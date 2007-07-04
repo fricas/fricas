@@ -1,0 +1,109 @@
+This experimental branch maintained by Waldek Hebisch.
+
+-------------------------------------------------------
+
+Quick installation:
+
+Axiom now tries to support standard GNU build/installation 
+conventions.  So if you have sources and all prerequisities
+just:
+
+configure && make && make install
+
+should work. The above will install Axiom files in
+/usr/local/axiom directory and put axiom command in
+/usr/local/bin directory, you can give arguments to configure
+to change those locations.
+
+--------------------------------------------------------
+
+Step by step instructions for first time users:
+
+ATM this branch of Axiom is available only
+via svn, so you need svn client (see http://subversion.tigris.org/).
+
+0) Change to a diresctory with enough (1.2 GB) free space
+
+1) Fetch sources:
+
+svn co https://axiom.svn.sourceforge.net/svnroot/axiom/branches/wh-sandbox
+
+2) Fetch nonstandard prerequisities:
+
+cd wh-sandbox
+svn co https://axiom.svn.sourceforge.net/svnroot/axiom/branches/build-improvements/gcl gcl
+
+cd zips
+wget https://axiom.svn.sourceforge.net/svnroot/axiom/trunk/axiom/zips/noweb-2.10a.tgz
+
+2a) Go back to first directory
+cd ../..
+
+3) Create build directory and change to it:
+
+mkdir ax-build
+cd ax-build
+
+4) Configure.  Assuming that you want axiom files to be installed in
+/tmp/usr
+
+./configure --prefix=/tmp/usr
+
+5) Build and install:
+
+make
+make install
+
+--------------------------------------------------------
+
+Extra information about installation:
+
+The preferred way to build this branch is to use already installed
+gcl and noweb.  Also, it is preferable to use a separate build
+directory.  Assuming that source tree is in wh-sandbox subdirectry
+and you build in ax-build subdirectry, the following should just
+work:
+
+cd ax-build
+../wh-sandbox/configure && make && make install
+
+If you have istalled gcl in some non-standard place (or you
+have multiple installations of gcl and you want to choose
+correct one) you can use the following:
+
+cd ax-build
+../wh-sandbox/configure --with-lisp=/path/to/gcl && make && make install
+
+Alternatively, you can just put gcl sources as a subdirectory
+(called gcl) of wh-sandbox directory -- in this case the build
+process should automatically build gcl and later use the freshly
+build gcl.
+
+Currently --with-lisp option accepts other lisp variants, namely
+sbcl, clisp and openmcl.  Build machinery must know which Lisp
+variant is in use. gcl, sbcl and clisp can be autodetected,
+for openmcl one has to give an extra argument --with-lisp-flavor=openmcl
+(you can also specify flavor for other Lisps, but this argument
+is required only for openmcl).  If you use Lisp different than
+gcl you should also specify --with-x=no option (otherwise
+build will hang trying to generate HyperDoc pages)
+
+Prerequisities:
+
+- Lisp (currently only GCL is fully functional, sbcl, clisp
+  and openmcl should work for core Axiom).
+- noweb literate programing tool (http://www.eecs.harvard.edu/~nr/noweb/)
+- X libraries and headers (includig Xpm library)
+
+---------------------------------------------------------------
+
+Current goals:
+
+-- generate all information that can be generated (documentation,
+   images, databases)
+-- remove unused code (both old and new but unfinished)
+-- rework file handling (current code is buggy, complicated and
+   inefficient)
+-- improve SPAD compiler
+
+   Waldek Hebisch 

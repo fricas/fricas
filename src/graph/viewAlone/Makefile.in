@@ -1,0 +1,65 @@
+# local include files shared by graphics
+LINC=	$(axiom_src_srcdir)/graph/include
+
+# global include files shared by everyone
+GINC=	$(axiom_src_srcdir)/include
+
+build_libdir = $(abs_top_builddir)/src/lib
+
+bin_PROGRAMS = viewAlone$(EXEEXT)
+
+viewAlone_sources = viewAlone.c spoonComp.c spoon2D.c
+
+viewAlone_SOURCES = $(addsuffix .pamphlet, $(viewAlone_sources))
+
+viewAlone_objects = $(viewAlone_sources:.c=.$(OBJEXT))
+
+viewAlone_LDADD = -L$(build_libdir) -lspad
+viewAlone_DEPENDENCIES =
+
+pamphlets = Makefile.pamphlet $(viewAlone_SOURCES)
+
+
+subdir = src/graph/viewAlone/
+
+AXIOM_CFLAGS = ${CCF} ${AXIOM_X11_CFLAGS} -I$(srcdir) -I${LINC} -I${GINC} \
+			$(axiom_includes)
+
+HEADERS= $(srcdir)/viewAlone.h     ${LINC}/component.h ${LINC}/view2D.h  \
+         ${LINC}/view3D.h      ${LINC}/tube.h      ${LINC}/actions.h \
+         ${LINC}/viewCommand.h 
+
+.PHONY: all all-ax all-viewAlone
+all: all-ax
+
+all-ax all-viewAlone: stamp
+	@echo finished $(builddir)
+
+stamp: $(axiom_target_bindir)/viewAlone$(EXEEXT)
+	-rm -f stamp
+	$(STAMP) stamp
+
+$(axiom_target_bindir)/viewAlone$(EXEEXT): $(viewAlone_objects) \
+		 $(viewAlone_DEPENDENCIES)
+	${CC} $(viewAlone_objects) -o $@ $(viewAlone_LDADD) \
+		$(AXIOM_X11_LDFLAGS)
+
+.PRECIOUS: %.$(OBJEXT)
+.PRECIOUS: %.c
+
+%.$(OBJEXT): $(HEADERS)
+
+%.$(OBJEXT): %.c $(axiom_c_macros_h)
+	$(CC) $(CFLAGS) $(AXIOM_CFLAGS) -c -o $@ $<
+
+%.c: $(srcdir)/%.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+mostlyclean-local:
+
+clean-local: mostlyclean-local
+	-rm -f $(viewAlone_sources) $(viewAlone_objects)
+	-rm $(axiom_target_bindir)/viewAlone$(EXEEXT)
+
+distclean-local: clean-local
+

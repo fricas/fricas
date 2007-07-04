@@ -1,0 +1,154 @@
+%% Oh Emacs, this is a -*- Makefile -*-, so give me tabs.
+\documentclass{article}
+\usepackage{axiom}
+
+\title{\$SPAD/src/etc Makefile}
+\author{Timothy Daly \and Gabriel Dos~Reis}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+\eject
+
+\tableofcontents
+\eject
+
+\section{The \Tool{axiom} command}
+
+<<axiomcmd>>=
+$(axiom_target_bindir)/axiom: $(srcdir)/axiom
+	@echo 1 making $@ from $<
+	@ $(INSTALL_SCRIPT) $< $@
+	@chmod +x $(axiom_target_bindir)/axiom
+
+@
+
+\section{The databases}
+The databases are built in this Makefile even though the prerequisits
+are actually made during the previous step in the algebra directory.
+This allows us to use a simple wildcard to express the fact that
+all of the [[algebra/*.NRLIB/code.$(FASLEXT)]] files are required in order to build
+the databases. If any if any of these are changed, the databases must
+be re-built.
+<<dbcomplete>>=
+$(DATABASES): ../algebra/*.NRLIB/code.$(FASLEXT)
+	@ echo 4 rebuilding databases...
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/gloss.text ../algebra
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/gloss.text ../algebra
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/topics.data ../algebra
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/topics.data ../algebra
+	@ (cd ../algebra ; \
+           echo ')lisp (make-databases "" nil)' | ${INTERPSYS} )
+	@ $(INSTALL_DATA) ../algebra/*.daase $(axiom_targetdir)/algebra
+	@ $(INSTALL_DATA) ../algebra/libdb.text $(axiom_targetdir)/algebra
+	@ $(INSTALL_DATA) ../algebra/comdb.text $(axiom_targetdir)/algebra
+	@ $(mkinstalldirs) $(axiom_targetdir)/algebra/USERS.DAASE \
+             $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+	@ $(INSTALL_DATA) ../algebra/USERS.DAASE/index.KAF \
+                   $(axiom_targetdir)/algebra/USERS.DAASE
+	@ $(INSTALL_DATA) ../algebra/DEPENDENTS.DAASE/index.KAF \
+                   $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+
+@
+
+\section{\Tool{summary}}
+<<summary>>=
+$(axiom_target_libdir)/summary: $(srcdir)/summary
+	$(INSTALL_DATA) $< $@ 
+
+@
+
+\section{\File{copyright}}
+<<copyright>>=
+$(axiom_target_libdir)/copyright: $(srcdir)/copyright
+	$(INSTALL_DATA) $< $@ 
+
+@
+
+\section{\Tool{asq}}
+
+\Tool{asq} is a command line tool to ask questions about \Tool{Axiom}'s 
+domains, packages, and categories.
+
+\begin{verbatim}
+asq -property searchkey
+ property is one of the following flags: (all is the default)
+  (ab)    abbreviation          (an)    ancestors
+  (at)    attributes            (ca cc) constructorcategory
+  (cf fo) constructorform       (ck ki) constructorkind
+  (cm)    constructormodemap    (con)   constructor
+  (cos)   cosig                 (de)    defaultdomain
+  (dom)   domain                (doc)   documentation
+  (mo)    modemaps              (ni)    niladic
+  (ob)    object                (op)    operationalist
+  (pr)    predicates            (so)    sourcefile
+searchkey can be either a domain or its abbreviation.
+ e.g. %s -so Integer
+ will give the source file name written to stdout
+\end{verbatim}
+<<asq>>=
+bin_PROGRAMS = asq$(EXEEXT)
+asq_sources = asq.c
+asq_SOURCES = $(addsuffix .pamphlet, $(asq_sources))
+asq_objects = $(asq_sources:.c=.$(OBJEXT))
+
+$(axiom_target_bindir)/asq$(EXEEXT): asq.c $(axiom_c_macros_h)
+	@echo 4 making $@ from $<
+	${CC} ${CCF} $(axiom_includes) -o asq asq.c
+	$(INSTALL_PROGRAM) asq $(axiom_target_bindir)
+
+asq.c: $(srcdir)/asq.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+@
+
+<<*>>=
+INTERPSYS=$(axiom_build_bindir)/interpsys
+DATABASES_SHORT=compress.daase interp.daase browse.daase category.daase \
+                operation.daase libdb.text comdb.text USERS.DAASE/index.KAF \
+                DEPENDENTS.DAASE/index.KAF
+DATABASES=$(addprefix $(axiom_targetdir)/algebra/, $(DATABASES_SHORT))
+
+subdir = src/etc/
+
+pamphlets = Makefile.pamphlet $(asq_SOURCES)
+
+
+.PHONY: all all-asq
+all: all-ax
+
+all-ax all-asq: stamp
+	@echo finished $(builddir)
+
+stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
+		$(axiom_target_libdir)/summary \
+		$(axiom_target_libdir)/copyright \
+		$(axiom_target_bindir)/axiom
+	-rm -f stamp
+	$(STAMP) stamp
+
+<<dbcomplete>>
+<<asq>>
+<<summary>>
+<<copyright>>
+<<axiomcmd>>
+
+mostlyclean-local:
+	-rm -f $(asq_sources) $(asq_objects)
+	-rm -f stamp
+
+clean-local: mostlyclean-local
+	-rm -f $(axiom_target_libdir)/summary
+	-rm -f $(axiom_target_libdir)/copyright
+	-rm -f $(axiom_target_bindir)/axiom
+	-rm -f $(axiom_target_bindir)/asq$(EXEEXT)
+
+distclean-local: clean-local
+@
+
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

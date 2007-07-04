@@ -1,0 +1,330 @@
+%% Oh Emacs, this is a -*- Lisp -*- file despite apperance.
+\documentclass{article}
+\usepackage{axiom}
+
+\title{\$SPAD/src/boot boothdr.lisp}
+\author{Timothy Daly \and Gabriel Dos~Reis}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  This pamphlet defines the base initial environment for building
+  a Boot translator image.  It essentially etablishes a namespace
+  (package \Code{Boot}) for the Boot translator, and defines 
+  some macros that need to be present during translation of Boot
+  source files.
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+
+\section{License}
+<<license>>=
+;; Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;;     - Redistributions of source code must retain the above copyright
+;;       notice, this list of conditions and the following disclaimer.
+;;
+;;     - Redistributions in binary form must reproduce the above copyright
+;;       notice, this list of conditions and the following disclaimer in
+;;       the documentation and/or other materials provided with the
+;;       distribution.
+;;
+;;     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+;;       names of its contributors may be used to endorse or promote products
+;;       derived from this software without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+@
+
+\section{The \code{BOOTTRAN} package}
+
+All Boot translator functions are defined in the package
+\code{BOOTTRAN}.  It is expected that the translator interfaces
+with the rest of the system only through the functions explicitly exported
+by \code{BOOTTRAN}:
+<<boot-translator>>=
+(defpackage "BOOTTRAN" (:use "AXIOM-LISP")
+  (:export "boottocl"
+	   "bootclam"
+	   "boottoclc"
+	   "boottomc"
+	   "compile-boot-file"
+	   "eval-boot-file"
+	   "bo"
+	   "boclam"
+	   "stout"
+	   "steval"
+	   "sttomc"))
+
+;; ECL does not load the compiler module by default.  Therefore, we
+;; must require that appropriate symbols be present.
+#+:ecl (require 'cmp)
+@
+
+\section{I/O macros}
+
+The Boot translator source codes make uses of some 
+higher order functions.  For various reasons, including efficiency,
+they are defined as Lisp macros and must therefore be available in each
+source file that uses them.
+
+\subsection{[[shoeInputFile]]}
+
+<<with-input-file>>=
+(defmacro |shoeOpenInputFile|
+     (stream fn prog)
+    `(with-open-file (,stream ,fn :direction :input
+       :if-does-not-exist nil) ,prog))
+@
+
+This macro creates a input stream object from a file name [[fn]], and 
+processes it with [[prog]].  If the file name designates a non-existent 
+file, the standard input is used instead.
+
+\subsection{[[shoeOpenOutputFile]]}
+<<with-output-file>>=
+(defmacro |shoeOpenOutputFile|
+     (stream fn prog)
+    `(with-open-file (,stream ,fn :direction :output
+       :if-exists :supersede) ,prog))
+@
+
+This macro creates an output stream object from a file name [[fn]], and 
+processes it with [[prog]].  The output file is overwritten if it exists.
+
+
+\section{Interface with the build machinery}
+
+Lisp implementations seem to fill all the implemented-defined 
+design space fuzzily described by Common Lisp standard.  What
+that means for us is that we need to provide abstractions that
+encapsulate all those variabilities in Lisp systems we care about.
+The functions defined in the next few subsections interface with
+our build-machinery.
+
+\subsection{Loading Lisp files}
+
+<<load-lisp-files>>=
+;; Load Lisp files (any LOADable file), given as a list of file names.
+;; The file names are strings, as approrpriate for LOAD.
+(defun load-lisp-files (files)
+  (mapcar #'(lambda (f) (load f)) files))
+@
+
+\subsection{Building new Lisp images}
+
+At many points, the build machinery makes new Lisp images that
+are the results of augmenting a given Lisp image with new 
+Lisp files (either compiled or in source form).  For most Lisp
+implementations, this is done by loading the Lisp files in the 
+current image and dumping the result on disk as an executable.
+<<make-program>>=
+;; Save current image on disk as executable and quit.
+
+(defun make-program (core-image lisp-files)
+  (load-lisp-files lisp-files)
+  (save-core core-image))
+@
+[[core-image]] is a string designating the name of the resulting program;
+[[lisp-files]] is a list of strings designating Lisp files to combine
+with the base Lisp system.
+
+\section{Putting it together}
+
+<<*>>=
+<<license>>
+
+<<boot-translator>>
+
+(in-package "BOOTTRAN")
+
+;## need the conditional here so it appears in boottran
+#+:ieee-floating-point (setq $ieee t)
+#-:ieee-floating-point (setq $ieee nil)
+
+;; The following comes from file previously known as npextras.lisp
+(defun double (x) (float x 1.D0))
+
+(defun pname (x)
+  (cond ((symbolp x) (symbol-name x))
+	((characterp x) (string x))
+	(t nil)))
+
+(defun |char| (x) (CHAR (PNAME x) 0))
+
+(defmacro memq (a b) `(member ,a ,b :test #'eq))
+(defvar |$lispType| '|Common|)
+(defvar |$lispName| '|Common|)
+(defvar |$machineType| 'RTPC)
+(defvar *lisp-bin-filetype* "o")
+(defvar *lisp-source-filetype* "lisp")
+(defun |shoeCOMPILE-FILE| (fn) (compile-file fn ))
+(defun setdifference (x y) (set-difference x y))
+(defun make-cvec (sint) (make-string sint))
+(defun MAKE-VEC (n) (make-array n))
+(defun concat (&rest l)
+  (progn
+    (setq l (mapcar #'string l))
+    (apply #'concatenate 'string l)))
+
+(defun |shoeInputFile| (filespec )
+  (open filespec :direction :input :if-does-not-exist nil))
+
+(defun |shoeCLOSE| (s) (close s))
+
+<<with-input-file>>
+
+<<with-output-file>>
+
+(defun |shoeConsole| (line)  (write-line line *terminal-io*))
+
+(defun shoeprettyprin1 (x &optional (stream *standard-output*))
+  (let ((*print-pretty* t)
+	(*print-array* t)
+	(*print-circle* t)
+	(*print-level* nil)
+	(*print-length* nil))
+    (prin1 x stream)))
+ 
+(defun reallyprettyprint (x &optional (stream *terminal-io*))
+  (shoeprettyprin1 x stream) (terpri stream))
+ 
+(defun shoeprettyprin0 (x &optional (stream *standard-output*))
+  (let ((*print-pretty* nil)
+	(*print-array* t)
+	(*print-circle* t)
+	(*print-level* nil)
+	(*print-length* nil))
+    (prin1 x stream)))
+ 
+(defun shoenotprettyprint (x &optional (stream *terminal-io*))
+  (shoeprettyprin0 x stream) (terpri stream))
+
+(defun make-full-cvec (sint &optional (char #\space))
+  (make-string sint :initial-element (character char)))
+
+(defun |shoeread-line| (st &optional (eofval nil))
+  (read-line st nil eofval))
+
+(defun |shoePLACEP| (item) 
+  (eq item nil))
+
+(defun substring (cvec start length)
+  (if length (subseq cvec start (+ start length))
+    (subseq cvec start)))
+
+(defun MAKE-HASHTABLE (id1)
+  (let ((test (case id1
+		    ((EQ ID) #'eq)
+		    (CVEC #'equal)
+		    ((UEQUAL EQUAL) #'equal)
+		    (otherwise (error "bad arg to make-hashtable")))))
+    (make-hash-table :test test)))
+
+(defun HKEYS (table)
+  (let (keys)
+    (maphash #'(lambda (key val) 
+		 (declare (ignore val))
+		 (push key keys)) table)
+    keys))
+
+
+(defun HPUT (table key value)
+  (setf (gethash key table) value))
+
+ 
+(defun stringimage (x)
+  (write-to-string x))
+ 
+(defun QENUM (cvec ind)
+  (char-code (char cvec ind)))
+ 
+(defun charmem (a b)
+  (member  a  b :test #'eql))
+ 
+(defun |shoeCloser| (w)
+  (MEMQ (|shoeKeyWord| w) '(CPAREN CBRACK)))
+
+(defun |shoeIdChar| (x)
+  (or (ALPHANUMERICP x)
+      (charmem x '(#\' #\? #\%))))
+
+(defun |shoeStartsId| (x)
+  (or (alpha-char-p x)
+      (charmem x '(#\$ #\? #\%))))
+ 
+(defun strpos (what in start dontcare)
+  (setq what (string what) in (string in))
+  (if dontcare (progn (setq dontcare (character dontcare))
+		      (search what in :start2 start
+			      :test #'(lambda (x y) (or (eql x dontcare)
+							(eql x y)))))
+    (search what in :start2 start)))
+ 
+
+(defun strposl (table cvec sint item)
+  (setq cvec (string cvec))
+  (if (not item)
+      (position table cvec :test #'(lambda (x y) (position y x)) :start sint)
+    (position table cvec :test-not #'(lambda (x y) (position y x))
+	      :start sint  )))
+
+(defun VEC-SETELT (vec ind val) 
+  (setf (elt vec ind) val))
+
+(defun  bvec-make-full (n x)
+  (make-array (list n) :element-type 'bit :initial-element x))
+
+(defun make-bvec (n)
+  (bvec-make-full n 0))
+ 
+(defun bvec-setelt (bv i x)
+  (setf (sbit bv i) x))
+
+(defun size (l)
+  (cond ((vectorp l) (length l))
+	((consp l) (list-length l))
+	(t 0)))
+
+(defun identp (a) 
+  (and (symbolp a) a))
+ 
+(defun shoeGREATERP (s1 s2)
+  (string> (string s1) (string s2)))
+
+(defun |shoeReadLisp| (s n)
+  (multiple-value-list (read-from-string s nil nil :start n)))
+
+(defun |last| (x)
+  (car (last x)))
+
+<<load-lisp-files>>
+
+<<make-program>>
+@
+
+
+
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

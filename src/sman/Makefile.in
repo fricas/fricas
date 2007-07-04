@@ -1,0 +1,91 @@
+
+subdir = src/sman/
+
+# this is where to put the various commands
+OUT=	$(axiom_target_bindir)
+OUTLIB=	$(axiom_target_libdir)
+
+# this is where the include files live
+INC=    $(axiom_src_srcdir)/include
+
+build_libdir = $(abs_top_builddir)/src/lib
+
+bin_PROGRAMS = session$(EXEEXT) \
+		spadclient$(EXEEXT) \
+		sman$(EXEEXT)
+
+session_sources = session.c
+session_SOURCES = $(addsuffix .pamphlet, $(session_sources))
+session_objects = $(session_sources:.c=.$(OBJEXT))
+session_LDADD = -L$(build_libdir) -lspad @axiom_c_runtime_extra@
+session_DEPENDENCIES =
+
+spadclient_sources = spadclient.c
+spadclient_SOURCES = $(addsuffix .pamphlet, $(spadclient_sources))
+spadclient_objects = $(spadclient_sources:.c=.$(OBJEXT))
+spadclient_LDADD = -L$(build_libdir) -lspad @axiom_c_runtime_extra@
+spadclient_DEPENDENCIES =
+
+sman_sources = sman.c
+sman_SOURCES = $(addsuffix .pamphlet, $(sman_sources))
+sman_objects = $(sman_sources:.c=.$(OBJEXT))
+sman_LDADD = -L$(build_libdir) -lspad @axiom_c_runtime_extra@
+sman_DEPENDENCIES =
+
+
+pamphlets = $(session_SOURCES) $(spadclient_SOURCES) $(sman_SOURCES)
+
+
+.PHONY: all all-sman
+
+all: all-ax
+
+all-ax all-sman: stamp
+
+stamp:	$(OUTLIB)/session$(EXEEXT) \
+		$(OUTLIB)/spadclient$(EXEEXT) \
+		$(OUT)/sman$(EXEEXT)
+	-rm -f stamp
+	$(STAMP) stamp
+
+.SUFFIXES:
+.SUFFIXES: .c .h .$(OBJEXT)
+.PRECIOUS: %.$(OBJEXT)
+.PRECIOUS: %.c
+.PRECIOUS: %.h
+
+%.$(OBJEXT): %.c 
+	$(CC) -c ${CCF} $(axiom_includes) -I$(builddir) -o $@ $<
+
+%.c: $(srcdir)/%.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+${OUTLIB}/session$(EXEEXT): $(session_objects) $(session_DEPENDENCIES)
+	$(CC) $(session_objects) -o $@ $(session_LDADD) ${LDF} -o $@
+
+${OUTLIB}/spadclient$(EXEEXT): $(spadclient_objects) $(spadclient_DEPENDENCIES)
+	$(CC) $(spadclient_objects) $(spadclient_LDADD) ${LDF} -o $@
+
+spadclient.$(OBJEXT): ${INC}/useproto.h ${INC}/spadclient.H1 \
+			$(axiom_configdir)/axiom-c-macros.h
+
+${OUT}/sman$(EXEEXT): $(sman_objects) $(sman_DEPENDENCIES)
+	$(CC) $(sman_objects) $(sman_LDADD) ${LDF} -o $@
+
+$(sman_objects): sman.h $(axiom_c_macros_h)
+
+sman.h: $(srcdir)/sman.c.pamphlet
+	$(axiom_build_document) --tangle=$@ --output=$@ $<
+
+mostlyclean-local:
+	-rm -f $(session_sources) $(session_objects) sman.h
+	-rm -f $(spadclient_sources) $(session_objects)
+	-rm -f $(sman_sources) $(sman_objects)
+
+clean-local: mostlyclean-local
+	-rm -f $(OUTLIB)/session$(EXEEXT)
+	-rm -f $(OUTLIB)/spadclient$(EXEEXT)
+	-rm -f $(OUT)/sman$(EXEEXT)
+
+distclean-local: clean-local
+

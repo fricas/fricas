@@ -1,0 +1,9 @@
+egrep '<<(domain|package|category) .*>>=' *.spad.pamphlet | sort | uniq | \
+awk -F: '{
+  chunk=substr($2,3,length($2)-5);
+  split(chunk,part," ");
+  spadfile=part[2]".spad";
+  print spadfile": $(srcdir)/"$1;
+  print "\t$(axiom_build_document) --output=$@ --tangle=\""chunk"\" $<";
+  print "";
+}'

@@ -1,0 +1,77 @@
+INTERPSYS=$(axiom_build_bindir)/interpsys
+DATABASES_SHORT=compress.daase interp.daase browse.daase category.daase \
+                operation.daase libdb.text comdb.text USERS.DAASE/index.KAF \
+                DEPENDENTS.DAASE/index.KAF
+DATABASES=$(addprefix $(axiom_targetdir)/algebra/, $(DATABASES_SHORT))
+
+subdir = src/etc/
+
+pamphlets = Makefile.pamphlet $(asq_SOURCES)
+
+
+.PHONY: all all-asq
+all: all-ax
+
+all-ax all-asq: stamp
+	@echo finished $(builddir)
+
+stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
+		$(axiom_target_libdir)/summary \
+		$(axiom_target_libdir)/copyright \
+		$(axiom_target_bindir)/axiom
+	-rm -f stamp
+	$(STAMP) stamp
+
+$(DATABASES): ../algebra/*.NRLIB/code.$(FASLEXT)
+	@ echo 4 rebuilding databases...
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/gloss.text ../algebra
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/gloss.text ../algebra
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/topics.data ../algebra
+	@ $(INSTALL_DATA) $(axiom_src_docdir)/topics.data ../algebra
+	@ (cd ../algebra ; \
+           echo ')lisp (make-databases "" nil)' | ${INTERPSYS} )
+	@ $(INSTALL_DATA) ../algebra/*.daase $(axiom_targetdir)/algebra
+	@ $(INSTALL_DATA) ../algebra/libdb.text $(axiom_targetdir)/algebra
+	@ $(INSTALL_DATA) ../algebra/comdb.text $(axiom_targetdir)/algebra
+	@ $(mkinstalldirs) $(axiom_targetdir)/algebra/USERS.DAASE \
+             $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+	@ $(INSTALL_DATA) ../algebra/USERS.DAASE/index.KAF \
+                   $(axiom_targetdir)/algebra/USERS.DAASE
+	@ $(INSTALL_DATA) ../algebra/DEPENDENTS.DAASE/index.KAF \
+                   $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+
+bin_PROGRAMS = asq$(EXEEXT)
+asq_sources = asq.c
+asq_SOURCES = $(addsuffix .pamphlet, $(asq_sources))
+asq_objects = $(asq_sources:.c=.$(OBJEXT))
+
+$(axiom_target_bindir)/asq$(EXEEXT): asq.c $(axiom_c_macros_h)
+	@echo 4 making $@ from $<
+	${CC} ${CCF} $(axiom_includes) -o asq asq.c
+	$(INSTALL_PROGRAM) asq $(axiom_target_bindir)
+
+asq.c: $(srcdir)/asq.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+$(axiom_target_libdir)/summary: $(srcdir)/summary
+	$(INSTALL_DATA) $< $@ 
+
+$(axiom_target_libdir)/copyright: $(srcdir)/copyright
+	$(INSTALL_DATA) $< $@ 
+
+$(axiom_target_bindir)/axiom: $(srcdir)/axiom
+	@echo 1 making $@ from $<
+	@ $(INSTALL_SCRIPT) $< $@
+	@chmod +x $(axiom_target_bindir)/axiom
+
+
+mostlyclean-local:
+	-rm -f $(asq_sources) $(asq_objects)
+	-rm -f stamp
+
+clean-local: mostlyclean-local
+	-rm -f $(axiom_target_libdir)/summary
+	-rm -f $(axiom_target_libdir)/copyright
+	-rm -f $(axiom_target_bindir)/axiom
+	-rm -f $(axiom_target_bindir)/asq$(EXEEXT)
+
+distclean-local: clean-local

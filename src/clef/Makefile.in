@@ -1,0 +1,55 @@
+# this is where the include files live
+INC=    $(axiom_src_srcdir)/include
+
+bin_PROGRAMS = clef$(EXEEXT)
+
+clef_sources = edible.c
+
+clef_SOURCES = $(addsuffix .pamphlet, $(clef_sources))
+
+clef_objects = $(clef_sources:.c=.$(OBJEXT)) 
+
+clef_LDADD = -L$(abs_top_builddir)/src/lib -lspad @axiom_c_runtime_extra@
+clef_DEPENDENCIES =
+
+subdir = src/clef/
+
+pamphlets = $(clef_SOURCES) Makefile.pamphlet
+
+.PHONY: all all-clef
+all: all-ax
+
+all-ax all-clef: stamp
+	@ echo finished $(builddir)
+
+stamp: $(axiom_target_bindir)/clef$(EXEEXT)
+	-rm -f stamp
+	$(STAMP) stamp
+
+$(axiom_target_bindir)/clef$(EXEEXT): $(clef_objects) $(clef_DEPENDENCIES)
+	${CC} $(clef_objects) $(clef_LDADD) ${LDF} -o $@
+
+.SUFFIXES:
+.SUFFIXES: .c .$(OBJEXT) .h
+.PRECIOUS: %.c
+.PRECIOUS: %.$(OBJEXT)
+
+%.c: $(srcdir)/%.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+%.$(OBJEXT): ${INC}/useproto.h ${INC}/edible.h \
+	$(axiom_configdir)/axiom-c-macros.h
+
+%.$(OBJEXT): %.c $(axiom_c_macros_h)
+	${CC} -c ${CCF} $(axiom_includes) -o $@ $<
+
+mostlyclean-local:
+	-rm -f $(clef_objects)
+	-rm -f $(clef_sources)
+	-rm -f stamp
+
+clean-local: mostlyclean-local
+	-rm -f $(axiom_target_bindir)/clef$(EXEEXT)
+
+distclean-local: clean-local
+

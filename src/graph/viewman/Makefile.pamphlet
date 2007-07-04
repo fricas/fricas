@@ -1,0 +1,97 @@
+%% Oh Emacs, this is a -*- Makefile -*-, so give me tabs.
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{src/graph/viewman Makefile}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{environment}
+<<environment>>=
+# local include files shared by graphics
+LINC=	$(axiom_src_srcdir)/graph/include
+
+# global include files shared by everyone 
+GINC=	$(axiom_src_srcdir)/include
+
+build_libdir = $(abs_top_builddir)/src/lib
+
+bin_PROGRAMS = viewman$(EXEEXT)
+
+viewman_sources = cleanup.c fun2D.c fun3D.c make2D.c make3D.c \
+		makeGraph.c readView.c sselect.c viewman.c
+
+viewman_SOURCES = $(addsuffix .pamphlet, $(viewman_sources))
+
+viewman_objects = $(viewman_sources:.c=.$(OBJEXT))
+
+viewman_headers = $(srcdir)/viewman.h \
+		$(addprefix $(axiom_src_srcdir)/graph/include/,\
+			component.h view2D.h view3D.h tube.h \
+			actions.h viewCommand.h) \
+		$(axiom_src_srcdir)/include/com.h
+
+
+viewman_DEPENDENCIES =
+viewman_LDFLAGS = -L$(build_libdir) -lspad
+
+pamphlets = Makefile.pamphlet $(viewman_SOURCES)
+
+@
+\section{viewman}
+<<viewman>>=
+$(axiom_target_libdir)/viewman$(EXEEXT): $(viewman_objects) $(viewman_DEPENDENCIES)
+	${CC} $(viewman_objects) -o $@ $(viewman_LDFLAGS) \
+		$(AXIOM_X11_LDFLAGS)
+@
+
+<<*>>=
+<<environment>>
+
+subdir = src/graph/viewman/
+
+AXIOM_CFLAGS = ${CCF} ${AXIOM_X11_CFLAGS} -I${LINC} -I${GINC} -I$(srcdir) \
+			$(axiom_includes)
+
+.PHONY: all all-ax all-viewman
+all: all-ax
+
+all-ax all-viewman: stamp
+	@ echo 30 finished $(srcdir)
+
+stamp: $(axiom_target_libdir)/viewman$(EXEEXT)
+	-rm -f stamp
+	$(STAMP) stamp
+
+
+.PRECIOUS: %.c
+.PRECIOUS: %.$(OBJEXT)
+
+%.$(OBJEXT): $(viewman_HEADERS)
+
+%.$(OBJEXT): %.c $(axiom_c_macros_h)
+	$(CC) $(CFLAGS) $(AXIOM_CFLAGS) -c -o $@ $<
+
+%.c: $(srcdir)/%.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+<<viewman>>
+
+mostlyclean-local:
+
+clean-local: mostlyclean-local
+	-rm -f $(viewman_sources) $(viewman_objects)
+	-rm -f $(axiom_target_libdir)/viewman$(EXEEXT)
+
+distclean-local: clean-local
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

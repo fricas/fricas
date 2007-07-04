@@ -1,0 +1,205 @@
+%% Oh Emacs, this is a -*- Makefile -*-, so give me tabs.
+\documentclass{article}
+\usepackage{axiom}
+
+\title{\$SPAD/src/lib Makefile}
+\author{Timothy Daly \and Gabriel Dos~Reis}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  This Makefile builds the \Tool{Axiom} C runtime system.  This runtime
+  support consists of three main compoments: core, terminal I/O, and
+  graphics.
+\end{abstract}
+\eject
+
+\tableofcontents
+\eject
+
+\section{Components}
+
+\subsection{Core runtime}
+
+The core C runtime system is required on all hosts. It is composed of
+\begin{itemize}
+\item \verb!iint bsdSignal()!
+\item \verb!int addtopath(const char*)!
+\item \verb!int directoryp(const char*)!
+\item \verb!int make_path_from_file(const char*, const char*)!
+\item \verb!int writeablep(const char*)!
+\item \verb!int readablep(const char*)!
+\item \verb!int findString(const char*, const char*)!
+\item \verb!int copyEnvValue(const char*, char*)!
+\end{itemize}
+
+Those functions are implemented in \File{cfuns-c.c} and 
+\File{sockio-c.c}.  For the most part,
+they depend on [[<unistd.h>]], [[<sys/stat.h>]], and
+[[<sys/socket.h>]]
+
+<<environment>>=
+core_sources = bsdsignal.c cfuns-c.c sockio-c.c
+@
+
+
+\subsection{Terminal I/O}
+
+This component provides all the routines necessary to build
+the \Tool{Superman} component.
+
+<<environment>>=
+terminal_io_sources = cursor.c edin.c fnct_key.c openpty.c prt.c wct.c
+@
+
+
+\subsection{Graphics}
+
+HyperDoc and any other graphics capability.
+
+<<environment>>=
+graphics_sources = \
+		halloc.c \
+		hash.c \
+		pixmap.c \
+		spadcolors.c \
+		util.c \
+		XDither.c \
+		XShade.c \
+		XSpadFill.c
+@
+
+??? document each of those files.???
+
+
+\section{environment}
+
+The \Tool{Autoconf}-subst'd variable [[axiom_c_runtime]] is computed
+at configure time, based on the characteristics of the host environment.
+It is a list of the main components.  It also contain [[core]]
+
+<<environment>>=
+
+libspad_a_sources = $(foreach comp, \
+			$(addsuffix _sources, @axiom_c_runtime@), \
+			$($(comp)))
+
+libspad_a_SOURCES = $(addsuffix .pamphlet,$(libspad_a_sources))
+
+other_sources = cfuns-c.c
+
+other_SOURCES = $(addsuffix .pamphlet,$(other_sources))
+
+unused_sources = emupty.c
+
+libspad_a_objects = $(libspad_a_sources:.c=.$(OBJEXT))
+
+other_objects = $(other_sources:.c=.$(OBJEXT))
+
+pamphlets = Makefile.pamphlet $(libspad_a_SOURCES) $(other_SOURCES)
+
+@
+
+\section{Files}
+
+\subsection{C from pamphlet}
+<<C from pamphlet>>=
+.PRECIOUS: %.c
+
+%.c: $(srcdir)/%.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+@
+
+\subsection{object from C}
+<<object from C>>=
+.PRECIOUS: %.$(OBJEXT)
+
+%.$(OBJEXT): %.c $(axiom_c_macros_h)
+	$(CC) $(CCF) -c $(axiom_includes) $(AXIOM_X11_CFLAGS) $< -o $@
+@
+
+
+
+\subsection{cfuns-c.c \cite{2}}
+The cfuns-c file contains socket primitives used by Axiom.
+They must be linked into and visible from the inferior lisp.
+In GCL this link happens thru setting a shell variable called
+{\bf EXTRAS} in the {\bf h/386-linux.defs} file. This file
+gets included as part of the final system build of GCL.
+
+\subsection{hash.c \cite{6}}
+This a a string-based hash table that is used both in the graph
+and hyper functions. It is included here because we need it built
+earlier so the graph and hyper routines can refer to it.
+
+\subsection{sockio-c.c \cite{10}}
+The sockio-c file contains socket primitives used by Axiom.
+They must be linked into and visible from the inferior lisp.
+In GCL this link happens thru setting a shell variable called
+{\bf EXTRAS} in the {\bf h/386-linux.defs} file. This file
+gets included as part of the final system build of GCL.
+
+\section{The cleanup stanza}
+<<cleanup>>=
+# This is a support library, so it does not change often and
+# we don't need to remove the produced objects in mostlyclean.
+# The remoal is done by clean.
+mostlyclean-local:
+
+clean-local: mostlyclean-local
+	-rm -f $(libspad_a_objects) $(other_objects)
+	-rm -f $(libspad_a_sources) $(other_sources)
+	-rm -f libspad.a
+	-rm -f stamp
+
+distclean-local: clean-local
+@
+
+<<*>>=
+<<environment>>
+
+subdir = src/lib/
+
+.PHONY: all all-lib
+.SUFFIXES:
+.SUFFIXES: .o .c .h
+
+all: all-ax
+
+all-ax all-lib: stamp
+stamp: libspad.a $(other_objects)
+	rm -f stamp
+	$(STAMP) stamp
+
+libspad.a: $(libspad_a_objects)
+	$(AR) ru libspad.a $(libspad_a_objects)
+	$(RANLIB) libspad.a
+
+<<C from pamphlet>>
+
+<<object from C>>
+
+<<cleanup>>
+@
+
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} {\$SPAD/src/lib/bsdssignal.c.pamphlet}
+\bibitem{2} {\$SPAD/src/lib/cfuns-c.c.pamphlet}
+\bibitem{3} {\$SPAD/src/lib/cursor.c.pamphlet}
+\bibitem{4} {\$SPAD/src/lib/edin.c.pamphlet}
+\bibitem{5} {\$SPAD/src/lib/fnct\_key.c.pamphlet}
+\bibitem{6} {\$SPAD/src/lib/halloc.c.pamphlet}
+\bibitem{7} {\$SPAD/src/lib/openpty.c.pamphlet}
+\bibitem{8} {\$SPAD/src/lib/pixmap.c.pamphlet}
+\bibitem{9} {\$SPAD/src/lib/prt.c.pamphlet}
+\bibitem{10} {\$SPAD/src/lib/sockio-c.c.pamphlet}
+\bibitem{11} {\$SPAD/src/lib/spadcolors.c.pamphlet}
+\bibitem{12} {\$SPAD/src/lib/util.c.pamphlet}
+\bibitem{13} {\$SPAD/src/lib/wct.c.pamphlet}
+\bibitem{14} {\$SPAD/src/lib/XDither.c.pamphlet}
+\bibitem{15} {\$SPAD/src/lib/XShade.c.pamphlet}
+\bibitem{16} {\$SPAD/src/lib/XSpadFill.c.pamphlet}
+\end{thebibliography}
+\end{document}

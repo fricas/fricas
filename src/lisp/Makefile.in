@@ -1,0 +1,77 @@
+OUT = $(axiom_build_bindir)
+
+subdir = src/lisp/
+
+pamphlets = Makefile.pamphlet
+
+build_libdir = $(abs_top_builddir)/src/lib
+
+lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
+		    $(build_libdir)/sockio-c.o \
+		    $(build_libdir)/libspad.a
+
+.PHONY: all all-lisp
+all: all-ax all-lisp
+
+all-ax all-lisp: $(OUT)/lisp$(EXEEXT)
+
+
+lisp_flavor=@axiom_lisp_flavor@
+
+## Create a fresh image for building interpsys and AXIOMsys
+## These objects files are the C runtime support
+## and must be compiled into the Lisp image,
+## as they must be present in the final interpreter
+## and image.
+## Use $(BASE) because Lisp (gcl) is native on Windows
+lisp_c_objects = \
+		$(BASE)$(build_libdir)/bsdsignal.o \
+		$(BASE)$(build_libdir)/cfuns-c.o \
+		$(BASE)$(build_libdir)/sockio-c.o
+
+$(OUT)/lisp$(EXEEXT): do_it.$(lisp_flavor)
+
+do_it.gcl: axiom-lisp.lisp axiom-package.lisp
+	@axiom_gcl_rsym_hack@
+	echo '(load "axiom-package.lisp")' \
+	     '(setq compiler::*default-system-p* t)' \
+	     '(compile-file "axiom-lisp.lisp")' | $(AXIOM_LISP)
+	echo '(compiler::link nil "prelisp" ' \
+              ' (format nil "(progn (let ((*load-path* (cons ~S *load-path*))'\
+                                        ' (si::*load-types* ~S))' \
+                                       ' (compiler::emit-fn t))' \
+                                  ' (when (fboundp (quote si::sgc-on))' \
+                                        ' (si::sgc-on t))' \
+                                  ' (setq compiler::*default-system-p* t))"' \
+                      ' si::*system-directory* (quote (list ".lsp")))' \
+               '  "$(lisp_c_objects) @axiom_c_runtime_extra@")' \
+            | $(AXIOM_LISP)
+	echo '(load "axiom-package.lisp") (load "axiom-lisp.$(OBJEXT)")' \
+	     '(in-package "AXIOM-LISP") (save-core "lisp$(EXEEXT)")' \
+	    | ./prelisp$(EXEEXT)
+	$(INSTALL_PROGRAM) lisp$(EXEEXT) $(OUT)
+	$(STAMP) $@
+
+axiom-lisp.lisp: $(srcdir)/axiom-lisp.lisp.pamphlet
+	$(axiom_build_document) --tangle $< --output=$@
+
+axiom-package.lisp: $(srcdir)/axiom-lisp.lisp.pamphlet
+	$(axiom_build_document) --tangle=axiom-package.lisp --output=$@ $<
+
+do_it.sbcl do_it.clisp do_it.openmcl: axiom-lisp.lisp axiom-package.lisp
+	echo '(load "axiom-package.lisp")' \
+	    '(load (compile-file "axiom-lisp.lisp"))' \
+            '(in-package "AXIOM-LISP") (save-core "${OUT}/lisp")' \
+         | $(AXIOM_LISP)
+	 $(STAMP) $@
+
+
+# Build GCL takes quite a while, so we don't remove the
+# diretcory in mostlyclean.  Rather, we do that in clean.
+mostlyclean-local:
+
+clean-local: mostlyclean
+	-rm -f $(OUT)/lisp$(EXEEXT)
+
+distclean-local: clean-local
+	-rm -f Makefile

@@ -1,0 +1,77 @@
+IN=	$(axiom_src_srcdir)/graph/Gdraws
+OUT=	$(axiom_target_libdir)
+PS=	$(axiom_target_libdir)/graph
+DOC=    $(axiom_target_docdir)/src/graph
+
+# local include files shared by graphics
+LINC=	$(axiom_src_srcdir)/graph/include
+
+# global include files shared by everyone
+GINC=	$(axiom_src_srcdir)/include
+
+# include files in Hyperdoc
+HINC=	$(axiom_src_srcdir)/hyper
+
+# bitmaps for cursors
+BIT=	$(axiom_src_srcdir)/graph/include/bitmaps
+
+# a .h file stuck in a really wierd place
+DOTH=	$(axiom_src_srcdir)/graph/viewman
+
+# a .c file in the library subdirectory
+DOTC=	$(axiom_src_srcdir)/lib
+
+pamphlets = Gfun.c.pamphlet psFiles.pamphlet Makefile.pamphlet
+
+AXIOM_CFLAGS = ${CCF} -I${LINC} -I${GINC} -I$(srcdir) -I${HINC} \
+		$(axiom_includes) ${AXIOM_X11_CFLAGS}
+
+
+subdir = src/graph/Gdraws/
+
+pamphlets = Makefile.pamphlet Gfun.c.pamphlet psFiles.pamphlet
+
+HEADERS = ${IN}/Gdraws0.h ${LINC}/G.h     ${LINC}/Gfun.H1    \
+          ${GINC}/hash.h  ${GINC}/hash.H1 ${GINC}/useproto.h \
+		$(axiom_c_macros_h)
+
+PSFiles= ${PS}/colorpoly.ps ${PS}/colorwol.ps  ${PS}/draw.ps      \
+         ${PS}/drawIstr.ps  ${PS}/drawarc.ps   ${PS}/drawcolor.ps \
+         ${PS}/drawline.ps  ${PS}/drawlines.ps ${PS}/drawpoint.ps \
+         ${PS}/drawrect.ps  ${PS}/drawstr.ps   ${PS}/drwfilled.ps \
+         ${PS}/end.ps       ${PS}/fillarc.ps   ${PS}/fillpoly.ps  \
+         ${PS}/fillwol.ps   ${PS}/header.ps    ${PS}/setup.ps
+
+.SUFFIXES:
+.SUFFIXES: .c .o .h .ps
+
+.PHONY: all all-ax all-Gdraws
+all: all-ax
+all-ax all-Gdraws: stamp
+	@ echo finished making $(axiom_src_srcdir)/Gdraws
+
+.PHONY: PSfiles.post
+stamp:  Gfun.$(OBJEXT) $(PSfiles)
+	@-rm -f stamp
+	$(STAMP) stamp
+
+$(PS)/%.ps: $(srcdir)/psFiles.pamphlet
+	$(axiom_build_document) --tangle=$* --output=$@ $<
+
+Gfun.c: $(srcdir)/Gfun.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+Gfun.$(OBJEXT): ${HEADERS}
+
+Gfun.$(OBJEXT): $(builddir)/Gfun.c 
+	${CC} -c  $(CFLAGS) $(AXIOM_CFLAGS) -o $@ $<
+
+
+mostlyclean-local:
+	-rm -f Gfun.$(OBJEXT)
+
+clean-local: mostlyclean-local
+	-rm -f $(PSFiles)
+
+distclean-local: clean-local
+

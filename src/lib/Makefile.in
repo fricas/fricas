@@ -1,0 +1,70 @@
+core_sources = bsdsignal.c cfuns-c.c sockio-c.c
+terminal_io_sources = cursor.c edin.c fnct_key.c openpty.c prt.c wct.c
+graphics_sources = \
+		halloc.c \
+		hash.c \
+		pixmap.c \
+		spadcolors.c \
+		util.c \
+		XDither.c \
+		XShade.c \
+		XSpadFill.c
+
+libspad_a_sources = $(foreach comp, \
+			$(addsuffix _sources, @axiom_c_runtime@), \
+			$($(comp)))
+
+libspad_a_SOURCES = $(addsuffix .pamphlet,$(libspad_a_sources))
+
+other_sources = cfuns-c.c
+
+other_SOURCES = $(addsuffix .pamphlet,$(other_sources))
+
+unused_sources = emupty.c
+
+libspad_a_objects = $(libspad_a_sources:.c=.$(OBJEXT))
+
+other_objects = $(other_sources:.c=.$(OBJEXT))
+
+pamphlets = Makefile.pamphlet $(libspad_a_SOURCES) $(other_SOURCES)
+
+
+subdir = src/lib/
+
+.PHONY: all all-lib
+.SUFFIXES:
+.SUFFIXES: .o .c .h
+
+all: all-ax
+
+all-ax all-lib: stamp
+stamp: libspad.a $(other_objects)
+	rm -f stamp
+	$(STAMP) stamp
+
+libspad.a: $(libspad_a_objects)
+	$(AR) ru libspad.a $(libspad_a_objects)
+	$(RANLIB) libspad.a
+
+.PRECIOUS: %.c
+
+%.c: $(srcdir)/%.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+.PRECIOUS: %.$(OBJEXT)
+
+%.$(OBJEXT): %.c $(axiom_c_macros_h)
+	$(CC) $(CCF) -c $(axiom_includes) $(AXIOM_X11_CFLAGS) $< -o $@
+
+# This is a support library, so it does not change often and
+# we don't need to remove the produced objects in mostlyclean.
+# The remoal is done by clean.
+mostlyclean-local:
+
+clean-local: mostlyclean-local
+	-rm -f $(libspad_a_objects) $(other_objects)
+	-rm -f $(libspad_a_sources) $(other_sources)
+	-rm -f libspad.a
+	-rm -f stamp
+
+distclean-local: clean-local

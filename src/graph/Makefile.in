@@ -1,0 +1,47 @@
+SUBDIRS = Gdraws viewman view2D view3D viewAlone
+
+pamphlets = fileformats.pamphlet Makefile.pamphlet
+
+subdir = src/graph/
+
+pamphlets = Makefile.pamphlet
+
+.PHONY: all all-ax all-graph
+all: all-ax
+
+all-ax all-graph: stamp
+	@ echo 24 finished ${IN}
+
+stamp: all-subdirs
+	$(STAMP) stamp
+
+.PHONY: all-subdirs
+all-subdirs: all-subdirs.pre all-subdirs.rest
+
+.PHONY: all-subdirs.pre
+all-subdirs.pre:
+	-rm -f stamp
+
+.PHONY: all-subdirs.rest
+all-subdirs.rest: all-subdirs.pre all-Gdraws all-viewman \
+		  all-view2D all-view3D all-viewAlone
+
+
+all-viewman: all-Gdraws
+	cd viewman && ${MAKE}
+all-Gdraws: 
+	@$(mkinstalldirs) $(axiom_target_libdir)/graph
+	cd Gdraws && ${MAKE}
+all-view3D: all-Gdraws
+	cd view3D && ${MAKE}
+all-view2D: all-Gdraws
+	cd view2D && ${MAKE}
+all-viewAlone: all-Gdraws
+	cd viewAlone && ${MAKE}
+
+mostlyclean-local:
+
+clean-local: mostlyclean-local
+
+distclean-local: clean-local
+

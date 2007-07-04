@@ -1,0 +1,137 @@
+
+## ----------------------------------------
+## -- Old-style Axiom makefile variables --
+## ----------------------------------------
+
+## CCLBASE=${OBJ}/${SYS}/ccl/ccllisp
+COMMAND=$(DESTDIR)$(libdir)/axiom/target/$(target)/bin/axiom
+
+GCLOPTS=@GCLOPTS@
+
+pamphlets = configure.ac.pamphlet Makefile.pamphlet
+
+PART=	cprogs
+SUBPART= everything
+
+
+
+subdir = 
+
+SUBDIRS = src
+
+build_srcdir = $(builddir)/src
+
+AXIOM_SRC_TARGETS = all-algebra all-asq all-axiomsys all-book all-boot \
+	all-clef all-doc all-graph all-hyper all-input all-interpsys \
+	all-lib all-lisp all-sman all-src
+
+.PHONY: all $(AXIOM_SRC_TARGETS)
+all: all-ax
+
+all-ax: all-src
+	@echo finished system build on `date` | tee >lastBuildDate
+
+all-src: stamp-rootdirs @axiom_all_prerequisites@
+
+$(AXIOM_SRC_TARGETS):
+	cd $(build_srcdir) && $(MAKE) $@
+
+stamp-rootdirs: $(axiom_build_document)
+	mkdir -p $(axiom_build_bindir)
+	mkdir -p $(axiom_build_libdir)
+	mkdir -p $(axiom_target_bindir)
+	mkdir -p $(axiom_target_libdir)
+	mkdir -p $(axiom_target_docdir)
+	mkdir -p $(axiom_target_datadir)
+	mkdir -p $(axiom_target_texdir)
+	mkdir -p $(axiom_targetdir)/algebra/
+	mkdir -p $(axiom_target_srcdir)/algebra
+	mkdir -p ${TMP}
+	$(STAMP) stamp-rootdirs
+
+
+.PHONY: all-noweb
+all-noweb: stamp-noweb
+
+stamp-noweb:
+	@echo Making in noweb
+	( mkdir noweb && \
+	  cd noweb && \
+	  $(TAR) -zxf $(axiom_optional_srcdir)/noweb-2.10a.tgz && \
+	  cd src && \
+	  cat Makefile \
+	      | sed -e "s|^BIN=.*|BIN=$(axiom_build_bindir)|" \
+                    -e "s|^LIB=.*|LIB=$(axiom_build_libdir)|" \
+		    -e "s|^MAN=.*|MAN=$(axiom_build_mandir)|" \
+                    -e "s|^TEXINPUTS=.*|TEXINPUTS=$(axiom_target_texdir)|" \
+		    -e 's/ make / $$\(MAKE\) /' \
+		    -e "s,c/nt,c/nt$(EXEEXT)," \
+		    -e "s,c/markup,c/markup$(EXEEXT)," \
+		    -e "s,c/mnt,c/mnt$(EXEEXT)," \
+		    -e "s,c/finduses,c/finduses$(EXEEXT)," \
+	      > Makefile.tmp && mv Makefile.tmp Makefile && \
+	  ./awkname $(AWK) && $(MAKE) all install )
+	$(STAMP) stamp-noweb
+
+
+.PHONY: all-gcl
+all-gcl: $(axiom_build_bindir)/gcl$(EXEEXT)
+
+$(axiom_build_bindir)/gcl$(EXEEXT):
+	if test "$(srcdir)" != "$(builddir)"; then \
+	   cp -r $(srcdir)/gcl $(builddir); \
+	fi && cd gcl && \
+	./configure --prefix=$(axiom_builddir) ${GCLOPTS} && \
+		$(MAKE) && $(MAKE) install
+book:
+	@ echo 79 building the book as $(axiom_target_docdir)/book.dvi 
+	mkdir -p ${TMP}
+	mkdir -p $(axiom_target_docdir)/ps
+	$(INSTALL) $(axiom_src_srcdir)/doc/book.pamphlet $(axiom_target_docdir)
+	cp $(axiom_src_srcdir)/doc/ps/* $(axiom_target_docdir)/ps
+	(cd $(axiom_target_docdir) ; \
+	    latex book.pamphlet --interaction nonstopmode && \
+	      latex book.pamphlet --interaction nonstopmode ; \
+	  rm book.pamphlet ; \
+	  rm book.toc ; \
+	  rm book.log ; \
+	  rm book.aux )
+	@ echo 80 The book is at $(axiom_target_docdir)/book.dvi 
+
+install:
+	@echo Installing Axiom in $(prefix)
+	rm -rf $(DESTDIR)$(libdir)/axiom
+	@mkdir -p $(DESTDIR)$(libdir)/axiom
+	@cp -pr $(builddir)/target $(DESTDIR)$(libdir)/axiom
+	@echo '#!/bin/sh -' > ${COMMAND}
+	@echo AXIOM=$(libdir)/axiom/target/$(target) >> ${COMMAND}
+	@echo export AXIOM >> ${COMMAND}
+	@echo PATH='$${AXIOM}/bin':'$${PATH}' >> ${COMMAND}
+	@echo export PATH >> ${COMMAND}
+	@cat $(axiom_src_srcdir)/etc/axiom >> ${COMMAND}
+	@chmod +x ${COMMAND}
+	@rm -f $(DESTDIR)$(bindir)/axiom
+	@mkdir -p $(DESTDIR)$(bindir)
+	@ $(INSTALL_PROGRAM) $(COMMAND) $(DESTDIR)$(bindir)/axiom
+	@echo 79 Axiom installation finished.
+
+
+mostlyclean-local:
+	@-rm -f lastBuildDate
+
+clean-local: mostlyclean-local
+	@ rm -f stamp-*
+	@ rm -rf int
+	@ rm -rf obj
+
+distclean-local: clean-local
+	@-rm -rf build
+	@-rm -rf $(axiom_targetdir)
+	@-rm -f config.status config.log
+	@-rm -f Makefile
+
+$(top_builddir)/config.status: $(top_srcdir)/configure
+	$(SHELL) ./config.status --recheck
+
+$(RECURSIVE_TARGETS): stamp-rootdirs @axiom_all_prerequisites@
+

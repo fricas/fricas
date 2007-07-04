@@ -1,0 +1,75 @@
+
+IN=	$(axiom_src_srcdir)/graph/view3D
+
+# local include files shared by graphics
+LINC=	$(axiom_src_srcdir)/graph/include
+
+# global include files shared by everyone 
+GINC=	$(axiom_src_srcdir)/include
+
+# bitmaps for cursors
+BIT=	$(axiom_src_srcdir)/graph/include/purty
+
+build_libdir = $(abs_top_builddir)/src/lib
+
+bin_PROGRAMS = view3D$(EXEEXT)
+
+view3D_sources = buttons3d.c closeView3d.c component3d.c control3d.c \
+		illuminate3d.c lightbut3d.c lighting3d.c main3d.c \
+		mesh3d.c msort3d.c pot3d.c process3d.c project3d.c \
+		quitbut3d.c quit3d.c save3d.c savebut3d.c smoothShade3d.c \
+		spadAction3d.c	stuff3d.c surface3d.c transform3d.c \
+		viewport3d.c volume3d.c write3d.c
+
+view3D_SOURCES = $(addsuffix .pamphlet, $(view3D_sources))
+
+view3D_objects = $(addprefix $(builddir)/, $(view3D_sources:.c=.$(OBJEXT)))
+
+Gfun_objects = ../Gdraws/Gfun.$(OBJEXT)
+
+
+view3D_LDADD = -L$(build_libdir) -lspad
+view3D_DEPENDENCIES = $(Gfun_objects)
+
+pamphlets = Makefile.pamphlet $(view3D_SOURCES)
+
+
+subdir = src/graph/view3D/
+
+AXIOM_CFLAGS  = ${CCF} ${AXIOM_X11_CFLAGS} -I${LINC} -I${GINC} -I${IN} \
+			$(axiom_includes)
+
+HEADERS = ${IN}/header.h ${IN}/globals.h \
+	${LINC}/component.h ${LINC}/view3D.h ${LINC}/tube.h \
+	${LINC}/actions.h ${LINC}/viewCommand.h \
+	${GINC}/view.h ${LINC}/G.h $(axiom_c_macros.h)
+
+.PHONY: all all-ax all-view3D
+all: all-ax
+all-ax all-view3D: stamp
+	@echo finished $(srcdir)
+
+stamp: $(axiom_target_libdir)/view3D$(EXEEXT)
+	-rm -f stamp
+	$(STAMP) stamp
+
+$(axiom_target_libdir)/view3D$(EXEEXT): $(view3D_objects) $(view3D_DEPENDENCIES)
+	${CC} $(view3D_objects) $(Gfun_objects) -o $@ \
+		$(view3D_LDADD) $(AXIOM_X11_LDFLAGS) -lm
+
+.PRECIOUS: %.$(OBJEXT)
+.PRECIOUS: %.c
+
+%.$(OBJEXT): $(HEADERS)
+
+%.$(OBJEXT): %.c
+	$(CC) -c $(CFLAGS) $(AXIOM_CFLAGS) -o $@ $<
+
+%.c: $(srcdir)/%.c.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+mostly-clean:
+
+clean-clean: mostlyclean-clean
+
+distclean-local: clean-local
