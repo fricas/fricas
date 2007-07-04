@@ -1,0 +1,246 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/interp debugsys.lisp}
+\author{Timothy Daly}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{An explanation}
+
+This file is basically the same as the one created during the build of
+interpsys. See the echo lines in the {\bf SAVESYS} block in the
+Makefile.pamphlet file. These are echoed into a temporary file which
+gets loaded into the lisp image to create interpsys.  We simply
+captured that temporary file, replaced the .o files with .lisp files
+(or .lsp or .clisp) and saved it here.
+
+This is a file that can be loaded into a raw lisp image to create a
+running interpreter. Note that almost all of the files are loaded as
+lisp code. cfuns and sockio are exceptions because they depend on the
+loader to link to externs in the lisp image which cannot be done in
+interpreted code. 
+
+We assume that debugsys is being built after interpsys has been built
+as the only use for a debugsys image is to debug a deep system
+problem in interpsys. Thus we can assume that all of these files
+exist. Note that these files are {\bf hard coded} to assume they
+live under {\bf /home/axiomgnu/new}. You need to do a global
+search and replace if you don't place them there. We should write
+lisp code to grab the {\bf AXIOM} shell variable but since (a)
+there is hardly any reason to use this level of debugging and (b)
+if you're screwing around here you've got much harder problems
+to solve so this is not an issue.
+
+For debugging purposes you can add anything to this file
+and it will show up in the debugsys image. 
+
+Note that the nag files have been removed as there is a bug
+in the handling of their autoload code.
+
+\section{The debugsys.lisp code (non-portable)}
+<<*>>=
+;;; Needed for debugging with gcl
+#+:gcl (si::use-fast-links nil)
+(unless (system:getenv "AXIOM") 
+ (format t "The AXIOM shell variable must be set~%")
+ (format t "The likely value is axiom/mnt/linux~%"))
+(unless (system:getenv "DAASE")
+ (format t "The DAASE shell variable must be set~%")
+ (format t "The likely value is axiom/mnt/linux~%"))
+(trace load)
+#+:GCL
+(defun thepath (file) 
+  (concatenate 'string (system:getenv "AXIOM") "/" file))
+(load "sys-pkg.lisp")
+(load "nocompil.lisp")
+(load "bookvol5.lisp")
+(load "util.lisp")
+(in-package "BOOT")
+#+:GCL
+(defun thesymb (file) (intern
+  (concatenate 'string (system:getenv "AXIOM") "/" file)))
+(progn (setq timestamp (user::thepath "../../src/timestamp")) (yearweek))
+(setq *build-version* "debug")
+(build-interpsys 
+   (list 
+      "vmlisp.lisp"
+      "hash.lisp"
+      "bootfuns.lisp"
+      "macros.lisp"
+      "unlisp.lisp"
+      "setq.lisp"
+      "astr.clisp"
+      "bits.lisp"
+      "alql.clisp"
+      "buildom.clisp"
+      "cattable.clisp"
+      "cformat.clisp"
+      "cfuns.o"
+      "clam.clisp"
+      "clammed.clisp"
+      "comp.lisp"
+      "compat.clisp"
+      "compress.clisp"
+      "cparse.clisp"
+      "cstream.clisp"
+      "database.clisp"
+      "debug.lisp"
+      "dq.clisp"
+      "fname.lisp"
+      "format.clisp"
+      "g-boot.clisp"
+      "g-cndata.clisp"
+      "g-error.clisp"
+      "g-opt.clisp"
+      "g-timer.clisp"
+      "g-util.clisp"
+      "ggreater.lisp"
+      "hypertex.clisp"
+      "i-analy.clisp"
+      "i-code.clisp"
+      "i-coerce.clisp"
+      "i-coerfn.clisp"
+      "i-eval.clisp"
+      "i-funsel.clisp"
+      "i-intern.clisp"
+      "i-map.clisp"
+      "i-output.clisp"
+      "i-resolv.clisp"
+      "i-spec1.clisp"
+      "i-spec2.clisp"
+      "i-syscmd.clisp"
+      "i-toplev.clisp"
+      "i-util.clisp"
+      "incl.clisp"
+      "int-top.clisp"
+      "intfile.clisp"
+      "lisplib.clisp"
+      "macex.clisp"
+      "match.clisp"
+      "monitor.lisp"
+      "msg.clisp"
+      "msgdb.clisp"
+      "nci.lisp"
+      "newaux.lisp"
+      "newfort.clisp"
+      "nlib.lisp"
+      "nrunfast.clisp"
+      "nrungo.clisp"
+      "nrunopt.clisp"
+      "nruntime.clisp"
+      "osyscmd.clisp"
+      "packtran.clisp"
+      "pathname.clisp"
+      "pf2sex.clisp"
+      "pile.clisp"
+      "posit.clisp"
+      "property.lisp"
+      "ptrees.clisp"
+      "ptrop.clisp"
+      "record.clisp"
+      "rulesets.clisp"
+      "scan.clisp"
+      "serror.clisp"
+      "server.clisp"
+      "setvars.clisp"
+      "sfsfun-l.lisp"
+      "sfsfun.clisp"
+      "simpbool.clisp"
+      "slam.clisp"
+      "sockio.o"
+      "spad.lisp"
+      "spaderror.lisp"
+      "template.clisp"
+      "termrw.clisp"
+      "trace.clisp"
+      "union.lisp"
+      "daase.lisp"
+      "fortcall.clisp"
+    "hashcode.clisp"
+    "as.clisp"
+    "foam_l.lisp"
+    "axext_l.lisp"
+    "varini.clisp"
+    "parini.clisp"
+    "setvart.clisp"
+    "intint.lisp"
+    "interop.clisp"
+    "patches.lisp")
+  (list
+    "bootlex.lisp"
+    "def.lisp"
+    "fnewmeta.lisp"
+    "metalex.lisp"
+    "metameta.lisp"
+    "parsing.lisp"
+    "parse.clisp"
+    "postpar.clisp"
+    "preparse.lisp")
+  (list
+    "apply.clisp"
+    "c-doc.clisp"
+    "c-util.clisp"
+    "profile.clisp"
+    "category.clisp"
+    "compiler.clisp"
+    "define.clisp"
+    "functor.clisp"
+    "info.clisp"
+    "iterator.clisp"
+    "modemap.clisp"
+    "nruncomp.clisp"
+    "package.clisp"
+    "htcheck.clisp")
+  (list
+    "bc-matrix.clisp"
+    "bc-misc.clisp"
+    "bc-solve.clisp"
+    "bc-util.clisp"
+    "ht-util.clisp"
+    "htsetvar.clisp"
+    "ht-root.clisp"
+    "br-con.clisp"
+    "br-data.clisp"
+    "showimp.clisp"
+    "br-op1.clisp"
+    "br-op2.clisp"
+    "br-search.clisp"
+    "br-util.clisp"
+    "topics.clisp"
+    "br-prof.clisp"
+    "br-saturn.clisp")
+  (list
+    "wi1.clisp"
+    "wi2.clisp"
+    "pspad1.clisp"
+    "pspad2.clisp"
+    "mark.clisp"
+    "nspadaux.lisp"
+    "def.lisp")
+  (quote 
+   ())
+  (list 
+   "ax.clisp")
+  (system:getenv "AXIOM"))
+(boot::set-restart-hook)
+(in-package "BOOT")
+(load (user::thepath "../../int/algebra/warm.data"))
+(|clearClams|)
+(load "obey.lisp")
+;(si::multiply-bignum-stack 10)
+(si::gbc-time 0)
+(setq si::*system-directory* 
+  (user::thepath "bin/"))
+(setq compiler::*default-system-p* nil)
+(gbc t)
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

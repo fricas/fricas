@@ -1,0 +1,623 @@
+
+subdir = src/interp/
+
+DOC=$(axiom_target_docdir)/src/interp
+BOOK=$(axiom_target_docdir)
+
+# Command to translate Boot to Common Lisp
+BOOT_TO_LISP = \
+	$(axiom_build_document) --tag=boot --mode=translate \
+		--use=$(BOOTSYS) $<
+
+# Command to translate Common Lisp to native object code
+COMPILE_LISP = \
+	$(axiom_build_document) --tag=lisp --mode=compile \
+		--output=$@ --use=$(DEPSYS) $<
+AUTO=$(axiom_targetdir)/autoload
+
+autoload_objects =
+
+LISPSYS= $(axiom_build_bindir)/lisp
+
+BOOTSYS= $(axiom_build_bindir)/bootsys    
+
+DEPSYS=	$(axiom_build_bindir)/depsys
+
+depsys_lisp_noncompiled_sources += sys-pkg.lisp nocompil.lisp \
+	ncompil.lisp bookvol5.lisp util.lisp
+
+depsys_lisp_compiled_sources += parsing.lisp metalex.lisp bootlex.lisp \
+	newaux.lisp preparse.lisp def.lisp metameta.lisp \
+	fnewmeta.lisp
+
+depsys_lisp_sources = $(depsys_lisp_noncompiled_sources) \
+			$(depsys_lisp_compiled_sources)
+
+DEP=	vmlisp.lisp	ggreater.lisp	\
+	hash.lisp	bootfuns.lisp	\
+	union.lisp	nlib.lisp	\
+	macros.lisp	comp.lisp	\
+	spaderror.lisp	debug.lisp	\
+	spad.lisp	bits.lisp	\
+	setq.lisp	property.lisp	\
+	unlisp.lisp      foam_l.lisp      \
+	axext_l.lisp
+
+depsys_lisp_macro_sources = vmlisp.lisp ggreater.lisp hash.lisp \
+	bootfuns.lisp union.lisp nlib.lisp macros.lisp	\
+	comp.lisp spaderror.lisp debug.lisp \
+	spad.lisp bits.lisp setq.lisp property.lisp \
+	unlisp.lisp foam_l.lisp axext_l.lisp
+
+depsys_lisp_noncompiled_sources += $(depsys_lisp_macro_sources)
+depsys_lisp_SOURCES = $(addsuffix .pamphlet, $(depsys_lisp_sources))
+LOADSYS= $(axiom_build_bindir)/lisp$(EXEEXT)
+SAVESYS= $(axiom_build_bindir)/interpsys$(EXEEXT)
+AXIOMSYS= $(axiom_target_bindir)/AXIOMsys$(EXEEXT)
+
+DEBUGSYS=$(axiom_build_bindir)/debugsys$(EXEEXT)
+
+OBJS=	vmlisp.$(FASLEXT)	hash.$(FASLEXT)	\
+	bootfuns.lisp	macros.$(FASLEXT)	\
+	unlisp.$(FASLEXT)	setq.lisp	\
+	astr.$(FASLEXT)	bits.$(FASLEXT)	\
+	alql.$(FASLEXT)	buildom.$(FASLEXT)	\
+	cattable.$(FASLEXT)				\
+	cformat.$(FASLEXT)	cfuns.$(FASLEXT)	\
+	clam.$(FASLEXT)	clammed.$(FASLEXT)	\
+	comp.$(FASLEXT)	\
+	compat.$(FASLEXT)	compress.$(FASLEXT)	\
+	cparse.$(FASLEXT)	cstream.$(FASLEXT)	\
+	database.$(FASLEXT)	\
+	debug.$(FASLEXT)	dq.$(FASLEXT)		\
+	fname.$(FASLEXT)	format.$(FASLEXT)	\
+	g-boot.$(FASLEXT)	g-cndata.$(FASLEXT)	\
+	g-error.$(FASLEXT)	g-opt.$(FASLEXT)	\
+	g-timer.$(FASLEXT)	g-util.$(FASLEXT)	\
+	ggreater.$(FASLEXT)				\
+	hypertex.$(FASLEXT)	i-analy.$(FASLEXT)	\
+	i-code.$(FASLEXT)	i-coerce.$(FASLEXT)	\
+	i-coerfn.$(FASLEXT)	i-eval.$(FASLEXT)	\
+	i-funsel.$(FASLEXT)	bookvol5.$(FASLEXT)	\
+	i-intern.$(FASLEXT)	i-map.$(FASLEXT)	\
+	i-output.$(FASLEXT)	i-resolv.$(FASLEXT)	\
+	i-spec1.$(FASLEXT)				\
+	i-spec2.$(FASLEXT)	i-syscmd.$(FASLEXT)	\
+	i-toplev.$(FASLEXT)	i-util.$(FASLEXT)	\
+	incl.$(FASLEXT)	int-top.$(FASLEXT)	\
+	intfile.$(FASLEXT)				\
+	lisplib.$(FASLEXT)	macex.$(FASLEXT)	\
+	match.$(FASLEXT)				\
+	monitor.$(FASLEXT)	msg.$(FASLEXT)		\
+	msgdb.$(FASLEXT)	nci.$(FASLEXT)		\
+	newaux.$(FASLEXT)	newfort.$(FASLEXT)	\
+	nlib.$(FASLEXT)	nrunfast.$(FASLEXT)	\
+	nrungo.$(FASLEXT)	nrunopt.$(FASLEXT)	\
+	nruntime.$(FASLEXT)	osyscmd.$(FASLEXT)	\
+	packtran.$(FASLEXT)	pathname.$(FASLEXT)	\
+	pf2sex.$(FASLEXT)	pile.$(FASLEXT)	\
+	posit.$(FASLEXT)	property.lisp	\
+	ptrees.$(FASLEXT)	ptrop.$(FASLEXT)	\
+	record.$(FASLEXT)				\
+	rulesets.$(FASLEXT)	\
+	scan.$(FASLEXT)	serror.$(FASLEXT)	\
+	server.$(FASLEXT)				\
+	setvars.$(FASLEXT)	\
+	sfsfun-l.$(FASLEXT)	sfsfun.$(FASLEXT)	\
+	simpbool.$(FASLEXT)	slam.$(FASLEXT)	\
+	sockio.$(FASLEXT)	spad.$(FASLEXT)	\
+	spaderror.$(FASLEXT)				\
+	template.$(FASLEXT)	termrw.$(FASLEXT)	\
+	trace.$(FASLEXT)	\
+	union.$(FASLEXT)       daase.$(FASLEXT)  	\
+	fortcall.$(FASLEXT)
+
+AXIOMsys_noncompiled_lisp_sources = bootfuns.lisp nocompil.lisp \
+	property.lisp setq.lisp 
+
+AXIOMsys_compiled_lisp_sources = bits.lisp \
+	bootlex.lisp cfuns.lisp comp.lisp construc.lisp daase.lisp \
+	debug.lisp def.lisp fname.lisp fnewmeta.lisp ggreater.lisp \
+	hash.lisp macros.lisp metalex.lisp monitor.lisp newaux.lisp \
+	nlib.lisp nspadaux.lisp parsing.lisp \
+	patches.lisp preparse.lisp \
+	sockio.lisp spad.lisp spaderror.lisp \
+	union.lisp util.lisp vmlisp.lisp obey.lisp \
+	unlisp.lisp intint.lisp nci.lisp sfsfun-l.lisp \
+	axext_l.lisp foam_l.lisp
+
+AXIOMsys_boot_sources = astr.boot alql.boot buildom.boot cattable.boot \
+	cformat.boot clam.boot clammed.boot compat.boot compress.boot \
+	cparse.boot cstream.boot database.boot dq.boot format.boot \
+	g-boot.boot g-cndata.boot g-error.boot g-opt.boot g-timer.boot \
+	g-util.boot hypertex.boot i-analy.boot i-code.boot i-coerce.boot \
+	i-coerfn.boot i-eval.boot i-funsel.boot i-intern.boot i-map.boot \
+	i-output.boot i-resolv.boot i-spec1.boot i-spec2.boot \
+	i-syscmd.boot i-toplev.boot i-util.boot incl.boot int-top.boot \
+	intfile.boot lisplib.boot macex.boot match.boot msg.boot \
+	msgdb.boot newfort.boot nrunfast.boot nrungo.boot nrunopt.boot \
+	nruntime.boot osyscmd.boot packtran.boot pathname.boot \
+	pf2sex.boot pile.boot posit.boot ptrees.boot ptrop.boot \
+	record.boot rulesets.boot scan.boot serror.boot server.boot \
+	setvars.boot sfsfun.boot simpbool.boot slam.boot template.boot \
+	termrw.boot trace.boot fortcall.boot
+INOBJS=	varini.$(FASLEXT)	parini.$(FASLEXT)	\
+	setvart.$(FASLEXT)	intint.$(FASLEXT)	\
+        interop.$(FASLEXT)     \
+        patches.$(FASLEXT)
+
+# These are autloaded old parser files
+OPOBJS=	${AUTO}/parsing.$(FASLEXT)	${AUTO}/bootlex.$(FASLEXT)	\
+        ${AUTO}/def.$(FASLEXT)	\
+	${AUTO}/fnewmeta.$(FASLEXT)	${AUTO}/metalex.$(FASLEXT)	\
+	${AUTO}/metameta.$(FASLEXT)	\
+	${AUTO}/parse.$(FASLEXT)	${AUTO}/postpar.$(FASLEXT)	\
+	${AUTO}/preparse.$(FASLEXT)
+
+autoload_objects += $(OPBJS)
+OCOBJS=	${AUTO}/apply.$(FASLEXT)	${AUTO}/c-doc.$(FASLEXT)	\
+	${AUTO}/c-util.$(FASLEXT)	${AUTO}/profile.$(FASLEXT)	\
+	${AUTO}/category.$(FASLEXT)	${AUTO}/compiler.$(FASLEXT)	\
+	${AUTO}/define.$(FASLEXT)	${AUTO}/functor.$(FASLEXT)	\
+	${AUTO}/info.$(FASLEXT)	${AUTO}/iterator.$(FASLEXT)	\
+	${AUTO}/modemap.$(FASLEXT)	${AUTO}/nruncomp.$(FASLEXT)	\
+	${AUTO}/package.$(FASLEXT)	${AUTO}/htcheck.$(FASLEXT)
+
+autoload_objects += $(OCOBJS)
+
+BROBJS=	${AUTO}/bc-matrix.$(FASLEXT)				\
+	${AUTO}/bc-misc.$(FASLEXT)	${AUTO}/bc-solve.$(FASLEXT)	\
+	${AUTO}/bc-util.$(FASLEXT)				\
+	${AUTO}/ht-util.$(FASLEXT)	${AUTO}/htsetvar.$(FASLEXT)	\
+	${AUTO}/ht-root.$(FASLEXT)	\
+	${AUTO}/br-con.$(FASLEXT)	\
+	${AUTO}/br-data.$(FASLEXT)	${AUTO}/showimp.$(FASLEXT)    \
+	${AUTO}/br-op1.$(FASLEXT)	${AUTO}/br-op2.$(FASLEXT)	\
+	${AUTO}/br-search.$(FASLEXT)	${AUTO}/br-util.$(FASLEXT)	\
+	${AUTO}/topics.$(FASLEXT)     ${AUTO}/br-prof.$(FASLEXT)    \
+	${AUTO}/br-saturn.$(FASLEXT)
+
+autoload_objects += $(BFOBJS)
+
+TRANOBJS= ${AUTO}/wi1.$(FASLEXT) ${AUTO}/wi2.$(FASLEXT) ${AUTO}/pspad1.$(FASLEXT) \
+	  ${AUTO}/pspad2.$(FASLEXT) ${AUTO}/mark.$(FASLEXT) ${AUTO}/nspadaux.$(FASLEXT) \
+	  ${AUTO}/def.$(FASLEXT)
+
+autoload_objects += $(TRANOBJS)
+
+NAGBROBJS= ${AUTO}/nag-c02.$(FASLEXT)   ${AUTO}/nag-c05.$(FASLEXT) \
+           ${AUTO}/nag-c06.$(FASLEXT)   ${AUTO}/nag-d01.$(FASLEXT) \
+           ${AUTO}/nag-d02.$(FASLEXT)   ${AUTO}/nag-d03.$(FASLEXT) \
+           ${AUTO}/nag-e01.$(FASLEXT)   ${AUTO}/nag-e02.$(FASLEXT) \
+           ${AUTO}/nag-e04.$(FASLEXT)   ${AUTO}/nag-f01.$(FASLEXT) \
+           ${AUTO}/nag-f02.$(FASLEXT)   ${AUTO}/nag-f04.$(FASLEXT) \
+           ${AUTO}/nag-f07.$(FASLEXT)   ${AUTO}/nag-s.$(FASLEXT) 
+
+autoload_objects += $(NAGBROBJS)
+
+ASCOMP= hashcode.$(FASLEXT) as.$(FASLEXT) \
+	foam_l.$(FASLEXT) axext_l.$(FASLEXT)
+
+ASAUTO= ${AUTO}/ax.$(FASLEXT)
+
+autoload_objects += $(ASAUTO)
+TIMESTAMP=$(axiom_targetdir)/timestamp
+YEARWEEK=(progn (setq timestamp "${TIMESTAMP}") (setq boot::*build-version* "${VERSION}") (yearweek))
+
+
+.PRECIOUS:	${DEPSYS}
+.PRECIOUS:	${SAVESYS}
+.PRECIOUS:	${AXIOMSYS}
+
+PROCLAIMS=(progn (load "sys-pkg.lisp") (load "$(srcdir)/interp-proclaims.lisp"))
+
+DOCFILES=${DOC}/alql.boot.dvi \
+	 ${DOC}/apply.boot.dvi ${DOC}/as.boot.dvi \
+	 ${DOC}/astr.boot.dvi ${DOC}/ax.boot.dvi \
+	 ${DOC}/axext_l.lisp.dvi \
+	 ${DOC}/bc-matrix.boot.dvi ${DOC}/bc-misc.boot.dvi \
+	 ${DOC}/bc-solve.boot.dvi ${DOC}/bc-util.boot.dvi \
+	 ${DOC}/bits.lisp.dvi ${DOC}/bootfuns.lisp.dvi \
+	 ${DOC}/bootlex.lisp.dvi ${DOC}/br-con.boot.dvi \
+	 ${DOC}/br-data.boot.dvi ${DOC}/br-op1.boot.dvi \
+	 ${DOC}/br-op2.boot.dvi ${DOC}/br-prof.boot.dvi \
+	 ${DOC}/br-saturn.boot.dvi ${DOC}/br-search.boot.dvi \
+	 ${DOC}/br-util.boot.dvi ${DOC}/buildom.boot.dvi \
+	 ${DOC}/category.boot.dvi ${DOC}/cattable.boot.dvi \
+	 ${DOC}/c-doc.boot.dvi ${DOC}/cformat.boot.dvi \
+	 ${DOC}/cfuns.lisp.dvi ${DOC}/clam.boot.dvi \
+	 ${DOC}/clammed.boot.dvi ${DOC}/compat.boot.dvi \
+	 ${DOC}/compiler.boot.dvi ${DOC}/comp.lisp.dvi \
+	 ${DOC}/compress.boot.dvi \
+	 ${DOC}/cparse.boot.dvi ${DOC}/cstream.boot.dvi \
+	 ${DOC}/c-util.boot.dvi ${DOC}/daase.lisp.dvi \
+	 ${DOC}/database.boot.dvi ${DOC}/debug.lisp.dvi \
+	 ${DOC}/define.boot.dvi \
+	 ${DOC}/dq.boot.dvi \
+	 ${DOC}/fname.lisp.dvi ${DOC}/fnewmeta.lisp.dvi \
+	 ${DOC}/foam_l.lisp.dvi \
+	 ${DOC}/format.boot.dvi ${DOC}/fortcall.boot.dvi \
+	 ${DOC}/functor.boot.dvi ${DOC}/g-boot.boot.dvi \
+	 ${DOC}/g-cndata.boot.dvi ${DOC}/g-error.boot.dvi \
+	 ${DOC}/ggreater.lisp.dvi ${DOC}/g-opt.boot.dvi \
+	 ${DOC}/g-timer.boot.dvi \
+	 ${DOC}/g-util.boot.dvi ${DOC}/hashcode.boot.dvi \
+	 ${DOC}/hash.lisp.dvi ${DOC}/htcheck.boot.dvi \
+	 ${DOC}/ht-root.boot.dvi ${DOC}/htsetvar.boot.dvi \
+	 ${DOC}/ht-util.boot.dvi ${DOC}/hypertex.boot.dvi \
+	 ${DOC}/i-analy.boot.dvi ${DOC}/i-code.boot.dvi \
+	 ${DOC}/i-coerce.boot.dvi ${DOC}/i-coerfn.boot.dvi \
+	 ${DOC}/i-eval.boot.dvi ${DOC}/i-funsel.boot.dvi \
+	 ${BOOK}/bookvol5.dvi ${DOC}/i-intern.boot.dvi \
+	 ${DOC}/i-map.boot.dvi ${DOC}/incl.boot.dvi \
+	 ${DOC}/info.boot.dvi ${DOC}/interop.boot.dvi \
+	 ${DOC}/intfile.boot.dvi \
+	 ${DOC}/intint.lisp.dvi ${DOC}/int-top.boot.dvi \
+	 ${DOC}/i-output.boot.dvi ${DOC}/i-resolv.boot.dvi \
+	 ${DOC}/i-spec1.boot.dvi ${DOC}/i-spec2.boot.dvi \
+	 ${DOC}/i-syscmd.boot.dvi ${DOC}/iterator.boot.dvi \
+	 ${DOC}/i-toplev.boot.dvi ${DOC}/i-util.boot.dvi \
+	 ${DOC}/lisplib.boot.dvi ${DOC}/macex.boot.dvi \
+	 ${DOC}/macros.lisp.dvi ${DOC}/Makefile.dvi \
+	 ${DOC}/mark.boot.dvi ${DOC}/match.boot.dvi \
+	 ${DOC}/metalex.lisp.dvi ${DOC}/metameta.lisp.dvi \
+	 ${DOC}/modemap.boot.dvi ${DOC}/monitor.lisp.dvi \
+	 ${DOC}/msg.boot.dvi ${DOC}/msgdb.boot.dvi \
+	 ${DOC}/nag-c02.boot.dvi ${DOC}/nag-c05.boot.dvi \
+	 ${DOC}/nag-c06.boot.dvi ${DOC}/nag-d01.boot.dvi \
+	 ${DOC}/nag-d02.boot.dvi ${DOC}/nag-d03.boot.dvi \
+	 ${DOC}/nag-e01.boot.dvi \
+	 ${DOC}/nag-e02.boot.dvi \
+	 ${DOC}/nag-e04.boot.dvi ${DOC}/nag-f01.boot.dvi \
+	 ${DOC}/nag-f02.boot.dvi ${DOC}/nag-f04.boot.dvi \
+	 ${DOC}/nag-f07.boot.dvi ${DOC}/nag-s.boot.dvi \
+	 ${DOC}/nci.lisp.dvi ${DOC}/newaux.lisp.dvi \
+	 ${DOC}/newfort.boot.dvi \
+	 ${DOC}/nlib.lisp.dvi ${DOC}/nocompil.lisp.dvi \
+	 ${DOC}/nruncomp.boot.dvi ${DOC}/nrunfast.boot.dvi \
+	 ${DOC}/nrungo.boot.dvi ${DOC}/nrunopt.boot.dvi \
+	 ${DOC}/nruntime.boot.dvi ${DOC}/nspadaux.lisp.dvi \
+	 ${DOC}/obey.lisp.dvi ${DOC}/osyscmd.boot.dvi \
+	 ${DOC}/package.boot.dvi ${DOC}/packtran.boot.dvi \
+	 ${DOC}/parini.boot.dvi ${DOC}/parse.boot.dvi \
+	 ${DOC}/parsing.lisp.dvi ${DOC}/patches.lisp.dvi \
+	 ${DOC}/pathname.boot.dvi \
+	 ${DOC}/pf2sex.boot.dvi ${DOC}/pile.boot.dvi \
+	 ${DOC}/posit.boot.dvi ${DOC}/postpar.boot.dvi \
+	 ${DOC}/preparse.lisp.dvi \
+	 ${DOC}/profile.boot.dvi ${DOC}/property.lisp.dvi \
+	 ${DOC}/pspad1.boot.dvi ${DOC}/pspad2.boot.dvi \
+	 ${DOC}/ptrees.boot.dvi ${DOC}/ptrop.boot.dvi \
+	 ${DOC}/record.boot.dvi \
+	 ${DOC}/rulesets.boot.dvi ${DOC}/scan.boot.dvi \
+	 ${DOC}/serror.boot.dvi ${DOC}/server.boot.dvi \
+	 ${DOC}/setq.lisp.dvi ${DOC}/setvars.boot.dvi \
+	 ${DOC}/setvart.boot.dvi ${DOC}/sfsfun.boot.dvi \
+	 ${DOC}/sfsfun-l.lisp.dvi \
+	 ${DOC}/showimp.boot.dvi ${DOC}/simpbool.boot.dvi \
+	 ${DOC}/slam.boot.dvi ${DOC}/sockio.lisp.dvi \
+	 ${DOC}/spaderror.lisp.dvi ${DOC}/spad.lisp.dvi \
+	 ${DOC}/sys-pkg.lisp.dvi ${DOC}/template.boot.dvi \
+	 ${DOC}/termrw.boot.dvi ${DOC}/topics.boot.dvi \
+	 ${DOC}/trace.boot.dvi \
+	 ${DOC}/union.lisp.dvi ${DOC}/unlisp.lisp.dvi \
+	 ${DOC}/util.lisp.dvi ${DOC}/varini.boot.dvi \
+	 ${DOC}/vmlisp.lisp.dvi ${DOC}/wi1.boot.dvi \
+	 ${DOC}/wi2.boot.dvi
+
+UNUSED= ${DOC}/anna.boot.dvi ${DOC}/construc.lisp.dvi \
+	${DOC}/domain.lisp.dvi 	${DOC}/guess.boot.dvi \
+	${DOC}/interp-fix.boot.dvi \
+	${DOC}/pf2atree.boot.dvi \
+	${DOC}/redefs.boot.dvi 	${DOC}/word.boot.dvi 
+
+
+.SUFFIXES:
+.SUFFIXES: .boot .clisp .lisp .pamphlet
+
+.PHONY: all all-ax all-depsys all-interpsys all-axiomsys all-debugsys
+
+all: all-ax
+
+all-ax: stamp
+	@echo finished $(srcdir)
+
+stamp:  $(AUTO) remove-stamp build-images
+	$(STAMP) stamp
+
+.PHONY: remove-stamp
+remove-stamp:
+	-rm -f stamp
+
+.PHONY: build-images
+build-images: remove-stamp all-interpsys all-debugsys
+
+all-interpsys: all-depsys 
+	$(mkinstalldirs) $(AUTO)
+	$(MAKE) $(SAVESYS)
+
+all-axiomsys: all-depsys 
+	$(MAKE) $(AXIOMSYS)
+
+all-debugsys: all-interpsys
+	$(MAKE) $(DEBUGSYS)
+
+all-depsys: $(DEPSYS)
+
+clean:
+	@echo 619 cleaning $(builddir)
+
+.PRECIOUS: %.boot
+%.boot: $(srcdir)/%.boot.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+.PRECIOUS: %.clisp
+%.clisp: %.boot
+	$(BOOT_TO_LISP)
+.PRECIOUS: %.$(FASLEXT)
+%.$(FASLEXT): %.clisp
+	$(COMPILE_LISP)
+# Extract and compile the part of the interpreter written
+# in Common Lisp
+.PRECIOUS: %.lisp
+%.$(FASLEXT): %.lisp
+	$(COMPILE_LISP)
+
+%.lisp: $(srcdir)/%.lisp.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+mostlyclean-local:
+	rm -f *.fn *.data *.o
+
+clean-local: mostlyclean-local
+	rm -f *.clisp *.lsp *.boot
+	rm -f \
+	axext_l.lisp   def.lisp       metalex.lisp   parsing.lisp \
+	spad.lisp      bits.lisp      fname.lisp     metameta.lisp \
+	patches.lisp   sys-pkg.lisp   bookvol5.lisp  fnewmeta.lisp \
+	monitor.lisp   preparse.lisp  union.lisp     bootfuns.lisp \
+	foam_l.lisp    nci.lisp       proclaims.lisp unlisp.lisp \
+	bootlex.lisp   ggreater.lisp  newaux.lisp    property.lisp \
+	util.lisp      cfuns.lisp     hash.lisp      nlib.lisp \
+	setq.lisp      vmlisp.lisp    comp.lisp      intint.lisp \
+	nocompil.lisp  sfsfun-l.lisp  daase.lisp     macros.lisp \
+	nspadaux.lisp  sockio.lisp    debug.lisp     makedep.lisp \
+	obey.lisp      spaderror.lisp
+
+distclean-local: clean-local
+
+${SAVESYS} ${AXIOMSYS}: makeint.lisp \
+    ${DEPSYS} ${OBJS}  bookvol5.$(FASLEXT) util.$(FASLEXT) \
+    nocompil.lisp sys-pkg.lisp \
+    ${OCOBJS} ${OPOBJS} ${BROBJS} obey.$(FASLEXT) \
+    database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
+    ${NAGBROBJS} ${TRANOBJS} \
+    ${LOADSYS} \
+    $(axiom_targetdir)/algebra/exposed.$(FASLEXT) \
+    $(axiom_src_docdir)/msgs/s2-us.msgs \
+    ../algebra/warm.data
+
+makeint.lisp:
+	@ echo 5 invoking make in `pwd` with parms:
+	@ echo LSP= ${LSP} 
+	@ echo PART= ${PART} 
+	@ echo SRC= $(axiom_src_srcdir) 
+	@ echo LISP=${LISP} BYE=${BYE}
+	$(mkinstalldirs) $(axiom_target_datadir)/msgs
+	$(INSTALL_DATA) $(axiom_src_docdir)/msgs/s2-us.msgs \
+		 $(axiom_target_datadir)/msgs
+	@ echo '${PROCLAIMS}' > makeint.lisp
+	@ echo '(load "nocompil.lisp")' >> makeint.lisp
+	@ echo '(load "bookvol5")' >> makeint.lisp
+	@ echo '(load "util")' >> makeint.lisp
+	@ echo '(in-package "BOOT")' >> makeint.lisp
+	@ touch ${TIMESTAMP}
+	@ echo '${YEARWEEK}' >> makeint.lisp
+	@ echo '(build-interpsys (append (quote ($(patsubst %, "%", ${OBJS}))) (quote ($(patsubst %, "%", ${ASCOMP}))) (quote ($(patsubst %, "%", ${INOBJS})))) (quote ($(patsubst %, "$(BASE)%", ${OPOBJS}))) (quote ($(patsubst %, "$(BASE)%", ${OCOBJS}))) (quote ($(patsubst %, "$(BASE)%", ${BROBJS}))) (quote ($(patsubst %, "$(BASE)%", ${TRANOBJS}))) (quote ($(patsubst %, "$(BASE)%", ${NAGBROBJS}))) (quote ($(patsubst %, "$(BASE)%", ${ASAUTO})))  "${AXIOM}")' >> makeint.lisp
+	@ echo '(in-package "BOOT")' >> makeint.lisp
+	@ echo '(load "../algebra/warm.data")' >> makeint.lisp
+	@ echo '(|clearClams|)' >> makeint.lisp
+	@ echo '(load "obey")' >> makeint.lisp
+	@ echo '#+:akcl (setq compiler::*suppress-compiler-notes* t)' >> makeint.lisp
+	@ echo '#+:akcl (si::gbc-time 0)' >> makeint.lisp
+
+${SAVESYS}:
+	echo '(load "makeint.lisp") (VMLISP::reclaim)' \
+	     '(setf BOOT::|$$createLocalLibDb| nil)' \
+	     '(BOOT::spad-save "$(BASE)$@" t)' | ${LISPSYS}
+	@ echo 6 ${SAVESYS} created
+depsys_lisp_sources += parsing.lisp metalex.lisp bootlex.lisp \
+			newaux.lisp preparse.lisp \
+			metameta.lisp fnewmeta.lisp
+
+depsys_boot_sources = postpar parse clam slam \
+			g-boot g-util
+
+depsys_SOURCES = $(depsys_lisp_SOURCES) $(depsys_boot_SOURCES)
+
+depsys_objects = nocompil.$(FASLEXT) bookvol5.$(FASLEXT) \
+		util.$(FASLEXT) postpar.$(FASLEXT) parse.$(FASLEXT) \
+		parsing.$(FASLEXT) metalex.$(FASLEXT) bootlex.$(FASLEXT) \
+		newaux.$(FASLEXT) preparse.$(FASLEXT) \
+		metameta.$(FASLEXT) fnewmeta.$(FASLEXT) clam.$(FASLEXT) \
+		slam.$(FASLEXT) g-boot.$(FASLEXT) \
+		g-util.$(FASLEXT)
+
+${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
+	        bookvol5.lisp util.lisp \
+	        parsing.lisp metalex.lisp \
+	        bootlex.lisp newaux.lisp \
+	        preparse.lisp \
+	        def.lisp \
+	        metameta.lisp fnewmeta.lisp \
+	        $(patsubst %, %.clisp, ${depsys_boot_sources})
+	@ echo 3 making ${DEPSYS} 
+	@ $(mkinstalldirs) $(axiom_build_bindir)
+	@ echo '${PROCLAIMS}' > makedep.lisp
+	@ echo '(push :oldboot *features*)' >> makedep.lisp
+	@ echo '(load "nocompil.lisp")' >> makedep.lisp
+	@ echo '(load "bookvol5.lisp")' >> makedep.lisp
+	@ echo '(load "util.lisp")' >> makedep.lisp
+	@ echo '(in-package "BOOT")' >> makedep.lisp
+	@ echo '(build-depsys (quote ($(patsubst %, "%", ${DEP}))) "${AXIOM}" "$(builddir)")' >> makedep.lisp
+	@ echo '(unless (probe-file "def.$(FASLEXT)") (compile-file "def.lisp" :output-file "def.$(FASLEXT)"))' >> makedep.lisp
+	@ echo '(load "def")' >> makedep.lisp
+	for A in postpar.clisp parse.clisp parsing.lisp metalex.lisp \
+	         bootlex.lisp newaux.lisp preparse.lisp def.lisp \
+	         metameta.lisp fnewmeta.lisp clam.clisp slam.clisp \
+	         g-boot.clisp g-util.clisp; do \
+	   B=$${A%.*} ; \
+	   echo '(unless (probe-file "'$$B'.$(FASLEXT)")' \
+	        '(compile-file "'$$A'" :output-file "'$$B'.$(FASLEXT)"))' \
+		  >> makedep.lisp ; \
+	  echo '(load "'$$B'")' >> makedep.lisp ; \
+	done
+	echo '(load "makedep.lisp") (BOOT::spad-save "$(BASE)$@" nil)' | ${LISPSYS}
+	@ echo 4 ${DEPSYS} created
+.PHONY: all-axiomsys
+
+all-axiomsys: ${AXIOMSYS}
+
+${AXIOMSYS}:
+	echo '(load "makeint.lisp") (VMLISP::reclaim)' \
+	   '#+:gcl(setf compiler::*default-system-p* nil)' \
+	   '#+:gcl(compiler::emit-fn nil)' \
+           '(setq *load-verbose* nil)' \
+           '#+:clisp(setf custom:*suppress-check-redefinition* t)' \
+	   '(BOOT::spad-save "$(BASE)$@" t)' \
+             | DAASE="$(BASE)$(axiom_targetdir)" ${LISPSYS}
+	@ echo 6a ${AXIOMSYS} created
+${DEBUGSYS}: debugsys.lisp
+	@ echo 7 building debugsys
+	echo '(load "debugsys.lisp") (BOOT::spad-save "$(BASE)$@" t))' \
+          | ${LISPSYS}
+	@ echo 8 ${DEBUGSYS} created
+
+exposed.lsp: $(axiom_src_algdir)/exposed.lsp.pamphlet
+	@ echo 615 making $@ from $<
+	$(axiom_build_document) --tangle --output=$@ $<
+
+$(axiom_targetdir)/algebra/exposed.$(FASLEXT) : exposed.lsp ${DEPSYS}
+	@ echo 616 making $@ from exposed.lsp
+	echo '(progn  (compile-file "exposed.lsp" :output-file' \
+	      ' "$(BASE)$(axiom_targetdir)/algebra/exposed.$(FASLEXT)") (${BYE}))' \
+		| ${DEPSYS} 
+
+database.date:
+	@ echo 617 the database was updated...remaking interpsys
+	touch database.date
+
+
+
+AUTO_from_IN=\
+ apply bootlex def fnewmeta metalex metameta parsing preparse \
+ c-util nag-c02 nag-c05 nag-c06 nag-d01 nag-d02 nag-d03 nag-e01 \
+ nag-e02 nag-e04 nag-f01 nag-f02 nag-f04 nag-f07 nag-s category \
+ c-doc compiler profile define functor info iterator modemap \
+ nruncomp package parse postpar bc-matrix bc-misc bc-solve \
+ bc-util ht-util htsetvar ht-root htcheck ax br-con br-search \
+ br-op1 br-op2 br-data br-util br-saturn topics br-prof nspadaux \
+ showimp
+
+$(addprefix $(AUTO)/, $(addsuffix .$(FASLEXT), $(AUTO_from_IN))): \
+   $(AUTO)/%.$(FASLEXT) : %.$(FASLEXT)
+	cp $< $@
+
+IN_from_MID=\
+ apply as ax bc-matrix bc-misc bc-solve bc-util br-con br-data \
+ br-op1 br-op2 br-prof br-saturn br-search br-util buildom \
+ category cattable c-doc clammed compat compiler compress c-util \
+ database define format fortcall functor g-cndata g-error g-opt \
+ g-timer hashcode htcheck ht-root htsetvar ht-util hypertex \
+ i-analy i-code i-coerce i-coerfn i-eval i-funsel \
+ i-intern interop i-map info i-output i-resolv i-spec1 i-spec2 \
+ i-syscmd iterator i-toplev i-util lisplib match modemap msgdb \
+ nag-c02 nag-c05 nag-c06 nag-d01 nag-d02 nag-d03 nag-e01 nag-e02 \
+ nag-e04 nag-f01 nag-f02 nag-f04 nag-f07 nag-s newfort \
+ nruncomp nrunfast nrungo nruntime nrunopt package pathname \
+ profile record rulesets server setvars setvart simpbool \
+ template termrw topics trace
+
+$(addsuffix .$(FASLEXT), $(IN_from_MID)): \
+    %.$(FASLEXT) : %.clisp
+	@ echo 10 making $@ from $<
+	echo '(progn  (compile-file "$<" :output-file "$@") (${BYE}))' \
+	     | ${DEPSYS}
+
+AUTO_from_MID=\
+mark pspad1 pspad2 wi1 wi2
+
+$(addprefix $(AUTO)/, $(addsuffix .$(FASLEXT), $(AUTO_from_MID))): \
+    $(AUTO)/%.$(FASLEXT) : %.clisp
+	@ echo 10 making $@ from $<
+	echo '(progn  (compile-file "$<" :output-file "$(notdir $@)")' \
+	     ' (${BYE}))' | ${DEPSYS}
+	mv "$(notdir $@)" $@
+
+MID_from_IN=\
+ apply as ax bc-matrix bc-misc bc-solve bc-util br-con br-data \
+ br-op1 br-op2 br-prof br-saturn br-search br-util buildom \
+ category cattable c-doc clammed compat compiler compress c-util \
+ database define format fortcall functor g-cndata g-error g-opt \
+ g-timer hashcode htcheck ht-root htsetvar ht-util hypertex \
+ i-analy i-code i-coerce i-coerfn i-eval i-funsel i-intern \
+ interop i-map info i-output i-resolv i-spec1 i-spec2 i-syscmd \
+ iterator i-toplev i-util lisplib mark match modemap msgdb \
+ nag-c02 nag-c05 nag-c06 nag-d01 nag-d02 nag-d03 nag-e01 nag-e02 \
+ nag-e04 nag-f01 nag-f02 nag-f04 nag-f07 nag-s newfort nruncomp \
+ nrunfast nrungo nruntime nrunopt package pathname profile pspad1 \
+ pspad2 record rulesets server setvars setvart simpbool template \
+ termrw topics trace wi1 wi2
+
+$(addsuffix .clisp, $(MID_from_IN)): \
+    %.clisp : $(srcdir)/%.boot.pamphlet
+	@ echo 11 making $@ from $<
+	$(axiom_build_document) --tangle --output=$*.boot $<; \
+	   echo '(progn (boottran::boottocl "$*.boot") (${BYE}))' | ${DEPSYS}
+
+debugsys.lisp: $(srcdir)/debugsys.lisp.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+bookvol5.$(FASLEXT): bookvol5.lisp
+	@ echo 297 making $@ from $<
+	echo '(progn  (compile-file "bookvol5.lisp" :output-file' \
+	       ' "bookvol5.$(FASLEXT)") (${BYE}))' | ${DEPSYS} 
+
+bookvol5.lisp: $(srcdir)/bookvol5.pamphlet
+	@ echo 298 making $@ from $<
+	$(axiom_build_document) --tangle=Interpreter --output=$@ $<
+
+newaux.$(FASLEXT): newaux.lisp
+	@ echo 79 making newaux.$(FASLEXT) from newaux.lisp
+	echo '(progn  (compile-file "newaux.lisp" :output-file ' \
+             '"newaux.$(FASLEXT)") (${BYE}))' | ${DEPSYS} 
+
+newaux.lisp: $(srcdir)/newaux.lisp.pamphlet
+	$(axiom_build_document) --tangle --output=$@ $<
+
+../algebra/warm.data: $(srcdir)/Makefile.pamphlet
+	@ echo 2 building warm.data
+	$(axiom_build_document) --tangle=warm.data --output=$@ $<
+
+
+.PRECIOUS: $(builddir)/%.tex
+.PRECIOUS: $(builddir)/%.dvi
+
+$(DOCFILES): $(DOC) $(axiom_build_texdir)/diagrams.tex
+
+$(DOC):
+	$(mkinstalldirs) $@
+
+$(DOC)/%.dvi: $(builddir)/%.dvi
+	$(INSTALL_DATA) $< $@
+
+$(builddir)/%.dvi: $(axiom_build_texdir)/axiom.sty
+
+$(builddir)/%.dvi: $(builddir)/%.tex
+	$(axiom_build_document) --latex $<
+
+$(builddir)/%.tex: $(srcdir)/%.pamphlet
+	$(axiom_build_document) --weave --output=$@ $<
+
+$(axiom_build_texdir)/diagrams.tex: $(axiom_src_docdir)/diagrams.tex
+	$(INSTALL_DATA) $< $@
+
