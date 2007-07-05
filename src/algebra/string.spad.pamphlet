@@ -1,0 +1,552 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra string.spad}
+\author{Stephen M. Watt, Michael Monagan, Manuel Bronstein}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{domain CHAR Character}
+<<domain CHAR Character>>=
+)abbrev domain CHAR Character
+++ Author: Stephen M. Watt
+++ Date Created: July 1986
+++ Date Last Updated: June 20, 1991
+++ Basic Operations: char
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords: character, string
+++ Examples:
+++ References:
+++ Description:
+++   This domain provides the basic character data type.
+
+Character: OrderedFinite() with
+	ord: % -> Integer
+	    ++ ord(c) provides an integral code corresponding to the
+	    ++ character c.  It is always true that \spad{char ord c = c}.
+	char: Integer  -> %
+	    ++ char(i) provides a character corresponding to the integer
+	    ++ code i.	It is always true that \spad{ord char i = i}.
+	char: String   -> %
+	    ++ char(s) provides a character from a string s of length one.
+	space:	() -> %
+	    ++ space() provides the blank character.
+	quote:	() -> %
+	    ++ quote() provides the string quote character, \spad{"}.
+	escape: () -> %
+	    ++ escape() provides the escape character, \spad{_}, which
+	    ++ is used to allow quotes and other characters {\em within}
+	    ++ strings.
+	upperCase: % -> %
+	    ++ upperCase(c) converts a lower case letter to the corresponding
+	    ++ upper case letter.  If c is not a lower case letter, then
+	    ++ it is returned unchanged.
+	lowerCase: % -> %
+	    ++ lowerCase(c) converts an upper case letter to the corresponding
+	    ++ lower case letter.  If c is not an upper case letter, then
+	    ++ it is returned unchanged.
+	digit?: % -> Boolean
+	    ++ digit?(c) tests if c is a digit character,
+	    ++ i.e. one of 0..9.
+	hexDigit?: % -> Boolean
+	    ++ hexDigit?(c) tests if c is a hexadecimal numeral,
+	    ++ i.e. one of 0..9, a..f or A..F.
+	alphabetic?: % -> Boolean
+	    ++ alphabetic?(c) tests if c is a letter,
+	    ++ i.e. one of a..z or A..Z.
+	upperCase?: % -> Boolean
+	    ++ upperCase?(c) tests if c is an upper case letter,
+	    ++ i.e. one of A..Z.
+	lowerCase?: % -> Boolean
+	    ++ lowerCase?(c) tests if c is an lower case letter,
+	    ++ i.e. one of a..z.
+	alphanumeric?: % -> Boolean
+	    ++ alphanumeric?(c) tests if c is either a letter or number,
+	    ++ i.e. one of 0..9, a..z or A..Z.
+
+    == add
+	Rep := SingleInteger	  -- 0..255
+
+	CC ==> CharacterClass()
+	import CC
+
+	--cl: Record(dig:CC,hex:CC,upp:CC,low:CC,alpha:CC,alnum:CC) :=
+	--    [ digit(), hexDigit(),
+	--	upperCase(), lowerCase(), alphabetic(), alphanumeric() ]
+
+	OutChars:PrimitiveArray(OutputForm) :=
+	   construct [NUM2CHAR(i)$Lisp for i in 0..255]
+
+	minChar := minIndex OutChars
+
+	a = b		       == a =$Rep b
+	a < b		       == a <$Rep b
+	size()		       == 256
+	index n		       == char((n - 1)::Integer)
+	lookup c	       == (1 + ord c)::PositiveInteger
+	char(n:Integer)	       == n::%
+	ord c		       == convert(c)$Rep
+	random()	       == char(random()$Integer rem size())
+	space		       == QENUM("   ", 0$Lisp)$Lisp
+	quote		       == QENUM("_" ", 0$Lisp)$Lisp
+	escape		       == QENUM("__ ", 0$Lisp)$Lisp
+	coerce(c:%):OutputForm == OutChars(minChar + ord c)
+	digit? c	       == member?(c pretend Character, digit())
+	hexDigit? c	       == member?(c pretend Character, hexDigit())
+	upperCase? c	       == member?(c pretend Character, upperCase())
+	lowerCase? c	       == member?(c pretend Character, lowerCase())
+	alphabetic? c	       == member?(c pretend Character, alphabetic())
+	alphanumeric? c	       == member?(c pretend Character, alphanumeric())
+
+	latex c ==
+	    concat("\mbox{`", concat(new(1,c pretend Character)$String, "'}")$String)$String
+
+	char(s:String) ==
+--	  one?(#s) => s(minIndex s) pretend %
+	  (#s) = 1 => s(minIndex s) pretend %
+	  error "String is not a single character"
+
+	upperCase c ==
+	  QENUM(PNAME(UPCASE(NUM2CHAR(ord c)$Lisp)$Lisp)$Lisp,
+		0$Lisp)$Lisp
+
+	lowerCase c ==
+	  QENUM(PNAME(DOWNCASE(NUM2CHAR(ord c)$Lisp)$Lisp)$Lisp,
+		0$Lisp)$Lisp
+
+@
+
+\section{domain CCLASS CharacterClass}
+<<domain CCLASS CharacterClass>>=
+)abbrev domain CCLASS CharacterClass
+++ Author: Stephen M. Watt
+++ Date Created: July 1986
+++ Date Last Updated: June 20, 1991
+++ Basic Operations: charClass
+++ Related Domains: Character, Bits
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ Examples:
+++ References:
+++ Description:
+++   This domain allows classes of characters to be defined and manipulated
+++   efficiently.
+
+
+CharacterClass: Join(SetCategory, ConvertibleTo String,
+  FiniteSetAggregate Character, ConvertibleTo List Character) with
+	charClass: String -> %
+	    ++ charClass(s) creates a character class which contains
+	    ++ exactly the characters given in the string s.
+	charClass: List Character -> %
+	    ++ charClass(l) creates a character class which contains
+	    ++ exactly the characters given in the list l.
+	digit:	constant -> %
+	    ++ digit() returns the class of all characters
+	    ++ for which \spadfunFrom{digit?}{Character} is true.
+	hexDigit: constant -> %
+	    ++ hexDigit() returns the class of all characters for which
+	    ++ \spadfunFrom{hexDigit?}{Character} is true.
+	upperCase: constant -> %
+	    ++ upperCase() returns the class of all characters for which
+	    ++ \spadfunFrom{upperCase?}{Character} is true.
+	lowerCase:  constant -> %
+	    ++ lowerCase() returns the class of all characters for which
+	    ++ \spadfunFrom{lowerCase?}{Character} is true.
+	alphabetic  :  constant -> %
+	    ++ alphabetic() returns the class of all characters for which
+	    ++ \spadfunFrom{alphabetic?}{Character} is true.
+	alphanumeric:  constant -> %
+	    ++ alphanumeric() returns the class of all characters for which
+	    ++ \spadfunFrom{alphanumeric?}{Character} is true.
+
+    == add
+	Rep := IndexedBits(0)
+	N   := size()$Character
+
+	a, b: %
+
+	digit()		== charClass "0123456789"
+	hexDigit()	== charClass "0123456789abcdefABCDEF"
+	upperCase()	== charClass "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	lowerCase()	== charClass "abcdefghijklmnopqrstuvwxyz"
+	alphabetic()	== union(upperCase(), lowerCase())
+	alphanumeric()	== union(alphabetic(), digit())
+
+	a = b		== a =$Rep b
+
+	member?(c, a)	== a(ord c)
+	union(a,b)	== Or(a, b)
+	intersect (a,b) == And(a, b)
+	difference(a,b) == And(a, Not b)
+	complement a	== Not a
+
+	convert(cl):String ==
+	  construct(convert(cl)@List(Character))
+	convert(cl:%):List(Character) ==
+	  [char(i) for i in 0..N-1 | cl.i]
+
+	charClass(s: String) ==
+	  cl := new(N, false)
+	  for i in minIndex(s)..maxIndex(s) repeat cl(ord s.i) := true
+	  cl
+
+	charClass(l: List Character) ==
+	  cl := new(N, false)
+	  for c in l repeat cl(ord c) := true
+	  cl
+
+	coerce(cl):OutputForm == (convert(cl)@String)::OutputForm
+
+	-- Stuff to make a legal SetAggregate view
+	# a		== (n := 0; for i in 0..N-1 | a.i repeat n := n+1; n)
+	empty():%	== charClass []
+	brace():%	== charClass []
+
+	insert_!(c, a)	== (a(ord c) := true; a)
+	remove_!(c, a)	== (a(ord c) := false; a)
+
+	inspect(a) ==
+	    for i in 0..N-1 | a.i repeat
+		 return char i
+	    error "Cannot take a character from an empty class."
+	extract_!(a) ==
+	    for i in 0..N-1 | a.i repeat
+		 a.i := false
+		 return char i
+	    error "Cannot take a character from an empty class."
+
+	map(f, a) ==
+	    b := new(N, false)
+	    for i in 0..N-1 | a.i repeat b(ord f char i) := true
+	    b
+
+	temp: % := new(N, false)$Rep
+	map_!(f, a) ==
+	    fill_!(temp, false)
+	    for i in 0..N-1 | a.i repeat temp(ord f char i) := true
+	    copyInto_!(a, temp, 0)
+
+	parts a ==
+	    [char i for i in 0..N-1 | a.i]
+
+@
+\section{domain ISTRING IndexedString}
+<<domain ISTRING IndexedString>>=
+)abbrev domain ISTRING IndexedString
+++ Authors: Stephen Watt, Michael Monagan, Manuel Bronstein 1986 .. 1991
+-- The following Lisp dependencies are divided into two groups
+-- Those that are required
+-- QENUM QESET QCSIZE MAKE-FULL-CVEC EQ QSLESSP QSGREATERP
+-- Those that can are included for efficiency only
+-- COPY STRCONC SUBSTRING STRPOS RPLACSTR DOWNCASE UPCASE CGREATERP
+++ Description:
+++ This domain implements low-level strings
+
+IndexedString(mn:Integer): Export == Implementation where
+  B ==> Boolean
+  C ==> Character
+  I ==> Integer
+  N ==> NonNegativeInteger
+  U ==> UniversalSegment Integer
+
+  Export ==> StringAggregate() with
+      hash: % -> I
+	++ hash(x) provides a hashing function for strings
+
+  Implementation ==> add
+    -- These assume Character's Rep is Small I
+    Qelt    ==> QENUM$Lisp
+    Qequal  ==> EQUAL$Lisp
+    Qsetelt ==> QESET$Lisp
+    Qsize   ==> QCSIZE$Lisp
+    Cheq    ==> EQL$Lisp
+    Chlt    ==> QSLESSP$Lisp
+    Chgt    ==> QSGREATERP$Lisp
+
+    c:	Character
+    cc: CharacterClass
+
+--  new n		   == MAKE_-FULL_-CVEC(n, space$C)$Lisp
+    new(n, c)		   == MAKE_-FULL_-CVEC(n, c)$Lisp
+    empty()		   == MAKE_-FULL_-CVEC(0$Lisp)$Lisp
+    empty?(s)		   == Qsize(s) = 0
+    #s			   == Qsize(s)
+    s = t		   == Qequal(s, t)
+    s < t		   == CGREATERP(t,s)$Lisp
+    concat(s:%,t:%)	   == STRCONC(s,t)$Lisp
+    copy s		   == COPY_-SEQ(s)$Lisp
+    insert(s:%, t:%, i:I)  == concat(concat(s(mn..i-1), t), s(i..))
+    coerce(s:%):OutputForm == outputForm(s pretend String)
+    minIndex s		   == mn
+    upperCase_! s	   == map_!(upperCase, s)
+    lowerCase_! s	   == map_!(lowerCase, s)
+
+    latex s		   == concat("\mbox{``", concat(s pretend String, "''}"))
+
+    replace(s, sg, t) ==
+	l := lo(sg) - mn
+	m := #s
+	n := #t
+	h:I := if hasHi sg then hi(sg) - mn else maxIndex s - mn
+	l < 0 or h >= m or h < l-1 => error "index out of range"
+	r := new((m-(h-l+1)+n)::N, space$C)
+	for k in 0.. for i in 0..l-1 repeat Qsetelt(r, k, Qelt(s, i))
+	for k in k.. for i in 0..n-1 repeat Qsetelt(r, k, Qelt(t, i))
+	for k in k.. for i in h+1..m-1 repeat Qsetelt(r, k, Qelt(s, i))
+	r
+
+    setelt(s:%, i:I, c:C) ==
+	i < mn or i > maxIndex(s) => error "index out of range"
+	Qsetelt(s, i - mn, c)
+	c
+
+    substring?(part, whole, startpos) ==
+	np:I := Qsize part
+	nw:I := Qsize whole
+	(startpos := startpos - mn) < 0 => error "index out of bounds"
+	np > nw - startpos => false
+	for ip in 0..np-1 for iw in startpos.. repeat
+	    not Cheq(Qelt(part, ip), Qelt(whole, iw)) => return false
+	true
+
+    position(s:%, t:%, startpos:I) ==
+	(startpos := startpos - mn) < 0 => error "index out of bounds"
+	startpos >= Qsize t => mn - 1
+	r:I := STRPOS(s, t, startpos, NIL$Lisp)$Lisp
+	EQ(r, NIL$Lisp)$Lisp => mn - 1
+	r + mn
+    position(c: Character, t: %, startpos: I) ==
+	(startpos := startpos - mn) < 0 => error "index out of bounds"
+	startpos >= Qsize t => mn - 1
+	for r in startpos..Qsize t - 1 repeat
+	    if Cheq(Qelt(t, r), c) then return r + mn
+	mn - 1
+    position(cc: CharacterClass, t: %, startpos: I) ==
+	(startpos := startpos - mn) < 0 => error "index out of bounds"
+	startpos >= Qsize t => mn - 1
+	for r in startpos..Qsize t - 1 repeat
+	    if member?(Qelt(t,r), cc) then return r + mn
+	mn - 1
+
+    suffix?(s, t) ==
+	(m := maxIndex s) > (n := maxIndex t) => false
+	substring?(s, t, mn + n - m)
+
+    split(s, c) ==
+	n := maxIndex s
+	for i in mn..n while s.i = c repeat 0
+	l := empty()$List(%)
+	j:Integer -- j is conditionally intialized
+	while i <= n and (j := position(c, s, i)) >= mn repeat
+	    l := concat(s(i..j-1), l)
+	    for i in j..n while s.i = c repeat 0
+	if i <= n then l := concat(s(i..n), l)
+	reverse_! l
+    split(s, cc) ==
+	n := maxIndex s
+	for i in mn..n while member?(s.i,cc) repeat 0
+	l := empty()$List(%)
+	j:Integer -- j is conditionally intialized
+	while i <= n and (j := position(cc, s, i)) >= mn repeat
+	    l := concat(s(i..j-1), l)
+	    for i in j..n while member?(s.i,cc) repeat 0
+	if i <= n then l := concat(s(i..n), l)
+	reverse_! l
+
+    leftTrim(s, c) ==
+	n := maxIndex s
+	for i in mn .. n while s.i = c repeat 0
+	s(i..n)
+    leftTrim(s, cc) ==
+	n := maxIndex s
+	for i in mn .. n while member?(s.i,cc) repeat 0
+	s(i..n)
+
+    rightTrim(s, c) ==
+	for j in maxIndex s .. mn by -1 while s.j = c repeat 0
+	s(minIndex(s)..j)
+    rightTrim(s, cc) ==
+	for j in maxIndex s .. mn by -1 while member?(s.j, cc) repeat 0
+	s(minIndex(s)..j)
+
+    concat l ==
+	t := new(+/[#s for s in l], space$C)
+	i := mn
+	for s in l repeat
+	    copyInto_!(t, s, i)
+	    i := i + #s
+	t
+
+    copyInto_!(y, x, s) ==
+	m := #x
+	n := #y
+	s := s - mn
+	s < 0 or s+m > n => error "index out of range"
+	RPLACSTR(y, s, m, x, 0, m)$Lisp
+	y
+
+    elt(s:%, i:I) ==
+	i < mn or i > maxIndex(s) => error "index out of range"
+	Qelt(s, i - mn)
+
+    elt(s:%, sg:U) ==
+	l := lo(sg) - mn
+	h := if hasHi sg then hi(sg) - mn else maxIndex s - mn
+	l < 0 or h >= #s => error "index out of bound"
+	SUBSTRING(s, l, max(0, h-l+1))$Lisp
+
+    hash(s:$):Integer ==
+	n:I := Qsize s
+	zero? n => 0
+--	one? n => ord(s.mn)
+	(n = 1) => ord(s.mn)
+	ord(s.mn) * ord s(mn+n-1) * ord s(mn + n quo 2)
+
+    match(pattern,target,wildcard) == stringMatch(pattern,target,CHARACTER(wildcard)$Lisp)$Lisp
+ 
+@
+
+Up to [[patch--40]] this read
+
+\begin{verbatim}
+    match(pattern,target,wildcard) == stringMatch(pattern,target,wildcard)$Lisp
+\end{verbatim}
+
+which did not work (Issue~\#97), since [[wildcard]] is an Axiom-[[Character]],
+not a Lisp-[[Character]]. The operation [[CHARACTER]] from [[Lisp]] performs
+the coercion.
+
+<<domain ISTRING IndexedString>>=
+    match?(pattern, target, dontcare) ==
+	n := maxIndex pattern
+	p := position(dontcare, pattern, m := minIndex pattern)::N
+	p = m-1 => pattern = target
+	(p ^= m) and not prefix?(pattern(m..p-1), target) => false
+	i := p	-- index into target
+	q := position(dontcare, pattern, p + 1)::N
+	while q ^= m-1 repeat
+	   s := pattern(p+1..q-1)
+	   i := position(s, target, i)::N
+	   i = m-1 => return false
+	   i := i + #s
+	   p := q
+	   q := position(dontcare, pattern, q + 1)::N
+	(p ^= n) and not suffix?(pattern(p+1..n), target) => false
+	true
+
+@
+
+\section{domain STRING String}
+<<domain STRING String>>=
+)abbrev domain STRING String
+++ Description:
+++   This is the domain of character strings.
+MINSTRINGINDEX ==> 1	      -- as of 3/14/90.
+
+String(): StringCategory == IndexedString(MINSTRINGINDEX) add 
+    string n == STRINGIMAGE(n)$Lisp
+
+    OMwrite(x: %): String ==
+      s: String := ""
+      sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
+      dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+      OMputObject(dev)
+      OMputString(dev, x pretend String)
+      OMputEndObject(dev)
+      OMclose(dev)
+      s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
+      s
+
+    OMwrite(x: %, wholeObj: Boolean): String ==
+      s: String := ""
+      sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
+      dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+      if wholeObj then
+        OMputObject(dev)
+      OMputString(dev, x pretend String)
+      if wholeObj then
+        OMputEndObject(dev)
+      OMclose(dev)
+      s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
+      s
+
+    OMwrite(dev: OpenMathDevice, x: %): Void ==
+      OMputObject(dev)
+      OMputString(dev, x pretend String)
+      OMputEndObject(dev)
+
+    OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+      if wholeObj then
+        OMputObject(dev)
+      OMputString(dev, x pretend String)
+      if wholeObj then
+        OMputEndObject(dev)
+
+@
+\section{category STRICAT StringCategory}
+<<category STRICAT StringCategory>>=
+)abbrev category STRICAT StringCategory
+-- Note that StringCategory is built into the old compiler
+-- redundant SetCategory added to help A# compiler
+++ Description:
+++ A category for string-like objects
+
+StringCategory():Category == Join(StringAggregate(), SetCategory, OpenMath) with
+  string: Integer -> %
+    ++ string(i) returns the decimal representation of i in a string
+
+@
+\section{License}
+<<license>>=
+--Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+<<*>>=
+<<license>>
+
+<<domain CHAR Character>>
+<<domain CCLASS CharacterClass>>
+<<domain ISTRING IndexedString>>
+<<category STRICAT StringCategory>>
+<<domain STRING String>>
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

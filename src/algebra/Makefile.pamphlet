@@ -1,0 +1,816 @@
+%% Oh Emacs, this is a -*- Makefile -*-, so give me tabs.
+\documentclass{article}
+\usepackage{axiom}
+
+\title{\$SPAD/src/algebra Makefile}
+\author{Timothy Daly}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+\eject
+
+\tableofcontents
+\eject
+
+
+\section{The bootstrap problem\dots}
+
+The current Axiom compiler compiles each constructor (category, domain
+or package) separately.  In order to perform type checking Axiom
+needs type information from other constructors.  To collect
+type information about a constructor Axiom must compile it.
+This creates a bootstrap problem: in order to compile a constructor
+one must first compile many other constructors.
+
+In principle the bootstrap problem could be avoided by organizing algebra
+into layers, so that layer $0$ is independent of other layers and
+each higher layer depends only on lower layers.  However, the current
+Axiom algebra contains a lot of cyclic dependencies: for example, a substantial
+part of algebra depends on [[Integer]], but [[Integer]] has a rich structure
+and depends on many categories which in turn depend on [[Integer]].
+
+\section{\dots and its solution}
+
+At the moment this bootstrap problem has no proper resolution: Axiom
+avoids it simply using type information collected in the past
+and stored in databases [[interp.daase]] and [[category.daase]].
+This solution means that any attempt to change the signature of an exported
+operation is likely to cause build failure.
+
+Using the type information stored in databases solves only part of
+the bootstrap problem: internally, Axiom types are represented by
+executable code and sometimes Axiom needs to load actual compiled
+code.  The exact rules telling when Axiom needs compiled code
+and when it is enough to have info in databases are unknown.
+Axiom needs to load categories given as arguments to [[Join]],
+because [[Join]] is implemented as a runtime operation.  It
+seems that Axiom also needs to load a category given as an argument
+to a constructor if this category itself has arguments.
+
+During normal compilation Axiom tries to optimize (i.e., expand inline)
+calls to operations from core domains, which are listed in the
+[[$optimizableConstructorNames]] variable.  To do this, Axiom
+has to load these domains.  In the past, this optimization required
+keeping compiled Lisp corresponding to a collection of categories and
+domains sufficient to cut cycles involving core domains.
+Currently Axiom has a special flag [[$bootstrapDomains]] to
+disable this optimization.
+
+Even after using the [[$bootstrapDomains]] flag there are still
+cyclic load dependencies caused by constructor arguments, but
+those problem are resolved using the [[$bootStrapMode]] flag,
+which causes relaxed type checking and skips executable parts
+of categories.
+
+The final process looks as follows: first, categories are
+topologically sorted with respect to [[Join]] --  recall that arguments to
+[[Join]] must be compiled before a category using [[Join]].
+This order is slightly tweaked to avoid problems due to
+constructor parameters.  In the first pass categories
+are compiled using [[$bootStrapMode]] set to [[t]].  This
+makes compiled code of categories available to second pass.
+In the second pass categories and core domains are
+compiled setting [[$bootstrapDomains]] to [[t]].  We have
+to compile categories because categories may have associated
+default domains which also may be loaded.  We also compile a
+few domains which are needed for unknown reasons -- if we
+skip them, the build will fail.  In the third pass we
+compile categories and core domains in normal mode.
+Finally, we compile the rest of algebra in alphabetical order.
+More precisely, we let make choose the order, but the list we give is
+sorted alphabetically, and make processes it in order.
+
+\section{Adding new constructors}
+
+Adding a new constructor is different from the above process.  It is
+easier because a new constructor can freely use functions provided
+by standard algebra.  On the other hand, information about new constructors
+is absent from Axiom databases, so cyclic dependencies between new
+constructors have no easy solution.  However if one is adding
+mutually dependent constructors without cyclic dependencies
+the solution is easy:  compile all dependent constructors in
+a single Axiom image, using appropriate order.  The [[guess-pkg]]
+target illustrates this method.
+
+NOTE: If you add new constructors to this file you must also update
+
+[[src/algebra/exposed.lsp.pamphlet]]
+
+otherwise the new constructors won't be loaded by the interpreter when needed.
+
+\section{Bootstrap procedure and variables}
+
+The list [[SPADLIST]] below was produced using the following Perl
+progam on the list of unpacked [[.spad]] files (as given by [[ls *.spad]]).
+\begin{verbatim}
+$j=0;
+$cl = "     ";
+while(<>) {
+     chop;
+     $l = $_;
+     $l =~ s/\.spad/ /;
+     $cl .= $l;
+     if ($j == 5) {
+         print $cl, "\\\n";
+         $cl = "     ";
+         $j=0;
+     } else {
+         $j++;
+     }
+}
+$cl =~ s/ $//;
+print $cl, "\n";
+\end{verbatim}
+
+<<bootstrap variables>>=
+
+SPADLIST=\
+     A1AGG ABELGRP ABELMON ABELSG ACF ACFS \
+     ACPLOT AF AGG AHYP ALAGG ALGEBRA \
+     ALGFACT ALGFF ALGMANIP ALGMFACT ALGPKG ALGSC \
+     ALIST AMR ANON AN ANTISYM ANY1 \
+     ANY APPLYORE APPRULE ARR2CAT ARRAY12 ARRAY1 \
+     ARRAY2 ASP10 ASP12 ASP19 ASP1 ASP20 \
+     ASP24 ASP27 ASP28 ASP29 ASP30 ASP31 \
+     ASP33 ASP34 ASP35 ASP41 ASP42 ASP49 \
+     ASP4 ASP50 ASP55 ASP6 ASP73 ASP74 \
+     ASP77 ASP78 ASP7 ASP80 ASP8 ASP9 \
+     ASSOCEQ ASTACK ATRIG ATTRBUT ATTREG AUTOMOR \
+     BALFACT BASTYPE BBTREE BEZOUT BFUNCT BGAGG \
+     BINARY BINFILE BITS BMODULE BOOLEAN BOP1 \
+     BOP BOUNDZRO BPADICRT BPADIC BRAGG BRILL \
+     BSTREE BTAGG BTCAT BTOURN BTREE CABMON \
+     CACHSET CARD CARTEN2 CARTEN CCLASS CDEN \
+     CFCAT CHARNZ CHARPOL CHAR CHARZ CHVAR \
+     CINTSLPE CLAGG CLIF CLIP CMPLXRT COLOR \
+     COMBF COMBINAT COMBOPC COMMONOP COMM COMMUPC \
+     COMPCAT COMPFACT COMPLEX2 COMPLEX COMPLPAT COMPPROP \
+     COMRING CONTFRAC COORDSYS CPIMA CPMATCH CRAPACK \
+     CRFP CSTTOOLS CTRIGMNP CVMP CYCLES CYCLOTOM \
+     D01AGNT D01AJFA D01AKFA D01ALFA D01AMFA D01ANFA \
+     D01APFA D01AQFA D01ASFA D01FCFA D01GBFA D01TRNS \
+     D01WGTS D02AGNT D02BBFA D02BHFA D02CJFA D02EJFA \
+     D03AGNT D03EEFA D03FAFA DBASE DBLRESP DDFACT \
+     DECIMAL DEFINTEF DEFINTRF DEGRED DEQUEUE DERHAM \
+     DFINTTLS DFLOAT DFSFUN DHMATRIX DIAGG DIFEXT \
+     DIFRING DIOPS DIOSP DIRPCAT DIRPROD2 DIRPROD \
+     DISPLAY DIVRING DLAGG DLIST DLP DMP \
+     DPMM DPMO DPOLCAT DQAGG DRAWCFUN DRAWCURV \
+     DRAWCX DRAWHACK DRAWPT DRAW DROPT0 DROPT1 \
+     DROPT DSMP DVARCAT E04AGNT E04DGFA E04FDFA \
+     E04GCFA E04JAFA E04MBFA E04NAFA E04UCFA EAB \
+     EF EFSTRUC EFULS EFUPXS ELAGG ELEMFUN \
+     ELFUTS ELTAB ELTAGG EMR ENTIRER EP \
+     EQ2 EQ EQTBL ERROR ES1 ES2 \
+     ESCONT1 ESCONT ES ESTOOLS1 ESTOOLS2 ESTOOLS \
+     EUCDOM EVALAB EVALCYC EXIT EXPEXPAN EXPR2 \
+     EXPR2UPS EXPRODE EXPR EXPRTUBE EXPUPXS FACTFUNC \
+     FACUTIL FAGROUP FAMONC FAMONOID FAMR FARRAY \
+     FAXF FCOMP FCPAK1 FC FDIV2 FDIVCAT \
+     FDIV FEVALAB FEXPR FFCAT2 FFCAT FFCGP \
+     FFCG FFCGX FFF FFHOM FFIELDC FFINTBAS \
+     FFNBP FFNB FFNBX FFPOLY2 FFPOLY FFP \
+     FFSLPE FF FFX FGLMICPK FGROUP FIELD \
+     FILECAT FILE FINAALG FINITE FINRALG FLAGG2 \
+     FLAGG FLALG FLASORT FLINEXP FLOATCP FLOATRP \
+     FLOAT FM1 FMCAT FMC FMFUN FMONOID \
+     FM FMTC FNAME FNCAT FNLA FOP \
+     FORDER FORMULA1 FORMULA FORTCAT FORTFN FORTRAN \
+     FORT FPARFRAC FPATMAB FPC FPS FR2 \
+     FRAC2 FRAC FRAMALG FRETRCT FRIDEAL2 FRIDEAL \
+     FRMOD FRNAAF2 FRNAALG FR FRUTIL FS2EXPXP \
+     FS2 FS2UPS FSAGG2 FSAGG FSCINT FSERIES \
+     FSINT FSPECF FSPRMELT FSRED FS FST \
+     FSUPFACT FTEM FT FUNCTION FVC FVFUN \
+     GALFACT GALFACTU GALPOLYU GALUTIL GAUSSFAC GBEUCLID \
+     GBF GBINTERN GB GCDDOM GCNAALG GDMP \
+     GENEEZ GENMFACT GENPGCD GENUFACT GENUPS GHENSEL \
+     GMODPOL GOSPER GPOLSET GRALG GRAY GRDEF \
+     GRIMAGE GRMOD GROEBSOL GROUP GSERIES GSTBL \
+     GTSET HACKPI HASHTBL HB HDMP HDP \
+     HEAP HELLFDIV HEUGCD HEXADEC HOAGG HYPCAT \
+     IALGFACT IAN IARRAY1 IARRAY2 IBACHIN IBATOOL \
+     IBITS IBPTOOLS ICARD ICDEN IDEAL IDECOMP \
+     IDPAG IDPAM IDPC IDPOAM IDPOAMS IDPO \
+     IEVALAB IFAMON IFARRAY IFF IIARRAY2 ILIST \
+     IMATLIN IMATQF IMATRIX INBFF INCRMAPS INDE \
+     INEP INFINITY INFORM1 INFORM INFPROD0 INFSP \
+     INMODGCD INNMFACT INPRODFF INPRODPF INPSIGN INS \
+     INTABL INTAF INTALG INTBIT INTCAT INTDOM \
+     INTEF INTFACT INTFTBL INTG0 INTHEORY INTHERAL \
+     INTHERTR INTPACK INTPAF INTPM INTRAT INTRET \
+     INTRF INTRVL INTSLPE INT INTTOOLS INTTR \
+     INVLAPLA IPADIC IPF IPRNTPK IR2F IR2 \
+     IROOT IRREDFFX IRRF2F IRSN IR IRURPK \
+     ISTRING ISUMP ISUPS ITAYLOR ITFUN2 ITFUN3 \
+     ITRIGMNP ITUPLE IVECTOR IXAGG JORDAN KAFILE \
+     KDAGG KERNEL2 KERNEL KOERCE KONVERT KOVACIC \
+     LALG LAPLACE LA LAUPOL LAZM3PK LEADCDET \
+     LEXP LEXTRIPK LFCAT LF LGROBP LIB \
+     LIECAT LIE LIMITPS LIMITRF LINDEP LINEXP \
+     LIST2MAP LIST2 LIST3 LIST LMDICT LMODULE \
+     LMOPS LNAGG LODEEF LODO1 LODO2 LODOCAT \
+     LODOF LODOOPS LODO LOGIC LO LPEFRAC \
+     LPOLY LSAGG LSMP1 LSMP LSPP LSQM \
+     LWORD LZSTAGG M3D MAGMA MAPHACK1 MAPHACK2 \
+     MAPHACK3 MAPPKG1 MAPPKG2 MAPPKG3 MATCAT2 MATCAT \
+     MATLIN MATRIX MATSTOR MCALCFN MCDEN MCMPLX \
+     MDAGG MDDFACT MESH MFINFACT MFLOAT MHROWRED \
+     MINT MKBCFUNC MKCHSET MKFLCFN MKFUNC MKRECORD \
+     MKUCFUNC MLIFT MLO MMAP MODFIELD MODMONOM \
+     MODMON MODOP MODRING MODULE MOEBIUS MONAD \
+     MONADWU MONOGEN MONOID MONOTOOL MPC2 MPC3 \
+     MPCPF MPOLY MPRFF MRATFAC MRF2 MRING \
+     MSETAGG MSET MSYSCMD MTHING MTSCAT MULTFACT \
+     MULTSQFR NAALG NAGC02 NAGC05 NAGC06 NAGD01 \
+     NAGD02 NAGD03 NAGE01 NAGE02 NAGE04 NAGF01 \
+     NAGF02 NAGF04 NAGF07 NAGSP NAGS NARNG \
+     NASRING NCEP NCNTFRAC NCODIV NFINTBAS NIPROB \
+     NLINSOL NNI NODE1 NONE1 NONE NORMMA \
+     NORMPK NORMRETR NPCOEF NREP NSMP NSUP2 \
+     NSUP NTPOLFN NTSCAT NUMERIC NUMFMT NUMINT \
+     NUMODE NUMQUAD NUMTUBE OAGROUP OAMON OAMONS \
+     OASGP OCAMON OC OCTCT2 OCT ODECAT \
+     ODECONST ODEEF ODEIFTBL ODEINT ODEPACK ODEPAL \
+     ODEPRIM ODEPROB ODEPRRIC ODERAT ODERED ODERTRIC \
+     ODESYS ODETOOLS ODPOL ODP ODR ODVAR \
+     OFMONOID OINTDOM OMCONN OMDEV OMENC OMERRK \
+     OMERR OMEXPR OMLO OMPKG OMSAGG OMSERVER \
+     OM ONECOMP2 ONECOMP OPQUERY OP OPTCAT \
+     OPTPACK OPTPROB ORDCOMP2 ORDCOMP ORDFIN ORDFUNS \
+     ORDMON ORDRING ORDSET OREPCAT OREPCTO ORESUP \
+     OREUP ORTHPOL OSI OUTFORM OUT OVAR \
+     OWP PADEPAC PADE PADICCT PADICRAT PADICRC \
+     PADIC PALETTE PAN2EXPR PARPC2 PARPCURV PARSC2 \
+     PARSCURV PARSU2 PARSURF PARTPERM PATAB PATLRES \
+     PATMAB PATMATCH PATRES2 PATRES PATTERN1 PATTERN2 \
+     PATTERN PBWLB PCOMP PDECAT PDECOMP PDEPACK \
+     PDEPROB PDRING PENDTREE PERMAN PERMCAT PERMGRP \
+     PERM PFBR PFBRU PFECAT PFOQ PFO \
+     PFOTOOLS PFRPAC PFR PF PGCD PGE \
+     PGROEB PICOERCE PID PINTERPA PINTERP PI \
+     PLEQN PLOT1 PLOT3D PLOT PLOTTOOL PMASSFS \
+     PMASS PMDOWN PMFS PMINS PMKERNEL PMLSAGG \
+     PMPLCAT PMPREDFS PMPRED PMQFCAT PMSYM PMTOOLS \
+     PNTHEORY POINT POLTOPOL POLUTIL POLY2 POLY2UP \
+     POLYCATQ POLYCAT POLYLIFT POLYROOT POLY PPCURVE \
+     PREASSOC PRIMARR2 PRIMARR PRIMCAT PRIMELT PRIMES \
+     PRINT PRODUCT PRQAGG PR PRS PRTITION \
+     PSCAT PSCURVE PSETCAT PSETPK PSEUDLIN PSQFR \
+     PTCAT PTFUNC2 PTPACK PTRANFN PUSHVAR PWFFINTB \
+     QALGSET2 QALGSET QCMPACK QEQUAT QFCAT2 QFCAT \
+     QFORM QUAGG QUATCAT QUATCT2 QUAT QUEUE \
+     RADCAT RADFF RADIX RADUTIL RANDSRC RATFACT \
+     RATRET RCAGG RCFIELD RDEEF RDEEFS RDETR \
+     RDETRS RDIST RDIV REAL0Q REAL0 REALSOLV \
+     REAL RECLOS REDORDER REF REGSET REP1 \
+     REP2 REPDB REP REPSQ RESLATC RESRING \
+     RESULT RETRACT RETSOL RFDIST RFFACTOR RFFACT \
+     RF RGCHAIN RIDIST RING RINTERP RMATCAT \
+     RMATRIX RMCAT2 RMODULE RNG RNS ROIRC \
+     ROMAN ROUTINE RPOLCAT RRCC RSDCMPK RSETCAT \
+     RSETGCD RULECOLD RULESET RULE RURPK SAEFACT \
+     SAERFFC SAE SAOS SCACHE SCPKG SDPOL \
+     SDVAR SEG2 SEGBIND2 SEGBIND SEGCAT SEG \
+     SEGXCAT SETAGG SETCAT SETMN SET SEXCAT \
+     SEXOF SEX SFORT SFQCMPK SFRGCD SFRTCAT \
+     SGCF SGROUP SHDP SHP SIGNEF SIGNRF \
+     SIMPAN SINT SKAGG SMATCAT SMITH SMP \
+     SMTS SNTSCAT SOLVEFOR SOLVERAD SOLVESER SOLVETRA \
+     SORTPAK SPACE3 SPACEC SPECOUT SPFCAT SPLNODE \
+     SPLTREE SQMATRIX SRAGG SRDCMPK SREGSET STACK \
+     STAGG STBL STEP STINPROD STREAM1 STREAM2 \
+     STREAM3 STREAM STRICAT STRING STRTBL STTAYLOR \
+     STTFNC STTF SUBRESP SUBSPACE SUCH SULS \
+     SUMFS SUMRF SUP2 SUPFRACF SUP SUPXS \
+     SUTS SWITCH SYMBOL SYMFUNC SYMPOLY SYMS \
+     SYMTAB SYSSOLP TABLBUMP TABLEAU TABLE TANEXP \
+     TBAGG TBCMPPK TEMUTL TEX1 TEX TEXTFILE \
+     TOOLSIGN TOPSP TRANFUN TREE TRIGCAT TRIGMNIP \
+     TRIMAT TRMANIP TSETCAT TS TUBE TUBETOOL \
+     TUPLE TWOFACT TYPE UDPO UDVO UFD \
+     ULS2 ULSCAT ULSCCAT ULSCONS ULS UNIFACT \
+     UNISEG2 UNISEG UP2 UPCDEN UPDECOMP UPDIVP \
+     UPMP UPOLYC2 UPOLYC UPSCAT UP UPSQFREE \
+     UPXS2 UPXSCAT UPXSCCA UPXSCONS UPXSSING UPXS \
+     URAGG UTS2 UTSCAT UTSODE UTSODETL UTS \
+     VARIABLE VECTCAT VECTOR2 VECTOR VIEW2D VIEW3D \
+     VIEWDEF VIEW VOID VSPACE WEIER WFFINTBS \
+     WP WUTSET XALG XDPOLY XEXPPKG XFALG \
+     XF XPBWPOLY XPOLYC XPOLY XPR XRPOLY \
+     YSTREAM ZDSOLVE ZLINDEP ZMOD
+
+# Full list of categories
+CATLIST= AHYP ATTREG CFCAT ELTAB KOERCE KONVERT OM PRIMCAT PTRANFN \
+        SPFCAT TYPE BASTYPE IEVALAB AGG EVALAB SETCAT HOAGG CLAGG \
+        RADCAT RETRACT TRIGCAT ATRIG HYPCAT ELEMFUN ELTAGG IXAGG \
+        LNAGG ORDSET FLAGG A1AGG ABELSG ABELMON CABMON ABELGRP \
+        LMODULE RMODULE BMODULE MODULE SGROUP MONOID RNG RING ALGEBRA \
+        COMRING ENTIRER DIVRING INTDOM GCDDOM PID EUCDOM UFD FIELD \
+        ACF CHARNZ CHARZ ES LINEXP FLINEXP PATMAB FPATMAB FRETRCT \
+        GROUP PDRING PATAB FS ACFS BGAGG DIOPS DIAGG ELAGG KDAGG \
+        RCAGG URAGG STAGG LSAGG TBAGG ALAGG AMR ARR2CAT BRAGG LOGIC \
+        BTAGG BTCAT CACHSET COMBOPC DIFRING DIFEXT FPC FINITE STEP \
+        FFIELDC FINRALG FRAMALG FEVALAB MONOGEN PFECAT TRANFUN COMPCAT \
+        OASGP OAMON OCAMON OAGROUP OAMONS ORDRING VSPACE DIRPCAT DLAGG \
+        FAMR POLYCAT DPOLCAT QUAGG SKAGG DQAGG DVARCAT FAMONC XF FAXF \
+        FDIVCAT FFCAT FILECAT MONAD NARNG NAALG FINAALG LIECAT FLALG \
+        FORTCAT FMC FMCAT FMFUN FMTC FNCAT FORTFN REAL RNS FPS FRNAALG \
+        SETAGG FSAGG FVC FVFUN GRMOD GRALG IDPC OINTDOM INS INTCAT LALG \
+        LFCAT OREPCAT LODOCAT LZSTAGG MATCAT MDAGG MLO MONADWU MSETAGG \
+        PSCAT MTSCAT NASRING PSETCAT TSETCAT RSETCAT NTSCAT NUMINT OC \
+        ODECAT PRQAGG OMSAGG OPTCAT ORDFIN ORDMON PADICCT PDECAT PERMCAT \
+        PPCURVE PSCURVE VECTCAT PTCAT QFCAT QUATCAT RCFIELD RMATCAT \
+        RPOLCAT RRCC SEGCAT SEGXCAT SEXCAT SFRTCAT SMATCAT SNTSCAT \
+        SPACEC SRAGG STRICAT UPSCAT ULSCAT ULSCCAT UPOLYC UPXSCAT \
+        UPXSCCA UTSCAT XALG XFALG XPOLYC
+
+
+# List of core domains
+DOMLIST= ALIST BOOLEAN CHAR DFLOAT FRAC ILIST IARRAY1 ISTRING IVECTOR \
+        INT LIST NNI OUTFORM PI PRIMARR REF SINT STRING SYMBOL VECTOR
+
+# List of categories which provide default implementations
+CATDOMS= A1AGG ABELGRP ABELMON ABELSG ACF ACFS AGG ALGEBRA AMR ARR2CAT \
+        ATRIG BASTYPE BGAGG BRAGG BTAGG BTCAT CLAGG COMPCAT DIAGG \
+        DIFEXT DIFRING DIOPS DIRPCAT DIVRING DPOLCAT DVARCAT ELAGG \
+        ELEMFUN ELTAGG ES EUCDOM EVALAB FAMR FAXF FDIVCAT FEVALAB \
+        FFCAT FFIELDC FIELD FINAALG FINRALG FLAGG FLINEXP FPC FPS \
+        FRAMALG FRETRCT FRNAALG FSAGG FS GCDDOM GRALG GRMOD GROUP \
+        HOAGG HYPCAT IEVALAB INS INTDOM IXAGG KDAGG LALG LIECAT LNAGG \
+        LODOCAT LOGIC LSAGG LZSTAGG MATCAT MODULE MONAD MONADWU \
+        MONOGEN MONOID NAALG NARNG NASRING OC ORDRING ORDSET OREPCAT \
+        PDRING PFECAT POLYCAT PSCAT PSETCAT QFCAT QUATCAT RADCAT \
+        RCAGG RCFIELD RETRACT RING RMATCAT RNS RPOLCAT RRCC RSETCAT \
+        SETAGG SETCAT SGROUP SMATCAT SRAGG STAGG TBAGG TRANFUN \
+        TRIGCAT TSETCAT UFD ULSCCAT UPOLYC UPSCAT UPXSCCA URAGG \
+        UTSCAT VECTCAT VSPACE XF
+@
+
+<<layer0 bootstrap>>=
+stamp-bootstrap: $(patsubst %, %.spad, ${CATLIST} ${DOMLIST})
+	( \
+	echo "Stage 1 object bootstrap (bootStrapMode)" ; \
+	echo ')lisp (setf |$$bootStrapMode| t)' > boo1.input ; \
+	for A in ${CATLIST} ; do \
+	     echo ')compile "'$$A'.spad"' >> boo1.input ; \
+	done; \
+	( echo ')read "boo1.input"' | \
+	    ${INTERPSYS} ) || exit 1 ; \
+	echo "Stage 1 copy" ; \
+	for A in ${CATLIST} ; do \
+	    cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	done ; \
+	echo "Stage 2 object bootstrap (bootstrapDomains)" ; \
+	echo ')lisp (setf |$$bootstrapDomains| t)' > boo2.input ; \
+	for A in ${CATLIST} ${DOMLIST} ; do \
+	    echo ')compile "'$$A'.spad"' >> boo2.input ; \
+	done; \
+	( echo ')read "boo2.input"' | \
+	    ${INTERPSYS} ) || exit 1 ; \
+	echo "Stage 2 copy" ; \
+	for A in ${CATLIST} ${DOMLIST} ; do \
+	    cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	done ; \
+	for A in ${CATDOMS} ; do \
+	    cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT) || exit 1 ; \
+	done ; \
+	echo "Stage 3 object bootstrap (normal mode)" ; \
+	echo > boo3.input ; \
+	for A in ${CATLIST} ${DOMLIST} ; do \
+	    echo ')compile "'$$A'.spad"' >> boo3.input ; \
+	done; \
+	( echo ')read "boo3.input"' | \
+	    ${INTERPSYS} ) || exit 1 ; \
+	echo "Stage 3 object copy" ; \
+	for A in ${CATLIST} ${DOMLIST} ; do \
+	   cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	done ; \
+	for A in ${CATDOMS} ; do \
+	    cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
+	done ; \
+	)
+	touch stamp-bootstrap
+
+$(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST}) : stamp-bootstrap
+@
+
+\subsection{User Layer for newly added algebra}
+Rather than classify newly created algebra into the existing type lattice
+we add it here.
+<<USERLAYER>>=
+
+GUESSLIST= SUPEXPR FAMR2 NEWTON UFPS GOPT GUESSF1 \
+           UTSSOL FFFG UFPS1 GOPT0 EXPRSOL FFFGF \
+           RECOP GUESS GUESSINT GUESSP GUESSF
+
+@
+
+\section{Broken Files}
+These files are Aldor files
+\begin{verbatim}
+axtimer.as Timer
+iviews.as  InventorRenderPackage IVREND
+ffrac.as   FormalFraction FORMAL
+iviews.as  InventorViewPort IVVIEW
+iviews.as  InventorDataSink IVDATA
+herm.as    PackedHermitianSequence PACKED
+nsfip.as   NagSpecialFunctionsInterfacePackage NAGSPE
+nrc.as     NagResultChecks NAGRES
+nqip.as    NagQuadratureInterfacePackage NAGQUA
+noptip.as  NagOptimizationInterfacePackage NAGOPT
+nepip.as   NagEigenInterfacePackage NAGEIG
+ndftip.as  NagDiscreteFourierTransformInterfacePackage NAGDIS
+\end{verbatim}
+
+These domains are referenced but don't exist
+\begin{verbatim}
+OBJECT
+\end{verbatim}
+
+\section{The Environment}
+\subsection{The working directories}
+We define 5 directories for this build. The{\bf IN} directory
+contains the pamphlet files for the algebra. These are expanded
+into the{\bf MID} directory as either .spad or .as files. The
+.spad files are compiled by the native spad internal compiler.
+The .as files are compiled using the Aldor compiler. The output
+of the compilation has two purposes. Part of the information is
+used to build various database files (daase files). The other
+part is executable code which is placed in the {\bf OUT}
+directory. When invoked as ``make document'' we construct
+the .dvi files in the{\bf DOC} directory.
+
+The [[OUTSRC=$(axiom_target_srcdir)/algebra]] subdirectory contains the 
+algebra source files extracted from the pamphlet files. These sources 
+allow the end user to change the algebra if needed.
+
+<<environment>>=
+
+OUT=$(axiom_targetdir)/algebra
+DOC=$(axiom_target_docdir)/src/algebra
+OUTSRC=$(axiom_target_srcdir)/algebra
+# INPUT=${INT}/input
+INPUT=../input
+
+@
+
+\subsection{The interpsys variable}
+The {\bf interpsys} image is the compile-time environment for algebra
+files.
+
+<<environment>>=
+
+INTERPSYS=$(axiom_build_bindir)/interpsys
+
+@
+\subsection{The spad source list}
+Note that we have excluded {\bf mlift.spad.jhd} from this list.
+We need to figure out which mlift.spad to keep.
+
+<<environment>>=
+
+SPAD_SRCS= \
+     acplot aggcat2 aggcat algcat algext algfact \
+     algfunc allfact alql annacat any array1 \
+     array2 asp attreg bags bezout boolean \
+     brill c02 c05 c06 card carten \
+     catdef cden clifford clip cmplxrt coerce \
+     color combfunc combinat complet constant contfrac \
+     cont coordsys cra crfp curve cycles \
+     cyclotom d01agents d01Package d01routine d01 d01transform \
+     d01weights d02agents d02Package d02routine d02 d03agents \
+     d03Package d03routine d03 ddfact defaults defintef \
+     defintrf degred derham dhmatrix divisor dpolcat \
+     drawopt drawpak draw e01 e02 e04agents \
+     e04Package e04routine e04 efstruc efuls efupxs \
+     eigen elemntry elfuts equation1 equation2 error \
+     expexpan expr2ups exprode expr f01 f02 \
+     f04 f07 facutil ffcat ffcg fffg \
+     fff ffhom ffnb ffpoly2 ffpoly ffp \
+     ffx files float fmod fname fnla \
+     formula fortcat fortmac fortpak fortran forttyp \
+     fourier fparfrac fraction free fr fs2expxp \
+     fs2ups fspace funcpkgs functions galfact galfactu \
+     galpolyu galutil gaussfac gaussian gbeuclid gbintern \
+     gb gdirprod gdpoly geneez generic genufact \
+     genups ghensel gpgcd gpol grdef groebf \
+     groebsol gseries ideal idecomp indexedp infprod \
+     intaf intalg intaux intclos intef integer \
+     integrat interval intfact intpm intrf irexpand \
+     irsn ituple kl kovacic laplace laurent \
+     leadcdet lie limitps lindep lingrob liouv \
+     listgcd list lmdict lodof lodop lodo \
+     manip mantepse mappkg matcat matfuns matrix \
+     matstor mesh mfinfact misc mkfunc mkrecord \
+     mlift moddfact modgcd modmonom modmon modring \
+     moebius mring mset mts multfact multpoly \
+     multsqfr naalgc naalg newdata newpoint newpoly \
+     nlinsol nlode npcoef nregset nsregset numeigen \
+     numeric numode numquad numsolve numtheor oct \
+     odealg odeef oderf omcat omdev omerror \
+     omserver opalg openmath op ore outform \
+     out pade padiclib padic paramete partperm \
+     patmatch1 patmatch2 pattern pcurve pdecomp perman \
+     permgrps perm pfbr pfo pfr pf \
+     pgcd pgrobner pinterp pleqn plot3d plot \
+     plottool polset poltopol polycat poly primelt \
+     print product prs prtition pscat pseudolin \
+     ptranfn puiseux qalgset quat radeigen radix \
+     random ratfact rdeef rderf rdesys real0q \
+     realzero reclos rec regset rep1 rep2 \
+     resring retract rf riccati rinterp routines \
+     rule seg setorder sets sex sf \
+     sgcf sign si smith solvedio solvefor \
+     solvelin solverad sortpak space special sregset \
+     ssolve s stream string sttaylor sttf \
+     sturm suchthat suls sum sups supxs \
+     suts symbol syssolp system tableau table \
+     taylor tex tools transsolve tree trigcat \
+     triset tube twofact unifact updecomp updivp \
+     utsode variable vector view2D view3D viewDef \
+     viewpack void weier wtpol xlpoly xpoly \
+     ystream zerodim
+
+SPADFILES=$(patsubst %, $(OUTSRC)/%.spad.pamphlet, $(SPAD_SRCS))
+
+@
+\subsection{The ALDORFILES list}
+<<environment>>=
+
+ALDOR_SRCS=\
+  axtimer ffrac herm interval invnode invrender \
+  invtypes invutils iviews ndftip nepip noptip \
+  nqip nrc nsfip
+
+ALDORFILES=$(patsubst %, $(OUTSRC)/%.as.pamphlet, $(ALDOR_SRCS))
+
+@
+
+\subsection{The pamphlets list}
+<<environment>>=
+
+pamphlets=$(addsuffix .as.pamphlet, $(ALDOR_SRCS)) \
+          $(addsuffix .spad.pamphlet, $(SPAD_SRCS)) \
+	  Makefile.pamphlet exposed.lsp.pamphlet
+
+@
+
+\section{Test Cases}
+<<environment>>=
+
+TESTS=${INPUT}/INTHEORY.input ${INPUT}/VIEW2D.input ${INPUT}/TESTFR.input
+
+@
+<<testrules>>=
+
+${INPUT}/TESTFR.input: $(srcdir)/fr.spad.pamphlet
+	$(axiom_build_document) --tangle='TEST FR' --output=$@ $<
+
+${INPUT}/INTHEORY.input: $(srcdir)/numtheor.spad.pamphlet
+	$(axiom_build_document) --tangle='TEST INTHEORY' --output=$@ $<
+
+${INPUT}/VIEW2D.input: $(srcdir)/view2D.spad.pamphlet
+	$(axiom_build_document) --tangle='TEST VIEW2D' --output=$@ $<
+
+@
+
+\section{Generic Make Rules}
+
+The idea is to use generic rules to try to cut down the size of this file.
+
+This Makefile works very hard to cache
+intermediate results in order to minimize the re-build time. The cached
+files are kept in the [[${MID}]] directory. If one of these
+files disappears but the original pamphlet file is unchanged we only
+need to rebuild the final file. These rule will attempt to do
+that and they succeed however these are intermediate files created by
+implicit rules so they would normally be deleted. To prevent the removal
+the NRLIB directory and its contents, the files are marked as .PRECIOUS.
+Unfortunatly, this means that we have to explicitly delete NRLIB
+directory when it gets out of date.
+
+The output of the compile step is saved in a file of the same name
+and extension [[.$(FASLEXT)]] in the [[${OUT}]] directory, so we need
+to copy it from [[${MID}]] directory.
+
+<<genericDotOfiles>>=
+
+${OUT}/%.$(FASLEXT): %.NRLIB/code.$(FASLEXT)
+	cp $*.NRLIB/code.$(FASLEXT) $@
+
+@ 
+<<genericNRLIBfiles>>=
+
+.PRECIOUS: %.NRLIB/code.$(FASLEXT)
+%.NRLIB/code.$(FASLEXT): %.spad
+	@ echo compiling $*.spad to $*.NRLIB
+	rm -rf $*.NRLIB
+	( \
+	     echo ')co $*.spad' | ${INTERPSYS} \
+	   )
+
+@
+
+<<genericSPADfiles>>=
+
+$(OUTSRC)/%.spad.pamphlet: $(srcdir)/%.spad.pamphlet
+	$(INSTALL_DATA) $< $@
+
+${OUTSRC}/%.spad: $(srcdir)/%.spad.pamphlet
+	@ echo tangling $< to $@
+	@ $(axiom_build_document) --tangle --output=$@ $<
+
+@
+
+<<genericRules>>=
+
+<<genericDotOfiles>>
+<<genericNRLIBfiles>>
+<<genericSPADfiles>>
+
+@
+
+\section{Pamphlet file structure}
+Because the individual .spad files are grouped into higher-level
+algebra pamphlet files, the rules for extracting them are coded
+below as simple ``awk'' scripts that are called when the Makefile
+is constructed.
+
+<<findAlgebraFiles>>=
+
+<<findSpadFiles>>
+@
+
+There are, at present, 2 kinds of algebra files to be handled.
+First we have [[.as]] files which use the [[aldor]] compiler.
+These are ignored here as the compiler is not yet integrated.
+
+Second, there are 3 "types" of algebra which are all treated 
+the same at compile time, namely the "domain", "category", and
+"package" algebra.
+
+\subsection{Finding the algebra code}
+Step 1 is to scan all of the algebra pamphlet files for the
+chunk names which contain the string "domain", "package", or
+"category". This is done using egrep (same as grep -E, which
+means that the pattern is an extended regular expression) because
+extended regular expressions allows the use of alternatives
+written as (domain|package|category). Thus the command
+\begin{verbatim}
+ egrep '@<<(domain|package|category) .*>>=' *.spad.pamphlet 
+\end{verbatim}
+will scan the algebra files looking for special chunknames.
+Axiom's chunk names are written in a stylized form so that each
+algebra chunk name begins with one of those three symbols. Thus 
+in zerodim.spad.pamphlet the LexTriangularPackage chunkname is:
+\begin{verbatim}
+@<<package LEXTRIPK LexTriangularPackage>>
+\end{verbatim}
+so this egrep will generate an output line, prefixed by the filename
+that looks like:
+\begin{verbatim}
+zerodim.spad.pamphlet:@<<package LEXTRIPK LexTriangularPackage>>=
+\end{verbatim}
+There can be many lines of output per pamphlet file, one for
+each domain, package and category code chunk contained in the file.
+
+Step 2 is an [[awk]] command line.
+
+\subsection{Write the Makefile stanzas for the algebra files}
+
+<<findSpadFiles>>=
+
+egrep '@<<(domain|package|category) .*>>=' *.spad.pamphlet | sort | uniq | \
+awk -F: '{
+  chunk=substr($2,3,length($2)-5);
+  split(chunk,part," ");
+  spadfile=part[2]".spad";
+  print spadfile": $(srcdir)/"$1;
+  print "\t@${TANGLE} -R\""chunk"\" $(srcdir)/"$1">"spadfile;
+  print "";
+}'
+
+@
+[awk] processes each line of the [[egrep]] output. 
+
+The awk script uses [[-F:]] which is a flag that says that a [[:]] is
+the field separator. As a result the \$1 and \$2 in the awk script
+refer to the parts of the egrep output that come before and after the
+[[:]] respectively.
+
+The variable [[chunk]] is assigned the actual chunk name minus
+the @<< and >>= delimiters. In the example given above this will become
+\begin{verbatim}
+package LEXTRIPK LexTriangularPackage
+\end{verbatim}
+The call to [[split]] splits the chunk into parts separated
+by spaces. Thus
+\begin{verbatim}
+  part[1]=package
+  part[2]=LEXTRIPK
+  part[3]=LexTriangularPackage
+\end{verbatim}
+The variable [[spadfile]] in the above example is set to
+\begin{verbatim}
+${MID}/LEXTRIPK.spad
+\end{verbatim}
+Finally, in the domain example given above we print two lines.
+The first line is the Makefile stanza header which depends on the
+original [[zerodim.spad.pamphlet]] file.
+
+The second line is the body of the makefile stanza which calls 
+notangle to extract the algebra from the original pamphlet using
+the chunk name and writes it to the intermediate subdirectory. In
+the case above this would resolve to [[\${MID}/LEXTRIPK.spad]].
+
+For the line given above it outputs the following:
+\begin{verbatim}
+${MID}/LEXTRIPK.spad: $(srcdir)/zerodim.spad.pamphlet
+	$(axiom_build_document) --tangle='package LEXTRIPK LexTriangularPackage' --output=$@ $<
+\end{verbatim}
+
+
+\section{The Makefile}
+
+<<*>>=
+
+<<environment>>
+
+subdir = src/algebra/
+
+
+<<bootstrap variables>>
+<<USERLAYER>>
+
+# The algebra build is not yet ready for parallel build.
+.NOTPARALLEL:
+
+.PHONY: all all-algebra
+all: all-ax
+
+all-ax all-algebra: stamp
+	@ echo finished $(builddir)
+
+<<layer0 bootstrap>>
+
+guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-src
+	( \
+	  { for A in ${GUESSLIST}; do \
+	        echo ')compile "'$$A'.spad"' ; \
+	    done | ${INTERPSYS} ; \
+	    for A in ${GUESSLIST}; do \
+	        cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	    done ; \
+          } \
+	)
+	touch guess-pkg
+
+stamp: stamp-src guess-pkg ${TESTS}
+	-rm -f stamp
+	$(STAMP) stamp
+
+everything: check lib db cmd gloss
+	@ echo 4303 invoking make in `pwd` with parms:
+	@ echo LSP= ${LSP} PART= ${PART} SUBPART= ${SUBPART}
+	@ echo SRC= ${SRC} INT= ${INT}
+	@ echo LISP=${LISP} BYE=${BYE}
+
+stamp-src: stamp-spadsrc stamp-bootstrap \
+             $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST})
+	@ echo 4304 Done building NRLIBS from spad sources
+	touch stamp-src
+
+
+stamp-spadsrc: ${SPADFILES}
+	touch stamp-spadsrc
+
+check:
+	@ echo 4305 Checking that INTERP.EXPOSED and NRLIBs are consistent
+	@ echo 4306 libcheck needs to use exposed.lsp, not INTERP.EXPOSED
+
+
+<<genericRules>>
+
+<<testrules>>
+
+
+mostlyclean-local: ;
+
+clean-local: mostlyclean-local
+
+distclean-local: clean-local
+
+include extract-spad.mk
+
+.NOTPARALLEL:
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,365 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra symbol.spad}
+\author{Stephen M. Watt}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{domain SYMBOL Symbol}
+<<domain SYMBOL Symbol>>=
+)abbrev domain SYMBOL Symbol
+++ Author: Stephen Watt
+++ Date Created: 1986
+++ Date Last Updated: 7 Mar 1991, 29 Apr. 1994 (FDLL)
+++ Description:
+++   Basic and scripted symbols.
+++ Keywords: symbol.
+Symbol(): Exports == Implementation where
+  L ==> List OutputForm
+  Scripts ==> Record(sub:L,sup:L,presup:L,presub:L,args:L)
+
+  Exports ==> Join(OrderedSet, ConvertibleTo InputForm, OpenMath,
+        ConvertibleTo Symbol,
+         ConvertibleTo Pattern Integer, ConvertibleTo Pattern Float,
+          PatternMatchable Integer, PatternMatchable Float) with
+     new: () -> %
+       ++ new() returns a new symbol whose name starts with %.
+     new: % -> %
+       ++ new(s) returns a new symbol whose name starts with %s.
+     resetNew: () -> Void
+       ++ resetNew() resets the internals counters that new() and
+       ++ new(s) use to return distinct symbols every time.
+     coerce: String -> %
+       ++ coerce(s) converts the string s to a symbol.
+     name: % -> %
+       ++ name(s) returns s without its scripts.
+     scripted?: % -> Boolean
+       ++ scripted?(s) is true if s has been given any scripts.
+     scripts: % -> Scripts
+       ++ scripts(s) returns all the scripts of s.
+     script: (%, List L) -> %
+       ++ script(s, [a,b,c,d,e]) returns s with subscripts a,
+       ++ superscripts b, pre-superscripts c, pre-subscripts d,
+       ++ and argument-scripts e.  Omitted components are taken to be empty.
+       ++ For example, \spad{script(s, [a,b,c])} is equivalent to
+       ++ \spad{script(s,[a,b,c,[],[]])}.
+     script: (%, Scripts) -> %
+       ++ script(s, [a,b,c,d,e]) returns s with subscripts a,
+       ++ superscripts b, pre-superscripts c, pre-subscripts d,
+       ++ and argument-scripts e.
+     subscript: (%, L) -> %
+       ++ subscript(s, [a1,...,an]) returns s
+       ++ subscripted by \spad{[a1,...,an]}.
+     superscript: (%, L) -> %
+       ++ superscript(s, [a1,...,an]) returns s
+       ++ superscripted by \spad{[a1,...,an]}.
+     argscript: (%, L) -> %
+       ++ argscript(s, [a1,...,an]) returns s
+       ++ arg-scripted by \spad{[a1,...,an]}.
+     elt: (%, L) -> %
+       ++ elt(s,[a1,...,an]) or s([a1,...,an]) returns s subscripted by \spad{[a1,...,an]}.
+     string: % -> String
+       ++ string(s) converts the symbol s to a string.
+       ++ Error: if the symbol is subscripted.
+     list: % -> List %
+       ++ list(sy) takes a scripted symbol and produces a list
+       ++ of the name followed by the scripts.
+     sample: constant -> %
+       ++ sample() returns a sample of %
+
+  Implementation ==> add
+    count: Reference(Integer) := ref 0
+    xcount: AssociationList(%, Integer) := empty()
+    istrings:PrimitiveArray(String) :=
+                     construct ["0","1","2","3","4","5","6","7","8","9"]
+    -- the following 3 strings shall be of empty intersection
+    nums:String:="0123456789"
+    ALPHAS:String:="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    alphas:String:="abcdefghijklmnopqrstuvwxyz"
+
+    writeOMSym(dev: OpenMathDevice, x: %): Void ==
+      scripted? x =>
+        error "Cannot convert a scripted symbol to OpenMath"
+      OMputVariable(dev, x pretend Symbol)
+
+    OMwrite(x: %): String ==
+      s: String := ""
+      sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
+      dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+      OMputObject(dev)
+      writeOMSym(dev, x)
+      OMputEndObject(dev)
+      OMclose(dev)
+      s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
+      s
+
+    OMwrite(x: %, wholeObj: Boolean): String ==
+      s: String := ""
+      sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
+      dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+      if wholeObj then
+        OMputObject(dev)
+      writeOMSym(dev, x)
+      if wholeObj then
+        OMputEndObject(dev)
+      OMclose(dev)
+      s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
+      s
+
+    OMwrite(dev: OpenMathDevice, x: %): Void ==
+      OMputObject(dev)
+      writeOMSym(dev, x)
+      OMputEndObject(dev)
+
+    OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+      if wholeObj then
+        OMputObject(dev)
+      writeOMSym(dev, x)
+      if wholeObj then
+        OMputEndObject(dev)
+
+    hd:String    := "*"
+    lhd          := #hd
+    ord0         := ord char("0")$Character
+
+    istring  : Integer -> String
+    syprefix : Scripts -> String
+    syscripts: Scripts -> L
+
+    convert(s:%):InputForm == convert(s pretend Symbol)$InputForm
+    convert(s:%):Symbol    == s pretend Symbol
+    coerce(s:String):%     == VALUES(INTERN(s)$Lisp)$Lisp
+    x = y                  == EQUAL(x,y)$Lisp
+    x < y                  == GGREATERP(y, x)$Lisp
+    coerce(x:%):OutputForm == outputForm(x pretend Symbol)
+    subscript(sy, lx)      == script(sy, [lx, nil, nil(), nil(), nil()])
+    elt(sy,lx)             == subscript(sy,lx)
+    superscript(sy, lx)    == script(sy,[nil(),lx, nil(), nil(), nil()])
+    argscript(sy, lx)      == script(sy,[nil(),nil(), nil(), nil(), lx])
+
+    patternMatch(x:%,p:Pattern Integer,l:PatternMatchResult(Integer,%))==
+      (patternMatch(x pretend Symbol, p, l pretend
+       PatternMatchResult(Integer, Symbol))$PatternMatchSymbol(Integer))
+         pretend PatternMatchResult(Integer, %)
+
+    patternMatch(x:%, p:Pattern Float, l:PatternMatchResult(Float, %)) ==
+      (patternMatch(x pretend Symbol, p, l pretend
+       PatternMatchResult(Float, Symbol))$PatternMatchSymbol(Float))
+         pretend PatternMatchResult(Float, %)
+
+    convert(x:%):Pattern(Float) ==
+      coerce(x pretend Symbol)$Pattern(Float)
+
+    convert(x:%):Pattern(Integer) ==
+      coerce(x pretend Symbol)$Pattern(Integer)
+
+    syprefix sc ==
+      ns: List Integer := [#sc.presub, #sc.presup, #sc.sup, #sc.sub]
+      while #ns >= 2 and zero? first ns repeat ns := rest ns
+      concat concat(concat(hd, istring(#sc.args)),
+                                 [istring n for n in reverse_! ns])
+
+    syscripts sc ==
+      all := sc.presub
+      all := concat(sc.presup, all)
+      all := concat(sc.sup, all)
+      all := concat(sc.sub, all)
+      concat(all, sc.args)
+
+    script(sy: %, ls: List L) ==
+      sc: Scripts := [nil(), nil(), nil(), nil(), nil()]
+      if not null ls then (sc.sub    := first ls; ls := rest ls)
+      if not null ls then (sc.sup    := first ls; ls := rest ls)
+      if not null ls then (sc.presup := first ls; ls := rest ls)
+      if not null ls then (sc.presub := first ls; ls := rest ls)
+      if not null ls then (sc.args   := first ls; ls := rest ls)
+      script(sy, sc)
+
+    script(sy: %, sc: Scripts) ==
+      scripted? sy => error "Cannot add scripts to a scripted symbol"
+      (concat(concat(syprefix sc, string name sy)::%::OutputForm,
+                                                syscripts sc)) pretend %
+
+    string e ==
+      not scripted? e => PNAME(e)$Lisp
+      error "Cannot form string from non-atomic symbols."
+
+-- Scripts ==> Record(sub:L,sup:L,presup:L,presub:L,args:L)
+    latex e ==
+      s : String := (PNAME(name e)$Lisp) pretend String
+      if #s > 1 and s.1 ^= char "\" then
+        s := concat("\mbox{\it ", concat(s, "}")$String)$String
+      not scripted? e => s
+      ss : Scripts := scripts e
+      lo : List OutputForm := ss.sub
+      sc : String
+      if not empty? lo then
+        sc := "__{"
+        while not empty? lo repeat
+            sc := concat(sc, latex first lo)$String
+            lo := rest lo
+            if not empty? lo then sc := concat(sc, ", ")$String
+        sc := concat(sc, "}")$String
+        s := concat(s, sc)$String
+      lo := ss.sup
+      if not empty? lo then
+        sc := "^{"
+        while not empty? lo repeat
+            sc := concat(sc, latex first lo)$String
+            lo := rest lo
+            if not empty? lo then sc := concat(sc, ", ")$String
+        sc := concat(sc, "}")$String
+        s := concat(s, sc)$String
+      lo := ss.presup
+      if not empty? lo then
+        sc := "{}^{"
+        while not empty? lo repeat
+            sc := concat(sc, latex first lo)$String
+            lo := rest lo
+            if not empty? lo then sc := concat(sc, ", ")$String
+        sc := concat(sc, "}")$String
+        s := concat(sc, s)$String
+      lo := ss.presub
+      if not empty? lo then
+        sc := "{}__{"
+        while not empty? lo repeat
+            sc := concat(sc, latex first lo)$String
+            lo := rest lo
+            if not empty? lo then sc := concat(sc, ", ")$String
+        sc := concat(sc, "}")$String
+        s := concat(sc, s)$String
+      lo := ss.args
+      if not empty? lo then
+        sc := "\left( {"
+        while not empty? lo repeat
+            sc := concat(sc, latex first lo)$String
+            lo := rest lo
+            if not empty? lo then sc := concat(sc, ", ")$String
+        sc := concat(sc, "} \right)")$String
+        s := concat(s, sc)$String
+      s
+
+    anyRadix(n:Integer,s:String):String ==
+      ns:String:=""
+      repeat
+        qr := divide(n,#s)
+        n  := qr.quotient
+        ns := concat(s.(qr.remainder+minIndex s),ns)
+        if zero?(n) then return ns
+      
+    new() ==
+      sym := anyRadix(count()::Integer,ALPHAS)
+      count() := count() + 1
+      concat("%",sym)::%
+
+    new x ==
+      n:Integer :=
+        (u := search(x, xcount)) case "failed" => 0
+        inc(u::Integer)
+      xcount(x) := n
+      xx := 
+        not scripted? x => string x
+        string name x
+      xx := concat("%",xx)
+      xx :=
+        (position(xx.maxIndex(xx),nums)>=minIndex(nums)) => 
+          concat(xx, anyRadix(n,alphas))
+        concat(xx, anyRadix(n,nums))
+      not scripted? x => xx::%
+      script(xx::%,scripts x)
+
+    resetNew() ==
+      count() := 0
+      for k in keys xcount repeat remove_!(k, xcount)
+      void
+
+    scripted? sy ==
+      not ATOM(sy)$Lisp
+
+    name sy ==
+      not scripted? sy => sy
+      str := string first list sy
+      for i in lhd+1..#str repeat
+        not digit?(str.i) => return((str.(i..#str))::%)
+      error "Improper scripted symbol"
+
+    scripts sy ==
+      not scripted? sy => [nil(), nil(), nil(), nil(), nil()]
+      nscripts: List NonNegativeInteger := [0, 0, 0, 0, 0]
+      lscripts: List L := [nil(), nil(), nil(), nil(), nil()]
+      str  := string first list sy
+      nstr := #str
+      m := minIndex nscripts
+      for i in m.. for j in lhd+1..nstr while digit?(str.j) repeat
+          nscripts.i := (ord(str.j) - ord0)::NonNegativeInteger
+      -- Put the number of function scripts at the end.
+      nscripts := concat(rest nscripts, first nscripts)
+      allscripts := rest list sy
+      m := minIndex lscripts
+      for i in m.. for n in nscripts repeat
+        #allscripts < n => error "Improper script count in symbol"
+        lscripts.i := [a::OutputForm for a in first(allscripts, n)]
+        allscripts := rest(allscripts, n)
+      [lscripts.m, lscripts.(m+1), lscripts.(m+2),
+                                         lscripts.(m+3), lscripts.(m+4)]
+
+    istring n ==
+      n > 9 => error "Can have at most 9 scripts of each kind"
+      istrings.(n + minIndex istrings)
+
+    list sy ==
+      not scripted? sy =>
+         error "Cannot convert a symbol to a list if it is not subscripted"
+      sy pretend List(%)
+
+    sample() == "aSymbol"::%
+
+@
+
+\section{License}
+<<license>>=
+--Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+<<*>>=
+<<license>>
+
+<<domain SYMBOL Symbol>>
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

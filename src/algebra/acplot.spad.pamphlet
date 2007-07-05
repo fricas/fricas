@@ -1,0 +1,1241 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra acplot.spad}
+\author{Clifton J. Williamson}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{package REALSOLV RealSolvePackage}
+<<package REALSOLV RealSolvePackage>>=
+)abbrev package REALSOLV RealSolvePackage
+
+RealSolvePackage(): Exports == Implementation where
+  ++ This package provides numerical solutions of systems of polynomial
+  ++ equations for use in ACPLOT.
+  I    ==> Integer
+  IE   ==> IndexedExponents Symbol
+  L    ==> List
+  NF   ==> Float
+  P    ==> Polynomial
+  RN   ==> Fraction Integer
+  SE   ==> Symbol
+  RFI  ==> Fraction Polynomial Integer
+  LIFT ==> PolynomialCategoryLifting(IE,SE,RN,P RN,RFI)
+  SOLV ==> FloatingRealPackage Float
+
+  Exports ==> with
+    solve: (P RN,NF) -> L NF
+      ++ solve(p,eps) finds the real zeroes of a
+      ++ univariate rational polynomial p with precision eps.
+    solve: (P I,NF) -> L NF
+      ++ solve(p,eps) finds the real zeroes of a univariate
+      ++ integer polynomial p with precision eps.
+    realSolve: (L P I,L SE,NF) -> L L NF
+      ++ realSolve(lp,lv,eps) = compute the list of the real
+      ++ solutions of the list lp of polynomials with integer
+      ++ coefficients with respect to the variables in lv,
+      ++ with precision eps.
+
+  Implementation ==> add
+
+    prn2rfi: P RN -> RFI
+    prn2rfi p ==
+      map(#1 :: RFI,(numer(#1) :: RFI)/(denom(#1) :: RFI),p)$LIFT
+
+    pi2rfi: P I -> RFI
+    pi2rfi p == p :: RFI
+
+    solve(p:P RN,eps:NF) == realRoots(prn2rfi p,eps)$SOLV
+
+    solve(p:P I,eps:NF) ==
+      realRoots(p :: RFI,eps)$SOLV
+
+    realSolve(lp,lv,eps) ==
+      realRoots(map(pi2rfi,lp)$ListFunctions2(P I,RFI),lv,eps)$SOLV
+
+@
+\section{domain ACPLOT PlaneAlgebraicCurvePlot}
+<<domain ACPLOT PlaneAlgebraicCurvePlot>>=
+--% PlaneAlgebraicCurvePlot
+++ Plot a NON-SINGULAR plane algebraic curve p(x,y) = 0.
+++ Author: Clifton J. Williamson
+++ Date Created: Fall 1988
+++ Date Last Updated: 27 April 1990
+++ Keywords: algebraic curve, non-singular, plot
+++ Examples:
+++ References:
+
+)abbrev domain ACPLOT PlaneAlgebraicCurvePlot
+
+PlaneAlgebraicCurvePlot():Exports == Implementation where
+    B           ==> Boolean
+    OUT         ==> OutputForm
+    SE          ==> Symbol
+    L           ==> List
+    SEG         ==> Segment
+    I           ==> Integer
+    PI          ==> PositiveInteger
+    RN          ==> Fraction Integer
+    NF          ==> Float
+    SF          ==> DoubleFloat
+    P           ==> Polynomial
+    UP          ==> UnivariatePolynomial
+    SUP         ==> SparseUnivariatePolynomial
+    FR          ==> Factored
+    Pt          ==> Point DoubleFloat
+    BoundaryPts ==> Record(left:   L Pt,_
+                           right:  L Pt,_
+                           bottom: L Pt,_
+                           top:    L Pt)
+    NewPtInfo   ==> Record(newPt: Pt,_
+                           type:  String)
+    Corners     ==> Record(minXVal: SF,_
+                           maxXVal: SF,_
+                           minYVal: SF,_
+                           maxYVal: SF)
+    kinte       ==> solve$RealSolvePackage()
+    rsolve      ==> realSolve$RealSolvePackage()
+
+    Exports ==> PlottablePlaneCurveCategory with
+
+      makeSketch:(P I,SE,SE,SEG RN,SEG RN) -> %
+        ++ makeSketch(p,x,y,a..b,c..d) creates an ACPLOT of the
+        ++ curve \spad{p = 0} in the region {\em a <= x <= b, c <= y <= d}.
+        ++ More specifically, 'makeSketch' plots a non-singular algebraic curve
+        ++ \spad{p = 0} in an rectangular region {\em xMin <= x <= xMax},
+        ++ {\em yMin <= y <= yMax}. The user inputs
+        ++ \spad{makeSketch(p,x,y,xMin..xMax,yMin..yMax)}.
+        ++ Here p is a polynomial in the variables x and y with
+        ++ integer coefficients (p belongs to the domain
+        ++ \spad{Polynomial Integer}). The case
+        ++ where p is a polynomial in only one of the variables is
+        ++ allowed.  The variables x and y are input to specify the
+        ++ the coordinate axes.  The horizontal axis is the x-axis and
+        ++ the vertical axis is the y-axis.  The rational numbers
+        ++ xMin,...,yMax specify the boundaries of the region in
+        ++ which the curve is to be plotted.
+      refine:(%,SF) -> %
+	++ refine(p,x) \undocumented{}
+
+    Implementation ==> add
+
+      import PointPackage DoubleFloat
+      import Plot
+      import RealSolvePackage
+
+      singValBetween?:(SF,SF,L SF) -> B
+      segmentInfo:(SF -> SF,SF,SF,L SF,L SF,L SF,SF,SF) -> _
+             Record(seg:SEG SF,left: SF,lowerVals: L SF,upperVals:L SF)
+      swapCoords:Pt -> Pt
+      samePlottedPt?:(Pt,Pt) -> B
+      findPtOnList:(Pt,L Pt) -> Union(Pt,"failed")
+      makeCorners:(SF,SF,SF,SF) -> Corners
+      getXMin: Corners -> SF
+      getXMax: Corners -> SF
+      getYMin: Corners -> SF
+      getYMax: Corners -> SF
+      SFPolyToUPoly:P SF -> SUP SF
+      RNPolyToUPoly:P RN -> SUP RN
+      coerceCoefsToSFs:P I -> P SF
+      coerceCoefsToRNs:P I -> P RN
+      RNtoSF:RN -> SF
+      RNtoNF:RN -> NF
+      SFtoNF:SF -> NF
+      listPtsOnHorizBdry:(P RN,SE,RN,NF,NF) -> L Pt
+      listPtsOnVertBdry:(P RN,SE,RN,NF,NF) -> L Pt
+      listPtsInRect:(L L NF,NF,NF,NF,NF) -> L Pt
+      ptsSuchThat?:(L L NF,L NF -> B) -> B
+      inRect?:(L NF,NF,NF,NF,NF) -> B
+      onHorzSeg?:(L NF,NF,NF,NF) -> B
+      onVertSeg?:(L NF,NF,NF,NF) -> B
+      newX:(L L NF,L L NF,NF,NF,NF,RN,RN) -> RN
+      newY:(L L NF,L L NF,NF,NF,NF,RN,RN) -> RN
+      makeOneVarSketch:(P I,SE,SE,RN,RN,RN,RN,SE) -> %
+      makeLineSketch:(P I,SE,SE,RN,RN,RN,RN) -> %
+      makeRatFcnSketch:(P I,SE,SE,RN,RN,RN,RN,SE) -> %
+      makeGeneralSketch:(P I,SE,SE,RN,RN,RN,RN) -> %
+      traceBranches:(P SF,P SF,P SF,SE,SE,Corners,SF,SF,PI,_
+                                    L Pt,BoundaryPts) -> L L Pt
+      dummyFirstPt:(Pt,P SF,P SF,SE,SE,L Pt,L Pt,L Pt,L Pt) -> Pt
+      listPtsOnSegment:(P SF,P SF,P SF,SE,SE,Pt,Pt,Corners,_
+                                    SF,SF,PI,L Pt,L Pt) -> L L Pt
+      listPtsOnLoop:(P SF,P SF,P SF,SE,SE,Pt,Corners,_
+                                    SF,SF,PI,L Pt,L Pt) -> L L Pt
+      computeNextPt:(P SF,P SF,P SF,SE,SE,Pt,Pt,Corners,_
+                                 SF,SF,PI,L Pt,L Pt) -> NewPtInfo
+      newtonApprox:(SUP SF, SF, SF, PI) -> Union(SF, "failed")
+
+--% representation
+
+      Rep := Record(poly    : P I,_
+                    xVar    : SE,_
+                    yVar    : SE,_
+                    minXVal : RN,_
+                    maxXVal : RN,_
+                    minYVal : RN,_
+                    maxYVal : RN,_
+                    bdryPts : BoundaryPts,_
+                    hTanPts : L Pt,_
+                    vTanPts : L Pt,_
+                    branches: L L Pt)
+
+--% global constants
+
+      EPSILON : NF := .000001 -- precision to which realSolve finds roots
+      PLOTERR : SF := float(1,-3,10)
+        -- maximum allowable difference in each coordinate when
+        -- determining if 2 plotted points are equal
+
+--% global flags
+
+      NADA   : String := "nothing in particular"
+      BDRY   : String := "boundary point"
+      CRIT   : String := "critical point"
+      BOTTOM : String := "bottom"
+      TOP    : String := "top"
+
+--% hacks
+
+      NFtoSF: NF -> SF
+      NFtoSF x == 0 + convert(x)$NF
+
+--% points
+      makePt: (SF,SF) -> Pt
+      makePt(xx,yy) == point(l : L SF := [xx,yy])
+
+      swapCoords(pt) == makePt(yCoord pt,xCoord pt)
+
+      samePlottedPt?(p0,p1) ==
+      -- determines if p1 lies in a square with side 2 PLOTERR
+      -- centered at p0
+        x0 := xCoord p0; y0 := yCoord p0
+        x1 := xCoord p1; y1 := yCoord p1
+        (abs(x1-x0) < PLOTERR) and (abs(y1-y0) < PLOTERR)
+
+      findPtOnList(pt,pointList) ==
+        for point in pointList repeat
+          samePlottedPt?(pt,point) => return point
+        "failed"
+
+--% corners
+
+      makeCorners(xMinSF,xMaxSF,yMinSF,yMaxSF) ==
+        [xMinSF,xMaxSF,yMinSF,yMaxSF]
+
+      getXMin(corners) == corners.minXVal
+      getXMax(corners) == corners.maxXVal
+      getYMin(corners) == corners.minYVal
+      getYMax(corners) == corners.maxYVal
+
+--% coercions
+
+      SFPolyToUPoly(p) ==
+      -- 'p' is of type Polynomial, but has only one variable
+        zero? p => 0
+        monomial(leadingCoefficient p,totalDegree p) +
+           SFPolyToUPoly(reductum p)
+
+      RNPolyToUPoly(p) ==
+      -- 'p' is of type Polynomial, but has only one variable
+        zero? p => 0
+        monomial(leadingCoefficient p,totalDegree p) +
+            RNPolyToUPoly(reductum p)
+
+      coerceCoefsToSFs(p) ==
+      -- coefficients of 'p' are coerced to be DoubleFloat's
+        map(coerce,p)$PolynomialFunctions2(I,SF)
+
+      coerceCoefsToRNs(p) ==
+      -- coefficients of 'p' are coerced to be DoubleFloat's
+        map(coerce,p)$PolynomialFunctions2(I,RN)
+
+      RNtoSF(r) == coerce(r)@SF
+      RNtoNF(r) == coerce(r)@NF
+      SFtoNF(x) == convert(x)@NF
+
+--% computation of special points
+
+      listPtsOnHorizBdry(pRN,y,y0,xMinNF,xMaxNF) ==
+      -- strict inequality here: corners on vertical boundary
+        pointList : L Pt := nil()
+        ySF := RNtoSF(y0)
+        f := eval(pRN,y,y0)
+        roots : L NF := kinte(f,EPSILON)
+        for root in roots repeat
+          if (xMinNF < root) and (root < xMaxNF) then
+            pointList := cons(makePt(NFtoSF root, ySF), pointList)
+        pointList
+
+      listPtsOnVertBdry(pRN,x,x0,yMinNF,yMaxNF) ==
+        pointList : L Pt := nil()
+        xSF := RNtoSF(x0)
+        f := eval(pRN,x,x0)
+        roots : L NF := kinte(f,EPSILON)
+        for root in roots repeat
+          if (yMinNF <= root) and (root <= yMaxNF) then
+            pointList := cons(makePt(xSF, NFtoSF root), pointList)
+        pointList
+
+      listPtsInRect(points,xMin,xMax,yMin,yMax) ==
+        pointList : L Pt := nil()
+        for point in points repeat
+          xx := first point; yy := second point
+          if (xMin<=xx) and (xx<=xMax) and (yMin<=yy) and (yy<=yMax) then
+            pointList := cons(makePt(NFtoSF xx,NFtoSF yy),pointList)
+        pointList
+
+      ptsSuchThat?(points,pred) ==
+        for point in points repeat
+          if pred point then return true
+        false
+
+      inRect?(point,xMinNF,xMaxNF,yMinNF,yMaxNF) ==
+        xx := first point; yy := second point
+        xMinNF <= xx and xx <= xMaxNF and yMinNF <= yy and yy <= yMaxNF
+
+      onHorzSeg?(point,xMinNF,xMaxNF,yNF) ==
+        xx := first point; yy := second point
+        yy = yNF and xMinNF <= xx and xx <= xMaxNF
+
+      onVertSeg?(point,yMinNF,yMaxNF,xNF) ==
+        xx := first point; yy := second point
+        xx = xNF and yMinNF <= yy and yy <= yMaxNF
+
+      newX(vtanPts,singPts,yMinNF,yMaxNF,xNF,xRN,horizInc) ==
+        xNewNF := xNF + RNtoNF horizInc
+        xRtNF := max(xNF,xNewNF); xLftNF := min(xNF,xNewNF)
+--      ptsSuchThat?(singPts,inRect?(#1,xLftNF,xRtNF,yMinNF,yMaxNF)) =>
+        foo : L NF -> B := inRect?(#1,xLftNF,xRtNF,yMinNF,yMaxNF)
+        ptsSuchThat?(singPts,foo) =>
+          newX(vtanPts,singPts,yMinNF,yMaxNF,xNF,xRN,horizInc/2::RN)
+--      ptsSuchThat?(vtanPts,onVertSeg?(#1,yMinNF,yMaxNF,xNewNF)) =>
+        goo : L NF -> B := onVertSeg?(#1,yMinNF,yMaxNF,xNewNF)
+        ptsSuchThat?(vtanPts,goo) =>
+          newX(vtanPts,singPts,yMinNF,yMaxNF,xNF,xRN,horizInc/2::RN)
+        xRN + horizInc
+
+      newY(htanPts,singPts,xMinNF,xMaxNF,yNF,yRN,vertInc) ==
+        yNewNF := yNF + RNtoNF vertInc
+        yTopNF := max(yNF,yNewNF); yBotNF := min(yNF,yNewNF)
+--      ptsSuchThat?(singPts,inRect?(#1,xMinNF,xMaxNF,yBotNF,yTopNF)) =>
+        foo : L NF -> B := inRect?(#1,xMinNF,xMaxNF,yBotNF,yTopNF)
+        ptsSuchThat?(singPts,foo) =>
+          newY(htanPts,singPts,xMinNF,xMaxNF,yNF,yRN,vertInc/2::RN)
+--      ptsSuchThat?(htanPts,onHorzSeg?(#1,xMinNF,xMaxNF,yNewNF)) =>
+        goo : L NF -> B := onHorzSeg?(#1,xMinNF,xMaxNF,yNewNF)
+        ptsSuchThat?(htanPts,goo) =>
+          newY(htanPts,singPts,xMinNF,xMaxNF,yNF,yRN,vertInc/2::RN)
+        yRN + vertInc
+
+--% creation of sketches
+
+      makeSketch(p,x,y,xRange,yRange) ==
+        xMin := lo xRange; xMax := hi xRange
+        yMin := lo yRange; yMax := hi yRange
+        -- test input for consistency
+        xMax <= xMin =>
+          error "makeSketch: bad range for first variable"
+        yMax <= yMin =>
+          error "makeSketch: bad range for second variable"
+        varList := variables p
+        # varList > 2 =>
+          error "makeSketch: polynomial in more than 2 variables"
+        # varList = 0 =>
+          error "makeSketch: constant polynomial"
+        -- polynomial in 1 variable
+        # varList = 1 =>
+          (not member?(x,varList)) and (not member?(y,varList)) =>
+            error "makeSketch: bad variables"
+          makeOneVarSketch(p,x,y,xMin,xMax,yMin,yMax,first varList)
+        -- polynomial in 2 variables
+        (not member?(x,varList)) or (not member?(y,varList)) =>
+          error "makeSketch: bad variables"
+        totalDegree p = 1 =>
+          makeLineSketch(p,x,y,xMin,xMax,yMin,yMax)
+        -- polynomial is linear in one variable
+        -- y is a rational function of x
+        degree(p,y) = 1 =>
+          makeRatFcnSketch(p,x,y,xMin,xMax,yMin,yMax,y)
+        -- x is a rational function of y
+        degree(p,x) = 1 =>
+          makeRatFcnSketch(p,x,y,xMin,xMax,yMin,yMax,x)
+        -- the general case
+        makeGeneralSketch(p,x,y,xMin,xMax,yMin,yMax)
+
+--% special cases
+
+      makeOneVarSketch(p,x,y,xMin,xMax,yMin,yMax,var) ==
+      -- the case where 'p' is a polynomial in only one variable
+      -- the graph consists of horizontal or vertical lines
+        if var = x then
+          minVal := RNtoNF xMin
+          maxVal := RNtoNF xMax
+        else
+          minVal := RNtoNF yMin
+          maxVal := RNtoNF yMax
+        lf : L Pt := nil(); rt : L Pt := nil()
+        bt : L Pt := nil(); tp : L Pt := nil()
+        htans : L Pt := nil(); vtans : L Pt := nil()
+        bran : L L Pt := nil()
+        roots := kinte(p,EPSILON)
+        sketchRoots : L SF := nil()
+        for root in roots repeat
+          if (minVal <= root) and (root <= maxVal) then
+              sketchRoots := cons(NFtoSF root,sketchRoots)
+        null sketchRoots =>
+          [p,x,y,xMin,xMax,yMin,yMax,[lf,rt,bt,tp],htans,vtans,bran]
+        if var = x then
+          yMinSF := RNtoSF yMin; yMaxSF := RNtoSF yMax
+          for rootSF in sketchRoots repeat
+              tp := cons(pt1 := makePt(rootSF,yMaxSF),tp)
+              bt := cons(pt2 := makePt(rootSF,yMinSF),bt)
+              branch : L Pt := [pt1,pt2]
+              bran := cons(branch,bran)
+        else
+          xMinSF := RNtoSF xMin; xMaxSF := RNtoSF xMax
+          for rootSF in sketchRoots repeat
+              rt := cons(pt1 := makePt(xMaxSF,rootSF),rt)
+              lf := cons(pt2 := makePt(xMinSF,rootSF),lf)
+              branch : L Pt := [pt1,pt2]
+              bran := cons(branch,bran)
+        [p,x,y,xMin,xMax,yMin,yMax,[lf,rt,bt,tp],htans,vtans,bran]
+
+      makeLineSketch(p,x,y,xMin,xMax,yMin,yMax) ==
+      -- the case where p(x,y) = a x + b y + c with a ^= 0, b ^= 0
+      -- this is a line which is neither vertical nor horizontal
+        xMinSF := RNtoSF xMin; xMaxSF := RNtoSF xMax
+        yMinSF := RNtoSF yMin; yMaxSF := RNtoSF yMax
+        -- determine the coefficients a, b, and c
+        a := ground(coefficient(p,x,1)) :: SF
+        b := ground(coefficient(p,y,1)) :: SF
+        c := ground(coefficient(coefficient(p,x,0),y,0)) :: SF
+        lf : L Pt := nil(); rt : L Pt := nil()
+        bt : L Pt := nil(); tp : L Pt := nil()
+        htans : L Pt := nil(); vtans : L Pt := nil()
+        branch : L Pt := nil(); bran : L L Pt := nil()
+        -- compute x coordinate of point on line with y = yMin
+        xBottom := (- b*yMinSF - c)/a
+        -- compute x coordinate of point on line with y = yMax
+        xTop    := (- b*yMaxSF - c)/a
+        -- compute y coordinate of point on line with x = xMin
+        yLeft   := (- a*xMinSF - c)/b
+        -- compute y coordinate of point on line with x = xMax
+        yRight  := (- a*xMaxSF - c)/b
+        -- determine which of the above 4 points are in the region
+        -- to be plotted and list them as a branch
+        if (xMinSF < xBottom) and (xBottom < xMaxSF) then
+            bt := cons(pt := makePt(xBottom,yMinSF),bt)
+            branch := cons(pt,branch)
+        if (xMinSF < xTop) and (xTop < xMaxSF) then
+            tp := cons(pt := makePt(xTop,yMaxSF),tp)
+            branch := cons(pt,branch)
+        if (yMinSF <= yLeft) and (yLeft <= yMaxSF) then
+            lf := cons(pt := makePt(xMinSF,yLeft),lf)
+            branch := cons(pt,branch)
+        if (yMinSF <= yRight) and (yRight <= yMaxSF) then
+            rt := cons(pt := makePt(xMaxSF,yRight),rt)
+            branch := cons(pt,branch)
+        bran := cons(branch,bran)
+        [p,x,y,xMin,xMax,yMin,yMax,[lf,rt,bt,tp],htans,vtans,bran]
+
+      singValBetween?(xCurrent,xNext,xSingList) ==
+        for xVal in xSingList repeat
+          (xCurrent < xVal) and (xVal < xNext) => return true
+        false
+
+      segmentInfo(f,lo,hi,botList,topList,singList,minSF,maxSF) ==
+        repeat
+          -- 'current' is the smallest element of 'topList' and 'botList'
+          -- 'currentFrom' records the list from which it was taken
+          if null topList then
+            if null botList then
+              return [segment(lo,hi),hi,nil(),nil()]
+            else
+              current := first botList
+              botList := rest  botList
+              currentFrom := BOTTOM
+          else
+            if null botList then
+              current := first topList
+              topList := rest  topList
+              currentFrom := TOP
+            else
+              bot := first botList
+              top := first topList
+              if bot < top then
+                current := bot
+                botList := rest botList
+                currentFrom := BOTTOM
+              else
+                current := top
+                topList := rest topList
+                currentFrom := TOP
+          -- 'nxt' is the next smallest element of 'topList'
+          --  and 'botList'
+          -- 'nextFrom' records the list from which it was taken
+          if null topList then
+            if null botList then
+              return [segment(lo,hi),hi,nil(),nil()]
+            else
+              nxt := first botList
+              botList := rest botList
+              nextFrom := BOTTOM
+          else
+            if null botList then
+              nxt := first topList
+              topList := rest topList
+              nextFrom := TOP
+            else
+              bot := first botList
+              top := first topList
+              if bot < top then
+                nxt := bot
+                botList := rest botList
+                nextFrom := BOTTOM
+              else
+                nxt := top
+                topList := rest topList
+                nextFrom := TOP
+          if currentFrom = nextFrom then
+            if singValBetween?(current,nxt,singList) then
+              return [segment(lo,current),nxt,botList,topList]
+            else
+              val := f((nxt - current)/2::SF)
+              if (val <= minSF) or (val >= maxSF) then
+                return [segment(lo,current),nxt,botList,topList]
+          else
+            if singValBetween?(current,nxt,singList) then
+              return [segment(lo,current),nxt,botList,topList]
+
+      makeRatFcnSketch(p,x,y,xMin,xMax,yMin,yMax,depVar) ==
+      -- the case where p(x,y) is linear in x or y
+      -- Thus, one variable is a rational function of the other.
+      -- Therefore, we may use the 2-dimensional function plotting
+      -- package.  The only problem is determining the intervals on
+      -- on which the function is to be plotted.
+      --!! corners: e.g. upper left corner is on graph with y' > 0
+        factoredP := p :: FR P I
+        numberOfFactors(factoredP) > 1 =>
+            error "reducible polynomial"  --!! sketch each factor
+        dpdx := differentiate(p,x)
+        dpdy := differentiate(p,y)
+        pRN := coerceCoefsToRNs p
+        xMinSF := RNtoSF xMin; xMaxSF := RNtoSF xMax
+        yMinSF := RNtoSF yMin; yMaxSF := RNtoSF yMax
+        xMinNF := RNtoNF xMin; xMaxNF := RNtoNF xMax
+        yMinNF := RNtoNF yMin; yMaxNF := RNtoNF yMax
+        -- 'p' is of degree 1 in the variable 'depVar'.
+        -- Thus, 'depVar' is a rational function of the other variable.
+        num := -coefficient(p,depVar,0)
+        den :=  coefficient(p,depVar,1)
+        numUPolySF := SFPolyToUPoly(coerceCoefsToSFs(num))
+        denUPolySF := SFPolyToUPoly(coerceCoefsToSFs(den))
+        -- this is the rational function
+        f : SF -> SF := elt(numUPolySF,#1)/elt(denUPolySF,#1)
+        -- values of the dependent and independent variables
+        if depVar = x then
+          indVarMin   := yMin;   indVarMax   := yMax
+          indVarMinNF := yMinNF; indVarMaxNF := yMaxNF
+          indVarMinSF := yMinSF; indVarMaxSF := yMaxSF
+          depVarMin   := xMin;   depVarMax   := xMax
+          depVarMinSF := xMinSF; depVarMaxSF := xMaxSF
+        else
+          indVarMin   := xMin;   indVarMax   := xMax
+          indVarMinNF := xMinNF; indVarMaxNF := xMaxNF
+          indVarMinSF := xMinSF; indVarMaxSF := xMaxSF
+          depVarMin   := yMin;   depVarMax   := yMax
+          depVarMinSF := yMinSF; depVarMaxSF := yMaxSF
+        -- Create lists of critical points.
+        htanPts := rsolve([p,dpdx],[x,y],EPSILON)
+        vtanPts := rsolve([p,dpdy],[x,y],EPSILON)
+        htans := listPtsInRect(htanPts,xMinNF,xMaxNF,yMinNF,yMaxNF)
+        vtans := listPtsInRect(vtanPts,xMinNF,xMaxNF,yMinNF,yMaxNF)
+        -- Create lists which will contain boundary points.
+        lf : L Pt := nil(); rt : L Pt := nil()
+        bt : L Pt := nil(); tp : L Pt := nil()
+        -- Determine values of the independent variable at the which
+        -- the rational function has a pole as well as the values of
+        -- the independent variable for which there is a point on the
+        -- upper or lower boundary.
+        singList : L SF :=
+          roots : L NF := kinte(den,EPSILON)
+          outList : L SF := nil()
+          for root in roots repeat
+            if (indVarMinNF < root) and (root < indVarMaxNF) then
+              outList := cons(NFtoSF root,outList)
+          sort(#1 < #2,outList)
+        topList : L SF :=
+          roots : L NF := kinte(eval(pRN,depVar,depVarMax),EPSILON)
+          outList : L SF := nil()
+          for root in roots repeat
+            if (indVarMinNF < root) and (root < indVarMaxNF) then
+              outList := cons(NFtoSF root,outList)
+          sort(#1 < #2,outList)
+        botList : L SF :=
+          roots : L NF := kinte(eval(pRN,depVar,depVarMin),EPSILON)
+          outList : L SF := nil()
+          for root in roots repeat
+            if (indVarMinNF < root) and (root < indVarMaxNF) then
+              outList := cons(NFtoSF root,outList)
+          sort(#1 < #2,outList)
+        -- We wish to determine if the graph has points on the 'left'
+        -- and 'right' boundaries, so we compute the value of the
+        -- rational function at the lefthand and righthand values of
+        -- the dependent variable.  If the function has a singularity
+        -- on the left or right boundary, then 'leftVal' or 'rightVal'
+        -- is given a dummy valuewhich will convince the program that
+        -- there is no point on the left or right boundary.
+        denUPolyRN := RNPolyToUPoly(coerceCoefsToRNs(den))
+        if elt(denUPolyRN,indVarMin) = 0$RN then
+          leftVal  := depVarMinSF - (abs(depVarMinSF) + 1$SF)
+        else
+          leftVal  := f(indVarMinSF)
+        if elt(denUPolyRN,indVarMax) = 0$RN then
+          rightVal := depVarMinSF - (abs(depVarMinSF) + 1$SF)
+        else
+          rightVal := f(indVarMaxSF)
+        -- Now put boundary points on the appropriate lists.
+        if depVar = x then
+          if (xMinSF < leftVal) and (leftVal < xMaxSF) then
+            bt := cons(makePt(leftVal,yMinSF),bt)
+          if (xMinSF < rightVal) and (rightVal < xMaxSF) then
+            tp := cons(makePt(rightVal,yMaxSF),tp)
+          for val in botList repeat
+            lf := cons(makePt(xMinSF,val),lf)
+          for val in topList repeat
+            rt := cons(makePt(xMaxSF,val),rt)
+        else
+          if (yMinSF < leftVal) and (leftVal < yMaxSF) then
+            lf := cons(makePt(xMinSF,leftVal),lf)
+          if (yMinSF < rightVal) and (rightVal < yMaxSF) then
+            rt := cons(makePt(xMaxSF,rightVal),rt)
+          for val in botList repeat
+            bt := cons(makePt(val,yMinSF),bt)
+          for val in topList repeat
+            tp := cons(makePt(val,yMaxSF),tp)
+        bran : L L Pt := nil()
+        -- Determine segments on which the rational function is to
+        -- be plotted.
+        if (depVarMinSF < leftVal) and (leftVal < depVarMaxSF) then
+          lo := indVarMinSF
+        else
+          if null topList then
+            if null botList then
+              return [p,x,y,xMin,xMax,yMin,yMax,[lf,rt,bt,tp],_
+                                              htans,vtans,bran]
+            else
+              lo := first botList
+              botList := rest botList
+          else
+            if null botList then
+              lo := first topList
+              topList := rest topList
+            else
+              bot := first botList
+              top := first topList
+              if bot < top then
+                lo := bot
+                botList := rest botList
+              else
+                lo := top
+                topList := rest topList
+        hi := 0$SF  -- @#$%^&* compiler
+        if (depVarMinSF < rightVal) and (rightVal < depVarMaxSF) then
+          hi := indVarMaxSF
+        else
+          if null topList then
+            if null botList then
+              error "makeRatFcnSketch: plot domain"
+            else
+              hi := last botList
+              botList := remove(hi,botList)
+          else
+            if null botList then
+              hi := last topList
+              topList := remove(hi,topList)
+            else
+              bot := last botList
+              top := last topList
+              if bot > top then
+                hi := bot
+                botList := remove(hi,botList)
+              else
+                hi := top
+                topList := remove(hi,topList)
+        if (depVar = x) then
+          (minSF := xMinSF; maxSF := xMaxSF)
+        else
+          (minSF := yMinSF; maxSF := yMaxSF)
+        segList : L SEG SF := nil()
+        repeat
+          segInfo := segmentInfo(f,lo,hi,botList,topList,singList,_
+                                      minSF,maxSF)
+          segList := cons(segInfo.seg,segList)
+          lo := segInfo.left
+          botList := segInfo.lowerVals
+          topList := segInfo.upperVals
+          if lo = hi then break
+        for segment in segList repeat
+          RFPlot : Plot := plot(f,segment)
+          curve := first(listBranches(RFPlot))
+          if depVar = y then
+            bran := cons(curve,bran)
+          else
+            bran := cons(map(swapCoords,curve),bran)
+        [p,x,y,xMin,xMax,yMin,yMax,[lf,rt,bt,tp],htans,vtans,bran]
+
+--% the general case
+
+      makeGeneralSketch(pol,x,y,xMin,xMax,yMin,yMax) ==
+        --!! corners of region should not be on curve
+        --!! enlarge region if necessary
+        factoredPol := pol :: FR P I
+        numberOfFactors(factoredPol) > 1 =>
+            error "reducible polynomial"  --!! sketch each factor
+        p := nthFactor(factoredPol,1)
+        dpdx := differentiate(p,x); dpdy := differentiate(p,y)
+        xMinNF := RNtoNF xMin; xMaxNF := RNtoNF xMax
+        yMinNF := RNtoNF yMin; yMaxNF := RNtoNF yMax
+        -- compute singular points; error if singularities in region
+        singPts := rsolve([p,dpdx,dpdy],[x,y],EPSILON)
+--      ptsSuchThat?(singPts,inRect?(#1,xMinNF,xMaxNF,yMinNF,yMaxNF)) =>
+        foo : L NF -> B := inRect?(#1,xMinNF,xMaxNF,yMinNF,yMaxNF)
+        ptsSuchThat?(singPts,foo) =>
+          error "singular pts in region of sketch"
+        -- compute critical points
+        htanPts := rsolve([p,dpdx],[x,y],EPSILON)
+        vtanPts := rsolve([p,dpdy],[x,y],EPSILON)
+        critPts := append(htanPts,vtanPts)
+        -- if there are critical points on the boundary, then enlarge
+        -- the region, but be sure that the new region does not contain
+        -- any singular points
+        hInc : RN := (1/20) * (xMax - xMin)
+        vInc : RN := (1/20) * (yMax - yMin)
+--      if ptsSuchThat?(critPts,onVertSeg?(#1,yMinNF,yMaxNF,xMinNF)) then
+        foo : L NF -> B := onVertSeg?(#1,yMinNF,yMaxNF,xMinNF)
+        if ptsSuchThat?(critPts,foo) then
+          xMin := newX(critPts,singPts,yMinNF,yMaxNF,xMinNF,xMin,-hInc)
+          xMinNF := RNtoNF xMin
+--      if ptsSuchThat?(critPts,onVertSeg?(#1,yMinNF,yMaxNF,xMaxNF)) then
+        foo : L NF -> B := onVertSeg?(#1,yMinNF,yMaxNF,xMaxNF)
+        if ptsSuchThat?(critPts,foo) then
+          xMax := newX(critPts,singPts,yMinNF,yMaxNF,xMaxNF,xMax,hInc)
+          xMaxNF := RNtoNF xMax
+--      if ptsSuchThat?(critPts,onHorzSeg?(#1,xMinNF,xMaxNF,yMinNF)) then
+        foo : L NF -> B := onHorzSeg?(#1,xMinNF,xMaxNF,yMinNF)
+        if ptsSuchThat?(critPts,foo) then
+          yMin := newY(critPts,singPts,xMinNF,xMaxNF,yMinNF,yMin,-vInc)
+          yMinNF := RNtoNF yMin
+--      if ptsSuchThat?(critPts,onHorzSeg?(#1,xMinNF,xMaxNF,yMaxNF)) then
+        foo : L NF -> B := onHorzSeg?(#1,xMinNF,xMaxNF,yMaxNF)
+        if ptsSuchThat?(critPts,foo) then
+          yMax := newY(critPts,singPts,xMinNF,xMaxNF,yMaxNF,yMax,vInc)
+          yMaxNF := RNtoNF yMax
+        htans := listPtsInRect(htanPts,xMinNF,xMaxNF,yMinNF,yMaxNF)
+        vtans := listPtsInRect(vtanPts,xMinNF,xMaxNF,yMinNF,yMaxNF)
+        crits := append(htans,vtans)
+        -- conversions to DoubleFloats
+        xMinSF := RNtoSF xMin; xMaxSF := RNtoSF xMax
+        yMinSF := RNtoSF yMin; yMaxSF := RNtoSF yMax
+        corners := makeCorners(xMinSF,xMaxSF,yMinSF,yMaxSF)
+        pSF := coerceCoefsToSFs p
+        dpdxSF := coerceCoefsToSFs dpdx
+        dpdySF := coerceCoefsToSFs dpdy
+        delta := min((xMaxSF - xMinSF)/25,(yMaxSF - yMinSF)/25)
+        err := min(delta/100,PLOTERR/100)
+        bound : PI := 10
+        -- compute points on the boundary
+        pRN := coerceCoefsToRNs(p)
+        lf : L Pt := listPtsOnVertBdry(pRN,x,xMin,yMinNF,yMaxNF)
+        rt : L Pt := listPtsOnVertBdry(pRN,x,xMax,yMinNF,yMaxNF)
+        bt : L Pt := listPtsOnHorizBdry(pRN,y,yMin,xMinNF,xMaxNF)
+        tp : L Pt := listPtsOnHorizBdry(pRN,y,yMax,xMinNF,xMaxNF)
+        bdPts : BoundaryPts := [lf,rt,bt,tp]
+        bran := traceBranches(pSF,dpdxSF,dpdySF,x,y,corners,delta,err,_
+                               bound,crits,bdPts)
+        [p,x,y,xMin,xMax,yMin,yMax,bdPts,htans,vtans,bran]
+
+      refine(plot,stepFraction) ==
+        p := plot.poly; x := plot.xVar; y := plot.yVar
+        dpdx := differentiate(p,x); dpdy := differentiate(p,y)
+        pSF := coerceCoefsToSFs p
+        dpdxSF := coerceCoefsToSFs dpdx
+        dpdySF := coerceCoefsToSFs dpdy
+        xMin := plot.minXVal; xMax := plot.maxXVal
+        yMin := plot.minYVal; yMax := plot.maxYVal
+        xMinSF := RNtoSF xMin; xMaxSF := RNtoSF xMax
+        yMinSF := RNtoSF yMin; yMaxSF := RNtoSF yMax
+        corners := makeCorners(xMinSF,xMaxSF,yMinSF,yMaxSF)
+        pSF := coerceCoefsToSFs p
+        dpdxSF := coerceCoefsToSFs dpdx
+        dpdySF := coerceCoefsToSFs dpdy
+        delta :=
+          stepFraction * min((xMaxSF - xMinSF)/25,(yMaxSF - yMinSF)/25)
+        err := min(delta/100,PLOTERR/100)
+        bound : PI := 10
+        crits := append(plot.hTanPts,plot.vTanPts)
+        bdPts := plot.bdryPts
+        bran := traceBranches(pSF,dpdxSF,dpdySF,x,y,corners,delta,err,_
+                               bound,crits,bdPts)
+        htans := plot.hTanPts; vtans := plot.vTanPts
+        [p,x,y,xMin,xMax,yMin,yMax,bdPts,htans,vtans,bran]
+
+      traceBranches(pSF,dpdxSF,dpdySF,x,y,corners,delta,err,bound,_
+                        crits,bdPts) ==
+        -- for boundary points, trace curve from boundary to boundary
+        -- add the branch to the list of branches
+        -- update list of boundary points by deleting first and last
+        -- points on this branch
+        -- update list of critical points by deleting any critical
+        -- points which were plotted
+        lf := bdPts.left; rt := bdPts.right
+        tp := bdPts.top ; bt := bdPts.bottom
+        bdry := append(append(lf,rt),append(bt,tp))
+        bran : L L Pt := nil()
+        while not null bdry repeat
+          pt := first bdry
+          p0 := dummyFirstPt(pt,dpdxSF,dpdySF,x,y,lf,rt,bt,tp)
+          segInfo := listPtsOnSegment(pSF,dpdxSF,dpdySF,x,y,p0,pt,_
+                           corners,delta,err,bound,crits,bdry)
+          bran  := cons(first segInfo,bran)
+          crits := second segInfo
+          bdry  := third segInfo
+        -- trace loops beginning and ending with critical points
+        -- add the branch to the list of branches
+        -- update list of critical points by deleting any critical
+        -- points which were plotted
+        while not null crits repeat
+          pt := first crits
+          segInfo := listPtsOnLoop(pSF,dpdxSF,dpdySF,x,y,pt,_
+                           corners,delta,err,bound,crits,bdry)
+          bran  := cons(first segInfo,bran)
+          crits := second segInfo
+        bran
+
+      dummyFirstPt(p1,dpdxSF,dpdySF,x,y,lf,rt,bt,tp) ==
+      -- The function 'computeNextPt' requires 2 points, p0 and p1.
+      -- When computing the second point on a branch which starts
+      -- on the boundary, we use the boundary point as p1 and the
+      -- 'dummy' point returned by this function as p0.
+        x1 := xCoord p1; y1 := yCoord p1
+        zero := 0$SF; one := 1$SF
+        px := ground(eval(dpdxSF,[x,y],[x1,y1]))
+        py := ground(eval(dpdySF,[x,y],[x1,y1]))
+        if px * py < zero then       -- positive slope at p1
+          member?(p1,lf) or member?(p1,bt) =>
+            makePt(x1 - one,y1 - one)
+          makePt(x1 + one,y1 + one)
+        else
+          member?(p1,lf) or member?(p1,tp) =>
+            makePt(x1 - one,y1 + one)
+          makePt(x1 + one,y1 - one)
+
+      listPtsOnSegment(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                                     delta,err,bound,crits,bdry) ==
+      -- p1 is a boundary point; p0 is a 'dummy' point
+        bdry := remove(p1,bdry)
+        pointList : L Pt := [p1]
+        ptInfo := computeNextPt(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                                     delta,err,bound,crits,bdry)
+        p2 := ptInfo.newPt
+        ptInfo.type = BDRY =>
+          bdry := remove(p2,bdry)
+          pointList := cons(p2,pointList)
+          [pointList,crits,bdry]
+        if ptInfo.type = CRIT then crits := remove(p2,crits)
+        pointList := cons(p2,pointList)
+        repeat
+          pt0 := second pointList; pt1 := first pointList
+          ptInfo := computeNextPt(pSF,dpdxSF,dpdySF,x,y,pt0,pt1,corners,_
+                                       delta,err,bound,crits,bdry)
+          p2 := ptInfo.newPt
+          ptInfo.type = BDRY =>
+            bdry := remove(p2,bdry)
+            pointList := cons(p2,pointList)
+            return [pointList,crits,bdry]
+          if ptInfo.type = CRIT then crits := remove(p2,crits)
+          pointList := cons(p2,pointList)
+        --!! delete next line (compiler bug)
+        [pointList,crits,bdry]
+
+
+      listPtsOnLoop(pSF,dpdxSF,dpdySF,x,y,p1,corners,_
+                                     delta,err,bound,crits,bdry) ==
+        x1 := xCoord p1; y1 := yCoord p1
+        px := ground(eval(dpdxSF,[x,y],[x1,y1]))
+        py := ground(eval(dpdySF,[x,y],[x1,y1]))
+        p0 := makePt(x1 - 1$SF,y1 - 1$SF)
+        pointList : L Pt := [p1]
+        ptInfo := computeNextPt(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                                     delta,err,bound,crits,bdry)
+        p2 := ptInfo.newPt
+        ptInfo.type = BDRY =>
+          error "boundary reached while on loop"
+        if ptInfo.type = CRIT then
+          p1 = p2 =>
+            error "first and second points on loop are identical"
+          crits := remove(p2,crits)
+        pointList := cons(p2,pointList)
+        repeat
+          pt0 := second pointList; pt1 := first pointList
+          ptInfo := computeNextPt(pSF,dpdxSF,dpdySF,x,y,pt0,pt1,corners,_
+                                       delta,err,bound,crits,bdry)
+          p2 := ptInfo.newPt
+          ptInfo.type = BDRY =>
+            error "boundary reached while on loop"
+          if ptInfo.type = CRIT then
+            crits := remove(p2,crits)
+            p1 = p2 =>
+              pointList := cons(p2,pointList)
+              return [pointList,crits,bdry]
+          pointList := cons(p2,pointList)
+        --!! delete next line (compiler bug)
+        [pointList,crits,bdry]
+
+      computeNextPt(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                                     delta,err,bound,crits,bdry) ==
+      -- p0=(x0,y0) and p1=(x1,y1) are the last two points on the curve.
+      -- The function computes the next point on the curve.
+      -- The function determines if the next point is a critical point
+      -- or a boundary point.
+      -- The function returns a record of the form
+      -- Record(newPt:Pt,type:String).
+      -- If the new point is a boundary point, then 'type' is
+      -- "boundary point" and 'newPt' is a boundary point to be
+      -- deleted from the list of boundary points yet to be plotted.
+      -- Similarly, if the new point is a critical point, then 'type' is
+      -- "critical point" and 'newPt' is a critical point to be
+      -- deleted from the list of critical points yet to be plotted.
+      -- If the new point is neither a critical point nor a boundary
+      -- point, then 'type' is "nothing in particular".
+        xMinSF := getXMin corners; xMaxSF := getXMax corners
+        yMinSF := getYMin corners; yMaxSF := getYMax corners
+        x0 := xCoord p0; y0 := yCoord p0
+        x1 := xCoord p1; y1 := yCoord p1
+        px := ground(eval(dpdxSF,[x,y],[x1,y1]))
+        py := ground(eval(dpdySF,[x,y],[x1,y1]))
+        -- let m be the slope of the tangent line at p1
+        -- if |m| < 1, we will increment the x-coordinate by delta
+        -- (indicated by 'incVar = x'), find an approximate
+        -- y-coordinate using the tangent line, then find the actual
+        -- y-coordinate using a Newton iteration
+        if abs(py) > abs(px) then
+          incVar0 := incVar := x
+          deltaX := (if x1 > x0 then delta else -delta)
+          x2Approx := x1 + deltaX
+          y2Approx := y1 + (-px/py)*deltaX
+        -- if |m| >= 1, we interchange the roles of the x- and y-
+        -- coordinates
+        else
+          incVar0 := incVar := y
+          deltaY := (if y1 > y0 then delta else -delta)
+          x2Approx := x1 + (-py/px)*deltaY
+          y2Approx := y1 + deltaY
+        lookingFor := NADA
+        -- See if (x2Approx,y2Approx) is out of bounds.
+        -- If so, find where the line segment connecting (x1,y1) and
+        -- (x2Approx,y2Approx) intersects the boundary and use this
+        -- point as (x2Approx,y2Approx).
+        -- If the resulting point is on the left or right boundary,
+        -- we will now consider x as the 'incremented variable' and we
+        -- will compute the y-coordinate using a Newton iteration.
+        -- Similarly, if the point is on the top or bottom boundary,
+        -- we will consider y as the 'incremented variable' and we
+        -- will compute the x-coordinate using a Newton iteration.
+        if x2Approx >= xMaxSF then
+          incVar := x
+          lookingFor := BDRY
+          x2Approx := xMaxSF
+          y2Approx := y1 + (-px/py)*(x2Approx - x1)
+        else
+          if x2Approx <= xMinSF then
+            incVar := x
+            lookingFor := BDRY
+            x2Approx := xMinSF
+            y2Approx := y1 + (-px/py)*(x2Approx - x1)
+        if y2Approx >= yMaxSF then
+          incVar := y
+          lookingFor := BDRY
+          y2Approx := yMaxSF
+          x2Approx := x1 + (-py/px)*(y2Approx - y1)
+        else
+          if y2Approx <= yMinSF then
+            incVar := y
+            lookingFor := BDRY
+            y2Approx := yMinSF
+            x2Approx := x1 + (-py/px)*(y2Approx - y1)
+        -- set xLo = min(x1,x2Approx), xHi = max(x1,x2Approx)
+        -- set yLo = min(y1,y2Approx), yHi = max(y1,y2Approx)
+        if x1 < x2Approx then
+          xLo := x1
+          xHi := x2Approx
+        else
+          xLo := x2Approx
+          xHi := x1
+        if y1 < y2Approx then
+          yLo := y1
+          yHi := y2Approx
+        else
+          yLo := y2Approx
+          yHi := y1
+        -- check for critical points (x*,y*) with x* between
+        -- x1 and x2Approx or y* between y1 and y2Approx
+        -- store values of x2Approx and y2Approx
+        x2Approxx := x2Approx
+        y2Approxx := y2Approx
+        -- xPointList will contain all critical points (x*,y*)
+        -- with x* between x1 and x2Approx
+        xPointList : L Pt := nil()
+        -- yPointList will contain all critical points (x*,y*)
+        -- with y* between y1 and y2Approx
+        yPointList : L Pt := nil()
+        for pt in crits repeat
+          xx := xCoord pt; yy := yCoord pt
+          -- if x1 = x2Approx, then p1 is a point with horizontal
+          -- tangent line
+          -- in this case, we don't want critical points with
+          -- x-coordinate x1
+          if xx = x2Approx and not (xx = x1) then
+            if min(abs(yy-yLo),abs(yy-yHi)) < delta then
+              xPointList := cons(pt,xPointList)
+          if ((xLo < xx) and (xx < xHi)) then
+            if min(abs(yy-yLo),abs(yy-yHi)) < delta then
+              xPointList := cons(pt,nil())
+              x2Approx := xx
+              if xx < x1 then xLo := xx else xHi := xx
+          -- if y1 = y2Approx, then p1 is a point with vertical
+          -- tangent line
+          -- in this case, we don't want critical points with
+          -- y-coordinate y1
+          if yy = y2Approx and not (yy = y1) then
+              yPointList := cons(pt,yPointList)
+          if ((yLo < yy) and (yy < yHi)) then
+            if min(abs(xx-xLo),abs(xx-xHi)) < delta then
+              yPointList := cons(pt,nil())
+              y2Approx := yy
+              if yy < y1 then yLo := yy else yHi := yy
+        -- points in both xPointList and yPointList
+        if (not null xPointList) and (not null yPointList) then
+          xPointList = yPointList =>
+          -- this implies that the lists have only one point
+            incVar := incVar0
+            if incVar = x then
+              y2Approx := y1 + (-px/py)*(x2Approx - x1)
+            else
+              x2Approx := x1 + (-py/px)*(y2Approx - y1)
+            lookingFor := CRIT        -- proceed
+          incVar0 = x =>
+          -- first try Newton iteration with 'y' as incremented variable
+            x2Temp := x1 + (-py/px)*(y2Approx - y1)
+            f := SFPolyToUPoly(eval(pSF,y,y2Approx))
+            x2New := newtonApprox(f,x2Temp,err,bound)
+            x2New case "failed" =>
+              y2Approx := y1 + (-px/py)*(x2Approx - x1)
+              incVar := x
+              lookingFor := CRIT      -- proceed
+            y2Temp := y1 + (-px/py)*(x2Approx - x1)
+            f := SFPolyToUPoly(eval(pSF,x,x2Approx))
+            y2New := newtonApprox(f,y2Temp,err,bound)
+            y2New case "failed" =>
+              return computeNextPt(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                            abs((x2Approx-x1)/2),err,bound,crits,bdry)
+            pt1 := makePt(x2Approx,y2New :: SF)
+            pt2 := makePt(x2New :: SF,y2Approx)
+            critPt1 := findPtOnList(pt1,crits)
+            critPt2 := findPtOnList(pt2,crits)
+            (critPt1 case "failed") and (critPt2 case "failed") =>
+              abs(x2Approx - x1) > abs(x2Temp - x1) =>
+                return [pt1,NADA]
+              return [pt2,NADA]
+            (critPt1 case "failed") =>
+              return [critPt2::Pt,CRIT]
+            (critPt2 case "failed") =>
+              return [critPt1::Pt,CRIT]
+            abs(x2Approx - x1) > abs(x2Temp - x1) =>
+              return [critPt2::Pt,CRIT]
+            return [critPt1::Pt,CRIT]
+          y2Temp := y1 + (-px/py)*(x2Approx - x1)
+          f := SFPolyToUPoly(eval(pSF,x,x2Approx))
+          y2New := newtonApprox(f,y2Temp,err,bound)
+          y2New case "failed" =>
+            x2Approx := x1 + (-py/px)*(y2Approx - y1)
+            incVar := y
+            lookingFor := CRIT      -- proceed
+          x2Temp := x1 + (-py/px)*(y2Approx - y1)
+          f := SFPolyToUPoly(eval(pSF,y,y2Approx))
+          x2New := newtonApprox(f,x2Temp,err,bound)
+          x2New case "failed" =>
+            return computeNextPt(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                          abs((y2Approx-y1)/2),err,bound,crits,bdry)
+          pt1 := makePt(x2Approx,y2New :: SF)
+          pt2 := makePt(x2New :: SF,y2Approx)
+          critPt1 := findPtOnList(pt1,crits)
+          critPt2 := findPtOnList(pt2,crits)
+          (critPt1 case "failed") and (critPt2 case "failed") =>
+            abs(y2Approx - y1) > abs(y2Temp - y1) =>
+              return [pt2,NADA]
+            return [pt1,NADA]
+          (critPt1 case "failed") =>
+            return [critPt2::Pt,CRIT]
+          (critPt2 case "failed") =>
+            return [critPt1::Pt,CRIT]
+          abs(y2Approx - y1) > abs(y2Temp - y1) =>
+            return [critPt1::Pt,CRIT]
+          return [critPt2::Pt,CRIT]
+        if (not null xPointList) and (null yPointList) then
+          y2Approx := y1 + (-px/py)*(x2Approx - x1)
+          incVar0 = x =>
+            incVar := x
+            lookingFor := CRIT        -- proceed
+          f := SFPolyToUPoly(eval(pSF,x,x2Approx))
+          y2New := newtonApprox(f,y2Approx,err,bound)
+          y2New case "failed" =>
+            x2Approx := x2Approxx
+            y2Approx := y2Approxx     -- proceed
+          pt := makePt(x2Approx,y2New::SF)
+          critPt := findPtOnList(pt,crits)
+          critPt case "failed" =>
+            return [pt,NADA]
+          return [critPt :: Pt,CRIT]
+        if (null xPointList) and (not null yPointList) then
+          x2Approx := x1 + (-py/px)*(y2Approx - y1)
+          incVar0 = y =>
+            incVar := y
+            lookingFor := CRIT        -- proceed
+          f := SFPolyToUPoly(eval(pSF,y,y2Approx))
+          x2New := newtonApprox(f,x2Approx,err,bound)
+          x2New case "failed" =>
+            x2Approx := x2Approxx
+            y2Approx := y2Approxx     -- proceed
+          pt := makePt(x2New::SF,y2Approx)
+          critPt := findPtOnList(pt,crits)
+          critPt case "failed" =>
+            return [pt,NADA]
+          return [critPt :: Pt,CRIT]
+        if incVar = x then
+          x2 := x2Approx
+          f := SFPolyToUPoly(eval(pSF,x,x2))
+          y2New := newtonApprox(f,y2Approx,err,bound)
+          y2New case "failed" =>
+            return computeNextPt(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                                   abs((x2-x1)/2),err,bound,crits,bdry)
+          y2 := y2New :: SF
+        else
+          y2 := y2Approx
+          f := SFPolyToUPoly(eval(pSF,y,y2))
+          x2New := newtonApprox(f,x2Approx,err,bound)
+          x2New case "failed" =>
+            return computeNextPt(pSF,dpdxSF,dpdySF,x,y,p0,p1,corners,_
+                                   abs((y2-y1)/2),err,bound,crits,bdry)
+          x2 := x2New :: SF
+        pt := makePt(x2,y2)
+        --!! check that 'pt' is not out of bounds
+        -- check if you've gotten a critical or boundary point
+        lookingFor = NADA =>
+          [pt,lookingFor]
+        lookingFor = BDRY =>
+          bdryPt := findPtOnList(pt,bdry)
+          bdryPt case "failed" =>
+            error "couldn't find boundary point"
+          [bdryPt :: Pt,BDRY]
+        critPt := findPtOnList(pt,crits)
+        critPt case "failed" =>
+          [pt,NADA]
+        [critPt :: Pt,CRIT]
+
+--% Newton iterations
+
+      newtonApprox(f,a0,err,bound) ==
+      -- Newton iteration to approximate a root of the polynomial 'f'
+      -- using an initial approximation of 'a0'
+      -- Newton iteration terminates when consecutive approximations
+      -- are within 'err' of each other
+      -- returns "failed" if this has not been achieved after 'bound'
+      -- iterations
+        Df := differentiate f
+        oldApprox := a0
+        newApprox := a0 - elt(f,a0)/elt(Df,a0)
+        i : PI := 1
+        while abs(newApprox - oldApprox) > err repeat
+          i = bound => return "failed"
+          oldApprox := newApprox
+          newApprox := oldApprox - elt(f,oldApprox)/elt(Df,oldApprox)
+          i := i+1
+        newApprox
+
+--% graphics output
+
+      listBranches(acplot) == acplot.branches
+
+--% terminal output
+
+      coerce(acplot:%) ==
+        pp := acplot.poly :: OUT
+        xx := acplot.xVar :: OUT
+        yy := acplot.yVar :: OUT
+        xLo := acplot.minXVal :: OUT
+        xHi := acplot.maxXVal :: OUT
+        yLo := acplot.minYVal :: OUT
+        yHi := acplot.maxYVal :: OUT
+        zip := message(" = 0")
+        com := message(",   ")
+        les := message(" <= ")
+        l : L OUT :=
+          [pp,zip,com,xLo,les,xx,les,xHi,com,yLo,les,yy,les,yHi]
+        f : L OUT := nil()
+        for branch in acplot.branches repeat
+          ll : L OUT := [p :: OUT for p in branch]
+          f := cons(vconcat ll,f)
+        ff := vconcat(hconcat l,vconcat f)
+        vconcat(message "ACPLOT",ff)
+
+@
+\section{License}
+<<license>>=
+--Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+<<*>>=
+<<license>>
+
+<<package REALSOLV RealSolvePackage>>
+<<domain ACPLOT PlaneAlgebraicCurvePlot>>
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}
