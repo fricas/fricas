@@ -26,7 +26,6 @@ SUBDIRS=". src                           \
 		  src/algebra            \
 		  src/etc                \
 		  src/clef               \
-		  src/doc                \
 		  src/graph              \
                      src/graph/Gdraws    \
                      src/graph/view2D    \
@@ -36,7 +35,6 @@ SUBDIRS=". src                           \
 		  src/sman               \
 		  src/hyper              \
 		  src/input              \
-                  src/booklets           \
 		  src/paste              \
 "
 

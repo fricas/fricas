@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([Axiom wh-sandbox branch], [2007-05-31], 
+AC_INIT([FriCAS], [2007-05-31], 
         [axiom-developer@nongnu.org])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
@@ -97,13 +97,6 @@ AC_CHECK_PROG([AR], [ar], [ar], [AC_MSG_ERROR([program 'ar' is missing])])
 
 AC_PATH_PROG([LATEX], [latex])
 AC_CHECK_PROG([MAKEINDEX], [makeindex])
-if test -n "$LATEX"; then \
-    axiom_src_all="$axiom_src_all all-book"
-    axiom_src_subdirs="$axiom_src_subdirs booklets"
-    AXIOM_MAKEFILE([src/booklets/Makefile])
-else
-    AC_MSG_NOTICE([Documentation is disabled.])
-fi
 
 ## -------------------------
 ## -- Which noweb to use? --
@@ -555,7 +548,6 @@ AXIOM_MAKEFILE([src/share/Makefile])
 AXIOM_MAKEFILE([src/algebra/Makefile])
 AXIOM_MAKEFILE([src/input/Makefile])
 AXIOM_MAKEFILE([src/etc/Makefile])
-AXIOM_MAKEFILE([src/doc/Makefile])
 
 
 ## We now generate the "document" script and support files at configure time.
