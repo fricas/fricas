@@ -1,0 +1,548 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input pmint.input}
+\author{Manuel Bronstein}
+\maketitle
+\begin{abstract}
+pmint is a very short (95 lines) Maple program for integrating
+transcendental elementary or special functions. It is based on recent
+improvements to a powerful heuristic called parallel
+integration. While it is not meant to be as complete as the large
+commercial integrators based on the Risch algorithm, its very small
+size makes it easy to port to any computer algebra system or library
+capable of factoring multivariate polynomials. Because it is
+applicable to special functions (such as Airy, Bessel, Whittaker,
+Lambert), it is able to compute integrals not handled by the existing
+integrators.
+
+pmint is not meant as a replacement for existing integrators, but
+either as an extension, or as a cheap and powerful alternative for any
+computer algebra project.
+
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{pmint}
+These come from Manuel Bronstein's pages at
+http://www-sop.inria.fr/cafe/Manuel.Bronstein/pmint/examples
+
+\section{The Maple Code}
+The maple code is:
+\begin{verbatim}
+
+# The Poor Man's Integrator, a parallel integration heuristic
+# Version 1.1 ---  May 10, 2005  (c) M.Bronstein and INRIA 2004-2005
+pmint := proc(f,x)
+	local ff, si, li, lin, lout, ld, q, d, l, vars, dx, ls, fint, lc;
+	ff := eval(convert(f, tan));		# convert trigs to tan
+	si := select(proc(d) diff(d,x) <> 0 end, indets(ff));
+	si := select(proc(d) diff(d,x) <> 0 end, indets(map(diff, si, x))) union si;
+	li := [op(si)];		# list of terms in integrand and its derivative
+	lin := [seq(d=`tools/genglobal`(x), d=li)];	# substitution terms->indets
+	lout := [seq(rhs(d)=lhs(d), d=lin)];		# substitution indets->terms
+	ld := subs(lin, map(diff, li, x));	# derivatives of all the terms
+	q := lcm(seq(denom(d), d=ld));		# denominator of the total derivation
+	l := [seq(normal(q * d), d=ld)];	# q * derivatives of all the terms
+	vars := map(lhs, lout);
+	dx := totalDerivation(vars, l);		# vector field dx = q * d/dx
+	ls := [seq(getSpecial(d, lin), d=li)];	# list of known Darboux for dx
+	fint := subs(lout, pmIntegrate(subs(lin, ff), dx, q, vars, ls));
+	lc := select(proc(d) convert(d,string)[1]="_"; end, indets(fint, name));
+	subs({seq(d = 0, d=lc minus si)}, fint);
+end;
+
+getSpecial := proc(f, l) local p;		# return known Darboux polys
+	p := op(0,f);
+	if p = `tan` then [1+subs(l,f)^2, false];
+	elif p = `tanh` then [1 + subs(l,f), false], [1 - subs(l,f), false];
+	elif p = `LambertW` then [subs(l,f), true];
+	else NULL; fi;
+end;
+
+totalDerivation := proc(lv, ld)
+	proc(f) local fp, i;
+		fp := 0; for i to nops(ld) do fp := fp + ld[i] * diff(f, lv[i]); od;
+		fp;
+	end;
+end;
+
+pmIntegrate := proc(f, d, q, vars)
+	local ls, splq, s, ff, df, spl, cden, dg, monomials, cand, lunk, sol, i;
+	if nargs = 5 then ls := args[5]; else ls := []; fi;
+	splq := splitFactor(q, d);
+	s := splq[1]; for i to nops(ls) do if ls[i][2] then s := s*ls[i][1]; fi; od;
+	ff := normal(f); df := denom(ff); spl := splitFactor(df, d);
+	cden := s * spl[1] * deflation(spl[2], d);
+	dg := 1 + degree(s) +  max(degree(numer(ff)), degree(denom(ff)));
+	monomials := [op(enumerateMonoms(vars, dg))];
+	cand := add('_A'[i] * monomials[i], i = 1..nops(monomials)) / cden;
+	lunk := { seq('_A'[i], i = 1..nops(monomials)) };
+	sol:= tryIntegral(f, d, q, vars, cand, lunk, spl[1], spl[2], splq[1], ls, 0);
+	if sol[1] then sol := tryIntegral(f, d, q, vars, cand, lunk,
+						spl[1], spl[2], splq[1], ls, I); fi;
+	if sol[1] then Int(f); else sol[2]; fi;
+end;
+
+tryIntegral := proc(f, d, q, vars, cand, lunk, l1, l2, l3, ls, K)
+	local candlog, p, candidate, i, sol;
+	candlog := [op({ myfactors(l1, K), myfactors(l2, K), myfactors(l3, K) }
+			union { seq(p[1], p=ls) })];
+	candidate := cand + add('_B'[i] * log(candlog[i]), i = 1..nops(candlog));
+	sol := solve({coeffs(numer(normal(f - d(candidate)/q)), {op(vars)})},
+				lunk union { seq('_B'[i], i = 1..nops(candlog)) });
+	[evalb(sol=NULL), subs(sol,candidate)];
+end;
+
+myfactors := proc(p, K) local l, fact;
+	if K = 0 then l := factors(p); else l := factors(p, K); fi;
+	seq(fact[1], fact=l[2]);
+end;
+
+enumerateMonoms := proc(vars, d) local n, x, i, v, s, w;
+	n := nops(vars);
+	if n = 0 then {1}; else
+		x := vars[n];
+		v := [seq(vars[i], i = 1..n-1)];
+		s := enumerateMonoms(v, d);
+		for i to d do s := s union {seq(x^i*w,w=enumerateMonoms(v,d-i))}; od;
+		s;
+	fi;
+end;
+
+splitFactor := proc(p, d) local si, x, c, q, spl, s, splh;
+	si := select(proc(z) d(z) <> 0 end, indets(p,name));
+	if si = {} then RETURN([1,p]) fi;
+	x := si[1];
+	c := content(p, x, 'q');
+	spl := splitFactor(c, d);
+	s := normal(gcd(q, d(q)) / gcd(q, diff(q, x)));
+	if degree(s) = 0 then RETURN([spl[1], q * spl[2]]); fi;
+	splh := splitFactor(normal(q / s), d);
+	[spl[1] * splh[1] * s, spl[2] * splh[2]];
+end;
+
+deflation := proc(p, d) local si, x, c, q;
+	si := select(proc(z) d(z) <> 0 end, indets(p,name));
+	if si = {} then RETURN(p) fi;
+	x := si[1];
+	c := content(p, x, 'q');
+	deflation(c, d) * gcd(q, diff(q, x));
+end;
+
+\end{verbatim}
+\section{rational functions}
+<<rational functions>>=
+)clear all
+-- Rational Functions
+
+f:=(x^7-24*x^4-4*x^2+8*x-8)/(x^8+6*x^6+12*x^4+8*x^2)
+-- should be:
+--          7      4     2
+--        x  - 24x  - 4x  + 8x - 8
+--   (1)  ------------------------
+--           8     6      4     2
+--          x  + 6x  + 12x  + 8x
+--                                            Type: Fraction Polynomial Integer
+
+g:=integrate(f,x)
+-- should be:
+--          5     3                 3     2
+--        (x  + 4x  + 4x)log(x) + 3x  + 8x  + 6x + 4
+--   (2)  ------------------------------------------
+--                        5     3
+--                       x  + 4x  + 4x
+--                                          Type: Union(Expression Integer,...)
+
+differentiate(g,x)
+-- should be:
+--         7      4     2
+--        x  - 24x  - 4x  + 8x - 8
+--   (3)  ------------------------
+--           8     6      4     2
+--          x  + 6x  + 12x  + 8x
+--                                                     Type: Expression Integer
+
+@
+\section{trigonometric functions}
+<<trigonometric functions>>=
+)clear all
+-- Trigonometric Functions
+
+f:=(x-tan(x))/tan(x)^2 + tan(x)
+-- should be:
+--              3
+--        tan(x)  - tan(x) + x
+--   (1)  --------------------
+--                     2
+--               tan(x)
+--                                                     Type: Expression Integer
+
+g:=integrate(f,x)
+-- should be:
+--                        2         2
+--        tan(x)log(tan(x)  + 1) - x tan(x) - 2x
+--   (2)  --------------------------------------
+--                        2tan(x)
+--                                          Type: Union(Expression Integer,...)
+
+differentiate(g,x)
+-- should be:
+--              3
+--        tan(x)  - tan(x) + x
+--   (3)  --------------------
+--                     2
+--               tan(x)
+--                                                     Type: Expression Integer
+
+@
+\section{log-exp functions}
+<<log-exp functions>>=
+)clear all
+-- Log-Exp Functions
+
+f:=(1+x+x*exp(x))*(x+log(x)+exp(x)-1)/(x+log(x)+exp(x))^2/x
+-- should be:
+--              x                       x 2     2       x    2
+--         (x %e  + x + 1)log(x) + x (%e )  + (x  + 1)%e  + x  - 1
+--   (1)  ---------------------------------------------------------
+--                2         x     2               x 2     2  x    3
+--        x log(x)  + (2x %e  + 2x )log(x) + x (%e )  + 2x %e  + x
+--                                                     Type: Expression Integer
+
+g:=integrate(f,x)
+-- should be:
+--                    x                    x
+--        (log(x) + %e  + x)log(log(x) + %e  + x) + 1
+--   (2)  -------------------------------------------
+--                                 x
+--                      log(x) + %e  + x
+--                                          Type: Union(Expression Integer,...)
+
+differentiate(g,x)
+-- should be:
+--              x                       x 2     2       x    2
+--         (x %e  + x + 1)log(x) + x (%e )  + (x  + 1)%e  + x  - 1
+--   (3)  ---------------------------------------------------------
+--                2         x     2               x 2     2  x    3
+--        x log(x)  + (2x %e  + 2x )log(x) + x (%e )  + 2x %e  + x
+--                                                     Type: Expression Integer
+
+@
+\section{liouvillian functions}
+<<liouvillian functions>>=
+)clear all
+-- Liouvillian special functions
+
+f:=exp(-x^2)+erf(x)/(erf(x)^3-erf(x)^2-erf(x)+1)
+-- should be:
+--                                             2
+--               3         2                - x
+--        (erf(x)  - erf(x)  - erf(x) + 1)%e     + erf(x)
+--   (4)  -----------------------------------------------
+--                       3         2
+--                 erf(x)  - erf(x)  - erf(x) + 1
+--                                                     Type: Expression Integer
+
+--
+--                                                      2
+--           x         3          2                 - %G
+--         ++  (erf(%G)  - erf(%G)  - erf(%G) + 1)%e      + erf(%G)
+--   (2)   |   ---------------------------------------------------- d%G
+--        ++                    3          2
+--                       erf(%G)  - erf(%G)  - erf(%G) + 1
+--                                          Type: Union(Expression Integer,...)
+
+
+
+f:=(exp(-x^2)+erf(x))/(erf(x)^3-erf(x)^2-erf(x)+1)
+-- should be:
+--                     2
+--                  - x
+--                %e     + erf(x)
+--   (3)  ------------------------------
+--              3         2
+--        erf(x)  - erf(x)  - erf(x) + 1
+--                                                     Type: Expression Integer
+
+integrate(f,x)
+-- should be:
+--    1   sqrt(%pi)     1                           1
+-- -  - ------------  - - sqrt(%pi) log(erf(x)+1) + - sqrt(%pi) log(erf(x)-1)
+--    4  erf(x) - 1     8                           8
+
+-- but axiom cannot do this and gives:
+--                           2
+--           x           - %G
+--         ++          %e      + erf(%G)
+--   (4)   |   --------------------------------- d%G
+--        ++          3          2
+--             erf(%G)  - erf(%G)  - erf(%G) + 1
+--                                          Type: Union(Expression Integer,...)
+
+@
+\section{airy functions}
+<<airy functions>>=
+)clear all
+-- Airy Functions
+
+-- f:=(x-airyAi(x)*airyAi(1,x))/(x^2-airyAi(x)^2)
+-- Axiom does not have a 2 argument form of the airyAi function
+ 
+-- integrate(f,x)
+-- should be:
+--  1                    1
+--  - log(x+airyAi(x)) + - log(x-airyAi(x))
+--  2                    2
+
+f:=x^2*airyAi(x)
+-- should be:
+--         2
+--   (1)  x airyAi(x)
+--                                                     Type: Expression Integer
+
+g:=integrate(f,x)
+-- should be:
+--  -airyAi(x) + airyAi(1,x) x
+-- but Axiom cannot integrate this and gives:
+--
+--           x
+--         ++    2
+--   (2)   |   %H airyAi(%H)d%H
+--        ++
+--                                          Type: Union(Expression Integer,...)
+
+@
+\section{bessel functions}
+<<bessel functions>>=
+)clear all
+-- Bessel functions
+
+f:=besselJ(y+1,x)/besselJ(y,x)
+-- should be:
+--        besselJ(y + 1,x)
+--   (1)  ----------------
+--          besselJ(y,x)
+--                                                     Type: Expression Integer
+
+g:=integrate(f,x)
+-- should be:
+--  y log(x) - log(besselJ(y,x))
+-- but Axiom cannot integrate it and gives:
+--
+--           x
+--         ++  besselJ(y + 1,%H)
+--   (2)   |   ----------------- d%H
+--        ++     besselJ(y,%H)
+--                                          Type: Union(Expression Integer,...)
+
+-- f:=normal(y*besselJ(y,x)/x = besselJ(y+1,x))
+-- Axiom does not have Maple's normal function
+-- should be:
+--   besselJ(y+1,x) x - y besselJ(y,x)
+-- - ---------------------------------
+--                  x
+--
+
+@
+\section{whittaker functions}
+<<whittaker functions>>=
+)clear all
+-- Whittaker functions
+
+-- f:=WhittakerW(u+1,n,x)/(WhittakerW(u,n,x)*x)
+-- Axiom does not implement WhittakerW
+-- should be:
+--  Whittaker(u+1,n,x)
+--  ------------------
+--  Whittaker(u,n,x) x
+
+-- integrate(f,x)
+-- should be:
+--  x
+--  -  - u log(x) - log(WhattakerW(u,n,x))
+--  2
+
+@
+\section{lambertW function}
+<<lambertW function>>=
+)clear all
+-- The Lambert W function
+
+-- f:=LambertW(x)
+-- Axiom does not implement LambertW
+
+-- g:=integrate(f,x)
+-- should be:
+--    2             2  2                2
+--   x + LambertW(x)  x  - LambertW(x) x
+--   ------------------------------------
+--          x LambertW(x)
+
+--integrate(sin(LambertW(x)),x)
+--should be:
+-- +-                                                  -+
+-- |                                     2              |
+-- |                    +-             -+               |
+-- |  1                 | 1             |  2            |
+-- |  - LambertW(x) tan | - LambertW(x) | x   +         |
+-- |  2                 | 2             |               |
+-- |                    +-             -+               |
+-- |                                                    |
+-- |                  +-             -+                 |
+-- |                  | 1             |  2              |
+-- |  LambertW(x) tan | - LambertW(x) | x  +            |
+-- |                  | 2             |                 |
+-- |                  +-             -+                 |
+-- |                                                    |
+-- |      +-             -+                             |
+-- |      | 1             |  2      1              2    |
+-- |  tan | - LambertW(x) | x  -    - LambertW(x) x     |
+-- |      | 2             |         2                   |
+-- |      +-             -+                             |
+-- +-                                                  -+
+-- ------------------------------------------------------
+--                  +-                         2 -+
+--                  |         +-             -+   |
+--                  |         | 1             |   |
+--    x LambertW(x) | 1 + tan | - LambertW(x) |   |
+--                  |         | 2             |   |
+--                  |         +-             -+   |
+--                  +-                           -+
+
+-- f:=((x^2+2)*LambertW(x^2)^2+x^2*(2*LambertW(x^2)+1))/(x*(1+LambertW(x^2)^3))
+--should be:
+--                       2
+--    2                2      2              2
+--  (x  + 2) LambertW(x )  + x  (2 LambertW(x ) + 1)
+--  ------------------------------------------------
+--                               3
+--                            2  
+--           x (1 + LambertW(x ))
+
+--integrate(f,x)
+--should be:
+--                 2                    4
+--1  4           2     4          2    x              2   2    2           2
+--- x  LambertW(x ) + x LambertW(x ) + -- + LambertW(x ) x  + x  LambertW(x )
+--2                                    2
+-----------------------------------------------------------------------------
+--                                              2
+--              2          2                 2
+--             x LambertW(x ) (1 + LambertW(x ))
+--
+--  +
+--                     2
+--   log(1 + LambertW(x ))
+
+--f:=(2*LambertW(x^2)*cos(LambertW(x^2))*(a*x+LambertW(x^2))+a*x*(1+LambertW(x^2)) + 2*LambertW(x^2))/((1+LambertW(x^2))*(a*x+LambertW(x^2))*x)
+--+-                                                       -+
+--|                                                         |
+--|             2                2                    2     |
+--| 2 LambertW(x ) cos(LambertW(x )) (a x + LambertW(x )) + |
+--|                                                         |
+--|                   2                 2                   |
+--| a x (1 + LambertW(x )) + 2 LambertW(x )                 |
+--|                                                         |
+--+-                                                       -+
+-------------------------------------------------------------
+--                2                 2
+-- (1 + LambertW(x ))(a x+LambertW(x )) x
+--
+
+--integrate(f,x)
+--   
+--        +-              -+
+--        | 1           2  |
+--  2 tan | - LambertW(x ) |
+--        | 2              |
+--        +-              -+                          2
+--  --------------------------- + log(a x + LambertW(x ))
+--                            2
+--          +-              -+
+--          | 1           2  |
+--  1 + tan | - LambertW(x ) |
+--          | 2              |
+--          +-              -+
+--
+--
+
+@
+wright omega function}
+<<wright omega function>>=
+)clear all
+-- The Wright omega function
+
+-- omega:=proc(z) LambertW(exp(z)); end;
+-- should be (in Maple notation)
+--
+-- proc(z) LambertW(exp(z)) end proc
+--
+--normal(integrate(omega(x),x))
+--
+--  1            x             x
+--  - LambertW(%e )(LambertW(%e )+2)
+--  2
+--
+--f:=(1+LambertW(%e^x)*(2+cos(LambertW(%e^x))*(x+LambertW(%e^x))))/((1+LambertW(%e^x))*(x+LambertW(%e^x)))
+--
+--integrate(f,x)
+--
+--        +-               -+
+--        | 1            x  |
+--  2 tan | - LambertW(%e ) |
+--        | 2               |
+--        +-               -+                         x
+--  ---------------------------- + log(x + LambertW(%e ))
+--                             2
+--          +-               -+
+--          | 1            x  |
+--  1 + tan | - LambertW(%e ) |
+--          | 2               |
+--          +-               -+
+--
+
+@
+\section{License}
+<<license>>=
+--Version 1.1 ---  May 10, 2005  (c) M.Bronstein and INRIA 2004-2005
+@
+<<*>>=
+<<license>>
+<<rational functions>>
+<<trigonometric functions>>
+<<log-exp functions>>
+<<liouvillian functions>>
+<<airy functions>>
+<<bessel functions>>
+<<whittaker functions>>
+<<lambertW function>>
+<<wright omega function>>
+@
+\section{\eject
+\begin{thebibliography}{99}
+\bibitem{1} J.H.Davenport (1982): 
+On the Parallel Risch Algorithm (I), 
+Proceedings of EUROCAM'82, LNCS 144, Springer, 144-157.
+\bibitem{2} J.H.Davenport (1982): 
+On the Parallel Risch Algorithm (III): Use of Tangents, 
+SIGSAM Bulletin 16, 3-6.
+\bibitem{3} J.H.Davenport, B.M.Trager (1985): 
+On the Parallel Risch Algorithm (II), 
+ACM Transactions on Mathematical Software 11, 356-362.
+\bibitem{4} J.Fitch (1981): 
+User-based integration software, 
+Proceedings of SYMSAC'81, ACM Press, 245-248.
+\bibitem{5} K.Geddes, L.Stefanus (1989): 
+On the Risch-Norman Integration Method and its Implementation in Maple, 
+Proceedings of ISSAC'89, ACM Press, 212-217.
+\bibitem{6} S.H.Harrington (1979): 
+A new symbolic integration system in reduce, 
+The Computer Journal 22, 127-131.
+\bibitem{7} A.C.Norman, P.M.A.Moore (1977): 
+Implementing the new Risch Integration Algorithm, 
+Proceedings of the 4th International Colloquium on Advanced Computing 
+Methods in Theoretical Physics, 99-110. 
+\end{thebibliography}
+\end{document}

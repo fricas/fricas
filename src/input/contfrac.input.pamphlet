@@ -1,0 +1,96 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input contfrac.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+)clear all
+r1 := 3/4
+r2 := 314159/100000
+ 
+c1 := r1 :: ContinuedFraction Integer
+c2 := r2 :: ContinuedFraction Integer
+ 
+-- We can view these in the list notation
+partialQuotients c1
+partialQuotients c2
+ 
+-- These are algebraic objects, so we can manipulate them accordingly
+c1 + c2
+c1 * c2
+1 / c2
+c1 - c2
+c2 - c1
+ 
+-- and can convert them back to rational numbers.
+convergents %
+ 
+ 
+)clear all
+-- Continued fractions over other Euclidean domains
+a0 := ((-122 + 597* %i)/(4 - 4*%i))
+b0 := ((-595 - %i)/(3 - 4*%i))
+a  := continuedFraction(a0)
+b  := continuedFraction(b0)
+a + b
+convergents % 
+last % - (a0 + b0)
+a / b
+convergents %
+last % - (a0/b0)
+
+(a = b)::Boolean
+c := continuedFraction(3 + 4*%i, repeating [1 + %i], repeating [5 - %i])
+a/c
+-- (a = c)::Boolean -- should give error
+d := complete continuedFraction(3+4*%i, repeating [1+%i],[i-%i for i in 1..5])
+(a = d)::Boolean
+
+
+q : Fraction UnivariatePolynomial('x, Fraction Integer) 
+q := (2*x**2 - x + 1) / (3*x**3 - x + 8)
+ 
+c := continuedFraction q
+d := continuedFraction differentiate q
+c/d
+convergents %
+q/differentiate q
+
+)clear all
+-- This file illustrates continued fractions.
+ 
+)set streams calculate 7
+ 
+-- Use the notation Phi(ai/bi, i = 1..n) for continued fractions
+-- a1/(b1 + (a2/b2 + ... (an/bn) ...))
+ 
+-- 1/(e-1) may be written  Phi(i/i, i = 1..)
+s := continuedFraction(0, expand [1..], expand [1..])
+-- Euler discovered the relation (e-1)/(e+1) = Phi(1/(4i-2), i = 1..)
+t := reducedContinuedFraction(0, [4*i-2 for i in 1..])
+-- Arithmetic on infinite continued fractions is supported.
+-- The results are given in reduced form.  We illustrate by using the
+-- values s = 1/(e-1) and t = (e-1)/(e+1) to recover the expansion for e.
+e := 1/(s*t) - 1
+c := convergents e
+for i in 1..15 repeat
+  output numeric c.i
+(s = t)::Boolean
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

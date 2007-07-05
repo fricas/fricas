@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input fr.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+-- Manipulation of factored integers
+)clear all
+ 
+(x,y,z,w): FR INT
+-- automatic coercion of integers to factored integers
+x := 2**8 * 78**7 * 111**3 * 74534
+y := 2**4 * 45**3 * 162**6 * 774325
+-- computation of 50!
+z1 := factorial 50
+z := z1 :: (FR INT)
+-- examine the structure if a factor
+nthFactor(z,1)
+nthFlag(z,1)
+nthExponent(z,1)
+-- extract the factors in another form
+factorList z
+-- construct an object that has the factors to multiplicity one
+r:=reduce(*,[(nthFactor(z,i) :: (FR INT)) for i in 1..(numberOfFactors z)])
+-- some arithmetic
+exquo(z,r)
+x*y
+y*x
+(x*y = y*x) :: BOOLEAN
+gcd(x,z)
+x+y
+-- this is how you multiply the terms together
+expand(x+y)
+-- now look at quotients
+f := x/y
+g := (x ** 9) / y
+f * g
+(f * g) / (g * primeFactor(2,200)) 
+(f * g) / (g * primeFactor(2,200)) * z
+ 
+ 
+--% Manipulation of factored polynomials
+)clear all
+)set history on
+ 
+(u,v,w): FR POLY INT
+ 
+-- coercion to FR POLY INT involves factoring
+u := (x**4 - y**4) :: POLY INT
+-- primeFactor creates factors that are asserted to be prime
+v := primeFactor(x-y,2) * primeFactor(x+y,2) * primeFactor(x**2 + y**2,1)
+w := factor(x**2 + 2*x*y + 2*x + 2*y + y**2 + 1) * primeFactor(x-y,2)
+unit w
+-- some ways of looking at the components of an elements of FR P I
+l := factorList u
+factorList v
+factorList w
+l.1.fctr
+l.1.xpnt
+nthFactor(u,1)
+nthFactor(u,2)
+nthFactor(u,3)
+nthExponent(u,3)
+nthFlag(u,3)
+nthFactor(u,4)
+-- this computes a factored object that is similar to v except that
+-- each factor occurs with multiplicity 1
+s:=reduce(*,[(nthFactor(v,i) :: FR POLY INT) for i in 1..(numberOfFactors v)])
+-- some arithmetic
+exquo(v,s)
+gcd(u,v)
+u + v
+lcm(v,w)
+u * v * w
+-- "expand" multiplies the factors together
+expand(u * v * w)
+-- some quotients
+u/w
+w/(u*v)
+-- %%(-1) is the last result, %%(-2) is the one before that
+w/(u*v) * u/w
+w/(u*v) + u/w
+
+differentiate(w,x)
+differentiate(w,y)
+
+associates?(x,-x)
+
+characteristic()$FR POLY INT
+
+1$FR POLY INT
+0$FR POLY INT
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

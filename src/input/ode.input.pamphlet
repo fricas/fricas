@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input ode.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1996.
+@
+<<*>>=
+<<license>>
+
+
+--A bug when one one uses a diff.eq. with a free variable other than x.
+)set break resume
+y:=operator 'y
+deqx:= differentiate(y x,x,2)+differentiate(y x,x) +y x
+solve(deqx,y,x) --OK
+solve(deqx,y,x=0,[1]) --OK
+deqt:= differentiate(y t,t,2)+differentiate(y t,t) +y t
+solve(deqt,y,t) --OK
+solve(deqt,y,t=0,[1]) -- BUG!
+deqz:= differentiate(y z,z,2)+differentiate(y z,z) +y z
+solve(deqz,y,z) --OK
+solve(deqz,y,z=0,[1]) -- BUG!
+
+
+--I think the bug is in
+--   file odeef.spad
+--   constructor ODEEF
+--   function solve(diffeq:F,y:OP,center:EQ,y0:List F)
+
+--the second line of the body was
+
+--   kx:K:=kernel x
+
+--which uses uninitialised x. I think it should be
+
+--   kx:K:=kernel(retract(lhs(center))@SY)
+
+--as the line immediately below it. That change certainly fixes THIS bug!
+
+--Also, maybe a check should be made that this kx is indeed to be found
+--in the diffeq -- my system reports segmenttion violation if I do
+
+
+solve(deqt,y,x=0,[1])
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

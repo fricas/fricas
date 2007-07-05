@@ -1,0 +1,122 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input eigen.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+-- Computation of eigenvalues and eigenvectors
+)cl all
+
+-- computation of characteristic polynomial
+ 
+-- for matrix of integers
+m:=matrix([[1,2,1],[2,1,-2],[1,-2,4]])
+ 
+characteristicPolynomial m
+characteristicPolynomial(m,x)
+ 
+-- for matrix of polynomials
+p:=matrix([[x+1,2-x*y,x**2+1],[2-x,y+2*x,x**2-2],[y**2,x-2,4-x*y]])
+characteristicPolynomial p
+characteristicPolynomial(p,t)
+ 
+-- for general matrix of FRAC POLY INT
+n:=matrix([[a,b,c],[d,e,f],[g,h,k]])
+characteristicPolynomial n
+ 
+-- there are many functions for the computation of  eigenvalues and
+-- eigenvectors:
+-- the function eigenvalues returns the eigenvalues :
+leig := eigenvalues m
+
+alpha:=leig.1
+-- alpha is a rational eigenvalue; the corresponding eigenvector can be 
+-- computed with the function eigenvector:
+eigenvector(alpha,m)
+
+beta:=leig.2
+-- beta is a "symbolic" eigenvalue, i.e. it is a root (symbolically expressed)
+-- of an irreducible factor of the characteristic polynomial. In this case
+-- too we can compute the associate eigenvectors.
+eigenvector(beta,m)$EP(INT)
+-- eigenvector(beta,m)  not accepted by the interpreter
+
+-- eigenvalues and eigenvectors can be computed simultaneously
+--  with the function eigenvectors
+eigenvectors m
+ 
+q:=matrix [[x**2-y**2,(x-y)*(2*x+3*y)],[x+y,2*x+3*y]]
+ 
+eigenvectors(q)
+
+p:=matrix([[76,-18,58,-10],[-4,78,2,-2],[-6,15,45,3],[22,-75,7,41]])
+ll := eigenvectors p
+
+-- In this case the algebraic multiplicity (the field eigmult) is different
+-- from the geometric multiplicity (the length of the field eigvec).
+
+generalizedEigenvectors p
+generalizedEigenvector(ll.1,p)$EP(INT)
+-- generalizedEigenvector(ll.1,p) the interpreter can not handle this
+ 
+-- these functions return respectively the complete set of 
+-- generalized eigenvectors
+-- or the generalized eigenvectors associated to a particular eigenvalue alpha,
+-- i.e. a basis of the nullSpace((p-alpha*I)**k) where k is the  algebraic
+-- multiplicity of alpha.
+
+-- In the case of symbolic eigenvalues it is possible to convert the symbolic
+-- eigenvalue and the corresponding eigenvectors in a more explicit form.
+m
+mm:=matrix([[30,4,24],[-17,8,-7],[-31,-54,-5]])
+-- the function radicalEigenvalues expresses, when possible, the eigenvalues 
+-- in terms of radicals.
+le1:=radicalEigenvalues m
+le2:=radicalEigenvalues mm
+
+-- the function radicalEigenvector computes the eigenvectors assocoted to
+-- a given eigenvalue, expressed in terms of radicals
+radicalEigenvector(le1.2, m)
+radicalEigenvector(le2.2,mm)
+
+-- the function radicalEigenvectors computes simoultaneously all the
+-- eigenvalues and the associated eigenvectors  and expresses the , when
+-- it is possible, in terms of radical.
+radicalEigenvectors m
+radicalEigenvectors mm
+
+-- there exist analogous functions for the computation of real and complex
+-- eigenvalues and eigenvectors.
+
+-- in order to compute respectively the eigenvalues or the
+-- eigenvalues and the associared eigevectors of a matrix m and express them
+-- as rational numbers (Gaussian rational) up to precision 1/1000000 use
+realEigenvalues(m,1/1000000)
+complexEigenvalues(mm,1/1000000)
+
+realEigenvectors(m,1/1000000)
+complexEigenvectors(mm,1/1000000)
+-- to have the eigenvalues expressed as real float (complex float) use
+realEigenvalues(m,.000001)
+realEigenvectors(m,.000001)
+
+complexEigenvalues(mm,.000001)
+complexEigenvectors(mm,.000001)
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

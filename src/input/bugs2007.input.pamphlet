@@ -1,0 +1,137 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input bug2007.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+@
+<<*>>=
+
+-- derivative of besselK (issue 355)
+D(besselK(a,x),x)
+D(besselK(a,x),a)
+integrate(D(besselK(a,x),a),a)
+limit(D(besselK(a,x),a),a=1/2)
+
+-- order in FreeAbelianGroup (issue 343)
+Z2:=FreeAbelianGroup Symbol
+a:= a::FreeAbelianGroup Symbol
+b:= b::FreeAbelianGroup Symbol
+z:= 0::FreeAbelianGroup Symbol
+
+a < -b
+-b < z
+z < a
+
+-- bug in map$Set (issue 347)
+A:Set Integer:=set [-2,-1,0]
+B:Set Integer:=set [0,1,4]
+C:=map(x +-> x^2,A)
+test(C=B)
+
+-- Bug in sqrt() for UnivariateTaylorSeries (issue 312)
+UTSx := UTS(FRAC INT,x,0)
+monx2 := monomial(1,2)$UTSx
+sqrt(monx2)
+
+-- issue 340 'divisors$IntegerNumberTheoryFunctions' incorrect for units,
+-- i.e., 1, -1
+divisors 1
+divisors (-1)
+
+)clear all
+-- issue 15
+integrate(1/(1+z^4), z=0..1)::Complex Float
+
+-- issue 293
+integrate (1/(1+x^4),x = %minusInfinity..%plusInfinity)
+
+-- issue 314
+integrate(2*atan(x)/(1+x^2),x)
+
+-- issue 47
+complexForm(log(%i) - log(-%i))
+-- integrate((z^a+1)^b, z) crashes (issue 100)
+integrate((z^a+1)^b, z)
+
+--issue 184
+argument (-%i)
+
+-- issue 308
+integrate(x^a*(x^b+1)^p, x)
+
+-- laplace(log(z), z,w) crashes (issue 101)
+laplace(log(z), z,w)
+
+laplace(1/sqrt(z), z, w)
+laplace(sqrt(z), z, w)
+
+-- issue 103
+solve(z=z,z)
+
+-- issue 114
+dom:=(INT->INT)
+g(f:dom):dom== x+->(f(x))^2
+p(x:INT):INT == x-1
+q:= g p
+
+-- issue 156
+)clear all
+)set function compile off
+u := operator `u;
+multidiff(expr, variable, count) == if count > 0 then D(multidiff(expr, variable, count-1), variable) else expr
+maketaylor(expr) == series( n +-> multidiff(expr, x, n), x=0)
+maketaylor(u(x))
+)set function compile on
+
+
+-- issue 176
+p := -x*y^2+x*y+x^3-x^2
+D(factor(p),x)
+
+--issue 182
+round(3.77623)
+round(-3.77623)
+
+-- issue 186
+)clear all
+E := Expression Integer
+F := E -> E
+compose(f:F, g:F):F == (e:E):E +-> f(g(e))
+p(e:E):E == 2*e+1
+q(e:E):E == 3*e+1
+compose(p,q)
+
+-- issue 199
+integrate(exp(-x^2)+exp(x)/x,x)
+
+-- issue 19
+D(0^z, z)
+
+-- issue 211
+)clear all
+D(product((1-q^(n-i))/(1-q^(m-i)),i=0..m-1),q)
+f:=operator `f;
+D(product(f(i,q),i=0..m),q)
+
+-- issue 278
+simplifyLog(2*sqrt(2)*log(2))
+
+-- issue 83
+1::DMP([x],FRAC INT)::POLY FRAC INT
+1::DMP([x],INT)::POLY INT
+vv := 1::DMP([x],FRAC INT)
+uu := vv ::POLY FRAC INT
+1 * uu
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

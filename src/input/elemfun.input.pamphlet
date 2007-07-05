@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input elemfun.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+-- Manipulations of ElementaryFunction Integer
+ 
+)clear all
+ 
+-- some values of trig functions will simplify on application
+cos 0
+sin 0
+exp 0
+log 1
+sin(%pi/2)
+simplify %
+ 
+-- same goes with the usual relations
+sin(3)**2 + cos(3)**2
+simplify %
+ 
+a := atan 1
+t := cos(a)*sin(a)*tan(a)*sec(a)*csc(a)*cot(a)
+simplify t
+ 
+-- we can remove selected operations
+cot2tan t
+cot2trig t
+tan2cot t
+tan2trig t
+cos2sec t
+ 
+-- given such a trig expression not involving any variables,
+-- we can get a numeric approximation
+ 
+t := sin(7)**2 - sec(7)/(1 - cot(7) + csc(7)**3)
+simplify t
+numeric %
+ 
+-- we really didn't need to have simplified
+numeric t
+ 
+-- we can get more digits by giving a precision
+numeric(t, 100)
+ 
+-- if we do have an expression involving variables, we can use eval
+-- to give them values
+ 
+u := exp(sin(x-1)**2 - cos(x-1)/sec(x-1))
+eval(u,x=1)
+ 
+-- here is another technique using rewrite rules
+v(x) == exp(sin(x-1)**2 - cos(x-1)/sec(x-1))
+v x
+v 1
+v(%pi/3)
+numeric %
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

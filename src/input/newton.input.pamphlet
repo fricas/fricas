@@ -1,0 +1,57 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input newton.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+-- Newton's Iteration function
+
+-- newtonStep(f) returns a newton's iteration function for the
+-- expression f.
+
+newtonStep(f) ==
+  fun  := complexNumericFunction f
+  deriv := complexDerivativeFunction(f,1)
+  (b:Complex DoubleFloat):Complex DoubleFloat +->
+    b - fun(b)/deriv(b)
+
+-- create complex numeric functions from an expression
+
+complexFunPack := MakeUnaryCompiledFunction(EXPR INT, Complex DoubleFloat, Complex DoubleFloat)
+
+-- create a complex numeric function from an expression
+complexNumericFunction x ==
+  v := theVariable x
+  compiledFunction(x, v)$complexFunPack
+
+-- create a complex numeric derivatiave function from an expression
+complexDerivativeFunction(x,n) ==
+  v := theVariable x
+  df := differentiate(x,v,n)
+  compiledFunction(df, v)$complexFunPack
+
+-- return the unique variable in x, or an error if it is multivariate
+theVariable x ==
+  vl := variables x
+  nv := # vl
+  nv > 1 => error "Expression is not univariate."
+  nv = 0 => 'x
+  first vl
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,107 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input clifford.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+--  CliffordAlgebra(n, K, Q) defines a vector space of dimension 2**n
+--  over K, given a quadratic form Q on K**n.
+--
+--  If e[i]  1<=i<=n is a basis for K**n then
+--     1, e[i] 1<=i<=n, e[i1]*e[i2] 1<=i1<i2<=n,...,e[1]*e[2]*..*e[n]
+--  is a basis for the Clifford Algebra.
+--
+--  The algebra is defined by the relations
+--     e[i]*e[j] = -e[j]*e[i]  i ^= j,
+--     e[i]*e[i] = Q(e[i])
+--
+--  Examples of Clifford Algebras are:
+--    gaussians, quaternions, exterior algebras and spin algebras.
+ 
+-- Choose rational functions as the ground field.
+)clear all
+K := FRAC POLY INT
+ 
+--% The complex numbers as a Clifford Algebra
+)clear p qf
+qf: QFORM(1, K) := quadraticForm(matrix([[-1]])$(SQMATRIX(1,K)))
+C := CLIF(1, K, qf)
+i := e(1)$C
+x := a + b * i
+y := c + d * i
+x * y
+recip %
+x*%
+%*y
+ 
+--% The quaternions as a Clifford Algebra
+)clear p qf
+qf:QFORM(2, K) :=quadraticForm matrix([[-1, 0], [0, -1]])$(SQMATRIX(2,K))
+H  := CLIF(2, K, qf)
+i  := e(1)$H
+j  := e(2)$H
+k  := i * j
+x := a + b * i + c * j + d * k
+y := e + f * i + g * j + h * k
+x + y
+x * y
+y * x
+ 
+--% The exterior algebra on a 3 space.
+)clear p qf
+qf: QFORM(3, K) := quadraticForm(0::SQMATRIX(3,K))
+Ext := CLIF(3,K,qf)
+i := e(1)$Ext
+j := e(2)$Ext
+k := e(3)$Ext
+x := x1*i + x2*j + x3*k
+y := y1*i + y2*j + y3*k
+x + y
+x * y + y * x
+-- In n space, a grade p form has a dual n-p form.
+-- In particular, in 3 space the dual of a grade 2 element identifies
+--   e1*e2->e3, e2*e3->e1, e3*e1->e2.
+dual2 a ==
+    coefficient(a,[2,3])$Ext * i + _
+    coefficient(a,[3,1])$Ext * j + _
+    coefficient(a,[1,2])$Ext * k 
+
+-- The vector cross product is then given by
+dual2(x*y)
+ 
+--% The Dirac Algebra used in Quantum Field Theory.
+)clear p qf
+K := FRAC INT
+g: SQMATRIX(4, K) := [[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,-1]]
+qf: QFORM(4, K) := quadraticForm g
+D := CLIF(4,K,qf)
+ 
+-- The usual notation is gamma sup i.
+gam := [e(i)$D for i in 1..4]
+ 
+-- There are various contraction identities of the form
+-- g(l,t)*gam(l)*gam(m)*gam(n)*gam(r)*gam(s)*gam(t) =
+--     2*(gam(s)gam(m)gam(n)gam(r) + gam(r)*gam(n)*gam(m)*gam(s))
+-- where the sum over l and t is implied.
+ 
+-- Verify this identity for m=1,n=2,r=3,s=4
+m := 1; n:= 2; r := 3; s := 4;
+lhs := reduce(+,[reduce(+,[g(l,t)*gam(l)*gam(m)*gam(n)*gam(r)*gam(s)*gam(t)
+             for l in 1..4]) for t in 1..4])
+rhs := 2*(gam s * gam m*gam n*gam r + gam r*gam n*gam m*gam s)
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

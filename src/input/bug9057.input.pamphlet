@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input bug9057.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+product over product or sum fails
+
+it might be that the problem is in iidprod in combfunc.spad: if I understand correctly, its last line 
+
+ */[eval(first l,k::K,i::F) for i in r1::Z .. r2::Z]
+
+evaluates product's first argument for each value of the product variable and then multiplies the resulting list together. However, for some reason the eval fails. I was unable to find out why eval fails. A hint might be that the operation "summation" is not called anymore. I don't even know which operation "eval" is called...
+
+Same thing for iidsum.
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+<<*>>=
+)cl all
+g:=operator 'g
+f==n+->sum(g(j),j=1..n)
+f(1)
+f==n+->product(sum(1/i,i=1..j),j=1..n)
+f(1)
+f==n+->product(product(1/i,i=1..j),j=1..n)
+f(1)
+f==n+->sum(sum(1/i,i=1..j),j=1..n)
+f(1)
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

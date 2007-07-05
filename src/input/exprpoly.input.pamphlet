@@ -1,0 +1,69 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input exprpoly.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+-- This file test coercing objects of type Expression to various
+-- polynomial types and back.
+
+)clear all
+
+-- Start with a simple expression involving variables
+
+a := sin(i)*x**2 - y*x*sin(j)
+
+-- Coerce it to various multivariate polynomial types
+
+a :: DMP([x,y], EXPR INT)
+leadingCoefficient %
+
+a :: HDMP([x,y], EXPR INT)
+a :: MPOLY([x,y], EXPR INT)
+a :: MPOLY([y,x], EXPR INT)
+
+-- Coerce it back to type Expression
+
+% :: EXPR INT
+a - %
+
+-- Coerce the expression to various univariate polynomial types
+
+a :: UP(x, EXPR INT)
+a :: UP(y, EXPR INT)
+a :: UP(y, UP(x, EXPR INT))
+
+-- Coerce it back to type Expression
+
+% :: EXPR INT
+a - %
+
+-- We needn't have had such a complicated expression. The following is
+-- really just a multivariate polynomial.
+
+b : EXPR INT := (x - 2*y + 3*z)**3
+
+b :: DMP([x,y,z], Integer)
+b :: HDMP([y,x,z], Integer)
+b - (% :: EXPR INT)
+b :: MPOLY([z,y,x], Integer)
+
+b :: UP(y, HDMP([x,z], Integer))
+b - (% :: EXPR INT)
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

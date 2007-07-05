@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input streams.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+)clear all
+)set streams calculate 5
+)set streams showall on
+--at least 5 stream elements will be evaluated
+--the stream of integers starting at 1
+a := [i for i in 1..]
+b := [i+1 for i in a]
+--select the 20th element
+b.20
+--the first 20 elements of b (and a) are evaluated
+b
+a
+--the first 10 elements of a
+first(a,10)
+--all except the first 10 elements of a
+rest(a,10)
+--the stream of odd integers
+[i for i in a | odd? i]
+--combining two streams
+c := [[i,j] for i in a for j in b]
+-- selecting the first from each pair
+[first i for i in c]
+)set streams calculate 10
+--concat(a,b) concatenates streams a and b, better if a is finite
+concat([i for i in a while i<7],a)
+concat(a,a)
+upto:NNI->STREAM INT
+upto n == first(a,n)
+d := [upto n for n in a]
+--concat flattens a stream of streams into a one level stream
+concat d
+--the sum of a finite stream
+reduce(0,_+$INT,first(a,10))
+--a stream of cumulative sums
+scan(0,_+$INT,a)
+scan(0,_+$INT,[2*i-1 for i in a])
+ff:(LIST INT)->(LIST INT)
+ff(x)==[x.1+x.2,x.1]
+--generate(f,x) operates on an A->A function f and an initial A, x
+--to produce the stream x,f x,f(f x),...
+fibs := generate(ff,[1,1])
+--first([first i for i in fibs], 100)
+mt:SQMATRIX(2,INT) := matrix [[1,2],[3,4]]
+mplm:SQMATRIX(2,INT)->SQMATRIX(2,INT)
+mplm x == x*mt
+generate(mplm,mt)
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

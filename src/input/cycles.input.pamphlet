@@ -1,0 +1,374 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input cycles.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+ 
+--Examples of Polya-Redfield enumeration methods.
+--
+--This file is based upon the paper
+--J.H.Redfield 'The Theory of Group-Reduced Distributions'
+--American J. Math.,49 (1927) 433-455,
+--and is an application of group theory to enumeration problems.
+--It is a development of the work by P.A.MacMahon on the
+--application of symmetric functions and Hammond operators to
+--combinatorial theory.
+--
+--The theory is based upon the symmetric functions s   which are the
+--                                                   i
+--sum of the i th powers of the variables.
+--The cycle index of a permutation may be represented as a partition.
+-- For example, the partition
+--   2     2                                2      2
+-- (3  2 1  )  will be used to represent  s   s  s   and
+--                                          3  2  1
+-- will indicate that the permutation has two cycles of length 3,
+-- one of length 2 and two of length 1.
+--The cycle index of a permutation group is the sum of the cycle indices
+--of its permutations divided by the number of permutations.
+--
+--The cycle indices of certain groups are provided.
+--complete n is the cycle index of the symmetric group of order n
+)clear all
+)expose EVALCYC
+complete 1
+--
+--   (1)  (1)
+--
+complete 2
+--
+--        1       1   2
+--   (2)  - (2) + - (1 )
+--        2       2
+--
+complete 3
+--
+--        1       1         1   3
+--   (3)  - (3) + - (2 1) + - (1 )
+--        3       2         6
+--
+--
+complete 7
+--
+--   (7)
+--     1       1         1          1      2    1          1           1      3
+--     - (7) + - (6 1) + -- (5 2) + -- (5 1 ) + -- (4 3) + - (4 2 1) + -- (4 1 )
+--     7       6         10         10          12         8           24
+--   +
+--     1    2     1      2    1        2    1      4    1    3     1    2 3
+--     -- (3 1) + -- (3 2 ) + -- (3 2 1 ) + -- (3 1 ) + -- (2 1) + -- (2 1 )
+--     18         24          12            72          48         48
+--   +
+--      1      5     1     7
+--     --- (2 1 ) + ---- (1 )
+--     240          5040
+--
+--elementary n is the nth elementary symmetric function.
+--
+elementary 7
+--
+--   (8)
+--     1       1         1          1      2    1          1           1      3
+--     - (7) - - (6 1) - -- (5 2) + -- (5 1 ) - -- (4 3) + - (4 2 1) - -- (4 1 )
+--     7       6         10         10          12         8           24
+--   +
+--     1    2     1      2    1        2    1      4    1    3     1    2 3
+--     -- (3 1) + -- (3 2 ) - -- (3 2 1 ) + -- (3 1 ) - -- (2 1) + -- (2 1 )
+--     18         24          12            72          48         48
+--   +
+--        1      5     1     7
+--     - --- (2 1 ) + ---- (1 )
+--       240          5040
+--
+--alternating n is the cycle index of the alternating group
+--having an even number of even parts in each cycle partition.
+--
+alternating 7
+--
+--   (9)
+--     2       1     2    1           1   2     1      2    1      4    1    2 3
+--     - (7) + - (5 1 ) + - (4 2 1) + - (3 1) + -- (3 2 ) + -- (3 1 ) + -- (2 1 )
+--     7       5          4           9         12          36          24
+--   +
+--      1     7
+--     ---- (1 )
+--     2520
+--
+--
+--cyclic n is the cycle index of the cyclic group
+cyclic 7
+--
+--         6       1   7
+--   (10)  - (7) + - (1 )
+--         7       7
+--
+--dihedral n is the cycle index of the dihedral group
+--
+dihedral 7
+--
+--         3       1   3     1    7
+--   (11)  - (7) + - (2 1) + -- (1 )
+--         7       2         14
+--
+--graphs n is the cycle index of the group of permutations on
+--the edges of the complete graph with n nodes induced by
+--applying the symmetric group to the nodes.
+graphs 5
+--
+--   (12)
+--   1           1   2    1   2     1   3     1   4 2    1    3 4     1    10
+--   - (6 3 1) + - (5 ) + - (4 2) + - (3 1) + - (2 1 ) + -- (2 1 ) + --- (1  )
+--   6           5        4         6         8          12          120
+--
+--The cycle index of a direct product of two groups is the product of the
+--cycle indices of the groups.
+--Redfield provided two operations on two cycle indices which
+--will be called cup and cap here.
+--The cup of two cycle indices is a kind of scalar product that
+--combines monomials for permutations with the same cycles.
+--
+--The cap operation provides the sum of the coefficients of the result
+--of the cup operation which will be an integer that enumerates
+--group-reduced distributions.
+--
+--We can for example represent  complete 2 * complete 2
+--as the set of objects a a b b and
+--complete 2 * complete 1 * complete 1 as c c d e.
+--
+--The integer cap(complete 2**2,complete 2*complete 1**2)
+--is the number of different sets of four pairs.
+--
+--a a b b     a a b b    a a b b   a a b b
+--c c d e     c d c e    c e c d   d e c c
+--
+cap(complete 2**2,complete 2*complete 1**2)
+--
+--   (13)  4
+--
+--The integer cap(elementary 2**2,complete 2*complete 1**2)
+--is the number of different sets of four pairs no two pairs being equal.
+--
+--    a a b b    a a b b
+--    c d c e    c e c d
+--
+cap(elementary 2**2,complete 2*complete 1**2)
+--
+--   (14)  2
+--
+--In this case the configurations enumerated are easily constructed,
+--however the theory merely enumerates them providing little help in
+--actually constructing them. Similarly
+--
+--The number of 6-pairs, first from a a a b b c, second from d d e e f g.
+--
+cap(complete 3*complete 2*complete 1,complete 2**2*complete 1**2)
+--
+--   (15)  24
+--
+--Same again, but with no equal pairs
+--
+cap(elementary 3*elementary 2*elementary 1,complete 2**2*complete 1**2)
+--
+--   (16)  8
+--
+cap(complete 3*complete 2*complete 1,elementary 2**2*elementary 1**2)
+--
+--   (17)  8
+--
+--The number of 6-triples, first from a a a b b c, second from
+--d d e e f g, third from h h i i j j
+--
+eval(cup(complete 3*complete 2*complete 1, cup(complete 2**2*complete 1**2,complete 2**3)))
+--
+--   (18)  1500
+--
+--The cycle index of vertices of a square is dihedral 4
+--
+square:=dihedral 4
+--
+--         1       3   2    1     2    1   4
+--   (19)  - (4) + - (2 ) + - (2 1 ) + - (1 )
+--         4       8        4          8
+--
+--The number of different squares with 2 red vertices and 2 blue vertices
+--
+cap(complete 2**2,square)
+--
+--   (20)  2
+--
+--The number of necklaces with 3 red beads,2 blue beads and 2 green beads
+--
+cap(complete 3*complete 2**2,dihedral 7)
+--
+--   (21)  18
+--
+--The number of graphs with 5 nodes and 7 edges
+--
+cap(graphs 5,complete 7*complete 3)
+--
+--   (22)  4
+--The cycle index of rotations of vertices of a cube
+--
+macro s == powerSum
+cube:=(1/24)*(s 1**8+9*s 2**4 + 8*s 3**2*s 1**2+6*s 4**2)
+--
+--         1   2    1   2 2    3   4    1    8
+--   (23)  - (4 ) + - (3 1 ) + - (2 ) + -- (1 )
+--         4        3          8        24
+--
+--The number of cubes with 4 red vertices and 4 blue vertices
+cap(complete 4**2,cube)
+--
+--   (24)  7
+--
+--The number of labeled graphs with degree sequence 2 2 2 1 1
+--with no loops or multiple edges
+cap(complete 2**3*complete 1**2,wreath(elementary 4,elementary 2))
+--with loops allowed but not multiple edges
+cap(complete 2**3*complete 1**2,wreath(elementary 4,complete 2))
+-- with multiple edges allowed, but not loops
+cap(complete 2**3*complete 1**2,wreath(complete 4,elementary 2))
+-- with both multiple edges and loops allowed
+cap(complete 2**3*complete 1**2,wreath(complete 4,complete 2))
+--Having constructed a cycle index for a configuration
+--we are at liberty to evaluate the s i components any way we please.
+--For example we can produce enumerating generating functions.
+--This is done by providing a function f from an integer i to the
+--value required of s  , and then evaluating eval(f,cycleindex)
+--                   i
+x:ULS(FRAC INT,'x,0):=x
+ZeroOrOne:INT->ULS(FRAC INT,'x,0)
+Integers:INT->ULS(FRAC INT,'x,0)
+--For the integers 0 1 , or two colors
+ZeroOrOne n == 1+x**n
+ZeroOrOne 5
+--For the integers 0,1,2,...
+Integers n == 1/(1-x**n)
+Integers 5
+--
+--The coefficient of x**n below is the number of graphs with 5 nodes
+--and n edges.
+--
+eval(ZeroOrOne,graphs 5)
+--
+--                   2     3     4     5     6     7     8    9    10      11
+--   (30)  1 + x + 2x  + 4x  + 6x  + 6x  + 6x  + 4x  + 2x  + x  + x   + O(x  )
+--
+--The coefficient of x**n is the number of necklaces with
+-- n red beads and n-8 green beads.
+eval(ZeroOrOne,dihedral 8)
+--The coefficient of x**n is the number of partitions of n
+--into 4 or fewer parts
+eval(Integers,complete 4)
+--
+--   (32)
+--             2     3     4     5     6      7      8      9      10      11
+--   1 + x + 2x  + 3x  + 5x  + 6x  + 9x  + 11x  + 15x  + 18x  + 23x   + O(x  )
+--
+--The coefficient of x**n is the number of partitions of n into 4
+-- boxes containing ordered distinct parts.
+eval(Integers,elementary 4)
+--
+--          6    7     8     9     10      11
+--   (33)  x  + x  + 2x  + 3x  + 5x   + O(x  )
+--
+--the coefficient of x**n is the number of partitions of n
+--into exactly 4 parts
+--
+--The coefficient of x**n is the number of different cubes with n
+-- red vertices and 8-n green ones.
+--
+eval(ZeroOrOne,cube)
+--
+--                   2     3     4     5     6    7    8
+--   (36)  1 + x + 3x  + 3x  + 7x  + 3x  + 3x  + x  + x
+--
+--The  coefficient of x**n is the number of different cubes with integers
+-- on the vertices whose sum is n.
+--
+eval(Integers,cube)
+--
+--   (37)
+--               2     3      4      5      6       7       8       9       10
+--     1 + x + 4x  + 7x  + 21x  + 37x  + 85x  + 151x  + 292x  + 490x  + 848x
+--   +
+--        11
+--     O(x  )
+--
+-- the coefficient of x**n is the number of graphs with 5 nodes and
+-- with integers on the edges whose sum is n.
+-- In other words the enumeration is of multigraphs with 5 nodes and n
+-- edges.
+eval(Integers,graphs 5)
+--
+--   (38)
+--               2     3      4      5      6       7       8       9       10
+--     1 + x + 3x  + 7x  + 17x  + 35x  + 76x  + 149x  + 291x  + 539x  + 974x
+--   +
+--        11
+--     O(x  )
+--
+--Graphs with 15 nodes enumerated with respect to number of edges
+--
+eval(ZeroOrOne ,graphs 15)
+--
+--   (39)
+--               2     3      4      5      6       7       8        9        10
+--     1 + x + 2x  + 5x  + 11x  + 26x  + 68x  + 177x  + 496x  + 1471x  + 4583x
+--   +
+--           11         12          13          14           15            16
+--     15036x   + 51814x   + 185987x   + 691001x   + 2632420x   + 10176660x
+--   +
+--              17             18             19              20      21
+--     39500169x   + 152374465x   + 578891716x   + 2149523582x   + O(x  )
+--
+--
+--Necklaces with 7 green beads, 8 white beads, 5 yellow beads and 10
+--red beads.
+--
+cap(dihedral 30,complete 7*complete 8*complete 5*complete 10)
+--
+--   (40)  49958972383320
+-- The function SFunction is the S-function of a partition written
+-- as a descending list of integers expressed in terms of power sum
+-- symmetric functions.
+sf3221:= SFunction [3,2,2,1]
+-- It counts the number of different tableaux of shape 3,2,2,1 filled
+-- with objects with an ascending order in the columns and a
+-- non-descending order in the rows.
+-- cap(sf3221,complete 4**2) is the number filled
+-- with a a b b c c d d.
+cap(sf3221,complete 2**4)
+-- the configurations enumerated are
+--  a a b    a a c    a a d
+--  b c      b b      b b
+--  c d      c d      c c
+--  d        d        d
+-- cap(sf3221,powerSum 1**8) is the number of tableaux filled with 1..8.
+cap(sf3221,powerSum 1**8)
+--The coefficient of x**n below is the number of column strict
+-- reverse plane partitions of n of shape 3 2 2 1.
+-- The smallest is
+--  0 0 0
+--  1 1
+--  2 2
+--  3
+eval(Integers,sf3221)
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

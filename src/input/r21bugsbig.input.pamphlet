@@ -1,0 +1,63 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input r21bugsbig.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+<<*>>=
+
+-- takes a long time
+)clear completely
+)set expose add constructor CyclotomicPolynomialPackage
+)set message type off
+)set message time off
+n : PositiveInteger := 5
+UZn : List(PositiveInteger) := [i for i in 1 .. n-1 | gcd(i,n) = 1]
+-- K = Q(t), corps des fractions rationnelles a Phi(n) indeterminees sur Q
+vars : List(Symbol) := [concat("t", i::String)::Symbol for i in 0 ..#UZn-1] ;
+Zt := DistributedMultivariatePolynomial(vars, Integer) ;   K :=Fraction(Zt) ;
+t : List(K) := [v::K for v in vars]
+-- ATTENTION : on specialise certains des indeterminees
+t(#t) := 0 ; t
+Zn := IntegerMod(n) ;
+rapport(i : Integer, j : Integer) : Integer ==   -- returns <i/j> modulo n
+   k : Zn := i * recip(j::Zn)::Zn
+   return convert(k)
+Phi : UP('xi, K) := map(coerce, cyclotomic(n))
+-- E est l'extension cyclotomique de K par les racines n-iemes de l'unite
+E := SimpleAlgebraicExtension(K, UP('xi, K), Phi) ;
+xi : E := generator()$E ;
+bList : List(E) := [reduce(+, [t(i+1) * xi**(i*j) for i in 0 .. #UZn-1]) for j in UZn]
+-- delta(j) = delta(j, 1) avec les nouvelles notations
+delta : List(E) :=
+  [reduce(*, [b**((j*rapport(1,k)) quo n) for b in bList for k in UZn]) for j in UZn] ;
+-- verification en introduisant la liste B des Bj
+B : List(E) := [reduce(*, [b**rapport(j,i) for b in bList for i in UZn]) for j in UZn] ;
+[B(1)**j - b * d**n for b in B for d in delta for j in UZn]
+L := SimpleAlgebraicExtension(E, UP('C1, E), C1**n - B(1)) ;  C1 : L := generator()$L ;
+-- retracter de L sur Zt : Zt < K < E < L
+retraction(z : L) : Zt ==
+   zE : E := retract(z)
+   zK : K := retract(zE)
+   zt : Zt := retract(zK)
+   return zt
+)set message time on
+C : List(L) := [C1**j / d for j in UZn for d in delta] ;
+-- en principe [c**n for c in C] = B
+r : List(L) := [reduce(+, [c * xi**(k*j) for j in UZn for c in C]) for k in 0 .. n-1] ;
+LX := UP('X, L) ;  X : LX := monomial(1, 1) ;
+g : LX := reduce(*, [X - rho for rho in r]) ;
+f : UP('X, Zt) := map(retraction, g)
+
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

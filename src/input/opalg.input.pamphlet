@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input opalg.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991, 1995.
+@
+<<*>>=
+<<license>>
+
+)cl all
+-- This is the recursive definition of the Legendre polynomials
+L n ==
+  n = 0 => 1
+  n = 1 => x
+  (2*n-1)/n * x * L(n-1) - (n-1)/n * L(n-2)
+
+L 5
+
+-- Create the differential operator d/dx on Q[x]
+dx := operator("D")::OP(POLY FRAC INT)
+-- and attach the map d/dx to it:
+evaluate(dx, p +-> differentiate(p, 'x))$OP(POLY FRAC INT)
+
+-- This is the differential equation satisfied by the nth Legendre poly:
+E n == (1 - x**2) * dx**2 - 2 * x * dx + n*(n+1)
+E 5
+[L i for i in 1..10]
+[E i for i in 1..10]
+[(E i)(L i) for i in 1..10]
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

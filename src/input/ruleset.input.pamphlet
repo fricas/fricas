@@ -1,0 +1,51 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input ruleset.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+)cl all
+-- This is the example from "Programming in Mathematica", p.139
+
+TrigLinearRules := rule
+   sin(x) * sin(y) == cos(x-y)/2 - cos(x+y)/2
+   cos(x) * cos(y) == cos(x+y)/2 + cos(x-y)/2
+   sin(x) * cos(y) == sin(x+y)/2 + sin(x-y)/2
+   sin(x)**(n | integer? n and n > 0) == (1-cos(2*x))/2 * sin(x)**(n-2)
+   cos(x)**(n | integer? n and n > 0) == (1+cos(2*x))/2 * cos(x)**(n-2)
+
+sin(a)*cos(b) + sin(a)*cos(a) + cos(2*a)*cos(3*a)
+TrigLinearRules %
+
+sin(a) * sin(2*a) * sin(3*a) * sin(4*a)
+TrigLinearRules %
+
+-- Defining an operator to be linear w.r.t. its 2nd argument
+
+f := operator 'f
+
+FLinearRules := rule
+  f(a + b, x) == f(a, x) + f(b, x)
+  f(c * a, x | freeOf?(c, x)) == c * f(a, x)
+
+f(2*x + a * log(x) + x * log(x), x)
+FLinearRules %
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input eval.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+-- This file demonstrate the various eval's available on EXPR, and the
+-- handling of formal derivatives.
+-- Lines starting with --** are comments indicating that the final syntax
+-- will be different.
+ 
+)cl all
+--** This line will be optional interactively, since the a := f(x**2)
+--** will prompt you if you don't declare f this way.
+f := operator 'f
+a := f(x**2)
+b := differentiate(a,x,2) + f 5
+-- This is the 'variable' evaluation, similar to what's available on
+-- polynomials:
+eval(b, x = x + y)
+-- This is the 'kernel' evaluation, allowing you to specify special
+-- values. Only the specified value f 5 is affected, not the others:
+eval(b, f 5 = 1)
+-- This is the 'operator' evaluation, allowing you to specify an actual
+-- function for a formal one. ALL the values of f are affected.
+--** will eventually use the +-> notation in the eval statement
+foo(u:EXPR INT):EXPR INT == exp u
+-- So what is b if f were the exponential function?
+-- Notice that the formal derivatives will be computed properly now:
+c := eval(b, 'f, foo)
+-- We can also use that evaluation on 'system' operators, which allows
+-- us to replace an actual function by a formal one:
+oof(u:EXPR INT):EXPR INT == f u
+eval(c, 'exp, oof)
+-- It is also possible to give f a derivative without replacing it by
+-- a 'concrete' function:
+f'(u:EXPR INT):EXPR INT == f u
+-- this will make f differentiate like an exponential:
+derivative(f,f')
+b
+--** The coercion is needed to avoid an interpreter bug.
+--** This will just be eval(b) eventually:
+eval(b, x = x::(EXPR INT))
+differentiate(%, x)
+-- This is the 'operator/power' evaluation: suppose that we know that
+-- f squared is the exponential, but we do not want to replace f(u) by
+-- sqrt(exp u). It is still possible to eliminate higher powers of f
+-- in the following way:
+a3 := a * a * a
+foo
+eval(a3,'f,2,foo)
+-- Several 'operator' evaluations can be carried out simultaneously:
+g := operator 'g
+bar(u:EXPR INT):EXPR INT == sin(u) + cos(2*u)
+a + g a
+eval(%,['f,'g],[foo,bar])
+a3 + g a
+-- The grand finale: by now the effect of the following should be clear:
+eval(%,['f,'g],[2,1],[foo,bar])
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

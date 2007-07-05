@@ -1,0 +1,104 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input r20abugs.input}
+\author{Mike Dewar}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1996.
+@
+<<*>>=
+<<license>>
+
+
+-- This file tests bugs fixed/additions made since release 2.0a.
+-- Created by Mike Dewar, 17.5.95
+
+-- Added eval for aggregates
+)clear completely
+m : Matrix Expression Integer := matrix [[i*x^j for i in 1..3] for j in 1..3]
+eval(m,x=0)
+
+-- Added seed function
+)clear completely
+s:= seed();
+r1 := randnum();
+for i in 1..10 repeat randnum();
+reseed s;
+r2 := randnum();
+r1 - r2
+
+-- Fixed some problems with %e etc in rules
+)clear completely
+r3:=rule(3==%pi) -- biblical approximation
+numeric(%pi)
+numeric(r3(3))
+
+)clear completely
+-- Added some extra simplifications
+sin(atan(sqrt 3)/2)
+
+)clear completely
+-- Fix to poly from Quitte
+R := IntegerMod(4)
+PolR := UP('X, R)
+X : PolR := monomial(1, 1)
+a : PolR := 2 * X**2
+b : PolR := X**2 + 2*X + 1
+-- Used to give a 0 remainder!
+qr := monicDivide(a, b)
+a - (qr.quotient * b + qr.remainder)
+
+)clear completely
+-- This used not to return 0
+limit(%e^(1/x^2)/(%e^(1/x^2) + %e^(1/x^4)), x=0)
+
+)clear completely
+-- This used to crash because we generated tan(%pi/2)
+integrate((sin(t))*sin((%pi-t)/6),t)
+
+)clear completely
+-- This used not to return 1.0!
+(x+1.0)/(x+1.0)
+
+)clear completely
+-- This used to return a formal integral
+b := D(Ci(x),x)
+integrate(b,x)
+-- This used to return -Si(x) rather than log(x) - Si(x)
+integrate((1 - sin x)/x,x)
+
+)clear completely
+-- This used to return "failed"
+limit(erf(x),x=c)
+
+-- Used only to do structural equality for algebraic numbers, now try
+-- to do true mathematical equality
+(sqrt(2)*sqrt(3)=sqrt(6))@Boolean
+
+-- New case we couldn't handle before
+integrate((a + b*x)*exp(-x^2),x)
+
+-- This used to give an infinite recursion
+laplace(sin(t)^2/t^(3/2),t,s)
+
+)clear completely
+-- The following used to fail
+P:=x^4+x^3+x^2+x+1
+Q:=x^5+x^4+2*x^3+2*x^2+2*x-2+4*sqrt(-1+sqrt(3))
+int := P/Q
+int2 := int pretend FRAC POLY IAN
+ans:=integrate(int2,x)
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

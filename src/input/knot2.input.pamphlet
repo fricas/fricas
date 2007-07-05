@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input knot2.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+<<*>>=
+)cl all
+
+-- see how long this all takes
+)set messages time on
+
+-- this is the color function, nothing elaborate for now
+f(x:SF):SF == x
+
+--------------------------------------------------------------
+--         Creation of the knot!!!                          --
+-- only p/q is really used, but p and q correspond to       --
+-- the factors in the notes deriving these knotty things    --
+-- see the notes for detail...too involved to explain here  --
+--------------------------------------------------------------
+
+[p,q] := [3,5]
+PQ    := p/q
+
+l := lcm(p, q) quo p
+maxRange := (odd? l => l * %pi::SF; 2 * l * %pi::SF)  
+theRange := 0..maxRange
+
+-- create the knot
+knot:TUBE := tubePlot(sin t * cos(PQ*t),cos t * cos(PQ*t),cos t * sin(PQ*t),
+                      f, theRange, 0.1::SF, 6, "open" )
+
+-- make a viewport out of it
+makeViewport3D(knot, concat ["knot",p::String,q::String])$VIEW3D
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

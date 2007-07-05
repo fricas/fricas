@@ -1,0 +1,80 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input psgenfcn.input}
+\author{Clifton J. Williamson}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+--% Power Series Generating Functions
+-- We obtain Fibonacci numbers, Bernoulli numbers and polynomials, and
+-- Euler numbers and polynomials as power series coefficients
+-- Author: Clifton J. Williamson
+-- Date Created: 1 June 1990
+-- Date Last Updated: 1 June 1990
+-- Keywords: Fibonacci, Bernoulli, Euler
+-- References:
+
+-- We will compute power series in two different ways, then test equality
+-- of coefficients up to a specified order.  The function that tests
+-- 'approximate equality' will return an error message if the test fails.
+
+)cl all
+
+ORD := 20
+
+approximateEquality(series1,series2) ==
+  -- tests that 2 series are equal to order ORD
+  uts1 := series1 :: UTS(EXPR INT,'t,0)
+  uts2 := series2 :: UTS(EXPR INT,'t,0)
+  flag := (order(uts1 - uts2,ORD) = ORD) :: Boolean
+  flag => true
+  error "series do not agree to specified order"
+
+bernoulliPolynomial(n) ==
+  -- returns the nth Bernoulli polynomial as an EXPR INT
+  sup := bernoulli(n)$(PNTHEORY)
+  p : POLY FRAC INT := multivariate(sup,'x)
+  p :: (EXPR INT)
+
+eulerPolynomial(n) ==
+  -- returns the nth Euler polynomial as an EXPR INT
+  sup := euler(n)$(PNTHEORY)
+  p : POLY FRAC INT := multivariate(sup,'x)
+  p :: (EXPR INT)
+
+f1 := taylor(t/(1 - t - t**2))
+f2 := taylor(n +-> fibonacci(n),t = 0)
+approximateEquality(f1,f2)
+
+g1 := taylor(t/(exp(t) - 1))
+g2 := taylor(n +-> bernoulli(n)/factorial(n),t = 0)
+approximateEquality(g1,g2)
+
+gg1 := taylor(t*exp(t*x)/(exp(t) - 1),t = 0)
+gg2 := taylor(n +-> bernoulliPolynomial(n)/factorial(n),t = 0)
+approximateEquality(gg1,gg2)
+
+h1 := taylor(2*exp(t/2)/(exp(t) + 1))
+h2 := taylor(n +-> euler(n)/(2**n * factorial(n)),t = 0)
+approximateEquality(h1,h2)
+
+hh1 := taylor(2*exp(t*x)/(exp(t) + 1),t = 0)
+hh2 := taylor(n +-> eulerPolynomial(n)/factorial(n),t = 0)
+approximateEquality(hh1,hh2)
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

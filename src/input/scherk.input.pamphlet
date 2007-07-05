@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input scherk.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+-- Scherk's minimal surface.
+-- Defined by:
+--    exp(z) * cos(x) = cos(y)
+-- See: A comprehensive Introduction to Differential Geometry, Vol. 3,
+--  by Michael Spivak, Publish Or Persih, Berkeley, 1979, pp 249-252.
+
+-- Off set for a single piece of Scherk's minimal surface
+(xOffset, yOffset):DoubleFloat
+
+-- DrawScherk's minimal surface on an m by n patch.
+drawScherk(m,n) ==
+  free xOffset, yOffset
+  space := create3Space()$ThreeSpace(DoubleFloat)
+  for i in 0..m-1 repeat
+    xOffset := i*%pi
+    for j in 0 .. n-1 repeat
+      rem(i+j, 2) = 0 => 'iter
+      yOffset := j*%pi
+      drawOneScherk(space)
+  makeViewport3D(space, "Scherk's Minimal Surface")
+
+-- The four patches which make up a single piece of Scherk's minimal surface.
+scherk1(u,v) ==
+  x := cos(u)/exp(v)
+  point [xOffset + acos(x), yOffset + u, v, abs(v)]
+
+scherk2(u,v) ==
+  x := cos(u)/exp(v)
+  point [xOffset - acos(x), yOffset + u, v, abs(v)]
+
+scherk3(u,v) ==
+  x := exp(v) * cos(u)
+  point [xOffset + u, yOffset + acos(x), v, abs(v)]
+
+scherk4(u,v) ==
+  x := exp(v) * cos(u)
+  point [xOffset + u, yOffset - acos(x), v, abs(v)]
+
+
+-- We draw the surface by breaking it into 4 patches, and drawing them
+-- into a single space.
+drawOneScherk(s) ==
+  makeObject(scherk1, -%pi/2..%pi/2, 0..%pi/2,  space == s, _
+             var1Steps == 28, var2Steps == 28)
+  makeObject(scherk2, -%pi/2..%pi/2, 0..%pi/2,  space == s, _
+             var1Steps == 28, var2Steps == 28)
+  makeObject(scherk3, -%pi/2..%pi/2, -%pi/2..0, space == s, _
+             var1Steps == 28, var2Steps == 28)
+  makeObject(scherk4, -%pi/2..%pi/2, -%pi/2..0, space == s, _
+             var1Steps == 28, var2Steps == 28)
+  void()
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

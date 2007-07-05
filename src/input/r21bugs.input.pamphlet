@@ -1,0 +1,184 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input r21bugs.input}
+\author{Mike Dewar}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1996.
+@
+<<*>>=
+<<license>>
+
+
+-- This file tests bugs fixed since release 2.1.
+-- Mike Dewar 19-11-96
+
+)clear completely
+-- This bug, spotted by Claude Quitte, meant that we generated incorrect
+-- expressions for Chebyshev polynomials of the second kind, so that they
+-- did not satisfy the recurrence relation:
+--  U_n(x) - x U_{n-1}(x) = T_n(x)
+
+)set expose add constructor PolynomialNumberTheoryFunctions
+X : UP('x, Integer) := x
+[chebyshevU(n) - X*chebyshevU(n-1) - chebyshevT(n) for n in 1 .. ]
+
+)clear completely
+Fp:=PF 2
+poly:=createIrreduciblePoly(4)$FFPOLY(Fp)
+Fq:=FFP(Fp, poly)    -- Field with 16 elements
+R:=DMP([X,Y,Z],Fq)
+Q:=FRAC R
+F:=X**4+X*Z**3
+G:=X**4+X**2*Y**2+Z**4
+h:Q:=F/G
+
+)clear completely
+
+squareFree ((c^15*e^8+c^23*d^4)::POLY PF 2) 
+
+)clear completely
+FiniteFieldExtensionByPolynomial(FF(3,3),1+2*x**2+x**3)
+
+)clear completely
+Field has Ring
+
+)clear completely
+-- from bmt
+y:=operator y
+u:=operator u
+eval(y x, y, c[1]*x,x)
+eval(y x, y, D(u t,t),t)
+eval(y x ,y, integral(u t,t),t)
+eval(y x ,y, integral(u z,z=z0..t),t)
+eval(y x+D(y x,x), y, u t+ D(u t,t),t)
+eval(D(y x,x)+y(x),y,D(u x,x)+u(x),x)
+
+
+)clear completely
+-- from bmt
+ps:=x::TS FRAC INT
+D(ps,x) -- fails to find function
+D(ps,[x]) -- works
+D(ps,[y]) -- causes ccl to disappear (at least under windows)
+
+
+)clear completely
+-- from bmt
+T1:=3
+a | a^2+1
+--gets an error while trying to display the type of the expression
+--since it uses fortran code generation stuff which wants to use
+-- the variable name T1 for some other purpose
+
+)clear completely
+-- from bmt
+u1 := operator 'u1
+u2 := operator 'u2
+eq1 := D(u1(t),t,2) + 5*u1(t) = 2*u2(t)
+eq2 := D(u2(t),t,2) + 2*u2(t) = 2*u1(t)
+eq1/2
+_rule(rhs %, lhs %)
+%(lhs eq2)
+eval(%,t=0)
+
+)clear completely
+-- from bmt
+bug := [exp(sqrt(-5))]
+complexForm(bug.1) -- works
+map(complexForm,bug::List EXPR COMPLEX INT) -- works
+map(complexForm,bug) -- fails
+
+
+)clear completely
+-- from bmt
+f x == c[1]*exp(x)
+f x -- works
+g(x:EXPR(INT)):EXPR(INT) == c[1]*exp(x) 
+g x -- fails
+g(x:EXPR(INT)):EXPR(INT) == (c[1]::EXPR INT)*exp(x) 
+g x -- fails
+
+)clear completely
+-- from bmt
+a | a**8+a**4+a**3+a**2+(1::PF 2)
+tt:Matrix SAEa:=[_
+[0,0,0,1,1,1,0,1],_
+[1,0,0,0,0,0,0,0],_
+[0,1,0,0,0,0,0,0],_
+[0,0,1,0,0,0,0,0],_
+[0,0,0,1,0,0,0,0],_
+[0,0,0,0,1,0,0,0],_
+[0,0,0,0,0,1,0,0],_
+[0,0,0,0,0,0,1,0]];
+T:=transpose tt
+T0:=T**91
+T1:=T**95
+
+)clear completely
+-- from bmt
+u1:=operator 'u1
+u2:=operator 'u2
+eq1 := D(u1(t),t,2) + 5*u1(t) = 2*u2(t)
+eq2 := D(u2(t),t,2) + 2*u2(t) = 2*u1(t)
+eq1/2
+_rule(rhs %, lhs %)
+%(lhs eq2)=%(rhs eq2)
+rightZero %
+-2*%
+eval(lhs %,u1,exp(r*t),t)
+%/exp(r*t)
+solve(%,r)
+[eval(exp(r*t),eq) for eq in %]
+map(complexForm, %::List EXPR COMPLEX INT)
+[real %(1), imag %(1), real %(3), imag %(3)]
+gform:= u1(t)=reduce(+, [c[i]*%.i for i in 1..#%])
+_rule(lhs %, rhs %)
+%(lhs eq1)=rhs eq1
+%/2
+--part c
+inits := [u1(0)=1, eval(D(u1 t,t),t=0)=0, u2(0)=2, eval(D(u2 t,t),t=0)=0]
+eqq := eq1-5*u1(t)
+eval(eqq,t=0)
+eval(%,inits)
+inits:=cons(%,inits)
+D(eqq,t)
+eval(%,t=0)
+
+
+)clear completely
+-- from bmt
+u:=operator 'u
+exp:=D(u t,t)
+k:=kernels(exp).1
+l:=argument %
+difop:=operator k
+l2:=[l.1+l.2,l.2,l.3]
+bug:=evaluate(difop,l2)
+kernels(bug).1
+argument %
+eval(bug,t=0)
+
+)clear completely
+R := Polynomial(PrimeField(3)) ; 
+A := UP('X, R) 
+X : A := monomial(1, 1) ;
+f : A := a*X^3 + b*X^2 + c*X + d
+discriminant(f)
+s := differentiate f
+resultant(f,s)
+exquo(%,leadingCoefficient(f))
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

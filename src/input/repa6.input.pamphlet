@@ -1,0 +1,163 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input repa6.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+<<*>>=
+)cls
+
+-- This file demonstrates Representation Theory in Scratchpad
+-- using the packages REP1, REP2, IRSN and SGCF, which are the
+-- abbreviations for RepresentationPackage1, RepresentationPackage2
+-- IrrRepSymNatPackage and SymmetricGroupCombinatoricFunctions.
+ 
+-- authors: Holger Gollan, Johannes Grabmeier
+-- release 1.0  09/30/87
+-- release 2.0  11/10/88: J. Grabmeier: add functions from IRSN
+-- release 2.1  08/04/89: J. Grabmeier: adjusting to new PERM
+--   and modified REP1
+-- release 2.2  06/05/89: J. Grabmeier: adjusting to new algebra
+-- release 2.3  08/20/89: J. Grabmeier: minor adjustments
+ 
+-- In the sequel we show how to get all 2-modular irreducible
+-- representations of the alternating group A6.
+ 
+-- We generate A6 by the permutations threecycle x=(1,2,3)
+-- and the 5-cycle y=(2,3,4,5,6)
+ 
+genA6 : List PERM INT := [cycle [1,2,3], cycle [2,3,4,5,6]]
+ 
+-- pRA6 is the permutation representation over the Integers...
+ 
+pRA6 := permutationRepresentation (genA6, 6)
+ 
+-- ... and pRA6m2 is the permutation representation over PrimeField 2:
+ 
+pRA6m2 : List Matrix PrimeField 2 := pRA6
+ 
+-- Now try to split pRA6m2:
+ 
+sp0 := meatAxe pRA6m2
+ 
+-- We have found the trivial module as a factormodule
+-- and a 5-dimensional submodule.
+ 
+dA6d1 := sp0.2
+ 
+-- Try to split again...
+ 
+sp1 := meatAxe sp0.1
+ 
+-- ... and find a 4-dimensional submodule, say dA6d4a, and the
+-- trivial one again.
+ 
+dA6d4a := sp1.2
+ 
+-- Now we want to test, whether dA6d4a is absolutely irreducible...
+ 
+isAbsolutelyIrreducible? dA6d4a
+ 
+-- ...and see: dA6d4a is absolutely irreducible.
+-- So we have found a second irreducible representation.
+ 
+-- Now construct a representation from reducing an irreducible one
+-- of the symmetric group S_6 over the integers taken mod 2
+-- What is the degree of the representation belonging to partition
+-- [2,2,1,1]?
+ 
+ 
+-- lambda : PRTITION := partition [2,2,1,1]
+lambda := [2,2,1,1]
+dimIrrRepSym lambda
+ 
+-- now create the restriction to A6:
+ 
+d2211  := irrRepSymNat(lambda, genA6)
+ 
+-- ... and d2211m2 is the representation over PrimeField 2:
+ 
+d2211m2 : List Matrix PrimeField 2 := d2211
+ 
+-- and split it:
+ 
+sp2 := meatAxe d2211m2
+ 
+-- A 5 and a 4-dimensional one.
+ 
+-- we take the 4-dimensional one, say dA6d4b:
+ 
+dA6d4b := sp2.1
+ 
+-- This is absolutely irreducible, too ...
+ 
+isAbsolutelyIrreducible? dA6d4b
+ 
+-- ... and dA6d4a and dA6d4b are not equivalent:
+ 
+areEquivalent? ( dA6d4a , dA6d4b )
+ 
+-- So the third irreducible representation is found.
+ 
+-- Now construct a new representation with the help of the tensorproduct
+ 
+dA6d16 := tensorProduct ( dA6d4a , dA6d4b )
+ 
+-- and try to split it...
+ 
+sp3 := meatAxe dA6d16
+ 
+-- The representation is irreducible, but may be not
+-- absolutely irreducible.
+ 
+isAbsolutelyIrreducible? dA6d16
+ 
+-- So let's try the same over the field with 4 elements:
+ 
+gf4 := FiniteField(2,2)
+ 
+dA6d16gf4 : List Matrix gf4 := dA6d16
+sp4 := meatAxe dA6d16gf4
+ 
+-- Now we find two 8-dimensional ones, dA6d8a and dA6d8b.
+ 
+dA6d8a : List Matrix gf4  := sp4.1
+dA6d8b : List Matrix gf4  := sp4.2
+ 
+-- Both are absolutely irreducible...
+ 
+isAbsolutelyIrreducible? dA6d8a
+isAbsolutelyIrreducible? dA6d8b
+ 
+-- and they are not equivalent...
+ 
+areEquivalent? ( dA6d8a, dA6d8b )
+ 
+-- So we have found five absolutely irreducible representations of A6
+-- in characteristic 2.
+ 
+-- The theory tells us that there are no more irreducible ones.
+-- Here again are all absolutely irreducible 2-modular
+-- representations of A6
+ 
+dA6d1
+dA6d4a
+dA6d4b
+dA6d8a
+dA6d8b
+ 
+-- And here again is the irreducible, but not absolutely irreducible
+-- representations of A6 over PrimeField 2
+ 
+dA6d16
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

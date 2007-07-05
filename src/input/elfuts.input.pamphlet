@@ -1,0 +1,80 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input elfuts.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+ 
+)cl all
+--demo of Jacobian elliptic functions expanded as power series
+)set streams calculate 10
+)expose ELFUTS
+macro RN == FRAC INT
+macro QF == FRAC
+xx:UTS(RN,'x,0):=x
+sn(xx,1::RN)
+cn(xx,1::RN)
+dn(xx,1::RN)
+yy:UTS(FRAC UP(k,RN),'y,0):=y
+snn:=sn(yy,k::QF UP(k,RN))
+cnn:=cn(yy,k::QF UP(k,RN))
+dnn:=dn(yy,k::QF UP(k,RN))
+snn**2+cnn**2
+ksquared:=(k::UP(k,RN))**2
+dnn**2+ksquared*snn**2
+(differentiate snn)**2
+(1-snn**2)*(1-ksquared*snn**2)
+(differentiate cnn)**2
+(1-cnn**2)*(1-ksquared+ksquared*cnn**2)
+(differentiate dnn)**2
+(1-dnn**2)*(dnn**2-1+ksquared)
+ 
+kkk:=integrate(1/((1-yy**2)*(1-ksquared*yy**2))**(1/2))
+revert kkk
+snn
+ 
+-- Theta-functions expanded as power series
+ 
+--q0=*/[1-q**2*n for n in 1..]
+--q1=*/[1+q**2*n for n in 1..]
+--q2=*/[1+q**(2*n-1) for n in 1..]
+--q3=*/[1-q**(2*n-1) for n in 1..]
+eprod x==exp evenlambert log x
+qq:UTS(RN,'q,0):=q
+q0:=eprod(1-qq)
+q1:=eprod(1+qq)
+oprod x == exp oddlambert log x
+q2:=oprod(1+qq)
+q3:=oprod(1-qq)
+q1*q2*q3
+q2**8-q3**8
+16*qq*q1**8
+--(q1**2/q2**2)**2
+--(q3**2/q2**2)**2
+q0**3
+q1**2*q0
+q2**2*q0
+q3**2*q0
+qqq:UTS(FRAC UP(a,RN),'q,0):=q
+a:=a::FRAC UP(a,RN)
+ 
+--Jacobi's triple product
+eprod(1-qqq)*oprod(1-a*qqq)*oprod(1-qqq/a)
+sq:=ksquared*snn**2
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,185 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input perm.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+)clear all
+
+-- This file demonstrates some of the new routines for permutations
+-- in AXIOM.        ( Last change: 05/16/89   by   HWG )
+--                  (J. Grabmeier: adjusted to new concept: 08/07/89)
+--                  (M. Weller   : adjusted to 1..: 03/29/90)
+--                  (J. Grabmeier : adjusted to new algebra 05/14/90)
+
+-- Permutations can act on every set, finite or infinite.
+-- Usually permutations are given as a product of cycles,
+-- so the following generates a permutation acting on some
+-- elements of GF(29):
+
+x : List List PrimeField 29 :=
+ [[23,19,7,9,12,11,15],[22,4,14,18,2,5,8],[21,20,10,16,13,6,17]]
+px : PERM PrimeField 29 := x
+
+-- If the permutation consists of just one cycle, you can use the
+-- function "cycle" instead of "coerce":
+
+w : List PrimeField 29 :=
+ [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+pw : PERM PrimeField 29 := cycle w
+
+-- For a product of cycles there is also the function "cycles":
+
+k : List List PrimeField 29 :=
+ [[23,24],[22,16],[21,9],[20,19],[18,12],[17,14],[15,7],[10,6]]
+pk : PERM PrimeField 29 := cycles k
+
+-- Since these permutations generate a group, you can
+-- perform various operations on px, pw and pk.
+-- You may have to be careful, because permutations are viewed
+-- as mappings acting on the left, so   (pw*pk)(7) = pw(pk(7)).
+-- Here are some examples:
+
+pw*pk
+px**3
+
+-- You can ask for inverses:
+
+inv px
+
+-- or for the image of some element under a special permutation:
+
+eval(px,17::PrimeField(29))
+
+-- you may try to build commutators:
+
+commutator(pk,pw)
+
+-- which is the same as inv(pk) * inv(pw) * pk * pw
+
+-- You can also ask for the orbit of some element under a permutation:
+
+orbit(px,11::PrimeField(29))
+
+-- or for the elements of the underlying set, which are permuted
+-- by a given permutation:
+
+movedPoints(pk)
+
+-- Now we take a short look on permutation groups.
+-- They are represented as a list of generating permutations:
+
+gp1 : PERMGRP PrimeField 29 := [ px , pk ]
+gp2 : PERMGRP PrimeField 29 := [ pw , px ]
+gp3 : PERMGRP PrimeField 29 := [ pw , pk ]
+
+-- and we can ask for their orders:
+
+order gp1
+order gp2
+order gp3
+
+-- In fact these are the Mathieu-groups M_22, M_23 and M_24.
+
+-- now a more sophisticated example
+-- The following matrices generate the general linear group GL(3,2):
+
+(m1,m2,m3,m4): Matrix PrimeField 2
+m1 := [[1,1,0],[0,1,0],[0,0,1]]
+m2 := [[1,0,0],[0,1,1],[0,0,1]]
+m3 := [[1,0,0],[1,1,0],[0,0,1]]
+m4 := [[1,0,0],[0,1,0],[0,1,1]]
+
+-- and these matrices act on the non-zero vectors of the
+-- corresponding vector space
+
+vl : List Vector PrimeField 2
+vl := [[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
+
+-- Now we can write down the action of our matrices on this list vl
+-- as a list of pairs
+
+ll1 : List List Vector PrimeField 2 :=
+   [ [ vl.i , m1*(vl.i) ] for i in 1..7 ]
+ll2 : List List Vector PrimeField 2 :=
+   [ [ vl.i , m2*(vl.i) ] for i in 1..7 ]
+ll3 : List List Vector PrimeField 2 :=
+   [ [ vl.i , m3*(vl.i) ] for i in 1..7 ]
+ll4 : List List Vector PrimeField 2 :=
+   [ [ vl.i , m4*(vl.i) ] for i in 1..7 ]
+
+-- and we can coerce these lists to permutations
+
+el1 : PERM Vector PrimeField 2 := coerceListOfPairs ll1
+el2 : PERM Vector PrimeField 2 := coerceListOfPairs ll2
+el3 : PERM Vector PrimeField 2 := coerceListOfPairs ll3
+el4 : PERM Vector PrimeField 2 := coerceListOfPairs ll4
+
+-- Now we can do the same operations as before, e.g.
+
+eval ( el3 , vl.5 )
+el2 * el1
+movedPoints el4
+
+-- Let's built the general linear group now
+
+gl : PERMGRP Vector PrimeField 2 := [ el1 , el2 , el3 , el4 ]
+
+-- and ask for its order
+
+order gl
+
+-- We can also ask for the orbit of the unordered set of vectors
+
+setOfVectors : Set Vector PrimeField 2 := brace [ vl.2 , vl.4 , vl.6 ]
+
+-- under gl
+
+orbit ( gl, setOfVectors )
+
+-- and also for the orbit of the ordered list
+
+listOfVectors : List Vector PrimeField 2 := parts setOfVectors
+orbit ( gl, listOfVectors )
+
+-- Now Rubik's cube.
+
+f : PERM INT := cycles [[11,13,15,17],[12,14,16,18],[51,31,21,41],[53,33,23,43],_
+             [52,32,22,42]]
+
+r : PERM INT := cycles [[21,23,25,27],[22,24,26,28],[13,37,67,43],[15,31,61,45],_
+             [14,38,68,44]]
+
+-- Some calculation in Rubik's group:
+
+(f**2*r**2)**3
+
+rc := rubiksGroup()
+
+order rc
+
+orbits rc
+
+-- Can we interchange just two pieces with two visible faces on the cube
+-- and leave everything else fixed?
+
+member? (cycles([[12,14],[32,22]])$(PERM INT),rc)
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input fparfrac.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+---------------------------- fparfrac.input ---------------------------------
+-- This file demonstrates the factor-free conversion to full partial fractions.
+)cl all
+Q := FRAC INT
+Px := UP(x, Q)
+Fx := FRAC Px
+
+-- here is a simple-looking function
+f:Fx := 36 / (x**5-2*x**4-2*x**3+4*x**2+x-2)
+-- use fullPartialFraction to convert to the type FPARFRAC
+g := fullPartialFraction f
+-- use :: to convert back to a rational function
+g::Fx
+
+-- Full partial fractions differentiate faster than rational functions:
+g5 := D(g, 5)
+f5 := D(f, 5)
+-- check that the two forms represent the same function
+g5::Fx - f5
+
+-- Here are more complicated examples:
+f:Fx := (x**5 * (x-1)) / ((x**2 + x + 1)**2 * (x-2)**3)
+g := fullPartialFraction f
+g::Fx - f
+
+f:Fx := (2*x**7-7*x**5+26*x**3+8*x)/(x**8-5*x**6+6*x**4+4*x**2-8)
+g := fullPartialFraction f
+g::Fx - f
+
+f:Fx := x**3/(x**21+2*x**20+4*x**19+7*x**18+10*x**17+17*x**16+22*x**15+30*x**14
+                +36*x**13+40*x**12+47*x**11+46*x**10+49*x**9+43*x**8+38*x**7
+                  +32*x**6+23*x**5+19*x**4+10*x**3+7*x**2+2*x+1)
+g := fullPartialFraction f
+-- this verification takes much longer than the conversion to partial fractions
+g::Fx - f
+
+
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

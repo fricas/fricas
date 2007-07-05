@@ -1,0 +1,122 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input elemnum.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+--
+-- Test numeric evaluation of elementary functions.  SMW June 26, 1991.
+)clear all
+)set break resume
+x := 0.7::Float
+[exp log x]
+[log exp x]
+[sin asin x,  cos acos x,  tan atan x,  cot acot x]
+[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
+[sinh asinh x,             tanh atanh x,             csch acsch x,sech asech x]
+[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
+--Should give errors:
+--acsc  x
+--asec  x 
+--acosh x
+--acoth x
+
+x := 1.1::Float
+[exp log x]
+[log exp x]
+[                          tan atan x,  cot acot x, csc acsc x,   sec asec x  ]
+[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
+[sinh asinh x,cosh acosh x,             coth acoth x,csch acsch x             ]
+[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
+--Should give errors:
+--asin x
+--acos x
+--atanh x
+--asech x
+
+x := 0.7::DoubleFloat
+[exp log x]
+[log exp x]
+[sin asin x,  cos acos x,  tan atan x,  cot acot x]
+[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
+[sinh asinh x,             tanh atanh x,             csch acsch x,sech asech x]
+[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
+--Should give errors:
+--acsc  x
+--asec  x 
+--acosh x
+--acoth x
+
+x := 1.1::DoubleFloat
+[exp log x]
+[log exp x]
+[                          tan atan x,  cot acot x, csc acsc x,   sec asec x  ]
+[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
+[sinh asinh x,cosh acosh x,             coth acoth x,csch acsch x             ]
+[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
+--Should give errors:
+--asin x
+--acos x
+--atanh x
+--asech x
+
+qtest(a,b,n) ==
+   m1 := if n = 1 or n = 4 then 0 else  1
+   s1 := if n = 1 or n = 4 then 1 else -1
+   s2 := if n = 1 or n = 2 then 1 else -1
+   x := complex(s1*a, s2*b)
+   [x- exp   log x, _
+    x- sin   asin  x, x-    cos   acos  x, x- tan   atan  x , _
+    x- csc   acsc  x, x-    sec   asec  x, x- cot   acot  x , _
+    x- sinh  asinh x, x-    cosh  acosh x, x- tanh  atanh x , _
+    x- csch  acsch x, x-    sech  asech x, x- coth  acoth x , _
+    x- log   exp   x, _
+    x- asin  sin   x, x- s1*acos  cos   x, x- atan  tan  x , _
+    x- acsc  csc   x, x- s1*asec  sec   x, x- acot  cot  x + m1*%pi, _
+    x- asinh sinh  x, x- s1*acosh cosh  x, x- atanh tanh x , _
+    x- acsch csch  x, x- s1*asech sech  x, x- acoth coth x ]
+
+qerr(l) ==
+    reduce(+, [norm v for v in l])/#l
+sa := 0.7::DoubleFloat
+sb := 1.1::DoubleFloat
+ba := 0.7::Float
+bb := 1.1::Float
+
+qtest(sa, sb, 1)
+qerr %
+qtest(ba, bb, 1)
+qerr %
+
+qtest(sa, sb, 2)
+qerr %
+qtest(ba, bb, 2)
+qerr %
+
+qtest(sa, sb, 3)
+qerr %
+qtest(ba, bb, 3)
+qerr %
+
+qtest(sa, sb, 4)
+qerr %
+qtest(ba, bb, 4)
+qerr %
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

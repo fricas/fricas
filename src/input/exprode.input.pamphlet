@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input exprode.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+<<*>>=
+)clear all
+)set streams calculate 7
+ 
+-- We will solve  y''' = sin(y'') * exp(y) + cos(x)
+-- subject to y(0) = 1, y'(0) = 0, y''(0) = 0
+ 
+y := operator 'y
+ 
+eq := differentiate(y x, x, 3) - sin differentiate(y x, x, 2) * exp y x
+           = cos x
+ 
+seriesSolve(eq, y, x = 0, [1, 0, 0])
+ 
+-- Airy, isn't it?
+airy := differentiate(y x, x, 2) - x * y x
+ 
+seriesSolve(airy, y, x = 0, [a0, a1])
+ 
+-- We can solve around other points than x = 0
+seriesSolve(airy, y, x = 1, [a0, a1])
+
+-- System of equations for tan(t) and sec(t)
+x := operator 'x
+eq1 := differentiate(x t, t) = 1 + x(t)**2
+eq2 := differentiate(y t, t) = x(t) * y(t)
+seriesSolve([eq2, eq1], [x, y], t = 0, [y 0 = 1, x 0 = 0])
+
+-- System of equations for a damped pendulum of mass and length 1:
+eq1 := differentiate(x t, t) = y t
+eq2 := differentiate(y t, t) = - g * sin(x t) - c * y t
+seriesSolve([eq1, eq2], [x, y], t = 0, [y 0 = a, x 0 = b])
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

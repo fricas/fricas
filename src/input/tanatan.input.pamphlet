@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input tanatan.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+)clear all
+--Here's an equation
+eq:=2*tan(x)+2*tan(2*x)
+--
+-- Solve it
+--
+thesols:=solve(eq,x)
+--
+-- Verify the solutions
+--
+theproofs:=[eval(eq,i) for i in thesols]
+--
+-- Problem with simplification of tan(n*atan(y))
+-- Get the  tower for each expression
+--
+thetowers:=[tower i for i in theproofs];
+thesubs:LIST Record (a:LIST KERNEL EXPR INT ,b:LIST EXPR INT)
+thetans:LIST LIST Record(i:INT,k:KERNEL EXPR INT,z:List Equation EXPR INT)
+--
+-- apply pattern-matching to find tan(n*atan(y))
+-- and construct the structures needed
+--
+thetans:=_
+ [[construct(j,i.j,Is(argument(i.j).1,n * atan(y))) for j in 1..#i_
+      |is?(i.j,tan) and is?(argument(i.j).1,n * atan(y))] _
+          for i in thetowers] ;
+--
+-- Construct the evaluation rules for tan(n*atan(y)) -> tanNa(a,n)
+--
+thesubs:=_
+  [construct([j.k for j in thetans.i],_
+             [tanNa(rhs(j.z.2),rhs(j.z.1) ::INT)$TangentExpansions(EXPR INT)_
+                        for j in thetans.i]) _
+            for i in 1..#theproofs];
+--
+-- Apply the evaluation rules
+--
+thezeros:=[eval(i,j.a,j.b) for i in theproofs for j in thesubs]
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

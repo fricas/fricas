@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input antoine.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+-- Draw Antoine's Necklace
+-- Thanks to Matt Grayson (formerly at IBM's T.J Watson Research Center)
+-- for the idea.
+
+-- Bring DH matrices into the environment
+)set expose add con DenavitHartenbergMatrix
+
+)read dhtri
+
+-- The current transformation for drawing a sub-ring
+torusRot: DHMATRIX(DoubleFloat)
+
+-- Draw Antoine's Rings with n levels of recursive subdivision.
+-- The number of subrings is 10**n.
+drawRings(n) ==
+  s := create3Space()$ThreeSpace DoubleFloat
+  -- create an identity transformation
+  dh:DHMATRIX(DoubleFloat) := identity()
+  drawRingsInner(s, n, dh)
+  makeViewport3D(s, "Antoine's Necklace")
+
+-- Recursively draw Antoine's Necklace.
+drawRingsInner(s, n, dh) ==
+  n = 0 =>
+    drawRing(s, dh)
+    void()
+  t := 0.0@DoubleFloat             -- the current angle around the ring
+  p := 0.0@DoubleFloat             -- the angle of the subring from the plane
+  tr := 1.0@DoubleFloat            -- the amount to translate the subring
+  inc := 0.1@DoubleFloat           -- translation increment
+  -- subdivide the ring into 10 linked rings
+  for i in 1..10 repeat
+    tr := tr + inc
+    inc := -inc
+    dh' := dh * rotatez(t) * translate(tr, 0.0@DoubleFloat, 0.0@DoubleFloat) *
+           rotatey(p) * scale(0.35@DoubleFloat, 0.48@DoubleFloat, 0.4@DoubleFloat)
+    drawRingsInner(s, n-1, dh')
+    t := t + 36.0@DoubleFloat
+    p := p + 90.0@DoubleFloat
+  void()
+
+-- draw a single ring into the given subspace, transformed by the given
+-- DHMATRIX.
+drawRing(s, dh) ==
+  free torusRot
+  torusRot := dh
+  makeObject(torus, 0..2*%pi, 0..2*%pi, var1Steps == 6, space == s,
+             var2Steps == 15)
+
+-- Parameterization of a torus, transformed by the DHMATRIX in torusRot.
+torus(u ,v) ==
+  cu := cos(u)/6
+  torusRot * point [(1+cu)*cos(v), (1+cu)*sin(v), (sin u)/6]
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

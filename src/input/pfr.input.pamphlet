@@ -1,0 +1,123 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input pfr.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Partial Fractions}
+A {\it partial fraction} is a decomposition of a quotient into a
+sum of quotients where the denominators of the summands are
+powers of primes.
+For example, the rational number $1 \over 6$ can be decomposed
+into ${{1 \over 2} + {-1 \over 3}}.$ It is possible to compute
+partial fractions of quotients of objects belonging to domains
+belonging to the category {\sf EuclideanDomain}.
+For example, {\sf Integer, Gaussian(Integer)} and {\sf
+UnivariatePoly(x, RationalNumber)} all belong to {\sf
+EuclideanDomain}.
+In the examples below, we'll demonstrate how to decompose
+quotients of each of these kind of objects into partial fractions.
+
+It is necessary that we know how to factor the denominator when
+we want to compute a partial fraction.  Although the interpreter
+can often do this automatically, it is easier if you just include
+a call to {\em factor}.  The main function for computing partial
+fractions is called {\em partialFraction} and we'll use this to
+compute a decomposition of $1 \over {10!}$.
+The first argument to {\em partialFraction} is the numerator of
+the quotient and the second argument is the factored denominator.
+<<code>>=
+partialFraction(1,factor factorial 10)
+@
+Since the denominators are powers of primes, it may be possible to
+further expand the numerators with respect to those primes. Use the
+function {\em padicFraction} to do this.  The function
+{\em compactFraction} returns an expanded fraction into the usual
+form.  The compacted version is used internally for computational
+efficiency.
+<<code>>=
+f := padicFraction %
+compactFraction %
+@
+Given a partial fraction, it is possible to add, subtract, multiply
+and divide them.  In addition, it is possible to extract the parts
+of the decomposition.  The number of terms in fractional part is
+computed by {\em numberOfFractionalTerms}.
+<<code>>=
+numberOfFractionalTerms f
+@
+This does {\it not} include the whole part of the fraction, though
+it can be gotten by calling {\em wholePart}.
+<<code>>=
+wholePart f
+@
+Individual terms can be extracted with {\em nthFractionalTerm}.
+<<code>>=
+t3 := nthFractionalTerm(f,3)
+@
+The numerator and denominator of the first fractional term are gotten
+by calling {\em firstNumer} and {\em firstDenom}, respectively.
+<<code>>=
+firstNumer t3
+firstDenom t3
+@
+Given two gaussian integers (see \S \ref{gaussz}), it is possible
+to decompose their quotient into a partial fraction.
+<<code>>=
+g := - 13 + 14 * %i
+1/g
+partialFraction(1,factor g)
+@
+To convert back to a quotient, simply use a coercion.
+<<code>>=
+% :: FRAC COMPLEX INT
+@
+Also, since {\sf QF G I} is {\it isomorphic} to
+{\sf G RN} is further possible to
+coerce the last result to a gaussian with rational number real and
+imaginary parts.
+<<code>>=
+% :: COMPLEX FRAC INT
+
+)clear all
+@
+To conclude this section, we'll compute the decomposition of
+$$
+1 \over {\prod_{i=1}^{4} {{(x+1)}^i}}
+$$
+The polynomials in this object will be of type
+{\sf UnivariatePoly(x, RationalNumber)}, though it is easier to write
+as {\sf P[x] RN}.
+We'll use the {\em prfac} function (see \S \ref{factobj}) to
+directly compute the denominator in factored form.
+<<code>>=
+u : FR UP(x,FRAC INT) := reduce(*,[primeFactor(x+i,i) for i in 0..4])
+@
+The compact and expanded partial fractions for the quotient are
+<<code>>=
+partialFraction(1,u)
+padicFraction %
+@
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1991.
+@
+<<*>>=
+<<license>>
+
+)set out len 57
+)time off
+)clear all
+
+<<code>>
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

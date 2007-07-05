@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input tree.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{License}
+<<license>>=
+--Copyright The Numerical Algorithms Group Limited 1994.
+@
+<<*>>=
+<<license>>
+)cl all
+)load TREE BTREE
+bt := BinaryTree INT
+ebtree:=empty()$(BTREE INT)
+insleaf:(INT,bt)->bt
+insleaf(x,t)==
+     empty? t=> binaryTree(x)$(BTREE INT)
+     x> value t => binaryTree(left t,value t,insleaf(x,right t))
+     binaryTree(insleaf(x,left t),value t,right t)
+b:bt:=reduce(insleaf,[8,3,5,4,6,2,1,5,7],ebtree)
+bleaf x == reduce(insleaf,x,ebtree)
+fln:bt-> List INT
+fln t==
+    empty? t => empty()$(List INT)
+    concat(fln left t,concat(value t,fln right t))
+fln b
+split:(INT,bt)->List bt
+split(x,t)==
+     empty? t=> [ebtree,ebtree]
+     x> value t =>
+            a:=split(x,right t)
+            [binaryTree(left t,value t,a.1),a.2]
+     a:=split(x,left t)
+     [a.1,binaryTree(a.2,value t,right t)]
+split(3,b)
+insroot:(INT,bt)->bt
+insroot(x,t)==
+      a:=split(x,t)
+      binaryTree(a.1,x,a.2)
+broot x == reduce(insroot,x,ebtree)
+a:List INT:=[8,3,9,4,6,2,1,5,7]
+l1:=bleaf a
+r1:=broot reverse a
+(l1=r1)::Boolean
+broot a
+bleaf reverse a
+mg:(bt,bt)->bt
+mg(x,y)==
+    empty? x => y
+    empty? y => x
+    value x > value y => binaryTree(mg(y,left x),value x,right x)
+    binaryTree(left y,value y,mg(x,right y))
+mg1:(INT,bt)->bt
+mg1(x,t)==mg(binaryTree x,t)
+btourn:List INT-> bt
+btourn x == reduce(mg1,x,ebtree)
+btourn a
+cmp:(List INT,List INT)-> Boolean
+cmp(x,y)== x.2<y.2
+sort2 : List List INT -> List List INT
+sort2 x== sort(cmp,x)
+invert x==[i.1 for i in  sort2  [[k,l]
+          for k in 1..#x for  l in x]]
+broot a
+btourn invert a
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

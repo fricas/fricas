@@ -1,0 +1,518 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{Quaternions and Rotation Sequences}
+\author{Timothy Daly}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Rotations in 3-space}
+Orthogonal groups are used in Quantum Field Theory. Conway highlights
+4 kinds of orthogonal groups. First is the General Orthogonal group
+$GO_n$ which is the set of all isometries of n-dimensional Euclidean
+space $R^n$ that fix the origin. This would imply rotations and
+reflections but not translations.
+
+The determinant of any element in $GO_n$ is $+1$ or $-1$. Reflections
+have a determinant of $-1$. The elements of determinant $+1$
+(rotations) form a subgroup of index 2, the Special Orthogonal group
+$SO_n$. The product of any two reflections forms a rotation so
+grouping reflections in pairs generates $SO_n$.
+
+Conway also defines two groups derived from $GO_n$ and $SO_n$. From
+$GO_n$ we get the Projective General Orthogonal group. From $SO_n$ we
+get the Projective Special Orthogonal group. Annoyingly, he's
+introduced these groups without explaining them.  And based their
+definition on an undefined $\alpha$.
+
+It is a consequence of the existence of complex numbers that $SO_2$
+and $PSO_2$ are commutative; of the existence of quaternions that
+$PSO_4$ is equivalent to $PSO_3 \times PSO_3$; and of the existence of
+octonions that <img alt=$PSO_8$ has a "triality" automorphism of order 3.
+
+Now we move back to Kuipers, Chapter 3 "Rotations in 3-space"
+
+Rotation matrices are unique. Euler angle rotations are not.
+Eigenvalues of rotation matrices are always $+1$ plus a pair of
+complex conjugates.  The trace of a square matrix is the sum of the
+elements on the diagonal.
+
+The following code are the steps in the tracking example starting on p60.
+
+First we define a rotation around the X axis by a rotation angle $a$.
+
+<<spadcommand>>=
+R1:=matrix([[cos a, sin a, 0],[-sin a, cos a, 0],[0, 0, 1]])
+
+@
+
+\begin{verbatim}
+        + cos(a)   sin(a)  0+
+        |                   |
+   (1)  |- sin(a)  cos(a)  0|
+        |                   |
+        +   0        0     1+
+
+   Type: Matrix Expression Integer
+\end{verbatim}
+
+Next we define a rotation around the Y axis by a rotation angle of $b$.
+
+<<spadcommand>>=
+R2:=matrix([[cos b, 0, -sin b],[0, 1, 0],[sin b, 0, cos b]])
+
+@
+
+\begin{verbatim}
+        +cos(b)  0  - sin(b)+
+        |                   |
+   (2)  |  0     1     0    |
+        |                   |
+        +sin(b)  0   cos(b) +
+
+   Type: Matrix Expression Integer
+\end{verbatim}
+
+Then we compose them (order is important) to form the single rotation
+equivalent to first rotating around $X$, then around the new,
+displaced $Y$.
+
+<<spadcommand>>=
+R:=R2*R1
+
+@
+
+\begin{verbatim}
+        +cos(a)cos(b)  cos(b)sin(a)  - sin(b)+
+        |                                    |
+   (3)  |  - sin(a)       cos(a)        0    |
+        |                                    |
+        +cos(a)sin(b)  sin(a)sin(b)   cos(b) +
+
+   Type: Matrix Expression Integer
+\end{verbatim}
+
+To find the axis of this single rotation we define the vector $V$
+
+<<spadcommand>>=
+V:=matrix([[x1],[y1],[z1]])
+@
+
+\begin{verbatim}
+        +x1+
+        |  |
+   (4)  |y1|
+        |  |
+        +z1+
+
+   Type: Matrix Polynomial Integer
+\end{verbatim}
+
+And this is the equation we need to solve. Since we rotate around the
+vector $V$ it is unchanged when operated on by the rotation $R$, or in
+equation form we get 
+
+<<spadcommand>>=
+E:=R*V=V
+
+@
+
+\begin{verbatim}
+        +- z1 sin(b) + y1 cos(b)sin(a) + x1 cos(a)cos(b)+  +x1+
+        |                                               |  |  |
+   (5)  |            - x1 sin(a) + y1 cos(a)            |= |y1|
+        |                                               |  |  |
+        +   (y1 sin(a) + x1 cos(a))sin(b) + z1 cos(b)   +  +z1+
+
+   Type: Equation Matrix Expression Integer
+\end{verbatim}
+
+We can subtract the right hand side from the left hand side thus
+
+<<spadcommand>>=
+F:=lhs(E)-rhs(E)
+
+@
+
+\begin{verbatim}
+        +- z1 sin(b) + y1 cos(b)sin(a) + x1 cos(a)cos(b) - x1+
+        |                                                    |
+   (6)  |            - x1 sin(a) + y1 cos(a) - y1            |
+        |                                                    |
+        +   (y1 sin(a) + x1 cos(a))sin(b) + z1 cos(b) - z1   +
+
+    Type: Matrix Expression Integer
+\end{verbatim}
+
+and form the equation setting the result to zero. This has two solutions.
+The trivial solution is when $V$ is zero. 
+We solve for the nontrivial solution.
+
+<<spadcommand>>=
+G:=F=matrix([[0],[0],[0]])
+
+@
+
+\begin{verbatim}
+        +- z1 sin(b) + y1 cos(b)sin(a) + x1 cos(a)cos(b) - x1+  +0+
+        |                                                    |  | |
+   (7)  |            - x1 sin(a) + y1 cos(a) - y1            |= |0|
+        |                                                    |  | |
+        +   (y1 sin(a) + x1 cos(a))sin(b) + z1 cos(b) - z1   +  +0+
+
+   Type: Equation Matrix Expression Integer
+\end{verbatim}
+
+
+If we pick out the second equation
+
+<<spadcommand>>=
+H:=elt(F,2,1)
+
+@
+
+\begin{verbatim}
+   (8)  - x1 sin(a) + y1 cos(a) - y1
+
+   Type: Expression Integer
+\end{verbatim}
+
+and let x1 = k
+
+<<spadcommand>>=
+x1:=k
+
+@
+
+\begin{verbatim}
+   (9)  k
+
+   Type: Variable k
+\end{verbatim}
+
+and substitute this into the second equation
+
+<<spadcommand>>=
+J:=subst(H,'x1=k)
+
+@
+
+\begin{verbatim}
+   (10)  - k sin(a) + y1 cos(a) - y1
+
+   Type: Expression Integer
+\end{verbatim}
+
+we can solve this equation for y1.
+
+<<spadcommand>>=
+L:=solve(J,y1)
+
+@
+
+\begin{verbatim}
+               k sin(a)
+   (11)  [y1= ----------]
+              cos(a) - 1
+
+   Type: List Equation Expression Integer
+\end{verbatim}
+
+and we can assign the solution to the variable y1
+
+<<spadcommand>>=
+y1:=rhs(first(solve(J,y1)))
+
+@
+
+\begin{verbatim}
+          k sin(a)
+   (12)  ----------
+         cos(a) - 1
+
+   Type: Expression Integer
+\end{verbatim}
+
+Now we turn our attention to the third equation
+
+<<spadcommand>>=
+H1:=elt(F,3,1)
+
+@
+
+\begin{verbatim}
+   (13)  (y1 sin(a) + x1 cos(a))sin(b) + z1 cos(b) - z1
+
+   Type: Expression Integer
+\end{verbatim}
+
+and substitute the known values for x1 and y1
+
+<<spadcommand>>=
+J1:=subst(H1,['x1=x1, 'y1=y1])
+
+@
+
+\begin{verbatim}
+   (14)
+                2           2
+       (k sin(a)  + k cos(a)  - k cos(a))sin(b) + (z1 cos(a) - z1)cos(b)
+     + 
+       - z1 cos(a) + z1
+  /
+     cos(a) - 1
+
+    Type: Expression Integer
+\end{verbatim}
+
+and then solve for z1, assigning it to the variable z1
+
+
+<<spadcommand>>=
+z1:=simplify(rhs(first(solve(J1,z1))))
+
+@
+
+\begin{verbatim}
+          k sin(b)
+   (15)  ----------
+         cos(b) - 1
+
+   Type: Expression Integer
+\end{verbatim}
+
+So the axis of rotation is
+
+<<spadcommand>>=
+[x1,y1,z1]
+
+@
+
+\begin{verbatim}
+             k sin(a)   k sin(b)
+   (16)  [k,----------,----------]
+            cos(a) - 1 cos(b) - 1
+
+   Type: List Expression Integer
+\end{verbatim}
+
+We can choose a specific value of $k = -1$ so that $y1$ becomes
+
+<<spadcommand>>=
+y1:=eval(y1,[k=-1])
+
+@
+
+\begin{verbatim}
+             sin(a)
+   (17)  - ----------
+           cos(a) - 1
+
+   Type: Expression Integer
+\end{verbatim}
+
+and $z1$ becomes
+
+<<spadcommand>>=
+z1:=eval(z1,[k=-1])
+
+@
+
+\begin{verbatim}
+             sin(b)
+   (18)  - ----------
+           cos(b) - 1
+
+   Type: Expression Integer
+\end{verbatim}
+
+So the axis of rotation is
+
+<<spadcommand>>=
+[x1,y1,z1]
+
+@
+
+\begin{verbatim}
+                sin(a)       sin(b)
+   (19)  [k,- ----------,- ----------]
+              cos(a) - 1   cos(b) - 1
+
+   Type: List Expression Integer
+\end{verbatim}
+
+We need the trace of the matrix which is only defined for square matrices.
+So we create a new version of the R matrix as a square matrix $RSQ$
+
+<<spadcommand>>=
+RSQ:SQMATRIX(3,EXPR(INT)):=R
+
+@
+
+\begin{verbatim}
+         +cos(a)cos(b)  cos(b)sin(a)  - sin(b)+
+         |                                    |
+   (20)  |  - sin(a)       cos(a)        0    |
+         |                                    |
+         +cos(a)sin(b)  sin(a)sin(b)   cos(b) +
+
+   Type: SquareMatrix(3,Expression Integer)
+\end{verbatim}
+
+Now we compute the trace
+
+<<spadcommand>>=
+TR:=trace(RSQ)
+
+@
+
+\begin{verbatim}
+   (21)  (cos(a) + 1)cos(b) + cos(a)
+
+   Type: Expression Integer
+\end{verbatim}
+
+and we can obtain the angle of rotation by equating the trace to 1-2*cos(c)
+
+<<spadcommand>>=
+TREQ:=TR=1+2*cos(c)
+
+@
+
+\begin{verbatim}
+   (22)  (cos(a) + 1)cos(b) + cos(a)= 2cos(c) + 1
+
+   Type: Equation Expression Integer
+\end{verbatim}
+
+which we can solve for c
+
+<<spadcommand>>=
+c:=rhs(first(solve(TREQ,c)))
+
+@
+
+\begin{verbatim}
+              (cos(a) + 1)cos(b) + cos(a) - 1
+   (23)  acos(-------------------------------)
+                             2
+
+   Type: Expression Integer
+\end{verbatim}
+
+assuming $k=-1$, heading $a=\pi/6$, and elevation $b=\pi/3$ we can
+compute numeric values for the axis of rotation thus. First a numeric
+$x1$
+
+<<spadcommand>>=
+x1v:=eval(x1,k=-1)
+
+@
+
+\begin{verbatim}
+   (24)  - 1
+
+   Type: Polynomial Integer
+\end{verbatim}
+
+then a numeric y1
+
+<<spadcommand>>=
+y1v:=numeric(eval(y1,[a=%pi/6]))
+
+@
+
+\begin{verbatim}
+   (25)  3.7320508075 688772936
+
+   Type: Float
+\end{verbatim}
+
+then a numeric z1
+
+<<spadcommand>>=
+z1v:=numeric(eval(z1,[k=-1,b=%pi/3]))
+
+@
+
+\begin{verbatim}
+   (26)  1.7320508075 688772935
+
+   Type: Float
+\end{verbatim}
+
+giving us the vector for the axis of rotation
+
+<<spadcommand>>=
+[x1v, y1v, z1v]
+
+@
+
+\begin{verbatim}
+   (27)  [- 1.0,3.7320508075 688772936,1.7320508075 688772935]
+
+   Type: List Polynomial Float
+\end{verbatim}
+
+with a rotation angle (in radians) given by
+
+<<spadcommand>>=
+c1v:=numeric(eval(c,[a=%pi/6,b=%pi/3]))
+
+@
+
+\begin{verbatim}
+   (28)  1.1598041770 494147762
+
+   Type: Float
+\end{verbatim}
+
+in degrees this is 
+
+<<spadcommand>>=
+c1v*180/%pi
+
+@
+
+\begin{verbatim}
+   (29)  66.4518844065 75160021
+
+   Type: Float
+\end{verbatim}
+
+We can evaluate the combined rotation matrix under our assumed values
+
+<<spadcommand>>=
+rv:=eval(R,[a=%pi/6,b=%pi/3])
+
+@
+
+\begin{verbatim}
+         + +-+           +-++
+         |\|3    1      \|3 |
+         |----   -    - ----|
+         |  4    4        2 |
+         |                  |
+         |       +-+        |
+   (30)  |  1   \|3         |
+         |- -   ----    0   |
+         |  2     2         |
+         |                  |
+         |       +-+        |
+         | 3    \|3     1   |
+         | -    ----    -   |
+         + 4      4     2   +
+
+   Type: Matrix Expression Integer
+\end{verbatim}
+<<*>>=
+<<spadcommand>>
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}
