@@ -24,20 +24,16 @@ stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
 
 $(DATABASES): ../algebra/*.NRLIB/code.$(FASLEXT)
 	@ echo 4 rebuilding databases...
-	@ $(INSTALL_DATA) $(axiom_src_docdir)/gloss.text ../algebra
-	@ $(INSTALL_DATA) $(axiom_src_docdir)/gloss.text ../algebra
-	@ $(INSTALL_DATA) $(axiom_src_docdir)/topics.data ../algebra
-	@ $(INSTALL_DATA) $(axiom_src_docdir)/topics.data ../algebra
-	@ (cd ../algebra ; \
-           echo ')lisp (make-databases "" nil)' | ${INTERPSYS} )
-	@ $(INSTALL_DATA) ../algebra/*.daase $(axiom_targetdir)/algebra
-	@ $(INSTALL_DATA) ../algebra/libdb.text $(axiom_targetdir)/algebra
-	@ $(INSTALL_DATA) ../algebra/comdb.text $(axiom_targetdir)/algebra
-	@ $(mkinstalldirs) $(axiom_targetdir)/algebra/USERS.DAASE \
+	(cd ../algebra ; \
+           echo ')lisp (make-databases "" nil)' | AXIOM=$(AXIOM) ${INTERPSYS} )
+	$(INSTALL_DATA) ../algebra/*.daase $(axiom_targetdir)/algebra
+	$(INSTALL_DATA) ../algebra/libdb.text $(axiom_targetdir)/algebra
+	$(INSTALL_DATA) ../algebra/comdb.text $(axiom_targetdir)/algebra
+	$(mkinstalldirs) $(axiom_targetdir)/algebra/USERS.DAASE \
              $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
-	@ $(INSTALL_DATA) ../algebra/USERS.DAASE/index.KAF \
+	$(INSTALL_DATA) ../algebra/USERS.DAASE/index.KAF \
                    $(axiom_targetdir)/algebra/USERS.DAASE
-	@ $(INSTALL_DATA) ../algebra/DEPENDENTS.DAASE/index.KAF \
+	$(INSTALL_DATA) ../algebra/DEPENDENTS.DAASE/index.KAF \
                    $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
 
 bin_PROGRAMS = asq$(EXEEXT)
@@ -60,8 +56,8 @@ $(axiom_target_libdir)/copyright: $(srcdir)/copyright
 
 $(axiom_target_bindir)/axiom: $(srcdir)/axiom
 	@echo 1 making $@ from $<
-	@ $(INSTALL_SCRIPT) $< $@
-	@chmod +x $(axiom_target_bindir)/axiom
+	$(INSTALL_SCRIPT) $< $@
+	chmod +x $(axiom_target_bindir)/axiom
 
 
 mostlyclean-local:

@@ -159,23 +159,17 @@ sup.bitmap: $(srcdir)/bitmaps.pamphlet
 ht_icon: $(srcdir)/bitmaps.pamphlet
 	$(axiom_build_document) --tangle=hticon --output=$@ $< 
 
-${HYPER}/pages/ht.db: $(HTADD) $(srcdir)/pages/*.ht $(srcdir)/pages/*.pht
+${HYPER}/pages/ht.db: $(HTADD) $(srcdir)/pages/*.ht
 	@echo making ${HYPER}/pages from $(axiom_src_srcdir)/pages directory
 	mkdir -p ${HYPER}/pages
+	mkdir -p $(axiom_target_datadir)/viewports
 	cp -pr $(srcdir)/pages/*.ht ${HYPER}/pages
-	(cd $(srcdir)/pages/ ; \
-	     for A in `ls *.pht`; do \
-		sed 's,/doc/viewports/,/share/viewports/,g' $$A \
-					> ${HYPER}/pages/$$A; \
-	     done )
 	(cd ${HYPER}/pages ; \
            rm -f ht.db ; \
            rm -f *~ ; \
-	   ${HTADD} *.ht *.pht )
+	   ${HTADD} *.ht )
 	rm -rf ${HYPER}/bitmaps
 	cp -pr $(srcdir)/bitmaps ${HYPER}
-	rm -rf $(axiom_target_datadir)/viewports
-	cp -pr $(srcdir)/viewports $(axiom_target_datadir)
 
 
 ${OUTLIB}/htsearch: $(srcdir)/search.pamphlet
