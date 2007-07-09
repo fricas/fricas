@@ -291,12 +291,6 @@ getConstructorForm name ==
 
 getConstructorArgs conname == CDR getConstructorForm conname
 
-htSay(x,:options) ==
---if x = $charEscape then x := $charNewline else
---if x = $stringEscape then x := $stringNewline
-  bcHt x
-  for y in options repeat bcHt y
-
 bcComments(comments,:options) ==
   italics? := not IFCAR options
   STRINGP comments =>
@@ -316,70 +310,6 @@ bcConform(form,:options) ==
   $italics?    : local := IFCAR options
   $italicHead? : local := IFCAR IFCDR options
   bcConform1 form
-
-bcConform1 form == main where
------------------> OBSELETE
-  main ==
-    form is ['ifp,form1,:pred] =>
-      hd form1
-      bcPred pred
-    hd form
-  hd form ==
-    atom form =>
-      not MEMQ(form,'(Mapping Union Record)) and null constructor? form =>
-        s := STRINGIMAGE form
-        (s.0 = char '_#) and (n := POSN1(form, $FormalFunctionParameterList)) =>
-           htSay form2HtString ($FormalMapVariableList . n)
-        htSay form
-      s := STRINGIMAGE form
-      $italicHead? => htSayItalics s
-      $bcMultipleNames =>
-        satTypeDownLink(s, ['"(|conPageChoose| '|",s,'"|)"])
-      satTypeDownLink(s, ["(|conPage| '|",s,'"|)"])
-    (head := QCAR form) = 'QUOTE =>
-      htSay('"'")
-      hd CADR form
-    head = 'SIGNATURE =>
-      htSay(CADR form,'": ")
-      mapping CADDR form
-    head = 'Mapping and rest form => rest form => mapping rest form
-    head = ":" =>
-      hd CADR form
-      htSay '": "
-      hd CADDR form
-    QCDR form and dbEvalableConstructor? form
-       => bcConstructor(form,head)
-    hd head
-    null (r := QCDR form) => nil
-    tl QCDR form
-  mapping [target,:source] ==
-    tuple source
-    bcHt
-      $saturn => '" {\ttrarrow} "
-      '" -> "
-    hd target
-  tuple u ==
-    null u => bcHt '"()"
-    null rest u => hd u
-    bcHt '"("
-    hd first u
-    for x in rest u repeat
-      bcHt '","
-      hd x
-    bcHt '")"
-  tl u ==
-    bcHt '"("
-    firstTime := true
-    for x in u repeat
-      if not firstTime then bcHt '","
-      firstTime := false
-      hd x
-    bcHt '")"
-  say x ==
-    if $italics? then bcHt '"{\em "
-    if x = 'etc then x := '"..."
-    bcHt escapeSpecialIds STRINGIMAGE x
-    if $italics? then bcHt '"}"
 
 bcConstructor(form is [op,:arglist],cname) ==  --called only when $conformsAreDomains
   htSayList dbConformGen form

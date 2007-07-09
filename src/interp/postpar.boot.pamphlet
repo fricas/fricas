@@ -413,12 +413,19 @@ postSemiColon u == postBlock ['Block,:postFlattenLeft(u,";")]
 
 postSequence ['Sequence,:l] == ['(elt $ makeRecord),:postTranList l]
 
---------------------> NEW DEFINITION (see br-saturn.boot.pamphlet)
 postSignature ['Signature,op,sig] ==
   sig is ["->",:.] =>
     sig1:= postType sig
     op:= postAtom (STRINGP op => INTERN op; op)
-    ["SIGNATURE",op,:removeSuperfluousMapping killColons sig1]
+    ["SIGNATURE",op,:removeSuperfluousMapping killColons postDoubleSharp sig1]
+
+postDoubleSharp sig ==
+  sig is [['Mapping,target,:r]] =>
+    -- replace #1,... by ##1,...
+    [['Mapping, SUBLISLIS($FormalFunctionParameterList, _
+                   $FormalMapVariableList, target), _
+         :r]]
+  sig
 
 killColons x ==
   atom x => x

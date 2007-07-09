@@ -756,7 +756,7 @@ orderByDependency(vl,dl) ==
     vl:= vl'
     dl:= dl'
   REMDUP NREVERSE orderedVarList --ordered so ith is indep. of jth if i < j
- 
+
 compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
   m,oldE,$prefix,$formalArgList) ==
     [lineNumber,:specialCases] := specialCases
@@ -778,7 +778,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $form:= [$op,:argl]
     argl:= stripOffArgumentConditions argl
     $formalArgList:= [:argl,:$formalArgList]
- 
+
     --let target and local signatures help determine modes of arguments
     argModeList:=
       identSig:= hasSigInTargetCategory(argl,form,first signature,e) =>
@@ -788,34 +788,40 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     signature':= [first signature,:argModeList]
     if null identSig then  --make $op a local function
       oldE := put($op,'mode,['Mapping,:signature'],oldE)
- 
+
     --obtain target type if not given
     if null first signature' then signature':=
       identSig => identSig
       getSignature($op,rest signature',e) or return nil
+
+    --replace ##1,.. in signature by arguments
+--    pp signature'
+    signature':= SUBLISLIS(argl,$FormalFunctionParameterList,signature')
+--  pp '"------after----"
+--  pp signature'
     e:= giveFormalParametersValues(argl,e)
- 
+
     $signatureOfForm:= signature' --this global is bound in compCapsuleItems
     $functionLocations := [[[$op,$signatureOfForm],:lineNumber],
       :$functionLocations]
     e:= addDomain(first signature',e)
     e:= compArgumentConditions e
- 
+
     if $profileCompiler then
       for x in argl for t in rest signature' repeat profileRecord('arguments,x,t)
 
 
     --4. introduce needed domains into extendedEnv
     for domain in signature' repeat e:= addDomain(domain,e)
- 
+
     --6. compile body in environment with extended environment
     rettype:= resolve(signature'.target,$returnMode)
- 
+
     localOrExported :=
       null MEMBER($op,$formalArgList) and
         getmode($op,e) is ['Mapping,:.] => 'local
       'exported
- 
+
     --6a skip if compiling only certain items but not this one
     -- could be moved closer to the top
     formattedSig := formatUnabbreviated ['Mapping,:signature']
@@ -825,12 +831,14 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
         [nil,['Mapping,:signature'],oldE]
     sayBrightly ['"   compiling ",localOrExported,
       :bright $op,'": ",:formattedSig]
- 
+
     T := CATCH('compCapsuleBody, compOrCroak(body,rettype,e))
            or ["",rettype,e]
 --+
     NRTassignCapsuleFunctionSlot($op,signature')
-
+    if $newCompCompare=true then
+         SAY '"The old compiler generates:"
+         prTriple T
 --  A THROW to the above CATCH occurs if too many semantic errors occur
 --  see stackSemanticError
     catchTag:= MKQ GENSYM()
@@ -840,12 +848,12 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
       finalBody:= ["CATCH",catchTag,body']
       compileCases([$op,["LAM",[:argl,'_$],finalBody]],oldE)
     $functorStats:= addStats($functorStats,$functionStats)
- 
- 
+
+
 --  7. give operator a 'value property
     val:= [fun,signature',e]
     [fun,['Mapping,:signature'],oldE] -- oldE:= put($op,'value,removeEnv val,e)
- 
+
 getSignatureFromMode(form,e) ==
   getmode(opOf form,e) is ['Mapping,:signature] =>
     #form^=#signature => stackAndThrow ["Wrong number of arguments: ",form]

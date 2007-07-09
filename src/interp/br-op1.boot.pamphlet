@@ -56,99 +56,6 @@
 
 dbFromConstructor?(htPage) == htpProperty(htPage,'conform)
 
-dbPresentOps(htPage,which,:exclusions) ==
-  true => dbPresentOpsSaturn(htPage,which,exclusions)
---Flags:
---  fromConPage?:    came (originally) from a constructor page
---  usage?:          display usage?
---  star?:           display exposed/*=unexposed
---  implementation?: display implementation?
-  htSay('"{\em Views:}")
-  asharp? := htpProperty(htPage,'isAsharpConstructor)
-  fromConPage? := (conname := opOf htpProperty(htPage,'conform))
-  usage? := $UserLevel = 'development and fromConPage? and which = '"operation"
-    and not (GETDATABASE(conname,'CONSTRUCTORKIND) = 'category)
-      and not asharp?
-  star? := not fromConPage? or which = '"package operation"
-  implementation? := not asharp? and
-    $UserLevel = 'development and $conformsAreDomains --and not $includeUnexposed?
-  rightmost? := star? or (implementation? and not $includeUnexposed?)
-  tabs :=
-    which = '"attribute" => '("12" "12" "25" "40" 13)
-    star? => '("12" "19" "31" "43" 10)
-    implementation? => '("9" "16" "28" "44" 9)
-    '("9" "16" "28" "41" 12)
-  if INTEGERP first exclusions then exclusions := ['documentation]
-  htpSetProperty(htPage,'exclusion,first exclusions)
-  opAlist :=
-    which = '"operation" => htpProperty(htPage,'opAlist)
-    htpProperty(htPage,'attrAlist)
-  empty? := null opAlist
-  htTab
-   which = '"attribute" => tabs.1
-   tabs.0
-  if empty? or MEMBER('names,exclusions) or null KDR opAlist
-    then htSay '"{\em names}"
-    else htMakePage [['bcLispLinks,['"names",'"",'dbShowOps,which,'names]]]
-  if which ^= '"attribute" then
-    htTab tabs.1
-    if empty? or MEMBER('signatures,exclusions)
-      then htSay '"{\em signatures}"
-      else htMakePage [['bcLispLinks,['"signatures",'"",'dbShowOps,which,'signatures]]]
-  htTab tabs.2
-  if empty? or MEMBER('parameters,exclusions) --also test for some parameter
-      or not dbDoesOneOpHaveParameters? opAlist
-    then htSay '"{\em parameters}"
-    else htMakePage [['bcLispLinks,['"parameters",'"",'dbShowOps,which,'parameters]]]
-  htTab tabs.3
-  if not empty? and null IFCDR opAlist and not htpProperty(htPage,'noUsage)
-    then
-      if htpProperty(htPage,'conform)
-      then htMakePage
-             [['bcLinks,['"generalise",'"",'dbShowOps,which,'generalise]]]
-      else htMakePage
-             [['bcLinks,['"all domains",'"",'dbShowOps,which,'allDomains]]]
-    else
-      if empty? or MEMQ('usage,exclusions) or htpProperty(htPage,'noUsage) then htSay '"{\em filter}" else
-        htMakePage [['bcLinks,['"filter",'"",'dbShowOps,which,'filter]]]
-      htMakePage [['bcStrings, [tabs.4,'"",'filter,'EM]]]
-  htSay('"\newline ")
-  if star?
-  then
-    if $exposedOnlyIfTrue
-    then htMakePage
-           [['bcLinks,['"exposed",'" {\em only}",'dbShowOps,which,'exposureOff]]]
-    else
-      htSay('"*{\em =}")
-      htMakePage [['bcLinks,['"unexposed",'"",'dbShowOps,which,'exposureOn]]]
---  else if (updown := dbCompositeWithMap htPage)
---       then htMakePage [['bcLispLinks,[updown,'"",'dbShowUpDown,updown]]]
-  htTab tabs.0
-  if usage? then
-      if empty? or MEMBER('usage,exclusions) or GETDATABASE(conname,'CONSTRUCTORKIND) = 'category or HGET($defaultPackageNamesHT,conname) or htpProperty(htPage,'noUsage)
-      then htSay '"{\em usage}"
-      else htMakePage [['bcLispLinks,['"usage",'"",'whoUsesOperation,which,nil]]]
-  htTab tabs.1
-  if empty? or MEMBER('origins,exclusions)
-    then htSay '"{\em origins}"
-    else htMakePage [['bcLispLinks,['"origins",'"",'dbShowOps,which,'origins]]]
-  htTab tabs.2
-  if implementation? then
-    if MEMBER('implementation,exclusions) or which = '"attribute" or
-      ((conname := opOf htpProperty(htPage,'conform)) and GETDATABASE(conname,'CONSTRUCTORKIND) = 'category)
-    then htSay '"{\em implementation}"
-    else htMakePage [['bcLispLinks,['"implementation",'"",'dbShowOps,which,'implementation]]]
-  else if empty? or MEMBER('conditions,exclusions) or (htpProperty(htPage,'condition?) = 'no)
-      then htSay '"{\em conditions}"
-      else htMakePage [['bcLispLinks,['"conditions",'"",'dbShowOps,which,'conditions]]]
-  htTab tabs.3
-  if empty? or MEMBER('documentation,exclusions)
-    then htSay '"{\em description}"
-    else htMakePage [['bcLispLinks,['"description",'"",'dbShowOps,which,'documentation]]]
-  htShowPageNoScroll()
-
-htTab s == htSay('"\tab{",s,'"}")
-
 dbDoesOneOpHaveParameters? opAlist ==
   or/[(or/[fn for x in items]) for [op,:items] in opAlist] where fn ==
     STRINGP x => dbPart(x,2,1) ^= '"0"
@@ -390,16 +297,6 @@ dbOpsForm form ==
 --1st arg: like "Matrix(Integer)" or "UP('x,Integer)" <---all highlighted
 --2nd arg: like (|Matrix| (|Integer|)) and (|U..P..| (QUOTE |x|) (|Integer|))
   ["\ops{",:conform2StringList(form,FUNCTION conname2StringList,FUNCTION conformString,nil),'"}{",:$pn,:form2Fence form,'"}"]
-
-dbConform form ==
---------------------> OBSELETE <--------------------------
---one button for the main constructor page of a type
---NOTE: Next line should be as follows---but form2Fence form will
---      put, e.g. '((2 1 . 0) (0 1 . 0)) instead of x**2 + 1
-  $saturn => ["\conf{",:form2StringList opOf form,
-     '"}{\lispLink{\verb!{(|conForm| '",:form2Fence dbOuttran form,'")!}}}"]
-  ["\conf{",:form2StringList opOf form,'"}{",:form2Fence dbOuttran form,'"}"]
---["\conf{",:form2StringList opOf form,'"}{",:form2Fence opOf form,'"}"]
 
 
 dbConformGen form == dbConformGen1(form,true)
@@ -675,37 +572,6 @@ dbShowOpImplementations(htPage,opAlist,which,data) ==
 
 dbShowOpConditions(htPage,opAlist,which,data) ==
   dbGatherThenShow(htPage,opAlist,which,data,nil,nil,function bcPred)
-
-dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
------------------> OBSELETE
-  single? := null rest data
-  htSay('"\beginmenu ")
-  bincount := 0
-  for [thing,exposeFlag,:items] in data repeat
-    htSay('"\item ")
-    if single? then htSay(menuButton())
-    else htMakePage [['bcLinks,[menuButton(),'"",'dbShowOps,which,bincount]]]
-    htSay '"{\em "
-    htSay
-      thing = 'nowhere => '"implemented nowhere"
-      thing = 'constant => '"constant"
-      thing = '_$ => '"by the domain"
-      INTEGERP thing => '"unexported"
-      constructorIfTrue =>
-        htSay word
-        atom thing => '" an unknown constructor"
-        '""
-      atom thing => '"unconditional"
-      '""
-    htSay '"}"
-    if null atom thing then
-      if constructorIfTrue then htSay('" {\em ",dbShowKind thing,'"}")
-      htSay '" "
-      FUNCALL(fn,thing)
-    htSay('":\newline ")
-    dbShowOpSigList(which,items,(1 + bincount) * 8192)
-    bincount := bincount + 1
-  htSay '"\endmenu "
 
 dbShowKind conform ==
   conname := CAR conform

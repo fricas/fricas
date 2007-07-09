@@ -112,9 +112,6 @@ htpInputAreaAlist htPage ==
 htpSetInputAreaAlist(htPage, val) ==
   SETELT(htPage, 5, val)
 
-htpAddInputAreaProp(htPage, label, prop) ==
-  SETELT(htPage, 5, [[label, nil, nil, nil, :prop], :ELT(htPage, 5)])
-
 htpPropertyList htPage ==
 -- Association list of user-defined properties
   ELT(htPage, 6)
@@ -149,13 +146,6 @@ replacePercentByDollar s == fn(s,0,MAXINDEX s) where
     i > n => '""
     (m := charPosition(char "%",s,i)) > n => SUBSTRING(s,i,nil)
     STRCONC(SUBSTRING(s,i,m - i),'"$",fn(s,m + 1,n))
-
-htpSetLabelInputString(htPage, label, val) ==
-------------------> OBSELETE
--- value user typed as input string on page
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => SETELT(props, 0, STRINGIMAGE val)
-  nil
 
 htpLabelSpadValue(htPage, label) ==
 -- Scratchpad value of parsed and evaled inputString, as (type . value)
@@ -218,23 +208,12 @@ htpPageDescription htPage ==
 htpSetPageDescription(htPage, pageDescription) ==
   SETELT(htPage, 7, pageDescription)
 
-htpAddToPageDescription(htPage, pageDescrip) ==
--------------> OBSELETE <-----------
-  SETELT(htPage, 7, nconc(nreverse COPY_-LIST pageDescrip, ELT(htPage, 7)))
-
 iht line ==
 -- issue a single hyperteTeX line, or a group of lines
   $newPage => nil
   PAIRP line =>
     $htLineList := NCONC(nreverse mapStringize COPY_-LIST line, $htLineList)
   $htLineList := [basicStringize line, :$htLineList]
-
-bcHt line ==
---line = '"\##1" => harharhar()
-  iht line
-  PAIRP line =>
-    if $newPage then htpAddToPageDescription($curPage, [['text, :line]])
-  if $newPage then htpAddToPageDescription($curPage, [['text, line]])
 
 bcIssueHt line ==
   PAIRP line => htMakePage1 line
@@ -258,80 +237,6 @@ stringize s ==
   STRINGP s => s
   PRINC_-TO_-STRING s
 
-htInitPage(title, propList) ==
-----------------------------> OBSELETE---cannot return $curPage
--- start defining a hyperTeX page
-  htInitPageNoScroll(propList, title)
-  htSayStandard '"\beginscroll "
-  $curPage
-
-
---htInitPageNoHeading(propList) ==
------------------------> replaced by htInitPageNoScroll
--- start defining a hyperTeX page
---  $curPage := htpMakeEmptyPage(propList)
---  if $saturn then $saturnPage := htpMakeEmptyPage(propList)
---  $newPage := true
---  $htLineList := nil
---  $curPage
-
-htAddHeading(title) ==
-------------------------> OBSELETE
-  htNewPage title
-  $curPage
-
-htShowPage() ==
--- show the page which has been computed
-  htSayStandard '"\endscroll"
-  htShowPageNoScroll()
-
-htShowPageNoScroll() ==
-------------------------> OBSELETE
--- show the page which has been computed
-  htSayStandard '"\autobuttons"
-  htpSetPageDescription($curPage, nreverse htpPageDescription $curPage)
-  $newPage := false
-  $htLineList := nil
-  htMakePage htpPageDescription $curPage
-  line := APPLY(function CONCAT, nreverse $htLineList)
-  issueHT line
-  endHTPage()
-
-htMakePage itemList ==
-------------------------> OBSELETE
--- make a page given the description in itemList
-  if $newPage then htpAddToPageDescription($curPage, itemList)
-  htMakePage1 itemList
-
-htMakePage1 itemList ==
--- make a page given the description in itemList
-  for [itemType, :items] in itemList repeat
-    itemType = 'text              => iht items
-    itemType = 'lispLinks         => htLispLinks items
-    itemType = 'lispmemoLinks     => htLispMemoLinks items
-    itemType = 'bcLinks           => htBcLinks items               --->
-    itemType = 'bcLinksNS         => htBcLinks(items,true)
-    itemType = 'bcLispLinks       => htBcLispLinks items           --->
-    itemType = 'radioButtons      => htRadioButtons items
-    itemType = 'bcRadioButtons    => htBcRadioButtons items
-    itemType = 'inputStrings      => htInputStrings items
-    itemType = 'domainConditions  => htProcessDomainConditions items
-    itemType = 'bcStrings         => htProcessBcStrings items
-    itemType = 'toggleButtons     => htProcessToggleButtons items
-    itemType = 'bcButtons         => htProcessBcButtons items
-    itemType = 'doneButton        => htProcessDoneButton items
-    itemType = 'doitButton        => htProcessDoitButton items
-    systemError ['"unknown itemType", itemType]
-
-htMakeErrorPage htPage ==
-------------------> OBSELETE
-  $newPage := false
-  $htLineList := nil
-  $curPage := htPage
-  htMakePage htpPageDescription htPage
-  line := APPLY(function CONCAT, nreverse $htLineList)
-  issueHT line
-  endHTPage()
 
 htQuote s ==
 -- wrap quotes around a piece of hyperTeX
@@ -361,19 +266,6 @@ htProcessBcButtons buttons ==
     iht ['"\inputbox[", htpLabelDefault($curPage, buttonName), '"]{",
          buttonName, '"}{\htbmfile{pick}}{\htbmfile{unpick}}"]
 
-htProcessBcStrings strings ==
----------------------> OBSELETE <------------------------
-  for [numChars, default, stringName, spadType, :filter] in strings repeat
-    mess2 := '""
-    if NULL LASSOC(stringName, htpInputAreaAlist $curPage) then
-      setUpDefault(stringName, ['string, default, spadType, filter])
-    if htpLabelErrorMsg($curPage, stringName) then
-      iht ['"\centerline{{\em ", htpLabelErrorMsg($curPage, stringName), '"}}"]
-      mess2 := CONCAT(mess2, bcSadFaces())
-      htpSetLabelErrorMsg($curPage, stringName, nil)
-    iht ['"\inputstring{", stringName, '"}{",
-         numChars, '"}{", htpLabelDefault($curPage,stringName), '"} ", mess2]
-
 bcSadFaces() ==
   '"\space{1}{\em\htbitmap{error}\htbitmap{error}\htbitmap{error}}"
 
@@ -392,22 +284,6 @@ htLispLinks(links,:option) ==
   iht '"\enditems\indent{0} "
 
 htLispMemoLinks(links) == htLispLinks(links,true)
-
-htBcLinks(links,:options) ==
--------------------------> OBSELETE
-  skipStateInfo? := IFCAR options
-  [links,options] := beforeAfter('options,links)
-  for [message, info, func, :value] in links repeat
-    htMakeButton('"\lispdownlink",message,
-                   mkCurryFun(func, value),skipStateInfo?)
-    bcIssueHt info
-
-htBcLispLinks links ==
--------------------------> OBSELETE
-  [links,options] := beforeAfter('options,links)
-  for [message, info, func, :value] in links repeat
-    htMakeButton('"\lisplink",message, mkCurryFun(func, value))
-    bcIssueHt info
 
 beforeAfter(x,u) == [[y for [y,:r] in tails u while x ^= y],r]
 
@@ -452,10 +328,6 @@ htBcRadioButtons [groupName, :buttons] ==
     bcIssueHt message
     iht '"\space{}}"
     bcIssueHt info
-
-setUpDefault(name, props) ==
----------------> OBSELETE <----------------
-  htpAddInputAreaProp($curPage, name, props)
 
 buttonNames buttons ==
   [buttonName for [.,., buttonName] in buttons]
@@ -555,23 +427,6 @@ htProcessDoneButton [label , func] ==
 
   iht '"} "
 
-htMakeButton(htCommand, message, func,:options) ==
-----------> OBSELETE <----------------------------------
-  skipStateInfo? := IFCAR options
-  iht [htCommand, '"{"]
-  bcIssueHt message
-  skipStateInfo? =>
-    iht ['"}{(|htDoneButton| '|", func, '"| ",htpName $curPage, '")}"]
-  iht ['"}{(|htDoneButton| '|", func, '"| (PROGN "]
-  for [id, ., ., ., type, :.] in htpInputAreaAlist $curPage repeat
-    iht ['"(|htpSetLabelInputString| ", htpName $curPage, '"'|", id, '"| "]
-    if type = 'string then
-      iht ['"_"\stringvalue{", id, '"}_""]
-    else
-      iht ['"_"\boxvalue{", id, '"}_""]
-    iht '") "
-  iht [htpName $curPage, '"))}"]
-
 bchtMakeButton(htCommand, message, func) ==
   bcHt [htCommand, '"{", message,
        '"}{(|htDoneButton| '|", func, '"| (PROGN "]
@@ -616,13 +471,6 @@ executeInterpreterCommand command ==
   CATCH('SPAD__READER, parseAndInterpret command)
   PRINC MKPROMPT()
   FINISH_-OUTPUT()
-
-htDoneButton(func, htPage) ==
-  typeCheckInputAreas htPage =>
-    htMakeErrorPage htPage
-  NULL FBOUNDP func =>
-    systemError ['"unknown function", func]
-  FUNCALL(SYMBOL_-FUNCTION func, htPage)
 
 typeCheckInputAreas htPage ==
   -- This needs to be severly beefed up
