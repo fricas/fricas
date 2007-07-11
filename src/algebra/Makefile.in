@@ -349,43 +349,44 @@ stamp-db: $(patsubst %, %.spad, ${SPADLIST} ${EXTRASPADS})
           ./boot-sum.sh && touch stamp-db ; \
         fi
 
-stamp-bootstrap: stamp-db
-	( \
-        echo "Bootstrap object copy" ; \
-        for A in ${CATLIST} ${DOMLIST} ; do \
-          cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
-        done; \
-        for A in ${CATDOMS} ; do \
-          cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
-       done; \
-       rm -rf *.NRLIB \
-        echo "Stage 3 object bootstrap (normal mode)" ; \
-       echo > oboo3.input ; \
-        for A in ${CATLIST} ${DOMLIST} ; do \
-           echo ')compile "'$$A'.spad"' >> oboo3.input ; \
-        done; \
-       ( echo ')read "oboo3.input"' | \
-           DAASE=./r7 ${INTERPSYS} ) || exit 1 ; \
-	echo "Stage 3 object copy" ; \
-	for A in ${CATLIST} ${DOMLIST} ; do \
-	   cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
-	done ; \
-	for A in ${CATDOMS} ; do \
-	    cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
-	done ; \
-	)
-	( \
-	  for A in ${SPADLIST} ; \
-	    do \
+stamp-oboo3: stamp-db
+	if [ ! -f stamp-oboo3 ] ; then \
+           echo "Bootstrap object copy" ; \
+           for A in ${CATLIST} ${DOMLIST} ; do \
+              cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+           done; \
+           for A in ${CATDOMS} ; do \
+              cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
+           done; \
+           rm -rf *.NRLIB \
+           echo "Stage 3 object bootstrap (normal mode)" ; \
+           echo > oboo3.input ; \
+           for A in ${CATLIST} ${DOMLIST} ; do \
+              echo ')compile "'$$A'.spad"' >> oboo3.input ; \
+           done; \
+           ( echo ')read "oboo3.input"' | \
+              DAASE=./r7 ${INTERPSYS} ) || exit 1 ; \
+	   echo "Stage 3 object copy" ; \
+	   for A in ${CATLIST} ${DOMLIST} ; do \
+	      cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	   done ; \
+	   for A in ${CATDOMS} ; do \
+	      cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
+	   done ; \
+	   touch stamp-oboo3 ; \
+	fi
+
+stamp-bootstrap: stamp-oboo3
+	if [ ! -f stamp-bootstrap ] ; then \
+	   for A in ${SPADLIST} ; do \
 	      echo ')compile "'$$A'.spad"' | DAASE=./r7 ${INTERPSYS} ; \
-	  done ; )
-	( \
+	   done ; \
 	   echo ')lisp (make-databases "" nil)' | DAASE=./r7 ${INTERPSYS} ; \
 	   mkdir -p r8/algebra ; \
 	   mv browse.daase  category.daase  compress.daase  interp.daase \
-	     operation.daase r8/algebra || exit 1 ; \
+	      operation.daase r8/algebra || exit 1 ; \
            for A in ${EXTRASPADS} ; do \
-             echo ')compile "'$$A'.spad"' ; \
+              echo ')compile "'$$A'.spad"' ; \
            done | DAASE=./r8 ${INTERPSYS} ; \
            echo ')lisp (make-databases "" nil)' | DAASE=./r8 ${INTERPSYS} ; \
            mkdir -p rf/algebra ; \
@@ -397,8 +398,8 @@ stamp-bootstrap: stamp-db
 	   for A in ${BADSPADS} ; do \
 	     cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	   done ; \
-	     )
-	touch stamp-bootstrap
+	   touch stamp-bootstrap ; \
+	fi     
 
 $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST}) : stamp-bootstrap
 
@@ -426,8 +427,10 @@ everything: check lib db cmd gloss
 
 stamp-src: stamp-spadsrc stamp-bootstrap \
              $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST} ${EXTRASPADS})
-	@ echo 4304 Done building NRLIBS from spad sources
-	touch stamp-src
+	if [ ! -f stamp-src ] ; then \
+	    echo 4304 Done building NRLIBS from spad sources ; \
+	    touch stamp-src ; \
+	fi
 
 
 stamp-spadsrc: ${SPADFILES}
