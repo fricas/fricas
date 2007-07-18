@@ -34,11 +34,18 @@ and depends on many categories which in turn depend on [[Integer]].
 
 \section{\dots and its solution}
 
-At the moment this bootstrap problem has no proper resolution: Axiom
-avoids it simply using type information collected in the past
+
+In the past Axiom avoided significant part of bootstrap problem
+simply by using type information collected in the past
 and stored in databases [[interp.daase]] and [[category.daase]].
-This solution means that any attempt to change the signature of an exported
-operation is likely to cause build failure.
+This solution meant that any attempt to change the signature of an exported
+operation was likely to cause build failure.
+
+Newer bootstrap procedure uses different approach.  It proceeds
+in several phases.  After each phase of bootstrap we dump databases.
+The databases dumped in a given phase are used in the next phase.
+To limit number of phase (and also number of dumped databases)
+in each phase we compile several files in a single image.
 
 Using the type information stored in databases solves only part of
 the bootstrap problem: internally, Axiom types are represented by
@@ -69,19 +76,68 @@ The final process looks as follows: first, categories are
 topologically sorted with respect to [[Join]] --  recall that arguments to
 [[Join]] must be compiled before a category using [[Join]].
 This order is slightly tweaked to avoid problems due to
-constructor parameters.  In the first pass categories
-are compiled using [[$bootStrapMode]] set to [[t]].  This
-makes compiled code of categories available to second pass.
-In the second pass categories and core domains are
+constructor parameters.
+
+In the first
+phase we compile several fake categories and domains.  The only
+purpose of using them is to inform Axiom that they are valid types
+and what arity they have -- in effect they serve as forward
+declarations.  We also collect all abbreviations in a single file
+and read it into Axiom before compilation.  Abbreviations inform
+Axiom that the corresponding names are constructors, which is
+important to get correct parse.  
+
+Once fake definitions are compiled we can compile categories
+using [[$bootStrapMode]] set to [[t]].  This finishes phase 1. 
+
+In phase 2 we recompile several categories and core domains
+(still using [[$bootStrapMode]] set to [[t]]).  This phase
+removes most of the traces of fake definitions made in phase 1.
+We also compile several domains.
+
+In phases 3, 4, and 5 we compile rest of domains and packages.
+
+In principle it should be possible to use smaller number of
+phases, but compile time grows nonlinearly with number of
+files compiled in a single image, so we save time splitting
+compilation into more phases.  Also, recompiling few core
+domains in phase 2 does not work, so we recompile them at the
+beginning of phase 3.
+
+In the first five phases use [[$bootStrapMode]] set to [[t]].
+For domains and packages it results in object code which
+can not be used in normal compilation.  However, the main
+result of phase 5 is database containing almost complete
+type information.  Almost, because operation lists
+are missing (this information is collected only
+during normal compilation).
+Phase 5 also makes compiled code of categories available to
+phase 6.
+
+In phase 6 categories and core domains are
 compiled setting [[$bootstrapDomains]] to [[t]].  We have
 to compile categories because categories may have associated
 default domains which also may be loaded.  We also compile a
 few domains which are needed for unknown reasons -- if we
-skip them, the build will fail.  In the third pass we
+skip them, the build will fail.  After phase 6 we obtaion
+databases which still miss some information (most operation lists)
+but allow compiling the rest of algebra.
+
+In the phase 7 (stage 3 of previous bootstrap) we
 compile categories and core domains in normal mode.
-Finally, we compile the rest of algebra in alphabetical order.
+Next, we compile the bulk of algebra in alphabetical order.
 More precisely, we let make choose the order, but the list we give is
 sorted alphabetically, and make processes it in order.
+We skip a few files becase thier compilation would fail.
+After this step we obtaion databases which contain compilete
+information about almost all of the algebra (it misses
+information about a skipped files).
+
+Finally we need two extra phases. In phase 8 we compile
+a few files skipped in phase 7 and obtain a complete databse.
+In the final phase we recompile several files which seem to be
+miscompiled in previous steps (presumably due to missing database
+entires).
 
 \section{Adding new constructors}
 
