@@ -419,48 +419,6 @@ categoryParts(conform,category,:options) == main where
     $conslist := [[target,:true],:$conslist]
     nil
 
---------------------> NEW DEFINITION (override in patches.lisp.pamphlet)
-compressHashTable ht ==
--- compresses hash table ht, to give maximal sharing of cells
-  sayBrightlyNT '"compressing hash table..."
-  $found: local := MAKE_-HASHTABLE 'UEQUAL
-  for x in HKEYS ht repeat compressSexpr(HGET(ht,x),nil,nil)
-  sayBrightly   "done"
-  ht
-
-compressSexpr(x,left,right) ==
--- recursive version of compressHashTable
-  atom x => nil
-  u:= HGET($found,x) =>
-    left => RPLACA(left,u)
-    right => RPLACD(right,u)
-    nil
-  compressSexpr(first x,x,nil)
-  compressSexpr(rest x,nil,x)
-  HPUT($found,x,x)
-
-squeezeList(l) ==
--- changes the list l, so that is has maximal sharing of cells
-  $found:local:= NIL
-  squeeze1 l
-
-squeeze1(l) ==
--- recursive version of squeezeList
-  x:= CAR l
-  y:=
-    atom x => x
-    z:= MEMBER(x,$found) => CAR z
-    $found:= CONS(x,$found)
-    squeeze1 x
-  RPLACA(l,y)
-  x:= CDR l
-  y:=
-    atom x => x
-    z:= MEMBER(x,$found) => CAR z
-    $found:= CONS(x,$found)
-    squeeze1 x
-  RPLACD(l,y)
-
 updateCategoryTable(cname,kind) ==
   $updateCatTableIfTrue =>
     kind = 'package => nil

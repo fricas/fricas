@@ -40,14 +40,14 @@ DEP=	vmlisp.lisp	ggreater.lisp	\
 	spaderror.lisp	debug.lisp	\
 	spad.lisp	bits.lisp	\
 	setq.lisp	property.lisp	\
-	unlisp.lisp      foam_l.lisp      \
+	foam_l.lisp      \
 	axext_l.lisp
 
 depsys_lisp_macro_sources = vmlisp.lisp ggreater.lisp hash.lisp \
 	bootfuns.lisp union.lisp nlib.lisp macros.lisp	\
 	comp.lisp spaderror.lisp debug.lisp \
 	spad.lisp bits.lisp setq.lisp property.lisp \
-	unlisp.lisp foam_l.lisp axext_l.lisp
+	foam_l.lisp axext_l.lisp
 
 depsys_lisp_noncompiled_sources += $(depsys_lisp_macro_sources)
 depsys_lisp_SOURCES = $(addsuffix .pamphlet, $(depsys_lisp_sources))
@@ -55,11 +55,9 @@ LOADSYS= $(axiom_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(axiom_build_bindir)/interpsys$(EXEEXT)
 AXIOMSYS= $(axiom_target_bindir)/AXIOMsys$(EXEEXT)
 
-DEBUGSYS=$(axiom_build_bindir)/debugsys$(EXEEXT)
-
 OBJS=	vmlisp.$(FASLEXT)	hash.$(FASLEXT)	\
 	bootfuns.lisp	macros.$(FASLEXT)	\
-	unlisp.$(FASLEXT)	setq.lisp	\
+	setq.lisp	\
 	astr.$(FASLEXT)	bits.$(FASLEXT)	\
 	alql.$(FASLEXT)	buildom.$(FASLEXT)	\
 	cattable.$(FASLEXT)				\
@@ -123,7 +121,7 @@ AXIOMsys_compiled_lisp_sources = bits.lisp \
 	patches.lisp preparse.lisp \
 	sockio.lisp spad.lisp spaderror.lisp \
 	union.lisp util.lisp vmlisp.lisp obey.lisp \
-	unlisp.lisp intint.lisp nci.lisp sfsfun-l.lisp \
+	intint.lisp nci.lisp sfsfun-l.lisp \
 	axext_l.lisp foam_l.lisp
 
 AXIOMsys_boot_sources = astr.boot alql.boot buildom.boot cattable.boot \
@@ -305,7 +303,7 @@ UNUSED= ${DOC}/anna.boot.dvi ${DOC}/construc.lisp.dvi \
 .SUFFIXES:
 .SUFFIXES: .boot .clisp .lisp .pamphlet
 
-.PHONY: all all-ax all-depsys all-interpsys all-axiomsys all-debugsys
+.PHONY: all all-ax all-depsys all-interpsys all-axiomsys
 
 all: all-ax
 
@@ -320,7 +318,7 @@ remove-stamp:
 	-rm -f stamp
 
 .PHONY: build-images
-build-images: remove-stamp all-interpsys all-debugsys
+build-images: remove-stamp all-interpsys
 
 all-interpsys: all-depsys 
 	$(mkinstalldirs) $(AUTO)
@@ -328,9 +326,6 @@ all-interpsys: all-depsys
 
 all-axiomsys: all-depsys 
 	$(MAKE) $(AXIOMSYS)
-
-all-debugsys: all-interpsys
-	$(MAKE) $(DEBUGSYS)
 
 all-depsys: $(DEPSYS)
 
@@ -365,20 +360,20 @@ clean-local: mostlyclean-local
 	spad.lisp      bits.lisp      fname.lisp     metameta.lisp \
 	patches.lisp   sys-pkg.lisp   bookvol5.lisp  fnewmeta.lisp \
 	monitor.lisp   preparse.lisp  union.lisp     bootfuns.lisp \
-	foam_l.lisp    nci.lisp       proclaims.lisp unlisp.lisp \
+	foam_l.lisp    nci.lisp       proclaims.lisp \
 	bootlex.lisp   ggreater.lisp  newaux.lisp    property.lisp \
 	util.lisp      cfuns.lisp     hash.lisp      nlib.lisp \
 	setq.lisp      vmlisp.lisp    comp.lisp      intint.lisp \
 	nocompil.lisp  sfsfun-l.lisp  daase.lisp     macros.lisp \
 	nspadaux.lisp  sockio.lisp    debug.lisp     makedep.lisp \
-	obey.lisp      spaderror.lisp
+	spaderror.lisp
 
 distclean-local: clean-local
 
 ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     ${DEPSYS} ${OBJS}  bookvol5.$(FASLEXT) util.$(FASLEXT) \
     nocompil.lisp sys-pkg.lisp \
-    ${OCOBJS} ${OPOBJS} ${BROBJS} obey.$(FASLEXT) \
+    ${OCOBJS} ${OPOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
     ${NAGBROBJS} ${TRANOBJS} \
     ${LOADSYS} \
@@ -397,7 +392,6 @@ makeint.lisp:
 		 $(axiom_target_datadir)/msgs
 	@ echo '${PROCLAIMS}' > makeint.lisp
 	@ echo '(load "nocompil.lisp")' >> makeint.lisp
-	@ echo '(load "bookvol5")' >> makeint.lisp
 	@ echo '(load "util")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ touch ${TIMESTAMP}
@@ -406,7 +400,6 @@ makeint.lisp:
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ echo '(load "../algebra/warm.data")' >> makeint.lisp
 	@ echo '(|clearClams|)' >> makeint.lisp
-	@ echo '(load "obey")' >> makeint.lisp
 	@ echo '#+:akcl (setq compiler::*suppress-compiler-notes* t)' >> makeint.lisp
 	@ echo '#+:akcl (si::gbc-time 0)' >> makeint.lisp
 
@@ -476,12 +469,6 @@ ${AXIOMSYS}:
 	   '(BOOT::spad-save "$(BASE)$@" t)' \
              | DAASE="$(BASE)$(axiom_targetdir)" ${LISPSYS}
 	@ echo 6a ${AXIOMSYS} created
-${DEBUGSYS}: debugsys.lisp
-	@ echo 7 building debugsys
-	echo '(load "debugsys.lisp") (BOOT::spad-save "$(BASE)$@" t))' \
-          | ${LISPSYS}
-	@ echo 8 ${DEBUGSYS} created
-
 exposed.lsp: $(axiom_src_algdir)/exposed.lsp.pamphlet
 	@ echo 615 making $@ from $<
 	$(axiom_build_document) --tangle --output=$@ $<
@@ -560,9 +547,6 @@ $(addsuffix .clisp, $(MID_from_IN)): \
 	@ echo 11 making $@ from $<
 	$(axiom_build_document) --tangle --output=$*.boot $<; \
 	   echo '(progn (boottran::boottocl "$*.boot") (${BYE}))' | ${DEPSYS}
-
-debugsys.lisp: $(srcdir)/debugsys.lisp.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
 
 bookvol5.$(FASLEXT): bookvol5.lisp
 	@ echo 297 making $@ from $<

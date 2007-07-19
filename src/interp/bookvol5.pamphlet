@@ -238,7 +238,7 @@ curoutstream                 & ncIntLoop           & \\
 \$relative-directory-list    &                     & reroot \\
 \$relative-library-directory-list &                & reroot \\
 \$reportUndo                 & initvars            & diffAlist \\
-\$shoeReadLineFunction       & SpadInterpretStream & \\
+                             & SpadInterpretStream & \\
 \$spad                       & ncTopLevel          & \\
 \$spadroot                   & reroot              & initroot \\
                              &                     & make-absolute-filename \\
@@ -546,11 +546,6 @@ to [[T]] then we call [[reportUndo]].
 
 It is part of the undo mechanism.
 
-\subsection{\$shoeReadLineFunction}
-The [[$shoeReadLineFunction]] is set in [[SpadInterpretStream]]
-to point to the 
-[[serverReadLine]] 
-
 \subsection{\$spadroot}
 The [[$spadroot]] variable is the internal name for the [[AXIOM]]
 shell variable. 
@@ -845,7 +840,6 @@ SpadInterpretStream(str, source, interactive?) ==
     $ncMsgList             : local := nil
  
     $systemCommandFunction : local := function InterpExecuteSpadSystemCommand
-    $shoeReadLineFunction  : local := function serverReadLine
     $promptMsg             : local := 'S2CTP023
  
     interactive? =>
@@ -859,11 +853,11 @@ SpadInterpretStream(str, source, interactive?) ==
 \end{verbatim}
 <<defun SpadInterpretStream>>=
 (defun |SpadInterpretStream| (str source interactive?) 
- (prog (|$promptMsg| |$shoeReadLineFunction| |$systemCommandFunction| 
+ (prog (|$promptMsg| |$systemCommandFunction| 
         |$ncMsgList| |$erMsgToss| |$lastPos| |$inclAssertions| 
         |$okToExecuteMachineCode| |$newcompErrorCount| 
         |$libQuiet| |$fn|)
-  (declare (special |$promptMsg| |$shoeReadLineFunction| 
+  (declare (special |$promptMsg|
             |$systemCommandFunction| |$ncMsgList| |$erMsgToss| |$lastPos| 
             |$inclAssertions| |$okToExecuteMachineCode| |$newcompErrorCount| 
             |$libQuiet| |$fn| |$nopos|))
@@ -878,7 +872,6 @@ SpadInterpretStream(str, source, interactive?) ==
      (setq |$erMsgToss| nil) 
      (setq |$ncMsgList| nil) 
      (setq |$systemCommandFunction| #'|InterpExecuteSpadSystemCommand|) 
-     (setq |$shoeReadLineFunction| #'|serverReadLine|) 
      (setq |$promptMsg| 'S2CTP023) 
      (cond 
       (interactive? 
@@ -989,63 +982,7 @@ Call the garbage collector on various platforms.
 #+openmcl
 (defun reclaim () (ccl::gc))
 @
-\subsection{defun getenviron}
-<<defun getenviron>>=
-(defun getenviron (shellvar)
- #+allegro (sys::getenv (string var))
- #+clisp (ext:getenv (string var))
- #+(or cmu scl)
-  (cdr 
-   (assoc (string var) ext:*environment-list* :test #'equalp :key #'string))
- #+(or kcl akcl gcl) (si::getenv (string var))
- #+lispworks (lw:environment-variable (string var))
- #+lucid (lcl:environment-variable (string var))
- #+mcl (ccl::getenv var)
- #+sbcl (sb-ext:posix-getenv var)
- )
-@
-\subsection{defun init-memory-config}
-Austin-Kyoto Common Lisp (AKCL), now known as Gnu Common Lisp (GCL)
-requires some changes to the default memory setup to run Axiom efficently.
-This function performs those setup commands. 
-<<defun init-memory-config>>=
-(defun init-memory-config (&key
-			   (cons 500)
-			   (fixnum 200)
-			   (symbol 500)
-			   (package 8)
-			   (array 400)
-			   (string 500)
-			   (cfun 100)
-			   (cpages 3000)
-			   (rpages 1000)
-			   (hole 2000) )
-  ;; initialize AKCL memory allocation parameters
-  #+:AKCL
-  (progn
-    (system:allocate 'cons cons)
-    (system:allocate 'fixnum fixnum)
-    (system:allocate 'symbol symbol)
-    (system:allocate 'package package)
-    (system:allocate 'array array)
-    (system:allocate 'string string)
-    (system:allocate 'cfun cfun)
-    (system:allocate-contiguous-pages cpages)
-    (system:allocate-relocatable-pages rpages)
-    (system:set-hole-size hole))
-  #-:AKCL
-  nil)
 
-@
-\subsection{defun initroot}
-Sets up the system to use the {\bf AXIOM} shell variable if we can
-and default to the {\bf \$spadroot} variable (which was the value
-of the {\bf AXIOM} shell variable at build time) if we can't.
-<<defun initroot>>=
-(defun initroot (&optional (newroot (BOOT::|getEnv| "AXIOM")))
-  (reroot (or newroot $spadroot (error "setenv AXIOM or (setq $spadroot)"))))
-
-@
 \subsection{defun loadExposureGroupData}
 <<defun loadExposureGroupData>>=
 #-:CCL
@@ -1067,50 +1004,7 @@ of the {\bf AXIOM} shell variable at build time) if we can't.
   (t nil) ))
 
 @
-\subsection{make-absolute-filename}
-Prefix a filename with the {\bf AXIOM} shell variable.
-<<defun make-absolute-filename>>=
-(defun make-absolute-filename (name)
- (concatenate 'string $spadroot name))
 
-@
-\subsection{defun makeInitialModemapFrame}
-\begin{verbatim}
-makeInitialModemapFrame() == COPY $InitialModemapFrame
-\end{verbatim}
-<<defun makeInitialModemapFrame>>=
-(defun |makeInitialModemapFrame| ()
-  (copy |$InitialModemapFrame|)) 
-
-@
-\subsection{defun reroot}
-The reroot function is used to reset the important variables used by
-the system. In particular, these variables are sensitive to the
-{\bf AXIOM} shell variable. That variable is renamed internally to
-be {\bf \$spadroot}. The {\bf reroot} function will change the
-system to use a new root directory and will have the same effect
-as changing the {\bf AXIOM} shell variable and rerunning the system
-from scratch. Note that we have changed from the
-NAG distribution back to the original form. If you need the NAG
-version you can push {\bf :tpd} on the {\bf *features*} variable
-before compiling this file. A correct call looks like:
-\begin{verbatim}
-(in-package "BOOT")
-(reroot "${AXIOM}")
-\end{verbatim}
-where the [[${AXIOM}]] variable is the same one set at build time.
-<<defun reroot>>=
-(defun reroot (dir)
-  (setq $spadroot dir)
-  (setq $directory-list
-   (mapcar #'make-absolute-filename $relative-directory-list))
-  (setq $library-directory-list
-   (mapcar #'make-absolute-filename $relative-library-directory-list))
-  (setq |$defaultMsgDatabaseName|
-	(pathname (make-absolute-filename "/share/msgs/s2-us.msgs")))
-  (setq |$msgDatabaseName| ()))
-
-@
 \subsection{defun statisticsInitialization}
 <<defun statisticsInitialization>>=
 (defun |statisticsInitialization| () 
@@ -1119,6 +1013,7 @@ where the [[${AXIOM}]] variable is the same one set at build time.
  nil)
 
 @
+
 \chapter{The History Mechanism}
 \section{)history}
 \index{ugSysCmdhistory}
@@ -5358,7 +5253,6 @@ file and it will show up here.
 <<defun frameNames>>
 <<defun frameSpad2Cmd>>
 
-<<defun getenviron>>
 <<defun gensymInt>>
 
 <<defun histFileErase>>
@@ -5368,19 +5262,15 @@ file and it will show up here.
 <<defun historySpad2Cmd>>
 
 <<defun importFromFrame>>
-<<defun init-memory-config>>
 <<defun initHist>>
 <<defun initHistList>>
 <<defun initializeInterpreterFrameRing>>
-<<defun initroot>>
 <<defun intloop>>
 <<defun intloopReadConsole>>
 
 <<defun loadExposureGroupData>>
 
-<<defun make-absolute-filename>>
 <<defun makeHistFileName>>
-<<defun makeInitialModemapFrame>>
 
 <<defun ncIntLoop>>
 <<defun ncTopLevel>>
@@ -5400,7 +5290,6 @@ file and it will show up here.
 <<defun recordFrame>>
 <<defun removeUndoLines>>
 <<defun reportUndo>>
-<<defun reroot>>
 <<defun resetInCoreHist>>
 <<defun restart>>
 <<defun restoreHistory>>

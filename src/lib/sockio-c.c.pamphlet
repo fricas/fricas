@@ -741,58 +741,6 @@ sock_send_wakeup(int purpose)
 }
 
 Sock *
-connect_to_local_server_new(char *server_name, int purpose, int time_out)
-{
-  int max_con=(time_out == 0 ? 1000000 : time_out), i, code=-1;
-  Sock *sock;
-  char name[256];
-
-  make_server_name(name, server_name);
-  sock = (Sock *) calloc(sizeof(Sock), 1);
-  if (sock == NULL) {
-    perror("allocating socket space");
-    return NULL;
-  }
-
-  sock->socket = axiom_communication_link(AXIOM_AF_LOCAL);
-  if (is_invalid_socket(sock)) {
-    perror("opening client socket");
-    free(sock);
-    return NULL;
-  }
-
-  memset(server[1].addr.u_addr.sa_data, 0,
-         sizeof(server[1].addr.u_addr.sa_data));
-  sock->addr.u_addr.sa_family = AXIOM_AF_LOCAL;
-  strcpy(sock->addr.u_addr.sa_data, name);
-  for(i=0; i<max_con; i++) {
-    code = connect(sock->socket, &sock->addr.u_addr,
-                   sizeof(sock->addr.u_addr));
-    if (code == -1) {
-      if (errno != ENOENT && !axiom_connection_refused()) {
-        perror("connecting server stream socket");
-        return NULL;
-      } else {
-        if (i != max_con - 1)
-           axiom_sleep(1);
-        continue;
-      }
-    } else break;
-  }
-
-  if (code == -1) {
-    return NULL;
-  }
-
-  send_int(sock, getpid());
-  send_int(sock, purpose);
-  send_int(sock, sock->socket);
-  sock->pid = get_int(sock);
-  sock->remote = get_int(sock);
-  return sock;
-}
-
-Sock *
 connect_to_local_server(char *server_name, int purpose, int time_out)
 {
   int max_con=(time_out == 0 ? 1000000 : time_out), i, code=-1;

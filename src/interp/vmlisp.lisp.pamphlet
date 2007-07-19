@@ -1896,8 +1896,6 @@ Contributed by Juergen Weiss from Arthur Norman's CCL.
 (defun LAM\,FILEACTQ (name form)
        (if *FILEACTQ-APPLY* (FUNCALL *FILEACTQ-APPLY* name form)))
 
-(defun CALLBELOW (&rest junk) junk) ; to invoke system dependent code?
-
 (define-function 'EVA1 #'eval) ;EVA1 and VMLISP EVAL make lexicals visible
 (define-function 'EVALFUN #'eval) ;EVALFUN drops lexicals before evaluating
 (define-function 'EVA1FUN #'EVALFUN)
@@ -2072,13 +2070,30 @@ Contributed by Juergen Weiss from Arthur Norman's CCL.
 <<asec>>
 <<Missing DFLOAT Transcendental functions>>
 
-;;--------------------> NEW DEFINITION (see unlisp.lisp.pamphlet)
+;;; moved from unlisp.lisp.pamphlet
 (defun |AlistAssocQ| (key l)
   (assoc key l :test #'eq) )
 
-;;--------------------> NEW DEFINITION (see unlisp.lisp.pamphlet)
+(defun |ListMemberQ?| (ob l)
+  (member ob l :test #'eq) )
+
 (defun |ListMember?| (ob l)
   (member ob l :test #'equal) )
+
+(defun |AlistRemoveQ| (key l)
+   (let ((pr (assoc key l :test #'eq)))
+       (if pr
+           (remove pr l :test #'eq)
+           l) ))
+
+;; CCL supplies a slightly more efficient version of logs to base 10, which
+;; is useful in the WIDTH function. MCD.
+#-:CCL (defun log10 (u) (log u 10.0d0))
+
+(defun |make_spaces| (len)
+    (make-string len :initial-element #\ ))
+
+;;; end of moved fragment
 
 ; rewrite nnPP for csl, which does not support flet
 (defvar *npPParg* nil "rewrite flets, using global scoping")

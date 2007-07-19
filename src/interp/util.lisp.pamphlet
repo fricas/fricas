@@ -29,7 +29,55 @@ search Emacs TAGS files.
 A fifth group of related functions are some translated boot
 functions we need to define here so they work and are available
 at load time.
-\subsection{Building Depsys (build-depsys)}
+
+\subsection{make-absolute-filename}
+Prefix a filename with the {\bf AXIOM} shell variable.
+<<defun make-absolute-filename>>=
+(defun make-absolute-filename (name)
+ (concatenate 'string $spadroot name))
+
+@
+
+\subsection{defun reroot}
+The reroot function is used to reset the important variables used by
+the system. In particular, these variables are sensitive to the
+{\bf AXIOM} shell variable. That variable is renamed internally to
+be {\bf \$spadroot}. The {\bf reroot} function will change the
+system to use a new root directory and will have the same effect
+as changing the {\bf AXIOM} shell variable and rerunning the system
+from scratch. Note that we have changed from the
+NAG distribution back to the original form. If you need the NAG
+version you can push {\bf :tpd} on the {\bf *features*} variable
+before compiling this file. A correct call looks like:
+\begin{verbatim}
+(in-package "BOOT")
+(reroot "${AXIOM}")
+\end{verbatim}
+where the [[${AXIOM}]] variable is the same one set at build time.
+<<defun reroot>>=
+(defun reroot (dir)
+  (setq $spadroot dir)
+  (setq $directory-list
+   (mapcar #'make-absolute-filename $relative-directory-list))
+  (setq $library-directory-list
+   (mapcar #'make-absolute-filename $relative-library-directory-list))
+  (setq |$defaultMsgDatabaseName|
+        (pathname (make-absolute-filename "/share/msgs/s2-us.msgs")))
+  (setq |$msgDatabaseName| ()))
+
+@
+
+\subsection{defun initroot}
+Sets up the system to use the {\bf AXIOM} shell variable if we can
+and default to the {\bf \$spadroot} variable (which was the value
+of the {\bf AXIOM} shell variable at build time) if we can't.
+<<defun initroot>>=
+(defun initroot (&optional (newroot (BOOT::|getEnv| "AXIOM")))
+  (reroot (or newroot $spadroot (error "setenv AXIOM or (setq $spadroot)"))))
+
+@
+
+subsection{Building Depsys (build-depsys)}
 The {\bf depsys} image is one of the two images we build from
 the src/interp subdirectory (the other is {\bf interpsys}). We
 use {\bf depsys} as a compile-time image as it contains all of
@@ -90,6 +138,41 @@ into the image. It used to read:
   )
 
 @
+
+\subsection{defun init-memory-config}
+Austin-Kyoto Common Lisp (AKCL), now known as Gnu Common Lisp (GCL)
+requires some changes to the default memory setup to run Axiom efficently.
+This function performs those setup commands. 
+<<defun init-memory-config>>=
+(defun init-memory-config (&key
+			   (cons 500)
+			   (fixnum 200)
+			   (symbol 500)
+			   (package 8)
+			   (array 400)
+			   (string 500)
+			   (cfun 100)
+			   (cpages 3000)
+			   (rpages 1000)
+			   (hole 2000) )
+  ;; initialize AKCL memory allocation parameters
+  #+:AKCL
+  (progn
+    (system:allocate 'cons cons)
+    (system:allocate 'fixnum fixnum)
+    (system:allocate 'symbol symbol)
+    (system:allocate 'package package)
+    (system:allocate 'array array)
+    (system:allocate 'string string)
+    (system:allocate 'cfun cfun)
+    (system:allocate-contiguous-pages cpages)
+    (system:allocate-relocatable-pages rpages)
+    (system:set-hole-size hole))
+  #-:AKCL
+  nil)
+
+@
+
 \subsection{Building Interpsys (build-interpsys)}
 \begin{verbatim}
 ;############################################################################
@@ -129,13 +212,15 @@ After this function is called the image is clean and can be saved.
 <<build-interpsys>>=
 (defun build-interpsys (load-files parse-files comp-files browse-files
 	     translate-files nagbr-files asauto-files spad)
+  (declare (ignore nagbr-files))
   (push :oldboot *features*)
   (initroot spad)
   #+:AKCL
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
 		      :array 400 :string 500 :cfun 100 :cpages 1000
 		      :rpages 1000 :hole 2000)
-  <<compiler-notes>>
+  #+:AKCL
+  (setq compiler::*suppress-compiler-notes* t)
   (mapcar #'load load-files)
   (|resetWorkspaceVariables|)
   (|initHist|)
@@ -151,7 +236,6 @@ After this function is called the image is clean and can be saved.
   (|setBootAutloadProperties| parse-functions parse-files)
   (|setBootAutloadProperties| browse-functions browse-files)
   (|setBootAutloadProperties| translate-functions translate-files)
-  (|setNAGBootAutloadProperties| nagbr-functions nagbr-files)
   (|setBootAutloadProperties| asauto-functions asauto-files)
   (setf (symbol-function 'boot::|addConsDB|) #'identity)
   (resethashtables) ; the databases into core, then close the streams
@@ -284,72 +368,6 @@ files.
     (if |$printLoadMsgs|
 	(format t "   Loading ~A.~%" name))
     (load name)))
-
-@
-\subsubsection{setNAGBootAutloadProperties}
-This is a further refinement of the autoload scheme. Since the
-Numerical Algorithms Group (NAG) fortran library contains many
-functions we subdivide the NAG library subsystem into chapters.
-We use a different helper function {\bf get-NAG-chapter} to decide
-which files to load.
-<<setNAGBootAutloadProperties>>=
-(defun |setNAGBootAutloadProperties| (function-list file-list)
-  (mapcar
-    #'(lambda (f)
-        (|setBootAutloadProperties|
-          (get-NAG-chapter (chapter-name f) function-list)
-          (nag-files f file-list)))
-    file-list))
-
-@
-\subsubsection{get-NAG-chapter}
-This function is used to find the names of the files to load.
-On solaris 9 under GCL the original implementation will fail because
-the max number of arguments is 63. We rewrite it to get around this
-problem. It originally read:
-\begin{verbatim}
-(defun get-NAG-chapter (chapter function-list)
- (apply 'append
-  (mapcar
-   #'(lambda (f)
-     (cond 
-      ((equalp chapter (subseq (string f) 0 (length chapter))) (list f ))))
-   function-list)))
-
-\end{verbatim}
-<<get-NAG-chapter>>=
-(defun get-NAG-chapter (chapter function-list)
- (let ((l (length chapter)) r)
-  (dolist (f function-list)
-   (when (equalp chapter (subseq (string f) 0 l))
-    (push f r)))
-  (nreverse r)))
-
-@
-\subsubsection{nag-files}
-We analyze the function names to decide which chapter we are in.
-We load files based on the chapter.
-<<nag-files>>=
-(defun nag-files (filename filelist)
-  (apply 'append (mapcar
-     #'(lambda (f)
-         (cond ((equalp (chapter-name filename) (chapter-name f)) (list f))) )
-     filelist)))
-
-@
-\subsubsection{chapter-name}
-The library names follow a convention that allows us to extract
-the chapter name. 
-<<chapter-name>>=
-(defun chapter-name (f)
-#+:AKCL
-  (apply
-    #'(lambda (s)
-        (cond ((equalp (aref s 0) #\s) "s") (T (reverse (subseq s 0 3)))))
-    (list (string-left-trim "a.o" (reverse f) )) )
-#+:CCL
-  (subseq (string-downcase (string f)) 4 (length (string f)))
-)
 
 @
 \subsubsection{parse-functions}
@@ -492,81 +510,6 @@ system.
 	|showImp|))
 
 @
-\subsubsection{anna-functions}
-The {\bf ANNA} subsystem, invoked thru {\bf hypertex}, is an
-expert system that understands the Numerical Algorithms Group (NAG)
-fortran library. 
-<<anna-functions>>=
-(setq anna-functions '(
-	|annaInt|
-	|annaMInt|
-	|annaOde|
-	|annaOpt|
-	|annaOpt2|
-	|annaPDESolve|
-	|annaOptDefaultSolve1|
-	|annaOptDefaultSolve2|
-	|annaOptDefaultSolve3|
-	|annaOptDefaultSolve4|
-	|annaOptDefaultSolve5|
-	|annaOpt2DefaultSolve|
-	|annaFoo|
-	|annaBar|
-	|annaJoe|
-	|annaSue|
-	|annaAnn|
-	|annaBab|
-	|annaFnar|
-	|annaDan|
-	|annaBlah|
-	|annaTub|
-	|annaRats|
-	|annaMInt|
-	|annaOdeDefaultSolve1|
-	|annaOdeDefaultSolve2|))
-
-@
-\subsubsection{nagbr-functions}
-The Numerical Algorithms Group (NAG) fortran library has a set
-of cover functions. These functions need to be loaded if you use
-the NAG library.
-<<nagbr-functions>>=
-(setq nagbr-functions '(
-       loadnag
-       |c02aff| |c02agf|
-       |c05adf| |c05nbf| |c05pbf|
-       |c06eaf| |c06ebf| |c06ecf| |c06ekf| |c06fpf| |c06fqf| |c06frf|
-		|c06fuf| |c06gbf| |c06gcf| |c06gqf| |c06gsf|
-       |d01ajf| |d01akf| |d01alf| |d01amf| |d01anf| |d01apf| |d01aqf|
-		|d01asf| |d01bbf| |d01fcf| |d01gaf| |d01gbf|
-       |d02bbf| |d02bhf| |d02cjf| |d02ejf| |d02gaf| |d02gbf| |d02kef|
-		|d02raf|
-       |d03edf| |d03eef| |d03faf|
-       |e01baf| |e01bef| |e01bff| |e01bgf| |e01bhf| |e01daf| |e01saf|
-		|e01sbf| |e01sef|
-       |e02adf| |e02aef| |e02agf| |e02ahf| |e02ajf| |e02akf| |e02baf|
-		|e02bbf| |e02bcf| |e02bdf| |e02bef| |e02daf| |e02dcf|
-		|e02ddf| |e02def| |e02dff| |e02gaf| |e02zaf|
-       |e04dgf| |e04fdf| |e04gcf| |e04jaf| |e04mbf| |e04naf| |e04ucf|
-		|e04ycf|
-       |f01brf| |f01bsf| |f01maf| |f01mcf| |f01qcf| |f01qdf| |f01qef|
-		|f01rcf| |f01rdf| |f01ref|
-       |f02aaf| |f02abf| |f02adf| |f02aef| |f02aff| |f02agf| |f02ajf|
-		|f02akf| |f02awf| |f02axf| |f02bbf| |f02bjf| |f02fjf|
-		|f02wef| |f02xef|
-       |f04adf| |f04arf| |f04asf| |f04atf| |f04axf| |f04faf| |f04jgf|
-		|f04maf| |f04mbf| |f04mcf| |f04qaf|
-       |f07adf| |f07aef| |f07fdf| |f07fef|
-       |s01eaf| |s13aaf| |s13acf| |s13adf| |s14aaf| |s14abf| |s14baf|
-		|s15adf| |s15aef| |s17acf| |s17adf| |s17aef| |s17aff|
-		|s17agf| |s17ahf| |s17ajf| |s17akf| |s17dcf| |s17def|
-		|s17dgf| |s17dhf| |s17dlf| |s18acf| |s18adf| |s18aef|
-		|s18aff| |s18dcf| |s18def| |s19aaf| |s19abf| |s19acf|
-		|s19adf| |s20acf| |s20adf| |s21baf| |s21bbf| |s21bcf|
-		|s21bdf|
-      ))
-
-@
 \subsection{The command-line build functions}
 \subsubsection{translist}
 Translate a list of boot files to common lisp.
@@ -587,7 +530,6 @@ Translate a single boot file to common lisp
   (in-package "BOOT")
   (let (*print-level* *print-length* (fn (pathname-name file))
 	(bootfile  (merge-pathnames file (concat $spadroot "nboot/.boot"))))
-    (declare (special *print-level* *print-length*))
     (boot bootfile (make-pathname :type "lisp" :defaults bootfile))))
 
 @
@@ -634,26 +576,7 @@ is newer.
       (mapcan #'retranslate-file-if-necessary files)))
 
 @
-\subsubsection{recompile-NRLIB-if-necessary}
-Recompile a single library's lisp file if it is out of date.
-The {\bf recompile-lib-file-if-necessary} is defined in nlib.lisp.
-<<recompile-NRLIB-if-necessary>>=
-(defun recompile-NRLIB-if-necessary (lib)
-  (recompile-lib-file-if-necessary (concat (namestring lib) "/code.lsp"))
-  (lift-NRLIB-name (namestring lib)))
 
-@
-\subsubsection{lift-NRLIB-name}
-We used to use FOO.NRLIB/code.o files for algebra. However there
-was no need for this additional level of indirection since the rest
-of the information in an NRLIB is now kept in the daase files. Thus
-we lift the FOO.NRLIB/code.o to FOO.o in the final system.
-<<lift-NRLIB-name>>=
-(defun lift-NRLIB-name (f)
-  (obey (concat "cp " f "/code.o " (subseq f 0 (position #\. f)) ".o"))
-  nil)
-
-@
 \subsubsection{recompile-lib-directory}
 Recompile library lisp code if necessary.
 <<recompile-lib-directory>>=
@@ -1439,8 +1362,6 @@ function assumes that \\ can only appear as first character of name.
 <<recompile-all-files>>
 <<recompile-lib-directory>>
 <<recompile-all-libs>>
-<<recompile-NRLIB-if-necessary>>
-<<lift-NRLIB-name>>
 <<retranslate-directory>>
 <<retranslate-file-if-necessary>>
 <<make-tags-file>>
@@ -1468,17 +1389,15 @@ function assumes that \\ can only appear as first character of name.
 <<translate-functions>>
 <<asauto-functions>>
 <<debug-functions>>
-<<anna-functions>>
-<<nagbr-functions>>
 <<setBootAutloadProperties>>
 <<boot-load>>
 <<setBootAutoLoadProperty>>
 <<mkBootAutoLoad>>
+<<defun make-absolute-filename>>
+<<defun reroot>>
+<<defun initroot>>
+<<defun init-memory-config>>
 <<build-interpsys>>
-<<setNAGBootAutloadProperties>>
-<<get-NAG-chapter>>
-<<nag-files>>
-<<chapter-name>>
 <<build-depsys>>
 
 <<string2BootTree>>

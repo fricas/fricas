@@ -124,14 +124,14 @@ DEP=	vmlisp.lisp	ggreater.lisp	\
 	spaderror.lisp	debug.lisp	\
 	spad.lisp	bits.lisp	\
 	setq.lisp	property.lisp	\
-	unlisp.lisp      foam_l.lisp      \
+	foam_l.lisp      \
 	axext_l.lisp
 
 depsys_lisp_macro_sources = vmlisp.lisp ggreater.lisp hash.lisp \
 	bootfuns.lisp union.lisp nlib.lisp macros.lisp	\
 	comp.lisp spaderror.lisp debug.lisp \
 	spad.lisp bits.lisp setq.lisp property.lisp \
-	unlisp.lisp foam_l.lisp axext_l.lisp
+	foam_l.lisp axext_l.lisp
 
 depsys_lisp_noncompiled_sources += $(depsys_lisp_macro_sources)
 depsys_lisp_SOURCES = $(addsuffix .pamphlet, $(depsys_lisp_sources))
@@ -146,19 +146,6 @@ subdirectory and becomes the axiom executable image.
 LOADSYS= $(axiom_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(axiom_build_bindir)/interpsys$(EXEEXT)
 AXIOMSYS= $(axiom_target_bindir)/AXIOMsys$(EXEEXT)
-
-@
-
-Occasionally we need to really get into the system internals.
-The best way to do this is to run almost all of the lisp code
-interpreted rather than compiled (note that cfuns.lisp and sockio.lisp
-still need to be loaded in compiled form as they depend on the 
-loader to link with lisp internals). This image is nothing more
-than a load of the file src/interp/debugsys.lisp.pamphlet. If
-you need to make test modifications you can add code to that
-file and it will show up here.
-<<environment>>=
-DEBUGSYS=$(axiom_build_bindir)/debugsys$(EXEEXT)
 
 @
 
@@ -183,7 +170,7 @@ interpreted) in [[depsys]].
 <<environment>>=
 OBJS=	vmlisp.$(FASLEXT)	hash.$(FASLEXT)	\
 	bootfuns.lisp	macros.$(FASLEXT)	\
-	unlisp.$(FASLEXT)	setq.lisp	\
+	setq.lisp	\
 	astr.$(FASLEXT)	bits.$(FASLEXT)	\
 	alql.$(FASLEXT)	buildom.$(FASLEXT)	\
 	cattable.$(FASLEXT)				\
@@ -247,7 +234,7 @@ AXIOMsys_compiled_lisp_sources = bits.lisp \
 	patches.lisp preparse.lisp \
 	sockio.lisp spad.lisp spaderror.lisp \
 	union.lisp util.lisp vmlisp.lisp obey.lisp \
-	unlisp.lisp intint.lisp nci.lisp sfsfun-l.lisp \
+	intint.lisp nci.lisp sfsfun-l.lisp \
 	axext_l.lisp foam_l.lisp
 
 AXIOMsys_boot_sources = astr.boot alql.boot buildom.boot cattable.boot \
@@ -944,7 +931,7 @@ Doing otherwise causes havoc.
 ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     ${DEPSYS} ${OBJS}  bookvol5.$(FASLEXT) util.$(FASLEXT) \
     nocompil.lisp sys-pkg.lisp \
-    ${OCOBJS} ${OPOBJS} ${BROBJS} obey.$(FASLEXT) \
+    ${OCOBJS} ${OPOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
     ${NAGBROBJS} ${TRANOBJS} \
     ${LOADSYS} \
@@ -963,7 +950,6 @@ makeint.lisp:
 		 $(axiom_target_datadir)/msgs
 	@ echo '${PROCLAIMS}' > makeint.lisp
 	@ echo '(load "nocompil.lisp")' >> makeint.lisp
-	@ echo '(load "bookvol5")' >> makeint.lisp
 	@ echo '(load "util")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ touch ${TIMESTAMP}
@@ -972,7 +958,6 @@ makeint.lisp:
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ echo '(load "../algebra/warm.data")' >> makeint.lisp
 	@ echo '(|clearClams|)' >> makeint.lisp
-	@ echo '(load "obey")' >> makeint.lisp
 	@ echo '#+:akcl (setq compiler::*suppress-compiler-notes* t)' >> makeint.lisp
 	@ echo '#+:akcl (si::gbc-time 0)' >> makeint.lisp
 
@@ -1008,19 +993,6 @@ ${AXIOMSYS}:
 	   '(BOOT::spad-save "$(BASE)$@" t)' \
              | DAASE="$(BASE)$(axiom_targetdir)" ${LISPSYS}
 	@ echo 6a ${AXIOMSYS} created
-@
-
-\section{Building debugsys}
-Note that we assume you've already built interpsys so all of the
-files are known to exist and be up to date. We don't list any of
-the preconditions here. 
-<<debugsys>>=
-${DEBUGSYS}: debugsys.lisp
-	@ echo 7 building debugsys
-	echo '(load "debugsys.lisp") (BOOT::spad-save "$(BASE)$@" t))' \
-          | ${LISPSYS}
-	@ echo 8 ${DEBUGSYS} created
-
 @
 
 \section{The Interpreter files}
@@ -1124,24 +1096,6 @@ $(addsuffix .clisp, $(MID_from_IN)): \
 	   echo '(progn (boottran::boottocl "$*.boot") (${BYE}))' | ${DEPSYS}
 @
 
-\subsection{debugsys.lisp \cite{14}}
-The {\bf debugsys.lisp} file is used to create a {\bf debugsys} runnable image.
-This image contains almost all of the lisp code that make up the axiom
-interpreter in lisp form. It is useful for deep system debugging but
-otherwise worthless. This file is certain to drift over time as changes
-are made elsewhere to add or remove files. It is assumed that you know
-what you are doing if you change this file or use debugsys.
-
-This file is basically the same as the one created during the build of
-interpsys. See the echo lines in the {\bf SAVESYS} block above. These
-are echoed into a temporary file which gets loaded into the lisp image.
-We simply captured that temporary file, replaced the .o files with .lisp
-files (or .lsp or .clisp) and saved it here.
-<<debugsys.lisp (MID from IN)>>=
-debugsys.lisp: $(srcdir)/debugsys.lisp.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
-@
-
 \subsection{newaux.lisp \cite{25}}
 <<newaux.o (OUT from MID)>>=
 newaux.$(FASLEXT): newaux.lisp
@@ -1224,7 +1178,7 @@ subdir = src/interp/
 .SUFFIXES:
 .SUFFIXES: .boot .clisp .lisp .pamphlet
 
-.PHONY: all all-ax all-depsys all-interpsys all-axiomsys all-debugsys
+.PHONY: all all-ax all-depsys all-interpsys all-axiomsys
 
 all: all-ax
 
@@ -1239,7 +1193,7 @@ remove-stamp:
 	-rm -f stamp
 
 .PHONY: build-images
-build-images: remove-stamp all-interpsys all-debugsys
+build-images: remove-stamp all-interpsys
 
 all-interpsys: all-depsys 
 	$(mkinstalldirs) $(AUTO)
@@ -1247,9 +1201,6 @@ all-interpsys: all-depsys
 
 all-axiomsys: all-depsys 
 	$(MAKE) $(AXIOMSYS)
-
-all-debugsys: all-interpsys
-	$(MAKE) $(DEBUGSYS)
 
 all-depsys: $(DEPSYS)
 
@@ -1268,25 +1219,22 @@ clean-local: mostlyclean-local
 	spad.lisp      bits.lisp      fname.lisp     metameta.lisp \
 	patches.lisp   sys-pkg.lisp   bookvol5.lisp  fnewmeta.lisp \
 	monitor.lisp   preparse.lisp  union.lisp     bootfuns.lisp \
-	foam_l.lisp    nci.lisp       proclaims.lisp unlisp.lisp \
+	foam_l.lisp    nci.lisp       proclaims.lisp \
 	bootlex.lisp   ggreater.lisp  newaux.lisp    property.lisp \
 	util.lisp      cfuns.lisp     hash.lisp      nlib.lisp \
 	setq.lisp      vmlisp.lisp    comp.lisp      intint.lisp \
 	nocompil.lisp  sfsfun-l.lisp  daase.lisp     macros.lisp \
 	nspadaux.lisp  sockio.lisp    debug.lisp     makedep.lisp \
-	obey.lisp      spaderror.lisp
+	spaderror.lisp
 
 distclean-local: clean-local
 
 <<savesys>>
 <<depsys>>
 <<axiomsys>>
-<<debugsys>>
 <<databases>>
 
 <<Regular rules>>
-
-<<debugsys.lisp (MID from IN)>>
 
 <<bookvol5.o (OUT from MID)>>
 <<bookvol5.lisp (MID from IN)>>

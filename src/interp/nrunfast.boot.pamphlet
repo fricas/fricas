@@ -67,14 +67,6 @@ isNewWorldDomain domain == INTEGERP domain.3    --see HasCategory/Attribute
  
 getDomainByteVector dom == CDDR dom.4
  
---------------------> NEW DEFINITION (see interop.boot.pamphlet)
-getOpCode(op,vec,max) ==
---search Op vector for "op" returning code if found, nil otherwise
-  res := nil
-  for i in 0..max by 2 repeat
-    EQ(QVELT(vec,i),op) => return (res := QSADD1 i)
-  res
- 
 --=======================================================
 --                 Lookup From Compiled Code
 --=======================================================
@@ -89,16 +81,6 @@ newGoGet(:l) ==
 lookupFF(op,sig,dollar,env) == newLookupInTable(op,sig,dollar,env,nil)
  
 lookupUF(op,sig,dollar,env) == newLookupInTable(op,sig,dollar,env,true)
- 
---------------------> NEW DEFINITION (see interop.boot.pamphlet)
-lookupComplete(op,sig,dollar,env) == newLookupInTable(op,sig,dollar,env,nil)
- 
---------------------> NEW DEFINITION (see interop.boot.pamphlet)
-lookupIncomplete(op,sig,dollar,env) == newLookupInTable(op,sig,dollar,env,true)
- 
---------------------> NEW DEFINITION (see interop.boot.pamphlet)
-lookupInCompactTable(op,sig,dollar,env) ==
-  newLookupInTable(op,sig,dollar,env,true)
  
 newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   dollar = nil => systemError()
@@ -500,22 +482,6 @@ sigDomainVal(dollar,domain,index) ==
   domain.index
   
 --=======================================================
---          Convert Lazy Domain to Domain Form
---=======================================================
- 
---------------------> NEW DEFINITION (see interop.boot.pamphlet)
-lazyDomainSet(lazyForm,thisDomain,slot) ==
-  form :=
-    lazyForm is [vec,.,:u] and VECP vec => u        --old style
-    lazyForm                                        --new style
-  slotDomain := evalSlotDomain(form,thisDomain)
-  if $monitorNewWorld then
-    sayLooking1(concat(form2String devaluate thisDomain,
-      '" activating lazy slot ",slot,'": "),slotDomain)
-  name := CAR form
-  SETELT(thisDomain,slot,slotDomain)
- 
---=======================================================
 --                   HasCategory/Attribute
 --=======================================================
 -- PLEASE NOTE: This function has the rather charming side-effect that
@@ -576,13 +542,6 @@ newHasTest(domform,catOrAtt) ==
 --    predvec := QVELT(domain,3)
 --    testBitVector(predvec,predIndex)
 --  lazyMatchAssocV(catform,auxvec,catvec,domain)         --new style
- 
---------------------> NEW DEFINITION (see interop.boot.pamphlet)
-lazyMatchAssocV(x,auxvec,catvec,domain) ==      --new style slot4
-  n : FIXNUM := MAXINDEX catvec
-  xop := CAR x
-  or/[ELT(auxvec,i) for i in 0..n |
-    xop = CAR (lazyt := QVELT(catvec,i)) and lazyMatch(x,lazyt,domain,domain)]
  
 lazyMatchAssocV1(x,vec,domain) ==               --old style slot4
   n : FIXNUM := MAXINDEX vec
