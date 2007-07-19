@@ -1,6 +1,6 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2007-05-31], 
-        [axiom-developer@nongnu.org])
+AC_INIT([FriCAS], [2007-07-19], 
+        [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
 AC_CONFIG_AUX_DIR(config)
@@ -27,7 +27,7 @@ axiom_targetdir=`pwd`/target/$target
 AC_SUBST(axiom_targetdir)
 if test $build != $target; then
    AC_MSG_WARN([Cross build is not supported.])
-   AC_MSG_WARN([Please notify axiom-developer@nongnu.org if you succeed.])
+   AC_MSG_WARN([Please notify fricas-devel@googlegroups.com if you succeed.])
 fi
 ## Where tools for the build platform are sequestered
 axiom_build_sharedir=$axiom_builddir/share
