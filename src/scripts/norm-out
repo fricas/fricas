@@ -1,0 +1,101 @@
+#!/bin/sh
+
+# Script to compare test results.
+#
+# Usage: 
+#    norm-out tree1 tree2
+#
+# where tree1 and tree2 are paths to build trees.
+
+DIR1=$1
+DIR2=$2
+
+
+echo DIR1=$DIR1
+echo DIR2=$DIR2
+
+# Make pathnames absolute.
+ADIR1=$(cd $DIR1; pwd)
+ADIR2=$(cd $DIR2; pwd)
+
+verify_dir () {
+if ! [ -d $1 ] ; then
+  echo $1: does not exist
+  exit
+fi
+}
+
+verify_dir $ADIR1
+verify_dir $ADIR2
+
+# Find test subdirectories
+IDIR1=$ADIR1/int/input
+IDIR2=$ADIR2/int/input
+if ! [ -d $IDIR1 ] ; then
+    IDIR1=$ADIR1/src/input
+fi
+
+if ! [ -d $IDIR2 ] ; then
+    IDIR2=$ADIR2/src/input
+fi
+
+verify_dir $IDIR1
+verify_dir $IDIR2
+
+# Find target subdirectories
+TDIR1=$ADIR1/mnt
+TDIR2=$ADIR2/mnt
+if ! [ -d $TDIR1 ] ; then
+    TDIR1=$ADIR1/target
+fi
+if ! [ -d $TDIR2 ] ; then
+    TDIR2=$ADIR2/target
+fi
+
+verify_dir $TDIR1
+verify_dir $TDIR2
+
+PLF=""
+for A in $(ls $TDIR1); do
+  if [ -d $TDIR1/$A ] ; then
+     if [ "$PLF"x != x ] ; then
+        echo $TDIR1: contains more then one subdirectory
+     else
+        PLF=$A
+     fi
+  fi
+done
+
+AX1=$TDIR1/$PLF
+
+PLF=""
+for A in $(ls $TDIR2); do
+  if [ -d $TDIR2/$A ] ; then
+     if [ "$PLF"x != x ] ; then
+        echo $TDIR2: contains more then one subdirectory
+     else
+        PLF=$A
+     fi
+  fi
+done
+
+AX2=$TDIR2/$PLF
+
+echo AX1=$AX1
+echo AX2=$AX2
+
+trap "rm -f /tmp/tcmp1.$$ /tmp/tcmp2.$$" 0 2 3 15
+
+# Do the real work
+
+cd $IDIR1
+for A in *.output; do
+  echo Diffing $A
+  if ! [ -f $IDIR2/$A ] ; then
+     echo $A: only in $IDIR1
+  else
+     sed "1,/^(/d;/^ *Time: /d;s,$AX1,AXIOM,g;/)lisp (quit)/,\$d" $A > /tmp/tcmp1.$$
+     sed "1,/^(/d;/^ *Time: /d;s,$AX2,AXIOM,g;/)lisp (quit)/,\$d" $IDIR2/$A > /tmp/tcmp2.$$
+     diff -u /tmp/tcmp1.$$ /tmp/tcmp2.$$
+  fi
+done
