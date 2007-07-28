@@ -9,12 +9,12 @@
 \eject
 \tableofcontents
 \eject
-\section{domain MRING MonoidRing}
-<<domain MRING MonoidRing>>=
-)abbrev domain MRING MonoidRing
+\section{category MRCAT MonoidRingCategory}
+<<category MRCAT MonoidRingCategory>>=
+)abbrev category MRCAT MonoidRingCategory
 ++ Authors: Stephan M. Watt; revised by Johannes Grabmeier
 ++ Date Created: January 1986
-++ Date Last Updated: 14 December 1995, Mike Dewar
+++ Date Last Updated: 22 July 2007, Franz Lehner
 ++ Basic Operations: *, +, monomials, coefficients
 ++ Related Constructors: Polynomial
 ++ Also See:
@@ -23,26 +23,13 @@
 ++  indeterminates
 ++ References:
 ++ Description:
-++  \spadtype{MonoidRing}(R,M), implements the algebra
+++  \spadtype{MonoidRingCategory}(R,M) defines the algebra
 ++  of all maps from the monoid M to the commutative ring R with
 ++  finite support.
-++  Multiplication of two maps f and g is defined
-++  to map an element c of M to the (convolution) sum over {\em f(a)g(b)}
-++  such that {\em ab = c}. Thus M can be identified with a canonical
-++  basis and the maps can also be considered as formal linear combinations
-++  of the elements in M. Scalar multiples of a basis element are called
-++  monomials. A prominent example is the class of polynomials
-++  where the monoid is a direct product of the natural numbers
-++  with pointwise addition. When M is
-++  \spadtype{FreeMonoid Symbol}, one gets polynomials
-++  in infinitely many non-commuting variables. Another application
-++  area is representation theory of finite groups G, where modules
-++  over \spadtype{MonoidRing}(R,G) are studied.
-
-MonoidRing(R: Ring, M: Monoid): MRcategory == MRdefinition where
+MonoidRingCategory(R: Ring, M: Monoid):Category == MRCdefinition where
     Term ==> Record(coef: R, monom: M)
 
-    MRcategory ==> Join(Ring, RetractableTo M, RetractableTo R) with
+    MRCdefinition == Join(Ring, RetractableTo M, RetractableTo R) with
         monomial         : (R, M) -> %
           ++ monomial(r,m) creates a scalar multiple of the basis element m.
         coefficient : (%, M) -> R
@@ -82,6 +69,38 @@ MonoidRing(R: Ring, M: Monoid): MRcategory == MRdefinition where
             ++ among all those with non-zero coefficients.
           reductum          : % -> %
             ++ reductum(f) is f minus its leading monomial.
+@
+\section{domain MRING MonoidRing}
+<<domain MRING MonoidRing>>=
+)abbrev domain MRING MonoidRing
+++ Authors: Stephan M. Watt; revised by Johannes Grabmeier
+++ Date Created: January 1986
+++ Date Last Updated: 14 December 1995, Mike Dewar
+++ Basic Operations: *, +, monomials, coefficients
+++ Related Constructors: Polynomial
+++ Also See:
+++ AMS Classifications:
+++ Keywords: monoid ring, group ring, polynomials in non-commuting
+++  indeterminates
+++ References:
+++ Description:
+++  \spadtype{MonoidRing}(R,M), implements the algebra
+++  of all maps from the monoid M to the commutative ring R with
+++  finite support.
+++  Multiplication of two maps f and g is defined
+++  to map an element c of M to the (convolution) sum over {\em f(a)g(b)}
+++  such that {\em ab = c}. Thus M can be identified with a canonical
+++  basis and the maps can also be considered as formal linear combinations
+++  of the elements in M. Scalar multiples of a basis element are called
+++  monomials. A prominent example is the class of polynomials
+++  where the monoid is a direct product of the natural numbers
+++  with pointwise addition. When M is
+++  \spadtype{FreeMonoid Symbol}, one gets polynomials
+++  in infinitely many non-commuting variables. Another application
+++  area is representation theory of finite groups G, where modules
+++  over \spadtype{MonoidRing}(R,G) are studied.
+MonoidRing(R: Ring, M: Monoid): MonoidRingCategory(R,M) == MRdefinition where
+    Term ==> Record(coef: R, monom: M)
 
     MRdefinition ==> add
         Ex ==> OutputForm
@@ -395,6 +414,7 @@ MonoidRingFunctions2(R,S,M) : Exports == Implementation where
 <<*>>=
 <<license>>
 
+<<category MRCAT MonoidRingCategory>>
 <<domain MRING MonoidRing>>
 <<package MRF2 MonoidRingFunctions2>>
 @
