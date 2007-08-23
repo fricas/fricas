@@ -258,15 +258,16 @@ Various lisps use different ``extensions'' on the filename to indicate
 that a file has been compiled. We set this variable correctly depending
 on the system we are using.
 <<bin-path>>=
-(defvar *bin-path*
+(defvar *lisp-bin-filetype*
   #+:GCL "o"
   #+lucid "bbin"
   #+symbolics "bin"
   #+cmulisp "fasl"
   #+:sbcl "fasl"
-  #+(and :openmcl :X86-64 :LINUX-HOST) "lx64fsl"
   #+:clisp "fas"
-  #+:ccl "not done this way at all")
+  #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
+  #+:ccl "not done this way at all"
+  )
 
 @
 \subsubsection{directory-list}
@@ -543,7 +544,7 @@ and load it.
 #+:AKCL
   (compile-file (concat file ".lisp"))
 #+:AKCL
-  (load (concat file "." *bin-path*))
+  (load (concat file "." *lisp-bin-filetype*))
 #+:CCL
   (load (concat file ".lisp"))
 )
@@ -555,7 +556,7 @@ Retranslate a single boot file if it has been changed.
 (defun retranslate-file-if-necessary (bootfile)
    (let* ((lfile (make-pathname :type "lisp" :defaults bootfile))
 	  (ldate (our-write-date lfile))
-	  (binfile (make-pathname :type *bin-path*  :defaults bootfile))
+	  (binfile (make-pathname :type *lisp-bin-filetype* :defaults bootfile))
 	  (bindate (our-write-date binfile))
 	  (bootdate (our-write-date   bootfile)))
        (if (and ldate bootdate (> ldate bootdate)) nil
@@ -616,7 +617,7 @@ the given file and its compiled binary. If the file has changed
 since it was last compiled this function will recompile it.
 <<recompile-file-if-necessary>>=
 (defun recompile-file-if-necessary (lfile)
-   (let* ((bfile (make-pathname :type *bin-path* :defaults lfile))
+   (let* ((bfile (make-pathname :type *lisp-bin-filetype* :defaults lfile))
 	  (bdate (our-write-date bfile))
 	  (ldate (our-write-date lfile)))
        (if (and bdate ldate (> bdate ldate)) nil
@@ -651,7 +652,8 @@ src/interp/TAGS file.
 |#
     (boot tbootfile tlispfile)
     (if compflag (progn (compile-file tlispfile)
-			(load (make-pathname :type *bin-path* :defaults tlispfile)))
+			(load (make-pathname :type *lisp-bin-filetype*
+			                     :defaults tlispfile)))
       (load tlispfile))))
 @
 \subsubsection{fc}
@@ -683,7 +685,7 @@ Load a whole subdirectory of compiled files
 (defun load-directory (dir)
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
-				  :name :wild :type *bin-path*))
+				  :name :wild :type *lisp-bin-filetype*))
 	  (files (directory pattern)))
       (mapcar #'load files)))
 
