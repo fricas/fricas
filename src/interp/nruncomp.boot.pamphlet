@@ -383,9 +383,7 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   domainShell := GETREFV (6 + $NRTdeltaLength)
   for i in 0..4 repeat domainShell.i := $domainShell.i
     --we will clobber elements; copy since $domainShell may be a cached vector
-  $template :=
-    $NRTvec = true => GETREFV (6 + $NRTdeltaLength)
-    nil
+  $template := GETREFV (6 + $NRTdeltaLength)
   $catvecList:= [domainShell,:[emptyVector for u in CADR domainShell.4]]
   $catNames := ['$] -- for DescendCode -- to be changed below for slot 4
   $maximalViews:= nil
@@ -404,10 +402,8 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   storeOperationCode:= DescendCode(code,true,nil,first $catNames)
   outsideFunctionCode:= NRTaddDeltaCode()
   storeOperationCode:= NRTputInLocalReferences storeOperationCode
-  if $NRTvec = true then
-    NRTdescendCodeTran(storeOperationCode,nil) --side effects storeOperationCode
+  NRTdescendCodeTran(storeOperationCode,nil) --side effects storeOperationCode
   codePart2:=
-    $NRTvec = true =>
       argStuffCode :=
         [[$setelt,'$,i,v] for i in 6.. for v in $FormalMapVariableList
           for arg in rest $definition]
@@ -416,7 +412,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
          argStuffCode := [[$setelt,'$,5,addargname],:argStuffCode]
       [['stuffDomainSlots,'$],:argStuffCode,
          :predBitVectorCode2,storeOperationCode]
-    [:outsideFunctionCode,storeOperationCode]
 
   $CheckVectorList := NRTcheckVector domainShell
 --CODE: part 1
@@ -437,24 +432,7 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
 --CODE: part 3
   $ConstantAssignments :=
       [NRTputInLocalReferences code for code in $ConstantAssignments]
-  codePart3:= [:constantCode1,
-                :constantCode2,:epilogue] where
-    constantCode1:=
-      name='Integer => $ConstantAssignments
-      nil
-                      -- The above line is needed to get the recursion
-                      -- Integer => FontTable => NonNegativeInteger  => Integer
-                      -- right.  Otherwise NNI has 'unset' for 0 and 1
---  setVector4c:= setVector4part3($catNames,$catvecList)
-                      -- In particular, setVector4part3 and setVector5,
-                      -- which generate calls to local domain-instantiators,
-                      -- must come after operations are set in the vector.
-                      -- The symptoms of getting this wrong are that
-                      -- operations are not set which should be
-    constantCode2:= --matches previous test on Integer
-      name='Integer => nil
-      $ConstantAssignments
-    epilogue:= $epilogue
+  codePart3:= [:$ConstantAssignments,:$epilogue]
   ans :=
     ['PROGN,:optFunctorPROGN [:codePart1,:codePart2,:codePart3], '$]
   $getDomainCode:= nil
