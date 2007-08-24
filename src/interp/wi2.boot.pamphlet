@@ -1,15 +1,19 @@
 \documentclass{article}
 \usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/interp wi2.boot}
+
+\title{\File{src/interp/wi2.boot} Pamphlet}
 \author{The Axiom Team}
+
+\begin{document}
 \maketitle
 \begin{abstract}
 \end{abstract}
 \eject
 \tableofcontents
 \eject
+
 \section{License}
+
 <<license>>=
 -- Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 -- All rights reserved.
@@ -351,7 +355,7 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     rettype:= resolve(signature'.target,$returnMode)
  
     localOrExported :=
-      null MEMBER($op,$formalArgList) and
+      null member($op,$formalArgList) and
         getmode($op,e) is ['Mapping,:.] => 'local
       'exported
  
@@ -359,7 +363,7 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     -- could be moved closer to the top
     formattedSig := formatUnabbreviated ['Mapping,:signature']
     $compileOnlyCertainItems and _
-      not MEMBER($op, $compileOnlyCertainItems) =>
+      not member($op, $compileOnlyCertainItems) =>
         sayBrightly ['"   skipping ", localOrExported,:bright $op]
         [nil,['Mapping,:signature'],oldE]
     sayBrightly ['"   compiling ",localOrExported,
@@ -415,10 +419,10 @@ mkUnion(a,b) ==
   b="$" and $Rep is ["Union",:l] => b
   a is ["Union",:l] =>
     b is ["Union",:l'] => ["Union",:setUnion(l,l')]
-    MEMBER(b, l) => a
+    member(b, l) => a
     ["Union",:setUnion([b],l)]
   b is ["Union",:l] => 
-    MEMBER(a, l) => b
+    member(a, l) => b
     ["Union",:setUnion([a],l)]
   STRINGP a => ["Union",b,a]
   ["Union",a,b]
@@ -477,13 +481,13 @@ getInverseEnvironment(a,E) ==
            --the next two lines are necessary to get 3-branched Unions to work
            -- old-style unions, that is
     if corrupted? get(x,"condition",E) then systemError 'condition
-    (get(x,"condition",E) is [["OR",:oldpred]]) and MEMBER(a,oldpred) =>
-      put(x,"condition",LIST MKPF(DELETE(a,oldpred),"OR"),E)
+    (get(x,"condition",E) is [["OR",:oldpred]]) and member(a,oldpred) =>
+      put(x,"condition",LIST MKPF(delete(a,oldpred),"OR"),E)
     getUnionMode(x,E) is ["Union",:l] or systemError 'Union
     if corrupted? l then systemError 'list
-    l':= DELETE(m,l)
+    l':= delete(m,l)
     for u in l' repeat
-       if u is ['_:,=m,:.] then l':=DELETE(u,l')
+       if u is ['_:,=m,:.] then l':= delete(u,l')
     newpred:= MKPF([["case",x,m'] for m' in l'],"OR")
     put(x,"condition",[newpred,:get(x,"condition",E)],E)
   E
@@ -521,7 +525,7 @@ applyMapping([op,:argl],m,e,ml) ==
       T() == [.,.,e]:= comp(x,m',e) or return "failed"
   if argl'="failed" then return nil
   form:=
-    not MEMBER(op,$formalArgList) and ATOM op and not get(op,'value,e) =>
+    not member(op,$formalArgList) and ATOM op and not get(op,'value,e) =>
       nprefix := $prefix or
    -- following needed for referencing local funs at capsule level
         getAbbreviation($op,#rest $form)
@@ -662,8 +666,8 @@ compApplyModemap(form,modemap,$e,sl) ==
 --+ information which is no longer valid; thus ignore this index and
 --+ store the signature instead.
  
---$NRTflag=true and f is [op1,d,.] and NE(d,'$) and MEMBER(op1,'(ELT CONST)) =>
-  f is [op1,d,.] and MEMBER(op1,'(ELT CONST Subsumed)) =>
+--$NRTflag=true and f is [op1,d,.] and NE(d,'$) and member(op1,'(ELT CONST)) =>
+  f is [op1,d,.] and member(op1,'(ELT CONST Subsumed)) =>
     [genDeltaEntry [op,:modemap],lt',$bindings]
   markImport mc
   [f,lt',$bindings]
@@ -682,7 +686,7 @@ compMapCond''(cexpr,dc) ==
         --stackSemanticError(("not known that",'%b,name,
         -- '%d,"has",'%b,cat,'%d),nil)
   --now it must be an attribute
-  MEMBER(["ATTRIBUTE",dc,cexpr],get("$Information","special",$e)) => true
+  member(["ATTRIBUTE",dc,cexpr],get("$Information","special",$e)) => true
   --for the time being we'll stop here - shouldn't happen so far
   stackMessage ["not known that",'%b,dc,'%d,"has",'%b,cexpr,'%d]
   false
@@ -749,7 +753,7 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
      hehe fn
      [op]                    -----------> return just the op here
 --   ['XLAM,'ignore,MKQ SPADCALL fn]
-  GET(compileTimeBindingOf first fn,'SPADreplace)
+  GETL(compileTimeBindingOf first fn,'SPADreplace)
  
 genDeltaEntry opMmPair ==
 --called from compApplyModemap
@@ -774,7 +778,7 @@ genDeltaEntry opMmPair ==
   opModemapPair :=
     [op,[dc,:[genDeltaSig x for x in sig]],['T,cform]] -- force pred to T
   if null NRTassocIndex dc and dc ^= $NRTaddForm and
-    (MEMBER(dc,$functorLocalParameters) or null atom dc) then
+    (member(dc,$functorLocalParameters) or null atom dc) then
     --create "domain" entry to $NRTdeltaList
       $NRTdeltaList:= [['domain,NRTaddInner dc,:dc],:$NRTdeltaList]
       saveNRTdeltaListComp:= $NRTdeltaListComp:=[nil,:$NRTdeltaListComp]
@@ -1037,13 +1041,13 @@ chaseInferences(origPred,$e) ==
         u is ["COND",:l] =>
           for [ante,:conseq] in l repeat
             ante=pred => [foo w for w in conseq]
-            ante is ["and",:ante'] and MEMBER(pred,ante') =>
-              ante':= DELETE(pred,ante')
+            ante is ["and",:ante'] and member(pred,ante') =>
+              ante':= delete(pred,ante')
               v':=
                 LENGTH ante'=1 => first ante'
                 ["and",:ante']
               v':= ["COND",[v',:conseq]]
-              MEMBER(v',get("$Information","special",$e)) => nil
+              member(v',get("$Information","special",$e)) => nil
               $e:=
                 put("$Information","special",[v',:
                   get("$Information","special",$e)],$e)
@@ -1155,7 +1159,7 @@ doItLet1 item ==
          stackSemanticError(["multiple assignment ",item," not allowed"],nil)
       wiReplaceNode(item, code, 24)
   lhs:= lhs'
-  if not MEMBER(KAR rhs,$NonMentionableDomainNames) and
+  if not member(KAR rhs,$NonMentionableDomainNames) and
       not MEMQ(lhs, $functorLocalParameters) then
          $functorLocalParameters:= [:$functorLocalParameters,lhs]
   if (rhs' := rhsOfLetIsDomainForm code) then

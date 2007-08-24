@@ -280,9 +280,9 @@ format(x,:options) ==
         formatDollar(name,p,argl)
       op = 'elt and UPPER_-CASE_-P (STRINGIMAGE opOf CAR argl).0 => 
         formatDollar1(CAR argl,CADR argl)
-      fn:= GET(op,"PSPAD") => formatFn(fn,x,$m,$c)
+      fn:= GETL(op,"PSPAD") => formatFn(fn,x,$m,$c)
       if MEMQ(op,'(AND OR NOT)) then op:= DOWNCASE op
-      n=1 and GET(op,'Nud) and (lbp:= formatOpBindingPower(op,"Nud","left")) =>
+      n=1 and GETL(op,'Nud) and (lbp:= formatOpBindingPower(op,"Nud","left")) =>
         formatPrefix(op,first argl,lbp,formatOpBindingPower(op,"Nud","right"),qualification)
       n=2 and (op = '_$ or getOp(op,'Led)) and (lbp:= formatOpBindingPower(op,"Led","left")) =>
         formatInfix(op,argl,lbp,formatOpBindingPower(op,"Led","right"),qualification)
@@ -296,14 +296,14 @@ format(x,:options) ==
 getOp(op,kind) ==
   kind = 'Led =>
     MEMQ(op,'(_div _exquo)) => nil
-    GET(op,'Led)
-  GET(op,'Nud)
+    GETL(op,'Led)
+  GETL(op,'Nud)
 
 formatDollar(name,p,argl) ==
   name := markMacroTran name
   n := #argl
   kind := (n=1 => "Nud"; "Led")
-  IDENTP name and GET(p,kind) => format([p,:argl],name)
+  IDENTP name and GETL(p,kind) => format([p,:argl],name)
   formatForcePren [p,:argl] and 
     (try (format "$$" and formatForcePren name) 
       or (indent() and format "$__" and formatForcePren name and undent()))
@@ -323,7 +323,7 @@ formatDOLLAR ['DOLLAR,x,y] == formatDollar1(y, x)
 formatDollar1(name,arg) ==
   id :=
     IDENTP name => name
-    name is [p] and GET(p,'NILADIC) => p
+    name is [p] and GETL(p,'NILADIC) => p
     name
   format arg and format "$$" and formatForcePren id
  
@@ -376,7 +376,7 @@ formatElt(u) ==
 formatForm (u) ==
   [op,:argl] := u
   if MEMQ(op, '(Record Union)) then 
-    $fieldNames := UNION(getFieldNames argl,$fieldNames)
+    $fieldNames := union(getFieldNames argl,$fieldNames)
   MEMQ(op,'((QUOTE T) true)) => format "true"
   MEMQ(op,'(false nil)) => format op
   u='(Zero) => format 0
@@ -391,7 +391,7 @@ formatFunctionCall u ==
 formatFunctionCall1 [op,:argl] ==
 --null argl and getConstructorProperty(op,'niladic) => formatOp op
   null argl => 
-    GET(op,'NILADIC) => formatOp op
+    GETL(op,'NILADIC) => formatOp op
     formatOp op and format "()"
   formatOp op and formatFunctionCallTail argl 
  
@@ -458,7 +458,7 @@ formatSelection1 [f,x] == formatSelectionOp f and format "." and
     formatPren x
  
 formatSelectionOp op ==
-  op is [f,.] and not GET(f,'Nud) or 
+  op is [f,.] and not GETL(f,'Nud) or 
     1000 < pspadBindingPowerOf("right",op) => formatSelectionOp1 op
   formatPren1("formatSelectionOp1",op)
  
@@ -510,7 +510,7 @@ formatPrefix(op,arg,lbp,rbp,:options) ==
 formatPrefixOp(op,:options) ==
   qualification := IFCAR options
   op=char '" " => format " ="
-  qualification or GET(op,"Nud") and ^MEMQ(op,$spadTightList) => 
+  qualification or GETL(op,"Nud") and ^MEMQ(op,$spadTightList) => 
     formatQual(op,qualification) and format " "
   format op
 
@@ -576,7 +576,7 @@ formatOpBindingPower(op,key,leftOrRight) ==
   op = "not" and key = "Nud" =>
     leftOrRight = 'left => 1000
     1001
-  GET(op,key) is [.,.,:r] =>
+  GETL(op,key) is [.,.,:r] =>
     leftOrRight = 'left => KAR r or 0
     KAR KDR r or 1
   1000
@@ -740,7 +740,7 @@ formatImport ["import",a] ==
 
 addFieldNames a ==
   a is [op,:r] and MEMQ(op,'(Record Union)) =>
-        $fieldNames := UNION(getFieldNames r,$fieldNames)
+        $fieldNames := union(getFieldNames r,$fieldNames)
   a is ['List,:b] => addFieldNames b
   nil
 

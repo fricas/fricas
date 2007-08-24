@@ -114,7 +114,7 @@ findSubstitutionOrder? alist == fn(alist,nil) where
   fn(alist,res) ==
     null alist => NREVERSE res
     choice := or/[x for (x:=[a,:b]) in alist | null containedRight(a,alist)] =>
-      fn(DELETE(choice,alist),[choice,:res])
+      fn(delete(choice,alist),[choice,:res])
     nil
 
 containedRight(x,alist)== or/[CONTAINED(x,y) for [.,:y] in alist]
@@ -127,7 +127,7 @@ removeIsDomainD pred ==
     for p in preds while not D repeat
       p is ['isDomain,'D,D1] =>
         D := D1
-        npreds := DELETE(['isDomain,'D,D1],preds)
+        npreds := delete(['isDomain,'D,D1],preds)
     D =>
       1 = #npreds => [D,first npreds]
       [D,['AND,:npreds]]
@@ -252,7 +252,7 @@ formatOpSymbol(op,sig) ==
         [quad,".",sel]
       [quad,".",quad]
     op
-  STRINGP op or GET(op,"Led") or GET(op,"Nud") =>
+  STRINGP op or GETL(op,"Led") or GETL(op,"Nud") =>
     n = 3 =>
       if op = 'SEGMENT then op := '".."
       op = 'in => [quad,'" ",op,'" ",quad]
@@ -261,7 +261,7 @@ formatOpSymbol(op,sig) ==
       op = 'exquo => op
       [quad,op,quad]
     n = 2 =>
-      not GET(op,"Nud") => [quad,op]
+      not GETL(op,"Nud") => [quad,op]
       [op,quad]
     op
   op

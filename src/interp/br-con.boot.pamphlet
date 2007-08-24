@@ -263,7 +263,7 @@ mkDomTypeForm(typeForm,conform,domname) == --called by kargPage
 domainDescendantsOf(conform,domform) == main where --called by kargPage
   main ==
     conform is [op,:r] =>
-      op = 'Join => jfn(DELETE('(Type Object),r),DELETE('(Type Object),IFCDR domform))
+      op = 'Join => jfn(delete('(Type Object),r),delete('(Type Object),IFCDR domform))
       op = 'CATEGORY => nil
       domainsOf(conform,domform)
     domainsOf(conform,domform)
@@ -689,7 +689,7 @@ kisValidType typeForm ==
   $ProcessInteractiveValue: fluid := true
   $noEvalTypeMsg: fluid := true
   CATCH('SPAD__READER, processInteractive(typeForm,nil))
-    is [[h,:.],:t] and MEMBER(h,'(Domain SubDomain)) =>
+    is [[h,:.],:t] and member(h,'(Domain SubDomain)) =>
       kCheckArgumentNumbers t and t
   false
 
@@ -978,7 +978,7 @@ dbShowCons1(htPage,cAlist,key) ==
     htPage and htpProperty(htPage,'domname) => first conlist
     opOf first conlist
   conlist := [opOf x for x in conlist]
-  kinds := "UNION"/[dbConstructorKind x for x in conlist]
+  kinds := "union"/[dbConstructorKind x for x in conlist]
   kind :=
     kinds is [a] => a
     'constructor
@@ -1067,7 +1067,7 @@ dbShowConsDoc1(htPage,conform,indexOrNil) ==
   [conname,:conargs] := conform
   MEMQ(conname,$Primitives) =>
     conname := htpProperty(htPage,'conname)
-    [["constructor",["NIL",doc]],:.] := GET(conname,'documentation)
+    [["constructor",["NIL",doc]],:.] := GETL(conname,'documentation)
     sig := '((CATEGORY domain) (SetCategory) (SetCategory))
     displayDomainOp(htPage,'"constructor",conform,conname,sig,true,doc,indexOrNil,'dbSelectCon,nil,nil)
   exposeFlag := isExposedConstructor conname
@@ -1134,9 +1134,9 @@ dbConsHeading(htPage,conlist,view,kind) ==
     nil
   heading := [:prefix,:placepart]
   connective :=
-    MEMBER(view,'(abbrs files kinds)) => '" as "
+    member(view,'(abbrs files kinds)) => '" as "
     '" with "
-  if count ^= 0 and MEMBER(view,'(abbrs files parameters conditions)) then heading:= [:heading,'" viewed",connective,'"{\em ",STRINGIMAGE view,'"}"]
+  if count ^= 0 and member(view,'(abbrs files parameters conditions)) then heading:= [:heading,'" viewed",connective,'"{\em ",STRINGIMAGE view,'"}"]
   heading
 
 dbShowConstructorLines lines ==
@@ -1177,7 +1177,7 @@ dbSpecialDescription(conname) ==
 dbSpecialOperations(conname) ==
   page := htInitPage(nil,nil)
   conform := getConstructorForm conname
-  opAlist := dbSpecialExpandIfNecessary(conform,rest GET(conname,'documentation))
+  opAlist := dbSpecialExpandIfNecessary(conform,rest GETL(conname,'documentation))
   fromHeading := ['" from domain {\sf ",form2HtString conform,'"}"]
   htpSetProperty(page,'fromHeading,fromHeading)
   htpSetProperty(page,'conform,conform)
@@ -1189,7 +1189,7 @@ dbSpecialOperations(conname) ==
 dbSpecialExports(conname) ==
   conform := getConstructorForm conname
   page := htInitPage(['"Exports of {\sf ",form2HtString conform,'"}"],nil)
-  opAlist := dbSpecialExpandIfNecessary(conform,rest GET(conname,'documentation))
+  opAlist := dbSpecialExpandIfNecessary(conform,rest GETL(conname,'documentation))
   kePageDisplay(page,'"operation",opAlist)
   htShowPage()
 

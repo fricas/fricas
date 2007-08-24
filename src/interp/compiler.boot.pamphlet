@@ -192,7 +192,7 @@ comp3(x,m,$e) ==
   not ($insideCompTypeOf=true) and stringPrefix?('"TypeOf",PNAME op) =>
     compTypeOf(x,m,e)
   t:= compExpression(x,m,e)
-  t is [x',m',e'] and not MEMBER(m',getDomainsInScope e') =>
+  t is [x',m',e'] and not member(m',getDomainsInScope e') =>
     [x',m',addDomain(m',e')]
   t
 
@@ -312,7 +312,7 @@ extractCodeAndConstructTriple(u, m, oldE) ==
 
 compExpression(x,m,e) ==
   $insideExpressionIfTrue: local:= true
-  atom first x and (fn:= GET(first x,"SPECIAL")) =>
+  atom first x and (fn:= GETL(first x,"SPECIAL")) =>
     FUNCALL(fn,x,m,e)
   compForm(x,m,e)
 
@@ -354,7 +354,7 @@ compSymbol(s,m,e) ==
         [s,v.mode,e] --s will be replaced by an ELT form in beforeCompile
     [s,v.mode,e] --s has been SETQd
   m':= getmode(s,e) =>
-    if not MEMBER(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
+    if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
       not isFunction(s,e) and null ($compForModeIfTrue=true) then errorRef s
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ["no mode found for",s]
@@ -527,7 +527,7 @@ getConstructorMode(x,e) ==
     u is ["Record",:l] =>
       (or/[p is [., =a,R] for p in l]) and isConstructorForm R => R
 
-isConstructorForm u == u is [name,:.] and MEMBER(name,'(Record Vector List))
+isConstructorForm u == u is [name,:.] and member(name,'(Record Vector List))
 
 eltModemapFilter(name,mmList,e) ==
   isConstantId(name,e) =>
@@ -994,12 +994,12 @@ getInverseEnvironment(a,E) ==
   a is ["case",x,m] and IDENTP x =>
            --the next two lines are necessary to get 3-branched Unions to work
            -- old-style unions, that is
-    (get(x,"condition",E) is [["OR",:oldpred]]) and MEMBER(a,oldpred) =>
-      put(x,"condition",LIST MKPF(DELETE(a,oldpred),"OR"),E)
+    (get(x,"condition",E) is [["OR",:oldpred]]) and member(a,oldpred) =>
+      put(x,"condition",LIST MKPF(delete(a,oldpred),"OR"),E)
     getUnionMode(x,E) is ["Union",:l]
-    l':= DELETE(m,l)
+    l':= delete(m,l)
     for u in l' repeat
-       if u is ['_:,=m,:.] then l':=DELETE(u,l')
+       if u is ['_:,=m,:.] then l':=delete(u,l')
     newpred:= MKPF([["case",x,m'] for m' in l'],"OR")
     put(x,"condition",[newpred,:get(x,"condition",E)],E)
   E
@@ -1057,7 +1057,7 @@ compColon([":",f,t],m,e) ==
   t:=
     atom t and (t':= ASSOC(t,getDomainsInScope e)) => t'
     isDomainForm(t,e) and not $insideCategoryIfTrue =>
-      (if not MEMBER(t,getDomainsInScope e) then e:= addDomain(t,e); t)
+      (if not member(t,getDomainsInScope e) then e:= addDomain(t,e); t)
     isDomainForm(t,e) or isCategoryForm(t,e) => t
     t is ["Mapping",m',:r] => t
     unknownTypeError t
@@ -1181,7 +1181,7 @@ coerceHard(T,m) ==
 coerceExtraHard(T is [x,m',e],m) ==
   T':= autoCoerceByModemap(T,m) => T'
   isUnionMode(m',e) is ["Union",:l] and (t:= hasType(x,e)) and
-    MEMBER(t,l) and (T':= autoCoerceByModemap(T,t)) and
+    member(t,l) and (T':= autoCoerceByModemap(T,t)) and
       (T'':= coerce(T',m)) => T''
   m' is ['Record,:.] and m = $Expression =>
       [['coerceRe2E,x,['ELT,COPY m',0]],m,e]
@@ -1246,7 +1246,7 @@ autoCoerceByModemap([x,source,e],target) ==
       for (modemap:= [map,cexpr]) in getModemapList("autoCoerce",1,e) | map is [
         .,t,s] and modeEqual(t,target) and modeEqual(s,source)] or return nil
   fn:= (or/[selfn for [cond,selfn] in u | cond=true]) or return nil
-  source is ["Union",:l] and MEMBER(target,l) =>
+  source is ["Union",:l] and member(target,l) =>
     (y:= get(x,"condition",e)) and (or/[u is ["case",., =target] for u in y])
        => [["call",fn,x],target,e]
     x="$fromCoerceable$" => nil
@@ -1275,8 +1275,8 @@ modeEqual(x,y) ==
     for x1 in xl repeat
       for y1 in yl repeat
         modeEqual(x1,y1) =>
-          xl := DELETE(x1,xl)
-          yl := DELETE(y1,yl)
+          xl := delete(x1,xl)
+          yl := delete(y1,yl)
           return nil
     xl or yl => nil
     true
@@ -1431,7 +1431,7 @@ compilerDoit(constructor, fun) ==
       $byConstructors := [opOf x for x in constructor]
       _/RQ_,LIB()
       for ii in $byConstructors repeat
-        null MEMBER(ii,$constructorsSeen) =>
+        null member(ii,$constructorsSeen) =>
           sayBrightly ['">>> Warning ",'%b,ii,'%d,'" was not found"]
 
 compilerDoitWithScreenedLisplib(constructor, fun) ==

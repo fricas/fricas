@@ -83,7 +83,7 @@ grepConstructDo(x, key) ==
   $localLibdb =>
     oldLines := purgeNewConstructorLines(grepf(x,key,false),$newConstructorList)
     newLines := grepf(x,$localLibdb,false)
-    UNION(oldLines, newLines)
+    union(oldLines, newLines)
   grepf(x,key,false)
 
 dbExposed?(line,kind) == -- does line come from an unexposed constructor?
@@ -122,7 +122,7 @@ applyGrep(x,filename) ==   --OBSELETE with $saturn--> see applyGrepSaturn
     grepCombine(a,b)
   grepf(x,filename,false)
 
-grepCombine(a,b) == MSORT UNION(a,b)
+grepCombine(a,b) == MSORT union(a,b)
 
 grepf(pattern,s,not?) ==  --s=sourceFile or list of strings
   pattern is [op,:argl] =>
@@ -132,7 +132,7 @@ grepf(pattern,s,not?) ==  --s=sourceFile or list of strings
       s
     op = "or" =>
       targetStack := nil
-      "UNION"/[grepf(arg,s,not?) for arg in argl]
+      "union"/[grepf(arg,s,not?) for arg in argl]
     op = "not" =>
       not? => grepf(first argl,s,false)
       --could be the first time so have to get all of same $key
@@ -199,7 +199,7 @@ pmPreparse s == hn fn(s,0,#s) where--stupid insertion of chars to get correct pa
     j := firstDelim(s,i + 1) or siz
     t := gn(s,i,j - 1)
     middle :=
-      MEMBER(t,'("and" "or" "not")) => t
+      member(t,'("and" "or" "not")) => t
       --the following 2 lines make commutative("*") parse correctly!!!!
       t.0 = char '_" => t
       j < siz - 1 and s.j = char '_( => t
@@ -691,7 +691,7 @@ conSpecialString?(filter,:options) ==
   secondTime := IFCAR options
   parse :=
     words := string2Words filter is [s] => ncParseFromString s
-    and/[not MEMBER(x,'("and" "or" "not")) for x in words] => ncParseFromString filter
+    and/[not member(x,'("and" "or" "not")) for x in words] => ncParseFromString filter
     false
   null parse => nil
   form := conLowerCaseConTran parse
@@ -711,10 +711,10 @@ $dbDelimiters := [char " " , char "(", char ")"]
 dbWordFrom(l,i) ==
   maxIndex := MAXINDEX l
   while maxIndex >= i and l.i = char " " repeat i := i + 1
-  if maxIndex >= i and MEMBER(l.i, $dbDelimiters) then return [l.i, i + 1]
-  k := or/[j for j in i..maxIndex | not MEMBER(l.j, $dbDelimiters)] or return nil
+  if maxIndex >= i and member(l.i, $dbDelimiters) then return [l.i, i + 1]
+  k := or/[j for j in i..maxIndex | not member(l.j, $dbDelimiters)] or return nil
   buf := '""
-  while k <= maxIndex and not MEMBER(c := l.k, $dbDelimiters) repeat
+  while k <= maxIndex and not member(c := l.k, $dbDelimiters) repeat
     ch :=
       c = char '__   => l.(k := 1+k)  --this may exceed bounds
       c
@@ -750,11 +750,11 @@ dbSearch(lines,kind,filter) == --called by attribute, operation, constructor sea
   lines is ['error,:.] => bcErrorPage lines
   null filter => nil      --means filter error
   lines is ['Abbreviations,:r] => dbSearchAbbrev(lines,kind,filter)
-  if MEMBER(kind,'("attribute" "operation")) then --should not be necessary!!
+  if member(kind,'("attribute" "operation")) then --should not be necessary!!
     lines := dbScreenForDefaultFunctions lines
   count := #lines
   count = 0 => emptySearchPage(kind,filter)
-  MEMBER(kind,'("attribute" "operation")) => dbShowOperationLines(kind,lines)
+  member(kind,'("attribute" "operation")) => dbShowOperationLines(kind,lines)
   dbShowConstructorLines lines
 
 dbSearchAbbrev([.,:conlist],kind,filter) ==
@@ -995,7 +995,7 @@ grepFile(pattern,:options) ==
         '"-i"
       command := STRCONC('"grep ",casepart,'" _'",pattern,'"_' ",source)
       obey
-        MEMBER(key,'(a o c d p x)) =>
+        member(key,'(a o c d p x)) =>
           STRCONC(command, '" | sed 's/~/", STRINGIMAGE key, '"/' > ", target)
         STRCONC(command, '" > ",target)
       dbReadLines target

@@ -343,20 +343,20 @@ checkRecordHash u ==
   while u repeat
     x := first u
     if STRINGP x and x.0 = $charBack then
-      if MEMBER(x,$HTlinks) and (u := checkLookForLeftBrace IFCDR u)
+      if member(x,$HTlinks) and (u := checkLookForLeftBrace IFCDR u)
            and (u := checkLookForRightBrace IFCDR u)
              and (u := checkLookForLeftBrace IFCDR u) and (u := IFCDR u) then
         htname := intern IFCAR u
         entry := HGET($htHash,htname) or [nil]
         HPUT($htHash,htname,[first entry,:[[$name,:$origin],:rest entry]])
-      else if MEMBER(x,$HTlisplinks) and (u := checkLookForLeftBrace IFCDR u)
+      else if member(x,$HTlisplinks) and (u := checkLookForLeftBrace IFCDR u)
             and (u := checkLookForRightBrace IFCDR u)
               and (u := checkLookForLeftBrace IFCDR u) and (u := IFCDR u) then
         htname := intern checkGetLispFunctionName checkGetStringBeforeRightBrace u
         entry := HGET($lispHash,htname) or [nil]
         HPUT($lispHash,htname,[first entry,:[[$name,:$origin],:rest entry]])
-      else if ((p := MEMBER(x,'("\gloss" "\spadglos")))
-                 or (q := MEMBER(x,'("\glossSee" "\spadglosSee"))))
+      else if ((p := member(x,'("\gloss" "\spadglos")))
+                 or (q := member(x,'("\glossSee" "\spadglosSee"))))
                     and (u := checkLookForLeftBrace IFCDR u)
                       and (u := IFCDR u) then
           if q then
@@ -371,7 +371,7 @@ checkRecordHash u ==
           if s.0 = char '_) then s := SUBSTRING(s,1,nil)
           parse := checkGetParse s
           null parse => checkDocError ['"Unparseable \spadtype: ",s]
-          not MEMBER(opOf parse,$currentSysList) =>
+          not member(opOf parse,$currentSysList) =>
             checkDocError ['"Bad system command: ",s]
           atom parse or not (parse is ['set,arg]) => 'ok  ---assume ok
           not spadSysChoose($setOptions,arg) =>
@@ -389,9 +389,9 @@ checkRecordHash u ==
             checkDocError ['"Unknown \spadtype: ", s]
           atom key => 'ok
           checkDocError ['"Wrong number of arguments: ",form2HtString key]
-      else if MEMBER(x,'("\spadop" "\keyword")) and (u := checkLookForLeftBrace IFCDR u) and (u := IFCDR u) then
+      else if member(x,'("\spadop" "\keyword")) and (u := checkLookForLeftBrace IFCDR u) and (u := IFCDR u) then
           x := intern checkGetStringBeforeRightBrace u
-          not (GET(x,'Led) or GET(x,'Nud)) =>
+          not (GETL(x,'Led) or GETL(x,'Nud)) =>
             checkDocError ['"Unknown \spadop: ",x]
     u := rest u
   'done
@@ -734,7 +734,7 @@ checkFixCommonProblem u ==
   acc := nil
   while u repeat
     x := first u
-    x = $charLbrace and MEMBER(next := IFCAR rest u,$HTspadmacros) and
+    x = $charLbrace and member(next := IFCAR rest u,$HTspadmacros) and
                        (IFCAR IFCDR rest u ^= $charLbrace) =>
       checkDocError ['"Reversing ",next,'" and left brace"]
       acc := [$charLbrace,next,:acc]  --reverse order of brace and command
@@ -758,15 +758,15 @@ checkDecorate u ==
           mathSymbolsOk := count - 1
           spadflag := count - 1
         else checkDocError ['"\em must be enclosed in braces"]
-      if MEMBER(x,'("\spadpaste" "\spad" "\spadop")) then mathSymbolsOk := count
-      if MEMBER(x,'("\s" "\spadtype" "\spadsys" "\example" "\andexample" "\spadop" "\spad" "\spadignore" "\spadpaste" "\spadcommand" "\footnote")) then spadflag := count
+      if member(x,'("\spadpaste" "\spad" "\spadop")) then mathSymbolsOk := count
+      if member(x,'("\s" "\spadtype" "\spadsys" "\example" "\andexample" "\spadop" "\spad" "\spadignore" "\spadpaste" "\spadcommand" "\footnote")) then spadflag := count
       else if x = $charLbrace then
         count := count + 1
       else if x = $charRbrace then
         count := count - 1
         if mathSymbolsOk = count then mathSymbolsOk := false
         if spadflag = count then spadflag := false
-      else if not mathSymbolsOk and MEMBER(x,'("+" "*" "=" "==" "->")) then
+      else if not mathSymbolsOk and member(x,'("+" "*" "=" "==" "->")) then
         if $checkingXmptex? then
           checkDocError ["Symbol ",x,'" appearing outside \spad{}"]
 
@@ -796,8 +796,8 @@ checkDecorate u ==
       STRINGP x and DIGITP x.0 => [x,:acc]
       null spadflag and
         (CHARP x and ALPHA_-CHAR_-P x and not MEMQ(x,$charExclusions) or
-          MEMBER(x,$argl)) => [$charRbrace,x,$charLbrace,'"\spad",:acc]
-      null spadflag and ((STRINGP x and not x.0 = $charBack and DIGITP(x.(MAXINDEX x))) or MEMBER(x,'("true" "false"))) =>
+          member(x,$argl)) => [$charRbrace,x,$charLbrace,'"\spad",:acc]
+      null spadflag and ((STRINGP x and not x.0 = $charBack and DIGITP(x.(MAXINDEX x))) or member(x,'("true" "false"))) =>
         [$charRbrace,x,$charLbrace,'"\spad",:acc]  --wrap x1, alpha3, etc
       xcount := #x
       xcount = 3 and x.1 = char 't and x.2 = char 'h =>
@@ -805,7 +805,7 @@ checkDecorate u ==
       xcount = 4 and x.1 = char '_- and x.2 = char 't and x.3 = char 'h =>
         ['"-th",$charRbrace,x.0,$charLbrace,'"\spad",:acc]
       xcount = 2 and x.1 = char 'i or              --wrap ei, xi, hi
-        null spadflag and xcount > 0 and xcount < 4 and not MEMBER(x,'("th" "rd" "st")) and
+        null spadflag and xcount > 0 and xcount < 4 and not member(x,'("th" "rd" "st")) and
           hasNoVowels x =>                         --wrap words with no vowels
             [$charRbrace,x,$charLbrace,'"\spad",:acc]
       [checkAddBackSlashes x,:acc]
@@ -989,7 +989,7 @@ checkBalance u ==
       x := first u
       openClose := ASSOC(x,$checkPrenAlist)  --is it an open bracket?
         => stack := [CAR openClose,:stack]   --yes, push the open bracket
-      open  := RASSOC(x,$checkPrenAlist) =>  --it is a close bracket!
+      open  := rassoc(x,$checkPrenAlist) =>  --it is a close bracket!
         stack is [top,:restStack] => --does corresponding open bracket match?
           if open ^= top then          --yes: just pop the stack
             checkDocError
@@ -1022,13 +1022,13 @@ checkBeginEnd u ==
         beginEndStack := ["items",:beginEndStack]
       x = '"\begin" =>
         u is [.,=$charLbrace,y,:r] and CAR r = $charRbrace =>
-          if not MEMBER(y,$beginEndList) then
+          if not member(y,$beginEndList) then
             checkDocError ['"Unknown begin type: \begin{",y,'"}"]
           beginEndStack := [y,:beginEndStack]
           u := r
         checkDocError ['"Improper \begin command"]
       x = '"\item" =>
-        MEMBER(IFCAR beginEndStack,'("items" "menu")) => nil
+        member(IFCAR beginEndStack,'("items" "menu")) => nil
         null beginEndStack =>
           checkDocError ['"\item appears outside a \begin-\end"]
         checkDocError ['"\item appears within a \begin{",IFCAR beginEndStack,'"}.."]
@@ -1121,7 +1121,7 @@ checkTransformFirsts(opname,u,margin) ==
       STRCONC('"\spad{",SUBSTRING(u,0,k + 1),'"}",SUBSTRING(u,k + 1,nil))
     k := checkSkipToken(u,j,m) or return u
     infixOp := INTERN SUBSTRING(u,j,k - j)
-    not GET(infixOp,'Led) =>                                     --case 3
+    not GETL(infixOp,'Led) =>                                     --case 3
       namestring ^= (firstWord := SUBSTRING(u,0,i)) =>
         checkDocError ['"Improper first word in comments: ",firstWord]
         u
@@ -1143,7 +1143,7 @@ checkTransformFirsts(opname,u,margin) ==
       checkDocError ['"Improper first word in comments: ",firstWord]
       u
     prefixOp := INTERN SUBSTRING(u,0,i)
-    not GET(prefixOp,'Nud) =>
+    not GETL(prefixOp,'Nud) =>
       u ---what could this be?
     j := checkSkipBlanks(u,i,m) or return u
     u.j = char '_( =>                                            --case 4
@@ -1179,7 +1179,7 @@ checkSkipToken(u,i,m) ==
 
 checkSkipOpToken(u,i,m) ==
   while i < m and
-    (not(checkAlphabetic(u.i)) and not(MEMBER(u.i,$charDelimiters))) repeat
+    (not(checkAlphabetic(u.i)) and not(member(u.i,$charDelimiters))) repeat
       i := i + 1
   i = m => nil
   i
@@ -1266,19 +1266,19 @@ checkDecorateForHt u ==
       if x = '"\em" then
         if count > 0 then spadflag := count - 1
         else checkDocError ['"\em must be enclosed in braces"]
-      if MEMBER(x,'("\s" "\spadop" "\spadtype" "\spad" "\spadpaste" "\spadcommand" "\footnote")) then spadflag := count
+      if member(x,'("\s" "\spadop" "\spadtype" "\spad" "\spadpaste" "\spadcommand" "\footnote")) then spadflag := count
       else if x = $charLbrace then count := count + 1
       else if x = $charRbrace then
         count := count - 1
         if spadflag = count then spadflag := false
-      else if not spadflag and MEMBER(x,'("+" "*" "=" "==" "->")) then
+      else if not spadflag and member(x,'("+" "*" "=" "==" "->")) then
         if $checkingXmptex? then
           checkDocError ["Symbol ",x,'" appearing outside \spad{}"]
       x = '"$" or x = '"%" => checkDocError ['"Unescaped ",x]
---      null spadflag and STRINGP x and (MEMBER(x,$argl) or #x = 1
---        and ALPHA_-CHAR_-P x.0) and not MEMBER(x,'("a" "A")) =>
+--      null spadflag and STRINGP x and (member(x,$argl) or #x = 1
+--        and ALPHA_-CHAR_-P x.0) and not member(x,'("a" "A")) =>
 --          checkDocError1 ['"Naked ",x]
---      null spadflag and STRINGP x and (not x.0 = $charBack and not DIGITP(x.0) and DIGITP(x.(MAXINDEX x))or MEMBER(x,'("true" "false")))
+--      null spadflag and STRINGP x and (not x.0 = $charBack and not DIGITP(x.0) and DIGITP(x.(MAXINDEX x))or member(x,'("true" "false")))
 --        => checkDocError1 ["Naked ",x]
     u := rest u
   u

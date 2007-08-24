@@ -169,10 +169,10 @@ markCallCoerce(x,m,T) ==
 
 markCoerceByModemap(x,source,target,T, killColonColon?) == 
   tcheck T
-  source is ["Union",:l] and MEMBER(target,l) =>
+  source is ["Union",:l] and member(target,l) =>
     tag := genCaseTag(target, l, 1) or return nil
     markAutoCoerceDown(x, tag, markAutoWas(x,T), killColonColon?)
-  target is ["Union",:l] and MEMBER(source,l) =>
+  target is ["Union",:l] and member(source,l) =>
     markAutoCoerceUp(x,markAutoWas(x, T))
   [mkWi('markCoerceByModemap,'WI,x,T.expr),:CDR T]
    
@@ -408,14 +408,14 @@ markChanges(originalDef,T,sig) ==
     $freeStack   := [frees,:$freeStack]
     --------------------> import code <------------------
     imports      := $localImportStack
-    subtractions := UNION($localDeclareStack,UNION($globalDeclareStack,
-                      UNION($globalImportStack,signature)))
+    subtractions := union($localDeclareStack,union($globalDeclareStack,
+                      union($globalImportStack,signature)))
     if $insideCategoryIfTrue and $insideFunctorIfTrue then
       imports      := markCatsub imports
       subtractions := markCatsub subtractions
     imports      := [markMacroTran d for d in imports]
     subtractions := [markMacroTran d for d in subtractions]
-    subtractions := UNION(subtractions, getImpliedImports imports)
+    subtractions := union(subtractions, getImpliedImports imports)
     $importStack := [reduceImports SETDIFFERENCE(imports,subtractions),:$importStack]
     -------------------> import code <------------------
     entry := [originalDef,:ndef]
@@ -432,15 +432,15 @@ reduceImports1 x ==
   for y in x repeat 
     y is ['List,a] =>
       [k,o] := reduceImports1 [a]
-      kills := UNION(y,UNION(k,kills))
-      others:= UNION(o, others)
-    RASSOC(y,$globalImportDefAlist) => kills := insert(y,kills)
+      kills := union(y,union(k,kills))
+      others:= union(o, others)
+    rassoc(y,$globalImportDefAlist) => kills := insert(y,kills)
     others := insert(y, others)
   [kills, others]
 
 getImpliedImports x ==
   x is [[op,:r],:y] => 
-    MEMQ(op, '(List Enumeration)) => UNION(r, getImpliedImports y)
+    MEMQ(op, '(List Enumeration)) => union(r, getImpliedImports y)
     getImpliedImports y
   nil  
  
@@ -710,7 +710,7 @@ markPathsEqual(x,y) ==
   x is ['REDUCE,.,.,c,:.] and c is ['COLLECT,:u] and 
     y is ['PROGN,.,repeet,:.] and repeet is ['REPEAT,:v] => markPathsEqual(u,v)
   atom y or atom x => 
-    IDENTP y and IDENTP x and y = GET(x,'ORIGNAME)  => true --> see 
+    IDENTP y and IDENTP x and y = GETL(x,'ORIGNAME)  => true --> see 
 --  IDENTP y and IDENTP x and anySubstring?(PNAME y,PNAME x,0) => true
     IDENTP y and (z := markPathsMacro y) => markPathsEqual(x,z)
     false
@@ -874,8 +874,8 @@ markFinish1() ==
   form := T. expr
   ['Mapping,:sig] := T.mode
   if $insideCategoryIfTrue and $insideFunctorIfTrue then
-     $importStack       := [DELETE($categoryNameForDollar,x) for x in $importStack]
-     $globalImportStack := DELETE($categoryNameForDollar,$globalImportStack)
+     $importStack       := [delete($categoryNameForDollar,x) for x in $importStack]
+     $globalImportStack := delete($categoryNameForDollar,$globalImportStack)
   $commonImports : local := getCommonImports()
   globalImports := 
     REVERSE orderByContainment REMDUP [:$commonImports,:$globalImportStack]
@@ -907,10 +907,10 @@ markFinish1() ==
   nsig :=
     $categoryPart => sig
     ['Type,:rest sig]
-  for x in REVERSE $abbreviationStack |not MEMBER(x,$abbreviationsAlreadyPrinted) repeat 
+  for x in REVERSE $abbreviationStack |not member(x,$abbreviationsAlreadyPrinted) repeat 
      markPrintAbbreviation x
      $abbreviationsAlreadyPrinted := insert(x,$abbreviationsAlreadyPrinted)
-  for x in REVERSE $globalMacroStack|not MEMBER(x,$macrosAlreadyPrinted) repeat
+  for x in REVERSE $globalMacroStack|not member(x,$macrosAlreadyPrinted) repeat
     $def := ['MDEF,first x,'(NIL),'(NIL),rest x]
     markPrint(true)
     $macrosAlreadyPrinted := insert(x,$macrosAlreadyPrinted)
@@ -922,7 +922,7 @@ markFinish1() ==
 stop x == x
 
 getNumberTypesInScope() ==
-  UNION([y for x in $localImportStack | MEMQ(y := opOf x,$markNumberTypes)], 
+  union([y for x in $localImportStack | MEMQ(y := opOf x,$markNumberTypes)], 
         [y for x in $globalImportStack| MEMQ(y := opOf x,$markNumberTypes)])
 
 getCommonImports() ==
@@ -952,14 +952,14 @@ markPrintAttributes addForm ==
 
 getCommons u ==
   common := KAR u
-  while common and u is [x,:u] repeat common := INTERSECTION(x,common)
+  while common and u is [x,:u] repeat common := intersection(x,common)
   common
 
 markExtractLeadingMacros(globalImports,body) ==
-  [x for x in body | x is ['MDEF,[a],:.] and MEMBER(a,globalImports)]
+  [x for x in body | x is ['MDEF,[a],:.] and member(a,globalImports)]
   
 markRemImportsAndLeadingMacros(leadingMacros,body) ==
-  [x for x in body | x isnt ['import,:.] and not MEMBER(x,leadingMacros)]
+  [x for x in body | x isnt ['import,:.] and not member(x,leadingMacros)]
 
 mkNewCapsuleItem(frees,i,x) ==
   [originalDef,:ndef] := x
@@ -1178,14 +1178,14 @@ markPartOp? op ==
   MEMQ(op,$partChoices) => true
   MEMQ(op,$partSkips)   => false
   if op is ['elt,.,o] then op := o
-  GET(op,'special) => false
+  GETL(op,'special) => false
   true
 
 markWrapPart y ==
 ----------------new definition----------94/10/11
   atom y => 
     y = 'noBranch => y
-    GET(y, 'SPECIAL) => y 
+    GETL(y, 'SPECIAL) => y 
     $partNumber := $partNumber + 1
     ['PART,$partNumber, y] 
   ['PART,$partNumber := $partNumber + 1,markInsertBodyParts y]
@@ -1475,7 +1475,7 @@ buildNewDefinition(op,theSig,formPredAlist) ==
   theAlist := [[pred, CAR form, :theArgl] for [pred,:form] in alist]
   theNils := [nil for x in theForm]
   thePred :=
-     MEMBER(outerPred, '(T (QUOTE T))) => nil
+     member(outerPred, '(T (QUOTE T))) => nil
      outerPred
   def := ['DEF, theForm, theSig, theNils, ifize theAlist]
   value :=
@@ -1496,7 +1496,7 @@ ifize [[pred,:value],:r] ==
   
 moveTruePred2End alist ==
   truthPair := or/[pair for pair in alist | pair is ["T",:.]] =>
-    [:DELETE(truthPair, alist), truthPair]      
+    [:delete(truthPair, alist), truthPair]      
   [:a, [lastPair, lastValue]] := alist
   [:a, ["T", lastValue]]
 

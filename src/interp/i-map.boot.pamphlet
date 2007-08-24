@@ -240,7 +240,7 @@ getUserIdentifiersIn body ==
   body is [op,:l] =>
     argIdList:= "append"/[getUserIdentifiersIn y for y in l]
     bodyIdList :=
-      not (GET(op,'Nud) or GET(op,'Led) or GET(op,'up))=>
+      not (GETL(op,'Nud) or GETL(op,'Led) or GETL(op,'up))=>
         NCONC(getUserIdentifiersIn op, argIdList)
       argIdList
     REMDUP bodyIdList
@@ -365,7 +365,7 @@ putDependencies (op, dependencies) ==
   --that have just been generated.  Remember that the list of
   --dependencies does not just include those for the map just being
   --defined, but includes those for all maps and variables that exist
-  newDependencies := UNION (dependencies, oldDependencies)
+  newDependencies := union (dependencies, oldDependencies)
   putFlag ("$dependencies", newDependencies)
 
 clearDependencies(x,clearLocalModemapsIfTrue) ==
@@ -379,7 +379,7 @@ clearDep1(x,toDoList,doneList,depList) ==
   until null a repeat
     a:= ASSQ(x,depList)
     a =>
-      depList:= DELETE(a,depList)
+      depList:= delete(a,depList)
       toDoList:= setUnion(toDoList,
         setDifference(CDR a,doneList))
   toDoList is [a,:res] => clearDep1(a,res,newDone,depList)
@@ -501,7 +501,7 @@ analyzeMap(op,argTypes,mapDef, tar) ==
         isEqualOrSubDomain(x,$Integer) => $Integer
         x
   mapAndArgTypes := [$mapName,:argTypes]
-  MEMBER(mapAndArgTypes,$analyzingMapList) =>
+  member(mapAndArgTypes,$analyzingMapList) =>
     -- if the map is declared, return the target type
     (getMode op) is ['Mapping,target,:.] => target
     throwKeyedMsg("S2IM0009",
@@ -1055,14 +1055,14 @@ findLocalsInLoop(op,itrl,body) ==
     it is [op,b] and (op in '(UNTIL)) =>
       findLocalVars1(op,b)
 
-isLocalVar(var) == MEMBER(var,$localVars)
+isLocalVar(var) == member(var,$localVars)
 
 mkLocalVar(op,var) ==
   -- add var to the local variable list
   isFreeVar(var) => $localVars
   $localVars:= insert(var,$localVars)
 
-isFreeVar(var) == MEMBER(var,$freeVars)
+isFreeVar(var) == member(var,$freeVars)
 
 mkFreeVar(op,var) ==
   -- op here for symmetry with mkLocalVar

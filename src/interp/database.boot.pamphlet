@@ -64,7 +64,7 @@ augLisplibModemapsFromCategory(form is [op,:argl],body,signature) ==
       isCategoryForm(m,$EmptyEnvironment)]
   catPredList:= [['ofCategory,:u] for u in [["*1",form],:domainList]]
   for (entry:= [[op,sig,:.],pred,sel]) in opAlist |
-    MEMBER(sig,LASSOC(op,nonCategorySigAlist)) repeat
+    member(sig,LASSOC(op,nonCategorySigAlist)) repeat
       pred':= MKPF([pred,:catPredList],'AND)
       modemap:= [["*1",:sig],[pred',sel]]
       $lisplibModemapAlist:=
@@ -144,7 +144,7 @@ orderPredTran(oldList,sig,skip) ==
     ((pred is [op,pvar,.] and MEMQ(op,'(isDomain ofCategory))
        and pvar=first sig and ^(pvar in rest sig)) or
 	(^skip and pred is ['isDomain,pvar,.] and pvar="*1")) =>
-	  oldList:=DELETE(pred,oldList)
+	  oldList:=delete(pred,oldList)
 	  lastPreds:=[pred,:lastPreds]
 --sayBrightlyNT "lastPreds="
 --pp lastPreds
@@ -173,7 +173,7 @@ orderPredTran(oldList,sig,skip) ==
 	and INTERSECTIONQ(indepvl,lastDependList) =>
       somethingDone := true
       lastPreds := [:lastPreds,x]
-      oldList := DELETE(x,oldList)
+      oldList := delete(x,oldList)
 --if somethingDone then
 --  sayBrightlyNT "Again lastPreds="
 --  pp lastPreds
@@ -278,7 +278,7 @@ modemapPattern(mmPattern,sig) ==
     if x is ['Union,dom,tag] and tag = '"failed" and xTails=sig then
       x := dom
       partial := true
-    patvar := RASSOC(x,patternAlist)
+    patvar := rassoc(x,patternAlist)
     not null patvar => mmpat := [patvar,:mmpat]
     patvar := first patvars
     patvars := rest patvars
@@ -421,7 +421,7 @@ mkAlistOfExplicitCategoryOps target ==
   if target is ['add,a,:l] then
     target:=a
   target is ['Join,:l] =>
-    "UNION"/[mkAlistOfExplicitCategoryOps cat for cat in l]
+    "union"/[mkAlistOfExplicitCategoryOps cat for cat in l]
   target is ['CATEGORY,.,:l] =>
     l:= flattenSignatureList ['PROGN,:l]
     u:=
@@ -467,7 +467,7 @@ updateDatabase(fname,cname,systemdir?) ==
   if oldFname := constructor? cname then
     clearClams()
     clearAllSlams []
-    if GET(cname, 'LOADED) then
+    if GETL(cname, 'LOADED) then
       clearConstructorCaches()
   if $forceDatabaseUpdate or not systemdir? then
     clearClams()
@@ -515,7 +515,7 @@ insertModemap(new,mmList) ==
 --% Exposure Group Code
 
 dropPrefix(fn) ==
-  MEMBER(fn.0,[char "?",char "-",char "+"]) => SUBSTRING(fn,1,nil)
+  member(fn.0,[char "?",char "-",char "+"]) => SUBSTRING(fn,1,nil)
   fn
 
 --moved to util.lisp

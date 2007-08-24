@@ -67,7 +67,7 @@ addDomain(domain,e) ==
     -- constructor? test needed for domains compiled with $bootStrapMode=true
   isFunctor name or constructor? name => addNewDomain(domain,e)
   if not isCategoryForm(domain,e) and
-    not MEMBER(name,'(Mapping CATEGORY)) then
+    not member(name,'(Mapping CATEGORY)) then
       unknownTypeError name
   e        --is not a functor
  
@@ -167,7 +167,7 @@ addModemap1(op,mc,sig,pred,fn,e) ==
  
 mkNewModemapList(mc,sig,pred,fn,curModemapList,e,filenameOrNil) ==
   entry:= [map:= [mc,:sig],[pred,fn],:filenameOrNil]
-  MEMBER(entry,curModemapList) => curModemapList
+  member(entry,curModemapList) => curModemapList
   (oldMap:= ASSOC(map,curModemapList)) and oldMap is [.,[opred, =fn],:.] =>
     $forceAdd => mergeModemap(entry,curModemapList,e)
     opred=true => curModemapList
@@ -216,7 +216,7 @@ isSuperDomain(domainForm,domainForm',e) ==
  
 --substituteForRep(entry is [[mc,:sig],:.],curModemapList) ==
 --  --change 'Rep to "$" unless the resulting signature is already in $
---  MEMBER(entry':= substitute("$",'Rep,entry),curModemapList) =>
+--  member(entry':= substitute("$",'Rep,entry),curModemapList) =>
 --    [entry,:curModemapList]
 --  [entry,entry',:curModemapList]
  
@@ -224,9 +224,9 @@ addNewDomain(domain,e) ==
   augModemapsFromDomain(domain,domain,e)
  
 augModemapsFromDomain(name,functorForm,e) ==
-  MEMBER(KAR name or name,$DummyFunctorNames) => e
+  member(KAR name or name,$DummyFunctorNames) => e
   name=$Category or isCategoryForm(name,e) => e
-  MEMBER(name,curDomainsInScope:= getDomainsInScope e) => e
+  member(name,curDomainsInScope:= getDomainsInScope e) => e
   if u:= GETDATABASE(opOf functorForm,'SUPERDOMAIN) then
     e:= addNewDomain(first u,e)
     --need code to handle parameterized SuperDomains
@@ -287,7 +287,7 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   --if knownInfo cond then cond1:=true else cond1:=cond
   --condlist:=[[cond,:cond1],:condlist]
     e:= addModemapKnown(op,domainName,sig,cond,fnsel,e) -- cond was cond1
---  for u in sig | (not MEMBER(u,$DomainsInScope)) and
+--  for u in sig | (not member(u,$DomainsInScope)) and
 --                   (not atom u) and
 --                     (not isCategoryForm(u,e)) do
 --     e:= addNewDomain(u,e)
@@ -336,7 +336,7 @@ substNames(domainName,viewName,functorForm,opalist) ==
 
  
 compCat(form is [functorName,:argl],m,e) ==
-  fn:= GET(functorName,"makeFunctionList") or return nil
+  fn:= GETL(functorName,"makeFunctionList") or return nil
   [funList,e]:= FUNCALL(fn,form,form,e)
   catForm:=
     ["Join",'(SetCategory),["CATEGORY","domain",:
@@ -348,7 +348,7 @@ compCat(form is [functorName,:argl],m,e) ==
 addConstructorModemaps(name,form is [functorName,:.],e) ==
   $InteractiveMode: local:= nil
   e:= putDomainsInScope(name,e) --frame
-  fn := GET(functorName,"makeFunctionList")
+  fn := GETL(functorName,"makeFunctionList")
   [funList,e]:= FUNCALL(fn,name,form,e)
   for [op,sig,opcode] in funList repeat
     if opcode is [sel,dc,n] and sel='ELT then
@@ -368,8 +368,8 @@ getDomainsInScope e ==
  
 putDomainsInScope(x,e) ==
   l:= getDomainsInScope e
-  if MEMBER(x,l) then SAY("****** Domain: ",x," already in scope")
-  newValue:= [x,:DELETE(x,l)]
+  if member(x,l) then SAY("****** Domain: ",x," already in scope")
+  newValue:= [x,:delete(x,l)]
   $insideCapsuleFunctionIfTrue => ($CapsuleDomainsInScope:= newValue; e)
   put("$DomainsInScope","special",newValue,e)
  

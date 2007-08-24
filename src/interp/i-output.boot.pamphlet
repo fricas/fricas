@@ -152,11 +152,11 @@ obj2String o ==
 
 APP(u,x,y,d) ==
   atom u => appChar(atom2String u,x,y,d)
-  u is [[op,:.],a] and (s:= GET(op,'PREFIXOP)) =>
-    GET(op,'isSuffix) => appChar(s,x+WIDTH a,y,APP(a,x,y,d))
+  u is [[op,:.],a] and (s:= GETL(op,'PREFIXOP)) =>
+    GETL(op,'isSuffix) => appChar(s,x+WIDTH a,y,APP(a,x,y,d))
     APP(a,x+#s,y,appChar(s,x,y,d))
   u is [[id,:.],:.] =>
-    fn := GET(id,'APP) => FUNCALL(fn,u,x,y,d)
+    fn := GETL(id,'APP) => FUNCALL(fn,u,x,y,d)
     not NUMBERP id and (d':= appInfix(u,x,y,d))=> d'
     appelse(u,x,y,d)
   appelse(u,x,y,d)
@@ -586,7 +586,7 @@ exptNeedsPren a ==
   atom a and null (INTEGERP a and a < 0)  => false
   key:= keyp a
   key = "OVER" => true  -- added JHD 2/Aug/90
-  (key="SUB") or (null GET(key,"Nud") and null GET(key,"Led")) => false
+  (key="SUB") or (null GETL(key,"Nud") and null GETL(key,"Led")) => false
   true
 
 exptSub u == subspan CADR u
@@ -599,7 +599,7 @@ needStar(wasSimple,wasQuotient,wasNumber,cur,op) ==
   wasQuotient or isQuotient op => true
   wasSimple =>
     atom cur or keyp cur="SUB" or isRationalNumber cur or op="**" or op = "^" or
-      (atom op and ^NUMBERP op and ^GET(op,"APP"))
+      (atom op and ^NUMBERP op and ^GETL(op,"APP"))
   wasNumber =>
     NUMBERP(cur) or isRationalNumber cur or
         ((op="**" or op ="^") and NUMBERP(CADR cur))
@@ -631,7 +631,7 @@ appSum(u,x,y,d) ==
     infixOp:=
       syminusp arg => "-"
       "+"
-    opString:= GET(infixOp,"INFIXOP") or '","
+    opString:= GETL(infixOp,"INFIXOP") or '","
     d:= APP(opString,x,y,d)
     x:= x+WIDTH opString
     arg:= absym arg --negate a neg. number or remove leading "-"
@@ -653,11 +653,11 @@ appInfix(e,x,y,d) ==
   rightPrec:= getOpBindingPower(op,"Led","right")
   #e < 2 => throwKeyedMsg("S2IX0008",['appInfix,
       '"fewer than 2 arguments to an infix function"])
-  opString:= GET(op,"INFIXOP") or '","
+  opString:= GETL(op,"INFIXOP") or '","
   opWidth:= WIDTH opString
   [.,frst,:rst]:= e
   null rst =>
-    GET(op,"isSuffix") =>
+    GETL(op,"isSuffix") =>
       [d,x]:= appInfixArg(frst,x,y,d,leftPrec,"right",opString)
       d:= appChar(opString,x,y,d)
     THROW('outputFailure,'outputFailure)
@@ -843,7 +843,7 @@ putWidth u ==
   rightPrec:= getBindingPowerOf("right",u)
   [firstEl,:l] := u
   interSpace:=
-    GET(firstEl,"INFIXOP") => 0
+    GETL(firstEl,"INFIXOP") => 0
     1
   argsWidth:=
     l is [firstArg,:restArg] =>
@@ -860,7 +860,7 @@ putWidth u ==
     0
   newFirst:=
     atom (oldFirst:= first u) =>
-      fn:= GET(oldFirst,"WIDTH") =>
+      fn:= GETL(oldFirst,"WIDTH") =>
         [oldFirst,:FUNCALL(fn,[oldFirst,:l])]
       if l then ll := rest l else ll := nil
       [oldFirst,:opWidth(oldFirst,ll)+argsWidth]
@@ -872,9 +872,9 @@ opWidth(op,has2Arguments) ==
   op = "EQUATNUM" => 4
   NUMBERP op => 2+SIZE STRINGIMAGE op
   null has2Arguments =>
-    a:= GET(op,"PREFIXOP") => SIZE a
+    a:= GETL(op,"PREFIXOP") => SIZE a
     2+SIZE PNAME op
-  a:= GET(op,"INFIXOP") => SIZE a
+  a:= GETL(op,"INFIXOP") => SIZE a
   2+SIZE PNAME op
 
 matrixBorder(x,y1,y2,d,leftOrRight) ==
@@ -1035,8 +1035,8 @@ SubstWhileDesizing(u,m) ==
     --Taking out any outdated size information as it goes
   ATOM u => u
   [[op,:n],:l]:=u
-  --name := RASSOC(u,$MatrixList) => name
-  -- doesn't work since RASSOC seems to use an EQ test, and returns the
+  --name := rassoc(u,$MatrixList) => name
+  -- doesn't work since rassoc seems to use an EQ test, and returns the
   -- pair anyway. JHD 28/2/93
   op = 'MATRIX =>
     l':=SubstWhileDesizingList(CDR l,m)
@@ -1407,9 +1407,9 @@ getOutputAbbreviatedForm form ==
   form
 
 outputOp x ==
-  x is [op,:args] and (GET(op,"LED") or GET(op,"NUD")) =>
+  x is [op,:args] and (GETL(op,"LED") or GETL(op,"NUD")) =>
     n:=
-      GET(op,"NARY") => 2
+      GETL(op,"NARY") => 2
       #args
     newop:= INTERN STRCONC("*",STRINGIMAGE n,PNAME op)
     [newop,:[outputOp y for y in args]]
@@ -1506,11 +1506,11 @@ charyTrouble1(u,v,start,linelength) ==
   EQ(x:= keyp u,'_-) => charyMinus(u,v,start,linelength)
   MEMQ(x,'(_+ _* AGGLST)) => charySplit(u,v,start,linelength)
   EQ(x,'EQUATNUM) => charyEquatnum(u,v,start,linelength)
-  d := GET(x,'INFIXOP) => charyBinary(d,u,v,start,linelength)
+  d := GETL(x,'INFIXOP) => charyBinary(d,u,v,start,linelength)
   x = 'OVER  =>
-    charyBinary(GET("/",'INFIXOP),u,v,start,linelength)
-  EQ(3,LENGTH u) and GET(x,'Led) =>
-    d:= PNAME first GET(x,'Led)
+    charyBinary(GETL("/",'INFIXOP),u,v,start,linelength)
+  EQ(3,LENGTH u) and GETL(x,'Led) =>
+    d:= PNAME first GETL(x,'Led)
     charyBinary(d,u,v,start,linelength)
   EQ(x,'CONCAT) =>
     concatTrouble(rest v,d,start,linelength,nil)
@@ -1523,7 +1523,7 @@ charyTrouble1(u,v,start,linelength) ==
         charyTop(['CONCATB,wu,loop,'repeat],start,linelength)
         charyTop(body,start+2,linelength-2)
     concatTrouble(rest v,d,start,linelength,true)
-  GET(x,'INFIXOP) => charySplit(u,v,start,linelength)
+  GETL(x,'INFIXOP) => charySplit(u,v,start,linelength)
   EQ(x,'PAREN) and
     (EQ(keyp u.1,'AGGLST) and (v:= ",") or EQ(keyp u.1,'AGGSET) and
       (v:= ";")) => bracketagglist(rest u.1,start,linelength,v,"_(","_)")
@@ -1592,8 +1592,8 @@ charySplit(u,v,start,linelength) ==
   split2(u,dm,ddm,start,linelength)
 
 split2(u,dm,ddm,start,linelength) ==
---prnd(start,(d:= GET(keyp u,'INFIXOP) => d; opSrch(keyp u,OPLIST)))
-  prnd(start,(d:= GET(keyp u,'INFIXOP) => d; '","))
+--prnd(start,(d:= GETL(keyp u,'INFIXOP) => d; opSrch(keyp u,OPLIST)))
+  prnd(start,(d:= GETL(keyp u,'INFIXOP) => d; '","))
   RPLACD(dm,ddm)
   m:= WIDTH [keyp u,:dm]<linelength-2
   charybdis([keyp u,:dm],(m => start+2; start),(m => linelength-2; linelength))
@@ -1644,8 +1644,8 @@ subspan u ==
   (not atom first u             and_
    atom CAAR u           and_
    not NUMBERP CAAR u    and_
-   GET(CAAR u, 'SUBSPAN)    )    =>
-   APPLX(GET(CAAR u, 'SUBSPAN), LIST u)
+   GETL(CAAR u, 'SUBSPAN)    )    =>
+   APPLX(GETL(CAAR u, 'SUBSPAN), LIST u)
   MAX(subspan first u, subspan rest u)
 
 agggsub u == subspan rest u
@@ -1656,8 +1656,8 @@ superspan u ==
   (not atom first u               and_
    atom CAAR u             and_
    not NUMBERP CAAR u      and_
-   GET(CAAR u, 'SUPERSPAN)    )    =>
-   APPLX(GET(CAAR u, 'SUPERSPAN), LIST u)
+   GETL(CAAR u, 'SUPERSPAN)    )    =>
+   APPLX(GETL(CAAR u, 'SUPERSPAN), LIST u)
   MAX(superspan first u, superspan rest u)
 
 agggsuper u == superspan rest u
@@ -1750,7 +1750,7 @@ appsum(u, x, y, d) ==
   sc :=
     syminusp first u => '"-"
     true => '"+"
-  dp := MEMBER(keyp absym first u, '(_+ _-))
+  dp := member(keyp absym first u, '(_+ _-))
   tempx := x + WIDTH ac + (dp => 5; true => 3)
   tempdblock :=
     temparg1 := APP(sc, x + 1, y, d)
@@ -2170,7 +2170,7 @@ sumWidth u ==
 
 sumWidthA u ==
   ^u => 0
-  ( MEMBER(keyp absym first u,'(_+ _-)) => 5; true => 3) +
+  ( member(keyp absym first u,'(_+ _-)) => 5; true => 3) +
     WIDTH absym first u +
       sumWidthA rest u
 
@@ -2304,7 +2304,7 @@ transcomparg(x) ==
   repeat
     if true then
        null y => return(nil)
-       (atom first y) and MEMBER(first y, FRLIS_*) =>
+       (atom first y) and member(first y, FRLIS_*) =>
             conds := CONS(LIST('EQUAL1, first args, first y), conds)
             y := SUBST(first args, first y, y)
             x := SUBST(first args, first y, x)

@@ -181,7 +181,7 @@ intersectionContour(c,c') ==
       modeAssoc:= buildModeAssoc(diffVars,c,c')
       [:modeAssoc,:
         [[x,:proplist]
-          for [x,:y] in c | MEMBER(x,interVars) and
+          for [x,:y] in c | member(x,interVars) and
             (proplist:= interProplist(y,LASSOC($var:= x,c')))]]
     interProplist(p,p') ==
                             --p is new proplist; p' is old one
@@ -221,7 +221,7 @@ intersectionContour(c,c') ==
         m2 is ["Union",:.] => ["Union",:S_+(rest m2,[m1])]
         ["Union",m1,m2]
       for u in getDomainsInScope $e repeat
-        if u is ["Union",:u'] and (and/[MEMBER(v,u') for v in rest m]) then
+        if u is ["Union",:u'] and (and/[member(v,u') for v in rest m]) then
           return m
         --this loop will return NIL if not satisfied
  
@@ -234,7 +234,7 @@ addContour(c,E is [cur,:tail]) ==
                 for pv in p repeat fn3(x,pv,ee) where
                  fn3(x,pv,e) ==
                    [p,:v]:=pv;
-                   if MEMBER(x,$getPutTrace) then
+                   if member(x,$getPutTrace) then
                      pp([x,"has",pv]);
                    if p="conditionalmode" then
                      RPLACA(pv,"mode");
@@ -298,7 +298,7 @@ prModemaps E ==
   listOfOperatorsSeenSoFar:= nil
   for x in E for i in 1.. repeat
     for y in x for j in 1.. repeat
-      for z in y | null MEMBER(first z,listOfOperatorsSeenSoFar) and
+      for z in y | null member(first z,listOfOperatorsSeenSoFar) and
         (modemap:= LASSOC("modemap",rest z)) repeat
           listOfOperatorsSeenSoFar:= [first z,:listOfOperatorsSeenSoFar]
           TERPRI()
@@ -340,7 +340,7 @@ isFalse() == nil
 isFluid s == atom s and "$"=(PNAME s).(0)
  
 isFunction(x,e) ==
-  get(x,"modemap",e) or GET(x,"SPECIAL") or x="case" or getmode(x,e) is [
+  get(x,"modemap",e) or GETL(x,"SPECIAL") or x="case" or getmode(x,e) is [
     "Mapping",:.]
  
 isLiteral(x,e) == get(x,"isLiteral",e)
@@ -352,7 +352,7 @@ isSomeDomainVariable s ==
  
 isSubset(x,y,e) ==
   x="$" and y="Rep" or x=y or
-    LASSOC(opOf x,get(opOf y,"Subsets",e) or GET(opOf y,"Subsets")) or
+    LASSOC(opOf x,get(opOf y,"Subsets",e) or GETL(opOf y,"Subsets")) or
       LASSOC(opOf x,get(opOf y,"SubDomain",e)) or
         opOf(y)='Type or opOf(y)='Object
  
@@ -377,7 +377,7 @@ isSimple x ==
     isSideEffectFree op and (and/[isSimple y for y in argl])
  
 isSideEffectFree op ==
-  MEMBER(op,$SideEffectFreeFunctionList) or op is ["elt",.,op'] and
+  member(op,$SideEffectFreeFunctionList) or op is ["elt",.,op'] and
     isSideEffectFree op'
  
 isAlmostSimple x ==
@@ -485,7 +485,7 @@ stackSemanticError(msg,expr) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   if atom msg then msg:= LIST msg
   entry:= [msg,expr]
-  if not MEMBER(entry,$semanticErrorStack) then $semanticErrorStack:=
+  if not member(entry,$semanticErrorStack) then $semanticErrorStack:=
     [entry,:$semanticErrorStack]
   $scanIfTrue and $insideCapsuleFunctionIfTrue=true and #$semanticErrorStack-
     $initCapsuleErrorCount>3 => THROW("compCapsuleBody",nil)
@@ -493,7 +493,7 @@ stackSemanticError(msg,expr) ==
  
 stackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
-  if not MEMBER(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
+  if not member(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
   nil
  
 unStackWarning msg ==
@@ -569,7 +569,7 @@ extendsCategoryForm(domain,form,form') ==
     extendsCategoryForm(domain,form,cat) and isSubset(domain,dom,$e)
   form is ["Join",:l] => or/[extendsCategoryForm(domain,x,form') for x in l]
   form is ["CATEGORY",.,:l] =>
-    MEMBER(form',l) or
+    member(form',l) or
       stackWarning ["not known that ",form'," is of mode ",form] or true
   isCategoryForm(form,$EmptyEnvironment) =>
           --Constructs the associated vector
@@ -586,8 +586,8 @@ extendsCategoryForm(domain,form,form') ==
     -- Are we dealing with an Aldor category?  If so use the "has" function ...
     # formVec = 1 => newHasTest(form,form')
     catvlist:= formVec.4
-    MEMBER(form',first catvlist) or
-     MEMBER(form',SUBSTQ(domain,"$",first catvlist)) or
+    member(form',first catvlist) or
+     member(form',SUBSTQ(domain,"$",first catvlist)) or
       (or/
         [extendsCategoryForm(domain,SUBSTQ(domain,"$",cat),form')
           for [cat,:.] in CADR catvlist])
@@ -610,7 +610,7 @@ outerProduct l ==
  
 sublisR(al,u) ==
   atom u => u
-  y:= RASSOC(t:= [sublisR(al,x) for x in u],al) => y
+  y:= rassoc(t:= [sublisR(al,x) for x in u],al) => y
   true => t
  
 substituteOp(op',op,x) ==
@@ -715,7 +715,7 @@ displayModemaps E ==
   listOfOperatorsSeenSoFar:= nil
   for x in E for i in 1.. repeat
     for y in x for j in 1.. repeat
-      for z in y | null MEMBER(first z,listOfOperatorsSeenSoFar) and
+      for z in y | null member(first z,listOfOperatorsSeenSoFar) and
         (modemaps:= LASSOC("modemap",rest z)) repeat
           listOfOperatorsSeenSoFar:= [first z,:listOfOperatorsSeenSoFar]
           displayOpModemaps(first z,modemaps)

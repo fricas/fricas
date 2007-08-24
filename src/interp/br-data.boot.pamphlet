@@ -447,7 +447,7 @@ getDefaultPackageClients con ==  --called by mkUsersHashTable
   for [catAncestor,:.] in childrenOf([catname]) repeat
     pakname := INTERN STRCONC(PNAME catAncestor,'"&")
     if getCDTEntry(pakname,true) then acc := [pakname,:acc]
-    acc := UNION([CAAR x for x in domainsOf([catAncestor],nil)],acc)
+    acc := union([CAAR x for x in domainsOf([catAncestor],nil)],acc)
   listSort(function GLESSEQP,acc)
 
 --============================================================================
@@ -469,7 +469,7 @@ mkDependentsHashTable() == --called by make-databases (database.boot)
 getArgumentConstructors con == --called by mkDependentsHashTable
   argtypes := IFCDR IFCAR getConstructorModemap con or return nil
   fn argtypes where
-    fn(u) == "UNION"/[gn x for x in u]
+    fn(u) == "union"/[gn x for x in u]
     gn(x) ==
       atom x => nil
       x is ['Join,:r] => fn(r)
@@ -782,13 +782,13 @@ extendLocalLibdb conlist ==   --  called by astran
   not $createLocalLibDb => nil
   null conlist => nil
   buildLibdb conlist          --> puts datafile into temp.text
-  $newConstructorList := UNION(conlist, $newConstructorList)
+  $newConstructorList := union(conlist, $newConstructorList)
   localLibdb := '"libdb.text"
   not PROBE_-FILE '"libdb.text" =>
     RENAME_-FILE('"temp.text",'"libdb.text")
   oldlines := purgeNewConstructorLines(dbReadLines localLibdb, conlist)
   newlines := dbReadLines '"temp.text"
-  dbWriteLines(MSORT UNION(oldlines,newlines), '"libdb.text")
+  dbWriteLines(MSORT union(oldlines,newlines), '"libdb.text")
   PROBE_-FILE '"temp.text" => deleteFile '"temp.text"
 
 

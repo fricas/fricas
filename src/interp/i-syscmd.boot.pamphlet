@@ -59,7 +59,7 @@ handleNoParseCommands(unab, string) ==
     npsynonym(unab, (null spaceIndex => '""; SUBSEQ(string, spaceIndex+1)))
   null spaceIndex =>
     FUNCALL unab
-  MEMBER(unab, '( quit     _
+  member(unab, '( quit     _
                   fin      _
 		  pquit    _
 		  credits  _
@@ -219,7 +219,7 @@ selectOptionLC(x,l,errorFunction) ==
   selectOption(DOWNCASE object2Identifier x,l,errorFunction)
 
 selectOption(x,l,errorFunction) ==
-  MEMBER(x,l) => x                   --exact spellings are always OK
+  member(x,l) => x                   --exact spellings are always OK
   null IDENTP x =>
     errorFunction => FUNCALL(errorFunction,x,u)
     nil
@@ -1199,7 +1199,7 @@ loadSpad2Cmd args ==
 --  for lib in args repeat
 --    lib := object2Identifier lib
 --    justWondering =>
---      GET(lib,'LOADED) => sayKeyedMsg("S2IZ0028",[lib])
+--      GETL(lib,'LOADED) => sayKeyedMsg("S2IZ0028",[lib])
 --      sayKeyedMsg("S2IZ0029",[lib])
 --    null GETDATABASE(lib,'OBJECT) and
 --     null (lib := GETDATABASE(lib,'CONSTRUCTOR)) =>
@@ -1290,9 +1290,9 @@ readSpad2Cmd l ==
   ll := pathname ll
   ft := pathnameType ll
   upft := UPCASE ft
-  null MEMBER(upft,fileTypes) =>
+  null member(upft,fileTypes) =>
     fs := namestring l
-    MEMBER(upft,devFTs) => throwKeyedMsg("S2IZ0033",[fs])
+    member(upft,devFTs) => throwKeyedMsg("S2IZ0033",[fs])
     throwKeyedMsg("S2IZ0034",[fs])
   SETQ(_/EDITFILE,ll)
   if upft = '"BOOT" then $InteractiveMode := nil
@@ -1430,7 +1430,7 @@ reportOpsFromUnitDirectly unitForm ==
       sayBrightly '""
       if isRecordOrUnion
         then
-          constructorFunction:= GET(top,"makeFunctionList") or
+          constructorFunction:= GETL(top,"makeFunctionList") or
             systemErrorHere '"reportOpsFromUnitDirectly"
           [funlist,.]:= FUNCALL(constructorFunction,"$",unitForm,
             $CategoryFrame)
@@ -1693,7 +1693,7 @@ workfilesSpad2Cmd args ==
     type1 = 'delete => nil
     for file in flist repeat
       fl := pathname [file,type1,'"*"]
-      deleteFlag => SETQ($sourceFiles,DELETE(fl,$sourceFiles))
+      deleteFlag => SETQ($sourceFiles,delete(fl,$sourceFiles))
       null (MAKE_-INPUT_-FILENAME fl) => sayKeyedMsg("S2IZ0035",[namestring fl])
       updateSourceFiles fl
   SAY " "
@@ -1800,10 +1800,10 @@ doSystemCommand string ==
    tok:=getFirstWord(string)
    tok =>
         unab := unAbbreviateKeyword tok
-        MEMBER(unab, $noParseCommands) =>
+        member(unab, $noParseCommands) =>
           handleNoParseCommands(unab, string)
         optionList := splitIntoOptionBlocks string
-        MEMBER(unab, $tokenCommands) =>
+        member(unab, $tokenCommands) =>
           handleTokensizeSystemCommands(unab, optionList)
         handleParsedSystemCommands(unab, optionList)
         nil

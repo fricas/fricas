@@ -146,7 +146,7 @@ orderBySubsumption items ==
     if null CADR u then u := [CAR u,1] --mark as missing operation
     y := [[a,'Subsumed],u,:y] --makes subsuming signature follow one subsumed
     z := insert(b,z)  --mark a signature as already present
-  [:y,:[w for (w := [c,:.]) in acc | not MEMBER(c,z)]] --add those not subsuming
+  [:y,:[w for (w := [c,:.]) in acc | not member(c,z)]] --add those not subsuming
  
 makeCompactSigCode(sig,$isOpPackageName) == [fn for x in sig] where 
 --$isOpPackageName = true only for an exported operation of a default package
@@ -162,7 +162,7 @@ makeCompactSigCode(sig,$isOpPackageName) == [fn for x in sig] where
 --=======================================================================
 stuffDomainSlots dollar ==
   domname := devaluate dollar
-  infovec := GET(opOf domname,'infovec)
+  infovec := GETL(opOf domname,'infovec)
   lookupFunction := getLookupFun infovec
   lookupFunction :=
     lookupFunction = 'lookupIncomplete => function lookupIncomplete
@@ -253,7 +253,7 @@ makePrefixForm(u,op) ==
 --=======================================================================
 makePredicateBitVector pl ==   --called by NRTbuildFunctor
   if $insideCategoryPackageIfTrue = true then
-    pl := UNION(pl,$categoryPredicateList)
+    pl := union(pl,$categoryPredicateList)
   $predGensymAlist := nil --bound by NRTbuildFunctor, used by optHas
   for p in removeAttributePredicates pl repeat
     pred := simpBool transHasCode p
@@ -330,7 +330,7 @@ orderByContainment pl ==
     else if CONTAINED(x,max)
          then if null ASSOC(x,$predGensymAlist) then $predGensymAlist := [[x,:GENSYM()],:$predGensymAlist]
     if y then max := x
-  [max,:orderByContainment DELETE(max,pl)]
+  [max,:orderByContainment delete(max,pl)]
  
 buildBitTable(:l) == fn(REVERSE l,0) where fn(l,n) ==
   null l => n
@@ -400,7 +400,7 @@ hasDefaultPackage catname ==
 orderCatAnc x == NREVERSE ASSOCLEFT SORTBY('CDR,CDR depthAssoc x)
  
 depthAssocList u == 
-  u := DELETE('DomainSubstitutionMacro,u)  --hack by RDJ 8/90
+  u := delete('DomainSubstitutionMacro,u)  --hack by RDJ 8/90
   REMDUP ("append"/[depthAssoc(y) for y in u])
  
 depthAssoc x ==
@@ -498,12 +498,12 @@ dcOpLatchPrint(op,index) ==
   sayBrightly ['"latch",:formatOpSignature(op,signumList),:namePart]
  
 getInfovec name ==
-  u := GET(name,'infovec) => u
-  GET(name,'LOADED) => nil
+  u := GETL(name,'infovec) => u
+  GETL(name,'LOADED) => nil
   fullLibName := GETDATABASE(name,'OBJECT) or return nil
   startTimingProcess 'load
   loadLibNoUpdate(name, name, fullLibName)
-  GET(name,'infovec)
+  GETL(name,'infovec)
  
 getOpSegment index ==
   numOfArgs := (vec := getCodeVector()).index
@@ -713,7 +713,7 @@ dcSize(:options) ==
 dcSizeAll() ==
   count := 0
   total := 0
-  for x in allConstructors() | null atom GET(x,'infovec) repeat
+  for x in allConstructors() | null atom GETL(x,'infovec) repeat
     count := count + 1
     s := dcSize(x,'quiet)
     sayBrightly [s,'" : ",x]
@@ -865,7 +865,7 @@ extendsCategoryBasic(dom,u,v) ==
   v is ['SIGNATURE,op,sig] =>
     or/[uVec.i is [[=op,=sig],:.] for i in 6..MAXINDEX uVec]
   u is ['CATEGORY,.,:l] =>
-    v is ['IF,:.] => MEMBER(v,l)
+    v is ['IF,:.] => member(v,l)
     nil
   nil
  
@@ -874,7 +874,7 @@ catExtendsCat?(u,v,uvec) ==
   uvec := uvec or compMakeCategoryObject(u,$EmptyEnvironment).expr
   slot4 := uvec.4
   prinAncestorList := CAR slot4
-  MEMBER(v,prinAncestorList) => true
+  member(v,prinAncestorList) => true
   vOp := KAR v
   if similarForm := ASSOC(vOp,prinAncestorList) then
     PRINT u

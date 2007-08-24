@@ -1,15 +1,19 @@
 \documentclass{article}
 \usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/interp wi1.boot}
+
+\title{\File{src/interp/wi1.boot} Pamphlet}
 \author{The Axiom Team}
+
+\begin{document}
 \maketitle
 \begin{abstract}
 \end{abstract}
 \eject
 \tableofcontents
 \eject
+
 \section{License}
+
 <<license>>=
 -- Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 -- All rights reserved.
@@ -113,7 +117,7 @@ compJoin(["Join",:argl],m,e) ==
         x := markKillAll x
         isCategoryForm(x,e) =>
           parameters:=
-            UNION("append"/[getParms(y,e) for y in rest x],parameters)
+            union("append"/[getParms(y,e) for y in rest x],parameters)
               where getParms(y,e) ==
                 atom y =>
                   isDomainForm(y,e) => LIST y
@@ -122,7 +126,7 @@ compJoin(["Join",:argl],m,e) ==
                 LIST y
           x
         x is ["DomainSubstitutionMacro",pl,body] =>
-          (parameters:= UNION(pl,parameters); body)
+          (parameters:= union(pl,parameters); body)
         x is ["mkCategory",:.] => x
         atom x and getmode(x,e)=$Category => x
         stackSemanticError(["invalid argument to Join: ",x],nil)
@@ -365,8 +369,8 @@ compAtom(x,m,e) ==
       compSymbol(x,m,e) or return nil
     m = $Expression and primitiveType x => [x,m,e]
     STRINGP x => 
-      x ^= '"failed" and (MEMBER('(Symbol), $localImportStack) or
-        MEMBER('(Symbol), $globalImportStack)) => markAt [x, '(String), e]
+      x ^= '"failed" and (member('(Symbol), $localImportStack) or
+        member('(Symbol), $globalImportStack)) => markAt [x, '(String), e]
       [x, x, e]
     [x,primitiveType x or return nil,e]
   convert(t,m)
@@ -392,7 +396,7 @@ compSymbol(s,m,e) ==
 	[s,v.mode,e] --s will be replaced by an ELT form in beforeCompile
     [s,v.mode,e] --s has been SETQd
   m':= getmode(s,e) =>
-    if not MEMBER(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
+    if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
       not isFunction(s,e) and null ($compForModeIfTrue=true) then errorRef s
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ["no mode found for",s]
@@ -726,7 +730,7 @@ compColon([":",f,t],m,e) ==
     t := markKillAll t
     atom t and (t':= ASSOC(t,getDomainsInScope e)) => t'
     isDomainForm(t,e) and not $insideCategoryIfTrue =>
-      (if not MEMBER(t,getDomainsInScope e) then e:= addDomain(t,e); t)
+      (if not member(t,getDomainsInScope e) then e:= addDomain(t,e); t)
     isDomainForm(t,e) or isCategoryForm(t,e) => t
     t is ["Mapping",m',:r] => t
     unknownTypeError t
@@ -868,7 +872,7 @@ coerceRep(T,m) ==
     CONTAINED('Rep,m) and SUBST('$,'Rep,m) = md => T
   nil
 
---- GET rid of XLAMs
+--- GETL rid of XLAMs
 spadCompileOrSetq form ==
 	--bizarre hack to take account of the existence of "known" functions
 	--good for performance (LISPLLIB size, BPI size, NILSEC)
@@ -904,7 +908,7 @@ coerceHard(T,m) ==
 coerceExtraHard(T is [x,m',e],m) ==
   T':= autoCoerceByModemap(T,m) => T'
   isUnionMode(m',e) is ["Union",:l] and (t:= hasType(x,e)) and
-    MEMBER(t,l) and (T':= autoCoerceByModemap(T,t)) and
+    member(t,l) and (T':= autoCoerceByModemap(T,t)) and
       (T'':= coerce(T',m)) => T''
   m' is ['Record,:.] and m = $Expression =>
       [['coerceRe2E,x,['ELT,COPY m',0]],m,e]
@@ -987,7 +991,7 @@ comp3(x,m,$e) ==
   x is ['PART,:.] => compPART(x,m,e)
   ----------------------------------
   t:= qt(14,compExpression(x,m,e))
-  t is [x',m',e'] and not MEMBER(m',getDomainsInScope e') =>
+  t is [x',m',e'] and not member(m',getDomainsInScope e') =>
     qt(15,[x',m',addDomain(m',e')])
   qt(16,t)
 
@@ -996,7 +1000,7 @@ compExpression(x,m,e) ==
   $insideExpressionIfTrue: local:= true
   if x is ['LET,['PART,.,w],[['elt,B,'new],['PART,.,["#",['PART,.,l]]],:.],:.] then yyyyy x 
   x := compRenameOp x
-  atom first x and (fn:= GET(first x,"SPECIAL")) =>
+  atom first x and (fn:= GETL(first x,"SPECIAL")) =>
     FUNCALL(fn,x,m,e)
   compForm(x,m,e)
 

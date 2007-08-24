@@ -130,7 +130,7 @@ trace1 l ==
     throwKeyedMsg("S2IT0002",NIL)
   a:= hasOption($options,'restore) =>
     null(oldL:= $lastUntraced) => nil
-    newOptions:= DELETE(a,$options)
+    newOptions:= delete(a,$options)
     null l => trace1 oldL
     for x in l repeat
       x is [domain,:opList] and VECP domain =>
@@ -172,7 +172,7 @@ getTraceOptions options ==
 
 saveMapSig(funNames) ==
   for name in funNames repeat
-    map:= RASSOC(name,$mapSubNameAlist) =>
+    map:= rassoc(name,$mapSubNameAlist) =>
       $tracedMapSignatures:= ADDASSOC(name,getMapSig(map,name),
         $tracedMapSignatures)
 
@@ -372,7 +372,7 @@ getMapSubNames(l) ==
   for mapName in l repeat
     lmm:= get(mapName,'localModemap,$InteractiveFrame) =>
       subs:= APPEND([[mapName,:CADR mm] for mm in lmm],subs)
-  UNION(subs,getPreviousMapSubNames UNIONQ(_/TRACENAMES,
+  union(subs,getPreviousMapSubNames UNIONQ(_/TRACENAMES,
     $lastUntraced))
 
 getPreviousMapSubNames(traceNames) ==
@@ -389,7 +389,7 @@ lassocSub(x,subs)  ==
   x
 
 rassocSub(x,subs) ==
-  y:= RASSOC(x,subs) => y
+  y:= rassoc(x,subs) => y
   x
 
 isUncompiledMap(x) ==
@@ -410,7 +410,7 @@ augmentTraceNames(l,mapSubNames) ==
 
 isSubForRedundantMapName(subName) ==
   mapName:= rassocSub(subName,$mapSubNameAlist) =>
-    tail:=MEMBER([mapName,:subName],$mapSubNameAlist) =>
+    tail:=member([mapName,:subName],$mapSubNameAlist) =>
       MEMQ(mapName,CDR ASSOCLEFT tail)
 
 untraceMapSubNames traceNames ==
@@ -533,7 +533,7 @@ untraceDomainLocalOps(dom,lops) ==
 untraceAllDomainLocalOps(dom) == NIL
 --  abb := abbreviate dom
 --  actualLops := getLocalOpsFromLisplib abb
---  null (l := INTERSECTION(actualLops,_/TRACENAMES)) => NIL
+--  null (l := intersection(actualLops,_/TRACENAMES)) => NIL
 --  _/UNTRACE_,1(l,NIL)
 --  NIL
 
@@ -573,7 +573,7 @@ untraceDomainConstructor domainConstructor ==
   innerDomainConstructor := INTERN STRCONC(domainConstructor,'";")
   if FBOUNDP innerDomainConstructor then UNEMBED innerDomainConstructor
     else UNEMBED domainConstructor
-  SETQ(_/TRACENAMES,DELETE(domainConstructor,_/TRACENAMES))
+  SETQ(_/TRACENAMES,delete(domainConstructor,_/TRACENAMES))
 
 flattenOperationAlist(opAlist) ==
    res:= nil
@@ -792,7 +792,7 @@ tracelet(fn,vars) ==
   fn = 'Undef => nil
   vars:=
     vars="all" => "all"
-    l:= LASSOC(fn,$letAssoc) => UNION(vars,l)
+    l:= LASSOC(fn,$letAssoc) => union(vars,l)
     vars
   $letAssoc:= [[fn,:vars],:$letAssoc]
   if $letAssoc then SETLETPRINTFLAG true
@@ -801,7 +801,7 @@ tracelet(fn,vars) ==
   ^MEMQ(fn,$traceletFunctions) and ^IS__GENVAR fn and COMPILED_-FUNCTION_-P SYMBOL_-FUNCTION fn
     and not stupidIsSpadFunction fn and not GENSYMP fn =>
       ($traceletFunctions:= [fn,:$traceletFunctions]; compileBoot fn ;
-       $traceletFunctions:= DELETE(fn,$traceletFunctions) )
+       $traceletFunctions:= delete(fn,$traceletFunctions) )
 
 breaklet(fn,vars) ==
                        --vars is "all" or a list of variables
@@ -812,7 +812,7 @@ breaklet(fn,vars) ==
   fn = "Undef" => nil
   fnEntry:= LASSOC(fn,$letAssoc)
   vars:=
-    pair:= ASSOC("BREAK",fnEntry) => UNION(vars,rest pair)
+    pair:= ASSOC("BREAK",fnEntry) => union(vars,rest pair)
     vars
   $letAssoc:=
     null fnEntry => [[fn,:LIST ["BREAK",:vars]],:$letAssoc]
@@ -823,7 +823,7 @@ breaklet(fn,vars) ==
     and not GENSYMP fn =>
       $traceletFunctions:= [fn,:$traceletFunctions]
       compileBoot fn
-      $traceletFunctions:= DELETE(fn,$traceletFunctions)
+      $traceletFunctions:= delete(fn,$traceletFunctions)
 
 stupidIsSpadFunction fn ==
   -- returns true if the function pname has a semi-colon in it

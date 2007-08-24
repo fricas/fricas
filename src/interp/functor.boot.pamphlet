@@ -375,11 +375,11 @@ DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes) ==
      --combinations (SETELT ...(ELT ..)) by MVCs where this is practicable
   copyvec:=GETREFV (1+n)
   for u in code repeat
-      if update(u,copyvec,[]) then code:=DELETE(u,code)
+      if update(u,copyvec,[]) then code:=delete(u,code)
     where update(code,copyvec,sofar) ==
       ATOM code =>nil
       MEMQ(QCAR code,'(ELT QREFELT)) =>
-          copyvec.(CADDR code):=UNION(copyvec.(CADDR code), sofar)
+          copyvec.(CADDR code):=union(copyvec.(CADDR code), sofar)
           true
       code is [x,name,number,u'] and MEMQ(x,'(SETELT QSETREFV)) =>
         update(u',copyvec,[[name,:number],:sofar])
@@ -391,7 +391,7 @@ DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes) ==
              --Maximum length of an MVC is 64 words
       j:=j-1
       j > i+2 =>
-        for k in i..j repeat copyvec.k:=DELETE([name,:count+k-i],copyvec.k)
+        for k in i..j repeat copyvec.k:=delete([name,:count+k-i],copyvec.k)
         code:=[['REPLACE, name, instantiatedBase,
                  INTERN('"START1",'"KEYWORD"), count,
                   INTERN('"START2",'"KEYWORD"), i,
@@ -445,7 +445,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
                     --only keep the names that are useful
     if body is [a,:.] and isFunctor a
       then $packagesUsed:=[body,:$packagesUsed]
-    u:=MEMBER(name,$locals) =>
+    u:=member(name,$locals) =>
         CONTAINED('$,body) and isDomainForm(body,$e) =>
           --instantiate domains which depend on $ after constants are set
           code:=[($QuickCode => 'QSETREFV; 'SETELT),[($QuickCode => 'QREFELT; 'ELT),'$,5],#$locals-#u,code]
@@ -591,7 +591,7 @@ InvestigateConditions catvecListMaker ==
       if not TruthP(cond:=CADR u) then
         new:=['CATEGORY,'domain,['IF,cond,['ATTRIBUTE,CAR u], 'noBranch]]
         $principal is ['Join,:l] =>
-          not MEMBER(new,l) =>
+          not member(new,l) =>
             $principal:=['Join,:l,new]
         $principal:=['Join,$principal,new]
   principal' :=
@@ -600,7 +600,7 @@ InvestigateConditions catvecListMaker ==
         atom a => a
         a is ['SIGNATURE,:.] => a
         a is ['IF,cond,:.] =>
-          if not MEMBER(cond,$Conditions) then $Conditions:= [cond,:$Conditions]
+          if not member(cond,$Conditions) then $Conditions:= [cond,:$Conditions]
           nil
         [pessimise first a,:pessimise rest a]
   null $Conditions => [true,:[true for u in secondaries]]
@@ -608,7 +608,7 @@ InvestigateConditions catvecListMaker ==
   MinimalPrimary:= CAR first PrincipalSecondaries
   MaximalPrimary:= CAAR $domainShell.4
   necessarySecondaries:= [first u for u in PrincipalSecondaries | rest u=true]
-  and/[MEMBER(u,necessarySecondaries) for u in secondaries] =>
+  and/[member(u,necessarySecondaries) for u in secondaries] =>
     [true,:[true for u in secondaries]]
   $HackSlot4:=
     MinimalPrimary=MaximalPrimary => nil
@@ -622,10 +622,10 @@ InvestigateConditions catvecListMaker ==
            --of refinements of that list
       atom code => [previous]
       code is ['DomainSubstitutionMacro,.,b] => Conds(b,previous)
-      code is ['IF,a,b,c] => UNION(Conds(b,[a,:previous]),Conds(c,previous))
-      code is ['PROGN,:l] => "UNION"/[Conds(u,previous) for u in l]
-      code is ['CATEGORY,:l] => "UNION"/[Conds(u,previous) for u in l]
-      code is ['Join,:l] => "UNION"/[Conds(u,previous) for u in l]
+      code is ['IF,a,b,c] => union(Conds(b,[a,:previous]),Conds(c,previous))
+      code is ['PROGN,:l] => "union"/[Conds(u,previous) for u in l]
+      code is ['CATEGORY,:l] => "union"/[Conds(u,previous) for u in l]
+      code is ['Join,:l] => "union"/[Conds(u,previous) for u in l]
       [previous]
   $Conditions:= EFFACE(nil,[EFFACE(nil,u) for u in $Conditions])
   partList:=
@@ -633,11 +633,11 @@ InvestigateConditions catvecListMaker ==
   masterSecondaries:= secondaries
   for u in partList repeat
     for [v,:.] in u repeat
-      if not MEMBER(v,secondaries) then secondaries:= [v,:secondaries]
+      if not member(v,secondaries) then secondaries:= [v,:secondaries]
   --PRETTYPRINT $Conditions
   --PRETTYPRINT masterSecondaries
   --PRETTYPRINT secondaries
-  (list:= [mkNilT MEMBER(u,necessarySecondaries) for u in secondaries]) where
+  (list:= [mkNilT member(u,necessarySecondaries) for u in secondaries]) where
     mkNilT u ==
       u => true
       nil
@@ -677,15 +677,15 @@ InvestigateConditions catvecListMaker ==
                              ['delete,['QUOTE,first u],'(CAAR TrueDomain)]]]]
   $supplementaries:=
     [u
-      for u in list | not MEMBER(first u,masterSecondaries)
-        and not (true=rest u) and not MEMBER(first u,pv)]
+      for u in list | not member(first u,masterSecondaries)
+        and not (true=rest u) and not member(first u,pv)]
   [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
  
 ICformat u ==
       atom u => u
       u is ['has,:.] => compHasFormat u
       u is ['AND,:l] or u is ['and,:l] =>
-        l:= REMDUP [ICformat v for [v,:l'] in tails l | not MEMBER(v,l')]
+        l:= REMDUP [ICformat v for [v,:l'] in tails l | not member(v,l')]
              -- we could have duplicates after, even if not before
         LENGTH l=1 => first l
         l1:= first l
@@ -698,8 +698,8 @@ ICformat u ==
             for u in l | u is ['AND,:.] or u is ['and,:.] repeat
                                   --check that B causes (and A B) to go
               for v in l | not (v=u) repeat
-                if MEMBER(v,u) or (and/[MEMBER(w,u) for w in v]) then l:=
-                  DELETE(u,l)
+                if member(v,u) or (and/[member(w,u) for w in v]) then l:=
+                  delete(u,l)
                        --v subsumes u
                            --Note that we are ignoring AND as a component.
                            --Convince yourself that this code still works
@@ -714,14 +714,14 @@ ICformat u ==
               cond] repeat
                                   --check that v causes descendants to go
                 for v in l | not (v=u) and v is ['HasCategory, =name,['QUOTE,
-                  cond2]] repeat if DescendantP(cond,cond2) then l:= DELETE(u,l)
+                  cond2]] repeat if DescendantP(cond,cond2) then l:= delete(u,l)
                        --v subsumes u
             for u in l | u is ['AND,:l'] or u is ['and,:l'] repeat
               for u' in l' | u' is ['HasCategory,name,cond] and cond is ['QUOTE,
                 cond] repeat
                                     --check that v causes descendants to go
                   for v in l | v is ['HasCategory, =name,['QUOTE,
-                    cond2]] repeat if DescendantP(cond,cond2) then l:= DELETE(u,l)
+                    cond2]] repeat if DescendantP(cond,cond2) then l:= delete(u,l)
                          --v subsumes u
             l
         LENGTH l=1 => first l
@@ -731,7 +731,7 @@ ICformat u ==
 partPessimise(a,trueconds) ==
   atom a => a
   a is ['SIGNATURE,:.] => a
-  a is ['IF,cond,:.] => (MEMBER(cond,trueconds) => a; nil)
+  a is ['IF,cond,:.] => (member(cond,trueconds) => a; nil)
   [partPessimise(first a,trueconds),:partPessimise(rest a,trueconds)]
  
 getPossibleViews u ==

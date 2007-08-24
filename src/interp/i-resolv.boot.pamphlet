@@ -1,14 +1,17 @@
 \documentclass{article}
 \usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/interp i-resolv.boot}
+
+\title{\File{src/interp/i-resolv.boot} Pamphlet}
 \author{The Axiom Team}
+
+\begin{document}
 \maketitle
 \begin{abstract}
 \end{abstract}
 \eject
 \tableofcontents
 \eject
+
 \begin{verbatim}
 new resolution: types and modes
 
@@ -187,7 +190,7 @@ resolveTTUnion(t1 is ['Union,:doms],t2) ==
       [t for [.,.,t] in doms]
     tagged := false
     doms
-  MEMBER(t2,unionDoms1) => t1
+  member(t2,unionDoms1) => t1
   tagged => NIL
   t2 isnt ['Union,:doms2] =>
     ud := nil
@@ -380,15 +383,15 @@ resolveTTRed3(t) ==
   t is ['Resolve,a,b] =>
     ( t1 := resolveTTRed3 a ) and ( t2 := resolveTTRed3 b ) and
       resolveTT1(t1,t2)
-  t is ['Incl,a,b] => MEMBER(a,b) and b
-  t is ['SetDiff,a,b] => INTERSECTION(a,b) and SETDIFFERENCE(a,b)
+  t is ['Incl,a,b] => member(a,b) and b
+  t is ['SetDiff,a,b] => intersection(a,b) and SETDIFFERENCE(a,b)
   t is ['SetComp,a,b] =>
-    and/[MEMBER(x,a) for x in b] and SETDIFFERENCE(a,b)
-  t is ['SetInter,a,b] => INTERSECTION(a,b)
-  t is ['SetUnion,a,b] => UNION(a,b)
+    and/[member(x,a) for x in b] and SETDIFFERENCE(a,b)
+  t is ['SetInter,a,b] => intersection(a,b)
+  t is ['SetUnion,a,b] => union(a,b)
   t is ['VarEqual,a,b] => (a = b) and a
   t is ['SetEqual,a,b] =>
-    (and/[MEMBER(x,a) for x in b] and and/[MEMBER(x,b) for x in a]) and a
+    (and/[member(x,a) for x in b] and and/[member(x,b) for x in a]) and a
   [( atom x and x ) or ((not cs and x and not interpOp? x and x)
     or resolveTTRed3 x) or return NIL
       for x in t for cs in GETDATABASE(CAR t, 'COSIG) ]
@@ -646,7 +649,7 @@ resolveTMSpecial(t,m) ==
   t = $AnonymousFunction and m is ['Mapping,:.] => m
   t is ['Variable,x] and m is ['OrderedVariableList,le] =>
     isPatternVar le => ['OrderedVariableList,[x]]
-    PAIRP(le) and MEMBER(x,le) => le
+    PAIRP(le) and member(x,le) => le
     NIL
   t is ['Fraction, ['Complex, t1]] and m is ['Complex, m1] =>
     resolveTM1(['Complex, ['Fraction, t1]], m)
@@ -733,14 +736,14 @@ resolveTMRed1(t) ==
   t is ['Resolve,a,b] =>
     ( a := resolveTMRed1 a ) and ( b := resolveTMRed1 b ) and
       resolveTM1(a,b)
-  t is ['Incl,a,b] => PAIRP b and MEMBER(a,b) and b
-  t is ['Diff,a,b] => PAIRP a and MEMBER(b,a) and SETDIFFERENCE(a,[b])
-  t is ['SetIncl,a,b] => PAIRP b and and/[MEMBER(x,b) for x in a] and b
+  t is ['Incl,a,b] => PAIRP b and member(a,b) and b
+  t is ['Diff,a,b] => PAIRP a and member(b,a) and SETDIFFERENCE(a,[b])
+  t is ['SetIncl,a,b] => PAIRP b and and/[member(x,b) for x in a] and b
   t is ['SetDiff,a,b] => PAIRP b and PAIRP b and
-                         INTERSECTION(a,b) and SETDIFFERENCE(a,b)
+                         intersection(a,b) and SETDIFFERENCE(a,b)
   t is ['VarEqual,a,b] => (a = b) and b
   t is ['SetComp,a,b] => PAIRP a and PAIRP b and
-    and/[MEMBER(x,a) for x in b] and SETDIFFERENCE(a,b)
+    and/[member(x,a) for x in b] and SETDIFFERENCE(a,b)
   t is ['SimpleAlgebraicExtension,a,b,p] =>  -- this is a hack. RSS
     ['SimpleAlgebraicExtension, resolveTMRed1 a, resolveTMRed1 b,p]
   [( atom x and x ) or resolveTMRed1 x or return NIL for x in t]

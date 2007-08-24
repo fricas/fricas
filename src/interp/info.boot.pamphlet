@@ -142,13 +142,13 @@ chaseInferences(pred,$e) ==
         u is ["COND",:l] =>
           for [ante,:conseq] in l repeat
             ante=pred => [foo w for w in conseq]
-            ante is ["and",:ante'] and MEMBER(pred,ante') =>
-              ante':= DELETE(pred,ante')
+            ante is ["and",:ante'] and member(pred,ante') =>
+              ante':= delete(pred,ante')
               v':=
                 LENGTH ante'=1 => first ante'
                 ["and",:ante']
               v':= ["COND",[v',:conseq]]
-              MEMBER(v',get("$Information","special",$e)) => nil
+              member(v',get("$Information","special",$e)) => nil
               $e:=
                 put("$Information","special",[v',:
                   get("$Information","special",$e)],$e)
@@ -169,7 +169,7 @@ knownInfo pred ==
                --true %if the information is already known
   pred=true => true
   --pred = "true" => true
-  MEMBER(pred,get("$Information","special",$e)) => true
+  member(pred,get("$Information","special",$e)) => true
   pred is ["OR",:l] => or/[knownInfo u for u in l]
   pred is ["AND",:l] => and/[knownInfo u for u in l]
   pred is ["or",:l] => or/[knownInfo u for u in l]
@@ -179,7 +179,7 @@ knownInfo pred ==
     null v => stackSemanticError(["can't find category of ",name],nil)
     [vv,.,.]:= compMakeCategoryObject(CADR v,$e)
     null vv => stackSemanticError(["can't make category of ",name],nil)
-    MEMBER(attr,vv.2) => true
+    member(attr,vv.2) => true
     x:= ASSOC(attr,vv.2) => knownInfo CADR x
           --format is a list of two elements: information, predicate
     false
@@ -191,12 +191,12 @@ knownInfo pred ==
     null v => stackSemanticError(["can't find category of ",name],nil)
     vmode := CADR v
     cat = vmode => true
-    vmode is ["Join",:l] and MEMBER(cat,l) => true
+    vmode is ["Join",:l] and member(cat,l) => true
     [vv,.,.]:= compMakeCategoryObject(vmode,$e)
     catlist := vv.4
     --catlist := SUBST(name,'$,vv.4)
     null vv => stackSemanticError(["can't make category of ",name],nil)
-    MEMBER(cat,first catlist) => true  --checks princ. ancestors
+    member(cat,first catlist) => true  --checks princ. ancestors
     (u:=ASSOC(cat,CADR catlist)) and knownInfo(CADR u) => true
     -- previous line checks fundamental anscestors, we should check their
     --   principal anscestors but this requires instantiating categories
@@ -229,7 +229,7 @@ actOnInfo(u,$e) ==
   u is ["COND",:l] =>
       --there is nowhere %else that this sort of thing exists
     for [ante,:conseq] in l repeat
-      if MEMBER(hasToInfo ante,Info) then for v in conseq repeat
+      if member(hasToInfo ante,Info) then for v in conseq repeat
         $e:= actOnInfo(v,$e)
     $e
   u is ["ATTRIBUTE",name,att] =>
@@ -258,7 +258,7 @@ actOnInfo(u,$e) ==
          --we are adding information about a category
       [catvec,.,$e]:= u
       [ocatvec,.,$e]:= compMakeCategoryObject(vmode,$e)
-      -- MEMBER(vmode,CAR catvec.4) =>
+      -- member(vmode,CAR catvec.4) =>
       --    JHD 82/08/08 01:40 This does not mean that we can ignore the
       --    extension, since this may not be compatible with the view we
       --    were passed
@@ -267,7 +267,7 @@ actOnInfo(u,$e) ==
       --    $e:= augModemapsFromCategory(name,name,nil,catvec,$e)
       --    SAY("augmenting ",name,": ",cat)
       --    put(name, "value", (vval, cat, venv), $e)
-      MEMBER(cat,first ocatvec.4) or
+      member(cat,first ocatvec.4) or
          ASSOC(cat,CADR ocatvec.4) is [.,'T,.] => $e
         --SAY("Category extension error:
         --cat shouldn't be a join
