@@ -155,6 +155,101 @@ intloopPrefix?(prefix,whole) ==
 )package "BOOT"
 
 --% INTERPRETER TOP LEVEL
+
+spad() ==
+  -- starts the interpreter but does not read in profiles, etc.
+  $PrintCompilerMessageIfTrue: local
+  $inLispVM : local := nil
+  setOutputAlgebra "%initialize%"
+  runspad()
+  'EndOfSpad
+
+runspad() ==
+  mode:='restart
+  while mode='restart repeat
+    resetStackLimits()
+    CATCH($quitTag, CATCH('coerceFailure,
+                  mode:=CATCH('top__level, ncTopLevel())))
+
+ncTopLevel() ==
+-- Top-level read-parse-eval-print loop for the interpreter.  Uses
+-- the Bill Burge's parser.
+  IN_-STREAM: fluid := CURINSTREAM
+  _*EOF_*: fluid := NIL
+  $InteractiveMode :fluid := true
+  $BOOT: fluid := NIL
+  $NEWSPAD: fluid := true
+  $SPAD: fluid := true
+  $e:fluid := $InteractiveFrame
+  ncIntLoop()
+
+
+ncIntLoop() ==
+  CURINSTREAM : local := _*STANDARD_-OUTPUT_*
+  CUROUTSTREAM : local := _*STANDARD_-INPUT_*
+  intloop()
+
+
+intloop () ==
+    mode := $intRestart
+    while mode = $intRestart repeat
+      resetStackLimits()
+      mode := CATCH($intTopLevel,
+                    SpadInterpretStream(1, ["TIM", "DALY", "?"], true))
+
+
+SpadInterpretStream(str, source, interactive?) ==
+    $fn              : local := source
+    pile?                    := not interactive?
+    $libQuiet        : local := not interactive?
+--  following seems useless and causes ccl package problems
+--    $InteractiveMode : local := false
+ 
+    $newcompErrorCount: local := 0 -- SMW Feb 2/90.
+                                   -- Used in highComplete, ncHardError etc.
+ 
+    $okToExecuteMachineCode: local := true -- set false on error
+    $inclAssertions: local := ["AIX", "CommonLisp"] -- Jan 28/90
+ 
+ 
+    $lastPos               : local := $nopos   ------------>!!!
+    $erMsgToss             : local := false --------------->!!!
+    $ncMsgList             : local := nil
+ 
+    $systemCommandFunction : local := function InterpExecuteSpadSystemCommand
+    $promptMsg             : local := 'S2CTP023
+ 
+    interactive? =>
+                PRINC(MKPROMPT())
+                intloopReadConsole('"", str)
+                []
+    intloopInclude (source,0)
+    []
+ 
+    -----------------------------------------------------------------
+
+intloopReadConsole(b, n)==
+    a:= serverReadLine(_*STANDARD_-INPUT_*)
+    not STRINGP a => leaveScratchpad()
+    #a=0 =>
+             PRINC(MKPROMPT())
+             intloopReadConsole('"", n)
+    $DALYMODE and intloopPrefix?('"(",a) =>
+            intnplisp(a)
+            PRINC(MKPROMPT())
+            intloopReadConsole('"",n)
+    pfx := stripSpaces intloopPrefix?('")fi",a)
+    pfx and ((pfx = '")fi") or (pfx = '")fin")) => []
+    b = '"" and (d := intloopPrefix?('")", a)) =>
+             setCurrentLine d
+             c := ncloopCommand(d,n)
+             PRINC(MKPROMPT())
+             intloopReadConsole('"", c)
+    a:=CONCAT(b,a)
+    ncloopEscaped a => intloopReadConsole(SUBSEQ(a, 0, (LENGTH a) - 1),n)
+    c := intloopProcessString(a, n)
+    PRINC(MKPROMPT())
+    intloopReadConsole('"", c)
  
 <<intloopPrefix?>> 
  
