@@ -1,15 +1,20 @@
 \documentclass{article}
 \usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/interp cparse.boot}
+
+\title{\File{src/interp/cparse.boot} Pamphlet}
 \author{The Axiom Team}
+
+\begin{document}
 \maketitle
+
 \begin{abstract}
 \end{abstract}
-\eject
+
 \tableofcontents
 \eject
+
 \section{License}
+
 <<license>>=
 -- Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 -- All rights reserved.
@@ -211,6 +216,42 @@ npList(f,str1,g)== -- always produces a list, g is applied to it
           npPush FUNCALL(g, [npPop1()])
     else npPush FUNCALL(g, [])
 
+
+++ rewrite flets, using global scoping
+$npPParg := nil
+
+npPPff() ==
+  FUNCALL $npPParg and npPush [npPop1()]
+
+npPPf() ==
+  npSemiListing function npPPff
+
+npPPg() ==
+  npListAndRecover function npPPf
+    and npPush pfAppend npPop1()
+
+npPP(f) ==
+  $npPParg := f
+  npParened function npPPf
+    or npPileBracketed function npPPg and
+      npPush pfEnSequence npPop1()
+        or FUNCALL f
+
+++ rewrite flets, using global scoping
+$npPCff := nil
+
+npPCff() ==
+  FUNCALL $npPCff and npPush [npPop1()]
+
+npPCg() ==
+  npListAndRecover function npPCff
+    and npPush pfAppend npPop1()
+
+npPC(f) ==
+  $npPCff := f
+  npPileBracketed function npPCg and
+    npPush pfEnSequence npPop1()
+      or FUNCALL f
 
 
 -- s must transform the head of the stack
