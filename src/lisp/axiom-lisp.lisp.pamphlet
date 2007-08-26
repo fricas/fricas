@@ -51,6 +51,11 @@ See LICENSE.AXIOM for Copyright
 (eval-when (:execute :load-toplevel)
     (set-initial-parameters))
 
+;;; clisp wants to search whole "~/lisp" subtree to find source
+;;; file, which is insane.  Below we disable this behaviour.
+#+:clisp
+(eval-when (:execute :compile-toplevel :load-toplevel)
+    (setf custom:*load-paths* '(#P"./")))
 
 ;; Save current image on disk as executable and quit.
 (defun save-core-restart (core-image restart)
@@ -82,9 +87,9 @@ See LICENSE.AXIOM for Copyright
             :executable t))
 #+:clisp
   (if restart
-     (ext::saveinitmem core-image :INIT-FUNCTION restart
+     (ext::saveinitmem core-image :INIT-FUNCTION restart :QUIET t
          :executable t)
-     (ext::saveinitmem core-image :executable t))
+     (ext::saveinitmem core-image :executable t :QUIET t))
 #+:openmcl
   (let ((ccl-dir (|getEnv| "CCL_DEFAULT_DIRECTORY"))
 	(core-fname (concatenate 'string core-image ".image"))
