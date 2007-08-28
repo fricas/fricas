@@ -92,7 +92,9 @@ substDomainArgs(domain,object) ==
 --       Lookup Function in Slot 1 (via SPADCALL)
 --=======================================================
 lookupInTable(op,sig,dollar,[domain,table]) ==
-  EQ(table,'derived) => lookupInAddChain(op,sig,domain,dollar)
+  EQ(table,'derived) => 
+    -- lookupInAddChain(op,sig,domain,dollar)
+    BREAK()
   success := false
   someMatch := false
   while not success for [sig1,:code] in LASSQ(op,table) repeat
@@ -113,15 +115,19 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
       slot := domain.loc
       EQCAR(slot,'goGet) =>
         lookupDisplay(op,sig,domain,'" !! goGet found, will ignore")
-        lookupInAddChain(op,sig,domain,dollar) or 'failed
+        -- lookupInAddChain(op,sig,domain,dollar) or 'failed
+	BREAK()
       NULL slot =>
         lookupDisplay(op,sig,domain,'" !! null slot entry, continuing")
-        lookupInAddChain(op,sig,domain,dollar) or 'failed
+        -- lookupInAddChain(op,sig,domain,dollar) or 'failed
+	BREAK()
       lookupDisplay(op,sig,domain,'" !! found in NEW table!!")
       slot
   NE(success,'failed) and success => success
   subsumptionSig and (u:= SPADCALL(op,subsumptionSig,dollar,domain.1)) => u
-  someMatch => lookupInAddChain(op,sig,domain,dollar)
+  someMatch => 
+    -- lookupInAddChain(op,sig,domain,dollar)
+    BREAK()
   nil
 
 --=======================================================
@@ -158,21 +164,7 @@ lookupInDomain(op,sig,addFormDomain,dollar,index) ==
 --       Category Default Lookup (from goGet or lookupInAddChain)
 --=======================================================
 lookupInCategories(op,sig,dom,dollar) ==
-  catformList := dom.4.0
-  varList := ['$,:$FormalMapVariableList]
-  valueList := [dom,:[dom.(5+i) for i in 1..(# rest dom.0)]]
-  valueList := [MKQ val for val in valueList]
-  nsig := MSUBST(dom.0,dollar.0,sig)
-  r := or/[lookupInDomainVector(op,nsig,
-                   eval EQSUBSTLIST(valueList,varList,catform),dollar)
-        for catform in catformList | pred] where pred ==
-   (table := HGET($Slot1DataBase,first catform)) and
-      (u := LASSQ(op,table))  --compare without checking predicates
-         and (v := or/[rest x for x in u | #sig = #x.0])
-        -- following lines commented out because compareSig needs domain
-        -- and (v := or/[rest x for x in u |
-        --             compareSig(sig,x.0,dollar.0, catform)])
-  r or lookupDisplay(op,sig,'"category defaults",'"-- not found")
+  BREAK()
 
 --=======================================================
 --                       Predicates

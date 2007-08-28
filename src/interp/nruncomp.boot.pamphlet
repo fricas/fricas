@@ -255,11 +255,6 @@ NRTgetLocalIndex1(item,killBindingIfTrue) ==
   RPLACA(saveNRTdeltaListComp,compEntry)
   saveIndex
 
-NRTgetAddForm domain ==
-  u := HGET($Slot1DataBase,first domain) =>
-    EQSUBSTLIST(rest domain,$FormalMapVariableList,first u)
-  systemErrorHere '"NRTgetAddForm"
-
 NRTassignCapsuleFunctionSlot(op,sig) ==
 --called from compDefineCapsuleFunction
   opSig := [op,sig]
@@ -467,30 +462,6 @@ NRTvectorCopy(cacheName,domName,deltaLength) == GETREFV (6 + deltaLength)
 
 mkDomainCatName id == INTERN STRCONC(id,";CAT")
 
-NRTsetVector4(siglist,formlist,condlist) ==
-  $uncondList: local := nil
-  $condList: local := nil
-  $count: local := 0
-  for sig in reverse siglist for form in reverse formlist
-         for cond in reverse condlist repeat
-                  NRTsetVector4a(sig,form,cond)
-  --NRTsetVector4a(first siglist,first formlist,first condlist)
-
-  $lisplibCategoriesExtended:= [$uncondList,:$condList]
-  code := ['mapConsDB,MKQ REVERSE REMDUP $uncondList]
-  if $condList then
-    localVariable := GENSYM()
-    code := [['LET,localVariable,code]]
-    for [pred,list] in $condList repeat
-      code :=
-        [['COND,[pred,['LET,localVariable,
-          ['mergeAppend,['mapConsDB,MKQ list],localVariable]]]],
-            :code]
-    code := ['PROGN,:NREVERSE [['NREVERSE,localVariable],:code]]
-  g := GENSYM()
-  [$setelt,'$,4,['PROG2,['LET,g,code],
-    ['VECTOR,['catList2catPackageList,g],g]]]
-
 NRTsetVector4Part1(siglist,formlist,condlist) ==
   $uncondList: local := nil
   $condList: local := nil
@@ -516,40 +487,10 @@ reverseCondlist cl ==
       RPLACD(u,[x,:CDR u])
   alist
 
-NRTsetVector4Part2(uncondList,condList) ==
-  $lisplibCategoriesExtended:= [uncondList,:condList]
-  code := ['mapConsDB,MKQ REVERSE REMDUP uncondList]
-  if condList then
-    localVariable := GENSYM()
-    code := [['LET,localVariable,code]]
-    for [pred,list] in condList repeat
-      code :=
-        [['COND,[predicateBitRef SUBLIS($pairlis,pred),['LET,localVariable,
-          ['mergeAppend,['mapConsDB,MKQ list],localVariable]]]],
-            :code]
-    code := ['PROGN,:NREVERSE [['NREVERSE,localVariable],:code]]
-  g := GENSYM()
-  [$setelt,'$,4,['PROG2,['LET,g,code],
-    ['VECTOR,['catList2catPackageList,g],g]]]
-
 mergeAppend(l1,l2) ==
   ATOM l1 => l2
   member(QCAR l1,l2) => mergeAppend(QCDR l1, l2)
   CONS(QCAR l1, mergeAppend(QCDR l1, l2))
-
---genLoadTimeValue u ==
---  name :=
---    INTERN STRCONC(PNAME first $definition,'";",STRINGIZE($count:=$count+1))
---  $NRTloadTimeAlist := [[name,:['addConsDB,MKQ u]],:$NRTloadTimeAlist]
---  --see compDefineFunctor1
---  name
-
-catList2catPackageList u ==
---converts ((Set) (Module R) ...) to ((Set& $) (Module& $ R)...)
-  [fn x for x in u] where
-    fn [op,:argl] ==
-      newOp := INTERN(STRCONC(PNAME op,"&"))
-      addConsDB [newOp,"$",:argl]
 
 NRTsetVector4a(sig,form,cond) ==
   sig = '$ =>
@@ -679,8 +620,6 @@ NRTsubstDelta(initSig) ==
            [CAR t,:[replaceSlotTypes(x) for x in rest t]]
         t
 -----------------------------SLOT1 DATABASE------------------------------------
-
-updateSlot1DataBase [name,info] == HPUT($Slot1DataBase,name,info)
 
 NRTputInLocalReferences bod ==
   $elt: local := ($QuickCode => 'QREFELT; 'ELT)
