@@ -53,17 +53,7 @@ The original code was:
     (replace (make-array n :fill-pointer t) v)))
 
 @
-\subsection{make-init-vector}
-The original code was
-\begin{verbatim}
-(defun make-init-vector (n val) (make-array n :initial-element val))
-\end{verbatim}
 
-<<make-init-vector>>=
-(defun make-init-vector (n val) 
-  (make-array n :initial-element val :fill-pointer t))
-
-@
 \section{DEFUN CONTAINED}
 The [[CONTAINED]] predicate is used to walk internal structures
 such as modemaps to see if the $X$ object occurs within $Y$. One
@@ -172,12 +162,6 @@ ends up being [[CONTAINED |$EmptyMode| Y]].
 #+lucid
 (defmacro qeqcar (x y) `(eq (qcar ,x) ,y))
  
- 
-(defun COMPARE (X Y)
-  "True if X is an atom or X and Y are lists and X and Y are equal up to X."
-  (COND ((ATOM X) T)
-        ((ATOM Y) NIL)
-        ((EQUAL (CAR X) (CAR Y)) (COMPARE (CDR X) (CDR Y)))))
  
  
 (DEFUN ?ORDER (U V)  "Multiple-type ordering relation."
@@ -987,8 +971,6 @@ LP  (COND ((NULL X)
         ((EQL N 4) '(CDDDDR))
         ((APPEND (PARTCODET (PLUS N -4)) '(CDDDDR)))))
  
-(defmacro TL (&rest L) `(tail . ,L))
- 
 (defun TAILFN (X N) (if (LT N 1) X (TAILFN (CDR X) (SUB1 N))))
  
 (defmacro SPADCONST (&rest L) (cons 'qrefelt L))
@@ -998,8 +980,6 @@ LP  (COND ((NULL X)
      ;; (values t) indicates a single return value
      `(let ((,gi ,fn)) (the (values t) (funcall (car ,gi) ,@args (cdr ,gi))))
      ))
- 
-(DEFUN LASTELEM (X) (car (last X)))
  
 (defun LISTOFATOMS (X)
   (COND ((NULL X) NIL)
@@ -1056,7 +1036,11 @@ LP  (COND ((NULL X)
         (SETQ NFORM (CDR NFORM))
         (SETQ FORM (CDR FORM))
         (GO LP)))
- 
+
+;; needed for substNames (always copy)
+(define-function 'SUBSTQ #'SUBSTEQ)
+
+
 (DEFUN SUBLISNQ (KEY E) (declare (special KEY)) (if (NULL KEY) E (SUBANQ E)))
  
 (DEFUN SUBANQ (E)
@@ -1093,14 +1077,12 @@ LP  (COND ((NULL X)
  
 (defun remdup (l) (remove-duplicates l :test #'equalp))
  
-(DEFUN GETTAIL (X L) (member X L :test #'equal))
- 
 ; 15.6 Association Lists
  
-(defun DelAsc (u v) "Returns a copy of a-list V in which any pair with key U is deleted."
+(defun DELASC (u v) "Returns a copy of a-list V in which any pair with key U is deleted."
    (cond ((atom v) nil)
          ((or (atom (car v))(not (equal u (caar v))))
-          (cons (car v) (DelAsc u (cdr v))))
+          (cons (car v) (DELASC u (cdr v))))
          ((cdr v))))
  
 (DEFUN ADDASSOC (X Y L)
@@ -1169,7 +1151,6 @@ LP  (COND ((NULL X)
  
 
 <<lengthenvec>>
-<<make-init-vector>> 
  
 ; 22 INPUT/OUTPUT
  
@@ -1187,52 +1168,12 @@ LP  (COND ((NULL X)
 (defvar $prompt "--->")
 (defvar stream-buffer nil)
  
-(DEFUN NEXTSTRMLINE (STRM) "Returns the next input line from stream STRM."
-  (let ((v (read-line strm nil -1 nil)))
-    (if (equal v -1) (throw 'spad_reader nil)
-        (progn (setq stream-buffer v) v))))
- 
-(DEFUN CURSTRMLINE (STRM)
-  "Returns the current input line from the stream buffer of STRM (VM-specific!)."
-  (cond (stream-buffer)
-        ((stream-eof strm) (fail))
-        ((nextstrmline strm))))
- 
 (defvar *EOF* NIL)
  
-(DEFUN CURMAXINDEX (STRM)
-"Something bizarre and VM-specific with respect to streams."
-  (if *EOF* (FAIL) (ELT (ELT (LASTATOM STRM) 1) 3)))
- 
-(DEFUN ADJCURMAXINDEX (STRM)
-"Something unearthly and VM-specific with respect to streams."
-  (let (v) (if *eof* (fail)
-               (progn (SETQ V (ELT (LASTATOM STRM) 1))
-                      (SETELT V 3 (SIZE (ELT V 0)))))))
- 
-(DEFUN STRMBLANKLINE (STRM)
-"Something diabolical and VM-specific with respect to streams."
-  (if *EOF* (FAIL) (AND (EQ '\  (CAR STRM)) (EQL 1 (CURMAXINDEX STRM)))))
- 
-(DEFUN STRMSKIPTOBLANK (STRM)
-"Munch away on the stream until you get to a blank line."
-  (COND (*EOF* (FAIL))
-        ((PROGN (NEXTSTRMLINE STRM) (STRMBLANKLINE STRM)) STRM)
-        ((STRMSKIPTOBLANK STRM))))
- 
-(DEFUN CURINPUTLINE () (CURSTRMLINE *standard-input*))
- 
-(DEFUN NEXTINPUTLINE () (NEXTSTRMLINE *standard-input*))
  
 ; 22.3 Output Functions
  
 ; 22.3.1 Output to Character Streams
- 
-(DEFUN ATOM2STRING (X)
-  "Give me the string which would be printed out to denote an atom."
-  (cond ((atom x) (symbol-name x))
-        ((stringp x) x)
-        ((write-to-string x))))
  
 (defvar |conOutStream| *terminal-io* "console output stream")
  
@@ -1302,16 +1243,10 @@ LP  (COND ((NULL X)
  
 (defvar |$highlightAllowed| nil "Used in BRIGHTPRINT and is a )set variable.")
  
-(defvar |$highlightFontOn| |$boldString| "switch to highlight font")
-(defvar |$highlightFontOff| |$normalString| "return to normal font")
- 
-;; the following are redefined in MSGDB BOOT
- 
-;; --------------------> NEW DEFINITION (override in msgdb.boot.pamphlet)
-(DEFUN BRIGHTPRINT (X) (MESSAGEPRINT X))
- 
-;; --------------------> NEW DEFINITION (override in msgdb.boot.pamphlet)
-(DEFUN BRIGHTPRINT-0 (x) (MESSAGEPRINT-1 X))
+(defvar |$highlightFontOn| (concat " " |$boldString|)
+                     "switch to highlight font")
+(defvar |$highlightFontOff| (concat |$normalString| " ")
+                     "return to normal font")
  
 (defun SAY (&rest x) (progn (MESSAGEPRINT X) (TERPRI)))
  
@@ -1352,28 +1287,7 @@ terminals and empty or at-end files.  In Common Lisp, we must assume record size
          ((IS-CONSOLE STRM) 0)
          ((file-position STRM))))
  
-(DEFUN IS-CONSOLE-NOT-XEDIT (S) (not (OR (NULL (IS-CONSOLE S)))))
- 
-(DEFUN POINTW (RECNO STRM)
-"Does something obscure and VM-specific with respect to streams."
-  (let (V)
-    (if (STREAM-EOF STRM) (FAIL))
-    (SETQ V (LASTATOM STRM))
-    (SETELT V 4 RECNO)
-    (SETQ *EOF* (STREAM-EOF STRM))
-    strm))
- 
 (DEFUN POINT (RECNO STRM) (file-position strm recno))
- 
-(DEFUN STRM (RECNO STRM)
-"Does something obscure and VM-specific with respect to streams."
-  (let (V)
-    (if (STREAM-EOF STRM) (FAIL))
-    (SETQ V (LASTATOM STRM))
-    (SETELT V 4 RECNO)
-    (read-char STRM)
-    (SETQ *EOF* (STREAM-EOF STRM))
-    strm))
  
 ; 24 ERRORS
  
@@ -1504,7 +1418,7 @@ terminals and empty or at-end files.  In Common Lisp, we must assume record size
 (DEFUN |rightBindingPowerOf| (X IND &AUX (Y (GETL X IND)))
    (IF Y (ELEMN Y 4 105) 105))
 
-(defmacro make-bf (MT EP) `(LIST |$BFtag| ,MT ,EP))
+(defmacro MAKE-BF (MT EP) `(LIST |$BFtag| ,MT ,EP))
 
 (defun MAKE-FLOAT (int frac fraclen exp)
     (if (AND $SPAD |$useBFasDefault|)

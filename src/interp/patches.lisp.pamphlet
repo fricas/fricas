@@ -63,6 +63,9 @@ previous definition.
 (in-package "BOOT")
 ;;patches for now
 
+(defun |stripSpaces| (str)
+    (string-trim '(#\Space) str))
+
 ;; browser stuff:
 (defvar |$standard| 't)
 (defvar |$saturn| 'nil)
@@ -125,19 +128,8 @@ previous definition.
 
 (DEFUN BUMPCOMPERRORCOUNT () ())
 
-(define-function '|isBpiOrLambda| #'FBOUNDP)
-;;(defun |isSharpVar| (x) (and (identp x) (char= (elt (pname x) 0) #\#)))
-
-(setq |$useInternalHistoryTable| T)
-(defvar |$internalHistoryTable| ())
-(setq |$inputPromptType| '|step|)
 (setq |nullstream| '|nullstream|)
 (setq |nonnullstream| '|nonnullstream|)
-(defun |cpCms| (prefix &optional (string (|getSystemCommandLine|)))
-  (setq string (concat prefix string))
-  (if (equal string "") (obey "sh")
-    (obey string))
-   (|terminateSystemCommand|))
 (setq *print-escape* nil) ;; so stringimage doesn't escape idents?
 
 ;;; FIXME: do we need this?
@@ -211,50 +203,21 @@ previous definition.
     (set-file-getter (strconc asharprootlib "axextend.o")))
 )
 
-(defun SHAREDITEMS (x) T) ;;checked in history code
 (defun whocalled (n) nil) ;; no way to look n frames up the stack
 (defun setletprintflag (x) x)
-(defun |normalizeTimeAndStringify| (time)
-  (if (= time 0.0) "0" (format nil "~,1F" time)))
 
 (define-function '|eval| #'eval)
-
-(defun |libraryFileLists| () '((SPAD SPADLIBS J)))
 
 ;;--------------------> NEW DEFINITION (see cattable.boot.pamphlet)
 (defun |compressHashTable| (ht) ht)
 (defun GETZEROVEC (n) (MAKE-ARRAY n :initial-element 0))
 
-(defun |normalizeArgFileName| (l) l)
-
-(defun READSPADEXPR ()
-  (let* ((line (cdar (preparse in-stream))))
-    (cond ((or (not (stringp line)) (zerop (SIZE line)))
-       (SAY "   Scratchpad -- input")
-       (READSPADEXPR))
-      (t (|parseTransform| (|postTransform| (|string2SpadTree| line)))))))
-
-(setq |$sourceFiles| ()) ;; set in readSpad2Cmd
-
 (setq |$localVars| ())	;checked by isType
 
-(setq |$highlightFontOn| (concat " " |$boldString|))
-(setq |$highlightFontOff| (concat |$normalString| " "))
-(define-function 'SUBSTQ #'SUBSTEQ) ;; needed for substNames (always copy)
 #+(and :lucid (not :ibm/370))
  (define-function 'RUN-AIX-PROGRAM #'SYS:RUN-AIX-PROGRAM)
 (setq |$specialCharacters| |$plainRTspecialCharacters|)
 
-;; following should be no longer necessary
-;; (eval-when (eval load compile) (shadow 'delete))
-;; (define-function 'boot::delete #'|delete|)
-
-;; following code is to mimic def of MAP in NEWSPAD LISP
-;; i.e. MAP in boot package is a self evaluating form
-;; #-:CCL (eval-when (eval load compile) (shadow 'map))
-;; #-:CCL (defmacro map (&rest args) `'(map ,@args))
-(eval-when (eval load compile) (shadow 'map))
-(defmacro map (&rest args) `'(map ,@args))
 
 #+:Lucid
 (defun save-system (filename)
@@ -271,11 +234,6 @@ previous definition.
       (system:disksave filename :restart-function restart-hook :full-gc t))
 #+:Lucid (define-function 'user::save-system  #'boot::save-system)
 (defun |undoINITIALIZE| () ())
-;; following are defined in spadtest.boot and stantest.boot
-(defun |installStandardTestPackages| () ())
-(defun |spadtestValueHook| (val type) ())
-(defun |testError| (errotype erroValue) ())
-(defvar |$TestOptions| ())
 ;; following in defined in word.boot
 (defun |bootFind| (word) ())
 ;; following 3 are replacements for g-util.boot
@@ -322,35 +280,6 @@ previous definition.
 (setq identity #'identity) ;to make LispVM code for handling constants to work
 
 (|initializeTimedNames| |$interpreterTimedNames| |$interpreterTimedClasses|)
-
-#+:dos
-(setq vmlisp::$spadroot "/spad/mnt/dos")
-#+:dos
-(defun user-homedir-pathname ()
- (truename "."))
-
-(defun boot::|printCopyright| ()
- (format t "there is no such thing as a simple job -- ((iHy))~%"))
-
-(defun |setViewportProcess| ()
-  (setq |$ViewportProcessToWatch|
-     (stringimage (CDR
-	  (|processInteractive|	 '(|key| (|%%| -2)) NIL) ))))
-
-(defun |waitForViewport| ()
-  (progn
-   (do ()
-       ((not (zerop (obey
-	 (concat
-	  "ps "
-	  |$ViewportProcessToWatch|
-	  " > /dev/null")))))
-       ())
-   (|sockSendInt| |$MenuServer| 1)
-   (|setIOindex| (- |$IOindex| 3))
-  )
-)
-
 
 (defun |makeVector| (els type)
  (make-array (length els) :element-type (or type t) :initial-contents els))
@@ -406,16 +335,6 @@ previous definition.
 
 ;; clearParserMacro has problems as boot code (package notation)
 ;; defined here in Lisp
-;;--------------------> NEW DEFINITION (see i-syscmd.boot.pamphlet)
-#|
-(DEFUN |clearParserMacro| (|macro|)
-  (PROG ()
-    (RETURN (COND
-       ((NULL (IFCDR (|assoc| |macro| |$pfMacros|))) NIL)
-       ((QUOTE T) (SPADLET |$pfMacros|
-          (REMALIST |$pfMacros| |macro|)))))))
-|#
-;
 
 (setq /MAJOR-VERSION 2)
 (setq echo-meta nil)

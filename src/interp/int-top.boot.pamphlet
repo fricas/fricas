@@ -191,10 +191,10 @@ ncIntLoop() ==
 
 
 intloop () ==
-    mode := $intRestart
-    while mode = $intRestart repeat
+    mode := "restart"
+    while mode = "restart" repeat
       resetStackLimits()
-      mode := CATCH($intTopLevel,
+      mode := CATCH("top__level",
                     SpadInterpretStream(1, ["TIM", "DALY", "?"], true))
 
 
@@ -227,6 +227,17 @@ SpadInterpretStream(str, source, interactive?) ==
     []
  
     -----------------------------------------------------------------
+
+setCurrentLine s ==
+  v := $currentLine
+  $currentLine := 
+     NULL(v) => s
+     u :=
+        STRINGP(s) => [s]
+        s
+     STRINGP(v) => [v, :u]
+     RPLACD(lastNode(v), u)
+     v
 
 intloopReadConsole(b, n)==
     a:= serverReadLine(_*STANDARD_-INPUT_*)
@@ -291,6 +302,9 @@ intloopProcessString(s,n) ==
  
 $pfMacros := []
 
+intSetNeedToSignalSessionManager() ==
+    $NeedToSignalSessionManager := true
+
 intloopSpadProcess(stepNo,lines,ptree,interactive?)==
     $stepNo:local := stepNo
     $currentCarrier := cc := ['carrier]
@@ -299,7 +313,7 @@ intloopSpadProcess(stepNo,lines,ptree,interactive?)==
     ncPutQ(cc, 'lines, lines)
     $ncMsgList := nil
     result := CATCH("SpadCompileItem",
-     CATCH($intCoerceFailure, CATCH($intSpadReader,
+     CATCH("coerceFailure", CATCH("SPAD__READER",
        interp(cc, ptree, interactive?)))) where
  
         interp(cc, ptree, interactive?) ==
@@ -321,7 +335,9 @@ phInterpret carrier ==
   ptree := ncEltQ(carrier, 'ptree)
   val := intInterpretPform(ptree)
   ncPutQ(carrier, 'value, val)
- 
+
+intInterpretPform pf ==
+  processInteractive(zeroOneTran(packageTran(pf2Sex pf)), pf)
  
 --% phReportMsgs: carrier[lines,messages,..]-> carrier[lines,messages,..]
 phIntReportMsgs(carrier, interactive?) ==
@@ -334,7 +350,10 @@ phIntReportMsgs(carrier, interactive?) ==
     processMsgList(msgs, lines)
     intSayKeyedMsg ('S2CTP010,[nerr])
     'OK
- 
+
+intSayKeyedMsg(key, args) ==
+  sayKeyedMsg(packageTran key, packageTran args)
+
 mkLineList lines ==
   l := [CDR line for line in lines | nonBlank CDR line]
   #l = 1 => CAR l
