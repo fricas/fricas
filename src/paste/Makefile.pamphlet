@@ -65,7 +65,7 @@ all:
 
 nphts: $(addprefix $(THTDIR)/, $(addsuffix .pht, $(PHTS)))
 
-gphts: $(addprefix $(THTDIR)/, $(addsuffix .pht, $(GPHTS)))
+gphts: $(addprefix $(THTDIR)/, $(addsuffix .pht, $(GPHTS))) mobius.VIEW
 	cp -r *.VIEW $(axiom_target_datadir)/viewports
 
 GRINPUTS = bouquet.input vectors.input arrows.input ribbon.input newton.input
@@ -86,6 +86,24 @@ $(addsuffix .pht, $(PHTS)): %.pht : $(THTDIR)/%.ht
 # -noihere works around race in session
 $(addsuffix .pht, $(GPHTS)): %.pht : $(THTDIR)/%.ht
 	(export AXIOM=$(TAXDIR); unset DAASE; $(SMAN) -noihere -paste $<)
+
+mobius.input: $(IN)/mobius.input
+	cp $< $@
+
+# Clumsy, there should be better way.
+mobius.VIEW: mobius.input
+	echo '#!/bin/sh' > mob-ax
+	echo '$(TAXDIR)/bin/AXIOMsys < mobius.input' >> mob-ax
+	chmod u+x mob-ax
+	(export AXIOM=$(TAXDIR); unset DAASE; $(SMAN) -noht -noclef \
+            -ws ./mob-ax)
+
+mostlyclean-local:
+	rm -rf *.VIEW
+	rm -f mob-ax *.input *.pht
+
+clean-local: mostlyclean-local
+
 @
 \eject
 \begin{thebibliography}{99}
