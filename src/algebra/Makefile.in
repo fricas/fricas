@@ -329,8 +329,38 @@ GUESSLIST= SUPEXPR FAMR2 NEWTON UFPS GOPT GUESSF1 \
 .PHONY: all all-algebra
 all: all-ax
 
-all-ax all-algebra: stamp
+all-ax all-algebra:
+	if [ -f use_lisp ] ; then \
+          ${MAKE} BUILD_WAY=use_lisp stamp-alg ; \
+	else \
+	  ${MAKE} BUILD_WAY=normal stamp ; \
+	fi
 	@ echo finished $(builddir)
+
+ifeq ($(BUILD_WAY),use_lisp)
+FULL_FASL_LIST=${SPADLIST} ${EXTRASPADS} ${GUESSLIST} \
+               $(patsubst %, %-, ${CATDOMS})
+
+stamp-alg: stamp-fasls ${TESTS}
+
+stamp-fasls: $(patsubst %, ${OUT}/%.$(FASLEXT), ${FULL_FASL_LIST})
+
+$(patsubst %, ${OUT}/%.$(FASLEXT), ${FULL_FASL_LIST}) : \
+	${OUT}/%.$(FASLEXT) : %.$(FASLEXT)
+	cp $< $@
+
+.PRECIOUS: %.$(FASLEXT)
+
+$(patsubst %, %.$(FASLEXT), ${FULL_FASL_LIST}) : \
+        %.$(FASLEXT) : %.lsp
+	echo ')lisp (progn (compile-file "$<") (quit))' | \
+          DAASE=$(axiom_src_datadir) $(INTERPSYS)
+
+.PRECIOUS: %.lsp
+$(patsubst %, %.lsp, ${FULL_FASL_LIST}) : \
+	%.lsp : $(srcdir)/%.lsp
+	cp $< $@
+endif
 
 stamp-db: $(patsubst %, %.spad, ${SPADLIST} ${EXTRASPADS})
 	if [ ! -f stamp-db ] ; then \
@@ -401,7 +431,9 @@ stamp-bootstrap: stamp-oboo3
 	   touch stamp-bootstrap ; \
 	fi     
 
+ifneq ($(BUILD_WAY),use_lisp)
 $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST}) : stamp-bootstrap
+endif
 
 guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-src
 	( \
@@ -443,8 +475,10 @@ check:
 
 
 
+ifneq ($(BUILD_WAY),use_lisp)
 ${OUT}/%.$(FASLEXT): %.NRLIB/code.$(FASLEXT)
 	cp $*.NRLIB/code.$(FASLEXT) $@
+endif
 
 
 .PRECIOUS: %.NRLIB/code.$(FASLEXT)

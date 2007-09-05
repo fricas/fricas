@@ -59,6 +59,7 @@ all:
 	  rm -f ht.db ; \
 	  ${HTADD} *.ht)
 	$(MAKE) nphts
+	if [ -f copy_gphts ] ; then ${MAKE} copy-gphts ; fi
 	(cd $(THTDIR); \
 	  rm -f ht.db ; \
 	  ${HTADD} *.ht *.pht )
@@ -67,6 +68,12 @@ nphts: $(addprefix $(THTDIR)/, $(addsuffix .pht, $(PHTS)))
 
 gphts: $(addprefix $(THTDIR)/, $(addsuffix .pht, $(GPHTS))) mobius.VIEW
 	cp -r *.VIEW $(axiom_target_datadir)/viewports
+
+copy-gphts:
+	for A in $(addsuffix .pht, $(GPHTS)); do \
+	  cp $(srcdir)/$${A} $(THTDIR) ; \
+	done
+	cp -r $(srcdir)/*.VIEW $(axiom_target_datadir)/viewports
 
 GRINPUTS = bouquet.input vectors.input arrows.input ribbon.input newton.input
 

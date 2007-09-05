@@ -281,6 +281,28 @@ previous definition.
 
 (|initializeTimedNames| |$interpreterTimedNames| |$interpreterTimedClasses|)
 
+;;; Accesed from HyperDoc
+(defun |setViewportProcess| ()
+  (setq |$ViewportProcessToWatch|
+     (stringimage (CDR
+         (|processInteractive|  '(|key| (|%%| -2)) NIL) ))))
+
+;;; Accesed from HyperDoc
+(defun |waitForViewport| ()
+  (progn
+   (do ()
+       ((not (zerop (obey
+        (concat
+         "ps "
+         |$ViewportProcessToWatch|
+         " > /dev/null")))))
+       ())
+   (|sockSendInt| |$MenuServer| 1)
+   (|setIOindex| (- |$IOindex| 3))
+  )
+)
+
+
 (defun |makeVector| (els type)
  (make-array (length els) :element-type (or type t) :initial-contents els))
 

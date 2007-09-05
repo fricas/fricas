@@ -12,7 +12,12 @@ pamphlets = Makefile.pamphlet $(asq_SOURCES)
 .PHONY: all all-asq
 all: all-ax
 
-all-ax all-asq: stamp
+all-ax all-asq: 
+	if [ -f ../algebra/use_lisp ] ; then \
+	  ${MAKE} BUILD_WAY=use_lisp copy-db; \
+	else \
+	  ${MAKE} BUILD_WAY=normal stamp ; \
+	fi
 	@echo finished $(builddir)
 
 stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
@@ -21,6 +26,19 @@ stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
 		$(axiom_target_bindir)/axiom
 	-rm -f stamp
 	$(STAMP) stamp
+
+copy-db:
+	cp $(axiom_src_datadir)/algebra/*.daase $(axiom_targetdir)/algebra
+	cp $(axiom_src_datadir)/algebra/libdb.text $(axiom_targetdir)/algebra
+	cp $(axiom_src_datadir)/algebra/comdb.text $(axiom_targetdir)/algebra
+	$(mkinstalldirs) $(axiom_targetdir)/algebra/USERS.DAASE \
+             $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+	$(INSTALL_DATA) $(axiom_src_datadir)/algebra/USERS.DAASE/index.KAF \
+             $(axiom_targetdir)/algebra/USERS.DAASE
+	$(INSTALL_DATA) \
+	  $(axiom_src_datadir)/algebra/DEPENDENTS.DAASE/index.KAF \
+             $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+
 
 $(DATABASES): ../algebra/*.NRLIB/code.$(FASLEXT)
 	@ echo 4 rebuilding databases...

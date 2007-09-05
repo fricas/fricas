@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2007-07-19], 
+AC_INIT([FriCAS], [2007-09-05], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
@@ -419,7 +419,7 @@ else
     AC_MSG_NOTICE([Superman component is disabled.])
 fi
 
-axiom_src_all="all-input $axiom_src_all"
+axiom_src_all="all-axiomsys $axiom_src_all"
 AC_PATH_XTRA
 ## Output directives for the C compiler
 AC_SUBST(X_CLFAGS)
@@ -538,6 +538,7 @@ AC_SUBST(CCF)
 AC_SUBST(LDF)
 AC_SUBST(LISP)
 AC_SUBST(GCLOPTS)
+
 AXIOM_MAKEFILE([Makefile])
 AXIOM_MAKEFILE([src/Makefile])
 AXIOM_MAKEFILE([src/lib/Makefile])
@@ -564,5 +565,24 @@ echo "extracting list of SPAD type definitions"
    . ../scripts/find-algebra-files) > src/algebra/tmp-extract-spad.mk
 $srcdir/config/move-if-change \
     src/algebra/tmp-extract-spad.mk src/algebra/extract-spad.mk
+
+## Configure the use of cached files.
+if test -f $srcdir/src/algebra/use_lisp ; then
+    # Sanity check
+    if test -f $srcdir/src/algebra/A1AGG.lsp ; then
+        touch src/algebra/use_lisp
+    else
+        AC_MSG_ERROR([Sources look corrupted])
+    fi
+fi
+
+if test -f $srcdir/src/paste/copy_gphts ; then
+    # Sanity check
+    if test -d $srcdir/src/paste/mobius.VIEW ; then
+        touch src/paste/copy_gphts
+    else
+        AC_MSG_ERROR([Sources look corrupted])
+    fi
+fi
 
 echo "Type '${MAKE}' (without quotes) to build Axiom"
