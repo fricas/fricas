@@ -24,6 +24,8 @@
 #define NadaDelShitsky  2
 /* When a process dies start it up again */
 #define DoItAgain       3
+/* When hypertex dies, clean its socket */
+#define CleanHypertexSocket 4
 
 typedef struct spad_proc {
   int	proc_id;	/* process id of child */
@@ -641,7 +643,7 @@ start_the_hypertex(void)
     sprintf(prog, "%s -k -rv %s", HypertexProgram, VerifyRecordFile);
     spawn_of_hell(prog, NadaDelShitsky);
   }
-  else	spawn_of_hell(HypertexProgram, NadaDelShitsky);
+  else	spawn_of_hell(HypertexProgram, CleanHypertexSocket);
 }
 
 @
@@ -753,6 +755,14 @@ start_the_Axiom(char **envp)
 \subsection{clean\_up\_sockets}
 <<cleanupsockets>>=
 static void
+clean_hypertex_socket(void)
+{
+   char name[256];
+   sprintf(name, "%s%d", MenuServerName, server_num);
+   unlink(name); 
+}
+
+static void
 clean_up_sockets(void)
 {
   char name[256];
@@ -762,8 +772,7 @@ clean_up_sockets(void)
   unlink(name);
   sprintf(name, "%s%d", SessionIOName, server_num);
   unlink(name);
-  sprintf(name, "%s%d", MenuServerName, server_num);
-  unlink(name);
+  clean_hypertex_socket();
 }
 
 @
@@ -972,6 +981,9 @@ monitor_children(void)
       break;
     case DoItAgain:
       spawn_of_hell(proc->command, DoItAgain);
+      break;
+    case CleanHypertexSocket:
+      clean_hypertex_socket();
       break;
     }
   }
