@@ -1393,11 +1393,12 @@ terminals and empty or at-end files.  In Common Lisp, we must assume record size
 		  (macro-function (car sexpr)))))
      (setq sexpr (macroexpand sexpr)))
    (if (consp sexpr) 
-     (let ((a (car sexpr)) (b (caadr sexpr)))
-       (if (and (eq a 'function) (eq b 'lambda))
-         (cons a (list (cons b (mapcar #'macroexpandall (cdadr sexpr)))))
-         (mapcar #'macroexpandall sexpr)))
-       sexpr))
+      (let ((a (car sexpr)) (b (cadr sexpr)))
+         (if (and (eq a 'function) (consp b) (eq (car b) 'lambda))
+            (cons a (list (cons (car b)
+                                (mapcar #'macroexpandall (cdadr sexpr)))))
+            (mapcar #'macroexpandall sexpr)))
+      sexpr))
   ('else	
     (mapcar #'macroexpandall sexpr))))
 
