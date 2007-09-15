@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2007-09-05], 
+AC_INIT([FriCAS], [2007-09-15], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
@@ -9,7 +9,7 @@ AC_CONFIG_HEADERS([config/axiom-c-macros.h])
 # AM_INIT_AUTOMAKE([foreign])
 AC_PREREQ([2.59])
 
-AC_CONFIG_SRCDIR(src/Makefile.pamphlet)
+AC_CONFIG_SRCDIR(src/Makefile.in)
 
 axiom_src_subdirs="lib lisp boot interp share algebra input etc doc"
 AC_SUBST(axiom_src_subdirs)
