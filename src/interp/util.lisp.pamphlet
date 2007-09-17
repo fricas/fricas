@@ -1406,8 +1406,6 @@ function assumes that \\ can only appear as first character of name.
 <<processSynonyms>>
 
 ;; the following are for conditional reading
-#+:ieee-floating-point (setq $ieee t)
-#-:ieee-floating-point (setq $ieee nil)
 (setq |$opSysName| '"shell")
 #+:CCL (defun machine-type () "unknown")
 (setq |$machineType| (machine-type))
@@ -1417,13 +1415,11 @@ function assumes that \\ can only appear as first character of name.
 <<yearweek>>
 (defun sourcepath (f)
  "find the sourcefile in the system directories"
- (let (axiom algebra naglink)
+ (let (axiom algebra)
   (setq axiom (|getEnv| "AXIOM"))
   (setq algebra (concatenate 'string axiom "/../../src/algebra/" f ".spad"))
-  (setq naglink (concatenate 'string axiom "/../../src/naglink/" f ".spad"))
   (cond
    ((probe-file algebra) algebra)
-   ((probe-file naglink) naglink)
    ('else nil))))
 
 (defun srcabbrevs (sourcefile)
@@ -1444,17 +1440,6 @@ function assumes that \\ can only appear as first character of name.
       (push (subseq expr (1+ mark)) names)))))
   (values longnames names)))
 
-
-#+(and :AKCL (not (or :dos :win32)))
-(in-package "COMPILER")
-#+(and :AKCL (not (or :dos :win32)))
-(defun gazonk-name ( &aux tem)
- "return the name of the intermediate compiler file"
- (dotimes (i 1000)
-  (setq tem (merge-pathnames (format nil "/tmp/gazonk~d.lsp" i)))
-  (unless (probe-file tem)
-    (return-from gazonk-name (pathname tem))))
- (error "1000 gazonk names used already!"))
 
 (in-package "BOOT")
 

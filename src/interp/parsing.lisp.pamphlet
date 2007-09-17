@@ -773,9 +773,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
         (meta-syntax-error)
         (go top)))
 
-(defun termchr ()  "Is CHR a terminating character?"
-  (position (current-char) " *,;<>()[]/\\"))
-
 (defun compfin () (or (match-string ")fin") (match-string ".FIN")))
 
 (defparameter Meta_Errors_Occurred nil  "Did any errors occur")
@@ -887,31 +884,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
        (if (< m n)
            (setq /gensymlist (nconc /gensymlist `(,(intern (format nil "G~D" (1+ m))))))
            (return (nth (1- n) /gensymlist))))))
-
-; 3 D.  Managing rule sets
-
-(defparameter bac nil                   "")
-(defparameter keyfn nil                 "")
-(defparameter /metaoption               "")
-(defparameter tline nil                 "")
-(defparameter rs nil                    "")
-
-(defun getrulefunlists  (rootfun rs)
-  (let* ((metapfx (or (get rootfun 'metapfx) ""))
-         (mainfun (internl metapfx (pname rootfun)))
-         (mainfunstr (pname mainfun))
-         (flnam (internl mainfunstr "FUN"))
-         (pfx-funlist (union (cons mainfun
-                                   (if (atom (eval flnam)) nil (eval flnam)))
-                             (mapcar #'(lambda (x) (internl metapfx (pname x)))
-                                     (assocleft rs))))
-         n unpfx-funlist)
-    (set flnam pfx-funlist)
-    (if (not (lessp (setq n (length metapfx)) 0))
-        (setq unpfx-funlist
-              (mapcar #'(lambda (x) (intern (subseq (copy-symbol (pname x)) n)))
-                       pfx-funlist)))
-    (if unpfx-funlist (list pfx-funlist unpfx-funlist))))
 
 ;  4. Tracing routines
 

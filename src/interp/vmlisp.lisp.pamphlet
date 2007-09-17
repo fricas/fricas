@@ -1834,13 +1834,13 @@ Contributed by Juergen Weiss from Arthur Norman's CCL.
 (defun MACRO-MISSINGARGS (NAME ignore N)
   (declare (ignore ignore))
   (setq MACERRORCOUNT (+ 1 (eval 'MACERRORCOUNT)))
-  (error (concatenate 'string (symbol-name NAME) " requires "
+  (let ((nargs (abs N)))
+      (error (concatenate 'string (symbol-name NAME) " requires "
                        (if (minusp N) "at least " "exactly ")
-                       (setq N (abs N))
-                       (case N (0 "no") (1 "one") (2 "two") (3 "three")
+                       (case nargs (0 "no") (1 "one") (2 "two") (3 "three")
                              (4 "four") (5 "five") (6 "six")
                              (t (princ-to-string N)))
-                       (if (eq n 1) " argument," " arguments,"))))
+                       (if (= nargs 1) " argument," " arguments,")))))
 
 (defun MACERR (MESSAGE &rest ignore)
   (declare (ignore ignore))

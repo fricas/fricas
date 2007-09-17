@@ -147,7 +147,7 @@ postConstruct u ==
 postError msg ==
   BUMPERRORCOUNT 'precompilation
   xmsg:=
-    $defOp ^= '$defOp and not InteractiveMode => [$defOp,'": ",:msg]
+    $defOp ^= '$defOp and not $InteractiveMode => [$defOp,'": ",:msg]
     msg
   $postStack:= [xmsg,:$postStack]
   nil
@@ -261,13 +261,7 @@ postForm (u is [op,:argl]) ==
   x:=
     atom op =>
       argl':= postTranList argl
-      op':=
-        true=> op
-        $BOOT => op
-        GETL(op,'Led) or GETL(op,'Nud) or op = 'IN => op
-        numOfArgs:= (argl' is [['Tuple,:l]] => #l; 1)
-        INTERNL("*",STRINGIMAGE numOfArgs,PNAME op)
-      [op',:argl']
+      [op,:argl']
     op is ['Scripts,:.] => [:postTran op,:postTranList argl]
     u:= postTranList u
     if u is [['Tuple,:.],:.] then

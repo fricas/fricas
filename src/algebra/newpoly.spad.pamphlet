@@ -604,6 +604,8 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
            ++ \axiom{nextsubResultant2(p,q,z,s)} is the multivariate version
            ++ of the operation \axiomOpFrom{next_sousResultant2}{PseudoRemainderSequence} from
            ++ the \axiomType{PseudoRemainderSequence} constructor.
+       iexactQuo : (R,R) -> R
+           ++ iexactQuo(x,y) should be local but conditional
 
      if R has GcdDomain
      then
@@ -1038,11 +1040,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
        if R has EuclideanDomain
          then
-           exactQuo(r:R,s:R):R ==
+           iexactQuo(r:R,s:R):R ==
              r quo$R s
          else
-           exactQuo(r:R,s:R):R ==
+           iexactQuo(r:R,s:R):R ==
              (r exquo$R s)::R
+
+       exactQuo(r:R,s:R):R == iexactQuo(r, s)
 
        exactQuotient (p:$,r:R) ==
          (p exquo$$ r)::$
@@ -1219,14 +1223,16 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                not retractablePZ?(p) => "failed"::Union($,"failed")
                localRetractPZ(p)::Union($,"failed")
 
-         if R has Algebra Fraction Integer
-           then 
+	 if R has Algebra Integer or _
+	    R has Algebra Fraction Integer then
+           mpc2Z := MPolyCatFunctions2(Symbol,IES,IES,Z,R,PZ,PR)
+           ZToR (z:Z):R == coerce(z)@R
+           PZToPR (pz:PZ):PR == map(ZToR,pz)$mpc2Z
 
-             mpc2Z := MPolyCatFunctions2(Symbol,IES,IES,Z,R,PZ,PR)
+           if R has Algebra Fraction Integer then 
+
              mpc2Q := MPolyCatFunctions2(Symbol,IES,IES,Q,R,PQ,PR)
-             ZToR (z:Z):R == coerce(z)@R
              QToR (q:Q):R == coerce(q)@R
-             PZToPR (pz:PZ):PR == map(ZToR,pz)$mpc2Z
              PQToPR (pq:PQ):PR == map(QToR,pq)$mpc2Q
 
              retract(pz:PZ) ==
@@ -1303,12 +1309,8 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                        pq : PQ := PRToPQ(pr)
                        retract(pq)@$
 
-         if (R has Algebra Integer) and not(R has Algebra Fraction Integer)
-           then 
-
-             mpc2Z := MPolyCatFunctions2(Symbol,IES,IES,Z,R,PZ,PR)
-             ZToR (z:Z):R == coerce(z)@R
-             PZToPR (pz:PZ):PR == map(ZToR,pz)$mpc2Z
+           if (R has Algebra Integer) and _
+	      not(R has Algebra Fraction Integer) then 
 
              retract(pz:PZ) ==
                rif : Union($,"failed") := retractIfCan(pz)@Union($,"failed")

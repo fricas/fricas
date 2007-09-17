@@ -54,7 +54,6 @@ evalDomain form ==
   if $evalDomain then
     sayMSG concat('"   instantiating","%b",prefix2String form,"%d")
   startTimingProcess 'instantiation
-  newType? form => form
   result := eval mkEvalable form
   stopTimingProcess 'instantiation
   result
@@ -251,11 +250,7 @@ evalForm(op,opName,argl,mmS) ==
             optRECORDCOPY([CAAR xbody,rec,len])
           ['FUNCALL,['function , ['LAMBDA,xargs,:xbody]],:TAKE(#xargs, form)]
         dcVector := evalDomain dc
-        fun0 :=
-          newType? CAAR mm =>
-            mm' := first ncSigTransform mm
-            ncGetFunction(opName, first mm', rest mm')
-          NRTcompileEvalForm(opName,fun,dcVector)
+        fun0 := NRTcompileEvalForm(opName,fun,dcVector)
         null fun0 => throwKeyedMsg("S2IE0008",[opName])
         [bpi,:domain] := fun0
         EQ(bpi,function Undef) =>

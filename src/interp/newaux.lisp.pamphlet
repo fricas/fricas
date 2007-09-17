@@ -61,6 +61,8 @@
 (defparameter OpAssoc nil 
   "Information used by OUT BOOT operator pretty printing routines")
 
+(defparameter |PARSE-NewKEY| nil) ;;list of keywords
+
 (defun MAKENEWOP (X Y) (MAKEOP X Y '|PARSE-NewKEY|))
  
 (defun MAKEOP (X Y KEYNAME)
@@ -72,8 +74,6 @@
   (MAKEPROP (FIRST X) Y X)
   (SETQ OPASSOC (ADDASSOC Y (CONS (CONS X X) (LASSOC Y OPASSOC)) OPASSOC))
   (SECOND X))
- 
-(setq |PARSE-NewKEY| nil) ;;list of keywords
  
 (mapcar #'(LAMBDA(J) (MAKENEWOP J '|Led|))
         '((* 800 801)   (|rem| 800 801)   (|mod| 800 801)
@@ -181,24 +181,6 @@ keyboards which define equivalent tokens.
           (>\) \})))
  
 @
-\subsection{Generic function table}
-GENERIC operators be suffixed by [[$]] qualifications in SPAD code.  
-[[$]] is then followed by a domain label, such as I for Integer, which 
-signifies which domain the operator refers to.  For example [[+$Integer]] 
-is [[+]] for Integers.
-<<GENERICTable>>=
-(mapcar #'(lambda (x) (MAKEPROP X 'GENERIC 'TRUE))
-        '(- = * |rem| |mod| |quo| |div| / ** |exquo| + - < > <= >= ^= ))
-
-@  
-\subsection{Character Syntax Table}
-<<CharacterSyntaxTable>>=
-(defun SPECIALCASESYNTAX () (OR (AND (char= TOK '#\#) (DIGITP CHR))))
- 
-(defun TERMINATOR (CHR)
-  (member CHR '(#\  #\( #\) #\. #\; #\, #\Return)) :test #'char=)
- 
-@  
 \section{License}
 <<license>>=
 ;; Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
@@ -241,8 +223,6 @@ is [[+]] for Integers.
 <<LEDNUDTables>>
 <<GLIPHTable>> 
 <<RENAMETOKTable>>
-<<GENERICTable>>
-<<CharacterSyntaxTable>>
 @
 \eject
 \begin{thebibliography}{99}

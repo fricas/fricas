@@ -73,6 +73,8 @@
 
 ; *** 1. BOOT file handling
 
+(defvar SPADERRORSTREAM)
+
 (defun init-boot/spad-reader ()
   (setq $SPAD_ERRORS (VECTOR 0 0 0))
   (setq SPADERRORSTREAM *standard-output*)
@@ -84,13 +86,6 @@
   (setq Boot-Line-Stack nil)
   (ioclear))
 
-(defmacro test (x &rest y)
-  `(progn
-     (setq spaderrorstream t)
-     (in-boot)
-     (initialize-preparse *terminal-io*)
-     (,(intern (strconc "PARSE-" x)) . ,y)))
-
 (defun |oldParserAutoloadOnceTrigger| () nil)
 
 (defun print-defun (name body)
@@ -101,27 +96,6 @@
 	 (compile name))
      (when (or |$PrettyPrint| (not (is-console st)))
 	   (print-full body st) (force-output st))))
-
-(defun boot-parse-1 (in-stream
-	      &aux
-	     (Echo-Meta nil)
-	     (current-fragment nil)
-	     ($INDEX 0)
-	     ($LineList nil)
-	     ($EchoLineStack nil)
-	     ($preparse-last-line nil)
-	     ($BOOT T)
-	     (*EOF* NIL)
-	     (OPTIONLIST NIL))
-  (declare (special echo-meta *comp370-apply* *EOF* File-Closed
-		    $index $linelist $echolinestack $preparse-last-line))
-  (init-boot/spad-reader)
-  (let* ((Boot-Line-Stack (PREPARSE in-stream))
-	 (parseout (prog2 (|PARSE-Expression|) (pop-stack-1)) ) )
-    ;(setq parseout (|new2OldLisp| parseout))
-    ; (setq parseout (DEF-RENAME parseout))
-    ; (DEF-PROCESS parseout)
-    parseout))
 
 (defun boot (&optional
 	      (*boot-input-file* nil)
@@ -230,37 +204,6 @@
     (if *spad-input-file* (shut in-stream))
     (if *spad-output-file* (shut out-stream)))
   T))
-
-(defun READ-BOOT (FN FM TO)
-  (let (($boot t)) (READ-SPAD1 FN 'BOOT FM TO)))
-
-(defun READ-SPAD1 (FN FT FM TO)
-    (LET ((STRM IN-STREAM))
-      (SETQ $MAXLINENUMBER 0)
-      (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
-      (SETQ IN-STREAM (open (strconc fm ">" fn "." ft) :direction :input))
-      ($ERASE (LIST FN 'ERROR 'A))
-      (SETQ OUT-STREAM (if TO (open to :direction :output) OUT-STREAM))
-      (SETQ SPADERRORSTREAM (open (strconc "a>" fn ".error") :direction :output))
-      (READ-SPAD-1)
-      (close SPADERRORSTREAM)
-      (SETQ IN-STREAM STRM)
-      (OR (EQUAL #(0 0 0) $SPAD_ERRORS)
-	  (|sayBrightly| (LIST '|%b| (ELT $SPAD_ERRORS 0) '|%d| '|syntax errors|
-	    '|%l| '|%b| (ELT $SPAD_ERRORS 1) '|%d| '|precompilation errors|
-	    '|%l| '|%b| (ELT $SPAD_ERRORS 2) '|%d| '|semantic errors| '|%l|)))
-      (+ (ELT $SPAD_ERRORS 0) (ELT $SPAD_ERRORS 1) (ELT $SPAD_ERRORS 2))))
-
-(defun READBOOT ()
-  (let (form expr ($BOOT 'T))
-    (declare (special $BOOT))
-    (ADVANCE-TOKEN)
-    (|PARSE-Expression|)
-   ;; (|pp| (setq form (|postTransform| (FIRST STACK))))
-    (|pp| (setq form (|postTransform| (pop-STACK-1))))
-    (setq EXPR (DEF-RENAME form))
-    (DEF-PROCESS EXPR)
-    (TERSYSCOMMAND)))
 
 ;  *** 2. BOOT Line Handling ***
 
