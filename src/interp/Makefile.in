@@ -280,7 +280,7 @@ ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     nocompil.lisp sys-pkg.lisp \
     ${OCOBJS} ${OPOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
-    ${NAGBROBJS} ${TRANOBJS} \
+    ${NAGBROBJS} ${TRANOBJS} ${AUTO}/ffi-func.$(FASLEXT) \
     ${LOADSYS} \
     $(axiom_targetdir)/algebra/exposed.$(FASLEXT) \
     $(axiom_src_datadir)/doc/msgs/s2-us.msgs \
@@ -397,7 +397,7 @@ AUTO_from_IN=\
  nruncomp package parse postpar bc-matrix bc-misc bc-solve \
  bc-util ht-util htsetvar ht-root htcheck ax br-con br-search \
  br-op1 br-op2 br-data br-util br-saturn topics br-prof nspadaux \
- showimp
+ showimp ffi-func
 
 $(addprefix $(AUTO)/, $(addsuffix .$(FASLEXT), $(AUTO_from_IN))): \
    $(AUTO)/%.$(FASLEXT) : %.$(FASLEXT)
@@ -461,6 +461,14 @@ bookvol5.$(FASLEXT): bookvol5.lisp
 bookvol5.lisp: $(srcdir)/bookvol5.pamphlet
 	@ echo 298 making $@ from $<
 	$(axiom_build_document) --tangle=Interpreter --output=$@ $<
+
+ffi-func.$(FASLEXT): ffi-func.lisp
+	echo '(progn  (compile-file "ffi-func.lisp" :output-file' \
+              ' "ffi-func.$(FASLEXT)") (${BYE}))' | ${DEPSYS}
+
+ffi-func.lisp: $(srcdir)/ffi-func.lisp
+	cp $< $@
+
 
 newaux.$(FASLEXT): newaux.lisp
 	@ echo 79 making newaux.$(FASLEXT) from newaux.lisp

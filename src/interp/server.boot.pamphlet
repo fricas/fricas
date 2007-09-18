@@ -60,7 +60,7 @@ SETANDFILEQ($sockBufferLength, 9217)
 serverReadLine(stream) ==
 -- used in place of READ-LINE in a scratchpad server system.
   FORCE_-OUTPUT()
-  not $SpadServer or not IS_-CONSOLE stream =>
+  not $SpadServer => 
     READ_-LINE(stream)
   IN_-STREAM: fluid := stream
   _*EOF_*: fluid := NIL
@@ -91,8 +91,7 @@ serverReadLine(stream) ==
       $EndServerSession := true
     action = $LispCommand =>
       $NeedToSignalSessionManager := true
-      stringBuf := MAKE_-STRING $sockBufferLength
-      sockGetString($MenuServer, stringBuf, $sockBufferLength)
+      stringBuf := sockGetStringFrom($MenuServer)
       form := unescapeStringsInForm READ_-FROM_-STRING stringBuf
       protectedEVAL form
     action = $QuietSpadCommand =>
@@ -100,8 +99,7 @@ serverReadLine(stream) ==
       executeQuietCommand()
     action = $SpadCommand =>
       $NeedToSignalSessionManager := true
-      stringBuf := MAKE_-STRING 512
-      sockGetString($MenuServer, stringBuf, 512)
+      stringBuf := sockGetStringFrom($MenuServer)
       CATCH('coerceFailure,CATCH('top__level, CATCH('SPAD__READER,
         parseAndInterpret stringBuf)))
       PRINC MKPROMPT()
@@ -130,8 +128,7 @@ oldParseAndInterpret str ==
 
 executeQuietCommand() ==
   $QuietCommand: fluid := true
-  stringBuf := MAKE_-STRING 512
-  sockGetString($MenuServer, stringBuf, 512)
+  sockGetStringFrom($MenuServer)
   CATCH('coerceFailure,CATCH('top__level, CATCH('SPAD__READER,
     parseAndInterpret stringBuf)))
 
