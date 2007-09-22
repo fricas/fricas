@@ -6,7 +6,7 @@ if grep '^abs_srcdir = ' Makefile > /dev/null ; then
    echo SRCDIR="$SRCDIR"
    if [ ! -d "$SRCDIR" ] ; then
       SRCDIR=""
-   elif [ ! -r "$SRCDIR"/README.wh ] ; then
+   elif [ ! -r "$SRCDIR"/README ] ; then
       SRCDIR=""
    fi
 fi
