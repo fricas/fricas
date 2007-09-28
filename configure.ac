@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2007-09-18], 
+AC_INIT([FriCAS], [1.0.0], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
@@ -154,22 +154,24 @@ AC_ARG_WITH([lisp], [ --with-lisp=L         use L as Lisp platform],
               [axiom_lisp=$withval])
 ## If --enable-gcl is specified, we need to check for coonsistency
 axiom_include_gcl=
-if test -z $axiom_lisp; then
+if test -z $axiom_lisp ; then
     AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from Axiom source],
-                  [case $withval in
-                       yes|no) axiom_include_gcl=$withval ;;
+                  [case $enableval in
+                       yes|no) axiom_include_gcl=$enableval ;;
                        *) AC_MSG_ERROR([erroneous value for --enable-gcl]) ;;
                    esac])
 fi
 ## We need to build our own GCL is none is avalaible
-if test -z $axiom_lisp; then
+if test x"$axiom_include_gcl" != xyes ; then
+  if test -z $axiom_lisp ; then
     AC_PATH_PROG([AXIOM_LISP], [gcl])
     axiom_lisp=$AXIOM_LISP
-else
+  else
     ## Honor use of Lisp image specified on command line
     AXIOM_LISP=$axiom_lisp
     AC_SUBST(AXIOM_LISP)
     :
+  fi
 fi
 ## Coherence check for GCL inclusion.
 case $axiom_include_gcl,$axiom_lisp in
