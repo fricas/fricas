@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [1.0.0], 
+AC_INIT([FriCAS], [2007-09-29], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
@@ -249,7 +249,16 @@ case $axiom_lisp_flavor in
        LIBSPAD_SO_TARGET=""
        ;;
 esac
+case $target in
+    *darwin*)
+       SOLIB_FLAGS="-dynamiclib -single_module"
+         ;;
+    *)
+       SOLIB_FLAGS="-shared"
+         ;;
+esac
 AC_SUBST(LIBSPAD_SO_TARGET)
+AC_SUBST(SOLIB_FLAGS)
 
 ## The following is a horrible to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
