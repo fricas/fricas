@@ -242,7 +242,7 @@ AC_SUBST(axiom_lisp_flavor)
 
 ## Check if we need shared libspad library.
 case $axiom_lisp_flavor in
-    sbcl)
+    sbcl|clisp)
        LIBSPAD_SO_TARGET="libspad_so"
         ;;
     *)
