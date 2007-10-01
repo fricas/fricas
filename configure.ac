@@ -540,6 +540,9 @@ case $target in
     *linux*)
         AC_DEFINE([LINUXplatform], [], [Linux flavour])
         ;;
+    *cygwin*)
+        AC_DEFINE([CYGWINplatform], [], [Cygwin flavour])
+        ;;
     *solaris*)
         AC_DEFINE([SUNplatform], [], [SunOS flavour])
         ;;
