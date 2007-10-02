@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2007-09-29], 
+AC_INIT([FriCAS], [2007-10-02], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
