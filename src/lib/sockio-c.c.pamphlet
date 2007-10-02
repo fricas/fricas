@@ -771,7 +771,12 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
     code = connect(sock->socket, &sock->addr.u_addr,
                    sizeof(sock->addr.u_addr));
     if (code == -1) {
-      if (errno != ENOENT && !axiom_connection_refused()) {
+      if (
+        /* @@@ Why we need this */
+	errno != ENOENT &&
+	/* Needed on Cygwin, on Linux this should never happen. */
+	errno != EBADF &&
+	!axiom_connection_refused()) {
         perror("connecting server stream socket");
         return NULL;
       } else {
