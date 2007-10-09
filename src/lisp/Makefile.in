@@ -1,8 +1,13 @@
+# The purpose of this Makefile is to create a fresh Lisp image, 
+# $(OUT)/lisp, augmented with a useful routines defined in
+# axiom.lisp file.  This effectively creates our own dialect
+# of Lisp, which is used during the rest of build process
+
 OUT = $(axiom_build_bindir)
 
 subdir = src/lisp/
 
-pamphlets = Makefile.pamphlet
+pamphlets = 
 
 build_libdir = $(abs_top_builddir)/src/lib
 
@@ -52,11 +57,11 @@ do_it.gcl: axiom-lisp.lisp axiom-package.lisp
 	$(INSTALL_PROGRAM) lisp$(EXEEXT) $(OUT)
 	$(STAMP) $@
 
-axiom-lisp.lisp: $(srcdir)/axiom-lisp.lisp.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
+axiom-lisp.lisp: $(srcdir)/axiom-lisp.lisp
+	cp $< $@
 
-axiom-package.lisp: $(srcdir)/axiom-lisp.lisp.pamphlet
-	$(axiom_build_document) --tangle=axiom-package.lisp --output=$@ $<
+axiom-package.lisp: $(srcdir)/axiom-package.lisp
+	cp $< $@
 
 do_it.sbcl do_it.clisp do_it.openmcl: axiom-lisp.lisp axiom-package.lisp
 	echo '(load "axiom-package.lisp")' \

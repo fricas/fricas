@@ -1,42 +1,6 @@
-%% Oh Emacs, this is a -*- Lisp -*- file
-\documentclass{article}
-\usepackage{axiom}
+;;; This file contains portablity and support routines which abstract away
+;;; differences between Lisp dialects.
 
-\begin{document}
-\title{axiom-lisp.lisp}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-This file contains portablity and support routines which abstract away
-differences between Lisp dialects.
-\end{abstract}
-See LICENSE.AXIOM for Copyright
-<<axiom-package.lisp>>=
-;;; We put this in separate file to avoid problems with compilation.
-(eval-when (:execute :compile-toplevel :load-toplevel)
-(if (not (find-package "AXIOM-LISP"))
-   (make-package "AXIOM-LISP" 
-     :use (list (or (find-package "COMMON-LISP")
-                    "LISP"))))) 
-#+:sbcl
-(eval-when (:execute :compile-toplevel :load-toplevel)
-    (setf SB-IMPL::*DEFAULT-EXTERNAL-FORMAT* :LATIN-1))
-
-(in-package "AXIOM-LISP")
-(do-symbols (x "AXIOM-LISP") (export (list x)))
-
-(export '(quit chdir |getEnv| |load_quietly| get-current-directory
-          axiom-probe-file trim-directory-name pad-directory-name
-          file-kind makedir))
-
-#+:GCL
-(progn
-    (import '(LISP::LAMBDA-CLOSURE))
-    (export '(LISP::LAMBDA-CLOSURE))
-)
-@
-
-<<*>>=
 (in-package "AXIOM-LISP")
 #+:sbcl
 (progn
@@ -94,36 +58,36 @@ See LICENSE.AXIOM for Copyright
      (ext::saveinitmem core-image :executable t :QUIET t))
 #+:openmcl
   (let ((ccl-dir (|getEnv| "CCL_DEFAULT_DIRECTORY"))
-	(core-fname (concatenate 'string core-image ".image"))
-	(eval-arg (if restart 
-	              (format nil " --eval '(~A)'" restart)
-		      ""))
-	core-path exe-path)
-	;;; truename works only on existing files, so we
-	;;; create one just to get absolute path
-	(with-open-file (ims core-fname 
-	                  :direction :output :if-exists :supersede)
-	    (declare (ignore ims))
-	    (setf core-path (namestring (truename core-fname))))
-	(delete-file core-path)
-	(with-open-file (ims core-image 
-	                :direction :output :if-exists :supersede)
-		(setf exe-path (namestring (truename core-image)))
-		(format ims "#!/bin/sh~2%")
-		(format ims "CCL_DEFAULT_DIRECTORY=~A~%" ccl-dir)
-		(format ims "export CCL_DEFAULT_DIRECTORY~%")
-		(format ims "exec ~A/~A -I ~A~A~%"
-		            ccl-dir (ccl::standard-kernel-name)
-			    core-path eval-arg))
-	(ccl::run-program "chmod" (list "a+x" exe-path))
-	#|
-	;;; We would prefer this version, but due to openmcl bug
-	;;; it does not work
-	(if restart
-	  (ccl::save-application core-path :toplevel-function restart)
-	  (ccl::save-application core-path))
-	|#
-	(ccl::save-application core-path)
+        (core-fname (concatenate 'string core-image ".image"))
+        (eval-arg (if restart 
+                      (format nil " --eval '(~A)'" restart)
+                      ""))
+        core-path exe-path)
+        ;;; truename works only on existing files, so we
+        ;;; create one just to get absolute path
+        (with-open-file (ims core-fname 
+                          :direction :output :if-exists :supersede)
+            (declare (ignore ims))
+            (setf core-path (namestring (truename core-fname))))
+        (delete-file core-path)
+        (with-open-file (ims core-image 
+                        :direction :output :if-exists :supersede)
+                (setf exe-path (namestring (truename core-image)))
+                (format ims "#!/bin/sh~2%")
+                (format ims "CCL_DEFAULT_DIRECTORY=~A~%" ccl-dir)
+                (format ims "export CCL_DEFAULT_DIRECTORY~%")
+                (format ims "exec ~A/~A -I ~A~A~%"
+                            ccl-dir (ccl::standard-kernel-name)
+                            core-path eval-arg))
+        (ccl::run-program "chmod" (list "a+x" exe-path))
+        #|
+        ;;; We would prefer this version, but due to openmcl bug
+        ;;; it does not work
+        (if restart
+          (ccl::save-application core-path :toplevel-function restart)
+          (ccl::save-application core-path))
+        |#
+        (ccl::save-application core-path)
         )
   )
      
@@ -303,9 +267,3 @@ See LICENSE.AXIOM for Copyright
 
 
 
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}
