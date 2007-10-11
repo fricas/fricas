@@ -2,7 +2,6 @@
 subdir = src/interp/
 
 DOC=$(axiom_target_docdir)/src/interp
-BOOK=$(axiom_target_docdir)
 
 # Command to translate Boot to Common Lisp
 BOOT_TO_LISP = \
@@ -15,23 +14,9 @@ COMPILE_LISP = \
 		--output=$@ --use=$(DEPSYS) $<
 AUTO=$(axiom_targetdir)/autoload
 
-autoload_objects =
-
-LISPSYS= $(axiom_build_bindir)/lisp
-
 BOOTSYS= $(axiom_build_bindir)/bootsys    
 
 DEPSYS=	$(axiom_build_bindir)/depsys
-
-depsys_lisp_noncompiled_sources += sys-pkg.lisp nocompil.lisp \
-	ncompil.lisp bookvol5.lisp util.lisp
-
-depsys_lisp_compiled_sources += parsing.lisp metalex.lisp bootlex.lisp \
-	newaux.lisp preparse.lisp def.lisp metameta.lisp \
-	fnewmeta.lisp
-
-depsys_lisp_sources = $(depsys_lisp_noncompiled_sources) \
-			$(depsys_lisp_compiled_sources)
 
 DEP=	vmlisp.lisp	ggreater.lisp	\
 	hash.lisp	bootfuns.lisp	\
@@ -43,14 +28,6 @@ DEP=	vmlisp.lisp	ggreater.lisp	\
 	foam_l.lisp      \
 	axext_l.lisp
 
-depsys_lisp_macro_sources = vmlisp.lisp ggreater.lisp hash.lisp \
-	bootfuns.lisp union.lisp nlib.lisp macros.lisp	\
-	comp.lisp spaderror.lisp debug.lisp \
-	spad.lisp bits.lisp setq.lisp property.lisp \
-	foam_l.lisp axext_l.lisp
-
-depsys_lisp_noncompiled_sources += $(depsys_lisp_macro_sources)
-depsys_lisp_SOURCES = $(addsuffix .pamphlet, $(depsys_lisp_sources))
 LOADSYS= $(axiom_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(axiom_build_bindir)/interpsys$(EXEEXT)
 AXIOMSYS= $(axiom_target_bindir)/AXIOMsys$(EXEEXT)
@@ -109,35 +86,6 @@ OBJS=	vmlisp.$(FASLEXT)	hash.$(FASLEXT)	\
 	union.$(FASLEXT)       daase.$(FASLEXT)  	\
 	fortcall.$(FASLEXT)
 
-AXIOMsys_noncompiled_lisp_sources = bootfuns.lisp nocompil.lisp \
-	property.lisp setq.lisp 
-
-AXIOMsys_compiled_lisp_sources = bits.lisp \
-	bootlex.lisp cfuns.lisp comp.lisp construc.lisp daase.lisp \
-	debug.lisp def.lisp fname.lisp fnewmeta.lisp ggreater.lisp \
-	hash.lisp macros.lisp metalex.lisp monitor.lisp newaux.lisp \
-	nlib.lisp nspadaux.lisp parsing.lisp \
-	patches.lisp preparse.lisp \
-	sockio.lisp spad.lisp spaderror.lisp \
-	union.lisp util.lisp vmlisp.lisp obey.lisp \
-	nci.lisp sfsfun-l.lisp \
-	axext_l.lisp foam_l.lisp
-
-AXIOMsys_boot_sources = astr.boot alql.boot buildom.boot cattable.boot \
-	cformat.boot clam.boot clammed.boot compat.boot compress.boot \
-	cparse.boot cstream.boot database.boot dq.boot format.boot \
-	g-boot.boot g-cndata.boot g-error.boot g-opt.boot g-timer.boot \
-	g-util.boot hypertex.boot i-analy.boot i-code.boot i-coerce.boot \
-	i-coerfn.boot i-eval.boot i-funsel.boot i-intern.boot i-map.boot \
-	i-output.boot i-resolv.boot i-spec1.boot i-spec2.boot \
-	i-syscmd.boot i-toplev.boot i-util.boot incl.boot int-top.boot \
-	lisplib.boot macex.boot match.boot msg.boot \
-	msgdb.boot newfort.boot nrunfast.boot nrungo.boot nrunopt.boot \
-	nruntime.boot osyscmd.boot packtran.boot pathname.boot \
-	pf2sex.boot pile.boot posit.boot ptrees.boot ptrop.boot \
-	record.boot rulesets.boot scan.boot serror.boot server.boot \
-	setvars.boot sfsfun.boot simpbool.boot slam.boot template.boot \
-	termrw.boot trace.boot fortcall.boot
 INOBJS=	varini.$(FASLEXT)	parini.$(FASLEXT)	\
 	setvart.$(FASLEXT)	\
         interop.$(FASLEXT)     \
@@ -151,7 +99,6 @@ OPOBJS=	${AUTO}/parsing.$(FASLEXT)	${AUTO}/bootlex.$(FASLEXT)	\
 	${AUTO}/parse.$(FASLEXT)	${AUTO}/postpar.$(FASLEXT)	\
 	${AUTO}/preparse.$(FASLEXT)
 
-autoload_objects += $(OPBJS)
 OCOBJS=	${AUTO}/apply.$(FASLEXT)	${AUTO}/c-doc.$(FASLEXT)	\
 	${AUTO}/c-util.$(FASLEXT)	${AUTO}/profile.$(FASLEXT)	\
 	${AUTO}/category.$(FASLEXT)	${AUTO}/compiler.$(FASLEXT)	\
@@ -159,8 +106,6 @@ OCOBJS=	${AUTO}/apply.$(FASLEXT)	${AUTO}/c-doc.$(FASLEXT)	\
 	${AUTO}/info.$(FASLEXT)	${AUTO}/iterator.$(FASLEXT)	\
 	${AUTO}/modemap.$(FASLEXT)	${AUTO}/nruncomp.$(FASLEXT)	\
 	${AUTO}/package.$(FASLEXT)	${AUTO}/htcheck.$(FASLEXT)
-
-autoload_objects += $(OCOBJS)
 
 BROBJS=	${AUTO}/bc-matrix.$(FASLEXT)				\
 	${AUTO}/bc-misc.$(FASLEXT)	${AUTO}/bc-solve.$(FASLEXT)	\
@@ -174,20 +119,15 @@ BROBJS=	${AUTO}/bc-matrix.$(FASLEXT)				\
 	${AUTO}/topics.$(FASLEXT)     ${AUTO}/br-prof.$(FASLEXT)    \
 	${AUTO}/br-saturn.$(FASLEXT)
 
-autoload_objects += $(BFOBJS)
-
 TRANOBJS= ${AUTO}/wi1.$(FASLEXT) ${AUTO}/wi2.$(FASLEXT) ${AUTO}/pspad1.$(FASLEXT) \
 	  ${AUTO}/pspad2.$(FASLEXT) ${AUTO}/mark.$(FASLEXT) ${AUTO}/nspadaux.$(FASLEXT) \
 	  ${AUTO}/def.$(FASLEXT)
-
-autoload_objects += $(TRANOBJS)
 
 ASCOMP= hashcode.$(FASLEXT) as.$(FASLEXT) \
 	foam_l.$(FASLEXT) axext_l.$(FASLEXT)
 
 ASAUTO= ${AUTO}/ax.$(FASLEXT)
 
-autoload_objects += $(ASAUTO)
 TIMESTAMP=$(axiom_targetdir)/timestamp
 YEARWEEK=(progn (setq timestamp "${TIMESTAMP}") (setq boot::*build-version* "${VERSION}") (yearweek))
 
@@ -312,24 +252,11 @@ makeint.lisp:
 ${SAVESYS}:
 	echo '(load "makeint.lisp") (VMLISP::reclaim)' \
 	     '(setf BOOT::|$$createLocalLibDb| nil)' \
-	     '(BOOT::spad-save "$(BASE)$@" t)' | ${LISPSYS}
+	     '(BOOT::spad-save "$(BASE)$@" t)' | ${LOADSYS}
 	@ echo 6 ${SAVESYS} created
-depsys_lisp_sources += parsing.lisp metalex.lisp bootlex.lisp \
-			newaux.lisp preparse.lisp \
-			metameta.lisp fnewmeta.lisp
 
 depsys_boot_sources = postpar parse clam slam \
 			g-boot g-util
-
-depsys_SOURCES = $(depsys_lisp_SOURCES) $(depsys_boot_SOURCES)
-
-depsys_objects = nocompil.$(FASLEXT) bookvol5.$(FASLEXT) \
-		util.$(FASLEXT) postpar.$(FASLEXT) parse.$(FASLEXT) \
-		parsing.$(FASLEXT) metalex.$(FASLEXT) bootlex.$(FASLEXT) \
-		newaux.$(FASLEXT) preparse.$(FASLEXT) \
-		metameta.$(FASLEXT) fnewmeta.$(FASLEXT) clam.$(FASLEXT) \
-		slam.$(FASLEXT) g-boot.$(FASLEXT) \
-		g-util.$(FASLEXT)
 
 ${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
 	        bookvol5.lisp util.lisp \
@@ -360,7 +287,7 @@ ${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
 		  >> makedep.lisp ; \
 	  echo '(load "'$$B'")' >> makedep.lisp ; \
 	done
-	echo '(load "makedep.lisp") (BOOT::spad-save "$(BASE)$@" nil)' | ${LISPSYS}
+	echo '(load "makedep.lisp") (BOOT::spad-save "$(BASE)$@" nil)' | ${LOADSYS}
 	@ echo 4 ${DEPSYS} created
 .PHONY: all-axiomsys
 
@@ -373,7 +300,7 @@ ${AXIOMSYS}:
            '(setq *load-verbose* nil)' \
            '#+:clisp(setf custom:*suppress-check-redefinition* t)' \
 	   '(BOOT::spad-save "$(BASE)$@" t)' \
-             | DAASE="$(BASE)$(axiom_targetdir)" ${LISPSYS}
+             | DAASE="$(BASE)$(axiom_targetdir)" ${LOADSYS}
 	@ echo 6a ${AXIOMSYS} created
 exposed.lsp: $(axiom_src_algdir)/exposed.lsp.pamphlet
 	@ echo 615 making $@ from $<
