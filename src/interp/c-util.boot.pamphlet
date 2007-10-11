@@ -142,7 +142,7 @@ unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
  
 consProplistOf(var,proplist,prop,val) ==
   semchkProplist(var,proplist,prop,val)
-  $InteractiveMode and (u:= ASSOC(prop,proplist)) =>
+  $InteractiveMode and (u:= assoc(prop,proplist)) =>
     RPLACD(u,val)
     proplist
   [[prop,:val],:proplist]
@@ -190,7 +190,7 @@ intersectionContour(c,c') ==
       [[x,:mp] for x in varlist | (mp:= modeCompare(LASSOC(x,c),LASSOC(x,c')))]
     compare(pair is [prop,:val],p') ==
       --1. if the property-value pair are identical, accept it immediately
-      pair=(pair':= ASSOC(prop,p')) => pair
+      pair=(pair':= assoc(prop,p')) => pair
       --2. if property="value" and modes are unifiable, give intersection
       --       property="value" but value=genSomeVariable)()
       (val':= KDR pair') and prop="value" and
@@ -200,15 +200,15 @@ intersectionContour(c,c') ==
       --3. property="mode" is covered by modeCompare
       prop="mode" => nil
     modeCompare(p,p') ==
-      pair:= ASSOC("mode",p) =>
-        pair':= ASSOC("mode",p') =>
+      pair:= assoc("mode",p) =>
+        pair':= assoc("mode",p') =>
           m'':= unifiable(rest pair,rest pair') => LIST ["mode",:m'']
           stackSemanticError(['%b,$var,'%d,"has two modes: "],nil)
        --stackWarning ("mode for",'%b,$var,'%d,"introduced conditionally")
         LIST ["conditionalmode",:rest pair]
         --LIST pair
        --stackWarning ("mode for",'%b,$var,'%d,"introduced conditionally")
-      pair':= ASSOC("mode",p') => LIST ["conditionalmode",:rest pair']
+      pair':= assoc("mode",p') => LIST ["conditionalmode",:rest pair']
         --LIST pair'
     unifiable(m1,m2) ==
       m1=m2 => m1
@@ -535,7 +535,7 @@ pmatch(s,p) == pmatchWithSl(s,p,"ok")
 pmatchWithSl(s,p,al) ==
   s=$EmptyMode => nil
   s=p => al
-  v:= ASSOC(p,al) => s=rest v or al
+  v:= assoc(p,al) => s=rest v or al
   MEMQ(p,$PatternVariableList) => [[p,:s],:al]
   null atom p and null atom s and (al':= pmatchWithSl(first s,first p,al)) and
     pmatchWithSl(rest s,rest p,al')
@@ -576,12 +576,12 @@ extendsCategoryForm(domain,form,form') ==
     formVec:=(compMakeCategoryObject(form,$e)).expr
             --Must be $e to pick up locally bound domains
     form' is ["SIGNATURE",op,args,:.] =>
-        ASSOC([op,args],formVec.(1)) or
-            ASSOC(SUBSTQ(domain,"$",[op,args]),
+        assoc([op,args],formVec.(1)) or
+            assoc(SUBSTQ(domain,"$",[op,args]),
                   SUBSTQ(domain,"$",formVec.(1)))
     form' is ["ATTRIBUTE",at] =>
-         ASSOC(at,formVec.2) or
-            ASSOC(SUBSTQ(domain,"$",at),SUBSTQ(domain,"$",formVec.2))
+         assoc(at,formVec.2) or
+            assoc(SUBSTQ(domain,"$",at),SUBSTQ(domain,"$",formVec.2))
     form' is ["IF",:.] => true --temporary hack so comp won't fail
     -- Are we dealing with an Aldor category?  If so use the "has" function ...
     # formVec = 1 => newHasTest(form,form')

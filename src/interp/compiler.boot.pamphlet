@@ -503,7 +503,7 @@ getFormModemaps(form is [op,:argl],e) ==
   if $insideCategoryPackageIfTrue then
     modemapList := [x for x in modemapList | x is [[dom,:.],:.] and dom ^= '$]
   if op="elt"
-     then modemapList:= eltModemapFilter(LAST argl,modemapList,e) or return nil
+     then modemapList:= eltModemapFilter(last argl,modemapList,e) or return nil
      else
       if op="setelt" then modemapList:=
         seteltModemapFilter(CADR argl,modemapList,e) or return nil
@@ -715,7 +715,7 @@ setqMultipleExplicit(nameList,valList,m,e) ==
       for g in gensymList for name in nameList]
   reAssignList="failed" => nil
   [["PROGN",:[T.expr for T in assignList],:[T.expr for T in reAssignList]],
-    $NoValueMode, (LAST reAssignList).env]
+    $NoValueMode, (last reAssignList).env]
 
 --% WHERE
 compWhere([.,form,:exprList],m,eInit) ==
@@ -1056,7 +1056,7 @@ compColon([":",f,t],m,e) ==
     --if inside an expression, ":" means to convert to m "on faith"
   $lhsOfColon: local:= f
   t:=
-    atom t and (t':= ASSOC(t,getDomainsInScope e)) => t'
+    atom t and (t':= assoc(t,getDomainsInScope e)) => t'
     isDomainForm(t,e) and not $insideCategoryIfTrue =>
       (if not member(t,getDomainsInScope e) then e:= addDomain(t,e); t)
     isDomainForm(t,e) or isCategoryForm(t,e) => t

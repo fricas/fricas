@@ -422,7 +422,7 @@ clearCmdParts(l is [opt,:vl]) ==
     if option='properties and x in imacs and ^(x in pmacs) then
         sayMessage ['"   You cannot clear the definition of the system-defined macro ",
             fixObjectForPrinting x,"."]
-    p1 := ASSOC(x,CAAR $InteractiveFrame) =>
+    p1 := assoc(x,CAAR $InteractiveFrame) =>
       option='properties =>
         if isMap x then
           (lm := get(x,'localModemap,$InteractiveFrame)) =>
@@ -433,7 +433,7 @@ clearCmdParts(l is [opt,:vl]) ==
           recordOldValue(x,prop,CDR p2)
           recordNewValue(x,prop,NIL)
         SETF(CAAR $InteractiveFrame,deleteAssoc(x,CAAR $InteractiveFrame))
-      p2:= ASSOC(option,CDR p1) =>
+      p2:= assoc(option,CDR p1) =>
         recordOldValue(x,option,CDR p2)
         recordNewValue(x,option,NIL)
         RPLACD(p2,NIL)
@@ -920,7 +920,7 @@ getParserMacroNames() ==
 --------------------> NEW DEFINITION (override in patches.lisp.pamphlet)
 clearParserMacro(macro) ==
   -- first see if it is one
-  not IFCDR ASSOC(macro, ($pfMacros)) => NIL
+  not IFCDR assoc(macro, ($pfMacros)) => NIL
   $pfMacros := REMALIST($pfMacros, macro)
 
 displayMacro name ==
@@ -2031,7 +2031,7 @@ dewritify ob ==
                     HPUT($seen, nob, nob)
                     nob
                 type = 'PLACE =>
-                    nob := READ MAKE_-INSTREAM NIL
+                    nob := VMREAD MAKE_-INSTREAM NIL
                     HPUT($seen, ob, nob)
                     HPUT($seen, nob, nob)
                     nob
@@ -2501,7 +2501,7 @@ diffAlist(new,old) ==
         acc := [[name,:[[prop] for [prop,:.] in proplist]],:acc]
       deltas := nil
       for (propval := [prop,:val]) in proplist repeat
-        null (oldPropval := ASSOC(prop,oldProplist)) => --missing property
+        null (oldPropval := assoc(prop,oldProplist)) => --missing property
           deltas := [[prop],:deltas]
         EQ(CDR oldPropval,val) => 'skip
         deltas := [oldPropval,:deltas]

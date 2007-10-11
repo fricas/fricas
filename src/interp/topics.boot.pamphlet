@@ -107,7 +107,7 @@ mkTopicHashTable() ==                         --given $groupAssoc = ((extended .
   --initialize table of topic classes
   $topicHash := MAKE_-HASHTABLE 'ID           --$topicHash has keys: topic and value: index
   for [x,:c] in $groupAssoc repeat HPUT($topicHash,x,c)
-  $topicIndex := CDR LAST $groupAssoc
+  $topicIndex := CDR last $groupAssoc
 
   --replace each property list by a topic code
   --store under each construct an OR of all codes
@@ -237,7 +237,7 @@ transferClassCodes(conform,opAlist) ==
 transferCodeCon(con,opAlist) ==
   for pair in GETDATABASE(con,'DOCUMENTATION) 
     | FIXP (code := myLastAtom pair) repeat
-      u := ASSOC(QCAR pair,opAlist) => RPLACD(LASTNODE u,code)
+      u := assoc(QCAR pair,opAlist) => RPLACD(LASTNODE u,code)
 
 --=======================================================================
 --           Filter Operation by Topic
@@ -250,7 +250,7 @@ filterByTopic(opAlist,topic) ==
 
 listOfTopics(conname) ==
   doc := GETDATABASE(conname,'DOCUMENTATION)
-  u := ASSOC('constructor,doc) or return nil
+  u := assoc('constructor,doc) or return nil
   code := myLastAtom u
 --null FIXP code => nil
   mySort [key for key in HKEYS($topicHash) | LOGBITP(HGET($topicHash,key),code)]

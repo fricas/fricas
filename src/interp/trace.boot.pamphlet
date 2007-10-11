@@ -446,7 +446,7 @@ spadTrace(domain,options) ==
     options := removeOption("VARBREAK",options)
   anyifTrue:= null listOfOperations
   domainId:= opOf domain.(0)
-  currentEntry:= ASSOC(domain,_/TRACENAMES)
+  currentEntry:= assoc(domain,_/TRACENAMES)
   currentAlist:= KDR currentEntry
   opStructureList:= flattenOperationAlist getOperationAlistFromLisplib domainId
   sigSlotNumberAlist:=
@@ -667,7 +667,7 @@ spadTraceAlias(domainId,op,n) ==
   INTERNL(domainId,".",op,",",STRINGIMAGE n)
 
 getOption(opt,l) ==
-  y:= ASSOC(opt,l) => rest y
+  y:= assoc(opt,l) => rest y
 
 reportSpadTrace(header,[op,sig,n,:t]) ==
   null $traceNoisely => nil
@@ -701,7 +701,7 @@ spadUntrace(domain,options) ==
   anyifTrue:= null options
   listOfOperations:= getOption("ops:",options)
   domainId := devaluate domain
-  null (pair:= ASSOC(domain,_/TRACENAMES)) =>
+  null (pair:= assoc(domain,_/TRACENAMES)) =>
     sayMSG ['"   No functions in",
       :bright prefix2String domainId,'"are now traced."]
   sigSlotNumberAlist:= rest pair
@@ -710,7 +710,7 @@ spadUntrace(domain,options) ==
       BPIUNTRACE(traceName,alias)
       RPLAC(first domain.n,bpiPointer)
       RPLAC(CDDDR pair,nil)
-      if assocPair:=ASSOC(BPINAME bpiPointer,$letAssoc) then
+      if assocPair:= assoc(BPINAME bpiPointer,$letAssoc) then
         $letAssoc := REMOVER($letAssoc,assocPair)
         if null $letAssoc then SETLETPRINTFLAG nil
   newSigSlotNumberAlist:= [x for x in sigSlotNumberAlist | CDDDR x]
@@ -812,7 +812,7 @@ breaklet(fn,vars) ==
   fn = "Undef" => nil
   fnEntry:= LASSOC(fn,$letAssoc)
   vars:=
-    pair:= ASSOC("BREAK",fnEntry) => union(vars,rest pair)
+    pair:= assoc("BREAK",fnEntry) => union(vars,rest pair)
     vars
   $letAssoc:=
     null fnEntry => [[fn,:LIST ["BREAK",:vars]],:$letAssoc]

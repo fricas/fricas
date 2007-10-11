@@ -141,8 +141,8 @@ orderBySubsumption items ==
   for [a,b,:.] in subacc | b repeat   
   --NOTE: b = nil means that the signature a will appear in acc, that this
   --  entry is be ignored (e.g. init: -> $ in ULS)
-    while (u := ASSOC(b,subacc)) repeat b := CADR u
-    u := ASSOC(b,acc) or systemError nil
+    while (u := assoc(b,subacc)) repeat b := CADR u
+    u := assoc(b,acc) or systemError nil
     if null CADR u then u := [CAR u,1] --mark as missing operation
     y := [[a,'Subsumed],u,:y] --makes subsuming signature follow one subsumed
     z := insert(b,z)  --mark a signature as already present
@@ -325,10 +325,10 @@ orderByContainment pl ==
   max := first pl
   for x in rest pl repeat
     if (y := CONTAINED(max,x)) then
-      if null ASSOC(max,$predGensymAlist)
+      if null assoc(max,$predGensymAlist)
       then $predGensymAlist := [[max,:GENSYM()],:$predGensymAlist]
     else if CONTAINED(x,max)
-         then if null ASSOC(x,$predGensymAlist) then $predGensymAlist := [[x,:GENSYM()],:$predGensymAlist]
+         then if null assoc(x,$predGensymAlist) then $predGensymAlist := [[x,:GENSYM()],:$predGensymAlist]
     if y then max := x
   [max,:orderByContainment delete(max,pl)]
  
@@ -876,7 +876,7 @@ catExtendsCat?(u,v,uvec) ==
   prinAncestorList := CAR slot4
   member(v,prinAncestorList) => true
   vOp := KAR v
-  if similarForm := ASSOC(vOp,prinAncestorList) then
+  if similarForm := assoc(vOp,prinAncestorList) then
     PRINT u
     sayBrightlyNT '"   extends "
     PRINT similarForm

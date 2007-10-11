@@ -351,8 +351,8 @@ SourceLevelSubset(a,b) ==
   $noSubsumption=true => false
   b is ["Union",:blist] and member(a,blist) => true
   BOUNDP '$noSubsets and $noSubsets => false
-  atom b and ASSOC(a,GETL(b,"Subsets")) => true
-  a is [a1] and b is [b1] and ASSOC(a1,GETL(b1,"Subsets")) => true
+  atom b and assoc(a,GETL(b,"Subsets")) => true
+  a is [a1] and b is [b1] and assoc(a1,GETL(b1,"Subsets")) => true
   nil
  
 MachineLevelSubsume([name1,[out1,:in1],:flag1],[name2,[out2,:in2],:flag2]) ==
@@ -369,8 +369,8 @@ MachineLevelSubset(a,b) ==
   b is ["Union",:blist] and member(a,blist) and
     (and/[STRINGP x for x in blist | x^=a]) => true
            --all other branches must be distinct objects
-  atom b and ASSOC(a,GETL(b,"Subsets")) => true
-  a is [a1] and b is [b1] and ASSOC(a1,GETL(b1,"Subsets")) => true
+  atom b and assoc(a,GETL(b,"Subsets")) => true
+  a is [a1] and b is [b1] and assoc(a1,GETL(b1,"Subsets")) => true
              --we assume all subsets are true at the machine level
   nil
  
@@ -436,7 +436,7 @@ DescendantP(a,b) ==
   a is ["SIGNATURE",:.] => nil
   a:= CatEval a
   b is ["ATTRIBUTE",b'] =>
-    (l:=ASSOC(b',a.2)) => TruthP CADR l
+    (l := assoc(b',a.2)) => TruthP CADR l
   member(b,first a.4) => true
   AncestorP(b,[first u for u in CADR a.4]) => true
   nil
@@ -493,7 +493,7 @@ JoinInner(l,$e) ==
       bname:= b.(0)
       CondAncestorP(bname,FundamentalAncestors,condition) => nil
       (f:=AncestorP(bname,[first u for u in FundamentalAncestors])) =>
-        [.,.,index]:=ASSOC(f,FundamentalAncestors)
+        [.,.,index] := assoc(f,FundamentalAncestors)
         FundamentalAncestors:=[[bname,condition,index],:FundamentalAncestors]
       PrinAncb:= first (CatEval bname).(4)
                --Principal Ancestors of b
@@ -568,7 +568,7 @@ JoinInner(l,$e) ==
   for b in CondList repeat
     newpred:= first rest b
     for u in (first b).2 repeat
-      v:= ASSOC(first u,attl)
+      v:= assoc(first u,attl)
       null v =>
         attl:=
           CADR u=true => [[first u,newpred],:attl]
