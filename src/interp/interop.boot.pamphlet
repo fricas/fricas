@@ -910,6 +910,22 @@ getFunctionFromDomain(op,dc,args) ==
     b or  throwKeyedMsg("S2IS0023",[op,dc])
   throwKeyedMsg("S2IF0004",[op,dc])
 
+devaluateDeeply x ==
+    VECP x => devaluate x
+    atom x => x
+    [devaluateDeeply y for y in x]
+
+lookupDisplay(op,sig,vectorOrForm,suffix) ==
+    null $NRTmonitorIfTrue => nil
+    prefix := (suffix = '"" => ">"; "<")
+    sayBrightly
+        concat(prefix,formatOpSignature(op,sig),
+            '" from ", prefix2String devaluateDeeply vectorOrForm,suffix)
+
+isCategoryPackageName nam ==
+    p := PNAME opOf nam
+    p.(MAXINDEX p) = char '_&
+
 @
 \eject
 \begin{thebibliography}{99}
