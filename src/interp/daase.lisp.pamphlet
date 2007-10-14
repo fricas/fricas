@@ -9,6 +9,8 @@
 \eject
 \tableofcontents
 \eject
+<<Database structure>>=
+#|
 \section{Database structure}
 In order to understand this program you need to understand some details
 of the structure of the databases it reads. Axiom has 5 databases,
@@ -75,6 +77,8 @@ the image the database is not needed (since the internal hash
 tables already contain all of the information). When the database
 is built the time stamp is saved in both the gcl image and the
 database.
+|#
+@
 
 \section{License}
 <<license>>=
@@ -112,6 +116,8 @@ database.
 @
 <<*>>=
 <<license>>
+
+<<Database structure>>
 
 ;;TTT 7/2/97
 ; Regarding the 'ancestors field for a category: At database build
@@ -1298,16 +1304,13 @@ database.
 ;;  (when erase? (system::system (concatenate 'string "rm -f " filename)))
 ;;  filename))
 
-@
-\subsection{compress.daase}
-The compress database is special. It contains a list of symbols.
-The character string name of a symbol in the other databases is
-represented by a negative number. To get the real symbol back you
-take the absolute value of the number and use it as a byte index
-into the compress database. In this way long symbol names become
-short negative numbers.
 
-<<*>>=
+;; The compress database is special. It contains a list of symbols.
+;; The character string name of a symbol in the other databases is
+;; represented by a negative number. To get the real symbol back you
+;; take the absolute value of the number and use it as a byte index
+;; into the compress database. In this way long symbol names become
+;; short negative numbers.
 
 (defun compressOpen ()
  (let (lst stamp pos)
@@ -1371,214 +1374,6 @@ short negative numbers.
   (finish-output out)
   (close out)))
 
-@
-\subsubsection{interp.daase} 
-\begin{verbatim}
- format of an entry in interp.daase:
-  (constructor-name
-    operationalist
-    constructormodemap
-    modemaps		 -- this should not be needed. eliminate it.
-    object		 -- the name of the object file to load for this con.
-    constructorcategory -- note that this info is the cadar of the
-	  constructormodemap for domains and packages so it is stored
-	  as NIL for them. it is valid for categories.
-    niladic		 -- t or nil directly
-    unused
-    cosig		 -- kept directly
-    constructorkind	 -- kept directly
-    defaultdomain	 -- a short list, for %i
-    ancestors		 -- used to compute new category updates
-  )
-\end{verbatim}
-
-Here I'll try to outline the interp database write procedure
-
-\begin{verbatim}
-(defun write-interpdb ()
- "build interp.daase from hash tables"
- (declare (special $spadroot) (special *ancestors-hash*))
- (let (opalistpos modemapspos cmodemappos master masterpos obj (*print-pretty* t)
-	concategory categorypos kind niladic cosig abbrev defaultdomain
-	ancestors ancestorspos out)
-  (print "building interp.daase")
-
-; 1. We open the file we're going to create
-
-  (setq out (open "interp.build" :direction :output))
-
-; 2. We reserve some space at the top of the file for the key-time pair
-;    We will overwrite these spaces just before we close the file.
-
-  (princ "                              " out)
-
-; 3. Make sure we write it out
-  (finish-output out)
-
-; 4. For every constructor in the system we write the parts:
-
-  (dolist (constructor (|allConstructors|))
-   (let (struct)
-
-; 4a. Each constructor has a property list. A property list is a list
-;     of (key . value) pairs. The property we want is called 'database
-;     so there is a ('database . something) in the property list
-
-    (setq struct (get constructor 'database))
-
-; 5 We write the "operationsalist"
-; 5a. We remember the current file position before we write
-;     We need this information so we can seek to this position on read
-
-    (setq opalistpos (file-position out))
-
-; 5b. We get the "operationalist", compress it, and write it out
-
-    (print (squeeze (database-operationalist struct)) out)
-
-; 5c. We make sure it was written
-
-    (finish-output out)
-
-; 6 We write the "constructormodemap"
-; 6a. We remember the current file position before we write
-
-    (setq cmodemappos (file-position out))
-
-; 6b. We get the "constructormodemap", compress it, and write it out
-
-    (print (squeeze (database-constructormodemap struct)) out)
-
-; 6c. We make sure it was written
-
-    (finish-output out)
-
-; 7. We write the "modemaps"
-; 7a. We remember the current file position before we write
-
-    (setq modemapspos (file-position out))
-
-; 7b. We get the "modemaps", compress it, and write it out
-
-    (print (squeeze (database-modemaps struct)) out)
-
-; 7c. We make sure it was written
-
-    (finish-output out)
-
-; 8. We remember source file pathnames in the obj variable
-
-    (if (consp (database-object struct)) ; if asharp code ...
-     (setq obj
-      (cons (pathname-name (car (database-object struct)))
-            (cdr (database-object struct))))
-     (setq obj
-      (pathname-name
-        (first (last (pathname-directory (database-object struct)))))))
-
-; 9. We write the "constructorcategory", if it is a category, else nil
-; 9a. Get the constructorcategory and compress it
-
-    (setq concategory (squeeze (database-constructorcategory struct)))
-
-; 9b. If we have any data we write it out, else we don't write it
-;     Note that if there is no data then the byte index for the
-;     constructorcatagory will not be a number but will be nil.
-
-    (if concategory  ; if category then write data else write nil
-     (progn
-      (setq categorypos (file-position out))
-      (print concategory out)
-      (finish-output out))
-     (setq categorypos nil))
-
-; 10. We get a set of properties which are kept as "immediate" data
-;     This means that the key table will hold this data directly
-;     rather than as a byte index into the file.
-; 10a. niladic data
-
-    (setq niladic (database-niladic struct))
-
-; 10b. abbreviation data (e.g. POLY for polynomial)
-
-    (setq abbrev (database-abbreviation struct))
-
-; 10c. cosig data
-
-    (setq cosig (database-cosig struct))
-
-; 10d. kind data
-
-    (setq kind (database-constructorkind struct))
-
-; 10e. defaultdomain data
-
-    (setq defaultdomain (database-defaultdomain struct))
-
-; 11. The ancestor data might exist. If it does we fetch it, 
-;     compress it, and write it out. If it does not we place
-;     and immediate value of nil in the key-value table
-
-    (setq ancestors (squeeze (gethash constructor *ancestors-hash*))) ;cattable.boot
-    (if ancestors
-     (progn
-      (setq ancestorspos (file-position out))
-      (print ancestors out)
-      (finish-output out))
-     (setq ancestorspos nil))
-
-; 12. "master" is an alist. Each element of the alist has the name of
-;     the constructor and all of the above attributes. When the loop
-;     finishes we will have constructed all of the data for the key-value
-;     table
-
-    (push (list constructor opalistpos cmodemappos modemapspos
-      obj categorypos niladic abbrev cosig kind defaultdomain
-      ancestorspos) master)))
-
-; 13. The loop is done, we make sure all of the data is written
-
-  (finish-output out)
-
-; 14. We remember where the key-value table will be written in the file
-
-  (setq masterpos (file-position out))
-
-; 15. We compress and print the key-value table
-
-  (print (mapcar #'squeeze master) out)
-
-; 16. We make sure we write the table
-
-  (finish-output out)
-
-; 17. We go to the top of the file
-
-  (file-position out 0)
-
-; 18. We write out the (master-byte-position . universal-time) pair
-;     Note that if the universal-time value matches the value of
-;     *interp-stream-stamp* then there is no reason to read the
-;     interp database because all of the data is already cached in
-;     the image. This happens if you build a database and immediatly
-;     save the image. The saved image already has the data since we
-;     just wrote it out. If the *interp-stream-stamp* and the database
-;     time stamp differ we "reread" the database on startup. Actually
-;     we just open the database and fetch as needed. You can see fetches
-;     by setting the *miss* variable non-nil.
-
-  (print (cons masterpos (get-universal-time)) out)
-
-; 19. We make sure we write it.
-
-  (finish-output out)
-
-; 20 And we are done
-
-  (close out)))
-\end{verbatim}
-
-<<*>>=
 (defun write-interpdb ()
  "build interp.daase from hash tables"
  (declare (special $spadroot) (special *ancestors-hash*))
@@ -1587,8 +1382,14 @@ Here I'll try to outline the interp database write procedure
 	ancestors ancestorspos out)
   (print "building interp.daase")
   (setq out (open "interp.build" :direction :output :if-exists :supersede))
+
+  ;;  We reserve some space at the top of the file for the key-time pair
+  ;;  We will overwrite these spaces just before we close the file.
   (princ "                              " out)
   (finish-output out)
+
+  ;;  We loop across the list of constructors dumping the data and
+  ;;  remembering the byte positions in a key-value pair table.
   (dolist (constructor (|allConstructors|))
    (let (struct)
     (setq struct (get constructor 'database))
@@ -1633,34 +1434,14 @@ Here I'll try to outline the interp database write procedure
   (setq masterpos (file-position out))
   (print (mapcar #'squeeze master) out)
   (finish-output out)
+
+  ;; Write the timestamp
   (file-position out 0)
   (print (cons masterpos (get-universal-time)) out)
   (finish-output out)
+
   (close out)))
 
-@
-\subsubsection{browse.daase}
-\begin{verbatim}
- format of an entry in browse.daase:
- ( constructorname
-     sourcefile
-     constructorform
-     documentation
-     attributes
-     predicates
- )
-\end{verbatim}
-This is essentially the same overall process as write-interpdb.
-
-We reserve some space for the (key-table-byte-position . timestamp)
-
-We loop across the list of constructors dumping the data and
-remembering the byte positions in a key-value pair table.
-
-We dump the final key-value pair table, write the byte position and
-time stamp at the top of the file and close the file.
-
-<<*>>=
 (defun write-browsedb ()
  "make browse.daase from hash tables"
  (declare (special $spadroot))

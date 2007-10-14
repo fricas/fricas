@@ -10,6 +10,8 @@
 \tableofcontents
 \eject
 \section{util.lisp}
+<<PREFACE>>=
+#|
 This file is a collection of utility functions that are useful
 for system level work. A couple of the functions, {\bf build-depsys}
 and {\bf build-interpsys} interface to the src/interp/Makefile.
@@ -29,32 +31,33 @@ search Emacs TAGS files.
 A fifth group of related functions are some translated boot
 functions we need to define here so they work and are available
 at load time.
+|#
+@
 
 \subsection{make-absolute-filename}
-Prefix a filename with the {\bf AXIOM} shell variable.
 <<defun make-absolute-filename>>=
+;;; Prefix a filename with the {\bf AXIOM} shell variable.
 (defun make-absolute-filename (name)
  (concatenate 'string $spadroot name))
 
 @
 
 \subsection{defun reroot}
+<<defun reroot>>=
+#|
 The reroot function is used to reset the important variables used by
 the system. In particular, these variables are sensitive to the
 {\bf AXIOM} shell variable. That variable is renamed internally to
 be {\bf \$spadroot}. The {\bf reroot} function will change the
 system to use a new root directory and will have the same effect
 as changing the {\bf AXIOM} shell variable and rerunning the system
-from scratch. Note that we have changed from the
-NAG distribution back to the original form. If you need the NAG
-version you can push {\bf :tpd} on the {\bf *features*} variable
-before compiling this file. A correct call looks like:
+from scratch.  A correct call looks like:
 \begin{verbatim}
 (in-package "BOOT")
 (reroot "${AXIOM}")
 \end{verbatim}
-where the [[${AXIOM}]] variable is the same one set at build time.
-<<defun reroot>>=
+where the [[${AXIOM}]] variable points to installed tree.
+|#
 (defun reroot (dir)
   (setq $spadroot dir)
   (setq $directory-list
@@ -68,24 +71,24 @@ where the [[${AXIOM}]] variable is the same one set at build time.
 @
 
 \subsection{defun initroot}
-Sets up the system to use the {\bf AXIOM} shell variable if we can
-and default to the {\bf \$spadroot} variable (which was the value
-of the {\bf AXIOM} shell variable at build time) if we can't.
 <<defun initroot>>=
+;;; Sets up the system to use the {\bf AXIOM} shell variable if we can
+;;; and default to the {\bf \$spadroot} variable (which was the value
+;;; of the {\bf AXIOM} shell variable at build time) if we can't.
 (defun initroot (&optional (newroot (BOOT::|getEnv| "AXIOM")))
   (reroot (or newroot $spadroot (error "setenv AXIOM or (setq $spadroot)"))))
 
 @
 
 subsection{Building Depsys (build-depsys)}
-The {\bf depsys} image is one of the two images we build from
-the src/interp subdirectory (the other is {\bf interpsys}). We
-use {\bf depsys} as a compile-time image as it contains all of
-the necessary functions and macros to compile any file. The 
-{\bf depsys} image is almost the same as an {\bf interpsys}
-image but it does not have any autoload triggers or databases
-loaded.
 <<build-depsys>>=
+;;; The {\bf depsys} image is one of the two images we build from
+;;; the src/interp subdirectory (the other is {\bf interpsys}). We
+;;; use {\bf depsys} as a compile-time image as it contains all of
+;;; the necessary functions and macros to compile any file. The 
+;;; {\bf depsys} image is almost the same as an {\bf interpsys}
+;;; image but it does not have any autoload triggers or databases
+;;; loaded.
 (defun build-depsys (load-files spad build-interp-dir)
 #+:CCL
   (setq *package* (find-package "BOOT"))
@@ -105,23 +108,13 @@ loaded.
 
 @
 \subsubsection{make-depsys}
-When we are building a {\bf depsys} image for AKCL (now GCL) we need
-need to initialize some optimization routines. Each time a file is
-compiled in GCL we collect some function information and write it
-out to a {\bf .fn} file. If this {\bf .fn} file exists at compile
-time then GCL will perform function call optimizations. These can
-be significant in terms of performance.
-
-We comment out the load of collectfn because it is already preloaded
-into the image. It used to read:
-\begin{verbatim}
-   ((collectfn (concatenate 'string (string lsp) "/cmpnew/collectfn")))
-   (unless (probe-file (concatenate 'string collectfn ".o"))
-     (compile-file collectfn))
-   (load collectfn)
-   (compiler::emit-fn t)
-\end{verbatim}
 <<make-depsys>>=
+;;; When we are building a {\bf depsys} image for AKCL (now GCL) we need
+;;; need to initialize some optimization routines. Each time a file is
+;;; compiled in GCL we collect some function information and write it
+;;; out to a {\bf .fn} file. If this {\bf .fn} file exists at compile
+;;; time then GCL will perform function call optimizations. These can
+;;; be significant in terms of performance.
 (defun make-depsys (build-interp-dir)
   ;; perform system initializations for building a starter system
   (init-memory-config)
@@ -140,10 +133,10 @@ into the image. It used to read:
 @
 
 \subsection{defun init-memory-config}
-Austin-Kyoto Common Lisp (AKCL), now known as Gnu Common Lisp (GCL)
-requires some changes to the default memory setup to run Axiom efficently.
-This function performs those setup commands. 
 <<defun init-memory-config>>=
+;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes 
+;;; to the default memory setup to run Axiom efficently.
+;;; This function performs those setup commands. 
 (defun init-memory-config (&key
 			   (cons 500)
 			   (fixnum 200)
@@ -174,7 +167,8 @@ This function performs those setup commands.
 @
 
 \subsection{Building Interpsys (build-interpsys)}
-\begin{verbatim}
+<<build-interpsys>>=
+#|
 ;############################################################################
 ;# autoload dependencies
 ;#
@@ -195,7 +189,7 @@ This function performs those setup commands.
 ;#     build-interpsys (in util.lisp) needs an extra argument for the
 ;#     new autoload things and several functions in util.lisp need hacking.
 ;############################################################################
-\end{verbatim}
+
 The {\bf build-interpsys} function takes a list of files to load
 into the image ({\bf load-files}). It also takes several lists of files, 
 one for each subsystem which will be autoloaded. Autoloading is explained
@@ -209,7 +203,7 @@ it sets up the lisp system memory (at present only for AKCL/GCL). Next
 it loads all of the named files, resets a few global state variables,
 loads the databases, sets up autoload triggers and clears out hash tables.
 After this function is called the image is clean and can be saved.
-<<build-interpsys>>=
+|#
 (defun build-interpsys (load-files parse-files comp-files browse-files
 	     translate-files nagbr-files asauto-files spad)
   (declare (ignore nagbr-files))
@@ -242,21 +236,23 @@ After this function is called the image is clean and can be saved.
 
 @
 \subsubsection{GCL porting changes}
+<<compiler-notes>>=
+#|
 GCL likes to output lines of the form:
 \begin{verbatim}
 ;; Note: Tail-recursive call of |matSuperList1| was replaced by iteration.
 \end{verbatim}
 which is pointless and should be removed. Bill Schelter added this while
 he was debugging tail-recursive replacement and it never was removed.
-<<compiler-notes>>=
+|#
   #+:AKCL
   (setq compiler::*suppress-compiler-notes* t)
 @
 \subsection{The variables}
-Various lisps use different ``extensions'' on the filename to indicate
-that a file has been compiled. We set this variable correctly depending
-on the system we are using.
 <<bin-path>>=
+;;; Various lisps use different ``extensions'' on the filename to indicate
+;;; that a file has been compiled. We set this variable correctly depending
+;;; on the system we are using.
 (defvar *lisp-bin-filetype*
   #+:GCL "o"
   #+lucid "bbin"
@@ -270,17 +266,16 @@ on the system we are using.
 
 @
 \subsubsection{directory-list}
-This is the system-wide list of directories to search.
-It is set up in the {\bf reroot} function.
 <<directory-list>>=
+;;; This is the system-wide list of directories to search.
+;;; It is set up in the {\bf reroot} function.
 (defvar $directory-list ())
 
 @
 \subsubsection{relative-directory-list}
-The relative directory list specifies a search path for files 
-for the current directory structure. It has been changed from the
-NAG distribution back to the original form. 
 <<relative-directory-list>>=
+;;; The relative directory list specifies a search path for files 
+;;; for the current directory structure.
 (defvar $relative-directory-list
   '("/../../src/input/"
     "/doc/msgs/"
@@ -290,20 +285,23 @@ NAG distribution back to the original form.
 
 @
 \subsubsection{library-directory-list}
-This is the system-wide search path for library files.
-It is set up in the {\bf reroot} function.
 <<library-directory-list>>=
+;;; This is the system-wide search path for library files.
+;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
 @
 \subsubsection{relative-library-directory-list}
-The relative directory list specifies how to find the algebra
-directory from the current {\bf AXIOM} shell variable.
 <<relative-library-directory-list>>=
+;;; The relative directory list specifies how to find the algebra
+;;; directory from the current {\bf AXIOM} shell variable.
 (defvar $relative-library-directory-list '("/algebra/"))
 
 @
 \subsection{The autoload list}
+\subsubsection{setBootAutloadProperties}
+<<setBootAutloadProperties>>=
+#|
 There are several subsystems within {\bf AXIOM} that are not normally
 loaded into a running system. They will be loaded only if you invoke
 one of the functions listed here. Each of these listed functions will
@@ -314,7 +312,9 @@ overwritten, the function call is retried and now succeeds. Files
 containing functions listed here are assumed to exist in the 
 {\bf autoload} subdirectory. The list of files to load is defined
 in the src/interp/Makefile.
-\subsubsection{setBootAutloadProperties}
+|#
+
+#|
 This function is called by {\bf build-interpsys}. It takes two lists.
 The first is a list of functions that need to be used as 
 ``autoload triggers''. The second is a list of files to load if one
@@ -324,6 +324,7 @@ list. In this way we will automatically load a whole subsystem if we
 touch any function in that subsystem. We call a helper function
 called {\bf setBootAutoLoadProperty} to set up the autoload trigger.
 This helper function is listed below.
+|#
 <<setBootAutloadProperties>>=
 (defun |setBootAutloadProperties| (fun-list file-list)
 #-:CCL
@@ -334,15 +335,17 @@ This helper function is listed below.
 
 @
 \subsubsection{setBootAutoLoadProperty}
-This is a helper function to set up the autoload trigger. It sets
-the function cell of each symbol to {\bf mkBootAutoLoad} which is
-listed below. 
 <<setBootAutoLoadProperty>>=
+;;; This is a helper function to set up the autoload trigger. It sets
+;;; the function cell of each symbol to {\bf mkBootAutoLoad} which is
+;;; listed below. 
 (defun |setBootAutoLoadProperty| (func file-list)
   (setf (symbol-function func) (|mkBootAutoLoad| func file-list)) )
 
 @
 \subsubsection{mkBootAutoLoad}
+<<mkBootAutoLoad>>=
+#|
 This is how the autoload magic happens. Every function named in the
 autoload lists is actually just another name for this function. When
 the named function is called we call {\bf boot-load} on all of the
@@ -350,7 +353,7 @@ files in the subsystem. This overwrites all of the autoload triggers.
 We then look up the new (real) function definition and call it again
 with the real arguments. Thus the subsystem loads and the original
 call succeeds.
-<<mkBootAutoLoad>>=
+|#
 (defun |mkBootAutoLoad| (fn file-list)
    (function (lambda (&rest args)
 		 (mapc #'boot-load file-list)
@@ -359,10 +362,10 @@ call succeeds.
 
 @
 \subsubsection{boot-load}
-This function knows where the {\bf autoload} subdirectory lives.
-It is called by {\bf mkBootAutoLoad} above to find the necessary
-files.
 <<boot-load>>=
+;;; This function knows where the {\bf autoload} subdirectory lives.
+;;; It is called by {\bf mkBootAutoLoad} above to find the necessary
+;;; files.
 (defun boot-load (file)
   (let ((name (concat $SPADROOT "/autoload/" (pathname-name file))))
     (if |$printLoadMsgs|
@@ -371,9 +374,10 @@ files.
 
 @
 \subsubsection{parse-functions}
-This is the {\bf boot parser} subsystem. It is only needed by 
-developers who translate boot code to Common Lisp.
 <<parse-functions>>=
+;;; This is the {\bf boot parser} subsystem. It is only needed by 
+;;; algebra developers and developers who translate boot code to
+;;; Common Lisp.
 (setq parse-functions
       '(
 ;;      loadparser
@@ -386,9 +390,9 @@ developers who translate boot code to Common Lisp.
 
 @
 \subsubsection{comp-functions}
-This is the {\bf spad compiler} subsystem. It is only needed by
-developers who write or modify algebra code.
 <<comp-functions>>=
+;;; This is the {\bf spad compiler} subsystem. It is only needed by
+;;; developers who write or modify algebra code.
 (setq comp-functions
       '(
 ;;      loadcompiler
@@ -403,9 +407,9 @@ developers who write or modify algebra code.
 
 @
 \subsubsection{browse-functions}
-This is the {\bf browser} subsystem. It will get autoloaded only
-if you use the browse function of the {\bf hypertex} system.
 <<browse-functions>>=
+;;; This is the {\bf browser} subsystem. It will get autoloaded only
+;;; if you use the browse function of the {\bf hypertex} system.
 (setq browse-functions
       '(
 ;;      loadbrowse
@@ -466,9 +470,9 @@ if you use the browse function of the {\bf hypertex} system.
 
 @
 \subsubsection{translate-functions}
-This is a little used subsystem to generate {\bf ALDOR} code
-from {\bf Spad} code. Frankly, I'd be amazed if it worked.
 <<translate-functions>>=
+;;; This is a little used subsystem to generate {\bf ALDOR} code
+;;; from {\bf Spad} code.
 (setq translate-functions '(
 ;; .spad to .as translator, in particular
 ;;	loadtranslate
@@ -477,11 +481,11 @@ from {\bf Spad} code. Frankly, I'd be amazed if it worked.
 
 @
 \subsubsection{asauto-functions}
-This is part of the {\bf ALDOR subsystem}. These will be loaded
-if you compile a {\bf .as} file rather than a {\bf .spad} file.
-{\bf ALDOR} is an external compiler that gets automatically called
-if the file extension is {\bf .as}.
 <<asauto-functions>>=
+;;; This is part of the {\bf ALDOR subsystem}. These will be loaded
+;;; if you compile a {\bf .as} file rather than a {\bf .spad} file.
+;;; {\bf ALDOR} is an external compiler that gets automatically called
+;;; if the file extension is {\bf .as}.
 (setq asauto-functions '(
 	loadas
 ;;	|as|			     ;; now in as.boot
@@ -497,10 +501,10 @@ if the file extension is {\bf .as}.
 
 @
 \subsubsection{debug-functions}
-These are some {\bf debugging} functions that I use. I can't imagine
-why you might autoload them but they don't need to be in a running
-system.
 <<debug-functions>>=
+;;; These are some old {\bf debugging} functions.  I can't imagine
+;;; why you might autoload them but they don't need to be in a running
+;;; system.
 (setq debug-functions '(
 	loaddebug
 	|showSummary|
@@ -512,8 +516,8 @@ system.
 @
 \subsection{The command-line build functions}
 \subsubsection{translist}
-Translate a list of boot files to common lisp.
 <<translist>>=
+;;; Translate a list of boot files to common lisp.
 (defun translist (fns)
   (mapcar #'(lambda (f) (format t "translating ~a~%" (concat f ".boot"))
 			(translate f))
@@ -521,8 +525,8 @@ Translate a list of boot files to common lisp.
 
 @
 \subsubsection{translate}
-Translate a single boot file to common lisp
 <<translate>>=
+;;; Translate a single boot file to common lisp
 (defun translate (file) ;; translates a single boot file
 #+:CCL
   (setq *package* (find-package "BOOT"))
@@ -534,9 +538,8 @@ Translate a single boot file to common lisp
 
 @
 \subsubsection{compile-boot-file}
-Translate a single boot file to common lisp, compile it 
-and load it.
 <<compile-boot-file>>=
+;;; Translate a single boot file to common lisp, compile it
 (defun compile-boot-file (file)
   "compile and load a boot file"
   (boot (concat file ".boot") (concat file ".lisp"))
@@ -550,8 +553,8 @@ and load it.
 
 @
 \subsubsection{retranslate-file-if-necessary}
-Retranslate a single boot file if it has been changed.
 <<retranslate-file-if-necessary>>=
+;;; Retranslate a single boot file if it has been changed.
 (defun retranslate-file-if-necessary (bootfile)
    (let* ((lfile (make-pathname :type "lisp" :defaults bootfile))
 	  (ldate (our-write-date lfile))
@@ -565,9 +568,9 @@ Retranslate a single boot file if it has been changed.
 
 @
 \subsubsection{retranslate-directory}
-Translate a directory of boot code to common lisp if the boot code
-is newer.
 <<retranslate-directory>>=
+;;; Translate a directory of boot code to common lisp if the boot code
+;;; is newer.
 (defun retranslate-directory (dir)
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
@@ -578,8 +581,8 @@ is newer.
 @
 
 \subsubsection{recompile-lib-directory}
-Recompile library lisp code if necessary.
 <<recompile-lib-directory>>=
+;;; Recompile library lisp code if necessary.
 (defun recompile-lib-directory (dir)
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
@@ -589,8 +592,8 @@ Recompile library lisp code if necessary.
 
 @
 \subsubsection{recompile-all-files}
-Force recompilation of all lisp files in a directory.
 <<recompile-all-files>>=
+;;; Force recompilation of all lisp files in a directory.
 (defun recompile-all-files (dir)
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
@@ -600,8 +603,8 @@ Force recompilation of all lisp files in a directory.
 
 @
 \subsubsection{recompile-directory}
-This function will compile any lisp code that has changed in a directory.
 <<recompile-directory>>=
+;;; This function will compile any lisp code that has changed in a directory.
 (defun recompile-directory (dir)
   (let* ((direc (make-directory dir))
 	 (pattern (make-pathname :directory (pathname-directory direc)
@@ -611,10 +614,10 @@ This function will compile any lisp code that has changed in a directory.
 
 @
 \subsubsection{recompile-file-if-necessary}
-This is a helper function that checks the time stamp between
-the given file and its compiled binary. If the file has changed
-since it was last compiled this function will recompile it.
 <<recompile-file-if-necessary>>=
+;;; This is a helper function that checks the time stamp between
+;;; the given file and its compiled binary. If the file has changed
+;;; since it was last compiled this function will recompile it.
 (defun recompile-file-if-necessary (lfile)
    (let* ((bfile (make-pathname :type *lisp-bin-filetype* :defaults lfile))
 	  (bdate (our-write-date bfile))
@@ -627,46 +630,18 @@ since it was last compiled this function will recompile it.
 
 @
 \subsubsection{our-write-date}
-Get the write date of a file. In GCL we need to check that it
-exists first. This is a simple helper function.
 <<our-write-date>>=
+;;; Get the write date of a file. In GCL we need to check that it
+;;; exists first. This is a simple helper function.
 (defun our-write-date (file) (and #+kcl (probe-file file)
 				  (file-write-date file)))
 
 @
-\subsubsection{fe}
-I'm unsure what this does but I believe it is related to an interpreter
-command. Invoking ``)fe'' in the interpreter tries to get at the 
-src/interp/TAGS file.
-<<fe>>=
-(defun fe (function file &optional (compflag nil) &aux (fn (pathname-name file)))
-  (let ((tbootfile (concat "/tmp/" fn ".boot"))
-	(tlispfile (concat "/tmp/" fn ".lisp")))
-#|
-    (system::run-aix-program "fc"
-        :arguments (list (string function)
-                         (namestring
-                          (merge-pathnames file (concat $SPADROOT "nboot/.boot"))))
-        :if-output-exists :supersede :output tbootfile)
-|#
-    (boot tbootfile tlispfile)
-    (if compflag (progn (compile-file tlispfile)
-			(load (make-pathname :type *lisp-bin-filetype*
-			                     :defaults tlispfile)))
-      (load tlispfile))))
-@
-\subsubsection{fc}
-I'm unsure what this does but I believe it is related to an interpreter
-command. Invoking ``)fc'' in the interpreter tries to get at the 
-src/interp/TAGS file.
-<<fc>>=
-(defun fc (function file) (fe function file t))
 
-@
 \subsubsection{compspadfiles}
-The {\bf compspadfiles} function will recompile a list of {\bf spad} files.
-The filelist should be a file containing names of files to compile.
 <<compspadfiles>>=
+;;; The {\bf compspadfiles} function will recompile a list of {\bf spad} files.
+;;; The filelist should be a file containing names of files to compile.
 (defun compspadfiles (filelist ;; should be a file containing files to compile
 		      &optional (*default-pathname-defaults*
 				 (pathname (concat $SPADROOT "nalgebra/"))))
@@ -679,8 +654,8 @@ The filelist should be a file containing names of files to compile.
 
 @
 \subsubsection{load-directory}
-Load a whole subdirectory of compiled files
 <<load-directory>>=
+;;; Load a whole subdirectory of compiled files
 (defun load-directory (dir)
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
@@ -690,8 +665,8 @@ Load a whole subdirectory of compiled files
 
 @
 \subsubsection{make-directory}
-Make a directory relative to the {\bf \$spadroot} variable.
 <<make-directory>>=
+;;; Make a directory relative to the {\bf \$spadroot} variable.
 (defun make-directory (direc)
   (setq direc (namestring direc))
   (if (string= direc "")  $SPADROOT
@@ -715,6 +690,8 @@ Make a directory relative to the {\bf \$spadroot} variable.
 
 @
 \subsubsection{recompile-all-libs}
+<<recompile-all-libs>>=
+#|
 Occasionally it will be necessary to iterate over all of the NRLIB
 directories and compile each of the code.lsp files in every NRLIB.
 This function will do that. A correct call looks like:
@@ -723,7 +700,7 @@ This function will do that. A correct call looks like:
 (recompile-all-libs "/spad/mnt/${SYS}/algebra")
 \end{verbatim}
 where the [[${SYS}]] variable is same as the one set at build time.
-<<recompile-all-libs>>=
+|#
 (defun recompile-all-libs (dir)
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
@@ -735,6 +712,8 @@ where the [[${SYS}]] variable is same as the one set at build time.
 
 @
 \subsubsection{recompile-all-algebra-files}
+<<recompile-all-algebra-files>>=
+#|
 We occasionally need to completely rebuild the algebra from the spad
 files. This function will iterate across a directory containing all
 of the spad files and attempt to recompile them. A correct call looks
@@ -754,7 +733,7 @@ then the wildcard expands to
 /spad/mnt/${SYS}/nalg/*.spad
 \end{verbatim}
 and all of the matching files would be recompiled.
-<<recompile-all-algebra-files>>=
+|#
 (defun recompile-all-algebra-files (dir) ;; a desperation measure
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
@@ -768,12 +747,11 @@ and all of the matching files would be recompiled.
 @
 
 \subsubsection{boottocl}
-
-The {\bf boottocl} function is the workhorse function that translates
-{\bf .boot} files to {\bf Common Lisp}. It basically wraps the actual
-{\bf boot} function call to ensure that we don't truncate lines 
-because of {\bf *print-level*} or {\bf *print-length*}.
 <<boottocl>>=
+;;; The {\bf boottocl} function is the workhorse function that translates
+;;; {\bf .boot} files to {\bf Common Lisp}. It basically wraps the actual
+;;; {\bf boot} function call to ensure that we don't truncate lines 
+;;; because of {\bf *print-level*} or {\bf *print-length*}.
 (in-package "BOOTTRAN") 
 
 #+:oldboot
@@ -790,7 +768,8 @@ because of {\bf *print-level*} or {\bf *print-length*}.
 @
 
 \subsubsection{yearweek}
-
+<<yearweek>>=
+#|
 We need a way of distinguishing different versions of the system.
 There used to be a way to touch the src/timestamp file whenever
 you checked in a change to the change control subsystem. 
@@ -802,7 +781,7 @@ The result of this function is a string that is printed as a banner
 when Axiom starts. The actual printing is done by the function
 [[spadStartUpMsgs]] in [[src/interp/msgdb.boot]]. It uses a 
 format string from the file [[src/doc/msgs/s2-us.msgs]].
-<<yearweek>>=
+|#
 (defun yearweek ()
  "set *yearweek* to the current time string for the version banner"
   (declare (special timestamp) (special *yearweek*))
@@ -825,6 +804,8 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 
 @
 \subsubsection{makelib}
+<<makelib>>=
+#|
 Make will not compare dates across directories.
 Rather than copy all of the code.lsp files to the MNT directory
 we run this function to compile the files that are out of date
@@ -832,7 +813,7 @@ this function assumes that the shell variables INT and MNT are set.
 
 Also of note: on the rt some files (those in the nooptimize list)
 need to be compiled without optimize due to compiler bugs
-<<makelib>>=
+|#
 (defun makelib (mid out stype btype)
  "iterate over the NRLIBs, compiling ones that are out of date.
   mid is the directory containing code.lsp
@@ -894,6 +875,8 @@ need to be compiled without optimize due to compiler bugs
 
 @
 \subsubsection{makespad}
+<<makespad>>=
+#|
 Make will not compare dates across directories.
 In particular, it cannot compare the algebra files because there
 is a one-to-many correspondence. This function will walk over
@@ -906,7 +889,7 @@ Note that the file /tmp/compile.input is not currently used
 as algebra source recompiles are not necessarily something
 we want done automatically. Nevertheless, in the quest for
 quality we check anyway.
-<<makespad>>=
+|#
 (defun makespad (src mid stype)
  "iterate over the spad files, compiling ones that are out of date.
   src is the directory containing .spad
@@ -970,9 +953,9 @@ quality we check anyway.
 
 @
 \subsubsection{libcheck}
-We need to ensure that the INTERP.EXPOSED list, which is a list
-of the exposed constructors, is consistent with the actual libraries.
 <<libcheck>>=
+;; We need to ensure that the INTERP.EXPOSED list, which is a list
+;; of the exposed constructors, is consistent with the actual libraries.
 (defun libcheck (int)
  "check that INTERP.EXPOSED and NRLIBs are consistent"
  (let (interp nrlibs)
@@ -1102,13 +1085,15 @@ of the exposed constructors, is consistent with the actual libraries.
 
 @
 \subsection{Constructing TAGS}
-TAGS are useful for finding functions if you run Emacs. We have a
-set of functions that construct TAGS files for Axiom.
 \subsubsection{make-tags-file}
-Run the etags command on all of the lisp code. Then run the
-{\bf spadtags-from-directory} function on the boot code. The
-final TAGS file is constructed in the {\bf tmp} directory.
 <<make-tags-file>>=
+
+;;; TAGS are useful for finding functions if you run Emacs. We have a
+;;; set of functions that construct TAGS files for Axiom.
+
+;;; Run the etags command on all of the lisp code. Then run the
+;;; {\bf spadtags-from-directory} function on the boot code. The
+;;; final TAGS file is constructed in the {\bf tmp} directory.
 (defun make-tags-file ()
 #+:gcl (system:chdir "/tmp")
 #-:gcl (vmlisp::obey (concatenate 'string "cd " "/tmp"))
@@ -1118,9 +1103,9 @@ final TAGS file is constructed in the {\bf tmp} directory.
 
 @
 \subsubsection{spadtags-from-directory}
-This function will walk across a directory and call 
-{\bf spadtags-from-file} on each file.
 <<spadtags-from-directory>>=
+;;; This function will walk across a directory and call 
+;;; {\bf spadtags-from-file} on each file.
 (defun spadtags-from-directory (dir type)
    (let* ((direc (make-directory dir))
 	  (pattern (make-pathname :directory (pathname-directory direc)
@@ -1145,9 +1130,9 @@ This function will walk across a directory and call
 
 @
 \subsubsection{spadtags-from-file}
-This function knows how to find function names in {\bf boot} code
-so we can add them to the TAGS file using standard etags format.
 <<spadtags-from-file>>=
+;;; This function knows how to find function names in {\bf boot} code
+;;; so we can add them to the TAGS file using standard etags format.
 (defun spadtags-from-file (spadfile)
   (with-open-file (tagstream "/tmp/*TAGS" :direction :output
 			     :if-exists :supersede :if-does-not-exist :create)
@@ -1186,8 +1171,9 @@ so we can add them to the TAGS file using standard etags format.
 
 @
 \subsubsection{write-tag-line}
-This function knows how to write a single line into a TAGS file
-using the etags file format.
+<<write-tag-line>>=
+;;; This function knows how to write a single line into a TAGS file
+;;; using the etags file format.
 <<write-tag-line>>=
 (defun write-tag-line (line tagstream endcol line-count char-count)
   (write-string line tagstream :end endcol)
@@ -1199,17 +1185,17 @@ using the etags file format.
 
 @
 \subsubsection{blankcharp}
-This is a trivial predicate for calls to {\bf position-if-not} in the
-{\bf findtag} function.
 <<blankcharp>>=
+;;; This is a trivial predicate for calls to {\bf position-if-not} in the
+;;; {\bf findtag} function.
 (defun blankcharp (c) (char= c #\Space))
 
 @
 \subsubsection{findtag}
-The {\bf findtag} function is a user-level function to figure out
-which file contains a given tag. This is sometimes useful if Emacs
-is not around or TAGS are not loaded.
 <<findtag>>=
+;;; The {\bf findtag} function is a user-level function to figure out
+;;; which file contains a given tag. This is sometimes useful if Emacs
+;;; is not around or TAGS are not loaded.
 (defun findtag (tag &optional (tagfile (concat $spadroot "/../../src/interp/TAGS")) )
   ;; tag is an identifier
     (with-open-file (tagstream tagfile)
@@ -1250,9 +1236,9 @@ is not around or TAGS are not loaded.
 
 @
 \subsubsection{match-lisp-tag}
-The {\bf match-lisp-tag} function is used by {\bf findtag}. This
-function assumes that \\ can only appear as first character of name.
 <<match-lisp-tag>>=
+;;; The {\bf match-lisp-tag} function is used by {\bf findtag}. This
+;;; function assumes that \\ can only appear as first character of name.
 (defun match-lisp-tag (tag tagline &optional (prefix nil)
 			   &aux (stringtag (string tag)) pos tpos)
   (when (and (if prefix
@@ -1345,7 +1331,7 @@ function assumes that \\ can only appear as first character of name.
 @
 <<*>>=
 <<license>>
-
+<<PREFACE>>
 (in-package "BOOT")
 (export '($spadroot $directory-list reroot
 	  make-absolute-filename |$msgDatabaseName| |$defaultMsgDatabaseName|))
@@ -1356,8 +1342,6 @@ function assumes that \\ can only appear as first character of name.
 <<load-directory>>
 <<compspadfiles>>
 <<recompile-all-algebra-files>>
-<<fe>>
-<<fc>>
 <<recompile-directory>>
 <<recompile-file-if-necessary>>
 <<recompile-all-files>>

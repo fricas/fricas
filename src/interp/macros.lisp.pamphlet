@@ -9,16 +9,16 @@
 \eject
 \tableofcontents
 \eject
-\begin{verbatim}
-PURPOSE: Provide generally useful macros and functions for MetaLanguage
-         and Boot code.  Contents are organized along Common Lisp datatype
-         lines, with sections numbered to match the section headings of the
-         Common Lisp Reference Manual, by Guy Steele, Digital Press, 1984,
-         Digital Press Order Number EY-00031-DP.  This way you can
-         look up the corresponding section in the manual and see if
-         there isn't a cleaner and non-VM-specific way of doing things.
- 
-\end{verbatim}
+<<PURPOSE>>=
+;;;  PURPOSE:
+;;;    Provide generally useful macros and functions for MetaLanguage
+;;;    and Boot code.  Contents are organized along Common Lisp datatype
+;;;    lines, with sections numbered to match the section headings of the
+;;;    Common Lisp Reference Manual, by Guy Steele, Digital Press, 1984,
+;;;    Digital Press Order Number EY-00031-DP.  This way you can
+;;;    look up the corresponding section in the manual and see if
+;;;    there isn't a cleaner and non-VM-specific way of doing things.
+@
 \section{Performance change}
 Camm has identified a performace problem during compiles. There is
 a loop that continually adds one element to a vector. This causes
@@ -41,6 +41,9 @@ The original code was:
 \end{verbatim}
 
 <<lengthenvec>>=
+;;; The function below continually adds one element to a vector.
+;;; We use vectors with fill pointers to limit numbers of
+;;; copies made (otherwise this function would use too much time).
 (defun lengthenvec (v n)
   (if 
     (and (array-has-fill-pointer-p v) (adjustable-array-p v))
@@ -55,14 +58,14 @@ The original code was:
 @
 
 \section{DEFUN CONTAINED}
-The [[CONTAINED]] predicate is used to walk internal structures
-such as modemaps to see if the $X$ object occurs within $Y$. One
-particular use is in a function called [[isPartialMode]] (see
-i-funsel.boot) to decide
-if a modemap is only partially complete. If this is true then the 
-modemap will contain the constant [[$EmptyMode]]. So the call 
-ends up being [[CONTAINED |$EmptyMode| Y]]. 
 <<DEFUN CONTAINED>>=
+;;; The [[CONTAINED]] predicate is used to walk internal structures
+;;; such as modemaps to see if the $X$ object occurs within $Y$. One
+;;; particular use is in a function called [[isPartialMode]] (see
+;;; i-funsel.boot) to decide
+;;; if a modemap is only partially complete. If this is true then the 
+;;; modemap will contain the constant [[$EmptyMode]]. So the call 
+;;; ends up being [[CONTAINED |$EmptyMode| Y]]. 
 #-:CCL
 (DEFUN CONTAINED (X Y)
   (if (symbolp x)
@@ -115,6 +118,7 @@ ends up being [[CONTAINED |$EmptyMode| Y]].
 @
 <<*>>=
 <<license>>
+<<PURPOSE>>
 
 (provide 'Boot)
  
