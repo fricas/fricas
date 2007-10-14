@@ -10,7 +10,8 @@
 \tableofcontents
 \eject
 \section{intloopReadConsole}
-
+<<intloopReadConsoleComment>>=
+)if false
 This is the top level loop when reading from the input console.  This
 function calls itself after processing the current line.  Because of
 this it is important that the underlying common lisp supports
@@ -47,56 +48,13 @@ tail-recursively calling [[intloopReadConsole]].
 
 If none of the above conditions occur we simply evaluate the input line
 and then tail-recursively call [[intloopReadConsole]].
-
-However, there was a small bug in the test for the system command
-[[)fin]]. Originally, the test took the form:
-\begin{verbatim}
-   intloopPrefix?('")fin",a) => []
-\end{verbatim}
-This test was flawed in two ways. First, it would match {\sl any}
-command beginning with [[)fin]]. Second, it would {\sl only} match
-names beginning with [[)fin]], although [[)fi]] is an acceptable
-abbreviation for this command. The improved test takes the form:
-\begin{verbatim}
-    pfx := stripSpaces intloopPrefix?('")fi",a)
-    pfx and ((pfx = '")fi") or (pfx = '")fin")) => []
-\end{verbatim}
+)endif
+@
 
 \section{intloopPrefix?}
-The [[intloopPrefix?(prefix, whole)]] function simply tests if the string
-[[prefix]] is a prefix of the string [[whole]]. The original
-implementation discounts {\sl any} whitespace in [[whole]] in deciding a
-match, when a more sensible behavior would be to discount only leading
-whitespace.
-
-Moreover, the function SUBSTRING\cite{2} was being improperly called.
-The reason why this improper call had gone undetected is that
-generally [[intloopPrefix?]] is invoked with a prefix string of length
-one -- hence the start position for the substring would generally
-begin at index [[spaces]] (which is what we want).
-
-The original code read:
-\begin{verbatim}
-intloopPrefix?(prefix,whole) ==
-     #prefix > #whole => false
-     good:=true
-     spaces := 0
-     i := 0
-     len := #prefix
-     wlen := #whole
-     for j in 0.. while (good and i < len and j < wlen) repeat
-       good:= (prefix.i = whole.j) or (whole.j = char " ")
-       if prefix.i = whole.j then i := i+1
-       if whole.j = char " " then spaces := spaces + 1
-     spaces = wlen => nil
-     if good then SUBSTRING(whole,#prefix+spaces-1,nil) else good
-
-\end{verbatim}
-
-The improved version of [[inloopPrefix?(prefix, whole)]] returns the
-string [[whole]] sans leading whitespace if the match succeeds, else nil.
-
 <<intloopPrefix?>>=
+-- The 'intloopPrefix?' function tests if the string 'prefix' is
+-- is a prefix of the string 'whole', ignoring leading whitespace.
 intloopPrefix?(prefix,whole) ==
      #prefix > #whole => false
      good := true
@@ -151,6 +109,8 @@ intloopPrefix?(prefix,whole) ==
 @
 <<*>>=
 <<license>>
+
+<<intloopReadConsoleComment>>
 
 )package "BOOT"
 
