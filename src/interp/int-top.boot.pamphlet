@@ -228,6 +228,14 @@ SpadInterpretStream(str, source, interactive?) ==
  
     -----------------------------------------------------------------
 
+SpadInterpretFile fn ==
+  SpadInterpretStream(1, fn, nil)
+
+ncINTERPFILE(file, echo) ==
+  $EchoLines : local := echo
+  $ReadingFile : local := true
+  SpadInterpretFile(file)
+
 setCurrentLine s ==
   v := $currentLine
   $currentLine := 
@@ -238,6 +246,9 @@ setCurrentLine s ==
      STRINGP(v) => [v, :u]
      RPLACD(LASTNODE(v), u)
      v
+
+
+ncSetCurrentLine c == setCurrentLine(c)
 
 intloopReadConsole(b, n)==
     a:= serverReadLine(_*STANDARD_-INPUT_*)
@@ -301,6 +312,16 @@ intloopProcessString(s,n) ==
            next(function lineoftoks,incString s)))
  
 $pfMacros := []
+
+clearMacroTable() ==
+   SETF($pfMacros, nil)
+
+getParserMacros() == $pfMacros
+
+displayParserMacro m ==
+   m := ASSQ(m, $pfMacros)
+   NULL m => nil
+   pfPrintSrcLines(CADDR(m))
 
 intSetNeedToSignalSessionManager() ==
     $NeedToSignalSessionManager := true
