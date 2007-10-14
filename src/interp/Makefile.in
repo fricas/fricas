@@ -53,7 +53,7 @@ OBJS=	vmlisp.$(FASLEXT)	hash.$(FASLEXT)	\
 	hypertex.$(FASLEXT)	i-analy.$(FASLEXT)	\
 	i-code.$(FASLEXT)	i-coerce.$(FASLEXT)	\
 	i-coerfn.$(FASLEXT)	i-eval.$(FASLEXT)	\
-	i-funsel.$(FASLEXT)	bookvol5.$(FASLEXT)	\
+	i-funsel.$(FASLEXT)	\
 	i-intern.$(FASLEXT)	i-map.$(FASLEXT)	\
 	i-output.$(FASLEXT)	i-resolv.$(FASLEXT)	\
 	i-spec1.$(FASLEXT)				\
@@ -203,7 +203,7 @@ clean-local: mostlyclean-local
 	rm -f \
 	axext_l.lisp   def.lisp       metalex.lisp   parsing.lisp \
 	spad.lisp      bits.lisp      fname.lisp     metameta.lisp \
-	patches.lisp   sys-pkg.lisp   bookvol5.lisp  fnewmeta.lisp \
+	patches.lisp   sys-pkg.lisp   fnewmeta.lisp \
 	monitor.lisp   preparse.lisp  union.lisp     bootfuns.lisp \
 	foam_l.lisp    proclaims.lisp \
 	bootlex.lisp   ggreater.lisp  newaux.lisp    property.lisp \
@@ -216,7 +216,7 @@ clean-local: mostlyclean-local
 distclean-local: clean-local
 
 ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
-    ${DEPSYS} ${OBJS}  bookvol5.$(FASLEXT) util.$(FASLEXT) \
+    ${DEPSYS} ${OBJS}  util.$(FASLEXT) \
     nocompil.lisp sys-pkg.lisp \
     ${OCOBJS} ${OPOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
@@ -259,7 +259,7 @@ depsys_boot_sources = postpar parse clam slam \
 			g-boot g-util
 
 ${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
-	        bookvol5.lisp util.lisp \
+	        util.lisp \
 	        parsing.lisp metalex.lisp \
 	        bootlex.lisp newaux.lisp \
 	        preparse.lisp \
@@ -271,7 +271,6 @@ ${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
 	@ echo '${PROCLAIMS}' > makedep.lisp
 	@ echo '(push :oldboot *features*)' >> makedep.lisp
 	@ echo '(load "nocompil.lisp")' >> makedep.lisp
-	@ echo '(load "bookvol5.lisp")' >> makedep.lisp
 	@ echo '(load "util.lisp")' >> makedep.lisp
 	@ echo '(in-package "BOOT")' >> makedep.lisp
 	@ echo '(build-depsys (quote ($(patsubst %, "%", ${DEP}))) "${AXIOM}" "$(builddir)")' >> makedep.lisp
@@ -380,15 +379,6 @@ $(addsuffix .clisp, $(MID_from_IN)): \
 	@ echo 11 making $@ from $<
 	$(axiom_build_document) --tangle --output=$*.boot $<; \
 	   echo '(progn (boottran::boottocl "$*.boot") (${BYE}))' | ${DEPSYS}
-
-bookvol5.$(FASLEXT): bookvol5.lisp
-	@ echo 297 making $@ from $<
-	echo '(progn  (compile-file "bookvol5.lisp" :output-file' \
-	       ' "bookvol5.$(FASLEXT)") (${BYE}))' | ${DEPSYS} 
-
-bookvol5.lisp: $(srcdir)/bookvol5.pamphlet
-	@ echo 298 making $@ from $<
-	$(axiom_build_document) --tangle=Interpreter --output=$@ $<
 
 ffi-func.$(FASLEXT): ffi-func.lisp
 	echo '(progn  (compile-file "ffi-func.lisp" :output-file' \

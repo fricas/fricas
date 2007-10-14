@@ -1437,6 +1437,146 @@ quality we check anyway.
 <<makespad>>
 <<libcheck>>
 
+;;; moved from bookvol5
+
+(defvar |$historyDirectory| 'A        "vm/370 filename disk component")
+(defvar |$HiFiAccess| t               "t means turn on history mechanism")
+
+(defvar |$reportUndo| nil "t means we report the steps undo takes")
+(defvar $openServerIfTrue t "t means try starting an open server")
+(defparameter $SpadServerName "/tmp/.d" "the name of the spad server socket")
+(defvar |$SpadServer| nil "t means Scratchpad acts as a remote server")
+
+
+#-:CCL
+(defun |loadExposureGroupData| ()
+ (cond
+  ((load "./exposed" :verbose nil :if-does-not-exist nil)
+    '|done|)
+  ((load (concat (BOOT::|getEnv| "AXIOM") "/algebra/exposed")
+     :verbose nil :if-does-not-exist nil)
+   '|done|)
+  (t '|failed|) ))
+
+#+:CCL
+(defun |loadExposureGroupData| ()
+ (cond
+  ((load "./exposed.lsp" :verbose NIL :if-does-not-exist NIL) '|done|)
+  ((load (concat (BOOT::|getEnv| "AXIOM") "/../../src/algebra/exposed.lsp") 
+    :verbose nil :if-does-not-exist nil) '|done|)
+  (t nil) ))
+
+(defun axiom-restart ()
+#+:akcl
+  (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
+    :array 400 :string 500 :cfun 100 :cpages 3000 :rpages 1000 :hole 2000)
+#+:akcl (setq compiler::*compile-verbose* nil)
+#+:akcl (setq compiler::*suppress-compiler-warnings* t)
+#+:akcl (setq compiler::*suppress-compiler-notes* t)
+#-:CCL
+  (in-package "BOOT")
+#+:CCL
+  (setq *package* (find-package "BOOT"))
+#+:CCL (setpchar "") ;; Turn off CCL read prompts
+  (initroot)
+#+:akcl (system:gbc-time 0)
+#+:akcl
+  (when (and $openServerIfTrue (fboundp '|openServer|))
+   (prog (os)
+    (setq os (|openServer| $SpadServerName))
+    (if (zerop os) 
+     (progn 
+      (setq $openServerIfTrue nil) 
+      (setq |$SpadServer| t)))))
+#+:sbcl
+(let* ((ax-dir (|getEnv| "AXIOM"))
+       (spad-lib (concatenate 'string ax-dir "/lib/libspad.so"))
+       (sock-fasl (concatenate 'string ax-dir "/autoload/ffi-func.fasl")))
+    (format t "Checking for foreign routines~%")
+    (format t "AXIOM=~S~%" ax-dir)
+    (format t "spad-lib=~S~%" spad-lib)
+    (format t "sock-fasl=~S~%" sock-fasl)
+    (when (and (axiom-probe-file spad-lib)
+               (axiom-probe-file sock-fasl))
+        (format t "foreign routines found~%")
+        (sb-alien::load-shared-object spad-lib)
+        (load sock-fasl)
+        (let ((os (|openServer| $SpadServerName)))
+             (format t "openServer result ~S~%" os)
+             (if (zerop os)
+                 (progn
+                      (setq $openServerIfTrue nil)
+                      (setq |$SpadServer| t))))))
+#+:clisp
+(let* ((ax-dir (|getEnv| "AXIOM"))
+       (spad-lib (concatenate 'string ax-dir "/lib/libspad.so"))
+       (sock-fasl (concatenate 'string ax-dir "/autoload/ffi-func2.lisp")))
+    (format t "Checking for foreign routines~%")
+    (format t "AXIOM=~S~%" ax-dir)
+    (format t "spad-lib=~S~%" spad-lib)
+    (format t "sock-fasl=~S~%" sock-fasl)
+    (when (and (axiom-probe-file spad-lib)
+               (axiom-probe-file sock-fasl))
+        (defvar *libspad_pathname*)
+        (setf *libspad_pathname* spad-lib)
+        (format t "foreign routines found~%")
+        (load sock-fasl)
+        (let ((os (|openServer| $SpadServerName)))
+             (format t "openServer result ~S~%" os)
+             (if (zerop os)
+                 (progn
+                      (setq $openServerIfTrue nil)
+                      (setq |$SpadServer| t))))))
+;; We do the following test at runtime to allow us to use the same images
+;; with Saturn and Sman.  MCD 30-11-95
+#+:CCL
+  (when 
+     (and (memq :unix *features*) $openServerIfTrue (fboundp '|openServer|))
+   (prog (os)
+    (setq os (|openServer| $SpadServerName))
+    (if (zerop os) 
+     (progn 
+      (setq $openServerIfTrue nil) 
+      (setq |$SpadServer| t)))))
+  (setq |$IOindex| 1)
+  (setq |$InteractiveFrame| (|makeInitialModemapFrame|))
+  (setq |$printLoadMsgs| t)
+  (|loadExposureGroupData|)
+  (|statisticsInitialization|)
+  (|initHist|)
+  (|initializeInterpreterFrameRing|)
+
+  (when |$displayStartMsgs| 
+   (|spadStartUpMsgs|))
+  (setq |$currentLine| nil)
+  (restart0)
+  (|readSpadProfileIfThere|)
+  #+(or :GCL :CCL)
+  (|spad|)
+  #-(or :GCL :CCL)
+  (handler-bind ((error #'spad-system-error-handler))
+     (|spad|))
+)
+
+
+(defun spad-save (save-file do-restart)
+  (setq |$SpadServer| nil)
+  (setq $openServerIfTrue t)
+  #-:openmcl
+  (AXIOM-LISP::save-core-restart save-file
+         (if do-restart #'boot::axiom-restart nil))
+  #+:openmcl
+  (AXIOM-LISP::save-core-restart save-file
+         (if do-restart "BOOT::axiom-restart" nil))
+)
+
+(defun |statisticsInitialization| () 
+ "initialize the garbage collection timer"
+ #+:akcl (system:gbc-time 0)
+ nil)
+
+
+
 @
 \eject
 \begin{thebibliography}{99}

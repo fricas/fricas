@@ -630,100 +630,7 @@ We do not care that certain generated variables are not used.
 
 The [[compiler::*suppress-compiler-notes*]] flag has been set to t.
 We do not care that tail recursion occurs.
-<<defun restart>>=
-(defun axiom-restart ()
-#+:akcl
-  (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
-    :array 400 :string 500 :cfun 100 :cpages 3000 :rpages 1000 :hole 2000)
-#+:akcl (setq compiler::*compile-verbose* nil)
-#+:akcl (setq compiler::*suppress-compiler-warnings* t)
-#+:akcl (setq compiler::*suppress-compiler-notes* t)
-#-:CCL
-  (in-package "BOOT")
-#+:CCL
-  (setq *package* (find-package "BOOT"))
-#+:CCL (setpchar "") ;; Turn off CCL read prompts
-  (initroot)
-#+:akcl (system:gbc-time 0)
-#+:akcl
-  (when (and $openServerIfTrue (fboundp '|openServer|))
-   (prog (os)
-    (setq os (|openServer| $SpadServerName))
-    (if (zerop os) 
-     (progn 
-      (setq $openServerIfTrue nil) 
-      (setq |$SpadServer| t)))))
-#+:sbcl
-(let* ((ax-dir (|getEnv| "AXIOM"))
-       (spad-lib (concatenate 'string ax-dir "/lib/libspad.so"))
-       (sock-fasl (concatenate 'string ax-dir "/autoload/ffi-func.fasl")))
-    (format t "Checking for foreign routines~%")
-    (format t "AXIOM=~S~%" ax-dir)
-    (format t "spad-lib=~S~%" spad-lib)
-    (format t "sock-fasl=~S~%" sock-fasl)
-    (when (and (axiom-probe-file spad-lib)
-               (axiom-probe-file sock-fasl))
-        (format t "foreign routines found~%")
-        (sb-alien::load-shared-object spad-lib)
-        (load sock-fasl)
-        (let ((os (|openServer| $SpadServerName)))
-             (format t "openServer result ~S~%" os)
-             (if (zerop os)
-                 (progn
-                      (setq $openServerIfTrue nil)
-                      (setq |$SpadServer| t))))))
-#+:clisp
-(let* ((ax-dir (|getEnv| "AXIOM"))
-       (spad-lib (concatenate 'string ax-dir "/lib/libspad.so"))
-       (sock-fasl (concatenate 'string ax-dir "/autoload/ffi-func2.lisp")))
-    (format t "Checking for foreign routines~%")
-    (format t "AXIOM=~S~%" ax-dir)
-    (format t "spad-lib=~S~%" spad-lib)
-    (format t "sock-fasl=~S~%" sock-fasl)
-    (when (and (axiom-probe-file spad-lib)
-               (axiom-probe-file sock-fasl))
-        (defvar *libspad_pathname*)
-        (setf *libspad_pathname* spad-lib)
-        (format t "foreign routines found~%")
-        (load sock-fasl)
-        (let ((os (|openServer| $SpadServerName)))
-             (format t "openServer result ~S~%" os)
-             (if (zerop os)
-                 (progn
-                      (setq $openServerIfTrue nil)
-                      (setq |$SpadServer| t))))))
-;; We do the following test at runtime to allow us to use the same images
-;; with Saturn and Sman.  MCD 30-11-95
-#+:CCL
-  (when 
-     (and (memq :unix *features*) $openServerIfTrue (fboundp '|openServer|))
-   (prog (os)
-    (setq os (|openServer| $SpadServerName))
-    (if (zerop os) 
-     (progn 
-      (setq $openServerIfTrue nil) 
-      (setq |$SpadServer| t)))))
-  (setq |$IOindex| 1)
-  (setq |$InteractiveFrame| (|makeInitialModemapFrame|))
-  (setq |$printLoadMsgs| t)
-  (|loadExposureGroupData|)
-  (|statisticsInitialization|)
-  (|initHist|)
-  (|initializeInterpreterFrameRing|)
 
-  (when |$displayStartMsgs| 
-   (|spadStartUpMsgs|))
-  (setq |$currentLine| nil)
-  (restart0)
-  (|readSpadProfileIfThere|)
-  #+(or :GCL :CCL)
-  (|spad|)
-  #-(or :GCL :CCL)
-  (handler-bind ((error #'spad-system-error-handler))
-     (|spad|))
-)
-
-@
 \subsection{defun SpadInterpretStream}
 The [[SpadInterpretStream]] function takes three arguments
 \begin{list}{}
@@ -735,65 +642,6 @@ suppressed and input does not use piles. If this is true then the
 library loading routines might output messages and piles are expected
 on input (as from a file).
 \end{list}
-
-\section{Helper Functions}
-\subsection{defun reclaim}
-Call the garbage collector on various platforms.
-<<defun reclaim>>=
-#+abcl 
-(defun reclaim () (ext::gc))
-#+:allegro
-(defun reclaim () (excl::gc t))
-#+:CCL
-(defun reclaim () (gc))
-#+clisp
-(defun reclaim () (#+lisp=cl ext::gc #-lisp=cl lisp::gc))
-#+(or :cmulisp :cmu)
-(defun reclaim () (ext:gc))
-#+cormanlisp
-(defun reclaim () (cl::gc))
-#+(OR IBCL KCL GCL)
-(defun reclaim () (si::gbc t))
-#+lispworks 
-(defun reclaim () (hcl::normal-gc))
-#+Lucid
-(defun reclaim () (lcl::gc))
-#+sbcl
-(defun reclaim () (sb-ext::gc))
-#+openmcl
-(defun reclaim () (ccl::gc))
-@
-
-\subsection{defun loadExposureGroupData}
-<<defun loadExposureGroupData>>=
-#-:CCL
-(defun |loadExposureGroupData| ()
- (cond
-  ((load "./exposed" :verbose nil :if-does-not-exist nil)
-    '|done|)
-  ((load (concat (BOOT::|getEnv| "AXIOM") "/algebra/exposed")
-     :verbose nil :if-does-not-exist nil)
-   '|done|)
-  (t '|failed|) ))
-
-#+:CCL
-(defun |loadExposureGroupData| ()
- (cond
-  ((load "./exposed.lsp" :verbose NIL :if-does-not-exist NIL) '|done|)
-  ((load (concat (BOOT::|getEnv| "AXIOM") "/../../src/algebra/exposed.lsp") 
-    :verbose nil :if-does-not-exist nil) '|done|)
-  (t nil) ))
-
-@
-
-\subsection{defun statisticsInitialization}
-<<defun statisticsInitialization>>=
-(defun |statisticsInitialization| () 
- "initialize the garbage collection timer"
- #+:akcl (system:gbc-time 0)
- nil)
-
-@
 
 \chapter{The History Mechanism}
 \section{)history}
@@ -1011,12 +859,6 @@ into a call of [[fetchOutput(n)]]. The
  
 \subsection{Initialized history variables}
  
-<<initvars>>=
-(defvar |$historyDirectory| 'A        "vm/370 filename disk component")
-(defvar |$HiFiAccess| t               "t means turn on history mechanism")
-
-@
-
 \section{Data Structures}
 \section{Functions}
 \subsection{defun setHistoryCore}
@@ -1036,92 +878,6 @@ the history in memory and tell the user.
 \item Otherwise history must be on and in memory. We erase any old history
 file and then write the in-memory history to a new file
 \end{list}
-
-\section{History File Messages}
-<<History File Messages>>=
-S2IH0001
- You have not reached step %1b yet, and so its value cannot be
- supplied.
-S2IH0002
- Cannot supply value for step %1b because 1 is the first step.
-S2IH0003
- Step %1b has no value.
-S2IH0004
- The history facility is not on, so you cannot use %b %% %d .
-S2IH0006
- You have not used the correct syntax for the %b history %d command.
- Issue %b )help history %d for more information.
-S2IH0007
- The history facility is already on.
-S2IH0008
- The history facility is now on.
-S2IH0009
- Turning on the history facility will clear the contents of the
- workspace.
- Please enter %b y %d or %b yes %d if you really want to do this:
-S2IH0010
- The history facility is still off.
-S2IH0011
- The history facility is already off.
-S2IH0012
- The history facility is now off.
-S2IH0013
- The history facility is not on, so the .input file containing your user input
- cannot be created.
-S2IH0014
- Edit %b %1 %d to see the saved input lines.
-S2IH0015
- The argument %b n %d for %b )history )change n must be a nonnegative
- integer and your argument, %1b , is not one.
-S2IH0016
- The history facility is not on, so no information can be saved.
-S2IH0018
- The saved history file is %1b .
-S2IH0019
- There is no history file, so value of step %1b is
- undefined.
-S2IH0022
- No history information had been saved yet.
-S2IH0023
- %1b is not a valid filename for the history file.
-S2IH0024
- History information cannot be restored from %1b because the file does
- not exist.
-S2IH0025
- The workspace has been successfully restored from the history file
- %1b .
-S2IH0026
- The history facility command %1b cannot be performed because the
- history facility is not on.
-S2IH0027
- A value containing a %1b is being saved in a history file or a
- compiled input file INLIB. This type
- is not yet usable in other history operations.  You might want to issue
- %b )history )off %d
-S2IH0029
- History information is already being maintained in an external file
- (and not in memory).
-S2IH0030
- History information is already being maintained in memory (and not
- in an external file).
-S2IH0031
- When the history facility is active, history information will be
- maintained in a file (and not in an internal table).
-S2IH0032
- When the history facility is active, history information will be
- maintained in memory (and not in an external file).
-S2IH0034
- Missing element in internal history table.
-S2IH0035
- Can't save the value of step number %1b.  You can re-generate this value
- by running the input file %2b.
-S2IH0036
- The value specified cannot be saved to a file.
-S2IH0037
- You must specify a file name to the history save command
-S2IH0038
- You must specify a file name to the history write command
-@
 
 \chapter{The Frame Mechanism}
 \section{)frame}
@@ -1245,59 +1001,6 @@ prompt.
 \section{Functions}
 \subsection{defun frameNames}
 
-\section{Frame File Messages}
-<<Frame File Messages>>=
-S2IZ0016
- The %1b system command takes arguments but no options.
-S2IZ0017
- %1b is not a valid frame name
-S2IZ0018
- You must provide a name for the new frame.
-S2IZ0019
- You cannot use the name %1b for a new frame because an existing
- frame already has that name.
-S2IZ0020
- There is only one frame active and therefore that cannot be closed.
- Furthermore, the frame name you gave is not the name of the current frame.
- The current frame is called %1b .
-S2IZ0021
- The current frame is the only active one.  Issue %b )clear all %d to
- clear its contents.
-S2IZ0022
- There is no frame called %1b and so your command cannot be
- processed.
-S2IZ0024
- The names of the existing frames are: %1 %l
- The current frame is the first one listed.
-S2IZ0073
- %b )frame import %d must be followed by the frame name. The names
- of objects in that frame can then optionally follow the frame name.
- For example,
- %ceon %b )frame import calculus %d %ceoff
- imports all objects in the %b calculus %d frame, and
- %ceon %b )frame import calculus epsilon delta %d %ceoff
- imports the objects named %b epsilon %d and %b delta %d from the
- frame %b calculus %d .
- Please note that if the current frame contained any information
- about objects with these names, then that information would be
- cleared before the import took place.
-S2IZ0074
- You cannot import anything from the frame %1b because that is not
- the name of an existing frame.
-S2IZ0075
- You cannot import from the current frame (nor is there a need!).
-S2IZ0076
- User verification required:
- do you really want to import everything from the frame %1b ?
- If so, please enter %b y %d or %b yes %d :
-S2IZ0077
- On your request, AXIOM will not import everything from frame %1b.
-S2IZ0078
- Import from frame %1b is complete. Please issue %b )display all %d
- if you wish to see the contents of the current frame.
-S2IZ0079
- AXIOM cannot import %1b from frame %2b because it cannot be found.
-@
 \chapter{The Undo Mechanism}
 \section{)undo}
 \index{ugSysCmdundo}
@@ -1399,10 +1102,6 @@ The [[$previousBindings]] is a copy of the
 [[CAAR $InteractiveFrame]]. This is used to
 compute the [[delta(i)]]s stored in [[$frameRecord]].
 \section{Functions}
-\subsection{Initial Undo Variables}
-<<initvars>>=
-(defvar |$reportUndo| nil "t means we report the steps undo takes")
-@
 
 \subsection{defun reportUndo}
 This function is enabled by setting [[|$reportUndo]] to a non-nil value.
@@ -1423,14 +1122,6 @@ Properties of r ::
 
 \end{verbatim}
 
-
-\chapter{The Spad Server Mechanism}
-<<initvars>>=
-(defvar $openServerIfTrue t "t means try starting an open server")
-(defparameter $SpadServerName "/tmp/.d" "the name of the spad server socket")
-(defvar |$SpadServer| nil "t means Scratchpad acts as a remote server")
-
-@
 
 \chapter{Axiom Build-time Functions}
 \subsection{defun spad-save}
@@ -1472,57 +1163,7 @@ than a load of the file src/interp/debugsys.lisp.pamphlet. If
 you need to make test modifications you can add code to that
 file and it will show up here.
 \end{list}
-<<defun spad-save>>=
-(defun spad-save (save-file do-restart)
-  (setq |$SpadServer| nil)
-  (setq $openServerIfTrue t)
-  #-:openmcl
-  (AXIOM-LISP::save-core-restart save-file
-         (if do-restart #'boot::axiom-restart nil))
-  #+:openmcl
-  (AXIOM-LISP::save-core-restart save-file
-         (if do-restart "BOOT::axiom-restart" nil))
-)
 
-@
-
-\chapter{The Interpreter}
-<<Interpreter>>=
-(in-package "BOOT")
-<<initvars>>
-
-<<defun loadExposureGroupData>>
-
-<<defun reclaim>>
-
-<<defun restart>>
-
-<<defun spad-save>>
-<<defun statisticsInitialization>>
-
-@
-\chapter{Makefile.bookvol5}
-<<*>>=
-LATEX=/usr/bin/latex
-LISP=${AXIOM}/obj/linux/bin/lisp
-TANGLE=/usr/local/bin/NOTANGLE
-WEAVE=/usr/local/bin/NOWEAVE -delay
-
-all: bookvol5
-	@echo 0 done
-
-bookvol5: bookvol5.pamphlet
-	@echo 1 extracting the bookvol5reter
-	${WEAVE} bookvol5.pamphlet >bookvol5.tex
-	${LATEX} bookvol5.tex
-	${LATEX} bookvol5.tex
-	${TANGLE} -R"Interpreter" bookvol5.pamphlet >bookvol5.lisp
-
-remake:	
-	@echo 2 rebuilding the makefile
-	@${TANGLE} bookvol5.pamphlet >Makefile.bookvol5
-
-@
 \eject
 \begin{thebibliography}{99}
 \bibitem nothing

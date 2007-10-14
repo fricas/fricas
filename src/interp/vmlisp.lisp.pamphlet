@@ -1915,23 +1915,28 @@ and works properly.
 #+:clisp
 (defun gcmsg (x))
 
-#|
-#+Lucid
-(defun reclaim () (system:gc))
-#+:cmulisp
-(defun reclaim () (ext:gc))
-#+(OR IBCL KCL)
-(defun reclaim () (gbc t))
+#+abcl
+(defun reclaim () (ext::gc))
 #+:allegro
 (defun reclaim () (excl::gc t))
 #+:CCL
 (defun reclaim () (gc))
-#+:sbcl
-(defun reclaim () (sb-ext:gc))
-#+:clisp
-(defun reclaim () nil)
-
-|#
+#+clisp
+(defun reclaim () (#+lisp=cl ext::gc #-lisp=cl lisp::gc))
+#+(or :cmulisp :cmu)
+(defun reclaim () (ext:gc))
+#+cormanlisp
+(defun reclaim () (cl::gc))
+#+(OR IBCL KCL GCL)
+(defun reclaim () (si::gbc t))
+#+lispworks
+(defun reclaim () (hcl::normal-gc))
+#+Lucid
+(defun reclaim () (lcl::gc))
+#+sbcl
+(defun reclaim () (sb-ext::gc))
+#+openmcl
+(defun reclaim () (ccl::gc))
 
 #+Lucid
 (defun BPINAME (func)
