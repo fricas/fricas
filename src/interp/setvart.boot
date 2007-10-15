@@ -349,8 +349,8 @@ SETANDFILEQ($setOptions,'(
      (autoload
       "print file auto-load messages"
       interpreter
-      FUNCTION
-      printLoadMessages
+      LITERALS
+      $printLoadMessages
       (on off)
       on)
      (bottomup
