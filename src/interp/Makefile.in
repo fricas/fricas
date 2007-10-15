@@ -178,8 +178,13 @@ clean:
 	@echo 619 cleaning $(builddir)
 
 .PRECIOUS: %.boot
-%.boot: $(srcdir)/%.boot.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
+alql.boot astr.boot cformat.boot clam.boot cparse.boot \
+cstream.boot dq.boot g-boot.boot g-util.boot incl.boot \
+int-top.boot macex.boot msg.boot osyscmd.boot packtran.boot \
+parini.boot parse.boot pf2sex.boot pile.boot posit.boot \
+postpar.boot ptrees.boot ptrop.boot scan.boot serror.boot \
+sfsfun.boot showimp.boot slam.boot varini.boot : %.boot: $(srcdir)/%.boot
+	cp $< $@
 .PRECIOUS: %.clisp
 %.clisp: %.boot
 	$(BOOT_TO_LISP)
@@ -192,8 +197,11 @@ clean:
 %.$(FASLEXT): %.lisp
 	$(COMPILE_LISP)
 
-%.lisp: $(srcdir)/%.lisp.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
+$(DEP) sys-pkg.lisp nocompil.lisp util.lisp parsing.lisp metalex.lisp \
+  bootlex.lisp preparse.lisp def.lisp metameta.lisp fnewmeta.lisp \
+  cfuns.lisp fname.lisp monitor.lisp sfsfun-l.lisp sockio.lisp \
+  daase.lisp patches.lisp nspadaux.lisp : %.lisp: $(srcdir)/%.lisp
+	cp $< $@
 
 mostlyclean-local:
 	rm -f *.fn *.data *.o
@@ -274,8 +282,6 @@ ${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
 	@ echo '(load "util.lisp")' >> makedep.lisp
 	@ echo '(in-package "BOOT")' >> makedep.lisp
 	@ echo '(build-depsys (quote ($(patsubst %, "%", ${DEP}))) "${AXIOM}" "$(builddir)")' >> makedep.lisp
-	@ echo '(unless (probe-file "def.$(FASLEXT)") (compile-file "def.lisp" :output-file "def.$(FASLEXT)"))' >> makedep.lisp
-	@ echo '(load "def")' >> makedep.lisp
 	for A in postpar.clisp parse.clisp parsing.lisp metalex.lisp \
 	         bootlex.lisp newaux.lisp preparse.lisp def.lisp \
 	         metameta.lisp fnewmeta.lisp clam.clisp slam.clisp \
@@ -375,9 +381,9 @@ MID_from_IN=\
  termrw topics trace wi1 wi2
 
 $(addsuffix .clisp, $(MID_from_IN)): \
-    %.clisp : $(srcdir)/%.boot.pamphlet
+    %.clisp : $(srcdir)/%.boot
 	@ echo 11 making $@ from $<
-	$(axiom_build_document) --tangle --output=$*.boot $<; \
+	cp $< $*.boot ; \
 	   echo '(progn (boottran::boottocl "$*.boot") (${BYE}))' | ${DEPSYS}
 
 ffi-func.$(FASLEXT): ffi-func.lisp
@@ -395,26 +401,6 @@ newaux.$(FASLEXT): newaux.lisp
 	echo '(progn  (compile-file "newaux.lisp" :output-file ' \
              '"newaux.$(FASLEXT)") (${BYE}))' | ${DEPSYS} 
 
-newaux.lisp: $(srcdir)/newaux.lisp.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
-
-.PRECIOUS: $(builddir)/%.tex
-.PRECIOUS: $(builddir)/%.dvi
-
-$(DOC):
-	$(mkinstalldirs) $@
-
-$(DOC)/%.dvi: $(builddir)/%.dvi
-	$(INSTALL_DATA) $< $@
-
-$(builddir)/%.dvi: $(axiom_build_texdir)/axiom.sty
-
-$(builddir)/%.dvi: $(builddir)/%.tex
-	$(axiom_build_document) --latex $<
-
-$(builddir)/%.tex: $(srcdir)/%.pamphlet
-	$(axiom_build_document) --weave --output=$@ $<
-
-$(axiom_build_texdir)/diagrams.tex: $(axiom_src_docdir)/diagrams.tex
-	$(INSTALL_DATA) $< $@
+newaux.lisp: $(srcdir)/newaux.lisp
+	cp $< $@
 
