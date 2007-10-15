@@ -178,8 +178,15 @@ make_program() {
 translate_boot_file() {
     case $lisp_flavor in
 	gcl|sbcl|clisp|openmcl)
+	   if [ -z "$output" ] ; then
+	      o_arg=nil
+	   else
+	      o_arg=\""$output"\"
+	   fi
 	   # $command $quiet $eval_flags "(in-package \"BOOTTRAN\")" \
-	   echo "(in-package \"BOOTTRAN\") (progn (boottoclc \"$1\")) (quit)" | $command | tee $2 
+	   echo "(in-package \"BOOTTRAN\") (progn (boottoclc \"$1\" $o_arg))" \
+	         "(quit)" | $command
+
 	   ;;
 	*)
 	   error "don't know how to translate with '$lisp_flavor' Lisp"

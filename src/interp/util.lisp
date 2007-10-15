@@ -450,7 +450,7 @@ where the [[${SYS}]] variable is same as the one set at build time.
 (in-package "BOOTTRAN") 
 
 #+:oldboot
-(defun boottran::boottocl (file) ;; translates a single boot file
+(defun boottran::boottocl (file &optional ofile) ;; translates a single boot file
 #+:CCL
   (setq *package* (find-package "BOOT"))
 #-:CCL
@@ -458,7 +458,8 @@ where the [[${SYS}]] variable is same as the one set at build time.
   (let (*print-level* *print-length* (fn (pathname-name file)))
     (boot::boot
       file
-      (merge-pathnames (make-pathname :type "clisp") file))))
+      (if ofile ofile
+         (merge-pathnames (make-pathname :type "clisp") file)))))
 
 
 (in-package "BOOT")

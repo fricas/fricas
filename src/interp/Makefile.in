@@ -6,7 +6,7 @@ DOC=$(axiom_target_docdir)/src/interp
 # Command to translate Boot to Common Lisp
 BOOT_TO_LISP = \
 	$(axiom_build_document) --tag=boot --mode=translate \
-		--use=$(BOOTSYS) $<
+		--use=$(BOOTSYS) --output=$@ $<
 
 # Command to translate Common Lisp to native object code
 COMPILE_LISP = \
@@ -177,20 +177,14 @@ all-depsys: $(DEPSYS)
 clean:
 	@echo 619 cleaning $(builddir)
 
-.PRECIOUS: %.boot
-alql.boot astr.boot cformat.boot clam.boot cparse.boot \
-cstream.boot dq.boot g-boot.boot g-util.boot incl.boot \
-int-top.boot macex.boot msg.boot osyscmd.boot packtran.boot \
-parini.boot parse.boot pf2sex.boot pile.boot posit.boot \
-postpar.boot ptrees.boot ptrop.boot scan.boot serror.boot \
-sfsfun.boot showimp.boot slam.boot varini.boot : %.boot: $(srcdir)/%.boot
-	cp $< $@
 .PRECIOUS: %.clisp
-%.clisp: %.boot
+%.clisp: $(srcdir)/%.boot
 	$(BOOT_TO_LISP)
+
 .PRECIOUS: %.$(FASLEXT)
 %.$(FASLEXT): %.clisp
 	$(COMPILE_LISP)
+
 # Extract and compile the part of the interpreter written
 # in Common Lisp
 .PRECIOUS: %.lisp
@@ -383,8 +377,7 @@ MID_from_IN=\
 $(addsuffix .clisp, $(MID_from_IN)): \
     %.clisp : $(srcdir)/%.boot
 	@ echo 11 making $@ from $<
-	cp $< $*.boot ; \
-	   echo '(progn (boottran::boottocl "$*.boot") (${BYE}))' | ${DEPSYS}
+	echo '(progn (boottran::boottocl "$<" "$@") (${BYE}))' | ${DEPSYS}
 
 ffi-func.$(FASLEXT): ffi-func.lisp
 	echo '(progn  (compile-file "ffi-func.lisp" :output-file' \
