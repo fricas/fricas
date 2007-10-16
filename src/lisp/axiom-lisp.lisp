@@ -255,8 +255,15 @@
            ;;; gcl-2.6.7
            (probe-file file))
 |#
-#+:GCL (if (not (equal (file-kind (namestring file)) -1))
-           (truename file))
+#+:GCL (let* ((fk (file-kind (namestring file)))
+              (fname (trim-directory-name (namestring file)))
+              (dname (pad-directory-name fname)))
+           (cond
+             ((equal fk 1)
+                (truename dname))
+             ((equal fk 0)
+               (truename fname))
+             (t nil)))
 #+:sbcl (if (sb-unix::unix-file-kind file) (truename file))
 #+:openmcl (probe-file file)
 #+:clisp(let* ((fname (trim-directory-name (namestring file)))

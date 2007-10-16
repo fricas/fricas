@@ -208,7 +208,7 @@ NRTassocIndex x == --returns index of "domain" entry x in al
   NULL x => x
   x = $NRTaddForm => 5
   k := or/[i for i in 1.. for y in $NRTdeltaList
-            | y.0 = 'domain and y.1 = x and ($found := y)] =>
+            | CAR(y) = 'domain and NTH(1, y) = x and ($found := y)] =>
     $NRTbase + $NRTdeltaLength - k
   nil
 
