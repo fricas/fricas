@@ -623,7 +623,7 @@ This helper function is listed below.
 ;;; files.
 (defun boot-load (file)
   (let ((name (concat $SPADROOT "/autoload/" (pathname-name file))))
-    (if |$printLoadMsgs|
+    (if (eq |$printLoadMsgs| |on|)
         (format t "   Loading ~A.~%" name))
     (load name)))
 
@@ -1283,7 +1283,7 @@ quality we check anyway.
       (setq |$SpadServer| t)))))
   (setq |$IOindex| 1)
   (setq |$InteractiveFrame| (|makeInitialModemapFrame|))
-  (setq |$printLoadMsgs| t)
+  (setq |$printLoadMsgs| '|on|)
   (|loadExposureGroupData|)
   (|statisticsInitialization|)
   (|initHist|)

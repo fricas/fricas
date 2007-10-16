@@ -135,7 +135,7 @@ loadLib cname ==
   not update? =>
      loadLibNoUpdate(cname, cname, fullLibName)
   kind := GETDATABASE(cname,'CONSTRUCTORKIND)
-  if $printLoadMsgs then
+  if $printLoadMsgs = "on" then
     sayKeyedMsg("S2IL0002",[namestring fullLibName,kind,cname])
   load__quietly(fullLibName)
   clearConstructorCache cname
@@ -161,7 +161,7 @@ loadLib cname ==
 
 loadLibNoUpdate(cname, libName, fullLibName) ==
   kind := GETDATABASE(cname,'CONSTRUCTORKIND)
-  if $printLoadMsgs then
+  if $printLoadMsgs = "on" then
     sayKeyedMsg("S2IL0002",[namestring fullLibName,kind,cname])
   if CATCH('VERSIONCHECK,load__quietly(fullLibName)) = -1
     then 
