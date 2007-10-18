@@ -623,7 +623,7 @@ This helper function is listed below.
 ;;; files.
 (defun boot-load (file)
   (let ((name (concat $SPADROOT "/autoload/" (pathname-name file))))
-    (if (eq |$printLoadMsgs| |on|)
+    (if (eq |$printLoadMsgs| '|on|)
         (format t "   Loading ~A.~%" name))
     (load name)))
 
