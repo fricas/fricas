@@ -341,9 +341,11 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
         for i in minRowIndex m .. maxRowIndex m repeat
           for j in minColIndex m .. maxColIndex m repeat
             qsetelt_!(mhat, i, j, qelt(r, i + ii) * qelt(m, i, j))
-        sol := first nullSpace transpose map(infValue,
+        solList := nullSpace transpose map(infValue,
                 mhat)$MatrixCategoryFunctions2(RF, Vector RF, Vector RF,
                              Matrix RF, Q, Vector Q, Vector Q, Matrix Q)
+        empty?(solList) => return ans
+        sol := first solList
         (pr := kmin(m, sol)) case "failed" => return ans
         qsetelt_!(ans, pr.pos,
          +/[Q2RF(qelt(sol, i)) * rfmonom(repOrder(m, i - ii) - pr.km)
