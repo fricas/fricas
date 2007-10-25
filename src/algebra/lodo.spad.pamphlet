@@ -113,12 +113,10 @@ LinearOrdinaryDifferentialOperatorsOps(A, L): Exports == Implementation where
           var1 := new()$Symbol
           var2 := new()$Symbol
 
-          nonTrivial?: Vector A -> Boolean
           applyLODO  : (L, V) -> P
           killer     : (P, N, List V, List P, A -> A) -> L
           vec2LODO   : Vector A -> L
 
-          nonTrivial? v == any?(#1 ^= 0, v)$Vector(A)
           vec2LODO v    == +/[monomial(v.i, (i-1)::N) for i in 1..#v]
 
           symmetricPower(l, m, diff) ==
@@ -140,8 +138,8 @@ LinearOrdinaryDifferentialOperatorsOps(A, L): Exports == Implementation where
             lu:List P := [u]
             for q in 0..m repeat
               mat := reducedSystem(matrix([lu])@Matrix(P))@Matrix(A)
-              (sol := find(nonTrivial?, l := nullSpace mat)) case Vector(A) =>
-                return vec2LODO(sol::Vector(A))
+              l := nullSpace mat
+              not empty?(l) => vec2LODO(first l)
               u := eval(differentiate(u, diff), lvar, lval)
               lu := concat_!(lu, [u])
             error "killer: no linear dependence found"

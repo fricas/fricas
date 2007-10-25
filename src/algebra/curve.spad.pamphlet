@@ -99,9 +99,6 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     yCoordinates           : $ -> Record(num:Vector(UP), den:UP)
       ++ yCoordinates(f) returns \spad{[[A1,...,An], D]} such that
       ++ \spad{f = (A1 + A2 y +...+ An y**(n-1)) / D}.
-    represents             : (Vector UP, UP) -> $
-      ++ represents([A0,...,A(n-1)],D) returns
-      ++ \spad{(A0 + A1 y +...+ A(n-1)*y**(n-1))/D}.
     integralCoordinates    : $ -> Record(num:Vector(UP), den:UP)
       ++ integralCoordinates(f) returns \spad{[[A1,...,An], D]} such that
       ++ \spad{f = (A1 w1 +...+ An wn) / D}  where \spad{(w1,...,wn)} is the
@@ -163,7 +160,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     infValue: RF -> Fraction F
     intvalue: (Vector UP, F, F) -> F
     rfmonom : Z  -> RF
-    kmin    : (Matrix RF,Vector Q) -> Union(Record(pos:Z,km:Z),"failed")
+    kmin    : (Matrix RF,Vector Q) -> Record(pos:Z,km:Z)
 
     Q2RF q                 == numer(q)::UP / denom(q)::UP
     infOrder f             == (degree denom f)::Z - (degree numer f)::Z
@@ -326,7 +323,8 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
         if nostart then (nostart := false; k := nk; i0 := i)
         else
           if nk < k then (k := nk; i0 := i)
-      nostart => "failed"
+      nostart => 
+        error "vector v has only zero entries"
       [i0, k]
 
     normalizeAtInfinity w ==
@@ -346,7 +344,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
                              Matrix RF, Q, Vector Q, Vector Q, Matrix Q)
         empty?(solList) => return ans
         sol := first solList
-        (pr := kmin(m, sol)) case "failed" => return ans
+        pr := kmin(m, sol)
         qsetelt_!(ans, pr.pos,
          +/[Q2RF(qelt(sol, i)) * rfmonom(repOrder(m, i - ii) - pr.km)
                   * qelt(ans, i) for i in minIndex sol .. maxIndex sol])
