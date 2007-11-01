@@ -1,15 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{no title}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -43,9 +31,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-@
-<<*>>=
-<<license>>
 
 #include "axiom-c-macros.h"
 #define _HASH_C
@@ -89,7 +74,7 @@ free_hash(HashTable *table, FreeFunction free_fun)
       for (e = table->table[i]; e != NULL;) {
         next = e->next;
         (*free_fun) (e->data);
-	(*e).data=0;
+        (*e).data=0;
         free(e);
         e = next;
       }
@@ -232,9 +217,3 @@ alloc_string(char *str)
     strcpy(result,str);
     return (result);
 }
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

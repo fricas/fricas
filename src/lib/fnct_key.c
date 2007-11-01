@@ -1,28 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/lib fnct\_key.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-\section{MAC OSX and BSD port}
-On the MAC OSX the signal [[SIGCLD]] has been renamed to [[SIGCHLD]].
-In order to handle this change we need to ensure that the platform
-variable is set properly and that the platform variable is changed
-everywhere.
-<<mac os signal rename>>=
-#if defined(MACOSXplatform) || defined(BSDplatform)
-        bsdSignal(SIGCHLD, null_fnct,RestartSystemCalls);
-#else
-        bsdSignal(SIGCLD, null_fnct,RestartSystemCalls);
-#endif
-@
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -55,19 +30,8 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-@
-<<*>>=
-<<license>>
 
 #include "axiom-c-macros.h"
-@
-The MACOSX platform is broken because no matter what you do it seems to
-include files from [[/usr/include/sys]] ahead of [[/usr/include]]. On linux
-systems these files include themselves which causes an infinite regression
-of includes that fails. GCC gracefully steps over that problem but the
-build fails anyway. On MACOSX the [[/usr/include/sys]] versions 
-of files are badly broken with respect to the [[/usr/include]] versions.
-<<*>>=
 #if defined(MACOSXplatform)
 #include "/usr/include/unistd.h"
 #else
@@ -346,7 +310,11 @@ handle_function_key(int key,int  chann)
                 close(fd);
             }
         }
-<<mac os signal rename>>
+#if defined(MACOSXplatform) || defined(BSDplatform)
+        bsdSignal(SIGCHLD, null_fnct,RestartSystemCalls);
+#else
+        bsdSignal(SIGCLD, null_fnct,RestartSystemCalls);
+#endif
         switch (id = fork()) {
           case -1:
             perror("Special key");
@@ -387,9 +355,3 @@ handle_function_key(int key,int  chann)
     return;
 
 }
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

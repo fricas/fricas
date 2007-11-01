@@ -1,16 +1,35 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/lib wct.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\newpage
-<<*>>=
-<<license>>
+/*
+Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    - Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+
+    - Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the
+      distribution.
+
+    - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 /*
  * Word completion.
  *
@@ -24,14 +43,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-@
-The MACOSX platform is broken because no matter what you do it seems to
-include files from [[/usr/include/sys]] ahead of [[/usr/include]]. On linux
-systems these files include themselves which causes an infinite regression
-of includes that fails. GCC gracefully steps over that problem but the
-build fails anyway. On MACOSX the [[/usr/include/sys]] versions 
-of files are badly broken with respect to the [[/usr/include]] versions.
-<<*>>=
 #if defined(MACOSXplatform)
 #include "/usr/include/unistd.h"
 #else
@@ -177,7 +188,7 @@ rescanWct(void)
     for (i = 0; i < wc; i++) {
       curr_wix.word = i;
       if (strneql(wv[i], prefix, preflen))
-	return &curr_wix;
+        return &curr_wix;
     }
   }
 
@@ -192,7 +203,7 @@ rescanWct(void)
     for (i = 0; i < wc; i++) {
       curr_wix.word = i;
       if (strneql(wv[i], prefix, preflen))
-	return &curr_wix;
+        return &curr_wix;
     }
   }
 
@@ -725,44 +736,3 @@ find_wct(void)
 
 
 }
-@
-\section{License}
-<<license>>=
-/*
-Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-    - Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-
-    - Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the
-      distribution.
-
-    - Neither the name of The Numerical ALgorithms Group Ltd. nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
-OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-@
-\newpage
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

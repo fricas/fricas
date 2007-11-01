@@ -1,31 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/lib XSpadFill.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-\begin{verbatim}
-
-This file contains the routines needed in order to dither using the
-spadcolors. The routines will have names such as XSpadFill, ... The user
-simply gives the normal arguments as with the corresponding XFill routine,
-with two additional arguments which choose the shade and the hue.
-
-The file will maintain twoGC's: stippleGC - will be used when stippling the
-backgrounds. solidGC - will be used when the background should be solid
-
-The user should call XSpadInit to get everthing going. This routine has the
-job of Initializing the dithering routines, and getting the colors all
-into place.
-
-\end{verbatim}
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -58,9 +30,22 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-@
-<<*>>=
-<<license>>
+
+/*
+
+This file contains the routines needed in order to dither using the
+spadcolors. The routines will have names such as XSpadFill, ... The user
+simply gives the normal arguments as with the corresponding XFill routine,
+with two additional arguments which choose the shade and the hue.
+
+The file will maintain twoGC's: stippleGC - will be used when stippling the
+backgrounds. solidGC - will be used when the background should be solid
+
+The user should call XSpadInit to get everthing going. This routine has the
+job of Initializing the dithering routines, and getting the colors all
+into place.
+
+*/
 
 #include "axiom-c-macros.h"
 #ifndef MSYSplatform
@@ -313,9 +298,3 @@ XSpadFillArcs(Display *dsply, Drawable drawable,XArc *arcs, int narcs,
 
 #endif /* MSYSplatform */
 
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

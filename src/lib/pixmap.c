@@ -1,26 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/lib pixmap.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-\section{MAC OSX zopen redefinition}
-On the [[MAC OSX]] platform they defined [[zopen]]. Since the function
-is only used in this file we simply rename it to [[zzopen]].
-<<mac zopen redefinition 1>>=
-FILE *
-zzopen(char *file,char * mode)
-@
-<<mac zopen redefinition 2>>=
-    file = zzopen(filename, "r");
-@
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -53,9 +30,6 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-@
-<<*>>=
-<<license>>
 
 #include "axiom-c-macros.h"
 
@@ -93,7 +67,8 @@ file_exists(char *file)
     return 0;
 }
 
-<<mac zopen redefinition 1>>
+FILE *
+zzopen(char *file,char * mode)
 {
     char com[512], zfile[512];
 
@@ -218,7 +193,7 @@ read_pixmap_file(Display *display, int screen, char *filename,
     if ((num_colors = makeColors(display, screen, &cmap, &spadColors, &ts)) < 0) {
         return(-1);
     }
-<<mac zopen redefinition 2>>
+    file = zzopen(filename, "r");
     if (file == NULL) {
         printf("couldn't open %s\n", filename);
         return BitmapOpenFailed;
@@ -359,9 +334,3 @@ write_pixmap_file(Display *dsp, int scr, char  *fn,
 
 
 
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

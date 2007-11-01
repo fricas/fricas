@@ -1,21 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-
-\title{\$SPAD/src/lib sockio-c.c}
-\author{The Axiom Team}
-
-\begin{document}
-\maketitle
-
-\begin{abstract}
-\end{abstract}
-\eject
-
-\tableofcontents
-\eject
-
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -48,9 +30,6 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-@
-<<*>>=
-<<license>>
 
 /* socket i/o primitives */
 
@@ -494,9 +473,9 @@ get_string(Sock *sock)
   buf = malloc(len*sizeof(char));
   val = fill_buf(sock, buf, len, "string");
   if (val == -1){
-	free(buf);
-	return NULL;
-	}
+        free(buf);
+        return NULL;
+        }
 #ifdef DEBUG
   fprintf(stderr,"get_string: received \"%s\" \n",buf);
 #endif
@@ -773,10 +752,10 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
     if (code == -1) {
       if (
         /* @@@ Why we need this */
-	errno != ENOENT &&
-	/* Needed on Cygwin, on Linux this should never happen. */
-	errno != EBADF &&
-	!axiom_connection_refused()) {
+        errno != ENOENT &&
+        /* Needed on Cygwin, on Linux this should never happen. */
+        errno != EBADF &&
+        !axiom_connection_refused()) {
         perror("connecting server stream socket");
         return NULL;
       } else {
@@ -1123,7 +1102,7 @@ print_line(char *s)
 typedef union {
   double        f;
   long          l[2];
-	} DoubleFloat;
+        } DoubleFloat;
 
 double 
 plus_infinity(void )
@@ -1163,9 +1142,3 @@ NANQ(void)
   }
   return nanq.f;
 }
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

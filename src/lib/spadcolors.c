@@ -1,16 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/lib spadcolors.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -43,9 +30,6 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-@
-<<*>>=
-<<license>>
 
 #include "axiom-c-macros.h"
 #include "spadcolors.h"
@@ -214,7 +198,7 @@ HLStoRGB(HLS hls)
 
 int
 makeColors(Display *dsply, int scrn, Colormap *colorMap, 
-	   unsigned long **colorIndex, int *total_Shades)
+           unsigned long **colorIndex, int *total_Shades)
 {
 
     int h, s;
@@ -249,14 +233,14 @@ makeColors(Display *dsply, int scrn, Colormap *colorMap,
             hsv.s = saturations[s];
             hsv.v = values[s];
             rgb = HSVtoRGB(hsv);
-	    color.red    = rgb.r *((1<<16)-1);
-	    color.green  = rgb.g *((1<<16)-1);
-	    color.blue   = rgb.b *((1<<16)-1);
+            color.red    = rgb.r *((1<<16)-1);
+            color.green  = rgb.g *((1<<16)-1);
+            color.blue   = rgb.b *((1<<16)-1);
             color.flags = DoRed | DoGreen | DoBlue;
-	    /*
-	      fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
-	      fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
-	      */
+            /*
+              fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
+              fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
+              */
             if ((okay = XAllocColor(dsply, *colorMap, &color)))
                 hiya[colorNum++] = color.pixel; /* hiya points to table */
         }                       /* for s */
@@ -268,14 +252,14 @@ makeColors(Display *dsply, int scrn, Colormap *colorMap,
             hsv.v = values[s];
             rgb = HSVtoRGB(hsv);
 
-	    color.red    = rgb.r *((1<<16)-1);
-	    color.green  = rgb.g *((1<<16)-1);
-	    color.blue   = rgb.b *((1<<16)-1);
+            color.red    = rgb.r *((1<<16)-1);
+            color.green  = rgb.g *((1<<16)-1);
+            color.blue   = rgb.b *((1<<16)-1);
             color.flags = DoRed | DoGreen | DoBlue;
-	    /* 
-	       fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
-	       fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
-	       */
+            /* 
+               fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
+               fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
+               */
 
             if ((okay = XAllocColor(dsply, *colorMap, &color)))
                 hiya[colorNum++] = color.pixel;
@@ -289,14 +273,14 @@ makeColors(Display *dsply, int scrn, Colormap *colorMap,
             hsv.v = values[s];
             rgb = HSVtoRGB(hsv);
 
-	    color.red    = rgb.r *((1<<16)-1);
-	    color.green  = rgb.g *((1<<16)-1);
-	    color.blue   = rgb.b *((1<<16)-1);
+            color.red    = rgb.r *((1<<16)-1);
+            color.green  = rgb.g *((1<<16)-1);
+            color.blue   = rgb.b *((1<<16)-1);
             color.flags = DoRed | DoGreen | DoBlue;
-	    /* 
-	       fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
-	       fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
-	       */
+            /* 
+               fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
+               fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
+               */
             if ((okay = XAllocColor(dsply, *colorMap, &color)))
                 hiya[colorNum++] = color.pixel;
         }
@@ -412,14 +396,14 @@ makeNewColorMap(Display *dsply, Colormap colorMap, int smoothHue)
         hls.s = saturation;
         rgb = HLStoRGB(hls);
 
-	xcolor.red    = rgb.r *((1<<16)-1);
-	xcolor.green  = rgb.g *((1<<16)-1);
-	xcolor.blue   = rgb.b *((1<<16)-1);
-	xcolor.flags = DoRed | DoGreen | DoBlue;
-	/* 
-	   fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
-	   fprintf(stderr,"%d\t%d\t%d\n",xcolor.red,xcolor.green,xcolor.blue);
-	   */
+        xcolor.red    = rgb.r *((1<<16)-1);
+        xcolor.green  = rgb.g *((1<<16)-1);
+        xcolor.blue   = rgb.b *((1<<16)-1);
+        xcolor.flags = DoRed | DoGreen | DoBlue;
+        /* 
+           fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
+           fprintf(stderr,"%d\t%d\t%d\n",xcolor.red,xcolor.green,xcolor.blue);
+           */
         if (XAllocColor(dsply, colorMap, &xcolor)) {
             pixels[count] = xcolor.pixel;
             count++;
@@ -505,65 +489,6 @@ FreePixels(Display *dsply, Colormap colorMap, int num)
 
 int
 AllocCells(Display *dsply, Colormap colorMap, int smoothHue)
-@
-This routine used to have the following code block. However this
-code block makes no sense. To see why you need to know that an
-XColor object looks like:
-\begin{verbatim}
-/*
- * Data structure used by color operations
- */
-typedef struct {
-	unsigned long pixel;
-	unsigned short red, green, blue;
-	char flags;  /* do_red, do_green, do_blue */
-	char pad;
-} XColor;
-\end{verbatim}
-This routine used to set the values of all of the elements of the XColor struct
-except [[pixel]]. This is usually done to specify a desired color in RGB
-values. To try to get a pixel value close to that color you call XAllocColor.
-This routine sets up the desired color values but it never asks for the pixel
-(which is really an index into the colormap of the nearest color) value that
-corresponds to the desired color. In fact it uses pixel without ever giving
-it a value. I've rewritten that code.
-\begin{verbatim}
-{
-    unsigned long plane_masks[1];
-    int i, count;
-    float lightness;
-    RGB rgb;
-    XColor xcolor;
-    HLS hls;
-
-    count = 0;
-    for (i = 0; i < (smoothConst + 1); i++) {
-        lightness = (float) (i) / (float) (smoothConst);
-        hls.h = (float) smoothHue;
-        hls.l = lightness;
-        hls.s = saturation;
-        rgb = HLStoRGB(hls);
-	xcolor.red    = rgb.r *((1@<<16)-1);
-	xcolor.green  = rgb.g *((1@<<16)-1);
-	xcolor.blue   = rgb.b *((1@<<16)-1);
-	xcolor.flags = DoRed | DoGreen | DoBlue;
-	/*
-	  fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
-	  fprintf(stderr,"%d\t%d\t%d\n",xcolor.red,xcolor.green,xcolor.blue);
-	  */
-        pixels[i] = xcolor.pixel;
-        count++;
-    }
-    if (XAllocColorCells(dsply, colorMap, False, 
-			  plane_masks, 0, pixels, smoothConst + 1)) {
-        return (smoothConst + 1);
-    }
-    else {
-        return (0);
-    }
-}
-\end{verbatim}
-<<*>>=
 {
     unsigned long plane_masks[1];
     int i, count;
@@ -587,10 +512,6 @@ it a value. I've rewritten that code.
           fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
           fprintf(stderr,"%d\t%d\t%d\n",xcolor.red,xcolor.green,xcolor.blue);
           */
-@
-Here I've modified the code to actually as for the pixel (colormap index) that
-most closely matches our requested RGB values.
-<<*>>=
         if (XAllocColor(dsply, colorMap, &xcolor)) { 
             pixels[count] = xcolor.pixel;
             count++;
@@ -610,9 +531,3 @@ most closely matches our requested RGB values.
         return (0);
     }
 }
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

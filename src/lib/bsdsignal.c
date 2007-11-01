@@ -1,16 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/lib halloc.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -43,37 +30,42 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-@
-<<*>>=
-<<license>>
 
 #include "axiom-c-macros.h"
+#include "bsdsignal.h"
 
-/* memory allocation used by HyperDoc and addfile */
+#if defined(MACOSXplatform)
+#include "/usr/include/signal.h"
+#else
+#include <signal.h> 
+#endif
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "halloc.H1"
+#include "bsdsignal.H1"
 
 
-/* allocate memory and bomb if none left (hyperTeX alloc) */
-char *
-halloc(int bytes,char * msg)
+SignalHandlerFunc
+bsdSignal(int sig, SignalHandlerFunc action, int restartSystemCall)
 {
-    static char buf[200];
-    char *result;
+#if HAVE_DECL_SIGACTION
 
-    result = (char *) malloc(bytes);
-    if (result == NULL) {
-        sprintf(buf, "Ran out of memory allocating %s.\b", msg);
-        exit(-1);
-    }
-    return result;
+  struct sigaction in,out;
+  in.sa_handler = action;
+  /* handler is reinstalled - calls are restarted if restartSystemCall */
+#ifdef SA_RESTART
+  if(restartSystemCall) in.sa_flags = SA_RESTART;
+  else in.sa_flags = 0;
+#elif defined(SA_INTERRUPT)
+  if (restartSystemCall) in.sa_flags = 0;
+  else in.sa_flags = SA_INTERRUPT;
+#else
+  in.sa_flags = 0; 
+#endif
+  
+  return (sigaction(sig, &in, &out) ? (SignalHandlerFunc) -1 : 
+          (SignalHandlerFunc) out.sa_handler);
+#else /* !HAVE_DECL_SIGACTION */
+  return (SignalHandlerFunc) -1;
+#endif /* HAVE_DECL_SIGACTION */
 }
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}
+
+

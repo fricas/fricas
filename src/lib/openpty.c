@@ -1,16 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/lib openpty.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -43,9 +30,6 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-@
-<<*>>=
-<<license>>
 
 #include "axiom-c-macros.h"
 #include <stdlib.h>
@@ -110,9 +94,9 @@ ptyopen(int *controller,int * server, char *controllerPath,char * serverPath)
     if (*controller >= 0) {
       *server = open(serverPath, oflag, 0);
       if (*server > 0)
-	looking = 0;
+        looking = 0;
       else
-	close(*controller);
+        close(*controller);
     }
   }
   if (looking) {
@@ -204,29 +188,23 @@ void
 makeNextPtyNames(char *cont,char * serv)
 {
 #ifdef AIX370platform
-	static int channelNo = 0;
-	sprintf(cont, "/dev/ptyp%02x", channelNo);
-	sprintf(serv, "/dev/ttyp%02x", channelNo);
-	channelNo++;
+        static int channelNo = 0;
+        sprintf(cont, "/dev/ptyp%02x", channelNo);
+        sprintf(serv, "/dev/ttyp%02x", channelNo);
+        channelNo++;
 #endif
 #if defined(SUNplatform) || defined(HP9platform) || defined(LINUXplatform) || defined(MACOSXplatform) || defined(BSDplatform)
-	static int channelNo = 0;
-	static char group[] = "pqrstuvwxyzPQRST";
-	static int groupNo = 0;
+        static int channelNo = 0;
+        static char group[] = "pqrstuvwxyzPQRST";
+        static int groupNo = 0;
 
-	sprintf(cont, "/dev/pty%c%x", group[groupNo], channelNo);
-	sprintf(serv, "/dev/tty%c%x", group[groupNo], channelNo);
-	channelNo++;                /* try next */
-	if (channelNo == 16) {      /* move to new group */
-		channelNo = 0;
-		groupNo++;
-		if (groupNo == 16) groupNo = 0;        /* recycle */
-		}
+        sprintf(cont, "/dev/pty%c%x", group[groupNo], channelNo);
+        sprintf(serv, "/dev/tty%c%x", group[groupNo], channelNo);
+        channelNo++;                /* try next */
+        if (channelNo == 16) {      /* move to new group */
+                channelNo = 0;
+                groupNo++;
+                if (groupNo == 16) groupNo = 0;        /* recycle */
+                }
 #endif
 }
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}
