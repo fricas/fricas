@@ -5,6 +5,10 @@
 \author{The Axiom Team}
 \maketitle
 \begin{abstract}
+This domain implements cartesian product for a pair of (possibly different) domains.
+If the underlying domains are both Finite then the resulting Product is also Finite
+and can be enumerated via size(), index(), location(), etc. The index of the second
+component (B) varies most quickly.
 \end{abstract}
 \eject
 \tableofcontents
@@ -64,9 +68,17 @@ Product (A:SetCategory,B:SetCategory) : C == T
           1 == [1$A,1$B]
           x * y == [x.acomp * y.acomp,x.bcomp * y.bcomp]
           x ** p == [x.acomp ** p ,x.bcomp ** p]
- 
+
        if A has Finite and B has Finite then
-          size == size$A () * size$B ()
+          size() == size()$A * size()$B 
+          index(n) == [index((((n::Integer-1) quo size()$B )+1)
+	                 ::PositiveInteger)$A,
+                       index((((n::Integer-1) rem size()$B )+1)
+		         ::PositiveInteger)$B]
+          random() == [random()$A,random()$B]
+          lookup(x) == ((lookup(x.acomp)$A::Integer-1) * size()$B::Integer +
+                        lookup(x.bcomp)$B::Integer)::PositiveInteger
+          hash(x) == hashCombine(hash(x.acomp), hash(x.bcomp))$Lisp
  
        if A has Group and B has Group then
           inv(x) == [inv(x.acomp),inv(x.bcomp)]

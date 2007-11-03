@@ -5,6 +5,37 @@
 \author{The Axiom Team}
 \maketitle
 \begin{abstract}
+VectorCategory, DirectProductCategory, Vector, IndexedVector, DirectProduct
+
+\spadtype{VectorCategory} represents the type of vector like objects,
+i.e. finite sequences indexed by some finite segment of the
+integers. The operations available on vectors depend on the structure
+of the underlying components. Many operations from the component domain
+are defined for vectors componentwise. It can by assumed that extraction or
+updating components can be done in constant time.
+
+\spadtype{IndexedVector} represents vector like objects with varying lengths
+and a user-specified initial index.
+
+\spadtype{Vector} represents vector like objects with varying lengths
+and indexed by a finite segment of integers starting at 1.
+
+\spadtype{DirectProductCategory} represents a finite cartesian product of
+a given type. Many categorical properties are preserved under this construction.
+
+\spadtype{DirectProduct} represents the finite direct or cartesian product
+of an underlying component type. This contrasts with simple vectors in that
+the members can be viewed as having constant length. Thus many
+categorical properties can by lifted from the underlying component type.
+Component extraction operations are provided but no updating operations.
+Thus new direct product elements can either be created by converting
+vector elements using the \spadfun{directProduct} function
+or by taking appropriate linear combinations of basis vectors provided
+by the \spad{unitVector} operation.
+
+If the underlying component type is Finite then the DirectProduct
+itself is Finite and may be enumerated via size() and index(). In this
+enumeration the index of the leftmost (nth)component varies most quickly.
 \end{abstract}
 \eject
 \tableofcontents
@@ -295,8 +326,6 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
               column(rh, minColIndex rh)
             [reducedSystem(m)@Matrix(R), vh]
  
-      if R has Finite then size == size$R ** dim
- 
       if R has Field then
         x / b       == x * inv b
         dimension() == dim::CardinalNumber
@@ -357,7 +386,29 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
         retractIfCan(z:%):Union(R, "failed") ==
           same? z => z(minIndex z)
           "failed"
- 
+
+      if R has Finite then
+          size() == size()$R ** dim
+          index(n:PositiveInteger):% ==
+            N:Integer := size()$R
+            p:Integer := n-1
+            L:List R := [index(((p rem N) + 1)::PositiveInteger)$R]
+            for i in 2..dim repeat
+              p := p quo N
+              L:=cons(index(((p rem N) + 1)::PositiveInteger)$R, L)
+            vector(L)
+          random() == [random()$R for i in 1..dim]
+          lookup(x) ==
+            N:Integer := size()$R
+            L:Integer := lookup(x.1)-1
+            for i in 2..dim repeat
+              L:=L*N+lookup(x.i)-1
+            (L+1)::PositiveInteger
+          hash(x) ==
+            L := hash(x.1)
+            for i in 2..dim repeat
+              L:=hashCombine(L, hash(x.i))$Lisp
+            L 
  
       if R has AbelianSemiGroup then
         u:% + v:% == map(_+ , u, v)$Rep
