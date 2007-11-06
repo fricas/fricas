@@ -17,11 +17,13 @@
 (eval-when (:execute :load-toplevel)
     (set-initial-parameters))
 
-;;; clisp wants to search whole "~/lisp" subtree to find source
-;;; file, which is insane.  Below we disable this behaviour.
 #+:clisp
 (eval-when (:execute :compile-toplevel :load-toplevel)
-    (setf custom:*load-paths* '(#P"./")))
+    ;;; clisp wants to search whole "~/lisp" subtree to find a source
+    ;;; file, which is insane.  Below we disable this behaviour.
+    (setf custom:*load-paths* '(#P"./"))
+    ;;; We want ANSI compliance
+    (setf custom:*ansi* t))
 
 ;; Save current image on disk as executable and quit.
 (defun save-core-restart (core-image restart)
