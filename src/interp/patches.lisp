@@ -74,6 +74,8 @@
   (setq |$specialCharacters| |$saveSpecialchars|))
 
 (defun |spool| (filename)
+  (if (and filename (symbolp (car filename)))
+      (setf (car filename) (symbol-name (car filename))))
   (cond ((null filename)
          (dribble) (TERPRI)
          (reset-highlight))
