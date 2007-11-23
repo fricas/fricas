@@ -282,7 +282,10 @@ NonBlank is true if the token is not preceded by a blank."
 
 (defun Pop-Reduction () (stack-pop Reduce-Stack))
 
+#-:openmcl
 (defmacro pop-stack-1 () '(reduction-value (Pop-Reduction)))
+#+:openmcl
+(defun pop-stack-1 () (reduction-value (Pop-Reduction)))
 
 (defmacro pop-stack-2 ()
   `(let* ((top (Pop-Reduction)) (next (Pop-Reduction)))
