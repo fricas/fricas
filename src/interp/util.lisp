@@ -92,6 +92,7 @@ at load time.
   #+:sbcl "fasl"
   #+:clisp "fas"
   #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
+  #+:ecl "fas"
   #+:ccl "not done this way at all"
   )
 

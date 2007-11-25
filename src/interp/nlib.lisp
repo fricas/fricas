@@ -479,12 +479,16 @@ do the compile, and then rename the result back to [[code.o]].
     (obey (concat "rm -r " dirname))
     #+:win32 
     (obey (concat "rmdir /q /s " "\"" dirname "\"")))
-    
+
+#+:ecl
+(defun delete-directory (dirname)
+  (ext:system (concat "rm -r " dirname)))
+
 (defun $REPLACE (filespec1 filespec2)
     ($erase (setq filespec1 (make-full-namestring filespec1)))
-    #-(or :clisp :openmcl)
+    #-(or :clisp :openmcl :ecl)
     (rename-file (make-full-namestring filespec2) filespec1)
-    #+(or :clisp :openmcl)
+    #+(or :clisp :openmcl :ecl)
     (obey (concat "mv " (make-full-namestring filespec2) " " filespec1))
  )
 
@@ -517,7 +521,7 @@ do the compile, and then rename the result back to [[code.o]].
    (makedir name2)
    (ccl::run-program "sh" (list "-c" (concat "cp " name1 "/* " name2))))
 
-#+:clisp
+#+(or :clisp :ecl)
 (defun copy-lib-directory (name1 name2)
    (makedir name2)
    (OBEY (concat "sh -c 'cp " name1 "/* " name2 "'")))    
@@ -534,7 +538,7 @@ do the compile, and then rename the result back to [[code.o]].
 (defun copy-file (namestring1 namestring2)
   (ccl::run-program "cp" (list namestring1 namestring2)))
 
-#+:clisp
+#+(or :clisp :ecl)
 (defun copy-file (namestring1 namestring2)
   (OBEY (concat "cp " namestring1 " " namestring2)))
 

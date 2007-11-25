@@ -1827,6 +1827,8 @@
 (defun gcmsg (x))
 #+:clisp
 (defun gcmsg (x))
+#+:ecl
+(defun gcmsg (x))
 
 #+abcl
 (defun reclaim () (ext::gc))
@@ -1886,7 +1888,7 @@
    (if (symbolp x)
      (intern (symbol-name (symbol-function x)) "BOOT")
     nil))
-#+(or :sbcl :clisp :openmcl)
+#+(or :sbcl :clisp :openmcl :ecl)
 (defun BPINAME (func)
   (cond
       ((functionp func)
@@ -1951,6 +1953,9 @@
 (defun OBEY (S)
    (ext:run-shell-command S))
 
+#+:ecl
+(defun OBEY (S)
+   (ext:system S))
 
 (defun RE-ENABLE-INT (number-of-handler) number-of-handler)
 

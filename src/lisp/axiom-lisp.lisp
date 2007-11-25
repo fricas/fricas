@@ -121,6 +121,10 @@
 #+:openmcl
 (defun quit() (ccl::quit))
 
+#+:ecl
+(defun quit ()
+    (SI:quit))
+
 #+:poplog
 (defun quit() (poplog::bye))
 
@@ -148,10 +152,13 @@
 (defun chdir (dir)
  (ext::cd dir))
 
-
 #+:openmcl
 (defun chdir (dir)
   (ccl::%chdir dir))
+
+#+:ecl
+(defun chdir (dir)
+   (SI:CHDIR dir t))
 
 ;;; Environment access
 
@@ -160,6 +167,7 @@
   #+:sbcl (sb-ext::posix-getenv var-name)
   #+:clisp (ext::getenv var-name)
   #+:openmcl (ccl::getenv var-name)
+  #+:ecl (si::getenv var-name)
   )
 
 ;;; Silent loading of files
@@ -182,6 +190,24 @@
   (LISP::defentry file_kind (LISP::string)      (LISP::int "directoryp"))
   (LISP::defentry |makedir| (LISP::string)         (LISP::int "makedir")))
 
+#+:ecl
+(uffi:def-function ("directoryp" raw_file_kind)
+                   ((arg :cstring))
+                   :returning :int)
+#+:ecl
+(defun file_kind (name)
+      (FFI:WITH-CSTRING (cname name)
+           (raw_file_kind cname)))
+
+#+:ecl
+(uffi:def-function ("makedir" raw_makedir)
+                   ((arg :cstring))
+                   :returning :int)
+
+#+:ecl
+(defun |makedir| (name)
+      (FFI:WITH-CSTRING (cname name)
+          (raw_makedir cname)))
 
 (defun trim-directory-name (name)
     #+(or :unix :win32)
@@ -197,7 +223,7 @@
 
 ;;; Make directory
 
-#+:GCL
+#+(or :GCL :ecl)
 (defun makedir (fname) (|makedir| fname))
 
 #+:sbcl
@@ -215,7 +241,7 @@
 ;;;
 
 (defun file-kind (filename)
-   #+:GCL (file_kind filename)
+   #+(or :GCL :ecl) (file_kind filename)
    #+:sbcl (case (sb-unix::unix-file-kind filename)
                  (:directory 1)
                  ((nil) -1)
@@ -238,7 +264,7 @@
 (defun get-current-directory ()
   (namestring (extensions::default-directory)))
 
-#+(or :akcl :gcl :sbcl :clisp :openmcl)
+#+(or :ecl :gcl :sbcl :clisp :openmcl)
 (defun get-current-directory ()
     (trim-directory-name (namestring (truename ""))))
 
@@ -267,7 +293,7 @@
                (truename fname))
              (t nil)))
 #+:sbcl (if (sb-unix::unix-file-kind file) (truename file))
-#+:openmcl (probe-file file)
+#+(or :openmcl :ecl) (probe-file file)
 #+:clisp(let* ((fname (trim-directory-name (namestring file)))
                (dname (pad-directory-name fname)))
                  (or (ignore-errors (truename dname))
