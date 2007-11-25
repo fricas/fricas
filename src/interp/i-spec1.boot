@@ -80,11 +80,6 @@ SETANDFILEQ($repeatLabel, NIL)
 SETANDFILEQ($breakCount, 0)
 SETANDFILEQ($anonymousMapCounter, 0)
 
-SETANDFILEQ($specialOps, '(
-  ADEF AlgExtension and case COERCE COLLECT construct Declare DEF Dollar
-   equation error free has IF is isnt iterate break LET local MDEF or
-    pretend QUOTE REDUCE REPEAT return SEQ TARGET Tuple typeOf where ))
-
 --% Void stuff
 
 voidValue() == '"()"

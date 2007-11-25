@@ -31,6 +31,10 @@
 
 
 -- Functions which require special handlers (also see end of file)
+SETANDFILEQ($specialOps, '(
+  ADEF AlgExtension and case COERCE COLLECT construct Declare DEF Dollar
+     equation error free has IF is isnt iterate break LET local MDEF or
+       pretend QUOTE REDUCE REPEAT return SEQ TARGET Tuple typeOf where ))
 
 --% Handlers for map definitions
 
