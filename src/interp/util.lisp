@@ -1230,7 +1230,10 @@ quality we check anyway.
     (setq os (|openServer| $SpadServerName))
     (if (zerop os) 
      (progn 
-      (setq $openServerIfTrue nil) 
+      (setq $openServerIfTrue nil)
+      #+:gcl
+      (if (fboundp 'si::readline-off)
+          (si::readline-off))
       (setq |$SpadServer| t)))))
 #+:sbcl
 (let* ((ax-dir (|getEnv| "AXIOM"))
