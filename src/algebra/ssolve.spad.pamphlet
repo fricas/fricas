@@ -29,6 +29,11 @@ SparseUnivariatePolynomialExpressions(R: Ring): Exports == Implementation where
     Implementation == SparseUnivariatePolynomial R add
 
         if R has TranscendentalFunctionCategory then
+            log(p: %): % ==
+                ground? p => coerce log ground p
+                output(hconcat("log p for p= ", p::OutputForm))$OutputPackage
+                error "SUPTRAFUN: log only defined for elements of the coefficient ring"
+
             exp(p: %): % ==
                 ground? p => coerce exp ground p
                 output(hconcat("exp p for p= ", p::OutputForm))$OutputPackage
@@ -227,6 +232,7 @@ ExpressionSolve(R, F, UTSF, UTSSUPF): Exports == Implementation where
     Exports == with
 
         seriesSolve: (F, OP, SY, List F) -> UTSF
+        replaceDiffs: (F, OP, Symbol) -> F
 
     Implementation == add
 <<implementation: EXPRSOL ExpressionSolve>>
@@ -244,18 +250,25 @@ It turns out that the compiler doesn't find the right definition of
 that's even cleaner. Also, we need to tell the compiler that kernels that are
 independent of the main variable should be coerced to elements of the
 coefficient ring, since it will complain otherwise.
+\begin{ToDo}
+  I cannot find an example for this behaviour right now. However, if I do use
+  the coerce, the following fails:
+  \begin{verbatim}
+     seriesSolve(h x -1-x*h x *h(q*x), h, x, [1])
+  \end{verbatim}
+\end{ToDo}
 
 <<implementation: EXPRSOL ExpressionSolve>>=
         opelt := operator("elt"::Symbol)$OP
         opdiff := operator("D"::Symbol)$OP
         opcoerce := operator("coerce"::Symbol)$OP
 
-        replaceDiffs: (F, OP, Symbol) -> F
+--        replaceDiffs: (F, OP, Symbol) -> F
         replaceDiffs (expr, op, sy) ==
             lk := kernels expr
             for k in lk repeat
-                if freeOf?(coerce k, sy) then
-                    expr := subst(expr, [k], [opcoerce [coerce k]])
+--                if freeOf?(coerce k, sy) then
+--                    expr := subst(expr, [k], [opcoerce [coerce k]])
 
                 if is?(k, op) then
                     arg := first argument k
@@ -332,11 +345,11 @@ works. This is probably due to missing [[/]] in [[UFPS]].
 <<*>>=
 <<license>>
 
-<<dom: SUPEXPR SparseUnivariatePolynomialExpressions>>
+<<domain SUPEXPR SparseUnivariatePolynomialExpressions>>
 
-<<pkg: UTSSOL TaylorSolve>>
+<<package UTSSOL TaylorSolve>>
 
-<<pkg: EXPRSOL ExpressionSolve>>
+<<package EXPRSOL ExpressionSolve>>
 
 @
 \end{document}
