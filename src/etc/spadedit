@@ -1,0 +1,177 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{SPADEDIT}
+\author{Martin Rubey}
+\maketitle
+\begin{abstract}
+  \verb|SPADEDIT| is a shell script that handles features to display or edit
+  source files.
+\end{abstract}
+
+The script described here is called (at least) in two different situations:
+\begin{itemize}
+\item it is called by HyperDoc, when the user clicks on a link like
+  \verb|INT.spad|. In this case it receives two arguments, namely 
+  \begin{enumerate}
+  \item the file in which HyperDoc believes the constructur is defined, which
+    is currently of the form \verb|$AXIOM/../../src/algebra/INT.spad|, i.e.,
+    the path to the source directory, then the abreviation of the constructor,
+    and finally \verb|.spad| appended,
+
+  \item the long name of the constructor.
+  \end{enumerate} 
+
+\item it is called from the interpreter, when the usser issues \verb|)edit|. In
+  this case it receives exactly one argument, even if it \verb|)edit| had  no
+  or several arguments supplied. 
+
+  \begin{itemize}
+  \item if several arguments were supplied, only the first is passed to
+    \verb|SPADEDIT| and all the others are ignored.
+  \item if no arguments were supplied, \verb|SPADEDIT| receives the last
+    argument it received, or \verb|NIL| if so far \verb|)edit| was always
+    called with no arguments. Furthermore, if the argument of \verb|)edit|
+    starts with a dot, it is also not passed to \verb|SPADEDIT|.
+  \end{itemize}
+
+\item given the option \verb|$useFullScreenHelp| is set via
+  \verb|)set help fullscreen on|, then \verb|)help| also launches
+  \verb|SPADEDIT|, again with one argument, which is the
+  \verb|$AXIOM/doc/spadhelp/ARG.help|, where \verb|ARG| is the argument given
+  to \verb|)help|.
+\end{itemize}
+
+We want to enable user customization via a shell variable \verb|AXIOMEDITOR|.
+This variable should be a string containing \verb|$name| and optionally
+\verb|$line|, that gives the precise command to call the preferred editor,
+makes it load \verb|$name| and go to line number \verb|$line|.  More precisely,
+we will call the bash builtin \verb|eval| on that variable, after setting
+\verb|line| and \verb|name| appropriately. For example, it could be something
+like:
+\begin{verbatim}
+    emacs +$line $name 
+    emacsclient +$line $name >\dev\null 2>&1
+    emacsclient +$line $name 
+    xemacs +$line $name 
+    gnuclient +$line $name 
+    { exec </dev/tty; vi +$line $name; }
+    less +$line $name 
+    kwrite --line $line $name 
+    kate --line $line $name 
+\end{verbatim}
+
+If \verb|AXIOMEDITOR| is not set we use \verb|more| as default viewer.  Note
+that this would in fact also available on \verb|MS Windows|, and even supports
+the option \verb|+| there.  
+
+There is another subtlety we have to be aware of: when \verb|axiom| is started
+in the usual way, i.e., via \verb|sman|, then we do not have access to a real
+terminal.  Under X, this is no problem, we simply launch an \verb|xterm|.
+Otherwise, we just exit.
+
+If \verb|axiom| is started directly via \verb|AXIOMsys|, which can be detected
+using the \verb|$SPADNUM| variable, this problem does not exist.
+
+<<*>>= 
+#! /bin/sh
+
+if [ $# -eq 0 ]; then
+    echo ""
+    echo "Error: SPADEDIT expects one or two arguments."
+    exit
+fi
+
+DEFAULTEDITOR='more +$line $name'
+DEFAULTXEDITOR='xterm -e "more +$line $name"'
+
+if [ "$AXIOMEDITOR" = "" ] ; then
+    echo ""
+    if [ ! -z "$SPADNUM" ] && [ -z "$DISPLAY" ] ; then
+        echo "Error: environment variable AXIOMEDITOR not set."
+        echo "We are in server mode but have no X."
+        echo "No default way to edit/view files."
+        exit
+     fi
+     if [ -z "$DISPLAY" ] ; then
+         echo "Warning: environment variable AXIOMEDITOR not set."
+         echo "Using 'more'."
+         echo "Press space to continue, 'q' to quit."
+         AXIOMEDITOR=$DEFAULTEDITOR
+     else
+         echo "Warning: environment variable AXIOMEDITOR not set."
+         echo "Launching 'more' in an 'xterm'."
+         echo "Press space to continue, 'q' to quit."
+         AXIOMEDITOR=$DEFAULTXEDITOR
+     fi
+fi
+
+@
+
+If we have only one argument, we were called by \verb|)edit| and can simply
+call the text editor of our choice:
+
+<<*>>=
+if [ $# -eq 1 ]; then
+    name=$1
+    line=1
+    eval $AXIOMEDITOR
+@
+%$
+
+Otherwise, we are now in the case where we were called by HyperDoc. Since
+filenames supplied by HyperDoc do not correspond to the filenames in the
+current Axiom distribution as of [[patch-50]], we have to find the right file
+ourselves.  We simply grep the directory containing the source files to return
+file and line number within that file.  Here we assume that \verb|)abb| appears
+at the beginning of a line exactly if it introduces a constructor.
+
+<<*>>=
+else
+    f=$(basename $1 .spad)
+    h=$(grep -n "^)abb.* $f " $AXIOM/src/algebra/*.spad.pamphlet)
+    name=${h%%:*}
+@
+
+Note that we rather extract the abbreviation of the constructor, instead of
+using the full name. The reason is best explained by example. Consider the
+following two lines in \verb|integer.spad|:
+
+\begin{verbatim}
+)abbrev package INTSLPE IntegerSolveLinearPolynomialEquation
+\end{verbatim}
+
+and
+
+\begin{verbatim}
+)abbrev domain INT Integer
+\end{verbatim}
+
+The abreviated domain name is nicely delimited by two spaces, while we do not
+know what follows the long domain name. There might be spaces and a carriage
+return, maybe even comments are allowed\dots.
+
+We assume that grep produces only one result. There is currently way in Axiom
+to deal with several constructors having the same name anyway.
+
+The next step is to obtain the name of the source file.  At some point we might
+make sense to display the dvi file instead.  This would rely on
+\verb|source-specials| being properly enabled, as Ralf pointed out.
+
+We could then say, for example
+\begin{verbatim}
+  kdvi file:$dviname#src:$number$name.tex
+\end{verbatim}
+but that doesn't work yet.
+
+Finally, we obtain the line number and call our favorite editor:
+
+<<*>>=
+    line1=${h#*:}
+    line=${line1%:*}
+    eval $AXIOMEDITOR
+fi
+@
+%$
+
+\end{document}
