@@ -37,7 +37,11 @@ all:
 	(cd $(THTDIR); \
 	  rm -f ht.db ; \
 	  ${HTADD} *.ht)
-	$(MAKE) nphts
+	if [ -f copy_nphts ] ; then \
+	   ${MAKE} copy-nphts ; \
+	else \
+	   $(MAKE) nphts ; \
+	fi
 	if [ -f copy_gphts ] ; then ${MAKE} copy-gphts ; fi
 	(cd $(THTDIR); \
 	  rm -f ht.db ; \
@@ -47,6 +51,11 @@ nphts: $(addprefix $(THTDIR)/, $(addsuffix .pht, $(PHTS)))
 
 gphts: $(addprefix $(THTDIR)/, $(addsuffix .pht, $(GPHTS))) mobius.VIEW
 	cp -r *.VIEW $(axiom_target_datadir)/viewports
+
+copy-nphts:
+	for A in $(addsuffix .pht, $(PHTS)); do \
+	  cp $(srcdir)/$${A} $(THTDIR) ; \
+	done
 
 copy-gphts:
 	for A in $(addsuffix .pht, $(GPHTS)); do \

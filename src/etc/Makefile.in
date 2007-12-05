@@ -24,7 +24,8 @@ stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
 		$(axiom_target_libdir)/summary \
 		$(axiom_target_libdir)/copyright \
 		$(axiom_target_bindir)/axiom \
-                $(axiom_target_libdir)/SPADEDIT
+                $(axiom_target_libdir)/SPADEDIT \
+                $(axiom_target_docdir)/spadhelp/help.help
 	-rm -f stamp
 	$(STAMP) stamp
 
@@ -77,11 +78,20 @@ $(axiom_target_bindir)/asq$(EXEEXT): asq.c $(axiom_c_macros_h)
 
 asq.c: $(srcdir)/asq.c.pamphlet
 	$(axiom_build_document) --tangle --output=$@ $<
+
 $(axiom_target_libdir)/summary: $(srcdir)/summary
 	$(INSTALL_DATA) $< $@ 
 
 $(axiom_target_libdir)/copyright: $(srcdir)/copyright
 	$(INSTALL_DATA) $< $@ 
+
+$(axiom_target_docdir)/spadhelp/help.help:
+	if [ -f $(axiom_src_datadir)/spadhelp/help.help ] ; then \
+	   cp $(axiom_src_datadir)/spadhelp/* \
+	      $(axiom_target_docdir)/spadhelp ; \
+	else \
+	   echo "Help files not installed" > $@ ; \
+	fi
 
 $(axiom_target_libdir)/SPADEDIT: $(srcdir)/spadedit
 	$(axiom_build_document) --tangle --output=$@ $<

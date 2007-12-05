@@ -601,6 +601,13 @@ if test -f $srcdir/src/algebra/use_lisp ; then
     fi
 fi
 
+if test -f $srcdir/src/paste/copy_nphts ; then
+    # Sanity check
+    if test -f $srcdir/src/paste/SYMBOL.pht ; then
+        touch src/paste/copy_nphts
+    fi
+fi
+
 if test -f $srcdir/src/paste/copy_gphts ; then
     # Sanity check
     if test -d $srcdir/src/paste/mobius.VIEW ; then

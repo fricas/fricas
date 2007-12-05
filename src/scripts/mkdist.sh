@@ -17,6 +17,7 @@ fi
 
 copy_lisp=""
 copy_gphts=""
+copy_phts=""
 NOWEB_TARBALL=""
 GCL_DIST=""
 
@@ -27,6 +28,10 @@ while test $# -gt 0 ; do
         copy_lisp=y
         ;;
       --copy_gphts)
+        copy_gphts=y
+        ;;
+      --copy_phts)
+        copy_phts=y
         copy_gphts=y
         ;;
       --copy_noweb=*)
@@ -43,6 +48,13 @@ while test $# -gt 0 ; do
            exit 1
         fi
         ;;
+      --copy_help=*)
+        HELP_DIR=`echo ${opt} | sed 's,--copy_help=,,'`
+        if [ ! -d "${HELP_DIR}" ] ; then
+            echo The directory "${HELP_DIR}" does not exist
+            exit 1
+        fi
+        ;;
       *)
         echo Unrecognized option "${opt}"
         exit 1
@@ -53,8 +65,10 @@ done
 
 echo copy_lisp=\"${copy_lisp}\"
 echo copy_gphts=\"${copy_gphts}\"
+echo copy_phts=\"${copy_phts}\"
 echo NOWEB_TARBALL=\"${NOWEB_TARBALL}\"
 echo GCL_DIST=\"${GCL_DIST}\"
+echo HELP_DIR=\"${HELP_DIR}\"
 
 clean_svn () {
     # The maximal depth in gcl tree is 6
@@ -84,6 +98,11 @@ if [ ! -z "${GCL_DIST}" ] ; then
    clean_svn gcl
 fi
 
+# copy help files
+if [ ! -z "${HELP_DIR}" ] ; then
+   cp -r "${HELP_DIR}" src/share/spadhelp
+fi
+
 # copy graphic .pht pages
 if [ ! -z "${copy_gphts}" ]; then
    for A in SEGBIND explot2d coverex explot3d graphics ug01 ug07 \
@@ -98,6 +117,12 @@ if [ ! -z "${copy_gphts}" ]; then
          cp -r $A ../../dist/src/paste ; \
       done)
   touch src/paste/copy_gphts
+fi
+
+# copy nornal .pht pages
+if [ ! -z "${copy_phts}" ]; then
+    cp ../src/paste/*.pht src/paste
+    touch src/paste/copy_nphts
 fi
 
 # copy databases and algebra bootstrap files
