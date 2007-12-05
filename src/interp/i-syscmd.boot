@@ -2245,9 +2245,10 @@ reportOpsFromUnitDirectly unitForm ==
       '"is not"
     sayBrightly ['" This constructor",:bright verb,
       '"exposed in this frame."]
-    sayBrightly ['" Issue",:bright STRCONC('")edit ",
-      namestring sourceFile),'"to see algebra source code for",
-        :bright abb,'%l]
+    -- -- Disabled because the path is wrong.
+    -- sayBrightly ['" Issue",:bright STRCONC('")edit ",
+    --  namestring sourceFile),'"to see algebra source code for",
+    --    :bright abb,'%l]
 
   for [opt] in $options repeat
     opt := selectOptionLC(opt,$showOptions,'optionError)
@@ -2302,9 +2303,10 @@ reportOpsFromLisplib(op,u) ==
   sayBrightly ['" This constructor",:bright verb,
     '"exposed in this frame."]
   sourceFile := GETDATABASE(op,'SOURCEFILE)
-  sayBrightly ['" Issue",:bright STRCONC('")edit ",
-    namestring sourceFile),
-      '"to see algebra source code for",:bright fn,'%l]
+  -- -- Disabled because the path is wrong.
+  -- sayBrightly ['" Issue",:bright STRCONC('")edit ",
+  --  namestring sourceFile),
+  --    '"to see algebra source code for",:bright fn,'%l]
 
   for [opt] in $options repeat
     opt := selectOptionLC(opt,$showOptions,'optionError)
