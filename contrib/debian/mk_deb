@@ -21,51 +21,69 @@ mv debian/tmp/usr/lib/axiom debian/tmp/usr/lib/fricas
 
 # Rename axiom to fricas and adjust AXIOM variable
 sed 's,axiom,fricas,' debian/tmp/usr/bin/axiom > debian/tmp/usr/bin/fricas \
- && rm debian/tmp/usr/bin/axiom
+  && rm debian/tmp/usr/bin/axiom
 chmod 755 debian/tmp/usr/bin/fricas
 
-sed 's,axiom,fricas,' \
-   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom > \
-   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom.pp && \
- mv \
-   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom.pp \
-   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom
+# find the platform subdirectory
 
-chmod 755 debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom
+TDIR=debian/tmp/usr/lib/fricas/target
+PLF=""
+for A in $(ls $TDIR); do
+    if [ -d $TDIR/$A ] ; then
+        if [ "$PLF"x != x ] ; then
+            echo $TDIR1: contains more then one subdirectory
+        else
+            PLF=$A
+        fi
+    fi
+done
+
+AX=$TDIR/$PLF
+
+echo AX=$AX
+
+sed 's,axiom,fricas,' \
+   $AX/bin/axiom > \
+   $AX/bin/axiom.pp && \
+ mv \
+   $AX/bin/axiom.pp \
+   $AX/bin/axiom
+
+chmod 755 $AX/bin/axiom
 
 
 # Adjust path to awk in presea
 sed 's,/bin/awk,/usr/bin/awk,' \
-  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea > \
-  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea.pp && \
- mv debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea.pp \
-    debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea
-chmod 755 debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea
+  $AX/bin/presea > \
+  $AX/bin/presea.pp && \
+ mv $AX/bin/presea.pp \
+    $AX/bin/presea
+chmod 755 $AX/bin/presea
 
 sed 's,/bin/awk,/usr/bin/awk,' \
-  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea > \
-  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea.pp && \
- mv debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea.pp \
-    debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea
-chmod 755 debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea
+  $AX/lib/presea > \
+  $AX/lib/presea.pp && \
+ mv $AX/lib/presea.pp \
+    $AX/lib/presea
+chmod 755 $AX/lib/presea
 
 # generate shared library dependencies
 dpkg-shlibdeps \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/AXIOMsys \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/asq \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/clef \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/htadd \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/hypertex \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/sman \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/viewAlone \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/ex2ht \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/hthits \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/session \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/spadbuf \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/spadclient \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/view2D \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/view3D \
-debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/viewman
+$AX/bin/AXIOMsys \
+$AX/bin/asq \
+$AX/bin/clef \
+$AX/bin/htadd \
+$AX/bin/hypertex \
+$AX/bin/sman \
+$AX/bin/viewAlone \
+$AX/lib/ex2ht \
+$AX/lib/hthits \
+$AX/lib/session \
+$AX/lib/spadbuf \
+$AX/lib/spadclient \
+$AX/lib/view2D \
+$AX/lib/view3D \
+$AX/lib/viewman
 
 # proper package build
 mkdir debian/tmp/DEBIAN
