@@ -1,0 +1,73 @@
+#/bin/sh
+
+# To build the debian package you need:
+#
+# 1) Configure FriCAS using '--prefix=/usr'
+#
+# 2) Build
+#
+# 3) make DESTDIR=debian/tmp install
+#
+# 4) Put 'control' and 'changelog' files in the 'debian' subdirectory
+#    of the build tree
+#
+# 5) Run this script (from within build directory).
+
+# Stop on errors
+set -e
+
+# move the istalled tree
+mv debian/tmp/usr/lib/axiom debian/tmp/usr/lib/fricas
+
+# Rename axiom to fricas and adjust AXIOM variable
+sed 's,axiom,fricas,' debian/tmp/usr/bin/axiom > debian/tmp/usr/bin/fricas \
+ && rm debian/tmp/usr/bin/axiom
+chmod 755 debian/tmp/usr/bin/fricas
+
+sed 's,axiom,fricas,' \
+   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom > \
+   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom.pp && \
+ mv \
+   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom.pp \
+   debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom
+
+chmod 755 debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/axiom
+
+
+# Adjust path to awk in presea
+sed 's,/bin/awk,/usr/bin/awk,' \
+  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea > \
+  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea.pp && \
+ mv debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea.pp \
+    debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea
+chmod 755 debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/presea
+
+sed 's,/bin/awk,/usr/bin/awk,' \
+  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea > \
+  debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea.pp && \
+ mv debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea.pp \
+    debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea
+chmod 755 debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/presea
+
+# generate shared library dependencies
+dpkg-shlibdeps \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/AXIOMsys \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/asq \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/clef \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/htadd \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/hypertex \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/sman \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/bin/viewAlone \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/ex2ht \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/hthits \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/session \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/spadbuf \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/spadclient \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/view2D \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/view3D \
+debian/tmp/usr/lib/fricas/target/x86_64-unknown-linux/lib/viewman
+
+# proper package build
+mkdir debian/tmp/DEBIAN
+dpkg-gencontrol
+fakeroot dpkg --build debian/tmp ..
