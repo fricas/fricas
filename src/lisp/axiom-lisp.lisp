@@ -102,10 +102,6 @@
 (defun load-lisp-files (files)
   (mapcar #'(lambda (f) (load f)) files))
 
-(defun make-program (core-image lisp-files)
-  (load-lisp-files lisp-files)
-  (save-core core-image))
-
 ;;; How to exit Lisp process
 #+(and :gcl :common-lisp)
 (defun quit() (lisp::quit))
@@ -127,6 +123,29 @@
 
 #+:poplog
 (defun quit() (poplog::bye))
+
+;;; -----------------------------------------------------------------
+
+;;; Making (linking) program
+
+#-:ecl
+(defun make-program (core-image lisp-files)
+    (load-lisp-files lisp-files)
+    (save-core core-image))
+
+#+:ecl
+(defun make-program (core-image lisp-files)
+    (if *axiom-initial-lisp-forms*
+        (c:build-program core-image
+             :lisp-files (append *axiom-initial-lisp-objects* lisp-files)
+             :ld-flags *axiom-extra-c-files*
+	     :epilogue-code *axiom-initial-lisp-forms*)
+	(c:build-program core-image
+	     :lisp-files (append *axiom-initial-lisp-objects* lisp-files)
+	     :ld-flags *axiom-extra-c-files*))
+    (quit))
+
+
 
 ;;; -----------------------------------------------------------------
 
@@ -273,8 +292,6 @@
    (let ((name (namestring (truename "."))))
         (trim-directory-name (subseq name 0 (1- (length name))))))
 
-
-
 (defun axiom-probe-file (file)
 #|
 #+:GCL (if (fboundp 'system::stat)
@@ -300,5 +317,30 @@
                      (ignore-errors (truename fname))))
          )
 
+(defun relative-to-absolute (name)
+    (let ((ns (namestring name)))
+         (if (and (> (length ns) 0) (char= (char ns 0) #\/))
+             ns
+             (concatenate 'string (get-current-directory)  "/" ns))))
 
+;;; Saner version of compile-file
+#+:ecl
+(defun axiom-compile-file (f &key output-file)
+    (if output-file
+        (compile-file f :output-file (relative-to-absolute output-file)
+                        :system-p t)
+        (compile-file f :system-p t)))
+#-:ecl
+(defun axiom-compile-file (f &key output-file)
+    (if output-file
+        (compile-file f :output-file (relative-to-absolute output-file))
+        (compile-file f)))
+
+(defun load-maybe-compiling (f)
+    (let ((cf #-:ecl(compile-file-pathname f)
+              #+:ecl(merge-pathnames (make-pathname :type "o"))))
+         (if (or (not (probe-file cf))
+                 (< (file-write-date cf) (file-write-date f)))
+             (axiom-compile-file f))
+         (load #-:ecl cf #+:ecl f)))
 

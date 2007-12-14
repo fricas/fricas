@@ -1,4 +1,8 @@
-AXIOM_LOCAL_LISP_sources = initial-env.lisp
+AXIOM_LOCAL_LISP_source = initial-env.lisp
+AXIOM_LOCAL_LISP_object = $(AXIOM_LOCAL_LISP_source:.lisp=.$(FASLEXT))
+
+lisp_flavor=@axiom_lisp_flavor@
+
 AXIOM_LOCAL_LISP = $(builddir)/local-lisp$(EXEEXT)
 BOOTSYS_FOR_TARGET = $(axiom_target_bindir)/bootsys$(EXEEXT)
 PROCLAIMS=(load "$(srcdir)/boot-proclaims.lisp")
@@ -84,13 +88,33 @@ stage2/bootsys$(EXEEXT): stage1/bootsys$(EXEEXT)
 	-mv $(boot_data) $(boot_fn) stage2
 	mv bootsys$(EXEEXT) stage2
 
-$(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_sources)
-	$(axiom_build_document) --tag=lisp --mode=save-image --output=$@ \
-		--use=$(LISPSYS) $(AXIOM_LOCAL_LISP_sources)
+ifeq ($(lisp_flavor),gcl)
 
-bootsys$(EXEEXT): $(OBJECTS)
+$(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_source)
+	echo '(load "$(AXIOM_LOCAL_LISP_source)")' \
+	     '(in-package "AXIOM-LISP")' \
+	     '(save-core "$@")' | $(LISPSYS)
+
+bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
-		--use=$(AXIOM_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
+	        --use=$(AXIOM_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
+
+else
+
+$(AXIOM_LOCAL_LISP_object): %.$(FASLEXT): %.lisp
+	$(COMPILE_LISP) --use=$(LISPSYS) $<
+
+$(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_object)
+	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
+                --use=$(LISPSYS) \
+                '$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object))'
+
+bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
+	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
+		--use=$(LISPSYS) \
+		'$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object) $(OBJECTS))'
+
+endif
 
 .PRECIOUS: %.$(FASLEXT)
 .PRECIOUS: %.clisp

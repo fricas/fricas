@@ -110,45 +110,17 @@ check_mode_value() {
 # $2 is the output file name
 compile_lisp_file() {
     case $lisp_flavor in
-	gcl|sbcl|clisp|openmcl)
+	gcl|sbcl|clisp|openmcl|ecl)
 	   if [ -z "$output" ] ; then 
 	       # $command $quiet $eval_flags \
-	       echo "(progn (compile-file \"$1\") (quit))" | $command
+	       echo "(in-package \"AXIOM-LISP\")" \
+	            "(progn (axiom-compile-file \"$1\") (quit))" | $command
 	   else
-               # argument to:output-file has implementation defined
-               # default -- we use merge-patnames to pick defaults
-               # from *default-pathname-defaults*
-
 	       # $command $quiet $eval_flags 
-	       echo "(progn (compile-file \"$1\" :output-file \
-                 (merge-pathnames \"$output\")) (quit))" | $command
+	       echo "(in-package \"AXIOM-LISP\")" \
+	            "(progn (axiom-compile-file \"$1\" :output-file" \
+                    "\"$output\") (quit))" | $command
 	   fi
-	   ;;
-	# ECL makes the saved image executable only if :system-p it true. 
-	ecl)
-	   $command $quiet $eval_flags \
-	       "(progn (compile-file \"$1\" :system-p t))"
-	   ;;
-	*)
-	   error "don't know how to compile with '$lisp_flavor' Lisp"
-	   ;;
-    esac
-    return $?
-}
-
-# Load Lisp files and save the core.  
-load_lisp_and_save_image() {
-    case $lisp_flavor in
-	gcl|sbcl|clisp|openmcl)
-           ## Ideally we would like the loading to be quiet.
-           ## However, the GCL saved image would remain a batch-only
-           ## image.  Consequently, we don't supply the $quiet flags
-           ## when loading-and-saving.
-           ## $command $eval_flags "(load \"$1\")" \
-	   ##    $eval_flags "(in-package \"AXIOM-LISP\")" \
-	   ##    $eval_flags "(save-core \"$output\")"
-           echo "(load \"$1\")" "(in-package \"AXIOM-LISP\")" \
-                "(save-core \"$output\")" | $command
 	   ;;
 	*)
 	   error "don't know how to compile with '$lisp_flavor' Lisp"
@@ -160,7 +132,7 @@ load_lisp_and_save_image() {
 # Build an executable out of (compiled) Lisp files.
 make_program() {
     case $lisp_flavor in
-	gcl|sbcl|clisp|openmcl)
+	gcl|sbcl|clisp|openmcl|ecl)
            ## $command $eval_flags \
 	   echo "(in-package \"AXIOM-LISP\") \
 	         (make-program \"$output\" (quote ($*)))" | $command
@@ -177,7 +149,7 @@ make_program() {
 # $3 is a temporary file where we dump compiler diagnostics
 translate_boot_file() {
     case $lisp_flavor in
-	gcl|sbcl|clisp|openmcl)
+	gcl|sbcl|clisp|openmcl|ecl)
 	   if [ -z "$output" ] ; then
 	      o_arg=nil
 	   else

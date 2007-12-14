@@ -13,10 +13,18 @@
 
 (export '(quit chdir |getEnv| |load_quietly| get-current-directory
           axiom-probe-file trim-directory-name pad-directory-name
-          file-kind makedir))
+          file-kind makedir axiom-compile-file load-maybe-compiling))
 
 #+:GCL
 (progn
     (import '(LISP::LAMBDA-CLOSURE))
     (export '(LISP::LAMBDA-CLOSURE))
+    (import '(DEFPACKAGE::DEFPACKAGE))
+    (export '(DEFPACKAGE::DEFPACKAGE))
+)
+#+:ecl 
+(progn
+    (require 'cmp)
+    (eval-when (:execute :compile-toplevel :load-toplevel)
+         (proclaim '(optimize (safety 0))))
 )

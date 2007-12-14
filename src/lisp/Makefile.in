@@ -63,6 +63,27 @@ axiom-lisp.lisp: $(srcdir)/axiom-lisp.lisp
 axiom-package.lisp: $(srcdir)/axiom-package.lisp
 	cp $< $@
 
+do_it.ecl: axiom-lisp.lisp axiom-package.lisp
+	echo "(in-package \"AXIOM-LISP\")" > axiom-ecl.lisp
+	echo "(defvar *axiom-extra-c-files* (quote (" \
+	     $(patsubst %, "\"%\"", $(lisp_c_objects)) \
+	     ")))" >> axiom-ecl.lisp
+	echo "(defvar *axiom-initial-lisp-objects* (quote (" \
+	      $(patsubst %, "\"$(BASE)$(abs_builddir)/%\"", \
+	          axiom-package.o axiom-ecl.o axiom-lisp.o) ")))" \
+	            >> axiom-ecl.lisp
+	echo "(defvar *axiom-initial-lisp-forms* nil)" >> axiom-ecl.lisp
+	echo '(load "axiom-package.lisp")' \
+	     '(load "axiom-ecl.lisp")' \
+	     '(load "axiom-lisp.lisp")' \
+	     '(in-package "AXIOM-LISP")' \
+             '(axiom-compile-file "axiom-package.lisp")' \
+	     '(axiom-compile-file "axiom-ecl.lisp")' \
+	     '(axiom-compile-file "axiom-lisp.lisp")' \
+	     '(make-program "${OUT}/lisp" nil)' | $(AXIOM_LISP)
+	$(STAMP) $@
+
+	     
 do_it.sbcl do_it.clisp do_it.openmcl: axiom-lisp.lisp axiom-package.lisp
 	echo '(load "axiom-package.lisp")' \
 	    '(load (compile-file "axiom-lisp.lisp"))' \

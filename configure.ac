@@ -318,7 +318,16 @@ if test -z $axiom_fasl_type; then
     fi
     AC_MSG_RESULT([$axiom_fasl_type])
 fi
+axiom_fasl_type2=$axiom_fasl_type
+case $axiom_lisp_flavor in
+    ecl)
+       axiom_fasl_type="o"
+     ;;
+    *)
+     ;;
+esac
 AC_SUBST(axiom_fasl_type)
+AC_SUBST(axiom_fasl_type2)
 
 AC_SUBST(axiom_all_prerequisites)
 
