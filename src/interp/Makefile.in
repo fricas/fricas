@@ -32,99 +32,52 @@ LOADSYS= $(axiom_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(axiom_build_bindir)/interpsys$(EXEEXT)
 AXIOMSYS= $(axiom_target_bindir)/AXIOMsys$(EXEEXT)
 
-OBJS=	vmlisp.$(FASLEXT)	hash.$(FASLEXT)	\
-	bootfuns.lisp	macros.$(FASLEXT)	\
-	setq.lisp	\
-	astr.$(FASLEXT)	bits.$(FASLEXT)	\
-	alql.$(FASLEXT)	buildom.$(FASLEXT)	\
-	cattable.$(FASLEXT)				\
-	cformat.$(FASLEXT)	cfuns.$(FASLEXT)	\
-	clam.$(FASLEXT)	clammed.$(FASLEXT)	\
-	comp.$(FASLEXT)	\
-	compat.$(FASLEXT)	compress.$(FASLEXT)	\
-	cparse.$(FASLEXT)	cstream.$(FASLEXT)	\
-	database.$(FASLEXT)	\
-	debug.$(FASLEXT)	dq.$(FASLEXT)		\
-	fname.$(FASLEXT)	format.$(FASLEXT)	\
-	g-boot.$(FASLEXT)	g-cndata.$(FASLEXT)	\
-	g-error.$(FASLEXT)	g-opt.$(FASLEXT)	\
-	g-timer.$(FASLEXT)	g-util.$(FASLEXT)	\
-	ggreater.$(FASLEXT)				\
-	hypertex.$(FASLEXT)	i-analy.$(FASLEXT)	\
-	i-code.$(FASLEXT)	i-coerce.$(FASLEXT)	\
-	i-coerfn.$(FASLEXT)	i-eval.$(FASLEXT)	\
-	i-funsel.$(FASLEXT)	\
-	i-intern.$(FASLEXT)	i-map.$(FASLEXT)	\
-	i-output.$(FASLEXT)	i-resolv.$(FASLEXT)	\
-	i-spec1.$(FASLEXT)				\
-	i-spec2.$(FASLEXT)	i-syscmd.$(FASLEXT)	\
-	i-toplev.$(FASLEXT)	i-util.$(FASLEXT)	\
-	incl.$(FASLEXT)	int-top.$(FASLEXT)	\
-	lisplib.$(FASLEXT)	macex.$(FASLEXT)	\
-	match.$(FASLEXT)				\
-	monitor.$(FASLEXT)	msg.$(FASLEXT)		\
-	msgdb.$(FASLEXT)	\
-	newaux.$(FASLEXT)	newfort.$(FASLEXT)	\
-	nlib.$(FASLEXT)	nrunfast.$(FASLEXT)	\
-	nrungo.$(FASLEXT)	nrunopt.$(FASLEXT)	\
-	osyscmd.$(FASLEXT)	\
-	packtran.$(FASLEXT)	pathname.$(FASLEXT)	\
-	pf2sex.$(FASLEXT)	pile.$(FASLEXT)	\
-	posit.$(FASLEXT)	property.lisp	\
-	ptrees.$(FASLEXT)	ptrop.$(FASLEXT)	\
-	record.$(FASLEXT)				\
-	rulesets.$(FASLEXT)	\
-	scan.$(FASLEXT)	serror.$(FASLEXT)	\
-	server.$(FASLEXT)				\
-	setvars.$(FASLEXT)	\
-	sfsfun-l.$(FASLEXT)	sfsfun.$(FASLEXT)	\
-	simpbool.$(FASLEXT)	slam.$(FASLEXT)	\
-	sockio.$(FASLEXT)	spad.$(FASLEXT)	\
-	spaderror.$(FASLEXT)				\
-	template.$(FASLEXT)	termrw.$(FASLEXT)	\
-	trace.$(FASLEXT)	\
-	union.$(FASLEXT)       daase.$(FASLEXT)  	\
-	fortcall.$(FASLEXT)
+OBJ_files= vmlisp hash bootfuns macros setq astr bits \
+	alql buildom cattable cformat cfuns clam clammed \
+	comp compat compress cparse cstream database \
+	debug dq fname format g-boot g-cndata g-error g-opt \
+	g-timer	g-util ggreater hypertex i-analy \
+	i-code i-coerce	i-coerfn i-eval i-funsel i-intern \
+	i-map i-output i-resolv	i-spec1 i-spec2 i-syscmd \
+	i-toplev i-util incl int-top lisplib macex match \
+	monitor msg msgdb newaux newfort nlib nrunfast \
+	nrungo nrunopt osyscmd packtran pathname pf2sex pile \
+	posit property ptrees ptrop record rulesets scan \
+	serror server setvars sfsfun-l sfsfun simpbool slam \
+	sockio spad spaderror template termrw trace \
+	union daase fortcall
 
-INOBJS=	varini.$(FASLEXT)	parini.$(FASLEXT)	\
-	setvart.$(FASLEXT)	\
-        interop.$(FASLEXT)     \
-        patches.$(FASLEXT)
+OBJS= $(patsubst %, %.$(FASLEXT), $(OBJ_files))
+
+INOBJ_files= varini parini setvart interop patches
+
+INOBJS= $(patsubst %, %.$(FASLEXT), $(INOBJ_files))
 
 # These are autloaded old parser files
-OPOBJS=	${AUTO}/parsing.$(FASLEXT)	${AUTO}/bootlex.$(FASLEXT)	\
-        ${AUTO}/def.$(FASLEXT)	\
-	${AUTO}/fnewmeta.$(FASLEXT)	${AUTO}/metalex.$(FASLEXT)	\
-	${AUTO}/metameta.$(FASLEXT)	\
-	${AUTO}/parse.$(FASLEXT)	${AUTO}/postpar.$(FASLEXT)	\
-	${AUTO}/preparse.$(FASLEXT)
+OPOBJ_files= parsing bootlex def fnewmeta metalex \
+	metameta parse postpar preparse
 
-OCOBJS=	${AUTO}/apply.$(FASLEXT)	${AUTO}/c-doc.$(FASLEXT)	\
-	${AUTO}/c-util.$(FASLEXT)	${AUTO}/profile.$(FASLEXT)	\
-	${AUTO}/category.$(FASLEXT)	${AUTO}/compiler.$(FASLEXT)	\
-	${AUTO}/define.$(FASLEXT)	${AUTO}/functor.$(FASLEXT)	\
-	${AUTO}/info.$(FASLEXT)	${AUTO}/iterator.$(FASLEXT)	\
-	${AUTO}/modemap.$(FASLEXT)	${AUTO}/nruncomp.$(FASLEXT)	\
-	${AUTO}/package.$(FASLEXT)	${AUTO}/htcheck.$(FASLEXT)
+OPOBJS= $(patsubst %, ${AUTO}/%.$(FASLEXT), $(OPOBJ_files))
 
-BROBJS=	${AUTO}/bc-matrix.$(FASLEXT)				\
-	${AUTO}/bc-misc.$(FASLEXT)	${AUTO}/bc-solve.$(FASLEXT)	\
-	${AUTO}/bc-util.$(FASLEXT)				\
-	${AUTO}/ht-util.$(FASLEXT)	${AUTO}/htsetvar.$(FASLEXT)	\
-	${AUTO}/ht-root.$(FASLEXT)	\
-	${AUTO}/br-con.$(FASLEXT)	\
-	${AUTO}/br-data.$(FASLEXT)	${AUTO}/showimp.$(FASLEXT)    \
-	${AUTO}/br-op1.$(FASLEXT)	${AUTO}/br-op2.$(FASLEXT)	\
-	${AUTO}/br-search.$(FASLEXT)	${AUTO}/br-util.$(FASLEXT)	\
-	${AUTO}/topics.$(FASLEXT)     ${AUTO}/br-prof.$(FASLEXT)    \
-	${AUTO}/br-saturn.$(FASLEXT)
+OCOBJ_files= apply c-doc c-util profile category compiler \
+	define functor info iterator modemap nruncomp \
+	package	htcheck
 
-TRANOBJS= ${AUTO}/wi1.$(FASLEXT) ${AUTO}/wi2.$(FASLEXT) ${AUTO}/pspad1.$(FASLEXT) \
-	  ${AUTO}/pspad2.$(FASLEXT) ${AUTO}/mark.$(FASLEXT) ${AUTO}/nspadaux.$(FASLEXT) \
-	  ${AUTO}/def.$(FASLEXT)
+OCOBJS= $(patsubst %, ${AUTO}/%.$(FASLEXT), $(OCOBJ_files))
 
-ASCOMP= hashcode.$(FASLEXT) as.$(FASLEXT) \
-	foam_l.$(FASLEXT) axext_l.$(FASLEXT)
+BROBJ_files= bc-matrix bc-misc bc-solve bc-util ht-util htsetvar \
+	ht-root br-con br-data showimp br-op1 br-op2 \
+	br-search br-util topics br-prof br-saturn
+
+BROBJS= $(patsubst %, ${AUTO}/%.$(FASLEXT), $(BROBJ_files))
+
+TRANOBJ_files= wi1 wi2 pspad1 pspad2 mark nspadaux def
+
+TRANOBJS= $(patsubst %, ${AUTO}/%.$(FASLEXT), $(TRANOBJ_files))
+
+ASCOMP_files= hashcode as foam_l axext_l
+
+ASCOMP= $(patsubst %, %.$(FASLEXT), $(ASCOMP_files))
 
 ASAUTO= ${AUTO}/ax.$(FASLEXT)
 
@@ -137,13 +90,6 @@ YEARWEEK=(progn (setq timestamp "${TIMESTAMP}") (setq boot::*build-version* "${V
 .PRECIOUS:	${AXIOMSYS}
 
 PROCLAIMS=(progn (load "sys-pkg.lisp") (load "$(srcdir)/interp-proclaims.lisp"))
-
-UNUSED= ${DOC}/anna.boot.dvi ${DOC}/construc.lisp.dvi \
-	${DOC}/domain.lisp.dvi 	${DOC}/guess.boot.dvi \
-	${DOC}/interp-fix.boot.dvi \
-	${DOC}/pf2atree.boot.dvi \
-	${DOC}/redefs.boot.dvi 	${DOC}/word.boot.dvi 
-
 
 .SUFFIXES:
 .SUFFIXES: .boot .clisp .lisp .pamphlet
@@ -244,7 +190,15 @@ makeint.lisp:
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ touch ${TIMESTAMP}
 	@ echo '${YEARWEEK}' >> makeint.lisp
-	@ echo '(build-interpsys (append (quote ($(patsubst %, "%", ${OBJS}))) (quote ($(patsubst %, "%", ${ASCOMP}))) (quote ($(patsubst %, "%", ${INOBJS})))) (quote ($(patsubst %, "$(BASE)%", ${OPOBJS}))) (quote ($(patsubst %, "$(BASE)%", ${OCOBJS}))) (quote ($(patsubst %, "$(BASE)%", ${BROBJS}))) (quote ($(patsubst %, "$(BASE)%", ${TRANOBJS}))) (quote ($(patsubst %, "$(BASE)%", ${NAGBROBJS}))) (quote ($(patsubst %, "$(BASE)%", ${ASAUTO})))  "${AXIOM}")' >> makeint.lisp
+	echo '(build-interpsys' \
+	  '(quote ($(patsubst %, "%", ${OBJS} ${ASCOMP} ${INOBJS} )))' \
+	  '(quote ($(patsubst %, "$(BASE)%", ${OPOBJS})))' \
+	  '(quote ($(patsubst %, "$(BASE)%", ${OCOBJS})))' \
+	  '(quote ($(patsubst %, "$(BASE)%", ${BROBJS})))' \
+	  '(quote ($(patsubst %, "$(BASE)%", ${TRANOBJS})))' \
+	  '(quote ())' \
+	  '(quote ($(patsubst %, "$(BASE)%", ${ASAUTO})))' \
+	  '"${AXIOM}")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ echo '(load "$(srcdir)/../algebra/warm.data")' >> makeint.lisp
 	@ echo '(|clearClams|)' >> makeint.lisp
