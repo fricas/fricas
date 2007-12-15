@@ -570,6 +570,8 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
     finiteAggregate
       ++ matrices are finite
 
+    if R has Finite then Finite
+
     if R has CommutativeRing then Module(R)
 
 --% Matrix creation
@@ -674,6 +676,38 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
         ++ \spad{nullSpace(m)}+ returns a basis for the null space of
         ++ the matrix m.
    add
+
+     if R has Finite then
+         size() == (size()$R)**(m*n)
+
+         random() == matrix [[random()$R for i in 1..m] for j in 1..n]
+
+         lookup x ==
+             s := size()$R
+             pow: Integer := 1
+             l := listOfLists(x)
+             res: Integer := 1
+             for r in l repeat
+                 for c in r repeat
+                     res := res + (lookup(c)$R-1)*pow
+                     pow := pow*s
+             res::PositiveInteger
+
+         index i ==
+             s := size()$R
+             old := divide(i-1, s)
+             res: List List R := []
+            
+             for i in 1..m repeat
+                 row: List R := []
+                 for j in 1..n repeat
+                     el:R := index((old.remainder + 1)::PositiveInteger)$R
+                     row := cons(el, row)
+                     old := divide(old.quotient, s)
+                 res := cons(reverse! row, res)
+
+             matrix reverse! res
+
      nrows x == m
      ncols x == n
      square? x == m = n
