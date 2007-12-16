@@ -183,7 +183,8 @@ WEAVE = @NOWEAVE@
 
 AXIOM_LISP = @AXIOM_LISP@
 # Extension of the output file name returned by compile-file
-FASLEXT = @axiom_fasl_type@
+LISPOBJEXT = @axiom_fasl_type@
+FASLEXT = @axiom_fasl_type2@
 
 
 ##

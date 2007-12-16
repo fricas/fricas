@@ -1,5 +1,5 @@
 AXIOM_LOCAL_LISP_source = initial-env.lisp
-AXIOM_LOCAL_LISP_object = $(AXIOM_LOCAL_LISP_source:.lisp=.$(FASLEXT))
+AXIOM_LOCAL_LISP_object = $(AXIOM_LOCAL_LISP_source:.lisp=.$(LISPOBJEXT))
 
 lisp_flavor=@axiom_lisp_flavor@
 
@@ -7,7 +7,7 @@ AXIOM_LOCAL_LISP = $(builddir)/local-lisp$(EXEEXT)
 BOOTSYS_FOR_TARGET = $(axiom_target_bindir)/bootsys$(EXEEXT)
 PROCLAIMS=(load "$(srcdir)/boot-proclaims.lisp")
 
-boot_objects = $(boot_sources:.boot=.$(FASLEXT))
+boot_objects = $(boot_sources:.boot=.$(LISPOBJEXT))
 
 boot_SOURCES = $(addsuffix .pamphlet, $(boot_sources))
 
@@ -39,7 +39,7 @@ all-ax: stage2/bootsys$(EXEEXT)
 	$(INSTALL_PROGRAM) stage2/bootsys$(EXEEXT) $(axiom_build_bindir)
 
 .PRECIOUS: stage0/%.clisp
-.PRECIOUS: stage0/%.$(FASLEXT)
+.PRECIOUS: stage0/%.$(LISPOBJEXT)
 
 stage0_boot_clisp = $(addprefix stage0/, $(boot_clisp))
 
@@ -57,7 +57,7 @@ stage0/bootsys$(EXEEXT):
 
 $(stage0_boot_objects): $(AXIOM_LOCAL_LISP)
 
-stage0/%.$(FASLEXT): stage0/%.clisp
+stage0/%.$(LISPOBJEXT): stage0/%.clisp
 	$(COMPILE_LISP)  --use=$(AXIOM_LOCAL_LISP) $<
 
 stage0/%.clisp: $(srcdir)/%.boot.pamphlet
@@ -101,7 +101,7 @@ bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP)
 
 else
 
-$(AXIOM_LOCAL_LISP_object): %.$(FASLEXT): %.lisp
+$(AXIOM_LOCAL_LISP_object): %.$(LISPOBJEXT): %.lisp
 	$(COMPILE_LISP) --use=$(LISPSYS) $<
 
 $(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_object)
@@ -116,11 +116,11 @@ bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
 
 endif
 
-.PRECIOUS: %.$(FASLEXT)
+.PRECIOUS: %.$(LISPOBJEXT)
 .PRECIOUS: %.clisp
 .PRECIOUS: %.boot
 
-$(boot_objects): %.$(FASLEXT): %.clisp
+$(boot_objects): %.$(LISPOBJEXT): %.clisp
 	$(COMPILE_LISP) --use=$(AXIOM_LOCAL_LISP) $<
 
 %.clisp: %.boot

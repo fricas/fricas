@@ -25,6 +25,7 @@
 #+:ecl 
 (progn
     (require 'cmp)
+    ;;; Currently build using ecl fails at safety 0
     (eval-when (:execute :compile-toplevel :load-toplevel)
-         (proclaim '(optimize (safety 0))))
+         (proclaim '(optimize (safety 1))))
 )

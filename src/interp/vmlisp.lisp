@@ -1852,6 +1852,8 @@
 (defun reclaim () (sb-ext::gc))
 #+openmcl
 (defun reclaim () (ccl::gc))
+#+:ecl
+(defun reclaim () (si::gc t))
 
 #+Lucid
 (defun BPINAME (func)

@@ -752,6 +752,53 @@ After this function is called the image is clean and can be saved.
 (defun build-interpsys (load-files parse-files comp-files browse-files
              translate-files nagbr-files asauto-files spad)
   (declare (ignore nagbr-files))
+  #-:ecl
+  (progn
+      (mapcar #'load load-files)
+      (interpsys-image-init parse-files comp-files browse-files
+             translate-files asauto-files spad))
+  #+:ecl
+  (progn
+      (setf AXIOM-LISP::*axiom-initial-lisp-objects*
+           (append AXIOM-LISP::*axiom-initial-lisp-objects*
+	           '("sys-pkg.o" "nocompil.o" "util.o")
+	           load-files))
+      (dolist (el `(("parse-files" ,parse-files)
+                    ("comp-files" ,comp-files)
+		    ("browse-files" ,browse-files)
+		    ("translate-files" ,translate-files)
+		    ("asauto-files" ,asauto-files)))
+          (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
+	                :lisp-files (nth 1 el)))
+      (setf AXIOM-LISP::*axiom-initial-lisp-forms*
+            `(interpsys-ecl-image-init ,spad))
+         )
+)
+
+#+:ecl
+(progn
+   (defvar *YEARWEEK* "YEARWEEK")
+   (defvar *BUILD-VERSION* "ecl experimental")
+)
+
+(defun interpsys-ecl-image-init (spad)
+     (format *standard-output* "Starting interpsys~%")
+     (format *standard-output* "spad = ~s~%" spad)
+     (force-output  *standard-output*)
+     ;;; (load (concatenate 'string spad "/autoload/"  "parini.lsp"))
+     (interpsys-image-init
+           (list (concatenate 'string spad "/autoload/"  "parse-files"))
+	   (list (concatenate 'string spad "/autoload/" "comp-files"))
+	   (list (concatenate 'string spad "/autoload/" "browse-files"))
+	   (list (concatenate 'string spad "/autoload/" "translate-files"))
+	   (list (concatenate 'string spad "/autoload/" "asauto-files"))
+	   spad)
+      (format *standard-output* "before axiom-restart~%")
+      (force-output  *standard-output*)
+      (axiom-restart))
+
+(defun interpsys-image-init (parse-files comp-files browse-files
+             translate-files asauto-files spad)
   (push :oldboot *features*)
   (initroot spad)
   #+:AKCL
@@ -760,10 +807,10 @@ After this function is called the image is clean and can be saved.
                       :rpages 1000 :hole 2000)
   #+:AKCL
   (setq compiler::*suppress-compiler-notes* t)
-  (mapcar #'load load-files)
   (|resetWorkspaceVariables|)
   (|initHist|)
   (|initNewWorld|)
+  (in-package "BOOT")
   (compressopen)
   (interpopen)
   (create-initializers)

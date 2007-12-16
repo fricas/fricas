@@ -177,7 +177,7 @@
 
 #+:ecl
 (defun chdir (dir)
-   (SI:CHDIR dir t))
+   (SI:CHDIR (pad-directory-name dir) t))
 
 ;;; Environment access
 
