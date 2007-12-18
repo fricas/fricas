@@ -100,7 +100,14 @@ Here's a list of test cases that currently format correctly:
 12. y:UTS(FLOAT,'z,0) := exp(z)
 
 13. a. c := continuedFraction(314159/100000)
-    b. c := continuedFraction(314159/100000)
+    b. c := continuedFraction(14159/100000)
+    c. c := continuedFraction(3,repeating [1], repeating [3,6])
+
+14. F := operator F
+    x := operator x
+    y := operator y
+    a := F(x z,y z,z**2) + x y(z+1)
+    D(a,z)
 
 The \spadtype{TexFormat} domain has the capability to format an object with
 subscripts, superscripts, presubscripts and presuperscripts however
@@ -1191,15 +1198,31 @@ have to be switched by swapping names.
       null args => ""
       p : I := position(op,naryOps)
       p < 1 => error "unknown nary op"
-      -- need to test for "ZAG" case and divert it here, here's an
-      -- example including "op", the args list would be the rest of this
+      -- need to test for "ZAG" case and divert it here
+      -- ex 1. continuedFraction(314159/100000)
       -- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
       -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
-      -- The first arg, the "3" in this case, could be a "ZAG" or something
+      -- this is the preconditioned output form
+      -- including "op", the args list would be the rest of this
+      -- i.e op = '+' and args = {{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}
+      -- {{ZAG}{1}{1}}{{ZAG}{1}{25}}{{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+      -- ex 2. continuedFraction(14159/100000)
+      -- this one doesn't have the leading integer
+      -- {{+}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
+      -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+      --
+      -- ex 3. continuedFraction(3,repeating [1], repeating [3,6])
+      -- {{+}{3}{{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
+      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
+      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{...}}
+      -- In each of these examples the args list consists of the terms
+      -- following the '+' op
+      -- so the first arg could be a "ZAG" or something
       -- else, but the second arg looks like it has to be "ZAG", so maybe
-      -- test for #args > 1 and args.2 is "ZAG".
-      -- This test should work so long as axiom doesn't try to evaluate
-      -- the second half of the "and" when the first half is false.
+      -- test for #args > 1 and args.2 contains "ZAG".
+      -- Note that since the resulting MathML <mfrac>s are nested we need
+      -- to handle the whole continued fraction at once, i.e. we can't
+      -- just look for, e.g., {{ZAG}{1}{6}}
       (#args > 1) and (position("ZAG",stringify first rest args,1) > 0) =>
 	   tmpS : S := stringify first args
 	   position("ZAG",tmpS,1) > 0 => formatZag(args)
@@ -1224,12 +1247,17 @@ have to be switched by swapping names.
       s
 
     formatZag(args : L E) : S ==
-    -- {{ZAG}{1}{7}}
+      -- args will be a list of things like this {{ZAG}{1}{7}}, the ZAG
+      -- must be there, the '1' and '7' could conceivably be more complex
+      -- expressions
       tmpZag : L E := first args pretend L E
+      -- may want to test that tmpZag contains 'ZAG'
       #args > 1 => "<mfrac>"formatMml(first rest tmpZag,minPrec)"<mrow><mn>"formatMml(first rest rest tmpZag,minPrec)"</mn><mo>+</mo>"formatZag(rest args)"</mrow></mfrac>"
-      -- EQUAL(tmpZag, "...")$Lisp => "<mo>&#x2026;</mo>"
       (first args = "...":: E)@Boolean => "<mo>&#x2026;</mo>"
-      error "formatZag: Unexpected kind of ZAG"
+      op:S := stringify first args
+      position("ZAG",op,1) > 0 =>
+        "<mfrac>"formatMml(first rest tmpZag,minPrec)formatMml(first rest rest tmpZag,minPrec)"</mfrac>"
+      error "formatZag: Last argument in ZAG construct has unknown operator: "op
       
     formatZag1(args : L E) : S ==
     -- make alternative ZAG format without diminishing fonts, maybe
