@@ -891,6 +891,8 @@ have to be switched by swapping names.
 
     formatSub(expr : E, args : L E, opPrec : I) : S ==
       -- This one produces differential notation partial derivatives.
+      -- It doesn't work in all cases and may not be workable, use
+      -- formatSub1 below for now.
       -- At this time this is only to handle partial derivatives.
       -- If the SUB case handles anything else I'm not aware of it.
       -- This an example of the 4th partial of y(x,z) w.r.t. x,x,z,x
@@ -1009,19 +1011,21 @@ have to be switched by swapping names.
       s := s"</mrow></msub><mo>(</mo>"
       i := 1
       while i < #posLS+1 repeat
-        tmpS := stringify args.i
+--        tmpS := stringify args.i
+	tmpS := formatMml(first args,minPrec)
+	args := rest args
 	s := s"<mi>"tmpS"</mi>"
 	if i < #posLS then s := s"<mo>,</mo>"
 	i := i+1
       s := s"<mo>)</mo>"
 
-    formatSuperSub1(expr : E, args : L E, opPrec : I) : S ==
-      -- this produces differential notation ordinary derivatives.
+    formatSuperSub(expr : E, args : L E, opPrec : I) : S ==
+      -- this produces prime notation ordinary derivatives.
       -- first have to divine the semantics, add cases as needed
       atomE : L E := atomize(expr)      
       op : S := stringify first atomE
-      op ^= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB</mtext>"
-      #args ^= 1 => "<mtext>Mistake in SuperSub: #args <> 1</mtext>"
+      op ^= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB1</mtext>"
+      #args ^= 1 => "<mtext>Mistake in SuperSub1: #args <> 1</mtext>"
       var : E := first args
       -- should be looking at something like {{SUPERSUB}{var}{ }{,,...,}} for
       -- example here's the second derivative of y w.r.t. x
@@ -1041,10 +1045,11 @@ have to be switched by swapping names.
       while j < i repeat
         s := s"<mo>&#x02032;</mo>"
 	j := j + 1
-      s := s"</mrow></msup><mo>&#x02061;</mo><mo>(</mo><mi>"bvarS"</mi><mo>)</mo>"
+      s := s"</mrow></msup><mo>&#x02061;</mo><mo>(</mo>"formatMml(first args,minPrec)"<mo>)</mo>"
 
-    formatSuperSub(expr : E, args : L E, opPrec : I) : S ==
-      -- This one produces ordinary derivatives with prime notation.
+    formatSuperSub1(expr : E, args : L E, opPrec : I) : S ==
+      -- This one produces ordinary derivatives with differential notation,
+      -- it needs a little more work yet.
       -- first have to divine the semantics, add cases as needed
       atomE : L E := atomize(expr)      
       op : S := stringify first atomE
@@ -1064,7 +1069,7 @@ have to be switched by swapping names.
       while position(commaTest,commaS,1) > 0 repeat
         ndiffs := ndiffs+1
 	commaTest := commaTest","
-      s : S := "<mfrac><mrow><msup><mo>&#x02146;</mo><mn>"string(ndiffs)"</mn></msup><mi>"funcS"</mi></mrow><mrow><mo>&#x02146;</mo><msup><mi>"bvarS"</mi><mn>"string(ndiffs)"</mn></msup></mrow></mfrac><mo>&#x02061;</mo><mo>(</mo><mi>"bvarS"</mi><mo>)</mo>"
+      s : S := "<mfrac><mrow><msup><mo>&#x02146;</mo><mn>"string(ndiffs)"</mn></msup><mi>"funcS"</mi></mrow><mrow><mo>&#x02146;</mo><msup><mi>"formatMml(first args,minPrec)"</mi><mn>"string(ndiffs)"</mn></msup></mrow></mfrac><mo>&#x02061;</mo><mo>(</mo><mi>"formatMml(first args,minPrec)"</mi><mo>)</mo>"
 
     formatPlex(op : S, args : L E, prec : I) : S ==
       hold : S
@@ -1318,6 +1323,13 @@ have to be switched by swapping names.
       op : S := stringify first l
       args : L E := rest l
       nargs : I := #args
+      -- need to test here in case first l is SUPERSUB case and then
+      -- pass first l and args to formatSuperSub.
+      position("SUPERSUB",op,1) > 0 =>
+        formatSuperSub(first l,args,minPrec)
+      -- now test for SUB
+      position("SUB",op,1) > 0 =>
+        formatSub1(first l,args,minPrec)
 
       -- special cases
       member?(op, specialOps) => formatSpecial(op,args,prec)
@@ -1337,13 +1349,6 @@ have to be switched by swapping names.
       -- nary case
       member?(op,naryNGOps) => formatNaryNoGroup(op,args, prec)
       member?(op,naryOps) => formatNary(op,args, prec)
-      -- need to test here in case first l is SUPERSUB case and then
-      -- pass first l and args to formatSuperSub.
-      position("SUPERSUB",op,1) > 0 =>
-        formatSuperSub(first l,args,minPrec)
-      -- now test for SUB
-      position("SUB",op,1) > 0 =>
-        formatSub(first l,args,minPrec)
 
       op := formatMml(first l,minPrec)
       formatFunction(op,args,prec)
