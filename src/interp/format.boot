@@ -706,6 +706,10 @@ pred2English x ==
     concat("attribute: ",form2String form)
   form2String x
 
+mathObject2String x ==
+  CHARACTERP x => COERCE([x],'STRING)
+  object2String x
+
 object2String x ==
   STRINGP x => x
   IDENTP x  => PNAME x
