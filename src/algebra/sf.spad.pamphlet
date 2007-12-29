@@ -392,7 +392,8 @@ complex number.)
 -- I've put some timing comparisons in the notes for the Float
 -- domain about the difference in speed between the two domains.
 DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
-   TranscendentalFunctionCategory, ConvertibleTo InputForm) with
+   TranscendentalFunctionCategory, SpecialFunctionCategory, _
+   ConvertibleTo InputForm) with
       _/   : (%, Integer) -> %
         ++ x / i computes the division from x by an integer i.
       _*_* : (%,%) -> %
@@ -545,8 +546,22 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
    SFSFUN           ==> DoubleFloatSpecialFunctions()
    sfx              ==> x pretend DoubleFloat
    sfy              ==> y pretend DoubleFloat
-   Gamma x          == Gamma(sfx)$SFSFUN pretend %
+   airyAi x         == airyAi(sfx)$SFSFUN pretend %
+   airyBi x         == airyBi(sfx)$SFSFUN pretend %
+   besselI(x,y)     == besselI(sfx, sfy)$SFSFUN pretend %
+   besselJ(x,y)     == besselJ(sfx, sfy)$SFSFUN pretend %
+   besselK(x,y)     == besselK(sfx, sfy)$SFSFUN pretend %
+   besselY(x,y)     == besselY(sfx, sfy)$SFSFUN pretend %
    Beta(x,y)        == Beta(sfx,sfy)$SFSFUN pretend %
+   digamma x        == digamma(sfx)$SFSFUN pretend %
+   Gamma x          == Gamma(sfx)$SFSFUN pretend %
+-- not implemented in SFSFUN
+--   Gamma(x,y)       == Gamma(sfx,sfy)$SFSFUN pretend %
+   polygamma(x,y)   == 
+       if (n := retractIfCan(x:%):Union(Integer, "failed")) case Integer _
+          and n >= 0 
+       then polygamma(n::Integer::NonNegativeInteger,sfy)$SFSFUN pretend %
+       else error "polygamma: first argument should be a nonnegative integer"
 
    wholePart x            == FIX(x)$Lisp
    float(ma,ex,b)   == ma*(b::%)**ex

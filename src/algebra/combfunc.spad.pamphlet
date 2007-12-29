@@ -719,14 +719,53 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
     airyBi:    F -> F
       ++ airyBi(x) returns the airybi function applied to x
 
+@
+
+In case we want to have more special function operators here, do not forget to
+add them to the list [[specop]] in [[CommonOperators]].  Otherwise they will
+not have the \lq special\rq\ attribute and will not be recognised here.  One
+effect could be that
+\begin{verbatim}
+myNewSpecOp(1::Expression Integer)::Expression DoubleFloat
+\end{verbatim}
+might not re-evaluate the operator.
+
+<<package FSPECF FunctionalSpecialFunction>>=
     iiGamma : F -> F
       ++ iiGamma(x) should be local but conditional;
     iiabs     : F -> F
       ++ iiabs(x) should be local but conditional;
+    iiBeta     : List F -> F
+      ++ iiGamma(x) should be local but conditional;
+    iidigamma  : F -> F
+      ++ iidigamma(x) should be local but conditional;
+    iipolygamma: List F -> F
+      ++ iipolygamma(x) should be local but conditional;
+    iiBesselJ  : List F -> F
+      ++ iiBesselJ(x) should be local but conditional;
+    iiBesselY  : List F -> F
+      ++ iiBesselY(x) should be local but conditional;
+    iiBesselI  : List F -> F
+      ++ iiBesselI(x) should be local but conditional;
+    iiBesselK  : List F -> F
+      ++ iiBesselK(x) should be local but conditional;
+    iiAiryAi   : F -> F
+      ++ iiAiryAi(x) should be local but conditional;
+    iiAiryBi   : F -> F
+      ++ iiAiryBi(x) should be local but conditional;
 
   Implementation ==> add
-    iabs     : F -> F
-    iGamma:     F -> F
+    iabs      : F -> F
+    iGamma    : F -> F
+    iBeta     : (F, F) -> F
+    idigamma  : F -> F
+    iiipolygamma: (F, F) -> F
+    iiiBesselJ  : (F, F) -> F
+    iiiBesselY  : (F, F) -> F
+    iiiBesselI  : (F, F) -> F
+    iiiBesselK  : (F, F) -> F
+    iAiryAi   : F -> F
+    iAiryBi   : F -> F
 
     opabs       := operator("abs"::Symbol)$CommonOperators
     opGamma     := operator("Gamma"::Symbol)$CommonOperators
@@ -784,6 +823,17 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
       x < 0 => kernel(opabs, -x)
       kernel(opabs, x)
 
+    iBeta(x, y) == kernel(opBeta, [x, y])
+    idigamma x == kernel(opdigamma, x)
+    iiipolygamma(n, x) == kernel(oppolygamma, [n, x])
+    iiiBesselJ(x, y) == kernel(opBesselJ, [x, y])
+    iiiBesselY(x, y) == kernel(opBesselY, [x, y])
+    iiiBesselI(x, y) == kernel(opBesselI, [x, y])
+    iiiBesselK(x, y) == kernel(opBesselK, [x, y])
+    iAiryAi x == kernel(opAiryAi, x)
+    iAiryBi x == kernel(opAiryBi, x)
+
+
     -- Could put more conditional special rules for other functions here
 
     if R has abs : R -> R then
@@ -802,6 +852,54 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
         (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => iGamma x
         Gamma(r::R)::F
 
+      iiBeta l ==
+        (r:=retractIfCan(first l)@Union(R,"failed")) case "failed" or _
+        (s:=retractIfCan(second l)@Union(R,"failed")) case "failed" _
+            => iBeta(first l, second l)
+        Beta(r::R, s::R)::F
+
+      iidigamma x ==
+        (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => idigamma x
+        digamma(r::R)::F
+
+      iipolygamma l ==
+        (s:=retractIfCan(first l)@Union(R,"failed")) case "failed" or _
+        (r:=retractIfCan(second l)@Union(R,"failed")) case "failed" _
+            => iiipolygamma(first l, second l)
+        polygamma(s::R, r::R)::F
+
+      iiBesselJ l ==
+        (r:=retractIfCan(first l)@Union(R,"failed")) case "failed" or _
+        (s:=retractIfCan(second l)@Union(R,"failed")) case "failed" _
+            => iiiBesselJ(first l, second l)
+        besselJ(r::R, s::R)::F
+
+      iiBesselY l ==
+        (r:=retractIfCan(first l)@Union(R,"failed")) case "failed" or _
+        (s:=retractIfCan(second l)@Union(R,"failed")) case "failed" _
+            => iiiBesselY(first l, second l)
+        besselY(r::R, s::R)::F
+
+      iiBesselI l ==
+        (r:=retractIfCan(first l)@Union(R,"failed")) case "failed" or _
+        (s:=retractIfCan(second l)@Union(R,"failed")) case "failed" _
+            => iiiBesselI(first l, second l)
+        besselI(r::R, s::R)::F
+
+      iiBesselK l ==
+        (r:=retractIfCan(first l)@Union(R,"failed")) case "failed" or _
+        (s:=retractIfCan(second l)@Union(R,"failed")) case "failed" _
+            => iiiBesselK(first l, second l)
+        besselK(r::R, s::R)::F
+
+      iiAiryAi x ==
+        (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryAi x
+        airyAi(r::R)::F
+
+      iiAiryBi x ==
+        (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryBi x
+        airyBi(r::R)::F
+
     else
       if R has RetractableTo Integer then
         iiGamma x ==
@@ -811,9 +909,29 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
       else
         iiGamma x == iGamma x
 
+      iiBeta l == iBeta(first l, second l)
+      iidigamma x == idigamma x 
+      iipolygamma l == iiipolygamma(first l, second l)
+      iiBesselJ l == iiiBesselJ(first l, second l) 
+      iiBesselY l == iiiBesselY(first l, second l)
+      iiBesselI l == iiiBesselI(first l, second l)
+      iiBesselK l == iiiBesselK(first l, second l)
+      iiAiryAi x == iAiryAi x
+      iiAiryBi x == iAiryBi x
+
     -- Default behaviour is to build a kernel
     evaluate(opGamma, iiGamma)$BasicOperatorFunctions1(F)
     evaluate(opabs, iiabs)$BasicOperatorFunctions1(F)
+--    evaluate(opGamma2    ,iiGamma2   )$BasicOperatorFunctions1(F)
+    evaluate(opBeta      ,iiBeta     )$BasicOperatorFunctions1(F)
+    evaluate(opdigamma   ,iidigamma  )$BasicOperatorFunctions1(F)
+    evaluate(oppolygamma ,iipolygamma)$BasicOperatorFunctions1(F)
+    evaluate(opBesselJ   ,iiBesselJ  )$BasicOperatorFunctions1(F)
+    evaluate(opBesselY   ,iiBesselY  )$BasicOperatorFunctions1(F)
+    evaluate(opBesselI   ,iiBesselI  )$BasicOperatorFunctions1(F)
+    evaluate(opBesselK   ,iiBesselK  )$BasicOperatorFunctions1(F)
+    evaluate(opAiryAi    ,iiAiryAi   )$BasicOperatorFunctions1(F)
+    evaluate(opAiryBi    ,iiAiryBi   )$BasicOperatorFunctions1(F)
 @
 
 \subsection{differentiation of special functions}
