@@ -57,6 +57,12 @@ Tree(S: SetCategory): T==C where
     ls: List S
     empty? t == t case empty
     empty()  == ["empty"]
+@
+
+Do we really throw an error if we pass [[children]] and empty tree?  This
+implies also that we need to override [[child?]].
+
+<<domain TREE Tree>>=
     children t == 
       t case empty => error "cannot take the children of an empty tree" 
       (t.node.args)@List(%)
@@ -91,9 +97,15 @@ Tree(S: SetCategory): T==C where
     value t ==
       t case empty => error "cannot take the value of an empty tree" 
       t.node.value
+@
+
+We cannot inherit [[child?]] from [[RecursiveAggregate]], since we have
+overridden [[children]], which now yields an error if passed an empty tree.
+
+<<domain TREE Tree>>=
     child?(t1,t2) == 
       empty? t2 => false
-      "or"/[t1 = t for t in children t2]
+      member?(t1, children t2)
     distance1(t1: %, t2: %): Integer ==
       t1 = t2 => 0
       t2 case empty => -1
@@ -107,7 +119,8 @@ Tree(S: SetCategory): T==C where
     node?(t1, t2) ==
       t1 = t2 => true
       t case empty => false
-      "or"/[node?(t1, t) for t in children t2]
+      any?(inode?, children t2) where
+         inode?(t: %): Boolean == node?(t1, t)
     leaf? t == 
       t case empty => false
       empty? children t
@@ -125,13 +138,18 @@ Tree(S: SetCategory): T==C where
     size? (t, n) == # t = n
     any?(fn, t) ==  ---bug fixed
       t case empty => false
-      fn value t or "or"/[any?(fn, c) for c in children t]
+      fn value t => true
+      for c in children t | any?(fn, c) repeat return true
+      false
     every?(fn, t) == 
       t case empty => true
-      fn value t and "and"/[every?(fn, c) for c in children t]
+      not fn value t => false
+      for c in children t | not every?(fn, c) repeat return false
+      true
     member?(n, t) == 
       t case empty => false
-      n = value t or "or"/[member?(n, c) for c in children t]
+      n = value t or any?(mem?, children t) where
+          mem?(c: %): Boolean == member?(n, c)
     members t == parts t
     parts t == --buggy?
       t case empty => empty()
@@ -151,8 +169,11 @@ Tree(S: SetCategory): T==C where
         error "use cyclicEqual? to test equality on cyclic trees"
       t1 case empty => t2 case empty
       t2 case empty => false
-      value t1 = value t2 and (c1 := children t1) = (c2 := children t2) and
-        "and"/[equal?(x,y,ot1, ot2,k + 1) for x in c1 for y in c2]
+      not (value t1 = value t2 and (c1 := children t1) = (c2 := children t2))
+          => false
+      for x in c1 for y in c2 | not equal?(x,y,ot1, ot2,k + 1) repeat 
+          return false
+      true
 
     -----> #
     treeCount: (%, %, NonNegativeInteger) -> NonNegativeInteger    
@@ -268,9 +289,11 @@ Tree(S: SetCategory): T==C where
       t1 case empty => t2 case empty
       t2 case empty => false
       0 ^= (k := eqMemberIndex(t1, cp1, 0)) => eq?(t2, cp2 . k)
-      value t1 = value t2 and 
-        "and"/[cyclicEqual4?(x,y,cp1,cp2) 
-                 for x in children t1 for y in children t2]
+      value t1 ~= value t2 => false
+      for x in children t1 for y in children t2 _
+          | not cyclicEqual4?(x,y,cp1,cp2) repeat
+          return false
+      true
 
     -----> cyclicParents t
     cyclicParents3: (%, List %, List %) -> List %
@@ -381,7 +404,6 @@ BinaryTree(S: SetCategory): Exports == Implementation where
   Implementation == add
      Rep := List Tree S
      t1 = t2 == (t1::Rep) =$Rep (t2::Rep)
-     empty()== [] pretend %
      empty()== [] pretend %
      node(l,v,r) == cons(tree(v,l:Rep),r:Rep)
      binaryTree(l,v,r) == node(l,v,r)

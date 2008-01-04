@@ -11,7 +11,7 @@
 \eject
 @
 <<*>>=
-
+)set break resume
 -- derivative of besselK (issue 355)
 D(besselK(a,x),x)
 D(besselK(a,x),a)
@@ -195,6 +195,25 @@ abs(besselJ(1,1::EXPR INT)::EXPR DFLOAT - 0.440051) < 0.000001
 -- fails, because airyAi yields complex results even for real arguments
 abs(airyAi(1/5::EXPR INT)::EXPR DFLOAT - 0.303703) < 0.00001
 
+-- issue 183
+bt l == 
+    if empty? l 
+    then empty()$BTREE INT 
+    else binaryTree(bt rest(l, #l quo 2 + 1), first l, _
+                    bt first(rest l, #l quo 2))
+
+tree := bt primes(1, 20);
+any?(even?, tree)
+not any?(x +-> x > 19, tree)
+every?(prime?, tree)
+not every?(x +-> x > 2, tree)
+member?(17, tree)
+not member?(4, tree)
+
+any?(i+->(i=1)::Boolean,[1,2,3])
+not every?(odd?, [1,2,3])
+member?(2, [1,2,3])
+not ([1,2,3] = [1,3,2])::Boolean
 
 @
 \eject

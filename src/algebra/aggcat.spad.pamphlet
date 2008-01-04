@@ -122,10 +122,14 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
 	++ any?(p,u) tests if \axiom{p(x)} is true for any element x of u.
 	++ Note: for collections,
 	++ \axiom{any?(p,u) = reduce(or,map(f,u),false,true)}.
+        ++ However, \axiom{any?(p,u)} returns as soon as it finds an element
+        ++ for which \axiom{p} gives true.
       every?: (S->Boolean,%) -> Boolean
 	++ every?(f,u) tests if p(x) is true for all elements x of u.
 	++ Note: for collections,
 	++ \axiom{every?(p,u) = reduce(and,map(f,u),true,false)}.
+        ++ However, \axiom{every?(p,u)} returns as soon as it finds an element
+        ++ for which \axiom{p} gives false.
       count: (S->Boolean,%) -> NonNegativeInteger
 	++ count(p,u) returns the number of elements x in u
 	++ such that \axiom{p(x)} is true. For collections,
@@ -144,20 +148,29 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
 	  ++ member?(x,u) tests if x is a member of u.
 	  ++ For collections,
 	  ++ \axiom{member?(x,u) = reduce(or,[x=y for y in u],false)}.
+          ++ However, \axiom{member?(x,u)} returns as soon as it finds a
+          ++ member.
+
   add
    if S has Evalable S then
      eval(u:%,l:List Equation S):% == map(eval(#1,l),u)
    if % has finiteAggregate then
      #c			  == # parts c
-     any?(f, c)		  == _or/[f x for x in parts c]
-     every?(f, c)	  == _and/[f x for x in parts c]
+     any?(f, c) ==
+       for x in parts c | f x repeat return true
+       false
+     every?(f, c) ==
+       for x in parts c | not f x repeat return false
+       true
      count(f:S -> Boolean, c:%) == _+/[1 for x in parts c | f x]
      members x		  == parts x
      if S has SetCategory then
        count(s:S, x:%) == count(s = #1, x)
        member?(e, c)   == any?(e = #1,c)
        x = y ==
-	  size?(x, #y) and _and/[a = b for a in parts x for b in parts y]
+	  not size?(x, #y) => false
+          for a in parts x for b in parts y | a ~= b repeat return false
+          true
        coerce(x:%):OutputForm ==
 	 bracket
 	    commaSeparate [a::OutputForm for a in parts x]$List(OutputForm)
@@ -230,10 +243,6 @@ Collection(S:Type): Category == HomogeneousAggregate(S) with
    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
  add
    if % has finiteAggregate then
-     #c			  == # parts c
-     count(f:S -> Boolean, c:%) == _+/[1 for x in parts c | f x]
-     any?(f, c)		  == _or/[f x for x in parts c]
-     every?(f, c)	  == _and/[f x for x in parts c]
      find(f:S -> Boolean, c:%) == find(f, parts c)
      reduce(f:(S,S)->S, x:%) == reduce(f, parts x)
      reduce(f:(S,S)->S, x:%, s:S) == reduce(f, parts x, s)
@@ -522,7 +531,11 @@ Dictionary(S:SetCategory): Category ==
      s = t ==
        eq?(s,t) => true
        #s ^= #t => false
-       _and/[member?(x, t) for x in parts s]
+-- I'd rather write
+--       every?(member?(#1, t), parts s)
+-- but the compiler complains
+       every?(mem?, parts s) where
+           mem?(x: S): Boolean == member?(x, t)
 
      remove_!(f:S->Boolean, t:%) ==
        for m in parts t repeat if f m then remove_!(m, t)
@@ -685,7 +698,14 @@ FiniteSetAggregate(S:SetCategory): Category ==
    cardinality s   == #s
    construct l	   == (s := set(); for x in l repeat insert_!(x,s); s)
    count(x:S, s:%) == (member?(x, s) => 1; 0)
-   subset?(s, t)   == #s < #t and _and/[member?(x, t) for x in parts s]
+-- I'd rather write
+--   subset?(s, t)   == #s < #t and every?(x +-> member?(x, t), parts s)
+-- but the compiler complains
+   subset?(s, t)   == 
+       #s >= #t => false
+       every?(mem?, parts s) where
+           mem?(x: S): Boolean == member?(x, t)
+
 
    coerce(s:%):OutputForm ==
      brace [x::OutputForm for x in parts s]$List(OutputForm)
@@ -1167,7 +1187,14 @@ RecursiveAggregate(S:Type): Category == HomogeneousAggregate(S) with
    if % has shallowlyMutable then
      setelt(x,"value",y) == setvalue_!(x,y)
    if S has SetCategory then
-     child?(x,l) == member?(x,children(l))
+
+@
+
+Note that [[children(l)]] below yields a [[List %]], that is, we call
+[[member?]] from [[List %]]!
+
+<<category RCAGG RecursiveAggregate>>=
+     child?(x,l) == member?(x, children(l))
    if % has finiteAggregate then
      parts(x) == [value(i) for i in nodes(x)] 
 @
