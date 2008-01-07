@@ -15,7 +15,7 @@
 @
 <<*>>=
 <<license>>
-)cl all
+)clear all
 -- ----------[ A x i o m ]----------
 -- ---------- Initialization ----------
 )set bre resume
@@ -323,14 +323,10 @@ system:= [D(x(t), t) = x(t) * (1 + cos(t)/(2 + sin(t))), _
           D(y(t), t) = x(t) - y(t)]
 -- Try solving this system one equation at a time
 solve(system.1, x, t)
-isTimes(subst(%.basis.1, cos(t) = sqrt(1 - sin(t)**2)))
-reduce(*, cons(subst(
-   factors(factor(subst(%.1**2, sin(t) = u) :: Polynomial Integer)).1.factor,
-                     u = sin(t)),
-               rest(%)))
-x(t) = C1 * %
+eq1 := x(t) = C1 * %.basis.1
 solve(map(e +-> subst(e, %), system.2), y, t)
-y(t) = simplify(%.particular) + C2 * %.basis.1
+eq2 := y(t) = simplify(%.particular) + C2 * %.basis.1
+map(e +-> rightZero eval(e, [eq1, D(eq1, t), eq2, D(eq2, t)]), system)
 )clear properties x y
 -- ---------- Operators ----------
 -- Linear differential operator
