@@ -76,16 +76,11 @@
 (defparameter OpAssoc nil 
   "Information used by OUT BOOT operator pretty printing routines")
 
-(defparameter |PARSE-NewKEY| nil) ;;list of keywords
-
-(defun MAKENEWOP (X Y) (MAKEOP X Y '|PARSE-NewKEY|))
+(defun MAKENEWOP (X Y) (MAKEOP X Y))
  
-(defun MAKEOP (X Y KEYNAME)
+(defun MAKEOP (X Y)
   (if (OR (NOT (CDR X)) (NUMBERP (SECOND X)))
       (SETQ X (CONS (FIRST X) X)))
-  (if (AND (alpha-char-p (ELT (STRINGIMAGE (FIRST X)) 0))
-           (NOT (MEMBER (FIRST X) (EVAL KEYNAME))))
-      (SET KEYNAME (CONS (FIRST X) (EVAL KEYNAME))))
   (MAKEPROP (FIRST X) Y X)
   (SETQ OPASSOC (ADDASSOC Y (CONS (CONS X X) (LASSOC Y OPASSOC)) OPASSOC))
   (SECOND X))

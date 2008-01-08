@@ -212,8 +212,6 @@
  
 ; 7.3 Function Invocation
  
-(DEFUN APPLYR (L X) (if (not L) X  (LIST (CAR L) (APPLYR (CDR L) X))))
- 
 ; 7.8 Iteration
  
 ; 7.8.2 General Iteration
@@ -438,12 +436,11 @@
  
 (defmacro SUCHTHATCLAUSE  (&rest L) (LIST 'COND (LIST (CADR L) (CAR L))))
  
-(defvar $NEWSPAD NIL)
 (defvar $BOOT NIL)
  
 (defmacro spadDO (&rest OL)
     (PROG (VARS L VL V U INITS U-VARS U-VALS ENDTEST EXITFORMS BODYFORMS)
-         (if (OR $BOOT (NOT $NEWSPAD)) (return (CONS 'DO OL)))
+         (if $BOOT (return (CONS 'DO OL)))
          (SETQ L  (copy-list OL))
          (if (OR (ATOM L) (ATOM (CDR L))) (GO BADO))
          (setq vl (POP L))
@@ -486,7 +483,7 @@
          (AND (progn (POP V) V)  (GO TG))
          (SETQ U-VARS VL)
      XT  (RETURN (COND
-           ((AND $NEWSPAD (NULL $BOOT))
+           ((NULL $BOOT)
              (CONS 'SEQ (NCONC (DO_LET VARS INITS)
                (LIST 'G190 ENDTEST BODYFORMS U-VARS '(GO G190)
                 'G191 EXITFORMS))))
@@ -696,11 +693,6 @@ LP  (COND ((NULL X)
         STR
         (concatenate 'string str (make-string (- N M) :initial-element #\Space)))))
  
-(DEFUN STRINGSUFFIX (TARGET SOURCE) "Suffix source to target if enough room else nil."
-  (concatenate 'string target source))
- 
-(defun NSTRCONC (s1 s2) (concatenate 'string (string s1) (string s2)))
- 
 (defmacro spadREDUCE (OP AXIS BOD) (REDUCE-1 OP AXIS BOD))
  
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
@@ -711,11 +703,6 @@ LP  (COND ((NULL X)
         (OR NIL)))
  
 (define-function '|append| #'APPEND)
- 
-;;(defun |delete| (item list)    ; renaming from DELETE is done in DEF
-;;   (cond ((atom list) list)
-;;         ((equalp item (qcar list)) (|delete| item (qcdr list)))
-;;         ('t (cons (qcar list) (|delete| item (qcdr list))))))
  
 (defun |delete| (item sequence)
    (cond ((symbolp item) (remove item sequence :test #'eq))
@@ -782,7 +769,7 @@ LP  (COND ((NULL X)
       ((EQ OP 'OR) (LIST (LIST 'UNTIL G)))
       (NIL) )))
    (RETURN (COND
-      ((AND $NEWSPAD (NULL $BOOT)) (LIST 'PROGN PRESET
+      ((NULL $BOOT) (LIST 'PROGN PRESET
          (CONS 'REPEAT (APPEND AUX (APPEND SPL (LIST BODY))) )))
       ((LIST 'PROG
                 (COND ((EQ RESETCODE BODY) (LIST G)) ((LIST G VALUE)))
@@ -877,23 +864,6 @@ LP  (COND ((NULL X)
   (COND ((NULL X) DEFAULT)
         ((EQL N 1) (CAR X))
         ((ELEMN (CDR X) (SUB1 N) DEFAULT))))
- 
-(defmacro TAIL (&rest L)
-  (let ((x (car L)) (n (if (cdr L) (cadr L) 1)))
-    (COND ((EQL N 0) X)
-          ((EQL N 1) (LIST 'CDR X))
-          ((GT N 1) (APPLYR (PARTCODET N) X))
-          ((LIST 'TAILFN X N)))))
- 
-(defun PARTCODET (N)
-  (COND ((OR (NULL (INTEGERP N)) (LT N 1)) (ERROR 'PARTCODET))
-        ((EQL N 1) '(CDR))
-        ((EQL N 2) '(CDDR))
-        ((EQL N 3) '(CDDDR))
-        ((EQL N 4) '(CDDDDR))
-        ((APPEND (PARTCODET (PLUS N -4)) '(CDDDDR)))))
- 
-(defun TAILFN (X N) (if (LT N 1) X (TAILFN (CDR X) (SUB1 N))))
  
 (defmacro SPADCONST (&rest L) (cons 'qrefelt L))
  
@@ -1384,50 +1354,6 @@ terminals and empty or at-end files.  In Common Lisp, we must assume record size
           (MAKE-BF (+ (* int (expt 10 fraclen)) frac) (- exp fraclen)) )
         (read-from-string
           (format nil "~D.~v,'0De~D" int fraclen frac exp))) )
-
-;;---- Added by WFS.
- 
-(proclaim '(ftype (function (t t) t) |subWord|)) ;hack for bug in akcl-478
- 
-(DEFUN |subWord| (|str| N )
-  (declare (fixnum n ) (string |str|))
-  (PROG (|word| (|n| 0) |inWord|(|l| 0) )
-     (declare (fixnum |n| |l|))
-    (RETURN
-      (SEQ (COND
-             ((> 1 N) NIL)
-             ('T (SPADLET |l| (SPADDIFFERENCE (|#| |str|) 1))
-              (COND
-                ((EQL |l| 0) NIL)
-                ('T (SPADLET |n| 0) (SPADLET |word| '||)
-                 (SPADLET |inWord| NIL)
-                 (DO ((|i| 0 (QSADD1 |i|))) ((QSGREATERP |i| |l|) NIL)
-               (declare (fixnum |i|))
-                   (SEQ (EXIT (COND
-                                ((eql (aref |str| |i|) #\space)
-                                 (COND
-                                   ((NULL |inWord|) NIL)
-                                   ((eql |n| N) (RETURN |word|))
-                                   ('T (SPADLET |inWord| NIL))))
-                                ('T
-                                 (COND
-                                   ((NULL |inWord|)
-                                    (SPADLET |inWord| 'T)
-                                    (SPADLET |n| (PLUS |n| 1))))
-                                 (COND
-                                   ((eql |n| N)
-                       (cond ((eq |word| '||)
-                           (setq |word|
-                           (make-array 10 :adjustable t
-                                    :element-type 'standard-char
-                                  :fill-pointer 0))))
-                       (or |word| (error "bad"))
-                       (vector-push-extend (aref |str| |i|)
-                                  (the string |word|)
-                                  )
-                       )
-                                   ('T NIL)))))))
-                 (COND ((> N |n|) NIL) ('T |word|))))))))))
 
 (defun print-full (expr &optional (stream *standard-output*))
    (let ((*print-circle* t) (*print-array* t) *print-level* *print-length*)

@@ -1,33 +1,4 @@
-;; Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
-;; All rights reserved.
-;;
-;; Redistribution and use in source and binary forms, with or without
-;; modification, are permitted provided that the following conditions are
-;; met:
-;;
-;;     - Redistributions of source code must retain the above copyright
-;;       notice, this list of conditions and the following disclaimer.
-;;
-;;     - Redistributions in binary form must reproduce the above copyright
-;;       notice, this list of conditions and the following disclaimer in
-;;       the documentation and/or other materials provided with the
-;;       distribution.
-;;
-;;     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
-;;       names of its contributors may be used to endorse or promote products
-;;       derived from this software without specific prior written permission.
-;;
-;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
-;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;;; -*- Mode:Lisp; Package:Boot  -*-
 
 
 (IN-PACKAGE "BOOT" )
@@ -41,77 +12,8 @@
 
 
 (DEFUN |PARSE-NewExpr| ()
-  (OR (AND (MATCH-STRING ")") (ACTION (|processSynonyms|))
-           (MUST (|PARSE-Command|)))
-      (AND (ACTION (SETQ DEFINITION_NAME (CURRENT-SYMBOL)))
-           (|PARSE-Statement|)))) 
-
-
-(DEFUN |PARSE-Command| ()
-  (AND (MATCH-ADVANCE-STRING ")") (MUST (|PARSE-SpecialKeyWord|))
-       (MUST (|PARSE-SpecialCommand|))
-       (PUSH-REDUCTION '|PARSE-Command| NIL))) 
-
-
-(DEFUN |PARSE-SpecialKeyWord| ()
-  (AND (MATCH-CURRENT-TOKEN 'IDENTIFIER)
-       (ACTION (SETF (TOKEN-SYMBOL (CURRENT-TOKEN))
-                     (|unAbbreviateKeyword| (CURRENT-SYMBOL)))))) 
-
-
-(DEFUN |PARSE-SpecialCommand| ()
-  (OR (AND (MATCH-ADVANCE-STRING "show")
-           (BANG FIL_TEST
-                 (OPTIONAL
-                     (OR (MATCH-ADVANCE-STRING "?")
-                         (|PARSE-Expression|))))
-           (PUSH-REDUCTION '|PARSE-SpecialCommand|
-               (CONS '|show| (CONS (POP-STACK-1) NIL)))
-           (MUST (|PARSE-CommandTail|)))
-      (AND (MEMBER (CURRENT-SYMBOL) |$noParseCommands|)
-           (ACTION (FUNCALL (CURRENT-SYMBOL))))
-      (AND (MEMBER (CURRENT-SYMBOL) |$tokenCommands|)
-           (|PARSE-TokenList|) (MUST (|PARSE-TokenCommandTail|)))
-      (AND (STAR REPEATOR (|PARSE-PrimaryOrQM|))
-           (MUST (|PARSE-CommandTail|))))) 
-
-
-(DEFUN |PARSE-TokenList| ()
-  (STAR REPEATOR
-        (AND (NOT (|isTokenDelimiter|))
-             (PUSH-REDUCTION '|PARSE-TokenList| (CURRENT-SYMBOL))
-             (ACTION (ADVANCE-TOKEN))))) 
-
-
-(DEFUN |PARSE-TokenCommandTail| ()
-  (AND (BANG FIL_TEST (OPTIONAL (STAR REPEATOR (|PARSE-TokenOption|))))
-       (|atEndOfLine|)
-       (PUSH-REDUCTION '|PARSE-TokenCommandTail|
-           (CONS (POP-STACK-2) (APPEND (POP-STACK-1) NIL)))
-       (ACTION (|systemCommand| (POP-STACK-1))))) 
-
-
-(DEFUN |PARSE-TokenOption| ()
-  (AND (MATCH-ADVANCE-STRING ")") (MUST (|PARSE-TokenList|)))) 
-
-
-(DEFUN |PARSE-CommandTail| ()
-  (AND (BANG FIL_TEST (OPTIONAL (STAR REPEATOR (|PARSE-Option|))))
-       (|atEndOfLine|)
-       (PUSH-REDUCTION '|PARSE-CommandTail|
-           (CONS (POP-STACK-2) (APPEND (POP-STACK-1) NIL)))
-       (ACTION (|systemCommand| (POP-STACK-1))))) 
-
-
-(DEFUN |PARSE-PrimaryOrQM| ()
-  (OR (AND (MATCH-ADVANCE-STRING "?")
-           (PUSH-REDUCTION '|PARSE-PrimaryOrQM| '?))
-      (|PARSE-Primary|))) 
-
-
-(DEFUN |PARSE-Option| ()
-  (AND (MATCH-ADVANCE-STRING ")")
-       (MUST (STAR REPEATOR (|PARSE-PrimaryOrQM|))))) 
+  (AND (ACTION (SETQ DEFINITION_NAME (CURRENT-SYMBOL)))
+       (|PARSE-Statement|))) 
 
 
 (DEFUN |PARSE-Statement| ()
@@ -667,17 +569,17 @@
        (ACTION (ADVANCE-TOKEN)))) 
 
 
-(DEFUN |PARSE-GliphTok| (|tok|)
-  (DECLARE (SPECIAL |tok|))
-  (AND (MATCH-CURRENT-TOKEN 'GLIPH |tok|) (ACTION (ADVANCE-TOKEN)))) 
-
-
 (DEFUN |PARSE-AnyId| ()
   (OR (PARSE-IDENTIFIER)
       (OR (AND (MATCH-STRING "$")
                (PUSH-REDUCTION '|PARSE-AnyId| (CURRENT-SYMBOL))
                (ACTION (ADVANCE-TOKEN)))
           (PARSE-KEYWORD)))) 
+
+
+(DEFUN |PARSE-GliphTok| (|tok|)
+  (DECLARE (SPECIAL |tok|))
+  (AND (MATCH-CURRENT-TOKEN 'GLIPH |tok|) (ACTION (ADVANCE-TOKEN)))) 
 
 
 (DEFUN |PARSE-Sequence| ()

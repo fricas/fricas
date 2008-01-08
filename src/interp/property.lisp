@@ -447,7 +447,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (REDUCE SPADREDUCE)
   (\| SUCHTHAT)
   (T T$)
-  (UNION |union|)
 )) (MAKEPROP (CAR X) 'RENAME (CDR X)))
 
 (REPEAT (IN X '(

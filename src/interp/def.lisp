@@ -581,10 +581,6 @@ except that elements are separated by commas."
     ((NOT X) "")
     ((STRCONC "\," (LIST2STRING (FIRST X)) (LIST2STRING1 (CDR X))))))
 
-(defvar |$new2OldRenameAssoc|
-        '((\QUAD . \.) (\' . QUOTE) (|nil| . NIL) (|append| . APPEND)
-          (|union| . UNION) (|cons| . CONS)))
-
 (defun |new2OldLisp| (x) (|new2OldTran| (|postTransform| x)))
 
 (defun |new2OldTran| (x)
@@ -592,8 +588,7 @@ except that elements are separated by commas."
         (RETURN
           (prog nil
                 (if (atom x)
-                    (RETURN (let ((y (ASSOC x |$new2OldRenameAssoc|)))
-                              (if y (cdr y) x))))
+                    (RETURN (if (eq x '\') (break) x)))
                 (if (AND (dcq (g10463 a b . g10465) x)
                          (null G10465)
                          (EQ G10463 '|where|)

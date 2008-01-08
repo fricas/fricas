@@ -185,7 +185,6 @@
 (defun S-PROCESS (X)
   (let ((|$Index| 0)
         ($MACROASSOC ())
-        ($NEWSPAD T)
         (|$PolyMode| |$EmptyMode|)
         (|$compUniquelyIfTrue| nil)
         |$currentFunction|

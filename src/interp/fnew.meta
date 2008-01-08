@@ -10,33 +10,7 @@
 .DECLARE(tmptok TOK ParseMode DEFINITION_NAME LABLASOC)
 .PREFIX 'PARSE-'
 
-NewExpr:        =')' .(processSynonyms) Command
-              / .(SETQ DEFINITION_NAME (CURRENT-SYMBOL)) Statement ;
-
-Command:        ')' SpecialKeyWord SpecialCommand +() ;
-
-SpecialKeyWord: =(MATCH-CURRENT-TOKEN "IDENTIFIER)
-                .(SETF (TOKEN-SYMBOL (CURRENT-TOKEN)) (unAbbreviateKeyword (CURRENT-SYMBOL))) ;
-
-SpecialCommand: 'show' <'?' / Expression>! +(show #1) CommandTail
-              / ?(MEMBER (CURRENT-SYMBOL) \$noParseCommands)
-                 .(FUNCALL (CURRENT-SYMBOL))
-              / ?(MEMBER (CURRENT-SYMBOL) \$tokenCommands) TokenList
-                  TokenCommandTail
-              / PrimaryOrQM* CommandTail ;
-
-TokenList:      (^?(isTokenDelimiter) +=(CURRENT-SYMBOL) .(ADVANCE-TOKEN))* ;
-
-TokenCommandTail:
-                <TokenOption*>! ?(atEndOfLine) +(#2 -#1) .(systemCommand #1) ;
-
-TokenOption:    ')' TokenList ;
-
-CommandTail:    <Option*>! ?(atEndOfLine) +(#2 -#1) .(systemCommand #1) ;
-
-PrimaryOrQM:    '?' +\? / Primary ;
-
-Option:         ')' PrimaryOrQM* ;
+NewExpr:        .(SETQ DEFINITION_NAME (CURRENT-SYMBOL)) Statement ;
 
 Statement:      Expr{0} <(',' Expr{0})* +(Series #2 -#1)>;
 
@@ -206,6 +180,8 @@ ScriptItem:     Expr{90} <(';' ScriptItem)* +(\; #2 -#1)>
 
 Name:           IDENTIFIER +#1 ;
 
+% Boot only section
+
 Data:           .(SETQ LABLASOC NIL) Sexpr +(QUOTE =(TRANSLABEL #1 LABLASOC)) ;
 
 Sexpr:          .(ADVANCE-TOKEN) Sexpr1 ;
@@ -223,10 +199,12 @@ Sexpr1:       AnyId
 NBGliphTok{tok}:   ?(AND (MATCH-CURRENT-TOKEN "GLIPH tok) NONBLANK)
                     .(ADVANCE-TOKEN) ;
 
-GliphTok{tok}:     ?(MATCH-CURRENT-TOKEN "GLIPH tok) .(ADVANCE-TOKEN) ;
-
 AnyId:          IDENTIFIER
               / (='$' +=(CURRENT-SYMBOL) .(ADVANCE-TOKEN) / KEYWORD) ;
+
+% End of Boot only section
+
+GliphTok{tok}:     ?(MATCH-CURRENT-TOKEN "GLIPH tok) .(ADVANCE-TOKEN) ;
 
 Sequence:       OpenBracket Sequence1 ']'
               / OpenBrace Sequence1 '}' +(brace #1) ;

@@ -95,7 +95,6 @@ ncTopLevel() ==
   _*EOF_*: fluid := NIL
   $InteractiveMode :fluid := true
   $BOOT: fluid := NIL
-  $NEWSPAD: fluid := true
   $SPAD: fluid := true
   $e:fluid := $InteractiveFrame
   ncIntLoop()
@@ -454,10 +453,3 @@ phBegin id ==
     $convPhase := id
     if $ncmPhase then intSayKeyedMsg('S2CTP021,[id])
  
-PullAndExecuteSpadSystemCommand stream ==
-    ExecuteSpadSystemCommand CAR stream
-    CDR stream
-
-ExecuteSpadSystemCommand string ==
-  FUNCALL($systemCommandFunction, string)
-

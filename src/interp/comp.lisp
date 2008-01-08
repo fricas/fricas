@@ -361,7 +361,7 @@
            ; temporarily make TRACELET cause MAKEPROPs to be reported
           ((MEMQ U '(DCQ RELET PRELET SPADLET SETQ LET) )
            (COND ((NOT (eq U 'DCQ))
-                  (COND ((OR (AND (eq $NEWSPAD T) (NOT $BOOT))
+                  (COND ((OR (NOT $BOOT)
                              (MEMQ $FUNNAME |$traceletFunctions|))
                          (NCONC X $FUNNAME_TAIL)
                          (RPLACA X 'LETT))
