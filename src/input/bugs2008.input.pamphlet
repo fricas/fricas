@@ -12,12 +12,25 @@
 @
 <<*>>=
 )set break resume
--- equality in TBAGG (issue 412)
+-- equality in TBAGG (issue #412)
 R ==> Record(key: Symbol, entry: String)
 T ==> AssociationList(Symbol, String)
-t1 := construct([[x, "ix"]$R])$T
-t2 := construct([[y, "iy"]$R])$T
+t1 := construct([[x, "ix"]$R])$T;
+t2 := construct([[y, "iy"]$R])$T;
 (t1~=t2)::Boolean
+
+)clear all
+-- expose PartialFractionPackage (issue #309)
+
+-- note that we cannot easily test for equality of the result of
+-- partialFraction itself: the result of partialFraction is of type Any, thus
+-- we would have to provide type information when creating the other side of
+-- the equation.  But then, the bug won't manifest.
+
+(numberOfFractionalTerms partialFraction((x+a)/(x*(x**3+(b+c)*x**2+b*c*x)),x) _
+ = 3)@Boolean
+(numberOfFractionalTerms partialFraction(2*x/(x^2-1),x) = 2)@Boolean
+
 @
 \eject
 \begin{thebibliography}{99}
