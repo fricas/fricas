@@ -761,15 +761,15 @@ After this function is called the image is clean and can be saved.
   (progn
       (setf AXIOM-LISP::*axiom-initial-lisp-objects*
            (append AXIOM-LISP::*axiom-initial-lisp-objects*
-	           '("sys-pkg.o" "nocompil.o" "util.o")
-	           load-files))
+                   '("sys-pkg.o" "nocompil.o" "util.o")
+                   load-files))
       (dolist (el `(("parse-files" ,parse-files)
                     ("comp-files" ,comp-files)
-		    ("browse-files" ,browse-files)
-		    ("translate-files" ,translate-files)
-		    ("asauto-files" ,asauto-files)))
+                    ("browse-files" ,browse-files)
+                    ("translate-files" ,translate-files)
+                    ("asauto-files" ,asauto-files)))
           (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
-	                :lisp-files (nth 1 el)))
+                        :lisp-files (nth 1 el)))
       (setf AXIOM-LISP::*axiom-initial-lisp-forms*
             `(interpsys-ecl-image-init ,spad))
          )
@@ -788,11 +788,11 @@ After this function is called the image is clean and can be saved.
      ;;; (load (concatenate 'string spad "/autoload/"  "parini.lsp"))
      (interpsys-image-init
            (list (concatenate 'string spad "/autoload/"  "parse-files"))
-	   (list (concatenate 'string spad "/autoload/" "comp-files"))
-	   (list (concatenate 'string spad "/autoload/" "browse-files"))
-	   (list (concatenate 'string spad "/autoload/" "translate-files"))
-	   (list (concatenate 'string spad "/autoload/" "asauto-files"))
-	   spad)
+           (list (concatenate 'string spad "/autoload/" "comp-files"))
+           (list (concatenate 'string spad "/autoload/" "browse-files"))
+           (list (concatenate 'string spad "/autoload/" "translate-files"))
+           (list (concatenate 'string spad "/autoload/" "asauto-files"))
+           spad)
       (format *standard-output* "before axiom-restart~%")
       (force-output  *standard-output*)
       (axiom-restart))
