@@ -1362,7 +1362,7 @@ outputString(start,linelength,str) ==
     sayALGEBRA [blnks, str]
 
 outputDomainConstructor form ==
-  if VECTORP CAR form then form := devaluate form
+  if VECTORP form then form := devaluate form
   atom (u:= prefix2String form) => u
   v:= [object2String(x) for x in u]
   -- return INTERNL eval ['STRCONC,:v]
