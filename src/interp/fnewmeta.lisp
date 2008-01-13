@@ -300,7 +300,7 @@
 
 (DEFUN |PARSE-getSemanticForm| (X IND Y)
   (DECLARE (SPECIAL X IND Y))
-  (OR (AND Y (EVAL Y)) (AND (EQ IND '|Nud|) (|PARSE-Prefix|))
+  (OR (AND Y (FUNCALL (CAR Y))) (AND (EQ IND '|Nud|) (|PARSE-Prefix|))
       (AND (EQ IND '|Led|) (|PARSE-Infix|)))) 
 
 
