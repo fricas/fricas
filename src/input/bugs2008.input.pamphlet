@@ -12,49 +12,47 @@
 @
 <<*>>=
 )set break resume
--- equality in TBAGG (issue #412)
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2008"
+testcase "equality in TBAGG (issue #412)"
 R ==> Record(key: Symbol, entry: String)
 T ==> AssociationList(Symbol, String)
-t1 := construct([[x, "ix"]$R])$T;
-t2 := construct([[y, "iy"]$R])$T;
-(t1~=t2)::Boolean
+t1 := construct([[x, "ix"]$R])$T
+t2 := construct([[y, "iy"]$R])$T
+testNotEquals("t1", "t2")
 
-)clear all
--- expose PartialFractionPackage (issue #309)
+
+testcase "expose PartialFractionPackage (issue #309)"
 
 -- note that we cannot easily test for equality of the result of
 -- partialFraction itself: the result of partialFraction is of type Any, thus
 -- we would have to provide type information when creating the other side of
 -- the equation.  But then, the bug won't manifest.
 
-(numberOfFractionalTerms partialFraction((x+a)/(x*(x**3+(b+c)*x**2+b*c*x)),x) _
- = 3)@Boolean
-(numberOfFractionalTerms partialFraction(2*x/(x^2-1),x) = 2)@Boolean
+f := (x+a)/(x*(x**3+(b+c)*x**2+b*c*x))
+testEquals("numberOfFractionalTerms partialFraction(f, x)", "3")
+f := 2*x/(x^2-1)
+testEquals("numberOfFractionalTerms partialFraction(f, x)", "2")
 
-)clear all
--- loop-bugs: resultants for finite integraldomains (issue #413)
+testcase "resultants for finite integraldomains (issue #413)"
 P ==> UP(x, PF 5)
 R ==> Record(coef1: P,coef2: P,resultant: PF 5)
-(resultantEuclidean(x, x)$PRS(PF 5, P) = [0,0,0]$R)@Boolean
+testEquals("resultantEuclidean(x, x)$PRS(PF 5, P)", "[0,0,0]$R")
 
--- loop-bugs: ListMultiDictionary for non-ordered SetCategories (issue #414)
+testcase "ListMultiDictionary for non-ordered SetCategories (issue #414)"
 b := empty()$LMDICT(PF 13)
-insert!(0, b);
-insert!(0, b);
-(#b = 2)@Boolean
-)clear all
+testEquals("(insert!(0, b); insert!(0, b); #b)", "2")
 
--- from open-axiom: Stack missing exports (issue #415)
-s := stack [1,2,3,1];
-(parts s = [1,2,3,1])@Boolean
-(map(i +-> i^2, s)=stack [1,4,9,1])@Boolean
+testcase "from open-axiom: Stack missing exports (issue #415)"
+s := stack [1,2,3,1]
+testEquals("parts s", "[1,2,3,1]")
+testEquals("map(i +-> i^2, s)", "stack [1,4,9,1]")
 t := s; r := map!(i +-> i^2, s);
-eq?(t, r)
+testTrue "eq?(t, r)"
 
--- from open-axiom: Bug SF/1790563
-Insn == Enumeration(New, Move, Line, Close)
-Insn
-
+)set output algebra on
+statistics()
 @
 \eject
 \begin{thebibliography}{99}

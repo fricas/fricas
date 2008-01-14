@@ -1,0 +1,420 @@
+\documentclass{article}
+\usepackage{axiom}
+\newcommand{\Axiom}{{\tt Axiom}}
+\begin{document}
+\title{unittest.spad}
+\author{Martin Rubey}
+\maketitle
+\begin{abstract}
+  The packages defined in this file enable us to write unit tests for {\Axiom}s
+  library.
+\end{abstract}
+\tableofcontents
+\section{Usage}
+To make writing tests and checking them as easy as possible, we provide the
+following functions:
+\begin{description}
+\item[\spadfun{testsuite}] introduces a new testsuite, which is composed of
+  several testcases,
+\item[\spadfun{testcase}] introduces a new testcase, which is composed of
+  several tests,
+\item[\spadfun{testEquals}] checks equality of two elements and steps an
+  appropriate counter, depending on whether equality holds or not,
+\item[\spadfun{testNotEquals}] checks inequality of two elements,
+\item[\spadfun{testTrue}] checks whether a statement is true, and
+\item[\spadfun{statistics}] that outputs for each testcase the number of tests
+  and the number and indices of failed tests.
+\end{description}
+
+To be able to detect fatal errors, we have to pass the arguments to
+\spadfun{testEquals}, \spadfun{testNotEquals} and \spadfun{testTrue} as
+strings.  For example:
+\begin{verbatim}
+    f := (x+a)/(x*(x**3+(b+c)*x**2+b*c*x))
+    testEquals("numberOfFractionalTerms partialFraction(f, x)", "3")
+    s1 := "ab"; s2 := concat("a", "b"); 
+    testEquals("s1", "s2")
+\end{verbatim}
+would be valid tests.  For some reason 
+\begin{verbatim}
+    testEquals("concat(_"a_", _"b_")", "_"ab_"")
+\end{verbatim}
+currently is not a valid test, although it should be.
+
+The system command \verb|)clear completely| resets all the statistics counters,
+while \verb|)clear all| leaves them untouched.  Introducing a new testcase
+calls \verb|)clear all|, so it should not be necessary to call it manually.
+
+The packages defined in this file are meant to be used as regression test
+facility.  Therefore, we do not expose them automatically.  Rather, they should
+be exposed using
+\begin{verbatim}
+)expose UnittestCount UnittestAux Unittest
+\end{verbatim}
+at the very beginning of the regression testing.
+
+\section{package TESTCNT UnittestCount}
+<<package TESTCNT UnittestCount>>=
+)abbrev package TESTCNT UnittestCount
+++ Author: Martin Rubey
+++ Description: UnittestCount is a package that keeps track of statistics
+++              collected during testing.  It is separate from
+++              \spadtype{UnittestAux} because the latter takes an argument,
+++              and we want the state to be common for all arguments.
+UnittestCount(): with
+
+     testsuite: String -> Void     
+       ++ testsuite s starts a new testsuite with s as title.  A testsuite is
+       ++ composed of several testcases.
+
+     testcase: String -> Void
+       ++ testcase s starts a new testcase with s as title.  It also calls
+       ++ \axiom{clear all}.  A testcase is composed of several tests.
+
+     statistics: () -> Void
+       ++ statistics() prints out a summary of the outcome of the testcases so
+       ++ far. Use \axiom{clear completely} to reset the statistics.
+
+     incPass: () -> Void
+       ++ incPass is an internal function that steps the number of passed
+       ++ tests.
+
+     incFail: (String, List OutputForm) -> Void
+       ++ incFail(s, o) is an internal function that steps the number of
+       ++ failed tests and records in- and output.
+
+     incFatal: String -> Void
+       ++ incFatal s is an internal function that steps the number of fatal
+       ++ tests and records input.
+
+     decFatal: () -> Void
+       ++ decFatal is an internal function that declares that the preceding
+       ++ test did not fail with a fatal error.
+
+     addWarning: OutputForm -> Void
+       ++ addWarning s is an internal function that adds s, together with an
+       ++ indication of the current testcase and the current testsuite to the
+       ++ list of warnings. 
+
+  == add
+
+     O ==> OutputForm
+     P ==> OutputPackage
+
+     maxWidth: NonNegativeInteger := 77
+     
+     FAILED    ==> Record(index: Integer,
+                          input: String,
+                          output: List OutputForm)
+
+     FATAL     ==> Record(index: Integer,
+                          input: String)
+
+     TESTCASE  ==> Record(total: Integer, 
+                          fail: Integer, 
+                          fatalities: List FATAL,
+                          failed: List FAILED)
+
+     TESTSUITE ==> AssociationList(String, TESTCASE)
+
+     tests: AssociationList(String, TESTSUITE) := empty()
+     warnings: List O := []
+
+     currentTestcase: String := ""
+     currentTestsuite: String := ""
+
+     testsuite s ==
+         if #s > 15
+         then messagePrint("WARNING: string for testsuite should have less then "
+                           "15 characters!")$OutputForm
+         
+         currentTestsuite := s
+         insert!([currentTestsuite, empty()$TESTSUITE]_
+                 $Record(key: String, entry: TESTSUITE), _
+                 tests)
+
+     testcase s ==
+         if #s > maxWidth - # "  Testcase: "
+         then messagePrint("WARNING: string for testcase should have less then "
+                           string(maxWidth - # "  Testcase: ") _
+                           " characters!")$OutputForm
+         
+         systemCommand("clear all")$MoreSystemCommands
+         currentTestcase := s
+         insert!([currentTestcase, _
+                  [0, 0, [], []]$TESTCASE]$Record(key: String, entry: TESTCASE), _
+                 tests.currentTestsuite)
+         
+     incPass() == 
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total + 1
+
+     incFail(inp, out) == 
+         cur := tests.currentTestsuite.currentTestcase
+         cur.fail := cur.fail + 1
+-- because of the incFatal / decFatal construction, the current index is
+-- cur.total, rather than cur.total + 1
+         cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
+         cur.total := cur.total + 1
+
+     incFatal inp == 
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total + 1
+         cur.fail := cur.fail + 1
+         cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
+
+
+     decFatal() == 
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total - 1
+         cur.fail := cur.fail - 1
+         cur.fatalities := rest(cur.fatalities)
+
+
+     addWarning s ==
+         idx := tests.currentTestsuite.currentTestcase.total
+         warnings := cons(pile([message("Testsuite " currentTestsuite)$O,  
+                                message("Testcase " currentTestcase)$O,   
+                                message("test " string(idx))$O,
+                                s])$O, warnings)
+
+     statistics() ==
+         messagePrint(new(maxWidth, char "=")$String)$O
+         messagePrint("General WARNINGS:")$O
+         messagePrint("* do not use ')clear completely' before having used "_
+                      "'statistics()'")$O
+         messagePrint("  It clears the statistics without warning!")$O
+         messagePrint("* do not forget to pass the arguments of the testXxxx "_
+                      "functions as Strings!")$O
+         messagePrint("  Otherwise, the test will fail and statistics() will "_
+                      "not notice!")$O
+
+         if # warnings > 0 then
+             messagePrint(new(maxWidth, char "=")$String)$O
+             messagePrint("WARNINGS:")$O
+             for w in reverse warnings repeat
+                 output(w)$P
+
+         output("")$P
+         for tstsuite in reverse parts(tests)_
+                             @List Record(key: String, entry: TESTSUITE) repeat
+
+             failedCases: Integer := 0
+             totalCases: Integer := 0
+
+             for tstcase in reverse parts(tstsuite.entry)_
+                              @List Record(key: String, entry: TESTCASE) repeat
+                 totalCases := totalCases + 1
+                 if tstcase.entry.fail > 0 then failedCases := failedCases + 1
+
+             messagePrint(new(maxWidth, char "=")$String)$O
+             messagePrint("Testsuite: " tstsuite.key)$O
+             messagePrint("  failed (total): " _
+                          string(failedCases) " (" _
+                          string(totalCases) ")")$O
+             if failedCases > 0 then
+                 output("")$P
+                 messagePrint("  failed testcases were:")$O
+                 for tstcase in reverse parts(tstsuite.entry)_
+                              @List Record(key: String, entry: TESTCASE) _
+                     | tstcase.entry.fail > 0 repeat
+                     messagePrint("  " new((maxWidth-2)::NonNegativeInteger, _
+                                           char "-")$String)$O
+                     messagePrint("  Testcase: " tstcase.key)$O
+                     messagePrint("    failed (total): " _
+                          string(tstcase.entry.fail) _
+                          " (" string(tstcase.entry.total) ")")$O
+
+                     if # tstcase.entry.failed > 0 then
+                         output("")$P
+                         messagePrint("    failed tests were:")$O
+                         for f in reverse(tstcase.entry.failed) repeat
+                             output("")$P
+                             messagePrint("      " string(f.index) ": " f.input)$O
+                             for o in f.output for i in 1..#(f.output) repeat
+                                 outstring := "      Output" string(i) ": "
+                                 output(hconcat(message outstring, o)$O)$P
+
+                     if # tstcase.entry.fatalities > 0 then
+                         output("")$P
+                         messagePrint("  fatal tests were:")$O
+                         for f in reverse(tstcase.entry.fatalities) repeat
+                             output("")$P
+                             messagePrint("      " string(f.index) ": " f.input)$O
+
+         output("")$P
+         messagePrint(new(maxWidth, char "=")$String)$O
+         messagePrint("Summary:           failed  (total)")$O
+         for tstsuite in reverse parts(tests)_
+                             @List Record(key: String, entry: TESTSUITE) repeat
+
+             failedCases: Integer := 0
+             totalCases: Integer := 0
+
+             for tstcase in reverse parts(tstsuite.entry)_
+                              @List Record(key: String, entry: TESTCASE) repeat
+                 totalCases := totalCases + 1
+                 if tstcase.entry.fail > 0 then failedCases := failedCases + 1
+
+             sfail := string failedCases
+             stotal := string totalCases
+             messagePrint(tstsuite.key _
+                          new(max(20-#(tstsuite.key),0)::NonNegativeInteger, _
+                              char " ") _
+                          new(max(5-#sfail, 0)::NonNegativeInteger, _
+                              char " ") sfail _
+                          new(max(7-#stotal, 0)::NonNegativeInteger, _
+                              char " ") "(" stotal ")")$O
+
+
+@
+
+\section{package TESTAUX UnittestAux}
+<<package TESTAUX UnittestAux>>=
+)abbrev package TESTAUX UnittestAux
+++ Author: Martin Rubey
+++ Description: UnittestAux is an auxiliary package to Unittest, that performs
+++              checking of tests, dealing also with fatal errors.
+UnittestAux(R: BasicType): with
+
+     testEqualsAux: (String, R, R) -> Void
+       ++ testEquals(inp, ex1, ex2) states that ex1 and ex2 should be equal.
+       ++ To sidestep the possibility that the equality function of the domain
+       ++ R performs some simplifications, we convert ex1 and ex2 to
+       ++ \axiom{InputForm}, if possible. 
+
+     testNotEqualsAux: (String, R, R) -> Void
+       ++ testNotEquals(inp, ex1, ex2) states that ex1 and ex2 should be
+       ++ different.
+
+     testTrueAux: (String, R) -> Void
+       ++ testTrueAux(inp, ex) states that ex should be true.
+
+  == add
+
+     O ==> OutputForm
+     U ==> UnittestCount
+
+     if R has ConvertibleTo InputForm then
+         testEqualsAux(inp, ex1, ex2) == 
+             if (convert(ex1)@InputForm=convert(ex2)@InputForm)@Boolean
+             then incPass()$U
+             else 
+                 if R has CoercibleTo O 
+                 then incFail(inp, [ex1::O, ex2::O])$U
+                 else incFail(inp, [])$U
+     else
+         testEqualsAux(inp, ex1, ex2) == 
+             addWarning(message("testing in a domain without InputForm!")$O)$U
+             if (ex1=ex2)@Boolean
+             then incPass()$U
+             else 
+                 if R has CoercibleTo O 
+                 then incFail(inp, [ex1::O, ex2::O])$U
+                 else incFail(inp, [])$U
+
+
+     testNotEqualsAux(inp, ex1, ex2) == 
+         if (ex1=ex2)@Boolean
+         then
+             if R has CoercibleTo O 
+             then incFail(inp, [ex1::O, ex2::O])$U
+             else incFail(inp, [])$U
+         else incPass()$U
+
+     testTrueAux(inp, ex) == 
+         if R is Boolean then
+             if ex
+             then incPass()$U
+             else incFail(inp, [ex::Boolean::O])$U
+         else
+             if R has CoercibleTo O 
+             then incFail(inp, [ex::O])$U
+             else incFail(inp, [])$U
+@
+
+\section{package TESTUNIT Unittest}
+<<package TESTUNIT Unittest>>=
+)abbrev package TESTUNIT Unittest
+++ Author: Martin Rubey
+++ Description: Unittest is a package that provides functions for regression
+++              testing.  Note that it calls the interpreter, thus, all
+++              functions require that there arguments be passed as strings.
+Unittest: with
+
+     testEquals: (String, String) -> Void
+       ++ testEquals(ex1, ex2) states that ex1 and ex2 should be equal.  To
+       ++ sidestep the possibility that the equality function of the domain R
+       ++ performs some simplifications, we convert ex1 and ex2 to
+       ++ \axiom{InputForm}, if possible
+
+     testNotEquals: (String, String) -> Void
+       ++ testNotEquals(ex1, ex2) states that ex1 and ex2 should be
+       ++ different.
+
+     testTrue: String -> Void
+       ++ testTrue ex states that ex should be true.
+
+  == add
+
+     T ==> TemplateUtilities
+
+     testEquals(s1, s2) ==
+         inp := "EQUL: (" s1 ", " s2 ")"
+         incFatal(inp)$UnittestCount
+         interpretString("testEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         decFatal()$UnittestCount
+
+     testNotEquals(s1, s2) ==
+         inp := "DIFF: (" s1 ", " s2 ")"
+         incFatal(inp)$UnittestCount
+         interpretString("testNotEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         decFatal()$UnittestCount
+
+     testTrue(s) ==
+         inp := "TRUE: (" s ")"
+         incFatal(inp)$UnittestCount
+         interpretString("testTrueAux(_"" inp "_", " s ")")$T
+         decFatal()$UnittestCount
+
+@
+
+
+\section{License}
+<<license>>=
+--Copyright (c) 2006-2007, Martin Rubey <Martin.Rubey@univie.ac.at>
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+
+<<*>>=
+<<license>>
+
+<<package TESTCNT UnittestCount>>
+<<package TESTAUX UnittestAux>>
+<<package TESTUNIT Unittest>>
+
+@
+\end{document}

@@ -322,6 +322,8 @@ GUESSLIST= SUPEXPR FAMR2 NEWTON UFPS GOPT GUESSF1 \
            UTSSOL FFFG UFPS1 GOPT0 EXPRSOL FFFGF \
            RECOP GUESS GUESSINT GUESSP GUESSF GUESSAN
 
+TESTLIST= TESTCNT TESTAUX TESTUNIT
+
 
 # The algebra build is not yet ready for parallel build.
 .NOTPARALLEL:
@@ -338,7 +340,7 @@ all-ax all-algebra:
 	@ echo finished $(builddir)
 
 ifeq ($(BUILD_WAY),use_lisp)
-FULL_FASL_LIST=${SPADLIST} ${EXTRASPADS} ${GUESSLIST} \
+FULL_FASL_LIST=${SPADLIST} ${EXTRASPADS} ${GUESSLIST} ${TESTLIST} \
                $(patsubst %, %-, ${CATDOMS})
 
 stamp-alg: stamp-fasls stamp-spadsrc ${TESTS}
@@ -447,7 +449,19 @@ guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-src
 	)
 	touch guess-pkg
 
-stamp: stamp-src guess-pkg ${TESTS}
+test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-src
+	( \
+	  { for A in ${TESTLIST}; do \
+	        echo ')compile "'$$A'.spad"' ; \
+	    done | DAASE=./rf ${INTERPSYS} ; \
+	    for A in ${TESTLIST}; do \
+	        cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	    done ; \
+          } \
+	)
+	touch test-pkg
+
+stamp: stamp-src guess-pkg test-pkg ${TESTS}
 	-rm -f stamp
 	$(STAMP) stamp
 
