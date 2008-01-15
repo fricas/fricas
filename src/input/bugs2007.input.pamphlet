@@ -12,190 +12,176 @@
 @
 <<*>>=
 )set break resume
--- derivative of besselK (issue 355)
-D(besselK(a,x),x)
-D(besselK(a,x),a)
-integrate(D(besselK(a,x),a),a)
-limit(D(besselK(a,x),a),a=1/2)
+)expose UnittestCount UnittestAux Unittest
 
--- order in FreeAbelianGroup (issue 343)
+testsuite "bugs2007"
+
+testcase "derivative of besselK (issue 355)"
+testEquals("D(besselK(a,x),x)", "-1/2*(besselK(a+1,x)+besselK(a-1,x))")
+testEquals("integrate(D(besselK(a,x),a),a)", "besselK(a,x)")
+-- limit(D(besselK(a,x),a),a=1/2)
+
+testcase "order in FreeAbelianGroup (issue 343)"
 Z2:=FreeAbelianGroup Symbol
 a:= a::FreeAbelianGroup Symbol
 b:= b::FreeAbelianGroup Symbol
 z:= 0::FreeAbelianGroup Symbol
 
-a < -b
--b < z
-z < a
+testTrue "a > -b"
+testTrue "-b < z"
+testTrue "z < a"
 
--- bug in map$Set (issue 347)
+testcase "bug in map$Set (issue 347)"
 A:Set Integer:=set [-2,-1,0]
 B:Set Integer:=set [0,1,4]
 C:=map(x +-> x^2,A)
-test(C=B)
+testTrue "test(C=B)"
 
--- Bug in sqrt() for UnivariateTaylorSeries (issue 312)
+testcase "Bug in sqrt() for UnivariateTaylorSeries (issue 312)"
 UTSx := UTS(FRAC INT,x,0)
 monx2 := monomial(1,2)$UTSx
-sqrt(monx2)
+testEquals("sqrt(monx2)", "monomial(1,1)$UTSx")
 
--- issue 340 'divisors$IntegerNumberTheoryFunctions' incorrect for units,
+testcase "issue 340 'divisors$IntegerNumberTheoryFunctions' incorrect for units"
 -- i.e., 1, -1
-divisors 1
-divisors (-1)
+testEquals("divisors 1", "[1]")
+testEquals("divisors(-1)", "[1]")
 
-)clear all
--- issue 15
-integrate(1/(1+z^4), z=0..1)::Complex Float
+testcase "issue 15"
+testTrue("abs(integrate(1/(1+z^4), z=0..1)::Complex Float-0.866972) < 0.00001")
 
--- issue 293
-integrate (1/(1+x^4),x = %minusInfinity..%plusInfinity)
+testcase "issue 293"
+testEquals("integrate(1/(1+x^4),x = %minusInfinity..%plusInfinity)", _
+           "sqrt(2)/2*%pi")
 
--- issue 314
-integrate(2*atan(x)/(1+x^2),x)
+strNoPole := "noPole"
+testEquals("D(integrate((x^4+2*a*x^2+1)^-1, x=0..b, strNoPole), x)",
+           "(x^4+2*a*x^2+1)^-1")
 
--- issue 47
-complexForm(log(%i) - log(-%i))
--- integrate((z^a+1)^b, z) crashes (issue 100)
-integrate((z^a+1)^b, z)
+testcase "issue 314"
+testEquals("integrate(2*atan(x)/(1+x^2),x)", "atan(x)^2")
 
---issue 184
-argument (-%i)
+testcase "issue 47"
+testEquals("complexForm(log(%i) - log(-%i))", "complexForm(%pi*%i)")
 
--- issue 308
-integrate(x^a*(x^b+1)^p, x)
+testcase "integrate((z^a+1)^b, z) crashes (issue 100)"
+testEquals("D(integrate((z^a+1)^b, z), z)", "(z^a+1)^b")
 
--- laplace(log(z), z,w) crashes (issue 101)
-laplace(log(z), z,w)
+testcase "issue 184"
+testEquals("argument(-%i)", "-%pi/2")
 
-laplace(1/sqrt(z), z, w)
-laplace(sqrt(z), z, w)
+testcase "issue 308"
+testEquals("D(integrate(x^a*(x^b+1)^p, x), x)", "x^a*(x^b+1)^p")
 
--- issue 103
-solve(z=z,z)
+testcase "laplace(log(z), z,w) crashes (issue 101)"
+testTrue "(laplace(log(z), z,w); true)"
+testTrue "(laplace(1/sqrt(z), z, w); true)"
+testTrue "(laplace(sqrt(z), z, w); true)"
 
--- issue 114
+testcase "issue 103"
+testEquals("solve(z=z, z)", "[0=0]")
+
+testcase "issue 114"
 dom:=(INT->INT)
 g(f:dom):dom== x+->(f(x))^2
 p(x:INT):INT == x-1
-q:= g p
+q := g p
+testEquals("q 3", "4")
 
--- issue 156
-)clear all
-)set function compile off
-u := operator `u;
-multidiff(expr, variable, count) == if count > 0 then D(multidiff(expr, variable, count-1), variable) else expr
-maketaylor(expr) == series( n +-> multidiff(expr, x, n), x=0)
-maketaylor(u(x))
-)set function compile on
-
-
--- issue 176
+testcase "issue 176"
 p := -x*y^2+x*y+x^3-x^2
-D(factor(p),x)
+testEquals("D(factor(p),x)::POLY INT", "D(p, x)")
 
---issue 182
-round(3.77623)
-round(-3.77623)
+testcase "issue 182"
+testEquals("round(3.77623)::INT", "4")
+testEquals("round(-3.77623)::INT", "-4")
 
--- issue 186
-)clear all
+testcase "issue 186"
 E := Expression Integer
 F := E -> E
 compose(f:F, g:F):F == (e:E):E +-> f(g(e))
 p(e:E):E == 2*e+1
 q(e:E):E == 3*e+1
-compose(p,q)
+testEquals("compose(p,q)(sin x)", "6*sin(x) + 3")
 
--- issue 199
-integrate(exp(-x^2)+exp(x)/x,x)
+testcase "issue 199"
+testEquals("D(integrate(exp(-x^2)+exp(x)/x,x),x)", "exp(-x^2)+exp(x)/x")
 
--- issue 19
-D(0^z, z)
+testcase "issue 19"
+testEquals("D(0^z, z)", "0$EXPR INT")
 
--- issue 211
-)clear all
-D(product((1-q^(n-i))/(1-q^(m-i)),i=0..m-1),q)
+testcase "issue 211"
+testEquals("eval(D(product((1-q^(n-i))/(1-q^(m-i)), i=0..m-1), q),[n=3,m=2])",_
+           "(2*q+1)::EXPR INT")
 f:=operator `f;
-D(product(f(i,q),i=0..m),q)
 
--- issue 278
-simplifyLog(2*sqrt(2)*log(2))
+testEquals("D(product(f(i,q),i=0..m),q)", _
+           "product(f(j, q),j=0..m)*sum(D(f(i, q), q)/f(i, q), i=0..m)")
+           
+testcase "issue 278"
+testEquals("simplifyLog(2*sqrt(2)*log(2))", "log 4 * sqrt 2")
 
--- issue 83
-1::DMP([x],FRAC INT)::POLY FRAC INT
-1::DMP([x],INT)::POLY INT
+testcase "issue 83"
+testEquals("1::DMP([x],FRAC INT)::POLY FRAC INT", "1")
+testEquals("1::DMP([x],INT)::POLY INT", "1")
 vv := 1::DMP([x],FRAC INT)
 uu := vv ::POLY FRAC INT
-1 * uu
+testEquals("1 * uu", "1")
 
--- issue 371
-iprint("Release the hounds!")$IPRNTPK
-for i in 1..10 repeat (iprint$IPRNTPK)(i::String)
+testcase "issue 102"
+testEquals("solve(sinh(z)=cosh(z), z)", "[]$List EQ EXPR INT")
 
--- tracing sanity check
-)trace Integer )math
--1
-)trace Integer )off
-
--- issue 102
-solve(sinh(z)=cosh(z), z)
-
--- issue 187
-(INT, INT)
-Tuple Any
-
--- missing exports
+testcase "missing exports"
 MyFD := DirectProduct(3, PrimeField(100000000000000006579))
 myv := [3, 2, 1]::MyFD
 ii := lookup(myv)
-index(ii)$MyFD
+testEquals("index(ii)$MyFD", "[3,2,1]::MyFD")
 ii := lookup([1, 1, 1]::MyFD)
-index(ii)$MyFD
+testEquals("index(ii)$MyFD", "[1,1,1]::MyFD")
 ii := lookup([1, 1, 0]::MyFD)
-index(ii)$MyFD
+testEquals("index(ii)$MyFD", "[1,1,0]::MyFD")
 ii := lookup([1, 2, 3]::MyFD)
-index(ii)$MyFD
-hash([3, 2, 1]::MyFD)
+testEquals("index(ii)$MyFD", "[1,2,3]::MyFD")
+testTrue "(hash([3, 2, 1]::MyFD); true)"
 
 MyFD:= Product(PrimeField(100000000000000006579), PrimeField(257))
 myv := makeprod(1, 1)$MyFD
 ii := lookup(myv)
-index(ii)$MyFD
+testEquals("index(ii)$MyFD", "makeprod(1,1)$MyFD")
 ii := lookup(makeprod(2, 1)$MyFD)
-index(ii)$MyFD
+testEquals("index(ii)$MyFD", "makeprod(2,1)$MyFD")
 ii := lookup(makeprod(1, 2)$MyFD)
-index(ii)$MyFD
+testEquals("index(ii)$MyFD", "makeprod(1,2)$MyFD")
 ii := lookup(makeprod(2, 128)$MyFD)
-index(ii)$MyFD
-hash(myv)
+testEquals("index(ii)$MyFD", "makeprod(2, 128)$MyFD")
+testTrue "(hash(myv); true)"
 
--- issue 221
-PI has OASGP
+testcase "issue 221"
+testTrue "PI has OASGP"
 
--- issue 258
+testcase "issue 258"
 R==>RectangularMatrix(2,4, PF 2)
-every?(zero?, [lookup(index(i)$R)$R - i for i in 1..2^8])
+testTrue "every?(zero?, [lookup(index(i)$R)$R - i for i in 1..2^8])"
 
--- issue 198
-zero?(complexIntegrate(%i/2*e^(-%i*x^2),x)-_
-      (sqrt %pi * sqrt(%i * log e)*erf(x*sqrt(%i*log e)))/(4*log e))
+testcase "issue 198"
+testEquals("complexIntegrate(%i/2*e^(-%i*x^2),x)", _
+      "(sqrt %pi * sqrt(%i * log e)*erf(x*sqrt(%i*log e)))/(4*log e)")
 
-zero?(complexIntegrate(-%i/2*e^(%i*x^2),x)-_
-      (sqrt %pi * sqrt(-%i * log e)*erf(x*sqrt(-%i*log e)))/(4*log e))
+testEquals("complexIntegrate(-%i/2*e^(%i*x^2),x)", _
+      "(sqrt %pi * sqrt(-%i * log e)*erf(x*sqrt(-%i*log e)))/(4*log e)")
 
-zero?(complexIntegrate(log(x)/(x-1),x)+dilog x)
+testEquals("complexIntegrate(log(x)/(x-1),x)", "-dilog x")
 
-zero?(complexIntegrate(2*log(x)/(x-1),x)+2*dilog x)
+testEquals("complexIntegrate(2*log(x)/(x-1),x)", "-2*dilog x")
 
--- issue 408
-abs(Gamma(1/5::EXPR INT)::EXPR DFLOAT - 4.59084) < 0.00001
-abs(digamma(1/5::EXPR INT)::EXPR DFLOAT+5.28904) < 0.000001
-abs(besselJ(1,1::EXPR INT)::EXPR DFLOAT - 0.440051) < 0.000001
--- fails, because airyAi yields complex results even for real arguments
-abs(airyAi(1/5::EXPR INT)::EXPR DFLOAT - 0.303703) < 0.00001
+testcase "issue 408"
+testTrue "abs(Gamma(1/5::EXPR INT)::EXPR DFLOAT - 4.59084) < 0.00001"
+testTrue "abs(digamma(1/5::EXPR INT)::EXPR DFLOAT+5.28904) < 0.000001"
+testTrue "abs(besselJ(1,1::EXPR INT)::EXPR DFLOAT - 0.440051) < 0.000001"
+fails, because airyAi yields complex results even for real arguments
+testTrue "abs(airyAi(1/5::EXPR INT)::EXPR DFLOAT - 0.303703) < 0.00001"
 
--- issue 183
+testcase "issue 183"
 bt l == 
     if empty? l 
     then empty()$BTREE INT 
@@ -203,18 +189,19 @@ bt l ==
                     bt first(rest l, #l quo 2))
 
 tree := bt primes(1, 20);
-any?(even?, tree)
-not any?(x +-> x > 19, tree)
-every?(prime?, tree)
-not every?(x +-> x > 2, tree)
-member?(17, tree)
-not member?(4, tree)
+testTrue "any?(even?, tree)"
+testTrue "not any?(x +-> x > 19, tree)"
+testTrue "every?(prime?, tree)"
+testTrue "not every?(x +-> x > 2, tree)"
+testTrue "member?(17, tree)"
+testTrue "not member?(4, tree)"
 
-any?(i+->(i=1)::Boolean,[1,2,3])
-not every?(odd?, [1,2,3])
-member?(2, [1,2,3])
-not ([1,2,3] = [1,3,2])::Boolean
+testTrue "any?(i+->(i=1)::Boolean,[1,2,3])"
+testTrue "not every?(odd?, [1,2,3])"
+testTrue "member?(2, [1,2,3])"
+testTrue "not ([1,2,3] = [1,3,2])::Boolean"
 
+statistics()
 @
 \eject
 \begin{thebibliography}{99}

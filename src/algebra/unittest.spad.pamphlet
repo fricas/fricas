@@ -188,6 +188,10 @@ UnittestCount(): with
                       "functions as Strings!")$O
          messagePrint("  Otherwise, the test will fail and statistics() will "_
                       "not notice!")$O
+         messagePrint("* when a function to test takes a string as an " _
+                      "  argument, put it into a variable instead.")$O
+         messagePrint("  Otherwise, the test will fail and statistics() will "_
+                      "not notice!")$O
 
          if # warnings > 0 then
              messagePrint(new(maxWidth, char "=")$String)$O
@@ -244,27 +248,38 @@ UnittestCount(): with
 
          output("")$P
          messagePrint(new(maxWidth, char "=")$String)$O
-         messagePrint("Summary:           failed  (total)")$O
+         messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$O
          for tstsuite in reverse parts(tests)_
                              @List Record(key: String, entry: TESTSUITE) repeat
 
              failedCases: Integer := 0
              totalCases: Integer := 0
 
+             failedTests: Integer := 0
+             totalTests: Integer := 0
+
              for tstcase in reverse parts(tstsuite.entry)_
                               @List Record(key: String, entry: TESTCASE) repeat
                  totalCases := totalCases + 1
                  if tstcase.entry.fail > 0 then failedCases := failedCases + 1
+                 totalTests := totalTests + tstcase.entry.total
+                 failedTests := failedTests + tstcase.entry.fail
 
-             sfail := string failedCases
-             stotal := string totalCases
+             sfailedCases := string failedCases
+             stotalCases := string totalCases
+             sfailedTests := string failedTests
+             stotalTests := string totalTests
              messagePrint(tstsuite.key _
-                          new(max(20-#(tstsuite.key),0)::NonNegativeInteger, _
+                          new(max(27-#(tstsuite.key),0)::NonNegativeInteger, _
                               char " ") _
-                          new(max(5-#sfail, 0)::NonNegativeInteger, _
-                              char " ") sfail _
-                          new(max(7-#stotal, 0)::NonNegativeInteger, _
-                              char " ") "(" stotal ")")$O
+                          new(max(5-#sfailedCases, 0)::NonNegativeInteger, _
+                              char " ") sfailedCases _
+                          new(max(7-#stotalCases, 0)::NonNegativeInteger, _
+                              char " ") "(" stotalCases ")" _
+                          new(max(10-#sfailedTests, 0)::NonNegativeInteger, _
+                              char " ") sfailedTests _
+                          new(max(7-#stotalTests, 0)::NonNegativeInteger, _
+                              char " ") "(" stotalTests ")")$O
 
 
 @
