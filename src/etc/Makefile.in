@@ -20,7 +20,7 @@ all-ax all-asq:
 	fi
 	@echo finished $(builddir)
 
-stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
+stamp: stamp-databases $(axiom_target_bindir)/asq$(EXEEXT) \
 		$(axiom_target_libdir)/summary \
 		$(axiom_target_libdir)/copyright \
 		$(axiom_target_bindir)/axiom \
@@ -30,7 +30,7 @@ stamp: $(DATABASES) $(axiom_target_bindir)/asq$(EXEEXT) \
 	$(STAMP) stamp
 
 ifeq ($(BUILD_WAY),use_lisp)
-$(DATABASES):
+stamp-databases:
 	cp $(axiom_src_datadir)/algebra/*.daase $(axiom_targetdir)/algebra
 	cp $(axiom_src_datadir)/algebra/libdb.text $(axiom_targetdir)/algebra
 	cp $(axiom_src_datadir)/algebra/comdb.text $(axiom_targetdir)/algebra
@@ -41,6 +41,8 @@ $(DATABASES):
 	$(INSTALL_DATA) \
 	  $(axiom_src_datadir)/algebra/DEPENDENTS.DAASE/index.KAF \
              $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+	-rm -f stamp-databases
+	$(STAMP) stamp-databases
 endif
 
 ifneq ($(BUILD_WAY),use_lisp)
@@ -52,7 +54,7 @@ ifneq ($(BUILD_WAY),use_lisp)
 # order to build the databases. If any if any of these are changed,
 # the databases must be re-built.
 
-$(DATABASES): ../algebra/*.NRLIB/code.$(FASLEXT)
+stamp-databases: ../algebra/*.NRLIB/code.$(FASLEXT)
 	@ echo 4 rebuilding databases...
 	(cd ../algebra ; \
            echo ')lisp (make-databases "" nil)' | AXIOM=$(AXIOM) ${INTERPSYS} )
@@ -65,6 +67,8 @@ $(DATABASES): ../algebra/*.NRLIB/code.$(FASLEXT)
                    $(axiom_targetdir)/algebra/USERS.DAASE
 	$(INSTALL_DATA) ../algebra/DEPENDENTS.DAASE/index.KAF \
                    $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+	-rm -f stamp-databases
+	$(STAMP) stamp-databases
 endif
 bin_PROGRAMS = asq$(EXEEXT)
 asq_sources = asq.c
