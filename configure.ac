@@ -1,7 +1,17 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2007-12-14], 
+AC_INIT([FriCAS], [2008-01-18], 
         [fricas-devel@googlegroups.com])
-axiom_top_srcdir=`cd $srcdir && pwd`
+axiom_top_srcdir=`cd "$srcdir" && pwd`
+if pwd | grep ' ' ; then
+    AC_MSG_WARN([Please make sure that name of source directory])
+    AC_MSG_WARN([and name of build directory does not contain spaces.])
+    AC_MSG_ERROR([Name of build directory contains space.])
+fi
+if echo "$srcdir" | grep ' ' || echo "axiom_top_srcdir" | grep ' ' ; then
+    AC_MSG_WARN([Please make sure that name of source directory])
+    AC_MSG_WARN([and name of build directory does not contain spaces.])
+    AC_MSG_ERROR([Name of source directory contains space.])
+fi
 AC_SUBST(axiom_top_srcdir)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -107,7 +117,7 @@ axiom_build_noweb=
 AC_ARG_WITH([included-noweb],
             [  --with-included-noweb    build noweb from included sources],
             [case $withval in
-                yes) if test -f $axiom_top_srcdir/zips/noweb-2.10a.tgz ; then
+                yes) if test -f "$axiom_top_srcdir/zips/noweb-2.10a.tgz" ; then
                          axiom_build_noweb=yes
                      else
                          AC_MSG_ERROR([--with-included-noweb specified, but no noweb sources is present])
@@ -125,7 +135,7 @@ if test x$axiom_build_noweb != xyes ; then
     if test -z $NOTANGLE -o -z $NOWEAVE ; then
         if test x$axiom_build_noweb = xno ; then
            AC_MSG_ERROR([noweb utils are missing but --without-included-noweb is specified])
-        elif test -f $axiom_top_srcdir/zips/noweb-2.10a.tgz ; then
+        elif test -f "$axiom_top_srcdir/zips/noweb-2.10a.tgz" ; then
            axiom_build_noweb=yes
         else
            AC_MSG_ERROR([noweb utils and noweb sources missing])
