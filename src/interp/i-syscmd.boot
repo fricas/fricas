@@ -785,7 +785,9 @@ displaySpad2Cmd l ==
 
       option = 'abbreviations =>
         null vl => listConstructorAbbreviations()
-        for v in vl repeat abbQuery(opOf v)
+        for v in vl repeat
+	  constructor := abbreviation?(opOf v) => abbQuery(constructor)
+	  abbQuery(opOf v)
 
       option = 'operations =>     displayOperations vl
       option = 'macros =>         displayMacros vl
