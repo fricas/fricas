@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2008-01-18], 
+AC_INIT([FriCAS], [2008-01-19], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -57,7 +57,7 @@ case $build in
         AC_CHECK_PROGS([MAKE], [gmake make],
                        [AC_MSG_ERROR([Make utility missing.])])
         if ! $MAKE --version | grep 'GNU' 2>/dev/null; then
-            AC_MSG_ERROR([Axiom build system needs GNU Make.])
+            AC_MSG_ERROR([FriCAS build system needs GNU Make.])
         fi
         ;;
 esac
@@ -82,23 +82,23 @@ AC_CHECK_PROGS([MKTEMP], [mktemp])
 case $build in
      *-solaris9)
         AC_CHECK_PROG([AWK], [gawk], 
-                      [gawk], [AC_MSG_ERROR([Axiom needs gawk])])
+                      [gawk], [AC_MSG_ERROR([FriCAS needs gawk])])
 
         AC_CHECK_PROG([TAR], [gtar],
-                      [gtar], [AC_MSG_ERROR([Axiom needs gtar])])
+                      [gtar], [AC_MSG_ERROR([FriCAS needs gtar])])
 
         AC_CHECK_PROG([PATCH], [gpatch],
-                      [gptach], [AC_MSG_ERROR([Axiom needs gpatch])]) 
+                      [gptach], [AC_MSG_ERROR([FriCAS needs gpatch])]) 
         ;;
 
       *)
         AC_PROG_AWK
 
         AC_CHECK_PROGS([TAR], [gtar tar],
-                       [AC_MSG_ERROR([Axiom needs a tar program])])
+                       [AC_MSG_ERROR([FriCAS needs a tar program])])
 
         AC_CHECK_PROGS([PATCH], [gpatch patch], 
-                       [AC_MSG_ERROR([Axiom needs a patch program])])
+                       [AC_MSG_ERROR([FriCAS needs a patch program])])
         ;;
 esac
 
@@ -126,7 +126,7 @@ AC_ARG_WITH([included-noweb],
                 *) AC_MSG_ERROR([erroneous value for --with-included-noweb]) ;;
              esac])
 ## Check for notangle and noweb if we are not explicitly told
-## to build noweb from Axiom sources.
+## to build noweb from FriCAS sources.
 if test x$axiom_build_noweb != xyes ; then
     AC_CHECK_PROGS([NOTANGLE], [notangle])
     AC_CHECK_PROGS([NOWEAVE], [noweave])
@@ -165,7 +165,7 @@ AC_ARG_WITH([lisp], [ --with-lisp=L         use L as Lisp platform],
 ## If --enable-gcl is specified, we need to check for coonsistency
 axiom_include_gcl=
 if test -z $axiom_lisp ; then
-    AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from Axiom source],
+    AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from FriCAS source],
                   [case $enableval in
                        yes|no) axiom_include_gcl=$enableval ;;
                        *) AC_MSG_ERROR([erroneous value for --enable-gcl]) ;;
@@ -193,7 +193,7 @@ case $axiom_include_gcl,$axiom_lisp in
        fi
 
        ## No Lisp image was specified and none was available from
-       ## the build environment; build GCL from Axiom source.
+       ## the build environment; build GCL from FriCAS source.
        if test -f $axiom_top_srcdir/gcl/configure.in ; then
          AXIOM_LISP='$(axiom_build_bindir)/gcl'
          axiom_all_prerequisites="$axiom_all_prerequisites all-gcl"
@@ -305,7 +305,7 @@ case $axiom_lisp_flavor in
        axiom_quiet_flags=
        axiom_eval_flags='--eval'
        ;;
-    *) AC_MSG_ERROR([We do not know how to build Axiom this $axiom_lisp]) ;;
+    *) AC_MSG_ERROR([We do not know how to build FriCAS this $axiom_lisp]) ;;
 esac
 AC_SUBST(axiom_quiet_flags)
 AC_SUBST(axiom_eval_flags)
@@ -348,14 +348,14 @@ AC_SUBST(axiom_c_runtime)
 
 AC_CHECK_HEADERS([signal.h],
                  [],
-                 [AC_MSG_ERROR([Axiom needs signal support.])])
+                 [AC_MSG_ERROR([FriCAS needs signal support.])])
 AC_CHECK_DECLS([sigaction], [], [], 
                [#include <signal.h>])
 AC_CHECK_HEADERS([sys/stat.h],
                  [],
-                 [AC_MSG_ERROR([Axiom needs <sys/stat.h>.])])
+                 [AC_MSG_ERROR([FriCAS needs <sys/stat.h>.])])
 AC_CHECK_HEADERS([unistd.h], [],
-                 [AC_MSG_ERROR([Axiom needs <unistd.h>])])
+                 [AC_MSG_ERROR([FriCAS needs <unistd.h>])])
 AC_CHECK_DECLS([getuid, geteuid, getgid, getegid], [], [],
                [#include <unistd.h>])
 
@@ -375,7 +375,7 @@ case $host in
         ;;
 esac
 if test x$axiom_host_has_socket != xyes; then \
-    AC_MSG_ERROR([Axiom needs suport for sockets.])
+    AC_MSG_ERROR([FriCAS needs suport for sockets.])
 fi
 
 ## solaris-based systems tend to hide the socket library.
@@ -470,11 +470,11 @@ AC_SUBST(X_LIBS)
 AC_SUBST(X_EXTRA_LIBS)
 
 ## Finally, output the list of libraries that need to appear before -lX11
-## Some part of Axiom depends on Xpm.  That library has kind uncertain
+## Some part of FriCAS depends on Xpm.  That library has kind uncertain
 ## future.  At some point in the past, it was deprecated, to be
 ## replaced by xpm-nox; then came back again.  So, its support may
 ## vary from system to system.  For the moment, we do a quick sanity
-## check and disable X11 if Xpm is not present.  Long term, Axiom should
+## check and disable X11 if Xpm is not present.  Long term, FriCAS should
 ## get rid of dependence on Xpm.  Another possibility is to (optionally)
 ## bundle Xpm source tarball and build Xpm if needed.
 
@@ -636,4 +636,4 @@ if test -f $srcdir/src/paste/copy_gphts ; then
     fi
 fi
 
-echo "Type '${MAKE}' (without quotes) to build Axiom"
+echo "Type '${MAKE}' (without quotes) to build FriCAS"
