@@ -106,7 +106,7 @@ AC_PROG_RANLIB
 AC_CHECK_PROG([AR], [ar], [ar], [AC_MSG_ERROR([program 'ar' is missing])])
 
 AC_PATH_PROG([LATEX], [latex])
-AC_CHECK_PROG([MAKEINDEX], [makeindex])
+AC_CHECK_PROGS([MAKEINDEX], [makeindex])
 
 ## -------------------------
 ## -- Which noweb to use? --
