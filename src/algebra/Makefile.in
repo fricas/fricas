@@ -345,23 +345,20 @@ FULL_FASL_LIST=${SPADLIST} ${EXTRASPADS} ${GUESSLIST} ${TESTLIST} \
 
 stamp-alg: stamp-fasls stamp-spadsrc ${TESTS}
 
-stamp-fasls: $(patsubst %, ${OUT}/%.$(FASLEXT), ${FULL_FASL_LIST})
+stamp-fasls:
+	for A in $(patsubst %, $(srcdir)/%.lsp, ${FULL_FASL_LIST}) ; do \
+	   cp $$A . ; \
+	done
+	( for A in $(patsubst %, %.lsp, ${FULL_FASL_LIST}) ; do \
+	   echo ')lisp (compile-file "'$$A'")' ; \
+	done ; \
+	echo '(quit)' ) | \
+	DAASE=$(axiom_src_datadir) $(INTERPSYS)
+	for A in $(patsubst %, %.$(FASLEXT), ${FULL_FASL_LIST}) ; do \
+	  cp $$A ${OUT} ; \
+	done
+	touch stamp-fasls
 
-$(patsubst %, ${OUT}/%.$(FASLEXT), ${FULL_FASL_LIST}) : \
-	${OUT}/%.$(FASLEXT) : %.$(FASLEXT)
-	cp $< $@
-
-.PRECIOUS: %.$(FASLEXT)
-
-$(patsubst %, %.$(FASLEXT), ${FULL_FASL_LIST}) : \
-        %.$(FASLEXT) : %.lsp
-	echo ')lisp (progn (compile-file "$<") (quit))' | \
-          DAASE=$(axiom_src_datadir) $(INTERPSYS)
-
-.PRECIOUS: %.lsp
-$(patsubst %, %.lsp, ${FULL_FASL_LIST}) : \
-	%.lsp : $(srcdir)/%.lsp
-	cp $< $@
 endif
 
 stamp-db: $(patsubst %, %.spad, ${SPADLIST} ${EXTRASPADS})
