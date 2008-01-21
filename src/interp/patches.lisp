@@ -90,6 +90,8 @@
     (let ((dname (if (null args)
                      (trim-directory-name (namestring (user-homedir-pathname)))
                      (car args))))
+         (if (symbolp dname)
+             (setf dname (symbol-name dname)))
          (chdir dname))
     (|sayKeyedMsg| 'S2IZ0070 (list (get-current-directory))))
 
