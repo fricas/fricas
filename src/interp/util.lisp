@@ -1348,8 +1348,12 @@ quality we check anyway.
   #+(or :GCL :CCL)
   (|spad|)
   #-(or :GCL :CCL)
-  (handler-bind ((error #'spad-system-error-handler))
-     (|spad|))
+  (let ((*debugger-hook* 
+	  (lambda (condition previous-handler)
+	     (spad-system-error-handler condition)) 
+       ))
+     (handler-bind ((error #'spad-system-error-handler))
+       (|spad|)))
 )
 
 
