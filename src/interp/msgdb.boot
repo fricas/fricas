@@ -460,11 +460,13 @@ throwKeyedMsgFromDb(key,args,dbName) ==
   spadThrow()
 
 queryUserKeyedMsg(key,args) ==
+  ioHook("startQueryUser")
   -- display message and return reply
   conStream := DEFIOSTREAM ('((DEVICE . CONSOLE) (MODE . INPUT)),120,0)
   sayKeyedMsg(key,args)
   ans := read_-line conStream
   SHUT conStream
+  ioHook("endOfQueryUser")
   ans
 
 flowSegmentedMsg(msg, len, offset) ==

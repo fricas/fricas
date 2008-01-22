@@ -185,10 +185,12 @@ print(x,domain) ==
   output(x,dom)
 
 mathprintWithNumber x ==
+  ioHook("startAlgebraOutput")
   x:= outputTran x
   maprin
     $IOindex => ['EQUATNUM,$IOindex,x]
     x
+  ioHook("endOfAlgebraOutput")
 
 mathprint x == 
    x := outputTran x

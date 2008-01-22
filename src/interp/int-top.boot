@@ -71,6 +71,17 @@ and then tail-recursively call [[intloopReadConsole]].
 
 )package "BOOT"
 
+-- User function to call when performing interactive input or output.
+-- $ioHook is given one argument: symbol identifying curent i/o event
+--
+-- One possible way to use it is:
+-- )lisp (setf |$ioHook| (lambda (x) (format t "<~S>~%" x)))
+--
+DEFPARAMETER($ioHook, nil)
+
+ioHook(x) ==
+   if $ioHook then FUNCALL($ioHook, x)
+
 --% INTERPRETER TOP LEVEL
 
 spad() ==
@@ -167,7 +178,9 @@ setCurrentLine s ==
 ncSetCurrentLine c == setCurrentLine(c)
 
 intloopReadConsole(b, n)==
+    ioHook("startReadLine")
     a:= serverReadLine(_*STANDARD_-INPUT_*)
+    ioHook("endOfReadLine")
     not STRINGP a => leaveScratchpad()
     #a=0 =>
              PRINC(MKPROMPT())
@@ -278,7 +291,8 @@ intloopSpadProcess(stepNo,lines,ptree,interactive?)==
             ncConversationPhase(function phInterpret,        [cc])
  
             #ncEltQ(cc, 'messages) ^= 0 => ncError()
- 
+
+    ioHook("endOfOutput") 
     intSetNeedToSignalSessionManager()
     $prevCarrier := $currentCarrier
     result = 'ncEnd     => stepNo

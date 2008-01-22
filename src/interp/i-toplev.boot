@@ -208,8 +208,10 @@ recordAndPrint(x,md) ==
   'done
 
 printTypeAndTime(x,m) ==  --m is the mode/type of the result
+  ioHook("startTypeAndTime")
   $saturn => printTypeAndTimeSaturn(x, m)
   printTypeAndTimeNormal(x, m)
+  ioHook("endOfTypeAndTime")
 
 printTypeAndTimeNormal(x,m) ==
   -- called only if either type or time is to be displayed
