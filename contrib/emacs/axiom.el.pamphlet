@@ -86,7 +86,7 @@ life with axiom easier.  To install it, do the following:
 \end{verbatim}
   to your [[.emacs]], and add
 \begin{verbatim}
-export AXIOMEDITOR='emacsclient +$line $name >\dev\null 2>&1'
+export AXIOMEDITOR='emacsclient +$line $name >/dev/null 2>&1'
 \end{verbatim}
   to the script read by your shell at startup - for example your [[.bashrc]].
 \end{itemize}
@@ -111,6 +111,7 @@ following emacs commands are provided:
 \item[axiom-paint-face] changes the face of the paint-brush.
 \item[return] evaluates input.  If point is on a previous input, it overwrites
   old output ``nicely''.
+\item[Shift-return] is equivalent to typing underscore followed by [[return]].
 \item[M-return] evaluates input and appends output at the end of the buffer.
 \item[C-return] writes the front item of the kill ring into a temporary file,
   and then [[)read]]s that file.  With an argument, it reads the file
@@ -235,7 +236,8 @@ the arguments to be provided:
 
 <<AxiomStartupVariables>>=
 ;; Variables used when starting Axiom
-(defvar axiom-command nil)
+(defvar axiom-command nil)           ;; you could set this to "fricas"
+(defvar axiom-single-prompt nil)     ;; does axiom start with a single prompt?
 (defvar axiom-args "-noclef")  ;; Ignored when AXIOMsys is used.
 (defvar axiom-prompt "^(\\([0-9]+\\)) -> ")
 (defvar axiom-after-output-wait 100) ;; time to wait for axiom to repond prompt
@@ -260,6 +262,7 @@ the arguments to be provided:
 ;; doesn't work in terminal
 ;; (define-key axiom-mode-map [return] 'axiom-eval)
 (define-key axiom-mode-map "\C-m" 'axiom-eval)
+(define-key axiom-mode-map [(shift return)] 'axiom-underscore-newline)
 ;; doesn't work in terminal
 ;;(define-key axiom-mode-map [(meta return)] 'axiom-eval-append)
 (define-key axiom-mode-map "\M-\C-m" 'axiom-eval-append)
@@ -502,12 +505,13 @@ I allow visiting saved history, this needs to change.
  otherwise delete it."
   (comint-goto-process-mark)
   ;; wait until the prompt(s) have appeared
-  (cond ((string= (file-name-nondirectory axiom-command) "axiom")
-         (while (not (re-search-backward "(1) -> [^ ](1) ->" before-banner t))
-           (accept-process-output proc)))
-        ((string= (file-name-nondirectory axiom-command) "AXIOMsys")
-         (while (not (re-search-backward "(1) -> " before-banner t))
-           (accept-process-output proc))))
+  (if (or (string= (file-name-nondirectory axiom-command) "AXIOMsys")
+          axiom-single-prompt)
+      (while (not (re-search-backward "(1) -> " before-banner t))
+        (accept-process-output proc))
+    (while (not (re-search-backward "(1) -> [^ ](1) ->" before-banner t))
+      (accept-process-output proc)))
+        
 
   (if delete-banner
       (delete-region before-banner (point))
@@ -552,7 +556,7 @@ I allow visiting saved history, this needs to change.
         ;; not know how.
         (axiom-parse-region)
         (axiom-get-command)
-        ;; inserst a newline so that the banner is easier to find
+        ;; insert a newline so that the banner is easier to find
         (goto-char before-banner)
         (insert "\n")
         ;; Run that command
@@ -1356,6 +1360,14 @@ evaluation routine is needed based on the location of the input line.
       (comint-set-process-mark)
       (insert input)
       (axiom-normal-eval))))
+
+(defun axiom-underscore-newline ()
+  "If in input, append an underscore and a newline."
+  (interactive)
+  (unless (or (axiom-prompt? (point))
+              (axiom-output? (point)))
+    (end-of-line)
+    (insert "_\n")))
 
 @ 
 
