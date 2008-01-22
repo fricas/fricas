@@ -207,7 +207,6 @@ makeint.lisp:
 
 ${SAVESYS}:
 	echo '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
-             '#-:ecl(setf BOOT::|$$createLocalLibDb| nil)' \
              '#+:ecl(AXIOM-LISP::make-program "$(BASE)$@" nil)' \
              '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' | ${LOADSYS}
 
@@ -263,11 +262,8 @@ ${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
 all-axiomsys: ${AXIOMSYS}
 
 ${AXIOMSYS}:
-	echo '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
-	   '#+:gcl(setf compiler::*default-system-p* nil)' \
-	   '#+:gcl(compiler::emit-fn nil)' \
-           '(setq *load-verbose* nil)' \
-           '#+:clisp(setf custom:*suppress-check-redefinition* t)' \
+	echo '(defparameter AXIOM-LISP::*building-axiomsys* t)' \
+	   '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
 	   '#+:ecl(AXIOM-LISP::make-program "$(BASE)$@" nil)' \
 	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' \
              | DAASE="$(BASE)$(axiom_targetdir)" ${LOADSYS}

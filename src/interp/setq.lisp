@@ -59,7 +59,7 @@
 ;; their own code.
 (SETQ |$newConstructorList| nil)
 (SETQ |$newConlist| nil)
-(SETQ |$createLocalLibDb| 't)
+(SETQ |$createLocalLibDb| nil)
 
 
 ;; These were originally in SPAD LISP

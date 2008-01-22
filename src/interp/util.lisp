@@ -757,6 +757,16 @@ After this function is called the image is clean and can be saved.
       (mapcar #'load load-files)
       (interpsys-image-init parse-files comp-files browse-files
              translate-files asauto-files spad))
+  (if (and (boundp 'AXIOM-LISP::*building-axiomsys*)
+                AXIOM-LISP::*building-axiomsys*)
+       (progn
+           #+:gcl(setf compiler::*default-system-p* nil)
+           #+:gcl(compiler::emit-fn nil)
+           (setq *load-verbose* nil)
+           #+:clisp(setf custom:*suppress-check-redefinition* t)
+           (setf |$createLocalLibDb| t)
+       )
+  )
   #+:ecl
   (progn
       (setf AXIOM-LISP::*axiom-initial-lisp-objects*
@@ -770,15 +780,18 @@ After this function is called the image is clean and can be saved.
                     ("asauto-files" ,asauto-files)))
           (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
                         :lisp-files (nth 1 el)))
-      (setf AXIOM-LISP::*axiom-initial-lisp-forms*
-            `(interpsys-ecl-image-init ,spad))
-         )
-)
-
-#+:ecl
-(progn
-   (defvar *YEARWEEK* "YEARWEEK")
-   (defvar *BUILD-VERSION* "ecl experimental")
+      (let ((initforms nil))
+          (dolist (el '(*YEARWEEK* *BUILD-VERSION* timestamp
+                    |$createLocalLibDb|))
+              (if (boundp el)
+                  (push (list 'defparameter el (symbol-value el))
+                        initforms)))
+          (push `(interpsys-ecl-image-init ,spad) initforms)
+          (setf initforms (reverse initforms))
+          (push `progn initforms)
+          (setf AXIOM-LISP::*axiom-initial-lisp-forms* initforms)
+      )
+  )
 )
 
 (defun interpsys-ecl-image-init (spad)
