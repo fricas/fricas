@@ -35,24 +35,6 @@
 
 (in-package "FOAM-USER")
 
-;; tacky but means we can run programs
-
-(defun H-integer (l e)
-  (|AXL-LiteralToInteger| l))
-        
-(defun  H-string (l e)
-  (|AXL-LiteralToString| l))
-
-(defun  H-error (l e)
-  (|AXL-error| l))
-
-(defmacro define-constant (name value)
-   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
-
-(eval-when (load eval)
-           (define-constant |G-axclique_string_305639517| (cons #'H-String nil))
-           (define-constant |G-axclique_integer_685864888| (cons #'H-integer nil))
-           (define-constant |G-axclique_error_011667951| (cons #'H-error nil)))
 
 ;; Literals should be null-terminated strings
 
@@ -202,3 +184,24 @@
 (defun |AXL-spitSInt| (x)
   (print x))
 
+;; tacky but means we can run programs
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
+    (defun H-integer (l e)
+        (|AXL-LiteralToInteger| l))
+        
+    (defun  H-string (l e)
+        (|AXL-LiteralToString| l))
+
+    (defun  H-error (l e)
+        (|AXL-error| l))
+)
+
+(defmacro define-constant (name value)
+   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
+
+(eval-when (:execute :load-toplevel)
+    (define-constant |G-axclique_string_305639517| (cons #'H-String nil))
+    (define-constant |G-axclique_integer_685864888| (cons #'H-integer nil))
+    (define-constant |G-axclique_error_011667951| (cons #'H-error nil))
+)

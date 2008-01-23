@@ -18,15 +18,10 @@ BOOTSYS= $(axiom_build_bindir)/bootsys
 
 DEPSYS=	$(axiom_build_bindir)/depsys
 
-DEP=	vmlisp.lisp	ggreater.lisp	\
-	hash.lisp	bootfuns.lisp	\
-	union.lisp	nlib.lisp	\
-	macros.lisp	comp.lisp	\
-	spaderror.lisp	debug.lisp	\
-	spad.lisp	bits.lisp	\
-	setq.lisp	property.lisp	\
-	foam_l.lisp      \
-	axext_l.lisp
+DEP=    vmlisp     ggreater   hash       bootfuns \
+        union      nlib       macros     comp \
+        spaderror  debug      spad       bits \
+        setq       property
 
 LOADSYS= $(axiom_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(axiom_build_bindir)/interpsys$(EXEEXT)
@@ -45,7 +40,7 @@ OBJ_files= vmlisp hash bootfuns macros setq astr bits \
 	posit property ptrees ptrop record rulesets scan \
 	serror server setvars sfsfun-l sfsfun simpbool slam \
 	sockio spad spaderror template termrw trace \
-	union daase fortcall
+	union daase fortcall nocompil
 
 OBJS= $(patsubst %, %.$(LISPOBJEXT), $(OBJ_files))
 
@@ -89,7 +84,8 @@ YEARWEEK=(progn (setq timestamp "${TIMESTAMP}") (setq boot::*build-version* "${V
 .PRECIOUS:	${SAVESYS}
 .PRECIOUS:	${AXIOMSYS}
 
-PROCLAIMS=(progn (load "sys-pkg.lisp") (load "$(srcdir)/interp-proclaims.lisp"))
+PROCLAIMS=(progn (load "$(srcdir)/sys-pkg.lisp") \
+                 (load "$(srcdir)/interp-proclaims.lisp"))
 
 .SUFFIXES:
 .SUFFIXES: .boot .clisp .lisp .pamphlet
@@ -131,41 +127,24 @@ clean:
 %.$(LISPOBJEXT): %.clisp
 	$(COMPILE_LISP)
 
-# Extract and compile the part of the interpreter written
-# in Common Lisp
+# Compile the part of the interpreter written in Common Lisp
 .PRECIOUS: %.lisp
-%.$(LISPOBJEXT): %.lisp
+%.$(LISPOBJEXT): $(srcdir)/%.lisp
 	$(COMPILE_LISP)
 
-$(DEP) sys-pkg.lisp nocompil.lisp util.lisp parsing.lisp metalex.lisp \
-  bootlex.lisp preparse.lisp def.lisp metameta.lisp fnewmeta.lisp \
-  cfuns.lisp fname.lisp monitor.lisp sfsfun-l.lisp sockio.lisp \
-  daase.lisp patches.lisp nspadaux.lisp : %.lisp: $(srcdir)/%.lisp
-	cp $< $@
-
 mostlyclean-local:
-	rm -f *.fn *.data *.o
+	rm -f *.fn *.data *.lib *.$(LISPOBJEXT)
 
 clean-local: mostlyclean-local
-	rm -f *.clisp *.lsp *.boot
-	rm -f \
-	axext_l.lisp   def.lisp       metalex.lisp   parsing.lisp \
-	spad.lisp      bits.lisp      fname.lisp     metameta.lisp \
-	patches.lisp   sys-pkg.lisp   fnewmeta.lisp \
-	monitor.lisp   preparse.lisp  union.lisp     bootfuns.lisp \
-	foam_l.lisp    proclaims.lisp \
-	bootlex.lisp   ggreater.lisp  newaux.lisp    property.lisp \
-	util.lisp      cfuns.lisp     hash.lisp      nlib.lisp \
-	setq.lisp      vmlisp.lisp    comp.lisp      \
-	nocompil.lisp  sfsfun-l.lisp  daase.lisp     macros.lisp \
-	nspadaux.lisp  sockio.lisp    debug.lisp     makedep.lisp \
-	spaderror.lisp
+	rm -f *.clisp \
+	  makedep.lisp makedep2.lisp makedep2.lst makeint.lisp \
+	  exposed.lsp database.date
 
 distclean-local: clean-local
 
 ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     ${DEPSYS} ${OBJS}  util.$(LISPOBJEXT) \
-    nocompil.lisp sys-pkg.lisp \
+    $(srcdir)/sys-pkg.lisp \
     ${OCOBJS} ${OPOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
     ${NAGBROBJS} ${TRANOBJS} ${AUTO}/ffi-func.$(LISPOBJEXT) \
@@ -185,8 +164,7 @@ makeint.lisp:
 	$(INSTALL_DATA) $(axiom_src_datadir)/doc/msgs/s2-us.msgs \
 		 $(axiom_target_datadir)/msgs
 	@ echo '${PROCLAIMS}' > makeint.lisp
-	@ echo '(load "nocompil.lisp")' >> makeint.lisp
-	echo '(load #-:ecl "util" #+:ecl "util.lisp")' >> makeint.lisp
+	echo '(load #-:ecl "util" #+:ecl "$(srcdir)/util.lisp")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ touch ${TIMESTAMP}
 	@ echo '${YEARWEEK}' >> makeint.lisp
@@ -215,42 +193,46 @@ ${SAVESYS}:
 depsys_boot_sources = postpar parse clam slam \
 			g-boot g-util
 
-${DEPSYS}:	${DEP} sys-pkg.lisp nocompil.lisp \
-	        util.lisp \
-	        parsing.lisp metalex.lisp \
-	        bootlex.lisp newaux.lisp \
-	        preparse.lisp \
-	        def.lisp \
-	        metameta.lisp fnewmeta.lisp \
+# Lisp files beyond DEP needed for DEPSYS
+depsys_lisp_files = parsing metalex bootlex newaux preparse def \
+                    metameta fnewmeta
+
+${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
+                    ${DEP} $(depsys_lisp_files) sys-pkg util) \
 	        $(patsubst %, %.clisp, ${depsys_boot_sources})
 	@ echo 3 making ${DEPSYS} 
 	$(mkinstalldirs) $(axiom_build_bindir)
 	echo '${PROCLAIMS}' > makedep.lisp
 	echo '(push :oldboot *features*)' >> makedep.lisp
-	echo '(load "nocompil.lisp")' >> makedep.lisp
-	echo '(load "util.lisp")' >> makedep.lisp
+	echo '(load "$(srcdir)/util.lisp")' >> makedep.lisp
 	echo '(in-package "BOOT")' >> makedep.lisp
-	echo '(build-depsys (quote ($(patsubst %, "%", ${DEP}))) "${AXIOM}" "$(builddir)")' >> makedep.lisp
+	echo '(build-depsys (quote (' \
+	          '$(patsubst %, "$(srcdir)/%.lisp", ${DEP})' \
+		  ')) "${AXIOM}" "$(builddir)")' >> makedep.lisp
 	echo > makedep2.lst
-	for A in postpar.clisp parse.clisp parsing.lisp metalex.lisp \
-	         bootlex.lisp newaux.lisp preparse.lisp def.lisp \
-	         metameta.lisp fnewmeta.lisp clam.clisp slam.clisp \
+	for A in postpar.clisp parse.clisp \
+	         $(patsubst %, $(srcdir)/%.lisp, $(depsys_lisp_files)) \
+	         clam.clisp slam.clisp \
 	         g-boot.clisp g-util.clisp; do \
-	   B=$${A%.*} ; \
-	   echo '(load-maybe-compiling "'$$A'")' >> makedep.lisp ; \
-	   echo $$B >> makedep2.lst ; \
+	   B=$${A##*/} ; \
+	   C=$${B%.*} ; \
+	   echo '(load-maybe-compiling "'$$A'" "'$$C'.$(LISPOBJEXT)")' \
+	          >> makedep.lisp ; \
+	   echo $$C >> makedep2.lst ; \
 	done
-	for A in ${DEP} nocompil.lisp util.lisp; do \
-	    echo '(axiom-compile-file "'$$A'")' >> makedep.lisp ; \
+	for A in ${DEP} util ; do \
+	    echo '(maybe-compile "$(srcdir)/'$$A'.lisp"' \
+	         '"'$$A'.$(LISPOBJEXT)")' >> makedep.lisp ; \
 	done
-	echo '#-:gcl(axiom-compile-file "sys-pkg.lisp")' >> makedep.lisp
+	echo '#-:gcl(maybe-compile "$(srcdir)/sys-pkg.lisp"' \
+	             '"sys-pkg.$(LISPOBJEXT)")' >> makedep.lisp
 	echo '(load "makedep.lisp")' | ${LOADSYS}
 	echo '(in-package "AXIOM-LISP")' > makedep2.lisp
 	echo '(make-program "$(BASE)$@" (quote (' >> makedep2.lisp
-	echo '#+:gcl"sys-pkg.lisp" #-:gcl"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
+	echo '#+:gcl"$(srcdir)/sys-pkg.lisp"' \
+	     '#-:gcl"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
 	echo '#+:gcl"$(srcdir)/interp-proclaims.lisp"' >> makedep2.lisp
-	for A in nocompil util \
-                 $(patsubst %.lisp, %, ${DEP}) \
+	for A in util ${DEP} \
                  `cat makedep2.lst` ; do \
               echo '"'$$A'.$(LISPOBJEXT)"' >> makedep2.lisp ; \
         done
@@ -282,34 +264,24 @@ database.date:
 	@ echo 617 the database was updated...remaking interpsys
 	touch database.date
 
-
-
 AUTO_from_IN=\
- apply bootlex def fnewmeta metalex metameta parsing preparse \
- c-util category \
- c-doc compiler profile define functor info iterator modemap \
- nruncomp package parse postpar bc-matrix bc-misc bc-solve \
- bc-util ht-util htsetvar ht-root htcheck ax br-con br-search \
- br-op1 br-op2 br-data br-util br-saturn topics br-prof nspadaux \
- showimp ffi-func
+ bootlex def fnewmeta metalex metameta parsing preparse \
+ parse postpar nspadaux ffi-func
 
 $(addprefix $(AUTO)/, $(addsuffix .$(LISPOBJEXT), $(AUTO_from_IN))): \
    $(AUTO)/%.$(LISPOBJEXT) : %.$(LISPOBJEXT)
 	cp $< $@
 
 IN_from_MID=\
- apply as ax bc-matrix bc-misc bc-solve bc-util br-con br-data \
- br-op1 br-op2 br-prof br-saturn br-search br-util buildom \
- category cattable c-doc clammed compat compiler compress c-util \
- database define format fortcall functor g-cndata g-error g-opt \
- g-timer hashcode htcheck ht-root htsetvar ht-util hypertex \
+ as buildom cattable clammed compat compress \
+ database format fortcall g-cndata g-error g-opt \
+ g-timer hashcode hypertex \
  i-analy i-code i-coerce i-coerfn i-eval i-funsel \
- i-intern interop i-map info i-output i-resolv i-spec1 i-spec2 \
- i-syscmd iterator i-toplev i-util lisplib match modemap msgdb \
- newfort \
- nruncomp nrunfast nrungo nrunopt package pathname \
- profile record rulesets server setvars setvart simpbool \
- template termrw topics trace
+ i-intern interop i-map i-output i-resolv i-spec1 i-spec2 \
+ i-syscmd i-toplev i-util lisplib match msgdb \
+ newfort nrunfast nrungo nrunopt pathname \
+ record rulesets server setvars setvart simpbool \
+ template termrw trace
 
 $(addsuffix .$(LISPOBJEXT), $(IN_from_MID)): \
     %.$(LISPOBJEXT) : %.clisp
@@ -319,51 +291,26 @@ $(addsuffix .$(LISPOBJEXT), $(IN_from_MID)): \
 	     | ${DEPSYS}
 
 AUTO_from_MID=\
-mark pspad1 pspad2 wi1 wi2
+ apply ax bc-matrix bc-misc bc-solve bc-util br-con br-data br-op1 \
+ br-op2 br-prof br-saturn br-search br-util category c-doc \
+ compiler c-util define functor htcheck ht-root htsetvar ht-util \
+ info iterator mark modemap nruncomp package profile pspad1 \
+ pspad2 topics wi1 wi2
 
-$(addprefix $(AUTO)/, $(addsuffix .$(LISPOBJEXT), $(AUTO_from_MID))): \
+$(patsubst %, $(AUTO)/%.$(LISPOBJEXT), $(AUTO_from_MID) showimp): \
     $(AUTO)/%.$(LISPOBJEXT) : %.clisp
 	@ echo 10 making $@ from $<
 	echo '(in-package "AXIOM-LISP")' \
-	     '(progn (axiom-compile-file "$<" :output-file "$(notdir $@)")' \
+	     '(progn (axiom-compile-file "$<" :output-file "$@")' \
 	     ' (${BYE}))' | ${DEPSYS}
-	mv "$(notdir $@)" $@
 
-MID_from_IN=\
- apply as ax bc-matrix bc-misc bc-solve bc-util br-con br-data \
- br-op1 br-op2 br-prof br-saturn br-search br-util buildom \
- category cattable c-doc clammed compat compiler compress c-util \
- database define format fortcall functor g-cndata g-error g-opt \
- g-timer hashcode htcheck ht-root htsetvar ht-util hypertex \
- i-analy i-code i-coerce i-coerfn i-eval i-funsel i-intern \
- interop i-map info i-output i-resolv i-spec1 i-spec2 i-syscmd \
- iterator i-toplev i-util lisplib mark match modemap msgdb \
- newfort nruncomp \
- nrunfast nrungo nrunopt package pathname profile pspad1 \
- pspad2 record rulesets server setvars setvart simpbool template \
- termrw topics trace wi1 wi2
+MID_from_IN= $(IN_from_MID) $(AUTO_from_MID)
 
 $(addsuffix .clisp, $(MID_from_IN)): \
     %.clisp : $(srcdir)/%.boot
 	@ echo 11 making $@ from $<
 	echo '(progn (boottran::boottocl "$<" "$@") (${BYE}))' | ${DEPSYS}
 
-ffi-func.$(LISPOBJEXT): ffi-func.lisp
-	echo '(in-package "AXIOM-LISP")' \
-	     '(axiom-compile-file "ffi-func.lisp" :output-file' \
-              ' "ffi-func.$(LISPOBJEXT)") (${BYE})' | ${DEPSYS}
-
-ffi-func.lisp: $(srcdir)/ffi-func.lisp
-	cp $< $@
-
 ${AUTO}/ffi-func2.lisp: $(srcdir)/ffi-func2.lisp
-	cp $< $@
-
-newaux.$(LISPOBJEXT): newaux.lisp
-	@ echo 79 making newaux.$(LISPOBJEXT) from newaux.lisp
-	echo '(progn  (axiom-compile-file "newaux.lisp" :output-file ' \
-             '"newaux.$(LISPOBJEXT)") (${BYE}))' | ${DEPSYS} 
-
-newaux.lisp: $(srcdir)/newaux.lisp
 	cp $< $@
 

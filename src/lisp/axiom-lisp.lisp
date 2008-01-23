@@ -336,11 +336,12 @@
         (compile-file f :output-file (relative-to-absolute output-file))
         (compile-file f)))
 
-(defun load-maybe-compiling (f)
-    (let ((cf #-:ecl(compile-file-pathname f)
-              #+:ecl(merge-pathnames (make-pathname :type "o"))))
-         (if (or (not (probe-file cf))
-                 (< (file-write-date cf) (file-write-date f)))
-             (axiom-compile-file f))
-         (load #-:ecl cf #+:ecl f)))
+(defun maybe-compile (f cf)
+    (if (or (not (probe-file cf))
+            (< (file-write-date cf) (file-write-date f)))
+        (axiom-compile-file f :output-file cf)))
+
+(defun load-maybe-compiling (f cf)
+         (maybe-compile f cf)
+         (load #-:ecl cf #+:ecl f))
 

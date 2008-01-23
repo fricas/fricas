@@ -771,7 +771,7 @@ After this function is called the image is clean and can be saved.
   (progn
       (setf AXIOM-LISP::*axiom-initial-lisp-objects*
            (append AXIOM-LISP::*axiom-initial-lisp-objects*
-                   '("sys-pkg.o" "nocompil.o" "util.o")
+                   '("sys-pkg.o" "util.o")
                    load-files))
       (dolist (el `(("parse-files" ,parse-files)
                     ("comp-files" ,comp-files)
