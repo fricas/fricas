@@ -9,6 +9,55 @@
 \eject
 \tableofcontents
 \eject
+\section{Overview over constructors related to matrices}
+\subsection{Categories}
+We define three categories for matrices:
+\begin{description}
+\item[\spadtype{MatrixCategory}] is the category of all matrices, and
+\item[\spadtype{RectangularMatrixCategory}] is the category of all matrices of
+  given dimension.
+\item[\spadtype{SquareMatrixCategory}] inherits from the latter.
+\end{description}
+Implementations that are independent of a particular representation of a matrix
+should be put into \spadtype{MatrixCategory}.  As we explain below, domains
+in the other categories will automatically see this implementation.
+
+Note however that a domain in \spadtype{RectangularMatrixCategory} is not
+automatically a domain in \spadtype{MatrixCategory}.  The precise reasons for
+this choice are unclear, but we note that domains in
+\spadtype{DirectProductCategory(n,R)}, which are expected as parameters of
+\spadtype{RectangularMatrixCategory}, do not satisfy
+\spadtype{FiniteLinearAggregate R} as required in \spadtype{MatrixCategory}.
+Another reason is that \spadtype{RectangularMatrixCategory} does not export
+multiplication of matrices, but I doubt that this is a good reason.  If it
+were, at least \spadtype{SquareMatrixCategory} should inherit from
+\spadtype{MatrixCategory}.
+\subsection{Domains}
+There are essentially three domains corresponding to these categories:
+\begin{description}
+\item[\spadtype{Matrix}] for all matrices,
+\item[\spadtype{RectangularMatrix}] for matrices of fixed dimension, and
+\item[\spadtype{SquareMatrix}] for square matrices of fixed dimension.
+\end{description}
+The domain \spadtype{IMATRIX} is unused.
+
+Note that all three domains share the same representation, inherited from
+\spadtype{Matrix}.  Thus, most algorithms are only implemented for
+\spadtype{Matrix}.  However, they are mostly defined not directly there, but
+rather in separate packages.
+\subsection{Packages}
+\begin{description}
+\item[\spadtype{MatrixLinearAlgebraFunctions}] is the top-level package, that
+  calls the packages below as appropriate.
+\item[\spadtype{InnerMatrixLinearAlgebraFunctions}] contains implementations
+  that work over a \spadtype{Field}, and
+\item[\spadtype{InnerMatrixQuotientFieldFunctions}] contains implementations
+  that work over a quotient field.
+\end{description}
+Therefore, implementations that rely on the representation of matrices used in
+\spadtype{Matrix} should be put into these packages.  The various definitions
+of \spadfun{determinant} are a good example to look at.
+
 \section{category MATCAT MatrixCategory}
 <<category MATCAT MatrixCategory>>=
 )abbrev category MATCAT MatrixCategory
