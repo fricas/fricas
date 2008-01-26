@@ -15,105 +15,126 @@
 @
 <<*>>=
 <<license>>
-
---
--- Test numeric evaluation of elementary functions.  SMW June 26, 1991.
-)clear all
 )set break resume
+)expose UnittestCount UnittestAux Unittest
+
+-- SMW June 26, 1991.
+testsuite "elemnum"
+
+epsilonAbsolute := 1.0e-15
+epsilonrelative := 1.0e-30
+
+testFloat(a: String, b: String): Void ==
+    testTrue("abs(" a "-" b") < epsilonAbsolute")
+    testTrue("abs(" a "/" b "-1) < epsilonRelative")
+
+testComplexFloat(a: String, b: String): Void ==
+    testTrue("norm(" a "-" b") < epsilonAbsolute")
+    testTrue("norm(" a "/" b "-1) < epsilonRelative")
+
+inverses := _
+["exp log x",                                                                 _
+ "log exp x",                                                                 _
+ "sin asin x",   "cos acos x",   "tan atan x",   "cot acot x",   "csc acsc x",_
+ "sec asec x",                                                                _
+ "asin sin x",   "acos cos x",   "atan tan x",   "acot cot x",   "acsc csc x",_ 
+ "asec sec x",                                                                _
+ "sinh asinh x", "cosh acosh x", "tanh atanh x", "coth acoth x",              _
+ "csch acsch x", "sech asech x",                                              _ 
+ "asinh sinh x", "acosh cosh x", "atanh tanh x", "acoth coth x",              _
+ "acsch csch x", "asech sech x"];
+
+anySubstring?(l: List String, x: String): Boolean ==
+--    any?(e +-> match("*" e "*", x, char "*") > 0, l)
+    any?(e +-> integer(stringMatch("*" e "*", x, CHARACTER("*")$Lisp)$Lisp) > 0, l)
+
+testcaseNoClear "0.7 Float"
 x := 0.7::Float
-[exp log x]
-[log exp x]
-[sin asin x,  cos acos x,  tan atan x,  cot acot x]
-[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
-[sinh asinh x,             tanh atanh x,             csch acsch x,sech asech x]
-[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
---Should give errors:
---acsc  x
---asec  x 
---acosh x
---acoth x
+errlist := ["acsc x", "asec x", "acosh x", "acoth x"]
 
-x := 1.1::Float
-[exp log x]
-[log exp x]
-[                          tan atan x,  cot acot x, csc acsc x,   sec asec x  ]
-[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
-[sinh asinh x,cosh acosh x,             coth acoth x,csch acsch x             ]
-[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
---Should give errors:
---asin x
---acos x
---atanh x
---asech x
+for ex in inverses | not anySubstring?(errlist, ex) repeat
+    testFloat(ex, "x")
 
+testLibraryError "acsc x"
+testLibraryError "asec x"
+testLibraryError "acosh x"
+testLibraryError "acoth x"
+
+
+testcaseNoClear "0.7 DoubleFloat"
 x := 0.7::DoubleFloat
-[exp log x]
-[log exp x]
-[sin asin x,  cos acos x,  tan atan x,  cot acot x]
-[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
-[sinh asinh x,             tanh atanh x,             csch acsch x,sech asech x]
-[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
---Should give errors:
---acsc  x
---asec  x 
---acosh x
---acoth x
+for ex in inverses | not anySubstring?(errlist, ex) repeat
+    testFloat(ex, "x")
 
+testLibraryError "acsc x"
+testLibraryError "asec x"
+testLibraryError "acosh x"
+testLibraryError "acoth x"
+
+testcaseNoClear "1.1 Float"
+x := 1.1::Float
+errlist := ["asin x", "acos x", "atanh x", "asech x"]
+for ex in inverses | not anySubstring?(errlist, ex) repeat
+    testFloat(ex, "x")
+
+testLibraryError "asin x"
+testLibraryError "acos x"
+testLibraryError "atanh x"
+testLibraryError "asech x"
+
+testcaseNoClear "1.1 DoubleFloat"
 x := 1.1::DoubleFloat
-[exp log x]
-[log exp x]
-[                          tan atan x,  cot acot x, csc acsc x,   sec asec x  ]
-[asin sin x,  acos cos x,  atan tan x,  acot cot x, acsc csc x,   asec sec x  ]
-[sinh asinh x,cosh acosh x,             coth acoth x,csch acsch x             ]
-[asinh sinh x,acosh cosh x,atanh tanh x,acoth coth x,acsch csch x,asech sech x]
---Should give errors:
---asin x
---acos x
---atanh x
---asech x
+for ex in inverses | not anySubstring?(errlist, ex) repeat
+    testFloat(ex, "x")
+ 
+testLibraryError "asin x"
+testLibraryError "acos x"
+testLibraryError "atanh x"
+testLibraryError "asech x"
 
-qtest(a,b,n) ==
+testinverseFloats(a, b, n) ==
+-- not declaring x and not converting s1, m1 as numbers to strings leads to the
+-- strings being interpreted as Expressions, not Floats
+   free x
    m1 := if n = 1 or n = 4 then 0 else  1
    s1 := if n = 1 or n = 4 then 1 else -1
    s2 := if n = 1 or n = 2 then 1 else -1
    x := complex(s1*a, s2*b)
-   [x- exp   log x, _
-    x- sin   asin  x, x-    cos   acos  x, x- tan   atan  x , _
-    x- csc   acsc  x, x-    sec   asec  x, x- cot   acot  x , _
-    x- sinh  asinh x, x-    cosh  acosh x, x- tanh  atanh x , _
-    x- csch  acsch x, x-    sech  asech x, x- coth  acoth x , _
-    x- log   exp   x, _
-    x- asin  sin   x, x- s1*acos  cos   x, x- atan  tan  x , _
-    x- acsc  csc   x, x- s1*asec  sec   x, x- acot  cot  x + m1*%pi, _
-    x- asinh sinh  x, x- s1*acosh cosh  x, x- atanh tanh x , _
-    x- acsch csch  x, x- s1*asech sech  x, x- acoth coth x ]
+   for ex in inverses repeat
+       if member?(ex, ["acos cos x", "asec sec x", _
+                       "acosh cosh x", "asech sech x"])
+       then testComplexFloat(concat [string s1, "*", ex], "x")
+       else if ex = "acot cot x"
+       then testComplexFloat(concat [ex, " - ", string m1, "*%pi"], "x")
+       else testComplexFloat(ex, "x")
 
-qerr(l) ==
-    reduce(+, [norm v for v in l])/#l
-sa := 0.7::DoubleFloat
-sb := 1.1::DoubleFloat
-ba := 0.7::Float
-bb := 1.1::Float
+sa := 0.7::DoubleFloat;
+sb := 1.1::DoubleFloat;
+ba := 0.7::Float;
+bb := 1.1::Float;
 
-qtest(sa, sb, 1)
-qerr %
-qtest(ba, bb, 1)
-qerr %
+testcaseNoClear "Complex Float"
+)clear value x
+x:Complex Float
+testinverseFloats(ba, bb, 1);
+testinverseFloats(ba, bb, 2);
+testinverseFloats(ba, bb, 3);
+testinverseFloats(ba, bb, 4);
+testcaseNoClear "Complex DoubleFloat"
+)clear value x
+x:Complex DFLOAT
+testinverseFloats(sa, sb, 1);
+testinverseFloats(sa, sb, 2);
+testinverseFloats(sa, sb, 3);
+testinverseFloats(sa, sb, 4);
 
-qtest(sa, sb, 2)
-qerr %
-qtest(ba, bb, 2)
-qerr %
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
+    messagePrint("elemnum                     0     (6)               0   (608)")$OutputForm
 
-qtest(sa, sb, 3)
-qerr %
-qtest(ba, bb, 3)
-qerr %
+statistics()
+expected()
 
-qtest(sa, sb, 4)
-qerr %
-qtest(ba, bb, 4)
-qerr %
 @
 \eject
 \begin{thebibliography}{99}
