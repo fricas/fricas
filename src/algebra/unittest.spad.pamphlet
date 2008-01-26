@@ -43,7 +43,9 @@ currently is not a valid test, although it should be.
 
 The system command \verb|)clear completely| resets all the statistics counters,
 while \verb|)clear all| leaves them untouched.  Introducing a new testcase
-calls \verb|)clear all|, so it should not be necessary to call it manually.
+calls \verb|)clear all|, so it should not be necessary to call it manually.  We
+provide a second function \spadfun{testcaseNoClear} that does not clear the
+environment.
 
 The packages defined in this file are meant to be used as regression test
 facility.  Therefore, we do not expose them automatically.  Rather, they should
@@ -71,6 +73,10 @@ UnittestCount(): with
        ++ testcase s starts a new testcase with s as title.  It also calls
        ++ \axiom{clear all}.  A testcase is composed of several tests.
 
+     testcaseNoClear: String -> Void
+       ++ testcaseNoClear s, starts a new testcase with s as title, without
+       ++ calling \axiom{clear all}.  A testcase is composed of several tests.
+
      statistics: () -> Void
        ++ statistics() prints out a summary of the outcome of the testcases so
        ++ far. Use \axiom{clear completely} to reset the statistics.
@@ -82,6 +88,14 @@ UnittestCount(): with
      incFail: (String, List OutputForm) -> Void
        ++ incFail(s, o) is an internal function that steps the number of
        ++ failed tests and records in- and output.
+
+     chkLibraryError: () -> Void
+       ++ chkLibraryError is an internal function that steps the number of
+       ++ tests. 
+
+     incLibraryError: (String, List OutputForm) -> Void
+       ++ incLibraryError is an internal function that steps the number of
+       ++ failed tests, but not the number of tests. 
 
      incFatal: String -> Void
        ++ incFatal s is an internal function that steps the number of fatal
@@ -133,21 +147,38 @@ UnittestCount(): with
                  $Record(key: String, entry: TESTSUITE), _
                  tests)
 
-     testcase s ==
+
+     testcaseNoClear s ==
          if #s > maxWidth - # "  Testcase: "
          then messagePrint("WARNING: string for testcase should have less then "
                            string(maxWidth - # "  Testcase: ") _
                            " characters!")$OutputForm
          
-         systemCommand("clear all")$MoreSystemCommands
          currentTestcase := s
          insert!([currentTestcase, _
                   [0, 0, [], []]$TESTCASE]$Record(key: String, entry: TESTCASE), _
                  tests.currentTestsuite)
+
+     testcase s ==
+         systemCommand("clear all")$MoreSystemCommands
+         testcaseNoClear s
+
          
      incPass() == 
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
+
+
+     chkLibraryError() ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total + 1
+
+     incLibraryError(inp, out) ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.fail := cur.fail + 1
+-- because of the chkLibraryError / incLibraryError construction, the total
+-- number must not be stepped
+         cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
 
      incFail(inp, out) == 
          cur := tests.currentTestsuite.currentTestcase
@@ -189,9 +220,14 @@ UnittestCount(): with
          messagePrint("  Otherwise, the test will fail and statistics() will "_
                       "not notice!")$O
          messagePrint("* when a function to test takes a string as an " _
-                      "  argument, put it into a variable instead.")$O
-         messagePrint("  Otherwise, the test will fail and statistics() will "_
-                      "not notice!")$O
+                      "argument, put it in a variable")$O
+         messagePrint("  instead. Otherwise, the test will fail and " _
+                      "statistics() will not notice!")$O
+         messagePrint("* testLibraryError does not prevent FriCAS from " _
+                      "aborting the current block.")$O
+         messagePrint("  Thus, if a block contains other test functions, they " _
+                      "will not be executed")$O
+         messagePrint("  and statistics() will not notice!")$O
 
          if # warnings > 0 then
              messagePrint(new(maxWidth, char "=")$String)$O
@@ -270,15 +306,15 @@ UnittestCount(): with
              sfailedTests := string failedTests
              stotalTests := string totalTests
              messagePrint(tstsuite.key _
-                          new(max(27-#(tstsuite.key),0)::NonNegativeInteger, _
+                          new(max(24-#(tstsuite.key),0)::NonNegativeInteger, _
                               char " ") _
                           new(max(5-#sfailedCases, 0)::NonNegativeInteger, _
                               char " ") sfailedCases _
-                          new(max(7-#stotalCases, 0)::NonNegativeInteger, _
+                          new(max(6-#stotalCases, 0)::NonNegativeInteger, _
                               char " ") "(" stotalCases ")" _
-                          new(max(10-#sfailedTests, 0)::NonNegativeInteger, _
+                          new(max(16-#sfailedTests, 0)::NonNegativeInteger, _
                               char " ") sfailedTests _
-                          new(max(7-#stotalTests, 0)::NonNegativeInteger, _
+                          new(max(6-#stotalTests, 0)::NonNegativeInteger, _
                               char " ") "(" stotalTests ")")$O
 
 
@@ -304,6 +340,11 @@ UnittestAux(R: BasicType): with
 
      testTrueAux: (String, R) -> Void
        ++ testTrueAux(inp, ex) states that ex should be true.
+
+     testLibraryErrorAux: (String, R) -> Void
+       ++ testLibraryError(inp, ex) states that ex should throw an error. Such
+       ++ a test will never count as a fatal error.
+
 
   == add
 
@@ -346,6 +387,14 @@ UnittestAux(R: BasicType): with
              if R has CoercibleTo O 
              then incFail(inp, [ex::O])$U
              else incFail(inp, [])$U
+
+     testLibraryErrorAux(inp, ex) == 
+-- at this point, ex was already evaluated.  If there would have been an error,
+-- incLibraryError would not be invoked.
+         if R has CoercibleTo O 
+         then incLibraryError(inp, [ex::O])$U
+         else incLibraryError(inp, [])$U
+
 @
 
 \section{package TESTUNIT Unittest}
@@ -370,6 +419,10 @@ Unittest: with
      testTrue: String -> Void
        ++ testTrue ex states that ex should be true.
 
+     testLibraryError: String -> Void
+       ++ testLibraryError ex states that ex should throw an error. Such a test
+       ++ will never count as a fatal error.
+
   == add
 
      T ==> TemplateUtilities
@@ -391,6 +444,11 @@ Unittest: with
          incFatal(inp)$UnittestCount
          interpretString("testTrueAux(_"" inp "_", " s ")")$T
          decFatal()$UnittestCount
+
+     testLibraryError(s) ==
+         chkLibraryError()$UnittestCount
+         inp := "ERROR: (" s ")"
+         interpretString("testLibraryErrorAux(_"" inp "_", " s ")")$T
 
 @
 
