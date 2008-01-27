@@ -1270,7 +1270,7 @@ quality we check anyway.
     :verbose nil :if-does-not-exist nil) '|done|)
   (t nil) ))
 
-(defun fricas-restart ()
+(defun fricas-init ()
 #+:akcl
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
     :array 400 :string 500 :cfun 100 :cpages 3000 :rpages 1000 :hole 2000)
@@ -1357,6 +1357,10 @@ quality we check anyway.
    (|spadStartUpMsgs|))
   (setq |$currentLine| nil)
   (restart0)
+)
+
+(defun fricas-restart ()
+  (fricas-init)
   (|readSpadProfileIfThere|)
   #+(or :GCL :CCL)
   (|spad|)
