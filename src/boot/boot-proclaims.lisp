@@ -279,7 +279,6 @@
   BOOTTRAN::|bfListOf| 
   BOOTTRAN::BOOTTOMC 
   BOOTTRAN::|bPremStreamNil| 
-  BOOTTRAN::BOOTTOCLC 
   BOOTTRAN::|shoeLeafId| 
   BOOTTRAN::|shoeConsole| 
   BOOTTRAN::|shoeLeafComment| 
@@ -305,7 +304,6 @@
   BOOTTRAN::|bpEqKeyNextTok| 
   BOOTTRAN::|shoePLACEP| 
   BOOTTRAN::|shoePrefixLine| 
-  BOOTTRAN::BOOTCLAM 
   BOOTTRAN::|shoeIncludeLines?| 
   BOOTTRAN::|bfSmintable| 
   BOOTTRAN::|bfAND| 
@@ -339,7 +337,6 @@
   BOOTTRAN::|bpConditional| 
   BOOTTRAN::|bpEqKey| 
   BOOTTRAN::|bfMakeCons| 
-  BOOTTRAN::BOOTTOCL 
   BOOTTRAN::|shoePileColumn| 
   BOOTTRAN::|shoeFluids| 
   BOOTTRAN::|bpPileBracketed| 
@@ -463,7 +460,6 @@
   BOOTTRAN::|bfForin| 
   BOOTTRAN::|shoePrefix?| 
   BOOTTRAN::|shoeMatch| 
-  BOOTTRAN::BOOTTOCLLINES 
   BOOTTRAN::|bAddLineNumber| 
   BOOTTRAN::|shoeIdEnd| 
   BOOTTRAN::|bFileNext1| 
@@ -479,7 +475,6 @@
   BOOTTRAN::|bDelay| 
   BOOTTRAN::|bfReduce| 
   BOOTTRAN::|bfDrop| 
-  BOOTTRAN::BOOTTOCLCLINES 
   BOOTTRAN::|bfReduceCollect| 
   BOOTTRAN::|bfIS| 
   BOOTTRAN::|shoeReadLispString| 
@@ -493,7 +488,6 @@
   BOOTTRAN::|bfON| 
   BOOTTRAN::|bfTake| 
   BOOTTRAN::|bfLessp| 
-  BOOTTRAN::BOOTCLAMLINES 
   BOOTTRAN::|bfQ| 
   BOOTTRAN::BVEC-MAKE-FULL 
   BOOTTRAN::|shoeXref| 

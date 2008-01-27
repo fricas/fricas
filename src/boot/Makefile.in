@@ -30,13 +30,19 @@ BOOT_TO_LISP = \
 	$(axiom_build_document) --tag=boot --mode=translate \
 	--use=./prev-stage/bootsys $<
 
+BOOTSYS_EXE_TARGETS = stage0/bootsys$(EXEEXT) stage1/bootsys$(EXEEXT) \
+                      stage2/bootsys$(EXEEXT) \
+                      $(axiom_build_bindir)/bootsys$(EXEEXT)
+
 subdir = src/boot/
  
 # this stanza will create the final bootsys image
 all: all-ax
 
-all-ax: stage2/bootsys$(EXEEXT)
-	$(INSTALL_PROGRAM) stage2/bootsys$(EXEEXT) $(axiom_build_bindir)
+stage2_boot_objects = $(addprefix stage2/, $(boot_objects))
+
+all-ax: stage2/stamp_bootsys
+	$(MAKE) $(AX_FLAGS) OBJECTS="$(stage2_boot_objects)" $(axiom_build_bindir)/bootsys$(EXEEXT)
 
 .PRECIOUS: stage0/%.clisp
 .PRECIOUS: stage0/%.$(LISPOBJEXT)
@@ -45,14 +51,13 @@ stage0_boot_clisp = $(addprefix stage0/, $(boot_clisp))
 
 stage0_boot_objects = $(addprefix stage0/, $(boot_objects))
 
-stage0/bootsys$(EXEEXT): 
+stage0/stamp_bootsys: 
 	@echo Building stage 0
 	[ -d stage0 ] || $(mkinstalldirs) stage0
 	rm -rf prev-stage
 	rm -f $(stage0_boot_objects)
 	rm -f $(stage0_boot_clisp)
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(stage0_boot_objects)" bootsys$(EXEEXT)
-	mv bootsys$(EXEEXT) stage0
+	$(MAKE) $(AX_FLAGS) OBJECTS="$(stage0_boot_objects)" stage0/bootsys$(EXEEXT)
 	$(LN_S) stage0 prev-stage
 
 $(stage0_boot_objects): $(AXIOM_LOCAL_LISP)
@@ -63,30 +68,28 @@ stage0/%.$(LISPOBJEXT): stage0/%.clisp
 stage0/%.clisp: $(srcdir)/%.boot.pamphlet
 	$(axiom_build_document) --tangle=$*.clisp --output=$@ $<
 
-stage1/bootsys$(EXEEXT): stage0/bootsys$(EXEEXT)
+stage1/stamp_bootsys: stage0/stamp_bootsys
 	@echo Building stage 1
 	[ -d stage1 ] || $(mkinstalldirs) stage1
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" bootsys$(EXEEXT)
+	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" stage1/bootsys$(EXEEXT)
 	-rm -f $(addprefix stage1/, $(boot_objects))
 	-rm -f $(addprefix stage1/, $(boot_clisp))
 	mv $(boot_objects) stage1
 	mv $(boot_clisp) stage1
 	-mv $(boot_data) $(boot_fn) stage1
-	mv bootsys$(EXEEXT) stage1
 	-rm -rf prev-stage
 	$(LN_S) stage1 prev-stage
 
-stage2/bootsys$(EXEEXT): stage1/bootsys$(EXEEXT)
+stage2/stamp_bootsys: stage1/stamp_bootsys
 	@echo Building stage 2
 	[ -d stage2 ] || $(mkinstalldirs) stage2
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" bootsys$(EXEEXT)
+	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" stage2/bootsys$(EXEEXT)
 	-rm -rf prev-stage
 	-rm -f $(addprefix stage2/, $(boot_objects))
 	-rm -f $(addprefix stage2/, $(boot_clisp))
 	mv $(boot_objects) stage2
 	mv $(boot_clisp) stage2
 	-mv $(boot_data) $(boot_fn) stage2
-	mv bootsys$(EXEEXT) stage2
 
 ifeq ($(lisp_flavor),gcl)
 
@@ -109,7 +112,8 @@ $(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_object)
                 --use=$(LISPSYS) \
                 '$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object))'
 
-bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
+$(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
+            $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
 		--use=$(LISPSYS) \
 		'$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object) $(OBJECTS))'

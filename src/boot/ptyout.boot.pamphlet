@@ -54,12 +54,13 @@ Calling {\bf shoeOpenInputFile} will create {\bf ``foo.clisp''} and
 return the string ``foo.clisp PRODUCED''.
 
 <<BOOTTOCLLINES>>= 
-BOOTTOCLLINES(lines, fn)==
-   _*READ_-DEFAULT_-FLOAT_-FORMAT_* := 'DOUBLE_-FLOAT
+BOOTTOCLLINES(lines, fn, outfn)==
+   -- _*READ_-DEFAULT_-FLOAT_-FORMAT_* := 'DOUBLE_-FLOAT
    callingPackage := _*PACKAGE_*
    IN_-PACKAGE '"BOOTTRAN"
    infn:=shoeAddbootIfNec fn
-   outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
+   if NULL(outfn) then
+       outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
    result := shoeOpenInputFile(a,infn,
                 shoeClLines(a,fn,lines,outfn))
    setCurrentPackage callingPackage
@@ -112,20 +113,20 @@ setCurrentPackage x ==
 -- (boottocl "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp"
  
-BOOTTOCL fn ==
+BOOTTOCL (fn, outfn) ==
          $bfClamming:local:=false
-         BOOTTOCLLINES(nil,fn)
+         BOOTTOCLLINES(nil,fn, outfn)
  
 -- (bootclam "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp" , producing, for each function
 -- a hash table to store previously computed values indexed by argument
 -- list.
  
-BOOTCLAM fn == BOOTCLAMLINES(nil,fn)
+BOOTCLAM (fn, outfn) == BOOTCLAMLINES(nil, fn, outfn)
  
-BOOTCLAMLINES(lines, fn) ==
+BOOTCLAMLINES(lines, fn, outfn) ==
          $bfClamming:local:=true
-         BOOTTOCLLINES(lines,fn)
+         BOOTTOCLLINES(lines,fn, outfn)
 
 <<BOOTTOCLLINES>>
 shoeClLines(a,fn,lines,outfn)==
