@@ -1,7 +1,7 @@
 ;;; This file contains portablity and support routines which abstract away
 ;;; differences between Lisp dialects.
 
-(in-package "AXIOM-LISP")
+(in-package "FRICAS-LISP")
 #+:sbcl
 (progn
      (defvar *saved-terminal-io* *terminal-io*)
@@ -135,14 +135,14 @@
 
 #+:ecl
 (defun make-program (core-image lisp-files)
-    (if *axiom-initial-lisp-forms*
+    (if *fricas-initial-lisp-forms*
         (c:build-program core-image
-             :lisp-files (append *axiom-initial-lisp-objects* lisp-files)
-             :ld-flags *axiom-extra-c-files*
-	     :epilogue-code *axiom-initial-lisp-forms*)
+             :lisp-files (append *fricas-initial-lisp-objects* lisp-files)
+             :ld-flags *fricas-extra-c-files*
+	     :epilogue-code *fricas-initial-lisp-forms*)
 	(c:build-program core-image
-	     :lisp-files (append *axiom-initial-lisp-objects* lisp-files)
-	     :ld-flags *axiom-extra-c-files*))
+	     :lisp-files (append *fricas-initial-lisp-objects* lisp-files)
+	     :ld-flags *fricas-extra-c-files*))
     (quit))
 
 
@@ -292,7 +292,7 @@
    (let ((name (namestring (truename "."))))
         (trim-directory-name (subseq name 0 (1- (length name))))))
 
-(defun axiom-probe-file (file)
+(defun fricas-probe-file (file)
 #|
 #+:GCL (if (fboundp 'system::stat)
            ;;; gcl-2.6.8
@@ -325,13 +325,13 @@
 
 ;;; Saner version of compile-file
 #+:ecl
-(defun axiom-compile-file (f &key output-file)
+(defun fricas-compile-file (f &key output-file)
     (if output-file
         (compile-file f :output-file (relative-to-absolute output-file)
                         :system-p t)
         (compile-file f :system-p t)))
 #-:ecl
-(defun axiom-compile-file (f &key output-file)
+(defun fricas-compile-file (f &key output-file)
     (if output-file
         (compile-file f :output-file (relative-to-absolute output-file))
         (compile-file f)))
@@ -339,7 +339,7 @@
 (defun maybe-compile (f cf)
     (if (or (not (probe-file cf))
             (< (file-write-date cf) (file-write-date f)))
-        (axiom-compile-file f :output-file cf)))
+        (fricas-compile-file f :output-file cf)))
 
 (defun load-maybe-compiling (f cf)
          (maybe-compile f cf)

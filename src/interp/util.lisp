@@ -757,8 +757,8 @@ After this function is called the image is clean and can be saved.
       (mapcar #'load load-files)
       (interpsys-image-init parse-files comp-files browse-files
              translate-files asauto-files spad))
-  (if (and (boundp 'AXIOM-LISP::*building-axiomsys*)
-                AXIOM-LISP::*building-axiomsys*)
+  (if (and (boundp 'FRICAS-LISP::*building-axiomsys*)
+                FRICAS-LISP::*building-axiomsys*)
        (progn
            #+:gcl(setf compiler::*default-system-p* nil)
            #+:gcl(compiler::emit-fn nil)
@@ -769,8 +769,8 @@ After this function is called the image is clean and can be saved.
   )
   #+:ecl
   (progn
-      (setf AXIOM-LISP::*axiom-initial-lisp-objects*
-           (append AXIOM-LISP::*axiom-initial-lisp-objects*
+      (setf FRICAS-LISP::*fricas-initial-lisp-objects*
+           (append FRICAS-LISP::*fricas-initial-lisp-objects*
                    '("sys-pkg.o" "util.o")
                    load-files))
       (dolist (el `(("parse-files" ,parse-files)
@@ -789,7 +789,7 @@ After this function is called the image is clean and can be saved.
           (push `(interpsys-ecl-image-init ,spad) initforms)
           (setf initforms (reverse initforms))
           (push `progn initforms)
-          (setf AXIOM-LISP::*axiom-initial-lisp-forms* initforms)
+          (setf FRICAS-LISP::*fricas-initial-lisp-forms* initforms)
       )
   )
 )
@@ -806,9 +806,9 @@ After this function is called the image is clean and can be saved.
            (list (concatenate 'string spad "/autoload/" "translate-files"))
            (list (concatenate 'string spad "/autoload/" "asauto-files"))
            spad)
-      (format *standard-output* "before axiom-restart~%")
+      (format *standard-output* "before fricas-restart~%")
       (force-output  *standard-output*)
-      (axiom-restart))
+      (fricas-restart))
 
 (defun interpsys-image-init (parse-files comp-files browse-files
              translate-files asauto-files spad)
@@ -1270,7 +1270,7 @@ quality we check anyway.
     :verbose nil :if-does-not-exist nil) '|done|)
   (t nil) ))
 
-(defun axiom-restart ()
+(defun fricas-restart ()
 #+:akcl
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
     :array 400 :string 500 :cfun 100 :cpages 3000 :rpages 1000 :hole 2000)
@@ -1303,8 +1303,8 @@ quality we check anyway.
     (format t "AXIOM=~S~%" ax-dir)
     (format t "spad-lib=~S~%" spad-lib)
     (format t "sock-fasl=~S~%" sock-fasl)
-    (when (and (axiom-probe-file spad-lib)
-               (axiom-probe-file sock-fasl))
+    (when (and (fricas-probe-file spad-lib)
+               (fricas-probe-file sock-fasl))
         (format t "foreign routines found~%")
         (sb-alien::load-shared-object spad-lib)
         (load sock-fasl)
@@ -1322,8 +1322,8 @@ quality we check anyway.
     (format t "AXIOM=~S~%" ax-dir)
     (format t "spad-lib=~S~%" spad-lib)
     (format t "sock-fasl=~S~%" sock-fasl)
-    (when (and (axiom-probe-file spad-lib)
-               (axiom-probe-file sock-fasl))
+    (when (and (fricas-probe-file spad-lib)
+               (fricas-probe-file sock-fasl))
         (defvar *libspad_pathname*)
         (setf *libspad_pathname* spad-lib)
         (format t "foreign routines found~%")
@@ -1374,11 +1374,11 @@ quality we check anyway.
   (setq |$SpadServer| nil)
   (setq $openServerIfTrue t)
   #-:openmcl
-  (AXIOM-LISP::save-core-restart save-file
-         (if do-restart #'boot::axiom-restart nil))
+  (FRICAS-LISP::save-core-restart save-file
+         (if do-restart #'boot::fricas-restart nil))
   #+:openmcl
-  (AXIOM-LISP::save-core-restart save-file
-         (if do-restart "BOOT::axiom-restart" nil))
+  (FRICAS-LISP::save-core-restart save-file
+         (if do-restart "BOOT::fricas-restart" nil))
 )
 
 (defun |statisticsInitialization| () 

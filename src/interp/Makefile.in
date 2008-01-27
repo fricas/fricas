@@ -185,7 +185,7 @@ makeint.lisp:
 
 ${SAVESYS}:
 	echo '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
-             '#+:ecl(AXIOM-LISP::make-program "$(BASE)$@" nil)' \
+             '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
              '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' | ${LOADSYS}
 
 	@ echo 6 ${SAVESYS} created
@@ -227,7 +227,7 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
 	echo '#-:gcl(maybe-compile "$(srcdir)/sys-pkg.lisp"' \
 	             '"sys-pkg.$(LISPOBJEXT)")' >> makedep.lisp
 	echo '(load "makedep.lisp")' | ${LOADSYS}
-	echo '(in-package "AXIOM-LISP")' > makedep2.lisp
+	echo '(in-package "FRICAS-LISP")' > makedep2.lisp
 	echo '(make-program "$(BASE)$@" (quote (' >> makedep2.lisp
 	echo '#+:gcl"$(srcdir)/sys-pkg.lisp"' \
 	     '#-:gcl"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
@@ -244,9 +244,9 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
 all-axiomsys: ${AXIOMSYS}
 
 ${AXIOMSYS}:
-	echo '(defparameter AXIOM-LISP::*building-axiomsys* t)' \
+	echo '(defparameter FRICAS-LISP::*building-axiomsys* t)' \
 	   '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
-	   '#+:ecl(AXIOM-LISP::make-program "$(BASE)$@" nil)' \
+	   '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
 	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' \
              | DAASE="$(BASE)$(axiom_targetdir)" ${LOADSYS}
 	@ echo 6a ${AXIOMSYS} created
@@ -286,8 +286,8 @@ IN_from_MID=\
 $(addsuffix .$(LISPOBJEXT), $(IN_from_MID)): \
     %.$(LISPOBJEXT) : %.clisp
 	@ echo 10 making $@ from $<
-	echo '(in-package "AXIOM-LISP")' \
-	     '(progn  (axiom-compile-file "$<" :output-file "$@") (${BYE}))' \
+	echo '(in-package "FRICAS-LISP")' \
+	     '(progn  (fricas-compile-file "$<" :output-file "$@") (${BYE}))' \
 	     | ${DEPSYS}
 
 AUTO_from_MID=\
@@ -300,8 +300,8 @@ AUTO_from_MID=\
 $(patsubst %, $(AUTO)/%.$(LISPOBJEXT), $(AUTO_from_MID) showimp): \
     $(AUTO)/%.$(LISPOBJEXT) : %.clisp
 	@ echo 10 making $@ from $<
-	echo '(in-package "AXIOM-LISP")' \
-	     '(progn (axiom-compile-file "$<" :output-file "$@")' \
+	echo '(in-package "FRICAS-LISP")' \
+	     '(progn (fricas-compile-file "$<" :output-file "$@")' \
 	     ' (${BYE}))' | ${DEPSYS}
 
 MID_from_IN= $(IN_from_MID) $(AUTO_from_MID)

@@ -416,7 +416,7 @@ do the compile, and then rename the result back to [[code.o]].
               :test #'string=))))
 
 (defun probe-name (file)
-  (if (axiom-probe-file file) (namestring file) nil))
+  (if (fricas-probe-file file) (namestring file) nil))
 
 (defun make-input-filename (filearg &optional (filetype nil))
    (let*
@@ -428,7 +428,7 @@ do the compile, and then rename the result back to [[code.o]].
     (if (or (null dirname) (eqcar dirname :relative))
         (dolist (dir dirs (probe-name filename))
                 (when 
-                 (axiom-probe-file 
+                 (fricas-probe-file 
                   (setq newfn (concatenate 'string dir "/" filename)))
                  (return newfn)))
         (probe-name filename))))
@@ -446,7 +446,7 @@ do the compile, and then rename the result back to [[code.o]].
 ;; ($ERASE filearg) -> 0 if succeeds else 1
 (defun $erase (&rest filearg)
   (setq filearg (make-full-namestring filearg))
-  (if (axiom-probe-file filearg)
+  (if (fricas-probe-file filearg)
 #+:CCL (delete-file filearg)
 #-:CCL
       (if (library-file filearg)

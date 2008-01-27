@@ -181,7 +181,7 @@ axiom_build_document = @abs_top_builddir@/build/scripts/document
 TANGLE = @NOTANGLE@
 WEAVE = @NOWEAVE@
 
-AXIOM_LISP = @AXIOM_LISP@
+FRICAS_LISP = @FRICAS_LISP@
 # Extension of the output file name returned by compile-file
 LISPOBJEXT = @axiom_fasl_type@
 FASLEXT = @axiom_fasl_type2@

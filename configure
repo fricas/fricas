@@ -692,9 +692,9 @@ LATEX
 MAKEINDEX
 NOTANGLE
 NOWEAVE
-AXIOM_LISP
+FRICAS_LISP
 axiom_include_gcl
-axiom_lisp_flavor
+fricas_lisp_flavor
 LIBSPAD_SO_TARGET
 SOLIB_FLAGS
 axiom_gcl_rsym_hack
@@ -3619,8 +3619,10 @@ echo "${ECHO_T}no" >&6; }
 fi
 
 
-# Extract the first word of "makeindex", so it can be a program name with args.
-set dummy makeindex; ac_word=$2
+for ac_prog in makeindex
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
 if test "${ac_cv_prog_MAKEINDEX+set}" = set; then
@@ -3636,7 +3638,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_MAKEINDEX=""
+    ac_cv_prog_MAKEINDEX="$ac_prog"
     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -3655,6 +3657,9 @@ else
 echo "${ECHO_T}no" >&6; }
 fi
 
+
+  test -n "$MAKEINDEX" && break
+done
 
 
 ## -------------------------
@@ -3800,17 +3805,17 @@ fi
 ## ------------------------
 ##
 ## We will default to GCL later, if no lisp implementation is specified.
-axiom_lisp=
-axiom_lisp_flavor=unknown
+fricas_lisp=
+fricas_lisp_flavor=unknown
 
 # Check whether --with-lisp was given.
 if test "${with_lisp+set}" = set; then
-  withval=$with_lisp; axiom_lisp=$withval
+  withval=$with_lisp; fricas_lisp=$withval
 fi
 
 ## If --enable-gcl is specified, we need to check for coonsistency
 axiom_include_gcl=
-if test -z $axiom_lisp ; then
+if test -z $fricas_lisp ; then
     # Check whether --enable-gcl was given.
 if test "${enable_gcl+set}" = set; then
   enableval=$enable_gcl; case $enableval in
@@ -3824,17 +3829,17 @@ fi
 fi
 ## We need to build our own GCL is none is avalaible
 if test x"$axiom_include_gcl" != xyes ; then
-  if test -z $axiom_lisp ; then
+  if test -z $fricas_lisp ; then
     # Extract the first word of "gcl", so it can be a program name with args.
 set dummy gcl; ac_word=$2
 { echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
-if test "${ac_cv_path_AXIOM_LISP+set}" = set; then
+if test "${ac_cv_path_FRICAS_LISP+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  case $AXIOM_LISP in
+  case $FRICAS_LISP in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_AXIOM_LISP="$AXIOM_LISP" # Let the user override the test with a path.
+  ac_cv_path_FRICAS_LISP="$FRICAS_LISP" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -3844,7 +3849,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_AXIOM_LISP="$as_dir/$ac_word$ac_exec_ext"
+    ac_cv_path_FRICAS_LISP="$as_dir/$ac_word$ac_exec_ext"
     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -3855,30 +3860,30 @@ IFS=$as_save_IFS
   ;;
 esac
 fi
-AXIOM_LISP=$ac_cv_path_AXIOM_LISP
-if test -n "$AXIOM_LISP"; then
-  { echo "$as_me:$LINENO: result: $AXIOM_LISP" >&5
-echo "${ECHO_T}$AXIOM_LISP" >&6; }
+FRICAS_LISP=$ac_cv_path_FRICAS_LISP
+if test -n "$FRICAS_LISP"; then
+  { echo "$as_me:$LINENO: result: $FRICAS_LISP" >&5
+echo "${ECHO_T}$FRICAS_LISP" >&6; }
 else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 fi
 
 
-    axiom_lisp=$AXIOM_LISP
+    fricas_lisp=$FRICAS_LISP
   else
     ## Honor use of Lisp image specified on command line
-    AXIOM_LISP=$axiom_lisp
+    FRICAS_LISP=$fricas_lisp
 
     :
   fi
 fi
 ## Coherence check for GCL inclusion.
-case $axiom_include_gcl,$axiom_lisp in
+case $axiom_include_gcl,$fricas_lisp in
     ,|no,|yes*)
        ## It doesn't make sense not to include GCL when no Lisp image
        ## is available.  Give up.
-       if test $axiom_include_gcl,$AXIOM_LISP = no,; then
+       if test $axiom_include_gcl,$FRICAS_LISP = no,; then
            { { echo "$as_me:$LINENO: error: --disable-gcl specified but no GCL image found" >&5
 echo "$as_me: error: --disable-gcl specified but no GCL image found" >&2;}
    { (exit 1); exit 1; }; }
@@ -3887,10 +3892,10 @@ echo "$as_me: error: --disable-gcl specified but no GCL image found" >&2;}
        ## No Lisp image was specified and none was available from
        ## the build environment; build GCL from FriCAS source.
        if test -f $axiom_top_srcdir/gcl/configure.in ; then
-         AXIOM_LISP='$(axiom_build_bindir)/gcl'
+         FRICAS_LISP='$(axiom_build_bindir)/gcl'
          axiom_all_prerequisites="$axiom_all_prerequisites all-gcl"
          axiom_include_gcl=yes
-         axiom_lisp_flavor=gcl
+         fricas_lisp_flavor=gcl
          axiom_fasl_type=o
        else
           { { echo "$as_me:$LINENO: error: GCL and GCL sources missing, see README.wh" >&5
@@ -3899,8 +3904,8 @@ echo "$as_me: error: GCL and GCL sources missing, see README.wh" >&2;}
        fi
        ;;
     yes,*)
-       { { echo "$as_me:$LINENO: error: --with-lisp=$axiom_lisp conflicts with --enable-gcl" >&5
-echo "$as_me: error: --with-lisp=$axiom_lisp conflicts with --enable-gcl" >&2;}
+       { { echo "$as_me:$LINENO: error: --with-lisp=$fricas_lisp conflicts with --enable-gcl" >&5
+echo "$as_me: error: --with-lisp=$fricas_lisp conflicts with --enable-gcl" >&2;}
    { (exit 1); exit 1; }; }
        ;;
 esac
@@ -3910,7 +3915,7 @@ esac
 if test "${with_lisp_flavor+set}" = set; then
   withval=$with_lisp_flavor; case $withval in
             gcl|clisp|sbcl|ecl|openmcl)
-                   axiom_lisp_flavor=$withval
+                   fricas_lisp_flavor=$withval
                    ;;
             *)
               { { echo "$as_me:$LINENO: error: --with-lisp-flavor requires one of gcl clisp sbcl ecl openmcl" >&5
@@ -3921,7 +3926,7 @@ fi
 
 
 
-if test x$axiom_lisp_flavor = xunknown ; then
+if test x$fricas_lisp_flavor = xunknown ; then
 
        ## As of this writting, the Lisp systems ECL, GCL, and SBCL all
        ## understands the command line option --help, though they do
@@ -3930,29 +3935,29 @@ if test x$axiom_lisp_flavor = xunknown ; then
        ## must enter a read-eval-print loop (which isn't very helpful).
        { echo "$as_me:$LINENO: checking which flavor of Lisp" >&5
 echo $ECHO_N "checking which flavor of Lisp... $ECHO_C" >&6; }
-       what=`echo '(quit)' | $axiom_lisp --help`
+       what=`echo '(quit)' | $fricas_lisp --help`
        case $what in
            *GCL*)
-               axiom_lisp_flavor=gcl
+               fricas_lisp_flavor=gcl
                ;;
            *ecl*)
-               axiom_lisp_flavor=ecl
+               fricas_lisp_flavor=ecl
                ;;
            *sbcl*)
-               axiom_lisp_flavor=sbcl
+               fricas_lisp_flavor=sbcl
                ;;
            *CLISP*)
-               axiom_lisp_flavor=clisp
+               fricas_lisp_flavor=clisp
                ;;
        esac
-       { echo "$as_me:$LINENO: result: $axiom_lisp_flavor" >&5
-echo "${ECHO_T}$axiom_lisp_flavor" >&6; }
+       { echo "$as_me:$LINENO: result: $fricas_lisp_flavor" >&5
+echo "${ECHO_T}$fricas_lisp_flavor" >&6; }
 fi
 
 
 
 ## Check if we need shared libspad library.
-case $axiom_lisp_flavor in
+case $fricas_lisp_flavor in
     sbcl|clisp)
        LIBSPAD_SO_TARGET="libspad_so"
         ;;
@@ -3974,9 +3979,9 @@ esac
 ## The following is a horrible to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
-case $axiom_lisp_flavor,$target in
+case $fricas_lisp_flavor,$target in
     gcl,*mingw*)
-        axiom_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(AXIOM_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
+        axiom_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(FRICAS_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
         ;;
     *)
         axiom_gcl_rsym_hack=':'
@@ -3985,7 +3990,7 @@ esac
 
 ## How are we supposed to tell the Lisp system to eval an expression
 ## in batch mode?  What is the extension of a compiled Lisp file?
-case $axiom_lisp_flavor in
+case $fricas_lisp_flavor in
     gcl)
        axiom_quiet_flags='-batch'
        axiom_eval_flags='-eval'
@@ -4006,8 +4011,8 @@ case $axiom_lisp_flavor in
        axiom_quiet_flags=
        axiom_eval_flags='--eval'
        ;;
-    *) { { echo "$as_me:$LINENO: error: We do not know how to build FriCAS this $axiom_lisp" >&5
-echo "$as_me: error: We do not know how to build FriCAS this $axiom_lisp" >&2;}
+    *) { { echo "$as_me:$LINENO: error: We do not know how to build FriCAS this $fricas_lisp" >&5
+echo "$as_me: error: We do not know how to build FriCAS this $fricas_lisp" >&2;}
    { (exit 1); exit 1; }; } ;;
 esac
 
@@ -4019,7 +4024,7 @@ echo $ECHO_N "checking compiled Lisp file extension... $ECHO_C" >&6; }
     ## replacement of <newline> by <space>.
     axiom_save_IFS=$IFS
     IFS=' '
-    axiom_fasl_type=`$axiom_lisp $axiom_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
+    axiom_fasl_type=`$fricas_lisp $axiom_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
 
     ## Now pull out the fasl type.  ECL has the habit of spitting noise
     ## about internal loading.  Therefore, we must look only for a line that
@@ -4036,7 +4041,7 @@ echo "$as_me: error: Could not determine extension for compiled Lisp files" >&2;
 echo "${ECHO_T}$axiom_fasl_type" >&6; }
 fi
 axiom_fasl_type2=$axiom_fasl_type
-case $axiom_lisp_flavor in
+case $fricas_lisp_flavor in
     ecl)
        axiom_fasl_type="o"
      ;;
@@ -9333,9 +9338,9 @@ LATEX!$LATEX$ac_delim
 MAKEINDEX!$MAKEINDEX$ac_delim
 NOTANGLE!$NOTANGLE$ac_delim
 NOWEAVE!$NOWEAVE$ac_delim
-AXIOM_LISP!$AXIOM_LISP$ac_delim
+FRICAS_LISP!$FRICAS_LISP$ac_delim
 axiom_include_gcl!$axiom_include_gcl$ac_delim
-axiom_lisp_flavor!$axiom_lisp_flavor$ac_delim
+fricas_lisp_flavor!$fricas_lisp_flavor$ac_delim
 LIBSPAD_SO_TARGET!$LIBSPAD_SO_TARGET$ac_delim
 SOLIB_FLAGS!$SOLIB_FLAGS$ac_delim
 axiom_gcl_rsym_hack!$axiom_gcl_rsym_hack$ac_delim

@@ -641,7 +641,7 @@
             |Category| |describeAsharpArgs| |describeSetOutputAlgebra|
             |sayAllCacheCounts| |describeSetFunctionsCache|
             |nangenericcomplex| |createTypeEquivRules|
-            |createResolveTTRules| |createResolveTMRules| AXIOM-RESTART
+            |createResolveTTRules| |createResolveTMRules| FRICAS-RESTART
             |bcBlankLine| |browserAutoloadOnceTrigger|
             |scanKeyTableCons| |scanToken| ADVANCE-CHAR |scanEsc|
             |scanError| |scanEscape| |scanNumber| |asharpConstructors|

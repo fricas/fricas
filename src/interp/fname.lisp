@@ -78,7 +78,7 @@
     (if s s "") ))
  
 (defun |fnameExists?| (f)
-  (if (vmlisp::axiom-probe-file (namestring f)) 't nil))
+  (if (vmlisp::fricas-probe-file (namestring f)) 't nil))
 
 (defun |fnameReadable?| (f)
 #+:CCL (file-readablep f)
@@ -101,5 +101,5 @@
     (do ((fn))
         (nil)
         (setq fn (|fnameMake| d (string (gensym n)) e))
-        (if (not (vmlisp::axiom-probe-file (namestring fn)))
+        (if (not (vmlisp::fricas-probe-file (namestring fn)))
            (return-from |fnameNew| fn)) )))

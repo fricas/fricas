@@ -158,13 +158,13 @@ AC_SUBST(NOWEAVE)
 ## ------------------------
 ##
 ## We will default to GCL later, if no lisp implementation is specified.
-axiom_lisp=
-axiom_lisp_flavor=unknown
+fricas_lisp=
+fricas_lisp_flavor=unknown
 AC_ARG_WITH([lisp], [ --with-lisp=L         use L as Lisp platform],
-              [axiom_lisp=$withval])
+              [fricas_lisp=$withval])
 ## If --enable-gcl is specified, we need to check for coonsistency
 axiom_include_gcl=
-if test -z $axiom_lisp ; then
+if test -z $fricas_lisp ; then
     AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from FriCAS source],
                   [case $enableval in
                        yes|no) axiom_include_gcl=$enableval ;;
@@ -173,39 +173,39 @@ if test -z $axiom_lisp ; then
 fi
 ## We need to build our own GCL is none is avalaible
 if test x"$axiom_include_gcl" != xyes ; then
-  if test -z $axiom_lisp ; then
-    AC_PATH_PROG([AXIOM_LISP], [gcl])
-    axiom_lisp=$AXIOM_LISP
+  if test -z $fricas_lisp ; then
+    AC_PATH_PROG([FRICAS_LISP], [gcl])
+    fricas_lisp=$FRICAS_LISP
   else
     ## Honor use of Lisp image specified on command line
-    AXIOM_LISP=$axiom_lisp
-    AC_SUBST(AXIOM_LISP)
+    FRICAS_LISP=$fricas_lisp
+    AC_SUBST(FRICAS_LISP)
     :
   fi
 fi
 ## Coherence check for GCL inclusion.
-case $axiom_include_gcl,$axiom_lisp in
+case $axiom_include_gcl,$fricas_lisp in
     ,|no,|yes*)
        ## It doesn't make sense not to include GCL when no Lisp image
        ## is available.  Give up.
-       if test $axiom_include_gcl,$AXIOM_LISP = no,; then
+       if test $axiom_include_gcl,$FRICAS_LISP = no,; then
            AC_MSG_ERROR([--disable-gcl specified but no GCL image found])
        fi
 
        ## No Lisp image was specified and none was available from
        ## the build environment; build GCL from FriCAS source.
        if test -f $axiom_top_srcdir/gcl/configure.in ; then
-         AXIOM_LISP='$(axiom_build_bindir)/gcl'
+         FRICAS_LISP='$(axiom_build_bindir)/gcl'
          axiom_all_prerequisites="$axiom_all_prerequisites all-gcl"
          axiom_include_gcl=yes
-         axiom_lisp_flavor=gcl
+         fricas_lisp_flavor=gcl
          axiom_fasl_type=o
        else
           AC_MSG_ERROR([GCL and GCL sources missing, see README.wh])
        fi
        ;;
     yes,*)
-       AC_MSG_ERROR([--with-lisp=$axiom_lisp conflicts with --enable-gcl])
+       AC_MSG_ERROR([--with-lisp=$fricas_lisp conflicts with --enable-gcl])
        ;;
 esac
 
@@ -215,14 +215,14 @@ AC_ARG_WITH([lisp-flavor],
                    gcl clisp sbcl ecl can be autodetected],
             [case $withval in
             gcl|clisp|sbcl|ecl|openmcl)
-                   axiom_lisp_flavor=$withval
+                   fricas_lisp_flavor=$withval
                    ;;
             *)
               AC_MSG_ERROR([--with-lisp-flavor requires one of gcl clisp sbcl ecl openmcl]);;
             esac])
 
 
-if test x$axiom_lisp_flavor = xunknown ; then
+if test x$fricas_lisp_flavor = xunknown ; then
 
        ## As of this writting, the Lisp systems ECL, GCL, and SBCL all
        ## understands the command line option --help, though they do
@@ -230,28 +230,28 @@ if test x$axiom_lisp_flavor = xunknown ; then
        ## help information and exits.  Others, such as GCL, think they
        ## must enter a read-eval-print loop (which isn't very helpful).
        AC_MSG_CHECKING([which flavor of Lisp])
-       what=`echo '(quit)' | $axiom_lisp --help`
+       what=`echo '(quit)' | $fricas_lisp --help`
        case $what in
            *GCL*) 
-               axiom_lisp_flavor=gcl
+               fricas_lisp_flavor=gcl
                ;;
            *ecl*) 
-               axiom_lisp_flavor=ecl 
+               fricas_lisp_flavor=ecl 
                ;;
            *sbcl*) 
-               axiom_lisp_flavor=sbcl 
+               fricas_lisp_flavor=sbcl 
                ;;
            *CLISP*)
-               axiom_lisp_flavor=clisp
+               fricas_lisp_flavor=clisp
                ;;
        esac
-       AC_MSG_RESULT([$axiom_lisp_flavor])
+       AC_MSG_RESULT([$fricas_lisp_flavor])
 fi
 AC_SUBST(axiom_include_gcl)
-AC_SUBST(axiom_lisp_flavor)
+AC_SUBST(fricas_lisp_flavor)
 
 ## Check if we need shared libspad library.
-case $axiom_lisp_flavor in
+case $fricas_lisp_flavor in
     sbcl|clisp)
        LIBSPAD_SO_TARGET="libspad_so"
         ;;
@@ -273,9 +273,9 @@ AC_SUBST(SOLIB_FLAGS)
 ## The following is a horrible to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
-case $axiom_lisp_flavor,$target in
+case $fricas_lisp_flavor,$target in
     gcl,*mingw*)
-        axiom_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(AXIOM_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
+        axiom_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(FRICAS_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
         ;;
     *) 
         axiom_gcl_rsym_hack=':'
@@ -284,7 +284,7 @@ esac
 AC_SUBST(axiom_gcl_rsym_hack)
 ## How are we supposed to tell the Lisp system to eval an expression
 ## in batch mode?  What is the extension of a compiled Lisp file?
-case $axiom_lisp_flavor in
+case $fricas_lisp_flavor in
     gcl) 
        axiom_quiet_flags='-batch'
        axiom_eval_flags='-eval'
@@ -305,7 +305,7 @@ case $axiom_lisp_flavor in
        axiom_quiet_flags=
        axiom_eval_flags='--eval'
        ;;
-    *) AC_MSG_ERROR([We do not know how to build FriCAS this $axiom_lisp]) ;;
+    *) AC_MSG_ERROR([We do not know how to build FriCAS this $fricas_lisp]) ;;
 esac
 AC_SUBST(axiom_quiet_flags)
 AC_SUBST(axiom_eval_flags)
@@ -315,7 +315,7 @@ if test -z $axiom_fasl_type; then
     ## replacement of <newline> by <space>.
     axiom_save_IFS=$IFS
     IFS=' '
-    axiom_fasl_type=`$axiom_lisp $axiom_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
+    axiom_fasl_type=`$fricas_lisp $axiom_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
 
     ## Now pull out the fasl type.  ECL has the habit of spitting noise
     ## about internal loading.  Therefore, we must look only for a line that
@@ -329,7 +329,7 @@ if test -z $axiom_fasl_type; then
     AC_MSG_RESULT([$axiom_fasl_type])
 fi
 axiom_fasl_type2=$axiom_fasl_type
-case $axiom_lisp_flavor in
+case $fricas_lisp_flavor in
     ecl)
        axiom_fasl_type="o"
      ;;

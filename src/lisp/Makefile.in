@@ -1,6 +1,6 @@
 # The purpose of this Makefile is to create a fresh Lisp image, 
 # $(OUT)/lisp, augmented with a useful routines defined in
-# axiom.lisp file.  This effectively creates our own dialect
+# fricas-lisp file.  This effectively creates our own dialect
 # of Lisp, which is used during the rest of build process
 
 OUT = $(axiom_build_bindir)
@@ -21,7 +21,7 @@ all: all-ax all-lisp
 all-ax all-lisp: $(OUT)/lisp$(EXEEXT)
 
 
-lisp_flavor=@axiom_lisp_flavor@
+lisp_flavor=@fricas_lisp_flavor@
 
 ## Create a fresh image for building interpsys and AXIOMsys
 ## These objects files are the C runtime support
@@ -36,11 +36,11 @@ lisp_c_objects = \
 
 $(OUT)/lisp$(EXEEXT): do_it.$(lisp_flavor)
 
-do_it.gcl: axiom-lisp.lisp axiom-package.lisp
+do_it.gcl: fricas-lisp.lisp fricas-package.lisp
 	@axiom_gcl_rsym_hack@
-	echo '(load "axiom-package.lisp")' \
+	echo '(load "fricas-package.lisp")' \
 	     '(setq compiler::*default-system-p* t)' \
-	     '(compile-file "axiom-lisp.lisp")' | $(AXIOM_LISP)
+	     '(compile-file "fricas-lisp.lisp")' | $(FRICAS_LISP)
 	echo '(compiler::link nil "prelisp" ' \
               ' (format nil "(progn (let ((*load-path* (cons ~S *load-path*))'\
                                         ' (si::*load-types* ~S))' \
@@ -50,54 +50,55 @@ do_it.gcl: axiom-lisp.lisp axiom-package.lisp
                                   ' (setq compiler::*default-system-p* t))"' \
                       ' si::*system-directory* (quote (list ".lsp")))' \
                '  "$(lisp_c_objects) @axiom_c_runtime_extra@")' \
-            | $(AXIOM_LISP)
-	echo '(load "axiom-package.lisp") (load "axiom-lisp.$(OBJEXT)")' \
-	     '(in-package "AXIOM-LISP") (save-core "lisp$(EXEEXT)")' \
+            | $(FRICAS_LISP)
+	echo '(load "fricas-package.lisp") (load "fricas-lisp.$(OBJEXT)")' \
+	     '(in-package "FRICAS-LISP") (save-core "lisp$(EXEEXT)")' \
 	    | ./prelisp$(EXEEXT)
 	$(INSTALL_PROGRAM) lisp$(EXEEXT) $(OUT)
 	$(STAMP) $@
 
-axiom-lisp.lisp: $(srcdir)/axiom-lisp.lisp
+fricas-lisp.lisp: $(srcdir)/fricas-lisp.lisp
 	cp $< $@
 
-axiom-package.lisp: $(srcdir)/axiom-package.lisp
+fricas-package.lisp: $(srcdir)/fricas-package.lisp
 	cp $< $@
 
-do_it.ecl: axiom-lisp.lisp axiom-package.lisp
-	echo "(in-package \"AXIOM-LISP\")" > axiom-ecl.lisp
-	echo "(defvar *axiom-extra-c-files* (quote (" \
+do_it.ecl: fricas-lisp.lisp fricas-package.lisp
+	echo "(in-package \"FRICAS-LISP\")" > fricas-ecl.lisp
+	echo "(defvar *fricas-extra-c-files* (quote (" \
 	     $(patsubst %, "\"%\"", $(lisp_c_objects)) \
-	     ")))" >> axiom-ecl.lisp
-	echo "(defvar *axiom-initial-lisp-objects* (quote (" \
+	     ")))" >> fricas-ecl.lisp
+	echo "(defvar *fricas-initial-lisp-objects* (quote (" \
 	      $(patsubst %, "\"$(BASE)$(abs_builddir)/%\"", \
-	          axiom-package.o axiom-ecl.o axiom-lisp.o) ")))" \
-	            >> axiom-ecl.lisp
-	echo "(defvar *axiom-initial-lisp-forms* nil)" >> axiom-ecl.lisp
-	echo '(load "axiom-package.lisp")' \
-	     '(load "axiom-ecl.lisp")' \
-	     '(load "axiom-lisp.lisp")' \
-	     '(in-package "AXIOM-LISP")' \
-             '(axiom-compile-file "axiom-package.lisp")' \
-	     '(axiom-compile-file "axiom-ecl.lisp")' \
-	     '(axiom-compile-file "axiom-lisp.lisp")' \
-	     '(make-program "${OUT}/lisp" nil)' | $(AXIOM_LISP)
+	          fricas-package.o fricas-ecl.o fricas-lisp.o) ")))" \
+	            >> fricas-ecl.lisp
+	echo "(defvar *fricas-initial-lisp-forms* nil)" >> fricas-ecl.lisp
+	echo '(load "fricas-package.lisp")' \
+	     '(load "fricas-ecl.lisp")' \
+	     '(load "fricas-lisp.lisp")' \
+	     '(in-package "FRICAS-LISP")' \
+             '(fricas-compile-file "fricas-package.lisp")' \
+	     '(fricas-compile-file "fricas-ecl.lisp")' \
+	     '(fricas-compile-file "fricas-lisp.lisp")' \
+	     '(make-program "${OUT}/lisp" nil)' | $(FRICAS_LISP)
 	$(STAMP) $@
 
 	     
-do_it.sbcl do_it.clisp do_it.openmcl: axiom-lisp.lisp axiom-package.lisp
-	echo '(load "axiom-package.lisp")' \
-	    '(load (compile-file "axiom-lisp.lisp"))' \
-            '(in-package "AXIOM-LISP") (save-core "${OUT}/lisp")' \
-         | $(AXIOM_LISP)
+do_it.sbcl do_it.clisp do_it.openmcl: fricas-lisp.lisp fricas-package.lisp
+	echo '(load "fricas-package.lisp")' \
+	    '(load (compile-file "fricas-lisp.lisp"))' \
+            '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp")' \
+         | $(FRICAS_LISP)
 	 $(STAMP) $@
 
 
-# Build GCL takes quite a while, so we don't remove the
-# diretcory in mostlyclean.  Rather, we do that in clean.
+# Build GCL takes quite a while, so we don't clean the
+# directory in mostlyclean.  Rather, we do that in clean.
 mostlyclean-local:
 
 clean-local: mostlyclean
 	-rm -f $(OUT)/lisp$(EXEEXT)
+	-rm -f prelisp$(EXEEXT)
 
 distclean-local: clean-local
 	-rm -f Makefile

@@ -34,35 +34,35 @@
 ;;; but in fact contains macros to support several other lisps. It
 ;;; is essentially the place where most of the macros to support
 ;;; idioms from prior ports (like rdefiostream and fileactq)
-(make-package "VMLISP" :use '("AXIOM-LISP"))
+(make-package "VMLISP" :use '("FRICAS-LISP"))
 
 ;;; This is the boot to lisp compiler package which contains the
 ;;; src/boot files. Tt is the boot translator package.
-(make-package "BOOTTRAN" :use '("AXIOM-LISP"))
+(make-package "BOOTTRAN" :use '("FRICAS-LISP"))
 
 ;;; Everything in axiom that the user references eventually shows
 ;;; up here. The interpreter and the algebra are run after switching
 ;;; to the boot package (in-package "BOOT") so any symbol that the
 ;;; interpreter or algebra uses has to (cough, cough) appear here.
-(make-package "BOOT" :use '("VMLISP" "AXIOM-LISP"))
+(make-package "BOOT" :use '("VMLISP" "FRICAS-LISP"))
 
 ;;; FOAM is the intermediate language for the aldor compiler. FOAM
 ;;; means "first order abstract machine" and functions similar to
 ;;; RTL for the GCC compiler. It is a "machine" that is used as the
 ;;; target for meta-assembler level statments. These are eventually
 ;;; expanded for the real target machine (or interpreted directly)
-(make-package "FOAM" :use '("AXIOM-LISP"))
+(make-package "FOAM" :use '("FRICAS-LISP"))
 
 ;;; FOAM-USER is the package containing foam statements and macros
 ;;; that get inserted into user code versus the foam package which
 ;;; provides support for compiler code.
-(make-package "FOAM-USER" :use '("AXIOM-LISP" "FOAM"))
+(make-package "FOAM-USER" :use '("FRICAS-LISP" "FOAM"))
 
 (in-package "BOOT")
 
 (import
     '(VMLISP::NE VMLISP::FLUID
-         AXIOM-LISP:SEQUENCE VMLISP::OBEY VMLISP::|union|
+         FRICAS-LISP:SEQUENCE VMLISP::OBEY VMLISP::|union|
          VMLISP::OPTIONLIST VMLISP::EXIT VMLISP::throw-protect
          VMLISP::*INDEX-FILENAME*))
 (export
@@ -173,7 +173,7 @@
          BOOT::|$userConstructors| BOOT::BOOT-NEQUAL BOOT::RPLAC
          BOOT::GETTAIL BOOT::|QuotientField| BOOT::CURRENT-TOKEN
          BOOT::|$suffix| BOOT::|$VariableCount| BOOT::COMPARE
-         AXIOM-LISP:SEQUENCE BOOT::|$Exit| BOOT::BOOT-EQUAL BOOT::LT
+         FRICAS-LISP:SEQUENCE BOOT::|$Exit| BOOT::BOOT-EQUAL BOOT::LT
          VMLISP::OBEY BOOT::TYPE-CONTENTS-OF-FILE BOOT::|UnSizedBox| BOOT::|Integer| BOOT::|Nud|
          BOOT::IOCLEAR BOOT::|$BigFloatOpt| BOOT::|$EmptyEnvironment|
          BOOT::|$forceDatabaseUpdate| BOOT::$LINESTACK BOOT::ULCASEFG
@@ -192,7 +192,7 @@
          BOOT::SPADCALL BOOT::DELASC BOOT::FAIL BOOT::$COMPILE
          BOOT::|$lastUntraced| BOOT::|$lisplibKind|
          BOOT::|$tracedModemap| BOOT::|$inputPromptType| BOOT::LASSOC
-         AXIOM-LISP:NUMBER BOOT::|$prefix| BOOT::|$TranslateOnly| BOOT::SAY
+         FRICAS-LISP:NUMBER BOOT::|$prefix| BOOT::|$TranslateOnly| BOOT::SAY
          BOOT::|$CategoryFrame| BOOT::|$croakIfTrue| BOOT::|$exitMode|
          BOOT::|$lisplibDependentCategories| BOOT::|$NoValue|
          BOOT::MOAN BOOT::POP-STACK-2 BOOT::BAC
@@ -253,7 +253,7 @@
          BOOT::|$lisplibModemap| BOOT::|$NoValueMode| BOOT::|$PrintBox|
          BOOT::ADVANCE-TOKEN BOOT::|$NegativeIntegerOpt|
          BOOT::|$polyDefaultAssoc| BOOT::|$PrimitiveDomainNames|
-         AXIOM-LISP:STEP BOOT::|rassoc| BOOT::|$Res|
+         FRICAS-LISP:STEP BOOT::|rassoc| BOOT::|$Res|
          BOOT::MATCH-CURRENT-TOKEN BOOT::/GENSYMLIST BOOT::|$false|
          BOOT::|$ignoreCommentsIfTrue| BOOT::|$ModeVariableList|
          BOOT::|$useBFasDefault| BOOT::|$CommonDomains|
