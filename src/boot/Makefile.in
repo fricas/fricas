@@ -31,8 +31,7 @@ BOOT_TO_LISP = \
 	--use=./prev-stage/bootsys $<
 
 BOOTSYS_EXE_TARGETS = stage0/bootsys$(EXEEXT) stage1/bootsys$(EXEEXT) \
-                      stage2/bootsys$(EXEEXT) \
-                      $(axiom_build_bindir)/bootsys$(EXEEXT)
+                      stage2/bootsys$(EXEEXT)
 
 subdir = src/boot/
  
@@ -103,6 +102,10 @@ $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
 	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
 	        --use=$(AXIOM_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
 
+$(axiom_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP)
+	$(axiom_build_document) --tag=lisp --mode=link --output=$(BASE)$@ \
+	        --use=$(AXIOM_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
+
 else
 
 $(AXIOM_LOCAL_LISP_object): %.$(LISPOBJEXT): %.lisp
@@ -117,6 +120,11 @@ $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
             $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
 		--use=$(LISPSYS) \
+		'$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object) $(OBJECTS))'
+
+$(axiom_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
+	$(axiom_build_document) --tag=lisp --mode=link --output=$(BASE)$@ \
+	        --use=$(LISPSYS) \
 		'$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object) $(OBJECTS))'
 
 endif
