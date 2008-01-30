@@ -19,8 +19,7 @@ We define three categories for matrices:
 \item[\spadtype{SquareMatrixCategory}] inherits from the latter.
 \end{description}
 Implementations that are independent of a particular representation of a matrix
-should be put into \spadtype{MatrixCategory}.  As we explain below, domains
-in the other categories will automatically see this implementation.
+should be put into \spadtype{MatrixCategory}.
 
 Note however that a domain in \spadtype{RectangularMatrixCategory} is not
 automatically a domain in \spadtype{MatrixCategory}.  The precise reasons for
@@ -59,6 +58,11 @@ Therefore, implementations that rely on the representation of matrices used in
 of \spadfun{determinant} are a good example to look at.
 
 \section{category MATCAT MatrixCategory}
+<<TEST MATCAT>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "MATCAT"
+@
 <<category MATCAT MatrixCategory>>=
 )abbrev category MATCAT MatrixCategory
 ++ Authors: Grabmeier, Gschnitzer, Williamson
@@ -233,6 +237,9 @@ MatrixCategory(R,Row,Col): Category == Definition where
      if R has EuclideanDomain then
        rowEchelon: % -> %
          ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
+       columnSpace: % -> List Col
+         ++ \spad{columnSpace(m)} returns a sublist of columns of the matrix m
+         ++ forming a basis of its column space
      if R has IntegralDomain then
        rank: % -> NonNegativeInteger
          ++ \spad{rank(m)} returns the rank of the matrix m.
@@ -566,6 +573,61 @@ MatrixCategory(R,Row,Col): Category == Definition where
              sum
          w
 
+@
+\subsection{columnSpace}
+\verb|columnSpace| extracts from the columns of $M$ a basis for the space they
+generate.  The columns of $M$ that generate the space correspond to those
+columns in the row echelon form of $M$ whose last non-zero entry is the first
+non-zero entry in a row.  As an example, let $M$ be the matrix
+\begin{verbatim}
+         +2  1  0  2+
+         |          |
+         |2  0  3  0|
+         |          |
+         +2  1  0  1+
+\end{verbatim}
+Its row-echelon form is
+\begin{verbatim}
+         +2  0   3   0+
+         |            |
+         |0  1  - 3  0|
+         |            |
+         +0  0   0   1+
+\end{verbatim}
+And indeed, \verb|@[[2,2,2],[1,0,1],[2,0,1]]| is a $\mathbb Q$-basis of the
+column space.  Reversing the extracted columns is not strictly necessary, but
+makes the result look more natural.
+
+Note that selecting the non-zero rows of the row echelon form of the transposed
+matrix would give another basis of the column space.
+
+<<category MATCAT MatrixCategory>>=
+     if R has EuclideanDomain then
+        columnSpace M ==
+            M2 := rowEchelon M
+            basis: List Col := []
+            n: Integer := ncols M
+            m: Integer := nrows M
+            indRow: Integer := 1
+            for k in 1..n while indRow <= m repeat
+                if not zero?(M2.(indRow, k)) then
+                    basis := cons(column(M, k), basis)
+                    indRow := indRow + 1
+            reverse! basis
+
+@
+
+<<TEST MATCAT>>=
+testcase "columnSpace"
+M := matrix [[1,2,3],[4,5,6],[7,8,9],[1,1,1]];
+testEquals("columnSpace M", "[[1,4,7,1],[2,5,8,1]]")
+testEquals("columnSpace transpose M", "[[1,2,3],[4,5,6]]")
+testEquals("columnSpace [[0,0]]", "[]")
+testEquals("columnSpace(M::RMATRIX(4,3,INT))", _
+           "[[1,4,7,1],[2,5,8,1]]::List DIRPROD(4, INT)")
+@
+
+<<category MATCAT MatrixCategory>>=
      if R has IntegralDomain then
        x exquo a ==
          ans := new(nrows x,ncols x,0)
@@ -715,6 +777,9 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
     if R has EuclideanDomain then
       rowEchelon: % -> %
         ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
+      columnSpace: % -> List Col
+        ++ \spad{columnSpace(m)} returns a sublist of columns of the matrix m
+        ++ forming a basis of its column space.
     if R has IntegralDomain then
       rank: % -> NonNegativeInteger
         ++ \spad{rank(m)} returns the rank of the matrix m.
@@ -939,6 +1004,9 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
           error "**: matrix must be invertible"
         positivePower(xInv :: %,-n)
 
+@
+<<TEST MATCAT>>=
+statistics()
 @
 \section{License}
 <<license>>=
