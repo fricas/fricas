@@ -1072,6 +1072,7 @@ have to be switched by swapping names.
       s : S := "<mfrac><mrow><msup><mo>&#x02146;</mo><mn>"string(ndiffs)"</mn></msup><mi>"funcS"</mi></mrow><mrow><mo>&#x02146;</mo><msup><mi>"formatMml(first args,minPrec)"</mi><mn>"string(ndiffs)"</mn></msup></mrow></mfrac><mo>&#x02061;</mo><mo>(</mo><mi>"formatMml(first args,minPrec)"</mi><mo>)</mo>"
 
     formatPlex(op : S, args : L E, prec : I) : S ==
+      checkarg:Boolean := false
       hold : S
       p : I := position(op,plexOps)
       p < 1 => error "unknown plex op"
@@ -1080,13 +1081,21 @@ have to be switched by swapping names.
       n : I := #args
       (n ^= 2) and (n ^= 3) => error "wrong number of arguments for plex"
       s : S :=
-        op = "SIGMA"   => "<mo>&#x02211;</mo>"
+        op = "SIGMA"   => 
+	  checkarg := true
+	  "<mo>&#x02211;</mo>"
 	-- Sum
-        op = "SIGMA2"   => "<mo>&#x02211;</mo>"
+        op = "SIGMA2"   => 
+	  checkarg := true
+	  "<mo>&#x02211;</mo>"
 	-- Sum
-        op = "PI"      => "<mo>&#x0220F;</mo>"
+        op = "PI"      => 
+	  checkarg := true
+	  "<mo>&#x0220F;</mo>"
 	-- Product
-        op = "PI2"     => "<mo>&#x0220F;</mo>"
+        op = "PI2"     => 
+	  checkarg := true
+	  "<mo>&#x0220F;</mo>"
 	-- Product
 --        op = "INTSIGN" => "<mo>&#x0222B;</mo>"
 	-- Integral, int
@@ -1107,7 +1116,15 @@ have to be switched by swapping names.
 	  else
 	    s := concat [s,group " ","</munderover>"]
           args := rest args
-        s := concat [s,formatMml(first args,minPrec)]
+	-- if checkarg true need to test op arg for "+" at least
+	-- and wrap parentheses if so
+	if checkarg then
+          la : L E := (first args pretend L E)
+          opa : S := stringify first la
+	  if opa = "+" then
+            s := concat [s,"<mo>(</mo>",formatMml(first args,minPrec),"<mo>)</mo>"]
+          else s := concat [s,formatMml(first args,minPrec)]
+        else s := concat [s,formatMml(first args,minPrec)]
       else
         hold := group concat [hold,formatMml(first args,minPrec)]
         s := concat [s,hold]
@@ -1181,7 +1198,16 @@ have to be switched by swapping names.
       p : I := position(op,binaryOps)
       p < 1 => error "unknown binary op"
       opPrec := binaryPrecs.p
-      s1 : S := formatMml(first args, opPrec)
+      -- if base op is product or sum need to add parentheses
+      if ATOM(first args)$Lisp@Boolean then
+        opa:S := stringify first args
+      else
+        la : L E := (first args pretend L E)
+        opa : S := stringify first la
+      if (opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2") and op = "**" then
+        s1 : S := concat ["<mo>(</mo>",formatMml(first args, opPrec),"<mo>)</mo>"]
+      else 
+	s1 : S := formatMml(first args, opPrec)
       s2 : S := formatMml(first rest args, opPrec)
       op :=
         op = "|"     =>  s := concat ["<mrow>",s1,"</mrow><mo>",op,"</mo><mrow>",s2,"</mrow>"]
@@ -1200,6 +1226,7 @@ have to be switched by swapping names.
       group formatNaryNoGroup(op, args, prec)
 
     formatNaryNoGroup(op : S, args : L E, prec : I) : S ==
+      checkargs:Boolean := false
       null args => ""
       p : I := position(op,naryOps)
       p < 1 => error "unknown nary op"
@@ -1233,20 +1260,48 @@ have to be switched by swapping names.
 	   position("ZAG",tmpS,1) > 0 => formatZag(args)
 --	   position("ZAG",tmpS,1) > 0 => formatZag1(args)
 	   concat [formatMml(first args,minPrec) "<mo>+</mo>" formatZag(rest args)]
+      -- At least for the ops "*","+","-" we need to test to see if a sigma or pi
+      -- is one of their arguments because we might need parentheses as indicated
+      -- by the problem with summation(operator(f)(i),i=1..n)+1 versus 
+      -- summation(operator(f)(i)+1,i=1..n) having identical displays as of
+      -- 2007-12-21
       op :=
         op = ","     => "<mo>,</mo>" --originally , \:
         op = ";"     => "<mo>;</mo>" --originally ; \: should figure these out
-        op = "*"     => "<mo>&#x02062;</mo>"
+        op = "*"     =>
+	    checkargs := true
+	    "<mo>&#x02062;</mo>"
 	-- InvisibleTimes
         op = " "     => "<mspace width='0.5em'/>"
         op = "ROW"   => "</mtd><mtd>"
-	op = "+"     => "<mo>+</mo>"
-	op = "-"     => "<mo>-</mo>"
+	op = "+"     => 
+	    checkargs := true
+	    "<mo>+</mo>"
+	op = "-"     => 
+	    checkargs := true
+	    "<mo>-</mo>"
         op
       l : L S := nil
       opPrec := naryPrecs.p
+      -- if checkargs is true check each arg except last one to see if it's
+      -- a sigma or pi and if so add parentheses. Other op's may have to be
+      -- checked for in future
+      count:I := 1
       for a in args repeat
-        l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
+        if checkargs then
+	  if count < #args then
+	    -- check here for sum or product
+	    if ATOM(a)$Lisp@Boolean then
+	      opa:S := stringify a
+	    else
+	      la : L E := (a pretend L E)
+	      opa : S := stringify first la
+	    if opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2" then
+	      l := concat(op,concat(concat ["<mo>(</mo>",formatMml(a,opPrec),"<mo>)</mo>"],l)$L(S))$L(S)
+	    else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
+	  else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
+	else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
+	count := count + 1
       s : S := concat reverse rest l
       opPrec < prec => parenthesize s
       s
