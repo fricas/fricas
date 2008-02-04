@@ -319,7 +319,9 @@
 
 (defun relative-to-absolute (name)
     (let ((ns (namestring name)))
-         (if (and (> (length ns) 0) (char= (char ns 0) #\/))
+         (if (and (consp (pathname-directory name))
+                  (eq (car (pathname-directory name))
+                      #-:gcl :absolute #+:gcl :root))
              ns
              (concatenate 'string (get-current-directory)  "/" ns))))
 
