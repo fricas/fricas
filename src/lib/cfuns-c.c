@@ -124,7 +124,7 @@ make_path_from_file(char *s, char *t)
     char *c;
 
     /** simply copies the path name from t into s **/
-    for (c = t + strlen(t); c != s; c--)
+    for (c = t + strlen(t); c != t; c--)
         if ( ( *c == '/' ) || ( *c == '\\' ) ) {
             pos = c;
             break;
