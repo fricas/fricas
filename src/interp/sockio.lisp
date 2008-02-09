@@ -30,64 +30,8 @@
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-;; load C socket functions
-
 (in-package "BOOT")
 
-#+(and :Lucid (not :ibm/370))
-(progn
-  (system:define-foreign-function :c 'open_server :fixnum)
-  (system:define-foreign-function :c 'sock_get_int :fixnum)
-  (system:define-foreign-function :c 'sock_send_int :fixnum)
-  (system:define-foreign-function :c 'sock_get_string_buf :fixnum)
-  (system:define-foreign-function :c 'sock_send_string_len :fixnum)
-  (system:define-foreign-function :c 'sock_get_float :single)
-  (system:define-foreign-function :c 'sock_send_float :fixnum)
-  (system:define-foreign-function :c 'sock_send_wakeup :fixnum)
-  (system:define-foreign-function :c 'server_switch :fixnum)
-  (system:define-foreign-function :c 'flush_stdout :fixnum)
-  (system:define-foreign-function :c 'sock_send_signal :fixnum)
-  (system:define-foreign-function :c 'print_line :fixnum)
-  (system:define-foreign-function :c 'plus_infininty :single)
-  (system:define-foreign-function :c 'minus_infinity :single)
-  (system:define-foreign-function :c 'NANQ :single)
-)
-
-#+KCL
-(progn
-  (LISP::clines "extern double plus_infinity(), minus_infinity(), NANQ();")
-  (LISP::clines "extern double sock_get_float();")
-;; GCL may pass strings by value.  'sock_get_string_buf' should fill
-;; string with data read from connection, therefore needs address of
-;; actual string buffer. We use 'sock_get_string_buf_wrapper' to
-;; resolve the problem
-  (LISP::clines "int sock_get_string_buf_wrapper(int i, object x, int j)"
-          "{ if (type_of(x)!=t_string) FEwrong_type_argument(sLstring,x);"
-          "  if (x->st.st_fillp<j)"
-          "    FEerror(\"string too small in sock_get_string_buf_wrapper\",0);"
-          "  return sock_get_string_buf(i, x->st.st_self, j); }")
-  (LISP::defentry open_server (LISP::string) (LISP::int "open_server"))
-  (LISP::defentry sock_get_int (LISP::int) (LISP::int "sock_get_int"))
-  (LISP::defentry sock_send_int (LISP::int LISP::int) (LISP::int "sock_send_int"))
-  (LISP::defentry sock_get_string_buf (LISP::int LISP::object LISP::int) 
-     (LISP::int "sock_get_string_buf_wrapper"))
-  (LISP::defentry sock_send_string_len (LISP::int LISP::string LISP::int) (LISP::int "sock_send_string_len"))
-  (LISP::defentry sock_get_float (LISP::int) (LISP::double "sock_get_float"))
-  (LISP::defentry sock_send_float (LISP::int LISP::double) (LISP::int "sock_send_float"))
-  (LISP::defentry sock_send_wakeup (LISP::int LISP::int) (LISP::int "sock_send_wakeup"))
-  (LISP::defentry server_switch () (LISP::int "server_switch"))
-  (LISP::defentry flush_stdout () (LISP::int "flush_stdout"))
-  (LISP::defentry sock_send_signal (LISP::int LISP::int) (LISP::int "sock_send_signal"))
-  (LISP::defentry print_line (LISP::string) (LISP::int "print_line"))
-  (LISP::defentry plus_infinity () (LISP::double "plus_infinity"))
-  (LISP::defentry minus_infinity () (LISP::double "minus_infinity"))
-  (LISP::defentry NANQ () (LISP::double "NANQ"))
-  )
-
-(defun open-server (name)
-#+(and :lucid :ibm/370) -2
-#-(and :lucid :ibm/370)
-  (open_server name))
 (defun sock-get-int (type)
 #+(and :lucid :ibm/370) ()
 #-(and :lucid :ibm/370)
@@ -96,10 +40,6 @@
 #+(and :lucid :ibm/370) ()
 #-(and :lucid :ibm/370)
   (sock_send_int type val))
-(defun sock-get-string (type buf buf-len)
-#+(and :lucid :ibm/370) ()
-#-(and :lucid :ibm/370)
-  (sock_get_string_buf type buf buf-len))
 (defun sock-send-string (type str)
 #+(and :lucid :ibm/370) ()
 #-(and :lucid :ibm/370)
@@ -116,34 +56,17 @@
 #+(and :lucid :ibm/370) ()
 #-(and :lucid :ibm/370)
   (sock_send_wakeup type))
-(defun server-switch ()
-#+(and :lucid :ibm/370) ()
-#-(and :lucid :ibm/370)
-  (server_switch))
 (defun sock-send-signal (type signal)
 #+(and :lucid :ibm/370) ()
 #-(and :lucid :ibm/370)
   (sock_send_signal type signal))
-(defun print-line (str)
-#+(and :lucid :ibm/370) ()
-#-(and :lucid :ibm/370)
-  (print_line str))
-(defun |plusInfinity| () (plus_infinity))
-(defun |minusInfinity| () (minus_infinity))
 
 ;; Macros for use in Boot
 
-(defun |openServer| (name)
-  (open_server name))
 (defun |sockGetInt| (type)
   (sock_get_int type))
 (defun |sockSendInt| (type val)
   (sock_send_int type val))
-#+:GCL
-(defun |sockGetStringFrom| (type)
-  (let ((buf (MAKE-STRING |$sockBufferLength|)))
-      (sock_get_string_buf type buf |$sockBufferLength|)
-      buf))
 (defun |sockSendString| (type str)
   (sock_send_string_len type str (length str)))
 (defun |sockGetFloat| (type)
@@ -152,12 +75,8 @@
   (sock_send_float type val))
 (defun |sockSendWakeup| (type)
   (sock_send_wakeup type))
-(defun |serverSwitch| ()
-  (server_switch))
 (defun |sockSendSignal| (type signal)
   (sock_send_signal type signal))
-(defun |printLine| (str)
-  (print_line str))
 
 ;; Socket types.  This list must be consistent with the one in com.h
 
@@ -217,23 +136,4 @@
 (defconstant |$KillLispSystem|  KillLispSystem)
 
 (defconstant |$CreateFrameAnswer|  CreateFrameAnswer)
-
-;; signal types (from /usr/include/sys/signal.h)
-#+(and :Lucid (not :ibm/370))
-(progn 
-  (defconstant  SIGUSR1 16)     ;; user defined signal 1
-  (defconstant  SIGUSR2 17)     ;; user defined signal 2
-  )
-
-#+:RIOS
-(progn 
-  (defconstant  SIGUSR1 30)     ;; user defined signal 1
-  (defconstant  SIGUSR2 31)     ;; user defined signal 2
-  )
-
-#+:IBMPS2
-(progn
-  (defconstant  SIGUSR1 30)     ;; user defined signal 1
-  (defconstant  SIGUSR2 31)     ;; user defined signal 2
-  )
 

@@ -1270,6 +1270,8 @@ quality we check anyway.
     :verbose nil :if-does-not-exist nil) '|done|)
   (t nil) ))
 
+(defvar *fricas-load-libspad* t)
+
 (defun fricas-init ()
 #+:akcl
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
@@ -1284,56 +1286,37 @@ quality we check anyway.
 #+:CCL (setpchar "") ;; Turn off CCL read prompts
   (initroot)
 #+:akcl (system:gbc-time 0)
-#+:akcl
-  (when (and $openServerIfTrue (fboundp '|openServer|))
-   (prog (os)
-    (setq os (|openServer| $SpadServerName))
-    (if (zerop os) 
-     (progn 
-      (setq $openServerIfTrue nil)
-      #+:gcl
-      (if (fboundp 'si::readline-off)
-          (si::readline-off))
-      (setq |$SpadServer| t)))))
-#+:sbcl
-(let* ((ax-dir (|getEnv| "AXIOM"))
-       (spad-lib (concatenate 'string ax-dir "/lib/libspad.so"))
-       (sock-fasl (concatenate 'string ax-dir "/autoload/ffi-func.fasl")))
-    (format t "Checking for foreign routines~%")
-    (format t "AXIOM=~S~%" ax-dir)
-    (format t "spad-lib=~S~%" spad-lib)
-    (format t "sock-fasl=~S~%" sock-fasl)
-    (when (and (fricas-probe-file spad-lib)
-               (fricas-probe-file sock-fasl))
-        (format t "foreign routines found~%")
-        (sb-alien::load-shared-object spad-lib)
-        (load sock-fasl)
+    #+(or :sbcl :clisp :openmcl)
+    (if *fricas-load-libspad*
+        (let* ((ax-dir (|getEnv| "AXIOM"))
+               (spad-lib (concatenate 'string ax-dir "/lib/libspad.so")))
+            (format t "Checking for foreign routines~%")
+            (format t "AXIOM=~S~%" ax-dir)
+            (format t "spad-lib=~S~%" spad-lib)
+            (if (fricas-probe-file spad-lib)
+                (progn
+                    (setf *fricas-load-libspad* nil)
+                    (format t "foreign routines found~%")
+                    #+:sbcl
+                    (sb-alien::load-shared-object spad-lib)
+                    #+:openmcl
+                    (ccl::open-shared-library spad-lib)
+                    #+:clisp
+                    (progn
+                        (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
+                        (FRICAS-LISP::clisp-init-foreign-calls)))
+                (setf $openServerIfTrue nil))))
+    #+(or :gcl :clisp :sbcl :openmcl :ecl)
+    (if $openServerIfTrue
         (let ((os (|openServer| $SpadServerName)))
              (format t "openServer result ~S~%" os)
              (if (zerop os)
                  (progn
-                      (setq $openServerIfTrue nil)
-                      (setq |$SpadServer| t))))))
-#+:clisp
-(let* ((ax-dir (|getEnv| "AXIOM"))
-       (spad-lib (concatenate 'string ax-dir "/lib/libspad.so"))
-       (sock-fasl (concatenate 'string ax-dir "/autoload/ffi-func2.lisp")))
-    (format t "Checking for foreign routines~%")
-    (format t "AXIOM=~S~%" ax-dir)
-    (format t "spad-lib=~S~%" spad-lib)
-    (format t "sock-fasl=~S~%" sock-fasl)
-    (when (and (fricas-probe-file spad-lib)
-               (fricas-probe-file sock-fasl))
-        (defvar *libspad_pathname*)
-        (setf *libspad_pathname* spad-lib)
-        (format t "foreign routines found~%")
-        (load sock-fasl)
-        (let ((os (|openServer| $SpadServerName)))
-             (format t "openServer result ~S~%" os)
-             (if (zerop os)
-                 (progn
-                      (setq $openServerIfTrue nil)
-                      (setq |$SpadServer| t))))))
+                      (setf $openServerIfTrue nil)
+                      #+:gcl
+                      (if (fboundp 'si::readline-off)
+                          (si::readline-off))
+                      (setq |$SpadServer| t)))))
 ;; We do the following test at runtime to allow us to use the same images
 ;; with Saturn and Sman.  MCD 30-11-95
 #+:CCL

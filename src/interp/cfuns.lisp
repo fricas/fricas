@@ -42,11 +42,6 @@
   (system:define-foreign-function :c '|copyEnvValue| :fixnum)
   )
 
-#+:GCL
-(progn
-  (LISP::defentry |writeablep| (LISP::string)        (LISP::int "writeablep"))
-  )
-
 #+:CCL
 (defun |directoryp| (fn)
   (cond ((not (probe-file fn)) -1)

@@ -201,6 +201,340 @@
     ;;; (format *error-output* "finished load_quietly ~&") 
 )
 
+;;; -------------------------------------------------------
+;;;
+;;; FriCAS FFI macros
+;;;
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(defvar *c-type-to-ffi*)
+(defun c-type-to-ffi (c-type)
+   (let ((pp (assoc c-type *c-type-to-ffi*)))
+        (if pp (nth 1 pp) (break))))
+
+)
+
+#+:gcl
+(eval-when (:compile-toplevel :load-toplevel :execute)
+(setf *c-type-to-ffi* '(
+    (int LISP::int)
+    (c-string LISP::string)
+    (double LISP::double)
+))               
+
+(defun c-args-to-gcl (arguments)
+   (declare (safety 3))
+   (mapcar (lambda (x) (c-type-to-ffi (nth 1 x))) arguments))
+
+(defun gcl-foreign-call (name c-name return-type arguments)
+    (let ((gcl-args (c-args-to-gcl arguments))
+          (gcl-ret (c-type-to-ffi return-type)))
+    `(LISP::defentry ,name ,gcl-args (,gcl-ret ,c-name))
+  ))
+
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+    (gcl-foreign-call name c-name return-type arguments))
+
+)
+
+#+:clisp
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(setf *c-type-to-ffi* '(
+    (int ffi:int)
+    (c-string  ffi:c-string)
+    (double ffi:double-float)
+))
+
+(defun c-args-to-clisp (arguments)
+   (mapcar (lambda (x) (list (nth 0 x) (c-type-to-ffi (nth 1 x)))) arguments))
+
+(defun clisp-foreign-call (name c-name return-type arguments)
+    (let ((clisp-args (c-args-to-clisp arguments))
+          (clisp-ret (c-type-to-ffi return-type)))
+     `(eval (quote (ffi:def-call-out ,name
+          ;;; (:library "./libspad.so")
+          (:name ,c-name) 
+          (:arguments ,@clisp-args)
+          (:return-type ,clisp-ret)
+          (:language :stdc))))
+     ))
+
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+     (clisp-foreign-call name c-name return-type arguments))
+
+)
+
+#+:sbcl
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(setf *c-type-to-ffi* '(
+    (int SB-ALIEN::int)
+    (c-string SB-ALIEN::c-string)
+    (double SB-ALIEN::double)
+))
+
+(defun c-args-to-sbcl (arguments)
+       (mapcar (lambda (x) (list (nth 0 x) (c-type-to-ffi (nth 1 x)) :in))
+               arguments))
+
+(defun sbcl-foreign-call (name c-name return-type arguments)
+    (let ((sbcl-args (c-args-to-sbcl arguments))
+          (sbcl-ret (c-type-to-ffi return-type)))
+       `(SB-ALIEN::define-alien-routine (,c-name ,name) ,sbcl-ret
+           ,@sbcl-args)))
+
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+       (sbcl-foreign-call name c-name return-type arguments))
+
+)
+
+#+:openmcl
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(setf *c-type-to-ffi* '(
+    (int :int)
+    (c-string :address)
+    (double :double-float)
+))
+
+(defun c-args-to-openmcl (arguments)
+   (let ((strs nil) (fargs nil))
+        (mapcar (lambda (x)
+                         (if (eq (nth 1 x) 'c-string)
+                             (let ((sym (gensym)))
+                                   (push (list sym (nth 0 x)) strs)
+                                   (push :address fargs)
+                                   (push sym fargs))
+                             (progn
+                                  (push (c-type-to-ffi (nth 1 x)) fargs)
+                                  (push (nth 0 x) fargs))))
+                     arguments)
+         (values (nreverse fargs) strs 
+                 (mapcar #'car arguments))))
+
+(defun openmcl-foreign-call (name c-name return-type arguments)
+    (multiple-value-bind (fargs strs largs) (c-args-to-openmcl arguments)
+        (let* ((l-ret (c-type-to-ffi return-type))
+               (call-body
+                 `(ccl::external-call ,c-name ,@fargs ,l-ret))
+               (fun-body
+                  (if strs
+                     `(ccl::with-cstrs ,strs ,call-body)
+                      call-body)))
+               `(defun ,name ,largs ,fun-body))))
+            
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+     (openmcl-foreign-call name c-name return-type arguments))
+
+)
+
+#+:ecl
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(setf *c-type-to-ffi* '(
+                 (int :int)
+                 (c-string  :cstring )
+                 (double :double)
+                 ))
+
+(defun c-args-to-ecl (arguments)
+    (let ((strs nil) (fargs nil))
+        (mapcar (lambda (x)
+                        (if (eq (nth 1 x) 'c-string)
+                            (let ((sym (gensym)))
+                                (push (list sym (nth 0 x)) strs)
+                                (push (list sym :cstring) fargs))
+                            (push (list (nth 0 x) (c-type-to-ffi (nth 1 x)))
+                                  fargs)))
+                arguments)
+        (values (nreverse fargs) strs)))
+
+(defun ecl-foreign-call (name c-name return-type arguments)
+    (multiple-value-bind (fargs strs) (c-args-to-ecl arguments)
+        (let ((l-ret (c-type-to-ffi return-type))
+               wrapper)
+            (if strs
+                (let* ((sym (gensym))
+                       (wargs (mapcar #'car fargs))
+                       (largs (mapcar #'car arguments))
+                       (wrapper `(,sym ,@wargs)))
+                    (dolist (el strs)
+                        (setf wrapper `(FFI:WITH-CSTRING ,el ,wrapper)))
+                    (setf wrapper `(defun ,name ,largs ,wrapper))
+                    `(progn (uffi:def-function (,c-name ,sym)
+                                ,fargs :returning ,l-ret)
+                            ,wrapper))
+                `(uffi:def-function (,c-name ,name)
+                     ,fargs :returning ,l-ret)))))
+
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+    (ecl-foreign-call name c-name return-type arguments))
+
+)
+
+;;;
+;;; Foreign routines
+;;;
+
+(defmacro foreign-defs (&rest arguments)
+    #-:clisp `(progn ,@arguments)
+    #+:clisp `(defun clisp-init-foreign-calls () ,@arguments)
+)
+
+(foreign-defs
+
+(fricas-foreign-call |writeablep| "writeablep" int
+        (filename c-string))
+
+(fricas-foreign-call |openServer| "open_server" int
+        (server_name c-string))
+
+(fricas-foreign-call sock_get_int "sock_get_int" int
+        (purpose int))
+
+(fricas-foreign-call sock_send_int "sock_send_int" int
+        (purpose int)
+        (val int))
+
+#+:gcl
+(LISP::clines "extern double sock_get_float();")
+
+(fricas-foreign-call sock_get_float "sock_get_float" double
+        (purpose int))
+
+(fricas-foreign-call sock_send_float "sock_send_float" int
+       (purpose int)
+       (num double))
+
+(fricas-foreign-call sock_send_string "sock_send_string" int
+       (purpose int)
+       (str c-string))
+
+(fricas-foreign-call sock_send_string_len "sock_send_string_len" int
+       (purpose int)
+       (str c-string)
+       (len int))
+
+(fricas-foreign-call |serverSwitch| "server_switch" int)
+
+(fricas-foreign-call sock_send_signal "sock_send_signal" int
+       (purpose int)
+       (sig int))
+
+#+:gcl
+(progn
+
+(LISP::defentry sock_get_string_buf (LISP::int LISP::object LISP::int)
+    (LISP::int "sock_get_string_buf_wrapper"))
+
+;; GCL may pass strings by value.  'sock_get_string_buf' should fill
+;; string with data read from connection, therefore needs address of
+;; actual string buffer. We use 'sock_get_string_buf_wrapper' to
+;; resolve the problem
+(LISP::clines "int sock_get_string_buf_wrapper(int i, object x, int j)"
+    "{ if (type_of(x)!=t_string) FEwrong_type_argument(sLstring,x);"
+    "  if (x->st.st_fillp<j)"
+    "    FEerror(\"string too small in sock_get_string_buf_wrapper\",0);"
+    "  return sock_get_string_buf(i, x->st.st_self, j); }")
+
+(LISP::defentry sock_get_string_buf (LISP::int LISP::object LISP::int)
+    (LISP::int "sock_get_string_buf_wrapper"))
+
+(defun |sockGetStringFrom| (type)
+    (let ((buf (MAKE-STRING 10000)))
+        (sock_get_string_buf type buf 10000)
+            buf))
+
+)
+#+:clisp
+(eval '(FFI:DEF-CALL-OUT sock_get_string_buf
+    (:NAME "sock_get_string_buf")
+    (:arguments (purpose ffi:int)
+    (buf (FFI:C-POINTER (FFI:C-ARRAY FFI::char 10000)))
+    (len ffi:int))
+    (:return-type ffi:int)
+    (:language :stdc)))
+
+)
+
+#+:clisp
+(defun |sockGetStringFrom| (purpose)
+    (let ((buf nil))
+        (FFI:WITH-C-VAR (tmp-buf '(FFI:C-ARRAY
+                                   FFI::char 10000))
+            (sock_get_string_buf purpose (FFI:C-VAR-ADDRESS tmp-buf) 10000)
+            (prog ((len2 10000))
+                (dotimes (i 10000)
+                    (if (eql 0 (FFI:ELEMENT tmp-buf i))
+                        (progn
+                            (setf len2 i)
+                            (go nn1))))
+              nn1
+                (setf buf (make-string len2))
+                (dotimes (i len2)
+                    (setf (aref buf i)
+                          (code-char (FFI:ELEMENT tmp-buf i)))))
+        )
+        buf
+    )
+)
+
+#+:openmcl
+(defun |sockGetStringFrom| (purpose)
+    (ccl::%stack-block ((tmp-buf 10000))
+        (ccl::external-call "sock_get_string_buf"
+            :int purpose :address tmp-buf :int 10000)
+        (ccl::%get-cstring tmp-buf)))
+
+#+:sbcl
+(defun |sockGetStringFrom| (purpose)
+    (let ((buf nil))
+        (SB-ALIEN::with-alien ((tmp-buf (SB-ALIEN::array
+                                         SB-ALIEN::char 10000)))
+            (SB-ALIEN::alien-funcall
+                (SB-ALIEN::extern-alien
+                    "sock_get_string_buf"
+                        (SB-ALIEN::function SB-ALIEN::void
+                            SB-ALIEN::int
+                            (SB-ALIEN::* SB-ALIEN::char)
+                            SB-ALIEN::int))
+                purpose
+                (SB-ALIEN::addr (SB-ALIEN::deref tmp-buf 0))
+                10000)
+            (prog ((len2 10000))
+                (dotimes (i 10000)
+                    (if (eql 0 (SB-ALIEN::deref tmp-buf i))
+                        (progn
+                            (setf len2 i)
+                            (go nn1))))
+              nn1
+                (setf buf (make-string len2))
+                (dotimes (i len2)
+                    (setf (aref buf i)
+                        (code-char (SB-ALIEN::deref tmp-buf i))))
+            )
+        )
+        buf
+    )
+)
+
+#+:ecl
+(progn
+
+(uffi:def-function ("sock_get_string_buf" sock_get_string_buf_wrapper)
+                   ((purpose :int) (buf (:array :unsigned-char 10000)) (len :int))
+                   :returning :void)
+
+(defun |sockGetStringFrom| (purpose)
+    (uffi:with-foreign-object (buf '(:array :unsigned-char 10000))
+        (sock_get_string_buf_wrapper purpose buf 10000)
+        (uffi:convert-from-foreign-string buf)))
+
+)
+      
+;;; -------------------------------------------------------
 ;;; File and directory support
 ;;; First version contributed by Juergen Weiss.
 

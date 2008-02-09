@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2008-01-19], 
+AC_INIT([FriCAS], [2008-02-09], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -252,7 +252,7 @@ AC_SUBST(fricas_lisp_flavor)
 
 ## Check if we need shared libspad library.
 case $fricas_lisp_flavor in
-    sbcl|clisp)
+    sbcl|clisp|openmcl)
        LIBSPAD_SO_TARGET="libspad_so"
         ;;
     *)
