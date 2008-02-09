@@ -204,7 +204,6 @@
         (|$e| |$EmptyEnvironment|)
         (|$genFVar| 0)
         (|$genSDVar| 0)
-        (|$VariableCount| 0)
         (|$previousTime| (TEMPUS-FUGIT))
         (|$LocalFrame| '((NIL))))
   (prog ((CURSTRM CUROUTSTREAM) |$s| |$x| |$m| u)
@@ -286,7 +285,6 @@
 
 (defvar MATBORCH "*")
 (defvar $MARGIN 3)
-(defvar $LINELENGTH 71)
 (defvar TEMPGENSYMLIST '(|s| |r| |q| |p|))
 (defvar ALPHLIST '(|a| |b| |c| |d| |e| |f| |g|))
 (defvar LITTLEIN " in ")

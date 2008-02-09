@@ -77,7 +77,6 @@ displayWarning(l,stream) ==
     sayBrightly(['"      [",i,'"] ",:x],stream)
  
 displayComp level ==
-  $tripleCache:= nil
   $bright:= " << "
   $dim:= " >> "
   if $insideCapsuleFunctionIfTrue=true then
@@ -412,16 +411,7 @@ wrapSEQExit l ==
  
 --% UTILITY FUNCTIONS
  
---appendOver x == "append"/x
- 
 removeEnv t == [t.expr,t.mode,$EmptyEnvironment]  -- t is a triple
- 
--- This function seems no longer used
---ordinsert(x,l) ==
---  null l => [x]
---  x=first l => l
---  _?ORDER(x,first l) => [x,:l]
---  [first l,:ordinsert(x,rest l)]
  
 makeNonAtomic x ==
   atom x => [x]
@@ -704,68 +694,3 @@ displayModemaps E ==
           listOfOperatorsSeenSoFar:= [first z,:listOfOperatorsSeenSoFar]
           displayOpModemaps(first z,modemaps)
  
---% General object traversal functions
- 
-GEQSUBSTLIST(old, new, body) ==
-    GEQNSUBSTLIST(old, new, GCOPY body)
- 
-GEQNSUBSTLIST(old, new, body) ==
-    or/[:[EQ(o,n) for o in old] for n in new] =>
-        mid := [GENSYM() for o in old]
-        GEQNSUBSTLIST(old, mid, body)
-        GEQNSUBSTLIST(mid, new, body)
-    alist := [[o,:n] for o in old for n in new]
-    traverse(function GSUBSTinner, alist, body) where
-        GSUBSTinner(alist, ob) ==
-            (pr := ASSQ(ob, alist)) => CDR pr
-            ob
- 
-GCOPY ob == COPY ob  -- for now
- 
-traverse(fn, arg, ob) ==
-    $seen:    local := MAKE_-HASHTABLE 'EQ
-    $notseen: local := GENSYM()
- 
-    traverseInner(ob, fn, arg) where
-        traverseInner(ob, fn, arg) ==
-            e := HGET($seen, ob, $notseen)
-            not EQ(e, $notseen) => e
- 
-            nob := FUNCALL(fn, arg, ob)
-            HPUT($seen, ob, nob)
-            not EQ(nob, ob) => nob
-            PAIRP ob =>
-                ne:=traverseInner(QCAR ob, fn, arg)
-                if not EQ(ne,QCAR ob) then QRPLACA(ob, ne)
-                ne:=traverseInner(QCDR ob, fn, arg)
-                if not EQ(ne,QCDR ob) then QRPLACD(ob, ne)
-                ob
-            VECP ob =>
-                n := QVMAXINDEX ob
-                for i in 0..n repeat
-                    e:=QVELT(ob,i)
-                    ne:=traverseInner(e, fn, arg)
-                    if not EQ(ne,e) then QSETVELT(ob,i,ne)
-                ob
-            HASHTABLEP ob =>
-                keys := HKEYS ob
-                for k in keys repeat
-                    e  := HGET(ob, k)
-                    nk := traverseInner(k, fn, arg)
-                    ne := traverseInner(e, fn, arg)
-                    if not EQ(k,nk) or not EQ(e,ne) then
-                        HREM(ob, k)
-                        HPUT(ob, nk, ne)
-                ob
-            PAPPP ob =>
-                for i in 1..PA_-SPEC_-COUNT ob repeat
-                    s := PA_-SPEC(ob, i)
-                    not PAIRP s =>
-                        ns := traverseInner(s,fn,arg)
-                        if not EQ(s,ns) then
-                            SET_-PA_-SPEC(ob,i,ns)
-                    ns := traverseInner(QCDR s, fn, arg)
-                    if not EQ(ns,QCDR s) then
-                       apply(SET_-PA_-SPEC, [ob,i,QCAR s,:ns])
-                ob
-            ob

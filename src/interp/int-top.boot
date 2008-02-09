@@ -84,6 +84,12 @@ ioHook(x) ==
 
 --% INTERPRETER TOP LEVEL
 
+-- Variables to control phases and their output
+
+$ncmParse :=            NIL
+$ncmMacro :=            NIL
+$ncmPhase :=      NIL
+
 spad() ==
   -- starts the interpreter but does not read in profiles, etc.
   $PrintCompilerMessageIfTrue: local

@@ -360,13 +360,6 @@ SETANDFILEQ($setOptions,'(
       $reportBottomUpFlag
       (on off)
       off)
-     (coercion
-      "display datatype coercion messages"
-      development
-      LITERALS
-      $reportCoerceIfTrue
-      (on off)
-      off)
      (dropmap
       "display old map defn when replaced"
       interpreter

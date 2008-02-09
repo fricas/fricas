@@ -77,7 +77,6 @@ compOrCroak1(x,m,e,compFn) ==
       userError errorMessage
 
 tc() ==
-  $tripleCache:= nil
   comp($x,$m,$f)
 
 
@@ -121,7 +120,9 @@ comp3(x,m,$e) ==
   ^x or atom x => compAtom(x,m,e)
   op:= first x
   getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
-  op is ["KAPPA",sig,varlist,body] => compApply(sig,varlist,body,rest x,m,e)
+  op is ["KAPPA",sig,varlist,body] =>
+     BREAK()
+     compApply(sig,varlist,body,rest x,m,e)
   op=":" => compColon(x,m,e)
   op="::" => compCoerce(x,m,e)
   not ($insideCompTypeOf=true) and stringPrefix?('"TypeOf",PNAME op) =>

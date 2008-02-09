@@ -195,7 +195,6 @@ genTempCategoryTable() ==
     HPUT(_*ANCESTORS_-HASH_*,id,listSort(function GLESSEQP,item))
 
 addToCategoryTable con ==
-  -- adds an entry to $tempCategoryTable with key=con and alist entries
   u := CAAR GETDATABASE(con,'CONSTRUCTORMODEMAP) --domain
   alist := getCategoryExtensionAlist u
   HPUT(_*ANCESTORS_-HASH_*,first u,alist)

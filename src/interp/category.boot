@@ -526,15 +526,6 @@ JoinInner(l,$e) ==
   $NewCatVec.4:= [c,FundamentalAncestors,CADDR $NewCatVec.4]
   mkCategory("domain",sigl,attl,globalDomains,$NewCatVec)
  
---ProduceDomainAlist(u,e) ==
---  -- Gives a complete Alist for all the functions in the Domain
---  not (sig:= get(u,"modemap",e)) => nil
---  sig:= CADAAR sig
---                       --an incantation
---  [c,.,.]:= compMakeCategoryObject(sig,e)
---  -- We assume that the environment need not be kept
---  c.(1)
- 
 isCategoryForm(x,e) ==
   x is [name,:.] => categoryForm? name
   atom x => u:= get(x,"macro",e) => isCategoryForm(u,e)

@@ -49,6 +49,7 @@ transImplementation(op,map,fn) ==
   ["call",fn]
 
 compApply(sig,varl,body,argl,m,e) ==
+  BREAK()
   argTl:= [[.,.,e]:= comp(x,$EmptyMode,e) for x in argl]
   contour:=
     [Pair(x,[["mode",m'],["value",removeEnv comp(a,m',e)]])

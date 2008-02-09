@@ -33,8 +33,6 @@
 --% FUNCTIONS WHICH MUNCH ON == STATEMENTS
  
 compDefine(form,m,e) ==
-  $tripleCache: local:= nil
-  $tripleHits: local:= 0
   $macroIfTrue: local := nil
   $packagesUsed: local := nil
   result:= compDefine1(form,m,e)

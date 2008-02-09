@@ -30,29 +30,10 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
---====================> WAS b-con.boot <================================
-
 --=======================================================================
 --              Pages Initiated from HyperDoc Pages
 --=======================================================================
---NOTE: This duplicate version was discovered 3/20/94 in br-search.boot
---called from buttons via bcCon, bcAbb, bcConform, dbShowCons1, dbSelectCon
---conPage(a,:b) ==
---  --The next 4 lines allow e.g. MATRIX INT  ==> Matrix Integer (see kPage)
---  $conArgstrings: local :=
---    atom a => b
---    a := conform2OutputForm a
---    [mathform2HtString x for x in rest a]
---  if not atom a then a := first a
---  da := DOWNCASE a
---  pageName := LASSQ(da,'((type . CategoryType)(union . DomainUnion)(record . DomainRecord)(mapping . DomainMapping))) =>
---    downlink pageName              --special jump out for primitive domains
---  line := conPageFastPath a        => kPage line  --lower case name of cons?
---  line := conPageFastPath UPCASE a => kPage line  --upper case an abbr?
---  ySearch a                        --slow search (include default packages)
---
 
---called from buttons via bcCon, bcAbb, bcConform, dbShowCons1, dbSelectCon
 conPage(a,:b) ==
   --The next 4 lines allow e.g. MATRIX INT  ==> Matrix Integer (see kPage)
   form :=
@@ -86,68 +67,6 @@ conPageConEntry entry ==
   $kind:    local := nil
   buildLibdbConEntry entry
 
---=======================================================================
---                    Constructor Page
---=======================================================================
--- in br-saturn.boot now
---% kPage(line,:options) == --any cat, dom, package, default package
---% --constructors    Cname\#\E\sig \args   \abb \comments (C is C, D, P, X)
---% ------------------> BRANCH OUT FOR SATURN
---%   true => kPageSaturn(line,options)
---%   parts := dbXParts(line,7,1)
---%   [kind,name,nargs,xflag,sig,args,abbrev,comments] := parts
---%   form := IFCAR options
---%   isFile := null kind
---%   kind := kind or '"package"
---%   RPLACA(parts,kind)
---%   conform         := mkConform(kind,name,args)
---%   conname         := opOf conform
---%   capitalKind     := capitalize kind
---%   signature       := ncParseFromString sig
---%   sourceFileName  := dbSourceFile INTERN name
---%   constrings      :=
---%     KDR form => dbConformGenUnder form
---%     [STRCONC(name,args)]
---%   emString        := ['"{\sf ",:constrings,'"}"]
---%   heading := [capitalKind,'" ",:emString]
---%   if not isExposedConstructor conname then heading := ['"Unexposed ",:heading]
---%   if name=abbrev then abbrev := asyAbbreviation(conname,nargs)
---%   page := htInitPage(heading,nil)
---%   htpSetProperty(page,'isFile,true)
---%   htpSetProperty(page,'parts,parts)
---%   htpSetProperty(page,'heading,heading)
---%   htpSetProperty(page,'kind,kind)
---%   if asharpConstructorName? conname then
---%     htpSetProperty(page,'isAsharpConstructor,true)
---%   htpSetProperty(page,'conform,conform)
---%   htpSetProperty(page,'signature,signature)
---%   kdPageInfo(name,abbrev,nargs,conform,signature,isFile)
---%   htSayStandard  '"\newline"
---%   htBeginMenu(3)
---%   htSayStandard '"\item "
---%   htMakePage [['bcLinks,['"\menuitemstyle{Description}",
---%                 [['text,'"\tab{19}",'"General description"]],'kiPage,nil]]]
---%   satBreak()
---%   htMakePage [['bcLinks,['"\menuitemstyle{Operations}",
---%                 [['text,'"\tab{19}All exported operations"]],'koPage,'"operation"]]]
---%   if not asharpConstructorName? conname then
---%     satBreak()
---%     htMakePage [['bcLinks,['"\menuitemstyle{Attributes}",
---%                 [['text,'"\tab{19}All exported attributes"]],'koPage,'"attribute"]]]
---%   if kind ^= 'category and (pathname := dbHasExamplePage conname) then
---%     satBreak()
---%     htMakePage [['bcLinks,['"\menuitemstyle{Examples}",
---%                 [['text,'"\tab{19}Examples illustrating use"]],'kxPage,pathname]]]
---%   satBreak()
---%   htMakePage [['bcLinks,['"\menuitemstyle{Exports}",
---%     [['text,'"\tab{19}Explicit categories and operations"]],'kePage,nil]]]
---%   satBreak()
---%   htMakePage [['bcLinks,['"\menuitemstyle{Cross Reference}",
---%                 [['text,'"\tab{19}Hierarchy and usage information"]],'kcPage,nil]]]
---%   htEndMenu(3)
---%   if kind ^= 'category and nargs > 0 then addParameterTemplates conform
---%   htShowPage()
---% 
 conform2String u ==
   x := form2String u
   atom x => STRINGIMAGE x

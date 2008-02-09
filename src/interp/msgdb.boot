@@ -77,9 +77,7 @@ above for examples.
 
 --% Message Database Code and Message Utility Functions
 
-SETANDFILEQ($msgDatabase,NIL)
 SETANDFILEQ($cacheMessages,'T)  -- for debugging purposes
-SETANDFILEQ($msgAlist,NIL)
 SETANDFILEQ($msgDatabaseName,NIL)
 SETANDFILEQ($testingErrorPrefix, '"Daly Bug")
 
@@ -616,7 +614,6 @@ spadStartUpMsgs() ==
 --  if not $HiFiAccess then sayKeyedMsg("S2GL0008",NIL)
 --  sayMSG bar
 --  version()
-  $msgAlist := NIL    -- these msgs need not be saved
   sayMSG " "
 
 HELP() == sayKeyedMsg("S2GL0019",NIL)

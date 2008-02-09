@@ -1070,8 +1070,6 @@ compNot([op,arg], pWas, m, e) ==
   coerce(markAny('compNot, pWas, [["NOT",x],$Boolean,ei]),m)
 
 compDefine(form,m,e) ==
-  $tripleCache: local:= nil
-  $tripleHits: local:= 0
   $macroIfTrue: local
   $packagesUsed: local
   ['DEF,.,originalSignature,.,body] := form

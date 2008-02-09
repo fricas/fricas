@@ -123,7 +123,6 @@
 (SETQ |$functionTable| NIL)
 (SETQ |$spaddefs| NIL)
 (SETQ |$InteractiveMode| T)
-(SETQ |$xeditIsConsole|  NIL)
 (SETQ |$echoInputLines|  NIL)       ;; This is in SETVART also
 (SETQ |$pfKeysForBrowse|  NIL)
 (SETQ MARG 0)
@@ -300,10 +299,7 @@
 (SETQ |$systemLastChanged| |$systemCreation|)
 
 (SETQ $LISPLIB NIL)
-(SETQ |$dependeeClosureAlist|       NIL)
-(SETQ |$userModemaps| NIL)
 (SETQ |$forceDatabaseUpdate| NIL)  ;; see "load" function
-(SETQ |$spadSystemDisks|  '(I J K L))
 (SETQ |$functorForm| NIL)
 
 (SETQ |$InitialCommandSynonymAlist| '(
@@ -397,17 +393,6 @@
 
 (SETQ |$constructorDataTable| NIL)
 
-(SETQ |$underDomainAlist| '())
-;;(SETQ |$underDomainAlist| '(
-;;  (|DistributedMultivariatePolynomial| . 2)
-;;  (|MultivariatePolynomial| . 2)
-;;  (|NewDistributedMultivariatePolynomial| . 2)
-;;  (|RectangularMatrix| . 3)
-;;  (|SquareMatrix| . 2)
-;;  (|UnivariatePoly| . 2)
-;;  (|VVectorSpace| . 2)
-;;))
-
 (SETQ |$univariateDomains| '(
     |UnivariatePolynomial|
     |UnivariateTaylorSeries|
@@ -467,8 +452,6 @@
    |Category| |CATEGORY| |RecordCategory| |Join| |EnumerationCategory|
    |StringCategory| |SubsetCategory| |UnionCategory|
       ))
-
-(|SETQ| |$BasicDomains| '(|Integer| |Float| |Symbol| |Boolean| |String|))
 
 (SETQ |$PrintCompilerMessagesIfTrue| NIL)
 (SETQ |$printStorageIfTrue| NIL) ;; storage info disabled in common lisp
@@ -532,6 +515,7 @@
 (SETQ |$EmptyEnvironment| '((NIL)))
 (SETQ |$NETail| (CONS |$EmptyEnvironment| NIL))
 (SETQ |$EmptyMode| '|$EmptyMode|)
+(SETQ |$NoValueMode| '|NoValueMode|)
 (SETQ |$DummyFunctorNames| '(|Mapping|))
 (SETQ |$form| NIL)
 (SETQ |$DoubleQuote| '"\"")
@@ -543,8 +527,6 @@
 (SETQ |$false| NIL)
 (SETQ |$suffix| NIL)
 (SETQ |$BasicPredicates| '(INTEGERP STRINGP FLOATP))
-(SETQ |$coerceIntByMapCounter| 0)
-(SETQ |$reportCoerce| NIL)
 (SETQ |$reportCompilation| NIL)
 (SETQ |$streamCount| 0)
 (SETQ |$cacheCount| 0)

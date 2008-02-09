@@ -32,6 +32,33 @@
 
 )package "BOOT"
 
+ 
+ 
+$compBugPrefix :=      '"Bug!"
+$compErrorPrefix :=    '"Error"
+
+--error message facility
+$nopos   := ['noposition]
+$showKeyNum   :=        NIL
+ 
+-- Miscellaneous nonsense.
+$newcompErrorCount :=           0
+ 
+-- Items from MSG BOOT I
+$preLength := 11
+$LOGLENGTH := $LINELENGTH - 6
+$specificMsgTags := []
+ 
+$imPrTagGuys := ['unimple, 'bug, 'debug, 'say, 'warn]
+$toWhereGuys := ['fileOnly, 'screenOnly ]
+$imPrGuys    := ['imPr]
+$repGuys     := ['noRep, 'rep]
+$attrCats    := ['$imPrGuys, '$toWhereGuys, '$repGuys]
+ 
+ 
+$ncMsgList := nil
+
+
 --%  Messages for the USERS of the compiler.
 -- The program being compiled has a minor error.
 -- Give a message and continue processing.
@@ -106,27 +133,13 @@ getMsgInfoFromKey msg ==
     $msgDatabaseName : local := []
     msgText :=
         msgKey := getMsgKey? msg =>   --temp  oldmsgs use key tostoretext
-           dbL := [$erLocMsgDatabaseName,$erGlbMsgDatabaseName]
-           getErFromDbL (msgKey,dbL)
+           getKeyedMsg msgKey
         getMsgKey msg                  --temp oldmsgs
     msgText := segmentKeyedMsg  msgText
     [msgText,attributes] := removeAttributes msgText
     msgText := substituteSegmentedMsg(msgText, getMsgArgL msg)
     [msgText,attributes]
  
- 
-getErFromDbL (erMsgKey,dbL) ==
-    erMsg := NIL
-    while null erMsg   repeat
-        dbName := CAR dbL
-        dbL    := CDR dbL
-        $msgDatabaseName      := dbName
-        lastName := null dbL
---        fileFound := '"co_-eng.msgs"
-        fileFound := '"s2_-us.msgs"
-        if fileFound or lastName then
-            erMsg := fetchKeyedMsg(erMsgKey,not lastName)
-    erMsg
  
 -----------------------
 --%character position marking

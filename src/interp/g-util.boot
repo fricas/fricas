@@ -422,6 +422,8 @@ getProplist(x,E) ==
 -- Above line commented out JHD/BMT 2.Aug.90
 
 search(x,e is [curEnv,:tailEnv]) ==
+  tailEnv =>
+    BREAK()
   searchCurrentEnv(x,curEnv) or searchTailEnv(x,tailEnv)
 
 searchCurrentEnv(x,currentEnv) ==

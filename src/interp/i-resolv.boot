@@ -747,7 +747,6 @@ equiType(t) ==
 
 getUnderModeOf d ==
   not PAIRP d => NIL
---  n := LASSOC(first d,$underDomainAlist) => d.n ----> $underDomainAlist NOW always NIL
   for a in rest d for m in rest destructT d repeat
     if m then return a
 

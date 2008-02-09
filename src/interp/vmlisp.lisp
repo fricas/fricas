@@ -45,9 +45,6 @@
 
 (in-package "VMLISP")
 
-#-:common-lisp 
- (setq *features* (adjoin :common-lisp *features*))
-
 ;; DEFVARS
 
 (defvar *comp370-apply* nil "function (name def) for comp370 to apply")
@@ -529,9 +526,6 @@
 #-:CCL
 (defmacro sub1 (x)
  `(1- ,x))
-
-(defmacro throw-protect (exp1 exp2)
- `(unwind-protect ,exp1 ,exp2))
 
 #-:CCL
 (defmacro times (&rest args)

@@ -59,21 +59,6 @@ bcGen command ==
   htMakeDoitButton('"Do It", command)
   htShowPage()
 
--- bcGen for axiom - nag link
-linkGen command ==
-  htInitPage('"AXIOM-Nag Link Command",nil)
-  string := 
-    #command < 50 => STRCONC('"{\centerline{ ",command,'" }}")
-    command
-  htMakePage [
-     '(text 
-        "\centerline{{\em Here is the FriCAS command}}"
-          "\centerline{{\em you could have issued to compute this result:}}"
-            "\vspace{2}\newline "),
-      ['text,:string]]
-  htMakeDoitButton('"Do It", command)
-  htShowPage()
-
 bcOptional s ==
   s = '"" => '"2"
   s

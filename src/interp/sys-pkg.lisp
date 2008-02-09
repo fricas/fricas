@@ -62,226 +62,14 @@
 
 (import
     '(VMLISP::NE VMLISP::FLUID
-         FRICAS-LISP:SEQUENCE VMLISP::OBEY VMLISP::|union|
-         VMLISP::OPTIONLIST VMLISP::EXIT VMLISP::throw-protect
+         VMLISP::OBEY VMLISP::|union|
+         VMLISP::OPTIONLIST VMLISP::EXIT
          VMLISP::*INDEX-FILENAME*))
-(export
-    '(BOOT::|$FormalMapVariableList| BOOT::|$userModemaps|
-         boot::restart boot::$IEEE
-         BOOT::|directoryp| BOOT::|makedir| boot::help boot::|version| boot::|pp|
-         BOOT::POP-STACK-4 BOOT::|$BasicDomains| BOOT::|$DomainFrame|
-         BOOT::|$SideEffectFreeFunctionList|
-         BOOT::ATOM2STRING BOOT::|$DoubleQuote| BOOT::|$genSDVar|
-         BOOT::GETCHARN BOOT::DROP
-         BOOT::MATCH-STRING BOOT::|$fromSpadTrace|
-         BOOT::|$UserSynonyms| BOOT::%L BOOT::FLUIDVARS
-         BOOT::/EMBEDREPLY BOOT::|$LocalFrame| BOOT::|$streamIndexing|
-         BOOT::APPLYR BOOT::NEXTINPUTLINE BOOT::$NORMALSTRING
-         BOOT::|$InteractiveTimingStatsIfTrue| BOOT::|$leaveLevelStack|
-         BOOT::|$xyMin| BOOT::|lcm| BOOT::STRINGSUFFIX
-         BOOT::|Category| BOOT::ESCAPE-CHARACTER
-         BOOT::|break| BOOT::$DIRECTORY
-         BOOT::CONVERSATION BOOT::|fillerSpaces|
-         BOOT::$REVERSEVIDEOSTRING BOOT::|$DomainsInScope|
-         BOOT::|$gauss01| BOOT::|$mostRecentOpAlist| BOOT::SUBLISLIS
-         BOOT::QUITFILE BOOT::|PrintBox| BOOT::POP-REDUCTION
-         BOOT::META-SYNTAX-ERROR BOOT::|$constructorInfoTable|
-         BOOT::|$currentLine| BOOT::|$Float| BOOT::|$slamFlag|
-         BOOT::|$SmallIntegerOpt| BOOT::$SPAD BOOT::|$timerOn|
-         BOOT::$TRACELETFLAG VMLISP::NE BOOT::ADJCURMAXINDEX
-         BOOT::STREAM-BUFFER BOOT::SPADSLAM BOOT::$EM
-         BOOT::|$PositiveIntegerOpt| BOOT::THETA BOOT::READ-QUIETLY
-         BOOT::RS BOOT::|$compUniquelyIfTrue|
-         BOOT::|$insideExpressionIfTrue| BOOT::LE BOOT::KAR BOOT::ELEM
-         BOOT::LASTATOM BOOT::IN-STREAM BOOT::$DELAY
-         BOOT::QSEXPT BOOT::|$quadSymbol| BOOT::|$streamAlist|
-         BOOT::|$SymbolOpt| BOOT::TAKE BOOT::CONSOLEINPUTP
-         BOOT::|$hasYield| BOOT::DEBUGMODE BOOT::|$DummyFunctorNames|
-         BOOT::|$PositiveInteger| BOOT::%D VMLISP::FLUID BOOT::TLINE
-         BOOT::|$abbreviationTable| BOOT::|$FontTable|
-         BOOT::|$PatternVariableList| BOOT::|$returnMode| BOOT::NEQUAL
-         BOOT::GE BOOT::|MakeSymbol| BOOT::|$insideWhereIfTrue|
-         BOOT::|$mapSubNameAlist| BOOT::GETCHAR BOOT::|Gaussian|
-         BOOT::IDENTIFIER BOOT::|$LastCxArg| BOOT::|$systemCommands|
-         BOOT::|$true| BOOT::SETANDFILE BOOT::PUSH-REDUCTION
-         BOOT::|$BigFloat| BOOT::|$brightenCommentsFlag|
-         BOOT::|$cacheCount| BOOT::|$exitModeStack| BOOT::|$noEnv|
-         BOOT::|$NonPositiveIntegerOpt| BOOT::PUTGCEXIT
-         BOOT::|$readingFile|
-         BOOT::IS BOOT::KDR BOOT::|$quadSym| BOOT::|$BreakMode|
-         BOOT::$TOKSTACK BOOT::DEFSTREAM BOOT::LOCVARS BOOT::NTH-STACK
-         BOOT::$UNDERLINESTRING BOOT::|$compCount|
-         BOOT::|$lisplibModemapAlist| BOOT::COMP BOOT::LINE
-         BOOT::GETGENSYM BOOT::$FUNNAME BOOT::|$SystemSynonyms|
-         BOOT::|$spadOpList| BOOT::GENERAL BOOT::|$fortranOutputStream|
-         BOOT::META_PREFIX BOOT::|$InteractiveMode| BOOT::|strconc|
-         BOOT::TAILFN BOOT::RPLACW BOOT::|PositiveInteger|
-         BOOT::|$inactiveLisplibs| BOOT::|$NonPositiveInteger|
-         BOOT::|$reportCoerceIfTrue|
-         BOOT::|sayBrightlyNT| BOOT::NEXT-CHAR boot::|sayString|
-         BOOT::META_ERRORS_OCCURRED BOOT::|$resolveFlag|
-         BOOT::|$StringOpt| BOOT::|UnivariatePoly| BOOT::MATCH-TOKEN
-         BOOT::|$createUpdateFiles| BOOT::|$noParseCommands|
-         BOOT::FLAGP BOOT::ECHO-META BOOT::|initializeSetVariables|
-         BOOT::|$CategoryNames| BOOT::?ORDER
-         BOOT::$FILELINENUMBER BOOT::|$timerTicksPerSecond|
-         BOOT::|bootUnionPrint| BOOT::|$consistencyCheck|
-         BOOT::|$oldTime| BOOT::$NEWSPAD BOOT::NUMOFNODES
-         BOOT::|$ResMode| BOOT::S* BOOT::TRANSPGVAR BOOT::$BOXSTRING
-         BOOT::|$BasicPredicates| BOOT::|$eltIfNil| BOOT::$FUNNAME_TAIL
-         BOOT::|$QuickCode| BOOT::GENVAR BOOT::|$TypeEqui|
-         BOOT::TOKEN-TYPE BOOT::|updateSourceFiles| BOOT::|$BFtag|
-         BOOT::|$reportBottomUpFlag| BOOT::|$SmallInteger|
-         BOOT::|$TypeEQ| BOOT::|Boolean| BOOT::|RationalNumber|
-         BOOT::MAKENEWOP BOOT::|$EmptyList| BOOT::|$leaveMode|
-         BOOT::MKQ BOOT::ON BOOT::CONTAINED BOOT::|conOutStream|
-         BOOT::POINTW BOOT::REDUCTION-POP-ELT BOOT::TOKEN-SYMBOL
-         BOOT::ERRCOL BOOT::|$domainTraceNameAssoc| BOOT::SUBSTEQ
-         BOOT::DELASSOS BOOT::|Size| BOOT::|$form|
-         BOOT::|$insideCategoryIfTrue| BOOT::SUCHTHAT BOOT::|One|
-         BOOT::ACTION BOOT::MDEFTRACE BOOT::|$BooleanOpt|
-         BOOT::|$xyStack| BOOT::ASSOCLEFT BOOT::|sayALGEBRA|
-         BOOT::|Coord| BOOT::IDENTIFIER-TOKEN BOOT::ADVANCE-CHAR
-         BOOT::|$InitialDomainsInScope| BOOT::|$StringCategory|
-         BOOT::S- BOOT::NEWLINE BOOT::|$optimizableDomainNames|
-         BOOT::IN BOOT::COLLECTV BOOT::|$Lisp|
-         BOOT::|$lisplibOperationAlist| BOOT::|$reportExitModeStack|
-         BOOT::|$updateCatTableIfTrue| BOOT::NREVERSE0 BOOT::%M
-         BOOT::|sayFORTRAN| BOOT::NEWLINECHR BOOT::|$EmptyMode|
-         BOOT::|$Zero| BOOT::CARCDREXPAND BOOT::|IS_#GENVAR|
-         BOOT::LISTOFATOMS BOOT::|$algebraOutputStream|
-         BOOT::|$highlightAllowed| BOOT::|NonNegativeInteger|
-         BOOT::/EMBED-1
-         BOOT::|$constructorsNotInDatabase| BOOT::|$ConstructorNames|
-         BOOT::|$Integer| BOOT::|$systemModemapsInCore| BOOT::KADDR
-         BOOT::STAR BOOT::|$reportCompilation|
-         BOOT::|$traceNoisely| BOOT::SPADDIFFERENCE BOOT::%B
-         BOOT::COMMENT-CHARACTER BOOT::|$PrettyPrint| BOOT::SPADLET
-         BOOT::|$ModemapFrame| BOOT::|$QuickLet| BOOT::SPADDO
-         BOOT::PREDECESSOR BOOT::*EOF* BOOT::POP-STACK-1 BOOT::BANG
-         BOOT::|$ConstructorCache| BOOT::|$printConStats|
-         BOOT::|$RationalNumberOpt| BOOT::RESET
-         BOOT::NLIST BOOT::NSTRCONC BOOT::TAIL BOOT::GETRULEFUNLISTS
-         BOOT::|$IntegerOpt| BOOT::$NEWLINSTACK BOOT::|$QuietIfNil|
-         BOOT::$SPAD_ERRORS BOOT::|$useDCQnotLET| BOOT::|$xCount|
-         BOOT::$BOOT BOOT::POINT BOOT::OPTIONAL BOOT::PARSE-IDENTIFIER
-         BOOT::BSTRING-TOKEN BOOT::LASTELEM BOOT::STREAM-EOF
-         BOOT::|sayBrightly| BOOT::|$formulaOutputStream|
-         BOOT::|BigFloat| BOOT::SLAM BOOT::$DISPLAY
-         BOOT::|$NonMentionableDomainNames| BOOT::$OLDLINE BOOT::$TYPE
-         BOOT::STATUS BOOT::KEYFN BOOT::|$NonNegativeIntegerOpt|
-         BOOT::|$userConstructors| BOOT::BOOT-NEQUAL BOOT::RPLAC
-         BOOT::GETTAIL BOOT::|QuotientField| BOOT::CURRENT-TOKEN
-         BOOT::|$suffix| BOOT::|$VariableCount| BOOT::COMPARE
-         FRICAS-LISP:SEQUENCE BOOT::|$Exit| BOOT::BOOT-EQUAL BOOT::LT
-         VMLISP::OBEY BOOT::TYPE-CONTENTS-OF-FILE BOOT::|UnSizedBox| BOOT::|Integer| BOOT::|Nud|
-         BOOT::IOCLEAR BOOT::|$BigFloatOpt| BOOT::|$EmptyEnvironment|
-         BOOT::|$forceDatabaseUpdate| BOOT::$LINESTACK BOOT::ULCASEFG
-         BOOT::|$Boolean| BOOT::|$clamList| BOOT::COLLECT
-         BOOT::IOSTREAMS-SET BOOT::MUST BOOT::|$FloatOpt|
-         BOOT::|$NonNegativeInteger|
-         BOOT::FLAG BOOT::TL BOOT::BLANKS BOOT::|$report3|
-         BOOT::|$reportFlag| BOOT::|$xeditIsConsole| BOOT::PAIR
-         BOOT::|$evalDomain| BOOT::|$traceletFunctions| BOOT::|$Void|
-         BOOT::GT BOOT::MATCH-ADVANCE-STRING
-         BOOT::|$scanModeFlag| BOOT::SUBLISNQ BOOT::LASSQ BOOT::NOTE
-         BOOT::ILAM BOOT::CURRENT-SYMBOL
-         BOOT::|$SetFunctions| BOOT::|$sourceFileTypes| BOOT::|String|
-         BOOT::NUMBER-TOKEN BOOT::$LINENUMBER BOOT::$NUM_OF_META_ERRORS
-         BOOT::|$Polvar| BOOT::|$domainsWithUnderDomains|
-         BOOT::SPADCALL BOOT::DELASC BOOT::FAIL BOOT::$COMPILE
-         BOOT::|$lastUntraced| BOOT::|$lisplibKind|
-         BOOT::|$tracedModemap| BOOT::|$inputPromptType| BOOT::LASSOC
-         FRICAS-LISP:NUMBER BOOT::|$prefix| BOOT::|$TranslateOnly| BOOT::SAY
-         BOOT::|$CategoryFrame| BOOT::|$croakIfTrue| BOOT::|$exitMode|
-         BOOT::|$lisplibDependentCategories| BOOT::|$NoValue|
-         BOOT::MOAN BOOT::POP-STACK-2 BOOT::BAC
-         BOOT::|$InitialModemapFrame| BOOT::$MAXLINENUMBER
-         BOOT::$ESCAPESTRING BOOT::|$bootStrapMode|
-         BOOT::|$compileMapFlag| BOOT::|$currentFunction|
-         BOOT::|$DomainNames| BOOT::|$PolyMode| BOOT::|$tripleCache|
-         BOOT::SUCHTHATCLAUSE BOOT::WHILE BOOT::S+ BOOT::|Expression|
-         BOOT::PARSE-NUMBER BOOT::|$Index| BOOT::$NBOOT
-         BOOT::|$PrintCompilerMessagesIfTrue| BOOT::$PROMPT
-         BOOT::MAKE-PARSE-FUNCTION BOOT::/METAOPTION BOOT::|$topOp|
-         BOOT::|$xyInitial| BOOT::MKPF BOOT::STRM
-         BOOT::MATCH-NEXT-TOKEN BOOT::|pathname| BOOT::|$cacheAlist|
-         BOOT::$FUNCTION BOOT::|$reportSpadTrace|
-         BOOT::|$tempCategoryTable| BOOT::|$underDomainAlist|
-         BOOT::|$whereList| BOOT::|append| BOOT::|function|
-         BOOT::CURINPUTLINE BOOT::|sayFORMULA|
-         BOOT::/GENVARLST BOOT::|$Category| BOOT::|$SpecialDomainNames|
-         VMLISP::|union| BOOT::ASSOCRIGHT BOOT::CURSTRMLINE
-         BOOT::REDUCTION BOOT::|$lisplibDomainDependents|
-         BOOT::|OptionList| BOOT::|$postStack| BOOT::|$traceDomains|
-         BOOT::BRIGHTPRINT BOOT::|$instantRecord|
-         BOOT::|$NETail| BOOT::UNTIL BOOT::GET-TOKEN
-         BOOT::|$Expression| BOOT::$LASTPREFIX BOOT::|$mathTraceList|
-         BOOT::|$PrintOnly| BOOT::ELEMN BOOT::NILADIC
-         BOOT::PARSE-BSTRING BOOT::/DEPTH BOOT::|$spadLibFT|
-         BOOT::|$xyMax| BOOT::|$IOindex| BOOT::SPADCONST
-         BOOT::|sayBrightlyI| BOOT::|SquareMatrix|
-         BOOT::LASTTAIL
-         BOOT::|UnboundBox| BOOT::NEXT-TOKEN
-         BOOT::|$OutsideStringIfTrue| BOOT::|$String| BOOT::TRIMLZ
-         BOOT::KADR BOOT::STRMBLANKLINE BOOT::STRMSKIPTOBLANK
-         BOOT::IOSTAT BOOT::|$insideCoerceInteractiveHardIfTrue|
-         BOOT::|$lisplibSignatureAlist| BOOT::REMFLAG BOOT::SPADREDUCE
-         BOOT::QLASSQ BOOT::NEXTSTRMLINE BOOT::|FontTable| BOOT::|Led|
-         BOOT::UNGET-TOKENS BOOT::|$operationNameList|
-         BOOT::|$tokenCommands| BOOT::IS_GENVAR BOOT::INIT-RULES
-         BOOT::|PrintItem| BOOT::$LISPLIB BOOT::|$optionAlist|
-         BOOT::|$previousTime| BOOT::|$StreamIndex|
-         BOOT::|$systemLisplibsWithModemapsInCore|
-         BOOT::|$tracedSpadModemap| BOOT::ISTEP BOOT::|$warningStack|
-         BOOT::|and| BOOT::OUT-STREAM BOOT::TOKEN
-         BOOT::|$ConstructorDependencyAlist|
-         BOOT::|$lisplibVariableAlist| BOOT::INTERNL BOOT::IEQUAL
-         BOOT::|$algebraList| BOOT::|$brightenCommentsIfTrue|
-         BOOT::|$failure| BOOT::|$Mode| BOOT::|$opFilter|
-         BOOT::|$TraceFlag| BOOT::|Float| BOOT::POP-STACK-3
-         BOOT::|$EmptyString| BOOT::$TOP_STACK BOOT::|$mpolyTTrules|
-         BOOT::|$mpolyTMrules| BOOT::|$InteractiveFrame|
-         BOOT::|$InteractiveModemapFrame| BOOT::|$letAssoc|
-         BOOT::|$lisp2lispRenameAssoc| BOOT::|$RationalNumber|
-         BOOT::|$ThrowAwayMode| BOOT::*PROMPT* BOOT::NUMOFARGS
-         BOOT::|$semanticErrorStack| BOOT::|$spadSystemDisks|
-         BOOT::$TOP_LEVEL BOOT::BUMPCOMPERRORCOUNT
-         BOOT::|delete| BOOT::STREQ BOOT::STRING-TOKEN BOOT::XNAME
-         BOOT::|$ExpressionOpt| BOOT::|$systemCreation| BOOT::$GENNO
-         BOOT::CROAK BOOT::PARSE-STRING BOOT::|$genFVar|
-         BOOT::|$lisplibModemap| BOOT::|$NoValueMode| BOOT::|$PrintBox|
-         BOOT::ADVANCE-TOKEN BOOT::|$NegativeIntegerOpt|
-         BOOT::|$polyDefaultAssoc| BOOT::|$PrimitiveDomainNames|
-         FRICAS-LISP:STEP BOOT::|rassoc| BOOT::|$Res|
-         BOOT::MATCH-CURRENT-TOKEN BOOT::/GENSYMLIST BOOT::|$false|
-         BOOT::|$ignoreCommentsIfTrue| BOOT::|$ModeVariableList|
-         BOOT::|$useBFasDefault| BOOT::|$CommonDomains|
-         BOOT::|$printLoadMsgs| BOOT::|dataCoerce| BOOT::|$inLispVM|
-         BOOT::|$streamCount|
-         BOOT::|$Symbol| BOOT::|$updateIfTrue| BOOT::REMDUP
-         BOOT::ADDASSOC BOOT::|PrintList|
-         BOOT::SPECIAL-CHAR BOOT::XCAPE BOOT::|$EmptyVector|
-         BOOT::REPEAT BOOT::|$NegativeInteger|
-         BOOT::LENGTHENVEC BOOT::CURMAXINDEX BOOT::|$hasCategoryTable|
-         BOOT::|$leftPren| BOOT::|$lisplibForm| BOOT::|$OneCoef|
-         BOOT::|$reportCoerce| VMLISP::OPTIONLIST BOOT::META
-         BOOT::|$insideCapsuleFunctionIfTrue|
-         BOOT::|$insideConstructIfTrue| BOOT::$BOLDSTRING
-         BOOT::|breaklet| BOOT::|$insideCompTypeOf|
-         BOOT::|$rightPren|
-         BOOT::|$systemLastChanged| BOOT::|$xyCurrent| BOOT::|Zero|
-         BOOT::YIELD BOOT::|Polynomial| BOOT::|$Domain| BOOT::STRINGPAD
-         BOOT::TRUNCLIST BOOT::|SmallInteger| BOOT::|$libFile|
-         BOOT::|$mathTrace| BOOT::|$PolyDomains| BOOT::|or|
-         BOOT::|$DomainVariableList| BOOT::|$insideFunctorIfTrue|
-         BOOT::|$One| VMLISP::EXIT BOOT::CURRENT-CHAR BOOT::NBLNK
-         BOOT::$DALYMODE))
 
 ;;; Definitions for package VMLISP of type EXPORT
 (in-package "VMLISP")
 (import '(
-          BOOT:|directoryp| BOOT:|makedir|))
+          BOOT::|directoryp| BOOT::|makedir|))
 
 (export
     '(VMLISP::SINTP VMLISP::$FCOPY 
@@ -406,163 +194,20 @@
 (shadow '(BOOT::MAP))
 (import
     '(VMLISP::NE VMLISP::FLUID
-         VMLISP::OBEY BOOT::TYPE-CONTENTS-OF-FILE VMLISP::|union|
+         VMLISP::OBEY VMLISP::|union|
          VMLISP::OPTIONLIST VMLISP::EXIT VMLISP::LEXGREATERP))
 (import '(vmlisp::make-input-filename))
 (import '(vmlisp::libstream-dirname))
 (import '(vmlisp::eqcar))
-(export '(boot::eqcar))
 
 ;;; Definitions for package VMLISP of type SHADOW
 
 (in-package "BOOT") ;; Used to be "UNCOMMON"
 
-(export '(
-        ;; !! ;;; Passed on from the Lisp package
-        ;; !! + * -
-
-        ;;;; Operating system interface
-        |OsRunProgram| |OsRunProgramToStream| |OsProcessNumber|
-        |OsEnvGet|     |OsEnvVarCharacter|    |OsExpandString|
-
-        ;;;; Time
-        |TimeStampString|
-
-        ;;;; Lisp Interface
-        |LispKeyword|
-        |LispReadFromString| |LispEval|
-        |LispCompile| |LispCompileFile| |LispCompileFileQuietlyToObject|
-        |LispLoadFile| |LispLoadFileQuietly|
-
-        ;;; Control
-        |funcall| |Catch| |Throw| |UnwindProtect| |CatchAsCan|
-
-        ;;; General
-        |Eq| |Nil| |DeepCopy| |Sort| |SortInPlace|
-
-        |genRemoveDuplicates| |genMember|
-        |gobSharedExcluding| |gobSharedParts| |gobAlwaysShared?|
-        |gobPretty| |gobSexpr|
-
-        ;;; Streams
-        |Prompt| |PlainError| |PrettyPrint| |PlainPrint| |PlainPrintOn|
-        |WithOpenStream|
-        |WriteLispExpr| |WriteByte| |WriteChar| |WriteLine| |WriteString|
-        |ReadLispExpr| |ReadByte| |ReadChar| |ReadLine|
-        |ByteFileWriteLine| |ByteFileReadLine|
-        |ReadLineIntoString| |ByteFileReadLineIntoString| |ReadBytesIntoVector|
-        |StreamCopyChars| |StreamCopyBytes|
-        |InputStream?| |OutputStream?|
-        |StreamSize| |StreamGetPosition| |StreamSetPosition|
-        |StreamEnd?| |StreamFlush| |StreamClose|
-
-        |FileLine| |StreamLine|
-
-        ;;; Pathnames
-        |TempFileDirectory| |LispFileType| |FaslFileType|
-        |ToPathname| |Pathname| |NewPathname| |SessionPathname|
-        |PathnameDirectory| |PathnameName| |PathnameType|
-        |PathnameString| |PathnameAbsolute?|
-        |PathnameWithType| |PathnameWithDirectory|
-        |PathnameWithoutType| |PathnameWithoutDirectory|
-
-        |PathnameToUsualCase| |PathnameWithinDirectory|
-        |PathnameDirectoryOfDirectoryPathname| |PathnameWithinOsEnvVar|
-
-        ;;; Symbols
-        |MakeSymbol| |Symbol?| |SymbolString|
-
-        ;;; Bits
-        |Bit| |Bit?| |TrueBit| |FalseBit| |BitOn?| |BitOr|
-
-        ;;; General Sequences
-        ;; !! ;;; Passed on from the Lisp package
-        ;; !! ELT SETELT
-        ;; SIZE
-
-        ;;; Vectors
-        |FullVector| |Vector?|
-
-        ;;; Bit Vectors
-        |FullBvec|
-
-        ;;; Characters
-        |char| |Char| |Char?|
-        |CharCode| |CharGreater?| |CharDigit?|
-        |SpaceChar| |NewlineChar|
-
-        ;;; Character Sets
-        |Cset| |CsetMember?|
-        |CsetUnion| |CsetComplement| |CsetString|
-        |NumericCset| |LowerCaseCset| |UpperCaseCset| |WhiteSpaceCset|
-        |AlphaCset| |AlphaNumericCset|
-
-        ;;; Character Strings
-        |FullString| |ToString| |StringImage| |String?|
-        |StringGetCode| |StringConcat|
-        |StringLength| |StringFromTo| |StringFromToEnd| |StringFromLong|
-        |StringGreater?| |StringPrefix?| |StringUpperCase| |StringLowerCase|
-        |StringToInteger|  |StringToFloat|
-        |StringWords|      |StringTrim|
-        |StringPositionOf| |StringPositionOfNot|
-        |UnescapeString|   |ExpandVariablesInString|
-
-        ;;; Numbers
-        |Number?| |Integer?| |SmallInteger?| |Float?| |DoublePrecision|
-        |Odd?| |Remainder|
-        |Abs| |Min| |Max|
-        |Exp| |Ln| |Log10|
-        |Sin| |Cos| |Tan| |Cotan| |Arctan|
-
-        ;;; Pairs
-        |Pair?|
-
-        |car|       |cdr|
-        |caar|      |cadr|      |cdar|      |cddr|
-        |caaar|     |caadr|     |cadar|     |caddr|
-        |cdaar|     |cdadr|     |cddar|     |cdddr|
-        |FastCar|   |FastCdr|
-        |FastCaar|  |FastCadr|  |FastCdar|  |FastCddr|
-        |FastCaaar| |FastCaadr| |FastCadar| |FastCaddr|
-        |FastCdaar| |FastCdadr| |FastCddar| |FastCdddr|
-        |IfCar|     |IfCdr|
-        |EqCar|     |EqCdr|
-
-        ;;; Lists
-        |length1?| |second|
-
-        |ListIsLength?| |ListMemberQ?| |ListMember?|
-        |ListRemoveQ| |ListNRemoveQ| |ListRemoveDuplicatesQ| |ListNReverse|
-        |ListUnion| |ListUnionQ| |ListIntersection| |ListIntersectionQ|
-        |ListAdjoin| |ListAdjoinQ|
-
-        ;;; Association lists
-        |AlistAssoc| |AlistRemove|
-        |AlistAssocQ| |AlistRemoveQ| |AlistAdjoinQ| |AlistUnionQ|
-
-        ;;; Tables
-        |Table?|
-        |TableCount| |TableGet| |TableSet| |TableUnset| |TableKeys|
-))
-
 (in-package "BOOT")
-(export '(boot::ncloop boot::ncrecover))
 (import '(
    vmlisp::make-input-filename
    vmlisp::is-console
-   ;; boot::|openServer|
-   ;; boot::|sockGetInt|
-   ;; boot::|sockSendInt|
-   ;; boot::|sockGetInts|
-   ;; boot::|sockSendInts|
-   ;; boot::|sockGetString|
-   ;; boot::|sockSendString|
-   ;; boot::|sockGetFloat|
-   ;; boot::|sockSendFloat|
-   ;; boot::|sockGetFloats|
-   ;; boot::|sockSendFloats|
-   ;; boot::|sockSendWakeup|
-   ;; boot::|sockSendSignal|
    vmlisp::qsdifference
    vmlisp::qsminusp
    vmlisp::qsplus
@@ -653,7 +298,6 @@
    vmlisp::strpos
    vmlisp::strposl
    vmlisp::substring
-   ;; boot::|error|
    vmlisp::ivecp
    vmlisp::rvecp
    vmlisp::dig2fix
@@ -670,7 +314,6 @@
    vmlisp::neq
    vmlisp::hashtable-class
    vmlisp::maxindex
-   ;; boot::remdup
    vmlisp::upcase
    vmlisp::downcase
    vmlisp::vecp
@@ -678,10 +321,6 @@
    vmlisp::defiostream
    vmlisp::shut
    vmlisp::prin2cvec
-   ;; boot::lasttail
-   ;; boot::lastpair
-   ;; boot::lastatom
-   ;; boot::|last|
    vmlisp::ncons
    vmlisp::rplpair
    vmlisp::nump
@@ -702,8 +341,6 @@
    vmlisp::id
    vmlisp::vec-setelt
    vmlisp::make-bvec
-   ;; boot::bvec-make-full
-   ;; boot::bvec-setelt
    vmlisp::|shoeread-line|
    vmlisp::|shoeInputFile|
    vmlisp::|shoeConsole|
@@ -711,14 +348,6 @@
    vmlisp::|idChar?|
    vmlisp::|npPC|
    vmlisp::|npPP|
-   ;; boot::mkprompt
-   ;; boot::|fillerSpaces|
-   ;; boot::|sayString|
-   ;; boot::help
-   ;; boot::|version|
-   ;; boot::|pp|
-   ;; boot::$dalymode
-   ;; boot::$IEEE
 ))
 
 (in-package "FOAM")

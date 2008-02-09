@@ -303,8 +303,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|NegativeInteger| . (|<| * 0))
   ))
 
-(FLAG '(|Union| |Record| |Enumration| |Mapping| |Enumeration|) 'FUNCTOR)
-
 (FLAG '(* + AND OR PROGN) 'NARY)
 
 (REPEAT (IN X '(

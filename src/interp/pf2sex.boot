@@ -33,7 +33,6 @@
 )package "BOOT"
 
 $dotdot := INTERN('"..", '"BOOT")
-$specificMsgTags := nil
 
 -- Pftree to s-expression translation.  Used to interface the new parser
 -- technology to the interpreter.  The input is a parseTree and the
