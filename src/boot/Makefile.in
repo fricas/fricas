@@ -40,8 +40,8 @@ all: all-ax
 
 stage2_boot_objects = $(addprefix stage2/, $(boot_objects))
 
-all-ax: stage2/stamp_bootsys
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(stage2_boot_objects)" $(axiom_build_bindir)/bootsys$(EXEEXT)
+all-ax: stage1/stamp_bootsys
+	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" $(axiom_build_bindir)/bootsys$(EXEEXT)
 
 .PRECIOUS: stage0/%.clisp
 .PRECIOUS: stage0/%.$(LISPOBJEXT)
@@ -58,6 +58,7 @@ stage0/stamp_bootsys:
 	rm -f $(stage0_boot_clisp)
 	$(MAKE) $(AX_FLAGS) OBJECTS="$(stage0_boot_objects)" stage0/bootsys$(EXEEXT)
 	$(LN_S) stage0 prev-stage
+	touch $@
 
 $(stage0_boot_objects): $(AXIOM_LOCAL_LISP)
 
@@ -78,17 +79,7 @@ stage1/stamp_bootsys: stage0/stamp_bootsys
 	-mv $(boot_data) $(boot_fn) stage1
 	-rm -rf prev-stage
 	$(LN_S) stage1 prev-stage
-
-stage2/stamp_bootsys: stage1/stamp_bootsys
-	@echo Building stage 2
-	[ -d stage2 ] || $(mkinstalldirs) stage2
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" stage2/bootsys$(EXEEXT)
-	-rm -rf prev-stage
-	-rm -f $(addprefix stage2/, $(boot_objects))
-	-rm -f $(addprefix stage2/, $(boot_clisp))
-	mv $(boot_objects) stage2
-	mv $(boot_clisp) stage2
-	-mv $(boot_data) $(boot_fn) stage2
+	touch $@
 
 ifeq ($(lisp_flavor),gcl)
 
