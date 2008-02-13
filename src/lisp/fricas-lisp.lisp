@@ -139,10 +139,10 @@
         (c:build-program core-image
              :lisp-files (append *fricas-initial-lisp-objects* lisp-files)
              :ld-flags *fricas-extra-c-files*
-	     :epilogue-code *fricas-initial-lisp-forms*)
-	(c:build-program core-image
-	     :lisp-files (append *fricas-initial-lisp-objects* lisp-files)
-	     :ld-flags *fricas-extra-c-files*))
+             :epilogue-code *fricas-initial-lisp-forms*)
+        (c:build-program core-image
+             :lisp-files (append *fricas-initial-lisp-objects* lisp-files)
+             :ld-flags *fricas-extra-c-files*))
     (quit))
 
 
