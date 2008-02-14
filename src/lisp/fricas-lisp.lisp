@@ -23,7 +23,9 @@
     ;;; file, which is insane.  Below we disable this behaviour.
     (setf custom:*load-paths* '(#P"./"))
     ;;; We want ANSI compliance
-    (setf custom:*ansi* t))
+    (setf custom:*ansi* t)
+    ;;; We have our own loading messages
+    (setf *LOAD-VERBOSE* nil))
 
 ;; Save current image on disk as executable and quit.
 (defun save-core-restart (core-image restart)
