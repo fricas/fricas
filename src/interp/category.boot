@@ -53,7 +53,48 @@ CategoryPrint(D,$e) ==
     null u => SAY "another domain"
     atom first u => SAY("Alternate View corresponding to: ",u)
     PRETTYPRINT u
- 
+
+-- Compute list of parameters which occur in singntures on the
+-- sigList, remowing duplicates, and skipping "known"
+-- constuctors
+sigParams(sigList) ==
+  result := nil
+  myhash := MAKE_-HASHTABLE 'EQUAL
+  NewLocals:= nil
+  for s in sigList repeat
+    (NewLocals := Prepare (CADAR s, NewLocals)) where
+      Prepare (u, l) == for v in u repeat l := Prepare2(v, l)
+      Prepare2 (v,l) ==
+          v is "$" => l
+          STRINGP v => l
+          atom v => [v,:l]
+          MEMQ(first v,$PrimitiveDomainNames) => l
+            --This variable is set in INIT LISP
+            --It is a list of all the domains that we need not cache
+          v is ["Union",:w] =>
+            for x in stripUnionTags w repeat l := Prepare2 (x, l)
+            l
+          v is ["Mapping",:w] =>
+            for x in w repeat l := Prepare2 (x, l)
+            l
+          v is ["List",w] => Prepare2 (w, l)
+          v is ["Record",.,:w] =>
+            for x in w repeat l := Prepare2 (CADDR x, l)
+            l 
+          [v,:l]
+  for s in NewLocals repeat
+     if null(HGET(myhash, s)) then
+        HPUT(myhash, s, true)
+        result := [s,:result]
+  result
+
+-- create a new category vector
+-- Arguments:
+--   domainOrPackage      - "domain" or "package" (marks kind of category
+--                           object)
+--   sigList              - list of all signatures
+--   attList              - list of all attributes
+--   PrincipalAncestor    - principal ancestor (if any) 
 mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
   NSigList:= nil
   if PrincipalAncestor=nil then count:= 6 else count:= SIZE PrincipalAncestor
@@ -68,23 +109,7 @@ mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
          count:= count+1
          nsig
      else s for s in sigList]
-  NewLocals:= nil
-  for s in sigList repeat
-    ((NewLocals:= union(NewLocals,Prepare CADAR s)) where
-      Prepare u == "union"/[Prepare2 v for v in u]) where
-        Prepare2 v ==
-          v is "$" => nil
-          STRINGP v => nil
-          atom v => [v]
-          MEMQ(first v,$PrimitiveDomainNames) => nil
-            --This variable is set in INIT LISP
-            --It is a list of all the domains that we need not cache
-          v is ["Union",:w] =>
-            "union"/[Prepare2 x for x in stripUnionTags w]
-          v is ["Mapping",:w] => "union"/[Prepare2 x for x in w]
-          v is ["List",w] => Prepare2 w
-          v is ["Record",.,:w] => "union"/[Prepare2 CADDR x for x in w]
-          [v]
+  NewLocals := sigParams(sigList)
   OldLocals:= nil
   if PrincipalAncestor then for u in (OldLocals:= CADDR PrincipalAncestor.4)
      repeat NewLocals:= delete(first u,NewLocals)
