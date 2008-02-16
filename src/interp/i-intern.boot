@@ -617,11 +617,20 @@ get0(x,prop,e) ==
 
 get1(x,prop,e) ==
     --this is the old get
+  negHash := nil
   null atom x => get(QCAR x,prop,e)
+  if $envHashTable and (not(EQ($CategoryFrame, e))) and (not(EQ(prop, "modemap"))) then
+    null (HGET($envHashTable, [x, prop])) => return nil
+    negHash := null (HGET($envHashTable, [x, prop]))
   prop="modemap" and $insideCapsuleFunctionIfTrue=true =>
-    LASSOC("modemap",getProplist(x,$CapsuleModemapFrame))
-      or get2(x,prop,e)
-  LASSOC(prop,getProplist(x,e)) or get2(x,prop,e)
+    ress := LASSOC("modemap",getProplist(x,$CapsuleModemapFrame))
+              or get2(x,prop,e)
+    -- SAY ["get1", x, prop, ress and true]
+    ress
+  ress := LASSOC(prop,getProplist(x,e)) or get2(x,prop,e)
+  if ress and negHash then
+    SAY ["get1", x, prop, ress and true]
+  ress
 
 get2(x,prop,e) ==
   prop="modemap" and constructor? x =>

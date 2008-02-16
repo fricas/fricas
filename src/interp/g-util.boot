@@ -459,8 +459,13 @@ semchkProplist(x,proplist,prop,val) ==
   MEMQ(prop,'(mode value)) =>
     LASSOC("isLiteral",proplist) => warnLiteral x
 
+DEFPARAMETER($envHashTable, nil)
+
 addBinding(var,proplist,e is [[curContour,:tailContour],:tailEnv]) ==
   EQ(proplist,getProplist(var,e)) => e
+  if $envHashTable then
+    for u in proplist repeat
+      HPUT($envHashTable, [var, CAR u], true) 
   $InteractiveMode => addBindingInteractive(var,proplist,e)
   if curContour is [[ =var,:.],:.] then curContour:= rest curContour
                  --Previous line should save some space

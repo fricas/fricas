@@ -38,6 +38,10 @@ compTopLevel(x,m,e) ==
   $compTimeSum: local := 0
   $resolveTimeSum: local := 0
   $packagesUsed: local := []
+  $envHashTable: local := MAKE_-HASHTABLE 'EQUAL
+  for u in CAR(CAR(e)) repeat
+    for v in CDR(u) repeat
+      HPUT($envHashTable, [CAR u, CAR v], true)
   -- The next line allows the new compiler to be tested interactively.
   compFun := if $newCompAtTopLevel=true then 'newComp else 'compOrCroak
   x is ["DEF",:.] or x is ["where",["DEF",:.],:.] =>
