@@ -933,7 +933,7 @@ open_server(char *server_name)
 }
 
 int 
-accept_connection(Sock *sock)
+fricas_accept_connection(Sock *sock)
 {
   int client;
   for(client=0; client<MaxClients && clients[client].socket != 0; client++);
@@ -991,7 +991,7 @@ sock_accept_connection(int purpose)
     for(i=0; i<2; i++) {
       if (is_valid_socket(&server[i])
           && FD_ISSET(server[i].socket, &rd)) {
-        p = accept_connection(server+i);
+        p = fricas_accept_connection(server+i);
         if (p == purpose) return 1;
       }
     }
@@ -1059,7 +1059,7 @@ server_switch(void)
       for(i=0; i<2; i++) {
         if (is_valid_socket(&server[i])
             && (FD_ISSET(server[i].socket, &rd)))
-          accept_connection(server+i);
+          fricas_accept_connection(server+i);
       }
     } while (purpose_table[SessionManager] == NULL);
     FD_SET(purpose_table[SessionManager]->socket, &fds_mask);
