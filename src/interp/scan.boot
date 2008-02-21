@@ -42,7 +42,7 @@ scanIgnoreLine(ln,n)==
     then n
     else
        fst:=QENUM(ln,0)
-       if EQ(fst,CLOSEPAREN)
+       if EQ(fst,CLOSEPAREN) and ($sz > 1) and not(EQ(QENUM(ln,1), char " "))
        then if incPrefix?('"command",1,ln)
             then true
             else nil

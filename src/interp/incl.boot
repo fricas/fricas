@@ -69,7 +69,7 @@ incPrefix?(prefix, start, whole) ==
                 good:= prefix.i = whole.j
             good
  
-incCommand?(s) == #s > 0 and s.0 = char ")"
+incCommand?(s) == #s > 1 and s.0 = char ")" and not (s.1 = char " ")
  
 incCommands :=
             ['"say"    , _

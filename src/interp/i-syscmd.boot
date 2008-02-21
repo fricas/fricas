@@ -2062,6 +2062,21 @@ reportCount () ==
   SAY " "
   sayBrightly [:bright " stream",fillerSpaces(29,'".")," ",$streamCount]
 
+--% )nopiles
+
+nopiles l == nopilesSpad2Cmd l
+
+nopilesSpad2Cmd l ==
+    null l => setNopiles ("{")
+    #l > 1 =>
+       SAY "nopiles takes a single argument"
+    #l = 0 => setNopiles ("{")
+    l is [opt] =>
+       opt = 'brace => setNopiles ("{")
+       opt = 'parenthesis => setNopiles ("(")
+       SAY "nopiles only takes 'brace' or 'parenthesis' as an argument"
+
+
 --% )quit
 
 pquit() == pquitSpad2Cmd()
@@ -2899,6 +2914,7 @@ handleNoParseCommands(unab, string) ==
     FUNCALL unab
   member(unab, '( quit     _
                   fin      _
+                  piles    _
                   pquit    _
                   credits  _
                   copyright )) => 

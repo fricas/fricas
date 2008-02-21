@@ -50,8 +50,49 @@ pilePlusComment t== EQ(tokType CAAR t,"comment")
  
 -- insertpile is used by next so s is non-null
 -- bite off a line-tree, return it and the remaining line-list.
+
+countParens(s, opar, cpar) ==
+   ress := 0
+   for stok in dqToList s repeat
+      t := tokPart stok
+      if EQ(CAAR stok,"key") and EQ(t, opar) then
+          ress := ress + 1
+      if EQ(CAAR stok,"key") and EQ(t, cpar) then
+          ress := ress - 1
+   ress
+
+nopile (s, opar, cpar) ==
+   -- SAY("nopile")
+   if npNull s
+   then [false,0,[],s]
+   else
+      [h,t]:=[car s,cdr s]
+      h := car h
+      ress := h
+      balance := countParens(h, opar, cpar)
+      -- SAY("balance = ", balance)
+      while not npNull t and balance > 0 repeat
+         h := car (car t)
+         t := cdr t
+         ress := dqAppend(ress, h)
+         balance := balance + countParens(h, opar, cpar)
+         -- SAY("balance = ", balance)
+      -- SAY("ress=", ress)
+      -- FIXME: we should return a pair [deque, stream], but
+      -- now we return nil instead of a stream
+      cons([[ress]], t)
+
+DEFPARAMETER($nopiles, false)
+
+setNopiles (t) ==
+    $nopiles := t
+
+piles () ==
+    $nopiles := false
  
 insertpile (s)==
+     $nopiles = "{" => nopile (s, "{", "}")
+     $nopiles = "(" => nopile (s, "(", ")")
      if npNull s
      then [false,0,[],s]
      else

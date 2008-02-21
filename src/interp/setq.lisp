@@ -191,6 +191,8 @@
    (|library|                        . |interpreter|)
    (|load|                           . |interpreter|)
    (|ltrace|                         . |interpreter|)
+   (|nopiles|                        . |interpreter|)
+   (|piles|                          . |interpreter|)
    (|pquit|                          . |interpreter|)
    (|quit|                           . |interpreter|)
    (|read|                           . |interpreter|)
@@ -215,6 +217,7 @@
     |credits|
     |fin|
     |lisp|
+    |piles|
     |pquit|
     |quit|
     |suspend|
@@ -239,6 +242,7 @@
     |library|
     |load|
     |ltrace|
+    |nopiles|
     |read|
     |savesystem|
     |set|
