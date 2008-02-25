@@ -149,9 +149,6 @@ pushDownTargetInfo(op,target,arglist) ==
     (op = 'equation) and (target is ['Equation,S]) =>
       for x in arglist repeat
         if not getTarget(x) then putTarget(x,S)
-    (op = 'gauss) and (target is ['Gaussian,S]) =>
-      for x in arglist repeat
-        if not getTarget(x) then putTarget(x,S)
     (op = '_/) =>
       targ :=
         target is ['Fraction,S] => S

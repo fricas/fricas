@@ -333,7 +333,6 @@ interpret1(x,rootMode,posnForm) ==
 interpret2(object,m1,posnForm) ==
   -- this is the late interpretCoerce. I removed the call to
   -- coerceInteractive, so it only does the JENKS cases    ALBI
-  m1=$ThrowAwayMode => object
   x := objVal object
   m := objMode object
   m=$EmptyMode =>

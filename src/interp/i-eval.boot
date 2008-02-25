@@ -172,7 +172,6 @@ evaluateType1 form ==
                 [zt,:zv]:= z1:= getAndEvalConstructorArgument tree
                 (v:= coerceOrRetract(z1,m)) => objValUnwrap v
                 throwKeyedMsgCannotCoerceWithValue(zv,zt,m)
-        if x = $EmptyMode then x := $quadSymbol
         throwEvalTypeMsg("S2IE0006",[makeOrdinal argnum,m,form])
     [op,:NREVERSE typeList]
   throwEvalTypeMsg("S2IE0007",[op])

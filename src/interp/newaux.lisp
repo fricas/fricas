@@ -73,16 +73,12 @@
  
 ; ** TABLE CREATION
  
-(defparameter OpAssoc nil 
-  "Information used by OUT BOOT operator pretty printing routines")
-
 (defun MAKENEWOP (X Y) (MAKEOP X Y))
  
 (defun MAKEOP (X Y)
   (if (OR (NOT (CDR X)) (NUMBERP (SECOND X)))
       (SETQ X (CONS (FIRST X) X)))
   (MAKEPROP (FIRST X) Y X)
-  (SETQ OPASSOC (ADDASSOC Y (CONS (CONS X X) (LASSOC Y OPASSOC)) OPASSOC))
   (SECOND X))
  
 (mapcar #'(LAMBDA(J) (MAKENEWOP J '|Led|))

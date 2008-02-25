@@ -272,7 +272,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
      (CREATE-SBC (INTERNL (STRCONC "status" (STRINGIMAGE X))) )))
 
 (REPEAT (IN X '(
-  |UnivariatePoly| |Matrix| |QuotientField| |Gaussian|
+  |UnivariatePoly| |Matrix| |QuotientField|
   )) (MAKEPROP X '|dataCoerce|
      (CREATE-SBC (INTERNL (STRCONC "coerce" (STRINGIMAGE X))) )))
 

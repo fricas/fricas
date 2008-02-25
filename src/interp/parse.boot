@@ -189,7 +189,6 @@ parsePretend [x,typ] ==
 parseType x ==
   x := MSUBST($EmptyMode,$quadSymbol,x)
   x is ['typeOf,val] => ['typeOf,parseTran val]
-  $oldParserExpandAbbrs => parseTypeEvaluate unabbrevAndLoad x
   x
  
 parseTypeEvaluate form ==
@@ -465,24 +464,5 @@ transCategoryItem x ==
       rhs:= first m
     LIST ['SIGNATURE,op,[rhs,:SUBLIS($transCategoryAssoc,argl)],:extra]
   LIST x
- 
-superSub(name,x) ==
-  for u in x repeat y:= [:y,:u]
-  code:=
-    x is [[u]] => $quadSymbol
-    STRCONC("_(",scriptTranRow first x,scriptTran rest x,"_)")
-  [INTERNL(PNAME name,"$",code),:y]
- 
-scriptTran x ==
-  null x => ""
-  STRCONC(";",scriptTranRow first x,scriptTran rest x)
- 
-scriptTranRow x ==
-  null x => ""
-  STRCONC($quadSymbol,scriptTranRow1 rest x)
- 
-scriptTranRow1 x ==
-  null x => ""
-  STRCONC(",",$quadSymbol,scriptTranRow1 rest x)
  
 parseVCONS l == ["VECTOR",:parseTranList l]

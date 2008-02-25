@@ -65,7 +65,6 @@
 ;; These were originally in SPAD LISP
 
 (SETQ $BOOT NIL)
-(SETQ $NBOOT NIL)
 (setq |$interpOnly| nil)
 (SETQ |$testingSystem| NIL)
 (SETQ |$publicSystem| NIL)
@@ -106,38 +105,20 @@
 
 (SETQ $FUNNAME NIL)   ;; this and next used in COMP,TRAN,1
 (SETQ $FUNNAME_TAIL '(()))
-(SETQ $LASTPREFIX "S:")    ;"default setting"
 (SETQ |$inLispVM| 'T)
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
-(SETQ STAKCOLUMN -1)
-(SETQ ECHOMETA NIL)
-(SETQ |$checkParseIfTrue| 'NIL)
-(SETQ |$oldParserExpandAbbrs| NIL)
-(SETQ $DISPLAY NIL)
-(SETQ |S:SPADKEY| NIL) ;" this is augmented by MAKESPADOP"
 (SETQ $OLDLINE NIL)  ;"used to output command lines"
 (SETQ |/EDIT,FT| 'SPAD)
 (SETQ |/EDIT,FM| 'A)
 (SETQ /EDITFILE NIL)
-(SETQ INITCOLUMN 0)
 (SETQ |$functionTable| NIL)
-(SETQ |$spaddefs| NIL)
 (SETQ |$InteractiveMode| T)
-(SETQ |$echoInputLines|  NIL)       ;; This is in SETVART also
-(SETQ |$pfKeysForBrowse|  NIL)
-(SETQ MARG 0)
-  ;" Margin for testing by ?OP"
-(SETQ LCTRUE '|true|)
-(SETQ |$displayParserOutput| 'T)
 
-(SETQ |$insideReadRulesIfTrue| NIL)
-(SETQ |$useUndo| NIL)
 (SETQ |$ruleSetsInitialized| NIL)
 
-;; tell the system not to use the new parser
-(SETQ |$useNewParser| NIL)
-
-(SETQ |$htPrecedenceTable| NIL)
+;;; The $useNewParser flag controls which parser will be used in the interpreter
+;;; If nil then the old parser is used, otherwise Bill Burge's parser is used
+(SETQ |$useNewParser| T)
 
 (SETQ |$NRTmakeCompactDirect| NIL)
 (SETQ |$returnNowhereFromGoGet| NIL)
@@ -156,11 +137,6 @@
         (|%infinity| . (|infinity|))
         (|%plusInfinity| . (|plusInfinity|))
         (|%minusInfinity| . (|minusInfinity|))))
-
-;; variables controlling companion pages (see copage.boot)
-(SETQ |$HTCompanionWindowID| nil)
-(SETQ |$HTPreviousDomain| nil)
-(SETQ |$HTOperationError| nil)
 
 ;; Common lisp control variables
 ;;(setq *load-verbose* nil)
@@ -254,20 +230,6 @@
     |zsystemdevelopment|
     ))
 
-(SETQ |S:SPADTOK| 'SPADSYSTOK)
-(SETQ APLMODE NIL)
-(SETQ RLGENSYMFG NIL)
-(SETQ RLGENSYMLST NIL)
-(SETQ XTOKENREADER 'SPADTOK)
-(SETQ |$delimiterTokenList|
-  '(| |  |)| |(| |{| |}| |[| |]| ENDOFLINECHR EOI EOL |END_LINE|))
-(SETQ |$generalTokenIfTrue| NIL)
-(SETQ OPASSOC NIL)
-(SETQ SPADSYSKEY '(EOI EOL))
-
-(SETQ $cacheAlist NIL)
-(SETQ $streamAlist NIL)
-
 ;; following 2 variables are referenced by PREPARSE1
 
 (defvar |$byConstructors| () "list of constructors to be compiled")
@@ -296,11 +258,6 @@
 (SETQ |$fortranArrayStartingIndex| 0)
 
 ;; These were originally in INIT LISP
-
-(SETQ |$systemCreation|
-  (STRCONC (SUBSTRING (CURRENTTIME) 0 8) " at "
-           (SUBSTRING (CURRENTTIME) 8 5)))
-(SETQ |$systemLastChanged| |$systemCreation|)
 
 (SETQ $LISPLIB NIL)
 (SETQ |$forceDatabaseUpdate| NIL)  ;; see "load" function
@@ -360,7 +317,6 @@
 
 (SETQ |$spadLibFT| 'LISPLIB)
 
-(SETQ |$existingFiles| (MAKE-HASHTABLE 'UEQUAL))
 (SETQ |$updateCatTableIfTrue| 'T)
 
 (SETQ |$ConstructorCache| (MAKE-HASHTABLE 'ID))
@@ -432,9 +388,6 @@
 (SETQ |$highlightAllowed| 'T)
          ;" used in BRIGHTPRINT and is a )set variable"
 
-(SETQ |$leftPren| "(")    ;;[for use in SAY expressions]
-(SETQ |$rightPren| ")")
-
 (SETQ |$abbreviationTable| NIL)
 
 (SETQ |$ConstructorNames| '(
@@ -447,11 +400,6 @@
       ))
                  ;" Used in isDomainForm, addEmptyCapsuleIfnecessary"
 
-(SETQ |$DomainNames| '(
-   |Integer| |Float| |Symbol| |Boolean| |String| |Expression|
-   |Mapping| |SubDomain| |List| |Union| |Record| |Vector| |Enumeration|
-      ))
-
 (SETQ |$CategoryNames| '(
    |Category| |CATEGORY| |RecordCategory| |Join| |EnumerationCategory|
    |StringCategory| |SubsetCategory| |UnionCategory|
@@ -459,10 +407,7 @@
 
 (SETQ |$PrintCompilerMessagesIfTrue| NIL)
 (SETQ |$printStorageIfTrue| NIL) ;; storage info disabled in common lisp
-(SETQ |$mostRecentOpAlist| NIL)
 (SETQ |$noEnv| NIL)
-(SETQ |$croakIfTrue| NIL) ;" see moan in UT"
-(SETQ |$opFilter| NIL)   ;" used to |/s a function "
 (SETQ |$evalDomain| NIL)
 
 (SETQ |$SideEffectFreeFunctionList| '(
@@ -513,11 +458,9 @@
 (SETQ $TOP_LEVEL T)
 (SETQ $NE (LIST (LIST NIL)))
 (SETQ |$InteractiveFrame| (LIST (LIST NIL)))
-(SETQ |$gauss01| '(|gauss| 0 1))
 (SETQ |$LocalFrame| (LIST (LIST NIL)))
 (SETQ |$DomainsInScope| (LIST NIL))
 (SETQ |$EmptyEnvironment| '((NIL)))
-(SETQ |$NETail| (CONS |$EmptyEnvironment| NIL))
 (SETQ |$EmptyMode| '|$EmptyMode|)
 (SETQ |$NoValueMode| '|NoValueMode|)
 (SETQ |$DummyFunctorNames| '(|Mapping|))
@@ -534,13 +477,9 @@
 (SETQ |$reportCompilation| NIL)
 (SETQ |$streamCount| 0)
 (SETQ |$cacheCount| 0)
-(SETQ |$streamIndexing| NIL)
 (SETQ |$reportExitModeStack| NIL)
 (SETQ |$prefix| NIL)
-(SETQ |$Polvar| '(WRAPPED . ((1 . 1))))
-(SETQ |$OneCoef| '(1 1 . 1))
 (SETQ |$Lisp| '(|Lisp|))
-(SETQ |$ExpressionOpt| '(|Expression| . OPT))
 (SETQ |$formalArgList| ())
 (SETQ |$FormalMapVariableList|
   '(|#1| |#2| |#3| |#4| |#5| |#6| |#7| |#8| |#9| |#10|
@@ -616,28 +555,6 @@
 (MAKEPROP '|One| '|defaultType| |$Integer|)
 (MAKEPROP '|Zero| '|defaultType| |$Integer|)
 
-;; Following were originally in EXPLORE BOOT
-
-(SETQ |$xdatabase|         NIL)
-(SETQ |$CatOfCatDatabase|  NIL)
-(SETQ |$DomOfCatDatabase|  NIL)
-(SETQ |$JoinOfDomDatabase| NIL)
-(SETQ |$JoinOfCatDatabase| NIL)
-(SETQ |$attributeDb|       NIL)
-
-(SETQ |$abbreviateIfTrue|  NIL)
-(SETQ |$deltax|  0)
-(SETQ |$deltay|  0)
-(SETQ |$displayDomains|  'T)
-(SETQ |$displayTowardAncestors|  NIL)
-(SETQ |$focus|  NIL)
-(SETQ |$focusAccessPath|  NIL)
-(SETQ |$minimumSeparation|  3)
-(SETQ |$origMaxColumn|  80)
-(SETQ |$origMaxRow|  20)
-(SETQ |$origMinColumn|  1)
-(SETQ |$origMinRow|  1)
-
 ;; ---- start of initial settings for variables used in test.boot
 
 (SETQ |$testOutputLineFlag| NIL)   ;; referenced by charyTop, prnd
@@ -670,11 +587,6 @@
 (SETQ |$inDefIS|  NIL)
 (SETQ |$letGenVarCounter| 1)
 (SETQ |$isGenVarCounter|  1)
-
-;; Next 2 lines originally from CLAM BOOT
-
-;; this node is used in looking up values
-(SETQ |$hashNode| (LIST NIL))
 
 ;; By default, don't generate info files with old compiler.
 (setq |$profileCompiler| nil)

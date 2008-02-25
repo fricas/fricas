@@ -904,9 +904,7 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 (defun trmeta1 (x)
   (let (y)
   (if (not (fboundp  x))
-      (if (fboundp (setq y (internl $lastprefix (pname x))))
-          (moan (format nil "********* ~S RENAMED AS ~S" x (setq x y)))
-          (croak (format nil  "********* ~S MUST BE GIVEN PREFIX" x))))
+      (croak (format nil  "********* ~S MUST BE GIVEN PREFIX" x)))
   (/embed-1 x
    (sublislis
      (list (pname x) x (gensym))

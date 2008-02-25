@@ -270,17 +270,9 @@ clearCmdSortedCaches() ==
 clearCmdCompletely() ==
   clearCmdAll()
   $localExposureData := COPY_-SEQ $localExposureDataDefault
-  $xdatabase := NIL
-  $CatOfCatDatabase  := NIL
-  $DomOfCatDatabase  := NIL
-  $JoinOfCatDatabase := NIL
-  $JoinOfDomDatabase := NIL
-  $attributeDb := NIL
-  $functionTable := NIL
   sayKeyedMsg("S2IZ0013",NIL)
   clearClams()
   clearConstructorCaches()
-  $existingFiles := MAKE_-HASHTABLE 'UEQUAL
   sayKeyedMsg("S2IZ0014",NIL)
   RECLAIM()
   sayKeyedMsg("S2IZ0015",NIL)

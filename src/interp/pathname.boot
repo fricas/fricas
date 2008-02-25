@@ -63,10 +63,8 @@ deleteFile f == DELETE_-FILE f
  
 isExistingFile f ==
 --  p := pathname f
-  --member(p,$existingFiles) => true
   if MAKE_-INPUT_-FILENAME f
     then
-      --$existingFiles := [p,:$existingFiles]
       true
     else false
  

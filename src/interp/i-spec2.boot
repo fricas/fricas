@@ -996,7 +996,7 @@ evalSEQ(op,args,m) ==
     $genValue => getValue last
     bodyCode := nil
     for x in args repeat
-      (m1 := computedMode x) and (m1 ^= '$ThrowAwayMode) =>
+      (m1 := computedMode x) =>
         (av := getArgValue(x,m1)) ^= voidValue() =>
           bodyCode := [av,:bodyCode]
     code:=

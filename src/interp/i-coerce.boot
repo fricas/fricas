@@ -522,7 +522,7 @@ canCoerceTopMatching(t1,t2,tt1,tt2) ==
   -- for example, if t1 = P[x] D1 and t2 = P[y] D2 and x = y then
   -- canCoerce will only be true if D1 = D2
   not EQ(tt1,tt2) => 'maybe
-  doms := '(Polynomial List Matrix FiniteSet Vector Stream Gaussian)
+  doms := '(Polynomial List Matrix FiniteSet Vector Stream)
   MEMQ(tt1,doms) => canCoerce(CADR t1, CADR t2)
   not (MEMQ(tt1,$univariateDomains) or MEMQ(tt2,$multivariateDomains)) =>
     'maybe
@@ -649,8 +649,6 @@ canCoerceCommute(t1,t2) ==
 -- THIS IS OUT-MODED AND WILL GO AWAY SOON  RSS 2-87
 -- t1 is t2 with the two top level constructors commuted
 -- looks for the existence of a commuting function
-  CAR(t1) in (l := [$QuotientField, 'Gaussian]) and
-    CAR(t2) in l => true
   p:= ASSQ(CAR t1,$CommuteTable)
   p and ASSQ(CAR t2,CDR p) is [.,:['commute,.]]
 
@@ -745,7 +743,7 @@ absolutelyCannotCoerce(t1,t2) ==
   MEMQ(n2,aggs) and (u2 = t1) => true
 
   algs :=  '(
-    SquareMatrix Gaussian RectangularMatrix Quaternion
+    SquareMatrix RectangularMatrix Quaternion
        )
   nonpols := append(aggs,algs)
   num2 and MEMQ(n1,nonpols) => true

@@ -34,7 +34,6 @@
 
 -- The $useNewParser flag controls which parser will be used in the interpreter
 -- If nil then the old parser is used, otherwise Bill Burge's parser is used
-$useNewParser := true
 
 rePackageTran(sex, package) ==
   _*PACKAGE_* : fluid := FIND_-PACKAGE STRING package

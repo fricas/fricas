@@ -70,8 +70,8 @@ There are several special modes used in these functions:
   1) Void is the mode that should be used for all statements
      that do not otherwise return values, such as declarations,
      loops, IF-THEN's without ELSE's, etc..
-  2) $NoValueMode and $ThrowAwayMode used to be used in situations
-     where Void is now used, and are being phased out completely.
+  2) $NoValueMode used to be used in situations
+     where Void is now used, and is being phased out completely.
 )endif
 
 -- Functions which require special handlers (also see end of file)

@@ -216,7 +216,6 @@ SETANDFILEQ($generalTMRules,'( _
 -- Private abbreviation table for resolve rules
 SETANDFILEQ($resolveAbbreviations, '( _
     (P .  Polynomial) _
-    (G .  Gaussian) _
     (L .  List) _
     (M .  Matrix) _
     (EQ . Equation) _
