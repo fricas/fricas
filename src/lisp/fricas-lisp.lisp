@@ -393,35 +393,38 @@
 (fricas-foreign-call |openServer| "open_server" int
         (server_name c-string))
 
-(fricas-foreign-call sock_get_int "sock_get_int" int
+(fricas-foreign-call |sockGetInt| "sock_get_int" int
         (purpose int))
 
-(fricas-foreign-call sock_send_int "sock_send_int" int
+(fricas-foreign-call |sockSendInt| "sock_send_int" int
         (purpose int)
         (val int))
 
 #+:gcl
 (LISP::clines "extern double sock_get_float();")
 
-(fricas-foreign-call sock_get_float "sock_get_float" double
+(fricas-foreign-call |sockGetFloat| "sock_get_float" double
         (purpose int))
 
-(fricas-foreign-call sock_send_float "sock_send_float" int
+(fricas-foreign-call |sockSendFloat| "sock_send_float" int
        (purpose int)
        (num double))
 
-(fricas-foreign-call sock_send_string "sock_send_string" int
-       (purpose int)
-       (str c-string))
+;;; (fricas-foreign-call |sockSendString| "sock_send_string" int
+;;;       (purpose int)
+;;;       (str c-string))
 
 (fricas-foreign-call sock_send_string_len "sock_send_string_len" int
        (purpose int)
        (str c-string)
        (len int))
 
+(defun |sockSendString| (purpose str)
+     (sock_send_string_len purpose str (length str)))
+
 (fricas-foreign-call |serverSwitch| "server_switch" int)
 
-(fricas-foreign-call sock_send_signal "sock_send_signal" int
+(fricas-foreign-call |sockSendSignal| "sock_send_signal" int
        (purpose int)
        (sig int))
 

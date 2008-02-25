@@ -15,10 +15,9 @@
           fricas-probe-file trim-directory-name pad-directory-name
           file-kind makedir fricas-compile-file load-maybe-compiling
           maybe-compile
-          |writeablep| |openServer| sock_get_int sock_send_int
-          sock_get_float sock_send_float sock_send_string
-          sock_send_string_len |serverSwitch| sock_send_signal
-          |sockGetStringFrom|))
+          |writeablep| |openServer| |sockGetInt|
+          |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
+          |serverSwitch| |sockSendSignal| |sockGetStringFrom|))
 
 #+:GCL
 (progn
