@@ -489,33 +489,7 @@
 
 
 (DEFUN |PARSE-VarForm| ()
-  (AND (|PARSE-Name|)
-       (OPTIONAL
-           (AND (|PARSE-Scripts|)
-                (PUSH-REDUCTION '|PARSE-VarForm|
-                    (CONS '|Scripts|
-                          (CONS (POP-STACK-2) (CONS (POP-STACK-1) NIL))))))
-       (PUSH-REDUCTION '|PARSE-VarForm| (POP-STACK-1)))) 
-
-
-(DEFUN |PARSE-Scripts| ()
-  (AND NONBLANK (MATCH-ADVANCE-STRING "[") (MUST (|PARSE-ScriptItem|))
-       (MUST (MATCH-ADVANCE-STRING "]")))) 
-
-
-(DEFUN |PARSE-ScriptItem| ()
-  (OR (AND (|PARSE-Expr| 90)
-           (OPTIONAL
-               (AND (STAR REPEATOR
-                          (AND (MATCH-ADVANCE-STRING ";")
-                               (MUST (|PARSE-ScriptItem|))))
-                    (PUSH-REDUCTION '|PARSE-ScriptItem|
-                        (CONS '|;|
-                              (CONS (POP-STACK-2)
-                                    (APPEND (POP-STACK-1) NIL)))))))
-      (AND (MATCH-ADVANCE-STRING ";") (MUST (|PARSE-ScriptItem|))
-           (PUSH-REDUCTION '|PARSE-ScriptItem|
-               (CONS '|PrefixSC| (CONS (POP-STACK-1) NIL)))))) 
+  (AND (|PARSE-Name|) (PUSH-REDUCTION '|PARSE-VarForm| (POP-STACK-1)))) 
 
 
 (DEFUN |PARSE-Name| ()

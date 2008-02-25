@@ -328,7 +328,7 @@ or the chracters ?, !, ' or %"
                    (advance-char)
                    (go loop))
             (let ((new-token (intern buf)))
-              (return (token-install (or (get new-token 'renametok) new-token)
+              (return (token-install new-token
                                      'gliph token nonblank))))))
 
 (defun get-SPADSTRING-token (token)

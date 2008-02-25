@@ -177,14 +177,3 @@
           ( \~ (=)         )
           ( \: (=) (-) (\:))))
   
-;;;  Rename Token Table
-
-;;; RENAMETOK defines alternate token strings which can be used for different
-;;; keyboards which define equivalent tokens.
-(mapcar 
-  #'(lambda (x) (MAKEPROP (CAR X) 'RENAMETOK (CADR X)) (MAKENEWOP X NIL))
-        '((\(\| \[)                     ; (| |) means []
-          (\|\) \])
-          (\(< \{)                      ; (< >) means {}
-          (>\) \})))
- 

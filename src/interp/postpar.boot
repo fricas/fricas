@@ -42,7 +42,7 @@ postTransform y ==
   if u is ['Tuple,:l,[":",y,t]] and (and/[IDENTP x for x in l]) then u:=
     [":",['LISTOF,:l,y],t]
   postTransformCheck u
-  aplTran u
+  u
 
 displayPreCompilationErrors() ==
   n:= #($postStack:= REMDUP NREVERSE $postStack)
@@ -70,8 +70,6 @@ postTran x ==
   op is ['elt,a,b] =>
     u:= postTran [b,:rest x]
     [postTran op,:rest u]
-  op is ['Scripts,:.] =>
-    postScriptsForm(op,"append"/[unTuple postTran y for y in rest x])
   op^=(y:= postOp op) => [y,:postTranList rest x]
   postForm x
 
@@ -245,7 +243,6 @@ postForm (u is [op,:argl]) ==
     atom op =>
       argl':= postTranList argl
       [op,:argl']
-    op is ['Scripts,:.] => [:postTran op,:postTranList argl]
     u:= postTranList u
     if u is [['Tuple,:.],:.] then
       postError ['"  ",:bright u,
@@ -256,35 +253,6 @@ postForm (u is [op,:argl]) ==
   x
 
 postQuote [.,a] == ['QUOTE,a]
-
-postScriptsForm(['Scripts,op,a],argl) ==
-  [getScriptName(op,a,#argl),:postTranScripts a,:argl]
-
-postScripts ['Scripts,op,a] ==
-  [getScriptName(op,a,0),:postTranScripts a]
-
-getScriptName(op,a,numberOfFunctionalArgs) ==
-  if null IDENTP op then
-    postError ['"   ",op,'" cannot have scripts"]
-  INTERNL("*",STRINGIMAGE numberOfFunctionalArgs,
-    decodeScripts a,PNAME op)
-
-postTranScripts a ==
-  a is ['PrefixSC,b] => postTranScripts b
-  a is [";",:b] => "append"/[postTranScripts y for y in b]
-  a is [",",:b] =>
-    ("append"/[fn postTran y for y in b]) where
-      fn x ==
-        x is ['Tuple,:y] => y
-        LIST x
-  LIST postTran a
-
-decodeScripts a ==
-  a is ['PrefixSC,b] => STRCONC(STRINGIMAGE 0,decodeScripts b)
-  a is [";",:b] => APPLX('STRCONC,[decodeScripts x for x in b])
-  a is [",",:b] =>
-    STRINGIMAGE fn a where fn a == (a is [",",:b] => +/[fn x for x in b]; 1)
-  STRINGIMAGE 1
 
 postIf t ==
   t isnt ["if",:l] => t
@@ -475,53 +443,3 @@ unTuple x ==
   x is ['Tuple,:y] => y
   LIST x
 
---% APL TRANSFORMATION OF INPUT
-
-aplTran x ==
-  $BOOT => x
-  $GENNO: local := 0
-  u:= aplTran1 x
-  containsBang u => throwKeyedMsg("S2IP0002",NIL)
-  u
-
-containsBang u ==
-  atom u => EQ(u,"!")
-  u is [='QUOTE,.] => false
-  or/[containsBang x for x in u]
-
-aplTran1 x ==
-  atom x => x
-  [op,:argl1] := x
-  argl := aplTranList argl1
-  -- unary case f ! y
-  op = "_!" =>
-    argl is [f,y] =>
-      y is [op',:y'] and op' = "_!" => aplTran1 [op,op,f,:y']
-      $BOOT => ['COLLECT,['IN,g:=GENVAR(),aplTran1 y],[f,g]]
-      ['map,f,aplTran1 y]
-    x    --do not handle yet
-  -- multiple argument case
-  hasAplExtension argl is [arglAssoc,:futureArgl] =>
-    -- choose the last aggregate type to be result of reshape
-    ['reshape,['COLLECT,:[['IN,g,['ravel,a]] for [g,:a] in arglAssoc],
-      aplTran1 [op,:futureArgl]],CDAR arglAssoc]
-  [op,:argl]
-
-aplTranList x ==
-  atom x => x
-  [aplTran1 first x,:aplTranList rest x]
-
-hasAplExtension argl ==
-  or/[x is ["_!",:.] for x in argl] =>
-    u:= [futureArg for x in argl] where futureArg ==
-      x is ["_!",y] =>
-        z:= deepestExpression y
-        arglAssoc := [[g := GENVAR(),:aplTran1 z],:arglAssoc]
-        substitute(g,z,y)
-      x
-    [arglAssoc,:u]
-  nil
-
-deepestExpression x ==
-  x is ["_!",y] => deepestExpression y
-  x
