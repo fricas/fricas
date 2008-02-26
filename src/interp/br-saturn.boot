@@ -1233,8 +1233,8 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
   ops := escapeSpecialChars STRINGIMAGE op
   n := #sig
   do
-    n = 2 and LASSOC('Nud,PROPLIST op) => htSay(ops,'" {\em ",quickForm2HtString KAR args,'"}")
-    n = 3 and LASSOC('Led,PROPLIST op) => htSay('"{\em ",quickForm2HtString KAR args,'"} ",ops,'" {\em ",quickForm2HtString KAR KDR args,'"}")
+    n = 2 and GETL(op, 'Nud) => htSay(ops,'" {\em ",quickForm2HtString KAR args,'"}")
+    n = 3 and GETL(op, 'Led) => htSay('"{\em ",quickForm2HtString KAR args,'"} ",ops,'" {\em ",quickForm2HtString KAR KDR args,'"}")
     if unexposed? and $includeUnexposed? then
       htSayUnexposed()
     htSay(ops)
@@ -1417,7 +1417,7 @@ htSaySourceFile conname ==
 --------------------> NEW DEFINITION (see br-op2.boot.pamphlet)
 htSayIndentRel(n,:options) ==
   flag := IFCAR options
-  m := ABSVAL n
+  m := ABS n
   if flag then m := m + 2
   if $standard then htSayStandard
     n > 0 =>

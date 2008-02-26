@@ -589,7 +589,8 @@ compileAsharpArchiveCmd args ==
     -- the name is fully qualified.
 
     path := pathname args
-    ^PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    (FILE_-KIND namestring args) ^= 1 =>
+          throwKeyedMsg("S2IL0003",[namestring args])
 
     -- here is the plan:
     --   1. extract the file name and try to make a directory based
@@ -601,9 +602,8 @@ compileAsharpArchiveCmd args ==
     -- First try to make the directory in the current directory
 
     dir  := fnameMake('".", pathnameName path, '"axldir")
-    exists := PROBE_-FILE dir
-    isDir := directoryp namestring dir
-    exists and isDir ^= 1=>
+    isDir := FILE_-KIND namestring dir
+    isDir = 0 =>
         throwKeyedMsg("S2IL0027",[namestring dir, namestring args])
 
     if isDir ^= 1 then

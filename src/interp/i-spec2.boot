@@ -1135,7 +1135,7 @@ EVALANDFILEACTQ
     (
       functionName:=INTERNL('up,name) ;
       MAKEPROP(name,'up,functionName) ;
-      CREATE_-SBC functionName
+      functionName
      )
   )
 

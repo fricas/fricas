@@ -1211,23 +1211,6 @@ Qf2F(u,source is [.,D,:.],target) ==
 Rn2F(rnum, source, target) ==
   float(CAR(rnum)/CDR(rnum))
 
--- next function is needed in RN algebra code
---Rn2F([a,:b],source,target) ==
---  al:=if LINTP a then QLENGTHCODE a else 4
---  bl:=if LINTP b then QLENGTHCODE b else 4
---  MAX(al,bl) < 36 => FLOAT a / FLOAT b
---  sl:=0
---  if al>32 then
---     sl:=35*(al-32)/4
---     a:=a/2**sl
---  if bl>32 then
---     sbl:=35*(bl-32)/4
---     b:=b/2**sbl
---     sl:=sl-sbl
---  ans:=FLOAT a /FLOAT b
---  sl=0 => ans
---  ans*2**sl
-
 Qf2domain(u,source is [.,D],target) ==
   -- tests whether it is an element of the underlying domain
   useUnder := (ut := underDomainOf target) and canCoerce(source,ut)

@@ -67,16 +67,9 @@
 ;; DEFMACROS
 
 
-(defmacro absval (x)
- `(abs ,x))
-
 #-:CCL
 (defmacro add1 (x)
  `(1+ ,x))
-
-(defmacro assemble (&rest ignore) 
- (declare (ignore ignore))
-  nil)
 
 (defmacro applx (&rest args)
  `(apply ,@args))
@@ -88,12 +81,6 @@
 #+:CCL
 (defmacro assq (a b) `(atsoc ,a ,b))
 
-#-:CCL
-(defmacro bintp (n)
- `(typep ,n 'bignum))
-#+:CCL
-(defun bintp (n) (and (integerp n) (not (fixp n))))
-
 (defmacro |char| (x)
   (if (and (consp x) (eq (car x) 'quote)) (character (cadr x))
     `(character ,x)))
@@ -101,20 +88,11 @@
 (defmacro closedfn (form)
  `(function ,form))
 
-(defmacro |copyList| (x) 
- `(copy-list ,x))
-
-(defmacro create-sbc (x) x)  ;a no-op for common lisp
-
 (defmacro cvecp (x)
  `(stringp ,x))
 
 (defmacro dcq (&rest args)
  (cons 'setqp args))
-
-#-Lucid
-(defmacro define-macro (f v)
- `(setf (macro-function ,f) (macro-function ,v)))
 
 #-:CCL
 (defmacro difference (&rest args)
@@ -214,9 +192,6 @@
 (defmacro lessp (&rest args)
  `(< ,@args))
 
-(defmacro lintp (n)
- `(typep ,n 'bignum))
-
 (defmacro makestring (a) a)
 
 (defmacro mapelt (f vec)
@@ -233,26 +208,11 @@
 (defmacro minus (x)
  `(- ,x))
 
-(defmacro mrp (x)
- `(special-form-p ,x))
-
-(defmacro namederrset (id iexp &rest item)
- (declare (ignore item))
-  `(catch ,id ,iexp))
-
 (defmacro ne (a b) `(not (equal ,a ,b)))
 
 ;;; This may need adjustment in CCL where NEQ means (NOT (EQUAL ..)))
 #-:CCL
 (defmacro neq (a b) `(not (eq ,a ,b)))
-
-#-:CCL
-(defmacro nreverse0 (x)
-  (if (atom x)
-      `(if (atom ,x) ,x (nreverse ,x))
-    (let ((xx (gensym)))
-      `(let ((,xx ,x))
-         (if (atom ,xx) ,xx (nreverse ,xx))))))
 
 (defmacro nump (n)
  `(numberp ,n))
@@ -263,9 +223,6 @@
     (let ((xx (gensym)))
       `(let ((,xx ,x))
          (if (consp ,xx) (qcar ,xx) ,xx)))))
-
-(defmacro oraddtempdefs (filearg)
- `(eval-when (compile) (load ,filearg)))
 
 (defmacro pairp (x)
  `(consp ,x)) 
@@ -370,32 +327,17 @@
 (defmacro qrplacd (a b)
  `(rplacd (the cons ,a) ,b))
 
-(defmacro qrplq (&whole form pattern exp)
- (if (or (consp pattern) (simple-vector-p pattern))
-  `(,(rcqexp pattern) ,exp)
-   (macro-invalidargs 'qrplq form "form must be updateable.")))
-
 (defmacro qsadd1 (x)
  `(the fixnum (1+ (the fixnum ,x))))
 
-(defmacro qsdec1 (x)
- `(the fixnum (1- (the fixnum ,x))))
-
 (defmacro qsdifference (x y)
  `(the fixnum (- (the fixnum ,x) (the fixnum ,y))))
-
-(defmacro qsetq (&whole form pattern exp)
- (declare (ignore form))
-  `(,(dcqexp pattern '=) ,exp))
 
 (defmacro qsetrefv (vec ind val)
  `(setf (svref ,vec (the fixnum ,ind)) ,val))
 
 (defmacro qsetvelt (vec ind val)
  `(setf (svref ,vec (the fixnum ,ind)) ,val))
-
-(defmacro qsetvelt-1 (vec ind val)
- `(setf (svref ,vec (the fixnum (1- (the fixnum ,ind)))) ,val))
 
 (defmacro qsgreaterp (a b)
  `(> (the fixnum ,a) (the fixnum ,b)))
@@ -436,17 +378,11 @@
 (defmacro qstimes (x y)
  `(the fixnum (* (the fixnum ,x) (the fixnum ,y))))
 
-(defmacro qstringlength (x)
- `(the fixnum (length (the simple-string ,x))))
-
 (defmacro qszerop (x)
  `(zerop (the fixnum ,x)))
 
 (defmacro qvelt (vec ind)
  `(svref ,vec (the fixnum ,ind)))
-
-(defmacro qvelt-1 (vec ind)
- `(svref ,vec (the fixnum (1- (the fixnum ,ind)))))
 
 (defmacro qvmaxindex (x)
  `(the fixnum (1- (the fixnum (length (the simple-vector ,x))))))
@@ -466,11 +402,6 @@
 
 (defmacro rnump (n)
  `(floatp ,n))
-
-(defmacro rplq (&whole form exp pattern)
- (if (or (consp pattern) (simple-vector-p pattern))
-  `(,(rcqexp pattern) ,exp)
-   (macro-invalidargs 'rplq form "form must be updateable.")))
 
 (defmacro rvecp (v)
  `(typep ,v '(vector float)))
@@ -493,12 +424,6 @@
          (val `(return-from seq ,(pop body))))
     (nsubstitute '(progn) nil body) ;don't treat NIL as a label
     `(block seq (tagbody ,@(nreverse body) ,val))))
-
-(defmacro sfp (x)
- `(special-form-p ,x))
-
-(defmacro |shoeread-line| (st)
- `(read-line ,st nil nil))
 
 #-:CCL
 (defmacro sintp (n)
@@ -540,12 +465,6 @@
 ; #+:CCL
 ; (defun vecp (v) (and (vectorp v) (not (stringp v))))
 (defmacro vecp (v) `(simple-vector-p ,v))
-
-#-:CCL
-(defmacro zero? (x)
-  `(and (typep ,x 'fixnum) (zerop (the fixnum ,x))))
-#+:CCL
-(defmacro zero? (x) `(zerop ,x))
 
 ;; defuns
 
@@ -714,8 +633,6 @@
          (t (cons (remove-fluids (car arglist))
                   (remove-fluids (cdr arglist))))))
 
-(define-function 'KOMPILE #'COMP370)
-
 ; 9.4 Vectors and Bpis
 
 (defun IVECP (x) (and (vectorp x) (subtypep (array-element-type x) 'integer)))
@@ -774,10 +691,6 @@
 
 ; 10.8.4 Auxiliary Operators
 
-(defun nilfn (&rest ignore)
- (declare (ignore ignore)) 
- ())
-
 ; 11.0 Operations on Identifiers
 
 ; 11.1 Creation
@@ -789,17 +702,12 @@
         ((atom l) l)
         (t (mapcar #'upcase l))))
 
-(define-function 'U-CASE #'upcase)
-(define-function 'LC2UC #'upcase)
-
 (defun downcase (l)
   (cond ((stringp l) (string-downcase l))
         ((identp l) (intern (string-downcase (symbol-name l))))
         ((characterp l) (char-downcase L))
         ((atom l) l)
         (t (mapcar #'downcase l))))
-
-(define-function 'L-CASE #'downcase)
 
 ; 11.2 Accessing
 
@@ -808,20 +716,6 @@
   (cond ((symbolp x) (symbol-name x))
         ((characterp x) (string x))
         (t nil)))
-
-;; property lists in vmlisp are alists
-(defun PROPLIST (x)
-  (if (symbolp x)
-#-:CCL
-   (plist2alist (symbol-plist x))
-#+:CCL
-   (plist2alist (plist x))
-    nil))
-
-(defun plist2alist (x)
-  (if (null x) 
-      nil
-      (cons (cons (first x) (second x)) (plist2alist (cddr x)))))
 
 #-:CCL
 (defun put (sym ind val) (setf (get sym ind) val))
@@ -837,28 +731,12 @@
 
 ; 12.2 Predicates
 
-;(define-function 'lessp #'<)
-
-;(define-function 'greaterp #'>)
-
-
-;(define-function 'fixp #'integerp)
-
 ; 12.3 Computation
 
-;(define-function 'add1 #'1+)
-;(define-function 'sub1 #'1-)
-;(define-function 'plus #'+)
-;(define-function 'times #'*)
-;(define-function 'difference #'-)
-;(define-function 'minus #'-)
-;(define-function 'absval #'abs)
 
 (defun QUOTIENT (x y)
   (cond ((or (floatp x) (floatp y)) (/ x y))
         (t (truncate x y))))
-
-(define-function 'vm/ #'quotient)
 
 #-:CCL
 (defun REMAINDER (x y)
@@ -875,11 +753,6 @@
 (defun QSQUOTIENT (a b) (the fixnum (truncate (the fixnum a) (the fixnum b))))
 
 (defun QSREMAINDER (a b) (the fixnum (rem (the fixnum a) (the fixnum b))))
-
-
-;(defun IFCAR (x) (if (consp x) (car (the cons x))))
-
-;(defun IFCDR (x) (if (consp x) (cdr (the cons x))))
 
 ; 13.3 Updating
 
@@ -1009,8 +882,6 @@
 ; 16.2 Accessing
 
 
-;(define-function 'FETCHCHAR #'char)
-
 ;; Oddly, LENGTH is more efficient than LIST-LENGTH in CCL, since the former
 ;; is compiled and the latter is byte-coded!
 (defun size (l) 
@@ -1057,8 +928,6 @@
 (define-function 'strconc #'concat)
 
 (defun make-cvec (sint) (make-array sint :fill-pointer 0 :element-type 'character))
-
-;(define-function 'CVECP #'stringp)
 
 (define-function 'getstr #'make-cvec)
 
@@ -1208,9 +1077,6 @@
 ; note subst isn't guaranteed to copy
 (defun |nsubst| (new old tree) (nsubst new old tree :test #'equal))
 (define-function 'MSUBSTQ #'subst) ;default test is eql
-
-;;; Unused 
-;;;(define-function 'SUBSTQ #'SUBST) ;default test is eql subst is not guaranteed to copy
 
 (defun copy (x) (copy-tree x)) ; not right since should descend vectors
 
@@ -1401,103 +1267,6 @@
 
 ; 19.4 Updating
 
-; Generate code for RPLQ exprs
-
-(eval-when (compile load eval)
- (defun RCQEXP (FORM)
-    (PROG (SV PVL CODE)
-          (declare (special pvl))
-      (setq SV (GENSYM))
-      (setq CODE (RCQGENEXP SV FORM NIL))
-      (RETURN
-        `(LAMBDA (,sv)
-              (PROG ,pvl
-                ,@code
-                (RETURN 'true)
-            BAD (RETURN NIL) ) ))))
-)
-
-; Generate code for RPLQ expr innards
-
-(eval-when (compile load eval)
- (defun RCQGENEXP (SV FORM QFLAG)
-    (PROG (D A I L C W)
-          (declare (special pvl))
-      (COND
-        ( (EQ FORM SV)
-          (RETURN NIL) )
-        ( (simple-vector-p FORM)
-         (RETURN (SEQ
-            (setq L (length FORM))
-            (if (EQ L 0) (RETURN NIL))
-            (setq I (1- L))
-        LP  (setq A (elt FORM I))
-            (COND
-              ( (AND
-                  (NULL W)
-                  (OR (AND (consp A) (NOT (EQ (car A) 'QUOTE)))
-                           (simple-vector-p A)))
-                (setq PVL (CONS (setq W (GENSYM)) PVL)) ) )
-            (setq C
-              (NCONC
-                (COND
-                  ( (OR
-                      (IDENTP A)
-                      (NUMP A)
-                      (AND (consp A) (EQ (car A) 'QUOTE)))
-                    `((SETELT ,sv ,i ,a)))
-                  ( (OR (consp A) (simple-vector-p A))
-                    `((setq ,w (ELT ,sv ,i))
-                      ,@(RCQGENEXP W A QFLAG))))
-                C) )
-            (COND
-              ( (EQ I 0)
-                (GO RET) ) )
-            (setq I (1- I))
-            (GO LP)
-        RET (RETURN
-              (COND
-                ( (NULL QFLAG)
-                  `((COND ( (OR
-                              (NOT (simple-vector-p ,sv))
-                              (< (length ,sv) ,l))
-                            (GO BAD) ) )
-                    ,@c))
-                ( 'T
-                  C ) )) )))
-        ( (NOT (consp FORM))
-          (RETURN NIL) ) )
-      (setq A (car FORM))
-      (setq D (cdr FORM))
-      (cond
-        ( (or (and (consp A) (NOT (EQ (car A) 'QUOTE))) (simple-vector-p A))
-          (setq PVL (CONS (setq W (GENSYM)) PVL)) ) )
-      (setq C
-        (COND
-          ( (OR (IDENTP A) (NUMP A) (AND (consp A) (EQ (car A) 'QUOTE)))
-            `((rplaca ,sv ,a)))
-          ( (OR (consp A) (simple-vector-p A))
-            `((setq ,w (CAR ,sv))
-              ,@(RCQGENEXP W A QFLAG)))))
-      (setq C
-        (NCONC
-          C
-          (COND
-            ( (OR (IDENTP D) (NUMP D) (AND (consp D) (EQ (car D) 'QUOTE)))
-              `((RPLACD ,sv ,d)))
-            ( (OR (consp D) (simple-vector-p D))
-              `((setq ,sv (CDR ,sv))
-                ,@(RCQGENEXP SV D QFLAG))))))
-      (RETURN
-        (COND
-          ( (NULL QFLAG)
-            `((COND ( (ATOM ,sv)
-                      (GO BAD) ) )
-              ,@c))
-          ( 'T
-            C ) )) ) )
-)
-
 ; 22.0 Internal and External Forms
 
 ; 23.0 Reading
@@ -1526,9 +1295,6 @@
 (defun prettyprin0 (x &optional (stream *standard-output*))
   (let ((*print-pretty* t) (*print-array* t))
     (prin1 x stream)))
-
-(defun vmprint (x &optional (stream *standard-output*))
-  (prin1 x stream) (terpri stream))
 
 (defun tab (sint &optional (stream t))
   (format stream "~vT" sint))
@@ -1784,9 +1550,7 @@
 (defun LAM\,FILEACTQ (name form)
        (if *FILEACTQ-APPLY* (FUNCALL *FILEACTQ-APPLY* name form)))
 
-(define-function 'EVA1 #'eval) ;EVA1 and VMLISP EVAL make lexicals visible
 (define-function 'EVALFUN #'eval) ;EVALFUN drops lexicals before evaluating
-(define-function 'EVA1FUN #'EVALFUN)
 
 (defun PLACEP (item) (eq item *read-place-holder*))
 (defun VMREAD (&optional (st *standard-input*) (eofval *read-place-holder*))
@@ -1797,12 +1561,6 @@
 (defun STATEP (item)
  (declare (ignore item))
    nil) ;no state objects
-(defun FUNARGP (item)
- (declare (ignore item))
-  nil) ;can't tell closures from other functions
-(defun PAPPP (item)
- (declare (ignore item))
-  nil) ;no partial application objects
 
 #+Lucid
 (defun gcmsg (x)
@@ -1895,28 +1653,6 @@
                  func)))
       ((symbolp func) func)))
 
-
-
-(defun LISTOFQUOTES (bpi)
- (declare (ignore bpi))
-  ())
-
-#+Lucid
-(defun LISTOFFREES (bpi)
-  (if (compiled-function-p bpi)
-      (let ((end (- (lucid::procedure-length bpi) 2)))
-        (do ((i 3 (1+ i))
-             (ans nil))
-            ((> i end) ans)
-            (let ((locexp (svref bpi i)))
-              (if (symbolp locexp) (push locexp ans)))))))
-
-#-Lucid
-(defun LISTOFFREES (bpi)
- (declare (ignore bpi))
- ())
-
-  
 #+(and :Lucid (not :ibm/370))
 (defun OBEY (S)
   (system::run-aix-program (make-absolute-filename "/lib/obey")
@@ -1952,8 +1688,6 @@
 #+:ecl
 (defun OBEY (S)
    (ext:system S))
-
-(defun RE-ENABLE-INT (number-of-handler) number-of-handler)
 
 (defun QUOREM (i j r) ; never used, refed in parini.boot
   (multiple-value-bind (x y) (truncate i j)
@@ -2039,13 +1773,4 @@
                     (|ncloopInclude0| st name n)))
 
 ;;; end of moved fragment
-
-(defun |stringLE1| (x y)
-  (string<= x y :start1 1 :start2 2))
-
-(defun |sortCarString| (lines)
-  (sort lines #'string<= :key #'car))
-
-(defun |insertString| (s1 s2 i1)
-   (replace s2 s1 :start1 i1 :end1 (1+ i1) :end2 (size s1))) 
 

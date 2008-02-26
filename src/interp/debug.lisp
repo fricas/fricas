@@ -601,7 +601,7 @@ EXAMINE (SETQ RECNO (NOTE INPUTSTREAM))
         ((ATOM (CAR L))
          (|spadThrowBrightly|
            (format nil "~A has wrong format for an option" (car L))))
-        ((CONS (CONS (LC2UC (CAAR L)) (CDAR L)) (OPTIONS2UC (CDR L))))))
+        ((CONS (CONS (UPCASE (CAAR L)) (CDAR L)) (OPTIONS2UC (CDR L))))))
  
 (DEFUN COND-UCASE (X) (COND ((INTEGERP X) X) ((UPCASE X))))
  

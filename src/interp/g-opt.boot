@@ -392,7 +392,7 @@ EVALANDFILEACTQ
               (RECORDELT    optRECORDELT)_
               (SETRECORDELT optSETRECORDELT)_
               (RECORDCOPY   optRECORDCOPY)) _
-      repeat MAKEPROP(CAR x,'OPTIMIZE,CREATE_-SBC CADR x)
+      repeat MAKEPROP(CAR x,'OPTIMIZE, CADR x)
           --much quicker to call functions if they have an SBC
     )
  

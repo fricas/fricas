@@ -418,25 +418,15 @@ getProplist(x,E) ==
   --$InteractiveMode and (u:= search(x,$InteractiveFrame)) => u
   (pl:=search(x,$CategoryFrame)) =>
     pl
---  (pl:=PROPLIST x) => pl
--- Above line commented out JHD/BMT 2.Aug.90
 
 search(x,e is [curEnv,:tailEnv]) ==
   tailEnv =>
     BREAK()
-  searchCurrentEnv(x,curEnv) or searchTailEnv(x,tailEnv)
+  searchCurrentEnv(x,curEnv)
 
 searchCurrentEnv(x,currentEnv) ==
   for contour in currentEnv repeat
     if u:= ASSQ(x,contour) then return (signal:= u)
-  KDR signal
-
-searchTailEnv(x,e) ==
-  for env in e repeat
-    signal:=
-      for contour in env repeat
-        if (u:= ASSQ(x,contour)) and ASSQ("FLUID",u) then return (signal:= u)
-      if signal then return signal
   KDR signal
 
 augProplist(proplist,prop,val) ==

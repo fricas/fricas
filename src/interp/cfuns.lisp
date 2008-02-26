@@ -32,24 +32,6 @@
 
 (in-package "BOOT")
 
-#+(and :Lucid (not :ibm/370))
-(progn
-  (system:define-foreign-function :c '|findString| :fixnum)
-  (system:define-foreign-function :c '|addtopath|  :fixnum)
-  (system:define-foreign-function :c '|chdir|      :fixnum)
-  (system:define-foreign-function :c '|writeablep| :fixnum)
-  (system:define-foreign-function :c '|directoryp| :fixnum)
-  (system:define-foreign-function :c '|copyEnvValue| :fixnum)
-  )
-
-#+:CCL
-(defun |directoryp| (fn)
-  (cond ((not (probe-file fn)) -1)
-        ((directoryp fn) 1)
-        (t 0)))
-
-
-
 
 ;;stolen from AXIOM-XL src/strops.c
 #+(AND GCL (NOT ELF))

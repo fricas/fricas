@@ -738,30 +738,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 (defparameter errcol nil)
 (defparameter line nil)
 
-(defun conversation (x y)
-  (prog (u)
-     a  (reduce-stack-clear)
-        (setq u (namederrset 'spad_reader (conversation1 x y) ))
-        (cond (*eof* (return nil))
-              ((atom u) (go a))
-              ((return (car u))))))
-
-(defparameter ulcasefg nil              "")
-
-(defun conversation1 (firstfun procfun)
-  (prog nil
-     top(cond ((not (Current-Char)) (return nil))
-              ((and (current-token) (next-token)) (go top))
-              ((compfin) (return 't))
-              ((and (funcall firstfun)
-                    (or (funcall procfun (pop-stack-1))))
-               (go top))
-              ((compfin) (return 't)) )
-        (meta-syntax-error)
-        (go top)))
-
-(defun compfin () (or (match-string ")fin") (match-string ".FIN")))
-
 (defparameter Meta_Errors_Occurred nil  "Did any errors occur")
 
 (defparameter Meta_Error_Handler 'meta-meta-error-handler)

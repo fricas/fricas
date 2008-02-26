@@ -69,7 +69,7 @@ incRgen s==Delay(function incRgen1,[s])
  
 incRgen1(:z)==
         [s]:=z
-        a:=shoeread_-line s
+        a := READ_-LINE(s, nil, nil)
         if NULL a
         then (CLOSE s;StreamNil)
 

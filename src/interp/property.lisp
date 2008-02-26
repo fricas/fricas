@@ -269,12 +269,12 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 (REPEAT (IN X '(
   |Polynomial| |UnivariatePoly| |SquareMatrix| |QuotientField|
   )) (MAKEPROP X '|status|
-     (CREATE-SBC (INTERNL (STRCONC "status" (STRINGIMAGE X))) )))
+     (INTERNL (STRCONC "status" (STRINGIMAGE X))) ))
 
 (REPEAT (IN X '(
   |UnivariatePoly| |Matrix| |QuotientField|
   )) (MAKEPROP X '|dataCoerce|
-     (CREATE-SBC (INTERNL (STRCONC "coerce" (STRINGIMAGE X))) )))
+     (INTERNL (STRCONC "coerce" (STRINGIMAGE X))) ))
 
 (REPEAT (IN X '(
   (|Integer| . (INTEGERP |#1|))
@@ -310,7 +310,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|Union| |mkUnionFunList|)
   (|Mapping| |mkMappingFunList|)
   (|Enumeration| |mkEnumerationFunList|)
-)) (MAKEPROP (CAR X) '|makeFunctionList| (CREATE-SBC (CADR X))))
+)) (MAKEPROP (CAR X) '|makeFunctionList| (CADR X)))
 
 (REPEAT (IN X '(
   (|<=| |parseLessEqual|)
@@ -491,5 +491,5 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (VECTOR |compVector|)
   (|VectorCategory| |compConstructorCategory|)
   (|where| |compWhere|)
-)) (MAKEPROP (CAR X) 'SPECIAL (CREATE-SBC (CADR X))))
+)) (MAKEPROP (CAR X) 'SPECIAL  (CADR X)))
 
