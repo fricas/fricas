@@ -103,8 +103,7 @@ mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
        then
          or/[x is [[ =sig,.,:impl],:num] for x in NSigList] => [sig,pred,:impl]
                  --only needed for multiple copies of sig
-         num:= if domainOrPackage="domain" then count else count-5
-         nsig:= mkOperatorEntry("domain",sig,pred,num)
+         nsig:= mkOperatorEntry("domain",sig,pred,count)
          NSigList:= [[nsig,:count],:NSigList]
          count:= count+1
          nsig
