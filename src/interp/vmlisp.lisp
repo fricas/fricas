@@ -101,9 +101,6 @@
 (defmacro dsetq (&whole form pattern exp)
  (dodsetq form pattern exp))
 
-(defmacro ecq (&rest args)
- (cons 'eqq args))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun equable (x) ;;def needed to prevent recursion in def of eqcar
     (or (null x) (and (consp x) (eq (car x) 'quote) (symbolp (cadr x))))))
@@ -120,9 +117,6 @@
     (let ((xx (gensym)))
      `(let ((,xx ,x))
        (and (consp ,xx) (,test (qcar ,xx) ,y)))))))
-
-(defmacro eqq (pattern exp)
- `(,(ecqexp pattern nil) ,exp))
 
 (defmacro |equal| (x y)
  `(equalp ,x ,y))
@@ -272,44 +266,11 @@
 (defmacro qcdddr (x)
  `(cdr (the cons (cdr (the cons (cdr (the cons ,x)))))))
 
-(defmacro qcaaaar (x)
- `(car (the cons (car (the cons (car (the cons (car (the cons ,x)))))))))
-(defmacro qcaaadr (x)
- `(car (the cons (car (the cons (car (the cons (cdr (the cons ,x)))))))))
-(defmacro qcaadar (x)
- `(car (the cons (car (the cons (cdr (the cons (car (the cons ,x)))))))))
-(defmacro qcaaddr (x)
- `(car (the cons (car (the cons (cdr (the cons (cdr (the cons ,x)))))))))
-(defmacro qcadaar (x)
- `(car (the cons (cdr (the cons (car (the cons (car (the cons ,x)))))))))
-(defmacro qcadadr (x)
- `(car (the cons (cdr (the cons (car (the cons (cdr (the cons ,x)))))))))
-(defmacro qcaddar (x)
- `(car (the cons (cdr (the cons (cdr (the cons (car (the cons ,x)))))))))
-(defmacro qcadddr (x)
- `(car (the cons (cdr (the cons (cdr (the cons (cdr (the cons ,x)))))))))
-(defmacro qcdaaar (x)
- `(cdr (the cons (car (the cons (car (the cons (car (the cons ,x)))))))))
-(defmacro qcdaadr (x)
- `(cdr (the cons (car (the cons (car (the cons (cdr (the cons ,x)))))))))
-(defmacro qcdadar (x)
- `(cdr (the cons (car (the cons (cdr (the cons (car (the cons ,x)))))))))
-(defmacro qcdaddr (x)
- `(cdr (the cons (car (the cons (cdr (the cons (cdr (the cons ,x)))))))))
-(defmacro qcddaar (x)
- `(cdr (the cons (cdr (the cons (car (the cons (car (the cons ,x)))))))))
-(defmacro qcddadr (x)
- `(cdr (the cons (cdr (the cons (car (the cons (cdr (the cons ,x)))))))))
-(defmacro qcdddar (x)
- `(cdr (the cons (cdr (the cons (cdr (the cons (car (the cons ,x)))))))))
 (defmacro qcddddr (x)
  `(cdr (the cons (cdr (the cons (cdr (the cons (cdr (the cons ,x)))))))))
 
 (defmacro qcsize (x)
  `(the fixnum (length (the simple-string ,x))))
-
-(defmacro qeqq (pattern exp)
- `(,(ecqexp pattern 1) ,exp))
 
 (defmacro qlength (a)
  `(length ,a))
@@ -1165,106 +1126,6 @@
 
 ; 19.3 Searching
 
-; Generate code for EQQ
-
-(eval-when (compile load eval)
- (defun ECQEXP (FORM QFLAG)
-  (PROG (SV PVL CODE)
-        (declare (special pvl))
-        (setq SV (GENSYM))
-        (setq CODE (ECQGENEXP SV FORM QFLAG))
-        (RETURN
-              `(LAMBDA (,sv)
-                 (PROG ,pvl
-                       ,@code
-                       (RETURN 'true)
-                    BAD (RETURN NIL) ) ))))
-)
-
-; Generate code for EQQ innards
-
-(eval-when (compile load eval)
- (defun ECQGENEXP (SV FORM QFLAG)
-  (PROG (D A I L C W)
-        (declare (special pvl))
-        (COND
-          ((EQ FORM SV) (RETURN NIL))
-          ((OR
-              (IDENTP FORM)
-              (NUMP FORM)
-              (AND (consp FORM) (EQ (qcar FORM) 'QUOTE)))
-           (RETURN
-             `((COND ((NOT (EQ ,form ,sv)) (GO BAD))) )))
-          ((simple-vector-p FORM)
-           (RETURN (SEQ
-              (setq L (length FORM))
-              (if (EQ L 0)
-                  (RETURN
-                    (COND ((NULL QFLAG)
-                           `((COND ((NOT (simple-vector-p ,sv)) (GO BAD))) )))
-                    ))
-              (setq I (1- L))
-           LP (setq A (elt FORM I))
-              (if (AND (NULL W) (OR (consp A) (simple-vector-p A)))
-                  (push (setq W (GENSYM)) PVL))
-              (setq C
-                    (NCONC
-                      (COND
-                        ( (OR
-                            (IDENTP A)
-                            (NUMP A)
-                            (AND (consp A) (EQ (qcar A) 'QUOTE)))
-                         `((COND ( (NOT (EQ ,a (ELT ,sv ,i)))
-                                  (GO BAD) ) ) ) )
-                        ( (OR (consp A) (simple-vector-p A))
-                         `((setq ,w (ELT ,sv ,i))
-                           ,@(ECQGENEXP W A QFLAG))))
-                      C) )
-              (if (EQ I 0) (GO RET) )
-              (setq I (1- I))
-              (GO LP)
-           RET
-              (COND
-                ( (NULL QFLAG)
-                 `((COND ( (OR
-                             (NOT (simple-vector-p ,sv))
-                             (< (length ,sv) ,l))
-                          (GO BAD) ) )
-                   ,@c))
-                ( 'T C ) )) ))
-          ( (NOT (consp FORM))
-           (RETURN NIL) ) )
-        (setq A (car FORM))
-        (setq D (cdr FORM))
-        (if (OR (consp A) (simple-vector-p A) (consp D) (simple-vector-p D))
-           (setq PVL (CONS (setq W (GENSYM)) PVL)))
-        (setq C
-              (COND
-                ( (OR (IDENTP A) (NUMP A) (AND (consp A) (EQ (car A) 'QUOTE)))
-                 `((COND ((NOT (EQ ,a (CAR ,sv))) (GO BAD))) ))
-                ( (OR (consp A) (simple-vector-p A))
-                 `((setq ,w (CAR ,sv))
-                   ,@(ECQGENEXP W A QFLAG)))))
-        (setq C
-              (NCONC
-                C
-                (COND
-                  ( (OR (IDENTP D) (NUMP D) (AND (consp D)
-                                                 (EQ (car D) 'QUOTE)))
-                   `((COND ((NOT (EQ ,d (CDR ,sv))) (GO BAD))) ))
-                  ( (OR (consp D) (simple-vector-p D))
-                   `((setq ,sv (CDR ,sv))
-                     ,@(ECQGENEXP SV D QFLAG))))))
-        (RETURN
-          (COND
-            ( (NULL QFLAG)
-             `((COND ( (ATOM ,sv)
-                      (GO BAD) ) )
-               ,@c))
-            ( 'T
-             C ) )) ) )
-)
-
 ; 19.4 Updating
 
 ; 22.0 Internal and External Forms
@@ -1387,33 +1248,29 @@
       (RETURN CURRENT-BINDING) ) )
 
 (defun UNEMBED (CURRENT-BINDING)
-    (PROG
-#+:CCL  (TMP E-LIST CUR-DEF *COMP)
-#-:CCL  (TMP E-LIST CUR-DEF)
+    (let
+#+:CCL  (TMP E-LIST E-HEAD CUR-DEF *COMP)
+#-:CCL  (TMP E-LIST E-HEAD CUR-DEF)
       (SETQ E-LIST *embedded-functions*)
       (SETQ CUR-DEF (symbol-function CURRENT-BINDING))
 #+:CCL (IF (CONSP CUR-DEF) (SETQ CUR-DEF (CDR CUR-DEF)))
-      (COND
-        ( (NOT (consp E-LIST))
-          NIL )
-        ( (ECQ ((CURRENT-BINDING CUR-DEF)) E-LIST)
-          (SETF (symbol-function CURRENT-BINDING) (QCADDAR E-LIST))
-          (SETQ *embedded-functions* (QCDR E-LIST))
-          (RETURN CURRENT-BINDING) )
-        ( 'T
-          (SEQ
-            (SETQ TMP E-LIST)
-        LP  (COND
-              ( (NOT (consp (QCDR TMP)))
-                (EXIT NIL) )
-              ( (NULL (ECQ ((CURRENT-BINDING CUR-DEF)) (QCDR TMP)))
-                (SETQ TMP (QCDR TMP))
-                (GO LP) )
-              ( 'T
-                (SETF (symbol-function  CURRENT-BINDING) (QCAR (QCDDADR TMP)))
-                (RPLACD TMP (QCDDR TMP))
-                (RETURN CURRENT-BINDING) ) ) ) ) )
-      (RETURN NIL) ))
+      (tagbody
+       LP (let (NOT (consp E-LIST))
+              (return-from UNEMBED NIL))
+          (setf E-HEAD (car E-LIST))
+	  (if (or (NOT (consp E-HEAD))
+		  (NOT (consp (cdr E-HEAD)))
+		  (NOT (EQ CURRENT-BINDING (car E-HEAD)))
+		  (NOT (EQ CUR-DEF (nth 1 E-HEAD))))
+	      (progn
+                  (setf TMP E-LIST)
+		  (setf E-LIST (cdr E-LIST))
+	          (GO LP) ))
+	  (setf (symbol-function CURRENT-BINDING) (nth 2 E-HEAD))
+	  (if TMP
+	      (setf (cdr TMP) (QCDR E-LIST))
+	      (setf *embedded-functions* (QCDR E-LIST)))
+	  (return-from UNEMBED CURRENT-BINDING))))
 
 (defun FLAT-BV-LIST (BV-LIST)
   (PROG (TMP1)

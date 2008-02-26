@@ -131,12 +131,12 @@
          VMLISP::$FILEP VMLISP::MAKE-FULL-CVEC VMLISP::HCLEAR
          VMLISP::HPUTPROP 
          VMLISP::STRING2ID-N VMLISP::CALLBELOW VMLISP::BPINAME
-         VMLISP::CHANGELENGTH VMLISP::ECQ VMLISP::OBEY VMLISP::QASSQ
+         VMLISP::CHANGELENGTH VMLISP::OBEY VMLISP::QASSQ
          VMLISP::DCQ VMLISP::SHUT VMLISP::FILE VMLISP::HPUT
          VMLISP::MAKEPROP VMLISP::GREATERP
          VMLISP::REROOT VMLISP::DIG2FIX VMLISP::L-CASE
          VMLISP::TEREAD VMLISP::QSREMAINDER VMLISP::$FINDFILE
-         VMLISP::EQQ VMLISP::PRETTYPRINT VMLISP::HASHEQ VMLISP::LOG2
+         VMLISP::PRETTYPRINT VMLISP::HASHEQ VMLISP::LOG2
          VMLISP::U-CASE VMLISP::NREMOVE VMLISP::QREFELT VMLISP::SIZE
          VMLISP::EOFP VMLISP::QCDAAR VMLISP::RSHUT VMLISP::ADD1
          VMLISP::QMEMQ VMLISP::SUBSTRING VMLISP::LOADVOL
@@ -171,7 +171,7 @@
          VMLISP::SETDIFFERENCEQ VMLISP::STRPOS VMLISP::CONSTANT
          VMLISP::QCAAR VMLISP::HCOUNT VMLISP::RCOPYITEMS
          VMLISP::QSMINUS VMLISP::EVA1 VMLISP::OPTIONLIST
-         VMLISP::NUM2CHAR VMLISP::QENUM VMLISP::QEQQ
+         VMLISP::NUM2CHAR VMLISP::QENUM
          VMLISP::$TOTAL-GC-TIME VMLISP::CHARP VMLISP::QCADR
          VMLISP::INTERSECTIONQ VMLISP::DSETQ VMLISP::FETCHCHAR
          VMLISP::STRCONC VMLISP::MACRO-MISSINGARGS VMLISP::RPACKFILE
@@ -231,22 +231,6 @@
    vmlisp::qcdaar
    vmlisp::qcdadr
    vmlisp::qcddar
-   vmlisp::qcdddr
-   vmlisp::qcaaaar
-   vmlisp::qcaaadr
-   vmlisp::qcaadar
-   vmlisp::qcaaddr
-   vmlisp::qcadaar
-   vmlisp::qcadadr
-   vmlisp::qcaddar
-   vmlisp::qcadddr
-   vmlisp::qcdaaar
-   vmlisp::qcdaadr
-   vmlisp::qcdadar
-   vmlisp::qcdaddr
-   vmlisp::qcddaar
-   vmlisp::qcddadr
-   vmlisp::qcdddar
    vmlisp::qcddddr
    vmlisp::qcsize
    vmlisp::qenum
