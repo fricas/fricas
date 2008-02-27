@@ -40,36 +40,32 @@
 wrap x ==
   isWrapped x => x
   ['WRAPPED,:x]
- 
+
 isWrapped x == x is ['WRAPPED,:.] or NUMBERP x or FLOATP x or CVECP x
- 
+
 unwrap x ==
   NUMBERP x or FLOATP x or CVECP x => x
   x is ["WRAPPED",:y] => y
   x
- 
+
 wrapped2Quote x ==
   x is ["WRAPPED",:y] => MKQ y
   x
- 
+
 quote2Wrapped x ==
   x is ['QUOTE,y] => wrap y
   x
- 
+
 removeQuote x ==
   x is ["QUOTE",y] => y
   x
- 
--- addQuote x ==
---   NUMBERP x => x
---   ['QUOTE,x]
- 
+
 --% The function for making prompts
- 
+
 spadPrompt() ==
   SAY '"   FriCAS"
   sayNewLine()
- 
+
 inputPrompt str ==
   -- replaces older INPUT-PROMPT
   atom (x := $SCREENSIZE()) => NIL
@@ -79,7 +75,7 @@ inputPrompt str ==
   y => _$SHOWLINE(STRCONC(str,EBCDIC 19,y),p)
   0 = SIZE str => NIL
   _$SHOWLINE(STRCONC(str,EBCDIC 19),p)
- 
+
 protectedPrompt(:p) ==
   [str,:br] := p
   0 = SIZE str => inputPrompt str
@@ -89,7 +85,7 @@ protectedPrompt(:p) ==
     else       STRCONC(msg,EBCDIC  96)   -- write protect
   msg := STRCONC(msg,str,EBCDIC 29,EBCDIC 64)  -- unprotect again
   inputPrompt msg
- 
+
 MKPROMPT() ==
   $inputPromptType = 'none    => '""
   $inputPromptType = 'plain   => '"-> "
@@ -101,25 +97,21 @@ MKPROMPT() ==
   STRCONC(STRINGIMAGE $interpreterFrameName,
    '" [", SUBSTRING(CURRENTTIME(),8,NIL),'"] [",
     STRINGIMAGE $IOindex, '"] -> ")
- 
+
 --% Miscellaneous
- 
+
 Zeros n ==
   BOUNDP '$ZeroVecCache and #$ZeroVecCache=n => $ZeroVecCache
   $ZeroVecCache:= MAKE_-VEC n
   for i in 0..n-1 repeat $ZeroVecCache.i:=0
   $ZeroVecCache
- 
+
 LZeros n ==
   n < 1 => nil
   l := [0]
   for i in 2..n repeat l := [0, :l]
   l
- 
--- bpi2FunctionName x ==
---   s:= BPINAME x  => s
---   x
- 
+
 -- subrToName x == BPINAME x
 
 -- formerly in clammed.boot
@@ -156,30 +148,12 @@ Undef(:u) ==
         slot,'%d,'"of",'%b,:prefix2String domain,'%d]
     APPLY(CAR ELT(domain',slot),[:u'',CDR ELT(domain',slot)])
   throwKeyedMsg("S2IF0008",[formatOpSignature(op,sig),domain])
- 
+
 devaluateList l == [devaluate d for d in l]
- 
---HasAttribute(domain,attrib) ==
----->
---  isNewWorldDomain domain => newHasAttribute(domain,attrib)
-----+
---  (u := LASSOC(attrib,domain.2)) and lookupPred(first u,domain,domain)
- 
+
 HasSignature(domain,[op,sig]) ==
   compiledLookup(op,sig,domain)
- 
---HasCategory(domain,catform') ==
---  catform' is ['SIGNATURE,:f] => HasSignature(domain,f)
---  catform' is ['ATTRIBUTE,f] => HasAttribute(domain,f)
---  catform:= devaluate catform'
---  domain0:=domain.0
---  isNewWorldDomain domain => newHasCategory(domain,catform)
---  slot4 := domain.4
---  catlist := slot4.1
---  member(catform,catlist) or
---   MEMQ(opOf(catform),'(Object Type)) or  --temporary hack
---    or/[compareSigEqual(catform,cat,domain0,domain) for cat in catlist]
- 
+
 addModemap(op,mc,sig,pred,fn,$e) ==
   $InteractiveMode => $e
   if knownInfo pred then pred:=true
@@ -188,74 +162,16 @@ addModemap(op,mc,sig,pred,fn,$e) ==
       addModemap0(op,mc,sig,pred,fn,$CapsuleModemapFrame)
     $e
   addModemap0(op,mc,sig,pred,fn,$e)
- 
-isCapitalWord x ==
-  (y := PNAME x) and and/[UPPER_-CASE_-P y.i for i in 0..MAXINDEX y]
- 
-lispize x == first optimize [x]
- 
-$newCompilerUnionFlag := true
 
-orderUnionEntries l ==
-  $newCompilerUnionFlag => l
-  first l is [":",.,.] => l  -- new style Unions
-  [a,b]:=
-    split(l,nil,nil) where
-      split(l,a,b) ==
-        l is [x,:l'] =>
-          (STRINGP x => split(l',[x,:a],b); split(l',a,[x,:b]))
-        [a,b]
-  [:orderList a,:orderList b]
- 
+lispize x == first optimize [x]
+
 mkPredList listOfEntries ==
-  $newCompilerUnionFlag =>
      [['EQCAR,"#1",i] for arg in listOfEntries for i in 0..]
-  first listOfEntries is [":",.,.] =>   -- new Tagged Unions
-     [['EQCAR,"#1",MKQ tag] for [.,tag,.] in listOfEntries]
-  --1. generate list of type-predicate pairs from union specification
-  initTypePredList:=
-    [selTypePred for x in listOfEntries] where
-      selTypePred() ==
-        STRINGP x => [x,'EQUAL,"#1",x]
-        [x,:GETL(opOf x,"BasicPredicate")]
-  typeList:= ASSOCLEFT initTypePredList
-  initPredList:= ASSOCRIGHT initTypePredList
-  hasDuplicatePredicate:=
-    fn initPredList where
-      fn x ==
-        null x => false
-        first x and member(first x,rest x) => true
-        fn rest x
-                                 --if duplicate predicate, kill them all
-  if hasDuplicatePredicate then initPredList:= [nil for x in initPredList]
-  nonEmptyPredList:= [p for p in initPredList | p^=nil]
-  numberWithoutPredicate:= #listOfEntries-#nonEmptyPredList
-  predList:=
-    numberWithoutPredicate=0 and not hasDuplicatePredicate => initPredList
-    numberWithoutPredicate=1 and null last initPredList and
-      [STRINGP x for x in rest REVERSE listOfEntries] =>
-        allButLast:= rest REVERSE initPredList
-        NREVERSE [['NULL,MKPF(allButLast,"OR")],:allButLast]
-  --otherwise, generate a tagged-union
-  --we have made an even number of REVERSE operations, therefore
-  --the original order is preserved.  JHD 25.Sept.1983
-    tagPredList:= [["EQCAR","#1",i] for i in 1..numberWithoutPredicate]
-    [addPredIfNecessary for p in initPredList] where
-      addPredIfNecessary() ==
-        p => p
-        [u,:tagPredList]:= tagPredList
-        u
-  predList
- 
+
 TruthP x ==
     --True if x is a predicate that's always true
   x is nil => nil
   x=true => true
   x is ['QUOTE,:.] => true
   nil
-
-
-
-
-
 

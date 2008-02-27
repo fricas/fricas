@@ -1024,7 +1024,7 @@ getUnionOrRecordTags u ==
 
 coerceUnion2Branch(object) ==
   [.,:unionDoms] := objMode object
-  doms := orderUnionEntries unionDoms
+  doms := unionDoms
   predList:= mkPredList doms
   doms := stripUnionTags doms
   val' := objValUnwrap object
@@ -1040,8 +1040,7 @@ coerceUnion2Branch(object) ==
 
 coerceBranch2Union(object,union) ==
   -- assumes type is a member of unionDoms
-  unionDoms := CDR union
-  doms := orderUnionEntries unionDoms
+  doms := CDR union
   predList:= mkPredList doms
   doms := stripUnionTags doms
   p := position(objMode object,doms)

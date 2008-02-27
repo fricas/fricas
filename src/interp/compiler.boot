@@ -1044,7 +1044,7 @@ compPretend(["pretend",x,t],m,e) ==
   e:= addDomain(t,e)
   T:= comp(x,t,e) or comp(x,$EmptyMode,e) or return nil
   if T.mode=t then warningMessage:= ["pretend",t," -- should replace by @"]
-  $newCompilerUnionFlag and opOf(T.mode) = 'Union and opOf(m) ^= 'Union =>
+  opOf(T.mode) = 'Union and opOf(m) ^= 'Union =>
      stackSemanticError(["cannot pretend ",x," of mode ",T.mode," to mode ",m],nil)
   T:= [T.expr,t,T.env]
   T':= coerce(T,m) => (if warningMessage then stackWarning warningMessage; T')
@@ -1058,7 +1058,7 @@ compColonInside(x,m,e,m') ==
     if warningMessage
        then stackWarning warningMessage
        else
-         $newCompilerUnionFlag and opOf(m'') = 'Union =>
+         opOf(m'') = 'Union =>
            return
              stackSemanticError(["cannot pretend ",x," of mode ",m''," to mode ",m'],nil)
 
