@@ -1258,19 +1258,19 @@
        LP (let (NOT (consp E-LIST))
               (return-from UNEMBED NIL))
           (setf E-HEAD (car E-LIST))
-	  (if (or (NOT (consp E-HEAD))
-		  (NOT (consp (cdr E-HEAD)))
-		  (NOT (EQ CURRENT-BINDING (car E-HEAD)))
-		  (NOT (EQ CUR-DEF (nth 1 E-HEAD))))
-	      (progn
+          (if (or (NOT (consp E-HEAD))
+                  (NOT (consp (cdr E-HEAD)))
+                  (NOT (EQ CURRENT-BINDING (car E-HEAD)))
+                  (NOT (EQ CUR-DEF (nth 1 E-HEAD))))
+              (progn
                   (setf TMP E-LIST)
-		  (setf E-LIST (cdr E-LIST))
-	          (GO LP) ))
-	  (setf (symbol-function CURRENT-BINDING) (nth 2 E-HEAD))
-	  (if TMP
-	      (setf (cdr TMP) (QCDR E-LIST))
-	      (setf *embedded-functions* (QCDR E-LIST)))
-	  (return-from UNEMBED CURRENT-BINDING))))
+                  (setf E-LIST (cdr E-LIST))
+                  (GO LP) ))
+          (setf (symbol-function CURRENT-BINDING) (nth 2 E-HEAD))
+          (if TMP
+              (setf (cdr TMP) (QCDR E-LIST))
+              (setf *embedded-functions* (QCDR E-LIST)))
+              (return-from UNEMBED CURRENT-BINDING))))
 
 (defun FLAT-BV-LIST (BV-LIST)
   (PROG (TMP1)
