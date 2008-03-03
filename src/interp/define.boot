@@ -1202,7 +1202,7 @@ doIt(item,$predl) ==
   isDomainForm(item,$e) =>
      -- convert naked top level domains to import
     u:= ['import, [first item,:rest item]]
-    stackWarning ["Use: import ", [first item,:rest item]]
+    userError ["Use: import ", [first item,:rest item]]
     RPLACA(item,first u)
     RPLACD(item,rest u)
     doIt(item,$predl)
