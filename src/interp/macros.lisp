@@ -588,10 +588,6 @@ LP  (COND ((NULL X)
  
 (FLAG '(* + AND OR PROGN) 'NARY)                ; flag for MKPF
  
-(DEFUN REMFLAG (L KEY)
-  "Set the KEY property of every item in list L to NIL."
-  (OR (ATOM L) (SEQ (REMPROP (CAR L) KEY) (REMFLAG (CDR L) KEY))))
- 
 (DEFUN FLAGP (X KEY)
   "If X has a KEY property, then FLAGP is true."
   (GET X KEY))
@@ -617,12 +613,6 @@ LP  (COND ((NULL X)
   (AND (IDENTP X)
        (let ((y (symbol-name x)))
          (and (char= #\# (ELT y 0)) (> (SIZE Y) 1) (DIGITP (ELT Y 1))))))
- 
-; 10.7 CATCH and THROW
- 
-(defmacro SPADCATCH (&rest form) (CONS 'CATCH form))
- 
-(defmacro SPADTHROW (&rest form) (CONS 'THROW form))
  
 ; 12 NUMBERS
  
@@ -681,9 +671,6 @@ LP  (COND ((NULL X)
   (if (LT N 1) NIL (CONS (EVAL FN) (NLIST (SUB1 N) FN))))
  
 (define-function 'getchar #'elt)
- 
-(defun GETCHARN (A M) "Return the code of the Mth character of A"
-  (let ((a (if (identp a) (symbol-name a) a))) (char-code (elt A M))))
  
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
  
@@ -1133,8 +1120,6 @@ LP  (COND ((NULL X)
         (progn (BRIGHTPRINT-0 X) (TERPRI) (force-output))
       (progn (BRIGHTPRINT X) (TERPRI) (force-output))))
  
-(defvar |$algebraOutputStream| *standard-output*)
- 
 (defun |saySpadMsg| (X)
   (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
  
@@ -1194,26 +1179,6 @@ LP  (COND ((NULL X)
 (DEFUN BLANKS (N &optional (stream *standard-output*)) "Print N blanks."
     (do ((i 1 (the fixnum(1+ i))))
         ((> i N))(declare (fixnum i n)) (princ " " stream)))
- 
-; 23 FILE SYSTEM INTERFACE
- 
-; 23.2 Opening and Closing Files
- 
-(DEFUN DEFSTREAM (file MODE)
-       (if (member mode '(i input))
-           (MAKE-INSTREAM file)
-         (MAKE-OUTSTREAM file)))
- 
-; 23.3 Renaming, Deleting and Other File Operations
- 
-(DEFUN NOTE (STRM)
-"Attempts to return the current record number of a file stream.  This is 0 for
-terminals and empty or at-end files.  In Common Lisp, we must assume record sizes of 1!"
-   (COND ((STREAM-EOF STRM) 0)
-         ((IS-CONSOLE STRM) 0)
-         ((file-position STRM))))
- 
-(DEFUN POINT (RECNO STRM) (file-position strm recno))
  
 ; 24 ERRORS
  

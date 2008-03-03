@@ -925,7 +925,7 @@ interpREPEAT(op,itrl,body,repeatMode) ==
       ['REPEAT,:[interpIter itr for itr in itrl],
         ['CATCH,$repeatBodyLabel,interpLoop(body,$indexVars,
           $indexTypes,nil)]]
-  SPADCATCH(eval $repeatLabel,timedEVALFUN code)
+  CATCH($repeatLabel,timedEVALFUN code)
   val:= objNewWrap(voidValue(),repeatMode)
   putValue(op,val)
   putModeSet(op,[repeatMode])

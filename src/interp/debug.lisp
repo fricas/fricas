@@ -62,30 +62,23 @@
 (MAKEPROP 'SPAD '/READFUN '|New,LEXPR|)
 (MAKEPROP 'SPAD '/TRAN '/TRANSPAD)
  
-(defmacro |/C,LIB| (&rest L &aux optionlist /editfile
-                          ($prettyprint 't) ($reportCompilation 't))
-  (declare (special optionlist /editfile $prettyprint $reportComilation))
-  `',(|compileConstructorLib| L (/COMP) NIL NIL))
- 
-(defmacro /C (&rest L) `',(/D-1 L (/COMP) NIL NIL))
- 
-(defmacro /CT (&rest L) `',(/D-1 L (/COMP) NIL 'T))
- 
-(defmacro /CTL (&rest L) `',(/D-1 L (/COMP) NIL 'TRACELET))
- 
-(defmacro /D (&rest L) `',(/D-1 L 'DEFINE NIL NIL))
- 
-(defmacro /EC (&rest L) `', (/D-1 L (/COMP) 'T NIL))
- 
-(defmacro /ECT (&rest L) `',(/D-1 L (/COMP) 'T 'T))
- 
-(defmacro /ECTL (&rest L) `',(/D-1 L (/COMP) 'T 'TRACELET))
- 
-(defmacro /E (&rest L) `',(/D-1 L NIL 'T NIL))
- 
-(defmacro /ED (&rest L) `',(/D-1 L 'DEFINE 'T NIL))
  
 (defun heapelapsed () 0)
+
+(DEFUN DEFSTREAM (file MODE)
+       (if (member mode '(i input))
+           (MAKE-INSTREAM file)
+         (MAKE-OUTSTREAM file)))
+
+(DEFUN NOTE (STRM)
+"Attempts to return the current record number of a file stream.  This is 0 for
+terminals and empty or at-end files.  In Common Lisp, we must assume record sizes of 1!"
+   (COND ((STREAM-EOF STRM) 0)
+         ((IS-CONSOLE STRM) 0)
+         ((file-position STRM))))
+
+(DEFUN POINT (RECNO STRM) (file-position strm recno))
+
  
 (defun /COMP () (if (fboundp 'COMP) 'COMP 'COMP370))
  
@@ -93,8 +86,6 @@
   (CATCH 'FILENAM
     (PROG (TO OPTIONL OPTIONS FNL INFILE OUTSTREAM FN )
           (declare (special fn infile outstream ))
-          (if (member '? L :test #'eq)
-              (RETURN (OBEY "EXEC SPADEDIT /C TELL")))
           (SETQ OPTIONL (/OPTIONS L))
           (SETQ FNL (TRUNCLIST L OPTIONL))
           (SETQ OPTIONS (OPTIONS2UC OPTIONL))
@@ -432,10 +423,8 @@ EXAMINE (SETQ RECNO (NOTE INPUTSTREAM))
 (defmacro /TRACE (&rest L) `',(/TRACE-0 L))
  
 (DEFUN /TRACE-0 (L)
-  (if (member '? L :test #'eq)
-      (OBEY "EXEC NORMEDIT TRACE TELL")
-      (let* ((options (/OPTIONS L)) (FNL (TRUNCLIST L OPTIONS)))
-        (/TRACE-1 FNL OPTIONS))))
+    (let* ((options (/OPTIONS L)) (FNL (TRUNCLIST L OPTIONS)))
+        (/TRACE-1 FNL OPTIONS)))
  
 (define-function '|/TRACE,0| #'/TRACE-0)
  
@@ -618,7 +607,6 @@ EXAMINE (SETQ RECNO (NOTE INPUTSTREAM))
  
 (DEFUN /UNTRACE-0 (L)
     (PROG (OPTIONL OPTIONS FNL)
-      (if (member '? L :test #'eq) (RETURN (OBEY "EXEC NORMEDIT TRACE TELL")))
       (SETQ OPTIONL (/OPTIONS L))
       (SETQ FNL (TRUNCLIST L OPTIONL))
       (SETQ OPTIONS (if OPTIONL (CAR OPTIONL)))

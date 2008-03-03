@@ -190,26 +190,8 @@
 
 (setq |$localVars| ())  ;checked by isType
 
-#+(and :lucid (not :ibm/370))
- (define-function 'RUN-AIX-PROGRAM #'SYS:RUN-AIX-PROGRAM)
 (setq |$specialCharacters| |$plainRTspecialCharacters|)
 
-
-#+:Lucid
-(defun save-system (filename)
-      (in-package "BOOT")
-      (UNTRACE)
-      (|untrace| NIL)
-      (|clearClams|)
-        ;; bind output to nulloutstream
-      (let ((*standard-output* (make-broadcast-stream)))
-        (|resetWorkspaceVariables|))
-      (setq |$specialCharacters| |$plainRTspecialCharacters|)
-
-          (load (make-absolute-filename "lib/interp/obey"))
-      (system:disksave filename :restart-function restart-hook :full-gc t))
-#+:Lucid (define-function 'user::save-system  #'boot::save-system)
-(defun |undoINITIALIZE| () ())
 ;; following in defined in word.boot
 (defun |bootFind| (word) ())
 ;; following 3 are replacements for g-util.boot

@@ -244,7 +244,6 @@
          (setf (cddr entry) value-or-pos)))
      entry))
 
-(defun rsetclass (key int rstream) 0)
 
 ;;(defun rshut (rstream)
 ;;  (when (and (equal rstream (cdr (assoc 'FILE OPTIONLIST)))

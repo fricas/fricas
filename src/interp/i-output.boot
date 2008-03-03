@@ -2100,10 +2100,8 @@ bracketagglist(u, start, linelength, tchr, open, close) ==
     for x in tails u repeat
            RPLACA(x, LIST('CONCAT, first x, tchr))
     if null nextu then RPLACA(CDDR last u, close)
-    x := ASSOCIATER('CONCAT, CONS(ichr, u))
     charybdis(ASSOCIATER('CONCAT, u), start, linelength)
     if $collectOutput then TERPRI $algebraOutputStream
-    ichr := '" "
     u := nextu
     null u => return(nil)
 

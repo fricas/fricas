@@ -231,7 +231,6 @@ substituteCategoryArguments(argl,catform) ==
 augModemapsFromCategoryRep(domainName,repDefn,functorBody,categoryForm,e) ==
   [fnAlist,e]:= evalAndSub(domainName,domainName,domainName,categoryForm,e)
   [repFnAlist,e]:= evalAndSub('Rep,'Rep,repDefn,getmode(repDefn,e),e)
-  catform:= (isCategory categoryForm => categoryForm.(0); categoryForm)
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)
   $base:= 4
@@ -253,8 +252,6 @@ AMFCR_,redefined(opname,u) ==
  
 augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   [fnAlist,e]:= evalAndSub(domainName,domainView,functorForm,categoryForm,e)
-  --  catform:= (isCategory categoryForm => categoryForm.(0); categoryForm)
-  -- catform appears not to be used, so why set it?
   --if ^$InteractiveMode then
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)

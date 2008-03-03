@@ -45,12 +45,6 @@ SETANDFILEQ($nonLisplibDomains,
 
 isRecord type == type is ['Record,:.]
 
-RecordInner args ==
-  -- this is old and should be removed wherever it occurs
-  if $evalDomain then
-    sayBrightly '"-->> Whoops! RecordInner called from this code."
-  Record0 VEC2LIST args
-
 Record0 args ==
     dom := GETREFV 10
     -- JHD added an extra slot to cache EQUAL methods

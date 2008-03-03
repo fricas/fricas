@@ -57,11 +57,8 @@ putFileProperty(fn,ft,id,val) ==
 lisplibWrite(prop,val,filename) ==
   -- this may someday not write NIL keys, but it will now
   if $LISPLIB then
-     rwrite128(prop,val,filename)
+     rwrite(prop,val,filename)
  
-rwrite128(key,value,stream) ==
-  rwrite(key,value,stream)
-  RSETCLASS(key,128,stream)
  
 evalAndRwriteLispForm(key,form) ==
   eval form
@@ -70,7 +67,6 @@ evalAndRwriteLispForm(key,form) ==
 rwriteLispForm(key,form) ==
   if $LISPLIB then
     rwrite( key,form,$libFile)
-    RSETCLASS(PNAME key,1,$libFile)
     LAM_,FILEACTQ(key,form)
  
 getLisplib(name,id) ==
@@ -261,51 +257,6 @@ unloadOneConstructor(cnam,fn) ==
     SETF(SYMBOL_-FUNCTION cnam,mkAutoLoad(fn, cnam))
 
 --% Compilation
- 
-compileConstructorLib(l,op,editFlag,traceFlag) ==
-  --this file corresponds to /C,1
-  MEMQ('_?,l) => return editFile '(_/C TELL _*)
-  optionList:= _/OPTIONS l
-  funList:= TRUNCLIST(l,optionList) or [_/FN]
-  options:= [[UPCASE CAR x,:CDR x] for x in optionList]
-  infile:=  _/MKINFILENAM _/GETOPTION(options,'FROM_=)
-  outfile:= _/MKINFILENAM _/GETOPTION(options,'TO_=)
-  res:= [compConLib1(fn,infile,outfile,op,editFlag,traceFlag)
-               for fn in funList]
-  SHUT INPUTSTREAM
-  res
- 
-compConLib1(fun,infileOrNil,outfileOrNil,auxOp,editFlag,traceFlag) ==
-  $PRETTYPRINT: local := 'T
-  $LISPLIB: local := 'T
-  $lisplibAttributes: local := NIL
-  $lisplibPredicates: local := NIL
-  $lisplibForm: local := NIL
-  $lisplibAbbreviation: local := NIL
-  $lisplibParents: local := NIL
-  $lisplibAncestors: local := NIL
-  $lisplibKind: local := NIL
-  $lisplibModemap: local := NIL
-  $lisplibModemapAlist: local := NIL
-  $lisplibCategoriesExtended: local := NIL -- this is always nil. why? (tpd)
-  $lisplibSlot1 : local := NIL   --used by NRT mechanisms
-  $lisplibOperationAlist: local := NIL
-  $lisplibOpAlist: local:= NIL
-  $lisplibSuperDomain: local := NIL
-  $libFile: local := NIL
-  $lisplibVariableAlist: local := NIL
-  $lisplibSignatureAlist: local := NIL
-  if null atom fun and null CDR fun then fun:= CAR fun -- unwrap nullary
-  libName:= getConstructorAbbreviation fun
-  infile:= infileOrNil or getFunctionSourceFile fun or
-    throwKeyedMsg("S2IL0004",[fun])
-  SETQ(_/EDITFILE,infile)
-  outfile := outfileOrNil or
-    [libName,'OUTPUT,$listingDirectory]   --always QUIET
-  _$ERASE(libName,'OUTPUT,$listingDirectory)
-  outstream:= DEFSTREAM(outfile,'OUTPUT)
-  val:= _/D_,2_,LIB(fun,infile,outstream,auxOp,editFlag,traceFlag)
-  val
  
 compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   --fn= compDefineCategory OR compDefineFunctor

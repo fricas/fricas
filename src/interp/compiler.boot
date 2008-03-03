@@ -1396,14 +1396,7 @@ compilerDoitWithScreenedLisplib(constructor, fun) ==
                           VALUE)
                          ((NOT NIL)
                           (RWRITE KEY VALUE STREAM)))) )
-    EMBED('RSETCLASS,
-          '(LAMBDA (KEY CLASS STREAM)
-                   (COND ((AND (EQ STREAM $libFile)
-                               (NOT (MEMBER KEY $saveableItems)))
-                          CLASS)
-                         ((NOT NIL)
-                          (RSETCLASS KEY CLASS STREAM)))) )
     UNWIND_-PROTECT(compilerDoit(constructor,fun),
-                   SEQ(UNEMBED 'RWRITE, UNEMBED 'RSETCLASS))
+                   UNEMBED 'RWRITE)
 
 
