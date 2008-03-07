@@ -78,7 +78,7 @@ Magma(VarSet:OrderedSet):Public == Private where
            false
         y case VWORD => x::VWORD = y::VWORD
         false
- 
+
       varList x == 
         x case VarSet => [x::VarSet]
         lv: List VarSet := setUnion(varList x.left, varList x.right)
@@ -136,7 +136,7 @@ Magma(VarSet:OrderedSet):Public == Private where
          x.left =  y.left =>  x.right <  y.right
          x.left < y.left
 
-      lexico(x,y) ==      	-- peut etre amelioree !!!!!!!!!!!
+      lexico(x,y) ==            -- peut etre amelioree !!!!!!!!!!!
          x case VarSet => 
             y case VarSet => x::VarSet < y::VarSet
             x::VarSet <= first y
@@ -145,7 +145,7 @@ Magma(VarSet:OrderedSet):Public == Private where
          fx = fy => lexico(rest x , rest y)
          fx < fy 
 
-      x < y ==                 	-- recursif par longueur
+      x < y ==                  -- recursif par longueur
          lx,ly: PositiveInteger
          lx:= length x ; ly:= length y
          lx = ly => recursif(x,y)
@@ -280,20 +280,20 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
          w = 1 => []
          l : List $ := reverse [ u::$ for u in LetterList w]
          factor1( rest l, first l , [] )
-      
+
        x < y ==                     -- lexicographique par longueur
          lx,ly: PI
          lx:= length x ; ly:= length y
          lx = ly => lexico(x,y)
          lx < ly
- 
+
        coerce(x:$):OF == bracket(x::OFMON::OF)
        coerce(x:$):Magma VarSet == x::Rep
 
        LyndonWordsList1 (vl,n) ==    -- a ameliorer !!!!!!!!!!!
             null vl => error "empty list"
             base: ARRAY1 List $ := new(n::I::NNI ,[])
-           
+
            -- mots de longueur 1
             lbase1:List $ := [w::$ for w in sort(vl)]
             base.1 := lbase1
@@ -310,10 +310,10 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
                    for b in base(ll-i) repeat
                      if lexico(a,b) and (lexico(b,right a) or b = right a ) 
                      then lbase1:=cons(a*b,lbase1)
- 
+
                base(ll):= sort_!(lexico, lbase1)
             return base
-           
+
        LyndonWordsList (vl,n) ==
            v:ARRAY1 List $ := LyndonWordsList1(vl,n)
            "append"/ [v.i for i in 1..n] 
@@ -454,7 +454,7 @@ XExponentialPackage(R, VarSet, XPOLY): Public == Private where
          ++ truncated at order \axiom{n}.
 
     Private == add
-  
+
         log (p,n) ==
            p1 : XPOLY := p - 1
            not quasiRegular? p1 => 
@@ -586,7 +586,7 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
         lquo(p, lp) ==
           lp = 0 => 0$XRPOLY
           +/ [t.c * lquo1(p,t.k) for t in lp]
- 
+
         rquo(p, lp) ==
           lp = 0 => 0$XRPOLY
           +/ [t.c * rquo1(p,t.k) for t in lp] 
@@ -602,10 +602,10 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
              r := r + lp 
              p1 := p1 - lp::XDPOLY 
            r
- 
+
       --definitions locales
         makeLyndon(u,v) == (u::MAGMA * v::MAGMA) pretend LWORD
- 
+
         crw(u,v) ==               -- u et v sont des mots de Lyndon
           u = v => 0
           lexico(u,v) => lyndon(u,v)
@@ -617,7 +617,7 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
           u2: LWORD := right u
           lexico(u2,v) => cr1(u1, lyndon(u2,v)) + cr2(lyndon(u1,v), u2)
           monom(makeLyndon(u,v),1)
-           
+
         cr1 (l, p) ==
             +/[t.c * crw(l, t.k) for t in p]
 
@@ -635,7 +635,7 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
            l:XRPOLY := RPoly left w
            r:XRPOLY := RPoly right w
            l*r - r*l 
-    
+
       -- definitions
 
         coerce(v:VarSet) == monom(v::LWORD , 1)
@@ -671,7 +671,7 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
           length( p.first.k)$LWORD
 
       --  ListOfTerms p == p pretend List TERM
-        
+
 --        coerce(x) : EX ==
 --           null x => (0$R) :: EX
 --           le : List EX := nil
@@ -732,7 +732,7 @@ PoincareBirkhoffWittLyndonBasis(VarSet: OrderedSet): Public == Private where
       varList      : $ -> List VarSet
          ++ \spad{varList([l1]*[l2]*...[ln])} returns the list of
          ++ variables in the word \spad{l1*l2*...*ln}.
-   
+
    Private == add
 
     -- Representation
@@ -776,7 +776,7 @@ PoincareBirkhoffWittLyndonBasis(VarSet: OrderedSet): Public == Private where
      retractIfCan x ==
         retractable? x => x.first
         "failed"
-      
+
      length x ==
         n: Integer := +/[ length l for l in x]
         n::NNI
@@ -881,7 +881,7 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
 
        prod2(p:$, b:BASIS):$ ==
          +/ [t.c * prod(t.k, b) for t in p]
- 
+
        prod11(b,p,n) ==
            limit: I := n -$I length b
            +/ [t.c * prod(b, t.k) for t in p| length(t.k) :: I <= limit]
@@ -963,7 +963,7 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
          p = 0 => p
          p.last.k = 1$BASIS => delete(p, maxIndex p)
          p
-    
+
        x:$ * y:$ ==
          y = 0$$ => 0
          +/ [t.c * prod1(t.k, y) for t in x]
@@ -1000,7 +1000,7 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
                 s := k2 * product(p, s, n)
                 r := r + s
              r
-  
+
          log (p,n) ==
              p = 1 => 0
              p1: $ := 1 - p
@@ -1013,7 +1013,7 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
                s := product(p1, s, n)
                r := k2 * s + r
              r
- 
+
        LiePolyIfCan p ==
          p = 0 => 0$LPOLY
          "and"/ [retractable?(t.k)$BASIS for t in p] =>
@@ -1126,13 +1126,13 @@ LieExponentials(VarSet, R, Order): XDPcat == XDPdef where
        out(t:TERM1):EX ==
          t.c =$R 1 => char("e")$Character :: EX ** t.k ::EX
          char("e")$Character :: EX ** (t.c::EX * t.k::EX)
- 
+
     -- definitions
        identification(x,y) ==
           l1: List TERM1 := LyndonCoordinates x
           l2: List TERM1 := LyndonCoordinates y
           ident(l1, l2)
- 
+
        LyndonCoordinates x ==
          lt: List TERM1 := [[l::LWORD, t.c]$TERM1 for t in ListOfTerms x | _
                              (l := retractIfCan(t.k)$BASIS) case LWORD ] 

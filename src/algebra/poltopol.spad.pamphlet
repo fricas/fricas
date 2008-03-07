@@ -17,7 +17,7 @@
 ++ Date Created: 1987
 ++ Date Last Updated: 28 March 1990  (PG)
 MPolyCatFunctions2(VarSet,E1,E2,R,S,PR,PS) : public == private where
- 
+
   VarSet : OrderedSet
   E1     : OrderedAbelianMonoidSup
   E2     : OrderedAbelianMonoidSup
@@ -27,22 +27,22 @@ MPolyCatFunctions2(VarSet,E1,E2,R,S,PR,PS) : public == private where
   PS     : PolynomialCategory(S,E2,VarSet)
   SUPR   ==> SparseUnivariatePolynomial PR
   SUPS   ==> SparseUnivariatePolynomial PS
- 
+
   public == with
     map:     (R -> S,PR) -> PS
-	++ map(f,p) \undocumented	
+        ++ map(f,p) \undocumented       
     reshape: (List S, PR) -> PS
-	++ reshape(l,p) \undocumented
- 
+        ++ reshape(l,p) \undocumented
+
   private == add
- 
+
     supMap:  (R -> S, SUPR) -> SUPS
- 
+
     supMap(fn : R -> S, supr : SUPR): SUPS ==
       supr = 0 => monomial(fn(0$R) :: PS,0)$SUPS
       c : PS := map(fn,leadingCoefficient supr)$%
       monomial(c,degree supr)$SUPS + supMap(fn, reductum supr)
- 
+
     map(fn : R -> S, pr : PR): PS ==
       varu : Union(VarSet,"failed") := mainVariable pr
       varu case "failed" =>  -- have a constant
@@ -65,13 +65,13 @@ MPolyCatFunctions3(Vars1,Vars2,E1,E2,R,PR1,PR2): C == T where
   R    : Ring
   PR1  : PolynomialCategory(R,E1,Vars1)
   PR2  : PolynomialCategory(R,E2,Vars2)
- 
+
   C ==> with
     map: (Vars1 -> Vars2, PR1) -> PR2
-	++ map(f,x) \undocumented
- 
+        ++ map(f,x) \undocumented
+
   T ==> add
- 
+
     map(f:Vars1 -> Vars2, p:PR1):PR2 ==
       (x1 := mainVariable p) case "failed" =>
         c:R:=(retract p)
@@ -92,23 +92,23 @@ MPolyCatFunctions3(Vars1,Vars2,E1,E2,R,PR1,PR2): C == T where
 ++ Description:
 ++ Package with the conversion functions among different kind of polynomials
 PolToPol(lv,R) : C == T
- 
+
  where
   R      :    Ring
   lv     :    List Symbol
   NNI    ==>  NonNegativeInteger
   Ov     ==>  OrderedVariableList(lv)
   IES    ==>  IndexedExponents Symbol
- 
+
   DP     ==>  DirectProduct(#lv,NonNegativeInteger)
   DPoly  ==>  DistributedMultivariatePolynomial(lv,R)
- 
+
   HDP    ==>  HomogeneousDirectProduct(#lv,NonNegativeInteger)
   HDPoly ==>  HomogeneousDistributedMultivariatePolynomial(lv,R)
   P      ==>  Polynomial R
   VV     ==>  Vector NNI
   MPC3   ==>  MPolyCatFunctions3
- 
+
   C == with
      dmpToHdmp    :    DPoly    -> HDPoly
        ++ dmpToHdmp(p) converts p from a \spadtype{DMP} to a \spadtype{HDMP}.
@@ -123,32 +123,32 @@ PolToPol(lv,R) : C == T
      pToDmp       :     P       -> DPoly
        ++ pToDmp(p) converts p from a \spadtype{POLY} to a \spadtype{DMP}.
   T == add
- 
+
     variable1(xx:Symbol):Ov == variable(xx)::Ov
- 
+
    -- transform a P in a HDPoly --
     pToHdmp(pol:P) : HDPoly ==
       map(variable1,pol)$MPC3(Symbol,Ov,IES,HDP,R,P,HDPoly)
- 
+
    -- transform an HDPoly in a P --
     hdmpToP(hdpol:HDPoly) : P ==
       map(convert,hdpol)$MPC3(Ov,Symbol,HDP,IES,R,HDPoly,P)
- 
+
    -- transform an DPoly in a P --
     dmpToP(dpol:DPoly) : P ==
       map(convert,dpol)$MPC3(Ov,Symbol,DP,IES,R,DPoly,P)
- 
+
    -- transform a P in a DPoly --
     pToDmp(pol:P) : DPoly ==
       map(variable1,pol)$MPC3(Symbol,Ov,IES,DP,R,P,DPoly)
- 
+
    -- transform a DPoly in a HDPoly --
     dmpToHdmp(dpol:DPoly) : HDPoly ==
       dpol=0 => 0$HDPoly
       monomial(leadingCoefficient dpol,
                directProduct(degree(dpol)::VV)$HDP)$HDPoly+
                                                  dmpToHdmp(reductum dpol)
- 
+
    -- transform a HDPoly in a DPoly --
     hdmpToDmp(hdpol:HDPoly) : DPoly ==
       hdpol=0 => 0$DPoly

@@ -25,7 +25,7 @@ TubePlot(Curve): Exports == Implementation where
   B   ==> Boolean
   L   ==> List
   Pt  ==> Point DoubleFloat
- 
+
   Exports ==> with
     getCurve: % -> Curve
       ++ getCurve(t) returns the \spadtype{PlottableSpaceCurveCategory}
@@ -45,22 +45,22 @@ TubePlot(Curve): Exports == Implementation where
       ++ space curve c of the category \spadtype{PlottableSpaceCurveCategory},
       ++ a list of lists of points (loops) ll and a boolean b which if
       ++ true indicates a closed tube, or if false an open tube.
- 
+
   Implementation ==> add
- 
+
 --% representation
- 
+
     Rep := Record(parCurve:Curve,loops:L L Pt,closedTube?:B)
- 
+
     getCurve plot == plot.parCurve
- 
+
     listLoops plot == plot.loops
- 
+
     closed? plot == plot.closedTube?
     open? plot   == not plot.closedTube?
- 
+
     setClosed(plot,flag) == plot.closedTube? := flag
- 
+
     tube(curve,ll,b) == [curve,ll,b]
 
 @
@@ -79,7 +79,7 @@ TubePlotTools(): Exports == Implementation where
   SF  ==> DoubleFloat
   L   ==> List
   Pt  ==> Point SF
- 
+
   Exports ==> with
     point: (SF,SF,SF,SF) -> Pt
       ++ point(x1,x2,x3,c) creates and returns a point from the three 
@@ -123,48 +123,48 @@ TubePlotTools(): Exports == Implementation where
       ++ binormal vector given by the point(vector) b, and a list of lists,
       ++ lls, which is the \spadfun{cosSinInfo} of the number of points
       ++ defining the loop.
- 
+
   Implementation ==> add
     import PointPackage(SF)
- 
+
     point(x,y,z,c) == point(l : L SF := [x,y,z,c])
- 
+
     getColor: Pt -> SF
     getColor pt == (maxIndex pt > 3 => color pt; 0)
- 
+
     getColor2: (Pt,Pt) -> SF
     getColor2(p0,p1) ==
       maxIndex p0 > 3 => color p0
       maxIndex p1 > 3 => color p1
       0
- 
+
     a * p ==
       l : L SF := [a * xCoord p,a * yCoord p,a * zCoord p,getColor p]
       point l
- 
+
     p0 + p1 ==
       l : L SF := [xCoord p0 + xCoord p1,yCoord p0 + yCoord p1,_
                    zCoord p0 + zCoord p1,getColor2(p0,p1)]
       point l
- 
+
     p0 - p1 ==
       l : L SF := [xCoord p0 - xCoord p1,yCoord p0 - yCoord p1,_
                    zCoord p0 - zCoord p1,getColor2(p0,p1)]
       point l
- 
+
     dot(p0,p1) ==
       (xCoord p0 * xCoord p1) + (yCoord p0 * yCoord p1) +_
         (zCoord p0 * zCoord p1)
- 
+
     cross(p0,p1) ==
       x0 := xCoord p0; y0 := yCoord p0; z0 := zCoord p0;
       x1 := xCoord p1; y1 := yCoord p1; z1 := zCoord p1;
       l : L SF := [y0 * z1 - y1 * z0,z0 * x1 - z1 * x0,_
                    x0 * y1 - x1 * y0,getColor2(p0,p1)]
       point l
- 
+
     unitVector p == (inv sqrt dot(p,p)) * p
- 
+
     cosSinInfo n ==
       ans : L L SF := nil()
       theta : SF := 2 * pi()/n
@@ -172,7 +172,7 @@ TubePlotTools(): Exports == Implementation where
         angle := i * theta
         ans := concat([cos angle,sin angle],ans)
       ans
- 
+
     loopPoints(ctr,pNorm,bNorm,rad,cosSin) ==
       ans : L Pt := nil()
       while not null cosSin repeat
@@ -205,7 +205,7 @@ ExpressionTubePlot(): Exports == Implementation where
   Pt  ==> Point SF
   PLOT3 ==> Plot3D
   TUBE  ==> TubePlot Plot3D
- 
+
   Exports ==> with
     constantToUnaryFunction: SF -> (SF -> SF)
       ++ constantToUnaryFunction(s) is a local function which takes the
@@ -235,14 +235,14 @@ ExpressionTubePlot(): Exports == Implementation where
       ++ If s = "closed", the tube is
       ++ considered to be closed; if s = "open", the tube is considered
       ++ to be open.
- 
+
   Implementation ==> add
     import Plot3D
     import F2F
     import TubePlotTools
- 
+
 --% variables
- 
+
     getVariable: (FE,FE,FE) -> SY
     getVariable(x,y,z) ==
       varList1 := variables x
@@ -274,9 +274,9 @@ ExpressionTubePlot(): Exports == Implementation where
       not (first varList3 = t1) or not (t2 = t1) =>
         error "tubePlot: only one variable may be used"
       t1
- 
+
 --% tubes: variable radius
- 
+
     tubePlot(x:FE,y:FE,z:FE,colorFcn:SF -> SF,_
              tRange:SEG SF,radFcn:SF -> SF,n:I,string:S) ==
       -- check value of n
@@ -339,22 +339,22 @@ ExpressionTubePlot(): Exports == Implementation where
         lps := loopPoints(ctr,pNorm,bNorm,radFcn tval,cosSin)
         loopList := cons(lps,loopList)
       tube(parPlot,reverse_! loopList,flag)
- 
+
     tubePlot(x:FE,y:FE,z:FE,colorFcn:SF -> SF,_
              tRange:SEG SF,radFcn:SF -> SF,n:I) ==
       tubePlot(x,y,z,colorFcn,tRange,radFcn,n,"open")
- 
+
 --% tubes: constant radius
- 
+
     project: (SF,SF) -> SF
     project(x,y) == x
- 
+
     constantToUnaryFunction x == project(x,#1)
- 
+
     tubePlot(x:FE,y:FE,z:FE,colorFcn:SF -> SF,_
              tRange:SEG SF,rad:SF,n:I,s:S) ==
       tubePlot(x,y,z,colorFcn,tRange,constantToUnaryFunction rad,n,s)
- 
+
     tubePlot(x:FE,y:FE,z:FE,colorFcn:SF -> SF,_
              tRange:SEG SF,rad:SF,n:I) ==
       tubePlot(x,y,z,colorFcn,tRange,rad,n,"open")
@@ -380,23 +380,23 @@ NumericTubePlot(Curve): Exports == Implementation where
   Pt  ==> Point SF
   TUBE ==> TubePlot Curve
   Triad ==> Record(tang:Pt,norm:Pt,bin:Pt)
- 
+
   Exports ==> with
     tube: (Curve,SF,I) -> TUBE
       ++ tube(c,r,n) creates a tube of radius r around the curve c.
- 
+
   Implementation ==> add
     import TubePlotTools
- 
+
     LINMAX  := convert(0.995)@SF
     XHAT := point(1,0,0,0)
     YHAT := point(0,1,0,0)
     PREV0 := point(1,1,0,0)
     PREV := PREV0
- 
+
     colinearity: (Pt,Pt) -> SF
     colinearity(x,y) == dot(x,y)**2/(dot(x,x) * dot(y,y))
- 
+
     orthog: (Pt,Pt) -> Pt
     orthog(x,y) ==
       if colinearity(x,y) > LINMAX then y := PREV
@@ -404,7 +404,7 @@ NumericTubePlot(Curve): Exports == Implementation where
         y := (colinearity(x,XHAT) < LINMAX => XHAT; YHAT)
       a := -dot(x,y)/dot(x,x)
       PREV := a*x + y
- 
+
     poTriad:(Pt,Pt,Pt) -> Triad
     poTriad(pl,po,pr) ==
       -- use divided difference for t.
@@ -413,7 +413,7 @@ NumericTubePlot(Curve): Exports == Implementation where
       pol := pl - po
       n   := unitVector orthog(t,pol)
       [t,n,cross(t,n)]
- 
+
     curveTriads: L Pt -> L Triad
     curveTriads l ==
       (k := #l) < 2 => error "Need at least 2 points to specify a curve"
@@ -440,7 +440,7 @@ NumericTubePlot(Curve): Exports == Implementation where
       n := unitVector orthog(t,x.norm)
       endtriad : Triad := [t,n,cross(t,n)]
       concat(begtriad,concat(midtriads,endtriad))
- 
+
     curveLoops: (L Pt,SF,I) -> L L Pt
     curveLoops(pts,r,nn) ==
       triads := curveTriads pts
@@ -450,7 +450,7 @@ NumericTubePlot(Curve): Exports == Implementation where
         n := triad.norm; b := triad.bin
         loops := concat(loopPoints(pt,n,b,r,cosSin),loops)
       reverse_! loops
- 
+
     tube(curve,r,n) ==
       n < 3 => error "tube: n should be at least 3"
       brans := listBranches curve
@@ -495,7 +495,7 @@ NumericTubePlot(Curve): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<domain TUBE TubePlot>>
 <<package TUBETOOL TubePlotTools>>
 <<package EXPRTUBE ExpressionTubePlot>>

@@ -178,20 +178,20 @@ extension from ".stex" to ".smml".
 
 To the "section{output}" table I added the line
 \begin{verbatim}
-   mathml		   created output in MathML style	Off:CONSOLE
+   mathml                  created output in MathML style       Off:CONSOLE
 \end{verbatim}
 Added the code chunk "outputmathml" to the code chunk "output"
 in "section{output}".
 
 Relevant code chunks:
 \begin{verbatim}
-	 outputmathml
+         outputmathml
 \end{verbatim}
 Relevant variables:
 \begin{verbatim}
-	 setOutputMathml
-	 $mathmlFormat
-	 $mathmlOutputFile
+         setOutputMathml
+         $mathmlFormat
+         $mathmlOutputFile
 \end{verbatim}
 
 Note when copying the tex stuff I changed occurrences of "tex"
@@ -582,7 +582,7 @@ returning Void.  I really only need the one coerce function.
       sayTeX$Lisp "</math>"
       void()$Void
 
-      
+
 
     exprex(expr : E): S ==
       -- This breaks down an expression into atoms and returns it as
@@ -602,9 +602,9 @@ returning Void.  I really only need the one coerce function.
       s : S := concat ["{",sop]
       if nargs > 0  then
         for a in args repeat
---	  sayTeX$Lisp concat ["2: ",stringify a]
-	  s1 : S := exprex a
-	  s := concat [s,s1]
+--        sayTeX$Lisp concat ["2: ",stringify a]
+          s1 : S := exprex a
+          s := concat [s,s1]
       s := concat [s,"}"]
 
 @
@@ -642,16 +642,16 @@ returning Void.  I really only need the one coerce function.
       if enE < length then
 --        sayTeX$Lisp "****displayElt3****"
         u := segment(1,enE)$US
-	sayTeX$Lisp mathML.u
+        sayTeX$Lisp mathML.u
       else
 --        sayTeX$Lisp "****displayElt4****"
         enT := tagEnd(name,1,mathML)
-	u := segment(1,enT)$US
-	sayTeX$Lisp mathML.u
-	u := segment(enT+1,enE-#name-3)$US
-	displayElt(mathML.u)
-	u := segment(enE-#name-2,enE)$US
-	sayTeX$Lisp mathML.u
+        u := segment(1,enT)$US
+        sayTeX$Lisp mathML.u
+        u := segment(enT+1,enE-#name-3)$US
+        displayElt(mathML.u)
+        u := segment(enE-#name-2,enE)$US
+        sayTeX$Lisp mathML.u
       if end > enE then
 --        sayTeX$Lisp "****displayElt5****"
         u := segment(enE+1,end)$US
@@ -684,19 +684,19 @@ returning Void.  I really only need the one coerce function.
       while (level > 0) repeat
         startI := position(startS,mathML,pI)$String
 
-	endI := position(endS,mathML,pI)$String
+        endI := position(endS,mathML,pI)$String
 
-	if (startI = 0) then
-	  level := level-1
+        if (startI = 0) then
+          level := level-1
           --sayTeX$Lisp "****eltLimit 1******"
-	  pI := tagEnd(name,endI,mathML)
-	else
-	  if (startI < endI) then
-	    level := level+1
-	    pI := tagEnd(name,startI,mathML)
-	  else
-	    level := level-1
-	    pI := tagEnd(name,endI,mathML)
+          pI := tagEnd(name,endI,mathML)
+        else
+          if (startI < endI) then
+            level := level+1
+            pI := tagEnd(name,startI,mathML)
+          else
+            level := level-1
+            pI := tagEnd(name,endI,mathML)
       pI
 
 
@@ -759,7 +759,7 @@ have to be switched by swapping names.
       for a in letmp repeat
         le := append(le,atomize a)
       le
-      	
+
 
     ungroup(str: S): S ==
       len : I := #str
@@ -781,10 +781,10 @@ have to be switched by swapping names.
       pos : I := position(plusminus,str,1)
       if pos > 0 then
         ustart:US := segment(1,pos-1)$US
-	uend:US := segment(pos+20,len)$US
+        uend:US := segment(pos+20,len)$US
         str := concat [str.ustart,"<mo>-</mo>",str.uend]
-	if pos < len-18 then
-	  str := postcondition(str)
+        if pos < len-18 then
+          str := postcondition(str)
       str
 
 
@@ -820,7 +820,7 @@ have to be switched by swapping names.
         group concat [formatMml(first args,prec),
                       "<mo>&#x02192;</mo>",
                         formatMml(second args,prec)]
-			 --RightArrow
+                         --RightArrow
       op = "VCONCAT" =>
         group concat("<mtable><mtr>",
                      concat(concat([concat("<mtd>",concat(formatMml(u, minPrec),"</mtd>"))
@@ -841,13 +841,13 @@ have to be switched by swapping names.
       op = "OVERBAR" =>
         null args => ""
         group concat ["<mover accent='true'><mrow>",formatMml(first args,minPrec),"</mrow><mo stretchy='true'>&#x000AF;</mo></mover>"]
-	 --OverBar
+         --OverBar
       op = "ROOT" =>
         null args => ""
         tmp : S := group formatMml(first args, minPrec)
         null rest args => concat ["<msqrt>",tmp,"</msqrt>"]
         group concat
-	  ["<mroot><mrow>",tmp,"</mrow>",formatMml(first rest args, minPrec),"</mroot>"]
+          ["<mroot><mrow>",tmp,"</mrow>",formatMml(first rest args, minPrec),"</mroot>"]
       op = "SEGMENT" =>
         tmp : S := concat [formatMml(first args, minPrec),"<mo>..</mo>"]
         group
@@ -862,19 +862,19 @@ have to be switched by swapping names.
       -- the code here for now.
       op = "SUPERSUB" =>
         base:S := formatMml(first args, minPrec)
-	args := rest args
-	if #args = 1 then
-	  "<msub><mrow>"base"</mrow><mrow>"formatMml(first args, minPrec)"</mrow></msub>"
-	else if #args = 2 then
-	-- it would be nice to substitue &#x2032; for , in the case of
-	-- an ordinary derivative, it looks a lot better.
-	  "<msubsup><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args, minPrec)"</mrow></msubsup>"
-	else if #args = 3 then
-	  "<mmultiscripts><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args,minPrec)"</mrow><mprescripts/><mrow>"formatMml(first rest rest args,minPrec)"</mrow><none/></mmultiscripts>"
-	else if #args = 4 then
-	  "<mmultiscripts><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args,minPrec)"</mrow><mprescripts/><mrow>"formatMml(first rest rest args,minPrec)"</mrow><mrow>"formatMml(first rest rest rest args,minPrec)"</mrow></mmultiscripts>"
-	else
-	  "<mtext>Problem with multiscript object</mtext>"
+        args := rest args
+        if #args = 1 then
+          "<msub><mrow>"base"</mrow><mrow>"formatMml(first args, minPrec)"</mrow></msub>"
+        else if #args = 2 then
+        -- it would be nice to substitue &#x2032; for , in the case of
+        -- an ordinary derivative, it looks a lot better.
+          "<msubsup><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args, minPrec)"</mrow></msubsup>"
+        else if #args = 3 then
+          "<mmultiscripts><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args,minPrec)"</mrow><mprescripts/><mrow>"formatMml(first rest rest args,minPrec)"</mrow><none/></mmultiscripts>"
+        else if #args = 4 then
+          "<mmultiscripts><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args,minPrec)"</mrow><mprescripts/><mrow>"formatMml(first rest rest args,minPrec)"</mrow><mrow>"formatMml(first rest rest rest args,minPrec)"</mrow></mmultiscripts>"
+        else
+          "<mtext>Problem with multiscript object</mtext>"
       op = "SC" =>
         -- need to handle indentation someday
         null args => ""
@@ -909,13 +909,13 @@ have to be switched by swapping names.
       tmpLE : L E := rest rest atomE
       while stringify first tmpLE = "CONCAT" repeat
         ndiffs := ndiffs+1
-	tmpLE := rest tmpLE
+        tmpLE := rest tmpLE
       numLS : L S := nil
       i : I := 1
       while i < ndiffs repeat
         numLS := append(numLS,list(stringify first rest tmpLE))
-	tmpLE := rest rest rest tmpLE
-	i := i+1
+        tmpLE := rest rest rest tmpLE
+        i := i+1
       numLS := append(numLS,list(stringify first rest tmpLE))
       -- numLS contains the numbers of the bound variables as strings
       -- for the differentiations, thus for the differentiation [x,x,z,x]
@@ -925,7 +925,7 @@ have to be switched by swapping names.
  --     sayTeX$Lisp "formatSub: nargs = "string(#args)
       while i < #args repeat
         posLS := append(posLS,list(string(i+1)))
-	i := i+1
+        i := i+1
       -- posLS contains the positions of the bound variables in args
       -- as a list of strings, e.g. for the above example ["1","2"]
       tmpS: S := stringify atomE.2
@@ -940,25 +940,25 @@ have to be switched by swapping names.
       k : I
       tmpS: S
       while i < #posLS+1 repeat
-	j := 0
-	k := 1
-	while k < #numLS + 1 repeat
-	  if numLS.k = string i then j := j + 1
-	  k := k+1
+        j := 0
+        k := 1
+        while k < #numLS + 1 repeat
+          if numLS.k = string i then j := j + 1
+          k := k+1
         if j > 0 then
-	  tmpS := stringify args.i
-	  if j = 1 then
-	    s := s"<mo>&#x02202;</mo><mi>"tmpS"</mi>"
-	  else
-	    s := s"<mo>&#x02202;</mo><msup><mi>"tmpS"</mi><mn>"string(j)"</mn></msup>"
+          tmpS := stringify args.i
+          if j = 1 then
+            s := s"<mo>&#x02202;</mo><mi>"tmpS"</mi>"
+          else
+            s := s"<mo>&#x02202;</mo><msup><mi>"tmpS"</mi><mn>"string(j)"</mn></msup>"
         i := i + 1
       s := s"</mrow></mfrac><mo>(</mo>"
       i := 1
       while i < #posLS+1 repeat
         tmpS := stringify args.i
-	s := s"<mi>"tmpS"</mi>"
-	if i < #posLS then s := s"<mo>,</mo>"
-	i := i+1
+        s := s"<mi>"tmpS"</mi>"
+        if i < #posLS then s := s"<mo>,</mo>"
+        i := i+1
       s := s"<mo>)</mo>"
 
     formatSub1(expr : E, args : L E, opPrec : I) : S ==
@@ -983,13 +983,13 @@ have to be switched by swapping names.
       tmpLE : L E := rest rest atomE
       while stringify first tmpLE = "CONCAT" repeat
         ndiffs := ndiffs+1
-	tmpLE := rest tmpLE
+        tmpLE := rest tmpLE
       numLS : L S := nil
       i : I := 1
       while i < ndiffs repeat
         numLS := append(numLS,list(stringify first rest tmpLE))
-	tmpLE := rest rest rest tmpLE
-	i := i+1
+        tmpLE := rest rest rest tmpLE
+        i := i+1
       numLS := append(numLS,list(stringify first rest tmpLE))
       -- numLS contains the numbers of the bound variables as strings
       -- for the differentiations, thus for the differentiation [x,x,z,x]
@@ -999,7 +999,7 @@ have to be switched by swapping names.
  --     sayTeX$Lisp "formatSub: nargs = "string(#args)
       while i < #args repeat
         posLS := append(posLS,list(string(i+1)))
-	i := i+1
+        i := i+1
       -- posLS contains the positions of the bound variables in args
       -- as a list of strings, e.g. for the above example ["1","2"]
       funcS: S := stringify atomE.2
@@ -1007,16 +1007,16 @@ have to be switched by swapping names.
       i := 1
       while i < #numLS+1 repeat
         s := s"<mo>,</mo><mn>"numLS.i"</mn>"
-	i := i + 1
+        i := i + 1
       s := s"</mrow></msub><mo>(</mo>"
       i := 1
       while i < #posLS+1 repeat
 --        tmpS := stringify args.i
-	tmpS := formatMml(first args,minPrec)
-	args := rest args
-	s := s"<mi>"tmpS"</mi>"
-	if i < #posLS then s := s"<mo>,</mo>"
-	i := i+1
+        tmpS := formatMml(first args,minPrec)
+        args := rest args
+        s := s"<mi>"tmpS"</mi>"
+        if i < #posLS then s := s"<mo>,</mo>"
+        i := i+1
       s := s"<mo>)</mo>"
 
     formatSuperSub(expr : E, args : L E, opPrec : I) : S ==
@@ -1039,12 +1039,12 @@ have to be switched by swapping names.
       i : I := 0
       while position(commaTest,commaS,1) > 0 repeat
         i := i+1
-	commaTest := commaTest","
+        commaTest := commaTest","
       s : S := "<msup><mi>"funcS"</mi><mrow>"
       j : I := 0
       while j < i repeat
         s := s"<mo>&#x02032;</mo>"
-	j := j + 1
+        j := j + 1
       s := s"</mrow></msup><mo>&#x02061;</mo><mo>(</mo>"formatMml(first args,minPrec)"<mo>)</mo>"
 
     formatSuperSub1(expr : E, args : L E, opPrec : I) : S ==
@@ -1068,7 +1068,7 @@ have to be switched by swapping names.
       ndiffs : I := 0
       while position(commaTest,commaS,1) > 0 repeat
         ndiffs := ndiffs+1
-	commaTest := commaTest","
+        commaTest := commaTest","
       s : S := "<mfrac><mrow><msup><mo>&#x02146;</mo><mn>"string(ndiffs)"</mn></msup><mi>"funcS"</mi></mrow><mrow><mo>&#x02146;</mo><msup><mi>"formatMml(first args,minPrec)"</mi><mn>"string(ndiffs)"</mn></msup></mrow></mfrac><mo>&#x02061;</mo><mo>(</mo><mi>"formatMml(first args,minPrec)"</mi><mo>)</mo>"
 
     formatPlex(op : S, args : L E, prec : I) : S ==
@@ -1082,46 +1082,46 @@ have to be switched by swapping names.
       (n ^= 2) and (n ^= 3) => error "wrong number of arguments for plex"
       s : S :=
         op = "SIGMA"   => 
-	  checkarg := true
-	  "<mo>&#x02211;</mo>"
-	-- Sum
+          checkarg := true
+          "<mo>&#x02211;</mo>"
+        -- Sum
         op = "SIGMA2"   => 
-	  checkarg := true
-	  "<mo>&#x02211;</mo>"
-	-- Sum
+          checkarg := true
+          "<mo>&#x02211;</mo>"
+        -- Sum
         op = "PI"      => 
-	  checkarg := true
-	  "<mo>&#x0220F;</mo>"
-	-- Product
+          checkarg := true
+          "<mo>&#x0220F;</mo>"
+        -- Product
         op = "PI2"     => 
-	  checkarg := true
-	  "<mo>&#x0220F;</mo>"
-	-- Product
+          checkarg := true
+          "<mo>&#x0220F;</mo>"
+        -- Product
 --        op = "INTSIGN" => "<mo>&#x0222B;</mo>"
-	-- Integral, int
+        -- Integral, int
         op = "INDEFINTEGRAL" => "<mo>&#x0222B;</mo>"
-	-- Integral, int
+        -- Integral, int
         "????"
       hold := formatMml(first args,minPrec)
       args := rest args
       if op ^= "INDEFINTEGRAL" then
         if hold ^= "" then
           s := concat ["<munderover>",s,group hold]
-	else
-	  s := concat ["<munderover>",s,group " "]
+        else
+          s := concat ["<munderover>",s,group " "]
         if not null rest args then
           hold := formatMml(first args,minPrec)
-	  if hold ^= "" then
+          if hold ^= "" then
             s := concat [s,group hold,"</munderover>"]
-	  else
-	    s := concat [s,group " ","</munderover>"]
+          else
+            s := concat [s,group " ","</munderover>"]
           args := rest args
-	-- if checkarg true need to test op arg for "+" at least
-	-- and wrap parentheses if so
-	if checkarg then
+        -- if checkarg true need to test op arg for "+" at least
+        -- and wrap parentheses if so
+        if checkarg then
           la : L E := (first args pretend L E)
           opa : S := stringify first la
-	  if opa = "+" then
+          if opa = "+" then
             s := concat [s,"<mo>(</mo>",formatMml(first args,minPrec),"<mo>)</mo>"]
           else s := concat [s,formatMml(first args,minPrec)]
         else s := concat [s,formatMml(first args,minPrec)]
@@ -1140,27 +1140,27 @@ have to be switched by swapping names.
       -- starting at the NOTHING or ...
       (stringify first args) = "NOTHING" =>
         -- the bound variable is the second one in the argument list
-	bvar : E := first rest args
-	bvarS : S := stringify bvar
-	tmpS : S
-	i : I := 0
-	u1 : US
-	u2 : US
-	-- this next one atomizes the integrand plus differential
-	atomE : L E := atomize(first rest rest args)
-	-- pick out the bound variable used by axiom
-	varRS : S := stringify last(atomE)
-	tmpLE : L E := ((first rest rest args) pretend L E)
+        bvar : E := first rest args
+        bvarS : S := stringify bvar
+        tmpS : S
+        i : I := 0
+        u1 : US
+        u2 : US
+        -- this next one atomizes the integrand plus differential
+        atomE : L E := atomize(first rest rest args)
+        -- pick out the bound variable used by axiom
+        varRS : S := stringify last(atomE)
+        tmpLE : L E := ((first rest rest args) pretend L E)
         integrand : S := formatMml(first rest tmpLE,minPrec)
-	-- replace the bound variable, i.e. axiom uses someting of the form
-	-- %A for the bound variable and puts the original variable used
-	-- in the input command as a superscript on the integral sign.
-	-- I'm assuming that the axiom variable is 2 characters.
-	while (i := position(varRS,integrand,i+1)) > 0 repeat
-	  u1 := segment(1,i-1)$US
-	  u2 := segment(i+2,#integrand)$US
-	  integrand := concat [integrand.u1,bvarS,integrand.u2]
-	concat ["<mrow><mo>&#x0222B;</mo>" integrand "<mo>&#x02146;</mo><mi>" bvarS "</mi></mrow>"]
+        -- replace the bound variable, i.e. axiom uses someting of the form
+        -- %A for the bound variable and puts the original variable used
+        -- in the input command as a superscript on the integral sign.
+        -- I'm assuming that the axiom variable is 2 characters.
+        while (i := position(varRS,integrand,i+1)) > 0 repeat
+          u1 := segment(1,i-1)$US
+          u2 := segment(i+2,#integrand)$US
+          integrand := concat [integrand.u1,bvarS,integrand.u2]
+        concat ["<mrow><mo>&#x0222B;</mo>" integrand "<mo>&#x02146;</mo><mi>" bvarS "</mi></mrow>"]
 
       lowlim : S := stringify first args
       highlim : S := stringify first rest args
@@ -1207,7 +1207,7 @@ have to be switched by swapping names.
       if (opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2") and op = "**" then
         s1 : S := concat ["<mo>(</mo>",formatMml(first args, opPrec),"<mo>)</mo>"]
       else 
-	s1 : S := formatMml(first args, opPrec)
+        s1 : S := formatMml(first args, opPrec)
       s2 : S := formatMml(first rest args, opPrec)
       op :=
         op = "|"     =>  s := concat ["<mrow>",s1,"</mrow><mo>",op,"</mo><mrow>",s2,"</mrow>"]
@@ -1256,10 +1256,10 @@ have to be switched by swapping names.
       -- to handle the whole continued fraction at once, i.e. we can't
       -- just look for, e.g., {{ZAG}{1}{6}}
       (#args > 1) and (position("ZAG",stringify first rest args,1) > 0) =>
-	   tmpS : S := stringify first args
-	   position("ZAG",tmpS,1) > 0 => formatZag(args)
---	   position("ZAG",tmpS,1) > 0 => formatZag1(args)
-	   concat [formatMml(first args,minPrec) "<mo>+</mo>" formatZag(rest args)]
+           tmpS : S := stringify first args
+           position("ZAG",tmpS,1) > 0 => formatZag(args)
+--         position("ZAG",tmpS,1) > 0 => formatZag1(args)
+           concat [formatMml(first args,minPrec) "<mo>+</mo>" formatZag(rest args)]
       -- At least for the ops "*","+","-" we need to test to see if a sigma or pi
       -- is one of their arguments because we might need parentheses as indicated
       -- by the problem with summation(operator(f)(i),i=1..n)+1 versus 
@@ -1269,17 +1269,17 @@ have to be switched by swapping names.
         op = ","     => "<mo>,</mo>" --originally , \:
         op = ";"     => "<mo>;</mo>" --originally ; \: should figure these out
         op = "*"     =>
-	    checkargs := true
-	    "<mo>&#x02062;</mo>"
-	-- InvisibleTimes
+            checkargs := true
+            "<mo>&#x02062;</mo>"
+        -- InvisibleTimes
         op = " "     => "<mspace width='0.5em'/>"
         op = "ROW"   => "</mtd><mtd>"
-	op = "+"     => 
-	    checkargs := true
-	    "<mo>+</mo>"
-	op = "-"     => 
-	    checkargs := true
-	    "<mo>-</mo>"
+        op = "+"     => 
+            checkargs := true
+            "<mo>+</mo>"
+        op = "-"     => 
+            checkargs := true
+            "<mo>-</mo>"
         op
       l : L S := nil
       opPrec := naryPrecs.p
@@ -1289,19 +1289,19 @@ have to be switched by swapping names.
       count:I := 1
       for a in args repeat
         if checkargs then
-	  if count < #args then
-	    -- check here for sum or product
-	    if ATOM(a)$Lisp@Boolean then
-	      opa:S := stringify a
-	    else
-	      la : L E := (a pretend L E)
-	      opa : S := stringify first la
-	    if opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2" then
-	      l := concat(op,concat(concat ["<mo>(</mo>",formatMml(a,opPrec),"<mo>)</mo>"],l)$L(S))$L(S)
-	    else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
-	  else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
-	else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
-	count := count + 1
+          if count < #args then
+            -- check here for sum or product
+            if ATOM(a)$Lisp@Boolean then
+              opa:S := stringify a
+            else
+              la : L E := (a pretend L E)
+              opa : S := stringify first la
+            if opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2" then
+              l := concat(op,concat(concat ["<mo>(</mo>",formatMml(a,opPrec),"<mo>)</mo>"],l)$L(S))$L(S)
+            else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
+          else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
+        else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
+        count := count + 1
       s : S := concat reverse rest l
       opPrec < prec => parenthesize s
       s
@@ -1318,7 +1318,7 @@ have to be switched by swapping names.
       position("ZAG",op,1) > 0 =>
         "<mfrac>"formatMml(first rest tmpZag,minPrec)formatMml(first rest rest tmpZag,minPrec)"</mfrac>"
       error "formatZag: Last argument in ZAG construct has unknown operator: "op
-      
+
     formatZag1(args : L E) : S ==
     -- make alternative ZAG format without diminishing fonts, maybe
     -- use a table
@@ -1334,7 +1334,7 @@ have to be switched by swapping names.
       ATOM(expr)$Lisp@Boolean =>
         str := stringify expr
         len := #str
-	-- this bit seems to deal with integers
+        -- this bit seems to deal with integers
         FIXP$Lisp expr =>
           i := expr pretend Integer
           if (i < 0) or (i > 9)
@@ -1353,14 +1353,14 @@ have to be switched by swapping names.
                  concat ["<mn>",elt(nstr,segment(2)$US),"</mn>"]
             else str := concat ["<mn>",str,"</mn>"]
         str = "%pi" => "<mi>&#x003C0;</mi>"
-	-- pi
+        -- pi
         str = "%e"  => "<mi>&#x02147;</mi>"
-	-- ExponentialE
+        -- ExponentialE
         str = "%i"  => "<mi>&#x02148;</mi>"
-	-- ImaginaryI
+        -- ImaginaryI
         len > 0 and str.1 = char "%" => concat(concat("<mi>",str),"</mi>")
         len > 1 and digit? str.1 => concat ["<mn>",str,"</mn>"] -- should handle floats
-	-- presumably this is a literal string
+        -- presumably this is a literal string
         len > 0 and str.1 = char "_"" =>
           concat(concat("<mtext>",str),"</mtext>")
         len = 1 and str.1 = char " " => " "
@@ -1368,10 +1368,10 @@ have to be switched by swapping names.
           specialStringsInMML.i
         (i := position(char " ",str)) > 0 =>
           -- We want to preserve spacing, so use a roman font.
-	  -- What's this for?  Leave the \rm in for now so I can see
-	  -- where it arises.  Removed 2007-02-14
+          -- What's this for?  Leave the \rm in for now so I can see
+          -- where it arises.  Removed 2007-02-14
           concat(concat("<mtext>",str),"</mtext>")
-	-- if we get to here does that mean it's a variable?
+        -- if we get to here does that mean it's a variable?
         concat ["<mi>",str,"</mi>"]
       l : L E := (expr pretend L E)
       null l => blank

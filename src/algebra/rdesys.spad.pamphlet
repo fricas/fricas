@@ -19,14 +19,14 @@
 TranscendentalRischDESystem(F, UP): Exports == Implementation where
   F  : Join(Field, CharacteristicZero, RetractableTo Integer)
   UP : UnivariatePolynomialCategory F
- 
+
   N   ==> NonNegativeInteger
   Z   ==> Integer
   RF  ==> Fraction UP
   V   ==> Vector UP
   U   ==> Union(List UP, "failed")
   REC ==> Record(z1:UP, z2:UP, r1:UP, r2:UP)
- 
+
   Exports ==> with
     monomRDEsys: (RF, RF, RF, UP -> UP) -> _
                     Union(Record(a:UP, b:RF, h:UP, c1:RF, c2:RF, t:UP),"failed")
@@ -40,11 +40,11 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
       ++ baseRDEsys(f, g1, g2) returns fractions \spad{y_1.y_2} such that
       ++ \spad{(y1', y2') + ((0, -f), (f, 0)) (y1,y2) = (g1,g2)}
       ++ if \spad{y_1,y_2} exist, "failed" otherwise.
- 
+
   Implementation ==> add
     import MonomialExtensionTools(F, UP)
     import SmithNormalForm(UP, V, V, Matrix UP)
- 
+
     diophant: (UP, UP, UP, UP, UP) -> Union(REC, "failed")
     getBound: (UP, UP, UP, UP, UP) -> Z
     SPDEsys : (UP, UP, UP, UP, UP, Z, UP -> UP, (F, F, F, UP, UP, Z) -> U) -> U
@@ -53,7 +53,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
     DSPDEhdom: (UP, UP, F, F, N, Z) -> U
     DSPDEbdom: (UP, UP, F, F, N, Z) -> U
     DSPDEsys0: (F, UP, UP, UP, UP, F, F, Z, UP -> UP, (UP,UP,F,F,N) -> U) -> U
- 
+
 -- reduces (y1', y2') + ((0, -f), (f, 0)) (y1,y2) = (g1,g2) to
 -- A (Q1', Q2') + ((H, -B), (B, H)) (Q1,Q2) = (C1,C2), Q1 = y1 T, Q2 = y2 T
 -- where A and H are polynomials, and B,C1,C2,Q1 and Q2 have no normal poles.
@@ -64,7 +64,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
       tt := (gcd(e, differentiate e) exquo gcd(gg,differentiate gg))::UP
       (u := ((tt * (aa := d * tt)) exquo e)) case "failed" => "failed"
       [aa, tt * d * f, - d * derivation tt, u::UP * e * g1, u::UP * e * g2, tt]
- 
+
 -- solve (y1', y2') + ((0, -f), (f, 0)) (y1,y2) = (g1,g2) for y1,y2 in RF
 -- assumes that f is weakly normalized (no finite cancellation) and nonzero
 -- base case: F' = 0
@@ -79,7 +79,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
                           case "failed" => "failed"
       l := v::List(UP)
       [first(l) / u.t, second(l) / u.t]
- 
+
 -- solve
 --   D1 = A Z1 + B R1 - C R2
 --   D2 = A Z2 + C R1 + B R2
@@ -94,7 +94,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
       qr2 := divide(v 4, a)
       [v.1 + b * qr1.quotient - c * qr2.quotient,
        v.2 + c * qr1.quotient + b * qr2.quotient, qr1.remainder, qr2.remainder]
- 
+
 -- solve
 -- A (Q1', Q2') + ((H, -B), (B, H)) (Q1,Q2) = (C1,C2)
 -- for polynomials Q1 and Q2 with degree <= n
@@ -124,7 +124,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
         ((rh := retractIfCan(h)@Union(F, "failed")) case "failed") =>
                                 DSPDEsys(ra, b, h, c1, c2, n, derivation)
       degradation(ra, rb::F, rh::F, c1, c2, n)
- 
+
 -- solve
 -- a (Q1', Q2') + ((H, -B), (B, H)) (Q1,Q2) = (C1,C2)
 -- for polynomials Q1 and Q2 with degree <= n
@@ -143,7 +143,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
         DSPDEsys0(a,b,h,c1,c2,lb,lh,n,derivation,DSPDEbdom(#1,#2,#3,#4,#5,bb))
       det := lb * lb + lh * lh
       DSPDEsys0(a,b,h,c1,c2,lb,lh,n,derivation,DSPDEmix(#1,#2,#3,#4,#5,bb,det))
- 
+
     DSPDEsys0(a, b, h, c1, c2, lb, lh, n, derivation, getlc) ==
       ans1 := ans2 := 0::UP
       repeat
@@ -157,7 +157,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
         n := n - 1
         ans1 := ans1 + q1
         ans2 := ans2 + q2
- 
+
     DSPDEmix(c1, c2, lb, lh, n, d, det) ==
       rh1:F :=
         zero? c1 => 0
@@ -172,8 +172,8 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
       q1 := (rh1 * lh + rh2 * lb) / det
       q2 := (rh2 * lh - rh1 * lb) / det
       [monomial(q1, n), monomial(q2, n)]
- 
- 
+
+
     DSPDEhdom(c1, c2, lb, lh, n, d) ==
       q1:UP :=
         zero? c1 => 0
@@ -186,7 +186,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
         d2 > n => return "failed"
         monomial(leadingCoefficient(c2) / lh, n)
       [q1, q2]
- 
+
     DSPDEbdom(c1, c2, lb, lh, n, d) ==
       q1:UP :=
         zero? c2 => 0
@@ -199,7 +199,7 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
         d1 > n => return "failed"
         monomial(- leadingCoefficient(c1) / lb, n)
       [q1, q2]
- 
+
 -- return a common bound on the degrees of a solution of
 -- A (Q1', Q2') + ((H, -B), (B, H)) (Q1,Q2) = (C1,C2), Q1 = y1 T, Q2 = y2 T
 -- cancellation at infinity is possible
@@ -236,7 +236,7 @@ ElementaryRischDESystem(R, F): Exports == Implementation where
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory, AlgebraicallyClosedField,
            FunctionSpace R)
- 
+
   Z   ==> Integer
   SE  ==> Symbol
   K   ==> Kernel F
@@ -248,7 +248,7 @@ ElementaryRischDESystem(R, F): Exports == Implementation where
   U   ==> Union(RRF, "failed")
   ULF ==> Union(List F, "failed")
   UEX ==> Union(Record(ratpart:F, coeff:F), "failed")
- 
+
   Exports ==> with
     rischDEsys: (Z, F, F, F, SE, (F, List F) -> U, (F, F) -> UEX) -> ULF
       ++ rischDEsys(n, f, g_1, g_2, x,lim,ext) returns \spad{y_1.y_2} such that
@@ -256,29 +256,29 @@ ElementaryRischDESystem(R, F): Exports == Implementation where
       ++ if \spad{y_1,y_2} exist, "failed" otherwise.
       ++ lim is a limited integration function,
       ++ ext is an extended integration function.
- 
+
   Implementation ==> add
     import IntegrationTools(R, F)
     import ElementaryRischDE(R, F)
     import TranscendentalRischDESystem(F, UP)
     import PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
- 
+
 --  sm1 := sqrt(-1::F)
 --  ks1 := retract(sm1)@K
- 
+
 --  gcoeffs    : P -> ULF
 --  gets1coeffs: F -> ULF
 --  cheat      : (Z, F, F, F, SE, (F, List F) -> U, (F, F) -> UEX) -> ULF
     basecase   : (F, F, F, K) -> ULF
- 
+
 -- solve (y1',y2') + ((0, -nfp), (nfp, 0)) (y1,y2) = (g1, g2), base case
     basecase(nfp, g1, g2, k) ==
       (ans := baseRDEsys(univariate(nfp, k), univariate(g1, k),
                          univariate(g2, k))) case "failed" => "failed"
       l := ans::List(RF)
       [multivariate(first l, k), multivariate(second l, k)]
- 
+
 -- returns [x,y] s.t. f = x + y %i
 -- f can be of the form (a + b %i) / (c + d %i)
 --  gets1coeffs f ==
@@ -290,18 +290,18 @@ ElementaryRischDESystem(R, F): Exports == Implementation where
 --    zero?(d := second(lden::List F)) => [a/c, b/c]
 --    cd := c * c + d * d
 --    [(a * c + b * d) / cd, (b * c - a * d) / cd]
- 
+
 --  gcoeffs p ==
 --    degree(q := univariate(p, ks1)) > 1 => "failed"
 --    [coefficient(q, 0)::F, coefficient(q, 1)::F]
- 
+
 --  cheat(n, f, g1, g2, x, limint, extint) ==
 --    (u := rischDE(n, sm1 * f, g1 + sm1 * g2, x, limint, extint))
 --      case "failed" => "failed"
 --    (l := gets1coeffs(u::F)) case "failed" =>
 --      error "rischDEsys: expect linear result in sqrt(-1)"
 --    l::List F
- 
+
 -- solve (y1',y2') + ((0, -n f'), (n f', 0)) (y1,y2) = (g1, g2)
     rischDEsys(n, f, g1, g2, x, limint, extint) ==
       zero? g1 and zero? g2 => [0, 0]
@@ -351,7 +351,7 @@ ElementaryRischDESystem(R, F): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<package RDETRS TranscendentalRischDESystem>>
 <<package RDEEFS ElementaryRischDESystem>>
 @

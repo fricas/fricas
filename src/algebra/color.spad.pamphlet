@@ -23,13 +23,13 @@
 ++ References:
 ++ Description: Color() specifies a domain of 27 colors provided in the 
 ++ \Language{} system (the colors mix additively).
- 
+
 
 Color(): Exports == Implementation where
   I      ==> Integer
   PI     ==> PositiveInteger
   SF     ==> DoubleFloat
- 
+
   Exports ==> AbelianSemiGroup with
     "*"    : (PI, %) -> %
       ++ s * c, returns the color c, whose weighted shade has been scaled by s.
@@ -51,19 +51,19 @@ Color(): Exports == Implementation where
       ++ numberOfHues() returns the number of total hues, set in totalHues.
     color  : Integer -> %
       ++ color(i) returns a color of the indicated hue i.
-  
+
   Implementation ==> add
     totalHues   ==> 27  --see  (header.h file) for the current number
 
     Rep := Record(hue:I, weight:SF)
- 
+
 
     f:SF * c:% ==
       -- s * c returns the color c, whose weighted shade has been scaled by s
       zero? f => c
       -- 0 is the identitly function...or maybe an error is better?
       [c.hue, f * c.weight]
- 
+
     x + y ==
       x.hue = y.hue => [x.hue, x.weight + y.weight]
       if y.weight > x.weight then  -- let x be color with bigger weight
@@ -81,7 +81,7 @@ Color(): Exports == Implementation where
       if (ans < 0) then ans := totalHues + ans
       else if (ans > totalHues) then ans := ans - totalHues
       [ans,1]
- 
+
     x = y     == (x.hue = y.hue) and (x.weight = y.weight)
     red()     == [1,1]
     yellow()  == [11::I,1]
@@ -96,7 +96,7 @@ Color(): Exports == Implementation where
       if (i<0) or (i>totalHues) then
        error concat("Color should be in the range 1..",totalHues::String)
       [i::I, 1]
- 
+
     coerce(c:%):OutputForm ==
       hconcat ["Hue: "::OutputForm, (c.hue)::OutputForm,
                "  Weight: "::OutputForm, (c.weight)::OutputForm]
@@ -115,7 +115,7 @@ Color(): Exports == Implementation where
 ++ Keywords: dim,bright,pastel,coerce
 ++ References:
 ++ Description: This domain describes four groups of color shades (palettes).
- 
+
 Palette(): Exports == Implementation where
   I      ==> Integer
   C      ==> Color
@@ -139,7 +139,7 @@ Palette(): Exports == Implementation where
     coerce : C  -> %
       ++ coerce(c) sets the average shade for the palette to that of the 
       ++ indicated color c.
- 
+
   Implementation ==> add
     Rep := Record(shadeField:I, hueField:C)
 
@@ -191,7 +191,7 @@ Palette(): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<domain COLOR Color>>
 <<domain PALETTE Palette>>
 @

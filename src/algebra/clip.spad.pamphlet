@@ -19,7 +19,7 @@
 ++ Keywords: plot, singularity
 ++ Examples:
 ++ References:
- 
+
 TwoDimensionalPlotClipping(): Exports == Implementation where
   ++ The purpose of this package is to provide reasonable plots of
   ++ functions with singularities.
@@ -31,7 +31,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
   Pt     ==> Point DoubleFloat
   PLOT   ==> Plot
   CLIPPED ==> Record(brans: L L Pt,xValues: SEG SF,yValues: SEG SF)
- 
+
   Exports ==> with
     clip: PLOT -> CLIPPED
       ++ clip(p) performs two-dimensional clipping on a plot, p, from
@@ -76,11 +76,11 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       ++ the fraction and \spad{5/1} for the scale are used in the 
       ++ \fakeAxiomFun{iClipParametric} subroutine, which is called by this 
       ++ function.
- 
+
   Implementation ==> add
     import PointPackage(DoubleFloat)
     import ListFunctions2(Point DoubleFloat,DoubleFloat)
- 
+
     point:(SF,SF) -> Pt
     intersectWithHorizLine:(SF,SF,SF,SF,SF) -> Pt
     intersectWithVertLine:(SF,SF,SF,SF,SF) -> Pt
@@ -94,7 +94,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
 
     Fnan? x == x~=x
     Pnan? p == any?(Fnan?,p)
-   
+
     iClipParametric(pointLists,fraction,scale) ==
       -- error checks and special cases
       (fraction < 0) or (fraction > 1) =>
@@ -149,20 +149,20 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       yseg:SEG SF :=yMin..yMax
       -- return original
       [pointLists,xseg,yseg]@CLIPPED
-      
 
 
- 
+
+
     point(xx,yy) == point(l : L SF := [xx,yy])
- 
+
     intersectWithHorizLine(x1,y1,x2,y2,yy) ==
       x1 = x2 => point(x1,yy)
       point(x1 + (x2 - x1)*(yy - y1)/(y2 - y1),yy)
- 
+
     intersectWithVertLine(x1,y1,x2,y2,xx) ==
       y1 = y2 => point(xx,y1)
       point(xx,y1 + (y2 - y1)*(xx - x1)/(x2 - x1))
- 
+
     intersectWithBdry(xMin,xMax,yMin,yMax,pt1,pt2) ==
       -- pt1 is in rectangle, pt2 is not
       x1 := xCoord pt1; y1 := yCoord pt1
@@ -179,7 +179,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       if x2 < xMin then
         pt2 := intersectWithVertLine(x1,y1,x2,y2,xMin)
       pt2
- 
+
     discardAndSplit(pointList,pred,xMin,xMax,yMin,yMax) ==
       ans : L L Pt := nil()
       list : L Pt  := nil()
@@ -191,20 +191,20 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
         pred(pt) =>
           if (empty? list) and lastPt? then
             bdryPt := intersectWithBdry(xMin,xMax,yMin,yMax,pt,lastPt)
-            -- print bracket [ coerce bdryPt ,coerce pt ]	
+            -- print bracket [ coerce bdryPt ,coerce pt ]       
             --list := cons(bdryPt,list)
           list := cons(pt,list)
         if not empty? list then
           bdryPt := intersectWithBdry(xMin,xMax,yMin,yMax,first list,pt)
-	  -- print bracket [ coerce bdryPt,coerce first list]	
+          -- print bracket [ coerce bdryPt,coerce first list]   
           --list := cons(bdryPt,list)
           ans := cons( list,ans)
         lastPt := pt 
-	lastPt? := true
-	list := nil()
+        lastPt? := true
+        list := nil()
       empty? list => ans
       reverse_! cons(reverse_! list,ans)
- 
+
     clip(plot,fraction,scale) ==
 --      sayBrightly(["   clip: "::OutputForm]$List(OutputForm))$Lisp
       (fraction < 0) or (fraction > 1/2) =>
@@ -242,9 +242,9 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
             yMin := min(yMin,yCoord pt)
             yMax := max(yMax,yCoord pt)
       [lists,xVals,segment(yMin,yMax)]
- 
+
     clip(plot:PLOT) == clip(plot,1/4,5/1)
- 
+
     norm(pt) == 
       x := xCoord(pt); y := yCoord(pt)
       if Fnan? x then
@@ -258,11 +258,11 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
         else
           r:SF := x**2 + y**2
       r
- 
+
     findPt lists ==
       for list in lists repeat
         not empty? list => 
-	     for p in list repeat 
+             for p in list repeat 
                not Pnan? p => return p
       "failed"
 
@@ -286,12 +286,12 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
             yMin := min(yMin,yCoord pt)
             yMax := max(yMax,yCoord pt)
       [lists,segment(xMin,xMax),segment(yMin,yMax)]
- 
+
     clipParametric(plot,fraction,scale) ==
       iClipParametric(listBranches plot,fraction,scale)
- 
+
     clipParametric plot == clipParametric(plot,1/2,5/1)
- 
+
     clip(l: L Pt)   == iClipParametric(list l,1/2,5/1)
     clip(l: L L Pt) == iClipParametric(l,1/2,5/1)
 

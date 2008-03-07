@@ -32,9 +32,9 @@ PartitionsAndPermutations: Exports == Implementation where
   ST1 ==> StreamFunctions1
   ST2 ==> StreamFunctions2
   ST3 ==> StreamFunctions3
- 
+
   Exports ==> with
- 
+
     partitions: (I,I,I) -> ST L I
       ++\spad{partitions(p,l,n)} is the stream of partitions
       ++ of n whose number of parts is no greater than p
@@ -70,56 +70,56 @@ PartitionsAndPermutations: Exports == Implementation where
     permutations: I -> ST L I
       ++\spad{permutations(n)} is the stream of permutations
       ++ formed from \spad{1,2,3,...,n}.
- 
+
   Implementation ==> add
- 
+
     partitions(M,N,n) ==
       zero? n => concat(empty()$L(I),empty()$(ST L I))
       zero? M or zero? N or n < 0 => empty()
       c := map(concat(N,#1),partitions(M - 1,N,n - N))
       concat(c,partitions(M,N - 1,n))
- 
+
     partitions n == partitions(n,n,n)
- 
+
     partitions(M,N)==
       aaa : L ST L I := [partitions(M,N,i) for i in 0..M*N]
       concat(aaa :: ST ST L I)$ST1(L I)
- 
+
     -- nogreq(n,l) is the number of elements of l that are greater or
     -- equal to n
     nogreq: (I,L I) -> I
     nogreq(n,x) == +/[1 for i in x | i >= n]
- 
+
     conjugate x ==
       empty? x => empty()
       [nogreq(i,x) for i in 1..first x]
- 
+
     conjugates z == map(conjugate,z)
- 
+
     shuffle(x,y)==
       empty? x => concat(y,empty())$(ST L I)
       empty? y => concat(x,empty())$(ST L I)
       concat(map(concat(first x,#1),shuffle(rest x,y)),_
              map(concat(first y,#1),shuffle(x,rest y)))
- 
+
     shufflein(x,yy) ==
       concat(map(shuffle(x,#1),yy)$ST2(L I,ST L I))$ST1(L I)
- 
+
     -- rpt(n,m) is the list of n m's
     rpt: (I,I) -> L I
     rpt(n,m) == [m for i in 1..n]
- 
+
     -- zrpt(x,y) where x is [x0,x1,x2...] and y is [y0,y1,y2...]
     -- is the stream [rpt(x0,y0),rpt(x1,y1),...]
     zrpt: (L I,L I) -> ST L I
     zrpt(x,y) == map(rpt,x :: ST I,y :: ST I)$ST3(I,I,L I)
- 
+
     sequences(x,y) ==
       reduce(concat(empty()$L(I),empty()$(ST L I)),_
                     shufflein,zrpt(x,y))$ST2(L I,ST L I)
- 
+
     sequences x == sequences(x,[i for i in 0..#x-1])
- 
+
     permutations n == sequences(rpt(n,1),[i for i in 1..n])
 
 @
@@ -158,7 +158,7 @@ PartitionsAndPermutations: Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<package PARTPERM PartitionsAndPermutations>>
 @
 \eject

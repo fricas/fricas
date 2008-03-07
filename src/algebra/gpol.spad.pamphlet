@@ -19,48 +19,48 @@
 LaurentPolynomial(R, UP): Exports == Implementation where
   R : IntegralDomain
   UP: UnivariatePolynomialCategory R
- 
+
   O   ==> OutputForm
   B   ==> Boolean
   N   ==> NonNegativeInteger
   Z   ==> Integer
   RF  ==> Fraction UP
- 
+
   Exports ==> Join(DifferentialExtension UP, IntegralDomain,
           ConvertibleTo RF, FullyRetractableTo R, RetractableTo UP) with
     monomial?          : %  -> B
-	++ monomial?(x) \undocumented
+        ++ monomial?(x) \undocumented
     degree             : %  -> Z
-	++ degree(x) \undocumented
+        ++ degree(x) \undocumented
     order              : %  -> Z
-	++ order(x) \undocumented
+        ++ order(x) \undocumented
     reductum           : %  -> %
-	++ reductum(x) \undocumented
+        ++ reductum(x) \undocumented
     leadingCoefficient : %  -> R
-	++ leadingCoefficient \undocumented
+        ++ leadingCoefficient \undocumented
     trailingCoefficient: %  -> R
-	++ trailingCoefficient \undocumented
+        ++ trailingCoefficient \undocumented
     coefficient        : (%, Z) -> R
-	++ coefficient(x,n) \undocumented
+        ++ coefficient(x,n) \undocumented
     monomial           : (R, Z) -> %
-	++ monomial(x,n) \undocumented
+        ++ monomial(x,n) \undocumented
     if R has CharacteristicZero then CharacteristicZero
     if R has CharacteristicNonZero then CharacteristicNonZero
     if R has Field then
       EuclideanDomain
       separate: RF -> Record(polyPart:%, fracPart:RF)
-	++ separate(x) \undocumented
- 
+        ++ separate(x) \undocumented
+
   Implementation ==> add
     Rep := Record(polypart: UP, order0: Z)
- 
+
     poly   : %  -> UP
     check0 : (Z, UP) -> %
     mkgpol : (Z, UP) -> %
     gpol   : (UP, Z) -> %
     toutput: (R, Z, O) -> O
     monTerm: (R, Z, O) -> O
- 
+
     0                == [0, 0]
     1                == [1, 0]
     p = q            == p.order0 = q.order0 and p.polypart = q.polypart
@@ -82,7 +82,7 @@ LaurentPolynomial(R, UP): Exports == Implementation where
     check0(n, p)     == (zero? p => 0; gpol(p, n))
     trailingCoefficient p   == coefficient(poly p, 0)
     leadingCoefficient p    == leadingCoefficient poly p
- 
+
     coerce(p:%):O ==
       zero? p => 0::Z::O
       l := nil()$List(O)
@@ -91,33 +91,33 @@ LaurentPolynomial(R, UP): Exports == Implementation where
         l := concat(l, toutput(leadingCoefficient p, degree p, v))
         p := reductum p
       reduce("+", l)
- 
+
     coefficient(p, n) ==
       (m := n - order p) < 0 => 0
       coefficient(poly p, m::N)
- 
+
     differentiate(p:%, derivation:UP -> UP) ==
       t := monomial(1, 1)$UP
       mkgpol(order(p) - 1,
               derivation(poly p) * t + order(p) * poly(p) * derivation t)
- 
+
     monTerm(r, n, v) ==
       zero? n => r::O
 --      one? n => v
       (n = 1) => v
       v ** (n::O)
- 
+
     toutput(r, n, v) ==
       mon := monTerm(r, n, v)
 --      zero? n or one? r => mon
       zero? n or (r = 1) => mon
       r = -1 => - mon
       r::O * mon
- 
+
     recip p ==
       (q := recip poly p) case "failed" => "failed"
       gpol(q::UP, - order p)
- 
+
     p + q ==
       zero? q => p
       zero? p => q
@@ -125,41 +125,41 @@ LaurentPolynomial(R, UP): Exports == Implementation where
                       gpol(poly(p) * monomial(1, d::N) + poly q, order q)
       d < 0 => gpol(poly(p) + poly(q) * monomial(1, (-d)::N), order p)
       mkgpol(order p, poly(p) + poly q)
- 
+
     mkgpol(n, p) ==
       zero? p => 0
       d := order(p, monomial(1, 1)$UP)
       gpol((p exquo monomial(1, d))::UP, n + d::Z)
- 
+
     p exquo q ==
       (r := poly(p) exquo poly q) case "failed" => "failed"
       check0(order p - order q, r::UP)
- 
+
     retractIfCan(p:%):Union(UP, "failed") ==
       order(p) < 0 => error "Not retractable"
       poly(p) * monomial(1, order(p)::N)$UP
- 
+
     retractIfCan(p:%):Union(R, "failed") ==
       order(p) ^= 0 => "failed"
       retractIfCan poly p
- 
+
     if R has Field then
       gcd(p, q) == gcd(poly p, poly q)::%
- 
+
       separate f ==
         n  := order(q := denom f, monomial(1, 1))
         q  := (q exquo (tn := monomial(1, n)$UP))::UP
         bc := extendedEuclidean(tn,q,numer f)::Record(coef1:UP,coef2:UP)
         qr := divide(bc.coef1, q)
         [mkgpol(-n, bc.coef2 + tn * qr.quotient), qr.remainder / q]
- 
+
 -- returns (z, r) s.t. p = q z + r,
 -- and degree(r) < degree(q), order(r) >= min(order(p), order(q))
       divide(p, q) ==
         c  := min(order p, order q)
         qr := divide(poly(p) * monomial(1, (order p - c)::N)$UP, poly q)
         [mkgpol(c - order q, qr.quotient), mkgpol(c, qr.remainder)]
- 
+
       euclideanSize p == degree poly p
 
       extendedEuclidean(a, b, c) ==

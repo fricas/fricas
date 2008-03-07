@@ -51,7 +51,7 @@
 ++   1.  \spad{error "Whoops, you made a %l %ceon %b big %d %ceoff %l mistake!"}
 ++   2.  \spad{error ["Whoops, you made a","%l %ceon %b","big",
 ++              "%d %ceoff %l","mistake!"]}
- 
+
 ErrorFunctions() : Exports == Implementation where
   Exports ==> with
     error: String -> Exit 
@@ -67,27 +67,27 @@ ErrorFunctions() : Exports == Implementation where
       ++ message containing the name nam of the function in which
       ++ the error is contained.
   Implementation ==> add
- 
+
     prefix1 : String := "Error signalled from user code: %l "
     prefix2 : String := "Error signalled from user code in function %b "
- 
+
     doit(s : String) : Exit ==
       throwPatternMsg(s,nil$(List String))$Lisp
       -- there are no objects of type Exit, so we'll fake one,
       -- knowing we will never get to this step anyway.
       "exit" pretend Exit
- 
+
     error(s : String) : Exit ==
       doit concat [prefix1,s]
- 
+
     error(l : List String) : Exit ==
       s : String := prefix1
       for x in l repeat s := concat [s," ",x]
       doit s
- 
+
     error(fn : String,s : String) : Exit ==
       doit concat [prefix2,fn,": %d %l ",s]
- 
+
     error(fn : String, l : List String) : Exit ==
       s : String := concat [prefix2,fn,": %d %l"]
       for x in l repeat s := concat [s," ",x]

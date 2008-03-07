@@ -34,7 +34,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
   NNI ==> NonNegativeInteger
   ARR ==> PrimitiveArray R
   REP ==> PrimitiveArray PrimitiveArray R
- 
+
   Exports ==> with
     copy_! : (M,M) -> M
       ++ \spad{copy!(c,a)} copies the matrix \spad{a} into the matrix c.
@@ -73,12 +73,12 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
     "**" : (M,NNI) -> M
       ++ \spad{x ** n} computes the n-th power
       ++ of a square matrix. The power n is assumed greater than 1.
- 
+
   Implementation ==> add
- 
+
     rep : M -> REP
     rep m == m pretend REP
- 
+
     copy_!(c,a) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
@@ -89,7 +89,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         for j in 0..(n-1) repeat
           qsetelt_!(cRow,j,qelt(aRow,j))
       c
- 
+
     plus_!(c,a,b) ==
       m := nrows a; n := ncols a
       not((nrows b) = m and (ncols b) = n) =>
@@ -102,7 +102,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         for j in 0..(n-1) repeat
           qsetelt_!(cRow,j,qelt(aRow,j) + qelt(bRow,j))
       c
- 
+
     minus_!(c,a) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
@@ -113,7 +113,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         for j in 0..(n-1) repeat
           qsetelt_!(cRow,j,-qelt(aRow,j))
       c
- 
+
     minus_!(c,a,b) ==
       m := nrows a; n := ncols a
       not((nrows b) = m and (ncols b) = n) =>
@@ -126,7 +126,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         for j in 0..(n-1) repeat
           qsetelt_!(cRow,j,qelt(aRow,j) - qelt(bRow,j))
       c
- 
+
     leftScalarTimes_!(c,r,a) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
@@ -137,7 +137,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         for j in 0..(n-1) repeat
           qsetelt_!(cRow,j,r * qelt(aRow,j))
       c
- 
+
     rightScalarTimes_!(c,a,r) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
@@ -148,11 +148,11 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         for j in 0..(n-1) repeat
           qsetelt_!(cRow,j,qelt(aRow,j) * r)
       c
- 
+
     copyCol_!: (ARR,REP,Integer,Integer) -> ARR
     copyCol_!(bCol,bb,j,n1) ==
       for i in 0..n1 repeat qsetelt_!(bCol,i,qelt(qelt(bb,i),j))
- 
+
     times_!(c,a,b) ==
       m := nrows a; n := ncols a; p := ncols b
       not((nrows b) = n and (nrows c) = m and (ncols c) = p) =>
@@ -169,7 +169,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
             sum := sum + qelt(aRow,k) * qelt(bCol,k)
           qsetelt_!(cRow,j,sum)
       c
- 
+
     power_!(a,b,c,m,p) ==
       mm := nrows a; nn := ncols a
       not(mm = nn) =>
@@ -194,7 +194,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         p := p quo 2
         times_!(c,b,b)
         copy_!(b,c)
- 
+
     m ** n ==
       not square? m => error "**: matrix must be square"
       a := copy m; b := copy m; c := copy m
@@ -236,7 +236,7 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<package MATSTOR StorageEfficientMatrixOperations>>
 @
 \eject

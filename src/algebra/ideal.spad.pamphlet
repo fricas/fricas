@@ -360,54 +360,54 @@ PolynomialIdeals(F,Expon,VarSet,DPoly) : C == T
          g
 
        relationsIdeal(listf : List DPoly): ST ==
-	 empty? listf  => [empty(),empty()]$ST
-	 nf:=#listf
-	 lvint := "setUnion"/[variables g for g in listf]
-	 vl: List Symbol := [convert vv for vv in lvint]
-	 nvar:List Symbol:=[new() for i in 1..nf]
-	 VarSet1:=OrderedVariableList(concat(vl,nvar))
-	 lv1:=[variable(vv)$VarSet1::VarSet1 for vv in nvar]
-	 DirP:=DirectProduct(nf,NNI)
-	 nExponent:=Product(Expon,DirP)
-	 nPoly := PolynomialRing(F,nExponent)
-	 gp:=GroebnerPackage(F,nExponent,VarSet1,nPoly)
-	 lf:List nPoly :=[]
-	 lp:List P:=[]
-	 for f in listf for i in 1..  repeat
-	   vec2:Vector(NNI):=new(nf,0$NNI)
-	   vec2.i:=1
-	   g:nPoly:=0$nPoly
-	   pol:=0$P
-	   while f^=0 repeat
-	     df:=degree(f-reductum f,lvint)
-	     lcf:=leadingCoefficient f
-	     pol:=pol+monompol(df,lcf,lvint)
-	     g:=g+monomial(lcf,makeprod(degree f,0))$nPoly
-	     f:=reductum f
-	   lp:=concat(pol,lp)
-	   lf:=concat(monomial(1,makeprod(0,directProduct vec2))-g,lf)
-	 npol:List P :=[v::P for v in nvar]
-	 leq : List Equation P :=
-	       [p = pol for p in npol for pol in reverse lp ]
-	 lf:=(groebner lf)$gp
-	 while lf^=[] repeat
-	   q:=lf.first
-	   dq:nExponent:=degree q
-	   n:=selectfirst (dq)
-	   if n=0 then leave "done"
-	   lf:=lf.rest
-	 solsn:List P:=[]
-	 for q in lf repeat
-	   g:Polynomial F :=0
-	   while q^=0 repeat
-	     dq:=degree q
-	     lcq:=leadingCoefficient q
-	     q:=reductum q
-	     vdq:=(selectsecond dq):Vector NNI
-	     g:=g+ lcq*
-		_*/[p**vdq.j for p in npol for j in 1..]
-	   solsn:=concat(g,solsn)
-	 [solsn,leq]$ST
+         empty? listf  => [empty(),empty()]$ST
+         nf:=#listf
+         lvint := "setUnion"/[variables g for g in listf]
+         vl: List Symbol := [convert vv for vv in lvint]
+         nvar:List Symbol:=[new() for i in 1..nf]
+         VarSet1:=OrderedVariableList(concat(vl,nvar))
+         lv1:=[variable(vv)$VarSet1::VarSet1 for vv in nvar]
+         DirP:=DirectProduct(nf,NNI)
+         nExponent:=Product(Expon,DirP)
+         nPoly := PolynomialRing(F,nExponent)
+         gp:=GroebnerPackage(F,nExponent,VarSet1,nPoly)
+         lf:List nPoly :=[]
+         lp:List P:=[]
+         for f in listf for i in 1..  repeat
+           vec2:Vector(NNI):=new(nf,0$NNI)
+           vec2.i:=1
+           g:nPoly:=0$nPoly
+           pol:=0$P
+           while f^=0 repeat
+             df:=degree(f-reductum f,lvint)
+             lcf:=leadingCoefficient f
+             pol:=pol+monompol(df,lcf,lvint)
+             g:=g+monomial(lcf,makeprod(degree f,0))$nPoly
+             f:=reductum f
+           lp:=concat(pol,lp)
+           lf:=concat(monomial(1,makeprod(0,directProduct vec2))-g,lf)
+         npol:List P :=[v::P for v in nvar]
+         leq : List Equation P :=
+               [p = pol for p in npol for pol in reverse lp ]
+         lf:=(groebner lf)$gp
+         while lf^=[] repeat
+           q:=lf.first
+           dq:nExponent:=degree q
+           n:=selectfirst (dq)
+           if n=0 then leave "done"
+           lf:=lf.rest
+         solsn:List P:=[]
+         for q in lf repeat
+           g:Polynomial F :=0
+           while q^=0 repeat
+             dq:=degree q
+             lcq:=leadingCoefficient q
+             q:=reductum q
+             vdq:=(selectsecond dq):Vector NNI
+             g:=g+ lcq*
+                _*/[p**vdq.j for p in npol for j in 1..]
+           solsn:=concat(g,solsn)
+         [solsn,leq]$ST
 
      coerce(Id:List DPoly) : Ideal == [Id,false]
 

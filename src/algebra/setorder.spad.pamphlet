@@ -56,31 +56,31 @@ UserDefinedPartialOrdering(S:SetCategory): with
       ++ more?(a, b) compares \spad{a} and b in the partial ordering induced
       ++ by setOrder, and uses the ordering on S if \spad{a} and b are not
       ++ comparable in the partial ordering.
- 
+
  == add
   llow :Reference List S := ref nil()
   lhigh:Reference List S := ref nil()
- 
+
   userOrdered?() == not(empty? deref llow) or not(empty? deref lhigh)
   getOrder()     == [deref llow, deref lhigh]
   setOrder l     == setOrder(nil(), l)
- 
+
   setOrder(l, h) ==
     setref(llow, removeDuplicates l)
     setref(lhigh, removeDuplicates h)
     void
- 
+
   less?(a, b, f) ==
     (u := less?(a, b)) case "failed" => f(a, b)
     u::Boolean
- 
+
   largest(x, f) ==
     empty? x => error "largest: empty list"
     empty? rest x => first x
     a := largest(rest x, f)
     less?(first x, a, f) => a
     first x
- 
+
   less?(a, b) ==
     for x in deref llow repeat
       x = a => return(a ^= b)
@@ -96,7 +96,7 @@ UserDefinedPartialOrdering(S:SetCategory): with
     aa => false
     bb => true
     "failed"
- 
+
   if S has OrderedSet then
     more?(a, b) == not less?(a, b, #1 <$S #2)
     largest x   == largest(x, #1 <$S #2)
@@ -130,11 +130,11 @@ UserDefinedVariableOrdering(): with
     ++ setVariableOrder and returns to the default system ordering.
  == add
   import UserDefinedPartialOrdering(Symbol)
- 
+
   setVariableOrder l       == setOrder reverse l
   setVariableOrder(l1, l2) == setOrder(reverse l2, reverse l1)
   resetVariableOrder()     == setVariableOrder(nil(), nil())
- 
+
   getVariableOrder() ==
     r := getOrder()
     [reverse(r.high), reverse(r.low)]
@@ -175,7 +175,7 @@ UserDefinedVariableOrdering(): with
 @
 <<*>>=
 <<license>>
- 
+
 <<package UDPO UserDefinedPartialOrdering>>
 <<package UDVO UserDefinedVariableOrdering>>
 @

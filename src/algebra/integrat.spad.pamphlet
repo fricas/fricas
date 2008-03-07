@@ -25,12 +25,12 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory,
            AlgebraicallyClosedFunctionSpace R)
- 
+
   SE  ==> Symbol
   G   ==> Complex R
   FG  ==> Expression G
   IR  ==> IntegrationResult F
- 
+
   Exports ==> with
     internalIntegrate : (F, SE) -> IR
         ++ internalIntegrate(f, x) returns the integral of \spad{f(x)dx}
@@ -40,7 +40,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
     complexIntegrate  : (F, SE) -> F
         ++ complexIntegrate(f, x) returns the integral of \spad{f(x)dx}
         ++ where x is viewed as a complex variable.
- 
+
   Implementation ==> add
     import IntegrationTools(R, F)
     import ElementaryIntegration(R, F)
@@ -53,22 +53,22 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
     import ElementaryFunctionStructurePackage(R, F)
     import ElementaryFunctionStructurePackage(G, FG)
     import InnerTrigonometricManipulations(R, F, FG)
- 
+
     K2KG: Kernel F -> Kernel FG
- 
+
     K2KG k                 == retract(tan F2FG first argument k)@Kernel(FG)
- 
+
     complexIntegrate(f, x) ==
       removeConstantTerm(complexExpand internalIntegrate(f, x), x)
- 
+
     if R has Join(ConvertibleTo Pattern Integer, PatternMatchable Integer)
       and F has Join(LiouvillianFunctionCategory, RetractableTo SE) then
         import PatternMatchIntegration(R, F)
         internalIntegrate0(f, x) ==
           intPatternMatch(f, x, lfintegrate, pmComplexintegrate)
- 
+
     else internalIntegrate0(f, x) == lfintegrate(f, x)
- 
+
     internalIntegrate(f, x) ==
       f := distribute(f, x::F)
       any?(has?(operator #1, "rtrig"),
@@ -101,7 +101,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory, PrimitiveFunctionCategory,
            AlgebraicallyClosedFunctionSpace R)
- 
+
   B   ==> Boolean
   G   ==> Complex R
   K   ==> Kernel F
@@ -111,12 +111,12 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
   FG  ==> Expression G
   ALGOP ==> "%alg"
   TANTEMP ==> "%temptan"::SE
- 
+
   Exports ==> with
     integrate: (F, SE) -> Union(F, List F)
         ++ integrate(f, x) returns the integral of \spad{f(x)dx}
         ++ where x is viewed as a real variable.
- 
+
   Implementation ==> add
     import IntegrationTools(R, F)
     import ElementaryIntegration(R, F)
@@ -131,7 +131,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     import InnerTrigonometricManipulations(R, F, FG)
     import PolynomialCategoryQuotientFunctions(IndexedExponents K,
                       K, R, SparseMultivariatePolynomial(R, K), F)
- 
+
     K2KG      : K -> Kernel FG
     postSubst : (F, List F, List K, B, List K, SE) -> F
     rinteg    : (IR, F, SE, B, B) -> Union(F, List F)
@@ -141,37 +141,37 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     halfangle : F -> F
     Khalf     : K -> F
     tan2temp  : K -> K
- 
+
     optemp:BasicOperator := operator(TANTEMP, 1)
- 
+
     K2KG k     == retract(tan F2FG first argument k)@Kernel(FG)
     tan2temp k == kernel(optemp, argument k, height k)$K
- 
+
     trans? f ==
       any?(is?(#1,"log"::SE) or is?(#1,"exp"::SE) or is?(#1,"atan"::SE),
            operators f)$List(BasicOperator)
- 
+
     mkPrimh(f, x, h, comp) ==
       f := real f
       if comp then f := removeSinSq f
       g := mkPrim(f, x)
       h and trans? g => htrigs g
       g
- 
+
     rinteg(i, f, x, h, comp) ==
       not elem? i => integral(f, x)$F
       empty? rest(l := [mkPrimh(f, x, h, comp) for f in expand i]) => first l
       l
- 
+
 -- replace tan(a/2)**2 by (1-cos a)/(1+cos a) if tan(a/2) is in ltan
     halfangle a ==
       a := 2 * a
       (1 - cos a) / (1 + cos a)
- 
+
     Khalf k ==
       a := 2 * first argument k
       sin(a) / (1 + cos a)
- 
+
 -- ltan = list of tangents in the integrand after real normalization
     postSubst(f, lv, lk, comp, ltan, x) ==
       for v in lv for k in lk repeat
@@ -185,14 +185,14 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
         f := eval(f, TANTEMP, 2, halfangle)
         f := eval(f, ltemp, [Khalf k for k in ltemp])
       removeConstantTerm(f, x)
- 
+
 -- can handle a single unnested tangent directly, otherwise go complex for now
 -- l is the list of all the kernels containing x
 -- ltan is the list of all the tangents in l
     goComplex?(rt, l, ltan) ==
       empty? ltan => rt
       not empty? rest rest l
- 
+
     integrate(f, x) ==
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
@@ -252,13 +252,13 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 -- SPAD files for the integration world should be compiled in the
 -- following order:
 --
 --   intaux  rderf  intrf  curve  curvepkg  divisor  pfo
 --   intalg  intaf  EFSTRUC  rdeef  intef  irexpand  integrat
- 
+
 <<package FSCINT FunctionSpaceComplexIntegration>>
 <<package FSINT FunctionSpaceIntegration>>
 @

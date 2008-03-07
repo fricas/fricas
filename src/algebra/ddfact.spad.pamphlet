@@ -27,12 +27,12 @@
 ++   "distinct degree" algorithm of Cantor-Zassenhaus, modified
 ++   to use trace instead of the norm and a table for computing
 ++   Frobenius as suggested by Naudin and Quitte .
-    
+
 DistinctDegreeFactorize(F,FP): C == T
   where
    F  : FiniteFieldCategory
    FP : UnivariatePolynomialCategory(F)
- 
+
    fUnion ==> Union("nil", "sqfr", "irred", "prime")
    FFE    ==> Record(flg:fUnion, fctr:FP, xpnt:Integer)
    NNI       == NonNegativeInteger
@@ -40,7 +40,7 @@ DistinctDegreeFactorize(F,FP): C == T
    fact      == Record(deg : NNI,prod : FP)
    ParFact   == Record(irr:FP,pow:Z)
    FinalFact == Record(cont:F,factors:List(ParFact))
- 
+
    C == with
       factor        :         FP      -> Factored FP
         ++ factor(p) produces the complete factorization of the polynomial p.
@@ -69,19 +69,19 @@ DistinctDegreeFactorize(F,FP): C == T
         ++ for i running and q= size F
       irreducible?    :         FP      -> Boolean
         ++ irreducible?(p) tests whether the polynomial p is irreducible.
- 
- 
+
+
    T == add
       --declarations
       D:=ModMonic(F,FP)
       import UnivariatePolynomialSquareFree(F,FP)
- 
+
       --local functions
       notSqFr : (FP,FP -> List(FP)) -> List(ParFact)
       ddffact : FP -> List(FP)
       ddffact1 : (FP,Boolean) -> List fact
       ranpol :         NNI       -> FP
-      
+
       charF : Boolean := characteristic()$F = 2
 
       --construct a random polynomial of random degree < d
@@ -96,7 +96,7 @@ DistinctDegreeFactorize(F,FP): C == T
         u := monomial(1,k1)
         for j in 0..k1-1 repeat u:=u+monomial(random()$F,j)
         u
- 
+
       notSqFr(m:FP,appl: FP->List(FP)):List(ParFact) ==
         factlist : List(ParFact) :=empty()
         llf : List FFE
@@ -111,11 +111,11 @@ DistinctDegreeFactorize(F,FP): C == T
           fln := appl(pol)
           factlist :=append([[pf,d1]$ParFact for pf in fln],factlist)
         factlist
- 
+
       -- compute u**k mod v (requires call to setPoly of multiple of v)
       -- characteristic not equal 2
       exptMod(u:FP,k:NNI,v:FP):FP == (reduce(u)$D**k):FP rem v
- 
+
       -- compute u**k mod v (requires call to setPoly of multiple of v)
       -- characteristic equal 2
       trace2PowMod(u:FP,k:NNI,v:FP):FP ==
@@ -139,7 +139,7 @@ DistinctDegreeFactorize(F,FP): C == T
         uu : D := u1
         for i in 1..k repeat uu:=(u1*frobenius uu) 
         (lift uu) rem v
- 
+
       --find the factorization of m as product of factors each containing
       --terms of equal degree .
       -- if testirr=true the function returns the first factor found
@@ -167,15 +167,15 @@ DistinctDegreeFactorize(F,FP): C == T
             du = 0 => return ddfact
             setPoly u
         cons([du,u]$fact,ddfact)
- 
+
       -- test irreducibility
       irreducible?(m:FP):Boolean ==
         mf:fact:=first ddffact1(m,true)
         degree m = mf.deg
- 
+
       --export ddfact1
       separateDegrees(m:FP):List(fact) == ddffact1(m,false)
- 
+
       --find the complete factorization of m, using the result of ddfact1
       separateFactors(distf : List fact) :List FP ==
         ddfact := distf
@@ -208,44 +208,44 @@ DistinctDegreeFactorize(F,FP): C == T
                               else newaux := cons(v,newaux)
             aux:=newaux
         ris
- 
+
       --distinct degree algorithm for monic ,square-free polynomial
       ddffact(m:FP):List(FP)==
         ddfact:=ddffact1(m,false)
         empty? ddfact => [m]
         separateFactors ddfact
- 
+
       --factorize a general polynomial with distinct degree algorithm
       --if test=true no check is executed on square-free
       distdfact(m:FP,test:Boolean):FinalFact ==
         factlist: List(ParFact):= empty()
         fln : List(FP) :=empty()
- 
+
         --make m monic
         if (lcm := leadingCoefficient m) ^=1 then m := (inv lcm)*m
- 
+
         --is x**d factor of m?
         if (d := minimumDegree m)>0 then
           m := (monicDivide (m,monomial(1,d))).quotient
           factlist := [[monomial(1,1),d]$ParFact]
         d:=degree m
- 
+
         --is m constant?
         d=0 => [lcm,factlist]$FinalFact
- 
+
         --is m linear?
         d=1 => [lcm,cons([m,d]$ParFact,factlist)]$FinalFact
- 
+
         --m is square-free
         test =>
           fln := ddffact m
           factlist := append([[pol,1]$ParFact for pol in fln],factlist)
           [lcm,factlist]$FinalFact
- 
+
         --factorize the monic,square-free terms
         factlist:= append(notSqFr(m,ddffact),factlist)
         [lcm,factlist]$FinalFact
- 
+
       --factorize the polynomial m
       factor(m:FP) ==
         m = 0 => 0
@@ -297,9 +297,9 @@ DistinctDegreeFactorize(F,FP): C == T
 @
 <<*>>=
 <<license>>
- 
+
 --The Berlekamp package for the finite factorization is in FINFACT.
- 
+
 <<package DDFACT DistinctDegreeFactorize>>
 @
 \eject

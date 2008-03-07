@@ -39,7 +39,7 @@
 ++   i.e. every answer is correct, but with small probability
 ++   the algorithm fails to get an answer.
 RepresentationPackage2(R): public == private where
- 
+
   R    : Ring
   OF    ==> OutputForm
   I     ==> Integer
@@ -51,9 +51,9 @@ RepresentationPackage2(R): public == private where
   PI    ==> PositiveInteger
   B     ==> Boolean
   RADIX ==> RadixExpansion
- 
+
   public ==> with
- 
+
     completeEchelonBasis : V V R  ->  M R
       ++ completeEchelonBasis(lv) completes the basis {\em lv} assumed
       ++ to be in echelon form of a subspace of {\em R**n} (n the length
@@ -232,15 +232,15 @@ RepresentationPackage2(R): public == private where
         ++ stars.
         -- would prefer to have (V V R,....   but nullSpace  results
         -- in L V R
- 
+
   private ==> add
- 
+
     -- import of domain and packages
     import OutputForm
- 
+
     -- declarations and definitions of local variables and
     -- local function
- 
+
     blockMultiply: (M R, M R, L I, I) -> M R
       -- blockMultiply(a,b,li,n) assumes that a has n columns
       -- and b has n rows, li is a sublist of the rows of a and
@@ -251,7 +251,7 @@ RepresentationPackage2(R): public == private where
     blockMultiply(a, b, li, n) ==
       matrix([[ +/[a(i,s) * b(s,j) for s in 1..n ] _
         for j in li  ]  for i in li])
- 
+
     fingerPrint: (NNI, M R, M R, M R) -> M R
       -- is local, because one should know all the results for smaller i
     fingerPrint (i : NNI, a : M R, b : M R, x :M R) ==
@@ -265,23 +265,23 @@ RepresentationPackage2(R): public == private where
       (i::PI) = 6 => x := x - a + b*a
       error "Sorry, but there are only 6 fingerprints!"
       x
- 
- 
+
+
     -- definition of exported functions
- 
- 
+
+
     --randomWord(lli,lm)  ==
     --  -- we assume that all matrices are square of same size
     --  numberOfMatrices := #lm
     --  +/[*/[lm.(1+i rem numberOfMatrices) for i in li ] for li in lli]
- 
+
     completeEchelonBasis(basis) ==
- 
+
       dimensionOfSubmodule : NNI := #basis
       n : NNI := # basis.1
       indexOfVectorToBeScanned : NNI := 1
       row : NNI := dimensionOfSubmodule
- 
+
       completedBasis : M R := zero(n, n)
       for i in 1..dimensionOfSubmodule repeat
         completedBasis := setRow_!(completedBasis, i, basis.i)
@@ -298,8 +298,8 @@ RepresentationPackage2(R): public == private where
         for j in newStart..n repeat
           completedBasis(j,j) := 1  --put unit vector into basis
       completedBasis
- 
- 
+
+
     createRandomElement(aG,algElt) ==
       numberOfGenerators : NNI := #aG
       -- randomIndex := randnum numberOfGenerators
@@ -308,8 +308,8 @@ RepresentationPackage2(R): public == private where
       -- randomIndxElement := randnum numberOfGenerators
       randomIndex := 1 + random(numberOfGenerators)$Integer
       algElt + aG.randomIndex
- 
- 
+
+
     if R has EuclideanDomain then
       cyclicSubmodule (lm : L M R, v : V R)  ==
         basis : M R := rowEchelon matrix list entries v
@@ -336,8 +336,8 @@ RepresentationPackage2(R): public == private where
              -- of the basis
              furtherElts := rest furtherElts
         vector [row(basis, i) for i in 1..maxRowIndex basis]
- 
- 
+
+
       standardBasisOfCyclicSubmodule (lm : L M R, v : V R)  ==
         dim   : NNI := #v
         standardBasis : L L R := list(entries v)
@@ -366,15 +366,15 @@ RepresentationPackage2(R): public == private where
              -- no updating of matrix
              furtherElts := rest furtherElts
         transpose matrix standardBasis
- 
- 
+
+
     if R has Field then  -- only because of inverse in Matrix
- 
+
       -- as conditional local functions, *internal have to be here
- 
+
       splitInternal: (L M R, V R, B) -> L L M R
       splitInternal(algebraGenerators : L M R, vector: V R,doSplitting? : B) ==
- 
+
         n : I := # vector    -- R-rank of representation module =
                                -- degree of representation
         submodule : V V R := cyclicSubmodule (algebraGenerators,vector)
@@ -409,9 +409,9 @@ RepresentationPackage2(R): public == private where
         else -- represesentation is irreducible
           messagePrint "  The generated cyclic submodule was not proper"
           [algebraGenerators]
- 
- 
- 
+
+
+
       irreducibilityTestInternal: (L M R, M R, B) -> L L M R
       irreducibilityTestInternal(algebraGenerators,_
           singularMatrix,split?) ==
@@ -451,20 +451,20 @@ RepresentationPackage2(R): public == private where
         -- if "split?" then dual representation interchange factor
         -- and submodules, hence reverse
         reverse result
- 
- 
- 
+
+
+
       -- exported functions for FiniteField-s.
- 
- 
+
+
       areEquivalent? (aG0, aG1) ==
         areEquivalent? (aG0, aG1, true, 25)
- 
- 
+
+
       areEquivalent? (aG0, aG1, numberOfTries) ==
         areEquivalent? (aG0, aG1, true, numberOfTries)
- 
- 
+
+
       areEquivalent? (aG0, aG1, randomelements, numberOfTries) ==
           result : B := false
           transitionM : M R := zero(1, 1)
@@ -560,11 +560,11 @@ RepresentationPackage2(R): public == private where
               messagePrint  " "
               messagePrint  "Representations are not equivalent."
           transitionM
- 
- 
+
+
       isAbsolutelyIrreducible?(aG) == isAbsolutelyIrreducible?(aG,25)
- 
- 
+
+
       isAbsolutelyIrreducible?(aG, numberOfTries) ==
         result : B := false
         numberOfGenerators  : NNI := #aG
@@ -612,13 +612,13 @@ RepresentationPackage2(R): public == private where
         --  else
         --    messagePrint "Representation is irreducible."
         result
- 
- 
- 
+
+
+
       split(algebraGenerators: L M R, vector: V R) ==
         splitInternal(algebraGenerators, vector, true)
- 
- 
+
+
       split(algebraGenerators : L M R, submodule: V V R) == --not zero submodule
         n : NNI := #submodule.1 -- R-rank of representation module =
                                 -- degree of representation
@@ -647,16 +647,16 @@ RepresentationPackage2(R): public == private where
             factormoduleRepresentation)
         cons(reverse submoduleRepresentation, list( reverse _
           factormoduleRepresentation)::(L L M R))
- 
- 
+
+
     -- the following is "under"  "if R has Field", as there are compiler
     -- problems with conditinally defined local functions, i.e. it
     -- doesn't know, that "FiniteField" has "Field".
- 
- 
+
+
       -- we are scanning through the vectorspaces
       if (R has Finite) and (R has Field) then
- 
+
         meatAxe(algebraGenerators, randomelements, numberOfTries, _
            maxTests) ==
           numberOfGenerators  : NNI := #algebraGenerators
@@ -739,22 +739,22 @@ RepresentationPackage2(R): public == private where
              messagePrint "Sorry, no result, try meatAxe(...,true)"
              messagePrint "  or consider using an extension field."
           result
- 
- 
+
+
         meatAxe (algebraGenerators) ==
           meatAxe(algebraGenerators, false, 25, 7)
- 
- 
+
+
         meatAxe (algebraGenerators, randomElements?) ==
           randomElements? => meatAxe (algebraGenerators, true, 25, 7)
           meatAxe(algebraGenerators, false, 6, 7)
- 
- 
+
+
         meatAxe (algebraGenerators:L M R, numberOfTries:PI) ==
           meatAxe (algebraGenerators, true, numberOfTries, 7)
- 
- 
- 
+
+
+
         scanOneDimSubspaces(basis,n) ==
           -- "dimension" of subspace generated by "basis"
           dim : NNI := #basis

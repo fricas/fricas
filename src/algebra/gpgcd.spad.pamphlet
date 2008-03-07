@@ -20,47 +20,47 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
     P     :  PolynomialCategory(R,E,OV)
     OV    :  OrderedSet
     E     :  OrderedAbelianMonoidSup
- 
+
     SUPP      ==> SparseUnivariatePolynomial P
 --JHD    ContPrim  ==> Record(cont:P,prim:P)
- 
+
     C == with
            gcdPolynomial     :   (SUPP,SUPP) -> SUPP
-		++ gcdPolynomial(p,q) returns the GCD of p and q
+                ++ gcdPolynomial(p,q) returns the GCD of p and q
            randomR        : ()                ->R
-		++ randomR() should be local but conditional
+                ++ randomR() should be local but conditional
 --JHD      gcd               :   (P,P)    -> P
 --JHD      gcd               :   List P   -> P
 --JHD      gcdprim           :   (P,P)    -> P
 --JHD      gcdprim           :   List P   -> P
- 
+
 --JHD      gcdcofact         :   List P   -> List P
 --JHD      gcdcofactprim     :   List P   -> List P
- 
+
 --JHD      primitate         :   (P,OV)   -> P
 --JHD      primitate         :    SUPP    -> SUPP
- 
+
 --JHD      content           :     P      -> P
 --JHD      content           :   List P   -> List P
 --JHD      contprim          :   List P   -> List ContPrim
- 
+
 --JHD      monomContent      :   (P,OV)   -> P
 --JHD      monomContent      :    SUPP    -> SUPP
- 
- 
+
+
     T == add
- 
+
       SUPR     ==> SparseUnivariatePolynomial R
 --JHD      SUPLGcd  ==> Record(locgcd:SUPP,goodint:List R)
 --JHD      LGcd     ==> Record(locgcd:P,goodint:List R)
 --JHD      UTerm    ==> Record(lpol:List SUPR,lint:List R,mpol:P)
 --JHD--JHD      pmod:R   :=  (prevPrime(2**26)$IntegerPrimesPackage(Integer))::R
- 
+
 --JHD      import MultivariateLifting(E,OV,R,P,pmod)
       import UnivariatePolynomialCategoryFunctions2(R,SUPR,P,SUPP)
       import UnivariatePolynomialCategoryFunctions2(P,SUPP,R,SUPR)
                  --------  Local  Functions  --------
- 
+
 --JHD      abs             :      P       -> P
       better          :    (P,P)     -> Boolean
 --JHD      failtest        :   (P,P,P)    -> Boolean
@@ -76,7 +76,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD      localgcd        :     (P,P,List OV)          -> LGcd
 --JHD      notCoprime      :  (P,P, List NNI,List OV)   -> P
 --JHD      imposelc        : (List SUPR,List OV,List R,List P)  -> List SUPR
- 
+
 --JHD      lift? :(P,P,UTerm,List NNI,List OV)  -> Union("failed",P)
 --      lift  :(P,SUPR,SUPR,P,List OV,List NNI,List R) -> P
       lift  :  (SUPR,SUPP,SUPR,List OV,List R) -> Union(SUPP,"failed")
@@ -86,7 +86,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
       monomContentSup   :    SUPP    -> SUPP
 --
 --JHD  gcdcofact         :   List P   -> List P
- 
+
       gcdTrivial      :  (SUPP,SUPP)   -> SUPP
       gcdSameVariables:  (SUPP,SUPP,List OV)    -> SUPP
       recursivelyGCDCoefficients: (SUPP,List OV,SUPP,List OV) -> SUPP
@@ -172,49 +172,49 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
           lr:=[randomR() for vv in lv]
           count:NonNegativeInteger:=0
           while count<10 repeat
-	    while zero? eval(gcdLC,lv,lr) and count<10 repeat
-		  lr:=[randomR() for vv in lv]
-		  count:=count+1
-	    count = 10 => error "too many evaluations in GCD code"
-	    up1:SUPR:=map(ground eval(#1,lv,lr),p1)
-	    up2:SUPR:=map(ground eval(#1,lv,lr),p2)
-	    u:=gcdPolynomial(up1,up2)
-	    degree u = 0 => return 1
+            while zero? eval(gcdLC,lv,lr) and count<10 repeat
+                  lr:=[randomR() for vv in lv]
+                  count:=count+1
+            count = 10 => error "too many evaluations in GCD code"
+            up1:SUPR:=map(ground eval(#1,lv,lr),p1)
+            up2:SUPR:=map(ground eval(#1,lv,lr),p2)
+            u:=gcdPolynomial(up1,up2)
+            degree u = 0 => return 1
             -- let's pick a second one, just to check
             lrr:=[randomR() for vv in lv]
-	    while zero? eval(gcdLC,lv,lrr) and count<10 repeat
-		  lrr:=[randomR() for vv in lv]
-		  count:=count+1
-	    count = 10 => error "too many evaluations in GCD code"
-	    vp1:SUPR:=map(ground eval(#1,lv,lrr),p1)
-	    vp2:SUPR:=map(ground eval(#1,lv,lrr),p2)
-	    v:=gcdPolynomial(vp1,vp2)
-	    degree v = 0 => return 1
+            while zero? eval(gcdLC,lv,lrr) and count<10 repeat
+                  lrr:=[randomR() for vv in lv]
+                  count:=count+1
+            count = 10 => error "too many evaluations in GCD code"
+            vp1:SUPR:=map(ground eval(#1,lv,lrr),p1)
+            vp2:SUPR:=map(ground eval(#1,lv,lrr),p2)
+            v:=gcdPolynomial(vp1,vp2)
+            degree v = 0 => return 1
             if degree v < degree u then
                u:=v
                up1:=vp1
                up2:=vp2
                lr:=lrr
-	    up1:=(up1 exquo u)::SUPR
-	    degree gcd(u,up1) = 0 =>
+            up1:=(up1 exquo u)::SUPR
+            degree gcd(u,up1) = 0 =>
                 ans:=lift(u,p1,up1,lv,lr)
                 ans case SUPP => return ans
                 "next"
-	    up2:=(up2 exquo u)::SUPR
-	    degree gcd(u,up2) = 0 =>
+            up2:=(up2 exquo u)::SUPR
+            degree gcd(u,up2) = 0 =>
                 ans:=lift(u,p2,up2,lv,lr)
                 ans case SUPP => return ans
                 "next"
-	    -- so neither cofactor is relatively prime
-	    count:=0
-	    while count < 10 repeat
-	       r:=randomR()
-	       uu:=up1+r*up2
-	       degree gcd(u,uu)=0 =>
+            -- so neither cofactor is relatively prime
+            count:=0
+            while count < 10 repeat
+               r:=randomR()
+               uu:=up1+r*up2
+               degree gcd(u,uu)=0 =>
                  ans:= lift(u,p1+r::P *p2,uu,lv,lr)
                  ans case SUPP => return ans
                  "next"
-	    error "too many evaluations in GCD code"
+            error "too many evaluations in GCD code"
           count >= 10 => error "too many evaluations in GCD code"
       lift(gR:SUPR,p:SUPP,cfR:SUPR,lv:List OV,lr:List R) ==
         -- lift the coprime factorisation gR*cfR = (univariate of p)
@@ -286,7 +286,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
            p2:=reductum p2
         un? => 1
         cp1::SUPP
- 
+
                      ---- Local  functions ----
 --JHD    -- test if something wrong happened in the gcd
 --JHD      failtest(f:P,p1:P,p2:P) : Boolean ==
@@ -434,21 +434,21 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD        ground? p => 1$P
 --JHD        md:= minimumDegree(p,var)
 --JHD        ((var::P)**md)*(gcd sort(better,coefficients univariate(p,var)))
- 
+
       monomContentSup(u:SUPP):SUPP ==
         degree(u) = 0$NonNegativeInteger => 1$SUPP
         md:= minimumDegree u
         gcd(sort(better,coefficients u)) * monomial(1$P,md)$SUPP
- 
+
 --JHD  -- change the polynomials to have positive lc
 --JHD      abs(p:P): P == unitNormal(p).canonical
- 
+
   -- Ordering for gcd purposes
       better(p1:P,p2:P):Boolean ==
         ground? p1 => true
         ground? p2 => false
         degree(p1,mainVariable(p1)::OV) < degree(p2,mainVariable(p2)::OV)
- 
+
    -- PRS algorithm
    -- gcdPrs(p1:P,p2:P,d:NNI,var:OV):Union(P,"failed") ==
    --   u1:= univariate(p1,var)
@@ -466,7 +466,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
    --   g:= (u2 exquo u3)
    --   g case SUPP => abs multivariate(u3,var)
    --   "failed"
- 
+
   -- Gcd between polynomial p1 and p2 with
   -- mainVariable p1 < x=mainVariable p2
 --JHD      gcdTermList(p1:P,p2:P) : P ==
@@ -682,7 +682,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 @
 <<*>>=
 <<license>>
- 
+
 <<package GENPGCD GeneralPolynomialGcdPackage>>
 @
 \eject

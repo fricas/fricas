@@ -40,9 +40,9 @@
 ++   Note: instead of having parameters from \spadtype{Permutation}
 ++   this package allows list notation of permutations as well:
 ++   e.g. \spad{[1,4,3,2]} denotes permutes 2 and 4 and fixes 1 and 3.
- 
+
 RepresentationPackage1(R): public == private where
- 
+
    R   : Ring
    OF    ==> OutputForm
    NNI   ==> NonNegativeInteger
@@ -56,9 +56,9 @@ RepresentationPackage1(R): public == private where
    ICF   ==> IntegerCombinatoricFunctions Integer
    SGCF  ==> SymmetricGroupCombinatoricFunctions
    PERM  ==> Permutation
- 
+
    public ==> with
- 
+
      if R has commutative("*") then
        antisymmetricTensors : (M R,PI) ->  M R
          ++ antisymmetricTensors(a,n) applies to the square matrix
@@ -151,37 +151,37 @@ RepresentationPackage1(R): public == private where
        ++ of matrices {\em [(deltai,pi1(i)),...,(deltai,pik(i))]}
        ++ if the permutations {\em pi1},...,{\em pik} are in 
        ++ list notation and are permuting {\em {1,2,...,n}}.
- 
+
    private ==> add
- 
+
      -- import of domains and packages
- 
+
      import OutputForm
- 
+
      -- declaration of local functions:
- 
- 
+
+
      calcCoef : (L I, M I) -> I
        -- calcCoef(beta,C) calculates the term
        -- |S(beta) gamma S(alpha)| / |S(beta)|
- 
- 
+
+
      invContent : L I -> V I
        -- invContent(alpha) calculates the weak monoton function f with
        -- f : m -> n with invContent alpha. f is stored in the returned
        -- vector
- 
- 
+
+
      -- definition of local functions
- 
- 
+
+
      calcCoef(beta,C) ==
        prod : I := 1
        for i in 1..maxIndex beta repeat
          prod := prod * multinomial(beta(i), entries row(C,i))$ICF
        prod
- 
- 
+
+
      invContent(alpha) ==
        n : NNI := (+/alpha)::NNI
        f : V I  := new(n,0)
@@ -193,15 +193,15 @@ RepresentationPackage1(R): public == private where
            f(i) := j
            i := i + 1
        f
- 
- 
+
+
      -- exported functions:
- 
- 
- 
+
+
+
      if R has commutative("*") then
        antisymmetricTensors ( a : M R , k : PI ) ==
- 
+
          n      : NNI   := nrows a
          k = 1 => a
          k > n =>
@@ -222,28 +222,28 @@ RepresentationPackage1(R): public == private where
                  setelt(c,r,t,elt(a, 1+rr, 1+tt))
              setelt(b, i, j, determinant c)
          b
- 
- 
+
+
      if R has commutative("*") then
        antisymmetricTensors(la: L M R, k: PI) ==
          [antisymmetricTensors(ma,k) for ma in la]
- 
- 
- 
+
+
+
      symmetricTensors (a : M R, n : PI) ==
- 
+
        m : NNI := nrows a
        m ^= ncols a =>
          error("Input to symmetricTensors is no square matrix")
        n = 1 => a
- 
+
        dim : NNI := (binomial(m+n-1,n)$ICF)::NNI
        c : M R := new(dim,dim,0)
        f : V I := new(n,0)
        g : V I := new(n,0)
        nullMatrix : M I := new(1,1,0)
        colemanMatrix : M I
- 
+
        for i in 1..dim repeat
          -- unrankImproperPartitions1 starts counting from 0
          alpha := unrankImproperPartitions1(n,m,i-1)$SGCF
@@ -263,14 +263,14 @@ RepresentationPackage1(R): public == private where
            -- end of while
          -- end of j-loop
        -- end of i-loop
- 
+
        c
- 
- 
+
+
      symmetricTensors(la : L M R, k : PI) ==
        [symmetricTensors (ma, k) for ma in la]
- 
- 
+
+
      tensorProduct(a: M R, b: M R) ==
        n      : NNI := nrows a
        m      : NNI := nrows b
@@ -287,25 +287,25 @@ RepresentationPackage1(R): public == private where
                    indexc          := indexc + 1
              indexr := indexr + 1
        c
- 
- 
+
+
      tensorProduct (la: L M R, lb: L M R) ==
        [tensorProduct(la.i, lb.i) for i in 1..maxIndex la]
- 
- 
+
+
      tensorProduct(a : M R) == tensorProduct(a, a)
- 
+
      tensorProduct(la : L M R) ==
        tensorProduct(la :: L M R, la :: L M R)
- 
+
      permutationRepresentation (p : PERM I, n : I) ==
        -- permutations are assumed to permute {1,2,...,n}
        a : M I := zero(n :: NNI, n :: NNI)
        for i in 1..n repeat
           a(eval(p,i)$(PERM I),i) := 1
        a
- 
- 
+
+
      permutationRepresentation (p : L I) ==
        -- permutations are assumed to permute {1,2,...,n}
        n : I := #p
@@ -313,16 +313,16 @@ RepresentationPackage1(R): public == private where
        for i in 1..n repeat
           a(p.i,i) := 1
        a
- 
- 
+
+
      permutationRepresentation(listperm : L PERM I, n : I) ==
        -- permutations are assumed to permute {1,2,...,n}
        [permutationRepresentation(perm, n) for perm in listperm]
- 
+
      permutationRepresentation (listperm : L L I) ==
        -- permutations are assumed to permute {1,2,...,n}
        [permutationRepresentation perm for perm in listperm]
- 
+
      createGenericMatrix(m) ==
        res : M P R := new(m,m,0$(P R))
        for i in 1..m repeat

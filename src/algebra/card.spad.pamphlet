@@ -89,24 +89,24 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
         NNI ==> NonNegativeInteger
         FINord   ==> -1
         DUMMYval ==> -1
- 
+
         Rep := Record(order: Integer, ival: Integer)
- 
+
         GCHypothesis: Reference(Boolean) := ref false
- 
+
         -- Creation
         0           == [FINord, 0]
         1           == [FINord, 1]
         coerce(n:NonNegativeInteger):% == [FINord, n]
         Aleph n     == [n, DUMMYval]
- 
+
         -- Output
         ALEPHexpr := "Aleph"::OutputForm
- 
+
         coerce(x: %): OutputForm ==
             x.order = FINord => (x.ival)::OutputForm
             prefix(ALEPHexpr, [(x.order)::OutputForm])
- 
+
         -- Manipulation
         x = y ==
             x.order ^= y.order => false
@@ -144,18 +144,18 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
             x = 1 => 1
             GCHypothesis() => [max(x.order-1, y.order) + 1, DUMMYval]
             error "Transfinite exponentiation only implemented under GCH"
- 
+
         finite? x    == x.order = FINord
         countable? x == x.order < 1
- 
+
         retract(x:%):NonNegativeInteger ==
           finite? x => (x.ival)::NNI
           error "Not finite"
- 
+
         retractIfCan(x:%):Union(NonNegativeInteger, "failed") ==
           finite? x => (x.ival)::NNI
           "failed"
- 
+
         -- State manipulation
         generalizedContinuumHypothesisAssumed?() == GCHypothesis()
         generalizedContinuumHypothesisAssumed b == (GCHypothesis() := b)

@@ -18,7 +18,7 @@
 ++ an algorithm of Paul Wang.
 ++ This package will work for every euclidean domain R which has property
 ++ F, i.e. there exists a factor operation in \spad{R[x]}.
- 
+
 MultivariateLifting(E,OV,R,P) : C == T
  where
   OV        :   OrderedSet
@@ -33,16 +33,16 @@ MultivariateLifting(E,OV,R,P) : C == T
   VTerm     ==> List Term
   Table     ==> Vector List BP
   L         ==> List
- 
+
   C == with
     corrPoly:      (SUP,L OV,L R,L NNI,L SUP,Table,R) -> Union(L SUP,"failed")
-	++ corrPoly(u,lv,lr,ln,lu,t,r) \undocumented
+        ++ corrPoly(u,lv,lr,ln,lu,t,r) \undocumented
     lifting:       (SUP,L OV,L BP,L R,L P,L NNI,R) -> Union(L SUP,"failed")
-	++ lifting(u,lv,lu,lr,lp,ln,r) \undocumented
+        ++ lifting(u,lv,lu,lr,lp,ln,r) \undocumented
     lifting1:      (SUP,L OV,L SUP,L R,L P,L VTerm,L NNI,Table,R) ->
                                                 Union(L SUP,"failed")
-	++ lifting1(u,lv,lu,lr,lp,lt,ln,t,r) \undocumented
- 
+        ++ lifting1(u,lv,lu,lr,lp,lt,ln,t,r) \undocumented
+
   T == add
     import GenExEuclid(R,BP)
     import NPCoef(BP,E,OV,R,P)
@@ -52,27 +52,27 @@ MultivariateLifting(E,OV,R,P) : C == T
 
     DetCoef ==> Record(deter:L SUP,dterm:L VTerm,nfacts:L BP,
                        nlead:L P)
- 
+
               ---   local functions   ---
     normalDerivM    :    (P,Z,OV)     ->  P
     normalDeriv     :     (SUP,Z)     ->  SUP
     subslead        :     (SUP,P)     ->  SUP
     subscoef        :   (SUP,L Term)  ->  SUP
     maxDegree       :   (SUP,OV)      ->  NonNegativeInteger
- 
- 
+
+
     corrPoly(m:SUP,lvar:L OV,fval:L R,ld:L NNI,flist:L SUP,
              table:Table,pmod:R):Union(L SUP,"failed") ==
       --  The correction coefficients are evaluated recursively.
       --   Extended Euclidean algorithm for the multivariate case.
- 
+
       -- the polynomial is univariate  --
       #lvar=0 =>
         lp:=solveid(map(ground,m)$SUPF2(P,R),pmod,table)
         if lp case "failed" then return "failed"
         lcoef:= [map(coerce,mp)$SUPF2(R,P) for mp in lp::L BP]
- 
- 
+
+
       diff,ddiff,pol,polc:SUP
       listpolv,listcong:L SUP
       deg1:NNI:= ld.first
@@ -99,9 +99,9 @@ MultivariateLifting(E,OV,R,P) : C == T
         lcoef := [lcoef.i+beta.i*pol  for i in 1..np]
         diff:=diff- +/[listcong.i*beta.i for i in 1..np]*pol
       lcoef
- 
- 
- 
+
+
+
     lifting1(m:SUP,lvar:L OV,plist:L SUP,vlist:L R,tlist:L P,_
       coeflist:L VTerm,listdeg:L NNI,table:Table,pmod:R) :Union(L SUP,"failed") ==
     -- The factors of m (multivariate) are determined ,
@@ -130,7 +130,7 @@ MultivariateLifting(E,OV,R,P) : C == T
         ldeg := cons(degj,ldeg)
         subsvar:=cons(x,subsvar)
         subsval:=cons(v,subsval)
- 
+
       --substitute the determined coefficients
         if testp then
           if j<nvar then
@@ -164,14 +164,14 @@ MultivariateLifting(E,OV,R,P) : C == T
         idegj < 0 => return "failed"
       plist
         --There are not extraneous factors
- 
+
     maxDegree(um:SUP,x:OV):NonNegativeInteger ==
        ans:NonNegativeInteger:=0
        while um ^= 0 repeat  
           ans:=max(ans,degree(leadingCoefficient um,x))
           um:=reductum um    
        ans                   
-                         
+
     lifting(um:SUP,lvar:L OV,plist:L BP,vlist:L R,
             tlist:L P,listdeg:L NNI,pmod:R):Union(L SUP,"failed") ==
     -- The factors of m (multivariate) are determined, when the
@@ -219,7 +219,7 @@ MultivariateLifting(E,OV,R,P) : C == T
     subslead(m:SUP,pol:P):SUP ==
       dm:NNI:=degree m
       monomial(pol,dm)+reductum m
- 
+
     subscoef(um:SUP,lterm:L Term):SUP ==
       dm:NNI:=degree um
       new:=monomial(leadingCoefficient um,dm)

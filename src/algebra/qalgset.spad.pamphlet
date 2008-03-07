@@ -66,7 +66,7 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
    Ex       ==> OutputForm
    mrf      ==> MultivariateFactorize(Var,Expon,R,Dpoly)
    Status   ==> Union(Boolean,"failed") -- empty or not, or don't know
- 
+
    C == Join(SetCategory, CoercibleTo OutputForm) with
   --- should be Object instead of SetCategory, bug in LIST Object ---
   --- equality is not implemented ---
@@ -113,24 +113,24 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
    T  == add
      Rep := Record(status:Status,zero:List Dpoly, nzero:Dpoly)
      x:$
- 
+
      import GroebnerPackage(R,Expon,Var,Dpoly)
      import GroebnerPackage(R,newExpon,Var,newPoly)
      import GroebnerInternalPackage(R,Expon,Var,Dpoly)
- 
+
                        ----  Local Functions  ----
- 
+
      minset   : List List Dpoly -> List List Dpoly
      overset? : (List Dpoly, List List Dpoly) -> Boolean
      npoly    : Dpoly            ->  newPoly
      oldpoly  : newPoly          ->  Union(Dpoly,"failed")
- 
- 
+
+
      if (R has EuclideanDomain) and (R has CharacteristicZero) then
        factorset (y:Dpoly):List Dpoly ==
          ground? y => []
          [j.factor for j in factors factor$mrf  y]
- 
+
        simplify x ==
          if x.status case "failed" then
            x:=quasiAlgebraicSet(zro:=groebner x.zero, redPol(x.nzero,zro))
@@ -141,12 +141,12 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
          zro:=groebner [*/s for s in mset]
          member? (1$Dpoly, zro) => empty()
          [x.status, zro, primitivePart redPol(*/nzro, zro)]
- 
+
      npoly(f:Dpoly) : newPoly ==
        zero? f => 0
        monomial(leadingCoefficient f,makeprod(0,degree f))$newPoly +
              npoly(reductum f)
- 
+
      oldpoly(q:newPoly) : Union(Dpoly,"failed") ==
        q=0$newPoly => 0$Dpoly
        dq:newExpon:=degree q
@@ -154,23 +154,23 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
        n^=0 => "failed"
        ((g:=oldpoly reductum q) case "failed") => "failed"
        monomial(leadingCoefficient q,selectsecond dq)$Dpoly + (g::Dpoly)
- 
+
      coerce x ==
        x.status = true => "Empty"::Ex
        bracket [[hconcat(f::Ex, " = 0"::Ex) for f in x.zero ]::Ex,
                  hconcat( x.nzero::Ex, " != 0"::Ex)]
- 
+
      empty? x ==
        if x.status case "failed" then x:=idealSimplify x
        x.status :: Boolean
- 
+
      empty() == [true::Status, [1$Dpoly], 0$Dpoly]
      status x == x.status
      setStatus(x,t) == [t,x.zero,x.nzero]
      definingEquations x == x.zero
      definingInequation x == x.nzero
      quasiAlgebraicSet(z0,n0) == ["failed", z0, n0]
- 
+
      idealSimplify x ==
        x.status case Boolean => x
        z0:= x.zero
@@ -185,12 +185,12 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
          if ((f:=oldpoly ngb.first) case Dpoly) then gb:=concat(f, gb)
          ngb:=ngb.rest
        [false::Status, gb, primitivePart redPol(n0, gb)]
- 
- 
+
+
      minset lset ==
        empty? lset => lset
        [s for s  in lset | ^(overset?(s,lset))]
- 
+
      overset?(p,qlist) ==
        empty? qlist => false
        or/[(brace$(Set Dpoly) q) <$(Set Dpoly) (brace$(Set Dpoly) p) for q in qlist]
@@ -249,7 +249,7 @@ QuasiAlgebraicSet2(vl,nv) : C == T where
    newPoly  ==> DistributedMultivariatePolynomial(newvl,F)
    newVar   ==> OrderedVariableList newvl
    Status   ==> Union(Boolean,"failed") -- empty or not, or don't know
- 
+
    C == with
      radicalSimplify:QALG -> QALG
        ++ radicalSimplify(s) returns a different and presumably simpler
@@ -267,7 +267,7 @@ QuasiAlgebraicSet2(vl,nv) : C == T where
      oldpoly       :     newPoly          ->  Union(Dpoly,"failed")
      f             :     Var              ->  newPoly
      g             :     newVar           ->  Dpoly
- 
+
      import PolynomialIdeals(F,newExpon,newVar,newPoly)
      import GroebnerPackage(F,Expon,Var,Dpoly)
      import GroebnerPackage(F,newExpon,newVar,newPoly)
@@ -281,14 +281,14 @@ QuasiAlgebraicSet2(vl,nv) : C == T where
      g(v:newVar):Dpoly ==
        v = tv => 0
        variable((convert v)@Symbol)@Union(Var,"failed")::Var::Dpoly
- 
+
      npoly(p:Dpoly) : newPoly ==  map(f #1, #1::newPoly, p)
- 
+
      oldpoly(q:newPoly) : Union(Dpoly,"failed") ==
        (x:=mainVariable q) case "failed" => (leadingCoefficient q)::Dpoly
        (x::newVar = tv) => "failed"
        map(g #1,#1::Dpoly, q)
- 
+
      radicalSimplify x ==
        status(x)$QALG = true => x     -- x is empty
        z0:=definingEquations x

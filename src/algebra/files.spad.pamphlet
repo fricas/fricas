@@ -27,12 +27,12 @@
 ++   computer's file system.  The precise method of naming files
 ++   is determined by the Name parameter.  The type of the contents
 ++   of the file is determined by S.
- 
+
 FileCategory(Name, S): Category == FCdefinition where
     Name:      SetCategory
     S:         SetCategory
     IOMode ==> String  -- Union("input", "output", "closed")
- 
+
     FCdefinition == SetCategory with
         open: Name -> %
           ++ open(s) returns the file s open for input.  
@@ -48,14 +48,14 @@ FileCategory(Name, S): Category == FCdefinition where
 
         close_!: % -> %
           ++ close!(f) returns the file f closed to input and output.
- 
+
         name: % -> Name
           ++ name(f) returns the external name of the file f.
 
         iomode: % -> IOMode
           ++ iomode(f) returns the status of the file f. The input/output 
           ++ status of f may be "input", "output" or "closed" mode.
- 
+
         read_!: % -> S
           ++ read!(f) extracts a value from file f.  The state of f is
           ++ modified so a subsequent call to \spadfun{read!} will return
@@ -65,7 +65,7 @@ FileCategory(Name, S): Category == FCdefinition where
           ++ write!(f,s) puts the value s into the file f. 
           ++ The state of f is modified so subsequents call to \spad{write!}
           ++ will append one after another.
- 
+
 @
 \section{domain FILE File}
 <<domain FILE File>>=
@@ -83,7 +83,7 @@ FileCategory(Name, S): Category == FCdefinition where
 ++ Description:
 ++   This domain provides a basic model of files to save arbitrary values.
 ++   The operations provide sequential access to the contents.
- 
+
 File(S:SetCategory): FileCategory(FileName, S) with
         readIfCan_!: % -> Union(S, "failed")
             ++ readIfCan!(f) returns a value from the file f, if possible.
@@ -92,11 +92,11 @@ File(S:SetCategory): FileCategory(FileName, S) with
     == add
         FileState ==> SExpression
         IOMode    ==> String
- 
+
         Rep:=Record(fileName:    FileName,   _
                     fileState:   FileState,  _
                     fileIOmode:  IOMode)
- 
+
         defstream(fn: FileName, mode: IOMode): FileState ==
             mode = "input"  =>
               not readable? fn => error ["File is not readable", fn]
@@ -105,12 +105,12 @@ File(S:SetCategory): FileCategory(FileName, S) with
               not writable? fn => error ["File is not writable", fn]
               MAKE_-OUTSTREAM(fn::String)$Lisp
             error ["IO mode must be input or output", mode]
- 
+
         f1 = f2 ==
             f1.fileName = f2.fileName
         coerce(f: %): OutputForm ==
             f.fileName::OutputForm
- 
+
         open fname ==
             open(fname, "input")
         open(fname, mode) ==
@@ -168,7 +168,7 @@ File(S:SetCategory): FileCategory(FileName, S) with
 
 TextFile: Cat == Def where
     StreamName ==> Union(FileName, "console")
- 
+
     Cat == FileCategory(FileName, String) with
         writeLine_!: (%, String) -> String
           ++ writeLine!(f,s) writes the contents of the string s 
@@ -198,17 +198,17 @@ TextFile: Cat == Def where
           ++ endOfFile?(f) tests whether the file f is positioned after the
           ++ end of all text.  If the file is open for output, then
           ++ this test is always true.
- 
+
     Def == File(String) add
         FileState ==> SExpression
- 
+
         Rep := Record(fileName:   FileName,    _
                       fileState:  FileState,   _
                       fileIOmode: String)
- 
+
         read_! f      == readLine_! f
         readIfCan_! f == readLineIfCan_! f
- 
+
         readLine_! f ==
             f.fileIOmode ^= "input"  => error "File not in read state"
             s: String := read_-line(f.fileState)$Lisp
@@ -255,7 +255,7 @@ TextFile: Cat == Def where
 ++   accessed one byte at a time as a small integer.
 
 BinaryFile: Cat == Def where
- 
+
     Cat == FileCategory(FileName, SingleInteger) with
         readIfCan_!: % -> Union(SingleInteger, "failed")
             ++ readIfCan!(f) returns a value from the file f, if possible.
@@ -273,17 +273,17 @@ BinaryFile: Cat == Def where
 
     Def == File(SingleInteger) add
         FileState ==> SExpression
- 
+
         Rep := Record(fileName:   FileName,    _
                       fileState:  FileState,   _
                       fileIOmode: String)
- 
+
 --      direc : Symbol := INTERN("DIRECTION","KEYWORD")$Lisp
 --      input : Symbol := INTERN("INPUT","KEYWORD")$Lisp
 --      output : Symbol := INTERN("OUTPUT","KEYWORD")$Lisp
 --      eltype : Symbol := INTERN("ELEMENT-TYPE","KEYWORD")$Lisp
 --      bytesize : SExpression := LIST(QUOTE(UNSIGNED$Lisp)$Lisp,8)$Lisp
-   
+
 
         defstream(fn: FileName, mode: String): FileState ==
             mode = "input"  =>
@@ -360,13 +360,13 @@ BinaryFile: Cat == Def where
 ++ Description:
 ++  This domain allows a random access file to be viewed both as a table
 ++  and as a file object.
- 
- 
+
+
 KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
     Name  ==> FileName
     Key   ==> String
     Entry :   SetCategory
- 
+
     KAFcategory ==
         Join(FileCategory(Name, Record(key: Key, entry: Entry)),
              TableAggregate(Key, Entry)) with
@@ -374,32 +374,32 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
                  pack_!: % -> %
                      ++ pack!(f) reorganizes the file f on disk to recover 
                      ++ unused space.
- 
+
     KAFcapsule == add
- 
+
         CLASS     ==> 131   -- an arbitrary no. greater than 127
         FileState ==> SExpression
         IOMode    ==> String
- 
- 
+
+
         Cons:= Record(car: SExpression, cdr: SExpression)
         Rep := Record(fileName:    Name,     _
                       fileState:   FileState,   _
                       fileIOmode:  IOMode)
- 
+
         defstream(fn: Name, mode: IOMode): FileState ==
             mode = "input"  =>
               RDEFINSTREAM(fn::String)$Lisp
             mode = "output" =>
               RDEFOUTSTREAM(fn::String)$Lisp
             error ["IO mode must be input or output", mode]
- 
+
         ---- From Set ----
         f1 = f2 ==
             f1.fileName = f2.fileName
         coerce(f: %): OutputForm ==
             f.fileName::OutputForm
- 
+
         ---- From FileCategory ----
         open fname ==
             open(fname, "either")
@@ -435,7 +435,7 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
             f.fileName
         iomode f ==
             f.fileIOmode
- 
+
         ---- From TableAggregate ----
         empty() ==
             fn := new("", "kaf", "sdata")$Name

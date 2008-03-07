@@ -25,7 +25,7 @@
 ++ Description: PointCategory is the category of points in space which
 ++ may be plotted via the graphics facilities.  Functions are provided for
 ++ defining points and handling elements of points.
- 
+
 PointCategory(R:Ring) : Category == VectorCategory(R) with
   point: List R -> %
     ++ point(l) returns a point category defined by a list l of elements from 
@@ -39,7 +39,7 @@ PointCategory(R:Ring) : Category == VectorCategory(R) with
       ++ cross(p,q) computes the cross product of the two points \spad{p}
       ++ and \spad{q}. Error if the p and q are not 3 dimensional
   extend : (%,List R) -> %
-	++ extend(x,l,r) \undocumented
+        ++ extend(x,l,r) \undocumented
 
 @
 \section{domain POINT Point}
@@ -47,13 +47,13 @@ PointCategory(R:Ring) : Category == VectorCategory(R) with
 )abbrev domain POINT Point
 ++ Description:
 ++ This domain implements points in coordinate space
- 
+
 Point(R:Ring) : Exports == Implementation where
   -- Domains for points, subspaces and properties of components in
   -- a subspace
- 
+
   Exports ==> PointCategory(R)
- 
+
   Implementation ==> Vector (R) add
     PI   ==> PositiveInteger
 
@@ -77,30 +77,30 @@ Point(R:Ring) : Exports == Implementation where
 )abbrev domain COMPPROP SubSpaceComponentProperty
 ++ Description:
 ++ This domain implements some global properties of subspaces.
- 
+
 SubSpaceComponentProperty() : Exports == Implementation where
- 
+
   O ==> OutputForm
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
   L    ==> List
   B    ==> Boolean
- 
+
   Exports ==> SetCategory with
     new     : () -> %
-	++ new() \undocumented
+        ++ new() \undocumented
     closed? : % -> B
-	++ closed?(x) \undocumented
+        ++ closed?(x) \undocumented
     solid?  : % -> B
-	++ solid?(x) \undocumented
+        ++ solid?(x) \undocumented
     close   : (%,B) -> B
-	++ close(x,b) \undocumented
+        ++ close(x,b) \undocumented
     solid   : (%,B) -> B
-	++ solid(x,b) \undocumented
+        ++ solid(x,b) \undocumented
     copy    : % -> %
-	++ copy(x) \undocumented
- 
+        ++ copy(x) \undocumented
+
   Implementation ==> add
     Rep := Record(closed:B, solid:B)
     closed? p == p.closed
@@ -161,7 +161,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
   -- The subspace s would now have a new component which has one child
   -- which, in turn, has one child (the leaf). The new component is then a 
   -- point.
- 
+
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
@@ -172,30 +172,30 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
   S ==> String
   O ==> OutputForm
   empty ==> nil  -- macro to ease conversion to new aggcat.spad
- 
+
   Exports ==> SetCategory with
     leaf?          : % -> B
-	++ leaf?(x) \undocumented
+        ++ leaf?(x) \undocumented
     root?          : % -> B
-	++ root?(x) \undocumented
+        ++ root?(x) \undocumented
     internal?      : % -> B
-	++ internal?(x) \undocumented
+        ++ internal?(x) \undocumented
     new            : () -> %
-	++ new() \undocumented
+        ++ new() \undocumented
     subspace       : () -> %
-	++ subspace() \undocumented
+        ++ subspace() \undocumented
     birth          : % -> %       -- returns a pointer to the baby
-	++ birth(x) \undocumented
+        ++ birth(x) \undocumented
     child          : (%,NNI) -> %
-	++ child(x,n) \undocumented
+        ++ child(x,n) \undocumented
     children       : % -> List %
-	++ children(x) \undocumented
+        ++ children(x) \undocumented
     numberOfChildren: % -> NNI
-	++ numberOfChildren(x) \undocumented
+        ++ numberOfChildren(x) \undocumented
     shallowCopy    : % -> %
-	++ shallowCopy(x) \undocumented
+        ++ shallowCopy(x) \undocumented
     deepCopy       : % -> %
-	++ deepCopy(x) \undocumented
+        ++ deepCopy(x) \undocumented
     merge          : (%,%) -> %
       ++ merge(s1,s2) the subspaces s1 and s2 into a single subspace.
     merge          : List % -> %
@@ -260,7 +260,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
       ++ location, ind, by replacing it with the point, p in the 3 dimensional
       ++ subspace, s.  An error message occurs if s is empty, otherwise the
       ++ subspace s is returned with the point modification.
- 
+
     closeComponent : (%,List NNI,B)     -> %
       ++ closeComponent(s,li,b) sets the property of the component in the
       ++ 3 dimensional subspace, s, to be closed if b is true, or open if 
@@ -308,7 +308,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
     pointData       : % -> L POINT
       ++ pointData(s) returns the list of points from the point data field
       ++ of the 3 dimensional subspace s.
- 
+
   Implementation ==> add
     import String()
 
@@ -323,16 +323,16 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
                    parentField:List %) -- needn't be list but...base case?
 
     TELLWATT : String := "Non-null list: Please inform Stephen Watt"
- 
+
     leaf? space ==  empty? children space
     root? space == (space.levelField = 0$NNI)
     internal? space == ^(root? space and leaf? space)
- 
+
     new() ==
       [point(empty())$POINT,0,new()$PROP,empty(),empty(),0,_
                                      empty(),empty(),0,0,empty()]
     subspace() == new()
- 
+
     birth momma ==
       baby := new()
       baby.levelField := momma.levelField+1
@@ -349,13 +349,13 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
           momma.lastChild := rest lastKid
           momma.noChildren := momma.noChildren + 1
       baby
- 
+
     child(space,num) ==
       space.childrenField.num
 
     children space == space.childrenField
     numberOfChildren space == space.noChildren
- 
+
     shallowCopy space ==
       node := new()
       node.pt         := space.pt
@@ -407,7 +407,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
         spc.childrenField:=[deepCopy s]
         spaceList := cons(spc,spaceList)
       spaceList
- 
+
     addPoint(space:%,path:List NNI,point:POINT) ==
       if not empty?(lastPt := space.lastPoint) then
         not empty? rest lastPt => error TELLWATT
@@ -497,7 +497,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
             space.lastPoint := rest lastPt
         space.noPoints := space.noPoints + 1
       error "You need to pass a top level SubSpace (level should be zero)"
- 
+
     modifyPoint(space:%,path:List NNI,point:POINT) ==
       if not empty?(lastPt := space.lastPoint) then
         not empty? rest lastPt => error TELLWATT
@@ -530,7 +530,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
         space.pointDataField.which := point
         space
       error "You need to pass a top level SubSpace (level should be zero)"
- 
+
     closeComponent(space,path,val) ==
       node := space
       for i in path repeat
@@ -544,7 +544,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
         node := child(node,i)
       node.property := prop
       space
- 
+
     traverse(space,path) ==
       for i in path repeat space := child(space,i)
       space
@@ -556,7 +556,7 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
     extractIndex space == space.index
     extractClosed space == closed? space.property
     extractProperty space == space.property
- 
+
     parent space ==
       empty? space.parentField => error "This is a top level SubSpace - it does not have a parent"
       first space.parentField
@@ -582,14 +582,14 @@ SubSpace(n:PI,R:Ring) : Exports == Implementation where
 ++ Description:
 ++ This package \undocumented
 PointPackage(R:Ring):Exports == Implementation where
- 
+
   POINT ==> Point(R)
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
   L    ==> List
   B    ==> Boolean
- 
+
   Exports == with
     xCoord       : POINT -> R
       ++ xCoord(pt) returns the first element of the point, pt,
@@ -646,10 +646,10 @@ PointPackage(R:Ring):Exports == Implementation where
       ++ how the components of higher dimensional points are interpreted.
       ++ This function is defined for the convenience of the user using 
       ++ specifically, shade to express a fourth dimension.
- 
+
       -- 2D and 3D extraction of data
   Implementation ==> add
- 
+
     xCoord p == elt(p,1)
     yCoord p == elt(p,2)
     zCoord p == elt(p,3)
@@ -669,15 +669,15 @@ PointPackage(R:Ring):Exports == Implementation where
 ++ Description:
 ++ This package \undocumented 
 PointFunctions2(R1:Ring,R2:Ring):Exports == Implementation where
- 
+
   Exports == with
     map : ((R1->R2),Point(R1)) -> Point(R2)
-	++ map(f,p) \undocumented
- 
+        ++ map(f,p) \undocumented
+
   Implementation ==> add
     import Point(R1)
     import Point(R2)
- 
+
     map(mapping,p) ==
       point([mapping p.(i::PositiveInteger) for i in minIndex(p)..maxIndex(p)])$Point(R2)
 

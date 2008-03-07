@@ -32,9 +32,9 @@ StreamInfiniteProduct(Coef): Exports == Implementation where
   I  ==> Integer
   QF ==> Fraction
   ST ==> Stream
- 
+
   Exports ==> with
- 
+
     infiniteProduct: ST Coef -> ST Coef
       ++ infiniteProduct(f(x)) computes \spad{product(n=1,2,3...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
@@ -48,29 +48,29 @@ StreamInfiniteProduct(Coef): Exports == Implementation where
       ++ generalInfiniteProduct(f(x),a,d) computes
       ++ \spad{product(n=a,a+d,a+2*d,...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
- 
+
   Implementation ==> add
- 
+
     if Coef has Field then
- 
+
       import StreamTaylorSeriesOperations(Coef)
       import StreamTranscendentalFunctions(Coef)
- 
+
       infiniteProduct st             == exp lambert log st
       evenInfiniteProduct st         == exp evenlambert log st
       oddInfiniteProduct st          == exp oddlambert log st
       generalInfiniteProduct(st,a,d) == exp generalLambert(log st,a,d)
- 
+
     else
- 
+
       import StreamTaylorSeriesOperations(QF Coef)
       import StreamTranscendentalFunctions(QF Coef)
- 
+
       applyOverQF:(ST QF Coef -> ST QF Coef,ST Coef) -> ST Coef
       applyOverQF(f,st) ==
         stQF := map(#1 :: QF(Coef),st)$StreamFunctions2(Coef,QF Coef)
         map(retract(#1)@Coef,f stQF)$StreamFunctions2(QF Coef,Coef)
- 
+
       infiniteProduct st     == applyOverQF(exp lambert log #1,st)
       evenInfiniteProduct st == applyOverQF(exp evenlambert log #1,st)
       oddInfiniteProduct st  == applyOverQF(exp oddlambert log #1,st)
@@ -100,9 +100,9 @@ InfiniteProductCharacteristicZero(Coef,UTS):_
   Coef : Join(IntegralDomain,CharacteristicZero)
   UTS  : UnivariateTaylorSeriesCategory Coef
   I  ==> Integer
- 
+
   Exports ==> with
- 
+
     infiniteProduct: UTS -> UTS
       ++ infiniteProduct(f(x)) computes \spad{product(n=1,2,3...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
@@ -116,15 +116,15 @@ InfiniteProductCharacteristicZero(Coef,UTS):_
       ++ generalInfiniteProduct(f(x),a,d) computes
       ++ \spad{product(n=a,a+d,a+2*d,...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
- 
+
   Implementation ==> add
- 
+
     import StreamInfiniteProduct Coef
- 
+
     infiniteProduct x     == series infiniteProduct coefficients x
     evenInfiniteProduct x == series evenInfiniteProduct coefficients x
     oddInfiniteProduct x  == series oddInfiniteProduct coefficients x
- 
+
     generalInfiniteProduct(x,a,d) ==
       series generalInfiniteProduct(coefficients x,a,d)
 
@@ -151,9 +151,9 @@ InfiniteProductPrimeField(Coef,UTS): Exports == Implementation where
   UTS  : UnivariateTaylorSeriesCategory Coef
   I  ==> Integer
   ST ==> Stream
- 
+
   Exports ==> with
- 
+
     infiniteProduct: UTS -> UTS
       ++ infiniteProduct(f(x)) computes \spad{product(n=1,2,3...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
@@ -167,16 +167,16 @@ InfiniteProductPrimeField(Coef,UTS): Exports == Implementation where
       ++ generalInfiniteProduct(f(x),a,d) computes
       ++ \spad{product(n=a,a+d,a+2*d,...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
- 
+
   Implementation ==> add
- 
+
     import StreamInfiniteProduct Integer
- 
+
     applyOverZ:(ST I -> ST I,ST Coef) -> ST Coef
     applyOverZ(f,st) ==
       stZ := map(convert(#1)@Integer,st)$StreamFunctions2(Coef,I)
       map(#1 :: Coef,f stZ)$StreamFunctions2(I,Coef)
- 
+
     infiniteProduct x ==
       series applyOverZ(infiniteProduct,coefficients x)
     evenInfiniteProduct x ==
@@ -218,9 +218,9 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
   STT ==> StreamTaylorSeriesOperations
   ST2 ==> StreamFunctions2
   SUP ==> SparseUnivariatePolynomial
- 
+
   Exports ==> with
- 
+
     infiniteProduct: UTS -> UTS
       ++ infiniteProduct(f(x)) computes \spad{product(n=1,2,3...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
@@ -234,9 +234,9 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
       ++ generalInfiniteProduct(f(x),a,d) computes
       ++ \spad{product(n=a,a+d,a+2*d,...,f(x**n))}.
       ++ The series \spad{f(x)} should have constant coefficient 1.
- 
+
   Implementation ==> add
- 
+
     liftPoly: UP -> SUP RN
     liftPoly poly ==
       -- lift coefficients of 'poly' to integers
@@ -246,7 +246,7 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
         ans := ans + monomial(coef,degree poly)
         poly := reductum poly
       ans
- 
+
     reducePoly: SUP RN -> UP
     reducePoly poly ==
       -- reduce coefficients of 'poly' to elements of K
@@ -256,10 +256,10 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
         ans := ans + monomial(coef,degree poly)
         poly := reductum poly
       ans
- 
+
     POLY := liftPoly definingPolynomial()$Coef
     ALG  := SAE(RN,SUP RN,POLY)
- 
+
     infiniteProduct x ==
       stUP := map(lift,coefficients x)$ST2(Coef,UP)
       stSUP := map(liftPoly,stUP)$ST2(UP,SUP RN)
@@ -268,7 +268,7 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
       stSUP := map(lift,stALG)$ST2(ALG,SUP RN)
       stUP := map(reducePoly,stSUP)$ST2(SUP RN,UP)
       series map(reduce,stUP)$ST2(UP,Coef)
- 
+
     evenInfiniteProduct x ==
       stUP := map(lift,coefficients x)$ST2(Coef,UP)
       stSUP := map(liftPoly,stUP)$ST2(UP,SUP RN)
@@ -277,7 +277,7 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
       stSUP := map(lift,stALG)$ST2(ALG,SUP RN)
       stUP := map(reducePoly,stSUP)$ST2(SUP RN,UP)
       series map(reduce,stUP)$ST2(UP,Coef)
- 
+
     oddInfiniteProduct x ==
       stUP := map(lift,coefficients x)$ST2(Coef,UP)
       stSUP := map(liftPoly,stUP)$ST2(UP,SUP RN)
@@ -286,7 +286,7 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
       stSUP := map(lift,stALG)$ST2(ALG,SUP RN)
       stUP := map(reducePoly,stSUP)$ST2(SUP RN,UP)
       series map(reduce,stUP)$ST2(UP,Coef)
- 
+
     generalInfiniteProduct(x,a,d) ==
       stUP := map(lift,coefficients x)$ST2(Coef,UP)
       stSUP := map(liftPoly,stUP)$ST2(UP,SUP RN)
@@ -333,7 +333,7 @@ InfiniteProductFiniteField(K,UP,Coef,UTS):_
 @
 <<*>>=
 <<license>>
- 
+
 <<package STINPROD StreamInfiniteProduct>>
 <<package INFPROD0 InfiniteProductCharacteristicZero>>
 <<package INPRODPF InfiniteProductPrimeField>>

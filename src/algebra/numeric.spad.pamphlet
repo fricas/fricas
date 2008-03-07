@@ -24,7 +24,7 @@
 ++ References:
 ++ Description: Numeric provides real and complex numerical evaluation
 ++ functions for various symbolic types.
- 
+
 Numeric(S:ConvertibleTo Float): with
   numeric: S -> Float
     ++ numeric(x) returns a real approximation of x.
@@ -152,7 +152,7 @@ Numeric(S:ConvertibleTo Float): with
         ++ complexNumericIfCan(x, n) returns a complex approximation of x
         ++ up to n decimal places, or "failed" if \axiom{x} is not a constant.
  == add
- 
+
   if S has CommutativeRing then
     complexNumericIfCan(p:Polynomial Complex S) ==
       p' : Union(Complex(S),"failed") := retractIfCan p
@@ -163,7 +163,7 @@ Numeric(S:ConvertibleTo Float): with
       p' : Union(Complex(S),"failed") := retractIfCan p
       p' case "failed" => "failed"
       complexNumeric(p',n)
- 
+
   if S has Ring then
     numericIfCan(p:Polynomial S) ==
       p' : Union(S,"failed") := retractIfCan p
@@ -174,18 +174,18 @@ Numeric(S:ConvertibleTo Float): with
       p' : Union(S,"failed") := retractIfCan p
       p' case "failed" => "failed"
       complexNumeric(p')
- 
+
     complexNumericIfCan(p:Polynomial S, n:PositiveInteger) ==
       p' : Union(S,"failed") := retractIfCan p
       p' case "failed" => "failed"
       complexNumeric(p', n)
- 
+
     numericIfCan(p:Polynomial S, n:PositiveInteger) ==
       old := digits(n)$Float
       ans := numericIfCan p
       digits(old)$Float
       ans
- 
+
   if S has IntegralDomain then
     numericIfCan(f:Fraction Polynomial S)==
       num := numericIfCan(numer(f))
@@ -193,21 +193,21 @@ Numeric(S:ConvertibleTo Float): with
       den := numericIfCan(denom f)
       den case "failed" => "failed"
       num/den
- 
+
     complexNumericIfCan(f:Fraction Polynomial S) ==
       num := complexNumericIfCan(numer f)
       num case "failed" => "failed"
       den := complexNumericIfCan(denom f)
       den case "failed" => "failed"
       num/den
- 
+
     complexNumericIfCan(f:Fraction Polynomial S, n:PositiveInteger) ==
       num := complexNumericIfCan(numer f, n)
       num case "failed" => "failed"
       den := complexNumericIfCan(denom f, n)
       den case "failed" => "failed"
       num/den
- 
+
     numericIfCan(f:Fraction Polynomial S, n:PositiveInteger) ==
       old := digits(n)$Float
       ans := numericIfCan f
@@ -220,30 +220,30 @@ Numeric(S:ConvertibleTo Float): with
       den := complexNumericIfCan(denom f)
       den case "failed" => "failed"
       num/den
- 
+
     complexNumericIfCan(f:Fraction Polynomial Complex S, n:PositiveInteger) ==
       num := complexNumericIfCan(numer f, n)
       num case "failed" => "failed"
       den := complexNumericIfCan(denom f, n)
       den case "failed" => "failed"
       num/den
- 
+
     if S has OrderedSet then
       numericIfCan(x:Expression S) ==
         retractIfCan(map(convert, x)$ExpressionFunctions2(S, Float))
- 
+
       --s2cs(u:S):Complex(S) == complex(u,0)
 
       complexNumericIfCan(x:Expression S) ==
          complexNumericIfCan map(coerce, x)$ExpressionFunctions2(S,Complex S)
- 
+
       numericIfCan(x:Expression S, n:PositiveInteger) ==
         old := digits(n)$Float
         x' : Expression Float := map(convert, x)$ExpressionFunctions2(S, Float)
         ans : Union(Float,"failed") := retractIfCan x'
         digits(old)$Float
         ans
- 
+
       complexNumericIfCan(x:Expression S, n:PositiveInteger) ==
         old := digits(n)$Float
         x' : Expression Complex S := map(coerce, x)$ExpressionFunctions2(S, Complex S)
@@ -254,7 +254,7 @@ Numeric(S:ConvertibleTo Float): with
       if S has RealConstant then
         complexNumericIfCan(x:Expression Complex S) ==
           retractIfCan(map(convert, x)$ExpressionFunctions2(Complex S,Complex Float))
- 
+
         complexNumericIfCan(x:Expression Complex S, n:PositiveInteger) ==
           old := digits(n)$Float
           x' : Expression Complex Float :=
@@ -267,7 +267,7 @@ Numeric(S:ConvertibleTo Float): with
 
         complexNumericIfCan(x:Expression Complex S) ==
           retractIfCan(map(convert, x)$ExpressionFunctions2(Complex S,Complex Float))
- 
+
         complexNumericIfCan(x:Expression Complex S, n:PositiveInteger) ==
           old := digits(n)$Float
           x' : Expression Complex Float :=
@@ -276,19 +276,19 @@ Numeric(S:ConvertibleTo Float): with
           digits(old)$Float
           ans
   numeric(s:S) == convert(s)@Float
- 
+
   if S has ConvertibleTo Complex Float then
     complexNumeric(s:S) == convert(s)@Complex(Float)
- 
+
     complexNumeric(s:S, n:PositiveInteger) ==
       old := digits(n)$Float
       ans := complexNumeric s
       digits(old)$Float
       ans
- 
+
   else
     complexNumeric(s:S) == convert(s)@Float :: Complex(Float)
- 
+
     complexNumeric(s:S,n:PositiveInteger) ==
       numeric(s, n)::Complex(Float)
 
@@ -307,7 +307,7 @@ Numeric(S:ConvertibleTo Float): with
 
     if S has RealConstant then
       complexNumeric(s:Complex S) == convert(s)$Complex(S)
-  
+
       complexNumeric(s:Complex S, n:PositiveInteger) ==
         old := digits(n)$Float
         ans := complexNumeric s
@@ -316,7 +316,7 @@ Numeric(S:ConvertibleTo Float): with
 
     else if Complex(S) has ConvertibleTo(Complex Float) then
       complexNumeric(s:Complex S) == convert(s)@Complex(Float)
-  
+
       complexNumeric(s:Complex S, n:PositiveInteger) ==
         old := digits(n)$Float
         ans := complexNumeric s
@@ -329,7 +329,7 @@ Numeric(S:ConvertibleTo Float): with
         s' case "failed" =>
           error "Cannot compute the numerical value of a non-constant object"
         complexNumeric(s')
-  
+
       complexNumeric(s:Complex S, n:PositiveInteger) ==
         s' : Union(S,"failed") := retractIfCan s
         s' case "failed" =>
@@ -338,13 +338,13 @@ Numeric(S:ConvertibleTo Float): with
         ans := complexNumeric s'
         digits(old)$Float
         ans
- 
+
   numeric(s:S, n:PositiveInteger) ==
     old := digits(n)$Float
     ans := numeric s
     digits(old)$Float
     ans
- 
+
   if S has Ring then
     numeric(p:Polynomial S) ==
       p' : Union(S,"failed") := retractIfCan p
@@ -357,29 +357,29 @@ Numeric(S:ConvertibleTo Float): with
       p' case "failed" => 
         error "Cannot compute the numerical value of a non-constant polynomial"
       complexNumeric(p')
- 
+
     complexNumeric(p:Polynomial S, n:PositiveInteger) ==
       p' : Union(S,"failed") := retractIfCan p
       p' case "failed" => 
         error "Cannot compute the numerical value of a non-constant polynomial"
       complexNumeric(p', n)
- 
+
     numeric(p:Polynomial S, n:PositiveInteger) ==
       old := digits(n)$Float
       ans := numeric p
       digits(old)$Float
       ans
- 
+
   if S has IntegralDomain then
     numeric(f:Fraction Polynomial S)==
         numeric(numer(f)) / numeric(denom f)
- 
+
     complexNumeric(f:Fraction Polynomial S) ==
       complexNumeric(numer f)/complexNumeric(denom f)
- 
+
     complexNumeric(f:Fraction Polynomial S, n:PositiveInteger) ==
       complexNumeric(numer f, n)/complexNumeric(denom f, n)
- 
+
     numeric(f:Fraction Polynomial S, n:PositiveInteger) ==
       old := digits(n)$Float
       ans := numeric f
@@ -388,10 +388,10 @@ Numeric(S:ConvertibleTo Float): with
 
     complexNumeric(f:Fraction Polynomial Complex S) ==
       complexNumeric(numer f)/complexNumeric(denom f)
- 
+
     complexNumeric(f:Fraction Polynomial Complex S, n:PositiveInteger) ==
       complexNumeric(numer f, n)/complexNumeric(denom f, n)
- 
+
     if S has OrderedSet then
       numeric(x:Expression S) ==
         x' : Union(Float,"failed") := 
@@ -399,14 +399,14 @@ Numeric(S:ConvertibleTo Float): with
         x' case "failed" => error
          "Can only compute the numerical value of a constant, real-valued Expression"
         x'
- 
+
       complexNumeric(x:Expression S) ==
         x' : Union(Complex Float,"failed") := retractIfCan(
          map(complexNumeric, x)$ExpressionFunctions2(S,Complex Float))
         x' case "failed" =>
          error "Cannot compute the numerical value of a non-constant expression"
         x'
- 
+
       numeric(x:Expression S, n:PositiveInteger) ==
         old := digits(n)$Float
         x' : Expression Float := map(convert, x)$ExpressionFunctions2(S, Float)
@@ -415,7 +415,7 @@ Numeric(S:ConvertibleTo Float): with
         ans case "failed" => error
          "Can only compute the numerical value of a constant, real-valued Expression"
         ans
- 
+
       complexNumeric(x:Expression S, n:PositiveInteger) ==
         old := digits(n)$Float
         x' : Expression Complex Float :=
@@ -432,7 +432,7 @@ Numeric(S:ConvertibleTo Float): with
         x' case "failed" =>
          error "Cannot compute the numerical value of a non-constant expression"
         x'
- 
+
       complexNumeric(x:Expression Complex S, n:PositiveInteger) ==
         old := digits(n)$Float
         x' : Expression Complex Float :=
@@ -464,7 +464,7 @@ Numeric(S:ConvertibleTo Float): with
 ++ \spad{a} and b contains symbolic variables, but is meant for expressions
 ++ involving %pi.  
 ++ NOTE:  This is meant for internal use only.
- 
+
 DrawNumericHack(R:Join(OrderedSet,IntegralDomain,ConvertibleTo Float)):
  with coerce: SegmentBinding Expression R -> SegmentBinding Float
         ++ coerce(x = a..b) returns \spad{x = c..d} where c and d are the

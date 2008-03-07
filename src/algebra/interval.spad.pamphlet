@@ -187,8 +187,8 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
   _~_= (a:%,b:%):Boolean == (inf(a)~=inf(b)) or (sup(a)~=sup(b))
 
   1 == 
-	one : R := normaliseFloat 1
-	[one,one]
+        one : R := normaliseFloat 1
+        [one,one]
 
   0 == [0,0]
 
@@ -236,13 +236,13 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
   retractIfCan(u:%):Union(Integer,"failed") == 
     not zero? width(u) => "failed"
     retractIfCan inf u
-  
+
 
   retract(u:%):Integer == 
     not zero? width(u) =>
       error "attempt to retract a non-Integer interval to an Integer"
     retract inf u
-  
+
 
   coerce(u:%):OutputForm ==
     bracket([coerce inf(u), coerce sup(u)]$List(OutputForm))
@@ -257,7 +257,7 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
   log(u:%):% == 
     positive?(u) => qinterval(log inf u, log sup u)
     error "negative logs in interval"
-  
+
 
   exp(u:%):% == qinterval(exp inf u, exp sup u)
 
@@ -275,14 +275,14 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
   hasTwoPiMultiple(offset:R,ipi:R,i:%):Boolean == 
     next : Integer := retract ceiling( (inf(i) - offset)/(2*ipi) )
     contains?(i,offset+2*next*ipi)
-  
+
 
   -- This function checks whether an interval contains a value of the form
   -- `offset + n pi'.
   hasPiMultiple(offset:R,ipi:R,i:%):Boolean == 
     next : Integer := retract ceiling( (inf(i) - offset)/ipi )
     contains?(i,offset+next*ipi)
-  
+
 
   sin(u:%):% == 
     ipi : R := pi()$R
@@ -299,8 +299,8 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
         exactInfInterval(-1,last vals)
       else
         qinterval(first vals, last vals)
-    
-  
+
+
 
   cos(u:%):% == 
     ipi : R := pi()
@@ -317,8 +317,8 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
         exactInfInterval(-1,last vals)
       else
         qinterval(first vals, last vals)
-    
-  
+
+
 
   tan(u:%):% == 
     ipi : R := pi()
@@ -333,8 +333,8 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
 
       lo > hi => error "Interval contains a singularity"
       qinterval(lo,hi)
-    
-  
+
+
 
   csc(u:%):% == 
     ipi : R := pi()
@@ -351,8 +351,8 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
         exactSupInterval(first vals,-1)
       else
         qinterval(first vals, last vals)
-    
-  
+
+
 
   sec(u:%):% == 
     ipi : R := pi()
@@ -370,8 +370,8 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
         exactSupInterval(first vals,-1)
       else
         qinterval(first vals, last vals)
-    
-  
+
+
 
 
   cot(u:%):% == 
@@ -387,8 +387,8 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
 
       lo > hi => error "Interval contains a singularity"
       qinterval(lo,hi)
-    
-  
+
+
 
   -- From ArcTrigonometricFunctionCategory
 
@@ -397,14 +397,14 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     hi : R := sup(u)
     if (lo < -1) or (hi > 1) then error "asin only defined on the region -1..1"
     qinterval(asin lo,asin hi)
-  
+
 
   acos(u:%):% == 
     lo : R := inf(u)
     hi : R := sup(u)
     if (lo < -1) or (hi > 1) then error "acos only defined on the region -1..1"
     qinterval(acos hi,acos lo)
-  
+
 
   atan(u:%):% == qinterval(atan inf u, atan sup u)
 
@@ -416,7 +416,7 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     if ((lo <= -1) and (hi >= -1)) or ((lo <= 1) and (hi >= 1)) then
       error "acsc not defined on the region -1..1"
     qinterval(acsc hi, acsc lo)
-  
+
 
   asec(u:%):% == 
     lo : R := inf(u)
@@ -424,7 +424,7 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     if ((lo < -1) and (hi > -1)) or ((lo < 1) and (hi > 1)) then
       error "asec not defined on the region -1..1"
     qinterval(asec lo, asec hi)
-  
+
 
   -- From HyperbolicFunctionCategory
 
@@ -437,31 +437,31 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     positive? u => qinterval(sech sup u, sech inf u)
     vals : List R := sort [sech inf u, sech sup u]
     exactSupInterval(first vals,1)
-  
+
 
   cosh(u:%):% == 
     negative? u => qinterval(cosh sup u, cosh inf u)
     positive? u => qinterval(cosh inf u, cosh sup u)
     vals : List R := sort [cosh inf u, cosh sup u]
     exactInfInterval(1,last vals)
-  
+
 
   csch(u:%):% == 
     contains?(u,0) => error "csch: singularity at zero"
     qinterval(csch sup u, csch inf u)
-  
+
 
   coth(u:%):% == 
     contains?(u,0) => error "coth: singularity at zero"
     qinterval(coth sup u, coth inf u)
-  
+
 
   -- From ArcHyperbolicFunctionCategory
 
   acosh(u:%):% == 
     inf(u)<1 => error "invalid argument: acosh only defined on the region 1.."
     qinterval(acosh inf u, acosh sup u)
-  
+
 
   acoth(u:%):% == 
     lo : R := inf(u)
@@ -469,12 +469,12 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     if ((lo <= -1) and (hi >= -1)) or ((lo <= 1) and (hi >= 1)) then
       error "acoth not defined on the region -1..1"
     qinterval(acoth hi, acoth lo)
-  
+
 
   acsch(u:%):% == 
     contains?(u,0) => error "acsch: singularity at zero"
     qinterval(acsch sup u, acsch inf u)
-  
+
 
   asech(u:%):% == 
     lo : R := inf(u)
@@ -482,7 +482,7 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     if  (lo <= 0) or (hi > 1) then 
       error "asech only defined on the region 0 < x <= 1"
     qinterval(asech hi, asech lo)
-  
+
 
   asinh(u:%):% == qinterval(asinh inf u, asinh sup u)
 
@@ -492,11 +492,11 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     if  (lo <= -1) or (hi >= 1) then 
       error "atanh only defined on the region -1 < x < 1"
     qinterval(atanh lo, atanh hi)
-  
+
 
   -- From RadicalCategory
   _*_* (u:%,n:Fraction Integer):% == interval(inf(u)**n,sup(u)**n)
-  
+
 @
 \section{License}
 <<license>>=

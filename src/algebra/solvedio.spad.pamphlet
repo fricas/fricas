@@ -39,53 +39,53 @@
 ++   enumerates all solutions in a recursive depth-first-search
 ++   it can be seen as finding monotone paths in a graph
 ++   for more details see Reference
- 
+
 DiophantineSolutionPackage(): Cat == Capsule where
- 
+
   B ==> Boolean
   I ==> Integer
   NI ==> NonNegativeInteger
- 
+
   LI ==> List(I)
   VI ==> Vector(I)
   VNI ==> Vector(NI)
- 
+
   POLI ==> Polynomial(I)
   EPOLI ==> Equation(POLI)
   LPOLI ==> List(POLI)
- 
+
   S ==> Symbol
   LS ==> List(S)
- 
+
   ListSol ==> List(VNI)
   Solutions ==> Record(varOrder: LS, inhom: Union(ListSol,"failed"),
                        hom: ListSol)
- 
+
   Node ==> Record(vert: VI, free: B)
   Graph ==> Record(vn: Vector(Node), dim : NI, zeroNode: I)
- 
+
   Cat ==> with
- 
+
     dioSolve: EPOLI -> Solutions
       ++ dioSolve(u) computes a basis of all minimal solutions for 
       ++ linear homogeneous Diophantine equation u,
       ++ then all minimal solutions of inhomogeneous equation
- 
+
   Capsule ==> add
- 
+
     import I
     import POLI
- 
+
     -- local function specifications
- 
+
     initializeGraph: (LPOLI, I) -> Graph
     createNode: (I, VI, NI, I) -> Node
     findSolutions: (VNI, I, I, I, Graph, B) -> ListSol
     verifyMinimality: (VNI, Graph, B) -> B
     verifySolution: (VNI, I, I, I, Graph) -> B
- 
+
     -- exported functions
- 
+
     dioSolve(eq) ==
       p := lhs(eq) - rhs(eq)
       n := totalDegree(p)
@@ -105,16 +105,16 @@ DiophantineSolutionPackage(): Cat == Capsule where
         findSolutions(sol, graph.zeroNode + c, 1, 1, graph, false)
       vars := [first(variables(x))$LS for x in mon]
       [vars, if empty?(ihs)$ListSol then "failed" else ihs, hs]
- 
+
     -- local functions
- 
+
     initializeGraph(mon, c) ==
       coeffs := vector([first(coefficients(x))$LI for x in mon])$VI
       k := #coeffs
       m := min(c, reduce(min, coeffs)$VI)
       n := max(c, reduce(max, coeffs)$VI)
       [[createNode(i, coeffs, k, 1 - m) for i in m..n], k, 1 - m]
- 
+
     createNode(ind, coeffs, k, zeroNode) ==
       -- create vertices from node ind to other nodes
       v := zero(k)$VI
@@ -125,7 +125,7 @@ DiophantineSolutionPackage(): Cat == Capsule where
         coeffs.i > 0 =>
           v.i := zeroNode + ind + coeffs.i
       [v, true]
- 
+
     findSolutions(sol, ind, m, n, graph, flag) ==
       -- return all solutions (paths) from node ind to node zeroNode
       sols := empty()$ListSol
@@ -152,7 +152,7 @@ DiophantineSolutionPackage(): Cat == Capsule where
         node.free := true
         sols
       sols
- 
+
     verifyMinimality(sol, graph, flag) ==
       -- test whether sol contains a minimal homogeneous solution
       flag =>  -- sol is a homogeneous solution
@@ -165,7 +165,7 @@ DiophantineSolutionPackage(): Cat == Capsule where
         sol.i := x
         flag
       verifySolution(sol, graph.zeroNode, 1, 1, graph)
- 
+
     verifySolution(sol, ind, m, n, graph) ==
       -- test whether sol contains a path from ind to zeroNode
       flag := true
@@ -222,7 +222,7 @@ DiophantineSolutionPackage(): Cat == Capsule where
 @
 <<*>>=
 <<license>>
- 
+
 <<package DIOSP DiophantineSolutionPackage>>
 @
 \eject

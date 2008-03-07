@@ -77,7 +77,7 @@ Multiset(S: SetCategory): MultisetAggregate S with
 
         empty():% == [0,tbl()]
         multiset():% == empty()
-        dictionary():% == empty()			-- DictionaryOperations
+        dictionary():% == empty()                       -- DictionaryOperations
         set():% == empty()
         brace():% == empty()
 
@@ -89,8 +89,8 @@ Multiset(S: SetCategory): MultisetAggregate S with
               n := inc n
             [n, t]
         multiset(l:List S):% == construct l
-        bag(l:List S):% == construct l			-- BagAggregate
-        dictionary(l:List S):% == construct l		-- DictionaryOperations
+        bag(l:List S):% == construct l                  -- BagAggregate
+        dictionary(l:List S):% == construct l           -- DictionaryOperations
         set(l:List S):% == construct l
         brace(l:List S):% == construct l
 
@@ -116,14 +116,14 @@ Multiset(S: SetCategory): MultisetAggregate S with
                 l := cons(item,l)
             brace l
 
-        duplicates(ms:%):List D ==			-- MultiDictionary
+        duplicates(ms:%):List D ==                      -- MultiDictionary
           ld : List D := empty()
           t := ms.table
           for e in keys t | (n := t.e) > 1 repeat
             ld := cons([e,n::NonNegativeInteger],ld)
           ld
 
-        extract_!(ms:%):S ==				-- BagAggregate
+        extract_!(ms:%):S ==                            -- BagAggregate
           empty? ms => error "extract: Empty multiset"
           ms.count := dec ms.count
           t := ms.table
@@ -132,9 +132,9 @@ Multiset(S: SetCategory): MultisetAggregate S with
            else remove_!(e,t)
           e
 
-        inspect(ms:%):S == inspect(ms.table).key	-- BagAggregate
+        inspect(ms:%):S == inspect(ms.table).key        -- BagAggregate
 
-        insert_!(e:S,ms:%):% ==				-- BagAggregate
+        insert_!(e:S,ms:%):% ==                         -- BagAggregate
             ms.count   := inc ms.count
             ms.table.e := inc ms.table.e
             ms
@@ -181,36 +181,36 @@ Multiset(S: SetCategory): MultisetAggregate S with
 
         remove(p: S -> Boolean,ms:%,max:Integer):% == remove_!(p, copy ms, max)
 
-        remove_!(e:S, ms:%):% ==			-- DictionaryOperations
+        remove_!(e:S, ms:%):% ==                        -- DictionaryOperations
           t := ms.table
           if member?(e, keys t) then
             ms.count := ms.count-t.e
             remove_!(e, t)
           ms
 
-        remove_!(p:S ->Boolean, ms:%):% ==		-- DictionaryOperations
+        remove_!(p:S ->Boolean, ms:%):% ==              -- DictionaryOperations
           t := ms.table
           for e in keys t | p(e) repeat
             ms.count := ms.count-t.e
             remove_!(e, t)
           ms
 
-	select_!(p: S -> Boolean, ms:%):% ==		-- DictionaryOperations
+        select_!(p: S -> Boolean, ms:%):% ==            -- DictionaryOperations
           remove_!(not p(#1), ms)
 
-        removeDuplicates_!(ms:%):% ==			-- MultiDictionary
+        removeDuplicates_!(ms:%):% ==                   -- MultiDictionary
           t := ms.table
           l := keys t
           for e in l repeat t.e := 1
           ms.count := #l
           ms
 
-        insert_!(e:S,ms:%,more:NonNegativeInteger):% ==	-- MultiDictionary
+        insert_!(e:S,ms:%,more:NonNegativeInteger):% == -- MultiDictionary
             ms.count   := ms.count+more
             ms.table.e := ms.table.e+more
             ms
 
-        map_!(f: S->S, ms:%):% ==			-- HomogeneousAggregate
+        map_!(f: S->S, ms:%):% ==                       -- HomogeneousAggregate
           t := ms.table
           t1 := tbl()
           for e in keys t repeat
@@ -219,7 +219,7 @@ Multiset(S: SetCategory): MultisetAggregate S with
           ms.table := t1
           ms
 
-	map(f: S -> S, ms:%):% == map_!(f, copy ms)	-- HomogeneousAggregate
+        map(f: S -> S, ms:%):% == map_!(f, copy ms)     -- HomogeneousAggregate
 
         parts(m:%):List S ==
           l := empty()$List(S)

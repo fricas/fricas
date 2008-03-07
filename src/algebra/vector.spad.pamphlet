@@ -59,7 +59,7 @@ enumeration the index of the leftmost (nth)component varies most quickly.
 ++ of the underlying components. Many operations from the component domain
 ++ are defined for vectors componentwise. It can by assumed that extraction or
 ++ updating components can be done in constant time.
- 
+
 VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
     if R has AbelianSemiGroup then
       _+ : (%, %) -> %
@@ -101,19 +101,19 @@ VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
       u + v ==
         (n := #u) ^= #v => error "Vectors must be of the same length"
         map(_+ , u, v)
- 
+
     if R has AbelianMonoid then
       zero n == new(n, 0)
- 
+
     if R has AbelianGroup then
       - u             == map(- #1, u)
       n:Integer * u:% == map(n * #1, u)
       u - v           == u + (-v)
- 
+
     if R has Monoid then
       u:% * r:R       == map(#1 * r, u)
       r:R * u:%       == map(r * #1, u)
- 
+
     if R has Ring then
       dot(u, v) ==
         #u ^= #v => error "Vectors must be of the same length"
@@ -132,7 +132,7 @@ VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
          sqrt(dot(p,p))
       magnitude p ==
          sqrt(dot(p,p))
- 
+
 @
 \section{domain IVECTOR IndexedVector}
 <<domain IVECTOR IndexedVector>>=
@@ -149,10 +149,10 @@ VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
 ++ Description:
 ++   This type represents vector like objects with varying lengths
 ++ and a user-specified initial index.
- 
+
 IndexedVector(R:Type, mn:Integer):
   VectorCategory R == IndexedOneDimensionalArray(R, mn)
- 
+
 @
 \section{domain VECTOR Vector}
 <<domain VECTOR Vector>>=
@@ -169,7 +169,7 @@ IndexedVector(R:Type, mn:Integer):
 ++ Description:
 ++ This type represents vector like objects with varying lengths
 ++ and indexed by a finite segment of integers starting at 1.
- 
+
 Vector(R:Type): Exports == Implementation where
  VECTORMININDEX ==> 1       -- if you want to change this, be my guest
 
@@ -203,15 +203,15 @@ Vector(R:Type): Exports == Implementation where
 ++ vectors of elements of some type \spad{A} and functions from \spad{A} to
 ++ another of type B. The operations all iterate over their vector argument
 ++ and either return a value of type B or a vector over B.
- 
+
 VectorFunctions2(A, B): Exports == Implementation where
   A, B: Type
- 
+
   VA ==> Vector A
   VB ==> Vector B
   O2 ==> FiniteLinearAggregateFunctions2(A, VA, B, VB)
   UB ==> Union(B,"failed")
- 
+
   Exports ==> with
     scan   : ((A, B) -> B, VA, B) -> VB
       ++ scan(func,vec,ident) creates a new vector whose elements are
@@ -227,7 +227,7 @@ VectorFunctions2(A, B): Exports == Implementation where
     map : (A -> UB, VA) -> Union(VB,"failed")
       ++ map(f, v) applies the function f to every element of the vector v
       ++ producing a new vector containing the values or \spad{"failed"}.
- 
+
   Implementation ==> add
     scan(f, v, b)   == scan(f, v, b)$O2
     reduce(f, v, b) == reduce(f, v, b)$O2
@@ -248,9 +248,9 @@ VectorFunctions2(A, B): Exports == Implementation where
 -- all direct product category domains must be compiled
 -- without subsumption, set SourceLevelSubset to EQUAL
 --)bo $noSubsumption := true
- 
+
 --% DirectProductCategory
- 
+
 ++ Author:
 ++ Date Created:
 ++ Date Last Updated:
@@ -263,7 +263,7 @@ VectorFunctions2(A, B): Exports == Implementation where
 ++ Description:
 ++   This category represents a finite cartesian product of a given type.
 ++ Many categorical properties are preserved under this construction.
- 
+
 DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
   Join(IndexedAggregate(Integer, R), CoercibleTo Vector R) with
          finiteAggregate
@@ -301,23 +301,23 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
  add
       if R has Ring then
         equation2R: Vector % -> Matrix R
- 
+
         coerce(n:Integer):%          == n::R::%
         characteristic()             == characteristic()$R
         differentiate(z:%, d:R -> R) == map(d, z)
- 
+
         equation2R v ==
           ans:Matrix(R) := new(dim, #v, 0)
           for i in minRowIndex ans .. maxRowIndex ans repeat
             for j in minColIndex ans .. maxColIndex ans repeat
               qsetelt_!(ans, i, j, qelt(qelt(v, j), i))
           ans
- 
+
         reducedSystem(m:Matrix %):Matrix(R) ==
           empty? m => new(0, 0, 0)
           reduce(vertConcat, [equation2R row(m, i)
                  for i in minRowIndex m .. maxRowIndex m])$List(Matrix R)
- 
+
         reducedSystem(m:Matrix %, v:Vector %):
           Record(mat:Matrix R, vec:Vector R) ==
             vh:Vector(R) :=
@@ -325,11 +325,11 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
               rh := reducedSystem(v::Matrix %)@Matrix(R)
               column(rh, minColIndex rh)
             [reducedSystem(m)@Matrix(R), vh]
- 
+
       if R has Field then
         x / b       == x * inv b
         dimension() == dim::CardinalNumber
- 
+
 @
 \section{domain DIRPROD DirectProduct}
 <<domain DIRPROD DirectProduct>>=
@@ -353,36 +353,36 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
 ++ vector elements using the \spadfun{directProduct} function
 ++ or by taking appropriate linear combinations of basis vectors provided
 ++ by the \spad{unitVector} operation.
- 
+
 DirectProduct(dim:NonNegativeInteger, R:Type):
   DirectProductCategory(dim, R) == Vector R add
- 
+
       Rep := Vector R
- 
+
       coerce(z:%):Vector(R)        == copy(z)$Rep pretend Vector(R)
       coerce(r:R):%                == new(dim, r)$Rep
- 
+
       parts x == VEC2LIST(x)$Lisp
- 
+
       directProduct z ==
         size?(z, dim) => copy(z)$Rep
         error "Not of the correct length"
- 
- 
+
+
       if R has SetCategory then
         same?: % -> Boolean
         same? z == every?(#1 = z(minIndex z), z)
- 
+
         x = y ==
           for i in 1..dim repeat
             ^(qelt(x,i)$Rep = qelt(y,i)$Rep) => return false
           true
           -- _and/[qelt(x,i)$Rep = qelt(y,i)$Rep for i in 1..dim]
- 
+
         retract(z:%):R ==
           same? z => z(minIndex z)
           error "Not retractable"
- 
+
         retractIfCan(z:%):Union(R, "failed") ==
           same? z => z(minIndex z)
           "failed"
@@ -409,19 +409,19 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
             for i in 2..dim repeat
               L:=hashCombine(L, hash(x.i))$Lisp
             L 
- 
+
       if R has AbelianSemiGroup then
         u:% + v:% == map(_+ , u, v)$Rep
- 
+
       if R has AbelianMonoid then
         0 == zero(dim)$Vector(R) pretend %
- 
+
       if R has Monoid then
         1 == new(dim, 1)$Vector(R) pretend %
         u:% * r:R       == map(#1 * r, u)
         r:R * u:%       == map(r * #1, u)
- 
- 
+
+
       if R has CancellationAbelianMonoid then
         subtractIfCan(u:%, v:%):Union(%,"failed") ==
           w := new(dim,0)$Vector(R)
@@ -430,23 +430,23 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
                     return "failed"
             qsetelt_!(w, i, c::R)$Rep
           w pretend %
- 
+
       if R has Ring then
- 
+
         u:% * v:%                    == map(_* , u, v)$Rep
- 
+
         recip z ==
           w := new(dim,0)$Vector(R)
           for i in minIndex w .. maxIndex w repeat
             (u := recip qelt(z, i)) case "failed" => return "failed"
             qsetelt_!(w, i, u::R)
           w pretend %
- 
+
         unitVector i ==
           v:= new(dim,0)$Vector(R)
           v.i := 1
           v pretend %
- 
+
       if R has OrderedSet then
         x < y ==
           for i in 1..dim repeat
@@ -455,7 +455,7 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
           false
 
       if R has OrderedAbelianMonoidSup then sup(x, y) == map(sup, x, y)
- 
+
 --)bo $noSubsumption := false
 
 @
@@ -476,17 +476,17 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
 ++ direct products of elements of some type \spad{A} and functions from \spad{A} to another
 ++ type B. The operations all iterate over their vector argument
 ++ and either return a value of type B or a direct product over B.
- 
+
 DirectProductFunctions2(dim, A, B): Exports == Implementation where
   dim : NonNegativeInteger
   A, B: Type
- 
+
   DA ==> DirectProduct(dim, A)
   DB ==> DirectProduct(dim, B)
   VA ==> Vector A
   VB ==> Vector B
   O2 ==> FiniteLinearAggregateFunctions2(A, VA, B, VB)
- 
+
   Exports ==> with
     scan   : ((A, B) -> B, DA, B) -> DB
       ++ scan(func,vec,ident) creates a new vector whose elements are
@@ -499,10 +499,10 @@ DirectProductFunctions2(dim, A, B): Exports == Implementation where
     map    : (A -> B, DA) -> DB
       ++ map(f, v) applies the function f to every element of the vector v
       ++ producing a new vector containing the values.
- 
+
   Implementation ==> add
     import FiniteLinearAggregateFunctions2(A, VA, B, VB)
- 
+
     map(f, v)       == directProduct map(f, v::VA)
     scan(f, v, b)   == directProduct scan(f, v::VA, b)
     reduce(f, v, b) == reduce(f, v::VA, b)
@@ -543,7 +543,7 @@ DirectProductFunctions2(dim, A, B): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<category VECTCAT VectorCategory>>
 <<domain IVECTOR IndexedVector>>
 <<domain VECTOR Vector>>
@@ -551,7 +551,7 @@ DirectProductFunctions2(dim, A, B): Exports == Implementation where
 <<category DIRPCAT DirectProductCategory>>
 <<domain DIRPROD DirectProduct>>
 <<package DIRPROD2 DirectProductFunctions2>>
- 
+
 @
 \eject
 \begin{thebibliography}{99}

@@ -25,9 +25,9 @@ MoebiusTransform(F): Exports == Implementation where
   F : Field
   OUT ==> OutputForm
   P1F ==> OnePointCompletion F         -- projective 1-space over F
- 
+
   Exports ==> Group with
- 
+
     moebius: (F,F,F,F) -> %
       ++ moebius(a,b,c,d) returns \spad{matrix [[a,b],[c,d]]}.
     shift: F -> %
@@ -57,43 +57,43 @@ MoebiusTransform(F): Exports == Implementation where
       ++ (see \spadfunFrom{moebius}{MoebiusTransform}).
 
   Implementation ==> add
- 
+
     Rep := Record(a: F,b: F,c: F,d: F)
- 
+
     moebius(aa,bb,cc,dd) == [aa,bb,cc,dd]
- 
+
     a(t:%):F == t.a
     b(t:%):F == t.b
     c(t:%):F == t.c
     d(t:%):F == t.d
- 
+
     1 == moebius(1,0,0,1)
     t * s ==
       moebius(b(t)*c(s) + a(t)*a(s), b(t)*d(s) + a(t)*b(s), _
               d(t)*c(s) + c(t)*a(s), d(t)*d(s) + c(t)*b(s))
     inv t == moebius(d(t),-b(t),-c(t),a(t))
- 
+
     shift f == moebius(1,f,0,1)
     scale f == moebius(f,0,0,1)
     recip() == moebius(0,1,1,0)
- 
+
     shift(t,f) == moebius(a(t) + f*c(t), b(t) + f*d(t), c(t), d(t))
     scale(t,f) == moebius(f*a(t),f*b(t),c(t),d(t))
     recip t    == moebius(c(t),d(t),a(t),b(t))
- 
+
     eval(t:%,f:F) == (a(t)*f + b(t))/(c(t)*f + d(t))
     eval(t:%,f:P1F) ==
       (ff := retractIfCan(f)@Union(F,"failed")) case "failed" =>
         (a(t)/c(t)) :: P1F
       zero?(den := c(t) * (fff := ff :: F) + d(t)) => infinity()
       ((a(t) * fff + b(t))/den) :: P1F
- 
+
     coerce t ==
       var := "%x" :: OUT
       num := (a(t) :: OUT) * var + (b(t) :: OUT)
       den := (c(t) :: OUT) * var + (d(t) :: OUT)
       rarrow(var,num/den)
- 
+
     proportional?: (List F,List F) -> Boolean
     proportional?(list1,list2) ==
       empty? list1 => empty? list2
@@ -102,7 +102,7 @@ MoebiusTransform(F): Exports == Implementation where
         (zero? first list2) and proportional?(rest list1,rest list2)
       zero? (x2 := first list2) => false
       map(#1 / x1,list1) = map(#1 / x2,list2)
- 
+
     t = s ==
       list1 : List F := [a(t),b(t),c(t),d(t)]
       list2 : List F := [a(s),b(s),c(s),d(s)]

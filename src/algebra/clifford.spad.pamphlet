@@ -32,7 +32,7 @@ QuadraticForm(n, K): T == Impl where
     K: Field
     SM ==> SquareMatrix
     V  ==> DirectProduct
- 
+
     T ==> AbelianGroup with
         quadraticForm: SM(n, K) -> %
             ++ quadraticForm(m) creates a quadratic form from a symmetric,
@@ -42,10 +42,10 @@ QuadraticForm(n, K): T == Impl where
         elt: (%, V(n, K)) -> K
             ++ elt(qf,v) evaluates the quadratic form qf on the vector v, 
             ++ producing a scalar.
- 
+
     Impl ==> SM(n,K) add
         Rep := SM(n,K)
- 
+
         quadraticForm m ==
             not symmetric? m =>
                 error "quadraticForm requires a symmetric matrix"
@@ -241,7 +241,7 @@ make the following diagram commute:
        |   m                            |  m
        V                                V
          m                                m
-	2        reshape                 4
+        2        reshape                 4
        R    ------------------------>   R
 \end{verbatim}
 <<domain CLIF CliffordAlgebra>>=
@@ -272,15 +272,15 @@ make the following diagram commute:
 ++
 ++  Examples of Clifford Algebras are: gaussians, quaternions, exterior 
 ++  algebras and spin algebras.
- 
+
 CliffordAlgebra(n, K, Q): T == Impl where
     n: PositiveInteger
     K: Field
     Q: QuadraticForm(n, K)
- 
+
     PI ==> PositiveInteger
     NNI==> NonNegativeInteger
- 
+
     T ==> Join(Ring, Algebra(K), VectorSpace(K)) with
         e: PI -> %
           ++ e(n) produces the appropriate unit element.
@@ -293,43 +293,43 @@ CliffordAlgebra(n, K, Q): T == Impl where
         recip: % -> Union(%, "failed")
           ++ recip(x) computes the multiplicative inverse of x or "failed"
           ++ if x is not invertible.
- 
+
     Impl ==> add
         Qeelist :=  [Q unitVector(i::PositiveInteger) for i in 1..n]
         dim     :=  2**n
- 
+
         Rep     := PrimitiveArray K
- 
+
         New     ==> new(dim, 0$K)$Rep
- 
+
         x, y, z: %
         c: K
         m: Integer
- 
+
         characteristic() == characteristic()$K
         dimension()      == dim::CardinalNumber
- 
+
         x = y ==
             for i in 0..dim-1 repeat
                 if x.i ^= y.i then return false
             true
- 
+
         x + y == (z := New; for i in 0..dim-1 repeat z.i := x.i + y.i; z)
         x - y == (z := New; for i in 0..dim-1 repeat z.i := x.i - y.i; z)
         - x   == (z := New; for i in 0..dim-1 repeat z.i := - x.i; z)
         m * x == (z := New; for i in 0..dim-1 repeat z.i := m*x.i; z)
         c * x == (z := New; for i in 0..dim-1 repeat z.i := c*x.i; z)
- 
+
         0            == New
         1            == (z := New; z.0 := 1; z)
         coerce(m): % == (z := New; z.0 := m::K; z)
         coerce(c): % == (z := New; z.0 := c; z)
- 
+
         e b ==
             b::NNI > n => error "No such basis element"
             iz := 2**((b-1)::NNI)
             z := New; z.iz := 1; z
- 
+
         -- The ei*ej products could instead be precomputed in
         -- a (2**n)**2 multiplication table.
         addMonomProd(c1: K, b1: NNI, c2: K, b2: NNI, z: %): % ==
@@ -349,18 +349,18 @@ CliffordAlgebra(n, K, Q): T == Impl where
                     bz:= bz + 2**i
             z.bz := z.bz + c
             z
- 
+
         x * y ==
             z := New
             for ix in 0..dim-1 repeat
                 if x.ix ^= 0 then for iy in 0..dim-1 repeat
                     if y.iy ^= 0 then addMonomProd(x.ix,ix,y.iy,iy,z)
             z
- 
+
         canonMonom(c: K, lb: List PI): Record(coef: K, basel: NNI) ==
             -- 0. Check input
             for b in lb repeat b > n => error "No such basis element"
- 
+
             -- 1. Apply identity ei*ej = -ej*ei, i^=j.
             -- The Rep assumes n is small so bubble sort is ok.
             -- Using bubble sort keeps the exchange info obvious.
@@ -374,7 +374,7 @@ CliffordAlgebra(n, K, Q): T == Impl where
                         exchanges := exchanges + 1
                         wasordered := false
             if odd? exchanges then c := -c
- 
+
             -- 2. Prepare the basis element
             -- Apply identity ei*ei = Q(ei).
             bz := 0
@@ -386,7 +386,7 @@ CliffordAlgebra(n, K, Q): T == Impl where
                 else
                     bz:= bz + 2**bn
             [c, bz::NNI]
- 
+
         monomial(c, lb) ==
             r := canonMonom(c, lb)
             z := New
@@ -396,9 +396,9 @@ CliffordAlgebra(n, K, Q): T == Impl where
             r := canonMonom(1, lb)
             r.coef = 0 => error "Cannot take coef of 0"
             z r.basel/r.coef
- 
+
         Ex ==> OutputForm
- 
+
         coerceMonom(c: K, b: NNI): Ex ==
             b = 0 => c::Ex
             ml := [sub("e"::Ex, i::Ex) for i in 1..n | bit?(b,i-1)]
@@ -411,41 +411,41 @@ CliffordAlgebra(n, K, Q): T == Impl where
             reduce("+", tl)
 
 
-	localPowerSets(j:NNI): List(List(PI)) ==
-	  l: List List PI := list []
-	  j = 0 => l
-	  Sm := localPowerSets((j-1)::NNI)
+        localPowerSets(j:NNI): List(List(PI)) ==
+          l: List List PI := list []
+          j = 0 => l
+          Sm := localPowerSets((j-1)::NNI)
           Sn: List List PI := []
-	  for x in Sm repeat Sn := cons(cons(j pretend PI, x),Sn)
-	  append(Sn, Sm)
+          for x in Sm repeat Sn := cons(cons(j pretend PI, x),Sn)
+          append(Sn, Sm)
 
-	powerSets(j:NNI):List List PI == map(reverse, localPowerSets j)
+        powerSets(j:NNI):List List PI == map(reverse, localPowerSets j)
 
-	Pn:List List PI := powerSets(n)
+        Pn:List List PI := powerSets(n)
 
-	recip(x: %): Union(%, "failed") ==
-	  one:% := 1
-	  -- tmp:c := x*yC - 1$C
-	  rhsEqs : List K := []
-	  lhsEqs: List List K := []
-	  lhsEqi: List K
-	  for pi in Pn repeat
-	    rhsEqs := cons(coefficient(one, pi), rhsEqs)
+        recip(x: %): Union(%, "failed") ==
+          one:% := 1
+          -- tmp:c := x*yC - 1$C
+          rhsEqs : List K := []
+          lhsEqs: List List K := []
+          lhsEqi: List K
+          for pi in Pn repeat
+            rhsEqs := cons(coefficient(one, pi), rhsEqs)
 
-	    lhsEqi := []
-	    for pj in Pn repeat
-		lhsEqi := cons(coefficient(x*monomial(1,pj),pi),lhsEqi)
-	    lhsEqs := cons(reverse(lhsEqi),lhsEqs)
-	  ans := particularSolution(matrix(lhsEqs),
+            lhsEqi := []
+            for pj in Pn repeat
+                lhsEqi := cons(coefficient(x*monomial(1,pj),pi),lhsEqi)
+            lhsEqs := cons(reverse(lhsEqi),lhsEqs)
+          ans := particularSolution(matrix(lhsEqs),
             vector(rhsEqs))$LinearSystemMatrixPackage(K, Vector K, Vector K, Matrix K)
           ans case "failed" => "failed"
-	  ansP := parts(ans)
-	  ansC:% := 0
-	  for pj in Pn repeat
-	    cj:= first ansP
-	    ansP := rest ansP
-	    ansC := ansC + cj*monomial(1,pj)
-	  ansC
+          ansP := parts(ans)
+          ansC:% := 0
+          for pj in Pn repeat
+            cj:= first ansP
+            ansP := rest ansP
+            ansC := ansC + cj*monomial(1,pj)
+          ansC
 
 @
 \section{License}

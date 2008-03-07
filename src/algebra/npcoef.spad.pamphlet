@@ -19,13 +19,13 @@
 ++ This package will work for every euclidean domain R which has property
 ++ F, i.e. there exists a factor operation in \spad{R[x]}.
 NPCoef(BP,E,OV,R,P) : C == T where
- 
+
  OV   :   OrderedSet
  E    :   OrderedAbelianMonoidSup
  R    :   EuclideanDomain  -- with property "F"
  BP   :   UnivariatePolynomialCategory R
  P    :   PolynomialCategory(R,E,OV)
- 
+
  Z       ==> Integer
  NNI     ==> NonNegativeInteger
  USP     ==> SparseUnivariatePolynomial(P)
@@ -36,14 +36,14 @@ NPCoef(BP,E,OV,R,P) : C == T where
                     nfacts:List(BP),nlead:List(P))
  TermC   ==> Record(coefu:P,detfacts:List(VTerm))
  TCoef   ==> List(TermC)
- 
+
  C == with
       npcoef   :    (USP,List(BP),List(P))      ->   DetCoef
-	++ npcoef \undocumented
+        ++ npcoef \undocumented
       listexp  :              BP                ->   List(NNI)
-	++ listexp \undocumented
+        ++ listexp \undocumented
  T == add
- 
+
                  ----   Local  Functions  ----
   check      : (TermC,Vector P) -> Union(Detc,"failed")
   buildvect  : (List(VTerm),NNI) -> Vector(List(VTerm))
@@ -95,8 +95,8 @@ NPCoef(BP,E,OV,R,P) : C == T where
         factlist:=delete(factlist,i)
         leadlist:=delete(leadlist,i)
     [detufact,detcoef,factlist,leadlist]$DetCoef
- 
- 
+
+
   check(tterm:TermC,ulist:Vector(P)) : Union(Detc,"failed") ==
     cfu:P:=1$P;doit:NNI:=0;poselt:NNI:=0;pp:Union(P,"failed")
     termlist:List(VTerm):=tterm.detfacts
@@ -110,13 +110,13 @@ NPCoef(BP,E,OV,R,P) : C == T where
       doit=2  or (pp:=tterm.coefu exquo cfu) case "failed" => "failed"
       [vterm.poselt.expt,pp::P,poselt]$Detc
     "failed"
- 
+
   buildvect(lvterm:List(VTerm),n:NNI) : Vector(List(VTerm)) ==
     vtable:Vector(List(VTerm)):=new(n,empty())
     (#lvterm)=1 =>
       for term in lvterm.first repeat vtable.(term.expt+1):=[[term]]
       vtable
- 
+
     vtable:=buildvect(lvterm.rest,n)
     ntable:Vector(List(VTerm)):=new(n,empty())
     for term in lvterm.first repeat
@@ -126,7 +126,7 @@ NPCoef(BP,E,OV,R,P) : C == T where
                             [cons(term,lvterm) for lvterm in vtable.i],
                                ntable.(nexp+i))
     ntable
- 
+
   buildtable(vu:Vector(P),lvect:List(List(NNI)),leadlist:List(P)):TCoef==
     nfact:NNI:=#leadlist
     table:TCoef:=empty()
@@ -139,7 +139,7 @@ NPCoef(BP,E,OV,R,P) : C == T where
       empty? partialv.i => "next i"
       table:=cons([vu.i,partialv.i]$TermC, table)
     table
- 
+
   modify(tablecoef:TCoef,cfter:Detc) : TCoef ==
     cfexp:=cfter.valexp;cfcoef:=cfter.valcoef;cfpos:=cfter.posit
     lterase:List(NNI):=empty()
@@ -158,11 +158,11 @@ NPCoef(BP,E,OV,R,P) : C == T where
         cterm.detfacts:=ctdet
         lterase:=empty()
     tablecoef
- 
+
   listexp(up:BP) :List(NNI) ==
     degree up=0 => [0]
     [degree up,:listexp(reductum up)]
- 
+
   constructp(lterm:VTerm):USP ==
     +/[monomial(term.pcoef,term.expt) for term in lterm]
 

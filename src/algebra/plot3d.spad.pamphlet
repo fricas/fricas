@@ -42,35 +42,35 @@ Plot3D(): Exports == Implementation where
   R   ==> Segment F
   O   ==> OutputPackage
   C   ==> Record(source: F -> P,ranges: L R, knots: L F, points: L P)
- 
+
   Exports ==> PlottableSpaceCurveCategory with
- 
+
     pointPlot: (F -> P,R) -> %
       ++ pointPlot(f,g,h,a..b) plots {/emx = f(t), y = g(t), z = h(t)} as
       ++ t ranges over {/em[a,b]}.
     pointPlot: (F -> P,R,R,R,R) -> %
-	++ pointPlot(f,x,y,z,w) \undocumented 
+        ++ pointPlot(f,x,y,z,w) \undocumented 
     plot: (F -> F,F -> F,F -> F,F -> F,R) -> %
       ++ plot(f,g,h,a..b) plots {/emx = f(t), y = g(t), z = h(t)} as
       ++ t ranges over {/em[a,b]}.
     plot: (F -> F,F -> F,F -> F,F -> F,R,R,R,R) -> %
-	++ plot(f1,f2,f3,f4,x,y,z,w) \undocumented
- 
+        ++ plot(f1,f2,f3,f4,x,y,z,w) \undocumented
+
     plot: (%,R) -> %                       -- change the range
- 	++ plot(x,r) \undocumented
+        ++ plot(x,r) \undocumented
     zoom: (%,R,R,R) -> %
-	++ zoom(x,r,s,t) \undocumented
+        ++ zoom(x,r,s,t) \undocumented
     refine: (%,R) -> %
-	++ refine(x,r) \undocumented
+        ++ refine(x,r) \undocumented
     refine: % -> %
-	++ refine(x) \undocumented
- 
+        ++ refine(x) \undocumented
+
     tRange: % -> R
       ++ tRange(p) returns the range of the parameter in a parametric plot p.
     tValues: % -> L L F
       ++ tValues(p) returns a list of lists of the values of the parameter for
       ++ which a point is computed, one list for each curve in the plot p.
- 
+
     minPoints3D: () -> I
       ++ minPoints3D() returns the minimum number of points in a plot.
     setMinPoints3D: I -> I
@@ -93,12 +93,12 @@ Plot3D(): Exports == Implementation where
     debug3D: B -> B
       ++ debug3D(true) turns debug mode on;
       ++ debug3D(false) turns debug mode off.
- 
+
   Implementation ==> add
     import PointPackage(F)
- 
+
 --% local functions
- 
+
     fourth         : L R -> R
     checkRange     : R -> R
       -- checks that left-hand endpoint is less than right-hand endpoint
@@ -116,15 +116,15 @@ Plot3D(): Exports == Implementation where
     basicPlot      : (F -> P,R) -> C
     basicRefine    : (C,R) -> C
     point          : (F,F,F,F) -> P
- 
+
 --% representation
- 
+
     Rep := Record( display: L R, _
                    bounds: L R, _
                    screenres: I, _
                    axisLabels: L S, _
                    functions: L C )
- 
+
 --% global constants
 
     ADAPTIVE    : B := true
@@ -134,11 +134,11 @@ Plot3D(): Exports == Implementation where
     SCREENRES   : I := 500
     ANGLEBOUND  : F := cos inv (4::F) 
     DEBUG       : B := false
- 
+
     point(xx,yy,zz,col) == point(l : L F := [xx,yy,zz,col])
- 
+
     fourth list == first rest rest rest list
- 
+
     checkRange r == (lo r > hi r => error "ranges cannot be negative"; r)
     intersect(s,t) == checkRange (max(lo s,lo t) .. min(hi s,hi t))
     union(s:R,t:R) == min(lo s,lo t) .. max(hi s,hi t)
@@ -156,7 +156,7 @@ Plot3D(): Exports == Implementation where
         u := union(u,fourth(r.ranges))
       u
     parametricRange r == first(r.bounds)
- 
+
     minPoints3D() == MINPOINTS
     setMinPoints3D n ==
       if n < 3 then error "three points minimum required"
@@ -173,23 +173,23 @@ Plot3D(): Exports == Implementation where
       SCREENRES := n
     adaptive3D?() == ADAPTIVE
     setAdaptive3D b == ADAPTIVE := b
- 
+
     numFunEvals3D() == NUMFUNEVALS
     debug3D b == DEBUG := b
- 
+
 --     setColor(p,c) == p.colNum := c
- 
+
     xRange plot == second plot.bounds
     yRange plot == third plot.bounds
     zRange plot == fourth plot.bounds
     tRange plot == first plot.bounds
- 
+
     tValues plot ==
       outList : L L F := nil()
       for curve in plot.functions repeat
         outList := concat(curve.knots,outList)
       outList
- 
+
     select(l,f,g) ==
       m := f first l
       -- if (EQL(m, _$NaNvalue$Lisp)$Lisp) then m := 0
@@ -199,10 +199,10 @@ Plot3D(): Exports == Implementation where
         -- if (EQL(fp, _$NaNvalue$Lisp)$Lisp) then fp := 0
         m := g(m,fp)
       m
- 
+
 --     normalizeColor(p,lo,diff) ==
 --       p.colNum := (p.colNum - lo)/diff
- 
+
     rangeRefine(curve,nRange) ==
       checkRange nRange; l := lo nRange; h := hi nRange
       t := curve.knots; p := curve.points; f := curve.source
@@ -239,7 +239,7 @@ Plot3D(): Exports == Implementation where
 --         error "all points are the same color"
 --       map(normalizeColor(#1,colorLo,diff),q)$ListPackage1(P)
       [f,[nRange,xRange,yRange,zRange],c,q]
- 
+
 
     adaptivePlot(curve,tRg,xRg,yRg,zRg,pixelfraction,resolution) ==
       xDiff := hi xRg - lo xRg
@@ -351,7 +351,7 @@ Plot3D(): Exports == Implementation where
         zRg := select(p,zCoord,min) .. select(p,zCoord,max)
         [curve.source,[tRg,xRg,yRg,zRg],t,p]
       else curve
- 
+
     basicPlot(f,tRange) ==
       checkRange tRange; l := lo tRange; h := hi tRange
       t : L F := list l; p : L P := list f l
@@ -365,11 +365,11 @@ Plot3D(): Exports == Implementation where
       yRange : R := select(p,yCoord,min) .. select(p,yCoord,max)
       zRange : R := select(p,zCoord,min) .. select(p,zCoord,max)
       [f,[tRange,xRange,yRange,zRange],t,p]
- 
+
     zoom(p,xRange,yRange,zRange) ==
      [[xRange,yRange,zRange],p.bounds,
       p.screenres,p.axisLabels,p.functions]
- 
+
     basicRefine(curve,nRange) ==
       tRange:R := first curve.ranges
       -- curve := copy$C curve  -- Yet another @#$%^&* compiler bug
@@ -392,7 +392,7 @@ Plot3D(): Exports == Implementation where
       yRange := select(p,yCoord,min) .. select(p,yCoord,max)
       zRange := select(p,zCoord,min) .. select(p,zCoord,max)
       [curve.source,[tRange,xRange,yRange,zRange],t,p]
- 
+
     refine p == refine(p,parametricRange p)
     refine(p,nRange) ==
       NUMFUNEVALS := 0
@@ -410,7 +410,7 @@ Plot3D(): Exports == Implementation where
         zRange := join(curves,3)
       [p.display,[tRange,xRange,yRange,zRange], _
        scrres,p.axisLabels,curves]
- 
+
     plot(p:%,tRange:R) ==
       -- re plot p on a new range making use of the points already
       -- computed if possible
@@ -427,7 +427,7 @@ Plot3D(): Exports == Implementation where
 --      print(NUMFUNEVALS::OUT)
       [[xRange,yRange,zRange],[tRange,xRange,yRange,zRange],
         p.screenres,p.axisLabels,curves]
- 
+
     pointPlot(f:F -> P,tRange:R) ==
       p := basicPlot(f,tRange)
       r := p.ranges
@@ -437,12 +437,12 @@ Plot3D(): Exports == Implementation where
 --      print(NUMFUNEVALS::OUT)
 --      print(p::OUT)
       [ rest r, r, SCREENRES, nil(), [ p ] ]
- 
+
     pointPlot(f:F -> P,tRange:R,xRange:R,yRange:R,zRange:R) ==
       p := pointPlot(f,tRange)
       p.display:= [checkRange xRange,checkRange yRange,checkRange zRange]
       p
- 
+
     myTrap: (F-> F, F) -> F
     myTrap(ff:F-> F, f:F):F ==
       s := trapNumericErrors(ff(f))$Lisp :: Union(F, "failed")
@@ -460,15 +460,15 @@ Plot3D(): Exports == Implementation where
        p := adaptivePlot(p,first r,second r,third r,fourth r,8,SCREENRES)
 --      print(NUMFUNEVALS::OUT)
       [ rest r, r, SCREENRES, nil(), [ p ] ]
- 
+
     plot(f1:F -> F,f2:F -> F,f3:F -> F,col:F -> F,_
               tRange:R,xRange:R,yRange:R,zRange:R) ==
       p := plot(f1,f2,f3,col,tRange)
       p.display:= [checkRange xRange,checkRange yRange,checkRange zRange]
       p
- 
+
 --% terminal output
- 
+
     coerce r ==
       spaces := "   " :: OUT
       xSymbol := "x = " :: OUT; ySymbol := "y = " :: OUT
@@ -486,9 +486,9 @@ Plot3D(): Exports == Implementation where
         l := [p::OUT for p in curve.points]
         f := concat(vconcat concat(h,l),f)
       prefix("PLOT" :: OUT,reverse_! f)
- 
+
 ----% graphics output
- 
+
     listBranches plot ==
       outList : L L P := nil()
       for curve in plot.functions repeat
@@ -531,7 +531,7 @@ Plot3D(): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<domain PLOT3D Plot3D>>
 @
 \eject

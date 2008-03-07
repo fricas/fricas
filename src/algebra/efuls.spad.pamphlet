@@ -36,22 +36,22 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
   RN   ==> Fraction Integer
   S    ==> String
   STTF ==> StreamTranscendentalFunctions(Coef)
- 
+
   Exports ==> PartialTranscendentalFunctions(ULS) with
- 
+
     if Coef has Field then
       "**": (ULS,RN) -> ULS
         ++ s ** r raises a Laurent series s to a rational power r
- 
+
 --% Exponentials and Logarithms
- 
+
     exp: ULS -> ULS
       ++ exp(z) returns the exponential of Laurent series z.
     log: ULS -> ULS
       ++ log(z) returns the logarithm of Laurent series z.
- 
+
 --% TrigonometricFunctionCategory
- 
+
     sin: ULS -> ULS
       ++ sin(z) returns the sine of Laurent series z.
     cos: ULS -> ULS
@@ -64,9 +64,9 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       ++ sec(z) returns the secant of Laurent series z.
     csc: ULS -> ULS
       ++ csc(z) returns the cosecant of Laurent series z.
- 
+
 --% ArcTrigonometricFunctionCategory
- 
+
     asin: ULS -> ULS
       ++ asin(z) returns the arc-sine of Laurent series z.
     acos: ULS -> ULS
@@ -79,9 +79,9 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       ++ asec(z) returns the arc-secant of Laurent series z.
     acsc: ULS -> ULS
       ++ acsc(z) returns the arc-cosecant of Laurent series z.
- 
+
 --% HyperbolicFunctionCategory
- 
+
     sinh: ULS -> ULS
       ++ sinh(z) returns the hyperbolic sine of Laurent series z.
     cosh: ULS -> ULS
@@ -94,9 +94,9 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       ++ sech(z) returns the hyperbolic secant of Laurent series z.
     csch: ULS -> ULS
       ++ csch(z) returns the hyperbolic cosecant of Laurent series z.
- 
+
 --% ArcHyperbolicFunctionCategory
- 
+
     asinh: ULS -> ULS
       ++ asinh(z) returns the inverse hyperbolic sine of Laurent series z.
     acosh: ULS -> ULS
@@ -109,15 +109,15 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       ++ asech(z) returns the inverse hyperbolic secant of Laurent series z.
     acsch: ULS -> ULS
       ++ acsch(z) returns the inverse hyperbolic cosecant of Laurent series z.
- 
+
   Implementation ==> add
- 
+
 --% roots
- 
+
     RATPOWERS : Boolean := Coef has "**":(Coef,RN) -> Coef
     TRANSFCN  : Boolean := Coef has TranscendentalFunctionCategory
     RATS      : Boolean := Coef has retractIfCan: Coef -> Union(RN,"failed")
- 
+
     nthRootUTS:(UTS,I) -> Union(UTS,"failed")
     nthRootUTS(uts,n) ==
       -- assumed: n > 1, uts has non-zero constant term
@@ -125,7 +125,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       coefficient(uts,0) = 1 => uts ** inv(n::RN)
       RATPOWERS => uts ** inv(n::RN)
       "failed"
- 
+
     nthRootIfCan(uls,nn) ==
       (n := nn :: I) < 1 => error "nthRootIfCan: n must be positive"
       n = 1 => uls
@@ -138,7 +138,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       uts := taylor(uls * monomial(1,-deg))
       (root := nthRootUTS(uts,n)) case "failed" => "failed"
       monomial(1,k :: I) * (root :: UTS :: ULS)
- 
+
     if Coef has Field then
        (uls:ULS) ** (r:RN) ==
          num := numer r; den := denom r
@@ -153,15 +153,15 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
            error "**: rational power does not exist"
          uts := taylor(uls * monomial(1,-deg)) ** r
          monomial(1,(k :: I) * num) * (uts :: ULS)
- 
+
 --% transcendental functions
- 
+
     applyIfCan: (UTS -> UTS,ULS) -> Union(ULS,"failed")
     applyIfCan(fcn,uls) ==
       uts := taylorIfCan uls
       uts case "failed" => "failed"
       fcn(uts :: UTS) :: ULS
- 
+
     expIfCan   uls == applyIfCan(exp,uls)
     sinIfCan   uls == applyIfCan(sin,uls)
     cosIfCan   uls == applyIfCan(cos,uls)
@@ -177,13 +177,13 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
     acothIfCan uls == applyIfCan(acoth,uls)
     asechIfCan uls == applyIfCan(asech,uls)
     acschIfCan uls == applyIfCan(acsch,uls)
- 
+
     logIfCan uls ==
       uts := taylorIfCan uls
       uts case "failed" => "failed"
       zero? coefficient(ts := uts :: UTS,0) => "failed"
       log(ts) :: ULS
- 
+
     tanIfCan uls ==
       -- don't call 'tan' on a UTS (tan(uls) may have a singularity)
       uts := taylorIfCan uls
@@ -191,7 +191,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       sc := sincos(coefficients(uts :: UTS))$STTF
       (cosInv := recip(series(sc.cos) :: ULS)) case "failed" => "failed"
       (series(sc.sin) :: ULS) * (cosInv :: ULS)
- 
+
     cotIfCan uls ==
       -- don't call 'cot' on a UTS (cot(uls) may have a singularity)
       uts := taylorIfCan uls
@@ -199,13 +199,13 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       sc := sincos(coefficients(uts :: UTS))$STTF
       (sinInv := recip(series(sc.sin) :: ULS)) case "failed" => "failed"
       (series(sc.cos) :: ULS) * (sinInv :: ULS)
- 
+
     secIfCan uls ==
       cos := cosIfCan uls
       cos case "failed" => "failed"
       (cosInv := recip(cos :: ULS)) case "failed" => "failed"
       cosInv :: ULS
- 
+
     cscIfCan uls ==
       sin := sinIfCan uls
       sin case "failed" => "failed"
@@ -248,7 +248,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
         return "failed"
       (z := recip(1 + uls*uls)) case "failed" => "failed"
       (cc :: ULS) - integrate(differentiate(uls) * (z :: ULS))
- 
+
     tanhIfCan uls ==
       -- don't call 'tanh' on a UTS (tanh(uls) may have a singularity)
       uts := taylorIfCan uls
@@ -257,7 +257,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       (coshInv := recip(series(sc.cosh) :: ULS)) case "failed" =>
         "failed"
       (series(sc.sinh) :: ULS) * (coshInv :: ULS)
- 
+
     cothIfCan uls ==
       -- don't call 'coth' on a UTS (coth(uls) may have a singularity)
       uts := taylorIfCan uls
@@ -266,26 +266,26 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       (sinhInv := recip(series(sc.sinh) :: ULS)) case "failed" =>
         "failed"
       (series(sc.cosh) :: ULS) * (sinhInv :: ULS)
- 
+
     sechIfCan uls ==
       cosh := coshIfCan uls
       cosh case "failed" => "failed"
       (coshInv := recip(cosh :: ULS)) case "failed" => "failed"
       coshInv :: ULS
- 
+
     cschIfCan uls ==
       sinh := sinhIfCan uls
       sinh case "failed" => "failed"
       (sinhInv := recip(sinh :: ULS)) case "failed" => "failed"
       sinhInv :: ULS
- 
+
     applyOrError:(ULS -> Union(ULS,"failed"),S,ULS) -> ULS
     applyOrError(fcn,name,uls) ==
       ans := fcn uls
       ans case "failed" =>
         error concat(name," of function with singularity")
       ans :: ULS
- 
+
     exp uls   == applyOrError(expIfCan,"exp",uls)
     log uls   == applyOrError(logIfCan,"log",uls)
     sin uls   == applyOrError(sinIfCan,"sin",uls)

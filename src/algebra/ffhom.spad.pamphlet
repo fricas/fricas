@@ -50,7 +50,7 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
   -- as a variable of type FiniteFieldCategory in the new compiler, one
   -- could build up 'convert' recursively to get an homomorphism w.r.t
   -- the whole extension.
- 
+
   I   ==> Integer
   NNI ==> NonNegativeInteger
   SI  ==> SingleInteger
@@ -61,9 +61,9 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
   FFPOL2 ==> FiniteFieldPolynomialPackage2
   FFPOLY ==> FiniteFieldPolynomialPackage
   OUT ==> OutputForm
- 
+
   Exports ==> with
- 
+
     coerce: F1  ->  F2
       ++ coerce(x) is the homomorphic image of x from
       ++ {\em F1} in {\em F2}. Thus {\em coerce} is a
@@ -74,7 +74,7 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       ++ the extension degree of {\em F2}.
       ++ Note that the other coercion function in the 
       ++ \spadtype{FiniteFieldHomomorphisms} is a left inverse.
- 
+
     coerce: F2  ->  F1
       ++ coerce(x) is the homomorphic image of x from
       ++ {\em F2} in {\em F1}, where {\em coerce} is a
@@ -86,57 +86,57 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       ++ Note that the other coercion function in the 
       ++ \spadtype{FiniteFieldHomomorphisms} is a left inverse.
     -- coerce(coerce(x:F1)@F2)@F1 = x and coerce(coerce(y:F2)@F1)@F2 = y
- 
+
   Implementation ==> add
- 
+
 -- global variables ===================================================
- 
+
     degree1:NNI:= extensionDegree()$F1
     degree2:NNI:= extensionDegree()$F2
     -- the degrees of the last extension
- 
+
     -- a necessary condition for the one field being an subfield of
     -- the other one is, that the respective extension degrees are
     -- multiples
     if max(degree1,degree2) rem min(degree1,degree2) ^= 0 then
       error "FFHOM: one extension degree must divide the other one"
- 
+
     conMat1to2:M:= zero(degree2,degree1)$M
     -- conversion Matix for the conversion direction F1 -> F2
     conMat2to1:M:= zero(degree1,degree2)$M
     -- conversion Matix for the conversion direction F2 -> F1
- 
+
     repType1:=representationType()$F1
     repType2:=representationType()$F2
     -- the representation types of the fields
- 
+
     init?:Boolean:=true
     -- gets false after initialization
- 
+
     defPol1:=definingPolynomial()$F1
     defPol2:=definingPolynomial()$F2
     -- the defining polynomials of the fields
- 
- 
+
+
 -- functions ==========================================================
- 
- 
+
+
     compare: (SUP GF,SUP GF) -> Boolean
     -- compares two polynomials
- 
+
     convertWRTsameDefPol12: F1  ->  F2
     convertWRTsameDefPol21: F2  ->  F1
     -- homomorphism if the last extension of F1 and F2 was build up
     -- using the same defining polynomials
- 
+
     convertWRTdifferentDefPol12: F1  ->  F2
     convertWRTdifferentDefPol21: F2  ->  F1
     -- homomorphism if the last extension of F1 and F2 was build up
     -- with different defining polynomials
- 
+
     initialize: () -> Void
     -- computes the conversion matrices
- 
+
     compare(g:(SUP GF),f:(SUP GF)) ==
       degree(f)$(SUP GF)  >$NNI degree(g)$(SUP GF) => true
       degree(f)$(SUP GF) <$NNI degree(g)$(SUP GF) => false
@@ -151,7 +151,7 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
         f1 <$PositiveInteger g1 => equal:=(-1)
       equal=1 => true
       false
- 
+
     initialize() ==
       -- 1) in the case of equal def. polynomials initialize is called only
       --  if one of the rep. types is "normal" and the other one is "polynomial"
@@ -315,14 +315,14 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       --we finish the function for one case, hence reset initialization flag
       init? := false
       void()$Void
-      
- 
+
+
     coerce(x:F1) ==
       inGroundField?(x)$F1 => retract(x)$F1 :: F2
       -- if x is already in GF then we can use a simple coercion
       defPol1 =$(SUP GF) defPol2 => convertWRTsameDefPol12(x)
       convertWRTdifferentDefPol12(x)
- 
+
     convertWRTsameDefPol12(x:F1)  ==
       repType1 = repType2 => x pretend F2
       -- same groundfields, same defining polynomials, same
@@ -342,7 +342,7 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       if init? then initialize()
       -- here a conversion matrix is necessary, (see initialize())
       represents(conMat1to2 *$(Matrix GF) coordinates(x)$F1)$F2
- 
+
     convertWRTdifferentDefPol12(x:F1) ==
       if init? then initialize()
       -- if we want to convert into a 'smaller' field, we have to test,
@@ -352,17 +352,17 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
         if positiveRemainder(degree2,degree(x)$F1)^= 0 then
           error "coerce: element doesn't belong to smaller field"
       represents(conMat1to2 *$(Matrix GF) coordinates(x)$F1)$F2
- 
+
 -- the three functions below equal the three functions above up to
 -- '1' exchanged by '2' in all domain and variable names
- 
- 
+
+
     coerce(x:F2) ==
       inGroundField?(x)$F2 => retract(x)$F2 :: F1
       -- if x is already in GF then we can use a simple coercion
       defPol1 =$(SUP GF) defPol2 => convertWRTsameDefPol21(x)
       convertWRTdifferentDefPol21(x)
- 
+
     convertWRTsameDefPol21(x:F2)  ==
       repType1 = repType2 => x pretend F1
       -- same groundfields, same defining polynomials,
@@ -377,7 +377,7 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       -- here one of the representation types is "normal"
       if init? then initialize()
       represents(conMat2to1 *$(Matrix GF) coordinates(x)$F2)$F1
- 
+
     convertWRTdifferentDefPol21(x:F2) ==
       if init? then initialize()
       if degree2 > degree1 then

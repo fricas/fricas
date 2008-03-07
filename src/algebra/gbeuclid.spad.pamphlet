@@ -73,16 +73,16 @@
 ++ \spadtype{DistributedMultivariatePolynomial},
 ++ \spadtype{HomogeneousDistributedMultivariatePolynomial},
 ++ \spadtype{GeneralDistributedMultivariatePolynomial}.
- 
+
 EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
- 
+
  Dom: EuclideanDomain
  Expon: OrderedAbelianMonoidSup
  VarSet: OrderedSet
  Dpol: PolynomialCategory(Dom, Expon, VarSet)
- 
+
  T== with
- 
+
      euclideanNormalForm: (Dpol, List(Dpol) )  ->  Dpol
        ++ euclideanNormalForm(poly,gb) reduces the polynomial poly modulo the
        ++ precomputed groebner basis gb giving a canonical representative
@@ -109,17 +109,17 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
    red ==> reductum
 
    import OutputForm
- 
+
    ------  Definition list of critPair
    ------  lcmfij is now lcm of headterm of poli and polj
    ------  lcmcij is now lcm of of lc poli and lc polj
- 
+
    critPair ==>Record(lcmfij: Expon, lcmcij: Dom, poli:Dpol, polj: Dpol )
    Prinp    ==> Record( ci:Dpol,tci:Integer,cj:Dpol,tcj:Integer,c:Dpol,
                 tc:Integer,rc:Dpol,trc:Integer,tH:Integer,tD:Integer)
- 
+
    ------  Definition of intermediate functions
- 
+
    strongGbasis: (List(Dpol), Integer, Integer) -> List(Dpol)
    eminGbasis: List(Dpol) -> List(Dpol)
    ecritT: (critPair ) -> Boolean
@@ -142,11 +142,11 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
    prindINFO: (critPair, Dpol, Dpol,Integer,Integer,Integer) -> Integer
    prinpolINFO: List(Dpol) -> Void
    prinb: Integer -> Void
- 
+
    ------    MAIN ALGORITHM GROEBNER ------------------------
    euclideanGroebner( Pol: List(Dpol) ) ==
      eminGbasis(strongGbasis(Pol,0,0))
- 
+
    euclideanGroebner( Pol: List(Dpol), xx1: String) ==
      xx1 = "redcrit" =>
        eminGbasis(strongGbasis(Pol,1,0))
@@ -158,7 +158,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
      print("         please try again"::Ex)
      print("   "::Ex)
      []
- 
+
    euclideanGroebner( Pol: List(Dpol), xx1: String, xx2: String) ==
      (xx1 = "redcrit" and xx2 = "info") or
       (xx1 = "info" and xx2 = "redcrit")   =>
@@ -173,14 +173,14 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
      print("          please try again "::Ex)
      print("   "::Ex)
      []
- 
+
    ------    calculate basis
- 
+
    strongGbasis(Pol: List(Dpol),xx1: Integer, xx2: Integer ) ==
      dd1, D : List(critPair)
- 
+
      ---------   create D and Pol
- 
+
      Pol1:= sort( (degree #1 > degree #2) or
                     ((degree #1 = degree #2 ) and
                        sizeLess?(leadingCoefficient #2,leadingCoefficient #1)),
@@ -211,9 +211,9 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
              (( #1.lcmfij = #2.lcmfij ) and
                ( sizeLess?(#1.lcmcij,#2.lcmcij)) ) ,D)
      xx:= xx2
- 
+
      --------  loop
- 
+
      while ^null D repeat
          D0:= first D
          ep:=esPol(D0)
@@ -255,20 +255,20 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
      if xx1 = 1 and xx2 ^= 1 then
        print("    THE GROEBNER BASIS over EUCLIDEAN DOMAIN"::Ex)
      H
- 
+
              --------------------------------------
- 
+
              --- erase multiple of e in D2 using crit M
- 
+
    ecritMondd1(e: Expon, c: Dom, D2: List(critPair))==
       null D2 => nil
       x:= first(D2)
       ecritM(e,c, x.lcmfij, lcm(leadingCoefficient(x.poli), leadingCoefficient(x.polj)))
          => ecritMondd1(e, c, rest(D2))
       cons(x, ecritMondd1(e, c, rest(D2)))
- 
+
             -------------------------------
- 
+
    ecredPol(h: Dpol, F: List(Dpol) ) ==
         h0:Dpol:= 0
         null F => h
@@ -277,9 +277,9 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
            h:= eRed(red(h), F, F)
         h0
              ----------------------------
- 
+
              --- reduce dd1 using crit T and crit M
- 
+
    ecritMTondd1(dd1: List(critPair))==
            null dd1 => nil
            f1:= first(dd1)
@@ -296,11 +296,11 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
            dd1 := ecritMondd1(e1, f1.lcmcij, r1)
            cT1 => ecritMTondd1(dd1)
            cons(f1, ecritMTondd1(dd1))
- 
+
              -----------------------------
- 
+
              --- erase elements in D fullfilling crit B
- 
+
    ecritBonD(h:Dpol, D: List(critPair))==
          null D => nil
          x:= first(D)
@@ -309,21 +309,21 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
          ecritB(degree(h), leadingCoefficient(h), degree(x1),leadingCoefficient(x1),degree(x2),leadingCoefficient(x2)) =>
            ecritBonD(h, rest(D))
          cons(x, ecritBonD(h, rest(D)))
- 
+
              -----------------------------
- 
+
              --- concat F and h and erase multiples of h in F
- 
+
    eupdatF(h: Dpol, F: List(Dpol)) ==
        null F => nil
        f1:= first(F)
        ecritM(degree h, leadingCoefficient(h), degree f1, leadingCoefficient(f1))
            => eupdatF(h, rest(F))
        cons(f1, eupdatF(h, rest(F)))
- 
+
              -----------------------------
              --- concat H and h and erase multiples of h in H
- 
+
    updatH(h: Dpol, H: List(Dpol), Hh: List(Dpol), Hhh: List(Dpol)) ==
        null H => append(Hh,Hhh)
        h1:= first(H)
@@ -336,10 +336,10 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
          hp:= ecredPol(eRed(hp,hpp,hpp),hpp)
          updatH(h, rest(H), crithdelH(hp,Hh),cons(hp,crithdelH(hp,Hhh)))
        updatH(h, rest(H), Hh,Hhh)
- 
+
              --------------------------------------------------
              ---- delete elements in cons(h,H)
- 
+
    crithdelH(h: Dpol, H: List(Dpol))==
         null H => nil
         h1:= first(H)
@@ -351,24 +351,24 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
            cons(plc.coef1*h1 + monomial(plc.coef2,subtractIfCan(dh1,dh)::Expon)*h,
                crithdelH(h,rest(H)))
         cons(h1, crithdelH(h,rest(H)))
- 
+
    eminGbasis(F: List(Dpol)) ==
         null F => nil
         newbas := eminGbasis rest F
         cons(ecredPol( first(F), newbas),newbas)
- 
+
              ------------------------------------------------
              --- does h belong to H
- 
+
    ecrithinH(h: Dpol, H: List(Dpol))==
         null H  => true
         h1:= first(H)
         ecritM(degree h1, lc h1, degree h, lc h) => false
         ecrithinH(h, rest(H))
- 
+
             -----------------------------
             --- calculate  euclidean S-polynomial of a critical pair
- 
+
    esPol(p:critPair)==
       Tij := p.lcmfij
       fi := p.poli
@@ -378,11 +378,11 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
                         subtractIfCan(Tij, degree fi)::Expon) -
         red(fj)*monomial((lij exquo leadingCoefficient(fj))::Dom,
                          subtractIfCan(Tij, degree fj)::Expon)
- 
+
             ----------------------------
- 
+
             --- euclidean reduction mod F
- 
+
    eRed(s: Dpol, H: List(Dpol), Hh: List(Dpol)) ==
      ( s = 0 or null H ) => s
      f1:= first(H)
@@ -397,50 +397,50 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
      sdf1.remainder = 0 =>
         eRed(red(s) - monomial(q1,e)*reductum(f1), Hh, Hh)
      eRed(s -(monomial(q1, e)*f1), rest(H), Hh)
- 
+
             ----------------------------
- 
+
             --- crit T  true, if e1 and e2 are disjoint
- 
+
    ecritT(p: critPair) ==
           pi:= p.poli
           pj:= p.polj
           ci:= lc pi
           cj:= lc pj
           (p.lcmfij = degree pi + degree pj) and  (p.lcmcij = ci*cj)
- 
+
             ----------------------------
- 
+
             --- crit M - true, if lcm#2 multiple of lcm#1
- 
+
    ecritM(e1: Expon, c1: Dom, e2: Expon, c2: Dom) ==
      en: Union(Expon, "failed")
      ((en:=subtractIfCan(e2, e1)) case "failed") or
        ((c2 exquo c1) case "failed") => false
      true
             ----------------------------
- 
+
             --- crit B - true, if eik is a multiple of eh and eik ^equal
             ---          lcm(eh,ei) and eik ^equal lcm(eh,ek)
- 
+
    ecritB(eh:Expon, ch: Dom, ei:Expon, ci: Dom, ek:Expon, ck: Dom) ==
        eik:= sup(ei, ek)
        cik:= lcm(ci, ck)
        ecritM(eh, ch, eik, cik) and
              ^ecritM(eik, cik, sup(ei, eh), lcm(ci, ch)) and
                 ^ecritM(eik, cik, sup(ek, eh), lcm(ck, ch))
- 
+
             -------------------------------
- 
+
             --- reduce p1 mod lp
- 
+
    euclideanNormalForm(p1: Dpol, lp: List(Dpol))==
        eRed(p1, lp, lp)
- 
+
             ---------------------------------
- 
+
             ---  insert element in sorted list
- 
+
    sortin(p1: Dpol, lp: List(Dpol))==
       null lp => [p1]
       f1:= first(lp)
@@ -450,7 +450,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
         sizeLess?(leadingCoefficient(f1),leadingCoefficient(p1)))) =>
          cons(f1,sortin(p1, rest(lp)))
       cons(p1,lp)
- 
+
    updatD(D1: List(critPair), D2: List(critPair)) ==
       null D1 => D2
       null D2 => D1
@@ -458,9 +458,9 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
       dl2:= first(D2)
       (dl1.lcmfij  <  dl2.lcmfij) => cons(dl1, updatD(D1.rest, D2))
       cons(dl2, updatD(D1, D2.rest))
- 
+
             ----  calculate number of terms of polynomial
- 
+
    lepol(p1:Dpol)==
       n: Integer
       n:= 0
@@ -468,25 +468,25 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
          n:= n + 1
          p1:= red(p1)
       n
- 
+
             ----  print blanc lines
- 
+
    prinb(n: Integer)==
         for i in 1..n repeat messagePrint("    ")
- 
+
             ----  print reduced critpair polynom
- 
+
    prinshINFO(h: Dpol)==
            prinb(2)
            messagePrint(" reduced Critpair - Polynom :")
            prinb(2)
            print(h::Ex)
            prinb(2)
- 
+
             -------------------------------
- 
+
             ----  print info string
- 
+
    prindINFO(cp: critPair, ps: Dpol, ph: Dpol, i1:Integer,
              i2:Integer, n:Integer) ==
        ll: List Prinp
@@ -530,11 +530,11 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
        print(ll::Ex)
        prinb(1)
        n
- 
+
             -------------------------------
- 
+
             ----  print the groebner basis polynomials
- 
+
    prinpolINFO(pl: List(Dpol))==
        n:Integer
        n:= #pl
@@ -548,7 +548,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
        prinb(1)
        print("  Groebner Basis Polynomials. "::Ex)
        prinb(2)
- 
+
 
 @
 \section{License}
@@ -586,7 +586,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
 @
 <<*>>=
 <<license>>
- 
+
 <<package GBEUCLID EuclideanGroebnerBasisPackage>>
 @
 \eject

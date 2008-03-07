@@ -76,11 +76,11 @@ PadeApproximants(R,PS,UP): Exports == Implementation where
   R:  Field -- IntegralDomain
   PS: UnivariateTaylorSeriesCategory R
   UP: UnivariatePolynomialCategory R
- 
+
   NNI ==> NonNegativeInteger
   QF  ==> Fraction UP
   CF  ==> ContinuedFraction UP
- 
+
   Exports ==> with
     pade:   (NNI,NNI,PS,PS) -> Union(QF,"failed")
       ++ pade(nd,dd,ns,ds)
@@ -98,33 +98,33 @@ PadeApproximants(R,PS,UP): Exports == Implementation where
       ++ dd (denominator degree of approximant),
       ++ ns (numerator series of function), and
       ++ ds (denominator series of function).
- 
+
   Implementation ==> add
     -- The approximant is represented as
     --   p0 + x**a1/(p1 + x**a2/(...))
- 
+
     PadeRep ==> Record(ais: List UP, degs: List NNI) -- #ais= #degs
     PadeU   ==> Union(PadeRep, "failed")             -- #ais= #degs+1
- 
+
     constInner(up:UP):PadeU == [[up], []]
- 
+
     truncPoly(p:UP,n:NNI):UP ==
       while n < degree p repeat p := reductum p
       p
- 
+
     truncSeries(s:PS,n:NNI):UP ==
       p: UP := 0
       for i in 0..n repeat p := p + monomial(coefficient(s,i),i)
       p
- 
+
     -- Assumes s starts with a<n>*x**n + ... and divides out x**n.
     divOutDegree(s:PS,n:NNI):PS ==
       for i in 1..n repeat s := quoByVar s
       s
- 
+
     padeNormalize: (NNI,NNI,PS,PS) -> PadeU
     padeInner:     (NNI,NNI,PS,PS) -> PadeU
- 
+
     pade(l,m,gps,dps) ==
       (ad := padeNormalize(l,m,gps,dps)) case "failed" => "failed"
       plist := ad.ais; dlist := ad.degs
@@ -132,14 +132,14 @@ PadeApproximants(R,PS,UP): Exports == Implementation where
       for d in dlist for p in rest plist repeat
         approx := p::QF + (monomial(1,d)$UP :: QF)/approx
       approx
- 
+
     padecf(l,m,gps,dps) ==
       (ad := padeNormalize(l,m,gps,dps)) case "failed" => "failed"
       alist := reverse(ad.ais)
       blist := [monomial(1,d)$UP for d in reverse ad.degs]
       continuedFraction(first(alist),_
                           blist::Stream UP,(rest alist) :: Stream UP)
- 
+
     padeNormalize(l,m,gps,dps) ==
       zero? dps => "failed"
       zero? gps => constInner 0
@@ -149,7 +149,7 @@ PadeApproximants(R,PS,UP): Exports == Implementation where
         dps := divOutDegree(dps,ldeg)
         gps := divOutDegree(gps,ldeg)
       padeInner(l,m,gps,dps)
- 
+
     padeInner(l, m, gps, dps) ==
       zero? coefficient(gps,0) and zero? coefficient(dps,0) =>
         error "Pade' problem not normalized."

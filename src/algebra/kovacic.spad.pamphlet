@@ -24,12 +24,12 @@ Kovacic(F, UP): Exports == Impl where
   F  : Join(CharacteristicZero, AlgebraicallyClosedField,
             RetractableTo Integer, RetractableTo Fraction Integer)
   UP : UnivariatePolynomialCategory F
- 
+
   RF  ==> Fraction UP
   SUP ==> SparseUnivariatePolynomial RF
   LF  ==> List Record(factor:UP, exponent:Integer)
   LODO==> LinearOrdinaryDifferentialOperator1 RF
- 
+
   Exports ==> with
     kovacic: (RF, RF, RF) -> Union(SUP, "failed")
       ++ kovacic(a_0,a_1,a_2) returns either "failed" or P(u) such that
@@ -45,15 +45,15 @@ Kovacic(F, UP): Exports == Impl where
       ++ The equation must be already irreducible over the rational functions.
       ++ Argument \spad{ezfactor} is a factorisation in \spad{UP},
       ++ not necessarily into irreducibles.
- 
+
   Impl ==> add
     import RationalRicDE(F, UP)
- 
+
     case2       : (RF, LF, UP -> Factored UP) -> Union(SUP, "failed")
     cannotCase2?: LF -> Boolean
- 
+
     kovacic(a0, a1, a2) == kovacic(a0, a1, a2, squareFree)
- 
+
     -- it is assumed here that a2 y'' + a1 y' + a0 y is already irreducible
     -- over the rational functions, i.e. that the associated Riccati equation
     -- does NOT have rational solutions (so we don't check case 1 of Kovacic's
@@ -72,7 +72,7 @@ Kovacic(F, UP): Exports == Impl where
       r := r  / (4 * a2**2)
       lf := factors squareFree denom r
       case2(r, lf, ezfactor)
- 
+
     -- this is case 2 of Kovacic's algorithm, i.e. look for a solution
     -- of the associated Riccati equation in a quadratic extension
     -- lf is the squarefree factorisation of denom(r) and is used to
@@ -91,7 +91,7 @@ Kovacic(F, UP): Exports == Impl where
       b := first sol
       monomial(1, 2)$SUP - monomial(b, 1)$SUP
                          + ((differentiate(b) + b**2 - 2 * r) / (2::RF))::SUP
- 
+
     -- checks the necessary condition for case 2
     -- returns true if case 2 cannot have solutions
     -- the necessary condition is that there is either a factor with
@@ -138,7 +138,7 @@ Kovacic(F, UP): Exports == Impl where
 @
 <<*>>=
 <<license>>
- 
+
 -- Compile order for the differential equation solver:
 -- oderf.spad  odealg.spad  nlode.spad  nlinsol.spad  riccati.spad
 -- kovacic.spad  odeef.spad

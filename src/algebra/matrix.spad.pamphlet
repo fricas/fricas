@@ -38,12 +38,12 @@ IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
   Row ==> IndexedVector(R,mnCol)
   Col ==> IndexedVector(R,mnRow)
   MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,$)
- 
+
   Exports ==> MatrixCategory(R,Row,Col)
- 
+
   Implementation ==>
     InnerIndexedTwoDimensionalArray(R,mnRow,mnCol,Row,Col) add
- 
+
       swapRows_!(x,i1,i2) ==
         (i1 < minRowIndex(x)) or (i1 > maxRowIndex(x)) or _
            (i2 < minRowIndex(x)) or (i2 > maxRowIndex(x)) =>
@@ -56,24 +56,24 @@ IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
         qsetelt_!(xx,n1,qelt(xx,n2))
         qsetelt_!(xx,n2,row1)
         xx pretend $
- 
+
       if R has commutative("*") then
- 
+
         determinant x == determinant(x)$MATLIN
         minordet    x == minordet(x)$MATLIN
- 
+
       if R has EuclideanDomain then
- 
+
         rowEchelon  x == rowEchelon(x)$MATLIN
- 
+
       if R has IntegralDomain then
- 
+
         rank        x == rank(x)$MATLIN
         nullity     x == nullity(x)$MATLIN
         nullSpace   x == nullSpace(x)$MATLIN
- 
+
       if R has Field then
- 
+
         inverse     x == inverse(x)$MATLIN
 
 @
@@ -101,7 +101,7 @@ Matrix(R): Exports == Implementation where
   mnCol ==> 1
   MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,$)
   MATSTOR ==> StorageEfficientMatrixOperations(R)
- 
+
   Exports ==> MatrixCategory(R,Row,Col) with
     diagonalMatrix: Vector R -> $
       ++ \spad{diagonalMatrix(v)} returns a diagonal matrix where the elements
@@ -125,7 +125,7 @@ Matrix(R): Exports == Implementation where
 --     vectorOfVectors: $ -> Vector Vector R
 --       ++ \spad{vectorOfVectors(m)} returns the rows of the matrix m as a
 --       ++ vector of vectors
- 
+
   Implementation ==>
    InnerIndexedTwoDimensionalArray(R,mnRow,mnCol,Row,Col) add
     minr ==> minRowIndex
@@ -134,10 +134,10 @@ Matrix(R): Exports == Implementation where
     maxc ==> maxColIndex
     mini ==> minIndex
     maxi ==> maxIndex
- 
+
     minRowIndex x == mnRow
     minColIndex x == mnCol
- 
+
     swapRows_!(x,i1,i2) ==
         (i1 < minRowIndex(x)) or (i1 > maxRowIndex(x)) or _
            (i2 < minRowIndex(x)) or (i2 > maxRowIndex(x)) =>
@@ -150,7 +150,7 @@ Matrix(R): Exports == Implementation where
         qsetelt_!(xx,n1,qelt(xx,n2))
         qsetelt_!(xx,n2,row1)
         xx pretend $
- 
+
     positivePower:($,Integer,NonNegativeInteger) -> $
     positivePower(x,n,nn) ==
 --      one? n => x
@@ -164,32 +164,32 @@ Matrix(R): Exports == Implementation where
       c := new(nn,nn,0) pretend Matrix(R)
       xx := x pretend Matrix(R)
       power_!(a,b,c,xx,n :: NonNegativeInteger)$MATSTOR pretend $
- 
+
     x:$ ** n:NonNegativeInteger ==
       not((nn := nrows x) = ncols x) =>
         error "**: matrix must be square"
       zero? n => scalarMatrix(nn,1)
       positivePower(x,n,nn)
- 
+
     if R has commutative("*") then
- 
+
         determinant x == determinant(x)$MATLIN
         minordet    x == minordet(x)$MATLIN
- 
+
     if R has EuclideanDomain then
- 
+
         rowEchelon  x == rowEchelon(x)$MATLIN
- 
+
     if R has IntegralDomain then
- 
+
         rank        x == rank(x)$MATLIN
         nullity     x == nullity(x)$MATLIN
         nullSpace   x == nullSpace(x)$MATLIN
- 
+
     if R has Field then
- 
+
         inverse     x == inverse(x)$MATLIN
- 
+
         x:$ ** n:Integer ==
           nn := nrows x
           not(nn = ncols x) =>
@@ -199,7 +199,7 @@ Matrix(R): Exports == Implementation where
           (xInv := inverse x) case "failed" =>
             error "**: matrix must be invertible"
           positivePower(xInv :: $,-n,nn)
- 
+
 --     matrix(v: Vector Vector R) ==
 --       (rows := # v) = 0 => new(0,0,0)
 --       -- error check: this is a top level function
@@ -212,13 +212,13 @@ Matrix(R): Exports == Implementation where
 --         for j in minc(ans)..maxc(ans) for l in mini(vv)..maxi(vv) repeat
 --           ans(i,j) := vv.l
 --       ans
- 
+
     diagonalMatrix(v: Vector R) ==
       n := #v; ans := zero(n,n)
       for i in minr(ans)..maxr(ans) for j in minc(ans)..maxc(ans) _
           for k in mini(v)..maxi(v) repeat qsetelt_!(ans,i,j,qelt(v,k))
       ans
- 
+
 --     diagonalMatrix(vec: Vector $) ==
 --       rows : NonNegativeInteger := 0
 --       cols : NonNegativeInteger := 0
@@ -235,7 +235,7 @@ Matrix(R): Exports == Implementation where
 --             ans(i,j) := mat(k,l)
 --         loR := hiR + 1; loC := hiC + 1
 --       ans
- 
+
 --     vectorOfVectors x ==
 --       vv : Vector Vector R := new(nrows x,0)
 --       cols := ncols x
@@ -246,7 +246,7 @@ Matrix(R): Exports == Implementation where
 --         for j in minc(x)..maxc(x) for l in mini(v)..maxi(v) repeat
 --           v.l := x(i,j)
 --       vv
- 
+
     if R has ConvertibleTo InputForm then
       convert(x:$):InputForm ==
          convert [convert("matrix"::Symbol)@InputForm,
@@ -276,9 +276,9 @@ RectangularMatrix(m,n,R): Exports == Implementation where
   Col ==> DirectProduct(m,R)
   Exports ==> Join(RectangularMatrixCategory(m,n,R,Row,Col),_
                    CoercibleTo Matrix R) with
- 
+
     if R has Field then VectorSpace R
- 
+
     if R has ConvertibleTo InputForm then ConvertibleTo InputForm
 
     rectangularMatrix: Matrix R -> $
@@ -287,7 +287,7 @@ RectangularMatrix(m,n,R): Exports == Implementation where
     coerce: $ -> Matrix R
       ++ \spad{coerce(m)} converts a matrix of type \spadtype{RectangularMatrix}
       ++ to a matrix of type \spad{Matrix}.
- 
+
   Implementation ==> Matrix R add
     minr ==> minRowIndex
     maxr ==> maxRowIndex
@@ -295,10 +295,10 @@ RectangularMatrix(m,n,R): Exports == Implementation where
     maxc ==> maxColIndex
     mini ==> minIndex
     maxi ==> maxIndex
- 
+
     ZERO := new(m,n,0)$Matrix(R) pretend $
     0    == ZERO
- 
+
     coerce(x:$):OutputForm == coerce(x pretend Matrix R)$Matrix(R)
 
     matrix(l: List List R) ==
@@ -311,35 +311,35 @@ RectangularMatrix(m,n,R): Exports == Implementation where
         for j in minc(ans)..maxc(ans) for r in ll repeat
           qsetelt_!(ans,i,j,r)
       ans pretend $
- 
+
     row(x,i)    == directProduct row(x pretend Matrix(R),i)
     column(x,j) == directProduct column(x pretend Matrix(R),j)
- 
+
     coerce(x:$):Matrix(R) == copy(x pretend Matrix(R))
- 
+
     rectangularMatrix x ==
       (nrows(x) ^= m) or (ncols(x) ^= n) =>
         error "rectangularMatrix: matrix of bad dimensions"
       copy(x) pretend $
- 
+
     if R has EuclideanDomain then
- 
+
       rowEchelon x == rowEchelon(x pretend Matrix(R)) pretend $
- 
+
       columnSpace x == 
         [directProduct c for c in columnSpace(x pretend Matrix R)]
 
     if R has IntegralDomain then
- 
+
       rank x    == rank(x pretend Matrix(R))
       nullity x == nullity(x pretend Matrix(R))
       nullSpace x ==
         [directProduct c for c in nullSpace(x pretend Matrix(R))]
- 
+
     if R has Field then
- 
+
       dimension() == (m * n) :: CardinalNumber
- 
+
     if R has ConvertibleTo InputForm then
       convert(x:$):InputForm ==
          convert [convert("rectangularMatrix"::Symbol)@InputForm,
@@ -368,10 +368,10 @@ SquareMatrix(ndim,R): Exports == Implementation where
   Row ==> DirectProduct(ndim,R)
   Col ==> DirectProduct(ndim,R)
   MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,$)
- 
+
   Exports ==> Join(SquareMatrixCategory(ndim,R,Row,Col),_
                    CoercibleTo Matrix R) with
- 
+
     transpose: $ -> $
       ++ \spad{transpose(m)} returns the transpose of the matrix m.
     squareMatrix: Matrix R -> $
@@ -395,7 +395,7 @@ SquareMatrix(ndim,R): Exports == Implementation where
       ++ the invertible matrices are simply the matrices whose determinants
       ++ are units in the Ring R.
     if R has ConvertibleTo InputForm then ConvertibleTo InputForm
- 
+
   Implementation ==> Matrix R add
     minr ==> minRowIndex
     maxr ==> maxRowIndex
@@ -403,14 +403,14 @@ SquareMatrix(ndim,R): Exports == Implementation where
     maxc ==> maxColIndex
     mini ==> minIndex
     maxi ==> maxIndex
- 
+
     ZERO := scalarMatrix 0
     0    == ZERO
     ONE  := scalarMatrix 1
     1    == ONE
 
     characteristic() == characteristic()$R
- 
+
     matrix(l: List List R) ==
       -- error check: this is a top level function
       #l ^= ndim => error "matrix: wrong number of rows"
@@ -421,64 +421,64 @@ SquareMatrix(ndim,R): Exports == Implementation where
         for j in minc(ans)..maxc(ans) for r in ll repeat
           qsetelt_!(ans,i,j,r)
       ans pretend $
- 
+
     row(x,i)    == directProduct row(x pretend Matrix(R),i)
     column(x,j) == directProduct column(x pretend Matrix(R),j)
     coerce(x:$):OutputForm == coerce(x pretend Matrix R)$Matrix(R)
- 
+
     scalarMatrix r == scalarMatrix(ndim,r)$Matrix(R) pretend $
- 
+
     diagonalMatrix l ==
       #l ^= ndim =>
         error "diagonalMatrix: wrong number of entries in list"
       diagonalMatrix(l)$Matrix(R) pretend $
- 
+
     coerce(x:$):Matrix(R) == copy(x pretend Matrix(R))
- 
+
     squareMatrix x ==
       (nrows(x) ^= ndim) or (ncols(x) ^= ndim) =>
         error "squareMatrix: matrix of bad dimensions"
       copy(x) pretend $
- 
+
     x:$ * v:Col ==
       directProduct((x pretend Matrix(R)) * (v :: Vector(R)))
- 
+
     v:Row * x:$ ==
       directProduct((v :: Vector(R)) * (x pretend Matrix(R)))
- 
+
     x:$ ** n:NonNegativeInteger ==
       ((x pretend Matrix(R)) ** n) pretend $
- 
+
     if R has commutative("*") then
- 
+
       determinant x == determinant(x pretend Matrix(R))
       minordet x    == minordet(x pretend Matrix(R))
       Pfaffian x    == Pfaffian(x pretend Matrix(R))
- 
+
     if R has EuclideanDomain then
- 
+
       rowEchelon x == rowEchelon(x pretend Matrix(R)) pretend $
- 
+
     if R has IntegralDomain then
- 
+
       rank x    == rank(x pretend Matrix(R))
       nullity x == nullity(x pretend Matrix(R))
       nullSpace x ==
         [directProduct c for c in nullSpace(x pretend Matrix(R))]
- 
+
     if R has Field then
- 
+
       dimension() == (m * n) :: CardinalNumber
- 
+
       inverse x ==
         (u := inverse(x pretend Matrix(R))) case "failed" => "failed"
         (u :: Matrix(R)) pretend $
- 
+
       x:$ ** n:Integer ==
         ((x pretend Matrix(R)) ** n) pretend $
- 
+
       recip x == inverse x
- 
+
     if R has ConvertibleTo InputForm then
       convert(x:$):InputForm ==
          convert [convert("squareMatrix"::Symbol)@InputForm,

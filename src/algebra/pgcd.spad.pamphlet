@@ -42,19 +42,19 @@ but has now been removed.
 ++ domain is imposed by the lifting strategy. It is assumed that
 ++ the coefficient domain has the property that almost all specializations
 ++ preserve the degree of the gcd.
- 
+
 I        ==> Integer
 NNI      ==> NonNegativeInteger
 PI       ==> PositiveInteger
- 
+
 PolynomialGcdPackage(E,OV,R,P):C == T where
     R     :  EuclideanDomain
     P     :  PolynomialCategory(R,E,OV)
     OV    :  OrderedSet
     E     :  OrderedAbelianMonoidSup
- 
+
     SUPP      ==> SparseUnivariatePolynomial P
- 
+
     C == with
       gcd               :   (P,P)    -> P
         ++ gcd(p,q) computes the gcd of the two polynomials p and q.
@@ -75,18 +75,18 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         ++ polynomials lp.
 
     T == add
- 
+
       SUP      ==> SparseUnivariatePolynomial R
- 
+
       LGcd     ==> Record(locgcd:SUPP,goodint:List List R)
       UTerm    ==> Record(lpol:List SUP,lint:List List R,mpol:SUPP)
       pmod:R   :=  (prevPrime(2**26)$IntegerPrimesPackage(Integer))::R
- 
+
       import MultivariateLifting(E,OV,R,P)
       import FactoringUtilities(E,OV,R,P)
- 
+
                  --------  Local  Functions  --------
- 
+
       myran           :    Integer   -> Union(R,"failed")
       better          :    (P,P)     -> Boolean
       failtest        :   (SUPP,SUPP,SUPP)    -> Boolean
@@ -94,20 +94,20 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
       gcdMonom        :  (SUPP,SUPP)    -> SUPP
       gcdTermList     :    (P,P)     -> P
       good            :  (SUPP,List OV,List List R) -> Record(upol:SUP,inval:List List R)
- 
+
       chooseVal       :  (SUPP,SUPP,List OV,List List R) -> Union(UTerm,"failed")
       localgcd        :  (SUPP,SUPP,List OV,List List R) -> LGcd
       notCoprime      :  (SUPP,SUPP, List NNI,List OV,List List R)   -> SUPP
       imposelc        : (List SUP,List OV,List R,List P) -> List SUP
- 
+
       lift? :(SUPP,SUPP,UTerm,List NNI,List OV) -> Union(s:SUPP,failed:"failed",notCoprime:"notCoprime")
       lift  :(SUPP,SUP,SUP,P,List OV,List NNI,List R) -> Union(SUPP,"failed")
- 
+
                      ---- Local  functions ----
     -- test if something wrong happened in the gcd
       failtest(f:SUPP,p1:SUPP,p2:SUPP) : Boolean ==
         (p1 exquo f) case "failed" or (p2 exquo f) case "failed"
- 
+
     -- Choose the integers
       chooseVal(p1:SUPP,p2:SUPP,lvr:List OV,ltry:List List R):Union(UTerm,"failed") ==
         d1:=degree(p1)
@@ -129,29 +129,29 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           du:=degree u
          --the univariate gcd is 1
           if du=0 then return [[1$SUP],ltry,0$SUPP]$UTerm
- 
+
           ugcd:List SUP:=[u,(uf1 exquo u)::SUP,(uf2 exquo u)::SUP]
           uterm:=[ugcd,ltry,0$SUPP]$UTerm
           dd=0 => dd:=du
- 
+
         --the degree is not changed
           du=dd =>
- 
+
            --test if one of the polynomials is the gcd
             dd=d1 =>
               if ^((f:=p2 exquo p1) case "failed") then
                 return [[u],ltry,p1]$UTerm
               if dd^=d2 then dd:=(dd-1)::NNI
- 
+
             dd=d2 =>
               if ^((f:=p1 exquo p2) case "failed") then
                 return [[u],ltry,p2]$UTerm
               dd:=(dd-1)::NNI
             return uterm
- 
+
          --the new gcd has degree less
           du<dd => dd:=du
- 
+
       good(f:SUPP,lvr:List OV,ltry:List List R):Record(upol:SUP,inval:List List R) ==
         nvr:NNI:=#lvr
         range:I:=1
@@ -162,7 +162,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           ltry:=cons(lval,ltry)
           uf:=completeEval(f,lvr,lval)
           if degree gcd(uf,differentiate uf)=0 then return [uf,ltry]
- 
+
       -- impose the right lc
       imposelc(lipol:List SUP,
                lvar:List OV,lval:List R,leadc:List P):List SUP ==
@@ -171,7 +171,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
            p1:= univariate eval(leadpol,lvar,lval) * pol
            result:= cons((p1 exquo leadingCoefficient pol)::SUP,result)
         reverse result
- 
+
     --Compute the gcd between not coprime polynomials
       notCoprime(g:SUPP,p2:SUPP,ldeg:List NNI,lvar1:List OV,ltry:List List R) : SUPP ==
         g1:=gcd(g,differentiate g)
@@ -204,7 +204,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
             dl:=degree ul
           gd1:=gd1*gd2
           ulist:=[(uf exquo d)::SUP for uf in ulist]
- 
+
       gcdPrimitive(p1:SUPP,p2:SUPP) : SUPP ==
         if (d1:=degree(p1)) > (d2:=degree(p2)) then
             (p1,p2):= (p2,p1)
@@ -228,7 +228,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           totResult:=localgcd(p1,p2,lvar,ltry)
           result:=totResult.locgcd
         result
- 
+
     --local function for the gcd : it returns the evaluation point too
       localgcd(p1:SUPP,p2:SUPP,lvar:List(OV),ltry:List List R) : LGcd ==
         uterm:=chooseVal(p1,p2,lvar,ltry)::UTerm
@@ -236,35 +236,35 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         listpol:= uterm.lpol
         ud:=listpol.first
         dd:= degree ud
- 
+
         --the univariate gcd is 1
         dd=0 => [1$SUPP,ltry]$LGcd
- 
+
         --one of the polynomials is the gcd
         dd=degree(p1) or dd=degree(p2) =>
                          [uterm.mpol,ltry]$LGcd
         ldeg:List NNI:=map(min,degree(p1,lvar),degree(p2,lvar))
- 
+
        -- if there is a polynomial g s.t. g/gcd and gcd are coprime ...
         -- I can lift
         (h:=lift?(p1,p2,uterm,ldeg,lvar)) case notCoprime =>
           [notCoprime(p1,p2,ldeg,lvar,ltry),ltry]$LGcd
         h case failed => localgcd(p1,p2,lvar,ltry) -- skip bad values?
         [h.s,ltry]$LGcd
- 
- 
+
+
   -- content, internal functions return the poly if it is a monomial
       monomContent(p:SUPP):SUPP ==
         degree(p)=0 => 1
         md:= minimumDegree(p)
         monomial(gcd sort(better,coefficients p),md)
- 
+
   -- Ordering for gcd purposes
       better(p1:P,p2:P):Boolean ==
         ground? p1 => true
         ground? p2 => false
         degree(p1,mainVariable(p1)::OV) < degree(p2,mainVariable(p2)::OV)
- 
+
   -- Gcd between polynomial p1 and p2 with
   -- mainVariable p1 < x=mainVariable p2
       gcdTermList(p1:P,p2:P) : P ==
@@ -273,7 +273,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         q:P:=termList.first
         for term in termList.rest until q = 1$P repeat q:= gcd(q,term)
         q
- 
+
   -- Gcd between polynomials with the same mainVariable
       gcd(p1:SUPP,p2:SUPP): SUPP ==
         if degree(p1) > degree(p2) then (p1,p2):= (p2,p1)
@@ -288,13 +288,13 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         p1:= (p1 exquo c1)::SUPP
         p2:= (p2 exquo c2)::SUPP
         gcdPrimitive(p1,p2) * gcdMonom(c1,c2)
- 
+
    -- gcd between 2 monomials
       gcdMonom(m1:SUPP,m2:SUPP):SUPP ==
         monomial(gcd(leadingCoefficient(m1),leadingCoefficient(m2)),
                  min(degree(m1),degree(m2)))
 
- 
+
     --If there is a pol s.t. pol/gcd and gcd are coprime I can lift
       lift?(p1:SUPP,p2:SUPP,uterm:UTerm,ldeg:List NNI,
                      lvar:List OV) : Union(s:SUPP,failed:"failed",notCoprime:"notCoprime") ==
@@ -311,7 +311,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         lgcd:=gcd(leadingCoefficient p1, leadingCoefficient p2)
         (l:=lift(f,d,uf,lgcd,lvar,ldeg,lval)) case "failed" => ["failed"]
         [l :: SUPP]
- 
+
    -- interface with the general "lifting" function
       lift(f:SUPP,d:SUP,uf:SUP,lgcd:P,lvar:List OV,
                         ldeg:List NNI,lval:List R):Union(SUPP,"failed") ==
@@ -320,7 +320,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         lcf:=leadingCoefficient f
         df:=degree f
         leadlist:List(P):=[]
- 
+
         if lgcd^=1 then
           leadpol:=true
           f:=lgcd*f
@@ -339,7 +339,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
            (p0,p1):=(p1,p0)
         ^leadpol => p0
         p0 exquo content(p0)
- 
+
   -- Gcd for two multivariate polynomials
       gcd(p1:P,p2:P) : P ==
         ground? p1 =>
@@ -360,7 +360,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
                                       univariate(p2,mv1)),mv1)
         mv1 < mv2 => gcdTermList(p1,p2)
         gcdTermList(p2,p1)
- 
+
   -- Gcd for a list of multivariate polynomials
       gcd(listp:List P) : P ==
         lf:=sort(better,listp)
@@ -378,7 +378,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           if f=1 then return f
         f
 
- 
+
    -- Gcd for primitive polynomials
       gcdPrimitive(p1:P,p2:P):P ==
         (p1:= unitCanonical(p1)) = (p2:= unitCanonical(p2)) => p1
@@ -402,7 +402,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           up2 := univariate(p2,mv2)
           mp*multivariate(gcdPrimitive(up1,up2),mv1)
         1$P
- 
+
   -- Gcd for a list of primitive multivariate polynomials
       gcdPrimitive(listp:List P) : P ==
         lf:=sort(better,listp)
@@ -448,7 +448,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
 @
 <<*>>=
 <<license>>
- 
+
 <<package PGCD PolynomialGcdPackage>>
 @
 \eject

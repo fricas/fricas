@@ -38,9 +38,9 @@
 ++   functions concerning symmetric groups and representation
 ++   theory: list young tableaus, improper partitions, subsets
 ++   bijection of Coleman.
- 
+
 SymmetricGroupCombinatoricFunctions(): public == private where
- 
+
   NNI  ==> NonNegativeInteger
   I    ==> Integer
   L    ==> List
@@ -48,14 +48,14 @@ SymmetricGroupCombinatoricFunctions(): public == private where
   V    ==> Vector
   B    ==> Boolean
   ICF  ==> IntegerCombinatoricFunctions Integer
- 
+
   public ==> with
- 
+
 --    IS THERE A WORKING DOMAIN Tableau ??
 --    coerce : M I -> Tableau(I)
 --      ++ coerce(ytab) coerces the Young-Tableau ytab to an element of
 --      ++ the domain Tableau(I).
- 
+
     coleman : (L I, L I, L I) -> M I
       ++ coleman(alpha,beta,pi):
       ++ there is a bijection from the set of matrices having nonnegative
@@ -163,14 +163,14 @@ SymmetricGroupCombinatoricFunctions(): public == private where
       ++ [2,0,1] < [0,2,1] < [1,2,0] < [1,0,2] < [0,1,2] < [1,1,1]}).
       ++ Note: counting of subtrees is done by
       ++ {\em numberOfImproperPartitionsInternal}.
- 
+
   private == add
- 
+
     import Set I
- 
+
     -- declaration of local functions
- 
- 
+
+
     numberOfImproperPartitionsInternal: (I,I,I) -> I
       -- this is used as subtree counting function in
       -- "unrankImproperPartitions1". For (n,m,cm) it counts
@@ -178,11 +178,11 @@ SymmetricGroupCombinatoricFunctions(): public == private where
       -- to right) m-cm non-zero entries are equal, the remaining
       -- positions sum up to n. Example: (3,3,2) counts
       -- [x,3,0], [x,0,3], [0,x,3], [x,2,1], [x,1,2], x non-zero.
- 
- 
+
+
     -- definition of local functions
- 
- 
+
+
     numberOfImproperPartitionsInternal(n,m,cm) ==
       n = 0 => binomial(m,cm)$ICF
       cm = 0 and n > 0 => 0
@@ -190,10 +190,10 @@ SymmetricGroupCombinatoricFunctions(): public == private where
       for i in 0..n-1 repeat
         s := s + numberOfImproperPartitionsInternal(i,m,cm-1)
       s
- 
- 
+
+
     -- definition of exported functions
- 
+
     numberOfImproperPartitions(n,m) ==
       if n < 0 or m < 1 then return 0
       if m = 1 or n = 0 then return 1
@@ -201,8 +201,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
       for i in 0..n repeat
         s := s + numberOfImproperPartitions(n-i,m-1)
       s
- 
- 
+
+
     unrankImproperPartitions0(n,m,k) ==
       l : L I  := nil$(L I)
       k < 0 => error"counting of partitions is started at 0"
@@ -219,8 +219,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
         n := n - y
       l := append(l,list(n)$(L I))$(L I)
       l
- 
- 
+
+
     unrankImproperPartitions1(n,m,k) ==
       -- we use the counting procedure of the leaves in a tree
       -- having the following structure: First of all non-zero
@@ -252,8 +252,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
       --building the partition
       for i in 1..m-cm  repeat partition.(1+nonZeroPos.i) := nonZeros.i
       entries partition
- 
- 
+
+
     subSet(n,m,k) ==
       k < 0 or n < 0 or m < 0 or m > n =>
         error "improper argument to subSet"
@@ -271,22 +271,22 @@ SymmetricGroupCombinatoricFunctions(): public == private where
          mm := mm - binomial$ICF (y-1,s)
          s := s-1
       l
- 
- 
+
+
     nextLatticePermutation(lambda, lattP, constructNotFirst) ==
- 
+
       lprime  : L I  := conjugate(lambda)$PartitionsAndPermutations
       columns : NNI := (first(lambda)$(L I))::NNI
       rows    : NNI := (first(lprime)$(L I))::NNI
       n       : NNI :=(+/lambda)::NNI
- 
+
       not constructNotFirst =>   -- first lattice permutation
         lattP := nil$(L I)
         for i in columns..1 by -1 repeat
           for l in 1..lprime(i) repeat
             lattP := cons(i,lattP)
         lattP
- 
+
       help : V I := new(columns,0) -- entry help(i) stores the number
       -- of occurences of number i on our way from right to left
       rightPosition  : NNI := n
@@ -324,8 +324,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
       -- end of repeat-loop
       not constructNotFirst =>  nil$(L I)
       lattP
- 
- 
+
+
     makeYoungTableau(lambda,gitter) ==
       lprime  : L I  := conjugate(lambda)$PartitionsAndPermutations
       columns : NNI := (first(lambda)$(L I))::NNI
@@ -341,8 +341,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
         ytab(help(j),j) := i
         help(j) := help(j) + 1
       ytab
- 
- 
+
+
 --    coerce(ytab) ==
 --      lli := listOfLists(ytab)$(M I)
 --      -- remove the filling zeros in each row. It is assumed that
@@ -352,8 +352,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
 --        0s, in my version there are no mapping facilities yet.
 --        deleteInPlace(not zero?,lli i)
 --      tableau(lli)$Tableau(I)
- 
- 
+
+
     listYoungTableaus(lambda) ==
       lattice   : L I
       ytab      : M I
@@ -364,8 +364,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
         younglist := append(younglist,[ytab]$(L M I))$(L M I)
         lattice   := nextLatticePermutation(lambda,lattice,true)
       younglist
- 
- 
+
+
     nextColeman(alpha,beta,C) ==
       nrow  : NNI := #beta
       ncol  : NNI := #alpha
@@ -407,12 +407,12 @@ SymmetricGroupCombinatoricFunctions(): public == private where
         --for k in 1..ncol repeat
         --  vrest(k) := vrest(k) - succ(k)
       setRow_!(coleman, nrow, vrest)
- 
- 
+
+
     nextPartition(gamma:V I, part:V I, number:I) ==
       nextPartition(entries gamma, part, number)
- 
- 
+
+
     nextPartition(gamma:L I,part:V I,number:I) ==
       n : NNI := #gamma
       vnull : V I := vector(nil()$(L I)) -- empty vector
@@ -438,8 +438,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
       for k in j+1..i-1 repeat
         part(k) := 0
       part
- 
- 
+
+
     inverseColeman(alpha,beta,C) ==
       pi   : L I  := nil$(L I)
       nrow : NNI := #beta
@@ -455,8 +455,8 @@ SymmetricGroupCombinatoricFunctions(): public == private where
             pi := append(pi,list(help(i))$(L I))
             help(i) := help(i) + 1
       pi
- 
- 
+
+
     coleman(alpha,beta,pi) ==
       nrow : NNI := #beta
       ncol : NNI := #alpha

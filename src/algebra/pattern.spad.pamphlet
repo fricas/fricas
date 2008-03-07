@@ -32,22 +32,22 @@ Pattern(R:SetCategory): Exports == Implementation where
   RSY ==> Record(tag:SI, val: SY, pred:List Any, bad:List Any)
   KER ==> Record(tag:SI, op:BOP, arg:List %)
   PAT ==> Union(ret:R, ker: KER, exp:REC, qot: QOT, sym:RSY)
- 
+
 -- the following MUST be the name of the formal exponentiation operator
   POWER ==> "%power"::Symbol
- 
+
 -- the 4 SYM_ constants must be disting powers of 2 (bitwise arithmetic)
   SYM_GENERIC  ==> 1::SI
   SYM_MULTIPLE ==> 2::SI
   SYM_OPTIONAL ==> 4::SI
- 
+
   PAT_PLUS     ==> 1::SI
   PAT_TIMES    ==> 2::SI
   PAT_LIST     ==> 3::SI
   PAT_ZERO     ==> 4::SI
   PAT_ONE      ==> 5::SI
   PAT_EXPT     ==> 6::SI
- 
+
   Exports ==> Join(SetCategory, RetractableTo R, RetractableTo SY) with
     0            : constant -> %              ++ 0
     1            : constant -> %              ++ 1
@@ -156,14 +156,14 @@ Pattern(R:SetCategory): Exports == Implementation where
       ++ optpair(l) returns l has the form \spad{[a, b]} and
       ++ a is optional, and
       ++ "failed" otherwise;
- 
+
   Implementation ==> add
     Rep := Record(cons?: B, pat:PAT, lev: NonNegativeInteger,
                   topvar: List SY, toppred: Any)
- 
+
     dummy:BOP := operator(new()$Symbol)
     nopred    := coerce(0$Integer)$AnyFunctions1(Integer)
- 
+
     mkPat     : (B, PAT, NonNegativeInteger) -> %
     mkrsy     : (SY, B, B, B)  -> RSY
     SYM2O     : RSY -> O
@@ -175,7 +175,7 @@ Pattern(R:SetCategory): Exports == Implementation where
     taggedElt : (SI, List %) -> %
     isTaggedOp: (%, SI) -> Union(List %, "failed")
     incmax    : List % -> NonNegativeInteger
- 
+
     coerce(r:R):%   == mkPat(true, [r], 0)
     mkPat(c, p, l)  == [c, p, l, empty(), nopred]
     hasTopPredicate? x == not empty?(x.topvar)
@@ -205,7 +205,7 @@ Pattern(R:SetCategory): Exports == Implementation where
     withPredicates(p, l)                == setPredicates(copy p, l)
     coerce(sy:SY):%          == patternVariable(sy, false, false, false)
     copy p  == [constant? p, patcopy(p.pat), p.lev, p.topvar, p.toppred]
- 
+
     -- returns [a, b] if #l = 2 and optional? a, "failed" otherwise
     optpair l ==
       empty? rest rest l =>
@@ -214,58 +214,58 @@ Pattern(R:SetCategory): Exports == Implementation where
         optional? b => reverse l
         "failed"
       "failed"
- 
+
     incmax l ==
       1 + reduce("max", [p.lev for p in l], 0)$List(NonNegativeInteger)
- 
+
     p1 = p2 ==
       (p1.cons? = p2.cons?) and (p1.lev = p2.lev) and
         (p1.topvar = p2.topvar) and
           ((EQ(p1.toppred, p2.toppred)$Lisp) pretend B) and
             pateq?(p1.pat, p2.pat)
- 
+
     isPower p ==
       (u := isTaggedOp(p, PAT_EXPT)) case "failed" => "failed"
       [first(u::List(%)), second(u::List(%))]
- 
+
     taggedElt(n, l) ==
       mkPat(every?(constant?, l), [[n, dummy, l]$KER], incmax l)
- 
+
     elt(o, l) ==
       is?(o, POWER) and #l = 2 => first(l) ** last(l)
       mkPat(every?(constant?, l), [[0, o, l]$KER], incmax l)
- 
+
     isOp p ==
       (p.pat case ker) and zero?(p.pat.ker.tag) =>
         [p.pat.ker.op, p.pat.ker.arg]
       "failed"
- 
+
     isTaggedOp(p,t) ==
       (p.pat case ker) and (p.pat.ker.tag = t) => p.pat.ker.arg
       "failed"
- 
+
     if R has Monoid then
       1 == 1::R::%
     else
       1 == taggedElt(PAT_ONE,  empty())
- 
+
     if R has AbelianMonoid then
       0 == 0::R::%
     else
       0 == taggedElt(PAT_ZERO, empty())
- 
+
     p:% ** n:NonNegativeInteger ==
       p = 0 and n > 0 => 0
       p = 1 or zero? n => 1
 --      one? n => p
       (n = 1) => p
       mkPat(constant? p, [[p, n]$REC], 1 + (p.lev))
- 
+
     p1 / p2 ==
       p2 = 1 => p1
       mkPat(constant? p1 and constant? p2, [[p1, p2]$QOT],
                                       1 + max(p1.lev, p2.lev))
- 
+
     p1 + p2 ==
       p1 = 0 => p2
       p2 = 0 => p1
@@ -276,7 +276,7 @@ Pattern(R:SetCategory): Exports == Implementation where
       (u2 := isPlus p2) case List(%) =>
         taggedElt(PAT_PLUS, concat(p1, u2::List %))
       taggedElt(PAT_PLUS, [p1, p2])
- 
+
     p1 * p2 ==
       p1 = 0 or p2 = 0 => 0
       p1 = 1 => p2
@@ -288,41 +288,41 @@ Pattern(R:SetCategory): Exports == Implementation where
       (u2 := isTimes p2) case List(%) =>
         taggedElt(PAT_TIMES, concat(p1, u2::List %))
       taggedElt(PAT_TIMES, [p1, p2])
- 
+
     isOp(p, o) ==
       (p.pat case ker) and zero?(p.pat.ker.tag) and (p.pat.ker.op =o) =>
         p.pat.ker.arg
       "failed"
- 
+
     predicates p ==
       symbol? p => p.pat.sym.pred
       empty()
- 
+
     setPredicates(p, l) ==
       generic? p => (p.pat.sym.pred := l; p)
       error "Can only attach predicates to generic symbol"
- 
+
     resetBadValues p ==
       generic? p => (p.pat.sym.bad := empty()$List(Any); p)
       error "Can only attach bad values to generic symbol"
- 
+
     addBadValue(p, a) ==
       generic? p =>
         if not member?(a, p.pat.sym.bad) then
           p.pat.sym.bad := concat(a, p.pat.sym.bad)
         p
       error "Can only attach bad values to generic symbol"
- 
+
     getBadValues p ==
       generic? p => p.pat.sym.bad
       error "Not a generic symbol"
- 
+
     SYM2O p ==
       sy := (p.val)::O
       empty?(p.pred) => sy
       paren infix(" | "::O, sy,
         reduce("and",[sub("f"::O, i::O) for i in 1..#(p.pred)])$List(O))
- 
+
     variables p ==
       constant? p => empty()
       generic? p => [p]
@@ -332,7 +332,7 @@ Pattern(R:SetCategory): Exports == Implementation where
       q case qot => concat_!(variables(q.qot.num), variables(q.qot.den))
       q case ker => concat [variables r for r in q.ker.arg]
       empty()
- 
+
     PAT2O p ==
       p case ret => (p.ret)::O
       p case sym => SYM2O(p.sym)
@@ -346,7 +346,7 @@ Pattern(R:SetCategory): Exports == Implementation where
       l := [x::O for x in p.ker.arg]$List(O)
       (u:=display(p.ker.op)) case "failed" =>prefix(name(p.ker.op)::O,l)
       (u::(List O -> O)) l
- 
+
     patcopy p ==
       p case ret => [p.ret]
       p case sym =>
@@ -354,7 +354,7 @@ Pattern(R:SetCategory): Exports == Implementation where
       p case ker=>[[p.ker.tag,p.ker.op,[copy x for x in p.ker.arg]]$KER]
       p case qot => [[copy(p.qot.num), copy(p.qot.den)]$QOT]
       [[copy(p.exp.val), p.exp.exponent]$REC]
- 
+
     pateq?(p1, p2) ==
       p1 case ret => (p2 case ret) and (p1.ret = p2.ret)
       p1 case qot =>
@@ -369,17 +369,17 @@ Pattern(R:SetCategory): Exports == Implementation where
                and (p1.ker.op = p2.ker.op) and (p1.ker.arg = p2.ker.arg)
       (p2 case exp) and (p1.exp.exponent = p2.exp.exponent)
                     and (p1.exp.val = p2.exp.val)
- 
+
     retractIfCan(p:%):Union(SY, "failed") ==
       symbol? p => p.pat.sym.val
       "failed"
- 
+
     mkrsy(t, c?, o?, m?) ==
       c? => [0, t, empty(), empty()]
       mlt := (m? => SYM_MULTIPLE; 0)
       opt := (o? => SYM_OPTIONAL; 0)
       [Or(Or(SYM_GENERIC, mlt), opt), t, empty(), empty()]
- 
+
     patternVariable(sy, c?, o?, m?) ==
       rsy := mkrsy(sy, c?, o?, m?)
       mkPat(zero?(rsy.tag), [rsy], 0)
@@ -424,10 +424,10 @@ PatternFunctions1(R:SetCategory, D:Type): with
     A1D ==> AnyFunctions1(D)
     A1  ==> AnyFunctions1(D -> Boolean)
     A1L ==> AnyFunctions1(List D -> Boolean)
- 
+
     applyAll: (List Any, D) -> Boolean
     st      : (Pattern R, List Any) -> Pattern R
- 
+
     st(p, l)          == withPredicates(p, concat(predicates p, l))
     predicate p       == applyAll(predicates p, #1)
     addBadValue(p, v) == addBadValue(p, coerce(v)$A1D)
@@ -435,16 +435,16 @@ PatternFunctions1(R:SetCategory, D:Type): with
     suchThat(p, l, f) == setTopPredicate(copy p, l, coerce(f)$A1L)
     suchThat(p:Pattern R, f:D -> Boolean) == st(p, [coerce(f)$A1])
     satisfy?(d:D, p:Pattern R)            == applyAll(predicates p, d)
- 
+
     satisfy?(l:List D, p:Pattern R) ==
       empty?((rec := topPredicate p).var) => true
       retract(rec.pred)$A1L l
- 
+
     applyAll(l, d) ==
       for f in l repeat
         not(retract(f)$A1 d) => return false
       true
- 
+
     suchThat(p:Pattern R, l:List(D -> Boolean)) ==
       st(p, [coerce(f)$A1 for f in l])
 
@@ -542,7 +542,7 @@ Patternable(R:Type): Category == with
 @
 <<*>>=
 <<license>>
- 
+
 <<domain PATTERN Pattern>>
 <<package PATTERN1 PatternFunctions1>>
 <<package PATTERN2 PatternFunctions2>>

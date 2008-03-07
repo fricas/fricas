@@ -41,7 +41,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
   UTS  ==> UnivariateTaylorSeries
   ULS  ==> UnivariateLaurentSeries
   UPXS ==> UnivariatePuiseuxSeries
- 
+
   Exports ==> with
     taylor: (I -> FE,EQ FE) -> Any
       ++ \spad{taylor(n +-> a(n),x = a)} returns
@@ -58,7 +58,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       ++ \spad{sum(n = n0..,a(n)*(x-a)**n)};
       ++ \spad{taylor(a(n),n,x = a,n0..n1)} returns
       ++ \spad{sum(n = n0..,a(n)*(x-a)**n)}.
- 
+
     laurent: (I -> FE,EQ FE,SEG I) -> Any
       ++ \spad{laurent(n +-> a(n),x = a,n0..)} returns
       ++ \spad{sum(n = n0..,a(n) * (x - a)**n)};
@@ -69,7 +69,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       ++ \spad{sum(n = n0..,a(n) * (x - a)**n)};
       ++ \spad{laurent(a(n),n,x=a,n0..n1)} returns
       ++ \spad{sum(n = n0..n1,a(n) * (x - a)**n)}.
- 
+
     puiseux: (RN -> FE,EQ FE,SEG RN,RN) -> Any
       ++ \spad{puiseux(n +-> a(n),x = a,r0..,r)} returns
       ++ \spad{sum(n = r0,r0 + r,r0 + 2*r..., a(n) * (x - a)**n)};
@@ -80,7 +80,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       ++ \spad{sum(n = r0,r0 + r,r0 + 2*r..., a(n) * (x - a)**n)};
       ++ \spad{puiseux(a(n),n,x = a,r0..r1,r)} returns
       ++ \spad{sum(n = r0 + k*r while n <= r1, a(n) * (x - a)**n)}.
- 
+
     series: (I -> FE,EQ FE) -> Any
       ++ \spad{series(n +-> a(n),x = a)} returns
       ++ \spad{sum(n = 0..,a(n)*(x-a)**n)}.
@@ -107,26 +107,26 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       ++ \spad{sum(n = r0,r0 + r,r0 + 2*r..., a(n) * (x - a)**n)};
       ++ \spad{series(a(n),n,x = a,r0..r1,r)} returns
       ++ \spad{sum(n = r0 + k*r while n <= r1, a(n) * (x - a)**n)}.
- 
+
   Implementation ==> add
- 
+
     genStream: (I -> FE,I) -> ST FE
     genStream(f,n) == delay concat(f(n),genStream(f,n + 1))
- 
+
     genFiniteStream: (I -> FE,I,I) -> ST FE
     genFiniteStream(f,n,m) == delay
       n > m => empty()
       concat(f(n),genFiniteStream(f,n + 1,m))
- 
+
     taylor(f,eq) ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
         error "taylor: left hand side must be a variable"
       x := xx :: SY; a := rhs eq
       coerce(series(genStream(f,0))$UTS(FE,x,a))$ANY1(UTS(FE,x,a))
- 
+
     taylor(an:FE,n:SY,eq:EQ FE) ==
       taylor(eval(an,(n :: FE) = (#1 :: FE)),eq)
- 
+
     taylor(f:I -> FE,eq:EQ FE,seg:SEG NNI) ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
         error "taylor: left hand side must be a variable"
@@ -141,10 +141,10 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       uts := series(genStream(f,n0))$UTS(FE,x,a)
       uts := uts * monomial(1,n0)$UTS(FE,x,a)
       coerce(uts)$ANY1(UTS(FE,x,a))
- 
+
     taylor(an,n,eq,seg) ==
       taylor(eval(an,(n :: FE) = (#1 :: FE)),eq,seg)
- 
+
     laurent(f,eq,seg) ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
         error "taylor: left hand side must be a variable"
@@ -157,13 +157,13 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       n0 := lo seg
       uts := series(genStream(f,n0))$UTS(FE,x,a)
       coerce(laurent(n0,uts)$ULS(FE,x,a))$ANY1(ULS(FE,x,a))
- 
+
     laurent(an,n,eq,seg) ==
       laurent(eval(an,(n :: FE) = (#1 :: FE)),eq,seg)
- 
+
     modifyFcn:(RN -> FE,I,I,I,I) -> FE
     modifyFcn(f,n0,nn,q,m) == (zero?((m - n0) rem nn) => f(m/q); 0)
- 
+
     puiseux(f,eq,seg,r) ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
         error "puiseux: left hand side must be a variable"
@@ -188,10 +188,10 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       ulsUnion := laurent(modifyFcn(f,n0,nn,q,#1),eq,segment n0)
       uls := retract(ulsUnion)$ANY1(ULS(FE,x,a))
       coerce(puiseux(1/q,uls)$UPXS(FE,x,a))$ANY1(UPXS(FE,x,a))
- 
+
     puiseux(an,n,eq,r0,m) ==
       puiseux(eval(an,(n :: FE) = (#1 :: FE)),eq,r0,m)
- 
+
     series(f:I -> FE,eq:EQ FE) == puiseux(f(numer #1),eq,segment 0,1)
     series(an:FE,n:SY,eq:EQ FE) == puiseux(an,n,eq,segment 0,1)
     series(f:I -> FE,eq:EQ FE,seg:SEG I) ==
@@ -239,7 +239,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
 @
 <<*>>=
 <<license>>
- 
+
 <<package GENUPS GenerateUnivariatePowerSeries>>
 @
 \eject

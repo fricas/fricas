@@ -110,7 +110,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
           ++ canonicalUnitNormal guarantees that the function
           ++ unitCanonical returns the same representative for all
           ++ associates of any particular element.
-       
+
   C == FreeModule(R,E) add
     --representations
        Term:=  Record(k:E,c:R)
@@ -163,94 +163,94 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
        entireRing? := R has EntireRing
 
        times!(r: R, x: %): % == 
-	 res, endcell, newend, xx: Rep
+         res, endcell, newend, xx: Rep
          if entireRing? then 
                 for tx in x repeat tx.c := r*tx.c
          else 
-		xx := x
-		res := empty()
-		while not empty? xx repeat 
-			tx := first xx
-			tx.c := r * tx.c
-			if zero? tx.c then 
-				xx := rest xx
-			else 
-				newend := xx
-				xx := rest xx
-				if empty? res then 
-					res := newend
-					endcell := res
-				else 
-					qsetrest!(endcell, newend)
-					endcell := newend
-		res;
+                xx := x
+                res := empty()
+                while not empty? xx repeat 
+                        tx := first xx
+                        tx.c := r * tx.c
+                        if zero? tx.c then 
+                                xx := rest xx
+                        else 
+                                newend := xx
+                                xx := rest xx
+                                if empty? res then 
+                                        res := newend
+                                        endcell := res
+                                else 
+                                        qsetrest!(endcell, newend)
+                                        endcell := newend
+                res;
 
-	--- term * polynomial 
+        --- term * polynomial 
        termTimes: (R, E, Term) -> Term
        termTimes(r: R, e: E, tx:Term): Term == [e+tx.k, r*tx.c]
        times(tco: R, tex: E, rx: %): % == 
         if entireRing? then 
-		map(termTimes(tco, tex, #1), rx::Rep)
+                map(termTimes(tco, tex, #1), rx::Rep)
         else
-		[[tex + tx.k, r] for tx in rx::Rep | not zero? (r := tco * tx.c)]
+                [[tex + tx.k, r] for tx in rx::Rep | not zero? (r := tco * tx.c)]
 
 
 
        -- local addm!
        addm!: (Rep, R, E, Rep) -> Rep
-	-- p1 + coef*x^E * p2
-	-- `spare' (commented out) is for storage efficiency (not so good for
-	-- performance though.
+        -- p1 + coef*x^E * p2
+        -- `spare' (commented out) is for storage efficiency (not so good for
+        -- performance though.
        addm!(p1:Rep, coef:R, exp: E, p2:Rep): Rep == 
                 --local res, newend, last: Rep
                 res, newcell, endcell: Rep
-		spare: List Rep
+                spare: List Rep
                 res     := empty()
-		endcell := empty()
-		--spare   := empty()
+                endcell := empty()
+                --spare   := empty()
                 while not empty? p1 and not empty? p2 repeat 
                         tx := first p1
                         ty := first p2
                         exy := exp + ty.k
-			newcell := empty();
-			if tx.k = exy then 
-				newcoef := tx.c + coef * ty.c
-				if not zero? newcoef then
-					tx.c    := newcoef
-					newcell := p1
-				--else
-				--	spare   := cons(p1, spare)
-				p1 := rest p1
-				p2 := rest p2
-			else if tx.k > exy then 
-				newcell := p1
-                               	p1      := rest p1
+                        newcell := empty();
+                        if tx.k = exy then 
+                                newcoef := tx.c + coef * ty.c
+                                if not zero? newcoef then
+                                        tx.c    := newcoef
+                                        newcell := p1
+                                --else
+                                --      spare   := cons(p1, spare)
+                                p1 := rest p1
+                                p2 := rest p2
+                        else if tx.k > exy then 
+                                newcell := p1
+                                p1      := rest p1
                         else 
-				newcoef := coef * ty.c
-				if not entireRing? and zero? newcoef then
-					newcell := empty()
-				--else if empty? spare then
-				--	ttt := [exy, newcoef]
-				--	newcell := cons(ttt, empty())
-				--else
-				--	newcell := first spare
-				--	spare   := rest spare
-				--	ttt := first newcell
-				--	ttt.k := exy
-				--	ttt.c := newcoef
+                                newcoef := coef * ty.c
+                                if not entireRing? and zero? newcoef then
+                                        newcell := empty()
+                                --else if empty? spare then
+                                --      ttt := [exy, newcoef]
+                                --      newcell := cons(ttt, empty())
+                                --else
+                                --      newcell := first spare
+                                --      spare   := rest spare
+                                --      ttt := first newcell
+                                --      ttt.k := exy
+                                --      ttt.c := newcoef
                                 else
-					ttt := [exy, newcoef]
-					newcell := cons(ttt, empty())
-				p2 := rest p2
-			if not empty? newcell then
-				if empty? res then
-					res := newcell
-					endcell := res
-				else
-					qsetrest!(endcell, newcell)
-					endcell := newcell
+                                        ttt := [exy, newcoef]
+                                        newcell := cons(ttt, empty())
+                                p2 := rest p2
+                        if not empty? newcell then
+                                if empty? res then
+                                        res := newcell
+                                        endcell := res
+                                else
+                                        qsetrest!(endcell, newcell)
+                                        endcell := newcell
                 if not empty? p1 then  -- then end is const * p1
-			newcell := p1
+                        newcell := p1
                 else  -- then end is (coef, exp) * p2
                         newcell := times(coef, exp, p2)
                 empty? res => newcell
@@ -265,8 +265,8 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
                 zero? first(xx).k => first(xx).c * p2
                 zero? first(yy).k => p1 * first(yy).c
                 --if #xx > #yy then 
-		--	(xx, yy) := (yy, xx)
-		--	(p1, p2) := (p2, p1)
+                --      (xx, yy) := (yy, xx)
+                --      (p1, p2) := (p2, p1)
                 xx := reverse xx
                 res : Rep := empty()
                 for tx in xx repeat res:=addm!(res,tx.c,tx.k,yy)
@@ -296,7 +296,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
          p ** np == p ** (np pretend NonNegativeInteger)
          p ^ np  == p ** (np pretend NonNegativeInteger)
          p ^ nn  == p ** nn
-            
+
 
          p ** nn  ==
             null p => 0
@@ -450,7 +450,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
             -- break up exponent in qn * characteristic + rn
             -- exponentiating by the characteristic is fast
             rec := divide(n, characteristic()$R)
-	    qn:= rec.quotient
+            qn:= rec.quotient
             rn:= rec.remainder
             repeat 
                 if rn = 1 then y := y * p 
@@ -458,8 +458,8 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
                 zero? qn => return y
                 -- raise to the characteristic power
                 p:= [[t.k * characteristic()$R , primeFrobenius(t.c)$R ]$Term for t in p]
-		rec := divide(qn, characteristic()$R)
-		qn:= rec.quotient 
+                rec := divide(qn, characteristic()$R)
+                qn:= rec.quotient 
                 rn:= rec.remainder
             y 
 

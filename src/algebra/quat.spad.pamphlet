@@ -26,11 +26,11 @@
 ++ Description:
 ++   \spadtype{QuaternionCategory} describes the category of quaternions
 ++   and implements functions that are not representation specific.
- 
+
 QuaternionCategory(R: CommutativeRing): Category ==
   Join(Algebra R, FullyRetractableTo R, DifferentialExtension R,
    FullyEvalableOver R, FullyLinearlyExplicitRingOver R) with
- 
+
      conjugate: $ -> $
        ++ conjugate(q) negates the imaginary parts of quaternion \spad{q}.
      imagI:   $ -> R
@@ -46,7 +46,7 @@ QuaternionCategory(R: CommutativeRing): Category ==
        ++ quatern(r,i,j,k) constructs a quaternion from scalars.
      real:    $ -> R
        ++ real(q) extracts the real part of quaternion \spad{q}.
- 
+
      if R has EntireRing then EntireRing
      if R has OrderedSet then OrderedSet
      if R has Field then DivisionRing
@@ -73,9 +73,9 @@ QuaternionCategory(R: CommutativeRing): Category ==
          ++ or "failed" if this is not possible.
          ++ Note: if \spad{rational?(q)} is true, the conversion
          ++ can be done and the rational number will be returned.
- 
+
  add
- 
+
        characteristic() ==
          characteristic()$R
        conjugate x      ==
@@ -121,7 +121,7 @@ QuaternionCategory(R: CommutativeRing): Category ==
          not (zero? imagI x and zero? imagJ x and zero? imagK x) =>
            "failed"
          real x
- 
+
        coerce(x:$):OutputForm ==
          part,z : OutputForm
          y : $
@@ -155,19 +155,19 @@ QuaternionCategory(R: CommutativeRing): Category ==
 --         one? imagK(x) => part
          (imagK(x) = 1) => part
          (imagK(x) :: OutputForm) * part
- 
+
        if R has Field then
          inv x ==
            norm x = 0 => error "This quaternion is not invertible."
            (inv norm x) * conjugate x
- 
+
        if R has ConvertibleTo InputForm then
          convert(x:$):InputForm ==
            l : List InputForm := [convert("quatern" :: Symbol),
              convert(real x)$R, convert(imagI x)$R, convert(imagJ x)$R,
                convert(imagK x)$R]
            convert(l)$InputForm
- 
+
        if R has OrderedSet then
          x < y ==
            real x = real y =>
@@ -177,10 +177,10 @@ QuaternionCategory(R: CommutativeRing): Category ==
                imagJ x < imagJ y
              imagI x < imagI y
            real x < real y
- 
+
        if R has RealNumberSystem then
          abs x == sqrt norm x
- 
+
        if R has IntegerNumberSystem then
          rational? x ==
            (zero? imagI x) and (zero? imagJ x) and (zero? imagK x)
@@ -210,23 +210,23 @@ QuaternionCategory(R: CommutativeRing): Category ==
 ++   commutative ring. The main constructor function is \spadfun{quatern}
 ++   which takes 4 arguments: the real part, the i imaginary part, the j
 ++   imaginary part and the k imaginary part.
- 
+
 Quaternion(R:CommutativeRing): QuaternionCategory(R) == add
   Rep := Record(r:R,i:R,j:R,k:R)
- 
+
   0 == [0,0,0,0]
   1 == [1,0,0,0]
- 
+
   a,b,c,d : R
   x,y : $
- 
+
   real  x == x.r
   imagI x == x.i
   imagJ x == x.j
   imagK x == x.k
- 
+
   quatern(a,b,c,d) == [a,b,c,d]
- 
+
   x * y == [x.r*y.r-x.i*y.i-x.j*y.j-x.k*y.k,
                x.r*y.i+x.i*y.r+x.j*y.k-x.k*y.j,
                  x.r*y.j+x.j*y.r+x.k*y.i-x.i*y.k,
@@ -249,7 +249,7 @@ Quaternion(R:CommutativeRing): QuaternionCategory(R) == add
 ++    \spadtype{QuaternionCategoryFunctions2} implements functions between
 ++    two quaternion domains.  The function \spadfun{map} is used by
 ++    the system interpreter to coerce between quaternion types.
- 
+
 QuaternionCategoryFunctions2(QR,R,QS,S) : Exports ==
   Implementation where
     R  : CommutativeRing
@@ -300,7 +300,7 @@ QuaternionCategoryFunctions2(QR,R,QS,S) : Exports ==
 @
 <<*>>=
 <<license>>
- 
+
 <<category QUATCAT QuaternionCategory>>
 <<domain QUAT Quaternion>>
 <<package QUATCT2 QuaternionCategoryFunctions2>>

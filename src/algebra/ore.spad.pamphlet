@@ -140,28 +140,28 @@ UnivariateSkewPolynomialCategory(R:Ring):
             ++ such that \spad{m = aa*a = bb*b} for some values
             ++ \spad{aa} and \spad{bb}.  The value \spad{m} is
             ++ computed using right-division.
- 
+
    add
         coerce(x:R):% == monomial(x, 0)
- 
+
         coefficients l ==
           ans:List(R) := empty()
           while l ^= 0 repeat
             ans := concat(leadingCoefficient l, ans)
             l   := reductum l
           ans
- 
+
         a:R * y:% ==
           z:% := 0
           while y ^= 0 repeat
             z := z + monomial(a * leadingCoefficient y, degree y)
             y := reductum y
           z
- 
+
         retractIfCan(x:%):Union(R, "failed") ==
           zero? x or zero? degree x => leadingCoefficient x
           "failed"
- 
+
         if R has IntegralDomain then
           l exquo a ==
             ans:% := 0
@@ -171,11 +171,11 @@ UnivariateSkewPolynomialCategory(R:Ring):
               ans := ans + monomial(u::R, degree l)
               l   := reductum l
             ans
- 
+
         if R has GcdDomain then
           content l       == gcd coefficients l
           primitivePart l == (l exquo content l)::%
- 
+
         if R has Field then
           leftEEA:  (%, %) -> Record(gcd:%, coef1:%, coef2:%, lcm:%)
           rightEEA: (%, %) -> Record(gcd:%, coef1:%, coef2:%, lcm:%)
@@ -184,7 +184,7 @@ UnivariateSkewPolynomialCategory(R:Ring):
           exactQuotient: Record(quotient:%, remainder:%) -> Union(%, "failed")
           extended: (%, %, (%, %) -> Record(gcd:%, coef1:%, coef2:%, lcm:%)) ->
                                           Record(coef1:%, coef2:%, generator:%)
- 
+
           leftQuotient(a, b)         == leftDivide(a,b).quotient
           leftRemainder(a, b)        == leftDivide(a,b).remainder
           leftExtendedGcd(a, b)      == extended(a, b, leftEEA)
@@ -198,7 +198,7 @@ UnivariateSkewPolynomialCategory(R:Ring):
           rightGcd(a, b)             == ncgcd(a, b, rightRemainder)
           leftGcd(a, b)              == ncgcd(a, b, leftRemainder)
           exactQuotient qr  == (zero?(qr.remainder) => qr.quotient; "failed")
- 
+
           -- returns [g = leftGcd(a, b), c, d, l = rightLcm(a, b)]
           -- such that g := a c + b d
           leftEEA(a, b) ==
@@ -211,14 +211,14 @@ UnivariateSkewPolynomialCategory(R:Ring):
               (u0, u):= (u, u0 - u * qr.quotient)
               (v0, v):= (v, v0 - v * qr.quotient)
             [a, u0, v0, a0 * u]
- 
+
           ncgcd(a, b, ncrem) ==
             zero? a => b
             zero? b => a
             degree a < degree b => ncgcd(b, a, ncrem)
             while b ^= 0 repeat (a, b) := (b, ncrem(a, b))
             a
- 
+
           extended(a, b, eea) ==
             zero? a => [0, 1, b]
             zero? b => [1, 0, a]
@@ -227,13 +227,13 @@ UnivariateSkewPolynomialCategory(R:Ring):
               [rec.coef2, rec.coef1, rec.gcd]
             rec := eea(a, b)
             [rec.coef1, rec.coef2, rec.gcd]
- 
+
           nclcm(a, b, eea) ==
             zero? a or zero? b => 0
             degree a < degree b => nclcm(b, a, eea)
             rec := eea(a, b)
             rec.lcm
- 
+
           -- returns [g = rightGcd(a, b), c, d, l = leftLcm(a, b)]
           -- such that g := a c + b d
           rightEEA(a, b) ==
@@ -299,9 +299,9 @@ Automorphism(R:Ring): Join(Group, Eltable(R, R)) with
       iter:  (R -> R, NonNegativeInteger, R) -> R
       iterat: (R -> R, R -> R, Integer, R) -> R
       apply: (%, R, Integer) -> R
- 
+
       Rep := ((R, Integer) -> R)
- 
+
       1                               == ident
       err r                           == error "Morphism is not invertible"
       ident(r, n)                     == r
@@ -314,15 +314,15 @@ Automorphism(R:Ring): Join(Group, Eltable(R, R)) with
       morphism(f:R -> R):%            == morphism(f, err)
       morphism(f, g)                  == iterat(f, g, #2, #1)
       apply(f, r, n) == (g := f pretend ((R, Integer) -> R); g(r, n))
- 
+
       iterat(f, g, n, r) ==
           n < 0 => iter(g, (-n)::NonNegativeInteger, r)
           iter(f, n::NonNegativeInteger, r)
- 
+
       iter(f, n, r) ==
           for i in 1..n repeat r := f r
           r
- 
+
       f * g ==
         f = g => f**2
         iterat(f g #1, (inv g)(inv f) #1, #2, #1)
@@ -343,11 +343,11 @@ Automorphism(R:Ring): Join(Group, Eltable(R, R)) with
 UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
     R: Ring
     C: UnivariateSkewPolynomialCategory R
- 
+
     N   ==> NonNegativeInteger
     MOR ==> Automorphism R
     QUOREM ==> Record(quotient: C, remainder: C)
- 
+
     Exports ==> with
         times: (C, C, MOR, R -> R) -> C
            ++ times(p, q, sigma, delta) returns \spad{p * q}.
@@ -383,12 +383,12 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
                 ++ less than the degree of \spad{b}.
                 ++ This process is called ``right division''.
                 ++ \spad{\sigma} is the morphism to use.
- 
+
     Implementation ==> add
         termPoly:         (R, N, C, MOR, R -> R) -> C
         localLeftDivide : (C, C, MOR, R) -> QUOREM
         localRightDivide: (C, C, MOR, R) -> QUOREM
- 
+
         times(x, y, sigma, delta) ==
           zero? y => 0
           z:C := 0
@@ -396,7 +396,7 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
             z := z + termPoly(leadingCoefficient x, degree x, y, sigma, delta)
             x := reductum x
           z
- 
+
         termPoly(a, n, y, sigma, delta) ==
           zero? y => 0
           (u := subtractIfCan(n, 1)) case "failed" => a * y
@@ -409,7 +409,7 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
                    + termPoly(a, n1, monomial(delta b, m), sigma, delta)
             y := reductum y
           z
- 
+
         apply(p, c, x, sigma, delta) ==
           w:R  := 0
           xn:R := x
@@ -417,7 +417,7 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
             w  := w + coefficient(p, i) * xn
             xn := c * sigma xn + delta xn
           w
- 
+
         -- localLeftDivide(a, b) returns [q, r] such that a = q b + r
         -- b1 is the inverse of the leadingCoefficient of b
         localLeftDivide(a, b, sigma, b1) ==
@@ -428,7 +428,7 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
             q  := monomial((sigma**(-m))(b1 * leadingCoefficient a), n::N)
             qr := localLeftDivide(a - b * q, b, sigma, b1)
             [q + qr.quotient, qr.remainder]
- 
+
         -- localRightDivide(a, b) returns [q, r] such that a = q b + r
         -- b1 is the inverse of the leadingCoefficient of b
         localRightDivide(a, b, sigma, b1) ==
@@ -439,22 +439,22 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
             q := monomial(leadingCoefficient(a) * (sigma**n) b1, n::N)
             qr := localRightDivide(a - q * b, b, sigma, b1)
             [q + qr.quotient, qr.remainder]
- 
+
         if R has IntegralDomain then
             monicLeftDivide(a, b, sigma) ==
                 unit?(u := leadingCoefficient b) =>
                     localLeftDivide(a, b, sigma, recip(u)::R)
                 error "monicLeftDivide: divisor is not monic"
- 
+
             monicRightDivide(a, b, sigma) ==
                 unit?(u := leadingCoefficient b) =>
                     localRightDivide(a, b, sigma, recip(u)::R)
                 error "monicRightDivide: divisor is not monic"
- 
+
         if R has Field then
             leftDivide(a, b, sigma) ==
                 localLeftDivide(a, b, sigma, inv leadingCoefficient b)
- 
+
             rightDivide(a, b, sigma) ==
                 localRightDivide(a, b, sigma, inv leadingCoefficient b)
 
@@ -476,14 +476,14 @@ SparseUnivariateSkewPolynomial(R:Ring, sigma:Automorphism R, delta: R -> R):
         ++ otherwise anonymous variable.
    == SparseUnivariatePolynomial R add
       import UnivariateSkewPolynomialCategoryOps(R, %)
- 
+
       x:% * y:%      == times(x, y, sigma, delta)
       apply(p, c, r) == apply(p, c, r, sigma, delta)
- 
+
       if R has IntegralDomain then
           monicLeftDivide(a, b)  == monicLeftDivide(a, b, sigma)
           monicRightDivide(a, b) == monicRightDivide(a, b, sigma)
- 
+
       if R has Field then
           leftDivide(a, b)  == leftDivide(a, b, sigma)
           rightDivide(a, b) == rightDivide(a, b, sigma)
@@ -544,7 +544,7 @@ UnivariateSkewPolynomial(x:Symbol, R:Ring, sigma:Automorphism R, delta: R -> R):
 @
 <<*>>=
 <<license>>
- 
+
 <<category OREPCAT UnivariateSkewPolynomialCategory>>
 <<package APPLYORE ApplyUnivariateSkewPolynomial>>
 <<domain AUTOMOR Automorphism>>
