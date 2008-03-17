@@ -34,11 +34,11 @@ stamp-databases:
 	cp $(axiom_src_datadir)/algebra/*.daase $(axiom_targetdir)/algebra
 	cp $(axiom_src_datadir)/algebra/libdb.text $(axiom_targetdir)/algebra
 	cp $(axiom_src_datadir)/algebra/comdb.text $(axiom_targetdir)/algebra
-	$(mkinstalldirs) $(axiom_targetdir)/algebra/USERS.DAASE \
+	mkdir $(axiom_targetdir)/algebra/USERS.DAASE \
              $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
-	$(INSTALL_DATA) $(axiom_src_datadir)/algebra/USERS.DAASE/index.KAF \
+	cp $(axiom_src_datadir)/algebra/USERS.DAASE/index.KAF \
              $(axiom_targetdir)/algebra/USERS.DAASE
-	$(INSTALL_DATA) \
+	cp \
 	  $(axiom_src_datadir)/algebra/DEPENDENTS.DAASE/index.KAF \
              $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
 	-rm -f stamp-databases
@@ -58,14 +58,14 @@ stamp-databases: ../algebra/*.NRLIB/code.$(FASLEXT)
 	@ echo 4 rebuilding databases...
 	(cd ../algebra ; \
            echo ')lisp (make-databases "" nil)' | AXIOM=$(AXIOM) ${INTERPSYS} )
-	$(INSTALL_DATA) ../algebra/*.daase $(axiom_targetdir)/algebra
-	$(INSTALL_DATA) ../algebra/libdb.text $(axiom_targetdir)/algebra
-	$(INSTALL_DATA) ../algebra/comdb.text $(axiom_targetdir)/algebra
-	$(mkinstalldirs) $(axiom_targetdir)/algebra/USERS.DAASE \
+	cp ../algebra/*.daase $(axiom_targetdir)/algebra
+	cp ../algebra/libdb.text $(axiom_targetdir)/algebra
+	cp ../algebra/comdb.text $(axiom_targetdir)/algebra
+	mkdir $(axiom_targetdir)/algebra/USERS.DAASE \
              $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
-	$(INSTALL_DATA) ../algebra/USERS.DAASE/index.KAF \
+	cp ../algebra/USERS.DAASE/index.KAF \
                    $(axiom_targetdir)/algebra/USERS.DAASE
-	$(INSTALL_DATA) ../algebra/DEPENDENTS.DAASE/index.KAF \
+	cp ../algebra/DEPENDENTS.DAASE/index.KAF \
                    $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
 	-rm -f stamp-databases
 	$(STAMP) stamp-databases
@@ -77,17 +77,16 @@ asq_objects = $(asq_sources:.c=.$(OBJEXT))
 
 $(axiom_target_bindir)/asq$(EXEEXT): asq.c $(axiom_c_macros_h)
 	@echo 4 making $@ from $<
-	${CC} ${CCF} $(axiom_includes) -o asq asq.c
-	$(INSTALL_PROGRAM) asq $(axiom_target_bindir)
+	${CC} ${CCF} $(axiom_includes) -o $@ asq.c
 
 asq.c: $(srcdir)/asq.c.pamphlet
 	$(axiom_build_document) --tangle --output=$@ $<
 
 $(axiom_target_libdir)/summary: $(srcdir)/summary
-	$(INSTALL_DATA) $< $@ 
+	cp $< $@ 
 
 $(axiom_target_libdir)/copyright: $(srcdir)/copyright
-	$(INSTALL_DATA) $< $@ 
+	cp $< $@ 
 
 $(axiom_target_docdir)/spadhelp/help.help:
 	if [ -f $(axiom_src_datadir)/spadhelp/help.help ] ; then \
@@ -103,7 +102,7 @@ $(axiom_target_libdir)/SPADEDIT: $(srcdir)/spadedit.pamphlet
 
 $(axiom_target_bindir)/axiom: $(srcdir)/axiom
 	@echo 1 making $@ from $<
-	$(INSTALL_SCRIPT) $< $@
+	cp $< $@
 	chmod +x $(axiom_target_bindir)/axiom
 
 
