@@ -98,23 +98,63 @@ book:
 	  rm book.aux )
 	@ echo 80 The book is at $(axiom_target_docdir)/book.dvi 
 
+reltarget = target/$(target)
+
 install:
-	@echo Installing Axiom in $(prefix)
-	rm -rf $(DESTDIR)$(libdir)/fricas
-	mkdir -p $(DESTDIR)$(libdir)/fricas
-	cp -pr $(builddir)/target $(DESTDIR)$(libdir)/fricas
-	@echo '#!/bin/sh -' > ${COMMAND}
-	echo AXIOM=$(libdir)/fricas/target/$(target) >> ${COMMAND}
-	@echo export AXIOM >> ${COMMAND}
-	@echo PATH='$${AXIOM}/bin':'$${PATH}' >> ${COMMAND}
-	@echo export PATH >> ${COMMAND}
-	@cat $(axiom_src_srcdir)/etc/axiom >> ${COMMAND}
-	@chmod +x ${COMMAND}
-	rm -f $(DESTDIR)$(bindir)/fricas
-	@mkdir -p $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) $(COMMAND) $(DESTDIR)$(bindir)/fricas
-	$(INSTALL_PROGRAM) $(COMMAND) $(DESTDIR)$(bindir)/axiom
-	@echo 79 Axiom installation finished.
+	@echo Installing FriCAS in $(prefix)
+	rm -rf '$(DESTDIR)$(libdir)/fricas'
+	$(mkinstalldirs) '$(DESTDIR)$(libdir)/fricas'
+	for A in algebra autoload doc share src lib/graph ; do \
+	  for B in `find $(reltarget)/$$A -type d -print` ; do \
+	     $(mkinstalldirs) '$(DESTDIR)$(libdir)'/fricas/$$B \
+	       || exit 1 ; \
+	  done ; \
+	  for B in `find $(reltarget)/$$A -type f -print` ; do \
+	     $(INSTALL_DATA) $$B '$(DESTDIR)$(libdir)'/fricas/$$B \
+	       || exit 1 ; \
+	  done ; \
+	done
+	$(mkinstalldirs) '$(DESTDIR)$(libdir)/fricas/$(reltarget)/bin'
+	for A in bin/AXIOMsys bin/asq bin/clef bin/htadd bin/hypertex \
+	         bin/sman bin/viewAlone lib/ex2ht lib/hthits lib/session \
+		 lib/spadbuf lib/spadclient lib/view2D lib/view3D \
+		 lib/viewman ; do \
+	   if [ -f $(reltarget)/$$A$(EXET) ] ; then \
+	      $(INSTALL_PROGRAM) $(reltarget)/$$A$(EXET) \
+	         '$(DESTDIR)$(libdir)'/fricas/$(reltarget)/$$A$(EXET) \
+		|| exit 1 ; \
+	   fi ; \
+	done
+	if [ -f $(reltarget)/lib/libspad.so ] ; then \
+	   $(INSTALL_PROGRAM) $(reltarget)/lib/libspad.so \
+	       '$(DESTDIR)$(libdir)'/fricas/$(reltarget)/lib/libspad.so \
+	     || exit 1 ; \
+	fi
+	for A in SPADEDIT htsearch presea ; do \
+	   if [ -f $(reltarget)/lib/$$A ] ; then \
+	      $(INSTALL_SCRIPT) $(reltarget)/lib/$$A \
+	        '$(DESTDIR)$(libdir)'/fricas/$(reltarget)/lib/$$A \
+	       || exit 1 ; \
+	   fi ; \
+	done
+	for A in command.list copyright summary ; do \
+	   $(INSTALL_DATA) $(reltarget)/lib/$$A \
+	      '$(DESTDIR)$(libdir)'/fricas/$(reltarget)/lib/$$A \
+	     || exit 1 ; \
+	done
+	echo '#!/bin/sh -' > '${COMMAND}'.tmp
+	echo AXIOM="'$(libdir)/fricas/target/$(target)'" >> '${COMMAND}'.tmp
+	echo export AXIOM >> '${COMMAND}'.tmp
+	echo PATH='$${AXIOM}/bin':'$${PATH}' >> '${COMMAND}'.tmp
+	echo export PATH >> '${COMMAND}'.tmp
+	cat $(axiom_src_srcdir)/etc/axiom >> '${COMMAND}'.tmp
+	$(INSTALL_SCRIPT) '${COMMAND}'.tmp '${COMMAND}'
+	-rm '${COMMAND}'.tmp
+	rm -f '$(DESTDIR)$(bindir)'/fricas
+	$(mkinstalldirs) '$(DESTDIR)$(bindir)'
+	$(INSTALL_SCRIPT) '$(COMMAND)' '$(DESTDIR)$(bindir)/fricas'
+	$(INSTALL_SCRIPT) '$(COMMAND)' '$(DESTDIR)$(bindir)/axiom'
+	@echo 79 FriCAS installation finished.
 
 
 mostlyclean-local:
