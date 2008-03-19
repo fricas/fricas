@@ -38,7 +38,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 #include "axiom-c-macros.h"
-#include <malloc.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
