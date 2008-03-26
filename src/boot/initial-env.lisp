@@ -1,26 +1,3 @@
-%% Oh Emacs, this is a -*- Lisp -*- file despite apperance.
-\documentclass{article}
-\usepackage{axiom}
-
-\title{\$SPAD/src/boot boothdr.lisp}
-\author{Timothy Daly \and Gabriel Dos~Reis}
-
-\begin{document}
-\maketitle
-
-\begin{abstract}
-  This pamphlet defines the base initial environment for building
-  a Boot translator image.  It essentially etablishes a namespace
-  (package \Code{Boot}) for the Boot translator, and defines 
-  some macros that need to be present during translation of Boot
-  source files.
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-
-\section{License}
-<<license>>=
 ;; Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 ;; All rights reserved.
 ;;
@@ -52,15 +29,7 @@
 ;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-@
 
-\section{The \code{BOOTTRAN} package}
-
-All Boot translator functions are defined in the package
-\code{BOOTTRAN}.  It is expected that the translator interfaces
-with the rest of the system only through the functions explicitly exported
-by \code{BOOTTRAN}:
-<<boot-translator>>=
 (eval-when (:execute :compile-toplevel :load-toplevel)
     (or (find-package "BOOTTRAN")
         (make-package "BOOTTRAN" :use '("FRICAS-LISP"))))
@@ -81,70 +50,6 @@ by \code{BOOTTRAN}:
 ;; ECL does not load the compiler module by default.  Therefore, we
 ;; must require that appropriate symbols be present.
 #+:ecl (require 'cmp)
-@
-
-\section{I/O macros}
-
-The Boot translator source codes make uses of some 
-higher order functions.  For various reasons, including efficiency,
-they are defined as Lisp macros and must therefore be available in each
-source file that uses them.
-
-\subsection{[[shoeInputFile]]}
-
-<<with-input-file>>=
-(defmacro |shoeOpenInputFile|
-     (stream fn prog)
-    `(with-open-file (,stream ,fn :direction :input
-       :if-does-not-exist nil) ,prog))
-@
-
-This macro creates a input stream object from a file name [[fn]], and 
-processes it with [[prog]].  If the file name designates a non-existent 
-file, the standard input is used instead.
-
-\subsection{[[shoeOpenOutputFile]]}
-<<with-output-file>>=
-(defmacro |shoeOpenOutputFile|
-     (stream fn prog)
-    `(with-open-file (,stream ,fn :direction :output
-       :if-exists :supersede) ,prog))
-@
-
-This macro creates an output stream object from a file name [[fn]], and 
-processes it with [[prog]].  The output file is overwritten if it exists.
-
-
-\section{Interface with the build machinery}
-
-Lisp implementations seem to fill all the implemented-defined 
-design space fuzzily described by Common Lisp standard.  What
-that means for us is that we need to provide abstractions that
-encapsulate all those variabilities in Lisp systems we care about.
-The functions defined in the next few subsections interface with
-our build-machinery.
-
-\subsection{Loading Lisp files}
-
-
-\subsection{Building new Lisp images}
-
-At many points, the build machinery makes new Lisp images that
-are the results of augmenting a given Lisp image with new 
-Lisp files (either compiled or in source form).  For most Lisp
-implementations, this is done by loading the Lisp files in the 
-current image and dumping the result on disk as an executable.
-
-[[core-image]] is a string designating the name of the resulting program;
-[[lisp-files]] is a list of strings designating Lisp files to combine
-with the base Lisp system.
-
-\section{Putting it together}
-
-<<*>>=
-<<license>>
-
-<<boot-translator>>
 
 ;## need the conditional here so it appears in boottran
 #+:ieee-floating-point (setq $ieee t)
@@ -155,8 +60,8 @@ with the base Lisp system.
 
 (defun pname (x)
   (cond ((symbolp x) (symbol-name x))
-	((characterp x) (string x))
-	(t nil)))
+        ((characterp x) (string x))
+        (t nil)))
 
 (defun |char| (x) (CHAR (PNAME x) 0))
 
@@ -180,18 +85,31 @@ with the base Lisp system.
 
 (defun |shoeCLOSE| (s) (close s))
 
-<<with-input-file>>
+;;; The Boot translator source codes make uses of some
+;;; higher order functions.  For various reasons they are defined
+;;; as Lisp macros and must therefore be available in each
+;;; source file that uses them.
 
-<<with-output-file>>
+(defmacro |shoeOpenInputFile|
+     (stream fn prog)
+    `(with-open-file (,stream ,fn :direction :input
+       :if-does-not-exist nil) ,prog))
+
+(defmacro |shoeOpenOutputFile|
+     (stream fn prog)
+    `(with-open-file (,stream ,fn :direction :output
+       :if-exists :supersede) ,prog))
+
+;;; ------------------------------------------------
 
 (defun |shoeConsole| (line)  (write-line line *terminal-io*))
 
 (defun shoeprettyprin1 (x &optional (stream *standard-output*))
   (let ((*print-pretty* t)
-	(*print-array* t)
-	(*print-circle* t)
-	(*print-level* nil)
-	(*print-length* nil))
+        (*print-array* t)
+        (*print-circle* t)
+        (*print-level* nil)
+        (*print-length* nil))
     (prin1 x stream)))
  
 (defun reallyprettyprint (x &optional (stream *terminal-io*))
@@ -199,10 +117,10 @@ with the base Lisp system.
  
 (defun shoeprettyprin0 (x &optional (stream *standard-output*))
   (let ((*print-pretty* nil)
-	(*print-array* t)
-	(*print-circle* t)
-	(*print-level* nil)
-	(*print-length* nil))
+        (*print-array* t)
+        (*print-circle* t)
+        (*print-level* nil)
+        (*print-length* nil))
     (prin1 x stream)))
  
 (defun shoenotprettyprint (x &optional (stream *terminal-io*))
@@ -223,17 +141,17 @@ with the base Lisp system.
 
 (defun MAKE-HASHTABLE (id1)
   (let ((test (case id1
-		    ((EQ ID) #'eq)
-		    (CVEC #'equal)
-		    ((UEQUAL EQUAL) #'equal)
-		    (otherwise (error "bad arg to make-hashtable")))))
+                    ((EQ ID) #'eq)
+                    (CVEC #'equal)
+                    ((UEQUAL EQUAL) #'equal)
+                    (otherwise (error "bad arg to make-hashtable")))))
     (make-hash-table :test test)))
 
 (defun HKEYS (table)
   (let (keys)
     (maphash #'(lambda (key val) 
-		 (declare (ignore val))
-		 (push key keys)) table)
+                 (declare (ignore val))
+                 (push key keys)) table)
     keys))
 
 
@@ -264,9 +182,9 @@ with the base Lisp system.
 (defun strpos (what in start dontcare)
   (setq what (string what) in (string in))
   (if dontcare (progn (setq dontcare (character dontcare))
-		      (search what in :start2 start
-			      :test #'(lambda (x y) (or (eql x dontcare)
-							(eql x y)))))
+                      (search what in :start2 start
+                              :test #'(lambda (x y) (or (eql x dontcare)
+                                                        (eql x y)))))
     (search what in :start2 start)))
  
 
@@ -275,7 +193,7 @@ with the base Lisp system.
   (if (not item)
       (position table cvec :test #'(lambda (x y) (position y x)) :start sint)
     (position table cvec :test-not #'(lambda (x y) (position y x))
-	      :start sint  )))
+              :start sint  )))
 
 (defun VEC-SETELT (vec ind val) 
   (setf (elt vec ind) val))
@@ -291,8 +209,8 @@ with the base Lisp system.
 
 (defun size (l)
   (cond ((vectorp l) (length l))
-	((consp l) (list-length l))
-	(t 0)))
+        ((consp l) (list-length l))
+        (t 0)))
 
 (defun identp (a) 
   (and (symbolp a) a))
@@ -306,12 +224,3 @@ with the base Lisp system.
 (defun |last| (x)
   (car (last x)))
 
-@
-
-
-
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}

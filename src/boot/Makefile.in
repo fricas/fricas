@@ -19,7 +19,7 @@ boot_sources = ptyout.boot btincl2.boot \
 boot_clisp = $(boot_sources:.boot=.clisp)
 boot_data = $(boot_sources:.boot=.data)
 boot_fn = $(boot_sources:.boot=.fn)
-boot_cached_clisp = $(boot_sources:.boot=.clisp)
+boot_lib = $(boot_sources:.boot=.lib)
 
 LISPSYS= $(axiom_build_bindir)/lisp
 
@@ -28,7 +28,7 @@ COMPILE_LISP = \
 
 BOOT_TO_LISP = \
 	$(axiom_build_document) --tag=boot --mode=translate \
-	--use=./prev-stage/bootsys $<
+	--use=./prev-stage/bootsys --output=$@ $<
 
 BOOTSYS_EXE_TARGETS = stage0/bootsys$(EXEEXT) stage1/bootsys$(EXEEXT) \
                       stage2/bootsys$(EXEEXT)
@@ -62,11 +62,8 @@ stage0/stamp_bootsys:
 
 $(stage0_boot_objects): $(AXIOM_LOCAL_LISP)
 
-stage0/%.$(LISPOBJEXT): stage0/%.clisp
+stage0/%.$(LISPOBJEXT): $(srcdir)/compiled/%.clisp
 	$(COMPILE_LISP)  --use=$(AXIOM_LOCAL_LISP) $<
-
-stage0/%.clisp: $(srcdir)/%.boot.pamphlet
-	$(axiom_build_document) --tangle=$*.clisp --output=$@ $<
 
 stage1/stamp_bootsys: stage0/stamp_bootsys
 	@echo Building stage 1
@@ -76,15 +73,15 @@ stage1/stamp_bootsys: stage0/stamp_bootsys
 	-rm -f $(addprefix stage1/, $(boot_clisp))
 	mv $(boot_objects) stage1
 	mv $(boot_clisp) stage1
-	-mv $(boot_data) $(boot_fn) stage1
+	-mv $(boot_data) $(boot_fn) $(boot_lib) stage1
 	-rm -rf prev-stage
 	$(LN_S) stage1 prev-stage
 	touch $@
 
 ifeq ($(lisp_flavor),gcl)
 
-$(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_source)
-	echo '(load "$(AXIOM_LOCAL_LISP_source)")' \
+$(AXIOM_LOCAL_LISP): $(srcdir)/$(AXIOM_LOCAL_LISP_source)
+	echo '(load "$(srcdir)/$(AXIOM_LOCAL_LISP_source)")' \
 	     '(in-package "FRICAS-LISP")' \
 	     '(save-core "$@")' | $(LISPSYS)
 
@@ -99,7 +96,7 @@ $(axiom_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP)
 
 else
 
-$(AXIOM_LOCAL_LISP_object): %.$(LISPOBJEXT): %.lisp
+$(AXIOM_LOCAL_LISP_object): %.$(LISPOBJEXT): $(srcdir)/%.lisp
 	$(COMPILE_LISP) --use=$(LISPSYS) $<
 
 $(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_object)
@@ -127,31 +124,18 @@ endif
 $(boot_objects): %.$(LISPOBJEXT): %.clisp
 	$(COMPILE_LISP) --use=$(AXIOM_LOCAL_LISP) $<
 
-%.clisp: %.boot
+%.clisp: $(srcdir)/%.boot
 	$(BOOT_TO_LISP)
 
-.PRECIOUS: %.boot
-%.boot: $(srcdir)/%.boot.pamphlet
-	$(axiom_build_document) --tangle $< 
-.PRECIOUS: %.boot
-
-%.boot: $(srcdir)/%.boot.pamphlet
-	$(axiom_build_document) --tangle $<
-.PRECIOUS: %.lisp
-
-initial-env.lisp: $(srcdir)/initial-env.lisp.pamphlet
-	$(axiom_build_document) --tangle $<
-
 mostlyclean-local:
-	@rm -f $(AXIOM_LOCAL_LISP)
-	@rm -f $(BOOTSYS_FOR_TARGET)
-	@rm -rf prev-stage
-	@rm -rf stage0 stage1 stage2
-	@rm -f *.data *.fn
-	@rm -f stamp
+	rm -f $(AXIOM_LOCAL_LISP)
+	rm -f $(BOOTSYS_FOR_TARGET)
+	rm -rf prev-stage
+	rm -rf stage0 stage1 stage2
+	rm -f $(boot_clisp) $(boot_objects) $(AXIOM_LOCAL_LISP_object)
+	rm -f *.data *.fn *.lib
+	rm -f stamp
 
 clean-local: mostlyclean-local
-	@rm -f $(boot_sources)
-	@rm -f *.lisp
 
 distclean-local: clean-local
