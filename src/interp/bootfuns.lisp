@@ -127,7 +127,6 @@
 (def-boot-val |$DoubleQuote| "\""                   "???")
 (def-boot-val |$DummyFunctorNames|
           '(|Boolean| |Mapping|)                "???")
-(def-boot-var |$eltIfNil|                           "SpecialFunctions>PSpad.boot")
 (def-boot-val |$EmptyEnvironment| '((NIL))          "???")
 (def-boot-val |$EmptyList| ()                       "???")
 (def-boot-val |$EmptyMode| '|$EmptyMode|    "compiler constant")

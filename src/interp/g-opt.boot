@@ -201,8 +201,13 @@ optSpecialCall(x,y,n) ==
     rplac(rest x,CDAR x)
     rplac(first x,fn)
     if fn is ["XLAM",:.] then x:=first optimize [x]
-    x is ["EQUAL",:args] => RPLACW(x,DEF_-EQUAL args)
+    x is ["EQUAL",:args] => 
                 --DEF-EQUAL is really an optimiser
+                -- RPLACW(x,DEF_-EQUAL args)
+                z := DEF_-EQUAL args
+                RPLACA(x, CAR z)
+                RPLACD(x, CDR z)
+                x
     x
   [fn,:a]:= first x
   RPLAC(first x,"SPADCALL")

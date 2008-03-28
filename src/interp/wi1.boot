@@ -164,8 +164,6 @@ compDefineLisplib(df,m,e,prefix,fal,fn) ==
   res
 
 compTopLevel(x,m,e) ==
---+ signals that target is derived from lhs-- see NRTmakeSlot1Info
-  $NRTderivedTargetIfTrue: local := false
   $killOptimizeIfTrue: local:= false
   $forceAdd: local:= false
   $compTimeSum: local := 0
@@ -962,7 +960,6 @@ comp3(x,m,$e) ==
   ^x or atom x => compAtom(x,m,e)
   op:= first x
   getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
-  op is ["KAPPA",sig,varlist,body] => compApply(sig,varlist,body,rest x,m,e)
   op=":" => compColon(x,m,e)
   op="::" => compCoerce(x,m,e)
   not ($insideCompTypeOf=true) and stringPrefix?('"TypeOf",PNAME op) =>

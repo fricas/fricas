@@ -1770,20 +1770,6 @@ appsub(u, x, y, d) ==
   temparg3 := APP(CADR u, x, y, d)
   appagg(CDDR u, temparg1, temparg2, temparg3)
 
-starstarcond(l, iforwhen) ==
-    null l => l
-    EQ((a := CAAR l), 1) =>
-       LIST('CONCAT, CADR first l, '" OTHERWISE")
-    EQCAR(a, 'COMPARG) =>
-      starstarcond(CONS(transcomparg(CADR a),  rest l), iforwhen)
-    null rest l =>
-      LIST('CONCAT, CADR first l,
-           LIST('CONCAT, iforwhen, CAAR l))
-    true => LIST('VCONCAT,
-                 starstarcond(CONS(first l, nil), iforwhen),
-                 LIST('VCONCAT, '"  ",
-                      starstarcond(rest l, iforwhen)))
-
 eq0(u) == 0
 
 height(u) ==
@@ -2274,26 +2260,6 @@ superSubSuper u ==
 
 suScWidth u ==
   WIDTH u.1 + aggwidth CDDR u
-
-transcomparg(x) ==
-  y := first x
-  args := first _*NTH(STANDARGLIST, 1 + LENGTH y)
-  repeat
-    if true then
-       null y => return(nil)
-       (atom first y) and member(first y, FRLIS_*) =>
-            conds := CONS(LIST('EQUAL1, first args, first y), conds)
-            y := SUBST(first args, first y, y)
-            x := SUBST(first args, first y, x)
-       (first y = first args) => nil
-       true => conds := CONS(LIST('EQUAL1, first args, first y), conds)
-    y := rest y
-    args := rest args
-  conds :=
-       null conds => rest CADR x
-       ANDSIMP(CONS('AND, APPEND(REVERSEWOC conds,
-                                         LIST(rest CADR x) ) ) )
-  LIST((conds => conds; true => 1), CADR rest x)
 
 vconcatapp(u, x, y, d) ==
   w := vConcatWidth u

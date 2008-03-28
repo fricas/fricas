@@ -53,7 +53,6 @@
 (setq |$spadTightList| '(\.\. \# \'  \:\  \: \:\:))
 
 (setq |$PerCentVariableList| '(%1 %2 %3 %4 %5 %6 %7 %8 %9 %10))
-(makeprop '_^ '|parseTran| '|parseNot|)
 
 (mapcar #'(lambda (X) (MAKEPROP (CAR X) 'SPECIAL (CADR X)))
         '((PART |compPART|)

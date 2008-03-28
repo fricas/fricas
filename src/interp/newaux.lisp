@@ -112,7 +112,7 @@
           (== DEF 122 121)
           (==\> MDEF 122 121)
           (\| 108 111)                          ;was 190 190
-          (\:- LETD 125 124) (\:= LET 125 124)))
+          #|(\:- LETD 125 124)|# (\:= LET 125 124)))
  
 (mapcar #'(LAMBDA (J) (MAKENEWOP J `|Nud|))
         '((|for| 130 350 (|PARSE-Loop|))

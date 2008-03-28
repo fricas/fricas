@@ -396,12 +396,12 @@ compImport(["import",:doms],m,e) ==
 mkUnion(a,b) ==
   b="$" and $Rep is ["Union",:l] => b
   a is ["Union",:l] =>
-    b is ["Union",:l'] => ["Union",:setUnion(l,l')]
+    b is ["Union",:l'] => ["Union",:union(l,l')]
     member(b, l) => a
-    ["Union",:setUnion([b],l)]
+    ["Union",:union([b],l)]
   b is ["Union",:l] => 
     member(a, l) => b
-    ["Union",:setUnion([a],l)]
+    ["Union",:union([a],l)]
   STRINGP a => ["Union",b,a]
   ["Union",a,b]
 

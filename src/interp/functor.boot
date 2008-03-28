@@ -630,19 +630,3 @@ resolvePatternVars(p,args) ==
   p := SUBLISLIS(args, $TriangleVariableList, p)
   SUBLISLIS(args, $FormalMapVariableList, p)
 
---resolvePatternVars(p,args) ==
---  atom p =>
---    isSharpVarWithNum p => args.(position(p,$FormalMapVariableList))
---    p
---  [resolvePatternVars(CAR p,args),:resolvePatternVars(CDR p,args)]
- 
--- Mysterious JENKS definition follows:
---DescendCodeVarAdd(base,flag) ==
---  baseops := [(u:=LASSOC([base,:SUBST(base,'$,types)],
---                    get(op,'modemap,$e))) and [sig,:u]
---                       for (sig := [op,types]) in $CheckVectorList]
---  $CheckVectorList := [sig for sig in $CheckVectorList
---                           for op in baseops | null op]
---  [SetFunctionSlots(sig,implem,flag,'adding)
---                   for u in baseops | u is [sig,[pred,implem]]]
- 

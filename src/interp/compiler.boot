@@ -31,8 +31,6 @@
 
 
 compTopLevel(x,m,e) ==
---+ signals that target is derived from lhs-- see NRTmakeSlot1Info
-  $NRTderivedTargetIfTrue: local := false
   $killOptimizeIfTrue: local:= false
   $forceAdd: local:= false
   $compTimeSum: local := 0
@@ -124,9 +122,6 @@ comp3(x,m,$e) ==
   ^x or atom x => compAtom(x,m,e)
   op:= first x
   getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
-  op is ["KAPPA",sig,varlist,body] =>
-     BREAK()
-     compApply(sig,varlist,body,rest x,m,e)
   op=":" => compColon(x,m,e)
   op="::" => compCoerce(x,m,e)
   not ($insideCompTypeOf=true) and stringPrefix?('"TypeOf",PNAME op) =>
@@ -313,9 +308,9 @@ convert(T,m) ==
 mkUnion(a,b) ==
   b="$" and $Rep is ["Union",:l] => b
   a is ["Union",:l] =>
-    b is ["Union",:l'] => ["Union",:setUnion(l,l')]
-    ["Union",:setUnion([b],l)]
-  b is ["Union",:l] => ["Union",:setUnion([a],l)]
+    b is ["Union",:l'] => ["Union",:union(l,l')]
+    ["Union",:union([b],l)]
+  b is ["Union",:l] => ["Union",:union([a],l)]
   ["Union",a,b]
 
 maxSuperType(m,e) ==

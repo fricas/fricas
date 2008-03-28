@@ -170,7 +170,8 @@
  
 (defmacro SPADLET (A B)
   (if (ATOM A) `(SETQ ,A ,B)
-     `(OR (IS ,B ,A) (LET_ERROR ,(MK_LEFORM A) ,(MKQ B) ))))
+      (BREAK)))
+;;;     `(OR (IS ,B ,A) (LET_ERROR ,(MK_LEFORM A) ,(MKQ B) ))))
  
 (defmacro RPLAC (&rest L)
   (if (EQCAR (CAR L) 'ELT)
@@ -894,10 +895,6 @@ LP  (COND ((NULL X)
   (COND ((ATOM L) L)
         ((EQL (CDR L) TL) (RPLACD L NIL))
         ((TRUNCLIST-1 (CDR L) TL))))
- 
-; 15.3 Alteration of List Structure
- 
-(defun RPLACW (x w) (let (y z) (dsetq (Y . Z) w) (RPLACA X Y) (RPLACD X Z)  X))
  
 ; 15.4 Substitution of Expressions
  

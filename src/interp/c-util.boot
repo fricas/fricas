@@ -158,8 +158,8 @@ intersectionContour(c,c') ==
     computeIntersection(c,c') ==
       varlist:= REMDUP ASSOCLEFT c
       varlist':= REMDUP ASSOCLEFT c'
-      interVars:= setIntersection(varlist,varlist')
-      unionVars:= setUnion(varlist,varlist')
+      interVars:= intersection(varlist,varlist')
+      unionVars:= union(varlist,varlist')
       diffVars:= setDifference(unionVars,interVars)
       modeAssoc:= buildModeAssoc(diffVars,c,c')
       [:modeAssoc,:

@@ -541,7 +541,7 @@ JoinInner(l,$e) ==
           AddPredicate(op is [sig,oldpred,:implem],newpred) ==
             newpred=true => op
             oldpred=true => [sig,newpred,:implem]
-            [sig,mkpf([oldpred,newpred],"and"),:implem]
+            [sig,MKPF([oldpred,newpred],"and"),:implem]
   FundamentalAncestors:= [x for x in FundamentalAncestors | rest x]
                --strip out the pointer to Principal Ancestor
   c:= first $NewCatVec.4

@@ -48,17 +48,6 @@ transImplementation(op,map,fn) ==
   fn is ["XLAM",:.] => [fn]
   ["call",fn]
 
-compApply(sig,varl,body,argl,m,e) ==
-  BREAK()
-  argTl:= [[.,.,e]:= comp(x,$EmptyMode,e) for x in argl]
-  contour:=
-    [Pair(x,[["mode",m'],["value",removeEnv comp(a,m',e)]])
-      for x in varl for m' in sig.source for a in argl]
-  code:= [["LAMBDA",varl,body'],:[T.expr for T in argTl]]
-  m':= resolve(m,sig.target)
-  body':= (comp(body,m',addContour(contour,e))).expr
-  [code,m',e]
-
 compToApply(op,argl,m,e) ==
   T:= compNoStacking(op,$EmptyMode,e) or return nil
   m1:= T.mode

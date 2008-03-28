@@ -152,8 +152,6 @@ parseLET [x,y] ==
   opOf x = 'cons => ['LET,transIs p.1,p.2]
   p
  
-parseLETD [x,y] == ['LETD,parseTran x,parseTran parseType y]
- 
 parseColon u ==
   u is [x] => [":",parseTran x]
   u is [x,typ] =>
@@ -282,18 +280,11 @@ parseCases [expr,ifClause] ==
       postError ['"   CASES format error: cases ",x," of ",ifExpr]
  
 parseCategory x ==
-  l:= parseTranList parseDropAssertions x
+  l:= parseTranList x
   key:=
     CONTAINED("$",l) => "domain"
     'package
   ['CATEGORY,key,:l]
- 
-parseDropAssertions x ==
---note: the COPY of this list is necessary-- do not replace by RPLACing version
-  x is [y,:r] =>
-    y is ['IF,'asserted,:.] => parseDropAssertions r
-    [y,:parseDropAssertions r]
-  x
  
 parseGreaterThan [x,y] ==
   [substitute("<",">",$op),parseTran y,parseTran x]
@@ -332,12 +323,6 @@ parseOr u ==
 parseNot u ==
   $InteractiveMode => ['not,parseTran first u]
   parseTran ['IF,first u,:'(false true)]
- 
-parseEquivalence [a,b] == parseIf [a,b,parseIf [b,:'(false true)]]
- 
-parseImplies [a,b] == parseIf [a,b,'true]
- 
-parseExclusiveOr [a,b] == parseIf [a,parseIf [b,:'(false true)],b]
  
 parseExit [a,:b] ==
   --  note: I wanted to convert 1s to 0s here to facilitate indexing in
@@ -464,5 +449,3 @@ transCategoryItem x ==
       rhs:= first m
     LIST ['SIGNATURE,op,[rhs,:SUBLIS($transCategoryAssoc,argl)],:extra]
   LIST x
- 
-parseVCONS l == ["VECTOR",:parseTranList l]

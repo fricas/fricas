@@ -499,7 +499,6 @@ NRTmakeSlot1Info() ==
 -- a:T == b add c  --- slot1 directory has #s for entries defined in c
 -- a:T == b        --- slot1 has all slot #s = NIL (see compFunctorBody)
 -- a == b add c    --- not allowed (line 7 of getTargetFromRhs)
--- a == b          --- $NRTderivedTargetIfTrue = true; set directory to NIL
   pairlis :=
     $insideCategoryPackageIfTrue = true =>
       [:argl,dollarName] := rest $form
@@ -507,7 +506,6 @@ NRTmakeSlot1Info() ==
     mkSlot1sublis rest $form
   $lisplibOpAlist := transformOperationAlist SUBLIS(pairlis,$domainShell.1)
   opList :=
-    $NRTderivedTargetIfTrue => 'derived
     $insideCategoryPackageIfTrue = true => slot1Filter $lisplibOpAlist
     $lisplibOpAlist
   addList := SUBLIS(pairlis,$NRTaddForm)

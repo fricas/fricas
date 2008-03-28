@@ -688,7 +688,7 @@ compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
       argDepAlist:=
         [[x,:dependencies] for [x,:y] in argSigAlist] where
           dependencies() ==
-            setUnion(listOfIdentifiersIn y,
+            union(listOfIdentifiersIn y,
               delete(x,listOfIdentifiersIn LASSOC(x,$predAlist)))
           argSigAlist:= [:$sigAlist,:pairList(argList,sigList)]
  
@@ -715,7 +715,7 @@ orderByDependency(vl,dl) ==
   fatalError => userError '"Parameter specification error"
   until (null vl) repeat
     newl:=
-      [v for v in vl for d in dl | null setIntersection(d,vl)] or return nil
+      [v for v in vl for d in dl | null intersection(d,vl)] or return nil
     orderedVarList:= [:newl,:orderedVarList]
     vl':= setDifference(vl,newl)
     dl':= [setDifference(d,newl) for x in vl for d in dl | member(x,vl')]

@@ -1035,6 +1035,8 @@
 ; 19.1 Creating
 
 (defun MSUBST (new old tree) (subst new old tree :test #'equal))
+(define-function '|substitute| #'MSUBST)
+
 ; note subst isn't guaranteed to copy
 (defun |nsubst| (new old tree) (nsubst new old tree :test #'equal))
 (define-function 'MSUBSTQ #'subst) ;default test is eql

@@ -204,7 +204,7 @@ freeOfSharpVars x ==
 
 listOfSharpVars x ==
   atom x => (isSharpVarWithNum x => LIST x; nil)
-  setUnion(listOfSharpVars first x,listOfSharpVars rest x)
+  union(listOfSharpVars first x,listOfSharpVars rest x)
 
 listOfPatternIds x ==
   isPatternVar x => [x]

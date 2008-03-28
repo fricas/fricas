@@ -86,8 +86,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
    (\| " \| ")
    (+ " + ")
    (- " - ")
-   (MEMBER " in ")
-   (NMEMBER " nin ")
    (WHERE " WHERE ")
    (AT " AT ")
    (MAX " MAX ")
@@ -266,26 +264,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 
 ;; following was in INIT LISP
 
-(REPEAT (IN X '(
-  |Polynomial| |UnivariatePoly| |SquareMatrix| |QuotientField|
-  )) (MAKEPROP X '|status|
-     (INTERNL (STRCONC "status" (STRINGIMAGE X))) ))
-
-(REPEAT (IN X '(
-  |UnivariatePoly| |Matrix| |QuotientField|
-  )) (MAKEPROP X '|dataCoerce|
-     (INTERNL (STRCONC "coerce" (STRINGIMAGE X))) ))
-
-(REPEAT (IN X '(
-  (|Integer| . (INTEGERP |#1|))
-  ;; (|Float| . (FLOATP |#1|))
-  (|DoubleFloat| . (FLOATP |#1|))
-  ;; (|Symbol| . (IDENTP |#1|))
-  ;;(|Boolean| . (BOOLEANP |#1|))  worthless predicate is always true
-  (|String| . (STRINGP |#1|))
-  (|PrimitiveSymbol| . (IDENTP |#1|))
-  )) (MAKEPROP (CAR X) '|BasicPredicate| (CDR X)))
-
 (MAKEPROP '|Integer| '|Subsets|
   '((|PositiveInteger| . (|>| * 0))
     (|NonNegativeInteger| . (|>=| * 0))
@@ -330,11 +308,9 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (CATEGORY |parseCategory|)
   (|construct| |parseConstruct|)
   (DEF |parseDEF|)
-  (|eqv| |parseEquivalence|)
   (|exit| |parseExit|)
   (|has| |parseHas|)
   (IF |parseIf|)
-  (|implies| |parseImplies|)
   (IN |parseIn|)
   (INBY |parseInBy|)
   (|is| |parseIs|)
@@ -342,7 +318,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|Join| |parseJoin|)
   (|leave| |parseLeave|)
   (LET |parseLET|)
-  (LETD |parseLETD|)
   (MDEF |parseMDEF|)
   (|not| |parseNot|)
   (|or| |parseOr|)
@@ -350,17 +325,13 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|return| |parseReturn|)
   (SEGMENT |parseSegment|)
   (SEQ |parseSeq|)
-  (VCONS |parseVCONS|)
   (|where| |parseWhere|)
-  (|xor| |parseExclusiveOr|)
 )) (MAKEPROP (CAR X) '|parseTran| (CADR X)))
 
 (REPEAT (IN X '(
   (|with| |postWith|)
-  (|Scripts| |postScripts|)
   (/ |postSlash|)
   (|construct| |postConstruct|)
-  (|Block| |postBlock|)
   (QUOTE |postQUOTE|)
   (COLLECT |postCollect|)
   (|:BF:| |postBigFloat|)
@@ -381,7 +352,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|Join| |postJoin|)
   (|Signature| |postSignature|)
   (CATEGORY |postCategory|)
-;;(      |postDef|)
   (== |postDef|)
   (|==>| |postMDef|)
   (|->| |postMapping|)
@@ -406,11 +376,11 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|exit| EXIT)
   (|false| NIL)
   (|first| CAR)
+  (|function| FUNCTION)
   (|genvar| GENVAR)
   (|in| |member|)
   (|is| IS)
   (|list| LIST)
-  (|mkpf| MKPF)
   (|nconc| NCONC)
   (|nil| NIL)
   (|not| NULL)
@@ -419,17 +389,12 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|null| NULL)
   (|or| OR)
   (|otherwise| 'T)
-  (|removeDuplicates| REMDUP)
   (|rest| CDR)
   (|return| RETURN)
   (|reverse| REVERSE)
   (|setDifference| SETDIFFERENCE)
-  (|setIntersection| |intersection|)
   (|setPart| SETELT)
-  (|setUnion| |union|)
   (|size| SIZE)
-  (|strconc| STRCONC)
-  (|substitute| MSUBST)
   (SUBST MSUBST)
   (|take| TAKE)
   (|true| 'T)

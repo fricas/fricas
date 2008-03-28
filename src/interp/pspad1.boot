@@ -75,7 +75,6 @@ $renameAlist := '(
 lisp2Boot x ==
                   --entry function
   $fieldNames := nil
-  $eltIfNil: local --changes NEW META to generate ELTs for infix dot
   $pilesAreOkHere: local:= true
   $commentsToPrint: local:= nil
   $lineBuffer: local := nil

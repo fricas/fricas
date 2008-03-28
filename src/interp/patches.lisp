@@ -232,9 +232,6 @@
   (cacheKeyedMsg |$defaultMsgDatabaseName|))
  (gethash key *msghash*))
 
-#+:AKCL (proclaim '(ftype (function (t) t) identity))
-#+:AKCL (defun identity (x) x)
-
 (setq identity #'identity) ;to make LispVM code for handling constants to work
 
 (|initializeTimedNames| |$interpreterTimedNames| |$interpreterTimedClasses|)

@@ -67,15 +67,6 @@
 
 (defun COMP (L) (MAPCAR #'COMP-2 (MAPCAN #'COMP-1 L)))
 
-;;(defun |compQuietly| (L)
-;;  (let (U CUROUTSTREAM)
-;;    (declare (special CUROUTSTREAM))
-;;    (ADDOPTIONS 'LISTING NULLOUTSTREAM)                     
-;;    (SETQ CUROUTSTREAM NULLOUTSTREAM)                       
-;;    (setq U (COMP L))
-;;    (setq OPTIONLIST (CDDR OPTIONLIST))
-;;    U))
-
 (defun comp_quietly_using_driver (driver fn)
   (let ((*comp370-apply*
          (if |$InteractiveMode|
@@ -137,18 +128,6 @@
   (|dropInputLibrary| lib)
    (setq input-libraries (cons (open-library lib) input-libraries)) )
 
-
-
-;;(defun |compileQuietly| (L) (PROG (U CUROUTSTREAM)
-;;  ;; calls lisp system COMPILE or DEFINE                  
-;;  (ADDOPTIONS 'QUIET 'T)                                  
-;;  (ADDOPTIONS 'LISTING NULLOUTSTREAM)                     
-;;  (SETQ CUROUTSTREAM NULLOUTSTREAM)                       
-;;  (SETQ U (COND                                           
-;;    (|$compileDontDefineFunctions| (COMPILE L))           
-;;    ('T (DEFINE L))))                                     
-;;  (SETQ OPTIONLIST (CDDR OPTIONLIST))                     
-;;  (RETURN U)   ))                                       
 
 (defun |compileQuietly| (fn)
     (comp_quietly_using_driver #'COMP370 fn))

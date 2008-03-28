@@ -277,7 +277,6 @@ postOp x ==
   x=":=" =>
     $BOOT => 'SPADLET
     'LET
-  x=":-" => 'LETD
   x='Attribute => 'ATTRIBUTE
   x
 
@@ -403,7 +402,7 @@ postTuple u ==
 
 postWhere ["where",a,b] ==
   x:=
-    b is ['Block,:c] => c
+    b is ['Block,:c] => BREAK() 
     LIST b
   ["where",postTran a,:postTranList x]
 
@@ -414,6 +413,7 @@ postWith ["with",a] ==
   a is ['PROGN,:b] => ['CATEGORY,:b]
   a
 
+-- should set $topOp
 postTransformCheck x ==
   $defOp: local:= nil
   postcheck x
@@ -421,7 +421,8 @@ postTransformCheck x ==
 postcheck x ==
   atom x => nil
   x is ['DEF,form,[target,:.],:.] =>
-    (setDefOp form; postcheckTarget target; postcheck rest rest x)
+    setDefOp form
+    nil
   x is ['QUOTE,:.] => nil
   postcheck first x
   postcheck rest x
@@ -430,14 +431,6 @@ setDefOp f ==
   if f is [":",g,:.] then f := g
   f := (atom f => f; first f)
   if $topOp then $defOp:= f else $topOp:= f
-
-postcheckTarget x ==
-  -- doesn't seem that useful!
-  isPackageType x => nil
-  x is ['Join,:.] => nil
-  NIL
-
-isPackageType x == not CONTAINED("$",x)
 
 unTuple x ==
   x is ['Tuple,:y] => y

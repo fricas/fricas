@@ -76,9 +76,6 @@ substDomainArgs(domain,object) ==
 --       Lookup Function in Slot 1 (via SPADCALL)
 --=======================================================
 lookupInTable(op,sig,dollar,[domain,table]) ==
-  EQ(table,'derived) => 
-    -- lookupInAddChain(op,sig,domain,dollar)
-    BREAK()
   success := false
   someMatch := false
   while not success for [sig1,:code] in LASSQ(op,table) repeat
@@ -99,18 +96,15 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
       slot := domain.loc
       EQCAR(slot,'goGet) =>
         lookupDisplay(op,sig,domain,'" !! goGet found, will ignore")
-        -- lookupInAddChain(op,sig,domain,dollar) or 'failed
         BREAK()
       NULL slot =>
         lookupDisplay(op,sig,domain,'" !! null slot entry, continuing")
-        -- lookupInAddChain(op,sig,domain,dollar) or 'failed
         BREAK()
       lookupDisplay(op,sig,domain,'" !! found in NEW table!!")
       slot
   NE(success,'failed) and success => success
   subsumptionSig and (u:= SPADCALL(op,subsumptionSig,dollar,domain.1)) => u
   someMatch => 
-    -- lookupInAddChain(op,sig,domain,dollar)
     BREAK()
   nil
 
@@ -118,20 +112,7 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
 --       Lookup Addlist (from lookupInDomainTable or lookupInDomain)
 --=======================================================
 lookupInAddChain(op,sig,addFormDomain,dollar) ==
-  addFunction:=lookupInDomain(op,sig,addFormDomain,dollar,5)
-  defaultingFunction addFunction =>
-     lookupInCategories(op,sig,addFormDomain,dollar) or addFunction
-  addFunction or lookupInCategories(op,sig,addFormDomain,dollar)
-
-
-defaultingFunction op ==
-  not(op is [.,:dom]) => false
-  not VECP dom => false
-  not (#dom > 0) => false
-  not (dom.0 is [packageName,:.]) => false
-  not IDENTP packageName => false
-  pname := PNAME packageName
-  pname.(MAXINDEX pname) = char "&"
+  BREAK()
 
 --=======================================================
 --   Lookup In Domain (from lookupInAddChain)
@@ -145,17 +126,10 @@ lookupInDomain(op,sig,addFormDomain,dollar,index) ==
   nil
 
 --=======================================================
---       Category Default Lookup (from goGet or lookupInAddChain)
---=======================================================
-lookupInCategories(op,sig,dom,dollar) ==
-  BREAK()
-
---=======================================================
 --                       Predicates
 --=======================================================
 lookupPred(pred,dollar,domain) ==
   pred = true => true
-  pred = 'asserted => false
   pred is ['AND,:pl] or pred is ['and,:pl] =>
     and/[lookupPred(p,dollar,domain) for p in pl]
   pred is ['OR,:pl] or pred is ['or,:pl] =>

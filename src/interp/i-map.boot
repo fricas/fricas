@@ -364,7 +364,7 @@ clearDep1(x,toDoList,doneList,depList) ==
     a:= ASSQ(x,depList)
     a =>
       depList:= delete(a,depList)
-      toDoList:= setUnion(toDoList,
+      toDoList:= union(toDoList,
         setDifference(CDR a,doneList))
   toDoList is [a,:res] => clearDep1(a,res,newDone,depList)
   'done

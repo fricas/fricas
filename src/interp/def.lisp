@@ -316,48 +316,8 @@ foo defined inside of fum gets renamed as fum,foo.")
                 ('T (RETURN (LIST 'PROGN F1 F2)) )) )
         ((EQCAR FORM 'ELT) (RETURN
            (DEFTRAN (LIST 'SETELT (CADR FORM) (CADDR FORM) RHS)) )))
-   (RETURN 
-     (COND (|$useDCQnotLET| (|defLETdcq| FORM (DEFTRAN RHS)))
-           ('T            (|defLET| FORM (DEFTRAN RHS)))))))
+   (RETURN (|defLET| FORM (DEFTRAN RHS)))))
 
-(defun |defLETdcq| (FORM RHS &AUX G NAME)
-  ;; see defLET in G-BOOT BOOT
-  (COND
-    ((IDENTP FORM) (LIST 'SPADLET FORM RHS))
-    ((IDENTP RHS)
-       (LIST 'COND (LIST (DEFTRAN (LIST 'IS RHS FORM)) RHS)
-                   (LIST ''T (LIST 'LET_ERROR (LIST 'MAKESTRING
-                                                    (MK_LEFORM FORM)) RHS))))
-    ((AND (EQ (CAR RHS) 'SPADLET) (IDENTP (SETQ NAME (CADR RHS)) ))
-       (SPADLET G (GENSYM))
-       (LIST 'COND (LIST (SUBST RHS G (DEFTRAN (LIST 'IS G FORM))) NAME)
-                   (LIST ''T (LIST 'LET_ERROR (LIST 'MAKESTRING
-                                                    (MK_LEFORM FORM)) NAME))))
-    ('T (SPADLET G (GENSYM))
-       (LIST 'COND (LIST (SUBST (LIST 'SPADLET G RHS) G
-                                (DEFTRAN (LIST 'IS G FORM))) G)
-                    (LIST ''T (LIST 'LET_ERROR (LIST 'MAKESTRING
-                                                  (MK_LEFORM FORM)) G))  ) )))
-
-(defun MK_LEFORM (U)
-  (COND ((IDENTP U) (PNAME U))
-        ((STRINGP U) U)
-        ((ATOM U) (STRINGIMAGE U))
-        ((MEMBER (FIRST U) '(VCONS CONS) :test #'eq)
-         (STRCONC "(" (MK_LEFORM-CONS U) ")") )
-        ((EQ (FIRST U) 'LIST) (STRCONC "(" (MK_LEFORM (SECOND U)) ")") )
-        ((EQ (FIRST U) 'APPEND) (STRCONC "(" (MK_LEFORM-CONS U) ")") )
-        ((EQ (FIRST U) 'QUOTE) (MK_LEFORM (SECOND U)))
-        ((EQ (FIRST U) 'EQUAL) (STRCONC "=" (MK_LEFORM (SECOND U)) ))
-        ((EQ (FIRST U) 'SPADLET) (MK_LEFORM (THIRD U)))
-        ((ERRHUH))))
-
-(defun MK_LEFORM-CONS (U)
-  (COND ((ATOM U) (STRCONC ":" (MK_LEFORM U)))
-        ((EQ (FIRST U) 'APPEND)
-         (STRCONC ":" (MK_LEFORM (SECOND U)) "\," (MK_LEFORM-CONS (THIRD U)) ))
-        ((EQ (THIRD U) NIL) (MK_LEFORM (SECOND U)))
-        ((STRCONC (MK_LEFORM (SECOND U)) "\," (MK_LEFORM-CONS (THIRD U))))))
 
 (defun LET_ERROR (FORM VAL)
   (|systemError| (format nil "~S is not matched by structure ~S~%" FORM VAL)))
