@@ -22,10 +22,12 @@ BINFILES= $(axiom_target_bindir)/hypertex$(EXEEXT) \
 		${OUTLIB}/hthits$(EXEEXT) ${OUTLIB}/ex2ht$(EXEEXT)
 
 
-HEADERS = addfile.h cond.h dialog.h display.h event.h extent.h \
+HEADERS_src = addfile.h cond.h dialog.h display.h event.h extent.h \
 	group.h hterror.h hyper.h initx.h keyin.h lex.h mem.h \
 	parse.h parse-aux.h parse-paste.h parse-types.h scrollbar.h \
-	show-types.h titlebar.h token.h $(axiom_c_macros_h)
+	show-types.h titlebar.h token.h
+
+HEADERS = $(addprefix $(srcdir)/, $(HEADERS_src) $(BITMAPS)) $(axiom_c_macros_h)
 
 
 build_libdir = $(abs_top_builddir)/src/lib
@@ -43,7 +45,6 @@ hypertex_sources = addfile.c cond.c dialog.c display.c event.c extent1.c \
 		parse-paste.c parse-types.c ReadBitmap.c scrollbar.c \
 		show-types.c spadint.c titlebar.c
 
-hypertex_SOURCES = $(hypertex_sources:.c=.pamphlet)
 hypertex_objects = $(hypertex_sources:.c=.$(OBJEXT))
 hypertex_LDADD = -L$(build_libdir) -lspad @axiom_c_runtime_extra@
 hypertex_DEPENDENCIES = $(build_libdir)/libspad.a
@@ -55,29 +56,21 @@ htadd_objects = $(htadd_sources:.c=.$(OBJEXT))
 htadd_LDADD = -L$(build_libdir) -lspad @axiom_c_runtime_extra@
 htadd_DEPENDENCIES = $(build_libdir)/libspad.a
 
-htsearch_SOURCES = search.pamphlet
 
 spadbuf_sources = spadbuf.c
-spadbuf_SOURCES = $(spadbuf_sources:.c=.pamphlet)
 spadbuf_objects = $(spadbuf_sources:.c=.$(OBJEXT))
 spadbuf_LDADD = -L$(build_libdir) -lspad @axiom_c_runtime_extra@
 spadbuf_DEPENDENCIES = $(build_libdir)/libspad.a
 
 hthits_sources = hthits.c
-hthits_SOURCES = $(hthits_sources:.c=.pamphlet)
 hthits_objects = $(hthits_sources:.c=.$(OBJEXT))
 hthits_LDADD = -L$(build_libdir) -lspad
 hthits_DEPENDENCIES = $(build_libdir)/libspad.a
 
 ex2ht_sources = ex2ht.c
-ex2ht_SOURCES = $(ex2ht_sources:.c=.pamphlet)
 ex2ht_objects = $(ex2ht_sources:.c=.$(OBJEXT))
 ex2ht_LDADD = -L$(build_libdir) -lspad
 ex2ht_DEPENDENCIES = $(build_libdir)/libspad.a
-
-pamphlets = Makefile.pamphlet $(hypertex_SOURCES) $(htadd_SOURCES) \
-		$(htsearch_SOURCES) $(spadbuf_SOURCES) $(hthits_SOURCES) \
-		$(ex2ht_SOURCES)
 
 
 subdir = src/hyper/
@@ -91,7 +84,7 @@ all: all-ax
 all-ax all-hyper: stamp
 	@ echo finished $(builddir)
 
-stamp: $(HEADERS) ${BITMAPS} ${SCRIPTS} ${BINFILES} ${HYPER}/pages/ht.db  
+stamp: ${SCRIPTS} ${BINFILES} ${HYPER}/pages/ht.db  
 	-rm -f stamp
 	$(STAMP) stamp
 
@@ -116,53 +109,12 @@ clean-local: mostclean-local
 
 distclean-local: clean-local
 
-.PRECIOUS: %.h
-
-$(HEADERS): %.h: $(srcdir)/%.pamphlet
-	$(axiom_build_document) --tangle=$*.h --output=$@ $<
-
 .PRECIOUS: %.$(OBJEXT)
-.PRECIOUS: %.c
 
-%.$(OBJEXT): %.c $(HEADERS)
-	$(CC) $(CFLAGS) ${CCF} $(axiom_includes) $(AXIOM_X11_CFLAGS) -I. \
-		-c -o $@ $<
+%.$(OBJEXT): $(srcdir)/%.c $(HEADERS)
+	$(CC) $(CFLAGS) ${CCF} $(axiom_includes) $(AXIOM_X11_CFLAGS) \
+	    -I$(srcdir) -c -o $@ $<
 
-%.c: $(srcdir)/%.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
-
-
-# There are two files for each (special) character glyph, one
-# for the upper case form, and one for the lower case form.
-# For more information about hese bitmaps see 'util.ht' in the
-# section 'pages', below.
-
-mouse11.bitmap: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=mouse11.bitmap --output=$@ $< 
-
-mouse11.mask: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=mouse11.mask --output=$@ $< 
-
-sdown3d.bitmap: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=sdown3d.bitmap --output=$@ $< 
-
-sdown3dpr.bitmap: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=sdown3dpr.bitmap --output=$@ $< 
-
-sdown.bitmap: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=sdown.bitmap --output=$@ $< 
-
-sup3d.bitmap: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=sup3d.bitmap --output=$@ $< 
-
-sup3dpr.bitmap: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=sup3dpr.bitmap --output=$@ $< 
-
-sup.bitmap: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=sup.bitmap --output=$@ $< 
-
-ht_icon: $(srcdir)/bitmaps.pamphlet
-	$(axiom_build_document) --tangle=hticon --output=$@ $< 
 
 # We need to make sure that 'ht.db', the hypertex database file
 # is up to date. The file contains absolute offsets into the various
@@ -184,13 +136,13 @@ ${HYPER}/pages/ht.db: $(HTADD) $(srcdir)/pages/*.ht
 	cp -pr $(srcdir)/bitmaps ${HYPER}
 
 
-${OUTLIB}/htsearch: $(srcdir)/search.pamphlet
-	$(axiom_build_document) --tangle=htsearch --output=$@ $<
-	chmod a+x ${OUTLIB}/htsearch
+${OUTLIB}/htsearch: $(srcdir)/htsearch
+	cp $< $@
+	chmod a+x $@
 
-${OUTLIB}/presea: $(srcdir)/search.pamphlet
-	$(axiom_build_document) --tangle=presea --output=$@ $<
-	chmod a+x ${OUTLIB}/presea
+${OUTLIB}/presea: $(srcdir)/presea
+	cp $< $@
+	chmod a+x $@
 
 ${OUTLIB}/ex2ht$(EXEEXT): $(ex2ht_objects) $(ex2ht_DEPENDENCIES)
 	${CC} $(ex2ht_objects) -o $@ $(ex2ht_LDADD) $(AXIOM_X11_LDFLAGS) -lm

@@ -1,0 +1,28 @@
+#!/bin/awk -f
+BEGIN {n=0;m=0
+}
+
+{
+        a[n] = $0;
+        n=n+1;
+        j=split($0,b,"{");
+        if (j >= 2)
+          m=m+substr(b[2],1,length(b[2])-1);
+}
+
+END {
+        if (case==1)  
+                printf ("\\begin{page}{staticsearchpage}{No matches found}\n")
+        else if ( n==0 || m==0 ) 
+                printf ("\\begin{page}{staticsearchpage}{No matches found for {\\em %s}}\n",expr)
+             else 
+                printf ("\\begin{page}{staticsearchpage}{%d matches found in %d pages for {\\em %s}}\n",m,n,expr);
+        printf ("Matches\\tab{8}in Page\n");
+        printf "\\beginscroll\n";
+        printf "\\beginmenu\n";
+        for(i=0;i<n;i++) printf ("%s\n",a[i]);
+        printf "\\endmenu\n";
+        printf "\\endscroll\n";
+        printf "\\end{page}\n";
+}
+        
