@@ -1,51 +1,3 @@
-\documentclass{article}
-\usepackage{axiom}
-\begin{document}
-\title{\$SPAD/src/sman sman.c}
-\author{The Axiom Team}
-\maketitle
-\begin{abstract}
-\end{abstract}
-\eject
-\tableofcontents
-\eject
-\section{spadclient}
-<<spadclient>>=
-#define _SPADCLIENT_C
-
-#include <stdio.h>
-#include <signal.h>
-
-#include "axiom-c-macros.h"
-#include "com.h"
-#include "bsdsignal.h"
-
-#include "bsdsignal.H1"
-#include "sockio-c.H1"
-#include "spadclient.H1"
-
-Sock *sock;
-
-static void 
-inter_handler(int sig)
-{
-  send_signal(sock, SIGUSR2);
-  fflush(stderr);
-}
-
-
-int 
-main(void)
-{
-  sock = connect_to_local_server(SessionServer, InterpWindow, Forever);
-  bsdSignal(SIGINT, inter_handler,RestartSystemCalls); 
-  remote_stdio(sock);
-  return(0);
-}
-
-@
-\section{License}
-<<license>>=
 /*
 Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 All rights reserved.
@@ -79,13 +31,35 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-@
-<<*>>=
-<<license>>
-<<spadclient>>
-@ 
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}
+#define _SPADCLIENT_C
+
+#include <stdio.h>
+#include <signal.h>
+
+#include "axiom-c-macros.h"
+#include "com.h"
+#include "bsdsignal.h"
+
+#include "bsdsignal.H1"
+#include "sockio-c.H1"
+#include "spadclient.H1"
+
+Sock *sock;
+
+static void 
+inter_handler(int sig)
+{
+  send_signal(sock, SIGUSR2);
+  fflush(stderr);
+}
+
+
+int 
+main(void)
+{
+  sock = connect_to_local_server(SessionServer, InterpWindow, Forever);
+  bsdSignal(SIGINT, inter_handler,RestartSystemCalls); 
+  remote_stdio(sock);
+  return(0);
+}
+
