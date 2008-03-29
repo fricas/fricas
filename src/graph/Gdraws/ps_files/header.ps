@@ -1,0 +1,156 @@
+%!PS-Adobe-2.0
+%%DocumentFonts: Times-Roman
+%%Creator: AXIOM
+%%CreationDate: today
+%%Pages: 1
+%%processing (hard) limit: 250 pts or 500 values for the operand stack.
+%%EndComments
+
+%------------------------------- prologue -------------------------------%
+%-------------------------- support procedures --------------------------%
+
+%--------- first create user dictionary with 100 entries max ------------%
+%          (number can be changed to accomodate definitions)             %
+
+100     dict    begin           %% using 100 entries in top level dictionary
+
+/FontHeight     12 def
+
+/inch
+        {       72 mul }
+        def
+
+% yVal and hVal are necessary because the Xwindow display origin
+% is at the upper left corner, while the postscript display
+% origin is at the lower left hand corner.
+
+/yVal           %% get Y value -- make upper left corner origin
+        {       maxY exch sub  }        %% maxY is viewWindow height
+        def
+
+/hVal           %% get H value -- used for displaying title text
+        {       maxH sub abs }  %% maxH is viewWindow height+titleWindow height
+        def
+
+% loads in the font
+
+/loadFont
+        {       /Times-Roman findfont FontHeight scalefont setfont }
+        def
+
+% draws a rectangle with input operand: 
+%               height
+%               width
+% notice that this function does not "draw" or ink the rectangle.
+/drawRect
+        {       1 index 1 add 0 rlineto         %% draw first side
+                0 exch 1 add neg rlineto        %% draw second side
+                1 add neg 0 rlineto             %% draw third side
+                closepath }                     %% draw fourth side
+        def
+
+% create a rectangle with input operand in the view window: 
+%               y
+%               x
+%               height
+%               width
+% notice that this function does not "draw" or ink the rectangle.
+/rectangle
+        {       yVal moveto                     %% set currentpoint for line
+                drawRect }                      %% draws the rectangle
+        def
+
+% These are global variables that every draw procedure uses
+% THe operand should be as follows:
+%               viewWindow width
+%               viewWindow height
+%               title height
+/setDim
+        {       /maxX exch def                  %% width of display
+                /maxY exch def                  %% height of display
+                /titleH exch def                %% height of title
+                /maxH maxY titleH add def       %% height of display + title
+        } def
+
+%-------------------------- major procedures --------------------------%
+
+/title          %% draws a rectangle around the title of picture
+        {       gsave
+                newpath
+                moveto                          %% lower left of title
+                titleH 1 add 0 exch rlineto     %% draw first side
+                1 add 0 rlineto                 %% draw second side
+                1 add neg 0 exch rlineto
+                begin installGC stroke end      %% draw third side
+                grestore }
+        def
+
+/drawFrame      %% draw display frame
+        {       gsave
+                newpath
+                maxX maxY 0 0 rectangle
+                begin installGC stroke end
+                grestore }
+        def
+
+% updates the foreground color of existing graphics-context dictionary:
+%               foreground color
+%               dictionary name
+/setForeground
+        {       /FGcolor exch put }
+        def
+
+% updates the background color of existing graphics-context dictionary:
+%               background color
+%               dictionary name
+/setBackground
+        {       /BGcolor exch put }
+        def
+
+% updates the line width, line style, cap style, join style of
+% existing graphics-context dictionary:
+%               dictionary name
+%               join style
+%               cap style
+%               line width
+/setLineAttributes
+        {       begin
+                /JoinStyle exch def
+                /CapStyle  exch def
+                /LineWidth exch def
+                end }
+        def
+
+% creates a graphics context dictionary with the following information:
+%               /dictionary name
+%               foreground color
+%               background color
+%               line width
+%               cap style
+%               join style
+% this creates different graphical contexts for different drawing functions.
+/makeDict
+        {       5 dict 2 copy def begin pop %% with dict name on top of stack
+                /FGcolor   exch def     %% define drawing attributes
+                /BGcolor   exch def     %% not heavily used
+                /LineWidth exch def
+                /CapStyle  exch def
+                /JoinStyle exch def
+                end }
+        def
+
+% makes the current dictionary attributes effective
+% this function takes the values in the current dictionary to set the context
+% these are the values currently being used: foreground, cap, join, and width
+/installGC
+        {
+                FGcolor currentgray ne
+                {FGcolor setgray} if            %% foreground color
+                CapStyle currentlinecap ne
+                {CapStyle setlinecap} if        %% cap style
+                JoinStyle currentlinejoin ne
+                {JoinStyle setlinejoin} if      %% join style
+                LineWidth currentlinewidth ne
+                {LineWidth setlinewidth} if }   %% line width
+        def
+

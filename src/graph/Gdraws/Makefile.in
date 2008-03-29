@@ -21,15 +21,11 @@ DOTH=	$(axiom_src_srcdir)/graph/viewman
 # a .c file in the library subdirectory
 DOTC=	$(axiom_src_srcdir)/lib
 
-pamphlets = Gfun.c.pamphlet psFiles.pamphlet Makefile.pamphlet
-
 AXIOM_CFLAGS = ${CCF} -I${LINC} -I${GINC} -I$(srcdir) -I${HINC} \
 		$(axiom_includes) ${AXIOM_X11_CFLAGS}
 
 
 subdir = src/graph/Gdraws/
-
-pamphlets = Makefile.pamphlet Gfun.c.pamphlet psFiles.pamphlet
 
 HEADERS = ${IN}/Gdraws0.h ${LINC}/G.h     ${LINC}/Gfun.H1    \
           ${GINC}/hash.h  ${GINC}/hash.H1 ${GINC}/useproto.h \
@@ -55,15 +51,12 @@ stamp:  Gfun.$(OBJEXT) $(PSFiles)
 	@-rm -f stamp
 	$(STAMP) stamp
 
-$(PS)/%.ps: $(srcdir)/psFiles.pamphlet
-	$(axiom_build_document) --tangle=$* --output=$@ $<
-
-Gfun.c: $(srcdir)/Gfun.c.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
+$(PS)/%.ps: $(srcdir)/ps_files/%.ps
+	cp $< $@
 
 Gfun.$(OBJEXT): ${HEADERS}
 
-Gfun.$(OBJEXT): $(builddir)/Gfun.c 
+Gfun.$(OBJEXT): $(srcdir)/Gfun.c 
 	${CC} -c  $(CFLAGS) $(AXIOM_CFLAGS) -o $@ $<
 
 

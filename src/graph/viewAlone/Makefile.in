@@ -10,15 +10,10 @@ bin_PROGRAMS = viewAlone$(EXEEXT)
 
 viewAlone_sources = viewAlone.c spoonComp.c spoon2D.c
 
-viewAlone_SOURCES = $(addsuffix .pamphlet, $(viewAlone_sources))
-
 viewAlone_objects = $(viewAlone_sources:.c=.$(OBJEXT))
 
 viewAlone_LDADD = -L$(build_libdir) -lspad
 viewAlone_DEPENDENCIES = $(build_libdir)/libspad.a
-
-pamphlets = Makefile.pamphlet $(viewAlone_SOURCES)
-
 
 subdir = src/graph/viewAlone/
 
@@ -45,15 +40,11 @@ $(axiom_target_bindir)/viewAlone$(EXEEXT): $(viewAlone_objects) \
 		$(AXIOM_X11_LDFLAGS)
 
 .PRECIOUS: %.$(OBJEXT)
-.PRECIOUS: %.c
 
 %.$(OBJEXT): $(HEADERS)
 
-%.$(OBJEXT): %.c $(axiom_c_macros_h)
+%.$(OBJEXT): $(srcdir)/%.c $(axiom_c_macros_h)
 	$(CC) $(CFLAGS) $(AXIOM_CFLAGS) -c -o $@ $<
-
-%.c: $(srcdir)/%.c.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
 
 mostlyclean-local:
 

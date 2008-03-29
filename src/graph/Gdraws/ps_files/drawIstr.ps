@@ -1,0 +1,37 @@
+/psDrawIStr
+        {       gsave
+                newpath                                 %% for rectangle
+                loadFont
+
+                /window exch def                        %% get window type
+
+                %% draw bounding box with background color
+                /str exch def                           %% get text string
+                str stringwidth pop 1 sub               %% width
+                FontHeight 1 sub                        %% height
+                currentfont begin                       %% get font height
+                        FontBBox
+                end
+                /ypos exch def pop                      %% define ypos
+                neg ypos add /offset exch def pop
+                /offset ypos offset div FontHeight mul def %% define offset
+                /h exch def /w exch def                 %% define h
+                /y0 exch def                            %% define y0
+                /x0 exch def                            %% define x0
+                w h x0 y0 offset sub
+                window (title) eq
+                {hVal moveto drawRect}                 %% draws in title window
+                {rectangle} ifelse                     %% draws in view window
+                begin
+                BGcolor setgray fill    %% set background box color
+
+                x0 y0
+                window (title) eq 
+                {hVal}                                  %% print title text
+                {yVal} ifelse                           %% print window text
+                moveto str 
+                FGcolor setgray show                    %% set text color
+                end
+                grestore }
+        def
+

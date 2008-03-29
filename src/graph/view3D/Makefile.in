@@ -21,8 +21,6 @@ view3D_sources = buttons3d.c closeView3d.c component3d.c control3d.c \
 		spadAction3d.c	stuff3d.c surface3d.c transform3d.c \
 		viewport3d.c volume3d.c write3d.c
 
-view3D_SOURCES = $(addsuffix .pamphlet, $(view3D_sources))
-
 view3D_objects = $(addprefix $(builddir)/, $(view3D_sources:.c=.$(OBJEXT)))
 
 Gfun_objects = ../Gdraws/Gfun.$(OBJEXT)
@@ -30,8 +28,6 @@ Gfun_objects = ../Gdraws/Gfun.$(OBJEXT)
 
 view3D_LDADD = -L$(build_libdir) -lspad
 view3D_DEPENDENCIES = $(Gfun_objects) $(build_libdir)/libspad.a
-
-pamphlets = Makefile.pamphlet $(view3D_SOURCES)
 
 
 subdir = src/graph/view3D/
@@ -58,15 +54,11 @@ $(axiom_target_libdir)/view3D$(EXEEXT): $(view3D_objects) $(view3D_DEPENDENCIES)
 		$(view3D_LDADD) $(AXIOM_X11_LDFLAGS) -lm
 
 .PRECIOUS: %.$(OBJEXT)
-.PRECIOUS: %.c
 
 %.$(OBJEXT): $(HEADERS)
 
-%.$(OBJEXT): %.c
+%.$(OBJEXT): $(srcdir)/%.c
 	$(CC) -c $(CFLAGS) $(AXIOM_CFLAGS) -o $@ $<
-
-%.c: $(srcdir)/%.c.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
 
 mostly-clean:
 

@@ -11,8 +11,6 @@ bin_PROGRAMS = view2D$(EXEEXT)
 view2D_sources = buttons2d.c control2d.c graph2d.c main2d.c pot2d.c \
 		process2d.c spadAction2d.c stuff2d.c viewport2D.c write2d.c
 
-view2D_SOURCES = $(addsuffix .pamphlet, $(view2D_sources))
-
 view2D_objects = $(view2D_sources:.c=.$(OBJEXT))
 
 Gfun_objects = ../Gdraws/Gfun.$(OBJEXT) 
@@ -22,8 +20,6 @@ view2D_LDADD = -L$(build_libdir) -lspad
 view2D_DEPENDENCIES = $(Gfun_objects) $(build_libdir)/libspad.a
 
 subdir = src/graph/view2D/
-
-pamphlets = Makefile.pamphlet $(view2D_SOURCES)
 
 AXIOM_CFLAGS  = ${CCF} ${AXIOM_X11_CFLAGS} -I${LINC} -I${GINC} -I$(srcdir) \
 			$(axiom_includes)
@@ -48,16 +44,12 @@ $(axiom_target_libdir)/view2D$(EXEEXT): $(view2D_objects) $(view2D_DEPENDENCIES)
 	${CC} $(view2D_objects) $(Gfun_objects) -o $@ \
 	    $(view2D_LDADD) $(AXIOM_X11_LDFLAGS) -lm 
 
-.PRECIOUS: %.c
 .PRECIOUS: %.$(OBJEXT)
 
 %.$(OBJEXT): $(HEADERS)
 
-%.$(OBJEXT): $(builddir)/%.c $(axiom_c_macros.h)
+%.$(OBJEXT): $(srcdir)/%.c $(axiom_c_macros.h)
 	${CC} -c $(CFLAGS) $(AXIOM_CFLAGS) -o $@ $<
-
-%.c: $(srcdir)/%.c.pamphlet
-	$(axiom_build_document) --tangle --output=$@ $<
 
 mostlyclean-local:
 
