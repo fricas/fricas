@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2008-02-09], 
+AC_INIT([FriCAS], [2008-03-29], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -107,6 +107,26 @@ AC_CHECK_PROG([AR], [ar], [ar], [AC_MSG_ERROR([program 'ar' is missing])])
 
 AC_PATH_PROG([LATEX], [latex])
 AC_CHECK_PROGS([MAKEINDEX], [makeindex])
+
+if test -z $AWK_FOR_TARGET ; then
+   AWK_FOR_TARGET=`which $AWK`
+fi
+
+AC_SUBST(AWK_FOR_TARGET)
+
+# Shell needed to run src/algebra/boot-sum.sh
+case $build in
+     *-solaris*)
+        AC_PATH_PROG([AUTO_GOOD_SHELL], [bash],
+                       [AC_MSG_ERROR([FriCAS needs bash])], [])
+        ;;
+     *)
+        # For now we assume that /bin/sh always exists
+        AUTO_GOOD_SHELL=/bin/sh
+        ;;
+esac
+
+AC_SUBST(AUTO_GOOD_SHELL)
 
 ## -------------------------
 ## -- Which noweb to use? --

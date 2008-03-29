@@ -58,6 +58,8 @@ EXEEXT = @EXEEXT@
 
 AUTOCONF = autoconf
 AWK = @AWK@
+GOOD_SHELL = @AUTO_GOOD_SHELL@
+TARGET_AWK = @AWK_FOR_TARGET@
 INSTALL = @INSTALL@
 install_sh = @install_sh@
 install_sh_DATA = $(install_sh) -c -m 644
