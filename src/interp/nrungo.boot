@@ -87,10 +87,11 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
             someMatch:=true
             false
       predIndex := QSQUOTIENT(code,8192)
-      predIndex ^= 0 and null lookupPred($predVector.predIndex,dollar,domain)
-        => false
+      predIndex ^= 0 =>
+         BREAK()
       loc := QSQUOTIENT(QSREMAINDER(code,8192),2)
       loc = 0 =>
+        BREAK()
         someMatch := true
         nil
       slot := domain.loc
@@ -109,46 +110,8 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
   nil
 
 --=======================================================
---       Lookup Addlist (from lookupInDomainTable or lookupInDomain)
---=======================================================
-lookupInAddChain(op,sig,addFormDomain,dollar) ==
-  BREAK()
-
---=======================================================
---   Lookup In Domain (from lookupInAddChain)
---=======================================================
-lookupInDomain(op,sig,addFormDomain,dollar,index) ==
-  addFormCell := addFormDomain.index =>
-    INTEGERP KAR addFormCell =>
-      or/[lookupInDomain(op,sig,addFormDomain,dollar,i) for i in addFormCell]
-    if null VECP addFormCell then addFormCell := eval addFormCell
-    lookupInDomainVector(op,sig,addFormCell,dollar)
-  nil
-
---=======================================================
 --                       Predicates
 --=======================================================
-lookupPred(pred,dollar,domain) ==
-  pred = true => true
-  pred is ['AND,:pl] or pred is ['and,:pl] =>
-    and/[lookupPred(p,dollar,domain) for p in pl]
-  pred is ['OR,:pl] or pred is ['or,:pl] =>
-    or/[lookupPred(p,dollar,domain) for p in pl]
-  pred is ['NOT,p] or pred is ['not,p] => not lookupPred(p,dollar,domain)
-  pred is ['is,dom1,dom2] => domainEqual(dom1,dom2)
-  pred is ['has,a,b] =>
-    VECP a =>
-      keyedSystemError("S2GE0016",['"lookupPred",
-        '"vector as  first argument to has"])
-    a := eval mkEvalable substDollarArgs(dollar,domain,a)
-    b := substDollarArgs(dollar,domain,b)
-    HasCategory(a,b)
-  keyedSystemError("S2NR0002",[pred])
-
-substDollarArgs(dollar,domain,object) ==
-    form := devaluate domain
-    SUBLISLIS([devaluate dollar,:rest form],
-                ["$",:$FormalMapVariableList],object)
 
 compareSig(sig,tableSig,dollar,domain) ==
   not (#sig = #tableSig) => false

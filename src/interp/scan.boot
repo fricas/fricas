@@ -69,12 +69,10 @@ lineoftoks(s)==
    $n:local:=nil
    $sz:local := nil
    $floatok:local:=true
-   if not nextline s
-   then CONS(nil,nil)
+   not nextline s => CONS(nil,nil)
+   if null scanIgnoreLine($ln,$n) -- line of spaces or starts ) or >
+   then cons(nil,$r)
    else
-     if null scanIgnoreLine($ln,$n) -- line of spaces or starts ) or >
-     then cons(nil,$r)
-     else
       toks:=[]
       a:= incPrefix?('"command",1,$ln)
       a =>

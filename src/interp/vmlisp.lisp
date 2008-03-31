@@ -369,8 +369,7 @@
 
 (defmacro setandfileq (id item)
  `(eval-when (:execute :load-toplevel) 
-   (defparameter ,id ,item)
-   (lam\,fileactq ',id (list 'defparameter ',id (list 'quote ,id)))))
+   (defparameter ,id ,item)))
 
 #-:CCL
 (defmacro setelt (vec ind val)

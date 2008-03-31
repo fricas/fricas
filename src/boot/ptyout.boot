@@ -435,66 +435,10 @@ bAddLineNumber1(:f)==
      bStreamNull f2 =>  ["nullstream"]
      cons(cons(CAR f1,CAR f2),bAddLineNumber(CDR f1,CDR f2))
  
---shoeStartsAt (sz,name,stream)==
---   bStreamNull stream => ['nullstream]
---   a:=CAAR stream
---   if #a<sz
---   then shoeStartsAt(sz,name,CDR stream)
---   else if SUBSTRING(a,0,sz)=name and (#a>sz and not shoeIdChar(a.sz))
---        then stream
---        else shoeStartsAt(sz,name,CDR stream)
- 
---FC(name,fn)==
---   $bfClamming:local:=false
---   $GenVarCounter:local := 0
---   infn:=shoeAddbootIfNec fn
---   shoeOpenInputFile(a,infn,shoeFindName(fn,name, a))
- 
---shoeFindName(fn,name,a)==
---  shoeFindAndDoSomething(FUNCTION shoeCompile,fn,name,a)
---shoeTransform1 str==
---    bNext(function shoeTreeConstruct,
---      streamTake(1, bNext(function shoePileInsert,
---           bNext(function shoeLineToks, str))))
- 
---BOOT_-DO_-SOMETHING_-TO_-DEFINITION_-FROM_-FILE(fun,fn,symbol)==
---   $bfClamming:local:=false
---   infn:=shoeAddbootIfNec NAMESTRING fn
---   name:=PNAME symbol
---   shoeOpenInputFile(a,infn,shoeFindAndDoSomething(fun,fn,name, a))
- 
---shoeFindAndDoSomething(fun,fn,name,a)==
---   if null a
---   then shoeNotFound fn
---   else
---      b:=shoeStartsAt(#name,name, shoeInclude
---                        bAddLineNumber(bRgen a,bIgen 0))
---      if bStreamNull b
---      then shoeConsole CONCAT (name,'" not found in ",fn)
---      else
---         $GenVarCounter:local := 0
---         shoeLoop(fun,shoeTransform1 b)
- 
---BOOT_-COMPILE_-DEFINITION_-FROM_-FILE(fn,symbol)==
---   BOOT_-DO_-SOMETHING_-TO_-DEFINITION_-FROM_-FILE
---         (FUNCTION shoeCompile,fn,symbol)
- 
---BOOT_-EVAL_-DEFINITION_-FROM_-FILE(fn,symbol)==
---   BOOT_-DO_-SOMETHING_-TO_-DEFINITION_-FROM_-FILE
---         (FUNCTION EVAL,fn,symbol)
- 
---BOOT_-PRINT_-DEFINITION_-FROM_-FILE(fn,symbol)==
---   BOOT_-DO_-SOMETHING_-TO_-DEFINITION_-FROM_-FILE
---         (FUNCTION REALLYPRETTYPRINT,fn,symbol)
- 
---shoeLoop(fun, s)==
---    while not bStreamNull s repeat
---         FUNCALL(fun, car s)
---         s:=cdr s
- 
 shoeAddbootIfNec s==shoeAddStringIfNec('".boot",s)
  
 shoeRemovebootIfNec s==shoeRemoveStringIfNec('".boot",s)
+
 shoeAddStringIfNec(str,s)==
        a:=STRPOS(str,s,0,nil)
        if null a
@@ -653,8 +597,8 @@ shoeXReport stream==
           for i in c repeat
              a:=CONCAT(PNAME i,'" is used in ")
              bootOutLines( SSORT GETHASH(i,$bootUsed),stream,a)
- 
---FC (name,fn)== shoeGeneralFC(function BOOT,name,fn)
+
+-------------------------------------------------------------------
  
 FBO (name,fn)== shoeGeneralFC(function BO,name,fn)
  
@@ -688,23 +632,6 @@ shoeItem (str)==
         dq:=CAR str
         cons([[CAR line for line in  shoeDQlines dq]],CDR str)
  
---shoeLines lines ==  [CAR line for line in lines]
- 
---shoeFindAndDoSomething2(fun,fn,name,a)==
---   if null a
---   then shoeNotFound fn
---   else
---      [lines,b]:=shoePackageStartsAt([],#name,name, shoeInclude
---                        bAddLineNumber(bRgen a,bIgen 0))
---      if bStreamNull b
---      then
---           shoeConsole CONCAT (name,'" not found in ",fn)
---           []
---      else
---         if null lines
---         then shoeConsole '")package not found"
---         $GenVarCounter:local := 0
---         shoeLoopPackage(fun,shoeTransform2 b,lines)
  
 shoeFindLines(fn,name,a)==
    if null a
@@ -736,11 +663,6 @@ shoePackageStartsAt (lines,sz,name,stream)==
           then [lines,stream]
           else shoePackageStartsAt(lines,sz,name,CDR stream)
  
---shoeLoopPackage(fun, s,lines)==
---    while not bStreamNull s repeat
---         FUNCALL(fun, append (reverse lines,car s))
---         s:=cdr s
---    true
 stripm (x,pk,bt)==
    ATOM x =>
              IDENTP x =>
