@@ -268,6 +268,12 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
              (RETURN (SKIP-TO-ENDIF X)))
             ((INITIAL-SUBSTRING ")endif" LINE)
              (RETURN (preparseReadLine X)))
+            ((and $BOOT 
+                  (INITIAL-SUBSTRING #|(|# ")package" LINE)
+                  (equal 
+                          (string-trim '(#\Space) (SUBSEQ LINE 9))
+                          "\"BOOT\""))
+                  (RETURN (preparseReadLine X)))
             ((INITIAL-SUBSTRING ")fin" LINE)
              (SETQ *EOF* T)
              (RETURN (CONS IND NIL)) ) )))
