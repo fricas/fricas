@@ -115,29 +115,6 @@ compFormWithModemap(form is [op,:argl],m,e,modemap) ==
         e
   convert(T,m)
 
--- This version tends to give problems with #1 and categories
--- applyMapping([op,:argl],m,e,ml) ==
---   #argl^=#ml-1 => nil
---   mappingHasCategoryTarget :=
---     isCategoryForm(first ml,e) => --is op a functor?
---       form:= [op,:argl']
---       pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
---       ml:= SUBLIS(pairlis,ml)
---       true
---     false
---   argl':=
---     [T.expr for x in argl for m' in rest ml] where
---       T() == [.,.,e]:= comp(x,m',e) or return "failed"
---   if argl'="failed" then return nil
---   mappingHasCategoryTarget => convert([form,first ml,e],m)
---   form:=
---     not member(op,$formalArgList) and ATOM op =>
---       [op',:argl',"$"] where
---         op':= INTERN STRCONC(STRINGIMAGE $prefix,";",STRINGIMAGE op)
---     ["call",["applyFun",op],:argl']
---   pairlis:= [[v,:a] for a in argl' for v in $FormalMapVariableList]
---   convert([form,SUBLIS(pairlis,first ml),e],m)
-
 applyMapping([op,:argl],m,e,ml) ==
   #argl^=#ml-1 => nil
   isCategoryForm(first ml,e) =>

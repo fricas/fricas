@@ -83,6 +83,8 @@
 ;;      (setq val (errorset ,form))
 ;;      (if (NULL val) |$numericFailure| (cons 0 (car val)))))
 
+(defparameter |$inLispVM| nil)
+
 #-(or :GCL :CCL)
 (defun spad-system-error-handler (c)
   (block nil

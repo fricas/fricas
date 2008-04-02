@@ -216,9 +216,6 @@ parseTypeEvaluateArgs(argl,argml) ==
       isCategoryForm(md,$CategoryFrame) => parseTypeEvaluate arg
       arg
  
- 
-parseTypeError(x,md,i) == throwKeyedMsg("S2IP0003",[i,$op,md])
- 
 parseHas [x,y] ==
   if $InteractiveMode then
     x:=

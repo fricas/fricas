@@ -274,14 +274,6 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
 --     e:= addNewDomain(u,e)
   e
  
---subCatParametersInto(domainForm,catForm,e) ==
---  -- JHD 08/08/84 perhaps we are fortunate that it is not used
---  --this is particularly dirty and should be cleaned up, say, by wrapping
---  -- an appropriate lambda expression around mapping forms
---  domainForm is [op,:l] and l =>
---    get(op,'modemap,e) is [[[mc,:.],:.]] => SUBLIS(PAIR(rest mc,l),catForm)
---  catForm
- 
 evalAndSub(domainName,viewName,functorForm,form,$e) ==
   $lhsOfColon: local:= domainName
   isCategory form => [substNames(domainName,viewName,functorForm,form.(1)),$e]

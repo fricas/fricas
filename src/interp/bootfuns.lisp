@@ -165,7 +165,6 @@
           '((|Boolean|) |$EmptyMode| |$NoValueMode|)
           "???")
 (def-boot-val |$InitialModemapFrame| '((NIL))       "???")
-(def-boot-var |$inLispVM|                           "Interpreter>Eval.boot")
 (def-boot-var |$insideCapsuleFunctionIfTrue|        "???")
 (def-boot-var |$insideCategoryIfTrue|               "???")
 (def-boot-var |$insideCoerceInteractiveHardIfTrue|  "???")

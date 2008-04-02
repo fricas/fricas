@@ -205,8 +205,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
         $NRTslot1Info := NRTmakeSlot1Info()
         $isOpPackageName: local := isCategoryPackageName $op
         $lisplibFunctionLocations := SUBLIS($pairlis,$functionLocations)
-        $lisplibCategoriesExtended := SUBLIS($pairlis,$lisplibCategoriesExtended)
-        -- see NRTsetVector4 for initial setting of $lisplibCategoriesExtended
         libFn := getConstructorAbbreviation op'
         $lookupFunction: local :=
             NRTgetLookupFunction($functorForm,CADAR $lisplibModemap,$NRTaddForm)

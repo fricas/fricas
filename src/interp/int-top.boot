@@ -93,7 +93,6 @@ $ncmPhase :=      NIL
 spad() ==
   -- starts the interpreter but does not read in profiles, etc.
   $PrintCompilerMessageIfTrue: local
-  $inLispVM : local := nil
   setOutputAlgebra "%initialize%"
   runspad()
   'EndOfSpad

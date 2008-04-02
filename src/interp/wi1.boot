@@ -131,7 +131,6 @@ compDefineLisplib(df,m,e,prefix,fal,fn) ==
   $op: local := op
   $lisplibAttributes: local := NIL
   $lisplibPredicates: local := NIL -- set by makePredicateBitVector
-  $lisplibCategoriesExtended: local := NIL -- this is always nil. why? (tpd)
   $lisplibForm: local := NIL
   $lisplibKind: local := NIL
   $lisplibModemap: local := NIL

@@ -265,7 +265,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $op: local := op
   $lisplibAttributes: local := NIL
   $lisplibPredicates: local := NIL -- set by makePredicateBitVector
-  $lisplibCategoriesExtended: local := NIL -- this is always nil. why? (tpd)
   $lisplibForm: local := NIL
   $lisplibKind: local := NIL
   $lisplibAbbreviation: local := NIL
@@ -284,8 +283,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   --will eventually become the "constructorCategory" property in lisplib
   --set in compDefineCategory1 if category, otherwise in finalizeLisplib
   libName := getConstructorAbbreviation op
-  BOUNDP '$compileDocumentation and $compileDocumentation =>
-     compileDocumentation libName
   sayMSG ['"   initializing ",$spadLibFT,:bright libName,
     '"for",:bright op]
   initializeLisplib libName
@@ -314,18 +311,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
      else updateCategoryFrameForConstructor op
   res
  
-compileDocumentation libName ==
-  filename := MAKE_-INPUT_-FILENAME(libName,$spadLibFT)
-  $FCOPY(filename,[libName,'DOCLB])
-  stream := RDEFIOSTREAM [['FILE,libName,'DOCLB],['MODE, :'O]]
-  lisplibWrite('"documentation",finalizeDocumentation(),stream)
---  if $lisplibRelatedDomains then 
---    lisplibWrite('"relatedDomains",$lisplibRelatedDomains,stream)
-  RSHUT(stream)
-  RPACKFILE([libName,'DOCLB])
-  $REPLACE([libName,$spadLibFT],[libName,'DOCLB])
-  ['dummy, $EmptyMode, $e]
-
 getLisplibVersion libName ==
   stream := RDEFIOSTREAM [['FILE,libName,$spadLibFT],['MODE, :'I]]
   version:= CADR rread('VERSION, stream,nil)
@@ -337,16 +322,7 @@ initializeLisplib libName ==
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib1(libName,'ERRORLIB,$libraryDirectory)
   ADDOPTIONS('FILE,$libFile)
-  $lisplibForm := nil             --defining form for lisplib
-  $lisplibModemap := nil          --modemap for constructor form
-  $lisplibKind := nil             --category, domain, or package
-  $lisplibModemapAlist := nil  --changed in "augmentLisplibModemapsFromCategory"
-  $lisplibAbbreviation := nil
-  $lisplibAncestors := nil
   $lisplibOpAlist := nil  --operations alist for new runtime system
-  $lisplibOperationAlist := nil   --old list of operations for functor/package
-  $lisplibSuperDomain:= nil
-  -- next var changed in "augmentLisplibDependents"
   $lisplibVariableAlist := nil    --this and the next are used by "luke"
   $lisplibSignatureAlist := nil
   if pathnameTypeId(_/EDITFILE) = 'SPAD

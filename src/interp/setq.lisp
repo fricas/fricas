@@ -105,7 +105,6 @@
 
 (SETQ $FUNNAME NIL)   ;; this and next used in COMP,TRAN,1
 (SETQ $FUNNAME_TAIL '(()))
-(SETQ |$inLispVM| 'T)
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
 (SETQ $OLDLINE NIL)  ;"used to output command lines"
 (SETQ |/EDIT,FT| 'SPAD)
