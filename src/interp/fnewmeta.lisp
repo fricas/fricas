@@ -377,7 +377,7 @@
   (OR (AND (|PARSE-VarForm|)
            (OPTIONAL
                (AND NONBLANK (EQ (CURRENT-SYMBOL) '|(|)
-                    (MUST (|PARSE-Primary1|))
+                    (MUST (|PARSE-Enclosure|))
                     (PUSH-REDUCTION '|PARSE-Primary1|
                         (CONS (POP-STACK-2) (CONS (POP-STACK-1) NIL))))))
       (|PARSE-Quad|) (|PARSE-String|) (|PARSE-IntegerTok|)
