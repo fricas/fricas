@@ -148,6 +148,15 @@ do_reading(void)
         putchar(_BELL);
         fflush(stdout);
         break;
+      case _CNTRL_A:
+        move_home();
+        num_proc++;
+        break;
+      case _CNTRL_E:
+        move_end();
+        num_proc++;
+        break;
+
       case _ESC:
         
         /*
@@ -204,6 +213,10 @@ do_reading(void)
           case _H:
           case 0:
             move_home();
+            num_proc += 3;
+            break;
+          case _F:
+            move_end();
             num_proc += 3;
             break;
           case _M:

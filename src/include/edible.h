@@ -58,6 +58,8 @@ extern short PTY;   /* A flag which lets me know whether or not I am
 #define	      _BELL    0X07    /***  ring the bell		      **/
 #define	      _INT     0X7F    /***  interrupt			      **/
 #define	      _SQUASH  0X03    /**   kill my process		      **/
+#define       _CNTRL_A 0X01    /**   cntrl-a, to go to line start     **/
+#define       _CNTRL_E 0X05    /**   cntrl-e, to go to line end       **/
 #define	      _CNTRL_W 0X17    /**   cntrl-w, to back up a word	      **/
 #define	      _CARROT  0X5E    /** circumflex			      **/
 #define	      _TAB     0X09    /** tab forward			      **/
@@ -67,6 +69,7 @@ extern short PTY;   /* A flag which lets me know whether or not I am
 #define	      _B       0X42    /**  B				      **/
 #define	      _C       0X43    /**  C				      **/
 #define	      _D       0X44    /**  D				      **/
+#define       _F       0X46    /**  F                                 **/
 #define	      _Z       0X5A    /**  Z				      **/
 #define	      _H       0X48    /**  H				      **/
 #define	      _M       0X4D    /**  M				      **/
