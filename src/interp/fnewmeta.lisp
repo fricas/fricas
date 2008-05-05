@@ -407,10 +407,7 @@
       (AND (FIXP (CURRENT-SYMBOL))
            (CHAR-EQ (CHAR-UPCASE (CURRENT-CHAR)) 'E)
            (|PARSE-IntegerTok|) (PUSH-REDUCTION '|PARSE-FloatBase| 0)
-           (PUSH-REDUCTION '|PARSE-FloatBase| 0))
-      (AND (DIGITP (CURRENT-CHAR)) (EQ (CURRENT-SYMBOL) '|.|)
-           (PUSH-REDUCTION '|PARSE-FloatBase| 0)
-           (|PARSE-FloatBasePart|)))) 
+           (PUSH-REDUCTION '|PARSE-FloatBase| 0)))) 
 
 
 (DEFUN |PARSE-FloatBasePart| ()
