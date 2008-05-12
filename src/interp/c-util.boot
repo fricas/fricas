@@ -216,11 +216,11 @@ addContour(c,E is [cur,:tail]) ==
               fn1(x,p,ee) ==
                 for pv in p repeat fn3(x,pv,ee) where
                  fn3(x,pv,e) ==
-                   [p,:v]:=pv;
+                   [p,:v]:=pv
                    if member(x,$getPutTrace) then
-                     pp([x,"has",pv]);
+                     pp([x,"has",pv])
                    if p="conditionalmode" then
-                     RPLACA(pv,"mode");
+                     RPLACA(pv,"mode")
                      --check for conflicts with earlier mode
                      if vv:=LASSOC("mode",e) then
                         if v ^=vv then

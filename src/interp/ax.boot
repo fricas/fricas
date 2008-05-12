@@ -239,7 +239,7 @@ axFormatOpList ops == ['Sequence,:[axFormatOp o for o in ops]]
 axOpTran(name) ==
    ATOM name =>
       name = 'elt => 'apply
-      name = 'setelt => 'set!
+      name = 'setelt => "set!"
       name = 'SEGMENT => ".."
       name = 1 => '_1
       name = 0 => '_0

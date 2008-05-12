@@ -665,7 +665,7 @@ nameLen n ==>
  +/[1+LENGTH(u) for u in n]
 
 fortFormatTypes(typeName,names) ==
-  null names => return()
+  null names => return nil
   $fortError : fluid := nil
   $fortranSegment : fluid := nil
   $fortInts2Floats : fluid := nil
@@ -713,7 +713,7 @@ fortFormatCharacterTypes(names) ==
 
 fortFormatIntrinsics(l) ==
   $fortError : fluid := nil
-  null l => return()
+  null l => return nil
   displayLines fortran2Lines ['"INTRINSIC ",:addCommas(l)]
   
  

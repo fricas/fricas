@@ -966,8 +966,8 @@ mkGrepFile s ==  --called to generate a path name for a temporary grep file
 --                     Grepping Code
 --=======================================================================
 
-grepFile(pattern,:options) ==
-  key := (x := IFCAR options => (options := rest options; x); nil)
+grepFile(pattern, key, option) ==
+  options := [option]
   source := grepSource key
   lines :=
     not PROBE_-FILE source => NIL
@@ -978,10 +978,7 @@ grepFile(pattern,:options) ==
         MEMQ('iv,options)=> '"-vi"
         '"-i"
       command := STRCONC('"grep ",casepart,'" _'",pattern,'"_' ",source)
-      obey
-        member(key,'(a o c d p x)) =>
-          STRCONC(command, '" | sed 's/~/", STRINGIMAGE key, '"/' > ", target)
-        STRCONC(command, '" > ",target)
+      obey STRCONC(command, '" > ",target)
       dbReadLines target
     ----Windows Version------
     invert? := MEMQ('iv, options)

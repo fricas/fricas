@@ -269,7 +269,7 @@ whoUsesOperation(htPage,which,key) ==  --see dbPresentOps
       sofar    := LASSOC(opsig,nopAlist)
       nopAlist := insertAlist(opsig,[name,:LASSOC(opsig,nopAlist)],nopAlist)
   usedList := nil
-  for [(pair := [op,:sig]),:namelist] in nopAlist repeat
+  for [pair := [op,:sig],:namelist] in nopAlist repeat
     ops := escapeSpecialChars STRINGIMAGE op
     usedList := [pair,:usedList]
     htSay('"Users of {\em ",ops,'": ")

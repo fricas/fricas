@@ -593,7 +593,7 @@ newString2Words l ==
   [w while newWordFrom(l,i,m) is [w,i]]
 
 newWordFrom(l,i,m) ==
-  while i <= m and l.i = " " repeat i := i + 1
+  while i <= m and l.i = $charBlank repeat i := i + 1
   i > m => NIL
   buf := '""
   ch := l.i
@@ -783,6 +783,7 @@ checkDecorate u ==
           member(x,$argl)) => [$charRbrace,x,$charLbrace,'"\spad",:acc]
       null spadflag and ((STRINGP x and not x.0 = $charBack and DIGITP(x.(MAXINDEX x))) or member(x,'("true" "false"))) =>
         [$charRbrace,x,$charLbrace,'"\spad",:acc]  --wrap x1, alpha3, etc
+      CHARP x => [checkAddBackSlashes x,:acc]
       xcount := #x
       xcount = 3 and x.1 = char 't and x.2 = char 'h =>
         ['"th",$charRbrace,x.0,$charLbrace,'"\spad",:acc]

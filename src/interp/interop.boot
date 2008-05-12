@@ -860,20 +860,6 @@ domainEqual(a,b) ==
 
 --makeConstructorsAutoLoad()
 
--- following changes should go back into xrun.boot
--- patched version from xrun.boot
---------------------> NEW DEFINITION (override in clammed.boot.pamphlet)
---------------------> NEW DEFINITION (override in xrun.boot.pamphlet)
-coerceConvertMmSelection(funName,m1,m2) ==
-  -- calls selectMms with $Coerce=NIL and tests for required
-  -- target type. funName is either 'coerce or 'convert.
-  $declaredMode : local:= NIL
-  $reportBottomUpFlag : local:= NIL
-  l := selectMms1(funName,m2,[m1],[m1],NIL)
---  mmS := [[sig,[targ,arg],:pred] for x in l | x is [sig,[.,arg],:pred] and
-  mmS := [x for x in l | x is [sig,:.] and hasCorrectTarget(m2,sig) and
-      sig is [dc,targ,oarg] and isEqualOrSubDomain(m1,oarg)]
-  mmS and CAR mmS
 
 --------------------> NEW DEFINITION (see i-funsel.boot.pamphlet)
 getFunctionFromDomain(op,dc,args) ==

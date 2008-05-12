@@ -118,6 +118,16 @@ selectMms1(op,tar,args1,args2,$Coerce) ==
 
     selectMms2(op,tar,args1,args2,$Coerce)
 
+coerceConvertMmSelection(funName,m1,m2) ==
+  -- calls selectMms with $Coerce=NIL and tests for required
+  -- target type. funName is either 'coerce or 'convert.
+  $declaredMode : local:= NIL
+  $reportBottomUpFlag : local:= NIL
+  l := selectMms1(funName,m2,[m1],[m1],NIL)
+  --  mmS := [[sig,[targ,arg],:pred] for x in l | x is [sig,[.,arg],:pred] and
+  mmS := [x for x in l | x is [sig,:.] and hasCorrectTarget(m2,sig) and
+           sig is [dc,targ,oarg] and isEqualOrSubDomain(m1,oarg)]
+  mmS and CAR mmS
 
 resolveTT(t1,t2) ==
   -- resolves two types

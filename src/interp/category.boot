@@ -164,7 +164,7 @@ SigListUnion(extra,original) ==
       not MachineLevelSubsume(QCAR e,QCAR x) =>
         --systemError '"Source level subsumption not implemented"
         original:= [e,:original]
-        return() -- this exits from the innermost for loop
+        return nil -- this exits from the innermost for loop
       original:= delete(x,original)
       [xsig,xpred,:ximplem]:= x
 --      if xsig ^= esig then   -- not quite strong enough
