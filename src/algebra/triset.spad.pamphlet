@@ -201,20 +201,20 @@ TriangularSetCategory(R:IntegralDomain,E:OrderedAbelianMonoidSup,_
      RBT ==> Record(bas:$,top:List P)
 
      ts:$ = us:$ ==
-       empty?(ts)$$ => empty?(us)$$
-       empty?(us)$$ => false
-       first(ts)::P =$P first(us)::P => rest(ts)::$ =$$ rest(us)::$
+       empty?(ts)$% => empty?(us)$%
+       empty?(us)$% => false
+       first(ts)::P =$P first(us)::P => rest(ts)::$ =$% rest(us)::$
        false
 
      infRittWu?(ts,us) ==
-       empty?(us)$$ => not empty?(ts)$$
-       empty?(ts)$$ => false
+       empty?(us)$% => not empty?(ts)$%
+       empty?(ts)$% => false
        p : P := (last(ts))::P
        q : P := (last(us))::P
        infRittWu?(p,q)$P => true
        supRittWu?(p,q)$P => false
        v : V := mvar(p)
-       infRittWu?(collectUpper(ts,v),collectUpper(us,v))$$
+       infRittWu?(collectUpper(ts,v),collectUpper(us,v))$%
 
      reduced?(p,ts,redOp?) ==
        lp : List P := members(ts)
@@ -227,11 +227,11 @@ TriangularSetCategory(R:IntegralDomain,E:OrderedAbelianMonoidSup,_
        any?(ground?,ps) => "failed"::Union(RBT,"failed")
        ps := sort(infRittWu?,ps)
        p,b : P
-       bs := empty()$$
+       bs := empty()$%
        ts : List P := []
        while not empty? ps repeat
          b := first(ps)
-         bs := extend(bs,b)$$
+         bs := extend(bs,b)$%
          ps := rest ps
          while (not empty? ps) and (not reduced?((p := first(ps)),bs,redOp?)) repeat
            ts := cons(p,ts)
@@ -253,11 +253,11 @@ TriangularSetCategory(R:IntegralDomain,E:OrderedAbelianMonoidSup,_
              bps := cons(p,bps)
        gps := sort(infRittWu?,gps)
        p,b : P
-       bs := empty()$$
+       bs := empty()$%
        ts : List P := []
        while not empty? gps repeat
          b := first(gps)
-         bs := extend(bs,b)$$
+         bs := extend(bs,b)$%
          gps := rest gps
          while (not empty? gps) and (not reduced?((p := first(gps)),bs,redOp?)) repeat
            ts := cons(p,ts)
@@ -463,7 +463,7 @@ TriangularSetCategory(R:IntegralDomain,E:OrderedAbelianMonoidSup,_
        rif::$
 
      retractIfCan(lp:List(P)) ==
-       empty? lp => (empty()$$)::Union($,"failed")
+       empty? lp => (empty()$%)::Union($,"failed")
        lp := sort(supRittWu?,lp)
        rif := retractIfCan(rest(lp))@Union($,"failed")
        not (rif case $) => error"in retractIfCan : LP -> ... from TSETCAT : bad arg"
@@ -540,9 +540,9 @@ GeneralTriangularSet(R,E,V,P) : Exports == Implementation where
      members ts ==
        rep(ts)
      map (f : PtoP, ts : $) : $ ==
-       construct(map(f,rep(ts))$LP)$$
+       construct(map(f,rep(ts))$LP)$%
      map! (f : PtoP, ts : $) : $  ==
-       construct(map!(f,rep(ts))$LP)$$
+       construct(map!(f,rep(ts))$LP)$%
      member? (p,ts) ==
        member?(p,rep(ts))$LP
 
@@ -1587,13 +1587,13 @@ WuWenTsunTriangularSet(R,E,V,P) : Exports == Implementation where
      characteristicSet(ps:LP) == characteristicSet(ps,initiallyReduced?,initiallyReduce)
 
      characteristicSerie(ps:LP,redOp?:((P,P)->B),redOp:((P,P)->P)) == 
-       a := [[ps,empty()$$]$NLpT]$ALpT
+       a := [[ps,empty()$%]$NLpT]$ALpT
        while ((esl := extractSplittingLeaf(a)) case ALpT) repeat
           ps := value(value(esl::ALpT)$ALpT)$NLpT
           charSet? := characteristicSetUsingTrace(ps,redOp?,redOp)
           if not (charSet? case $)
              then
-                setvalue!(esl::ALpT,[nil()$LP,empty()$$,true]$NLpT)
+                setvalue!(esl::ALpT,[nil()$LP,empty()$%,true]$NLpT)
                 updateStatus!(a)
              else
                 cs := (charSet?)::$
@@ -1611,9 +1611,9 @@ WuWenTsunTriangularSet(R,E,V,P) : Exports == Implementation where
                          lics := rest lics
                          newps := removeDuplicates newps
                          newps := sort(infRittWu?,newps)
-                         ln := cons([newps,empty()$$,false]$NLpT,ln)
+                         ln := cons([newps,empty()$%,false]$NLpT,ln)
                       splitNodeOf!(esl::ALpT,a,ln)
-       remove(empty()$$,conditions(a))
+       remove(empty()$%,conditions(a))
 
      characteristicSerie(ps:LP) ==  characteristicSerie (ps,initiallyReduced?,initiallyReduce)
 
@@ -1621,7 +1621,7 @@ WuWenTsunTriangularSet(R,E,V,P) : Exports == Implementation where
      then
 
        removeSquares (ts:$):Union($,"failed") ==
-         empty?(ts)$$ => ts::Union($,"failed")
+         empty?(ts)$% => ts::Union($,"failed")
          p := (first ts)::P
          rsts : Union($,"failed")
          rsts := removeSquares((rest ts)::$)

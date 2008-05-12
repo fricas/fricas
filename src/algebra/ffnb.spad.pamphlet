@@ -177,8 +177,8 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
 --  computes a**(-1) = a**((q**extDeg)-2)
 --  see reference of function expPot
     inv(a) ==
-      b:VGF:=qPot(expPot(a,(#a-1)::NNI::SI,1::SI)$$,1)$$
-      erg:VGF:=inv((a *$$ b).1 *$GF trGen)$GF *$VGF b
+      b:VGF:=qPot(expPot(a,(#a-1)::NNI::SI,1::SI)$%,1)$%
+      erg:VGF:=inv((a *$% b).1 *$GF trGen)$GF *$VGF b
 
 -- "**" decides which exponentiation algorithm will be used, in order to
 -- get the fastest computation. If dAndcExp is used, it chooses the
@@ -226,8 +226,8 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
       plist:List VGF:=[copy(a)$VGF]
       qk:I:=sizeGF**(k pretend NNI)
       for j in 2..(qk-1) repeat
-        if positiveRemainder(j,sizeGF)=0 then b:=qPot(plist.(j quo sizeGF),1)$$
-                            else b:=a *$$ last(plist)$(List VGF)
+        if positiveRemainder(j,sizeGF)=0 then b:=qPot(plist.(j quo sizeGF),1)$%
+                            else b:=a *$% last(plist)$(List VGF)
         plist:=concat(plist,b)
       l:List NNI:=nil()
       ex:I:=e
@@ -238,7 +238,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
                     else erg:VGF:=plist.(first(l))
       i:SI:=k
       for j in rest(l) repeat
-        if j^=0 then erg:=erg *$$ qPot(plist.j,i)$$
+        if j^=0 then erg:=erg *$% qPot(plist.j,i)$%
         i:=i+k
       erg
 
@@ -273,7 +273,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
       dSI:=d::SI
       r:=divide((#a)::SI,dSI)
       not(r.remainder = 0) => error "norm: 2.arg must divide extdeg"
-      expPot(a,r.quotient,dSI)$$
+      expPot(a,r.quotient,dSI)$%
 
 --  computes expPot(a,e,d) = sum form i=0 to e-1 over a**(q**id))
 --  see T.Itoh and S.Tsujii,
@@ -292,10 +292,10 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
         erg:=new(#a,inv(trGen)$GF)$VGF
         qpot:SI:=0
       for k in 1..length(e) repeat
-        y:= y *$$ qPot(y,k2)
+        y:= y *$% qPot(y,k2)
         k2:=addmod(k2,k2,deg)$SI
         if bit?(e,k) then
-          erg:=erg *$$ qPot(y,qpot)
+          erg:=erg *$% qPot(y,qpot)
           qpot:=addmod(qpot,k2,deg)$SI
       erg
 
@@ -332,7 +332,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
       gcd(xn(#x),pol(x))$(SUP GF) = 1 => true
       false
 
-    x:VGF / y:VGF == x *$$ inv(y)$$
+    x:VGF / y:VGF == x *$% inv(y)$%
 
 
     setFieldInfo(m,n) ==
@@ -349,9 +349,9 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
         for j in 1..dy repeat
           for k in 0..((dx quo dy)-1) repeat
             qsetelt_!(m,j+k*dy,i,y.j)$(M GF)
-        y:=y *$$ x
+        y:=y *$% x
       v:=first nullSpace(m)$(M GF)
-      pol(v)$$
+      pol(v)$%
 
     basis(n) ==
       bas:(V VGF):=new(n,zero(n)$VGF)$(V VGF)
@@ -365,7 +365,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
        v:=zero(n)$VGF
        qsetelt_!(v,1,1$GF)
        v
---    normalElement(n) == index(n,1)$$
+--    normalElement(n) == index(n,1)$%
 
     index(degm,n) ==
       m:I:=n rem$I (sizeGF ** degm)

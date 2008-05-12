@@ -693,15 +693,15 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        monomial(coefficient(p,v,d),v,d)
 
      reductum(p,v) ==
-       zero? (d := degree(p,v)) => 0$$
+       zero? (d := degree(p,v)) => 0$%
        p - monomial(coefficient(p,v,d),v,d)
 
      tail p ==
-       ground? p => 0$$
+       ground? p => 0$%
        p - head(p)
 
      deepestTail p ==
-       ground? p => 0$$
+       ground? p => 0$%
        ground? tail(p) => tail(p)
        mvar(p) > mvar(tail(p)) => tail(p)
        deepestTail(tail(p))
@@ -721,7 +721,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      monic? p ==
        ground? p => false
-       (recip(init(p))$$ case $)@Boolean
+       (recip(init(p))$% case $)@Boolean
 
      quasiMonic?  p ==
        ground? p => false
@@ -729,15 +729,15 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      mainMonomial p == 
        zero? p => error"Error in mainMonomial from RPOLCAT : #1 is zero"
-       ground? p => 1$$
+       ground? p => 1$%
        v := mainVariable(p)::V
-       monomial(1$$,v,degree(p,v))
+       monomial(1$%,v,degree(p,v))
 
      leastMonomial p == 
        zero? p => error"Error in leastMonomial from RPOLCAT : #1 is zero"
-       ground? p => 1$$
+       ground? p => 1$%
        v := mainVariable(p)::V
-       monomial(1$$,v,minimumDegree(p,v))
+       monomial(1$%,v,minimumDegree(p,v))
 
      mainCoefficients p == 
        zero? p => error"Error in mainCoefficients from RPOLCAT : #1 is zero"
@@ -747,10 +747,10 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      mainMonomials p == 
        zero? p => error"Error in mainMonomials from RPOLCAT : #1 is zero"
-       ground? p => [1$$]
+       ground? p => [1$%]
        v := mainVariable(p)::V
        lm := monomials(univariate(p,v)@SparseUnivariatePolynomial($))
-       [monomial(1$$,v,degree(m)) for m in lm]
+       [monomial(1$%,v,degree(m)) for m in lm]
 
      RittWuCompare (a,b) ==
        (ground? b and  ground? a) => "failed"::Union(Boolean,"failed")
@@ -799,10 +799,10 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      lazyPrem (a:$, b:$, v:V) : $ ==
        zero? b =>  error"Error in lazyPrem : ($,$,V) -> $ from RPOLCAT : #2 is zero"
-       ground?(b) => 0$$
+       ground?(b) => 0$%
        (v = mvar(b)) => lazyPrem(a,b)
        dbv : NNI := degree(b,v)
-       zero? dbv => 0$$
+       zero? dbv => 0$%
        dav : NNI  := degree(a,v)
        zero? dav => a
        test : INT := dav::INT - dbv 
@@ -836,8 +836,8 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        v := mvar(b)
        mvar(a) = v => lazyPrem(a,b)
        ia := a
-       ma := 1$$
-       ta := 0$$
+       ma := 1$%
+       ta := 0$%
        while (not ground?(ia)) and (mvar(ia) >= mvar(b)) repeat
          if (mvar(ia) = mvar(b)) and (mdeg(ia) >= mdeg(b))
            then
@@ -849,8 +849,8 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
          if zero? ia 
            then 
              ia := ta
-             ma := 1$$
-             ta := 0$$
+             ma := 1$%
+             ta := 0$%
            else
              if not ground?(ia)
                then
@@ -861,10 +861,10 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      lazyPremWithDefault (a,b) == 
        ground?(b) => error"Error in lazyPremWithDefault from RPOLCAT : #2 is constant"
-       ground?(a) => [1$$,0$NNI,a]
+       ground?(a) => [1$%,0$NNI,a]
        xa := mvar a
        xb := mvar b
-       xa < xb => [1$$,0$NNI,a]
+       xa < xb => [1$%,0$NNI,a]
        lcb : $ := init b 
        db : NNI := mdeg b
        test : INT := degree(a,xb)::INT - db
@@ -887,12 +887,12 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      lazyPremWithDefault (a,b,v) == 
        zero? b =>  error"Error in lazyPremWithDefault : ($,$,V) -> $ from RPOLCAT : #2 is zero"
-       ground?(b) => [b,1$NNI,0$$]
+       ground?(b) => [b,1$NNI,0$%]
        (v = mvar(b)) => lazyPremWithDefault(a,b)
        dbv : NNI := degree(b,v)
-       zero? dbv => [b,1$NNI,0$$]
+       zero? dbv => [b,1$NNI,0$%]
        dav : NNI  := degree(a,v)
-       zero? dav => [1$$,0$NNI,a]
+       zero? dav => [1$%,0$NNI,a]
        test : INT := dav::INT - dbv 
        delta : INT := max(test + 1$INT, 0$INT) 
        lcbv : $ := leadingCoefficient(b,v)
@@ -911,13 +911,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      lazyPseudoDivide (a,b) == 
        ground?(b) => error"Error in lazyPseudoDivide from RPOLCAT : #2 is constant"
-       ground?(a) => [1$$,0$NNI,0$$,a]
+       ground?(a) => [1$%,0$NNI,0$%,a]
        xa := mvar a 
        xb := mvar b
-       xa < xb => [1$$,0$NNI,0$$, a]
+       xa < xb => [1$%,0$NNI,0$%, a]
        lcb : $ := init b 
        db : NNI := mdeg b
-       q := 0$$
+       q := 0$%
        test : INT := degree(a,xb)::INT - db
        delta : INT := max(test + 1$INT, 0$INT) 
        if xa = xb 
@@ -940,16 +940,16 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      lazyPseudoDivide (a,b,v) == 
        zero? b =>  error"Error in lazyPseudoDivide : ($,$,V) -> $ from RPOLCAT : #2 is zero"
-       ground?(b) => [b,1$NNI,a,0$$]
+       ground?(b) => [b,1$NNI,a,0$%]
        (v = mvar(b)) => lazyPseudoDivide(a,b)
        dbv : NNI := degree(b,v)
-       zero? dbv => [b,1$NNI,a,0$$]
+       zero? dbv => [b,1$NNI,a,0$%]
        dav : NNI  := degree(a,v)
-       zero? dav => [1$$,0$NNI,0$$, a]
+       zero? dav => [1$%,0$NNI,0$%, a]
        test : INT := dav::INT - dbv 
        delta : INT := max(test + 1$INT, 0$INT) 
        lcbv : $ := leadingCoefficient(b,v)
-       q := 0$$
+       q := 0$%
        while not zero?(a) and not negative?(test) repeat
          lcav := leadingCoefficient(a,v)
          term := monomial(lcav,v,test::NNI)
@@ -962,19 +962,19 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
      monicModulo (a,b) == 
        ground?(b) => error"Error in monicModulo from RPOLCAT : #2 is constant"
        rec : Union($,"failed") 
-       rec := recip((ib := init(b)))$$
+       rec := recip((ib := init(b)))$%
        (rec case "failed")@Boolean => error"Error in monicModulo from RPOLCAT : #2 is not monic"
        ground? a => a
        ib * ((lazyPremWithDefault ((rec::$) * a,(rec::$) * b)).remainder)
 
      lazyResidueClass(a,b) ==
-       zero? b => [a,1$$,0$NNI]
-       ground? b => [0$$,1$$,0$NNI]
-       ground? a => [a,1$$,0$NNI]
+       zero? b => [a,1$%,0$NNI]
+       ground? b => [0$%,1$%,0$NNI]
+       ground? a => [a,1$%,0$NNI]
        xa := mvar a
        xb := mvar b
-       xa < xb => [a,1$$,0$NNI]
-       monic?(b) => [monicModulo(a,b),1$$,0$NNI]
+       xa < xb => [a,1$%,0$NNI]
+       monic?(b) => [monicModulo(a,b),1$%,0$NNI]
        lcb : $ := init b 
        db : NNI := mdeg b
        test : INT := degree(a,xb)::INT - db
@@ -1049,15 +1049,15 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        exactQuo(r:R,s:R):R == iexactQuo(r, s)
 
        exactQuotient (p:$,r:R) ==
-         (p exquo$$ r)::$
+         (p exquo$% r)::$
 
        exactQuotient (a:$,b:$) ==
          ground? b => exactQuotient(a,ground(b))
-         (a exquo$$ b)::$
+         (a exquo$% b)::$
 
        exactQuotient! (a:$,b:$) ==
          ground? b => exactQuotient!(a,ground(b))
-         a := (a exquo$$ b)::$
+         a := (a exquo$% b)::$
 
        if (R has GcdDomain) and not(R has Field)
        then
@@ -1102,7 +1102,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
        mainPrimitivePart p ==
          zero? p => p
-         (unitNormal((p exquo$$ mainContent(p))::$)).canonical
+         (unitNormal((p exquo$% mainContent(p))::$)).canonical
 
        mainSquareFreePart p ==
          ground? p => p
@@ -1122,7 +1122,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
          Z ==> Integer
 
          convert(p:$) : PR ==
-           ground? p => (ground(p)$$)::PR
+           ground? p => (ground(p)$%)::PR
            v : V := mvar(p)
            d : NNI := mdeg(p)
            convert(init(p))@PR *$PR ((convert(v)@Symbol)::PR)**d +$PR convert(tail(p))@PR
@@ -1151,13 +1151,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                imvp : PositiveInteger := (position(mvp,lv)$(List Symbol))::PositiveInteger 
                vimvp : V := index(imvp)$V
                xvimvp,c : $ 
-               newp := 0$$
+               newp := 0$%
                while (not zero? (d := degree(p,mvp))) repeat
                  c := localRetract(coefficient(p,mvp,d)$PR)
-                 xvimvp := monomial(c,vimvp,d)$$
-                 newp := newp +$$ xvimvp
+                 xvimvp := monomial(c,vimvp,d)$%
+                 newp := newp +$% xvimvp
                  p := p -$PR monomial(coefficient(p,mvp,d)$PR,mvp,d)$PR
-               newp +$$ localRetract(p)
+               newp +$% localRetract(p)
 
              if R has Algebra Fraction Integer
                then 
@@ -1168,13 +1168,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                    imvp : PositiveInteger := (position(mvp,lv)$(List Symbol))::PositiveInteger 
                    vimvp : V := index(imvp)$V
                    xvimvp,c : $ 
-                   newp := 0$$
+                   newp := 0$%
                    while (not zero? (d := degree(pq,mvp))) repeat
                      c := localRetractPQ(coefficient(pq,mvp,d)$PQ)
-                     xvimvp := monomial(c,vimvp,d)$$
-                     newp := newp +$$ xvimvp
+                     xvimvp := monomial(c,vimvp,d)$%
+                     newp := newp +$% xvimvp
                      pq := pq -$PQ monomial(coefficient(pq,mvp,d)$PQ,mvp,d)$PQ
-                   newp +$$ localRetractPQ(pq)
+                   newp +$% localRetractPQ(pq)
 
              if R has Algebra Integer
                then 
@@ -1185,13 +1185,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                    imvp : PositiveInteger := (position(mvp,lv)$(List Symbol))::PositiveInteger 
                    vimvp : V := index(imvp)$V
                    xvimvp,c : $ 
-                   newp := 0$$
+                   newp := 0$%
                    while (not zero? (d := degree(pz,mvp))) repeat
                      c := localRetractPZ(coefficient(pz,mvp,d)$PZ)
-                     xvimvp := monomial(c,vimvp,d)$$
-                     newp := newp +$$ xvimvp
+                     xvimvp := monomial(c,vimvp,d)$%
+                     newp := newp +$% xvimvp
                      pz := pz -$PZ monomial(coefficient(pz,mvp,d)$PZ,mvp,d)$PZ
-                   newp +$$ localRetractPZ(pz)
+                   newp +$% localRetractPZ(pz)
 
              retractable?(p:PR):Boolean ==
                lvp := variables(p)$PR
@@ -1511,7 +1511,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        ([p.v,leadingMonomial(p.ts)$D]$VPoly)::Rep
 
      tail p == 
-       p case R => 0$$
+       p case R => 0$%
        red := reductum(p.ts)$D
        ground?(red)$D => (ground(red)$D)::Rep
        ([p.v,red]$VPoly)::Rep
@@ -1531,13 +1531,13 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
 
      mainMonomial p == 
        zero? p => error"Error in mainMonomial from NSMP : the argument is zero"
-       p case R => 1$$ 
-       monomial(1$$,p.v,degree(p.ts)$D)
+       p case R => 1$% 
+       monomial(1$%,p.v,degree(p.ts)$D)
 
      leastMonomial p == 
        zero? p => error"Error in leastMonomial from NSMP : the argument is zero"
-       p case R => 1$$
-       monomial(1$$,p.v,minimumDegree(p.ts)$D)
+       p case R => 1$%
+       monomial(1$%,p.v,minimumDegree(p.ts)$D)
 
      mainCoefficients p == 
        zero? p => error"Error in mainCoefficients from NSMP : the argument is zero"
@@ -1570,13 +1570,13 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
      monicModulo (a,b) == 
        b case R => error"Error in monicModulo from NSMP : #2 is constant"
        ib : $ := init(b)@$
-       not ground?(ib)$$ => 
+       not ground?(ib)$% => 
          error"Error in monicModulo from NSMP : #2 is not monic"
        mM : $
---       if not one?(ib)$$
-       if not ((ib) = 1)$$
+--       if not one?(ib)$%
+       if not ((ib) = 1)$%
          then
-           r : R := ground(ib)$$
+           r : R := ground(ib)$%
            rec : Union(R,"failed"):= recip(r)$R
            (rec case "failed") =>
              error"Error in monicModulo from NSMP : #2 is not monic"
@@ -1644,7 +1644,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        db: N := degree(b.ts)$D
        lcb: $ := leadingCoefficient(b.ts)$D
        test: Z := degree(a,b.v)::Z - db
-       q := 0$$
+       q := 0$%
        test: Z := degree(a,b.v)::Z - db
        while not zero?(a) and not negative?(test) repeat 
          term := monomial(leadingCoefficient(a,b.v),b.v,test::N)
@@ -1657,14 +1657,14 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        -- with lazyPseudoDivide$NSUP
        b case R =>
          error " in lazyPseudoDivide$NSMP: #2 is conctant"
-       (a case R) or (a.v < b.v) => [1$$,0$N,0$$,a]
+       (a case R) or (a.v < b.v) => [1$%,0$N,0$%,a]
        a.v = b.v =>
          cgqr := lazyPseudoDivide(a.ts,b.ts)
          [cgqr.coef, cgqr.gap, PSimp(cgqr.quotient,a.v), PSimp(cgqr.remainder,a.v)]
        db: N := degree(b.ts)$D
        lcb: $ := leadingCoefficient(b.ts)$D
        test: Z := degree(a,b.v)::Z - db
-       q := 0$$
+       q := 0$%
        delta: Z := max(test + 1$Z, 0$Z) 
        while not zero?(a) and not negative?(test) repeat 
          term := monomial(leadingCoefficient(a,b.v),b.v,test::N)
@@ -1699,7 +1699,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        packD := PseudoRemainderSequence($,D)
 
        exactQuo(x:$, y:$):$ == 
-         ex: Union($,"failed") := x exquo$$ y
+         ex: Union($,"failed") := x exquo$% y
          (ex case $) => ex::$
          error "in exactQuotient$NSMP: bad args"
 
@@ -1836,7 +1836,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
 
        primitivePart! p ==
          zero? p => p
-         p case R => 1$$
+         p case R => 1$%
          cp := content(p)
          p.ts := unitCanonical(map(exactQuotient!(#1,cp),p.ts)$SUP2)$D
          p
