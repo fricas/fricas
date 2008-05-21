@@ -30,3 +30,6 @@
     (eval-when (:execute :compile-toplevel :load-toplevel)
          (proclaim '(optimize (safety 1))))
 )
+#+:openmcl
+(eval-when (:execute :compile-toplevel :load-toplevel)
+      (setf *features* (delete :CCL *features*)))
