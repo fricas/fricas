@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2008-05-13], 
+AC_INIT([FriCAS], [2008-05-28], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -221,7 +221,7 @@ case $axiom_include_gcl,$fricas_lisp in
          fricas_lisp_flavor=gcl
          axiom_fasl_type=o
        else
-          AC_MSG_ERROR([GCL and GCL sources missing, see README.wh])
+          AC_MSG_ERROR([GCL and GCL sources missing, see INSTALL])
        fi
        ;;
     yes,*)
