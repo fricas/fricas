@@ -614,6 +614,21 @@ AXIOM_MAKEFILE([src/algebra/Makefile])
 AXIOM_MAKEFILE([src/input/Makefile])
 AXIOM_MAKEFILE([src/etc/Makefile])
 
+## check whether Aldor is available
+AC_CHECK_PROGS([ALDOR], [aldor], [AC_MSG_WARN([Aldor not found.])])
+
+# The following is only necessary to get some files that do not yet
+# have a free license.
+AC_CHECK_PROGS([SVN], [svn], [AC_MSG_WARN([svn not found.])])
+
+## check for $ALDORROOT/include/aldor.conf
+if ! test -f $ALDORROOT/include/aldor.conf; then
+  AC_MSG_WARN([The environment variable ALDORROOT is not set.])
+fi
+
+AXIOM_MAKEFILE([src/aldor/Makefile])
+AXIOM_MAKEFILE([src/aldor/Makefile2])
+
 
 ## We now generate the "document" script and support files at configure time.
 ## We put them in the build directory because they are intended to be 
