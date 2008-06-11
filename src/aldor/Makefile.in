@@ -157,7 +157,7 @@ else
   SVNCAT:=echo Get the file manually from
 endif
 
-axiom.as attrib.as axextend.as axlit.as stub.as:
+axiom.as axextend.as axlit.as stub.as:
 	$(SVNCAT) $(ALDORBASICS)/$@ > $@
 
 minimach.as:
@@ -169,6 +169,34 @@ lang.as:
 
 SUBSETC.as: stub.as
 	tail -4 $< > $@
+
+# The file attrib.as is not taken from the Aldor repository since
+# that would mean to edit it manually in case any attribute setting
+# in Axiom changes. We rather generated it from Axiom itself.
+# The following translates
+# (commutative *) to
+# Attribute commutative(T: Type);
+# Actually it translates everything from starting with a parenthesis
+# to a category with one argument.
+attrib.as: tmp/attrib.all
+	echo 'import from AxiomLib; inline from AxiomLib;' > $@
+	echo 'Attribute X ==> X: Category == with;' >> $@
+	sort $< | uniq |\
+	sed -e 's/(\([a-z]*\) .*/\1(T: Type)/;s/\(.*\)/Attribute \1;/' >> $@
+
+# attrib.all lists all attributes of constructors in Axiom.
+tmp/attrib.all: tmp/attrib.lsp tmp/.dir
+	$(INTERPSYS) < $< > tmp/attrib.as.log
+	test -f $@
+
+# Write all attributes to tmp/attrib.all
+tmp/attrib.lsp: tmp/.dir
+	echo ")fin" > $@
+	echo '(with-open-file (str (pathname "tmp/attrib.all")' >> $@
+	echo ' :direction :output) (dolist (a ' >> $@
+	echo "(mapcar 'car (mapcan '(lambda (x) (getdatabase x 'ATTRIBUTES)) (|allConstructors|))))" >> $@
+	echo '(format str "~a~%" a)))' >> $@
+	echo "(quit)" >> $@
 
 aldor_basics     = lang minimach boolean0 attrib
 aldor_extensions = axextend axlit
