@@ -1,0 +1,159 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra special2.spad}
+\author{Waldek Hebisch}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Licence}
+For legal info see {\tt src/etc/copyright}.
+
+\section{package FSFUN FloatSpecialFunctions}
+<<package FSFUN FloatSpecialFunctions>>=
+)abbrev package FSFUN FloatSpecialFunctions
+
+FloatSpecialFunctions() : Exports == Implementation where
+
+  Exports ==> with
+    logGamma : Float -> Float
+      ++ logGamma(x) is the natural log of \spad{Gamma(x)}.
+    logGamma : (Complex Float) -> (Complex Float)
+      ++ logGamma(x) is the natural log of \spad{Gamma(x)}.
+    Gamma : Float -> Float
+      ++ Gamma(x) is the Euler Gamma function.
+    Gamma : (Complex Float) -> (Complex Float)
+      ++ Gamma(x) is the Euler Gamma function.
+
+  Implementation ==> add
+    
+    bernoulli__gamma__series(z : Complex Float, n : Integer): Complex Float ==
+       zinv := 1/z
+       zk := zinv
+       z2inv := zinv*zinv
+       s := zk*((1/12)::(Complex Float))
+       for k in 1..n repeat
+           zk := zk*z2inv
+           kinv := (1::Float)/(((2*k +2)*(2*k+1))::Float)
+           bk := (bernoulli(2*k+2)$IntegerNumberTheoryFunctions)::Float
+           s := s + ((bk*kinv)::(Complex Float))*zk
+       s
+    
+    logGamma__a1(z : Complex Float) : Complex Float ==
+       (z - ((1/2)::(Complex Float)))*log(z) - z _
+           + ((1/2)::(Complex Float))_
+             *((log((2 :: Float)*pi()))::(Complex Float))
+    
+    logGamma__asymptotic(z : Complex Float, n : Integer): Complex Float ==
+       lg1 := logGamma__a1(z)
+       lg1 + bernoulli__gamma__series(z, n)
+    
+    gamma__series(z : Complex Float, l : Float, n : Integer) : Complex Float ==
+       tk := exp(z*(log(l)::(Complex Float)))/z
+       s := tk
+       for k in 1..n repeat
+          tk := tk*(l::(Complex Float))/(z + (k::(Complex Float)))
+          s := s + tk
+       s*(exp(-l)::(Complex Float))
+    
+    Gamma(z : Complex Float) : Complex Float ==
+        ^(base()$Float = 2) =>
+            error "Gamma can only handle base 2 Float-s"
+        l0 := bits()
+        l := max(l0 + 5, 20)
+        re__z := real(z)
+        re__z < (1/2)::Float =>
+            integer?(re__z)$IntegerRetractions(Float) =>
+                error "Pole of Gamma"
+            bits (l + 5)
+            c__pi := (pi())::(Complex Float)
+            one := 1::(Complex Float)
+            result := c__pi/(Gamma(one - z)*sin(c__pi * z))
+            bits(l0)
+            result
+        abs__z := real(abs(z))
+        l :: Float > 6*abs__z =>
+            oz := max(order(abs__z), 5) :: PositiveInteger
+            lz := length(oz) :: PositiveInteger
+            bits(oz+lz+30)
+            loss := real(logGamma__a1(real(z)::(Complex Float))) - _
+                    real(logGamma__a1(z))
+            len : Float := 2*real(z) + 2*(loss + log2() * (l :: Float)) + 3::Float
+            l1 := (l + order(len) + wholePart(loss*log2()) + 12)::PositiveInteger
+            bits(l1)
+            result := gamma__series(z, len, 4*wholePart(len) + 6)
+            bits(l0)
+            result
+        llog := max(order(real(abs(logGamma__a1(z)))), 5) :: PositiveInteger
+        -- we sum l term, so need length(l) extra bits to
+        -- compensate roundoff error
+        -- we need llog extra bits in logGamma to avoid loss of
+        -- accuracy due to exponential
+        -- 7 extra bits to compensate for inaccuracy in computing
+        -- number of bits
+        l1 := l + llog + (length(l)::PositiveInteger) + 7
+        bits(l1)
+        result := exp(logGamma__asymptotic(z, l quo 6 + 1 ))
+        bits(l0)
+        result
+    
+    -- in exact arithmetic |imag(logGamma__a1(z) - logGamma(z))| < pi/2
+    logGamma__lift(z : Complex Float, lg2 : Complex Float) : Complex Float ==
+        lg2i := imag(lg2)
+        k := round((imag(logGamma__a1(z)) - lg2i)/(2*pi()))
+        lg2 + (imaginary()$(Complex Float))*((k*(2::Float)*pi())::(Complex Float))
+    
+    
+    logGamma(z : Complex Float) : Complex Float ==
+        ^(base()$Float = 2) =>
+            error "Gamma can only handle base 2 Float-s"
+        l0 := bits()
+        l := max(l0 + 5, 20)
+        re__z := real(z)
+        one := 1::(Complex Float)
+        re__z < (1/2)::Float =>
+            integer?(re__z)$IntegerRetractions(Float) =>
+                error "Pole of Gamma"
+            bits (l + 5)
+            c__pi := (pi())::(Complex Float)
+            result := log(c__pi) - logGamma(one - z) - log(sin(c__pi * z))
+            result := logGamma__lift(z, result)
+            bits(l0)
+            result
+        abs__z := real(abs(z))
+        l :: Float > 6*abs__z =>
+            l := l + 5
+            if real(abs(z - one)) < ((1/4)::Float) or _
+               real(abs(z - one - one)) < ((1/4)::Float) then
+                l := 2*l
+            bits(l)
+            result := logGamma__lift(z, log(Gamma(z)))
+            bits(l0)
+            result
+        -- we sum l term, so need length(l) extra bits to
+        -- compensate roundoff error
+        -- 7 extra bits to compensate for inaccuracy in computing
+        -- number of bits
+        l1 := l + length(l)::PositiveInteger + 7
+        bits(l1)
+        result := logGamma__asymptotic(z, l quo 6 + 1 )
+        bits(l0)
+        result
+
+    Gamma(x : Float) : Float ==
+        real(Gamma(x :: (Complex Float)))
+
+    logGamma(x : Float) : Float ==
+        x <= 0 =>
+            error "Agrument to logGamma <= 0"
+        real(logGamma(x :: (Complex Float)))
+
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}
