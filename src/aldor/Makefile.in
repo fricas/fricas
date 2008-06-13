@@ -126,11 +126,9 @@ $(domain_dep_files): gendeps/%.dep: gendeps/%.lsp tmp/.dir
 	$(INTERPSYS) < $< > tmp/dep_$*.log
 	test -f $@
 
-PREPARE='(|oldCompilerAutoloadOnceTrigger|) (|oldParserAutoloadOnceTrigger|) (|browserAutoloadOnceTrigger|)'
 domain_lsp_files = $(patsubst %,gendeps/%.lsp,$(domains))
 $(domain_lsp_files): gendeps/%.lsp: gendeps/.dir
 	echo ')fin' > $@
-	echo $(PREPARE) >> $@
 	echo '(load "$(srcdir)/genax.lsp")' >> $@
 	echo '(generate-deps (quote ($*)))' >> $@
 	echo '(quit)' >> $@
@@ -176,7 +174,7 @@ SUBSETC.as: stub.as
 # The following translates
 # (commutative *) to
 # Attribute commutative(T: Type);
-# Actually it translates everything from starting with a parenthesis
+# Actually it translates everything starting with a parenthesis
 # to a category with one argument.
 attrib.as: tmp/attrib.all
 	echo 'import from AxiomLib; inline from AxiomLib;' > $@
@@ -214,7 +212,6 @@ $(aldor_dep_files): gendeps/%.dep: gendeps/%.lsp initlist.ap tmp/.dir
 aldor_lsp_files = $(patsubst %,gendeps/%.lsp,$(aldor_srcs))
 $(aldor_lsp_files): gendeps/%.lsp: ap/%.ap gendeps/.dir
 	echo ")fin" > $@
-	echo $(PREPARE) >> $@
 	echo '(load "$(srcdir)/genax.lsp")' >> $@
 	echo '(generate-deps-from-ap-files (quote ("ap/$*.ap")))' >> $@
 	echo '(quit)' >> $@
