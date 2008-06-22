@@ -146,6 +146,7 @@ main (void)
 #ifdef DEBUG
         fprintf(stderr,"Reading child viewport...\n");
 #endif
+        viewCommand = viewportClosing;
         readViewport(slot,&viewCommand,intSize);
         
         switch (viewCommand) {
