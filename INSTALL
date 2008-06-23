@@ -43,11 +43,14 @@ Prerequisities:
     * GCL, 2.6.7 or prerelease 2.6.8 
     * sbcl, 1.0.7 or later
     * clisp, 2.41 or later
-    * openmcl, 1.1 prerelase 070512 or later
+    * Closure CL (former openmcl), starting from openmcl 1.1 prerelase
+    070512
     * ECL, 0.9j or later
-  GCL currently is best tested and fully functional, sbcl and clisp is
-  fully functional, graphic support for openmcl and ECL is very new.
-  Gcl sources are included in full+gcl distribution tarball.
+  GCL currently is best tested, but on some platforms there are known
+  build problems -- in particular there gcl is incompatible with Fedora
+  security enhancements.  All Lisp impementations should give essentially
+  the same functionality.  Gcl sources are included in full+gcl distribution
+  tarball.
 
 - noweb literate programing tool (http://www.eecs.harvard.edu/~nr/noweb/).
   Noweb sources are included in full distribution tarball.
@@ -61,8 +64,34 @@ Prerequisities:
   need libreadline5-dev, libncurses5-dev, libgmp3-dev, libxmu-dev and
   libxaw7-dev.
 
-  On Gentoo system installed gcl probably will not work, one need to
+Known problems:
+
+- On Gentoo system installed gcl probably will not work, one need to
   build own one.
+
+- Gcl is incompatible with Fedora "exec-shield" and strong addess space
+  randomization (setting randomize_va_space to 2) -- disabling security
+  may help (but one may also hit other problems).
+
+- Boehm garbage collector included in ECL (version 6.8) is incompatible
+  with Fedora strong address space randomization (setting randomize_va_space
+  to 2).  Using newer version of Boehm garbage collector (7.0 or 7.1)
+  should solve this problem.
+
+- Relased version of ECL (0.9j) has serious performance problems.  CVS
+  version is much faster.
+  
+- When doing documentation build (release version contains pre-built
+  documentation, so this step is skipped) ECL hangs generating ug13.pht.
+  This is annoying, but harmless -- one can just kill the hanged process
+  (the hang happens _after_ ug13.pht is generated, in exit function).
+
+- In general, any error when generating documentation will cause build to hang.
+
+- Closure CL (former Openmcl) has a bug in Lisp printer.  This bug causes
+  incorrect printing of FriCAS types.  To work around the bug you may apply
+  a patch 'contib/omcl.diff' and recompile openmcl (see the patch or openmcl
+  documentation for instructions).
 
 --------------------------------------------------------
 
@@ -133,21 +162,9 @@ process should automatically build gcl and later use the freshly
 build gcl.
 
 Currently --with-lisp option accepts other lisp variants, namely
-sbcl, clisp, ecl and openmcl.  Build machinery must know which Lisp
+sbcl, clisp, ecl and Closure CL (openmcl).  Build machinery must know which Lisp
 variant is in use. gcl, sbcl, clisp and ecl can be autodetected,
-for openmcl one has to give an extra argument --with-lisp-flavor=openmcl
-(you can also specify flavor for other Lisps, but this argument
-is required only for openmcl).
-
-Openmcl has a bug in Lisp printer.  This bug causes incorrect printing
-of FriCAS types.  To work around the bug you may apply a patch
-'contib/omcl.diff' and recompile openmcl (see openmcl documentation
-for instructions).
-
---------------------------------------------------------
-Known problems:
-
-- ECL based build hangs generating last documentation page.  The page should be
-  correct, but one has to kill build by hand.
-- In general, any error when generating documentation will cause build to hang.
+for Closure CL (openmcl) one has to give an extra argument
+--with-lisp-flavor=openmcl (you can also specify flavor for other Lisps,
+but this argument is required only for Closure CL (openmcl)).
 
