@@ -40,7 +40,7 @@ clean:
 	-rm domains.mk mkinit* initlist.lst initlist.ap
 	-rm libaxiom.lst aldordepfiles domaindepfiles
 	-rm -rf tmp init_ap gendeps ap ao al
-	-rm cliques.*
+	-rm cliques*
 
 
 ###################################################################
@@ -67,7 +67,7 @@ domains := $(filter-out $(blacklisted_domains), $(domains))
 ###################################################################
 ###################################################################
 # Now we are going to generate dependency files.
-# The generation is generated with the help genax.lsp.
+# The dependencies are generated with the help gendepap.lsp.
 # There are 3 categories of dependency files.
 # 1. Initial dependencies connected to a given initlist.as.
 # 2. Dependencies generated from the $(domains).
@@ -75,7 +75,7 @@ domains := $(filter-out $(blacklisted_domains), $(domains))
 # These dependencies will be listed in the directory "gendeps".
 ###################################################################
 ###################################################################
-
+GENAX=$(srcdir)/gendepap.lsp
 ###################################################################
 # 1. Initial dependencies connected to a given initlist.as.
 ###################################################################
@@ -113,8 +113,8 @@ initlist.lst: mkinit.lsp initlist.ap $(patsubst %,%/.dir,$(geninit_dirs))
 
 mkinit.lsp:
 	echo ')fin' > $@
-	echo '(load "$(srcdir)/genax.lsp")' >> $@
-	echo '(generate-init-list "initlist.lst")' >> $@
+	echo '(load "$(GENAX)")' >> $@
+	echo '(generate-init "initlist.lst")' >> $@
 	echo '(quit)' >> $@
 
 
@@ -122,14 +122,14 @@ mkinit.lsp:
 # 2. Dependencies generated from the $(domains).
 ###################################################################
 domain_dep_files = $(patsubst %,gendeps/%.dep,$(domains))
-$(domain_dep_files): gendeps/%.dep: gendeps/%.lsp tmp/.dir
+$(domain_dep_files): gendeps/%.dep: tmp/dep_%.lsp tmp/.dir
 	$(INTERPSYS) < $< > tmp/dep_$*.log
 	test -f $@
 
-domain_lsp_files = $(patsubst %,gendeps/%.lsp,$(domains))
-$(domain_lsp_files): gendeps/%.lsp: gendeps/.dir
+domain_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(domains))
+$(domain_lsp_files): tmp/dep_%.lsp: tmp/.dir gendeps/.dir
 	echo ')fin' > $@
-	echo '(load "$(srcdir)/genax.lsp")' >> $@
+	echo '(load "$(GENAX)")' >> $@
 	echo '(generate-deps (quote ($*)))' >> $@
 	echo '(quit)' >> $@
 
@@ -204,16 +204,16 @@ aldor_misc = SUBSETC
 aldor_srcs = $(aldor_basics) $(aldor_extensions) $(aldor_misc)
 
 aldor_dep_files = $(patsubst %,gendeps/%.dep,$(aldor_srcs))
-$(aldor_dep_files): gendeps/%.dep: gendeps/%.lsp initlist.ap tmp/.dir
+$(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.ap gendeps/.dir
 	echo 'Generating dependency of $*.'
 	$(INTERPSYS) < $< > tmp/dep_$*.log
 	test -f $@
 
-aldor_lsp_files = $(patsubst %,gendeps/%.lsp,$(aldor_srcs))
-$(aldor_lsp_files): gendeps/%.lsp: ap/%.ap gendeps/.dir
+aldor_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(aldor_srcs))
+$(aldor_lsp_files): tmp/dep_%.lsp: ap/%.ap tmp/.dir
 	echo ")fin" > $@
-	echo '(load "$(srcdir)/genax.lsp")' >> $@
-	echo '(generate-deps-from-ap-files (quote ("ap/$*.ap")))' >> $@
+	echo '(load "$(GENAX)")' >> $@
+	echo '(generate-deps-from-ap-files (quote (|$*|)))' >> $@
 	echo '(quit)' >> $@
 
 aldor_ap_files = $(patsubst %,ap/%.ap,$(aldor_srcs))
@@ -232,6 +232,10 @@ aldordepfiles: $(aldor_dep_files)
 # where keyword is one of "base", "initaxiom", "axiom", and "aldorext".
 # libaxiom.lst is used for the computation of cliques in the
 # axiom library, see program 'cliques'.
+#
+# Note that the function dep-type-or-nil in gendepap.lsp tests whether an
+# identifier is indeed an Axiom type. Therefore, it is necessary to make
+# attrib.as a dependency of every axiom clique.
 libaxiom.lst: initlist.lst 
 	cat /dev/null > $@
 	for i in $(aldor_basics); do echo "base $$i" >> $@; done
@@ -247,8 +251,8 @@ libaxiom.lst: initlist.lst
 cliques: cliques.as
 	$(ALDOR) -laldor -fx -dTRACE $<
 
-cliques.mk: extra_deps.lst libaxiom.lst cliques domaindepfiles aldordepfiles
-	cliques libaxiom.lst $< > $@
+cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
+	cliques libaxiom.lst > $@
 
 
 ###################################################################

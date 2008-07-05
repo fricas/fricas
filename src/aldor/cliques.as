@@ -187,18 +187,17 @@ GraphAlgorithms(T: NodeType): with {
 -- of 40 or so files which is too many for aldor to handle well.
 
 MakefileGeneration: with {
-	generateMakefile: (String, String) -> ();
-		++ generateMakefile(libaxiom.lst, extradeps.lst)
+	generateMakefile: String -> ();
+		++ generateMakefile(libaxiom.lst)
 		++ writes a Makefile to stdout.
 } == add {
 	macro S == String;
 	macro G == DirectedGraph S;
 
-        generateMakefile(libaxiomlst: S, extradepslst: S): () == {
+        generateMakefile(libaxiomlst: S): () == {
 		TRACE("generateMakefile: ", "Enter");
 		import from MachineInteger, S, List S;
 		files:     List S := [readNames libaxiomlst];
-		depsPairs: List S := [readNames extradepslst];
 
 		fileMap: HashTable(S, List S) := table();
 		fileMap."base"      := [];
@@ -218,6 +217,13 @@ MakefileGeneration: with {
 		TRACE("AllTypes: ", allTypes);
 
 		g: G := graph allTypes;
+		addReadDependencies!(g, allTypes);
+		
+		-- First, add the extra dependencies.
+		addDependency!(g, "lang", "attrib");
+		addDependency!(g, "lang", "boolean0");
+		addDependency!(g, "lang", "minimach");
+		addDependency!(g, "axlit", "axextend");
 
 		-- Every domain should depend on the aldor base domains.
 		ids: List S := [];
@@ -230,47 +236,23 @@ MakefileGeneration: with {
 		for id in fileMap."initaxiom" repeat {
 			addDependency!(g, id, substring(id, 5));
 		}
-
-		addReadDependencies!(g, fileMap."initaxiom");
-
 		
 		-- Now there are two kinds of types:
-		-- lower types and upper types
+		-- lower types and upper types.
 		-- A type is a lower type if it is a dependency of
 		-- axlit.as or axextend.as. That naturally includes all
-		-- the elements of fileMap."base" and fileMap."initAxiom".
+		-- the elements of fileMap."base".
 		-- A type is an upper type if it is not a lower type.
 		-- In the terminology of this program, a type corresponds
 		-- to a filename. So also axlit and lang are considered
 		-- to be types.
 		
-		depTypes: Set S := [];
 		-- fileMap."aldorext" contains axlit and axextend.
-		for id in fileMap("aldorext") repeat {
-			depTypes := union!(depTypes, [readDependencies id]);
-		}
-                -- depTypes = ABELSG BOOLEAN EXIT INT NNI
-		--            ORDSET RING SETCAT SINT TUPLE TYPE
-		TRACE("depTypes: ", sort! [generator depTypes]);
-		
-		local a: G := graph fileMap."axiom";
-		addReadDependencies!(a, fileMap."axiom");
+		depTypes: Set S := [generator fileMap."aldorext"];
 		lowerTypes: List S := sort! [
-		    ancestors(a, generator depTypes)
+		    ancestors(g, generator depTypes)
 		];
 		TRACE("lowerTypes: ", lowerTypes);
-		for id in lowerTypes repeat {
-			for dep in readDependencies id repeat {
-				idep := "init__" + dep;
-				if member?(idep, fileMap."initaxiom") then {
-					addDependency!(g, idep, id);
-				} else {
-					addDependency!(g, dep, id);
-				}
-			}
-		}
-		addReadDependencies!(g, fileMap."aldorext");
-		TRACE("after aldorext: ", "");
 
 		-- The types that axextend.as and axlit.as do not
 		-- (recursively) depend on. So we make them depend
@@ -289,17 +271,6 @@ MakefileGeneration: with {
 			addDependencies!(g, fileMap."aldorext", id);
 		}
 		TRACE("now all upper types depend on aldorext", "");
-		-- Now add the dependencies of the upper types.
-		addReadDependencies!(g, upperTypes);
-		TRACE("all dependencies of upper types have been added", "");
-
-		-- Finally, add the extra dependencies
-		for pair in extractPairs depsPairs repeat {
-			import from List S;
-			(ident, dep) := pair;
-			TRACE("[id, dep]  = ", [ident, dep]$List(S));
-			addDependency!(g, dep, ident);
-		}
 
 		import from GraphAlgorithms(S), Set S, Set Set S;
 		-- Sorting is not really necessary. We do it only to ease
@@ -398,6 +369,7 @@ MakefileGeneration: with {
 		return generator ancs;
 	}
 
+	-- idx depends on dep
 	local addDependency!(g: G, dep: S, idx: S): () == {
 		node?(dep, g) => addLink!(g, dep, idx);
 		stderr << "Missing node: [" << dep << "]" << newline;
@@ -453,7 +425,7 @@ main(): () == {
 	import from MachineInteger, MakefileGeneration;
 	args: Array String := arguments$CommandLine;
 	TRACE("BEGIN clq: ", args);
-	generateMakefile(args.0, args.1);
+	generateMakefile(args.0);
 	TRACE("END clq: ", args);
 }
 
