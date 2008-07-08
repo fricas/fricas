@@ -20,7 +20,7 @@ $(patsubst %,ap/%.ap,$(AXIOM_CLIQUES)): ap/%.ap: ap/%.lsp tmp/.dir
 
 ap/%.lsp:
 	echo ')fin' > $@
-	echo '(load "$(srcdir)/genax.lsp")' >> $@
+	echo '(load "$(GENAX)")' >> $@
 	echo '(trace |makeAxExportForm|)' >> $@
 	echo '(trace |modemapToAx|)' >> $@
 	echo '(trace getdatabase)' >> $@
@@ -36,6 +36,7 @@ al/libaxiom.al(%.ao): ao/%.ao
 	ar r $@ $<
 
 # From the .ap dependency we get a lot more dependencies, see cliques.mk.
+.PRECIOUS: ao/%.ao
 ao/%.ao: ap/%.ap al/libaxiom_%.al ao/.dir
 	$(ALDOR) $(extra_ao_options) -Y al -L AxiomLib=axiom_$* -fao=$@ $<
 
