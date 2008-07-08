@@ -197,9 +197,10 @@ MakefileGeneration: with {
         generateMakefile(libaxiomlst: S): () == {
 		TRACE("generateMakefile: ", "Enter");
 		import from MachineInteger, S, List S;
-		files:     List S := [readNames libaxiomlst];
+		files: List S := [readNames libaxiomlst];
 
 		fileMap: HashTable(S, List S) := table();
+		fileMap."lang"      := [];
 		fileMap."base"      := [];
 		fileMap."axiom"     := [];
 		fileMap."initaxiom" := [];
@@ -218,14 +219,16 @@ MakefileGeneration: with {
 
 		g: G := graph allTypes;
 		addReadDependencies!(g, allTypes);
-		
+
 		-- First, add the extra dependencies.
-		addDependency!(g, "lang", "attrib");
-		addDependency!(g, "lang", "boolean0");
-		addDependency!(g, "lang", "minimach");
 		addDependency!(g, "axlit", "axextend");
 
-		-- Every domain should depend on the aldor base domains.
+		-- Every base domains should depend on lang.
+		for id in fileMap."base" repeat {
+			addDependencies!(g, fileMap."lang", id);
+		}
+
+		-- Every other domain should depend on the aldor base domains.
 		ids: List S := [];
 		ids := append!(ids, copy fileMap."initaxiom");
 		ids := append!(ids, copy fileMap."axiom");
@@ -260,6 +263,7 @@ MakefileGeneration: with {
 		upperTypes: List S := [
 		    s for s in allTypes | 
 		      not member?(s, lowerTypes) and
+		      not member?(s, fileMap."lang") and
 		      not member?(s, fileMap."base") and
 		      not member?(s, fileMap."initaxiom") and
 		      not member?(s, fileMap."aldorext")
