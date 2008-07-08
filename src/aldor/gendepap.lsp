@@ -71,8 +71,8 @@
 (defun generate-init-ap ()
   (dolist (initform *initlist*)
     (let* ((abbrev (|abbreviate| (type-name initform)))
-	   (fname (pathname (format nil "init_ap/init_~a.ap" abbrev))))
-      (with-open-file (apstream fname :direction :output)
+	   (filename (pathname (format nil "init_ap/init_~a.ap" abbrev))))
+      (with-open-file (apstream filename :direction :output)
 	(prin1 initform apstream)))))
 
 ;; Create init dependency files
@@ -521,17 +521,41 @@
 	((env-contains-variable env item) nil) ; remove variable names
         ; Need special treatment for a SPAD builtin type.
 	((eq item '|SubsetCategory|)
-	 (format t "Adding ~a ~a~%" item (env-path env))
-	 '(SUBSETC))
+	 '(|subsetc|))
         ; Since |isNameOfType| returns false for attributes, we must
         ; make attrib.as available for the compilation of every file.
-	((|isNameOfType| item)
+	((is-axiom-type-name item)
 	 (let ((type (full-or-init (env-path env) item)))
 	   (format t "Adding ~a ~a ~a~%" type item (env-path env))
 	   (list type)))
         (t nil)))
 
+; Since |isNameOfType| returns false for attributes, we must
+; make attrib.as available for the compilation of every file.
+(defun is-axiom-type-name (item)
+  ; Certain types are built into aldor. They will anyway be available
+  ; through the base of libaxiom.al, see aldor_basics in Makefile.in and
+  ; in particular the file lang.as.
+  ; Maybe we have to reconsider later since Exit and Tuple have different
+  ; types in axllib and Axiom. So there should perhaps be some
+  ; 'init_Exit' and 'init_Tuple' in the directory 'init_ap'.
+  ;
+
+  (cond ((member item '(|Exit| |Tuple| |Type|)) nil)
+	((|isNameOfType| item) item)
+	(t nil)))
+
 (defun full-or-init (path item)
+  (full-or-init-internal path item item))
+; The third argument 'item-or-nil' is usually equal to the second
+; 'item'. It is only used to reliably check that something is used in
+; an |Apply| context and not the function name corresponding to this
+; |Apply|. 'item-or-nil' is set to nil if we have already found out
+; that 'item' is the function name of an |Apply| and we must look
+; earlier in the path. In that way, we find out correctly that in
+; List(List(Integer)) full information for List is needed even if this
+; whole expression appears in a |Declare| context.
+(defun full-or-init-internal (path item item-or-nil)
   (cond ((null path)
 	 (|abbreviate| item))
 
@@ -546,11 +570,15 @@
 		   |For| |If| |Import| |Inline| |Label| |Lambda|
 		   |Not| |Or| |PretendTo| |Qualify| |Repeat|
 		   |RestrictTo| |Sequence| |Test| |While|))
-	 (full-or-init (cdr path) item))
+	 (full-or-init-internal (cdr path) item item-or-nil))
 
 	; If a type appears in (|Apply| ->) context, then we only need
-	; initial information. Additionally, if the context is
-	; (|Apply| D) and item=D then we check the parent context.
+	; initial information. Not that forms coming from .as files
+	; will have |->| instead of just ->.
+	; If the context is (|Apply| D) and item=D then we check the
+	; parent context, but for a different value of item in order
+	; to correctly find the need of full information for List in
+	; a situation like (|Apply| |List| (|Apply| |List X)).
 	; For example in XPBWPOLY appears
 	; (|Apply| |Module| (|Apply| |Fraction| |Integer|))
 	; In that case full information of |Fraction| is needed.
@@ -559,10 +587,10 @@
 	   (cond ((eq fun '->)
 		 (could-be-init item))
 
-		 ((eq fun item)
-		  (full-or-init (cdr path) item))
-
-		(t (|abbreviate| item)))))
+		 ((eq fun item-or-nil)
+		  (full-or-init-internal (cdr path) item nil))
+		 
+		 (t (|abbreviate| item)))))
 
 	; We only need initial information.
 	((member (car path) '(|Declare|))
@@ -585,9 +613,9 @@
 
 (defun could-be-init (item)
   (let ((abbrev (|abbreviate| item)))
-  (if (member item |$extendedDomains|)
-      (intern (format nil "init_~a" abbrev))
-    abbrev)))
+    (if (member item |$extendedDomains|)
+	(intern (format nil "init_~a" abbrev))
+      abbrev)))
 
 ;------------------------------------------------------------------
 ; Some helper functions...
