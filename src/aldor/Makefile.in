@@ -165,7 +165,7 @@ minimach.as:
 lang.as:
 	$(SVNCAT) $(ALDORLANG)/$@ > $@
 
-SUBSETC.as: stub.as
+subsetc.as: stub.as
 	tail -4 $< > $@
 
 # The file attrib.as is not taken from the Aldor repository since
@@ -196,12 +196,13 @@ tmp/attrib.lsp: tmp/.dir
 	echo '(format str "~a~%" a)))' >> $@
 	echo "(quit)" >> $@
 
-aldor_basics     = lang minimach boolean0 attrib
+aldor_lang       = lang
+aldor_basics     = minimach boolean0 attrib
 aldor_extensions = axextend axlit
-# SUBSETC.as contains a definition for the SPAD builtin type
+# subsetc.as contains a definition for the SPAD builtin type
 # SubsetCategory.
-aldor_misc = SUBSETC
-aldor_srcs = $(aldor_basics) $(aldor_extensions) $(aldor_misc)
+aldor_misc = subsetc
+aldor_srcs = $(aldor_lang) $(aldor_basics) $(aldor_extensions) $(aldor_misc)
 
 aldor_dep_files = $(patsubst %,gendeps/%.dep,$(aldor_srcs))
 $(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.ap gendeps/.dir
@@ -237,10 +238,11 @@ aldordepfiles: $(aldor_dep_files)
 # identifier is indeed an Axiom type. Therefore, it is necessary to make
 # attrib.as a dependency of every axiom clique.
 libaxiom.lst: initlist.lst 
-	cat /dev/null > $@
-	for i in $(aldor_basics); do echo "base $$i" >> $@; done
-	sed -e 's/^/initaxiom /' initlist.lst >> $@
-	for i in $(aldor_misc) $(domains); do echo "axiom $$i" >> $@; done
+	sed -e 's/^/initaxiom /' initlist.lst > $@
+	for i in $(aldor_lang);       do echo "lang $$i"     >> $@; done
+	for i in $(aldor_basics);     do echo "base $$i"     >> $@; done
+	for i in $(aldor_misc);       do echo "base $$i"     >> $@; done
+	for i in $(domains);          do echo "axiom $$i"    >> $@; done
 	for i in $(aldor_extensions); do echo "aldorext $$i" >> $@; done
 
 
@@ -249,7 +251,8 @@ libaxiom.lst: initlist.lst
 # the gendeps directory. It writes a collection of Makefile variable
 # assignments and Makefile targets to stdout.
 cliques: cliques.as
-	$(ALDOR) -laldor -fx -dTRACE $<
+	$(ALDOR) -laldor -fx $<
+#	$(ALDOR) -laldor -fx -dTRACE $<
 
 cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
 	cliques libaxiom.lst > $@
@@ -259,7 +262,8 @@ cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
 # After we have generated cliques.mk, we can do the real work an start
 # compilation of al/libaxiom.al.
 al/libaxiom.al: cliques.mk
-	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)"
+	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)"
+
 
 
 #
