@@ -2733,8 +2733,6 @@ satisfiesRegularExpressions(name,patterns) ==
     STRPOS(pattern,dname,0,'"@") => nf := nil
   null nf
 
---% )with ... defined in daase.lisp (boot won't parse it)
-
 --% )workfiles
 
 workfiles l == workfilesSpad2Cmd l
@@ -2760,50 +2758,6 @@ workfilesSpad2Cmd args ==
   null $sourceFiles => SAY '"   no files specified"
   SETQ($sourceFiles,SORTBY('pathnameType,$sourceFiles))
   for fl in $sourceFiles repeat sayBrightly ["   " ,namestring fl]
-
---% )zsystemdevelopment
-
-zsystemdevelopment l == zsystemDevelopmentSpad2Cmd l
-
-zsystemDevelopmentSpad2Cmd l == zsystemdevelopment1 (l,$InteractiveMode)
-
-zsystemdevelopment1(l,im) ==
-  $InteractiveMode : local := im
-  fromopt := nil
-  -- cycle through once to see if )from is mentioned
-  for [opt,:optargs] in $options repeat
-    opt1 := selectOptionLC(opt,'(from),nil)
-    opt1 = 'from => fromopt := [['FROM,:optargs]]
-  for [opt,:optargs] in $options repeat
-    if null optargs then optargs := l
-    newopt := APPEND(optargs,fromopt)
-    opt1 := selectOptionLC(opt,'(from),nil)
-    opt1 = 'from => nil
-    opt = "c"   => _/D_,1 (newopt ,_/COMP(),NIL,NIL)
-    opt = "d"   => _/D_,1 (newopt ,'DEFINE,NIL,NIL)
-    opt = "dt"  => _/D_,1 (newopt ,'DEFINE,NIL,true)
-    opt = "ct"  => _/D_,1 (newopt ,_/COMP(),NIL,true)
-    opt = "ctl"  => _/D_,1 (newopt ,_/COMP(),NIL,'TRACELET)
-    opt = "ec"  => _/D_,1 (newopt ,_/COMP(),true,NIL)
-    opt = "ect" => _/D_,1 (newopt ,_/COMP(),true,true)
-    opt = "e"   => _/D_,1 (newopt ,NIL,true,NIL)
-    opt = "version" => version()
-    opt = "pause" =>
-      conStream := DEFIOSTREAM ('((DEVICE . CONSOLE) (QUAL . V)),120,0)
-      NEXT conStream
-      SHUT conStream
-    opt = "update" or opt = "patch" =>
-      $InteractiveMode := nil
-      upf := [KAR optargs or _/VERSION, KADR optargs or _/WSNAME,
-              KADDR optargs or '_*]
-      fun := (opt = "patch" => '_/UPDATE_-LIB_-1; '_/UPDATE_-1)
-      CATCH('FILENAM, FUNCALL(fun, upf))
-      sayMessage '"   Update/patch is completed."
-    null optargs =>
-      sayBrightly ['"   An argument is required for",:bright opt]
-    sayMessage ['"   Unknown option:",:bright opt,"    ",'%l,
-      '"   Available options are", _
-      :bright '"c ct e ec ect cls pause update patch compare record"]
 
 --% Synonym File Reader
 

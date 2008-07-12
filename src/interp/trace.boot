@@ -140,7 +140,7 @@ trace1 l ==
       [:domainList,:opList,:varList]
     optionList => [:traceList,:optionList]
     traceList
-  _/TRACE_,0 [funName for funName in argument]
+  _/TRACE_-0 [funName for funName in argument]
   saveMapSig [funName for funName in argument]
 
 getTraceOptions options ==
@@ -283,7 +283,7 @@ untrace l ==
     null l => COPY _/TRACENAMES
     l
   untraceList:= [transTraceItem x for x in l]
-  _/UNTRACE_,0 [lassocSub(funName,$mapSubNameAlist) for
+  _/UNTRACE_-0 [lassocSub(funName,$mapSubNameAlist) for
       funName in untraceList]
   removeTracedMapSigs untraceList
 
@@ -401,7 +401,7 @@ untraceMapSubNames traceNames ==
   null($mapSubNameAlist:local:= getPreviousMapSubNames traceNames) => nil
   for name in (subs:= ASSOCRIGHT $mapSubNameAlist)
     | MEMQ(name,_/TRACENAMES) repeat
-      _/UNTRACE_,2(name,nil)
+      _/UNTRACE_-2(name,nil)
       $lastUntraced:= SETDIFFERENCE($lastUntraced,subs)
 
 funfind("functor","opname") ==
@@ -550,7 +550,7 @@ untraceDomainConstructor domainConstructor ==
       keepTraced?(df, domainConstructor) ==
         (df is [dc,:.]) and (isDomainOrPackage dc) and 
            ((KAR devaluate dc) = domainConstructor) =>
-               _/UNTRACE_,0 [dc]
+               _/UNTRACE_-0 [dc]
                false
         true
   untraceAllDomainLocalOps domainConstructor
@@ -823,5 +823,6 @@ break msg ==
     sayBrightly msg
     INTERRUPT()
 
-compileBoot fn == _/D_,1(LIST fn,'(_/COMP),nil,nil)
+compileBoot fn == 
+  SAY("need to recompile: ", fn)
 

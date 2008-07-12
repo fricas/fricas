@@ -109,14 +109,6 @@ mkErrorExpr level ==
                 [highlight1(b,first a),:highlight1(b,rest a)]
       substitute(bracket rest l,first rest l,first l)
  
-compAndTrace [x,m,e] ==
-  SAY("tracing comp, compFormWithModemap of: ",x)
-  TRACE_,1(["comp","compFormWithModemap"],nil)
-  T:= comp(x,m,e)
-  UNTRACE_,1 "comp"
-  UNTRACE_,1 "compFormWithModemap"
-  T
- 
 errorRef s == stackWarning ['%b,s,'%d,'"has no value"]
  
 unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]

@@ -814,11 +814,6 @@ database.
                                           "." *lisp-bin-filetype*)))))))
   data))
 
-; )library top level command  -- soon to be obsolete
-
-(defun |with| (args)
- (|library| args))
-
 ; )library top level command
 
 (defun |library| (args)

@@ -283,7 +283,7 @@ mkCacheVec(op,nam,kind,resetCode,countCode) ==
 clearCache x ==
   get(x,'localModemap,$e) or get(x,'mapBody,$e) =>
     for [map,:sub] in $mapSubNameAlist repeat
-      map=x => _/UNTRACE_,2(sub,NIL)
+      map=x => _/UNTRACE_-2(sub,NIL)
     $e:= putHist(x,'localModemap,nil,$e)
     $e:= putHist(x,'mapBody,nil,$e)
     $e:= putHist(x,'localVars,nil,$e)

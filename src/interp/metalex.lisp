@@ -255,6 +255,8 @@ special character be the atom whose print name is the character itself."
                   ))))
  
 ; *** 4. META Auxiliary Parsing Actions
+
+(defparameter META_PREFIX nil)
  
 (defun make-defun (nametok vars body)
   (let ((name (INTERN (STRCONC |META_PREFIX| nametok))))
@@ -269,8 +271,6 @@ special character be the atom whose print name is the character itself."
  
 (defun print-package (package)
   (format out-stream "~&~%(IN-PACKAGE ~S )~%~%" package))
- 
-(defparameter Meta_Prefix nil)
  
 (defun set-prefix (prefix)  (setq META_PREFIX prefix))
  

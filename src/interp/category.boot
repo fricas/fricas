@@ -31,6 +31,8 @@
 
  
 -- Functions for building categories
+
+DEFPARAMETER($noSubsumption, true)
  
 Category() == nil --sorry to say, this hack is needed by isCategoryType
  

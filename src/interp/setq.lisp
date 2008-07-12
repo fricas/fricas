@@ -71,7 +71,6 @@
 (SETQ |$newCompCompare| NIL)
 (SETQ |$permitWhere| NIL)
 (SETQ |$newSystem| T)
-(SETQ |$noSubsumption| T)
 (SETQ |$bootStrapMode| NIL) ;; if true skip functor bodies
 (SETQ |$bootstrapDomains| NIL)
 (SETQ |$compileDontDefineFunctions| 'T)
@@ -181,9 +180,7 @@
    (|trace|                          . |interpreter|)
    (|undo|                           . |interpreter|)
    (|what|                           . |interpreter|)
-   (|with|                           . |interpreter|)
    (|workfiles|                      . |development|)
-   (|zsystemdevelopment| . |interpreter|)
  ))
 
 (SETQ |$noParseCommands| '(
@@ -226,7 +223,6 @@
     |what|
     |with|
     |workfiles|
-    |zsystemdevelopment|
     ))
 
 ;; following 2 variables are referenced by PREPARSE1
@@ -269,7 +265,6 @@
        (|apropos|    . "what things")
        (|cache|      . "set functions cache")
        (|cl|         . "clear")
-       (|cls|        . "zsystemdevelopment )cls")
        (|cms|        . "system")
        (|co|         . "compiler")
        (|d|          . "display")
@@ -277,22 +272,11 @@
        (|dependents| . "display dependents")
        (|e|          . "edit")
        (|expose|     . "set expose add constructor")
-       (|fc|         . "zsystemdevelopment )c")
-       (|fd|         . "zsystemdevelopment )d")
-       (|fdt|        . "zsystemdevelopment )dt")
-       (|fct|        . "zsystemdevelopment )ct")
-       (|fctl|       . "zsystemdevelopment )ctl")
-       (|fe|         . "zsystemdevelopment )e")
-       (|fec|        . "zsystemdevelopment )ec")
-       (|fect|       . "zsystemdevelopment )ect")
-       (|fns|        . "exec spadfn")
        (|fortran|    . "set output fortran")
        (|h|          . "help")
        (|hd|         . "system hypertex &")
        (|kclam|      . "boot clearClams ( )")
        (|killcaches| . "boot clearConstructorAndLisplibCaches ( )")
-       (|patch|      . "zsystemdevelopment )patch")
-       (|pause|      . "zsystemdevelopment )pause")
        (|prompt|     . "set message prompt")
        (|recurrence| . "set functions recurrence")
        (|restore|    . "history )restore")
@@ -302,7 +286,6 @@
        (|time|       . "set message time")
        (|type|       . "set message type")
        (|unexpose|   . "set expose drop constructor")
-       (|up|         . "zsystemdevelopment )update")
        (|version|    . "lisp *yearweek*")
        (|w|          . "what")
        (|wc|         . "what categories")

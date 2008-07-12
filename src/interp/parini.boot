@@ -148,9 +148,6 @@ scanDict:=scanDictCons()
 
 scanPun:=scanPunCons()
 
---for i in ["COLON","MINUS"] repeat
---   MAKEPROP(i,'PREGENERIC,'TRUE)
-
 for i in   [ _
    ["EQUAL"    ,"="], _
    ["TIMES"    ,"*"], _

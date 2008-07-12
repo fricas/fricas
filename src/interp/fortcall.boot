@@ -87,7 +87,7 @@ writeCFile(name,args,fortranArgs,dummies,decls,results,returnType,asps,fp) ==
   WRITE_-LINE('"  XDR xdrs;",fp)
   WRITE_-LINE('"  {",fp)
   if $addUnderscoreToFortranNames then
-    routineName := STRCONC(name,STRING(95))
+    routineName := STRCONC(name, UNDERBAR))
   else
     routineName := name
   -- If it is a function then give it somewhere to stick its result:
@@ -145,7 +145,7 @@ isPointer?(u,decls) ==
 printCName(u,ispointer,asps,fp) ==
   member(u,asps) =>
     PRINC(u,fp)
-    if $addUnderscoreToFortranNames then PRINC(STRING(95),fp)
+    if $addUnderscoreToFortranNames then PRINC(UNDERBAR, fp)
   if not ispointer then PRINC('"&",fp)
   PRINC(u,fp)
 
@@ -187,7 +187,7 @@ printDec(type,dec,asps,fp) ==
   wt(['"    ",if LISTP(type) then first(type) else type,'" "],fp)
   member(dec,asps) =>
     if $addUnderscoreToFortranNames then
-      wl([dec,STRING(95),'"();"],fp)
+      wl([dec, UNDERBAR,'"();"],fp)
     else
       wl([dec,'"();"],fp)
   LISTP(type) =>

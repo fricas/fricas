@@ -144,10 +144,9 @@
            (*EOF* NIL)
            (File-Closed NIL)
            (/editfile *spad-input-file*)
-           (|$noSubsumption| |$noSubsumption|)
            in-stream out-stream)
   (declare (special echo-meta /editfile *comp370-apply* *EOF*
-                    File-Closed Xcape |$noSubsumption|))
+                    File-Closed Xcape))
   ;; only rebind |$InteractiveFrame| if compiling
   (progv (if (not |$InteractiveMode|) '(|$InteractiveFrame|))
          (if (not |$InteractiveMode|)
@@ -372,6 +371,8 @@ or the chracters ?, !, ' or %"
         ((TRANSLABEL1 (FIRST X) AL) (TRANSLABEL1 (CDR X) AL))))
 
 ; **** 5. BOOT Error Handling
+
+(defparameter DEBUGMODE 'YES "Can be either YES or NO")
 
 (defun SPAD_SYNTAX_ERROR (&rest byebye)
   "Print syntax error indication, underline character, scrub line."
