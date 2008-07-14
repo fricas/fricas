@@ -1,3 +1,7 @@
+# (Patch) Subject: Re: aldor/axiom interoperability
+# http://article.gmane.org/gmane.comp.mathematics.axiom.devel/19315/match=broadbery
+
+
 VPATH=@srcdir@
 MAKEFLAGS += -Wwarn-undefined-variables
 ALDOR=@ALDOR@
@@ -38,6 +42,7 @@ default: al/libaxiom.al
 
 clean:
 	-rm domains.mk mkinit* initlist.lst initlist.ap
+	-rm easylist.lsp
 	-rm libaxiom.lst aldordepfiles domaindepfiles
 	-rm -rf tmp init_ap gendeps ap ao al
 	-rm cliques*
@@ -251,9 +256,10 @@ libaxiom.lst: initlist.lst
 # The program 'cliques' computes cliques according to the dependencies from
 # the gendeps directory. It writes a collection of Makefile variable
 # assignments and Makefile targets to stdout.
+CLIQUEOPTS=-mno-abbrev -mno-mactext -laldor -fx
 cliques: cliques.as
-	$(ALDOR) -laldor -fx $<
-#	$(ALDOR) -laldor -fx -dTRACE $<
+#	$(ALDOR) $(CLIQUEOPTS) $<
+	$(ALDOR) $(CLIQUEOPTS) -dTRACE $<
 
 cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
 	cliques libaxiom.lst > $@

@@ -1,3 +1,17 @@
+-- This program is responsible for the generation of cliques.mk.
+-- It takes as input a file libaxiom.lst and the dependency files
+-- from the 'gendeps' directory.
+
+-- Copyright (C) 2005-2008,  Peter Broadbery
+-- Copyright (C) 2008,  Ralf Hemmecke
+
+-- The program was originally written by Peter Broadbery.
+-- Ralf Hemmecke extended the program to write out dependencies
+-- in actual compilation order and thus make the compilation process
+-- of libaxiom.al easier. There is no longer any need to generate
+-- .lst files so that libaxiom.al contains the .ao files in an
+-- appropriate order (later files only depend on earlier files).
+
 #include "aldor.as"
 #include "aldorio.as"
 
@@ -161,6 +175,153 @@ GraphAlgorithms(T: NodeType): with {
 }
 
 
++++ A clique is a collection of names of types that have to be
++++ compiled together because of their interdependencies.
+Clique: OutputType with {
+	name: % -> String;
+		++ returns the name of the clique;
+	bracket: Generator String -> %;
+		++ Creates a clique with associated number zero.
+	generator: % -> Generator String;
+		++ Generate the members in lexicographical order.
+	setDependencies!: (%, List %) -> ();
+		++ Attaches dependencies of the clique.
+	dependencies: % -> List %;
+		++ Returns the dependencies of the clique in compilation
+		++ order.
+	setIndex!: (%, MachineInteger) -> ();
+		++ Attaches a number to a clique.
+	smallerSize?: (%, %) -> Boolean;
+		++ A clique x is smaller than a clique y if either it
+		++ has smaller size or its name is lexicographically
+		++ smaller.
+	compileEarlier?: (%, %) -> Boolean;
+		++ A clique x must be compiled earlier than a clique y,
+		++ if x is a dependency of y or neither x is a dependency
+		++ of y nor y is a dependency of x and x is
+		++ lexicographically smaller than y.
+	smallerIndex?: (%, %) -> Boolean;
+		++ Just compares the indices of the cliques.
+		++ The idea is that the indices correspond to
+		++ indices in list that is sorted by compileEarlier?.
+		++ So this test is faster.
+} == add {
+	macro S == String;
+	Rep == Record(
+	    mbrs: List S,       --members
+	    deps: List %,       --dependencies
+	    depNames: List S,   --dependency names
+	    idx: MachineInteger --compilation order
+	);
+	import from Rep, S, List S, MachineInteger;
+	-- The entries are supposed to be alphabetically sorted.
+	members(x: %): List S == rep(x).mbrs;
+	name(x: %): S == first members x;
+	bracket(g: Generator S): % == per [sort! [g], empty, empty, 0];
+	generator(x: %): Generator S == generator members x;
+	#(x: %): MachineInteger == # members x;
+	setDependencies!(x: %, d: List %): () == {
+		rep(x).deps := d;
+		rep(x).depNames := [name clq for clq in d];
+	}
+	dependencies(x: %): List % == rep(x).deps;
+	setIndex!(x: %, i: MachineInteger): () == rep(x).idx := i;
+	-- The following function is never applied to empty lists.
+	smallerSize?(x: %, y: %): Boolean == {
+		#x < #y or (#x = #y and name x < name y);
+	}
+	local dependencyNames(x: %): List S == rep(x).depNames;
+	compileEarlier?(x: %, y: %): Boolean == {
+		member?(name x, dependencyNames y) => true;
+		member?(name y, dependencyNames x) => false;
+		name x < name y;
+	}
+	-- idx should have been set before
+	smallerIndex?(x: %, y: %): Boolean == rep(x).idx < rep(y).idx;
+	(tw: TextWriter) << (x: %): TextWriter == {
+		tw << "Clq(" << rep(x).idx << "-" << members x << ")";
+	}
+}
+
+
++++ Cliques represents a collection of cliques, i.e, a collection of
++++ connected components.
+Cliques: OutputType with {
+	bracket: DirectedGraph String -> %;
+		++ Creates cliques from a directed graph.
+	generator: % -> Generator Clique;
+		++ generates the cliques in compilation order
+	sizeSorted: % -> List Clique;
+		++ generates the cliques in size+lex order
+} == add {
+	macro {
+		S  == String;
+		G  == DirectedGraph S;
+	}
+	Rep == List Clique;
+	import from Rep, List S, Clique;
+	sizeSorted(x: %): List Clique == sort!(copy rep x, smallerSize?);
+	-- Important! The sort! from 'List' does not work for the
+	-- sort to compilation order, since that
+	local insertClique!(c: Clique, previous: List Clique): () == {
+		cur := rest previous; -- pointer to current entry
+		while not empty? cur and compileEarlier?(first cur, c) repeat {
+			previous := cur;
+			cur := rest cur;
+		}
+		setRest!(previous, cons(c, cur));
+	}
+	local compileOrder(cliques: List Clique): List Clique == {
+		cliques: List Clique := sizeSorted per cliques;
+		z: List Clique := [first cliques]; -- dummy value, never used
+		for c in cliques repeat insertClique!(c, z);
+		rest z; -- remove dummy value
+	}
+	bracket(g: G): % == {
+		import from GraphAlgorithms(S), Set S, Set Set S, Clique;
+		cliques: List Clique := [
+		    [generator cc] for cc in connectedComponents g
+		];
+		local id2clq: HashTable(S, Clique) := table();
+		for clq in cliques repeat {
+			for id in clq repeat id2clq.id := clq;
+		}
+		-- There are no dependencies, yet. We set it now for each
+		-- clique.
+		for clq in cliques repeat {
+			a: Set S := []; -- all dependencies
+			for id in clq repeat a := union!(a, ancestors(g, id));
+			-- use the name of the clique instead of the type name
+			deps: Set S := [name(id2clq.id) for id in a];
+			-- now remove self dependencies and sort
+			n := name clq;
+			sdeps := sort!([id for id in deps | id ~= n]$List(S));
+			setDependencies!(clq, [id2clq.id for id in sdeps]);
+		}
+		-- The cliques should be topologically sorted according
+		-- to the dependencies.
+		-- We topologically sort the dependencies. (This step
+		-- is not really necessary, since 'make' takes care
+		-- of the actual order. So the sort is just for debugging
+		-- purposes.)
+		cliques := compileOrder cliques;
+		-- remember the index for later
+		import from MachineInteger;
+		for clq in cliques for i in 1.. repeat setIndex!(clq, i);
+		
+		-- reset dependencies to compilation order
+		for clq in cliques repeat {
+			sorteddeps := sort!(dependencies clq, smallerIndex?);
+			setDependencies!(clq, sorteddeps);
+		}
+		per cliques;
+	}
+	generator(x: %): Generator Clique == generator rep x;
+	(tw: TextWriter) << (x: %): TextWriter == {
+		import from List Clique;
+		tw << [generator x];		
+	}
+}
 -------------------------------------------------------------------
 -- addlink!(g, dep, id) means that id depends on dep.
 
@@ -191,8 +352,10 @@ MakefileGeneration: with {
 		++ generateMakefile(libaxiom.lst)
 		++ writes a Makefile to stdout.
 } == add {
-	macro S == String;
-	macro G == DirectedGraph S;
+	macro S  == String;
+	macro G  == DirectedGraph S;
+	out: TextWriter := stdout;
+	nl: Character := newline;
 
         generateMakefile(libaxiomlst: S): () == {
 		TRACE("generateMakefile: ", "Enter");
@@ -271,97 +434,107 @@ MakefileGeneration: with {
 
 		TRACE("upperTypes: ", upperTypes);
 		for id in upperTypes repeat {
-			TRACE("uid: ", id);
 			addDependencies!(g, fileMap."aldorext", id);
 		}
 		TRACE("now all upper types depend on aldorext", "");
+		cliques: Cliques := [g];
+		TRACE("ConnectedComponents: ", cliques);
 
-		import from GraphAlgorithms(S), Set S, Set Set S;
-		-- Sorting is not really necessary. We do it only to ease
-		-- checking against previous versions of the output.
-		s: List List S := [
-		    sort! [id for id in clq] for clq in connectedComponents g
-		];
-		s := sort!(s, smaller);
-		TRACE("ConnectedComponents: ", s);     
-		writeComponents(g, s);
+		---------------------------------------------------
+		-- write out the components
+		---------------------------------------------------
+		-- Output all clique names.
+		import from Clique, List Clique;
+		out << "CLIQUES = \" << nl;
+		for c in cliques repeat out << "  " << name c << "\" << nl;
+		out << nl;
+
+		-- Output all members and dependencies
+		-- To find out about cliques with size bigger than 1 use:
+		-- grep '^MEMBERS_.* = .* .*' cliques.mk
+		initaxiom := fileMap."initaxiom";
+		for c in cliques repeat writeVariables(c, initaxiom);
+		for c in cliques repeat writeTargets c;
 	}
 
-	-- The following function is never applied to empty lists.
-	local smaller(x: List S, y: List S): Boolean == {
-		import from MachineInteger, S;
-		#x < #y or (#x = #y and first x < first y);
-	}
+	local writeVariables(clq: Clique, initaxiom: List S): () == {
+		name: S := name clq;
+		---------------------------------------------------
+		-- write out the members
+		---------------------------------------------------
+		out << "MEMBERS__" << name << " =";
 
-	local writeComponents(g: G, s: List List S): () == {
-		import from List S, Edge S, List Edge S;
-		out: TextWriter := stdout;
-		nl: Character := newline;
-		out << "CLIQUES := " << newline;
-		
-		-- Each clique gets a name. The name is taken to be the
-		-- lexicographically smallest name of the clique members.
-		-- Since the entries in the clique are sorted, we simply
-		-- take the first name. clqid can be seen as a mapping from
-		-- the member name of a clique to the name of the clique.
-		clqid: HashTable(S, S) := table();
-		for clq in s repeat for id in clq repeat clqid.id := first clq;
-		for clq in s repeat {
-			name: S := first clq;
-			TRACE("write--------------: ", name);
-			out << "CLIQUES += " << name <<nl;
-			out << "CLIQUE__MEMBERS__" << name << " =";
-			for id in clq repeat out << " " << id;
-			out << nl;
+		-- We sort the members of the clq members, because if a
+		-- domain is extended, it should come before anything
+		-- else in the corresponding .ap file.
 
-			-- Write out direct dependencies.
-			out << "CLIQUE__DEPS__" << name+" =";
-			depNodes: Generator S := generate {
-				for id in clq repeat {
-					for e in inEdges(g, id) repeat {
-						yield p0 e
-					}
-				}
+		-- x is smaller than y iff
+		--   (1) x is "init_X" and y is not "init_Y"
+		--   (2) x is "init_X" and y is "init_Y"
+		--         and x is lex smaller than y
+		--   (3) x is not "init_X" and y is not "init_Y"
+		--         and "init_X" is in fileMap."initaxiom"
+		--         and ("init_Y is not in file.Map."initaxiom"
+		--             or x is lex smaller than y)
+		--   (4) x is lex smaller than y
+		local smaller?(x: S, y: S): Boolean == {
+			local init?(id: S): Boolean == {
+				import from MachineInteger;
+				#id > 5 and substring(id, 5) = "init__";
 			}
-			depNodesRed: Set S := [
-			    id for id in depNodes | not member?(id, clq)
-			];
-			TRACE("write-depNodesRed: ", depNodesRed);
-			deps: Set S := [clqid.id for id in depNodesRed];
-			sdeps: List S := sort! [generator deps];
-			TRACE("write-deps: ", sdeps);
-			for id in sdeps repeat out << " " + id;
-			out << nl;
-
-			-- Write out all (recursive) dependencies.
-			out << "CLIQUE__ALLDEPS__" << name << " =";
-			depNodes: Generator S := ancestors(g, generator clq);
-			depNodesRed: Set S := [
-			    id for id in depNodes | not member?(id, clq)
-			];
-			TRACE("write-alldepNodesRed: ", depNodesRed);
-			deps: Set S := [clqid.id for id in depNodesRed];
-			sdeps: List S := sort! [generator deps];
-			TRACE("write-alldeps: ", sdeps);
-			for id in sdeps repeat out << " " + id;
-			out << nl;
-
-			-- Write out (recursive) dependencies in
-			-- Makefile format.
-			out << "ap/" << name << ".ap: ";
-			out << "$(patsubst %,ap/%.ap,";
-			out << "$(CLIQUE__ALLDEPS__" << name << "))" << nl;
-
-			libname := "al/libaxiom__" + name + ".al";
-			
-			out << libname << ": ";
-			out << "$(patsubst %," << libname << "(%.ao)";
-			out << ", $(CLIQUE__ALLDEPS__" << name << "))" << nl;
-
-			out << libname << "(%.ao): ao/%.ao" << nl;
-			out << tab << "ar r $@ $<" << nl;
+			init? x => {
+				not init? y => true;
+				x < y;
+			}
+			init? y => false;
+			member?("init__" + x, initaxiom) => {
+				member?("init__" + y, initaxiom) => x < y;
+				true;
+			}
+			member?("init__" + y, initaxiom) => false;
+			x < y;
 		}
+		sortedMembers: List S := sort!([id for id in clq], smaller?);
+		for id in sortedMembers repeat out << " " << id;
+		out << nl;
+
+		---------------------------------------------------
+		-- Write out all (recursive) dependencies.
+		---------------------------------------------------
+		out << "DEPS__" << name << " =";
+		import from List Clique;
+		for d in dependencies clq repeat out << " " << name d << ".ao";
+		out << nl;
 	}
+
+	local writeTargets(clq: Clique): () == {
+		import from List Clique;
+		name: S := name clq;
+		libaxiom := "al/libaxiom.al";
+		libname  := "al/libaxiom__" + name + ".al";
+		depmember:= "($(DEPS__" + name + "))";
+
+		-- Each member depends on the corresponding .ao file.
+		empty? dependencies clq => {
+			out << libname << ":" << nl;
+			out << tab << "ar cr $@" << nl;
+		}
+		-- Now we know that there is at least one dependency.
+		-- What goes into the temporary library...
+		out << libname << ": " << libname << depmember << nl;
+		-- The order of members in the temporary library is
+		-- as in libaxiom.al.
+		out << libname << "(%.ao): ao/%.ao ";
+		out << libaxiom << "(%.ao)" << nl;
+		out << tab << "ar r $@ $<" << nl;
+		-- A libaxiom.al member depends on DEPS_...
+		out << libaxiom << "(" << name << ".ao): ";
+		out << libaxiom << depmember << nl;
+	}
+
+	---------------------------------------------------
+	-- Auxiliary functions follow.
+	---------------------------------------------------
 
 	-- Return the union of all recursive ancestors of 'types'.
 	-- This function is only used to figure out the lower types.
@@ -370,7 +543,7 @@ MakefileGeneration: with {
 		for id in types repeat {
 			ancs := insert!(id, union!(ancs, ancestors(g, id)));
 		}
-		return generator ancs;
+		generator ancs;
 	}
 
 	-- idx depends on dep
