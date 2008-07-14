@@ -9,29 +9,29 @@
 -- identifiers known for the export's that follow.
 -- Actually, the declarations for 'Category', 'Type', 'Tuple', and '->'
 -- are there to be able to compile from initlist.as to initlist.ap.
-Category: with;
 Type:     with;
 Tuple:    with;
 (->):     with;
 
--- These categories are only provided to make the stuff below compile.
-Field:          Category;
-IntegralDomain: Category;
-Ring:           Category;
-SetCategory:    Category;
-
 -- The following list contains some basic domains and categories from
 -- the Axiom algebra library.
 -- Declarations are sufficient.
-export Boolean:                    with;
+
+-- Note that because of the incomplete analysis of the dependencies,
+-- it is necessary here to give for some domains more than just
+-- 'with' as their initial type. Fine tuning could be done by starting
+-- with 'with' for every domain and specializing to more concrete
+-- categories according to the failure message in the compilation of
+-- big cliques.
+
 export InputForm:                  with;
 export NonNegativeInteger:         with;
 export OpenMathDevice:             with;
 export OutputForm:                 with;
 export PositiveInteger:            with;
 export SingleInteger:              with;
-export String:                     with;
 
+export String:                     SetCategory;
 export DoubleFloat:                SetCategory;
 export Float:                      SetCategory;
 export Symbol:                     SetCategory;
