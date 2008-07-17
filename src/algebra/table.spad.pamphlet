@@ -10,6 +10,11 @@
 \tableofcontents
 \eject
 \section{domain HASHTBL HashTable}
+<<TEST TABLE>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "HASHTBL"
+@
 <<domain HASHTBL HashTable>>=
 )abbrev domain HASHTBL HashTable
 ++ Author: Stephen M. Watt
@@ -39,7 +44,25 @@ HashTable(Key, Entry, hashfn): Exports == Implementation where
         Ex   ==> OutputForm
         failMsg := GENSYM()$Lisp
 
+@
+
+Originally we were implementing equality here via
+
+\begin{verbatim}
         t1 = t2              == EQ(t1, t2)$Lisp
+\end{verbatim}
+but this is wrong: we do not want that the internal order of the keys matters.
+Not implementing equality here means that equality comes from
+[[TableAggregate]], which is fine.
+
+<<TEST TABLE>>=
+testcase "equality"
+l := [[1, 1], [2, 2], [3, 3]]$List Record(key: INT, entry: INT);
+testEquals("construct(l)$TABLE(INT, INT)", "construct(reverse l)$TABLE(INT, INT)")
+
+@
+
+<<domain HASHTBL HashTable>>=
         keys t               == HKEYS(t)$Lisp
         # t                  == HCOUNT(t)$Lisp
         setelt(t, k, e)      == HPUT(t,k,e)$Lisp
@@ -213,6 +236,9 @@ GeneralSparseTable(Key, Entry, Tbl, dent): TableAggregate(Key, Entry) == Impl
 SparseTable(Key:SetCategory, Ent:SetCategory, dent:Ent) ==
         GeneralSparseTable(Key, Ent, Table(Key, Ent), dent)
 
+@
+<<TEST TABLE>>=
+statistics()
 @
 \section{License}
 <<license>>=
