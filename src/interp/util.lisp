@@ -894,8 +894,7 @@ After this function is called the image is clean and can be saved.
 
 ;; the following are for conditional reading
 (setq |$opSysName| '"shell")
-#+:CCL (defun machine-type () "unknown")
-(setq |$machineType| (machine-type))
+
 ; spad-clear-input patches around fact that akcl clear-input leaves newlines chars
 (defun spad-clear-input (st) (clear-input st) (if (listen st) (read-char st)))
 

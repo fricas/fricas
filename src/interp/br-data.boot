@@ -84,11 +84,7 @@ buildLibdb(:options) ==  --called by make-databases (daase.lisp.pamphlet)
     buildLibAttrs attrlist
   SHUT $outStream
   domainList => 'done         --leave new database in temp.text
-  OBEY
-    $machineType = 'RIOS => '"sort -f -T /tmp -y200 _"temp.text_"  > _"libdb.text_""
-    $machineType = 'SPARC => '"sort -f  _"temp.text_"  > _"libdb.text_""
-    '"sort  _"temp.text_"  > _"libdb.text_""
-  --OBEY '"mv libdb.text olibdb.text"
+  OBEY '"sort  _"temp.text_"  > _"libdb.text_""
   RENAME_-FILE('"libdb.text", '"olibdb.text")
   deleteFile '"temp.text"
 

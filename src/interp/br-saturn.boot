@@ -37,8 +37,6 @@ $aixTestSaturn := false
 --$saturn := false  --true to write SATURN output to $browserOutputStream
 --$standard:= true  --true to write browser output on AIX
 $saturnAmpersand := '"\&\&"
-$saturnFileNumber --true to write DOS files for Thinkpad (testing only)
-   := false
 $kPageSaturnArguments := nil  --bound by $kPageSaturn
 $atLeastOneUnexposed := false
 $saturnContextMenuLines := nil
@@ -97,7 +95,6 @@ off()==
 --=======================================================================
 ts(command) ==
   $saturn := true
-  $saturnFileNumber := false
   $standard := false
   saturnEvalToFile(command, '"/tmp/sat.text")
 
@@ -105,13 +102,6 @@ ut() ==
   $saturn := false
   $standard := true
   'done
-
-onDisk() ==
-  $saturnFileNumber := 1
-  obey '"dosdir"
-
-offDisk() ==
-  $saturnFileNumber := false
 
 page() ==
   $standard => $curPage
@@ -200,10 +190,6 @@ issueHTSaturn line == --called by htMakePageNoScroll and htMakeErrorPage
      writeSaturnPrefix()
      writeSaturn(line)
      writeSaturnSuffix()
-     if $saturnFileNumber then
-       fn := STRCONC('"sat", STRINGIMAGE $saturnFileNumber, '".tex")
-       obey STRCONC('"doswrite -a saturn.tex ",fn, '".tex")
-       $saturnFileNumber := $saturnFileNumber + 1
 
 writeSaturnPrefix() ==
   $saturnContextMenuLines =>
@@ -1625,12 +1611,6 @@ mkButtonBox n == STRCONC('"\buttonbox{", STRINGIMAGE n, '"}")
 --  SHUT outstream
 --  SHUT comstream
 --OBEY '"rm libdb.text"
-
-dbSort(x,y) ==
-  sin := STRINGIMAGE x
-  sout:= STRINGIMAGE y
-  OBEY STRCONC('"sort -f _"",sin,'".text_" > _"", sout, '".text_"")
-  OBEY STRCONC('"rm ", sin, '".text")
 
 -- override in  br-util.boot.pamphlet
 bcConform1 form == main where

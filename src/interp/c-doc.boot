@@ -1177,38 +1177,6 @@ checkSkipIdentifierToken(u,i,m) ==
 checkAlphabetic c ==
   ALPHA_-CHAR_-P c or DIGITP c or MEMQ(c,$charIdentifierEndings)
 
---=======================================================================
---        Code for creating a personalized report for ++ comments
---=======================================================================
-docreport(nam) ==
---creates a report for person "nam" using file "whofiles"
-  OBEY '"rm docreport.input"
-  OBEY STRCONC('"echo _")bo setOutStream('",STRINGIMAGE nam,'")_" > temp.input")
-  OBEY '"cat docreport.header temp.input > docreport.input"
-  OBEY STRCONC('"awk '/",STRINGIMAGE nam,'"/ {printf(_")co %s.spad\n_",$2)}' whofiles > temp.input")
-  OBEY '"cat docreport.input temp.input > temp1.input"
-  OBEY '"cat temp1.input docreport.trailer > docreport.input"
-  OBEY '"rm temp.input"
-  OBEY '"rm temp1.input"
-  SETQ(_/EDITFILE,'"docreport.input")
-  _/RQ()
-
-setOutStream nam ==
-  filename := STRCONC('"/tmp/",STRINGIMAGE nam,".docreport")
-  $outStream := MAKE_-OUTSTREAM filename
-
-whoOwns(con) ==
-  null $exposeFlag => nil
---con=constructor name (id beginning with a capital), returns owner as a string
-  filename := GETDATABASE(con,'SOURCEFILE)
-  quoteChar := char '_"
-  OBEY STRCONC('"awk '$2 == ",quoteChar,filename,quoteChar,'" {print $1}' whofiles > /tmp/temp")
-  instream := MAKE_-INSTREAM '"/tmp/temp"
-  value :=
-    EOFP instream => nil
-    READLINE instream
-  SHUT instream
-  value
 
 --=======================================================================
 --             Report Documentation Error
@@ -1236,7 +1204,7 @@ checkDocError u ==
 
 checkDocMessage u ==
   sourcefile := GETDATABASE($constructorName,'SOURCEFILE)
-  person := whoOwns $constructorName or '"---"
+  person := '"---"
   middle :=
     BOUNDP '$x => ['"(",$x,'"): "]
     ['": "]
