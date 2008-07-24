@@ -131,7 +131,6 @@
     (RETURN
       (AND (NULL $BOOT) (EQ (CURRENT-SYMBOL) '$)
            (OR (ALPHA-CHAR-P (CURRENT-CHAR))
-               (CHAR-EQ (CURRENT-CHAR) "$")
                (CHAR-EQ (CURRENT-CHAR) "%")
                (CHAR-EQ (CURRENT-CHAR) "("))
            (ACTION (SETQ G1 (COPY-TOKEN PRIOR-TOKEN)))
