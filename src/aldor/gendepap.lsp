@@ -28,7 +28,7 @@
 (defun init-forms (filename)
   (let ((ilist (cdr (with-open-file (str (pathname filename))
 		      (read str)))))
-    (mapcan '(lambda (x) (and (eq (car x) '|Export|) (list x))) ilist)))
+    (mapcan #'(lambda (x) (and (eq (car x) '|Export|) (list x))) ilist)))
 
 ; *initforms* lists all the export forms of "initlist.ap"
 (setq *initforms* (init-forms "initlist.ap"))
@@ -49,7 +49,7 @@
 ; from an Aldor source file. In particular for axlit.as and axextend.as
 ; we have to treat some tags differently. For example, an |Extend|
 ; should require full information of the extended domain.
-(setq *extends-axiom-domains* nil))
+(setq *extends-axiom-domains* nil)
 
 ; We introduce some debugging information.
 (defun debug-print (x y)
@@ -95,7 +95,7 @@
 	  ((eq (car apform) '|Extend|) (test-easy (cadr apform)))
 	  ((member (car apform) '(|Define| |Export| |Extend|))
 	     (test-easy1 (cadr apform)))
-	  (t nil)))))
+	  (t nil))))
 
 ; Now we have to check whether the form looks like
 ; (|Declare| |SomeName| (|Apply| -> (|Declare| |#1| |Type|) ...))
@@ -735,7 +735,7 @@
   (member var (env-vars env)))
 
 (defun map-find-deps (env lst)
-  (mapcan (lambda (x) (find-deps env x)) lst))
+  (mapcan #'(lambda (x) (find-deps env x)) lst))
 
 ; Return the list of argument names of a function.
 ; Only |Comma| and |Declare| is interesting here.
