@@ -577,6 +577,18 @@ handle_button(int button, XButtonEvent * event)
     HyperDocPage *page = NULL;
     char *page_name;
 
+    /* Hack to support mouse wheel */
+    if (event->window == gWindow->fMainWindow ||
+        event->window == gWindow->fScrollWindow) {
+        if (button == 4) {
+            scrollUp();
+            return;
+        } else if (button == 5) {
+            scrollDown();
+            return;
+        }
+    }
+
     /* find page name from sub-window handle */
 
     link = get_hyper_link(event);
