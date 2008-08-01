@@ -474,7 +474,7 @@ MakefileGeneration: with {
 		--         and x is lex smaller than y
 		--   (3) x is not "init_X" and y is not "init_Y"
 		--         and "init_X" is in fileMap."initaxiom"
-		--         and ("init_Y is not in file.Map."initaxiom"
+		--         and ("init_Y" is not in file.Map."initaxiom"
 		--             or x is lex smaller than y)
 		--   (4) x is lex smaller than y
 		local smaller?(x: S, y: S): Boolean == {
