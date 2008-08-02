@@ -317,6 +317,23 @@ runtimefiles: $(runtime_files)
 # :: Installation
 #
 
-install: $(install_tgts)
-
 .PHONY: install
+###################################################################
+# We need libaxiom.al and the .o (runtime support) files in the lib
+# subdirectory.
+install: install-libalgebra install-runtimefiles
+
+# Destination directory for the algebra files and aldor libraries.
+install_target_dir = $(DESTDIR)$(libdir)/fricas/target/$(target)
+install_algebra_dir = $(install_target_dir)/algebra
+install-libalgebra:
+	$(INSTALL_DATA) al/libaxiom.al $(install_algebra_dir)
+
+install_aldor_dir = $(install_target_dir)/aldor
+install-runtimefiles: installdir-runtimefiles
+	for f in $(runtime_files); do \
+	  $(INSTALL_DATA) $$f '$(install_aldor_dir)/lib'; \
+	done
+
+installdir-runtimefiles:
+	$(mkinstalldirs) '$(install_aldor_dir)/lib'
