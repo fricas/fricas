@@ -726,6 +726,7 @@ LISP
 GCLOPTS
 ALDOR
 SVN
+BUILD_ALDOR_INTERFACE
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -8683,6 +8684,15 @@ ac_config_files="$ac_config_files src/input/Makefile:config/var-def.mk:src/input
 ac_config_files="$ac_config_files src/etc/Makefile:config/var-def.mk:src/etc/Makefile.in:config/setup-dep.mk"
 
 
+
+###################################################################
+## The following section deals with the generation of the
+## aldor interface.
+##
+## If one of the Aldor related tests fail we should warn and
+## not build the Aldor interface. Default is to build it.
+BUILD_ALDOR_INTERFACE=build-axiom-interface
+
 ## check whether Aldor is available
 for ac_prog in aldor
 do
@@ -8725,12 +8735,17 @@ fi
 
   test -n "$ALDOR" && break
 done
-test -n "$ALDOR" || ALDOR="{ echo "$as_me:$LINENO: WARNING: Aldor not found." >&5
-echo "$as_me: WARNING: Aldor not found." >&2;}"
 
+if test -z $ALDOR; then
+  { echo "$as_me:$LINENO: WARNING: Aldor not found." >&5
+echo "$as_me: WARNING: Aldor not found." >&2;}
+  BUILD_ALDOR_INTERFACE=
+fi
 
 # The following is only necessary to get some files that do not yet
 # have a free license.
+# Not having svn is not a show stopper, because the files can be
+# obtained manually via a webbrowser.
 for ac_prog in svn
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -8772,20 +8787,40 @@ fi
 
   test -n "$SVN" && break
 done
-test -n "$SVN" || SVN="{ echo "$as_me:$LINENO: WARNING: svn not found." >&5
-echo "$as_me: WARNING: svn not found." >&2;}"
 
 
 ## check for $ALDORROOT/include/aldor.conf
-if ! test -f $ALDORROOT/include/aldor.conf; then
+if test -z $ALDORROOT || ! test -f $ALDORROOT/include/aldor.conf; then
   { echo "$as_me:$LINENO: WARNING: The environment variable ALDORROOT is not set." >&5
 echo "$as_me: WARNING: The environment variable ALDORROOT is not set." >&2;}
+  BUILD_ALDOR_INTERFACE=
 fi
 
-ac_config_files="$ac_config_files src/aldor/Makefile:config/var-def.mk:src/aldor/Makefile.in:config/setup-dep.mk"
+## check for $ALDORROOT/lib/libfoam.al (needed for aldor interface)
+if ! test -f $ALDORROOT/lib/libfoam.al; then
+  { echo "$as_me:$LINENO: WARNING: Couldn't find libfoam.al." >&5
+echo "$as_me: WARNING: Couldn't find libfoam.al." >&2;}
+  BUILD_ALDOR_INTERFACE=
+fi
 
-ac_config_files="$ac_config_files src/aldor/Makefile2:config/var-def.mk:src/aldor/Makefile2.in:config/setup-dep.mk"
+# The installation is currently not done by recursively calling
+# install in the src subdirectories, so we have to hardcode the
+# intallation of the aldor interface in src/Makefile.in and let a
+# variable decide whether or not the interface stuff should be
+# installed.
 
+
+if test -z $BUILD_ALDOR_INTERFACE; then
+  { echo "$as_me:$LINENO: WARNING: Aldor interface will not be built." >&5
+echo "$as_me: WARNING: Aldor interface will not be built." >&2;}
+else
+  axiom_src_subdirs="$axiom_src_subdirs aldor"
+  ac_config_files="$ac_config_files src/aldor/Makefile:config/var-def.mk:src/aldor/Makefile.in:config/setup-dep.mk"
+
+  ac_config_files="$ac_config_files src/aldor/Makefile2:config/var-def.mk:src/aldor/Makefile2.in:config/setup-dep.mk"
+
+fi
+###################################################################
 
 
 ## We now generate the "document" script and support files at configure time.
@@ -9584,11 +9619,12 @@ LISP!$LISP$ac_delim
 GCLOPTS!$GCLOPTS$ac_delim
 ALDOR!$ALDOR$ac_delim
 SVN!$SVN$ac_delim
+BUILD_ALDOR_INTERFACE!$BUILD_ALDOR_INTERFACE$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 16; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 17; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
