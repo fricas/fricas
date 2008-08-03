@@ -659,6 +659,7 @@ if test -z $BUILD_ALDOR_INTERFACE; then
   AC_MSG_WARN([Aldor interface will not be built.])
 else
   axiom_src_subdirs="$axiom_src_subdirs aldor"
+  axiom_src_all="$axiom_src_all all-aldor"
   AXIOM_MAKEFILE([src/aldor/Makefile])
   AXIOM_MAKEFILE([src/aldor/Makefile2])
 fi
