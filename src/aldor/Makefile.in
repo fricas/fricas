@@ -38,7 +38,7 @@ ALDOR=@ALDOR@
 # we explicitly override it here for the call of AXIOMsys.
 INTERPSYS = DAASE=$(axiom_targetdir) $(axiom_target_bindir)/AXIOMsys
 
-default: al/libaxiom.al runtimefiles
+default: axiom.as al/libaxiom.al runtimefiles
 
 clean:
 	-rm domains.mk mkinit* initlist.lst initlist.ap
@@ -279,8 +279,10 @@ runtime_files := $(patsubst %,lib/%.o, runtime $(aldor_srcs))
 $(runtime_files): lib/%.o: lsp/%.lsp
 aldor_lsp_files := $(patsubst %,lsp/%.lsp, $(aldor_srcs))
 lsp/runtime.lsp: runtime.ao lsp/.dir
-	ar x $(ALDORROOT)/lib/libfoam.al $<
 	$(ALDOR) -flsp=$@ $<
+
+runtime.ao: $(ALDORROOT)/lib/libfoam.al
+	ar x $< $@
 
 $(aldor_lsp_files): lsp/%.lsp: lsp/.dir al/libaxiom.al(%.ao)
 	ar x al/libaxiom.al $*.ao
