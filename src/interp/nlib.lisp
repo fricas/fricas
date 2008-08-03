@@ -39,12 +39,12 @@
 
 (defvar optionlist nil "alist which controls compiler output")
 
-(defun addoptions (key value) "adds pairs to optionlist"
+(defun addoptions (key value basename) "adds pairs to optionlist"
   (push (cons key value) optionlist)
   (if (equal key 'FILE)
       (push 
        (cons 'COMPILER-OUTPUT-STREAM
-                   (open (concat (libstream-dirname value) "/" "code.lsp")
+                   (open (concat (libstream-dirname value) "/" basename ".lsp")
                          :direction :output :if-exists :supersede))
              optionlist)))
 
@@ -279,17 +279,9 @@ the init blocks have the same name. At link time this causes
 the names to collide. Here we rename the file before we compile,
 do the compile, and then rename the result back to [[code.o]].
 |#
-#-:GCL (recompile-lib-file-if-necessary 
-         (concat (namestring filespec) "/code.lsp"))
-#+:GCL (let* ((base (pathname-name filespec))
-             (code (concatenate 'string (namestring filespec) "/code.lsp"))
-             (temp (concatenate 'string (namestring filespec) "/" base ".lsp"))
-             (o (make-pathname :type "o")))
-        (si::system (format nil "cp ~S ~S" code temp))
-        (recompile-lib-file-if-necessary temp)
-        (si::system (format nil "mv ~S ~S~%" 
-           (namestring (merge-pathnames o temp))
-           (namestring (merge-pathnames o code)))))
+    (let ((base (pathname-name filespec)))
+         (recompile-lib-file-if-necessary
+             (concatenate 'string (namestring filespec) "/" base ".lsp")))
   ;; only pack non libraries to avoid lucid file handling problems    
     (let* ((rstream (rdefiostream (list (cons 'file filespec) (cons 'mode 'input))))
            (nstream nil)

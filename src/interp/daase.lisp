@@ -951,7 +951,7 @@ database.
   (dolist (file libs) (|addInputLibrary| (truename file)))
   (dolist (file (nreverse nrlibs))
    (setq key (pathname-name (first (last (pathname-directory file)))))
-   (setq object (concatenate 'string (directory-namestring file) "code"))
+   (setq object (concatenate 'string (directory-namestring file) key))
    (localnrlib key file object make-database? noexpose))
   (dolist (file (nreverse asys))
    (setq object

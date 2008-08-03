@@ -386,10 +386,10 @@ stamp-oboo3: stamp-db
 	if [ ! -f stamp-oboo3 ] ; then \
            echo "Bootstrap object copy" ; \
            for A in ${CATLIST} ${DOMLIST} ; do \
-              cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+              cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
            done; \
            for A in ${CATDOMS} ; do \
-              cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
+              cp $${A}-.NRLIB/$${A}-.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
            done; \
            rm -rf *.NRLIB \
            echo "Stage 3 object bootstrap (normal mode)" ; \
@@ -401,10 +401,10 @@ stamp-oboo3: stamp-db
               DAASE=./r7 ${INTERPSYS} ) || exit 1 ; \
 	   echo "Stage 3 object copy" ; \
 	   for A in ${CATLIST} ${DOMLIST} ; do \
-	      cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	      cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	   done ; \
 	   for A in ${CATDOMS} ; do \
-	      cp $${A}-.NRLIB/code.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
+	      cp $${A}-.NRLIB/$${A}-.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
 	   done ; \
 	   touch stamp-oboo3 ; \
 	fi
@@ -429,7 +429,7 @@ stamp-bootstrap: stamp-oboo3
 	     echo ')compile "'$$A'.spad"' | DAASE=./rf ${INTERPSYS} ; \
            done ; \
 	   for A in ${BADSPADS} ; do \
-	     cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	     cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	   done ; \
 	   touch stamp-bootstrap ; \
 	fi     
@@ -444,7 +444,7 @@ guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-src
 	        echo ')compile "'$$A'.spad"' ; \
 	    done | DAASE=./rf ${INTERPSYS} ; \
 	    for A in ${GUESSLIST}; do \
-	        cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	        cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	    done ; \
           } \
 	)
@@ -456,7 +456,7 @@ test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-src
 	        echo ')compile "'$$A'.spad"' ; \
 	    done | DAASE=./rf ${INTERPSYS} ; \
 	    for A in ${TESTLIST}; do \
-	        cp $$A.NRLIB/code.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+	        cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	    done ; \
           } \
 	)
@@ -491,13 +491,13 @@ check:
 
 
 ifneq ($(BUILD_WAY),use_lisp)
-${OUT}/%.$(FASLEXT): %.NRLIB/code.$(FASLEXT)
-	cp $*.NRLIB/code.$(FASLEXT) $@
+${OUT}/%.$(FASLEXT): %.NRLIB/%.$(FASLEXT)
+	cp $*.NRLIB/$*.$(FASLEXT) $@
 endif
 
 
-.PRECIOUS: %.NRLIB/code.$(FASLEXT)
-%.NRLIB/code.$(FASLEXT): %.spad
+.PRECIOUS: %.NRLIB/%.$(FASLEXT)
+%.NRLIB/%.$(FASLEXT): %.spad
 	@ echo compiling $*.spad to $*.NRLIB
 	rm -rf $*.NRLIB
 	( \

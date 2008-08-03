@@ -321,7 +321,7 @@ initializeLisplib libName ==
   _$ERASE(libName,'ERRORLIB,$libraryDirectory)
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib1(libName,'ERRORLIB,$libraryDirectory)
-  ADDOPTIONS('FILE,$libFile)
+  ADDOPTIONS('FILE, $libFile, libName)
   $lisplibOpAlist := nil  --operations alist for new runtime system
   $lisplibVariableAlist := nil    --this and the next are used by "luke"
   $lisplibSignatureAlist := nil
