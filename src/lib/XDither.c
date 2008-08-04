@@ -40,8 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
-#include <X11/Intrinsic.h>
-#include <X11/StringDefs.h>
 #include <X11/cursorfont.h>
 
 #define XDitherWidth 3

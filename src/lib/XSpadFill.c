@@ -56,8 +56,6 @@ into place.
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
-#include <X11/Intrinsic.h>
-#include <X11/StringDefs.h>
 
 #include "spadcolors.h"
 
