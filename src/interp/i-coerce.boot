@@ -279,7 +279,7 @@ coerceRetract(object,t2) ==
   (val := objValUnwrap(object)) = "$fromCoerceable$" => NIL
   t1 := objMode object
   t2 = $OutputForm => NIL
-  isEqualOrSubDomain(t1,$Integer) and typeIsASmallInteger(t2) and SMINTP(val) =>
+  isEqualOrSubDomain(t1,$Integer) and typeIsASmallInteger(t2) and SINTP(val) =>
     objNewWrap(val,t2)
   t1 = $Integer    => NIL
   t1 = $Symbol     => NIL

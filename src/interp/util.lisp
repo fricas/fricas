@@ -1242,7 +1242,6 @@ quality we check anyway.
 
 ;;; moved from bookvol5
 
-(defvar |$historyDirectory| 'A        "vm/370 filename disk component")
 (defvar |$HiFiAccess| t               "t means turn on history mechanism")
 
 (defvar |$reportUndo| nil "t means we report the steps undo takes")
@@ -1251,7 +1250,6 @@ quality we check anyway.
 (defvar |$SpadServer| nil "t means Scratchpad acts as a remote server")
 
 
-#-:CCL
 (defun |loadExposureGroupData| ()
  (cond
   ((load "./exposed" :verbose nil :if-does-not-exist nil)
@@ -1260,14 +1258,6 @@ quality we check anyway.
      :verbose nil :if-does-not-exist nil)
    '|done|)
   (t '|failed|) ))
-
-#+:CCL
-(defun |loadExposureGroupData| ()
- (cond
-  ((load "./exposed.lsp" :verbose NIL :if-does-not-exist NIL) '|done|)
-  ((load (concat (BOOT::|getEnv| "AXIOM") "/../../src/algebra/exposed.lsp") 
-    :verbose nil :if-does-not-exist nil) '|done|)
-  (t nil) ))
 
 (defvar *fricas-load-libspad* t)
 

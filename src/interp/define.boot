@@ -256,7 +256,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
           [['devaluate,u] for u in sargl]]],body]
     body:=
       ['PROG1,['LET,g:= GENSYM(),body],['SETELT,g,0,mkConstructor $form]]
-    fun:= compile [op',['LAM,sargl,body]]
+    fun:= compile [op',['LAMBDA, sargl, body]]
  
 --  5. give operator a 'modemap property
     pairlis:= [[a,:v] for a in argl for v in $FormalMapVariableList]
@@ -328,8 +328,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $functorTarget: local := nil
     $Representation: local := nil
          --Set in doIt, accessed in the compiler - compNoStacking
-    $LocalDomainAlist: local := nil --set in doIt, accessed in genDeltaEntry
-    $LocalDomainAlist := nil
     $functorForm: local := nil
     $functorLocalParameters: local := nil
     $CheckVectorList: local := nil
@@ -341,7 +339,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       $QuickCode = true => 'QSETREFV
       'SETELT
     $TOP__LEVEL: local := nil
-    $genFVar: local:= 0
     $genSDVar: local:= 0
     originale:= $e
     [$op,:argl]:= form
@@ -439,7 +436,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
        [nil, ['Mapping, :signature'], originale]
  
     body':= T.expr
-    lamOrSlam:= if $mutableDomain then 'LAM else 'SPADSLAM
+    lamOrSlam:= if $mutableDomain then 'LAMBDA else 'SPADSLAM
     fun:= compile SUBLIS($pairlis, [op',[lamOrSlam,argl,body']])
     --The above statement stops substitutions gettting in one another's way
 --+
@@ -810,7 +807,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
       body':= replaceExitEtc(T.expr,catchTag,"TAGGEDreturn",$returnMode)
       body':= addArgumentConditions(body',$op)
       finalBody:= ["CATCH",catchTag,body']
-      compileCases([$op,["LAM",[:argl,'_$],finalBody]],oldE)
+      compileCases([$op,["LAMBDA",[:argl,'_$],finalBody]],oldE)
     $functorStats:= addStats($functorStats,$functionStats)
 
 
@@ -1225,8 +1222,6 @@ doIt(item,$predl) ==
            --$Representation bound by compDefineFunctor, used in compNoStacking
 --+
 --+
-      $LocalDomainAlist:= --see genDeltaEntry
-        [[lhs,:SUBLIS($LocalDomainAlist,get(lhs,'value,$e).0)],:$LocalDomainAlist]
 --+
     code is ['LET,:.] =>
       RPLACA(item,($QuickCode => 'QSETREFV;'SETELT))

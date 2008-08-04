@@ -64,10 +64,10 @@
   LP  (COND
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (RETURN (QCDR H)) )
-        ( (QMEMQ
+        ( (MEMQ
             (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
             (QCDR H)) )
-        ( (QMEMQ I LIST-OF-ITEMS-2)
+        ( (MEMQ I LIST-OF-ITEMS-2)
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
       (GO LP) ) )
 
@@ -111,7 +111,7 @@
             ( 'T
               (RETURN (QCDR H)) ) ) )
         ( (NOT
-            (QMEMQ
+            (MEMQ
               (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
               (QCDR H)))
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
@@ -148,9 +148,9 @@
   LP1 (COND
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (RETURN (QCDR H)) )
-        ( (QMEMQ
+        ( (MEMQ
             (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
             (QCDR H)) )
-        ( (NOT (QMEMQ I LIST-OF-ITEMS-2))
+        ( (NOT (MEMQ I LIST-OF-ITEMS-2))
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
       (GO LP1) ) )

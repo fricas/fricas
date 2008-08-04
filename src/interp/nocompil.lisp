@@ -43,19 +43,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (in-package "BOOT")
 
-(defun protected-symbol-warn (&rest arg))
-;  (format t "protected-symbol-warn called with ~A~%" arg))
-
-(defun protect-symbols (&rest arg))
-;  (format t "protected-symbol-warn called with ~A~%" arg))
-
 (defun use-fast-links (arg)
 ;  (format t "use-fast-links called with ~A~%" arg)
 #+:GCL  (si::use-fast-links arg)
  )
-
-(defun verbos (arg))
-;  (format t "verbos called with ~A~%" arg))
 
 (defun enable-backtrace (&rest arg)
 #+:ccl

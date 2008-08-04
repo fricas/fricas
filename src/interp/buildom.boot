@@ -189,8 +189,11 @@ coerceMap2E(x) ==
   ['theMap, BPINAME CAR x  ]
 
 --% Enumeration
+-- Enumeration is a Lisp macro since it wants unevaluated arguments
+-- Enumeration0 below is a function, so it needs explicit quotes for
+-- arguments
 
-Enumeration(:"args") ==
+Enumeration0(:args) ==
     dom := GETREFV 9
     -- JHD added an extra slot to cache EQUAL methods
     dom.0 := ['Enumeration, :args]
@@ -221,16 +224,12 @@ createEnum(sym, dom) ==
 
 --% INSTANTIATORS
 
-RecordCategory(:"x") == constructorCategory ['Record,:x]
+RecordCategory(:x) == constructorCategory ['Record,:x]
 
-EnumerationCategory(:"x") == constructorCategory ["Enumeration",:x]
+EnumerationCategory(:x) == constructorCategory ["Enumeration",:x]
 
-UnionCategory(:"x") == constructorCategory ["Union",:x]
+UnionCategory(:x) == constructorCategory ["Union",:x]
 
---ListCategory(:"x") == constructorCategory ("List",:x)
-
---VectorCategory(:"x") == constructorCategory ("Vector",:x)
-          --above two now defined in SPAD code.
 
 constructorCategory (title is [op,:.]) ==
   constructorFunction:= GETL(op,"makeFunctionList") or

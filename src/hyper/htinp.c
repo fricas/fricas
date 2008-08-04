@@ -221,7 +221,7 @@ make_input_file_from_page(HyperDocPage *page)
             /* send_lisp_command("(|setOutputCharacters| '(default))"); */
             send_lisp_command("(setq |$printLoadMsgs| NIL)");
             send_lisp_command("(setq |$UserLevel| '|development|)");
-            send_lisp_command("(verbos 0)");
+            /* send_lisp_command("(verbos 0)"); */
           }
           if (make_patch_files) {
             pfile = fopen(c, "a");

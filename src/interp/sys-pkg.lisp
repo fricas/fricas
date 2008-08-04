@@ -306,6 +306,7 @@
    vmlisp::make-bvec
    vmlisp::|startsId?|
    vmlisp::|idChar?|
+   vmlisp::|mkOutputConsoleStream|
 ))
 
 (in-package "FOAM")

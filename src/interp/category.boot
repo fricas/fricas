@@ -397,7 +397,7 @@ JoinInner(l,$e) ==
       if atom at2 then at2:=[at2]
         -- the variable $Attributes is built globally, so that true
         -- attributes can be detected without calling isCategoryForm
-      QMEMQ(QCAR at2,$Attributes) => nil
+      MEMQ(QCAR at2,$Attributes) => nil
       null isCategoryForm(at2,$e) =>
         $Attributes:=[QCAR at2,:$Attributes]
         nil

@@ -77,7 +77,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
       $QuickCode = true => 'QSETREFV
       'SETELT
     $TOP__LEVEL: local
-    $genFVar: local:= 0
     $genSDVar: local:= 0
     originale:= $e
     [$op,:argl]:= form
@@ -182,7 +181,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
        [nil, ['Mapping, :signature'], originale]
  
     body':= T.expr
-    lamOrSlam:= if $mutableDomain then 'LAM else 'SPADSLAM
+    lamOrSlam:= if $mutableDomain then 'LAMBDA else 'SPADSLAM
     fun:= compile SUBLIS($pairlis, [op',[lamOrSlam,argl,body']])
     --The above statement stops substitutions gettting in one another's way
 --+

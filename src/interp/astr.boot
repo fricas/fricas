@@ -54,7 +54,7 @@ ncAlist x ==
 
  --- Get the entry for key k on x's association list
 ncEltQ(x,k) ==
-   r := QASSQ(k,ncAlist x)
+   r := ASSQ(k,ncAlist x)
    NULL r => ncBug ('S2CB0007,[k])
    CDR r
  
@@ -67,7 +67,7 @@ ncPutQ(x,k,v) ==
    LISTP k =>
       for key in k for val in v repeat ncPutQ(x,key,val)
       v
-   r := QASSQ(k,ncAlist x)
+   r := ASSQ(k,ncAlist x)
    if NULL r then
       r := CONS( CONS(k,v), ncAlist x)
       RPLACA(x,CONS(ncTag x,r))

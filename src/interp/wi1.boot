@@ -139,8 +139,6 @@ compDefineLisplib(df,m,e,prefix,fal,fn) ==
   $lisplibOperationAlist: local := NIL
   $lisplibSuperDomain: local := NIL
   $libFile: local := NIL
-  $lisplibVariableAlist: local := NIL
-  $lisplibRelatedDomains: local := NIL   --from ++ Related Domains: see c-doc
   $lisplibCategory: local := nil
   --for categories, is rhs of definition; otherwise, is target of functor
   --will eventually become the "constructorCategory" property in lisplib
@@ -1222,7 +1220,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
           [['devaluate,u] for u in sargl]]],body]
     body:=
       ['PROG1,['LET,g:= GENSYM(),body],['SETELT,g,0,mkConstructor $functorForm]]
-    fun:= compile [op',['LAM,sargl,body]]
+    fun:= compile [op',['LAMBDA, sargl, body]]
 
 --  5. give operator a 'modemap property
     pairlis:= [[a,:v] for a in argl for v in $FormalMapVariableList]

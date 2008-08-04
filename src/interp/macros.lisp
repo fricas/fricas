@@ -76,14 +76,9 @@
 ;; the car of the first arg is always of the same type as the second
 ;; use eql unless we are sure fixnums are represented canonically
  
-#-lucid
 (defmacro qeqcar (x y)
   (if (integerp y) `(eql (the fixnum (qcar ,x)) (the fixnum ,y))
       `(eq (qcar ,x) ,y)))
- 
-#+lucid
-(defmacro qeqcar (x y) `(eq (qcar ,x) ,y))
- 
  
  
 (DEFUN ?ORDER (U V)  "Multiple-type ordering relation."
@@ -140,8 +135,6 @@
   (if (NUMBERP X) X (LIST 'QUOTE X)))
  
 ; 7.2 Generalized Variables
- 
-(defmacro IS (x y) `(dcq ,y ,x))
  
 (defmacro LETT (var val &rest L)
   (COND
@@ -574,13 +567,6 @@ LP  (COND ((NULL X)
          (CADR X))
         (`(QSADD1 ,X))))
  
-; 7.10 Dynamic Non-local Exits
- 
-(defmacro yield (L)
-  (let ((g (gensym)))
-    `(let ((,g (state)))
-       (if (statep ,g) (throw 'yield (list 'pair ,L) ,g)))))
- 
 ; 10.1 The Property List
  
 (DEFUN FLAG (L KEY)
@@ -658,10 +644,6 @@ LP  (COND ((NULL X)
            ((eql n (qvmaxindex vec)) vec)
            (t (subseq vec 0 (+ n 1))))))
  
-;; In CCL ASH assumes a 2's complement machine.  We use ASH in Integer and
-;; assume we have a sign and magnitude setup.
-#+:CCL (defmacro ash (u v) `(lisp::ash1 ,u ,v))
-
 ; 14 SEQUENCES
  
 ; 14.1 Simple Sequence Functions
@@ -1134,8 +1116,7 @@ LP  (COND ((NULL X)
         (SETQ file (|makePathname| '|spadmsg| '|listing| |$listingDirectory|))
         (SETQ str
               (DEFIOSTREAM
-               (CONS '(MODE . OUTPUT) (CONS (CONS 'FILE file) NIL))
-               255 0))
+                   (CONS '(MODE . OUTPUT) (CONS (CONS 'FILE file) NIL))))
         (sayBrightly1 msg str)
         (SHUT str) ) )
  
@@ -1238,7 +1219,6 @@ LP  (COND ((NULL X)
 (defun print-and-eval-defun (name body)
    (eval body)
    (print-defun name body)
-  ;; (set name (symbol-function name)) ;; this should go away
    )
 
 (defun eval-defun (name body) (eval (macroexpandall body)))
@@ -1296,6 +1276,10 @@ LP  (COND ((NULL X)
 (defmacro |Record| (&rest x)
   `(|Record0| (LIST ,@(COLLECT (IN Y X)
                          (list 'CONS (MKQ (CADR Y)) (CADDR Y))))))
+
+(defmacro |Enumeration| (&rest args)
+      (cons '|Enumeration0|
+	            (mapcar #'(lambda (x) (list 'QUOTE x)) args)))
 
 (defmacro |:| (tag expr) `(LIST '|:| ,(MKQ tag) ,expr))
 

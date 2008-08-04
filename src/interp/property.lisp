@@ -270,7 +270,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
     (|NegativeInteger| . (|<| * 0))
     (|NonPositiveInteger| . (|<=| * 0))
     (|NonZeroInteger| . (^= * 0))
-    (|SingleInteger| . (SMINTP *))
+    (|SingleInteger| . (SINTP *))
     ))
 
 (MAKEPROP '|NonNegativeInteger| '|Subsets| '(

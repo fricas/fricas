@@ -34,12 +34,6 @@
 
 --% Utility Functions of General Use
 
-PPtoFile(x, fname) ==
-    stream := DEFIOSTREAM([['MODE, :'OUTPUT], ['FILE, :fname]], 80, 0)
-    PRETTYPRINT(x, stream)
-    SHUT stream
-    x
-
 -- Convert an arbitrary lisp object to canonical boolean.
 bool x ==
     NULL NULL x

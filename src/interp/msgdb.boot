@@ -460,7 +460,7 @@ throwKeyedMsgFromDb(key,args,dbName) ==
 queryUserKeyedMsg(key,args) ==
   ioHook("startQueryUser")
   -- display message and return reply
-  conStream := DEFIOSTREAM ('((DEVICE . CONSOLE) (MODE . INPUT)),120,0)
+  conStream := DEFIOSTREAM ('((DEVICE . CONSOLE) (MODE . INPUT)))
   sayKeyedMsg(key,args)
   ans := read_-line conStream
   SHUT conStream

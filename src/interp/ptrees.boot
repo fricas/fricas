@@ -61,7 +61,7 @@ tokConstruct(hd,tok,:pos)==
 tokType x== ncTag x
 tokPart x== CDR x
 tokPosn x==
-     a:= QASSQ("posn",ncAlist x)
+     a:= ASSQ("posn",ncAlist x)
      if a then CDR a else pfNoPosition()
 
 pfAbSynOp form ==

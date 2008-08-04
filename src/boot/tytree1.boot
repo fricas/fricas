@@ -653,15 +653,8 @@ bfGargl argl==
 bfDef1 [defOp,op,args,body] ==
   argl:=if bfTupleP args then cdr args else [args]
   [quotes,control,arglp,body]:=bfInsertLet (argl,body)
-  quotes=>shoeLAM(op,arglp,control,body)
+  quotes=>BREAK()
   [[op,["LAMBDA",arglp,body]]]
- 
-shoeLAM (op,args,control,body)==
-  margs :=bfGenSymbol()
-  innerfunc:=INTERN(CONCAT(PNAME op,",LAM"))
-  [[innerfunc,["LAMBDA",args,body]],
-     [op,["MLAMBDA",["&REST",margs],["CONS",["QUOTE", innerfunc],
-                    ["WRAP",margs, ["QUOTE", control]]]]]]
  
 bfDef(defOp,op,args,body) ==
  $bfClamming =>

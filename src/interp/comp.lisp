@@ -41,7 +41,7 @@
 ;
 ;          SPADLET is defined in Macro.Lisp.
 ;
-;          Comp recognizes as new lambda types the forms ILAM, SPADSLAM, SLAM,
+;          Comp recognizes as new lambda types the forms SPADSLAM, SLAM,
 ;          and entries on $clamList.  These cache results.  ("Saving LAMbda".)
 ;          If the function is called with EQUAL arguments, returns the previous
 ;          result computed.
@@ -51,7 +51,7 @@
 
 (in-package "BOOT")
 
-(export '(Comp FluidVars LocVars OptionList SLAM SPADSLAM ILAM FLUID))
+(export '(Comp FluidVars LocVars OptionList SLAM SPADSLAM FLUID))
 
 ;;; Common Block section
 
@@ -151,7 +151,6 @@
           ((eq TYPE 'SLAM) (COMP-SLAM NAME ARGL BODYL))
           ((LASSQ NAME |$clamList|) (|compClam| NAME ARGL BODYL |$clamList|))
           ((eq TYPE 'SPADSLAM) (COMP-SPADSLAM NAME ARGL BODYL))
-          ((eq TYPE 'ILAM) (COMP-ILAM NAME ARGL BODYL))
           ((setq BODYL (LIST NAME (CONS TYPE (CONS ARGL BODYL))))
            (if |$PrettyPrint| (pprint bodyl))
            (if (null $COMPILE) (SAY "No Compilation")
@@ -160,13 +159,6 @@
 
 ;; used to be called POSN - but that interfered with a CCL function
 (DEFUN POSN1 (X L) (position x l :test #'equal))
-
-(DEFUN COMP-ILAM (NAME ARGL BODYL)
-  (let* ((FARGL (NLIST (LENGTH ARGL) '(GENSYM)))
-         (BODYLP (SUBLISLIS FARGL ARGL BODYL)))
-        (MAKEPROP NAME 'ILAM T)
-        (SET NAME (CONS 'LAMBDA (CONS FARGL BODYLP)))
-        NAME))
 
 (DEFUN COMP-SPADSLAM (NAME ARGL BODYL)
   (let* ((AL (INTERNL NAME ";AL"))
@@ -182,7 +174,7 @@
          (ARG (first U))
          (ARGTRAN (second U))
          (APP (third U))
-         (LAMEX  `(lam ,ARG
+         (LAMEX  `(LAMBDA ,ARG
                        (let (,g2)
                          (cond ,(COND (ARGL `((setq ,g2 (|assoc| ,argtran ,al))
                                               (cdr ,g2)))
@@ -213,7 +205,7 @@
          (ARG (CAR U))
          (APP (CADR U))
          (LAMEX
-           (LIST 'LAM ARG
+           (LIST 'LAMBDA ARG
                  (LIST 'PROG (LIST G2)
                        (LIST 'RETURN
                              (LIST 'COND
@@ -338,7 +330,7 @@
           ((AND (eq U 'MAKEPROP) $TRACELETFLAG (RPLAC (CAR X) 'MAKEPROP-SAY) NIL)
            NIL)
            ; temporarily make TRACELET cause MAKEPROPs to be reported
-          ((MEMQ U '(DCQ RELET PRELET SPADLET SETQ LET) )
+          ((MEMQ U '(DCQ SPADLET SETQ LET) )
            (COND ((NOT (eq U 'DCQ))
                   (COND ((OR (NOT $BOOT)
                              (MEMQ $FUNNAME |$traceletFunctions|))
@@ -350,14 +342,12 @@
                         ($TRACELETFLAG (RPLACA X '/TRACE-LET))
                         ((eq U 'LET) (RPLACA X 'SPADLET)))))
            (COMP-TRAN-1 (CDDR X))
-           (AND (NOT (MEMQ U '(setq RELET)))
+           (AND (NOT (MEMQ U '(setq)))
                 (COND ((IDENTP (CADR X)) (PUSHLOCVAR (CADR X)))
                       ((EQCAR (CADR X) 'FLUID)
                        (PUSH (CADADR X) FLUIDVARS)
                        (RPLAC (CADR X) (CADADR X)))
                       ((mapc #'pushlocvar (listofatoms (cadr x))) nil))))
-          ((and (symbolp u) (GET U 'ILAM))
-           (RPLACA X (EVAL U)) (COMP-TRAN-1 X))
           ((MEMQ U '(PROG LAMBDA))
            (PROG (NEWBINDINGS RES)
                  (setq NEWBINDINGS NIL)
@@ -380,7 +370,4 @@
                 (NOT (DIGITP (ELT P 1)))) NIL)
           ((PUSH X LOCVARS)))))
 
-(defmacro PRELET (L) `(spadlet . ,L))
-(defmacro RELET (L) `(spadlet . ,L))
-(defmacro PRESET (L) `(spadlet . ,L))
 (defmacro RESET (L) `(spadlet . ,L))

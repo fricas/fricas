@@ -82,8 +82,8 @@
            (print-full body st) (force-output st))))
 
 (defun boot (&optional
-              (*boot-input-file* nil)
-              (*boot-output-file* nil)
+              (boot-input-file nil)
+              (boot-output-file nil)
              &aux
              (Echo-Meta t)
              ($BOOT T)
@@ -97,17 +97,17 @@
   (declare (special echo-meta *comp370-apply* *EOF* File-Closed XCape))
   (init-boot/spad-reader)
   (with-open-stream
-    (in-stream (if *boot-input-file* (open *boot-input-file* :direction :input)
+    (in-stream (if boot-input-file (open boot-input-file :direction :input)
                     *standard-input*))
     (initialize-preparse in-stream)
     (with-open-stream
-      (out-stream (if *boot-output-file*
-                      (open *boot-output-file* :direction :output
+      (out-stream (if boot-output-file
+                      (open boot-output-file :direction :output
                          :if-exists :supersede)
                       #-(or :cmu :sbcl) (make-broadcast-stream *standard-output*)
                       #+(or :cmu :sbcl) *standard-output*
                       ))
-      (when *boot-output-file*
+      (when boot-output-file
          (format out-stream "~&;;; -*- Mode:Lisp; Package:Boot  -*-~%~%")
          (print-package "BOOT"))
       (loop (if (and (not File-Closed)
@@ -122,18 +122,16 @@
                          (format out-stream "~&")
                          (if (null parseout) (ioclear)) ))
                 (return nil)))
-      (if *boot-input-file*
+      (if boot-input-file
           (format out-stream ";;;Boot translation finished for ~a~%"
-                  (namestring *boot-input-file*)))
+                  (namestring boot-input-file)))
       (IOClear in-stream out-stream)))
   T)
 
 (defun spad (&optional
-              (*spad-input-file* nil)
-              (*spad-output-file* nil)
+              (spad-input-file nil)
+              (spad-output-file nil)
              &aux
-         ;;  (Echo-Meta *spad-input-file*)
-         ;;  (*comp370-apply* (function print-and-eval-defun))
            (*comp370-apply* (function print-defun))
            (*fileactq-apply* (function print-defun))
          ;;  (|$InteractiveMode| nil)
@@ -143,7 +141,7 @@
            (OPTIONLIST nil)
            (*EOF* NIL)
            (File-Closed NIL)
-           (/editfile *spad-input-file*)
+           (/editfile spad-input-file)
            in-stream out-stream)
   (declare (special echo-meta /editfile *comp370-apply* *EOF*
                     File-Closed Xcape))
@@ -158,14 +156,14 @@
   (init-boot/spad-reader)
   (unwind-protect
     (progn
-      (setq in-stream (if *spad-input-file*
-                         (open *spad-input-file* :direction :input)
+      (setq in-stream (if spad-input-file
+                         (open spad-input-file :direction :input)
                          *standard-input*))
       (initialize-preparse in-stream)
-      (setq out-stream (if *spad-output-file*
-                           (open *spad-output-file* :direction :output)
+      (setq out-stream (if spad-output-file
+                           (open spad-output-file :direction :output)
                          *standard-output*))
-      (when *spad-output-file*
+      (when spad-output-file
          (format out-stream "~&;;; -*- Mode:Lisp; Package:Boot  -*-~%~%")
          (print-package "BOOT"))
       (setq curoutstream out-stream)
@@ -184,8 +182,8 @@
                ;(IOClear in-stream out-stream)
                )))
       (IOClear in-stream out-stream)))
-    (if *spad-input-file* (shut in-stream))
-    (if *spad-output-file* (shut out-stream)))
+    (if spad-input-file (shut in-stream))
+    (if spad-output-file (shut out-stream)))
   T))
 
 ;  *** 2. BOOT Line Handling ***

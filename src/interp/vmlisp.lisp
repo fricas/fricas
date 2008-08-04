@@ -57,8 +57,6 @@
 
 (defvar *fileactq-apply* nil "function to apply in fileactq")
 
-(defvar *lam-name* nil "name to be used by lam macro if non-nil")
-
 (defvar macerrorcount 0  "Put some documentation in here someday")
 
 (defvar *read-place-holder* (make-symbol "%.EOF")
@@ -67,26 +65,18 @@
 ;; DEFMACROS
 
 
-#-:CCL
 (defmacro add1 (x)
  `(1+ ,x))
 
 (defmacro applx (&rest args)
  `(apply ,@args))
 
-#-(or LispM Lucid :CCL)
 (defmacro assq (a b)
  `(assoc ,a ,b :test #'eq))
-
-#+:CCL
-(defmacro assq (a b) `(atsoc ,a ,b))
 
 (defmacro |char| (x)
   (if (and (consp x) (eq (car x) 'quote)) (character (cadr x))
     `(character ,x)))
-
-(defmacro closedfn (form)
- `(function ,form))
 
 (defmacro cvecp (x)
  `(stringp ,x))
@@ -94,7 +84,6 @@
 (defmacro dcq (&rest args)
  (cons 'setqp args))
 
-#-:CCL
 (defmacro difference (&rest args)
  `(- ,@args))
 
@@ -105,7 +94,6 @@
   (defun equable (x) ;;def needed to prevent recursion in def of eqcar
     (or (null x) (and (consp x) (eq (car x) 'quote) (symbolp (cadr x))))))
 
-#-:CCL
 (defmacro eqcar (x y)
  (let ((test
         (cond
@@ -117,9 +105,6 @@
     (let ((xx (gensym)))
      `(let ((,xx ,x))
        (and (consp ,xx) (,test (qcar ,xx) ,y)))))))
-
-(defmacro |equal| (x y)
- `(equalp ,x ,y))
 
 (defmacro evalandfileactq (name &optional (form name))
  `(eval-when (eval load) ,form))  
@@ -176,13 +161,9 @@
 (defmacro intp (x)
  `(integerp ,x))
 
-(defmacro lam (&rest body)
- (list 'quote (*lam (copy-tree body))))
-
 (defmacro LASTNODE (l)
  `(last ,l))
 
-#-:CCL
 (defmacro lessp (&rest args)
  `(< ,@args))
 
@@ -194,11 +175,9 @@
 (defmacro maxindex (x)
  `(the fixnum (1- (the fixnum (length ,x)))))
 
-#-(or LispM Lucid :CCL)
 (defmacro memq (a b)
  `(member ,a ,b :test #'eq))
 
-#-:CCL
 (defmacro minus (x)
  `(- ,x))
 
@@ -221,31 +200,24 @@
 (defmacro pairp (x)
  `(consp ,x)) 
 
-#-:CCL
 (defmacro plus (&rest args)
  `(+ ,@ args))
 
-; (defmacro qassq (a b)
-;  `(assoc ,a ,b :test #'eq))
-(defmacro qassq (a b) `(assq ,a ,b))
-
-#-:CCL
 (defmacro qcar (x)
  `(car (the cons ,x)))
-#-:CCL
+
 (defmacro qcdr (x)
  `(cdr (the cons ,x)))
 
-#-:CCL
 (defmacro qcaar (x)
  `(car (the cons (car (the cons ,x)))))
-#-:CCL
+
 (defmacro qcadr (x)
  `(car (the cons (cdr (the cons ,x)))))
-#-:CCL
+
 (defmacro qcdar (x)
  `(cdr (the cons (car (the cons ,x)))))
-#-:CCL
+
 (defmacro qcddr (x)
  `(cdr (the cons (cdr (the cons ,x)))))
 
@@ -274,10 +246,6 @@
 
 (defmacro qlength (a)
  `(length ,a))
-
-; (defmacro qmemq (a b)
-; `(member ,a ,b :test #'eq))
-(defmacro qmemq (a b) `(memq ,a ,b))
 
 (defmacro qrefelt (vec ind)
  `(svref ,vec ,ind))
@@ -351,11 +319,6 @@
 (defmacro qvsize (x)
  `(the fixnum (length (the simple-vector ,x))))
 
-; #-:CCL
-; (defmacro refvecp (v)
-;  `(typep ,v '(vector t)))
-; #+:CCL
-; (defun refvecp (v) (and (vectorp v) (not (stringp v))))
 (defmacro refvecp (v) `(simple-vector-p ,v))
 
 (defmacro resetq (a b)
@@ -371,7 +334,6 @@
  `(eval-when (:execute :load-toplevel) 
    (defparameter ,id ,item)))
 
-#-:CCL
 (defmacro setelt (vec ind val)
  `(setf (elt ,vec ,ind) ,val))
 
@@ -385,19 +347,8 @@
     (nsubstitute '(progn) nil body) ;don't treat NIL as a label
     `(block seq (tagbody ,@(nreverse body) ,val))))
 
-#-:CCL
 (defmacro sintp (n)
  `(typep ,n 'fixnum))
-#+:CCL
-(defmacro sintp (n)
-  `(fixp ,n))
-
-#-:CCL
-(defmacro smintp (n)
- `(typep ,n 'fixnum))
-#+:CCL
-(defmacro smintp (n)
-  `(fixp ,n))
 
 (defmacro |startsId?| (x)
  `(or (alpha-char-p ,x) (member ,x '(#\? #\% #\!) :test #'char=)))
@@ -408,50 +359,31 @@
 (defmacro subrp (x)
  `(compiled-function-p ,x))
 
-#-:CCL
 (defmacro sub1 (x)
  `(1- ,x))
 
-#-:CCL
 (defmacro times (&rest args)
  `(* ,@args))
 
 (defmacro vec-setelt (vec ind val)
  `(setf (svref ,vec ,ind) ,val))
 
-; #-:CCL
-; (defmacro vecp (v)
-;  `(typep ,v '(vector t)))
-; #+:CCL
-; (defun vecp (v) (and (vectorp v) (not (stringp v))))
 (defmacro vecp (v) `(simple-vector-p ,v))
 
 ;; defuns
 
-#-(or :CCL (and :Lucid (not :rios)))
 (defun define-function (f v)
  (setf (symbol-function f) v))
-#+:CCL
-(defun define-function (f v)
- (setf (symbol-function f) v)
- (setf (get f 's:newname) v))
 
 (define-function 'tempus-fugit #'get-internal-run-time)
 
 (defun $TOTAL-ELAPSED-TIME ()
    (list (get-internal-run-time) (get-internal-real-time)))
 
-#-(OR IBCL KCL :CMULISP :CCL)
+#-(OR :GCL :CMULISP)
 (defun $TOTAL-GC-TIME () (list 0 0))
 
-#+:CCL
-(defun $TOTAL-GC-TIME () (list (gctime) (gctime)))
-
-#+IBCL
-(defun $TOTAL-GC-TIME (&aux (gcruntime (system:gbc-time-report)))
-  (list gcruntime gcruntime))
-
-#+KCL
+#+:GCL
 (defun $TOTAL-GC-TIME (&aux (gcruntime (system:gbc-time)))
   (if (minusp gcruntime)
       (setq gcruntime (system:gbc-time 0)))
@@ -463,64 +395,10 @@
  (declare (special ext::*gc-runtime* ext::*gc-walltime*))
  (list ext::*gc-runtime* ext::*gc-walltime*))
 
-; 7.0 Macros
-
-; 7.2 Creating Macro Expressions
-
-; 5.2 Functions
-
-; 5.2.2 Lambda Expressions
-
-(defun *LAM (body)
-  (cond  ((NOT (ISQUOTEDP (first BODY))) (cons 'LAMBDA BODY))
-         ((LET* ((BV (DEQUOTE (first BODY)))
-                 (CONTROL (QUOTESOF (first BODY)))
-                 (BODY (cdr BODY))
-                 (ARGS (GENSYM))
-                 (INNER-FUNC (or *lam-name* (gentemp))))
-            (COMP370 (LIST INNER-FUNC `(LAMBDA ,BV . ,BODY)))
-            `(MLAMBDA ,ARGS
-                      (CONS (QUOTE ,INNER-FUNC)
-                            (WRAP (cdr ,ARGS) ',CONTROL)))))))
-
-(defun WRAP (LIST-OF-ITEMS WRAPPER)
- (prog nil
-  (COND ((OR (NOT (PAIRP LIST-OF-ITEMS)) (not WRAPPER))
-         (RETURN LIST-OF-ITEMS))
-        ((NOT (consp WRAPPER))
-         (SETQ WRAPPER (LOTSOF WRAPPER))))
-  (RETURN
-    (CONS (if (first WRAPPER)
-              `(,(first WRAPPER) ,(first LIST-OF-ITEMS))
-              (first LIST-OF-ITEMS))
-          (WRAP (cdr LIST-OF-ITEMS) (cdr WRAPPER))))))
-
-(defun ISQUOTEDP (bv)
-  (COND ((NOT (consp BV)) NIL)
-        ((EQ (first BV) 'QUOTE))
-        ((AND (consp (first BV)) (EQ (QCAAR BV) 'QUOTE)))
-        ((ISQUOTEDP (cdr BV)))))
-
-(defun QUOTESOF (BV)
-  (COND ((NOT (consp BV)) NIL)
-      ((EQ (first BV) 'QUOTE) 'QUOTE)
-      ((CONS (COND ((NOT (consp (first BV))) nil)
-                   ((EQ (QCAAR BV) 'QUOTE) 'QUOTE)
-                   (T NIL))
-             (QUOTESOF (cdr BV))))))
-
-(defun DEQUOTE (BV)
-  (COND ((NOT (consp BV)) BV)
-        ((EQ 'QUOTE (first BV)) (second BV))
-        ((CONS (if (EQ 'QUOTE (IFCAR (CAR BV))) (CADAR BV) (first BV))
-               (DEQUOTE (cdr BV))))))
-
-(defun lotsof (&rest items)
-  (setq items (copy-list items))
-  (nconc items items))
 
 ; 7.4 Using Macros
 
+; Used only in debug.lisp
 ; Beats me how to simulate macro expansion "in the environment of sd"...:
 
 (defun MDEF (arg item &optional sd)
@@ -537,8 +415,6 @@
   (cond ((atom (car fnlist)) (list (COMPILE1 fnlist)))
         (t (MAPCAR #'(lambda (x) (COMPILE1 x)) fnlist))))
 
-#+:CCL (proclaim '(special *vars* *decl*)) ;; declare not handled right
-
 (defun COMPILE1 (fn)
   (let* (nargs
          (fname (car fn))
@@ -548,16 +424,14 @@
          (body (cddr lamda)))
     (declare (special *vars* *decl*))
     (if (eq ltype 'LAM)
-        (let ((*lam-name* (intern (concat fname "\,LAM"))))
-          (setq lamda (eval lamda) ltype (car lamda) body (cddr lamda))))
+        (BREAK))
     (let ((dectest (car body)))
       (if (and (eqcar dectest 'declare) (eqcar (cadr dectest) 'special))
           (setq *decl* (cdr (cadr dectest)) body (cdr body))))
     (setq args (remove-fluids (cadr lamda)))
     (cond ((and (eq ltype 'lambda) (simple-arglist args)) (setq nargs args))
           (t (setq nargs (gensym))
-     #+LispM (setq body `((dsetq ,args (copy-list ,nargs)) ,@body))
-     #-LispM (setq body `((dsetq ,args  ,nargs) ,@body))
+             (setq body `((dsetq ,args  ,nargs) ,@body))
              (cond ((eq ltype 'lambda) (setq nargs `(&rest ,nargs &aux ,@*vars*)))
                    ((eq ltype 'mlambda)
                     (setq nargs `(&whole ,nargs &rest ,(gensym) &aux ,@*vars*)))
@@ -628,13 +502,6 @@
 
 ; 9.13 Streams
 
-#+Lucid
-(defun IS-CONSOLE (stream)
-    (and (streamp stream)
-         (or (not (consp (pathname-directory stream)))
-             (equal (qcar (pathname-directory stream)) "dev")
-             (null (pathname-name stream) ))))
-
 #+KCL
 (defun IS-CONSOLE (stream)
   (and (streamp stream) (output-stream-p stream)
@@ -646,10 +513,6 @@
      (or (eq stream *terminal-io*)
          (and (typep stream 'synonym-stream)
               (eq (SYNONYM-STREAM-SYMBOL stream) '*terminal-io*))))
-
-; 10.0 Control Structures
-
-; 10.8.4 Auxiliary Operators
 
 ; 11.0 Operations on Identifiers
 
@@ -677,7 +540,6 @@
         ((characterp x) (string x))
         (t nil)))
 
-#-:CCL
 (defun put (sym ind val) (setf (get sym ind) val))
 
 (define-function 'MAKEPROP #'put)
@@ -698,13 +560,11 @@
   (cond ((or (floatp x) (floatp y)) (/ x y))
         (t (truncate x y))))
 
-#-:CCL
 (defun REMAINDER (x y)
   (if (and (integerp x) (integerp y))
       (rem x y)
       (- x (* y (QUOTIENT x y)))))
 
-#-:CCL
 (defun DIVIDE (x y)
   (if (and (integerp x) (integerp y))
       (multiple-value-list (truncate x y))
@@ -761,8 +621,6 @@
 
 ; 14.3 Searching
 
-#+:CCL (DEFMACRO |assoc| (X Y) `(ASSOC** ,X ,Y))
-#-:CCL
 (DEFUN |assoc| (X Y)
   "Return the pair associated with key X in association list Y."
   ; ignores non-nil list terminators
@@ -842,13 +700,9 @@
 ; 16.2 Accessing
 
 
-;; Oddly, LENGTH is more efficient than LIST-LENGTH in CCL, since the former
-;; is compiled and the latter is byte-coded!
 (defun size (l) 
   (cond ((vectorp l) (length l))
-#+:CCL  ((stringp l) (length l)) ;; Until ACN fixes his lisp -> C translator.
-#-:CCL  ((consp l)   (list-length l))
-#+:CCL  ((consp l)   (length l))
+        ((consp l)   (list-length l))
         (t           0)))
 
 (define-function 'MOVEVEC #'replace)
@@ -1125,12 +979,6 @@
 )
 
 
-; 19.3 Searching
-
-; 19.4 Updating
-
-; 22.0 Internal and External Forms
-
 ; 23.0 Reading
 
 
@@ -1166,31 +1014,27 @@
 
 ; 27.1 Creation
 
-(defun MAKE-INSTREAM (filespec &optional (recnum 0))
- (declare (ignore recnum))
+(defun MAKE-INSTREAM (filespec)
    (cond ((numberp filespec) (make-synonym-stream '*terminal-io*))
          ((null filespec) (error "not handled yet"))
          (t (open (make-input-filename filespec)
                   :direction :input :if-does-not-exist nil))))
 
-(defun MAKE-OUTSTREAM (filespec &optional (width nil) (recnum 0))
- (declare (ignore width) (ignore recnum))
+(defun MAKE-OUTSTREAM (filespec)
    (cond ((numberp filespec) (make-synonym-stream '*terminal-io*))
          ((null filespec) (error "not handled yet"))
          (t (open (make-filename filespec) :direction :output
                :if-exists :supersede))))
 
-(defun MAKE-APPENDSTREAM (filespec &optional (width nil) (recnum 0))
+(defun MAKE-APPENDSTREAM (filespec)
  "fortran support"
- (declare (ignore width) (ignore recnum))
  (cond 
   ((numberp filespec) (make-synonym-stream '*terminal-io*))
   ((null filespec) (error "make-appendstream: not handled yet"))
   ('else (open (make-filename filespec) :direction :output
           :if-exists :append :if-does-not-exist :create))))
 
-(defun DEFIOSTREAM (stream-alist buffer-size char-position)
- (declare (ignore buffer-size))
+(defun DEFIOSTREAM (stream-alist)
    (let ((mode (or (cdr (assoc 'MODE stream-alist)) 'INPUT))
          (filename (cdr (assoc 'FILE stream-alist)))
          (dev (cdr (assoc 'DEVICE stream-alist))))
@@ -1200,9 +1044,10 @@
                                             :direction :output))
                           ((INPUT I) (open (make-input-filename filename)
                                            :direction :input)))))
-          (if (and (numberp char-position) (> char-position 0))
-              (file-position strm char-position))
           strm))))
+
+(defun |mkOutputConsoleStream| ()
+     (make-synonym-stream '*terminal-io*))
 
 (defun shut (st) (if (is-console st) st
                    (if (streamp st) (close st) -1)))
@@ -1312,8 +1157,6 @@
     (format nil "~2,'0D/~2,'0D/~2,'0D~2,'0D:~2,'0D:~2,'0D"
             month day (rem year 100) hour min sec)))
 
-(defun $screensize () '(24 80))          ; You tell me!!
-
 ; 97.0 Stuff In The Manual But Wierdly Documented
 
 (defun EBCDIC (x) (int-char x))
@@ -1368,14 +1211,6 @@
         (LIST "in the expression:" MESSAGE))
       ())
 
-#+Lucid
-(defun numberofargs (x)
-  (setq x (system::arglist x))
-  (let ((nx (- (length x) (length (memq '&aux x)))))
-    (if (memq '&rest x) (setq nx (- (1- nx))))
-    (if (memq '&optional x) (setq nx (- (1- (abs nx)))))
-    nx))
-
 ; 98.0 Stuff Not In The VMLisp Manual That We Like
 
 ; A version of GET that works with lists
@@ -1396,10 +1231,6 @@
                      (return (cdar sym))))))
         ((symbolp sym) (get sym key))))
 
-; The following should actually position the cursor at the sint'th line of the screen:
-
-(defun $showline (cvec sint) (terpri) sint (princ cvec))
-
 ; 99.0 Ancient Stuff We Decided To Keep
 
 (defun LAM\,EVALANDFILEACTQ (name &optional (form name))
@@ -1411,18 +1242,11 @@
 (define-function 'EVALFUN #'eval) ;EVALFUN drops lexicals before evaluating
 
 (defun PLACEP (item) (eq item *read-place-holder*))
-(defun VMREAD (&optional (st *standard-input*) (eofval *read-place-holder*))
+(defun VMREAD (st &optional (eofval *read-place-holder*))
   (read st nil eofval))
 (defun |read-line| (st &optional (eofval *read-place-holder*))
   (read-line st nil eofval))
 
-(defun STATEP (item)
- (declare (ignore item))
-   nil) ;no state objects
-
-#+Lucid
-(defun gcmsg (x)
-   (prog1 (not system::*gc-silence*) (setq system::*gc-silence* (not x))))
 #+(OR IBCL KCL)
 (defun gcmsg (x)
    (prog1 system:*gbc-message* (setq system:*gbc-message* x)))
@@ -1444,35 +1268,22 @@
 (defun reclaim () (ext::gc))
 #+:allegro
 (defun reclaim () (excl::gc t))
-#+:CCL
-(defun reclaim () (gc))
 #+clisp
 (defun reclaim () (#+lisp=cl ext::gc #-lisp=cl lisp::gc))
 #+(or :cmulisp :cmu)
 (defun reclaim () (ext:gc))
 #+cormanlisp
 (defun reclaim () (cl::gc))
-#+(OR IBCL KCL GCL)
+#+:GCL
 (defun reclaim () (si::gbc t))
 #+lispworks
 (defun reclaim () (hcl::normal-gc))
-#+Lucid
-(defun reclaim () (lcl::gc))
 #+sbcl
 (defun reclaim () (sb-ext::gc))
 #+openmcl
 (defun reclaim () (ccl::gc))
 #+:ecl
 (defun reclaim () (si::gc t))
-
-#+Lucid
-(defun BPINAME (func)
-  (if (functionp func)
-      (if (symbolp func) func
-        (let ((name (svref func 0)))
-          (if (and (consp name) (eq (car name) 'SYSTEM::NAMED-LAMBDA))
-              (cadr name)
-            name)) )))
 
 #+(OR IBCL KCL)
 (defun BPINAME (func)
@@ -1492,14 +1303,7 @@
     ((compiled-function-p func)
       (system::%primitive header-ref func system::%function-name-slot))
     ('else func))))
-#+:allegro
-(defun bpiname (func)
- func)
-#+:CCL
-(defun bpiname (x)
-   (if (symbolp x)
-     (intern (symbol-name (symbol-function x)) "BOOT")
-    nil))
+
 #+(or :sbcl :clisp :openmcl :ecl)
 (defun BPINAME (func)
   (cond
@@ -1511,10 +1315,6 @@
                  func)))
       ((symbolp func) func)))
 
-#+(and :Lucid (not :ibm/370))
-(defun OBEY (S)
-  (system::run-aix-program (make-absolute-filename "/lib/obey")
-                       :arguments       (list "-c" S)))
 #+:cmulisp
 (defun OBEY (S)
    (ext:run-program (make-absolute-filename "/lib/obey")
@@ -1546,10 +1346,6 @@
 #+:ecl
 (defun OBEY (S)
    (ext:system S))
-
-(defun QUOREM (i j r) ; never used, refed in parini.boot
-  (multiple-value-bind (x y) (truncate i j)
-   (rplaca (the cons r) x) (rplacd (the cons r) y)))
 
 (defun MAKE-BVEC (n)
  (make-array (list n) :element-type 'bit :initial-element 0))

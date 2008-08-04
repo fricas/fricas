@@ -86,7 +86,7 @@ reportFunctionCompilation(op,nam,argl,body,isRecursive) ==
     ['PROG,[g2,g3],['RETURN,['COND,secondPredPair,thirdPredPair]]]
   -- cannot use envArg in next statement without redoing much
   -- of above.
-  lamex:= ['LAM,arg,codeBody]
+  lamex:= ['LAMBDA, arg, codeBody]
   mainFunction:= [nam,lamex]
   computeFunction:= [auxfn,['LAMBDA,[:argl, 'envArg],body]]
   compileInteractive mainFunction
@@ -119,7 +119,7 @@ reportFunctionCacheAll(op,nam,argl,body) ==
   secondPredPair:= [['SETQ,g2,['HGET,cacheName,g1]],g2]
   thirdPredPair:= ['(QUOTE T),['HPUT,cacheName,g1,computeValue]]
   codeBody:= ['PROG,[g2],['RETURN,['COND,secondPredPair,thirdPredPair]]]
-  lamex:= ['LAM,arg,codeBody]
+  lamex:= ['LAMBDA, arg, codeBody]
   mainFunction:= [nam,lamex]
   computeFunction:= [auxfn,['LAMBDA,[:argl, 'envArg],body]]
   compileInteractive mainFunction
@@ -183,7 +183,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
     null extraArguments => ['SETQ,stateNam,newTripleCode]
     ['HPUT,stateNam,extraArgumentCode,newTripleCode]
  
-  computeFunction:= [auxfn,['LAM,cargl,cbody]] where
+  computeFunction:= [auxfn,['LAMBDA, cargl, cbody]] where
     cargl:= [:argl,lastArg]
     returnValue:= ['PROGN,newStateCode,first gsList]
     cbody:=
@@ -199,7 +199,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   continueInit:=
     [['LET,gIndex,['ELT,stateVar,0]],
       :[['LET,g,['ELT,stateVar,i]] for g in gsList for i in 1..]]
-  mainFunction:= [nam,['LAM,margl,mbody]] where
+  mainFunction:= [nam,['LAMBDA, margl, mbody]] where
     margl:= [:argl,'envArg]
     max:= GENSYM()
     tripleCode := ['CONS,n,['LIST,:initCode]]
@@ -315,6 +315,6 @@ clearAllSlams x ==
             thoseCleared])
         NCONC(thoseToClear,someMoreToClear)
  
-clearSlam("functor")==
+clearSlam(functor)==
   id:= mkCacheName functor
   SET(id,nil)

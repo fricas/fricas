@@ -111,27 +111,11 @@
 (defun |sort| (seq spadfn)
     (sort (copy-seq seq) (function (lambda (x y) (SPADCALL X Y SPADFN)))))
 
-#-Lucid
 (defun QUOTIENT2 (X Y) (values (TRUNCATE X Y)))
 
-#+Lucid
-(defun QUOTIENT2 (X Y) ; following to force error check in division by zero
-  (values (if (zerop y) (truncate 1 Y) (TRUNCATE X Y))))
-
-#-Lucid
 (define-function 'REMAINDER2 #'REM)
 
-#+Lucid
-(defun REMAINDER2 (X Y)
-  (if (zerop y) (REM 1 Y) (REM X Y)))
-
-#-Lucid
 (defun DIVIDE2 (X Y) (multiple-value-call #'cons (TRUNCATE X Y)))
-
-#+Lucid
-(defun DIVIDE2 (X Y)
-  (if (zerop y) (truncate 1 Y)
-    (multiple-value-call #'cons (TRUNCATE X Y))))
 
 (defmacro APPEND2 (x y) `(append ,x ,y))
 
@@ -165,7 +149,6 @@
         |$insideCoerceInteractiveHardIfTrue| |$insideWhereIfTrue|
         |$insideCategoryIfTrue| |$insideCapsuleFunctionIfTrue| |$form|
         (|$e| |$EmptyEnvironment|)
-        (|$genFVar| 0)
         (|$genSDVar| 0)
         (|$previousTime| (TEMPUS-FUGIT))
         )
@@ -230,31 +213,8 @@
 
 (defvar MATBORCH "*")
 (defvar $MARGIN 3)
-(defvar TEMPGENSYMLIST '(|s| |r| |q| |p|))
-(defvar ALPHLIST '(|a| |b| |c| |d| |e| |f| |g|))
-(defvar LITTLEIN " in ")
-(defvar INITALPHLIST ALPHLIST)
-(defvar INITXPARLST '(|i| |j| |k| |l| |m| |n| |p| |q|))
-(defvar PORDLST (COPY-tree INITXPARLST))
-(defvar INITPARLST '(|x| |y| |z| |u| |v| |w| |r| |s| |t|))
-(defvar LITTLEA '|a|)
-(defvar LITTLEI '|i|)
 (defvar *TALLPAR NIL)
-(defvar ALLSTAR NIL)
 (defvar BLANK " ")
-(defvar PLUSS "+")
-(defvar PERIOD ".")
-(defvar SLASH "/")
-(defvar COMMA ",")
-(defvar LPAR "(")
-(defvar RPAR ")")
-(defvar EQSIGN "=")
-(defvar DASH "-")
-(defvar STAR "*")
-(defvar DOLLAR "$")
-(defvar COLON ":")
-
-(FLAG TEMPGENSYMLIST 'IS-GENSYM)
 
 (MAKEPROP 'COND '|Nud| '(|if| |if| 130 0))
 (MAKEPROP 'CONS '|Led| '(CONS CONS 1000 1000))
@@ -269,27 +229,17 @@
 
 ;; function to create byte and half-word vectors in new runtime system 8/90
 
-#-:CCL
 (defun |makeByteWordVec| (initialvalue)
   (let ((n (cond ((null initialvalue) 7) ('t (reduce #'max initialvalue)))))
     (make-array (length initialvalue)
       :element-type (list 'mod (1+ n))
       :initial-contents initialvalue)))
 
-#+:CCL
-(defun |makeByteWordVec| (initialvalue)
-   (list-to-vector initialvalue))
-
-#-:CCL
 (defun |makeByteWordVec2| (maxelement initialvalue)
   (let ((n (cond ((null initialvalue) 7) ('t maxelement))))
     (make-array (length initialvalue)
       :element-type (list 'mod (1+ n))
       :initial-contents initialvalue)))
-
-#+:CCL
-(defun |makeByteWordVec2| (maxelement initialvalue)
-   (list-to-vector initialvalue))
 
 (defun |knownEqualPred| (dom)
   (let ((fun (|compiledLookup| '= '((|Boolean|) $ $) dom)))

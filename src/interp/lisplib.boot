@@ -276,7 +276,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $lisplibOperationAlist: local := NIL
   $lisplibSuperDomain: local := NIL
   $libFile: local := NIL
-  $lisplibVariableAlist: local := NIL
 --  $lisplibRelatedDomains: local := NIL   --from ++ Related Domains: see c-doc
   $lisplibCategory: local := nil        
   --for categories, is rhs of definition; otherwise, is target of functor
@@ -323,7 +322,6 @@ initializeLisplib libName ==
   $libFile:= writeLib1(libName,'ERRORLIB,$libraryDirectory)
   ADDOPTIONS('FILE, $libFile, libName)
   $lisplibOpAlist := nil  --operations alist for new runtime system
-  $lisplibVariableAlist := nil    --this and the next are used by "luke"
   $lisplibSignatureAlist := nil
   if pathnameTypeId(_/EDITFILE) = 'SPAD
     then LAM_,FILEACTQ('VERSION,['_/VERSIONCHECK,_/MAJOR_-VERSION])
@@ -351,7 +349,7 @@ finalizeLisplib libName ==
   lisplibWrite('"superDomain",removeZeroOne $lisplibSuperDomain,$libFile)
   lisplibWrite('"signaturesAndLocals",
     removeZeroOne mergeSignatureAndLocalVarAlists($lisplibSignatureAlist,
-                                    $lisplibVariableAlist),$libFile)
+                                    nil),$libFile)
   lisplibWrite('"attributes",removeZeroOne $lisplibAttributes,$libFile)
   lisplibWrite('"predicates",removeZeroOne  $lisplibPredicates,$libFile)
   lisplibWrite('"abbreviation",$lisplibAbbreviation,$libFile)

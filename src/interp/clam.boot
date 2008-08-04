@@ -135,7 +135,7 @@ compClam(op,argl,body,$clamList) ==
   codeBody:= ['PROG,[g2,g3],
                 :callCountCode,
                   ['RETURN,['COND,secondPredPair,thirdPredPair]]]
-  lamex:= ['LAM,arg,codeBody]
+  lamex:= ['LAMBDA, arg, codeBody]
   mainFunction:= [op,lamex]
   computeFunction:= [auxfn,['LAMBDA,argl,:body]]
  
@@ -241,7 +241,7 @@ compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
   thirdPredPair:= ['(QUOTE T),putCode]
   codeBody:= ['PROG,[g2],
                :callCountCode,['RETURN,['COND,secondPredPair,thirdPredPair]]]
-  lamex:= ['LAM,arg,codeBody]
+  lamex:= ['LAMBDA, arg, codeBody]
   mainFunction:= [op,lamex]
   computeFunction:= [auxfn,['LAMBDA,argl,:body]]
  

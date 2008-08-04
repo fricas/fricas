@@ -566,7 +566,7 @@ indentFortLevel(i) ==
   $maximumFortranExpressionLength := $maximumFortranExpressionLength -2*i
   $fortIndent := $fortIndent + 2*i
 
-changeExprLength(i) ==>
+changeExprLength(i) ==
   $maximumFortranExpressionLength := $maximumFortranExpressionLength + i
 
 fortFormatDo(var,lo,hi,incr,lab) ==
@@ -661,7 +661,7 @@ mkParameterList l ==
       apply('STRCONC,[STRINGIMAGE(first u),'"(",_
                :rest [:['",",:statement2Fortran(v)] for v in rest u],'")"])
 
-nameLen n ==>
+nameLen n ==
  +/[1+LENGTH(u) for u in n]
 
 fortFormatTypes(typeName,names) ==

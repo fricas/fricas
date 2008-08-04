@@ -404,7 +404,7 @@ untraceMapSubNames traceNames ==
       _/UNTRACE_-2(name,nil)
       $lastUntraced:= SETDIFFERENCE($lastUntraced,subs)
 
-funfind("functor","opname") ==
+funfind(functor, opname) ==
   ops:= isFunctor functor
   [u for u in ops | u is [[ =opname,:.],:.]]
 

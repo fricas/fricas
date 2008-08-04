@@ -66,26 +66,6 @@ spadPrompt() ==
   SAY '"   FriCAS"
   sayNewLine()
 
-inputPrompt str ==
-  -- replaces older INPUT-PROMPT
-  atom (x := $SCREENSIZE()) => NIL
-  p := CAR(x) - 2
-  y := $OLDLINE
-  SETQ($OLDLINE,NIL)
-  y => _$SHOWLINE(STRCONC(str,EBCDIC 19,y),p)
-  0 = SIZE str => NIL
-  _$SHOWLINE(STRCONC(str,EBCDIC 19),p)
-
-protectedPrompt(:p) ==
-  [str,:br] := p
-  0 = SIZE str => inputPrompt str
-  msg := EBCDIC 29                       -- start of field
-  msg :=
-    if br then STRCONC(msg,EBCDIC 232)   -- bright write protect
-    else       STRCONC(msg,EBCDIC  96)   -- write protect
-  msg := STRCONC(msg,str,EBCDIC 29,EBCDIC 64)  -- unprotect again
-  inputPrompt msg
-
 MKPROMPT() ==
   $inputPromptType = 'none    => '""
   $inputPromptType = 'plain   => '"-> "

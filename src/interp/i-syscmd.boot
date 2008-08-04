@@ -928,7 +928,7 @@ displayProperties(option,l) ==
         sayMSG '"   none"
       propsSeen:= nil
       for [prop,:val] in pl | ^MEMQ(prop,propsSeen) and val repeat
-        prop in '(alias generatedCode IS_-GENSYM mapBody localVars) =>
+        prop in '(alias generatedCode mapBody localVars) =>
           nil
         prop = 'condition =>
           displayCondition(prop,val,true)
@@ -1312,7 +1312,7 @@ history l ==
 
 
 makeHistFileName(fname) ==
-  makePathname(fname,$historyFileType,$historyDirectory)
+  makePathname(fname,$historyFileType)
 
 oldHistFileName() ==
   makeHistFileName($oldHistoryFileName)
@@ -1323,8 +1323,8 @@ histFileName() ==
 
 histInputFileName(fn) ==
   null fn =>
-    makePathname($interpreterFrameName,'INPUT,$historyDirectory)
-  makePathname(fn,'INPUT,$historyDirectory)
+    makePathname($interpreterFrameName,'INPUT)
+  makePathname(fn,'INPUT)
 
 
 initHist() ==
@@ -1445,7 +1445,7 @@ writeInputLines(fn,initial) ==
       lineList := [vec,:lineList]
   file := histInputFileName(fn)
   histFileErase file
-  inp:= DEFIOSTREAM(['(MODE . OUTPUT),['FILE,:file]],255,0)
+  inp:= DEFIOSTREAM(['(MODE . OUTPUT),['FILE,:file]])
   for x in removeUndoLines NREVERSE lineList repeat WRITE_-LINE(x,inp)
   -- see file "undo" for definition of removeUndoLines
   if fn ^= 'redo then sayKeyedMsg("S2IH0014",[namestring file])
@@ -2116,7 +2116,7 @@ readSpad2Cmd l ==
   if _/EDITFILE then
       ef := pathname _/EDITFILE
       if pathnameTypeId(ef) = 'SPAD then
-          ef := makePathname(pathnameName ef,'"*",'"*")
+          ef := makePathname(pathnameName ef,'"*")
       if l then
           l := mergePathnames(pathname l,ef)
       else
@@ -2208,7 +2208,7 @@ reportOpsFromUnitDirectly1 D ==
   showFile := pathname ['SHOW,'LISTING,$listingDirectory]
   _$ERASE showFile
   $sayBrightlyStream : fluid :=
-    DEFIOSTREAM([['FILE,:showFile], '(MODE . OUTPUT)],255,0)
+    DEFIOSTREAM([['FILE,:showFile], '(MODE . OUTPUT)])
   sayShowWarning()
   reportOpsFromUnitDirectly D
   SHUT $sayBrightlyStream
@@ -2231,7 +2231,7 @@ reportOpsFromLisplib1(unitForm,u)  ==
   showFile := pathname ['SHOW,'LISTING,$listingDirectory]
   _$ERASE showFile
   $sayBrightlyStream : fluid :=
-    DEFIOSTREAM([['FILE,:showFile], '(MODE . OUTPUT)],255,0)
+    DEFIOSTREAM([['FILE,:showFile], '(MODE . OUTPUT)])
   sayShowWarning()
   reportOpsFromLisplib(unitForm,u)
   SHUT $sayBrightlyStream

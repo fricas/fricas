@@ -681,52 +681,9 @@ setHistory arg ==
     historySpad2Cmd()
   setHistory NIL
 
-describeProtectedSymbolsWarning() ==
- sayBrightly LIST(
-  '"Some FriCAS library functions are compiled into the kernel for efficiency",_
-  '%l,'"reasons.  To prevent them being re-defined when loaded from a library",_
-  '%l,'"they are specially protected.  If a user wishes to know when an attempt",_
-  '%l,'"is made to re-define such a function, he or she should issue the command:",_
-  '%l,'"        )set kernel warn on",_
-  '%l,'"To restore the default behaviour, he or she should issue the command:",_
-  '%l,'"        )set kernel warn off")
-
-protectedSymbolsWarning arg ==
-  arg = "%initialize%" => PROTECTED_-SYMBOL_-WARN(false)
-  arg = "%display%" =>
-    v := PROTECTED_-SYMBOL_-WARN(true)
-    PROTECTED_-SYMBOL_-WARN(v)
-    v => '"on" 
-    '"off"
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeProtectedSymbolsWarning()
-  PROTECTED_-SYMBOL_-WARN translateYesNo2TrueFalse first arg
-
-describeProtectSymbols() ==
- sayBrightly LIST(
-  '"Some FriCAS library functions are compiled into the kernel for efficiency",_
-  '%l,'"reasons.  To prevent them being re-defined when loaded from a library",_
-  '%l,'"they are specially protected.  If a user wishes to re-define these",_
-  '%l,'"functions, he or she should issue the command:",_
-  '%l,'"        )set kernel protect off",_
-  '%l,'"To restore the default behaviour, he or she should issue the command:",_
-  '%l,'"        )set kernel protect on")
-
-protectSymbols arg ==
-  arg = "%initialize%" => PROTECT_-SYMBOLS(true)
-  arg = "%display%" =>
-    v := PROTECT_-SYMBOLS(true)
-    PROTECT_-SYMBOLS(v)
-    v => '"on" 
-    '"off"
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeProtectSymbols()
-  PROTECT_-SYMBOLS translateYesNo2TrueFalse first arg
-
 setOutputAlgebra arg ==
   arg = "%initialize%" =>
-    $algebraOutputStream :=
-      DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+    $algebraOutputStream := mkOutputConsoleStream()
     $algebraOutputFile := '"CONSOLE"
     $algebraFormat := true
 
@@ -751,8 +708,7 @@ setOutputAlgebra arg ==
     UPCASE(fn) in '(YES ON) => $algebraFormat := true
     UPCASE(fn) = 'CONSOLE =>
       SHUT $algebraOutputStream
-      $algebraOutputStream :=
-        DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+      $algebraOutputStream := mkOutputConsoleStream()
       $algebraOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
@@ -763,7 +719,7 @@ setOutputAlgebra arg ==
     filename := $FILEP(fn,ft,fm)
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft,fm])
-    (testStream := MAKE_-OUTSTREAM(filename,255,0)) =>
+    (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $algebraOutputStream
       $algebraOutputStream := testStream
       $algebraOutputFile := object2String filename
@@ -834,14 +790,13 @@ setOutputCharacters arg ==
     setOutputCharacters NIL
   setOutputCharacters NIL
 
-makeStream(append,filename,i,j) ==
-  append => MAKE_-APPENDSTREAM(filename,i,j)
-  MAKE_-OUTSTREAM(filename,i,j)
+makeStream(append,filename) ==
+  append => MAKE_-APPENDSTREAM(filename)
+  MAKE_-OUTSTREAM(filename)
 
 setOutputFortran arg ==
   arg = "%initialize%" =>
-    $fortranOutputStream :=
-      DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+    $fortranOutputStream := mkOutputConsoleStream()
     $fortranOutputFile := '"CONSOLE"
     $fortranFormat := NIL
 
@@ -873,8 +828,7 @@ setOutputFortran arg ==
     UPCASE(fn) in '(YES ON)  => $fortranFormat := true
     UPCASE(fn) = 'CONSOLE =>
       SHUT $fortranOutputStream
-      $fortranOutputStream :=
-        DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+      $fortranOutputStream := mkOutputConsoleStream()
       $fortranOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
@@ -884,7 +838,7 @@ setOutputFortran arg ==
     if null fm then fm := 'A
     filename := $FILEP(fn,ft,fm)
     null filename => sayKeyedMsg("S2IV0003",[fn,ft,fm])
-    (testStream := makeStream(append,filename,255,0)) =>
+    (testStream := makeStream(append,filename)) =>
       SHUT $fortranOutputStream
       $fortranOutputStream := testStream
       $fortranOutputFile := object2String filename
@@ -922,8 +876,7 @@ describeSetOutputFortran() ==
 
 setOutputMathml arg ==
   arg = "%initialize%" =>
-    $mathmlOutputStream :=
-      DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+    $mathmlOutputStream := mkOutputConsoleStream()
     $mathmlOutputFile := '"CONSOLE"
     $mathmlFormat := NIL
 
@@ -948,8 +901,7 @@ setOutputMathml arg ==
     UPCASE(fn) in '(YES ON) => $mathmlFormat := true
     UPCASE(fn) = 'CONSOLE =>
       SHUT $mathmlOutputStream
-      $mathmlOutputStream :=
-        DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+      $mathmlOutputStream := mkOutputConsoleStream()
       $mathmlOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
@@ -960,7 +912,7 @@ setOutputMathml arg ==
     filename := $FILEP(fn,ft,fm)
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft,fm])
-    (testStream := MAKE_-OUTSTREAM(filename,255,0)) =>
+    (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $mathmlOutputStream
       $mathmlOutputStream := testStream
       $mathmlOutputFile := object2String filename
@@ -998,8 +950,7 @@ describeSetOutputMathml() ==
 
 setOutputOpenMath arg ==
   arg = "%initialize%" =>
-    $openMathOutputStream :=
-      DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+    $openMathOutputStream := mkOutputConsoleStream()
     $openMathOutputFile := '"CONSOLE"
     $openMathFormat := NIL
 
@@ -1024,8 +975,7 @@ setOutputOpenMath arg ==
     UPCASE(fn) in '(YES ON) => $openMathFormat := true
     UPCASE(fn) = 'CONSOLE =>
       SHUT $openMathOutputStream
-      $openMathOutputStream :=
-        DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+      $openMathOutputStream := mkOutputConsoleStream()
       $openMathOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
@@ -1036,7 +986,7 @@ setOutputOpenMath arg ==
     filename := $FILEP(fn,ft,fm)
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft,fm])
-    (testStream := MAKE_-OUTSTREAM(filename,255,0)) =>
+    (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $openMathOutputStream
       $openMathOutputStream := testStream
       $openMathOutputFile := object2String filename
@@ -1073,8 +1023,7 @@ describeSetOutputOpenMath() ==
 
 setOutputFormula arg ==
   arg = "%initialize%" =>
-    $formulaOutputStream :=
-      DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+    $formulaOutputStream := mkOutputConsoleStream()
     $formulaOutputFile := '"CONSOLE"
     $formulaFormat := NIL
 
@@ -1099,8 +1048,7 @@ setOutputFormula arg ==
     UPCASE(fn) in '(YES ON) => $formulaFormat := true
     UPCASE(fn) = 'CONSOLE =>
       SHUT $formulaOutputStream
-      $formulaOutputStream :=
-        DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+      $formulaOutputStream := mkOutputConsoleStream()
       $formulaOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
@@ -1111,7 +1059,7 @@ setOutputFormula arg ==
     filename := $FILEP(fn,ft,fm)
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft,fm])
-    (testStream := MAKE_-OUTSTREAM(filename,255,0)) =>
+    (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $formulaOutputStream
       $formulaOutputStream := testStream
       $formulaOutputFile := object2String filename
@@ -1148,8 +1096,7 @@ describeSetOutputFormula() ==
 
 setOutputTex arg ==
   arg = "%initialize%" =>
-    $texOutputStream :=
-      DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+    $texOutputStream := mkOutputConsoleStream()
     $texOutputFile := '"CONSOLE"
     $texFormat := NIL
 
@@ -1174,8 +1121,7 @@ setOutputTex arg ==
     UPCASE(fn) in '(YES ON) => $texFormat := true
     UPCASE(fn) = 'CONSOLE =>
       SHUT $texOutputStream
-      $texOutputStream :=
-        DEFIOSTREAM('((MODE . OUTPUT) (DEVICE . CONSOLE)),255,0)
+      $texOutputStream := mkOutputConsoleStream()
       $texOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
@@ -1186,7 +1132,7 @@ setOutputTex arg ==
     filename := $FILEP(fn,ft,fm)
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft,fm])
-    (testStream := MAKE_-OUTSTREAM(filename,255,0)) =>
+    (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $texOutputStream
       $texOutputStream := testStream
       $texOutputFile := object2String filename

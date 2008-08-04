@@ -1628,29 +1628,6 @@ database.
   (cond ((not type?) obj)
         (t (|makeOldAxiomDispatchDomain| obj))))
 
-;; CCL doesn't have closures, so we use an intermediate function in
-;; asharpMkAutoLoadFunctor.
-#+:CCL
-(defun mkFunctorStub (func cosig cname)
-  (setf (symbol-function cname)
-        (if (vectorp (car func))
-          `(lambda () ',func)  ;; constant domain
-          `(lambda (&rest args2)
-              (apply ',(|ClosFun| func)
-                 (nconc
-                    (mapcar #'wrapDomArgs args2 ',(cdr cosig))
-                    (list ',(|ClosEnv| func))))))))
-
-#+:CCL
-(defun asharpMkAutoLoadFunctor (file cname asharp-name cosig)
-  (setf (symbol-function cname)
-        `(lambda (&rest args)
-            (mkFunctorStub
-              (getconstructor (eval (file-getter-name ',file)) ',asharp-name)
-              ',cosig ',cname)
-            (apply ',cname args))))
-
-#-:CCL
 (defun asharpMkAutoLoadFunctor (file cname asharp-name cosig)
   (setf (symbol-function cname)
   #'(lambda (&rest args)
@@ -1665,35 +1642,7 @@ database.
                     (list (|ClosEnv| func)))))))
       (apply cname args)))))
 
-;; CCL doesn't have closures, so we use an intermediate function in
-;; asharpMkAutoLoadCategory.
-#+:CCL
-(defun mkCategoryStub (func cosig packname)
-  (setf (symbol-function packname)
-        (if (vectorp (car func))
-         `(lambda (self)  ;; constant category
-           (|CCall| (elt ',(car func) 5) ',(cdr func) (wrapDomArgs self t)))
-         `(lambda (self &rest args)
-           (let ((precat
-                  (apply (|ClosFun| ',func)
-                         (nconc
-                          (mapcar #'wrapDomArgs args ',(cdr cosig))
-                          (list (|ClosEnv| ',func))))))
-             (|CCall| (elt (car precat) 5) (cdr precat) (wrapDomArgs self t)))))
-))
 
-#+:CCL
-(defun asharpMkAutoLoadCategory (file cname asharp-name cosig)
-  (asharpMkAutoLoadFunctor file cname asharp-name cosig)
-  (let ((packname (INTERN (STRCONC cname "&"))))
-    (setf (symbol-function packname)
-          `(lambda (self &rest args)
-                 (mkCategoryStub
-                 (getconstructor (eval (file-getter-name ',file)) ',asharp-name)
-                 ',cosig ',packname)
-            (apply ',packname self args)))))
-
-#-:CCL
 (defun asharpMkAutoLoadCategory (file cname asharp-name cosig)
   (asharpMkAutoLoadFunctor file cname asharp-name cosig)
   (let ((packname (INTERN (STRCONC cname '"&"))))
@@ -1713,17 +1662,6 @@ database.
               (|CCall| (elt (car precat) 5) (cdr precat) (wrapDomArgs self t))))))
       (apply packname self args))))))
 
-#+:CCL
-(defun asharpMkAutoLoadFunction (file asharpname)
- (set asharpname
-  (cons
-   `(lambda (&rest l)
-     (let ((args (butlast l))
-           (func (getconstructor (eval (file-getter-name ',file)) ',asharpname)))
-        (apply (car func) (append args (list (cdr func))))))
-      ())))
-
-#-:CCL
 (defun asharpMkAutoLoadFunction (file asharpname)
   (set asharpname
    (cons
@@ -1749,11 +1687,7 @@ database.
 (defun init-file-getter (env)
   (let ((getter-name (car env))
         (filename (cdr env)))
-#-:CCL
-    (load filename)
-#+:CCL
-    (load-module filename)
-    (|CCall| (eval getter-name))))
+    (load filename)))
 
 (defun set-lib-file-getter (filename cname)
   (let ((getter-name (file-getter-name filename)))
@@ -1764,11 +1698,7 @@ database.
   (let* ((getter-name (car env))
          (cname (cdr env))
          (filename (getdatabase cname 'object)))
-#-:CCL
-    (load filename)
-#+:CCL
-    (load-module (pathname-name filename))
-    (|CCall| (eval getter-name))))
+    (load filename)))
 
 ;; following 2 functions are called by file-exports and file-imports macros
 (defun foam::process-import-entry (entry)
@@ -1803,10 +1733,3 @@ database.
 ;               (cons (cons *this-file* asharpname)
 ;                     (get bootname 'asharp-name)))
 ;         )))
-
-
-
-
-
-
-

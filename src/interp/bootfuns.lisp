@@ -157,7 +157,6 @@
 (def-boot-val |$ConstructorNames|
         '(|SubDomain| |List| |Union| |Record| |Vector|)
         "Used in isFunctor test, and compDefine.")
-(def-boot-var |$genFVar|                            "???")
 (def-boot-val |$genSDVar| 0         "counter for genSomeVariable" )
 (def-boot-val |$hasCategoryTable| (MAKE-HASHTABLE 'UEQUAL) "???")
 (def-boot-var |$Index|                              "???")

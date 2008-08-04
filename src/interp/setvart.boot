@@ -269,28 +269,6 @@ SETANDFILEQ($setOptions,'(
        )
       )
   ))
-  (kernel
-   "library functions built into the kernel for efficiency"
-   interpreter
-   TREE
-   novar
-   (
-     (warn
-      "warn when re-definition is attempted"
-      interpreter
-      FUNCTION
-      protectedSymbolsWarning
-      NIL
-      htSetKernelWarn)
-     (protect
-      "prevent re-definition of kernel functions"
-      interpreter
-      FUNCTION
-      protectSymbols
-      NIL
-      htSetKernelProtect)
-   )
-  )
   (hyperdoc
    "options in using HyperDoc"
    interpreter

@@ -70,7 +70,7 @@ isExistingFile f ==
  
 --% Scratchpad II File Name Functions
  
-makePathname(name,type,dir) ==
+makePathname(name,type) ==
   -- Common Lisp version of this will have to be written
   -- using MAKE-PATHNAME and the optional args.
   pathname [object2String name,object2String type]

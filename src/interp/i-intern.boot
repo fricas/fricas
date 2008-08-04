@@ -417,7 +417,7 @@ putTarget(x, targ) ==
 getTarget(x) == getAtree(x,'target)
 
 insertShortAlist(prop,val,al) ==
-  pair := QASSQ(prop,al) =>
+  pair := ASSQ(prop,al) =>
     RPLACD(pair,val)
     al
   [[prop,:val],:al]
