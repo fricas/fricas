@@ -275,8 +275,8 @@ al/libaxiom.al: cliques.mk
 ###################################################################
 # Runtime - things required to run aldor files
 # It is not clear whether actually all files in $(aldor_srcs) are needed.
-runtime_files := $(patsubst %,lib/%.o, runtime $(aldor_srcs))
-$(runtime_files): lib/%.o: lsp/%.lsp
+runtime_files := $(patsubst %,lib/%.$(FASLEXT), runtime $(aldor_srcs))
+$(runtime_files): lib/%.$(FASLEXT): lsp/%.lsp
 aldor_lsp_files := $(patsubst %,lsp/%.lsp, $(aldor_srcs))
 lsp/runtime.lsp: runtime.ao lsp/.dir
 	$(ALDOR) -flsp=$@ $<
@@ -289,15 +289,16 @@ $(aldor_lsp_files): lsp/%.lsp: lsp/.dir al/libaxiom.al(%.ao)
 	$(ALDOR) -flsp=$@ $*.ao
 	rm $*.ao
 
-foam_l=$(abs_top_builddir)/src/interp/foam_l.o
-$(runtime_files): lib/%.o: tmp/mko_%.lsp lsp/%.lsp lib/.dir
+foam_l=$(abs_top_builddir)/src/interp/foam_l.$(FASLEXT)
+$(runtime_files): lib/%.$(FASLEXT): tmp/mko_%.lsp lsp/%.lsp lib/.dir
 	$(INTERPSYS) < $< > tmp/mko_$*.log
 	test -f $@
 
 tmp/mko_%.lsp:
 	echo ')fin' > $@
 	echo '(load "$(foam_l)")' >> $@
-	echo '(compile-file "lsp/$*.lsp" :output-file "lib/$*.o")' >> $@
+	echo '(compile-file "$(abs_builddir)/lsp/$*.lsp" ' >> $@
+	echo '  :output-file "$(abs_builddir)/lib/$*.$(FASLEXT)")' >> $@
 	echo '(quit)' >> $@
 
 runtimefiles: $(runtime_files)
