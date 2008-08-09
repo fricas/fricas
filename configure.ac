@@ -621,7 +621,9 @@ AXIOM_MAKEFILE([src/etc/Makefile])
 ##
 ## If one of the Aldor related tests fail we should warn and
 ## not build the Aldor interface. Default is to build it.
-BUILD_ALDOR_INTERFACE=build-axiom-interface
+## The test only fails if --enable-aldor is given explicitly
+## and some prerequisite is not available.
+BUILD_ALDOR_INTERFACE=build-aldor-interface
 
 ## check whether Aldor is available
 AC_CHECK_PROGS([ALDOR], [aldor])
@@ -648,6 +650,19 @@ if ! test -f $ALDORROOT/lib/libfoam.al; then
   BUILD_ALDOR_INTERFACE=
 fi
 
+AC_ARG_ENABLE(aldor,
+  [AC_HELP_STRING([--enable-aldor],
+                  [build an interface to the Aldor compiler])],
+  [case $enableval in
+    yes) if test -z "$BUILD_ALDOR_INTERFACE"; then
+           AC_MSG_ERROR([prerequisites for Aldor interface missing])
+         fi;;
+    no)  BUILD_ALDOR_INTERFACE=;;
+    *)   AC_MSG_ERROR([only yes/no allowed as value for --enable-aldor]);;
+   esac],
+  [BUILD_ALDOR_INTERFACE=])
+
+###################################################################
 # The installation is currently not done by recursively calling
 # install in the src subdirectories, so we have to hardcode the
 # intallation of the aldor interface in src/Makefile.in and let a
@@ -655,9 +670,10 @@ fi
 # installed.
 AC_SUBST(BUILD_ALDOR_INTERFACE)
 
-if test -z $BUILD_ALDOR_INTERFACE; then
+if test -z "$BUILD_ALDOR_INTERFACE"; then
   AC_MSG_WARN([Aldor interface will not be built.])
 else
+  AC_MSG_NOTICE([Aldor interface will be built.])
   axiom_src_subdirs="$axiom_src_subdirs aldor"
   axiom_src_all="$axiom_src_all all-aldor"
   AXIOM_MAKEFILE([src/aldor/Makefile])
