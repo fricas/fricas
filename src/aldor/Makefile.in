@@ -289,14 +289,12 @@ $(aldor_lsp_files): lsp/%.lsp: lsp/.dir al/libaxiom.al(%.ao)
 	$(ALDOR) -flsp=$@ $*.ao
 	rm $*.ao
 
-foam_l=$(abs_top_builddir)/src/interp/foam_l.$(FASLEXT)
 $(runtime_files): lib/%.$(FASLEXT): tmp/mko_%.lsp lsp/%.lsp lib/.dir
 	$(INTERPSYS) < $< > tmp/mko_$*.log
 	test -f $@
 
 tmp/mko_%.lsp:
 	echo ')fin' > $@
-	echo '(load "$(foam_l)")' >> $@
 	echo '(compile-file "$(abs_builddir)/lsp/$*.lsp" ' >> $@
 	echo '  :output-file "$(abs_builddir)/lib/$*.$(FASLEXT)")' >> $@
 	echo '(quit)' >> $@
