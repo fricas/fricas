@@ -1687,7 +1687,8 @@ database.
 (defun init-file-getter (env)
   (let ((getter-name (car env))
         (filename (cdr env)))
-    (load filename)))
+    (load filename)
+    (|CCall| (eval getter-name))))
 
 (defun set-lib-file-getter (filename cname)
   (let ((getter-name (file-getter-name filename)))
@@ -1698,7 +1699,8 @@ database.
   (let* ((getter-name (car env))
          (cname (cdr env))
          (filename (getdatabase cname 'object)))
-    (load filename)))
+    (load filename)
+    (|CCall| (eval getter-name))))
 
 ;; following 2 functions are called by file-exports and file-imports macros
 (defun foam::process-import-entry (entry)
