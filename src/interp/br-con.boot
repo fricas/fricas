@@ -54,9 +54,6 @@ conPageFastPath x == --called by conPage and constructorSearch
   charPosition(char '_*,s,0) < #s => nil     --quit if name has * in it
   name := (STRINGP x => INTERN x; x)
   entry := HGET($lowerCaseConTb,name) or return nil
-  lineNumber := LASSQ('dbLineNumber,CDDR entry) =>
-    --'dbLineNumbers property is set by function dbAugmentConstructorDataTable
-    dbRead lineNumber --read record for constructor from libdb.text
   conPageConEntry first entry
 
 conPageConEntry entry ==

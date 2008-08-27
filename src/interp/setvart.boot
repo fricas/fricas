@@ -73,7 +73,7 @@ SETANDFILEQ($setOptions,'(
    interpreter
    LITERALS
    $BreakMode
-   (nobreak break query resume fastlinks)
+   (nobreak break query resume)
    nobreak)         -- needed to avoid possible startup looping
    (compiler
     "Library compiler options"

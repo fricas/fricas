@@ -111,6 +111,8 @@ parseAtom x ==
 parseTranList l ==
   atom l => parseTran l
   [parseTran first l,:parseTranList rest l]
+
+DEFPARAMETER($insideConstructIfTrue, nil)
  
 parseConstruct u ==
   $insideConstructIfTrue: local:= true

@@ -302,8 +302,6 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
     ['COND,:c]
   code is ['LET,name,body,:.] =>
                     --only keep the names that are useful
-    if body is [a,:.] and isFunctor a
-      then $packagesUsed:=[body,:$packagesUsed]
     u:=member(name,$locals) =>
         CONTAINED('$,body) and isDomainForm(body,$e) =>
           --instantiate domains which depend on $ after constants are set

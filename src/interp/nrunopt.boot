@@ -64,7 +64,7 @@ makeGoGetSlot(item,index) ==
 --these parts of the $byteVec are created first; see also makeCompactDirect
   [sig,whereToGo,op,:flag] := item
   n := #sig - 1
-  newcode := [n,whereToGo,:makeCompactSigCode(sig,nil),index]
+  newcode := [n,whereToGo,:makeCompactSigCode(sig),index]
   $byteVec := [newcode,:$byteVec]
   curAddress := $byteAddress
   $byteAddress := $byteAddress + n + 4
@@ -96,7 +96,7 @@ makeCompactDirect1(op,items) ==
   r = ['Subsumed] =>
     n := #sig - 1
     $byteAddress := $byteAddress + n + 4
-    [n,0,:makeCompactSigCode(sig,$isOpPackageName),0]  --always followed by subsuming signature
+    [n,0,:makeCompactSigCode(sig),0]  --always followed by subsuming signature
     --identified by a 0 in slot position
   if r is [n,:s] then
     slot :=
@@ -113,7 +113,7 @@ makeCompactDirect1(op,items) ==
      slot := 1   --signals that operation is not present
   n := #sig - 1
   $byteAddress := $byteAddress + n + 4
-  res := [n,predCode,:makeCompactSigCode(sig,$isOpPackageName),slot]
+  res := [n,predCode,:makeCompactSigCode(sig),slot]
   res
  
 orderBySubsumption items ==
@@ -132,13 +132,11 @@ orderBySubsumption items ==
     z := insert(b,z)  --mark a signature as already present
   [:y,:[w for (w := [c,:.]) in acc | not member(c,z)]] --add those not subsuming
  
-makeCompactSigCode(sig,$isOpPackageName) == [fn for x in sig] where 
---$isOpPackageName = true only for an exported operation of a default package
+makeCompactSigCode(sig) == [fn for x in sig] where 
   fn == 
     x = '_$_$ => 2
     x = '$ => 0
     NULL INTEGERP x => systemError ['"code vector slot is ",x,"; must be number"]
---  x = 6 and $isOpPackageName => 0  --treat slot 6 as $ for default packages
     x
   
 --=======================================================================
@@ -159,7 +157,9 @@ stuffDomainSlots dollar ==
   dollar.2 := infovec.2
   proto4 := infovec.3
   dollar.4 := 
-    VECP CDDR proto4 => [COPY_-SEQ CAR proto4,:CDR proto4]   --old style
+    VECP CDDR proto4 =>
+         BREAK()
+         [COPY_-SEQ CAR proto4,:CDR proto4]   --old style
     bitVector := dollar.3
     predvec := CAR proto4
     packagevec := CADR proto4
@@ -181,9 +181,8 @@ stuffSlot(dollar,i,item) ==
       sayBrightlyNT '"Unexpected constant environment!!"
       pp devaluate b
       nil
---  [dollar,i,:item]    --old form
---  $isOpPackageName = 'T => SUBST(0,6,item)
     item                --new form
+
 --=======================================================================
 --                Generate Slot 2 Attribute Alist
 --=======================================================================
@@ -235,10 +234,10 @@ makePrefixForm(u,op) ==
 --=======================================================================
 --               Generate Slot 3 Predicate Vector
 --=======================================================================
-makePredicateBitVector pl ==   --called by NRTbuildFunctor
+makePredicateBitVector pl ==   --called by buildFunctor
   if $insideCategoryPackageIfTrue = true then
     pl := union(pl,$categoryPredicateList)
-  $predGensymAlist := nil --bound by NRTbuildFunctor, used by optHas
+  $predGensymAlist := nil 
   for p in removeAttributePredicates pl repeat
     pred := simpBool transHasCode p
     atom pred => 'skip                --skip over T and NIL
@@ -397,46 +396,6 @@ depthAssoc x ==
  
 getCatAncestors x ==  [CAAR y for y in parentsOf opOf x]
  
-listOfEntries form ==
-  atom form => form
-  form is [op,:l] =>
-    op = 'Join => "append"/[listOfEntries x for x in l]
-    op = 'CATEGORY => listOfCategoryEntries rest l
-    op = 'PROGN => listOfCategoryEntries l
-    op = 'ATTRIBUTE and first l is [f,:.] and constructor? f => [first l]
-    op in '(ATTRIBUTE SIGNATURE) => nil
-    [form]
-  categoryFormatError()
- 
-listOfCategoryEntries l ==
-  null l => nil
-  l is [[op,:u],:v] =>
-    firstItemList:=
-      op = 'ATTRIBUTE and first u is [f,:.] and constructor? f =>
-        [first u]
-      MEMQ(op,'(ATTRIBUTE SIGNATURE)) => nil
-      op = 'IF and u is [pred,conseq,alternate] =>
-          listOfCategoryEntriesIf(pred,conseq,alternate)
-      categoryFormatError()
-    [:firstItemList,:listOfCategoryEntries v]
-  l is ['PROGN,:l] => listOfCategoryEntries l
-  l is '(NIL) => nil
-  sayBrightly '"unexpected category format encountered:"
-  pp l
- 
-listOfCategoryEntriesIf(pred,conseq,alternate) ==
-  alternate in '(noBranch NIL) =>
-    conseq is ['IF,p,c,a] => listOfCategoryEntriesIf(makePrefixForm([pred,p],'AND),c,a)
-    [fn for x in listOfEntries conseq] where fn ==
-      x is ['IF,a,b] => ['IF,makePrefixForm([pred,a],'AND),b]
-      ['IF,pred,x]
-  notPred := makePrefixForm(pred,'NOT)
-  conseq is ['IF,p,c,a] =>
-    listOfCategoryEntriesIf(makePrefixForm([notPred,p],'AND),c,a)
-  [gn for x in listOfEntries conseq] where gn ==
-    x is ['IF,a,b] => ['IF,makePrefixForm([notPred,a],'AND),b]
-    ['IF,notPred,x]
- 
 --=======================================================================
 --                     Display Template
 --=======================================================================
@@ -496,7 +455,9 @@ getOpSegment index ==
 getCodeVector() ==
   proto4 := $infovec.3
   u := CDDR proto4
-  VECP u => u           --old style
+  VECP u =>
+      BREAK()
+      u           --old style
   CDR u                 --new style
 
 formatSlotDomain x ==
@@ -579,7 +540,9 @@ dcCats con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
   u := $infovec.3
-  VECP CDDR u => dcCats1 con    --old style slot4
+  VECP CDDR u =>
+     BREAK()
+     dcCats1 con    --old style slot4
   $predvec:= GETDATABASE(con,'PREDICATES)
   catpredvec := CAR u
   catinfo := CADR u

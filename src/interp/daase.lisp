@@ -1181,7 +1181,6 @@ database.
     (format nil "~a.daase~a" root ext))
   )
  (let (d)
-  (declare (special |$constructorList|))
   (do-symbols (symbol)
    (when (get symbol 'database)
     (setf (get symbol 'database) nil)))
@@ -1205,10 +1204,8 @@ database.
   (|oldCompilerAutoloadOnceTrigger|)
   (|browserAutoloadOnceTrigger|)
 #+:AKCL    (|mkTopicHashTable|)
-  (setq |$constructorList| nil) ;; affects buildLibdb
   (|buildLibdb|)
   (|dbSplitLibdb|)
-; (|dbAugmentConstructorDataTable|)
   (|mkUsersHashTable|)
   (|saveUsersHashTable|)
   (|mkDependentsHashTable|)

@@ -87,13 +87,9 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
             someMatch:=true
             false
       predIndex := QSQUOTIENT(code,8192)
-      predIndex ^= 0 =>
-         BREAK()
+      predIndex ^= 0 => BREAK()
       loc := QSQUOTIENT(QSREMAINDER(code,8192),2)
-      loc = 0 =>
-        BREAK()
-        someMatch := true
-        nil
+      loc = 0 => BREAK()
       slot := domain.loc
       EQCAR(slot,'goGet) =>
         lookupDisplay(op,sig,domain,'" !! goGet found, will ignore")
@@ -105,8 +101,7 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
       slot
   NE(success,'failed) and success => success
   subsumptionSig and (u:= SPADCALL(op,subsumptionSig,dollar,domain.1)) => u
-  someMatch => 
-    BREAK()
+  someMatch => BREAK()
   nil
 
 --=======================================================

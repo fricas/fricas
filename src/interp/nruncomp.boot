@@ -322,15 +322,13 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
 
 --LOCAL BOUND FLUID VARIABLES:
   $GENNO: local:= 0     --bound in compDefineFunctor1, then as parameter here
---$frontier: local      --index of first local slot=#(cat part of princ view)
   $catvecList: local    --list of vectors v1..vn for each view
   $hasCategoryAlist: local  --list of GENSYMs bound to (HasCategory ..) items
   $catNames: local      --list of names n1..nn for each view
   $maximalViews: local  --list of maximal categories for domain (???)
   $catsig: local        --target category (used in ProcessCond)
   $SetFunctions: local  --copy of p view with preds telling when fnct defined
-  $MissingFunctionInfo: local --now useless
-     --vector marking which functions are assigned
+  $MissingFunctionInfo: local --vector marking which functions are assigned
   $ConstantAssignments: local --code for creation of constants
   $epilogue: local := nil     --code to set slot 5, things to be done last
   $HackSlot4: local  --Invention of JHD 13/July/86-set in InvestigateConditions
@@ -348,17 +346,11 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
     [(comp($catsig,$EmptyMode,$e)).expr,
       :[compCategories first u for u in CADR $domainShell.4]]
   condCats:= InvestigateConditions [$catsig,:rest catvecListMaker]
-  -- a list, one %for each element of catvecListMaker
+  -- a list, one for each element of catvecListMaker
   -- indicating under what conditions this
   -- category should be present.  true => always
   makeCatvecCode:= first catvecListMaker
   emptyVector := VECTOR()
---if $NRTaddForm and null NRTassocIndex $NRTaddForm then
---  --create "domain" entry to $NRTdeltaList
---    $NRTdeltaList:=
---      [['domain,NRTaddInner $NRTaddForm,:$NRTaddForm],:$NRTdeltaList]
---    $NRTdeltaLength := $NRTdeltaLength+1
---NRTgetLocalIndex $NRTaddForm
   domainShell := GETREFV (6 + $NRTdeltaLength)
   for i in 0..4 repeat domainShell.i := $domainShell.i
     --we will clobber elements; copy since $domainShell may be a cached vector
@@ -441,9 +433,6 @@ NRTcheckVector domainShell ==
       [[first v,:$SetFunctions.i],:alist]
   alist
 
--- Obsolete once we have moved to JHD's world
-NRTvectorCopy(cacheName,domName,deltaLength) == GETREFV (6 + deltaLength)
-
 mkDomainCatName id == INTERN STRCONC(id,";CAT")
 
 NRTsetVector4Part1(siglist,formlist,condlist) ==
@@ -486,13 +475,6 @@ NRTsetVector4a(sig,form,cond) ==
   evalform := eval mkEvalableCategoryForm form
   cond = true => $uncondList := [form,:APPEND(evalform.4.0,$uncondList)]
   $condList := [[cond,[form,:evalform.4.0]],:$condList]
-
-NRTmakeSlot1 domainShell ==
-  opDirectName := INTERN STRCONC(PNAME first $definition,'";opDirect")
-  fun :=
-    $NRTmakeCompactDirect => '(function lookupInCompactTable)
-    '(function lookupInTable)
-  [($QuickCode=>'QSETREFV;'SETELT), '$,1, ['LIST,fun,'$,opDirectName]]
 
 NRTmakeSlot1Info() ==
 -- 4 cases:
@@ -539,11 +521,7 @@ NRTaddToSlam([name,:argnames],shell) ==
   args:= ['LIST,:ASSOCRIGHT $devaluateList]
   addToConstructorCache(name,args,shell)
 
-changeDirectoryInSlot1() ==  --called by NRTbuildFunctor
-  --3 cases:
-  --  if called inside NRTbuildFunctor, $NRTdeltaLength gives different locs
-  --  otherwise called from compFunctorBody (all lookups are forwarded):
-  --    $NRTdeltaList = nil  ===> all slot numbers become nil
+changeDirectoryInSlot1() ==  --called by buildFunctor
   $lisplibOperationAlist := [sigloc entry for entry in $domainShell.1] where
     sigloc [opsig,pred,fnsel] ==
         if pred ^= 'T then
@@ -660,6 +638,3 @@ NRTputInTail x ==
       nil
     NRTputInHead u
   x
-
-
-

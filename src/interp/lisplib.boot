@@ -578,7 +578,8 @@ mkEvalableCategoryForm c ==       --from DEFINE
         mkEvalableCategoryForm CADR argl
     op is "mkCategory" => c
     MEMQ(op,$CategoryNames) =>
-      ([x,m,$e]:= compOrCroak(c,$EmptyMode,$e); m=$Category => x)
+        [x,m,$e]:= compOrCroak(c,$EmptyMode,$e)
+        m=$Category => optFunctorBody x
     --loadIfNecessary op
     GETDATABASE(op,'CONSTRUCTORKIND) = 'category or
       get(op,"isCategory",$CategoryFrame) =>

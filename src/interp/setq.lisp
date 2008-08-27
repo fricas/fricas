@@ -43,8 +43,6 @@
 (defvar |$displayStartMsgs| nil)
 
 (SETQ |/MAJOR-VERSION| 7)
-(SETQ /VERSION 0)
-(SETQ /RELEASE 0)
 
 (defconstant |$cclSystem|
 #+:CCL 't
@@ -82,7 +80,6 @@
 (SETQ |$maxSignatureLineNumber| 0)
 (SETQ |$functionLocations| NIL)
 (SETQ |$functorLocalParameters| NIL) ; used in compSymbol
-(SETQ /RELEASE '"UNKNOWN")
 (SETQ |$insideCategoryPackageIfTrue| NIL)
 (SETQ |$insideCompileBodyIfTrue| NIL)
 (SETQ |$globalExposureGroupAlist| NIL)
@@ -99,8 +96,6 @@
 (defvar $dalymode nil "if true then leading paren implies lisp cmd")
 (setq |$Newline| #\Newline)
 
-
-(setq |$createUpdateFiles| nil)
 
 (SETQ $FUNNAME NIL)   ;; this and next used in COMP,TRAN,1
 (SETQ $FUNNAME_TAIL '(()))
@@ -375,7 +370,6 @@
    |StringCategory| |SubsetCategory| |UnionCategory|
       ))
 
-(SETQ |$PrintCompilerMessagesIfTrue| NIL)
 (SETQ |$printStorageIfTrue| NIL) ;; storage info disabled in common lisp
 (SETQ |$noEnv| NIL)
 (SETQ |$evalDomain| NIL)
@@ -449,7 +443,6 @@
 (SETQ |$cacheCount| 0)
 (SETQ |$reportExitModeStack| NIL)
 (SETQ |$prefix| NIL)
-(SETQ |$Lisp| '(|Lisp|))
 (SETQ |$formalArgList| ())
 (SETQ |$FormalMapVariableList|
   '(|#1| |#2| |#3| |#4| |#5| |#6| |#7| |#8| |#9| |#10|
@@ -512,7 +505,6 @@
 
 (SETQ |$InitialModemapFrame| '((NIL)))
 
-(SETQ NRTPARSE NIL)
 (SETQ |$NRTaddForm| NIL)
 (SETQ |$NRTdeltaList| NIL)
 (SETQ |$NRTdeltaListComp| NIL)

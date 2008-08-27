@@ -63,6 +63,7 @@
 (MAKEPROP 'SPAD '/READFUN '|New,LEXPR|)
 (MAKEPROP 'SPAD '/TRAN '/TRANSPAD)
  
+(defun enable-backtrace (&rest arg))
  
 (defun heapelapsed () 0)
 
@@ -144,7 +145,7 @@
                      (STRINGIMAGE FN))))
         (COND (|$fromSpadTrace|
                (if MATHTRACE (push (INTERN TRACENAME) |$mathTraceList|))
-               (SETQ LETFUNCODE `(SETQ |$currentFunction| ,(MKQ FN)))
+               (SETQ LETFUNCODE `(EQ nil nil)) ;; No-op
                (SETQ BEFORE
                      (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'BEFORE))
                          `(progn ,(CADR U) ,LETFUNCODE)
@@ -639,7 +640,9 @@
 ; Functions to run a timer for tracing
 ; It avoids timing the tracing function itself by turning the timer
 ; on and off
- 
+
+(defparameter $delay 0)
+
 (defun |startTimer| ()
     (SETQ $delay (PLUS $delay (DIFFERENCE (TEMPUS-FUGIT) |$oldTime|)))
     (SETQ |$timerOn| 'T)

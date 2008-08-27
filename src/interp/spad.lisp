@@ -105,9 +105,6 @@
   (SUBST (SECOND L) 'x
          '(COND ($reportFlag (sayBrightly x)) ((QUOTE T) NIL))))
 
-(defmacro |DomainSubstitutionMacro| (&rest L)
-  (|DomainSubstitutionFunction| (first L) (second L)))
-
 (defun |sort| (seq spadfn)
     (sort (copy-seq seq) (function (lambda (x y) (SPADCALL X Y SPADFN)))))
 
@@ -136,7 +133,6 @@
   (let ((|$Index| 0)
         ($MACROASSOC ())
         (|$compUniquelyIfTrue| nil)
-        |$currentFunction|
         (|$postStack| nil)
         |$topOp|
         (|$semanticErrorStack| ())
@@ -146,7 +142,7 @@
         (|$returnMode| |$EmptyMode|)
         (|$leaveLevelStack| ())
         $TOP_LEVEL |$insideFunctorIfTrue| |$insideExpressionIfTrue|
-        |$insideCoerceInteractiveHardIfTrue| |$insideWhereIfTrue|
+        |$insideWhereIfTrue|
         |$insideCategoryIfTrue| |$insideCapsuleFunctionIfTrue| |$form|
         (|$e| |$EmptyEnvironment|)
         (|$genSDVar| 0)

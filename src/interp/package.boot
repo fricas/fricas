@@ -30,29 +30,11 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-isPackageFunction() ==
-  -- called by compile/putInLocalDomainReferences
---+
-  nil
- 
-processFunctorOrPackage(form,signature,data,localParList,m,e) ==
---+
-  processFunctor(form,signature,data,localParList,e)
- 
-subTree(u,v) ==
-  v=u => true
-  ATOM v => nil
-  or/[subTree(u,v') for v' in v]
- 
 mkList u ==
   u => ["LIST",:u]
   nil
  
-mkOperatorEntry(domainOrPackage,opSig is [op,sig,:flag],pred,count) ==
-  domainOrPackage^="domain" =>
-    BREAK()
-    [opSig,pred,["PAC","$",name]] where
-      name() == encodeFunctionName(op,domainOrPackage,sig,":",count)
+mkOperatorEntry(opSig is [op,sig,:flag],pred,count) ==
   null flag => [opSig,pred,["ELT","$",count]]
   first flag="constant" => [[op,sig],pred,["CONST","$",count]]
   systemError ["unknown variable mode: ",flag]

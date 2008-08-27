@@ -56,9 +56,6 @@ newGoGet(:l) ==
 --=======================================================
 --       Lookup Function in Slot 1 (via SPADCALL)
 --=======================================================
-lookupFF(op,sig,dollar,env) == newLookupInTable(op,sig,dollar,env,nil)
- 
-lookupUF(op,sig,dollar,env) == newLookupInTable(op,sig,dollar,env,true)
  
 newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   dollar = nil => systemError()
@@ -168,6 +165,7 @@ newLookupInCategories(op,sig,dom,dollar) ==
   catVec := CADR slot4
   SIZE catVec = 0 => nil                      --early exit if no categories
   INTEGERP KDR catVec.0 =>
+    BREAK()
     newLookupInCategories1(op,sig,dom,dollar) --old style
   $lookupDefaults : local := nil
   if $monitorNewWorld = true then sayBrightly concat('"----->",
@@ -501,32 +499,12 @@ newHasTest(domform,catOrAtt) ==
     newHasCategory(domain,catOrAtt)
   newHasAttribute(eval mkEvalable domform,catOrAtt)
  
---newHasCategory(domain,catform) ==
---  catform = '(Type) => true  
---  slot4 := domain.4
---  auxvec := CAR slot4
---  catvec := CADR slot4
---  $isDefaultingPackage: local := isDefaultPackageForm? devaluate domain
---  #catvec > 0 and INTEGERP KDR catvec.0 =>              --old style
---    predIndex := lazyMatchAssocV1(catform,catvec,domain)
---    null predIndex => false
---    EQ(predIndex,0) => true
---    predvec := QVELT(domain,3)
---    testBitVector(predvec,predIndex)
---  lazyMatchAssocV(catform,auxvec,catvec,domain)         --new style
- 
 lazyMatchAssocV1(x,vec,domain) ==               --old style slot4
+  BREAK()
   n : FIXNUM := MAXINDEX vec
   xop := CAR x
   or/[QCDR QVELT(vec,i) for i in 0..n |
     xop = CAR (lazyt := CAR QVELT(vec,i)) and lazyMatch(x,lazyt,domain,domain)]
- 
---newHasAttribute(domain,attrib) ==
---  predIndex := LASSOC(attrib,domain.2) =>
---    EQ(predIndex,0) => true
---    predvec := domain.3
---    testBitVector(predvec,predIndex)
---  false
  
 --=======================================================
 --                   Utility Functions

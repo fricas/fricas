@@ -165,7 +165,6 @@ compTopLevel(x,m,e) ==
   $forceAdd: local:= false
   $compTimeSum: local := 0
   $resolveTimeSum: local := 0
-  $packagesUsed: local := []
   -- The next line allows the new compiler to be tested interactively.
   compFun := if $newCompAtTopLevel=true then 'newComp else 'compOrCroak
   if x is ["where",:.] then x := markWhereTran x
@@ -506,22 +505,6 @@ compMacro(form,m,e) ==
   ["MDEF",lhs,signature,specialCases,rhs]:= form:= macroExpand(form,e)
   m=$EmptyMode or m=$NoValueMode =>
     ["/throwAway",$NoValueMode,put(first lhs,"macro",rhs,e)]
-
---compMacro(form,m,e) ==
---  $macroIfTrue: local:= true
---  ["MDEF",lhs,signature,specialCases,rhs]:= form
---  rhs :=
---    rhs is ['CATEGORY,:.] => ['"-- the constructor category"]
---    rhs is ['Join,:.]     => ['"-- the constructor category"]
---    rhs is ['CAPSULE,:.]  => ['"-- the constructor capsule"]
---    rhs is ['add,:.]      => ['"-- the constructor capsule"]
---    formatUnabbreviated rhs
---  sayBrightly ['"   processing macro definition",'%b,
---    :formatUnabbreviated lhs,'" ==> ",:rhs,'%d]
---  ["MDEF",lhs,signature,specialCases,rhs]:= form:= macroExpand(form,e)
---  m=$EmptyMode or m=$NoValueMode =>
---    rhs := markMacro(lhs,rhs)
---    ["/throwAway",$NoValueMode,put(first lhs,"macro",rhs,e)]
 
 compSetq(oform,m,E) ==
   ["LET",form,val] := oform
@@ -1065,7 +1048,6 @@ compNot([op,arg], pWas, m, e) ==
 
 compDefine(form,m,e) ==
   $macroIfTrue: local
-  $packagesUsed: local
   ['DEF,.,originalSignature,.,body] := form
   if not $insideFunctorIfTrue then
     $originalBody := COPY body
@@ -1190,7 +1172,6 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
 --Begin lines for category default definitions
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
-    $frontier: local := 0
     $getDomainCode: local := nil
     $addForm: local:= nil
     for x in sargl for t in rest signature' repeat

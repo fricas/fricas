@@ -472,10 +472,6 @@ lookupIncomplete(op,sig,dollar,env) ==
    hashCode? sig => hashNewLookupInTable(op,sig,dollar,env,true)
    newLookupInTable(op,sig,dollar,env,true)
  
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
-lookupInCompactTable(op,sig,dollar,env) ==
-   hashCode? sig => hashNewLookupInTable(op,sig,dollar,env,true)
-   newLookupInTable(op,sig,dollar,env,true)
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
 lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
@@ -489,12 +485,10 @@ lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
       s = d.0 => true
       domainArg := ($isDefaultingPackage => domain.6.0; domain.0)
       KAR s = QCAR d.0 and lazyMatchArgDollarCheck(s,d.0,dollar.0,domainArg)
-    --VECP CAR d => lazyMatch(s,CDDR d,dollar,domain)      --old style (erase)
     isDomain d =>
         dhash:=getDomainHash d
         dhash =
            (if hashCode? s then s else hashType(s, dhash))
---      s = devaluate d
     lazyMatch(s,d,dollar,domain)                         --new style
   a = '$ => s = devaluate dollar
   a = "$$" => s = devaluate domain
@@ -611,6 +605,7 @@ newExpandLocalType(lazyt,dollar,domain) ==
   isDomain lazyt => devaluate lazyt
   ATOM lazyt => lazyt
   lazyt is [vec,.,:lazyForm] and VECP vec =>              --old style
+    BREAK()
     newExpandLocalTypeForm(lazyForm,dollar,domain)
   newExpandLocalTypeForm(lazyt,dollar,domain)             --new style
 
@@ -752,6 +747,7 @@ newHasCategory(domain,catform) ==
   catvec := CADR slot4
   $isDefaultingPackage: local := isDefaultPackageForm? devaluate domain
   #catvec > 0 and INTEGERP KDR catvec.0 =>              --old style
+    BREAK()
     predIndex := lazyMatchAssocV1(catform,catvec,domain)
     null predIndex => false
     EQ(predIndex,0) => true
@@ -797,14 +793,9 @@ HasCategory(domain,catform') ==
    MEMQ(opOf(catform),'(Object Type)) or  --temporary hack
     or/[compareSigEqual(catform,cat,domain0,domain) for cat in catlist]
 
---systemDependentMkAutoload(fn,cnam) ==
---    FBOUNDP(cnam) => "next"
---    SETF(SYMBOL_-FUNCTION cnam,mkAutoLoad(fn, cnam))
-
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
 lazyDomainSet(lazyForm,thisDomain,slot) ==
   form :=
-    --lazyForm is [vec,.,:u] and VECP vec => u        --old style
     lazyForm                                        --new style
   slotDomain := evalSlotDomain(form,thisDomain)
   if $monitorNewWorld then
@@ -828,7 +819,9 @@ evalSlotDomain(u,dollar) ==
     isDomain y => y
     y is ['SETELT,:.] => eval y--lazy domains need to marked; this is dangerous?
     y is [v,:.] => 
-      VECP v => lazyDomainSet(y,dollar,u)               --old style has [$,code,:lazyt]
+      VECP v =>
+          BREAK()
+          lazyDomainSet(y,dollar,u)               --old style has [$,code,:lazyt]
       constructor? v or MEMQ(v,'(Record Union Mapping)) => 
         lazyDomainSet(y,dollar,u)                       --new style has lazyt
       y
@@ -857,8 +850,6 @@ evalSlotDomain(u,dollar) ==
 --------------------> NEW DEFINITION (override in i-util.boot.pamphlet)
 domainEqual(a,b) ==
   devaluate(a) = devaluate(b)
-
---makeConstructorsAutoLoad()
 
 
 --------------------> NEW DEFINITION (see i-funsel.boot.pamphlet)

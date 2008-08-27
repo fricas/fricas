@@ -160,11 +160,6 @@ set1(l,setTree) ==
       if arg2 = 'DEFAULT
         then SET(setData.setVar, translateYesNo2TrueFalse setData.setDef)
         else
-          if arg2 = 'nobreak then
-             USE_-FAST_-LINKS 'T
-          if arg2 = 'fastlinks then
-             USE_-FAST_-LINKS 'NIL
-             arg2 := 'break
           SET(setData.setVar, translateYesNo2TrueFalse arg2)
     -- if so set or not a valid choice, then show option information
     if $displaySetValue or (null arg2) then

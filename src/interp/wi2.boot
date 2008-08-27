@@ -33,8 +33,6 @@
 compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     ['DEF,form,signature,$functorSpecialCases,body] := df
     signature := markKillAll signature
-    if NRTPARSE = true then
-      [lineNumber,:$functorSpecialCases] := $functorSpecialCases
 --  1. bind global variables
     $addForm: local
     $viewNames: local:= nil
@@ -61,7 +59,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $form: local
     $op: local
     $signature: local
-    $functorTarget: local
     $Representation: local
          --Set in doIt, accessed in the compiler - compNoStacking
     $LocalDomainAlist: local  --set in doIt, accessed in genDeltaEntry
@@ -72,7 +69,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
                   --prevents CheckVector from printing out same message twice
     $getDomainCode: local -- code for getting views
     $insideFunctorIfTrue: local:= true
-    $functorsUsed: local --not currently used, finds dependent functors
     $setelt: local :=
       $QuickCode = true => 'QSETREFV
       'SETELT
@@ -96,7 +92,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     if null first signature' then signature':=
       modemap2Signature getModemap($form,$e)
     target:= first signature'
-    $functorTarget:= target
     $e:= giveFormalParametersValues(argl,$e)
     [ds,.,$e]:= compMakeCategoryObject(target,$e) or
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
@@ -155,12 +150,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
 --  domain D in argl,check its signature: if domain, its type is Join(A1,..,An);
 --  in this case, D is replaced by D1,..,Dn (gensyms) which are set
 --  to the A1,..,An view of D
-    if isPackageFunction() then $functorLocalParameters:=
-      [nil,:
-        [nil
-          for i in 6..MAXINDEX $domainShell |
-            $domainShell.i is [.,.,['ELT,'_$,.]]]]
-    --leave space for vector ops and package name to be stored
 --+
     $functorLocalParameters:=
       argPars :=
@@ -191,18 +180,16 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     reportOnFunctorCompilation()
  
 --  5. give operator a 'modemap property
---   if $functorsUsed then MAKEPROP(op',"NEEDS",$functorsUsed)
     $insideFunctorIfTrue:= false
     if $LISPLIB then
       $lisplibKind:=
-        $functorTarget is ["CATEGORY",key,:.] and key^="domain" => 'package
+        target is ["CATEGORY",key,:.] and key^="domain" => 'package
         'domain
       $lisplibForm:= form
       modemap:= [[parForm,:parSignature],[true,op']]
       $lisplibModemap:= modemap
       if null $bootStrapMode then
         $NRTslot1Info := NRTmakeSlot1Info()
-        $isOpPackageName: local := isCategoryPackageName $op
         $lisplibFunctionLocations := SUBLIS($pairlis,$functionLocations)
         libFn := getConstructorAbbreviation op'
         $lookupFunction: local :=
@@ -370,7 +357,7 @@ compCapsuleInner(itemList,m,e) ==
   if $addForm then data:= ['add,$addForm,data]
   code:=
     $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => data
-    processFunctorOrPackage($form,$signature,data,localParList,m,e)
+    processFunctor($form,$signature,data,localParList,e)
   [MKPF([:$getDomainCode,code],"PROGN"),m,e]
 
 compSingleCapsuleItem(item,$predl,$e) ==
@@ -1139,8 +1126,6 @@ doItLet1 item ==
          $functorLocalParameters:= [:$functorLocalParameters,lhs]
   if (rhs' := rhsOfLetIsDomainForm code) then
       if isFunctor rhs' then
-        $functorsUsed:= insert(opOf rhs',$functorsUsed)
-        $packagesUsed:= insert([opOf rhs'],$packagesUsed)
         $globalImportDefAlist := pp [[lhs, :rhs'],:$globalImportDefAlist]
       if lhs="Rep" then
         $Representation:= (get("Rep",'value,$e)).(0)

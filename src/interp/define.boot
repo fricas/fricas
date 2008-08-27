@@ -34,7 +34,6 @@
  
 compDefine(form,m,e) ==
   $macroIfTrue: local := nil
-  $packagesUsed: local := nil
   result:= compDefine1(form,m,e)
   result
  
@@ -233,7 +232,6 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
 --Begin lines for category default definitions
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
-    $frontier: local := 0
     $getDomainCode: local := nil
     $addForm: local:= nil
     for x in sargl for t in rest signature' repeat
@@ -310,11 +308,8 @@ compDefineFunctor(df,m,e,prefix,fal) ==
  
 compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
   m,$e,$prefix,$formalArgList) ==
-    if NRTPARSE = true then
-      [lineNumber,:$functorSpecialCases] := $functorSpecialCases
 --  1. bind global variables
     $addForm: local := nil
-    $viewNames: local:= nil
  
             --This list is only used in genDomainViewName, for generating names
             --for alternate views, if they do not already exist.
@@ -325,7 +320,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $form: local := nil
     $op: local := nil
     $signature: local := nil
-    $functorTarget: local := nil
     $Representation: local := nil
          --Set in doIt, accessed in the compiler - compNoStacking
     $functorForm: local := nil
@@ -334,7 +328,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
                   --prevents CheckVector from printing out same message twice
     $getDomainCode: local := nil -- code for getting views
     $insideFunctorIfTrue: local:= true
-    $functorsUsed: local := nil --not currently used, finds dependent functors
     $setelt: local :=
       $QuickCode = true => 'QSETREFV
       'SETELT
@@ -355,7 +348,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     if null first signature' then signature':=
       modemap2Signature getModemap($form,$e)
     target:= first signature'
-    $functorTarget:= target
     $e:= giveFormalParametersValues(argl,$e)
     [ds,.,$e]:= compMakeCategoryObject(target,$e) or
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
@@ -414,12 +406,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 --  domain D in argl,check its signature: if domain, its type is Join(A1,..,An);
 --  in this case, D is replaced by D1,..,Dn (gensyms) which are set
 --  to the A1,..,An view of D
-    if isPackageFunction() then $functorLocalParameters:=
-      [nil,:
-        [nil
-          for i in 6..MAXINDEX $domainShell |
-            $domainShell.i is [.,.,['ELT,'_$,.]]]]
-    --leave space for vector ops and package name to be stored
 --+
     $functorLocalParameters:=
       argPars :=
@@ -446,7 +432,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     reportOnFunctorCompilation()
  
 --  5. give operator a 'modemap property
---   if $functorsUsed then MAKEPROP(op',"NEEDS",$functorsUsed)
     if $LISPLIB then
       modemap:= [[parForm,:parSignature],[true,op']]
       $lisplibModemap:= modemap
@@ -460,12 +445,11 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       $lisplibKind:=
 ------->This next line prohibits changing the KIND once given
 --------kk:=GETDATABASE($op,'CONSTRUCTORKIND) => kk
-        $functorTarget is ["CATEGORY",key,:.] and key^="domain" => 'package
+        target is ["CATEGORY",key,:.] and key^="domain" => 'package
         'domain
       $lisplibForm:= form
       if null $bootStrapMode then
         $NRTslot1Info := NRTmakeSlot1Info()
-        $isOpPackageName: local := isCategoryPackageName $op
         $lisplibFunctionLocations := SUBLIS($pairlis,$functionLocations)
         libFn := GETDATABASE(op','ABBREVIATION)
         $lookupFunction: local :=
@@ -992,10 +976,6 @@ compile u ==
           isLocalFunction op ==
             null member(op,$formalArgList) and
               getmode(op,$e) is ['Mapping,:.]
-      isPackageFunction() and KAR $functorForm^="CategoryDefaults" =>
-        if null opmodes then userError ['"no modemap for ",op]
-        opmodes is [['PAC,.,name]] => name
-        encodeFunctionName(op,$functorForm,$signatureOfForm,";",$suffix)
       encodeFunctionName(op,$functorForm,$signatureOfForm,";",$suffix)
     u:= [op',lamExpr]
   -- If just updating certain functions, check for previous existence.
@@ -1021,7 +1001,9 @@ compile u ==
        then optimizedBody
        else putInLocalDomainReferences optimizedBody
   $doNotCompileJustPrint=true => (PRETTYPRINT stuffToCompile; op')
-  $macroIfTrue => constructMacro stuffToCompile
+  $macroIfTrue =>
+      BREAK()
+      constructMacro stuffToCompile
   result:= spadCompileOrSetq stuffToCompile
   functionStats:=[0,elapsedTime()]
   $functionStats:= addStats($functionStats,functionStats)
@@ -1103,7 +1085,6 @@ compAdd(['add,$addForm,capsule],m,e) ==
          ''%b,MKQ namestring _/EDITFILE,''%d,'"needs to be compiled"]]]],m,e]
   $addFormLhs: local:= $addForm
   if $addForm is ["SubDomain",domainForm,predicate] then
-    $packagesUsed := [domainForm,:$packagesUsed]
 --+
     $NRTaddForm := domainForm
     NRTgetLocalIndex domainForm
@@ -1111,9 +1092,6 @@ compAdd(['add,$addForm,capsule],m,e) ==
     --  slots will need to access it
     [$addForm,.,e]:= compSubDomain1(domainForm,predicate,m,e)
   else
-    $packagesUsed :=
-      $addForm is ['Tuple,:u] => [:u,:$packagesUsed]
-      [$addForm,:$packagesUsed]
 --+
     $NRTaddForm := $addForm
     [$addForm,.,e]:=
@@ -1166,7 +1144,7 @@ compCapsuleInner(itemList,m,e) ==
   if $addForm then data:= ['add,$addForm,data]
   code:=
     $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => data
-    processFunctorOrPackage($form,$signature,data,localParList,m,e)
+    processFunctor($form,$signature,data,localParList,e)
   [MKPF([:$getDomainCode,code],"PROGN"),m,e]
  
 --% PROCESS FUNCTOR CODE
@@ -1214,9 +1192,6 @@ doIt(item,$predl) ==
       not MEMQ(lhs, $functorLocalParameters) then
          $functorLocalParameters:= [:$functorLocalParameters,lhs]
     if code is ['LET,.,rhs',:.] and isDomainForm(rhs',$e) then
-      if isFunctor rhs' then
-        $functorsUsed:= insert(opOf rhs',$functorsUsed)
-        $packagesUsed:= insert([opOf rhs'],$packagesUsed)
       if lhs="Rep" then
         $Representation:= (get("Rep",'value,$e)).(0)
            --$Representation bound by compDefineFunctor, used in compNoStacking
@@ -1303,6 +1278,7 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
  
 --% CATEGORY AND DOMAIN FUNCTIONS
 compContained(["CONTAINED",a,b],m,e) ==
+  BREAK()
   [a,ma,e]:= comp(a,$EmptyMode,e) or return nil
   [b,mb,e]:= comp(b,$EmptyMode,e) or return nil
   isCategoryForm(ma,e) and isCategoryForm(mb,e) =>
@@ -1384,7 +1360,7 @@ mustInstantiate D ==
   D is [fn,:.] and ^(MEMQ(fn,$DummyFunctorNames) or GETL(fn,"makeFunctionList"))
  
 DomainSubstitutionFunction(parameters,body) ==
-  --see definition of DomainSubstitutionMacro in SPAD LISP
+  --see optFunctorBody
   if parameters then
     (body:= Subst(parameters,body)) where
       Subst(parameters,body) ==
@@ -1446,11 +1422,3 @@ compCategoryItem(x,predl) ==
  
   --4. branch on a single type or a signature %with source and target
   PUSH(MKQ [rest x,pred],$sigList)
- 
-
-
-
-
-
-
-

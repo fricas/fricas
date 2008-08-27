@@ -217,21 +217,6 @@ buildLibAttr(name,argl,pred) ==
   writedb
     buildLibdbString [header,# argl,$exposed?,argPart,conname,predString,comments]
 
-dbAugmentConstructorDataTable() ==
-  instream := MAKE_-INSTREAM '"libdb.text"
-  while not EOFP instream repeat
-    fp   := FILE_-POSITION instream
-    line := READLINE instream
-    cname := INTERN dbName line
-    entry := getCDTEntry(cname,true) =>  --skip over Mapping, Union, Record
-       [name,abb,:.] := entry
-       RPLACD(CDR entry,PUTALIST(CDDR entry,'dbLineNumber,fp))
---     if xname := constructorHasExamplePage entry then
---       RPLACD(CDR entry,PUTALIST(CDDR entry,'dbExampleFile,xname))
-       args := IFCDR GETDATABASE(name,'CONSTRUCTORFORM)
-       if args then RPLACD(CDR entry,PUTALIST(CDDR entry,'constructorArgs,args))
-  'done
-
 dbHasExamplePage conname ==
   sname    := STRINGIMAGE conname
   abb      := constructor? conname
@@ -239,13 +224,6 @@ dbHasExamplePage conname ==
   pathname :=STRCONC(getEnv '"AXIOM",'"/share/hypertex/pages/",ucname,'".ht")
   isExistingFile pathname => INTERN STRCONC(sname,'"XmpPage")
   nil
-
-dbRead(n) ==
-  instream := MAKE_-INSTREAM STRCONC(getEnv('"AXIOM"), '"/algebra/libdb.text")
-  FILE_-POSITION(instream,n)
-  line := READLINE instream
-  SHUT instream
-  line
 
 dbReadComments(n) ==
   n = 0 => '""

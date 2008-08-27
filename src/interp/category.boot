@@ -105,7 +105,7 @@ mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
        then
          or/[x is [[ =sig,.,:impl],:num] for x in NSigList] => [sig,pred,:impl]
                  --only needed for multiple copies of sig
-         nsig:= mkOperatorEntry("domain",sig,pred,count)
+         nsig:= mkOperatorEntry(sig,pred,count)
          NSigList:= [[nsig,:count],:NSigList]
          count:= count+1
          nsig
@@ -551,7 +551,13 @@ JoinInner(l,$e) ==
   if pName and not member(pName,c) then c:= [pName,:c]
   $NewCatVec.4:= [c,FundamentalAncestors,CADDR $NewCatVec.4]
   mkCategory("domain",sigl,attl,globalDomains,$NewCatVec)
- 
+
+Join(:L) ==
+  env := 
+     not(BOUNDP('$e)) or NULL($e) or $InteractiveMode => $CategoryFrame
+     $e
+  JoinInner(L, env)
+
 isCategoryForm(x,e) ==
   x is [name,:.] => categoryForm? name
   atom x => u:= get(x,"macro",e) => isCategoryForm(u,e)

@@ -35,7 +35,6 @@ compTopLevel(x,m,e) ==
   $forceAdd: local:= false
   $compTimeSum: local := 0
   $resolveTimeSum: local := 0
-  $packagesUsed: local := []
   $envHashTable: local := MAKE_-HASHTABLE 'EQUAL
   for u in CAR(CAR(e)) repeat
     for v in CDR(u) repeat
@@ -102,9 +101,6 @@ compNoStacking1(x,m,e,$compStack) ==
 
 comp2(x,m,e) ==
   [y,m',e]:= comp3(x,m,e) or return nil
-  if $LISPLIB and isDomainForm(x,e) then
-      if isFunctor x then
-         $packagesUsed:= insert([opOf x],$packagesUsed)
   --if null atom y and isDomainForm(y,e) then e := addDomain(x,e)
         --line commented out to prevent adding derived domain forms
   m^=m' and ($bootStrapMode or isDomainForm(m',e))=>[y,m',addDomain(m',e)]
