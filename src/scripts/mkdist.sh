@@ -82,8 +82,6 @@ clean_svn () {
 cp -r $SRCDIR dist
 cd dist || exit 1
 clean_svn .
-# Touch Makefile.in to prevent re-making before noweb is ready
-touch Makefile.in src/Makefile.in src/*/Makefile.in
 
 
 # copy noweb tarball
@@ -129,7 +127,7 @@ fi
 if [ ! -z "${copy_lisp}" ]; then
    (cd ../src/algebra; ls -d *.NRLIB | sed 's,\.NRLIB$,,' ) > ../nrlst
    for A in $(cat ../nrlst); do 
-      cp ../src/algebra/${A}.NRLIB/code.lsp src/algebra/${A}.lsp
+      cp ../src/algebra/${A}.NRLIB/${A}.lsp src/algebra/${A}.lsp
    done
    cp ../src/algebra/*.daase src/share/algebra
    cp ../src/algebra/libdb.text src/share/algebra
