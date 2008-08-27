@@ -83,11 +83,12 @@ WeierstrassPreparation(R): Defn == Impl where
             if null smps
             then nil()$(L SMPS)
             else
-              if null first (smps:(ST StS))
+              if null first (smps pretend (ST StS))
               then nil()$(L SMPS)
               else
-                cons(map2(first,smps:ST StS):SMPS,
-                   transback(map3(rest,smps:ST StS):(ST SMPS)))$(L SMPS)
+                cons(map2(first,smps pretend ST StS)pretend SMPS,
+                   transback(map3(rest,smps pretend ST StS)_
+                              pretend (ST SMPS)))$(L SMPS)
 
 
         clikeUniv(var)==likeUniv(#1,var)
@@ -105,7 +106,7 @@ WeierstrassPreparation(R): Defn == Impl where
         streamlikeUniv(p:SUP,n:NNI): StS ==
           if n=0
           then cons(coef (p,0),nil()$StS)
-          else cons(coef (p,n),streamlikeUniv(p,(n-1):NNI))
+          else cons(coef (p,n),streamlikeUniv(p,(n-1)::NNI))
 
         transpose:ST StS->ST StS
         transpose(s:ST StS)==delay(
@@ -116,8 +117,9 @@ WeierstrassPreparation(R): Defn == Impl where
         zp==>map$StreamFunctions3(SUP,NNI,StS)
 
         sts2stst(var, sts)==
+           si0 : ST NNI := (integers 0) pretend ST NNI
            zp(streamlikeUniv(#1,#2),
-             map1(clikeUniv var, sts),(integers 0):(ST NNI))
+             map1(clikeUniv var, sts),si0)
 
         tp:(VarSet,StS)->ST StS
         tp(v,sts)==transpose sts2stst(v,sts)
@@ -143,7 +145,7 @@ WeierstrassPreparation(R): Defn == Impl where
                f:= if e case "failed"
                    then error "no reciprocal"
                    else e::StS
-               q:=(YSS qqq(a,f:SMPS,rest p))
+               q:=(YSS qqq(a,f pretend SMPS,rest p))
                maptake(a,(p*q) pretend ST StS)
 
         cfirst n== first(#1,n)$StS
@@ -153,7 +155,7 @@ WeierstrassPreparation(R): Defn == Impl where
             cons(e,(-e)*mapdrop(a,(p*c)pretend(ST StS)))
         qqq(a,e,p)==  qq(a,e,p,#1)
         wei:(VarSet,SMPS)->ST SMPS
-        wei(v:VarSet,s:SMPS)==weier(v,s:StS)
+        wei(v:VarSet,s:SMPS)==weier(v,s pretend StS)
         weierstrass(v,smps)== transback wei (v,smps)
 
 @

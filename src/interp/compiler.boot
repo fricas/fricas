@@ -1045,20 +1045,8 @@ compPretend(["pretend",x,t],m,e) ==
   T':= coerce(T,m) => (if warningMessage then stackWarning warningMessage; T')
 
 compColonInside(x,m,e,m') ==
-  e:= addDomain(m',e)
-  T:= comp(x,$EmptyMode,e) or return nil
-  if (m'':=T.mode)=m' then warningMessage:= [":",m'," -- should replace by @"]
-  T:= [T.expr,m',T.env]
-  T':= coerce(T,m) =>
-    if warningMessage
-       then stackWarning warningMessage
-       else
-         opOf(m'') = 'Union =>
-           return
-             stackSemanticError(["cannot pretend ",x," of mode ",m''," to mode ",m'],nil)
-
-         stackWarning [":",m'," -- should replace by pretend"]
-    T'
+    return stackSemanticError([_
+        "compColonInside: colon inside expressions is unsupported"], nil)
 
 compIs(["is",a,b],m,e) ==
   [aval,am,e] := comp(a,$EmptyMode,e) or return nil

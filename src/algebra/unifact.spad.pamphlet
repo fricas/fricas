@@ -136,13 +136,13 @@ UnivariateFactorize(ZP) : public == private where
        nm := (degree m)::NNI
        nmq2:NNI := nm quo 2
        norm: Z := sqroot(+/[coefficient(m,k)**2 for k in 0..nm])
-       if nmq2^=1 then nm := (nmq2-1):NNI
+       if nmq2^=1 then nm := (nmq2-1)::NNI
        else nm := nmq2
        bin0 := nm
        cbound := (bin0*norm+lcm)::PI
        for i in 2..(nm-1)::NNI repeat
          bin1 := bin0
-         bin0 := (bin0*(nm+1-i):NNI) quo i
+         bin0 := (bin0*(nm+1-i)::NNI) quo i
          j := (bin0*norm+bin1*lcm)::PI
          if cbound<j then cbound := j
        (2*cbound*lcm)::PI -- adjusted by lcm to prepare for exquo in ghensel
@@ -234,7 +234,7 @@ UnivariateFactorize(ZP) : public == private where
 
      subMinusX(supPol : SUPZ): ZP ==
        minusX : SUPZ := monomial(-1,1)$SUPZ
-       (elt(supPol,minusX)$SUPZ) : ZP
+       (elt(supPol,minusX)$SUPZ) pretend ZP
 
 --   Factorize the polynomial m, test=true if m is known to be
 --   square-free, false otherwise.
@@ -274,7 +274,7 @@ UnivariateFactorize(ZP) : public == private where
       -- is m cyclotomic (x**n - 1)?
       -lcPol = reductum(m) =>    -- if true, both will = 1
         for fac in
-          (cyclotomicDecomposition(degree m)$CYC : List ZP) repeat
+          (cyclotomicDecomposition(degree m)$CYC pretend List ZP) repeat
             factorlist := cons([fac,1]$ParFact,factorlist)
         [c,factorlist]$FinalFact
 
