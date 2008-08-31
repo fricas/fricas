@@ -80,6 +80,23 @@ testTrue "is?(operator(kernels(i2).1), isym)"
 
 testEquals("integrate(log(sqrt(1-x^2)/x)/(x^2), x)", "(-log(sqrt(1-x^2)/x) -x*log(x+1)/2 +  x*log(x-1)/2 + 1)/x")
 
+testcase "Skew exponentiation (issue #431)"
+h: EXPR INT -> EXPR INT := f+->D(f,x)
+DoD := LODO(EXPR INT, h)
+Dx: DoD := D()
+u := operator 'u
+L := Dx + u(x)
+testEquals("L**2", "L*L")
+lodoPower(x: DoD, n: NonNegativeInteger): DoD == x^n
+testEquals("lodoPower(L, 3)", "L*L*L")
+
+f: UP(n, INT) -> UP(n, INT) := p +-> p.(n+1)
+g: UP(n, INT) -> UP(n, INT) := p +-> 0
+K := OREUP(E, UP(n, INT), morphism f, g)
+M := E::K+n
+testEquals("M**2", "M*M")
+testEquals("M^3", "M*M*M")
+
 )set output algebra on
 statistics()
 @

@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{axiom}
+\usepackage{axiom, amsmath, amsfonts}
 \begin{document}
 \title{\$SPAD/src/algebra ore.spad}
 \author{Manuel Bronstein, Jean Della Dora, Stephen M. Watt}
@@ -10,6 +10,37 @@
 \tableofcontents
 \eject
 \section{category OREPCAT UnivariateSkewPolynomialCategory}
+\emph{Skew} or \emph{Ore} polynomial rings provide a unified framework to
+compute with differential and difference equations.
+
+In the following, let $\mathbb A$ be an integral domain, equipped with two
+endomorphisms $\sigma$ and $\delta$:
+\begin{enumerate}
+\item $\sigma: \mathbb A\rightarrow\mathbb A$ is an injective ring
+  endomorphism, and
+\item $\delta: \mathbb A\rightarrow\mathbb A$, the \emph{pseudo-derivation}
+  with respect to $\sigma$, is an additive endomorphism with $\delta(ab) =
+  \sigma(a)\delta(b) + \delta(a)b$, for all $a, b\in\mathbb A$.
+\end{enumerate}
+Note that in the domains and categories below, these properties are \emph{not
+  checked}!
+
+The skew polynomial ring $\mathbb[\Delta;\sigma,\delta]$ is the ring of
+polynomials in $\Delta$ with coefficients in $\mathbb A$, with the usual
+addition, while the product is given by
+\begin{equation*}
+  \Delta a = \sigma(a)\Delta + \delta(a)\quad\text{for $a\in\mathbb A$}.
+\end{equation*}
+
+The two most important examples of skew polynomial rings are as follows:
+\begin{itemize}
+\item $\mathbb K(x)[D, 1, \delta]$, where $1$ is the identity on $\mathbb K$
+  and $\delta$ is the usual derivative, is the ring of differential
+  polynomials.
+\item $\mathbb K_n[E, n \mapsto n+1, 0]$ is the ring of linear recurrence
+  operators with polynomial coefficients.
+\end{itemize}
+
 <<category OREPCAT UnivariateSkewPolynomialCategory>>=
 )abbrev category OREPCAT UnivariateSkewPolynomialCategory
 ++ Author: Manuel Bronstein, Jean Della Dora, Stephen M. Watt
@@ -475,6 +506,22 @@ SparseUnivariateSkewPolynomial(R:Ring, sigma:Automorphism R, delta: R -> R):
         ++ outputForm(p, x) returns the output form of p using x for the
         ++ otherwise anonymous variable.
    == SparseUnivariatePolynomial R add
+@
+
+We have to define \spadfun{**} and \verb|^|, because otherwise they would be
+taken from \spadtype{SUP R}, where the default implementations from
+\spadtype{SemiGroup} and \spadtype{Monoid} are overridden.  There might be a
+faster definition, of course.
+
+<<domain ORESUP SparseUnivariateSkewPolynomial>>=
+      import RepeatedSquaring(%)
+      _^(x:%, n:PositiveInteger):% == x ** n
+      x:% ** n:PositiveInteger == expt(x,n)
+      _^(x:%, n:NonNegativeInteger):% == x ** n
+      x:% ** n:NonNegativeInteger ==
+         zero? n => 1
+         expt(x,n pretend PositiveInteger)
+
       import UnivariateSkewPolynomialCategoryOps(R, %)
 
       x:% * y:%      == times(x, y, sigma, delta)
