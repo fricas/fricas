@@ -44,7 +44,6 @@
 (defvar |$demoFlag| nil)
 
 (define-function '|construct| #'list) ;; NEEDED , SPAD-COMPILER generated Lisp code
-(define-function '|COMP,TRAN| #'comp-tran) ;called by |compWithMappingMode|
 
 (defvar |Undef| (function |Undef|)) ;needed in NewbFVectorCopy
 (define-function '|spadHash| #'sxhash)
@@ -179,7 +178,6 @@
 )
 
 (defun whocalled (n) nil) ;; no way to look n frames up the stack
-(defun setletprintflag (x) x)
 
 (define-function '|eval| #'eval)
 

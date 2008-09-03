@@ -469,7 +469,6 @@ spadTrace(domain,options) ==
     if $traceNoisely then printDashedLine()
     for x in orderBySlotNumber sigSlotNumberAlist repeat
       reportSpadTrace("TRACING",x)
-  if $letAssoc then SETLETPRINTFLAG true
   currentEntry =>
     RPLAC(rest currentEntry,[:sigSlotNumberAlist,:currentAlist])
   SETQ(_/TRACENAMES,[[domain,:sigSlotNumberAlist],:_/TRACENAMES])
@@ -696,7 +695,6 @@ spadUntrace(domain,options) ==
       RPLAC(CDDDR pair,nil)
       if assocPair:= assoc(BPINAME bpiPointer,$letAssoc) then
         $letAssoc := REMOVER($letAssoc,assocPair)
-        if null $letAssoc then SETLETPRINTFLAG nil
   newSigSlotNumberAlist:= [x for x in sigSlotNumberAlist | CDDDR x]
   newSigSlotNumberAlist => RPLAC(rest pair,newSigSlotNumberAlist)
   SETQ(_/TRACENAMES,DELASC(domain,_/TRACENAMES))
@@ -779,7 +777,6 @@ tracelet(fn,vars) ==
     l:= LASSOC(fn,$letAssoc) => union(vars,l)
     vars
   $letAssoc:= [[fn,:vars],:$letAssoc]
-  if $letAssoc then SETLETPRINTFLAG true
   $TRACELETFLAG : local := true
   $QuickLet : local := false
   ^MEMQ(fn,$traceletFunctions) and ^IS__GENVAR fn and COMPILED_-FUNCTION_-P SYMBOL_-FUNCTION fn
@@ -801,7 +798,6 @@ breaklet(fn,vars) ==
   $letAssoc:=
     null fnEntry => [[fn,:LIST ["BREAK",:vars]],:$letAssoc]
     pair => (RPLACD(pair,vars); $letAssoc)
-  if $letAssoc then SETLETPRINTFLAG true
   $QuickLet:local := false
   ^MEMQ(fn,$traceletFunctions) and not stupidIsSpadFunction fn
     and not GENSYMP fn =>

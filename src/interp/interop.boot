@@ -332,10 +332,6 @@ oldAxiomDomainLookupExport _
      
 oldAxiomDomainHashCode(domenv, env) == CAR domenv
 
-oldAxiomDomainHasCategory(domenv, cat, env) ==
-  HasAttribute(domvec := CDR domenv, cat) or
-    HasCategory(domvec, devaluate cat)
-
 oldAxiomDomainDevaluate(domenv, env) == 
    SExprToDName(CDR(domenv).0, 'T)
 

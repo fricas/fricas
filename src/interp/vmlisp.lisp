@@ -401,11 +401,9 @@
 ; Used only in debug.lisp
 ; Beats me how to simulate macro expansion "in the environment of sd"...:
 
-(defun MDEF (arg item &optional sd)
+(defun MDEFX (arg item &optional sd)
  (declare (ignore sd))
   (macroexpand `(,arg ,item)))
-
-(define-function 'MDEFX #'MDEF)
 
 ; 8.0 Operator Definition and Transformation
 
@@ -495,8 +493,6 @@
     (digit-char-p x)))
 
 #-:CCL
-(defun LN (x) (LOG x))
-#-:CCL
 (defun LOG2 (x) (LOG x 2.0))
 (defun |log| (x) (LOG x 10.0))
 
@@ -547,9 +543,6 @@
 ; 12.0 Operations on Numbers
 
 ; 12.1 Conversion
-
-(define-function 'FIX #'truncate)
-(define-function 'INT2RNUM #'float)
 
 ; 12.2 Predicates
 
@@ -610,11 +603,6 @@
       (remove item list :count count :test #'equalp)
       (remove item list :test #'equalp)))
 
-(defun REMOVEQ (list item &optional (count 1))
-  (if (integerp count)
-      (remove item list :count count :test #'eq)
-      (remove item list :test #'eq)))
-
 ; 14.2 Accessing
 
 (defun |last| (x) (car (LASTNODE x)))
@@ -652,11 +640,6 @@
   (if (integerp count)
       (delete item list :count count :test #'equal)
       (delete item list :test #'equal)))
-
-(defun NREMOVEQ (list item &optional (count 1))
-  (if (integerp count)
-      (delete item list :count count )
-      (delete item list )))
 
 (defun EFFACE (item list) (delete item list :count 1 :test #'equal))
 
@@ -818,10 +801,6 @@
            (setf (elt cvec l) id)
            cvec))
         (t (concat cvec id))))
-
-(defun setsize (vector size) (adjust-array vector size))
-
-(define-function 'changelength #'setsize)
 
 (defun trimstring (x) x)
 

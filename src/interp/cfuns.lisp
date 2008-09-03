@@ -32,7 +32,8 @@
 
 (in-package "BOOT")
 
-
+;; Duplicates code in hashcode.boot -- probably should remove this
+;; version.
 ;;stolen from AXIOM-XL src/strops.c
 #+(AND GCL (NOT ELF))
 (LISP::clines 

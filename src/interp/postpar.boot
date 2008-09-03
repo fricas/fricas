@@ -77,7 +77,7 @@ postTranList x == [postTran y for y in x]
 
 postBigFloat x ==
   [.,mant, expon] := x
-  $BOOT => INT2RNUM(mant) * INT2RNUM(10) ** expon
+  $BOOT => FLOAT(mant) * FLOAT(10) ** expon
   eltword := if $InteractiveMode then "$elt" else 'elt
   postTran [[eltword,'(Float),'float],[",",[",",mant,expon],10]]
 
@@ -436,3 +436,43 @@ unTuple x ==
   x is ['Tuple,:y] => y
   LIST x
 
+-- Boot only section
+
+new2OldLisp(x) == new2OldTran (postTransform (x))
+
+new2OldTran(x) ==
+    ATOM x => 
+         EQ(x, "'") => BREAK()
+         x
+    x is ["where", a, b] and b is ["SEQ", :c, ["exit", d]] =>
+         ["where", new2OldTran a, :new2OldTran c, new2OldTran d]
+    head := CAR(x)
+    head is "QUOTE" => x
+    head is "DEF" => newDef2Def x
+    head is "IF" => newIf2Cond x
+    head is "construct" => newConstruct new2OldTran CDR(x)
+    [new2OldTran CAR(x), :new2OldTran CDR(x)]
+
+newDef2Def(expr) ==
+    expr is ["DEF", form, a, b, c] =>
+        ["DEF", new2OldDefForm(form), new2OldTran(a),_
+             new2OldTran(b), new2OldTran(c)]
+    LET__ERROR('"(DEF,form,a,b,c)", expr)
+
+new2OldDefForm(x) ==
+    ATOM(x) => new2OldTran(x)
+    x is [["is", a, b], :y] => new2OldDefForm [["SPADLET", a, b], :y]
+    [new2OldTran CAR(x), :new2OldDefForm CDR(x)]
+
+newIf2Cond(expr) ==
+    expr is ["IF", a, b, c] =>
+         a := new2OldTran(a)
+         b := new2OldTran(b)
+         c := new2OldTran(c)
+         c is "noBranch" => ["IF", a, b]
+         ["IF", a, b, c]
+    LET__ERROR('"(IF,a,b,c)", expr)
+
+newConstruct(l) ==
+    ATOM(l) => l
+    ["CONS", CAR(l), newConstruct CDR(l)]

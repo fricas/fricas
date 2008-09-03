@@ -175,7 +175,7 @@ sayErrorly1(errorLabel, msg) ==
   sayBrightly msg
 
 -- systemError is being phased out. Please use keyedSystemError.
-systemError(:x) == errorSupervisor($SystemError,IFCAR x)
+systemError(x) == errorSupervisor($SystemError, x)
 
 -- unexpectedSystemError() ==
 --  systemError '"Oh, no.  Unexpected internal error."

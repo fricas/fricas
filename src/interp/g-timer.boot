@@ -105,7 +105,7 @@ significantStat t ==
  
 roundStat t ==
   not RNUMP t => t
-  (FIX (0.5 + t * 1000.0)) / 1000.0
+  (TRUNCATE (0.5 + t * 1000.0)) / 1000.0
  
 makeStatString(oldstr,time,abb,flag) ==
   time = '"" => oldstr

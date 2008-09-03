@@ -46,7 +46,7 @@ getDomainView(domain,catform) ==
   -- note:  this is necessary because of domain == another domain, e.g.
   -- Ps are defined to be SUPs with specific arguments so that if one
   -- asks if a P is a Module over itself, here one has catform= (Module
-  -- (P I)) yet domain is a SUP.  By oding this evaluation, c.0=SUP as
+  -- (P I)) yet domain is a SUP.  By doing this evaluation, c.0=SUP as
   -- well and test works --- RDJ 10/31/83
   throwKeyedMsg("S2IF0009",[devaluate domain, catform])
  

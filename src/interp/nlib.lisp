@@ -425,7 +425,6 @@ do the compile, and then rename the result back to [[code.o]].
         (probe-name filename))))
 
 (defun $FILEP (&rest filearg) (make-full-namestring filearg))
-(define-function '$OUTFILEP #'$FILEP) ;;temporary bogus def
 
 (defun $findfile (filespec filetypelist)
   (let ((file-name (if (consp filespec) (car filespec) filespec))
