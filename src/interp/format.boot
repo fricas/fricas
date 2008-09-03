@@ -428,9 +428,19 @@ form2String1 u ==
     argl := rest argl
     (null argl) or null (first argl) => [lo, '".."]
     [lo, '"..", form2String1 first argl]
-  isBinaryInfix op => fortexp0 [op,:argl]
-  -- COMPILED_-FUNCTION_-P(op) => form2String1 coerceMap2E(u1,NIL)
+  -- op = "MATRIX" => op
+  -- does no work
+  -- fortranCleanUp exp2Fort1 [op,:argl]
+  -- somewhat works, but causes regression
+  -- fortranCleanUp exp2Fort1 exp2FortOptimize [op,:argl]
+  isBinaryInfix op => binop2String [op,:argl]
   application2String(op,[form2String1 x for x in argl], u1)
+
+binop2String x ==
+    $exp2FortTempVarIndex : local := 0
+    $fortName : fluid := newFortranTempVar()
+    $fortInts2Floats : fluid := nil
+    fortranCleanUp exp2Fort1 exp2FortOptimize x
 
 formWrapId id == 
   $formatSigAsTeX = 1 => id
