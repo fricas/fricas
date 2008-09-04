@@ -1,0 +1,347 @@
+\documentclass{article}
+\usepackage{verbatim}
+\usepackage{srcltx}
+\usepackage{hyperref}
+\newcommand{\variable}{\begingroup \urlstyle{tt}\Url}
+\newcommand{\file}{\begingroup \urlstyle{tt}\Url}
+\newcommand{\directory}{\begingroup \urlstyle{tt}\Url}
+\newcommand{\code}{\begingroup \urlstyle{tt}\Url}
+\newcommand{\defineterm}[1]{\textbf{#1}}
+\newcommand{\useterm}[1]{#1}
+\newcommand{\xAldor}{\textsc{Aldor}}
+\newcommand{\xAxiom}{\textsc{FriCAS}}
+
+\begin{document}
+\title{Comments Building the \xAldor{}-\xAxiom{} Interface}
+\author{Ralf Hemmecke}
+\date{06-Jul-2008}
+\maketitle
+\begin{abstract}
+  We give an overview of the way the \xAldor{}-\xAxiom{} connection is
+  built. Unfortunately, due to lack of proper knowledge of the
+  internals of the \xAldor{} compiler and \xAxiom{}, a some parts here
+  consist of pure guessing.
+\end{abstract}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Due to history, the code that is needed to build the
+\xAldor{}-\xAxiom{} interface is split into two kinds of files.
+\begin{enumerate}
+  \item The code available in the \xAxiom{} repository, and
+  \item code that lives in the \xAldor{} repository. 
+\end{enumerate}
+
+Pre-existing code from \xAxiom{} that is used in the process lives in
+\file{src/interp/ax.boot}. After having built \file{libaxiom.al}, the
+file \file{src/interp/foam_l.lsp} is also needed.
+For loading the \xAldor{} related stuff into \xAxiom{} also
+\file{src/interp/daase.lisp} is of importance.
+
+We base the build process on previous work
+by Peter Broadbery, and add the relevant files to the directory
+\directory{src/aldor}.
+
+One part of the \xAldor{} code that is needed for building the library
+\file{libaxiom.al} lives in the subdirectory \directory{libax0} in the
+\xAldor{} repository. Only the file \file{lang.as} had to be taken
+from the subdirectory \directory{axllib}.
+
+The \xAldor{} code is split into several parts.
+\begin{enumerate}
+\item The \file{axiom.as} is globally needed as an include file for
+  the build process.
+
+\item Code that is needed as the very base of \file{libaxiom.al}. It
+  basically enables the \xAldor{} compiler to compile anything usefull
+  at all.
+
+\item The files \file{axlit.as} and \file{axextend.as} contain code
+  that is intended to extend some domains from the \xAxiom{} library.
+\end{enumerate}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Basic Thoughts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+There are two difficulties in building the \xAldor{}-\xAxiom{}
+connection:
+\begin{enumerate}
+\item the \xAxiom{} library contains a number of domains that depend
+  on each other, and
+\item the files \file{axlit.as} and \file{axextend.as} extend some
+  \xAxiom{} domains. On the other hand the extended functionality of
+  \file{axlit.as} and \file{axextend.as} is needed for other domains.
+\end{enumerate}
+
+To solve the second problem, we must compile \file{axlit.as} and
+\file{axextend.as} somewhere in the middle of the \xAxiom{} library.
+
+Let us first give the main idea to solve both problems.
+%
+The full list of types of the \xAxiom{} library is searched for
+cliques, i.e., domains that depend on each other. For each clique one
+\texttt{.ap} file will be constructed and this will be fed to the
+\xAldor{} compiler for inclusion into \file{libaxiom.al}.
+%
+Note that each clique will be named after its lexicographically
+smallest member where the names are the abbreviated forms of \xAxiom{}
+constructors. Thus, a file like, for example, \filename{COMPCAT.ap}
+will also contain definitions for the constructor \texttt{COMPLEX}.
+
+Among those cliques a compilation order is determined. Then the
+compilation of \file{axlit.as} and \file{axextend.as} is introduced as
+early as possible in this order, i.e., just after all cliques on which
+they depend are already compiled.
+
+It might be that without the following trick it is impossible to find
+a place in the list of cliques, so that \file{axlit.as} and
+\file{axextend.as} can be compiled on their own. That is just a guess
+and has not been experimentally confirmed.
+
+There is a trick to reduce the size of the cliques. If a domain or
+category $A$ mentions another domain $B$ then it is not always
+necessary that all knowledge of $B$ must be available to compile (the
+interface of) $A$. See \file{src/interp/ax.boot.tex} for more detail
+of how the SPAD code of $A$ is turned into a dummy domain definition
+(or basically an interface) of $A$ that will go into
+\file{libaxiom.al}.
+
+For example, if $A$ only exports a function
+\begin{verbatim}
+foo: B -> %
+\end{verbatim}
+then it is sufficient if an initial domain
+\begin{verbatim}
+B: with == add;
+\end{verbatim}
+has been compiled before $A$ and the actual (full) definition of $B$
+is turned into
+\begin{verbatim}
+extend B: CatB == (add pretend CatB) add;
+\end{verbatim}}
+and will be compiled after $A$. (\code{CatB} above stands for the full
+list of exports taken from the (compiled) SPAD code.)
+
+One can go even further and just provide
+\begin{verbatim}
+export B: with;
+\end{verbatim}
+Such an initial list was handcrafted by Peter Broadbery with a few
+additions by Ralf Hemmecke and is reflected in
+\file{src/aldor/initlist.as}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{What are the Interface Files?}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The code that will go into \file{libaxiom.al} can be classified as
+follows.
+
+\begin{enumerate}
+\item Code that is needed as the very base of \file{libaxiom.al}. This
+  part is completely independent of \xAxiom{}. It consists of the
+  files \file{lang.as}, \file{minimach.as}, and \file{boolean0.as}.
+
+\item From the file \file{stub.as} we will extract the definition of
+  the category \code{SubsetCategory}, which is a builtin type in SPAD.
+  That definition will be written to a file \file{SUBSETC.as} and as
+  that made available in \file{libaxiom.al}.
+
+\item The file \file{attrib.as} is not taken from the \xAldor{}
+  repository, but rather generated from information in \xAxiom{}. It
+  contains definitions of categories, one for each attribute available
+  in \xAxiom{}.
+
+\item Some initial domains, that can be found in \file{initlist.as}.
+
+\item The \texttt{.ap} form of \xAxiom{} cliques which are
+  prerequisites of \file{axlit.as} and \file{axextend.as}. We call
+  those types \defineterm{lower types}.
+
+\item The files \file{axlit.as} and \file{axextend.as}.
+
+\item The \texttt{.ap} form of \xAxiom{} cliques which are not
+  prerequisites of \file{axlit.as} and \file{axextend.as}. We call
+  those types \defineterm{upper types}.
+\end{enumerate}
+
+Note that the \texttt{.ap} files will be generated by
+\file{gendepap.lsp} with the help of the function
+\verb'|makeAxExportForm|' from \file{src/interp/ax.boot}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Building the \xAldor{}-\xAxiom{} Interaction Files}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For the interaction we must create \file{libaxiom.al}.
+
+ToDo: From \file{src_aldor2} (see
+\url{http://axiom-wiki.newsynthesis.org/uploads/src_aldor2.tgz}) it
+seems that more files (in particular some \texttt{.lsp} files must
+then be created.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Building libaxiom.al}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The process of building \file{libaxiom.al} happens in two stages.
+\begin{enumerate}
+\item The commands in \file{Makefile.in} are mainly responsible for
+  generating the file \file{cliques.mk}.
+%
+  The latter is a partial Makefile and basically contains for each
+  clique its dependencies.
+
+\item The actual creation of \file{libaxiom.al} is done via the
+  \file{Makefile2.in} using \file{cliques.mk}.
+\end{enumerate}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Computing Dependencies}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The process of creating the file \file{cliques.mk} is controlled by
+\file{Makefile.in} with help of \file{gendepap.lsp} and
+\file{src/interp/ax.boot}.
+
+It is done with the following steps:
+\begin{enumerate}
+\item Create the file \file{domains.mk} containing all domains,
+  packages, and categories of the \xAxiom{} library.
+
+\item Get some non-free files from an \xAldor{} repository (if they do
+  not yet exist in the build directory).
+
+\item Generate the files \file{SUBSETC.as} from \file{stub.as} and
+  \file{attrib.as} from the actual attribute list inside \xAxiom{}.
+
+\item From \file{initlist.as} create \file{initlist.ap}. The latter
+  file is used in \file{gendepap.lsp} to set the variable
+  \verb'$extendedDomains'. %$
+  These extended domains should not be confused with the domains that
+  are extended via \file{axlit.as} and \file{axextend.as}. We would
+  rather like to call this variables \verb'$initDomains', %$
+  but for this change we would have to modify
+  \file{src/interp/ax.boot}.
+
+\item Compute dependency lists.
+  \begin{enumerate}
+  \item For each export $T$ in \file{initlist.as} create a separate
+    file of the form \file{init_A.ap} and dependencies of that file
+    into \file{init_A.dep} where $A$ is the abbreviated form of $T$.
+
+  \item For each type $T$ from \file{domains.mk} (except some
+    blacklisted ones) compute \file{A.dep} where $A$ is the
+    abbreviated form of $T$.
+
+  \item For each file \texttt{F.as} (see variable
+    \variable{aldor_srcs} in \file{Makefile.in}) compute its
+    dependencies and write them to \file{F.dep}.
+  \end{enumerate}
+
+  Note that the algorithm in \file{src/aldor/gendepap.lsp} to compute
+  dependencies takes information from \file{initlist.as} into account.
+%
+  It generates a dependency on \verb'init_A' instead of \texttt{A} if
+  an initial definition of the form
+\begin{verbatim}
+export A: with;
+\end{verbatim}
+  (or similarly simple) is sufficient to compile the \texttt{.ap} file
+  in question.
+
+\item Create the file \file{libaxiom.lst} that will be used by
+  \file{cliques.as} to know about all files to consider.
+
+\item Call \file{cliques} on \file{libaxiom.lst} and all the
+  dependency files and thus compute \file{cliques.mk}.
+\end{enumerate}
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Compiling the Library}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Extension Files}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Looking at the files \file{axlit.as} and \file{axextend.as} more
+closely, reveals that they should make the \xAldor{} language defined
+types like \code{Literal} and \code{Generator} known.
+%
+Furthermore, some code deals with extending \xAxiom{} types to make
+them behave according to the Aldor User Guide, for example
+\code{Tuple}.
+%
+Another part (according to Peter Broadbery
+\url{http://groups.google.com/group/fricas-devel/browse_thread/thread/8db28eab0cb536bd/c8bafffdd6bd8fc3#c8bafffdd6bd8fc3})
+is for helping the \xAldor{} compiler with inlining certain
+statements.
+
+Unfortunately, the different purposes are not clear from the
+(non-existing) documentation. It also seems worth to mention that some
+domains in \file{axlit.as} and \file{axextend.as} explicitly assume a
+certain representation. These are \code{List}, \code{Tuple},
+\code{Vector}, \code{Matrix}, \code{Segment}, and
+\code{UniversalSegment}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Which Domains Need more Features?}
+\label{sec:ExtendedDomains}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Domains extended in \file{axlit.as} and \file{axextend.as}.
+  \begin{description}
+    \item \file{axlit.as}:
+      \begin{quote}
+        \code{String},
+        \code{Symbol},
+        \code{SingleInteger},
+        \code{Integer},
+        \code{NonNegativeInteger},
+        \code{PositiveInteger},
+        \code{DoubleFloat},
+        \code{Float},
+        \code{Tuple}, and
+        \code{List}
+      \end{quote}
+    \item \file{axlit.as}:
+      \begin{quote}
+        \code{Symbol},
+        \code{SingleInteger},
+        \code{Integer},
+        \code{NonNegativeInteger},
+        \code{PositiveInteger},
+        \code{DoubleFloat},
+        \code{Float},
+        \code{Tuple},
+        \code{List},
+        \code{Vector},
+        \code{Matrix},
+        \code{Segment}, and
+        \code{UniversalSegment}
+      \end{quote}
+  \end{description}
+
+
+\end{document}
+
+
+
+

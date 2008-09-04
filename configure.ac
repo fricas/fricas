@@ -615,6 +615,73 @@ AXIOM_MAKEFILE([src/input/Makefile])
 AXIOM_MAKEFILE([src/etc/Makefile])
 
 
+###################################################################
+## The following section deals with the generation of the
+## aldor interface.
+##
+## If one of the Aldor related tests fail we should warn and
+## not build the Aldor interface. Default is to build it.
+## The test only fails if --enable-aldor is given explicitly
+## and some prerequisite is not available.
+BUILD_ALDOR_INTERFACE=build-aldor-interface
+
+## check whether Aldor is available
+AC_CHECK_PROGS([ALDOR], [aldor])
+if test -z $ALDOR; then
+  AC_MSG_WARN([Aldor not found.])
+  BUILD_ALDOR_INTERFACE=
+fi
+
+# The following is only necessary to get some files that do not yet
+# have a free license.
+# Not having svn is not a show stopper, because the files can be
+# obtained manually via a webbrowser.
+AC_CHECK_PROGS([SVN], [svn])
+
+## check for $ALDORROOT/include/aldor.conf
+if test -z $ALDORROOT || ! test -f $ALDORROOT/include/aldor.conf; then
+  AC_MSG_WARN([The environment variable ALDORROOT is not set.])
+  BUILD_ALDOR_INTERFACE=
+fi
+
+## check for $ALDORROOT/lib/libfoam.al (needed for aldor interface)
+if ! test -f $ALDORROOT/lib/libfoam.al; then
+  AC_MSG_WARN([Couldn't find libfoam.al.])
+  BUILD_ALDOR_INTERFACE=
+fi
+
+AC_ARG_ENABLE(aldor,
+  [AC_HELP_STRING([--enable-aldor],
+                  [build an interface to the Aldor compiler])],
+  [case $enableval in
+    yes) if test -z "$BUILD_ALDOR_INTERFACE"; then
+           AC_MSG_ERROR([prerequisites for Aldor interface missing])
+         fi;;
+    no)  BUILD_ALDOR_INTERFACE=;;
+    *)   AC_MSG_ERROR([only yes/no allowed as value for --enable-aldor]);;
+   esac],
+  [BUILD_ALDOR_INTERFACE=])
+
+###################################################################
+# The installation is currently not done by recursively calling
+# install in the src subdirectories, so we have to hardcode the
+# intallation of the aldor interface in src/Makefile.in and let a
+# variable decide whether or not the interface stuff should be
+# installed.
+AC_SUBST(BUILD_ALDOR_INTERFACE)
+
+if test -z "$BUILD_ALDOR_INTERFACE"; then
+  AC_MSG_WARN([Aldor interface will not be built.])
+else
+  AC_MSG_NOTICE([Aldor interface will be built.])
+  axiom_src_subdirs="$axiom_src_subdirs aldor"
+  axiom_src_all="$axiom_src_all all-aldor"
+  AXIOM_MAKEFILE([src/aldor/Makefile])
+  AXIOM_MAKEFILE([src/aldor/Makefile2])
+fi
+###################################################################
+
+
 ## We now generate the "document" script and support files at configure time.
 ## We put them in the build directory because they are intended to be 
 ## build support utils only.

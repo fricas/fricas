@@ -724,6 +724,9 @@ CCF
 LDF
 LISP
 GCLOPTS
+ALDOR
+SVN
+BUILD_ALDOR_INTERFACE
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -1317,6 +1320,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-gcl   build GCL from FriCAS source
+  --enable-aldor          build an interface to the Aldor compiler
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -8682,6 +8686,168 @@ ac_config_files="$ac_config_files src/etc/Makefile:config/var-def.mk:src/etc/Mak
 
 
 
+###################################################################
+## The following section deals with the generation of the
+## aldor interface.
+##
+## If one of the Aldor related tests fail we should warn and
+## not build the Aldor interface. Default is to build it.
+## The test only fails if --enable-aldor is given explicitly
+## and some prerequisite is not available.
+BUILD_ALDOR_INTERFACE=build-aldor-interface
+
+## check whether Aldor is available
+for ac_prog in aldor
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_ALDOR+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$ALDOR"; then
+  ac_cv_prog_ALDOR="$ALDOR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_ALDOR="$ac_prog"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+ALDOR=$ac_cv_prog_ALDOR
+if test -n "$ALDOR"; then
+  { echo "$as_me:$LINENO: result: $ALDOR" >&5
+echo "${ECHO_T}$ALDOR" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+  test -n "$ALDOR" && break
+done
+
+if test -z $ALDOR; then
+  { echo "$as_me:$LINENO: WARNING: Aldor not found." >&5
+echo "$as_me: WARNING: Aldor not found." >&2;}
+  BUILD_ALDOR_INTERFACE=
+fi
+
+# The following is only necessary to get some files that do not yet
+# have a free license.
+# Not having svn is not a show stopper, because the files can be
+# obtained manually via a webbrowser.
+for ac_prog in svn
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_SVN+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$SVN"; then
+  ac_cv_prog_SVN="$SVN" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_SVN="$ac_prog"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+SVN=$ac_cv_prog_SVN
+if test -n "$SVN"; then
+  { echo "$as_me:$LINENO: result: $SVN" >&5
+echo "${ECHO_T}$SVN" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+  test -n "$SVN" && break
+done
+
+
+## check for $ALDORROOT/include/aldor.conf
+if test -z $ALDORROOT || ! test -f $ALDORROOT/include/aldor.conf; then
+  { echo "$as_me:$LINENO: WARNING: The environment variable ALDORROOT is not set." >&5
+echo "$as_me: WARNING: The environment variable ALDORROOT is not set." >&2;}
+  BUILD_ALDOR_INTERFACE=
+fi
+
+## check for $ALDORROOT/lib/libfoam.al (needed for aldor interface)
+if ! test -f $ALDORROOT/lib/libfoam.al; then
+  { echo "$as_me:$LINENO: WARNING: Couldn't find libfoam.al." >&5
+echo "$as_me: WARNING: Couldn't find libfoam.al." >&2;}
+  BUILD_ALDOR_INTERFACE=
+fi
+
+# Check whether --enable-aldor was given.
+if test "${enable_aldor+set}" = set; then
+  enableval=$enable_aldor; case $enableval in
+    yes) if test -z "$BUILD_ALDOR_INTERFACE"; then
+           { { echo "$as_me:$LINENO: error: prerequisites for Aldor interface missing" >&5
+echo "$as_me: error: prerequisites for Aldor interface missing" >&2;}
+   { (exit 1); exit 1; }; }
+         fi;;
+    no)  BUILD_ALDOR_INTERFACE=;;
+    *)   { { echo "$as_me:$LINENO: error: only yes/no allowed as value for --enable-aldor" >&5
+echo "$as_me: error: only yes/no allowed as value for --enable-aldor" >&2;}
+   { (exit 1); exit 1; }; };;
+   esac
+else
+  BUILD_ALDOR_INTERFACE=
+fi
+
+
+###################################################################
+# The installation is currently not done by recursively calling
+# install in the src subdirectories, so we have to hardcode the
+# intallation of the aldor interface in src/Makefile.in and let a
+# variable decide whether or not the interface stuff should be
+# installed.
+
+
+if test -z "$BUILD_ALDOR_INTERFACE"; then
+  { echo "$as_me:$LINENO: WARNING: Aldor interface will not be built." >&5
+echo "$as_me: WARNING: Aldor interface will not be built." >&2;}
+else
+  { echo "$as_me:$LINENO: Aldor interface will be built." >&5
+echo "$as_me: Aldor interface will be built." >&6;}
+  axiom_src_subdirs="$axiom_src_subdirs aldor"
+  axiom_src_all="$axiom_src_all all-aldor"
+  ac_config_files="$ac_config_files src/aldor/Makefile:config/var-def.mk:src/aldor/Makefile.in:config/setup-dep.mk"
+
+  ac_config_files="$ac_config_files src/aldor/Makefile2:config/var-def.mk:src/aldor/Makefile2.in:config/setup-dep.mk"
+
+fi
+###################################################################
+
+
 ## We now generate the "document" script and support files at configure time.
 ## We put them in the build directory because they are intended to be
 ## build support utils only.
@@ -9262,6 +9428,8 @@ do
     "src/algebra/Makefile") CONFIG_FILES="$CONFIG_FILES src/algebra/Makefile:config/var-def.mk:src/algebra/Makefile.in:config/setup-dep.mk" ;;
     "src/input/Makefile") CONFIG_FILES="$CONFIG_FILES src/input/Makefile:config/var-def.mk:src/input/Makefile.in:config/setup-dep.mk" ;;
     "src/etc/Makefile") CONFIG_FILES="$CONFIG_FILES src/etc/Makefile:config/var-def.mk:src/etc/Makefile.in:config/setup-dep.mk" ;;
+    "src/aldor/Makefile") CONFIG_FILES="$CONFIG_FILES src/aldor/Makefile:config/var-def.mk:src/aldor/Makefile.in:config/setup-dep.mk" ;;
+    "src/aldor/Makefile2") CONFIG_FILES="$CONFIG_FILES src/aldor/Makefile2:config/var-def.mk:src/aldor/Makefile2.in:config/setup-dep.mk" ;;
     "build/scripts/document") CONFIG_FILES="$CONFIG_FILES build/scripts/document:$srcdir/src/scripts/document.in" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
@@ -9474,11 +9642,14 @@ CCF!$CCF$ac_delim
 LDF!$LDF$ac_delim
 LISP!$LISP$ac_delim
 GCLOPTS!$GCLOPTS$ac_delim
+ALDOR!$ALDOR$ac_delim
+SVN!$SVN$ac_delim
+BUILD_ALDOR_INTERFACE!$BUILD_ALDOR_INTERFACE$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 14; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 17; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

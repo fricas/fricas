@@ -105,7 +105,7 @@ SETANDFILEQ($setOptions,'(
           STRING
           $asharpCmdlineFlags
           chkDirectory
-          "-O -Fasy -Fao -Flsp -laxiom -Mno-AXL__W__WillObsolete -DAxiom -Y $AXIOM/algebra"))
+          "-O -Fasy -Fao -Flsp -laxiom -Mno-ALDOR__W__WillObsolete -DAxiom -Y $AXIOM/algebra -I $AXIOM/algebra"))
        NIL)
     ))
   (expose

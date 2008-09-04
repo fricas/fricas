@@ -1,0 +1,67 @@
+VPATH=@srcdir@
+ALDOR=@ALDOR@
+INTERPSYS = DAASE=$(axiom_targetdir) $(axiom_target_bindir)/AXIOMsys
+
+default: al/libaxiom.al
+
+###################################################################
+# Now we can start to build libaxiom. All the computation up to here
+# has only be done to get cliques.mk. That file contains all (recursive)
+# dependencies of the types/files, so things should compile in the right
+# dependency order from now on.
+include cliques.mk
+AXIOM_CLIQUES=$(filter-out $(aldor_srcs), $(CLIQUES))
+
+###################################################################
+# Now we create an .ap file for each clique.
+$(patsubst %,ap/%.ap,$(AXIOM_CLIQUES)): ap/%.ap: ap/%.lsp tmp/.dir
+	$(INTERPSYS) < $< > tmp/$*.log
+	test -f $@
+
+ap/%.lsp:
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (trace |makeAxExportForm|)' >> $@
+	echo ')lisp (trace |modemapToAx|)' >> $@
+	echo ')lisp (trace getdatabase)' >> $@
+	echo ')lisp (generate-ax-file "$*" (quote ($(filter-out init_%, $(MEMBERS_$*)))) (quote ($(patsubst %,|%|,$(filter init_%, $(MEMBERS_$*))))))' >> $@
+
+
+
+###################################################################
+# All the files that should go into libaxiom.al
+libaxiom_members=$(patsubst %,al/libaxiom.al(%.ao),$(CLIQUES))
+al/libaxiom.al: al/.dir $(libaxiom_members)
+al/libaxiom.al(%.ao): ao/%.ao
+	ar r $@ $<
+
+# From the .ap dependency we get a lot more dependencies, see cliques.mk.
+$(patsubst %,ao/%.ao,$(aldor_src)): extra_ao_options=
+$(patsubst %,ao/%.ao,$(AXIOM_CLIQUES)): extra_ao_options=-Wname=axiom -Mno-abbrev -Mpreview
+.PRECIOUS: ao/%.ao
+ao/%.ao: ap/%.ap al/libaxiom_%.al ao/.dir
+	$(ALDOR) $(extra_ao_options) -Y al -L AxiomLib=axiom_$* -fao=$@ $<
+
+# We compile a seperate temporary library for the compilation of each
+# .ao file in order to avoid trouble with big libraries and the aldor
+# compiler.
+# Another option would be to build libaxiom.al step by step in the right
+# dependency order. If the Aldor compiler produces correct code that
+# should become the method of choice.
+# The dependencies are in cliques.mk.
+
+
+
+
+
+#
+# :: Directories
+#
+
+###################################################################
+# Creation of build subdirectories.
+# TODO: Maybe that can be removed some day. There is no real need to create
+# subdirectories.
+%/.dir:
+	mkdir -p $(patsubst %/.dir,%,$@)
+	touch -t 199901010000 $@
+

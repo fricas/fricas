@@ -1,0 +1,334 @@
+# (Patch) Subject: Re: aldor/axiom interoperability
+# http://article.gmane.org/gmane.comp.mathematics.axiom.devel/19315/match=broadbery
+
+
+VPATH=@srcdir@
+MAKEFLAGS += -Wwarn-undefined-variables
+ALDOR=@ALDOR@
+
+###################################################################
+# WARNING: THE FOLLOWING DOCUMENTATION MIGHT BE INCORRECT.
+# 
+# This Makefile is only responsible to prepare the stage for the
+# actual compilation of libaxiom.al.
+# The main output is the file cliques.mk which is a Makefile that
+# will be included in Makefile2.
+# cliques.mk basically contains for each domain from the Axiom library
+# its (recursive) dependencies on other domains. In fact, that is
+# not exactly true since several domains are grouped together in
+# cliques due to a lot of interdependencies in the axiom library.
+# Fortunately, there are only a few cliques left that have more
+# than one element. Most interdependencies are broken by the types
+# that appear in initlist.as.
+# Furthermore, cliques.mk contains a number of dependencies for and on
+# a number of basic aldor files and, in particular, the files
+# axlit.as and axextend.as. The latter two files extend various
+# Axiom domains so that certain Aldor can interpret literals etc.
+# Naturally, these files depend on existing Axiom types and thus
+# must occur somewhere in the middle of the Axiom type hierarchy,
+# i.e., compilation order.
+#
+# The whole Makefile is about to find out where axlit and axextend
+# live in the compilation order and find out about the cliques of
+# the Axiom library.
+###################################################################
+
+# For the compilation of libaxiom.al we must use the compiled form of
+# the database. Since the variable DAASE is already set in var-def.mk,
+# we explicitly override it here for the call of AXIOMsys.
+INTERPSYS = DAASE=$(axiom_targetdir) $(axiom_target_bindir)/AXIOMsys
+
+default: axiom.as al/libaxiom.al runtimefiles
+
+clean:
+	-rm domains.mk mkinit* initlist.lst initlist.ap
+	-rm easylist.lsp
+	-rm libaxiom.lst aldordepfiles domaindepfiles
+	-rm -rf tmp init_ap gendeps ap ao al
+	-rm cliques*
+
+
+###################################################################
+# Here we produce the list of all domains, categories and packages
+# that are available in the algebra directory. This is where the
+# .spad files are extracted to.
+spaddir=$(abs_top_builddir)/src/algebra
+domains.mk:
+	echo "domains := \\" > $@
+	grep '^)abbrev' $(spaddir)/*.spad | $(AWK) '{print $$3,"\\"}' >> $@
+	echo >> $@
+
+include domains.mk
+
+###################################################################
+# Some domains cannot (yet) be handled.
+# Reason is perhaps conditional exports or buggy .spad files.
+blacklisted_domains := FRMOD IDECOMP RIDIST ODERTRIC QALGSET2
+domains := $(filter-out $(blacklisted_domains), $(domains))
+
+
+
+
+###################################################################
+###################################################################
+# Now we are going to generate dependency files.
+# The dependencies are generated with the help gendepap.lsp.
+# There are 3 categories of dependency files.
+# 1. Initial dependencies connected to a given initlist.as.
+# 2. Dependencies generated from the $(domains).
+# 3. Dependencies of a few aldor files given by $(aldor_srcs).
+# These dependencies will be listed in the directory "gendeps".
+###################################################################
+###################################################################
+GENAX=$(srcdir)/gendepap.lsp
+###################################################################
+# 1. Initial dependencies connected to a given initlist.as.
+###################################################################
+# With the following stanzas initial dependencies will be generated
+# from the file initlist.as.
+#
+# The file initlist.lst will look like:
+## init_D1
+## ...
+## init_Dn
+#
+# At the same time for each domain Di a file gendeps/init_Di.dep is
+# generated which contains the dependencies for Di. That file will
+# look as follows.
+## DEPi1
+## ...
+## DEPin_i
+#
+# Furthermore, for each Di a file init_ap/init_Di.ap that contains the
+# ap form (parsed aldor source) of Di.
+# These files are only a part of what will later be ap/init_Di.ap.
+# (see Makefile2.in).
+###################################################################
+# Generate initlist.ap from initlist.as.
+# initlist.as lists the initial type that are used to break
+# a lot of big circular dependencies in the Axiom algebra library.
+initlist.ap: initlist.as tmp/.dir
+	$(ALDOR) -Fap=tmp/$@ $<
+	sed -e 's/\([->A-Za-z0-9\\]\+\)/|\1|/g' tmp/$@ > $@
+
+geninit_dirs = init_ap ap gendeps tmp
+initlist.lst: mkinit.lsp initlist.ap $(patsubst %,%/.dir,$(geninit_dirs))
+	$(INTERPSYS) < $< > tmp/mkinit.log
+	test -f $@
+
+# here and in the following we use )lisp instead of )fin, because )fin does not
+# work in ecl based FriCAS.
+mkinit.lsp:
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (generate-init "initlist.lst")' >> $@
+	echo ')lisp (quit)' >> $@
+
+
+###################################################################
+# 2. Dependencies generated from the $(domains).
+###################################################################
+domain_dep_files = $(patsubst %,gendeps/%.dep,$(domains))
+$(domain_dep_files): gendeps/%.dep: tmp/dep_%.lsp tmp/.dir
+	$(INTERPSYS) < $< > tmp/dep_$*.log
+	test -f $@
+
+domain_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(domains))
+$(domain_lsp_files): tmp/dep_%.lsp: tmp/.dir gendeps/.dir
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (generate-deps (quote ($*)))' >> $@
+	echo ')lisp (quit)' >> $@
+
+domaindepfiles: $(domain_dep_files)
+	touch $@
+
+
+###################################################################
+# 3. Dependencies of a few aldor files given by $(aldor_srcs).
+###################################################################
+# The files in aldor_srcs are not yet under a license
+# that is appropriate for inclusion in an Axiom repository.
+# These files are available from aldor.org
+# ALDORSVN=https://aquarium.aldor.csd.uwo.ca/svn/
+# or from a parallel development site
+ALDORSVN=https://svn.origo.ethz.ch/algebraist
+ALDORBASICS=$(ALDORSVN)/trunk/aldor/lib/libax0
+ALDORLANG=$(ALDORSVN)/trunk/aldor/lib/axllib/src
+SVN:=@SVN@
+ifdef SVN
+  SVNCAT=$(SVN) cat
+else
+  SVNCAT:=echo Get the file manually from
+endif
+
+axiom.as axextend.as axlit.as stub.as:
+	$(SVNCAT) $(ALDORBASICS)/$@ > $@
+
+minimach.as:
+	$(SVNCAT) $(ALDORBASICS)/$@ | \
+	sed -e 's/^#.*//;s/Language;/AxiomLib;inline from AxiomLib;/' > $@
+
+lang.as:
+	$(SVNCAT) $(ALDORLANG)/$@ > $@
+
+subsetc.as: stub.as
+	grep AxiomLib $< > $@
+	tail -4 $< >> $@
+
+# The file attrib.as is not taken from the Aldor repository since
+# that would mean to edit it manually in case any attribute setting
+# in Axiom changes. We rather generated it from Axiom itself.
+# The following translates
+# (commutative *) to
+# Attribute commutative(T: Type);
+# Actually it translates everything starting with a parenthesis
+# to a category with one argument.
+attrib.as: tmp/attrib.all
+	echo 'import from AxiomLib; inline from AxiomLib;' > $@
+	echo 'Attribute X ==> X: Category == with;' >> $@
+	sort $< | uniq |\
+	sed -e 's/(\([a-z]*\) .*/\1(T: Type)/;s/\(.*\)/Attribute \1;/' >> $@
+
+# attrib.all lists all attributes of constructors in Axiom.
+tmp/attrib.all: tmp/attrib.lsp tmp/.dir
+	$(INTERPSYS) < $< > tmp/attrib.as.log
+	test -f $@
+
+# Write all attributes to tmp/attrib.all
+tmp/attrib.lsp: tmp/.dir
+	echo ")lisp (with-open-file (str (pathname \"tmp/attrib.all\") :direction :output) (dolist (a (mapcar #'car (mapcan #'(lambda (x) (getdatabase x 'ATTRIBUTES)) (|allConstructors|)))) (format str \"~a~%\" a)))" > $@
+	echo ")lisp (quit)" >> $@
+
+aldor_lang       = lang
+aldor_basics     = minimach boolean0 attrib
+aldor_extensions = axextend axlit
+# subsetc.as contains a definition for the SPAD builtin type
+# SubsetCategory.
+aldor_misc = subsetc
+aldor_srcs = $(aldor_lang) $(aldor_basics) $(aldor_extensions) $(aldor_misc)
+
+aldor_dep_files = $(patsubst %,gendeps/%.dep,$(aldor_srcs))
+$(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.ap gendeps/.dir
+	echo 'Generating dependency of $*.'
+	$(INTERPSYS) < $< > tmp/dep_$*.log
+	test -f $@
+
+aldor_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(aldor_srcs))
+$(aldor_lsp_files): tmp/dep_%.lsp: ap/%.ap tmp/.dir
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (generate-deps-from-ap-files (quote (|$*|)))' >> $@
+	echo ')lisp (quit)' >> $@
+
+aldor_ap_files = $(patsubst %,ap/%.ap,$(aldor_srcs))
+$(aldor_ap_files): ap/%.ap: %.as ap/.dir tmp/.dir 
+	$(ALDOR) -Fap=tmp/$*.ap $<
+	sed -e 's/\([->A-Za-z0-9\\]\+\)/|\1|/g' tmp/$*.ap > $@
+
+aldordepfiles: $(aldor_dep_files)
+	touch $@
+
+
+###################################################################
+# Starting from the list initlist.lst, we create a file libaxiom.lst.
+# That file contains pairs of the form 
+## keyword filename
+# where keyword is one of "base", "initaxiom", "axiom", and "aldorext".
+# libaxiom.lst is used for the computation of cliques in the
+# axiom library, see program 'cliques'.
+#
+# Note that the function dep-type-or-nil in gendepap.lsp tests whether an
+# identifier is indeed an Axiom type. Therefore, it is necessary to make
+# attrib.as a dependency of every axiom clique.
+libaxiom.lst: initlist.lst 
+	sed -e 's/^/initaxiom /' initlist.lst > $@
+	for i in $(aldor_lang);       do echo "lang $$i"     >> $@; done
+	for i in $(aldor_basics);     do echo "base $$i"     >> $@; done
+	for i in $(aldor_misc);       do echo "base $$i"     >> $@; done
+	for i in $(domains);          do echo "axiom $$i"    >> $@; done
+	for i in $(aldor_extensions); do echo "aldorext $$i" >> $@; done
+
+
+###################################################################
+# The program 'cliques' computes cliques according to the dependencies from
+# the gendeps directory. It writes a collection of Makefile variable
+# assignments and Makefile targets to stdout.
+CLIQUEOPTS=-mno-abbrev -mno-mactext -laldor -fx
+cliques: cliques.as
+#	$(ALDOR) $(CLIQUEOPTS) $<
+	$(ALDOR) $(CLIQUEOPTS) -dTRACE $<
+
+cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
+	./cliques libaxiom.lst > $@
+
+
+###################################################################
+# After we have generated cliques.mk, we can do the real work an start
+# compilation of al/libaxiom.al.
+al/libaxiom.al: cliques.mk
+	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)"
+
+
+###################################################################
+# Runtime - things required to run aldor files
+# It is not clear whether actually all files in $(aldor_srcs) are needed.
+runtime_files := $(patsubst %,lib/%.$(FASLEXT), runtime $(aldor_srcs))
+$(runtime_files): lib/%.$(FASLEXT): lsp/%.lsp
+aldor_lsp_files := $(patsubst %,lsp/%.lsp, $(aldor_srcs))
+lsp/runtime.lsp: runtime.ao lsp/.dir
+	$(ALDOR) -flsp=$@ $<
+
+runtime.ao: $(ALDORROOT)/lib/libfoam.al
+	ar x $< $@
+
+$(aldor_lsp_files): lsp/%.lsp: lsp/.dir al/libaxiom.al(%.ao)
+	ar x al/libaxiom.al $*.ao
+	$(ALDOR) -flsp=$@ $*.ao
+	rm $*.ao
+
+$(runtime_files): lib/%.$(FASLEXT): tmp/mko_%.lsp lsp/%.lsp lib/.dir
+	$(INTERPSYS) < $< > tmp/mko_$*.log
+	test -f $@
+
+tmp/mko_%.lsp:
+	echo ')lisp (compile-file "$(abs_builddir)/lsp/$*.lsp" :output-file "$(abs_builddir)/lib/$*.$(FASLEXT)")' > $@
+	echo ')lisp (quit)' >> $@
+
+runtimefiles: $(runtime_files)
+
+
+#
+# :: Directories
+#
+
+###################################################################
+# Creation of build subdirectories.
+# TODO: Maybe that can be removed some day. There is no real need to create
+# subdirectories.
+%/.dir:
+	mkdir -p $(patsubst %/.dir,%,$@)
+	touch -t 199901010000 $@
+
+#
+# :: Installation
+#
+
+.PHONY: install
+###################################################################
+# We need libaxiom.al and the .o (runtime support) files in the lib
+# subdirectory.
+install: install-libalgebra install-runtimefiles
+
+# Destination directory for the algebra files and aldor libraries.
+install_target_dir = $(DESTDIR)$(libdir)/fricas/target/$(target)
+install_algebra_dir = $(install_target_dir)/algebra
+install-libalgebra:
+	$(INSTALL_DATA) al/libaxiom.al $(install_algebra_dir)
+	$(INSTALL_DATA) axiom.as $(install_algebra_dir)
+
+install_aldor_dir = $(install_target_dir)/aldor
+install-runtimefiles: installdir-runtimefiles
+	for f in $(runtime_files); do \
+	  $(INSTALL_DATA) $$f '$(install_aldor_dir)/lib'; \
+	done
+
+installdir-runtimefiles:
+	$(mkinstalldirs) '$(install_aldor_dir)/lib'

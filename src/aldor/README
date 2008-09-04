@@ -1,0 +1,45 @@
+This directory contains material to allow programs written in Aldor
+to be run inside FriCAS.
+
+The original programs and Makefiles in this directory are due to
+Peter Broadbery. Without his initial work and his help I would not have
+been able to come so far.
+
+See http://axiom-wiki.newsynthesis.org/AldorForAxiom and especially
+http://lists.gnu.org/archive/html/axiom-developer/2008-01/msg00033.html.
+
+-------------------------------------------------------------------
+Compilation currently is supposed to work as follows:
+
+  mkdir fricas
+  cd fricas
+  FRICASSVN=https://fricas.svn.sourceforge.net/svnroot/fricas
+  svn co $FRICASSVN/branches/aldor-interface fricas-src
+  mkdir fricas-build
+  cd fricas-build
+  ../fricas-src/configure
+  # Write
+  # ../fricas-src/configure --prefix=/some/where/else
+  # if you want to install somewhere else but not in /usr/local
+  make
+  make install
+
+After that you should be able to call FriCAS and say
+  )co somefile.as
+and use the content of that file in your FriCAS session.
+
+The interface to Aldor will only be built if 'configure' can find an
+aldor executable and certain aldor files. The environment variable
+ALDORROOT must be set.
+
+Possible issues:
+----------------
+Since there are currently 7 non-free .as files used during the built
+the build might break. The reason is that the first time 'make' is
+invoked, it will try to extract the missing files from a remote Aldor
+SVN repository. Once the files are on the local computer, no Internet
+connection is needed. 'make' tries to get these file via SVN, but they
+can also be extracted manually over http.
+
+Ralf Hemmecke
+03-Aug-2008
