@@ -1142,7 +1142,7 @@ evalMm(op,tar,sig,mmC) ==
       not containsVars sig =>
         isFreeFunctionFromMmCond mmC and (m := evalMmFreeFunction(op,tar,sig,mmC)) =>
            mS:= nconc(m,mS)
-        "or"/[^isValidType(arg) for arg in sig] => nil
+        "or"/[not isValidType(arg) for arg in sig] => nil
         [dc,t,:args]:= sig
         $Coerce or null tar or tar=t =>
           mS:= nconc(findFunctionInDomain(op,dc,t,args,args,NIL,'T),mS)
@@ -1625,8 +1625,8 @@ unifyStruct(s1,s2,SL) ==
   s1=s2 => SL
   if s1 is ['_:,x,.] then s1:= x
   if s2 is ['_:,x,.] then s2:= x
-  if ^atom s1 and CAR s1 = '_# then s1:= LENGTH CADR s1
-  if ^atom s2 and CAR s2 = '_# then s2:= LENGTH CADR s2
+  if not atom s1 and CAR s1 = '_# then s1:= LENGTH CADR s1
+  if not atom s2 and CAR s2 = '_# then s2:= LENGTH CADR s2
   s1=s2 => SL
   isPatternVar s1 => unifyStructVar(s1,s2,SL)
   isPatternVar s2 => unifyStructVar(s2,s1,SL)

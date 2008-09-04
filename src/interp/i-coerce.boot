@@ -1030,7 +1030,7 @@ coerceUnion2Branch(object) ==
   val' := objValUnwrap object
   predicate := NIL
   targetType:= NIL
-  for typ in doms for pred in predList while ^targetType repeat
+  for typ in doms for pred in predList while not targetType repeat
     evalSharpOne(pred,val') =>
       predicate := pred
       targetType := typ
@@ -1083,7 +1083,7 @@ coerceIntByMap(triple,t2) ==
   u1 := deconstructT t1
   1 = #u1 => NIL
   CAAR u1 ^= CAAR u2 => nil  -- constructors not equal
-  ^valueArgsEqual?(t1, t2) => NIL
+  not valueArgsEqual?(t1, t2) => NIL
 --  CAR u1 ^= CAR u2 => NIL
   top := CAAR u1
   u1 := underDomainOf t1
@@ -1131,11 +1131,11 @@ valueArgsEqual?(t1, t2) ==
   value := true
   for a1 in CDR t1 for a2 in CDR t2 for cs in coSig
     for m1 in tl1 for m2 in tl2 while not done repeat
-          ^cs =>
+          not cs =>
             trip := objNewWrap(a1, m1)
             newVal := coerceInt(trip, m2)
             null newVal => (done := true; value := false)
-            ^algEqual(a2, objValUnwrap newVal, m2) =>
+            not algEqual(a2, objValUnwrap newVal, m2) =>
               (done := true; value := false)
   value
 

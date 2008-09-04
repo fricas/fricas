@@ -841,7 +841,7 @@ checkAndDeclare(argl,form,sig,e) ==
 -- those that don't get declarations put into e
   for a in argl for m in rest sig repeat
     m1:= getArgumentMode(a,e) =>
-      ^modeEqual(m1,m) =>
+      not modeEqual(m1,m) =>
         stack:= ["   ",:bright a,'"must have type ",m,
           '" not ",m1,'%l,:stack]
     e:= put(a,'mode,m,e)
@@ -1049,7 +1049,7 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
   first u
  
 constructMacro (form is [nam,[lam,vl,body]]) ==
-  ^(and/[atom x for x in vl]) =>
+  not (and/[atom x for x in vl]) =>
     stackSemanticError(["illegal parameters for macro: ",vl],nil)
   ["XLAM",vl':= [x for x in vl | IDENTP x],body]
  
@@ -1357,7 +1357,7 @@ wrapDomainSub(parameters,x) ==
    ["DomainSubstitutionMacro",parameters,x]
  
 mustInstantiate D ==
-  D is [fn,:.] and ^(MEMQ(fn,$DummyFunctorNames) or GETL(fn,"makeFunctionList"))
+  D is [fn,:.] and not (MEMQ(fn,$DummyFunctorNames) or GETL(fn,"makeFunctionList"))
  
 DomainSubstitutionFunction(parameters,body) ==
   --see optFunctorBody

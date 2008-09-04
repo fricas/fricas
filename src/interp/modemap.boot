@@ -252,7 +252,7 @@ AMFCR_,redefined(opname,u) ==
  
 augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   [fnAlist,e]:= evalAndSub(domainName,domainView,functorForm,categoryForm,e)
-  --if ^$InteractiveMode then
+  --if not $InteractiveMode then
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)
   $base:= 4

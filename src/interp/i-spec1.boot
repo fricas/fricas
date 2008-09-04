@@ -989,7 +989,7 @@ upconstruct t ==
   tar is ['Record,:types] => upRecordConstruct(op,l,tar)
   isTaggedUnion tar => upTaggedUnionConstruct(op,l,tar)
   aggs := '(List)
-  if tar and PAIRP(tar) and ^isPartialMode(tar) then
+  if tar and PAIRP(tar) and not isPartialMode(tar) then
     CAR(tar) in aggs =>
       ud :=
         (l is [[realOp, :.]]) and (getUnname(realOp) = 'COLLECT) => tar

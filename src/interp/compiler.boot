@@ -115,7 +115,7 @@ comp3(x,m,$e) ==
   m is ["Mapping",:.] => compWithMappingMode(x,m,e)
   m is ["QUOTE",a] => (x=a => [x,m,$e]; nil)
   STRINGP m => (atom x => (m=x or m=STRINGIMAGE x => [m,m,e]; nil); nil)
-  ^x or atom x => compAtom(x,m,e)
+  not x or atom x => compAtom(x,m,e)
   op:= first x
   getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
   op=":" => compColon(x,m,e)
@@ -821,7 +821,7 @@ compElt(form,m,E) ==
         ,mmList]
       mmList.(0)
     [sig,[pred,val]]:= modemap
-    #sig^=2 and ^val is ["elt",:.] => nil --what does the second clause do ????
+    #sig^=2 and not val is ["elt",:.] => nil --what does the second clause do ????
 --+
     val := genDeltaEntry [opOf anOp,:modemap]
     convert([["call",val],first rest sig,E], m) --implies fn calls used to access constants
@@ -1234,7 +1234,7 @@ compileSpad2Cmd args ==
 
     path := pathname args
     pathnameType path ^= '"spad" => throwKeyedMsg("S2IZ0082", nil)
-    ^PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     SETQ(_/EDITFILE, path)
     updateSourceFiles path

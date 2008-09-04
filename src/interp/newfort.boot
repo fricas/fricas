@@ -97,8 +97,8 @@ exp2Fort2(e,prec,oldOp) ==
   e is [ "=",lhs,rhs] or e is [ '"=",lhs,rhs] =>
     ['"%l",:exp2Fort2(rhs,prec,'"="),'"=",:exp2Fort2(lhs,prec,'"=")]
  
-  unaryOps    := ['"-",'"^",'"~"]
-  unaryPrecs  := [700,260,50]
+  unaryOps    := ['"-",'"~"]
+  unaryPrecs  := [700,50]
   binaryOps   := ['"|",'"**",'"/",'".LT.",'".GT.",'".EQ.",'".LE.",'".GE.", _
                   '"OVER",'".AND.",'".OR."]
   binaryPrecs := [0, 900, 800, 400, 400, 400, 400, 400, 800, 70, 90]

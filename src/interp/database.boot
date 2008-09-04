@@ -126,8 +126,8 @@ orderPredTran(oldList,sig,skip) ==
   -----  (isDomain *1 ..)
   for pred in oldList repeat
     ((pred is [op,pvar,.] and MEMQ(op,'(isDomain ofCategory))
-       and pvar=first sig and ^(pvar in rest sig)) or
-        (^skip and pred is ['isDomain,pvar,.] and pvar="*1")) =>
+       and pvar=first sig and not (pvar in rest sig)) or
+        (not skip and pred is ['isDomain,pvar,.] and pvar="*1")) =>
           oldList:=delete(pred,oldList)
           lastPreds:=[pred,:lastPreds]
 --sayBrightlyNT "lastPreds="
@@ -277,7 +277,7 @@ substVars(pred,patternAlist,patternVarList) ==
     pred := substitute(patVar,value,pred)
     patternAlist := nsubst(patVar,value,patternAlist)
     domainPredicates := substitute(patVar,value,domainPredicates)
-    if ^MEMQ(value,$FormalMapVariableList) then
+    if not MEMQ(value,$FormalMapVariableList) then
       domainPredicates := [["isDomain",patVar,value],:domainPredicates]
   everything := [pred,patternAlist,domainPredicates]
   for var in $FormalMapVariableList repeat

@@ -582,7 +582,7 @@ compElt(origForm,m,E) ==
       m       := SUBST('Rep,'_$,m)
 ----------> new: <-----------
     [sig,[pred,val]]:= modemap
-    #sig^=2 and ^val is ["elt",:.] => nil --what does the second clause do ????
+    #sig^=2 and not val is ["elt",:.] => nil --what does the second clause do ????
 --+
     val := genDeltaEntry [opOf anOp,:modemap]
     x := markTran(origForm,[val],sig,[E])

@@ -368,7 +368,7 @@ evalIsPredicate(value,pattern,mode) ==
   --if the pattern matches then the bindings given in the pattern
   --are made
   pattern:= removeConstruct pattern
-  ^((valueAlist:=isPatternMatch(value,pattern))='failed) =>
+  not ((valueAlist:=isPatternMatch(value,pattern))='failed) =>
     for [id,:value] in valueAlist repeat
       evalLETchangeValue(id,objNewWrap(value,get(id,'mode,$env)))
     true
@@ -644,12 +644,12 @@ altSeteltable args ==
     form := NIL
 
     -- first look for exact matches for any of the possibilities
-    while ^form for newOp in newOps  repeat
+    while not form for newOp in newOps  repeat
         if selectMms(newOp, args, NIL) then form := [newOp, :args]
 
     -- now try retracting arguments after the first
-    while ^form and ( "and"/[retractAtree(a) for a in rest args] ) repeat
-        while ^form for newOp in newOps  repeat
+    while not form and ( "and"/[retractAtree(a) for a in rest args] ) repeat
+        while not form for newOp in newOps  repeat
             if selectMms(newOp, args, NIL) then form := [newOp, :args]
 
     form
@@ -1016,7 +1016,7 @@ upTuple t ==
   null l => upNullTuple(op,l,tar)
   isTaggedUnion tar => upTaggedUnionConstruct(op,l,tar)
   aggs := '(List)
-  if tar and PAIRP(tar) and ^isPartialMode(tar) then
+  if tar and PAIRP(tar) and not isPartialMode(tar) then
     CAR(tar) in aggs =>
       ud := CADR tar
       for x in l repeat if not getTarget(x) then putTarget(x,ud)

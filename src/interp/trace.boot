@@ -721,7 +721,7 @@ traceReply() ==
         addTraceItem EVAL x; functionList:= [x,:functionList])
     userError '"bad argument to trace"
   functionList:= "append"/[[rassocSub(x,$mapSubNameAlist),'" "]
-    for x in functionList | ^isSubForRedundantMapName x]
+    for x in functionList | not isSubForRedundantMapName x]
   if functionList then
     2 = #functionList =>
       sayMSG ["   Function traced: ",:functionList]
@@ -779,7 +779,7 @@ tracelet(fn,vars) ==
   $letAssoc:= [[fn,:vars],:$letAssoc]
   $TRACELETFLAG : local := true
   $QuickLet : local := false
-  ^MEMQ(fn,$traceletFunctions) and ^IS__GENVAR fn and COMPILED_-FUNCTION_-P SYMBOL_-FUNCTION fn
+  not MEMQ(fn,$traceletFunctions) and not IS__GENVAR fn and COMPILED_-FUNCTION_-P SYMBOL_-FUNCTION fn
     and not stupidIsSpadFunction fn and not GENSYMP fn =>
       ($traceletFunctions:= [fn,:$traceletFunctions]; compileBoot fn ;
        $traceletFunctions:= delete(fn,$traceletFunctions) )
@@ -799,7 +799,7 @@ breaklet(fn,vars) ==
     null fnEntry => [[fn,:LIST ["BREAK",:vars]],:$letAssoc]
     pair => (RPLACD(pair,vars); $letAssoc)
   $QuickLet:local := false
-  ^MEMQ(fn,$traceletFunctions) and not stupidIsSpadFunction fn
+  not MEMQ(fn,$traceletFunctions) and not stupidIsSpadFunction fn
     and not GENSYMP fn =>
       $traceletFunctions:= [fn,:$traceletFunctions]
       compileBoot fn

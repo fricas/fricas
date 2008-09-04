@@ -399,7 +399,7 @@ displayMap(headingIfTrue,$op,map) ==
 
 simplifyMapPattern (x,alias) ==
   for a in alias
-    for m in $FormalMapVariableList | a and ^CONTAINED(a,x) repeat
+    for m in $FormalMapVariableList | a and not CONTAINED(a,x) repeat
       x:= substitute(a,m,x)
   [lhs,:rhs]:= x
   rhs := simplifyMapConstructorRefs rhs

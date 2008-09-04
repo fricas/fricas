@@ -300,7 +300,7 @@ clearCmdAll() ==
 clearCmdExcept(l is [opt,:vl]) ==
   --clears elements of vl of all options EXCEPT opt
   for option in $clearOptions |
-    ^stringPrefix?(object2String opt,object2String option)
+    not stringPrefix?(object2String opt,object2String option)
       repeat clearCmdParts [option,:vl]
 
 clearCmdParts(l is [opt,:vl]) ==
@@ -328,7 +328,7 @@ clearCmdParts(l is [opt,:vl]) ==
   for x in vl repeat
     clearDependencies(x,true)
     if option='properties and x in pmacs then clearParserMacro(x)
-    if option='properties and x in imacs and ^(x in pmacs) then
+    if option='properties and x in imacs and not (x in pmacs) then
         sayMessage ['"   You cannot clear the definition of the system-defined macro ",
             fixObjectForPrinting x,"."]
     p1 := assoc(x,CAAR $InteractiveFrame) =>
@@ -401,7 +401,7 @@ compiler args ==
     optlist := '(new old translate constructor)
     haveNew := nil
     haveOld := nil
-    for opt in $options while ^(haveNew and haveOld) repeat
+    for opt in $options while not (haveNew and haveOld) repeat
         [optname,:optargs] := opt
         fullopt := selectOptionLC(optname,optlist,nil)
         fullopt = 'new => haveNew := true
@@ -490,7 +490,7 @@ compileAsharpCmd1 args ==
     path := pathname args
     pathType := pathnameType path
     (pathType ^= '"as") and (pathType ^= '"ao") => throwKeyedMsg("S2IZ0083", nil)
-    ^PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     SETQ(_/EDITFILE, path)
     updateSourceFiles path
@@ -559,7 +559,7 @@ compileAsharpCmd1 args ==
             s
         tempArgs
 
-    if ^beQuiet then sayKeyedMsg("S2IZ0038A",[namestring args, asharpArgs])
+    if not beQuiet then sayKeyedMsg("S2IZ0038A",[namestring args, asharpArgs])
 
     command :=
       STRCONC(STRCONC(getEnv('"ALDORROOT"),'"/bin/"),_
@@ -569,16 +569,16 @@ compileAsharpCmd1 args ==
     if (rc = 0) and doCompileLisp then
         lsp := fnameMake('".", pathnameName args, '"lsp")
         if fnameReadable?(lsp) then
-            if ^beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
+            if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
             compileFileQuietly(lsp)
         else
             sayKeyedMsg("S2IL0003", [namestring lsp])
 
     if rc = 0 and doLibrary then
         -- do we need to worry about where the compilation output went?
-        if ^beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
+        if not beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
         withAsharpCmd [ pathnameName path ]
-    else if ^beQuiet then
+    else if not beQuiet then
         sayKeyedMsg("S2IZ0084", nil)
 
     extendLocalLibdb $newConlist
@@ -647,7 +647,7 @@ compileAsharpLispCmd args ==
     -- and is a file with file extension .lsp
 
     path := pathname args
-    ^PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     optList :=  '( _
       quiet _
@@ -673,16 +673,16 @@ compileAsharpLispCmd args ==
 
     lsp := fnameMake(pathnameDirectory path, pathnameName path, pathnameType path)
     if fnameReadable?(lsp) then
-        if ^beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
+        if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
         compileFileQuietly(lsp)
     else
         sayKeyedMsg("S2IL0003", [namestring lsp])
 
     if doLibrary then
         -- do we need to worry about where the compilation output went?
-        if ^beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
+        if not beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
         withAsharpCmd [ pathnameName path ]
-    else if ^beQuiet then
+    else if not beQuiet then
         sayKeyedMsg("S2IZ0084", nil)
     terminateSystemCommand()
     spadPrompt()
@@ -692,7 +692,7 @@ compileSpadLispCmd args ==
     -- and is a file with file extension .NRLIB
 
     path := pathname fnameMake(first args, '"code", '"lsp")
-    ^PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     optList :=  '( _
       quiet _
@@ -718,7 +718,7 @@ compileSpadLispCmd args ==
 
     lsp := fnameMake(pathnameDirectory path, pathnameName path, pathnameType path)
     if fnameReadable?(lsp) then
-        if ^beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
+        if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
         --compileFileQuietly(lsp)
         RECOMPILE_-LIB_-FILE_-IF_-NECESSARY lsp
     else
@@ -726,9 +726,9 @@ compileSpadLispCmd args ==
 
     if doLibrary then
         -- do we need to worry about where the compilation output went?
-        if ^beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
+        if not beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
         LOCALDATABASE([ pathnameName first args ],[])
-    else if ^beQuiet then
+    else if not beQuiet then
         sayKeyedMsg("S2IZ0084", nil)
     terminateSystemCommand()
     spadPrompt()
@@ -927,7 +927,7 @@ displayProperties(option,l) ==
             displayMacro v
         sayMSG '"   none"
       propsSeen:= nil
-      for [prop,:val] in pl | ^MEMQ(prop,propsSeen) and val repeat
+      for [prop,:val] in pl | not MEMQ(prop,propsSeen) and val repeat
         prop in '(alias generatedCode mapBody localVars) =>
           nil
         prop = 'condition =>
@@ -1432,7 +1432,7 @@ writeInputLines(fn,initial) ==
       while n > maxn repeat
         -- search backwards for a blank
         done := nil
-        for j in 1..maxn while ^done repeat
+        for j in 1..maxn while not done repeat
           k := 1 + maxn - j
           MEMQ(vec.k,breakChars) =>
             svec := STRCONC(SUBSTRING(vec,0,k+1),UNDERBAR)
@@ -1441,7 +1441,7 @@ writeInputLines(fn,initial) ==
             vec := SUBSTRING(vec,k+1,NIL)
             n := SIZE vec
         -- in case we can't find a breaking point
-        if ^done then n := 0
+        if not done then n := 0
       lineList := [vec,:lineList]
   file := histInputFileName(fn)
   histFileErase file

@@ -131,7 +131,7 @@
           (\' 999 999 (|PARSE-Data|))
           (\<\< 122 120 (|PARSE-LabelExpr|))
           (\>\>)
-          (^ 260 259 NIL)
+;;          (^ 260 259 NIL) ;; using ^ as negation is confusing
           (\-\> 1001 1002)
           (\: 194 195)
           (|not| 260 259 NIL)

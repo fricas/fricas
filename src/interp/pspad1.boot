@@ -59,8 +59,8 @@ $renameAlist := '(
   (_$ . _%)
   (_$_$ . _$)
   (_*_* . _^)
-  (_^_= . _~_=)
-  (_^ . _~))
+  (_^_= . _~_=))
+
 
 --$opRenameAlist := '(
 --  (and . AND)
@@ -178,7 +178,7 @@ consBuffer item ==
       consBuffer item
     nil
   $lineFragmentBuffer:=
-    ^item or IDENTP item => [PNAME item,:$lineFragmentBuffer]
+    not item or IDENTP item => [PNAME item,:$lineFragmentBuffer]
     NUMBERP item or CHARP item => [STRINGIMAGE item,:$lineFragmentBuffer]
     STRINGP item => ["_"",string2PrintImage item,"_"",:$lineFragmentBuffer]
     sayBrightly ['"Unexpected line buffer item: ", STRINGIMAGE item]
@@ -493,7 +493,7 @@ formatPrefix(op,arg,lbp,rbp,:options) ==
 formatPrefixOp(op,:options) ==
   qualification := IFCAR options
   op=char '" " => format " ="
-  qualification or GETL(op,"Nud") and ^MEMQ(op,$spadTightList) => 
+  qualification or GETL(op,"Nud") and not MEMQ(op,$spadTightList) => 
     formatQual(op,qualification) and format " "
   format op
 
@@ -567,7 +567,7 @@ formatOpBindingPower(op,key,leftOrRight) ==
 formatInfixOp(op,:options) ==
   qualification := IFCAR options
   qualification or 
-    (op ^= '_$) and ^MEMQ(op,$spadTightList) => format " " and formatQual(op,qualification) and format " "
+    (op ^= '_$) and not MEMQ(op,$spadTightList) => format " " and formatQual(op,qualification) and format " "
   format op
  
 --======================================================================

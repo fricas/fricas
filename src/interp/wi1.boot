@@ -937,7 +937,7 @@ comp3(x,m,$e) ==
   m is ["Mapping",:.] => compWithMappingMode(x,m,e)
   m is ["QUOTE",a] => (x=a => [x,m,$e]; nil)
   STRINGP m => (atom x => (m=x or m=STRINGIMAGE x => [m,m,e]; nil); nil)
-  ^x or atom x => compAtom(x,m,e)
+  not x or atom x => compAtom(x,m,e)
   op:= first x
   getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
   op=":" => compColon(x,m,e)

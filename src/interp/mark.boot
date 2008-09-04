@@ -258,7 +258,7 @@ markRepeat(form, T)        ==
   [mkWi("repeat", 'WI,form,CAR T), :CDR T]
   
 markTran(form,form',[dc,:sig],env) ==  --from compElt/compFormWithModemap
-  dc ^= 'Rep or ^MEMQ('_$,sig) => mkWi('markTran,'WI,form,['call,:form'])
+  dc ^= 'Rep or not MEMQ('_$,sig) => mkWi('markTran,'WI,form,['call,:form'])
   argl := [u for t in rest sig for arg in rest form'] where u ==
     t='_$ => 
       argSource := getSourceWI arg

@@ -176,7 +176,7 @@ resolveTTUnion(t1 is ['Union,:doms],t2) ==
   t2 isnt ['Union,:doms2] =>
     ud := nil
     bad := nil
-    for d in doms while ^bad repeat
+    for d in doms while not bad repeat
       d = '"failed" => ud := [d,:ud]
       null (d' := resolveTT(d,t2)) => bad := true
       ud := [d',:ud]
@@ -184,7 +184,7 @@ resolveTTUnion(t1 is ['Union,:doms],t2) ==
     ['Union,:REMDUP reverse ud]
   ud := nil
   bad := nil
-  for d in doms2 while ^bad repeat
+  for d in doms2 while not bad repeat
     d = '"failed" => ud := append(ud,[d])
     null (d' := resolveTTUnion(t1,d)) => bad := true
     ud := append(ud,CDR d')
@@ -577,7 +577,7 @@ resolveTMUnion(t, m is ['Union,:ums]) ==
   ums := REMDUP spliceTypeListForEmptyMode(uts,ums)
   bad := nil
   doms := nil
-  for ut in uts while ^bad repeat
+  for ut in uts while not bad repeat
     (m' := resolveTMUnion(ut,['Union,:ums])) =>
       doms := append(CDR m',doms)
     bad := true

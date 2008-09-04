@@ -133,7 +133,7 @@ intersectionEnvironment(e,e') ==
   --$ie:= e''   this line is for debugging purposes only
  
 deltaContour([[c,:cl],:el],[[c',:cl'],:el']) ==
-  ^el=el' => systemError '"deltaContour" --a cop out for now
+  not el=el' => systemError '"deltaContour" --a cop out for now
   eliminateDuplicatePropertyLists contourDifference(c,c') where
     contourDifference(c,c') == [first x for x in tails c while (x^=c')]
     eliminateDuplicatePropertyLists contour ==

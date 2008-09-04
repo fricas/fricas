@@ -38,7 +38,7 @@ compReduce(form,m,e) ==
 compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
   [collectOp,:itl,body]:= collectForm
   if STRINGP op then op:= INTERN op
-  ^MEMQ(collectOp,'(COLLECT COLLECTV COLLECTVEC)) =>
+  not MEMQ(collectOp,'(COLLECT COLLECTV COLLECTVEC)) =>
         systemError ["illegal reduction form:",form]
   $sideEffectsList: local := nil
   $until: local := nil

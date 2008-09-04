@@ -1564,7 +1564,7 @@ insertAlist(a,b,l) ==
 Un2E(x,source,target) ==
   ['Union,:branches] := source
   x = '_$fromCoerceable_$ =>
-    and/[canCoerce(t, target) for t in branches | ^ STRINGP t]
+    and/[canCoerce(t, target) for t in branches | not STRINGP t]
   coerceUn2E(x,source)
 
 --% Variable
