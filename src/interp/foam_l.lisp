@@ -50,7 +50,7 @@
  compile-as-file cases
 
  |Clos| |Char| |Bool| |Byte| |HInt| |SInt| |BInt| |SFlo| |DFlo| |Ptr| 
- |Word| |Arb| |Env| |Level| |Arr| |Record|
+ |Word| |Arb| |Env| |Level| |Arr| |Record| |Nil|
 
  |ClosInit| |CharInit| |BoolInit| |ByteInit| |HIntInit| |SIntInit| 
  |BIntInit| |SFloInit| |DFloInit| |PtrInit| |WordInit| |ArbInit| |EnvInit|
@@ -157,7 +157,7 @@
 (deftype |Bool| () '(member t nil))
 (deftype |Byte| () 'unsigned-byte)
 (deftype |HInt| () '(integer #.(- (expt 2 15)) #.(1- (expt 2 15))))
-(deftype |SInt| () 'fixnum)
+(deftype |SInt| () '(integer #.(- (expt 2 31)) #.(1- (expt 2 31))))
 
 #+:AKCL
 (deftype |BInt| () t)
@@ -311,8 +311,8 @@
 
 (defmacro |SInt0|         () 0)
 (defmacro |SInt1|         () 1)
-(defmacro |SIntMin|       () `(the |SInt| most-negative-fixnum))
-(defmacro |SIntMax|       () `(the |SInt| most-positive-fixnum))
+(defmacro |SIntMin|       () `(the |SInt| #.(- (expt 2 31))))
+(defmacro |SIntMax|       () `(the |SInt| #.(1- (expt 2 31))))
 (defmacro |SIntIsZero|   (x) `(zerop (the |SInt| ,x)))
 (defmacro |SIntIsNeg|    (x) `(minusp (the |SInt| ,x)))
 (defmacro |SIntIsPos|    (x) `(plusp (the |SInt| ,x)))
@@ -511,7 +511,7 @@
 (defmacro |FunProg| (x) x)
 
 (defstruct FoamProgInfoStruct
-  (funcall nil :type function)
+  (funcall #'(lambda () (error "FoamProgInfoStruct: funcall not assigned")) :type function)
   (hashval 0   :type |SInt|))
 
 (defun |ProgHashCode| (x)
@@ -616,8 +616,23 @@
 
 ;; macros for defining things
 
+;; name-result is a list, the car is the name of the function to be declared,
+;; the cdr is the list of return values
+;; params is a list of pairs, the car of each is the name of the argument, the
+;; cdr is its type.
+
+;; in the ANSI Common Lisp ftype function declaration, the names of the
+;; arguments do not appear, actually.  In GCL, they did.  
+
+;; Example:
+;; (declare-prog
+;;  (|C25-csspecies-generBaseFn| |Clos| |Clos| |Clos| |Clos|)
+;;  ((|e1| |Env|)))
 (defmacro declare-prog (name-result params)
-  `(proclaim '(function ,(car name-result) ,params ,@(cdr name-result))))
+  `(proclaim '(ftype (function
+		      ,(mapcar #'cadr params)
+		      (values ,@(cdr name-result)))
+		     ,(car name-result))))
 
 (defmacro declare-type (name type)
   `(proclaim '(type ,name ,type)))

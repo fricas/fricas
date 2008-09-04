@@ -171,12 +171,12 @@
   (browseopen)
   (|makeConstructorsAutoLoad|)
   (let ((asharprootlib (strconc (|getEnv| "AXIOM") "/aldor/lib/")))
-    (set-file-getter (strconc asharprootlib "runtime.o"))
-    (set-file-getter (strconc asharprootlib "lang.o"))
-    (set-file-getter (strconc asharprootlib "attrib.o"))
-    (set-file-getter (strconc asharprootlib "axlit.o"))
-    (set-file-getter (strconc asharprootlib "minimach.o"))
-    (set-file-getter (strconc asharprootlib "axextend.o")))
+    (set-file-getter (strconc asharprootlib "runtime"))
+    (set-file-getter (strconc asharprootlib "lang"))
+    (set-file-getter (strconc asharprootlib "attrib"))
+    (set-file-getter (strconc asharprootlib "axlit"))
+    (set-file-getter (strconc asharprootlib "minimach"))
+    (set-file-getter (strconc asharprootlib "axextend")))
 )
 
 (defun whocalled (n) nil) ;; no way to look n frames up the stack

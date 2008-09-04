@@ -116,11 +116,12 @@ initlist.lst: mkinit.lsp initlist.ap $(patsubst %,%/.dir,$(geninit_dirs))
 	$(INTERPSYS) < $< > tmp/mkinit.log
 	test -f $@
 
+# here and in the following we use )lisp instead of )fin, because )fin does not
+# work in ecl based FriCAS.
 mkinit.lsp:
-	echo ')fin' > $@
-	echo '(load "$(GENAX)")' >> $@
-	echo '(generate-init "initlist.lst")' >> $@
-	echo '(quit)' >> $@
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (generate-init "initlist.lst")' >> $@
+	echo ')lisp (quit)' >> $@
 
 
 ###################################################################
@@ -133,10 +134,9 @@ $(domain_dep_files): gendeps/%.dep: tmp/dep_%.lsp tmp/.dir
 
 domain_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(domains))
 $(domain_lsp_files): tmp/dep_%.lsp: tmp/.dir gendeps/.dir
-	echo ')fin' > $@
-	echo '(load "$(GENAX)")' >> $@
-	echo '(generate-deps (quote ($*)))' >> $@
-	echo '(quit)' >> $@
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (generate-deps (quote ($*)))' >> $@
+	echo ')lisp (quit)' >> $@
 
 domaindepfiles: $(domain_dep_files)
 	touch $@
@@ -195,12 +195,8 @@ tmp/attrib.all: tmp/attrib.lsp tmp/.dir
 
 # Write all attributes to tmp/attrib.all
 tmp/attrib.lsp: tmp/.dir
-	echo ")fin" > $@
-	echo '(with-open-file (str (pathname "tmp/attrib.all")' >> $@
-	echo ' :direction :output) (dolist (a ' >> $@
-	echo "(mapcar #'car (mapcan #'(lambda (x) (getdatabase x 'ATTRIBUTES)) (|allConstructors|))))" >> $@
-	echo '(format str "~a~%" a)))' >> $@
-	echo "(quit)" >> $@
+	echo ")lisp (with-open-file (str (pathname \"tmp/attrib.all\") :direction :output) (dolist (a (mapcar #'car (mapcan #'(lambda (x) (getdatabase x 'ATTRIBUTES)) (|allConstructors|)))) (format str \"~a~%\" a)))" > $@
+	echo ")lisp (quit)" >> $@
 
 aldor_lang       = lang
 aldor_basics     = minimach boolean0 attrib
@@ -218,10 +214,9 @@ $(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.ap gendeps/.dir
 
 aldor_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(aldor_srcs))
 $(aldor_lsp_files): tmp/dep_%.lsp: ap/%.ap tmp/.dir
-	echo ")fin" > $@
-	echo '(load "$(GENAX)")' >> $@
-	echo '(generate-deps-from-ap-files (quote (|$*|)))' >> $@
-	echo '(quit)' >> $@
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (generate-deps-from-ap-files (quote (|$*|)))' >> $@
+	echo ')lisp (quit)' >> $@
 
 aldor_ap_files = $(patsubst %,ap/%.ap,$(aldor_srcs))
 $(aldor_ap_files): ap/%.ap: %.as ap/.dir tmp/.dir 
@@ -294,10 +289,8 @@ $(runtime_files): lib/%.$(FASLEXT): tmp/mko_%.lsp lsp/%.lsp lib/.dir
 	test -f $@
 
 tmp/mko_%.lsp:
-	echo ')fin' > $@
-	echo '(compile-file "$(abs_builddir)/lsp/$*.lsp" ' >> $@
-	echo '  :output-file "$(abs_builddir)/lib/$*.$(FASLEXT)")' >> $@
-	echo '(quit)' >> $@
+	echo ')lisp (compile-file "$(abs_builddir)/lsp/$*.lsp" :output-file "$(abs_builddir)/lib/$*.$(FASLEXT)")' > $@
+	echo ')lisp (quit)' >> $@
 
 runtimefiles: $(runtime_files)
 

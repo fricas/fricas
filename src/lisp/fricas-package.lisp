@@ -9,6 +9,17 @@
     (setf SB-IMPL::*DEFAULT-EXTERNAL-FORMAT* :LATIN-1))
 
 (in-package "FRICAS-LISP")
+;;; Aldor 1.1.0 and before produces IN-PACKAGE statements with :use options.
+;;; These are not allowed in ANSI Common Lisp, so we have to provide our own
+;;; IN-PACKAGE.  The :use options can actually be ignored, so we do not use
+;;; (defpackage package options)
+;;; (in-package package)
+#-gcl
+(shadow "IN-PACKAGE" "FRICAS-LISP")
+#-gcl
+(defmacro IN-PACKAGE (package &rest options) 
+  `(COMMON-LISP:IN-PACKAGE ,package))
+
 (do-symbols (x "FRICAS-LISP") (export (list x)))
 
 (export '(quit chdir |getEnv| |load_quietly| get-current-directory
