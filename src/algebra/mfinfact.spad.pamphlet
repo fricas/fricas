@@ -388,7 +388,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
        degum ^= degree newm or minimumDegree newm ^=0 => range:=range+1
        lffc1:=content newm
        newm:=(newm exquo lffc1)::SUP R
-       testp and leadtest and ^ polCase(lffc1*clc,#plist,leadcomp1)
+       testp and leadtest and not polCase(lffc1*clc,#plist,leadcomp1)
                            => range:=range+1
        Dnewm := differentiate newm
        D2newm := map(differentiate, newm)
@@ -418,7 +418,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
        -- polCase
          if leadtest or
            ((norm unifact > norm [ff.factor for ff in lunivf]) and
-             (^testp or polCase(lffc1*clc,#plist,leadcomp1))) then
+             (not testp or polCase(lffc1*clc,#plist,leadcomp1))) then
                 unifact:=[uf.factor for uf in lunivf]
                 int:=lval
                 lffc:=lffc1
@@ -435,10 +435,10 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
          nfatt := nf
 
        nfatt>nf =>  -- for the previous values there were more factors
-         if testp then leadtest:=^polCase(lffc*clc,#plist,leadcomp)
+         if testp then leadtest := not polCase(lffc*clc,#plist,leadcomp)
          else leadtest:= false
          -- if polCase=true we can consider the univariate decomposition
-         if ^leadtest then
+         if not leadtest then
            unifact:=[uf.factor for uf in lunivf]
            lffc:=lffc1
            if testp then leadcomp:=leadcomp1

@@ -196,7 +196,7 @@ PolynomialIdeals(F,Expon,VarSet,DPoly) : C == T
        n:= # leastVars
        #fullVars < n  => error "wrong vars"
        n=0 => fullVars
-       append([vv for vv in fullVars| ^member?(vv,leastVars)],leastVars)
+       append([vv for vv in fullVars| not member?(vv,leastVars)],leastVars)
 
      isMonic?(f:DPoly,x:VarSet) : Boolean ==
        ground? leadingCoefficient univariate(f,x)
@@ -220,7 +220,7 @@ PolynomialIdeals(F,Expon,VarSet,DPoly) : C == T
          ldif:List VarSet:= lv
          for mvset in monvar while ldif ^=[] repeat
            ldif:=setDifference(mvset,subs)
-         if ^(empty? ldif) then  return #subs
+         if not (empty? ldif) then  return #subs
        0
 
                --    Exported  Functions   ----
@@ -244,7 +244,7 @@ PolynomialIdeals(F,Expon,VarSet,DPoly) : C == T
             ----  groebner base for an Ideal  ----
      groebner(I:Ideal) : Ideal  ==
        I.isGr =>
-         "or"/[^zero? f for f in I.idl] => I
+         "or"/[not zero? f for f in I.idl] => I
          [empty(),true]
        [groebner I.idl ,true]
 
@@ -314,7 +314,7 @@ PolynomialIdeals(F,Expon,VarSet,DPoly) : C == T
        J = [1] => false
        n:NNI := # lvar
        #J < n => false
-       for f in J while ^empty?(lvar) repeat
+       for f in J while not empty?(lvar) repeat
          x:=(mainVariable f)::VarSet
          if isMonic?(f,x) then lvar:=delete(lvar,position(x,lvar))
        empty?(lvar)
@@ -336,7 +336,8 @@ PolynomialIdeals(F,Expon,VarSet,DPoly) : C == T
        empty?(I.idl) => # lvar
        element?(1,I) => -1
        truelist:="setUnion"/[variables f for f in I.idl]
-       "or"/[^member?(vv,lvar) for vv in truelist] => error "wrong variables"
+       "or"/[not member?(vv,lvar) for vv in truelist] => 
+          error "wrong variables"
        truelist:=setDifference(lvar,setDifference(lvar,truelist))
        ed:Z:=#lvar - #truelist
        leadid:=leadingIdeal(I)

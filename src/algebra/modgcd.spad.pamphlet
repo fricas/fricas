@@ -77,7 +77,7 @@ InnerModularGcd(R,BP,pMod,nextMod):C == T
     modularGcdPrimitive(listf : List BP) :BP ==
       empty? listf => 0$BP
       g := first listf
-      for f in rest listf | ^zero? f  while degree g > 0 repeat
+      for f in rest listf | not zero? f  while degree g > 0 repeat
         g:=modGcdPrimitive(g,f)
       g         
 
@@ -159,8 +159,8 @@ InnerModularGcd(R,BP,pMod,nextMod):C == T
         dp:=gcd(fp,gp)
         dgp :=euclideanSize dp
         if dgp =0 then return 1$BP
-        if dgp=dg and ^(f exquo g case "failed") then return g
-        if dgp=df and ^(g exquo f case "failed") then return f
+        if dgp=dg and not (f exquo g case "failed") then return g
+        if dgp=df and not (g exquo f case "failed") then return f
         dgp > testdeg => "next prime"
         ldp:FP:=
           ((lcdp:=leadingCoefficient(dp::BP)) = 1) =>
@@ -184,7 +184,7 @@ InnerModularGcd(R,BP,pMod,nextMod):C == T
           soFarModulus:=prime
           soFar:=dp::BP
           testdeg:=dgp
-        if ^zeroChar and euclideanSize(prime)>1 then
+        if not zeroChar and euclideanSize(prime)>1 then
            result:=dp::BP
            test(f,g,result) => return result
         -- this is based on the assumption that the caller of this package,

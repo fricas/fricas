@@ -961,7 +961,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
     -- the first argument must be a symbol, which is either i,j or k
     -- to specify the direction in which the concatenation is to take place
     matrixConcat3D(dir : Symbol,mat1 : $,mat2 : $) : $ ==
-      ^((dir = (i::Symbol)) or (dir = (j::Symbol)) or (dir = (k::Symbol)))_
+      not ((dir = (i::Symbol)) or (dir = (j::Symbol)) or (dir = (k::Symbol)))_
        => error "the axis of concatenation must be i,j or k"
       mat1Dim := matrixDimensions(mat1)
       mat2Dim := matrixDimensions(mat2)
@@ -977,7 +977,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
 
       if (dir = (i::Symbol)) then
         -- j,k dimensions must agree
-        if (^((jDim1 = jDim2) and (kDim1=kDim2)))
+        if (not ((jDim1 = jDim2) and (kDim1=kDim2)))
         then
           error "jxk do not agree"
         else
@@ -985,7 +985,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
 
       if (dir = (j::Symbol)) then
         -- i,k dimensions must agree
-        if (^((iDim1 = iDim2) and (kDim1=kDim2)))
+        if (not ((iDim1 = iDim2) and (kDim1=kDim2)))
         then
           error "ixk do not agree"
         else
@@ -997,7 +997,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
       if (dir = (k::Symbol)) then
         temp : (PA PA R)
         -- i,j dimensions must agree
-        if (^((iDim1 = iDim2) and (jDim1=jDim2)))
+        if (not ((iDim1 = iDim2) and (jDim1=jDim2)))
         then
           error "ixj do not agree"
         else
@@ -1088,7 +1088,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
         kLength2 := mat2Dims.3
 
         -- check that the dimensions are the same
-        (^(iLength1 = iLength2) or ^(jLength1 = jLength2) or ^(kLength1 = kLength2))_
+        (not (iLength1 = iLength2) or not (jLength1 = jLength2) or not(kLength1 = kLength2))_
          => error "error the matrices are different sizes"
 
         sum : R
@@ -1120,10 +1120,10 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
 
       --first check that the matrix is in the correct form
       for subList in listRep repeat
-        ^((#subList)$(L L R) = jLength) => error_
+        not((#subList)$(L L R) = jLength) => error_
  "can not have an irregular shaped matrix"
         for subSubList in subList repeat
-          ^((#(subSubList))$(L R) = kLength) => error_
+          not((#(subSubList))$(L R) = kLength) => error_
  "can not have an irregular shaped matrix"
 
       row1 : (PA R) := new(kLength,((listRep.1).1).1)$(PA R)

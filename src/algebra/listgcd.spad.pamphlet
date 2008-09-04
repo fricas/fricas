@@ -68,7 +68,7 @@ HeuGcd (BP):C == T
 
     myNextPrime(val:Z,bound:NNI) : Z == nextPrime(val)$IntegerPrimesPackage(Z)
 
-    constNotZero(f : BP ) : Boolean == (degree f = 0) and ^(zero? f)
+    constNotZero(f : BP ) : Boolean == (degree f = 0) and not (zero? f)
 
     negShiftz(n:Z,Modulus:PI):Z ==
       n < 0 => n:= n+Modulus
@@ -100,7 +100,7 @@ HeuGcd (BP):C == T
       member?(1,lval) => 1$Z
       lval:=sort(#1<#2,lval)
       val:=lval.first
-      for val1 in lval.rest while ^(val=1) repeat val:=gcd(val,val1)
+      for val1 in lval.rest while val ~= 1 repeat val:=gcd(val,val1)
       val
 
     --content for a list of univariate polynomials
@@ -149,9 +149,9 @@ HeuGcd (BP):C == T
 
     --local function for the gcd among n PRIMITIVE univariate polynomials
     localgcd(listf:List BP ):List BP  ==
-      hgt:="min"/[height(f) for f in listf|^zero? f]
+      hgt:="min"/[height(f) for f in listf| not zero? f]
       answr:=2+2*hgt
-      minf := "mindegpol"/[f for f in listf|^zero? f]
+      minf := "mindegpol"/[f for f in listf| not zero? f]
       (result := testDivide(listf, minf)) case List(BP) =>
            cons(minf, result::List BP)
       if degree minf < 100 then for k in 1..10 repeat

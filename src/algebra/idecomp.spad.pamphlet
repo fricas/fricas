@@ -121,7 +121,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
      nvint1:=(#lvint-1)::NNI
 
      deleteunit(lI: List FIdeal) : List FIdeal ==
-       [I for I in lI | _^ element?(1$DPoly,I)]
+       [I for I in lI | not element?(1$DPoly,I)]
 
      rearrange(vlist:List OV) :List OV ==
        vlist=[] => vlist
@@ -163,7 +163,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        f:DPoly:=s
        I:=groebner I
        J:=generators(JJ:= (saturate(I,s)))
-       while _^ in?(ideal([f*g for g in J]),I) repeat f:=s*f
+       while not in?(ideal([f*g for g in J]),I) repeat f:=s*f
        [f,JJ]
 
               ----  is the ideal zerodimensional?  ----
@@ -177,7 +177,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
          f := Jd.first
          Jd:=Jd.rest
          if ((y:=mainVariable f) case "failed") or (y::OV ^=x )
-              or _^ (ismonic (f,x)) then return false
+              or not (ismonic (f,x)) then return false
          while Jd^=[] and (mainVariable Jd.first)::OV=x repeat Jd:=Jd.rest
          if Jd=[] and position(x,truelist)<n then return false
        true
@@ -228,7 +228,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        for ef in lfact repeat
          g:DPoly:=(ef.factor)**(ef.exponent::NNI)
          J1:= groebnerIdeal(groebner cons(g,Jd))
-         if _^ (is0dimprimary (J1,truelist)) then
+         if not (is0dimprimary (J1,truelist)) then
                                    return zeroPrimDecomp(I,truelist)
          ris:=cons(groebner backGenPos(J1,lval,truelist),ris)
        ris
@@ -302,13 +302,13 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        (i case "failed") => return true
        JR:=(reverse Jd);JM:=groebnerIdeal([JR.first]);JP:List(DPoly):=[]
        for f in JR.rest repeat
-         if _^ ismonic(f,truelist.i) then
-           if _^ inRadical?(f,JM) then return false
+         if not ismonic(f,truelist.i) then
+           if not inRadical?(f,JM) then return false
            JP:=cons(f,JP)
           else
            x:=truelist.i
            i:=(i-1)::NNI
-           if _^ testPower(univariate(f,x),x,JM) then return false
+           if not testPower(univariate(f,x),x,JM) then return false
            JM :=groebnerIdeal(append(cons(f,JP),generators JM))
        true
 
@@ -357,7 +357,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        Jd:=generators J
        #Jd^=n => false
        for f in Jd repeat
-         if _^ ismonic(f,lvint.i) then return false
+         if not ismonic(f,lvint.i) then return false
          if i<n and (degree univariate(f,lvint.i))^=1 then return false
          i:=i+1
        g:=Jd.n
@@ -386,7 +386,8 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        n:= # lvar
        #fullVars < n  => error "wrong vars"
        n=0 => I
-       newVars:= append([vv for vv in fullVars| ^member?(vv,lvar)]$List(OV),lvar)
+       newVars:= append([vv for vv in fullVars
+                           | not member?(vv,lvar)]$List(OV),lvar)
        subsVars := [monomial(1,vv,1)$DPoly1 for vv in newVars]
        lJ:= [eval(g,fullVars,subsVars) for g in Id]
        J := groebner(lJ)

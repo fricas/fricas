@@ -223,7 +223,7 @@ InnerMultFact(OV,E,R,P) : C == T
        degum ^= degree newm or minimumDegree newm ^=0 => range:=2*range
        lffc1:=content newm
        newm:=(newm exquo lffc1)::BP
-       testp and leadtest and ^ polCase(lffc1*clc,#plist,leadcomp1)
+       testp and leadtest and not polCase(lffc1*clc,#plist,leadcomp1)
                              => range:=2*range
        degree(gcd [newm,differentiate(newm)])^=0 => range:=2*range
        luniv:=ufactor(newm)
@@ -243,7 +243,7 @@ InnerMultFact(OV,E,R,P) : C == T
        -- polCase
          if leadtest or
            ((localNorm unifact > localNorm [ff.factor for ff in lunivf])
-             and (^testp or polCase(lffc1*clc,#plist,leadcomp1))) then
+             and (not testp or polCase(lffc1*clc,#plist,leadcomp1))) then
                 unifact:=[uf.factor for uf in lunivf]
                 int:=lval
                 lffc:=lffc1
@@ -260,10 +260,10 @@ InnerMultFact(OV,E,R,P) : C == T
          nfatt := nf
 
        nfatt>nf =>  -- for the previous values there were more factors
-         if testp then leadtest:=^polCase(lffc*clc,#plist,leadcomp)
+         if testp then leadtest:= not polCase(lffc*clc,#plist,leadcomp)
          else leadtest:= false
          -- if polCase=true we can consider the univariate decomposition
-         if ^leadtest then
+         if not leadtest then
            unifact:=[uf.factor for uf in lunivf]
            lffc:=lffc1
            if testp then leadcomp:=leadcomp1
