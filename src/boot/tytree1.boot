@@ -865,6 +865,8 @@ bfSequence l ==
  
 bfWhere (context,expr)==
   [opassoc,defs,nondefs] := defSheepAndGoats context
+  opassoc := [[op, :bfSUBLIS(opassoc, repl)]
+               for d in opassoc | d is [op, :repl]]
   a:=[[def,op,args,bfSUBLIS(opassoc,body)]
                for d in defs  |d is [def,op,args,body]]
   $wheredefs:=append(a,$wheredefs)

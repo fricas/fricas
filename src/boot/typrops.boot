@@ -66,7 +66,7 @@ shoeKeyWords := [  _
             ['">=","GE" ], _
             ['"=", "SHOEEQ"], _
             ['"^", "NOT"], _
-            ['"^=","NE" ], _
+            ['"^=","SHOENE" ], _
             ['"..","SEG" ], _
             ['"#", "LENGTH"], _
             ['"=>","EXIT" ], _
@@ -137,7 +137,7 @@ for i in [      _
         ["GT"    ,">"], _
         ["LE"   ,"<="], _
         ["GE"   ,">="], _
-        ["NE"  ,"^="] _
+        ["SHOENE"  ,"^="] _
                    ]_
        repeat SETF (GET(CAR i,'SHOEINF),CADR i)
  
@@ -221,7 +221,7 @@ for i in [ _
   ["LE",             "<="], _
   ["GE",              ">="], _
   ["SHOEEQ",        "EQUAL"], _
-  ["NE",              "/="], _
+  ["SHOENE",              "/="], _
   ["T",               "T$"]   _
                                 ]
        repeat SETF (GET(CAR i,'SHOERENAME),CDR i)

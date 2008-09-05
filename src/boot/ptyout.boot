@@ -352,6 +352,8 @@ bpOutItem()==
     EQCAR(b,"+LINE")=> bpPush [ b ]
     b is ["L%T",l,r] and IDENTP l =>
                  bpPush [shoeEVALANDFILEACTQ ["SETQ",l,r]]
+    MEMQ(CAR(b), '(SETANDFILEQ SETQ DEFPARAMETER DEFCONSTANT)) =>
+       bpPush [ b ]
     b:=shoeCompTran ["LAMBDA",["x"],b]
     bpPush [shoeEVALANDFILEACTQ CADDR b]
  

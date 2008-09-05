@@ -548,7 +548,7 @@ bpBracketConstruct(f)==
         bpBracket f and bpPush bfConstruct bpPop1 ()
  
 bpCompare()==
-     bpIs() and (bpInfKey  '(SHOEEQ NE LT LE GT GE IN)
+     bpIs() and (bpInfKey  '(SHOEEQ SHOENE LT LE GT GE IN)
         and (bpIs() or bpTrap())
            and bpPush bfInfApplication(bpPop2(),bpPop2(),bpPop1())
                or true)
