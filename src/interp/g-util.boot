@@ -140,7 +140,7 @@ stringPrefix?(pref,str) ==
   ok := true
   i := 0
   while ok and (i < lp) repeat
-    not EQ(SCHAR(pref,i),SCHAR(str,i)) => ok := NIL
+    not EQL(SCHAR(pref,i),SCHAR(str,i)) => ok := NIL
     i := i + 1
   ok
 
@@ -160,7 +160,7 @@ dropLeadingBlanks str ==
   nb := NIL
   i := 0
   while (i < l) and not nb repeat
-    if SCHAR(str,i) ^= " " then nb := i
+    if SCHAR(str,i) ^= SCHAR('" ",0) then nb := i
     else i := i + 1
   nb = 0 => str
   nb => SUBSTRING(str,nb,NIL)

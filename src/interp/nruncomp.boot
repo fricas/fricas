@@ -426,8 +426,8 @@ NRTcheckVector domainShell ==
     v:= domainShell.i
     v=true => nil  --item is marked; ignore
     null v => nil  --a domain, which setVector4part3 will fill in
-    atom first v => nil  --category form; ignore
     atom v => systemErrorHere '"CheckVector"
+    atom first v => nil  --category form; ignore
     assoc(first v,alist) => nil
     alist:=
       [[first v,:$SetFunctions.i],:alist]

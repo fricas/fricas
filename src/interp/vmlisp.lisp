@@ -1047,8 +1047,8 @@
 #-:CCL (OP BV BODY OLD-DEF)
       (COND
         ( (NOT (IDENTP CURRENT-BINDING))
-          (SETQ CURRENT-BINDING
-                (error (format nil "invalid argument ~s to EMBED" CURRENT-BINDING))) ) )
+            (error (format nil "invalid argument ~s to EMBED"
+                      CURRENT-BINDING))) )
       (SETQ OLD-DEF (symbol-function CURRENT-BINDING))
       (SETQ NEW-DEFINITION
           (COND
@@ -1080,7 +1080,7 @@
       (SETQ CUR-DEF (symbol-function CURRENT-BINDING))
 #+:CCL (IF (CONSP CUR-DEF) (SETQ CUR-DEF (CDR CUR-DEF)))
       (tagbody
-       LP (let (NOT (consp E-LIST))
+       LP (if (NOT (consp E-LIST))
               (return-from UNEMBED NIL))
           (setf E-HEAD (car E-LIST))
           (if (or (NOT (consp E-HEAD))

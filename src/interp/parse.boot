@@ -410,7 +410,7 @@ parseWhere l == ["where",:mapInto(l,'parseTran)]
  
  
 parseSeq l ==
-  not l is [:.,['exit,:.]] =>
+  not (l is [:.,['exit,:.]]) =>
     postError ['"   Invalid ending to block: ",last l]
   transSeq mapInto(l,'parseTran)
  
