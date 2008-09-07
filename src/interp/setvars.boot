@@ -294,20 +294,7 @@ setInputLibrary arg ==
   setInputLibrary NIL
 
 -- FIXME: Is this used ??
-setOutputLibrary arg ==
-  -- Hack to avoid initialising libraries in KCL:
-  not $cclSystem => false
-  arg = "%initialize%" =>
-    $outputLibraryName := nil
-  arg = "%display%" =>
-    $outputLibraryName or '"user.lib" 
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeOutputLibraryArgs()
-  not ONEP(#arg) => setOutputLibrary nil
-  -- If the file already exists then use the complete pathname to help
-  -- keep track of it in the case the user issues )cd commands.
-  if FILEP (fn := STRINGIMAGE first arg) then fn := TRUENAME fn
-  openOutputLibrary($outputLibraryName := fn)
+setOutputLibrary arg == false
 
 describeOutputLibraryArgs() ==
   sayBrightly LIST (

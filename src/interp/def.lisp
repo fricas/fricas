@@ -66,12 +66,12 @@ foo defined inside of fum gets renamed as fum,foo.")
 ; We are making shallow binding cells for these functions as well
 
 (mapcar #'(lambda (x) (MAKEPROP (FIRST X) 'DEF-TRAN (SECOND X)))
-         '((\: DEF-\:) (\:\: DEF-\:\:) (ELT DEF-ELT)
+         '((\: DEF-\:) (ELT DEF-ELT)
            (SETELT DEF-SETELT) (SPADLET DEF-LET)
            (LET DEF-LET) (LESSP DEF-LESSP) (|<| DEF-LESSP)
            (SEQ DEF-SEQ) (COLLECT DEF-COLLECT)
-           (REPEAT DEF-REPEAT) (TRACE-LET DEF-TRACE-LET)
-           (CATEGORY DEF-CATEGORY) (EQUAL DEF-EQUAL)
+           (REPEAT DEF-REPEAT)
+           (EQUAL DEF-EQUAL)
            (|is| DEF-IS) (|isnt| DEF-ISNT) (|where| DEF-WHERE)))
 
 (defun DEF-EQUAL (X)
@@ -523,22 +523,3 @@ foo defined inside of fum gets renamed as fum,foo.")
                      ((LIST 'RPLAC (LIST Y VAR) EXPR))))
             ((LIST 'SETELT VAR SEL EXPR))))))
 
-(defun DEF-CATEGORY (L)
-  (let (siglist atlist)
-    (mapcar #'(lambda (x) (if (EQCAR (KADR X) 'Signature)
-                              (PUSH X SIGLIST)
-                              (PUSH X ATLIST)))
-            L)
-    (LIST 'CATEGORY (MKQ (NREVERSE SIGLIST)) (MKQ (NREVERSE ATLIST)))))
-
-
-(defun LIST2STRING (X)
-"Converts a list to a string which looks like a printed list,
-except that elements are separated by commas."
-  (COND ((ATOM X) (STRINGIMAGE X))
-        ((STRCONC "(" (LIST2STRING (FIRST X)) (LIST2STRING1 (CDR X)) ")"))))
-
-(defun LIST2STRING1 (X)
-  (COND
-    ((NOT X) "")
-    ((STRCONC "\," (LIST2STRING (FIRST X)) (LIST2STRING1 (CDR X))))))

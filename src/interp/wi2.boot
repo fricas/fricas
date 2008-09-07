@@ -682,40 +682,6 @@ NRTgetLocalIndex1(item,killBindingIfTrue) ==
 
 optDeltaEntry(op,sig,dc,eltOrConst) ==
   return nil    --------> kill it
-  $killOptimizeIfTrue = true => nil
-  ndc :=
-    dc = '$ => $functorForm
-    atom dc and (dcval := get(dc,'value,$e)) => dcval.expr
-    dc
---if (atom dc) and (dcval := get(dc,'value,$e))
---   then ndc := dcval.expr
---   else ndc := dc
-  sig := SUBST(ndc,dc,sig)
-  not MEMQ(KAR ndc,$optimizableConstructorNames) => nil
-  dcval := optCallEval ndc
-  -- MSUBST guarantees to use EQUAL testing
-  sig := MSUBST(devaluate dcval, ndc, sig)
-  if rest ndc then
-     for new in rest devaluate dcval for old in rest ndc repeat
-       sig := MSUBST(new,old,sig)
-     -- optCallEval sends (List X) to (LIst (Integer)) etc,
-     -- so we should make the same transformation
-  fn := compiledLookup(op,sig,dcval)
-  if null fn then
-    -- following code is to handle selectors like first, rest
-     nsig := [quoteSelector tt for tt in sig] where
-       quoteSelector(x) ==
-         not(IDENTP x) => x
-         get(x,'value,$e) => x
-         x='$ => x
-         MKQ x
-     fn := compiledLookup(op,nsig,dcval)
-     if null fn then return nil
-  eltOrConst="CONST" => 
-     hehe fn
-     [op]                    -----------> return just the op here
---   ['XLAM,'ignore,MKQ SPADCALL fn]
-  GETL(compileTimeBindingOf first fn,'SPADreplace)
  
 genDeltaEntry opMmPair ==
 --called from compApplyModemap

@@ -487,7 +487,7 @@ do the compile, and then rename the result back to [[code.o]].
 ;;(defun move-file (namestring1 namestring2)
 ;;  (rename-file namestring1 namestring2))
 
-(defun $FCOPY (filespec1 filespec2 &optional (append-flag nil))
+(defun $FCOPY (filespec1 filespec2)
     (let ((name1 (make-full-namestring filespec1))
           (name2 (make-full-namestring filespec2)))
       (if (library-file name1)

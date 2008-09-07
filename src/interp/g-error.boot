@@ -70,8 +70,6 @@ errorSupervisor(errorType,errorMsg) ==
   errorSupervisor1(errorType,errorMsg,$BreakMode)
 
 errorSupervisor1(errorType,errorMsg,$BreakMode) ==
-  $cclSystem and $BreakMode = 'trapNumerics => 
-    THROW('trapNumerics,$numericFailure)
   BUMPCOMPERRORCOUNT()
   errorLabel :=
       errorType = $SystemError  => '"System error"
@@ -105,11 +103,6 @@ handleLispBreakLoop($BreakMode) ==
     while not gotIt repeat
       gotIt := true
       msgQ := 
-       $cclSystem =>
-         ['%l,'"   You have two options. Enter:",'%l,_
-          '"    ",:bright '"top     ",'"  to return to top level, or",'%l,_
-          '"    ",:bright '"break   ",'"  to enter a LISP break loop.",'%l,_
-          '%l,'"   Please enter your choice now:"]
        ['%l,'"   You have three options. Enter:",'%l,_
         '"    ",:bright '"continue",'"  to continue processing,",'%l,_
         '"    ",:bright '"top     ",'"  to return to top level, or",'%l,_
@@ -117,8 +110,6 @@ handleLispBreakLoop($BreakMode) ==
         '%l,'"   Please enter your choice now:"]
       x := STRING2ID_-N(queryUser msgQ,1)
       x := 
-        $cclSystem =>
-          selectOptionLC(x,'(top break),NIL)
         selectOptionLC(x,'(top break continue),NIL)
       null x =>
         sayBrightly bright '"  That was not one of your choices!"
@@ -126,8 +117,7 @@ handleLispBreakLoop($BreakMode) ==
       x = 'top => returnToTopLevel()
       x = 'break =>
         $BreakMode := 'break
-        if not $cclSystem then
-          sayBrightly ['"   Enter",:bright '":C",
+        sayBrightly ['"   Enter",:bright '":C",
             '"when you are ready to continue processing where you ",'%l,_
             '"   interrupted the system, enter",:bright '"(TOP)",_
             '"when you wish to return",'%l,'"   to top level.",'%l,'%l]

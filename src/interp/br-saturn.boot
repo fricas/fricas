@@ -437,6 +437,8 @@ mkDocLink(code,s) ==
 saturnTranText x ==
   STRINGP x         => [unTab x]
   null x            => nil
+  -- FIXME 
+  -- x is [s,fn,:.] and s ????
   r is [s,fn,:.] and s = '"\unixcommand{" => ['"{\it ",s,'".spad}"]
   x is [['text, :s],:r] => unTab [:s, :saturnTranText r]
   error nil

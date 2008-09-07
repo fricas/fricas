@@ -44,11 +44,6 @@
 
 (SETQ |/MAJOR-VERSION| 7)
 
-(defconstant |$cclSystem|
-#+:CCL 't
-#-:CCL nil
-)
-
 ;; These two variables are referred to in setvars.boot.
 #+:kcl (setq input-libraries nil)
 #+:kcl (setq output-library nil)
@@ -65,17 +60,14 @@
 (SETQ $BOOT NIL)
 (setq |$interpOnly| nil)
 (SETQ |$testingSystem| NIL)
-(SETQ |$publicSystem| NIL)
 (SETQ |$newCompCompare| NIL)
 (SETQ |$permitWhere| NIL)
-(SETQ |$newSystem| T)
 (SETQ |$bootStrapMode| NIL) ;; if true skip functor bodies
 (SETQ |$bootstrapDomains| NIL)
 (SETQ |$compileDontDefineFunctions| 'T)
 (SETQ |$compileOnlyCertainItems| NIL)
 (SETQ |$devaluateList| NIL)
 (SETQ |$doNotCompressHashTableIfTrue| NIL)
-(SETQ |$mutableChecking| NIL)    ; used in DEFINE BOOT
 (SETQ |$mutableDomains| NIL)     ; checked in DEFINE BOOT
 (SETQ |$maxSignatureLineNumber| 0)
 (SETQ |$functionLocations| NIL)
@@ -101,10 +93,7 @@
 (SETQ $FUNNAME_TAIL '(()))
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
 (SETQ $OLDLINE NIL)  ;"used to output command lines"
-(SETQ |/EDIT,FT| 'SPAD)
-(SETQ |/EDIT,FM| 'A)
 (SETQ /EDITFILE NIL)
-(SETQ |$functionTable| NIL)
 (SETQ |$InteractiveMode| T)
 
 (SETQ |$ruleSetsInitialized| NIL)
@@ -289,7 +278,6 @@
 (SETQ |$immediateDataSymbol| '|--immediateData--|)
 
 (SETQ |$useIntegerSubdomain| 'T)
-(SETQ |$useNewFloat| 'T)
 
 ;; Directories/disks on which to place various kinds of files
 (SETQ |$libraryDirectory| 'A)
@@ -338,7 +326,6 @@
 
 (SETQ |$letAssoc| NIL)
         ;" used for trace of assignments in SPAD code -- see macro LETT"
-(SETQ |$useDCQnotLET| NIL)      ;; use DCQs for destructuring := patterns
 (SETQ |$QuickCode| T)
          ;" controls generation of QREFELT etc."
 (SETQ |$QuickLet| T)
@@ -409,7 +396,6 @@
 (SETQ |$Void|  '(|Void|))
 (SETQ |$QuotientField| '|Fraction|)
 (SETQ |$FunctionalExpression| '|Expression|)
-(SETQ |$defaultFunctionTargets| '(()))
 
 ;; Old names
 (SETQ |$SmallInteger| '(|SingleInteger|))

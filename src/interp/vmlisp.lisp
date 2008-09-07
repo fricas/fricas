@@ -1043,8 +1043,7 @@
 
 (defun EMBED (CURRENT-BINDING NEW-DEFINITION)
   (PROG
-#+:CCL (OP BV BODY OLD-DEF *COMP)
-#-:CCL (OP BV BODY OLD-DEF)
+      (OP BV BODY OLD-DEF)
       (COND
         ( (NOT (IDENTP CURRENT-BINDING))
             (error (format nil "invalid argument ~s to EMBED"
@@ -1068,17 +1067,14 @@
             )
       (SETF NEW-DEFINITION (COERCE NEW-DEFINITION 'FUNCTION))
       (SETF (symbol-function CURRENT-BINDING) NEW-DEFINITION)
-#+:CCL (IF (CONSP NEW-DEFINITION) (SETQ NEW-DEFINITION (CDR NEW-DEFINITION)))
       (push (LIST CURRENT-BINDING NEW-DEFINITION OLD-DEF) *embedded-functions*)
       (RETURN CURRENT-BINDING) ) )
 
 (defun UNEMBED (CURRENT-BINDING)
     (let
-#+:CCL  (TMP E-LIST E-HEAD CUR-DEF *COMP)
-#-:CCL  (TMP E-LIST E-HEAD CUR-DEF)
+      (TMP E-LIST E-HEAD CUR-DEF)
       (SETQ E-LIST *embedded-functions*)
       (SETQ CUR-DEF (symbol-function CURRENT-BINDING))
-#+:CCL (IF (CONSP CUR-DEF) (SETQ CUR-DEF (CDR CUR-DEF)))
       (tagbody
        LP (if (NOT (consp E-LIST))
               (return-from UNEMBED NIL))
