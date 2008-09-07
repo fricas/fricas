@@ -844,7 +844,7 @@ compHasFormat (pred is ["has",olda,b]) ==
   a := SUBLISLIS(argl,formals,olda)
   [a,:.] := comp(a,$EmptyMode,$e) or return nil
   a := SUBLISLIS(formals,argl,a)
-  b is ["ATTRIBUTE",c] => ["HasAttribute",a,["QUOTE",c]]
+  b is ["ATTRIBUTE",c] => BREAK()
   b is ["SIGNATURE",op,sig] =>
      ["HasSignature",a,
        mkList [MKQ op,mkList [mkDomainConstructor type for type in sig]]]

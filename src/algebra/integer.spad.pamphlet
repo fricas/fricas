@@ -72,17 +72,10 @@ Common Lisp and is not defined in Common Lisp.
 ++ Description: \spadtype{Integer} provides the domain of arbitrary precision
 ++ integers.
 
-Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath) with
+Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
+    Canonical, canonicalsClosed) with
     random   : % -> %
       ++ random(n) returns a random integer from 0 to \spad{n-1}.
-    canonical
-      ++ mathematical equality is data structure equality.
-    canonicalsClosed
-      ++ two positives multiply to give positive.
-    noetherian
-      ++ ascending chain condition on ideals.
-    infinite
-      ++ nextItem never returns "failed".
  == add
       ZP ==> SparseUnivariatePolynomial %
       ZZP ==> SparseUnivariatePolynomial Integer
@@ -253,7 +246,7 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath) with
 ++ Keywords: integer
 ++ Description: \spadtype{NonNegativeInteger} provides functions for non
 ++   negative integers.
-NonNegativeInteger: Join(OrderedAbelianMonoidSup,Monoid) with
+NonNegativeInteger: Join(OrderedAbelianMonoidSup, Monoid, CommutativeStar) with
             _quo : (%,%) -> %
               ++ a quo b returns the quotient of \spad{a} and b, forgetting
               ++ the remainder.
@@ -272,8 +265,6 @@ NonNegativeInteger: Join(OrderedAbelianMonoidSup,Monoid) with
               ++ shift(a,i) shift \spad{a} by i bits.
             random   : % -> %
               ++ random(n) returns a random integer from 0 to \spad{n-1}.
-            commutative("*")
-              ++ commutative("*") means multiplication is commutative : \spad{x*y = y*x}.
 
   == SubDomain(Integer,#1 >= 0) add
       x,y:%
@@ -297,12 +288,10 @@ NonNegativeInteger: Join(OrderedAbelianMonoidSup,Monoid) with
 ++ Keywords: positive integer
 ++ Description: \spadtype{PositiveInteger} provides functions for
 ++   positive integers.
-PositiveInteger: Join(OrderedAbelianSemiGroup,Monoid) with
+PositiveInteger: Join(OrderedAbelianSemiGroup, Monoid, CommutativeStar) with
             gcd: (%,%) -> %
               ++ gcd(a,b) computes the greatest common divisor of two
               ++ positive integers \spad{a} and b.
-            commutative("*")
-              ++ commutative("*") means multiplication is commutative : x*y = y*x
  == SubDomain(NonNegativeInteger,#1 > 0) add
      x:%
      y:%
@@ -321,13 +310,7 @@ PositiveInteger: Join(OrderedAbelianSemiGroup,Monoid) with
 ++ Keywords: roman numerals
 ++ Description:  \spadtype{RomanNumeral} provides functions for converting
 ++   integers to roman numerals.
-RomanNumeral(): IntegerNumberSystem with
-    canonical
-      ++ mathematical equality is data structure equality.
-    canonicalsClosed
-      ++ two positives multiply to give positive.
-    noetherian
-      ++ ascending chain condition on ideals.
+RomanNumeral(): Join(IntegerNumberSystem, Canonical, canonicalsClosed) with
     convert: Symbol  -> %
       ++ convert(n) creates a roman numeral for symbol n.
     roman  : Symbol  -> %

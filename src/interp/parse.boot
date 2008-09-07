@@ -237,18 +237,19 @@ parseHas [x,y] ==
       y is ['CATEGORY,:u] => "append"/[fn z for z in u]
       kk:= GETDATABASE(opOf y,'CONSTRUCTORKIND)
       kk = 'domain or kk = 'category => [makeNonAtomic y]
-      y is ['ATTRIBUTE,:.] => [y]
+      y is ['ATTRIBUTE,:.] => BREAK()
       y is ['SIGNATURE,:.] => [y]
       $InteractiveMode => parseHasRhs y
-      [['ATTRIBUTE,y]]
+      MOAN '"Attribute support is removed"
+      [y]
  
 parseHasRhs u ==   --$InteractiveMode = true
   get(u,'value,$CategoryFrame) is [D,m,.]
     and m in '((Mode) (Domain) (SubDomain (Domain))) => m
   y := abbreviation? u =>
     loadIfNecessary y => [unabbrevAndLoad y]
-    [['ATTRIBUTE,u]]
-  [['ATTRIBUTE,u]]
+    BREAK()
+  BREAK()
  
 parseDEF [$lhs,tList,specialList,body] ==
   setDefOp $lhs

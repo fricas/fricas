@@ -971,7 +971,7 @@ evalDomainOpPred(dom,pred) == process(dom,pred) where
       MEMQ(op,'(NOT not)) => ['NOT,convert(dom,first argl)]
       op = 'has =>
         [arg,p] := argl
-        p is ['ATTRIBUTE,a] => ['HasAttribute,arg,MKQ a]
+        p is ['ATTRIBUTE,a] => BREAK()
         ['HasCategory,arg,convertCatArg p]
       systemError '"unknown predicate form"
     pred = 'T => true
@@ -988,12 +988,7 @@ evalDomainOpPred(dom,pred) == process(dom,pred) where
       MEMQ(op,'(OR or))   =>  "or"/[evpred1(dom,x) for x in argl]
       op = 'NOT => not evpred1(dom,first argl)
       k := POSN1(pred,$predicateList) => testBitVector(dom.3,k + 1)
-      op = 'HasAttribute =>
-        [arg,[.,a]] := argl
-        attPredIndex := LASSOC(a,dom.2)
-        null attPredIndex  => nil
-        attPredIndex = 0 => true
-        testBitVector(dom.3,attPredIndex)
+      op = 'HasAttribute => BREAK()
       nil
     pred = 'T => true
     systemError '"unknown atomic predicate form"

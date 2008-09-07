@@ -36,8 +36,7 @@ HashTable(Key, Entry, hashfn): Exports == Implementation where
     Key, Entry: SetCategory
     hashfn: String --  Union("EQ", "UEQUAL", "CVEC", "ID")
 
-    Exports ==> TableAggregate(Key, Entry) with
-                     finiteAggregate
+    Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
 
     Implementation ==> add
         Pair ==> Record(key: Key, entry: Entry)
@@ -101,10 +100,8 @@ testEquals("construct(l)$TABLE(INT, INT)", "construct(reverse l)$TABLE(INT, INT)
 ++   for the implementation of \spadtype{Table}.
 
 InnerTable(Key: SetCategory, Entry: SetCategory, addDom):Exports == Implementation where
-    addDom : TableAggregate(Key, Entry) with
-                     finiteAggregate
-    Exports ==> TableAggregate(Key, Entry) with
-                     finiteAggregate
+    addDom : Join(TableAggregate(Key, Entry), finiteAggregate)
+    Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
     Implementation ==> addDom
 
 @
@@ -129,8 +126,7 @@ InnerTable(Key: SetCategory, Entry: SetCategory, addDom):Exports == Implementati
 ++   \spadtype{AssociationList}
 
 Table(Key: SetCategory, Entry: SetCategory):Exports == Implementation where
-    Exports ==> TableAggregate(Key, Entry) with
-                     finiteAggregate
+    Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
 
     Implementation ==> InnerTable(Key, Entry,
         if hashable(Key)$Lisp then HashTable(Key, Entry, "UEQUAL")

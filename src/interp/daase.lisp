@@ -1300,15 +1300,6 @@ database.
    (setq *compressvector*
      (make-array (car lst) :initial-contents (cdr lst))))))
 
-(setq *attributes* 
-      '(|nil| |infinite| |arbitraryExponent| |approximate| |complex|
-        |shallowMutable| |canonical| |noetherian| |central|
-        |partiallyOrderedSet| |arbitraryPrecision| |canonicalsClosed|
-        |noZeroDivisors| |rightUnitary| |leftUnitary|
-        |additiveValuation| |unitsKnown| |canonicalUnitNormal|
-        |multiplicativeValuation| |finiteAggregate| |shallowlyMutable|
-        |commutative|))
-
 (defun write-compress ()
  (let (compresslist masterpos out)
   (close *compress-stream*)
@@ -1317,7 +1308,7 @@ database.
   (finish-output out)
   (setq masterpos (file-position out))
   (setq compresslist
-        (append (|allConstructors|) (|allOperations|) *attributes*))
+        (append (|allConstructors|) (|allOperations|)))
   (push "algebra" compresslist)
   (push "failed" compresslist)
   (push 'signature compresslist)

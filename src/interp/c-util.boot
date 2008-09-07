@@ -546,6 +546,7 @@ extendsCategoryForm(domain,form,form') ==
             assoc(SUBSTQ(domain,"$",[op,args]),
                   SUBSTQ(domain,"$",formVec.(1)))
     form' is ["ATTRIBUTE",at] =>
+         BREAK()
          assoc(at,formVec.2) or
             assoc(SUBSTQ(domain,"$",at),SUBSTQ(domain,"$",formVec.2))
     form' is ["IF",:.] => true --temporary hack so comp won't fail

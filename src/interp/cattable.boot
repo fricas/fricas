@@ -95,9 +95,7 @@ simpHasPred(pred,:options) == main where
       op = 'HasSignature =>
          [op,sig] := simpDevaluate CADR r
          ['has,CAR r,['SIGNATURE,op,sig]]
-      op = 'HasAttribute =>
-        form := ['has,a := CAR r,['ATTRIBUTE,b := simpDevaluate CADR r]]
-        simpHasAttribute(form,a,b)
+      op = 'HasAttribute => BREAK()
       MEMQ(op,'(AND OR NOT)) =>
         null (u := MKPF([simp p for p in r],op)) => nil
         u is '(QUOTE T) => true
@@ -112,7 +110,7 @@ simpHasPred(pred,:options) == main where
     pred
   simpDevaluate a == EVAL SUBST('QUOTE,'devaluate,a)
   simpHas(pred,a,b) ==
-    b is ['ATTRIBUTE,attr] => simpHasAttribute(pred,a,attr)
+    b is ['ATTRIBUTE,attr] => BREAK()
     b is ['SIGNATURE,op,sig] => simpHasSignature(pred,a,op,sig)
     IDENTP a or hasIdent b => pred
     npred := eval pred
@@ -134,32 +132,6 @@ simpHasSignature(pred,conform,op,sig) == --eval w/o loading
   match := or/[x for (x := [sig1,:.]) in candidates
                 | sig = sublisFormal(args,sig1)] or return false
   simpHasPred(match is [sig,.,:p] and sublisFormal(args,p) or true)
-
-simpHasAttribute(pred,conform,attr) ==  --eval w/o loading
-  IDENTP conform => pred
-  conname := opOf conform
-  GETDATABASE(conname,'CONSTRUCTORKIND) = 'category =>
-      simpCatHasAttribute(conform,attr)
-  asharpConstructorName? conname =>
-    p := LASSOC(attr,GETDATABASE(conname,'attributes)) =>
-      simpHasPred sublisFormal(rest conform,p)
-  infovec := dbInfovec conname
-  k := LASSOC(attr,infovec.2) or return nil --if not listed then false
-  k = 0 => true
-  $domain => kTestPred k    --from koOps
-  predvec := $predvec or sublisFormal(rest conform,
-      GETDATABASE(conname,'PREDICATES))
-  simpHasPred predvec.(k - 1)
-
-simpCatHasAttribute(domform,attr) ==
-  conform := getConstructorForm opOf domform
-  catval :=  EVAL mkEvalable conform
-  if atom KDR attr then attr := IFCAR attr
-  pred :=
-    u := LASSOC(attr,catval . 2) => first u
-    return false                            --exit: not there
-  pred = true => true
-  EVAL SUBLISLIS(rest domform,rest conform,pred)
 
 hasIdent pred ==
   pred is [op,:r] =>
@@ -350,6 +322,8 @@ makeCatPred(zz, cats, thePred) ==
   if zz is ['IF,curPred := ['has,z1,z2],ats,.] then
     ats := if ats is ['PROGN,:atl] then atl else [ats]
     for at in ats repeat
+--      at is ['ATTRIBUTE,z3] =>
+--          BREAK()
       if at is ['ATTRIBUTE,z3] and not atom z3 and
         constructor? CAR z3 then
           cats:= CONS(['IF,quickAnd(['has,z1,z2], thePred),z3,'noBranch],cats)
@@ -383,7 +357,7 @@ categoryParts(conform,category,:options) == main where
       constructor? opOf attr =>
         $conslist := [[attr,:pred],:$conslist]
         nil
-      opOf attr = 'nothing => 'skip
+      opOf attr = 'nil => 'skip
       $attrlist := [[opOf attr,IFCDR attr,:pred],:$attrlist]
     item is ['TYPE,op,type] =>
         $oplist := [[op,[type],:pred],:$oplist]

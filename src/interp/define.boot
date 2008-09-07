@@ -158,7 +158,9 @@ makeCategoryPredicates(form,u) ==
         fn(u,pl) ==
           u is ['Join,:.,a] => fn(a,pl)
           u is ['has,:.] => insert(EQSUBSTLIST($mvl,$tvl,u),pl)
-          u is [op,:.] and MEMQ(op,'(SIGNATURE ATTRIBUTE)) => pl
+          u is [op,:.] and MEMQ(op,'(SIGNATURE ATTRIBUTE)) =>
+               -- EQ(op, 'ATTRIBUTE) => BREAK()
+               pl
           atom u => pl
           fnl(u,pl)
         fnl(u,pl) ==
@@ -1334,6 +1336,7 @@ compCategory(x,m,e) ==
       $atList: local := nil
       $sigList:= $atList:= nil
       for x in l repeat compCategoryItem(x,nil)
+      -- $atList ^= nil => BREAK()
       rep:= mkExplicitCategoryFunction(domainOrPackage,$sigList,$atList)
     --if inside compDefineCategory, provide for category argument substitution
       [rep,m,e]
@@ -1408,7 +1411,11 @@ compCategoryItem(x,predl) ==
   pred:= (predl => MKPF(predl,"AND"); true)
  
   --2. if attribute, push it and return
-  x is ["ATTRIBUTE",y] => PUSH(MKQ [y,pred],$atList)
+  x is ["ATTRIBUTE", 'nil] => 'iterate
+  x is ["ATTRIBUTE",y] =>
+       -- should generate something else for conditional categories
+       -- BREAK()
+       PUSH(MKQ [y,pred],$atList)
  
   --3. it may be a list, with PROGN as the CAR, and some information as the CDR
   x is ["PROGN",:l] => for u in l repeat compCategoryItem(u,predl)

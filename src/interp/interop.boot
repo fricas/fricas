@@ -705,37 +705,6 @@ replaceGoGetSlot env ==
     sayLooking1('"<------",[CAR slot,:devaluate CDR slot])
   slot
 
-HasAttribute(domain,attrib) ==
-  hashPercent :=
-       VECP domain => hashType(domain.0,0)
-       hashType(domain,0)
-  isDomain domain =>
-     FIXP((first domain).0) => 
-        -- following call to hashType was missing 2nd arg. 
-        -- getDomainHash domain added on 4/01/94 by RSS
-        basicLookup("%%",hashType(attrib, hashPercent),domain,domain)
-     HasAttribute(CDDR domain, attrib)
--->
-  isNewWorldDomain domain => newHasAttribute(domain,attrib)
---+
-  (u := LASSOC(attrib,domain.2)) and lookupPred(first u,domain,domain)
- 
-newHasAttribute(domain,attrib) ==
-  hashPercent :=
-       VECP domain => hashType(domain.0,0)
-       hashType(domain,0)
-  predIndex :=
-     hashCode? attrib =>
-        -- following call to hashType was missing 2nd arg. 
-        -- hashPercent added by PAB 15/4/94
-        or/[x for x in domain.2 | attrib = hashType(first x, hashPercent)]
-     LASSOC(attrib,domain.2)
-  predIndex =>
-    EQ(predIndex,0) => true
-    predvec := domain.3
-    testBitVector(predvec,predIndex)
-  false
-
 newHasCategory(domain,catform) ==
   catform = '(Type) => true  
   slot4 := domain.4
@@ -774,7 +743,8 @@ has(domain,catform') == HasCategory(domain,catform')
 
 HasCategory(domain,catform') ==
   catform' is ['SIGNATURE,:f] => HasSignature(domain,f)
-  catform' is ['ATTRIBUTE,f] => HasAttribute(domain,f)
+  catform' is ['ATTRIBUTE,f] =>
+      BREAK()
   isDomain domain =>
      FIXP((first domain).0) =>
         catform' := devaluate catform'

@@ -220,7 +220,7 @@ predicateBitIndexRemop p==
 --transform attribute predicates taken out by removeAttributePredicates
   p is [op,:argl] and op in '(AND and OR or NOT not) => 
     simpBool makePrefixForm([predicateBitIndexRemop x for x in argl],op)
-  p is ['has,'$,['ATTRIBUTE,a]] => LASSOC(a,$NRTattributeAlist)
+  p is ['has,'$,['ATTRIBUTE,a]] => BREAK()
   p
  
 predicateBitRef x ==
@@ -280,11 +280,7 @@ removeAttributePredicates pl ==
     fn p ==
       p is [op,:argl] and op in '(AND and OR or NOT not) => 
           makePrefixForm(fnl argl,op)
-      p is ['has,'$,['ATTRIBUTE,a]] =>
-        sayBrightlyNT '"Predicate: "
-        PRINT p
-        sayBrightlyNT '"  replaced by: "
-        PRINT LASSOC(a,$NRTattributeAlist)
+      p is ['has,'$,['ATTRIBUTE,a]] => BREAK()
       p
     fnl p == [fn x for x in p]
  
@@ -796,6 +792,7 @@ extendsCategory(dom,u,v) ==
  
 extendsCategoryBasic0(dom,u,v) ==
   v is ['IF,p,['ATTRIBUTE,c],.] =>
+    -- BREAK()
     uVec := compMakeCategoryObject(u,$EmptyEnvironment).expr
     null atom c and isCategoryForm(c,nil) =>
       slot4 := uVec.4

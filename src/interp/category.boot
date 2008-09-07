@@ -377,11 +377,10 @@ CondAncestorP(xname,leaves,condition) ==
 DescendantP(a,b) ==
   -- checks to see if a is any kind of Descendant of b
   a=b => true
-  a is ["ATTRIBUTE",:.] => nil
+  a is ["ATTRIBUTE",:.] => BREAK()
   a is ["SIGNATURE",:.] => nil
   a:= CatEval a
-  b is ["ATTRIBUTE",b'] =>
-    (l := assoc(b',a.2)) => TruthP CADR l
+  b is ["ATTRIBUTE",b'] => BREAK()
   member(b,first a.4) => true
   AncestorP(b,[first u for u in CADR a.4]) => true
   nil

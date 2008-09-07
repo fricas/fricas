@@ -335,7 +335,10 @@ getDomainFromMm mm ==
   val :=
     for condition in condList repeat
       condition is ['isDomain, "*1", dom] => return opOf dom
-      condition is ['ofCategory, "*1", cat] => return opOf cat
+      condition is ['ofCategory, "*1", cat] and _
+          not(member(opOf cat, ["finiteAggregate", "shallowlyMutable", _
+               "arbitraryPrecision", "canonicalUnitNormal"]))_
+             => return opOf cat
   null val =>
     keyedSystemError("S2GE0016",
       ['"getDomainFromMm",'"Can't find domain in modemap condition"])

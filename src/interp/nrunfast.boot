@@ -470,7 +470,8 @@ newHasTest(domform,catOrAtt) ==
       isPartialMode a => throwKeyedMsg("S2IS0025",NIL)
       b is ["SIGNATURE",:opSig] =>
         HasSignature(evalDomain a,opSig)
-      b is ["ATTRIBUTE",attr] => HasAttribute(evalDomain a,attr)
+      b is ["ATTRIBUTE",attr] => 
+          BREAK()
       hasCaty(a,b,NIL) ^= 'failed
       HasCategory(evalDomain a,b) => true -- for asharp domains: must return Boolean
   op := opOf catOrAtt
@@ -488,7 +489,9 @@ newHasTest(domform,catOrAtt) ==
              ATOM x => x
              [pred,:l] := x
              pred = 'has => 
-                  l is [ w1,['ATTRIBUTE,w2]] => newHasTest(w1,w2) 
+                  l is [ w1,['ATTRIBUTE,w2]] =>
+                       BREAK()
+                       newHasTest(w1,w2) 
                   l is [ w1,['SIGNATURE,:w2]] => compiledLookup(CAR w2,CADR w2, eval mkEvalable w1)
                   newHasTest(first  l ,first rest l) 
              pred = 'OR => or/[evalCond i for i in l]
@@ -497,7 +500,7 @@ newHasTest(domform,catOrAtt) ==
   null isAtom and constructor? op  =>
     domain := eval mkEvalable domform
     newHasCategory(domain,catOrAtt)
-  newHasAttribute(eval mkEvalable domform,catOrAtt)
+  systemError '"newHasTest expects category from"
  
 lazyMatchAssocV1(x,vec,domain) ==               --old style slot4
   BREAK()

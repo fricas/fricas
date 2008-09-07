@@ -275,9 +275,8 @@ Collection(S:Type): Category == HomogeneousAggregate(S) with
 ++ and where the order in which objects are inserted determines the order
 ++ of extraction.
 ++ Examples of bags are stacks, queues, and dequeues.
-BagAggregate(S:Type): Category == HomogeneousAggregate S with
-   shallowlyMutable
-     ++ shallowlyMutable means that elements of bags may be destructively changed.
+BagAggregate(S:Type): Category == Join(HomogeneousAggregate S,_
+     shallowlyMutable) with
    bag: List S -> %
      ++ bag([x,y,...,z]) creates a bag with elements x,y,...,z.
    extract_!: % -> S
@@ -307,8 +306,7 @@ BagAggregate(S:Type): Category == HomogeneousAggregate S with
 ++ References:
 ++ Description:
 ++ A stack is a bag where the last item inserted is the first item extracted.
-StackAggregate(S:Type): Category == BagAggregate S with
-   finiteAggregate
+StackAggregate(S:Type): Category == Join(BagAggregate S, finiteAggregate) with
    push_!: (S,%) -> S
      ++ push!(x,s) pushes x onto stack s, i.e. destructively changing s
      ++ so as to have a new first (top) element x.
@@ -340,8 +338,7 @@ StackAggregate(S:Type): Category == BagAggregate S with
 ++ References:
 ++ Description:
 ++ A queue is a bag where the first item inserted is the first item extracted.
-QueueAggregate(S:Type): Category == BagAggregate S with
-   finiteAggregate
+QueueAggregate(S:Type): Category == Join(BagAggregate S, finiteAggregate) with
    enqueue_!: (S, %) -> S
      ++ enqueue!(x,q) inserts x into the queue q at the back end.
    dequeue_!: % -> S
@@ -431,8 +428,8 @@ DequeueAggregate(S:Type):
 ++ Description:
 ++ A priority queue is a bag of items from an ordered set where the item
 ++ extracted is always the maximum element.
-PriorityQueueAggregate(S:OrderedSet): Category == BagAggregate S with
-   finiteAggregate
+PriorityQueueAggregate(S:OrderedSet): Category == Join(BagAggregate S,_
+     finiteAggregate) with
    max: % -> S
      ++ max(q) returns the maximum element of priority queue q.
    merge: (%,%) -> %
@@ -594,8 +591,7 @@ MultiDictionary(S:SetCategory): Category == DictionaryOperations S with
 ++ common to both, the relationship between the two cannot
 ++ be described by inclusion or inheritance.
 SetAggregate(S:SetCategory):
-  Category == Join(SetCategory, Collection(S)) with
-   partiallyOrderedSet
+  Category == Join(SetCategory, Collection(S), partiallyOrderedSet) with
    "<"         : (%, %) -> Boolean
      ++ s < t returns true if all elements of set aggregate s are also
      ++ elements of set aggregate t.
@@ -672,8 +668,7 @@ SetAggregate(S:SetCategory):
 ++ by order or multiplicity.
 ++ See \spadtype{Set} for an example.
 FiniteSetAggregate(S:SetCategory): Category ==
-  Join(Dictionary S, SetAggregate S) with
-    finiteAggregate
+  Join(Dictionary S, SetAggregate S, finiteAggregate) with
     cardinality: % -> NonNegativeInteger
       ++ cardinality(u) returns the number of elements of u.
       ++ Note: \axiom{cardinality(u) = #u}.
@@ -1818,8 +1813,8 @@ LinearAggregate(S:Type): Category ==
 ++ The finite property of the aggregate adds several exports to the
 ++ list of exports from \spadtype{LinearAggregate} such as
 ++ \spadfun{reverse}, \spadfun{sort}, and so on.
-FiniteLinearAggregate(S:Type): Category == LinearAggregate S with
-   finiteAggregate
+FiniteLinearAggregate(S:Type): Category == Join(LinearAggregate S,_
+     finiteAggregate) with
    merge: ((S,S)->Boolean,%,%) -> %
       ++ merge(p,a,b) returns an aggregate c which merges \axiom{a} and b.
       ++ The result is produced by examining each element x of \axiom{a} and y
@@ -1911,7 +1906,7 @@ FiniteLinearAggregate(S:Type): Category == LinearAggregate S with
 ++ Insertion and deletion however is generally slow since an entirely new
 ++ data structure must be created for the result.
 OneDimensionalArrayAggregate(S:Type): Category ==
-    FiniteLinearAggregate S with shallowlyMutable
+    Join(FiniteLinearAggregate S, shallowlyMutable)
   add
     parts x         == [qelt(x, i) for i in minIndex x .. maxIndex x]
     sort_!(f, a) == quickSort(f, a)$FiniteLinearAggregateSort(S, %)
@@ -2151,8 +2146,8 @@ OneDimensionalArrayAggregate(S:Type): Category ==
 ++ concatenation efficient. However, access to elements of these
 ++ extensible aggregates is generally slow since access is made from the end.
 ++ See \spadtype{FlexibleArray} for an exception.
-ExtensibleLinearAggregate(S:Type):Category == LinearAggregate S with
-   shallowlyMutable
+ExtensibleLinearAggregate(S:Type):Category == Join(LinearAggregate S,_
+     shallowlyMutable) with
    concat_!: (%,S) -> %
      ++ concat!(u,x) destructively adds element x to the end of u.
    concat_!: (%,%) -> %

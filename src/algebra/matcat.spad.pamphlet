@@ -91,12 +91,8 @@ MatrixCategory(R,Row,Col): Category == Definition where
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
 
-  Definition ==> TwoDimensionalArrayCategory(R,Row,Col) with
-     shallowlyMutable
-       ++ One may destructively alter matrices
-
-     finiteAggregate
-       ++ matrices are finite
+  Definition ==> Join(TwoDimensionalArrayCategory(R,Row,Col), 
+      shallowlyMutable, finiteAggregate) with
 
 --% Predicates
 
@@ -249,7 +245,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        nullSpace: % -> List Col
          ++ \spad{nullSpace(m)} returns a basis for the null space of
          ++ the matrix m.
-     if R has commutative("*") then
+     if R has CommutativeRing then
        determinant: % -> R
          ++ \spad{determinant(m)} returns the determinant of the matrix m.
          ++ Error: if the matrix is not square.
@@ -638,7 +634,7 @@ multiplication.
 \verb|B0| could be dubbed \emph{skew symmetric unit matrix}:
 <<category MATCAT MatrixCategory>>=
 
-     if R has commutative("*") then
+     if R has CommutativeRing then
         B0(n: PositiveInteger): % == 
             matrix [[(if i=j+1 and odd? j _
                       then -1 _
@@ -781,10 +777,8 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
   Row : DirectProductCategory(n,R)
   Col : DirectProductCategory(m,R)
 
-  Definition ==> Join(BiModule(R,R),HomogeneousAggregate(R)) with
-
-    finiteAggregate
-      ++ matrices are finite
+  Definition ==> Join(BiModule(R,R),HomogeneousAggregate(R), _
+      finiteAggregate) with
 
     if R has Finite then Finite
 
@@ -1011,7 +1005,7 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
 
 --% Linear algebra
 
-    if R has commutative("*") then
+    if R has CommutativeRing then
       Algebra R
       determinant: % -> R
         ++ \spad{determinant(m)} returns the determinant of the matrix m.

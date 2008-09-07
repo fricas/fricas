@@ -37,7 +37,7 @@ in order to keep track of all the compiler's information about
 various categories and similar objects
 An actual piece of (unconditional) information can have one of 3 forms:
  (ATTRIBUTE domainname attribute)
-             --These are only stored here
+             --These are only stored here, should be unused
  (SIGNATURE domainname operator signature)
              --These are also stored as 'modemap' properties
  (has domainname categoryexpression)
@@ -85,9 +85,9 @@ formatInfo u ==
     -- The parser can't tell between those attributes that really
     -- are attributes, and those that are category names
     atom v and isCategoryForm([v],$e) => ["has","$",[v]]
-    atom v => ["ATTRIBUTE","$",v]
+    atom v => BREAK()
     isCategoryForm(v,$e) => ["has","$",v]
-    ["ATTRIBUTE","$",v]
+    BREAK()
   u is ["IF",a,b,c] =>
     c="noBranch" => ["COND",:liftCond [formatPred a,formatInfo b]]
     b="noBranch" => ["COND",:liftCond [["not",formatPred a],formatInfo c]]
@@ -107,11 +107,11 @@ formatPred u ==
          --Assumes that $e is set up to point to an environment
   u is ["has",a,b] =>
     atom b and isCategoryForm([b],$e) => ["has",a,[b]]
-    atom b => ["has",a,["ATTRIBUTE",b]]
+    atom b => BREAK()
     isCategoryForm(b,$e) => u
-    b is ["ATTRIBUTE",.] => u
+    b is ["ATTRIBUTE",.] => BREAK()
     b is ["SIGNATURE",:.] => u
-    ["has",a,["ATTRIBUTE",b]]
+    BREAK()
   atom u => u
   u is ["and",:v] => ["and",:[formatPred w for w in v]]
   systemError '"formatPred"
@@ -141,12 +141,12 @@ chaseInferences(pred,$e) ==
  
 hasToInfo (pred is ["has",a,b]) ==
   b is ["SIGNATURE",:data] => ["SIGNATURE",a,:data]
-  b is ["ATTRIBUTE",c] => ["ATTRIBUTE",a,c]
+  b is ["ATTRIBUTE",c] => BREAK()
   pred
  
 infoToHas a ==
   a is ["SIGNATURE",b,:data] => ["has",b,["SIGNATURE",:data]]
-  a is ["ATTRIBUTE",b,c] => ["has",b,["ATTRIBUTE",c]]
+  a is ["ATTRIBUTE",b,c] => BREAK()
   a
  
 knownInfo pred ==
@@ -158,17 +158,9 @@ knownInfo pred ==
   pred is ["AND",:l] => and/[knownInfo u for u in l]
   pred is ["or",:l] => or/[knownInfo u for u in l]
   pred is ["and",:l] => and/[knownInfo u for u in l]
-  pred is ["ATTRIBUTE",name,attr] =>
-    v:= compForMode(name,$EmptyMode,$e)
-    null v => stackSemanticError(["can't find category of ",name],nil)
-    [vv,.,.]:= compMakeCategoryObject(CADR v,$e)
-    null vv => stackSemanticError(["can't make category of ",name],nil)
-    member(attr,vv.2) => true
-    x:= assoc(attr,vv.2) => knownInfo CADR x
-          --format is a list of two elements: information, predicate
-    false
+  pred is ["ATTRIBUTE",name,attr] => BREAK()
   pred is ["has",name,cat] =>
-    cat is ["ATTRIBUTE",:a] => knownInfo ["ATTRIBUTE",name,:a]
+    cat is ["ATTRIBUTE",:a] => BREAK()
     cat is ["SIGNATURE",:a] => knownInfo ["SIGNATURE",name,:a]
     name is ['Union,:.] => false
     v:= compForMode(name,$EmptyMode,$e)
@@ -216,13 +208,7 @@ actOnInfo(u,$e) ==
       if member(hasToInfo ante,Info) then for v in conseq repeat
         $e:= actOnInfo(v,$e)
     $e
-  u is ["ATTRIBUTE",name,att] =>
-    [vval,vmode,venv]:= GetValue name
-    SAY("augmenting ",name,": ",u)
-    key:= if CONTAINED("$",vmode) then "domain" else name
-    cat:= ["CATEGORY",key,["ATTRIBUTE",att]]
-    $e:= put(name,"value",[vval,mkJoin(cat,vmode),venv],$e)
-      --there is nowhere %else that this sort of thing exists
+  u is ["ATTRIBUTE",name,att] => BREAK()
   u is ["SIGNATURE",name,operator,modemap] =>
     implem:=
       (implem:= assoc([name,:modemap],get(operator,'modemap,$e))) =>
