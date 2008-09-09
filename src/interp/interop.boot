@@ -116,8 +116,6 @@ runOldAxiomFunctor(:allArgs) ==
   makeOldAxiomDispatchDomain dom
 
 makeLazyOldAxiomDispatchDomain domform ==
-  attribute? domform =>
-      [$attributeDispatch, domform, hashString(SYMBOL_-NAME domform)]
   GETDATABASE(opOf domform, 'CONSTRUCTORKIND) = 'category =>
       [$oldAxiomPreCategoryDispatch,: domform]
   dd := [$lazyOldAxiomDomainDispatch, hashTypeForm(domform,0), domform]

@@ -1,7 +1,7 @@
 #+:GCL
 (progn
   (eval-when (:execute :compile-toplevel :load-toplevel)
-                 (proclaim '(optimize (safety 1))))
+                 (proclaim '(optimize (safety 1) (debug 3))))
 (IN-PACKAGE "BOOT") 
 (PROCLAIM '(FTYPE (FUNCTION (*) (VALUES T T)) READLINE)) 
 (PROCLAIM
@@ -1048,7 +1048,7 @@
             |zeroOneConversion| XDR-STREAM-NAME |listOfSharpVars|
             |asyArgs| |getCatAncestors| |pfLinePosn| |checkRecordHash|
             |compileAsharpLispCmd| |asyArg| |makeCompactDirect1,fn|
-            |asyFindAttrs| |checkIsValidType| |asyAncestors|
+            |checkIsValidType| |asyAncestors|
             |axFormatPred| |asyAncestorList| |asyTypeJoinItem| SHUT
             |pfCharPosn| SETLETPRINTFLAG |fileConstructors|
             |isLowerCaseLetter| |isAlmostSimple| |depthAssoc|
@@ -1068,7 +1068,7 @@
             FOAM::PROCESS-IMPORT-ENTRY |infovec| |stripType| |ltrace|
             |asyLooksLikeCatForm?| |zeroOneConvertAlist|
             |checkArguments| |deconstructT| |asyCosigType| |dqUnitCopy|
-            |mkAliasList| |checkTexht| |dbMkForm| |attribute?| |trace|
+            |mkAliasList| |checkTexht| |dbMkForm| |trace|
             |asMakeAlistForFunction| |dqUnit| |optFunctorPROGN|
             |dbInfoSig| |compileAsharpCmd| TRARGPRINT |modemapToAx|
             MSORT |getAttributesFromCATEGORY| |formatApplication|

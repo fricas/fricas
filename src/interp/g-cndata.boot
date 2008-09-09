@@ -58,9 +58,6 @@ getCDTEntry(info,isName) ==
     NIL
   entry
  
-attribute? name == 
-        MEMQ(name, _*ATTRIBUTES_*)
- 
 abbreviation? abb ==
   -- if it is an abbreviation, return the corresponding name
   GETDATABASE(abb,'CONSTRUCTOR)

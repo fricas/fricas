@@ -352,8 +352,6 @@ asyMakeOperationAlist(con,proplist, key) ==
     id = "%%" =>
       opOf form = con => nil
       y := asyAncestors form
-      [attrs, na] := asyFindAttrs y
-      y := na
       if opOf(y)^=con then ancestorAlist := [ [y,:true],:ancestorAlist]
     idForm   :=
       form is ['Apply,'_-_>,source,target] => [id,:asyArgs source]
@@ -953,27 +951,10 @@ asyCATEGORY x ==
     operations := ops
   exportPart :=
     ['CATEGORY,'domain,:"APPEND"/[asyCatItem y for y in operations]]
-  [attribs, na] := asyFindAttrs joins
-  joins := na
   cats := "append"/[asyCattran c for c in cats]
-  [a, na] := asyFindAttrs cats
-  cats := na
-  attribs := APPEND(attribs, a)
-  attribs := [['ATTRIBUTE, x] for x in attribs]
-  exportPart := [:exportPart,:attribs]
-  joins or cats or attribs =>
+  joins or cats =>
     ['Join,:joins,:cats, exportPart]
   exportPart
-
-asyFindAttrs l ==
-  attrs := []
-  notattrs := []
-  for x in l repeat 
-    x0 := x
-    while CONSP x repeat x := CAR x
-    if MEMQ(x, _*ATTRIBUTES_*) then attrs := [:attrs, x]
-    else notattrs := [:notattrs, x0]
-  [attrs, notattrs]
 
 simpCattran x ==
   u := asyCattran x

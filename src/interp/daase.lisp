@@ -1705,11 +1705,7 @@ database.
                 (set asharpname
                      (if (getdatabase bootname 'niladic)
                          (|makeLazyOldAxiomDispatchDomain| (list bootname))
-                       (cons '|runOldAxiomFunctor|  bootname))))
-          (when (|attribute?| bootname)
-                (set asharpname (|makeLazyOldAxiomDispatchDomain| bootname))))))
-          
-                 
+                       (cons '|runOldAxiomFunctor|  bootname)))))))
 
 ;(defun foam::process-export-entry (entry)
 ;  (let* ((asharpname (car entry))

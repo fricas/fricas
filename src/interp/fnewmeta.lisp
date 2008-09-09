@@ -55,17 +55,21 @@
                          (CONS (POP-STACK-3)
                                (CONS (POP-STACK-2)
                                      (CONS (POP-STACK-1) NIL))))))
-          (AND (MATCH-ADVANCE-STRING "(") (MUST (|PARSE-Category|))
-               (BANG FIL_TEST
-                     (OPTIONAL
-                         (STAR REPEATOR
-                               (AND (MATCH-ADVANCE-STRING ";")
-                                    (MUST (|PARSE-Category|))))))
-               (MUST (MATCH-ADVANCE-STRING ")"))
-               (PUSH-REDUCTION '|PARSE-Category|
-                   (CONS 'CATEGORY
-                         (CONS (POP-STACK-2)
-                               (APPEND (POP-STACK-1) NIL)))))
+          (AND (MATCH-ADVANCE-STRING "(")
+               (MUST (OR (AND (MATCH-ADVANCE-STRING ")")
+                              (PUSH-REDUCTION '|PARSE-Category|
+                                  (CONS 'CATEGORY NIL)))
+                         (AND (|PARSE-Category|)
+                              (BANG FIL_TEST
+                                    (OPTIONAL
+                                     (STAR REPEATOR
+                                      (AND (MATCH-ADVANCE-STRING ";")
+                                       (MUST (|PARSE-Category|))))))
+                              (MUST (MATCH-ADVANCE-STRING ")"))
+                              (PUSH-REDUCTION '|PARSE-Category|
+                                  (CONS 'CATEGORY
+                                        (CONS (POP-STACK-2)
+                                         (APPEND (POP-STACK-1) NIL))))))))
           (AND (ACTION (SETQ G1 (LINE-NUMBER CURRENT-LINE)))
                (|PARSE-Application|)
                (MUST (OR (AND (MATCH-ADVANCE-STRING ":")
