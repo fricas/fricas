@@ -922,7 +922,7 @@ coerceInt1(triple,t2) ==
     ml := [target,:margl]
     intName :=
       or/[mm for mm in mms | (mm is [[., :ml1],oldName,:.]
-        and compareTypeLists(ml1,ml))] => [oldName]
+        and compareTypeLists(ml1,ml))] => [COERCE(oldName, 'FUNCTION)]
       NIL
     null intName => NIL
     objNewWrap(intName,t2)

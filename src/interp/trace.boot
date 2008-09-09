@@ -463,7 +463,7 @@ spadTrace(domain,options) ==
     $tracedModemap:= subTypes(mm,constructSubst(domain.0))
     traceName:= BPITRACE(first domain.n,alias, options)
     NCONC(pair,[listOfVariables,first domain.n,traceName,alias])
-    RPLAC(first domain.n,traceName)
+    RPLAC(first domain.n,SYMBOL_-FUNCTION traceName)
   sigSlotNumberAlist:= [x for x in sigSlotNumberAlist | CDDDR x]
   if $reportSpadTrace then
     if $traceNoisely then printDashedLine()

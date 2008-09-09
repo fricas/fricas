@@ -226,7 +226,7 @@ showAttributes dom ==
 
 showGoGet dom ==
   numvec := CDDR dom.4
-  for i in 6..MAXINDEX dom | (slot := dom.i) is ['newGoGet,dol,index,:op] repeat
+  for i in 6..MAXINDEX dom | (slot := dom.i) is [=FUNCTION newGoGet,dol,index,:op] repeat
     numOfArgs := numvec.index
     whereNumber := numvec.(index := index + 1)
     signumList := 

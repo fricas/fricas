@@ -838,10 +838,17 @@ LP  (COND ((NULL X)
 (defmacro SPADCONST (&rest L) (cons 'qrefelt L))
  
 (defmacro SPADCALL (&rest L)
-   (let ((args (butlast l)) (fn (car (last l))) (gi (gensym)))
+  (let ((args (butlast l)) 
+	(fn (car (last l))) 
+	(gi (gensym)))
      ;; (values t) indicates a single return value
-     `(let ((,gi ,fn)) (the (values t) (funcall (car ,gi) ,@args (cdr ,gi))))
-     ))
+    `(let ((,gi ,fn)) 
+       (the (values t) 
+	 (funcall 
+	  (the (function ,(make-list (length l) :initial-element t) t) 
+	    (car ,gi))
+	  ,@args 
+	  (cdr ,gi))))))
  
 (defun LISTOFATOMS (X)
   (COND ((NULL X) NIL)

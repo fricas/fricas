@@ -107,9 +107,9 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
         nil
       slot := domain.loc
       null atom slot =>
-        EQ(QCAR slot,'newGoGet) => someMatch:=true
+        EQ(QCAR slot,FUNCTION newGoGet) => someMatch:=true
                    --treat as if operation were not there
-        --if EQ(QCAR slot,'newGoGet) then
+        --if EQ(QCAR slot, function newGoGet) then
         --  UNWIND_-PROTECT --break infinite recursion
         --    ((SETELT(domain,loc,'skip); slot := replaceGoGetSlot QCDR slot),
         --      if domain.loc = 'skip then domain.loc := slot)

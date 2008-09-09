@@ -293,12 +293,14 @@ getMappingArgValue(a,t,m is ['Mapping,:ml]) ==
       a.0 := name
       mmS := selectLocalMms(a,name,rest ml, nil)
       or/[mm for mm in mmS |
-        (mm is [[., :ml1],oldName,:.] and ml=ml1)] => MKQ [oldName]
+        (mm is [[., :ml1],oldName,:.] and ml=ml1)] => 
+            MKQ [COERCE(oldName, 'FUNCTION)]
       NIL
     una
   mmS := selectLocalMms(a,una,rest ml, nil)
   or/[mm for mm in mmS |
-    (mm is [[., :ml1],oldName,:.] and ml=ml1)] => MKQ [oldName]
+    (mm is [[., :ml1],oldName,:.] and ml=ml1)] => 
+        MKQ [COERCE(oldName, 'FUNCTION)]
   NIL
 
 getArgValueComp2(arg, type, cond, se?, opName) ==

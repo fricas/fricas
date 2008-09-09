@@ -951,9 +951,9 @@ getDomainOpTable(dom,fromIfTrue,:options) ==
         cell := compiledLookup(op,sig1,dom) =>
           [f,:r] := cell
           f = 'nowhere => 'nowhere           --see replaceGoGetSlot
-          f = 'makeSpadConstant => 'constant
+          f = function makeSpadConstant => 'constant
           f = function IDENTITY => 'constant
-          f = 'newGoGet => SUBST('_$,domname,devaluate CAR r)
+          f = function newGoGet => SUBST('_$,domname,devaluate CAR r)
           null VECP r => systemError devaluateList r
           SUBST('_$,domname,devaluate r)
         'nowhere

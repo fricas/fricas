@@ -175,9 +175,9 @@ getLookupFun infovec ==
 stuffSlot(dollar,i,item) ==
   dollar.i :=
     atom item => [SYMBOL_-FUNCTION item,:dollar]
-    item is [n,:op] and INTEGERP n => ['newGoGet,dollar,:item]
+    item is [n,:op] and INTEGERP n => [FUNCTION newGoGet,dollar,:item]
     item is ['CONS,.,['FUNCALL,a,b]] =>
-      b = '$ => ['makeSpadConstant,eval a,dollar,i]
+      b = '$ => [FUNCTION makeSpadConstant,eval a,dollar,i]
       sayBrightlyNT '"Unexpected constant environment!!"
       pp devaluate b
       nil

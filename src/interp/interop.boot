@@ -348,7 +348,7 @@ isDomain a ==
   PAIRP a and VECP(CAR a) and
     member(CAR(a).0, $domainTypeTokens)
 
--- following is interpreter interfact to function lookup
+-- following is interpreter interface to function lookup
 -- perhaps it should always work with hashcodes for signature?
 --------------------> NEW DEFINITION (override in nrungo.boot.pamphlet)
 NRTcompiledLookup(op,sig,dom) ==
@@ -572,9 +572,9 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
         nil
       slot := domain.loc
       null atom slot =>
-        EQ(QCAR slot,'newGoGet) => someMatch:=true
+        EQ(QCAR slot,FUNCTION newGoGet) => someMatch:=true
                    --treat as if operation were not there
-        --if EQ(QCAR slot,'newGoGet) then
+        --if EQ(QCAR slot, function newGoGet) then
         --  UNWIND_-PROTECT --break infinite recursion
         --    ((SETELT(domain,loc,'skip); slot := replaceGoGetSlot QCDR slot),
         --      if domain.loc = 'skip then domain.loc := slot)
@@ -806,7 +806,8 @@ evalSlotDomain(u,dollar) ==
   u is ['ELT,d,n] =>
     dom := evalSlotDomain(d,dollar)
     slot := dom . n
-    slot is ['newGoGet,:env] => replaceGoGetSlot env
+    slot is [=FUNCTION newGoGet,:env] => 
+        replaceGoGetSlot env
     slot
   u is [op,:argl] => APPLY(op,[evalSlotDomain(x,dollar) for x in argl])
   systemErrorHere '"evalSlotDomain"
