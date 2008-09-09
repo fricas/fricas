@@ -704,6 +704,7 @@ axiom_quiet_flags
 axiom_eval_flags
 axiom_fasl_type
 axiom_fasl_type2
+fricas_algebra_optimization
 axiom_all_prerequisites
 axiom_c_runtime
 CPP
@@ -1319,17 +1320,20 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-gcl   build GCL from FriCAS source
+  --enable-gcl            build GCL from FriCAS source
   --enable-aldor          build an interface to the Aldor compiler
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-included-noweb    build noweb from included sources
- --with-lisp=L         use L as Lisp platform
-  --with-lisp-flavor=F  your Lisp is brand F
-                   where F if one F gcl clisp sbcl ecl openmcl
-                   gcl clisp sbcl ecl can be autodetected
+  --with-included-noweb   build noweb from included sources
+  --with-lisp=L           use L as Lisp platform
+  --with-lisp-flavor=F    your Lisp is brand F
+                          where F if one F gcl clisp sbcl ecl openmcl
+                          gcl clisp sbcl ecl can be autodetected
+  --with-algebra-optimization=S
+                          use S as Lisp optimize declaration for compiling the
+                          algebra
   --with-x                use the X Window System
 
 Some influential environment variables:
@@ -4115,6 +4119,17 @@ case $fricas_lisp_flavor in
     *)
      ;;
 esac
+
+
+
+fricas_algebra_optimization=nil
+
+
+# Check whether --with-algebra-optimization was given.
+if test "${with_algebra_optimization+set}" = set; then
+  withval=$with_algebra_optimization; fricas_algebra_optimization=$withval
+fi
+
 
 
 
@@ -9581,6 +9596,7 @@ axiom_quiet_flags!$axiom_quiet_flags$ac_delim
 axiom_eval_flags!$axiom_eval_flags$ac_delim
 axiom_fasl_type!$axiom_fasl_type$ac_delim
 axiom_fasl_type2!$axiom_fasl_type2$ac_delim
+fricas_algebra_optimization!$fricas_algebra_optimization$ac_delim
 axiom_all_prerequisites!$axiom_all_prerequisites$ac_delim
 axiom_c_runtime!$axiom_c_runtime$ac_delim
 CPP!$CPP$ac_delim
@@ -9588,7 +9604,6 @@ GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 axiom_c_runtime_extra!$axiom_c_runtime_extra$ac_delim
 XMKMF!$XMKMF$ac_delim
-X_CFLAGS!$X_CFLAGS$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -9630,6 +9645,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+X_CFLAGS!$X_CFLAGS$ac_delim
 X_PRE_LIBS!$X_PRE_LIBS$ac_delim
 X_LIBS!$X_LIBS$ac_delim
 X_EXTRA_LIBS!$X_EXTRA_LIBS$ac_delim
@@ -9649,7 +9665,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 17; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 18; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

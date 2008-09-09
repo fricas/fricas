@@ -135,7 +135,7 @@ AC_SUBST(AUTO_GOOD_SHELL)
 
 axiom_build_noweb=
 AC_ARG_WITH([included-noweb],
-            [  --with-included-noweb    build noweb from included sources],
+            [  --with-included-noweb   build noweb from included sources],
             [case $withval in
                 yes) if test -f "$axiom_top_srcdir/zips/noweb-2.10a.tgz" ; then
                          axiom_build_noweb=yes
@@ -180,12 +180,14 @@ AC_SUBST(NOWEAVE)
 ## We will default to GCL later, if no lisp implementation is specified.
 fricas_lisp=
 fricas_lisp_flavor=unknown
-AC_ARG_WITH([lisp], [ --with-lisp=L         use L as Lisp platform],
+AC_ARG_WITH([lisp], 
+            [  --with-lisp=L           use L as Lisp platform],
               [fricas_lisp=$withval])
 ## If --enable-gcl is specified, we need to check for coonsistency
 axiom_include_gcl=
 if test -z $fricas_lisp ; then
-    AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from FriCAS source],
+    AC_ARG_ENABLE([gcl], 
+                  [  --enable-gcl            build GCL from FriCAS source],
                   [case $enableval in
                        yes|no) axiom_include_gcl=$enableval ;;
                        *) AC_MSG_ERROR([erroneous value for --enable-gcl]) ;;
@@ -230,9 +232,9 @@ case $axiom_include_gcl,$fricas_lisp in
 esac
 
 AC_ARG_WITH([lisp-flavor],
-            [  --with-lisp-flavor=F  your Lisp is brand F
-                   where F if one F gcl clisp sbcl ecl openmcl
-                   gcl clisp sbcl ecl can be autodetected],
+            [  --with-lisp-flavor=F    your Lisp is brand F
+                          where F if one F gcl clisp sbcl ecl openmcl
+                          gcl clisp sbcl ecl can be autodetected],
             [case $withval in
             gcl|clisp|sbcl|ecl|openmcl)
                    fricas_lisp_flavor=$withval
@@ -358,6 +360,16 @@ case $fricas_lisp_flavor in
 esac
 AC_SUBST(axiom_fasl_type)
 AC_SUBST(axiom_fasl_type2)
+
+fricas_algebra_optimization=nil
+
+AC_ARG_WITH([algebra-optimization],
+            [  --with-algebra-optimization=S
+                          use S as Lisp optimize declaration for compiling the 
+                          algebra],
+            [fricas_algebra_optimization=$withval])
+
+AC_SUBST(fricas_algebra_optimization)
 
 AC_SUBST(axiom_all_prerequisites)
 

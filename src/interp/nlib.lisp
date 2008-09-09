@@ -355,7 +355,14 @@ do the compile, and then rename the result back to [[code.o]].
         (apply #'compile-file fn opts))
     (untrace compiler::fast-link-proclaimed-type-p compiler::t1defun)))
 #-:AKCL
-(define-function 'compile-lib-file #'compile-file)
+(define-function 'compile-lib-file 
+  (if FRICAS-LISP::algebra-optimization
+      #'(lambda (f)
+	  (locally (proclaim (cons 'optimize 
+				   FRICAS-LISP::algebra-optimization)))
+	  (compile-file f))
+    #'compile-file))
+    
 
 ;; (RDROPITEMS filearg keys) don't delete, used in files.spad
 (defun rdropitems (filearg keys &aux (ctable (getindextable filearg)))
