@@ -132,31 +132,6 @@
 (defun |compileQuietly| (fn)
     (comp_quietly_using_driver #'COMP370 fn))
 
-(defun COMP-1 (X)
-  (let* ((FNAME (car X))
-         ($FUNNAME FNAME)
-         ($FUNNAME_TAIL (LIST FNAME))
-         (LAMEX (second X))
-         ($closedfns nil))
-    (declare (special $FUNNAME $FUNNAME_TAIL $CLOSEDFNS))
-    (setq LAMEX (COMP-TRAN LAMEX))
-    (COMP-NEWNAM LAMEX)
-    (if (fboundp FNAME)
-        (format t "~&~%;;;     ***       ~S REDEFINED~%" FNAME))
-    (CONS (LIST FNAME LAMEX) $CLOSEDFNS)))
-
-(defun Comp-2 (args &aux name type argl bodyl junk)
-    (dsetq (NAME (TYPE ARGL . BODYL) . JUNK) args)
-    (cond (JUNK (MOAN (format nil "******pren error in (~S (~S ...) ...)" NAME TYPE)))
-          ((eq TYPE 'SLAM) (COMP-SLAM NAME ARGL BODYL))
-          ((LASSQ NAME |$clamList|) (|compClam| NAME ARGL BODYL |$clamList|))
-          ((eq TYPE 'SPADSLAM) (COMP-SPADSLAM NAME ARGL BODYL))
-          ((setq BODYL (LIST NAME (CONS TYPE (CONS ARGL BODYL))))
-           (if |$PrettyPrint| (pprint bodyl))
-           (if (null $COMPILE) (SAY "No Compilation")
-               (COMP370 (LIST BODYL)))
-           NAME)))
-
 ;; used to be called POSN - but that interfered with a CCL function
 (DEFUN POSN1 (X L) (position x l :test #'equal))
 

@@ -457,3 +457,31 @@ bootTransform e ==
   $labelsForGO : local := NIL
   bootLabelsForGO e
   bootTran e
+
+-- from comp.lisp
+
+COMP_-1(x) ==
+  [fname, lamex, :.] := x
+  $FUNNAME : local := fname
+  $FUNNAME__TAIL : local := [fname]
+  $CLOSEDFNS : local := nil
+  lamex := COMP_-TRAN lamex
+  COMP_-NEWNAM lamex
+  if FBOUNDP(fname) then
+      FORMAT(true, '"~&~%;;;     ***       ~S REDEFINED~%", fname)
+  [[fname, lamex], :$CLOSEDFNS]
+
+COMP_-2(args) ==
+    [name, [type, argl, :bodyl], :junk] := args
+    junk => MOAN (FORMAT(nil, '"******pren error in (~S (~S ...) ...)",_
+                         name, type))
+    type is "SLAM" => COMP_-SLAM(name, argl, bodyl)
+    LASSQ(name, $clamList) => compClam(name, argl, bodyl, $clamList)
+    type is "SPADSLAM" => COMP_-SPADSLAM(name, argl, bodyl)
+    bodyl := [name, [type, argl, :bodyl]]
+    if $PrettyPrint then PPRINT(bodyl)
+    if NULL($COMPILE) then
+      SAY '"No Compilation"
+    else
+      COMP370 [bodyl]
+    name

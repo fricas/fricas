@@ -550,7 +550,19 @@
                         BEFORE AFTER CONDITION BREAK TRACEDMODEMAP
                         BREAKCONDITION)
             (declare (special /ARGS))
-  (DCQ (NAME TYPE TRACECODE COUNTNAM TIMERNAM BEFORE AFTER CONDITION BREAK TRACEDMODEMAP BREAKCONDITION) OPTS)
+  (let ((x opts))
+       (setf NAME (ifcar x)              x (ifcdr x))
+       (setf TYPE (ifcar x)              x (ifcdr x))
+       (setf TRACECODE (ifcar x)         x (ifcdr x))
+       (setf COUNTNAM (ifcar x)          x (ifcdr x))
+       (setf TIMERNAM (ifcar x)          x (ifcdr x))
+       (setf BEFORE (ifcar x)            x (ifcdr x))
+       (setf AFTER (ifcar x)             x (ifcdr x))
+       (setf CONDITION (ifcar x)         x (ifcdr x))
+       (setf BREAK (ifcar x)             x (ifcdr x))
+       (setf TRACEDMODEMAP (ifcar x)     x (ifcdr x))
+       (setf BREAKCONDITION (ifcar x)    x (ifcdr x)))
+
   (|stopTimer|)
   (PROG (C V A NAME1 CURSTRM EVAL_TIME INIT_TIME NOT_TOP_LEVEL
          (/DEPTH (if (and (BOUNDP '/DEPTH) (numberp /depth)) (1+ /DEPTH) 1))

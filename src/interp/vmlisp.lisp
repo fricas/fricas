@@ -81,14 +81,8 @@
 (defmacro cvecp (x)
  `(stringp ,x))
 
-(defmacro dcq (&rest args)
- (cons 'setqp args))
-
 (defmacro difference (&rest args)
  `(- ,@args))
-
-(defmacro dsetq (&whole form pattern exp)
- (dodsetq form pattern exp))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun equable (x) ;;def needed to prevent recursion in def of eqcar
@@ -337,10 +331,6 @@
 (defmacro setelt (vec ind val)
  `(setf (elt ,vec ,ind) ,val))
 
-(defmacro setqp (&whole form pattern exp)
- (declare (ignore form))
-  `(,(dcqexp pattern '=) ,exp))
-
 (defmacro seq (&rest form)
   (let* ((body (reverse form))
          (val `(return-from seq ,(pop body))))
@@ -427,13 +417,19 @@
       (if (and (eqcar dectest 'declare) (eqcar (cadr dectest) 'special))
           (setq *decl* (cdr (cadr dectest)) body (cdr body))))
     (setq args (remove-fluids (cadr lamda)))
-    (cond ((and (eq ltype 'lambda) (simple-arglist args)) (setq nargs args))
-          (t (setq nargs (gensym))
-             (setq body `((dsetq ,args  ,nargs) ,@body))
-             (cond ((eq ltype 'lambda) (setq nargs `(&rest ,nargs &aux ,@*vars*)))
-                   ((eq ltype 'mlambda)
-                    (setq nargs `(&whole ,nargs &rest ,(gensym) &aux ,@*vars*)))
-                   (t (error "bad function type")))))
+    (cond ((not (eq ltype 'lambda)) (BREAK))
+          ((simple-arglist args) (setq nargs args))
+	  ((symbolp args)
+	       (setq nargs `(&rest ,args)))
+          (t 
+	     (let ((blargs (butlast args)))
+	          (setf nargs (last args))
+		  (setf blargs (append blargs (cons (car nargs) nil)))
+		  (setf nargs (cdr nargs))
+	          (if (not (and (every #'symbolp blargs) (symbolp nargs)))
+		      (BREAK))
+		  (setf args (last args))
+		  (setf nargs `(,@blargs &rest ,nargs)))))
     (cond (*decl* (setq body (cons `(declare (special ,@ *decl*)) body))))
     (setq body
           (cond ((eq ltype 'lambda) `(defun ,fname ,nargs . ,body))
@@ -877,86 +873,6 @@
 
 (defun eqsubstlist (new old list) (sublis (mapcar #'cons old new) list))
 
-; Gen code for SETQP expr
-
-(eval-when (compile load eval)
- (defun DCQEXP (FORM EQTAG)
-  (PROG (SV pvl avl CODE)
-        (declare (special pvl avl))
-        (setq SV (GENSYM))
-        (setq CODE (DCQGENEXP SV FORM EQTAG NIL))
-        (RETURN
-          `(LAMBDA (,sv)
-             (PROG ,pvl
-                   ,@code
-                   (RETURN 'true)
-                BAD (RETURN NIL) ) ))))
-)
-; Generate Expr code for DCQ
-(eval-when (compile load eval)
- (defun DCQGENEXP (SV FORM EQTAG QFLAG)
-  (PROG (D A I L C W)
-        (declare (special pvl avl))
-    (COND ((EQ FORM SV) (RETURN NIL))
-          ((IDENTP FORM) (RETURN `((setq ,form ,sv)) ))
-          ((simple-vector-p FORM)
-           (RETURN (SEQ
-             (setq L (length FORM))
-             (IF (EQ L 0)
-                 (RETURN (COND ((NULL QFLAG)
-                                `((cond ((not (simple-vector-p ,sv)) (go bad))))))))
-             (setq I (1- L))
-         LP  (setq A (elt FORM I))
-             (COND ((AND (NULL W) (OR (consp A) (simple-vector-p A)))
-                    (COND ((consp AVL) (setq W (car (RESETQ AVL (cdr AVL)))))
-                          ((setq PVL (CONS (setq W (GENSYM)) PVL))))))
-             (setq C (NCONC (COND ((IDENTP A) `((setq ,a (ELT ,sv ,i))))
-                                  ((OR (consp A) (simple-vector-p A))
-                                   `((setq ,w (ELT ,sv ,i))
-                                     ,@(dcqgenexp w a eqtag qflag))))
-                            C))
-             (if (EQ I 0) (GO RET))
-             (setq I (1- I))
-             (GO LP)
-         RET (if W (setq AVL (CONS W AVL)))
-             (COND ((NULL QFLAG)
-                    `((COND ((OR (NOT (simple-vector-p ,sv)) (< (length ,sv) ,l))
-                             (GO BAD)))
-                      ,@c))
-                   ('T C)))))
-          ((NOT (consp FORM)) (RETURN NIL))
-          ((AND EQTAG (EQ (car FORM) EQTAG))
-           (RETURN
-             (COND
-               ((OR (NOT (EQ 3 (LENGTH FORM))) (NOT (IDENTP (car (setq FORM (cdr FORM))))))
-                (MACRO-INVALIDARGS 'DCQ\/QDCQ FORM (MAKESTRING "invalid pattern.")))
-               (`((setq ,(car form) ,sv)  ,@(DCQGENEXP SV (CADR FORM) EQTAG QFLAG)))))))
-    (setq A (car FORM))
-    (setq D (cdr FORM))
-    (setq C (COND ((IDENTP A) `((setq ,a (CAR ,sv))))
-                  ((OR (consp A) (simple-vector-p A))
-                   (COND ((AND (NULL D) (IDENTP SV)) )
-                         ((COND ((consp AVL) (setq W (car (RESETQ AVL (cdr AVL)))))
-                                ((setq PVL (CONS (setq W (GENSYM)) PVL)) ) ) ) )
-                   (COND ((AND (consp A) EQTAG (EQ (car A) EQTAG))
-                          (DCQGENEXP (LIST 'CAR SV) A EQTAG QFLAG) )
-                         (`((setq ,(or w sv) (CAR ,sv))
-                            ,@(DCQGENEXP (OR W SV) A EQTAG QFLAG)))))))
-    (setq C (NCONC C (COND ((IDENTP D) `((setq ,d (CDR ,sv))))
-                           ((OR (consp D) (simple-vector-p D))
-                            (COND
-                              ((OR W (IDENTP SV)) )
-                              ((COND ((consp AVL)
-                                      (setq W (car (RESETQ AVL (cdr AVL)))) )
-                                     ((setq PVL (CONS (setq W (GENSYM)) PVL)) ) ) ) )
-                            (COND ((AND (consp D) EQTAG (EQ (car D) EQTAG))
-                                   (DCQGENEXP (LIST 'CDR SV) D EQTAG QFLAG) )
-                                  (`((setq ,(or w sv) (CDR ,sv))
-                                     ,@(DCQGENEXP (OR W SV) D EQTAG QFLAG))))))))
-    (COND (W (setq AVL (CONS W AVL))))
-    (RETURN (COND ((NULL QFLAG) `((COND ((ATOM ,sv) (GO BAD))) ,@c)) (C)))))
-)
-
 
 ; 23.0 Reading
 
@@ -1054,7 +970,10 @@
             ( (NOT (consp NEW-DEFINITION))
               NEW-DEFINITION )
             ( (AND
-                (DCQ (OP BV . BODY) NEW-DEFINITION)
+		(setf BODY (ifcdr (ifcdr NEW-DEFINITION)))
+		(or (progn (setf OP (car NEW-DEFINITION))
+		           (setf BV (car (cdr NEW-DEFINITION))))
+		    T)
                 (OR (EQ OP 'LAMBDA) (EQ OP 'MLAMBDA)))
               (COND
                 ( (NOT (MEMQ CURRENT-BINDING (FLAT-BV-LIST BV)))
@@ -1135,31 +1054,6 @@
 ; 97.0 Stuff In The Manual But Wierdly Documented
 
 (defun EBCDIC (x) (int-char x))
-
-;; This isn't really compatible but is as close as you can get in common lisp
-;; In place of ((one-of 1 2 3) l)  you should use
-;;   (funcall (one-of 1 2 3) l)
-
-(defun doDSETQ (form pattern exp)
-  (let (PVL AVL)
-    (declare (special PVL AVL))
-    (COND ((IDENTP PATTERN)
-           (LIST 'SETQ PATTERN EXP))
-          ((AND (NOT (consp PATTERN)) (NOT (simple-vector-p PATTERN)))
-           (MACRO-INVALIDARGS 'DSETQ FORM "constant target."))
-          ((let* ((SV (GENSYM))
-                  (E-PART (DCQGENEXP (LIST 'IDENTITY SV) PATTERN '= NIL)))
-             (setq e-part
-                   `(LAMBDA (,sv)
-                      (PROG ,pvl
-                            ,@e-part
-                            (RETURN ,sv)
-                         BAD (RETURN (SETQERROR ,sv)))))
-             `(,e-part ,exp))))))
-
-(defun SETQERROR (&rest FORM) (error (format nil "in destructuring ~S" FORM)))
-
-
 
 
 (defun MACRO-INVALIDARGS (NAME FORM MESSAGE)

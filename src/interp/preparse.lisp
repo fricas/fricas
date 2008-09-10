@@ -88,13 +88,19 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
         (SETQ |$docList| NIL)
         (SETQ |$maxSignatureLineNumber| 0)
         U))))
- 
+
+(defmacro DCQPAIR (x y)
+   (let ((sym (gensym)))
+     `(let ((,sym ,y))
+	    (setf ,(car x) (car ,sym))
+	    (setf ,(cdr x) (cdr ,sym)))))
+
 (defun PREPARSE1 (LineList)
  (PROG (($LINELIST LineList) $EchoLineStack NUM A I L PSLOC
         INSTRING PCOUNT COMSYM STRSYM OPARSYM CPARSYM N NCOMSYM
         (SLOC -1) (CONTINUE NIL)  (PARENLEV 0) (NCOMBLOCK ())
         (LINES ()) (LOCS ()) (NUMS ()) functor  )
- READLOOP (DCQ (NUM . A) (preparseReadLine LineList))
+ READLOOP (DCQPAIR (NUM . A) (preparseReadLine LineList))
          (cond ((atEndOfUnit A)
                 (PREPARSE-ECHO LineList)
                 (COND ((NULL LINES) (RETURN NIL))
@@ -220,7 +226,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
  
 (DEFUN SKIP-IFBLOCK (X)
    (PROG (LINE IND)
-     (DCQ (IND . LINE) (preparseReadLine1 X))
+     (DCQPAIR (IND . LINE) (preparseReadLine1 X))
       (IF (NOT (STRINGP LINE))  (RETURN (CONS IND LINE)))
       (IF (ZEROP (SIZE LINE)) (RETURN (SKIP-IFBLOCK X)))
       (COND ((CHAR= (ELT LINE 0) #\) )
@@ -243,7 +249,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
  
 (DEFUN SKIP-TO-ENDIF (X)
    (PROG (LINE IND)
-     (DCQ (IND . LINE) (preparseReadLine1 X))
+     (DCQPAIR (IND . LINE) (preparseReadLine1 X))
       (COND ((NOT (STRINGP LINE)) (RETURN (CONS IND LINE)))
             ((INITIAL-SUBSTRING LINE ")endif")
              (RETURN (preparseReadLine X)))
@@ -252,7 +258,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
  
 (DEFUN preparseReadLine (X)
     (PROG (LINE IND)
-      (DCQ (IND . LINE) (preparseReadLine1 X))
+      (DCQPAIR (IND . LINE) (preparseReadLine1 X))
       (COND ((NOT (STRINGP LINE)) (RETURN (CONS IND LINE))))
       (COND ((ZEROP (SIZE LINE))
              (RETURN (CONS IND LINE))))
