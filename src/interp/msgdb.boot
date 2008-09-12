@@ -243,9 +243,9 @@ SETANDFILEQ($msgdbNoBlanksBeforeGroup,['" ", " ", '"%", "%",_
 SETANDFILEQ($msgdbListPrims,'(%m %s %ce %rj "%m" "%s" "%ce" "%rj"))
 
 noBlankBeforeP word==
-    INTP word => false
+    INTEGERP word => false
     word in $msgdbNoBlanksBeforeGroup => true
-    if CVECP word and SIZE word > 1 then
+    if STRINGP word and SIZE word > 1 then
        word.0 = char '% and word.1 = char 'x => return true
        word.0 = char " " => return true
     (PAIRP word) and (CAR word in $msgdbListPrims) => true
@@ -256,9 +256,9 @@ SETANDFILEQ($msgdbNoBlanksAfterGroup,['" ", " ",'"%" ,"%",_
                           :$msgdbPrims,:$msgdbPunct])
 
 noBlankAfterP word==
-    INTP word => false
+    INTEGERP word => false
     word in $msgdbNoBlanksAfterGroup => true
-    if CVECP word and (s := SIZE word) > 1 then
+    if STRINGP word and (s := SIZE word) > 1 then
        word.0 = char '% and word.1 = char 'x => return true
        word.(s-1) = char " " => return true
     (PAIRP word) and (CAR word in $msgdbListPrims) => true

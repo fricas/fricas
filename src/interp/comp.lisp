@@ -176,7 +176,7 @@
          (G2 (GENSYM))
          (U (COND ((NOT ARGL) `(nil (,auxfn)))
                   ((NOT (CDR ARGL)) `((,g1)(,auxfn ,g1)))
-                  (`(,g1 (applx (function ,auxfn) ,g1)))))
+                  (`(,g1 (apply (function ,auxfn) ,g1)))))
          (ARG (CAR U))
          (APP (CADR U))
          (LAMEX

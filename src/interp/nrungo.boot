@@ -257,7 +257,7 @@ mkDiffAssoc(op,body,k,sharpPosition,sharpArg,diffSlot,vecname) ==
   body is [fn,:argl] =>
     (fn = op) and argl.(sharpPosition-1) is
       ['SPADCALL,=sharpArg,n,['ELT,=vecname,=diffSlot]] =>
-          NUMP n and n > 0 and n <= k =>
+          NUMBERP n and n > 0 and n <= k =>
             [[body,:$TriangleVariableList.n]]
           ['$failed]
     "union"/[mkDiffAssoc(op,x,k,sharpPosition,sharpArg,diffSlot,vecname) for x in argl]

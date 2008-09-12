@@ -68,18 +68,12 @@
 (defmacro add1 (x)
  `(1+ ,x))
 
-(defmacro applx (&rest args)
- `(apply ,@args))
-
 (defmacro assq (a b)
  `(assoc ,a ,b :test #'eq))
 
 (defmacro |char| (x)
   (if (and (consp x) (eq (car x) 'quote)) (character (cadr x))
     `(character ,x)))
-
-(defmacro cvecp (x)
- `(stringp ,x))
 
 (defmacro difference (&rest args)
  `(- ,@args))
@@ -152,9 +146,6 @@
       `(let ((,xx ,x))
          (and (consp ,xx) (qcdr ,xx))))))
 
-(defmacro intp (x)
- `(integerp ,x))
-
 (defmacro LASTNODE (l)
  `(last ,l))
 
@@ -162,9 +153,6 @@
  `(< ,@args))
 
 (defmacro makestring (a) a)
-
-(defmacro mapelt (f vec)
- `(map 'vector ,f ,vec))
 
 (defmacro maxindex (x)
  `(the fixnum (1- (the fixnum (length ,x)))))
@@ -180,9 +168,6 @@
 ;;; This may need adjustment in CCL where NEQ means (NOT (EQUAL ..)))
 #-:CCL
 (defmacro neq (a b) `(not (eq ,a ,b)))
-
-(defmacro nump (n)
- `(numberp ,n))
 
 (defmacro |opOf| (x) ;(if (atom x) x (qcar x))
   (if (atom x)
@@ -318,9 +303,6 @@
 (defmacro resetq (a b)
  `(prog1 ,a (setq ,a ,b)))
 
-(defmacro rnump (n)
- `(floatp ,n))
-
 (defmacro rvecp (v)
  `(typep ,v '(vector float)))
 
@@ -386,15 +368,6 @@
  (list ext::*gc-runtime* ext::*gc-walltime*))
 
 
-; 7.4 Using Macros
-
-; Used only in debug.lisp
-; Beats me how to simulate macro expansion "in the environment of sd"...:
-
-(defun MDEFX (arg item &optional sd)
- (declare (ignore sd))
-  (macroexpand `(,arg ,item)))
-
 ; 8.0 Operator Definition and Transformation
 
 ; 8.1 Definition and Transformation Operations
@@ -428,7 +401,6 @@
 		  (setf nargs (cdr nargs))
 	          (if (not (and (every #'symbolp blargs) (symbolp nargs)))
 		      (BREAK))
-		  (setf args (last args))
 		  (setf nargs `(,@blargs &rest ,nargs)))))
     (cond (*decl* (setq body (cons `(declare (special ,@ *decl*)) body))))
     (setq body
@@ -1019,7 +991,7 @@
           ( (VARP BV-LIST)
             (LIST BV-LIST) )
           ( (REFVECP BV-LIST)
-            (FLAT-BV-LIST (VEC2LIST (MAPELT #'FLAT-BV-LIST BV-LIST))) )
+	    (BREAK))
           ( (NOT (consp BV-LIST))
             NIL )
           ( (EQ '= (SETQ TMP1 (QCAR BV-LIST)))

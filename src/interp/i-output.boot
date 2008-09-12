@@ -1624,7 +1624,7 @@ subspan u ==
    atom CAAR u           and_
    not NUMBERP CAAR u    and_
    GETL(CAAR u, 'SUBSPAN)    )    =>
-   APPLX(GETL(CAAR u, 'SUBSPAN), LIST u)
+   APPLY(GETL(CAAR u, 'SUBSPAN), LIST u)
   MAX(subspan first u, subspan rest u)
 
 agggsub u == subspan rest u
@@ -1636,7 +1636,7 @@ superspan u ==
    atom CAAR u             and_
    not NUMBERP CAAR u      and_
    GETL(CAAR u, 'SUPERSPAN)    )    =>
-   APPLX(GETL(CAAR u, 'SUPERSPAN), LIST u)
+   APPLY(GETL(CAAR u, 'SUPERSPAN), LIST u)
   MAX(superspan first u, superspan rest u)
 
 agggsuper u == superspan rest u

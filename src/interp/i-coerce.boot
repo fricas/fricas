@@ -851,7 +851,8 @@ coerceInt1(triple,t2) ==
     sintp and (t2 = $PositiveInteger) and val > 0 => return objNew(val,t2)
     sintp and (t2 = $NonNegativeInteger) and val >= 0 => return objNew(val,t2)
 
-  typeIsASmallInteger(t2) and isEqualOrSubDomain(t1, $Integer) and INTP val =>
+  typeIsASmallInteger(t2) and isEqualOrSubDomain(t1, $Integer)_
+      and INTEGERP val =>
     SINTP val => objNew(val,t2)
     NIL
 

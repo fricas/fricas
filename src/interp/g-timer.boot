@@ -86,11 +86,11 @@ makeLongStatStringByProperty _
   STRCONC(str, '" = ", total)
  
 normalizeStatAndStringify t ==
-  RNUMP t =>
+  FLOATP t =>
       t := roundStat t
       t = 0.0 => '"0"
       FORMAT(nil,'"~,2F",t)
-  INTP t =>
+  INTEGERP t =>
       K := 1024
       M := K*K
       t > 9*M => CONCAT(STRINGIMAGE((t + 512*K)/M), '"M")
@@ -99,12 +99,12 @@ normalizeStatAndStringify t ==
   STRINGIMAGE t
  
 significantStat t ==
-   RNUMP t => (t > 0.01)
-   INTP  t => (t > 100)
+   FLOATP t => (t > 0.01)
+   INTEGERP  t => (t > 100)
    true
  
 roundStat t ==
-  not RNUMP t => t
+  not FLOATP t => t
   (TRUNCATE (0.5 + t * 1000.0)) / 1000.0
  
 makeStatString(oldstr,time,abb,flag) ==

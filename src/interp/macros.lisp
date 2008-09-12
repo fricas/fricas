@@ -615,12 +615,6 @@ LP  (COND ((NULL X)
  
 (defmacro SPADDIFFERENCE (&rest x) `(- . ,x))
  
-; 12.5 Irrational and Transcendental Functions
- 
-; 12.5.1 Exponential and Logarithmic Functions
- 
-(define-function 'QSEXPT #'expt)
- 
 ; 12.6 Small Finite Field ops with vector trimming
  
 ;; following macros assume 0 <= x,y < z

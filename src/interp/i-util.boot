@@ -41,10 +41,10 @@ wrap x ==
   isWrapped x => x
   ['WRAPPED,:x]
 
-isWrapped x == x is ['WRAPPED,:.] or NUMBERP x or FLOATP x or CVECP x
+isWrapped x == x is ['WRAPPED,:.] or NUMBERP x or FLOATP x or STRINGP x
 
 unwrap x ==
-  NUMBERP x or FLOATP x or CVECP x => x
+  NUMBERP x or FLOATP x or STRINGP x => x
   x is ["WRAPPED",:y] => y
   x
 

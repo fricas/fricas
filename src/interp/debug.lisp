@@ -620,7 +620,7 @@
         (if (member '|before| BREAK :test #'eq)
             (|break| (LIST "Break on entering" '|%b| NAME1 '|%d| ":")))
         (if TIMERNAM (SETQ INIT_TIME (|startTimer|)))
-        (SETQ /VALUE (if (EQ TYPE 'MACRO) (MDEFX FUNCT /ARGS)
+        (SETQ /VALUE (if (EQ TYPE 'MACRO) (macroexpand FUNCT /ARGS)
                          (APPLY FUNCT /ARGS)))
         (|stopTimer|)
         (if TIMERNAM (SETQ EVAL_TIME (- (|clock|) INIT_TIME)) )

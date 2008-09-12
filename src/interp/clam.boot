@@ -93,7 +93,7 @@ compClam(op,argl,body,$clamList) ==
   g1:= GENSYM()  --argument or argument list
   [arg,computeValue] :=
     argl is [.] => [[g1],[auxfn,g1]]  --g1 is a parameter
-    [g1,['APPLX,['function,auxfn],g1]]          --g1 is a parameter list
+    [g1,['APPLY, ['function, auxfn], g1]]          --g1 is a parameter list
   cacheName:= INTERNL(op,'";AL")
   if $reportCounts=true then
     hitCounter:= INTERNL(op,'";hit")

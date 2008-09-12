@@ -440,7 +440,7 @@ numOfOccurencesOf(x,y) ==
       fn(x,first y,n)+fn(x,rest y,n)
  
 compilerMessage x ==
-  $PrintCompilerMessageIfTrue => APPLX("SAY",x)
+  $PrintCompilerMessageIfTrue => APPLY("SAY",x)
  
 printDashedLine() ==
   SAY
