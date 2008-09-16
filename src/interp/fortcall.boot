@@ -87,7 +87,7 @@ writeCFile(name,args,fortranArgs,dummies,decls,results,returnType,asps,fp) ==
   WRITE_-LINE('"  XDR xdrs;",fp)
   WRITE_-LINE('"  {",fp)
   if $addUnderscoreToFortranNames then
-    routineName := STRCONC(name, UNDERBAR))
+    routineName := STRCONC(name, UNDERBAR)
   else
     routineName := name
   -- If it is a function then give it somewhere to stick its result:
