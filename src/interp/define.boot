@@ -347,8 +347,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     signature':=
       [first signature,:[getArgumentModeOrMoan(a,form,$e) for a in argl]]
     $functorForm:= $form:= [$op,:argl]
-    if null first signature' then signature':=
-      modemap2Signature getModemap($form,$e)
+    if null first signature' then BREAK()
     target:= first signature'
     $e:= giveFormalParametersValues(argl,$e)
     [ds,.,$e]:= compMakeCategoryObject(target,$e) or
@@ -1055,14 +1054,6 @@ constructMacro (form is [nam,[lam,vl,body]]) ==
     stackSemanticError(["illegal parameters for macro: ",vl],nil)
   ["XLAM",vl':= [x for x in vl | IDENTP x],body]
  
-listInitialSegment(u,v) ==
-  null u => true
-  null v => nil
-  first u=first v and listInitialSegment(rest u,rest v)
-  --returns true iff u.i=v.i for i in 1..(#u)-1
- 
-modemap2Signature [[.,:sig],:.] == sig
- 
 uncons x ==
   atom x => x
   x is ["CONS",a,b] => [a,:uncons b]
@@ -1279,13 +1270,6 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
 --  compSingleCapsuleItem(x,predl,e)
  
 --% CATEGORY AND DOMAIN FUNCTIONS
-compContained(["CONTAINED",a,b],m,e) ==
-  BREAK()
-  [a,ma,e]:= comp(a,$EmptyMode,e) or return nil
-  [b,mb,e]:= comp(b,$EmptyMode,e) or return nil
-  isCategoryForm(ma,e) and isCategoryForm(mb,e) =>
-    (T:= [["CONTAINED",a,b],$Boolean,e]; convert(T,m))
-  nil
  
 compJoin(["Join",:argl],m,e) ==
   catList:= [(compForMode(x,$Category,e) or return 'failed).expr for x in argl]
@@ -1300,7 +1284,9 @@ compJoin(["Join",:argl],m,e) ==
                 atom y =>
                   isDomainForm(y,e) => LIST y
                   nil
-                y is ['LENGTH,y'] => [y,y']
+                y is ['LENGTH,y'] =>
+                  BREAK()
+                  [y,y']
                 LIST y
           x
         x is ["DomainSubstitutionMacro",pl,body] =>
@@ -1334,7 +1320,6 @@ compCategory(x,m,e) ==
     domainOrPackage,:l] =>
       $sigList: local := nil
       $atList: local := nil
-      $sigList:= $atList:= nil
       for x in l repeat compCategoryItem(x,nil)
       -- $atList ^= nil => BREAK()
       rep:= mkExplicitCategoryFunction(domainOrPackage,$sigList,$atList)

@@ -339,8 +339,6 @@ finalizeLisplib libName ==
   opsAndAtts:= getConstructorOpsAndAtts(
     $lisplibForm,kind,$lisplibModemap)
   lisplibWrite('"operationAlist",removeZeroOne CAR opsAndAtts,$libFile)
-  --lisplibWrite('"attributes",CDR opsAndAtts,$libFile)
-  --if kind='category then NRTgenInitialAttributeAlist CDR opsAndAtts
   if kind='category then
      $pairlis : local := [[a,:v] for a in rest $lisplibForm
                                  for v in $FormalMapVariableList]
@@ -348,8 +346,7 @@ finalizeLisplib libName ==
      NRTgenInitialAttributeAlist CDR opsAndAtts
   lisplibWrite('"superDomain",removeZeroOne $lisplibSuperDomain,$libFile)
   lisplibWrite('"signaturesAndLocals",
-    removeZeroOne mergeSignatureAndLocalVarAlists($lisplibSignatureAlist,
-                                    nil),$libFile)
+    removeZeroOne $lisplibSignatureAlist, $libFile)
   lisplibWrite('"attributes",removeZeroOne $lisplibAttributes,$libFile)
   lisplibWrite('"predicates",removeZeroOne  $lisplibPredicates,$libFile)
   lisplibWrite('"abbreviation",$lisplibAbbreviation,$libFile)
@@ -380,56 +377,16 @@ getPartialConstructorModemapSig(c) ==
   (s := getConstructorSignature c) => rest s
   throwEvalTypeMsg("S2IL0015",[c])
  
-mergeSignatureAndLocalVarAlists(signatureAlist, localVarAlist) ==
-  -- this function makes a single Alist for both signatures
-  -- and local variable types, to be stored in the LISPLIB
-  -- for the function being compiled
-  [[funcName,:[signature,:LASSOC(funcName,localVarAlist)]] for
-    [funcName, :signature] in signatureAlist]
- 
-Operators u ==
-  ATOM u => []
-  ATOM first u =>
-    answer:="union"/[Operators v for v in rest u]
-    MEMQ(first u,answer) => answer
-    [first u,:answer]
-  "union"/[Operators v for v in u]
- 
 getConstructorOpsAndAtts(form,kind,modemap) ==
   kind is 'category => getCategoryOpsAndAtts(form)
-  getFunctorOpsAndAtts(form,modemap)
+  getFunctorOpsAndAtts(form)
  
 getCategoryOpsAndAtts(catForm) ==
   -- returns [operations,:attributes] of CAR catForm
-  [transformOperationAlist getSlotFromCategoryForm(catForm,1),
-    :getSlotFromCategoryForm(catForm,2)]
+  [transformOperationAlist getSlotFromCategoryForm(catForm,1), nil]
  
-getFunctorOpsAndAtts(form,modemap) ==
-  [transformOperationAlist getSlotFromFunctor(form,1,modemap),
-    :getSlotFromFunctor(form,2,modemap)]
- 
-getSlotFromFunctor([name,:args],slot,[[.,target,:argMml],:.]) ==
-  slot = 1 => $lisplibOperationAlist
-  t := compMakeCategoryObject(target,$e) or
-      systemErrorHere '"getSlotFromFunctor"
-  t.expr.slot
- 
-getSlot1 domainName ==
-  $e: local:= $CategoryFrame
-  fn:= getLisplibName domainName
-  p := pathname [fn,$spadLibFT,'"*"]
-  not isExistingFile(p) =>
-    sayKeyedMsg("S2IL0003",[namestring p])
-    NIL
-  (sig := getConstructorSignature domainName) =>
-    [.,target,:argMml] := sig
-    for a in $FormalMapVariableList for m in argMml repeat
-      $e:= put(a,'mode,m,$e)
-    t := compMakeCategoryObject(target,$e) or
-      systemErrorHere '"getSlot1"
-    t.expr.1
-  sayKeyedMsg("S2IL0022",[namestring p,'"constructor modemap"])
-  NIL
+getFunctorOpsAndAtts(form) ==
+  [transformOperationAlist $lisplibOperationAlist, nil]
  
 transformOperationAlist operationAlist ==
   --  this transforms the operationAlist which is written out onto LISPLIBs.
@@ -460,10 +417,6 @@ transformOperationAlist operationAlist ==
     itemList:= [signatureItem,:LASSQ(op,newAlist)]
     newAlist:= insertAlist(op,itemList,newAlist)
   newAlist
- 
-sayNonUnique x ==
-  sayBrightlyNT '"Non-unique:"
-  pp x
  
 -- flattenOperationAlist operationAlist ==
 --   --new form is (<op> <signature> <slotNumber> <condition> <kind>)
@@ -524,15 +477,6 @@ sigsMatch(sig,sig1,domainForm) ==
     sig:= rest sig; sig1 := rest sig1
   sig or sig1 => nil
   true
- 
-findDomainSlotNumber(domain,op,sig) == --using slot 1 of the domain
-  nsig:=#sig
-  tail:= or/[r for [[op1,sig1],:r] in domain.1 | op=op1 and nsig=#sig1 and
-    and/[a=b or isSuperDomain(bustUnion b,bustUnion a,$CategoryFrame)
-      for a in sig for b in sig1]]
-  tail is [.,["ELT",.,n]] => n
-  systemErrorHere '"findDomainSlotNumber"
- 
  
 getConstructorModemap form ==
   GETDATABASE(opOf form, 'CONSTRUCTORMODEMAP)
@@ -615,6 +559,4 @@ isFunctor x ==
       else updateCategoryFrameForConstructor op
     get(op,'isFunctor,$CategoryFrame)
   nil
- 
- 
  

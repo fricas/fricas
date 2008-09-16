@@ -33,9 +33,6 @@
 (in-package "BOOT")
 ;;patches for now
 
-(defun |stripSpaces| (str)
-    (string-trim '(#\Space) str))
-
 ;; browser stuff:
 (defvar |$standard| 't)
 (defvar |$saturn| 'nil)
@@ -55,10 +52,6 @@
 
 (setq |$printTimeIfTrue| nil)
 
-
-(defmacro dribinit (streamvar)
-  `(if (is-console ,streamvar)
-       (setq ,streamvar *terminal-io*)))
 
 (defun clear-highlight ()
   (let ((|$displaySetValue| nil))
@@ -97,7 +90,6 @@
 (defun toplevel (&rest foo) (throw '|top_level| '|restart|))
 ;;(defun toplevel (&rest foo) (lisp::unwind))
 
-(define-function 'top-level #'toplevel)
 (define-function 'unwind #'|spadThrow|)
 (define-function 'resume #'|spadThrow|)
 
@@ -128,14 +120,9 @@
      (type (pathname-type input-file)))
     (cond
      ((string= type "boot")
-#-:CCL
       (boot input-file
          (setq lfile (make-pathname :type "lisp"
                            :defaults input-file)))
-#+:CCL
-      (boot input-file
-         (setq lfile (make-pathname :name (pathname-name input-file)
-                                :type "lisp")))
       (load lfile))
      ((string= type "lisp") (load input-file))
      ((string= type "bbin") (load input-file))
@@ -189,14 +176,8 @@
 
 (setq |$specialCharacters| |$plainRTspecialCharacters|)
 
-;; following in defined in word.boot
-(defun |bootFind| (word) ())
 ;; following 3 are replacements for g-util.boot
 (define-function '|isLowerCaseLetter| #'LOWER-CASE-P)
-(define-function '|isUpperCaseLetter| #'UPPER-CASE-P)
-(define-function '|isLetter| #'ALPHA-CHAR-P)
-
-
 
 
 (defvar *msghash* nil "hash table keyed by msg number")

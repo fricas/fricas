@@ -89,8 +89,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $globalImportStack := 
        [markKillAll x for x in rest $functorForm for typ in rest signature' 
            | GETDATABASE(opOf typ,'CONSTRUCTORKIND) = 'category]
-    if null first signature' then signature':=
-      modemap2Signature getModemap($form,$e)
+    if null first signature' then BREAK()
     target:= first signature'
     $e:= giveFormalParametersValues(argl,$e)
     [ds,.,$e]:= compMakeCategoryObject(target,$e) or
