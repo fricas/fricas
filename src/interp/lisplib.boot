@@ -383,10 +383,10 @@ getConstructorOpsAndAtts(form,kind,modemap) ==
  
 getCategoryOpsAndAtts(catForm) ==
   -- returns [operations,:attributes] of CAR catForm
-  [transformOperationAlist getSlotFromCategoryForm(catForm,1), nil]
+  [transformOperationAlist getSlotFromCategoryForm(catForm,1)]
  
 getFunctorOpsAndAtts(form) ==
-  [transformOperationAlist $lisplibOperationAlist, nil]
+  [transformOperationAlist $lisplibOperationAlist]
  
 transformOperationAlist operationAlist ==
   --  this transforms the operationAlist which is written out onto LISPLIBs.
