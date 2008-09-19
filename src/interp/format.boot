@@ -433,14 +433,80 @@ form2String1 u ==
   -- fortranCleanUp exp2Fort1 [op,:argl]
   -- somewhat works, but causes regression
   -- fortranCleanUp exp2Fort1 exp2FortOptimize [op,:argl]
-  isBinaryInfix op => binop2String [op,:argl]
+  u1 is ["$elt", t, f] =>
+     concat(form2String1 f, '"$", form2String1 t)
+  #argl = 2 and (isBinaryInfix op or op = "::" or op = '"::"_
+     or op = "@" or op = '"@" or op = "pretend" or op = '"pretend") =>
+          binop2String [op,:argl]
   application2String(op,[form2String1 x for x in argl], u1)
 
 binop2String x ==
-    $exp2FortTempVarIndex : local := 0
-    $fortName : fluid := newFortranTempVar()
-    $fortInts2Floats : fluid := nil
-    fortranCleanUp exp2Fort1 exp2FortOptimize x
+    $curExpr : local := x
+    x is ["=", arg1, arg2] or x is ['"=", arg1, arg2] =>
+        concat(sumOrParen(arg1), '"=", sumOrParen(arg2))
+        sumOrParen(x)
+    sumOrParen(x)
+
+sumOrParen(x) ==
+   x is [op, arg1, arg2] =>
+       op = "+" or op = '"+" =>
+	   concat(sumOrParen(arg1), '"+", productOrParen(arg2))
+       op = "-" or op = '"-" =>
+           concat(sumOrParen(arg1), '"-", productOrParen(arg2))
+       op = "/" or op = '"/" =>
+           concat(appOrParen(arg1), '"/", appOrParen(arg2))
+       productOrParen(x)
+   productOrParen(x)
+
+productOrParen(x) ==
+   x is [op, arg1, arg2] =>
+       op = "*" or op ='"*" =>
+           concat(productOrParen(arg1), '"*",  powerOrParen(arg2))
+       powerOrParen(x)
+   powerOrParen(x)
+
+powerOrParen(x) ==
+   x is [op, arg1, arg2] =>
+      op = "**" or op = '"**" or op = "^" or op = '"^"  =>
+           concat(coerceOrParen(arg1), '"^", coerceOrParen(arg2))
+      coerceOrParen(x)
+   coerceOrParen(x)
+
+coerceOrParen(x) ==
+   x is [op, arg1, arg2] =>
+      op = "::" or op = '"::" =>
+           concat(coerceOrParen(arg1), '"::", appOrParen(arg2))
+      op = "@" or op = '"@" =>
+           concat(coerceOrParen(arg1), '"@", appOrParen(arg2))
+      op = "pretend" or op = '"pretend" =>
+           concat(coerceOrParen(arg1), '" ", '"pretend", '" ",_
+	           appOrParen(arg2))
+      appOrParen(x)
+   appOrParen(x)
+
+appOrParen(x) ==
+   SYMBOLP(x) => formWrapId x
+   INTEGERP(x) => WRITE_-TO_-STRING x
+   -- Kludge to avoid extra parentheses printing a SparseUnivariatePolynomial
+   x = '"?" => formWrapId x
+   ATOM(x) => concat('"(", form2String1(x), '")")
+   [op, :argl] := x
+   (op = "-" or op = '"-") and #argl = 1 =>
+       concat('"(", '"-", appOrParen(first argl), '")")
+   EQ(x, $curExpr) => BREAK()
+   op is ["$elt", f, t] =>
+       form2String1 x
+   -- Put parenthesis around anything special
+   not(SYMBOLP op) or GET(op, "Led") or GET(op, "Nud")_
+     or op= 'mkCategory or op = "SEGMENT" _
+     or op = 'construct or op = 'COLLECT or op = "SIGNATURE"_
+     or op = 'BRACKET or op = 'AGGLST or op = "ATTRIBUTE"_
+     or op = "#" =>
+        concat('"(", form2String1(x), '")")
+   op = "Zero" => '"0"
+   op = "One" => '"1"
+   form2String1 x
+
 
 formWrapId id == 
   $formatSigAsTeX = 1 => id
@@ -622,12 +688,15 @@ isInternalFunctionName(op) ==
   SUBSTRING(op',s,e-s)
 
 application2String(op,argl, linkInfo) ==
+  op is ["$elt", t, f] =>
+      concat(application2String(f, argl, linkInfo), '"$", _
+             form2String1 t)
   null argl =>
     (op' := isInternalFunctionName(op)) => op'
     app2StringWrap(formWrapId op, linkInfo)
   1=#argl =>
     first argl is ["<",:.] => concat(op,first argl)
-    concat(app2StringWrap(formWrapId op, linkInfo)," ",first argl)
+    concat(app2StringWrap(formWrapId op, linkInfo), '"(", first argl, '")")
 --op in '(UP SM) =>
 --  newop:= (op = "UP" => "P";"M")
 --  concat(newop,concat(lbrkSch(),argl.0,rbrkSch(),argl.1))
