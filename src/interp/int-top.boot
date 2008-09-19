@@ -72,15 +72,18 @@ and then tail-recursively call [[intloopReadConsole]].
 )package "BOOT"
 
 -- User function to call when performing interactive input or output.
--- $ioHook is given one argument: symbol identifying curent i/o event
---
+
+-- $ioHook receives two arguments, namely a symbol identifying curent i/o
+-- event, and a list (or nil) containing optional arguments, depending on the
+-- event.
+
 -- One possible way to use it is:
--- )lisp (setf |$ioHook| (lambda (x) (format t "<~S>~%" x)))
---
+-- )lisp (setf |$ioHook| (lambda (x arg) (format t "<~S>~%" x)))
+
 DEFPARAMETER($ioHook, nil)
 
-ioHook(x) ==
-   if $ioHook then FUNCALL($ioHook, x)
+ioHook(x, :args) ==
+   if $ioHook then FUNCALL($ioHook, x, args)
 
 --% INTERPRETER TOP LEVEL
 
@@ -152,7 +155,8 @@ SpadInterpretStream(str, source, interactive?) ==
     $promptMsg             : local := 'S2CTP023
  
     interactive? =>
-                PRINC(MKPROMPT())
+--  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
+                princPrompt()
                 intloopReadConsole('"", str)
                 []
     intloopInclude (source,0)
@@ -188,23 +192,23 @@ intloopReadConsole(b, n)==
     ioHook("endOfReadLine")
     not STRINGP a => leaveScratchpad()
     #a=0 =>
-             PRINC(MKPROMPT())
+             princPrompt()
              intloopReadConsole('"", n)
     $DALYMODE and intloopPrefix?('"(",a) =>
             intnplisp(a)
-            PRINC(MKPROMPT())
+            princPrompt()
             intloopReadConsole('"",n)
     pfx := stripSpaces intloopPrefix?('")fi",a)
     pfx and ((pfx = '")fi") or (pfx = '")fin")) => []
     b = '"" and (d := intloopPrefix?('")", a)) =>
              setCurrentLine d
              c := ncloopCommand(d,n)
-             PRINC(MKPROMPT())
+             princPrompt()
              intloopReadConsole('"", c)
     a:=CONCAT(b,a)
     ncloopEscaped a => intloopReadConsole(SUBSEQ(a, 0, (LENGTH a) - 1),n)
     c := intloopProcessString(a, n)
-    PRINC(MKPROMPT())
+    princPrompt()
     intloopReadConsole('"", c)
  
 -- The 'intloopPrefix?' function tests if the string 'prefix' is

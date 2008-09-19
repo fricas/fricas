@@ -304,7 +304,9 @@ sayKeyedMsgAsTeX(key, args) ==
 
 sayKeyedMsg(key,args) ==
   $texFormatting: fluid := false
+  ioHook("startKeyedMsg", key, args)
   sayKeyedMsgLocal(key, args)
+  ioHook("endOfKeyedMsg", key)
 
 sayKeyedMsgLocal(key, args) ==
   msg := segmentKeyedMsg getKeyedMsg key
@@ -458,13 +460,13 @@ throwKeyedMsgFromDb(key,args,dbName) ==
   spadThrow()
 
 queryUserKeyedMsg(key,args) ==
-  ioHook("startQueryUser")
   -- display message and return reply
   conStream := DEFIOSTREAM ('((DEVICE . CONSOLE) (MODE . INPUT)))
   sayKeyedMsg(key,args)
+  ioHook("startQueryUser")
   ans := read_-line conStream
-  SHUT conStream
   ioHook("endOfQueryUser")
+  SHUT conStream
   ans
 
 flowSegmentedMsg(msg, len, offset) ==

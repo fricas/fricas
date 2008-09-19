@@ -66,6 +66,7 @@ serverReadLine(stream) ==
       sockSendInt($SessionManager, $CreateFrameAnswer)
       sockSendInt($SessionManager, $frameNumber)
       $frameNumber := $frameNumber + 1
+--  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
       sockSendString($SessionManager, MKPROMPT())
     action = $SwitchFrames =>
       $currentFrameNum := sockGetInt($SessionManager)
@@ -86,7 +87,8 @@ serverReadLine(stream) ==
       stringBuf := sockGetStringFrom($MenuServer)
       CATCH('coerceFailure,CATCH('top__level, CATCH('SPAD__READER,
         parseAndInterpret stringBuf)))
-      PRINC MKPROMPT()
+--  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
+      princPrompt()
       FINISH_-OUTPUT()
     action = $NonSmanSession =>
       $SpadServer := nil

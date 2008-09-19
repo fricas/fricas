@@ -453,7 +453,8 @@ executeInterpreterCommand command ==
   TERPRI()
   ncSetCurrentLine(command)
   CATCH('SPAD__READER, parseAndInterpret command)
-  PRINC MKPROMPT()
+--  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
+  princPrompt()
   FINISH_-OUTPUT()
 
 typeCheckInputAreas htPage ==

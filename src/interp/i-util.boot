@@ -66,6 +66,11 @@ spadPrompt() ==
   SAY '"   FriCAS"
   sayNewLine()
 
+princPrompt() ==
+  ioHook("startPrompt")
+  PRINC MKPROMPT()
+  ioHook("endOfPrompt")
+
 MKPROMPT() ==
   $inputPromptType = 'none    => '""
   $inputPromptType = 'plain   => '"-> "
