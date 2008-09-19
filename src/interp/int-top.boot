@@ -301,7 +301,6 @@ intloopSpadProcess(stepNo,lines,ptree,interactive?)==
  
             #ncEltQ(cc, 'messages) ^= 0 => ncError()
 
-    ioHook("endOfOutput") 
     intSetNeedToSignalSessionManager()
     $prevCarrier := $currentCarrier
     result = 'ncEnd     => stepNo
