@@ -625,7 +625,7 @@ This helper function is listed below.
 (defun boot-load (file)
   (let ((name (concat $SPADROOT "/autoload/" (pathname-name file))))
     (if (eq |$printLoadMsgs| '|on|)
-        (format t "   Loading ~A.~%" name))
+	(|sayKeyedMsg| 'S2IL0030 (list name)))
     (load name)))
 
 ;;; This is a helper function to set up the autoload trigger. It sets

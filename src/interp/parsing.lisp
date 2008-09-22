@@ -682,7 +682,8 @@ is a token separator, which blank is equivalent to."
                        :adjustable t :initial-contents s))))
 
 (defun get-a-line (stream)
-  (if (IS-CONSOLE stream) (princ (MKPROMPT)))
+;;  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
+  (if (IS-CONSOLE stream) (princPrompt))
   (let ((ll (read-a-line stream)))
     (if (stringp ll) (make-string-adjustable ll) ll)))
 
