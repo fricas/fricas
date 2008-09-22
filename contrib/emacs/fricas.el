@@ -68,13 +68,13 @@
     (define-key map "\en"              'fricas-next-input)
     (define-key map [C-up]   	       'fricas-previous-input)
     (define-key map [C-down] 	       'fricas-next-input)
-    (define-key map [M-up]             'fricas-up-input)
-    (define-key map [M-down]           'fricas-down-input)
+    (define-key map [(meta up)]        'fricas-up-input)
+    (define-key map (kbd "ESC <up>")   'fricas-up-input)
+    (define-key map [(meta down)]      'fricas-down-input)
+    (define-key map (kbd "ESC <down>") 'fricas-down-input)
+
     (define-key map "\er" 	       'fricas-previous-matching-input)
     (define-key map "\es" 	       'fricas-next-matching-input)
-
-;;; (define-key map [left]             'fricas-backward-char)
-;;; (define-key map [right]            'fricas-forward-char)
     (define-key map [(shift up)]       'fricas-paint-previous-line)
     (define-key map [(shift down)]     'fricas-paint-next-line)
     (define-key map [(shift left)]     'fricas-paint-previous-char)
@@ -98,8 +98,37 @@ This variable is buffer-local."
   :type 'boolean
   :group 'fricas)
 
-(define-derived-mode fricas-mode fundamental-mode "FRICAS"
-  ""
+(define-derived-mode fricas-mode fundamental-mode "FriCAS"
+  "Major mode for interacting with the Computer Algebra System FriCAS.
+\\[fricas-eval] sends the text in the current input region to FriCAS, and
+    displays the output in the following output region.
+\\[fricas-eval-append] sends the text in the current input region to FriCAS,
+    and displays the output in a new output region at the bottom of the buffer.
+\\[fricas-up-input] and \\[fricas-down-input] move point respectively to the previous and 
+    the next input region.
+\\[fricas-copy-to-clipboard] copies the current input-output combination into the kill-ring.
+\\[fricas-yank] writes the front item of the kill ring into a temporary file,
+    and then `)read's that file.  With an argument, it reads the file 
+    `)quiet'ly.
+\\[fricas-paint-next-char], \\[fricas-paint-previous-char], \\[fricas-paint-next-line] and \\[fricas-paint-previous-line] permanently marks point 
+    in output region with `fricas-paint-face'.
+\\[fricas-change-paint-face] changes the face used thereby.
+
+`)cd' commands given to FriCAS at a prompt are watched by Emacs to, keep this
+buffer's default directory the same as the FriCAS's working directory.  FriCAS'
+working directory is displayed by \\[list-buffers] or \\[mouse-buffer-menu] in
+the `File' field.  If the buffer's default directory and FriCAS working
+directory ever get out of sync, use \\[fricas-resync-directory].
+
+You can save your FriCAS session as usual in Emacs with \\[save-buffer] or
+\\[write-file].  NOT YET IMPLEMENTED: Loading it will restore the entire state
+of your session.
+
+If you want to make multiple FriCAS buffers, rename the `*fricas*' buffer
+using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
+
+\\{fricas-mode-map}
+"
   (make-local-variable 'fricas-process)
   (setq fricas-process (get-buffer-process (current-buffer)))
 
@@ -132,6 +161,12 @@ This variable is buffer-local."
   (make-local-variable 'fricas-save-history?)
   (setq fricas-save-history? nil)    ;; did we just save the history
 
+  ;; taken from shell.el:
+  ;; This is not really correct, since the shell buffer does not really
+  ;; edit this directory.  But it is useful in the buffer list and menus.
+  (make-local-variable 'list-buffers-directory)
+  (setq list-buffers-directory (expand-file-name default-directory))
+
   (setq font-lock-defaults nil)
   (set-process-filter fricas-process (function fricas-filter))
   (setq buffer-offer-save t)
@@ -143,12 +178,12 @@ This variable is buffer-local."
 		       (concat ")lisp (setf |$ioHook| " 
 			       fricas-marker-format-function 
 			       ")\n"))
-  (switch-to-buffer "*Fricas*"))
+  (switch-to-buffer "*fricas*"))
 
-(defun fricas-run()
+(defun fricas-run ()
   "Run Fricas in a buffer."
-  (set-buffer (get-buffer-create "*Fricas*"))
-  (start-process-shell-command "fricas" "*Fricas*" "fricas" "-noclef" "2>>fricas.errors"))
+  (set-buffer (get-buffer-create "*fricas*"))
+  (start-process-shell-command "fricas" "*fricas*" "fricas" "-noclef" "2>>fricas.errors"))
 
 (defun fricas-check-proc (buffer)
   "Return non-nil if there is a living process associated w/buffer BUFFER.
@@ -158,10 +193,14 @@ BUFFER can be either a buffer or the name of one."
     (and proc (memq (process-status proc) '(open run stop)))))
 
 (defun fricas ()
-   "Run fricas in a terminal environment"
+  "Run an inferior FriCAS process, in a BUFFER `*fricas*'.  If BUFFER exists
+but FriCAS process is not running, make new FriCAS.  If BUFFER exists and
+FriCAS process is running, just switch to BUFFER.  The buffer is put in FriCAS
+mode, giving commands for sending input and controlling the subjobs of the
+shell.  See `fricas-mode'."
   (interactive)
-  (if (fricas-check-proc "*Fricas*")
-      (pop-to-buffer "*Fricas*")
+  (if (fricas-check-proc "*fricas*")
+      (pop-to-buffer "*fricas*")
     (fricas-run)
     (fricas-mode)))
 
@@ -249,7 +288,7 @@ answer.  Prints a message otherwise."
 
 (defvar fricas-paint-face 'fricas-paint-lightblue)
 
-(defun fricas-paint-face ()
+(defun fricas-change-paint-face ()
   (interactive)
   (let ((newpaint (completing-read "New paint face: "
                                    fricas-paint-face-alist
@@ -335,13 +374,16 @@ answer.  Prints a message otherwise."
 
 (defun fricas-resync-directory-post ()
   "parse output from )sys pwd and clean up."
-  (let ((inhibit-read-only t)
-	(begin fricas-resync-directory?)
-	(end (marker-position (process-mark fricas-process))))
+  (let* ((inhibit-read-only t)
+	 (begin fricas-resync-directory?)
+	 (end (marker-position (process-mark fricas-process)))
+	 (dir (buffer-substring-no-properties 
+	       begin 
+	       (1- (previous-single-property-change end 'type)))))
+    (cd dir)
+    (setq list-buffers-directory (file-name-as-directory
+				  (expand-file-name dir)))
     (setq fricas-resync-directory? nil)
-    (cd (buffer-substring-no-properties 
-	 begin 
-	 (1- (previous-single-property-change end 'type))))
     (delete-region begin end)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
