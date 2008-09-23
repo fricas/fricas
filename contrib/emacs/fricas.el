@@ -1,3 +1,55 @@
+;;; fricas.el --- specialized emacs major mode for interacting with FriCAS
+
+;; Author: Francois Maltey <fmaltey@nerim.fr>
+;;         Martin Rubey <martin.rubey@univie.ac.at>
+
+;; This file is not yet part of GNU Emacs.
+
+;;; Commentary:
+
+;; Please send me bug reports, bug fixes, and extensions, so that we can
+;; merge them into the master source, to 
+;;     - fricas-devel <fricas-devel@googlegroups.com>
+
+;; This file defines a FriCAS-in-a-buffer package (fricas mode).  This mode
+;; uses FriCAS' ioHooks to communicate with FriCAS, and is therefore much more
+;; robust than its predecessor axiom.el.
+
+;; IMPORTANT: this emacs mode requires FriCAS svn revision 375 or later.  It
+;; should work with GNU Emacs 21 and later.  A port to XEmacs would be much
+;; appreciated.
+
+;; GETTING STARTED
+;;=============================================================================
+;; to try it out: 
+;;
+;; copy this file and fricas-cpl.el into a directory where emacs can find it,
+;; possibly /usr/share/emacs/site-lisp/ or ~/emacs. Type
+;;
+;; M-x load-file RET fricas.el
+;;
+;; (that is: alt-x, type load-file, then return, then type fricas) and then
+;; type
+;;
+;; M-x fricas
+;;
+;; fricas should start in a new buffer called *fricas* -- otherwise you hit a
+;; bug, please complain to one of the authors. Type
+;;
+;; C-h m
+;;
+;; (that is: ctrl-h, then m) to get a brief description how to use it.
+;;
+;; If you like it, append the line 
+;;
+;; (require 'fricas)
+;;
+;; to your .emacs file.
+;;
+;; Read the rest of this file for more information.
+
+;;; Code:
+
 ;; this contains a list of all fricas operations and constructors
 (require 'fricas-cpl)
 
