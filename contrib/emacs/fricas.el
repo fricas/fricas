@@ -216,7 +216,7 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 
   (setq buffer-offer-save t)
   (add-hook 'write-region-annotate-functions 'fricas-write-annotated-region nil t)
-  (add-hook 'after-save-hook 'fricas-save-history nil t)
+  (add-hook 'before-save-hook 'fricas-save-history nil t)
   (auto-save-mode -1)
   (setq font-lock-defaults nil)
 
@@ -231,19 +231,19 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   
     (set-process-filter fricas-process (function fricas-filter))
     (process-send-string fricas-process ")se me au off\n")
-    (process-send-string fricas-process 
-			 (concat ")lisp (setf |$ioHook| " 
-				 fricas-marker-format-function 
-				 ")\n"))
     (unless running
       (process-send-string fricas-process 
 			   (concat ")history )restore " 
 				   (buffer-file-name)
-				   "\n"))))
+				   "\n")))
+    (process-send-string fricas-process 
+			 (concat ")lisp (setf |$ioHook| " 
+				 fricas-marker-format-function 
+				 ")\n")))
   (set-buffer-modified-p nil))
 
 (defun fricas-run ()
-  "Run Fricas in the current BUFFER."
+  "Run FriCAS in the current BUFFER."
   (start-process-shell-command "fricas" (current-buffer) 
 			       "/tmp/bin/fricas" "-noclef" "2>>fricas.errors"))
 
@@ -320,10 +320,10 @@ property as input, but doesn't yet."
  "Returns true only if fricas is not working and not awaiting an
 answer.  Prints a message otherwise."
  (cond ((eq fricas-state 'working)
-	(message "Fricas is working")
+	(message "FriCAS is working")
 	nil)
        (fricas-query-user 
-	(message "Fricas expects an answer")
+	(message "FriCAS expects an answer")
 	nil)
        (t)))
 
@@ -850,7 +850,7 @@ working, but this is not the case."
 (defun fricas-eval () 
   (interactive)
   (if (eq fricas-state 'working)
-      (message "Fricas is working")
+      (message "FriCAS is working")
     (let ((pos (point))
 	  beg-of-input-pos
 	  end-of-input-pos)
@@ -1201,14 +1201,15 @@ If N is negative, find the previous or Nth previous match."
 (defun fricas-save-history ()
   "If necessary, removes previous saved histories, since it seems that fricas
 does not store the %% facility correctly.  Then issues )history )save."
-  (when (fricas-can-receive-commands?)
-    (let ((dirname (concat (buffer-file-name) ".axh")))
-    (goto-char (process-mark fricas-process))
-    (when (file-exists-p dirname)
-      (delete-file (concat dirname "/index.KAF"))
-      (delete-directory dirname))
-    (setq fricas-save-history? t)
-    (fricas-send-input (concat ")history )save " (buffer-file-name))))))
+  (if (fricas-can-receive-commands?)
+      (let ((dirname (concat (buffer-file-name) ".axh")))
+	(goto-char (process-mark fricas-process))
+	(when (file-exists-p dirname)
+	  (delete-file (concat dirname "/index.KAF"))
+	  (delete-directory dirname))
+	(setq fricas-save-history? t)
+	(fricas-send-input (concat ")history )save " (buffer-file-name))))
+    (error "FriCAS is working")))
 
 (defun fricas-save-history-post ()
   (set-buffer-modified-p nil))
