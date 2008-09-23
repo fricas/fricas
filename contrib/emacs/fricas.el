@@ -55,8 +55,6 @@
 
 (defvar fricas-beg-marker-regexp "<|start[a-zA-Z]*|>\n")
 (defvar fricas-end-marker-regexp "<|endOf[a-zA-Z]*|>\n")
-;; we set the marker format string such that it always terminates with >
-;; followed by newline
 (defvar fricas-max-marker-length 40) ;; maximal length of a marker
 (defvar fricas-marker-format-function 
   (concat
@@ -72,6 +70,7 @@
    "                  (eq (car args) 'S2GL0014)))"
    "         (format t \"<|endOfTypeTime|>~%\")) "
    "        (t (format t \"<~S>~%\" x))))        "))
+(defvar fricas-annotate-regexp "\e\\([a-zA-Z\-]*\\)\n")
 
 (defvar fricas-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -179,11 +178,7 @@ of your session.
 If you want to make multiple FriCAS buffers, rename the `*fricas*' buffer
 using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 
-\\{fricas-mode-map}
-"
-  (make-local-variable 'fricas-process)
-  (setq fricas-process (get-buffer-process (current-buffer)))
-
+\\{fricas-mode-map}"
   (make-local-variable 'fricas-input-ring-size)
   (make-local-variable 'fricas-input-ring)
   (or (and (boundp 'fricas-input-ring) fricas-input-ring)
@@ -219,23 +214,38 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   (make-local-variable 'list-buffers-directory)
   (setq list-buffers-directory (expand-file-name default-directory))
 
-  (setq font-lock-defaults nil)
-  (set-process-filter fricas-process (function fricas-filter))
   (setq buffer-offer-save t)
+  (add-hook 'write-region-annotate-functions 'fricas-write-annotated-region nil t)
   (add-hook 'after-save-hook 'fricas-save-history nil t)
+  (auto-save-mode -1)
+  (setq font-lock-defaults nil)
 
-  ;;  (let ((inhibit-read-only t))
-  (process-send-string fricas-process ")se me au off\n")
-  (process-send-string fricas-process 
-		       (concat ")lisp (setf |$ioHook| " 
-			       fricas-marker-format-function 
-			       ")\n"))
-  (switch-to-buffer "*fricas*"))
+
+  (make-local-variable 'fricas-process)
+  (setq fricas-process (get-buffer-process (current-buffer)))
+  (let ((running fricas-process))
+    (unless running
+      (fricas-parse-buffer)
+      (fricas-run)
+      (setq fricas-process (get-buffer-process (current-buffer))))
+  
+    (set-process-filter fricas-process (function fricas-filter))
+    (process-send-string fricas-process ")se me au off\n")
+    (process-send-string fricas-process 
+			 (concat ")lisp (setf |$ioHook| " 
+				 fricas-marker-format-function 
+				 ")\n"))
+    (unless running
+      (process-send-string fricas-process 
+			   (concat ")history )restore " 
+				   (buffer-file-name)
+				   "\n"))))
+  (set-buffer-modified-p nil))
 
 (defun fricas-run ()
-  "Run Fricas in a buffer."
-  (set-buffer (get-buffer-create "*fricas*"))
-  (start-process-shell-command "fricas" "*fricas*" "fricas" "-noclef" "2>>fricas.errors"))
+  "Run Fricas in the current BUFFER."
+  (start-process-shell-command "fricas" (current-buffer) 
+			       "/tmp/bin/fricas" "-noclef" "2>>fricas.errors"))
 
 (defun fricas-check-proc (buffer)
   "Return non-nil if there is a living process associated w/buffer BUFFER.
@@ -253,6 +263,7 @@ shell.  See `fricas-mode'."
   (interactive)
   (if (fricas-check-proc "*fricas*")
       (pop-to-buffer "*fricas*")
+    (switch-to-buffer (get-buffer-create "*fricas*"))
     (fricas-run)
     (fricas-mode)))
 
@@ -1021,19 +1032,22 @@ str. Returns:
   (let ((inhibit-read-only t) 
 	(pos (point)))
     (insert str)
+    (fricas-set-properties pos (point) type)))
+
+(defun fricas-set-properties (beg end type)
     ;; the type of input is nil
-    (put-text-property pos (point) 'type type)
-    (put-text-property pos (point) 'face type)
-    (put-text-property pos (point) 'rear-nonsticky t)
-    (put-text-property pos (point) 'front-sticky t)
-    (put-text-property pos (point) 'read-only type)
+  (put-text-property beg end 'type type)
+  (put-text-property beg end 'face type)
+  (put-text-property beg end 'rear-nonsticky t)
+  (put-text-property beg end 'front-sticky t)
+  (put-text-property beg end 'read-only type)
     ;; the following inhibits deletion of the terminating newline in the input
     ;; area (inserted either by fricas-underscore-newline or fricas-send-input)
-    (when (not type)
-      (put-text-property (1- (point)) (point) 'front-sticky nil)
-      (put-text-property (1- (point)) (point) 'read-only t))
-    (when (eq type 'fricas-prompt)
-      (put-text-property pos (point) 'field t))))
+  (when (not type)
+    (put-text-property (1- end) end 'front-sticky nil)
+    (put-text-property (1- end) end 'read-only t))
+  (when (eq type 'fricas-prompt)
+    (put-text-property beg end 'field t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; getting old input - taken and adapted from comint
@@ -1206,6 +1220,38 @@ does not store the %% facility correctly.  Then issues )history )save."
                                (buffer-name))))
     t))
 
+(defun fricas-write-annotated-region (start end)
+  "Return a list of (POSITION . STRING) elements annotating the region.
+In each element, POSITION is the beginning position of the text
+to be annotated and STRING is the annotation.  The region itself
+is not modified.  Add this to the global
+'write-region-annotate-functions hook."
+  (let (result
+	(pos (next-single-property-change start 'type)))
+    (while pos
+      (setq result 
+	    (cons (cons pos 
+			(concat "\e"
+				(symbol-name (get-text-property pos 
+								'type))
+				"\n"))
+		  result))
+      (setq pos (next-single-property-change pos 'type)))
+    (reverse result)))
 
+(defun fricas-parse-buffer ()
+  "Convert annotations to text properties, assumes that we are in
+a FriCAS-buffer."
+  (let ((inhibit-read-only t)
+	(pos (point-min))
+	(last-type 'fricas-undefined)
+	type)
+    (goto-char pos)
+    (while (re-search-forward fricas-annotate-regexp (point-max) t)
+      (setq type (intern (match-string 1)))
+      (replace-match "" t)
+      (fricas-set-properties pos (point) last-type)
+      (setq last-type type)
+      (setq pos (point)))))
 
 (provide 'fricas)
