@@ -53,49 +53,12 @@
 ;; this contains a list of all fricas operations and constructors
 (require 'fricas-cpl)
 
-(defvar fricas-beg-marker-regexp "<|start[a-zA-Z]*|>\n")
-(defvar fricas-end-marker-regexp "<|endOf[a-zA-Z]*|>\n")
-(defvar fricas-max-marker-length 40) ;; maximal length of a marker
-(defvar fricas-marker-format-function 
-  (concat
-   "(lambda (x &optional args)                   "
-   "  (cond ((and (eq x '|startKeyedMsg|)        "
-   "              (or (eq (car args) 'S2GL0012)  "
-   "                  (eq (car args) 'S2GL0013)  "
-   "                  (eq (car args) 'S2GL0014)))"
-   "         (format t \"<|startTypeTime|>~%\")) "
-   "        ((and (eq x '|endOfKeyedMsg|)        "
-   "              (or (eq (car args) 'S2GL0012)  "
-   "                  (eq (car args) 'S2GL0013)  "
-   "                  (eq (car args) 'S2GL0014)))"
-   "         (format t \"<|endOfTypeTime|>~%\")) "
-   "        (t (format t \"<~S>~%\" x))))        "))
-(defvar fricas-annotate-regexp "\e\\([a-zA-Z\-]*\\)\n")
-
-(defvar fricas-mode-syntax-table
-  (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?$  ".   " st)
-    (modify-syntax-entry ?%  ".   " st)
-    (modify-syntax-entry ?!  "w   " st)
-    (modify-syntax-entry ??  "w   " st)
-    (modify-syntax-entry ?\\ "w   " st)
-    (modify-syntax-entry ?_  "\   " st)
-    st)
-  "Syntax table used while in `fricas-mode'.")
-
-(defvar fricas-input-ring nil)
-(defvar fricas-input-ring-index nil
-  "Index of last matched history element.")
-(defvar fricas-input-ring-size 150
-  "Size of input history ring.")
-(defvar fricas-stored-incomplete-input nil
-  "Stored input for history cycling.")
-
+;; customizable variables
 (defface fricas-algebra '((t (:background "#ffffa0")))
   "Face used for algebra output."
   :group 'fricas)
 
-(defface fricas-typeTime '((t (:background "#ffffa0" :foreground "darkgreen")))
+(defface fricas-type-time '((t (:background "#ffffa0" :foreground "darkgreen")))
   "Face used for type and time output."
   :group 'fricas)
 
@@ -111,6 +74,8 @@
   "Face used for the prompt."
   :group 'fricas)
 
+;; this should probably copy (mutatis mutandi) the keybindings from
+;; comint-mode-map
 (defvar fricas-mode-map 
   (let ((map (make-sparse-keymap)))
     (define-key map [(meta k)]         'fricas-copy-to-clipboard)
@@ -149,6 +114,50 @@ This variable is buffer-local."
   :type 'boolean
   :group 'fricas)
 
+
+(defvar fricas-beg-marker-regexp "\e|start[a-zA-Z]*|\n")
+(defvar fricas-end-marker-regexp "\e|endOf[a-zA-Z]*|\n")
+(defvar fricas-max-marker-length 40) ;; maximal length of a marker
+(defvar fricas-marker-format-function 
+  (concat
+   "(lambda (x &optional args)"
+   "  (cond ((and (eq x '|startKeyedMsg|)"
+   "              (or (eq (car args) 'S2GL0012)"
+   "                  (eq (car args) 'S2GL0013)"
+   "                  (eq (car args) 'S2GL0014)))"
+   "         (format t \"~C|startTypeTime|~%\" (code-char 27)))"
+   "        ((and (eq x '|endOfKeyedMsg|)"
+   "              (or (eq (car args) 'S2GL0012)"
+   "                  (eq (car args) 'S2GL0013)"
+   "                  (eq (car args) 'S2GL0014)))"
+   "         (format t \"~C|endOfTypeTime|~%\" (code-char 27)))"
+   "        (t (format t \"~C~S~%\" (code-char 27) x))))"))
+(defvar fricas-annotate-regexp "\e\\([a-zA-Z\-]*\\)\n")
+
+(defvar fricas-mode-syntax-table
+  (let ((st (make-syntax-table)))
+    (modify-syntax-entry ?$  ".   " st)
+    (modify-syntax-entry ?%  ".   " st)
+    (modify-syntax-entry ?!  "w   " st)
+    (modify-syntax-entry ??  "w   " st)
+    (modify-syntax-entry ?\\ "w   " st)
+    (modify-syntax-entry ?_  "\   " st)
+    st)
+  "Syntax table used while in `fricas-mode'.")
+
+(defvar fricas-input-ring nil)
+(defvar fricas-input-ring-index nil
+  "Index of last matched history element.")
+(defvar fricas-input-ring-size 150
+  "Size of input history ring.")
+(defvar fricas-stored-incomplete-input nil
+  "Stored input for history cycling.")
+
+;;; Note that fricas-mode does *not* derive from comint mode.  A failed attempt
+;;; can be found as fricas-comint-failed-attempt.el in the FriCAS subversion
+;;; repository, revision 381.  comint mode assumes that the new input is always
+;;; between process-mark and point-max, although this is sometimes documented
+;;; differently.  For an example see the function comint-delete-input.
 (define-derived-mode fricas-mode fundamental-mode "FriCAS"
   "Major mode for interacting with the Computer Algebra System FriCAS.
 \\[fricas-eval] sends the text in the current input region to FriCAS, and
@@ -171,9 +180,9 @@ working directory is displayed by \\[list-buffers] or \\[mouse-buffer-menu] in
 the `File' field.  If the buffer's default directory and FriCAS working
 directory ever get out of sync, use \\[fricas-resync-directory].
 
-You can save your FriCAS session as usual in Emacs with \\[save-buffer] or
-\\[write-file].  NOT YET IMPLEMENTED: Loading it will restore the entire state
-of your session.
+You can save your FriCAS session as usual in Emacs with
+\\[save-buffer] or \\[write-file].  Loading it and executing
+\\[fricas-mode] will restore the entire state of your session.
 
 If you want to make multiple FriCAS buffers, rename the `*fricas*' buffer
 using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
@@ -240,12 +249,13 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 			 (concat ")lisp (setf |$ioHook| " 
 				 fricas-marker-format-function 
 				 ")\n")))
+  (goto-char (point-max))
   (set-buffer-modified-p nil))
 
 (defun fricas-run ()
   "Run FriCAS in the current BUFFER."
   (start-process-shell-command "fricas" (current-buffer) 
-			       "/tmp/bin/fricas" "-noclef" "2>>fricas.errors"))
+			       "fricas" "-noclef" "2>>fricas.errors"))
 
 (defun fricas-check-proc (buffer)
   "Return non-nil if there is a living process associated w/buffer BUFFER.
@@ -899,7 +909,7 @@ str. Returns:
 	 (output-length (length str))
 	 (end-pos (or (and (not (eq (aref str (1- output-length)) 
 				    ?\n)) ;; last char is a newline
-			   (string-match "<" str 
+			   (string-match "\e" str 
 					 (max ind (- output-length 
 						     fricas-max-marker-length))))
 		      output-length)))
@@ -948,46 +958,46 @@ str. Returns:
 				      (cadr output-type)
 				      fricas-last-type))
 
-		((equal (car output-type) "<|startReadLine|>\n")  ;; expect input after prompt
+		((equal (car output-type) "\e|startReadLine|\n")  ;; expect input after prompt
 		 (setq fricas-state 'waiting)
 		 (setq fricas-last-type nil))
-		((equal (car output-type) "<|endOfReadLine|>\n")
+		((equal (car output-type) "\e|endOfReadLine|\n")
 		 (setq fricas-state 'working)
 		 (setq fricas-last-type 'fricas-undefined))
 
-		((equal (car output-type) "<|startQueryUser|>\n") ;; expect input after system command
+		((equal (car output-type) "\e|startQueryUser|\n") ;; expect input after system command
 		 (setq fricas-state 'waiting)
 		 (setq fricas-last-type nil)
 		 (setq query-user-prompt t)
 		 (setq fricas-query-user t))
-		((equal (car output-type) "<|endOfQueryUser|>\n") ;; expect input after system command
+		((equal (car output-type) "\e|endOfQueryUser|\n") ;; expect input after system command
 		 (setq fricas-state 'working)
 		 (setq fricas-last-type 'fricas-undefined)
 		 (setq fricas-query-user nil)) ;; should not be necessary
 
-		((equal (car output-type) "<|startAlgebraOutput|>\n") 
+		((equal (car output-type) "\e|startAlgebraOutput|\n") 
 		 (setq fricas-last-type 'fricas-algebra))
-		((equal (car output-type) "<|endOfAlgebraOutput|>\n") 
+		((equal (car output-type) "\e|endOfAlgebraOutput|\n") 
 		 (setq fricas-last-type 'fricas-undefined))
 
-		((equal (car output-type) "<|startTypeTime|>\n") 
-		 (setq fricas-last-type 'fricas-typeTime))
-		((equal (car output-type) "<|endOfTypeTime|>\n") 
+		((equal (car output-type) "\e|startTypeTime|\n") 
+		 (setq fricas-last-type 'fricas-type-time))
+		((equal (car output-type) "\e|endOfTypeTime|\n") 
 		 (setq fricas-last-type 'fricas-undefined))
 
-		((equal (car output-type) "<|startKeyedMsg|>\n") 
+		((equal (car output-type) "\e|startKeyedMsg|\n") 
 		 (setq fricas-last-type 'fricas-message))
-		((equal (car output-type) "<|endOfKeyedMsg|>\n") 
+		((equal (car output-type) "\e|endOfKeyedMsg|\n") 
 		 (setq fricas-last-type 'fricas-undefined))
 
-		((equal (car output-type) "<|startPrompt|>\n")
+		((equal (car output-type) "\e|startPrompt|\n")
 		 (setq fricas-last-type 'fricas-prompt)
 		 (when fricas-repair-prompt
 		   (goto-char (set-marker (process-mark proc) (point-max)))
 		   (setq repair-prompt-move t)
 		   (setq fricas-repair-prompt nil)))
 
-		((equal (car output-type) "<|endOfPrompt|>\n")
+		((equal (car output-type) "\e|endOfPrompt|\n")
 		 (setq fricas-last-type 'fricas-undefined))
 
 		(t (fricas-insert-output fricas-output-buffer 
