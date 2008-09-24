@@ -118,20 +118,23 @@ This variable is buffer-local."
 (defvar fricas-beg-marker-regexp "\e|start[a-zA-Z]*|\n")
 (defvar fricas-end-marker-regexp "\e|endOf[a-zA-Z]*|\n")
 (defvar fricas-max-marker-length 40) ;; maximal length of a marker
-(defvar fricas-marker-format-function 
+(defvar fricas-marker-format-function ;; we use that the newline at the end of
+				      ;; a marker does not appear within the
+				      ;; marker in fricas-get-next-output.
+                                      ;; (code-char 27) is not a Common Lisp
+                                      ;; "standard character", it might be
+                                      ;; better to use something else.
   (concat
    "(lambda (x &optional args)"
+   "  (princ (code-char 27))"
    "  (cond ((and (eq x '|startKeyedMsg|)"
-   "              (or (eq (car args) 'S2GL0012)"
-   "                  (eq (car args) 'S2GL0013)"
-   "                  (eq (car args) 'S2GL0014)))"
-   "         (format t \"~C|startTypeTime|~%\" (code-char 27)))"
+   "              (member (car args) '('S2GL0012 'S2GL0013 'S2GL0014)))"
+   "         (princ \"|startTypeTime|\"))"
    "        ((and (eq x '|endOfKeyedMsg|)"
-   "              (or (eq (car args) 'S2GL0012)"
-   "                  (eq (car args) 'S2GL0013)"
-   "                  (eq (car args) 'S2GL0014)))"
-   "         (format t \"~C|endOfTypeTime|~%\" (code-char 27)))"
-   "        (t (format t \"~C~S~%\" (code-char 27) x))))"))
+   "              (member (car args) '('S2GL0012 'S2GL0013 'S2GL0014)))"
+   "         (princ \"|endOfTypeTime|\"))"
+   "        (t (prin1 x)))"
+   "  (princ #\\Newline))"))
 (defvar fricas-annotate-regexp "\e\\([a-zA-Z\-]*\\)\n")
 
 (defvar fricas-mode-syntax-table
@@ -224,8 +227,16 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   (setq list-buffers-directory (expand-file-name default-directory))
 
   (setq buffer-offer-save t)
-  (add-hook 'write-region-annotate-functions 'fricas-write-annotated-region nil t)
-  (add-hook 'before-save-hook 'fricas-save-history nil t)
+  ;; the following works, since we only want to throw an error if FriCAS is
+  ;; still working
+  (if (> emacs-major-version 21)
+      (add-hook 'before-save-hook 'fricas-save-history nil t)
+    (add-hook 'write-contents-hooks 'fricas-save-history))
+  ;; write-region-annotate-functions is an abnormal hook and doesn't like the
+  ;; "local" optional argument.
+  (make-local-variable 'write-region-annotate-functions)
+  (add-hook 'write-region-annotate-functions 'fricas-write-annotated-region)
+
   (auto-save-mode -1)
   (setq font-lock-defaults nil)
 
@@ -711,7 +722,7 @@ makes fricas )read it."
     (write-region (car kill-ring-yank-pointer) nil fricas-yank-file?)
     (goto-char (process-mark fricas-process))
     (while (not (file-exists-p fricas-yank-file?))
-      (sit-for 0))
+      (sleep-for 1))
     (fricas-send-input (concat ")read " fricas-yank-file?
 			       (if quiet " )quiet" ""))
 		       t)))
@@ -850,6 +861,9 @@ working, but this is not the case."
 	      input))
 
 (defun fricas-send-input (input &optional nohistory)
+  ;;; it happens that not all of the marker is sent to stdout by FriCAS, before
+  ;;; the command terminates.  Setting the state here is saver.
+  (setq fricas-state 'working)
   (unless nohistory (fricas-add-to-input-history input))
   (fricas-insert-ascii (concat input "\n") nil)
   (setq fricas-input-ring-index nil)
@@ -907,6 +921,8 @@ str. Returns:
 	 (axMarkEnd (string-match fricas-end-marker-regexp str ind))
 	 (axMarkEndEnd (when axMarkEnd (match-end 0)))
 	 (output-length (length str))
+	 ;; the first branch of the or clause tries to determine whether a
+	 ;; marker was possibly cut into two pieces.
 	 (end-pos (or (and (not (eq (aref str (1- output-length)) 
 				    ?\n)) ;; last char is a newline
 			   (string-match "\e" str 
@@ -1219,7 +1235,8 @@ does not store the %% facility correctly.  Then issues )history )save."
 	  (delete-directory dirname))
 	(setq fricas-save-history? t)
 	(fricas-send-input (concat ")history )save " (buffer-file-name))))
-    (error "FriCAS is working")))
+    (error "FriCAS is working"))
+  nil)
 
 (defun fricas-save-history-post ()
   (set-buffer-modified-p nil))
@@ -1237,18 +1254,25 @@ In each element, POSITION is the beginning position of the text
 to be annotated and STRING is the annotation.  The region itself
 is not modified.  Add this to the global
 'write-region-annotate-functions hook."
-  (let (result
-	(pos (next-single-property-change start 'type)))
-    (while pos
-      (setq result 
-	    (cons (cons pos 
-			(concat "\e"
-				(symbol-name (get-text-property pos 
-								'type))
-				"\n"))
-		  result))
-      (setq pos (next-single-property-change pos 'type)))
-    (reverse result)))
+  (unless (stringp start)
+    (let (result
+	  (pos (if start
+		   (next-single-property-change start 'type nil end)
+		 (point-min)))
+	  (fin (if start 
+		   end
+		 (point-max))))
+      (while (and pos
+		  (<= pos fin))
+	(setq result 
+	      (cons (cons pos 
+			  (concat "\e"
+				  (symbol-name (get-text-property pos 
+								  'type))
+				  "\n"))
+		    result))
+	(setq pos (next-single-property-change pos 'type)))
+      (reverse result))))
 
 (defun fricas-parse-buffer ()
   "Convert annotations to text properties, assumes that we are in
@@ -1266,3 +1290,4 @@ a FriCAS-buffer."
       (setq pos (point)))))
 
 (provide 'fricas)
+
