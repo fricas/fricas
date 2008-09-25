@@ -1216,7 +1216,8 @@ isDomainValuedVariable form ==
     get(form,'value,$InteractiveFrame) or _
     (PAIRP($env) and get(form,'value,$env)) or _
     (PAIRP($e) and get(form,'value,$e)))) and
-      objMode(val) in '((Domain) (SubDomain (Domain))) =>
+      ((m := objMode(val)) in '((Domain) (SubDomain (Domain)))
+          or categoryForm? m) =>
         objValUnwrap(val)
   nil
 

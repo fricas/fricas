@@ -146,10 +146,22 @@ evaluateType form ==
     op='Record =>
       [op,:[['_:,sel,evaluateType type] for ['_:,sel,type] in argl]]
     op='Enumeration => form
-    evaluateType1 form
+    evaluateFormAsType form
   constructor? form =>
     ATOM form => evaluateType [form]
     throwEvalTypeMsg("S2IE0003",[form,form])
+  evaluateFormAsType form
+
+++ `form' used in a context where a type (domain or category) is
+++ expected.  Attempt to fully evaluate it.  Error if the resulting
+++ value is not a type.  When successful, the result is the reified
+++ canonical form of the type.
+evaluateFormAsType form ==
+  form is [op,:args] and constructor? op => evaluateType1 form
+  t := mkAtree form
+  -- ??? Maybe we should be more careful about generalized types.
+  bottomUp t is [m] and (m in '((Mode) (Domain) (SubDomain (Domain))) or isCategoryForm(m,$e)) =>
+    objVal getValue t
   throwEvalTypeMsg("S2IE0004",[form])
 
 evaluateType1 form ==

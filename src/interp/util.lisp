@@ -490,6 +490,7 @@ where the [[${SYS}]] variable is same as the one set at build time.
         |compilerDoitWithScreenedLisplib|
         |mkCategory|
         |cons5|
+        |isCategoryForm|
         |sublisV|))
 
 ;;; This is the {\bf browser} subsystem. It will get autoloaded only
