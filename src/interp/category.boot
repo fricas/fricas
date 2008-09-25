@@ -256,15 +256,6 @@ mkAnd2(a,b) ==
     [a,:b]
   [a,:b]
  
-SigListMember(m,list) ==
-  list=nil => false
-  SigEqual(m,first list) => true
-  SigListMember(m,rest list)
- 
-SigEqual([sig1,pred1,:.],[sig2,pred2,:.]) ==
-  -- Notice asymmetry: checks that arg1 is a consequence of arg2
-  sig1=sig2 and PredImplies(pred2,pred1)
- 
 PredImplies(a,b) ==
     --true if a => b in the sense of logical implication
 --a = "true" => true
@@ -326,19 +317,22 @@ FindFundAncs l ==
   --returns a list of them and all their fundamental ancestors
   --also as two-lists with the appropriate conditions
   l=nil => nil
-  f1:= CatEval CAAR l
+  [l1, cond1] := CAR l
+  f1:= CatEval l1
   f1.(0)=nil => FindFundAncs rest l
   ans:= FindFundAncs rest l
-  for u in FindFundAncs [[CatEval first x,mkAnd(CADAR l,CADR x)]
-   for x in CADR f1.4] repeat
-    x:= ASSQ(first u,ans) =>
-      ans:= [[first u,mkOr(CADR x,CADR u)],:delete(x,ans)]
-    ans:= [u,:ans]
-        --testing to see if CAR l is already there
-  x:= ASSQ(CAAR l,ans) => [[CAAR l,mkOr(CADAR l,CADR x)],:delete(x,ans)]
-  CADAR l=true =>
-    for x in first f1.4 repeat if y:= ASSQ(CatEval x,ans) then ans:= delete(y,ans)
-    [first l,:ans]
+  for u in FindFundAncs [[CatEval xf, mkAnd(cond1, xc)]
+     for [xf, xc] in CADR f1.4] repeat
+        [u1, uc] := u
+        x:= ASSQ(u1, ans) =>
+            ans:= [[u1, mkOr(CADR x, uc)],:delete(x,ans)]
+        ans:= [u,:ans]
+  --testing to see if l1 is already there
+  x := ASSQ(l1, ans) => [[l1, mkOr(cond1, CADR x)],:delete(x,ans)]
+  cond1 = true =>
+      for x in first f1.4 repeat
+            if y:= ASSQ(CatEval x,ans) then ans:= delete(y,ans)
+      [first l,:ans]
   for x in first f1.4 repeat
     if y:= ASSQ(CatEval x,ans) then ans:=
       [[first y,mkOr(CADAR l,CADR y)],:delete(y,ans)]
@@ -468,50 +462,12 @@ JoinInner(l,$e) ==
             copied:= true
           if ancindex
              then ($NewCatVec.ancindex:= bname; reallynew:= nil)
-             else
-              if originalVector and (condition=true) then
-                $NewCatVec:= CatEval bname
-                copied:= nil
-                FundamentalAncestors:= [[bname],:CADR $NewCatVec.4]
-                         --bname is Principal, so comes first
-                reallynew:= nil
-                MEMQ(b,l) =>
-                       --MEMQ since category vectors are guaranteed unique
-                  (sigl:= $NewCatVec.(1); attl:= $NewCatVec.2; l:= delete(b,l))
-             --     SAY("domain ",bname," subsumes")
-             --     SAY("adding a conditional domain ",
-             --         bname,
-             --         " replacing",
-             --         CAR anc)
-                bCond:= ASSQ(b,CondList)
-                CondList:= delete(bCond,CondList)
-             -- value of bCond not used and could be NIL
-             -- bCond:= CADR bCond
-                globalDomains:= $NewCatVec.5
-                for u in $NewCatVec.(1) repeat
-                  if not member(u,sigl) then
-                    [s,c,i]:= u
-                    if c=true
-                       then sigl:= [[s,condition,i],:sigl]
-                       else sigl:= [[s,["and",condition,c],i],:sigl]
-                for u in $NewCatVec.2 repeat
-                  if not member(u,attl) then
-                    [a,c]:= u
-                    if c=true
-                       then attl:= [[a,condition],:attl]
-                       else attl:= [[a,["and",condition,c]],:attl]
       if reallynew then
         n:= SIZE $NewCatVec
         FundamentalAncestors:= [[b.(0),condition,n],:FundamentalAncestors]
         $NewCatVec:= LENGTHENVEC($NewCatVec,n+1)
--- We need to copy the vector otherwise the FundamentalAncestors
--- list will get stepped on while compiling "If R has ... " code
--- Camm Maguire July 26, 2003
---        copied:= true
-        copied:= false
-        originalvector:= false
         $NewCatVec.n:= b.(0)
-  if not copied then $NewCatVec:= COPY_-SEQ $NewCatVec
+  $NewCatVec:= COPY_-SEQ $NewCatVec
     -- It is important to copy the vector now,
     -- in case SigListUnion alters it while
     -- performing Operator Subsumption

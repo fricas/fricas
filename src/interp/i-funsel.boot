@@ -780,8 +780,8 @@ findFunctionInDomain(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
         dcName='Enumeration and (args1.0=$Symbol or tar=dc)=>
            [[[dc, dc, $Symbol], ['$,$Symbol], [NIL, NIL]]]
         args1.0 ^= dc => NIL
-        tar and tar ^= $Expression => NIL
-        [[[dc, $Expression, dc], [$Expression,'$], [NIL, NIL]]]
+        tar and tar ^= $OutputForm => NIL
+        [[[dc, $OutputForm, dc], [$OutputForm, '$], [NIL, NIL]]]
     member(dcName,'(Record Union)) =>
       findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom)
     NIL

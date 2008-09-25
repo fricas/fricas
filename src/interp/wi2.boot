@@ -72,7 +72,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $setelt: local :=
       $QuickCode = true => 'QSETREFV
       'SETELT
-    $TOP__LEVEL: local
     $genSDVar: local:= 0
     originale:= $e
     [$op,:argl]:= form

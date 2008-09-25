@@ -341,7 +341,7 @@ compAtom(x,m,e) ==
   t:=
     isSymbol x =>
       compSymbol(x,m,e) or return nil
-    m = $Expression and primitiveType x => [x,m,e]
+    m = $OutputForm and primitiveType x => [x, m, e]
     STRINGP x => 
       x ^= '"failed" and (member('(Symbol), $localImportStack) or
         member('(Symbol), $globalImportStack)) => markAt [x, '(String), e]
@@ -375,7 +375,7 @@ compSymbol(s,m,e) ==
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ["no mode found for",s]
 --->
-  m = $Symbol or m = $Expression => [['QUOTE,s],m,e]
+  m = $Symbol or m = $OutputForm => [['QUOTE, s], m, e]
                                    ---> was ['QUOTE, s]
   not isFunction(s,e) => errorRef s
 
@@ -404,7 +404,7 @@ compForm1(form,m,e) ==
 --    foobar domain
 --    markImport(domain,true)
 -------> new <-------------
-    domain=$Expression and op'="construct" => compExpressionList(argl,m,e)
+    domain = $OutputForm and op'="construct" => compExpressionList(argl, m, e)
     (op'="COLLECT") and coerceable(domain,m,e) =>
       (T:= comp([op',:argl],domain,e) or return nil; coerce(T,m))
 -------> new <-------------
@@ -868,7 +868,7 @@ coerceExtraHard(T is [x,m',e],m) ==
   isUnionMode(m',e) is ["Union",:l] and (t:= hasType(x,e)) and
     member(t,l) and (T':= autoCoerceByModemap(T,t)) and
       (T'':= coerce(T',m)) => T''
-  m' is ['Record,:.] and m = $Expression =>
+  m' is ['Record, :.] and m = $OutputForm  =>
       [['coerceRe2E,x,['ELT,COPY m',0]],m,e]
   nil
 
@@ -1145,7 +1145,6 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
   $prefix,$formalArgList) ==
     --1. bind global variables
     $insideCategoryIfTrue: local:= true
-    $TOP__LEVEL: local
     $definition: local
                  --used by DomainSubstitutionFunction
     $form: local

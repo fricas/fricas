@@ -37,11 +37,7 @@
 
 --% Utility Variable Initializations
 
-SETANDFILEQ($cacheAlist,nil)
-SETANDFILEQ($reportCompilation,nil)
 SETANDFILEQ($compileRecurrence,true)
-SETANDFILEQ($errorReportLevel,'warning)
-SETANDFILEQ($sourceFileTypes,'(INPUT SPAD BOOT LISP LISP370 META))
 
 SETANDFILEQ($SYSCOMMANDS,[CAR x for x in $systemCommands])
 

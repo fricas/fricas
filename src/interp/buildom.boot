@@ -52,7 +52,7 @@ Record0 args ==
     dom.1 :=
            [function lookupInTable,dom,
                [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce,[[$Expression,'_$],:14]]]]
+                 ['coerce, [[$OutputForm, '_$], :14]]]]
     dom.2 := NIL
     dom.3 := ['RecordCategory,:QCDR dom.0]
     dom.4 :=
@@ -85,7 +85,7 @@ RecordEqual(x,y,dom) ==
 RecordPrint(x,dom) == coerceRe2E(x,dom.3)
 
 coerceVal2E(x,m) ==
-   objValUnwrap coerceByFunction(objNewWrap(x,m),$Expression)
+   objValUnwrap coerceByFunction(objNewWrap(x, m), $OutputForm)
 
 findEqualFun(dom) ==
   compiledLookup('_=,[$Boolean,'$,'$],dom)
@@ -116,7 +116,7 @@ Union(:args) ==
     dom.1 :=
             [function lookupInTable,dom,
                [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce,[[$Expression,'_$],:14]]]]
+                 ['coerce,[[$OutputForm, '_$],:14]]]]
     dom.2 := NIL
     dom.3 :=
       '(SetCategory)
@@ -166,7 +166,7 @@ Mapping(:args) ==
     dom.1 :=
             [function lookupInTable,dom,
                [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce,[[$Expression,'_$],:14]]]]
+                 ['coerce,[[$OutputForm, '_$],:14]]]]
     dom.2 := NIL
     dom.3 :=
       '(SetCategory)
@@ -200,7 +200,7 @@ Enumeration0(:args) ==
     dom.1 :=
            [function lookupInTable,dom,
                [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce,[[$Expression,'_$],:14], [['_$, $Symbol], :16]]
+                 ['coerce,[[$OutputForm, '_$],:14], [['_$, $Symbol], :16]]
                          ]]
     dom.2 := NIL
     dom.3 := ['EnumerationCategory,:QCDR dom.0]
@@ -247,7 +247,7 @@ mkMappingFunList(nam,mapForm,e) ==
   dc := GENSYM()
   sigFunAlist:=
     [['_=,[['Boolean],nam ,nam],['ELT,dc,6]],
-       ['coerce,[$Expression,nam],['ELT,dc,7]]]
+       ['coerce, [$OutputForm, nam], ['ELT, dc, 7]]]
   [substitute(nam,dc,substitute("$",'Rep,sigFunAlist)),e]
 
 mkRecordFunList(nam,['Record,:Alist],e) ==
@@ -263,8 +263,8 @@ mkRecordFunList(nam,['Record,:Alist],e) ==
      --       for i in 0..,(.,a,A) in Alist),
 
     [['construct,[nam,:[A for [.,a,A] in Alist]],'mkRecord],
-      ['_=,[['Boolean],nam ,nam],['ELT,dc,6]],
-       ['coerce,[$Expression,nam],['ELT,dc,7]],:
+      ['_=, [['Boolean], nam, nam], ['ELT, dc, 6]],
+       ['coerce, [$OutputForm, nam], ['ELT, dc, 7]],:
         [['elt,[A,nam,PNAME a],['XLAM,["$1","$2"],['RECORDELT,"$1",i,len]]]
             for i in 0.. for [.,a,A] in Alist],:
           [['setelt,[A,nam,PNAME a,A],['XLAM,["$1","$2","$3"],
@@ -280,7 +280,7 @@ mkNewUnionFunList(name,form is ['Union,:listOfEntries],e) ==
   --2. create coercions from subtypes to subUnion
   cList:=
     [['_=,[['Boolean],name ,name],['ELT,dc,6]],
-     ['coerce,[$Expression,name],['ELT,dc,7]],:
+     ['coerce, [$OutputForm, name], ['ELT, dc, 7]],:
        ("append"/
         [[['construct,[name,type],['XLAM,["#1"],['CONS,i,"#1"]]],
           ['elt,[type,name,tag],cdownFun],
@@ -315,7 +315,7 @@ mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
   --2. create coercions from subtypes to subUnion
   cList:=
    [['_=,[['Boolean],g ,g],['ELT,op,6]],
-    ['coerce,[$Expression,g],['ELT,op,7]],:
+    ['coerce, [$OutputForm, g], ['ELT, op, 7]],:
      ("append"/
       [[['autoCoerce,[g,t],upFun],
         ['coerce,[t,g],cdownFun],

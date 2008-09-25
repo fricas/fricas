@@ -141,7 +141,7 @@
         (|$exitModeStack| ())
         (|$returnMode| |$EmptyMode|)
         (|$leaveLevelStack| ())
-        $TOP_LEVEL |$insideFunctorIfTrue| |$insideExpressionIfTrue|
+        |$insideFunctorIfTrue| |$insideExpressionIfTrue|
         |$insideWhereIfTrue|
         |$insideCategoryIfTrue| |$insideCapsuleFunctionIfTrue| |$form|
         (|$e| |$EmptyEnvironment|)

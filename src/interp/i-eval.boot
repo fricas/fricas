@@ -33,6 +33,7 @@
 --% Constructor Evaluation
 
 $noEvalTypeMsg := nil
+$evalDomain := nil
 
 evalDomain form ==
   if $evalDomain then

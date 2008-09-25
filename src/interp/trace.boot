@@ -64,6 +64,13 @@ SETANDFILEQ($traceOptionList,'(
     within _
     ))
 
+DEFPARAMETER($domainTraceNameAssoc, NIL)
+
+-- used for )restore option of )trace.
+DEFPARAMETER($lastUntraced, NIL)
+
+DEFPARAMETER($tracedModemap, NIL)
+
 trace l == traceSpad2Cmd l
 
 traceSpad2Cmd l ==

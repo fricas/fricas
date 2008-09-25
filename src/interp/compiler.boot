@@ -258,7 +258,7 @@ compAtom(x,m,e) ==
   t:=
     isSymbol x =>
       compSymbol(x,m,e) or return nil
-    m = $Expression and primitiveType x => [x,m,e]
+    m = $OutputForm and primitiveType x => [x,m,e]
     STRINGP x => [x,x,e]
     [x,primitiveType x or return nil,e]
   convert(t,m)
@@ -290,7 +290,7 @@ compSymbol(s,m,e) ==
       not isFunction(s,e) and null ($compForModeIfTrue=true) then errorRef s
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ["no mode found for",s]
-  m = $Expression or m = $Symbol => [['QUOTE,s],m,e]
+  m = $OutputForm or m = $Symbol => [['QUOTE,s],m,e]
   not isFunction(s,e) => errorRef s
 
 convertOrCroak(T,m) ==
@@ -337,12 +337,13 @@ compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
   compForm1(form,m,e)
 
 outputComp(x,e) ==
-  u:=comp(['_:_:,x,$Expression],$Expression,e) => u
+  u:=comp(['_:_:, x, $OutputForm], $OutputForm, e) => u
   x is ['construct,:argl] =>
-    [['LIST,:[([.,.,e]:=outputComp(x,e)).expr for x in argl]],$Expression,e]
+    [['LIST, :[([.,.,e] := outputComp(x, e)).expr for x in argl]],_
+           $OutputForm, e]
   (v:= get(x,"value",e)) and (v.mode is ['Union,:l]) =>
-    [['coerceUn2E,x,v.mode],$Expression,e]
-  [x,$Expression,e]
+    [['coerceUn2E, x, v.mode], $OutputForm, e]
+  [x, $OutputForm, e]
 
 compForm1(form is [op,:argl],m,e) ==
   $NumberOfArgsIfInteger: local:= #argl --see compElt
@@ -353,7 +354,7 @@ compForm1(form is [op,:argl],m,e) ==
     domain="Lisp" =>
       --op'='QUOTE and null rest argl => [first argl,m,e]
       [[op',:[([.,.,e]:= compOrCroak(x,$EmptyMode,e)).expr for x in argl]],m,e]
-    domain=$Expression and op'="construct" => compExpressionList(argl,m,e)
+    domain = $OutputForm and op'="construct" => compExpressionList(argl,m,e)
     (op'="COLLECT") and coerceable(domain,m,e) =>
       (T:= comp([op',:argl],domain,e) or return nil; coerce(T,m))
     -- Next clause added JHD 8/Feb/94: the clause after doesn't work
@@ -373,9 +374,9 @@ compForm1(form is [op,:argl],m,e) ==
   compToApply(op,argl,m,e)
 
 compExpressionList(argl,m,e) ==
-  Tl:= [[.,.,e]:= comp(x,$Expression,e) or return "failed" for x in argl]
+  Tl := [[.,.,e] := comp(x, $OutputForm, e) or return "failed" for x in argl]
   Tl="failed" => nil
-  convert([["LIST",:[y.expr for y in Tl]],$Expression,e],m)
+  convert([["LIST", :[y.expr for y in Tl]], $OutputForm, e], m)
 
 compForm2(form is [op,:argl],m,e,modemapList) ==
   sargl:= TAKE(# argl, $TriangleVariableList)
@@ -1116,7 +1117,7 @@ coerceExtraHard(T is [x,m',e],m) ==
   isUnionMode(m',e) is ["Union",:l] and (t:= hasType(x,e)) and
     member(t,l) and (T':= autoCoerceByModemap(T,t)) and
       (T'':= coerce(T',m)) => T''
-  m' is ['Record,:.] and m = $Expression =>
+  m' is ['Record, :.] and m = $OutputForm =>
       [['coerceRe2E,x,['ELT,COPY m',0]],m,e]
   nil
 
@@ -1272,7 +1273,6 @@ compileSpad2Cmd args ==
 
     fun         := ['rq, 'lib]
     constructor := nil
-    $sourceFileTypes : local := '("SPAD")
 
     for opt in $options repeat
         [optname,:optargs] := opt

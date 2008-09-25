@@ -207,7 +207,6 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
   $prefix,$formalArgList) ==
     --1. bind global variables
     $insideCategoryIfTrue: local:= true
-    $TOP__LEVEL: local := nil
     $definition: local := nil
                  --used by DomainSubstitutionFunction
     $form: local := nil
@@ -333,7 +332,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $setelt: local :=
       $QuickCode = true => 'QSETREFV
       'SETELT
-    $TOP__LEVEL: local := nil
     $genSDVar: local:= 0
     originale:= $e
     [$op,:argl]:= form
@@ -1148,7 +1146,6 @@ processFunctor(form,signature,data,localParList,e) ==
   buildFunctor(form,signature,data,localParList,e)
  
 compCapsuleItems(itemlist,$predl,$e) ==
-  $TOP__LEVEL: local
   $signatureOfForm: local := nil
   $suffix: local:= 0
   for item in itemlist repeat $e:= compSingleCapsuleItem(item,$predl,$e)
@@ -1315,7 +1312,6 @@ makeCategoryForm(c,e) ==
   [x,e]
  
 compCategory(x,m,e) ==
-  $TOP__LEVEL: local:= true
   (m:= resolve(m,["Category"]))=["Category"] and x is ['CATEGORY,
     domainOrPackage,:l] =>
       $sigList: local := nil

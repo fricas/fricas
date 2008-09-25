@@ -41,7 +41,6 @@
 
 (defparameter deftran nil)
 (defparameter $macroassoc nil)
-(defparameter $ne nil)
 
 (defparameter $op nil
 "$OP is globalized for construction of local function names, e.g.

@@ -89,12 +89,12 @@
 (setq |$Newline| #\Newline)
 
 
-(SETQ $FUNNAME NIL)   ;; this and next used in COMP,TRAN,1
-(SETQ $FUNNAME_TAIL '(()))
+(DEFPARAMETER $FUNNAME NIL)   ;; this and next used in COMP,TRAN,1
+(DEFPARAMETER $FUNNAME_TAIL '(()))
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
 (SETQ $OLDLINE NIL)  ;"used to output command lines"
 (SETQ /EDITFILE NIL)
-(SETQ |$InteractiveMode| T)
+(DEFPARAMETER |$InteractiveMode| T)
 
 (SETQ |$ruleSetsInitialized| NIL)
 
@@ -330,8 +330,6 @@
          ;" controls generation of QREFELT etc."
 (SETQ |$QuickLet| T)
          ;" controls generation of LET tracing."
-(SETQ |$lastUntraced| NIL)
- ;" used for )restore option of )trace."
 (SETQ |$mathTraceList| NIL)
          ;" controls mathprint output for )trace."
 (SETQ |$domainTraceNameAssoc| NIL)
@@ -374,17 +372,13 @@
 (SETQ |$Category| '(|Category|))
 (SETQ |$Domain| '(|Domain|))
 (SETQ |$Exit|  '(|Exit|))
-(SETQ |$Expression| '(|OutputForm|))
 
 (SETQ |$OutputForm| '(|OutputForm|))
-(SETQ |$BigFloat| '(|Float|))
 (SETQ |$Float| '(|Float|))
 (SETQ |$DoubleFloat| '(|DoubleFloat|))
 
-(SETQ |$FontTable| '(|FontTable|))
 (SETQ |$Integer| '(|Integer|))
 (SETQ |$ComplexInteger| (LIST '|Complex| |$Integer|))
-(SETQ |$Mode|   '(|Mode|))
 (SETQ |$NegativeInteger| '(|NegativeInteger|))
 (SETQ |$NonNegativeInteger| '(|NonNegativeInteger|))
 (SETQ |$NonPositiveInteger| '(|NonPositiveInteger|))
@@ -405,13 +399,11 @@
 (SETQ |$DoubleFloat| '(|DoubleFloat|))
 (SETQ |$SingleInteger| '(|SingleInteger|))
 
-(SETQ $TOP_LEVEL T)
-(SETQ $NE (LIST (LIST NIL)))
 (SETQ |$InteractiveFrame| (LIST (LIST NIL)))
-(SETQ |$LocalFrame| (LIST (LIST NIL)))
 (SETQ |$DomainsInScope| (LIST NIL))
 (SETQ |$EmptyEnvironment| '((NIL)))
 (SETQ |$EmptyMode| '|$EmptyMode|)
+(SETQ |$NoValue| '|$NoValue|)
 (SETQ |$NoValueMode| '|NoValueMode|)
 (SETQ |$DummyFunctorNames| '(|Mapping|))
 (SETQ |$form| NIL)
@@ -422,13 +414,14 @@
 (SETQ |$Index| 0)
 (SETQ |$true| ''T)
 (SETQ |$false| NIL)
-(SETQ |$suffix| NIL)
+(DEFPARAMETER |$suffix| NIL)
 (SETQ |$BasicPredicates| '(INTEGERP STRINGP FLOATP))
-(SETQ |$reportCompilation| NIL)
-(SETQ |$streamCount| 0)
+(DEFPARAMETER |$reportCompilation| NIL)
+(DEFPARAMETER |$streamCount| 0)
+(SETQ |$cacheAlist| NIL)
 (SETQ |$cacheCount| 0)
 (SETQ |$reportExitModeStack| NIL)
-(SETQ |$prefix| NIL)
+(DEFPARAMETER |$prefix| NIL)
 (SETQ |$formalArgList| ())
 (SETQ |$FormalMapVariableList|
   '(|#1| |#2| |#3| |#4| |#5| |#6| |#7| |#8| |#9| |#10|
@@ -444,8 +437,7 @@
 (SETQ |$ModeVariableList|
   '(dv$1 dv$2 dv$3 dv$4 dv$5 dv$6 dv$7 dv$8 dv$9 dv$10 dv$11 dv$12 dv$13 dv$14 dv$15
          dv$16 dv$17 dv$18 dv$19 dv$20))
-(SETQ |$DomainVariableList|
-  '($1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15 $16 $17 $18 $19 $20))
+
 (SETQ |$TriangleVariableList|
    '(|t#1| |t#2| |t#3| |t#4| |t#5| |t#6| |t#7| |t#8| |t#9| |t#10|
      |t#11| |t#12| |t#13| |t#14| |t#15| |t#16| |t#17| |t#18| |t#19| |t#20|
@@ -527,6 +519,7 @@
 ;; Next flag determines whether to use BF as default floating point
 ;; type. (actually, now means NewFloat)
 
+; "Determines whether to use BF as default floating point type."
 (SETQ |$useBFasDefault| 'T)
 
 ;; Next are initial values for fluid variables in G-BOOT BOOT
