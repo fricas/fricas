@@ -765,6 +765,23 @@ typeIsASmallInteger x == (x = $SingleInteger)
 
 --% Interpreter Coercion Functions
 
+typeToInputForm(t) == typeToForm(t, '(InputForm))
+
+typeToOutputForm(t) == typeToForm(t, $OutputForm)
+
+typeToForm(t, toForm) ==
+    t0 := devaluate(t)
+    [op,:argl] := t0
+    coSig := rest GETDATABASE(op, 'COSIG)
+    sig := getConstructorSignature t0
+    ml := replaceSharps(rest sig, t0)
+    nl := [fn(x, t1, c, toForm) for x in argl for t1 in ml_
+                                for c in coSig] where
+        fn(x, t1, c, toForm) ==
+            c => typeToForm(x, toForm)
+            algCoerceInteractive(x, t1, toForm)
+    [op, :nl]
+
 coerceInteractive(triple,t2) ==
   -- bind flag for recording/reporting instantiations
   -- (see recordInstantiation)
@@ -776,7 +793,8 @@ coerceInteractive(triple,t2) ==
   if t2 is ['SubDomain,x,.] then t2:= x
   -- JHD added category Aug 1996 for BasicMath
   t1 in '((Category) (Mode) (Domain) (SubDomain (Domain))) =>
-    t2 = $OutputForm => objNew(val,t2)
+    t2 = $OutputForm => objNewWrap(typeToOutputForm(val), t2)
+    t2 = '(InputForm) => objNewWrap(typeToInputForm(val), t2)
     NIL
   t1 = '$NoValueMode =>
     if $compilingMap then clearDependentMaps($mapName,nil)

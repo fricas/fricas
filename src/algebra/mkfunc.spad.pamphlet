@@ -207,21 +207,40 @@ InputForm():
 ++ Description: Tools for manipulating input forms.
 
 InputFormFunctions1(R:Type):with
-  packageCall: Symbol -> InputForm
+  packageCall : Symbol -> InputForm
     ++ packageCall(f) returns the input form corresponding to f$R.
-  interpret  : InputForm -> R
+  coerceToType : InputForm -> InputForm
+    ++ coerceToType(f) returns the input form corresponding to f::R
+  atType: InputForm -> InputForm
+    ++ atType(f) returns the input form corresponding to f@R
+  pretendOfType : InputForm -> InputForm
+    ++ pretendOfType(f) returns the input form corresponding to
+    ++ \spad{f pretend R}
+  getType : () -> InputForm
+    ++ getType() returns the input form corresponding to R
+  interpret : InputForm -> R
     ++ interpret(f) passes f to the interpreter, and transforms
     ++ the result into an object of type R.
  == add
-  Rname := devaluate(R)$Lisp :: InputForm
+  Rname := typeToInputForm(R)$Lisp :: InputForm
+
+  getType() == Rname
 
   packageCall name ==
     convert([convert("$elt"::Symbol), Rname,
                                 convert name]$List(InputForm))@InputForm
 
+  coerceToType form == convert([convert("::"::Symbol), form,
+                     Rname]$List(InputForm))@InputForm
+
+  atType form == convert([convert("@"::Symbol), form,
+                     Rname]$List(InputForm))@InputForm
+
+  pretendOfType form == convert([convert("pretend"::Symbol), form,
+                     Rname]$List(InputForm))@InputForm
+
   interpret form ==
-    retract(interpret(convert([convert("@"::Symbol), form,
-          Rname]$List(InputForm))@InputForm)$InputForm)$AnyFunctions1(R)
+    retract(interpret(atType form)$InputForm)$AnyFunctions1(R)
 
 @
 \section{package MKFUNC MakeFunction}

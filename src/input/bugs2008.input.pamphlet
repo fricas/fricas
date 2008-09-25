@@ -106,6 +106,24 @@ testcase "Functions returning type"
 I := baseRing()$ExportType(Integer)
 testEquals("1$I", "1")
 
+testcase "Coercion to InputForm"
+str := "Integer()"
+testEquals("Integer::InputForm", "parse(str)$InputForm")
+
+iP := InputFormFunctions1(Float)
+str := "sin(2)$Float()"
+testEquals("parse(str)$InputForm", _
+           "convert([packageCall(sin)$iP, 2::InputForm])@InputForm")
+str := "Float()"
+testEquals("parse(str)$InputForm", "getType()$iP")
+str := "sin(2)@Float()"
+if1 := parse("sin(2)")$InputForm
+testEquals("parse(str)$InputForm", "atType(if1)$iP")
+str := "sin(2)::Float()"
+testEquals("parse(str)$InputForm", "coerceToType(if1)$iP")
+str := "sin(2) pretend Float()"
+testEquals("parse(str)$InputForm", "pretendOfType(if1)$iP")
+
 )set output algebra on
 statistics()
 @
