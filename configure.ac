@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2008-05-28], 
+AC_INIT([FriCAS], [2008-09-26], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -20,6 +20,16 @@ AC_CONFIG_HEADERS([config/axiom-c-macros.h])
 AC_PREREQ([2.59])
 
 AC_CONFIG_SRCDIR(src/Makefile.in)
+
+# FRICAS_CHECK_PROGS and FRICAS_CHECK_PROG signal error if the
+# program is not found
+AC_DEFUN([FRICAS_CHECK_PROGS],
+   [AC_CHECK_PROGS([$1], [$2])
+   test -n "$$1" || AC_MSG_ERROR([$3])])
+
+AC_DEFUN([FRICAS_CHECK_PROG],
+   [AC_CHECK_PROG([$1], [$2], [$2])
+   test -n "$$1" || AC_MSG_ERROR([$3])])
 
 axiom_src_subdirs="lib lisp boot interp share algebra input etc"
 AC_SUBST(axiom_src_subdirs)
@@ -49,13 +59,12 @@ axiom_all_prerequisites=
 case $build in
     *linux*)
         # GNU/Linux systems come equipped with GNU Make, called `make'
-        AC_CHECK_PROGS([MAKE], [make],
-                       [AC_MSG_ERROR([Make utility missing.])])
+        FRICAS_CHECK_PROGS([MAKE], [make], [Make utility missing.])
         ;;
     *)
         # Other systems tend to spell it `gmake' and such
-        AC_CHECK_PROGS([MAKE], [gmake make],
-                       [AC_MSG_ERROR([Make utility missing.])])
+        FRICAS_CHECK_PROGS([MAKE], [gmake make],
+                       [Make utility missing.])
         if ! $MAKE --version | grep 'GNU' 2>/dev/null; then
             AC_MSG_ERROR([FriCAS build system needs GNU Make.])
         fi
@@ -75,35 +84,30 @@ AC_OBJEXT
 
 AC_PROG_INSTALL
 # AC_PROG_LN_S
-AC_CHECK_PROG([TOUCH], [touch],
-              [touch], [AC_MSG_ERROR(['touch' program is missing.])])
+FRICAS_CHECK_PROG([TOUCH], [touch], ['touch' program is missing.])
 AC_CHECK_PROGS([MKTEMP], [mktemp])
 
 case $build in
      *-solaris9)
-        AC_CHECK_PROG([AWK], [gawk], 
-                      [gawk], [AC_MSG_ERROR([FriCAS needs gawk])])
+        FRICAS_CHECK_PROG([AWK], [gawk], [FriCAS needs gawk])
 
-        AC_CHECK_PROG([TAR], [gtar],
-                      [gtar], [AC_MSG_ERROR([FriCAS needs gtar])])
+        FRICAS_CHECK_PROG([TAR], [gtar], [FriCAS needs gtar])
 
-        AC_CHECK_PROG([PATCH], [gpatch],
-                      [gptach], [AC_MSG_ERROR([FriCAS needs gpatch])]) 
+        FRICAS_CHECK_PROG([PATCH], [gpatch], [FriCAS needs gpatch]) 
         ;;
 
       *)
         AC_PROG_AWK
 
-        AC_CHECK_PROGS([TAR], [gtar tar],
-                       [AC_MSG_ERROR([FriCAS needs a tar program])])
+        FRICAS_CHECK_PROGS([TAR], [gtar tar], [FriCAS needs a tar program])
 
-        AC_CHECK_PROGS([PATCH], [gpatch patch], 
-                       [AC_MSG_ERROR([FriCAS needs a patch program])])
+        FRICAS_CHECK_PROGS([PATCH], [gpatch patch],
+                           [FriCAS needs a patch program])
         ;;
 esac
 
 AC_PROG_RANLIB
-AC_CHECK_PROG([AR], [ar], [ar], [AC_MSG_ERROR([program 'ar' is missing])])
+FRICAS_CHECK_PROG([AR], [ar], [program 'ar' is missing])
 
 AC_PATH_PROG([LATEX], [latex])
 AC_CHECK_PROGS([MAKEINDEX], [makeindex])
@@ -117,8 +121,8 @@ AC_SUBST(AWK_FOR_TARGET)
 # Shell needed to run src/algebra/boot-sum.sh
 case $build in
      *-solaris*)
-        AC_PATH_PROG([AUTO_GOOD_SHELL], [bash],
-                       [AC_MSG_ERROR([FriCAS needs bash])], [])
+        AC_PATH_PROG([AUTO_GOOD_SHELL], [bash])
+        test -n "$AUTO_GOOD_SHELL" || AC_MSG_ERROR([FriCAS needs bash])
         ;;
      *)
         # For now we assume that /bin/sh always exists
