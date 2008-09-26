@@ -266,7 +266,7 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 (defun fricas-run ()
   "Run FriCAS in the current BUFFER."
   (start-process-shell-command "fricas" (current-buffer) 
-			       "fricas" "-noclef" "2>>fricas.errors"))
+			       "fricas" "-noclef" "2>/dev/null"))
 
 (defun fricas-check-proc (buffer)
   "Return non-nil if there is a living process associated w/buffer BUFFER.
