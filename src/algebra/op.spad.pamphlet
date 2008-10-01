@@ -22,15 +22,9 @@
 ++ Keywords: operator, kernel.
 BasicOperator(): Exports == Implementation where
   O   ==> OutputForm
-  P   ==> AssociationList(String, None)
-  L   ==> List Record(key:String, entry:None)
+  P   ==> AssociationList(Symbol, None)
+  L   ==> List Record(key:Symbol, entry:None)
   SEX ==> InputForm
--- some internal properties
-  LESS?   ==> "%less?"
-  EQUAL?  ==> "%equal?"
-  WEIGHT  ==> "%weight"
-  DISPLAY ==> "%display"
-  SEXPR   ==> "%input"
 
   Exports ==> OrderedSet with
     name      : $ -> Symbol
@@ -88,18 +82,18 @@ BasicOperator(): Exports == Implementation where
       ++ it has one attached, "failed" otherwise.
     is?        : ($, Symbol) -> Boolean
       ++ is?(op, s) tests if the name of op is s.
-    has?       : ($, String) -> Boolean
+    has?       : ($, Symbol) -> Boolean
       ++ has?(op, s) tests if property s is attached to op.
-    assert     : ($, String) -> $
+    assert     : ($, Symbol) -> $
       ++ assert(op, s) attaches property s to op.
       ++ Argument op is modified "in place", i.e. no copy is made.
-    deleteProperty_!: ($, String) -> $
+    deleteProperty_!: ($, Symbol) -> $
       ++ deleteProperty!(op, s) unattaches property s from op.
       ++ Argument op is modified "in place", i.e. no copy is made.
-    property      : ($, String) -> Union(None, "failed")
+    property      : ($, Symbol) -> Union(None, "failed")
       ++ property(op, s) returns the value of property s if
       ++ it is attached to op, and "failed" otherwise.
-    setProperty   : ($, String, None) -> $
+    setProperty   : ($, Symbol, None) -> $
       ++ setProperty(op, s, v) attaches property s to op,
       ++ and sets its value to v.
       ++ Argument op is modified "in place", i.e. no copy is made.
@@ -110,6 +104,14 @@ BasicOperator(): Exports == Implementation where
   Implementation ==> add
     -- if narg < 0 then the operator ahs variable arity.
     Rep := Record(opname:Symbol, narg:SingleInteger, props:P)
+
+    -- some internal properties
+    LESS?   := "%less?"::Symbol
+    EQUAL?  := "%equal?"::Symbol
+    WEIGHT  := "%weight"::Symbol
+    DISPLAY := "%display"::Symbol
+    SEXPR   := "%input"::Symbol
+
 
     oper: (Symbol, SingleInteger, P) -> $
 
@@ -159,7 +161,7 @@ BasicOperator(): Exports == Implementation where
       (EQ$Lisp)(op1, op2) => true
       name(op1) ^= name(op2) => false
       op1.narg ^= op2.narg => false
-      brace(keys properties op1)^=$Set(String) brace(keys properties op2) => false
+      brace(keys properties op1)^=$Set(Symbol) brace(keys properties op2) => false
       (func := property(op1, EQUAL?)) case None =>
                    ((func::None) pretend (($, $) -> Boolean)) (op1, op2)
       true
@@ -176,8 +178,8 @@ BasicOperator(): Exports == Implementation where
       (w1 := weight op1) ^= (w2 := weight op2) => w1 < w2
       op1.narg ^= op2.narg => op1.narg < op2.narg
       name(op1) ^= name(op2) => name(op1) < name(op2)
-      n1 := #(k1 := brace(keys(properties op1))$Set(String))
-      n2 := #(k2 := brace(keys(properties op2))$Set(String))
+      n1 := #(k1 := brace(keys(properties op1))$Set(Symbol))
+      n2 := #(k2 := brace(keys(properties op2))$Set(Symbol))
       n1 ^= n2 => n1 < n2
       not zero?(n1 := #(d1 := difference(k1, k2))) =>
         n1 ^= (n2 := #(d2 := difference(k2, k1))) => n1 < n2
@@ -202,9 +204,6 @@ BasicOperator(): Exports == Implementation where
 ++ Keywords: operator.
 BasicOperatorFunctions1(A:SetCategory): Exports == Implementation where
   OP   ==> BasicOperator
-  EVAL    ==> "%eval"
-  CONST   ==> "%constant"
-  DIFF    ==> "%diff"
 
   Exports ==> with
     evaluate        : (OP, List A)      -> Union(A, "failed")
@@ -243,6 +242,11 @@ BasicOperatorFunctions1(A:SetCategory): Exports == Implementation where
         ++ nullary operator always returning \spad{a}, "failed" otherwise.
 
   Implementation ==> add
+
+    EVAL    := "%eval"::Symbol
+    CONST   := "%constant"::Symbol
+    DIFF    := "%diff"::Symbol
+
     evaluate(op:OP, func:A -> A) == evaluate(op, func first #1)
 
     evaluate op ==
@@ -323,10 +327,10 @@ CommonOperators(): Exports == Implementation where
   OP  ==> BasicOperator
   O   ==> OutputForm
   POWER ==> "%power"::Symbol
-  ALGOP ==> "%alg"
-  EVEN  ==> "even"
-  ODD   ==> "odd"
-  DUMMYVAR ==> "%dummyVar"
+  ALGOP ==> "%alg"::Symbol
+  EVEN  ==> "even"::Symbol
+  ODD   ==> "odd"::Symbol
+  DUMMYVAR ==> "%dummyVar"::Symbol
 
   Exports ==> with
     operator: Symbol -> OP
@@ -474,19 +478,19 @@ CommonOperators(): Exports == Implementation where
       input(oproot,
             convert [convert("**"::Symbol)@InputForm, first #1, 1 / second #1])
       for op in algop   repeat assert(op, ALGOP)
-      for op in rtrigop repeat assert(op, "rtrig")
-      for op in htrigop repeat assert(op, "htrig")
-      for op in trigop  repeat assert(op, "trig")
-      for op in elemop  repeat assert(op, "elem")
-      for op in primop  repeat assert(op, "prim")
-      for op in combop  repeat assert(op, "comb")
-      for op in specop  repeat assert(op, "special")
-      for op in anyop   repeat assert(op, "any")
+      for op in rtrigop repeat assert(op, "rtrig"::Symbol)
+      for op in htrigop repeat assert(op, "htrig"::Symbol)
+      for op in trigop  repeat assert(op, "trig"::Symbol)
+      for op in elemop  repeat assert(op, "elem"::Symbol)
+      for op in primop  repeat assert(op, "prim"::Symbol)
+      for op in combop  repeat assert(op, "comb"::Symbol)
+      for op in specop  repeat assert(op, "special"::Symbol)
+      for op in anyop   repeat assert(op, "any"::Symbol)
       for op in evenop  repeat assert(op, EVEN)
       for op in oddop   repeat assert(op, ODD)
       for op in dummyvarop1 repeat setDummyVar(op, 1)
       for op in dummyvarop2 repeat setDummyVar(op, 2)
-      assert(oppren, "linear")
+      assert(oppren, "linear"::Symbol)
       void
 
 @

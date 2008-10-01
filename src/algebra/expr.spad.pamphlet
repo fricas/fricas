@@ -31,8 +31,6 @@ Expression(R:OrderedSet): Exports == Implementation where
   FSF ==> FunctionalSpecialFunction(R, %)
   ESD ==> ExpressionSpace_&(%)
   FSD ==> FunctionSpace_&(%, R)
-  SYMBOL ==> "%symbol"
-  ALGOP  ==> "%alg"
   POWER  ==> "%power"::Symbol
   SUP    ==> SparseUnivariatePolynomial
 
@@ -59,6 +57,10 @@ Expression(R:OrderedSet): Exports == Implementation where
 
   Implementation ==> add
     import KernelFunctions2(R, %)
+
+    SYMBOL := "%symbol"::Symbol
+    ALGOP  := "%alg"::Symbol
+
 
     retNotUnit     : % -> R
     retNotUnitIfCan: % -> Union(R, "failed")
@@ -597,7 +599,6 @@ FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
   D: Type
 
   K  ==> Kernel F
-  PMPRED  ==> "%pmpredicate"
 
   Exports ==> with
     suchThat: (F, D -> Boolean) -> F
@@ -611,6 +612,8 @@ FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
   Implementation ==> add
     import AnyFunctions1(D -> Boolean)
 
+    PMPRED  := "%pmpredicate"::Symbol
+
     st   : (K, List Any) -> F
     preds: K -> List Any
     mkk  : BasicOperator -> F
@@ -622,9 +625,15 @@ FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
       (u := property(operator k, PMPRED)) case "failed" => empty()
       (u::None) pretend List(Any)
 
+--    st(k, l) ==
+--      mkk assert(setProperty(copy operator k, PMPRED,
+--                 concat(preds k, l) pretend None), string(new()$Symbol))
+
+    -- Looks fishy, but we try to preserve meaning
     st(k, l) ==
-      mkk assert(setProperty(copy operator k, PMPRED,
-                 concat(preds k, l) pretend None), string(new()$Symbol))
+      kk := copy operator k
+      setProperty(kk, PMPRED, concat(preds k, l) pretend None)
+      kernel(kk, empty()$List(F))
 
     suchThat(p:F, l:List(D -> Boolean)) ==
       retractIfCan(p)@Union(Symbol, "failed") case Symbol =>
@@ -646,14 +655,14 @@ FunctionSpaceAssertions(R, F): Exports == Implementation where
   F: FunctionSpace R
 
   K  ==> Kernel F
-  PMOPT   ==> "%pmoptional"
-  PMMULT  ==> "%pmmultiple"
-  PMCONST ==> "%pmconstant"
+  PMOPT   ==> "%pmoptional"::Symbol
+  PMMULT  ==> "%pmmultiple"::Symbol
+  PMCONST ==> "%pmconstant"::Symbol
 
   Exports ==> with
-    assert  : (F, String) -> F
-      ++ assert(x, s) makes the assertion s about x.
-      ++ Error: if x is not a symbol.
+--    assert  : (F, String) -> F
+--      ++ assert(x, s) makes the assertion s about x.
+--      ++ Error: if x is not a symbol.
     constant: F -> F
       ++ constant(x) tells the pattern matcher that x should
       ++ match only the symbol 'x and no other quantity.
@@ -670,8 +679,8 @@ FunctionSpaceAssertions(R, F): Exports == Implementation where
       ++ Error: if x is not a symbol.
 
   Implementation ==> add
-    ass  : (K, String) -> F
-    asst : (K, String) -> F
+    ass  : (K, Symbol) -> F
+    asst : (K, Symbol) -> F
     mkk  : BasicOperator -> F
 
     mkk op == kernel(op, empty()$List(F))
@@ -684,10 +693,10 @@ FunctionSpaceAssertions(R, F): Exports == Implementation where
       has?(op := operator k, s) => k::F
       mkk assert(op, s)
 
-    assert(x, s) ==
-      retractIfCan(x)@Union(Symbol, "failed") case Symbol =>
-        asst(retract(x)@K, s)
-      error "assert must be applied to symbols only"
+--    assert(x, s) ==
+--      retractIfCan(x)@Union(Symbol, "failed") case Symbol =>
+--        asst(retract(x)@K, s)
+--      error "assert must be applied to symbols only"
 
     constant x ==
       retractIfCan(x)@Union(Symbol, "failed") case Symbol =>
@@ -708,7 +717,7 @@ FunctionSpaceAssertions(R, F): Exports == Implementation where
 \section{package PMPRED AttachPredicates}
 <<package PMPRED AttachPredicates>>=
 )abbrev package PMPRED AttachPredicates
-++ Predicates for pattern-matching
+++ Predicates for pattern-matching, unused
 ++ Author: Manuel Bronstein
 ++ Description: Attaching predicates to symbols for pattern matching.
 ++ Date Created: 21 Mar 1989
@@ -734,7 +743,7 @@ AttachPredicates(D:Type): Exports == Implementation where
 \section{package PMASS PatternMatchAssertions}
 <<package PMASS PatternMatchAssertions>>=
 )abbrev package PMASS PatternMatchAssertions
-++ Assertions for pattern-matching
+++ Assertions for pattern-matching, unused
 ++ Author: Manuel Bronstein
 ++ Description: Attaching assertions to symbols for pattern matching.
 ++ Date Created: 21 Mar 1989
@@ -744,8 +753,8 @@ PatternMatchAssertions(): Exports == Implementation where
   FE ==> Expression Integer
 
   Exports ==> with
-    assert  : (Symbol, String) -> FE
-      ++ assert(x, s) makes the assertion s about x.
+--    assert  : (Symbol, String) -> FE
+--      ++ assert(x, s) makes the assertion s about x.
     constant: Symbol -> FE
       ++ constant(x) tells the pattern matcher that x should
       ++ match only the symbol 'x and no other quantity.
@@ -764,7 +773,7 @@ PatternMatchAssertions(): Exports == Implementation where
     constant x   == constant(x::FE)
     multiple x   == multiple(x::FE)
     optional x   == optional(x::FE)
-    assert(x, s) == assert(x::FE, s)
+--    assert(x, s) == assert(x::FE, s)
 
 @
 \section{domain HACKPI Pi}

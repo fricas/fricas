@@ -165,6 +165,9 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     import AlgebraicManipulations(R, F)
     import InnerCommonDenominator(Z, Q, Vector Z, Vector Q)
 
+    HTRIG := "htrig"::Symbol
+    TRIG := "trig"::Symbol
+
     k2Elem             : (K, List SY) -> F
     realElem           : (F, List SY) -> F
     smpElem            : (SMP, List SY) -> F
@@ -299,14 +302,14 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       is?(k, "%paren"::SY) or is?(k, "%box"::SY) =>
         empty? rest args => z
         kf
-      if has?(op := operator k, "htrig") then iez  := inv(ez  := exp z)
+      if has?(op := operator k, HTRIG) then iez  := inv(ez  := exp z)
       is?(k, "sinh"::SY)  => (ez - iez) / (2::F)
       is?(k, "cosh"::SY)  => (ez + iez) / (2::F)
       is?(k, "tanh"::SY)  => (ez - iez) / (ez + iez)
       is?(k, "coth"::SY)  => (ez + iez) / (ez - iez)
       is?(k, "sech"::SY)  => 2 * inv(ez + iez)
       is?(k, "csch"::SY)  => 2 * inv(ez - iez)
-      if has?(op, "trig") then tz2  := tan(z / (2::F))
+      if has?(op, TRIG) then tz2  := tan(z / (2::F))
       is?(k, "sin"::SY)   => 2 * tz2 / (1 + tz2**2)
       is?(k, "cos"::SY)   => (1 - tz2**2) / (1 + tz2**2)
       is?(k, "sec"::SY)   => (1 + tz2**2) / (1 - tz2**2)
@@ -807,6 +810,8 @@ TrigonometricManipulations(R, F): Exports == Implementation where
     import ElementaryFunctionStructurePackage(R, F)
     import ElementaryFunctionStructurePackage(Complex R, FG)
 
+    RTRIG := "rtrig"::Symbol
+
     s1  := sqrt(-1::F)
     ipi := pi()$F * s1
 
@@ -849,13 +854,13 @@ TrigonometricManipulations(R, F): Exports == Implementation where
       explogs2trigs locexplogs eval(f, l.ker, l.val)
 
     locexplogs f ==
-      any?(has?(#1, "rtrig"),
+      any?(has?(#1, RTRIG),
            operators(g := realElementary f))$List(BasicOperator) =>
               localexplogs(f, g, variables g)
       F2FG g
 
     complexNormalize(f, x) ==
-      any?(has?(operator #1, "rtrig"),
+      any?(has?(operator #1, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                | member?(x, variables(k::F))]$List(K))$List(K) =>
                    FG2F(rischNormalize(localexplogs(f, g, [x]), x).func)
@@ -863,7 +868,7 @@ TrigonometricManipulations(R, F): Exports == Implementation where
 
     complexNormalize f ==
       l := variables(g := realElementary f)
-      any?(has?(#1, "rtrig"), operators g)$List(BasicOperator) =>
+      any?(has?(#1, RTRIG), operators g)$List(BasicOperator) =>
         h := localexplogs(f, g, l)
         for x in l repeat h := rischNormalize(h, x).func
         FG2F h
@@ -871,14 +876,14 @@ TrigonometricManipulations(R, F): Exports == Implementation where
       g
 
     complexElementary(f, x) ==
-      any?(has?(operator #1, "rtrig"),
+      any?(has?(operator #1, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                  | member?(x, variables(k::F))]$List(K))$List(K) =>
                      FG2F localexplogs(f, g, [x])
       g
 
     complexElementary f ==
-      any?(has?(#1, "rtrig"),
+      any?(has?(#1, RTRIG),
         operators(g := realElementary f))$List(BasicOperator) =>
           FG2F localexplogs(f, g, variables g)
       g
@@ -947,6 +952,8 @@ ComplexTrigonometricManipulations(R, F): Exports == Implementation where
     import InnerTrigonometricManipulations(R, FR, F)
     import ElementaryFunctionStructurePackage(Complex R, F)
 
+    RTRIG := "rtrig"::Symbol
+
     rreal?: Complex R -> Boolean
     kreal?: Kernel F -> Boolean
     localexplogs  : (F, F, List SY) -> F
@@ -969,20 +976,20 @@ ComplexTrigonometricManipulations(R, F): Exports == Implementation where
                           | is?(k, "tan"::SY) or is?(k, "cot"::SY)], lx)
 
     complexElementary f ==
-      any?(has?(#1, "rtrig"),
+      any?(has?(#1, RTRIG),
         operators(g := realElementary f))$List(BasicOperator) =>
           localexplogs(f, g, variables g)
       g
 
     complexElementary(f, x) ==
-      any?(has?(operator #1, "rtrig"),
+      any?(has?(operator #1, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                  | member?(x, variables(k::F))]$List(K))$List(K) =>
                      localexplogs(f, g, [x])
       g
 
     complexNormalize(f, x) ==
-      any?(has?(operator #1, "rtrig"),
+      any?(has?(operator #1, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                | member?(x, variables(k::F))]$List(K))$List(K) =>
                    (rischNormalize(localexplogs(f, g, [x]), x).func)
@@ -990,7 +997,7 @@ ComplexTrigonometricManipulations(R, F): Exports == Implementation where
 
     complexNormalize f ==
       l := variables(g := realElementary f)
-      any?(has?(#1, "rtrig"), operators g)$List(BasicOperator) =>
+      any?(has?(#1, RTRIG), operators g)$List(BasicOperator) =>
         h := localexplogs(f, g, l)
         for x in l repeat h := rischNormalize(h, x).func
         h

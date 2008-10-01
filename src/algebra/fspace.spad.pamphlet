@@ -26,7 +26,6 @@ ExpressionSpace(): Category == Defn where
   SY  ==> Symbol
   PAREN  ==> "%paren"::SY
   BOX    ==> "%box"::SY
-  DUMMYVAR ==> "%dummyVar"
 
   Defn ==> Join(OrderedSet, RetractableTo K,
                 InnerEvalable(K, %), Evalable %) with
@@ -162,6 +161,7 @@ ExpressionSpace(): Category == Defn where
 
    add
 
+    DUMMYVAR := "%dummyVar"::Symbol
 -- the 7 functions not provided are:
 --        kernels   minPoly   definingPolynomial
 --        coerce:K -> %  eval:(%, List K, List %) -> %
@@ -337,7 +337,7 @@ ExpressionSpace(): Category == Defn where
 ++   property of the operator of the kernel.
 -- should not be exposed
 ExpressionSpaceFunctions1(F:ExpressionSpace, S:Type): with
-    map: (F -> S, String, Kernel F) -> S
+    map: (F -> S, Symbol, Kernel F) -> S
       ++ map(f, p, k) uses the property p of the operator
       ++ of k, in order to lift f and apply it to k.
 
@@ -394,13 +394,9 @@ FunctionSpace(R:OrderedSet): Category == Definition where
   MP ==> SparseMultivariatePolynomial(R, K)
   QF==> PolynomialCategoryQuotientFunctions(IndexedExponents K,K,R,MP,%)
 
-  ODD  ==> "odd"
-  EVEN ==> "even"
-
-  SPECIALDIFF  ==> "%specialDiff"
-  SPECIALDISP  ==> "%specialDisp"
-  SPECIALEQUAL ==> "%specialEqual"
-  SPECIALINPUT ==> "%specialInput"
+  SPECIALDISP  ==> "%specialDisp"::Symbol
+  SPECIALEQUAL ==> "%specialEqual"::Symbol
+  SPECIALINPUT ==> "%specialInput"::Symbol
 
   Definition ==> Join(ExpressionSpace, RetractableTo SY, Patternable R,
                      FullyPatternMatchable R, FullyRetractableTo R) with
@@ -523,6 +519,10 @@ FunctionSpace(R:OrderedSet): Category == Definition where
          if R has RetractableTo Z then RetractableTo Fraction Z
    add
     import BasicOperatorFunctions1(%)
+
+    ODD  := "odd"::Symbol
+    EVEN := "even"::Symbol
+    SPECIALDIFF  := "%specialDiff"::Symbol
 
     -- these are needed in Ring only, but need to be declared here
     -- because of compiler bug: if they are declared inside the Ring

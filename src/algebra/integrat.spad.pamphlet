@@ -54,6 +54,8 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
     import ElementaryFunctionStructurePackage(G, FG)
     import InnerTrigonometricManipulations(R, F, FG)
 
+    RTRIG := "rtrig"::Symbol
+
     K2KG: Kernel F -> Kernel FG
 
     K2KG k                 == retract(tan F2FG first argument k)@Kernel(FG)
@@ -71,7 +73,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
 
     internalIntegrate(f, x) ==
       f := distribute(f, x::F)
-      any?(has?(operator #1, "rtrig"),
+      any?(has?(operator #1, RTRIG),
        [k for k in tower(g := realElementary(f, x))
         | member?(x, variables(k::F))]$List(Kernel F))$List(Kernel F) =>
           h := trigs2explogs(F2FG g, [K2KG k for k in tower f
@@ -109,7 +111,6 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
   SE  ==> Symbol
   IR  ==> IntegrationResult F
   FG  ==> Expression G
-  ALGOP ==> "%alg"
   TANTEMP ==> "%temptan"::SE
 
   Exports ==> with
@@ -131,6 +132,11 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     import InnerTrigonometricManipulations(R, F, FG)
     import PolynomialCategoryQuotientFunctions(IndexedExponents K,
                       K, R, SparseMultivariatePolynomial(R, K), F)
+
+    RTRIG := "rtrig"::Symbol
+    HTRIG := "htrig"::Symbol
+    ELEM := "elem"::Symbol
+    ALGOP := "%alg"::Symbol
 
     K2KG      : K -> Kernel FG
     postSubst : (F, List F, List K, B, List K, SE) -> F
@@ -198,13 +204,13 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       f   := distribute(f, x::F)
       tf  := [k for k in tower f | member?(x, variables(k::F)@List(SE))]$List(K)
       ltf := select(is?(operator #1, "tan"::SE), tf)
-      ht  := any?(has?(operator #1, "htrig"), tf)
+      ht  := any?(has?(operator #1, HTRIG), tf)
       rec := rischNormalize(realElementary(f, x), x)
       g   := rootSimp(rec.func)
       tg  := [k for k in tower g | member?(x, variables(k::F))]$List(K)
       ltg := select(is?(operator #1, "tan"::SE), tg)
-      rtg := any?(has?(operator #1, "rtrig"), tg)
-      el  := any?(has?(operator #1, "elem"), tg)
+      rtg := any?(has?(operator #1, RTRIG), tg)
+      el  := any?(has?(operator #1, ELEM), tg)
       i:IR
       if (comp := goComplex?(rtg, tg, ltg)) then
         i := map(FG2F, lfintegrate(trigs2explogs(F2FG g,
