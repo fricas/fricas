@@ -126,15 +126,15 @@ This variable is buffer-local."
                                       ;; better to use something else.
   (concat
    "(lambda (x &optional args)"
-   "  (princ (code-char 27))"
-   "  (cond ((and (eq x '|startKeyedMsg|)"
-   "              (member (car args) '('S2GL0012 'S2GL0013 'S2GL0014)))"
-   "         (princ \"|startTypeTime|\"))"
-   "        ((and (eq x '|endOfKeyedMsg|)"
-   "              (member (car args) '('S2GL0012 'S2GL0013 'S2GL0014)))"
-   "         (princ \"|endOfTypeTime|\"))"
-   "        (t (prin1 x)))"
-   "  (princ #\\Newline))"))
+     "(princ (code-char 27))"
+     "(cond ((and (eq x '|startKeyedMsg|)"
+                 "(member (car args) '('S2GL0012 'S2GL0013 'S2GL0014)))"
+            "(princ \"|startTypeTime|\"))"
+           "((and (eq x '|endOfKeyedMsg|)"
+                 "(member (car args) '('S2GL0012 'S2GL0013 'S2GL0014)))"
+            "(princ \"|endOfTypeTime|\"))"
+           "(t (prin1 x)))"
+     "(princ #\\Newline))"))
 (defvar fricas-annotate-regexp "\e\\([a-zA-Z\-]*\\)\n")
 
 (defvar fricas-mode-syntax-table
@@ -204,9 +204,10 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   (make-local-variable 'fricas-output-buffer)
   (setq fricas-output-buffer "")     ;; contains output yet to be processed
   (make-local-variable 'fricas-last-type)
-  (setq fricas-last-type 'fricas-undefined) ;; the type (and face) of the current output
+  (setq fricas-last-type 'fricas-undefined) ;; the type (and face) of the
+					    ;; current output.
   (make-local-variable 'fricas-state)
-  (setq fricas-state 'working)       ;; 'working or 'waiting
+  (setq fricas-state 'starting)       ;; starting, working or waiting
   (make-local-variable 'fricas-resync-directory)
   (setq fricas-resync-directory? nil);; are we resyncing the directory?
   (make-local-variable 'fricas-repair-prompt)
@@ -232,6 +233,9 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   (if (> emacs-major-version 21)
       (add-hook 'before-save-hook 'fricas-save-history nil t)
     (add-hook 'write-contents-hooks 'fricas-save-history))
+
+  (add-hook 'kill-buffer-query-functions 'fricas-query-kill)
+
   ;; write-region-annotate-functions is an abnormal hook and doesn't like the
   ;; "local" optional argument.
   (make-local-variable 'write-region-annotate-functions)
@@ -243,25 +247,27 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 
   (make-local-variable 'fricas-process)
   (setq fricas-process (get-buffer-process (current-buffer)))
-  (let ((running fricas-process))
+  (let ((running fricas-process)
+	(setup ")se me au off\n"))
     (unless running
       (fricas-parse-buffer)
       (fricas-run)
       (setq fricas-process (get-buffer-process (current-buffer))))
   
-    (set-process-filter fricas-process (function fricas-filter))
-    (process-send-string fricas-process ")se me au off\n")
+    (process-kill-without-query fricas-process)
+    (set-process-filter fricas-process (function fricas-banner-filter))
+;    (set-process-filter fricas-process (function fricas-filter))
     (unless running
-      (process-send-string fricas-process 
-			   (concat ")history )restore " 
-				   (buffer-file-name)
-				   "\n")))
+      (setq setup (concat setup 
+			  ")history )restore " 
+			  (buffer-file-name)
+			  "\n")))
     (process-send-string fricas-process 
-			 (concat ")lisp (setf |$ioHook| " 
+			 (concat setup 
+				 ")lisp (setf |$ioHook| " 
 				 fricas-marker-format-function 
 				 ")\n")))
-  (goto-char (point-max))
-  (set-buffer-modified-p nil))
+  (goto-char (point-max)))
 
 (defun fricas-run ()
   "Run FriCAS in the current BUFFER."
@@ -834,31 +840,31 @@ working, but this is not the case."
 ;;;
 ;;; (10) ->                            (11) ->
 
-	    (let ((inhibit-read-only t)
-		  input)
+  (let ((inhibit-read-only t)
+	input)
 ;;; is there a prompt further down?
-	      (setq fricas-repair-prompt (fricas-next-prompt-pos end-of-input-pos))
-	      (when fricas-repair-prompt
+    (setq fricas-repair-prompt (fricas-next-prompt-pos end-of-input-pos))
+    (when fricas-repair-prompt
 ;;; delete the old output
-		(delete-region (1+ end-of-input-pos) fricas-repair-prompt))
+      (delete-region (1+ end-of-input-pos) fricas-repair-prompt))
 ;;; delete and store the input
-	      (setq input (delete-and-extract-region beg-of-input-pos 
-						     end-of-input-pos))
-	      (when fricas-repair-prompt
+    (setq input (delete-and-extract-region beg-of-input-pos 
+					   end-of-input-pos))
+    (when fricas-repair-prompt
 ;;; delete the old prompt before the input
-		(delete-region (previous-single-property-change beg-of-input-pos 
-								'type)
-			       (1+ beg-of-input-pos))
+      (delete-region (previous-single-property-change beg-of-input-pos 
+						      'type)
+		     (1+ beg-of-input-pos))
 ;;; insert the new prompt from the bottom of the buffer - delete any input that
 ;;; may be left there.  The process mark is always after the last prompt
 ;;; (except when we are in UserQuery)!
-		(delete-region (process-mark fricas-process) (point-max))
-		(fricas-insert-ascii 
-		 (delete-and-extract-region (previous-single-property-change 
-					     (point-max) 'type)
-					    (point-max))
-		 'fricas-prompt))
-	      input))
+      (delete-region (process-mark fricas-process) (point-max))
+      (fricas-insert-ascii 
+       (delete-and-extract-region (previous-single-property-change 
+				   (point-max) 'type)
+				  (point-max))
+       'fricas-prompt))
+    input))
 
 (defun fricas-send-input (input &optional nohistory)
   ;;; it happens that not all of the marker is sent to stdout by FriCAS, before
@@ -871,39 +877,48 @@ working, but this is not the case."
   (setq fricas-cd (string-match " *)cd *" input))
   (process-send-string fricas-process (concat input "\n")))
 
-(defun fricas-eval () 
-  (interactive)
-  (if (eq fricas-state 'working)
-      (message "FriCAS is working")
-    (let ((pos (point))
-	  beg-of-input-pos
-	  end-of-input-pos)
-      (if (not (fricas-input? pos))
-	  (message "Not at command line")
+(defun fricas-eval-input () 
+  (let ((pos (point))
+	beg-of-input-pos
+	end-of-input-pos)
+    (if (not (fricas-input? pos))
+	(message "Not at command line")
 ;;; now we know that we are either after a prompt of after a user query.
 ;;; thus, there should be a previous text property
-	(setq beg-of-input-pos (fricas-beginning-of-region-pos pos))
-	(if fricas-query-user
+      (setq beg-of-input-pos (fricas-beginning-of-region-pos pos))
+      (if fricas-query-user
 ;;; we still need to check, whether we are in the right input-region
 ;;; for user's convenience, we move there if we aren't.
-	    (if (not (= beg-of-input-pos (process-mark fricas-process)))
-		(goto-char (process-mark fricas-process))
+	  (if (not (= beg-of-input-pos (process-mark fricas-process)))
+	      (goto-char (process-mark fricas-process))
 ;;; we are in the right place, get the input
-	      (setq end-of-input-pos (fricas-end-of-region-pos pos))
+	    (setq end-of-input-pos (fricas-end-of-region-pos pos))
+	    (when (< beg-of-input-pos end-of-input-pos)
 	      (delete-region end-of-input-pos (min (1+ end-of-input-pos)
 						   (point-max)))
+
 	      (fricas-send-input (delete-and-extract-region beg-of-input-pos 
 							    end-of-input-pos)
-				 t))
+				 t)))
 ;;; not user query
-	  (if (not (fricas-prompt? (1- beg-of-input-pos)))
-	      (message "Not after a prompt")
+	(if (not (fricas-prompt? (1- beg-of-input-pos)))
+	    (message "Not after a prompt")
 ;;; now we know that beg-of-input-pos is truly the first pos after a prompt
 
-	    (setq end-of-input-pos (fricas-end-of-region-pos pos))
+	  (setq end-of-input-pos (fricas-end-of-region-pos pos))
 ;;; now end-of-input-pos is the end of the input, possibly multi-line 
+	  (when (< beg-of-input-pos end-of-input-pos)
 	    (fricas-send-input (fricas-prepare-overwrite beg-of-input-pos 
-						       end-of-input-pos))))))))
+							 end-of-input-pos))))))))
+
+(defun fricas-eval () 
+  (interactive)
+  (cond ((eq fricas-state 'working)
+	 (message "FriCAS is working"))
+	((eq fricas-state 'starting)
+	 (process-send-string fricas-process "\n"))
+	(t (fricas-eval-input))))
+      
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -951,6 +966,11 @@ str. Returns:
 
 	  (t (error "Cannot happen")))))
 
+(defun fricas-banner-filter (proc str)
+  (message (substring str 0 (string-match "\n" str)))
+  (when (string-match "(1) ->" str)
+    (set-process-filter fricas-process (function fricas-filter))))
+
 (defun fricas-filter (proc str)
   (with-current-buffer (process-buffer proc)
     (let ((output-index 0) 
@@ -975,6 +995,7 @@ str. Returns:
 				      fricas-last-type))
 
 		((equal (car output-type) "\e|startReadLine|\n")  ;; expect input after prompt
+		 (when (eq fricas-state 'starting) (set-buffer-modified-p nil))
 		 (setq fricas-state 'waiting)
 		 (setq fricas-last-type nil))
 		((equal (car output-type) "\e|endOfReadLine|\n")
@@ -1051,7 +1072,7 @@ str. Returns:
 		     (goto-char (process-mark proc)))))))
 
 (defun fricas-insert-output (str beg end type)
-"inserts the substring of str into the buffer"
+  "inserts the substring of str into the buffer"
   (fricas-insert-ascii (substring str beg end) type))
 
 (defun fricas-insert-ascii (str type)
@@ -1244,8 +1265,8 @@ does not store the %% facility correctly.  Then issues )history )save."
 (defun fricas-query-kill ()
   (if (eq major-mode 'fricas-mode)
       (or (not (buffer-modified-p))
-          (yes-or-no-p (format "Buffer %s modified; kill anyway? "
-                               (buffer-name))))
+	  (yes-or-no-p (format "Buffer %s modified; kill anyway? "
+			       (buffer-name))))
     t))
 
 (defun fricas-write-annotated-region (start end)
