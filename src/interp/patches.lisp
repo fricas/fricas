@@ -47,6 +47,10 @@
 
 (defun |mkAutoLoad| (fn cname)
    (function (lambda (&rest args)
+                 #+:sbcl
+                 (handler-bind ((style-warning #'muffle-warning))
+                     (|autoLoad| fn cname))
+                 #-:sbcl
                  (|autoLoad| fn cname)
                  (apply cname args))))
 

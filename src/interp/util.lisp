@@ -646,6 +646,10 @@ call succeeds.
 |#
 (defun |mkBootAutoLoad| (fn file-list)
    (function (lambda (&rest args)
+                 #+:sbcl
+                 (handler-bind ((style-warning #'muffle-warning))
+                     (mapc #'boot-load file-list))
+                 #-:sbcl
                  (mapc #'boot-load file-list)
                  (unless (string= (subseq (string fn) 0 4) "LOAD")
                   (apply (symbol-function fn) args)))))
