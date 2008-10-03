@@ -45,8 +45,6 @@ SortedCache(S:CachableSet): Exports == Implementation where
   Exports ==> with
     clearCache  : () -> Void
       ++ clearCache() empties the cache.
-    cache       : () -> List S
-      ++ cache() returns the current cache as a list.
     enterInCache: (S, S -> Boolean) -> S
       ++ enterInCache(x, f) enters x in the cache, calling \spad{f(y)} to
       ++ determine whether x is equal to y. It returns x with an integer
@@ -58,52 +56,105 @@ SortedCache(S:CachableSet): Exports == Implementation where
       ++ It returns x with an integer associated with it.
 
   Implementation ==> add
-    shiftCache   : (List S, N) -> Void
-    insertInCache: (List S, List S, S, N) -> S
+    shiftCache   : (N, N) -> Void
+    insertInCache: (N, S, N) -> S
+    expandCache: (S) -> Void
+    insertBefore : (N, S) -> Void
 
-    cach := [nil()]$Record(cche:List S)
+    cache : PrimitiveArray S := empty()$(PrimitiveArray S)
+    cache__size : N := 0;
+    cache__use : N := 0;
 
-    cache() == cach.cche
+    expandCache(x) ==
+        if cache__size = cache__use then
+	    ocache := cache
+	    cache__size := 2*cache__size + 10
+            cache := new(cache__size, x)$(PrimitiveArray S)
+	    for k in 0..(cache__use - 1) repeat
+	        cache(k) := ocache(k)
+        void
 
+    insertBefore(l, x) ==
+        k : Integer
+        expandCache(x)
+	vscan := cache
+	for k in 0..(cache__use - l - 1) repeat
+	    vscan(cache__use - k) := vscan(cache__use - k - 1)
+	vscan(l) := x
+	cache__use := cache__use + 1
+	void
+	    
     shiftCache(l, n) ==
-      for x in l repeat setPosition(x, n + position x)
-      void
+        k : Integer
+	vscan := cache
+        for k in l..(cache__use - 1) repeat
+            x := vscan(k)
+            setPosition(x, n + position x)
+        void
 
     clearCache() ==
-      for x in cache repeat setPosition(x, 0)
-      cach.cche := nil()
-      void
+        k : Integer
+	vscan := cache
+	for k in 0..(cache__use - 1) repeat
+	    x := vscan(k)
+	    setPosition(x, 0)
+	cache := empty()$(PrimitiveArray S)
+	cache__size := 0
+	cache__use := 0
+        void
+
+    insertAtEnd(x:S):Void ==
+        expandCache(x)
+        cache(cache__use) := x
+        cache__use := cache__use + 1
+	void
 
     enterInCache(x:S, equal?:S -> Boolean) ==
-      scan := cache()
-      while not null scan repeat
-        equal?(y := first scan) =>
-          setPosition(x, position y)
-          return y
-        scan := rest scan
-      setPosition(x, 1 + #cache())
-      cach.cche := concat(cache(), x)
-      x
+        k : Integer
+        vscan := cache
+        for k in 0..(cache__use - 1) repeat
+            y := vscan(k)
+            equal?(y) =>
+                setPosition(x, position y)
+                return y
+        setPosition(x, 1 + cache__use)
+	insertAtEnd(x)
+        x
 
     enterInCache(x:S, triage:(S, S) -> Integer) ==
-      scan := cache()
-      pos:N:= 0
-      for i in 1..#scan repeat
-        zero?(n := triage(x, y := first scan)) =>
-          setPosition(x, position y)
-          return y
-        n<0 => return insertInCache(first(cache(),(i-1)::N),scan,x,pos)
-        scan := rest scan
-        pos  := position y
-      setPosition(x, pos + DIFF)
-      cach.cche := concat(cache(), x)
-      x
+        vscan := cache
+        l : Integer := -1
+        m : Integer := cache__use
+        m0 := m
+        zero?(cache__use) =>
+            setPosition(x, DIFF)
+	    insertAtEnd(x)
+            return x
+        while (l + 1) < m repeat
+            i := shift(l + m, -1)
+            cp := triage(x, y := qelt(vscan, i))
+            zero?(cp) =>
+                setPosition(x, position y)
+                return y
+            if cp < 0 then
+                m := i
+            else
+                l := i
+        m = m0 =>
+            setPosition(x, (position qelt(vscan, m - 1)) + DIFF)
+	    insertAtEnd(x)
+            return x
+        pos :N :=
+                l < 0 => 0
+                position qelt(vscan, l)
+        insertInCache((l+1)::N, x, pos)
 
-    insertInCache(before, after, x, pos) ==
-      if ((pos+1) = position first after) then shiftCache(after, DIFF)
-      setPosition(x, pos + (((position first after) - pos)::N quo 2))
-      cach.cche := concat(before, concat(x, after))
-      x
+    insertInCache(before, x, pos) ==
+        y := cache(before)
+        if ((pos+1) = position y) then shiftCache(before, DIFF)
+        setPosition(x, pos + (((position y) - pos)::N quo 2))
+	insertBefore(before, x)
+        x
 
 @
 \section{domain MKCHSET MakeCachableSet}
