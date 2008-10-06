@@ -48,9 +48,13 @@
 ;;
 ;; Read the rest of this file for more information.
 
+;; BUGS and ToDo's: 
+;;   I need a way to get out of the mode, or, at least, make the debugger work    
+;;   yanking should loose type information (done for emacs22)
+
 ;;; Code:
 
-;; this contains a list of all fricas operations and constructors
+;; this contains a list of all FriCAS operations and constructors
 (require 'fricas-cpl)
 
 ;; customizable variables
@@ -243,7 +247,10 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 
   (auto-save-mode -1)
   (setq font-lock-defaults nil)
-
+  
+  (when (> emacs-major-version 21)
+    (make-local-variable 'yank-excluded-properties)
+    (setq yank-excluded-properties (cons 'type yank-excluded-properties)))
 
   (make-local-variable 'fricas-process)
   (setq fricas-process (get-buffer-process (current-buffer)))
@@ -819,6 +826,13 @@ previous prompt.  Otherwise, point stays where it is."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; evaluating input
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fricas-nocheck-eval ()
+  "Emergency function that evaluates without checking"
+  (interactive)
+  (setq input (delete-and-extract-region (process-mark fricas-process) 
+					 (point)))
+  (process-send-string fricas-process (concat input "\n")))
+
 (defun fricas-set-idle ()
   "Emergency function in case emacs thinks that FriCAS is
 working, but this is not the case."
@@ -894,12 +908,17 @@ working, but this is not the case."
 ;;; we are in the right place, get the input
 	    (setq end-of-input-pos (fricas-end-of-region-pos pos))
 	    (when (< beg-of-input-pos end-of-input-pos)
-	      (delete-region end-of-input-pos (min (1+ end-of-input-pos)
-						   (point-max)))
+	      (if (char-equal (char-before end-of-input-pos) ?_)
+		  (progn 
+		    (goto-char end-of-input-pos)
+		    (fricas-insert-ascii "\n" nil))
 
-	      (fricas-send-input (delete-and-extract-region beg-of-input-pos 
-							    end-of-input-pos)
-				 t)))
+		(delete-region end-of-input-pos (min (1+ end-of-input-pos)
+						     (point-max)))
+		  
+		(fricas-send-input (delete-and-extract-region beg-of-input-pos 
+							      end-of-input-pos)
+				   t))))
 ;;; not user query
 	(if (not (fricas-prompt? (1- beg-of-input-pos)))
 	    (message "Not after a prompt")
@@ -908,8 +927,12 @@ working, but this is not the case."
 	  (setq end-of-input-pos (fricas-end-of-region-pos pos))
 ;;; now end-of-input-pos is the end of the input, possibly multi-line 
 	  (when (< beg-of-input-pos end-of-input-pos)
-	    (fricas-send-input (fricas-prepare-overwrite beg-of-input-pos 
-							 end-of-input-pos))))))))
+	    (if (char-equal (char-before end-of-input-pos) ?_)
+		(progn 
+		  (goto-char end-of-input-pos)
+		  (fricas-insert-ascii "\n" nil))
+	      (fricas-send-input (fricas-prepare-overwrite beg-of-input-pos 
+							   end-of-input-pos)))))))))
 
 (defun fricas-eval () 
   (interactive)
@@ -918,8 +941,6 @@ working, but this is not the case."
 	((eq fricas-state 'starting)
 	 (process-send-string fricas-process "\n"))
 	(t (fricas-eval-input))))
-      
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dealing with output
