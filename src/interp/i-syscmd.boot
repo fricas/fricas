@@ -1498,10 +1498,7 @@ putHist(x,prop,val,e) ==
   putIntSymTab(x,prop,val,e)
 
 histFileErase file ==
-  --OBEY STRCONC('"rm -rf ", file)
-  PROBE_-FILE(file) and DELETE_-FILE(file)
-
-
+  _$ERASE(file)
 
 recordNewValue(x,prop,val) ==
   startTimingProcess 'history
