@@ -263,7 +263,6 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   
     (process-kill-without-query fricas-process)
     (set-process-filter fricas-process (function fricas-banner-filter))
-;    (set-process-filter fricas-process (function fricas-filter))
     (unless running
       (setq setup (concat setup 
 			  ")history )restore " 
@@ -278,6 +277,7 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 
 (defun fricas-run ()
   "Run FriCAS in the current BUFFER."
+  (message "Starting FriCAS...")
   (start-process-shell-command "fricas" (current-buffer) 
 			       "fricas" "-noclef" "2>/dev/null"))
 
@@ -988,10 +988,11 @@ str. Returns:
 	  (t (error "Cannot happen")))))
 
 (defun fricas-banner-filter (proc str)
-  (message (substring str 0 (string-match "\n" str)))
-  (when (string-match "(1) ->" str)
-    (message "FriCAS is ready")
-    (set-process-filter fricas-process (function fricas-filter))))
+  (with-current-buffer (process-buffer proc)
+    (message (substring str 0 (string-match "\n" str)))
+    (when (string-match "(1) ->" str)
+      (message "FriCAS is ready")
+      (set-process-filter fricas-process (function fricas-filter)))))
 
 (defun fricas-filter (proc str)
   (with-current-buffer (process-buffer proc)
