@@ -215,7 +215,7 @@ bfReduce(op,y)==
      init:=GET(op,"SHOETHETA")
      g:=bfGenSymbol()
      g1:=bfGenSymbol()
-     body:=['SETQ,g,[op,g1,g]]
+     body := ["SETQ", g, [op, g, g1]]
      if null init
      then
         g2:=bfGenSymbol()
