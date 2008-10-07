@@ -810,24 +810,24 @@ previous prompt.  Otherwise, point stays where it is."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun fricas-copy-to-clipboard (&optional arg)
-   "Copy the arg previous input-output combinations into the kill-ring."
-   (interactive "p")
-   (when (> arg 0)
-     (let ((n arg)
-	   (end (or (fricas-next-prompt-pos (point)) (point-max)))
-	   (begin (point)))
-       (while (and (> n 0)
-		   (not (= begin (point-min))))
-	 (setq begin (or (fricas-previous-prompt-pos (1- begin))
-			 (point-min)))
-	 (setq n (1- n)))
-       (clipboard-kill-ring-save begin end))))
+  "Copy the arg previous input-output combinations into the kill-ring."
+  (interactive "p")
+  (when (> arg 0)
+    (let ((n arg)
+	  (end (or (fricas-next-prompt-pos (point)) (point-max)))
+	  (begin (point)))
+      (while (and (> n 0)
+		  (not (= begin (point-min))))
+	(setq begin (or (fricas-previous-prompt-pos (1- begin))
+			(point-min)))
+	(setq n (1- n)))
+      (clipboard-kill-ring-save begin end))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; evaluating input
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun fricas-nocheck-eval ()
-  "Emergency function that evaluates without checking"
+  "Emergency function that evaluates without checking."
   (interactive)
   (setq input (delete-and-extract-region (process-mark fricas-process) 
 					 (point)))
@@ -840,7 +840,7 @@ working, but this is not the case."
   (setq fricas-state 'waiting))
 
 (defun fricas-prepare-overwrite (beg-of-input-pos end-of-input-pos)
-  "Returns the input string"
+  "Returns the input string and prepares current input-output cell."
 ;;; if there is a prompt further down, we delete old prompt and output, and
 ;;; write the prompt from the very end of the buffer (which is always the last
 ;;; one) instead, and the new input instead.  fricas-repair-prompt is checked
@@ -990,6 +990,7 @@ str. Returns:
 (defun fricas-banner-filter (proc str)
   (message (substring str 0 (string-match "\n" str)))
   (when (string-match "(1) ->" str)
+    (message "FriCAS is ready")
     (set-process-filter fricas-process (function fricas-filter))))
 
 (defun fricas-filter (proc str)
