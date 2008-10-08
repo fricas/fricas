@@ -556,7 +556,7 @@ makeFunctorArgumentParameters(argl,sigl,target) ==
         $ConditionalOperators:=[CDR u,:$ConditionalOperators]
       s is ['Join,:sl] =>
         u:=ASSQ('CATEGORY,ss) =>
-          SUBST([:u,:ss],u,s)
+          substitute([:u, :ss], u, s)
         ['Join,:sl,['CATEGORY,'package,:ss]]
       ['Join,s,['CATEGORY,'package,:ss]]
     fn(a,s) ==
@@ -614,7 +614,7 @@ mkOpVec(dom,siglist) ==
     assoc(sig,u) is [.,n,.,'ELT] => ops.i := dom.n
     noplist:= SUBLIS(substargs,u)
  -- following variation on assoc needed for GENSYMS in Mutable domains
-    AssocBarGensym(SUBST(dom.0,'$,sig),noplist) is [.,n,.,'ELT] =>
+    AssocBarGensym(substitute(dom.0, '$, sig), noplist) is [., n, ., 'ELT] =>
                    ops.i := dom.n
     ops.i := [Undef,[dom.0,i],:opSig]
   ops
@@ -881,7 +881,7 @@ stripOffArgumentConditions argl ==
   [f for x in argl for i in 1..] where
     f() ==
       x is ["|",arg,condition] =>
-        condition:= SUBST('_#1,arg,condition)
+        condition := substitute('_#1, arg, condition)
         -- in case conditions are given in terms of argument names, replace
         $argumentConditionList:= [[i,arg,condition],:$argumentConditionList]
         arg

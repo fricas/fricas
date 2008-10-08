@@ -245,7 +245,7 @@ makeFunctorArgumentParameters(argl,sigl,target) ==
         $ConditionalOperators:=[CDR u,:$ConditionalOperators]
       s is ['Join,:sl] =>
         u:=ASSQ('CATEGORY,ss) =>
-          SUBST([:u,:ss],u,s)
+          substitute([:u,:ss],u,s)
         ['Join,:sl,['CATEGORY,'package,:ss]]
       ['Join,s,['CATEGORY,'package,:ss]]
     fn(a,s) ==
@@ -520,7 +520,7 @@ compFormWithModemap1(form,m,e,modemap,Rep2Dollar?) ==
      -- mode= ",map," sharp vars=",sv]
     for x in argl for ss in $FormalMapVariableList repeat
       if ss in sv then
-        [map:= [.,target,:.],:cexpr]:= modemap :=SUBST(x,ss,modemap)
+        [map:= [.,target,:.],:cexpr]:= modemap := substitute(x, ss, modemap)
         -- SAY ["new map is",map]
   not (target':= coerceable(target,m,e)) => nil
   markMap := map

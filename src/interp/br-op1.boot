@@ -661,8 +661,8 @@ dbShowOpDocumentation(htPage,opAlist,which,data) ==
         pred := predicate or true
         index := (exactlyOneOpSig => nil; base + j)
         if which = '"package operation" then
-          sig    := SUBST(conform,'_$,sig)
-          origin := SUBST(conform,'_$,origin)
+          sig    := substitute(conform, '_$, sig)
+          origin := substitute(conform, '_$, origin)
         displayDomainOp(htPage,newWhich,origin,op,sig,pred,doc,index,'dbChooseDomainOp,null exposeFlag,true)
   htSaySaturn '"\end{description}"
 
@@ -858,7 +858,7 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
 --  must change any % into $ otherwise we will not pick up comments properly
 --  delete the SUBLISLIS when we fix on % or $ 
               dbGetDocTable(op,SUBLISLIS(['$],['%],sig),dbDocTable origin,which,nil)
-            if packageSymbol then sig := SUBST('_$,packageSymbol,sig)
+            if packageSymbol then sig := substitute('_$, packageSymbol, sig)
             dbGetDocTable(op,sig,docTable,which,nil)
           origin := IFCAR u or origin
           docCode := IFCDR u   --> (doc . code)
@@ -953,9 +953,9 @@ getDomainOpTable(dom,fromIfTrue,:options) ==
           f = 'nowhere => 'nowhere           --see replaceGoGetSlot
           f = function makeSpadConstant => 'constant
           f = function IDENTITY => 'constant
-          f = function newGoGet => SUBST('_$,domname,devaluate CAR r)
+          f = function newGoGet => substitute('_$, domname, devaluate CAR r)
           null VECP r => systemError devaluateList r
-          SUBST('_$,domname,devaluate r)
+          substitute('_$, domname, devaluate r)
         'nowhere
       [sig1,:info]
 

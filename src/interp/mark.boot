@@ -970,7 +970,7 @@ markFinishBody capsuleBody ==
     [:[markFinishItem x for x in itemlist],:$extraDefinitions]
   nil
 
-markCatsub x == SUBST("$",$categoryNameForDollar,x)
+markCatsub x == substitute("$", $categoryNameForDollar, x)
  
 markFinishItem x ==
   $macroAlist : local := [:$localMacroStack,:$globalMacroStack]

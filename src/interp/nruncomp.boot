@@ -126,7 +126,7 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
 --if (atom dc) and (dcval := get(dc,'value,$e))
 --   then ndc := dcval.expr
 --   else ndc := dc
-  sig := SUBST(ndc,dc,sig)
+  sig := substitute(ndc, dc, sig)
   not MEMQ(KAR ndc,$optimizableConstructorNames) => nil
   dcval := optCallEval ndc
   -- MSUBST guarantees to use EQUAL testing

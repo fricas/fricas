@@ -181,7 +181,7 @@ dbInfoOrigin(op,sig,t) ==
   [sig = sig1 for [sig1,:.] in LASSOC(op, koOps(t,nil))] => t
   false
 
-dbInfoTran(con,opSigList) == [con,:SUBST("$",con,mySort opSigList)]
+dbInfoTran(con, opSigList) == [con, :substitute("$", con, mySort opSigList)]
 
 zeroOneConvertAlist u == [[zeroOneConvert x,:y] for [x,:y] in u]
 
@@ -258,7 +258,7 @@ getInfoAlist conname ==
   alist := mySort VMREAD inStream
   if cat? then
     [.,dollarName,:.] := GETDATABASE(conname,'CONSTRUCTORFORM)
-    alist := SUBST("$",dollarName,alist)
+    alist := substitute("$", dollarName, alist)
   alist
 
 

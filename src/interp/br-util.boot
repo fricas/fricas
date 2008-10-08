@@ -440,7 +440,7 @@ extractHasArgs pred ==
       MEMQ(op,'(AND OR NOT)) => or/[find y for y in argl]
       nil
     nil
-  [rest x,:simpBool SUBST('T,x,pred)]
+  [rest x, :simpBool substitute('T, x, pred)]
 
 splitConTable cons ==
   uncond := cond := nil

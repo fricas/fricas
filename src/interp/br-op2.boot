@@ -239,7 +239,8 @@ getSubstInsert(x,candidates) ==
     return insert(x,candidates)
     null candidates => [x]
     or/[CONTAINED(x,y) for y in candidates] => candidates
-    y := or/[CONTAINED(y,x) for y in candidates] => SUBST(x,y,candidates)
+    y := or/[CONTAINED(y, x) for y in candidates] =>
+        substitute(x, y, candidates)
     candidates
 
 
@@ -560,7 +561,7 @@ modemap2Sig(op,mm) ==
   if partial? then
     target := dcSig . 1
     ntarget := ['Union, target, '"failed"]
-    dcSig := SUBST(ntarget, target, dcSig)
+    dcSig := substitute(ntarget, target, dcSig)
   alist := findSubstitutionOrder? pairlis(vlist, flist) or systemError()
   predList := substInOrder(alist, predList)
   nsig := substInOrder(alist, sig)
@@ -572,7 +573,7 @@ modemap2Sig(op,mm) ==
     pp mm
     $badStack := [[op, mm], :$badStack]
 --pause nsig
-  [predList, origin, SUBST("%", origin, nsig)]
+  [predList, origin, substitute("%", origin, nsig)]
 
 modemap2SigConds conds ==
   conds is ['OR,:r] => modemap2SigConds first r

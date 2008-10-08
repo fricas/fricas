@@ -312,7 +312,7 @@ moveORsOutside p ==
   p is ['AND,:q] =>
     q := [moveORsOutside r for r in q]
     x := or/[r for r in q | r is ['OR,:s]] =>
-      moveORsOutside(['OR,:[['AND,:SUBST(t,x,q)] for t in CDR x]])
+      moveORsOutside(['OR, :[['AND, :substitute(t, x, q)] for t in CDR x]])
     ['AND,:q]
   p
 

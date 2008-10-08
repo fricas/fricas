@@ -395,7 +395,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|setDifference| SETDIFFERENCE)
   (|setPart| SETELT)
   (|size| SIZE)
-  (SUBST MSUBST)
   (|take| TAKE)
   (|true| 'T)
   (|where| WHERE)

@@ -54,7 +54,7 @@ In order not to have to change this everywhere we do a subsitution here.
 
 parseTransform x ==
   $defOp: local:= nil
-  x := substitute('$,'%,x) -- for new compiler compatibility
+  x := SUBST('$, '%, x) -- for new compiler compatibility
   parseTran x
 
 )if false
@@ -287,25 +287,29 @@ parseCategory x ==
   ['CATEGORY,key,:l]
  
 parseGreaterThan [x,y] ==
-  [substitute("<",">",$op),parseTran y,parseTran x]
+  [SUBST("<", ">", $op), parseTran y, parseTran x]
  
-parseGreaterEqual u == parseTran ['not,[substitute("<",">=",$op),:u]]
+parseGreaterEqual u == parseTran ['not, [SUBST("<", ">=", $op), :u]]
  
-parseLessEqual u == parseTran ['not,[substitute(">","<=",$op),:u]]
+parseLessEqual u == parseTran ['not, [SUBST(">", "<=", $op), :u]]
  
-parseNotEqual u == parseTran ['not,[substitute("=","^=",$op),:u]]
+parseNotEqual u == parseTran ['not, [SUBST("=", "^=", $op), :u]]
  
 parseDollarGreaterThan [x,y] ==
-  [substitute("$<","$>",$op),parseTran y,parseTran x]
+  BREAK()
+  [SUBST("$<","$>",$op),parseTran y,parseTran x]
  
 parseDollarGreaterEqual u ==
-  parseTran ['not,[substitute("$<","$>=",$op),:u]]
+  BREAK()
+  parseTran ['not,[SUBST("$<","$>=",$op),:u]]
  
 parseDollarLessEqual u ==
-  parseTran ['not,[substitute("$>","$<=",$op),:u]]
+  BREAK()
+  parseTran ['not,[SUBST("$>","$<=",$op),:u]]
  
 parseDollarNotEqual u ==
-  parseTran ['not,[substitute("$=","$^=",$op),:u]]
+  BREAK()
+  parseTran ['not,[SUBST("$=","$^=",$op),:u]]
  
 parseAnd u ==
   $InteractiveMode => ["and",:parseTranList u]

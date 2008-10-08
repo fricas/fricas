@@ -427,7 +427,7 @@ getSlotFromDomain(dom,op,oldSig) ==
   --  signature is oldSig may be found in the domain dom
   oldSig:= removeOPT oldSig
   dom:= removeOPT dom
-  sig:= SUBST("$",dom,oldSig)
+  sig := substitute("$", dom, oldSig)
   loadIfNecessary first dom
   isPackageForm dom => getSlotFromPackage(dom,op,oldSig)
   domain:= evalDomain dom

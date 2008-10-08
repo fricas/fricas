@@ -158,7 +158,7 @@ formatModemap modemap ==
   concat(firstPart,'%l,predPart)
 
 substInOrder(alist,x) ==
-  alist is [[a,:b],:y] => substInOrder(y,SUBST(b,a,x))
+  alist is [[a, :b], :y] => substInOrder(y, substitute(b, a, x))
   x
 
 reportOpSymbol op1 ==
@@ -748,7 +748,8 @@ formatPredParts s ==
   s is ['devaluate,s1] => formatPredParts s1
   s is ['getDomainView,s1,.] => formatPredParts s1
   s is ['SUBST,a,b,c] =>    -- this is a signature
-    s1 := formatPredParts SUBST(formatPredParts a,b,c)
+    BREAK()
+    s1 := formatPredParts substitute(formatPredParts a,b,c)
     s1 isnt [fun,sig] => s1
     ['SIGNATURE,fun,[formatPredParts(r) for r in sig]]
   s

@@ -355,7 +355,7 @@ renamePatternVariables1(condList, substList, patVars) ==
 
 substFromAlist(l, substAlist) ==
   for [pvar, :replace] in substAlist repeat
-    l := SUBST(replace, pvar, l)
+    l := substitute(replace, pvar, l)
   l
 
 computeDomainVariableAlist() ==

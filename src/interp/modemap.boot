@@ -235,7 +235,7 @@ augModemapsFromCategoryRep(domainName,repDefn,functorBody,categoryForm,e) ==
   e:= putDomainsInScope(domainName,e)
   $base:= 4
   for [lhs:=[op,sig,:.],cond,fnsel] in fnAlist repeat
-    u:= assoc(SUBST('Rep,domainName,lhs),repFnAlist)
+    u := assoc(substitute('Rep, domainName, lhs), repFnAlist)
     u and not AMFCR_,redefinedList(op,functorBody) =>
       fnsel':=CADDR u
       e:= addModemap(op,domainName,sig,cond,fnsel',e)

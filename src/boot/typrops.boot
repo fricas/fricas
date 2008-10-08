@@ -208,7 +208,6 @@ for i in [ _
   ["setUnion",   "UNION"]  , _
   ["size",        "SIZE"]  , _
   ["strconc",  "CONCAT"]  , _
-  ["substitute", "SUBST"]  , _
   ["take",        "TAKE"]  , _
   ["true",           "T"]  , _
   ["PLUS",           "+"]  , _
