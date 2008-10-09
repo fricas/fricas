@@ -1797,7 +1797,7 @@ writify ob ==
                 (qcar = function newGoGet) =>
                     writifyInner replaceGoGetSlot qcdr
                 (name := spadClosure? ob) =>
-                   d := writifyInner qcdr ob
+                   d := writifyInner qcdr
                    nob := ['WRITIFIED_!_!, 'SPADCLOSURE, d, name]
                    HPUT($seen, ob, nob)
                    HPUT($seen, nob, nob)
