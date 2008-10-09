@@ -1794,8 +1794,10 @@ writify ob ==
             PAIRP ob =>
                 qcar := QCAR ob
                 qcdr := QCDR ob
+                (qcar = function newGoGet) =>
+                    writifyInner replaceGoGetSlot qcdr
                 (name := spadClosure? ob) =>
-                   d := writifyInner QCDR ob
+                   d := writifyInner qcdr ob
                    nob := ['WRITIFIED_!_!, 'SPADCLOSURE, d, name]
                    HPUT($seen, ob, nob)
                    HPUT($seen, nob, nob)
@@ -1883,6 +1885,7 @@ writifyComplain s ==
 spadClosure? ob ==
   fun := QCAR ob
   not (name := BPINAME fun) => nil
+  name = "WRAPPED" => nil
   vec := QCDR ob
   not VECP vec => nil
   name
