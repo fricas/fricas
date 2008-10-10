@@ -510,7 +510,7 @@ bfIS1(lhs,rhs) ==
   NULL rhs =>
     ['NULL,lhs]
   STRINGP rhs =>
-    ['EQ,lhs,['QUOTE,INTERN rhs]]
+    ['EQUAL, lhs, ["QUOTE", rhs]]
   NUMBERP rhs =>
     ["EQUAL",lhs,rhs]
   ATOM rhs =>
