@@ -32,8 +32,6 @@
 
 getOperationAlistFromLisplib x ==
   -- used to be in clammed.boot. Moved on 1/24/94
---+
---  newType? x => GETDATABASE(x, 'OPERATIONALIST)
   NRTgetOperationAlistFromLisplib x
 
 NRTgetOperationAlistFromLisplib x ==

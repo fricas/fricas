@@ -711,11 +711,6 @@ newHasCategory(domain,catform) ==
   $isDefaultingPackage: local := isDefaultPackageForm? devaluate domain
   #catvec > 0 and INTEGERP KDR catvec.0 =>              --old style
     BREAK()
-    predIndex := lazyMatchAssocV1(catform,catvec,domain)
-    null predIndex => false
-    EQ(predIndex,0) => true
-    predvec := QVELT(domain,3)
-    testBitVector(predvec,predIndex)
   lazyMatchAssocV(catform,auxvec,catvec,domain)         --new style
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)

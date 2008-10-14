@@ -106,13 +106,6 @@ termMatch(tp,t,SL,vars) ==
  
 --% substitution handling
  
--- isContained(v,t) ==
---   -- tests (by EQ), whether v occurs in term t
---   -- v must not be NIL
---   EQ(v,t) => 'T
---   atom t => NIL
---   isContained(v,CAR t) or isContained(v,CDR t)
- 
 augmentSub(v,t,SL) ==
   -- destructively adds the pair (v,t) to the substitution list SL
   -- t doesn't contain any of the variables of SL

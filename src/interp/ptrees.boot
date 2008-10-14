@@ -763,4 +763,46 @@ pfFlattenApp x==
    [x]
 
 
+--% Utility operations on Abstract Syntax Trees (former ptrop.boot)
+ 
+-- An S-expression which people can read.
+pfSexpr pform ==
+    strip pform where
+         strip pform ==
+            pfId? pform       => pfIdSymbol pform
+            pfLiteral?  pform => pfLiteralString pform
+            pfLeaf? pform     => tokPart pform
+ 
+            pfApplication? pform =>
+                args :=
+                    a := pfApplicationArg pform
+                    if pfTuple? a then pf0TupleParts a else [a]
+                [strip p for p in cons(pfApplicationOp pform, args)]
+ 
+            cons(pfAbSynOp pform, [strip p for p in pfParts pform])
+ 
+pfCopyWithPos( pform , pos ) == 
+    pfLeaf? pform =>         pfLeaf( pfAbSynOp pform , tokPart pform , pos )
+    pfTree( pfAbSynOp pform , [ pfCopyWithPos( p , pos ) for p in pfParts pform ] )
+ 
+pfMapParts(f, pform) ==
+    pfLeaf? pform => pform
+    parts0 := pfParts pform
+    parts1 := [FUNCALL(f, p) for p in parts0]
+    -- Return the original if no changes.
+    same := true
+    for p0 in parts0 for p1 in parts1 while same repeat same := EQ(p0,p1)
+    same => pform
+    pfTree(pfAbSynOp pform, parts1)
+ 
+ 
+pf0ApplicationArgs pform ==
+    arg := pfApplicationArg pform
+    pf0FlattenSyntacticTuple arg
+ 
+pf0FlattenSyntacticTuple pform ==
+    not pfTuple? pform => [pform]
+    [:pf0FlattenSyntacticTuple p for p in pf0TupleParts pform]
+ 
+
 

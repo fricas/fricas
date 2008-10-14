@@ -502,13 +502,6 @@ newHasTest(domform,catOrAtt) ==
     newHasCategory(domain,catOrAtt)
   systemError '"newHasTest expects category from"
  
-lazyMatchAssocV1(x,vec,domain) ==               --old style slot4
-  BREAK()
-  n : FIXNUM := MAXINDEX vec
-  xop := CAR x
-  or/[QCDR QVELT(vec,i) for i in 0..n |
-    xop = CAR (lazyt := CAR QVELT(vec,i)) and lazyMatch(x,lazyt,domain,domain)]
- 
 --=======================================================
 --                   Utility Functions
 --=======================================================

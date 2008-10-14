@@ -322,7 +322,6 @@ formatTail1 x ==
     format ":" and formatConstructItem a and formatTail b
   format ":" and formatConstructItem x and format "]"
  
--- x = "." => format ""
 formatConstructItem x == format x
  
 formatLET ["LET",a,b] == 

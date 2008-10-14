@@ -180,16 +180,6 @@ concat1(x,y) ==
   atom y => [:x,y]
   [:x,:y]
 
---% BOOT ravel and reshape
-
-ravel a == a
-
-reshape(a,b) == a
-
---% Some functions for algebra code
-
-boolODDP x == ODDP x
-
 --% Miscellaneous
 
 freeOfSharpVars x ==
@@ -227,13 +217,6 @@ removeZeroOneDestructively t ==
   atom t => t
   RPLNODE(t,removeZeroOneDestructively first t,
     removeZeroOneDestructively rest t)
-
-flattenSexpr s ==
-  null s => s
-  ATOM s => s
-  [f,:r] := s
-  ATOM f => [f,:flattenSexpr r]
-  [:flattenSexpr f,:flattenSexpr r]
 
 --% Inplace Merge Sort for Lists
 -- MBM April/88

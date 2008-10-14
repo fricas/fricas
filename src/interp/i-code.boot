@@ -95,7 +95,7 @@ intCodeGenCOERCE(triple,t2) ==
         [MKQ true,['throwKeyedMsg,MKQ "S2IM0016",MKQ $mapName]]]
     objNew(code,t2)
 
-  -- optimize coerces to Expression
+  -- optimize coerces to OutputForm
   t2 = $OutputForm =>
     coerceByFunction(triple,t2)
 
