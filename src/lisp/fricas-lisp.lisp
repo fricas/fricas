@@ -27,6 +27,25 @@
     ;;; We have our own loading messages
     (setf *LOAD-VERBOSE* nil))
 
+;;
+#+:openmcl
+(progn
+
+(defclass fricas-application (ccl::application) ())
+
+(defvar *my-toplevel-function* nil)
+
+(defvar *ccl-default-directory* nil)
+
+(defmethod ccl::toplevel-function ((app fricas-application) init-file)
+    (declare (ignore init-file))
+        (call-next-method) ; this is critical, but shouldn't be.
+        (funcall *my-toplevel-function*)
+        (let ((ap (make-instance 'ccl::lisp-development-system)))
+            (ccl::toplevel-function ap init-file)))
+
+)
+
 ;; Save current image on disk as executable and quit.
 (defun save-core-restart (core-image restart)
 #+:GCL
@@ -61,6 +80,20 @@
          :executable t)
      (ext::saveinitmem core-image :executable t :QUIET t))
 #+:openmcl
+  (let* ((ccl-dir (or *ccl-default-directory*
+                 (|getEnv| "CCL_DEFAULT_DIRECTORY")))
+         (kname (concatenate 'string ccl-dir "/"
+                             (ccl::standard-kernel-name))))
+        (setf *ccl-default-directory* ccl-dir)
+        (if restart
+            (progn
+                (setf *my-toplevel-function* restart)
+                (CCL::save-application core-image
+                                       :PREPEND-KERNEL kname
+                                       :application-class 'fricas-application))
+            (CCL::save-application core-image :PREPEND-KERNEL kname))
+        (quit))
+#|
   (let ((ccl-dir (|getEnv| "CCL_DEFAULT_DIRECTORY"))
         (core-fname (concatenate 'string core-image ".image"))
         (eval-arg (if restart 
@@ -93,8 +126,8 @@
         |#
         (ccl::save-application core-path)
         )
-  )
-     
+  |#
+)
 
 (defun save-core (core-image)
      (save-core-restart core-image nil))

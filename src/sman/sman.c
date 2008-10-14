@@ -608,7 +608,9 @@ fork_Axiom(void)
       exit(-1); 
     }
     strcpy(augmented_ws_path,ws_path);          /* write the name    */
-    strcat(augmented_ws_path," ");              /* space             */
+    /* Pass '--' to make sure that argument passed to AXIOMsys
+       is not mistaken as Lisp kernel name (needed for Closure CL). */
+    strcat(augmented_ws_path," -- ");
     strcat(augmented_ws_path,ws_path);          /* name again        */
     tmp_pointer = (char *)
       strrchr(augmented_ws_path,'/');      /*pointer to last /  */

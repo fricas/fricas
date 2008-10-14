@@ -1354,12 +1354,8 @@ quality we check anyway.
 (defun spad-save (save-file do-restart)
   (setq |$SpadServer| nil)
   (setq $openServerIfTrue t)
-  #-:openmcl
   (FRICAS-LISP::save-core-restart save-file
          (if do-restart #'boot::fricas-restart nil))
-  #+:openmcl
-  (FRICAS-LISP::save-core-restart save-file
-         (if do-restart "BOOT::fricas-restart" nil))
 )
 
 (defun |statisticsInitialization| () 
