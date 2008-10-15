@@ -298,6 +298,8 @@
 (defmacro qvsize (x)
  `(the fixnum (length (the simple-vector ,x))))
 
+(defmacro qlessp(x y) `(< ,x ,y))
+
 (defmacro refvecp (v) `(simple-vector-p ,v))
 
 (defmacro resetq (a b)

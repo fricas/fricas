@@ -374,11 +374,21 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
         same?: % -> Boolean
         same? z == every?(#1 = z(minIndex z), z)
 
-        x = y ==
-          for i in 1..dim repeat
-            not (qelt(x,i)$Rep = qelt(y,i)$Rep) => return false
-          true
-          -- _and/[qelt(x,i)$Rep = qelt(y,i)$Rep for i in 1..dim]
+        if R is NonNegativeInteger or R is Integer then
+	  -- This is a hack to gain speed.  Direct product is used
+	  -- by DistributedPolynomial and calling directly Lisp
+	  -- operation gives significant speedup.  Once compiler
+	  -- is smarter this hack will go away.
+	  x = y ==
+	    for i in 0..(dim - 1) repeat
+	       not EQL(QREFELT(x, i)$Lisp, QREFELT(y, i)$Lisp)$Lisp => return false
+	    true
+	else
+          x = y ==
+            for i in 1..dim repeat
+               not (qelt(x,i)$Rep = qelt(y,i)$Rep) => return false
+            true
+            -- _and/[qelt(x,i)$Rep = qelt(y,i)$Rep for i in 1..dim]
 
         retract(z:%):R ==
           same? z => z(minIndex z)
@@ -450,6 +460,16 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
           v pretend %
 
       if R has OrderedSet then
+       if R is NonNegativeInteger or R is Integer then
+          -- This is a hack to gain speed, like for '='.
+          x < y ==
+            for i in 0..(dim - 1) repeat
+                a := QREFELT(x, i)$Lisp
+                b := QREFELT(y, i)$Lisp
+                QLESSP(a, b)$Lisp => return true
+                QLESSP(b, a)$Lisp => return false
+            false
+       else
         x < y ==
           for i in 1..dim repeat
              qelt(x,i) < qelt(y,i) => return true
