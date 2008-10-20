@@ -1,0 +1,38 @@
+VPATH=@srcdir@
+
+default: efricas fricas.el fricas-cpl.el
+
+clean:
+	-rm efricas
+
+install_emacs_dir = @emacsdatadir@
+EMACSCMDS = \
+  (progn \
+    (server-start) \
+    (setq load-path (cons (quote \"${install_emacs_dir}\") load-path)) \
+    (setq auto-mode-alist \
+      (cons (quote (\"\\\\.fri\" . fricas-mode)) auto-mode-alist)) \
+    (require (quote fricas)))
+
+efricas:
+	echo "#!/bin/sh -" > $@
+	echo "AXIOMEDITOR='emacsclient +$$line $$name >/dev/null 2>&1'" >> $@
+	echo "export AXIOMEDITOR" >> $@
+	echo "if which emacs; then \\" >> $@
+	echo "emacs --eval '${EMACSCMDS}' -f fricas; \\" >> $@
+	echo "else \\" >> $@
+	echo "echo You must have installed emacs to run efricas.; fi" >> $@
+
+
+
+###################################################################
+# We need libaxiom.al and the .o (runtime support) files in the lib
+# subdirectory.
+install: install-emacs
+
+# Destination directory for the algebra files and aldor libraries.
+install_target_dir = $(DESTDIR)${install_emacs_dir}
+install-emacs:
+	$(INSTALL_DATA) ${srcdir}/fricas.el $(install_emacs_dir)/fricas.el
+	$(INSTALL_DATA) ${srcdir}/fricas-cpl.el $(install_emacs_dir)/fricas-cpl.el
+	$(INSTALL_SCRIPT) efricas '$(DESTDIR)$(bindir)/efricas'
