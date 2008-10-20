@@ -698,6 +698,21 @@ fi
 ###################################################################
 
 
+###################################################################
+## The following section deals with running fricas inside emacs.
+## The sources are expected in ${srcdir}/contrib/emacs.
+## The shell script efricas will be copied to ${bindir}.
+## The files fricas*.el should probably go to
+#    emacsdatadir=$datadir/emacs/site-lisp
+## but will currently be put into
+emacsdatadir=$libdir/fricas/emacs
+AC_SUBST(emacsdatadir)
+AXIOM_MAKEFILE([contrib/emacs/Makefile])
+###################################################################
+
+
+
+
 ## We now generate the "document" script and support files at configure time.
 ## We put them in the build directory because they are intended to be 
 ## build support utils only.

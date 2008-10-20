@@ -26,7 +26,11 @@ AXIOM_SRC_TARGETS = all-algebra all-asq all-axiomsys all-book all-boot \
 	all-lib all-lisp all-sman all-src
 
 .PHONY: all install $(AXIOM_SRC_TARGETS)
-all: all-ax
+all: all-ax all-contrib
+
+# Generate the efricas script.
+all-contrib:
+	cd contrib/emacs && ${MAKE}
 
 all-ax: all-src
 	@echo finished system build on `date` | tee >lastBuildDate
@@ -159,6 +163,8 @@ install:
 	if test -n "@BUILD_ALDOR_INTERFACE@"; then \
 	    cd src/aldor && $(MAKE) install; \
 	fi
+	$(mkinstalldirs) '$(DESTDIR)@emacsdatadir@'
+	cd contrib/emacs && $(MAKE) install;
 	@echo 79 FriCAS installation finished.
 
 
