@@ -156,7 +156,7 @@ atom2String x ==
 -- the second - x - is the horizontal distance along the page
 --      at which to start
 -- the third - y - is some vertical hacking control
--- the foruth - d - is the "layout" so far
+-- the fourth - d - is the "layout" so far
 -- these functions return an updated "layout so far" in general
 
 appChar(string,x,y,d) ==
@@ -1260,6 +1260,7 @@ formulaFormat expr ==
   NIL
 
 texFormat expr ==
+  ioHook("startTeXOutput")
   tf := '(TexFormat)
   formatFn := 
     getFunctionFromDomain("convert",tf,[$OutputForm,$Integer])
@@ -1267,6 +1268,7 @@ texFormat expr ==
   SPADCALL(SPADCALL(expr,$IOindex,formatFn),displayFn)
   TERPRI $texOutputStream
   FORCE_-OUTPUT $texOutputStream
+  ioHook("endOfTeXOutput")
   NIL
 
 texFormat1 expr ==
