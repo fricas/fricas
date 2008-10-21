@@ -62,6 +62,10 @@
   "Face used for algebra output."
   :group 'fricas)
 
+(defface fricas-TeX '((t (:background "#ffffa0")))
+  "Face used for TeX output."
+  :group 'fricas)
+
 (defface fricas-type-time '((t (:background "#ffffa0" :foreground "darkgreen")))
   "Face used for type and time output."
   :group 'fricas)
@@ -140,6 +144,11 @@ This variable is buffer-local."
            "(t (prin1 x)))"
      "(princ #\\Newline))"))
 (defvar fricas-annotate-regexp "\e\\([a-zA-Z\-]*\\)\n")
+(defvar fricas-TeX-preamble (concat "\\documentclass{article}"
+				    "\\usepackage[active,dvips,tightpage,displaymath]{preview}"
+				    "\\begin{document}"
+				    "\\begin{preview}"))
+(defvar fricas-TeX-postamble "\\end{preview}\\end{document}")
 
 (defvar fricas-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -220,8 +229,14 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   (setq fricas-query-user nil)       ;; are we expecting a response to a query?
   (make-local-variable 'fricas-cd)
   (setq fricas-cd nil)               ;; are we changing the directory?
-  (make-local-variable 'fricas-yank-file?)
-  (setq fricas-yank-file? nil)       ;; did we yank a file?
+  (make-local-variable 'fricas-yank-file)
+  (setq fricas-yank-file (make-temp-file "fricas" nil ".input"))
+  (make-local-variable 'fricas-TeX-file)
+  (setq fricas-TeX-file (make-temp-file "fricas" nil ".tex"))
+;; this is not completely right: we are going to write to the files with
+;; extension dvi, log, aux, too, so we should check for their presence.
+  (make-local-variable 'fricas-TeX-buffer)
+  (setq fricas-TeX-buffer "")          ;; buffer to put TeX code
   (make-local-variable 'fricas-save-history?)
   (setq fricas-save-history? nil)    ;; did we just save the history
 
@@ -384,6 +399,16 @@ answer.  Prints a message otherwise."
     ("output"  fricas-output)))
 
 (defvar fricas-paint-face 'fricas-paint-lightblue)
+
+(defun fricas-clear-output ()
+  (interactive)
+  (when (fricas-paintable? (point))
+    (let ((inhibit-read-only t)
+	  (pos (fricas-beginning-of-region-pos (point))))
+      (while (fricas-paintable? pos)
+	(put-text-property pos (1+ pos) 
+			   'face (get-text-property pos 'type))
+	(setq pos (1+ pos))))))
 
 (defun fricas-change-paint-face ()
   (interactive)
@@ -731,18 +756,11 @@ If SUFFIX is non-nil, add that at the end of the file name."
 makes fricas )read it."
   (interactive "P")
   (when (fricas-can-receive-commands?)
-    (setq fricas-yank-file? (make-temp-file "fricas" nil ".input"))
-    (write-region (car kill-ring-yank-pointer) nil fricas-yank-file?)
+    (write-region (car kill-ring-yank-pointer) nil fricas-yank-file)
     (goto-char (process-mark fricas-process))
-    (while (not (file-exists-p fricas-yank-file?))
-      (sleep-for 1))
-    (fricas-send-input (concat ")read " fricas-yank-file?
+    (fricas-send-input (concat ")read " fricas-yank-file
 			       (if quiet " )quiet" ""))
 		       t)))
-
-(defun fricas-yank-post ()
-  "Deletes the temporary file created by fricas-yank."
-  (delete-file fricas-yank-file?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; moving around
@@ -1013,9 +1031,9 @@ str. Returns:
 
           (cond ((null (car output-type))           ;; text to be inserted
 		 (fricas-insert-output fricas-output-buffer
-				      output-index 
-				      (cadr output-type)
-				      fricas-last-type))
+				       output-index 
+				       (cadr output-type)
+ 				       fricas-last-type))
 
 		((equal (car output-type) "\e|startReadLine|\n")  ;; expect input after prompt
 		 (when (eq fricas-state 'starting) (set-buffer-modified-p nil))
@@ -1040,6 +1058,12 @@ str. Returns:
 		((equal (car output-type) "\e|endOfAlgebraOutput|\n") 
 		 (setq fricas-last-type 'fricas-undefined))
 
+		((equal (car output-type) "\e|startTeXOutput|\n") 
+		 (setq fricas-last-type 'fricas-TeX))
+		((equal (car output-type) "\e|endOfTeXOutput|\n") 
+                 (fricas-insert-TeX)
+		 (setq fricas-last-type 'fricas-undefined))
+
 		((equal (car output-type) "\e|startTypeTime|\n") 
 		 (setq fricas-last-type 'fricas-type-time))
 		((equal (car output-type) "\e|endOfTypeTime|\n") 
@@ -1061,9 +1085,9 @@ str. Returns:
 		 (setq fricas-last-type 'fricas-undefined))
 
 		(t (fricas-insert-output fricas-output-buffer 
-					output-index 
-					(cadr output-type) 
-					fricas-last-type)))
+					 output-index 
+					 (cadr output-type) 
+					 fricas-last-type)))
 
           (setq output-index (cadr output-type))
 	  (set-marker (process-mark proc) (point))))
@@ -1082,9 +1106,6 @@ str. Returns:
 	(when fricas-cd 
 	  (setq fricas-cd nil)
 	  (fricas-resync-directory))
-	(when fricas-yank-file?
-	  (fricas-yank-post)
-	  (setq fricas-yank-file? nil))
 	(when (and fricas-save-history?
 		   (eq fricas-state 'waiting))
 	  (message "done")
@@ -1096,7 +1117,10 @@ str. Returns:
 
 (defun fricas-insert-output (str beg end type)
   "inserts the substring of str into the buffer"
-  (fricas-insert-ascii (substring str beg end) type))
+  (let ((new-text (substring str beg end)))
+    (if (eq type 'fricas-TeX)
+	(setq fricas-TeX-buffer (concat fricas-TeX-buffer new-text))
+      (fricas-insert-ascii new-text type))))
 
 (defun fricas-insert-ascii (str type)
   (let ((inhibit-read-only t) 
@@ -1118,6 +1142,56 @@ str. Returns:
     (put-text-property (1- end) end 'read-only t))
   (when (eq type 'fricas-prompt)
     (put-text-property beg end 'field t)))
+
+(defun fricas-insert-TeX ()
+  (let* ((pos (point))
+	 (bas (file-name-sans-extension fricas-TeX-file))
+	 (dir (file-name-directory fricas-TeX-file))
+	 (png (make-temp-file "fricas" nil ".png"))
+	 (dvi (concat bas ".dvi"))
+         (bg  (apply 'format
+		     "rgb %f %f %f"
+		     (mapcar (function (lambda (v) (/ v 65535.0)))
+			     (color-values (face-background 
+					    'fricas-TeX)))))
+	 (inhibit-read-only t))
+
+    (write-region (concat fricas-TeX-preamble 
+			  fricas-TeX-buffer
+			  fricas-TeX-postamble) 
+		  nil fricas-TeX-file)
+    ;; TeX the file
+    (call-process "latex" nil nil nil (concat "-output-directory=" dir) 
+		  fricas-TeX-file)
+    ;; png the output
+    (call-process "dvipng" nil nil nil "-bg" bg "-o" png dvi)
+    ;; create and insert the image
+    (insert-image (create-image png 'png nil) fricas-TeX-buffer)
+    (fricas-set-properties pos (point) 'fricas-TeX)
+    (fricas-insert-ascii "\n" 'fricas-undefined)
+    (setq fricas-TeX-buffer "")))
+
+
+(defun fricas-toggle-TeX ()
+  "Toggle between TeX source code as produced by FriCAS and the
+typeset picture"
+  (interactive)
+  (let ((pos (point)))
+    (when (eq (get-text-property pos 'type) 'fricas-TeX)
+      (let ((beg (fricas-beginning-of-region-pos pos))
+	    (end (1+ (fricas-end-of-region-pos pos)))
+	    (prop (get-text-property pos 'display))
+	    (mod (buffer-modified-p))
+	    (inhibit-read-only t))
+	(if prop
+	    (progn
+	      (put-text-property beg end 'saved-display prop)
+	      (remove-text-properties beg end '(display)))
+	  (put-text-property beg end 'display 
+			     (get-text-property pos 'saved-display))
+	  (remove-text-properties beg end '(saved-display)))
+	(set-buffer-modified-p mod)))))
+		
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; getting old input - taken and adapted from comint
@@ -1269,8 +1343,10 @@ If N is negative, find the previous or Nth previous match."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun fricas-save-history ()
-  "If necessary, removes previous saved histories, since it seems that fricas
-does not store the %% facility correctly.  Then issues )history )save."
+  "If necessary, removes previous saved histories, since it seems
+that fricas does not store the %% facility correctly.  Then
+issues )history )save.  Return nil, because it's hooked to
+write-contents-hooks for emacs versions before 22."
   (if (fricas-can-receive-commands?)
       (let ((dirname (concat (buffer-file-name) ".axh")))
 	(goto-char (process-mark fricas-process))
@@ -1278,7 +1354,9 @@ does not store the %% facility correctly.  Then issues )history )save."
 	  (delete-file (concat dirname "/index.KAF"))
 	  (delete-directory dirname))
 	(setq fricas-save-history? t)
-	(fricas-send-input (concat ")history )save " (buffer-file-name))))
+	
+	(fricas-send-input (concat ")history )save " (buffer-file-name))
+			   t))
     (error "FriCAS is working"))
   nil)
 
