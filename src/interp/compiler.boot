@@ -30,15 +30,19 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+initEnvHashTable(l) ==
+  for u in CAR(CAR(l)) repeat
+      for v in CDR(u) repeat
+            HPUT($envHashTable, [CAR u, CAR v], true)
+
 compTopLevel(x,m,e) ==
   $killOptimizeIfTrue: local:= false
   $forceAdd: local:= false
   $compTimeSum: local := 0
   $resolveTimeSum: local := 0
   $envHashTable: local := MAKE_-HASHTABLE 'EQUAL
-  for u in CAR(CAR(e)) repeat
-    for v in CDR(u) repeat
-      HPUT($envHashTable, [CAR u, CAR v], true)
+  initEnvHashTable(e)
+  initEnvHashTable($CategoryFrame)
   -- The next line allows the new compiler to be tested interactively.
   compFun := if $newCompAtTopLevel=true then 'newComp else 'compOrCroak
   x is ["DEF",:.] or x is ["where",["DEF",:.],:.] =>
