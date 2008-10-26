@@ -650,9 +650,10 @@ fi
 
 # The following is only necessary to get some files that do not yet
 # have a free license.
-# Not having svn is not a show stopper, because the files can be
+# Not having svn or wget is not a show stopper, because the files can be
 # obtained manually via a webbrowser.
 AC_CHECK_PROGS([SVN], [svn])
+AC_CHECK_PROGS([WGET], [wget])
 
 ## check for $ALDORROOT/include/aldor.conf
 if test -z $ALDORROOT || ! test -f $ALDORROOT/include/aldor.conf; then
