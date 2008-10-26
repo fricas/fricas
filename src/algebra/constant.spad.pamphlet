@@ -30,7 +30,9 @@ InnerAlgebraicNumber(): Exports == Implementation where
                    LinearlyExplicitRingOver Z, RealConstant,
                    LinearlyExplicitRingOver Fraction Z,
                    CharacteristicZero,
-                   ConvertibleTo Complex Float, DifferentialRing) with
+                   ConvertibleTo Complex Float,
+                   ConvertibleTo InputForm,
+                   DifferentialRing) with
     coerce : P -> %
       ++ coerce(p) returns p viewed as an algebraic number.
     numer  : % -> P
@@ -135,6 +137,9 @@ InnerAlgebraicNumber(): Exports == Implementation where
        z
     belong? op           == belong?(op)$ExpressionSpace_&(%) or has?(op, ALGOP)
 
+    convert(x:%):InputForm ==
+      convert(x pretend Rep)$Rep
+
     convert(x:%):Float ==
       retract map(#1::Float, x pretend FE)$ExpressionFunctions2(Z,Float)
 
@@ -166,7 +171,8 @@ AlgebraicNumber(): Exports == Implementation where
                    LinearlyExplicitRingOver Z, RealConstant,
                    LinearlyExplicitRingOver Fraction Z,
                    CharacteristicZero,
-                   ConvertibleTo Complex Float, DifferentialRing) with
+                   ConvertibleTo Complex Float,
+                   ConvertibleTo InputForm, DifferentialRing) with
     coerce : P -> %
       ++ coerce(p) returns p viewed as an algebraic number.
     numer  : % -> P
@@ -196,6 +202,9 @@ AlgebraicNumber(): Exports == Implementation where
     zero? a == trueEqual(a::Rep,0::Rep)
     one? a == trueEqual(a::Rep,1::Rep)
     a=b == trueEqual((a-b)::Rep,0::Rep)
+    -- make sure the interpreter gets an AlgebraicNumber!
+    convert(x:%):InputForm ==
+      coerceToType(convert(x pretend Rep)$Rep)$InputFormFunctions1(%)
 
 @
 \section{License}
