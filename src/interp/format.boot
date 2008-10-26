@@ -319,7 +319,8 @@ prefix2StringAsTeX form ==
   form2StringAsTeX form
 
 prefix2String form ==
-  form2String form
+  $formatSigAsTeX: local := 1
+  form2StringLocal form
 
 -- local version
 prefix2String0 form ==
@@ -353,6 +354,7 @@ formString u ==
 
 form2String u == 
   $formatSigAsTeX: local := 1
+  $InteractiveMode: local := false
   form2StringLocal u
 
 form2StringAsTeX u == 
@@ -428,17 +430,26 @@ form2String1 u ==
     argl := rest argl
     (null argl) or null (first argl) => [lo, '".."]
     [lo, '"..", form2String1 first argl]
-  -- op = "MATRIX" => op
-  -- does no work
-  -- fortranCleanUp exp2Fort1 [op,:argl]
-  -- somewhat works, but causes regression
-  -- fortranCleanUp exp2Fort1 exp2FortOptimize [op,:argl]
+  op = "MATRIX" => matrix2String argl
+  u1 is ["ROOT", arg1] =>
+     concat("sqrt(", appOrParen(arg1),")")
+  u1 is ["ROOT", arg1, arg2] =>
+     concat("nthRoot(", appOrParen(arg1),",",appOrParen(arg2),")")
+     --concat(appOrParen(arg1), '"^", appOrParen(["OVER",1,arg2]))
   u1 is ["$elt", t, f] =>
      concat(form2String1 f, '"$", form2String1 t)
   #argl = 2 and (isBinaryInfix op or op = "::" or op = '"::"_
-     or op = "@" or op = '"@" or op = "pretend" or op = '"pretend") =>
+     or op = "@" or op = '"@" or op = "pretend" or op = '"pretend"_
+     or op = "OVER" or op = '"OVER") =>
           binop2String [op,:argl]
   application2String(op,[form2String1 x for x in argl], u1)
+
+matrix2String x ==
+  concat(lbrkSch(),
+    tuple2String [outtranRow x.i for i in 0..MAXINDEX x],rbrkSch()) where
+      outtranRow x ==
+        concat(lbrkSch(),
+          tuple2String [form2String1 x.i for i in 0..MAXINDEX x], rbrkSch())
 
 binop2String x ==
     $curExpr : local := x
@@ -453,7 +464,7 @@ sumOrParen(x) ==
 	   concat(sumOrParen(arg1), '"+", productOrParen(arg2))
        op = "-" or op = '"-" =>
            concat(sumOrParen(arg1), '"-", productOrParen(arg2))
-       op = "/" or op = '"/" =>
+       op = "/" or op = '"/" or op = "OVER" or op = '"OVER" =>
            concat(appOrParen(arg1), '"/", appOrParen(arg2))
        productOrParen(x)
    productOrParen(x)
