@@ -666,6 +666,16 @@ if ! test -f $ALDORROOT/lib/libfoam.al; then
   BUILD_ALDOR_INTERFACE=
 fi
 
+## This handles the cases if one of the following options is given on the
+## command line. If none is given, then the aldor interface will be built
+## if and only if all prerequisites are available.
+## --enable-aldor, --enable-aldor=yes:
+##   User requires to build the aldor interface. In this case,
+##   any missing prerequisite counts as error (not just warning).
+## --enable-aldor=no, --disable-aldor:
+##   User asks to skip the build of the aldor interface.
+## --enable-aldor=SOMETHING DIFFERENT FROM yes/no
+##   User made a mistake. This is an error.
 AC_ARG_ENABLE(aldor,
   [AC_HELP_STRING([--enable-aldor],
                   [build an interface to the Aldor compiler])],
@@ -675,8 +685,7 @@ AC_ARG_ENABLE(aldor,
          fi;;
     no)  BUILD_ALDOR_INTERFACE=;;
     *)   AC_MSG_ERROR([only yes/no allowed as value for --enable-aldor]);;
-   esac],
-  [BUILD_ALDOR_INTERFACE=])
+   esac])
 
 ###################################################################
 # The installation is currently not done by recursively calling
