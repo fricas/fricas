@@ -7,7 +7,7 @@ just:
 configure && make && make install
 
 should work. The above will install FriCAS files in
-/usr/local/lib/axiom directory and put axiom command in
+/usr/local/lib/fricas directory and put fricas command in
 /usr/local/bin directory, you can give arguments to configure
 to change those locations.
 
@@ -15,7 +15,7 @@ NOTE!! If you use svn (minimal version) the above will install broken
 HyperDoc pages -- all graphic examples will be missing (and trying to access
 them will crash hypertex).
 
-The get working graphic examples long into X and replace 'make' above by
+The get working graphic examples login into X and replace 'make' above by
 the following:
 
 make
@@ -47,8 +47,7 @@ Prerequisities:
     070512
     * ECL, 0.9j or later
   GCL currently is best tested, but on some platforms there are known
-  build problems -- in particular there gcl is incompatible with Fedora
-  security enhancements.  All Lisp impementations should give essentially
+  build problems.  All Lisp impementations should give essentially
   the same functionality.  Gcl sources are included in full+gcl distribution
   tarball.
 
@@ -69,30 +68,73 @@ Known problems:
 - On Gentoo system installed gcl probably will not work, one need to
   build own one.
 
-- Gcl is incompatible with Fedora "exec-shield" and strong addess space
-  randomization (setting randomize_va_space to 2) -- disabling security
-  may help (but one may also hit other problems).
+- Older version of gcl are incompatible with Fedora "exec-shield" and
+  strong address space randomization (setting randomize_va_space to 2).
+  Newest CVS version of 2.6.8 branch of gcl fixes this problem.
+
+- gcl needs bfd library.  Many Linux systems include version of bfd
+  library which is incompatible with gcl.  Using the following configure
+  line should fix this problem:
+
+    ./configure --disable-xgcl --disable-dynsysbfd --disable-statsysbfd --enable-locbfd
 
 - Boehm garbage collector included in ECL (version 6.8) is incompatible
   with Fedora strong address space randomization (setting randomize_va_space
   to 2).  Using newer version of Boehm garbage collector (7.0 or 7.1)
   should solve this problem.
 
-- Relased version of ECL (0.9j) has serious performance problems.  CVS
-  version is much faster.
-  
-- When doing documentation build (release version contains pre-built
-  documentation, so this step is skipped) ECL hangs generating ug13.pht.
-  This is annoying, but harmless -- one can just kill the hanged process
-  (the hang happens _after_ ug13.pht is generated, in exit function).
+- ECL 0.9j has serious performance problems.  ECL version 0.9l is much
+  faster.
 
+- ECL up to version 0.9l may segfault at exit.  This is usually harmless,
+  but may cause build to hang (for example when generating ug13.pht).  Using
+  CVS version should fix this problem.
+  
 - In general, any error when generating documentation will cause build to hang.
 
-- Closure CL (former Openmcl) has a bug in Lisp printer.  This bug causes
-  incorrect printing of FriCAS types.  Also, Closure CL has bug in compex
-  cosine function.  To work around the bugs you may apply
-  a patch 'contib/omcl.diff' and recompile openmcl (see the patch or openmcl
-  documentation for instructions).
+- Closure CL earlier than release 1.2 (former Openmcl) has a bug in Lisp
+  printer.  This bug causes incorrect printing of FriCAS types.  Also,
+  Closure CL earlier than release 1.2 has bug in compex
+  cosine function.  Those bugs are fixed in release 1.2.  If you want to
+  use earlier version you can work around the bugs applying
+  the 'contib/omcl.diff' patch and recompiling the compiler (see the patch
+  or Closure CL documentation for instructions).
+
+
+--------------------------------------------------------
+
+Getting Lisp.
+
+To build FriCAS you need to install Lisp first.  You need
+_one_ of the following:
+
+- sbcl
+
+  http://sbcl.sourceforge.net/platform-table.html
+
+- Closure CL
+
+  http://ccl.clozure.com/manual/chapter2.2.html#id357702
+  ftp://ftp.clozure.com/pub/release/1.2
+
+- ECL
+
+  http://ecls.sourceforge.net
+
+- gcl, older versions have various problems, CVS version is
+  better.  To get latest stable version from CVS use the
+  following command
+
+  cvs -d:pserver:anonymous@cvs.savannah.gnu.org:/cvsroot/gcl co -r Version_2_6_8pre -d gcl-2.6.8pre gcl
+
+  In case of build problems try the following configure line
+
+  ./configure --disable-xgcl --disable-dynsysbfd --disable-statsysbfd --enable-locbfd 
+
+- clisp
+
+  http://clisp.cons.org
+
 
 --------------------------------------------------------
 
@@ -100,6 +142,9 @@ Step by step instructions for first time users:
 
 Latest (developement) version of FriCAS is available only
 via svn, so you need svn client (see http://subversion.tigris.org/).
+
+You also need Lisp -- see links in section "Getting Lisp" and
+follow instructions.
 
 0) Change to a directory with enough (1.2 GB) free space
 
@@ -110,7 +155,6 @@ svn co https://fricas.svn.sourceforge.net/svnroot/fricas/trunk fricas
 2) Fetch nonstandard prerequisities:
 
 cd fricas
-svn co https://axiom.svn.sourceforge.net/svnroot/axiom/branches/build-improvements/gcl gcl
 
 mkdir zips
 
@@ -125,10 +169,12 @@ cd ../..
 mkdir ax-build
 cd ax-build
 
-4) Configure.  Assuming that you want axiom files to be installed in
+4) Configure.  Assuming that you want fricas files to be installed in
 /tmp/usr
 
-../fricas/configure --prefix=/tmp/usr
+../fricas/configure --with-lisp=/path/to/your/lisp --prefix=/tmp/usr
+
+where /path/to/your/lisp is name of your Lisp (for example sbcl)
 
 5) Build and install:
 
@@ -142,30 +188,24 @@ If you want graphic examples read the note before.
 Extra information about installation:
 
 The preferred way to build FriCAS is to use already installed
-gcl and noweb.  Also, it is preferable to use a separate build
-directory.  Assuming that source tree is in fricas subdirectry
-and you build in ax-build subdirectry, the following should just
-work:
+Lisp and noweb.  Also, it is preferable to use a separate build
+directory.  Assuming that source tree is in fricas subdirectory,
+you build in ax-build subdirectory and your Lisp is called sbcl
+the following should just work:
 
 cd ax-build
-../fricas/configure && make && make install
+../fricas/configure --with-lisp=sbcl && make && make install
 
-If you have istalled gcl in some non-standard place (or you
-have multiple installations of gcl and you want to choose
-correct one) you can use the following:
-
-cd ax-build
-../fricas/configure --with-lisp=/path/to/gcl && make && make install
-
-Alternatively, you can just put gcl sources as a subdirectory
-(called gcl) of fricas directory -- in this case the build
+Alternatively, if you use gcl you can just put gcl sources as a
+subdirectory (called gcl) of fricas directory -- in this case the build
 process should automatically build gcl and later use the freshly
 build gcl.
 
-Currently --with-lisp option accepts other lisp variants, namely
-sbcl, clisp, ecl and Closure CL (openmcl).  Build machinery must know which Lisp
-variant is in use. gcl, sbcl, clisp and ecl can be autodetected,
-for Closure CL (openmcl) one has to give an extra argument
---with-lisp-flavor=openmcl (you can also specify flavor for other Lisps,
-but this argument is required only for Closure CL (openmcl)).
+Currently --with-lisp option accepts all supported lisp variants, namely
+sbcl, clisp, ecl, gcl and Closure CL (openmcl).  Build machinery
+must know which Lisp variant is in use. gcl, sbcl, clisp and ecl
+can be autodetected, for Closure CL (openmcl) one has to give an
+extra argument --with-lisp-flavor=openmcl (you can also specify
+flavor for other Lisps, but this argument is required only for
+Closure CL (openmcl)).
 
