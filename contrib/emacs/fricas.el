@@ -122,6 +122,11 @@ This variable is buffer-local."
   :type 'boolean
   :group 'fricas)
 
+(defcustom fricas-run-command
+  (or (getenv "FRICASCMD") "fricas")
+  "The command to run FriCAS."
+  :type 'file
+  :group 'fricas)
 
 (defvar fricas-beg-marker-regexp "\e|start[a-zA-Z]*|\n")
 (defvar fricas-end-marker-regexp "\e|endOf[a-zA-Z]*|\n")
@@ -293,8 +298,10 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 (defun fricas-run ()
   "Run FriCAS in the current BUFFER."
   (message "Starting FriCAS...")
-  (start-process-shell-command "fricas" (current-buffer) 
-			       "fricas" "-noclef" "2>/dev/null"))
+  (let ((fricas-cmd (getenv "FRICASCMD")))
+    (start-process-shell-command "fricas" (current-buffer)
+                                fricas-run-command
+                                "-noclef" "2>/dev/null")))
 
 (defun fricas-check-proc (buffer)
   "Return non-nil if there is a living process associated w/buffer BUFFER.
