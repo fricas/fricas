@@ -1,0 +1,81 @@
+Aldor (http://www.aldor.org) was originally invented to be the next
+generation compiler for Axiom.
+
+Since FriCAS is a fork of Axiom, Aldor programs can be run inside FriCAS.
+
+The following criteria have to be met.
+
+1. Aldor must be locally installed and the aldor executable must be
+   available through the PATH environment variable.
+
+2. The environment variable ALDORROOT must have been set and point
+   to the installation directory of aldor. In particular the file
+   $ALDORROOT/lib/libfoam.al must be available.
+
+3. A number of Aldor source files must be available locally.
+   They are
+   https://svn.origo.ethz.ch/algebraist/trunk/aldor/lib/libax0/axiom.as
+   https://svn.origo.ethz.ch/algebraist/trunk/aldor/lib/libax0/axextend.as
+   https://svn.origo.ethz.ch/algebraist/trunk/aldor/lib/libax0/axlit.as
+   https://svn.origo.ethz.ch/algebraist/trunk/aldor/lib/libax0/stub.as
+   https://svn.origo.ethz.ch/algebraist/trunk/aldor/lib/libax0/minimach.as
+   https://svn.origo.ethz.ch/algebraist/trunk/aldor/lib/axllib/src/lang.as
+
+(1) and (2) are absolutely necessary.
+
+If you have svn or wget locally on your computer and you have internet
+access at the time you type "make", then the build system automatically
+takes care of downloading the above sources.
+
+If you don't have svn or wget or internet access at build time, the build
+will fail by telling you that you need one of the files above.
+You can then simply download those files with an ordinary web browser and
+put them into the build directory.
+
+Suggestion for building the aldor interface:
+
+1. Install aldor from aldor.org. Either build your own aldor from the
+   latest svn sources (only for experts) or download the appropriate
+   binary from http://www.aldor.org/downl.html.
+
+2. Set ALDORROOT to point to the installation directory.
+   In BASH: export ALDORROOT=/path/to/install/dir
+
+3. Add the aldor executable to your PATH
+   in BASH: PATH=$ALDORROOT/bin:$PATH
+
+4. Make a VPATH (or out-of-source) build of FriCAS.
+   cd /path/to/builddir
+   /path/to/fricas-src/configure --prefix=/path/to/installdir --enable-aldor
+   make
+
+5. If "make" finished successfully then type "make install" and the
+   FriCAS and the interface is installed.
+   In case the build failed because of missing one of the above files,
+   get those files with a web browser and put them under
+   /path/to/builddir/src/aldor. Then say
+   cd /path/to/builddir && make && make install
+
+If something does still not work, ask at fricas-devel@googlegroups.com.
+
+In order to test if everything went OK, try to compile the following
+file from within FriCAS by starting fricas and entering
+
+  )co fib.as
+  fib 5
+
+on the fricas command line.
+
+
+
+---BEGIN fib.as
+#include "axiom"
+fib(n: Integer): Integer == {
+        n < 0 => 0;
+	n < 3 => 1;
+	fib(n-1) + fib(n-2);
+}
+---END fib.as
+
+Note that this program is by design inefficient, because it recomputes
+values again and again.
