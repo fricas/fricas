@@ -298,10 +298,9 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
 (defun fricas-run ()
   "Run FriCAS in the current BUFFER."
   (message "Starting FriCAS...")
-  (let ((fricas-cmd (getenv "FRICASCMD")))
-    (start-process-shell-command "fricas" (current-buffer)
-                                fricas-run-command
-                                "-noclef" "2>/dev/null")))
+  (start-process-shell-command "fricas" (current-buffer)
+			       fricas-run-command
+			       "-noclef" "2>/dev/null"))
 
 (defun fricas-check-proc (buffer)
   "Return non-nil if there is a living process associated w/buffer BUFFER.
