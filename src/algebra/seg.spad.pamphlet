@@ -53,7 +53,10 @@ SegmentCategory(S:Type): Category == Type with
     convert: S -> %
         ++ convert(i) creates the segment \spad{i..i}.
 
+    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
+
 @
+
 \section{category SEGXCAT SegmentExpansionCategory}
 <<category SEGXCAT SegmentExpansionCategory>>=
 )abbrev category SEGXCAT SegmentExpansionCategory
@@ -128,7 +131,20 @@ Segment(S:Type): SegmentCategory(S) with
         s.incr = 1 => seg
         infix(" by "::OutputForm, seg, s.incr::OutputForm)
 
-    convert a == [a,a,1]
+    convert(a: S): % == [a,a,1]
+
+    if S has ConvertibleTo InputForm then
+        INFORM1 ==> InputFormFunctions1(%)
+
+        convert(s: %): InputForm == 
+            
+            seg := packageCall("SEGMENT"::Symbol,
+                               [convert(low s)@InputForm, 
+                                convert(hi s)@InputForm])$INFORM1
+            if one?(incr s) 
+            then seg
+            else packageCall("BY"::Symbol, 
+                             [seg, convert(incr s)@InputForm])$INFORM1
 
     if S has OrderedRing then
       expand(ls: List %):List S ==
@@ -246,6 +262,7 @@ SegmentBinding(S:Type): Type with
       ++ \spad{v=a..b}, then \spad{segment(segb)} returns \spad{a..b}.
 
   if S has SetCategory then SetCategory
+  if S has ConvertibleTo InputForm then ConvertibleTo InputForm
  == add
   Rep := Record(var:Symbol, seg:Segment S)
   equation(x,s) == [x, s]
@@ -258,6 +275,13 @@ SegmentBinding(S:Type): Type with
 
      coerce(b:%):OutputForm ==
        variable(b)::OutputForm = segment(b)::OutputForm
+
+  if S has ConvertibleTo InputForm then
+     INFORM1 ==> InputFormFunctions1(%)
+     convert b ==
+       packageCall("equation"::Symbol, 
+                   [convert(variable(b))@InputForm, 
+                    convert(segment(b))@InputForm])$INFORM1
 
 @
 \section{package SEGBIND2 SegmentBindingFunctions2}
@@ -386,6 +410,23 @@ UniversalSegment(S: Type): SegmentCategory(S) with
          inc := incr s
          inc = 1 => seg
          infix(" by "::OutputForm, seg, inc::OutputForm)
+
+    if S has ConvertibleTo InputForm then
+        INFORM1 ==> InputFormFunctions1(%)
+
+        convert(s: %): InputForm == 
+            if hasHi s then
+                seg := packageCall("SEGMENT"::Symbol,
+                                   [convert(low s)@InputForm, 
+                                    convert(hi s)@InputForm])$INFORM1
+            else
+                seg := packageCall("SEGMENT"::Symbol,
+                                   [convert(low s)@InputForm])$INFORM1
+            if one?(incr s) 
+            then seg
+            else packageCall("BY"::Symbol, 
+                             [seg, convert(incr s)@InputForm])$INFORM1
+
 
     if S has OrderedRing then
       expand(s:%)       == expand([s])
