@@ -209,6 +209,9 @@ InputForm():
 InputFormFunctions1(R:Type):with
   packageCall : Symbol -> InputForm
     ++ packageCall(f) returns the input form corresponding to f$R.
+  packageCall : (Symbol, List InputForm) -> InputForm
+    ++ packageCall(f, l) returns the input form corresponding to 
+    ++ f(l.1, l.2,...)$R. 
   coerceToType : InputForm -> InputForm
     ++ coerceToType(f) returns the input form corresponding to f::R
   atType: InputForm -> InputForm
@@ -229,6 +232,10 @@ InputFormFunctions1(R:Type):with
   packageCall name ==
     convert([convert("$elt"::Symbol), Rname,
                                 convert name]$List(InputForm))@InputForm
+
+  packageCall(name, args) ==
+    convert cons(packageCall name, args)
+     
 
   coerceToType form == convert([convert("::"::Symbol), form,
                      Rname]$List(InputForm))@InputForm
