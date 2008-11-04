@@ -263,6 +263,13 @@ caused nested products and summations to fail. (Issue~\#72)
     facts(x, l)          == smpfact(numer x, l) / smpfact(denom x, l)
     summand l            == eval(first l, retract(second l)@K, third l)
 
+@
+
+The following two operations return the product or the sum as unevaluated
+operators. A dummy variable is introduced to make the indexing variable \lq
+local\rq.
+
+<<package COMBF CombinatorialFunction>>=
     product(x:F, i:SE) ==
       dm := dummy
       opprod [eval(x, k := kernel(i)$K, dm), dm, k::F]
@@ -272,23 +279,8 @@ caused nested products and summations to fail. (Issue~\#72)
       opsum [eval(x, k := kernel(i)$K, dm), dm, k::F]
 
 @
-These two operations return the product or the sum as unevaluated operators. A
-dummy variable is introduced to make the indexing variable \lq local\rq.
 
-<<package COMBF CombinatorialFunction>>=
-    dvsum(l, x) ==
-      opsum [differentiate(first l, x), second l, third l]
-
-    dvdsum(l, x) ==
-      x = retract(y := third l)@SE => 0
-      if member?(x, variables(h := third rest rest l)) or 
-         member?(x, variables(g := third rest l)) then
-        error "a sum cannot be differentiated with respect to a bound"
-      else
-        opdsum [differentiate(first l, x), second l, y, g, h]
-
-@
-The above two operations implement differentiation of sums with and without
+The two operations below implement differentiation of sums with and without
 bounds. Note that the function
 $$n\mapsto\sum_{k=1}^n f(k,n)$$
 is well defined only for integral values of $n$ greater than or equal to zero.
@@ -332,30 +324,27 @@ differentiation of formal sums, which read
 \end{verbatim}
 
 <<package COMBF CombinatorialFunction>>=
-    dvprod(l, x) ==
-      dm := retract(dummy)@SE
-      f := eval(first l, retract(second l)@K, dm::F)
-      p := product(f, dm)
+    dvsum(l, x) ==
+      opsum [differentiate(first l, x), second l, third l]
 
-      opsum [differentiate(first l, x)/first l * p, second l, third l]
-
-
-    dvdprod(l, x) ==
+    dvdsum(l, x) ==
       x = retract(y := third l)@SE => 0
       if member?(x, variables(h := third rest rest l)) or 
          member?(x, variables(g := third rest l)) then
-        error "a product cannot be differentiated with respect to a bound"
+        error "a sum cannot be differentiated with respect to a bound"
       else
-        opdsum cons(differentiate(first l, x)/first l, rest l) * opdprod l 
+        opdsum [differentiate(first l, x), second l, y, g, h]
 
-@ 
-The above two operations implement differentiation of products with and without
+@
+
+The two operations below implement differentiation of products with and without
 bounds. Note again, that we cannot even properly define products with bounds
 that are not integral.
 
 To differentiate the product, we use Leibniz rule:
 $$\frac{d}{dx}\prod_{i=a}^b f(i,x) = 
-  \sum_{i=a}^b \frac{\frac{d}{dx} f(i,x)}{f(i,x)}\prod_{i=a}^b f(i,x)
+\left(\sum_{i=a}^b \frac{\frac{d}{dx} f(i,x)}{f(i,x)}\right)
+\prod_{i=a}^b f(i,x)
 $$
 
 There is one situation where this definition might produce wrong results,
@@ -384,6 +373,29 @@ differentiated according to the usual chain rule, which gave incorrect
 results. (Issue~\#211)
 
 <<package COMBF CombinatorialFunction>>=
+    dvprod(l, x) ==
+      dm := retract(dummy)@SE
+      f := eval(first l, retract(second l)@K, dm::F)
+      p := product(f, dm)
+
+      opsum [differentiate(first l, x)/first l * p, second l, third l]
+
+
+    dvdprod(l, x) ==
+      x = retract(y := third l)@SE => 0
+      if member?(x, variables(h := third rest rest l)) or 
+         member?(x, variables(g := third rest l)) then
+        error "a product cannot be differentiated with respect to a bound"
+      else
+        opdsum cons(differentiate(first l, x)/first l, rest l) * opdprod l 
+
+@ 
+
+These four operations handle the conversion of sums and products to
+[[OutputForm]]. Note that up to [[patch--45]] the definitions for sums and
+products without bounds were missing and output was illegible.
+
+<<package COMBF CombinatorialFunction>>=
     dprod l ==
       prod(summand(l)::O, third(l)::O)
 
@@ -397,9 +409,12 @@ results. (Issue~\#211)
       sum(summand(l)::O, third(l)::O = fourth(l)::O, fourth(rest l)::O)
 
 @ 
-These four operations handle the conversion of sums and products to
-[[OutputForm]]. Note that up to [[patch--45]] the definitions for sums and
-products without bounds were missing and output was illegible.
+
+The next two operations handle the testing for equality of sums and
+products. This functionality was missing up to [[patch--45]]. (Issue~\#213) The
+corresponding property [[%specialEqual]] set below is checked in
+[[Kernel]]. Note that we can assume that the operators are equal, since this is
+checked in [[Kernel]] itself.
 
 <<package COMBF CombinatorialFunction>>=
     equalsumprod(s1, s2) ==
@@ -417,11 +432,10 @@ products without bounds were missing and output was illegible.
        (eval(first l1, retract(second l1)@K, second l2) = first l2))
 
 @ 
-The preceding two operations handle the testing for equality of sums and
-products. This functionality was missing up to [[patch--45]]. (Issue~\#213) The
-corresponding property [[%specialEqual]] set below is checked in
-[[Kernel]]. Note that we can assume that the operators are equal, since this is
-checked in [[Kernel]] itself.
+The next two operations return the product or the sum as unevaluated
+operators. A dummy variable is introduced to make the indexing variable \lq
+local\rq.
+
 <<package COMBF CombinatorialFunction>>=
     product(x:F, s:SegmentBinding F) ==
       k := kernel(variable s)$K
@@ -433,11 +447,6 @@ checked in [[Kernel]] itself.
       dm := dummy
       opdsum [eval(x,k,dm), dm, k::F, lo segment s, hi segment s]
 
-@
-These two operations return the product or the sum as unevaluated operators. A
-dummy variable is introduced to make the indexing variable \lq local\rq.
-
-<<package COMBF CombinatorialFunction>>=
     smpfact(p, l) ==
       map(K2fact(#1, l), #1::F, p)$PolynomialCategoryLifting(
         IndexedExponents K, K, R, SMP, F)
@@ -566,6 +575,15 @@ dummy variable is introduced to make the indexing variable \lq local\rq.
         permutation(r1::R, r2::R)::F
 
       if R has RetractableTo(Z) and F has Algebra(Fraction(Z)) then
+@
+
+[[iibinom]] checks those cases in which the binomial coefficient may be
+evaluated explicitly. Note that up to [[patch--51]], the case where the second
+argument is a positive integer was not checked.(Issue~\#336) Currently, the
+naive iterative algorithm is used to calculate the coefficient, there is room
+for improvement here.
+
+<<package COMBF CombinatorialFunction>>=
          iibinom l ==
            (s:=retractIfCan(second l)@Union(R,"failed")) case R and
               (t:=retractIfCan(s)@Union(Z,"failed")) case Z and t>0 =>
@@ -583,17 +601,6 @@ dummy variable is introduced to make the indexing variable \lq local\rq.
              (r2 := retractIfCan(second l)@Union(R,"failed")) case "failed"
                => ibinom l
            binomial(r1::R, r2::R)::F
-
-@
-
-[[iibinom]] checks those cases in which the binomial coefficient may be
-evaluated explicitly. Note that up to [[patch--51]], the case where the second
-argument is a positive integer was not checked.(Issue~\#336) Currently, the
-naive iterative algorithm is used to calculate the coefficient, there is room
-for improvement here.
-
-<<package COMBF CombinatorialFunction>>=
-
       else
          iibinom l ==
            (r1 := retractIfCan(first l)@Union(R,"failed")) case "failed" or
@@ -616,11 +623,6 @@ for improvement here.
       iipow l == ipow l
 
     if F has ElementaryFunctionCategory then
-      dvpow2 l == if zero?(first l) then
-                    0
-                  else
-                    log(first l) * first(l) ** second(l)
-
 @
 This operation implements the differentiation of the power operator [[%power]]
 with respect to its second argument, i.e., the exponent. It uses the formula
@@ -638,6 +640,19 @@ Note that up to [[patch--25]] this used to read
 which caused differentiating $0^x$ to fail. (Issue~\#19)
 
 <<package COMBF CombinatorialFunction>>=
+      dvpow2 l == if zero?(first l) then
+                    0
+                  else
+                    log(first l) * first(l) ** second(l)
+
+@
+
+The last four properties below define special differentiation rules for sums
+and products. Note that up to [[patch--45]] the rules for products were
+missing.  Thus products were differentiated according the usual chain-rule,
+which gave incorrect results.
+
+<<package COMBF CombinatorialFunction>>=
     evaluate(opfact, iifact)$BasicOperatorFunctions1(F)
     evaluate(oppow, iipow)
     evaluate(opperm, iiperm)
@@ -652,11 +667,9 @@ which caused differentiating $0^x$ to fail. (Issue~\#19)
     setProperty(opprod,  SPECIALDIFF, dvprod@((List F, SE)->F) pretend None)
     setProperty(opdprod, SPECIALDIFF, dvdprod@((List F, SE)->F) pretend None)
 @
-The last four properties define special differentiation rules for sums and
-products. Note that up to [[patch--45]] the rules for products were missing.
-Thus products were differentiated according the usual chain-rule, which gave
-incorrect results.
 
+Finally, we set the properties for displaying sums and products and testing for
+equality.
 <<package COMBF CombinatorialFunction>>=
     setProperty(opsum,   SPECIALDISP, dsum@(List F -> O) pretend None)
     setProperty(opdsum,  SPECIALDISP, ddsum@(List F -> O) pretend None)
@@ -668,8 +681,6 @@ incorrect results.
     setProperty(opdprod, SPECIALEQUAL, equaldsumprod@((K,K) -> Boolean) pretend None)
 
 @ 
-Finally, we set the properties for displaying sums and products and testing for
-equality.
 
 
 \section{package FSPECF FunctionalSpecialFunction}
