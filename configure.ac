@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2008-09-26], 
+AC_INIT([FriCAS], [2008-11-07], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -563,17 +563,21 @@ AC_SUBST(BASE)
 AXIOM=${BASE}${axiom_targetdir}
 AC_SUBST(AXIOM)
 
-axiom_host_has_libbfd=
-AC_CHECK_HEADER([bfd.h])
-AC_HAVE_LIBRARY([bfd], [axiom_host_has_libbfd=yes])
+# axiom_host_has_libbfd=
+# AC_CHECK_HEADER([bfd.h])
+# AC_HAVE_LIBRARY([bfd], [axiom_host_has_libbfd=yes])
 
-axiom_gcl_bfd_option=
-if test x"$ac_cv_header_bfd_h" = xyes \
-    && test x"$axiom_host_has_libbfd" = xyes; then
-    axiom_gcl_bfd_option="--disable-dynsysbfd"
-else
-    axiom_gcl_bfd_option="--disable-statsysbfd --enable-locbfd"
-fi
+# axiom_gcl_bfd_option=
+# if test x"$ac_cv_header_bfd_h" = xyes \
+#    && test x"$axiom_host_has_libbfd" = xyes; then
+#    axiom_gcl_bfd_option="--disable-dynsysbfd"
+# else
+#     axiom_gcl_bfd_option="--disable-statsysbfd --enable-locbfd"
+#fi
+
+# Modern system seem to have bfd which is incompatible with gcl
+axiom_gcl_bfd_option="--disable-dynsysbfd --disable-statsysbfd --enable-locbfd"
+
 # axiom_gcl_mm_option="--enable-maxpage=256*1024"
 axiom_gcl_x_option="--disable-tkconfig --disable-x --disable-xgcl"
 
