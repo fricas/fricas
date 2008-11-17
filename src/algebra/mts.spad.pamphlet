@@ -10,6 +10,11 @@
 \tableofcontents
 \eject
 \section{domain SMTS SparseMultivariateTaylorSeries}
+<<TEST MTS>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "MTS"
+@
 <<domain SMTS SparseMultivariateTaylorSeries>>=
 )abbrev domain SMTS SparseMultivariateTaylorSeries
 ++ This domain provides multivariate Taylor series
@@ -71,7 +76,15 @@ SparseMultivariateTaylorSeries(Coef,Var,SMP):_
 
   Implementation ==> PS add
 
-    Rep := StS -- Below we use the fact that Rep of PS is Stream SMP.
+@
+\subsection{Rep}
+
+Below we will use the fact that the \verb|Rep| of \verb|PS| is
+\verb|Stream SMP|.  The total degree of the $n$\textsuperscript{th} element of
+the stream should always be $n-1$.
+<<domain SMTS SparseMultivariateTaylorSeries>>=
+    Rep := StS
+
     extend(x,n) == extend(x,n + 1)$Rep
     complete x == complete(x)$Rep
 
@@ -84,7 +97,58 @@ SparseMultivariateTaylorSeries(Coef,Var,SMP):_
       ints := integers(0)$STT pretend ST NNI
       map(monomial(#2 :: SMP,v,#1)$SMP,ints,s pretend ST Coef)$ST3(NNI,Coef,SMP)
 
-    coefficient(s,n) == elt(s,n + 1)$Rep  -- 1-based indexing for streams
+@
+
+\subsection{coefficient}
+
+The function \spadfun{coefficient} carries three different semantics.  We can extract
+\begin{enumerate}
+\item a polynomial giving the terms of given total degree: 
+<<domain SMTS SparseMultivariateTaylorSeries>>=
+    coefficient(s, n) == elt(s,n + 1)$Rep  -- 1-based indexing for streams
+@
+\item a Taylor series with all coefficients of a monomial:
+  here we have to take into account that we reduce the degree of each term of
+  the stream by a constant.
+<<domain SMTS SparseMultivariateTaylorSeries>>=
+    coefficient(s: %, lv: List Var, ln: List NNI): % == 
+        map(coefficient(#1, lv, ln), rest(s, reduce(_+, ln)))
+@
+\item the coefficient of a particular monomial:
+<<domain SMTS SparseMultivariateTaylorSeries>>=
+    coefficient(s: %, m: IndexedExponents Var): Coef ==
+        n := leadingCoefficient(mon := m)
+        while not zero?(mon := reductum mon) repeat
+            n := n + leadingCoefficient mon      
+
+        coefficient(coefficient(s, n), m)
+@
+\end{enumerate}
+
+<<TEST MTS>>=
+testcase "coefficient"
+)se str cal 2
+X := x::TS FRAC INT;
+Y := y::TS FRAC INT;
+Z := z::TS FRAC INT;
+s := sin(X+Y);
+testEquals("coefficient(s, 3)", "-1/6*(x+y)^3")
+
+IS ==> IndexedExponents Symbol
+testEquals("coefficient(s, monomial(3,x)$IS)", "-1/6")
+
+s := (1/(1-X-Y-Z))::TS FRAC INT;
+t := coefficient(s, [x,z], [3,2]);
+testEquals("degree(polynomial(t, 5), y)", "5")
+
+s := (1/(1-X-Y))::TS FRAC INT;
+t := coefficient(s, x, 1)
+testEquals("polynomial(t, 5)", "1+x+x^2+x^3+x^4+x^5")
+
+@
+
+<<domain SMTS SparseMultivariateTaylorSeries>>=
+
 
 --% creation of series
 
@@ -319,6 +383,9 @@ TaylorSeries(Coef): Exports == Implementation where
         s:= rst s
       sum
 
+@
+<<TEST MTS>>=
+statistics()
 @
 \section{License}
 <<license>>=
