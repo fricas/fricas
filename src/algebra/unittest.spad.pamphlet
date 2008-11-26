@@ -42,10 +42,10 @@ would be valid tests.  For some reason
 currently is not a valid test, although it should be.
 
 The system command \verb|)clear completely| resets all the statistics counters,
-while \verb|)clear all| leaves them untouched.  Introducing a new testcase
-calls \verb|)clear all|, so it should not be necessary to call it manually.  We
-provide a second function \spadfun{testcaseNoClear} that does not clear the
-environment.
+while \verb|)clear all| leaves them untouched.  Introducing a new testsuite or
+a new testcase calls \verb|)clear all|, so it should not be necessary to call
+it manually.  We provide a second function \spadfun{testcaseNoClear} that does
+not clear the environment.
 
 The packages defined in this file are meant to be used as regression test
 facility.  Therefore, we do not expose them automatically.  Rather, they should
@@ -66,8 +66,13 @@ at the very beginning of the regression testing.
 UnittestCount(): with
 
      testsuite: String -> Void     
-       ++ testsuite s starts a new testsuite with s as title.  A testsuite is
-       ++ composed of several testcases.
+       ++ testsuite s starts a new testsuite with s as title. It also calls
+       ++ \axiom{clear all}.  A testsuite is composed of several testcases.
+
+     testsuiteNoClear: String -> Void     
+       ++ testsuiteNoClear s starts a new testsuite with s as title, without
+       ++ calling \axiom{clear all}.  A testsuite is composed of several
+       ++ testcases. 
 
      testcase: String -> Void
        ++ testcase s starts a new testcase with s as title.  It also calls
@@ -138,6 +143,10 @@ UnittestCount(): with
      currentTestsuite: String := ""
 
      testsuite s ==
+         systemCommand("clear all")$MoreSystemCommands
+         testsuiteNoClear s
+
+     testsuiteNoClear s ==
          if #s > 15
          then messagePrint("WARNING: string for testsuite should have less then "
                            "15 characters!")$OutputForm
@@ -345,6 +354,28 @@ UnittestAux(R: BasicType): with
        ++ testLibraryError(inp, ex) states that ex should throw an error. Such
        ++ a test will never count as a fatal error.
 
+     if R has RealNumberSystem then
+         testRealEqualsAux: (String, R, R) -> Void
+           ++ testRealEquals(inp, ex1, ex2) states that ex1 and ex2 should be
+           ++ approximately equal as real numbers, taking into acount
+           ++ \spadfun{testAbsolutePrecision} and
+           ++ \spadfun{testRelativePrecision}. 
+
+         testComplexEqualsAux: (String, Complex R, Complex R) -> Void
+           ++ testComplexEquals(inp ex1, ex2) states that ex1 and ex2 should be
+           ++ approximately equal as complex numbers, taking into acount
+           ++ \spadfun{testAbsolutePrecision} and
+           ++ \spadfun{testRelativePrecision}. 
+
+         testAbsolutePrecision: R -> R
+           ++ testAbsolutePrecision(eps) returns the current absolute precision
+           ++ used for floating point comparison, and then sets it to eps.  The
+           ++ default value is 1.0e-15.  
+    
+         testRelativePrecision: R -> R
+           ++ testRelativePrecision(eps) returns the current absolute precision
+           ++ used for floating point comparison, and then sets it to eps.  The
+           ++ default value is 1.0e-15.  
 
   == add
 
@@ -369,6 +400,64 @@ UnittestAux(R: BasicType): with
                  then incFail(inp, [ex1::O, ex2::O])$U
                  else incFail(inp, [])$U
 
+     if R has RealNumberSystem then
+
+         epsilonRelative := 10::R**(-15)
+         epsilonAbsolute := 10::R**(-15)
+
+         testRelativePrecision eps ==
+             old := epsilonRelative
+             epsilonRelative := eps
+             old
+
+         testAbsolutePrecision eps ==
+             old := epsilonAbsolute
+             epsilonAbsolute := eps
+             old
+
+         testRealEqualsAux(inp, ex1, ex2) == 
+             absolute: R := norm(ex1-ex2)$R
+             if not zero? ex2
+             then relative: R := norm(ex1/ex2-1)$R
+             else relative: R := 0
+             res: List O := []
+             if relative > epsilonRelative then 
+                 if R has CoercibleTo O 
+                 then res := cons(hconcat(message("rel err: ")$O,
+                                          relative::O), res)
+                 else res := cons(message("rel err ")$O, res)
+
+             if absolute > epsilonAbsolute then 
+                 if R has CoercibleTo O 
+                 then res := cons(hconcat(message("abs err: ")$O,
+                                          absolute::O), res)
+                 else res := cons(message("abs err ")$O, res)
+
+             if empty? res 
+             then incPass()$U
+             else incFail(inp, concat([ex1::O, ex2::O], res))$U
+
+         testComplexEqualsAux(inp, ex1, ex2) ==
+             absolute: R := norm(ex1-ex2)$Complex(R)
+             if not zero? ex2
+             then relative: R := norm(ex1/ex2-1)$Complex(R)
+             else relative: R := 0
+             res: List O := []
+             if relative > epsilonRelative then
+                 if R has CoercibleTo O
+                 then res := cons(hconcat(message("rel err: ")$O,
+                                          relative::O), res)
+                 else res := cons(message("rel err ")$O, res)
+
+             if absolute > epsilonAbsolute then
+                 if R has CoercibleTo O
+                 then res := cons(hconcat(message("abs err: ")$O,
+                                          absolute::O), res)
+                 else res := cons(message("abs err ")$O, res)
+
+             if empty? res 
+             then incPass()$U
+             else incFail(inp, concat([ex1::O, ex2::O], res))$U
 
      testNotEqualsAux(inp, ex1, ex2) == 
          if (ex1=ex2)@Boolean
@@ -412,6 +501,16 @@ Unittest: with
        ++ performs some simplifications, we convert ex1 and ex2 to
        ++ \axiom{InputForm}, if possible
 
+     testRealEquals: (String, String) -> Void
+       ++ testRealEquals(ex1, ex2) states that ex1 and ex2 should be
+       ++ approximately equal as real numbers, taking into acount
+       ++ \spadfun{testAbsolutePrecision} and \spadfun{testRelativePrecision}.  
+
+     testComplexEquals: (String, String) -> Void
+       ++ testComplexEquals(ex1, ex2) states that ex1 and ex2 should be
+       ++ approximately equal as complex numbers, taking into acount
+       ++ \spadfun{testAbsolutePrecision} and \spadfun{testRelativePrecision}.
+
      testNotEquals: (String, String) -> Void
        ++ testNotEquals(ex1, ex2) states that ex1 and ex2 should be
        ++ different.
@@ -431,6 +530,18 @@ Unittest: with
          inp := "EQUL: (" s1 ", " s2 ")"
          incFatal(inp)$UnittestCount
          interpretString("testEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         decFatal()$UnittestCount
+
+     testRealEquals(s1, s2) ==
+         inp := "EQLR: (" s1 ", " s2 ")"
+         incFatal(inp)$UnittestCount
+         interpretString("testRealEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         decFatal()$UnittestCount
+
+     testComplexEquals(s1, s2) ==
+         inp := "EQLC: (" s1 ", " s2 ")"
+         incFatal(inp)$UnittestCount
+         interpretString("testComplexEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
          decFatal()$UnittestCount
 
      testNotEquals(s1, s2) ==
