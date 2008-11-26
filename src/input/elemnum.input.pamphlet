@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{axiom}
+\usepackage{axiom,url}
 \begin{document}
 \title{\$SPAD/src/input elemnum.input}
 \author{The Axiom Team}
@@ -9,29 +9,232 @@
 \eject
 \tableofcontents
 \eject
-\section{License}
-<<license>>=
---Copyright The Numerical Algorithms Group Limited 1991.
-@
+\section{Testing trigcat.spad.pamphlet}
+We want to test whether singularities, branch cuts, specific values and
+interplay between functions is properly implemented, and consistent over
+different domains.
+
+Tests are placed right after the list of exports of the Category.  In this
+section we give an overview of the tests performed and test the interplay
+between functions.
+
 <<*>>=
-<<license>>
 )set break resume
 )expose UnittestCount UnittestAux Unittest
+<<TEST inverses>>
+<<TEST branch cuts>>
+<<TEST singularities>>
+<<TEST specific values>>
+<<TEST simplification>>
+@
+Since the floating point calculations depend on the underlying Common Lisp
+engine, it may happen (and currently happens) that some tests fail only for
+specific Lisp implementations.
+<<*>>=
+expectedECL() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
+    messagePrint("inverses                    0     (6)               0   (312)")$OutputForm;
+    messagePrint("branch cuts                 3     (5)               8  (1584)")$OutputForm;
+    messagePrint("singularities               1     (2)               2    (10)")$OutputForm;
+    messagePrint("specific values             4     (4)              50   (112)")$OutputForm;
+    messagePrint("simplification              1     (2)              10    (40)")$OutputForm
 
--- SMW June 26, 1991.
-testsuite "elemnum"
+expectedSBCL() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
+    messagePrint("inverses                    0     (6)               0   (312)")$OutputForm;
+    messagePrint("branch cuts                 4     (5)              13  (1584)")$OutputForm;
+    messagePrint("singularities               2     (2)               5    (10)")$OutputForm;
+    messagePrint("specific values             4     (4)              50   (112)")$OutputForm;
+    messagePrint("simplification              1     (2)              10    (40)")$OutputForm
+   
+statistics()
+expectedECL()
+expectedSBCL()
+@
 
-epsilonAbsolute := 1.0e-15
-epsilonrelative := 1.0e-30
+\subsection{Branch cuts and singularities}
 
-testFloat(a: String, b: String): Void ==
-    testTrue("abs(" a "-" b") < epsilonAbsolute")
-    testTrue("abs(" a "/" b "-1) < epsilonRelative")
+\spadfun{testCircleCont} tests continuity of \verb|f| along a circular arc
+centered at the origin, beginning at \verb|beginCartesian| and subtending the
+given angle.  \verb|beginPolar| is the argument of \verb|beginCartesian|, which
+we need to provide because of a bug in \spadfun{argument}.
 
-testComplexFloat(a: String, b: String): Void ==
-    testTrue("norm(" a "-" b") < epsilonAbsolute")
-    testTrue("norm(" a "/" b "-1) < epsilonRelative")
+Note that one-sided continuity along branch cuts can only be tested if
+\spadfun{beginCartesian} is exact.
 
+However, it is not completely clear, especially taking into account
+\url{HyperSpec/Issues/iss192_w.htm}, whether we really want to specify this.
+
+<<TEST branch cuts>>=
+testsuite "branch cuts"
+tmax := 100
+testAbsolutePrecision((1/tmax)::Float)
+testAbsolutePrecision((1/tmax)::DoubleFloat)
+testRelativePrecision((1/tmax)::Float)
+testRelativePrecision((1/tmax)::DoubleFloat)
+
+testCircleCont(radius, angle, beginPolar, beginCartesian, f) ==
+    free valOld
+    free valNew
+    arg    := beginCartesian
+    valOld := f(arg)
+
+    for t in 1..tmax-1 repeat
+--        output arg
+        arg    := radius*exp(%i*(angle/tmax*t+beginPolar))
+        valNew := f(arg)
+        testComplexEquals("valOld", "valNew")
+        valOld := valNew
+--    output arg
+
+testcaseNoClear "sqrt"
+testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(FLOAT),  sqrt$Complex(Float))
+testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(DFLOAT), sqrt$Complex(DFLOAT))
+testcaseNoClear "log"
+testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(FLOAT),  log$Complex(Float))
+testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(DFLOAT), log$Complex(DFLOAT))
+
+testcaseNoClear "acos"
+-- upper circle
+testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(FLOAT),  acos$Complex(Float))
+testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(DFLOAT), acos$Complex(DFLOAT))
+-- lower circle
+testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(FLOAT),  acos$Complex(Float))
+testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(DFLOAT), acos$Complex(DFLOAT))
+
+testcaseNoClear "asin"
+-- upper circle
+testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(FLOAT),  asin$Complex(Float))
+testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(DFLOAT), asin$Complex(DFLOAT))
+-- lower circle
+testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(FLOAT),  asin$Complex(Float))
+testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(DFLOAT), asin$Complex(DFLOAT))
+
+testcaseNoClear "atan"
+-- right circle
+testCircleCont(2.0, %pi, -%pi/2.0, -2.0*%i::Complex(FLOAT),  atan$Complex(Float))
+testCircleCont(2.0, %pi, -%pi/2.0, -2.0*%i::Complex(DFLOAT), atan$Complex(DFLOAT))
+-- left circle
+testCircleCont(2.0, %pi, %pi/2.0, 2.0*%i::Complex(FLOAT),  atan$Complex(Float))
+testCircleCont(2.0, %pi, %pi/2.0, 2.0*%i::Complex(DFLOAT), atan$Complex(DFLOAT))
+
+@
+
+<<TEST singularities>>=
+testsuite "singularities"
+
+testcaseNoClear "log"
+testLibraryError("log(0.0::Complex Float)")
+testLibraryError("log(0.0::Complex DFLOAT)")
+testLibraryError("log(0::EXPR Complex INT)")
+testLibraryError("log(0::EXPR INT)")
+
+testcaseNoClear "atan"
+testLibraryError("atan(%i::Complex Float)")
+testLibraryError("atan(-%i::Complex Float)")
+testLibraryError("atan(%i::Complex DFLOAT)")
+testLibraryError("atan(-%i::Complex DFLOAT)")
+testLibraryError("atan(%i)")
+testLibraryError("atan(-%i)")
+
+@
+
+\subsection{specific values}
+
+We test whether the functions simplify for specific values.  However, some care
+has to be taken.  For example, it is not completely clear whether we want that
+\verb|log(-%e)| evaluates to \verb|%i*%pi|.
+
+<<TEST specific values>>=
+testsuite "specific values"
+atanValues := _
+      [["0", "0"], ["2-sqrt 3", "%pi/12"], ["sqrt(1-2/sqrt 5)", "%pi/10"],_
+      ["sqrt 2 - 1", "%pi/8"], ["1/sqrt 3", "%pi/6"],                     _
+      ["sqrt(5-2*sqrt 5)", "%pi/5"], ["1", "%pi/4"],                      _
+      ["sqrt(1+2/sqrt 5)", "3*%pi/10"], ["sqrt 3", "%pi/3"],              _
+      ["1+sqrt 2", "3*%pi/8"], ["sqrt(5+2*sqrt 5)", "2*%pi/5"],           _
+      ["2+sqrt 3", "5*%pi/12"]]
+
+atanValues := _
+      [["0", "0"], ["2-sqrt 3", "%pi/12"], ["sqrt(1-2/sqrt 5)", "%pi/10"],_
+      ["sqrt 2 - 1", "%pi/8"], ["1/sqrt 3", "%pi/6"],                     _
+      ["sqrt(5-2*sqrt 5)", "%pi/5"], ["1", "%pi/4"],                      _
+      ["sqrt(1+2/sqrt 5)", "3*%pi/10"], ["sqrt 3", "%pi/3"],              _
+      ["1+sqrt 2", "3*%pi/8"], ["sqrt(5+2*sqrt 5)", "2*%pi/5"],           _
+      ["2+sqrt 3", "5*%pi/12"]]
+
+testcaseNoClear "log"
+for i in 0..3 repeat
+    testEquals("log(%e^" string(i) ")", string(i))
+    testEquals("log(-%e^" string(i) ")", string(i) "+ %i*%pi")
+    testEquals("log(%i*%e^" string(i) ")", string(i) "+ %i*%pi/2")
+    testEquals("log(-%i*%e^" string(i) ")", string(i) "- %i*%pi/2")
+
+testcaseNoClear "acos"
+for p in atanValues repeat 
+    testEquals("acos(1/sqrt(1+(" p.1 ")^2))", p.2)
+    testRealEquals("numeric acos(1/sqrt(1+(" p.1 ")^2))", 
+                   "numeric(" p.2 ")")
+
+testcaseNoClear "asin"
+for p in atanValues repeat 
+    testEquals("asin((" p.1 ")/sqrt(1+(" p.1 ")^2))", p.2)
+    testRealEquals("numeric asin((" p.1 ")/sqrt(1+(" p.1 ")^2))", 
+                   "numeric(" p.2 ")")
+
+testcaseNoClear "atan"
+for p in atanValues repeat 
+    testEquals("atan(" p.1 ")", p.2)
+    testEquals("atan(-(" p.1 "))", "-(" p.2 ")")
+    testRealEquals("numeric atan(" p.1 ")", "numeric(" p.2 ")")
+    testRealEquals("numeric atan(-(" p.1 "))", "numeric(-(" p.2 "))")
+
+@
+
+\subsection{simplification}
+
+We test whether normalizing the function produces an equivalent function, even
+over branch cuts.  \spadfun{testCircleZero} is a helper function that tests
+whether \verb|f| vanishes along a circular arc, with the same conventions as
+\spadfun{testCircleCont}.
+
+<<TEST simplification>>=
+testsuite "simplification"
+tmax := 10
+testCircleZero(radius, angle, beginPolar, beginCartesian, f) ==
+    free val
+    val := f beginCartesian
+    testComplexEquals("val", "0.0")
+    for t in 1..tmax-1 repeat
+        val := f(radius*exp(%i*(angle/tmax*t+beginPolar)))
+        testComplexEquals("val", "0.0")
+
+testcaseNoClear "acos"
+acosNormalized(z: Complex Float): Complex Float == 
+    complexNumeric eval(normalize acos 'z, 'z, z) - acos z
+
+-- upper circle
+testCircleZero(2.0, -%pi, -%pi, -2.0::Complex(FLOAT),  acosNormalized)
+-- lower circle
+testCircleZero(2.0, -%pi, 0.0, 2.0::Complex(FLOAT),  acosNormalized)
+
+testcaseNoClear "asin"
+asinNormalized(z: Complex Float): Complex Float == 
+    complexNumeric eval(normalize asin 'z, 'z, z) - asin z
+
+-- upper circle
+testCircleZero(2.0, -%pi, -%pi, -2.0::Complex(FLOAT),  asinNormalized)
+-- lower circle
+testCircleZero(2.0, -%pi, 0.0, 2.0::Complex(FLOAT),  asinNormalized)
+@
+
+\subsection{Inverses}
+
+We test inverses of elementary functions on some (arbitrary) points, in
+\spad{Float}, \spad{DoubleFloat} and their \spad{Complex} counterparts.
+
+<<TEST inverses>>=
+testsuite "inverses"
 inverses := _
 ["exp log x",                                                                 _
  "log exp x",                                                                 _
@@ -53,8 +256,9 @@ x := 0.7::Float
 errlist := ["acsc x", "asec x", "acosh x", "acoth x"]
 
 for ex in inverses | not anySubstring?(errlist, ex) repeat
-    testFloat(ex, "x")
+    testRealEquals(ex, "x")
 
+-- cannot loop over errlist, since error breaks the loop
 testLibraryError "acsc x"
 testLibraryError "asec x"
 testLibraryError "acosh x"
@@ -64,7 +268,7 @@ testLibraryError "acoth x"
 testcaseNoClear "0.7 DoubleFloat"
 x := 0.7::DoubleFloat
 for ex in inverses | not anySubstring?(errlist, ex) repeat
-    testFloat(ex, "x")
+    testRealEquals(ex, "x")
 
 testLibraryError "acsc x"
 testLibraryError "asec x"
@@ -75,7 +279,7 @@ testcaseNoClear "1.1 Float"
 x := 1.1::Float
 errlist := ["asin x", "acos x", "atanh x", "asech x"]
 for ex in inverses | not anySubstring?(errlist, ex) repeat
-    testFloat(ex, "x")
+    testRealEquals(ex, "x")
 
 testLibraryError "asin x"
 testLibraryError "acos x"
@@ -85,7 +289,7 @@ testLibraryError "asech x"
 testcaseNoClear "1.1 DoubleFloat"
 x := 1.1::DoubleFloat
 for ex in inverses | not anySubstring?(errlist, ex) repeat
-    testFloat(ex, "x")
+    testRealEquals(ex, "x")
  
 testLibraryError "asin x"
 testLibraryError "acos x"
@@ -103,38 +307,30 @@ testinverseFloats(a, b, n) ==
    for ex in inverses repeat
        if member?(ex, ["acos cos x", "asec sec x", _
                        "acosh cosh x", "asech sech x"])
-       then testComplexFloat(concat [string s1, "*", ex], "x")
+       then testComplexEquals(concat [string s1, "*", ex], "x")
        else if ex = "acot cot x"
-       then testComplexFloat(concat [ex, " - ", string m1, "*%pi"], "x")
-       else testComplexFloat(ex, "x")
-
-sa := 0.7::DoubleFloat;
-sb := 1.1::DoubleFloat;
-ba := 0.7::Float;
-bb := 1.1::Float;
+       then testComplexEquals(concat [ex, " - ", string m1, "*%pi"], "x")
+       else testComplexEquals(ex, "x")
 
 testcaseNoClear "Complex Float"
 )clear value x
 x:Complex Float
-testinverseFloats(ba, bb, 1);
-testinverseFloats(ba, bb, 2);
-testinverseFloats(ba, bb, 3);
-testinverseFloats(ba, bb, 4);
+ba := 0.7::Float;
+bb := 1.1::Float;
+testinverseFloats(ba, bb, 1); -- test  0.7 + 1.1*%i
+testinverseFloats(ba, bb, 2); -- test -0.7 + 1.1*%i
+testinverseFloats(ba, bb, 3); -- test -0.7 - 1.1*%i
+testinverseFloats(ba, bb, 4); -- test  0.7 - 1.1*%i
+
 testcaseNoClear "Complex DoubleFloat"
 )clear value x
 x:Complex DFLOAT
+sa := 0.7::DoubleFloat;
+sb := 1.1::DoubleFloat;
 testinverseFloats(sa, sb, 1);
 testinverseFloats(sa, sb, 2);
 testinverseFloats(sa, sb, 3);
 testinverseFloats(sa, sb, 4);
-
-expected() ==
-    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
-    messagePrint("elemnum                     0     (6)               0   (608)")$OutputForm
-
-statistics()
-expected()
-
 @
 \eject
 \begin{thebibliography}{99}
