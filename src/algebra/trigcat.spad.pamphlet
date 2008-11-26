@@ -9,6 +9,30 @@
 \eject
 \tableofcontents
 \eject
+
+\section{category RADCAT RadicalCategory}
+<<category RADCAT RadicalCategory>>=
+)abbrev category RADCAT RadicalCategory
+++ Author:
+++ Date Created:
+++ Change History:
+++ Basic Operations: nthRoot, sqrt, **
+++ Related Constructors:
+++ Keywords: rational numbers
+++ Description: The \spad{RadicalCategory} is a model for the rational numbers.
+RadicalCategory(): Category == with
+  sqrt   : % -> %
+      ++ sqrt(x) returns the square root of x.  The branch cut lies along the
+      ++ negative real axis, continuous with quadrant II.
+  nthRoot: (%, Integer) -> %
+      ++ nthRoot(x,n) returns the nth root of x.
+  _*_*   : (%, Fraction Integer) -> %
+      ++ x ** y is the rational exponentiation of x by the power y.
+ add
+  sqrt x        == x ** inv(2::Fraction(Integer))
+  nthRoot(x, n) == x ** inv(n::Fraction(Integer))
+
+@
 \section{category ELEMFUN ElementaryFunctionCategory}
 <<category ELEMFUN ElementaryFunctionCategory>>=
 )abbrev category ELEMFUN ElementaryFunctionCategory
@@ -18,7 +42,11 @@
 ++ Date Last Updated: 14 May 1991
 ++ Description: Category for the elementary functions;
 ElementaryFunctionCategory(): Category == with
-    log : $ -> $       ++ log(x) returns the natural logarithm of x.
+    log : $ -> $       
+    ++ log(x) returns the natural logarithm of x.  When evaluated into some
+    ++ subset of the complex numbers, the branch cut lies along
+    ++ the negative real axis, continuous with quadrant II.  The domain does
+    ++ not contain the origin.
     exp : $ -> $       ++ exp(x) returns %e to the power x.
     "**": ($, $) -> $  ++ x**y returns x to the power y.
  add
@@ -55,12 +83,30 @@ intermediate test to check that the argument has a reciprocal values.
 ++ Date Last Updated: 14 May 1991
 ++ Description: Category for the inverse trigonometric functions;
 ArcTrigonometricFunctionCategory(): Category == with
-    acos: $ -> $       ++ acos(x) returns the arc-cosine of x.
+    acos: $ -> $
+    ++ acos(x) returns the arc-cosine of x.  When evaluated into some
+    ++ subset of the complex numbers, one branch cut for acos lies
+    ++ along the negative real axis to the left of -1 (inclusive),
+    ++ continuous  with the upper half plane, the other along the
+    ++ positive real axis to the right of 1 (inclusive), continuous
+    ++ with the lower half plane.
     acot: $ -> $       ++ acot(x) returns the arc-cotangent of x.
     acsc: $ -> $       ++ acsc(x) returns the arc-cosecant of x.
     asec: $ -> $       ++ asec(x) returns the arc-secant of x.
-    asin: $ -> $       ++ asin(x) returns the arc-sine of x.
-    atan: $ -> $       ++ atan(x) returns the arc-tangent of x.
+    asin: $ -> $
+    ++ asin(x) returns the arc-sine of x.  When evaluated into some
+    ++ subset of the complex numbers, one branch cut for asin lies
+    ++ along the negative real axis to the left of -1 (inclusive),
+    ++ continuous with the upper half plane, the other along the
+    ++ positive real axis to the right of 1 (inclusive), continuous
+    ++ with the lower half plane.
+    atan: $ -> $
+    ++ atan(x) returns the arc-tangent of x.  When evaluated into some
+    ++ subset of the complex numbers, one branch cut for atan lies
+    ++ along the positive imaginary axis above %i (exclusive), continuous
+    ++ with the left half plane, the other along the negative
+    ++ imaginary axis below -%i (exclusive) continuous with the right
+    ++ half plane.  The domain does not contain %i and -%i.
  add
     if $ has Ring then
        asec(x) ==
@@ -315,6 +361,7 @@ SpecialFunctionCategory(): Category == with
 <<*>>=
 <<license>>
 
+<<category RADCAT RadicalCategory>>
 <<category ELEMFUN ElementaryFunctionCategory>>
 <<category TRIGCAT TrigonometricFunctionCategory>>
 <<category ATRIG ArcTrigonometricFunctionCategory>>
