@@ -1441,7 +1441,7 @@ writeInputLines(fn,initial) ==
       lineList := [vec,:lineList]
   file := histInputFileName(fn)
   histFileErase file
-  inp:= DEFIOSTREAM(['(MODE . OUTPUT),['FILE,:file]])
+  inp:= MAKE_-OUTSTREAM(file)
   for x in removeUndoLines NREVERSE lineList repeat WRITE_-LINE(x,inp)
   -- see file "undo" for definition of removeUndoLines
   if fn ^= 'redo then sayKeyedMsg("S2IH0014",[namestring file])
@@ -2203,8 +2203,7 @@ reportOpsFromUnitDirectly0 D ==
 reportOpsFromUnitDirectly1 D ==
   showFile := pathname ['SHOW,'LISTING,$listingDirectory]
   _$ERASE showFile
-  $sayBrightlyStream : fluid :=
-    DEFIOSTREAM([['FILE,:showFile], '(MODE . OUTPUT)])
+  $sayBrightlyStream : fluid := MAKE_-OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromUnitDirectly D
   SHUT $sayBrightlyStream
@@ -2226,8 +2225,7 @@ reportOpsFromLisplib0(unitForm,u)  ==
 reportOpsFromLisplib1(unitForm,u)  ==
   showFile := pathname ['SHOW,'LISTING,$listingDirectory]
   _$ERASE showFile
-  $sayBrightlyStream : fluid :=
-    DEFIOSTREAM([['FILE,:showFile], '(MODE . OUTPUT)])
+  $sayBrightlyStream : fluid := MAKE_-OUTSTREAM (showFile)
   sayShowWarning()
   reportOpsFromLisplib(unitForm,u)
   SHUT $sayBrightlyStream

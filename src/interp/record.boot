@@ -97,7 +97,7 @@ printRecordFile(pathname,:option) ==
   $LINELENGTH : local := KAR option or 76
   $printTimeIfTrue: local := nil
   $printTypeIfTrue: local := true
-  stream := DEFIOSTREAM([['FILE,:pathname], '(MODE . INPUT)])
+  stream := MAKE_-INSTREAM (pathname)
   repeat
     NULL (PEEK_-CHAR ( true, stream , nil, nil )) => return nil
     [i,t,:o] := dewritify VMREAD stream

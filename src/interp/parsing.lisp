@@ -726,7 +726,7 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 (defparameter Read-Quietly nil
   "Whether or not to produce an output listing. [local to PRINT-NEW-LINE]")
 
-(defun Print-New-Line (string &optional (strm *terminal-io*))
+(defun Print-New-Line (string strm)
   "Makes output listings."
   (if Read-Quietly (stack-push (copy-tree string) Printer-Line-Stack)
       (progn (mapc #'(lambda (x) (format strm "; ~A~%" x) (terpri))

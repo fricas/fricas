@@ -75,11 +75,7 @@
 (defun print-defun (name body)
    (let* ((sp (assoc 'vmlisp::compiler-output-stream vmlisp::optionlist))
           (st (if sp (cdr sp) *standard-output*)))
-     (if (and (is-console st) (symbolp name) (fboundp name)
-              (not (compiled-function-p (symbol-function name))))
-         (compile name))
-     (when (or |$PrettyPrint| (not (is-console st)))
-           (print-full body st) (force-output st))))
+        (print-full body st) (force-output st)))
 
 (defun boot (&optional
               (boot-input-file nil)
@@ -375,8 +371,8 @@ or the chracters ?, !, ' or %"
 (defun SPAD_SYNTAX_ERROR (&rest byebye)
   "Print syntax error indication, underline character, scrub line."
   (BUMPERRORCOUNT '|syntax|)
-  (COND ((AND (EQ DEBUGMODE 'YES) (NOT(CONSOLEINPUTP IN-STREAM)))
-         (SPAD_LONG_ERROR))
+  (COND ((EQ DEBUGMODE 'YES) 
+           (SPAD_LONG_ERROR))
         ((SPAD_SHORT_ERROR)))
   (IOClear)
   (throw 'spad_reader nil))

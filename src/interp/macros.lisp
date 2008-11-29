@@ -1051,11 +1051,9 @@ LP  (COND ((NULL X)
  
 ; 22.2.1 Input from Character Streams
  
-(DEFUN STREAM-EOF (&optional (STRM *terminal-io*))
+(DEFUN STREAM-EOF (STRM) 
   "T if input stream STRM is at the end or saw a ~."
   (not (peek-char nil STRM nil nil nil))     )
- 
-(DEFUN CONSOLEINPUTP (STRM) (IS-CONSOLE STRM))
  
 (defvar $filelinenumber 0)
 (defvar $prompt "--->")
@@ -1068,21 +1066,17 @@ LP  (COND ((NULL X)
  
 ; 22.3.1 Output to Character Streams
  
-(defvar |conOutStream| *terminal-io* "console output stream")
- 
 (defun |sayTeX| (x) (if (null x) nil (sayBrightly1 x |$texOutputStream|)))
  
-(defun |sayNewLine| () (TERPRI))
-
 (defvar |$sayBrightlyStream| nil "if not nil, gives stream for sayBrightly output")
  
 (defun |sayBrightly| (x &optional (out-stream *standard-output*))
   (COND ((NULL X) NIL)
         (|$sayBrightlyStream| (sayBrightly1 X |$sayBrightlyStream|))
         ((IS-CONSOLE out-stream) (sayBrightly1 X out-stream))
-        ((sayBrightly1 X out-stream) (sayBrightly1 X *terminal-io*))))
+        ((sayBrightly1 X out-stream) (sayBrightly1 X *error-output*))))
  
-(defun |sayBrightlyI| (x &optional (s *terminal-io*))
+(defun |sayBrightlyI| (x &optional (s *error-output*))
     "Prints at console or output stream."
   (if (NULL X) NIL (sayBrightly1 X S)))
  
@@ -1090,15 +1084,17 @@ LP  (COND ((NULL X)
   (COND ((NULL X) NIL)
         (|$sayBrightlyStream| (sayBrightlyNT1 X |$sayBrightlyStream|))
         ((IS-CONSOLE S) (sayBrightlyNT1 X S))
-        ((sayBrightly1 X S) (sayBrightlyNT1 X *terminal-io*))))
+        ((sayBrightly1 X S) (sayBrightlyNT1 X *error-output*))))
+
+(defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
  
-(defun sayBrightlyNT1 (X *standard-output*)
-  (if (ATOM X) (BRIGHTPRINT-0 X) (BRIGHTPRINT X)))
+(defun sayBrightlyNT1 (X |$fricasOutput|)
+    (if (ATOM X) (BRIGHTPRINT-0 X) (BRIGHTPRINT X)))
  
-(defun sayBrightly1 (X *standard-output*)
-    (if (ATOM X)
-        (progn (BRIGHTPRINT-0 X) (TERPRI) (force-output))
-      (progn (BRIGHTPRINT X) (TERPRI) (force-output))))
+(defun sayBrightly1 (X str)
+    (sayBrightlyNT1 X str)
+    (TERPRI str) 
+    (force-output str))
  
 (defun |saySpadMsg| (X)
   (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
@@ -1115,9 +1111,7 @@ LP  (COND ((NULL X)
 (defun |sayMSG2File| (msg)
   (PROG (file str)
         (SETQ file (|makePathname| '|spadmsg| '|listing| |$listingDirectory|))
-        (SETQ str
-              (DEFIOSTREAM
-                   (CONS '(MODE . OUTPUT) (CONS (CONS 'FILE file) NIL))))
+        (SETQ str (MAKE-OUTSTREAM file))
         (sayBrightly1 msg str)
         (SHUT str) ) )
  
@@ -1353,7 +1347,7 @@ LP  (COND ((NULL X)
   ;; from standard-output while executing.
   (let* ((*standard-output* (make-string-output-stream))
          (curoutstream *standard-output*)
-         (*terminal-io* *standard-output*)
+         (*error-output* *standard-output*)
          (|$algebraOutputStream| *standard-output*)
         val)
     (declare (special curoutstream

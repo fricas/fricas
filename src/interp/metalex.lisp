@@ -59,7 +59,7 @@
     (with-open-stream
       (out-stream (if *meta-output-file*
                (open *meta-output-file* :direction :output)
-               *terminal-io*))
+               *standard-output*))
       (format out-stream
               "~&;;; -*- Mode:Lisp; Package:Boot  -*-~%~%")
       (parse-program)

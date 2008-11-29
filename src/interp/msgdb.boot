@@ -461,7 +461,7 @@ throwKeyedMsgFromDb(key,args,dbName) ==
 
 queryUserKeyedMsg(key,args) ==
   -- display message and return reply
-  conStream := DEFIOSTREAM ('((DEVICE . CONSOLE) (MODE . INPUT)))
+  conStream := MAKE_-INSTREAM 0
   sayKeyedMsg(key,args)
   ioHook("startQueryUser")
   ans := read_-line conStream
@@ -572,17 +572,15 @@ mkMessage msg ==
 
 sayMessage msg == sayMSG mkMessage msg
 
-sayNewLine(:margin) ==
+sayNewLine() ==
   -- Note: this function should *always* be used by sayBrightly and
-  -- friends rather than TERPRI --  see bindSayBrightly
-  TERPRI()
-  if margin is [n] then BLANKS n
-  nil
+  -- friends rather than TERPRI
+  TERPRI($fricasOutput)
 
 sayString x ==
   -- Note: this function should *always* be used by sayBrightly and
-  -- friends rather than PRINTEXP --  see bindSayBrightly
-  PRINTEXP x
+  -- friends rather than PRINTEXP
+  PRINTEXP (x, $fricasOutput)
 
 spadStartUpMsgs() ==
   -- messages displayed when the system starts up
@@ -657,7 +655,7 @@ brightPrint0 x ==
     NULL IS_-CONSOLE CUROUTSTREAM => sayString '" "
     NULL $highlightAllowed        => sayString '" "
     sayString $highlightFontOn
-  k := blankIndicator x => BLANKS k
+  k := blankIndicator x => BLANKS (k, $fricasOutput)
   x = '"%d" =>
     NULL IS_-CONSOLE CUROUTSTREAM => sayString '" "
     NULL $highlightAllowed        => sayString '" "

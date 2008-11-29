@@ -67,7 +67,7 @@
     '(VMLISP::SINTP VMLISP::$FCOPY 
          VMLISP::PUT
          VMLISP::EQCAR
-         VMLISP::DEFIOSTREAM VMLISP::RDEFIOSTREAM VMLISP::MLAMBDA
+         VMLISP::RDEFIOSTREAM VMLISP::MLAMBDA
          VMLISP::QSLESSP VMLISP::QSDIFFERENCE VMLISP::QSQUOTIENT
          VMLISP::EQSUBSTLIST VMLISP::QCAAAR VMLISP::$TOTAL-ELAPSED-TIME
          VMLISP::QUOTIENT VMLISP::SORTGREATERP
@@ -281,7 +281,6 @@
    vmlisp::downcase
    vmlisp::vecp
    vmlisp::strconc
-   vmlisp::defiostream
    vmlisp::shut
    vmlisp::prin2cvec
    vmlisp::ncons
