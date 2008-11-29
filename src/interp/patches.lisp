@@ -149,7 +149,7 @@
    (setq |$fortranOutputStream|
       (setq |$texOutputStream|
           (setq |$formulaOutputStream|
-             (setq |conOutStream| (make-synonym-stream '*terminal-io*))))))
+              (make-synonym-stream '*standard-output*)))))
 
 ;; non-interactive restarts...
 (defun restart0 ()

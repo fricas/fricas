@@ -475,10 +475,10 @@
            (system:fp-output-stream *terminal-io*))))
 
 #-(OR Lucid KCL :CCL)
-(defun IS-CONSOLE (stream) 
-     (or (eq stream *terminal-io*)
+(defun IS-CONSOLE (stream)  
+     (or (eq stream *standard-output*)
          (and (typep stream 'synonym-stream)
-              (eq (SYNONYM-STREAM-SYMBOL stream) '*terminal-io*))))
+              (eq (SYNONYM-STREAM-SYMBOL stream) '*standard-output*))))
 
 ; 11.0 Operations on Identifiers
 
@@ -884,13 +884,13 @@
 ; 27.1 Creation
 
 (defun MAKE-INSTREAM (filespec)
-   (cond ((numberp filespec) (make-synonym-stream '*terminal-io*))
+   (cond ((numberp filespec) (make-synonym-stream '*standard-input*))
          ((null filespec) (error "not handled yet"))
          (t (open (make-input-filename filespec)
                   :direction :input :if-does-not-exist nil))))
 
 (defun MAKE-OUTSTREAM (filespec)
-   (cond ((numberp filespec) (make-synonym-stream '*terminal-io*))
+   (cond ((numberp filespec) (make-synonym-stream '*standard-output*))
          ((null filespec) (error "not handled yet"))
          (t (open (make-filename filespec) :direction :output
                :if-exists :supersede))))
@@ -898,27 +898,17 @@
 (defun MAKE-APPENDSTREAM (filespec)
  "fortran support"
  (cond 
-  ((numberp filespec) (make-synonym-stream '*terminal-io*))
+  ((numberp filespec) (make-synonym-stream '*standard-output*))
   ((null filespec) (error "make-appendstream: not handled yet"))
   ('else (open (make-filename filespec) :direction :output
           :if-exists :append :if-does-not-exist :create))))
 
-(defun DEFIOSTREAM (stream-alist)
-   (let ((mode (or (cdr (assoc 'MODE stream-alist)) 'INPUT))
-         (filename (cdr (assoc 'FILE stream-alist)))
-         (dev (cdr (assoc 'DEVICE stream-alist))))
-      (if (EQ dev 'CONSOLE) (make-synonym-stream '*terminal-io*)
-        (let ((strm (case mode
-                          ((OUTPUT O) (open (make-filename filename)
-                                            :direction :output))
-                          ((INPUT I) (open (make-input-filename filename)
-                                           :direction :input)))))
-          strm))))
-
 (defun |mkOutputConsoleStream| ()
-     (make-synonym-stream '*terminal-io*))
+     (make-synonym-stream '*standard-output*))
 
-(defun shut (st) (if (is-console st) st
+(defun shut (st) (if #+:GCL(is-console st)
+                     #-:GCL(typep st 'synonym-stream)
+                     st
                    (if (streamp st) (close st) -1)))
 
 (defun EOFP (stream) (null (peek-char nil stream nil nil)))

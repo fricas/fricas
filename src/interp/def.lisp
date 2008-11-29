@@ -105,8 +105,6 @@ foo defined inside of fum gets renamed as fum,foo.")
                               (car (setq Y (cdr Y)))
                               (car (setq Y (cdr Y)))
                               (CONS 'WHERE (cons (car (setq Y (cdr Y))) (cddr X)))))))
-        ((IS-CONSOLE *STANDARD-OUTPUT*)
-         (SAY "  VALUE = " (EVAL (DEFTRAN X))))
         ((print-full (DEFTRAN X)))))
 
 (defun B-MDEF (FORM SIGNATURE $BODY)
