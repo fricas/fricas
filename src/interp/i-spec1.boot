@@ -380,13 +380,15 @@ upTARGET t ==
   $declaredMode: local := NIL
   m:= evaluateType unabbrev rhs
   not isLegitimateMode(m,NIL,NIL) => throwKeyedMsg("S2IE0004",[m])
-  categoryForm?(m) => throwKeyedMsg("S2IE0014",[m])
   $declaredMode:= m
   not atom(lhs) and putTarget(lhs,m)
   ms := bottomUp lhs
   first ms ^= m =>
     throwKeyedMsg("S2IC0011",[first ms,m])
-  putValue(op,getValue lhs)
+  if categoryForm?(m) then
+      putValue(op, objNew(devaluate objValUnwrap getValue lhs, m))
+  else
+      putValue(op,getValue lhs)
   putModeSet(op,ms)
 
 --% Handlers for COERCE
@@ -405,7 +407,6 @@ upCOERCE t ==
   $declaredMode: local := NIL
   m := evaluateType unabbrev rhs
   not isLegitimateMode(m,NIL,NIL) => throwKeyedMsg("S2IE0004",[m])
-  categoryForm?(m) => throwKeyedMsg("S2IE0014",[m])
   $declaredMode:= m
   -- 05/16/89 (RSS) following line commented out to give correct
   -- semantic difference between :: and @
@@ -435,7 +436,10 @@ evalCOERCE(op,tree,m) ==
     $genValue => coerceOrRetract(v,t2)
     objNew(getArgValue(tree,t2),t2)
   val:= value or throwKeyedMsgCannotCoerceWithValue(e,t1,m)
-  putValue(op,val)
+  if categoryForm?(m) then
+      putValue(op, objNew(devaluate objValUnwrap val, m))
+  else
+      putValue(op,val)
   objMode(val)
 
 --% Handlers for COLLECT
