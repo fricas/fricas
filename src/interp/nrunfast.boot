@@ -500,7 +500,7 @@ newHasTest(domform,catOrAtt) ==
   null isAtom and constructor? op  =>
     domain := eval mkEvalable domform
     newHasCategory(domain,catOrAtt)
-  systemError '"newHasTest expects category from"
+  systemError '"newHasTest expects category form"
  
 --=======================================================
 --                   Utility Functions
