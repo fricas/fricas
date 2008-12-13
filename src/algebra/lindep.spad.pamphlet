@@ -36,8 +36,16 @@ LinearDependence(S, R): Exports == Implementation where
         ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
         ++ such that \spad{c1*v1 + ... + cn*vn = u},
         ++ "failed" if no such ci's exist in S.
+      solveLinear: (Matrix R, Vector R) -> Union(Vector S, "failed")
+        ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+        ++ such that \spad{c1*v1 + ... + cn*vn = u},
+        ++ "failed" if no such ci's exist in S.
     else
       solveLinear: (Vector R, R) -> Union(Vector Q, "failed")
+        ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+        ++ such that \spad{c1*v1 + ... + cn*vn = u},
+        ++ "failed" if no such ci's exist in the quotient field of S.
+      solveLinear: (Matrix R, Vector R) -> Union(Vector Q, "failed")
         ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
         ++ such that \spad{c1*v1 + ... + cn*vn = u},
         ++ "failed" if no such ci's exist in the quotient field of S.
@@ -63,11 +71,16 @@ LinearDependence(S, R): Exports == Implementation where
         "failed"
       aNonZeroSolution reducedSystem transpose v
 
+    
     if S has Field then
-      solveLinear(v:Vector R, c:R):Union(Vector S, "failed") ==
+      solveLinear(v : Vector R, c : R) : Union(Vector S, "failed") ==
         zero? c => new(#v, 0)
         empty? v => "failed"
-        sys := reducedSystem(transpose v, new(1, c))
+        solveLinear(transpose v, new(1, c))
+
+      solveLinear(m : Matrix R, v : Vector R) : Union(Vector S, "failed") ==
+        v = zero(#v) => new(ncols(m), 0)
+        sys := reducedSystem(m, v)
         particularSolution(sys.mat, sys.vec)$LinearSystemMatrixPackage(S,
                                            Vector S, Vector S, Matrix S)
 
@@ -75,7 +88,11 @@ LinearDependence(S, R): Exports == Implementation where
       solveLinear(v:Vector R, c:R):Union(Vector Q, "failed") ==
         zero? c => new(#v, 0)
         empty? v => "failed"
-        sys := reducedSystem(transpose v, new(1, c))
+        solveLinear(transpose v, new(1, c))
+
+      solveLinear(m : Matrix R, v : Vector R) : Union(Vector Q, "failed") ==
+        v = zero(#v) => new(ncols(m), 0)
+        sys := reducedSystem(m, v)
         particularSolution(map(#1::Q, sys.mat)$MatrixCategoryFunctions2(S,
                Vector S,Vector S,Matrix S,Q,Vector Q,Vector Q,Matrix Q),
                   map(#1::Q, sys.vec)$VectorFunctions2(S, Q)
@@ -110,13 +127,19 @@ IntegerLinearDependence(R): Exports == Implementation where
       ++ \spad{solveLinearlyOverQ([v1,...,vn], u)} returns \spad{[c1,...,cn]}
       ++ such that \spad{c1*v1 + ... + cn*vn = u},
       ++ "failed" if no such rational numbers ci's exist.
+    solveLinearlyOverQ : (Matrix R, Vector R) -> 
+                                      Union(Vector Fraction Z, "failed")
+      ++ \spad{solveLinearlyOverQ([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+      ++ such that \spad{c1*v1 + ... + cn*vn = u},
+      ++ "failed" if no such rational numbers ci's exist.
 
   Implementation ==> add
     import LinearDependence(Z, R)
 
     linearlyDependentOverZ? v == linearlyDependent? v
     linearDependenceOverZ   v == linearDependence v
-    solveLinearlyOverQ(v, c)  == solveLinear(v, c)
+    solveLinearlyOverQ(v : Vector R, c : R)  == solveLinear(v, c)
+    solveLinearlyOverQ(m : Matrix R, v : Vector R)  == solveLinear(m, v)
 
 @
 \section{License}
