@@ -21,31 +21,29 @@
 ++ AMS Classifications:
 ++ Keywords: localization
 ++ References:
-++ Description: Localize(M,R,S) produces fractions with numerators
-++ from an R module M and denominators from some multiplicative subset
-++ D of R.
-Localize(M:Module R,
-         R:CommutativeRing,
-         S:SubsetCategory(Monoid, R)): Module R with
+++ Description: Localize(M,R) produces fractions with numerators
+++ from an R module M and denominators being the nonzero elements of R.
+Localize(M : Module R,
+         R : CommutativeRing): Module R with
       if M has OrderedAbelianGroup then OrderedAbelianGroup
-      _/ :(%,S) -> %
+      _/ : (%, R) -> %
          ++ x / d divides the element x by d.
-      _/ :(M,S) -> %
+      _/ : (M, R) -> %
          ++ m / d divides the element m by d.
       numer: % -> M
          ++ numer x returns the numerator of x.
-      denom: % -> S
+      denom: % -> R
          ++ denom x returns the denominator of x.
  ==
   add
     --representation
-      Rep:= Record(num:M,den:S)
+      Rep:= Record(num : M, den : R)
     --declarations
-      x,y: %
+      x, y: %
       n: Integer
       m: M
       r: R
-      d: S
+      d: R
     --definitions
       0 == [0,1]
       zero? x == zero? (x.num)
@@ -62,7 +60,7 @@ Localize(M:Module R,
       n*x == [n*x.num,x.den]
       r*x == if r=x.den then [x.num,1] else [r*x.num,x.den]
       x/d ==
-        zero?(u:S:=d*x.den) => error "division by zero"
+        zero?(u:R:=d*x.den) => error "division by zero"
         [x.num,u]
       m/d == if zero? d then error "division by zero" else [m,d]
       coerce(x:%):OutputForm ==
@@ -92,19 +90,18 @@ Localize(M:Module R,
 ++ Description: LocalAlgebra produces the localization of an algebra, i.e.
 ++ fractions whose numerators come from some R algebra.
 LocalAlgebra(A: Algebra R,
-             R: CommutativeRing,
-             S: SubsetCategory(Monoid, R)): Algebra R with
+             R: CommutativeRing): Algebra R with
           if A has OrderedRing then OrderedRing
-          _/ : (%,S) -> %
+          _/ : (%,R) -> %
             ++ x / d divides the element x by d.
-          _/ : (A,S) -> %
+          _/ : (A,R) -> %
             ++ a / d divides the element \spad{a} by d.
           numer: % -> A
             ++ numer x returns the numerator of x.
-          denom: % -> S
+          denom: % -> R
             ++ denom x returns the denominator of x.
- == Localize(A, R, S) add
-        1 == 1$A / 1$S
+ == Localize(A, R) add
+        1 == 1$A / 1$R
         x:% * y:% == (numer(x) * numer(y)) / (denom(x) * denom(y))
         characteristic() == characteristic()$A
 
@@ -315,7 +312,7 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
        if S has Canonical and S has GcdDomain and S has canonicalUnitNormal
            then Canonical
             ++ \spad{Canonical} means that equal elements are in fact identical.
-  == LocalAlgebra(S, S, S) add
+  == LocalAlgebra(S, S) add
     Rep:= Record(num:S, den:S)
     coerce(d:S):% == [d,1]
     zero?(x:%) == zero? x.num
