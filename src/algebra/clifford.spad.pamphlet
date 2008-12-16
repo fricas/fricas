@@ -54,10 +54,12 @@ QuadraticForm(n, K): T == Impl where
             m::%
         matrix q == q pretend SM(n,K)
         elt(q,v) == dot(v, (matrix q * v))
- 
+
         if SM(n, K) has ConvertibleTo InputForm then
             convert(q:%):InputForm ==
-               convert(['quadraticForm,convert(matrix q)])$InputForm
+               -- without package call we get infinite recursion
+               mif := (convert(matrix q)$(SM(n, K)))@InputForm
+               convert(['quadraticForm, mif])$InputForm
 
 
 @
