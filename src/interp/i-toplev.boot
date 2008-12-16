@@ -111,6 +111,8 @@ readSpadProfileIfThere() ==
 
 --% Parser Output --> Interpreter
 
+DEFPARAMETER($inRetract, nil)
+
 processInteractive(form, posnForm) ==
   --  Top-level dispatcher for the interpreter.  It sets local variables
   --  and then calls processInteractive1 to do most of the work.
