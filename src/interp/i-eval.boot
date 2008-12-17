@@ -150,7 +150,8 @@ evaluateType form ==
   constructor? form =>
     ATOM form => evaluateType [form]
     throwEvalTypeMsg("S2IE0003",[form,form])
-  evaluateFormAsType form
+  -- Caused infinite recursion
+  -- evaluateFormAsType form
 
 ++ `form' used in a context where a type (domain or category) is
 ++ expected.  Attempt to fully evaluate it.  Error if the resulting
