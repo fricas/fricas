@@ -32,14 +32,14 @@ Phi : UP('xi, K) := map(coerce, cyclotomic(n))
 -- E est l'extension cyclotomique de K par les racines n-iemes de l'unite
 E := SimpleAlgebraicExtension(K, UP('xi, K), Phi) ;
 xi : E := generator()$E ;
-bList : List(E) := [reduce(+, [t(i+1) * xi**(i*j) for i in 0 .. #UZn-1]) for j in UZn]
+bList : List(E) := [reduce(+, [t(i+1) * xi^(i*j) for i in 0 .. #UZn-1]) for j in UZn]
 -- delta(j) = delta(j, 1) avec les nouvelles notations
 delta : List(E) :=
-  [reduce(*, [b**((j*rapport(1,k)) quo n) for b in bList for k in UZn]) for j in UZn] ;
+  [reduce(*, [b^((j*rapport(1,k)) quo n) for b in bList for k in UZn]) for j in UZn] ;
 -- verification en introduisant la liste B des Bj
-B : List(E) := [reduce(*, [b**rapport(j,i) for b in bList for i in UZn]) for j in UZn] ;
-[B(1)**j - b * d**n for b in B for d in delta for j in UZn]
-L := SimpleAlgebraicExtension(E, UP('C1, E), C1**n - B(1)) ;  C1 : L := generator()$L ;
+B : List(E) := [reduce(*, [b^rapport(j,i) for b in bList for i in UZn]) for j in UZn] ;
+[B(1)^j - b * d^n for b in B for d in delta for j in UZn]
+L := SimpleAlgebraicExtension(E, UP('C1, E), C1^n - B(1)) ;  C1 : L := generator()$L ;
 -- retracter de L sur Zt : Zt < K < E < L
 retraction(z : L) : Zt ==
    zE : E := retract(z)
@@ -47,9 +47,9 @@ retraction(z : L) : Zt ==
    zt : Zt := retract(zK)
    return zt
 )set message time on
-C : List(L) := [C1**j / d for j in UZn for d in delta] ;
--- en principe [c**n for c in C] = B
-r : List(L) := [reduce(+, [c * xi**(k*j) for j in UZn for c in C]) for k in 0 .. n-1] ;
+C : List(L) := [C1^j / d for j in UZn for d in delta] ;
+-- en principe [c^n for c in C] = B
+r : List(L) := [reduce(+, [c * xi^(k*j) for j in UZn for c in C]) for k in 0 .. n-1] ;
 LX := UP('X, L) ;  X : LX := monomial(1, 1) ;
 g : LX := reduce(*, [X - rho for rho in r]) ;
 f : UP('X, Zt) := map(retraction, g)
