@@ -100,7 +100,7 @@ compFormWithModemap(form is [op,:argl],m,e,modemap) ==
       m':= SUBLIS(sl,map.(1))
       x':=
         form':= [f,:[t.expr for t in Tl]]
-        m'=$Category or isCategoryForm(m',e) => form'
+        (m'=$Category or isCategoryForm(m',e)) and ATOM(f) => form'
         -- try to deal with new-style Unions where we know the conditions
         op = "elt" and f is ['XLAM,:.] and IDENTP(z:=CAR argl) and
           (c:=get(z,'condition,e)) and
