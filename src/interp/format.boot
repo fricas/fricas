@@ -352,9 +352,13 @@ formString u ==
   atom x => STRINGIMAGE x
   "STRCONC"/[STRINGIMAGE y for y in x]
 
-form2String u == 
+unparseInputForm u ==
   $formatSigAsTeX: local := 1
   $InteractiveMode: local := false
+  form2StringLocal u
+
+form2String u == 
+  $formatSigAsTeX: local := 1
   form2StringLocal u
 
 form2StringAsTeX u == 
