@@ -107,18 +107,17 @@
 #+(and :GCL :IEEE-FLOATING-POINT)
  (setq system:*print-nans* T)
 
-(defun /RF (&rest foo &aux (Echo-Meta 'T))
+(defun /RF (&aux (Echo-Meta 'T))
   (declare (special Echo-Meta))
-  (/RF-1 nil))
-(defun /RQ (&rest foo &aux (Echo-Meta nil))
+  (/RF-1))
+(defun /RQ (&aux (Echo-Meta nil))
   (declare (special Echo-Meta))
-  (/RF-1 nil))
-(defun |/RQ,LIB| (&rest foo &aux (Echo-Meta nil) ($LISPLIB T))
+  (/RF-1))
+(defun |/RQ,LIB| (&aux (Echo-Meta nil) ($LISPLIB T))
   (declare (special Echo-Meta $LISPLIB))
-  (/RF-1 nil))
+  (/RF-1))
 
-(defun /RF-1 (ignore)
- (declare (ignore ignore))
+(defun /RF-1 ()
   (let* ((input-file (vmlisp::make-input-filename /EDITFILE))
      (lfile ())
      (type (pathname-type input-file)))
@@ -134,16 +133,6 @@
            |$useNewParser|)
       (|ncINTERPFILE| input-file Echo-Meta))
      (t (spad input-file)))))
-
-(defun /EF (&rest foo)
-  (obey (concat "vi " (namestring (vmlisp::make-input-filename /EDITFILE))))
-#|
-#-:CCL
-  (defun user::start () (in-package "BOOT") (boot::|start|))
-#+:CCL
-  (defun user::start () (setq *package* (find-package "BOOT")) (boot::|start|)
-|#
- )
 
 (setq |$algebraOutputStream|
    (setq |$fortranOutputStream|

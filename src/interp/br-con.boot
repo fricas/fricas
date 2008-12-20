@@ -64,11 +64,6 @@ conPageConEntry entry ==
   $kind:    local := nil
   buildLibdbConEntry entry
 
-conform2String u ==
-  x := form2String u
-  atom x => STRINGIMAGE x
-  "STRCONC"/[STRINGIMAGE y for y in x]
-
 kxPage(htPage,name) == downlink name
 
 kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==

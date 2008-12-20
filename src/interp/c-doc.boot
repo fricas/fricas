@@ -30,46 +30,6 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-batchExecute() ==
-  _/RF_-1 '(GENCON INPUT)
-
-getDoc(conName,op,modemap) ==
-  [dc,target,sl,pred,D] := simplifyModemap modemap
-  sig := [target,:sl]
-  null atom dc =>
-    sig := SUBST('$,dc,sig)
-    sig := SUBLISLIS($FormalMapVariableList,rest dc,sig)
-    getDocForDomain(conName,op,sig)
-  if argList := IFCDR getOfCategoryArgument pred then
-     SUBLISLIS($FormalMapArgumentList,argList,sig)
-  sig := SUBST('$,dc,sig)
-  getDocForCategory(conName,op,sig)
-
-getOfCategoryArgument pred ==
-  pred is [fn,:.] and MEMQ(fn,'(AND OR NOT)) =>
-    or/[getOfCategoryArgument x for x in rest pred]
-  pred is ['ofCategory,'_*1,form] => form
-  nil
-
-getDocForCategory(name,op,sig) ==
-  getOpDoc(constructor? name,op,sig) or
-    or/[getOpDoc(constructor? x,op,sig) for x in whatCatCategories name]
-
-getDocForDomain(name,op,sig) ==
-  getOpDoc(constructor? name,op,sig) or
-    or/[getOpDoc(constructor? x,op,sig) for x in whatCatExtDom name]
-
-getOpDoc(abb,op,:sigPart) ==
-  u := LASSOC(op,GETDATABASE(abb,'DOCUMENTATION))
-  $argList : local := $FormalMapVariableList
-  _$: local := '_$
-  sigPart is [sig] => or/[d for [s,:d] in u | sig = s]
-  u
-
-readForDoc fn ==
-  $bootStrapMode: local:= true
-  _/RQ_-LIB_-1 [fn,'SPAD]
-
 recordSignatureDocumentation(opSig,lineno) ==
   recordDocumentation(rest postTransform opSig,lineno)
 
