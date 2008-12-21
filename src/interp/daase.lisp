@@ -646,6 +646,8 @@ database.
      (setf (database-abbreviation struct) value)
      (when (symbolp value)
       (setf (get value 'abbreviationfor) constructor)))
+    (niladic
+     (setf (database-niladic struct) value))
     (constructorkind
      (setf (database-constructorkind struct) value))))))
 

@@ -1203,7 +1203,12 @@ LP  (COND ((NULL X)
         ((and (consp arg) (eq (car arg) 'quote)) (character (cadr arg)))
         (t `(character ,arg))))
 
-(defun DROPTRAILINGBLANKS  (LINE) (string-right-trim " " LINE))
+(defun DROPTRAILINGBLANKS  (LINE)
+     (let ((l (length LINE)))
+         (if (and (> l 0)
+                  (char= (char LINE (1- l)) #\ ))
+             (string-right-trim " " LINE)
+             LINE)))
  
 ; # Gives the number of elements of a list, 0 for atoms.
 ; If we quote it, then an interpreter trip is necessary every time
