@@ -995,9 +995,8 @@ quoteSuper [.,a] == superspan a
 
 quoteWidth [.,a] == 1 + WIDTH a
 
-SubstWhileDesizing(u,m) ==
-    -- arg. m is always nil (historical: EU directive to increase argument lists 1991/XGII)     
-    --Replaces all occurrences of matrix m by name in u
+SubstWhileDesizing(u) ==
+    --Replaces all occurrences of matrix by name in u
     --Taking out any outdated size information as it goes
   ATOM u => u
   [[op,:n],:l]:=u
@@ -1005,35 +1004,26 @@ SubstWhileDesizing(u,m) ==
   -- doesn't work since rassoc seems to use an EQ test, and returns the
   -- pair anyway. JHD 28/2/93
   op = 'MATRIX =>
-    l':=SubstWhileDesizingList(CDR l,m)
+    l':=SubstWhileDesizingList(CDR l)
     u :=
       -- CDR l=l' => u
       -- this was a CONS-saving optimisation, but it doesn't work JHD 28/2/93
       [op,nil,:l']
     PushMatrix u
-  l':=SubstWhileDesizingList(l,m)
+  l':=SubstWhileDesizingList(l)
   -- [op,:l']
   ATOM op => [op,:l']
-  [SubstWhileDesizing(op,m),:l']
+  [SubstWhileDesizing(op),:l']
 
---;SubstWhileDesizingList(u,m) ==
---;  -- m is always nil (historical)
---;  u is [a,:b] =>
---;    a':=SubstWhileDesizing(a,m)
---;    b':=SubstWhileDesizingList(b,m)
---;-- MCD & TTT think that this test is unnecessary and expensive
---;--    a=a' and b=b' => u
---;    [a',:b']
---;  u
 
-SubstWhileDesizingList(u,m) ==
+SubstWhileDesizingList(u) ==
    u is [a,:b] =>
      res:= 
        ATOM a => [a] 
-       [SubstWhileDesizing(a,m)] 
+       [SubstWhileDesizing(a)] 
      tail:=res
      for i in b repeat
-        if ATOM i then  RPLACD(tail,[i]) else RPLACD(tail,[SubstWhileDesizing(i,m)])
+        if ATOM i then  RPLACD(tail,[i]) else RPLACD(tail,[SubstWhileDesizing(i)])
         tail:=CDR tail
      res   
    u  
@@ -1467,8 +1457,7 @@ charyTrouble(u,v,start,linelength) ==
       --[[m,:m1]] := al
       --maPrin sublisMatAlist(m,m1,u)
       --above three lines commented out JHD 25/2/93 since don't work
-    --u := SubstWhileDesizing(u,first first al)
-    u := SubstWhileDesizing(u,nil)
+    u := SubstWhileDesizing(u)
     maprinChk u
   charyTrouble1(u,v,start,linelength)
 
