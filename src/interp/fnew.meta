@@ -7,10 +7,10 @@
 
 .META(New NewExpr Process)
 .PACKAGE 'BOOT'
-.DECLARE(tmptok TOK ParseMode DEFINITION_NAME LABLASOC)
+.DECLARE(tmptok TOK ParseMode LABLASOC)
 .PREFIX 'PARSE-'
 
-NewExpr:        .(SETQ DEFINITION_NAME (CURRENT-SYMBOL)) Statement ;
+NewExpr:        Statement ;
 
 Statement:      Expr{0} <(',' Expr{0})* +(Series #2 -#1)>;
 
@@ -121,7 +121,7 @@ Application: Primary <Selector>* <Application +(#2 #1)>;
 
 Selector: ?NONBLANK ?(EQ (CURRENT-SYMBOL) "\.) ?(CHAR-NE (CURRENT-CHAR) "\ )
                  '.' PrimaryNoFloat (=\$BOOT +(ELT #2 #1)/ +(#2 #1))
-          / (Float /'.' Primary) (=\$BOOT +(ELT #2 #1)/ +(#2 #1));
+          / '.' Primary (=\$BOOT +(ELT #2 #1)/ +(#2 #1));
 
 PrimaryNoFloat: Primary1 <TokTail> ;
 
@@ -136,32 +136,12 @@ Primary1: VarForm <=(AND NONBLANK (EQ (CURRENT-SYMBOL) "\()) Enclosure +(#2 #1)>
         /Sequence
         /Enclosure ;
 
-Float: FloatBase (?NONBLANK FloatExponent / +0) +=(MAKE-FLOAT #4 #2 #2 #1) ;
-
-FloatBase: ?(FIXP (CURRENT-SYMBOL)) ?(CHAR-EQ (CURRENT-CHAR) '.')
-           ?(CHAR-NE (NEXT-CHAR) '.')
-              IntegerTok FloatBasePart
-          /?(FIXP (CURRENT-SYMBOL)) ?(CHAR-EQ (CHAR-UPCASE (CURRENT-CHAR)) "E)
-              IntegerTok +0 +0;
-
-FloatBasePart: '.'
-  (?(DIGITP (CURRENT-CHAR)) +=(TOKEN-NONBLANK (CURRENT-TOKEN)) IntegerTok
-  / +0 +0);
-
-
-FloatExponent: =(AND (MEMBER (CURRENT-SYMBOL) "(E e))
-                     (FIND (CURRENT-CHAR) '+-'))
-                 .(ADVANCE-TOKEN)
-        (IntegerTok/'+' IntegerTok/'-' IntegerTok +=(MINUS #1)/+0)
-       /?(IDENTP (CURRENT-SYMBOL)) =(SETQ $1 (FLOATEXPID (CURRENT-SYMBOL)))
-       .(ADVANCE-TOKEN) +=$1 ;
+Float: SPADFLOAT ;
 
 Enclosure:      '(' ( Expr{6} ')' / ')' +(Tuple) )
               / '{' ( Expr{6} '}' +(brace (construct #1)) / '}' +(brace)) ;
 
 IntegerTok:     NUMBER ;
-
-FloatTok:       NUMBER +=(IF \$BOOT #1 (BFP- #1)) ;
 
 FormalParameter: FormalParameterTok ;
 

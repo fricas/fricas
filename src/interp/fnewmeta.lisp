@@ -3,17 +3,23 @@
 
 (IN-PACKAGE "BOOT" )
 
+(defmacro MATCH-STRING (x)
+   `(eq (current-symbol) (quote ,(intern x))))
+
+(defmacro MATCH-ADVANCE-STRING (x)
+   `(if (MATCH-STRING ,x)
+          (progn
+             (advance-token)
+             t)))
+
 
 (DEFPARAMETER |tmptok| NIL)
 (DEFPARAMETER TOK NIL)
 (DEFPARAMETER |ParseMode| NIL)
-(DEFPARAMETER DEFINITION_NAME NIL)
 (DEFPARAMETER LABLASOC NIL)
 
 
-(DEFUN |PARSE-NewExpr| ()
-  (AND (ACTION (SETQ DEFINITION_NAME (CURRENT-SYMBOL)))
-       (|PARSE-Statement|))) 
+(DEFUN |PARSE-NewExpr| () (|PARSE-Statement|)) 
 
 
 (DEFUN |PARSE-Statement| ()
@@ -356,9 +362,7 @@
                                      (CONS (POP-STACK-1) NIL)))))
                      (PUSH-REDUCTION '|PARSE-Selector|
                          (CONS (POP-STACK-2) (CONS (POP-STACK-1) NIL))))))
-      (AND (OR (|PARSE-Float|)
-               (AND (MATCH-ADVANCE-STRING ".")
-                    (MUST (|PARSE-Primary|))))
+      (AND (MATCH-ADVANCE-STRING ".") (MUST (|PARSE-Primary|))
            (MUST (OR (AND $BOOT
                           (PUSH-REDUCTION '|PARSE-Selector|
                               (CONS 'ELT
@@ -394,52 +398,7 @@
       (|PARSE-Sequence|) (|PARSE-Enclosure|))) 
 
 
-(DEFUN |PARSE-Float| ()
-  (AND (|PARSE-FloatBase|)
-       (MUST (OR (AND NONBLANK (|PARSE-FloatExponent|))
-                 (PUSH-REDUCTION '|PARSE-Float| 0)))
-       (PUSH-REDUCTION '|PARSE-Float|
-           (MAKE-FLOAT (POP-STACK-4) (POP-STACK-2) (POP-STACK-2)
-               (POP-STACK-1))))) 
-
-
-(DEFUN |PARSE-FloatBase| ()
-  (OR (AND (FIXP (CURRENT-SYMBOL)) (CHAR-EQ (CURRENT-CHAR) ".")
-           (CHAR-NE (NEXT-CHAR) ".") (|PARSE-IntegerTok|)
-           (MUST (|PARSE-FloatBasePart|)))
-      (AND (FIXP (CURRENT-SYMBOL))
-           (CHAR-EQ (CHAR-UPCASE (CURRENT-CHAR)) 'E)
-           (|PARSE-IntegerTok|) (PUSH-REDUCTION '|PARSE-FloatBase| 0)
-           (PUSH-REDUCTION '|PARSE-FloatBase| 0)))) 
-
-
-(DEFUN |PARSE-FloatBasePart| ()
-  (AND (MATCH-ADVANCE-STRING ".")
-       (MUST (OR (AND (DIGITP (CURRENT-CHAR))
-                      (PUSH-REDUCTION '|PARSE-FloatBasePart|
-                          (TOKEN-NONBLANK (CURRENT-TOKEN)))
-                      (|PARSE-IntegerTok|))
-                 (AND (PUSH-REDUCTION '|PARSE-FloatBasePart| 0)
-                      (PUSH-REDUCTION '|PARSE-FloatBasePart| 0)))))) 
-
-
-(DEFUN |PARSE-FloatExponent| ()
-  (PROG (G1)
-    (RETURN
-      (OR (AND (MEMBER (CURRENT-SYMBOL) '(E |e|))
-               (FIND (CURRENT-CHAR) "+-") (ACTION (ADVANCE-TOKEN))
-               (MUST (OR (|PARSE-IntegerTok|)
-                         (AND (MATCH-ADVANCE-STRING "+")
-                              (MUST (|PARSE-IntegerTok|)))
-                         (AND (MATCH-ADVANCE-STRING "-")
-                              (MUST (|PARSE-IntegerTok|))
-                              (PUSH-REDUCTION '|PARSE-FloatExponent|
-                                  (MINUS (POP-STACK-1))))
-                         (PUSH-REDUCTION '|PARSE-FloatExponent| 0))))
-          (AND (IDENTP (CURRENT-SYMBOL))
-               (SETQ G1 (FLOATEXPID (CURRENT-SYMBOL)))
-               (ACTION (ADVANCE-TOKEN))
-               (PUSH-REDUCTION '|PARSE-FloatExponent| G1)))))) 
+(DEFUN |PARSE-Float| () (PARSE-SPADFLOAT)) 
 
 
 (DEFUN |PARSE-Enclosure| ()
@@ -464,12 +423,6 @@
 
 
 (DEFUN |PARSE-IntegerTok| () (PARSE-NUMBER)) 
-
-
-(DEFUN |PARSE-FloatTok| ()
-  (AND (PARSE-NUMBER)
-       (PUSH-REDUCTION '|PARSE-FloatTok|
-           (IF $BOOT (POP-STACK-1) (BFP- (POP-STACK-1)))))) 
 
 
 (DEFUN |PARSE-FormalParameter| () (|PARSE-FormalParameterTok|)) 

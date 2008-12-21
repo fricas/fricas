@@ -148,28 +148,3 @@
           (|suchthat|)
           (|then| 0 114)
           (|else| 0 114)))
-
-;;;  Gliph Table
-
-;;; Gliphs are symbol clumps. The gliph property of a symbol gives
-;;; the tree describing the tokens which begin with that symbol.
-;;; The token reader uses the gliph property to determine the longest token.
-;;; Thus [[:=]] is read as one token not as [[:]] followed by [[=]].
- 
-(mapcar #'(lambda (x) (makeprop (car x) 'gliph (cdr x)))
-        `(
-          ( \| (\))        )
-          ( *  (*)         )
-          ( \( (<) (\|)    )
-          ( +  (- (>))     )
-          ( -  (>)         )
-          ( <  (=) (<)     )
-     ;;     ( /  (\\)        ) breaks */xxx
-          ( \\ (/)         )
-          ( >  (=) (>) (\)))
-          ( =  (= (>)) (>) )
-          ( \. (\.)        )
-          ( ^  (=)         )
-          ( \~ (=)         )
-          ( \: (=) (-) (\:))))
-  

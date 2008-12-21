@@ -221,7 +221,9 @@ The type is either NUMBER, IDENTIFIER or SPECIAL-CHAR.
 NonBlank is true if the token is not preceded by a blank."
   (Symbol nil)
   (Type nil)
-  (NonBlank t))
+  (NonBlank t)
+  (first-char nil)
+)
 
 (defparameter Prior-Token (make-token) "What did I see last")
 (defparameter nonblank t "Is there no blank in front of the current token.")
@@ -231,7 +233,14 @@ NonBlank is true if the token is not preceded by a blank."
 
 (defun Token-Install (symbol type token &optional (nonblank t))
   (setf (token-symbol token) symbol (token-type token) type
-        (token-nonblank token) nonblank)
+        (token-nonblank token) nonblank
+        (token-first-char token) nil)
+  token)
+
+(defun Token-Install1 (symbol type token nonblank first-char)
+  (setf (token-symbol token) symbol (token-type token) type
+        (token-nonblank token) nonblank
+        (token-first-char token) first-char)
   token)
 
 (defun Token-Print (token)
@@ -379,16 +388,6 @@ the stack, then stack a NIL. Return the value of prod."
 
 (defun action (dothis) (or dothis t))
 
-; A sequence consists of a head, which if recognized implies that the
-; tail must follow.   Following tail are actions, which
-; are performed upon recognizing the head and tail.
-
-#|
-(defmacro sequence (subrules &optional (actions nil))
-  `(and ,(pop subrules) . ,(append (mapcar #'(lambda (x) (list 'must x)) subrules)
-                         (if actions `((progn . ,(append actions '(t))))))))
-|#
-
 ; 3. Routines for handling lexical scanning
 ;
 ; Lexical scanning of tokens is performed off of the current line.  No
@@ -413,7 +412,6 @@ the stack, then stack a NIL. Return the value of prod."
 
 ; This section is broken up into 3 levels:
 ;
-;       (0) String grabbing:    Match String, Match Advance String
 ;       (1) Token handling:     Current Token, Next Token, Advance Token
 ;       (2) Character handling: Current Char, Next Char, Advance Char
 ;       (3) Line handling:      Next Line, Print Next Line
@@ -427,46 +425,6 @@ the stack, then stack a NIL. Return the value of prod."
       (loop (let ((z (advance-token)))
               (if z (Token-Print z out-stream) (return nil)))))))
 
-; 3A (0). String grabbing
-
-; String grabbing is the art of matching initial segments of the current
-; line, and removing them from the line before the get tokenized if they
-; match (or removing the corresponding current tokens).
-
-; FUNCTIONS DEFINED IN THIS SECTION:
-;
-;       Match-String, Match-Advance-String
-
-(defun Match-String (x)
-  "Returns length of X if X matches initial segment of inputstream."
-  (unget-tokens)                        ; So we don't get out of synch with token stream
-  (skip-blanks)
-  (if (and (not (Line-Past-End-P Current-Line)) (Current-Char) )
-      (initial-substring-p x
-           (subseq (Line-Buffer Current-Line) (Line-Current-Index Current-Line)))))
-
-(defun Match-Advance-String (x)
-  "Same as MATCH-STRING except if successful, advance inputstream past X."
-  (let ((y (if (>= (length (string x))
-                   (length (string (quote-if-string (current-token)))))
-               (Match-String x)
-               nil))) ; must match at least the current token
-    (if y (progn (incf (Line-Current-Index Current-Line) y)
-                 (if (not (Line-Past-End-P Current-Line))
-                     (setf (Line-Current-Char Current-Line)
-                           (elt (Line-Buffer Current-Line)
-                                (Line-Current-Index Current-Line)))
-                     (setf (Line-Current-Char Current-Line) #\Space))
-                 (setq prior-token
-                       (make-token :Symbol (intern (string x))
-                                   :Type 'identifier
-                                   :nonBlank nonblank))
-                 t))))
-
-(defun initial-substring-p (part whole)
-  "Returns length of part if part matches initial segment of whole."
-  (let ((x (string-not-greaterp part whole)))
-    (and x (= x (length part)) x)))
 
 ; 3A (1) Token Handling.
 
@@ -508,74 +466,10 @@ the stack, then stack a NIL. Return the value of prod."
              )))
 
 (defmacro token-stack-clear ()
-  `(progn (setq valid-tokens 0)
+  `(progn (setq Valid-Tokens 0)
           (token-install nil nil current-token nil)
           (token-install nil nil next-token nil)
           (token-install nil nil prior-token nil)))
-
-; Unget-Tokens
-
-(defun quote-if-string (token)
-  (if token   ;only use token-type on non-null tokens
-  (case (token-type token)
-    (bstring            (strconc "[" (token-symbol token) "]*"))
-    (string             (strconc "'" (token-symbol token) "'"))
-    (spadstring         (strconc "\"" (underscore (token-symbol token)) "\""))
-    (number             (format nil "~v,'0D" (token-nonblank token)
-                                (token-symbol token)))
-    (special-char       (string (token-symbol token)))
-    (identifier         (let ((id (symbol-name (token-symbol token)))
-                              (pack (package-name (symbol-package
-                                                   (token-symbol token)))))
-                          (if (or $BOOT $SPAD)
-                              (if (equal pack "BOOT")
-                                  (escape-keywords (underscore id) (token-symbol token))
-                                (concatenate 'string
-                                             (underscore pack) "'" (underscore id)))
-                            id)))
-    (t                  (token-symbol token)))
-   nil))
-
-(defun escape-keywords (pname id)
-  (if (member id keywords)
-      (concatenate 'string "_" pname)
-    pname))
-
-(defun underscore (string)
-  (if (every #'alpha-char-p string) string
-    (let* ((size (length string))
-           (out-string (make-array (* 2 size)
-                                   :element-type 'character
-                                   :fill-pointer 0))
-           next-char)
-      (dotimes (i size)
-               (setq next-char (char string i))
-               (if (not (alpha-char-p next-char))
-                   (vector-push #\_ out-string))
-               (vector-push next-char out-string))
-      out-string)))
-
-(defun Unget-Tokens ()
-  (case Valid-Tokens
-    (0 t)
-    (1 (let* ((cursym (quote-if-string current-token))
-              (curline (line-current-segment current-line))
-              (revised-line (strconc cursym curline (copy-seq " "))))
-         (line-new-line revised-line current-line (line-number current-line))
-         (setq NonBlank (token-nonblank current-token))
-         (setq Valid-Tokens 0)))
-    (2 (let* ((cursym (quote-if-string current-token))
-              (nextsym (quote-if-string next-token))
-              (curline (line-current-segment current-line))
-              (revised-line
-                (strconc (if (token-nonblank current-token) "" " ")
-                         cursym
-                         (if (token-nonblank next-token) "" " ")
-                         nextsym curline " ")))
-         (setq NonBlank (token-nonblank current-token))
-         (line-new-line revised-line current-line (line-number current-line))
-         (setq Valid-Tokens 0)))
-    (t (error "How many tokens do you think you have?"))))
 
 ; *** Match Token
 
@@ -611,12 +505,28 @@ the stack, then stack a NIL. Return the value of prod."
       Current-Token
       (try-get-token Current-Token)))
 
+(defvar *current-scanner-char*)
+(defvar *next-scanner-char*)
+
+(defun current-scanner-char ()
+  (if (> Valid-Tokens 1)
+      *current-scanner-char*
+      (current-char)))
+
+(defun next-scanner-char ()
+  (if (> Valid-Tokens 1)
+      *next-scanner-char*
+      (next-char)))
+
 (defun next-token ()
   "Returns the token after the current token, or NIL if there is none after."
   (current-token)
   (if (> Valid-Tokens 1)
       Next-Token
-      (try-get-token Next-Token)))
+      (progn
+          (setf *current-scanner-char* (current-char))
+          (setf *next-scanner-char* (next-char))
+          (try-get-token Next-Token))))
 
 (defun advance-token ()
   (current-token)                       ;don't know why this is needed
@@ -630,7 +540,7 @@ the stack, then stack a NIL. Return the value of prod."
        (setq Current-Token (copy-token Next-Token))
        (decf Valid-Tokens))))
 
-(defparameter XTokenReader 'get-meta-token "Name of tokenizing function")
+(defparameter XTokenReader 'get-boot-token "Tokenizing function")
 
 ; *** Get Token
 
@@ -643,6 +553,13 @@ the stack, then stack a NIL. Return the value of prod."
 ;       Current-Char, Next-Char, Advance-Char
 
 ; *** Current Char, Next Char, Advance Char
+
+(defun Current-Char-Index ()
+  (line-current-index Current-Line))
+
+(defun Line-subseq-from (x)
+    (subseq (Line-Buffer Current-Line)
+            x (line-current-index Current-Line)))
 
 (defun Current-Char ()
   "Returns the current character of the line, initially blank for an unread line."
@@ -672,7 +589,7 @@ is a token separator, which blank is equivalent to."
 ; *** Next Line
 
 (defparameter Echo-Meta nil                 "T if you want a listing of what has been read.")
-(defparameter Line-Handler 'next-META-line "Who grabs lines for us.")
+(defparameter Line-Handler 'next-BOOT-line "Who grabs lines for us.")
 
 (defun next-line (&optional (in-stream t)) (funcall Line-Handler in-stream))
 
@@ -693,23 +610,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 
 (defun input-clear () (setq Current-Fragment nil))
 
-#-:CCL
-(defun read-a-line (&optional (stream t))
-  (let (cp)
-    (if (and Current-Fragment (> (length Current-Fragment) 0))
-        (let ((line (with-input-from-string
-                      (s Current-Fragment :index cp :start 0)
-                      (read-line s nil nil))))
-          (setq Current-Fragment (subseq Current-Fragment cp))
-          line)
-        (prog nil
-              (if (stream-eof in-stream)
-                  (progn (setq File-Closed t *EOF* t)
-                         (Line-New-Line (make-string 0) Current-Line)
-                         (return nil)))
-              (if (setq Current-Fragment (read-line stream))
-                  (return (read-a-line stream)))))))
-#+:CCL
 (defun read-a-line (&optional (stream t))
    (let ((line (read-line stream nil nil)))
       (if (null line)
@@ -718,22 +618,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
                    nil)
           line)))
 
-; *** Print New Line
-
-(defparameter Printer-Line-Stack (make-stack)
-  "Stack of output listing lines waiting to print. [local to PRINT-NEW-LINE]")
-
-(defparameter Read-Quietly nil
-  "Whether or not to produce an output listing. [local to PRINT-NEW-LINE]")
-
-(defun Print-New-Line (string strm)
-  "Makes output listings."
-  (if Read-Quietly (stack-push (copy-tree string) Printer-Line-Stack)
-      (progn (mapc #'(lambda (x) (format strm "; ~A~%" x) (terpri))
-                   (nreverse (stack-store Printer-Line-Stack)))
-             (stack-clear Printer-Line-Stack)
-             (format strm "~&; ~A~%" string))))
-
 ; 3B. Error handling
 
 (defparameter errcol nil)
@@ -741,114 +625,30 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 
 (defparameter Meta_Errors_Occurred nil  "Did any errors occur")
 
+
 (defparameter Meta_Error_Handler 'meta-meta-error-handler)
+
+(defun meta-meta-error-handler (&optional (wanted nil) (parsing nil))
+  "Print syntax error indication, underline character, scrub line."
+  (format out-stream "~&% MetaLanguage syntax error: ")
+  (if (Line-Past-End-P Current-Line)
+      (cond ((and wanted parsing)
+             (format out-stream "wanted ~A while parsing ~A.~%"
+                     wanted parsing))
+            (wanted (format out-stream "wanted ~A.~%" wanted))
+            (parsing (format out-stream "while parsing ~A.~%" parsing)))
+      (progn (format out-stream "~:[here~;wanted ~A here~]" wanted wanted)
+             (format out-stream "~:[~; while parsing ~A~]:~%" parsing parsing)
+             (current-line-print)
+             (current-line-clear)
+             (current-token)
+             (incf $num_of_meta_errors)
+             (setq Meta_Errors_Occurred t)))
+   nil)
+       
 
 (defun meta-syntax-error (&optional (wanted nil) (parsing nil))
   (funcall Meta_Error_Handler wanted parsing))
-
-; 3 C. Constructing parsing procedures
-
-; FUNCTIONS DEFINED IN THIS SECTION:
-;
-;       Make-Parse-Function, GetGenSym
-
-(MAKEPROP 'PROGN 'NARY T)       ; Setting for Make-Parse-Function
-
-(defun make-parse-function (l op)
-   (if (flagp op 'nary) (setq l (make-parse-func-flatten-1 l op nil)))
-   (make-parse-function1 l op))
-
-(defun make-parse-func-flatten (x op)
-  (cond ((atom x) x)
-        ((eq (car x) op) (cons op (make-parse-func-flatten-1 (cdr x) op nil)))
-        (t (cons (make-parse-func-flatten (car x) op) (make-parse-func-flatten (cdr x) op)))))
-
-(defun make-parse-func-flatten-1 (l op r)
-  (let (x)
-    (if (null l)
-        r
-        (make-parse-func-flatten-1
-            (cdr l) op
-            (append r (if (eqcar (setq x (make-parse-func-flatten (car l) op)) op)
-                          (cdr x)
-                          (list x)))))))
-
-(defun make-parse-function1 (l op)
-  (let (x)
-    (case op
-      (plus (cond ((eq 0 (setq x (length (setq l (s- l '(0 (zero))))))) 0)
-                  ((eq 1 x) (car l))
-                  (t `(+ . ,l))))
-      (times (cond ((s* l '(0 (zero))) 0)
-                   ((eq 0 (setq x (length (setq l (s- l '(1 (one))))))) 1)
-                   ((eq 1 x) (car l))
-                   (t `(times . ,l)) ))
-      (quotient (cond ((> (length l) 2) (fail))
-                      ((eq 0 (car l)) 0)
-                      ((eq (cadr l) 1) (car l))
-                      (t `(quotient . ,l)) ))
-      (minus (cond ((cdr l) (fail))
-                   ((numberp (setq x (car l))) (minus x))
-                   ((eqcar x 'minus) (cadr x))
-                   (t `(minus . ,l))  ))
-      (- (cond ((> (length l) 2) (fail))
-                        ((equal (car l) (cadr l)) '(zero))
-                        ((member (car l) '(0 (zero))) (make-parse-function (cdr l) 'minus))
-                        ((member (cadr l) '(0 (zero))) (car l))
-                        ((eqcar (cadr l) 'minus)
-                         (make-parse-function (list (car l) (cadadr l)) 'plus))
-                        (t `(- . ,l)) ))
-      (expt (cond ((> (length l) 2) (fail))
-                  ((eq 0 (cadr l)) 1)
-                  ((eq 1 (cadr l)) (car l))
-                  ((member (car l) '(0 1 (zero) (one))) (car l))
-                  (t `(expt . ,l)) ))
-      (or (cond ((member 't l) ''t)
-                ((eq 0 (setq x (length (setq l (delete nil l))))) nil)
-                ((eq 1 x) (car l))
-                (t `(or . ,l)) ))
-      (|or| (cond ((member 't l) 't)
-                  ((eq 0 (setq x (length (setq l (delete nil l))))) nil)
-                  ((eq 1 x) (car l))
-                  (t `(|or| . ,l)) ))
-      (null (cond ((cdr l) (fail))
-                  ((eqcar (car l) 'null) (cadar l))
-                  ((eq (car l) 't) nil)
-                  ((null (car l)) ''t)
-                  (t `(null . ,l))))
-      (|and| (cond ((eq 0 (setq x (length (setq l (delete 't (delete 'true l)))))) 't)
-                   ((eq 1 x) (car l))
-                   (t `(|and| . ,l)) ))
-      (and (cond ((eq 0 (setq x (length (setq l (delete 't (delete 'true l)))))) ''t)
-                 ((eq 1 x) (car l))
-                 (t `(and . ,l)) ))
-      (progn (cond ((and (not (atom l)) (null (last l)))
-                    (cond ((cdr l) `(progn . ,l))
-                          (t (car l))))
-                   ((null (setq l (delete nil l))) nil)
-                   ((cdr l) `(progn . ,l))
-                   (t (car l)) ))
-      (seq (cond ((eqcar (car l) 'exit) (cadar l))
-                 ((cdr l) `(seq . ,l))
-                 (t (car l))   ))
-      (list (cond ((null l) nil) (t `(list . ,l))))
-      (cons (cond ((cdr l) `(cons . ,l)) (t (car l)) ))
-      (t (cons op l) ))))
-
-(defparameter /genvarlst nil    "??")
-
-(defun transpgvar (metapgvar) (remove-duplicates metapgvar))
-
-(defparameter /gensymlist nil   "List of rule local variables generated by getgensym.")
-
-(defun getgensym (n)
-  "Used to create unique numerically indexed local variables for the use of rules."
-  (loop
-     (let ((m (length /gensymlist)))
-       (if (< m n)
-           (setq /gensymlist (nconc /gensymlist `(,(intern (format nil "G~D" (1+ m))))))
-           (return (nth (1- n) /gensymlist))))))
-
 
 ;       5. Routines for inspecting and resetting total I/O system state
 ;
@@ -884,14 +684,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 (defun char-eq (x y) (char= (character x) (character y)))
 
 (defun char-ne (x y) (char/= (character x) (character y)))
-
-(Defun FLOATEXPID (X &aux S)
-  (if (AND (IDENTP X) (char= (char-upcase (ELT (SETQ S (PNAME X)) 0)) #\E)
-           (> (LENGTH S) 1)
-           (SPADREDUCE AND 0 (COLLECT (STEP I 1 1 (MAXINDEX S))
-                                      (DIGITP (ELT S I)))))
-       (READ-FROM-STRING S t nil :start 1)
-    NIL))
 
 (defun |getToken| (x) (if (EQCAR x '|elt|) (third x) x))
 
