@@ -475,7 +475,7 @@ the stack, then stack a NIL. Return the value of prod."
 
 (defun match-token (token type &optional (symbol nil))
   (if (and token (eq (token-type token) type))
-      (if symbol (if (equal symbol (token-symbol token)) token) token)))
+      (if symbol (if (eq symbol (token-symbol token)) token) token)))
 
 (defun match-current-token (type &optional (symbol nil))
   "Returns the current token if it has EQ type and (optionally) equal symbol."
@@ -496,7 +496,6 @@ the stack, then stack a NIL. Return the value of prod."
 (defun make-symbol-of (token)
   (let ((u (and token (token-symbol token))))
     (cond ((not u) nil)
-          ((characterp u) (intern (string u)))
           (u))))
 
 (defun current-token ()

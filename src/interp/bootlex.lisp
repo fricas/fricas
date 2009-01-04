@@ -427,9 +427,14 @@ or the chracters ?, !, ' or %"
 (defun get-special-token (token)
   "Take a special character off the input stream.  We let the type name of each
 special character be the atom whose print name is the character itself."
-  (let ((symbol (current-char)))
+  (let* ((char (current-char))
+         (as (assoc char 
+                    '((#\# |#|) (#\$ |$|) (#\@ |@|) #| ( |#
+                      (#\) |)|) (#\, |,|) (#\' |'|) (#\{ |{|) (#\} |}|)
+                      (#\/ |/|) (#\; |;|) (#\[ |[|) (#\] |]|))))
+         (symbol (if as (second as) char)))
     (advance-char)
-    (token-install1 symbol 'special-char token t symbol)))
+    (token-install1 symbol 'special-char token t char)))
 
 (defun get-intval ()
     (prog (buf
