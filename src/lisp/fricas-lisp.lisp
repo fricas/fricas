@@ -180,7 +180,9 @@
              :ld-flags *fricas-extra-c-files*))
     (quit))
 
-
+;;; -----------------------------------------------------------------
+;;; For ECL assume :unix, when :netbsd
+#+(and :ecl :netbsd) (push :unix *features*)
 
 ;;; -----------------------------------------------------------------
 
@@ -610,7 +612,10 @@
    #+(or :unix :win32)
    (if (char= (char name (1- (length name))) #\/)
        name
-       (concatenate 'string name "/")))
+       (concatenate 'string name "/"))
+   #-(or :unix :win32)
+       (error "Not Unix and not Windows, what system it is?")
+    )
 
 ;;; Make directory
 
