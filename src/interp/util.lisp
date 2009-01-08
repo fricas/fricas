@@ -685,8 +685,9 @@ where the [[${AXIOM}]] variable points to installed tree.
 ;;; Sets up the system to use the {\bf AXIOM} shell variable if we can
 ;;; and default to the {\bf \$spadroot} variable (which was the value
 ;;; of the {\bf AXIOM} shell variable at build time) if we can't.
-(defun initroot (&optional (newroot (BOOT::|getEnv| "AXIOM")))
-  (reroot (or newroot $spadroot (error "setenv AXIOM or (setq $spadroot)"))))
+(defun initroot (&optional (newroot nil))
+  (reroot (or (BOOT::|getEnv| "AXIOM") newroot $spadroot
+              (error "setenv AXIOM or (setq $spadroot)"))))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes 
 ;;; to the default memory setup to run Axiom efficently.
@@ -801,6 +802,8 @@ After this function is called the image is clean and can be saved.
 
 (defun interpsys-ecl-image-init (spad)
      (format *standard-output* "Starting interpsys~%")
+     (initroot spad)
+     (setf spad $spadroot)
      (format *standard-output* "spad = ~s~%" spad)
      (force-output  *standard-output*)
      ;;; (load (concatenate 'string spad "/autoload/"  "parini.lsp"))
