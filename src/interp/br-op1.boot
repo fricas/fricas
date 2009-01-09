@@ -101,7 +101,7 @@ dbShowOp1(htPage,opAlist,which,key) ==
   --set up for filtering below in dbGatherData
   $which: local := which
   if INTEGERP key then
-    BREAK()
+    -- BREAK()
     opAlist := dbSelectData(htPage,opAlist,key)
     ------> Jump out for constructor names in file <--------
   INTEGERP key and opAlist is [[con,:.]] and htpProperty(htPage,'isFile)
