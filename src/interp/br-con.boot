@@ -158,7 +158,7 @@ mkDomTypeForm(typeForm,conform,domname) == --called by kargPage
 domainDescendantsOf(conform,domform) == main where --called by kargPage
   main ==
     conform is [op,:r] =>
-      op = 'Join => jfn(delete('(Type Object),r),delete('(Type Object),IFCDR domform))
+      op = 'Join => jfn(r, IFCDR domform)
       op = 'CATEGORY => nil
       domainsOf(conform,domform)
     domainsOf(conform,domform)

@@ -522,8 +522,6 @@ emptySearchPage(kind,filter,:options) ==
   htSay '"}}"
   htShowPage()
 
-isLoaded? conform == GETL(constructor? opOf conform,'LOADED)
-
 string2Integer s ==
   and/[DIGIT_-CHAR_-P (s.i) for i in 0..MAXINDEX s] => PARSE_-INTEGER s
   nil

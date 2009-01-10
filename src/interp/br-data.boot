@@ -477,7 +477,6 @@ getParentsFor(cname,formalParams,constructorCategory) ==
   for x in folks constructorCategory repeat
     x := SUBLISLIS(formalParams,formals,x)
     x := SUBLISLIS(IFCDR constructorForm,formalParams,x)
-    x := SUBST('Type,'Object,x)
     acc := [:explodeIfs x,:acc]
   NREVERSE acc
 

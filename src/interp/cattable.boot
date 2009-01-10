@@ -31,7 +31,7 @@
 
 
 hasCat(domainOrCatName,catName) ==
-  catName='Object or catName='Type  -- every domain is a Type (Object)
+  catName='Type  -- every domain is a Type
    or GETDATABASE([domainOrCatName,:catName],'HASCATEGORY)
 
 showCategoryTable con ==
@@ -71,7 +71,6 @@ genCategoryTable() ==
 simpTempCategoryTable() ==
   for id in HKEYS _*ANCESTORS_-HASH_* repeat
     for (u:=[a,:b]) in GETDATABASE(id,'ANCESTORS) repeat
-      RPLACA(u,SUBST('Type,'Object,a))
       RPLACD(u,simpHasPred b)
 
 simpCategoryTable() == main where

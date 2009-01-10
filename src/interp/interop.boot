@@ -222,46 +222,6 @@ $oldAxiomCategoryDispatch :=
           [function oldAxiomCategoryParentCount],
           [function oldAxiomCategoryNthParent]) -- 1 indexed
 
-attributeDevaluate(attrObj, env) ==
-   [name, hash] := attrObj
-   StringToCompStr SYMBOL_-NAME name
-
-attributeLookupExport(attrObj, self, op, sig, box, env) ==
-   [name, hash] := attrObj
-   opIsHasCat op => if EQL(hash, sig) then [self] else nil
-
-attributeHashCode(attrObj, env) ==
-   [name, hash] := attrObj
-   hash
-
-attributeCategoryBuild(attrObj, dom, env) ==
-   [name, hash] := attrObj
-   [$attributeDispatch, name, hash] 
-
-attributeCategoryParentCount(attrObj, env) == 0
-
-attributeNthParent(attrObj, env) == nil
-
-$attributeDispatch :=
-   VECTOR('attribute,
-          [function attributeDevaluate],
-          [nil],
-          [function attributeLookupExport],
-          [function attributeHashCode],
-          [function attributeCategoryBuild], -- builder ??
-          [function attributeCategoryParentCount],
-          [function attributeNthParent]) -- 1 indexed
-
-
-orderedDefaults(conform,domform) ==
-  $depthAssocCache : local := MAKE_-HASHTABLE 'ID
-  conList := [x for x in orderCatAnc (op := opOf conform) | hasDefaultPackage op]
-  acc := nil
-  ancestors := ancestorsOf(conform,domform)
-  for x in conList repeat
-    for y in ancestors | x = CAAR y repeat acc := [y,:acc]
-  NREVERSE acc
-
 instantiate domenv ==
    -- following is a patch for a bug in runtime.as
    -- has a lazy dispatch vector with an instantiated domenv
@@ -749,7 +709,7 @@ HasCategory(domain,catform') ==
   slot4 := domain.4
   catlist := slot4.1
   member(catform,catlist) or
-   MEMQ(opOf(catform),'(Object Type)) or  --temporary hack
+   MEMQ(opOf(catform),'(Type)) or  --temporary hack
     or/[compareSigEqual(catform,cat,domain0,domain) for cat in catlist]
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
