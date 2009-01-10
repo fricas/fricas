@@ -82,20 +82,6 @@
 (defparameter out-stream t "Current output stream.")
 (defparameter File-Closed nil   "Way to stop EOF tests for console input.")
 
-(defun IOStreams-Show ()
-  (format t "~&Input is coming from ~A, and output is going to ~A.~%"
-           (or (streamp in-stream) "the keyboard")
-           (or (streamp out-stream) "the screen"))
-  (format t "~:[~;The current input stream is logically closed.~%~]~%" File-Closed))
-
-(defmacro IOStreams-Set (input output) `(setq in-stream ,input out-stream ,output))
-
-(defmacro IOStreams-Clear (&optional (in t) (out t))
-  `(progn (and (streamp in-stream) (close in-stream))
-          (and (streamp out-stream) (close out-stream))
-          (setq File-Closed nil)
-          (IOStreams-Set ,in ,out)))
-
 ; 1. Data structure declarations (defstructs) for parsing objects
 ;
 ;               A. Line Buffer
@@ -139,13 +125,6 @@
            (Line-Current-Index l) 1
            (Line-Last-Index l) 0
            (Line-Number l) 0)))
-
-(defun Line-Current-Segment (line)
-  "Buffer from current index to last index."
-  (if (line-at-end-p line) (make-string 0)
-      (subseq (Line-Buffer line)
-              (Line-Current-Index line)
-              (Line-Last-Index line))))
 
 (defun Line-New-Line (string line &optional (linenum nil))
   "Sets string to be the next line stored in line."
@@ -306,16 +285,6 @@ NonBlank is true if the token is not preceded by a blank."
      (stack-push next Reduce-Stack)
      (stack-push top Reduce-Stack)
      (reduction-value nnext)))
-
-(defmacro pop-stack-4 ()
-  `(let* ((top (Pop-Reduction))
-          (next (Pop-Reduction))
-          (nnext (Pop-Reduction))
-          (nnnext (Pop-Reduction)))
-     (stack-push nnext Reduce-Stack)
-     (stack-push next Reduce-Stack)
-     (stack-push top Reduce-Stack)
-     (reduction-value nnnext)))
 
 (defmacro nth-stack (x)
   `(reduction-value (nth (1- ,x) (stack-store Reduce-Stack))))
@@ -603,12 +572,6 @@ is a token separator, which blank is equivalent to."
   (let ((ll (read-a-line stream)))
     (if (stringp ll) (make-string-adjustable ll) ll)))
 
-(defparameter Current-Fragment nil
-  "A string containing remaining chars from readline; needed because
-Symbolics read-line returns embedded newlines in a c-m-Y.")
-
-(defun input-clear () (setq Current-Fragment nil))
-
 (defun read-a-line (&optional (stream t))
    (let ((line (read-line stream nil nil)))
       (if (null line)
@@ -623,7 +586,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 (defparameter line nil)
 
 (defparameter Meta_Errors_Occurred nil  "Did any errors occur")
-
 
 (defparameter Meta_Error_Handler 'meta-meta-error-handler)
 
@@ -662,7 +624,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
 
 (defun IOStat ()
   "Tell me what the current state of the parsing world is."
-  ;(IOStreams-show)
   (current-line-show)
   (if (or $BOOT $SPAD) (next-lines-show))
   (token-stack-show)
@@ -670,8 +631,6 @@ Symbolics read-line returns embedded newlines in a c-m-Y.")
   nil)
 
 (defun IOClear (&optional (in t) (out t))
-  ;(IOStreams-clear in out)
-  (input-clear)
   (current-line-clear)
   (token-stack-clear)
   (reduce-stack-clear)
