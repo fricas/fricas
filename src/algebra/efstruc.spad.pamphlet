@@ -157,6 +157,8 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       ++ radicals in \spad{f} in terms of \spad{k}.
     tanQ: (Q, F) -> F
       ++ tanQ(q,a) is a local function with a conditional implementation.
+    irootDep: K -> U
+      ++ irootDep(k) is a local function with a conditional implementation.
 
   Implementation ==> add
     import TangentExpansions F
@@ -164,6 +166,7 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     import IntegerLinearDependence F
     import AlgebraicManipulations(R, F)
     import InnerCommonDenominator(Z, Q, Vector Z, Vector Q)
+    P  ==> SparseMultivariatePolynomial(R, K)
 
     HTRIG := "htrig"::Symbol
     TRIG := "trig"::Symbol
@@ -171,9 +174,9 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     k2Elem             : (K, List SY) -> F
     realElem           : (F, List SY) -> F
     smpElem            : (SMP, List SY) -> F
-    deprel             : (List K, K, SY) -> U
     rootDep            : (List K, K)     -> U
-    qdeprel            : (List F, F)     -> U
+    findQRelation      : (List SY, List F, F) -> U
+    findRelation       : (List SY, List SY, List K, K) -> U
     factdeprel         : (List K, K)     -> U
     toR                : (List K, F) -> List K
     toY                : List K -> List F
@@ -244,17 +247,81 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
           return [rn.func, concat(rec.kers, rn.kers), concat(rec.vals, rn.vals)]
       [f, empty(), empty()]
 
-    deprel(ker, k, x) ==
-      is?(k, "log"::SY) or is?(k, "exp"::SY) =>
-        qdeprel([differentiate(g, x) for g in toY ker],
-                 differentiate(ktoY k, x))
-      is?(k, "atan"::SY) or is?(k, "tan"::SY) =>
-        qdeprel([differentiate(g, x) for g in toU ker],
-                 differentiate(ktoU k, x))
-      is?(k, NTHR) => rootDep(ker, k)
-      comb? and is?(k, "factorial"::SY) =>
-        factdeprel([x for x in ker | is?(x,"factorial"::SY) and x^=k],k)
-      [true]
+    findQRelation(lv : List Symbol, lpar : List Symbol, lk : List F,_
+             ker : F) : U ==
+    
+        null lk => [true]
+        isconstant := true
+        m := #lv
+        lvv := lv
+        n := #lk
+        v := new(m, 0)$(Vector F)
+        for i in 1..m for var in lv repeat
+            v(i) := differentiate(ker, var)
+            if isconstant then
+                isconstant := v(i) = 0
+        if isconstant then
+            m := #lpar
+            lvv := lpar
+            v := new(m, 0)$(Vector F)
+            for i in 1..m for var in lpar repeat
+                v(i) := differentiate(ker, var)
+                if isconstant then
+                    isconstant := v(i) = 0
+        isconstant =>
+            error "Hidden constant detected"
+        mat := new(m, n, 0)$(Matrix F)
+        for i in 1..m for var in lvv repeat
+            for j in 1..n for k in lk repeat
+                mat(i, j) := differentiate(k, var)
+        (u := solveLinearlyOverQ(mat, v)) case Vector(Q) => [u::Vector(Q)]
+        [true]
+
+    -- This is only correct if Schanuel Conjecture is true, otherwise
+    -- we may miss some relations.
+    findLinearRelation1(lk : List F, ker : F) : U ==
+        null lk => [true]
+
+        n := #lk
+        mat := new(1, n, 0)$(Matrix F)
+        v := new(1, ker)$(Vector F)
+        for j in 1..n for k in lk repeat
+            if null(variables(k)) then
+                mat(1, j) := k
+            else
+                mat(1, j) := 0::F
+        (u := solveLinearlyOverQ(mat, v)) case Vector(Q) => [u::Vector(Q)]
+        [true]
+
+    ALGOP  := "%alg"::Symbol
+    transkers(x : List K) : List K ==
+        [k for k in x | not(has?(operator k, ALGOP))]
+
+    findLinearRelation2(lk: List K, lz : List F, z : F) : U ==
+        zkers := transkers(kernels(z))
+        empty?(zkers) =>
+            -- Algebraic case, give up (we should do better)
+            [true]
+        lpars0 : List K := transkers(lk)
+        lpars1 : List Symbol := [new()$Symbol for k in lpars0]
+        lpars1f: List F := [kernel(s)::F for s in lpars1]
+        ly : List F := [log(eval(x, lpars0, lpars1f)) for x in lz]
+        findQRelation([], lpars1, ly, log(eval(z, lpars0, lpars1f)))
+
+    findRelation(lv : List Symbol, lpar: List Symbol, lk : List K,_
+              ker : K) : U ==
+        is?(ker, "log"::SY) or is?(ker, "exp"::SY) =>
+            null(variables(ker::F)) =>
+                is?(ker, "exp"::SY) => findLinearRelation1(toY lk, ktoY ker)
+                findLinearRelation2(lk, toZ lk, ktoZ ker)
+            findQRelation(lv, lpar, toY lk, ktoY ker)
+        is?(ker, "atan"::SY) or is?(ker, "tan"::SY) =>
+            findQRelation(lv, lpar, toU lk, ktoU ker) 
+        is?(ker, NTHR) => rootDep(lk, ker)
+        comb? and is?(ker, "factorial"::SY) =>
+            factdeprel([x for x in lk | is?(x,"factorial"::SY) and x^=ker],
+                       ker)
+        [true]
 
     ktoY k ==
       is?(k, "log"::SY) => k::F
@@ -282,10 +349,13 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
 
     k2Elem(k, l) ==
       ez, iez, tz2: F
+
       kf := k::F
-      not(empty? l) and empty? [v for v in variables kf | member?(v, l)] => kf
+      -- FIXME: Why we need explicit target here???
+      not(empty? l) and empty? ([v for v in variables kf | member?(v, l)]@(List SY)) => kf
       empty?(args :List F := [realElem(a, l) for a in argument k]) => kf
       z := first args
+
       is?(k, POWER)       => (zero? z => 0; exp(last(args) * log z))
       is?(k, "cot"::SY)   => inv tan z
       is?(k, "acot"::SY)  => atan inv z
@@ -465,29 +535,39 @@ height(k1) to be maximal
       [eval(f, [rec.ker], [g]), [rec.ker], [g]]
 
     tannosimp(f, lk, k, v, fns, c) ==
-      every?(is?(#1, "tan"::SY), lk) =>
+      n := maxIndex v
+      lk := [x for x in lk | is?(x, "tan"::SY) or is?(x, "atan"::SY)]
+      lk1 := [x for x in lk for i in 1..n | not(qelt(v, i) = 0)] 
+      every?(is?(#1, "tan"::SY), lk1) =>
         dd := (d := (cd := splitDenominator v).den)::F
-        newt := [tan(u / dd) for u in fns]$List(F)
+        newt := [tan(u / dd) for u in fns
+                    for i in 1..n | not(qelt(v, i) = 0)]$List(F)
         newtan := [tanNa(t, d) for t in newt]$List(F)
+        li := [i for i in 1..n | not(qelt(v, i) = 0)]
         h := tanSum(c, [tanNa(t, qelt(cd.num, i))
-                        for i in minIndex v .. maxIndex v for t in newt])
-        lk := concat(k, lk)
+                        for i in li for t in newt])
         newtan := concat(h, newtan)
-        [eval(f, lk, newtan), lk, newtan]
+        lk1 := concat(k, lk1)
+        [eval(f, lk1, newtan), lk1, newtan]
       h := tanSum(c, [tanQ(qelt(v, i), x)
-                      for i in minIndex v .. maxIndex v for x in toV lk])
+                      for i in 1..n for x in toV lk])
       [eval(f, [k], [h]), [k], [h]]
 
     expnosimp(f, lk, k, v, fns, g) ==
-      every?(is?(#1, "exp"::SY), lk) =>
+      n := maxIndex v
+      lk := [x for x in lk | is?(x, "exp"::SY) or is?(x, "log"::SY)]
+      lk1 := [x for x in lk for i in 1..n | not(qelt(v, i) = 0)]
+      every?(is?(#1, "exp"::SY), lk1) =>
         dd := (d := (cd := splitDenominator v).den)::F
-        newe := [exp(y / dd) for y in fns]$List(F)
+        newe := [exp(y / dd) for y in fns
+                    for i in 1..n | not(qelt(v, i) = 0)]$List(F)
         newexp := [e ** d for e in newe]$List(F)
+        li := [i for i in 1..n | not(qelt(v, i) = 0)]
         h := */[e ** qelt(cd.num, i)
-                for i in minIndex v .. maxIndex v for e in newe] * g
-        lk := concat(k, lk)
+                for i in li for e in newe] * g
+        lk1 := concat(k, lk1)
         newexp := concat(h, newexp)
-        [eval(f, lk, newexp), lk, newexp]
+        [eval(f, lk1, newexp), lk1, newexp]
       h := */[exp(y) ** qelt(v, i)
                 for i in minIndex v .. maxIndex v for y in fns] * g
       [eval(f, [k], [h]), [k], [h]]
@@ -501,23 +581,31 @@ height(k1) to be maximal
               for i in minIndex v .. maxIndex v for x in toY lk] + log c
       [eval(f, [k], [g]), [k], [g]]
 
-    rischNormalize(f, v) ==
-      empty?(ker := varselect(tower f, v)) => [f, empty(), empty()]
-      first(ker) ^= kernel(v)@K => error "Cannot happen"
-      ker := rest ker
-      (n := (#ker)::Z - 1) < 1 => [f, empty(), empty()]
-      for i in 1..n for kk in rest ker repeat
-        klist := first(ker, i)
+    rischNormalize0 : (F, List SY) -> REC
+    rischNormalize0(f, vars) ==
+      lk : List K := tower f
+      funs := lk -- [k for k in lk | height k > 1]@(List K)
+      pars := variables(f) -- [name(operator(k)) for k in lk | height k = 1]
+      pars := setDifference(pars, vars)
+      --  funs := [k for k in kers | height k > 1]
+      empty?(funs) => [f, empty(), empty()]
+      n := #funs
+
+      for i in 1..n for kk in rest funs repeat
+        klist := first(funs, i)
         -- NO EVALUATION ON AN EMPTY VECTOR, WILL CAUSE INFINITE LOOP
-        (c := deprel(klist, kk, v)) case vec and not empty?(c.vec) =>
+        (c := findRelation(vars, pars, klist, kk)) case vec and not empty?(c.vec) =>
+
           rec := depeval(f, klist, kk, c.vec)
-          rn  := rischNormalize(rec.func, v)
+          rn  := rischNormalize0(rec.func, vars)
           return [rn.func,
                    concat(rec.kers, rn.kers), concat(rec.vals, rn.vals)]
         c case func =>
-          rn := rischNormalize(eval(f, [kk], [c.func]), v)
+          rn := rischNormalize0(eval(f, [kk], [c.func]), vars)
           return [rn.func, concat(kk, rn.kers), concat(c.func, rn.vals)]
       [f, empty(), empty()]
+
+    rischNormalize(f, v) == rischNormalize0(f, [v])
 
     rootNormalize(f, k) ==
       (u := rootKernelNormalize(f, toR(tower f, first argument k), k))
@@ -529,10 +617,7 @@ height(k1) to be maximal
         rooteval(f, l, k, (c.vec)(minIndex(c.vec)))
       "failed"
 
-    localnorm f ==
-      for x in variables f repeat
-        f := rischNormalize(f, x).func
-      f
+    localnorm f == rischNormalize0(f, []).func
 
     validExponential(twr, eta, x) ==
       (c := solveLinearlyOverQ(construct([differentiate(g, x)
@@ -544,15 +629,26 @@ height(k1) to be maximal
       */[exp(yy) ** qelt(v, i)
                 for i in minIndex v .. maxIndex v for yy in fns] * exp g
 
+    if R has GcdDomain then
+      import PolynomialRoots(IndexedExponents K, K, R, P, F)
+      irootDep(k : K) : U ==
+         n : N := (retract(second argument k)@Z)::N
+         pr := froot(first argument k, n)
+         not(pr.coef = 1) or not(pr.exponent = n) =>
+             pr.exponent = 1 => [pr.coef*pr.radicand]
+             nf : F := (pr.exponent)::F
+             nr : F := pr.radicand
+             nk : F := kernel(operator k, [nr, nf])
+             nv : F := pr.coef*nk
+             [nv]
+         [true]
+    else
+      irootDep(k : K) : U == [true]
+
     rootDep(ker, k) ==
-      empty?(ker := toR(ker, first argument k)) => [true]
+      empty?(ker := toR(ker, first argument k)) => irootDep(k)
       [new(1,lcm(retract(second argument k)@Z,
        "lcm"/[retract(second argument r)@Z for r in ker])::Q)$Vector(Q)]
-
-    qdeprel(l, v) ==
-      (u := solveLinearlyOverQ(construct(l)@Vector(F), v))
-        case Vector(Q) => [u::Vector(Q)]
-      [true]
 
     expeval(f, lk, k, v) ==
       y   := first argument k
