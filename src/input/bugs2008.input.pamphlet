@@ -124,13 +124,10 @@ testEquals("parse(str)$InputForm", "coerceToType(if1)$iP")
 str := "sin(2) pretend Float()"
 testEquals("parse(str)$InputForm", "pretendOfType(if1)$iP")
 
--- Issue 23
-testcase "exp^log(x)"
+testcase "exp^log(x) (issue #23)"
 testEquals("exp^(2*log(x)) - (exp^log(x))^2", "0")
 
---
 testcase "MAP is undefined"
-
 R:= UP('t, INT)
 delta(x:R):R == D(x)
 W:= OREUP('x, R, 1, delta)
@@ -138,19 +135,22 @@ x: W := 'x
 t: W:= 't
 testEquals("x*t", "t*x+1")
 
--- Issue 301
-testcase "Bad fixedPointExquo"
 
+testcase "Bad fixedPointExquo (issue #301)"
 a := operator 'a
-sol := seriesSolve((2*x-2)*D(a(x),x)+4*a(x),a,x=0,[1])
+sol := seriesSolve((2*x-2)*D(a(x),x)+4*a(x),a,x=0,[1])::UTS(EXPR INT, x, 0)
 testEquals("[coefficient(sol, i) for i in 0..7]", "[1,2,3,4,5,6,7,8]")
 
 testcase "has with signature"
 testTrue("Float has exp : Float -> Float")
 testTrue("not(Float has foobar: Float -> Float)")
 
-)set output algebra on
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
+    messagePrint("bugs2008                    0    (17)               0    (34)")$OutputForm
+
 statistics()
+expected()
 @
 \eject
 \begin{thebibliography}{99}
