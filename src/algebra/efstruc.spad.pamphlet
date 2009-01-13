@@ -297,7 +297,8 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     transkers(x : List K) : List K ==
         [k for k in x | not(has?(operator k, ALGOP))]
 
-    findLinearRelation2(lk: List K, lz : List F, z : F) : U ==
+    findLinearRelation2(lk: List K, lz : List F, ker : K) : U ==
+        z : F := argument(ker).1
         zkers := transkers(kernels(z))
         empty?(zkers) =>
             -- Algebraic case, give up (we should do better)
@@ -305,17 +306,29 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
         lpars0 : List K := transkers(lk)
         lpars1 : List Symbol := [new()$Symbol for k in lpars0]
         lpars1f: List F := [kernel(s)::F for s in lpars1]
-        ly : List F := [log(eval(x, lpars0, lpars1f)) for x in lz]
-        findQRelation([], lpars1, ly, log(eval(z, lpars0, lpars1f)))
+        ly : List F
+        nz : F
+        if is?(ker, "log"::SY) then
+            ly := [log(eval(x, lpars0, lpars1f)) for x in lz]
+            nz := log(eval(z, lpars0, lpars1f))
+        else
+            not(is?(ker, "atan"::SY)) =>
+                error "findLinearRelation2: kernel should be log or atan"
+            ly := [atan(eval(x, lpars0, lpars1f)) for x in lz]
+            nz := atan(eval(z, lpars0, lpars1f))
+        findQRelation([], lpars1, ly, nz)
 
     findRelation(lv : List Symbol, lpar: List Symbol, lk : List K,_
               ker : K) : U ==
         is?(ker, "log"::SY) or is?(ker, "exp"::SY) =>
             null(variables(ker::F)) =>
                 is?(ker, "exp"::SY) => findLinearRelation1(toY lk, ktoY ker)
-                findLinearRelation2(lk, toZ lk, ktoZ ker)
+                findLinearRelation2(lk, toZ lk, ker)
             findQRelation(lv, lpar, toY lk, ktoY ker)
         is?(ker, "atan"::SY) or is?(ker, "tan"::SY) =>
+            null(variables(ker::F)) =>
+                is?(ker, "tan"::SY) => findLinearRelation1(toU lk, ktoU ker)
+                findLinearRelation2(lk, toV lk, ker)
             findQRelation(lv, lpar, toU lk, ktoU ker) 
         is?(ker, NTHR) => rootDep(lk, ker)
         comb? and is?(ker, "factorial"::SY) =>
