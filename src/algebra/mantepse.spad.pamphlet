@@ -1717,9 +1717,19 @@ does not.
 Note that we conjugate all partitions at the very end of the following
 procedure\dots
 
+In the homogeneous case, we can also drop those lists of partitions whose
+corresponding list of expressions have a common divisor.  [[homogeneousPart]]
+selects all partitions that have the given length.  It returns the empty list,
+if all partitions have a common entry.
+
 <<implementation: Guess - Hermite-Pade - Streams>>=
-homogeneousPart(n: NNI, l: List List Integer): List List Integer ==
-    select(# #1 = n, l)
+homogeneousPart(length: Integer, maxEntry: Integer, l: List List Integer)
+               : List List Integer ==
+    h := select(# #1 = length, l)
+    if not empty? h then
+        for k in 1..maxEntry repeat
+            if every?(member?(k, #1), h) then return empty()
+    h
 
 FilteredPartitionStream(options: LGOPT): Stream List List Integer ==
     maxD := 1+maxDerivative(options)$GOPT0
@@ -1752,7 +1762,8 @@ FilteredPartitionStream(options: LGOPT): Stream List List Integer ==
              $StreamFunctions2(List Integer, List List Integer)
 
     if homogeneous(options)$GOPT0 then
-        r2 := map(homogeneousPart(# first #1, #1), r2)
+-- the very first element of r2 is always the empty partition
+        r2 := map(homogeneousPart(# first #1, first first #1, #1), rest r2)
 
 -- FIXME: without the reverse, n^n/factorial n is not guessed anymore
 -- we want to have at least two elements
@@ -2695,6 +2706,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
     if maxLevel = 0 then return res
 
     if member?('guessProduct, ops) then
+
         if member?(0$F, list) then
             0 -- this must be here due to bug #430
             if debug(options)$GOPT0 then
