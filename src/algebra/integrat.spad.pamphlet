@@ -213,9 +213,13 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       el  := any?(has?(operator #1, ELEM), tg)
       i:IR
       if (comp := goComplex?(rtg, tg, ltg)) then
-        i := map(FG2F, lfintegrate(trigs2explogs(F2FG g,
-                       [K2KG k for k in tf | is?(k, "tan"::SE) or
-                            is?(k, "cot"::SE)], [x]), x))
+        gg : FG := trigs2explogs(F2FG g,
+                    [K2KG k for k in tf | is?(k, "tan"::SE) or
+                       is?(k, "cot"::SE)], [x])
+        -- FIXME: we should really rerun algebraic normalization
+        -- but currently we do nothing more than this
+        gg := rootSimp(gg)$AlgebraicManipulations(G, FG)
+        i := map(FG2F, lfintegrate(gg, x))
       else i := lfintegrate(g, x)
       ltg := setDifference(ltg, ltf)   -- tan's added by normalization
       (u := rinteg(i, f, x, el and ht, comp)) case F =>
