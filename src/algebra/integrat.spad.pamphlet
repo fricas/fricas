@@ -200,6 +200,10 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       not empty? rest rest l
 
     integrate(f, x) ==
+      -- FIXME: we need better way to check if base ring is
+      -- real
+      R has imaginary:() -> % or R is AlgebraicNumber =>
+          complexIntegrate(f, x)
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
       tf  := [k for k in tower f | member?(x, variables(k::F)@List(SE))]$List(K)
