@@ -585,8 +585,17 @@ hasPatternVar x ==
   or/[hasPatternVar y for y in x]
 
 getDcForm(dc, condlist) ==
-  [ofWord,id,cform] := or/[x for x in condlist | x is [k,=dc,:.]
-     and MEMQ(k, '(ofCategory isDomain))] or return nil
+  -- FIXME: normally first condition on *1 gives origin, but not
+  -- always.  In particular, if we get category with no operations
+  -- than this is clearly wrong, so try next (happens with attributes).
+  -- We should make this reliable.
+  candidates := [x for x in condlist | x is [k,=dc,:.]
+                 and MEMQ(k, '(ofCategory isDomain))]
+  null(candidates) => nil
+  [ofWord,id,cform] := first(candidates)
+  if #candidates > 1 and ofWord = 'ofCategory and _
+       null(GETDATABASE(opOf cform, 'MODEMAPS)) then
+     [ofWord,id,cform] := first(rest(candidates))
   conform := getConstructorForm opOf cform
   ofWord = 'ofCategory =>
     [conform, ["*1", :rest cform], ["%", :rest conform]]
