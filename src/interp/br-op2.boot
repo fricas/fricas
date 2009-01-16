@@ -571,7 +571,6 @@ modemap2Sig(op,mm) ==
     pp predList
     pp nsig
     pp mm
-    $badStack := [[op, mm], :$badStack]
 --pause nsig
   [predList, origin, substitute("%", origin, nsig)]
 
