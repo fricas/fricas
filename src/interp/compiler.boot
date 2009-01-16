@@ -1330,7 +1330,7 @@ convertSpadToAsFile path ==
     $globalMacroStack : local := nil       -- for spad -> as translator
     $abbreviationStack: local := nil       -- for spad -> as translator
     $macrosAlreadyPrinted: local := nil    -- for spad -> as translator
-    SETQ($badStack, nil)                   --ditto  TEMP to check for bad code
+    $badStack: local := nil                --ditto  TEMP to check for bad code
     $newPaths: local := true               --ditto  TEMP
     $abbreviationsAlreadyPrinted: local := nil    -- for spad -> as translator
     $convertingSpadFile : local := true
