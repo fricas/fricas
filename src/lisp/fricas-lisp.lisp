@@ -275,7 +275,7 @@
 
 )
 
-#+:clisp
+#+(and :clisp :ffi)
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
 (setf *c-type-to-ffi* '(
@@ -417,7 +417,7 @@
 
 (defmacro foreign-defs (&rest arguments)
     #-:clisp `(progn ,@arguments)
-    #+:clisp `(defun clisp-init-foreign-calls () ,@arguments)
+    #+(and :clisp :ffi) `(defun clisp-init-foreign-calls () ,@arguments)
 )
 
 (foreign-defs
@@ -488,7 +488,7 @@
             buf))
 
 )
-#+:clisp
+#+(and :clisp :ffi)
 (eval '(FFI:DEF-CALL-OUT sock_get_string_buf
     (:NAME "sock_get_string_buf")
     (:arguments (purpose ffi:int)
@@ -499,7 +499,7 @@
 
 )
 
-#+:clisp
+#+(and :clisp :ffi)
 (defun |sockGetStringFrom| (purpose)
     (let ((buf nil))
         (FFI:WITH-C-VAR (tmp-buf '(FFI:C-ARRAY

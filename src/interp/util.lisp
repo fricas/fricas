@@ -1298,12 +1298,12 @@ quality we check anyway.
                     (sb-alien::load-shared-object spad-lib)
                     #+:openmcl
                     (ccl::open-shared-library spad-lib)
-                    #+:clisp
+                    #+(and :clisp :ffi)
                     (progn
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
                         (FRICAS-LISP::clisp-init-foreign-calls)))
                 (setf $openServerIfTrue nil))))
-    #+(or :gcl :clisp :sbcl :openmcl :ecl)
+    #+(or :gcl (and :clisp :ffi) :sbcl :openmcl :ecl)
     (if $openServerIfTrue
         (let ((os (|openServer| $SpadServerName)))
              (format t "openServer result ~S~%" os)
