@@ -178,7 +178,18 @@ QuotientFieldCategory(S: IntegralDomain): Category ==
          m / 1
 
     map(fn, x)                         == (fn numer x) / (fn denom x)
-    reducedSystem(m:Matrix %):Matrix S == clearDenominator m
+    
+    reducedSystem(m:Matrix %):Matrix S ==
+      nrm := nrows m
+      ncm := ncols m
+      ans : Matrix S := new(nrm, ncm, 0)$(Matrix S)
+      for i in 1..nrm repeat
+        d := commonDenominator(row(m, i))$CommonDenominator(S, %, Vector %)
+        for j in 1..ncm repeat
+          ell := qelt(m,i,j)
+          qsetelt_!(ans, i, j, ((d exquo denom(ell))::S)*numer(ell))
+      ans
+
     characteristic()                   == characteristic()$S
 
     differentiate(x:%, deriv:S -> S) ==
