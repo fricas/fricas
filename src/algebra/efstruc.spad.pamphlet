@@ -297,11 +297,29 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     transkers(x : List K) : List K ==
         [k for k in x | not(has?(operator k, ALGOP))]
 
+    ktoQ(ker : K) : Q ==
+       is?(ker, "log"::SY) and F has RetractableTo Q =>
+          z : F := argument(ker).1
+          qu := retractIfCan(z)@Union(Q, "failed")
+          qu case Q => qu::Q
+          1
+       1 
+
+    toQ(lk: List K) : List Q ==
+        [ktoQ(k) for k in lk | is?(k, "log"::SY) or is?(k, "exp"::SY)]
+
+    import MultiplicativeDependence()
+
     findLinearRelation2(lk: List K, lz : List F, ker : K) : U ==
         z : F := argument(ker).1
         zkers := transkers(kernels(z))
         empty?(zkers) =>
-            -- Algebraic case, give up (we should do better)
+            -- Algebraic case, check for dependencies between logarithms
+            -- of rational numbers (we should do better)
+            q := ktoQ(ker)
+            not(q = 1 or q = -1) =>
+                (u := logDependenceQ([toQ (lk)], q)) case Vector(Q) => [u::Vector(Q)]
+                [true]
             [true]
         lpars0 : List K := transkers(lk)
         lpars1 : List Symbol := [new()$Symbol for k in lpars0]
