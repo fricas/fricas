@@ -1,5 +1,6 @@
 \documentclass{article}
-\usepackage{axiom}
+\usepackage{axiom,amsthm,amsmath}
+\newtheorem{ToDo}{ToDo}[section]
 \begin{document}
 \title{rec.spad}
 \author{Martin Rubey}
@@ -362,6 +363,9 @@ solution and determine the valuation.
 \subsubsection{Extracting some information from the functional equation}
 
 [[getOrder]] returns the maximum derivative of [[op]] occurring in [[f]].
+\begin{ToDo}
+  How about $q$-differentiation?
+\end{ToDo}
 
 <<implementation: RecurrenceOperator>>=
     getOrder(op: BasicOperator, f: Kernel F): NonNegativeInteger ==
@@ -475,21 +479,34 @@ solution and determine the valuation.
     ddADE: List F -> OutputForm
     ddADE l ==
       op := operatorName l
+      x := displayVariable l
       values := reverse l
 
-      vals: List OutputForm
-           := cons(eval(eqAsF l, dummyAsF l, displayVariable l)::OutputForm = _
-                   0::OutputForm,
-                   [eval(D(op(dummyAsF l), dummy l, i), _
-                         dummyAsF l=0)::OutputForm = _
-                    (values.(i+1))::OutputForm * _
-                    factorial(box(i::R::F)$F)::OutputForm _
-                    for i in 0..min(4,#values-5)])
+      TaylorCoeff: OutputForm 
+                 := bracket(x::OutputForm **(operatorArgument l)::OutputForm)
 
-      bracket(hconcat([bracket((displayVariable l)::OutputForm ** _
-                               (operatorArgument l)::OutputForm), 
-                       (op(displayVariable l))::OutputForm, ": ",
-                       commaSeparate vals]))
+      DiffEq: OutputForm
+             := hconcat([TaylorCoeff, _
+                         op(x)::OutputForm, ": ", _
+                         eval(eqAsF l, dummyAsF l, x)::OutputForm = 0::OutputForm])_
+                       $OutputForm
+
+      if #values >= 5 then
+          TaylorList: List OutputForm
+                     := [(values.(i+1) * x**i)::OutputForm _
+                         for i in 0..min(4, #values-5)]
+          TaylorO: OutputForm
+                     := prefix("O"::OutputForm, _
+                               [(x**(1+min(4,#values-5)))::OutputForm])
+          TaylorPoly: OutputForm 
+                     := op(x)::OutputForm _
+                        = reduce(_+, TaylorList) _
+                          + TaylorO
+    
+    
+          bracket(commaSeparate([DiffEq, TaylorPoly])$OutputForm)$OutputForm
+      else
+          bracket(DiffEq)$OutputForm
 
     setProperty(opADE, "%specialDisp"::Symbol, 
                 ddADE@(List F -> OutputForm) pretend None)
