@@ -181,8 +181,8 @@
     (quit))
 
 ;;; -----------------------------------------------------------------
-;;; For ECL assume :unix, when :netbsd
-#+(and :ecl :netbsd) (push :unix *features*)
+;;; For ECL assume :unix, when :netbsd or :darwin
+#+(and :ecl (or :darwin :netbsd)) (push :unix *features*)
 
 ;;; -----------------------------------------------------------------
 
