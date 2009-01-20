@@ -435,7 +435,7 @@ stamp-bootstrap: stamp-oboo3
 	   for A in ${BADSPADS} ; do \
 	     echo ')compile "'$$A'.spad"' | DAASE=./rf ${INTERPSYS} ; \
            done ; \
-	   for A in ${BADSPADS} ; do \
+	   for A in ${SPADLIST} ; do \
 	     cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	   done ; \
 	   touch stamp-bootstrap ; \
@@ -445,7 +445,7 @@ ifneq ($(BUILD_WAY),use_lisp)
 $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST}) : stamp-bootstrap
 endif
 
-guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-src
+guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-bootstrap
 	( \
 	  { for A in ${GUESSLIST}; do \
 	        echo ')compile "'$$A'.spad"' ; \
@@ -457,7 +457,7 @@ guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-src
 	)
 	touch guess-pkg
 
-test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-src
+test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-bootstrap
 	( \
 	  { for A in ${TESTLIST}; do \
 	        echo ')compile "'$$A'.spad"' ; \
@@ -469,7 +469,7 @@ test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-src
 	)
 	touch test-pkg
 
-stamp: stamp-src guess-pkg test-pkg ${TESTS}
+stamp: stamp-src ${TESTS}
 	-rm -f stamp
 	$(STAMP) stamp
 
@@ -479,8 +479,55 @@ everything: check lib db cmd gloss
 	@ echo SRC= ${SRC} INT= ${INT}
 	@ echo LISP=${LISP} BYE=${BYE}
 
-stamp-src: stamp-spadsrc stamp-bootstrap \
-             $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST} ${EXTRASPADS})
+# We would prefer to use simple rule like this, unfortunatly
+# it make can not handle pattern rule for remaking .NRLIBs
+# so we expand rules to separate makefile
+#
+# update-spads: \
+#          $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST} ${EXTRASPADS})
+
+do-update-spads: stamp-bootstrap guess-pkg test-pkg spad.mak
+	${MAKE} -f spad.mak update-spads
+
+
+spad.mak : Makefile
+	echo 'update-spads: \' > spad.mak
+	for A in \
+	     $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST} ${EXTRASPADS}) ; \
+	do \
+	    echo $${A}' \' >> spad.mak ; \
+	done
+	for A in $(patsubst %, ${OUT}/%-.$(FASLEXT), ${CATDOMS}) ; do \
+	    echo $${A}' \' >> spad.mak ; \
+	done
+	for A in ${SPADLIST} ${EXTRASPADS} ; do \
+	    echo >> spad.mak ; \
+	    echo '${OUT}/'$${A}'.$(FASLEXT): ' \
+	         $${A}.NRLIB/$${A}.$(FASLEXT) >> spad.mak ; \
+	    echo -e '\tcp $$< $$@ ' >> spad.mak ; \
+	    echo >> spad.mak ; \
+	    echo $${A}.NRLIB/$${A}'.$(FASLEXT) : '$${A}.spad >> spad.mak ; \
+	    echo -e '\t@ echo compiling '$${A}.spad >> spad.mak ; \
+	    echo -e '\trm -rf '$${A}.NRLIB >> spad.mak ; \
+	    echo -e '\techo ")co" '$${A}'.spad | DAASE=./rf ${INTERPSYS}' \
+	        >> spad.mak ; \
+	done
+	for A in ${CATDOMS} ; do \
+	    echo >> spad.mak ; \
+	    echo '${OUT}/'$${A}'-.$(FASLEXT): ' \
+	         $${A}-.NRLIB/$${A}-.$(FASLEXT) >> spad.mak ; \
+	    echo -e '\tcp $$< $$@ ' >> spad.mak ; \
+	    echo >> spad.mak ; \
+	    echo $${A}-.NRLIB/$${A}'-.$(FASLEXT) : ' \
+	         $${A}.NRLIB/$${A}.$(FASLEXT) >> spad.mak ; \
+        done
+	echo >> spad.mak
+	echo 'srcdir=$(srcdir)' >> spad.mak
+	echo 'axiom_build_document=$(axiom_build_document)' >> spad.mak
+	echo >> spad.mak
+	echo 'include extract-spad.mk' >> spad.mak
+
+stamp-src: stamp-spadsrc do-update-spads
 	if [ ! -f stamp-src ] ; then \
 	    echo 4304 Done building NRLIBS from spad sources ; \
 	    touch stamp-src ; \
@@ -497,19 +544,24 @@ check:
 
 
 
-ifneq ($(BUILD_WAY),use_lisp)
-${OUT}/%.$(FASLEXT): %.NRLIB/%.$(FASLEXT)
-	cp $*.NRLIB/$*.$(FASLEXT) $@
-endif
+# ifneq ($(BUILD_WAY),use_lisp)
+# ${OUT}/%.$(FASLEXT): %.NRLIB/%.$(FASLEXT)
+# 	cp $*.NRLIB/$*.$(FASLEXT) $@
+# endif
 
 
-.PRECIOUS: %.NRLIB/%.$(FASLEXT)
-%.NRLIB/%.$(FASLEXT): %.spad
-	@ echo compiling $*.spad to $*.NRLIB
-	rm -rf $*.NRLIB
-	( \
-	     echo ')co $*.spad' | DAASE=./rf ${INTERPSYS} \
-	   )
+#
+# .PRECIOUS: %.NRLIB/%.$(FASLEXT)
+
+#
+# Causes useless recompilation
+#
+# %.NRLIB/%.$(FASLEXT): %.spad
+#	@ echo compiling $*.spad to $*.NRLIB
+#	rm -rf $*.NRLIB
+#	( \
+#	     echo ')co $*.spad' | DAASE=./rf ${INTERPSYS} \
+#	   )
 
 
 $(OUTSRC)/%.spad.pamphlet: $(srcdir)/%.spad.pamphlet
