@@ -48,6 +48,23 @@ UnivariateFormalPowerSeriesFunctions(Coef: Ring): Exports == Implementation
 @
 %$
 
+\section{package STNSR StreamTensor}
+<<package STNSR StreamTensor>>=
+)abbrev package STNSR StreamTensor
+StreamTensor(R: Type): with
+
+        tensorMap: (Stream R, R -> List R) -> Stream R
+          ++ tensorMap([s1, s2, ...], f) returns the stream consisting of all
+          ++ elements of f(s1) followed by all elements of f(s2) and so on.
+
+    == add
+
+        tensorMap(s, f) ==
+            empty? s => empty()
+            concat([f first s], delay tensorMap(rest s, f))
+@
+%$
+
 \section{domain GOPT GuessOption}
 <<domain GOPT GuessOption>>=
 )abbrev domain GOPT GuessOption
@@ -58,44 +75,49 @@ GuessOption(): Exports == Implementation where
 
   Exports == SetCategory with
 
-    maxDerivative: Integer -> %
+    maxDerivative: Union(NonNegativeInteger, "arbitrary") -> %
       ++ maxDerivative(d) specifies the maximum derivative in an algebraic
-      ++ differential equation. maxDerivative(-1) specifies that the maximum
-      ++ derivative can be arbitrary. This option is expressed in the form
+      ++ differential equation.  This option is expressed in the form
       ++ \spad{maxDerivative == d}.
 
-    maxShift: Integer -> %
+    maxShift: Union(NonNegativeInteger, "arbitrary") -> %
       ++ maxShift(d) specifies the maximum shift in a recurrence
-      ++ equation. maxShift(-1) specifies that the maximum shift can be
-      ++ arbitrary. This option is expressed in the form \spad{maxShift == d}.
+      ++ equation.  This option is expressed in the form \spad{maxShift == d}.
 
-    maxPower: Integer -> %
+    maxPower: Union(PositiveInteger, "arbitrary") -> %
       ++ maxPower(d) specifies the maximum degree in an algebraic differential
       ++ equation. For example, the degree of (f'')^3 f' is 4. maxPower(-1)
       ++ specifies that the maximum exponent can be arbitrary. This option is
       ++ expressed in the form \spad{maxPower == d}.
 
-    homogeneous: Boolean -> %
+    homogeneous: Union(PositiveInteger, Boolean) -> %
       ++ homogeneous(d) specifies whether we allow only homogeneous algebraic
-      ++ differential equations, i.e., ADEs where the total degree is
-      ++ constant.  This option is expressed in the form 
-      ++ \spad{homogeneous == d}.
+      ++ differential equations.  This option is expressed in the form 
+      ++ \spad{homogeneous == d}.  If true, then maxPower must be
+      ++ set, too, and ADEs with constant total degree are allowed.
+      ++ If a PositiveInteger is given, only ADE's with this total degree are
+      ++ allowed. 
 
-    maxLevel: Integer -> %
+    maxLevel: Union(NonNegativeInteger, "arbitrary") -> %
       ++ maxLevel(d) specifies the maximum number of recursion levels operators
-      ++ guessProduct and guessSum will be applied.  maxLevel(-1) specifies
-      ++ that all levels are tried. This option is expressed in the form
-      ++ \spad{maxLevel == d}.
+      ++ guessProduct and guessSum will be applied. This option is expressed in
+      ++ the form spad{maxLevel == d}.
 
-    maxDegree: Integer -> %
+    maxDegree: Union(NonNegativeInteger, "arbitrary") -> %
       ++ maxDegree(d) specifies the maximum degree of the coefficient
       ++ polynomials in an algebraic differential equation or a recursion with
       ++ polynomial coefficients. For rational functions with an exponential
       ++ term, \spad{maxDegree} bounds the degree of the denominator
       ++ polynomial. 
-      ++ maxDegree(-1) specifies that the maximum
-      ++ degree can be arbitrary. This option is expressed in the form
-      ++ \spad{maxDegree == d}.
+      ++ This option is expressed in the form \spad{maxDegree == d}.
+
+    maxMixedDegree: NonNegativeInteger -> %
+      ++ maxMixedDegree(d) specifies the maximum q-degree of the coefficient
+      ++ polynomials in an algebraic differential equation or a recursion with
+      ++ polynomial coefficients, in the case of mixed shifts.
+      ++ Although slightly inconsistent, maxMixedDegree(0) specifies that no
+      ++ mixed shifts are allowed. This option is expressed in the form
+      ++ \spad{maxMixedDegree == d}.
 
     allDegrees: Boolean -> %
       ++ allDegrees(d) specifies whether all possibilities of the degree vector
@@ -151,25 +173,28 @@ GuessOption(): Exports == Implementation where
   Implementation ==> add
     import AnyFunctions1(Boolean)
     import AnyFunctions1(Symbol)
-    import AnyFunctions1(Integer)
     import AnyFunctions1(NonNegativeInteger)
+    import AnyFunctions1(Union(NonNegativeInteger, "arbitrary"))
+    import AnyFunctions1(Union(PositiveInteger, "arbitrary"))
+    import AnyFunctions1(Union(PositiveInteger, Boolean))
 
     Rep := Record(keyword: Symbol, value: Any)
 
-    maxLevel d      == ["maxLevel"::Symbol,      d::Any]
-    maxDerivative d == ["maxDerivative"::Symbol, d::Any]
-    maxShift d      == maxDerivative d
-    maxDegree d     == ["maxDegree"::Symbol,     d::Any]
-    allDegrees d    == ["allDegrees"::Symbol,    d::Any]
-    maxPower d      == ["maxPower"::Symbol,      d::Any]
-    safety d        == ["safety"::Symbol,        d::Any]
-    homogeneous d   == ["homogeneous"::Symbol,   d::Any]
-    debug d         == ["debug"::Symbol,         d::Any]
-    one d           == ["one"::Symbol,           d::Any]
-    functionName d  == ["functionName"::Symbol,  d::Any]
-    variableName d  == ["variableName"::Symbol,  d::Any]
-    indexName d     == ["indexName"::Symbol,     d::Any]
-    displayAsGF d   == ["displayAsGF"::Symbol,   d::Any]
+    maxLevel d       == ["maxLevel"::Symbol,       d::Any]
+    maxDerivative d  == ["maxDerivative"::Symbol,  d::Any]
+    maxShift d       == maxDerivative d
+    maxDegree d      == ["maxDegree"::Symbol,      d::Any]
+    maxMixedDegree d == ["maxMixedDegree"::Symbol, d::Any]
+    allDegrees d     == ["allDegrees"::Symbol,     d::Any]
+    maxPower d       == ["maxPower"::Symbol,       d::Any]
+    safety d         == ["safety"::Symbol,         d::Any]
+    homogeneous d    == ["homogeneous"::Symbol,    d::Any]
+    debug d          == ["debug"::Symbol,          d::Any]
+    one d            == ["one"::Symbol,            d::Any]
+    functionName d   == ["functionName"::Symbol,   d::Any]
+    variableName d   == ["variableName"::Symbol,   d::Any]
+    indexName d      == ["indexName"::Symbol,      d::Any]
+    displayAsGF d    == ["displayAsGF"::Symbol,    d::Any]
 
     coerce(x:%):OutputForm == x.keyword::OutputForm = x.value::OutputForm
     x:% = y:%              == x.keyword = y.keyword and x.value = y.value
@@ -204,20 +229,27 @@ GuessOptionFunctions0(): Exports == Implementation where
 
   Exports == SetCategory with
 
-    maxLevel: LGOPT -> Integer
-      ++ maxLevel returns the specified maxLevel or -1 as default.
+    maxDerivative: LGOPT -> Union(NonNegativeInteger, "arbitrary")
+      ++ maxDerivative returns the specified maxDerivative.
 
-    maxPower: LGOPT -> Integer
-      ++ maxPower returns the specified maxPower or -1 as default.
+    maxShift: LGOPT -> Union(NonNegativeInteger, "arbitrary")
+      ++ maxShift returns the specified maxShift.
 
-    maxDerivative: LGOPT -> Integer
-      ++ maxDerivative returns the specified maxDerivative or -1 as default.
+    maxPower: LGOPT -> Union(PositiveInteger, "arbitrary")
+      ++ maxPower returns the specified maxPower.
 
-    maxShift: LGOPT -> Integer
-      ++ maxShift returns the specified maxShift or -1 as default.
+    homogeneous: LGOPT -> Union(PositiveInteger, Boolean)
+      ++ homogeneous returns whether we allow only homogeneous algebraic
+      ++ differential equations, default being false
 
-    maxDegree: LGOPT -> Integer
-      ++ maxDegree returns the specified maxDegree or -1 as default.
+    maxLevel: LGOPT -> Union(NonNegativeInteger, "arbitrary")
+      ++ maxLevel returns the specified maxLevel.
+
+    maxDegree: LGOPT -> Union(NonNegativeInteger, "arbitrary")
+      ++ maxDegree returns the specified maxDegree.
+
+    maxMixedDegree: LGOPT -> NonNegativeInteger
+      ++ maxMixedDegree returns the specified maxMixedDegree.
 
     allDegrees: LGOPT -> Boolean
       ++ allDegrees returns whether all possibilities of the degree vector
@@ -228,10 +260,6 @@ GuessOptionFunctions0(): Exports == Implementation where
 
     one: LGOPT -> Boolean
       ++ one returns whether we need only one solution, default being true.
-
-    homogeneous: LGOPT -> Boolean
-      ++ homogeneous returns whether we allow only homogeneous algebraic
-      ++ differential equations, default being false
 
     functionName: LGOPT -> Symbol
       ++ functionName returns the name of the function given by the algebraic
@@ -258,23 +286,29 @@ GuessOptionFunctions0(): Exports == Implementation where
 
     maxLevel l ==
       if (opt := option(l, "maxLevel" :: Symbol)) case "failed" then
-        -1
+        "arbitrary"
       else 
-        retract(opt :: Any)$AnyFunctions1(Integer)
+        retract(opt :: Any)$AnyFunctions1(Union(NonNegativeInteger, "arbitrary"))
 
     maxDerivative l ==
       if (opt := option(l, "maxDerivative" :: Symbol)) case "failed" then
-        -1
+        "arbitrary"
       else 
-        retract(opt :: Any)$AnyFunctions1(Integer)
+        retract(opt :: Any)$AnyFunctions1(Union(NonNegativeInteger, "arbitrary"))
 
     maxShift l == maxDerivative l
 
     maxDegree l ==
       if (opt := option(l, "maxDegree" :: Symbol)) case "failed" then
-        -1
+        "arbitrary"
       else 
-        retract(opt :: Any)$AnyFunctions1(Integer)
+        retract(opt :: Any)$AnyFunctions1(Union(NonNegativeInteger, "arbitrary"))
+
+    maxMixedDegree l ==
+      if (opt := option(l, "maxMixedDegree" :: Symbol)) case "failed" then
+        0
+      else 
+        retract(opt :: Any)$AnyFunctions1(NonNegativeInteger)
 
     allDegrees l ==
       if (opt := option(l, "allDegrees" :: Symbol)) case "failed" then
@@ -284,15 +318,15 @@ GuessOptionFunctions0(): Exports == Implementation where
 
     maxPower l ==
       if (opt := option(l, "maxPower" :: Symbol)) case "failed" then
-        -1
+        "arbitrary"
       else 
-        retract(opt :: Any)$AnyFunctions1(Integer)
+        retract(opt :: Any)$AnyFunctions1(Union(PositiveInteger, "arbitrary"))
 
     safety l ==
       if (opt := option(l, "safety" :: Symbol)) case "failed" then
         1$NonNegativeInteger
       else
-        retract(opt :: Any)$AnyFunctions1(Integer)::NonNegativeInteger
+        retract(opt :: Any)$AnyFunctions1(NonNegativeInteger)
 
     one l ==
       if (opt := option(l, "one" :: Symbol)) case "failed" then
@@ -310,7 +344,7 @@ GuessOptionFunctions0(): Exports == Implementation where
       if (opt := option(l, "homogeneous" :: Symbol)) case "failed" then
         false
       else 
-        retract(opt :: Any)$AnyFunctions1(Boolean)
+        retract(opt :: Any)$AnyFunctions1(Union(PositiveInteger, Boolean))
 
     variableName l ==
       if (opt := option(l, "variableName" :: Symbol)) case "failed" then
@@ -413,10 +447,10 @@ Guess(F, S, EXPRR, R, retract, coerce): Exports == Implementation where
     DIFFSPECC ==> NNI -> List S
 
 
-    HPSPEC ==> Record(guessStream:  UFPSF -> Stream List UFPSF,
+    HPSPEC ==> Record(guessStream:  UFPSF -> Stream UFPSF,
                       degreeStream: Stream NNI,
-                      testStream:   UFPSSUPF -> Stream List UFPSSUPF, 
-                      exprStream:   (EXPRR, Symbol) -> Stream List EXPRR,
+                      testStream:   UFPSSUPF -> Stream UFPSSUPF, 
+                      exprStream:   (EXPRR, Symbol) -> Stream EXPRR,
                       A:  DIFFSPECA,
                       AF: DIFFSPECAF,
                       AX: DIFFSPECAX,
@@ -509,10 +543,6 @@ Section~\ref{sec:Hermite-Pade}.
               ++ \spad{guessBinRat q} returns a guesser that tries to find a
               ++ function of the form n+->qbinomial(a+b n, n) r(n), where r(q^n) is a
               ++ q-rational function, that fits l.
-
-        guessHP: (LGOPT -> HPSPEC) -> GUESSER
-          ++ \spad{guessHP f} constructs an operation that applies Hermite-Pade
-          ++ approximation to the series generated by the given function f.
 
         guessADE: List F -> GUESSRESULT
           ++ \spad{guessADE l} tries to find an algebraic differential equation
@@ -613,7 +643,8 @@ Section~\ref{sec:Hermite-Pade}.
 
             shiftHP: Symbol -> (LGOPT -> HPSPEC)
               ++ \spad{shiftHP options} returns a specification for
-              ++ Hermite-Pade approximation with the $q$-shift operator
+              ++ Hermite-Pade approximation with the $q$-shift operator, or,
+              ++ if \spad{maxMixedDegree > 0} for mixed shifts
 
             diffHP: Symbol -> (LGOPT -> HPSPEC)
               ++ \spad{diffHP options} returns a specification for Hermite-Pade
@@ -643,6 +674,24 @@ Section~\ref{sec:Hermite-Pade}.
               ++ first Taylor coefficients are given by l, using the given
               ++ options.
 
+            guessAlg: Symbol -> GUESSER
+              ++ \spad{guessAlg q} returns a guesser that tries to find an
+              ++ algebraic equation for a generating function whose
+              ++ first Taylor coefficients are given by l, using the given
+              ++ options.
+
+            guessHolo: Symbol -> GUESSER
+              ++ \spad{guessHolo q} returns a guesser that tries to find a
+              ++ linear differential equation for a generating function whose
+              ++ first Taylor coefficients are given by l, using the given
+              ++ options.
+
+            guessPade: Symbol -> GUESSER
+              ++ \spad{guessPade q} returns a guesser that tries to find a
+              ++ rational generating function whose
+              ++ first Taylor coefficients are given by l, using the given
+              ++ options.
+
         --@<<debug exports: Guess>>
 @
 
@@ -656,7 +705,7 @@ Section~\ref{sec:Hermite-Pade}.
 --ShiftSXGF: (EXPRR, Symbol, NNI) -> EXPRR
 --ShiftAXGF: (NNI, Symbol, EXPRR) -> EXPRR
 --
-FilteredPartitionStream: LGOPT -> Stream List List Integer
+FilteredPartitionStream: LGOPT -> Stream List Integer
 --
 --guessInterpolate: (List SUP F, List NNI, HPSPEC) -> Matrix SUP S
 --testInterpolant: (List SUP S, List F, List UFPSSUPF, List EXPRR, List EXPRR, _
@@ -971,9 +1020,9 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
     y3 := y(len+3)
 
     res := []::List EXPRR
-    if maxDegree(options)$GOPT0 = -1
-    then maxDeg := len-1
-    else maxDeg := min(maxDegree(options)$GOPT0, len-1)
+    if (maxD := maxDegree(options)$GOPT0) case NNI
+    then maxDeg := min(maxD, len-1)
+    else maxDeg := len-1
 
     for i in 0..maxDeg repeat
         if debug(options)$GOPT0 then
@@ -1280,9 +1329,9 @@ $y(n)=s_n*\binom{a+bn}{n}^-1$.
     y3 := y(len+3)
 
     res := []::List EXPRR
-    if maxDegree(options)$GOPT0 = -1
-    then maxDeg := len-1
-    else maxDeg := min(maxDegree(options)$GOPT0, len-1)
+    if (maxD := maxDegree(options)$GOPT0) case NNI
+    then maxDeg := min(maxD, len-1)
+    else maxDeg := len-1
 
     for i in 0..maxDeg repeat
 --        if debug(options)$GOPT0 then
@@ -1601,11 +1650,6 @@ termAsEXPRR(f: EXPRR, xx: Symbol, partition: List Integer,
                            ** second(part)::NNI for part in ll]
         reduce(_*, fl)
 
-listTermsAsListEXPRR(f: EXPRR, xx: Symbol, 
-                     partitions: List List Integer, 
-                     DX: DIFFSPECX, D1X: DIFFSPEC1X): List EXPRR ==
-    map(termAsEXPRR(f, xx, #1, DX, D1X), partitions)
-       $ListFunctions2(List Integer, EXPRR)
 
 termAsUFPSF(f: UFPSF, partition: List Integer, DS: DIFFSPECS, D1: DIFFSPEC1): UFPSF ==
     if empty? partition then D1
@@ -1618,12 +1662,6 @@ termAsUFPSF(f: UFPSF, partition: List Integer, DS: DIFFSPECS, D1: DIFFSPEC1): UF
                            ** second(part)::NNI for part in ll]
 
         reduce(_*, fl)
-
-listTermsAsListUFPSF(f: UFPSF, partitions: List List Integer, 
-                     DS: DIFFSPECS, D1: DIFFSPEC1): List UFPSF ==
-    map(termAsUFPSF(f, #1, DS, D1), partitions)
-       $ListFunctions2(List Integer, UFPSF)
-
 
 -- returns \prod f^(partition.i), but using the Hadamard product
 termAsUFPSF2(f: UFPSF, partition: List Integer, 
@@ -1640,12 +1678,6 @@ termAsUFPSF2(f: UFPSF, partition: List Integer,
 
         reduce(hadamard$UFPS1(F), fl)
 
-listTermsAsListUFPSF2(f: UFPSF, partitions: List List Integer, 
-                     DS: DIFFSPECS, D1: DIFFSPEC1): List UFPSF ==
-    map(termAsUFPSF2(f, #1, DS, D1), partitions)
-       $ListFunctions2(List Integer, UFPSF)
-
-
 termAsUFPSSUPF(f: UFPSSUPF, partition: List Integer, 
                DSF: DIFFSPECSF, D1F: DIFFSPEC1F): UFPSSUPF ==
     if empty? partition then D1F
@@ -1659,11 +1691,6 @@ termAsUFPSSUPF(f: UFPSSUPF, partition: List Integer,
                ** second(part)::NNI for part in ll]
 
         reduce(_*, fl)
-
-listTermsAsListUFPSSUPF(f: UFPSSUPF, partitions: List List Integer, 
-                        DSF: DIFFSPECSF, D1F: DIFFSPEC1F): List UFPSSUPF ==
-    map(termAsUFPSSUPF(f, #1, DSF, D1F), partitions)
-       $ListFunctions2(List Integer, UFPSSUPF)
 
 -- returns \prod f^(partition.i), but using the Hadamard product
 termAsUFPSSUPF2(f: UFPSSUPF, partition: List Integer, 
@@ -1679,20 +1706,15 @@ termAsUFPSSUPF2(f: UFPSSUPF, partition: List Integer,
                for part in ll]
 
         reduce(hadamard$UFPS1(SUP F), fl)
-
-listTermsAsListUFPSSUPF2(f: UFPSSUPF, partitions: List List Integer, 
-                     DSF: DIFFSPECSF, D1F: DIFFSPEC1F): List UFPSSUPF ==
-    map(termAsUFPSSUPF2(f, #1, DSF, D1F), partitions)
-       $ListFunctions2(List Integer, UFPSSUPF)
-
 @
 %$
 
-\spad{FilteredPartitionStream} returns a stream of lists of partitions.  We
-will interpret each partition $(\lambda_1,\lambda_2,\dots)$ as $\prod_i
-f^{(\lambda_i-1)}$.  Thus, each list corresponds to a list of expressions.  For
-each list we will then try to find a linear combinations of the expressions it
-contains, such that its Taylor coefficients match the given data.
+\spad{FilteredPartitionStream} returns a stream of partitions.  We will
+interpret each partition $(\lambda_1,\lambda_2,\dots)$ as $\prod_i
+f^{(\lambda_i-1)}$.  Thus, each partition corresponds to a expressions.  For
+given $n$ we will then try to find a linear combination of the first $n$
+expressions in the stream, such that its Taylor coefficients match the given
+data.
 
 It is not clear whether we should \lq prefer\rq\ shifting and differentiation over
 powering. Currently, we produce the stream
@@ -1714,31 +1736,21 @@ instead, i.e., to leave the partitions unconjugated. Note however, that
 shifting and differentiation decrease the number of valid terms, while powering
 does not.
 
-Note that we conjugate all partitions at the very end of the following
-procedure\dots
-
-In the homogeneous case, we can also drop those lists of partitions whose
-corresponding list of expressions have a common divisor.  [[homogeneousPart]]
-selects all partitions that have the given length.  It returns the empty list,
-if all partitions have a common entry.
-
 <<implementation: Guess - Hermite-Pade - Streams>>=
-homogeneousPart(length: Integer, maxEntry: Integer, l: List List Integer)
-               : List List Integer ==
-    h := select(# #1 = length, l)
-    if not empty? h then
-        for k in 1..maxEntry repeat
-            if every?(member?(k, #1), h) then return empty()
-    h
+FilteredPartitionStream(options: LGOPT): Stream List Integer ==
+    maxD? := maxDerivative(options)$GOPT0
+    maxP? := maxPower(options)$GOPT0
+    homD?: Union(PositiveInteger, Boolean) := homogeneous(options)$GOPT0
+    if homD? case Boolean then
+        homD? => error "Guess: internal error - homogeneous should not be Boolean in FilteredPartitionStream"
+    else 
+        (maxD? case NNI) and zero? maxD? =>
+            error "Guess: the option homogeneous requires that maxShift/maxDerivative is at least one"
+        maxP? := homD?::PI
 
-FilteredPartitionStream(options: LGOPT): Stream List List Integer ==
-    maxD := 1+maxDerivative(options)$GOPT0
-    if homogeneous(options)$GOPT0 and maxD = 1 then
-         error "Guess: the option homogeneous requires that maxShift/maxDerivative is at least one"
-    maxP := maxPower(options)$GOPT0
     s: Stream List Integer
-    if maxD > 0 and maxP > -1 then
-        s := partitions(maxD, maxP)$PartitionsAndPermutations
+    if maxD? case NNI and maxP? case PI then
+        s := partitions(maxD?::NNI+1, maxP?::PI)$PartitionsAndPermutations
     else
         s1: Stream Integer := generate(inc, 1)$Stream(Integer)
         s2: Stream Stream List Integer 
@@ -1752,22 +1764,15 @@ FilteredPartitionStream(options: LGOPT): Stream List List Integer ==
 --                     and ((maxP = -1) or (# #1 <= maxP)), s3))
 
         s := cons([],
-                  select(((maxD = 0) or (# #1 <= maxD)) _
-                     and ((maxP = -1) or (first #1 <= maxP)), s3))
+                  select(((maxD? case "arbitrary") or (# #1 <= maxD?::NNI+1)) _
+                     and ((maxP? case "arbitrary") or (first #1 <= maxP?::PI)),
+                         s3))
 
     s := conjugates(s)$PartitionsAndPermutations
 
-    r2: Stream List List Integer 
-       := scan(empty(), cons(#1, #2), s)
-             $StreamFunctions2(List Integer, List List Integer)
-
-    if homogeneous(options)$GOPT0 then
--- the very first element of r2 is always the empty partition
-        r2 := map(homogeneousPart(# first #1, first first #1, #1), rest r2)
-
--- FIXME: without the reverse, n^n/factorial n is not guessed anymore
--- we want to have at least two elements
-    map(reverse, select(not empty? rest #1, r2))
+    if homD? case PI
+    then select(# #1 = homD?, s)
+    else s
 
 @
 %$
@@ -1777,52 +1782,47 @@ corresponding streams of power series or expressions.
 
 <<implementation: Guess - Hermite-Pade - Streams>>=
 -- for functions
-ADEguessStream(f: UFPSF, partitions: Stream List List Integer, 
-               DS: DIFFSPECS, D1: DIFFSPEC1): Stream List UFPSF ==
-    map(listTermsAsListUFPSF(f, #1, DS, D1), partitions)
-       $StreamFunctions2(List List Integer, List UFPSF)
+ADEguessStream(f: UFPSF, partitions: Stream List Integer, 
+               DS: DIFFSPECS, D1: DIFFSPEC1): Stream UFPSF ==
+    map(termAsUFPSF(f, #1, DS, D1), partitions)
+       $StreamFunctions2(List Integer, UFPSF)
 
 -- for coefficients, i.e., using the Hadamard product
-ADEguessStream2(f: UFPSF, partitions: Stream List List Integer, 
-                DS: DIFFSPECS, D1: DIFFSPEC1): Stream List UFPSF ==
-    map(listTermsAsListUFPSF2(f, #1, DS, D1), partitions)
-       $StreamFunctions2(List List Integer, List UFPSF)
+ADEguessStream2(f: UFPSF, partitions: Stream List Integer, 
+                DS: DIFFSPECS, D1: DIFFSPEC1): Stream UFPSF ==
+    map(termAsUFPSF2(f, #1, DS, D1), partitions)
+       $StreamFunctions2(List Integer, UFPSF)
 
 -- for functions
-ADEtestStream(f: UFPSSUPF, partitions: Stream List List Integer, 
-              DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream List UFPSSUPF ==
-    map(listTermsAsListUFPSSUPF(f, #1, DSF, D1F), partitions)
-       $StreamFunctions2(List List Integer, List UFPSSUPF)
+ADEtestStream(f: UFPSSUPF, partitions: Stream List Integer, 
+              DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream UFPSSUPF ==
+    map(termAsUFPSSUPF(f, #1, DSF, D1F), partitions)
+       $StreamFunctions2(List Integer, UFPSSUPF)
 
 -- for coefficients, i.e., using the Hadamard product
-ADEtestStream2(f: UFPSSUPF, partitions: Stream List List Integer, 
-              DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream List UFPSSUPF ==
-    map(listTermsAsListUFPSSUPF2(f, #1, DSF, D1F), partitions)
-       $StreamFunctions2(List List Integer, List UFPSSUPF)
+ADEtestStream2(f: UFPSSUPF, partitions: Stream List Integer, 
+              DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream UFPSSUPF ==
+    map(termAsUFPSSUPF2(f, #1, DSF, D1F), partitions)
+       $StreamFunctions2(List Integer, UFPSSUPF)
 
-ADEEXPRRStream(f: EXPRR, xx: Symbol, partitions: Stream List List Integer, 
-               DX: DIFFSPECX, D1X: DIFFSPEC1X): Stream List EXPRR ==
-    map(listTermsAsListEXPRR(f, xx, #1, DX, D1X), partitions)
-       $StreamFunctions2(List List Integer, List EXPRR)
+ADEEXPRRStream(f: EXPRR, xx: Symbol, partitions: Stream List Integer, 
+               DX: DIFFSPECX, D1X: DIFFSPEC1X): Stream EXPRR ==
+    map(termAsEXPRR(f, xx, #1, DX, D1X), partitions)
+       $StreamFunctions2(List Integer, EXPRR)
 
 @
 %$
 
-The entries of the stream produced by this last function indicate how many
-terms we loose when applying one of the power and shift or differentiation
-operators.  
+The entries of the following stream indicate how many terms we loose when
+applying one of the power and shift or differentiation operators. More
+precisely, the $n$\textsuperscript{th} entry of the stream takes into account
+all partitions up to index $n$. Thus, the entries of the stream are weakly
+increasing.
 
 <<implementation: Guess - Hermite-Pade - Streams>>=       
-ADEdegreeStreamAux(partitions: List List Integer): NNI ==
-    order: List Integer -> NNI 
-          := (if empty? #1 then 0 else (first #1 - 1)::NNI)
-    orders := map(order, partitions)$ListFunctions2(List Integer, NNI)
-    reduce(max, orders)
-
-
-ADEdegreeStream(partitionLists: Stream List List Integer): Stream NNI ==
-    map(ADEdegreeStreamAux #1, partitionLists)
-       $StreamFunctions2(List List Integer, NNI)
+ADEdegreeStream(partitions: Stream List Integer): Stream NNI ==
+    scan(0, max((if empty? #1 then 0 else (first #1 - 1)::NNI), #2),
+         partitions)$StreamFunctions2(List Integer, NNI)
 @
 %$
 
@@ -1895,6 +1895,8 @@ diff1X: DIFFSPEC1X
 diff1X(x: Symbol)== 1$EXPRR
 
 diffHP options == 
+    if not zero? maxMixedDegree(options)$GOPT0
+    then error "Guess: no support for mixed shifts in differential equations"
     if displayAsGF(options)$GOPT0 then
         partitions := FilteredPartitionStream options
         [ADEguessStream(#1, partitions, diffDS, 1$UFPSF), _
@@ -1925,6 +1927,8 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         multiplyCoefficients((q::F::SUP F)**((n*#1)::NonNegativeInteger), s)
 
     diffHP(q: Symbol): (LGOPT -> HPSPEC) == 
+        if not zero? maxMixedDegree(#1)$GOPT0
+        then error "Guess: no support for mixed shifts in differential equations"
         if displayAsGF(#1)$GOPT0 then
             partitions := FilteredPartitionStream #1
             [ADEguessStream(#1, partitions, qDiffDS(q, #1, #2), 1$UFPSF), _
@@ -1993,6 +1997,8 @@ ShiftC(total: NNI): List S ==
     ShiftC(total)$FFFG(S, SUP S)
 
 shiftHP options == 
+    if not zero? maxMixedDegree(options)$GOPT0 
+    then error "Guess: need a symbol for mixed Shifting"
     partitions := FilteredPartitionStream options
     if displayAsGF(options)$GOPT0 then
         if maxPower(options)$GOPT0 = 1 then
@@ -2014,11 +2020,19 @@ shiftHP options ==
 @ 
 %$
 
-\paragraph{$q$-Shifting} The $q$-shift also transforms $u(n)$ into $u(n+1)$,
-and we can reuse the corresponding functions of the previous paragraph.
-However, this time multiplication with $z$ is defined differently: the
-coefficient of $x^k$ in $z u(n)$ is $q^n u(n)$. We do not define the
-corresponding functionality for power series.
+\paragraph{$q$-Shifting and mixed $q$-Shifting} The $q$-shift also transforms
+$u(n)$ into $u(n+1)$, and we can reuse the corresponding functions of the
+previous paragraph.  However, this time multiplication with $z$ is defined
+differently: the coefficient of $x^k$ in $z u(n)$ is $q^n u(n)$.  We do not
+define the corresponding functionality for power series.
+
+To guess mixed shift and $q$-shift equations we use ordinary shifting, but on a
+different sequence of power series.  Namely, for each partition, we produce
+[[maxMixedDegree]] power series, corresponding to $u(n)$, $q^n u(n)$, $q^{2n}
+u(n)$ and so on.
+\begin{ToDo}
+  The minimal number of series should be [[maxMixedDegree]] here\dots
+\end{ToDo}
 
 <<implementation: Guess - Hermite-Pade - Operators>>=
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
@@ -2035,19 +2049,59 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
     qShiftC(q: Symbol, total: NNI): List S == 
         qShiftC(q::S, total)$FFFG(S, SUP S)
 
+    qSubstUFPSF(q: Symbol, s: UFPSF, maxMD: Integer): List UFPSF ==
+        [s((q::F)**i*monomial(1,1)) for i in 0..maxMD]
+
+    qSubstUFPSSUPF(q: Symbol, s: UFPSSUPF, maxMD: Integer): List UFPSSUPF ==
+        [s(((q::F)**i)::SUP(F)*monomial(1,1)) for i in 0..maxMD]
+
+    qSubstEXPRR(q: Symbol, xx: Symbol, s: EXPRR, maxMD: Integer): List EXPRR ==
+        [(q::EXPRR)**(i*xx::EXPRR)*s for i in 0..maxMD]
+
+    ADEguessStreamMixShift(q: Symbol, f: UFPSF, _
+                           partitions: Stream List Integer, _
+                           maxMD: Integer): Stream UFPSF ==
+        s := ADEguessStream2(f, partitions, ShiftSS, (1-monomial(1,1))**(-1))
+        tensorMap(s, qSubstUFPSF(q, #1, maxMD))$StreamTensor(UFPSF)
+
+    ADEdegreeStreamMixShift(partitions: Stream List Integer, _
+                            maxMD: Integer): Stream NNI ==
+        s := ADEdegreeStream partitions
+        tensorMap(s, [#1 for i in 0..maxMD])$StreamTensor(NNI)
+
+    ADEtestStreamMixShift(q: Symbol, f: UFPSSUPF, _
+                          partitions: Stream List Integer, _
+                          maxMD: Integer): Stream UFPSSUPF ==
+        s := ADEtestStream2(f, partitions, ShiftSF, (1-monomial(1,1))**(-1))
+        tensorMap(s, qSubstUFPSSUPF(q, #1, maxMD))$StreamTensor(UFPSSUPF)
+
+    ADEEXPRRStreamMixShift(q: Symbol, f: EXPRR, xx: Symbol, _
+                           partitions: Stream List Integer, _
+                           maxMD: Integer): Stream EXPRR ==
+        s := ADEEXPRRStream(f, xx, partitions, ShiftSX, diff1X)
+        tensorMap(s, qSubstEXPRR(q, xx, #1, maxMD))$StreamTensor(EXPRR)
+
     shiftHP(q: Symbol): (LGOPT -> HPSPEC) == 
         partitions := FilteredPartitionStream #1
+        
         if displayAsGF(#1)$GOPT0 then
             error "Guess: no support for the qShift operator with displayAsGF"
         else
-            [ADEguessStream2(#1, partitions, ShiftSS, _
-                             (1-monomial(1,1))**(-1)), _
-             ADEdegreeStream partitions, _
-             ADEtestStream2(#1, partitions, ShiftSF, _
-                            (1-monomial(1,1))**(-1)), _
-             ADEEXPRRStream(#1, #2, partitions, ShiftSX, diff1X), _
-             qShiftA(q, #1, #2, #3), qShiftAF(q, #1, #2, #3), _
-             qShiftAX(q, #1, #2, #3), qShiftC(q, #1)]$HPSPEC
+            if zero?(maxMD := maxMixedDegree(#1)$GOPT0) then
+                [ADEguessStream2(#1, partitions, ShiftSS, _
+                                 (1-monomial(1,1))**(-1)), _
+                 ADEdegreeStream partitions, _
+                 ADEtestStream2(#1, partitions, ShiftSF, _
+                                (1-monomial(1,1))**(-1)), _
+                 ADEEXPRRStream(#1, #2, partitions, ShiftSX, diff1X), _
+                 qShiftA(q, #1, #2, #3), qShiftAF(q, #1, #2, #3), _
+                 qShiftAX(q, #1, #2, #3), qShiftC(q, #1)]$HPSPEC
+            else
+                [ADEguessStreamMixShift(q, #1, partitions, maxMD), _
+                 ADEdegreeStreamMixShift(partitions, maxMD), _
+                 ADEtestStreamMixShift(q, #1, partitions, maxMD), _
+                 ADEEXPRRStreamMixShift(q, #1, #2, partitions, maxMD), _
+                 ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
 
 @
 %$
@@ -2098,14 +2152,15 @@ SUPF2SUPSUPF(p: SUP F): SUP SUP F ==
 @
 %$
 
-[[getListSUPF]] truncates the given elements after degree [[deg]].
+[[getListSUPF]] returns the first [[o]] elements of the stream, each truncated
+after degree [[deg]]. 
 
 <<implementation: Guess - Hermite-Pade - Utilities>>=
 UFPSF2SUPF(f: UFPSF, deg: NNI): SUP F == 
     makeSUP univariatePolynomial(f, deg)
 
-getListSUPF(s: List UFPSF, deg: NNI): List SUP F ==
-    map(UFPSF2SUPF(#1, deg), s)
+getListSUPF(s: Stream UFPSF, o: NNI, deg: NNI): List SUP F ==
+    map(UFPSF2SUPF(#1, deg), entries complete first(s, o))
        $ListFunctions2(UFPSF, SUP F)
 
 S2EXPRR(s: S): EXPRR ==
@@ -2182,7 +2237,7 @@ we cannot check this if [[maxDegree]] is set, in which case some initial
 solutions may have been overlooked.
 
 <<implementation: Guess - testInterpolant>>=
-    ((maxDegree(options)$GOPT0 = -1) and 
+    ((maxDegree(options)$GOPT0 case "arbitrary") and 
      (allDegrees(options)$GOPT0 = false) and 
      zero?(last resi)) 
      => return "failed"
@@ -2387,22 +2442,12 @@ which all the generated series are correct, taking into account [[safety]].
                                -- doesn't understand => "iterate" properly
                                -- the latter just leaves the current block, it
                                -- seems 
-    for n in 1.. repeat
-        empty? rest(guessS, (n-1)::NNI) => 
-            if debug(options)$GOPT0 then 
-                output("guessStream is empty")$OutputPackage
-            break
-        o := #(guessS.n)
-        ds: Integer := (degreeS.n)::Integer
-        guessDegree: Integer := listDegree - ds
-        guessDegree < 0 => 
-            if debug(options)$GOPT0 then 
-                output("guessDegree is negative")$OutputPackage
-            break
+    for o in 2.. repeat
+        empty? rest(guessS, (o-1)::NNI) => break
+        guessDegree: Integer := listDegree-(degreeS.o)::Integer
+        guessDegree < 0 => break
         if debug(options)$GOPT0 then 
-            output(hconcat("Trying term ", n::OutputForm))$OutputPackage
-            output(hconcat("order is ", o::OutputForm))
-                  $OutputPackage
+            output(hconcat("Trying order ", o::OutputForm))$OutputPackage
             output(hconcat("guessDegree is ", guessDegree::OutputForm))
                   $OutputPackage
 @ 
@@ -2427,9 +2472,10 @@ with the evenly distributed case.
                     output("order larger than guessDegree+2")$OutputPackage                
                 return reslist
 
-            maxEta: Integer := 1+maxDegree(options)$GOPT0
-            if maxEta = 0 
-            then maxEta := guessDegree+1
+            maxEta: NNI
+            if (maxD := maxDegree(options)$GOPT0) case NNI
+            then maxEta := maxD + 1
+            else maxEta := guessDegree::NNI+1
         else
 @
 
@@ -2456,32 +2502,53 @@ least a constant term in each entry.
                 return reslist
 @
 
-If [[maxDegree]] is set, we skip the first few partitions, unless we cannot
-increase the order anymore.
+If [[maxDegree]] is set but [[allDegrees]] is not, we skip the first few
+partitions, unless we cannot increase the order anymore.
 \begin{ToDo}
-  I have no satisfactory way to determine whether we can increase the order or
-  not.
+  I have no satisfactory way to determine whether we should skip the current
+  partition or not.  We really want to make sure that for each sequence of
+  partitions $\lambda_1 \subseteq \lambda_2 \subseteq \dots$ occurring in the
+  stream, exactly one is actually tried.
+
+  In the case of an infinite stream, we assume that [[maxParams]] is weakly
+  decreasing.  But how can we determine whether that the current element is not
+  the last one with respect to inclusion?  Possibly, we should assume that the
+  lists of partitions are actually closed under inclusion.  However, this still
+  allows the case that [[maxParams]] is too large for one partition but too
+  small for the next.  Hm, it seems that this cannot happen, at least not for
+  [[maxPower==1]].
+
+  In the case of finite streams, it seems best to have an oracle that tells us
+  whether we want to try it or not, rather than sort the partitions according
+  to [[maxParams]].
+
+  One possibility is to add every partition we would like to skip to a list,
+  then throw away those which are not maximal with respect to inclusion, or
+  which are smaller than one we wouldn't skip anyway.
 \end{ToDo}
 
 <<implementation: Guess - guessHPaux>>=
-            if ((maxDegree(options)$GOPT0 ~= -1) and
-                (maxDegree(options)$GOPT0 < maxParams.quotient)) and
-                not (empty? rest(guessS, n) or
-                     ((ds: Integer := (degreeS.n)::Integer;
-                       newGuessDegree := listDegree - ds) < 0) or
-                     (newo: NNI := #(guessS.(n+1));
-                      newMaxParams := divide(newGuessDegree::NNI+1, newo);
-                      newMaxParams.quotient = 0 and
-                      newMaxParams.remainder < newo-1))
+            if ((maxD := maxDegree(options)$GOPT0) case NNI and
+                maxD < maxParams.quotient) and
+               not (empty? rest(guessS, o) or
+                    ((newGuessDegree := listDegree-(degreeS.(o+1))::Integer)
+                         < 0) or
+                    (((newMaxParams := divide(newGuessDegree::NNI+1, o+1))
+                          .quotient = 0) and
+                       (newMaxParams.remainder < o)))
             then iterate? := true
-            else if ((maxDegree(options)$GOPT0 ~= -1) and
-                     (maxParams.quotient > maxDegree(options)$GOPT0))
+@
+We distribute the parameters as evenly as possible.  Is it better to have
+higher degrees at the end or at the beginning?
+<<implementation: Guess - guessHPaux>>=
+            else if (maxD := maxDegree(options)$GOPT0) case NNI and
+                    maxD < maxParams.quotient
                  then
-                     guessDegree := o*(1+maxDegree(options)$GOPT0)-2
+                     guessDegree := o*(1+maxD)-2
                      eta: List NNI
                          := [(if i < o    _
-                               then maxDegree(options)$GOPT0 + 1   _
-                               else maxDegree(options)$GOPT0)::NNI _
+                               then maxD + 1   _
+                               else maxD)::NNI _
                              for i in 1..o]
                  else eta: List NNI
                           := [(if i <= maxParams.remainder   _
@@ -2489,9 +2556,6 @@ increase the order anymore.
                                else maxParams.quotient)::NNI for i in 1..o]
 @
 %$
-
-We distribute the parameters as evenly as possible.  Is it better to have
-higher degrees at the end or at the beginning?
 
 It remains to prepare [[guessList]], which is the list of [[o]] power series
 polynomials truncated after degree [[guessDegree]]. Then we can call
@@ -2511,9 +2575,9 @@ HermitePade.
             iterate? := false
             if debug(options)$GOPT0 then output("iterating")$OutputPackage
         else 
-            guessList: List SUP F    := getListSUPF(guessS.n, guessDegree::NNI)
-            testList:  List UFPSSUPF := testS.n
-            exprList:  List EXPRR    := exprS.n
+            guessList: List SUP F    := getListSUPF(guessS, o, guessDegree::NNI)
+            testList:  List UFPSSUPF := entries complete first(testS, o)
+            exprList:  List EXPRR    := entries complete first(exprS, o)
 
             if debug(options)$GOPT0 then 
                 output("The list of expressions is")$OutputPackage
@@ -2522,7 +2586,7 @@ HermitePade.
             if allDegrees(options)$GOPT0 then
                 MS: Stream Matrix SUP S := guessInterpolate2(guessList, 
                                                              guessDegree::NNI+1,
-                                                             maxEta::NNI, D)
+                                                             maxEta, D)
                 repeat
                     (empty? MS) => break
                     M := first MS
@@ -2579,11 +2643,17 @@ situations.
 \paragraph{generating functions}
 
 <<implementation: Guess - guessHP>>=
-guessHP(D: LGOPT -> HPSPEC): GUESSER == guessHPaux(#1, D #2, #2)
-
 guessADE(list: List F, options: LGOPT): GUESSRESULT == 
-    opts: LGOPT := cons(displayAsGF(true)$GuessOption, options)
-    guessHPaux(list, diffHP opts, opts)
+    if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
+        if (maxP? := maxPower(options)$GOPT0) case PI then
+            concat [guessADE(list, cons(homogeneous(i::PI)$GuessOption, options)) _
+                    for i in 1..maxP?]
+        else
+            error "Guess: setting homogeneous true requires that maxPower is also set"
+
+    else
+        opts: LGOPT := cons(displayAsGF(true)$GuessOption, options)
+        guessHPaux(list, diffHP opts, opts)
 
 guessADE(list: List F): GUESSRESULT == guessADE(list, [])
 
@@ -2605,6 +2675,7 @@ guessPade(list: List F, options: LGOPT): GUESSRESULT ==
 
 guessPade(list: List F): GUESSRESULT == guessPade(list, [])
 @
+%$
 
 \paragraph{$q$-generating functions}
 
@@ -2612,8 +2683,27 @@ guessPade(list: List F): GUESSRESULT == guessPade(list, [])
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessADE(q: Symbol): GUESSER ==
-        opts: LGOPT := cons(displayAsGF(true)$GuessOption, #2)
-        guessHPaux(#1, (diffHP q)(opts), opts)
+        if (hom? := homogeneous(#2)$GOPT0) case Boolean and hom? then
+            if (maxP? := maxPower(#2)$GOPT0) case PI then
+                concat [guessADE(q)(#1, cons(homogeneous(i::PI)$GuessOption, #2)) _
+                        for i in 1..maxP?]
+            else
+                error "Guess: setting homogeneous true requires that maxPower is also set"
+    
+        else 
+            opts: LGOPT := cons(displayAsGF(true)$GuessOption, #2)
+            guessHPaux(#1, (diffHP q)(opts), opts)
+
+    guessAlg(q: Symbol): GUESSER ==
+        guessADE(q)(#1, cons(maxDerivative(0)$GuessOption, #2))
+
+    guessHolo(q: Symbol): GUESSER ==
+        guessADE(q)(#1, cons(maxPower(1)$GuessOption, #2))
+
+    guessPade(q: Symbol): GUESSER ==
+        guessADE(q)(#1, append(#2, [maxDerivative(0)$GuessOption, 
+                                    maxPower(1)$GuessOption, 
+                                    allDegrees(true)$GuessOption]))
 
 @
 %$
@@ -2622,21 +2712,28 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
 <<implementation: Guess - guessHP>>=
 guessRec(list: List F, options: LGOPT): GUESSRESULT == 
-      opts: LGOPT := cons(displayAsGF(false)$GuessOption, options)
-      guessHPaux(list, shiftHP opts, opts)
+    if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
+        if (maxP? := maxPower(options)$GOPT0) case PI then
+            concat [guessRec(list, cons(homogeneous(i::PI)$GuessOption, options)) _
+                    for i in 1..maxP?]
+        else
+            error "Guess: setting homogeneous true requires that maxPower is also set"
+    else
+        opts: LGOPT := cons(displayAsGF(false)$GuessOption, options)
+        guessHPaux(list, shiftHP opts, opts)
 
 guessRec(list: List F): GUESSRESULT == guessRec(list, [])
 
 guessPRec(list: List F, options: LGOPT): GUESSRESULT ==
-      guessRec(list, cons(maxPower(1)$GuessOption, options))
+    guessRec(list, cons(maxPower(1)$GuessOption, options))
 
 guessPRec(list: List F): GUESSRESULT == guessPRec(list, [])
 
 guessRat(list: List F, options: LGOPT): GUESSRESULT ==
-      opts := append(options, [maxShift(0)$GuessOption, 
-                               maxPower(1)$GuessOption, 
-                               allDegrees(true)$GuessOption])
-      guessRec(list, opts)
+    opts := append(options, [maxShift(0)$GuessOption, 
+                             maxPower(1)$GuessOption, 
+                             allDegrees(true)$GuessOption])
+    guessRec(list, opts)
 
 guessRat(list: List F): GUESSRESULT == guessRat(list, [])
 
@@ -2649,21 +2746,24 @@ guessRat(list: List F): GUESSRESULT == guessRat(list, [])
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessRec(q: Symbol): GUESSER ==
-        opts: LGOPT := cons(displayAsGF(false)$GuessOption, #2)
-        guessHPaux(#1, (shiftHP q)(opts), opts)
+        if (hom? := homogeneous(#2)$GOPT0) case Boolean and hom? then
+            if (maxP? := maxPower(#2)$GOPT0) case PI then
+                concat [guessRec(q)(#1, cons(homogeneous(i::PI)$GuessOption, #2)) _
+                        for i in 1..maxP?]
+            else
+                error "Guess: setting homogeneous true requires that maxPower is also set"
+    
+        else 
+            opts: LGOPT := cons(displayAsGF(false)$GuessOption, #2)
+            guessHPaux(#1, (shiftHP q)(opts), opts)
 
     guessPRec(q: Symbol): GUESSER ==
-        opts: LGOPT := append([displayAsGF(false)$GuessOption, 
-                               maxPower(1)$GuessOption], #2)
-        guessHPaux(#1, (shiftHP q)(opts), opts)
+        guessRec(q)(#1, cons(maxPower(1)$GuessOption, #2))
 
     guessRat(q: Symbol): GUESSER ==
-        opts := append(#2, [displayAsGF(false)$GuessOption, 
-                            maxShift(0)$GuessOption, 
-                            maxPower(1)$GuessOption, 
-                            allDegrees(true)$GuessOption])
-        guessHPaux(#1, (shiftHP q)(opts), opts)
-
+        guessRec(q)(#1, append(#2, [maxShift(0)$GuessOption, 
+                                    maxPower(1)$GuessOption, 
+                                    allDegrees(true)$GuessOption]))
 @
 %$
 
@@ -2685,11 +2785,12 @@ following operators:
 <<implementation: Guess - guess>>=
 guess(list: List F, guessers: List GUESSER, ops: List Symbol, 
       options: LGOPT): GUESSRESULT ==
-    maxLevel := maxLevel(options)$GOPT0
+    newMaxLevel := maxLevel(options)$GOPT0
     xx := indexName(options)$GOPT0
-    if debug(options)$GOPT0 then
-        output(hconcat("guessing level ", maxLevel::OutputForm))
+    if debug(options)$GOPT0 and newMaxLevel case NNI then
+        output(hconcat("guessing level ", newMaxLevel::OutputForm))
               $OutputPackage
+        
 --        output(hconcat("guessing ", list::OutputForm))$OutputPackage
     res: GUESSRESULT := []
     len := #list :: PositiveInteger
@@ -2703,7 +2804,10 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
 
         if one(options)$GOPT0 and not empty? res then return res
 
-    if maxLevel = 0 then return res
+    if newMaxLevel case NNI then
+        if zero? newMaxLevel 
+        then return res
+        else newMaxLevel := (newMaxLevel::Integer - 1)::NNI
 
     if member?('guessProduct, ops) then
 
@@ -2724,7 +2828,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
                       guess.order] _
                      for guess in guess(prodList, guessers, ops,  
                                         append([indexName(var)$GuessOption,
-                                                maxLevel(maxLevel-1)
+                                                maxLevel(newMaxLevel)
                                                         $GuessOption],
                                                options))$%]
     
@@ -2752,7 +2856,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
                   guess.order] _
                  for guess in guess(sumList, guessers, ops,
                                     append([indexName(var)$GuessOption,
-                                            maxLevel(maxLevel-1)
+                                            maxLevel(newMaxLevel)
                                                     $GuessOption],
                                            options))$%]
 
@@ -3004,10 +3108,6 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
 
 -------------------------------------------------------------------------------
 
-        guessHP: (LGOPT -> HPSPEC) -> GUESSER
-          ++ \spad{guessHP f} constructs an operation that applies Hermite-Pade
-          ++ approximation to the series generated by the given function f.
-
         guessADE: List F -> GUESSRESULT
           ++ \spad{guessADE l} tries to find an algebraic differential equation
           ++ for a generating function whose first Taylor coefficients are
@@ -3137,6 +3237,24 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
           ++ first Taylor coefficients are given by l, using the given
           ++ options.
 
+        guessAlg: Symbol -> GUESSER
+          ++ \spad{guessAlg q} returns a guesser that tries to find an
+          ++ algebraic equation for a generating function whose
+          ++ first Taylor coefficients are given by l, using the given
+          ++ options.
+
+        guessHolo: Symbol -> GUESSER
+          ++ \spad{guessHolo q} returns a guesser that tries to find a
+          ++ linear differential equation for a generating function whose
+          ++ first Taylor coefficients are given by l, using the given
+          ++ options.
+
+        guessPade: Symbol -> GUESSER
+          ++ \spad{guessPade q} returns a guesser that tries to find a
+          ++ rational generating function whose
+          ++ first Taylor coefficients are given by l, using the given
+          ++ options.
+
 -------------------------------------------------------------------------------
 
     Implementation == Guess(Fraction UP, UP,
@@ -3181,6 +3299,7 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
 
 <<domain UFPS UnivariateFormalPowerSeries>>
 <<package UFPS1 UnivariateFormalPowerSeriesFunctions>>
+<<package STNSR StreamTensor>>
 <<domain GOPT GuessOption>>
 <<package GOPT0 GuessOptionFunctions0>>
 <<package GUESS Guess>>

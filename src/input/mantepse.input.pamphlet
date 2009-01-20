@@ -32,7 +32,7 @@ testsuite "guessing"
 <<*>>=
 expected() ==    
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
-    messagePrint("guessing                    1    (10)               1    (24)")$OutputForm
+    messagePrint("guessing                    1    (12)               1    (26)")$OutputForm
    
 statistics()
 expected()
@@ -62,7 +62,10 @@ testcase "guessRat$GUESSP"
 GUESSRESULT ==> Record(function: EXPR INT, order: NNI)
 testEquals("guessRat(q)([1,q,q^2], [])",
            "[[q^n,0]$GUESSRESULT]")
-@
+testEquals("guessRat(q)([i^3*q^i + q^(2*i) for i in 0..5], maxMixedDegree==2)",
+           "[[n^3*q^n+q^(2*n),0]$GUESSRESULT]")
+
+@%$
 \subsection{rational functions}
 
 <<TEST guessPade>>=
@@ -110,18 +113,27 @@ testEquals("getEq guessPRec([1,2,6,20,70], homogeneous==true).1.function",
            "(n+1)*f(n+1)-2*(2*n+1)*f(n)")
 testEquals("getEq guessPRec([1,2,6,20,70], allDegrees==true).1.function",
            "(n+1)*f(n+1)-2*(2*n+1)*f(n)")
+
+testcase "guessPRec$GUESSP"
+f := operator 'f
+r: INT -> POLY INT; 
+r(0)==1; r(1)==1;
+r(n)==q^(n-1)*r(n-1)+(n-2)*r(n-2);
+
+testEquals("getEq guessPRec(q)([r m for m in 0..7], maxMixedDegree==1, maxDegree==1, homogeneous==true).1.function", "n*f n + q*q^n*f(n+1)-f(n+2)")
 @
 %$
 
 \subsection{differentially algebraic functions}
 <<TEST guessADE>>=
 testcase "guessADE$GUESSINT"
-GUESSRESULT ==> Record(function: EXPR INT, order: NNI)
 f := operator 'f
 -- Lambert W
 testEquals("getEq guessADE([n^n/factorial n for n in 0..6]).1.function",
            "-x*D(f x, x) + f(x)^3-f(x)^2")
 
+testcase "guessADE$GUESSP"
+f := operator 'f
 -- q-Carlitz
 l := [1, 1, q+1, q^3+q^2+2*q+1, q^6+q^5+2*q^4+3*q^3+3*q^2+3*q+1, _
       q^10+q^9+2*q^8+3*q^7+5*q^6+5*q^5+7*q^4+7*q^3+6*q^2+4*q+1];
