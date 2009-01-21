@@ -77,8 +77,8 @@
 #+:clisp
   (if restart
      (ext::saveinitmem core-image :INIT-FUNCTION restart :QUIET t
-         :executable t)
-     (ext::saveinitmem core-image :executable t :QUIET t))
+         :NORC t :executable t)
+     (ext::saveinitmem core-image :executable t :NORC t :QUIET t))
 #+:openmcl
   (let* ((ccl-dir (or *ccl-default-directory*
                  (|getEnv| "CCL_DEFAULT_DIRECTORY")))
