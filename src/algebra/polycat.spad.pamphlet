@@ -610,6 +610,11 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
 @
 
 \section{package POLYLIFT PolynomialCategoryLifting}
+<<TEST POLYLIFT>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "POLYLIFT"
+@
 <<package POLYLIFT PolynomialCategoryLifting>>=
 )abbrev package POLYLIFT PolynomialCategoryLifting
 ++ Author: Manuel Bronstein
@@ -643,18 +648,33 @@ PolynomialCategoryLifting(E,Vars,R,P,S): Exports == Implementation where
       ++ varmap, a mapping from the variables of polynomial p into S,
       ++ coefmap, a mapping from coefficients of p into S, and p, and
       ++ produces a member of S using the corresponding arithmetic.
-      ++ in S
-
+      ++ in S.
+@
+<<TEST POLYLIFT>>=
+testcase "map"
+testEquals("map(v +-> 'x, c +-> c^2, 0)" _
+           "$POLYLIFT(INDE Symbol, Symbol, INT, POLY INT, POLY INT)", _
+           "0")
+testEquals("map(v +-> 'x, c +-> c^2, 1+r+s+s*t)" _
+           "$POLYLIFT(INDE Symbol, Symbol, INT, POLY INT, POLY INT)", _
+           "x^2+2*x+1")
+testEquals("map(v +-> (if v='s then 'x else sqrt v), c +-> sqrt c, 1+2*r+3*s+4*s*t)" _
+           "$POLYLIFT(INDE Symbol, Symbol, INT, POLY INT, EXPR INT)", _
+           "1+sqrt 2*sqrt r+sqrt 3*x+2*sqrt t*x")
+statistics()
+@
+<<package POLYLIFT PolynomialCategoryLifting>>=
   Implementation ==> add
     map(fv, fc, p) ==
       (x1 := mainVariable p) case "failed" => fc leadingCoefficient p
       up := univariate(p, x1::Vars)
       t  := fv(x1::Vars)
-      ans:= fc 0
-      while not ground? up repeat
-        ans := ans + map(fv,fc, leadingCoefficient up) * t ** (degree up)
+      ans := map(fv, fc, leadingCoefficient up) * t ** (degree up)
+      up  := reductum up
+      while not zero? up repeat
+        ans := ans + map(fv, fc, leadingCoefficient up) * t ** (degree up)
         up  := reductum up
-      ans + map(fv, fc, leadingCoefficient up)
+      ans
 
 @
 \section{category UPOLYC UnivariatePolynomialCategory}
