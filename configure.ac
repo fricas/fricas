@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2008-11-07], 
+AC_INIT([FriCAS], [2009-01-21], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -312,36 +312,35 @@ AC_SUBST(axiom_gcl_rsym_hack)
 ## in batch mode?  What is the extension of a compiled Lisp file?
 case $fricas_lisp_flavor in
     gcl) 
-       axiom_quiet_flags='-batch'
+       fricas_quiet_flags='-batch'
        axiom_eval_flags='-eval'
        ;;
     ecl) 
-       axiom_quiet_flags=
+       fricas_quiet_flags='-norc'
        axiom_eval_flags='-eval'
        ;;
     sbcl) 
-       axiom_quiet_flags='--noinform --noprint'
+       fricas_quiet_flags='--noinform --noprint --no-userinit'
        axiom_eval_flags='--eval'
        ;;
     clisp) 
-       axiom_quiet_flags='--quiet'
+       fricas_quiet_flags='--quiet -norc'
        axiom_eval_flags='-x'
        ;;
     openmcl)
-       axiom_quiet_flags=
+       fricas_quiet_flags=
        axiom_eval_flags='--eval'
        ;;
     *) AC_MSG_ERROR([We do not know how to build FriCAS this $fricas_lisp]) ;;
 esac
-AC_SUBST(axiom_quiet_flags)
-AC_SUBST(axiom_eval_flags)
+AC_SUBST(fricas_quiet_flags)
 if test -z $axiom_fasl_type; then
     AC_MSG_CHECKING([compiled Lisp file extension])
     ## We set the IFS to <space> as we don't want automatic
     ## replacement of <newline> by <space>.
     axiom_save_IFS=$IFS
     IFS=' '
-    axiom_fasl_type=`$fricas_lisp $axiom_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
+    axiom_fasl_type=`$fricas_lisp $fricas_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
 
     ## Now pull out the fasl type.  ECL has the habit of spitting noise
     ## about internal loading.  Therefore, we must look only for a line that
