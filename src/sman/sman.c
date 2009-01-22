@@ -579,6 +579,7 @@ fork_Axiom(void)
 
     if ((ptsNum =  open(ptsPath, O_RDWR)) < 0 ) {
       perror("fork_Axiom: Failed to reopen server");
+      fprintf(stderr, "ptsPath=%s\n", ptsPath);
       exit(-1);
     }
 #if defined(SUN4OS5platform) || defined(HP10platform)
