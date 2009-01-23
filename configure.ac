@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-01-21], 
+AC_INIT([FriCAS], [1.0.5], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
