@@ -73,15 +73,35 @@ Known problems:
   Newest CVS version of 2.6.8 branch of gcl fixes this problem.
 
 - gcl needs bfd library.  Many Linux systems include version of bfd
-  library which is incompatible with gcl.  Using the following configure
-  line should fix this problem:
-
+  library which is incompatible with gcl.  In the past we avised to
+  use in such case the following configure line:
+  
     ./configure --disable-xgcl --disable-dynsysbfd --disable-statsysbfd --enable-locbfd
+
+  Now this a defult setting if you build FriCAS+gcl together. 
 
 - Boehm garbage collector included in ECL (version 6.8) is incompatible
   with Fedora strong address space randomization (setting randomize_va_space
   to 2).  Using newer version of Boehm garbage collector (7.0 or 7.1)
   should solve this problem.
+
+- On NetBSD sometimes during/after build Clisp based FriCAS crashes
+  with message:
+
+    module 'syscalls' requires package OS.
+
+  This problem is under investigation, currently reasons are
+  unknown.  ECL based FriCAS should work fine on NetBSD.
+
+- On Mac OSX tiger some users report problems with pseudoterminals,
+  build stops with message:
+
+    fork_Axiom: Failed to reopen server: No such file or directory
+
+  One can avoid this problem building text only FriCAS (that is
+  using '--with-x=no' option to configure).
+  This problem is under investigation, progress here depends on
+  input from Mac users.
 
 - ECL 0.9j has serious performance problems.  ECL version 0.9l is much
   faster.
@@ -182,6 +202,44 @@ make
 make install
 
 If you want graphic examples read the note before.
+
+-------------------------------------------------------
+
+Algebra optimization
+
+When writing/compiling programs there is always tradeoff
+between speed and safety.  Program may include many
+checks to detect errors early (and allow recowery),
+such progams are safe but checks take time so the program
+is slower.  Or program may just blindly go forward hoping
+that everything goes well.  Typically the second program
+will be faster, but in case of problems it may crash
+without any hint why and take user data with it.
+
+Safty checks may be written by programmer, but another
+possiblity is to have compiler which automatically inserts
+various checks.  FriCAS is compiled by Lisp compiler and
+Lisp compilers may insert safety checks.  How many checks
+are inserted may be controlled by the user.  By default
+FriCAS tries to strike good balance between speed and
+safety.  However, some FriCAS users want different
+tradeoff.  The '--with-algebra-optimization=S' option
+to configure allows changing this setting: S is a Lisp
+expression specifying speed/safety tradeoff used by
+Lisp compiler.  For example:
+
+--with-algebra-optimization="((speed 3) (safety 0))"
+
+chooses fastest (but unsafe) variant, while
+
+--with-algebra-optimization="((speed 2) (safety 3))"
+
+should be very safe (but possibly slow).
+
+Note: this setting affects only algebra (that is mathematical
+code).  The rest of FriCAS always uses default setting.
+Ratinale for this is that mathematical code is unlikely to
+contain errors which can crash the whole system.
 
 --------------------------------------------------------
 
