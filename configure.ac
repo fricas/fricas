@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-01-23], 
+AC_INIT([FriCAS], [2009-01-25], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -462,7 +462,12 @@ AC_CHECK_DECL([openpty],
                   #endif
                  ]) # HAVE_OPENPTY_DECL
 
-AC_CHECK_LIB([util], [openpty],
+AC_CHECK_LIB([c], [openpty],
+       [AC_DEFINE([HAVE_OPENPTY], [1],
+	          [openpty is available])
+       axiom_c_runtime_extra="${axiom_c_runtime_extra} -lutil"
+       ],
+       AC_CHECK_LIB([util], [openpty],
                  [AC_DEFINE([HAVE_OPENPTY], [1],
                             [openpty is available])
                    axiom_c_runtime_extra="${axiom_c_runtime_extra} -lutil"
@@ -472,7 +477,7 @@ AC_CHECK_LIB([util], [openpty],
                                [openpty is available])
                       axiom_c_runtime_extra="${axiom_c_runtime_extra} -lbsd"
                     ])
-             ) # HAVE_OPENPTY
+             )) # HAVE_OPENPTY
 
 AC_SUBST(axiom_c_runtime_extra)
 
