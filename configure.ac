@@ -462,11 +462,22 @@ AC_CHECK_DECL([openpty],
                   #endif
                  ]) # HAVE_OPENPTY_DECL
 
-AC_CHECK_LIB([util], [openpty],
+AC_CHECK_LIB([c], [openpty],
+       [AC_DEFINE([HAVE_OPENPTY], [1],
+	          [openpty is available])
+       axiom_c_runtime_extra="${axiom_c_runtime_extra} -lutil"
+       ],
+       AC_CHECK_LIB([util], [openpty],
                  [AC_DEFINE([HAVE_OPENPTY], [1],
                             [openpty is available])
                    axiom_c_runtime_extra="${axiom_c_runtime_extra} -lutil"
-                 ]) # HAVE_OPENPTY
+                 ],
+                 AC_CHECK_LIB([bsd], [openpty],
+                    [AC_DEFINE([HAVE_OPENPTY], [1],
+                               [openpty is available])
+                      axiom_c_runtime_extra="${axiom_c_runtime_extra} -lbsd"
+                    ])
+             )) # HAVE_OPENPTY
 
 AC_SUBST(axiom_c_runtime_extra)
 
