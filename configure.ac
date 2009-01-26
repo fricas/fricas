@@ -465,7 +465,6 @@ AC_CHECK_DECL([openpty],
 AC_CHECK_LIB([c], [openpty],
        [AC_DEFINE([HAVE_OPENPTY], [1],
 	          [openpty is available])
-       axiom_c_runtime_extra="${axiom_c_runtime_extra} -lutil"
        ],
        AC_CHECK_LIB([util], [openpty],
                  [AC_DEFINE([HAVE_OPENPTY], [1],
