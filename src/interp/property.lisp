@@ -298,7 +298,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|$>| |parseDollarGreaterThan|)
   (|$>=| |parseDollarGreaterEqual|)
   ($^= |parseDollarNotEqual|)
-  (^ |parseNot|)
   (^= |parseNotEqual|)
   (\: |parseColon|)
   (|::| |parseCoerce|)
