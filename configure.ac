@@ -225,7 +225,7 @@ case $axiom_include_gcl,$fricas_lisp in
          axiom_all_prerequisites="$axiom_all_prerequisites all-gcl"
          axiom_include_gcl=yes
          fricas_lisp_flavor=gcl
-         axiom_fasl_type=o
+         fricas_fasl_type=o
        else
           AC_MSG_ERROR([GCL and GCL sources missing, see INSTALL])
        fi
@@ -238,7 +238,7 @@ esac
 AC_ARG_WITH([lisp-flavor],
             [  --with-lisp-flavor=F    your Lisp is brand F
                           where F if one F gcl clisp sbcl ecl openmcl
-                          gcl clisp sbcl ecl can be autodetected],
+                          should be autodetected],
             [case $withval in
             gcl|clisp|sbcl|ecl|openmcl)
                    fricas_lisp_flavor=$withval
@@ -246,32 +246,76 @@ AC_ARG_WITH([lisp-flavor],
             *)
               AC_MSG_ERROR([--with-lisp-flavor requires one of gcl clisp sbcl ecl openmcl]);;
             esac])
+if test x"$axiom_include_gcl" != xyes ; then
+  AC_MSG_CHECKING([Lisp implementation])
+  echo '(load "'"$axiom_top_srcdir"'/config.lisp")' | $fricas_lisp
 
+  if test x$fricas_lisp_flavor = xunknown ; then
+      fricas_lisp_flavor=`sed -n -e 's/fricas_lisp_flavor=//p' config_cl.out`
+  fi
 
-if test x$fricas_lisp_flavor = xunknown ; then
+  if test -z "$fricas_lisp_flavor" ; then
+    AC_MSG_ERROR([Unable to determine Lisp flavor])
+  fi
 
-       ## As of this writting, the Lisp systems ECL, GCL, and SBCL all
-       ## understands the command line option --help, though they do
-       ## behave very differently.  Some of them just print out the
-       ## help information and exits.  Others, such as GCL, think they
-       ## must enter a read-eval-print loop (which isn't very helpful).
-       AC_MSG_CHECKING([which flavor of Lisp])
-       what=`echo '(quit)' | $fricas_lisp --help`
-       case $what in
-           *GCL*) 
-               fricas_lisp_flavor=gcl
-               ;;
-           *ecl*) 
-               fricas_lisp_flavor=ecl 
-               ;;
-           *sbcl*) 
-               fricas_lisp_flavor=sbcl 
-               ;;
-           *CLISP*)
-               fricas_lisp_flavor=clisp
-               ;;
-       esac
-       AC_MSG_RESULT([$fricas_lisp_flavor])
+  AC_MSG_RESULT([$fricas_lisp_flavor])
+
+  fricas_fasl_type=`sed -n -e 's/fricas_fasl_type=//p' config_cl.out`
+  fricas_lisp_version=`sed -n -e 's/fricas_lisp_version=//p' config_cl.out`
+
+  if test -z "$fricas_lisp_version" ; then
+    AC_MSG_WARN([Unable to determine Lisp version.])
+  else
+   case $fricas_lisp_flavor in
+     clisp)
+        if echo $fricas_lisp_version | grep '^[[0-1]]\.' > /dev/null || \
+           echo $fricas_lisp_version | grep '^2\.[[0-3]]' > /dev/null ; then
+             AC_MSG_ERROR([clisp $fricas_lisp_version is too old])
+        fi
+        ;;
+     ecl)
+        case $fricas_lisp_version in
+           0.*)
+              case $fricas_lisp_version in
+                 0.9j)
+                    AC_MSG_WARN([You use old ecl, please consider upgrade])
+                   ;;
+                 0.9l)
+                   ;;
+                 *)
+                    AC_MSG_ERROR([ecl $fricas_lisp_version is too old])
+                   ;;
+               esac
+             ;;
+         esac
+        ;;
+     gcl)
+        case $fricas_lisp_version in
+           2.6.7|2.6.8)
+             ;;
+           2.7.0)
+             AC_MSG_WARN([FriCAS needs porting to gcl $fricas_lisp_version
+                          please proceed with caution])
+             ;;
+           *)
+             AC_MSG_ERROR([gcl $fricas_lisp_version is too old])
+             ;;
+        esac
+        ;;
+     openmcl)
+        if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
+           echo $fricas_lisp_version | grep '^1\.[[01]]' > /dev/null ; then
+             AC_MSG_ERROR([openmcl $fricas_lisp_version is too old])
+        fi
+        ;;
+     sbcl)
+        if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
+           echo $fricas_lisp_version | grep '^1\.0.[[0-6]]$' > /dev/null ; then
+             AC_MSG_ERROR([sbcl $fricas_lisp_version is too old])
+        fi
+        ;;
+   esac
+  fi
 fi
 AC_SUBST(axiom_include_gcl)
 AC_SUBST(fricas_lisp_flavor)
@@ -334,35 +378,22 @@ case $fricas_lisp_flavor in
     *) AC_MSG_ERROR([We do not know how to build FriCAS this $fricas_lisp]) ;;
 esac
 AC_SUBST(fricas_quiet_flags)
-if test -z $axiom_fasl_type; then
-    AC_MSG_CHECKING([compiled Lisp file extension])
-    ## We set the IFS to <space> as we don't want automatic
-    ## replacement of <newline> by <space>.
-    axiom_save_IFS=$IFS
-    IFS=' '
-    axiom_fasl_type=`$fricas_lisp $fricas_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
 
-    ## Now pull out the fasl type.  ECL has the habit of spitting noise
-    ## about internal loading.  Therefore, we must look only for a line that
-    ## begins with axiom_fasl_type.
-    axiom_fasl_type=`echo $axiom_fasl_type | grep '^axiom_fasl_type'`
-    IFS=$axiom_save_IFS
-    axiom_fasl_type=`echo $axiom_fasl_type | sed -e 's/axiom_fasl_type=//'`
-    if test -z $axiom_fasl_type; then
-        AC_MSG_ERROR([Could not determine extension for compiled Lisp files])
-    fi
-    AC_MSG_RESULT([$axiom_fasl_type])
+if test -z $fricas_fasl_type; then
+   AC_MSG_ERROR([Could not determine extension for compiled Lisp files])
 fi
-axiom_fasl_type2=$axiom_fasl_type
+AC_MSG_RESULT([$fricas_fasl_type])
+
+fricas_fasl_type2=$fricas_fasl_type
 case $fricas_lisp_flavor in
     ecl)
-       axiom_fasl_type="o"
+       fricas_fasl_type="o"
      ;;
     *)
      ;;
 esac
-AC_SUBST(axiom_fasl_type)
-AC_SUBST(axiom_fasl_type2)
+AC_SUBST(fricas_fasl_type)
+AC_SUBST(fricas_fasl_type2)
 
 fricas_algebra_optimization=nil
 

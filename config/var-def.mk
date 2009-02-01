@@ -185,8 +185,8 @@ WEAVE = @NOWEAVE@
 
 FRICAS_LISP = @FRICAS_LISP@
 # Extension of the output file name returned by compile-file
-LISPOBJEXT = @axiom_fasl_type@
-FASLEXT = @axiom_fasl_type2@
+LISPOBJEXT = @fricas_fasl_type@
+FASLEXT = @fricas_fasl_type2@
 
 
 ##
