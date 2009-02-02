@@ -68,11 +68,11 @@ kxPage(htPage,name) == downlink name
 
 kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
   htSay("{\sf ",name,'"}")
-  if abbrev ^= name then bcHt [" has abbreviation ",abbrev]
+  if abbrev ~= name then bcHt [" has abbreviation ",abbrev]
   if file? then bcHt ['" is a source file."]
-  if nargs = 0 then (if abbrev ^= name then bcHt '".")
+  if nargs = 0 then (if abbrev ~= name then bcHt '".")
     else
-      if abbrev ^= name then bcHt '" and"
+      if abbrev ~= name then bcHt '" and"
       bcHt
         nargs = 1 => '" takes one argument:"
         [" takes ",STRINGIMAGE nargs," arguments:"]
@@ -84,12 +84,12 @@ kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
 --sourceFileName := dbSourceFile INTERN name
   sourceFileName := GETDATABASE(INTERN name,'SOURCEFILE)
   filename := extractFileNameFromPath sourceFileName
-  if filename ^= '"" then
+  if filename ~= '"" then
     htSayStandard '"\newline{}"
     htSay('"The source code for the constructor is found in ")
   htMakePage [['text,'"\unixcommand{",filename,'"}{_\$AXIOM/lib/SPADEDIT ",
               sourceFileName, '" ", name, '"}"]]
-  if nargs ^= 0 then htSay '"."
+  if nargs ~= 0 then htSay '"."
   htSaturnBreak()
 
 kArgPage(htPage,arg) ==
@@ -254,7 +254,7 @@ kePageDisplay(htPage,which,opAlist) ==
   htpSetProperty(htPage,expandProperty,'lists)  --mark as unexpanded
   htMakePage [['bcLinks,[menuButton(),'"",'dbShowOps,which,'names]]]
   htSayStandard '"\tab{2}"
-  if count ^= total then
+  if count ~= total then
     if count = 1
     then htSay('"1 name for ")
     else htSay(STRINGIMAGE count,'" names for ")
@@ -359,7 +359,7 @@ kcPage(htPage,junk) ==
     message := '"Constructors mentioning this as an argument type"
     htMakePage [['bcLinks,['"\menuitemstyle{Dependents}",
       [['text,'"\tab{12}",message]],'kcdePage,nil]]]
-  if not asharpConstructorName? conname and kind ^= '"category" then
+  if not asharpConstructorName? conname and kind ~= '"category" then
     satBreak()
     htMakePage [['bcLinks,['"\menuitemstyle{Lineage}",
       '"\tab{12}Constructor hierarchy used for operation lookup",'ksPage,nil]]]
@@ -368,14 +368,14 @@ kcPage(htPage,junk) ==
     satBreak()
     htMakePage [['bcLinks,['"\menuitemstyle{Domains}",[['text,'"\tab{12}",
       '"All domains which are of this category"]],'kcdoPage,nil]]]
-   if kind ^= '"category" then
+   if kind ~= '"category" then
     satBreak()
     htMakePage [['bcLinks,['"\menuitemstyle{Clients}",'"\tab{12}Constructors",'kcuPage,nil]]]
     if HGET($defaultPackageNamesHT,conname)
       then htSay('" which {\em may use} this default package")
 --  htMakePage [['bcLinks,['"files",'"",'kcuPage,true]]]
       else htSay('" which {\em use} this ",kind)
-  if kind ^= '"category" or dbpHasDefaultCategory? xpart then
+  if kind ~= '"category" or dbpHasDefaultCategory? xpart then
     satBreak()
     message :=
       kind = '"category" => ['"Constructors {\em used by} its default package"]
@@ -440,7 +440,7 @@ kcaPage1(htPage,kind,article,whichever,fn, isCatDescendants?) ==
   conform := htpProperty(htPage,'conform)
   conname := opOf conform
   ancestors := FUNCALL(fn, conform, domname)
-  if whichever ^= '"ancestor" then
+  if whichever ~= '"ancestor" then
     ancestors := augmentHasArgs(ancestors,conform)
   ancestors := listSort(function GLESSEQP,ancestors)
 --if domname then ancestors := SUBST(domname,'$,ancestors)
@@ -483,7 +483,7 @@ kcdePage(htPage,junk) ==
   conname         := INTERN name
   constring       := STRCONC(name,args)
   conform         :=
-    kind ^= '"default package" => ncParseFromString constring
+    kind ~= '"default package" => ncParseFromString constring
     [INTERN name,:rest ncParseFromString STRCONC(char 'd,args)]  --because of &
   pakname         :=
 --  kind = '"category" => INTERN STRCONC(name,char '_&)
@@ -499,7 +499,7 @@ kcuPage(htPage,junk) ==
   conname         := INTERN name
   constring       := STRCONC(name,args)
   conform         :=
-    kind ^= '"default package" => ncParseFromString constring
+    kind ~= '"default package" => ncParseFromString constring
     [INTERN name,:rest ncParseFromString STRCONC(char 'd,args)]  --because of &
   pakname         :=
     kind = '"category" => INTERN STRCONC(name,char '_&)
@@ -591,7 +591,7 @@ kisValidType typeForm ==
 kCheckArgumentNumbers t ==
   [conname,:args] := t
   cosig := KDR GETDATABASE(conname,'COSIG)
-  #cosig ^= #args => false
+  #cosig ~= #args => false
   and/[foo for domain? in cosig for x in args] where foo ==
     domain? => kCheckArgumentNumbers x
     true
@@ -605,7 +605,7 @@ parseNoMacroFromString(s) ==
 
 
 mkConform(kind,name,argString) ==
-  kind ^= '"default package" =>
+  kind ~= '"default package" =>
     form := STRCONC(name,argString)
     parse := parseNoMacroFromString form
     null parse =>
@@ -952,7 +952,7 @@ dbShowConsDoc(htPage,conlist) ==
   for x in REMDUP conlist repeat
   -- for x in conlist repeat
     dbShowConsDoc1(htPage,getConstructorForm x,i) where i ==
-      while CAAAR cAlist ^= x repeat
+      while CAAAR cAlist ~= x repeat
         index := index + 1
         cAlist := rest cAlist
         null cAlist => systemError ()
@@ -1031,7 +1031,7 @@ dbConsHeading(htPage,conlist,view,kind) ==
   connective :=
     member(view,'(abbrs files kinds)) => '" as "
     '" with "
-  if count ^= 0 and member(view,'(abbrs files parameters conditions)) then heading:= [:heading,'" viewed",connective,'"{\em ",STRINGIMAGE view,'"}"]
+  if count ~= 0 and member(view,'(abbrs files parameters conditions)) then heading:= [:heading,'" viewed",connective,'"{\em ",STRINGIMAGE view,'"}"]
   heading
 
 dbShowConstructorLines lines ==
@@ -1201,7 +1201,7 @@ PUT('Enumeration, 'documentation, SUBST(MESSAGE, 'MESSAGE, '(
   (_= (((Boolean) _$ _$)
     "\spad{e = f} tests for equality of two enumerations \spad{e} and \spad{f}"))
   (_^_= (((Boolean) _$ _$)
-    "\spad{e ^= f} tests that two enumerations \spad{e} and \spad{f} are nont equal"))
+    "\spad{e ~= f} tests that two enumerations \spad{e} and \spad{f} are nont equal"))
   (coerce (((OutputForm) _$)
      "\spad{coerce(e)} returns a representation of enumeration \spad{r} as an output form")
           ((_$ (Symbol))

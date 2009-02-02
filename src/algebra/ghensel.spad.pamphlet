@@ -63,7 +63,7 @@ GeneralHenselPackage(RP,TP):C == T where
      exactquo(u:TP,v:TP,p:RP):Union(TP,"failed") ==
         invlcv:=modInverse(leadingCoefficient v,p)
         r:=monicDivide(u,reduction(invlcv*v,p))
-        reduction(r.remainder,p) ^=0 => "failed"
+        reduction(r.remainder,p) ~= 0 => "failed"
         reduction(invlcv*r.quotient,p)
 
      FP:=EuclideanModularRing(RP,TP,RP,reduction,merge,exactquo)
@@ -78,7 +78,7 @@ GeneralHenselPackage(RP,TP):C == T where
        factlist=[] => [[pol] for pol in fln]
        maxd := +/[degree f for f in fln] quo 2
        auxfl:List List TP := []
-       for poly in fln while factlist^=[] repeat
+       for poly in fln while factlist ~= [] repeat
          factlist := [term for term in factlist | not member?(poly,term)]
          dp := degree poly
          for term in factlist repeat
@@ -112,7 +112,7 @@ GeneralHenselPackage(RP,TP):C == T where
            fln = nfln and zero?(err:=poly-*/fln) => leave "finished"
            fln := nfln
            Modulus := prime*Modulus
-        if constp^=0 then fln:=cons(constp,fln)
+        if constp ~= 0 then fln:=cons(constp,fln)
         [fln,Modulus]
 
      completeHensel(m:TP,tl1:List TP,prime:RP,bound:PI) ==
@@ -127,9 +127,9 @@ GeneralHenselPackage(RP,TP):C == T where
       dfn :NonNegativeInteger := nm
       lcm1 := leadingCoefficient m
       mm := lcm1*m
-      while dfn>0 and (factlist := genFact(fln,factlist))^=[] repeat
+      while dfn>0 and (factlist := genFact(fln,factlist)) ~= [] repeat
         auxfl := []
-        while factlist^=[] repeat
+        while factlist ~= [] repeat
           auxl := factlist.first
           factlist := factlist.rest
           tc := reduceCoef((lcm1 * */[coefficient(poly,0)

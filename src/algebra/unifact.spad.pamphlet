@@ -110,13 +110,13 @@ UnivariateFactorize(ZP) : public == private where
        lead := leadingCoefficient m
        trail := lead
        m := reductum m
-       while m ^= 0 repeat
+       while m ~= 0 repeat
          trail := leadingCoefficient m
          m:= reductum m
        fc := factor(c) :: Factored(Z)
        for r in factors fc repeat
-         if (r.exponent = 1) and (0 ^= (lead rem r.factor)) and
-           (0 ^= (trail rem (r.factor ** 2))) then return true
+         if (r.exponent = 1) and (0 ~= (lead rem r.factor)) and
+           (0 ~= (trail rem (r.factor ** 2))) then return true
        false
 
      negShiftz(n: Z,Modulus:PI): Z ==
@@ -136,7 +136,7 @@ UnivariateFactorize(ZP) : public == private where
        nm := (degree m)::NNI
        nmq2:NNI := nm quo 2
        norm: Z := sqroot(+/[coefficient(m,k)**2 for k in 0..nm])
-       if nmq2^=1 then nm := (nmq2-1)::NNI
+       if nmq2 ~= 1 then nm := (nmq2-1)::NNI
        else nm := nmq2
        bin0 := nm
        cbound := (bin0*norm+lcm)::PI
@@ -173,7 +173,7 @@ UnivariateFactorize(ZP) : public == private where
          q:=nextPrime(q)$IntegerPrimesPackage(Z) pretend PI
          (rr:=lcm rem q) = 0$Z => "next prime"
          disc:=gcd(m,differentiate m,q)
-         (degree disc)^=0 => "next prime"
+         (degree disc) ~= 0 => "next prime"
          k := k+1
          newdd := ddFact(m,q)
          ((n := numFactors(newdd)) < 9) =>
@@ -216,11 +216,11 @@ UnivariateFactorize(ZP) : public == private where
        d,d2: Z
        d := coefficient(m,1)**2-4*coefficient(m,0)*coefficient(m,2)
        d2 := sqroot(d)
-       (d-d2**2)^=0 => [m]
+       (d-d2**2) ~= 0 => [m]
        alpha: Z := coefficient(m,1)+d2
        beta: Z := 2*coefficient(m,2)
        d := gcd(alpha,beta)
-       if d ^=1 then
+       if d ~= 1 then
          alpha := alpha quo d
          beta := beta quo d
        m0: ZP := monomial(beta,1)+monomial(alpha,0)

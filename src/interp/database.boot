@@ -234,7 +234,7 @@ interactiveModemapForm mm ==
   mm := replaceVars(COPY mm,$PatternVariableList,$FormalMapVariableList)
   [pattern:=[dc,:sig],pred] := mm
   pred := [fn x for x in pred] where fn x ==
-    x is [a,b,c] and a ^= 'isFreeFunction and atom c => [a,b,[c]]
+    x is [a,b,c] and a ~= 'isFreeFunction and atom c => [a,b,[c]]
     x
 --pp pred
   [mmpat, patternAlist, partial, patvars] :=
@@ -294,7 +294,7 @@ fixUpPredicate(predClause, domainPreds, partial, sig) ==
   [predicate, fn, :skip] := predClause
   if first predicate = "AND" then
     predicates := APPEND(domainPreds,rest predicate)
-  else if predicate ^= MKQ "T"
+  else if predicate ~= MKQ "T"
 --was->then predicates:= REVERSE [predicate, :domainPreds]
        then predicates:= [predicate, :domainPreds]
        else predicates := domainPreds or [predicate]
@@ -397,7 +397,7 @@ getSystemModemaps(op,nargs) ==
   mml:= GETDATABASE(op,'OPERATION) =>
     mms := NIL
     for (x := [[.,:sig],.]) in mml repeat
-      (NUMBERP nargs) and (nargs ^= #QCDR sig) => 'iterate
+      (NUMBERP nargs) and (nargs ~= #QCDR sig) => 'iterate
       $getUnexposedOperations or isFreeFunctionFromMm(x) or
         isExposedConstructor(getDomainFromMm(x)) => mms := [x,:mms]
       'iterate
@@ -481,7 +481,7 @@ getOplistForConstructorForm (form := [op,:argl]) ==
 
 getOplistWithUniqueSignatures(op,pairlis,signatureAlist) ==
   alist:= nil
-  for [sig,:[slotNumber,pred,kind]] in signatureAlist | kind ^= 'Subsumed repeat
+  for [sig,:[slotNumber,pred,kind]] in signatureAlist | kind ~= 'Subsumed repeat
     alist:= insertAlist(SUBLIS(pairlis,[op,sig]),
                 SUBLIS(pairlis,[pred,[kind,nil,slotNumber]]),
                 alist)

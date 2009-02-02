@@ -704,7 +704,7 @@ returning Void.  I really only need the one coerce function.
       -- Finds the closing ">" for either a start or end tag of a mathML
       -- element, so the return value is the position of ">" in mathML.
       pI:I := pos
-      while  (mathML.pI ^= char ">") repeat
+      while  (mathML.pI ~= char ">") repeat
         pI := pI+1
       u:US := segment(pos,pI)$US
       --sayTeX$Lisp "tagEnd: "mathML.u
@@ -899,8 +899,8 @@ have to be switched by swapping names.
       -- {{{SUB}{y}{{CONCAT}{{CONCAT}{{CONCAT}{{CONCAT}{,}{1}}{{CONCAT}{,}{1}}}{{CONCAT}{,}{2}}}{{CONCAT}{,}{1}}}}{x}{z}}
       atomE : L E := atomize(expr)      
       op : S := stringify first atomE
-      op ^= "SUB" => "<mtext>Mistake in formatSub: no SUB</mtext>"
-      stringify first rest rest atomE ^= "CONCAT" => "<mtext>Mistake in formatSub: no CONCAT</mtext>"
+      op ~= "SUB" => "<mtext>Mistake in formatSub: no SUB</mtext>"
+      stringify first rest rest atomE ~= "CONCAT" => "<mtext>Mistake in formatSub: no CONCAT</mtext>"
       -- expecting form for atomE like
       --[{SUB}{func}{CONCAT}...{CONCAT}{,}{n}{CONCAT}{,}{n}...{CONCAT}{,}{n}],
       --counting the first CONCATs before the comma gives the number of
@@ -973,8 +973,8 @@ have to be switched by swapping names.
       -- args is {{x}{z}}
       atomE : L E := atomize(expr)      
       op : S := stringify first atomE
-      op ^= "SUB" => "<mtext>Mistake in formatSub: no SUB</mtext>"
-      stringify first rest rest atomE ^= "CONCAT" => "<mtext>Mistake in formatSub: no CONCAT</mtext>"
+      op ~= "SUB" => "<mtext>Mistake in formatSub: no SUB</mtext>"
+      stringify first rest rest atomE ~= "CONCAT" => "<mtext>Mistake in formatSub: no CONCAT</mtext>"
       -- expecting form for atomE like
       --[{SUB}{func}{CONCAT}...{CONCAT}{,}{n}{CONCAT}{,}{n}...{CONCAT}{,}{n}],
       --counting the first CONCATs before the comma gives the number of
@@ -1024,8 +1024,8 @@ have to be switched by swapping names.
       -- first have to divine the semantics, add cases as needed
       atomE : L E := atomize(expr)      
       op : S := stringify first atomE
-      op ^= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB1</mtext>"
-      #args ^= 1 => "<mtext>Mistake in SuperSub1: #args <> 1</mtext>"
+      op ~= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB1</mtext>"
+      #args ~= 1 => "<mtext>Mistake in SuperSub1: #args <> 1</mtext>"
       var : E := first args
       -- should be looking at something like {{SUPERSUB}{var}{ }{,,...,}} for
       -- example here's the second derivative of y w.r.t. x
@@ -1053,8 +1053,8 @@ have to be switched by swapping names.
       -- first have to divine the semantics, add cases as needed
       atomE : L E := atomize(expr)      
       op : S := stringify first atomE
-      op ^= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB</mtext>"
-      #args ^= 1 => "<mtext>Mistake in SuperSub: #args <> 1</mtext>"
+      op ~= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB</mtext>"
+      #args ~= 1 => "<mtext>Mistake in SuperSub: #args <> 1</mtext>"
       var : E := first args
       -- should be looking at something like {{SUPERSUB}{var}{ }{,,...,}} for
       -- example here's the second derivative of y w.r.t. x
@@ -1079,7 +1079,7 @@ have to be switched by swapping names.
       op = "INTSIGN" => formatIntSign(args,minPrec)
       opPrec := plexPrecs.p
       n : I := #args
-      (n ^= 2) and (n ^= 3) => error "wrong number of arguments for plex"
+      (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
       s : S :=
         op = "SIGMA"   => 
           checkarg := true
@@ -1104,14 +1104,14 @@ have to be switched by swapping names.
         "????"
       hold := formatMml(first args,minPrec)
       args := rest args
-      if op ^= "INDEFINTEGRAL" then
-        if hold ^= "" then
+      if op ~= "INDEFINTEGRAL" then
+        if hold ~= "" then
           s := concat ["<munderover>",s,group hold]
         else
           s := concat ["<munderover>",s,group " "]
         if not null rest args then
           hold := formatMml(first args,minPrec)
-          if hold ^= "" then
+          if hold ~= "" then
             s := concat [s,group hold,"</munderover>"]
           else
             s := concat [s,group " ","</munderover>"]

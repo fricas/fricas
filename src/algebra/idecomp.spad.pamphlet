@@ -145,7 +145,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        lf:=Id.first
        pv:DPoly:=0
        pw:DPoly:=0
-       while degree(lf,y)^=1 repeat
+       while degree(lf,y) ~= 1 repeat
 -- FIXME: strange random distribution used (#227).
          val:=random(23)$Z
          pv:=px+val*py
@@ -154,7 +154,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
          lf:=Id.first
        ris:= generators(zeroRadComp(groebnerIdeal(Id.rest),truelist.rest))
        ris:=cons(lf,ris)
-       if pv^=0 then
+       if pv ~= 0 then
          ris:=[(univariate(h,x)).pw for h in ris]
        groebnerIdeal(groebner ris)
 
@@ -173,12 +173,12 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        truelist=[] => true
        n:=#truelist
        Jd:=groebner generators J
-       for x in truelist while Jd^=[] repeat
+       for x in truelist while Jd ~= [] repeat
          f := Jd.first
          Jd:=Jd.rest
-         if ((y:=mainVariable f) case "failed") or (y::OV ^=x )
+         if ((y:=mainVariable f) case "failed") or (y::OV ~= x )
               or not (ismonic (f,x)) then return false
-         while Jd^=[] and (mainVariable Jd.first)::OV=x repeat Jd:=Jd.rest
+         while Jd ~= [] and (mainVariable Jd.first)::OV=x repeat Jd:=Jd.rest
          if Jd=[] and position(x,truelist)<n then return false
        true
 
@@ -247,7 +247,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
      pushdown(g:DPoly,x:OV) : DPoly ==
        rf:DPoly:=0$DPoly
        i:=position(x,lvint)
-       while g^=0 repeat
+       while g ~= 0 repeat
          g1:=reductum g
          rf:=rf+pushdterm(g-g1,x,i)
          g := g1
@@ -267,11 +267,11 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        rf:DPoly:=0$DPoly
        g := f
        xp := convert(x)@SE
-       while g^=0 repeat
+       while g ~= 0 repeat
          h:=lcm(trueden(denom leadingCoefficient g,xp),h)
          g:=reductum g
        f:=(h::F)*f
-       while f^=0 repeat
+       while f ~= 0 repeat
          g:=reductum f
          rf:=rf+pushuterm(f-g,xp,x)
          f:=g
@@ -297,7 +297,7 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
      is0dimprimary(J:FIdeal,truelist:List OV) : Boolean ==
        element?(1,J) => true
        Jd:=generators(groebner J)
-       #(factors factor Jd.last)^=1 => return false
+       #(factors factor Jd.last) ~= 1 => return false
        i:=subtractIfCan(#truelist,1)
        (i case "failed") => return true
        JR:=(reverse Jd);JM:=groebnerIdeal([JR.first]);JP:List(DPoly):=[]
@@ -355,10 +355,10 @@ IdealDecompositionPackage(vl,nv) : C == T -- take away nv, now doesn't
        element?(1,J) => true
        n:NNI:=#vl;i:NNI:=1
        Jd:=generators J
-       #Jd^=n => false
+       #Jd ~= n => false
        for f in Jd repeat
          if not ismonic(f,lvint.i) then return false
-         if i<n and (degree univariate(f,lvint.i))^=1 then return false
+         if i<n and (degree univariate(f,lvint.i)) ~= 1 then return false
          i:=i+1
        g:=Jd.n
        #(lfact:=factors(factor g)) >1 => false

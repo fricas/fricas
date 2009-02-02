@@ -154,7 +154,7 @@ macApplication pf ==
 mac0MLambdaApply(mlambda, args, opf, $pfMacros) ==
     params := pf0MLambdaArgs mlambda
     body   := pfMLambdaBody  mlambda
-    #args ^= #params =>
+    #args ~= #params =>
         pos := pfSourcePosition opf
         ncHardError(pos,'S2CM0003, [#params,#args])
     for p in params for a in args repeat

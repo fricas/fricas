@@ -362,7 +362,6 @@
 (SETQ |$SideEffectFreeFunctionList| '(
   |null| |case| |Zero| |One| \: |::| |has| |Mapping|
   |elt| = |>| |>=| |<| |<=| MEMBER |is| |isnt| ATOM
-  $= |$>| |$>=| |$<| |$<=| $^= $MEMBER
 ))
 
 (SETQ |$AnonymousFunction| '(|AnonymousFunction|))

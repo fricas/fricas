@@ -79,11 +79,11 @@ mkTopicHashTable() ==                         --given $groupAssoc = ((extended .
     line.0 = char '_- => 'skip                --2      constructorName or operation name
     line := trimString line                   --3-n    ...
     m := MAXINDEX line                        --     (blank line) ...
-    line.m ^= (char '_:) => systemError('"wrong heading")
+    line.m ~= (char '_:) => systemError('"wrong heading")
     con := INTERN SUBSTRING(line,0,m)
     alist := [lst while not EOFP instream and 
        not (blankLine? (line := READLINE instream)) and
-         line.0 ^= char '_- for i in 1..
+         line.0 ~= char '_- for i in 1..
            | lst := string2OpAlist line]
     alist => HPUT($conTopicHash,con,alist)
   --initialize table of topic classes
@@ -178,7 +178,7 @@ tdAdd(con,hash) ==
   v := HGET($conTopicHash,con)
   u := addTopic2Documentation(con,v)
 --u := GETDATABASE(con,'DOCUMENTATION) 
-  for pair in u | FIXP (code := myLastAtom pair) and (op := CAR pair) ^= 'construct repeat
+  for pair in u | FIXP (code := myLastAtom pair) and (op := CAR pair) ~= 'construct repeat
     for x in (names := code2Classes code) repeat HPUT(hash,x,insert(op,HGET(hash,x)))
 
 tdPrint hash ==
@@ -201,7 +201,7 @@ topics con ==
 
 code2Classes cc ==
   cc := 2*cc
-  [x while cc ^= 0 for x in $topicClasses | ODDP (cc := QUOTIENT(cc,2))]
+  [x while cc ~= 0 for x in $topicClasses | ODDP (cc := QUOTIENT(cc,2))]
   
 myLastAtom x == 
   while x is [.,:x] repeat nil

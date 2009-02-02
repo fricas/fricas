@@ -159,9 +159,9 @@ BasicOperator(): Exports == Implementation where
 -- such that f(o1, o2) is true iff o1 = o2
     op1 = op2 ==
       (EQ$Lisp)(op1, op2) => true
-      name(op1) ^= name(op2) => false
-      op1.narg ^= op2.narg => false
-      brace(keys properties op1)^=$Set(Symbol) brace(keys properties op2) => false
+      name(op1) ~= name(op2) => false
+      op1.narg ~= op2.narg => false
+      brace(keys properties op1) ~=$Set(Symbol) brace(keys properties op2) => false
       (func := property(op1, EQUAL?)) case None =>
                    ((func::None) pretend (($, $) -> Boolean)) (op1, op2)
       true
@@ -175,14 +175,14 @@ BasicOperator(): Exports == Implementation where
 -- property LESS? contains a function f: (BOP, BOP) -> Boolean
 -- such that f(o1, o2) is true iff o1 < o2
     op1 < op2 ==
-      (w1 := weight op1) ^= (w2 := weight op2) => w1 < w2
-      op1.narg ^= op2.narg => op1.narg < op2.narg
-      name(op1) ^= name(op2) => name(op1) < name(op2)
+      (w1 := weight op1) ~= (w2 := weight op2) => w1 < w2
+      op1.narg ~= op2.narg => op1.narg < op2.narg
+      name(op1) ~= name(op2) => name(op1) < name(op2)
       n1 := #(k1 := brace(keys(properties op1))$Set(Symbol))
       n2 := #(k2 := brace(keys(properties op2))$Set(Symbol))
-      n1 ^= n2 => n1 < n2
+      n1 ~= n2 => n1 < n2
       not zero?(n1 := #(d1 := difference(k1, k2))) =>
-        n1 ^= (n2 := #(d2 := difference(k2, k1))) => n1 < n2
+        n1 ~= (n2 := #(d2 := difference(k2, k1))) => n1 < n2
         inspect(d1) < inspect(d2)
       (func := property(op1, LESS?)) case None =>
                    ((func::None) pretend (($, $) -> Boolean)) (op1, op2)

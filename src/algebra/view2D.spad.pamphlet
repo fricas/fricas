@@ -283,7 +283,7 @@ GraphImage (): Exports == Implementation where
       listOfListsOfPoints := [ l for l in listOfListsOfPoints | not null l ]
       if (null listOfListsOfPoints) then
         error "GraphImage was given a list that contained no valid point lists"
-      if ((len := #listOfListsOfPoints) ^= givenLen) then
+      if ((len := #listOfListsOfPoints) ~= givenLen) then
         sayBrightly(["   Warning: Ignoring pointless point list"::E]$List(E))$Lisp
       graf.llPoints := listOfListsOfPoints
         -- do point colors
@@ -308,7 +308,7 @@ GraphImage (): Exports == Implementation where
       doOptions(graf)
       (s := #(graf.llPoints)) = 0 =>
         error "You are trying to make a graph with no points"
-      key graf ^= 0 => 
+      key graf ~= 0 => 
         error "You are trying to draw over an existing graph"
       transform := coord(graf.optionsField,cartesian$COORDSYS)$DrawOptionFunctions0 
       graf.llPoints:= putColorInfo(graf.llPoints,graf.pointColors)
@@ -818,7 +818,7 @@ TwoDimensionalViewport ():Exports == Implementation where
 
     move(viewport,xLoc,yLoc) ==
       viewport.moveTo := [xLoc,yLoc]
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,MOVE)$Lisp
         checkViewport viewport =>
@@ -827,7 +827,7 @@ TwoDimensionalViewport ():Exports == Implementation where
           getI(VIEW)$Lisp          -- acknowledge
 
     update(viewport,graph,slot) ==
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,putGraph2D)$Lisp
         checkViewport viewport =>
@@ -837,7 +837,7 @@ TwoDimensionalViewport ():Exports == Implementation where
 
     resize(viewport,xSize,ySize) ==
       viewport.size := [xSize,ySize]
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,RESIZE)$Lisp
         checkViewport viewport =>
@@ -852,7 +852,7 @@ TwoDimensionalViewport ():Exports == Implementation where
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.deltaX := xTranslate
       viewport.graphStatesField.graphIndex.deltaY := yTranslate
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,TRANSLATE2D)$Lisp
         checkViewport viewport =>
@@ -868,7 +868,7 @@ TwoDimensionalViewport ():Exports == Implementation where
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.scaleX := xScale  -- check union (undefined?)
       viewport.graphStatesField.graphIndex.scaleY := yScale  -- check union (undefined?)
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,SCALE2D)$Lisp
         checkViewport viewport =>
@@ -932,7 +932,7 @@ TwoDimensionalViewport ():Exports == Implementation where
 
     title(viewport,Title) == 
       viewport.title := Title
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,TITLE)$Lisp
         checkViewport viewport =>
@@ -940,7 +940,7 @@ TwoDimensionalViewport ():Exports == Implementation where
           getI(VIEW)$Lisp          -- acknowledge
 
     reset viewport ==
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,SPADBUTTONPRESS)$Lisp
         checkViewport viewport =>
@@ -955,7 +955,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       else
         status := no
       viewport.graphStatesField.graphIndex.axes := status  -- check union (undefined?)
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,axesOnOff2D)$Lisp 
         checkViewport viewport =>
@@ -967,7 +967,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       if (graphIndex > maxGRAPHS) then
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.axesColor := color
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,axesColor2D)$Lisp
         checkViewport viewport =>
@@ -984,7 +984,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       else
         status := no
       viewport.graphStatesField.graphIndex.units := status  -- check union (undefined?)
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,unitsOnOff2D)$Lisp
         checkViewport viewport =>
@@ -996,7 +996,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       if (graphIndex > maxGRAPHS) then
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.unitsColor := color
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,unitsColor2D)$Lisp
         checkViewport viewport =>
@@ -1013,7 +1013,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       else
         status := 0$I
       viewport.graphStatesField.graphIndex.connect := status  -- check union (undefined?)
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,connectOnOff)$Lisp
         checkViewport viewport =>
@@ -1029,7 +1029,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       else
         status := 0$I
       viewport.graphStatesField.graphIndex.points := status  -- check union (undefined?)
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,pointsOnOff)$Lisp
         checkViewport viewport =>
@@ -1045,7 +1045,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       else
         status := 0$I
       viewport.graphStatesField.graphIndex.spline := status  -- check union (undefined?)
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,spline2D)$Lisp
         checkViewport viewport =>
@@ -1061,7 +1061,7 @@ TwoDimensionalViewport ():Exports == Implementation where
       else
         status := 0$I
       viewport.graphStatesField.graphIndex.showing := status  -- check union (undefined?)
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,showing2D)$Lisp
         checkViewport viewport =>
@@ -1072,7 +1072,7 @@ TwoDimensionalViewport ():Exports == Implementation where
     controlPanel (viewport,onOff) ==
       if onOff = "on" then viewport.flags.showCP := yes
       else viewport.flags.showCP := no
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,hideControl2D)$Lisp
         checkViewport viewport =>
@@ -1080,7 +1080,7 @@ TwoDimensionalViewport ():Exports == Implementation where
           getI(VIEW)$Lisp          -- acknowledge
 
     close viewport ==
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,closeAll2D)$Lisp
         checkViewport viewport =>
@@ -1101,7 +1101,7 @@ TwoDimensionalViewport ():Exports == Implementation where
 
     write(viewport:$,Filename:STR,thingsToWrite:L STR) ==
       stringToSend : STR := ""
-      (key(viewport) ^= 0$I) =>
+      (key(viewport) ~= 0$I) =>
         sendI(VIEW,typeVIEW2D)$Lisp
         sendI(VIEW,writeView)$Lisp
         checkViewport viewport =>

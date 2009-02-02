@@ -99,7 +99,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
       m1:= nrows m
       n1:= ncols m
       for i in 1..m1 repeat
-        for j in 1..n1 | (j ^= i) repeat
+        for j in 1..n1 | (j ~= i) repeat
           if  not zero?(m(i,j)) then return false
       true
 
@@ -111,14 +111,14 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
       m
 
              -- elementary operation of second kind: add to row i--
-                         -- a*row j  (i^=j) --
+                         -- a*row j  (i ~= j) --
     elRow2(m : M,a:R,i:I,j:I) : M ==
       vec:= map(a*#1,row(m,j))
       vec:=map("+",row(m,i),vec)
       setRow!(m,i,vec)
       m
              -- elementary operation of second kind: add to column i --
-                           -- a*column j (i^=j) --
+                           -- a*column j (i ~= j) --
     elColumn2(m : M,a:R,i:I,j:I) : M ==
       vec:= map(a*#1,column(m,j))
       vec:=map("+",column(m,i),vec)
@@ -157,7 +157,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
     lastStep(sf : SmithForm) : SmithForm ==
       m:=sf.Smith
       m1:=min(nrows m,ncols m)
-      for i in 1..m1 while (mii:=m(i,i)) ^=0 repeat
+      for i in 1..m1 while (mii:=m(i,i)) ~= 0 repeat
         for j in i+1..m1 repeat
           if (m(j,j) exquo mii) case "failed" then return
              lastStep(ijDivide(sf,i,j))

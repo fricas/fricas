@@ -293,7 +293,7 @@ parseGreaterEqual u == parseTran ['not, [SUBST("<", ">=", $op), :u]]
  
 parseLessEqual u == parseTran ['not, [SUBST(">", "<=", $op), :u]]
  
-parseNotEqual u == parseTran ['not, [SUBST("=", "^=", $op), :u]]
+parseNotEqual u == parseTran ['not, [SUBST("=", "~=", $op), :u]]
  
 parseDollarGreaterThan [x,y] ==
   BREAK()
@@ -353,7 +353,7 @@ parseReturn [a,:b] ==
   a:= parseTran a
   b:= parseTran b
   b =>
-    (if a^=1 then MOAN '"multiple-level 'return' not allowed"; ["return",1,:b])
+    (if a~=1 then MOAN '"multiple-level 'return' not allowed"; ["return",1,:b])
   ["return",1,a]
  
 parseJoin l ==

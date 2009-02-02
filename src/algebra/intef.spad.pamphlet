@@ -119,7 +119,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
             and ((z := retractIfCan(zz := third l)@Union(SE, "failed")) case SE)
               and (z::SE = x)
                 and ((u := droponex(first l, a, ka, zz)) case F) => u::F::IR
-      (da := differentiate(a := denom(f)::F, x)) ^= 0 and
+      (da := differentiate(a := denom(f)::F, x)) ~= 0 and
         zero? differentiate(c := numer(f)::F / da, x) => (c * log a)::IR
       mkAnswer(0, empty(), [[f, x::F]])
 
@@ -132,7 +132,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
       eval(f, [ka], [x])
 
     unklimint(f, x, lu) ==
-      for u in lu | u ^= 0 repeat
+      for u in lu | u ~= 0 repeat
         zero? differentiate(c := f * u / differentiate(u, x), x) => 
             return [0,[[c,u]]]
       "failed"
@@ -261,7 +261,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     primextint(f, x, k, g) ==
       lk := varselect([a for a in tower f
-                                     | k ^= a and is?(a, "log"::SE)], x)
+                                     | k ~= a and is?(a, "log"::SE)], x)
       (u1 := primextendedint(univariate(f, k), differentiate(#1,
            differentiate(#1, x), differentiate(k::F, x)::UP),
              lfextlimint(#1, x, k, lk), univariate(g, k))) case "failed"
@@ -285,7 +285,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     primint(f, x, k) ==
       lk := varselect([a for a in tower f
-                                     | k ^= a and is?(a, "log"::SE)], x)
+                                     | k ~= a and is?(a, "log"::SE)], x)
       r1 := primintegrate(univariate(f, k), differentiate(#1,
                       differentiate(#1, x), differentiate(k::F, x)::UP),
                                               lfextlimint(#1, x, k, lk))
@@ -320,7 +320,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     primlimint(f, x, k, lu) ==
       lk := varselect([a for a in tower f
-                                     | k ^= a and is?(a, "log"::SE)], x)
+                                     | k ~= a and is?(a, "log"::SE)], x)
       (u1 := primlimitedint(univariate(f, k), differentiate(#1,
           differentiate(#1, x), differentiate(k::F, x)::UP),
              lfextlimint(#1, x, k, lk), [univariate(u, k) for u in lu]))

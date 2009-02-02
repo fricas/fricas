@@ -326,7 +326,7 @@ RepresentationPackage2(R): public == private where
           -- will the rank change if we add this nextVector
           -- to the basis so far computed?
           addedToBasis : M R := vertConcat(basis, nextVector)
-          if rank addedToBasis ^= nrows basis then
+          if rank addedToBasis ~= nrows basis then
              basis := rowEchelon addedToBasis  -- add vector w to basis
              updateFurtherElts : L V R := _
                [(lm.i*w)::V R for i in 1..maxIndex lm]
@@ -355,7 +355,7 @@ RepresentationPackage2(R): public == private where
           -- will the rank change if we add this nextVector
           -- to the basis so far computed?
           addedToBasis : M R := vertConcat(basis, nextVector)
-          if rank addedToBasis ^= nrows basis then
+          if rank addedToBasis ~= nrows basis then
              standardBasis := cons(entries w, standardBasis)
              basis := rowEchelon addedToBasis  -- add vector w to basis
              updateFurtherElts : L V R := _
@@ -381,7 +381,7 @@ RepresentationPackage2(R): public == private where
         rankOfSubmodule : I := # submodule  -- R-Rank of submodule
         submoduleRepresentation    : L M R := nil()
         factormoduleRepresentation : L M R := nil()
-        if n ^= rankOfSubmodule then
+        if n ~= rankOfSubmodule then
           messagePrint "  A proper cyclic submodule is found."
           if doSplitting? then   -- no else !!
             submoduleIndices : L I := [i for i in 1..rankOfSubmodule]
@@ -502,12 +502,12 @@ RepresentationPackage2(R): public == private where
             -- test singularity of x0 and x1
             rk0 : NNI := rank x0
             rk1 : NNI := rank x1
-            rk0 ^= rk1 =>
+            rk0 ~= rk1 =>
               messagePrint  "Dimensions of kernels differ"
               foundResult := true
               result := false
             -- can assume dimensions are equal
-            rk0 ^= n - 1 =>
+            rk0 ~= n - 1 =>
               -- not of any use here if kernel not one-dimensional
               if randomelements then
                 messagePrint  "Random element in generated algebra does"
@@ -528,7 +528,7 @@ RepresentationPackage2(R): public == private where
               aG0,kernel0.1)
             baseChange1 : M R := standardBasisOfCyclicSubmodule(_
               aG1,kernel1.1)
-            (ncols baseChange0) ^= (ncols baseChange1) =>
+            (ncols baseChange0) ~= (ncols baseChange1) =>
               messagePrint  "  Dimensions of generated cyclic submodules differ"
               foundResult := true
               result := false
@@ -539,7 +539,7 @@ RepresentationPackage2(R): public == private where
               foundResult := true
               result := true
               for j in 1..numberOfGenerators while result repeat
-                if (aG0.j*transitionM) ^= (transitionM*aG1.j) then
+                if (aG0.j*transitionM) ~= (transitionM*aG1.j) then
                   result := false
                   transitionM := zero(1 ,1)
                   messagePrint "  There is no isomorphism, as the only possible one"
@@ -594,7 +594,7 @@ RepresentationPackage2(R): public == private where
             messagePrint "  one-dimensional kernel"
             kernel : L V R := nullSpace x
             if n=#cyclicSubmodule(aG, first kernel) then
-              result := (irreducibilityTestInternal(aG,x,false)).1 ^= nil()$(L M R)
+              result := (irreducibilityTestInternal(aG,x,false)).1 ~= nil()$(L M R)
               -- result := not null? first irreducibilityTestInternal(aG,x,false) -- this down't compile !!
             else -- we found a proper submodule
               result := false
@@ -690,7 +690,7 @@ RepresentationPackage2(R): public == private where
                  algebraGenerators.2 , x)
             -- test singularity of x
             n : NNI := #row(x, 1)  -- degree  of representation
-            if (rank x) ^= n then  -- x singular
+            if (rank x) ~= n then  -- x singular
               if randomelements then
                  messagePrint "Random element in generated algebra is singular"
               else

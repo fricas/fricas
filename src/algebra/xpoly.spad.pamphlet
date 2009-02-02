@@ -107,7 +107,7 @@ OrderedFreeMonoid(S: OrderedSet): OFMcategory == OFMdefinition where
           x: List REC := listOfMonoms(w)$Rep
           null x        => "failed"
           fx: REC := first x
-          fx.gen ^= l  => "failed"
+          fx.gen ~= l  => "failed"
           fx.exp = 1   => makeMulti rest(x)
           makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, :rest x]
 
@@ -288,7 +288,7 @@ FreeModule1(R:Ring,S:OrderedSet): FMcat == FMdef where
       monomials x == [ monom (t.k, t.c) for t in x]
 
       retractIfCan x ==
-         numberOfMonomials(x) ^= 1 => "failed"
+         numberOfMonomials(x) ~= 1 => "failed"
          x.first.c = 1 => x.first.k
          "failed"
 
@@ -578,7 +578,7 @@ XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
        constant? p == (p = 0) or (maxdeg(p) = 1$E)
        constant  p == coef(p,1$E)
 
-       quasiRegular? p == (p=0) or (last p).k ^= 1$E
+       quasiRegular? p == (p=0) or (last p).k ~= 1$E
        quasiRegular  p == 
           quasiRegular?(p) => p
           [t for t in p | not(t.k = 1$E)]
@@ -746,10 +746,10 @@ XDistributedPolynomial(vl:OrderedSet,R:Ring): XDPcat == XDPdef where
          x * shw(rest w1,w2) + y * shw(w1,rest w2)
 
        lquo(p:%,q:%):% ==
-         +/  [r * t.c for t in q | (r := lquo(p,t.k)) ^= 0] 
+         +/  [r * t.c for t in q | (r := lquo(p,t.k)) ~= 0] 
 
        rquo(p:%,q:%):% ==
-         +/  [r * t.c for t in q | (r := rquo(p,t.k)) ^= 0] 
+         +/  [r * t.c for t in q | (r := rquo(p,t.k)) ~= 0] 
 
        coef(p:%,q:%):R ==
          p = 0 => 0$R
@@ -839,14 +839,14 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
          p2 case R => p1 * p2::R
          p1 case R => p1  * p2.c0
          x:REGPOLY := construct [[t.k, a]$TERM for t in ListOfTerms(p1.reg) _
-                         | (a:= rquo(t.c,p2)) ^= 0$% ]$LTERMS
+                         | (a:= rquo(t.c,p2)) ~= 0$% ]$LTERMS
          simplifie [coef(p1,p2) , x]$VPOLY
 
        trunc(p,n) ==
          n = 0 or (p case R) => (constant p)::%
          n1: NNI := (n-1)::NNI
          lt: LTERMS := [[t.k, r]$TERM for t in ListOfTerms p.reg _
-                        | (r := trunc(t.c, n1)) ^= 0]$LTERMS
+                        | (r := trunc(t.c, n1)) ~= 0]$LTERMS
          x: REGPOLY := construct lt
          simplifie [constant p, x]$VPOLY
 
@@ -854,7 +854,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
          constant? p => (constant p)::%
          vl: List VarSet := sort(#1 > #2, varList p)
          x : REGPOLY := _
-           construct [[v, unexpand r]$TERM for v in vl| (r:=lquo(p,v)) ^= 0]
+           construct [[v, unexpand r]$TERM for v in vl| (r:=lquo(p,v)) ~= 0]
          [constant p, x]$VPOLY
 
        if R has CommutativeRing then
@@ -999,7 +999,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
        rquo(p:%, v:VarSet):% ==
          p case R => 0
          x:REGPOLY := construct [[t.k, a]$TERM for t in ListOfTerms(p.reg)
-                         | (a:= rquo(t.c,v)) ^= 0 ]
+                         | (a:= rquo(t.c,v)) ~= 0 ]
          simplifie [constant(coefficient(p.reg,v)) , x]$VPOLY 
 
        rquo(p:%, w:WORD):% ==
@@ -1026,7 +1026,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
          p case R =>
            p = 0 => error "XRPOLY.mindeg: polynome nul !!"
            1$WORD
-         p.c0 ^= 0 => 1$WORD
+         p.c0 ~= 0 => 1$WORD
          "min"/[(t.k) *$WORD mindeg(t.c) for t in ListOfTerms p.reg] 
 
        maxdeg p ==
@@ -1042,7 +1042,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
        map(fn,p) ==
          p case R => fn(p::R)
          x:REGPOLY := construct [[t.k,a]$TERM for t in ListOfTerms p.reg
-                         |(a := map(fn,t.c)) ^= 0$R]
+                         |(a := map(fn,t.c)) ~= 0$R]
          simplifie [fn(p.c0),x]$VPOLY
 
        varList p ==

@@ -81,7 +81,7 @@ shoePrefix?(prefix,whole) ==
  
 shoePlainLine?(s) ==
          #s = 0 =>  true
-         s.0 ^= char ")"
+         not(s.0 = char ")")
  
 shoeSay?          s  == shoePrefix?('")say",         s)
 shoeEval?         s  == shoePrefix?('")eval",        s)

@@ -128,7 +128,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       lc := leadingDenomRicDE(c, op)
       if finite? then lc := select_!(#1.deg <= b, lc)
       for rec in lc repeat
-        for r in zeros(c, rec.eq) | r ^= 0 repeat
+        for r in zeros(c, rec.eq) | r ~= 0 repeat
           rcn := r /$RF (c ** rec.deg)
           neweq := changeVar(op, rcn)
           sols := padicsol(c, neweq, (rec.deg-1)::N, true, zeros)
@@ -163,7 +163,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
 
     constantCoefficientOperator(op, m) ==
       ans:UP := 0
-      while op ^= 0 repeat
+      while op ~= 0 repeat
         if degree(p := leadingCoefficient op) = m then
           ans := ans + monomial(leadingCoefficient p, degree op)
         op := reductum op
@@ -179,7 +179,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       i := first(rec.ij)
       m := i * (d := rec.deg) + nu coefficient(l, i::N)
       ans:List(Z) := empty()
-      for j in 0..n | (f := coefficient(l, j)) ^= 0 repeat
+      for j in 0..n | (f := coefficient(l, j)) ~= 0 repeat
         if ((k := (j * d + nu f)) > m) then return empty()
         else if (k = m) then ans := concat(j, ans)
       ans
@@ -226,8 +226,8 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
     innerlb(l, nu) ==
       lb:List(IJ) := empty()
       n := degree l
-      for i in 0..n | (li := coefficient(l, i)) ^= 0repeat
-        for j in i+1..n | (lj := coefficient(l, j)) ^= 0 repeat
+      for i in 0..n | (li := coefficient(l, i)) ~= 0repeat
+        for j in i+1..n | (lj := coefficient(l, j)) ~= 0 repeat
           u := (nu li - nu lj) exquo (i-j)
           if (u case Z) and ((b := u::Z) > 0) then
             lb := concat([[i, j], b::N], lb)
@@ -257,7 +257,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       lc := leadingCoefficientRicDE l
       if finite? then lc := select_!(#1.deg <= b, lc)
       for rec in lc repeat
-        for a in zeros(rec.eq) | a ^= 0 repeat
+        for a in zeros(rec.eq) | a ~= 0 repeat
           atn:UP := monomial(a, rec.deg)
           neweq := changeVar(l, atn)
           sols := polysol(neweq, (rec.deg - 1)::N, true, zeros)
@@ -430,8 +430,8 @@ RationalRicDE(F, UP): Exports == Implementation where
       ans:List(POL) := [[0, l]]
       empty?(lc := leadingCoefficientRicDE l) => ans
       rec := first lc                            -- one with highest degree
-      for a in zeros(rec.eq) | a ^= 0 repeat
-        if (p := newtonSolution(l, a, rec.deg, zeros)) ^= 0 then
+      for a in zeros(rec.eq) | a ~= 0 repeat
+        if (p := newtonSolution(l, a, rec.deg, zeros)) ~= 0 then
             ans := concat([p, changeVar(l, p)], ans)
       ans
 
@@ -439,7 +439,7 @@ RationalRicDE(F, UP): Exports == Implementation where
     reverseUP p ==
       ans:UTS := 0
       n := degree(p)::Z
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         ans := ans + monomial(leadingCoefficient p, (n - degree p)::N)
         p   := reductum p
       ans
@@ -454,11 +454,11 @@ RationalRicDE(F, UP): Exports == Implementation where
       m:Z := 0
       aeq:UPS := 0
       op := l
-      while op ^= 0 repeat
+      while op ~= 0 repeat
         mu := degree(op) * n + degree leadingCoefficient op
         op := reductum op
         if mu > m then m := mu
-      while l ^= 0 repeat
+      while l ~= 0 repeat
         c := leadingCoefficient l
         d := degree l
         s:UTS := monomial(1, (m - d * n - degree c)::N)$UTS * reverseUP c

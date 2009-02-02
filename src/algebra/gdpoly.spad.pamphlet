@@ -159,10 +159,10 @@ GeneralDistributedMultivariatePolynomial(vl,R,E): public == private where
             p := reductum p
             for i in 1..n repeat
               maxdeg.i := max(maxdeg.i, tdeg.i)
-         [index(i::PositiveInteger) for i in 1..n | maxdeg.i^=0]
+         [index(i::PositiveInteger) for i in 1..n | maxdeg.i ~= 0]
 
       reorder(p: %,perm: List Integer):% ==
-         #perm ^= n => error "must be a complete permutation of all vars"
+         #perm ~= n => error "must be a complete permutation of all vars"
          q := [[directProduct [term.k.j for j in perm]$Vec,term.c]$Term
                          for term in p]
          sort(#1.k > #2.k,q)
@@ -220,7 +220,7 @@ GeneralDistributedMultivariatePolynomial(vl,R,E): public == private where
                       monomial(leadingCoefficient p,0)
         q := univariate(p,v:: OV)
         ans:SUP(R) := 0
-        while q ^= 0 repeat
+        while q ~= 0 repeat
           ans := ans + monomial(ground leadingCoefficient q,degree q)
           q := reductum q
         ans
@@ -265,7 +265,7 @@ GeneralDistributedMultivariatePolynomial(vl,R,E): public == private where
             t.k.i = 1 => l := cons(vl1.i,l)
             l := cons(vl1.i ** t.k.i ::OutputForm,l)
           l := reverse l
-          if (t.c ^= 1) or (null l) then l := cons(t.c :: OutputForm,l)
+          if (t.c ~= 1) or (null l) then l := cons(t.c :: OutputForm,l)
           1 = #l => lt := cons(first l,lt)
           lt := cons(reduce("*",l),lt)
         1 = #lt => first lt

@@ -357,7 +357,7 @@ finalizeLisplib libName ==
   if $profileCompiler then profileWrite()
   if $lisplibForm and null CDR $lisplibForm then
     MAKEPROP(CAR $lisplibForm,'NILADIC,'T)
-  ERRORS ^=0 =>    -- ERRORS is a fluid variable for the compiler
+  ERRORS ~=0 =>    -- ERRORS is a fluid variable for the compiler
     sayMSG ['"   Errors in processing ",kind,'" ",:bright libName,'":"]
     sayMSG ['"     not replacing ",$spadLibFT,'" for",:bright libName]
 

@@ -66,7 +66,7 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
       -- determines if the ith row of x consists only of zeroes
       -- internal function: no check on index i
       for j in minColIndex(x)..maxColIndex(x) repeat
-        qelt(x,i,j) ^= 0 => return false
+        qelt(x,i,j) ~= 0 => return false
       true
 
     colAllZeroes?: (M,I) -> Boolean
@@ -74,7 +74,7 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
       -- determines if the ith column of x consists only of zeroes
       -- internal function: no check on index j
       for i in minRowIndex(x)..maxRowIndex(x) repeat
-        qelt(x,i,j) ^= 0 => return false
+        qelt(x,i,j) ~= 0 => return false
       true
 
     rowEchelon y ==
@@ -87,19 +87,19 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
       for j in minC..maxC repeat
         i > maxR => return x
         n := minR - 1
-        -- n = smallest k such that k >= i and x(k,j) ^= 0
+        -- n = smallest k such that k >= i and x(k,j) ~= 0
         for k in i..maxR repeat
-          if qelt(x,k,j) ^= 0 then leave (n := k)
+          if qelt(x,k,j) ~= 0 then leave (n := k)
         n = minR - 1 => "no non-zeroes"
         -- put nth row in ith position
-        if i ^= n then swapRows_!(x,i,n)
+        if i ~= n then swapRows_!(x,i,n)
         -- divide ith row by its first non-zero entry
         b := inv qelt(x,i,j)
         qsetelt_!(x,i,j,1)
         for k in (j+1)..maxC repeat qsetelt_!(x,i,k,b * qelt(x,i,k))
         -- perform row operations so that jth column has only one 1
         for k in minR..maxR repeat
-          if k ^= i and qelt(x,k,j) ^= 0 then
+          if k ~= i and qelt(x,k,j) ~= 0 then
             for k1 in (j+1)..maxC repeat
               qsetelt_!(x,k,k1,qelt(x,k,k1) - qelt(x,k,j) * qelt(x,i,k1))
             qsetelt_!(x,k,j,0)
@@ -160,7 +160,7 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
               qsetelt_!(w,l,1)
               basis := cons(w,basis)
             for k in minC..(j-1) for ll in minR..(l-1) repeat
-              if qelt(v,k) ^= minR - 1 then
+              if qelt(v,k) ~= minR - 1 then
                 qsetelt_!(w,ll,-qelt(x,qelt(v,k),j))
             qsetelt_!(w,l,1)
             basis := cons(w,basis)
@@ -168,7 +168,7 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
         basis
 
     determinant y ==
-      (ndim := nrows y) ^= (ncols y) =>
+      (ndim := nrows y) ~= (ncols y) =>
         error "determinant: matrix must be square"
       -- Gaussian Elimination
       ndim = 1 => qelt(y,minRowIndex y,minColIndex y)
@@ -180,13 +180,13 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
         if qelt(x,i,j) = 0 then
           rown := minR - 1
           for k in (i+1)..maxR repeat
-            qelt(x,k,j) ^= 0 => leave (rown := k)
+            qelt(x,k,j) ~= 0 => leave (rown := k)
           if rown = minR - 1 then return 0
           swapRows_!(x,i,rown); ans := -ans
         ans := qelt(x,i,j) * ans; b := -inv qelt(x,i,j)
         for l in (j+1)..maxC repeat qsetelt_!(x,i,l,b * qelt(x,i,l))
         for k in (i+1)..maxR repeat
-          if (b := qelt(x,k,j)) ^= 0 then
+          if (b := qelt(x,k,j)) ~= 0 then
             for l in (j+1)..maxC repeat
               qsetelt_!(x,k,l,qelt(x,k,l) + b * qelt(x,i,l))
       qelt(x,maxR,maxC) * ans
@@ -208,7 +208,7 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
       map(elt(#1,0),yy)$MATCAT22
 
     inverse x ==
-      (ndim := nrows x) ^= (ncols x) =>
+      (ndim := nrows x) ~= (ncols x) =>
         error "inverse: matrix must be square"
       ndim = 2 =>
          ans2 : M := zero(ndim, ndim)
@@ -457,10 +457,10 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
       ++ of first kind
     elRow2!       :  (M,R,I,I)        ->  M
       ++ elRow2!(m,a,i,j)  adds to row i a*row(m,j) : elementary operation of
-      ++ second kind. (i ^=j)
+      ++ second kind. (i ~=j)
     elColumn2!    :  (M,R,I,I)        ->  M
       ++ elColumn2!(m,a,i,j)  adds to column i a*column(m,j) : elementary
-      ++ operation of second kind. (i ^=j)
+      ++ operation of second kind. (i ~=j)
 
     if R has IntegralDomain then
       rank: M -> NonNegativeInteger
@@ -502,7 +502,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
       -- determines if the ith row of x consists only of zeroes
       -- internal function: no check on index i
       for j in minColIndex(x)..maxColIndex(x) repeat
-        qelt(x,i,j) ^= 0 => return false
+        qelt(x,i,j) ~= 0 => return false
       true
 
     colAllZeroes?: (M,I) -> Boolean
@@ -510,7 +510,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
       -- determines if the ith column of x consists only of zeroes
       -- internal function: no check on index j
       for i in minRowIndex(x)..maxRowIndex(x) repeat
-        qelt(x,i,j) ^= 0 => return false
+        qelt(x,i,j) ~= 0 => return false
       true
 
     minorDet:(M,I,List I,I,PrimitiveArray(Union(R,"uncomputed")))-> R
@@ -521,7 +521,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
       j := first l; l := rest l; pos := true
       minR := minRowIndex x; minC := minColIndex x;
       repeat
-        if qelt(x,j + minR,i + minC) ^= 0 then
+        if qelt(x,j + minR,i + minC) ~= 0 then
           ans :=
             md := minorDet(x,m - 2**(j :: NonNegativeInteger),_
                            concat_!(reverse rl,l),i + 1,v) *_
@@ -534,7 +534,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
         pos := not pos; rl := cons(j,rl); j := first l; l := rest l
 
     minordet x ==
-      (ndim := nrows x) ^= (ncols x) =>
+      (ndim := nrows x) ~= (ncols x) =>
         error "determinant: matrix must be square"
       -- minor expansion with (s---loads of) memory
       n1 : I := ndim - 1
@@ -553,14 +553,14 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
       m
 
              -- elementary operation of second kind: add to row i--
-                         -- a*row j  (i^=j) --
+                         -- a*row j  (i~=j) --
     elRow2!(m : M,a:R,i:I,j:I) : M ==
       vec:= map(a*#1,row(m,j))
       vec:=map("+",row(m,i),vec)
       setRow!(m,i,vec)
       m
              -- elementary operation of second kind: add to column i --
-                           -- a*column j (i^=j) --
+                           -- a*column j (i~=j) --
     elColumn2!(m : M,a:R,i:I,j:I) : M ==
       vec:= map(a*#1,column(m,j))
       vec:=map("+",column(m,i),vec)
@@ -579,7 +579,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
           if qelt(x,i,j) = 0 then -- candidate for pivot = 0
             rown := minR - 1
             for k in (i+1)..maxR repeat
-              if qelt(x,k,j) ^= 0 then
+              if qelt(x,k,j) ~= 0 then
                  rown := k -- found a pivot
                  leave
             if rown > minR - 1 then
@@ -623,14 +623,14 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
         subMatrix(x,minR,maxR,maxC1,exCol)
 
       invertIfCan(y) ==
-        (nr:=nrows y) ^= (ncols y) =>
+        (nr:=nrows y) ~= (ncols y) =>
             error "invertIfCan: matrix must be square"
         adjRec := adjoint y
         (den:=recip(adjRec.detMat)) case "failed" => "failed"
         den::R * adjRec.adjMat
 
       adjoint(y) ==
-        (nr:=nrows y) ^= (ncols y) => error "adjoint: matrix must be square"
+        (nr:=nrows y) ~= (ncols y) => error "adjoint: matrix must be square"
         maxR := maxRowIndex y
         maxC := maxColIndex y
         x := horizConcat(copy y,scalarMatrix(nr,1$R))
@@ -668,7 +668,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
       nullSpace m == nullSpace(m)$IMATQF
 
       determinant y ==
-        (nrows y) ^= (ncols y) => error "determinant: matrix must be square"
+        (nrows y) ~= (ncols y) => error "determinant: matrix must be square"
         fm:=fractionFreeGauss!(copy y)
         fm(maxRowIndex fm,maxColIndex fm)
 
@@ -736,7 +736,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
 
             un := unitNormal qelt(x,i,j)
             qsetelt_!(x,i,j,un.canonical)
-            if un.associate ^= 1 then for jj in (j+1)..maxC repeat
+            if un.associate ~= 1 then for jj in (j+1)..maxC repeat
                 qsetelt_!(x,i,jj,un.associate * qelt(x,i,jj))
 
             xij := qelt(x,i,j)

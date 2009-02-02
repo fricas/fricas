@@ -121,7 +121,7 @@ FractionalIdeal(R, F, UP, A): Exports == Implementation where
       g    := agcd nr
       a    := (r quo (b := gcd(gcd(d, r), g)))::F::A
       d    := d quo b
-      r ^= 0 and ((g exquo r) case R) => mkIdeal([a], d)
+      r ~= 0 and ((g exquo r) case R) => mkIdeal([a], d)
       invb := inv(b::F)
       va:VA := [invb * m for m in nr]
       zero? a => mkIdeal(va, d)
@@ -268,7 +268,7 @@ ModularHermitianRowReduction(R): Exports == Implementation where
     determinantOfMinor: M -> R
     enumerateBinomial: (List Z, Z, Z) -> List Z
 
-    nonzero? v == any?(#1 ^= 0, v)
+    nonzero? v == any?(#1 ~= 0, v)
 
 -- returns [a, i, rown] if v = [0,...,0,a,0,...,0]
 -- where a <> 0 and i is the index of a, "failed" otherwise.
@@ -276,7 +276,7 @@ ModularHermitianRowReduction(R): Exports == Implementation where
       ans:REC
       allZero:Boolean := true
       for i in minIndex v .. maxIndex v repeat
-        if qelt(v, i) ^= 0 then
+        if qelt(v, i) ~= 0 then
           if allZero then
             allZero := false
             ans := [qelt(v, i), i, rown]
@@ -314,7 +314,7 @@ ModularHermitianRowReduction(R): Exports == Implementation where
       lc := [i for i in minColIndex x .. maxColIndex x]$List(Integer)
       lr := [i for i in minRowIndex x .. maxRowIndex x]$List(Integer)
       for i in 1..(n := binomial(nr, nc)) repeat
-        (d := determinant x(enumerateBinomial(lr, nc, i), lc)) ^= 0 =>
+        (d := determinant x(enumerateBinomial(lr, nc, i), lc)) ~= 0 =>
           j := i + 1 + random(n-i)$Z
           return gcd(d, determinant x(enumerateBinomial(lr, nc, j), lc))
       0
@@ -423,7 +423,7 @@ ModularHermitianRowReduction(R): Exports == Implementation where
           if i > nrows then leave
           rown := minr - 1
           for k in i .. nrows repeat
-            if (qelt(x,k,j) ^= 0) and ((rown = minr - 1) or
+            if (qelt(x,k,j) ~= 0) and ((rown = minr - 1) or
                   sizeLess?(qelt(x,k,j), qelt(x,rown,j))) then rown := k
           rown = minr - 1 => "next j"
           x := swapRows_!(x, i, rown)
@@ -442,7 +442,7 @@ ModularHermitianRowReduction(R): Exports == Implementation where
             qsetelt_!(x, k, j, 0)
           un := unitNormal qelt(x,i,j)
           qsetelt_!(x,i,j,un.canonical)
-          if un.associate ^= 1 then for jj in (j+1)..ncols repeat
+          if un.associate ~= 1 then for jj in (j+1)..ncols repeat
               qsetelt_!(x,i,jj,un.associate * qelt(x,i,jj))
 
           xij := qelt(x,i,j)
@@ -549,14 +549,14 @@ FramedModule(R, F, UP, A, ibasis): Exports == Implementation where
       v pretend VA
 
     norm m ==
-      #(basis m) ^= #ibasis => error "Module not of rank n"
+      #(basis m) ~= #ibasis => error "Module not of rank n"
       determinant(coordinates(basis m) * invintmat())
 
     m1 * m2 ==
       m := rowEch((cd := splitDenominator wmatrix(
                                      vectProd(basis m1, basis m2))).num)
       module [u for i in minRowIndex m .. maxRowIndex m |
-                           (u := W2A rowdiv(row(m, i), cd.den)) ^= 0]$VA
+                           (u := W2A rowdiv(row(m, i), cd.den)) ~= 0]$VA
 
     if A has RetractableTo F then
       module(i:FractionalIdeal(R, F, UP, A)) ==
@@ -707,7 +707,7 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
     divisor(i:ID) ==
 --      one?(n := #(v := basis minimize i)) => divisor v minIndex v
       (n := #(v := basis minimize i)) = 1 => divisor v minIndex v
-      n ^= 2 => ERR
+      n ~= 2 => ERR
       a := v minIndex v
       h := v maxIndex v
       (u := polyIfCan a) case UP =>
@@ -724,7 +724,7 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
       v::UP
 
     redpolyIfCan(h, a) ==
-      degree(p := lift h) ^= 1 => "failed"
+      degree(p := lift h) ~= 1 => "failed"
       q := - coefficient(p, 0) / coefficient(p, 1)
       rec := extendedEuclidean(denom q, a)
       not ground?(rec.generator) => "failed"
@@ -886,7 +886,7 @@ FiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
 
       reduce d ==
         (i := minimize(j := ideal d)) = j => d
-        #(n := numer i) ^= 2 => divisor i
+        #(n := numer i) ~= 2 => divisor i
         cd := splitDenominator lift n(1 + minIndex n)
         b  := gcd(cd.den * retract(retract(n minIndex n)@RF)@UP,
                   retract(norm reduce(cd.num))@UP)

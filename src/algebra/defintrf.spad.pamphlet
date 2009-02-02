@@ -148,7 +148,7 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
 
     maprat p ==
       ans:UPQ := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         (r := retractIfCan(c := leadingCoefficient p)@Union(Q,"failed"))
           case "failed"  => return "failed"
         ans := ans + monomial(r::Q, degree p)
@@ -157,14 +157,14 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
          )$SparseUnivariatePolynomialFunctions2(Q, Z)
 
     intrat(a, b) ==
-      (n := whatInfinity a) ^= 0 =>
+      (n := whatInfinity a) ~= 0 =>
         (r := retractIfCan(b)@Union(F,"failed")) case "failed" => ["all"]
         (q := retractIfCan(r::F)@Union(Q, "failed")) case "failed" =>
           ["failed"]
         [[q::Q, n]]
       (q := retractIfCan(retract(a)@F)@Union(Q,"failed")) case "failed"
         => ["failed"]
-      (n := whatInfinity b) ^= 0 => [[q::Q, n]]
+      (n := whatInfinity b) ~= 0 => [[q::Q, n]]
       (t := retractIfCan(retract(b)@F)@Union(Q,"failed")) case "failed"
         => ["failed"]
       [[q::Q, t::Q]]
@@ -192,11 +192,11 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
 
     checkBudan(p, a, b, incl?) ==
       r := retractIfCan(b)@Union(F, "failed")
-      (n := whatInfinity a) ^= 0 =>
+      (n := whatInfinity a) ~= 0 =>
         r case "failed" => realRoot p
         checkHalfAx(p, r::F, n, incl?)
       (za? := zero? p(aa := retract(a)@F)) and incl? => true
-      (n := whatInfinity b) ^= 0 => checkHalfAx(p, aa, n, incl?)
+      (n := whatInfinity b) ~= 0 => checkHalfAx(p, aa, n, incl?)
       (zb? := zero? p(bb := r::F)) and incl? => true
       (va := variation(p, aa)) case "failed" or
                    (vb := variation(p, bb)) case "failed" => "failed"
@@ -255,7 +255,7 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
       i:Z := 0
       (lastCoef := negative leadingCoefficient q) case "failed" =>
         "failed"
-      while ((q := reductum q) ^= 0) repeat
+      while ((q := reductum q) ~= 0) repeat
         (next := negative leadingCoefficient q) case "failed" =>
           return "failed"
         if ((not(lastCoef::B)) and next::B) or

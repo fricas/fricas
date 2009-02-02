@@ -96,7 +96,7 @@ GenExEuclid(R,BP) : C == T
     exactquo(u:BP,v:BP,p:R):Union(BP,"failed") ==
         invlcv:=modInverse(leadingCoefficient v,p)
         r:=monicDivide(u,reduction(invlcv*v,p))
-        reduction(r.remainder,p) ^=0 => "failed"
+        reduction(r.remainder,p) ~= 0 => "failed"
         reduction(invlcv*r.quotient,p)
 
     FP:=EuclideanModularRing(R,BP,R,reduction,merge,exactquo)
@@ -120,7 +120,7 @@ GenExEuclid(R,BP) : C == T
       ftab:Vector L FP :=
         map(reduceList(#1,lmod),table)$VectorFunctions2(List BP,List FP)
       sln:L FP:=[0$FP for xx in ftab.1 ]
-      for i in 0 .. d |(cc:=coefficient(err,i)) ^=0 repeat
+      for i in 0 .. d |(cc:=coefficient(err,i)) ~= 0 repeat
         sln:=[slp+reduce(cc::BP,lmod)*pp
               for pp in ftab.(i+1) for slp in sln]
       nsol:=[f-lmodk*reduction(g::BP,lmod) for f in oldsol for g in sln]
@@ -141,12 +141,12 @@ GenExEuclid(R,BP) : C == T
     testModulus(pmod, listPol) ==
          redListPol := reduceList(listPol, pmod)
          for pol in listPol for rpol in redListPol repeat
-              degree(pol) ^= degree(rpol::BP) => return false
+              degree(pol) ~= degree(rpol::BP) => return false
          while not empty? redListPol repeat
              rpol := first redListPol
              redListPol := rest redListPol
              for rpol2 in redListPol repeat
-                gcd(rpol, rpol2) ^= 1 => return false
+                gcd(rpol, rpol2) ~= 1 => return false
          true
 
     if R has Field then
@@ -165,7 +165,7 @@ GenExEuclid(R,BP) : C == T
             -- Actually, there's no possibility of failure
         d:=degree m
         sln:L BP:=[0$BP for xx in table.1]
-        for i in 0 .. d | coefficient(m,i)^=0 repeat
+        for i in 0 .. d | coefficient(m,i) ~= 0 repeat
           sln:=[slp+coefficient(m,i)*pp
                 for pp in table.(i+1) for slp in sln]
         sln
@@ -192,7 +192,7 @@ GenExEuclid(R,BP) : C == T
           map(reduceList(#1,pmod),table)$VectorFunctions2(List BP,List FP)
         lpolys:L BP:=table.(#table)
         sln:L FP:=[0$FP for xx in ftab.1]
-        for i in 0 .. d | coefficient(m,i)^=0 repeat
+        for i in 0 .. d | coefficient(m,i) ~= 0 repeat
           sln:=[slp+reduce(coefficient(m,i)::BP,pmod)*pp
                 for pp in ftab.(i+1) for slp in sln]
         soln:=[slp::BP for slp in sln]

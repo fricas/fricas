@@ -56,7 +56,7 @@ compToApply(op,argl,m,e) ==
 
 compApplication(op,argl,m,e,T) ==
   T.mode is ['Mapping, retm, :argml] =>
-    #argl ^= #argml => nil
+    #argl ~= #argml => nil
     retm := resolve(m, retm)
     retm = $Category or isCategoryForm(retm,e) => nil  -- not handled
     argTl := [[.,.,e] := comp(x,m,e) or return "failed"
@@ -116,7 +116,7 @@ compFormWithModemap(form is [op,:argl],m,e,modemap) ==
   convert(T,m)
 
 applyMapping([op,:argl],m,e,ml) ==
-  #argl^=#ml-1 => nil
+  #argl~=#ml-1 => nil
   isCategoryForm(first ml,e) =>
                                 --is op a functor?
     pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
@@ -153,7 +153,7 @@ compApplyModemap(form,modemap,$e,sl) ==
 
   -- 0.  fail immediately if #argl=#margl
 
-  if #argl^=#margl then return nil
+  if #argl~=#margl then return nil
 
   -- 1.  use modemap to evaluate arguments, returning failed if
   --     not possible

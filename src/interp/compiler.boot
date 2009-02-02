@@ -107,7 +107,7 @@ comp2(x,m,e) ==
   [y,m',e]:= comp3(x,m,e) or return nil
   --if null atom y and isDomainForm(y,e) then e := addDomain(x,e)
         --line commented out to prevent adding derived domain forms
-  m^=m' and ($bootStrapMode or isDomainForm(m',e))=>[y,m',addDomain(m',e)]
+  m~=m' and ($bootStrapMode or isDomainForm(m',e))=>[y,m',addDomain(m',e)]
         --isDomainForm test needed to prevent error while compiling Ring
         --$bootStrapMode-test necessary for compiling Ring in $bootStrapMode
   [y,m',e]
@@ -437,7 +437,7 @@ getFormModemaps(form is [op,:argl],e) ==
   null atom op => nil
   modemapList:= get(op,"modemap",e)
   if $insideCategoryPackageIfTrue then
-    modemapList := [x for x in modemapList | x is [[dom,:.],:.] and dom ^= '$]
+    modemapList := [x for x in modemapList | x is [[dom,:.],:.] and dom ~= '$]
   if op="elt"
      then modemapList:= eltModemapFilter(last argl,modemapList,e) or return nil
      else
@@ -483,7 +483,7 @@ seteltModemapFilter(name,mmList,e) ==
   mmList
 
 substituteIntoFunctorModemap(argl,modemap is [[dc,:sig],:.],e) ==
-  #dc^=#sig =>
+  #dc~=#sig =>
     keyedSystemError("S2GE0016",['"substituteIntoFunctorModemap",
       '"Incompatible maps"])
   #argl=#rest sig =>
@@ -567,7 +567,7 @@ setqSingle(id,val,m,E) ==
     eval or return nil where
       eval() ==
         T:= comp(val,m'',E) => T
-        not get(id,"mode",E) and m'' ^= (maxm'':=maxSuperType(m'',E)) and
+        not get(id,"mode",E) and m'' ~= (maxm'':=maxSuperType(m'',E)) and
            (T:=comp(val,maxm'',E)) => T
         (T:= comp(val,$EmptyMode,E)) and getmode(T.mode,E) =>
           assignError(val,T.mode,id,m'')
@@ -627,7 +627,7 @@ setqMultiple(nameList,val,m,e) ==
         comp(t,$EmptyMode,e) is [.,["RecordCategory",:l],.] =>
           [[name,:mode] for [":",name,mode] in l]
         stackMessage ["no multiple assigns to mode: ",t]
-  #nameList^=#selectorModePairs =>
+  #nameList~=#selectorModePairs =>
     stackMessage [val," must decompose into ",#nameList," components"]
   3 --generate code; return
   assignList:=
@@ -637,7 +637,7 @@ setqMultiple(nameList,val,m,e) ==
   else [MKPROGN [x,:assignList,g],m',e]
 
 setqMultipleExplicit(nameList,valList,m,e) ==
-  #nameList^=#valList =>
+  #nameList~=#valList =>
     stackMessage ["Multiple assignment error; # of items in: ",nameList,
       "must = # in: ",valList]
   gensymList:= [genVariable() for name in nameList]
@@ -796,7 +796,7 @@ compReturn(["return",level,x],m,e) ==
   null $exitModeStack =>
     stackSemanticError(["the return before","%b",x,"%d","is unneccessary"],nil)
     nil
-  level^=1 => userError '"multi-level returns not supported"
+  level~=1 => userError '"multi-level returns not supported"
   index:= MAX(0,#$exitModeStack-1)
   if index>=0 then $returnMode:= resolve($exitModeStack.index,$returnMode)
   [x',m',e']:= u:= comp(x,$returnMode,e) or return nil
@@ -826,7 +826,7 @@ compElt(form,m,E) ==
         ,mmList]
       mmList.(0)
     [sig,[pred,val]]:= modemap
-    #sig^=2 and not val is ["elt",:.] => nil --what does the second clause do ????
+    #sig~=2 and not val is ["elt",:.] => nil --what does the second clause do ????
 --+
     val := genDeltaEntry [opOf anOp,:modemap]
     convert([["call",val],first rest sig,E], m) --implies fn calls used to access constants
@@ -1040,7 +1040,7 @@ compPretend(["pretend",x,t],m,e) ==
   e:= addDomain(t,e)
   T:= comp(x,t,e) or comp(x,$EmptyMode,e) or return nil
   if T.mode=t then warningMessage:= ["pretend",t," -- should replace by @"]
-  opOf(T.mode) = 'Union and opOf(m) ^= 'Union =>
+  opOf(T.mode) = 'Union and opOf(m) ~= 'Union =>
      stackSemanticError(["cannot pretend ",x," of mode ",T.mode," to mode ",m],nil)
   T:= [T.expr,t,T.env]
   T':= coerce(T,m) => (if warningMessage then stackWarning warningMessage; T')
@@ -1198,7 +1198,7 @@ autoCoerceByModemap([x,source,e],target) ==
 resolve(din,dout) ==
   din=$NoValueMode or dout=$NoValueMode => $NoValueMode
   dout=$EmptyMode => din
-  din^=dout and (STRINGP din or STRINGP dout) =>
+  din~=dout and (STRINGP din or STRINGP dout) =>
     modeEqual(dout,$String) => dout
     modeEqual(din,$String) => nil
     mkUnion(din,dout)
@@ -1208,7 +1208,7 @@ modeEqual(x,y) ==
   -- this is the late modeEqual
   -- orders Unions
   atom x or atom y => x=y
-  #x ^=#y => nil
+  #x ~=#y => nil
   x is ['Union,:xl] and y is ['Union,:yl] =>
     for x1 in xl repeat
       for y1 in yl repeat
@@ -1234,11 +1234,11 @@ modeEqualSubst(m1,m,e) ==
 
 compileSpad2Cmd args ==
     -- This is the old compiler
-    -- Assume we entered from the "compiler" function, so args ^= nil
+    -- Assume we entered from the "compiler" function, so args ~= nil
     -- and is a file with file extension .spad.
 
     path := pathname args
-    pathnameType path ^= '"spad" => throwKeyedMsg("S2IZ0082", nil)
+    pathnameType path ~= '"spad" => throwKeyedMsg("S2IZ0082", nil)
     not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     SETQ(_/EDITFILE, path)
@@ -1290,8 +1290,8 @@ compileSpad2Cmd args ==
         fullopt = 'nolibrary   => fun.1 := 'nolib
 
         -- Ignore quiet/nonquiet if "constructor" is given.
-        fullopt = 'quiet       => if fun.0 ^= 'c then fun.0 := 'rq
-        fullopt = 'noquiet     => if fun.0 ^= 'c then fun.0 := 'rf
+        fullopt = 'quiet       => if fun.0 ~= 'c then fun.0 := 'rq
+        fullopt = 'noquiet     => if fun.0 ~= 'c then fun.0 := 'rf
         fullopt = 'nobreak     => $scanIfTrue := true
         fullopt = 'break       => $scanIfTrue := nil
         fullopt = 'vartrace      =>

@@ -171,7 +171,7 @@ dbChooseOperandName(typ) ==
     name = "$" => 'domain
     GETDATABASE(name,'CONSTRUCTORKIND)
   s := PNAME opOf typ
-  kind ^= 'category =>
+  kind ~= 'category =>
     anySubstring?('"Integer",s,0) or anySubstring?('"Number",s,0) =>
       x := first $NumberList
       $NumberList := rest $NumberList
@@ -232,7 +232,7 @@ getSubstSignature sig ==
     newsig
 
 getSubstQualify(x,i,sig) ==
-    or/[CONTAINED(x,y) for y in sig for j in 1.. | j ^= i] => x
+    or/[CONTAINED(x,y) for y in sig for j in 1.. | j ~= i] => x
     false
 
 getSubstInsert(x,candidates) ==
@@ -347,7 +347,7 @@ koAttrs(conform,domname) ==
   $predvec: local :=
     $domain => $domain . 3
     GETDATABASE(conname,'PREDICATES)
-  u := [[a,:pred] for [a,:i] in $infovec . 2 | a ^= 'nil and (pred := sublisFormal(args,kTestPred i))]
+  u := [[a,:pred] for [a,:i] in $infovec . 2 | a ~= 'nil and (pred := sublisFormal(args,kTestPred i))]
                                                ---------  CHECK for a = nil
   listSort(function GLESSEQP,fn u) where fn u ==
     alist := nil
@@ -398,7 +398,7 @@ koOps(conform,domname,:options) == main where
       op1 := zeroOneConvert op
       acc :=
        [[op1,:[[sig,npred,:exposureTail] for [sig,slot,pred,key,:.] in sublisFormal(subargs,u) |
-         (key ^= 'Subsumed) and (npred := simpHasPred pred)]],:acc]
+         (key ~= 'Subsumed) and (npred := simpHasPred pred)]],:acc]
     acc
   merge(alist,alist1) == --alist1 takes precedence
     for [op,:al] in alist1 repeat
@@ -580,7 +580,7 @@ modemap2SigConds conds ==
   [conds]
 
 hasPatternVar x ==
-  IDENTP x and (x ^= "**") => isPatternVar x
+  IDENTP x and (x ~= "**") => isPatternVar x
   atom x => false
   or/[hasPatternVar y for y in x]
 

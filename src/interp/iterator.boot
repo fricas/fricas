@@ -284,7 +284,7 @@ modeIsAggregateOf(ListOrVector,m,e) ==
 --  nil
 --
 --computeMaxIndex(s,f,i) ==
---  i^=1 => cannotDo()
+--  i~=1 => cannotDo()
 --  s=1 => f
 --  exprDifference(f,exprDifference(s,1))
 --

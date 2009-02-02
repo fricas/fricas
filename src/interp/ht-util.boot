@@ -269,7 +269,7 @@ htLispLinks(links,:option) ==
 
 htLispMemoLinks(links) == htLispLinks(links,true)
 
-beforeAfter(x,u) == [[y for [y,:r] in tails u while x ^= y],r]
+beforeAfter(x,u) == [[y for [y,:r] in tails u while x ~= y],r]
 
 mkCurryFun(fun, val) ==
   name := GENTEMP()
@@ -537,7 +537,7 @@ makeSpadCommand(:l) ==
   lastArg := last l
   l := rest l
   argList := nil
-  for arg in l while arg ^= lastArg repeat
+  for arg in l while arg ~= lastArg repeat
     argList := [CONCAT(arg, '", "), :argList]
   argList := nreverse [lastArg, :argList]
   CONCAT(opForm, APPLY(function CONCAT, argList), '")")
@@ -546,7 +546,7 @@ htMakeInputList stringList ==
 -- makes an input form for constructing a list
   lastArg := last stringList
   argList := nil
-  for arg in stringList while arg ^= lastArg repeat
+  for arg in stringList while arg ~= lastArg repeat
     argList := [CONCAT(arg, '", "), :argList]
   argList := nreverse [lastArg, :argList]
   bracketString APPLY(function CONCAT, argList)

@@ -237,7 +237,7 @@ Collection(S:Type): Category == HomogeneousAggregate(S) with
         remove: (S,%) -> %
           ++ remove(x,u) returns a copy of u with all
           ++ elements \axiom{y = x} removed.
-          ++ Note: \axiom{remove(y,c) == [x for x in c | x ^= y]}.
+          ++ Note: \axiom{remove(y,c) == [x for x in c | x ~= y]}.
         removeDuplicates: % -> %
           ++ removeDuplicates(u) returns a copy of u with all duplicates removed.
    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
@@ -527,7 +527,7 @@ Dictionary(S:SetCategory): Category ==
 
      s = t ==
        eq?(s,t) => true
-       #s ^= #t => false
+       #s ~= #t => false
 -- I'd rather write
 --       every?(member?(#1, t), parts s)
 -- but the compiler complains
@@ -1069,9 +1069,9 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
 
      s:% = t:% ==
        eq?(s,t) => true
-       #s ^= #t => false
+       #s ~= #t => false
        for k in keys s repeat
-         (e := search(k, t)) case "failed" or (e::Entry) ^= s.k => return false
+         (e := search(k, t)) case "failed" or (e::Entry) ~= s.k => return false
        true
 
      map(f: Record(key:Key,entry:Entry)->Record(key:Key,entry:Entry), t: %): % ==
@@ -1573,7 +1573,7 @@ UnaryRecursiveAggregate(S:Type): Category == RecursiveAggregate S with
       eq?(x, y) => true
       for k in 0.. while not empty? x and not empty? y repeat
         k = cycleMax and cyclic? x => error "cyclic list"
-        first x ^= first y => return false
+        first x ~= first y => return false
         x := rest x
         y := rest y
       empty? x and empty? y
@@ -1961,7 +1961,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
 
     if S has SetCategory then
        reduce(f, a, identity,absorber) ==
-         for k in minIndex a .. maxIndex a while identity ^= absorber
+         for k in minIndex a .. maxIndex a while identity ~= absorber
                 repeat identity := f(identity, qelt(a, k))
          identity
 
@@ -2102,7 +2102,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
 
     if S has SetCategory then
       x = y ==
-        #x ^= #y => false
+        #x ~= #y => false
         for i in minIndex x .. maxIndex x repeat
           not(qelt(x, i) = qelt(y, i)) => return false
         true
@@ -2122,7 +2122,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       a < b ==
         for i in minIndex a .. maxIndex a
           for j in minIndex b .. maxIndex b repeat
-            qelt(a, i) ^= qelt(b, j) => return a.i < b.j
+            qelt(a, i) ~= qelt(b, j) => return a.i < b.j
         #a < #b
 
 
@@ -2331,7 +2331,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
    if S has SetCategory then
       reduce(f, x, i,a) ==
         r := i
-        while not empty? x and r ^= a repeat
+        while not empty? x and r ~= a repeat
           r := f(r, first x)
           x := rest x
         r
@@ -2394,7 +2394,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
      position(w, x, s) ==
        s < (m := minIndex x) => error "index out of range"
        x := rest(x, (s - m)::NonNegativeInteger)
-       for k in s.. while not empty? x and w ^= first x repeat
+       for k in s.. while not empty? x and w ~= first x repeat
          x := rest x
        empty? x => minIndex x - 1
        k
@@ -2408,7 +2408,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
    if S has OrderedSet then
      x < y ==
         while not empty? x and not empty? y repeat
-          first x ^= first y => return(first x < first y)
+          first x ~= first y => return(first x < first y)
           x := rest x
           y := rest y
         empty? x => not empty? y

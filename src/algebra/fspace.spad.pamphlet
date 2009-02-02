@@ -256,19 +256,19 @@ ExpressionSpace(): Category == Defn where
 
     elt(op:OP, args:List %) ==
       not belong? op => error "Unknown operator"
-      ((u := arity op) case N) and (#args ^= u::N)
+      ((u := arity op) case N) and (#args ~= u::N)
                                     => error "Wrong number of arguments"
       (v := evaluate(op,args)$BasicOperatorFunctions1(%)) case % => v::%
       okkernel(op, args)
 
     retract f ==
       (k := mainKernel f) case "failed" => error "not a kernel"
-      k::K::% ^= f => error "not a kernel"
+      k::K::% ~= f => error "not a kernel"
       k::K
 
     retractIfCan f ==
       (k := mainKernel f) case "failed" => "failed"
-      k::K::% ^= f => "failed"
+      k::K::% ~= f => "failed"
       k
 
     is?(f:%, s:SY) ==
@@ -641,7 +641,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
         a:%  := 0
         f    := eval((lfunc.n) arg, lop, lexp, lfunc)
         e    := lexp.n
-        while q ^= 0 repeat
+        while q ~= 0 repeat
           m  := degree q
           qr := divide(m, e)
           t1 := f ** (qr.quotient)::N
@@ -690,14 +690,14 @@ FunctionSpace(R:OrderedSet): Category == Definition where
         u   := third l
         arg := argument k
         ans:% := 0
-        if (not member?(u,done)) and (ans := differentiate(u,x))^=0 then
+        if (not member?(u,done)) and (ans := differentiate(u,x)) ~= 0 then
           ans := ans * kernel(opdiff,
                [subst(expr, [kd], [kernel(opdiff, [first l, gg, gg])]),
                              gg, u])
         done := concat(gg, done)
         is?(k, opdiff) => ans + diffdiff0(arg, x, expr, k, done)
         for i in minIndex arg .. maxIndex arg for b in arg repeat
-          if (not member?(b,done)) and (bp:=differentiate(b,x))^=0 then
+          if (not member?(b,done)) and (bp:=differentiate(b,x)) ~= 0 then
             g   := symsub(gendiff, i)::%
             ans := ans + bp * kernel(opdiff, [subst(expr, [kd],
              [kernel(opdiff, [substArg(op, arg, i, g), gg, u])]), g, b])
@@ -745,7 +745,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
         grad :=
           (u := derivative op) case "failed" => opderiv(op, n)
           u::List(List % -> %)
-        if #grad ^= n then grad := opderiv(op, n)
+        if #grad ~= n then grad := opderiv(op, n)
         [g args for g in grad]
 
     -- SPECIALDIFF contains a map (List %, Symbol) -> %

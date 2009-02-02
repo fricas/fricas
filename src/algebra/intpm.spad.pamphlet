@@ -117,7 +117,7 @@ PatternMatchIntegration(R, F): Exports == Implementation where
         [cc, nc]
       if (v := isPower f) case Record(val:F, exponent:Z) then
         vv := v::Record(val:F, exponent:Z)
-        (vv.exponent ^= 1) =>
+        (vv.exponent ~= 1) =>
           rec := splitConstant(vv.val, x)
           return [rec.const ** vv.exponent, rec.nconst ** vv.exponent]
       error "splitConstant: should not happen"
@@ -233,7 +233,7 @@ PatternMatchIntegration(R, F): Exports == Implementation where
                  and failed?(res := patternMatch(f,convert(patci0)@PAT,res0)) =>
                    [NONE, 0, 0]
              l := mkalist res
-             (b := l.pmb) ^= 2 * (a := l.pma) => [NONE, 0, 0]
+             (b := l.pmb) ~= 2 * (a := l.pma) => [NONE, 0, 0]
              db := differentiate(b, x)
              d := (cc := l.pmc) / db
              zero? differentiate(d, x) =>
@@ -248,11 +248,11 @@ PatternMatchIntegration(R, F): Exports == Implementation where
              rec := froot(y, 2)$PolynomialRoots(IndexedExponents K, K, R, P, F)
 --             one?(rec.exponent) => rec.coef * rec.radicand
              ((rec.exponent) = 1) => rec.coef * rec.radicand
-             rec.exponent ^=2 => error "insqrt: hould not happen"
+             rec.exponent ~= 2 => error "insqrt: hould not happen"
              rec.coef * sqrt(rec.radicand)
 
            pmintegrate(f, x) ==
-             (rc := splitConstant(f, x)).const ^= 1 =>
+             (rc := splitConstant(f, x)).const ~= 1 =>
                (u := pmintegrate(rc.nconst, x)) case "failed" => "failed"
                rec := u::ANS
                [rc.const * rec.special, rc.const * rec.integrand]
@@ -270,7 +270,7 @@ PatternMatchIntegration(R, F): Exports == Implementation where
              "failed"
 
            pmComplexintegrate(f, x) ==
-             (rc := splitConstant(f, x)).const ^= 1 =>
+             (rc := splitConstant(f, x)).const ~= 1 =>
                (u := pmComplexintegrate(rc.nconst, x)) case "failed" => "failed"
                rec := u::ANS
                [rc.const * rec.special, rc.const * rec.integrand]

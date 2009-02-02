@@ -369,8 +369,8 @@ AlgebraicManipulations(R, F): Exports == Implementation where
       inroot(op, x, n) ==
 --        one? x => x
         (x = 1) => x
---        (x ^= -1) and (one?(num := numer x) or (num = -1)) =>
-        (x ^= -1) and (((num := numer x) = 1) or (num = -1)) =>
+--        (x ~= -1) and (one?(num := numer x) or (num = -1)) =>
+        (x ~= -1) and (((num := numer x) = 1) or (num = -1)) =>
           inv inroot(op, (num * denom x)::F, n)
         (u := isExpt(x, op)) case "failed" => kernel(op, [x, n::F])
         pr := u::Record(var:K, exponent:Integer)
@@ -756,7 +756,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
 
     supexp(p, f1, f2, bse) ==
       ans:F := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         g := htrigs(leadingCoefficient(p)::F)
         if ((d := degree(p)::Z - bse) >= 0) then
              ans := ans + g * f1 ** d
@@ -785,7 +785,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
          exlog(numer(x := expand arg)) - exlog denom x
       num := numer arg
       den := denom arg
-      (b := (reductum num) / den) ^= 0 =>
+      (b := (reductum num) / den) ~= 0 =>
         a := (leadingMonomial num) / den
         is?(op, "exp"::Symbol) => exp(expand a) * expand(exp b)
         is?(op, "sin"::Symbol) =>
@@ -805,7 +805,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
 
     smpexp p ==
       ans:F := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         ans := ans + termexp leadingMonomial p
         p   := reductum p
       ans

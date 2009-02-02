@@ -96,8 +96,8 @@ isValidType form ==
     null (sig := getConstructorSignature form) => nil
     [.,:cl] := sig
     -- following line is needed to deal with mutable domains
-    if # cl ^= # argl and GENSYMP last argl then argl:= DROP(-1,argl)
-    # cl ^= # argl => nil
+    if # cl ~= # argl and GENSYMP last argl then argl:= DROP(-1,argl)
+    # cl ~= # argl => nil
     cl:= replaceSharps(cl,form)
     and/[isValid for x in argl for c in cl] where isValid ==
       categoryForm?(c) =>
@@ -163,7 +163,7 @@ isLegitimateMode(t,hasPolyMode,polyVarList) ==
 
   t := equiType t
   vl := isPolynomialMode t =>
-    if vl^='all then
+    if vl~='all then
       var:= or/[(x in polyVarList => x;nil) for x in vl] => return false
       listOfDuplicates vl => return false
       polyVarList:= union(vl,polyVarList)

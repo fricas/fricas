@@ -279,7 +279,7 @@ fortran2Lines f ==
   fs := NIL
   lines := NIL
   while f repeat
-    while f and (ff := first(f)) ^= '"%l" repeat
+    while f and (ff := first(f)) ~= '"%l" repeat
       fs := [ff,:fs]
       f := rest f
     if f and first(f) = '"%l" then f := rest f

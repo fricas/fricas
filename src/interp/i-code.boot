@@ -59,7 +59,7 @@ intCodeGenCOERCE(triple,t2) ==
 
   val is ['THROW,label,code] =>
     if label is ['QUOTE, l] then label := l
-    null($compilingMap) or (label ^= mapCatchName($mapName)) =>
+    null($compilingMap) or (label ~= mapCatchName($mapName)) =>
       objNew(['THROW,label,wrapped2Quote objVal
         intCodeGenCOERCE(objNew(code,t1),t2)],t2)
     -- we have a return statement. just send it back as is

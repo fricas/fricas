@@ -165,7 +165,7 @@ genDeltaEntry opMmPair ==
     -- following hack needed to invert Rep to $ substitution
 --  if odc = 'Rep and cform is [.,.,osig] then sig:=osig
   newimp := optDeltaEntry(op,nsig,dc,eltOrConst) => newimp
-  setDifference(listOfBoundVars dc,$functorLocalParameters) ^= [] =>
+  setDifference(listOfBoundVars dc,$functorLocalParameters) ~= [] =>
     ['applyFun,['compiledLookupCheck,MKQ op,
          mkList consSig(nsig,dc),consDomainForm(dc,nil)]]
   odc := dc
@@ -174,7 +174,7 @@ genDeltaEntry opMmPair ==
  --   cform := substitute('$,dc,cform)
   opModemapPair :=
     [op,[dc,:[genDeltaSig x for x in nsig]],['T,cform]] -- force pred to T
-  if null NRTassocIndex dc and dc ^= $NRTaddForm and
+  if null NRTassocIndex dc and dc ~= $NRTaddForm and
     (member(dc,$functorLocalParameters) or null atom dc) then
     --create "domain" entry to $NRTdeltaList
       $NRTdeltaList:= [['domain,NRTaddInner dc,:dc],:$NRTdeltaList]
@@ -524,7 +524,7 @@ NRTaddToSlam([name,:argnames],shell) ==
 changeDirectoryInSlot1() ==  --called by buildFunctor
   $lisplibOperationAlist := [sigloc entry for entry in $domainShell.1] where
     sigloc [opsig,pred,fnsel] ==
-        if pred ^= 'T then
+        if pred ~= 'T then
           pred := simpBool pred
           $NRTslot1PredicateList := insert(pred,$NRTslot1PredicateList)
         fnsel is [op,a,:.] and (op = 'ELT or op = 'CONST) =>
@@ -538,7 +538,7 @@ changeDirectoryInSlot1() ==  --called by buildFunctor
   $newEnv :local := $e
   $domainShell.1 := [fn entry for entry in sortedOplist] where
     fn [[op,sig],pred,fnsel] ==
-       if $lastPred ^= pred then
+       if $lastPred ~= pred then
             $newEnv := deepChaseInferences(pred,$e)
             $lastPred := pred
        newfnsel :=

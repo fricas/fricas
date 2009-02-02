@@ -248,7 +248,7 @@ mkAtree3(x,op,argl) ==
     r := mkAtreeValueOf r
     v :=
       null arg => VECTOR(NIL,NIL,NIL)
-      PAIRP arg and rest arg and first arg^= "|" =>
+      PAIRP arg and rest arg and first arg~= "|" =>
         collectDefTypesAndPreds ['Tuple,:arg]
       null rest arg => collectDefTypesAndPreds first arg
       collectDefTypesAndPreds arg
@@ -270,7 +270,7 @@ mkAtree3(x,op,argl) ==
     a is [op,:arg] =>
       v :=
         null arg => VECTOR(NIL,NIL,NIL)
-        PAIRP arg and rest arg and first arg^= "|" =>
+        PAIRP arg and rest arg and first arg~= "|" =>
           collectDefTypesAndPreds ['Tuple,:arg]
         null rest arg => collectDefTypesAndPreds first arg
         collectDefTypesAndPreds arg
@@ -372,7 +372,7 @@ unVectorize body ==
   -- transforms from an atree back into a tree
   VECP body =>
     name := getUnname body
-    name ^= $immediateDataSymbol => name
+    name ~= $immediateDataSymbol => name
     objValUnwrap getValue body
   atom body => body
   body is [op,:argl] =>
@@ -550,12 +550,12 @@ getModeSetUseSubdomain x ==
 --% Environment Utilities
 
 -- getValueFromEnvironment(x,mode) ==
---   $failure ^= (v := getValueFromSpecificEnvironment(x,mode,$env)) => v
---   $failure ^= (v := getValueFromSpecificEnvironment(x,mode,$e))   => v
+--   $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$env)) => v
+--   $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$e))   => v
 --   throwKeyedMsg("S2IE0001",[x])
 getValueFromEnvironment(x,mode) ==
-  $failure ^= (v := getValueFromSpecificEnvironment(x,mode,$env)) => v
-  $failure ^= (v := getValueFromSpecificEnvironment(x,mode,$e))   => v
+  $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$env)) => v
+  $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$e))   => v
   null(v := coerceInt(objNew(x, ['Variable, x]), mode)) =>
      throwKeyedMsg("S2IE0001",[x])
   objValUnwrap v

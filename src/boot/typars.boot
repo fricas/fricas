@@ -451,7 +451,7 @@ bpPrefixOperator()==
      GET($ttok,"SHOEPRE") and bpPushId() and  bpNext()
 
 -- InfixOperator: = | * | + | is | isnt | and | or | / | ** | - |
---     < | > | <= | >= | ^= ;
+--     < | > | <= | >= | ~= ;
 bpInfixOperator()==
   EQCAR( $stok,"KEY") and
     GET($ttok,"SHOEINF") and bpPushId() and  bpNext()

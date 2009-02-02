@@ -378,7 +378,7 @@ bcOpTable(u,fn) ==
   htEndTable()
 
 bcNameConTable u ==
-  $bcMultipleNames: local := (#u ^= 1)
+  $bcMultipleNames: local := (#u ~= 1)
   bcConTable REMDUP u
   -- bcConTable u
 
@@ -423,7 +423,7 @@ bcConPredTable(u,conname,:options) ==
     if extractHasArgs pred is [arglist,:pred] then
       htSay('" {\em of} ")
       bcConform([conname,:arglist],italicList,true)
-    if pred ^= 'etc then bcPred(pred,italicList)
+    if pred ~= 'etc then bcPred(pred,italicList)
     htSay '"}"
   htEndTable()
 
@@ -494,7 +494,7 @@ dbSayItems(countOrPrefix,singular,plural,:options) ==
   else if count = 1 then htSay('"1 ",singular)
   else htSay(count,'" ",plural)
   for x in options repeat bcHt x
-  if count ^= 0 then bcHt '":"
+  if count ~= 0 then bcHt '":"
 
 dbBasicConstructor? conname == member(dbSourceFile conname,'("catdef" "coerce"))
 

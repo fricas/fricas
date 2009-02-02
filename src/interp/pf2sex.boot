@@ -108,7 +108,7 @@ pf2Sex1 pf ==
     [":", pf2Sex1 pfTypedId pf, pf2Sex1 pfTypedType pf]
   pfAssign? pf =>
     idList := [pf2Sex1 x for x in pf0AssignLhsItems pf]
-    if #idList ^= 1 then idList := ['Tuple, :idList]
+    if #idList ~= 1 then idList := ['Tuple, :idList]
     else idList := first idList
     ["LET", idList, pf2Sex1 pfAssignRhs pf]
   pfDefinition? pf =>
@@ -269,7 +269,7 @@ pfDefinition2Sex pf ==
     ["OPTARG", pf2Sex1 CAR pf0DefinitionLhsItems pf,
      pf2Sex1 pfDefinitionRhs pf]
   idList := [pf2Sex1 x for x in pf0DefinitionLhsItems pf]
-  #idList ^= 1 =>
+  #idList ~= 1 =>
     systemError '"lhs of definition must be a single item in the interpreter"
   id := first idList
   rhs := pfDefinitionRhs pf
@@ -326,7 +326,7 @@ pfSequence2Sex pf ==
 pfSequence2Sex0 seqList ==
   null seqList => "noBranch"
   seqTranList := []
-  while seqList ^= nil repeat
+  while seqList ~= nil repeat
     item := first seqList
     item is ["exit", cond, value] =>
       item := ["IF", cond, value, pfSequence2Sex0 rest seqList]

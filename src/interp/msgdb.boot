@@ -91,15 +91,15 @@ string2Words l ==
 
 wordFrom(l,i) ==
   maxIndex := MAXINDEX l
-  k := or/[j for j in i..maxIndex | l.j ^= char ('_ ) ] or return nil
+  k := or/[j for j in i..maxIndex | l.j ~= char ('_ ) ] or return nil
   buf := '""
-  while k < maxIndex and (c := l.k) ^= char ('_ ) repeat
+  while k < maxIndex and (c := l.k) ~= char ('_ ) repeat
     ch :=
       c = char '__   => l.(k := 1+k)  --this may exceed bounds
       c
     buf := STRCONC(buf,ch)
     k := k + 1
-  if k = maxIndex and (c := l.k) ^= char ('_ ) then buf := STRCONC(buf,c)
+  if k = maxIndex and (c := l.k) ~= char ('_ ) then buf := STRCONC(buf,c)
   [buf,k+1]
 
 getKeyedMsg key == fetchKeyedMsg(key,false)
@@ -133,7 +133,7 @@ segmentedMsgPreprocess x ==
 removeAttributes msg ==
     --takes a segmented message and returns it with the attributes
     --separted.
-    first msg ^= '"%atbeg" =>
+    first msg ~= '"%atbeg" =>
         [msg,NIL]
     attList := []
     until item = '"%atend" repeat
@@ -885,7 +885,7 @@ sayAsManyPerLineAsPossible l ==
     [c,:l] := l
     str := STRCONC(str,c,fillerSpaces(w - #c,'" "))
     REMAINDER(i+1,p) = 0 => (sayMSG str ; str := '"" )
-  if str ^= '"" then sayMSG str
+  if str ~= '"" then sayMSG str
   NIL
 
 say2PerLine l == say2PerLineWidth(l,$LINELENGTH / 2)
@@ -911,7 +911,7 @@ sayLongOperation x ==
 
 splitListOn(x,key) ==
   key in x =>
-    while first x ^= key repeat
+    while first x ~= key repeat
       y:= [first x,:y]
       x:= rest x
     [nreverse y,x]

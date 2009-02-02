@@ -135,7 +135,7 @@ LaplaceTransform(R, F): Exports == Implementation where
         [c, c1, c0]
       if (v := isPower f) case Record(val:F, exponent:Integer) then
         w := v::Record(val:F, exponent:Integer)
-        (w.exponent ^= 1) and
+        (w.exponent ~= 1) and
           ((r := aexp(w.val, t)) case Record(coef:F,coef1:F,coef0:F)) =>
             rec := r::Record(coef:F, coef1:F, coef0:F)
             return [rec.coef ** w.exponent, w.exponent * rec.coef1,
@@ -196,7 +196,7 @@ LaplaceTransform(R, F): Exports == Implementation where
       -- Use linearity
       (u := mkPlus f) case List(F) =>
         +/[locallaplace(g, t, tt, s, ss) for g in u::List(F)]
-      (rec := splitConstant(f, t)).const ^= 1 =>
+      (rec := splitConstant(f, t)).const ~= 1 =>
         rec.const * locallaplace(rec.nconst, t, tt, s, ss)
 
       -- laplace(t^n*f(t),t,s) = (-1)^n*D(laplace(f(t),t,s), s, n))

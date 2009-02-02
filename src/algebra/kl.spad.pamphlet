@@ -285,7 +285,7 @@ Kernel(S:OrderedSet): Exports == Implementation where
       k1.posit < k2.posit
 
     kernel(fn, x, n) ==
-      ((u := arity fn) case N) and (#x ^= u::N)
+      ((u := arity fn) case N) and (#x ~= u::N)
                                     => error "Wrong number of arguments"
       enterInCache([fn, x, n, 0]$Rep, triage)
 
@@ -301,13 +301,13 @@ Kernel(S:OrderedSet): Exports == Implementation where
       (u::(List OutputForm -> OutputForm)) l
 
     triage(k1, k2) ==
-      k1.nest   ^= k2.nest   => B2Z(k1.nest   < k2.nest)
-      k1.op ^= k2.op => B2Z(k1.op < k2.op)
-      (n1 := #(argument k1)) ^= (n2 := #(argument k2)) => B2Z(n1 < n2)
+      k1.nest   ~= k2.nest   => B2Z(k1.nest   < k2.nest)
+      k1.op ~= k2.op => B2Z(k1.op < k2.op)
+      (n1 := #(argument k1)) ~= (n2 := #(argument k2)) => B2Z(n1 < n2)
       ((func := property(operator k1, SPECIALEQUAL)) case None) and
         (((func::None) pretend ((%, %) -> Boolean)) (k1, k2)) => 0
       for x1 in argument(k1) for x2 in argument(k2) repeat
-        x1 ^= x2 => return B2Z(x1 < x2)
+        x1 ~= x2 => return B2Z(x1 < x2)
       0
 
     if S has ConvertibleTo InputForm then

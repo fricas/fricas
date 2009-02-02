@@ -89,7 +89,7 @@ compDefineAddSignature([op,:argl],signature,e) ==
 hasFullSignature(argl,[target,:ml],e) ==
   target =>
     u:= [m or get(x,"mode",e) or return 'failed for x in argl for m in ml]
-    u^='failed => [target,:u]
+    u~='failed => [target,:u]
  
 addEmptyCapsuleIfNecessary(target,rhs) ==
   MEMQ(KAR rhs,$SpecialDomainNames) => rhs
@@ -241,7 +241,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
 --   4. compile body in environment of %type declarations for arguments
     op':= $op
     -- following line causes cats with no with or Join to be fresh copies
-    if opOf(formalBody)^='Join and opOf(formalBody)^='mkCategory then
+    if opOf(formalBody)~='Join and opOf(formalBody)~='mkCategory then
            formalBody := ['Join, formalBody]
     body:= optFunctorBody (compOrCroak(formalBody,signature'.target,e)).expr
     if $extraParms then
@@ -384,7 +384,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     [.,.,$e]:= compMakeDeclaration([":",'_$,target],m,$e)
     --The following loop sees if we can economise on ADDed operations
     --by using those of Rep, if that is the same. Example: DIRPROD
-    if $insideCategoryPackageIfTrue^= true  then
+    if $insideCategoryPackageIfTrue~= true  then
       if body is ['add,ab:=[fn,:.],['CAPSULE,:cb]] and MEMQ(fn,'(List Vector))
          and FindRep(cb) = ab
                where FindRep cb ==
@@ -444,7 +444,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       $lisplibKind:=
 ------->This next line prohibits changing the KIND once given
 --------kk:=GETDATABASE($op,'CONSTRUCTORKIND) => kk
-        target is ["CATEGORY",key,:.] and key^="domain" => 'package
+        target is ["CATEGORY",key,:.] and key~="domain" => 'package
         'domain
       $lisplibForm:= form
       if null $bootStrapMode then
@@ -477,7 +477,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     [fun,['Mapping,:signature'],originale]
  
 disallowNilAttribute x == 
-  res := [y for y in x | car y and car y ^= "nil"]
+  res := [y for y in x | car y and car y ~= "nil"]
 --HACK to get rid of nil attibutes ---NOTE: nil is RENAMED to NIL
 
 compFunctorBody(body,m,e,parForm) ==
@@ -800,7 +800,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
 
 getSignatureFromMode(form,e) ==
   getmode(opOf form,e) is ['Mapping,:signature] =>
-    #form^=#signature => stackAndThrow ["Wrong number of arguments: ",form]
+    #form~=#signature => stackAndThrow ["Wrong number of arguments: ",form]
     EQSUBSTLIST(rest form,take(#rest form,$FormalMapVariableList),signature)
  
 hasSigInTargetCategory(argl,form,opsig,e) ==
@@ -1229,7 +1229,7 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
   olde:= $e
   [p',.,$e]:= comp(p,$Boolean,$e) or userError ['"not a Boolean:",p]
   oldFLP:=$functorLocalParameters
-  if x^="noBranch" then
+  if x~="noBranch" then
     compSingleCapsuleItem(x,$predl,getSuccessEnvironment(p,$e))
     x':=localExtras(oldFLP)
           where localExtras(oldFLP) ==
@@ -1257,7 +1257,7 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
             $functorLocalParameters:=[:oldFLP,:NREVERSE nils]
             NREVERSE ans
   oldFLP:=$functorLocalParameters
-  if y^="noBranch" then
+  if y~="noBranch" then
     compSingleCapsuleItem(y,$predl,getInverseEnvironment(p,olde))
     y':=localExtras(oldFLP)
   RPLACA(item,"COND")
@@ -1317,7 +1317,7 @@ compCategory(x,m,e) ==
       $sigList: local := nil
       $atList: local := nil
       for x in l repeat compCategoryItem(x,nil)
-      -- $atList ^= nil => BREAK()
+      -- $atList ~= nil => BREAK()
       rep:= mkExplicitCategoryFunction(domainOrPackage,$sigList,$atList)
     --if inside compDefineCategory, provide for category argument substitution
       [rep,m,e]
@@ -1333,7 +1333,7 @@ mkExplicitCategoryFunction(domainOrPackage,sigList,atList) ==
   parameters:=
     REMDUP
       ("append"/
-        [[x for x in sig | IDENTP x and x^='_$]
+        [[x for x in sig | IDENTP x and x~='_$]
           for ["QUOTE",[[.,sig,:.],:.]] in sigList])
   wrapDomainSub(parameters,body)
  
@@ -1361,7 +1361,7 @@ DomainSubstitutionFunction(parameters,body) ==
         first body="QUOTE" => body
         PAIRP $definition and
             isFunctor first body and
-              first body ^= first $definition
+              first body ~= first $definition
           =>  ['QUOTE,optimize body]
         [Subst(parameters,u) for u in body]
   not (body is ["Join",:.]) => body
@@ -1382,7 +1382,7 @@ compCategoryItem(x,predl) ==
     compCategoryItem(e,predl')
   x is ["IF",a,b,c] =>
     predl':= [a,:predl]
-    if b^="noBranch" then
+    if b~="noBranch" then
       b is ["PROGN",:l] => for y in l repeat compCategoryItem(y,predl')
       compCategoryItem(b,predl')
     c="noBranch" => nil

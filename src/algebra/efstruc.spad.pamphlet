@@ -211,10 +211,10 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     realElem(f, l)       == smpElem(numer f, l) / smpElem(denom f, l)
     realElementary(f, x) == realElem(f, [x])
     realElementary f     == realElem(f, variables f)
-    toY ker              == [func for k in ker | (func := ktoY k) ^= 0]
-    toZ ker              == [func for k in ker | (func := ktoZ k) ^= 0]
-    toU ker              == [func for k in ker | (func := ktoU k) ^= 0]
-    toV ker              == [func for k in ker | (func := ktoV k) ^= 0]
+    toY ker              == [func for k in ker | (func := ktoY k) ~= 0]
+    toZ ker              == [func for k in ker | (func := ktoZ k) ~= 0]
+    toU ker              == [func for k in ker | (func := ktoU k) ~= 0]
+    toV ker              == [func for k in ker | (func := ktoV k) ~= 0]
     rtNormalize f        == rootNormalize0(f).func
     toR(ker, x) == select(is?(#1, NTHR) and first argument(#1) = x, ker)
 
@@ -350,7 +350,7 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
             findQRelation(lv, lpar, toU lk, ktoU ker) 
         is?(ker, NTHR) => rootDep(lk, ker)
         comb? and is?(ker, "factorial"::SY) =>
-            factdeprel([x for x in lk | is?(x,"factorial"::SY) and x^=ker],
+            factdeprel([x for x in lk | is?(x,"factorial"::SY) and x ~= ker],
                        ker)
         [true]
 
@@ -429,7 +429,7 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     rooteval(f, lk, k, n) ==
       nv := nthRoot(x := first argument k, m := retract(n)@Z)
       l  := [r for r in concat(k, toR(lk, x)) |
-             retract(second argument r)@Z ^= m]
+             retract(second argument r)@Z ~= m]
       lv := [nv ** (n / (retract(second argument r)@Z::Q)) for r in l]
       [eval(f, l, lv), l, lv]
 
@@ -559,8 +559,8 @@ height(k1) to be maximal
           tannosimp(f, lk, k, v, fns, c)
       v0 := retract(inv qelt(v, rec.index))@Z
       lv := [qelt(v, i) for i in minIndex v .. maxIndex v |
-                                                 i ^= rec.index]$List(Q)
-      l  := [kk for kk in lk | kk ^= rec.ker]
+                                                 i ~= rec.index]$List(Q)
+      l  := [kk for kk in lk | kk ~= rec.ker]
       g := tanSum(-v0 * c, concat(tanNa(k::F, v0),
            [tanNa(x, - retract(a * v0)@Z) for a in lv for x in toV l]))
       [eval(f, [rec.ker], [g]), [rec.ker], [g]]
@@ -689,8 +689,8 @@ height(k1) to be maximal
         expnosimp(f, lk, k, v, fns, exp g)
       v0 := retract(inv qelt(v, rec.index))@Z
       lv := [qelt(v, i) for i in minIndex v .. maxIndex v |
-                                                 i ^= rec.index]$List(Q)
-      l  := [kk for kk in lk | kk ^= rec.ker]
+                                                 i ~= rec.index]$List(Q)
+      l  := [kk for kk in lk | kk ~= rec.ker]
       h :F := */[exp(z) ** (- retract(a * v0)@Z) for a in lv for z in toY l]
       h := h * exp(-v0 * g) * (k::F) ** v0
       [eval(f, [rec.ker], [h]), [rec.ker], [h]]
@@ -864,7 +864,7 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
 
     supexp(p, f1, f2, bse) ==
       ans:GF := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         g := explogs2trigs(leadingCoefficient(p)::FG)
         if ((d := degree(p)::Z - bse) >= 0) then
              ans := ans + g * f1 ** d

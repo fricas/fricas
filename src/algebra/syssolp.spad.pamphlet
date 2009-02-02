@@ -146,13 +146,13 @@ SystemSolvePackage(R): Cat == Cap where
            push:=PushVariables(R,DP,OV,dmp)
            lq : L dmp
            lvv:L OV:=[variable(vv)::OV for vv in lv]
-           lq:=[pushup(df::dmp,lvv)$push for f in lf|(df:=denom f)^=1]
+           lq:=[pushup(df::dmp,lvv)$push for f in lf|(df:=denom f) ~= 1]
            lp:=[pushup(numer(f)::dmp,lvv)$push for f in lf]
            parRes:=groebSolve(lp,lvv)$GroebnerSolve(lv,P R,R)
-           if lq^=[] then
+           if lq ~= [] then
              gb:=GroebnerInternalPackage(P R,DirectProduct(#lv,NNI),OV,dmp)
              parRes:=[pr for pr in parRes|
-                       and/[(redPol(fq,pr pretend List(dmp))$gb) ^=0
+                       and/[(redPol(fq,pr pretend List(dmp))$gb) ~= 0
                          for fq in lq]]
            [[retract pushdown(pf,lvv)$push for pf in pr] for pr in parRes]
 
@@ -199,7 +199,7 @@ SystemSolvePackage(R): Cat == Cap where
            rec.particular case "failed" => "failed"
            rhs := rec.particular :: V F
            zeron:V F:=zero(#lv)
-           for p in rec.basis | p ^= zeron repeat
+           for p in rec.basis | p ~= zeron repeat
                sym := newInF(1)
                for i in 1..#lv repeat
                    rhs.i := rhs.i + sym*p.i

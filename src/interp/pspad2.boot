@@ -573,10 +573,10 @@ isIdentifier x ==
   IDENTP x =>
     s:= PNAME x
     #s = 0 => nil
-    ALPHA_-CHAR_-P s.(0) => and/[s.i^=char '" " for i in 1..MAXINDEX s]
+    ALPHA_-CHAR_-P s.(0) => and/[s.i~=char '" " for i in 1..MAXINDEX s]
     #s>1 =>
       or/[ALPHA_-CHAR_-P s.i for i in 1..(m:= MAXINDEX s)] =>
-        and/[s.i^=char '" " for i in 1..m] => true
+        and/[s.i~=char '" " for i in 1..m] => true
  
 isGensym x == 
   s := STRINGIMAGE x

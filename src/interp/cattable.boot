@@ -180,7 +180,7 @@ encodeCategoryAlist(id,alist) ==
       b
     u:= assoc(key,newAl) =>
       argl => RPLACD(u,encodeUnion(id,first newEntry,rest u))
-      if newEntry ^= rest u then
+      if newEntry ~= rest u then
         p:= moreGeneralCategoryPredicate(id,newEntry,rest u) => RPLACD(u,p)
         sayMSG '"Duplicate entries:"
         PRINT [newEntry,rest u]

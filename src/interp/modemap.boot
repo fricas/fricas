@@ -155,7 +155,7 @@ mkNewModemapList(mc,sig,pred,fn,curModemapList,e,filenameOrNil) ==
   (oldMap:= assoc(map,curModemapList)) and oldMap is [.,[opred, =fn],:.] =>
     $forceAdd => mergeModemap(entry,curModemapList,e)
     opred=true => curModemapList
-    if pred^=true and pred^=opred then pred:= ["OR",pred,opred]
+    if pred~=true and pred~=opred then pred:= ["OR",pred,opred]
     [if x=oldMap then [map,[pred,fn],:filenameOrNil] else x
  
   --if new modemap less general, put at end; otherwise, at front
@@ -313,7 +313,7 @@ compCat(form is [functorName,:argl],m,e) ==
   [funList,e]:= FUNCALL(fn,form,form,e)
   catForm:=
     ["Join",'(SetCategory),["CATEGORY","domain",:
-      [["SIGNATURE",op,sig] for [op,sig,.] in funList | op^="="]]]
+      [["SIGNATURE",op,sig] for [op,sig,.] in funList | op~="="]]]
   --RDJ: for coercion purposes, it necessary to know it's a Set; I'm not
   --sure if it uses any of the other signatures(see extendsCategoryForm)
   [form,catForm,e]

@@ -108,7 +108,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
     mapExpon(f, l) ==
       ans:List(REC) := empty()
       for x in l repeat
-        if (a := f(x.exp)) ^= 0 then ans := concat([x.gen, a], ans)
+        if (a := f(x.exp)) ~= 0 then ans := concat([x.gen, a], ans)
       reverse_! ans
 
     outputForm(l, op, opexp, id) ==
@@ -132,7 +132,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
       concat([s, un], f)
 
     commutativeEquality(s1:$, s2:$):Boolean ==
-      #s1 ^= #s2 => false
+      #s1 ~= #s2 => false
       for t1 in s1 repeat
           if not member?(t1,s2) then return false
       true
@@ -301,15 +301,15 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
         hclf(f, g) ==
             h:List(REC) := empty()
             for f0 in listOfMonoms f for g0 in listOfMonoms g repeat
-                f0.gen ^= g0.gen => return makeMulti h
+                f0.gen ~= g0.gen => return makeMulti h
                 h := concat_!(h, [f0.gen, min(f0.exp, g0.exp)])
-                f0.exp ^= g0.exp => return makeMulti h
+                f0.exp ~= g0.exp => return makeMulti h
             makeMulti h
 
         lquo(aq, a) ==
             size a > #(laq := copy listOfMonoms aq) => "failed"
             for a0 in listOfMonoms a repeat
-                a0.gen ^= laq.first.gen or a0.exp > laq.first.exp =>
+                a0.gen ~= laq.first.gen or a0.exp > laq.first.exp =>
                                                           return "failed"
                 if a0.exp = laq.first.exp then laq := rest laq
                 else setfirst_!(laq, [laq.first.gen,

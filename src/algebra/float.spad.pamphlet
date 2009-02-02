@@ -128,7 +128,7 @@ Float():
       ++ normalize(x) normalizes x at current precision.
    relerror : (%, %) -> I
       ++ relerror(x,y) computes the absolute value of \spad{x - y} divided by
-      ++ y, when \spad{y \^= 0}.
+      ++ y, when \spad{y \~= 0}.
    shift: (%, I) -> %
       ++ shift(x,n) adds n to the exponent of float x.
    rationalApproximation: (%, N) -> RN
@@ -310,7 +310,7 @@ Float():
       s:I := d:I := shift(1,p)
       y := times(x,x)
       t := m := - shift2(y.mantissa,y.exponent+p)
-      for i in 3.. by 2 while t ^= 0 repeat
+      for i in 3.. by 2 while t ~= 0 repeat
          s := s + t quo i
          t := (m * t) quo d
       x * [s,-p]
@@ -323,7 +323,7 @@ Float():
       e:I := bits() + LENGTH bits() + LENGTH n + 1
       s:I := shift(1,e) quo n
       t:I := s quo n2
-      for k in 3.. by 2 while t ^= 0 repeat
+      for k in 3.. by 2 while t ~= 0 repeat
          s := s + t quo k
          t := t quo n2
       normalize [s,-e]
@@ -351,7 +351,7 @@ Float():
       s:I := d:I := shift(1,p)
       m:I := - shift2(y.mantissa,y.exponent+p)
       t:I := m quo 6
-      for i in 4.. by 2 while t ^= 0 repeat
+      for i in 4.. by 2 while t ~= 0 repeat
          s := s + t
          t := (m * t) quo (i*(i+1))
          t := t quo d
@@ -388,7 +388,7 @@ Float():
       s:I := d:I := shift(1,p)
       m:I := - shift2(y.mantissa,y.exponent+p)
       t:I := m quo 2
-      for i in 3.. by 2 while t ^= 0 repeat
+      for i in 3.. by 2 while t ~= 0 repeat
          s := s + t
          t := (m * t) quo (i*(i+1))
          t := t quo d
@@ -420,7 +420,7 @@ Float():
       t:I := shift(1,n) quo 882
       d:I := 4*882**2
       s:I := 0
-      for i in 2.. by 2 for j in 1123.. by 21460 while t ^= 0 repeat
+      for i in 2.. by 2 for j in 1123.. by 21460 while t ~= 0 repeat
          s := s + j*t
          m := -(i-1)*(2*i-1)*(2*i-3)
          t := (m*t) quo (d*i**3)
@@ -492,7 +492,7 @@ Float():
       s:I := d:I := shift(1,p)
       z := times(y,y)
       t := m := shift2(z.mantissa,z.exponent+p)
-      for i in 3.. by 2 while t ^= 0 repeat
+      for i in 3.. by 2 while t ~= 0 repeat
          s := s + t quo i
          t := m * t quo d
       y * [s,1-p]
@@ -506,7 +506,7 @@ Float():
       n := n + LENGTH n + 3  -- guard bits
       s:I := shift(1,n+1) quo 3
       t:I := s quo 9
-      for k in 3.. by 2 while t ^= 0 repeat
+      for k in 3.. by 2 while t ~= 0 repeat
          s := s + t quo k
          t := t quo 9
       L2 := [bits(),[s,-n]]
@@ -521,7 +521,7 @@ Float():
       n := n + LENGTH n + 5  -- guard bits
       s:I := shift(1,n+1) quo 9
       t:I := s quo 81
-      for k in 3.. by 2 while t ^= 0 repeat
+      for k in 3.. by 2 while t ~= 0 repeat
          s := s + t quo k
          t := t quo 81
       -- We have log 10 = log 5 + log 2 and log 5/4 = log 5 - 2 log 2
@@ -534,7 +534,7 @@ Float():
    exp(x) ==
       -- exp(n+x) = exp(1)**n exp(x) for n such that |x| < 1
       p := bits(); inc 5; e1:% := 1
-      if (n := wholePart x) ^= 0 then
+      if (n := wholePart x) ~= 0 then
          inc LENGTH n; e1 := exp1 ** n; dec LENGTH n
          x := fractionPart x
       if zero? x then (bits p; return normalize e1)
@@ -554,7 +554,7 @@ Float():
       p := bits() + LENGTH bits() + 1
       s:I := d:I := shift(1,p)
       t:I := n:I := shift2(x.mantissa,x.exponent+p)
-      for i in 2.. while t ^= 0 repeat
+      for i in 2.. while t ~= 0 repeat
          s := s + t
          t := (n * t) quo i
          t := t quo d
@@ -870,7 +870,7 @@ Float():
       d := if OUTPREC() = -1 then digits::I else OUTPREC()
 --    g := convert10(abs f,digits); m := g.mantissa; e := g.exponent
       g := convert10(abs f,d); m := g.mantissa; e := g.exponent
-      if OUTPREC() ^= -1 then
+      if OUTPREC() ~= -1 then
          -- round g to OUTPREC digits after the decimal point
          l := length10 m
          if -e > OUTPREC() and -e < 2*digits::I then
@@ -918,7 +918,7 @@ Float():
       zero? exponent f =>
         d := d + 1
         s := convert(mantissa f)@S
-        OUTPREC() ^= -1 and (e := #s) > d =>
+        OUTPREC() ~= -1 and (e := #s) > d =>
           t:S := if zero? SPACING() then "E" else " E "
           concat ["0.", padFromLeft s, t, convert(e)@S]
         padFromRight concat(s, ".0")
