@@ -264,7 +264,7 @@ This used to read:
 \begin{verbatim}
       hackroot(x, n) ==
         (n = 1) or (x = 1) => x
-        (x ^= -1) and (((num := numer x) = 1) or (num = -1)) =>
+        (x ~= -1) and (((num := numer x) = 1) or (num = -1)) =>
            inv hackroot((num * denom x)::F, n)
         (x = -1) and n = 4 =>
           ((-1::F) ** (1::Q / 2::Q) + 1) / ((2::F) ** (1::Q / 2::Q))
@@ -278,7 +278,7 @@ test and give $$1/(-2)^(1/n) \ne (-1/2)^(1/n)$$
 <<hackroot(x, n)>>=
       hackroot(x, n) ==
         (n = 1) or (x = 1) => x
-        (((dx := denom x) ^= 1) and
+        (((dx := denom x) ~= 1) and
            ((rx := retractIfCan(dx)@Union(Integer,"failed")) case Integer) and
            positive?(rx))
            => hackroot((numer x)::F, n)/hackroot(rx::Integer::F, n)
@@ -394,7 +394,7 @@ AlgebraicFunction(R, F): Exports == Implementation where
 
       UP2R p ==
         ans:UPR := 0
-        while p ^= 0 repeat
+        while p ~= 0 repeat
           (r := retractIfCan(leadingCoefficient p)@Union(R, "failed"))
             case "failed" => return "failed"
           ans := ans + monomial(r::R, degree p)

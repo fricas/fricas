@@ -149,7 +149,7 @@ SetOfMIntegersInOneToN(m, n): Exports == Implementation where
       while found < k repeat
           if b.i then found := found + 1
           if found < k then i := i + 1
-      b.p and i ^= p => "failed"
+      b.p and i ~= p => "failed"
       newb := copy b
       newb.p := true
       newb.i := false
@@ -309,7 +309,7 @@ AssociatedEquations(R, L):Exports == Implementation where
               u := incrementKthElement(wi, k::PI)$S
               if u case S then eq(lookup(u::S)) := 1
           if member?(n, wi) then
-              for j in 1..n | a.j ^= 0 repeat
+              for j in 1..n | a.j ~= 0 repeat
                   u := replaceKthElement(wi, m, j::PI)
                   if u case S then
                     eq(lookup(u::S)) := (odd? delta(wi, m, j::PI) => -a.j; a.j)
@@ -334,8 +334,8 @@ AssociatedEquations(R, L):Exports == Implementation where
         computeIt: (L, PI, N) -> REC
 
         makeeq(v, m, i, n) ==
-          [v.i, makeop row(m, i) - 1, [v.j for j in 1..n | j ^= i],
-                                    [makeop row(m, j) for j in 1..n | j ^= i]]
+          [v.i, makeop row(m, i) - 1, [v.j for j in 1..n | j ~= i],
+                                    [makeop row(m, j) for j in 1..n | j ~= i]]
 
         associatedEquations(op, m) ==
           (u := firstUncouplingMatrix(op, m)) case "failed" => computeIt(op,m,1)
@@ -414,7 +414,7 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
       first sol
 
     expsols(l, zeros, ezfactor, all?) ==
-      sol := [differentiate(f)/f for f in ratDsolve(l, 0).basis | f ^= 0]
+      sol := [differentiate(f)/f for f in ratDsolve(l, 0).basis | f ~= 0]
       not(all? or empty? sol) => sol
       concat(sol, ricDsolve(l, zeros, ezfactor))
 

@@ -170,7 +170,7 @@ transDoc(conname,doclist) ==
 --          null expectedNumOfArgs =>
 --            checkDocError ['"Unknown constructor name?: ",opOf x]
 --            x
---          expectedNumOfArgs ^= (n := #(IFCDR x)) =>
+--          expectedNumOfArgs ~= (n := #(IFCDR x)) =>
 --            n = 0 => checkDocError1
 --              ['"You must give arguments to the _"Related Domain_": ",x]
 --            checkDocError
@@ -204,10 +204,10 @@ checkExtractItemList l ==  --items are separated by commas or end of line
 --    acc := nil
 --    i := 0
 --    while i < m and (k := charPosition(char '_,,string,i)) < m repeat
---      if (t := trimString SUBSTRING(string,i,k-i)) ^= '"" then acc := [t,:acc]
+--      if (t := trimString SUBSTRING(string,i,k-i)) ~= '"" then acc := [t,:acc]
 --      i := k + 1
 --    if i < m then
---      if (t := trimString SUBSTRING(string,i,k-i)) ^= '"" then acc := [t,:acc]
+--      if (t := trimString SUBSTRING(string,i,k-i)) ~= '"" then acc := [t,:acc]
 --    acc
 
 transformAndRecheckComments(name,lines) ==
@@ -268,16 +268,16 @@ checkTexht u ==
         if not (IFCAR u = $charLbrace) then
            checkDocError '"First left brace after \texht missing"
         count := 1  -- drop first argument including braces of \texht
-        while ((y := IFCAR (u := rest u))^= $charRbrace or count > 1) repeat
+        while ((y := IFCAR (u := rest u))~= $charRbrace or count > 1) repeat
           if y = $charLbrace then count := count + 1
           if y = $charRbrace then count := count - 1
         x :=  IFCAR (u := rest u)  -- drop first right brace of 1st arg
     if x = '"\httex" and (u := IFCDR u) and (IFCAR u = $charLbrace) then
         acc := [IFCAR u,:acc]      --left  brace: add it
-        while (y := IFCAR (u := rest u)) ^= $charRbrace repeat (acc := [y,:acc])
+        while (y := IFCAR (u := rest u)) ~= $charRbrace repeat (acc := [y,:acc])
         acc := [IFCAR u,:acc]      --right brace: add it
         x :=  IFCAR (u := rest u)  --left brace:  forget it
-        while IFCAR (u := rest u) ^= $charRbrace repeat 'skip
+        while IFCAR (u := rest u) ~= $charRbrace repeat 'skip
         x :=  IFCAR (u := rest u)  --forget right brace: move to next char
     acc := [x,:acc]
     u := rest u
@@ -364,7 +364,7 @@ checkIsValidType form == main where
     null conname => nil
     fn(form,GETDATABASE(conname,'COSIG))
   fn(form,coSig) ==
-    #form ^= #coSig => form
+    #form ~= #coSig => form
     or/[null checkIsValidType x for x in rest form for flag in rest coSig | flag]
       => nil
     'ok
@@ -402,7 +402,7 @@ checkGetStringBeforeRightBrace u ==
 --          (y := IFCAR (v := IFCDR v)) = $charRbrace =>
 --             w := IFCDR v
 --             middle := nil
---             while w and (z := first w) ^= '"\end" repeat
+--             while w and (z := first w) ~= '"\end" repeat
 --               middle := [z,:middle]
 --               w := rest w
 --             if (y := IFCAR (w := IFCDR w)) = $charLbrace and
@@ -423,7 +423,7 @@ checkGetStringBeforeRightBrace u ==
 --          (y := IFCAR (v := IFCDR v)) = $charRbrace =>
 --             w := IFCDR v
 --             middle := nil
---             while w and (z := first w) ^= '"\end" repeat
+--             while w and (z := first w) ~= '"\end" repeat
 --               middle := [z,:middle]
 --               w := rest w
 --             if (y := IFCAR (w := IFCDR w)) = $charLbrace and
@@ -458,7 +458,7 @@ checkTrimCommented line ==
   --line beginning with % is a comment
   k = 0 => '""
   --remarks beginning with %% are comments
-  k >= n - 1 or line.(k + 1) ^= char '_% => line
+  k >= n - 1 or line.(k + 1) ~= char '_% => line
   k < #line => SUBSTRING(line,0,k)
   line
 
@@ -467,7 +467,7 @@ htcharPosition(char,line,i) ==
   k := charPosition(char,line,i)
   k = m => k
   k > 0 =>
-    line.(k - 1) ^= $charBack => k
+    line.(k - 1) ~= $charBack => k
     htcharPosition(char,line,k + 1)
   0
 
@@ -494,7 +494,7 @@ checkComments(nameSig,lines) == main where
     $checkErrorFlag: local := false
     margin := checkGetMargin lines
     if (null BOUNDP '$attribute? or null $attribute?)
-      and nameSig ^= 'constructor then lines :=
+      and nameSig ~= 'constructor then lines :=
         [checkTransformFirsts(first nameSig,first lines,margin),:rest lines]
     u := checkIndentedLines(lines, margin)
     $argl := checkGetArgs first u      --set $argl
@@ -584,7 +584,7 @@ checkGetArgs u ==
     k := getMatchingRightPren(u,6,char '_{,char '_}) or m
     checkGetArgs SUBSTRING(u,6,k-6)
   (i := charPosition(char '_(,u,0)) > m => nil
-  (u . m) ^= char '_) => nil
+  (u . m) ~= char '_) => nil
   while (k := charPosition($charComma,u,i + 1)) < m repeat
     acc := [trimString SUBSTRING(u,i + 1,k - i - 1),:acc]
     i := k
@@ -604,7 +604,7 @@ firstNonBlankPosition(x,:options) ==
   start := IFCAR options or 0
   k := -1
   for i in start..MAXINDEX x repeat
-    if x.i ^= $charBlank then return (k := i)
+    if x.i ~= $charBlank then return (k := i)
   k
 
 checkAddIndented(x,margin) ==
@@ -635,7 +635,7 @@ checkTrim($x,lines) == main where
     [trim y for y in lines]
   wherePP(u) ==
     k := charPosition($charPlus,u,0)
-    k = #u or charPosition($charPlus,u,k + 1) ^= k + 1 =>
+    k = #u or charPosition($charPlus,u,k + 1) ~= k + 1 =>
       systemError '" Improper comment found"
     k
   trim(s) ==
@@ -657,7 +657,7 @@ checkExtract(header,lines) ==
   j := charPosition(char '_:,u,k)
   margin := k
   firstLines :=
-    (k := firstNonBlankPosition(u,j + 1)) ^= -1 =>
+    (k := firstNonBlankPosition(u,j + 1)) ~= -1 =>
       [SUBSTRING(u,j + 1,nil),:rest lines]
     rest lines
   --now look for another header; if found skip all rest of these lines
@@ -679,7 +679,7 @@ checkFixCommonProblem u ==
   while u repeat
     x := first u
     x = $charLbrace and member(next := IFCAR rest u,$HTspadmacros) and
-                       (IFCAR IFCDR rest u ^= $charLbrace) =>
+                       (IFCAR IFCDR rest u ~= $charLbrace) =>
       checkDocError ['"Reversing ",next,'" and left brace"]
       acc := [$charLbrace,next,:acc]  --reverse order of brace and command
       u := rest rest u
@@ -936,7 +936,7 @@ checkBalance u ==
         => stack := [CAR openClose,:stack]   --yes, push the open bracket
       open  := rassoc(x,$checkPrenAlist) =>  --it is a close bracket!
         stack is [top,:restStack] => --does corresponding open bracket match?
-          if open ^= top then          --yes: just pop the stack
+          if open ~= top then          --yes: just pop the stack
             checkDocError
               ['"Mismatch: left ",checkSayBracket top,'" matches right ",checkSayBracket open]
           stack := restStack
@@ -1012,7 +1012,7 @@ checkLookForLeftBrace(u) ==   --return line beginning with left brace
   while u repeat
     x := first u
     if x = $charLbrace then return u
-    x ^= $charBlank => return nil
+    x ~= $charBlank => return nil
     u := rest u
   u
 
@@ -1055,7 +1055,7 @@ checkTransformFirsts(opname,u,margin) ==
     open = char '_[ and (close := char '_]) or
           open = char '_(  and (close := char '_)) =>
       k := getMatchingRightPren(u,j + 1,open,close)
-      namestring ^= (firstWord := SUBSTRING(u,0,i)) =>
+      namestring ~= (firstWord := SUBSTRING(u,0,i)) =>
         checkDocError ['"Improper first word in comments: ",firstWord]
         u
       null k =>
@@ -1067,7 +1067,7 @@ checkTransformFirsts(opname,u,margin) ==
     k := checkSkipToken(u,j,m) or return u
     infixOp := INTERN SUBSTRING(u,j,k - j)
     not GETL(infixOp,'Led) =>                                     --case 3
-      namestring ^= (firstWord := SUBSTRING(u,0,i)) =>
+      namestring ~= (firstWord := SUBSTRING(u,0,i)) =>
         checkDocError ['"Improper first word in comments: ",firstWord]
         u
       #(p := PNAME infixOp) = 1 and (open := p.0) and
@@ -1078,13 +1078,13 @@ checkTransformFirsts(opname,u,margin) ==
       STRCONC('"\spad{",SUBSTRING(u,0,k),'"}",SUBSTRING(u,k,nil))
     l := checkSkipBlanks(u,k,m) or return u
     n := checkSkipToken(u,l,m) or return u
-    namestring ^= PNAME infixOp =>
+    namestring ~= PNAME infixOp =>
       checkDocError ['"Improper initial operator in comments: ",infixOp]
       u
     STRCONC('"\spad{",SUBSTRING(u,0,n),'"}",SUBSTRING(u,n,nil))   --case 5
   true =>          -- not ALPHA_-CHAR_-P u.0 =>
     i := checkSkipToken(u,0,m) or return u
-    namestring ^= (firstWord := SUBSTRING(u,0,i)) =>
+    namestring ~= (firstWord := SUBSTRING(u,0,i)) =>
       checkDocError ['"Improper first word in comments: ",firstWord]
       u
     prefixOp := INTERN SUBSTRING(u,0,i)
@@ -1096,7 +1096,7 @@ checkTransformFirsts(opname,u,margin) ==
       j > m => u
       STRCONC('"\spad{",SUBSTRING(u,0,j + 1),'"}",SUBSTRING(u,j + 1,nil))
     k := checkSkipToken(u,j,m) or return u
-    namestring ^= (firstWord := SUBSTRING(u,0,i)) =>
+    namestring ~= (firstWord := SUBSTRING(u,0,i)) =>
       checkDocError ['"Improper first word in comments: ",firstWord]
       u
     STRCONC('"\spad{",SUBSTRING(u,0,k),'"}",SUBSTRING(u,k,nil))

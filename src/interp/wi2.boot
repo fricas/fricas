@@ -127,7 +127,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     [.,.,$e]:= compMakeDeclaration([":",'_$,target],m,$e)
     --The following loop sees if we can economise on ADDed operations
     --by using those of Rep, if that is the same. Example: DIRPROD
-    if $insideCategoryPackageIfTrue^= true  then
+    if $insideCategoryPackageIfTrue~= true  then
       if body is ['add,ab:=[fn,:.],['CAPSULE,:cb]] and MEMQ(fn,'(List Vector))
          and FindRep(cb) = ab
                where FindRep cb ==
@@ -181,7 +181,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $insideFunctorIfTrue:= false
     if $LISPLIB then
       $lisplibKind:=
-        target is ["CATEGORY",key,:.] and key^="domain" => 'package
+        target is ["CATEGORY",key,:.] and key~="domain" => 'package
         'domain
       $lisplibForm:= form
       modemap:= [[parForm,:parSignature],[true,op']]
@@ -466,7 +466,7 @@ corrupted? u ==
 --                    From apply.boot
 --======================================================================
 applyMapping([op,:argl],m,e,ml) ==
-  #argl^=#ml-1 => nil
+  #argl~=#ml-1 => nil
   isCategoryForm(first ml,e) =>
                                 --is op a functor?
     pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
@@ -580,7 +580,7 @@ compElt(origForm,m,E) ==
       m       := SUBST('Rep,'_$,m)
 ----------> new: <-----------
     [sig,[pred,val]]:= modemap
-    #sig^=2 and not val is ["elt",:.] => nil --what does the second clause do ????
+    #sig~=2 and not val is ["elt",:.] => nil --what does the second clause do ????
 --+
     val := genDeltaEntry [opOf anOp,:modemap]
     x := markTran(origForm,[val],sig,[E])
@@ -597,7 +597,7 @@ compApplyModemap(form,modemap,$e,sl) ==
  
   -- 0.  fail immediately if #argl=#margl
  
-  if #argl^=#margl then return nil
+  if #argl~=#margl then return nil
  
   -- 1.  use modemap to evaluate arguments, returning failed if
   --     not possible
@@ -695,7 +695,7 @@ genDeltaEntry opMmPair ==
     -- following hack needed to invert Rep to $ substitution
   if odc = 'Rep and cform is [.,.,osig] then sig:=osig
   newimp := optDeltaEntry(op,sig,dc,eltOrConst) => newimp
-  setDifference(listOfBoundVars dc,$functorLocalParameters) ^= [] =>
+  setDifference(listOfBoundVars dc,$functorLocalParameters) ~= [] =>
     ['applyFun,['compiledLookupCheck,MKQ op,
          mkList consSig(sig,dc),consDomainForm(dc,nil)]]
  --if null atom dc then
@@ -703,7 +703,7 @@ genDeltaEntry opMmPair ==
  --   cform := substitute('$,dc,cform)
   opModemapPair :=
     [op,[dc,:[genDeltaSig x for x in sig]],['T,cform]] -- force pred to T
-  if null NRTassocIndex dc and dc ^= $NRTaddForm and
+  if null NRTassocIndex dc and dc ~= $NRTaddForm and
     (member(dc,$functorLocalParameters) or null atom dc) then
     --create "domain" entry to $NRTdeltaList
       $NRTdeltaList:= [['domain,NRTaddInner dc,:dc],:$NRTdeltaList]
@@ -873,7 +873,7 @@ smallIntegerStep(it,index,start,inc,optFinal,e) ==
 --fail if
 ----> a) index has a mode that is not $SmallInteger
 ----> b) one of start,inc, final won't comp as a $SmallInteger
-  mode and mode ^= $SmallInteger => nil
+  mode and mode ~= $SmallInteger => nil
   null (start':= comp(start,$SmallInteger,e)) => nil
   null (inc':= comp(inc,$SmallInteger,start'.env)) => nil
   if optFinal is [final] and not (final':= comp(final,$SmallInteger,inc'.env)) then
@@ -882,7 +882,7 @@ smallIntegerStep(it,index,start,inc,optFinal,e) ==
     -----> assume that optFinal is $SmallInteger
     T := comp(final,$EmptyMode,inc'.env) or return nil
     final' := T
-    maxSuperType(T.mode,e) ^= $Integer => return nil
+    maxSuperType(T.mode,e) ~= $Integer => return nil
     givenRange := T.mode
   indexmode:= $SmallInteger
   [.,.,e]:= compMakeDeclaration([":",index,indexmode],$EmptyMode,
@@ -1014,7 +1014,7 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
   olde:= $e
   [p',.,$e]:= qt(19,comp(p,$Boolean,$e)) or userError ['"not a Boolean:",p]
   oldFLP:=$functorLocalParameters
-  if x^="noBranch" then
+  if x~="noBranch" then
 --> new <-----------------------
     qe(20,compSingleCapsuleItem(x,[p,:$predl],getSuccessEnvironment(markKillAll p,$e)))
 ---> new                                                 -----------
@@ -1045,7 +1045,7 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
             $functorLocalParameters:=[:oldFLP,:REVERSE nils]
             REVERSE ans
   oldFLP:=$functorLocalParameters
-  if y^="noBranch" then
+  if y~="noBranch" then
 --> new <-----------------------
     qe(21,compSingleCapsuleItem(y,[['not, p],:$predl],getInverseEnvironment(markKillAll p,olde)))
 -->                                                      ----------- 

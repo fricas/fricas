@@ -191,7 +191,7 @@ NRTgenInitialAttributeAlist attributeList ==
   alist := [x for x in attributeList | -- throw out constructors
     null MEMQ(opOf first x,allConstructors())]
   $lisplibAttributes := simplifyAttributeAlist
-    [[a,:b] for [a,b] in SUBLIS($pairlis,alist) | a ^= 'nothing]
+    [[a,:b] for [a,b] in SUBLIS($pairlis,alist) | a ~= 'nothing]
 
 simplifyAttributeAlist al ==
   al is [[a,:b],:r] =>
@@ -204,7 +204,7 @@ simplifyAttributeAlist al ==
   nil
  
 NRTgenFinalAttributeAlist() ==
-  [[a,:k] for [a,:b] in $NRTattributeAlist | (k := predicateBitIndex(b)) ^= -1]
+  [[a,:k] for [a,:b] in $NRTattributeAlist | (k := predicateBitIndex(b)) ~= -1]
  
 predicateBitIndex x == 
   pn(x,nil) where
@@ -342,7 +342,7 @@ NRTmakeCategoryAlist() ==
   opcAlist := NREVERSE SORTBY(function NRTcatCompare,pcAlist)
   newPairlis := [[5 + i,:b] for [.,:b] in $pairlis for i in 1..]
   slot1 := [[a,:k] for [a,:b] in SUBLIS($pairlis,opcAlist) 
-                   | (k := predicateBitIndex b) ^= -1]
+                   | (k := predicateBitIndex b) ~= -1]
   slot0 := [hasDefaultPackage opOf a for [a,:b] in slot1]
   sixEtc := [5 + i for i in 1..#$pairlis]
   formals := ASSOCRIGHT $pairlis

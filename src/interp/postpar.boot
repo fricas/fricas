@@ -54,7 +54,7 @@ displayPreCompilationErrors() ==
     then sayBrightly ['"   Semantic ",errors,'" detected: "]
     else
       heading:=
-        $topOp ^= '$topOp => ['"   ",$topOp,'" has"]
+        $topOp ~= '$topOp => ['"   ",$topOp,'" has"]
         ['"   You have"]
       sayBrightly [:heading,'%b,n,'%d,'"precompilation ",errors,'":"]
   if 1<n then
@@ -70,7 +70,7 @@ postTran x ==
   op is ['elt,a,b] =>
     u:= postTran [b,:rest x]
     [postTran op,:rest u]
-  op^=(y:= postOp op) => [y,:postTranList rest x]
+  op~=(y:= postOp op) => [y,:postTranList rest x]
   postForm x
 
 postTranList x == [postTran y for y in x]
@@ -128,7 +128,7 @@ postConstruct u ==
 postError msg ==
   BUMPERRORCOUNT 'precompilation
   xmsg:=
-    $defOp ^= '$defOp and not $InteractiveMode => [$defOp,'": ",:msg]
+    $defOp ~= '$defOp and not $InteractiveMode => [$defOp,'": ",:msg]
     msg
   $postStack:= [xmsg,:$postStack]
   nil
@@ -178,7 +178,7 @@ postDef [defOp,lhs,rhs] ==
   lhs is ["macro",name] => postMDef ["==>",name,rhs]
 
   if not($BOOT) then recordHeaderDocumentation nil
-  if $maxSignatureLineNumber ^= 0 then
+  if $maxSignatureLineNumber ~= 0 then
     $docList := [['constructor,:$headerDocumentation],:$docList]
     $maxSignatureLineNumber := 0
     --reset this for next constructor; see recordDocumentation

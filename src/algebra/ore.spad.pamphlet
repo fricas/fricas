@@ -61,7 +61,7 @@ UnivariateSkewPolynomialCategory(R:Ring):
             ++   \spad{l = sum(monomial(a(i),i), i = 0..n)}.
         minimumDegree: $ -> NonNegativeInteger
             ++ minimumDegree(l) is the smallest \spad{k} such that
-            ++ \spad{a(k) ^= 0} if
+            ++ \spad{a(k) ~= 0} if
             ++   \spad{l = sum(monomial(a(i),i), i = 0..n)}.
         leadingCoefficient: $ -> R
             ++ leadingCoefficient(l) is \spad{a(n)} if
@@ -177,14 +177,14 @@ UnivariateSkewPolynomialCategory(R:Ring):
 
         coefficients l ==
           ans:List(R) := empty()
-          while l ^= 0 repeat
+          while l ~= 0 repeat
             ans := concat(leadingCoefficient l, ans)
             l   := reductum l
           ans
 
         a:R * y:% ==
           z:% := 0
-          while y ^= 0 repeat
+          while y ~= 0 repeat
             z := z + monomial(a * leadingCoefficient y, degree y)
             y := reductum y
           z
@@ -196,7 +196,7 @@ UnivariateSkewPolynomialCategory(R:Ring):
         if R has IntegralDomain then
           l exquo a ==
             ans:% := 0
-            while l ^= 0 repeat
+            while l ~= 0 repeat
               (u := (leadingCoefficient(l) exquo a)) case "failed" =>
                  return "failed"
               ans := ans + monomial(u::R, degree l)
@@ -236,7 +236,7 @@ UnivariateSkewPolynomialCategory(R:Ring):
             a0 := a
             u0:% := v:% := 1
             v0:% := u:% := 0
-            while b ^= 0 repeat
+            while b ~= 0 repeat
               qr     := leftDivide(a, b)
               (a, b) := (b, qr.remainder)
               (u0, u):= (u, u0 - u * qr.quotient)
@@ -247,7 +247,7 @@ UnivariateSkewPolynomialCategory(R:Ring):
             zero? a => b
             zero? b => a
             degree a < degree b => ncgcd(b, a, ncrem)
-            while b ^= 0 repeat (a, b) := (b, ncrem(a, b))
+            while b ~= 0 repeat (a, b) := (b, ncrem(a, b))
             a
 
           extended(a, b, eea) ==
@@ -271,7 +271,7 @@ UnivariateSkewPolynomialCategory(R:Ring):
             a0 := a
             u0:% := v:% := 1
             v0:% := u:% := 0
-            while b ^= 0 repeat
+            while b ~= 0 repeat
               qr     := rightDivide(a, b)
               (a, b) := (b, qr.remainder)
               (u0, u):= (u, u0 - qr.quotient * u)
@@ -423,7 +423,7 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
         times(x, y, sigma, delta) ==
           zero? y => 0
           z:C := 0
-          while x ^= 0 repeat
+          while x ~= 0 repeat
             z := z + termPoly(leadingCoefficient x, degree x, y, sigma, delta)
             x := reductum x
           z
@@ -433,7 +433,7 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
           (u := subtractIfCan(n, 1)) case "failed" => a * y
           n1 := u::N
           z:C := 0
-          while y ^= 0 repeat
+          while y ~= 0 repeat
             m := degree y
             b := leadingCoefficient y
             z := z + termPoly(a, n1, monomial(sigma b, m + 1), sigma, delta)

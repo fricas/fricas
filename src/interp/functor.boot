@@ -229,7 +229,7 @@ DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes) ==
          and
           (u:=
             SetFunctionSlots(SUBLIS(slist,sig),['ELT,instantiatedBase,i],flag,
-              'adding))^=nil]
+              'adding))~=nil]
      --The code from here to the end is designed to replace repeated LOAD/STORE
      --combinations (SETELT ...(ELT ..)) by MVCs where this is practicable
   copyvec:=GETREFV (1+n)
@@ -271,14 +271,14 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
   isMacro(code,$e) => nil --RDJ: added 3/16/83
   code is ['add,base,:codelist] =>
     codelist:=
-      [v for u in codelist | (v:= DescendCode(u,flag,viewAssoc,EnvToPass))^=nil]
+      [v for u in codelist | (v:= DescendCode(u,flag,viewAssoc,EnvToPass))~=nil]
                   -- must do this first, to get this overriding Add code
     ['PROGN,:DescendCodeAdd(base,flag),:codelist]
   code is ['PROGN,:codelist] =>
     ['PROGN,:
             --Two REVERSEs leave original order, but ensure last guy wins
       NREVERSE [v for u in REVERSE codelist |
-                    (v:= DescendCode(u,flag,viewAssoc,EnvToPass))^=nil]]
+                    (v:= DescendCode(u,flag,viewAssoc,EnvToPass))~=nil]]
   code is ['COND,:condlist] =>
     c:= [[u2:= ProcessCond(first u,viewAssoc),:q] for u in condlist] where q ==
           null u2 => nil

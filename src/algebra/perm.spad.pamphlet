@@ -224,10 +224,10 @@ domain.
       perm
 
     smallerCycle?(cyca: L S, cycb: L S): B ==
-      #cyca ^= #cycb =>
+      #cyca ~= #cycb =>
         #cyca < #cycb
       for i in cyca for j in cycb repeat
-        i ^= j => return smaller?(i, j)
+        i ~= j => return smaller?(i, j)
       false
 
     shorterCycle?(cyca: L S, cycb: L S): B ==
@@ -235,7 +235,7 @@ domain.
 
     permord(pa: RECCYPE, pb : RECCYPE): B ==
       for i in pa.cycl for j in pb.cycl repeat
-        i ^= j => return smallerCycle?(i, j)
+        i ~= j => return smallerCycle?(i, j)
       #pa.cycl < #pb.cycl
 
     coerceToCycle(p: %, doSorting?: B): L L S ==
@@ -249,7 +249,7 @@ domain.
         preim := rest preim
         nextEltInCycle := first im
         im      := rest im
-        while nextEltInCycle ^= firstEltInCycle repeat
+        while nextEltInCycle ~= firstEltInCycle repeat
           nextCycle := cons(nextEltInCycle, nextCycle)
           i := position(nextEltInCycle, preim)
           preim := delete(preim,i)
@@ -325,18 +325,18 @@ removes fixed points from its result.
     degree p ==  #movedPoints p
 
     p = q ==
-      #(preimp := p.1) ^= #(preimq := q.1) => false
+      #(preimp := p.1) ~= #(preimq := q.1) => false
       for i in 1..maxIndex preimp repeat
         pos := position(preimp.i, preimq)
         pos = 0 => return false
-        (p.2).i ^= (q.2).pos => return false
+        (p.2).i ~= (q.2).pos => return false
       true
 
     orbit(p ,el) ==
       -- start with a 1-element list:
       out : Set S := brace list el
       el2 := eval(p, el)
-      while el2 ^= el repeat
+      while el2 ~= el repeat
         -- be carefull: insert adds one element
         -- as side effect to out
         insert_!(el2, out)
@@ -365,7 +365,7 @@ removes fixed points from its result.
       pacyc:= coerceToCycle(pa,true)
       pbcyc:= coerceToCycle(pb,true)
       for i in pacyc for j in pbcyc repeat
-        i ^= j => return smallerCycle? ( i, j )
+        i ~= j => return smallerCycle? ( i, j )
       maxIndex pacyc < maxIndex pbcyc
 
     coerce(lls : L L S): % == coerceCycle lls
@@ -410,11 +410,11 @@ removes fixed points from its result.
       preim := nil()$(L S)
       im := nil()$(L S)
       for pair in loP repeat
-        if first pair ^=  second pair then
+        if first pair ~=  second pair then
           preim := cons(first pair, preim)
           im := cons(second pair, im)
       duplicates?(preim) or duplicates?(im) or brace(preim)$(Set S) _
-        ^= brace(im)$(Set S) =>
+        ~= brace(im)$(Set S) =>
         error "coerceListOfPairs: the input cannot be interpreted as a permutation"
       [preim, im]
 
@@ -439,7 +439,7 @@ removes fixed points from its result.
           el := imOfq.j
           -- if the composition fixes the element, we don't
           -- have to do anything
-          if el ^= preimOfp.i then
+          if el ~= preimOfp.i then
             preimOfqp := cons(preimOfp.i, preimOfqp)
             imOfqp := cons(el, imOfqp)
           -- we drop the parts of q which have to do with p

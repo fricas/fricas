@@ -122,9 +122,9 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           member?(lval,ltry) => "new point"
           ltry:=cons(lval,ltry)
           uf1:SUP:=completeEval(p1,lvr,lval)
-          degree uf1 ^= d1 => "new point"
+          degree uf1 ~= d1 => "new point"
           uf2:SUP:= completeEval(p2,lvr,lval)
-          degree uf2 ^= d2 => "new point"
+          degree uf2 ~= d2 => "new point"
           u:=gcd(uf1,uf2)
           du:=degree u
          --the univariate gcd is 1
@@ -141,7 +141,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
             dd=d1 =>
               if not ((f:=p2 exquo p1) case "failed") then
                 return [[u],ltry,p1]$UTerm
-              if dd^=d2 then dd:=(dd-1)::NNI
+              if dd ~= d2 then dd:=(dd-1)::NNI
 
             dd=d2 =>
               if not ((f:=p1 exquo p2) case "failed") then
@@ -183,7 +183,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         (gd1,gd2):=(l,l)
         ul:=completeEval(l,lvar1,lval)
         dl:=degree ul
-        if degree gcd(ul,differentiate ul) ^=0 then
+        if degree gcd(ul,differentiate ul) ~= 0 then
           newchoice:=good(l,lvar1,ltry)
           ul:=newchoice.upol
           ltry:=newchoice.inval
@@ -195,7 +195,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           d:SUP:=gcd(cons(ul,ulist))
           if degree d =0 then return gd1
           lquo:=(ul exquo d)::SUP
-          if degree lquo ^=0 then
+          if degree lquo ~= 0 then
             lgcd:=gcd(cons(leadingCoefficient l,lcpol))
             (gdl:=lift(l,d,lquo,lgcd,lvar1,ldeg,lval)) case "failed" =>
                return notCoprime(g,p2,ldeg,lvar1,ltry)
@@ -321,7 +321,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         df:=degree f
         leadlist:List(P):=[]
 
-        if lgcd^=1 then
+        if lgcd ~= 1 then
           leadpol:=true
           f:=lgcd*f
           ldeg:=[n0+n1 for n0 in ldeg for n1 in degree(lgcd,lvar)]
@@ -335,7 +335,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
                "failed"
         plist := pl :: List SUPP
         (p0:SUPP,p1:SUPP):=(plist.first,plist.2)
-        if completeEval(p0,lvar,lval) ^= lg.first then
+        if completeEval(p0,lvar,lval) ~= lg.first then
            (p0,p1):=(p1,p0)
         not leadpol => p0
         p0 exquo content(p0)

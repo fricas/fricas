@@ -206,7 +206,7 @@ selectMms2(op,tar,args1,args2,$Coerce) ==
     -- for typically homogeneous functions, throw in resolve too
     if op in '(_= _+ _* _- ) then
       r := resolveTypeList a
-      if r ^= nil then a := cons(r,a)
+      if r ~= nil then a := cons(r,a)
 
     if tar and not isPartialMode tar then
       if xx := underDomainOf(tar) then a := cons(xx,a)
@@ -490,7 +490,7 @@ getOpArgTypes(opname, args) ==
   l := getOpArgTypes1(opname, args)
   [f(a,opname) for a in l] where
     f(x,op) ==
-      x is ['FunctionCalled,g] and op ^= 'name =>
+      x is ['FunctionCalled,g] and op ~= 'name =>
         m := get(g,'mode,$e) =>
           m is ['Mapping,:.] => m
           x
@@ -589,7 +589,7 @@ getLocalMms(name,types,tar) ==
     -- check format and destructure
     dcSig isnt [dc,result,:args] => NIL
     -- make number of args is correct
-    #types ^= #args => NIL
+    #types ~= #args => NIL
     -- check for equal or subsumed arguments
     subsume := (not $useIntegerSubdomain) or (tar = result) or
       get(name,'recursive,$e)
@@ -623,7 +623,7 @@ mmCost0(name, sig,cond,tar,args1,args2) ==
 
   -- try to favor homogeneous multiplication
 
---if name = "*" and 2 = #sigArgs and first sigArgs ^= first rest sigArgs then n := n + 1
+--if name = "*" and 2 = #sigArgs and first sigArgs ~= first rest sigArgs then n := n + 1
 
   -- because of obscure problem in evalMm, sometimes we will have extra
   -- modemaps with the wrong number of arguments if we want to the one
@@ -714,7 +714,7 @@ findCommonSigInDomain(opName,dom,nargs) ==
     nargs = #CAR mm =>
       null vec  => vec := LIST2VEC CAR mm
       for i in 0.. for x in CAR mm repeat
-        if vec.i and vec.i ^= x then vec.i := NIL
+        if vec.i and vec.i ~= x then vec.i := NIL
   VEC2LIST vec
 
 findUniqueOpInDomain(op,opName,dom) ==
@@ -773,14 +773,14 @@ findFunctionInDomain(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
     -- When domains no longer have to have Set, the hard coded 6 and 7
     -- should go.
     op = '_= =>
-        #args1 ^= 2 or args1.0 ^= dc or args1.1 ^= dc => NIL
-        tar and tar ^= '(Boolean) => NIL
+        #args1 ~= 2 or args1.0 ~= dc or args1.1 ~= dc => NIL
+        tar and tar ~= '(Boolean) => NIL
         [[[dc, '(Boolean), dc, dc], ['(Boolean),'$,'$], [NIL, NIL]]]
     op = 'coerce =>
         dcName='Enumeration and (args1.0=$Symbol or tar=dc)=>
            [[[dc, dc, $Symbol], ['$,$Symbol], [NIL, NIL]]]
-        args1.0 ^= dc => NIL
-        tar and tar ^= $OutputForm => NIL
+        args1.0 ~= dc => NIL
+        tar and tar ~= $OutputForm => NIL
         [[[dc, $OutputForm, dc], [$OutputForm, '$], [NIL, NIL]]]
     member(dcName,'(Record Union)) =>
       findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom)
@@ -820,7 +820,7 @@ allOrMatchingMms(mms,args1,tar,dc) ==
   for mm in mms repeat
     [sig,:.] := mm
     [res,:args] := MSUBSTQ(dc,"$",sig)
-    args ^= args1 => nil
+    args ~= args1 => nil
     x := CONS(mm,x)
   if x then x
   else mms
@@ -884,7 +884,7 @@ findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
       impls := cons([b,nil,true,d],impls)
     impls := cons([b,d,true,d],impls)
   impls := NREVERSE impls
-  if maxargs ^= -1 then
+  if maxargs ~= -1 then
     SL:= NIL
     for i in 1..maxargs repeat
       impls := SUBSTQ(GENSYM(),INTERNL('"#",STRINGIMAGE i),impls)
@@ -908,7 +908,7 @@ matchMmCond(cond) ==
     cond is ['OR,:conds] or cond is ['or,:conds] =>
       or/[matchMmCond c for c in conds]
     cond is ['has,dom,x] =>
-      hasCaty(dom,x,NIL) ^= 'failed
+      hasCaty(dom,x,NIL) ~= 'failed
     cond is ['not,cond1] => not matchMmCond cond1
     keyedSystemError("S2GE0016",
       ['"matchMmCond",'"unknown form of condition"])
@@ -998,7 +998,7 @@ filterModemapsFromPackages(mms, names, op) ==
 isTowerWithSubdomain(towerType,elem) ==
   not PAIRP towerType => NIL
   dt := deconstructT towerType
-  2 ^= #dt => NIL
+  2 ~= #dt => NIL
   s := underDomainOf(towerType)
   isEqualOrSubDomain(s,elem) and constructM(first dt,[elem])
 
@@ -1242,7 +1242,7 @@ coerceTypeArgs(t1, t2, SL) ==
   -- if the type t has type-valued arguments, coerce them to the new types,
   -- if needed.
   t1 isnt [con1, :args1] or t2 isnt [con2, :args2] => t2
-  con1 ^= con2 => t2
+  con1 ~= con2 => t2
   coSig := CDR GETDATABASE(CAR t1, 'COSIG)
   and/coSig => t2
   csub1 := constructSubst t1
@@ -1353,15 +1353,15 @@ evalMmCat1(mmC is ['ofCategory,d,c],op, SL) ==
     -- If c is not Set, Ring or Field then the more general mechanism
     dom := defaultTypeForCategory(c, SL)
     null dom =>
-      op ^= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
+      op ~= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
     null (p := ASSQ(d,$Subst)) =>
       dom =>
         NSL := [CONS(d,dom)]
-      op ^= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
+      op ~= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
     if containsVars dom then dom := resolveTM(CDR p, dom)
     $Coerce and canCoerce(CDR p, dom) =>
       NSL := [CONS(d,dom)]
-    op ^= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
+    op ~= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
   NSL
 
 hasCate(dom,cat,SL) ==
@@ -1369,14 +1369,14 @@ hasCate(dom,cat,SL) ==
   -- augments substitution SL or returns 'failed
   dom = $EmptyMode => NIL
   isPatternVar dom =>
-    (p:= ASSQ(dom,SL)) and ((NSL := hasCate(CDR p,cat,SL)) ^= 'failed) =>
+    (p:= ASSQ(dom,SL)) and ((NSL := hasCate(CDR p,cat,SL)) ~= 'failed) =>
        NSL
     (p:= ASSQ(dom,$Subst)) or (p := ASSQ(dom, SL)) =>
 --      S:= hasCate(CDR p,cat,augmentSub(CAR p,CDR p,copy SL))
       S:= hasCate1(CDR p,cat,SL, dom)
       not (S='failed) => S
       hasCateSpecial(dom,CDR p,cat,SL)
-    if SL ^= 'failed then $hope:= 'T
+    if SL ~= 'failed then $hope:= 'T
     'failed
   SL1 := [[v,:d] for [v,:d] in SL | not containsVariables d]
   if SL1 then cat := subCopy(cat, SL1)
@@ -1565,7 +1565,7 @@ hasSigOr(orCls, S0, SL) ==
         hasSigAnd(andCls, S0, SL)
       keyedSystemError("S2GE0016",
         ['"hasSigOr",'"unexpected condition for signature"])
-    if SA ^= 'failed then found := true
+    if SA ~= 'failed then found := true
   SA
 
 hasSig(dom,foo,sig,SL) ==
@@ -1612,9 +1612,9 @@ hasAtt(dom,att,SL) ==
 
 hasCatExpression(cond,SL) ==
   cond is ['OR,:l] =>
-    or/[(y:=hasCatExpression(x,SL)) ^= 'failed for x in l] => y
+    or/[(y:=hasCatExpression(x,SL)) ~= 'failed for x in l] => y
   cond is ['AND,:l] =>
-    and/[(SL:= hasCatExpression(x,SL)) ^= 'failed for x in l] => SL
+    and/[(SL:= hasCatExpression(x,SL)) ~= 'failed for x in l] => SL
   cond is ['has,a,b] => hasCate(a,b,SL)
   keyedSystemError("S2GE0016",
     ['"hasSig",'"unexpected condition for attribute"])
@@ -1658,15 +1658,15 @@ unifyStructVar(v,s,SL) ==
           else if canCoerce(ns1, ns0) then s3 := s0
           else s3 := nil
           s3 =>
-            if (s3 ^= s0) then SL := augmentSub(v,s3,SL)
-            if (s3 ^= s1) and isPatternVar(s) then SL := augmentSub(s,s3,SL)
+            if (s3 ~= s0) then SL := augmentSub(v,s3,SL)
+            if (s3 ~= s1) and isPatternVar(s) then SL := augmentSub(s,s3,SL)
             SL
           'failed
         $domPvar =>
           s3 := resolveTT(s0,s1)
           s3 =>
-            if (s3 ^= s0) then SL := augmentSub(v,s3,SL)
-            if (s3 ^= s1) and isPatternVar(s) then SL := augmentSub(s,s3,SL)
+            if (s3 ~= s0) then SL := augmentSub(v,s3,SL)
+            if (s3 ~= s1) and isPatternVar(s) then SL := augmentSub(s,s3,SL)
             SL
           'failed
 --        isSubDomain(s,s0) => augmentSub(v,s0,SL)
@@ -1683,7 +1683,7 @@ ofCategory(dom,cat) ==
   $hope:local := NIL
   IDENTP dom => NIL
   cat is ['Join,:cats] => and/[ofCategory(dom,c) for c in cats]
-  (hasCaty(dom,cat,NIL) ^= 'failed)
+  (hasCaty(dom,cat,NIL) ~= 'failed)
 
 printMms(mmS) ==
   -- mmS a list of modemap signatures

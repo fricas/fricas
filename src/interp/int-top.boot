@@ -299,7 +299,7 @@ intloopSpadProcess(stepNo,lines,ptree,interactive?)==
             ncConversationPhase(function phIntReportMsgs,[cc, interactive?])
             ncConversationPhase(function phInterpret,        [cc])
  
-            #ncEltQ(cc, 'messages) ^= 0 => ncError()
+            #ncEltQ(cc, 'messages) ~= 0 => ncError()
 
     intSetNeedToSignalSessionManager()
     $prevCarrier := $currentCarrier
@@ -339,7 +339,7 @@ mkLineList lines ==
 nonBlank str ==
   value := false
   for i in 0..MAXINDEX str repeat
-    str.i ^= char " " =>
+    str.i ~= char " " =>
       value := true
       return value
   value

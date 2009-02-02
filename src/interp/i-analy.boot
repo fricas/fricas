@@ -143,7 +143,7 @@ pushDownTargetInfo(op,target,arglist) ==
     op = "*" =>            -- only push down on 1st arg if not immed
       if not getTarget CADR arglist then putTarget(CADR arglist,target)
       getTarget(x := CAR arglist) => NIL
-      if getUnname(x) ^= $immediateDataSymbol then putTarget(x,target)
+      if getUnname(x) ~= $immediateDataSymbol then putTarget(x,target)
     op = "**" or op = "^" =>           -- push down on base
       if not getTarget CAR arglist then putTarget(CAR arglist,target)
     (op = 'equation) and (target is ['Equation,S]) =>
@@ -213,7 +213,7 @@ bottomUp t ==
   -- As a side-effect it also evaluates the tree.
   t is [op,:argl] =>
     tar := getTarget op
-    getUnname(op) ^= $immediateDataSymbol and (v := getValue op) =>
+    getUnname(op) ~= $immediateDataSymbol and (v := getValue op) =>
       om := objMode(v)
       null tar => [om]
       (r := resolveTM(om,tar)) => [r]
@@ -231,7 +231,7 @@ bottomUp t ==
     opVal := getValue op
 
     -- call a special handler if we are not being package called
-    dol := getAtree(op,'dollar) and (opName ^= 'construct)
+    dol := getAtree(op,'dollar) and (opName ~= 'construct)
 
     (null dol) and (fn:= GETL(opName,"up")) and (u:= FUNCALL(fn, t)) => u
     nargs := #argl
@@ -299,7 +299,7 @@ bottomUpCompile t ==
 bottomUpUseSubdomain t ==
   $useIntegerSubdomain : local := true
   ms := bottomUp t
-  ($immediateDataSymbol ^= getUnname(t)) or ($Integer ^= CAR(ms)) => ms
+  ($immediateDataSymbol ~= getUnname(t)) or ($Integer ~= CAR(ms)) => ms
   null INTEGERP(num := objValUnwrap getValue t) => ms
   o := getBasicObject(num)
   putValue(t,o)
@@ -310,7 +310,7 @@ bottomUpUseSubdomain t ==
 bottomUpPredicate(pred, name) ==
   putTarget(pred,$Boolean)
   ms := bottomUp pred
-  $Boolean ^= first ms => throwKeyedMsg('"S2IB0001",[name])
+  $Boolean ~= first ms => throwKeyedMsg('"S2IB0001",[name])
   ms
 
 bottomUpCompilePredicate(pred, name) ==
@@ -335,7 +335,7 @@ bottomUpIdentifier(t,id) ==
     tar := getTarget t
     expr:= objVal u
     om := objMode(u)
-    (om ^= $EmptyMode) and (om isnt ['RuleCalled,.]) =>
+    (om ~= $EmptyMode) and (om isnt ['RuleCalled,.]) =>
       $genValue or GENSYMP(id) =>
         null tar => [om]
         (r := resolveTM(om,tar)) => [r]
@@ -541,7 +541,7 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
       (u := bottomUpElt t) => u
       bottomUpForm0(t,op,opName,argl,argModeSetList)
 
-  (opName ^= "elt") and (opName ^= "apply") and
+  (opName ~= "elt") and (opName ~= "apply") and
     #argl = 1 and first first argModeSetList is ['Variable, var]
       and var in '(first last rest) and
         isEltable(op, argl, #argl) and (u := bottomUpElt t) => u
@@ -549,7 +549,7 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
   $genValue and
     ( u:= bottomUpFormRetract(t,op,opName,argl,argModeSetList) ) => u
 
-  (opName ^= "elt") and (opName ^= "apply") and
+  (opName ~= "elt") and (opName ~= "apply") and
     isEltable(op, argl, #argl) and (u := bottomUpElt t) => u
 
   if FIXP $HTCompanionWindowID then
@@ -712,7 +712,7 @@ bottomUpFormAnyUnionRetract(t,op,opName,argl,amsl) ==
   for x in argl for m in amsl for i in 0.. repeat
     m0 := first m
     if ( (m0 = $Any) or (first m0 = 'Union) ) and
-      ('failed^=(object:=retract getValue x)) then
+      ('failed~=(object:=retract getValue x)) then
         b := true
         RPLACA(m,objMode(object))
         putModeSet(x,[objMode(object)])
@@ -735,7 +735,7 @@ bottomUpFormUntaggedUnionRetract(t,op,opName,argl,amsl) ==
   for x in argl for m in amsl for i in 0.. repeat
     m0 := first m
     if (m0 is ['Union, :.] and null getUnionOrRecordTags m0) and
-      ('failed ^= (object:=retract getValue x)) then
+      ('failed ~= (object:=retract getValue x)) then
         b := true
         RPLACA(m,objMode(object))
         putModeSet(x,[objMode(object)])
@@ -787,11 +787,11 @@ isEltable(op,argl,numArgs) ==
     ZEROP numArgs => true
     m is ['Mapping, :.] => nil
     true
-  numArgs ^= 1 => nil
+  numArgs ~= 1 => nil
   name := getUnname op
   name = 'SEQ => nil
 --not (name in '(a e h s)) and getAllModemapsFromDatabase(name, nil) => nil
   arg := first argl
-  (getUnname arg) ^= 'construct => nil
+  (getUnname arg) ~= 'construct => nil
   true
 

@@ -42,7 +42,7 @@ dbFromConstructor?(htPage) == htpProperty(htPage,'conform)
 
 dbDoesOneOpHaveParameters? opAlist ==
   or/[(or/[fn for x in items]) for [op,:items] in opAlist] where fn ==
-    STRINGP x => dbPart(x,2,1) ^= '"0"
+    STRINGP x => dbPart(x,2,1) ~= '"0"
     KAR x
 --============================================================================
 --               Master Switch Functions for Operation Views
@@ -330,7 +330,7 @@ dbGatherData(htPage,opAlist,which,key) ==
          htpProperty(htPage,'attrAlist)
     acc := nil
     initialExposure :=
-      htPage and htpProperty(htPage,'conform) and which ^= '"package operation"
+      htPage and htpProperty(htPage,'conform) and which ~= '"package operation"
         => true
       --never star ops from a constructor
       nil
@@ -652,13 +652,13 @@ dbShowOpDocumentation(htPage,opAlist,which,data) ==
     for item in alist for j in 0.. repeat
       [sig,predicate,origin,exposeFlag,comments] := item
       exposeFlag or not $exposedOnlyIfTrue =>
-        if comments ^= '"" and STRINGP comments and (k := string2Integer comments) then
+        if comments ~= '"" and STRINGP comments and (k := string2Integer comments) then
           comments :=
             MEMQ(k,'(0 1)) => '""
             dbReadComments k
           tail := CDDDDR item
           RPLACA(tail,comments)
-        doc := (STRINGP comments and comments ^= '"" => comments; nil)
+        doc := (STRINGP comments and comments ~= '"" => comments; nil)
         pred := predicate or true
         index := (exactlyOneOpSig => nil; base + j)
         if which = '"package operation" then
@@ -935,7 +935,7 @@ getDomainOpTable(dom,fromIfTrue,:options) ==
   abb := getConstructorAbbreviation conname
   opAlist := getOperationAlistFromLisplib conname
   "append"/[REMDUP [[op1,:fn] for [sig,slot,pred,key,:.] in u
-              | key ^= 'Subsumed and ((null ops and (op1 := op)) or (op1 := memq(op,ops)))]
+              | key ~= 'Subsumed and ((null ops and (op1 := op)) or (op1 := memq(op,ops)))]
                  for [op,:u] in opAlist] where
     memq(op,ops) ==   --dirty trick to get 0 and 1 instead of Zero and One
       MEMQ(op,ops) => op

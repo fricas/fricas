@@ -56,7 +56,7 @@ ReductionOfOrder(F, L): Exports == Impl where
 
     ithcoef(eq, i, s) ==
       ans:F := 0
-      while eq ^= 0 repeat
+      while eq ~= 0 repeat
           j   := degree eq
           ans := ans + localbinom(j, i) * locals(s,j,i) * leadingCoefficient eq
           eq  := reductum eq
@@ -214,7 +214,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
       up := univariate(p, k := first l)
       l := rest l
       ans:P2 := 0
-      while up ^= 0 repeat
+      while up ~= 0 repeat
         ans := ans + monomial(upmp(leadingCoefficient up, l), k, degree up)
         up  := reductum up
       ans
@@ -285,7 +285,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
 
     ulodo(eq, k) ==
         op:LQ := 0
-        while eq ^= 0 repeat
+        while eq ~= 0 repeat
             op := op + monomial(univariate(leadingCoefficient eq, k), degree eq)
             eq := reductum eq
         op
@@ -295,7 +295,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
       op := ulodo(eq, k)
       empty? remove_!(k, varselect(kernels g, x)) =>  -- i.e. rhs is rational
         rc := ratDsolve(op, univariate(g, k))
-        rc.particular case "failed" =>                -- this implies g ^= 0
+        rc.particular case "failed" =>                -- this implies g ~= 0
           doVarParams(eq, g, homosolve(eq, op, rc.basis, k, x), x)
         [multivariate(rc.particular::RF, k), homosolve(eq, op, rc.basis, k, x)]
       doVarParams(eq, g, homosolve(eq, op, ratDsolve(op, 0).basis, k, x), x)
@@ -317,7 +317,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
 
     localmap(f, op) ==
         ans:L := 0
-        while op ^= 0 repeat
+        while op ~= 0 repeat
             ans := ans + monomial(f leadingCoefficient op, degree op)
             op  := reductum op
         ans
@@ -476,7 +476,7 @@ ElementaryFunctionODESolver(R, F): Exports == Implementation where
       p := rec.left
       Lx := LinearOrdinaryDifferentialOperator(F, diff x)
       op:Lx := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         op := op + monomial(leadingCoefficient p, degree p)
         p  := reductum p
       solve(op, rec.right, x, a, y0)$ElementaryFunctionLODESolver(R, F, Lx)
@@ -496,7 +496,7 @@ ElementaryFunctionODESolver(R, F): Exports == Implementation where
       p := rec.left
       Lx := LinearOrdinaryDifferentialOperator(F, diff x)
       op:Lx := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         op := op + monomial(leadingCoefficient p, degree p)
         p  := reductum p
       (uuu := solve(op, rec.right, x)$ElementaryFunctionLODESolver(R, F, Lx))
@@ -505,7 +505,7 @@ ElementaryFunctionODESolver(R, F): Exports == Implementation where
 
 -- returns [M, v] s.t. the equations are D x = M x + v
     parseSYS(eqs, ly, x) ==
-      (n := #eqs) ^= #ly => "failed"
+      (n := #eqs) ~= #ly => "failed"
       m:M := new(n, n, 0)
       v:V := new(n, 0)
       xx := x::F

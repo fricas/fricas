@@ -130,20 +130,20 @@ File(S:SetCategory): FileCategory(FileName, S) with
         iomode f ==
             f.fileIOmode
         read_! f ==
-            f.fileIOmode ^= "input" =>
+            f.fileIOmode ~= "input" =>
                 error "File not in read state"
             x := VMREAD(f.fileState)$Lisp
             PLACEP(x)$Lisp =>
                 error "End of file"
             x
         readIfCan_! f ==
-            f.fileIOmode ^= "input" =>
+            f.fileIOmode ~= "input" =>
                 error "File not in read state"
             x: S := VMREAD(f.fileState)$Lisp
             PLACEP(x)$Lisp => "failed"
             x
         write_!(f, x) ==
-            f.fileIOmode ^= "output" =>
+            f.fileIOmode ~= "output" =>
                 error "File not in write state"
             z := PRINT_-FULL(x, f.fileState)$Lisp
             TERPRI(f.fileState)$Lisp
@@ -210,25 +210,25 @@ TextFile: Cat == Def where
         readIfCan_! f == readLineIfCan_! f
 
         readLine_! f ==
-            f.fileIOmode ^= "input"  => error "File not in read state"
+            f.fileIOmode ~= "input"  => error "File not in read state"
             s: String := read_-line(f.fileState)$Lisp
             PLACEP(s)$Lisp => error "End of file"
             s
         readLineIfCan_! f ==
-            f.fileIOmode ^= "input"  => error "File not in read state"
+            f.fileIOmode ~= "input"  => error "File not in read state"
             s: String := read_-line(f.fileState)$Lisp
             PLACEP(s)$Lisp => "failed"
             s
         write_!(f, x) ==
-            f.fileIOmode ^= "output" => error "File not in write state"
+            f.fileIOmode ~= "output" => error "File not in write state"
             PRINTEXP(x, f.fileState)$Lisp
             x
         writeLine_! f ==
-            f.fileIOmode ^= "output" => error "File not in write state"
+            f.fileIOmode ~= "output" => error "File not in write state"
             TERPRI(f.fileState)$Lisp
             ""
         writeLine_!(f, x) ==
-            f.fileIOmode ^= "output" => error "File not in write state"
+            f.fileIOmode ~= "output" => error "File not in write state"
             PRINTEXP(x, f.fileState)$Lisp
             TERPRI(f.fileState)$Lisp
             x
@@ -316,12 +316,12 @@ BinaryFile: Cat == Def where
             error "file must be in read or write state"
 
         read! f ==
-            f.fileIOmode ^= "input"  => error "File not in read state"
+            f.fileIOmode ~= "input"  => error "File not in read state"
             BINARY__SELECT__INPUT(f.fileState)$Lisp 
             BINARY__READBYTE()$Lisp
 --          READ_-BYTE(f.fileState)$Lisp
         readIfCan_! f ==
-            f.fileIOmode ^= "input"  => error "File not in read state"
+            f.fileIOmode ~= "input"  => error "File not in read state"
             BINARY__SELECT__INPUT(f.fileState)$Lisp 
             n:SingleInteger:=BINARY__READBYTE()$Lisp
             n = -1 => "failed"
@@ -329,7 +329,7 @@ BinaryFile: Cat == Def where
 --          READ_-BYTE(f.fileState,NIL$Lisp,
 --                   "failed"::Union(SingleInteger,"failed"))$Lisp
         write_!(f, x) ==
-            f.fileIOmode ^= "output" => error "File not in write state"
+            f.fileIOmode ~= "output" => error "File not in write state"
             x < 0 or x>255 => error "integer cannot be represented as a byte"
             BINARY__PRINBYTE(x)$Lisp
 --          WRITE_-BYTE(x, f.fileState)$Lisp
@@ -337,10 +337,10 @@ BinaryFile: Cat == Def where
 
 --      # f == FILE_-LENGTH(f.fileState)$Lisp
         position f == 
-           f.fileIOmode ^= "input"  => error "file must be in read state"
+           f.fileIOmode ~= "input"  => error "file must be in read state"
            FILE_-POSITION(f.fileState)$Lisp
         position_!(f,i) == 
-           f.fileIOmode ^= "input"  => error "file must be in read state"
+           f.fileIOmode ~= "input"  => error "file must be in read state"
            (FILE_-POSITION(f.fileState,i)$Lisp ; i) 
 
 @
@@ -410,24 +410,24 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
             [fname, defstream(fname, mode), mode]
         reopen_!(f, mode) ==
             close_! f
-            if mode ^= "closed" then
+            if mode ~= "closed" then
                 f.fileState := defstream(f.fileName, mode)
                 f.fileIOmode  := mode
             f
         close_! f  ==
-            if f.fileIOmode ^= "closed" then
+            if f.fileIOmode ~= "closed" then
                 RSHUT(f.fileState)$Lisp
                 f.fileIOmode  := "closed"
             f
         read_! f ==
-            f.fileIOmode ^= "input" => error ["File not in read state",f]
+            f.fileIOmode ~= "input" => error ["File not in read state",f]
             ks: List Symbol := RKEYIDS(f.fileName)$Lisp
             null ks => error ["Attempt to read empty file", f]
             ix := random(#ks)$Integer
             k: String := PNAME(ks.ix)$Lisp
             [k, SPADRREAD(k, f.fileState)$Lisp]
         write_!(f, pr) ==
-            f.fileIOmode ^= "output" => error ["File not in write state",f]
+            f.fileIOmode ~= "output" => error ["File not in write state",f]
             SPADRWRITE(pr.key, pr.entry, f.fileState)$Lisp
             pr
         name f ==

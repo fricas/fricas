@@ -48,7 +48,7 @@ BalancedFactorisation(R, UP): Exports == Implementation where
       */[balSqfr1(f.factor, n, b) for f in factors balSqfr(a,n,rest l)]
 
     balancedFactorisation(a:UP, l:List UP) ==
-      empty?(ll := select(#1 ^= 0, l)) =>
+      empty?(ll := select(#1 ~= 0, l)) =>
         error "balancedFactorisation: 2nd argument is empty or all 0"
       sa := squareFree a
       unit(sa) * */[balSqfr(f.factor,f.exponent,ll) for f in factors sa])
@@ -225,7 +225,7 @@ PrimitiveRatDE(F, UP, L, LQ): Exports == Implementation where
       cd := splitDenominator coefficients op
       f  := cd.den / gcd(cd.num)
       l:L := 0
-      while op ^= 0 repeat
+      while op ~= 0 repeat
           l  := l + monomial(retract(f * leadingCoefficient op), degree op)
           op := reductum op
       [l, [f * g for g in lg]]
@@ -260,7 +260,7 @@ PrimitiveRatDE(F, UP, L, LQ): Exports == Implementation where
       lamb:List(N) := [d := degree l]
       lf:List(UP) := [a := leadingCoefficient l]
       mup := d::Z - order(a, c)
-      while (l := reductum l) ^= 0 repeat
+      while (l := reductum l) ~= 0 repeat
           a := leadingCoefficient l
           if (m := (d := degree l)::Z - order(a, c)) > mup then
               mup := m
@@ -510,10 +510,10 @@ RationalLODE(F, UP): Exports == Implementation where
 
     regularPoint(l, lg) ==
       a := leadingCoefficient(l) * commonDenominator lg
-      coefficient(a, 0) ^= 0 => 0
+      coefficient(a, 0) ~= 0 => 0
       for i in 1.. repeat
-        a(j := i::F) ^= 0 => return i
-        a(-j) ^= 0 => return(-i)
+        a(j := i::F) ~= 0 => return i
+        a(-j) ~= 0 => return(-i)
 
     unitlist(i, q) ==
       v := new(q, 0)$Vector(F)
@@ -534,7 +534,7 @@ RationalLODE(F, UP): Exports == Implementation where
                    for i in 1..q]$List(RF)
       a1 := inv(leadingCoefficient(op)::RF)
       part := [UTS2UP(dd * ode(RF2UTS(a1 * g)$tools + f #1, e)$solver, n)$tools
-                /$RF d for g in lg | g ^= 0]$List(RF)
+                /$RF d for g in lg | g ~= 0]$List(RF)
       [hom, part]
 
     nzero? v ==
@@ -552,7 +552,7 @@ RationalLODE(F, UP): Exports == Implementation where
       lamb:List(N) := [d := degree l]
       lf:List(UP) := [a := leadingCoefficient l]
       mup := degree(a)::Z - d
-      while (l := reductum l) ^= 0 repeat
+      while (l := reductum l) ~= 0 repeat
           a := leadingCoefficient l
           if (m := degree(a)::Z - (d := degree l)) > mup then
             mup := m
@@ -808,7 +808,7 @@ ConstantLODE(R, F, L): Exports == Implementation where
 
     homoBasis(op, x) ==
       p:SUP := 0
-      while op ^= 0 repeat
+      while op ~= 0 repeat
           p  := p + monomial(leadingCoefficient op, degree op)
           op := reductum op
       b:List(F) := empty()

@@ -77,12 +77,12 @@ tcheck T ==
   
 markComp(x,T) ==                                         --for comp
   tcheck T
-  x ^= CAR T => [mkWi('comp,'WI,x,CAR T),:CDR T]                  
+  x ~= CAR T => [mkWi('comp,'WI,x,CAR T),:CDR T]                  
   T
 
 markAny(key,x,T) ==
   tcheck T
-  x ^= CAR T => [mkWi(key,'WI,x,CAR T),:CDR T]
+  x ~= CAR T => [mkWi(key,'WI,x,CAR T),:CDR T]
   T
 
 markConstruct(x,T) == 
@@ -258,7 +258,7 @@ markRepeat(form, T)        ==
   [mkWi("repeat", 'WI,form,CAR T), :CDR T]
   
 markTran(form,form',[dc,:sig],env) ==  --from compElt/compFormWithModemap
-  dc ^= 'Rep or not MEMQ('_$,sig) => mkWi('markTran,'WI,form,['call,:form'])
+  dc ~= 'Rep or not MEMQ('_$,sig) => mkWi('markTran,'WI,form,['call,:form'])
   argl := [u for t in rest sig for arg in rest form'] where u ==
     t='_$ => 
       argSource := getSourceWI arg
@@ -282,7 +282,7 @@ markImport(d,:option) ==   --from compFormWithModemap/genDeltaEntry/compImport
   STRINGP d or (IDENTP d and (PNAME d).0 = char '_#) => nil
   MEMQ(d,'(_$ _$NoValueMode _$EmptyMode Void)) => nil
 -------=======+> WHY DOESN'T THIS WORK????????????
---if (d' := macroExpand(d,$e)) ^= d then markImport(d',declared?)
+--if (d' := macroExpand(d,$e)) ~= d then markImport(d',declared?)
   dom := markMacroTran d
 --if IDENTP dom and dom = d and not getmode(dom,$e) then dom := ['MyENUM, d]
   categoryForm? dom => nil
@@ -1326,7 +1326,7 @@ diff(x,y) ==
 diff1(x,y) ==
   x = y => nil
   ATOM x or ATOM y => [[x,y]]
-  #x ^= #y => [x,y]
+  #x ~= #y => [x,y]
   "APPEND"/[diff1(u,v) for u in x for v in y]
     
 markConstructorForm name ==  --------> same as getConstructorForm
@@ -1345,7 +1345,7 @@ markGetPaths(x,y) ==
 --  res := reverseDown mkGetPaths(x, y)
     res := mkGetPaths(x, y)
 --    oldRes := markPaths(x,y,[nil])
---    if res ^= oldRes then $badStack := [[x, :y], :$badStack]
+--    if res ~= oldRes then $badStack := [[x, :y], :$badStack]
 --    oldRes
   markPaths(x,y,[nil])
  

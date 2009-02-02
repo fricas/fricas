@@ -125,7 +125,7 @@ libConstructorSig [conname,:argl] ==
   sig := SUBLISLIS(formals,$TriangleVariableList,sig)
   keys := [g(f,sig,i) for f in formals for i in 1..] where
     g(x,u,i) ==  --does x appear in any but i-th element of u?
-      or/[CONTAINED(x,y) for y in u for j in 1.. | j ^= i]
+      or/[CONTAINED(x,y) for y in u for j in 1.. | j ~= i]
   sig := fn SUBLISLIS(argl,$FormalMapVariableList,sig) where
     fn x ==
       atom x => x
@@ -199,7 +199,7 @@ checkCommentsForBraces(kind,sop,sigpart,comments) ==
     sayBrightly ['"(",$conname,'" documentation) missing left brace--> ",:tail]
   if count > 0 then
     sayBrightly ['"(",$conname,'" documentation) missing right brace--> ",:tail]
-  if count ^= 0 or missingLeft then pp comments
+  if count ~= 0 or missingLeft then pp comments
 
 buildLibAttrs attrlist ==
   for [name,argl,:pred] in attrlist repeat buildLibAttr(name,argl,pred)
@@ -282,7 +282,7 @@ dbSpreadComments(line,n) ==
   line = '"" => nil
   k := charPosition(char '_-,line,n + 2)
   k >= MAXINDEX line => [SUBSTRING(line,n,nil)]
-  line.(k + 1) ^= char '_- =>
+  line.(k + 1) ~= char '_- =>
     u := dbSpreadComments(line,k)
     [STRCONC(SUBSTRING(line,n,k - n),first u),:rest u]
   [SUBSTRING(line,n,k - n),:dbSpreadComments(SUBSTRING(line,k,nil),0)]
@@ -372,7 +372,7 @@ getGlossLines instream ==
         #last = 0 =>
           lastLineHadTick => '""
           '"\blankline "
-        #last > 0 and last.(MAXINDEX last) ^= $charBlank => $charBlank
+        #last > 0 and last.(MAXINDEX last) ~= $charBlank => $charBlank
         '""
       lastLineHadTick := false
       text := [STRCONC(last,fill,line),:rest text]
@@ -600,7 +600,7 @@ ancestorsRecur(conform,domform,pred,firstTime?) == --called by ancestorsOf
   originalConform :=
     firstTime? and ($insideCategoryIfTrue or $insideFunctorIfTrue) => $form
     getConstructorForm op
-  if conform ^= originalConform then
+  if conform ~= originalConform then
     parents := SUBLISLIS(IFCDR conform,IFCDR originalConform,parents)
   for [newform,:p] in parents repeat
     if domform and rest domform then
@@ -673,7 +673,7 @@ transKCatAlist(conform,domname,s) == main where
       for pair in s repeat --pair has form [con,[conargs,:pred],...]]
         leftForm := getConstructorForm CAR pair
         for (ap := [args,:pred]) in CDR pair repeat
-          hasArgsForm? := args ^= farglist
+          hasArgsForm? := args ~= farglist
           npred := sublisFormal(KDR leftForm,pred)
           if hasArgsForm? then
             subargs := sublisFormal(KDR leftForm,args)

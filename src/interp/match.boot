@@ -62,7 +62,7 @@ charPosition(c,t,startpos) ==
 
 rightCharPosition(c,t,startpos) == --startpos often equals MAXINDEX t (rightmost)
   k := startpos
-  for i in startpos..0 by -1 while c ^= ELT(t,i) repeat (k := k - 1)
+  for i in startpos..0 by -1 while c ~= ELT(t,i) repeat (k := k - 1)
   k
 
 stringPosition(s,t,startpos) ==
@@ -144,7 +144,7 @@ basicMatch?(pattern,target) ==
   n := #pattern
   p := charPosition($wildCard,pattern,0)
   p = n => (pattern = target) and 0
-  if p ^= 0 then
+  if p ~= 0 then
      -- pattern does not begin with a wild card
      ans := 0
      s := SUBSTRING(pattern,0,p) --[pattern.i for i in 0..p-1]
@@ -153,7 +153,7 @@ basicMatch?(pattern,target) ==
   i := p   -- starting position for searching the target
   q := charPosition($wildCard,pattern,p+1)
   ltarget := #target
-  while q ^= n repeat
+  while q ~= n repeat
      s := SUBSTRING(pattern,p+1,q-p-1) --[pattern.i for i in (p+1..q-1)]
      i := stringPosition(s,target,i)
      if null ans then ans := stringPosition(s,target,p)
@@ -163,7 +163,7 @@ basicMatch?(pattern,target) ==
      p := q
      q := charPosition($wildCard,pattern,q+1)
   returnFlag => false
-  if p ^= q-1 then
+  if p ~= q-1 then
      -- pattern does not end with a wildcard
      s := SUBSTRING(pattern,p+1,q-p-1) --[pattern.i for i in (p+1..q-1)]
      if not suffix?(s,target) then return false
@@ -181,10 +181,10 @@ matchAnySegment?(pattern,target,k,nc) ==  --k = start position; nc=#chars or NIL
     m = #target => nil
     null nc => true
     m <= k + nc - n
-  if k ^= 0 and nc then
+  if k ~= 0 and nc then
     target := SUBSTRING(target,k,nc)
     k := 0
-  if p ^= 0 then
+  if p ~= 0 then
      -- pattern does not begin with a wild card
      ans := 0
      s := SUBSTRING(pattern,0,p) --[pattern.i for i in 0..p-1]
@@ -193,7 +193,7 @@ matchAnySegment?(pattern,target,k,nc) ==  --k = start position; nc=#chars or NIL
   i := p + k  -- starting position for searching the target
   q := charPosition($wildCard,pattern,p+1)
   ltarget := #target
-  while q ^= n repeat
+  while q ~= n repeat
      s := SUBSTRING(pattern,p+1,q-p-1) --[pattern.i for i in (p+1..q-1)]
      i := stringPosition(s,target,i)
      if i = ltarget then return (returnFlag := true)
@@ -201,7 +201,7 @@ matchAnySegment?(pattern,target,k,nc) ==  --k = start position; nc=#chars or NIL
      p := q
      q := charPosition($wildCard,pattern,q+1)
   returnFlag => false
-  if p ^= q-1 then
+  if p ~= q-1 then
      -- pattern does not end with a '&
      s := SUBSTRING(pattern,p+1,q-p-1) --[pattern.i for i in (p+1..q-1)]
      if not suffix?(s,target) then return false

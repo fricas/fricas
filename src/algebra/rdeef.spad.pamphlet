@@ -76,7 +76,7 @@ IntegrationTools(R:OrderedSet, F:FunctionSpace R): Exp == Impl where
 
 -- true if x should be considered before y in the tower
     better?(x, y) ==
-      height(y) ^= height(x) => height(y) < height(x)
+      height(y) ~= height(x) => height(y) < height(x)
       has?(operator y, ALGOP) or
               (is?(y, "exp"::SE) and not is?(x, "exp"::SE)
                                  and not has?(operator x, ALGOP))
@@ -138,7 +138,7 @@ IntegrationTools(R:OrderedSet, F:FunctionSpace R): Exp == Impl where
               if u case ANS then
                  rc := u::ANS
                  ans := ans + rc.special
-                 if rc.integrand ^= 0 then
+                 if rc.integrand ~= 0 then
                    ir0 := intPatternMatch(rc.integrand, x, int, pmint)
                    ans := ans + ratpart ir0
                    lg  := concat(logpart ir0, lg)
@@ -438,7 +438,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       dc - db
 
     boundAt0(twr, f0, nb, nc, x, t, limitedint) ==
-      nb ^= 0 => min(0, nc - min(0, nb))
+      nb ~= 0 => min(0, nc - min(0, nb))
       l1 := logdiff(twr, l0 := tower f0)
       (if0 := limitedint(f0, [first argument u for u in l1]))
                        case "failed" => error "Risch's theorem violated"

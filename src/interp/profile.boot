@@ -69,7 +69,7 @@ profileRecord(label,name,info) ==  --name: info is var: type or op: sig
 
 profileDisplay() ==
   profileDisplayOp('constructor,LASSOC('constructor,$profileAlist) )
-  for [op,:alist1] in $profileAlist | op ^= 'constructor repeat
+  for [op,:alist1] in $profileAlist | op ~= 'constructor repeat
     profileDisplayOp(op,alist1)
 
 profileDisplayOp(op,alist1) ==

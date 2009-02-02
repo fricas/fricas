@@ -61,7 +61,7 @@ htSystemVariables() == main where
     classlevel := $UserLevel
     $levels : local := '(compiler development interpreter)
     $heading  : local := nil
-    while classlevel ^= first $levels repeat $levels := rest $levels
+    while classlevel ~= first $levels repeat $levels := rest $levels
     table := NREVERSE fn($setOptions,nil,true)
     htInitPage('"System Variables",nil)
     htSay '"\beginmenu"
@@ -280,9 +280,9 @@ mkUnixPattern s ==
   starPositions := REVERSE [i for i in 1..(-1 + MAXINDEX u) | u.i = $wild]
   for i in starPositions repeat
     u := STRCONC(SUBSTRING(u,0,i),'".*",SUBSTRING(u,i + 1,nil))
-  if u.0 ^= $wild then u := STRCONC('"[^a-zA-Z]",u)
+  if u.0 ~= $wild then u := STRCONC('"[^a-zA-Z]",u)
                   else u := SUBSTRING(u,1,nil)
-  if u.(k := MAXINDEX u) ^= $wild then u := STRCONC(u,'"[^a-zA-Z]")
+  if u.(k := MAXINDEX u) ~= $wild then u := STRCONC(u,'"[^a-zA-Z]")
                                   else u := SUBSTRING(u,0,k)
   u
 

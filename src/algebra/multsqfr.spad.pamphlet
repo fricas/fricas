@@ -111,19 +111,19 @@ MultivariateSquareFree (E,OV,R,P) : C == T where
      exp0:Z:=0
      unitsq:P:=1
      lcf:P:=leadingCoefficient f
-     if ctf^=1 then
+     if ctf ~= 1 then
        f0:=ctf*f0
        f:=(ctf::P)*f
        lcf:=ctf*lcf
      sqlead:List FFEP:= empty()
      sqlc:Factored P:=1
-     if lcf^=1$P then
+     if lcf ~= 1$P then
        leadpol:=true
        sqlc:=squareFree lcf
        unitsq:=unitsq*(unit sqlc)
        sqlead:= factors sqlc
      lfact:=sort(#1.exponent > #2.exponent,lfact)
-     while lfact^=[] repeat
+     while lfact ~= [] repeat
        pfact:=lfact.first
        (g0,exp0):=(pfact.factor,pfact.exponent)
        lfact:=lfact.rest
@@ -132,7 +132,7 @@ MultivariateSquareFree (E,OV,R,P) : C == T where
          gg := unitNormal leadingCoefficient f
          sqdec:=cons([gg.associate*f,exp0],sqdec)
          return  [gg.unit, sqdec]$squareForm
-       if ctf^=1 then g0:=ctf*g0
+       if ctf ~= 1 then g0:=ctf*g0
        npol:=consnewpol(f,f0,exp0)
        (d,d0):=(npol.pol,npol.polval)
        if leadpol then lcoef:=coefChoose(exp0,sqlc)
@@ -147,8 +147,8 @@ MultivariateSquareFree (E,OV,R,P) : C == T where
        f:=h::SUP
        f0:=completeEval(h,lvar,lval)
        lcr:P:=leadingCoefficient result0
-       if leadpol and lcr^=1$P then
-         for lpfact in sqlead  while lcr^=1 repeat
+       if leadpol and lcr ~= 1$P then
+         for lpfact in sqlead  while lcr ~= 1 repeat
            ground? lcr =>
              unitsq:=(unitsq exquo lcr)::P
              lcr:=1$P
@@ -195,7 +195,7 @@ MultivariateSquareFree (E,OV,R,P) : C == T where
        y:=lvar.im
        p:=p*monomial(1$P,y,n)
        result1:=cons(["sqfr",y::P,n],result1)
-     if p^=1$P then
+     if p ~= 1$P then
        f := (f exquo p)::P
        if ground? f then return makeFR(f, result1)
        lvar:=variables(f)
@@ -206,7 +206,7 @@ MultivariateSquareFree (E,OV,R,P) : C == T where
        makeFR(unit result,append(result1,factorList result))
 
      ldeg:=degree(f,lvar)          ---  general case ---
-     m:="min"/[j for j in ldeg|j^=0]
+     m:="min"/[j for j in ldeg|j ~= 0]
      i:Z:=1
      for j in ldeg while j>m repeat i:=i+1
      x:=lvar.i
@@ -241,7 +241,7 @@ MultivariateSquareFree (E,OV,R,P) : C == T where
        member?(lval,ltry) => "new integer"
        ltry:=cons(lval,ltry)
        f0:=completeEval(f,lvar,lval)
-       degree f0 ^=degf  => "new integer"
+       degree f0 ~= degf  => "new integer"
        ctf:=content f0
        lfact:List(FFE):=factors(squareFree((f0 exquo (ctf::R)::BP)::BP))
 
@@ -303,7 +303,7 @@ MultivariateSquareFree (E,OV,R,P) : C == T where
      plist:=lifting(ud,lvar,[g0,g1],lval,leadlist,ldeg,pmod)
      plist case "failed" => "failed" 
      (p0:SUP,p1:SUP):=((plist::List SUP).1,(plist::List SUP).2)
-     if completeEval(p0,lvar,lval) ^= g0 then (p0,p1):=(p1,p0)
+     if completeEval(p0,lvar,lval) ~= g0 then (p0,p1):=(p1,p0)
      [primitivePart p0,primitivePart p1]
 
                 ----  the polynomial is univariate  ----

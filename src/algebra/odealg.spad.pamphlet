@@ -89,7 +89,7 @@ SystemODESolver(F, LO): Exports == Implementation where
       m:N := 0             -- number of Solutions
       part:V := new(n, 0)
       -- count first the different solutions
-      for sol in sols repeat m := m + count(#1 ^= 0, sol.basis)$List(F)
+      for sol in sols repeat m := m + count(#1 ~= 0, sol.basis)$List(F)
       SolMatrix:MF := new(n, m, 0)
       m := 0
       for sol in reverse_! sols repeat
@@ -136,7 +136,7 @@ SystemODESolver(F, LO): Exports == Implementation where
       offset := minIndex v - (mr := minRowIndex m)
       while r >= mr and every?(zero?, row(m, r))$Vector(LO) repeat r := r - 1
       r < mr => error "backsolve: system has a 0 matrix"
-      (c := firstnonzero(m, r)) ^= maxColIndex m =>
+      (c := firstnonzero(m, r)) ~= maxColIndex m =>
         error "backsolve: undetermined system"
       rec := solve(m(r, c), v(r + offset))
       dim := (r - mr + 1)::N
@@ -151,7 +151,7 @@ SystemODESolver(F, LO): Exports == Implementation where
       while r > mr repeat
         r := r - 1
         c := c - 1
-        firstnonzero(m, r) ^= c => error "backsolve: undetermined system"
+        firstnonzero(m, r) ~= c => error "backsolve: undetermined system"
         degree(eq := m(r, c)) > 0 => error "backsolve: pivot of order > 0"
         a := leadingCoefficient(eq)::F
         if part? then
@@ -189,7 +189,7 @@ SystemODESolver(F, LO): Exports == Implementation where
 -- returns the index of the first nonzero entry in row r of m
     firstnonzero(m, r) ==
       for c in minColIndex m .. maxColIndex m repeat
-        m(r, c) ^= 0 => return c
+        m(r, c) ~= 0 => return c
       error "firstnonzero: zero row"
 
 -- computes +/[m(r, i) v(i) for i ranging over the last n columns of m]
@@ -225,12 +225,12 @@ SystemODESolver(F, LO): Exports == Implementation where
         if i > nrows then leave x
         rown := minr - 1
         for k in i .. nrows repeat
-          if (x(k, j) ^= 0) and ((rown = minr - 1) or
+          if (x(k, j) ~= 0) and ((rown = minr - 1) or
                               degree x(k,j) < degree x(rown,j)) then rown := k
           rown = minr - 1 => "enuf"
           x := swapRows_!(x, i, rown)
           swap_!(w, i + offset, rown + offset)
-        for k in i+1 .. nrows | x(k, j) ^= 0 repeat
+        for k in i+1 .. nrows | x(k, j) ~= 0 repeat
           l := rightLcm(x(i,j), x(k,j))
           a := rightQuotient(l, x(i, j))
           b := rightQuotient(l, x(k, j))

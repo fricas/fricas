@@ -139,7 +139,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
             => g*gcd(c1,c2)::SUPP  -- divdes them both, so is the gcd
         v:=variables g -- there can be at most these variables in answer
         v1:=setDifference(vp1,v)
-        if #v1 ^= 0 then
+        if #v1 ~= 0 then
            g:=recursivelyGCDCoefficients(g,v,p1,v1)
 --           one? g => return gcd(c1,c2)::SUPP
            (g = 1) => return gcd(c1,c2)::SUPP
@@ -223,7 +223,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
         g:=monomial(lcp,degree gR)+map(#1::P,reductum gR)
         cf:=monomial(lcp,degree cfR)+map(#1::P,reductum cfR)
         p:=lcp*p       -- impose leaidng coefficient of p on each factor
-        while lv ^= [] repeat
+        while lv ~= [] repeat
            v:=first lv
            r:=first lr
            lv:=rest lv
@@ -244,7 +244,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
               g:=g+pn*first step
               cf:=cf+pn*second step
               pn:=pn*prime
-           thisp ^= g*cf => return "failed"
+           thisp ~= g*cf => return "failed"
         g
       recursivelyGCDCoefficients(g:SUPP,v:List OV,p:SUPP,pv:List OV) ==
          mv:=first pv   -- take each coefficient w.r.t. mv
@@ -257,7 +257,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
              else g:=recursivelyGCDCoefficients(p,v,p1,pv)
 --             one? g => return 1
              (g = 1) => return 1
-             g^=oldg =>
+             g ~= oldg =>
                 oldv:=v
                 v:=variables g
                 pv:=setUnion(pv,setDifference(v,oldv))
@@ -266,7 +266,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
          #lv = 0 => p1
          lr:=[ randomR() for vv in lv]
          dg:=degree p1
-         while dg ^= degree (ans:= map(eval(#1,lv,lr),p1)) repeat
+         while dg ~= degree (ans:= map(eval(#1,lv,lr),p1)) repeat
            lr:=[ randomR() for vv in lv]
          ans
 --      eval(p1:SUPP,lv:List OV,lr:List R) == map(eval(#1,lv,lr),p1)
@@ -306,9 +306,9 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD          range:=2*range
 --JHD          lval:=[(random()$I rem (2*range) - range)::R  for i in 1..nvr]
 --JHD          uf1:SUPR:=univariate eval(p1,lvr,lval)
---JHD          degree uf1 ^= d1 => "new point"
+--JHD          degree uf1 ~= d1 => "new point"
 --JHD          uf2:SUPR:=univariate eval(p2,lvr,lval)
---JHD          degree uf2 ^= d2 => "new point"
+--JHD          degree uf2 ~= d2 => "new point"
 --JHD          u:=gcd(uf1,uf2)
 --JHD          du:=degree u
 --JHD         --the univariate gcd is 1
@@ -325,7 +325,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD            dd=d1 =>
 --JHD              if not ((f:=p2 exquo p1) case "failed") then
 --JHD                return [[u],lval,p1]$UTerm
---JHD              if dd^=d2 then dd:=(dd-1)::NNI
+--JHD              if dd ~= d2 then dd:=(dd-1)::NNI
 --JHD
 --JHD            dd=d2 =>
 --JHD              if not ((f:=p1 exquo p2) case "failed") then
@@ -370,7 +370,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD        (gd1,gd2):=(l,l)
 --JHD        ul:=univariate(eval(l,lvar1,lval))
 --JHD        dl:=degree ul
---JHD        if degree gcd(ul,differentiate ul) ^=0 then
+--JHD        if degree gcd(ul,differentiate ul) ~= 0 then
 --JHD          newchoice:=good(l,lvar.rest)
 --JHD          ul:=newchoice.upol
 --JHD          lval:=newchoice.inval
@@ -382,7 +382,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD          d:SUPR:=gcd(cons(ul,ulist))
 --JHD          if degree d =0 then return gd1
 --JHD          lquo:=(ul exquo d)::SUPR
---JHD          if degree lquo ^=0 then
+--JHD          if degree lquo ~= 0 then
 --JHD            lgcd:=gcd(cons(leadingCoefficient univariate(l,x),lcpol))
 --JHD            gd2:=lift(l,d,lquo,lgcd,lvar,ldeg,lval)
 --JHD            l:=gd2
@@ -547,7 +547,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD        df:=degree(f,x)
 --JHD        leadlist:List(P):=[]
 --JHD
---JHD        if lgcd^=1$P then
+--JHD        if lgcd ~= 1$P then
 --JHD          leadpol:=true
 --JHD          f:=lgcd*f
 --JHD          ldeg:=[n0+n1 for n0 in ldeg for n1 in degree(lgcd,lvar)]
@@ -559,7 +559,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
 --JHD        lg:=imposelc([d,uf],lvar,lval,leadlist)
 --JHD        plist:=lifting(univariate(f,x),lvar,lg,lval,leadlist,ldeg)::List P
 --JHD        (p0:P,p1:P):=(plist.first,plist.2)
---JHD        if univariate eval(p0,rest lvar,lval) ^= lg.first then
+--JHD        if univariate eval(p0,rest lvar,lval) ~= lg.first then
 --JHD           (p0,p1):=(p1,p0)
 --JHD        not leadpol => p0
 --JHD        cprim:=contprim([p0])

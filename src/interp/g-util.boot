@@ -128,7 +128,7 @@ centerString(text,width,fillchar) ==
   for i in 1..(f.0) repeat
     fill1 := STRCONC(fillchar,fill1)
   fill2:= fill1
-  if f.1 ^= 0 then fill1 := STRCONC(fillchar,fill1)
+  if f.1 ~= 0 then fill1 := STRCONC(fillchar,fill1)
   [fill1,text,fill2]
 
 stringPrefix?(pref,str) ==
@@ -160,7 +160,7 @@ dropLeadingBlanks str ==
   nb := NIL
   i := 0
   while (i < l) and not nb repeat
-    if SCHAR(str,i) ^= SCHAR('" ",0) then nb := i
+    if SCHAR(str,i) ~= SCHAR('" ",0) then nb := i
     else i := i + 1
   nb = 0 => str
   nb => SUBSTRING(str,nb,NIL)

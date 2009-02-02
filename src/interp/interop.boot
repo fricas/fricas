@@ -506,7 +506,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   success := nil
   $isDefaultingPackage: local :=
     -- use special defaulting handler when dollar non-trivial
-    dollar ^= domain and isDefaultPackageForm? devaluate domain
+    dollar ~= domain and isDefaultPackageForm? devaluate domain
   while finish > start repeat
     PROGN
       i := start
@@ -516,7 +516,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
       exportSig :=
           [newExpandTypeSlot(numvec.(i + j + 1),
             dollar,domain) for j in 0..numTableArgs]
-      sig ^= hashType(['Mapping,: exportSig],hashPercent) => nil --signifies no match
+      sig ~= hashType(['Mapping,: exportSig],hashPercent) => nil --signifies no match
       loc := numvec.(i + numTableArgs + 2)
       loc = 1 => (someMatch := true)
       loc = 0 =>
@@ -580,7 +580,7 @@ hashNewLookupInCategories(op,sig,dom,dollar) ==
   valueList := [MKQ val for val in valueList]
   nsig := MSUBST(dom.0,dollar.0,sig)
   for i in 0..MAXINDEX packageVec |
-       (entry := packageVec.i) and entry ^= 'T repeat
+       (entry := packageVec.i) and entry ~= 'T repeat
     package :=
       VECP entry =>
          if $monitorNewWorld then
@@ -604,7 +604,7 @@ hashNewLookupInCategories(op,sig,dom,dollar) ==
               opvec.(code+2)
             --not nrunNumArgCheck(#(QCDR sig),byteVector,opvec.code,endPos) => nil
             --numOfArgs := byteVector.(opvec.code)
-            --numOfArgs ^= #(QCDR sig) => nil
+            --numOfArgs ~= #(QCDR sig) => nil
             packageForm := [entry,'$,:CDR cat]
             package := evalSlotDomain(packageForm,dom)
             packageVec.i := package

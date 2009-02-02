@@ -320,7 +320,7 @@ CliffordAlgebra(n, K, Q): T == Impl where
 
         x = y ==
             for i in 0..dim-1 repeat
-                if x.i ^= y.i then return false
+                if x.i ~= y.i then return false
             true
 
         x + y == (z := New; for i in 0..dim-1 repeat z.i := x.i + y.i; z)
@@ -345,7 +345,7 @@ CliffordAlgebra(n, K, Q): T == Impl where
             c  := c1 * c2
             bz := b2
             for i in 0..n-1 | bit?(b1,i) repeat
-                -- Apply rule  ei*ej = -ej*ei for i^=j
+                -- Apply rule  ei*ej = -ej*ei for i ~= j
                 k := 0
                 for j in i+1..n-1 | bit?(b1, j) repeat k := k+1
                 for j in 0..i-1   | bit?(bz, j) repeat k := k+1
@@ -362,15 +362,15 @@ CliffordAlgebra(n, K, Q): T == Impl where
         x * y ==
             z := New
             for ix in 0..dim-1 repeat
-                if x.ix ^= 0 then for iy in 0..dim-1 repeat
-                    if y.iy ^= 0 then addMonomProd(x.ix,ix,y.iy,iy,z)
+                if x.ix ~= 0 then for iy in 0..dim-1 repeat
+                    if y.iy ~= 0 then addMonomProd(x.ix,ix,y.iy,iy,z)
             z
 
         canonMonom(c: K, lb: List PI): Record(coef: K, basel: NNI) ==
             -- 0. Check input
             for b in lb repeat b > n => error "No such basis element"
 
-            -- 1. Apply identity ei*ej = -ej*ei, i^=j.
+            -- 1. Apply identity ei*ej = -ej*ei, i ~= j.
             -- The Rep assumes n is small so bubble sort is ok.
             -- Using bubble sort keeps the exchange info obvious.
             wasordered   := false
@@ -415,7 +415,7 @@ CliffordAlgebra(n, K, Q): T == Impl where
             c = 1 => be
             c::Ex * be
         coerce(x): Ex ==
-            tl := [coerceMonom(x.i,i) for i in 0..dim-1 | x.i^=0]
+            tl := [coerceMonom(x.i,i) for i in 0..dim-1 | x.i ~= 0]
             null tl => "0"::Ex
             reduce("+", tl)
 

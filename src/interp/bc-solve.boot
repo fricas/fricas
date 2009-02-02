@@ -270,7 +270,7 @@ bcLinearSolveMatrixInhomo(htPage,junk) ==
     [f(i) for i in 1..ncols] where f(i) ==
       spacer := (i > 99 => 0; i > 9 => 1; 2)
       prefix := STRCONC('"{\em Coefficient ",STRINGIMAGE i,'":}")
-      if spacer ^= 0 then
+      if spacer ~= 0 then
         prefix := STRCONC(prefix,'"\space{",STRINGIMAGE spacer,'"}")
       name := INTERN STRCONC('"c",STRINGIMAGE i)
       [prefix,"",30, 0,name, 'P]

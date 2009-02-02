@@ -180,17 +180,17 @@ NumberFormats(): NFexports == NFimplementation where
                 n := romval ord c
                 -- (I)=1000, ((I))=10000, (((I)))=100000, etc
                 if n < 0 then
-                    c ^= pren =>
+                    c ~= pren =>
                        error ["Improper character in Roman numeral: ",c]
                     nprens: PI := 1
                     while c = pren and i >= minIndex s repeat
                        c := s.i; i := i-1
                        if c = pren then nprens := nprens+1
-                    c ^= ichar =>
+                    c ~= ichar =>
                        error "Improper Roman numeral: (x)"
                     for k in 1..nprens while i >= minIndex s repeat
                        c := s.i; i := i-1
-                       c ^= plen =>
+                       c ~= plen =>
                           error "Improper Roman numeral: unbalanced ')'"
                     n := 10**(nprens + 2)
                 if n < Max then
@@ -420,8 +420,8 @@ OutputForm(): SetCategory with
         --% Specific applications
         "=":     ($, $) -> $
           ++ f = g creates the equivalent infix form.
-        "^=":    ($, $) -> $
-          ++ f ^= g creates the equivalent infix form.
+        "~=":    ($, $) -> $
+          ++ f ~= g creates the equivalent infix form.
         "<":     ($, $) -> $
           ++ f < g creates the equivalent infix form.
         ">":     ($, $) -> $
@@ -572,7 +572,7 @@ OutputForm(): SetCategory with
         vconcat(a, b)  == convert [eform VCONCAT, a, b]
         vconcat l     == cons(eform VCONCAT, l)
 
-        a ^= b      == convert [sform "^=",    a, b]
+        a ~= b      == convert [sform "~=",    a, b]
         a < b       == convert [sform "<",     a, b]
         a > b       == convert [sform ">",     a, b]
         a <= b      == convert [sform "<=",    a, b]

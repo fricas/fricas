@@ -54,7 +54,7 @@ FreeModule(R:Ring,S:OrderedSet):
 --             one? r => x
              (r = 1) => x
            --map(r*#1,x)
-             [[u.k,a] for u in x | (a:=r*u.c) ^= 0$R]
+             [[u.k,a] for u in x | (a:=r*u.c) ~= 0$R]
        if R has EntireRing then
          x * r  ==
              zero? r => 0
@@ -68,7 +68,7 @@ FreeModule(R:Ring,S:OrderedSet):
 --             one? r => x
              (r = 1) => x
            --map(r*#1,x)
-             [[u.k,a] for u in x | (a:=u.c*r) ^= 0$R]
+             [[u.k,a] for u in x | (a:=u.c*r) ~= 0$R]
 
        coerce(x) : OutputForm ==
          null x => (0$R) :: OutputForm
@@ -288,7 +288,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
 --            null p2 => 0
 --            zero?(p1.first.k) => p1.first.c * p2
 --            one? p2 => p1
---            +/[[[t1.k+t2.k,r]$Term for t2 in p2 | (r:=t1.c*t2.c) ^= 0]
+--            +/[[[t1.k+t2.k,r]$Term for t2 in p2 | (r:=t1.c*t2.c) ~= 0]
 --                 for t1 in reverse(p1)]
 --                  -- This 'reverse' is an efficiency improvement:
 --                  -- reduces both time and space [Abbott/Bradford/Davenport]
@@ -348,7 +348,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
                  while not null p1 and p1.first.k > e2 repeat
                    (rout:=[p1.first,:rout]; p1:=p1.rest)  --use PUSH and POP?
                  null p1 or p1.first.k < e2 => rout:=[[e2,c2],:rout]
-                 if (u:=p1.first.c + c2) ^= 0 then rout:=[[e2, u],:rout]
+                 if (u:=p1.first.c + c2) ~= 0 then rout:=[[e2, u],:rout]
                  p1:=p1.rest
               NRECONC(rout,p1)$Lisp
            if R has Approximate then
@@ -501,7 +501,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
              while not null p1 and p1.first.k > e2 repeat
                (rout:=[p1.first,:rout]; p1:=p1.rest)  --use PUSH and POP?
              null p1 or p1.first.k < e2 => rout:=[[e2,c2],:rout]
-             if (u:=p1.first.c + c2) ^= 0 then rout:=[[e2, u],:rout]
+             if (u:=p1.first.c + c2) ~= 0 then rout:=[[e2, u],:rout]
              p1:=p1.rest
           NRECONC(rout,p1)$Lisp
 
@@ -600,7 +600,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
              while not null p1 and p1.first.k > e2 repeat
                (rout:=[p1.first,:rout]; p1:=p1.rest)  --use PUSH and POP?
              null p1 or p1.first.k < e2 => rout:=[[e2,c2],:rout]
-             if (u:=p1.first.c + c2) ^= 0 then rout:=[[e2, u],:rout]
+             if (u:=p1.first.c + c2) ~= 0 then rout:=[[e2, u],:rout]
              p1:=p1.rest
           NRECONC(rout,p1)$Lisp
    pseudoRemainder(p1,p2) ==
@@ -651,7 +651,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
 
    monicDivide(p1:%,p2:%) ==
       null p2 => error "monicDivide: division by 0"
-      leadingCoefficient p2 ^= 1 => error "Divisor Not Monic"
+      leadingCoefficient p2 ~= 1 => error "Divisor Not Monic"
       p2 = 1 => [p1,0]
       null p1 => [0,0]
       degree p1 < (n:=degree p2) => [0,p1]
@@ -679,7 +679,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
 --       p:=pseudoRemainder(p1,p2)
 --       co:=1$R;
 --       e:= (p1.first.k - p2.first.k):NonNegativeInteger
---       while not null p and p.first.k ^= 0 repeat
+--       while not null p and p.first.k ~= 0 repeat
 --         p1:=p2; p2:=p; p:=pseudoRemainder(p1,p2)
 --         null p or p.first.k = 0 => "enuf"
 --         co:=(p1.first.c ** e exquo co ** max(0, (e-1))::NonNegativeInteger)::R
@@ -727,7 +727,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
        n:=p2.first.k
        p2:=p2.rest
        rout:=empty()$List(Term)
-       while p1 ^= 0 repeat
+       while p1 ~= 0 repeat
           (u:=subtractIfCan(p1.first.k, n)) case "failed" => leave
           rout:=[[u, ct * p1.first.c], :rout]
           p1:=fmecg(p1.rest, rout.first.k, rout.first.c, p2)
@@ -938,7 +938,7 @@ UnivariatePolynomialSquareFree(RC:IntegralDomain,P):C == T
              makeFR(u,[["sqfr",c,1]])
            i:NonNegativeInteger:=0; lffe:List FF:=[]
            lcp := leadingCoefficient p
-           while degree(ci)^=0 repeat
+           while degree(ci) ~= 0 repeat
               ci:=(ci exquo pi)::P
               di:=(di exquo pi)::P - differentiate(ci)
               pi:=gcd(ci,di)
@@ -960,7 +960,7 @@ UnivariatePolynomialSquareFree(RC:IntegralDomain,P):C == T
            di := (p exquo ci)::P
            i:NonNegativeInteger:=0; lffe:List FF:=[]
            dunit : P := 1
-           while degree(di)^=0 repeat
+           while degree(di) ~= 0 repeat
               diprev := di
               di := gcd(ci,di)
               ci:=(ci exquo di)::P
@@ -1081,7 +1081,7 @@ PolynomialSquareFree(VarSet:OrderedSet,E,RC:GcdDomain,P):C == T where
            cont1:=cont1*((unit listfin1)**uexp)
            pfaclist:=append(flistfin1,pfaclist)
          cont:=cont*cont1
-         cont ^= 1 =>
+         cont ~= 1 =>
            sqp := squareFree cont
            pfaclist:= append (factorList sqp,pfaclist)
            makeFR(unit(sqp)*coefficient(unit squf,0),pfaclist)
@@ -1090,7 +1090,7 @@ PolynomialSquareFree(VarSet:OrderedSet,E,RC:GcdDomain,P):C == T where
     squareFree(p:P) ==
        mv:=mainVariable p
        mv case "failed" => makeFR(p,[])$Factored(P)
-       characteristic$RC ^=0 => finSqFr(p,variables p)
+       characteristic$RC ~= 0 => finSqFr(p,variables p)
        up:=univariate(p,mv)
        cont := content up
        up := (up exquo cont)::SUP
@@ -1098,7 +1098,7 @@ PolynomialSquareFree(VarSet:OrderedSet,E,RC:GcdDomain,P):C == T where
        pfaclist:List FF :=
          [[u.flg,multivariate(u.fctr,mv),u.xpnt]
                                             for u in factorList squp]
-       cont ^= 1 =>
+       cont ~= 1 =>
          sqp := squareFree cont
          makeFR(unit(sqp)*coefficient(unit squp,0),
               append(factorList sqp, pfaclist))

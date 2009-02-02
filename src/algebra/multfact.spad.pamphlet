@@ -182,7 +182,7 @@ InnerMultFact(OV,E,R,P) : C == T
         "max"/[numberOfMonomials ff for ff in lum]
 
       "max"/[+/[euclideanSize cc for i in 0..degree ff|
-                (cc:= coefficient(ff,i))^=0] for ff in lum]
+                (cc:= coefficient(ff,i)) ~= 0] for ff in lum]
 
           ---  Choose the integer to reduce to univariate case  ---
     intChoose(um:USP,lvar:L OV,clc:R,plist:L P,ltry:L L R,
@@ -220,12 +220,12 @@ InnerMultFact(OV,E,R,P) : C == T
        leadcomp1:=[retract eval(pol,lvar,lval) for pol in plist]
        testp and or/[unit? epl for epl in leadcomp1] => range:=2*range
        newm:BP:=completeEval(um,lvar,lval)
-       degum ^= degree newm or minimumDegree newm ^=0 => range:=2*range
+       degum ~= degree newm or minimumDegree newm ~= 0 => range:=2*range
        lffc1:=content newm
        newm:=(newm exquo lffc1)::BP
        testp and leadtest and not polCase(lffc1*clc,#plist,leadcomp1)
                              => range:=2*range
-       degree(gcd [newm,differentiate(newm)])^=0 => range:=2*range
+       degree(gcd [newm,differentiate(newm)]) ~= 0 => range:=2*range
        luniv:=ufactor(newm)
        lunivf:= factors luniv
        lffc1:R:=retract(unit luniv)@R * lffc1
@@ -325,7 +325,7 @@ InnerMultFact(OV,E,R,P) : C == T
         lpol:= dist.polfac
         dd := dist.correct
         unifact:=dist.corrfact
-      if dd^=1 then
+      if dd ~= 1 then
 --        if polcase then lpol := [unitCanonical lp for lp in lpol]
 --        dd:=unitCanonical(dd)
         unifact := [dd * unif for unif in unifact]
@@ -334,7 +334,7 @@ InnerMultFact(OV,E,R,P) : C == T
       (ffin:=lifting(umd,lvar,unifact,lval,lpol,ldeg,pmod))
         case "failed" => intfact(um,lvar,ldeg,tleadpol,ltry,ufactor)
       factfin: L USP:=ffin :: L USP
-      if dd^=1 then
+      if dd ~= 1 then
         factfin:=[primitivePart ff for ff in factfin]
       factfin
 
@@ -351,7 +351,7 @@ InnerMultFact(OV,E,R,P) : C == T
       ans:USP := monomial(1,n)
       n:=(n-1)::NonNegativeInteger
       prod:P:=1
-      while (um:=reductum(um)) ^= 0 repeat
+      while (um:=reductum(um)) ~= 0 repeat
         i := degree um
         lc := leadingCoefficient um
         prod := prod * c ** (n-(n:=i))::NonNegativeInteger
@@ -420,12 +420,12 @@ InnerMultFact(OV,E,R,P) : C == T
         x:=lvar.first
         ldeg:=ldeg.rest
         lvar := lvar.rest
-        if varch.nvar.first ^= x then
+        if varch.nvar.first ~= x then
           lvar:= varch.nvar
           x := lvar.first
           lvar := lvar.rest
         pc:= gcd coefficients um
-        if pc^=1 then
+        if pc ~= 1 then
             um:=(um exquo pc)::USP
             ffactor:=multivariate(um,x)
             for lcterm in mFactor(pc,ufactor).factors repeat

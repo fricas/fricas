@@ -280,24 +280,24 @@ MatrixCategory(R,Row,Col): Category == Definition where
      diagonal? x ==
        not square? x => false
        for i in minr x .. maxr x repeat
-         for j in minc x .. maxc x | (j - minc x) ^= (i - minr x) repeat
+         for j in minc x .. maxc x | (j - minc x) ~= (i - minr x) repeat
            not zero? qelt(x, i, j) => return false
        true
 
      symmetric? x ==
-       (nRows := nrows x) ^= ncols x => false
+       (nRows := nrows x) ~= ncols x => false
        mr := minRowIndex x; mc := minColIndex x
        for i in 0..(nRows - 1) repeat
          for j in (i + 1)..(nRows - 1) repeat
-           qelt(x,mr + i,mc + j) ^= qelt(x,mr + j,mc + i) => return false
+           qelt(x,mr + i,mc + j) ~= qelt(x,mr + j,mc + i) => return false
        true
 
      antisymmetric? x ==
-       (nRows := nrows x) ^= ncols x => false
+       (nRows := nrows x) ~= ncols x => false
        mr := minRowIndex x; mc := minColIndex x
        for i in 0..(nRows - 1) repeat
          for j in i..(nRows - 1) repeat
-           qelt(x,mr + i,mc + j) ^= -qelt(x,mr + j,mc + i) =>
+           qelt(x,mr + i,mc + j) ~= -qelt(x,mr + j,mc + i) =>
              return false
        true
 
@@ -311,7 +311,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        rows : NonNegativeInteger := 1; cols := # first l
        cols = 0 => error "matrices with zero columns are not supported"
        for ll in rest l repeat
-         cols ^= # ll => error "matrix: rows of different lengths"
+         cols ~= # ll => error "matrix: rows of different lengths"
          rows := rows + 1
        ans := new(rows,cols,0)
        for i in minr(ans)..maxr(ans) for ll in l repeat
@@ -378,7 +378,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans
 
      horizConcat(x,y) ==
-       (rows := nrows x) ^= nrows y =>
+       (rows := nrows x) ~= nrows y =>
          error "HConcat: matrices must have same number of rows"
        ans := new(rows,(cols := ncols x) + ncols y,0)
        for i in minr(x)..maxr(x) repeat
@@ -390,7 +390,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans
 
      vertConcat(x,y) ==
-       (cols := ncols x) ^= ncols y =>
+       (cols := ncols x) ~= ncols y =>
          error "HConcat: matrices must have same number of columns"
        ans := new((rows := nrows x) + nrows y,cols,0)
        for i in minr(x)..maxr(x) repeat
@@ -452,7 +452,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        for ej in colList repeat
          (ej < minc(x)) or (ej > maxc(x)) =>
            error "setelt: index out of range"
-       ((# rowList) ^= (nrows y)) or ((# colList) ^= (ncols y)) =>
+       ((# rowList) ~= (nrows y)) or ((# colList) ~= (ncols y)) =>
          error "setelt: matrix has bad dimensions"
        for ei in rowList for i in minr(y)..maxr(y) repeat
          for ej in colList for j in minc(y)..maxc(y) repeat
@@ -489,7 +489,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
 --% Arithmetic
 
      x + y ==
-       ((r := nrows x) ^= nrows y) or ((c := ncols x) ^= ncols y) =>
+       ((r := nrows x) ~= nrows y) or ((c := ncols x) ~= ncols y) =>
          error "can't add matrices of different dimensions"
        ans := new(r,c,0)
        for i in minr(x)..maxr(x) repeat
@@ -498,7 +498,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans
 
      x - y ==
-       ((r := nrows x) ^= nrows y) or ((c := ncols x) ^= ncols y) =>
+       ((r := nrows x) ~= nrows y) or ((c := ncols x) ~= ncols y) =>
          error "can't subtract matrices of different dimensions"
        ans := new(r,c,0)
        for i in minr(x)..maxr(x) repeat
@@ -513,7 +513,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
      m:Integer * x:% == map(m * #1,x)
 
      x:% * y:% ==
-       (ncols x ^= nrows y) =>
+       (ncols x ~= nrows y) =>
          error "can't multiply matrices of incompatible dimensions"
        ans := new(nrows x,ncols y,0)
        for i in minr(x)..maxr(x) repeat
@@ -547,8 +547,8 @@ MatrixCategory(R,Row,Col): Category == Definition where
      if Col has shallowlyMutable then
 
        x:% * v:Col ==
-         ncols(x) ^= #v =>
-           error "can't multiply matrix A and vector v if #cols A ^= #v"
+         ncols(x) ~= #v =>
+           error "can't multiply matrix A and vector v if #cols A ~= #v"
          w : Col := new(nrows x,0)
          for i in minr(x)..maxr(x) for k in mini(w)..maxi(w) repeat
            w.k :=
@@ -561,8 +561,8 @@ MatrixCategory(R,Row,Col): Category == Definition where
      if Row has shallowlyMutable then
 
        v:Row * x:% ==
-         nrows(x) ^= #v =>
-           error "can't multiply vector v and matrix A if #rows A ^= #v"
+         nrows(x) ~= #v =>
+           error "can't multiply vector v and matrix A if #rows A ~= #v"
          w : Row := new(ncols x,0)
          for j in minc(x)..maxc(x) for k in mini(w)..maxi(w) repeat
            w.k :=
@@ -929,24 +929,24 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
        not square? x => false
        for i in minRowIndex x .. maxRowIndex x repeat
          for j in minColIndex x .. maxColIndex x
-           | (j - minColIndex x) ^= (i - minRowIndex x) repeat
+           | (j - minColIndex x) ~= (i - minRowIndex x) repeat
              not zero? qelt(x, i, j) => return false
        true
 
      symmetric? x ==
-       m ^= n => false
+       m ~= n => false
        mr := minRowIndex x; mc := minColIndex x
        for i in 0..(n - 1) repeat
          for j in (i + 1)..(n - 1) repeat
-           qelt(x,mr + i,mc + j) ^= qelt(x,mr + j,mc + i) => return false
+           qelt(x,mr + i,mc + j) ~= qelt(x,mr + j,mc + i) => return false
        true
 
      antisymmetric? x ==
-       m ^= n => false
+       m ~= n => false
        mr := minRowIndex x; mc := minColIndex x
        for i in 0..(n - 1) repeat
          for j in i..(n - 1) repeat
-           qelt(x,mr + i,mc + j) ^= -qelt(x,mr + j,mc + i) =>
+           qelt(x,mr + i,mc + j) ~= -qelt(x,mr + j,mc + i) =>
              return false
        true
 

@@ -158,7 +158,7 @@ assocCircular(x,al) ==  --like ASSOC except that al is circular
 compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   k:= #initCode
   extraArgumentCode :=
-    extraArguments := [x for x in argl | x ^= sharpArg] =>
+    extraArguments := [x for x in argl | x ~= sharpArg] =>
       extraArguments is [x] => x
       ['LIST,:extraArguments]
     nil

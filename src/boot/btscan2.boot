@@ -351,7 +351,7 @@ shoeW(b)==
        $n:=$n+1
        l:=$sz
        endid:=shoeIdEnd($ln,$n)
-       if endid=l or QENUM($ln,endid)^=shoeESCAPE
+       if endid=l or (not(QENUM($ln,endid) = shoeESCAPE))
        then
            $n:=endid
            [b,SUBSTRING($ln,n1,endid-n1)]
@@ -382,7 +382,7 @@ shoeInteger1(zro) ==
        n:=$n
        l:= $sz
        while $n<l and shoeDigit($ln.$n) repeat $n:=$n+1
-       if $n=l or QENUM($ln,$n)^=shoeESCAPE
+       if $n=l or (not(QENUM($ln,$n) = shoeESCAPE))
        then if n=$n and zro
             then '"0"
             else SUBSTRING($ln,n,$n-n)

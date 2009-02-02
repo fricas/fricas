@@ -213,12 +213,12 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
 
         ldeg:=ldeg.rest
         lvar:=lvar.rest
-        if varch.nvar.1 ^= x then
+        if varch.nvar.1 ~= x then
           lvar:= varch.nvar
           x := lvar.1
           lvar:=lvar.rest
           pc:= gcd coefficients um
-          if pc^=1 then
+          if pc ~= 1 then
             um:=(um exquo pc)::SUP P
             ffactor:=multivariate(um,x)
             for lcterm in mFactor(pc,dx).factors repeat
@@ -228,7 +228,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
         -- should be unitNormal if unified, but for now it is easier
         lcum:F:= leadingCoefficient leadingCoefficient
                 leadingCoefficient um
-        if lcum ^=1  then
+        if lcum ~= 1  then
           um:=((inv lcum)::R::P) * um
           flead.contp := (lcum::R) *flead.contp
 
@@ -286,13 +286,13 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
         lpol:= dist.polfac
         dd := dist.correct
         unifact:=dist.corrfact
-      if dd^=1 then
+      if dd ~= 1 then
         unifact := [dd*unifact.i for i in 1..nfact]
         um := ((dd**(nfact-1)::NNI)::P)*um
       (ffin:= lifting(um,lvar,unifact,lval,lpol,ldeg,pM(unifact)))
            case "failed" => intfact(um,lvar,ldeg,tleadpol,ltry)
       factfin: L SUP P:=ffin :: L SUP P
-      if dd^=1 then
+      if dd ~= 1 then
         factfin:=[primitivePart ff  for ff in  factfin]
       factfin
 
@@ -301,7 +301,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
     pushup(f:P,x:OV) :PG ==
        ground? f => pushupconst((retract f)@R,x)
        rr:PG:=0
-       while f^=0 repeat
+       while f ~= 0 repeat
          lf:=leadingMonomial f
          cf:=pushupconst(leadingCoefficient f,x)
          lvf:=variables lf
@@ -314,7 +314,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
        ground? g => ((retract g)@F)::R::P
        rf:P:=0$P
        ug:=univariate(g,x)
-       while ug^=0 repeat
+       while ug ~= 0 repeat
          cf:=monomial(1,degree ug)$R
          rf:=rf+cf*pushdcoef(leadingCoefficient ug)
          ug := reductum ug
@@ -324,7 +324,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
     pushupconst(r:R,x:OV):PG ==
        ground? r => (retract r)@F ::PG
        rr:PG:=0
-       while r^=0 repeat
+       while r ~= 0 repeat
          rr:=rr+monomial((leadingCoefficient r)::PG,x,degree r)$PG
          r:=reductum r
        rr
@@ -385,19 +385,19 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
        leadcomp1:=[retract eval(pol,lvar,lval) for pol in plist]
        testp and or/[unit? epl for epl in leadcomp1] => range:=range+1
        newm:SUP R:=completeEval(um,lvar,lval)
-       degum ^= degree newm or minimumDegree newm ^=0 => range:=range+1
+       degum ~= degree newm or minimumDegree newm ~= 0 => range:=range+1
        lffc1:=content newm
        newm:=(newm exquo lffc1)::SUP R
        testp and leadtest and not polCase(lffc1*clc,#plist,leadcomp1)
                            => range:=range+1
        Dnewm := differentiate newm
        D2newm := map(differentiate, newm)
-       degree(gcd [newm,Dnewm,D2newm])^=0 => range:=range+1
+       degree(gcd [newm,Dnewm,D2newm]) ~= 0 => range:=range+1
       -- if R has Integer then luniv:=henselFact(newm,false)$
       -- else
        lcnm:F:=1
         -- should be unitNormal if unified, but for now it is easier
-       if (lcnm:=leadingCoefficient leadingCoefficient newm)^=1 then
+       if (lcnm:=leadingCoefficient leadingCoefficient newm) ~= 1 then
          newm:=((inv lcnm)::R)*newm
        dx:="max"/[degree uc  for uc in coefficients newm]
        luniv:=generalTwoFactor(newm)$TwoFactorize(F)

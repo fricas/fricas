@@ -169,8 +169,8 @@ SigListUnion(extra,original) ==
         return nil -- this exits from the innermost for loop
       original:= delete(x,original)
       [xsig,xpred,:ximplem]:= x
---      if xsig ^= esig then   -- not quite strong enough
-      if CAR xsig ^= CAR esig or CADR xsig ^= CADR esig then
+--      if xsig ~= esig then   -- not quite strong enough
+      if CAR xsig ~= CAR esig or CADR xsig ~= CADR esig then
 -- the new version won't get confused by "constant"markers
          if ximplem is [["Subsumed",:.],:.] then
             original := [x,:original]
@@ -303,7 +303,7 @@ MachineLevelSubset(a,b) ==
   --true if a is a machine-level subset of b
   a=b => true
   b is ["Union",:blist] and member(a,blist) and
-    (and/[STRINGP x for x in blist | x^=a]) => true
+    (and/[STRINGP x for x in blist | x~=a]) => true
            --all other branches must be distinct objects
   atom b and assoc(a,GETL(b,"Subsets")) => true
   a is [a1] and b is [b1] and assoc(a1,GETL(b1,"Subsets")) => true

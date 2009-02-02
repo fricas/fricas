@@ -70,7 +70,7 @@ upDollar t ==
   if f = $immediateDataSymbol then
     f := objValUnwrap coerceInteractive(getValue form,$OutputForm)
     if f = '(construct) then f := "nil"
-  ATOM(form) and (f ^= $immediateDataSymbol) and
+  ATOM(form) and (f ~= $immediateDataSymbol) and
     (u := findUniqueOpInDomain(op,f,t)) => u
   f in '(One Zero true false nil) and constantInDomain?([f],t) =>
     isPartialMode t => throwKeyedMsg("S2IS0020",NIL)
@@ -84,7 +84,7 @@ upDollar t ==
 
   (ms := upDollarTuple(op, f, t, t2, rest form, nargs)) => ms
 
-  f ^= 'construct and null isOpInDomain(f,t,nargs) =>
+  f ~= 'construct and null isOpInDomain(f,t,nargs) =>
     throwKeyedMsg("S2IS0023",[f,t])
   if (sig := findCommonSigInDomain(f,t,nargs)) then
     for x in sig for y in form repeat
@@ -110,7 +110,7 @@ upDollarTuple(op, f, t, t2, args, nargs) ==
   newArg := [mkAtreeNode "Tuple",:args]
   putTarget(newArg, tuple)
   ms := bottomUp newArg
-  first ms ^= tuple => NIL
+  first ms ~= tuple => NIL
   form := [first form, newArg]
   putAtree(first form,'dollar,t)
   ms := bottomUp form
@@ -139,7 +139,7 @@ upequation tree ==
   -- only handle this if there is a target of Boolean
   -- this should speed things up a bit
   tree isnt [op,lhs,rhs] => NIL
-  $Boolean ^= getTarget(op) => NIL
+  $Boolean ~= getTarget(op) => NIL
   null VECP op => NIL
   -- change equation into '='
   op.0 := "="
@@ -465,7 +465,7 @@ upLET t ==
   var in '(% %%) =>               -- for history
     throwKeyedMsg("S2IS0027",[var])
   (IDENTP var) and not (var in '(true false elt QUOTE)) =>
-    var ^= (var' := unabbrev(var)) =>  -- constructor abbreviation
+    var ~= (var' := unabbrev(var)) =>  -- constructor abbreviation
       throwKeyedMsg("S2IS0028",[var,var'])
     if get(var,'isInterpreterFunction,$e) then
       putHist(var,'isInterpreterFunction,false,$e)
@@ -489,9 +489,9 @@ upLET t ==
 
 isTupleForm f ==
     -- have to do following since "Tuple" is an internal form name
-    getUnname f ^= "Tuple" => false
+    getUnname f ~= "Tuple" => false
     f is [op,:args] and VECP(op) and getUnname(op) = "Tuple" =>
-        #args ^= 1 => true
+        #args ~= 1 => true
         isTupleForm first args => true
         isType first args => false
         true
@@ -585,7 +585,7 @@ evalLETchangeValue(name,value) ==
     val:= (localEnv and get(name,'value,$env)) or get(name,'value,$e)
     null val =>
       not ((localEnv and get(name,'mode,$env)) or get(name,'mode,$e))
-    objMode val ^= objMode(value)
+    objMode val ~= objMode(value)
   if clearCompilationsFlag then
     clearDependencies(name,true)
   if localEnv and isLocalVar(name)
@@ -598,8 +598,8 @@ upLETWithFormOnLhs(op,lhs,rhs) ==
   lhs' := getUnnameIfCan lhs
   rhs' := getUnnameIfCan rhs
   lhs' = 'Tuple =>
-    rhs' ^= 'Tuple => throwKeyedMsg("S2IS0039",NIL)
-    #(lhs) ^= #(rhs) => throwKeyedMsg("S2IS0038",NIL)
+    rhs' ~= 'Tuple => throwKeyedMsg("S2IS0039",NIL)
+    #(lhs) ~= #(rhs) => throwKeyedMsg("S2IS0038",NIL)
     -- generate a sequence of assignments, using local variables
     -- to first hold the assignments so that things like
     -- (t1,t2) := (t2,t1) will work.
@@ -668,9 +668,9 @@ upSetelt(op,lhs,tree) ==
 
 upTableSetelt(op,lhs is [htOp,:args],rhs) ==
   -- called only for undeclared, uninitialized table setelts
-  ("*" = (PNAME getUnname htOp).0) and (1 ^= # args) =>
+  ("*" = (PNAME getUnname htOp).0) and (1 ~= # args) =>
     throwKeyedMsg("S2IS0040",NIL)
-  # args ^= 1 =>
+  # args ~= 1 =>
     throwKeyedMsg("S2IS0041",[[getUnname htOp,'".[",
       getUnname first args,
         ['",",getUnname arg for arg in rest args],'"]"]])
@@ -997,7 +997,7 @@ evalSEQ(op,args,m) ==
     bodyCode := nil
     for x in args repeat
       (m1 := computedMode x) =>
-        (av := getArgValue(x,m1)) ^= voidValue() =>
+        (av := getArgValue(x,m1)) ~= voidValue() =>
           bodyCode := [av,:bodyCode]
     code:=
       bodyCode is [c] => c

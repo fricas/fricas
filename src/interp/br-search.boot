@@ -138,7 +138,7 @@ pmTransFilter s ==
     => (parse := pmParseFromString s) and checkPmParse parse or
         ['error,'"Illegal search string",'"\vspace{3}\center{{\em Your search string} ",escapeSpecialChars s,'" {\em has incorrect syntax}}"]
   or/[s . i = char '_* and s.(i + 1) = char '_*
-      and (i=0 or s . (i - 1) ^= char $charUnderscore) for i in 0..(MAXINDEX s - 1)]
+      and (i=0 or s . (i - 1) ~= char $charUnderscore) for i in 0..(MAXINDEX s - 1)]
        => ['error,'"Illegal search string",'"\vspace{3}\center{Consecutive {\em *}'s are not allowed in search patterns}"]
   s
 
@@ -261,7 +261,7 @@ mkGrepPattern1(x,:options) == --called by mkGrepPattern (and grepConstructName?)
       sl is [s,:r] => h(r,[$wild1,s,:res])
       res := rest res
       if not MEMQ('w,$options) then
-        if first res ^= '"" then res := ['"`",:res]
+        if first res ~= '"" then res := ['"`",:res]
         else if res is [.,p,:r] and p = $wild1 then res := r
       "STRCONC"/NREVERSE res
     remUnderscores s ==
@@ -278,7 +278,7 @@ mkGrepPattern1(x,:options) == --called by mkGrepPattern (and grepConstructName?)
       n := SIZE t
       if startpos < 0 or startpos > n then error "index out of range"
       k:= startpos
-      for i in startpos .. n-1 while c ^= ELT(t,i)
+      for i in startpos .. n-1 while c ~= ELT(t,i)
         or i > startpos and ELT(t,i-1) = '__ repeat  (k := k+1)
       k
     addOptions s ==  --add front anchor
@@ -356,7 +356,7 @@ looksLikeDomainForm x ==
   coSig := LASSOC('coSig,CDDR entry)
   k := #coSig
   atom x => k = 1
-  k ^= #x => false
+  k ~= #x => false
   and/[p for key in rest coSig for arg in rest x] where
     p ==
       key => looksLikeDomainForm arg
@@ -387,7 +387,7 @@ genSearch(filter,:options) == --"Complete" from HD (see man0.ht) and aokSearch
   if includeDoc? then
     docSearchAlist := grepConstruct(key,'w,true)
     docSearchAlist is ['error,:.] => bcErrorPage docSearchAlist
-    docSearchAlist := [x for x in docSearchAlist | x.0 ^= char 'x]--drop defaults
+    docSearchAlist := [x for x in docSearchAlist | x.0 ~= char 'x]--drop defaults
   genSearch1(filter,genSearchTran regSearchAlist,genSearchTran docSearchAlist)
 
 genSearchTran alist == [[x,y,:y] for [x,:y] in alist]
@@ -481,7 +481,7 @@ genSearchSay(pair,summarize,kind,who,fn) ==
   else
     htSay('"{\em ",count,'" ",pluralize kind,'"} ")
   short => 'done        
-  if uniqueCount ^= 1 then
+  if uniqueCount ~= 1 then
     htSayStandard '"\indent{4}"
     htSay '"\newline "
     htBeginTable()
@@ -499,7 +499,7 @@ genSearchSay(pair,summarize,kind,who,fn) ==
     htMakePage [['bcLinks, [id,'"",fn,who + 8*i]]]
     i := i + #group
     bcHt '"}"
-  if uniqueCount ^= 1 then
+  if uniqueCount ~= 1 then
      htEndTable()
      htSayStandard '"\indent{0}"
 
@@ -517,7 +517,7 @@ genSearchUniqueCount(u) ==
   lastid := nil
   for item in u while count < $browseCountThreshold repeat
     id := dbGetName item
-    if id ^= lastid then
+    if id ~= lastid then
       count := count + 1
       lastid := id
   count
@@ -541,7 +541,7 @@ docSearch filter ==  --"Documentation" from HD (see man0.ht)
   key := removeSurroundingStars filter
   docSearchAlist := grepConstruct(filter,'w,true)
   docSearchAlist is ['error,:.] => bcErrorPage docSearchAlist
-  docSearchAlist := [x for x in docSearchAlist | x.0 ^= char 'x] --drop defaults
+  docSearchAlist := [x for x in docSearchAlist | x.0 ~= char 'x] --drop defaults
   docSearch1(filter,genSearchTran docSearchAlist)
 
 docSearch1(filter,doc) ==
@@ -576,9 +576,9 @@ sayDocMessage message ==
   htSay('"{\em ")
   if message is [leftEnd,left,middle,right,rightEnd] then
     htSay(leftEnd,left,'"}")
-    if left ^= '"" and left.(MAXINDEX left) = $blank then htBlank()
+    if left ~= '"" and left.(MAXINDEX left) = $blank then htBlank()
     htSay middle
-    if right ^= '"" and right.0 = $blank then htBlank()
+    if right ~= '"" and right.0 = $blank then htBlank()
     htSay('"{\em ",right,rightEnd)
   else
     htSay message
@@ -744,7 +744,7 @@ dbSearch(lines,kind,filter) == --called by attribute, operation, constructor sea
 dbSearchAbbrev([.,:conlist],kind,filter) ==
   null conlist => emptySearchPage('"abbreviation",filter)
   kind := intern kind
-  if kind ^= 'constructor then
+  if kind ~= 'constructor then
     conlist := [x for x in conlist | LASSOC('kind,IFCDR IFCDR x) = kind]
   conlist is [[nam,:.]] => conPage DOWNCASE nam
   cAlist := [[con,:true] for con in conlist]

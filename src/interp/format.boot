@@ -692,7 +692,7 @@ formTuple2String argl ==
 
 isInternalFunctionName(op) ==
   (not IDENTP(op)) or (op = "*") or (op = "**") => NIL
-  (1 = SIZE(op':= PNAME op)) or (char("*") ^= op'.0) => NIL
+  (1 = SIZE(op':= PNAME op)) or (char("*") ~= op'.0) => NIL
   -- if there is a semicolon in the name then it is the name of
   -- a compiled spad function
   null (e := STRPOS('"_;",op',1,NIL)) => NIL

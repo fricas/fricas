@@ -106,13 +106,13 @@ IntegrationResult(F:Field): Exports == Implementation where
       coeffp:O := (outputForm(rec.coeff, alpha) = 0::Z::O)@O
       logandp :=
            alpha * prefix("log"::Symbol::O, [outputForm(rec.logand, alpha)])
-      if (cc := Q2F(rec.scalar)) ^= 1 then
+      if (cc := Q2F(rec.scalar)) ~= 1 then
         logandp := cc::O * logandp
       sum(logandp, coeffp)
 
     nesimp l ==
       [[u,x] for x in removeDuplicates_!([ne.intvar for ne in l]$List(F))
-                                           | (u := neselect(l, x)) ^= 0]
+                                           | (u := neselect(l, x)) ~= 0]
 
     if (F has LiouvillianFunctionCategory) and (F has RetractableTo Symbol) then
       retractIfCan u ==
@@ -152,7 +152,7 @@ IntegrationResult(F:Field): Exports == Implementation where
       error "pNeDeriv: cannot differentiate not elementary part into F"
 
     pLogDeriv(log, derivation) ==
-      map(derivation, log.coeff) ^= 0 =>
+      map(derivation, log.coeff) ~= 0 =>
         error "pLogDeriv: can only handle logs with constant coefficients"
 --      one?(n := degree(log.coeff)) =>
       ((n := degree(log.coeff)) = 1) =>
@@ -173,7 +173,7 @@ IntegrationResult(F:Field): Exports == Implementation where
     coerce(u:%):O ==
       (r := retractIfCan u) case F => r::F::O
       l := reverse_! [LOG2O f for f in logpart u]$List(O)
-      if ratpart u ^= 0 then l := concat(ratpart(u)::O, l)
+      if ratpart u ~= 0 then l := concat(ratpart(u)::O, l)
       if not elem? u then l := concat([NE2O f for f in notelem u], l)
       null l => 0::O
       reduce("+", l)

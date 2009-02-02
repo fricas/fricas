@@ -222,7 +222,7 @@ htMakeErrorPage htPage ==
 
 writeSaturnLines lines ==
   for line in lines repeat
-   if line ^= '"" and line.0 = char '_\ then saturnTERPRI()
+   if line ~= '"" and line.0 = char '_\ then saturnTERPRI()
    saturnPRINTEXP line
 
 writeSaturn(line) ==
@@ -230,7 +230,7 @@ writeSaturn(line) ==
   n := MAXINDEX line
   while  --advance k if true
       k > n => false
-      line.k ^= char '_\ => true
+      line.k ~= char '_\ => true
       code := isBreakSegment?(line, k + 1,n) => false
       true
     repeat (k := k + 1)
@@ -659,7 +659,7 @@ kPage(line,:options) == --any cat, dom, package, default package
   ---what follows is stuff from kiPage with domain = nil
   $conformsAreDomains := nil
   dbShowConsDoc1(page,conform,nil)
-  if kind ^= 'category and nargs > 0 then addParameterTemplates(page,conform)
+  if kind ~= 'category and nargs > 0 then addParameterTemplates(page,conform)
   if $atLeastOneUnexposed then htSay '"\newline{}{\em *} = unexposed"
   htSayStandard("\endscroll ")
   kPageContextMenu page
@@ -690,7 +690,7 @@ kPageContextMenu page ==
       htMakePage [['bcLinks,['Domains,'"",'kcdoPage,nil]]]
     else htSay '"{\em Domains}"
   htSay '"}{"
-  if kind ^= '"category" and (pathname := dbHasExamplePage conname)
+  if kind ~= '"category" and (pathname := dbHasExamplePage conname)
     then htMakePage [['bcLinks,['Examples,'"",'kxPage,pathname]]]
     else htSay '"{\em Examples}"
   htSay '"}{"
@@ -699,12 +699,12 @@ kPageContextMenu page ==
   htMakePage [['bcLinks,['Operations,'"",'koPage,'"operation"]]]
   htSay '"}{"
   htMakePage [['bcLinks,['Parents,'"",'kcpPage,'"operation"]]]
-  if kind ^= '"category" then
+  if kind ~= '"category" then
     htSay '"}{"
     if not asharpConstructorName? conname
     then  htMakePage [['bcLinks,["Search Path",'"",'ksPage,nil]]]
     else htSay '"{\em Search Path}"
-  if kind ^= '"category" then
+  if kind ~= '"category" then
     htSay '"}{"
     htMakePage [['bcLinks,['Users,'"",'kcuPage,nil]]]
     htSay '"}{"
@@ -730,7 +730,7 @@ kPageContextMenuSaturn page ==
     if not asharpConstructorName? conname then
       htMakePage [['bcLinks,['"Do\&mains",'"",'kcdoPage,nil]]]
       else htSayCold '"Do\&mains"
-  if kind ^= '"category" and (name := saturnHasExamplePage conname)
+  if kind ~= '"category" and (name := saturnHasExamplePage conname)
     then saturnExampleLink name
     else htSayCold '"E\&xamples"
   htMakePage [['bcLinks,['"\&Exports",'"",'kePage,nil]]]
@@ -739,7 +739,7 @@ kPageContextMenuSaturn page ==
   if not asharpConstructorName? conname
     then  htMakePage [['bcLinks,['"Search O\&rder",'"",'ksPage,nil]]]
     else htSayCold '"Search Order"
-  if kind ^= '"category" or dbpHasDefaultCategory? xpart
+  if kind ~= '"category" or dbpHasDefaultCategory? xpart
     then
        htMakePage [['bcLinks,['"\&Users",'"",'kcuPage,nil]]]
        htMakePage [['bcLinks,['"U\&ses",'"",'kcnPage,nil]]]
@@ -796,7 +796,7 @@ dbPresentCons(htPage,kind,:exclusions) ==
     else htMakePage
       [['bcLinks,['"Filter",'"",'htFilterPage,['dbShowCons,'filter]]]]
   htSay '"}{"
-  if one? or member('kinds,exclusions) or kind ^= 'constructor
+  if one? or member('kinds,exclusions) or kind ~= 'constructor
     then htSay '"{\em Kinds}"
     else htMakePage [['bcLispLinks,['"Kinds",'"",'dbShowCons,'kinds]]]
   htSay '"}{"
@@ -843,7 +843,7 @@ dbPresentConsSaturn(htPage,kind,exclusions) ==
   if one? or null CDR cAlist
     then htSayCold '"\&Filter"
     else htMakeSaturnFilterPage ['dbShowCons, 'filter]
-  if one? or member('kinds,exclusions) or kind ^= 'constructor
+  if one? or member('kinds,exclusions) or kind ~= 'constructor
     then htSayCold '"\&Kinds"
     else htMakePage [['bcLispLinks,['"\&Kinds",'"",'dbShowCons,'kinds]]]
   if one? or member('names,exclusions)
@@ -1086,7 +1086,7 @@ dbPresentOps(htPage,which,:exclusions) ==
     then htSay '"{\em Parameters}"
     else htMakePage [['bcLispLinks,['"Parameters",'"",'dbShowOps,which,'parameters]]]
   htSay '"}{"
-  if which ^= '"attribute" then
+  if which ~= '"attribute" then
     if one? or member('signatures,exclusions)
       then htSay '"{\em Signatures}"
       else htMakePage [['bcLispLinks,['"Signatures",'"",'dbShowOps,which,'signatures]]]
@@ -1147,7 +1147,7 @@ dbPresentOpsSaturn(htPage,which,exclusions) ==
       or not dbDoesOneOpHaveParameters? opAlist
     then htSayCold '"\&Parameters"
     else htMakePage [['bcLispLinks,['"\&Parameters",'"",'dbShowOps,which,'parameters]]]
-  if which ^= '"attribute" then
+  if which ~= '"attribute" then
     if one? or member('signatures,exclusions)
       then htSayCold '"\&Signatures"
       else htMakePage [['bcLispLinks,['"\&Signatures",'"",'dbShowOps,which,'signatures]]]
@@ -1252,7 +1252,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     $signature := SUBLISLIS($FormalMapVariableList,tvarlist,$signature)
   $sig :=
     which = '"attribute" or which = '"constructor" => sig
-    $conkind ^= '"package" => sig
+    $conkind ~= '"package" => sig
     symbolsUsed := [x for x in rest conform | IDENTP x]
     $DomainList := SETDIFFERENCE($DomainList,symbolsUsed)
     getSubstSigIfPossible sig
@@ -1275,7 +1275,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
             htSayIndentRel(15, true)
             position := KAR relatives
             relatives := KDR relatives
-            if KAR coSig and t ^= '(Type)
+            if KAR coSig and t ~= '(Type)
               then htMakePage [['bcLinks,[a,'"",'kArgPage,a]]]
               else htSay('"{\em ",form2HtString(a),'"}")
             htSay ", "
@@ -1294,7 +1294,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSayIndentRel(-15, true)
       htSaySaturn '"\\"
   -----------------------------------------------------------
-  if origin and ($generalSearch? or origin ^= conform) and op^=opOf origin then
+  if origin and ($generalSearch? or origin ~= conform) and op~=opOf origin then
     htSaySaturn '"{\em Origin:}"
     htSaySaturnAmpersand()
     htSayStandard('"\newline\tab{2}{\em Origin:}")
@@ -1337,7 +1337,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       bcConform(conform,true,true)
       firstTime := false
       htSayIndentRel(-15,true)
-    for [d,key,:t] in $whereList | d ^= "$" repeat
+    for [d,key,:t] in $whereList | d ~= "$" repeat
       htSayIndentRel(15,count > 1)
       if not firstTime then htSaySaturn '"\\ "
       htSaySaturnAmpersand()
@@ -1347,7 +1347,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSayIndentRel(-15,count > 1)
     htSaySaturn '"\\"
   -----------------------------------------------------------
-  if doc and (doc ^= '"" and (doc isnt [d] or d ^= '"")) then
+  if doc and (doc ~= '"" and (doc isnt [d] or d ~= '"")) then
     htSaySaturn '"{\em Description:}"
     htSaySaturnAmpersand()
     htSayStandard('"\newline\tab{2}{\em Description:}")
@@ -1585,7 +1585,7 @@ mkButtonBox n == STRCONC('"\buttonbox{", STRINGIMAGE n, '"}")
 --  while not EOFP instream repeat
 --    line := READLINE instream
 --    comP := FILE_-POSITION comstream
---    if key ^= line.0 then
+--    if key ~= line.0 then
 --      if outstream then SHUT outstream
 --      key := line . 0
 --      outstream := MAKE_-OUTSTREAM STRCONC(STRINGIMAGE key,'"libdb.text")

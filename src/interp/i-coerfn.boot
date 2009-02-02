@@ -102,7 +102,7 @@ position1(x,y) ==
 --% Direct Product, New and Old
 
 DP2DP(u,source is [.,n,S],target is [.,m,T]) ==
-  n ^= m => nil
+  n ~= m => nil
   u = '_$fromCoerceable_$ => canCoerce(S,T)
   null (u' := coerceInt(objNewWrap(u,['Vector,S]),['Vector,T])) =>
     coercionFailure()
@@ -198,7 +198,7 @@ Dmp2Mp(u, source is [dmp, x, S], target is [mp, y, T]) ==
     x = y => canCoerce(S,T)
     canCoerce(source',target)
   null u => domainZero(target)  -- 0 dmp is = nil
-  x ^= y =>
+  x ~= y =>
     (u' := coerceInt(objNewWrap(u,source),source')) or coercionFailure()
     (u' := coerceInt(u',target)) or coercionFailure()
     objValUnwrap(u')
@@ -561,10 +561,10 @@ Complex2underDomain(u,[.,S],target) ==
 
 Complex2FR(u,S is [.,R],target is [.,T]) ==
   u = '_$fromCoerceable_$ =>
-    S ^= T => nil
+    S ~= T => nil
     R = $Integer => true
     nil
-  S ^= T => coercionFailure()
+  S ~= T => coercionFailure()
   package :=
     R = $Integer => ['GaussianFactorizationPackage]
     coercionFailure()
@@ -625,7 +625,7 @@ L2Tuple(val, source is [.,S], target is [.,T]) ==
 L2DP(l, source is [.,S], target is [.,n,T]) ==
   -- need to know size of the list
   l = '_$fromCoerceable_$ => nil
-  n ^= SIZE l => coercionFailure()
+  n ~= SIZE l => coercionFailure()
   (v := coerceInt(objNewWrap(LIST2VEC l,['Vector,S]),['Vector,T])) or
     coercionFailure()
   V2DP(objValUnwrap v, ['Vector, T], target)
@@ -633,7 +633,7 @@ L2DP(l, source is [.,S], target is [.,n,T]) ==
 V2DP(v, source is [.,S], target is [.,n,T]) ==
   -- need to know size of the vector
   v = '_$fromCoerceable_$ => nil
-  n ^= SIZE v => coercionFailure()
+  n ~= SIZE v => coercionFailure()
   (v1 := coerceInt(objNewWrap(v,source),['Vector,T])) or
     coercionFailure()
   dpFun  := getFunctionFromDomain('directProduct, target, [['Vector,T]])
@@ -815,10 +815,10 @@ Mp2Expr(u,source is [mp,vars,S], target is [Expr,T]) ==
 
 Mp2FR(u,S is [.,vl,R],[.,T]) ==
   u = '_$fromCoerceable_$ =>
-    S ^= T => nil
+    S ~= T => nil
     R in '((Integer) (Fraction (Integer))) => true
     nil
-  S ^= T => coercionFailure()
+  S ~= T => coercionFailure()
   package :=
     R = $Integer =>
       ovl := ['OrderedVariableList, vl]
@@ -1026,7 +1026,7 @@ OV2poly(u,source is [.,svl], target is [p,vl,T]) ==
   v := svl.(unwrap(u)-1)
   val' := [1,:domainOne(T)]
   p = 'UnivariatePolynomial =>
-    v ^= vl => coercionFailure()
+    v ~= vl => coercionFailure()
     [[1,:domainOne(T)]]
   null member(v,vl) => coercionFailure()
   val' := [[1,:domainOne(T)]]
@@ -1052,10 +1052,10 @@ varsInPoly(u) ==
 
 P2FR(u,S is [.,R],[.,T]) ==
   u = '_$fromCoerceable_$ =>
-    S ^= T => nil
+    S ~= T => nil
     R in '((Integer) (Fraction (Integer))) => true
     nil
-  S ^= T => coercionFailure()
+  S ~= T => coercionFailure()
   package :=
     R = $Integer =>
       ['MultivariateFactorize,$Symbol,['IndexedExponents, $Symbol],R,S]
@@ -1157,7 +1157,7 @@ P2MpAux(u,source,S,target,varlist,vars,T,univariate) ==
 
 varIsOnlyVarInPoly(u, var) ==
   u is [ =1, v, :termlist] =>
-    v ^= var => nil
+    v ~= var => nil
     and/[varIsOnlyVarInPoly(c,var) for [e,:c] in termlist]
   true
 
@@ -1356,7 +1356,7 @@ Sy2OV(u,source,target is [.,vl]) ==
 Sy2Dmp(u,source,target is [dmp,vl,S]) ==
   u = '_$fromCoerceable_$ => canCoerce(source,S)
   len:= #vl
-  -1^=(n:= position(u,vl)) =>
+  -1~=(n:= position(u,vl)) =>
     u:= wrap LIST [LIST2VEC [(n=i => 1; 0) for i in 0..len-1],:1]
     objValUnwrap(coerceInt(objNew(u,[dmp,vl,$Integer]),target))
   (u := coerceInt(objNewWrap(u,source),S)) or coercionFailure()
@@ -1364,7 +1364,7 @@ Sy2Dmp(u,source,target is [dmp,vl,S]) ==
 
 Sy2Mp(u,source,target is [mp,vl,S]) ==
   u = '_$fromCoerceable_$ => canCoerce(source,S)
-  (n:= position1(u,vl)) ^= 0 =>
+  (n:= position1(u,vl)) ~= 0 =>
     [1,n,[1,0,:domainOne(S)]]
   (u := coerceInt(objNewWrap(u,source),S)) or coercionFailure()
   [0,:objValUnwrap(u)]
@@ -1372,7 +1372,7 @@ Sy2Mp(u,source,target is [mp,vl,S]) ==
 Sy2NDmp(u,source,target is [ndmp,vl,S]) ==
   u = '_$fromCoerceable_$ => canCoerce(source,S)
   len:= #vl
-  -1^=(n:= position(u,vl)) =>
+  -1~=(n:= position(u,vl)) =>
     u:= wrap LIST [LIST2VEC [(n=i => 1; 0) for i in 0..len-1],:1]
     objValUnwrap(coerceInt(objNew(u,[ndmp,vl,$Integer]),target))
   (u := coerceInt(objNewWrap(u,source),S)) or coercionFailure()
@@ -1381,7 +1381,7 @@ Sy2NDmp(u,source,target is [ndmp,vl,S]) ==
 Sy2P(u,source,target is [poly,S]) ==
   u = '_$fromCoerceable_$ => true
   -- first try to get it into an underdomain
-  if (S ^= $Integer) then
+  if (S ~= $Integer) then
     u' := coerceInt(objNewWrap(u,source),S)
     if u' then return [0,:objValUnwrap(u')]
   -- if that failed, return it as a polynomial variable
@@ -1465,10 +1465,10 @@ Up2Expr(u,source is [up,var,S], target is [Expr,T]) ==
 
 Up2FR(u,S is [.,x,R],target is [.,T]) ==
   u = '_$fromCoerceable_$ =>
-    S ^= T => nil
+    S ~= T => nil
     R in '((Integer) (Fraction (Integer))) => true
     nil
-  S ^= T => coercionFailure()
+  S ~= T => coercionFailure()
   package :=
     R = $Integer => ['UnivariateFactorize,S]
     R = $RationalNumber => package := ['RationalFactorize,S]
@@ -1580,7 +1580,7 @@ Var2Dmp(u,source,target is [dmp,vl,S]) ==
   u = '_$fromCoerceable_$ => member(sym,vl) or canCoerce(source,S)
 
   len := #vl
-  -1 ^= (n:= position(sym,vl)) =>
+  -1 ~= (n:= position(sym,vl)) =>
     LIST [LIST2VEC [(n=i => 1; 0) for i in 0..len-1],
       :getConstantFromDomain('(One),S)]
   (u := coerceInt(objNewWrap(u,source),S)) or coercionFailure()
@@ -1591,7 +1591,7 @@ Var2Gdmp(u,source,target is [dmp,vl,S]) ==
   u = '_$fromCoerceable_$ => member(sym,vl) or canCoerce(source,S)
 
   len := #vl
-  -1 ^= (n:= position(sym,vl)) =>
+  -1 ~= (n:= position(sym,vl)) =>
     LIST [LIST2VEC [(n=i => 1; 0) for i in 0..len-1],
       :getConstantFromDomain('(One),S)]
   (u := coerceInt(objNewWrap(u,source),S)) or coercionFailure()
@@ -1600,7 +1600,7 @@ Var2Gdmp(u,source,target is [dmp,vl,S]) ==
 Var2Mp(u,source,target is [mp,vl,S]) ==
   sym := CADR source
   u = '_$fromCoerceable_$ => member(sym,vl) or canCoerce(source,S)
-  (n:= position1(u,vl)) ^= 0 =>
+  (n:= position1(u,vl)) ~= 0 =>
     [1,n,[1,0,:getConstantFromDomain('(One),S)]]
   (u := coerceInt(objNewWrap(u,source),S)) or coercionFailure()
   [0,:objValUnwrap u]
@@ -1610,7 +1610,7 @@ Var2NDmp(u,source,target is [ndmp,vl,S]) ==
   u = '_$fromCoerceable_$ => member(sym,vl) or canCoerce(source,S)
 
   len:= #vl
-  -1^=(n:= position(u,vl)) =>
+  -1~=(n:= position(u,vl)) =>
     LIST [LIST2VEC [(n=i => 1; 0) for i in 0..len-1],
       :getConstantFromDomain('(One),S)]
   (u := coerceInt(objNewWrap(u,source),S)) or coercionFailure()
@@ -1621,7 +1621,7 @@ Var2P(u,source,target is [poly,S]) ==
   u = '_$fromCoerceable_$ => true
 
   -- first try to get it into an underdomain
-  if (S ^= $Integer) then
+  if (S ~= $Integer) then
     u' := coerceInt(objNewWrap(u,source),S)
     if u' then return [0,:objValUnwrap(u')]
   -- if that failed, return it as a polynomial variable
@@ -1733,7 +1733,7 @@ P2Us(u, source is [.,S], target is [.,T,var,cen], type) ==
     -- might be able to say yes
     canCoerce(S,T)
   T isnt ['Expression, :.] => coercionFailure()
-  if S ^= '(Float) then S := $Integer
+  if S ~= '(Float) then S := $Integer
   obj := objNewWrap(u, source)
   E := ['Expression, S]
   newU := coerceInt(obj, E)

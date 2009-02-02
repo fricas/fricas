@@ -77,9 +77,9 @@ makePathname(name,type) ==
  
 mergePathnames(a,b) ==
   (fn := pathnameName(a)) = '"*" => b
-  fn ^= pathnameName(b) => a
+  fn ~= pathnameName(b) => a
   (ft := pathnameType(a)) = '"*" => b
-  ft ^= pathnameType(b) => a
+  ft ~= pathnameType(b) => a
   (fm := pathnameDirectory(a)) = ['"*"] => b
   a
  

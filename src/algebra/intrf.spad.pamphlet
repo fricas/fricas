@@ -97,7 +97,7 @@ SubResultantPackage(R, UP): Exports == Implementation where
        F := Sn
        null l => error "SUBRESP: strange Subresultant chain from PRS"
        zero? Sn => error "SUBRESP: strange Subresultant chain from PRS"
-       while (l ^= []) repeat
+       while (l ~= []) repeat
          res.(n) := Sn
          F := first(l)
          l := rest(l)
@@ -422,7 +422,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
 -- in k[z] of the restriction of D to k.
     kappa(p, derivation) ==
       ans:UP := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         ans := ans + derivation(leadingCoefficient(p)::UP)*monomial(1,degree p)
         p := reductum p
       ans
@@ -469,7 +469,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
     expintegratepoly(p, FRDE) ==
       coef0:F := 0
       notelm := answr := 0$GP
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         ans1 := FRDE(n := degree p, a := leadingCoefficient p)
         answr := answr + monomial(ans1.ans, n)
         if ~ans1.sol? then         -- Risch d.e. has no complete solution
@@ -487,7 +487,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
     tanintegratespecial(f, derivation, FRDE) ==
       ans:RF := 0
       p := monomial(1, 2)$UP + 1
-      while (n := degree(denom f) quo 2) ^= 0 repeat
+      while (n := degree(denom f) quo 2) ~= 0 repeat
         r := numer(f) rem p
         a := coefficient(r, 1)
         b := coefficient(r, 0)
@@ -507,21 +507,21 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
     expextintfrac(f, derivation, g) ==
       zero? f => [0, 0]
       degree numer f >= degree denom f => error "Not a proper fraction"
-      order(denom f,monomial(1,1)) ^= 0 => error "Not integral at t = 0"
+      order(denom f,monomial(1,1)) ~= 0 => error "Not integral at t = 0"
       r := HermiteIntegrate(f, derivation)
       zero? g =>
-        r.logpart ^= 0 => "failed"
+        r.logpart ~= 0 => "failed"
         [r.answer, 0]
       degree numer g >= degree denom g => error "Not a proper fraction"
-      order(denom g,monomial(1,1)) ^= 0 => error "Not integral at t = 0"
-      differentiate(c := r.logpart / g, derivation) ^= 0 => "failed"
+      order(denom g,monomial(1,1)) ~= 0 => error "Not integral at t = 0"
+      differentiate(c := r.logpart / g, derivation) ~= 0 => "failed"
       [r.answer, c]
 
     limitedLogs(f, logderiv, lu) ==
       zero? f => empty()
       empty? lu => "failed"
       empty? rest lu =>
-        logderiv(c0 := f / logderiv(u0 := first lu)) ^= 0 => "failed"
+        logderiv(c0 := f / logderiv(u0 := first lu)) ~= 0 => "failed"
         [[c0, u0]]
       num := numer f
       den := denom f
@@ -538,14 +538,14 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       m := rowEchelon m
       ans := empty()$LLG
       for i in minRowIndex m .. maxRowIndex m |
-       qelt(m, i, maxColIndex m) ^= 0 repeat
+       qelt(m, i, maxColIndex m) ~= 0 repeat
         OK := false
         for pp in l1 for j in minColIndex m .. maxColIndex m - 1
          while not OK repeat
-          if qelt(m, i, j) ^= 0 then
+          if qelt(m, i, j) ~= 0 then
             OK := true
             c := qelt(m, i, maxColIndex m) / qelt(m, i, j)
-            logderiv(c0 := c::UP::RF) ^= 0 => return "failed"
+            logderiv(c0 := c::UP::RF) ~= 0 => return "failed"
             ans := concat([c0, pp.logand2], ans)
         not OK => return "failed"
       ans
@@ -553,13 +553,13 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
 -- returns q in UP s.t. p = q', or "failed"
     primintfldpoly(p, extendedint, t') ==
       (u := primintegratepoly(p, extendedint, t')) case UPUP => "failed"
-      u.a0 ^= 0 => "failed"
+      u.a0 ~= 0 => "failed"
       u.answer
 
 -- returns q in GP st p = q', or "failed"
     expintfldpoly(p, FRDE) ==
       (u := expintegratepoly(p, FRDE)) case GPGP => "failed"
-      u.a0 ^= 0 => "failed"
+      u.a0 ~= 0 => "failed"
       u.answer
 
 -- returns (v in RF, c1...cn in RF, a in F) s.t. ci' = 0,
@@ -649,7 +649,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       r := monomialIntPoly(rec.polypart, derivation)
       t := monomial(1, 1)$UP
       c := coefficient(r.polypart, 1) / leadingCoefficient(derivation t)
-      derivation(c::UP) ^= 0 =>
+      derivation(c::UP) ~= 0 =>
         [i1 + mkAnswer(r.answer::RF, empty(),
                        [[r.polypart::RF + rec.specpart, dummy]$NE]), 0]
       logs:List(LOG) :=
@@ -721,10 +721,10 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       degree numer f >= degree denom f => error "Not a proper fraction"
       r := HermiteIntegrate(f, derivation)
       zero? g =>
-        r.logpart ^= 0 => "failed"
+        r.logpart ~= 0 => "failed"
         [r.answer, 0]
       degree numer g >= degree denom g => error "Not a proper fraction"
-      differentiate(c := r.logpart / g, derivation) ^= 0 => "failed"
+      differentiate(c := r.logpart / g, derivation) ~= 0 => "failed"
       [r.answer, c]
 
 @

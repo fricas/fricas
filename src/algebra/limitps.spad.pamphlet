@@ -151,7 +151,7 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       for k in xkers repeat
         (fval := limitPlus(k::FE,x)) case "failed" =>
             return specialLimitNormalize(fcn,x)
-        whatInfinity(val := fval::OFE) ^= 0 =>
+        whatInfinity(val := fval::OFE) ~= 0 =>
             return specialLimitNormalize(fcn,x)
         (valu := retractIfCan(val)@Union(FE,"failed")) case "failed" =>
             return specialLimitNormalize(fcn,x)
@@ -163,11 +163,11 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
 
     specialLimitNormalize(fcn,x) == -- tries to normalize result first
       nfcn := normalize(fcn)
-      fcn ^= nfcn => limitPlus(nfcn,x)
+      fcn ~= nfcn => limitPlus(nfcn,x)
       xkers := [k for k in tower fcn | member?(x,variables(k::FE))]
-      # xkers ^= 2 => "failed"
+      # xkers ~= 2 => "failed"
       expKers := [k for k in xkers | is?(k, "exp" :: Symbol)]
-      # expKers ^= 1 => "failed"
+      # expKers ~= 1 => "failed"
     -- fcn is a rational function of x and exp(g(x)) for some rational function g
       expKer := first expKers
       (fval := limitPlus(expKer::FE,x)) case "failed" => "failed"
@@ -188,7 +188,7 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
     specialLimit1(fcn,x) ==
       -- find the first interesting kernel in tower(fcn)
       xkers := [k for k in kernels fcn | member?(x,variables(k::FE))]
-      #xkers ^= 1 => "failed"
+      #xkers ~= 1 => "failed"
       ker := first xkers
       vv := new()$SY; eq : EQ FE := equation(ker :: FE,vv :: FE)
       cc := eval(fcn,eq)
@@ -629,7 +629,7 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
       n * plusInfinity()$ORF
 
     ofesign a ==
-      (n := whatInfinity a) ^= 0 => convert(n)@Z
+      (n := whatInfinity a) ~= 0 => convert(n)@Z
       sign(retract(a)@F)
 
     insign(f, x, a, m) ==
@@ -639,7 +639,7 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
       eq : Equation OFE := equation(x :: F :: OFE,a)
       (u := limit(f,eq)) case "failed" => "failed"
       u case OFE =>
-        (n := whatInfinity(u::OFE)) ^= 0 => convert(n)@Z
+        (n := whatInfinity(u::OFE)) ~= 0 => convert(n)@Z
         (v := retract(u::OFE)@F) = 0 =>
           (s := insign(differentiate(f, x), x, a, m + 1)) case "failed"
                                                              => "failed"
@@ -661,7 +661,7 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
       eq : Equation F := equation(x :: F,a)
       (u := limit(f,eq,st)) case "failed" => "failed"
       u case OFE =>
-        (n := whatInfinity(u::OFE)) ^= 0 => convert(n)@Z
+        (n := whatInfinity(u::OFE)) ~= 0 => convert(n)@Z
         (v := retract(u::OFE)@F) = 0 =>
           (s := psign(differentiate(f,x),x,a,st,m + 1)) case "failed"=>
             "failed"

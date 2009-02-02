@@ -116,7 +116,7 @@ InnerPAdicInteger(p,unBalanced?): Exports == Implementation where
     modPInfo n ==
       dv := divide(n,p)
       r0 := dv.remainder; q := dv.quotient
-      if (r := modP r0) ^= r0 then q := q + ((r0 - r) quo p)
+      if (r := modP r0) ~= r0 then q := q + ((r0 - r) quo p)
       [r,q]
 
     invModP: I -> I
@@ -135,7 +135,7 @@ InnerPAdicInteger(p,unBalanced?): Exports == Implementation where
       n : I := _$streamCount$Lisp
       for i in 0..n repeat
         empty? st => return true
-        frst st ^= 0 => return false
+        frst st ~= 0 => return false
         st := rst st
       empty? st
 
@@ -143,7 +143,7 @@ InnerPAdicInteger(p,unBalanced?): Exports == Implementation where
       st := stream x
       for i in 0..1000 repeat
         empty? st => return 0
-        frst st ^= 0 => return i
+        frst st ~= 0 => return i
         st := rst st
       error "order: series has more than 1000 leading zero coefs"
 
@@ -293,13 +293,13 @@ InnerPAdicInteger(p,unBalanced?): Exports == Implementation where
       n : NNI ; count : NNI := _$streamCount$Lisp
       l : L OUT := empty()
       for n in 0..count while not empty? st repeat
-        if frst(st) ^= 0 then
+        if frst(st) ~= 0 then
           l := concat(termOutput(n :: I,frst st),l)
         st := rst st
       if showAll?() then
         for n in (count + 1).. while explicitEntries? st and _
                not eq?(st,rst st) repeat
-          if frst(st) ^= 0 then
+          if frst(st) ~= 0 then
             l := concat(termOutput(n pretend I,frst st),l)
           st := rst st
       l :=
@@ -515,13 +515,13 @@ PAdicRationalConstructor(p,PADIC): Exports == Implementation where
       empty? uu => 0 :: OUT
       n : NNI ; count : NNI := _$streamCount$Lisp
       for n in 0..count while not empty? uu repeat
-        if frst(uu) ^= 0 then
+        if frst(uu) ~= 0 then
           l := concat(termOutput((n :: I) + m,frst(uu)),l)
         uu := rst uu
       if showAll?() then
         for n in (count + 1).. while explicitEntries? uu and _
                not eq?(uu,rst uu) repeat
-          if frst(uu) ^= 0 then
+          if frst(uu) ~= 0 then
             l := concat(termOutput((n::I) + m,frst(uu)),l)
           uu := rst uu
       l :=

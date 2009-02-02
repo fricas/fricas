@@ -119,13 +119,13 @@ constructorAbbreviationErrorCheck(c,a,typ,errmess) ==
   if typ = 'category and siz > 7
     then throwKeyedErrorMsg('precompilation,"S2IL0021",NIL)
   if siz > 8 then throwKeyedErrorMsg('precompilation,"S2IL0006",NIL)
-  if s ^= UPCASE s then throwKeyedMsg("S2IL0006",NIL)
+  if s ~= UPCASE s then throwKeyedMsg("S2IL0006",NIL)
   abb := GETDATABASE(c,'ABBREVIATION)
   name:= GETDATABASE(a,'CONSTRUCTOR)
   type := GETDATABASE(c,'CONSTRUCTORKIND)
-  a=abb and c^=name => lisplibError(c,a,typ,abb,name,type,'duplicateAbb)
-  a=name and c^=name => lisplibError(c,a,typ,abb,name,type,'abbIsName)
-  c=name and typ^=type => lisplibError(c,a,typ,abb,name,type,'wrongType)
+  a=abb and c~=name => lisplibError(c,a,typ,abb,name,type,'duplicateAbb)
+  a=name and c~=name => lisplibError(c,a,typ,abb,name,type,'abbIsName)
+  c=name and typ~=type => lisplibError(c,a,typ,abb,name,type,'wrongType)
  
 abbreviationError(c,a,typ,abb,name,type,error) ==
   sayKeyedMsg("S2IL0009",[a,typ,c])
@@ -209,7 +209,7 @@ condAbbrev(arglist,argtypes) ==
   res
  
 condUnabbrev(op,arglist,argtypes,modeIfTrue) ==
-  #arglist ^= #argtypes =>
+  #arglist ~= #argtypes =>
     throwKeyedMsg("S2IL0014",[op,plural(#argtypes,'"argument"),
       bright(#arglist)])
   [newArg for arg in arglist for type in argtypes] where newArg ==

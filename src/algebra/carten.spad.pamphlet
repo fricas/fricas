@@ -219,7 +219,7 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             ++ kroneckerDelta() is the rank 2 tensor defined by
             ++    \spad{kroneckerDelta()(i,j)}
             ++       \spad{= 1  if i = j}
-            ++       \spad{= 0 if  i \^= j}
+            ++       \spad{= 0 if  i \~= j}
 
         leviCivitaSymbol: () -> %
             ++ leviCivitaSymbol() is the rank \spad{dim} tensor defined by
@@ -269,7 +269,7 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
                 qr := divide(n, dim)
                 n  := qr.quotient
                 indv.((rnk-i+1) pretend NNI) := qr.remainder + minix
-            n ^= 0 => error "Index error (too big)"
+            n ~= 0 => error "Index error (too big)"
             indv
 
         index2int(indv: INDEX): Integer ==
@@ -287,17 +287,17 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             v = dim3 => 3
             v = dim4 => 4
             rx := 0
-            while v ^= 0 repeat
+            while v ~= 0 repeat
                 qr := divide(v, dim)
                 v  := qr.quotient
-                if v ^= 0 then
-                    qr.remainder ^= 0 => error "Rank is not a whole number"
+                if v ~= 0 then
+                    qr.remainder ~= 0 => error "Rank is not a whole number"
                     rx := rx + 1
             rx
 
         -- l must be a list of the numbers 1..#l
         mkPerm(n: NNI, l: List Integer): PERM ==
-            #l ^= n =>
+            #l ~= n =>
                 error "The list is not a permutation."
             p:    PERM           := new(n, 0)
             seen: Vector Boolean := new(n, false)
@@ -320,14 +320,14 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             -- sum minix..minix+#v-1.
             maxix := minix+#v-1
             psum  := (((maxix+1)*maxix - minix*(minix-1)) exquo 2)::Integer
-            -- +/v ^= psum => 0
+            -- +/v ~= psum => 0
             n := 0
             for i in 1..#v repeat n := n + v.i
-            n ^= psum => 0
+            n ~= psum => 0
             -- Bubble sort!  This is pretty grotesque.
             totTrans: Integer := 0
             nTrans:   Integer := 1
-            while nTrans ^= 0 repeat
+            while nTrans ~= 0 repeat
                 nTrans := 0
                 for i in 1..#v-1 for j in 2..#v repeat
                     if v.i > v.j then
@@ -335,7 +335,7 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
                         e := v.i; v.i := v.j; v.j := e
                 totTrans := totTrans + nTrans
             for i in 1..dim repeat
-                if v.i ^= minix+i-1 then return 0
+                if v.i ~= minix+i-1 then return 0
             odd? totTrans => -1
             1
 
@@ -373,23 +373,23 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             lengthRankOrElse n
 
         elt(x) ==
-            #x ^= 1    => error "Index error (the rank is not 0)"
+            #x ~= 1    => error "Index error (the rank is not 0)"
             get(x,0)
         elt(x, i: I) ==
-            #x ^= dim  => error "Index error (the rank is not 1)"
+            #x ~= dim  => error "Index error (the rank is not 1)"
             get(x,(i-minix))
         elt(x, i: I, j: I) ==
-            #x ^= dim2 => error "Index error (the rank is not 2)"
+            #x ~= dim2 => error "Index error (the rank is not 2)"
             get(x,(dim*(i-minix) + (j-minix)))
         elt(x, i: I, j: I, k: I) ==
-            #x ^= dim3 => error "Index error (the rank is not 3)"
+            #x ~= dim3 => error "Index error (the rank is not 3)"
             get(x,(dim2*(i-minix) + dim*(j-minix) + (k-minix)))
         elt(x, i: I, j: I, k: I, l: I) ==
-            #x ^= dim4 => error "Index error (the rank is not 4)"
+            #x ~= dim4 => error "Index error (the rank is not 4)"
             get(x,(dim3*(i-minix) + dim2*(j-minix) + dim*(k-minix) + (l-minix)))
 
         elt(x, i: List I) ==
-            #i ^= rank x => error "Index error (wrong rank)"
+            #i ~= rank x => error "Index error (wrong rank)"
             n: I := 0
             for ii in i repeat
                 ix := ii - minix
@@ -398,15 +398,15 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             get(x,n)
 
         coerce(lr: List R): % ==
-            #lr ^= dim => error "Incorrect number of components"
+            #lr ~= dim => error "Incorrect number of components"
             z := new(dim, 0)
             for r in lr for i in 0..dim-1 repeat set_!(z, i, r)
             z
         coerce(lx: List %): % ==
-            #lx ^= dim => error "Incorrect number of slices"
+            #lx ~= dim => error "Incorrect number of slices"
             rx := rank first lx
             for x in lx repeat
-                rank x ^= rx => error "Inhomogeneous slice ranks"
+                rank x ~= rx => error "Inhomogeneous slice ranks"
             nx := # first lx
             z  := new(dim * nx, 0)
             for x in lx for offz in 0.. by nx repeat
@@ -453,18 +453,18 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             z
 
         x = y ==
-            #x ^= #y => false
+            #x ~= #y => false
             for i in 0..#x-1 repeat
-               if get(x,i) ^= get(y,i) then return false
+               if get(x,i) ~= get(y,i) then return false
             true
         x + y ==
-            #x ^= #y => error "Rank mismatch"
+            #x ~= #y => error "Rank mismatch"
             -- z := [xi + yi for xi in x for yi in y]
             z := new(#x, 0)
             for i in 0..#x-1 repeat set_!(z, i, get(x,i) + get(y,i))
             z
         x - y ==
-            #x ^= #y => error "Rank mismatch"
+            #x ~= #y => error "Rank mismatch"
             -- [xi - yi for xi in x for yi in y]
             z := new(#x, 0)
             for i in 0..#x-1 repeat set_!(z, i, get(x,i) - get(y,i))

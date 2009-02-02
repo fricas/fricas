@@ -105,7 +105,7 @@ printRecordFile(pathname,:option) ==
     for x in i repeat sayBrightly x
     sayNewLine()
     for x in o repeat maPrin x
-    if t^= '(Void) then printTypeAndTime(nil,t)
+    if t~= '(Void) then printTypeAndTime(nil,t)
  
 testPrin(u,w) == --same as maPrin but lines are stored in $testOutputLineList
                  --these lines are needed for pasting into HT files
@@ -191,12 +191,12 @@ evaluateLines lines ==
 
 wasIs(old,new,:typePart) ==
   sayBrightly '"*************************************************************"
-  if old ^= new then 
+  if old ~= new then 
     sayBrightly '"Was ----------> "
     for x in old repeat maPrin x
     sayBrightly '"Is -----------> "
     for x in new repeat maPrin x
-  typePart is [oldtype,newtype] and oldtype ^= newtype =>
+  typePart is [oldtype,newtype] and oldtype ~= newtype =>
     sayBrightlyNT ['" Type was ---> ",oldtype]
     pp old
     sayBrightlyNT ['" Type is  ---> ",newtype]

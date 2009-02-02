@@ -87,7 +87,7 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
             someMatch:=true
             false
       predIndex := QSQUOTIENT(code,8192)
-      predIndex ^= 0 => BREAK()
+      predIndex ~= 0 => BREAK()
       loc := QSQUOTIENT(QSREMAINDER(code,8192),2)
       loc = 0 => BREAK()
       slot := domain.loc
@@ -140,7 +140,7 @@ compareSigEqual(s,t,dollar,domain) ==
     EQUAL(s,u)
   EQ(s,'$) => compareSigEqual(dollar,t,dollar,domain)
   ATOM s => nil
-  #s ^= #t => nil
+  #s ~= #t => nil
   match := true
   for u in s for v in t repeat
     not compareSigEqual(u,v,dollar,domain) => return(match:=false)
@@ -226,7 +226,7 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
     generalPred is ['NOT,['SPADCALL,=sharpArg,m,['ELT,=minivectorName, =lesspSlot]]]
       and EQ(lesspSlot,$minivector.slot) => m
     return nil
-  INTEGERP predOk and predOk ^= n =>
+  INTEGERP predOk and predOk ~= n =>
     sayKeyedMsg("S2IX0006",[n,m])
     return nil
 

@@ -135,7 +135,7 @@ intersectionEnvironment(e,e') ==
 deltaContour([[c,:cl],:el],[[c',:cl'],:el']) ==
   not el=el' => systemError '"deltaContour" --a cop out for now
   eliminateDuplicatePropertyLists contourDifference(c,c') where
-    contourDifference(c,c') == [first x for x in tails c while (x^=c')]
+    contourDifference(c,c') == [first x for x in tails c while (x~=c')]
     eliminateDuplicatePropertyLists contour ==
       contour is [[x,:.],:contour'] =>
         LASSOC(x,contour') =>
@@ -215,7 +215,7 @@ addContour(c,E is [cur,:tail]) ==
                      RPLACA(pv,"mode")
                      --check for conflicts with earlier mode
                      if vv:=LASSOC("mode",e) then
-                        if v ^=vv then
+                        if v ~=vv then
                           stackWarning ["The conditional modes ",
                                      v," and ",vv," conflict"]
         LIST c

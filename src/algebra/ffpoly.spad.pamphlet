@@ -240,7 +240,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       qexp.1:=h
       for i in 2..m1 repeat
         g:=0$SUP
-        while h ^= 0 repeat
+        while h ~= 0 repeat
           g:=g + leadingCoefficient(h) * qpow.degree(h)
           h:=reductum(h)
         qexp.i:=(h:=g)
@@ -282,7 +282,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 --      -- determine the multiplicative order of q modulo n
 --      e  : PI := 1
 --      qe : PI := q
---      while (qe rem n) ^= 1 repeat
+--      while (qe rem n) ~= 1 repeat
 --        e  := e + 1
 --        qe := qe * q
 --      ((qe - 1) ** ((eulerPhi(n) quo e) pretend PI) ) pretend PI
@@ -345,7 +345,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         -- determine the multiplicative order of q modulo d
         e  : PI := 1
         qe : PI := q
-        while (qe rem d) ^= 1 repeat
+        while (qe rem d) ~= 1 repeat
           e  := e + 1
           qe := qe * q
         prod := prod * _
@@ -361,7 +361,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- (cf. [LN] p.89, Th. 3.16, and p.87, following Th. 3.11)
       n : NNI := degree f
       n = 0 => false
-      leadingCoefficient f ^= 1 => false
+      leadingCoefficient f ~= 1 => false
       coefficient(f, 0) = 0 => false
       q  : PI := sizeGF
       qn1: PI := (q**n - 1) :: NNI :: PI
@@ -371,7 +371,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- may be improved by tabulating the residues x**(i*q)
       -- for i = 0,...,n-1 :
       --
-      lift(x ** qn1)$MM ^= 1 => false -- X**(q**n - 1) rem f in GF[X]
+      lift(x ** qn1)$MM ~= 1 => false -- X**(q**n - 1) rem f in GF[X]
       lrec  : L Record(factor:I, exponent:I) := factors(factor qn1)
       lfact : L PI := []              -- collect the prime factors
       for rec in lrec repeat          -- of q**n - 1
@@ -387,7 +387,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- x, x**q, ... , x**(q**(n-1)) are linearly independent over GF
       n : NNI := degree f
       n = 0 => false
-      leadingCoefficient f ^= 1 => false
+      leadingCoefficient f ~= 1 => false
       coefficient(f, 0) = 0 => false
       n = 1 => true
       not irreducible? f => false
@@ -428,7 +428,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n : NNI := degree f
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
-      if (lcf := leadingCoefficient f) ^= 1 then f := (inv lcf) * f
+      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
@@ -438,7 +438,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- a new value to one of its records
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
-      if term.expnt ^= 0 then
+      if term.expnt ~= 0 then
         fcopy := cons([0,0]$Rec, fcopy)
       tailpol : Repr := []
       headpol : Repr := fcopy  -- [[0,f0], ... , [n,fn]] where
@@ -505,7 +505,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n : NNI := degree f
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
-      if (lcf := leadingCoefficient f) ^= 1 then f := (inv lcf) * f
+      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
@@ -515,7 +515,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- a new value to one of its records
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
-      if term.expnt ^= 0 then
+      if term.expnt ~= 0 then
         term  := [0,0]$Rec
         fcopy := cons(term, fcopy)
       fcopy   := reverse fcopy
@@ -624,7 +624,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n : NNI := degree f
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
-      if (lcf := leadingCoefficient f) ^= 1 then f := (inv lcf) * f
+      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
@@ -634,7 +634,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- a new value to one of its records
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
-      if term.expnt ^= 0 then
+      if term.expnt ~= 0 then
         term  := [0,0]$Rec
         fcopy := cons(term, fcopy)
       fcopy     := reverse fcopy -- [[n,1], [r,fr], ... , [0,f0]]
@@ -737,7 +737,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n : NNI := degree f
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
-      if (lcf := leadingCoefficient f) ^= 1 then f := (inv lcf) * f
+      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
@@ -747,7 +747,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- a new value to one of its records
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
-      if term.expnt ^= 0 then
+      if term.expnt ~= 0 then
         term  := [0,0]$Rec
         fcopy := cons(term, fcopy)
       fcopy   := reverse fcopy -- [[n,1], [r,fr], ... , [0,f0]]
@@ -958,7 +958,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 --      expt : NNI := #ragits
 --      for i in ragits repeat
 --        expt := (expt - 1) :: NNI
---        if i ^= 0 then pol := pol + monomial(index(i::PI)$GF, expt)
+--        if i ~= 0 then pol := pol + monomial(index(i::PI)$GF, expt)
 --      pol
 
 --    random == qAdicExpansion(random()$I)
@@ -967,7 +967,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 --      pol := monomial(1,n)$SUP
 --      n1 : NNI := (n - 1) :: NNI
 --      for i in 0..n1 repeat
---        if (c := random()$GF) ^= 0 then
+--        if (c := random()$GF) ~= 0 then
 --          pol := pol + monomial(c, i)$SUP
 --      pol
 
@@ -975,7 +975,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       polRepr : Repr := []
       n1 : NNI := (n - 1) :: NNI
       for i in 0..n1 repeat
-        if (c := random()$GF) ^= 0 then
+        if (c := random()$GF) ~= 0 then
           polRepr := cons([i, c]$Rec, polRepr)
       cons([n, 1$GF]$Rec, polRepr) pretend SUP
 

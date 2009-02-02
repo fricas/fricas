@@ -248,7 +248,7 @@ resolveTTSpecial(t1,t2) ==
   t1 is ['FunctionCalled,f] and t2 is ['FunctionCalled,g] =>
     null (mf := get(f,'mode,$e)) => NIL
     null (mg := get(g,'mode,$e)) => NIL
-    mf ^= mg => NIL
+    mf ~= mg => NIL
     mf
   t1 is ['UnivariatePolynomial,x,S] =>
     EQCAR(t2,'Variable) =>
@@ -405,11 +405,11 @@ resolveTCat(t,c) ==
 
   c = '(Ring) and t is ['FactoredForm,t0] => ['FactoredRing,t0]
 
-  (t is [t0]) and (sd := getImmediateSuperDomain(t0)) and sd ^= t0 =>
+  (t is [t0]) and (sd := getImmediateSuperDomain(t0)) and sd ~= t0 =>
     resolveTCat(sd,c)
 
-  SIZE(td := deconstructT t) ^= 2=> NIL
-  SIZE(tc := deconstructT c) ^= 2 => NIL
+  SIZE(td := deconstructT t) ~= 2=> NIL
+  SIZE(tc := deconstructT c) ~= 2 => NIL
   ut := underDomainOf t
   null isValidType(uc := last tc) => NIL
   null canCoerceFrom(ut,uc) => NIL
@@ -541,12 +541,12 @@ resolveTM1(t,m) ==
   $Coerce and canCoerceFrom(t,m) and m
 
 resolveTMRecord(tr,mr) ==
-  #tr ^= #mr => NIL
+  #tr ~= #mr => NIL
   ok := true
   tt := NIL
   for ta in tr for ma in mr while ok repeat
     -- element is [':,tag,mode]
-    CADR(ta) ^= CADR(ma) => ok := NIL      -- match tags
+    CADR(ta) ~= CADR(ma) => ok := NIL      -- match tags
     ra := resolveTM1(CADDR ta, CADDR ma)   -- resolve modes
     null ra => ok := NIL
     tt := CONS([CAR ta,CADR ta,ra],tt)
@@ -637,7 +637,7 @@ resolveTMSpecial(t,m) ==
   t is ['Fraction, ['Polynomial, ['Complex, t1]]] and m is ['Complex, m1] =>
     resolveTM1(['Complex, ['Fraction, ['Polynomial, t1]]], m)
   t is ['Mapping,:lt] and m is ['Mapping,:lm] =>
-    #lt ^= #lm => NIL
+    #lt ~= #lm => NIL
     l := NIL
     ok := true
     for at in lt for am in lm while ok repeat

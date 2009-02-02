@@ -72,7 +72,7 @@ makeLongStatStringByProperty _
     cl := CAR LASSOC('other,listofnames)
     cl := CAR LASSOC(cl,listofclasses)
     PUT(cl,classproperty, otherStatTotal + GETL(cl,classproperty))
-  if flag ^= 'long then
+  if flag ~= 'long then
     total := 0
     str := '""
     for [class,name,:ab] in listofclasses repeat
@@ -131,7 +131,7 @@ startTimingProcess name ==
   if EQ(name, 'load) then          statRecordLoadEvent()
  
 stopTimingProcess name ==
-  (name ^= peekTimedName()) and null $InteractiveMode =>
+  (name ~= peekTimedName()) and null $InteractiveMode =>
     keyedSystemError("S2GL0015",[name,peekTimedName()])
   updateTimedName peekTimedName()
   popTimedName()

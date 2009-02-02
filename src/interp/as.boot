@@ -351,7 +351,7 @@ asyMakeOperationAlist(con,proplist, key) ==
     id = "%%" =>
       opOf form = con => nil
       y := asyAncestors form
-      if opOf(y)^=con then ancestorAlist := [ [y,:true],:ancestorAlist]
+      if opOf(y)~=con then ancestorAlist := [ [y,:true],:ancestorAlist]
     idForm   :=
       form is ['Apply,'_-_>,source,target] => [id,:asyArgs source]
   ----------> Constants change <--------------
@@ -361,8 +361,8 @@ asyMakeOperationAlist(con,proplist, key) ==
       nil
     sig := asySignature(asytranForm(form,[idForm],nil),nil)
     entry :=
-      --id ^= "%%" and IDENTP idForm => [[sig],nil,nil,'ASCONST]
-      id ^= "%%" and IDENTP idForm =>
+      --id ~= "%%" and IDENTP idForm => [[sig],nil,nil,'ASCONST]
+      id ~= "%%" and IDENTP idForm =>
           pred => [[sig],nil,asyPredTran pred,'ASCONST]
           [[sig],nil,true,'ASCONST]
       pred => [sig,nil,asyPredTran pred]
@@ -430,7 +430,7 @@ mkNiladics u ==
 asytranDeclaration(dform,levels,predlist,local?) ==
   ['Declare,id,form,r] := dform
   id = 'failed => id
-  KAR dform ^= 'Declare => systemError '"asytranDeclaration"
+  KAR dform ~= 'Declare => systemError '"asytranDeclaration"
   if levels = '(top) then
     if form isnt ['Apply,"->",:.] then HPUT($constantHash,id,true)
   comments := LASSOC('documentation,r) or '""
@@ -521,7 +521,7 @@ asytranForm(form,levels,local?) ==
 
 asytranForm1(form,levels,local?) ==
   form is ['With,left,cat] =>
---  left ^= nil       => error '"WITH cannot take a left argument yet"
+--  left ~= nil       => error '"WITH cannot take a left argument yet"
     asytranCategory(form,levels,nil,local?)
   form is ['Apply,:.]   => asytranApply(form,levels,local?)
   form is ['Declare,:.] => asytranDeclaration(form,levels,nil,local?)
@@ -748,7 +748,7 @@ asySplit(name,end) ==
 createAbbreviation s ==
   if STRINGP s then s := INTERN s
   a := constructor? s
-  a ^= s => a
+  a ~= s => a
   nil
 
 --============================================================================

@@ -165,13 +165,13 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     Q2RF q                 == numer(q)::UP / denom(q)::UP
     infOrder f             == (degree denom f)::Z - (degree numer f)::Z
     integral? f            == ground?(integralCoordinates(f).den)
-    integral?(f:$, a:F)    == (integralCoordinates(f).den)(a) ^= 0
+    integral?(f:$, a:F)    == (integralCoordinates(f).den)(a) ~= 0
 --    absolutelyIrreducible? == one? numberOfComponents()
     absolutelyIrreducible? == numberOfComponents() = 1
     yCoordinates f         == splitDenominator coordinates f
 
     hyperelliptic() ==
-      degree(f := definingPolynomial()) ^= 2 => "failed"
+      degree(f := definingPolynomial()) ~= 2 => "failed"
       (u:=retractIfCan(reductum f)@Union(RF,"failed")) case "failed" => "failed"
       (v := retractIfCan(-(u::RF) / leadingCoefficient f)@Union(UP, "failed"))
         case "failed" => "failed"
@@ -296,7 +296,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       nostart:Boolean := true
       ans:Z := 0
       r := row(m, i)
-      for j in minIndex r .. maxIndex r | qelt(r, j) ^= 0 repeat
+      for j in minIndex r .. maxIndex r | qelt(r, j) ~= 0 repeat
         ans :=
           nostart => (nostart := false; infOrder qelt(r, j))
           min(ans, infOrder qelt(r,j))
@@ -318,7 +318,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       nostart:Boolean := true
       k:Z := 0
       ii  := minRowIndex m - (i0  := minIndex v)
-      for i in minIndex v .. maxIndex v | qelt(v, i) ^= 0 repeat
+      for i in minIndex v .. maxIndex v | qelt(v, i) ~= 0 repeat
         nk := repOrder(m, i + ii)
         if nostart then (nostart := false; k := nk; i0 := i)
         else
@@ -476,7 +476,7 @@ ChangeOfVariable(F, UP, UPUP): Exports == Implementation where
     infIntegral?: (UPUP, UPUP)   -> Boolean
 
     eval(p, x, y)  == map(#1 x, p)  monomial(y, 1)
-    good?(a, p, q) == p(a) ^= 0 and q(a) ^= 0
+    good?(a, p, q) == p(a) ~= 0 and q(a) ~= 0
 
     algPoly p ==
       ground?(a:= retract(leadingCoefficient(q:=clearDenominator p))@UP)
@@ -514,7 +514,7 @@ ChangeOfVariable(F, UP, UPUP): Exports == Implementation where
       ninv := inv(r.deg::Q)
       degy:Q := degree(retract(r.radicand)@UP) * ninv
       degp:Q := 0
-      while p ^= 0 repeat
+      while p ~= 0 repeat
         c := leadingCoefficient p
         degp := max(degp,
             (2 + degree(numer c)::Z - degree(denom c)::Z)::Q + degree(p) * degy)
@@ -666,7 +666,7 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
 -- is a local integral basis at infinity for the curve y**d = p
     inftyBasis(p, m) ==
       rt := rootPoly(p(x := inv(monomial(1, 1)$UP :: RF)), m)
-      m ^= rt.exponent =>
+      m ~= rt.exponent =>
         error "Curve not irreducible after change of variable 0 -> infinity"
       a    := (rt.coef) x
       b:RF := 1
@@ -678,7 +678,7 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
       w
 
     charPintbas(p, c, v, w) ==
-      degree(p) ^= n => error "charPintbas: should not happen"
+      degree(p) ~= n => error "charPintbas: should not happen"
       q:UP2 := map(retract(#1)@UP, p)
       ib := integralBasis()$FunctionFieldIntegralBasis(UP, UP2,
                                           SimpleAlgebraicExtension(UP, UP2, q))
@@ -712,7 +712,7 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
 
     char0StartUp() ==
       rp          := rootPoly(radicnd, n)
-      rp.exponent ^= n => error "RadicalFunctionField: curve is not irreducible"
+      rp.exponent ~= n => error "RadicalFunctionField: curve is not irreducible"
       newrad()    := rp.radicand
       ib          := iBasis(newrad(), n)
       infb        := inftyBasis(radicnd, n)
@@ -831,7 +831,7 @@ AlgebraicFunctionField(F, UP, UPUP, modulus): Exports == Impl where
       x           := inv(monomial(1, 1)$UP :: RF)
       invmod      := map(#1 x, modulus)
       r           := mkIntegral invmod
-      degree(r.poly) ^= n => error "Should not happen"
+      degree(r.poly) ~= n => error "Should not happen"
       ninvmod:UP2 := map(retract(#1)@UP, r.poly)
       alpha       := [(r.coef ** i) x for i in 0..n1]$Vector(RF)
       invalpha := [inv qelt(alpha, i)

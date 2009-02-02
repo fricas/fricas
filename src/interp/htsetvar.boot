@@ -37,7 +37,7 @@ htsv() ==
 htSetVars() ==
   $path := nil
   $lastTree := nil
-  if 0 ^= LASTATOM $setOptions then htMarkTree($setOptions,0)
+  if 0 ~= LASTATOM $setOptions then htMarkTree($setOptions,0)
   htShowSetTree($setOptions)
 
 htShowSetTree(setTree) ==
@@ -438,7 +438,7 @@ htCacheSet htPage ==
   bcHt '"\vspace{1}\newline "
   if $cacheAlist then
 --    bcHt '" However, \indent{3}"
-    for [name,:val] in $cacheAlist | val ^= $cacheCount repeat
+    for [name,:val] in $cacheAlist | val ~= $cacheCount repeat
       bcHt '"\newline function {\em "
       bcHt stringize name
       bcHt '"} will cache "

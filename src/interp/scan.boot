@@ -316,11 +316,11 @@ scanW(b)==             -- starts pointing to first char
        $n:=$n+1          -- the first character is not tested
        l:=$sz
        endid:=posend($ln,$n)
-       if endid=l or QENUM($ln,endid)^=ESCAPE
+       if endid=l or QENUM($ln,endid)~=ESCAPE
        then -- not escaped
            $n:=endid
            [b,SUBSTRING($ln,n1,endid-n1)]   -- l overflows
-       else -- escape and endid^=l
+       else -- escape and endid~=l
            str:=SUBSTRING($ln,n1,endid-n1)
            $n:=endid+1
            a:=scanEsc()
@@ -354,7 +354,7 @@ spleI1(dig,zro) ==
        n:=$n
        l:= $sz
        while $n<l and FUNCALL(dig,($ln.$n)) repeat $n:=$n+1
-       if $n=l or QENUM($ln,$n)^=ESCAPE
+       if $n=l or QENUM($ln,$n)~=ESCAPE
        then if n=$n and zro
             then '"0"
             else SUBSTRING($ln,n,$n-n)
@@ -379,7 +379,7 @@ scanNumber() ==
        if $n>=$sz
        then lfinteger a
        else
-         if QENUM($ln,$n)^=RADIX_CHAR
+         if QENUM($ln,$n)~=RADIX_CHAR
          then
            if $floatok and QENUM($ln,$n)=DOT
            then

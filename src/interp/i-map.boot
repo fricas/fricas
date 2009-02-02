@@ -56,7 +56,7 @@ isInternalMapName name ==
   -- this only returns true or false as a "best guess"
   (not IDENTP(name)) or (name = "*") or (name = "**") => false
   sz := SIZE (name' := PNAME name)
-  (sz < 7) or (char("*") ^= name'.0) => false
+  (sz < 7) or (char("*") ~= name'.0) => false
   null DIGITP name'.1 => false
   null STRPOS('"_;",name',1,NIL) => false
   -- good enough
@@ -103,7 +103,7 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
     throwKeyedMsg("S2IM0002",[lhs])
 
   -- verify a constructor abbreviation is not used on the lhs
-  op ^= (op' := unabbrev op) => throwKeyedMsg("S2IM0003",[op,op'])
+  op ~= (op' := unabbrev op) => throwKeyedMsg("S2IM0003",[op,op'])
 
   -- get the formal parameters. These should only be atomic symbols
   -- that are not numbers.
@@ -136,9 +136,9 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
   -- same as what is given.
   if get(op,'mode,$e) is ['Mapping,.,:mapargs] then
     EQCAR(rhs,'rules) =>
-      0 ^= (numargs := # rest lhs) =>
+      0 ~= (numargs := # rest lhs) =>
         throwKeyedMsg("S2IM0027",[numargs,op])
-    # rest lhs ^= # mapargs => throwKeyedMsg("S2IM0008",[op])
+    # rest lhs ~= # mapargs => throwKeyedMsg("S2IM0008",[op])
   --get all the user variables in the map definition.  This is a multi
   --step process as this should not include recursive calls to the map
   --itself, or the formal parameters
@@ -170,7 +170,7 @@ addMap(lhs,rhs,pred) ==
   argPredList:= NREVERSE predList
   finalPred :=
 -- handle g(a,T)==a+T confusion between pred=T and T variable
-    MKPF((pred and (pred ^= 'T) => [:argPredList,SUBLISNQ($sl,pred)]; argPredList),"and")
+    MKPF((pred and (pred ~= 'T) => [:argPredList,SUBLISNQ($sl,pred)]; argPredList),"and")
   body:= SUBLISNQ($sl,rhs)
   oldMap :=
     (obj := get(op,'value,$InteractiveFrame)) => objVal obj
@@ -509,7 +509,7 @@ analyzeMap0(op,argTypes,mapDef) ==
   -- Type analyze and compile a map.  Returns the target type of the map.
   --  only called if there is no applicable compiled map
   $MapArgumentTypeList:local:= argTypes
-  numMapArgs mapDef ^= #argTypes => nil
+  numMapArgs mapDef ~= #argTypes => nil
   ((m:=getMode op) is ['Mapping,:sig]) or (m and (sig:=[m])) =>
     -- op has mapping property only if user has declared the signature
     analyzeDeclaredMap(op,argTypes,sig,mapDef,$mapList)
@@ -641,9 +641,9 @@ interpMap(opName,tar) ==
   savedTimerStack := COPY $timedNameStack
   catchName := mapCatchName $mapName
   c := CATCH(catchName, interpret1(body,tar,nil))
---  $interpMapTag and $interpMapTag ^= mapCatchName $mapName =>
+--  $interpMapTag and $interpMapTag ~= mapCatchName $mapName =>
 --    THROW($interpMapTag,c)
-  while savedTimerStack ^= $timedNameStack repeat
+  while savedTimerStack ~= $timedNameStack repeat
     stopTimingProcess peekTimedName()
   c  -- better be a triple
 
@@ -659,7 +659,7 @@ analyzeDeclaredMap(op,argTypes,sig,mapDef,$mapList) ==
       compileCoerceMap(opName,argTypes,mm)
   -- The declared map needs to be compiled
   compileDeclaredMap(opName,sig,mapDef)
-  argTypes ^= CDR sig =>
+  argTypes ~= CDR sig =>
     analyzeDeclaredMap(op,argTypes,sig,mapDef,$mapList)
   CAR sig
 
@@ -823,7 +823,7 @@ analyzeRecursiveMap(op,argTypes,body,parms,n) ==
     sigChanged:= false
     name := makeLocalModemap(op,sig:=[tar,:argTypes])
     code := compileBody(body,$mapTarget)
-    objMode(code) ^= tar =>
+    objMode(code) ~= tar =>
       sigChanged:= true
       tar := objMode(code)
       restoreDependentMapInfo(op, CDR $mapList, localMapInfo)
@@ -870,7 +870,7 @@ nonRecursivePart(opName, funBody) ==
   --  a function, and returns a list of the parts
   --  of the function which are not recursive in the name opName
   body:= expandRecursiveBody([opName], funBody)
-  ((nrp:=nonRecursivePart1(opName, body)) ^= 'noMapVal) => nrp
+  ((nrp:=nonRecursivePart1(opName, body)) ~= 'noMapVal) => nrp
   throwKeyedMsg("S2IM0012",[opName])
 
 expandRecursiveBody(alreadyExpanded, body) ==
