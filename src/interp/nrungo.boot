@@ -81,28 +81,12 @@ lookupInTable(op,sig,dollar,[domain,table]) ==
   while not success for [sig1,:code] in LASSQ(op,table) repeat
     success :=
       null compareSig(sig,sig1,dollar.0,domain) => false
-      code is ['subsumed,a] =>
-            subsumptionSig :=
-               EQSUBSTLIST(rest(domain.0),$FormalMapVariableList,a)
-            someMatch:=true
-            false
-      predIndex := QSQUOTIENT(code,8192)
-      predIndex ~= 0 => BREAK()
-      loc := QSQUOTIENT(QSREMAINDER(code,8192),2)
+      loc := code
       loc = 0 => BREAK()
       slot := domain.loc
-      EQCAR(slot,'goGet) =>
-        lookupDisplay(op,sig,domain,'" !! goGet found, will ignore")
-        BREAK()
-      NULL slot =>
-        lookupDisplay(op,sig,domain,'" !! null slot entry, continuing")
-        BREAK()
       lookupDisplay(op,sig,domain,'" !! found in NEW table!!")
       slot
-  NE(success,'failed) and success => success
-  subsumptionSig and (u:= SPADCALL(op,subsumptionSig,dollar,domain.1)) => u
-  someMatch => BREAK()
-  nil
+  success
 
 --=======================================================
 --                       Predicates

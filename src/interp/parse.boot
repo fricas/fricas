@@ -295,22 +295,6 @@ parseLessEqual u == parseTran ['not, [SUBST(">", "<=", $op), :u]]
  
 parseNotEqual u == parseTran ['not, [SUBST("=", "~=", $op), :u]]
  
-parseDollarGreaterThan [x,y] ==
-  BREAK()
-  [SUBST("$<","$>",$op),parseTran y,parseTran x]
- 
-parseDollarGreaterEqual u ==
-  BREAK()
-  parseTran ['not,[SUBST("$<","$>=",$op),:u]]
- 
-parseDollarLessEqual u ==
-  BREAK()
-  parseTran ['not,[SUBST("$>","$<=",$op),:u]]
- 
-parseDollarNotEqual u ==
-  BREAK()
-  parseTran ['not,[SUBST("$=","$^=",$op),:u]]
- 
 parseAnd u ==
   $InteractiveMode => ["and",:parseTranList u]
   null u => 'true
