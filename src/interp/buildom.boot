@@ -51,8 +51,8 @@ Record0 args ==
     dom.0 := ['Record, :[['_:, CAR a, devaluate CDR a] for a in args]]
     dom.1 :=
            [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce, [[$OutputForm, '_$], :14]]]]
+               [['_=,[[['Boolean],'_$,'_$],:6]],
+                 ['coerce, [[$OutputForm, '_$], :7]]]]
     dom.2 := NIL
     dom.3 := ['RecordCategory,:QCDR dom.0]
     dom.4 :=
@@ -115,8 +115,8 @@ Union(:args) ==
                           else devaluate a) for a in args]]
     dom.1 :=
             [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce,[[$OutputForm, '_$],:14]]]]
+               [['_=,[[['Boolean],'_$,'_$],:6]],
+                 ['coerce,[[$OutputForm, '_$],:7]]]]
     dom.2 := NIL
     dom.3 :=
       '(SetCategory)
@@ -165,8 +165,8 @@ Mapping(:args) ==
     dom.0 := ['Mapping, :[devaluate a for a in args]]
     dom.1 :=
             [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce,[[$OutputForm, '_$],:14]]]]
+               [['_=,[[['Boolean],'_$,'_$],:6]],
+                 ['coerce,[[$OutputForm, '_$],:7]]]]
     dom.2 := NIL
     dom.3 :=
       '(SetCategory)
@@ -199,8 +199,8 @@ Enumeration0(:args) ==
     dom.0 := ['Enumeration, :args]
     dom.1 :=
            [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:12]],
-                 ['coerce,[[$OutputForm, '_$],:14], [['_$, $Symbol], :16]]
+               [['_=,[[['Boolean],'_$,'_$],:6]],
+                 ['coerce,[[$OutputForm, '_$],:7], [['_$, $Symbol], :8]]
                          ]]
     dom.2 := NIL
     dom.3 := ['EnumerationCategory,:QCDR dom.0]
