@@ -503,13 +503,8 @@ This version is needed so that (COLLECT (IN X Y) ... (RETURN 'JUNK))=>JUNK."
   (let ((U (REPEAT-TRAN L NIL)))
     (CONS 'THETA (CONS '\, (NCONC (CAR U) (LIST (CDR U)))))))
  
-;; The following was changed to a macro for efficiency in CCL.  To change
-;; it back to a function would require recompilation of a large chunk of
-;; the library.
-(defmacro PRIMVEC2ARR (x) x) ;redefine to change Array rep
-
 (defmacro COLLECTVEC (&rest L)
-   `(PRIMVEC2ARR (COLLECTV ,@L)))
+   `(COLLECTV ,@L))
 
 (defmacro COLLECTV (&rest L)
   (PROG (CONDS BODY ANS COUNTER X Y)
@@ -596,11 +591,6 @@ LP  (COND ((NULL X)
        (let ((y (symbol-name x)))
          (and (char= #\$ (elt y 0)) (> (size y) 1) (digitp (elt y 1))))))
  
-(DEFUN IS_\#GENVAR (X)
-  (AND (IDENTP X)
-       (let ((y (symbol-name x)))
-         (and (char= #\# (ELT y 0)) (> (SIZE Y) 1) (DIGITP (ELT Y 1))))))
- 
 ; 12 NUMBERS
  
 ; 12.3 Comparisons on Numbers
@@ -631,13 +621,6 @@ LP  (COND ((NULL X)
 (defmacro qsmultmod (x y z)
  `(rem (* ,x ,y) ,z))
  
-(defun TRIMLZ (vec)
-  (declare (simple-vector vec))
-  (let ((n (position 0 vec :from-end t :test-not #'eql)))
-     (cond ((null n) (vector))
-           ((eql n (qvmaxindex vec)) vec)
-           (t (subseq vec 0 (+ n 1))))))
- 
 ; 14 SEQUENCES
  
 ; 14.1 Simple Sequence Functions
@@ -650,12 +633,6 @@ LP  (COND ((NULL X)
 (define-function 'getchar #'elt)
  
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
- 
-(DEFUN STRINGPAD (STR N)
-  (let ((M (length STR)))
-    (if (>= M N)
-        STR
-        (concatenate 'string str (make-string (- N M) :initial-element #\Space)))))
  
 (defmacro spadREDUCE (OP AXIS BOD) (REDUCE-1 OP AXIS BOD))
  
@@ -1282,8 +1259,6 @@ LP  (COND ((NULL X)
 	            (mapcar #'(lambda (x) (list 'QUOTE x)) args)))
 
 (defmacro |:| (tag expr) `(LIST '|:| ,(MKQ tag) ,expr))
-
-(defun |deleteWOC| (item list) (delete item list :test #'equal))
 
 (DEFUN |leftBindingPowerOf| (X IND &AUX (Y (GETL X IND)))
    (IF Y (ELEMN Y 3 0) 0))

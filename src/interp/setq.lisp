@@ -44,10 +44,6 @@
 
 (SETQ |/MAJOR-VERSION| 7)
 
-;; These two variables are referred to in setvars.boot.
-#+:kcl (setq input-libraries nil)
-#+:kcl (setq output-library nil)
-
 ;; For the browser, used for building local databases when a user compiles
 ;; their own code.
 (SETQ |$newConstructorList| nil)

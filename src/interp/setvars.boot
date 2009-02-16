@@ -284,14 +284,7 @@ describeAsharpArgs() ==
 setInputLibrary arg ==
   arg = "%initialize%" =>
    true
-  arg = "%display%" =>
-   [LIBRARY_-NAME(u) for u in INPUT_-LIBRARIES]
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeInputLibraryArgs()
-  arg is [act, filename] and (act := selectOptionLC(act,'(add drop),nil)) =>
-    act = 'add => addInputLibrary TRUENAME STRINGIMAGE filename
-    act = 'drop => dropInputLibrary TRUENAME STRINGIMAGE filename
-  setInputLibrary NIL
+  nil
 
 -- FIXME: Is this used ??
 setOutputLibrary arg == false

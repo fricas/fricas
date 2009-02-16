@@ -304,7 +304,6 @@ do the compile, and then rename the result back to [[code.o]].
       (rshut nrstream)))
   filespec)
 
-#-:CCL
 (defun recompile-lib-file-if-necessary (lfile)
    (let* ((bfile (make-pathname :type *lisp-bin-filetype* :defaults lfile))
           (bdate (and (probe-file bfile) (file-write-date bfile)))
@@ -312,27 +311,6 @@ do the compile, and then rename the result back to [[code.o]].
      (if ldate
          (if (and bdate (> bdate ldate)) nil
            (progn (compile-lib-file lfile) (list bfile))))))
-
-#+:CCL
-(defun recompile-lib-file-if-necessary (lfile)
- (let ( (mname (pathname-name (file-namestring (directory-namestring lfile))))
-        (mdate (modulep mname))
-        (ldate (filedate lfile)) )
-        (if (or (not mdate) (datelessp mdate ldate)) 
-          (seq
-            (if (null output-library)
-                (boot::|openOutputLibrary|
-                  (setq boot::|$outputLibraryName|
-                   (if (null boot::|$outputLibraryName|)
-                       (make-pathname :directory (get-current-directory)
-                                      :name "user.lib")
-                        (if (filep boot::|$outputLibraryName|)
-                            (truename boot::|$outputLibraryName|)
-                            boot::|$outputLibraryName|)))))
-            (compile-file lfile 
-                          :output-file (intern (pathname-name
-                                               (directory-namestring lfile))))))))
-
 
 #+:AKCL
 (defun spad-fixed-arg (fname )

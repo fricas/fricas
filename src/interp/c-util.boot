@@ -327,7 +327,7 @@ isSomeDomainVariable s ==
  
 isSubset(x,y,e) ==
   x="$" and y="Rep" or x=y or
-    LASSOC(opOf x,get(opOf y,"Subsets",e) or GETL(opOf y,"Subsets")) or
+    LASSOC(opOf x, GETL(opOf y,"Subsets")) or
       LASSOC(opOf x,get(opOf y,"SubDomain",e)) or
         opOf(y)='Type
  

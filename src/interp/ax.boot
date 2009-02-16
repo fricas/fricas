@@ -38,9 +38,6 @@ $literals  := nil
 
 spad2AxTranslatorAutoloadOnceTrigger any == true
 
-sourceFilesToAxFile(filename, sourceFiles) ==
-  makeAxFile(filename, MAPCAN('fileConstructors, sourceFiles))
-
 
 $extendedDomains := nil
 
