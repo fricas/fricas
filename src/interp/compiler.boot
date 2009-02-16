@@ -501,20 +501,6 @@ compConstructorCategory(x,m,e) == [x,resolve($Category,m),e]
 
 compString(x,m,e) == [x,resolve($StringCategory,m),e]
 
---% SUBSET CATEGORY
-
-compSubsetCategory(["SubsetCategory",cat,R],m,e) ==
-  --1. put "Subsets" property on R to allow directly coercion to subset;
-  --   allow automatic coercion from subset to R but not vice versa
-  e:= put(R,"Subsets",[[$lhsOfColon,"isFalse"]],e)
-  --2. give the subset domain modemaps of cat plus 3 new functions
-  comp(["Join",cat,C'],m,e) where
-    C'() ==
-      substitute($lhsOfColon,"$",C'') where
-        C''() ==
-          ["CATEGORY","domain",["SIGNATURE","coerce",[R,"$"]],["SIGNATURE",
-            "lift",[R,"$"]],["SIGNATURE","reduce",["$",R]]]
-
 --% CONS
 
 compCons(form,m,e) == compCons1(form,m,e) or compForm(form,m,e)

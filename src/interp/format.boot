@@ -785,7 +785,7 @@ pred2English x ==
     concat('"not ",pred2English l)
   x is [op,a,b] and op in '(has ofCategory) =>
     concat(pred2English a,'%b,'"has",'%d,form2String abbreviate b)
-  x is [op,a,b] and op in '(HasSignature HasAttribute HasCategory) =>
+  x is [op,a,b] and op in '(HasSignature HasCategory) =>
     concat(prefix2String0 formatPredParts a,'%b,'"has",'%d,
       prefix2String0 formatPredParts b)
   x is [op,a,b] and op in '(ofType getDomainView) =>

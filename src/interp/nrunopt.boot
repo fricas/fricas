@@ -266,7 +266,8 @@ augmentPredVector(dollar,value) ==
 isHasDollarPred pred ==
   pred is [op,:r] =>
     MEMQ(op,'(AND and OR or NOT not)) => or/[isHasDollarPred x for x in r]
-    MEMQ(op,'(HasCategory HasAttribute)) => CAR r = '$
+    op is "HasCategory" => CAR r = '$
+    false
   false
 
 stripOutNonDollarPreds pred ==
@@ -287,7 +288,7 @@ removeAttributePredicates pl ==
 transHasCode x ==
   atom x => x
   op := QCAR x
-  MEMQ(op,'(HasCategory HasAttribute)) => x
+  op is "HasCategory" => x
   EQ(op,'has) => compHasFormat x
   [transHasCode y for y in x]
  

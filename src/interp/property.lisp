@@ -443,7 +443,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (SETQ |compSetq|)
   (|String| |compString|)
   (|SubDomain| |compSubDomain|)
-  (|SubsetCategory| |compSubsetCategory|)
   (|Union| |compCat|)
   (|Mapping| |compCat|)
   (|UnionCategory| |compConstructorCategory|)

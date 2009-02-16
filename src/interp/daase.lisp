@@ -824,36 +824,11 @@ database.
  (setq original-directory (get-current-directory))
  (setq |$newConlist| nil)
  (localdatabase args |$options|)
-#+:CCL
- (dolist (a args) (check-module-exists a))
+
  (|extendLocalLibdb| |$newConlist|)
  (chdir original-directory)
  (tersyscommand))
 
-;; check-module-exists looks to see if a module exists in one of the current
-;; libraries and, if not, compiles it.  If the output-library exists but has not
-;; been opened then it opens it first.
-#+:CCL
-(defun check-module-exists (module)
-  (prog (|$options| mdate) 
-    (if (and (not output-library) (filep (or |$outputLibraryName| "user.lib")))
-        (seq (setq |$outputLibraryName| 
-               (if |$outputLibraryName| (truename |$outputLibraryName|)
-                   (make-pathname :directory (get-current-directory) 
-                                  :name "user.lib")))
-             (|openOutputLibrary| |$outputLibraryName|)))
-    (setq mdate (modulep module)) 
-    (setq |$options| '((|nolibrary| nil) (|quiet| nil)))
-    (|sayMSG| (format nil "   Checking for module ~s." (namestring module)))
-    (let* ((fn (concatenate 'string (namestring module) ".lsp"))
-           (fdate (filedate fn)) )
-          (if (and fdate (or (null mdate) (datelessp mdate fdate)))
-             (|compileAsharpLispCmd| (list fn))
-             (let* ((fn (concatenate 'string (namestring module) ".NRLIB"))
-                    (fdate (filedate fn)) )
-                   (if (and fdate (or (null mdate) (datelessp mdate fdate)))
-                       (|compileSpadLispCmd| (list fn))))))))
-  
 ; localdatabase tries to find files in the order of:
 ;  NRLIB/index.KAF
 ;  .asy
@@ -949,8 +924,7 @@ database.
        (concatenate 'string namedir filename ".ao")))
       (push (namestring file) asos))
      ('else (format t "   )library cannot find the file ~a.~%" filename)))))
-#+:CCL
-  (dolist (file libs) (|addInputLibrary| (truename file)))
+
   (dolist (file (nreverse nrlibs))
    (setq key (pathname-name (first (last (pathname-directory file)))))
    (setq object (concatenate 'string (directory-namestring file) key))
@@ -973,11 +947,6 @@ database.
   (fetchdata (alist index)
      (cdr (assoc index alist :test #'string=))))
   (let (cname kind key alist (systemdir? nil) oldmaps asharp-name dbstruct abbrev)
-#+:CCL
-  ;; Open the library
-  (let (lib)
-    (if (filep (setq lib (make-pathname :name object :type "lib")) )
-        (setq input-libraries (cons (open-library (truename lib)) input-libraries))))
    (set-file-getter object)  ; sets the autoload property for G-object
    (dolist (domain asy)
      (setq key (first domain))
@@ -1117,18 +1086,12 @@ database.
      (cddar (database-constructormodemap dbstruct)))))
   (remprop key 'loaded)
   (if (null noexpose) (|setExposeAddConstr| (cons key nil)))
- #-:CCL
   (setf (symbol-function key) ; sets the autoload property for cname
     #'(lambda (&rest args)
      (unless (get key 'loaded)
       (|startTimingProcess| '|load|)
       (|loadLibNoUpdate| key key object)) ; used to be cname key
      (apply key args)))
- #+:CCL
-  (let (lib)
-    (if (filep (setq lib (make-pathname :name object :type "lib")) )
-        (setq input-libraries (cons (open-library (truename lib)) input-libraries)))
-    (|unloadOneConstructor| (get abbrev 'abbreviationfor) abbrev) )
   (|sayKeyedMsg| 'S2IU0001 (list key object))))))
 
 

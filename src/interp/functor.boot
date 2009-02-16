@@ -295,7 +295,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
               else viewAssoc,EnvToPass) for v in rest u]
     TruthP CAAR c => ['PROGN,:CDAR c]
     while (c and (last c is [c1] or last c is [c1,[]]) and
-            (c1 = '(QUOTE T) or c1 is ['HasAttribute,:.])) repeat
+            (c1 = '(QUOTE T))) repeat
                    --strip out some worthless junk at the end
         c:=NREVERSE CDR NREVERSE c
     null c => '(LIST)

@@ -165,11 +165,6 @@
                                 ; since this flag was last set to NIL
 )
 
-(defun stack-load (list stack)
-  (setf (stack-store stack) list
-        (stack-size stack) (length list)
-        (stack-top stack) (car list)))
-
 (defun stack-clear (stack)
   (setf (stack-store stack) nil (stack-size stack) 0 (stack-top stack) nil
         (stack-updated stack) nil))
@@ -266,7 +261,7 @@ NonBlank is true if the token is not preceded by a blank."
                        (stack-store reduce-stack)))
         (format t "~%There is nothing on the reduction stack.~%"))))
 
-(defmacro reduce-stack-clear () `(stack-load nil reduce-stack))
+(defmacro reduce-stack-clear () `(stack-clear reduce-stack))
 
 (defun Pop-Reduction () (stack-pop Reduce-Stack))
 
