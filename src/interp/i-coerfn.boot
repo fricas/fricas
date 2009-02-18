@@ -179,7 +179,7 @@ Dmp2Expr(u,source is [dmp,vars,S], target is [Expr,T]) ==
 
     plus := getFunctionFromDomain("+",  target, [target, target])
     mult := getFunctionFromDomain("*",  target, [target, target])
-    expn := getFunctionFromDomain("**", target, [target, $Integer])
+    expn := getFunctionFromDomain("^", target, [target, $Integer])
 
     for [e, :c] in u repeat
         not (c := coerceInt(objNewWrap(c, S), target)) => coercionFailure()
@@ -854,7 +854,7 @@ Mp2Mp(u,source is [mp,x,S], target is [.,y,T]) ==
 
   null common =>
     times := getFunctionFromDomain('_*,target,[target,target])
-    expn  := getFunctionFromDomain('_*_*,target,
+    expn  := getFunctionFromDomain("^", target,
       [target,$NonNegativeInteger])
     Mp2MpAux0(u,S,target,x,plus,times,expn)
 
@@ -1438,7 +1438,7 @@ Up2Expr(u,source is [up,var,S], target is [Expr,T]) ==
 
     plus := getFunctionFromDomain("+",  target, [target, target])
     mult := getFunctionFromDomain("*",  target, [target, target])
-    expn := getFunctionFromDomain("**", target, [target, $Integer])
+    expn := getFunctionFromDomain("^", target, [target, $Integer])
 
     -- coerce via Horner's rule
 

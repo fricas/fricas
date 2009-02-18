@@ -267,10 +267,10 @@ make the following diagram commute:
 ++ References:
 ++
 ++ Description:
-++  CliffordAlgebra(n, K, Q) defines a vector space of dimension \spad{2**n}
-++  over K, given a quadratic form Q on \spad{K**n}.
+++  CliffordAlgebra(n, K, Q) defines a vector space of dimension \spad{2^n}
+++  over K, given a quadratic form Q on \spad{K^n}.
 ++
-++  If \spad{e[i]}, \spad{1<=i<=n} is a basis for \spad{K**n} then
+++  If \spad{e[i]}, \spad{1<=i<=n} is a basis for \spad{K^n} then
 ++     1, \spad{e[i]} (\spad{1<=i<=n}), \spad{e[i1]*e[i2]} 
 ++  (\spad{1<=i1<i2<=n}),...,\spad{e[1]*e[2]*..*e[n]}
 ++  is a basis for the Clifford Algebra.
@@ -305,7 +305,7 @@ CliffordAlgebra(n, K, Q): T == Impl where
 
     Impl ==> add
         Qeelist :=  [Q unitVector(i::PositiveInteger) for i in 1..n]
-        dim     :=  2**n
+        dim     :=  2^n
 
         Rep     := PrimitiveArray K
 
@@ -336,11 +336,11 @@ CliffordAlgebra(n, K, Q): T == Impl where
 
         e b ==
             b::NNI > n => error "No such basis element"
-            iz := 2**((b-1)::NNI)
+            iz := 2^((b-1)::NNI)
             z := New; z.iz := 1; z
 
         -- The ei*ej products could instead be precomputed in
-        -- a (2**n)**2 multiplication table.
+        -- a (2^n)^2 multiplication table.
         addMonomProd(c1: K, b1: NNI, c2: K, b2: NNI, z: %): % ==
             c  := c1 * c2
             bz := b2
@@ -350,12 +350,12 @@ CliffordAlgebra(n, K, Q): T == Impl where
                 for j in i+1..n-1 | bit?(b1, j) repeat k := k+1
                 for j in 0..i-1   | bit?(bz, j) repeat k := k+1
                 if odd? k then c := -c
-                -- Apply rule  ei**2 = Q(ei)
+                -- Apply rule  ei^2 = Q(ei)
                 if bit?(bz,i) then
                     c := c * Qeelist.(i+1)
-                    bz:= (bz - 2**i)::NNI
+                    bz:= (bz - 2^i)::NNI
                 else
-                    bz:= bz + 2**i
+                    bz:= bz + 2^i
             z.bz := z.bz + c
             z
 
@@ -391,9 +391,9 @@ CliffordAlgebra(n, K, Q): T == Impl where
                 bn := (b-1)::NNI
                 if bit?(bz, bn) then
                     c := c * Qeelist bn
-                    bz:= ( bz - 2**bn )::NNI
+                    bz:= ( bz - 2^bn )::NNI
                 else
-                    bz:= bz + 2**bn
+                    bz:= bz + 2^bn
             [c, bz::NNI]
 
         monomial(c, lb) ==

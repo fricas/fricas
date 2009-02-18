@@ -72,12 +72,12 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
       ++ stopMusserTrials() returns the bound on the number of factors for
       ++ which \spadfun{modularFactor} stops to look for an other prime. You
       ++ will have to remember that the step of recombining the extraneous
-      ++ factors may take up to \spad{2**stopMusserTrials()} trials. 
+      ++ factors may take up to \spad{2^stopMusserTrials()} trials. 
     stopMusserTrials: P -> P
       ++ stopMusserTrials(n) sets to n the bound on the number of factors for
       ++ which \spadfun{modularFactor} stops to look for an other prime. You
       ++ will have to remember that the step of recombining the extraneous
-      ++ factors may take up to \spad{2**n} trials. Returns the previous
+      ++ factors may take up to \spad{2^n} trials. Returns the previous
       ++ value.
     numberOfFactors: DDList -> N
       ++ numberOfFactors(ddfactorization) returns the number of factors of 
@@ -262,7 +262,7 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
       for p in factors(factor c)$Factored(Z) repeat
 --        if (one? p.exponent) and (not zero? (lc rem p.factor)) and
         if (p.exponent = 1) and (not zero? (lc rem p.factor)) and
-         (not zero? (tc rem ((p.factor)**2))) then return true
+         (not zero? (tc rem ((p.factor)^2))) then return true
       false
 
     numberOfFactors(ddlist:DDList):N ==
@@ -569,7 +569,7 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
     quadratic(p:UP):List UP ==
       a := leadingCoefficient p
       b := coefficient(p,1)
-      d := b**2-4*a*coefficient(p,0)
+      d := b^2-4*a*coefficient(p,0)
       r := perfectSqrt(d)
       r case "failed" => [p]
       b := b+(r::Z)
@@ -604,7 +604,7 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
         c := -c
         f := -f
 
-      -- is x**d factor of f
+      -- is x^d factor of f
       if (d := minimumDegree f) > 0 then
         f := monicDivide(f,monomial(1,d)).quotient
         factorlist := [[monomial(1,1),d]$ParFact]
@@ -620,14 +620,14 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
 
       lcPol: UP := leadingCoefficient(f) :: UP
 
-      -- is f cyclotomic (x**n - 1)?
+      -- is f cyclotomic (x^n - 1)?
       -lcPol = reductum(f) =>    -- if true, both will = 1
         for fac in map(unmakeSUP(#1)$UP,
          cyclotomicDecomposition(d)$CYC)$ListFunctions2(SUPZ,UP) repeat 
           factorlist := cons([fac,1]$ParFact,factorlist)
         [c,factorlist]$FinalFact
 
-      -- is f odd cyclotomic (x**(2*n+1) + 1)?
+      -- is f odd cyclotomic (x^(2*n+1) + 1)?
       odd?(d) and (lcPol = reductum(f)) =>
         for sfac in cyclotomicDecomposition(d)$CYC repeat
            fac := subMinusX sfac
@@ -635,7 +635,7 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
            factorlist := cons([fac,1]$ParFact,factorlist)
         [c,factorlist]$FinalFact
 
-      -- is the poly of the form x**n + 1 with n a power of 2?
+      -- is the poly of the form x^n + 1 with n a power of 2?
       -- if so, then irreducible
       isPowerOf2(d) and (lcPol = reductum(f)) =>
         factorlist := cons([f,1]$ParFact,factorlist)
@@ -676,7 +676,7 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
         c := -c
         f := -f
 
-      -- is x**d factor of f
+      -- is x^d factor of f
       if (maxd := minimumDegree f) > 0 then
         f := monicDivide(f,monomial(1,maxd)).quotient
         factorlist := [[monomial(1,1),maxd]$ParFact]
@@ -693,14 +693,14 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
 
       lcPol: UP := leadingCoefficient(f) :: UP
 
-      -- is f cyclotomic (x**n - 1)?
+      -- is f cyclotomic (x^n - 1)?
       -lcPol = reductum(f) =>    -- if true, both will = 1
         for fac in map(unmakeSUP(#1)$UP,
          cyclotomicDecomposition(d)$CYC)$ListFunctions2(SUPZ,UP) repeat 
           factorlist := cons([fac,1]$ParFact,factorlist)
         [c,factorlist]$FinalFact
 
-      -- is f odd cyclotomic (x**(2*n+1) + 1)?
+      -- is f odd cyclotomic (x^(2*n+1) + 1)?
       odd?(d) and (lcPol = reductum(f)) =>
         for sfac in cyclotomicDecomposition(d)$CYC repeat
            fac := subMinusX sfac
@@ -708,7 +708,7 @@ GaloisGroupFactorizer(UP): Exports == Implementation where
            factorlist := cons([fac,1]$ParFact,factorlist)
         [c,factorlist]$FinalFact
 
-      -- is the poly of the form x**n + 1 with n a power of 2?
+      -- is the poly of the form x^n + 1 with n a power of 2?
       -- if so, then irreducible
       isPowerOf2(d) and (lcPol = reductum(f)) =>
         factorlist := cons([f,1]$ParFact,factorlist)

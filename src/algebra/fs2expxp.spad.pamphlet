@@ -69,7 +69,7 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
       ++ negative numbers with n even.  If \spad{posCheck?} is false,
       ++ these are allowed.
     localAbs: FE -> FE
-      ++ localAbs(fcn) = \spad{abs(fcn)} or \spad{sqrt(fcn**2)} depending
+      ++ localAbs(fcn) = \spad{abs(fcn)} or \spad{sqrt(fcn^2)} depending
       ++ on whether or not FE has a function \spad{abs}.  This should be
       ++ a local function, but the compiler won't allow it.
 
@@ -158,11 +158,11 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
       is?(k,"coth" :: SY) => (ez + iez) / (ez - iez)
       is?(k,"sech" :: SY) => 2 * inv(ez + iez)
       is?(k,"csch" :: SY) => 2 * inv(ez - iez)
-      is?(k,"acosh" :: SY) => log(sqrt(z**2 - 1) + z)
+      is?(k,"acosh" :: SY) => log(sqrt(z^2 - 1) + z)
       is?(k,"atanh" :: SY) => log((z + 1) / (1 - z)) / (2 :: FE)
       is?(k,"acoth" :: SY) => log((z + 1) / (z - 1)) / (2 :: FE)
-      is?(k,"asech" :: SY) => log((inv z) + sqrt(inv(z**2) - 1))
-      is?(k,"acsch" :: SY) => log((inv z) + sqrt(1 + inv(z**2)))
+      is?(k,"asech" :: SY) => log((inv z) + sqrt(inv(z^2) - 1))
+      is?(k,"acsch" :: SY) => log((inv z) + sqrt(1 + inv(z^2)))
       (operator k) args
 
 --% general conversion function
@@ -172,7 +172,7 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
     iExprToXXP(fcn,posCheck?) ==
       -- converts a functional expression to an exponential expansion
       --!! The following line is commented out so that expressions of
-      --!! the form a**b will be normalized to exp(b * log(a)) even if
+      --!! the form a^b will be normalized to exp(b * log(a)) even if
       --!! 'a' and 'b' do not involve the limiting variable 'x'.
       --!!                         - cjw 1 Dec 94
       --not member?(x,variables fcn) => [monomial(fcn,0)$UPXS :: XXP]
@@ -237,14 +237,14 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
       -- converts an integral power to an exponential expansion
       (b := iExprToXXP(fcn,posCheck?)) case %problem => b
       xxp := b.%expansion
-      n > 0 => [xxp ** n]
+      n > 0 => [xxp ^ n]
       -- a Puiseux series will be reciprocated only if n < 0 and
       -- numerator of 'xxp' has exactly one monomial
-      numberOfMonomials(num := numer xxp) > 1 => [xxp ** n]
+      numberOfMonomials(num := numer xxp) > 1 => [xxp ^ n]
       negativePowerOK? leadingCoefficient num =>
         (rec := recip num) case "failed" => error "FS2EXPXP: can't happen"
         nn := (-n) :: NNI
-        [(((denom xxp) ** nn) * ((rec :: UPXSSING) ** nn)) :: XXP]
+        [(((denom xxp) ^ nn) * ((rec :: UPXSSING) ^ nn)) :: XXP]
       --!! we may want to create a fraction instead of trying to
       --!! reciprocate the numerator
       stateProblem("inv","lowest order coefficient involves x")
@@ -304,10 +304,10 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
       ans case %problem => [ans.%problem]
       [ans.%expansion]
 
---% general powers f(x) ** g(x)
+--% general powers f(x) ^ g(x)
 
     genPowerToXXP(args,posCheck?) ==
-      -- converts a power f(x) ** g(x) to an exponential expansion
+      -- converts a power f(x) ^ g(x) to an exponential expansion
       (logBase := logToXXP(first args,posCheck?)) case %problem =>
         logBase
       (expon := iExprToXXP(second args,posCheck?)) case %problem =>
@@ -391,7 +391,7 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
         false
       logTerm : FE :=
         mon : FE := (x :: FE) - (cen :: FE)
-        pow : FE := mon ** (deg :: FE)
+        pow : FE := mon ^ (deg :: FE)
         negRat? => log(coef * pow)
         term1 : FE := (deg :: FE) * log(mon)
         log(coef) + term1

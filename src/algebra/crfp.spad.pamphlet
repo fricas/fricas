@@ -95,7 +95,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        ++ {\em eps0} is determined and iterated tree-like calls
        ++ to {\em pleskenSplit} are used to get the factorization.
      graeffe : UP -> UP
-       ++ graeffe p determines q such that \spad{q(-z**2) = p(z)*p(-z)}.
+       ++ graeffe p determines q such that \spad{q(-z^2) = p(z)*p(-z)}.
        ++ Note that the roots of q are the squares of the roots of p.
      norm : UP -> R
        ++ norm(p) determines sum of absolute values of coefficients
@@ -103,7 +103,7 @@ ComplexRootFindingPackage(R, UP): public == private where
      pleskenSplit: (UP, R, Boolean)  ->  FR UP
        ++ pleskenSplit(poly,eps,info) determines a start polynomial {\em start}
        ++ by using "startPolynomial then it increases the exponent
-       ++ n of {\em start ** n mod poly} to get an approximate factor of
+       ++ n of {\em start ^ n mod poly} to get an approximate factor of
        ++ {\em poly}, in general of degree "degree poly -1". Then a divisor
        ++ cascade is calculated and the best splitting is chosen, as soon
        ++ as the error is small enough.
@@ -114,7 +114,7 @@ ComplexRootFindingPackage(R, UP): public == private where
      pleskenSplit: (UP, R)  ->  FR UP
        ++ pleskenSplit(poly, eps)  determines a start polynomial {\em start}\
        ++ by using "startPolynomial then it increases the exponent
-       ++ n of {\em start ** n mod poly} to get an approximate factor of
+       ++ n of {\em start ^ n mod poly} to get an approximate factor of
        ++ {\em poly}, in general of degree "degree poly -1". Then a divisor
        ++ cascade is calculated and the best splitting is chosen, as soon
        ++ as the error is small enough.
@@ -136,16 +136,16 @@ ComplexRootFindingPackage(R, UP): public == private where
      schwerpunkt: UP ->  C
        ++ schwerpunkt(p) determines the 'Schwerpunkt' of the roots of the
        ++ polynomial p of degree n, i.e. the center of gravity, which is
-       ++ {\em coeffient of \spad{x**(n-1)}} divided by
-       ++ {\em n times coefficient of \spad{x**n}}.
+       ++ {\em coeffient of \spad{x^(n-1)}} divided by
+       ++ {\em n times coefficient of \spad{x^n}}.
      setErrorBound : R -> R
        ++ setErrorBound(eps) changes the internal error bound,
-       -- by default being {\em 10 ** (-20)} to eps, if R is
-       ++ by default being {\em 10 ** (-3)} to eps, if R is
+       -- by default being {\em 10 ^ (-20)} to eps, if R is
+       ++ by default being {\em 10 ^ (-3)} to eps, if R is
        ++ a member in the category \spadtype{QuotientFieldCategory Integer}.
        ++ The internal {\em globalDigits} is set to
-       -- {\em ceiling(1/r)**2*10} being {\em 10**41} by default.
-       ++ {\em ceiling(1/r)**2*10} being {\em 10**7} by default.
+       -- {\em ceiling(1/r)^2*10} being {\em 10^41} by default.
+       ++ {\em ceiling(1/r)^2*10} being {\em 10^7} by default.
      startPolynomial: UP  -> Record(start: UP, factors: FR UP)
        ++ startPolynomial(p) uses the ideas of Schoenhage's
        ++ variant of Graeffe's method to construct circles which separate
@@ -164,8 +164,8 @@ ComplexRootFindingPackage(R, UP): public == private where
      -- constants
      c : C
      r : R
-     --globalDigits : I := 10 ** 41
-     globalDigits : I := 10 ** 7
+     --globalDigits : I := 10 ^ 41
+     globalDigits : I := 10 ^ 7
      globalEps : R :=
        --a : R := (1000000000000000000000 :: I) :: R
        a : R := (1000 :: I) :: R
@@ -197,7 +197,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        -- takes factorization with smaller error
      nthRoot : (R, NNI) -> R
        -- nthRoot(r,n) determines an approximation to the n-th
-       -- root of r, if \spadtype{R} has {\em ?**?: (R,Fraction Integer)->R}
+       -- root of r, if \spadtype{R} has {\em ?^?: (R,Fraction Integer)->R}
        -- we use this, otherwise we use {\em approxNthRoot} via
        -- \spadtype{Integer}
      shift: (UP,C) ->  UP
@@ -215,7 +215,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        --r1 : R := rootRadius(p,weakEps)
        --eps0 : R = r1 * nthRoot(eps, degree p)
        -- right now we are content with
-       eps0 : R := eps/(ten ** degree p)
+       eps0 : R := eps/(ten ^ degree p)
        facs : FR UP := factor(p,eps0)
        [-coefficient(linfac.factor,0) for linfac in factors facs]
 
@@ -252,7 +252,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        nm : R := eps
        split : FAE
        sR : Rep := st :: Rep
-       psR : Rep := sR ** (degree poly)
+       psR : Rep := sR ^ (degree poly)
 
        notFoundSplit : Boolean := true
        while notFoundSplit repeat
@@ -346,11 +346,11 @@ ComplexRootFindingPackage(R, UP): public == private where
      pleskenSplit(poly,eps) == pleskenSplit(poly,eps,false)
 
      graeffe p ==
-       -- If  p = ao x**n + a1 x**(n-1) + ... + a<n-1> x + an
-       -- and q = bo x**n + b1 x**(n-1) + ... + b<n-1> x + bn
-       -- are such that q(-x**2) = p(x)p(-x), then
-       -- bk := ak**2 + 2 * ((-1) * a<k-1>*a<k+1> + ... +
-       --                    (-1)**l * a<l>*a<l>) where l = min(k, n-k).
+       -- If  p = ao x^n + a1 x^(n-1) + ... + a<n-1> x + an
+       -- and q = bo x^n + b1 x^(n-1) + ... + b<n-1> x + bn
+       -- are such that q(-x^2) = p(x)p(-x), then
+       -- bk := ak^2 + 2 * ((-1) * a<k-1>*a<k+1> + ... +
+       --                    (-1)^l * a<l>*a<l>) where l = min(k, n-k).
        -- graeffe(p) constructs q using these identities.
        n   : NNI  := degree p
        aForth : L C := []
@@ -366,7 +366,7 @@ ComplexRootFindingPackage(R, UP): public == private where
          aBackCopy  : L C := aBack   -- aBack but do not want to
                                       -- destroy them
          sum        :   C := 0
-         const : I  := -1  --  after i steps const = (-1)**i
+         const : I  := -1  --  after i steps const = (-1)^i
          for aminus in aBack for aplus in aForth repeat
            -- after i steps aminus = a<k-i> and aplus = a<k+i>
            sum := sum + const * aminus * aplus
@@ -405,7 +405,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        zero? p => 0$C
        zero? (d := degree p) => error _
        "schwerpunkt: non-zero const. polynomial has no roots and no schwerpunkt"
-       -- coeffient of x**d and x**(d-1)
+       -- coeffient of x^d and x^(d-1)
        lC : C :=  coefficient(p,d)  -- ~= 0
        nC : C :=  coefficient(p,(d-1) pretend NNI)
        (denom := recip ((d::I::C)*lC)) case "failed" => error  "schwerpunkt: _
@@ -454,7 +454,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        result : FR  UP := coerce monomial(leadingCoefficient poly,0)
        d : NNI := degree poly
        --should be
-       --den : R := (d::I)::R * two**(d::Integer) * norm poly
+       --den : R := (d::I)::R * two^(d::Integer) * norm poly
        --eps0 : R := eps / den
        -- for now only
        eps0 : R := eps / (ten*ten)
@@ -540,7 +540,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        -- improvement?: direct calculation of the new coefficients
 
      nthRoot(r,n) ==
-       R has RealNumberSystem =>  r ** (1/n)
+       R has RealNumberSystem =>  r ^ (1/n)
        R has QuotientFieldCategory Integer =>
          den : I := approxNthRoot(globalDigits * denom r ,n)$IntegerRoots(I)
          num : I := approxNthRoot(globalDigits * numer r ,n)$IntegerRoots(I)
@@ -551,7 +551,7 @@ ComplexRootFindingPackage(R, UP): public == private where
        --  den : I := approxNthRoot(globalDigits * denom q ,n)$IntegerRoots(I)
        --  num : I := approxNthRoot(globalDigits * numer q ,n)$IntegerRoots(I)
        --  num/den
-       r -- this is nonsense, perhaps a Newton iteration for x**n-r here
+       r -- this is nonsense, perhaps a Newton iteration for x^n-r here
 
 )fin
      -- for late use:
@@ -594,7 +594,7 @@ ComplexRootFindingPackage(R, UP): public == private where
      scale2: (UP,C) -> UP
      shift2: (UP,C) ->  UP
      graeffe2 : UP -> UP
-       ++ graeffe2 p determines q such that \spad{q(-z**2) = p(z)*p(-z)}.
+       ++ graeffe2 p determines q such that \spad{q(-z^2) = p(z)*p(-z)}.
        ++ Note that the roots of q are the squares of the roots of p.
 
 @

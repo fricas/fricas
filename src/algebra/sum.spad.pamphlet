@@ -113,7 +113,7 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
       GosperF:     (I, PQ, PQ, PQ, V, () -> V) -> Union(RQ, "failed")
       linearAndNNIntRoot: (PQ, V) -> Union(I, "failed")
       deg0:    (PQ, V) -> I       -- degree with deg 0 = -1.
-      pCoef:   (PQ, PQ) -> PQ  -- pCoef(p, a*b**2)
+      pCoef:   (PQ, PQ) -> PQ  -- pCoef(p, a*b^2)
       RF2QIfCan: Q -> Union(RQ, "failed")
       UP2QIfCan: P -> Union(PQ,"failed")
       RFQ2R    : RQ -> Q
@@ -178,7 +178,7 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
 
       GosperF(k, pn, qn, rn, n, newV) ==
             mv := newV(); mp := mv::PQ; np := n::PQ
-            fn:       PQ := +/[mp**(i+1) * np**i for i in 0..k]
+            fn:       PQ := +/[mp^(i+1) * np^i for i in 0..k]
             fnminus1: PQ := eval(fn, n, np-1)
             qnplus1        := eval(qn, n, np+1)
             zro  := qnplus1 * fn - rn * fnminus1 - pn
@@ -200,7 +200,7 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
                                  dmz + minColIndex(mat) - 1, cmz)
             (soln := particularSolution(mat, vec)) case "failed" => "failed"
             vec := soln::Vector RQ
-            (+/[np**i * vec(i + minIndex vec) for i in 0..k])@RQ
+            (+/[np^i * vec(i + minIndex vec) for i in 0..k])@RQ
 
       GosperPQR(an, anm1, n, newV) ==
             np := n::PQ   -- polynomial version of n
@@ -236,10 +236,10 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
             k := degp - max(lplus-1, lminus)
             lplus <= lminus => k
             -- Find L(k), such that
-            --   p(n) = L(k)*c[k]*n**(k + lplus - 1) + ...
+            --   p(n) = L(k)*c[k]*n^(k + lplus - 1) + ...
             -- To do this, write f(n) and f(n-1) symbolically.
-            --   f(n)  = c[k]*n**k + c[k-1]*n**(k-1) +O(n**(k-2))
-            --   f(n-1)=c[k]*n**k + (c[k-1]-k*c[k])*n**(k-1)+O(n**(k-2))
+            --   f(n)  = c[k]*n^k + c[k-1]*n^(k-1) +O(n^(k-2))
+            --   f(n-1)=c[k]*n^k + (c[k-1]-k*c[k])*n^(k-1)+O(n^(k-2))
             kk := newV()::PQ
             ck := newV()::PQ
             ckm1 := newV()::PQ

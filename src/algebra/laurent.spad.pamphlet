@@ -27,7 +27,7 @@
 ++   univariate Taylor series.  A Laurent series is represented by a pair
 ++   \spad{[n,f(x)]}, where n is an arbitrary integer and \spad{f(x)}
 ++   is a Taylor series.  This pair represents the Laurent series
-++   \spad{x**n * f(x)}.
+++   \spad{x^n * f(x)}.
 UnivariateLaurentSeriesConstructorCategory(Coef,UTS):_
  Category == Definition where
   Coef: Ring
@@ -37,13 +37,13 @@ UnivariateLaurentSeriesConstructorCategory(Coef,UTS):_
   Definition ==> Join(UnivariateLaurentSeriesCategory(Coef),_
                       RetractableTo UTS) with
     laurent: (I,UTS) -> %
-      ++ \spad{laurent(n,f(x))} returns \spad{x**n * f(x)}.
+      ++ \spad{laurent(n,f(x))} returns \spad{x^n * f(x)}.
     degree: % -> I
       ++ \spad{degree(f(x))} returns the degree of the lowest order term of
       ++ \spad{f(x)}, which may have zero as a coefficient.
     taylorRep: % -> UTS
       ++ \spad{taylorRep(f(x))} returns \spad{g(x)}, where
-      ++ \spad{f = x**n * g(x)} is represented by \spad{[n,g(x)]}.
+      ++ \spad{f = x^n * g(x)} is represented by \spad{[n,g(x)]}.
     removeZeroes: % -> %
       ++ \spad{removeZeroes(f(x))} removes leading zeroes from the
       ++ representation of the Laurent series \spad{f(x)}.
@@ -104,7 +104,7 @@ UnivariateLaurentSeriesConstructorCategory(Coef,UTS):_
 ++   domain from a univariate Taylor series domain. Univariate
 ++   Laurent series are represented by a pair \spad{[n,f(x)]}, where n is
 ++   an arbitrary integer and \spad{f(x)} is a Taylor series.  This pair
-++   represents the Laurent series \spad{x**n * f(x)}.
+++   represents the Laurent series \spad{x^n * f(x)}.
 UnivariateLaurentSeriesConstructor(Coef,UTS):_
  Exports == Implementation where
   Coef    : Ring
@@ -239,11 +239,11 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
 
     x:% * y:% == laurent(getExpon x + getExpon y,getUTS x * getUTS y)
 
-    x:% ** n:NNI ==
+    x:% ^ n:NNI ==
       zero? n =>
-        zero? x => error "0 ** 0 is undefined"
+        zero? x => error "0 ^ 0 is undefined"
         1
-      laurent(n * getExpon(x),getUTS(x) ** n)
+      laurent(n * getExpon(x),getUTS(x) ^ n)
 
     recip x ==
       x := removeZeroes(1000,x)
@@ -262,7 +262,7 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
         (recipr := recip(uts2 :: %)) case "failed" =>
           error "elt: second argument not invertible"
         uts1 := taylor(uls1 * monomial(1,-deg))
-        (elt(uts1,uts2) :: %) * (recipr :: %) ** ((-deg) :: NNI)
+        (elt(uts1,uts2) :: %) * (recipr :: %) ^ ((-deg) :: NNI)
       elt(taylor uls1,uts2) :: %
 
     eval(uls:%,r:Coef) ==
@@ -272,9 +272,9 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
         zero? r => error "eval: 0 raised to negative power"
         (recipr := recip r) case "failed" =>
           error "eval: non-unit raised to negative power"
-        (recipr :: Coef) ** ((-n) :: NNI) *$STTAYLOR eval(uts,r)
+        (recipr :: Coef) ^ ((-n) :: NNI) *$STTAYLOR eval(uts,r)
       zero? n => eval(uts,r)
-      r ** (n :: NNI) *$STTAYLOR eval(uts,r)
+      r ^ (n :: NNI) *$STTAYLOR eval(uts,r)
 
 --% values
 
@@ -310,8 +310,8 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
         poly := polynomial(getUTS x,m :: NNI) :: RF
         zero? e => poly
         v := variable(x) :: RF; c := center(x) :: P :: RF
-        positive? e => poly * (v - c) ** (e :: NNI)
-        poly / (v - c) ** ((-e) :: NNI)
+        positive? e => poly * (v - c) ^ (e :: NNI)
+        poly / (v - c) ^ ((-e) :: NNI)
 
       rationalFunction(x,n1,n2) ==
         if n2 < n1 then (n1,n2) := (n2,n1)
@@ -319,8 +319,8 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
         poly := polynomial(getUTS x,m1 :: NNI,(n2 - e) :: NNI) :: RF
         zero? e => poly
         v := variable(x) :: RF; c := center(x) :: P :: RF
-        positive? e => poly * (v - c) ** (e :: NNI)
-        poly / (v - c) ** ((-e) :: NNI)
+        positive? e => poly * (v - c) ^ (e :: NNI)
+        poly / (v - c) ^ ((-e) :: NNI)
 
       --  La fonction < exquo > manque dans laurent.spad,
       --les lignes suivantes le mettent en evidence : 
@@ -341,13 +341,13 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
         laurent(degree x-d,uts :: UTS)
 
     if Coef has coerce: Symbol -> Coef then
-      if Coef has "**": (Coef,I) -> Coef then
+      if Coef has "^": (Coef,I) -> Coef then
 
         approximate(x,n) ==
           (m := n - (e := getExpon x)) < 0 => 0
           app := approximate(getUTS x,m :: NNI)
           zero? e => app
-          app * ((variable(x) :: Coef) - center(x)) ** e
+          app * ((variable(x) :: Coef) - center(x)) ^ e
 
     complete x == laurent(getExpon x,complete getUTS x)
     extend(x,n) ==
@@ -380,13 +380,13 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
       retract(x:%):UTS                      == taylor x
       retractIfCan(x:%):Union(UTS,"failed") == taylorIfCan x
 
-      (x:%) ** (n:I) ==
+      (x:%) ^ (n:I) ==
         zero? n =>
-          zero? x => error "0 ** 0 is undefined"
+          zero? x => error "0 ^ 0 is undefined"
           1
-        n > 0 => laurent(n * getExpon(x),getUTS(x) ** (n :: NNI))
+        n > 0 => laurent(n * getExpon(x),getUTS(x) ^ (n :: NNI))
         xInv := inv x; minusN := (-n) :: NNI
-        laurent(minusN * getExpon(xInv),getUTS(xInv) ** minusN)
+        laurent(minusN * getExpon(xInv),getUTS(xInv) ^ minusN)
 
       (x:UTS) * (y:%) == (x :: %) * y
       (x:%) * (y:UTS) == x * (y :: %)
@@ -422,7 +422,7 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
       coerce(r:RN) == r :: Coef :: %
 
       if Coef has Field then
-         (x:%) ** (r:RN) == x **$EFULS r
+         (x:%) ^ (r:RN) == x ^$EFULS r
 
       exp x   == exp(x)$EFULS
       log x   == log(x)$EFULS
@@ -487,11 +487,11 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
 
     termOutput:(I,Coef,OUT) -> OUT
     termOutput(k,c,vv) ==
-    -- creates a term c * vv ** k
+    -- creates a term c * vv ^ k
       k = 0 => c :: OUT
       mon :=
         k = 1 => vv
-        vv ** (k :: OUT)
+        vv ^ (k :: OUT)
       c = 1 => mon
       c = -1 => -mon
       (c :: OUT) * mon
@@ -518,7 +518,7 @@ UnivariateLaurentSeriesConstructor(Coef,UTS):_
       l :=
         explicitlyEmpty? uu => l
         eq?(uu,rst uu) and frst uu = 0 => l
-        concat(prefix("O" :: OUT,[xxx ** ((n :: I) + m) :: OUT]),l)
+        concat(prefix("O" :: OUT,[xxx ^ ((n :: I) + m) :: OUT]),l)
       empty? l => (0$Coef) :: OUT
       reduce("+",reverse_! l)
 

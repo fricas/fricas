@@ -39,7 +39,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
       ++ (e.g. \spad{a + b}, \spad{a * b}, \spad{ab}),
       ++ and \spad{fexp(a, n)} is the output form
       ++ for the exponentiation operation applied to \spad{a} and n
-      ++ (e.g. \spad{n a}, \spad{n * a}, \spad{a ** n}, \spad{a\^n}).
+      ++ (e.g. \spad{n a}, \spad{n * a}, \spad{a ^ n}, \spad{a\^n}).
     listOfMonoms  : $ -> List REC
       ++ listOfMonoms(l) returns the list of the monomials forming l.
     makeTerm      : (S, E) -> $
@@ -173,7 +173,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ The free monoid on a set S is the monoid of finite products of
-++ the form \spad{reduce(*,[si ** ni])} where the si's are in S, and the ni's
+++ the form \spad{reduce(*,[si ^ ni])} where the si's are in S, and the ni's
 ++ are nonnegative integers. The multiplication is not commutative.
 FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
     NNI ==> NonNegativeInteger
@@ -185,8 +185,8 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
           ++ s * x returns the product of x by s on the left.
         "*":    ($, S) -> $
           ++ x * s returns the product of x by s on the right.
-        "**":   (S, NonNegativeInteger) -> $
-          ++ s ** n returns the product of s by itself n times.
+        "^":   (S, NonNegativeInteger) -> $
+          ++ s ^ n returns the product of s by itself n times.
         hclf:   ($, $) -> $
           ++ hclf(x, y) returns the highest common left factor of x and y,
           ++ i.e. the largest d such that \spad{x = d a} and \spad{y = d b}.
@@ -228,14 +228,14 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
 
         1               == makeUnit()
         one? f          == empty? listOfMonoms f
-        coerce(f:$): Ex == outputForm(f, "*", "**", 1)
+        coerce(f:$): Ex == outputForm(f, "*", "^", 1)
         hcrf(f, g)      == reverse_! hclf(reverse f, reverse g)
         f:$ * s:S       == rightMult(f, s)
         s:S * f:$       == leftMult(s, f)
         factors f       == copy listOfMonoms f
         mapExpon(f, x)  == mapExpon(f, x)$Rep
         mapGen(f, x)    == mapGen(f, x)$Rep
-        s:S ** n:NonNegativeInteger == makeTerm(s, n)
+        s:S ^ n:NonNegativeInteger == makeTerm(s, n)
 
         f:$ * g:$ ==
 --            one? f => g
@@ -356,15 +356,15 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ The free group on a set S is the group of finite products of
-++ the form \spad{reduce(*,[si ** ni])} where the si's are in S, and the ni's
+++ the form \spad{reduce(*,[si ^ ni])} where the si's are in S, and the ni's
 ++ are integers. The multiplication is not commutative.
 FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
         "*":    (S, $) -> $
           ++ s * x returns the product of x by s on the left.
         "*":    ($, S) -> $
           ++ x * s returns the product of x by s on the right.
-        "**"         : (S, Integer) -> $
-          ++ s ** n returns the product of s by itself n times.
+        "^"         : (S, Integer) -> $
+          ++ s ^ n returns the product of s by itself n times.
         size         : $ -> NonNegativeInteger
           ++ size(x) returns the number of monomials in x.
         nthExpon     : ($, Integer) -> Integer
@@ -382,14 +382,14 @@ FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
 
         1                       == makeUnit()
         one? f                  == empty? listOfMonoms f
-        s:S ** n:Integer        == makeTerm(s, n)
+        s:S ^ n:Integer        == makeTerm(s, n)
         f:$ * s:S               == rightMult(f, s)
         s:S * f:$               == leftMult(s, f)
         inv f                   == reverse_! mapExpon("-", f)
         factors f               == copy listOfMonoms f
         mapExpon(f, x)          == mapExpon(f, x)$Rep
         mapGen(f, x)            == mapGen(f, x)$Rep
-        coerce(f:$):OutputForm  == outputForm(f, "*", "**", 1)
+        coerce(f:$):OutputForm  == outputForm(f, "*", "^", 1)
 
         f:$ * g:$ ==
             one? f => g

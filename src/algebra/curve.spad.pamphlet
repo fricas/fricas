@@ -74,31 +74,31 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     normalizeAtInfinity    : Vector $ -> Vector $
       ++ normalizeAtInfinity(v) makes v normal at infinity.
     reduceBasisAtInfinity  : Vector $ -> Vector $
-      ++ reduceBasisAtInfinity(b1,...,bn) returns \spad{(x**i * bj)}
-      ++ for all i,j such that \spad{x**i*bj} is locally integral at infinity.
+      ++ reduceBasisAtInfinity(b1,...,bn) returns \spad{(x^i * bj)}
+      ++ for all i,j such that \spad{x^i*bj} is locally integral at infinity.
     integralMatrix         : () -> Matrix RF
       ++ integralMatrix() returns M such that
-      ++ \spad{(w1,...,wn) = M (1, y, ..., y**(n-1))},
+      ++ \spad{(w1,...,wn) = M (1, y, ..., y^(n-1))},
       ++ where \spad{(w1,...,wn)} is the integral basis of
       ++ \spadfunFrom{integralBasis}{FunctionFieldCategory}.
     inverseIntegralMatrix  : () -> Matrix RF
       ++ inverseIntegralMatrix() returns M such that
-      ++ \spad{M (w1,...,wn) = (1, y, ..., y**(n-1))}
+      ++ \spad{M (w1,...,wn) = (1, y, ..., y^(n-1))}
       ++ where \spad{(w1,...,wn)} is the integral basis of
       ++ \spadfunFrom{integralBasis}{FunctionFieldCategory}.
     integralMatrixAtInfinity       : () -> Matrix RF
       ++ integralMatrixAtInfinity() returns M such that
-      ++ \spad{(v1,...,vn) = M (1, y, ..., y**(n-1))}
+      ++ \spad{(v1,...,vn) = M (1, y, ..., y^(n-1))}
       ++ where \spad{(v1,...,vn)} is the local integral basis at infinity
       ++ returned by \spad{infIntBasis()}.
     inverseIntegralMatrixAtInfinity: () -> Matrix RF
       ++ inverseIntegralMatrixAtInfinity() returns M such
-      ++ that \spad{M (v1,...,vn) = (1, y, ..., y**(n-1))}
+      ++ that \spad{M (v1,...,vn) = (1, y, ..., y^(n-1))}
       ++ where \spad{(v1,...,vn)} is the local integral basis at infinity
       ++ returned by \spad{infIntBasis()}.
     yCoordinates           : $ -> Record(num:Vector(UP), den:UP)
       ++ yCoordinates(f) returns \spad{[[A1,...,An], D]} such that
-      ++ \spad{f = (A1 + A2 y +...+ An y**(n-1)) / D}.
+      ++ \spad{f = (A1 + A2 y +...+ An y^(n-1)) / D}.
     integralCoordinates    : $ -> Record(num:Vector(UP), den:UP)
       ++ integralCoordinates(f) returns \spad{[[A1,...,An], D]} such that
       ++ \spad{f = (A1 w1 +...+ An wn) / D}  where \spad{(w1,...,wn)} is the
@@ -123,7 +123,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       ++ applies it to x.
     represents             : (Vector UP, UP) -> $
       ++ represents([A0,...,A(n-1)],D) returns
-      ++ \spad{(A0 + A1 y +...+ A(n-1)*y**(n-1))/D}.
+      ++ \spad{(A0 + A1 y +...+ A(n-1)*y^(n-1))/D}.
     primitivePart          : $ -> $
       ++ primitivePart(f) removes the content of the denominator and
       ++ the common content of the numerator of f.
@@ -132,10 +132,10 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       ++ if it is not singular.
     elliptic               : () -> Union(UP, "failed")
       ++ elliptic() returns \spad{p(x)} if the curve is the elliptic
-      ++ defined by \spad{y**2 = p(x)}, "failed" otherwise.
+      ++ defined by \spad{y^2 = p(x)}, "failed" otherwise.
     hyperelliptic          : () -> Union(UP, "failed")
       ++ hyperelliptic() returns \spad{p(x)} if the curve is the hyperelliptic
-      ++ defined by \spad{y**2 = p(x)}, "failed" otherwise.
+      ++ defined by \spad{y^2 = p(x)}, "failed" otherwise.
     algSplitSimple         : ($, UP -> UP) -> REC
       ++ algSplitSimple(f, D) returns \spad{[h,d,d',g]} such that \spad{f=h/d},
       ++ \spad{h} is integral at all the normal places w.r.t. \spad{D},
@@ -241,7 +241,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       rec := yCoordinates(+/[qelt(v, i)::RF * qelt(w, i)
                            for i in mini .. maxIndex w])
       n   := +/[(qelt(rec.num, i) x) *
-                (y ** ((i - mini)::NonNegativeInteger))
+                (y ^ ((i - mini)::NonNegativeInteger))
                            for i in mini .. maxIndex w]
       zero?(d := (rec.den) x) =>
         zero? n => error "0/0 -- cannot compute value yet"
@@ -267,7 +267,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     reduceBasisAtInfinity b ==
       x := monomial(1, 1)$UP ::RF
       concat([[f for j in 0.. while
-                integralAtInfinity?(f := x**j * qelt(b, i))]$Vector($)
+                integralAtInfinity?(f := x^j * qelt(b, i))]$Vector($)
                       for i in minIndex b .. maxIndex b]$List(Vector $))
 
     complementaryBasis b ==
@@ -288,7 +288,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     genus() ==
       ds := discriminant()
       d  := degree(retract(ds)@UP) + infOrder(ds * determinant(
-             integralMatrixAtInfinity() * inverseIntegralMatrix()) ** 2)
+             integralMatrixAtInfinity() * inverseIntegralMatrix()) ^ 2)
       dd := (((d exquo 2)::Z - rank()) exquo numberOfComponents())::Z
       (dd + 1)::NonNegativeInteger
 
@@ -447,11 +447,11 @@ ChangeOfVariable(F, UP, UPUP): Exports == Implementation where
           ++ The algebraic relation between x and z is \spad{q(x, z) = 0}.
     radPoly   : UPUP -> Union(Record(radicand:RF, deg:N), "failed")
           ++ radPoly(p(x, y)) returns \spad{[c(x), n]} if p is of the form
-          ++ \spad{y**n - c(x)}, "failed" otherwise.
+          ++ \spad{y^n - c(x)}, "failed" otherwise.
     rootPoly  : (RF, N) -> Record(exponent: N, coef:RF, radicand:UP)
           ++ rootPoly(g, n) returns \spad{[m, c, P]} such that
-          ++ \spad{c * g ** (1/n) = P ** (1/m)}
-          ++ thus if \spad{y**n = g}, then \spad{z**m = P}
+          ++ \spad{c * g ^ (1/n) = P ^ (1/m)}
+          ++ thus if \spad{y^n = g}, then \spad{z^m = P}
           ++ where \spad{z = c * y}.
     goodPoint : (UPUP,UPUP) -> F
           ++ goodPoint(p, q) returns an integer a such that a is neither
@@ -541,12 +541,12 @@ ChangeOfVariable(F, UP, UPUP): Exports == Implementation where
         => "failed"
       [- (r::RF), degree p]
 
--- we have y**m = g(x) = n(x)/d(x), so if we can write
--- (n(x) * d(x)**(m-1)) ** (1/m)  =  c(x) * P(x) ** (1/n)
--- then z**q = P(x) where z = (d(x) / c(x)) * y
+-- we have y^m = g(x) = n(x)/d(x), so if we can write
+-- (n(x) * d(x)^(m-1)) ^ (1/m)  =  c(x) * P(x) ^ (1/n)
+-- then z^q = P(x) where z = (d(x) / c(x)) * y
     rootPoly(g, m) ==
       zero? g => error "Should not happen"
-      pr := nthRoot(squareFree((numer g) * (d := denom g) ** (m-1)::N),
+      pr := nthRoot(squareFree((numer g) * (d := denom g) ^ (m-1)::N),
                                                 m)$FactoredFunctions(UP)
       [pr.exponent, d / pr.coef, */(pr.radicand)]
 
@@ -554,12 +554,12 @@ ChangeOfVariable(F, UP, UPUP): Exports == Implementation where
 \section{domain RADFF RadicalFunctionField}
 <<domain RADFF RadicalFunctionField>>=
 )abbrev domain RADFF RadicalFunctionField
-++ Function field defined by y**n = f(x)
+++ Function field defined by y^n = f(x)
 ++ Author: Manuel Bronstein
 ++ Date Created: 1987
 ++ Date Last Updated: 27 July 1993
 ++ Keywords: algebraic, curve, radical, function, field.
-++ Description: Function field defined by y**n = f(x);
+++ Description: Function field defined by y^n = f(x);
 ++ Examples: )r RADFF INPUT
 RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
   F       : UniqueFactorizationDomain
@@ -642,13 +642,13 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
                                          for i in mini..maxIndex v]$Vector(RF))
       [diagonalMatrix(cd.num), cd.den]
 
--- return (d0,...,d(n-1)) s.t. (1/d0, y/d1,...,y**(n-1)/d(n-1))
--- is an integral basis for the curve y**d = p
+-- return (d0,...,d(n-1)) s.t. (1/d0, y/d1,...,y^(n-1)/d(n-1))
+-- is an integral basis for the curve y^d = p
 -- requires that p has no factor of multiplicity >= d
     iBasis(p, d) ==
       pl := fullVector(squareFree p, d)
       d1 := (d - 1)::N
-      [*/[pl.j ** ((i * j) quo d) for j in 0..d1] for i in 0..d1]
+      [*/[pl.j ^ ((i * j) quo d) for j in 0..d1] for i in 0..d1]
 
 -- returns a vector [a0,a1,...,a_{m-1}] of length m such that
 -- p = a0^0 a1^1 ... a_{m-1}^{m-1}
@@ -662,8 +662,8 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
           (u::REC).factor
       ans
 
--- return (f0,...,f(n-1)) s.t. (f0, y f1,..., y**(n-1) f(n-1))
--- is a local integral basis at infinity for the curve y**d = p
+-- return (f0,...,f(n-1)) s.t. (f0, y f1,..., y^(n-1) f(n-1))
+-- is a local integral basis at infinity for the curve y^d = p
     inftyBasis(p, m) ==
       rt := rootPoly(p(x := inv(monomial(1, 1)$UP :: RF)), m)
       m ~= rt.exponent =>
@@ -704,9 +704,9 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
       brandNew?() := b
       if zero?(p := characteristic()$F) or p > n then char0StartUp()
                                                  else charPStartUp()
-      dsc:RF := ((-1)$Z ** ((n *$N n1) quo 2::N) * (n::Z)**n)$Z *
-               radicnd ** n1 *
-                  */[qelt(ibasis, i) ** 2 for i in mini..maxIndex ibasis]
+      dsc:RF := ((-1)$Z ^ ((n *$N n1) quo 2::N) * (n::Z)^n)$Z *
+               radicnd ^ n1 *
+                  */[qelt(ibasis, i) ^ 2 for i in mini..maxIndex ibasis]
       discPoly() := primitivePart(numer dsc) / denom(dsc)
       void
 
@@ -720,7 +720,7 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
       for i in mini..maxIndex ib repeat
         qsetelt_!(invibasis, i, a := qelt(ib, i) * invden)
         qsetelt_!(ibasis, i, inv a)
-        invden := invden / rp.coef        -- always equals 1/rp.coef**(i-mini)
+        invden := invden / rp.coef        -- always equals 1/rp.coef^(i-mini)
         qsetelt_!(infbasis, i, a := qelt(infb, i))
         qsetelt_!(invinfbasis, i, inv a)
       void
@@ -733,7 +733,7 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
     singular?(p:UP) ==
       (r := retractIfCan(p)@Union(F, "failed")) case F =>
         singular?(r::F)
-      (radcand() exquo(p**2)) case UP
+      (radcand() exquo(p^2)) case UP
 
     branchPoint?(p:UP) ==
       (r := retractIfCan(p)@Union(F, "failed")) case F =>
@@ -833,7 +833,7 @@ AlgebraicFunctionField(F, UP, UPUP, modulus): Exports == Impl where
       r           := mkIntegral invmod
       degree(r.poly) ~= n => error "Should not happen"
       ninvmod:UP2 := map(retract(#1)@UP, r.poly)
-      alpha       := [(r.coef ** i) x for i in 0..n1]$Vector(RF)
+      alpha       := [(r.coef ^ i) x for i in 0..n1]$Vector(RF)
       invalpha := [inv qelt(alpha, i)
                    for i in minIndex alpha .. maxIndex alpha]$Vector(RF)
       invib       := integralBasis()$FunctionFieldIntegralBasis(UP, UP2,
@@ -868,10 +868,10 @@ AlgebraicFunctionField(F, UP, UPUP, modulus): Exports == Impl where
           ibasis(i, j)    := qelt(ib2, i, j)
           invibasis(i, j) := invib2(i, j)
       dsc  := resultant(modulus, differentiate modulus)
-      dsc0 := dsc * determinant(infbasis) ** 2
+      dsc0 := dsc * determinant(infbasis) ^ 2
       degree(numer dsc0) > degree(denom dsc0) =>error "Shouldn't happen"
       infBr?() := degree(numer dsc0) < degree(denom dsc0)
-      dsc := dsc * determinant(ibasis) ** 2
+      dsc := dsc * determinant(ibasis) ^ 2
       discPoly() := primitivePart(numer dsc) / denom(dsc)
       void
 

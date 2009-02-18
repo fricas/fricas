@@ -39,7 +39,7 @@ MachineInteger(): Exports == Implementation where
 
   Implementation  ==> Integer add
 
-    MAXINT : PositiveInteger := 2**32
+    MAXINT : PositiveInteger := 2^32
 
     maxint():PositiveInteger == MAXINT
 
@@ -135,7 +135,7 @@ MachineFloat(): Exports == Implementation where
     -- Useful constants
     POWER : PI := 53  -- The maximum power of B which will yield P
                       -- decimal digits.
-    MMAX  : PI := B**POWER 
+    MMAX  : PI := B^POWER 
 
 
     -- locals
@@ -145,15 +145,15 @@ MachineFloat(): Exports == Implementation where
     newPower:(PI,PI)->Void
 
     retractIfCan(u:$):Union(FI,"failed") == 
-      mantissa(u)*(B/1)**(exponent(u))
+      mantissa(u)*(B/1)^(exponent(u))
 
     wholePart(u:$):Integer ==
        man:I:=mantissa u
        exp:I:=exponent u
        f:=
-           positive? exp => man*B**(exp pretend PI)
+           positive? exp => man*B^(exp pretend PI)
            zero? exp => man
-           wholePart(man/B**((-exp) pretend PI))
+           wholePart(man/B^((-exp) pretend PI))
     normalise(u:$):$ ==
       -- We want the largest possible mantissa, to ensure a canonical
       -- representation.
@@ -181,16 +181,16 @@ MachineFloat(): Exports == Implementation where
 
     newPower(base:PI,prec:PI):Void ==
       power   : PI := 1
-      target  : PI := 10**prec
+      target  : PI := 10^prec
       current : PI := base
       while (current := current*base) < target repeat power := power+1
       POWER := power
-      MMAX  := B**POWER
+      MMAX  := B^POWER
       void()
 
     changeBase(exp:I,man:I,base:PI):$ ==
       newExp : I  := 0
-      f      : FI := man*(base pretend I)::FI**exp
+      f      : FI := man*(base pretend I)::FI^exp
       sign   : I  := sign f
       f      : FI := abs f
       newMan : I  := wholePart f
@@ -245,7 +245,7 @@ MachineFloat(): Exports == Implementation where
     retractIfCan(u:$):Union(F,"failed") == u::F::Union(F,"failed")
 
     retractIfCan(u:$):Union(I,"failed") ==
-      value:FI := mantissa(u)*(B pretend I)::FI**exponent(u)
+      value:FI := mantissa(u)*(B pretend I)::FI^exponent(u)
       zero? fractionPart(value) => wholePart(value)::Union(I,"failed")
       "failed"::Union(I,"failed")
 
@@ -301,20 +301,20 @@ MachineFloat(): Exports == Implementation where
 
     recip f1 ==
       zero? f1 => "failed"
-      normalise [ locRound(B**(2*POWER)/mantissa f1),-(exponent f1 + 2*POWER)]
+      normalise [ locRound(B^(2*POWER)/mantissa f1),-(exponent f1 + 2*POWER)]
 
     f1 * f2 == 
       normalise [mantissa(f1)*mantissa(f2),exponent(f1)+exponent(f2)]$Rep
 
-    f1 **(p:FI) ==
-      ((f1::F)**p)::%
+    f1 ^(p:FI) ==
+      ((f1::F)^p)::%
 
 --inline
     f1 / f2 == 
       zero? f2 => error "division by zero"
       zero? f1 => 0
       f1=f2 => 1
-      normalise [locRound(mantissa(f1)*B**(2*POWER)/mantissa(f2)),
+      normalise [locRound(mantissa(f1)*B^(2*POWER)/mantissa(f2)),
          exponent(f1)-(exponent f2 + 2*POWER)]
 
     inv(f1) == 1/f1
@@ -340,11 +340,11 @@ MachineFloat(): Exports == Implementation where
          e1 > e2 + POWER + 2 => 
                zero? f1 => f2
                f1 
-         normalise [m1*(B pretend I)**((e1-e2) pretend NNI)+m2,e2]$Rep
+         normalise [m1*(B pretend I)^((e1-e2) pretend NNI)+m2,e2]$Rep
       e2 > e1 + POWER +2 => 
                zero? f2 => f1
                f2
-      normalise [m2*(B pretend I)**((e2-e1) pretend NNI)+m1,e1]$Rep
+      normalise [m2*(B pretend I)^((e2-e1) pretend NNI)+m1,e1]$Rep
 
     - f1 == [- mantissa f1,exponent f1]$Rep
 

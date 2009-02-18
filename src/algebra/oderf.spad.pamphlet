@@ -40,7 +40,7 @@ BalancedFactorisation(R, UP): Exports == Implementation where
       g := gcd(a, b)
       fa := sqfrFactor((a exquo g)::UP, n)
       ground? g => fa
-      fa * balSqfr1(g, n, (b exquo (g ** order(b, g)))::UP)
+      fa * balSqfr1(g, n, (b exquo (g ^ order(b, g)))::UP)
 
     balSqfr(a, n, l) ==
       b := first l
@@ -231,7 +231,7 @@ PrimitiveRatDE(F, UP, L, LQ): Exports == Implementation where
       [l, [f * g for g in lg]]
 
     tau(p, pp, q, n) ==
-      ((pp ** n) * ((q exquo (p ** order(q, p)))::UP)) rem p
+      ((pp ^ n) * ((q exquo (p ^ order(q, p)))::UP)) rem p
 
     indicialEquations(op:LQ) ==
       indicialEquations(splitDenominator(op, empty()).eq)
@@ -279,11 +279,11 @@ PrimitiveRatDE(F, UP, L, LQ): Exports == Implementation where
       max(n, order(e, c)::Z - rec.mu)::N
 
     hdenom(l, d, e) ==
-      */[dd.factor ** NPbound(dd.factor, l, e)
+      */[dd.factor ^ NPbound(dd.factor, l, e)
                     for dd in factors balancedFactorisation(d, coefficients l)]
 
     denom0(n, l, d, e, h) ==
-      hdenom(l, d, e) * */[hh.factor ** max(0, order(e, hh.factor) - n)::N
+      hdenom(l, d, e) * */[hh.factor ^ max(0, order(e, hh.factor) - n)::N
                                  for hh in factors balancedFactorisation(h, e)]
 
 -- returns a polynomials whose zeros are the zeros of e which are not
@@ -305,7 +305,7 @@ PrimitiveRatDE(F, UP, L, LQ): Exports == Implementation where
       zero? g => hdenom(l, d, 0)
       h := separateZeros(d, e := denom g)
       n := degree l
-      (e exquo (h**(n + 1))) case "failed" => "failed"
+      (e exquo (h^(n + 1))) case "failed" => "failed"
       denom0(n, l, d, e, h)
 
     denomLODE(l:L, lg:List RF) ==
@@ -723,7 +723,7 @@ ODEIntegration(R, F): Exports == Implementation where
       rec := first l
       d := denom(rec.coef)
       ll := select(denom(#1.coef) = d, l)
-      nthRoot(*/[r.logand ** numer(r.coef) for r in ll], d) *
+      nthRoot(*/[r.logand ^ numer(r.coef) for r in ll], d) *
         mkprod setDifference(l, ll)
 
 -- computes exp(int(f,x)) in a non-naive way
@@ -834,7 +834,7 @@ ConstantLODE(R, F, L): Exports == Implementation where
       [exp(a * x) for a in rootsOf p]
 
     quadSol(p, x) ==
-      (u := sign(delta := (b := coefficient(p, 1))**2 - 4 *
+      (u := sign(delta := (b := coefficient(p, 1))^2 - 4 *
         (a := leadingCoefficient p) * (c := coefficient(p, 0))))
           case Z and negative?(u::Z) =>
             y := x / (2 * a)

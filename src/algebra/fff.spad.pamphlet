@@ -62,7 +62,7 @@ FiniteFieldFunctions(GF): Exports == Implementation where
         ++ createZechTable(f) generates a Zech logarithm table for the cyclic
         ++ group representation of a extension of the ground field by the
         ++ primitive polynomial {\em f(x)}, i.e. \spad{Z(i)},
-        ++ defined by {\em x**Z(i) = 1+x**i} is stored at index i.
+        ++ defined by {\em x^Z(i) = 1+x^i} is stored at index i.
         ++ This is needed in particular
         ++ to perform addition of field elements in finite fields represented
         ++ in this way. See \spadtype{FFCGP}, \spadtype{FFCGX}.
@@ -120,10 +120,10 @@ FiniteFieldFunctions(GF): Exports == Implementation where
           primitive?(q::PF(i*n+1))$PF(i*n+1) =>
               a:NNI:=1
               k:=i
-              t1:PF(k*n+1):=(q::PF(k*n+1))**n
+              t1:PF(k*n+1):=(q::PF(k*n+1))^n
           gcd(n,a:=discreteLog(q::PF(n*i+1))$PF(n*i+1))$I = 1 =>
               k:=i
-              t1:=primitiveElement()$PF(k*n+1)**n
+              t1:=primitiveElement()$PF(k*n+1)^n
       k = 0 => "failed"
       -- initialize some start values
       multmat:M PF(p):=zero(n,n)
@@ -140,13 +140,13 @@ FiniteFieldFunctions(GF): Exports == Implementation where
       vec:Vector I:=zero(p1 pretend NNI)
       for x in 1..k repeat
         for l in 1..n repeat
-          vec.((t**(x-1) * pkn**(l-1)) pretend Integer+1):=_
+          vec.((t^(x-1) * pkn^(l-1)) pretend Integer+1):=_
                                             positiveRemainder(l,p1)
       lvj:M I:=zero(k::NNI,n)
       for v in 1..k repeat
         for j in 1..n repeat
           if (j ~= jt) or (v ~= vt) then
-            help:PF(p1):=t**(v-1)*pkn**(j-1)+1@PF(p1)
+            help:PF(p1):=t^(v-1)*pkn^(j-1)+1@PF(p1)
             setelt(lvj,v,j,vec.(help pretend I +1))
       for j in 1..n repeat
         if j ~= jt then
@@ -187,13 +187,13 @@ FiniteFieldFunctions(GF): Exports == Implementation where
       m1:I:=m-1
       -- initialize basis change matrices
       setPoly(f)$MM
-      e:=reduce(monomial(1,1)$SUP)$MM ** sizeGF
+      e:=reduce(monomial(1,1)$SUP)$MM ^ sizeGF
       w:=1$MM
       qpow:PrimitiveArray(MM):=new(m,0)
       qpow.0:=1$MM
       for i in 1..m1 repeat
         qpow.i:=(w:=w*e)
-      -- qpow.i = x**(i*q)
+      -- qpow.i = x^(i*q)
       qexp:PrimitiveArray(MM):=new(m,0)
       qexp.0:=reduce(monomial(1,1)$SUP)$MM
       mat:M GF:=zero(m,m)$(M GF)
@@ -208,7 +208,7 @@ FiniteFieldFunctions(GF): Exports == Implementation where
           h:=reductum(h)$MM
         qexp.i:=g
         setColumn_!(mat,i+1,Vectorise(h:=g)$MM)$(M GF)
-      -- loop invariant: qexp.i = x**(q**i)
+      -- loop invariant: qexp.i = x^(q^i)
       mat1:=inverse(mat)$(M GF)
       mat1 = "failed" =>
         error "createMultiplicationTable: polynomial must be normal"
@@ -229,9 +229,9 @@ FiniteFieldFunctions(GF): Exports == Implementation where
     createZechTable(f:SUP) ==
       sizeGF:NNI:=size()$GF -- the size of the ground field
       m:=degree(f)$SUP::PI
-      qm1:SI:=(sizeGF ** m -1) pretend SI
-      zechlog:ARR:=new(((sizeGF ** m + 1) quo 2)::NNI,-1::SI)$ARR
-      helparr:ARR:=new(sizeGF ** m::NNI,0$SI)$ARR
+      qm1:SI:=(sizeGF ^ m -1) pretend SI
+      zechlog:ARR:=new(((sizeGF ^ m + 1) quo 2)::NNI,-1::SI)$ARR
+      helparr:ARR:=new(sizeGF ^ m::NNI,0$SI)$ARR
       primElement:=reduce(monomial(1,1)$SUP)$SAE(GF,SUP,f)
       a:=primElement
       for i in 1..qm1-1 repeat

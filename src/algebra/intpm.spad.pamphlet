@@ -119,7 +119,7 @@ PatternMatchIntegration(R, F): Exports == Implementation where
         vv := v::Record(val:F, exponent:Z)
         (vv.exponent ~= 1) =>
           rec := splitConstant(vv.val, x)
-          return [rec.const ** vv.exponent, rec.nconst ** vv.exponent]
+          return [rec.const ^ vv.exponent, rec.nconst ^ vv.exponent]
       error "splitConstant: should not happen"
 
     if R has ConvertibleTo Pattern Integer and
@@ -168,7 +168,7 @@ PatternMatchIntegration(R, F): Exports == Implementation where
            matchei(f, x) ==
              res0 := new()$RES
              a := pma::F
-             pat := c * a**w / log a
+             pat := c * a^w / log a
              failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
                [NONE, 0, 0]
              l := mkalist res
@@ -224,8 +224,8 @@ PatternMatchIntegration(R, F): Exports == Implementation where
              res0 := new()$RES
              b := pmb::F
              t := tan(a := pma::F)
-             patsi := c * t / (patden := b + b * t**2)
-             patci := (c - c * t**2) / patden
+             patsi := c * t / (patden := b + b * t^2)
+             patci := (c - c * t^2) / patden
              patci0 := c / patden
              ci0?:Boolean
              (ci? := failed?(res := patternMatch(f, convert(patsi)@PAT, res0)))
@@ -314,30 +314,30 @@ and
              ((sgz := sign(z := (mw + 1) / ms)) case "failed") or (sgz::Z < 0)
                 => "failed"
              mmi := retract(mm := second l)@Z
-             sgs * (last l) * ms**(- mmi - 1) *
+             sgs * (last l) * ms^(- mmi - 1) *
                  eval(differentiate(Gamma(x::F), x, mmi::N), [kernel(x)@K], [z])
 
 -- returns [w, m, s, c] or []
 -- matches only formula (1) of the Geddes & al, AAECC 1 (1990) paper
            match1(f, x, t, cc) ==
              res0 := new()$RES
-             pat := cc * log(t)**m * exp(-t**s)
+             pat := cc * log(t)^m * exp(-t^s)
              not failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
                l := mkalist res
                [0, l.pmm, l.pms, l.pmc]
-             pat := cc * t**w * exp(-t**s)
+             pat := cc * t^w * exp(-t^s)
              not failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
                l := mkalist res
                [l.pmw, 0, l.pms, l.pmc]
-             pat := cc / t**w * exp(-t**s)
+             pat := cc / t^w * exp(-t^s)
              not failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
                l := mkalist res
                [- l.pmw, 0, l.pms, l.pmc]
-             pat := cc * t**w * log(t)**m * exp(-t**s)
+             pat := cc * t^w * log(t)^m * exp(-t^s)
              not failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
                l := mkalist res
                [l.pmw, l.pmm, l.pms, l.pmc]
-             pat := cc / t**w * log(t)**m * exp(-t**s)
+             pat := cc / t^w * log(t)^m * exp(-t^s)
              not failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
                l := mkalist res
                [- l.pmw, l.pmm, l.pms, l.pmc]

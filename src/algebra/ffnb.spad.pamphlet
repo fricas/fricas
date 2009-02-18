@@ -82,22 +82,22 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
         ++ the ground field.
       pol       : VGF          -> SUP GF
         ++ pol(v) turns the vector \spad{[v0,...,vn]} into the polynomial
-        ++ \spad{v0+v1*x+ ... + vn*x**n}.
+        ++ \spad{v0+v1*x+ ... + vn*x^n}.
       xn         : NNI          -> SUP GF
-        ++ xn(n) returns the polynomial \spad{x**n-1}.
+        ++ xn(n) returns the polynomial \spad{x^n-1}.
       dAndcExp  : (VGF,NNI,SI) -> VGF
-        ++ dAndcExp(v,n,k) computes \spad{v**e} interpreting v as an element of
+        ++ dAndcExp(v,n,k) computes \spad{v^e} interpreting v as an element of
         ++ normal basis field. A divide and conquer algorithm similar to the
         ++ one from D.R.Stinson,
         ++ "Some observations on parallel Algorithms for fast exponentiation in
         ++ GF(2^n)", Siam J. Computation, Vol.19, No.4, pp.711-717, August 1990
         ++ is used. Argument k is a parameter of this algorithm.
       repSq     : (VGF,NNI)    -> VGF
-        ++ repSq(v,e) computes \spad{v**e} by repeated squaring,
+        ++ repSq(v,e) computes \spad{v^e} by repeated squaring,
         ++ interpreting v as an element of a normal basis field.
       expPot    : (VGF,SI,SI)  -> VGF
         ++ expPot(v,e,d) returns the sum from \spad{i = 0} to
-        ++ \spad{e - 1} of \spad{v**(q**i*d)}, interpreting
+        ++ \spad{e - 1} of \spad{v^(q^i*d)}, interpreting
         ++ v as an element of a normal basis field and where q is
         ++ the size of the ground field.
         ++ Note: for a description of the algorithm, see T.Itoh and S.Tsujii,
@@ -105,15 +105,15 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
         ++ using normal bases",
         ++ Information and Computation 78, pp.171-177, 1988.
       qPot      : (VGF,I)      -> VGF
-        ++ qPot(v,e) computes \spad{v**(q**e)}, interpreting v as an element of
+        ++ qPot(v,e) computes \spad{v^(q^e)}, interpreting v as an element of
         ++ normal basis field, q the size of the ground field.
         ++ This is done by a cyclic e-shift of the vector v.
 
 -- the semantic of the following functions is obvious from the finite field
 -- context, for description see category FAXF
-      "**"      :(VGF,I)       -> VGF
-        ++ x**n \undocumented{}
-        ++ See \axiomFunFrom{**}{DivisionRing}
+      "^"      :(VGF,I)       -> VGF
+        ++ x^n \undocumented{}
+        ++ See \axiomFunFrom{^}{DivisionRing}
       "*"       :(VGF,VGF)     -> VGF
         ++ x*y \undocumented{}
         ++ See \axiomFunFrom{*}{SemiGroup}
@@ -161,7 +161,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
     logq:List SI:=[0,10::SI,16::SI,20::SI,23::SI,0,28::SI,_
                              30::SI,32::SI,0,35::SI]
     -- logq.i is about 10*log2(i) for the values <12 which
-    -- can match sizeGF. It's used by "**"
+    -- can match sizeGF. It's used by "^"
 
     expTable:L L SI:=[[],_
         [4::SI,12::SI,48::SI,160::SI,480::SI,0],_
@@ -169,26 +169,26 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
         [18::SI,216::SI,0],_
         [32::SI,480::SI,0],[],_
         [72::SI,0],[98::SI,0],[128::SI,0],[],[200::SI,0]]
-    -- expT is used by "**" to optimize the parameter k
+    -- expT is used by "^" to optimize the parameter k
     -- before calling dAndcExp(..,..,k)
 
 -- functions ===========================================================
 
---  computes a**(-1) = a**((q**extDeg)-2)
+--  computes a^(-1) = a^((q^extDeg)-2)
 --  see reference of function expPot
     inv(a) ==
       b:VGF:=qPot(expPot(a,(#a-1)::NNI::SI,1::SI)$%,1)$%
       erg:VGF:=inv((a *$% b).1 *$GF trGen)$GF *$VGF b
 
--- "**" decides which exponentiation algorithm will be used, in order to
+-- "^" decides which exponentiation algorithm will be used, in order to
 -- get the fastest computation. If dAndcExp is used, it chooses the
 -- optimal parameter k for that algorithm.
-    a ** ex  ==
-      e:NNI:=positiveRemainder(ex,sizeGF**((#a)::PI)-1)$I :: NNI
+    a ^ ex  ==
+      e:NNI:=positiveRemainder(ex,sizeGF^((#a)::PI)-1)$I :: NNI
       zero?(e)$NNI => new(#a,trGen)$VGF
 --      one?(e)$NNI  => copy(a)$VGF
       (e = 1)$NNI  => copy(a)$VGF
---    inGroundField?(a) => new(#a,((a.1*trGen) **$GF e))$VGF
+--    inGroundField?(a) => new(#a,((a.1*trGen) ^$GF e))$VGF
       e1:SI:=(length(e)$I)::SI
       sizeGF >$I 11 =>
         q1:SI:=(length(sizeGF)$I)::SI
@@ -202,7 +202,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
       k:SI:=1$SI
       expT:List SI:=expTable.sizeGF
       while (logqe >= expT.k) and not zero? expT.k repeat k:=k +$SI 1$SI
-      mult:I:=(sizeGF-1) *$I sizeGF **$I ((k-1)pretend NNI) +$I_
+      mult:I:=(sizeGF-1) *$I sizeGF ^$I ((k-1)pretend NNI) +$I_
               ((logqe +$SI k -$SI 1$SI) quo$SI k)::I -$I 2
       (10*mult) >= (15 * (e1::I)) =>
 --      print("repeatedSquaring(a,e)"::OUT)
@@ -210,7 +210,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
 --    print(hconcat(["divAndConquer(a,e,"::OUT,k::OUT,")"::OUT])$OUT)
       dAndcExp(a,e,k)
 
--- computes a**e by repeated squaring
+-- computes a^e by repeated squaring
     repSq(b,e) ==
       a:=copy(b)$VGF
 --      one? e => a
@@ -218,13 +218,13 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
       odd?(e)$I => a * repSq(a*a,(e quo 2) pretend NNI)
       repSq(a*a,(e quo 2) pretend NNI)
 
--- computes a**e using the divide and conquer algorithm similar to the
+-- computes a^e using the divide and conquer algorithm similar to the
 -- one from D.R.Stinson,
 -- "Some observations on parallel Algorithms for fast exponentiation in
 -- GF(2^n)", Siam J. Computation, Vol.19, No.4, pp.711-717, August 1990
     dAndcExp(a,e,k) ==
       plist:List VGF:=[copy(a)$VGF]
-      qk:I:=sizeGF**(k pretend NNI)
+      qk:I:=sizeGF^(k pretend NNI)
       for j in 2..(qk-1) repeat
         if positiveRemainder(j,sizeGF)=0 then b:=qPot(plist.(j quo sizeGF),1)$%
                             else b:=a *$% last(plist)$(List VGF)
@@ -264,10 +264,10 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
       erg:I:=0
       for j in (#x)..1 by -1 repeat
         erg:=(erg * sizeGF) + (lookup(x.j)$GF rem sizeGF)
-      erg=0 => (sizeGF**(#x)) :: PI
+      erg=0 => (sizeGF^(#x)) :: PI
       erg :: PI
 
---  computes the norm of a over GF**d, d must devide extdeg
+--  computes the norm of a over GF^d, d must devide extdeg
 --  see reference of function expPot below
     norm(a,d) ==
       dSI:=d::SI
@@ -275,7 +275,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
       not(r.remainder = 0) => error "norm: 2.arg must divide extdeg"
       expPot(a,r.quotient,dSI)$%
 
---  computes expPot(a,e,d) = sum form i=0 to e-1 over a**(q**id))
+--  computes expPot(a,e,d) = sum form i=0 to e-1 over a^(q^id))
 --  see T.Itoh and S.Tsujii,
 --  "A fast algorithm for computing multiplicative inverses in GF(2^m)
 --   using normal bases",
@@ -299,7 +299,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
           qpot:=addmod(qpot,k2,deg)$SI
       erg
 
--- computes qPot(a,n) = a**(q**n), q=size of GF
+-- computes qPot(a,n) = a^(q^n), q=size of GF
     qPot(e,n) ==
       ei:=(#e)::SI
       m:SI:= positiveRemainder(n::SI,ei)$SI
@@ -368,7 +368,7 @@ InnerNormalBasisFieldFunctions(GF): Exports == Implementation where
 --    normalElement(n) == index(n,1)$%
 
     index(degm,n) ==
-      m:I:=n rem$I (sizeGF ** degm)
+      m:I:=n rem$I (sizeGF ^ degm)
       erg:=zero(degm)$VGF
       for j in 1..degm repeat
         erg.j:=index((sizeGF+(m rem sizeGF)) pretend PI)$GF
@@ -481,8 +481,8 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
 
     basisOutput : List OUT :=
       qs:OUT:=(q::Symbol)::OUT
-      append([alpha, alpha **$OUT qs],_
-        [alpha **$OUT (qs **$OUT i::OUT) for i in 2..extdeg-1] )
+      append([alpha, alpha ^$OUT qs],_
+        [alpha ^$OUT (qs ^$OUT i::OUT) for i in 2..extdeg-1] )
 
 
     facOfGroupSize :=nil()$(List Record(factor:Integer,exponent:Integer))
@@ -500,7 +500,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
     discLogTable:Table(PI,TBL):=table()$Table(PI,TBL)
     -- tables indexed by the factors of sizeCG,
     -- discLogTable(factor) is a table with keys
-    -- primitiveElement() ** (i * (sizeCG quo factor)) and entries i for
+    -- primitiveElement() ^ (i * (sizeCG quo factor)) and entries i for
     -- i in 0..n-1, n computed in initialize() in order to use
     -- the minimal size limit 'limit' optimal.
 
@@ -596,7 +596,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
       r
 
     initializeElt() ==
-      facOfGroupSize := factors factor(size()$GF**extdeg-1)$I
+      facOfGroupSize := factors factor(size()$GF^extdeg-1)$I
       -- get a primitive element
       primitiveElt:=lookup(createPrimitiveElement())
       initelt?:=false
@@ -616,7 +616,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
       -- the minimum size for the discrete logarithm table
       for f in facOfGroupSize repeat
         fac:=f.factor
-        base:$:=index(primitiveElt)**((size()$GF**extdeg -$I 1$I) quo$I fac)
+        base:$:=index(primitiveElt)^((size()$GF^extdeg -$I 1$I) quo$I fac)
         l:Integer:=length(fac)$Integer
         n:Integer:=0
         if odd?(l)$I then n:=shift(fac,-$I (l quo$I 2))$I
@@ -679,7 +679,7 @@ divisor of the order of the multiplicative group"
 
     0 == zero(extdeg)$Rep
 
-    size() == size()$GF ** extdeg
+    size() == size()$GF ^ extdeg
 
     index(n:PI) == index(extdeg,n)$INBFF
 
@@ -691,10 +691,10 @@ divisor of the order of the multiplicative group"
       vector([e::$ for e in entries a])
 
 
-    x:$ ** e:I ==
+    x:$ ^ e:I ==
       if initmult? then initializeMult()
       setFieldInfo(multTable,traceAlpha)$INBFF
-      (x::Rep) **$INBFF e
+      (x::Rep) ^$INBFF e
 
     normal?(x) == normal?(x::Rep)$INBFF
 

@@ -71,7 +71,7 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
     discLogTable:Table(PI,TBL):=table()$Table(PI,TBL)
     -- tables indexed by the factors of the size q of the cyclic group
     -- discLogTable.factor is a table of with keys
-    -- primitiveElement() ** (i * (q quo factor)) and entries i for
+    -- primitiveElement() ^ (i * (q quo factor)) and entries i for
     -- i in 0..n-1, n computed in initialize() in order to use
     -- the minimal size limit 'limit' optimal.
 
@@ -79,12 +79,12 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
 
     generator() == 1
 
-    -- This uses x**(p-1)=1 (mod p), so x**(q(p-1)+r) = x**r (mod p)
-    x:$ ** n:Integer ==
+    -- This uses x^(p-1)=1 (mod p), so x^(q(p-1)+r) = x^r (mod p)
+    x:$ ^ n:Integer ==
       zero?(n) => 1
       zero?(x) => 0
       r := positiveRemainder(n,p-1)::NNI
-      ((x pretend IntegerMod p) **$IntegerMod(p) r) pretend $
+      ((x pretend IntegerMod p) ^$IntegerMod(p) r) pretend $
 
     if p <= convert(max()$SingleInteger)@Integer then
       q := p::SingleInteger
@@ -141,7 +141,7 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
       -- the minimum size for the discrete logarithm table
       for f in facOfGroupSize repeat
         fac:=f.factor
-        base:$:=primitiveElement() ** (sizeCG quo fac)
+        base:$:=primitiveElement() ^ (sizeCG quo fac)
         l:Integer:=length(fac)$Integer
         n:Integer:=0
         if odd?(l)$Integer then n:=shift(fac,-(l quo 2))

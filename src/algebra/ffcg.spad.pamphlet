@@ -90,16 +90,16 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
     -- of the primitive element, the root of the defining polynomial
 
     -- it would be very nice if we could use the representation
-    -- Rep:= Union("zero", IntegerMod(size()$GF ** degree(defpol) -1)),
+    -- Rep:= Union("zero", IntegerMod(size()$GF ^ degree(defpol) -1)),
     -- why doesn't the compiler like this ?
 
     extdeg:NNI  :=degree(defpol)$(SUP GF)::NNI
     -- the extension degree
 
-    sizeFF:NNI:=(size()$GF ** extdeg) pretend NNI
+    sizeFF:NNI:=(size()$GF ^ extdeg) pretend NNI
     -- the size of the field
 
-    if sizeFF > 2**20 then
+    if sizeFF > 2^20 then
       error "field too large for this representation"
 
     sizeCG:SI:=(sizeFF - 1) pretend SI
@@ -162,7 +162,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       x=0 => new(extdeg,0)$(Vector GF)
       primElement:SAE:=convert(monomial(1,1)$(SUP GF))$SAE
 -- the primitive element in the corresponding algebraic extension
-      coordinates(primElement **$SAE (x pretend SI))$SAE
+      coordinates(primElement ^$SAE (x pretend SI))$SAE
 
     x:$ + y:$ ==
       if initzech? then initializeZech()
@@ -187,7 +187,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
     basis(n:PI) ==
       extensionDegree() rem n ~= 0 =>
         error("argument must divide extension degree")
-      m:=sizeCG quo (size()$GF**n-1)
+      m:=sizeCG quo (size()$GF^n-1)
       [index((1+i*m) ::PI) for i in 0..(n-1)]::Vector $
 
     n:I * x:$ == ((n::GF)::$) * x
@@ -238,7 +238,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       zero? x => 0$GF
       u:= (x::Rep) exquo$Rep (sizeFG pretend Rep)
       u = "failed" => "failed"
-      primEltGF **$GF ((u::$) pretend SI)
+      primEltGF ^$GF ((u::$) pretend SI)
 
     retract(x:$) ==
       a:=retractIfCan(x)
@@ -303,7 +303,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       x =$Rep (-$Rep 1$Rep) => "0"::OUT
       x =$Rep 0$Rep => "1"::OUT
       y:I:=lookup(x)-1
-      alpha **$OUT (y::OUT)
+      alpha ^$OUT (y::OUT)
 
     x:$ = y:$ ==  x =$Rep y
 
@@ -325,11 +325,11 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       (x = 1) => 1
       sizeCG -$Rep x
 
-    x:$ ** n:PI == x ** n::I
+    x:$ ^ n:PI == x ^ n::I
 
-    x:$ ** n:NNI == x ** n::I
+    x:$ ^ n:NNI == x ^ n::I
 
-    x:$ ** n:I ==
+    x:$ ^ n:I ==
       m:Rep:=positiveRemainder(n,sizeCG)$I pretend Rep
       m =$Rep 0$Rep => 1
       x = 0 => 0

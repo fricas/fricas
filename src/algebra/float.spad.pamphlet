@@ -53,7 +53,7 @@ N ==> NonNegativeInteger
 ++   19 Jun 1990
 ++ Basic Operations: outputFloating, outputFixed, outputGeneral, outputSpacing,
 ++   atan, convert, exp1, log2, log10, normalize, rationalApproximation,
-++   relerror, shift, / , **
+++   relerror, shift, / , ^
 ++ Keywords: float, floating point, number
 ++ Description: \spadtype{Float} implements arbitrary precision floating
 ++ point arithmetic.
@@ -61,19 +61,19 @@ N ==> NonNegativeInteger
 ++ to an arbitrary value (the default is 20 decimal digits).
 ++ The operation \spad{float(mantissa,exponent,\spadfunFrom{base}{FloatingPointSystem})} for integer
 ++ \spad{mantissa}, \spad{exponent} specifies the number
-++ \spad{mantissa * \spadfunFrom{base}{FloatingPointSystem} ** exponent}
+++ \spad{mantissa * \spadfunFrom{base}{FloatingPointSystem} ^ exponent}
 ++ The underlying representation for floats is binary
 ++ not decimal. The implications of this are described below.
 ++
 ++ The model adopted is that arithmetic operations are rounded to
 ++ to nearest unit in the last place, that is, accurate to within
-++ \spad{2**(-\spadfunFrom{bits}{FloatingPointSystem})}.
+++ \spad{2^(-\spadfunFrom{bits}{FloatingPointSystem})}.
 ++ Also, the elementary functions and constants are
 ++ accurate to one unit in the last place.
 ++ A float is represented as a record of two integers, the mantissa
 ++ and the exponent.  The \spadfunFrom{base}{FloatingPointSystem}
 ++ of the representation is binary, hence
-++ a \spad{Record(m:mantissa,e:exponent)} represents the number \spad{m * 2 ** e}.
+++ a \spad{Record(m:mantissa,e:exponent)} represents the number \spad{m * 2 ^ e}.
 ++ Though it is not assumed that the underlying integers are represented
 ++ with a binary \spadfunFrom{base}{FloatingPointSystem},
 ++ the code will be most efficient when this is the
@@ -93,16 +93,16 @@ N ==> NonNegativeInteger
 ++ For the elementary functions, the general approach is to apply
 ++ identities so that the taylor series can be used, and, so
 ++ that it will converge within \spad{O( sqrt n )} steps.  For example,
-++ using the identity \spad{exp(x) = exp(x/2)**2}, we can compute
+++ using the identity \spad{exp(x) = exp(x/2)^2}, we can compute
 ++ \spad{exp(1/3)} to n digits of precision as follows.  We have
-++ \spad{exp(1/3) = exp(2 ** (-sqrt s) / 3) ** (2 ** sqrt s)}.
+++ \spad{exp(1/3) = exp(2 ^ (-sqrt s) / 3) ^ (2 ^ sqrt s)}.
 ++ The taylor series will converge in less than sqrt n steps and the
 ++ exponentiation requires sqrt n multiplications for a total of
 ++ \spad{2 sqrt n} multiplications.  Assuming integer multiplication costs
-++ \spad{O( n**2 )} the overall running time is \spad{O( sqrt(n) n**2 )}.
+++ \spad{O( n^2 )} the overall running time is \spad{O( sqrt(n) n^2 )}.
 ++ This approach is the best known approach for precisions up to
 ++ about 10,000 digits at which point the methods of Brent
-++ which are \spad{O( log(n) n**2 )} become competitive.  Note also that
+++ which are \spad{O( log(n) n^2 )} become competitive.  Note also that
 ++ summing the terms of the taylor series for the elementary
 ++ functions is done using integer operations.  This avoids the
 ++ overhead of floating point operations and results in efficient
@@ -113,8 +113,8 @@ N ==> NonNegativeInteger
 ++ if in-place operations were available.
 ++
 ++ Running times: in the following, n is the number of bits of precision
-++      \spad{*}, \spad{/}, \spad{sqrt}, \spad{pi}, \spad{exp1}, \spad{log2}, \spad{log10}: \spad{ O( n**2 )}
-++      \spad{exp}, \spad{log}, \spad{sin}, \spad{atan}:  \spad{ O( sqrt(n) n**2 )}
+++      \spad{*}, \spad{/}, \spad{sqrt}, \spad{pi}, \spad{exp1}, \spad{log2}, \spad{log10}: \spad{ O( n^2 )}
+++      \spad{exp}, \spad{log}, \spad{sin}, \spad{atan}:  \spad{ O( sqrt(n) n^2 )}
 ++ The other elementary functions are coded in terms of the ones above.
 
 
@@ -133,11 +133,11 @@ Float():
       ++ shift(x,n) adds n to the exponent of float x.
    rationalApproximation: (%, N) -> RN
      ++ rationalApproximation(f, n) computes a rational approximation
-     ++ r to f with relative error \spad{< 10**(-n)}.
+     ++ r to f with relative error \spad{< 10^(-n)}.
    rationalApproximation: (%, N, N) -> RN
      ++ rationalApproximation(f, n, b) computes a rational
-     ++ approximation r to f with relative error \spad{< b**(-n)}, that is
-     ++ \spad{|(r-f)/f| < b**(-n)}.
+     ++ approximation r to f with relative error \spad{< b^(-n)}, that is
+     ++ \spad{|(r-f)/f| < b^(-n)}.
    log2 : () -> %
       ++ log2() returns \spad{ln 2}, i.e. \spad{0.6931471805...}.
    log10: () -> %
@@ -192,7 +192,7 @@ Float():
    chop: (%,PI) -> %             -- chop x at p bits of precision
    dvide: (%,%) -> %             -- divide x by y with no rounding
    square: (%,I) -> %            -- repeated squaring with chopping
-   power: (%,I) -> %             -- x ** n with chopping
+   power: (%,I) -> %             -- x ^ n with chopping
    plus: (%,%) -> %              -- addition with no rounding
    sub: (%,%) -> %               -- subtraction with no rounding
    negate: % -> %                -- negation with no rounding
@@ -293,8 +293,8 @@ Float():
          r := pi/2 - r
          dec 4
          return normalize r
-      -- make |x| < O( 2**(-sqrt p) ) < 1/2 to speed series convergence
-      -- by using the formula  atan(x) = 2*atan(x/(1+sqrt(1+x**2)))
+      -- make |x| < O( 2^(-sqrt p) ) < 1/2 to speed series convergence
+      -- by using the formula  atan(x) = 2*atan(x/(1+sqrt(1+x^2)))
       k := ISQRT (bits()-100)::I quo 5
       k := max(0,2 + k + order x)
       inc(2*k)
@@ -305,7 +305,7 @@ Float():
       normalize t
 
    atanSeries x ==
-      -- atan(x) = x (1 - x**2/3 + x**4/5 - x**6/7 + ...)  |x| < 1
+      -- atan(x) = x (1 - x^2/3 + x^4/5 - x^6/7 + ...)  |x| < 1
       p := bits() + LENGTH bits() + 2
       s:I := d:I := shift(1,p)
       y := times(x,x)
@@ -317,7 +317,7 @@ Float():
 
    atanInverse n ==
       -- compute atan(1/n) for an integer n > 1
-      -- atan n = 1/n - 1/n**3/3 + 1/n**5/4 - ...
+      -- atan n = 1/n - 1/n^3/3 + 1/n^5/4 - ...
       --   pi = 16 atan(1/5) - 4 atan(1/239)
       n2 := -n*n
       e:I := bits() + LENGTH bits() + LENGTH n + 1
@@ -333,19 +333,19 @@ Float():
       if x > [6,0] then (inc p; x := 2*pi*fractionPart(x/pi/2); bits p)
       if x > [3,0] then (inc p; s := -s; x := x - pi; bits p)
       if x > [3,-1] then (inc p; x := pi - x; dec p)
-      -- make |x| < O( 2**(-sqrt p) ) < 1/2 to speed series convergence
-      -- by using the formula  sin(3*x/3) = 3 sin(x/3) - 4 sin(x/3)**3
+      -- make |x| < O( 2^(-sqrt p) ) < 1/2 to speed series convergence
+      -- by using the formula  sin(3*x/3) = 3 sin(x/3) - 4 sin(x/3)^3
       -- the running time is O( sqrt p M(p) ) assuming |x| < 1
       k := ISQRT (bits()-100)::I quo 4
       k := max(0,2 + k + order x)
-      if k > 0 then (inc k; x := x / 3**k::N)
+      if k > 0 then (inc k; x := x / 3^k::N)
       r := sinSeries x
-      for i in 1..k repeat r := itimes(3,r)-shift(r**3,2)
+      for i in 1..k repeat r := itimes(3,r)-shift(r^3,2)
       bits p
       s * r
 
    sinSeries x ==
-      -- sin(x) = x (1 - x**2/3! + x**4/5! - x**6/7! + ... |x| < 1/2
+      -- sin(x) = x (1 - x^2/3! + x^4/5! - x^6/7! + ... |x| < 1/2
       p := bits() + LENGTH bits() + 2
       y := times(x,x)
       s:I := d:I := shift(1,p)
@@ -365,15 +365,15 @@ Float():
          -- take care of the accuracy problem near pi/2
          inc p; x := pi/2-x; bits p; x := normalize x
          return (s * sin x)
-      -- make |x| < O( 2**(-sqrt p) ) < 1/2 to speed series convergence
-      -- by using the formula  cos(2*x/2) = 2 cos(x/2)**2 - 1
+      -- make |x| < O( 2^(-sqrt p) ) < 1/2 to speed series convergence
+      -- by using the formula  cos(2*x/2) = 2 cos(x/2)^2 - 1
       -- the running time is O( sqrt p M(p) ) assuming |x| < 1
      k := ISQRT (bits()-100)::I quo 3
      k := max(0,2 + k + order x)
       -- need to increase precision by more than k, otherwise recursion
       -- causes loss of accuracy.
       -- Michael Monagan suggests adding a factor of log(k)
-     if k > 0 then (inc(k+length(k)**2); x := shift(x,-k))
+     if k > 0 then (inc(k+length(k)^2); x := shift(x,-k))
      r := cosSeries x
      for i in 1..k repeat r := shift(r*r,1)-1
      bits p
@@ -382,7 +382,7 @@ Float():
 
 
    cosSeries x ==
-      -- cos(x) = 1 - x**2/2! + x**4/4! - x**6/6! + ... |x| < 1/2
+      -- cos(x) = 1 - x^2/2! + x^4/4! - x^6/6! + ... |x| < 1/2
       p := bits() + LENGTH bits() + 1
       y := times(x,x)
       s:I := d:I := shift(1,p)
@@ -418,12 +418,12 @@ Float():
       -- "Calculation of pi to 100,000 Decimals".
       n := bits() + LENGTH bits() + 11
       t:I := shift(1,n) quo 882
-      d:I := 4*882**2
+      d:I := 4*882^2
       s:I := 0
       for i in 2.. by 2 for j in 1123.. by 21460 while t ~= 0 repeat
          s := s + j*t
          m := -(i-1)*(2*i-1)*(2*i-3)
-         t := (m*t) quo (d*i**3)
+         t := (m*t) quo (d*i^3)
       1 / [s,-n-2]
 
    sinh x ==
@@ -465,27 +465,27 @@ Float():
       negative? x => error "negative log"
       zero? x => error "log 0 generated"
       p := bits(); inc 5
-      -- apply  log(x) = n log 2 + log(x/2**n)  so that  1/2 < x < 2
+      -- apply  log(x) = n log 2 + log(x/2^n)  so that  1/2 < x < 2
       if (n := order x) < 0 then n := n+1
       l := if n = 0 then 0 else (x := shift(x,-n); n * log2)
       -- speed the series convergence by finding m and k such that
-      -- | exp(m/2**k) x - 1 |  <  1 / 2 ** O(sqrt p)
-      -- write  log(exp(m/2**k) x) as m/2**k + log x
+      -- | exp(m/2^k) x - 1 |  <  1 / 2 ^ O(sqrt p)
+      -- write  log(exp(m/2^k) x) as m/2^k + log x
       k := ISQRT (p-100)::I quo 3
       if k > 1 then
          k := max(1,k+order(x-1))
          inc k
-         ek := expInverse (2**k::N)
+         ek := expInverse (2^k::N)
          dec(p quo 2); m := order square(x,k); inc(p quo 2)
          m := (6847196937 * m) quo 9878417065   -- m := m log 2
-         x := x * ek ** (-m)
+         x := x * ek ^ (-m)
          l := l + [m,-k]
       l := l + logSeries x
       bits p
       normalize l
 
    logSeries x ==
-      -- log(x) = 2 y (1 + y**2/3 + y**4/5 ...)  for  y = (x-1) / (x+1)
+      -- log(x) = 2 y (1 + y^2/3 + y^4/5 ...)  for  y = (x-1) / (x+1)
       -- given 1/2 < x < 2 on input we have -1/3 < y < 1/3
       p := bits() + (g := LENGTH bits() + 3)
       inc g; y := (x-1)/(x+1); dec g
@@ -499,8 +499,8 @@ Float():
 
    L2:StoredConstant := [1,1]
    log2() ==
-      --  log x  =  2 * sum( ((x-1)/(x+1))**(2*k+1)/(2*k+1), k=1.. )
-      --  log 2  =  2 * sum( 1/9**k / (2*k+1), k=0..n ) / 3
+      --  log x  =  2 * sum( ((x-1)/(x+1))^(2*k+1)/(2*k+1), k=1.. )
+      --  log 2  =  2 * sum( 1/9^k / (2*k+1), k=0..n ) / 3
       n := bits() :: N
       n <= L2.precision => normalize L2.value
       n := n + LENGTH n + 3  -- guard bits
@@ -514,8 +514,8 @@ Float():
 
    L10:StoredConstant := [1,[1,1]]
    log10() ==
-      --  log x  =  2 * sum( ((x-1)/(x+1))**(2*k+1)/(2*k+1), k=0.. )
-      --  log 5/4  =  2 * sum( 1/81**k / (2*k+1), k=0.. ) / 9
+      --  log x  =  2 * sum( ((x-1)/(x+1))^(2*k+1)/(2*k+1), k=0.. )
+      --  log 5/4  =  2 * sum( 1/81^k / (2*k+1), k=0.. ) / 9
       n := bits() :: N
       n <= L10.precision => normalize L10.value
       n := n + LENGTH n + 5  -- guard bits
@@ -532,14 +532,14 @@ Float():
    log10(x) == (inc 2; r := log(x)/log10; dec 2; normalize r)
 
    exp(x) ==
-      -- exp(n+x) = exp(1)**n exp(x) for n such that |x| < 1
+      -- exp(n+x) = exp(1)^n exp(x) for n such that |x| < 1
       p := bits(); inc 5; e1:% := 1
       if (n := wholePart x) ~= 0 then
-         inc LENGTH n; e1 := exp1 ** n; dec LENGTH n
+         inc LENGTH n; e1 := exp1 ^ n; dec LENGTH n
          x := fractionPart x
       if zero? x then (bits p; return normalize e1)
-      -- make |x| < O( 2**(-sqrt p) ) < 1/2 to speed series convergence
-      -- by repeated use of the formula exp(2*x/2) = exp(x/2)**2
+      -- make |x| < O( 2^(-sqrt p) ) < 1/2 to speed series convergence
+      -- by repeated use of the formula exp(2*x/2) = exp(x/2)^2
       -- results in an overall running time of O( sqrt p M(p) )
       k := ISQRT (p-100)::I quo 3
       k := max(0,2 + k + order x)
@@ -550,7 +550,7 @@ Float():
       e * e1
 
    expSeries x ==
-      -- exp(x) = 1 + x + x**2/2 + ... + x**i/i!  valid for all x
+      -- exp(x) = 1 + x + x^2/2 + ... + x^i/i!  valid for all x
       p := bits() + LENGTH bits() + 1
       s:I := d:I := shift(1,p)
       t:I := n:I := shift2(x.mantissa,x.exponent+p)
@@ -614,7 +614,7 @@ Float():
    float(m,e) == normalize [m,e]
    float(m,e,b) ==
       m = 0 => 0
-      inc 4; r := m * [b,0] ** e; dec 4
+      inc 4; r := m * [b,0] ^ e; dec 4
       normalize r
    normalize x ==
       m := x.mantissa
@@ -710,9 +710,9 @@ Float():
          if (n := n quo 2) = 0 then return y
          z := chop( times(z,z), bits() )
 
-   x:% ** y:% ==
+   x:% ^ y:% ==
       x = 0 =>
-         y = 0 => error "0**0 is undefined"
+         y = 0 => error "0^0 is undefined"
          y < 0 => error "division by 0"
          y > 0 => 0
       y = 0 => 1
@@ -722,9 +722,9 @@ Float():
       inc p; r := exp(y*log(x)); dec p
       normalize r
 
-   x:% ** r:RN ==
+   x:% ^ r:RN ==
       x = 0 =>
-         r = 0 => error "0**0 is undefined"
+         r = 0 => error "0^0 is undefined"
          r < 0 => error "division by 0"
          r > 0 => 0
       r = 0 => 1
@@ -734,18 +734,18 @@ Float():
       d := denom r
       negative? x =>
          odd? d =>
-            odd? n => return -((-x)**r)
-            return ((-x)**r)
+            odd? n => return -((-x)^r)
+            return ((-x)^r)
          error "negative root"
       if d = 2 then
-         inc LENGTH n; y := sqrt(x); y := y**n; dec LENGTH n
+         inc LENGTH n; y := sqrt(x); y := y^n; dec LENGTH n
          return normalize y
       y := [n,0]/[d,0]
-      x ** y
+      x ^ y
 
-   x:% ** n:I ==
+   x:% ^ n:I ==
       x = 0 =>
-         n = 0 => error "0**0 is undefined"
+         n = 0 => error "0^0 is undefined"
          n < 0 => error "division by 0"
          n > 0 => 0
       n = 0 => 1
@@ -773,8 +773,8 @@ Float():
       m := x.mantissa; e := x.exponent
       --!! deal with bits here
       b := bits(); (q,r) := divide(abs e, b)
-      b := 2**b::N; r := 2**r::N
-      -- compute 2**e = b**q * r
+      b := 2^b::N; r := 2^r::N
+      -- compute 2^e = b^q * r
       h := power10([b,0],q,d+5)
       h := chop10([r*h.mantissa,h.exponent],d+5)
       if e < 0 then h := quotient10([m,0],h,d)
@@ -788,7 +788,7 @@ Float():
       upper := 76573 * ln quo 254370
       lower := 21306 * (ln-1) quo 70777
       upper = lower => upper + 1
-      n := n quo (10**lower::N)
+      n := n quo (10^lower::N)
       while n >= 10 repeat
          n:= n quo 10
          lower := lower + 1
@@ -796,25 +796,25 @@ Float():
 
    chop10(x,p) ==
       e : I := floorLength10 x.mantissa - p
-      if e > 0 then x := [x.mantissa quo 10**e::N,x.exponent+e]
+      if e > 0 then x := [x.mantissa quo 10^e::N,x.exponent+e]
       x
    normalize10(x,p) ==
       ma := x.mantissa
       ex := x.exponent
       e : I := length10 ma - p
       if e > 0 then
-         ma := ma quo 10**(e-1)::N
+         ma := ma quo 10^(e-1)::N
          ex := ex + e
          (ma,r) := divide(ma, 10)
          if r > 4 then
             ma := ma + 1
-            if ma = 10**p::N then (ma := 1; ex := ex + p)
+            if ma = 10^p::N then (ma := 1; ex := ex + p)
       [ma,ex]
    times10(x,y,p) == normalize10(times(x,y),p)
    quotient10(x,y,p) ==
       ew := floorLength10 y.mantissa - ceilLength10 x.mantissa + p + 2
       if ew < 0 then ew := 0
-      mw := (x.mantissa * 10**ew::N) quo y.mantissa
+      mw := (x.mantissa * 10^ew::N) quo y.mantissa
       ew := x.exponent - y.exponent - ew
       normalize10([mw,ew],p)
    power10(x,n,d) ==
@@ -998,10 +998,10 @@ Float():
    rationalApproximation(f,d,b) ==
       t: Integer
       nu := f.mantissa; ex := f.exponent
-      if ex >= 0 then return ((nu*BASE**(ex::N))/1)
-      de := BASE**((-ex)::N)
+      if ex >= 0 then return ((nu*BASE^(ex::N))/1)
+      de := BASE^((-ex)::N)
       if b < 2 then error "base must be > 1"
-      tol := b**d
+      tol := b^d
       s := nu; t := de
       p0,p1,q0,q1 : Integer
       p0 := 0; p1 := 1; q0 := 1; q1 := 0

@@ -399,7 +399,7 @@ Guess(F, S, EXPRR, R, retract, coerce): Exports == Implementation where
                 PartialDifferentialRing Symbol) with
               _* : (%,%) -> %
               _/ : (%,%) -> %
-              _*_* : (%,%) -> %
+              _^ : (%,%) -> %
               numerator : % -> %
               denominator : % -> %
               ground? : % -> Boolean
@@ -794,7 +794,7 @@ MPCSF ==> MPolyCatFunctions2(V, IndexedExponents V,
 
 SUPF2EXPRR(xx: Symbol, p: SUP F): EXPRR ==
   zero? p => 0
-  (coerce(leadingCoefficient p))::EXPRR * (xx::EXPRR)**degree p
+  (coerce(leadingCoefficient p))::EXPRR * (xx::EXPRR)^degree p
      + SUPF2EXPRR(xx, reductum p)
 
 FSUPF2EXPRR(xx: Symbol, p: FSUPF): EXPRR ==
@@ -960,16 +960,16 @@ roles of $p1$ and $p2$, only that we have to take care of the sign, too.
         if d2atk < d2 then
             if  d1atk < d1
             then lead := 0$S
-            else lead := (leadingCoefficient p1atk)**((d2-d2atk)::NNI)
+            else lead := (leadingCoefficient p1atk)^((d2-d2atk)::NNI)
         else
             if  d1atk < d1
-            then lead := (-1$S)**d2 * (leadingCoefficient p2atk)**((d1-d1atk)::NNI)
+            then lead := (-1$S)^d2 * (leadingCoefficient p2atk)^((d1-d1atk)::NNI)
             else lead := 1$S
 
         if zero? lead 
         then res := cons(0, res)
         else res := cons(lead * (resultant(p1atk, p2atk)$SUP(S) exquo _
-                                (k::S)**(o::NNI))::S, 
+                                (k::S)^(o::NNI))::S, 
                          res)
 
 @
@@ -1010,7 +1010,7 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 <<implementation: Guess - guessExpRat - Main>>=
     y: NNI -> FPOLYS := 
         F2FPOLYS(list.#1) * _
-        p(last xValues, (xValues.#1)::Integer, a1, A, basis)**_
+        p(last xValues, (xValues.#1)::Integer, a1, A, basis)^_
             (-(xValues.#1)::Integer)
 
     ylist: List FPOLYS := [y i for i in 1..len]
@@ -1188,7 +1188,7 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
                                                  basis(xx::EXPRR))
                                            *p2(last xValues, _
                                                xx, a1v, Av, basis)_
-                                            **xx::EXPRR
+                                            ^xx::EXPRR
                              res := cons(res4, res)
                          else if zero? numr and debug(options)$GOPT0 then
                              output("numerator and denominator vanish!")
@@ -1256,7 +1256,7 @@ guessExpRat(list: List F, options: LGOPT): GUESSRESULT ==
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessExpRat(q: Symbol): GUESSER ==
-        guessExpRatAux0(#1, q::EXPRR**#1, #2)
+        guessExpRatAux0(#1, q::EXPRR^#1, #2)
 
 @
 
@@ -1557,14 +1557,14 @@ guessBinRat(list: List F, options: LGOPT): GUESSRESULT ==
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     qD: Symbol -> DIFFSPECN
-    qD q == (q::EXPRR)**#1
+    qD q == (q::EXPRR)^#1
 
 
     qBinExtAux(q: Symbol, i: Integer, va1: V, vA: V): FPOLYS == 
         fl: List FPOLYS 
              := [(1$FPOLYS - _
-                  va1::POLYS::FPOLYS * (vA::POLYS::FPOLYS)**(i-1) * _
-                  F2FPOLYS(q::F)**l) / (1-F2FPOLYS(q::F)**l) _ 
+                  va1::POLYS::FPOLYS * (vA::POLYS::FPOLYS)^(i-1) * _
+                  F2FPOLYS(q::F)^l) / (1-F2FPOLYS(q::F)^l) _ 
                  for l in 1..i]
         reduce(_*, fl, 1)
 
@@ -1574,9 +1574,9 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
     qBinExtEXPRaux(q: Symbol, i: Symbol, a1v: F, Av: F): EXPRR == 
         l: Symbol := 'l
         product((1$EXPRR - _
-                 coerce a1v * (coerce Av) ** (coerce i - 1$EXPRR) * _
-                 (q::EXPRR) ** coerce(l)) / _
-                (1$EXPRR - (q::EXPRR) ** coerce(l)), _
+                 coerce a1v * (coerce Av) ^ (coerce i - 1$EXPRR) * _
+                 (q::EXPRR) ^ coerce(l)) / _
+                (1$EXPRR - (q::EXPRR) ^ coerce(l)), _
                 equation(l, 1$EXPRR..i::EXPRR))
 
     qBinExtEXPR: Symbol -> EXTEXPR
@@ -1647,7 +1647,7 @@ termAsEXPRR(f: EXPRR, xx: Symbol, partition: List Integer,
         ll: List List Integer := powers(partition)$Partition
 
         fl: List EXPRR := [DX(f, xx, (first part-1)::NonNegativeInteger)
-                           ** second(part)::NNI for part in ll]
+                           ^ second(part)::NNI for part in ll]
         reduce(_*, fl)
 
 
@@ -1659,7 +1659,7 @@ termAsUFPSF(f: UFPSF, partition: List Integer, DS: DIFFSPECS, D1: DIFFSPEC1): UF
 -- first of each element of ll is the derivative, second is the power
 
         fl: List UFPSF := [DS(f, (first part -1)::NonNegativeInteger) _
-                           ** second(part)::NNI for part in ll]
+                           ^ second(part)::NNI for part in ll]
 
         reduce(_*, fl)
 
@@ -1673,7 +1673,7 @@ termAsUFPSF2(f: UFPSF, partition: List Integer,
 -- first of each element of ll is the derivative, second is the power
 
         fl: List UFPSF 
-            := [map(#1** second(part)::NNI, DS(f, (first part -1)::NNI)) _
+            := [map(#1^ second(part)::NNI, DS(f, (first part -1)::NNI)) _
                 for part in ll]
 
         reduce(hadamard$UFPS1(F), fl)
@@ -1688,7 +1688,7 @@ termAsUFPSSUPF(f: UFPSSUPF, partition: List Integer,
 
         fl: List UFPSSUPF
            := [DSF(f, (first part -1)::NonNegativeInteger)
-               ** second(part)::NNI for part in ll]
+               ^ second(part)::NNI for part in ll]
 
         reduce(_*, fl)
 
@@ -1702,7 +1702,7 @@ termAsUFPSSUPF2(f: UFPSSUPF, partition: List Integer,
 -- first of each element of ll is the derivative, second is the power
 
         fl: List UFPSSUPF 
-           := [map(#1 ** second(part)::NNI, DSF(f, (first part -1)::NNI)) _
+           := [map(#1 ^ second(part)::NNI, DSF(f, (first part -1)::NNI)) _
                for part in ll]
 
         reduce(hadamard$UFPS1(SUP F), fl)
@@ -1878,7 +1878,7 @@ i.e., the function itself, which is by definition equal to $x^l f(x)$.
 <<implementation: Guess - Hermite-Pade - Operators>>=
 diffAX: DIFFSPECAX
 diffAX(l: NNI, x: Symbol, f: EXPRR): EXPRR ==
-    (x::EXPRR)**l * f
+    (x::EXPRR)^l * f
 
 diffA: DIFFSPECA
 diffA(k: NNI, l: NNI, f: SUP S): S ==
@@ -1918,13 +1918,13 @@ Differentiation is defined by $D_q f(x, q) = f(qx, q)$.
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     qDiffDX(q: Symbol, expr: EXPRR, x: Symbol, n: NonNegativeInteger): EXPRR ==
-        eval(expr, x::EXPRR, (q::EXPRR)**n*x::EXPRR)
+        eval(expr, x::EXPRR, (q::EXPRR)^n*x::EXPRR)
 
     qDiffDS(q: Symbol, s: UFPSF, n: NonNegativeInteger): UFPSF ==
-        multiplyCoefficients((q::F)**((n*#1)::NonNegativeInteger), s)
+        multiplyCoefficients((q::F)^((n*#1)::NonNegativeInteger), s)
 
     qDiffDSF(q: Symbol, s: UFPSSUPF, n: NonNegativeInteger): UFPSSUPF ==
-        multiplyCoefficients((q::F::SUP F)**((n*#1)::NonNegativeInteger), s)
+        multiplyCoefficients((q::F::SUP F)^((n*#1)::NonNegativeInteger), s)
 
     diffHP(q: Symbol): (LGOPT -> HPSPEC) == 
         if not zero? maxMixedDegree(#1)$GOPT0
@@ -1961,14 +1961,14 @@ ShiftSXGF(expr: EXPRR, x: Symbol, n: NNI): EXPRR ==
     if zero? n then expr
     else
         l := [eval(D(expr, x, i)/factorial(i)::EXPRR, x::EXPRR, 0$EXPRR)_
-              *(x::EXPRR)**i for i in 0..n-1]
-        (expr-reduce(_+, l))/(x::EXPRR**n)
+              *(x::EXPRR)^i for i in 0..n-1]
+        (expr-reduce(_+, l))/(x::EXPRR^n)
 
 ShiftSS(s:UFPSF, n:NNI): UFPSF == 
-    ((quoByVar #1)**n)$MappingPackage1(UFPSF) (s)
+    ((quoByVar #1)^n)$MappingPackage1(UFPSF) (s)
 
 ShiftSF(s:UFPSSUPF, n: NNI):UFPSSUPF == 
-    ((quoByVar #1)**n)$MappingPackage1(UFPSSUPF) (s)
+    ((quoByVar #1)^n)$MappingPackage1(UFPSSUPF) (s)
 
 @
 %$
@@ -1977,14 +1977,14 @@ As before, next three functions extract the coefficient of $x^k$ in $z^l f(x)$.
 
 <<implementation: Guess - Hermite-Pade - Operators>>=
 ShiftAX(l: NNI, n: Symbol, f: EXPRR): EXPRR == 
-    n::EXPRR**l * f
+    n::EXPRR^l * f
 
 ShiftAXGF(l: NNI, x: Symbol, f: EXPRR): EXPRR == 
 -- I need to help the compiler here, unfortunately
       if zero? l then f
       else
           s := [stirling2(l, i)$IntegerCombinatoricFunctions(Integer)::EXPRR _
-                * (x::EXPRR)**i*D(f, x, i) for i in 1..l]
+                * (x::EXPRR)^i*D(f, x, i) for i in 1..l]
           reduce(_+, s)
 
 ShiftA(k: NNI, l: NNI, f: SUP S): S == 
@@ -2002,18 +2002,18 @@ shiftHP options ==
     partitions := FilteredPartitionStream options
     if displayAsGF(options)$GOPT0 then
         if maxPower(options)$GOPT0 = 1 then
-            [ADEguessStream(#1, partitions, ShiftSS, (1-monomial(1,1))**(-1)),_
+            [ADEguessStream(#1, partitions, ShiftSS, (1-monomial(1,1))^(-1)),_
              ADEdegreeStream partitions, _
-             ADEtestStream(#1, partitions, ShiftSF, (1-monomial(1,1))**(-1)), _
+             ADEtestStream(#1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
              ADEEXPRRStream(#1, #2, partitions, ShiftSXGF, 1/(1-#1::EXPRR)), _
              ShiftA, ShiftAF, ShiftAXGF, ShiftC]$HPSPEC
        else
             error "Guess: no support for the Shift operator with displayAsGF _
                    and maxPower>1"
     else
-        [ADEguessStream2(#1, partitions, ShiftSS, (1-monomial(1,1))**(-1)), _
+        [ADEguessStream2(#1, partitions, ShiftSS, (1-monomial(1,1))^(-1)), _
          ADEdegreeStream partitions, _
-         ADEtestStream2(#1, partitions, ShiftSF, (1-monomial(1,1))**(-1)), _
+         ADEtestStream2(#1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
          ADEEXPRRStream(#1, #2, partitions, ShiftSX, diff1X), _
          ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
 
@@ -2038,7 +2038,7 @@ u(n)$ and so on.
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     qShiftAX(q: Symbol, l: NNI, n: Symbol, f: EXPRR): EXPRR == 
-        (q::EXPRR)**(l*n::EXPRR) * f
+        (q::EXPRR)^(l*n::EXPRR) * f
 
     qShiftA(q: Symbol, k: NNI, l: NNI, f: SUP S): S ==
         qShiftAction(q::S, k, l, f)$FFFG(S, SUP S)
@@ -2050,18 +2050,18 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         qShiftC(q::S, total)$FFFG(S, SUP S)
 
     qSubstUFPSF(q: Symbol, s: UFPSF, maxMD: Integer): List UFPSF ==
-        [s((q::F)**i*monomial(1,1)) for i in 0..maxMD]
+        [s((q::F)^i*monomial(1,1)) for i in 0..maxMD]
 
     qSubstUFPSSUPF(q: Symbol, s: UFPSSUPF, maxMD: Integer): List UFPSSUPF ==
-        [s(((q::F)**i)::SUP(F)*monomial(1,1)) for i in 0..maxMD]
+        [s(((q::F)^i)::SUP(F)*monomial(1,1)) for i in 0..maxMD]
 
     qSubstEXPRR(q: Symbol, xx: Symbol, s: EXPRR, maxMD: Integer): List EXPRR ==
-        [(q::EXPRR)**(i*xx::EXPRR)*s for i in 0..maxMD]
+        [(q::EXPRR)^(i*xx::EXPRR)*s for i in 0..maxMD]
 
     ADEguessStreamMixShift(q: Symbol, f: UFPSF, _
                            partitions: Stream List Integer, _
                            maxMD: Integer): Stream UFPSF ==
-        s := ADEguessStream2(f, partitions, ShiftSS, (1-monomial(1,1))**(-1))
+        s := ADEguessStream2(f, partitions, ShiftSS, (1-monomial(1,1))^(-1))
         tensorMap(s, qSubstUFPSF(q, #1, maxMD))$StreamTensor(UFPSF)
 
     ADEdegreeStreamMixShift(partitions: Stream List Integer, _
@@ -2072,7 +2072,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
     ADEtestStreamMixShift(q: Symbol, f: UFPSSUPF, _
                           partitions: Stream List Integer, _
                           maxMD: Integer): Stream UFPSSUPF ==
-        s := ADEtestStream2(f, partitions, ShiftSF, (1-monomial(1,1))**(-1))
+        s := ADEtestStream2(f, partitions, ShiftSF, (1-monomial(1,1))^(-1))
         tensorMap(s, qSubstUFPSSUPF(q, #1, maxMD))$StreamTensor(UFPSSUPF)
 
     ADEEXPRRStreamMixShift(q: Symbol, f: EXPRR, xx: Symbol, _
@@ -2089,10 +2089,10 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         else
             if zero?(maxMD := maxMixedDegree(#1)$GOPT0) then
                 [ADEguessStream2(#1, partitions, ShiftSS, _
-                                 (1-monomial(1,1))**(-1)), _
+                                 (1-monomial(1,1))^(-1)), _
                  ADEdegreeStream partitions, _
                  ADEtestStream2(#1, partitions, ShiftSF, _
-                                (1-monomial(1,1))**(-1)), _
+                                (1-monomial(1,1))^(-1)), _
                  ADEEXPRRStream(#1, #2, partitions, ShiftSX, diff1X), _
                  qShiftA(q, #1, #2, #3), qShiftAF(q, #1, #2, #3), _
                  qShiftAX(q, #1, #2, #3), qShiftC(q, #1)]$HPSPEC
@@ -2960,7 +2960,7 @@ MyUnivariatePolynomial(x:Symbol, R:Ring):
     coerce: Variable(x) -> %
       ++ coerce(x) converts the variable x to a univariate polynomial.
     fmecg: (%,NonNegativeInteger,R,%) -> %
-        ++ fmecg(p1,e,r,p2) finds X : p1 - r * X**e * p2
+        ++ fmecg(p1,e,r,p2) finds X : p1 - r * X^e * p2
     if R has univariate: (R, Symbol) -> SparseUnivariatePolynomial R
     then coerce: R -> %
     coerce: Polynomial R -> %
@@ -2995,7 +2995,7 @@ MyExpression(q: Symbol, R): Exports == Implementation where
                 PartialDifferentialRing Symbol) with
               _* : (%,%) -> %
               _/ : (%,%) -> %
-              _*_* : (%,%) -> %
+              _^ : (%,%) -> %
               numerator : % -> %
               denominator : % -> %
               ground? : % -> Boolean 

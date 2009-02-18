@@ -15,7 +15,7 @@
 ++ Authors: J. Grabmeier, R. Wisbauer
 ++ Date Created: 01 March 1991
 ++ Date Last Updated: 11 June 1991
-++ Basic Operations: *, **
+++ Basic Operations: *, ^
 ++ Related Constructors: SemiGroup, Monoid, MonadWithUnit
 ++ Also See:
 ++ AMS Classifications:
@@ -39,16 +39,16 @@ Monad(): Category == SetCategory with
         ++ leftPower(a,n) returns the \spad{n}-th left power of \spad{a},
         ++ i.e. \spad{leftPower(a,n) := a * leftPower(a,n-1)} and
         ++ \spad{leftPower(a,1) := a}.
-      "**": (%,PositiveInteger) -> %
-        ++ a**n returns the \spad{n}-th power of \spad{a},
-        ++ defined by repeated squaring.
       "^": (%,PositiveInteger) -> %
+        ++ a^n returns the \spad{n}-th power of \spad{a},
+        ++ defined by repeated squaring.
+ --      "^": (%,PositiveInteger) -> %
         ++ a^n returns the \spad{n}-th power of \spad{a},
 	++ defined by repeated squaring.
     add
       import RepeatedSquaring(%)
-      x:% ** n:PositiveInteger == expt(x,n)
-      x:% ^ n:PositiveInteger == x ** n
+      x:% ^ n:PositiveInteger == expt(x,n)
+ --      x:% ^ n:PositiveInteger == x ^ n
       rightPower(a,n) ==
 --        one? n => a
         (n = 1) => a
@@ -69,7 +69,7 @@ Monad(): Category == SetCategory with
 ++ Authors: J. Grabmeier, R. Wisbauer
 ++ Date Created: 01 March 1991
 ++ Date Last Updated: 11 June 1991
-++ Basic Operations: *, **, 1
+++ Basic Operations: *, ^, 1
 ++ Related Constructors: SemiGroup, Monoid, Monad
 ++ Also See:
 ++ AMS Classifications:
@@ -101,8 +101,8 @@ MonadWithUnit(): Category == Monad with
         ++ leftPower(a,n) returns the \spad{n}-th left power of \spad{a},
         ++ i.e. \spad{leftPower(a,n) := a * leftPower(a,n-1)} and
         ++ \spad{leftPower(a,0) := 1}.
-      "**": (%,NonNegativeInteger) -> %
-        ++ \spad{a**n} returns the \spad{n}-th power of \spad{a},
+      "^": (%,NonNegativeInteger) -> %
+        ++ \spad{a^n} returns the \spad{n}-th power of \spad{a},
         ++ defined by repeated squaring.
       recip: % -> Union(%,"failed")
         ++ recip(a) returns an element, which is both a left and a right
@@ -120,7 +120,7 @@ MonadWithUnit(): Category == Monad with
     add
       import RepeatedSquaring(%)
       one? x == x = 1
-      x:% ** n:NonNegativeInteger ==
+      x:% ^ n:NonNegativeInteger ==
          zero? n => 1
          expt(x,n pretend PositiveInteger)
       rightPower(a,n) ==
@@ -141,7 +141,7 @@ MonadWithUnit(): Category == Monad with
 ++ Author: J. Grabmeier, R. Wisbauer
 ++ Date Created: 01 March 1991
 ++ Date Last Updated: 03 July 1991
-++ Basic Operations: +, *, -, **
+++ Basic Operations: +, *, -, ^
 ++ Related Constructors: Rng, Ring, NonAssociativeRing
 ++ Also See:
 ++ AMS Classifications:
@@ -176,7 +176,7 @@ NonAssociativeRng(): Category == Join(AbelianGroup,Monad)  with
 ++ Author: J. Grabmeier, R. Wisbauer
 ++ Date Created: 01 March 1991
 ++ Date Last Updated: 11 June 1991
-++ Basic Operations: +, *, -, **
+++ Basic Operations: +, *, -, ^
 ++ Related Constructors: NonAssociativeRng, Rng, Ring
 ++ Also See:
 ++ AMS Classifications:
@@ -205,7 +205,7 @@ NonAssociativeRing(): Category == Join(NonAssociativeRng,MonadWithUnit) with
 ++ Author: J. Grabmeier, R. Wisbauer
 ++ Date Created: 01 March 1991
 ++ Date Last Updated: 11 June 1991
-++ Basic Operations: +, -, *, **
+++ Basic Operations: +, -, *, ^
 ++ Related Constructors: Algebra
 ++ Also See:
 ++ AMS Classifications:
@@ -239,7 +239,7 @@ NonAssociativeAlgebra(R:CommutativeRing): Category == _
 ++ Author: J. Grabmeier, R. Wisbauer
 ++ Date Created: 01 March 1991
 ++ Date Last Updated: 12 June 1991
-++ Basic Operations: +,-,*,**, someBasis
+++ Basic Operations: +,-,*,^, someBasis
 ++ Related Constructors: FramedNonAssociativeAlgebra, FramedAlgebra,
 ++   FiniteRankAssociativeAlgebra
 ++ Also See:
@@ -391,7 +391,7 @@ FiniteRankNonAssociativeAlgebra(R:CommutativeRing):
       ++ is flexible and Jordan admissible.
     jordanAlgebra?:() -> Boolean
       ++ jordanAlgebra?() tests if the algebra is commutative,
-      ++ characteristic is not 2, and \spad{(a*b)*a**2 - a*(b*a**2) = 0}
+      ++ characteristic is not 2, and \spad{(a*b)*a^2 - a*(b*a^2) = 0}
       ++ for all \spad{a},b,c in the algebra (Jordan identity).
       ++ Example:
       ++ for every associative algebra \spad{(A,+,@)} we can construct a
@@ -698,7 +698,7 @@ FiniteRankNonAssociativeAlgebra(R:CommutativeRing):
       associatorDependence() ==
         n := rank()
         b := someBasis()
-        cond : Matrix(R) := new(n**4,6,0$R)$Matrix(R)
+        cond : Matrix(R) := new(n^4,6,0$R)$Matrix(R)
         z : Integer := 0
         for i in 1..n repeat
          for j in 1..n repeat
@@ -903,7 +903,7 @@ FiniteRankNonAssociativeAlgebra(R:CommutativeRing):
 ++ Author: J. Grabmeier, R. Wisbauer
 ++ Date Created: 01 March 1991
 ++ Date Last Updated: 11 June 1991
-++ Basic Operations: +,-,*,**,basis
+++ Basic Operations: +,-,*,^,basis
 ++ Related Constructors: FiniteRankNonAssociativeAlgebra, FramedAlgebra,
 ++   FiniteRankAssociativeAlgebra
 ++ Also See:
@@ -1096,8 +1096,8 @@ FramedNonAssociativeAlgebra(R:CommutativeRing):
         n := rank()
         b := basis()
         gamma : Vector Matrix R := structuralConstants b
-        cond : Matrix(R) := new(n**2,n,0$R)$Matrix(R)
-        rhs : Vector(R) := new(n**2,0$R)$Vector(R)
+        cond : Matrix(R) := new(n^2,n,0$R)$Matrix(R)
+        rhs : Vector(R) := new(n^2,0$R)$Vector(R)
         z : Integer := 0
         addOn : R := 0
         for k in 1..n repeat
@@ -1132,8 +1132,8 @@ FramedNonAssociativeAlgebra(R:CommutativeRing):
         n := rank()
         b := basis()
         gamma : Vector Matrix R := structuralConstants b
-        condo : Matrix(R) := new(n**2,n,0$R)$Matrix(R)
-        rhs : Vector(R) := new(n**2,0$R)$Vector(R)
+        condo : Matrix(R) := new(n^2,n,0$R)$Matrix(R)
+        rhs : Vector(R) := new(n^2,0$R)$Vector(R)
         z : Integer := 0
         addOn : R := 0
         for k in 1..n repeat
@@ -1166,8 +1166,8 @@ FramedNonAssociativeAlgebra(R:CommutativeRing):
         n := rank()
         b := basis()
         gamma : Vector Matrix R := structuralConstants b
-        cond : Matrix(R) := new(2*n**2,n,0$R)$Matrix(R)
-        rhs : Vector(R) := new(2*n**2,0$R)$Vector(R)
+        cond : Matrix(R) := new(2*n^2,n,0$R)$Matrix(R)
+        rhs : Vector(R) := new(2*n^2,0$R)$Vector(R)
         z : Integer := 0
         u : Integer := n*n
         addOn : R := 0

@@ -122,7 +122,7 @@ InnerTaylorSeries(Coef): Exports == Implementation where
         (quot := stream(x) exquo$STT stream(y)) case "failed" => "failed"
         series(quot :: ST)
 
-    x:% ** n:NNI ==
+    x:% ^ n:NNI ==
       n = 0 => 1
       expt(x,n :: PositiveInteger)$RepeatedSquaring(%)
 
@@ -279,7 +279,7 @@ UnivariateTaylorSeries(Coef,var,cen): Exports == Implementation where
     stToPoly: (ST Coef,P,NNI,NNI) -> P
     stToPoly(st,term,n,n0) ==
       (n > n0) or (empty? st) => 0
-      frst(st) * term ** n + stToPoly(rst st,term,n + 1,n0)
+      frst(st) * term ^ n + stToPoly(rst st,term,n + 1,n0)
 
     polynomial(x,n) == stToPoly(stream x,(var :: P) - (cen :: P),0,n)
 
@@ -290,7 +290,7 @@ UnivariateTaylorSeries(Coef,var,cen): Exports == Implementation where
     stToUPoly: (ST Coef,UP,NNI,NNI) -> UP
     stToUPoly(st,term,n,n0) ==
       (n > n0) or (empty? st) => 0
-      frst(st) * term ** n + stToUPoly(rst st,term,n + 1,n0)
+      frst(st) * term ^ n + stToUPoly(rst st,term,n + 1,n0)
 
     univariatePolynomial(x,n) ==
       stToUPoly(stream x,monomial(1,1)$UP - monomial(cen,0)$UP,0,n)
@@ -311,12 +311,12 @@ UnivariateTaylorSeries(Coef,var,cen): Exports == Implementation where
       st
 
     if Coef has coerce: Symbol -> Coef then
-      if Coef has "**": (Coef,NNI) -> Coef then
+      if Coef has "^": (Coef,NNI) -> Coef then
 
         stToCoef: (ST Coef,Coef,NNI,NNI) -> Coef
         stToCoef(st,term,n,n0) ==
           (n > n0) or (empty? st) => 0
-          frst(st) * term ** n + stToCoef(rst st,term,n + 1,n0)
+          frst(st) * term ^ n + stToCoef(rst st,term,n + 1,n0)
 
         approximate(x,n) ==
           stToCoef(stream x,(var :: Coef) - cen,0,n)
@@ -372,9 +372,9 @@ UnivariateTaylorSeries(Coef,var,cen): Exports == Implementation where
       unit? x == unit? coefficient(x,0)
     if Coef has Field then
       if Coef is RN then
-        (x:%) ** (s:Coef) == powern(s,stream x)$STT
+        (x:%) ^ (s:Coef) == powern(s,stream x)$STT
       else
-        (x:%) ** (s:Coef) == power(s,stream x)$STT
+        (x:%) ^ (s:Coef) == power(s,stream x)$STT
 
     if Coef has Algebra Fraction Integer then
       coerce(r:RN) == r :: Coef :: %

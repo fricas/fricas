@@ -116,7 +116,7 @@ IntegralBasisTools(R,UP,F): Exports == Implementation where
       ++ \spad{matrixOut} are \spad{n}-by-\spad{n} upper triangular matrices.
     leastPower: (NNI,NNI) -> NNI
       ++ leastPower(p,n) returns e, where e is the smallest integer
-      ++ such that \spad{p **e >= n}
+      ++ such that \spad{p ^e >= n}
     idealiser: (Mat,Mat) -> Mat
       ++ idealiser(m1,m2) computes the order of an ideal defined by m1 and m2
     idealiser: (Mat,Mat,R) -> Mat
@@ -427,7 +427,7 @@ WildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
     iLocalIntegralBasis(bas,pows,tfm,matrixOut,disc,prime) ==
       n := rank()$F; standardBasis := basis()$F
       -- 'standardBasis' is the basis for F as a FramedAlgebra;
-      -- usually this is [1,y,y**2,...,y**(n-1)]
+      -- usually this is [1,y,y^2,...,y^(n-1)]
       p2 := prime * prime; sae := SAE(K,R,prime)
       p := characteristic()$F; q := size()$sae
       lp := leastPower(q,n)
@@ -439,19 +439,19 @@ WildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
       -- rbden = denominator for current basis matrix
       -- index = index of original order in current order
       repeat
-        -- pows = [(w1 * rbden) ** q,...,(wn * rbden) ** q], where
+        -- pows = [(w1 * rbden) ^ q,...,(wn * rbden) ^ q], where
         -- bas = [w1,...,wn] is 'rbden' times the basis for the order B = 'rb'
         for i in 1..n repeat
           bi : F := 0
           for j in 1..n repeat
             bi := bi + qelt(rb,i,j) * qelt(standardBasis,j)
           qsetelt_!(bas,i,bi)
-          qsetelt_!(pows,i,bi ** p)
+          qsetelt_!(pows,i,bi ^ p)
         coor0 := transpose coordinates(pows,bas)
-        denPow := rbden ** ((p - 1) :: NNI)
+        denPow := rbden ^ ((p - 1) :: NNI)
         (coMat0 := coor0 exquo denPow) case "failed" =>
           error "can't happen"
-        -- the jth column of coMat contains the coordinates of (wj/rbden)**q
+        -- the jth column of coMat contains the coordinates of (wj/rbden)^q
         -- with respect to the basis [w1/rbden,...,wn/rbden]
         coMat := coMat0 :: Matrix R
         -- the ith column of 'pPows' contains the coordinates of the pth power
@@ -464,9 +464,9 @@ WildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
         frob := copy pPows; tmpMat : Matrix sae := new(n,n,0)
         for r in 2..leastPower(p,q) repeat
           for i in 1..n repeat for j in 1..n repeat
-            qsetelt_!(tmpMat,i,j,qelt(frob,i,j) ** p)
+            qsetelt_!(tmpMat,i,j,qelt(frob,i,j) ^ p)
           times_!(frob,pPows,tmpMat)$MATSTOR(sae)
-        frobPow := frob ** lp
+        frobPow := frob ^ lp
         -- compute the p-radical
         ns := nullSpace frobPow
         for i in 1..n repeat for j in 1..n repeat qsetelt_!(tfm,i,j,0)
@@ -621,9 +621,9 @@ NumberFieldIntegralBasis(UP,F): Exports == Implementation where
           for j in minIndex(b)..maxIndex(b)
             for jj in minColIndex(rb)..maxColIndex(rb) repeat
               a := a + qelt(rb,ii,jj) * qelt(b,j)
-          qsetelt_!(v,i,a**p)
+          qsetelt_!(v,i,a^p)
       mat := transpose coordinates v
-      ((transpose(rbinv) * mat) exquo (rbden ** p)) :: Mat
+      ((transpose(rbinv) * mat) exquo (rbden ^ p)) :: Mat
 
     wildPrimes(factoredDisc,n) ==
       -- returns a list of the primes <=n which divide factoredDisc to a
@@ -736,7 +736,7 @@ NumberFieldIntegralBasis(UP,F): Exports == Implementation where
       -- id = basis matrix of the ideal (p-radical) wrt current basis
       p2 := p * p; lp := leastPower(p::NNI,n)
       repeat
-        tfm := frobMatrix(rb,rbinv,rbden,p::NNI) ** lp
+        tfm := frobMatrix(rb,rbinv,rbden,p::NNI) ^ lp
         -- compute Rp = p-radical
         idinv := transpose squareTop rowEchelon(tfm, p)
         -- [u1,..,un] are the coordinates of an element of Rp
@@ -763,7 +763,7 @@ NumberFieldIntegralBasis(UP,F): Exports == Implementation where
       disc := determinant traceMatrix()$F
       intBas := integralBasis()
       rb := intBas.basis; rbden := intBas.basisDen
-      index := ((rbden ** rank()$F) exquo (determinant rb)) :: Integer
+      index := ((rbden ^ rank()$F) exquo (determinant rb)) :: Integer
       (disc exquo (index * index)) :: Integer
 
 @

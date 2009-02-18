@@ -105,10 +105,10 @@ SturmHabichtPackage(R,x): T == C where
        in2:INT:=(n-1)::INT
        for i in in1..in2 repeat
          LSubr:L UP(x,R):=append(LSubr::L UP(x,R),[0]::L UP(x,R))
-       c1:R:=(leadingCoefficient(p1)*leadingCoefficient(p2))**((n-d2)::NNI)
+       c1:R:=(leadingCoefficient(p1)*leadingCoefficient(p2))^((n-d2)::NNI)
        Lc1:UP(x,R):=monomial(c1,0)*p2
        Lc2:UP(x,R):=
-         (-leadingCoefficient(p1))**((n-d2)::NNI)*pseudoRemainder(p1,p2)
+         (-leadingCoefficient(p1))^((n-d2)::NNI)*pseudoRemainder(p1,p2)
        append(LSubr::L UP(x,R),[Lc1,Lc2]::L UP(x,R))
 
      subresultantSequenceNext(LcsI:L UP(x,R)):L UP(x,R) ==
@@ -119,15 +119,15 @@ SturmHabichtPackage(R,x): T == C where
        in1:NNI:=(d1-1)::NNI
        d2 = in1 =>
          pr1:UP(x,R):=
-           (pseudoRemainder(p1,p2) exquo (leadingCoefficient(p1))**2)::UP(x,R)
+           (pseudoRemainder(p1,p2) exquo (leadingCoefficient(p1))^2)::UP(x,R)
          append(LcsI::L UP(x,R),[pr1]::L UP(x,R))
        d2 < in1 =>
          c1:R:=leadingCoefficient(p1)
          pr1:UP(x,R):=
-          (leadingCoefficient(p2)**((in1-d2)::NNI)*p2 exquo
-              c1**((in1-d2)::NNI))::UP(x,R)
+          (leadingCoefficient(p2)^((in1-d2)::NNI)*p2 exquo
+              c1^((in1-d2)::NNI))::UP(x,R)
          pr2:UP(x,R):=
-           (pseudoRemainder(p1,p2) exquo (-c1)**((in1-d2+2)::NNI))::UP(x,R)
+           (pseudoRemainder(p1,p2) exquo (-c1)^((in1-d2+2)::NNI))::UP(x,R)
          LSub:L UP(x,R):=[pr1,pr2]
          for k in ((d2+1)::INT)..((in1-1)::INT) repeat
            LSub:L UP(x,R):=append([0]::L UP(x,R),LSub::L UP(x,R))
@@ -157,7 +157,7 @@ SturmHabichtPackage(R,x): T == C where
        c1:R:=leadingCoefficient(p1)
        for j in 3..#(List1) repeat
          Pr0:UP(x,R):=List1.j
-         Pr1:UP(x,R):=(Pr0 exquo c1**((p-q-1)::NNI))::UP(x,R)
+         Pr1:UP(x,R):=(Pr0 exquo c1^((p-q-1)::NNI))::UP(x,R)
          List2:L UP(x,R):=append(List2::L UP(x,R),[Pr1]::L UP(x,R))
        List2
 
@@ -174,7 +174,7 @@ SturmHabichtPackage(R,x): T == C where
 -- Computation of the delta function:
 
      delta(int1:NNI):R ==
-       (-1)**((int1*(int1+1) exquo 2)::NNI)
+       (-1)^((int1*(int1+1) exquo 2)::NNI)
 
 
 -- Computation of the Sturm-Habicht sequence of two polynomials P and Q
@@ -183,14 +183,14 @@ SturmHabichtPackage(R,x): T == C where
      polsth1(p1,p:NNI,p2,q:NNI,c1:R):L UP(x,R) ==
        sc1:R:=(sign(c1))::R
        Pr1:UP(x,R):=pseudoRemainder(differentiate(p1)*p2,p1)
-       Pr2:UP(x,R):=(Pr1 exquo c1**(q::NNI))::UP(x,R)
+       Pr2:UP(x,R):=(Pr1 exquo c1^(q::NNI))::UP(x,R)
        c2:R:=leadingCoefficient(Pr2)
        r:NNI:=degree(Pr2)
-       Pr3:UP(x,R):=monomial(sc1**((p-r-1)::NNI),0)*p1
-       Pr4:UP(x,R):=monomial(sc1**((p-r-1)::NNI),0)*Pr2
+       Pr3:UP(x,R):=monomial(sc1^((p-r-1)::NNI),0)*p1
+       Pr4:UP(x,R):=monomial(sc1^((p-r-1)::NNI),0)*Pr2
        Listf:L UP(x,R):=[Pr3,Pr4]
        if r < p-1 then
-         Pr5:UP(x,R):=monomial(delta((p-r-1)::NNI)*c2**((p-r-1)::NNI),0)*Pr2
+         Pr5:UP(x,R):=monomial(delta((p-r-1)::NNI)*c2^((p-r-1)::NNI),0)*Pr2
          for j in ((r+1)::INT)..((p-2)::INT) repeat
            Listf:L UP(x,R):=append(Listf::L UP(x,R),[0]::L UP(x,R))
          Listf:L UP(x,R):=append(Listf::L UP(x,R),[Pr5]::L UP(x,R))
@@ -220,7 +220,7 @@ SturmHabichtPackage(R,x): T == C where
        sc1:R:=(sign(c1))::R
        q1:NNI:=(q-1)::NNI
        v:NNI:=(p+q1)::NNI
-       Pr1:UP(x,R):=monomial(delta(q1::NNI)*sc1**((q+1)::NNI),0)*p1
+       Pr1:UP(x,R):=monomial(delta(q1::NNI)*sc1^((q+1)::NNI),0)*p1
        Listf:L UP(x,R):=[Pr1]
        List1:L UP(x,R):=subresultantSequence(differentiate(p1)*p2,p1)
        List2:L UP(x,R):=[]
@@ -294,7 +294,7 @@ SturmHabichtPackage(R,x): T == C where
        ct2:INT:=if elt2 > 0 then 1 else -1
        ct3:NNI:=(int1 exquo 2)::NNI
        ct4:INT:=(ct1*ct2)::INT
-       ((-1)**(ct3::NNI))*ct4
+       ((-1)^(ct3::NNI))*ct4
 
      numbnce(Lsig:L R):NNI ==
        null Lsig => 0
@@ -340,7 +340,7 @@ SturmHabichtPackage(R,x): T == C where
 
 -- In particular:
 --      - SturmHabicht(P,1) is the number of "real" roots of P,
---      - SturmHabicht(P,Q**2) is the number of "real" roots of P making Q neq 0
+--      - SturmHabicht(P,Q^2) is the number of "real" roots of P making Q neq 0
 
      SturmHabicht(p1,p2):INT ==
 --     print("+" :: Ex)

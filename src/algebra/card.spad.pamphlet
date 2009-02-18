@@ -15,7 +15,7 @@
 ++ Author: S.M. Watt
 ++ Date Created: June 1986
 ++ Date Last Updated: May 1990
-++ Basic Operations: Aleph, +, -, *, **
+++ Basic Operations: Aleph, +, -, *, ^
 ++ Related Domains: 
 ++ Also See:
 ++ AMS Classifications:
@@ -33,7 +33,7 @@
 ++     \spad{x+y  = #(X+Y)}   \tab{30}disjoint union
 ++     \spad{x-y  = #(X-Y)}   \tab{30}relative complement
 ++     \spad{x*y  = #(X*Y)}   \tab{30}cartesian product
-++     \spad{x**y = #(X**Y)}  \tab{30}\spad{X**Y = \{g| g:Y->X\}}
+++     \spad{x^y = #(X^Y)}  \tab{30}\spad{X^Y = \{g| g:Y->X\}}
 ++
 ++   The non-negative integers have a natural construction as cardinals
 ++     \spad{0 = #\{\}}, \spad{1 = \{0\}}, \spad{2 = \{0, 1\}}, ..., \spad{n = \{i| 0 <= i < n\}}.
@@ -42,7 +42,7 @@
 ++   equivalent to the axiom of choice.
 ++
 ++   The generalized continuum hypothesis asserts 
-++   \center{\spad{2**Aleph i = Aleph(i+1)}}
+++   \center{\spad{2^Aleph i = Aleph(i+1)}}
 ++   and is independent of the axioms of set theory [Goedel 1940].
 ++
 ++   Three commonly encountered cardinal numbers are
@@ -51,15 +51,15 @@
 ++      \spad{f = #\{g| g:[0,1]->R\}}
 ++
 ++   In this domain, these values are obtained using
-++      \spad{a := Aleph 0}, \spad{c := 2**a}, \spad{f := 2**c}.
+++      \spad{a := Aleph 0}, \spad{c := 2^a}, \spad{f := 2^c}.
 ++
 CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
                         RetractableTo NonNegativeInteger, CommutativeStar) with
         "-": (%,%) -> Union(%,"failed")
            ++ \spad{x - y} returns an element z such that \spad{z+y=x} or "failed" 
            ++ if no such element exists.
-        "**": (%, %) -> %
-            ++ \spad{x**y} returns \spad{#(X**Y)} where \spad{X**Y} is defined
+        "^": (%, %) -> %
+            ++ \spad{x^y} returns \spad{#(X^Y)} where \spad{X^Y} is defined
             ++  as \spad{\{g| g:Y->X\}}.
 
         Aleph: NonNegativeInteger -> %
@@ -130,13 +130,13 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
             finite? x => [FINord, n*x.ival]
             n = 0     => 0
             x
-        x**y ==
+        x^y ==
             y = 0 =>
                 x ~= 0 => 1
-                error "0**0 not defined for cardinal numbers."
+                error "0^0 not defined for cardinal numbers."
             finite? y =>
                 not finite? x => x
-                [FINord,x.ival**(y.ival)::NNI]
+                [FINord,x.ival^(y.ival)::NNI]
             x = 0 => 0
             x = 1 => 1
             GCHypothesis() => [max(x.order-1, y.order) + 1, DUMMYval]

@@ -291,7 +291,7 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     ++ Iterative \spad{O(log(b)^2)} version coded by Michael Monagan June 1987.
   legendre : (I,I) -> I
     ++ \spad{legendre(a,p)} returns the Legendre symbol \spad{L(a/p)}.
-    ++ \spad{L(a/p) = (-1)**((p-1)/2) mod p} (p prime), which is 0 if \spad{a}
+    ++ \spad{L(a/p) = (-1)^((p-1)/2) mod p} (p prime), which is 0 if \spad{a}
     ++ is 0, 1 if \spad{a} is a quadratic residue \spad{mod p} and -1 otherwise.
     ++ Note: because the primality test is expensive,
     ++ if it is known that p is prime then use \spad{jacobi(a,p)}.
@@ -338,8 +338,8 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     f1, f2 : I
     (f1,f2) := (0,1)
     for k in length(n)-2 .. 0 by -1 repeat
-      t := f2**2
-      (f1,f2) := (t+f1**2,t+2*f1*f2)
+      t := f2^2
+      (f1,f2) := (t+f1^2,t+2*f1*f2)
       if bit?(n,k) then (f1,f2) := (f2,f1+f2)
     f2
 
@@ -412,11 +412,11 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     -- assertion: 0 < a < b and odd? b
     while a > 1 repeat
       if odd? a then
-        -- J(a/b) = J(b/a) (-1) ** (a-1)/2 (b-1)/2
+        -- J(a/b) = J(b/a) (-1) ^ (a-1)/2 (b-1)/2
         if a rem 4 = 3 and b rem 4 = 3 then j := -j
         (a,b) := (b rem a,a)
       else
-        -- J(2*a/b) = J(a/b) (-1) (b**2-1)/8
+        -- J(2*a/b) = J(a/b) (-1) (b^2-1)/8
         for k in 0.. until odd? a repeat a := a quo 2
         if odd? k and (b+2) rem 8 > 4 then j := -j
     a = 0 => 0
@@ -440,7 +440,7 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     for f in factors factor n repeat
       newList : List Integer := oldList
       for k in 1..f.exponent repeat
-        pow := f.factor ** k
+        pow := f.factor ^ k
         for m in oldList repeat
           newList := concat(pow * m, newList)
       oldList := newList
@@ -482,14 +482,14 @@ can safely share memory.
 
   sumOfDivisors n ==
     n = 0 => 0
-    r : RN := */[(entry.factor**(entry.exponent::NNI + 1)-1)/
+    r : RN := */[(entry.factor^(entry.exponent::NNI + 1)-1)/
       (entry.factor-1) for entry in factors factor n]
     numer r
 
   sumOfKthPowerDivisors(n,k) ==
     n = 0 => 0
-    r : RN := */[(entry.factor**(k*entry.exponent::NNI+k)-1)/
-      (entry.factor**k-1) for entry in factors factor n]
+    r : RN := */[(entry.factor^(k*entry.exponent::NNI+k)-1)/
+      (entry.factor^k-1) for entry in factors factor n]
     numer r
 
   moebiusMu n ==
@@ -538,21 +538,21 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
     ++ chebyshevT(n) returns the nth Chebyshev polynomial \spad{T[n](x)}.
     ++ Note: Chebyshev polynomials of the first kind, denoted \spad{T[n](x)},
     ++ computed from the two term recurrence.  The generating function
-    ++ \spad{(1-t*x)/(1-2*t*x+t**2) = sum(T[n](x)*t**n, n=0..infinity)}.
+    ++ \spad{(1-t*x)/(1-2*t*x+t^2) = sum(T[n](x)*t^n, n=0..infinity)}.
   chebyshevU: I -> SUP I
     ++ chebyshevU(n) returns the nth Chebyshev polynomial \spad{U[n](x)}.
     ++ Note: Chebyshev polynomials of the second kind, denoted \spad{U[n](x)},
     ++ computed from the two term recurrence.  The generating function
-    ++ \spad{1/(1-2*t*x+t**2) = sum(T[n](x)*t**n, n=0..infinity)}.
+    ++ \spad{1/(1-2*t*x+t^2) = sum(T[n](x)*t^n, n=0..infinity)}.
   cyclotomic: I -> SUP I
     ++ cyclotomic(n) returns the nth cyclotomic polynomial \spad{phi[n](x)}.
-    ++ Note: \spad{phi[n](x)} is the factor of \spad{x**n - 1} whose roots
+    ++ Note: \spad{phi[n](x)} is the factor of \spad{x^n - 1} whose roots
     ++ are the primitive nth roots of unity.
   euler     : I -> SUP RN
     ++ euler(n) returns the nth Euler polynomial \spad{E[n](x)}.
     ++ Note: Euler polynomials denoted \spad{E(n,x)} computed by solving the
     ++ differential equation  \spad{differentiate(E(n,x),x) = n E(n-1,x)} where
-    ++ \spad{E(0,x) = 1} and initial condition comes from \spad{E(n) = 2**n E(n,1/2)}.
+    ++ \spad{E(0,x) = 1} and initial condition comes from \spad{E(n) = 2^n E(n,1/2)}.
   fixedDivisor: SUP I -> I
     ++ fixedDivisor(a) for \spad{a(x)} in \spad{Z[x]} is the largest integer
     ++ f such that f divides \spad{a(x=k)} for all integers k.
@@ -562,17 +562,17 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
     ++ hermite(n) returns the nth Hermite polynomial \spad{H[n](x)}.
     ++ Note: Hermite polynomials, denoted \spad{H[n](x)}, are computed from
     ++ the two term recurrence.  The generating function is:
-    ++ \spad{exp(2*t*x-t**2) = sum(H[n](x)*t**n/n!, n=0..infinity)}.
+    ++ \spad{exp(2*t*x-t^2) = sum(H[n](x)*t^n/n!, n=0..infinity)}.
   laguerre  : I -> SUP I
     ++ laguerre(n) returns the nth Laguerre polynomial \spad{L[n](x)}.
     ++ Note: Laguerre polynomials, denoted \spad{L[n](x)}, are computed from
     ++ the two term recurrence.  The generating function is:
-    ++ \spad{exp(x*t/(t-1))/(1-t) = sum(L[n](x)*t**n/n!, n=0..infinity)}.
+    ++ \spad{exp(x*t/(t-1))/(1-t) = sum(L[n](x)*t^n/n!, n=0..infinity)}.
   legendre  : I -> SUP RN
     ++ legendre(n) returns the nth Legendre polynomial \spad{P[n](x)}.
     ++ Note: Legendre polynomials, denoted \spad{P[n](x)}, are computed from
     ++ the two term recurrence.  The generating function is:
-    ++ \spad{1/sqrt(1-2*t*x+t**2) = sum(P[n](x)*t**n, n=0..infinity)}.
+    ++ \spad{1/sqrt(1-2*t*x+t^2) = sum(P[n](x)*t^n, n=0..infinity)}.
  Implementation ==> add
   import IntegerPrimesPackage(I)
 
@@ -629,7 +629,7 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
     -- (s,p) := if n < E.En then (0,1) else E
     for i in s+1 .. n repeat
       t := (i::RN) * integrate p
-      c := euler(i)$IntegerNumberTheoryFunctions / 2**(i::NNI) - t(1/2)
+      c := euler(i)$IntegerNumberTheoryFunctions / 2^(i::NNI) - t(1/2)
       p := t + c::SUP(RN)
     E.En := n
     E.Ev := p
@@ -686,7 +686,7 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
     if n < L.Ln then (s := 0; p := 1; q := x) else (s,p,q) := L
     for k in s+1 .. n repeat
       t := k-1
-      (p,q) := ((((k+t)$I)::SUP(I)-x)*p-t**2*q,p)
+      (p,q) := ((((k+t)$I)::SUP(I)-x)*p-t^2*q,p)
     L.Ln := n
     L.L1 := p
     L.L2 := q

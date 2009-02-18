@@ -24,7 +24,7 @@
 ++ References:
 ++ Description:
 ++    The free monoid on a set \spad{S} is the monoid of finite products of
-++ the form \spad{reduce(*,[si ** ni])} where the si's are in S, and the ni's
+++ the form \spad{reduce(*,[si ^ ni])} where the si's are in S, and the ni's
 ++ are non-negative integers. The multiplication is not commutative.
 ++ For two elements \spad{x} and \spad{y} the relation \spad{x < y}
 ++ holds if either \spad{length(x) < length(y)} holds or if these lengths
@@ -42,8 +42,8 @@ OrderedFreeMonoid(S: OrderedSet): OFMcategory == OFMdefinition where
           ++ \spad{s * x} returns the product of \spad{x} by \spad{s} on the left.
         "*":    (%, S) -> %
           ++ \spad{x * s} returns the product of \spad{x} by \spad{s} on the right.
-        "**":   (S, NNI) -> %
-          ++ \spad{s ** n} returns the product of \spad{s} by itself \spad{n} times.
+        "^":   (S, NNI) -> %
+          ++ \spad{s ^ n} returns the product of \spad{s} by itself \spad{n} times.
         first: % -> S
           ++ \spad{first(x)} returns the first letter of \spad{x}.
         rest:  % -> %
@@ -612,7 +612,7 @@ XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
 --                 for t1 in reverse(p1)]
             +/[[[t1.k*t2.k,r]$TERM for t2 in p2 | not (r:=t1.c*t2.c) =$R 0]
                    for t1 in p1]
-       p:% ** nn:NNI  == repeatMultExpt(p,nn)
+       p:% ^ nn:NNI  == repeatMultExpt(p,nn)
        repeatMultExpt(x,nn) ==
                nn = 0 => 1
                y:% := x
@@ -860,11 +860,11 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
        if R has CommutativeRing then
          sh(p:%, n:NNI):% ==
             n = 0 => 1
-            p case R => (p::R)** n
+            p case R => (p::R)^ n
             n1: NNI := (n-1)::NNI
             p1: % := n * sh(p, n1)  
             lt: LTERMS := [[t.k, sh(t.c, p1)]$TERM for t in ListOfTerms p.reg]
-            [p.c0 ** n, construct lt]$VPOLY
+            [p.c0 ^ n, construct lt]$VPOLY
 
          sh(p1:%, p2:%) ==
             p1 case R => p1::R * p2

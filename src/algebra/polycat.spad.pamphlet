@@ -219,11 +219,11 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
       ++ with respect to each of the variables in the list lv.
     coefficient: (%,VarSet,NonNegativeInteger) -> %
       ++ coefficient(p,v,n) views the polynomial p as a univariate
-      ++ polynomial in v and returns the coefficient of the \spad{v**n} term.
+      ++ polynomial in v and returns the coefficient of the \spad{v^n} term.
     coefficient: (%,List VarSet,List NonNegativeInteger) -> %
       ++ coefficient(p, lv, ln) views the polynomial p as a polynomial
       ++ in the variables of lv and returns the coefficient of the term
-      ++ \spad{lv**ln}, i.e. \spad{prod(lv_i ** ln_i)}.
+      ++ \spad{lv^ln}, i.e. \spad{prod(lv_i ^ ln_i)}.
     monomials: % -> List %
       ++ monomials(p) returns the list of non-zero monomials of polynomial p, i.e.
       ++ \spad{monomials(sum(a_(i) X^(i))) = [a_(1) X^(1),...,a_(n) X^(n)]}.
@@ -254,10 +254,10 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
        ++ both the quotient and remainder.
        ++ Error: if b is not monic with respect to v.
     monomial : (%,VarSet,NonNegativeInteger) -> %
-        ++ monomial(a,x,n) creates the monomial \spad{a*x**n} where \spad{a} is
+        ++ monomial(a,x,n) creates the monomial \spad{a*x^n} where \spad{a} is
         ++ a polynomial, x is a variable and n is a nonnegative integer.
     monomial : (%,List VarSet,List NonNegativeInteger) -> %
-        ++ monomial(a,[v1..vn],[e1..en]) returns \spad{a*prod(vi**ei)}.
+        ++ monomial(a,[v1..vn],[e1..en]) returns \spad{a*prod(vi^ei)}.
     multivariate : (SparseUnivariatePolynomial(R),VarSet) -> %
         ++ multivariate(sup,v) converts an anonymous univariable
         ++ polynomial sup to a polynomial in the variable v.
@@ -270,10 +270,10 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
     isTimes: % -> Union(List %, "failed")
         ++ isTimes(p) returns \spad{[a1,...,an]} if polynomial \spad{p = a1 ... an}
         ++ and \spad{n >= 2}, and, for each i, ai is either a nontrivial constant in R or else of the
-        ++ form \spad{x**e}, where \spad{e > 0} is an integer and x in a member of VarSet.
+        ++ form \spad{x^e}, where \spad{e > 0} is an integer and x in a member of VarSet.
     isExpt: % -> Union(Record(var:VarSet, exponent:NonNegativeInteger),_
                        "failed")
-        ++ isExpt(p) returns \spad{[x, n]} if polynomial p has the form \spad{x**n} and \spad{n > 0}.
+        ++ isExpt(p) returns \spad{[x, n]} if polynomial p has the form \spad{x^n} and \spad{n > 0}.
     totalDegree : % -> NonNegativeInteger
         ++ totalDegree(p) returns the largest sum over all monomials
         ++ of all exponents of a monomial.
@@ -318,7 +318,7 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
         ++ content(p,v) is the gcd of the coefficients of the polynomial p
         ++ when p is viewed as a univariate polynomial with respect to the
         ++ variable v.
-        ++ Thus, for polynomial 7*x**2*y + 14*x*y**2, the gcd of the
+        ++ Thus, for polynomial 7*x^2*y + 14*x*y^2, the gcd of the
         ++ coefficients with respect to x is 7*y.
       primitivePart: % -> %
         ++ primitivePart(p) returns the unitCanonical associate of the
@@ -630,7 +630,7 @@ testsuite "POLYLIFT"
 ++ This package provides a very general map function, which
 ++ given a set S and polynomials over R with maps from the
 ++ variables into S and the coefficients into S, maps polynomials
-++ into S. S is assumed to support \spad{+}, \spad{*} and \spad{**}.
+++ into S. S is assumed to support \spad{+}, \spad{*} and \spad{^}.
 
 PolynomialCategoryLifting(E,Vars,R,P,S): Exports == Implementation where
   E   : OrderedAbelianMonoidSup
@@ -640,7 +640,7 @@ PolynomialCategoryLifting(E,Vars,R,P,S): Exports == Implementation where
   S   : SetCategory with
            "+" : (%, %) -> %
            "*" : (%, %) -> %
-           "**": (%, NonNegativeInteger) -> %
+           "^": (%, NonNegativeInteger) -> %
 
   Exports ==> with
     map: (Vars -> S, R -> S, P) -> S
@@ -669,10 +669,10 @@ statistics()
       (x1 := mainVariable p) case "failed" => fc leadingCoefficient p
       up := univariate(p, x1::Vars)
       t  := fv(x1::Vars)
-      ans := map(fv, fc, leadingCoefficient up) * t ** (degree up)
+      ans := map(fv, fc, leadingCoefficient up) * t ^ (degree up)
       up  := reductum up
       while not zero? up repeat
-        ans := ans + map(fv, fc, leadingCoefficient up) * t ** (degree up)
+        ans := ans + map(fv, fc, leadingCoefficient up) * t ^ (degree up)
         up  := reductum up
       ans
 
@@ -701,7 +701,7 @@ UnivariatePolynomialCategory(R:Ring): Category ==
       DifferentialExtension R) with
     vectorise        : (%,NonNegativeInteger) -> Vector R
       ++ vectorise(p, n) returns \spad{[a0,...,a(n-1)]} where
-      ++ \spad{p = a0 + a1*x + ... + a(n-1)*x**(n-1)} + higher order terms.
+      ++ \spad{p = a0 + a1*x + ... + a(n-1)*x^(n-1)} + higher order terms.
       ++ The degree of polynomial p can be different from \spad{n-1}.
     makeSUP: % -> SparseUnivariatePolynomial R
       ++ makeSUP(p) converts the polynomial p to be of type
@@ -732,7 +732,7 @@ UnivariatePolynomialCategory(R:Ring): Category ==
       ++ \spad{shiftLeft(p,n)} returns \spad{p * monomial(1,n)}
     pseudoRemainder: (%,%) -> %
        ++ pseudoRemainder(p,q) = r, for polynomials p and q, returns the remainder when
-       ++ \spad{p' := p*lc(q)**(deg p - deg q + 1)}
+       ++ \spad{p' := p*lc(q)^(deg p - deg q + 1)}
        ++ is pseudo right-divided by q, i.e. \spad{p' = s q + r}.
     differentiate: (%, R -> R, %) -> %
        ++ differentiate(p, d, x') extends the R-derivation d to an
@@ -749,7 +749,7 @@ UnivariatePolynomialCategory(R:Ring): Category ==
              ++ elt(a,b) evaluates the fraction of univariate polynomials \spad{a}
              ++ with the distinguished variable replaced by b.
         order: (%, %) -> NonNegativeInteger
-             ++ order(p, q) returns the largest n such that \spad{q**n} divides polynomial p
+             ++ order(p, q) returns the largest n such that \spad{q^n} divides polynomial p
              ++ i.e. the order of \spad{p(x)} at \spad{q(x)=0}.
         subResultantGcd: (%,%) -> %
            ++ subResultantGcd(p,q) computes the gcd of the polynomials p and q
@@ -760,11 +760,11 @@ UnivariatePolynomialCategory(R:Ring): Category ==
            ++ composite(f, q) returns h if f = h(q), and "failed" is no such h exists.
         pseudoQuotient: (%,%) -> %
            ++ pseudoQuotient(p,q) returns r, the quotient when
-           ++ \spad{p' := p*lc(q)**(deg p - deg q + 1)}
+           ++ \spad{p' := p*lc(q)^(deg p - deg q + 1)}
            ++ is pseudo right-divided by q, i.e. \spad{p' = s q + r}.
         pseudoDivide: (%, %) -> Record(coef:R, quotient: %, remainder:%)
            ++ pseudoDivide(p,q) returns \spad{[c, q, r]}, when
-           ++ \spad{p' := p*lc(q)**(deg p - deg q + 1) = c * p}
+           ++ \spad{p' := p*lc(q)^(deg p - deg q + 1) = c * p}
            ++ is pseudo right-divided by q, i.e. \spad{p' = s q + r}.
     if R has GcdDomain then
         separate: (%, %) -> Record(primePart:%, commonPart: %)
@@ -910,7 +910,7 @@ UnivariatePolynomialCategory(R:Ring): Category ==
         d + deriv(leadingCoefficient x)::%
     else
       ncdiff: (NonNegativeInteger, %) -> %
-      -- computes d(x**n) given dx = x', non-commutative case
+      -- computes d(x^n) given dx = x', non-commutative case
       ncdiff(n, x') ==
         zero? n => 0
         zero?(n1 := (n - 1)::NonNegativeInteger) => x'
@@ -936,13 +936,13 @@ UnivariatePolynomialCategory(R:Ring): Category ==
 
       pseudoQuotient(p, q) ==
         (n := degree(p)::Integer - degree q + 1) < 1 => 0
-        ((leadingCoefficient(q)**(n::NonNegativeInteger) * p
+        ((leadingCoefficient(q)^(n::NonNegativeInteger) * p
           - pseudoRemainder(p, q)) exquo q)::%
 
       pseudoDivide(p, q) ==
         (n := degree(p)::Integer - degree q + 1) < 1 => [1, 0, p]
         prem := pseudoRemainder(p, q)
-        lc   := leadingCoefficient(q)**(n::NonNegativeInteger)
+        lc   := leadingCoefficient(q)^(n::NonNegativeInteger)
         [lc,((lc*p - prem) exquo q)::%, prem]
 
       composite(f:Fraction %, q:%) ==
@@ -965,10 +965,10 @@ UnivariatePolynomialCategory(R:Ring): Category ==
         ans:Fraction(%) := (leadingCoefficient p)::%::Fraction(%)
         n := degree p
         while not zero?(p:=reductum p) repeat
-          ans := ans * f ** (n - (n := degree p))::NonNegativeInteger +
+          ans := ans * f ^ (n - (n := degree p))::NonNegativeInteger +
                     (leadingCoefficient p)::%::Fraction(%)
         zero? n => ans
-        ans * f ** n
+        ans * f ^ n
 
       order(p, q) ==
         zero? p => error "order: arguments must be nonzero"

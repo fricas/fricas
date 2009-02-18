@@ -49,7 +49,7 @@ RandomNumberSource(): with
     == add
         -- This random number generator passes the spectral test
         -- with flying colours. [Knuth vol2, 2nd ed, p105]
-        ranbase: Integer := 2**31-1
+        ranbase: Integer := 2^31-1
         x0:   Integer := 1231231231
         x1:   Integer := 3243232987
 
@@ -139,15 +139,15 @@ RandomDistributions(S: SetCategory): with
 ++ This  package provides functions to lookup bits in integers 
 IntegerBits: with
     --  bitLength(n)  == # of bits to represent abs(n)
-    --  bitCoef (n,i) == coef of 2**i in abs(n)
-    --  bitTruth(n,i) == true if coef of 2**i in abs(n) is 1
+    --  bitCoef (n,i) == coef of 2^i in abs(n)
+    --  bitTruth(n,i) == true if coef of 2^i in abs(n) is 1
 
         bitLength: Integer -> Integer
                 ++ bitLength(n) returns the number of bits to represent abs(n)
         bitCoef:   (Integer, Integer) -> Integer
-                ++ bitCoef(n,m) returns the coefficient of 2**m  in abs(n)
+                ++ bitCoef(n,m) returns the coefficient of 2^m  in abs(n)
         bitTruth:  (Integer, Integer) -> Boolean
-                ++ bitTruth(n,m) returns true if coefficient of 2**m in abs(n) is 1
+                ++ bitTruth(n,m) returns true if coefficient of 2^m in abs(n) is 1
 
     == add
         bitLength n   == INTEGER_-LENGTH(n)$Lisp
@@ -178,23 +178,23 @@ RandomIntegerDistributions(): with
 
         -- Compute uniform(a..b) as
         --
-        --     l + U0 + w*U1 + w**2*U2 +...+ w**(n-1)*U-1 + w**n*M
+        --     l + U0 + w*U1 + w^2*U2 +...+ w^(n-1)*U-1 + w^n*M
         --
         -- where
         --     l = min(a,b)
         --     m = abs(b-a) + 1
-        --     w**n < m < w**(n+1)
+        --     w^n < m < w^(n+1)
         --     U0,...,Un-1  are uniform on  0..w-1
-        --     M            is  uniform on  0..(m quo w**n)-1
+        --     M            is  uniform on  0..(m quo w^n)-1
 
         uniform aTob ==
             a := lo aTob;  b := hi aTob
             l := min(a,b); m := abs(a-b) + 1
 
-            w := 2**(bitLength size() quo 2)::NonNegativeInteger
+            w := 2^(bitLength size() quo 2)::NonNegativeInteger
 
             n  := 0
-            mq := m  -- m quo w**n
+            mq := m  -- m quo w^n
             while (mqnext := mq quo w) > 0 repeat
                 n  := n + 1
                 mq := mqnext
@@ -268,7 +268,7 @@ RandomFloatDistributions(): Cat == Body where
             while s >= 1 repeat
                 v1 := 2 * uniform01() - 1
                 v2 := 2 * uniform01() - 1
-                s  := v1**2 + v2**2
+                s  := v1^2 + v2^2
             v1 * sqrt(-2 * log s/s)
         normal(mean, stdev) ==
             mean + stdev*normal01()
@@ -278,7 +278,7 @@ RandomFloatDistributions(): Cat == Body where
             for i in 1..dgfree quo 2 repeat
                 x := x + 2*exponential1()
             if odd? dgfree then
-                x := x + normal01()**2
+                x := x + normal01()^2
             x
         chiSquare dgfree ==
             chiSquare1 dgfree

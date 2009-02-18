@@ -438,7 +438,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
            ++ isTimes(p) returns \spad{[a1,...,an]}
            ++ if \spad{p = a1*...*an} and \spad{n > 1}.
          isExpt : % -> Union(Record(var:K,exponent:Z),"failed")
-           ++ isExpt(p) returns \spad{[x, n]} if \spad{p = x**n}
+           ++ isExpt(p) returns \spad{[x, n]} if \spad{p = x^n}
            ++ and \spad{n <> 0}.
        if R has Group then Group
        if R has AbelianSemiGroup then
@@ -466,26 +466,26 @@ FunctionSpace(R:OrderedSet): Category == Definition where
          numerator : % -> %
            ++ numerator(f) returns the numerator of \spad{f} converted to %.
          isExpt:(%,OP) -> Union(Record(var:K,exponent:Z),"failed")
-           ++ isExpt(p,op) returns \spad{[x, n]} if \spad{p = x**n}
+           ++ isExpt(p,op) returns \spad{[x, n]} if \spad{p = x^n}
            ++ and \spad{n <> 0} and \spad{x = op(a)}.
          isExpt:(%,SY) -> Union(Record(var:K,exponent:Z),"failed")
-           ++ isExpt(p,f) returns \spad{[x, n]} if \spad{p = x**n}
+           ++ isExpt(p,f) returns \spad{[x, n]} if \spad{p = x^n}
            ++ and \spad{n <> 0} and \spad{x = f(a)}.
          isPower   : % -> Union(Record(val:%,exponent:Z),"failed")
-           ++ isPower(p) returns \spad{[x, n]} if \spad{p = x**n}
+           ++ isPower(p) returns \spad{[x, n]} if \spad{p = x^n}
            ++ and \spad{n <> 0}.
          eval: (%, List SY, List N, List(% -> %)) -> %
            ++ eval(x, [s1,...,sm], [n1,...,nm], [f1,...,fm]) replaces
-           ++ every \spad{si(a)**ni} in x by \spad{fi(a)} for any \spad{a}.
+           ++ every \spad{si(a)^ni} in x by \spad{fi(a)} for any \spad{a}.
          eval: (%, List SY, List N, List(List % -> %)) -> %
            ++ eval(x, [s1,...,sm], [n1,...,nm], [f1,...,fm]) replaces
-           ++ every \spad{si(a1,...,an)**ni} in x by \spad{fi(a1,...,an)}
+           ++ every \spad{si(a1,...,an)^ni} in x by \spad{fi(a1,...,an)}
            ++ for any a1,...,am.
          eval: (%, SY, N, List % -> %) -> %
-           ++ eval(x, s, n, f) replaces every \spad{s(a1,...,am)**n} in x
+           ++ eval(x, s, n, f) replaces every \spad{s(a1,...,am)^n} in x
            ++ by \spad{f(a1,...,am)} for any a1,...,am.
          eval: (%, SY, N, % -> %) -> %
-           ++ eval(x, s, n, f) replaces every \spad{s(a)**n} in x
+           ++ eval(x, s, n, f) replaces every \spad{s(a)^n} in x
            ++ by \spad{f(a)} for any \spad{a}.
        if R has CharacteristicZero then CharacteristicZero
        if R has CharacteristicNonZero then CharacteristicNonZero
@@ -628,7 +628,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
       eval(x:%, s:List SY, n:List N, l:List(% -> %)) ==
         eval(x, s, n, [f first #1 for f in l]$List(List % -> %))
 
-      -- op(arg)**m ==> func(arg)**(m quo n) * op(arg)**(m rem n)
+      -- op(arg)^m ==> func(arg)^(m quo n) * op(arg)^(m rem n)
       smprep(lop, lexp, lfunc, p) ==
         (v := mainVariable p) case "failed" => p::%
         -- symbolIfCan(k := v::K) case SY => p::%
@@ -644,8 +644,8 @@ FunctionSpace(R:OrderedSet): Category == Definition where
         while q ~= 0 repeat
           m  := degree q
           qr := divide(m, e)
-          t1 := f ** (qr.quotient)::N
-          t2 := g ** (qr.remainder)::N
+          t1 := f ^ (qr.quotient)::N
+          t2 := g ^ (qr.remainder)::N
           a  := a + leadingCoefficient(q) * t1 * t2
           q  := reductum q
         a
@@ -969,7 +969,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
       differentiate(f:%, x:SY) ==
         (smpderiv(numer f, x) * denom(f)::% -
           numer(f)::% * smpderiv(denom f, x))
-            / (denom(f)::% ** 2)
+            / (denom(f)::% ^ 2)
 
       eval(x:%, lk:List K, lv:List %) ==
         smpeval(numer x, lk, lv) / smpeval(denom x, lk, lv)
@@ -982,7 +982,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
         paren x
 
       convert(x:Factored %):% ==
-        par(unit x) * */[par(f.factor) ** f.exponent for f in factors x]
+        par(unit x) * */[par(f.factor) ^ f.exponent for f in factors x]
 
       retractIfCan(x:%):Union(PR, "failed") ==
         (u := retractIfCan(x)@Union(Fraction PR,"failed")) case "failed"

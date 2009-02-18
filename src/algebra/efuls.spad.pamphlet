@@ -40,8 +40,8 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
   Exports ==> PartialTranscendentalFunctions(ULS) with
 
     if Coef has Field then
-      "**": (ULS,RN) -> ULS
-        ++ s ** r raises a Laurent series s to a rational power r
+      "^": (ULS,RN) -> ULS
+        ++ s ^ r raises a Laurent series s to a rational power r
 
 --% Exponentials and Logarithms
 
@@ -114,16 +114,16 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
 
 --% roots
 
-    RATPOWERS : Boolean := Coef has "**":(Coef,RN) -> Coef
+    RATPOWERS : Boolean := Coef has "^":(Coef,RN) -> Coef
     TRANSFCN  : Boolean := Coef has TranscendentalFunctionCategory
     RATS      : Boolean := Coef has retractIfCan: Coef -> Union(RN,"failed")
 
     nthRootUTS:(UTS,I) -> Union(UTS,"failed")
     nthRootUTS(uts,n) ==
       -- assumed: n > 1, uts has non-zero constant term
---      one? coefficient(uts,0) => uts ** inv(n::RN)
-      coefficient(uts,0) = 1 => uts ** inv(n::RN)
-      RATPOWERS => uts ** inv(n::RN)
+--      one? coefficient(uts,0) => uts ^ inv(n::RN)
+      coefficient(uts,0) = 1 => uts ^ inv(n::RN)
+      RATPOWERS => uts ^ inv(n::RN)
       "failed"
 
     nthRootIfCan(uls,nn) ==
@@ -140,18 +140,18 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef,UTS,ULS):_
       monomial(1,k :: I) * (root :: UTS :: ULS)
 
     if Coef has Field then
-       (uls:ULS) ** (r:RN) ==
+       (uls:ULS) ^ (r:RN) ==
          num := numer r; den := denom r
---         one? den => uls ** num
-         den = 1 => uls ** num
+--         one? den => uls ^ num
+         den = 1 => uls ^ num
          deg := degree uls
          if zero? (coef := coefficient(uls,deg)) then
            uls := removeZeroes(1000,uls); deg := degree uls
            zero? (coef := coefficient(uls,deg)) =>
              error "power of series with many leading zero coefficients"
          (k := deg exquo den) case "failed" =>
-           error "**: rational power does not exist"
-         uts := taylor(uls * monomial(1,-deg)) ** r
+           error "^: rational power does not exist"
+         uts := taylor(uls * monomial(1,-deg)) ^ r
          monomial(1,(k :: I) * num) * (uts :: ULS)
 
 --% transcendental functions

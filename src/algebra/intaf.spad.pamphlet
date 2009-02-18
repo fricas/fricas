@@ -150,7 +150,7 @@ GenusZeroIntegration(R, F, L): Exports == Implementation where
             integrate
               mkRat(multivariate(leadingMonomial ff,x,y::F), pr.subs, pr.newk))
 
--- the algebraic relation is (den * y)**2 = p  where p is a * x**2 + b * x + c
+-- the algebraic relation is (den * y)^2 = p  where p is a * x^2 + b * x + c
 -- if p is squarefree, then parametrize in the following form:
 --     u  = y - x \sqrt{a}
 --     x  = (u^2 - c) / (b - 2 u \sqrt{a}) = h(u)
@@ -179,10 +179,10 @@ GenusZeroIntegration(R, F, L): Exports == Implementation where
         [x::F, [1, [x, y], [u, sa * (u + b / (2*a)) / eval(den,x,u)]], empty()]
       empty? kerdiff(sa, a) =>
         bm2u := b - 2 * u * sa
-        q    := eval(den, x, xx := (u**2 - c) / bm2u)
+        q    := eval(den, x, xx := (u^2 - c) / bm2u)
         yy   := (ua := u + xx * sa) / q
         [y::F - x::F * sa, [2 * ua / bm2u, [x, y], [xx, yy]], empty()]
-      u2ma:= u**2 - a
+      u2ma:= u^2 - a
       sc  := rootSimp sqrt c
       q   := eval(den, x, xx := (b - 2 * u * sc) / u2ma)
       yy  := (ux := xx * u + sc) / q
@@ -447,7 +447,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
 -- Returns f((u^n - b)/a,u) as an element of F
     chv0(f, n, a, b) ==
       d := dumk::F
-      (f (d::UP::RF)) ((d ** n - b) / a)
+      (f (d::UP::RF)) ((d ^ n - b) / a)
 
 -- candidates(p) returns a list of pairs [g, u] such that p(x) = g(u(x)),
 -- those u's are candidates for change of variables
@@ -482,7 +482,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
     chvarIfCan(p, d, u, u1) ==
       ans:UPUP := 0
       while p ~= 0 repeat
-        (v := composite(u1 * leadingCoefficient(p) / d ** degree(p), u))
+        (v := composite(u1 * leadingCoefficient(p) / d ^ degree(p), u))
           case "failed" => return "failed"
         ans := ans + monomial(v::RF, degree p)
         p   := reductum p
@@ -491,7 +491,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
     algaddx(i, xx) ==
       elem? i => i
       mkAnswer(ratpart i, logpart i,
-                [[- ne.integrand / (xx**2), xx] for ne in notelem i])
+                [[- ne.integrand / (xx^2), xx] for ne in notelem i])
 
     prootRDE(nfp, f, g, x, k, rde) ==
       modulus := lift(p := minPoly k, x)
@@ -501,7 +501,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
       ((uf := chvarIfCan(ff := univariate(f,x,k,p),rec.coef,q,1)) case UPUP) and
         ((ug:=chvarIfCan(gg:=univariate(g,x,k,p),rec.coef,q,dqdx)) case UPUP) =>
           (u := rde(chv0(uf::UPUP, rec.exponent, 1, 0), rec.exponent *
-                    (dumk::F) ** (rec.exponent * (rec.exponent - 1))
+                    (dumk::F) ^ (rec.exponent * (rec.exponent - 1))
                       * chv0(ug::UPUP, rec.exponent, 1, 0),
                        symbolIfCan(dumk)::SY)) case "failed" => "failed"
           eval(u::F, dumk, k::F)
@@ -634,7 +634,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
         palgRDE0(f, g, x, y, rde, u.coef, u.poly)
       palgRDE0(f, g, x, y, rde, dumk, v.xsub, v.dxsub)
 
-    -- returns "failed", or (d, P) such that (dy)**2 = P(x)
+    -- returns "failed", or (d, P) such that (dy)^2 = P(x)
     -- and degree(P) = 2
     quadIfCan(x, y) ==
       (degree(p := minPoly y) = 2) and zero?(coefficient(p, 1)) =>

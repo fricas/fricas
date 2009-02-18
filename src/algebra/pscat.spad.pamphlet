@@ -35,10 +35,10 @@ PowerSeriesCategory(Coef,Expon,Var): Category == Definition where
   Definition ==> AbelianMonoidRing(Coef,Expon) with
 
     monomial: (%,Var,Expon) -> %
-      ++ \spad{monomial(a,x,n)} computes \spad{a*x**n}.
+      ++ \spad{monomial(a,x,n)} computes \spad{a*x^n}.
     monomial: (%,List Var,List Expon) -> %
       ++ \spad{monomial(a,[x1,..,xk],[n1,..,nk])} computes
-      ++ \spad{a * x1**n1 * .. * xk**nk}.
+      ++ \spad{a * x1^n1 * .. * xk^nk}.
     leadingMonomial: % -> %
       ++ leadingMonomial(f) returns the monomial of \spad{f} of lowest order.
     leadingCoefficient: % -> Coef
@@ -132,7 +132,7 @@ UnivariatePowerSeriesCategory(Coef,Expon): Category == Definition where
       ++ series consisting of
       ++ the sum of all terms of f of degree d with \spad{k1 <= d <= k2}.
     if Coef has coerce: Symbol -> Coef then
-      if Coef has "**":(Coef,Expon) -> Coef then
+      if Coef has "^":(Coef,Expon) -> Coef then
         approximate: (%,Expon) -> Coef
           ++ \spad{approximate(f)} returns a truncated power series with the
           ++ series variable viewed as an element of the coefficient domain.
@@ -144,7 +144,7 @@ UnivariatePowerSeriesCategory(Coef,Expon): Category == Definition where
       --!! DifferentialExtension Coef
       if Coef has PartialDifferentialRing Symbol then
         PartialDifferentialRing Symbol
-    if Coef has "**": (Coef,Expon) -> Coef then
+    if Coef has "^": (Coef,Expon) -> Coef then
       eval: (%,Coef) -> Stream Coef
         ++ \spad{eval(f,a)} evaluates a power series at a value in the
         ++ ground ring by returning a stream of partial sums.
@@ -202,21 +202,21 @@ UnivariateTaylorSeriesCategory(Coef): Category == Definition where
       ++ where a term is an exponent-coefficient pair.  The terms in the
       ++ stream should be ordered by increasing order of exponents.
     coefficients: % -> Stream Coef
-      ++ \spad{coefficients(a0 + a1 x + a2 x**2 + ...)} returns a stream
+      ++ \spad{coefficients(a0 + a1 x + a2 x^2 + ...)} returns a stream
       ++ of coefficients: \spad{[a0,a1,a2,...]}. The entries of the stream
       ++ may be zero.
     series: Stream Coef -> %
       ++ \spad{series([a0,a1,a2,...])} is the Taylor series
-      ++ \spad{a0 + a1 x + a2 x**2 + ...}.
+      ++ \spad{a0 + a1 x + a2 x^2 + ...}.
     quoByVar: % -> %
-      ++ \spad{quoByVar(a0 + a1 x + a2 x**2 + ...)}
-      ++ returns \spad{a1 + a2 x + a3 x**2 + ...}
+      ++ \spad{quoByVar(a0 + a1 x + a2 x^2 + ...)}
+      ++ returns \spad{a1 + a2 x + a3 x^2 + ...}
       ++ Thus, this function substracts the constant term and divides by
       ++ the series variable.  This function is used when Laurent series
       ++ are represented by a Taylor series and an order.
     multiplyCoefficients: (I -> Coef,%) -> %
-      ++ \spad{multiplyCoefficients(f,sum(n = 0..infinity,a[n] * x**n))}
-      ++ returns \spad{sum(n = 0..infinity,f(n) * a[n] * x**n)}.
+      ++ \spad{multiplyCoefficients(f,sum(n = 0..infinity,a[n] * x^n))}
+      ++ returns \spad{sum(n = 0..infinity,f(n) * a[n] * x^n)}.
       ++ This function is used when Laurent series are represented by
       ++ a Taylor series and an order.
     polynomial: (%,NNI) -> Polynomial Coef
@@ -227,8 +227,8 @@ UnivariateTaylorSeriesCategory(Coef): Category == Definition where
       ++ sum of all terms of f of degree d with \spad{k1 <= d <= k2}.
 
     if Coef has Field then
-      "**": (%,Coef) -> %
-        ++ \spad{f(x) ** a} computes a power of a power series.
+      "^": (%,Coef) -> %
+        ++ \spad{f(x) ^ a} computes a power of a power series.
         ++ When the coefficient ring is a field, we may raise a series
         ++ to an exponent from the coefficient ring provided that the
         ++ constant coefficient of the series is 1.
@@ -276,9 +276,9 @@ UnivariateTaylorSeriesCategory(Coef): Category == Definition where
 
     termOutput: (I,Coef,OUT) -> OUT
     termOutput(k,c,vv) ==
-    -- creates a term c * vv ** k
+    -- creates a term c * vv ^ k
       k = 0 => c :: OUT
-      mon := (k = 1 => vv; vv ** (k :: OUT))
+      mon := (k = 1 => vv; vv ^ (k :: OUT))
 --       if factorials?() and k > 1 then
 --         c := factorial(k)$IntegerCombinatoricFunctions * c
 --         mon := mon / hconcat(k :: OUT,"!" :: OUT)
@@ -311,17 +311,17 @@ UnivariateTaylorSeriesCategory(Coef): Category == Definition where
       l :=
         explicitlyEmpty? uu => l
         eq?(uu,rst uu) and frst uu = 0 => l
-        concat(prefix("O" :: OUT,[vv ** (n :: OUT)]),l)
+        concat(prefix("O" :: OUT,[vv ^ (n :: OUT)]),l)
       empty? l => (0$Coef) :: OUT
       reduce("+",reverse_! l)
 
     if Coef has Field then
-      (x:%) ** (r:Coef) == series power(r,coefficients x)$STTA
+      (x:%) ^ (r:Coef) == series power(r,coefficients x)$STTA
 
     if Coef has Algebra Fraction Integer then
       if Coef has CommutativeRing then
-        (x:%) ** (y:%)    == series(coefficients x **$STTF coefficients y)
-        (x:%) ** (r:RN)   == series powern(r,coefficients x)$STTA
+        (x:%) ^ (y:%)    == series(coefficients x ^$STTF coefficients y)
+        (x:%) ^ (r:RN)   == series powern(r,coefficients x)$STTA
 
         exp x == series exp(coefficients x)$STTF
         log x == series log(coefficients x)$STTF
@@ -355,17 +355,17 @@ UnivariateTaylorSeriesCategory(Coef): Category == Definition where
         acsch x == series acsch(coefficients x)$STTF
 
       else
-        (x:%) ** (y:%) == series(coefficients x **$STNC coefficients y)
+        (x:%) ^ (y:%) == series(coefficients x ^$STNC coefficients y)
 
-        (x:%) ** (r:RN) ==
+        (x:%) ^ (r:RN) ==
           coefs := coefficients x
           empty? coefs =>
             positive? r => 0
-            zero? r => error "0**0 undefined"
+            zero? r => error "0^0 undefined"
             error "0 raised to a negative power"
 --          not one? frst coefs =>
           not (frst coefs = 1) =>
-            error "**: constant coefficient should be 1"
+            error "^: constant coefficient should be 1"
           coefs := concat(0,rst coefs)
           onePlusX := monom(1,0)$STTA + $STTA monom(1,1)$STTA
           ratPow := powern(r,onePlusX)$STTA
@@ -432,8 +432,8 @@ UnivariateLaurentSeriesCategory(Coef): Category == Definition where
       ++ where a term is an exponent-coefficient pair.  The terms in the
       ++ stream should be ordered by increasing order of exponents.
     multiplyCoefficients: (I -> Coef,%) -> %
-      ++ \spad{multiplyCoefficients(f,sum(n = n0..infinity,a[n] * x**n)) =
-      ++ sum(n = 0..infinity,f(n) * a[n] * x**n)}.
+      ++ \spad{multiplyCoefficients(f,sum(n = n0..infinity,a[n] * x^n)) =
+      ++ sum(n = 0..infinity,f(n) * a[n] * x^n)}.
       ++ This function is used when Puiseux series are represented by
       ++ a Laurent series and an exponent.
     if Coef has IntegralDomain then

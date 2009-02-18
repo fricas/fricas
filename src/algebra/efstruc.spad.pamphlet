@@ -32,7 +32,7 @@ SymmetricFunctions(R:Ring): Exports == Implementation where
   Implementation ==> add
     signFix: (UP, NonNegativeInteger) -> Vector R
 
-    symFunc(x, n) == signFix((monomial(1, 1)$UP - x::UP) ** n, 1 + n)
+    symFunc(x, n) == signFix((monomial(1, 1)$UP - x::UP) ^ n, 1 + n)
 
     symFunc l ==
       signFix(*/[monomial(1, 1)$UP - a::UP for a in l], 1 + #l)
@@ -390,16 +390,16 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       is?(k, POWER)       => (zero? z => 0; exp(last(args) * log z))
       is?(k, "cot"::SY)   => inv tan z
       is?(k, "acot"::SY)  => atan inv z
-      is?(k, "asin"::SY)  => atan(z / sqrt(1 - z**2))
-      is?(k, "acos"::SY)  => atan(sqrt(1 - z**2) / z)
-      is?(k, "asec"::SY)  => atan sqrt(1 - z**2)
-      is?(k, "acsc"::SY)  => atan inv sqrt(1 - z**2)
-      is?(k, "asinh"::SY) => log(sqrt(1 + z**2) + z)
-      is?(k, "acosh"::SY) => log(sqrt(z**2 - 1) + z)
+      is?(k, "asin"::SY)  => atan(z / sqrt(1 - z^2))
+      is?(k, "acos"::SY)  => atan(sqrt(1 - z^2) / z)
+      is?(k, "asec"::SY)  => atan sqrt(1 - z^2)
+      is?(k, "acsc"::SY)  => atan inv sqrt(1 - z^2)
+      is?(k, "asinh"::SY) => log(sqrt(1 + z^2) + z)
+      is?(k, "acosh"::SY) => log(sqrt(z^2 - 1) + z)
       is?(k, "atanh"::SY) => log((z + 1) / (1 - z)) / (2::F)
       is?(k, "acoth"::SY) => log((z + 1) / (z - 1)) / (2::F)
-      is?(k, "asech"::SY) => log((inv z) + sqrt(inv(z**2) - 1))
-      is?(k, "acsch"::SY) => log((inv z) + sqrt(1 + inv(z**2)))
+      is?(k, "asech"::SY) => log((inv z) + sqrt(inv(z^2) - 1))
+      is?(k, "acsch"::SY) => log((inv z) + sqrt(1 + inv(z^2)))
       is?(k, "%paren"::SY) or is?(k, "%box"::SY) =>
         empty? rest args => z
         kf
@@ -411,10 +411,10 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       is?(k, "sech"::SY)  => 2 * inv(ez + iez)
       is?(k, "csch"::SY)  => 2 * inv(ez - iez)
       if has?(op, TRIG) then tz2  := tan(z / (2::F))
-      is?(k, "sin"::SY)   => 2 * tz2 / (1 + tz2**2)
-      is?(k, "cos"::SY)   => (1 - tz2**2) / (1 + tz2**2)
-      is?(k, "sec"::SY)   => (1 + tz2**2) / (1 - tz2**2)
-      is?(k, "csc"::SY)   => (1 + tz2**2) / (2 * tz2)
+      is?(k, "sin"::SY)   => 2 * tz2 / (1 + tz2^2)
+      is?(k, "cos"::SY)   => (1 - tz2^2) / (1 + tz2^2)
+      is?(k, "sec"::SY)   => (1 + tz2^2) / (1 - tz2^2)
+      is?(k, "csc"::SY)   => (1 + tz2^2) / (2 * tz2)
       op args
 
 --The next 5 functions are used by normalize, once a relation is found
@@ -430,7 +430,7 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       nv := nthRoot(x := first argument k, m := retract(n)@Z)
       l  := [r for r in concat(k, toR(lk, x)) |
              retract(second argument r)@Z ~= m]
-      lv := [nv ** (n / (retract(second argument r)@Z::Q)) for r in l]
+      lv := [nv ^ (n / (retract(second argument r)@Z::Q)) for r in l]
       [eval(f, l, lv), l, lv]
 
     ataneval(f, lk, k, v) ==
@@ -592,20 +592,20 @@ height(k1) to be maximal
         dd := (d := (cd := splitDenominator v).den)::F
         newe := [exp(y / dd) for y in fns
                     for i in 1..n | not(qelt(v, i) = 0)]$List(F)
-        newexp := [e ** d for e in newe]$List(F)
+        newexp := [e ^ d for e in newe]$List(F)
         li := [i for i in 1..n | not(qelt(v, i) = 0)]
-        h := */[e ** qelt(cd.num, i)
+        h := */[e ^ qelt(cd.num, i)
                 for i in li for e in newe] * g
         lk1 := concat(k, lk1)
         newexp := concat(h, newexp)
         [eval(f, lk1, newexp), lk1, newexp]
-      h := */[exp(y) ** qelt(v, i)
+      h := */[exp(y) ^ qelt(v, i)
                 for i in minIndex v .. maxIndex v for y in fns] * g
       [eval(f, [k], [h]), [k], [h]]
 
     logeval(f, lk, k, v) ==
       z := first argument k
-      c := z / (*/[x**qelt(v, i)
+      c := z / (*/[x^qelt(v, i)
                    for x in toZ lk for i in minIndex v .. maxIndex v])
 -- CHANGED log ktoZ x TO ktoY x SINCE WE WANT log exp f TO BE REPLACED BY f.
       g := +/[qelt(v, i) * x
@@ -657,7 +657,7 @@ height(k1) to be maximal
       v := c::Vector(Q)
       g := eta - +/[qelt(v, i) * yy
                         for i in minIndex v .. maxIndex v for yy in fns]
-      */[exp(yy) ** qelt(v, i)
+      */[exp(yy) ^ qelt(v, i)
                 for i in minIndex v .. maxIndex v for yy in fns] * exp g
 
     if R has GcdDomain then
@@ -691,8 +691,8 @@ height(k1) to be maximal
       lv := [qelt(v, i) for i in minIndex v .. maxIndex v |
                                                  i ~= rec.index]$List(Q)
       l  := [kk for kk in lk | kk ~= rec.ker]
-      h :F := */[exp(z) ** (- retract(a * v0)@Z) for a in lv for z in toY l]
-      h := h * exp(-v0 * g) * (k::F) ** v0
+      h :F := */[exp(z) ^ (- retract(a * v0)@Z) for a in lv for z in toY l]
+      h := h * exp(-v0 * g) * (k::F) ^ v0
       [eval(f, [rec.ker], [h]), [rec.ker], [h]]
 
     if F has CombinatorialOpsCategory then
@@ -761,7 +761,7 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       ++ all the trigonometric functions appearing in \spad{f} and involving
       ++ one of the \spad{xi's} in terms of complex logarithms and
       ++ exponentials. A kernel of the form \spad{tan(u)} is expressed
-      ++ using \spad{exp(u)**2} if it is one of the \spad{ki's}, in terms of
+      ++ using \spad{exp(u)^2} if it is one of the \spad{ki's}, in terms of
       ++ \spad{exp(2*u)} otherwise.
 
   Implementation ==> add
@@ -795,7 +795,7 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       im := complex(0, 1)$GR :: FG
       z  := first args
       is?(k, "tan"::Symbol)  =>
-        e := (member?(k, l) => exp(im * z) ** 2;  exp(2 * im * z))
+        e := (member?(k, l) => exp(im * z) ^ 2;  exp(2 * im * z))
         - im * (e - 1) /$FG (e + 1)
       is?(k, "atan"::Symbol) =>
         im * log((1 -$FG im *$FG z)/$FG (1 +$FG im *$FG z))$FG / (2::FG)
@@ -867,8 +867,8 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       while p ~= 0 repeat
         g := explogs2trigs(leadingCoefficient(p)::FG)
         if ((d := degree(p)::Z - bse) >= 0) then
-             ans := ans + g * f1 ** d
-        else ans := ans + g * f2 ** (-d)
+             ans := ans + g * f1 ^ d
+        else ans := ans + g * f2 ^ (-d)
         p := reductum p
       ans
 

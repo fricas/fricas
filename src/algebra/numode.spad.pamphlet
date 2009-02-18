@@ -68,11 +68,11 @@
 ++ \center{\spad{error = MAX(ABS((y2steps(i) - y1step(i))/yscal(i)))}}
 ++ and this is compared against \spad{eps}. If this is greater
 ++ than \spad{eps}, the step size is reduced accordingly to
-++ \center{\spad{hnew = 0.9 * hdid * (error/eps)**(-1/4)}}
+++ \center{\spad{hnew = 0.9 * hdid * (error/eps)^(-1/4)}}
 ++ If the error criterion is satisfied, then we check if the
 ++ step size was too fine and return a more efficient one. If
 ++ \spad{error > \spad{eps} * (6.0E-04)} then the next step size should be
-++ \center{\spad{hnext = 0.9 * hdid * (error/\spad{eps})**(-1/5)}}
+++ \center{\spad{hnext = 0.9 * hdid * (error/\spad{eps})^(-1/5)}}
 ++ Otherwise \spad{hnext = 4.0 * hdid} is returned.
 ++ A more detailed discussion of this and related topics can be
 ++ found in the book "Numerical Recipies" by W.Press, B.P. Flannery, 
@@ -190,7 +190,7 @@ NumericalOrdinaryDifferentialEquations(): Exports == Implementation where
       t6      : V NF := new(nvar::NNI,0.0)
       step    : RK4STEP := [htry,0.0,0.0]
       x       : NF   := x1
-      tiny    : NF   := 10.0**(-(digits()+1)::I)
+      tiny    : NF   := 10.0^(-(digits()+1)::I)
       m       : I    := nvar
       outlist : L OFORM := [x::E,x::E,x::E]
       i       : I
@@ -263,7 +263,7 @@ NumericalOrdinaryDifferentialEquations(): Exports == Implementation where
       safety : NF := 0.9
       grow   : NF := -0.20
       shrink : NF := -0.25
-      errcon : NF := 0.6E-04  --(this is 4/safety)**(1/grow)
+      errcon : NF := 0.6E-04  --(this is 4/safety)^(1/grow)
       hh     : NF
       errmax : NF
       i      : I
@@ -293,11 +293,11 @@ NumericalOrdinaryDifferentialEquations(): Exports == Implementation where
          errmax := errmax * eps
 --update integration stepsize
          if (errmax > 1.0) then
-            h := safety * h * (errmax ** shrink)
+            h := safety * h * (errmax ^ shrink)
          else
             step.did := h
             if errmax > errcon then
-               step.next := safety * h * (errmax ** grow)
+               step.next := safety * h * (errmax ^ grow)
             else
                step.next := 4 * h
             leave

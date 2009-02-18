@@ -37,7 +37,7 @@ GaussianFactorizationPackage() : C == T
        ++ factor(zi) produces the complete factorization of the complex
        ++ integer zi.
      sumSquares  :     Z      ->    List Z
-       ++ sumSquares(p) construct \spad{a} and b such that \spad{a**2+b**2}
+       ++ sumSquares(p) construct \spad{a} and b such that \spad{a^2+b^2}
        ++ is equal to
        ++ the integer prime p, and otherwise returns an error.
        ++ It will succeed if the prime number p is 2 or congruent to 1
@@ -67,7 +67,7 @@ GaussianFactorizationPackage() : C == T
 
      fact2:ZI:= complex(1,1)
 
-             ----  find the solution of x**2+1 mod q  ----
+             ----  find the solution of x^2+1 mod q  ----
      findelt(q:Z) : Z ==
        q1:=q-1
        r:=q1
@@ -78,11 +78,11 @@ GaussianFactorizationPackage() : C == T
        s : FMod := reduce(1,q)
        qq1:FMod :=reduce(q1,q)
        for i in 2.. while (s=1 or s=qq1) repeat
-         s:=reduce(i,q)**(r::NNI)
+         s:=reduce(i,q)^(r::NNI)
        t:=s
        while t ~= qq1 repeat
          s:=t
-         t:=t**2
+         t:=t^2
        s::Z
 
 
@@ -90,7 +90,7 @@ GaussianFactorizationPackage() : C == T
      sumsq1(p:Z) : List Z ==
        s:= findelt(p)
        u:=p
-       while u**2>p repeat
+       while u^2>p repeat
          w:=u rem s
          u:=s
          s:=w
@@ -106,7 +106,7 @@ GaussianFactorizationPackage() : C == T
          exp:=term.xpnt
          n=2 =>
            r :=concat(["prime",fact2,2*exp]$FFE,r)
-           unity:=unity*complex(0,-1)**(exp rem 4)::NNI
+           unity:=unity*complex(0,-1)^(exp rem 4)::NNI
 
          (n rem 4) = 3 => r:=concat(["prime",complex(n,0),exp]$FFE,r)
 
@@ -140,7 +140,7 @@ GaussianFactorizationPackage() : C == T
          unity:=unit r
          m:=complex(a,b)
 
-       n:Z:=a**2+b**2
+       n:Z:=a^2+b^2
        factn:= factorList(factor n)
        part:FFE:=["prime",0$ZI,0]
        for term in factn repeat
@@ -148,7 +148,7 @@ GaussianFactorizationPackage() : C == T
          exp:=term.xpnt
          n=2 =>
            part:= ["prime",fact2,exp]$FFE
-           m:=m quo (fact2**exp::NNI)
+           m:=m quo (fact2^exp::NNI)
            result:=concat(part,result)
 
          (n rem 4) = 3 =>
@@ -159,7 +159,7 @@ GaussianFactorizationPackage() : C == T
 
          z:=gcd(m,complex(n,0))
          part:= ["prime",z,exp]$FFE
-         z:=z**(exp::NNI)
+         z:=z^(exp::NNI)
          m:=m quo z
          result:=concat(part,result)
 

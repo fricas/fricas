@@ -39,8 +39,8 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef,ULS,UPXS,EFULS):_
   Exports ==> PartialTranscendentalFunctions(UPXS) with
 
     if Coef has Field then
-      "**": (UPXS,RN) -> UPXS
-        ++ z ** r raises a Puiseaux series z to a rational power r
+      "^": (UPXS,RN) -> UPXS
+        ++ z ^ r raises a Puiseaux series z to a rational power r
 
 --% Exponentials and Logarithms
 
@@ -129,17 +129,17 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef,ULS,UPXS,EFULS):_
       puiseux(r,ulsRoot :: ULS) * monomial(1,deg * r * inv(n :: RN))
 
     if Coef has Field then
-       (upxs:UPXS) ** (q:RN) ==
+       (upxs:UPXS) ^ (q:RN) ==
          num := numer q; den := denom q
---         one? den => upxs ** num
-         den = 1 => upxs ** num
+--         one? den => upxs ^ num
+         den = 1 => upxs ^ num
          r := rationalPower upxs; uls := laurentRep upxs
          deg := degree uls
          if zero?(coef := coefficient(uls,deg)) then
            deg := order(uls,deg + 1000)
            zero?(coef := coefficient(uls,deg)) =>
              error "power of series with many leading zero coefficients"
-         ulsPow := (uls * monomial(1,-deg)$ULS) ** q
+         ulsPow := (uls * monomial(1,-deg)$ULS) ^ q
          puiseux(r,ulsPow) * monomial(1,deg*q*r)
 
 --% transcendental functions
@@ -176,24 +176,24 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef,ULS,UPXS,EFULS):_
     asinIfCan upxs ==
       order(upxs,0) < 0 => "failed"
       (coef := coefficient(upxs,0)) = 0 =>
-        integrate((1 - upxs*upxs)**(-1/2) * (differentiate upxs))
+        integrate((1 - upxs*upxs)^(-1/2) * (differentiate upxs))
       TRANSFCN =>
         cc := asin(coef) :: UPXS
-        cc + integrate((1 - upxs*upxs)**(-1/2) * (differentiate upxs))
+        cc + integrate((1 - upxs*upxs)^(-1/2) * (differentiate upxs))
       "failed"
 
     acosIfCan upxs ==
       order(upxs,0) < 0 => "failed"
       TRANSFCN =>
         cc := acos(coefficient(upxs,0)) :: UPXS
-        cc + integrate(-(1 - upxs*upxs)**(-1/2) * (differentiate upxs))
+        cc + integrate(-(1 - upxs*upxs)^(-1/2) * (differentiate upxs))
       "failed"
 
     asecIfCan upxs ==
       order(upxs,0) < 0 => "failed"
       TRANSFCN =>
         cc := asec(coefficient(upxs,0)) :: UPXS
-        f := (upxs*upxs - 1)**(-1/2) * (differentiate upxs)
+        f := (upxs*upxs - 1)^(-1/2) * (differentiate upxs)
         (rec := recip upxs) case "failed" => "failed"
         cc + integrate(f * (rec :: UPXS))
       "failed"
@@ -202,7 +202,7 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef,ULS,UPXS,EFULS):_
       order(upxs,0) < 0 => "failed"
       TRANSFCN =>
         cc := acsc(coefficient(upxs,0)) :: UPXS
-        f := -(upxs*upxs - 1)**(-1/2) * (differentiate upxs)
+        f := -(upxs*upxs - 1)^(-1/2) * (differentiate upxs)
         (rec := recip upxs) case "failed" => "failed"
         cc + integrate(f * (rec :: UPXS))
       "failed"
@@ -210,13 +210,13 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef,ULS,UPXS,EFULS):_
     asinhIfCan upxs ==
       order(upxs,0) < 0 => "failed"
       TRANSFCN or (coefficient(upxs,0) = 0) =>
-        log(upxs + (1 + upxs*upxs)**(1/2))
+        log(upxs + (1 + upxs*upxs)^(1/2))
       "failed"
 
     acoshIfCan upxs ==
       TRANSFCN =>
         order(upxs,0) < 0 => "failed"
-        log(upxs + (upxs*upxs - 1)**(1/2))
+        log(upxs + (upxs*upxs - 1)^(1/2))
       "failed"
 
     asechIfCan upxs ==

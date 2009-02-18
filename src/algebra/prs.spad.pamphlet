@@ -208,10 +208,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
          ++ of the exact euclidean division of \axiom{F} by \axiom{G}.
 
        Lazard : (R, R, NNI) -> R
-         ++ \axiom{Lazard(x, y, n)} computes \axiom{x**n/y**(n-1)}
+         ++ \axiom{Lazard(x, y, n)} computes \axiom{x^n/y^(n-1)}
 
        Lazard2 : (polR, R, R, NNI) -> polR
-         ++ \axiom{Lazard2(F, x, y, n)} computes  \axiom{(x/y)**(n-1) * F}
+         ++ \axiom{Lazard2(F, x, y, n)} computes  \axiom{(x/y)^(n-1) * F}
 
        next_sousResultant2 : (polR, polR, polR, R) -> polR
          ++ \axiom{nextsousResultant2(P, Q, Z, s)} returns
@@ -253,14 +253,14 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        degP < degQ => construct(1, 0, P)
        Q := reductum(Q)
        i : NNI := (degP - degQ + 1)::NNI
-       co : R := lcQ**i
+       co : R := lcQ^i
        quot : polR := 0$polR
        while (delta : Integer := degree(P) - degQ) >= 0 repeat
          i := (i - 1)::NNI
          mon := monomial(LC(P), delta::NNI)$polR
-         quot := quot + lcQ**i * mon
+         quot := quot + lcQ^i * mon
          P := lcQ * reductum(P) - mon * Q
-       P := lcQ**i * P
+       P := lcQ^i * P
        return construct(co, quot, P)
 
     divide(F : polR, G : polR) : Record(quotient : polR, remainder : polR)==
@@ -283,9 +283,9 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           zero?(Q) => return 0
           (degP, degQ) := (degree(P), degree(Q))
           if odd?(degP) and odd?(degQ) then a := - a
-          zero?(degQ) => return (a * LC(Q)**degP)
+          zero?(degQ) => return (a * LC(Q)^degP)
           U : polR := divide(P, Q).remainder
-          a := a * LC(Q)**(degP - degree(U))::NNI
+          a := a * LC(Q)^(degP - degree(U))::NNI
           (P, Q) := (Q, U)
 
     resultantEuclidean_naif(P : polR, Q : polR) :
@@ -299,10 +299,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           (degP, degQ) := (degree(P), degree(Q))
           if odd?(degP) and odd?(degQ) then a := -a
           if zero?(degQ) then
-             a := a * LC(Q)**(degP-1)::NNI
+             a := a * LC(Q)^(degP-1)::NNI
              return construct(a*cf1, a*cf2, a*LC(Q))
           divid := divide(P,Q)
-          a := a * LC(Q)**(degP - degree(divid.remainder))::NNI
+          a := a * LC(Q)^(degP - degree(divid.remainder))::NNI
           (P, Q) := (Q, divid.remainder)
           (old_cf1, old_cf2, cf1, cf2) := (cf1, cf2, 
                 old_cf1 - divid.quotient * cf1, old_cf2 - divid.quotient * cf2)
@@ -317,10 +317,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           (degP, degQ) := (degree(P), degree(Q))
           if odd?(degP) and odd?(degQ) then a := -a
           if zero?(degQ) then
-             a := a * LC(Q)**(degP-1)::NNI
+             a := a * LC(Q)^(degP-1)::NNI
              return construct(a*cf2, a*LC(Q))
           divid := divide(P,Q)
-          a := a * LC(Q)**(degP - degree(divid.remainder))::NNI
+          a := a * LC(Q)^(degP - degree(divid.remainder))::NNI
           (P, Q) := (Q, divid.remainder)
           (old_cf2, cf2) := (cf2, old_cf2 - divid.quotient * cf2)
 
@@ -332,7 +332,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        while n >= (b := 2*a) repeat a := b
        c : R := x
        n := (n - a)::NNI
-       repeat                    --  c = x**i / y**(i-1),  i=n_0 quo a,  a=2**?
+       repeat                    --  c = x^i / y^(i-1),  i=n_0 quo a,  a=2^?
 --          one?(a) => return c
           (a = 1) => return c
           a := a quo 2
@@ -347,7 +347,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        return ((x * F) exquo y)::polR
 
     Lazard3(V : Vector(polR), x : R, y : R, n : NNI) : Vector(polR) ==
-    -- computes x**(n-1) * V / y**(n-1)
+    -- computes x^(n-1) * V / y^(n-1)
        zero?(n) => error("Lazard2$prs : n = 0")
 --       one?(n) => V
        (n = 1) => V
@@ -399,7 +399,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
 
     algo_new(P : polR, Q : polR) : R ==
        delta : NNI := (degree(P) - degree(Q))::NNI
-       s : R := LC(Q)**delta
+       s : R := LC(Q)^delta
        (P, Q) := (Q, pseudoRemainder(P, -Q))
        repeat      
           -- P = S_c-1 (except the first turn : P ~ S_c-1), 
@@ -417,14 +417,14 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        if degree(P) < degree(Q) then 
           (P, Q) := (Q, P)
           if odd?(degree(P)) and odd?(degree(Q)) then Q := - Q
-       zero?(degree(Q)) => LC(Q)**degree(P)
+       zero?(degree(Q)) => LC(Q)^degree(P)
        -- degree(P) >= degree(Q) > 0
        R has Finite => resultant_naif(P, Q)
        return algo_new(P, Q)
 
     subResultantEuclidean(P : polR, Q : polR) :
                           Record(coef1 : polR, coef2 : polR, resultant : R) ==
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 0::polR, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.coef::polR, pdiv.quotient]
@@ -452,14 +452,14 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        if zero?(degree(Q)) then
           degP : NNI := degree(P)
           zero?(degP) => error("resultantEuclidean$PRS : constant polynomials")
-          s : R := LC(Q)**(degP-1)::NNI
+          s : R := LC(Q)^(degP-1)::NNI
           return construct(0::polR, s::polR, s * LC(Q))
        R has Finite => resultantEuclidean_naif(P, Q)
        return subResultantEuclidean(P,Q)
 
     semiSubResultantEuclidean(P : polR, Q : polR) :
                        Record(coef2 : polR, resultant : R) ==
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.quotient]
@@ -484,7 +484,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        if zero?(degree(Q)) then
           degP : NNI := degree(P)
           zero?(degP) => error("semiResultantEuclidean2 : constant polynomials")
-          s : R := LC(Q)**(degP-1)::NNI
+          s : R := LC(Q)^(degP-1)::NNI
           return construct(s::polR, s * LC(Q))
        R has Finite => semiResultantEuclidean_naif(P, Q)
        return semiSubResultantEuclidean(P,Q)
@@ -502,10 +502,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        if i = degree(Q) then
           delta : NNI := (degree(P)-degree(Q))::NNI
           zero?(delta) => error("indiceSubResultant$PRS : bad degrees")
-          s : R := LC(Q)**(delta-1)::NNI
+          s : R := LC(Q)^(delta-1)::NNI
           return s*Q
        i > degree(Q) => 0
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        (P, Q) := (Q, pseudoRemainder(P, -Q))
        repeat
           -- P = S_{c-1} ~ S_d , Q = S_{d-1},  s = lc(S_d),  i < d
@@ -529,10 +529,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           delta : NNI := (degree(P)-degree(Q))::NNI
           zero?(delta) => 
                       error("indiceSubResultantEuclidean$PRS : bad degrees")
-          s : R := LC(Q)**(delta-1)::NNI
+          s : R := LC(Q)^(delta-1)::NNI
           return construct(0::polR, s::polR, s * Q)
        i > degree(Q) => construct(0::polR, 0::polR, 0::polR)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 0::polR, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.coef::polR, pdiv.quotient]
@@ -559,10 +559,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           delta : NNI := (degree(P)-degree(Q))::NNI
           zero?(delta) => 
                   error("semiIndiceSubResultantEuclidean$PRS : bad degrees")
-          s : R := LC(Q)**(delta-1)::NNI
+          s : R := LC(Q)^(delta-1)::NNI
           return construct(s::polR, s * Q)
        i > degree(Q) => construct(0::polR, 0::polR)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.quotient]
@@ -586,10 +586,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        if i = degree(Q) then
           delta : NNI := (degree(P)-degree(Q))::NNI
           zero?(delta) => error("degreeSubResultant$PRS : bad degrees")
-          s : R := LC(Q)**(delta-1)::NNI
+          s : R := LC(Q)^(delta-1)::NNI
           return s*Q
        i > degree(Q) => 0
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        (P, Q) := (Q, pseudoRemainder(P, -Q))
        repeat
           -- P = S_{c-1},  Q = S_{d-1},  s = lc(S_d)
@@ -610,10 +610,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           delta : NNI := (degree(P)-degree(Q))::NNI
           zero?(delta) => 
                       error("degreeSubResultantEuclidean$PRS : bad degrees")
-          s : R := LC(Q)**(delta-1)::NNI
+          s : R := LC(Q)^(delta-1)::NNI
           return construct(0::polR, s::polR, s * Q)
        i > degree(Q) => construct(0::polR, 0::polR, 0::polR)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 0::polR, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.coef::polR, pdiv.quotient]
@@ -637,10 +637,10 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           delta : NNI := (degree(P)-degree(Q))::NNI
           zero?(delta) => 
                   error("semiDegreeSubResultantEuclidean$PRS : bad degrees")
-          s : R := LC(Q)**(delta-1)::NNI
+          s : R := LC(Q)^(delta-1)::NNI
           return construct(s::polR, s * Q)
        i > degree(Q) => construct(0::polR, 0::polR)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.quotient]
@@ -658,8 +658,8 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
     lastSubResultant(P : polR, Q : polR) : polR ==
        zero?(Q) or zero?(P) => 0
        if degree(P) < degree(Q) then (P, Q) := (Q, P)
-       zero?(degree(Q)) => (LC(Q)**degree(P))::polR
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       zero?(degree(Q)) => (LC(Q)^degree(P))::polR
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        (P, Q) := (Q, pseudoRemainder(P, -Q))
        Z : polR := P
        repeat
@@ -682,9 +682,9 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           degP : NNI := degree(P)
           zero?(degP) => 
               error("lastSubResultantEuclidean$PRS : constant polynomials")
-          s : R := LC(Q)**(degP-1)::NNI
+          s : R := LC(Q)^(degP-1)::NNI
           return construct(0::polR, s::polR, s * Q)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 0::polR, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.coef::polR, pdiv.quotient]
@@ -711,9 +711,9 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           degP : NNI := degree(P)
           zero?(degP) => 
               error("semiLastSubResultantEuclidean$PRS : constant polynomials")
-          s : R := LC(Q)**(degP-1)::NNI
+          s : R := LC(Q)^(degP-1)::NNI
           return construct(s::polR, s * Q)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.quotient]
@@ -739,7 +739,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        L : List(polR) := []
        zero?(degree(Q)) => L
        L := [Q]
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        (P, Q) := (Q, pseudoRemainder(P, -Q))
        repeat
           -- P = S_{c-1},  Q = S_{d-1},  s = lc(S_d)
@@ -760,7 +760,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        if degree(P) < degree(Q) then (P, Q) := (Q, P)
        zero?(degree(Q)) => [0]
        L : List(NNI) := []
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        (P, Q) := (Q, pseudoRemainder(P, Q))
        repeat
           -- P = S_{c-1} ~ S_d,  Q = S_{d-1},  s = lc(S_d)
@@ -780,7 +780,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        zero?(Q) => P
        if degree(P) < degree(Q) then (P, Q) := (Q, P)
        zero?(degree(Q)) => 1$polR
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        (P, Q) := (Q, pseudoRemainder(P, -Q))
        repeat
           -- P = S_{c-1},  Q = S_{d-1},  s = lc(S_d)
@@ -800,7 +800,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           l := subResultantGcdEuclidean(Q, P)
           return construct(l.coef2, l.coef1, l.gcd)
        zero?(degree(Q)) => construct(0::polR, 1::polR, Q)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 0::polR, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.coef::polR, pdiv.quotient]
@@ -823,7 +823,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        degree(P) < degree(Q) => 
                        error("semiSubResultantGcdEuclidean2$PRS : bad degrees")
        zero?(degree(Q)) => construct(1::polR, Q)
-       s : R := LC(Q)**(degree(P) - degree(Q))::NNI
+       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
        VP : Vector(polR) := [Q, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.quotient]
@@ -847,19 +847,19 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        d : Integer := degree(P)
        zero?(d) => error "cannot take discriminant of constants"
        a : Integer := (d * (d-1)) quo 2
-       a := (-1)**a::NonNegativeInteger
+       a := (-1)^a::NonNegativeInteger
        dP : polR := differentiate P
        r : R := resultant(P, dP)
        d := d - degree(dP) - 1
        return (if zero?(d) then a * (r exquo LC(P))::R
-               else a * r * LC(P)**(d-1)::NNI)
+               else a * r * LC(P)^(d-1)::NNI)
 
     discriminantEuclidean(P : polR) : 
                        Record(coef1 : polR, coef2 : polR, discriminant : R) ==
        d : Integer := degree(P)
        zero?(d) => error "cannot take discriminant of constants"
        a : Integer := (d * (d-1)) quo 2
-       a := (-1)**a::NonNegativeInteger
+       a := (-1)^a::NonNegativeInteger
        dP : polR := differentiate P
        rE := resultantEuclidean(P, dP)
        d := d - degree(dP) - 1
@@ -868,9 +868,9 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           c2 : polR := a * (rE.coef2 exquo LC(P))::polR
           cr : R := a * (rE.resultant exquo LC(P))::R
        else
-          c1 : polR := a * rE.coef1 * LC(P)**(d-1)::NNI
-          c2 : polR := a * rE.coef2 * LC(P)**(d-1)::NNI
-          cr : R := a * rE.resultant * LC(P)**(d-1)::NNI
+          c1 : polR := a * rE.coef1 * LC(P)^(d-1)::NNI
+          c2 : polR := a * rE.coef2 * LC(P)^(d-1)::NNI
+          cr : R := a * rE.resultant * LC(P)^(d-1)::NNI
        return construct(c1, c2, cr)
 
     semiDiscriminantEuclidean(P : polR) : 
@@ -878,7 +878,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        d : Integer := degree(P)
        zero?(d) => error "cannot take discriminant of constants"
        a : Integer := (d * (d-1)) quo 2
-       a := (-1)**a::NonNegativeInteger
+       a := (-1)^a::NonNegativeInteger
        dP : polR := differentiate P
        rE := semiResultantEuclidean2(P, dP)
        d := d - degree(dP) - 1
@@ -886,8 +886,8 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           c2 : polR := a * (rE.coef2 exquo LC(P))::polR
           cr : R := a * (rE.resultant exquo LC(P))::R
        else
-          c2 : polR := a * rE.coef2 * LC(P)**(d-1)::NNI
-          cr : R := a * rE.resultant * LC(P)**(d-1)::NNI
+          c2 : polR := a * rE.coef2 * LC(P)^(d-1)::NNI
+          cr : R := a * rE.resultant * LC(P)^(d-1)::NNI
        return construct(c2, cr)
 
     if R has GcdDomain then
