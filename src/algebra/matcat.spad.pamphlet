@@ -217,8 +217,8 @@ MatrixCategory(R,Row,Col): Category == Definition where
      "*": (Row,%) -> Row
        ++ \spad{r * x} is the product of the row vector r and the matrix x.
        ++ Error: if the dimensions are incompatible.
-     "**": (%,NonNegativeInteger) -> %
-       ++ \spad{x ** n} computes a non-negative integral power of the matrix x.
+     "^": (%,NonNegativeInteger) -> %
+       ++ \spad{x ^ n} computes a non-negative integral power of the matrix x.
        ++ Error: if the matrix is not square.
      if R has IntegralDomain then
        "exquo": (%,R) -> Union(%,"failed")
@@ -260,8 +260,8 @@ MatrixCategory(R,Row,Col): Category == Definition where
          ++ \spad{inverse(m)} returns the inverse of the matrix m.
          ++ If the matrix is not invertible, "failed" is returned.
          ++ Error: if the matrix is not square.
-       "**": (%,Integer) -> %
-         ++ \spad{m**n} computes an integral power of the matrix m.
+       "^": (%,Integer) -> %
+         ++ \spad{m^n} computes an integral power of the matrix m.
          ++ Error: if matrix is not square or if the matrix
          ++ is square but not invertible.
 
@@ -534,8 +534,8 @@ MatrixCategory(R,Row,Col): Category == Definition where
        y := positivePower(x,n quo 2)
        y * y
 
-     x:% ** n:NonNegativeInteger ==
-       not((nn:= nrows x) = ncols x) => error "**: matrix must be square"
+     x:% ^ n:NonNegativeInteger ==
+       not((nn:= nrows x) = ncols x) => error "^: matrix must be square"
        zero? n => scalarMatrix(nn,1)
        positivePower(x,n)
 
@@ -744,12 +744,12 @@ testLibraryError "Pfaffian [[1,2,3],[0,0,0]]"
      if R has Field then
        x / r == map(#1 / r,x)
 
-       x:% ** n:Integer ==
-         not((nn:= nrows x) = ncols x) => error "**: matrix must be square"
+       x:% ^ n:Integer ==
+         not((nn:= nrows x) = ncols x) => error "^: matrix must be square"
          zero? n => scalarMatrix(nn,1)
          positive? n => positivePower(x,n)
          (xInv := inverse x) case "failed" =>
-           error "**: matrix must be invertible"
+           error "^: matrix must be invertible"
          positivePower(xInv :: %,-n)
 
 @
@@ -891,7 +891,7 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
    add
 
      if R has Finite then
-         size() == (size()$R)**(m*n)
+         size() == (size()$R)^(m*n)
 
          random() == matrix [[random()$R for i in 1..m] for j in 1..n]
 
@@ -1020,8 +1020,8 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
       inverse: % -> Union(%,"failed")
         ++ \spad{inverse(m)} returns the inverse of the matrix m, if that
         ++ matrix is invertible and returns "failed" otherwise.
-      "**": (%,Integer) -> %
-        ++ \spad{m**n} computes an integral power of the matrix m.
+      "^": (%,Integer) -> %
+        ++ \spad{m^n} computes an integral power of the matrix m.
         ++ Error: if the matrix is not invertible.
 
    add
@@ -1040,7 +1040,7 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
       y := positivePower(x,n quo 2)
       y * y
 
-    x:% ** n:NonNegativeInteger ==
+    x:% ^ n:NonNegativeInteger ==
       zero? n => scalarMatrix 1
       positivePower(x,n)
 
@@ -1100,11 +1100,11 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
 
     if R has Field then
 
-      x:% ** n:Integer ==
+      x:% ^ n:Integer ==
         zero? n => scalarMatrix 1
         positive? n => positivePower(x,n)
         (xInv := inverse x) case "failed" =>
-          error "**: matrix must be invertible"
+          error "^: matrix must be invertible"
         positivePower(xInv :: %,-n)
 
 @

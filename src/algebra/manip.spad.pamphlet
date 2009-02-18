@@ -42,9 +42,9 @@ FactoredFunctions(M:IntegralDomain): Exports == Implementation where
       n             := n quo d
       for term in lf repeat
         qr    := divide(term.exponent::N quo d, n)
-        coeff := coeff * term.factor ** qr.quotient
+        coeff := coeff * term.factor ^ qr.quotient
         not zero?(qr.remainder) =>
-          radi := concat_!(radi, term.factor ** qr.remainder)
+          radi := concat_!(radi, term.factor ^ qr.remainder)
       [n, coeff, radi]
 
     log ff ==
@@ -83,13 +83,13 @@ PolynomialRoots(E, V, R, P, F):Exports == Implementation where
   Exports ==> with
     rroot: (R, N) -> REC
       ++ rroot(f, n) returns \spad{[m,c,r]} such
-      ++ that \spad{f**(1/n) = c * r**(1/m)}.
+      ++ that \spad{f^(1/n) = c * r^(1/m)}.
     qroot : (Q, N) -> REC
       ++ qroot(f, n) returns \spad{[m,c,r]} such
-      ++ that \spad{f**(1/n) = c * r**(1/m)}.
+      ++ that \spad{f^(1/n) = c * r^(1/m)}.
     if R has GcdDomain then froot: (F, N) -> REC
       ++ froot(f, n) returns \spad{[m,c,r]} such
-      ++ that \spad{f**(1/n) = c * r**(1/m)}.
+      ++ that \spad{f^(1/n) = c * r^(1/m)}.
     nthr: (P, N) -> Record(exponent:N,coef:P,radicand:List P)
         ++ nthr(p,n) should be local but conditional
 
@@ -120,16 +120,16 @@ PolynomialRoots(E, V, R, P, F):Exports == Implementation where
         sd := czroot(denom x, n)
         m  := lcm(sn.exponent, sd.exponent)::N
         [m, sn.coef / sd.coef,
-                    (sn.radicand ** (m quo sn.exponent)) /
-                                (sd.radicand ** (m quo sd.exponent))]
+                    (sn.radicand ^ (m quo sn.exponent)) /
+                                (sd.radicand ^ (m quo sd.exponent))]
     else
       qroot(x, n) ==
         sn := zroot(numer x, n)
         sd := zroot(denom x, n)
         m  := lcm(sn.exponent, sd.exponent)::N
         [m, sn.coef::F / sd.coef::F,
-                    (sn.radicand ** (m quo sn.exponent))::F /
-                                (sd.radicand ** (m quo sd.exponent))::F]
+                    (sn.radicand ^ (m quo sn.exponent))::F /
+                                (sd.radicand ^ (m quo sd.exponent))::F]
 
     if R has RetractableTo Fraction Z then
       rroot(x, n) ==
@@ -175,10 +175,10 @@ PolynomialRoots(E, V, R, P, F):Exports == Implementation where
         rd := rroot(pd.coef, sd.exponent)
         m := lcm([rn.exponent, rd.exponent, sn.exponent, sd.exponent])::N
         [m, (sn.coef::F / sd.coef::F) * (rn.coef / rd.coef),
-             ((rn.radicand ** (m quo rn.exponent)) /
-                    (rd.radicand ** (m quo rd.exponent))) *
-                           (pn.poly ** (m quo sn.exponent))::F /
-                                    (pd.poly ** (m quo sd.exponent))::F]
+             ((rn.radicand ^ (m quo rn.exponent)) /
+                    (rd.radicand ^ (m quo rd.exponent))) *
+                           (pn.poly ^ (m quo sn.exponent))::F /
+                                    (pd.poly ^ (m quo sd.exponent))::F]
 
 
 @
@@ -215,7 +215,7 @@ AlgebraicManipulations(R, F): Exports == Implementation where
   Exports ==> with
     rootSplit: F -> F
       ++ rootSplit(f) transforms every radical of the form
-      ++ \spad{(a/b)**(1/n)} appearing in f into \spad{a**(1/n) / b**(1/n)}.
+      ++ \spad{(a/b)^(1/n)} appearing in f into \spad{a^(1/n) / b^(1/n)}.
       ++ This transformation is not in general valid for all
       ++ complex numbers \spad{a} and b.
     ratDenom  : F -> F
@@ -237,17 +237,17 @@ AlgebraicManipulations(R, F): Exports == Implementation where
       and F has FunctionSpace(R) then
         rootPower  : F -> F
           ++ rootPower(f) transforms every radical power of the form
-          ++ \spad{(a**(1/n))**m} into a simpler form if \spad{m} and
+          ++ \spad{(a^(1/n))^m} into a simpler form if \spad{m} and
           ++ \spad{n} have a common factor.
         rootProduct: F -> F
           ++ rootProduct(f) combines every product of the form
-          ++ \spad{(a**(1/n))**m * (a**(1/s))**t} into a single power
+          ++ \spad{(a^(1/n))^m * (a^(1/s))^t} into a single power
           ++ of a root of \spad{a}, and transforms every radical power
-          ++ of the form \spad{(a**(1/n))**m} into a simpler form.
+          ++ of the form \spad{(a^(1/n))^m} into a simpler form.
         rootSimp   : F -> F
           ++ rootSimp(f) transforms every radical of the form
-          ++ \spad{(a * b**(q*n+r))**(1/n)} appearing in f into
-          ++ \spad{b**q * (a * b**r)**(1/n)}.
+          ++ \spad{(a * b^(q*n+r))^(1/n)} appearing in f into
+          ++ \spad{b^q * (a * b^r)^(1/n)}.
           ++ This transformation is not in general valid for all
           ++ complex numbers b.
         rootKerSimp: (OP, F, N) -> F
@@ -316,7 +316,7 @@ AlgebraicManipulations(R, F): Exports == Implementation where
         rootKerSimp(op, x, n) == inroot(op, x, n)
 
 -- l is a list of nth-roots, returns a list of records of the form
--- [a**(1/n1),a**(1/n2),...], [n1,n2,...]]
+-- [a^(1/n1),a^(1/n2),...], [n1,n2,...]]
 -- such that the whole list covers l exactly
       breakup l ==
         empty? l => empty()
@@ -350,7 +350,7 @@ AlgebraicManipulations(R, F): Exports == Implementation where
           x := radeval(numer x, k) / radeval(denom x, k)
         x
 
--- replaces (a**(1/n))**m in p by a power of a simpler radical of a if
+-- replaces (a^(1/n))^m in p by a power of a simpler radical of a if
 -- n and m have a common factor
       radeval(p, k) ==
         a := first(arg := argument k)
@@ -378,7 +378,7 @@ AlgebraicManipulations(R, F): Exports == Implementation where
                                 (n * retract(second argument(pr.var))@Z)
         qr := divide(numer q, denom q)
         x  := first argument(pr.var)
-        x ** qr.quotient * rootKerSimp(op,x,denom(q)::N) ** qr.remainder
+        x ^ qr.quotient * rootKerSimp(op,x,denom(q)::N) ^ qr.remainder
 
       sroot k ==
         pr := froot(first(arg := argument k),(retract(second arg)@Z)::N)
@@ -433,17 +433,17 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       ++ \item 2. trigonometric and hyperbolic trigonometric functions
       ++ of sums are expanded into sums of products of trigonometric
       ++ and hyperbolic trigonometric functions.
-      ++ \item 3. formal powers of the form \spad{(a/b)**c} are expanded into
-      ++ \spad{a**c * b**(-c)}.
+      ++ \item 3. formal powers of the form \spad{(a/b)^c} are expanded into
+      ++ \spad{a^c * b^(-c)}.
       ++ \end{items}
     simplify   : F -> F
       ++ simplify(f) performs the following simplifications on f:\begin{items}
       ++ \item 1. rewrites trigs and hyperbolic trigs in terms
       ++ of \spad{sin} ,\spad{cos}, \spad{sinh}, \spad{cosh}.
-      ++ \item 2. rewrites \spad{sin**2} and \spad{sinh**2} in terms
+      ++ \item 2. rewrites \spad{sin^2} and \spad{sinh^2} in terms
       ++ of \spad{cos} and \spad{cosh},
       ++ \item 3. rewrites \spad{exp(a)*exp(b)} as \spad{exp(a+b)}.
-      ++ \item 4. rewrites \spad{(a**(1/n))**m * (a**(1/s))**t} as a single
+      ++ \item 4. rewrites \spad{(a^(1/n))^m * (a^(1/s))^t} as a single
       ++ power of a single radical of \spad{a}.
       ++ \end{items}
     htrigs     : F -> F
@@ -457,8 +457,8 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       ++ into \spad{log(a/b)}, every \spad{log(a) + log(b)} into \spad{log(a*b)}
       ++ and every \spad{n*log(a)} into \spad{log(a^n)}.
     expandPower: F -> F
-      ++ expandPower(f) converts every power \spad{(a/b)**c} appearing
-      ++ in f into \spad{a**c * b**(-c)}.
+      ++ expandPower(f) converts every power \spad{(a/b)^c} appearing
+      ++ in f into \spad{a^c * b^(-c)}.
     expandLog  : F -> F
       ++ expandLog(f) converts every \spad{log(a/b)} appearing in f into
       ++ \spad{log(a) - log(b)}, and every \spad{log(a*b)} into
@@ -512,20 +512,20 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       ++ coth2tanh(f) converts every \spad{coth(u)} appearing in f into
       ++ \spad{1/tanh(u)}.
     removeCosSq: F -> F
-      ++ removeCosSq(f) converts every \spad{cos(u)**2} appearing in f into
-      ++ \spad{1 - sin(x)**2}, and also reduces higher
+      ++ removeCosSq(f) converts every \spad{cos(u)^2} appearing in f into
+      ++ \spad{1 - sin(x)^2}, and also reduces higher
       ++ powers of \spad{cos(u)} with that formula.
     removeSinSq: F -> F
-      ++ removeSinSq(f) converts every \spad{sin(u)**2} appearing in f into
-      ++ \spad{1 - cos(x)**2}, and also reduces higher powers of
+      ++ removeSinSq(f) converts every \spad{sin(u)^2} appearing in f into
+      ++ \spad{1 - cos(x)^2}, and also reduces higher powers of
       ++ \spad{sin(u)} with that formula.
     removeCoshSq:F -> F
-      ++ removeCoshSq(f) converts every \spad{cosh(u)**2} appearing in f into
-      ++ \spad{1 - sinh(x)**2}, and also reduces higher powers of
+      ++ removeCoshSq(f) converts every \spad{cosh(u)^2} appearing in f into
+      ++ \spad{1 - sinh(x)^2}, and also reduces higher powers of
       ++ \spad{cosh(u)} with that formula.
     removeSinhSq:F -> F
-      ++ removeSinhSq(f) converts every \spad{sinh(u)**2} appearing in f into
-      ++ \spad{1 - cosh(x)**2}, and also reduces higher powers
+      ++ removeSinhSq(f) converts every \spad{sinh(u)^2} appearing in f into
+      ++ \spad{1 - cosh(x)^2}, and also reduces higher powers
       ++ of \spad{sinh(u)} with that formula.
     if R has PatternMatchable(R) and R has ConvertibleTo(Pattern(R)) and F has ConvertibleTo(Pattern(R)) and F has PatternMatchable R then
       expandTrigProducts : F -> F
@@ -599,7 +599,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
         -- Now look for multiples, including negative ones.
         prod : Union(PRODUCT, "failed") := isMult(term)
         (prod case PRODUCT) and is?(prod.var,"log"::Symbol) =>
-            arg := arg * simplifyLog ((first argument(prod.var))**(prod.coef))
+            arg := arg * simplifyLog ((first argument(prod.var))^(prod.coef))
         sum := sum+term
       sum+log(arg)
 
@@ -612,7 +612,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       -- Check for n*log(u)
       prod : Union(PRODUCT, "failed") := isMult(e)
       (prod case PRODUCT) and is?(prod.var,"log"::Symbol) =>
-        log simplifyLog ((first argument(prod.var))**(prod.coef))
+        log simplifyLog ((first argument(prod.var))^(prod.coef))
 
       termList : Union(List(F),"failed") := isTimes(e)
       -- I'm using two variables, termList and terms, to work round a
@@ -638,7 +638,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
             i := i+1
             if is?(terms.i,"log"::Symbol) then
               args : List F := argument(retract(terms.i)@K)
-              setelt(terms,i, log simplifyLog1(first(args)**(*/exprs)))
+              setelt(terms,i, log simplifyLog1(first(args)^(*/exprs)))
               foundLog := true
           -- The next line deals with a situation which shouldn't occur,
           -- since we have checked whether we are freeOf log already.
@@ -651,7 +651,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       expt : Union(POW, "failed") := isPower(e)
 --      (expt case POW) and not one? expt.exponent =>
       (expt case POW) and not (expt.exponent = 1) =>
-        simplifyLog(expt.val)**(expt.exponent)
+        simplifyLog(expt.val)^(expt.exponent)
 
       kers : List K := kernels e
 --      not(one?(#kers)) => e -- Have a constant
@@ -667,10 +667,10 @@ TranscendentalManipulations(R, F): Exports == Implementation where
     expandpow k ==
       a := expandPower first(arg := argument k)
       b := expandPower second arg
---      ne:F := (one? numer a => 1; numer(a)::F ** b)
-      ne:F := (((numer a) = 1) => 1; numer(a)::F ** b)
---      de:F := (one? denom a => 1; denom(a)::F ** (-b))
-      de:F := (((denom a) = 1) => 1; denom(a)::F ** (-b))
+--      ne:F := (one? numer a => 1; numer(a)::F ^ b)
+      ne:F := (((numer a) = 1) => 1; numer(a)::F ^ b)
+--      de:F := (one? denom a => 1; denom(a)::F ^ (-b))
+      de:F := (((denom a) = 1) => 1; denom(a)::F ^ (-b))
       ne * de
 
     termexp p ==
@@ -694,25 +694,25 @@ TranscendentalManipulations(R, F): Exports == Implementation where
 -- l is a list of pure powers appearing as kernels in p
     powersimp(p, l) ==
       empty? l => 1
-      k := first l                           -- k = a**b
+      k := first l                           -- k = a^b
       a := first(arg := argument k)
       exponent := degree(p, k) * second arg
       empty?(lk := select(a = first argument #1, rest l)) =>
-        (a ** exponent) * powersimp(p, rest l)
+        (a ^ exponent) * powersimp(p, rest l)
       for k0 in lk repeat
         exponent := exponent + degree(p, k0) * second argument k0
-      (a ** exponent) * powersimp(p, setDifference(rest l, lk))
+      (a ^ exponent) * powersimp(p, setDifference(rest l, lk))
 
     t2t x         == sin(x) / cos(x)
     c2t x         == cos(x) / sin(x)
     c2s x         == inv sin x
     s2c x         == inv cos x
-    s2c2 x        == 1 - cos(x)**2
+    s2c2 x        == 1 - cos(x)^2
     th2th x       == sinh(x) / cosh(x)
     ch2th x       == cosh(x) / sinh(x)
     ch2sh x       == inv sinh x
     sh2ch x       == inv cosh x
-    sh2ch2 x      == cosh(x)**2 - 1
+    sh2ch2 x      == cosh(x)^2 - 1
     ueval(x, s,f) == eval(x, s::Symbol, f)
     ueval2(x,s,f) == eval(x, s::Symbol, 2, f)
     cos2sec x     == ueval(x, "cos", inv sec #1)
@@ -731,9 +731,9 @@ TranscendentalManipulations(R, F): Exports == Implementation where
     coth2tanh x   == ueval(x, "coth", inv tanh #1)
     tanh2trigh x  == ueval(x, "tanh", th2th)
     coth2trigh x  == ueval(x, "coth", ch2th)
-    removeCosSq x == ueval2(x, "cos", 1 - (sin #1)**2)
+    removeCosSq x == ueval2(x, "cos", 1 - (sin #1)^2)
     removeSinSq x == ueval2(x, "sin", s2c2)
-    removeCoshSq x== ueval2(x, "cosh", 1 + (sinh #1)**2)
+    removeCoshSq x== ueval2(x, "cosh", 1 + (sinh #1)^2)
     removeSinhSq x== ueval2(x, "sinh", sh2ch2)
     expandLog x   == smplog(numer x) / smplog(denom x)
     simplifyExp x == (smpexp numer x) / (smpexp denom x)
@@ -759,8 +759,8 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       while p ~= 0 repeat
         g := htrigs(leadingCoefficient(p)::F)
         if ((d := degree(p)::Z - bse) >= 0) then
-             ans := ans + g * f1 ** d
-        else ans := ans + g * f2 ** (-d)
+             ans := ans + g * f1 ^ d
+        else ans := ans + g * f2 ^ (-d)
         p := reductum p
       ans
 
@@ -812,7 +812,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
 
     -- this now works in 3 passes over the expression:
     --   pass1 rewrites trigs and htrigs in terms of sin,cos,sinh,cosh
-    --   pass2 rewrites sin**2 and sinh**2 in terms of cos and cosh.
+    --   pass2 rewrites sin^2 and sinh^2 in terms of cos and cosh.
     --   pass3 groups exponentials together
     simplify0 x ==
       simplifyExp eval(eval(x,

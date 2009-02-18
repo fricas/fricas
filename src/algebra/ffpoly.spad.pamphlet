@@ -184,7 +184,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       ++ size of {\em GF}.
     reducedQPowers: SUP  -> PrimitiveArray SUP
       ++ reducedQPowers(f)
-      ++ generates \spad{[x,x**q,x**(q**2),...,x**(q**(n-1))]}
+      ++ generates \spad{[x,x^q,x^(q^2),...,x^(q^(n-1))]}
       ++ reduced modulo f where \spad{q = size()$GF} and \spad{n = degree f}.
     --
     -- we intend to implement also the functions
@@ -226,7 +226,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       m:PI:=degree(f)$SUP pretend PI
       m1:I:=m-1
       setPoly(f)$MM
-      e:=reduce(monomial(1,1)$SUP)$MM ** sizeGF
+      e:=reduce(monomial(1,1)$SUP)$MM ^ sizeGF
       w:=1$MM
       qpow:PrimitiveArray SUP:=new(m,0)
       qpow.0:=1$SUP
@@ -271,7 +271,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           coeffVector := newCoeffVector
         ns := rest ns
       (coeffVector(1)::SUP) +(+/[monomial(coeffVector.k, _
-               sizeGF**((k-2)::NNI))$SUP for k in 2..dim])
+               sizeGF^((k-2)::NNI))$SUP for k in 2..dim])
 
 --    qEulerPhiCyclotomic n ==
 --      n = 1 => (sizeGF - 1) pretend PI
@@ -285,12 +285,12 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 --      while (qe rem n) ~= 1 repeat
 --        e  := e + 1
 --        qe := qe * q
---      ((qe - 1) ** ((eulerPhi(n) quo e) pretend PI) ) pretend PI
+--      ((qe - 1) ^ ((eulerPhi(n) quo e) pretend PI) ) pretend PI
 
     numberOfIrreduciblePoly n ==
       -- we compute the number Nq(n) of monic irreducible polynomials
       -- of degree n over the field GF of order q by the formula
-      -- Nq(n) = (1/n)* sum(moebiusMu(n/d)*q**d) where the sum extends
+      -- Nq(n) = (1/n)* sum(moebiusMu(n/d)*q^d) where the sum extends
       -- over all divisors d of n (cf. [LN] p.93, Th. 3.25)
       n = 1 => sizeGF
       -- the contribution of d = 1 :
@@ -300,45 +300,45 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- the divisors d > 1 of n :
       divisorsOfn : L PI := rest(divisors n) pretend L PI
       for d in divisorsOfn repeat
-        qd := qd * (sizeGF) ** ((d - lastd) pretend PI)
+        qd := qd * (sizeGF) ^ ((d - lastd) pretend PI)
         sum := sum + moebiusMu(n quo d) * qd
         lastd := d
       (sum quo n) :: PI
 
-    numberOfPrimitivePoly n == (eulerPhi((sizeGF ** n) - 1) quo n) :: PI
+    numberOfPrimitivePoly n == (eulerPhi((sizeGF ^ n) - 1) quo n) :: PI
       -- [each root of a primitive polynomial of degree n over a field
       --  with q elements is a generator of the multiplicative group
-      --  of a field of order q**n (definition), and the number of such
-      --  generators is precisely eulerPhi(q**n - 1)]
+      --  of a field of order q^n (definition), and the number of such
+      --  generators is precisely eulerPhi(q^n - 1)]
 
     numberOfNormalPoly n ==
       -- we compute the number Nq(n) of normal polynomials of degree n
       -- in GF[X], with GF of order q, by the formula
-      -- Nq(n) = (1/n) * qPhi(X**n - 1) (cf. [LN] p.124) where,
+      -- Nq(n) = (1/n) * qPhi(X^n - 1) (cf. [LN] p.124) where,
       -- for any polynomial f in GF[X] of positive degree n,
-      -- qPhi(f) = q**n * (1 - q**(-n1)) *...* (1 - q**(-nr)) =
-      -- q**n * ((q**(n1)-1) / q**(n1)) *...* ((q**(nr)-1) / q**(n_r)),
+      -- qPhi(f) = q^n * (1 - q^(-n1)) *...* (1 - q^(-nr)) =
+      -- q^n * ((q^(n1)-1) / q^(n1)) *...* ((q^(nr)-1) / q^(n_r)),
       -- the ni being the degrees of the distinct irreducible factors
       -- of f in its canonical factorization over GF
       -- ([LN] p.122, Lemma 3.69).
-      -- hence, if n = m * p**r where p is the characteristic of GF
+      -- hence, if n = m * p^r where p is the characteristic of GF
       -- and gcd(m,p) = 1, we get
-      -- Nq(n) = (1/n)* q**(n-m) * qPhi(X**m - 1)
-      -- now X**m - 1 is the product of the (pairwise relatively prime)
+      -- Nq(n) = (1/n)* q^(n-m) * qPhi(X^m - 1)
+      -- now X^m - 1 is the product of the (pairwise relatively prime)
       -- cyclotomic polynomials Qd(X) for which d divides m
       -- ([LN] p.64, Th. 2.45), and each Qd(X) factors into
       -- eulerPhi(d)/e (distinct) monic irreducible polynomials in GF[X]
       -- of the same degree e, where e is the least positive integer k
-      -- such that d divides q**k - 1 ([LN] p.65, Th. 2.47)
+      -- such that d divides q^k - 1 ([LN] p.65, Th. 2.47)
       n = 1 => (sizeGF - 1) :: NNI :: PI
       m : PI := n
       p : PI := characteristic()$GF :: PI
       q : PI := sizeGF
       while (m rem p) = 0 repeat   -- find m such that
-        m := (m quo p) :: PI       -- n = m * p**r and gcd(m,p) = 1
+        m := (m quo p) :: PI       -- n = m * p^r and gcd(m,p) = 1
       m = 1 =>
          -- know that n is a power of p
-        (((q ** ((n-1)::NNI) )  * (q - 1) ) quo n) :: PI
+        (((q ^ ((n-1)::NNI) )  * (q - 1) ) quo n) :: PI
       prod : I := q - 1
       divisorsOfm : L PI := rest(divisors m) pretend L PI
       for d in divisorsOfm repeat
@@ -349,42 +349,42 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           e  := e + 1
           qe := qe * q
         prod := prod * _
-          ((qe - 1) ** ((eulerPhi(d) quo e) pretend PI) ) pretend PI
-      (q**((n-m) pretend PI) * prod quo n) pretend PI
+          ((qe - 1) ^ ((eulerPhi(d) quo e) pretend PI) ) pretend PI
+      (q^((n-m) pretend PI) * prod quo n) pretend PI
 
     primitive? f ==
       -- let GF be a field of order q; a monic polynomial f in GF[X]
       -- of degree n is primitive over GF if and only if its constant
-      -- term is non-zero, f divides X**(q**n - 1) - 1 and,
-      -- for each prime divisor d of q**n - 1,
-      -- f does not divide X**((q**n - 1) / d) - 1
+      -- term is non-zero, f divides X^(q^n - 1) - 1 and,
+      -- for each prime divisor d of q^n - 1,
+      -- f does not divide X^((q^n - 1) / d) - 1
       -- (cf. [LN] p.89, Th. 3.16, and p.87, following Th. 3.11)
       n : NNI := degree f
       n = 0 => false
       leadingCoefficient f ~= 1 => false
       coefficient(f, 0) = 0 => false
       q  : PI := sizeGF
-      qn1: PI := (q**n - 1) :: NNI :: PI
+      qn1: PI := (q^n - 1) :: NNI :: PI
       setPoly f
       x := reduce(monomial(1,1)$SUP)$MM -- X rem f represented in MM
       --
-      -- may be improved by tabulating the residues x**(i*q)
+      -- may be improved by tabulating the residues x^(i*q)
       -- for i = 0,...,n-1 :
       --
-      lift(x ** qn1)$MM ~= 1 => false -- X**(q**n - 1) rem f in GF[X]
+      lift(x ^ qn1)$MM ~= 1 => false -- X^(q^n - 1) rem f in GF[X]
       lrec  : L Record(factor:I, exponent:I) := factors(factor qn1)
       lfact : L PI := []              -- collect the prime factors
-      for rec in lrec repeat          -- of q**n - 1
+      for rec in lrec repeat          -- of q^n - 1
         lfact := cons((rec.factor) :: PI, lfact)
       for d in lfact repeat
         if (expt := (qn1 quo d)) >= n then
-          lift(x ** expt)$MM = 1 => return false
+          lift(x ^ expt)$MM = 1 => return false
       true
 
     normal? f ==
       -- let GF be a field with q elements; a monic irreducible
       -- polynomial f in GF[X] of degree n is normal if its roots
-      -- x, x**q, ... , x**(q**(n-1)) are linearly independent over GF
+      -- x, x^q, ... , x^(q^(n-1)) are linearly independent over GF
       n : NNI := degree f
       n = 0 => false
       leadingCoefficient f ~= 1 => false
@@ -429,7 +429,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
+      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
@@ -506,7 +506,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
+      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
@@ -536,7 +536,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       s  : L NNI := [] -- we will compute s(f) only if necessary
       n1 : NNI := (n - 1) :: NNI
       -- a necessary condition for a monic polynomial f of degree n
-      -- over GF to be primitive is that (-1)**n * f(0) be a
+      -- over GF to be primitive is that (-1)^n * f(0) be a
       -- primitive element of GF (cf. [LN] p.90, Th. 3.18)
       c  : GF  := c0
       while l < sizeGF repeat
@@ -544,7 +544,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         noGenerator : Boolean := true
         while noGenerator and l < sizeGF repeat
           -- find least c >= c0 such that (-1)^n c0 is primitive
-          primitive?((-1)**n * c)$GF => noGenerator := false
+          primitive?((-1)^n * c)$GF => noGenerator := false
           l := l + 1
           c := index(l :: PI)$GF
         noGenerator => return "failed"
@@ -556,9 +556,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           -- whose lookup's were not yet computed :
           headlookuplist : L NNI := new(weight, 0)
         else
-          -- X**n + c can not be primitive for n > 1 (cf. [LN] p.90,
-          -- Th. 3.18); next possible polynomial is X**n + X + c
-          headpol : Repr := [[1,0]$Rec, xn] -- 0*X + X**n
+          -- X^n + c can not be primitive for n > 1 (cf. [LN] p.90,
+          -- Th. 3.18); next possible polynomial is X^n + X + c
+          headpol : Repr := [[1,0]$Rec, xn] -- 0*X + X^n
           headlookuplist : L NNI := [sizeGF]
           s := [0,1]
           weight := 2
@@ -625,7 +625,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
+      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
@@ -648,8 +648,8 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         [xn, [0, index((l+1) :: PI)$GF]$Rec] pretend SUP
       n1 : NNI := (n  - 1) :: NNI
       n2 : NNI := (n1 - 1) :: NNI
-      -- if the polynomial X**n + a * X**(n-1) + ... is normal then
-      -- a = -(x + x**q +...+ x**(q**n)) can not be zero (where q = #GF)
+      -- if the polynomial X^n + a * X^(n-1) + ... is normal then
+      -- a = -(x + x^q +...+ x^(q^n)) can not be zero (where q = #GF)
       a  : GF  := a0
       -- if a = 0 then set a := 1
       if l = 0 then
@@ -670,7 +670,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           middlelookuplist : L NNI := [sizeGF]
           s : L NNI := [0]
           weight : NNI := 1
-        headpol : Repr := [xn, [n1, a]$Rec] -- X**n + a * X**(n-1)
+        headpol : Repr := [xn, [n1, a]$Rec] -- X^n + a * X^(n-1)
         tailpol : Repr := []
         taillookuplist : L NNI := []
         notReady : Boolean := true
@@ -738,7 +738,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       n = 0 => error "polynomial must have positive degree"
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X**n + ... + f{i0}*X**{i0} with the fi non-zero
+      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
       -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
@@ -769,9 +769,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       middlepol : Repr := rest fcopy -- [[r,fr],...,[i0,f{i0}],[0,f0]]
       a0 : GF  := (first middlepol).coeff
       la : NNI := lookup(a0)$GF rem sizeGF
-      -- if the polynomial X**n + a * X**(n-1) +...+ c is primitive and
-      -- normal over GF then (-1)**n * c is a primitive element of GF
-      -- (cf. [LN] p.90, Th. 3.18), and a = -(x + x**q +...+ x**(q**n))
+      -- if the polynomial X^n + a * X^(n-1) +...+ c is primitive and
+      -- normal over GF then (-1)^n * c is a primitive element of GF
+      -- (cf. [LN] p.90, Th. 3.18), and a = -(x + x^q +...+ x^(q^n))
       -- is not zero (where q = #GF)
       c : GF  := c0
       a : GF  := a0
@@ -783,15 +783,15 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         -- (run through the possible values of the constant term)
         noGenerator : Boolean := true
         while noGenerator and lc < sizeGF repeat
-          -- find least c >= c0 such that (-1)**n * c0 is primitive
-          primitive?((-1)**n * c)$GF => noGenerator := false
+          -- find least c >= c0 such that (-1)^n * c0 is primitive
+          primitive?((-1)^n * c)$GF => noGenerator := false
           lc := lc + 1
           c  := index(lc :: PI)$GF
         noGenerator => return "failed"
         constterm : Rec := [0, c]$Rec
         while la < sizeGF repeat
         -- (run through the possible values of a)
-          headpol : Repr := [xn, [n1, a]$Rec] -- X**n + a X**(n-1)
+          headpol : Repr := [xn, [n1, a]$Rec] -- X^n + a X^(n-1)
           if c = c0 and a = a0 then
             -- middlepol = [[i0,f{i0}], ... , [m,fm]] with m < n-1
             middlepol := rest reverse rest middlepol
@@ -888,10 +888,10 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
     -- (see also the comments in the code of nextPrimitivePoly)
       xn := monomial(1,n)$SUP
       n = 1 => xn + monomial(-primitiveElement()$GF, 0)$SUP
-      c0 : GF := (-1)**n * primitiveElement()$GF
+      c0 : GF := (-1)^n * primitiveElement()$GF
       constterm : Rec := [0, c0]$Rec
       -- try first (probably faster) the polynomials
-      -- f = X**n + f{n-1}*X**(n-1) +...+ f1*X + c0 for which
+      -- f = X^n + f{n-1}*X^(n-1) +...+ f1*X + c0 for which
       -- fi is 0 or 1 for i=1,...,n-1,
       -- and this in the order used to define nextPrimitivePoly
       s  : L NNI := [0,1]
@@ -921,10 +921,10 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 
     createNormalPoly n  ==
       n = 1 => monomial(1,1)$SUP + monomial(-1,0)$SUP
-      -- get a normal polynomial f = X**n + a * X**(n-1) + ...
+      -- get a normal polynomial f = X^n + a * X^(n-1) + ...
       -- with a = -1
       -- [recall that if f is normal over the field GF of order q
-      -- then a = -(x + x**q +...+ x**(q**n)) can not be zero;
+      -- then a = -(x + x^q +...+ x^(q^n)) can not be zero;
       -- hence the existence of such an f follows from the
       -- normal basis theorem ([LN] p.60, Th. 2.35) and the
       -- surjectivity of the trace ([LN] p.55, Th. 2.23 (iii))]
@@ -935,9 +935,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       xn := monomial(1,n)$SUP
       n = 1 => xn + monomial(-primitiveElement()$GF, 0)$SUP
       n1  : NNI := (n - 1) :: NNI
-      c0  : GF  := (-1)**n * primitiveElement()$GF
+      c0  : GF  := (-1)^n * primitiveElement()$GF
       constterm  := monomial(c0, 0)$SUP
-      -- try first the polynomials f = X**n + a *  X**(n-1) + ...
+      -- try first the polynomials f = X^n + a *  X^(n-1) + ...
       -- with a = -1
       pol := xn + monomial(-1, n1)$SUP + constterm
       normal? pol and primitive? pol => pol

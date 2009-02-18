@@ -166,14 +166,14 @@ UnivariatePuiseuxSeriesConstructor(Coef,ULS):_
 
     rewrite:(%,PI) -> %
     rewrite(upxs,m) ==
-      -- rewrites a series in x**r as a series in x**(r/m)
+      -- rewrites a series in x^r as a series in x^(r/m)
       puiseux((getExpon upxs)*(1/m),multiplyExponents(getULS upxs,m))
 
     ratGcd: (RN,RN) -> RN
     ratGcd(r1,r2) ==
-      -- if r1 = prod(p prime,p ** ep(r1)) and
-      -- if r2 = prod(p prime,p ** ep(r2)), then
-      -- ratGcd(r1,r2) = prod(p prime,p ** min(ep(r1),ep(r2)))
+      -- if r1 = prod(p prime,p ^ ep(r1)) and
+      -- if r2 = prod(p prime,p ^ ep(r2)), then
+      -- ratGcd(r1,r2) = prod(p prime,p ^ min(ep(r1),ep(r2)))
       gcd(numer r1,numer r2) / lcm(denom r1,denom r2)
 
     withNewExpon:(%,RN) -> %
@@ -209,7 +209,7 @@ UnivariatePuiseuxSeriesConstructor(Coef,ULS):_
     pxs1 - pxs2     == applyFcn(#1 -$ULS #2,pxs1,pxs2)
     pxs1:% * pxs2:% == applyFcn(#1 *$ULS #2,pxs1,pxs2)
 
-    pxs:% ** n:NNI == puiseux(getExpon pxs,getULS(pxs)**n)
+    pxs:% ^ n:NNI == puiseux(getExpon pxs,getULS(pxs)^n)
 
     recip pxs ==
       rec := recip getULS pxs
@@ -222,24 +222,24 @@ UnivariatePuiseuxSeriesConstructor(Coef,ULS):_
       uls1 := laurentRep upxs1; uls2 := laurentRep upxs2
       r1 := rationalPower upxs1; r2 := rationalPower upxs2
       (n := retractIfCan(r1)@Union(Integer,"failed")) case Integer =>
-        puiseux(r2,uls1(uls2 ** r1))
+        puiseux(r2,uls1(uls2 ^ r1))
       RATALG =>
         if zero? (coef := coefficient(uls2,deg := degree uls2)) then
           deg := order(uls2,deg + 1000)
           zero? (coef := coefficient(uls2,deg)) =>
             error "elt: series with many leading zero coefficients"
         -- a fractional power of a Laurent series may not be defined:
-        -- if f(x) = c * x**n + ..., then f(x) ** (p/q) will be defined
+        -- if f(x) = c * x^n + ..., then f(x) ^ (p/q) will be defined
         -- only if q divides n
         b := lcm(denom r1,deg); c := b quo deg
         mon : ULS := monomial(1,c)
-        uls2 := elt(uls2,mon) ** r1
+        uls2 := elt(uls2,mon) ^ r1
         puiseux(r2*(1/c),elt(uls1,uls2))
       error "elt: rational powers not available for this coefficient domain"
 
-    if Coef has "**": (Coef,Integer) -> Coef and
-       Coef has "**": (Coef, RN) -> Coef then
-         eval(upxs:%,a:Coef) == eval(getULS upxs,a ** getExpon(upxs))
+    if Coef has "^": (Coef,Integer) -> Coef and
+       Coef has "^": (Coef, RN) -> Coef then
+         eval(upxs:%,a:Coef) == eval(getULS upxs,a ^ getExpon(upxs))
 
     if Coef has Field then
 
@@ -369,17 +369,17 @@ UnivariatePuiseuxSeriesConstructor(Coef,ULS):_
           error "integrate: center is a function of variable of integration"
 
       if Coef has Field then
-         (upxs:%) ** (q:RN) ==
+         (upxs:%) ^ (q:RN) ==
            num := numer q; den := denom q
---           one? den => upxs ** num
-           den = 1 => upxs ** num
+--           one? den => upxs ^ num
+           den = 1 => upxs ^ num
            r := rationalPower upxs; uls := laurentRep upxs
            deg := degree uls
            if zero?(coef := coefficient(uls,deg)) then
              deg := order(uls,deg + 1000)
              zero?(coef := coefficient(uls,deg)) =>
                error "power of series with many leading zero coefficients"
-           ulsPow := (uls * monomial(1,-deg)$ULS) ** q
+           ulsPow := (uls * monomial(1,-deg)$ULS) ^ q
            puiseux(r,ulsPow) * monomial(1,deg*q*r)
 
       applyUnary: (ULS -> ULS,%) -> %
@@ -498,7 +498,7 @@ UnivariatePuiseuxSeries(Coef,var,cen): Exports == Implementation where
       integrate(upxs:%,v:Variable(var)) == integrate upxs
 
     if Coef has coerce: Symbol -> Coef then
-      if Coef has "**": (Coef,RN) -> Coef then
+      if Coef has "^": (Coef,RN) -> Coef then
 
         roundDown: RN -> I
         roundDown rn ==
@@ -511,27 +511,27 @@ UnivariatePuiseuxSeries(Coef,var,cen): Exports == Implementation where
         stToCoef: (ST,Coef,NNI,NNI) -> Coef
         stToCoef(st,term,n,n0) ==
           (n > n0) or (empty? st) => 0
-          frst(st) * term ** n + stToCoef(rst st,term,n + 1,n0)
+          frst(st) * term ^ n + stToCoef(rst st,term,n + 1,n0)
 
         approximateLaurent: (ULS,Coef,I) -> Coef
         approximateLaurent(x,term,n) ==
           (m := n - (e := degree x)) < 0 => 0
           app := stToCoef(coefficients taylorRep x,term,0,m :: NNI)
           zero? e => app
-          app * term ** (e :: RN)
+          app * term ^ (e :: RN)
 
         approximate(x,r) ==
           e := rationalPower(x)
-          term := ((variable(x) :: Coef) - center(x)) ** e
+          term := ((variable(x) :: Coef) - center(x)) ^ e
           approximateLaurent(laurentRep x,term,roundDown(r / e))
 
     termOutput:(RN,Coef,OUT) -> OUT
     termOutput(k,c,vv) ==
-    -- creates a term c * vv ** k
+    -- creates a term c * vv ^ k
       k = 0 => c :: OUT
       mon :=
         k = 1 => vv
-        vv ** (k :: OUT)
+        vv ^ (k :: OUT)
       c = 1 => mon
       c = -1 => -mon
       (c :: OUT) * mon
@@ -558,7 +558,7 @@ UnivariatePuiseuxSeries(Coef,var,cen): Exports == Implementation where
       l :=
         explicitlyEmpty? uu => l
         eq?(uu,rst uu) and frst uu = 0 => l
-        concat(prefix("O" :: OUT,[xxx ** (((n::I) * rat + m) :: OUT)]),l)
+        concat(prefix("O" :: OUT,[xxx ^ (((n::I) * rat + m) :: OUT)]),l)
       empty? l => 0 :: OUT
       reduce("+",reverse_! l)
 

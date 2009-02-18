@@ -38,7 +38,7 @@ NewSparseUnivariatePolynomial(R): Exports == Implementation where
   Exports == Join(UnivariatePolynomialCategory(R), 
    CoercibleTo(SUPR),RetractableTo(SUPR)) with
      fmecg : (%,NNI,R,%) -> %
-        ++ \axiom{fmecg(p1,e,r,p2)} returns \axiom{p1 - r * X**e * p2}
+        ++ \axiom{fmecg(p1,e,r,p2)} returns \axiom{p1 - r * X^e * p2}
         ++ where \axiom{X} is \axiom{monomial(1,1)}
      monicModulo : ($, $) -> $ 
         ++ \axiom{monicModulo(a,b)} returns \axiom{r} such that \axiom{r} is 
@@ -244,7 +244,7 @@ NewSparseUnivariatePolynomial(R): Exports == Implementation where
                   pow := subtractIfCan(pow,1)::NNI
                   if empty? xx then break
                 zero? pow => [co, per reverse qq, per xx]
-                default: R := co ** pow
+                default: R := co ^ pow
                 q := default * (per reverse qq)
                 x := default * (per xx)
                 [co, q, x]
@@ -265,7 +265,7 @@ NewSparseUnivariatePolynomial(R): Exports == Implementation where
                   pow := subtractIfCan(pow,1)::NNI
                   if empty? xx then break
                 zero? pow => per reverse qq
-                (co ** pow) * (per reverse qq)
+                (co ^ pow) * (per reverse qq)
 
 @
 \section{package NSUP2 NewSparseUnivariatePolynomialFunctions2}
@@ -441,17 +441,17 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
          ++ \axiom{lazyPseudoDivide(a,b,v)} returns \axiom{[c,g,q,r]}.
      lazyPremWithDefault : ($, $) ->  Record (coef : $, gap : NonNegativeInteger, remainder : $)
          ++ \axiom{lazyPremWithDefault(a,b)} returns \axiom{[c,g,r]}
-         ++ such that \axiom{r = lazyPrem(a,b)} and \axiom{(c**g)*r = prem(a,b)}.
+         ++ such that \axiom{r = lazyPrem(a,b)} and \axiom{(c^g)*r = prem(a,b)}.
      lazyPremWithDefault : ($, $, V) ->  Record (coef : $, gap : NonNegativeInteger, remainder : $)
          ++ \axiom{lazyPremWithDefault(a,b,v)} returns \axiom{[c,g,r]} 
-         ++ such that \axiom{r = lazyPrem(a,b,v)} and \axiom{(c**g)*r = prem(a,b,v)}.
+         ++ such that \axiom{r = lazyPrem(a,b,v)} and \axiom{(c^g)*r = prem(a,b,v)}.
      lazyPseudoDivide : ($,$) ->  Record(coef:$, gap: NonNegativeInteger,quotient:$, remainder:$)
          ++ \axiom{lazyPseudoDivide(a,b)} returns \axiom{[c,g,q,r]} 
          ++ such that \axiom{[c,g,r] = lazyPremWithDefault(a,b)} and
          ++ \axiom{q} is the pseudo-quotient computed in this lazy pseudo-division.
      lazyPseudoDivide : ($,$,V) ->  Record(coef:$, gap:NonNegativeInteger, quotient:$, remainder: $)
          ++ \axiom{lazyPseudoDivide(a,b,v)} returns \axiom{[c,g,q,r]} such that  
-         ++ \axiom{r = lazyPrem(a,b,v)}, \axiom{(c**g)*r = prem(a,b,v)} and \axiom{q}
+         ++ \axiom{r = lazyPrem(a,b,v)}, \axiom{(c^g)*r = prem(a,b,v)} and \axiom{q}
          ++ is the pseudo-quotient computed in this lazy pseudo-division.
      pseudoDivide : ($, $) -> Record (quotient : $, remainder : $)
          ++ \axiom{pseudoDivide(a,b)} computes \axiom{[pquo(a,b),prem(a,b)]}, both
@@ -461,7 +461,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
          ++ \axiom{monicModulo(a,b)} computes \axiom{a mod b}, if \axiom{b} is 
          ++ monic as univariate polynomial in its main variable.
      lazyResidueClass : ($,$) -> Record(polnum:$, polden:$, power:NonNegativeInteger)
-         ++ \axiom{lazyResidueClass(a,b)} returns \axiom{[p,q,n]} where \axiom{p / q**n} 
+         ++ \axiom{lazyResidueClass(a,b)} returns \axiom{[p,q,n]} where \axiom{p / q^n} 
          ++ represents the residue class of \axiom{a} modulo \axiom{b} 
          ++ and \axiom{p} is reduced w.r.t. \axiom{b} and \axiom{q} is \axiom{init(b)}.
      headReduce: ($, $) ->  $
@@ -594,11 +594,11 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
            ++ of \axiom{a} and \axiom{b} where \axiom{a} and \axiom{b} are assumed to have 
            ++ the same main variable \axiom{v} and are viewed as univariate polynomials in \axiom{v}.
        LazardQuotient: ($, $, NonNegativeInteger) -> $
-           ++ \axiom{LazardQuotient(a,b,n)} returns \axiom{a**n exquo b**(n-1)}
+           ++ \axiom{LazardQuotient(a,b,n)} returns \axiom{a^n exquo b^(n-1)}
            ++ assuming that this quotient does not fail.
        LazardQuotient2: ($, $, $, NonNegativeInteger) -> $
            ++ \axiom{LazardQuotient2(p,a,b,n)} returns 
-           ++ \axiom{(a**(n-1) * p) exquo b**(n-1)}
+           ++ \axiom{(a^(n-1) * p) exquo b^(n-1)}
            ++ assuming that this quotient does not fail.
        next_subResultant2: ($, $, $, $) -> $
            ++ \axiom{nextsubResultant2(p,q,z,s)} is the multivariate version
@@ -645,14 +645,14 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                  then
                    return((mvar(p))::O)
                  else
-                   return(((mvar(p))::O **$O (dp::O)))
+                   return(((mvar(p))::O ^$O (dp::O)))
              else
 --               if one?((dp := mdeg(p)))
                if (((dp := mdeg(p))) = 1)
                  then
                    return((mvar(p))::O +$O (tp::O))
                  else
-                   return(((mvar(p))::O **$O (dp::O)) +$O (tp::O))
+                   return(((mvar(p))::O ^$O (dp::O)) +$O (tp::O))
           else
            if zero?((tp := tail(p)))
              then
@@ -661,13 +661,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                  then
                    return((ip::O) *$O  (mvar(p))::O)
                  else
-                   return((ip::O) *$O ((mvar(p))::O **$O (dp::O)))
+                   return((ip::O) *$O ((mvar(p))::O ^$O (dp::O)))
              else
 --               if one?(mdeg(p))
                if ((mdeg(p)) = 1)
                  then
                    return(((ip::O) *$O  (mvar(p))::O) +$O (tp::O))
-       ((ip)::O *$O ((mvar(p))::O **$O ((mdeg(p)::O))) +$O (tail(p)::O))
+       ((ip)::O *$O ((mvar(p))::O ^$O ((mdeg(p)::O))) +$O (tail(p)::O))
 
      mvar p ==
        ground?(p) => error"Error in mvar from RPOLCAT : #1 is constant."
@@ -774,20 +774,20 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      prem (a:$, b:$)  : $ == 
        cP := lazyPremWithDefault (a,b)
-       ((cP.coef) ** (cP.gap)) * cP.remainder
+       ((cP.coef) ^ (cP.gap)) * cP.remainder
 
      pquo (a:$, b:$)  : $ == 
        cPS := lazyPseudoDivide (a,b)
-       c := (cPS.coef) ** (cPS.gap)
+       c := (cPS.coef) ^ (cPS.gap)
        c * cPS.quotient
 
      prem (a:$, b:$, v:V) : $ ==
        cP := lazyPremWithDefault (a,b,v)
-       ((cP.coef) ** (cP.gap)) * cP.remainder  
+       ((cP.coef) ^ (cP.gap)) * cP.remainder  
 
      pquo (a:$, b:$, v:V)  : $ == 
        cPS := lazyPseudoDivide (a,b,v)
-       c := (cPS.coef) ** (cPS.gap)
+       c := (cPS.coef) ^ (cPS.gap)
        c * cPS.quotient     
 
      lazyPrem (a:$, b:$) : $ ==
@@ -827,7 +827,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
            then
              a := lrc.polnum
            else
-             a := lrc.polnum +  (lrc.polden)**(lrc.power) * tail(a)
+             a := lrc.polnum +  (lrc.polden)^(lrc.power) * tail(a)
        a
 
      initiallyReduce(a:$,b:$) ==
@@ -845,7 +845,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
              ia := iamodb.polnum
              if not zero? ta
                then
-                 ta :=  (iamodb.polden)**(iamodb.power) * ta
+                 ta :=  (iamodb.polden)^(iamodb.power) * ta
          if zero? ia 
            then 
              ia := ta
@@ -906,7 +906,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      pseudoDivide (a,b) == 
        cPS := lazyPseudoDivide (a,b)
-       c := (cPS.coef) ** (cPS.gap)
+       c := (cPS.coef) ^ (cPS.gap)
        [c * cPS.quotient, c * cPS.remainder]
 
      lazyPseudoDivide (a,b) == 
@@ -1125,7 +1125,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
            ground? p => (ground(p)$%)::PR
            v : V := mvar(p)
            d : NNI := mdeg(p)
-           convert(init(p))@PR *$PR ((convert(v)@Symbol)::PR)**d +$PR convert(tail(p))@PR
+           convert(init(p))@PR *$PR ((convert(v)@Symbol)::PR)^d +$PR convert(tail(p))@PR
 
          coerce(p:$) : PR ==
            convert(p)@PR
@@ -1416,7 +1416,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                  then
                    sdpol :=  empty()$String
                  else
-                   sdpol := concat("**",convert(convert(dpol)@INT)@String )$String 
+                   sdpol := concat("^",convert(convert(dpol)@INT)@String )$String 
                if zero? tpol
                  then
                    stpol :=  empty()$String
@@ -1596,7 +1596,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        lcb: $ := leadingCoefficient(b.ts)$D
        test: Z := degree(a,b.v)::Z - db
        delta: Z := max(test + 1$Z, 0$Z)
-       (a case R) or (a.v < b.v) => lcb ** (delta::N) * a
+       (a case R) or (a.v < b.v) => lcb ^ (delta::N) * a
        a.v = b.v =>
          r: D := pseudoRemainder(a.ts,b.ts)$D
          ground?(r) => return (ground(r)$D)::Rep 
@@ -1606,17 +1606,17 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          a := lcb * a - term * b
          delta := delta - 1$Z 
          test := degree(a,b.v)::Z - db
-       lcb ** (delta::N) * a
+       lcb ^ (delta::N) * a
 
      pquo (a:$, b:$)  : $ == 
        cPS := lazyPseudoDivide (a,b)
-       c := (cPS.coef) ** (cPS.gap)
+       c := (cPS.coef) ^ (cPS.gap)
        c * cPS.quotient
 
      pseudoDivide(a:$, b:$): Record (quotient : $, remainder : $) ==
        -- from RPOLCAT
        cPS := lazyPseudoDivide(a,b)
-       c := (cPS.coef) ** (cPS.gap)
+       c := (cPS.coef) ^ (cPS.gap)
        [c * cPS.quotient, c * cPS.remainder]
 
      lazyPrem(a:$, b:$): $ == 

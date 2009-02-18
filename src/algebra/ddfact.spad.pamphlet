@@ -62,10 +62,10 @@ DistinctDegreeFactorize(F,FP): C == T
         ++ exptMod(u,k,v) raises the polynomial u to the kth power
         ++ modulo the polynomial v.
       trace2PowMod     :   (FP,NNI,FP)   -> FP
-        ++ trace2PowMod(u,k,v) produces the sum of \spad{u**(2**i)} for i running
+        ++ trace2PowMod(u,k,v) produces the sum of \spad{u^(2^i)} for i running
         ++ from 1 to k all computed modulo the polynomial v.
       tracePowMod     :   (FP,NNI,FP)   -> FP
-        ++ tracePowMod(u,k,v) produces the sum of \spad{u**(q**i)} 
+        ++ tracePowMod(u,k,v) produces the sum of \spad{u^(q^i)} 
         ++ for i running and q= size F
       irreducible?    :         FP      -> Boolean
         ++ irreducible?(p) tests whether the polynomial p is irreducible.
@@ -112,18 +112,18 @@ DistinctDegreeFactorize(F,FP): C == T
           factlist :=append([[pf,d1]$ParFact for pf in fln],factlist)
         factlist
 
-      -- compute u**k mod v (requires call to setPoly of multiple of v)
+      -- compute u^k mod v (requires call to setPoly of multiple of v)
       -- characteristic not equal 2
-      exptMod(u:FP,k:NNI,v:FP):FP == (reduce(u)$D**k) pretend FP rem v
+      exptMod(u:FP,k:NNI,v:FP):FP == (reduce(u)$D^k) pretend FP rem v
 
-      -- compute u**k mod v (requires call to setPoly of multiple of v)
+      -- compute u^k mod v (requires call to setPoly of multiple of v)
       -- characteristic equal 2
       trace2PowMod(u:FP,k:NNI,v:FP):FP ==
         uu:=u
         for i in 1..k repeat uu:=(u+uu*uu) rem v
         uu
 
-      -- compute u+u**q+..+u**(q**k) mod v 
+      -- compute u+u^q+..+u^(q^k) mod v 
       -- (requires call to setPoly of multiple of v) where q=size< F
       tracePowMod(u:FP,k:NNI,v:FP):FP ==
         u1 :D :=reduce(u)$D
@@ -131,7 +131,7 @@ DistinctDegreeFactorize(F,FP): C == T
         for i in 1..k repeat uu:=(u1+frobenius uu) 
         (lift uu) rem v
 
-      -- compute u**(1+q+..+q**k) rem v where q=#F 
+      -- compute u^(1+q+..+q^k) rem v where q=#F 
       -- (requires call to setPoly of multiple of v)
       -- frobenius map is used
       normPowMod(u:FP,k:NNI,v:FP):FP ==
@@ -147,7 +147,7 @@ DistinctDegreeFactorize(F,FP): C == T
         p:=size$F
         dg:NNI :=0
         ddfact:List(fact):=empty()
-        --evaluation of x**p mod m
+        --evaluation of x^p mod m
         k1:NNI
         u:= m
         du := degree u
@@ -224,7 +224,7 @@ DistinctDegreeFactorize(F,FP): C == T
         --make m monic
         if (lcm := leadingCoefficient m) ~= 1 then m := (inv lcm)*m
 
-        --is x**d factor of m?
+        --is x^d factor of m?
         if (d := minimumDegree m)>0 then
           m := (monicDivide (m,monomial(1,d))).quotient
           factlist := [[monomial(1,1),d]$ParFact]

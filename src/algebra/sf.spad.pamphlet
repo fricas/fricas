@@ -126,12 +126,12 @@ RealNumberSystem(): Category ==
 ++ considerations when the field is a floating point system.
 FloatingPointSystem(): Category == Join(RealNumberSystem(), Approximate) with
    float: (Integer,Integer) -> %
-      ++ float(a,e) returns \spad{a * base() ** e}.
+      ++ float(a,e) returns \spad{a * base() ^ e}.
    float: (Integer,Integer,PositiveInteger) -> %
-      ++ float(a,e,b) returns \spad{a * b ** e}.
+      ++ float(a,e,b) returns \spad{a * b ^ e}.
    order: % -> Integer
       ++ order x is the order of magnitude of x.
-      ++ Note: \spad{base ** order x <= |x| < base ** (1 + order x)}.
+      ++ Note: \spad{base ^ order x <= |x| < base ^ (1 + order x)}.
    base: () -> PositiveInteger
       ++ base() returns the base of the \spadfunFrom{exponent}{FloatingPointSystem}.
    exponent: % -> Integer
@@ -328,7 +328,7 @@ complex number.)
 ++ Date Created:
 ++   January 1988
 ++ Change History:
-++ Basic Operations: exp1, hash, log2, log10, rationalApproximation, / , **
+++ Basic Operations: exp1, hash, log2, log10, rationalApproximation, / , ^
 ++ Related Constructors:
 ++ Keywords: small float
 ++ Description:  \spadtype{DoubleFloat} is intended to make accessible
@@ -386,11 +386,11 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
         ++ change the output format for doublefloats using lisp format strings
       rationalApproximation: (%, NonNegativeInteger) -> Fraction Integer
         ++ rationalApproximation(f, n) computes a rational approximation
-        ++ r to f with relative error \spad{< 10**(-n)}.
+        ++ r to f with relative error \spad{< 10^(-n)}.
       rationalApproximation: (%, NonNegativeInteger, NonNegativeInteger) -> Fraction Integer
          ++ rationalApproximation(f, n, b) computes a rational
-         ++ approximation r to f with relative error \spad{< b**(-n)}
-         ++ (that is, \spad{|(r-f)/f| < b**(-n)}).
+         ++ approximation r to f with relative error \spad{< b^(-n)}
+         ++ (that is, \spad{|(r-f)/f| < b^(-n)}).
 
  == add
    format: String := "~A"
@@ -476,8 +476,8 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
    x:% / i:Integer  == (x/i)$Lisp
    sqrt x           == checkComplex SQRT(x)$Lisp
    log10 x          == checkComplex log(x)$Lisp
-   x:% ** i:Integer == EXPT(x,i)$Lisp
-   x:% ** y:%       == checkComplex EXPT(x,y)$Lisp
+   x:% ^ i:Integer == EXPT(x,i)$Lisp
+   x:% ^ y:%       == checkComplex EXPT(x,y)$Lisp
    coerce(i:Integer):% == FLOAT(i,MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
    exp x            == EXP(x)$Lisp
    log x            == checkComplex LOG(x)$Lisp
@@ -534,7 +534,7 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
        else error "polygamma: first argument should be a nonnegative integer"
 
    wholePart x            == TRUNCATE(x)$Lisp
-   float(ma,ex,b)   == ma*(b::%)**ex
+   float(ma,ex,b)   == ma*(b::%)^ex
    convert(x:%):DoubleFloat == x pretend DoubleFloat
    convert(x:%):Float == convert(x pretend DoubleFloat)$Float
    rationalApproximation(x, d) == rationalApproximation(x, d, 10)
@@ -574,14 +574,14 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
       s := sign x; x := abs x
       if x > max()$% then return [s*mantissa(max())+1,exponent max()]
       me:Record(man:%,exp:Integer) := MANEXP(x)$Lisp 
-      two53:= base()**precision()
+      two53:= base()^precision()
       [s*wholePart(two53 * me.man ),me.exp-precision()]
 
 -- rationalApproximation(y,d,b) ==
 --    this is the quotient remainder algorithm (requires wholePart operation)
 --    x := y
 --    if b < 2 then error "base must be > 1"
---    tol := (b::%)**d
+--    tol := (b::%)^d
 --    p0,p1,q0,q1 : Integer
 --    p0 := 0; p1 := 1; q0 := 1; q1 := 0
 --    repeat
@@ -596,14 +596,14 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
 --       x := 1/x
 
    rationalApproximation(f,d,b) ==
-      -- this algorithm expresses f as n / d where d = BASE ** k
+      -- this algorithm expresses f as n / d where d = BASE ^ k
       -- then all arithmetic operations are done over the integers
       (nu, ex) := manexp f
       BASE := base()
-      ex >= 0 => (nu * BASE ** (ex::NonNegativeInteger))::Fraction(Integer)
-      de :Integer := BASE**((-ex)::NonNegativeInteger)
+      ex >= 0 => (nu * BASE ^ (ex::NonNegativeInteger))::Fraction(Integer)
+      de :Integer := BASE^((-ex)::NonNegativeInteger)
       b < 2 => error "base must be > 1"
-      tol := b**d
+      tol := b^d
       s := nu; t := de
       p0:Integer := 0; p1:Integer := 1; q0:Integer := 1; q1:Integer := 0
       repeat
@@ -615,9 +615,9 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
          (q0,q1) := (q1,q2)
          (s,t) := (t,r)
 
-   x:% ** r:Fraction Integer ==
+   x:% ^ r:Fraction Integer ==
       zero? x =>
-         zero? r => error "0**0 is undefined"
+         zero? r => error "0^0 is undefined"
          negative? r => error "division by 0"
          0
 --      zero? r or one? x => 1
@@ -628,11 +628,11 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
       d := denom r
       negative? x =>
          odd? d =>
-            odd? n => return -((-x)**r)
-            return ((-x)**r)
+            odd? n => return -((-x)^r)
+            return ((-x)^r)
          error "negative root"
-      d = 2 => sqrt(x) ** n
-      x ** (n::% / d::%)
+      d = 2 => sqrt(x) ^ n
+      x ^ (n::% / d::%)
 
 @
 

@@ -116,7 +116,7 @@ UnivariateFactorize(ZP) : public == private where
        fc := factor(c) :: Factored(Z)
        for r in factors fc repeat
          if (r.exponent = 1) and (0 ~= (lead rem r.factor)) and
-           (0 ~= (trail rem (r.factor ** 2))) then return true
+           (0 ~= (trail rem (r.factor ^ 2))) then return true
        false
 
      negShiftz(n: Z,Modulus:PI): Z ==
@@ -135,7 +135,7 @@ UnivariateFactorize(ZP) : public == private where
        lcm := abs(leadingCoefficient m)::NNI
        nm := (degree m)::NNI
        nmq2:NNI := nm quo 2
-       norm: Z := sqroot(+/[coefficient(m,k)**2 for k in 0..nm])
+       norm: Z := sqroot(+/[coefficient(m,k)^2 for k in 0..nm])
        if nmq2 ~= 1 then nm := (nmq2-1)::NNI
        else nm := nmq2
        bin0 := nm
@@ -214,9 +214,9 @@ UnivariateFactorize(ZP) : public == private where
 
      quadratic(m: ZP):List(ZP) ==
        d,d2: Z
-       d := coefficient(m,1)**2-4*coefficient(m,0)*coefficient(m,2)
+       d := coefficient(m,1)^2-4*coefficient(m,0)*coefficient(m,2)
        d2 := sqroot(d)
-       (d-d2**2) ~= 0 => [m]
+       (d-d2^2) ~= 0 => [m]
        alpha: Z := coefficient(m,1)+d2
        beta: Z := 2*coefficient(m,2)
        d := gcd(alpha,beta)
@@ -253,7 +253,7 @@ UnivariateFactorize(ZP) : public == private where
         c := -c
         m := -m
 
-      -- is x**d factor of m?
+      -- is x^d factor of m?
       if (d := minimumDegree m) >0 then
         m := (monicDivide(m,monomial(1,d))).quotient
         factorlist := [[monomial(1,1),d]$ParFact]
@@ -271,14 +271,14 @@ UnivariateFactorize(ZP) : public == private where
 
       lcPol : ZP := leadingCoefficient(m) :: ZP
 
-      -- is m cyclotomic (x**n - 1)?
+      -- is m cyclotomic (x^n - 1)?
       -lcPol = reductum(m) =>    -- if true, both will = 1
         for fac in
           (cyclotomicDecomposition(degree m)$CYC pretend List ZP) repeat
             factorlist := cons([fac,1]$ParFact,factorlist)
         [c,factorlist]$FinalFact
 
-      -- is m odd cyclotomic (x**(2*n+1) + 1)?
+      -- is m odd cyclotomic (x^(2*n+1) + 1)?
       odd?(d) and (lcPol = reductum(m)) =>
         for sfac in cyclotomicDecomposition(degree m)$CYC repeat
            fac:=subMinusX sfac
@@ -286,7 +286,7 @@ UnivariateFactorize(ZP) : public == private where
            factorlist := cons([fac,1]$ParFact,factorlist)
         [c,factorlist]$FinalFact
 
-      -- is the poly of the form x**n + 1 with n a power of 2?
+      -- is the poly of the form x^n + 1 with n a power of 2?
       -- if so, then irreducible
       isPowerOf2(d) and (lcPol = reductum(m)) =>
         factorlist := cons([m,1]$ParFact,factorlist)

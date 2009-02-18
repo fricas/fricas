@@ -73,7 +73,7 @@ SubResultantPackage(R, UP): Exports == Implementation where
            if degree(p2) > 0
            then
              res.((degree(p2)-1)::NonNegativeInteger) := p1
-             res.0 := (leadingCoefficient(p1)**(degree p2)) :: UP
+             res.0 := (leadingCoefficient(p1)^(degree p2)) :: UP
            else
              -- both are of degree 0 the resultant is 1 according to Loos
              res.0 := 1
@@ -82,7 +82,7 @@ SubResultantPackage(R, UP): Exports == Implementation where
            if degree(p1) > 0
            then
              res.((degree(p1)-1)::NonNegativeInteger) := p2
-             res.0 := (leadingCoefficient(p2)**(degree p1)) :: UP
+             res.0 := (leadingCoefficient(p2)^(degree p1)) :: UP
            else
              -- both are of degree 0 the resultant is 1 according to Loos
              res.0 := 1
@@ -254,8 +254,8 @@ TranscendentalHermiteIntegration(F, UP): Exports == Implementation where
 -- Hermite Reduction on f, every squarefree factor of denom(f) is normal wrt D
 -- this is really a "parallel" Hermite reduction, in the sense that
 -- every multiple factor of the denominator gets reduced at each pass
--- so if the denominator is P1 P2**2 ... Pn**n, this requires O(n)
--- reduction steps instead of O(n**2), like Mack's algorithm
+-- so if the denominator is P1 P2^2 ... Pn^n, this requires O(n)
+-- reduction steps instead of O(n^2), like Mack's algorithm
 -- (D.Mack, On Rational Integration, Univ. of Utah C.S. Tech.Rep. UCP-38,1975)
 -- returns [g, b, d] s.t. f = g' + b/d and d is squarefree and normal wrt D
     normalHermiteIntegrate(f, derivation) ==
@@ -480,7 +480,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       zero? notelm => [answr, coef0]
       [answr, notelm + monomial(coef0, 0)]
 
--- f is either 0 or of the form p(t)/(1 + t**2)**n
+-- f is either 0 or of the form p(t)/(1 + t^2)^n
 -- returns either
 --   (q in RF, a in F)  st f = q' + a, and a=0 or a has no integral in F
 -- or (q in RF, r in RF) st f = q' + r, and r has no integral elem/UP
@@ -633,7 +633,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
     expintegrate(f, derivation, FRDE) ==
       rec := monomialIntegrate(f, derivation)
       not elem?(i1 := rec.ir) => [notelementary rec, 0]
--- rec.specpart is either 0 or of the form p(t)/t**n
+-- rec.specpart is either 0 or of the form p(t)/t^n
       special := rec.polypart::GP +
                    (numer(rec.specpart)::GP exquo denom(rec.specpart)::GP)::GP
       (u2 := expintegratepoly(special, FRDE)) case GPGP =>
@@ -654,7 +654,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
                        [[r.polypart::RF + rec.specpart, dummy]$NE]), 0]
       logs:List(LOG) :=
          zero? c => empty()
-         [[1, monomial(1,1)$UPR - (c/(2::F))::UP::RF::UPR, (1 + t**2)::RF::UPR]]
+         [[1, monomial(1,1)$UPR - (c/(2::F))::UP::RF::UPR, (1 + t^2)::RF::UPR]]
       c0 := coefficient(r.polypart, 0)
       (u := tanintegratespecial(rec.specpart, differentiate(#1, derivation),
        FRDE)) case RFRF =>

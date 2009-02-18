@@ -183,7 +183,7 @@ DoubleFloatSpecialFunctions(): Exports == Impl where
         Beta(x,y) == Gamma(x)*Gamma(y)/Gamma(x+y)
         Beta(w,z) == Gamma(w)*Gamma(z)/Gamma(w+z)
 
-        fuzz := (10::R)**(-7)
+        fuzz := (10::R)^(-7)
 
         import IntegerRetractions(R)
         import IntegerRetractions(C)
@@ -213,25 +213,25 @@ DoubleFloatSpecialFunctions(): Exports == Impl where
         airyAi x ==
             ahalf  := recip(2::R)::R
             athird := recip(3::R)::R
-            eta := 2 * athird * (-x) ** (3*ahalf)
-            (-x)**ahalf * athird * (besselJ(-athird,eta) + besselJ(athird,eta))
+            eta := 2 * athird * (-x) ^ (3*ahalf)
+            (-x)^ahalf * athird * (besselJ(-athird,eta) + besselJ(athird,eta))
         airyAi z ==
             ahalf  := recip(2::C)::C
             athird := recip(3::C)::C
-            eta := 2 * athird * (-z) ** (3*ahalf)
-            (-z)**ahalf * athird * (besselJ(-athird,eta) + besselJ(athird,eta))
+            eta := 2 * athird * (-z) ^ (3*ahalf)
+            (-z)^ahalf * athird * (besselJ(-athird,eta) + besselJ(athird,eta))
 
         airyBi x ==
             ahalf  := recip(2::R)::R
             athird := recip(3::R)::R
-            eta := 2 * athird * (-x) ** (3*ahalf)
-            (-x*athird)**ahalf * ( besselJ(-athird,eta) - besselJ(athird,eta) )
+            eta := 2 * athird * (-x) ^ (3*ahalf)
+            (-x*athird)^ahalf * ( besselJ(-athird,eta) - besselJ(athird,eta) )
 
         airyBi z ==
             ahalf  := recip(2::C)::C
             athird := recip(3::C)::C
-            eta := 2 * athird * (-z) ** (3*ahalf)
-            (-z*athird)**ahalf * ( besselJ(-athird,eta) - besselJ(athird,eta) )
+            eta := 2 * athird * (-z) ^ (3*ahalf)
+            (-z*athird)^ahalf * ( besselJ(-athird,eta) - besselJ(athird,eta) )
 
 @
 \section{package ORTHPOL OrthogonalPolynomialFunctions}
@@ -259,22 +259,22 @@ OrthogonalPolynomialFunctions(R: CommutativeRing): Exports == Impl where
         chebyshevT: (NNI, R) -> R
            ++ chebyshevT(n,x) is the n-th Chebyshev polynomial of the first
            ++ kind, \spad{T[n](x)}.  These are defined by
-           ++ \spad{(1-t*x)/(1-2*t*x+t**2) = sum(T[n](x) *t**n, n = 0..)}.
+           ++ \spad{(1-t*x)/(1-2*t*x+t^2) = sum(T[n](x) *t^n, n = 0..)}.
 
         chebyshevU: (NNI, R) -> R
            ++ chebyshevU(n,x) is the n-th Chebyshev polynomial of the second
            ++ kind, \spad{U[n](x)}. These are defined by
-           ++ \spad{1/(1-2*t*x+t**2) = sum(T[n](x) *t**n, n = 0..)}.
+           ++ \spad{1/(1-2*t*x+t^2) = sum(T[n](x) *t^n, n = 0..)}.
 
         hermiteH:   (NNI, R) -> R
            ++ hermiteH(n,x) is the n-th Hermite polynomial, \spad{H[n](x)}.
            ++ These are defined by
-           ++ \spad{exp(2*t*x-t**2) = sum(H[n](x)*t**n/n!, n = 0..)}.
+           ++ \spad{exp(2*t*x-t^2) = sum(H[n](x)*t^n/n!, n = 0..)}.
 
         laguerreL:  (NNI, R) -> R
            ++ laguerreL(n,x) is the n-th Laguerre polynomial, \spad{L[n](x)}.
            ++ These are defined by
-           ++ \spad{exp(-t*x/(1-t))/(1-t) = sum(L[n](x)*t**n/n!, n = 0..)}.
+           ++ \spad{exp(-t*x/(1-t))/(1-t) = sum(L[n](x)*t^n/n!, n = 0..)}.
 
         laguerreL:  (NNI, NNI, R) -> R
            ++ laguerreL(m,n,x) is the associated Laguerre polynomial,
@@ -284,7 +284,7 @@ OrthogonalPolynomialFunctions(R: CommutativeRing): Exports == Impl where
             legendreP:  (NNI, R) -> R
                 ++ legendreP(n,x) is the n-th Legendre polynomial,
                 ++ \spad{P[n](x)}.  These are defined by
-                ++ \spad{1/sqrt(1-2*x*t+t**2) = sum(P[n](x)*t**n, n = 0..)}.
+                ++ \spad{1/sqrt(1-2*x*t+t^2) = sum(P[n](x)*t^n, n = 0..)}.
 
     Impl ==> add
         p0, p1: R
@@ -296,12 +296,12 @@ OrthogonalPolynomialFunctions(R: CommutativeRing): Exports == Impl where
             n = 0 => 1
             (p1, p0) := (-x + 1, 1)
             for i in 1..n-1 repeat
-                (p1, p0) := ((2*i::R + 1 - x)*p1 - i**2*p0, p1)
+                (p1, p0) := ((2*i::R + 1 - x)*p1 - i^2*p0, p1)
             p1
         laguerreL(m, n, x) ==
             ni := n::Integer
             mi := m::Integer
-            cx := (-1)**m * binomial(ni,ni-mi) * factorial(ni)
+            cx := (-1)^m * binomial(ni,ni-mi) * factorial(ni)
             p0 := 1
             p1 := cx::R
             for j in 1..ni-mi repeat
@@ -385,7 +385,7 @@ NumberTheoreticPolynomialFunctions(R: CommutativeRing): Exports == Impl where
                 d := degree p
                 c := leadingCoefficient p
                 p := reductum p
-                r := c*x**d + r
+                r := c*x^d + r
             r
 
         if R has Algebra RN then
@@ -396,7 +396,7 @@ NumberTheoreticPolynomialFunctions(R: CommutativeRing): Exports == Impl where
                     d := degree p
                     c := leadingCoefficient p
                     p := reductum p
-                    r := c*x**d + r
+                    r := c*x^d + r
                 r
             bernoulliB(k, x) ==
                 p: SUP(RN) := bernoulli(k)
@@ -405,7 +405,7 @@ NumberTheoreticPolynomialFunctions(R: CommutativeRing): Exports == Impl where
                     d := degree p
                     c := leadingCoefficient p
                     p := reductum p
-                    r := c*x**d + r
+                    r := c*x^d + r
                 r
 
 @

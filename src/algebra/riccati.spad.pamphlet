@@ -111,10 +111,10 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
     infLambda l         == innerlb(l, -(degree(#1)::Z))
     infmax(rec, l)      == innermax(rec, l, degree(#1)::Z)
     dmax(rec, c, l)     == innermax(rec, l, - order(#1, c)::Z)
-    tau0(p, q)          == ((q exquo (p ** order(q, p)))::UP) rem p
+    tau0(p, q)          == ((q exquo (p ^ order(q, p)))::UP) rem p
     poly1(c, cp, i)     == */[monomial(1,1)$UP2 - (j * cp)::UP2 for j in 0..i-1]
     getIndices(n, l)    == removeDuplicates_! concat [r.ij for r in l | r.deg=n]
-    denomRicDE l        == */[c ** bound(c, l) for c in factoredDenomRicDE l]
+    denomRicDE l        == */[c ^ bound(c, l) for c in factoredDenomRicDE l]
     polyRicDE(l, zeros) == concat([0, l], polysol(l, 0, false, zeros))
 
 -- refine([p1,...,pn], foo) refines the list of factors using foo
@@ -129,7 +129,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       if finite? then lc := select_!(#1.deg <= b, lc)
       for rec in lc repeat
         for r in zeros(c, rec.eq) | r ~= 0 repeat
-          rcn := r /$RF (c ** rec.deg)
+          rcn := r /$RF (c ^ rec.deg)
           neweq := changeVar(op, rcn)
           sols := padicsol(c, neweq, (rec.deg-1)::N, true, zeros)
           ans :=
@@ -448,7 +448,7 @@ RationalRicDE(F, UP): Exports == Implementation where
     reverseUTS(s, n) ==
       +/[monomial(coefficient(s, i), (n - i)::N)$UP for i in 0..n]
 
--- returns a potential polynomial solution p with leading coefficient a*?**n
+-- returns a potential polynomial solution p with leading coefficient a*?^n
     newtonSolution(l, a, n, zeros) ==
       i:N
       m:Z := 0
@@ -524,7 +524,7 @@ RationalRicDE(F, UP): Exports == Implementation where
       rec := genericPolynomial(dummy, degree(c)::Z - 1)
       unk:SUP := 0
       while not zero? h repeat
-        unk := unk + UP2SUP(leadingCoefficient h) * (rec.poly ** degree h)
+        unk := unk + UP2SUP(leadingCoefficient h) * (rec.poly ^ degree h)
         h   := reductum h
       sol := ratsol solve(coefficients(monicDivide(unk,UP2SUP c).remainder),
                           rec.vars)

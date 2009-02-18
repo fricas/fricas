@@ -117,35 +117,35 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
       ++ \spad{[[a<0,0>,a<0,1>,..],[a<1,0>,a<1,1>,..],[a<2,0>,a<2,1>,..],..]}
       ++ and \spad{addiag(x) = [b<0,b<1>,...], then b<k> = sum(i+j=k,a<i,j>)}.
     lambert      : ST A -> ST A
-      ++ lambert(st) computes \spad{f(x) + f(x**2) + f(x**3) + ...}
+      ++ lambert(st) computes \spad{f(x) + f(x^2) + f(x^3) + ...}
       ++ if st is a stream representing \spad{f(x)}.
       ++ This function is used for computing infinite products.
       ++ If \spad{f(x)} is a power series with constant coefficient 1 then
-      ++ \spad{prod(f(x**n),n = 1..infinity) = exp(lambert(log(f(x))))}.
+      ++ \spad{prod(f(x^n),n = 1..infinity) = exp(lambert(log(f(x))))}.
     oddlambert   : ST A -> ST A
-      ++ oddlambert(st) computes \spad{f(x) + f(x**3) + f(x**5) + ...}
+      ++ oddlambert(st) computes \spad{f(x) + f(x^3) + f(x^5) + ...}
       ++ if st is a stream representing \spad{f(x)}.
       ++ This function is used for computing infinite products.
       ++ If f(x) is a power series with constant coefficient 1 then
-      ++ \spad{prod(f(x**(2*n-1)),n=1..infinity) = exp(oddlambert(log(f(x))))}.
+      ++ \spad{prod(f(x^(2*n-1)),n=1..infinity) = exp(oddlambert(log(f(x))))}.
     evenlambert  : ST A -> ST A
-      ++ evenlambert(st) computes \spad{f(x**2) + f(x**4) + f(x**6) + ...}
+      ++ evenlambert(st) computes \spad{f(x^2) + f(x^4) + f(x^6) + ...}
       ++ if st is a stream representing \spad{f(x)}.
       ++ This function is used for computing infinite products.
       ++ If \spad{f(x)} is a power series with constant coefficient 1, then
-      ++ \spad{prod(f(x**(2*n)),n=1..infinity) = exp(evenlambert(log(f(x))))}.
+      ++ \spad{prod(f(x^(2*n)),n=1..infinity) = exp(evenlambert(log(f(x))))}.
     generalLambert : (ST A,I,I) -> ST A
       ++ generalLambert(f(x),a,d) returns
-      ++ \spad{f(x**a) + f(x**(a + d)) + f(x**(a + 2 d)) + ...}.
+      ++ \spad{f(x^a) + f(x^(a + d)) + f(x^(a + 2 d)) + ...}.
       ++ \spad{f(x)} should have zero constant
       ++ coefficient and \spad{a} and d should be positive.
     multisect    : (I,I,ST A) -> ST A
       ++ multisect(a,b,st)
-      ++ selects the coefficients of \spad{x**((a+b)*n+a)},
-      ++ and changes them to \spad{x**n}.
+      ++ selects the coefficients of \spad{x^((a+b)*n+a)},
+      ++ and changes them to \spad{x^n}.
     invmultisect : (I,I,ST A) -> ST A
-      ++ invmultisect(a,b,st) substitutes \spad{x**((a+b)*n)} for \spad{x**n}
-      ++ and multiplies by \spad{x**b}.
+      ++ invmultisect(a,b,st) substitutes \spad{x^((a+b)*n)} for \spad{x^n}
+      ++ and multiplies by \spad{x^b}.
     if A has Algebra RN then
       integrate  : (A,ST A) -> ST A
         ++ integrate(r,a) returns the integral of the power series \spad{a}
@@ -160,7 +160,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
         ++ first order non-linear differential equation described by u of the
         ++ form \spad{[[b<0,0>,b<0,1>,...],[b<1,0>,b<1,1>,.],...]}.
         ++ the differential equation has the form
-        ++ \spad{y' = sum(i=0 to infinity,j=0 to infinity,b<i,j>*(x**i)*(y**j))}.
+        ++ \spad{y' = sum(i=0 to infinity,j=0 to infinity,b<i,j>*(x^i)*(y^j))}.
       powern : (RN,ST A) -> ST A
         ++ powern(r,f) raises power series f to the power r.
     if A has Field then
@@ -324,8 +324,8 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
       empty? frst ststa => concat(0,addiag rst ststa)
       concat(frst(frst ststa),rst(frst ststa) + addiag(rst ststa))
 
--- lambert operates on a series +/[a[i]x**i for i in 1..] , and produces
--- the series +/[a[i](x**i/(1-x**i)) for i in 1..] i.e. forms the
+-- lambert operates on a series +/[a[i]x^i for i in 1..] , and produces
+-- the series +/[a[i](x^i/(1-x^i)) for i in 1..] i.e. forms the
 -- coefficients A[n] which is the sum of a[i] for all divisors i of n
 -- (including 1 and n)
 
@@ -389,7 +389,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
     invmultisect(a,b,x) ==
       concat(rpSt(b,0),altn(rpSt(a + b - 1,0),x))
 
--- comps(ststa,y) forms the composition of +/b[i,j]*y**i*x**j
+-- comps(ststa,y) forms the composition of +/b[i,j]*y^i*x^j
 -- where y is a power series in y.
 
     cssa ==> concat$(ST ST A)
@@ -416,7 +416,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
       nldere(lslsa,c) == lazyIntegrate(0,addiag(comps(lslsa,c)))
       nlde lslsa == YS(nldere(lslsa,#1))
 
-      RATPOWERS : Boolean := A has "**": (A,RN) -> A
+      RATPOWERS : Boolean := A has "^": (A,RN) -> A
 
       smult: (RN,ST A) -> ST A
       smult(rn,x) == map(rn * #1,x)
@@ -430,14 +430,14 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
           not zero? frst x => (order := n; leave x)
           x := rst x
           n = 1000 =>
-            error "**: series with many leading zero coefficients"
+            error "^: series with many leading zero coefficients"
         (ord := (order exquo denom(rn))) case "failed" =>
-          error "**: rational power does not exist"
+          error "^: rational power does not exist"
         co := frst x
         if ord > 0 and rn < 0 then
-           error "**: negative power does not exist" 
+           error "^: negative power does not exist" 
         (invCo := recip co) case "failed" =>
-           error "** rational power of coefficient undefined"
+           error "^ rational power of coefficient undefined"
 -- This error message is misleading, isn't it? see sups.spad/cRationalPower
         power :=
 --          one? co => YS(powerrn(rn,x,#1))
@@ -445,11 +445,11 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
           (denom rn) = 1 =>
             not negative?(num := numer rn) => 
 -- It seems that this cannot happen, but I don't know why
-              (co**num::NNI) * YS(powerrn(rn,(invCo :: A) * x,#1))
-            (invCo :: A)**((-num)::NNI) * YS(powerrn(rn,(invCo :: A) * x,#1))
+              (co^num::NNI) * YS(powerrn(rn,(invCo :: A) * x,#1))
+            (invCo :: A)^((-num)::NNI) * YS(powerrn(rn,(invCo :: A) * x,#1))
 
-          RATPOWERS => co**rn * YS(powerrn(rn,(invCo :: A) * x,#1))
-          error "** rational power of coefficient undefined"
+          RATPOWERS => co^rn * YS(powerrn(rn,(invCo :: A) * x,#1))
+          error "^ rational power of coefficient undefined"
         monom(1,(ord :: I) * numer(rn)) * power
 
     if A has Field then
@@ -468,7 +468,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
       powerre: (A,ST A,ST A) -> ST A
       powerre(s,x,c) == delay
         empty? x => zro()
-        frst x ~= 1 => error "**:constant coefficient should be 1"
+        frst x ~= 1 => error "^:constant coefficient should be 1"
         concat(frst x,finteg((s+1)*(c*deriv x))-rst x * c)
       power(s,x) == YS(powerre(s,x,#1))
 

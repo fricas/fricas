@@ -101,7 +101,7 @@ PadeApproximants(R,PS,UP): Exports == Implementation where
 
   Implementation ==> add
     -- The approximant is represented as
-    --   p0 + x**a1/(p1 + x**a2/(...))
+    --   p0 + x^a1/(p1 + x^a2/(...))
 
     PadeRep ==> Record(ais: List UP, degs: List NNI) -- #ais= #degs
     PadeU   ==> Union(PadeRep, "failed")             -- #ais= #degs+1
@@ -117,7 +117,7 @@ PadeApproximants(R,PS,UP): Exports == Implementation where
       for i in 0..n repeat p := p + monomial(coefficient(s,i),i)
       p
 
-    -- Assumes s starts with a<n>*x**n + ... and divides out x**n.
+    -- Assumes s starts with a<n>*x^n + ... and divides out x^n.
     divOutDegree(s:PS,n:NNI):PS ==
       for i in 1..n repeat s := quoByVar s
       s
@@ -157,15 +157,15 @@ PadeApproximants(R,PS,UP): Exports == Implementation where
       alist: List NNI := nil()
       -- Ensure denom has constant term.
       if zero? coefficient(dps,0) then
-        -- g/d = 0 + z**0/(d/g)
+        -- g/d = 0 + z^0/(d/g)
         (gps,dps) := (dps,gps)
         (l,m)     := (m,l)
         plist := concat(0,plist)
         alist := concat(0,alist)
       -- Ensure l >= m, maintaining coef(dps,0)~=0.
       if l < m then
-        --   (a<n>*x**n + a<n+1>*x**n+1 + ...)/b
-        -- = x**n/b + (a<n> + a<n+1>*x + ...)/b
+        --   (a<n>*x^n + a<n+1>*x^n+1 + ...)/b
+        -- = x^n/b + (a<n> + a<n+1>*x + ...)/b
         alpha := order gps
         if alpha > l then return "failed"
         gps := divOutDegree(gps, alpha)

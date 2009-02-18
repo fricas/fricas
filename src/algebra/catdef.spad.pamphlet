@@ -395,9 +395,9 @@ DifferentialExtension(R:Ring): Category == Ring with
 
 DivisionRing(): Category ==
  Join(EntireRing, Algebra Fraction Integer) with
-      "**": (%,Integer) -> %
-          ++ x**n returns x raised to the integer power n.
-      "^" : (%,Integer) -> %
+      "^": (%,Integer) -> %
+          ++ x^n returns x raised to the integer power n.
+      -- "^" : (%,Integer) -> %
           ++ x^n returns x raised to the integer power n.
       inv : % -> %
           ++ inv x returns the multiplicative inverse of x.
@@ -408,9 +408,9 @@ DivisionRing(): Category ==
     add
       n: Integer
       x: %
-      _^(x:%, n:Integer):% == x ** n
+      -- _^(x:%, n:Integer):% == x ^ n
       import RepeatedSquaring(%)
-      x ** n: Integer ==
+      x ^ n: Integer ==
          zero? n => 1
          zero? x =>
             n<0 => error "division by zero"
@@ -917,8 +917,8 @@ Group(): Category == Join(Monoid, unitsKnown) with
     --operations
       inv: % -> %               ++ inv(x) returns the inverse of x.
       "/": (%,%) -> %           ++ x/y is the same as x times the inverse of y.
-      "**": (%,Integer) -> %    ++ x**n returns x raised to the integer power n.
-      "^": (%,Integer) -> %     ++ x^n returns x raised to the integer power n.
+      "^": (%,Integer) -> %    ++ x^n returns x raised to the integer power n.
+      -- "^": (%,Integer) -> %     ++ x^n returns x raised to the integer power n.
       conjugate: (%,%) -> %
         ++ conjugate(p,q) computes \spad{inv(q) * p * q}; this is 'right action
         ++ by conjugation'.
@@ -928,8 +928,8 @@ Group(): Category == Join(Monoid, unitsKnown) with
       import RepeatedSquaring(%)
       x:% / y:% == x*inv(y)
       recip(x:%) == inv(x)
-      _^(x:%, n:Integer):% == x ** n
-      x:% ** n:Integer ==
+      -- _^(x:%, n:Integer):% == x ^ n
+      x:% ^ n:Integer ==
          zero? n => 1
          n<0 => expt(inv(x),(-n) pretend PositiveInteger)
          expt(x,n pretend PositiveInteger)
@@ -1103,23 +1103,23 @@ Monoid(): Category == SemiGroup with
       1: constant ->  %                   ++ 1 is the multiplicative identity.
       sample: constant -> %               ++ sample yields a value of type %
       one?: % -> Boolean                  ++ one?(x) tests if x is equal to 1.
-      "**": (%,NonNegativeInteger) -> %   ++ x**n returns the repeated product
+      "^": (%,NonNegativeInteger) -> %   ++ x^n returns the repeated product
                                           ++ of x n times, i.e. exponentiation.
-      "^" : (%,NonNegativeInteger) -> %   ++ x^n returns the repeated product
+      -- "^" : (%,NonNegativeInteger) -> %   ++ x^n returns the repeated product
                                           ++ of x n times, i.e. exponentiation.
       recip: % -> Union(%,"failed")
           ++ recip(x) tries to compute the multiplicative inverse for x
           ++ or "failed" if it cannot find the inverse (see unitsKnown).
     add
       import RepeatedSquaring(%)
-      _^(x:%, n:NonNegativeInteger):% == x ** n
+      -- _**(x:%, n:NonNegativeInteger):% == x ^ n
       one? x == x = 1
       sample() == 1
       recip x ==
 --       one? x => x
        (x = 1) => x
        "failed"
-      x:% ** n:NonNegativeInteger ==
+      x:% ^ n:NonNegativeInteger ==
          zero? n => 1
          expt(x,n pretend PositiveInteger)
 
@@ -1719,14 +1719,14 @@ Rng(): Category == Join(AbelianGroup,SemiRng)
 SemiGroup(): Category == SetCategory with
     --operations
       "*": (%,%) -> %                  ++ x*y returns the product of x and y.
-      "**": (%,PositiveInteger) -> %   ++ x**n returns the repeated product
+      "^": (%,PositiveInteger) -> %   ++ x^n returns the repeated product
                                        ++ of x n times, i.e. exponentiation.
-      "^": (%,PositiveInteger) -> %    ++ x^n returns the repeated product
+      -- "**": (%,PositiveInteger) -> %    ++ x^n returns the repeated product
                                        ++ of x n times, i.e. exponentiation.
     add
       import RepeatedSquaring(%)
-      x:% ** n:PositiveInteger == expt(x,n)
-      _^(x:%, n:PositiveInteger):% == x ** n
+      x:% ^ n:PositiveInteger == expt(x,n)
+      -- _**(x:%, n:PositiveInteger):% == x ^ n
 
 @
 \section{category SETCAT SetCategory}

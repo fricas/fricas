@@ -279,7 +279,7 @@ InnerPAdicInteger(p,unBalanced?): Exports == Implementation where
     termOutput:(I,I) -> OUT
     termOutput(k,c) ==
       k = 0 => c :: OUT
-      mon := (k = 1 => PEXPR; PEXPR ** (k :: OUT))
+      mon := (k = 1 => PEXPR; PEXPR ^ (k :: OUT))
       c = 1 => mon
       c = -1 => -mon
       (c :: OUT) * mon
@@ -305,7 +305,7 @@ InnerPAdicInteger(p,unBalanced?): Exports == Implementation where
       l :=
         explicitlyEmpty? st => l
         eq?(st,rst st) and frst st = 0 => l
-        concat(prefix("O" :: OUT,[PEXPR ** (n :: OUT)]),l)
+        concat(prefix("O" :: OUT,[PEXPR ^ (n :: OUT)]),l)
       empty? l => 0 :: OUT
       reduce("+",reverse_! l)
 
@@ -442,27 +442,27 @@ PAdicRationalConstructor(p,PADIC): Exports == Implementation where
       EQ(x,y)$Lisp => true
       n := getExpon(x) - getExpon(y)
       n >= 0 =>
-        (p**(n :: NNI) * getZp(x)) = getZp(y)
-      (p**((- n) :: NNI) * getZp(y)) = getZp(x)
+        (p^(n :: NNI) * getZp(x)) = getZp(y)
+      (p^((- n) :: NNI) * getZp(y)) = getZp(x)
 
     x + y ==
       n := getExpon(x) - getExpon(y)
       n >= 0 =>
-        makeQp(getExpon y,getZp(y) + p**(n :: NNI) * getZp(x))
-      makeQp(getExpon x,getZp(x) + p**((-n) :: NNI) * getZp(y))
+        makeQp(getExpon y,getZp(y) + p^(n :: NNI) * getZp(x))
+      makeQp(getExpon x,getZp(x) + p^((-n) :: NNI) * getZp(y))
 
     -x == makeQp(getExpon x,-getZp(x))
 
     x - y ==
       n := getExpon(x) - getExpon(y)
       n >= 0 =>
-        makeQp(getExpon y,p**(n :: NNI) * getZp(x) - getZp(y))
-      makeQp(getExpon x,getZp(x) - p**((-n) :: NNI) * getZp(y))
+        makeQp(getExpon y,p^(n :: NNI) * getZp(x) - getZp(y))
+      makeQp(getExpon x,getZp(x) - p^((-n) :: NNI) * getZp(y))
 
     n:I * x:% == makeQp(getExpon x,n * getZp x)
     x:% * y:% == makeQp(getExpon x + getExpon y,getZp x * getZp y)
 
-    x:% ** n:I ==
+    x:% ^ n:I ==
       zero? n => 1
       positive? n => expt(x,n :: PositiveInteger)$RepeatedSquaring(%)
       inv expt(x,(-n) :: PositiveInteger)$RepeatedSquaring(%)
@@ -483,7 +483,7 @@ PAdicRationalConstructor(p,PADIC): Exports == Implementation where
 
     approximate(x,n) ==
       k := getExpon x
-      (p :: RN) ** k * approximate(getZp x,n - k)
+      (p :: RN) ^ k * approximate(getZp x,n - k)
 
     cfStream: % -> Stream RN
     cfStream x == delay
@@ -498,7 +498,7 @@ PAdicRationalConstructor(p,PADIC): Exports == Implementation where
     termOutput:(I,I) -> OUT
     termOutput(k,c) ==
       k = 0 => c :: OUT
-      mon := (k = 1 => PEXPR; PEXPR ** (k :: OUT))
+      mon := (k = 1 => PEXPR; PEXPR ^ (k :: OUT))
       c = 1 => mon
       c = -1 => -mon
       (c :: OUT) * mon
@@ -527,7 +527,7 @@ PAdicRationalConstructor(p,PADIC): Exports == Implementation where
       l :=
         explicitlyEmpty? uu => l
         eq?(uu,rst uu) and frst uu = 0 => l
-        concat(prefix("O" :: OUT,[PEXPR ** ((n :: I) + m) :: OUT]),l)
+        concat(prefix("O" :: OUT,[PEXPR ^ ((n :: I) + m) :: OUT]),l)
       empty? l => 0 :: OUT
       reduce("+",reverse_! l)
 

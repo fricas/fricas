@@ -78,8 +78,8 @@ CombinatorialFunction(R, F): Exports == Implementation where
       ++ operator(op) returns a copy of op with the domain-dependent
       ++ properties appropriate for F;
       ++ error if op is not a combinatorial operator;
-    "**"       : (F, F) -> F
-      ++ a ** b is the formal exponential a**b;
+    "^"       : (F, F) -> F
+      ++ a ^ b is the formal exponential a^b;
     binomial   : (F, F) -> F
       ++ binomial(n, r) returns the number of subsets of r objects
       ++ taken among n objects, i.e. n!/(r! * (n-r)!);
@@ -240,13 +240,13 @@ caused nested products and summations to fail. (Issue~\#72)
       else
         ground?(x)
 
-    x ** y               == 
+    x ^ y               == 
       -- Do some basic simplifications
       is?(x,POWER) =>
         args : List F := argument first kernels x
-        not(#args = 2) => error "Too many arguments to **"
+        not(#args = 2) => error "Too many arguments to ^"
         number?(first args) and number?(y) =>
-          oppow [first(args)**y, second args]
+          oppow [first(args)^y, second args]
         oppow [first args, (second args)* y]
       -- Generic case
       exp : Union(Record(val:F,exponent:Z),"failed") := isPower x
@@ -257,7 +257,7 @@ caused nested products and summations to fail. (Issue~\#72)
 
     belong? op           == has?(op, COMB)
     fourth l             == third rest l
-    dvpow1 l             == second(l) * first(l) ** (second l - 1)
+    dvpow1 l             == second(l) * first(l) ^ (second l - 1)
     factorials x         == facts(x, variables x)
     factorials(x, v)     == facts(x, [v])
     facts(x, l)          == smpfact(numer x, l) / smpfact(denom x, l)
@@ -486,7 +486,7 @@ local\rq.
     idprod l ==
       member?(retract(second l)@SE, variables first l) =>
         kernel(opdprod, l)
-      first(l) ** (fourth rest l - fourth l + 1)
+      first(l) ^ (fourth rest l - fourth l + 1)
 
     idsum l ==
       member?(retract(second l)@SE, variables first l) =>
@@ -540,17 +540,17 @@ local\rq.
         ipow l ==
           (r := retractIfCan(second l)@Union(Fraction Z,"failed"))
             case "failed" => iiipow l
-          first(l) ** (r::Fraction(Z))
+          first(l) ^ (r::Fraction(Z))
       else
         ipow l ==
           (r := retractIfCan(second l)@Union(Z, "failed"))
             case "failed" => iiipow l
-          first(l) ** (r::Z)
+          first(l) ^ (r::Z)
 
     else
       ipow l ==
         zero?(x := first l) =>
-          zero? second l => error "0 ** 0"
+          zero? second l => error "0 ^ 0"
           0
 --        one? x or zero?(n := second l) => 1
         (x = 1) or zero?(n: F := second l) => 1
@@ -618,7 +618,7 @@ for improvement here.
         (r1:=retractIfCan(first l)@Union(R,"failed")) case "failed" or
           (r2:=retractIfCan(second l)@Union(R,"failed")) case "failed"
             => ipow l
-        (r1::R ** r2::R)::F
+        (r1::R ^ r2::R)::F
     else
       iipow l == ipow l
 
@@ -635,7 +635,7 @@ we return zero for convenience.
 Note that up to [[patch--25]] this used to read
 \begin{verbatim}
     if F has ElementaryFunctionCategory then
-      dvpow2 l == log(first l) * first(l) ** second(l)
+      dvpow2 l == log(first l) * first(l) ^ second(l)
 \end{verbatim}
 which caused differentiating $0^x$ to fail. (Issue~\#19)
 
@@ -643,7 +643,7 @@ which caused differentiating $0^x$ to fail. (Issue~\#19)
       dvpow2 l == if zero?(first l) then
                     0
                   else
-                    log(first l) * first(l) ** second(l)
+                    log(first l) * first(l) ^ second(l)
 
 @
 
@@ -1044,7 +1044,7 @@ respect to the first argument.
       iGamma2(l: List F, t: SE): F ==
         a := first l; x := second l
         differentiate(a, t)*kernel(opdiff, [opGamma2 [dm, x], dm, a])
-          - differentiate(x, t)* x ** (a - 1) * exp(-x)
+          - differentiate(x, t)* x ^ (a - 1) * exp(-x)
       setProperty(opGamma2, SPECIALDIFF, iGamma2@((List F, SE)->F) 
                                                  pretend None)
 @

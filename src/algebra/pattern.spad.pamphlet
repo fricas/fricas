@@ -67,7 +67,7 @@ Pattern(R:SetCategory): Exports == Implementation where
       ++ \spad{p = op(a1,...,an)}, and
       ++ "failed" otherwise;
     isExpt       : %  -> Union(REC, "failed")
-      ++ isExpt(p) returns \spad{[q, n]} if \spad{n > 0} and \spad{p = q ** n},
+      ++ isExpt(p) returns \spad{[q, n]} if \spad{n > 0} and \spad{p = q ^ n},
       ++ and "failed" otherwise.
     isQuotient   : %  -> Union(QOT, "failed")
       ++ isQuotient(p) returns \spad{[a, b]} if \spad{p = a / b}, and
@@ -76,7 +76,7 @@ Pattern(R:SetCategory): Exports == Implementation where
       ++ isList(p) returns \spad{[a1,...,an]} if \spad{p = [a1,...,an]},
       ++ "failed" otherwise;
     isPower      : %  -> Union(Record(val:%, exponent:%), "failed")
-      ++ isPower(p) returns \spad{[a, b]} if \spad{p = a ** b}, and
+      ++ isPower(p) returns \spad{[a, b]} if \spad{p = a ^ b}, and
       ++ "failed" otherwise.
     elt          : (BOP, List %) -> %
       ++ \spad{elt(op, [a1,...,an])} returns \spad{op(a1,...,an)}.
@@ -84,10 +84,10 @@ Pattern(R:SetCategory): Exports == Implementation where
       ++ \spad{a + b} returns the pattern \spad{a + b}.
     "*"          : (%, %) -> %
       ++ \spad{a * b} returns the pattern \spad{a * b}.
-    "**"         : (%, NonNegativeInteger) -> %
-      ++ \spad{a ** n} returns the pattern \spad{a ** n}.
-    "**"         : (%, %) -> %
-      ++ \spad{a ** b} returns the pattern \spad{a ** b}.
+    "^"         : (%, NonNegativeInteger) -> %
+      ++ \spad{a ^ n} returns the pattern \spad{a ^ n}.
+    "^"         : (%, %) -> %
+      ++ \spad{a ^ b} returns the pattern \spad{a ^ b}.
     "/"          : (%, %) -> %
       ++ \spad{a / b} returns the pattern \spad{a / b}.
     depth        : % -> NonNegativeInteger
@@ -197,7 +197,7 @@ Pattern(R:SetCategory): Exports == Implementation where
     optional? p     == symbol? p and bitSet?(p.pat.sym.tag,SYM_OPTIONAL)
     bitSet?(a, b)   == And(a, b) ~= 0
     coerce(p:%):O   == PAT2O(p.pat)
-    p1:% ** p2:%    == taggedElt(PAT_EXPT, [p1, p2])
+    p1:% ^ p2:%    == taggedElt(PAT_EXPT, [p1, p2])
     LPAT2O(f, l)    == reduce(f, [x::O for x in l])$List(O)
     retract(p:%):R  == (inR? p => p.pat.ret; error "Not retractable")
     convert(l:List %):%                 == taggedElt(PAT_LIST, l)
@@ -232,7 +232,7 @@ Pattern(R:SetCategory): Exports == Implementation where
       mkPat(every?(constant?, l), [[n, dummy, l]$KER], incmax l)
 
     elt(o, l) ==
-      is?(o, POWER) and #l = 2 => first(l) ** last(l)
+      is?(o, POWER) and #l = 2 => first(l) ^ last(l)
       mkPat(every?(constant?, l), [[0, o, l]$KER], incmax l)
 
     isOp p ==
@@ -254,7 +254,7 @@ Pattern(R:SetCategory): Exports == Implementation where
     else
       0 == taggedElt(PAT_ZERO, empty())
 
-    p:% ** n:NonNegativeInteger ==
+    p:% ^ n:NonNegativeInteger ==
       p = 0 and n > 0 => 0
       p = 1 or zero? n => 1
 --      one? n => p
@@ -336,7 +336,7 @@ Pattern(R:SetCategory): Exports == Implementation where
     PAT2O p ==
       p case ret => (p.ret)::O
       p case sym => SYM2O(p.sym)
-      p case exp => (p.exp.val)::O ** (p.exp.exponent)::O
+      p case exp => (p.exp.val)::O ^ (p.exp.exponent)::O
       p case qot => (p.qot.num)::O / (p.qot.den)::O
       p.ker.tag = PAT_PLUS  => LPAT2O("+", p.ker.arg)
       p.ker.tag = PAT_TIMES => LPAT2O("*", p.ker.arg)
@@ -479,11 +479,11 @@ PatternFunctions2(R:SetCategory, S:SetCategory): with
       (x := isPower p) case
        Record(val:Pattern R, exponent: Pattern R) =>
         xr := x::Record(val:Pattern R, exponent: Pattern R)
-        map(f, xr.val) ** map(f, xr.exponent)
+        map(f, xr.val) ^ map(f, xr.exponent)
       (w := isExpt p) case
        Record(val:Pattern R, exponent: NonNegativeInteger) =>
         wr := w::Record(val:Pattern R, exponent: NonNegativeInteger)
-        map(f, wr.val) ** wr.exponent
+        map(f, wr.val) ^ wr.exponent
       sy := retract(p)@Symbol
       setPredicates(sy::Pattern(S), copy predicates p)
 

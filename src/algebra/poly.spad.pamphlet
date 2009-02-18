@@ -105,7 +105,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
     --assertions
        if R has IntegralDomain and E has CancellationAbelianMonoid then
             fmecg: (%,E,R,%) -> %
-            ++ fmecg(p1,e,r,p2) finds X : p1 - r * X**e * p2
+            ++ fmecg(p1,e,r,p2) finds X : p1 - r * X^e * p2
        if R has canonicalUnitNormal then canonicalUnitNormal
           ++ canonicalUnitNormal guarantees that the function
           ++ unitCanonical returns the same representative for all
@@ -293,18 +293,18 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
 --                  -- This 'reverse' is an efficiency improvement:
 --                  -- reduces both time and space [Abbott/Bradford/Davenport]
        if R has CommutativeRing  then
-         p ** np == p ** (np pretend NonNegativeInteger)
-         p ^ np  == p ** (np pretend NonNegativeInteger)
-         p ^ nn  == p ** nn
+         p ^ np == p ^ (np pretend NonNegativeInteger)
+         p ^ np  == p ^ (np pretend NonNegativeInteger)
+         p ^ nn  == p ^ nn
 
 
-         p ** nn  ==
+         p ^ nn  ==
             null p => 0
             zero? nn => 1
 --            one? nn => p
             (nn = 1) => p
             empty? p.rest =>
-              zero?(cc:=p.first.c ** nn) => 0
+              zero?(cc:=p.first.c ^ nn) => 0
               [[nn * p.first.k, cc]]
             binomThmExpt([p.first], p.rest, nn)
 
@@ -338,7 +338,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
                then return "failed" else [tm.k,a])
                   for tm in p] :: Union(%,"failed")
          if E has CancellationAbelianMonoid then
-           fmecg(p1:%,e:E,r:R,p2:%):% ==       -- p1 - r * X**e * p2
+           fmecg(p1:%,e:E,r:R,p2:%):% ==       -- p1 - r * X^e * p2
               rout:%:= []
               r:= - r
               for tm in p2 repeat
@@ -414,7 +414,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
         ++ an output form (see \spadtype{OutputForm}) printed as a polynomial in the
         ++ output form variable.
      fmecg: (%,NonNegativeInteger,R,%) -> %
-        ++ fmecg(p1,e,r,p2) finds X : p1 - r * X**e * p2
+        ++ fmecg(p1,e,r,p2) finds X : p1 - r * X^e * p2
     == PolynomialRing(R,NonNegativeInteger)
   add
    --representations
@@ -433,16 +433,16 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
 
 
    if R has FieldOfPrimeCharacteristic  then 
-         p ** np == p ** (np pretend NonNegativeInteger)
-         p ^ np  == p ** (np pretend NonNegativeInteger)
-         p ^ n  == p ** n
-         p ** n  ==
+         p ^ np == p ^ (np pretend NonNegativeInteger)
+         p ^ np  == p ^ (np pretend NonNegativeInteger)
+         p ^ n  == p ^ n
+         p ^ n  ==
             null p => 0
             zero? n => 1
 --            one? n => p
             (n = 1) => p
             empty? p.rest =>
-              zero?(cc:=p.first.c ** n) => 0
+              zero?(cc:=p.first.c ^ n) => 0
               [[n * p.first.k, cc]]
             -- not worth doing special trick if characteristic is too small 
             if characteristic()$R < 3 then return expt(p,n pretend PositiveInteger)$RepeatedSquaring(%)
@@ -590,7 +590,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
            rout:= [[ee,a], :rout]
         null p1 => reverse(rout)::%    -- nreverse?
         "failed"
-   fmecg(p1,e,r,p2) ==       -- p1 - r * X**e * p2
+   fmecg(p1,e,r,p2) ==       -- p1 - r * X^e * p2
           rout:%:= []
           r:= - r
           for tm in p2 repeat
@@ -615,12 +615,12 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
        p1:=fmecg(co * p1.rest, u, p1.first.c, p2)
        e1:= (e1 - 1)::NonNegativeInteger
      e1 = 0 => p1
-     co ** e1 * p1
+     co ^ e1 * p1
    toutput(t1:Term,v:OutputForm):OutputForm ==
      t1.k = 0 => t1.c :: OutputForm
      if t1.k = 1
        then mon:= v
-       else mon := v ** t1.k::OutputForm
+       else mon := v ^ t1.k::OutputForm
      t1.c = 1 => mon
      t1.c = -1 and
           ((t1.c :: OutputForm) = (-1$Integer)::OutputForm)@Boolean => - mon
@@ -637,17 +637,17 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
       co:=p.first.c
       n:=p.first.k
       for tm in p.rest repeat
-       co:= co * val ** (n - (n:=tm.k))::NonNegativeInteger + tm.c
+       co:= co * val ^ (n - (n:=tm.k))::NonNegativeInteger + tm.c
       n = 0 => co
-      co * val ** n
+      co * val ^ n
    elt(p:%,val:%) ==
       null p => 0$%
       coef:% := p.first.c :: %
       n:=p.first.k
       for tm in p.rest repeat
-       coef:= coef * val ** (n-(n:=tm.k))::NonNegativeInteger+(tm.c::%)
+       coef:= coef * val ^ (n-(n:=tm.k))::NonNegativeInteger+(tm.c::%)
       n = 0 => coef
-      coef * val ** n
+      coef * val ^ n
 
    monicDivide(p1:%,p2:%) ==
       null p2 => error "monicDivide: division by 0"
@@ -668,8 +668,8 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
 --     discriminant(p) ==
 --       null p or zero?(p.first.k) => error "cannot take discriminant of constants"
 --       dp:=differentiate p
---       corr:=  p.first.c ** ((degree p - 1 - degree dp)::NonNegativeInteger)
---       (-1)**((p.first.k*(p.first.k-1)) quo 2):NonNegativeInteger
+--       corr:=  p.first.c ^ ((degree p - 1 - degree dp)::NonNegativeInteger)
+--       (-1)^((p.first.k*(p.first.k-1)) quo 2):NonNegativeInteger
 --         * (corr * resultant(p,dp) exquo p.first.c)::R
 
        subResultantGcd(p1,p2) == subResultantGcd(p1,p2)$PseudoRemainderSequence(R,%)
@@ -682,16 +682,16 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
 --       while not null p and p.first.k ~= 0 repeat
 --         p1:=p2; p2:=p; p:=pseudoRemainder(p1,p2)
 --         null p or p.first.k = 0 => "enuf"
---         co:=(p1.first.c ** e exquo co ** max(0, (e-1))::NonNegativeInteger)::R
---         e:= (p1.first.k - p2.first.k):NonNegativeInteger;  c1:=co**e
+--         co:=(p1.first.c ^ e exquo co ^ max(0, (e-1))::NonNegativeInteger)::R
+--         e:= (p1.first.k - p2.first.k):NonNegativeInteger;  c1:=co^e
 --         p:=[[tm.k,((tm.c exquo p1.first.c)::R exquo c1)::R] for tm in p]
 --       if null p then p2 else 1$%
 
        resultant(p1,p2) == resultant(p1,p2)$PseudoRemainderSequence(R,%)
 --     resultant(p1,p2) ==      --SubResultant PRS Algorithm
 --        null p1 or null p2 => 0$R
---        0 = degree(p1) => ((first p1).c)**degree(p2)
---        0 = degree(p2) => ((first p2).c)**degree(p1)
+--        0 = degree(p1) => ((first p1).c)^degree(p2)
+--        0 = degree(p2) => ((first p2).c)^degree(p1)
 --        if p1.first.k < p2.first.k then
 --          (if odd?(p1.first.k) then p1:=-p1;  (p1,p2):=(p2,p1))
 --        p:=pseudoRemainder(p1,p2)
@@ -699,11 +699,11 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
 --        while not null p repeat
 --           if not odd?(e) then p:=-p
 --           p1:=p2;  p2:=p;  p:=pseudoRemainder(p1,p2)
---           co:=(p1.first.c ** e exquo co ** max(e:Integer-1,0):NonNegativeInteger)::R
---           e:= (p1.first.k - p2.first.k):NonNegativeInteger;  c1:=co**e
+--           co:=(p1.first.c ^ e exquo co ^ max(e:Integer-1,0):NonNegativeInteger)::R
+--           e:= (p1.first.k - p2.first.k):NonNegativeInteger;  c1:=co^e
 --           p:=(p exquo ((leadingCoefficient p1) * c1))::%
 --        degree p2 > 0 => 0$R
---        (p2.first.c**e exquo co**((e-1)::NonNegativeInteger))::R
+--        (p2.first.c^e exquo co^((e-1)::NonNegativeInteger))::R
    if R has GcdDomain then
      content(p) == if null p then 0$R else "gcd"/[tm.c for tm in p]
         --make CONTENT more efficient?
@@ -790,7 +790,7 @@ UnivariatePolynomial(x:Symbol, R:Ring):
     coerce: Variable(x) -> %
       ++ coerce(x) converts the variable x to a univariate polynomial.
     fmecg: (%,NonNegativeInteger,R,%) -> %
-        ++ fmecg(p1,e,r,p2) finds X : p1 - r * X**e * p2
+        ++ fmecg(p1,e,r,p2) finds X : p1 - r * X^e * p2
    == SparseUnivariatePolynomial(R)   add
     Rep:=SparseUnivariatePolynomial(R)
     coerce(p:%):OutputForm  == outputForm(p, outputForm x)
@@ -944,7 +944,7 @@ UnivariatePolynomialSquareFree(RC:IntegralDomain,P):C == T
               pi:=gcd(ci,di)
               i:=i+1
               degree(pi) > 0 =>
-                 lcp:=(lcp exquo (leadingCoefficient(pi)**i))::RC
+                 lcp:=(lcp exquo (leadingCoefficient(pi)^i))::RC
                  lffe:=[["sqfr",pi,i],:lffe]
            makeFR(lcp::P,lffe)
 
@@ -967,10 +967,10 @@ UnivariatePolynomialSquareFree(RC:IntegralDomain,P):C == T
               i:=i+1
               degree(diprev) = degree(di) =>
                  lc := (leadingCoefficient(diprev) exquo leadingCoefficient(di))::RC
-                 dunit := lc**i * dunit
+                 dunit := lc^i * dunit
               pi:=(diprev exquo di)::P
               lffe:=[["sqfr",pi,i],:lffe]
-           dunit := dunit * di ** (i+1)
+           dunit := dunit * di ^ (i+1)
            degree(ci)=0 => makeFR(dunit*ci,lffe)
            redSqfr:=squareFree(divideExponents(ci,characteristic$P)::P)
            lsnil:= [BumInSepFFE(ffe) for ffe in factorList redSqfr]
@@ -1052,7 +1052,7 @@ PolynomialSquareFree(VarSet:OrderedSet,E,RC:GcdDomain,P):C == T where
           isSq  := true
         psqfr:=finSqFr(proot,variables f)
         isSq  =>
-          makeFR((unit psqfr)**chrc,[[u.flg,u.fctr,
+          makeFR((unit psqfr)^chrc,[[u.flg,u.fctr,
            (u.xpnt)*chrc] for u in factorList psqfr])
         makeFR((unit psqfr),[["nil",putPth u.fctr,u.xpnt]
                              for u in factorList psqfr])
@@ -1078,7 +1078,7 @@ PolynomialSquareFree(VarSet:OrderedSet,E,RC:GcdDomain,P):C == T where
            listfin1:= squareFree multivariate(u.fctr,mv)
            flistfin1:=[[uu.flg,uu.fctr,uu.xpnt*uexp]
                         for uu in factorList listfin1]
-           cont1:=cont1*((unit listfin1)**uexp)
+           cont1:=cont1*((unit listfin1)^uexp)
            pfaclist:=append(flistfin1,pfaclist)
          cont:=cont*cont1
          cont ~= 1 =>

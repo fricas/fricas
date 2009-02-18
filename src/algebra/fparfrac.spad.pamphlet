@@ -109,11 +109,11 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
 --      one?(m := degree d) =>
       ((m := degree d) = 1) =>
         a   := - (leadingCoefficient reductum d) / (leadingCoefficient d)
-        h(a)::UP / (x - a::UP)**n
+        h(a)::UP / (x - a::UP)^n
       dd  := UP2SUP d
       hh  := UP2SUP h
       aa  := monomial(1, 1)$SUP
-      p   := (x::RF::SUP - aa)**n rem dd
+      p   := (x::RF::SUP - aa)^n rem dd
       rec := extendedEuclidean(p, dd, hh)::Record(coef1:SUP, coef2:SUP)
       t   := rec.coef1     -- we want Trace_k^k(a)(t) now
       ans := coefficient(t, 0)
@@ -130,18 +130,18 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
 
     fullParFrac(a, d, q, n) ==
       ans:List REC := empty()
-      em := e := d quo (q ** n)
+      em := e := d quo (q ^ n)
       rec := extendedEuclidean(e, q, 1)::Record(coef1:UP,coef2:UP)
       bm := b := rec.coef1                  -- b = inverse of e modulo q
       lvar:List(ODV) := [u0]
       um := 1::ODP
-      un := (u1 := u0::ODP)**n
+      un := (u1 := u0::ODP)^n
       lval:List(UP)  := [q1 := q := differentiate(q0 := q)]
       h:ODF := a::ODP / (e * un)
       rec := extendedEuclidean(q1, q0, 1)::Record(coef1:UP,coef2:UP)
       c := rec.coef1                        -- c = inverse of q' modulo q
       cm := 1::UP
-      cn  := (c ** n) rem q0
+      cn  := (c ^ n) rem q0
       for m in 1..n repeat
         p    := retract(em * un * um * h)@ODP
         pp   := retract(eval(p, lvar, lval))@UP
@@ -152,10 +152,10 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
         qq   := q0 quo gcd(pp, q0)                    -- new center
         if (degree(qq) > 0) then
           ans  := concat([(n + 1 - m)::N, qq, (pp * bm * cn * cm) rem qq], ans)
-        cm   := (c * cm) rem q0     -- cm = c**m modulo q now
-        um   := u1 * um             -- um = u**m now
-        em   := e * em              -- em = e**{m+1} now
-        bm   := (b * bm) rem q0     -- bm = b**{m+1} modulo q now
+        cm   := (c * cm) rem q0     -- cm = c^m modulo q now
+        um   := u1 * um             -- um = u^m now
+        em   := e * em              -- em = e^{m+1} now
+        bm   := (b * bm) rem q0     -- bm = b^{m+1} modulo q now
       ans
 
     coerce(f:$):O ==
@@ -184,7 +184,7 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
     outputexp(f, n) ==
 --      one? n => f
       (n = 1) => f
-      f ** (n::O)
+      f ^ (n::O)
 
 @
 \section{License}

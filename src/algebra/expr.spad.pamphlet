@@ -109,24 +109,24 @@ Expression(R:OrderedSet): Exports == Implementation where
         is?(x,POWER) =>
           -- Look for a power of a number in case we can do a simplification
           args : List % := argument first k
-          not(#args = 2) => error "Too many arguments to **"
+          not(#args = 2) => error "Too many arguments to ^"
           number?(args.1) =>
-             reduc((args.1) **$Rep n, algkernels kernels (args.1))**(args.2)
-          (first args)**(n*second(args))
-        reduc(x **$Rep n, algkernels k)
+             reduc((args.1) ^$Rep n, algkernels kernels (args.1))^(args.2)
+          (first args)^(n*second(args))
+        reduc(x ^$Rep n, algkernels k)
 
-      x:% ** n:NonNegativeInteger ==
+      x:% ^ n:NonNegativeInteger ==
         n = 0 => 1$%
         n = 1 => x
         simplifyPower(numerator x,n pretend Integer) / simplifyPower(denominator x,n pretend Integer)
 
-      x:% ** n:Integer ==
+      x:% ^ n:Integer ==
         n = 0 => 1$%
         n = 1 => x
         n = -1 => 1/x
         simplifyPower(numerator x,n) / simplifyPower(denominator x,n)
 
-      x:% ** n:PositiveInteger == 
+      x:% ^ n:PositiveInteger == 
         n = 1 => x
         simplifyPower(numerator x,n pretend Integer) / simplifyPower(denominator x,n pretend Integer)
 
@@ -205,7 +205,7 @@ Expression(R:OrderedSet): Exports == Implementation where
       airyAi x                  == airyAi(x)$FSF
       airyBi x                  == airyBi(x)$FSF
 
-      x:% ** y:%                == x **$CF y
+      x:% ^ y:%                == x ^$CF y
       factorial x               == factorial(x)$CF
       binomial(n, m)            == binomial(n, m)$CF
       permutation(n, m)         == permutation(n, m)$CF
@@ -285,7 +285,7 @@ Expression(R:OrderedSet): Exports == Implementation where
         coerce(x:AN):% == (monomial(x, 0$IndexedExponents(K))$MP)::%
 
       if (R has RetractableTo Integer) then
-        x:% ** r:Q                           == x **$AF r
+        x:% ^ r:Q                           == x ^$AF r
         minPoly k                            == minPoly(k)$AF
         definingPolynomial x                 == definingPolynomial(x)$AF
         retract(x:%):Q                       == retract(x)$Rep
@@ -331,7 +331,7 @@ Expression(R:OrderedSet): Exports == Implementation where
             ans:AN := 0
             while not ground? up repeat
               (c:=smp2an leadingCoefficient up) case "failed" => return "failed"
-              ans := ans + (c::AN) * (t::AN) ** (degree up)
+              ans := ans + (c::AN) * (t::AN) ^ (degree up)
               up  := reductum up
             (c := smp2an leadingCoefficient up) case "failed" => "failed"
             ans + c::AN

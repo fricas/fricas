@@ -46,10 +46,10 @@ InputForm():
       ++ \spad{a * b} returns the input form corresponding to \spad{a * b}.
     "/"      : (%, %) -> %
       ++ \spad{a / b} returns the input form corresponding to \spad{a / b}.
-    "**"     : (%, NonNegativeInteger) -> %
-      ++ \spad{a ** b} returns the input form corresponding to \spad{a ** b}.
-    "**"     : (%, Integer) -> %
-      ++ \spad{a ** b} returns the input form corresponding to \spad{a ** b}.
+    "^"     : (%, NonNegativeInteger) -> %
+      ++ \spad{a ^ b} returns the input form corresponding to \spad{a ^ b}.
+    "^"     : (%, Integer) -> %
+      ++ \spad{a ^ b} returns the input form corresponding to \spad{a ^ b}.
     0        : constant -> %
       ++ \spad{0} returns the input form corresponding to 0.
     1        : constant -> %
@@ -181,14 +181,14 @@ InputForm():
       s2 = 1 => s1
       conv [convert("*"::Symbol), s1, s2]$List(%)
 
-    s1:% ** n:Integer ==
+    s1:% ^ n:Integer ==
       s1 = 0 and n > 0 => 0
       s1 = 1 or zero? n => 1
 --      one? n => s1
       (n = 1) => s1
-      conv [convert("**"::Symbol), s1, convert n]$List(%)
+      conv [convert("^"::Symbol), s1, convert n]$List(%)
 
-    s1:% ** n:NonNegativeInteger == s1 ** (n::Integer)
+    s1:% ^ n:NonNegativeInteger == s1 ^ (n::Integer)
 
     s1 / s2 ==
       s2 = 1 => s1
@@ -464,7 +464,7 @@ MakeFloatCompiledFunction(S): Exports == Implementation where
       (u := mkLispList rest l) case "failed" => "failed"
       ll := u::List(INF)
       streqlist?(op, ["+","*","/","-"]) => convert(concat(op, ll))@INF
-      streq?(op, "**") => gencode("EXPT", ll)
+      streq?(op, "^") => gencode("EXPT", ll)
       streqlist?(op, ["exp","sin","cos","tan","atan", 
          "log", "sinh","cosh","tanh","asinh","acosh","atanh","sqrt"]) =>
             gencode(upperCase string symbol op, ll)

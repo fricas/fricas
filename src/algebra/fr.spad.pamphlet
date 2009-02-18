@@ -185,7 +185,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
           l := concat( iFun pretend InputForm, l )
 --        one?(rec.xpnt) =>
 --          l := concat(convert(rec.fctr)@InputForm, l)
---        l := concat(convert(rec.fctr)@InputForm ** rec.xpnt, l)
+--        l := concat(convert(rec.fctr)@InputForm ^ rec.xpnt, l)
         empty? l => convert(unit x)@InputForm
         if unit x ~= 1 then l := concat(convert(unit x)@InputForm,l)
         empty? rest l => first l
@@ -243,7 +243,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
       rational x ==
         convert(unit x)@Integer *
            _*/[(convert(f.fctr)@Integer)::Fraction(Integer)
-                                    ** f.xpnt for f in factorList x]
+                                    ^ f.xpnt for f in factorList x]
 
     if R has Eltable(R, R) then
       elt(x:%, v:%) == x(expand v)
@@ -269,11 +269,11 @@ Factored(R: IntegralDomain): Exports == Implementation where
 
       convert(x:%):Float ==
         convert(unit x)@Float *
-                _*/[convert(f.fctr)@Float ** f.xpnt for f in factorList x]
+                _*/[convert(f.fctr)@Float ^ f.xpnt for f in factorList x]
 
       convert(x:%):DoubleFloat ==
         convert(unit x)@DoubleFloat *
-          _*/[convert(f.fctr)@DoubleFloat ** f.xpnt for f in factorList x]
+          _*/[convert(f.fctr)@DoubleFloat ^ f.xpnt for f in factorList x]
 
     u:% * v:% ==
       zero? u or zero? v => 0
@@ -284,8 +284,8 @@ Factored(R: IntegralDomain): Exports == Implementation where
       mkFF(unit u * unit v,
           SimplifyFactorization concat(factorList u, copy factorList v))
 
-    u:% ** n:NonNegativeInteger ==
-      mkFF(unit(u)**n, [[x.flg, x.fctr, n * x.xpnt] for x in factorList u])
+    u:% ^ n:NonNegativeInteger ==
+      mkFF(unit(u)^n, [[x.flg, x.fctr, n * x.xpnt] for x in factorList u])
 
     SimplifyFactorization x ==
       empty? x => empty()
@@ -314,7 +314,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
         ((rec.fctr) = 1) => messagePrint "WARNING (coerce$Factored): 1 should not appear as factor."
         ((rec.xpnt) = 1) =>
           l := concat(rec.fctr :: OutputForm, l)
-        l := concat(rec.fctr::OutputForm ** rec.xpnt::OutputForm, l)
+        l := concat(rec.fctr::OutputForm ^ rec.xpnt::OutputForm, l)
       empty? l => (unit x) :: OutputForm
       e :=
         empty? rest l => first l
@@ -328,7 +328,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
 
     qexpand u ==
       unit u *
-         _*/[y.fctr ** (y.xpnt::NonNegativeInteger) for y in factorList u]
+         _*/[y.fctr ^ (y.xpnt::NonNegativeInteger) for y in factorList u]
 
     retractIfCan(u:%):Union(R, "failed") ==
       negexp? u => "failed"
@@ -468,11 +468,11 @@ which causes wrong results as soon as units are involved, for example in
         e := abs(x.xpnt)::NonNegativeInteger
         if x.xpnt < 0
           then  --  associate is recip of unit
-            un := un * (ucar.associate ** e)
-            as := as * (ucar.unit ** e)
+            un := un * (ucar.associate ^ e)
+            as := as * (ucar.unit ^ e)
           else
-            un := un * (ucar.unit ** e)
-            as := as * (ucar.associate ** e)
+            un := un * (ucar.unit ^ e)
+            as := as * (ucar.associate ^ e)
 --        if not one?(ucar.canonical) then
         if not ((ucar.canonical) = 1) then
           vl := concat([x.flg, ucar.canonical, x.xpnt], vl)
@@ -586,7 +586,7 @@ FactoredFunctionUtilities(R): Exports == Implementation where
        l: List FF := empty()
        for item in factorList f repeat
          fitem := func item.fctr
-         u := u*unit(fitem) ** (item.xpnt :: NonNegativeInteger)
+         u := u*unit(fitem) ^ (item.xpnt :: NonNegativeInteger)
          if item.xpnt = 1 then
             l := concat(factorList fitem,l)
          else l := concat([[v.flg,v.fctr,v.xpnt*item.xpnt]

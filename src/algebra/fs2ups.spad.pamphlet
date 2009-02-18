@@ -138,7 +138,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       ++ user should perform the substitution \spad{x -> x + a} before calling
       ++ this function.
     localAbs: FE -> FE
-      ++ localAbs(fcn) = \spad{abs(fcn)} or \spad{sqrt(fcn**2)} depending
+      ++ localAbs(fcn) = \spad{abs(fcn)} or \spad{sqrt(fcn^2)} depending
       ++ on whether or not FE has a function \spad{abs}.  This should be
       ++ a local function, but the compiler won't allow it.
 
@@ -221,7 +221,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
     exprToUPS(fcn,posCheck?,atanFlag) ==
       -- converts a functional expression to a power series
       --!! The following line is commented out so that expressions of
-      --!! the form a**b will be normalized to exp(b * log(a)) even if
+      --!! the form a^b will be normalized to exp(b * log(a)) even if
       --!! 'a' and 'b' do not involve the limiting variable 'x'.
       --!!                         - cjw 1 Dec 94
       --not member?(x,variables fcn) => [monomial(fcn,0)]
@@ -277,14 +277,14 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
     powerToUPS(fcn,n,posCheck?,atanFlag) ==
       -- converts an integral power to a power series
       (b := exprToUPS(fcn,posCheck?,atanFlag)) case %problem => b
-      n > 0 => [(b.%series) ** n]
+      n > 0 => [(b.%series) ^ n]
       -- check lowest order coefficient when n < 0
       ups := b.%series; deg := degree ups
       if (coef := coefficient(ups,deg)) = 0 then
         deg := order(ups,deg + ZEROCOUNT :: Expon)
         (coef := coefficient(ups,deg)) = 0 =>
           error "inverse of series with many leading zero coefficients"
-      [ups ** n]
+      [ups ^ n]
 
     kernelToUPS(ker,posCheck?,atanFlag) ==
       -- converts a kernel to a power series
@@ -438,7 +438,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       stateProblem(string name ker,"unknown kernel")
 
     powToUPS(args,posCheck?,atanFlag) ==
-      -- converts a power f(x) ** g(x) to a power series
+      -- converts a power f(x) ^ g(x) to a power series
       (logBase := logToUPS(first args,posCheck?,atanFlag)) case %problem =>
         logBase
       (expon := exprToUPS(second args,posCheck?,atanFlag)) case %problem =>
@@ -497,7 +497,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       -- converts a functional expression to a generalized power
       -- series without first normalizing the expression
       --!! The following line is commented out so that expressions of
-      --!! the form a**b will be normalized to exp(b * log(a)) even if
+      --!! the form a^b will be normalized to exp(b * log(a)) even if
       --!! 'a' and 'b' do not involve the limiting variable 'x'.
       --!!                         - cjw 1 Dec 94
       --not member?(x,variables fcn) => [monomial(fcn,0)]
@@ -549,7 +549,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       -- (b) the lowest order coefficient is a product of exponentials
       --     and functions not involving x
       (b := exprToGenUPS(fcn,posCheck?,atanFlag)) case %problem => b
-      n > 0 => [(b.%series) ** n]
+      n > 0 => [(b.%series) ^ n]
       -- check lowest order coefficient when n < 0
       ups := b.%series; deg := degree ups
       if (coef := coefficient(ups,deg)) = 0 then
@@ -558,12 +558,12 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
           error "inverse of series with many leading zero coefficients"
       xOpList := opsInvolvingX coef
       -- only function involving x is 'log'
-      (null xOpList) => [ups ** n]
+      (null xOpList) => [ups ^ n]
       (null rest xOpList and is?(first xOpList,"log" :: SY)) =>
-        [ups ** n]
+        [ups ^ n]
       -- lowest order coefficient is a product of exponentials and
       -- functions not involving x
-      productOfNonZeroes? coef => [ups ** n]
+      productOfNonZeroes? coef => [ups ^ n]
       stateProblem("inv","lowest order coefficient involves x")
 
     kernelToGenUPS(ker,posCheck?,atanFlag) ==
@@ -621,7 +621,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
         false
       logTerm : FE :=
         mon : FE := (x :: FE) - (cen :: FE)
-        pow : FE := mon ** (deg :: FE)
+        pow : FE := mon ^ (deg :: FE)
         negRat? => log(coef * pow)
         term1 : FE := (deg :: FE) * log(mon)
         log(coef) + term1
@@ -759,7 +759,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       stateProblem(string name ker,"unknown kernel")
 
     powToGenUPS(args,posCheck?,atanFlag) ==
-      -- converts a power f(x) ** g(x) to a generalized power series
+      -- converts a power f(x) ^ g(x) to a generalized power series
       (logBase := logToGenUPS(first args,posCheck?,atanFlag)) case %problem =>
         logBase
       expon := iExprToGenUPS(second args,posCheck?,atanFlag)

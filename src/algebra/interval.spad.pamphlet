@@ -95,7 +95,7 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
     l : Integer := length(m)
     if l < b then 
       BASE : Integer := base()$R pretend Integer
-      float(m*BASE**((b-l) pretend PositiveInteger),exponent(u)-b+l)
+      float(m*BASE^((b-l) pretend PositiveInteger),exponent(u)-b+l)
     else
       u
 
@@ -169,16 +169,10 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
 
   _* (a:PositiveInteger,b:%):% == qinterval(a*inf(b),a*sup(b))
 
-  _*_* (a:%,n:PositiveInteger):% == 
-    contains?(a,0) and zero?((n pretend Integer) rem 2) =>
-      interval(0,max(inf(a)**n,sup(a)**n)) 
-    interval(inf(a)**n,sup(a)**n)
-
-
   _^ (a:%,n:PositiveInteger):% ==  
     contains?(a,0) and zero?((n pretend Integer) rem 2) => 
-      interval(0,max(inf(a)**n,sup(a)**n))
-    interval(inf(a)**n,sup(a)**n)
+      interval(0,max(inf(a)^n,sup(a)^n))
+    interval(inf(a)^n,sup(a)^n)
 
   _- (a:%):% == exactInterval(-sup(a),-inf(a))
 
@@ -260,11 +254,11 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
 
   exp(u:%):% == qinterval(exp inf u, exp sup u)
 
-  _*_* (u:%,v:%):% == 
-    zero?(v) => if zero?(u) then error "0**0 is undefined" else 1
+  _^ (u:%,v:%):% == 
+    zero?(v) => if zero?(u) then error "0^0 is undefined" else 1
     one?(u)  => 1
-    expts : List R :=  sort [inf(u)**inf(v),sup(u)**sup(v),
-                             inf(u)**sup(v),sup(u)**inf(v)]
+    expts : List R :=  sort [inf(u)^inf(v),sup(u)^sup(v),
+                             inf(u)^sup(v),sup(u)^inf(v)]
     qinterval(first expts, last expts)
 
   -- From TrigonometricFunctionCategory
@@ -494,7 +488,10 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
 
 
   -- From RadicalCategory
-  _*_* (u:%,n:Fraction Integer):% == interval(inf(u)**n,sup(u)**n)
+  _^(u:%, n:Fraction Integer):% ==
+       lo : R := inf(u)
+       lo <= 0 => error "fractional power only defined for x > 0"
+       interval(inf(u)^n,sup(u)^n)
 
 @
 \section{License}

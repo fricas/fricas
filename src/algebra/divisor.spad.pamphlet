@@ -82,7 +82,7 @@ FractionalIdeal(R, F, UP, A): Exports == Implementation where
 
     norm i ==
       ("gcd"/[retract(u)@R for u in coefficients determinant summat i])
-              / denom(i) ** rank()$A
+              / denom(i) ^ rank()$A
 
     tryRange(range, nm, nrm, i) ==
       for j in 0..10 repeat
@@ -138,12 +138,12 @@ FractionalIdeal(R, F, UP, A): Exports == Implementation where
     i1 * i2 ==
       intIdeal(coefficients(poly i1 * poly i2), denom i1 * denom i2)
 
-    i:$ ** m:Integer ==
-      m < 0 => inv(i) ** (-m)
+    i:$ ^ m:Integer ==
+      m < 0 => inv(i) ^ (-m)
       n := m::NonNegativeInteger
       v := numer i
-      intIdeal([qelt(v, j) ** n for j in minIndex v .. maxIndex v],
-               denom(i) ** n)
+      intIdeal([qelt(v, j) ^ n for j in minIndex v .. maxIndex v],
+               denom(i) ^ n)
 
     num2O v ==
       paren [qelt(v, i)::OutputForm
@@ -369,7 +369,7 @@ ModularHermitianRowReduction(R): Exports == Implementation where
       rowEchelonLocal(u.mat, u.val, p)
 
     rowEchelonLocal(y, m, p) ==
-        m := p**(order(m,p)::NonNegativeInteger)
+        m := p^(order(m,p)::NonNegativeInteger)
         x     := vconc(y, m)
         nrows := maxRowIndex x
         ncols := maxColIndex x
@@ -689,7 +689,7 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
       rec := principalIdeal [a1, a2, b1 + b2]
       d   := rec.generator
       h   := rec.coef              -- d = h1 a1 + h2 a2 + h3(b1 + b2)
-      a   := ((a1 * a2) exquo d**2)::UP
+      a   := ((a1 * a2) exquo d^2)::UP
       b:UP:= first(h) * a1 * b2
       b   := b + second(h) * a2 * b1
       b   := b + third(h) * (b1*b2 + hyper)
@@ -702,7 +702,7 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
     n:Z * d:% ==
       zero? n => 0
       n < 0 => (-n) * (-d)
-      divisor(d.principalPart ** n) + divisor(mkIdeal(d.center,d.polyPart) ** n)
+      divisor(d.principalPart ^ n) + divisor(mkIdeal(d.center,d.polyPart) ^ n)
 
     divisor(i:ID) ==
 --      one?(n := #(v := basis minimize i)) => divisor v minIndex v
@@ -743,7 +743,7 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
       d.reduced? => d
       degree(a := d.center) <= gen => (d.reduced? := true; d)
       b  := d.polyPart
-      a0 := ((hyper - b**2) exquo a)::UP
+      a0 := ((hyper - b^2) exquo a)::UP
       b0 := (-b) rem a0
       g  := d.principalPart * reduce(b::RF::UPUP-monomial(1,1)$UPUP) / a0::RF::R
       reduce makeDivisor(a0, b0, g)
@@ -779,7 +779,7 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
       h  := h - (r * dp)::RF::R
       a  := gcd(a, retract(norm h)@UP)
       h  := intReduce(h, a)
-      if not ground? gcd(g, a) then h := intReduce(h ** rank(), a)
+      if not ground? gcd(g, a) then h := intReduce(h ^ rank(), a)
       hh := lift h
       b  := - coefficient(hh, 0) / coefficient(hh, 1)
       rec := extendedEuclidean(denom b, a)
@@ -856,7 +856,7 @@ FiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
       ideal d                 == d.id
       decompose d             == [ideal d, 1]
       d1 = d2                 == basis(ideal d1) = basis(ideal d2)
-      n * d                   == divisor(ideal(d) ** n)
+      n * d                   == divisor(ideal(d) ^ n)
       d1 + d2                 == divisor(ideal d1 * ideal d2)
       - d                     == divisor inv ideal d
       divisor(h, d, dp, g, r) == makeDivisor(d, lift h - (r * dp)::RF::UPUP, g)
@@ -880,7 +880,7 @@ FiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
         m:N :=
           n < 0 => (-n)::N
           n::N
-        g := makeDivisor(d**m,(monomial(1,1)$UPUP - b::UP::RF::UPUP)**m,1)
+        g := makeDivisor(d^m,(monomial(1,1)$UPUP - b::UP::RF::UPUP)^m,1)
         n < 0 => -g
         g
 
@@ -914,7 +914,7 @@ FiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
       makeDivisor(b, hh, g) ==
         b := gcd(b, retract(norm(h := reduce hh))@UP)
         h := intReduce(h, b)
-        if not ground? gcd(g, b) then h := intReduce(h ** rank(), b)
+        if not ground? gcd(g, b) then h := intReduce(h ^ rank(), b)
         divisor ideal [b::RF::R, h]$Vector(R)
 
 @

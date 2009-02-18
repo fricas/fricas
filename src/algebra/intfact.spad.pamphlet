@@ -39,14 +39,14 @@ IntegerPrimesPackage(I:IntegerNumberSystem): with
      ++ If \spad{prime? n} returns false, n is proven composite.
      ++ If \spad{prime? n} returns true, prime? may be in error
      ++ however, the probability of error is very low.
-     ++ and is zero below 25*10**9 (due to a result of Pomerance et al),
-     ++ below 10**12 and 10**13 due to results of Pinch,
+     ++ and is zero below 25*10^9 (due to a result of Pomerance et al),
+     ++ below 10^12 and 10^13 due to results of Pinch,
      ++ and below 341550071728321 due to a result of Jaeschke.
      ++ Specifically, this implementation does at least 10 pseudo prime
-     ++ tests and so the probability of error is \spad{< 4**(-10)}.
+     ++ tests and so the probability of error is \spad{< 4^(-10)}.
      ++ The running time of this method is cubic in the length
-     ++ of the input n, that is \spad{O( (log n)**3 )}, for n<10**20.
-     ++ beyond that, the algorithm is quartic, \spad{O( (log n)**4 )}.
+     ++ of the input n, that is \spad{O( (log n)^3 )}, for n<10^20.
+     ++ beyond that, the algorithm is quartic, \spad{O( (log n)^4 )}.
      ++ Two improvements due to Davenport have been incorporated
      ++ which catches some trivial strong pseudo-primes, such as
      ++ [Jaeschke, 1991] 1377161253229053 * 413148375987157, which
@@ -72,20 +72,20 @@ IntegerPrimesPackage(I:IntegerNumberSystem): with
 
    productSmallPrimes    := */smallPrimes
    nextSmallPrime        := 317::I
-   nextSmallPrimeSquared := nextSmallPrime**2
+   nextSmallPrimeSquared := nextSmallPrime^2
    two                   := 2::I
-   tenPowerTwenty:=(10::I)**20
+   tenPowerTwenty:=(10::I)^20
    PomeranceList:= [25326001::I, 161304001::I, 960946321::I, 1157839381::I,
                      -- 3215031751::I, -- has a factor of 151
                      3697278427::I, 5764643587::I, 6770862367::I,
                       14386156093::I, 15579919981::I, 18459366157::I,
                        19887974881::I, 21276028621::I ]::(List I)
-   PomeranceLimit:=27716349961::I  -- replaces (25*10**9) due to Pinch
+   PomeranceLimit:=27716349961::I  -- replaces (25*10^9) due to Pinch
    PinchList:= [3215031751::I, 118670087467::I, 128282461501::I, 354864744877::I,
                 546348519181::I, 602248359169::I, 669094855201::I ]
-   PinchLimit:= (10**12)::I
+   PinchLimit:= (10^12)::I
    PinchList2:= [2152302898747::I, 3474749660383::I]
-   PinchLimit2:= (10**13)::I
+   PinchLimit2:= (10^13)::I
    JaeschkeLimit:=341550071728321::I
    rootsMinus1:Set I := empty()
    -- used to check whether we detect too many roots of -1
@@ -157,7 +157,7 @@ IntegerPrimesPackage(I:IntegerNumberSystem): with
       nm1 := n-1
       q := (nm1) quo two
       for k in 1.. while not odd? q repeat q := q quo two
-      -- q = (n-1) quo 2**k for largest possible k
+      -- q = (n-1) quo 2^k for largest possible k
 
       n < JaeschkeLimit =>
           rabinProvesCompositeSmall(2::I,n,nm1,q,k) => return false
@@ -248,7 +248,7 @@ IntegerRoots(I:IntegerNumberSystem): Exports == Implementation where
       ++ and r is the largest integer such that n is a perfect \spad{r}th power
     approxNthRoot: (I,NNI) -> I
       ++ \spad{approxRoot(n,r)} returns an approximation x
-      ++ to \spad{n**(1/r)} such that \spad{-1 < x - n**(1/r) < 1}
+      ++ to \spad{n^(1/r)} such that \spad{-1 < x - n^(1/r) < 1}
     perfectSquare?: I -> Boolean
       ++ \spad{perfectSquare?(n)} returns true if n is a perfect square
       ++ and false otherwise
@@ -261,7 +261,7 @@ IntegerRoots(I:IntegerNumberSystem): Exports == Implementation where
       ++ Compute an approximation s to \spad{sqrt(n)} such that
       ++           \spad{-1 < s - sqrt(n) < 1}
       ++ A variable precision Newton iteration is used.
-      ++ The running time is \spad{O( log(n)**2 )}.
+      ++ The running time is \spad{O( log(n)^2 )}.
 
   Implementation ==> add
     import IntegerPrimesPackage(I)
@@ -274,7 +274,7 @@ IntegerRoots(I:IntegerNumberSystem): Exports == Implementation where
     perfectSquare? a       == (perfectSqrt a) case I
     perfectNthPower?(b, n) == perfectNthRoot(b, n) case I
 
-    perfectNthRoot n ==  -- complexity (log log n)**2 (log n)**2
+    perfectNthRoot n ==  -- complexity (log log n)^2 (log n)^2
       m:NNI
 --      one? n or zero? n or n = -1 => [n, 1]
       (n = 1) or zero? n or n = -1 => [n, 1]
@@ -283,11 +283,11 @@ IntegerRoots(I:IntegerNumberSystem): Exports == Implementation where
       while p::I <= length(n) + 1 repeat
          for m in 0.. while (r := perfectNthRoot(n, p)) case I repeat
             n := r::I
-         e := e * p ** m
+         e := e * p ^ m
          p := convert(nextPrime(p::I))@Integer :: NNI
       [n, e]
 
-    approxNthRoot(a, n) ==   -- complexity (log log n) (log n)**2
+    approxNthRoot(a, n) ==   -- complexity (log log n) (log n)^2
       zero? n => error "invalid arguments"
 --      one? n => a
       (n = 1) => a
@@ -306,13 +306,13 @@ IntegerRoots(I:IntegerNumberSystem): Exports == Implementation where
       n1:= (n-1)::NNI
       while z > 0 repeat
         x := y
-        xn:= x**n1
+        xn:= x^n1
         y := (n1*x*xn+a) quo (n*xn)
         z := x-y
       x
 
     perfectNthRoot(b, n) ==
-      (r := approxNthRoot(b, n)) ** n = b => r
+      (r := approxNthRoot(b, n)) ^ n = b => r
       "failed"
 
     perfectSqrt a ==
@@ -392,7 +392,7 @@ IntegerFactorizationPackage(I): Exports == Implementation where
          concat_!(factorList x, ["sqfr",m,1]$FFE)
        makeFR(u, y)
 
-    -- Pfun(y: I,n: I): I == (y**2 + 5) rem n
+    -- Pfun(y: I,n: I): I == (y^2 + 5) rem n
     PollardSmallFactor(n:I):Union(I,"failed") ==
        -- Use the Brent variation
 -- FIXME: strange random distribution used (#227).
@@ -491,8 +491,8 @@ IntegerFactorizationPackage(I): Exports == Implementation where
             insert_!(s.base, a, c * s.exponent)
           -- test for a difference of square
           x:=approxSqrt n;
-          if (x**2<n) then x:=x+1
-          (y:=perfectSqrt (x**2-n)) case I =>
+          if (x^2<n) then x:=x+1
+          (y:=perfectSqrt (x^2-n)) case I =>
                 insert_!(x+y,a,c)
                 insert_!(x-y,a,c)
           (d := PollardSmallFactor20 n) case I =>

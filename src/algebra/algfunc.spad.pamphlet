@@ -113,19 +113,19 @@ AlgebraicallyClosedField(): Category == Join(Field,RadicalCategory) with
       a := leadingCoefficient p
       d = 2 =>
         b := coefficient(p, 1)
-        (sqrt(b**2 - 4 * a * coefficient(p, 0)) - b) / (2 * a)
+        (sqrt(b^2 - 4 * a * coefficient(p, 0)) - b) / (2 * a)
       (r := retractIfCan(reductum p)@Union($,"failed")) case "failed" =>
         rootOf(p, y)
       nthRoot(- (r::$ / a), d)
 
     binomialRoots(p, y, fn) ==
-     -- p = a * x**n + b
+     -- p = a * x^n + b
       alpha := assign(x := new(y)$Symbol, fn(p, x))
 --      one?(n := degree p) =>  [ alpha ]
       ((n := degree p) = 1) =>  [ alpha ]
       cyclo := cyclotomic(n, monomial(1,1)$SUP)$NumberTheoreticPolynomialFunctions(SUP)
       beta := assign(x := new(y)$Symbol, fn(cyclo, x))
-      [alpha*beta**i for i in 0..(n-1)::NonNegativeInteger]
+      [alpha*beta^i for i in 0..(n-1)::NonNegativeInteger]
 
     import PolynomialDecomposition(SUP,$)
 
@@ -267,7 +267,7 @@ This used to read:
         (x ~= -1) and (((num := numer x) = 1) or (num = -1)) =>
            inv hackroot((num * denom x)::F, n)
         (x = -1) and n = 4 =>
-          ((-1::F) ** (1::Q / 2::Q) + 1) / ((2::F) ** (1::Q / 2::Q))
+          ((-1::F) ^ (1::Q / 2::Q) + 1) / ((2::F) ^ (1::Q / 2::Q))
         kernel(oproot, [x, n::F])
 
 @
@@ -283,7 +283,7 @@ test and give $$1/(-2)^(1/n) \ne (-1/2)^(1/n)$$
            positive?(rx))
            => hackroot((numer x)::F, n)/hackroot(rx::Integer::F, n)
         (x = -1) and n = 4 =>
-          ((-1::F) ** (1::Q / 2::Q) + 1) / ((2::F) ** (1::Q / 2::Q))
+          ((-1::F) ^ (1::Q / 2::Q) + 1) / ((2::F) ^ (1::Q / 2::Q))
         kernel(oproot, [x, n::F])
 
 @
@@ -330,8 +330,8 @@ AlgebraicFunction(R, F): Exports == Implementation where
       ++ droot(l) should be a non-exported function.
       -- un-export when the compiler accepts conditional local functions!
     if R has RetractableTo Integer then
-      "**"   : (F, Q) -> F
-        ++ x ** q is \spad{x} raised to the rational power \spad{q}.
+      "^"   : (F, Q) -> F
+        ++ x ^ q is \spad{x} raised to the rational power \spad{q}.
       minPoly: K  -> UP
         ++ minPoly(k) returns the defining polynomial of \spad{k}.
       definingPolynomial: F -> F
@@ -435,11 +435,11 @@ AlgebraicFunction(R, F): Exports == Implementation where
 
       dvroot l ==
         n := retract(second l)@Z
-        (first(l) ** ((1 - n) / n)) / (n::F)
+        (first(l) ^ ((1 - n) / n)) / (n::F)
 
-      x ** q ==
+      x ^ q ==
         qr := divide(numer q, denom q)
-        x ** qr.quotient * inroot([x, (denom q)::F]) ** qr.remainder
+        x ^ qr.quotient * inroot([x, (denom q)::F]) ^ qr.remainder
 
 <<hackroot(x, n)>>
 
@@ -451,7 +451,7 @@ AlgebraicFunction(R, F): Exports == Implementation where
         (u := isExpt(x)) case Record(var:K, exponent:Z) =>
           pr := u::Record(var:K, exponent:Z)
           is?(pr.var, oproot) and #argument(pr.var) = 2 => 
-              (first argument(pr.var)) **
+              (first argument(pr.var)) ^
                   (pr.exponent /$Fraction(Z)
                       (n * retract(second argument(pr.var))@Z))
           inroot0(x, n, false, false)
@@ -467,12 +467,12 @@ AlgebraicFunction(R, F): Exports == Implementation where
           rec.coef * hackroot(rec.radicand, rec.exponent)
         rn case Z =>
           rec := qroot(rn::Z::Fraction(Z), n::NonNegativeInteger)
-          rec.coef * inroot0((rec.radicand**(n exquo rec.exponent)::Z)
+          rec.coef * inroot0((rec.radicand^(n exquo rec.exponent)::Z)
                                 / (denom(x)::F), n, true, den?)
         rd case Z =>
           rec := qroot(rd::Z::Fraction(Z), n::NonNegativeInteger)
           inroot0((numer(x)::F) /
-                  (rec.radicand ** (n exquo rec.exponent)::Z),
+                  (rec.radicand ^ (n exquo rec.exponent)::Z),
                    n, num?, true) / rec.coef
         hackroot(x, n)
 
@@ -497,7 +497,7 @@ AlgebraicFunction(R, F): Exports == Implementation where
         (r := retractIfCan(x)@Union(K, "failed")) case K =>
           is?(k := r::K, opalg) => first argument k
           is?(k, oproot) =>
-            dumvar ** retract(second argument k)@Z - first argument k
+            dumvar ^ retract(second argument k)@Z - first argument k
           dumvar - x
         dumvar - x
 

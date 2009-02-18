@@ -98,7 +98,7 @@ GaloisGroupFactorizationUtilities(R,UP,F): Exports == Implementation where
     norm(f:UP,p:P):F ==
       n : F := 0
       for c in coefficients f repeat
-        n := n+abs(c::F)**p
+        n := n+abs(c::F)^p
       nthRoot(n,p::N)
 
     quadraticNorm(f:UP):F == norm(f,2)
@@ -119,8 +119,8 @@ GaloisGroupFactorizationUtilities(R,UP,F): Exports == Implementation where
         num := num*nthRoot(Gamma(nf+1$F),2*r)
         den : F := Gamma(nf/((2*r)::F)+1$F)
       else
-        num := num*(2::F)**(5/8+n/2)*exp(1$F/(4*nf))
-        den : F := (pi()$F*nf)**(3/8)
+        num := num*(2::F)^(5/8+n/2)*exp(1$F/(4*nf))
+        den : F := (pi()$F*nf)^(3/8)
       safeFloor( num/den )
 
     singleFactorBound(p:UP):Z == singleFactorBound(p,2) -- See [6]
@@ -148,22 +148,22 @@ GaloisGroupFactorizationUtilities(R,UP,F): Exports == Implementation where
     beauzamyBound(f:UP):Z == -- See [1]
       d := degree f
       zero? d => safeFloor bombieriNorm f
-      safeFloor( (bombieriNorm(f)*(3::F)**(3/4+d/2))/
+      safeFloor( (bombieriNorm(f)*(3::F)^(3/4+d/2))/
        (2*sqrt(pi()$F*(d::F))) )
 
     bombieriNorm(f:UP,p:P):F == -- See [2] and [3]
       d := degree f
       b := abs(coefficient(f,0)::F)
       if zero? d then return b
-       else b := b**p
-      b := b+abs(leadingCoefficient(f)::F)**p
+       else b := b^p
+      b := b+abs(leadingCoefficient(f)::F)^p
       dd := (d-1) quo 2
       for i in 1..dd repeat
-        b := b+(abs(coefficient(f,i)::F)**p+abs(coefficient(f,(d-i)::N)::F)**p)
+        b := b+(abs(coefficient(f,i)::F)^p+abs(coefficient(f,(d-i)::N)::F)^p)
          /pascalTriangle(d,i)
       if even? d then
         dd := dd+1
-        b := b+abs(coefficient(f, dd::N)::F)**p/pascalTriangle(d,dd)
+        b := b+abs(coefficient(f, dd::N)::F)^p/pascalTriangle(d,dd)
       nthRoot(b,p::N)
 
     bombieriNorm(f:UP):F == bombieriNorm(f,2) -- See [1]

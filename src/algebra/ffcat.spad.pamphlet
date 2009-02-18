@@ -50,15 +50,15 @@ FieldOfPrimeCharacteristic:Category == _
       ++ group of the field.
       ++ Error: if \spad{a} is 0.
     discreteLog: ($,$) -> Union(NonNegativeInteger,"failed")
-      ++ discreteLog(b,a) computes s with \spad{b**s = a} if such an s exists.
+      ++ discreteLog(b,a) computes s with \spad{b^s = a} if such an s exists.
     primeFrobenius: $ -> $
-      ++ primeFrobenius(a) returns \spad{a ** p} where p is the characteristic.
+      ++ primeFrobenius(a) returns \spad{a ^ p} where p is the characteristic.
     primeFrobenius: ($,NonNegativeInteger) -> $
-      ++ primeFrobenius(a,s) returns \spad{a**(p**s)} where p
+      ++ primeFrobenius(a,s) returns \spad{a^(p^s)} where p
       ++ is the characteristic.
   add
-    primeFrobenius(a) == a ** characteristic()
-    primeFrobenius(a,s) == a ** (characteristic()**s)
+    primeFrobenius(a) == a ^ characteristic()
+    primeFrobenius(a,s) == a ^ (characteristic()^s)
 
 @
 \section{category XF ExtensionField}
@@ -104,17 +104,17 @@ ExtensionField(F:Field) : Category  == Join(Field,RetractableTo F,VectorSpace F)
     if F has Finite then
       FieldOfPrimeCharacteristic
       Frobenius: $ -> $
-        ++ Frobenius(a) returns \spad{a ** q} where q is the \spad{size()$F}.
+        ++ Frobenius(a) returns \spad{a ^ q} where q is the \spad{size()$F}.
       Frobenius:   ($,NonNegativeInteger) -> $
-        ++ Frobenius(a,s) returns \spad{a**(q**s)} where q is the size()$F.
+        ++ Frobenius(a,s) returns \spad{a^(q^s)} where q is the size()$F.
   add
     algebraic?(a) == not infinite? (degree(a)@OnePointCompletion_
       (PositiveInteger))$OnePointCompletion(PositiveInteger)
     transcendent? a == infinite?(degree(a)@OnePointCompletion _
       (PositiveInteger))$OnePointCompletion(PositiveInteger)
     if F has Finite then
-      Frobenius(a) == a ** size()$F
-      Frobenius(a,s) == a ** (size()$F ** s)
+      Frobenius(a) == a ^ size()$F
+      Frobenius(a,s) == a ^ (size()$F ^ s)
 
 @
 \section{category FAXF FiniteAlgebraicExtensionField}
@@ -150,7 +150,7 @@ ExtensionField(F:Field) : Category  == Join(Field,RetractableTo F,VectorSpace F)
 ++  Therefore \spadfun{linearAssociatedExp} is defined completely by
 ++  its action on  monomials from {\em F[X]}:
 ++  \spadfun{linearAssociatedExp}(a,monomial(1,k)\$SUP(F)) is defined to be
-++  \spadfun{Frobenius}(a,k) which is {\em a**(q**k)} where {\em q=size()\$F}.
+++  \spadfun{Frobenius}(a,k) which is {\em a^(q^k)} where {\em q=size()\$F}.
 ++  The operations order and discreteLog associated with the multiplicative
 ++  exponentiation have additive analogues associated to the operation
 ++  \spadfun{linearAssociatedExp}. These are the functions
@@ -203,21 +203,21 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
         ++ norm(a,d) computes the norm of \spad{a} with respect to the field of
         ++ extension degree d over the ground field of size.
         ++ Error: if d does not divide the extension degree of \spad{a}.
-        ++ Note: norm(a,d) = reduce(*,[a**(q**(d*i)) for i in 0..n/d])
+        ++ Note: norm(a,d) = reduce(*,[a^(q^(d*i)) for i in 0..n/d])
       trace: ($,PositiveInteger)   -> $
         ++ trace(a,d) computes the trace of \spad{a} with respect to the
         ++ field of extension degree d over the ground field of size q.
         ++ Error: if d does not divide the extension degree of \spad{a}.
-        ++ Note: \spad{trace(a,d) = reduce(+,[a**(q**(d*i)) for i in 0..n/d])}.
+        ++ Note: \spad{trace(a,d) = reduce(+,[a^(q^(d*i)) for i in 0..n/d])}.
       createNormalElement: () -> $
         ++ createNormalElement() computes a normal element over the ground
         ++ field F, that is,
-        ++ \spad{a**(q**i), 0 <= i < extensionDegree()} is an F-basis,
+        ++ \spad{a^(q^i), 0 <= i < extensionDegree()} is an F-basis,
         ++ where \spad{q = size()\$F}.
         ++ Reference: Such an element exists Lidl/Niederreiter: Theorem 2.35.
       normalElement: () -> $
         ++ normalElement() returns a element, normal over the ground field F,
-        ++ i.e. \spad{a**(q**i), 0 <= i < extensionDegree()} is an F-basis,
+        ++ i.e. \spad{a^(q^i), 0 <= i < extensionDegree()} is an F-basis,
         ++ where \spad{q = size()\$F}.
         ++ At the first call, the element is computed by
         ++ \spadfunFrom{createNormalElement}{FiniteAlgebraicExtensionField}
@@ -227,7 +227,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
       normal?: $ -> Boolean
         ++ normal?(a) tests whether the element \spad{a} is normal over the
         ++ ground field F, i.e.
-        ++ \spad{a**(q**i), 0 <= i <= extensionDegree()-1} is an F-basis,
+        ++ \spad{a^(q^i), 0 <= i <= extensionDegree()-1} is an F-basis,
         ++ where \spad{q = size()\$F}.
         ++ Implementation according to Lidl/Niederreiter: Theorem 2.39.
       generator: () -> $
@@ -243,7 +243,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
         ++ \spadfun{linearAssociatedExp} is defined completely by its action on
         ++ monomials from {\em F[X]}:
         ++ \spadfun{linearAssociatedExp}(a,monomial(1,k)\$SUP(F)) is defined to
-        ++ be \spadfun{Frobenius}(a,k) which is {\em a**(q**k)},
+        ++ be \spadfun{Frobenius}(a,k) which is {\em a^(q^k)},
         ++ where {\em q=size()\$F}.
       linearAssociatedOrder: $ -> SparseUnivariatePolynomial F
         ++ linearAssociatedOrder(a) retruns the monic polynomial {\em g} of
@@ -355,8 +355,8 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
       norm(e,s) ==
         qr := divide(extensionDegree(), s)
         zero?(qr.remainder) =>
-          pow := (size()-1) quo (size()$F ** s - 1)
-          e ** (pow::NonNegativeInteger)
+          pow := (size()-1) quo (size()$F ^ s - 1)
+          e ^ (pow::NonNegativeInteger)
         error "norm: second argument must divide degree of extension"
       trace(e,s) ==
         qr:=divide(extensionDegree(),s)
@@ -364,10 +364,10 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
         zero?(qr.remainder) =>
           a:$:=0
           for i in 0..qr.quotient-1 repeat
-            a:=a + e**(q**(s*i))
+            a:=a + e^(q^(s*i))
           a
         error "trace: second argument must divide degree of extension"
-      size() == size()$F ** extensionDegree()
+      size() == size()$F ^ extensionDegree()
       createNormalElement() ==
         characteristic() = size() => 1
         res : $
@@ -413,12 +413,12 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
 
 DiscreteLogarithmPackage(M): public == private where
   M : Join(Monoid,Finite) with
-   "**": (M,Integer) -> M
-        ++ x ** n returns x raised to the integer power n
+   "^": (M,Integer) -> M
+        ++ x ^ n returns x raised to the integer power n
   public ==> with
     shanksDiscLogAlgorithm:(M,M,NonNegativeInteger)->  _
         Union(NonNegativeInteger,"failed")
-      ++ shanksDiscLogAlgorithm(b,a,p) computes s with \spad{b**s = a} for
+      ++ shanksDiscLogAlgorithm(b,a,p) computes s with \spad{b^s = a} for
       ++ assuming that \spad{a} and b are elements in a 'small' cyclic group of
       ++ order p by Shank's algorithm.
       ++ Note: this is a subroutine of the function \spadfun{discreteLog}.
@@ -460,7 +460,7 @@ DiscreteLogarithmPackage(M): public == private where
       end := (p-1) quo n
       disclog:Integer:=0
       a := c
-      b := logbase ** (-n)
+      b := logbase ^ (-n)
       for i in 0..end while not found repeat
         rho:= search(lookup(a),exptable)_
               $Table(PositiveInteger,NNI)
@@ -523,8 +523,8 @@ FiniteFieldCategory() : Category ==_
     tableForDiscreteLogarithm: Integer -> _
              Table(PositiveInteger,NonNegativeInteger)
       ++ tableForDiscreteLogarithm(a,n) returns a table of the discrete
-      ++ logarithms of \spad{a**0} up to \spad{a**(n-1)} which, called with
-      ++ key \spad{lookup(a**i)} returns i for i in \spad{0..n-1}.
+      ++ logarithms of \spad{a^0} up to \spad{a^(n-1)} which, called with
+      ++ key \spad{lookup(a^i)} returns i for i in \spad{0..n-1}.
       ++ Error: if not called for prime divisors of order of
       ++        multiplicative group.
     createPrimitiveElement: () -> $
@@ -574,7 +574,7 @@ FiniteFieldCategory() : Category ==_
       l:=nullSpace mat
       empty? l => "failed"
       map(charthRoot,first l)
-    charthRoot(x:$):$ == x**(size() quo characteristic())
+    charthRoot(x:$):$ == x^(size() quo characteristic())
     charthRoot(x:%):Union($,"failed") ==
         (charthRoot(x)@$)::Union($,"failed")
     createPrimitiveElement() ==
@@ -596,8 +596,8 @@ FiniteFieldCategory() : Category ==_
       q:=(size()-1)@Integer
       equalone : Boolean := false
       for exp in explist while not equalone repeat
---        equalone := one?(a**(q quo exp.factor))
-        equalone := ((a**(q quo exp.factor)) = 1)
+--        equalone := one?(a^(q quo exp.factor))
+        equalone := ((a^(q quo exp.factor)) = 1)
       not equalone
     order e ==
       e = 0 => error "order(0) is not defined "
@@ -606,16 +606,16 @@ FiniteFieldCategory() : Category ==_
       lof:=factorsOfCyclicGroupSize()
       for rec in lof repeat -- run through prime divisors
         a := ord quo (primeDivisor := rec.factor)
---        goon := one?(e**a)
-        goon := ((e**a) = 1)
+--        goon := one?(e^a)
+        goon := ((e^a) = 1)
         -- run through exponents of the prime divisors
         for j in 0..(rec.exponent)-2 while goon repeat
-          -- as long as we get (e**ord = 1) we
+          -- as long as we get (e^ord = 1) we
           -- continue dividing by primeDivisor
           ord := a
           a := ord quo primeDivisor
---          goon := one?(e**a)
-          goon := ((e**a) = 1)
+--          goon := one?(e^a)
+          goon := ((e^a) = 1)
         if goon then ord := a
         -- as we do a top down search we have found the
         -- correct exponent of primeDivisor in order e
@@ -639,7 +639,7 @@ FiniteFieldCategory() : Category ==_
           -- shanks discrete logarithm algorithm
           exptable:=tableForDiscreteLogarithm(fac)
           n:=#exptable
-          c:=a**exp
+          c:=a^exp
           end:=(fac - 1) quo n
           found:=false
           disc1:Integer:=0
@@ -649,12 +649,12 @@ FiniteFieldCategory() : Category ==_
             rho case NNI =>
               found := true
               disc1:=((n * i + rho)@Integer) * mult
-            c:=c* gen**((groupord quo fac) * (-n))
+            c:=c* gen^((groupord quo fac) * (-n))
           not found => error "discreteLog: ?? discrete logarithm"
           -- end of shanks discrete logarithm algorithm
           mult := mult * fac
           disclog:=disclog+disc1
-          a:=a * (gen ** (-disc1))
+          a:=a * (gen ^ (-disc1))
       disclog pretend NonNegativeInteger
 
     discreteLog(logbase,b) ==
@@ -676,16 +676,16 @@ generated by first argument")$OutputForm
       exp:Integer:= groupord
       for f in faclist repeat
         fac:=f.factor
-        primroot:= logbase ** (groupord quo fac)
+        primroot:= logbase ^ (groupord quo fac)
         for t in 0..f.exponent-1 repeat
           exp:=exp quo fac
           rhoHelp:= shanksDiscLogAlgorithm(primroot,_
-                a**exp,fac pretend NonNegativeInteger)$DLP($)
+                a^exp,fac pretend NonNegativeInteger)$DLP($)
           rhoHelp case "failed" => return "failed"
           rho := (rhoHelp :: NNI) * mult
           disclog := disclog + rho
           mult := mult * fac
-          a:=a * (logbase ** (-rho))
+          a:=a * (logbase ^ (-rho))
       disclog pretend NonNegativeInteger
 
     FP ==> SparseUnivariatePolynomial($)

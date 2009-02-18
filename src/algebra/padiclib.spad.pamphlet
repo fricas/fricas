@@ -157,7 +157,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       m := nrows mat; n := ncols mat
       ans : Matrix R := new(m,n,0)
       for i in 1..m repeat for j in 1..n repeat
-        qsetelt_!(ans,i,j,map(#1 ** q,qelt(mat,i,j)))
+        qsetelt_!(ans,i,j,map(#1 ^ q,qelt(mat,i,j)))
       ans
 
     listConjugateBases(bas,q,n) ==
@@ -166,17 +166,17 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       for i in 1..(n-1) repeat
         b := applyFrobToMatrix(b,q)
         bInv := applyFrobToMatrix(bInv,q)
-        bDen := map(#1 ** q,bDen)
+        bDen := map(#1 ^ q,bDen)
         newBasis : Result := [b,bDen,bInv]
         outList := concat(newBasis,outList)
       reverse_! outList
 
     factorList(a,q,n,k) ==
       coef : SUP K := monomial(a,0); xx : SUP K := monomial(1,1)
-      outList : L SUP K := list((xx - coef)**k)
+      outList : L SUP K := list((xx - coef)^k)
       for i in 1..(n-1) repeat
-        coef := coef ** q
-        outList := concat((xx - coef)**k,outList)
+        coef := coef ^ q
+        outList := concat((xx - coef)^k,outList)
       reverse_! outList
 
     basisInfoToPolys: (Mat,R,R) -> L UP
@@ -383,7 +383,7 @@ PAdicWildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
 
     compLocalBasisOverExt: (UP,R,UP,NNI) -> Result
     compLocalBasisOverExt(poly0,prime0,irrPoly0,k) ==
-      -- poly0 = irrPoly0**k (mod prime0)
+      -- poly0 = irrPoly0^k (mod prime0)
       n := degree poly0; disc0 := discriminant poly0
       (disc0 exquo prime0) case "failed" =>
         [scalarMatrix(n,1), 1, scalarMatrix(n,1)]
@@ -406,7 +406,7 @@ PAdicWildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
       -- factor the reduction
       factorListSAE := factors factor(redIrrPoly)$DDFACT(sae,SUP sae)
       -- list the 'primary factors' of the reduction of poly
-      redFactors : List SUP sae := [(f.factor)**k for f in factorListSAE]
+      redFactors : List SUP sae := [(f.factor)^k for f in factorListSAE]
       -- lift these factors to elements of SUP SUP E
       primaries : List SUP SUP E :=
         [mapUnivariate(lift,ff)$IBPTOOLS(SUP E,SUP SUP E,SUP SUP SUP E,sae) _
@@ -460,7 +460,7 @@ PAdicWildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
       expons : List NNI := [((f.exponent) :: NNI) for f in factorListSAE]
       -- list the 'primary factors' of the reduced polynomial
       redPrimaries : List SUP sae :=
-        [(f.factor) **((f.exponent) :: NNI) for f in factorListSAE]
+        [(f.factor) ^((f.exponent) :: NNI) for f in factorListSAE]
       -- lift these factors to elements of UP
       primaries : List UP :=
         [mapUnivariate(lift,ff)$IBPTOOLS(R,UP,SUP UP,sae) for ff in redPrimaries]
