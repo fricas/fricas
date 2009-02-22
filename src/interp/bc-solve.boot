@@ -232,7 +232,7 @@ bcSolveEquations(htPage,solutionMethod) ==
     kind := htpButtonValue(htPage,'choice)
     accString :=
       kind in '(rf cf) => STRCONC('"1.e-",digits)
-      STRCONC('"1/10**",digits)
+      STRCONC('"1/10^",digits)
   alist := htpProperty(htPage,'inputArea)
   [[.,varpart,:.],:r] := alist
   varlist := bcString2WordList varpart
