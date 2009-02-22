@@ -16,7 +16,7 @@
 ++ Author: Martin Rubey
 ++ Description:
 ++ This package provides a mapping function for \spadtype{FiniteAbelianMonoidRing}
-FiniteAbelianMonoidRingFunctions2(E: OrderedAbelianMonoid, 
+FiniteAbelianMonoidRingFunctions2(E: OrderedAbelianMonoid,
                                   R1: Ring,
                                   A1: FiniteAbelianMonoidRing(R1, E),
                                   R2: Ring,
@@ -99,13 +99,13 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
 \end{ToDo}
 
 <<package FFFG FractionFreeFastGaussian>>=
-    interpolate: (List Fraction D, List Fraction D, NonNegativeInteger) 
+    interpolate: (List Fraction D, List Fraction D, NonNegativeInteger)
                 -> Fraction SUP D
       ++ \spad{interpolate(xlist, ylist, deg} returns the rational function with
       ++ numerator degree \spad{deg} that interpolates the given points using
       ++ fraction free arithmetic.
 
-    generalInterpolation: (List D, CoeffAction, 
+    generalInterpolation: (List D, CoeffAction,
                            Vector V, List NonNegativeInteger) -> Matrix SUP D
       ++ \spad{generalInterpolation(C, CA, f, eta)} performs Hermite-Pade
       ++ approximation using the given action CA of polynomials on the elements
@@ -114,27 +114,27 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
       ++ diagonal are given by eta. The degrees of column i are in this case
       ++ eta + e.i - [1,1,...,1], where the degree of zero is -1.
       ++
-      ++ The first argument C is the list of coefficients c_{k,k} in the 
+      ++ The first argument C is the list of coefficients c_{k,k} in the
       ++ expansion <x^k> z g(x) = sum_{i=0}^k c_{k,i} <x^i> g(x).
       ++
       ++ The second argument, CA(k, l, f), should return the coefficient of x^k
       ++ in z^l f(x).
 
-    generalInterpolation: (List D, CoeffAction, 
-                           Vector V, NonNegativeInteger, NonNegativeInteger) 
+    generalInterpolation: (List D, CoeffAction,
+                           Vector V, NonNegativeInteger, NonNegativeInteger)
                          -> Stream Matrix SUP D
       ++ \spad{generalInterpolation(C, CA, f, sumEta, maxEta)} applies
       ++ \spad{generalInterpolation(C, CA, f, eta)} for all possible \spad{eta}
       ++ with maximal entry \spad{maxEta} and sum of entries at most
       ++ \spad{sumEta}.
       ++
-      ++ The first argument C is the list of coefficients c_{k,k} in the 
+      ++ The first argument C is the list of coefficients c_{k,k} in the
       ++ expansion <x^k> z g(x) = sum_{i=0}^k c_{k,i} <x^i> g(x).
       ++
-      ++ The second argument, CA(k, l, f), should return the coefficient of x^k 
+      ++ The second argument, CA(k, l, f), should return the coefficient of x^k
       ++ in z^l f(x).
 
-    generalCoefficient: (CoeffAction, Vector V, 
+    generalCoefficient: (CoeffAction, Vector V,
                          NonNegativeInteger, Vector SUP D) -> D
       ++ \spad{generalCoefficient(action, f, k, p)} gives the coefficient of
       ++ x^k in p(z)\dot f(x), where the action of z^l on a polynomial in x is
@@ -184,7 +184,7 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
       k^l*coefficient(f, k)
 
 
-    ShiftC(total: NonNegativeInteger): List D == 
+    ShiftC(total: NonNegativeInteger): List D ==
       [i::D for i in 0..total-1]
 
 -------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
       q^(k*l)*coefficient(f, k)
 
 
-    qShiftC(q: D, total: NonNegativeInteger): List D == 
+    qShiftC(q: D, total: NonNegativeInteger): List D ==
       [q^i for i in 0..total-1]
 
 -------------------------------------------------------------------------------
@@ -211,7 +211,7 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
       coefficient(f, (k-l)::NonNegativeInteger)
 
 
-    DiffC(total: NonNegativeInteger): List D == 
+    DiffC(total: NonNegativeInteger): List D ==
       [0 for i in 1..total]
 
 -------------------------------------------------------------------------------
@@ -221,8 +221,8 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
 -- get the coefficient of z^k in the scalar product of p and f, the action
 -- being defined by coeffAction
 
-    generalCoefficient(coeffAction: CoeffAction, f: Vector V, 
-                       k: NonNegativeInteger, p: Vector SUP D): D == 
+    generalCoefficient(coeffAction: CoeffAction, f: Vector V,
+                       k: NonNegativeInteger, p: Vector SUP D): D ==
       res: D := 0
       for i in 1..#f repeat
 
@@ -236,9 +236,9 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
       res
 
 
-    generalInterpolation(C: List D, coeffAction: CoeffAction, 
-                         f: Vector V, 
-                         eta: List NonNegativeInteger): Matrix SUP D == 
+    generalInterpolation(C: List D, coeffAction: CoeffAction,
+                         f: Vector V,
+                         eta: List NonNegativeInteger): Matrix SUP D ==
 
       c: cFunction := generalCoefficient(coeffAction, f,
                                          (#1-1)::NonNegativeInteger, #2)
@@ -263,7 +263,7 @@ non-negative components smaller than [[p]] with the same sum as [[v]].
       zero? pos => return "failed"
       if pos = 1 then
         sum: Integer := v.1
-        for i in 2..n repeat    
+        for i in 2..n repeat
           if v.i < p and sum > 0 then
             v.i := v.i + 1
             sum := sum - 1
@@ -276,9 +276,9 @@ non-negative components smaller than [[p]] with the same sum as [[v]].
                 sum := 0
             return v
           else sum := sum + v.i
-        return "failed" 
+        return "failed"
       else
-        v.pos     := v.pos + 1    
+        v.pos     := v.pos + 1
         v.(pos-1) := (v.(pos-1) - 1)::NonNegativeInteger
 
       v
@@ -328,8 +328,8 @@ Although some redundancy exists also for higher dimensional [[f]], the scheme
 becomes much more complicated, thus we did not implement it.
 
 <<package FFFG FractionFreeFastGaussian>>=
-    generalInterpolation(C: List D, coeffAction: CoeffAction, 
-                         f: Vector V, 
+    generalInterpolation(C: List D, coeffAction: CoeffAction,
+                         f: Vector V,
                          sumEta: NonNegativeInteger,
                          maxEta: NonNegativeInteger)
                         : Stream Matrix SUP D ==
@@ -337,12 +337,12 @@ becomes much more complicated, thus we did not implement it.
       <<generate an initial degree vector>>
 
       if #f = 2 then
-        map(generalInterpolation(C, coeffAction, f, #1), 
+        map(generalInterpolation(C, coeffAction, f, #1),
             cons(eta, vectorStream2(maxEta, eta)))
            $StreamFunctions2(List NonNegativeInteger,
                              Matrix SUP D)
       else
-        map(generalInterpolation(C, coeffAction, f, #1), 
+        map(generalInterpolation(C, coeffAction, f, #1),
             cons(eta, vectorStream(maxEta, eta)))
            $StreamFunctions2(List NonNegativeInteger,
                            Matrix SUP D)
@@ -374,7 +374,7 @@ We want to generate all vectors with sum of entries being at most
 -- rational interpolation
 -------------------------------------------------------------------------------
 
-    interpolate(x: List Fraction D, y: List Fraction D, d: NonNegativeInteger) 
+    interpolate(x: List Fraction D, y: List Fraction D, d: NonNegativeInteger)
                : Fraction SUP D ==
       gx := splitDenominator(x)$InnerCommonDenominator(D, Fraction D, _
                                                        List D, _
@@ -418,15 +418,15 @@ interpolation problem, if [[M.1.(2,1)]] vanishes.
 \begin{align*}
   &\text{Increase order}\\
   &\quad\quad\text{for $\ell=1\dots m$, $\ell\neq\pi$}\\
-  &\quad\quad\quad\quad\mathbf M_{\sigma+1}^{(.,\ell)} := 
-        \left(\mathbf M_{\sigma}^{(.,\ell)}r^{(\pi)} 
+  &\quad\quad\quad\quad\mathbf M_{\sigma+1}^{(.,\ell)} :=
+        \left(\mathbf M_{\sigma}^{(.,\ell)}r^{(\pi)}
             - \mathbf M_{\sigma}^{(.,\pi)}r^{(\ell)}\right)/d_\sigma\\
   &\text{Increase order in column $\pi$}\\
-  &\quad\quad\mathbf M_{\sigma+1}^{(.,\pi)} := 
+  &\quad\quad\mathbf M_{\sigma+1}^{(.,\pi)} :=
         \left(z-c_{\sigma,\sigma}\right)\mathbf M_{\sigma}^{(.,\pi)}\\
   &\text{Adjust degree constraints:}\\
-  &\quad\quad\mathbf M_{\sigma+1}^{(.,\pi)} := 
-        \left(\mathbf M_{\sigma+1}^{(.,\pi)}r^{(\pi)} 
+  &\quad\quad\mathbf M_{\sigma+1}^{(.,\pi)} :=
+        \left(\mathbf M_{\sigma+1}^{(.,\pi)}r^{(\pi)}
             - \sum_{\ell\neq\pi}\mathbf M_{\sigma+1}^{(.,\ell)}p^{(\ell)}
         \right)/d_\sigma
 \end{align*}
@@ -465,7 +465,7 @@ $c_{\sigma,\sigma}$.
 
 
     fffg(C: List D, c: cFunction, eta: List NonNegativeInteger): Matrix SUP D ==
--- eta is the vector of degrees. We compute M with degrees eta+e_i-1, i=1..m 
+-- eta is the vector of degrees. We compute M with degrees eta+e_i-1, i=1..m
         z: SUP D := monomial(1, 1)
         m: NonNegativeInteger := #eta
         M: Matrix SUP D := scalarMatrix(m, 1)
@@ -492,16 +492,16 @@ $c_{\sigma,\sigma}$.
 
             lambdaMax := reduce(max, Lambda)
             lambda := 1
-            while eta.lambda-etak.lambda < lambdaMax or r.lambda = 0 repeat 
+            while eta.lambda-etak.lambda < lambdaMax or r.lambda = 0 repeat
                 lambda := lambda + 1
 
 -- Calculate leading coefficients
 
             for l in 1..m | l ~= lambda repeat
                 if etak.l > 0 then
-                    p.l := coefficient(M.(l, lambda), 
+                    p.l := coefficient(M.(l, lambda),
                                        (etak.l-1)::NonNegativeInteger)
-                else 
+                else
                     p.l := 0
 
 -- increase order and adjust degree constraints
@@ -543,7 +543,7 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
 
   Exports == with
 
-    generalInterpolation: (List D, CoeffAction, Vector VF, List NonNegativeInteger) 
+    generalInterpolation: (List D, CoeffAction, Vector VF, List NonNegativeInteger)
                           -> Matrix SUP D
       ++ \spad{generalInterpolation(l, CA, f, eta)} performs Hermite-Pade
       ++ approximation using the given action CA of polynomials on the elements
@@ -552,8 +552,8 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
       ++ diagonal are given by eta. The degrees of column i are in this case
       ++ eta + e.i - [1,1,...,1], where the degree of zero is -1.
 
-    generalInterpolation: (List D, CoeffAction, 
-                           Vector VF, NonNegativeInteger, NonNegativeInteger) 
+    generalInterpolation: (List D, CoeffAction,
+                           Vector VF, NonNegativeInteger, NonNegativeInteger)
                           -> Stream Matrix SUP D
       ++ \spad{generalInterpolation(l, CA, f, sumEta, maxEta)} applies
       ++ generalInterpolation(l, CA, f, eta) for all possible eta with maximal
@@ -569,8 +569,8 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
 
       M
 
-    generalInterpolation(C: List D, coeffAction: CoeffAction, 
-                         f: Vector VF, eta: List NonNegativeInteger): Matrix SUP D == 
+    generalInterpolation(C: List D, coeffAction: CoeffAction,
+                         f: Vector VF, eta: List NonNegativeInteger): Matrix SUP D ==
       n := #f
       g: Vector V   := new(n, 0)
       den: Vector D := new(n, 0)
@@ -578,7 +578,7 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
       for i in 1..n repeat
         c := coefficients(f.i)
         den.i := commonDenominator(c)$CommonDenominator(D, F, List F)
-        g.i := map(retract(#1*den.i)@D, f.i) 
+        g.i := map(retract(#1*den.i)@D, f.i)
                   $FAMR2(NonNegativeInteger, Fraction D, VF, D, V)
 
       M := generalInterpolation(C, coeffAction, g, eta)$FFFG(D, V)
@@ -589,11 +589,11 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
 
       multiplyRows!(den, M)
 
-    generalInterpolation(C: List D, coeffAction: CoeffAction, 
-                         f: Vector VF, 
+    generalInterpolation(C: List D, coeffAction: CoeffAction,
+                         f: Vector VF,
                          sumEta: NonNegativeInteger,
                          maxEta: NonNegativeInteger)
-                        : Stream Matrix SUP D == 
+                        : Stream Matrix SUP D ==
 
       n := #f
       g: Vector V   := new(n, 0)
@@ -609,7 +609,7 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
                                          (#1-1)::NonNegativeInteger, #2)$FFFG(D, V)
 
 
-      MS: Stream Matrix SUP D 
+      MS: Stream Matrix SUP D
          := generalInterpolation(C, coeffAction, g, sumEta, maxEta)$FFFG(D, V)
 
 -- The following is necessary since I'm multiplying each row with a factor, not
@@ -637,20 +637,20 @@ NewtonInterpolation F: Exports == Implementation where
       ++ l, where the x-coordinates are assumed to be [1,2,3,...,n] and the
       ++ coefficients of the interpolating polynomial are known to be in the
       ++ domain F. I.e., it is a very streamlined version for a special case of
-      ++ interpolation. 
+      ++ interpolation.
 
     Implementation == add
 
-      differences(yl: List F): List F == 
+      differences(yl: List F): List F ==
         [y2-y1 for y1 in yl for y2 in rest yl]
 
       z: SparseUnivariatePolynomial(F) := monomial(1,1)
 
 -- we assume x=[1,2,3,...,n]
       newtonAux(k: F, fact: F, yl: List F): SparseUnivariatePolynomial(F) ==
-        if empty? rest yl 
+        if empty? rest yl
         then ((yl.1) exquo fact)::F::SparseUnivariatePolynomial(F)
-        else ((yl.1) exquo fact)::F::SparseUnivariatePolynomial(F) 
+        else ((yl.1) exquo fact)::F::SparseUnivariatePolynomial(F)
              + (z-k::SparseUnivariatePolynomial(F)) _
                * newtonAux(k+1$F, fact*k, differences yl)
 

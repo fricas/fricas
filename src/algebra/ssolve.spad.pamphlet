@@ -24,7 +24,7 @@ SparseUnivariatePolynomialExpressions(R: Ring): Exports == Implementation where
     Exports == UnivariatePolynomialCategory R with
 
         if R has TranscendentalFunctionCategory
-        then TranscendentalFunctionCategory 
+        then TranscendentalFunctionCategory
 
     Implementation == SparseUnivariatePolynomial R add
 
@@ -160,7 +160,7 @@ $y^{\prime\prime}$.
 \end{ToDo}
 
 <<implementation: UTSSOL TaylorSolve>>=
-            next: () -> F := 
+            next: () -> F :=
                 nr := st.1
                 res: F
 
@@ -171,8 +171,8 @@ $y^{\prime\prime}$.
 If the next element was already calculated, we can simply return it:
 
 <<implementation: UTSSOL TaylorSolve>>=
-                then 
-                    res := ground coeff 
+                then
+                    res := ground coeff
                     st.1 := rest nr
                 else
 @
@@ -188,7 +188,7 @@ should be unique.
                     eq: SUP F := first eqs
                     if degree eq > 1 then
                         if monomial? eq then res := 0
-                        else 
+                        else
                             output(hconcat("The equation is: ", eq::OutputForm))
                                   $OutputPackage
                             error "seriesSolve: equation for coefficient not linear"
@@ -272,9 +272,9 @@ coefficient ring, since it will complain otherwise.
 
                 if is?(k, op) then
                     arg := first argument k
-                    if arg = sy::F 
+                    if arg = sy::F
                     then expr := subst(expr, [k], [(name op)::F])
-                    else expr := subst(expr, [k], [opelt [(name op)::F, 
+                    else expr := subst(expr, [k], [opelt [(name op)::F,
                                                           replaceDiffs(arg, op,
                                                           sy)]])
 --                    => "iterate"
@@ -288,10 +288,10 @@ coefficient ring, since it will complain otherwise.
 
 
         seriesSolve(expr, op, sy, l) ==
-            ex := replaceDiffs(expr, op, sy) 
+            ex := replaceDiffs(expr, op, sy)
             f := compiledFunction(ex, name op, sy)$MKF
             seriesSolve(f(#1, monomial(1,1)$UTSSUPF), l)$TaylorSolve(F, UTSF, UTSSUPF)
-@            
+@
 %$
 
 \section{Bugs}
@@ -299,7 +299,7 @@ coefficient ring, since it will complain otherwise.
 <<inp: seriesSolve>>=
 seriesSolve(sin f x / cos x, f, x, [1])$EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SUPEXPR EXPR INT)
 @
-returns 
+returns
 \begin{verbatim}
 (((0 . 1) 0 . 1) NonNullStream #<compiled-function |STREAM;generate;M$;62!0|> . UNPRINTABLE)
 \end{verbatim}

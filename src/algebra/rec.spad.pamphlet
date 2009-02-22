@@ -26,7 +26,7 @@ RecurrenceOperator(R, F): Exports == Implementation where
           CombinatorialOpsCategory)
 --RecurrenceOperator(F): Exports == Implementation where
 --  F: Join(ExpressionSpace, AbelianMonoid, RetractableTo Integer,
---          RetractableTo Symbol, PartialDifferentialRing Symbol) 
+--          RetractableTo Symbol, PartialDifferentialRing Symbol)
 
   Exports == with
 
@@ -63,8 +63,8 @@ RecurrenceOperator(R, F): Exports == Implementation where
     if R has Ring then
       getShiftRec: (BasicOperator, Kernel F, Symbol) -> Union(Integer, "failed")
 
-      shiftInfoRec: (BasicOperator, Symbol, F) -> 
-                     Record(max: Union(Integer, "failed"), 
+      shiftInfoRec: (BasicOperator, Symbol, F) ->
+                     Record(max: Union(Integer, "failed"),
                             ord: Union(Integer, "failed"),
                             ker: Kernel F)
 
@@ -181,12 +181,12 @@ how many initial values are necessary.
           then return retractIfCan(coefficient(num, 0))
           else return "failed"
 
--- if the recurrence is of the form 
+-- if the recurrence is of the form
 -- $p(n, f(n+m-o), f(n+m-o+1), \dots, f(n+m)) = 0$
 -- in which case shiftInfoRec returns [m, o, f(n+m)].
 
-      shiftInfoRec(op: BasicOperator, argsym: Symbol, eq: F): 
-                   Record(max: Union(Integer, "failed"), 
+      shiftInfoRec(op: BasicOperator, argsym: Symbol, eq: F):
+                   Record(max: Union(Integer, "failed"),
                           ord: Union(Integer, "failed"),
                           ker: Kernel F) ==
 
@@ -213,7 +213,7 @@ how many initial values are necessary.
                 minShift := shift
               else return ["failed", "failed", nextKernel]
             else
-              if shift case Integer then 
+              if shift case Integer then
                 if maxShift < shift then
                   maxShift := shift
                   nextKernel := f
@@ -229,15 +229,15 @@ how many initial values are necessary.
 \subsubsection{Evaluating a recurrence}
 
 <<implementation: RecurrenceOperator>>=
-      evalRec(op, argsym, argdisp, arg, eq, values) == 
+      evalRec(op, argsym, argdisp, arg, eq, values) ==
         if ((n := retractIfCan(arg)@Union(Integer, "failed")) case "failed")
            or (n < 0)
         then
           shiftInfo := shiftInfoRec(op, argsym, eq)
 
-          if (shiftInfo.ord case "failed") or ((shiftInfo.ord)::Integer > 0) 
+          if (shiftInfo.ord case "failed") or ((shiftInfo.ord)::Integer > 0)
           then
-            kernel(oprecur, 
+            kernel(oprecur,
                    append([eq, argsym::F, argdisp, op(arg)], values))
           else
             p := univariate(eq, shiftInfo.ker)
@@ -246,12 +246,12 @@ how many initial values are necessary.
 -- If the degree is 1, we can return the function explicitly.
 
             if degree num = 1 then
-              eval(-coefficient(num, 0)/coefficient(num, 1), argsym::F, 
+              eval(-coefficient(num, 0)/coefficient(num, 1), argsym::F,
                    arg::F-(shiftInfo.max)::Integer::F)
-            else 
-              kernel(oprecur, 
+            else
+              kernel(oprecur,
                      append([eq, argsym::F, argdisp, op(arg)], values))
-        else 
+        else
           len: Integer := #values
           if n < len
           then values.(len-n)
@@ -266,20 +266,20 @@ how many initial values are necessary.
               if degree num = 1 then
 
                 next := -coefficient(num, 0)/coefficient(num, 1)
-                nextval := eval(next, argsym::F, 
+                nextval := eval(next, argsym::F,
                                 (len-(shiftInfo.max)::Integer)::F)
-                newval := eval(nextval, op, 
+                newval := eval(nextval, op,
                                evalRec(op, argsym, argdisp, #1, eq, values))
                 evalRec(op, argsym, argdisp, arg, eq, cons(newval, values))
               else
-                kernel(oprecur, 
+                kernel(oprecur,
                        append([eq, argsym::F, argdisp, op(arg)], values))
 
             else
-              kernel(oprecur, 
+              kernel(oprecur,
                      append([eq, argsym::F, argdisp, op(arg)], values))
 
-      numberOfValuesNeeded(numberOfValues: Integer, 
+      numberOfValuesNeeded(numberOfValues: Integer,
                            op: BasicOperator, argsym: Symbol, eq: F): Integer ==
         order := shiftInfoRec(op, argsym, eq).ord
         if order case Integer
@@ -288,11 +288,11 @@ how many initial values are necessary.
 
 
     else
-      evalRec(op, argsym, argdisp, arg, eq, values) == 
-        kernel(oprecur, 
+      evalRec(op, argsym, argdisp, arg, eq, values) ==
+        kernel(oprecur,
                append([eq, argsym::F, argdisp, op(arg)], values))
 
-      numberOfValuesNeeded(numberOfValues: Integer, 
+      numberOfValuesNeeded(numberOfValues: Integer,
                            op: BasicOperator, argsym: Symbol, eq: F): Integer ==
         numberOfValues
 @
@@ -335,7 +335,7 @@ an operator.
                        ": ",
                        commaSeparate vals]))
 
-    setProperty(oprecur, "%specialDisp"::Symbol, 
+    setProperty(oprecur, "%specialDisp"::Symbol,
                 ddrec@(List F -> OutputForm) pretend None)
 
 @
@@ -382,27 +382,27 @@ solution and determine the valuation.
 \subsubsection{Extracting a coefficient given a functional equation}
 
 <<implementation: RecurrenceOperator>>=
-    evalADE(op, argsym, argdisp, arg, eq, values) == 
-      if not freeOf?(eq, retract(argdisp)@Symbol) 
+    evalADE(op, argsym, argdisp, arg, eq, values) ==
+      if not freeOf?(eq, retract(argdisp)@Symbol)
       then error "RECOP: The argument should not be used in the equation of the_
  ADE"
 
       if ((n := retractIfCan(arg)@Union(Integer, "failed")) case "failed")
-      then 
+      then
 -- try to determine the necessary number of initial values
          keq := kernels eq
          order := getOrder(op, keq.1)
          for k in rest keq repeat order := max(order, getOrder(op, k))
 
-         p: Fraction SparseUnivariatePolynomial F 
+         p: Fraction SparseUnivariatePolynomial F
            := univariate(eq, kernels(D(op(argsym::F), argsym, order)).1)$F
 
-         if one? degree numer p 
+         if one? degree numer p
 -- the equation is holonomic
-         then kernel(opADE, 
-                     append([eq, argsym::F, argdisp, op(arg)], 
+         then kernel(opADE,
+                     append([eq, argsym::F, argdisp, op(arg)],
                             reverse first(reverse values, order)))
-         else kernel(opADE, 
+         else kernel(opADE,
                      append([eq, argsym::F, argdisp, op(arg)], values))
       else
         if n < 0
@@ -413,19 +413,19 @@ solution and determine the valuation.
 --          output(hconcat("The order is ", order::OutputForm))$OutputPackage
           for k in rest keq repeat order := max(order, getOrder(op, k))
 
-          p: Fraction SparseUnivariatePolynomial F 
+          p: Fraction SparseUnivariatePolynomial F
             := univariate(eq, kernels(D(op(argsym::F), argsym, order)).1)$F
 
 --          output(hconcat("p: ", p::OutputForm))$OutputPackage
 
           if degree numer p > 1
           then
---            kernel(opADE, 
+--            kernel(opADE,
 --                   append([eq, argsym::F, argdisp, op(arg)], values))
 
             s := seriesSolve(eq, op, argsym, reverse values)
-                            $ExpressionSolve(R, F, 
-                                             UnivariateFormalPowerSeries F, 
+                            $ExpressionSolve(R, F,
+                                             UnivariateFormalPowerSeries F,
                                              UnivariateFormalPowerSeries
                                                SparseUnivariatePolynomialExpressions F)
 
@@ -433,8 +433,8 @@ solution and determine the valuation.
 
           else
             s := seriesSolve(eq, op, argsym, first(reverse values, order))
-                            $ExpressionSolve(R, F, 
-                                             UnivariateFormalPowerSeries F, 
+                            $ExpressionSolve(R, F,
+                                             UnivariateFormalPowerSeries F,
                                              UnivariateFormalPowerSeries
                                                SparseUnivariatePolynomialExpressions F)
 
@@ -482,7 +482,7 @@ solution and determine the valuation.
       x := displayVariable l
       values := reverse l
 
-      TaylorCoeff: OutputForm 
+      TaylorCoeff: OutputForm
                  := bracket(x::OutputForm ^(operatorArgument l)::OutputForm)
 
       DiffEq: OutputForm
@@ -498,15 +498,15 @@ solution and determine the valuation.
           TaylorO: OutputForm
                      := prefix("O"::OutputForm, _
                                [(x^(1+min(4,#values-5)))::OutputForm])
-          TaylorPoly: OutputForm 
+          TaylorPoly: OutputForm
                      := op(x)::OutputForm _
                         = reduce(_+, concat(TaylorList, TaylorO))
-    
+
           bracket(commaSeparate([DiffEq, TaylorPoly])$OutputForm)$OutputForm
       else
           bracket(DiffEq)$OutputForm
 
-    setProperty(opADE, "%specialDisp"::Symbol, 
+    setProperty(opADE, "%specialDisp"::Symbol,
                 ddADE@(List F -> OutputForm) pretend None)
 @
 %$

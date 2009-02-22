@@ -170,7 +170,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
          if ground?(reductum p.ts) then leadingCoefficient(reductum p.ts) else [p.v,reductum p.ts]$VPoly
 
       numberOfMonomials(p): NonNegativeInteger ==
-        p case R => 
+        p case R =>
           zero?(p)$R => 0
           1
         +/[numberOfMonomials q for q in coefficients(p.ts)]
@@ -186,16 +186,16 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 --    local
       moreThanOneVariable?: % -> Boolean
 
-      moreThanOneVariable? p == 
+      moreThanOneVariable? p ==
          p case R => false
          q:=p.ts
          any?(not ground? #1 ,coefficients q) => true
          false
 
       -- if we already know we use this (slighlty) faster function
-      univariateKnown: % -> SparseUnivariatePolynomial R 
+      univariateKnown: % -> SparseUnivariatePolynomial R
 
-      univariateKnown p == 
+      univariateKnown p ==
         p case R => (leadingCoefficient p) :: SparseUnivariatePolynomial(R)
         monomial( leadingCoefficient p,degree p.ts)+ univariateKnown(red p)
 
@@ -301,7 +301,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
          p1 case R and p2 case R => p1 +$R p2
          p1 case R => [p2.v, p1::D + p2.ts]$VPoly
          p2 case R => [p1.v,  p1.ts + p2::D]$VPoly
-         p1.v = p2.v => 
+         p1.v = p2.v =>
               mvar:=p1.v
               up:=p1.ts+p2.ts
               if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
@@ -331,19 +331,19 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 
       p1 * p2  ==
          p1 case R => p1::R * p2
-         p2 case R => 
+         p2 case R =>
             mvar:=p1.v
             up:=p1.ts*p2
             if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
-         p1.v = p2.v => 
+         p1.v = p2.v =>
             mvar:=p1.v
             up:=p1.ts*p2.ts
             if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
-         p1.v > p2.v => 
+         p1.v > p2.v =>
             mvar:=p1.v
             up:=p1.ts*p2
             if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
-            --- p1.v < p2.v 
+            --- p1.v < p2.v
          mvar:=p2.v
          up:=p1*p2.ts
          if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
@@ -353,8 +353,8 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       p ^ k == p ^ k
       p ^ k  ==
          p case R => p::R ^ k
-         -- univariate special case 
-         not moreThanOneVariable? p => 
+         -- univariate special case
+         not moreThanOneVariable? p =>
              multivariate( (univariateKnown p) ^ k , p.v)
          mvar:=p.v
          up:=p.ts ^ k
@@ -526,20 +526,20 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       mymerge(l:List VarSet,m:List VarSet):List VarSet  ==
          empty? l => m
          empty? m => l
-         first l = first m => 
-            empty? rest l => 
+         first l = first m =>
+            empty? rest l =>
                  setrest!(l,rest m)
                  l
-            empty? rest m => l 
+            empty? rest m => l
             setrest!(l, mymerge(rest l, rest m))
             l
          first l > first m =>
-            empty? rest l => 
-                setrest!(l,m) 
+            empty? rest l =>
+                setrest!(l,m)
                 l
             setrest!(l, mymerge(rest l, m))
             l
-         empty? rest m => 
+         empty? rest m =>
              setrest!(m,l)
              m
          setrest!(m,mymerge(l,rest m))
@@ -628,7 +628,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       if R has CommutativeRing then
         differentiate(p,mvar) ==
           p case R => 0
-          mvar=p.v =>  
+          mvar=p.v =>
              up:=differentiate p.ts
              if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
           up:=map(differentiate(#1,mvar),p.ts)
@@ -649,7 +649,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
           monomial(leadingMonomial leadingCoefficient(p.ts),
                    p.v, degree(p.ts))
 
-      reductum(p) == 
+      reductum(p) ==
           p case R => 0
           p - leadingMonomial p
 

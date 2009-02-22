@@ -32,10 +32,10 @@ strings.  For example:
 \begin{verbatim}
     f := (x+a)/(x*(x^3+(b+c)*x^2+b*c*x))
     testEquals("numberOfFractionalTerms partialFraction(f, x)", "3")
-    s1 := "ab"; s2 := concat("a", "b"); 
+    s1 := "ab"; s2 := concat("a", "b");
     testEquals("s1", "s2")
 \end{verbatim}
-would be valid tests.  For some reason 
+would be valid tests.  For some reason
 \begin{verbatim}
     testEquals("concat(_"a_", _"b_")", "_"ab_"")
 \end{verbatim}
@@ -65,14 +65,14 @@ at the very beginning of the regression testing.
 ++              and we want the state to be common for all arguments.
 UnittestCount(): with
 
-     testsuite: String -> Void     
+     testsuite: String -> Void
        ++ testsuite s starts a new testsuite with s as title. It also calls
        ++ \axiom{clear all}.  A testsuite is composed of several testcases.
 
-     testsuiteNoClear: String -> Void     
+     testsuiteNoClear: String -> Void
        ++ testsuiteNoClear s starts a new testsuite with s as title, without
        ++ calling \axiom{clear all}.  A testsuite is composed of several
-       ++ testcases. 
+       ++ testcases.
 
      testcase: String -> Void
        ++ testcase s starts a new testcase with s as title.  It also calls
@@ -96,11 +96,11 @@ UnittestCount(): with
 
      chkLibraryError: () -> Void
        ++ chkLibraryError is an internal function that steps the number of
-       ++ tests. 
+       ++ tests.
 
      incLibraryError: (String, List OutputForm) -> Void
        ++ incLibraryError is an internal function that steps the number of
-       ++ failed tests, but not the number of tests. 
+       ++ failed tests, but not the number of tests.
 
      incFatal: String -> Void
        ++ incFatal s is an internal function that steps the number of fatal
@@ -113,7 +113,7 @@ UnittestCount(): with
      addWarning: OutputForm -> Void
        ++ addWarning s is an internal function that adds s, together with an
        ++ indication of the current testcase and the current testsuite to the
-       ++ list of warnings. 
+       ++ list of warnings.
 
   == add
 
@@ -129,8 +129,8 @@ UnittestCount(): with
      FATAL     ==> Record(index: Integer,
                           input: String)
 
-     TESTCASE  ==> Record(total: Integer, 
-                          fail: Integer, 
+     TESTCASE  ==> Record(total: Integer,
+                          fail: Integer,
                           fatalities: List FATAL,
                           failed: List FAILED)
 
@@ -173,7 +173,7 @@ UnittestCount(): with
          testcaseNoClear s
 
 
-     incPass() == 
+     incPass() ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
 
@@ -189,7 +189,7 @@ UnittestCount(): with
 -- number must not be stepped
          cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
 
-     incFail(inp, out) == 
+     incFail(inp, out) ==
          cur := tests.currentTestsuite.currentTestcase
          cur.fail := cur.fail + 1
 -- because of the incFatal / decFatal construction, the current index is
@@ -197,14 +197,14 @@ UnittestCount(): with
          cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
          cur.total := cur.total + 1
 
-     incFatal inp == 
+     incFatal inp ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
          cur.fail := cur.fail + 1
          cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
 
 
-     decFatal() == 
+     decFatal() ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total - 1
          cur.fail := cur.fail - 1
@@ -213,8 +213,8 @@ UnittestCount(): with
 
      addWarning s ==
          idx := tests.currentTestsuite.currentTestcase.total
-         warnings := cons(pile([message("Testsuite " currentTestsuite)$O,  
-                                message("Testcase " currentTestcase)$O,   
+         warnings := cons(pile([message("Testsuite " currentTestsuite)$O,
+                                message("Testcase " currentTestcase)$O,
                                 message("test " string(idx))$O,
                                 s])$O, warnings)
 
@@ -341,7 +341,7 @@ UnittestAux(R: BasicType): with
        ++ testEquals(inp, ex1, ex2) states that ex1 and ex2 should be equal.
        ++ To sidestep the possibility that the equality function of the domain
        ++ R performs some simplifications, we convert ex1 and ex2 to
-       ++ \axiom{InputForm}, if possible. 
+       ++ \axiom{InputForm}, if possible.
 
      testNotEqualsAux: (String, R, R) -> Void
        ++ testNotEquals(inp, ex1, ex2) states that ex1 and ex2 should be
@@ -359,23 +359,23 @@ UnittestAux(R: BasicType): with
            ++ testRealEquals(inp, ex1, ex2) states that ex1 and ex2 should be
            ++ approximately equal as real numbers, taking into acount
            ++ \spadfun{testAbsolutePrecision} and
-           ++ \spadfun{testRelativePrecision}. 
+           ++ \spadfun{testRelativePrecision}.
 
          testComplexEqualsAux: (String, Complex R, Complex R) -> Void
            ++ testComplexEquals(inp ex1, ex2) states that ex1 and ex2 should be
            ++ approximately equal as complex numbers, taking into acount
            ++ \spadfun{testAbsolutePrecision} and
-           ++ \spadfun{testRelativePrecision}. 
+           ++ \spadfun{testRelativePrecision}.
 
          testAbsolutePrecision: R -> R
            ++ testAbsolutePrecision(eps) returns the current absolute precision
            ++ used for floating point comparison, and then sets it to eps.  The
-           ++ default value is 1.0e-15.  
-    
+           ++ default value is 1.0e-15.
+
          testRelativePrecision: R -> R
            ++ testRelativePrecision(eps) returns the current absolute precision
            ++ used for floating point comparison, and then sets it to eps.  The
-           ++ default value is 1.0e-15.  
+           ++ default value is 1.0e-15.
 
   == add
 
@@ -383,20 +383,20 @@ UnittestAux(R: BasicType): with
      U ==> UnittestCount
 
      if R has ConvertibleTo InputForm then
-         testEqualsAux(inp, ex1, ex2) == 
+         testEqualsAux(inp, ex1, ex2) ==
              if (convert(ex1)@InputForm=convert(ex2)@InputForm)@Boolean
              then incPass()$U
-             else 
-                 if R has CoercibleTo O 
+             else
+                 if R has CoercibleTo O
                  then incFail(inp, [ex1::O, ex2::O])$U
                  else incFail(inp, [])$U
      else
-         testEqualsAux(inp, ex1, ex2) == 
+         testEqualsAux(inp, ex1, ex2) ==
              addWarning(message("testing in a domain without InputForm!")$O)$U
              if (ex1=ex2)@Boolean
              then incPass()$U
-             else 
-                 if R has CoercibleTo O 
+             else
+                 if R has CoercibleTo O
                  then incFail(inp, [ex1::O, ex2::O])$U
                  else incFail(inp, [])$U
 
@@ -415,25 +415,25 @@ UnittestAux(R: BasicType): with
              epsilonAbsolute := eps
              old
 
-         testRealEqualsAux(inp, ex1, ex2) == 
+         testRealEqualsAux(inp, ex1, ex2) ==
              absolute: R := norm(ex1-ex2)$R
              if not zero? ex2
              then relative: R := norm(ex1/ex2-1)$R
              else relative: R := 0
              res: List O := []
-             if relative > epsilonRelative then 
-                 if R has CoercibleTo O 
+             if relative > epsilonRelative then
+                 if R has CoercibleTo O
                  then res := cons(hconcat(message("rel err: ")$O,
                                           relative::O), res)
                  else res := cons(message("rel err ")$O, res)
 
-             if absolute > epsilonAbsolute then 
-                 if R has CoercibleTo O 
+             if absolute > epsilonAbsolute then
+                 if R has CoercibleTo O
                  then res := cons(hconcat(message("abs err: ")$O,
                                           absolute::O), res)
                  else res := cons(message("abs err ")$O, res)
 
-             if empty? res 
+             if empty? res
              then incPass()$U
              else incFail(inp, concat([ex1::O, ex2::O], res))$U
 
@@ -455,32 +455,32 @@ UnittestAux(R: BasicType): with
                                           absolute::O), res)
                  else res := cons(message("abs err ")$O, res)
 
-             if empty? res 
+             if empty? res
              then incPass()$U
              else incFail(inp, concat([ex1::O, ex2::O], res))$U
 
-     testNotEqualsAux(inp, ex1, ex2) == 
+     testNotEqualsAux(inp, ex1, ex2) ==
          if (ex1=ex2)@Boolean
          then
-             if R has CoercibleTo O 
+             if R has CoercibleTo O
              then incFail(inp, [ex1::O, ex2::O])$U
              else incFail(inp, [])$U
          else incPass()$U
 
-     testTrueAux(inp, ex) == 
+     testTrueAux(inp, ex) ==
          if R is Boolean then
              if ex
              then incPass()$U
              else incFail(inp, [ex::Boolean::O])$U
          else
-             if R has CoercibleTo O 
+             if R has CoercibleTo O
              then incFail(inp, [ex::O])$U
              else incFail(inp, [])$U
 
-     testLibraryErrorAux(inp, ex) == 
+     testLibraryErrorAux(inp, ex) ==
 -- at this point, ex was already evaluated.  If there would have been an error,
 -- incLibraryError would not be invoked.
-         if R has CoercibleTo O 
+         if R has CoercibleTo O
          then incLibraryError(inp, [ex::O])$U
          else incLibraryError(inp, [])$U
 
@@ -504,7 +504,7 @@ Unittest: with
      testRealEquals: (String, String) -> Void
        ++ testRealEquals(ex1, ex2) states that ex1 and ex2 should be
        ++ approximately equal as real numbers, taking into acount
-       ++ \spadfun{testAbsolutePrecision} and \spadfun{testRelativePrecision}.  
+       ++ \spadfun{testAbsolutePrecision} and \spadfun{testRelativePrecision}.
 
      testComplexEquals: (String, String) -> Void
        ++ testComplexEquals(ex1, ex2) states that ex1 and ex2 should be

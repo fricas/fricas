@@ -36,45 +36,45 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
     clip: PLOT -> CLIPPED
       ++ clip(p) performs two-dimensional clipping on a plot, p, from
       ++ the domain \spadtype{Plot} for the graph of one variable,
-      ++ \spad{y = f(x)}; the default parameters \spad{1/4} for the fraction 
+      ++ \spad{y = f(x)}; the default parameters \spad{1/4} for the fraction
       ++ and \spad{5/1} for the scale are used in the \spadfun{clip} function.
     clip: (PLOT,RN,RN) -> CLIPPED
-      ++ clip(p,frac,sc) performs two-dimensional clipping on a plot, p, 
+      ++ clip(p,frac,sc) performs two-dimensional clipping on a plot, p,
       ++ from the domain \spadtype{Plot} for the graph of one variable
-      ++ \spad{y = f(x)}; the fraction parameter is specified by \spad{frac} 
-      ++ and the scale parameter is specified by \spad{sc} for use in the 
+      ++ \spad{y = f(x)}; the fraction parameter is specified by \spad{frac}
+      ++ and the scale parameter is specified by \spad{sc} for use in the
       ++ \spadfun{clip} function.
     clipParametric: PLOT -> CLIPPED
       ++ clipParametric(p) performs two-dimensional clipping on a plot,
       ++ p, from the domain \spadtype{Plot} for the parametric curve
-      ++ \spad{x = f(t)}, \spad{y = g(t)}; the default parameters \spad{1/2} 
-      ++ for the fraction and \spad{5/1} for the scale are used in the 
+      ++ \spad{x = f(t)}, \spad{y = g(t)}; the default parameters \spad{1/2}
+      ++ for the fraction and \spad{5/1} for the scale are used in the
       ++ \fakeAxiomFun{iClipParametric} subroutine, which is called by this
       ++ function.
     clipParametric: (PLOT,RN,RN) -> CLIPPED
-      ++ clipParametric(p,frac,sc) performs two-dimensional clipping on a 
+      ++ clipParametric(p,frac,sc) performs two-dimensional clipping on a
       ++ plot, p, from the domain \spadtype{Plot} for the parametric curve
-      ++ \spad{x = f(t)}, \spad{y = g(t)}; the fraction parameter is 
-      ++ specified by \spad{frac} and the scale parameter is specified 
+      ++ \spad{x = f(t)}, \spad{y = g(t)}; the fraction parameter is
+      ++ specified by \spad{frac} and the scale parameter is specified
       ++ by \spad{sc} for use in the \fakeAxiomFun{iClipParametric} subroutine,
       ++ which is called by this function.
     clipWithRanges: (L L Pt,SF,SF,SF,SF) -> CLIPPED
       ++ clipWithRanges(pointLists,xMin,xMax,yMin,yMax) performs clipping
-      ++ on a list of lists of points, \spad{pointLists}.  Clipping is 
-      ++ done within the specified ranges of \spad{xMin}, \spad{xMax} and 
-      ++ \spad{yMin}, \spad{yMax}.  This function is used internally by 
+      ++ on a list of lists of points, \spad{pointLists}.  Clipping is
+      ++ done within the specified ranges of \spad{xMin}, \spad{xMax} and
+      ++ \spad{yMin}, \spad{yMax}.  This function is used internally by
       ++ the \fakeAxiomFun{iClipParametric} subroutine in this package.
     clip: L Pt -> CLIPPED
       ++ clip(l) performs two-dimensional clipping on a curve l, which is
-      ++ a list of points; the default parameters \spad{1/2} for the 
-      ++ fraction and \spad{5/1} for the scale are used in the 
-      ++ \fakeAxiomFun{iClipParametric} subroutine, which is called by this 
+      ++ a list of points; the default parameters \spad{1/2} for the
+      ++ fraction and \spad{5/1} for the scale are used in the
+      ++ \fakeAxiomFun{iClipParametric} subroutine, which is called by this
       ++ function.
     clip: L L Pt -> CLIPPED
-      ++ clip(ll) performs two-dimensional clipping on a list of lists 
+      ++ clip(ll) performs two-dimensional clipping on a list of lists
       ++ of points, \spad{ll}; the default parameters \spad{1/2} for
-      ++ the fraction and \spad{5/1} for the scale are used in the 
-      ++ \fakeAxiomFun{iClipParametric} subroutine, which is called by this 
+      ++ the fraction and \spad{5/1} for the scale are used in the
+      ++ \fakeAxiomFun{iClipParametric} subroutine, which is called by this
       ++ function.
 
   Implementation ==> add
@@ -103,7 +103,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       -- put all points together , sort them according to norm
       sortedList := sort(norm(#1) < norm(#2),select(not Pnan? #1,concat pointLists))
       empty? sortedList => [nil(),segment(0,0),segment(0,0)]
-      n := # sortedList 
+      n := # sortedList
       num := numer fraction
       den := denom fraction
       clipNum := (n * num) quo den
@@ -111,7 +111,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       firstPt := first sortedList
       xMin : SF := xCoord firstPt
       xMax : SF := xCoord firstPt
-      yMin : SF := yCoord firstPt 
+      yMin : SF := yCoord firstPt
       yMax : SF := yCoord firstPt
       -- calculate min/max for the first (1-fraction)*N points
       -- this contracts the range
@@ -144,7 +144,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       xMin :SF :=reduce (min,xs)
       yMin :SF :=reduce (min,ys)
       xMax :SF :=reduce (max,xs)
-      yMax :SF :=reduce (max,ys) 
+      yMax :SF :=reduce (max,ys)
       xseg:SEG SF :=xMin..xMax
       yseg:SEG SF :=yMin..yMax
       -- return original
@@ -191,15 +191,15 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
         pred(pt) =>
           if (empty? list) and lastPt? then
             bdryPt := intersectWithBdry(xMin,xMax,yMin,yMax,pt,lastPt)
-            -- print bracket [ coerce bdryPt ,coerce pt ]       
+            -- print bracket [ coerce bdryPt ,coerce pt ]
             --list := cons(bdryPt,list)
           list := cons(pt,list)
         if not empty? list then
           bdryPt := intersectWithBdry(xMin,xMax,yMin,yMax,first list,pt)
-          -- print bracket [ coerce bdryPt,coerce first list]   
+          -- print bracket [ coerce bdryPt,coerce first list]
           --list := cons(bdryPt,list)
           ans := cons( list,ans)
-        lastPt := pt 
+        lastPt := pt
         lastPt? := true
         list := nil()
       empty? list => ans
@@ -245,7 +245,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
 
     clip(plot:PLOT) == clip(plot,1/4,5/1)
 
-    norm(pt) == 
+    norm(pt) ==
       x := xCoord(pt); y := yCoord(pt)
       if Fnan? x then
         if Fnan? y then
@@ -261,8 +261,8 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
 
     findPt lists ==
       for list in lists repeat
-        not empty? list => 
-             for p in list repeat 
+        not empty? list =>
+             for p in list repeat
                not Pnan? p => return p
       "failed"
 

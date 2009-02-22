@@ -184,8 +184,8 @@ here.
     ddsum     : List F -> O
     dprod     : List F -> O
     ddprod    : List F -> O
-    equalsumprod  : (K, K) -> Boolean 
-    equaldsumprod : (K, K) -> Boolean 
+    equalsumprod  : (K, K) -> Boolean
+    equaldsumprod : (K, K) -> Boolean
     fourth    : List F -> F
     dvpow1    : List F -> F
     dvpow2    : List F -> F
@@ -240,7 +240,7 @@ caused nested products and summations to fail. (Issue~\#72)
       else
         ground?(x)
 
-    x ^ y               == 
+    x ^ y               ==
       -- Do some basic simplifications
       is?(x,POWER) =>
         args : List F := argument first kernels x
@@ -295,14 +295,14 @@ representation of a sum: the operator [[%defsum]] takes 5 arguments, namely
 
 \begin{enumerate}
 \item the summands, where each occurrence of the indexing variable is replaced
-  by 
+  by
 \item the dummy variable,
 \item the indexing variable,
 \item the lower bound, and
 \item the upper bound.
 \end{enumerate}
 
-Note that up to [[patch--40]] the following incorrect code was used, which 
+Note that up to [[patch--40]] the following incorrect code was used, which
 tried to parallel the known rules for integration: (Issue~\#180)
 
 \begin{verbatim}
@@ -329,7 +329,7 @@ differentiation of formal sums, which read
 
     dvdsum(l, x) ==
       x = retract(y := third l)@SE => 0
-      if member?(x, variables(h := third rest rest l)) or 
+      if member?(x, variables(h := third rest rest l)) or
          member?(x, variables(g := third rest l)) then
         error "a sum cannot be differentiated with respect to a bound"
       else
@@ -342,7 +342,7 @@ bounds. Note again, that we cannot even properly define products with bounds
 that are not integral.
 
 To differentiate the product, we use Leibniz rule:
-$$\frac{d}{dx}\prod_{i=a}^b f(i,x) = 
+$$\frac{d}{dx}\prod_{i=a}^b f(i,x) =
 \left(\sum_{i=a}^b \frac{\frac{d}{dx} f(i,x)}{f(i,x)}\right)
 \prod_{i=a}^b f(i,x)
 $$
@@ -351,12 +351,12 @@ There is one situation where this definition might produce wrong results,
 namely when the product is zero, but axiom failed to recognize it: in this
 case,
 $$
-  \frac{d}{dx} f(i,x)/f(i,x)  
+  \frac{d}{dx} f(i,x)/f(i,x)
 $$
 is undefined for some $i$. However, I was not able to come up with an
 example. The alternative definition
 $$
-  \frac{d}{dx}\prod_{i=a}^b f(i,x) = 
+  \frac{d}{dx}\prod_{i=a}^b f(i,x) =
   \sum_{i=a}^b \left(\frac{d}{dx} f(i,x)\right)\prod_{j=a,j\neq i}^b f(j,x)
 $$
 has the slight (display) problem that we would have to come up with a new index
@@ -383,13 +383,13 @@ results. (Issue~\#211)
 
     dvdprod(l, x) ==
       x = retract(y := third l)@SE => 0
-      if member?(x, variables(h := third rest rest l)) or 
+      if member?(x, variables(h := third rest rest l)) or
          member?(x, variables(g := third rest l)) then
         error "a product cannot be differentiated with respect to a bound"
       else
-        opdsum cons(differentiate(first l, x)/first l, rest l) * opdprod l 
+        opdsum cons(differentiate(first l, x)/first l, rest l) * opdprod l
 
-@ 
+@
 
 These four operations handle the conversion of sums and products to
 [[OutputForm]]. Note that up to [[patch--45]] the definitions for sums and
@@ -408,7 +408,7 @@ products without bounds were missing and output was illegible.
     ddsum l ==
       sum(summand(l)::O, third(l)::O = fourth(l)::O, fourth(rest l)::O)
 
-@ 
+@
 
 The next two operations handle the testing for equality of sums and
 products. This functionality was missing up to [[patch--45]]. (Issue~\#213) The
@@ -431,7 +431,7 @@ checked in [[Kernel]] itself.
        (third rest rest l1 = third rest rest l2) and
        (eval(first l1, retract(second l1)@K, second l2) = first l2))
 
-@ 
+@
 The next two operations return the product or the sum as unevaluated
 operators. A dummy variable is introduced to make the indexing variable \lq
 local\rq.
@@ -630,7 +630,7 @@ $$\frac{d}{dx} g(y)^x = \frac{d}{dx} e^{x\log g(y)} = \log g(y) g(y)^x.$$
 
 If $g(y)$ equals zero, this formula is not valid, since the logarithm is not
 defined there. Although strictly speaking $0^x$ is not differentiable at zero,
-we return zero for convenience. 
+we return zero for convenience.
 
 Note that up to [[patch--25]] this used to read
 \begin{verbatim}
@@ -680,7 +680,7 @@ equality.
     setProperty(opprod,  SPECIALEQUAL, equalsumprod@((K,K) -> Boolean) pretend None)
     setProperty(opdprod, SPECIALEQUAL, equaldsumprod@((K,K) -> Boolean) pretend None)
 
-@ 
+@
 
 
 \section{package FSPECF FunctionalSpecialFunction}
@@ -717,7 +717,7 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
     Beta:      (F,F) -> F
       ++ Beta(x,y) returns the beta function applied to x and y
     digamma:   F->F
-      ++ digamma(x) returns the digamma function applied to x 
+      ++ digamma(x) returns the digamma function applied to x
     polygamma: (F,F) ->F
       ++ polygamma(x,y) returns the polygamma function applied to x and y
     besselJ:   (F,F) -> F
@@ -729,7 +729,7 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
     besselK:   (F,F) -> F
       ++ besselK(x,y) returns the besselk function applied to x and y
     airyAi:    F -> F
-      ++ airyAi(x) returns the airyai function applied to x 
+      ++ airyAi(x) returns the airyai function applied to x
     airyBi:    F -> F
       ++ airyBi(x) returns the airybi function applied to x
 
@@ -927,9 +927,9 @@ might not re-evaluate the operator.
         iiGamma x == iGamma x
 
       iiBeta l == iBeta(first l, second l)
-      iidigamma x == idigamma x 
+      iidigamma x == idigamma x
       iipolygamma l == iiipolygamma(first l, second l)
-      iiBesselJ l == iiiBesselJ(first l, second l) 
+      iiBesselJ l == iiiBesselJ(first l, second l)
       iiBesselY l == iiiBesselY(first l, second l)
       iiBesselI l == iiiBesselI(first l, second l)
       iiBesselK l == iiiBesselK(first l, second l)
@@ -1045,7 +1045,7 @@ respect to the first argument.
         a := first l; x := second l
         differentiate(a, t)*kernel(opdiff, [opGamma2 [dm, x], dm, a])
           - differentiate(x, t)* x ^ (a - 1) * exp(-x)
-      setProperty(opGamma2, SPECIALDIFF, iGamma2@((List F, SE)->F) 
+      setProperty(opGamma2, SPECIALDIFF, iGamma2@((List F, SE)->F)
                                                  pretend None)
 @
 
@@ -1063,13 +1063,13 @@ component of the gradient failed, it resulted in an infinite loop for
     derivative(opdigamma,   polygamma(1, #1))
     setProperty(oppolygamma, SPECIALDIFF, ipolygamma@((List F, SE)->F)
                                                      pretend None)
-    setProperty(opBesselJ, SPECIALDIFF, iBesselJ@((List F, SE)->F) 
+    setProperty(opBesselJ, SPECIALDIFF, iBesselJ@((List F, SE)->F)
                                                  pretend None)
-    setProperty(opBesselY, SPECIALDIFF, iBesselY@((List F, SE)->F) 
+    setProperty(opBesselY, SPECIALDIFF, iBesselY@((List F, SE)->F)
                                                  pretend None)
-    setProperty(opBesselI, SPECIALDIFF, iBesselI@((List F, SE)->F) 
+    setProperty(opBesselI, SPECIALDIFF, iBesselI@((List F, SE)->F)
                                                  pretend None)
-    setProperty(opBesselK, SPECIALDIFF, iBesselK@((List F, SE)->F) 
+    setProperty(opBesselK, SPECIALDIFF, iBesselK@((List F, SE)->F)
                                                  pretend None)
 
 @

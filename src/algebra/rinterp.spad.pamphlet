@@ -16,7 +16,7 @@ where the coefficients of the rational function are in any given field.
 \begin{itemize}
 \item Maybe this file should be joined with pinterp.spad, where polynomial
   Lagrange interpolation is implemented. I have a second version that parallels
-  the structure of pinterp.spad closely. 
+  the structure of pinterp.spad closely.
 \item There are probably better ways to implement rational interpolation. Maybe
   {http://www.cs.ucsb.edu/~omer/personal/abstracts/rational.html} contains
   something useful, but I don't know.
@@ -31,16 +31,16 @@ where the coefficients of the rational function are in any given field.
 ++ This package exports rational interpolation algorithms
 RationalInterpolation(xx,F): Exports == Implementation  where
     xx: Symbol
-    F: Field 
+    F: Field
 @
 
 <<RINTERP Exports>>=
     Exports == with
-        interpolate: (List F, List F, NonNegativeInteger, 
+        interpolate: (List F, List F, NonNegativeInteger,
                                 NonNegativeInteger) -> Fraction Polynomial F
 @
 
-The implementation sets up a system of linear equations and solves it. 
+The implementation sets up a system of linear equations and solves it.
 <<RINTERP Implementation>>=
     Implementation == add
         interpolate(xlist, ylist, m, k) ==
@@ -71,7 +71,7 @@ $$
 \begin{array}{rl}
  p(x_1)-y_1q(x_1)&=a_0+a_1x_1+\dots +a_mx_1^m-y_1(b_0+b_1x_1+\dots +b_kx_1^k)=0\\
  p(x_2)-y_2q(x_2)&=a_0+a_1x_2+\dots +a_mx_2^m-y_2(b_0+b_1x_2+\dots +b_kx_2^k)=0\\
-                 &\;\;\vdots\\                                                 
+                 &\;\;\vdots\\
  p(x_n)-y_nq(x_n)&=a_0+a_1x_n+\dots +a_mx_n^m-y_n(b_0+b_1x_n+\dots +b_kx_n^k)=0
 \end{array}
 $$
@@ -93,10 +93,10 @@ a_0\\a_1\\\vdots\\a_m\\b_0\\b_1\\\vdots\\b_k
 =\mathbf 0
 $$
 We generate this matrix columnwise:
-<<RINTERP Implementation>>= 
+<<RINTERP Implementation>>=
             tempvec: List F := [1 for i in 1..(m+k+1)]
 
-            collist: List List F := cons(tempvec, 
+            collist: List List F := cons(tempvec,
                                          [(tempvec := [tempvec.i * xlist.i _
                                                        for i in 1..(m+k+1)]) _
                                           for j in 1..max(m,k)])
@@ -126,7 +126,7 @@ simply take the first one:
 <<RINTERP Implementation>>=
             reslist: List List Polynomial F := _
                       [[(res.1).(i+1)*(xx::Polynomial F)^i for i in 0..m], _
-                      [(res.1).(i+m+2)*(xx::Polynomial F)^i for i in 0..k]] 
+                      [(res.1).(i+m+2)*(xx::Polynomial F)^i for i in 0..k]]
 @
 Finally, we generate the rational function:
 <<RINTERP Implementation>>=
