@@ -2,7 +2,7 @@
 \usepackage{axiom}
 \begin{document}
 \title{\$SPAD/src/algebra numtheor.spad}
-\author{Martin Brock, Timothy Daly, Michael Monagan, Robert Sutor, 
+\author{Martin Brock, Timothy Daly, Michael Monagan, Robert Sutor,
 Clifton J. Williamson}
 \maketitle
 \begin{abstract}
@@ -12,11 +12,11 @@ Clifton J. Williamson}
 \eject
 \section{package INTHEORY IntegerNumberTheoryFunctions}
 \subsection{The inverse function}
-The inverse function is derived from the 
+The inverse function is derived from the
 {\bf Extended Euclidean Algorithm}.
 If we divide one integer by another nonzero integer we get an integer
-quotient plus a remainder which is, in general, a rational number. 
-For instance, 
+quotient plus a remainder which is, in general, a rational number.
+For instance,
 \[13/5 = 2 + 3/5\]
 where 2 is the quotient and $3/5$ is the remainder.
 
@@ -71,54 +71,54 @@ And, from the line before that $24 = 81 - 1(57)$, giving us:
 \[3 = 3(57) - 7( 81 - 1(57)) = 10(57) -7(81)\]
 So we have found s = -7 and t = 10.
 
-The {\bf Extended Euclidean Algorithm} computes the GCD($a$,$b$) and 
+The {\bf Extended Euclidean Algorithm} computes the GCD($a$,$b$) and
 the values for $s$ and $t$.
 
 Suppose we were doing arithmetics modulo 26 and we needed to find the
 inverse of a number mod 26. This turned out to be a difficult task
 (and not always possible). We observed that a number $x$ had an inverse
-mod 26 (i.e., a number $y$ so that $xy = 1 {\rm\ mod\ } 26$) 
-if and only if $gcd(x,26) = 1$. 
+mod 26 (i.e., a number $y$ so that $xy = 1 {\rm\ mod\ } 26$)
+if and only if $gcd(x,26) = 1$.
 In the general case the inverse
 of $x$ exists if and only if $gcd(x, n) = 1$ and if it exists then
 there exist integers $s$ and $t$ so that
 
 \[sx + tn = 1\]
 
-But this says that $sx = 1 + (-t)n$, or in other words, 
-\[sx \equiv 1 {\rm\ mod\ } n\]  
-So, s (reduced mod n if need be) is the inverse of $x {\rm\ mod\ }n$. 
+But this says that $sx = 1 + (-t)n$, or in other words,
+\[sx \equiv 1 {\rm\ mod\ } n\]
+So, s (reduced mod n if need be) is the inverse of $x {\rm\ mod\ }n$.
 The extended Euclidean algorithm calculates $s$ efficiently.
 
 \subsubsection{Finding the inverse mod n}
 
 We will number the steps of the Euclidean algorithm starting
-with step 0. The quotient obtained at step $i$ will be denoted by $q_i$ 
+with step 0. The quotient obtained at step $i$ will be denoted by $q_i$
 and an auxillary number, $s_i$. For the first two steps, the value
 of this number is given: $s_0 = 0$ and $s_1 = 1$. For the remainder of the
-steps, we recursively calculate 
-\[s_i = s_{i-2} - s_{i-1} q_{i-2} {\rm\ (mod\ n)}\] 
+steps, we recursively calculate
+\[s_i = s_{i-2} - s_{i-1} q_{i-2} {\rm\ (mod\ n)}\]
 
-The algorithm starts by "dividing" $n$ by $x$. 
-If the last non-zero remainder occurs at step $k$, 
-then if this remainder is 1, $x$ has an inverse and it is $s_{k+2}$. 
-If the remainder is not 1, then $x$ does not have an inverse. 
+The algorithm starts by "dividing" $n$ by $x$.
+If the last non-zero remainder occurs at step $k$,
+then if this remainder is 1, $x$ has an inverse and it is $s_{k+2}$.
+If the remainder is not 1, then $x$ does not have an inverse.
 
 Find the inverse of 15 mod 26.
 \[
 \begin{array}{crcll}
 Step 0: &26 &=& 1(15) + 11 &s_0 = 0\\
 Step 1: &15 &=& 1(11) + 4  &s_1 = 1\\
-Step 2: &11 &=& 2(4) + 3   
+Step 2: &11 &=& 2(4) + 3
 &s_2 = 0 - 1( 1) {\rm\ mod\ } 26 = 25\\
-Step 3: &4  &=& 1(3) + 1   
+Step 3: &4  &=& 1(3) + 1
 &s_3 = 1 - 25( 1) {\rm\ mod\ } 26 = -24 {\rm\ mod\ } 26 = 2\\
-Step 4: &3  &=& 3(1) + 0   
+Step 4: &3  &=& 3(1) + 0
 &s_4 = 25 - 2( 2) {\rm\ mod\ } 26 = 21\\
 &&& &s_5 = 2 - 21( 1) {\rm\ mod\ } 26 = -19 {\rm\ mod\ } 26 = 7
 \end{array}
 \]
-Notice that $15(7) = 105 = 1 + 4(26) \equiv 1 ({\rm\ mod\ } 26)$. 
+Notice that $15(7) = 105 = 1 + 4(26) \equiv 1 ({\rm\ mod\ } 26)$.
 
 Using the half extended Euclidean algorithm we compute 1/a mod b.
 <<inverse(a,b)>>=
@@ -138,10 +138,10 @@ Using the half extended Euclidean algorithm we compute 1/a mod b.
 <<inverse : (I,I) -> I>>=
   inverse : (I,I) -> I
 @
-Since this algorithm in local we need to reproduce it in the 
+Since this algorithm in local we need to reproduce it in the
 input file for testing purposes.
 <<TESTinverse>>=
-)clear completely 
+)clear completely
 
 inverse:(INT,INT)->INT
 
@@ -165,14 +165,14 @@ if ((inverse(15,26)*15)::IntegerMod(26) ~= 1) then print "DALY BUG"
 \subsection{The Chinese Remainder Algorithm}
 \subsubsection{Chinese Remainder Theorem}
 Let $m_1$,$m_2$,\ldots,$m_r$ be positive integers that are pairwise
-relatively prime. Let $x_1$,$x_2$,\ldots,$x_r$ be integers with 
+relatively prime. Let $x_1$,$x_2$,\ldots,$x_r$ be integers with
 $0 \le x_i < m_i$. Then, there is exactly one $x$ in the interval
 \[0 \le x < m_1 \cdot m_2 \cdots m_r\]
 that satisfies the remainder equations
 \[{\rm\ irem\ }(x,m_i) = x_i,\ \ \ i=1,2,\ldots,r\]
 where {\bf irem} is the positive integer remainder function.
 \subsubsection{Chinese Remainder Example}
-Let $x_1 = 4$, $m_1 = 5$, $x_2 = 2$, $m_2 = 3$. We know that 
+Let $x_1 = 4$, $m_1 = 5$, $x_2 = 2$, $m_2 = 3$. We know that
 \[{\rm\ irem\ }(x,m_1) = x_1\]
 \[{\rm\ irem\ }(x,m_2) = x_2\]
 where $0 \le x_1 < m_1$ and $0 \le x_2 < m_2$. By the extended
@@ -183,7 +183,7 @@ In this case we are looking for an integer such that
 \[{\rm\ irem\ }(x,5) = 4\]
 \[{\rm\ irem\ }(x,3) = 2\]
 
-The algorithm we use is to first 
+The algorithm we use is to first
 compute the positive integer
 remainder of $x_1$ and $m_1$ to get a new $x_1$:
 \[
@@ -755,7 +755,7 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
 @
 \eject
 \begin{thebibliography}{99}
-\bibitem{1} Cohen, Joel S., 
+\bibitem{1} Cohen, Joel S.,
 {\sl Computer Algebra and Symbolic Computation}
 {\sl Mathematical Methods},
 A.K. Peters, Ltd, Natick, MA. USA (2003)

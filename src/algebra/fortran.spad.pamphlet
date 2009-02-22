@@ -14,7 +14,7 @@
 )abbrev domain RESULT Result
 ++ Author: Didier Pinchon and Mike Dewar
 ++ Date Created:  8 April 1994
-++ Date Last Updated: 28 June 1994 
+++ Date Last Updated: 28 June 1994
 ++ Basic Operations:
 ++ Related Domains:
 ++ Also See:
@@ -23,7 +23,7 @@
 ++ Examples:
 ++ References:
 ++ Description: A domain used to return the results from a call to the NAG
-++ Library.  It prints as a list of names and types, though the user may 
+++ Library.  It prints as a list of names and types, though the user may
 ++ choose to display values automatically if he or she wishes.
 Result():Exports==Implementation where
 
@@ -70,7 +70,7 @@ Result():Exports==Implementation where
     makeEntry(k:Symbol,v:Any):O ==
       hconcat [k::O,colon,display(v,dom v)]
 
-    coerce(r:%):O == 
+    coerce(r:%):O ==
       bracket [makeEntry(key,r.key) for key in reverse! keys(r)]
 
     showArrayValues(b:Boolean):Boolean  == showArrayValuesFlag := b
@@ -79,7 +79,7 @@ Result():Exports==Implementation where
 @
 \section{domain FC FortranCode}
 <<domain FC FortranCode>>=
-)abbrev domain FC FortranCode 
+)abbrev domain FC FortranCode
 -- The FortranCode domain is used to represent operations which are to be
 -- translated into FORTRAN.
 ++ Author: Mike Dewar
@@ -164,14 +164,14 @@ FortranCode(): public == private where
     goto: SingleInteger -> $
       ++ goto(l) creates a representation of a FORTRAN GOTO statement
     continue: SingleInteger -> $
-      ++ continue(l) creates a representation of a FORTRAN CONTINUE labelled 
+      ++ continue(l) creates a representation of a FORTRAN CONTINUE labelled
       ++ with l
     comment: String -> $
       ++ comment(s) creates a representation of the String s as a single FORTRAN
-      ++ comment.  
+      ++ comment.
     comment: List String -> $
       ++ comment(s) creates a representation of the Strings s as a multi-line
-      ++ FORTRAN comment.  
+      ++ FORTRAN comment.
     call: String -> $
       ++ call(s) creates a representation of a FORTRAN CALL statement
     returns: () -> $
@@ -366,7 +366,7 @@ FortranCode(): public == private where
 
     getPrint(l:PRINTLIST):SEX ==
       ll : SEX := LIST("PRINT*")$Lisp
-      for i in l repeat 
+      for i in l repeat
         ll := APPEND(ll,CONS(",",expression2Fortran(i)$Lisp)$Lisp)$Lisp
       fortran2Lines(ll)$Lisp
 
@@ -389,11 +389,11 @@ FortranCode(): public == private where
       rec := code f
       expr :=
        fortFormatElseIf(elt(rec.conditionalBranch,switch)$COND::O)$Lisp
-      expr := 
+      expr :=
        APPEND(expr,getBody elt(rec.conditionalBranch,thenClause)$COND)$Lisp
       elseBranch := elt(rec.conditionalBranch,elseClause)$COND
       not(operation(elseBranch) case Null) =>
-        operation(elseBranch) case Conditional => 
+        operation(elseBranch) case Conditional =>
           APPEND(expr,getElseIf elseBranch)$Lisp
         expr := APPEND(expr, getStatement(ELSE::O,NIL$Lisp)$Lisp)$Lisp
         expr := APPEND(expr, getBody elseBranch)$Lisp
@@ -682,7 +682,7 @@ FortranCode(): public == private where
 ++ AMS Classifications:
 ++ Keywords:
 ++ References:
-++ Description: \axiomType{FortranProgram} allows the user to build and manipulate simple 
+++ Description: \axiomType{FortranProgram} allows the user to build and manipulate simple
 ++ models of FORTRAN subprograms.  These can then be transformed into actual FORTRAN
 ++ notation.
 FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
@@ -791,14 +791,14 @@ FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
         error "Incorrect number of arguments"
       veList : List EXPR MINT := [w::EXPR(MINT) for w in vList]
       aeList : List EXPR MINT := [w::EXPR(MINT) for w in arguments]
-      eList : List Equation EXPR MINT := 
+      eList : List Equation EXPR MINT :=
         [equation(w,v) for w in veList for v in aeList]
       (subst(rhs u,eList))::$
 
     coerce(u:EXPR MFLOAT) : $ ==
       checkVariables(variables(u)$EXPR(MFLOAT),arguments)
       l : List(FC) := [assign(name,u)$FC,returns()$FC]
-      makeRep l 
+      makeRep l
 
     coerce(u:Equation EXPR MFLOAT) : $ ==
       retractIfCan(lhs u)@Union(Kernel(EXPR MFLOAT),"failed") case "failed" =>
@@ -808,7 +808,7 @@ FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
         error "Incorrect number of arguments"
       veList : List EXPR MFLOAT := [w::EXPR(MFLOAT) for w in vList]
       aeList : List EXPR MFLOAT := [w::EXPR(MFLOAT) for w in arguments]
-      eList : List Equation EXPR MFLOAT := 
+      eList : List Equation EXPR MFLOAT :=
         [equation(w,v) for w in veList for v in aeList]
       (subst(rhs u,eList))::$
 
@@ -825,7 +825,7 @@ FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
         error "Incorrect number of arguments"
       veList : List EXPR MCMPLX := [w::EXPR(MCMPLX) for w in vList]
       aeList : List EXPR MCMPLX := [w::EXPR(MCMPLX) for w in arguments]
-      eList : List Equation EXPR MCMPLX := 
+      eList : List Equation EXPR MCMPLX :=
         [equation(w,v) for w in veList for v in aeList]
       (subst(rhs u,eList))::$
 
@@ -855,14 +855,14 @@ FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
         error "Incorrect number of arguments"
       veList : List EXPR INT := [w::EXPR(INT) for w in vList]
       aeList : List EXPR INT := [w::EXPR(INT) for w in arguments]
-      eList : List Equation EXPR INT := 
+      eList : List Equation EXPR INT :=
         [equation(w,v) for w in veList for v in aeList]
       (subst(rhs u,eList))::$
 
     coerce(u:EXPR Float) : $ ==
       checkVariables(variables(u)$EXPR(Float),arguments)
       l : List(FC) := [assign(name,u)$FC,returns()$FC]
-      makeRep l 
+      makeRep l
 
     coerce(u:Equation EXPR Float) : $ ==
       retractIfCan(lhs u)@Union(Kernel(EXPR Float),"failed") case "failed" =>
@@ -872,7 +872,7 @@ FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
         error "Incorrect number of arguments"
       veList : List EXPR Float := [w::EXPR(Float) for w in vList]
       aeList : List EXPR Float := [w::EXPR(Float) for w in arguments]
-      eList : List Equation EXPR Float := 
+      eList : List Equation EXPR Float :=
         [equation(w,v) for w in veList for v in aeList]
       (subst(rhs u,eList))::$
 
@@ -889,7 +889,7 @@ FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
         error "Incorrect number of arguments"
       veList : List EXPR CMPX Float := [w::EXPR(CMPX Float) for w in vList]
       aeList : List EXPR CMPX Float := [w::EXPR(CMPX Float) for w in arguments]
-      eList : List Equation EXPR CMPX Float := 
+      eList : List Equation EXPR CMPX Float :=
         [equation(w,v) for w in veList for v in aeList]
       (subst(rhs u,eList))::$
 
@@ -1147,11 +1147,11 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
 <<domain SFORT SimpleFortranProgram>>=
 )abbrev domain SFORT SimpleFortranProgram
 -- Because of a bug in the compiler:
-)bo $noSubsumption:=true 
+)bo $noSubsumption:=true
 
 ++ Author: Mike Dewar
 ++ Date Created: November 1992
-++ Date Last Updated: 
+++ Date Last Updated:
 ++ Basic Operations:
 ++ Related Constructors: FortranType, FortranCode, Switch
 ++ Also See:
@@ -1171,7 +1171,7 @@ SimpleFortranProgram(R,FS): Exports == Implementation where
 
   Exports ==> FortranProgramCategory with
     fortran : (Symbol,FST,FS) -> $
-    ++fortran(fname,ftype,body) builds an object of type 
+    ++fortran(fname,ftype,body) builds an object of type
     ++\axiomType{FortranProgramCategory}. The three arguments specify
     ++the name, the type and the body of the program.
 
@@ -1302,7 +1302,7 @@ Switch():public == private where
 )abbrev domain FTEM FortranTemplate
 ++ Author: Mike Dewar
 ++ Date Created:  October 1992
-++ Date Last Updated: 
+++ Date Last Updated:
 ++ Basic Operations:
 ++ Related Domains:
 ++ Also See:
@@ -1339,7 +1339,7 @@ FortranTemplate() : specification == implementation where
 
     fortranLiteralLine(s:String):Void ==
       PRINTEXP(s,_$fortranOutputStream$Lisp)$Lisp
-      TERPRI(_$fortranOutputStream$Lisp)$Lisp 
+      TERPRI(_$fortranOutputStream$Lisp)$Lisp
 
     fortranLiteral(s:String):Void ==
       PRINTEXP(s,_$fortranOutputStream$Lisp)$Lisp
@@ -1351,7 +1351,7 @@ FortranTemplate() : specification == implementation where
     -- We might want to be a bit clever here and look for new SubPrograms etc.
       fortranLiteralLine line
 
-    processTemplate(tp:FileName, fn:FileName):FileName == 
+    processTemplate(tp:FileName, fn:FileName):FileName ==
       pushFortranOutputStack(fn)
       processTemplate(tp)
       popFortranOutputStack()
@@ -1364,7 +1364,7 @@ FortranTemplate() : specification == implementation where
         line := concat(line, stripCommentsAndBlanks readLine!(fp))$String
       line
 
-    processTemplate(tp:FileName):FileName == 
+    processTemplate(tp:FileName):FileName ==
       fp : TextFile := open(tp,"input")
       active : Boolean := true
       line : String
@@ -1384,7 +1384,7 @@ FortranTemplate() : specification == implementation where
           else
             writePassiveLine! line
       close!(fp)
-      if not active then 
+      if not active then
         error concat(["Missing `endVerbatim' line in ",tp::String])$String
       string(_$fortranOutputFile$Lisp)::FileName
 
@@ -1407,7 +1407,7 @@ FortranTemplate() : specification == implementation where
 ++ References:
 ++ Description: A domain of expressions involving functions which can be
 ++ translated into standard Fortran-77, with some extra extensions from
-++ the NAG Fortran Library.  
+++ the NAG Fortran Library.
 FortranExpression(basicSymbols,subscriptedSymbols,R):
                                 Exports==Implementation where
   basicSymbols : List Symbol
@@ -1425,13 +1425,13 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
   Exports ==> Join(ExpressionSpace,Algebra(R),RetractableTo(R),
                    PartialDifferentialRing(Symbol)) with
     retract : EXPR R -> $
-      ++ retract(e) takes e and transforms it into a 
+      ++ retract(e) takes e and transforms it into a
       ++  FortranExpression checking that it contains no non-Fortran
       ++  functions, and that it only contains the given basic symbols
       ++  and subscripted symbols which correspond to scalar and array
       ++  parameters respectively.
     retractIfCan : EXPR R -> Union($,"failed")
-      ++ retractIfCan(e) takes e and tries to transform it into a 
+      ++ retractIfCan(e) takes e and tries to transform it into a
       ++  FortranExpression checking that it contains no non-Fortran
       ++  functions, and that it only contains the given basic symbols
       ++  and subscripted symbols which correspond to scalar and array
@@ -1450,74 +1450,74 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
         ++ coerce(x) \undocumented{}
     if (R has RetractableTo(Integer)) then
       retract : EXPR Integer -> $
-        ++ retract(e) takes e and transforms it into a 
+        ++ retract(e) takes e and transforms it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retractIfCan : EXPR Integer -> Union($,"failed")
-        ++ retractIfCan(e) takes e and tries to transform it into a 
+        ++ retractIfCan(e) takes e and tries to transform it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retract : FRAC POLY  Integer -> $
-        ++ retract(e) takes e and transforms it into a 
+        ++ retract(e) takes e and transforms it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retractIfCan : FRAC POLY  Integer -> Union($,"failed")
-        ++ retractIfCan(e) takes e and tries to transform it into a 
+        ++ retractIfCan(e) takes e and tries to transform it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retract : POLY  Integer -> $
-        ++ retract(e) takes e and transforms it into a 
+        ++ retract(e) takes e and transforms it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retractIfCan : POLY  Integer -> Union($,"failed")
-        ++ retractIfCan(e) takes e and tries to transform it into a 
+        ++ retractIfCan(e) takes e and tries to transform it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
     if (R has RetractableTo(Float)) then
       retract : EXPR Float -> $
-        ++ retract(e) takes e and transforms it into a 
+        ++ retract(e) takes e and transforms it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retractIfCan : EXPR Float -> Union($,"failed")
-        ++ retractIfCan(e) takes e and tries to transform it into a 
+        ++ retractIfCan(e) takes e and tries to transform it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retract : FRAC POLY  Float -> $
-        ++ retract(e) takes e and transforms it into a 
+        ++ retract(e) takes e and transforms it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retractIfCan : FRAC POLY  Float -> Union($,"failed")
-        ++ retractIfCan(e) takes e and tries to transform it into a 
+        ++ retractIfCan(e) takes e and tries to transform it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retract : POLY  Float -> $
-        ++ retract(e) takes e and transforms it into a 
+        ++ retract(e) takes e and transforms it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
         ++  parameters respectively.
       retractIfCan : POLY  Float -> Union($,"failed")
-        ++ retractIfCan(e) takes e and tries to transform it into a 
+        ++ retractIfCan(e) takes e and tries to transform it into a
         ++  FortranExpression checking that it contains no non-Fortran
         ++  functions, and that it only contains the given basic symbols
         ++  and subscripted symbols which correspond to scalar and array
@@ -1551,7 +1551,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
     tanh   : $ -> $
       ++ tanh(x) represents the Fortran intrinsic function TANH
     pi     : () -> $
-      ++ pi(x) represents the NAG Library function X01AAF which returns 
+      ++ pi(x) represents the NAG Library function X01AAF which returns
       ++  an approximation to the value of pi
     variables : $ -> L S
       ++ variables(e) return a list of all the variables in \spad{e}.
@@ -1559,7 +1559,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
       ++ useNagFunctions() indicates whether NAG functions are being used
       ++  for mathematical and machine constants.
     useNagFunctions : Boolean -> Boolean
-      ++ useNagFunctions(v) sets the flag which controls whether NAG functions 
+      ++ useNagFunctions(v) sets the flag which controls whether NAG functions
       ++  are being used for mathematical and machine constants.  The previous
       ++  value is returned.
 
@@ -1594,7 +1594,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
 --        not one?(#(syms:=removeDuplicates! [name(s) for s in syms]))=> "failed"
         not ((#(syms:=removeDuplicates! [name(s) for s in syms])) = 1)=> "failed"
         sym : Symbol := first subscriptedSymbols
-        subst(u,[mkEqn(sym,i) for i in variables(u)]) 
+        subst(u,[mkEqn(sym,i) for i in variables(u)])
       "failed"
 
     extraSymbols?(u:EXPR R):Boolean ==
@@ -1607,7 +1607,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
       syms   : L S := [name(v) for v in variables(u)]
       extras : L S := setDifference(syms,
                                     setUnion(basicSymbols,subscriptedSymbols))
-      not empty? extras => 
+      not empty? extras =>
         m := fixUpSymbols(u)
         m case EXPR(R) => m::EXPR(R)
         error("Extra symbols detected:",[string(v) for v in extras]$L(String))
@@ -1615,7 +1615,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
 
     notSymbol?(v:BO):Boolean ==
       s : S := name v
-      member?(s,basicSymbols) or 
+      member?(s,basicSymbols) or
         scripted?(s) and member?(name s,subscriptedSymbols) => false
       true
 
@@ -1635,7 +1635,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
       else
         fortranFunctions : L S := f77Functions
       extras : L S := setDifference(ops,fortranFunctions)
-      not empty? extras => 
+      not empty? extras =>
         error("Non FORTRAN-77 functions detected:",[string(v) for v in extras])
       void()
 
@@ -1651,7 +1651,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
 
     -- Conditional retractions:
 
-    if R has RetractableTo(Integer) then 
+    if R has RetractableTo(Integer) then
 
       retractIfCan(u:POLY Integer):Union($,"failed") ==
         retractIfCan((u::EXPR Integer)$EXPR(Integer))@Union($,"failed")
@@ -1673,7 +1673,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
       retract(u:EXPR Integer):$ ==
         retract(map(int2R,u)$EXF2(Integer,R))@$
 
-    if R has RetractableTo(Float) then 
+    if R has RetractableTo(Float) then
 
       retractIfCan(u:POLY Float):Union($,"failed") ==
         retractIfCan((u::EXPR Float)$EXPR(Float))@Union($,"failed")
@@ -1698,7 +1698,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
     -- Exported Functions
 
     useNagFunctions():Boolean == useNagFunctionsFlag
-    useNagFunctions(v:Boolean):Boolean == 
+    useNagFunctions(v:Boolean):Boolean ==
       old := useNagFunctionsFlag
       useNagFunctionsFlag := v
       old
@@ -1711,7 +1711,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
     coerce(u:$):EXPR R == u pretend EXPR(R)
 
     retractIfCan(u:EXPR R):Union($,"failed") ==
-      if (extraSymbols? u) then 
+      if (extraSymbols? u) then
         m := fixUpSymbols(u)
         m case "failed" => return "failed"
         u := m::EXPR(R)

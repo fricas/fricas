@@ -13,13 +13,13 @@
 <<category FILECAT FileCategory>>=
 )abbrev category FILECAT FileCategory
 ++ Author: Stephen M. Watt, Victor Miller
-++ Date Created: 
+++ Date Created:
 ++ Date Last Updated: June 4, 1991
-++ Basic Operations: 
-++ Related Domains: File 
+++ Basic Operations:
+++ Related Domains: File
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: 
+++ Keywords:
 ++ Examples:
 ++ References:
 ++ Description:
@@ -35,10 +35,10 @@ FileCategory(Name, S): Category == FCdefinition where
 
     FCdefinition == SetCategory with
         open: Name -> %
-          ++ open(s) returns the file s open for input.  
+          ++ open(s) returns the file s open for input.
 
         open: (Name, IOMode) -> %
-          ++ open(s,mode) returns a file s open for operation in the 
+          ++ open(s,mode) returns a file s open for operation in the
           ++ indicated mode: "input" or "output".
 
         reopen_!: (%, IOMode) -> %
@@ -53,7 +53,7 @@ FileCategory(Name, S): Category == FCdefinition where
           ++ name(f) returns the external name of the file f.
 
         iomode: % -> IOMode
-          ++ iomode(f) returns the status of the file f. The input/output 
+          ++ iomode(f) returns the status of the file f. The input/output
           ++ status of f may be "input", "output" or "closed" mode.
 
         read_!: % -> S
@@ -62,7 +62,7 @@ FileCategory(Name, S): Category == FCdefinition where
           ++ the next element.
 
         write_!: (%,S) -> S
-          ++ write!(f,s) puts the value s into the file f. 
+          ++ write!(f,s) puts the value s into the file f.
           ++ The state of f is modified so subsequents call to \spad{write!}
           ++ will append one after another.
 
@@ -73,11 +73,11 @@ FileCategory(Name, S): Category == FCdefinition where
 ++ Author: Stephen M. Watt, Victor Miller
 ++ Date Created: 1984
 ++ Date Last Updated: June 4, 1991
-++ Basic Operations: 
-++ Related Domains: 
+++ Basic Operations:
+++ Related Domains:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: 
+++ Keywords:
 ++ Examples:
 ++ References:
 ++ Description:
@@ -160,9 +160,9 @@ File(S:SetCategory): FileCategory(FileName, S) with
 ++ Related Constructors:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: 
+++ Keywords:
 ++ References:
-++ Description: 
+++ Description:
 ++   This domain provides an implementation of text files.  Text is stored
 ++   in these files using the native character set of the computer.
 
@@ -171,7 +171,7 @@ TextFile: Cat == Def where
 
     Cat == FileCategory(FileName, String) with
         writeLine_!: (%, String) -> String
-          ++ writeLine!(f,s) writes the contents of the string s 
+          ++ writeLine!(f,s) writes the contents of the string s
           ++ and finishes the current line in the file f.
           ++ The value of s is returned.
 
@@ -181,17 +181,17 @@ TextFile: Cat == Def where
           ++ equivalent to \spad{writeLine!(f,"")}.
 
         readLine_!: % -> String
-          ++ readLine!(f) returns a string of the contents of a line from 
+          ++ readLine!(f) returns a string of the contents of a line from
           ++ the file f.
 
         readLineIfCan_!: % -> Union(String, "failed")
           ++ readLineIfCan!(f) returns a string of the contents of a line from
-          ++ file f, if possible.  If f is not readable or if it is 
+          ++ file f, if possible.  If f is not readable or if it is
           ++ positioned at the end of file, then \spad{"failed"} is returned.
 
         readIfCan_!: % -> Union(String, "failed")
           ++ readIfCan!(f) returns a string of the contents of a line from
-          ++ file f, if possible.  If f is not readable or if it is 
+          ++ file f, if possible.  If f is not readable or if it is
           ++ positioned at the end of file, then \spad{"failed"} is returned.
 
         endOfFile?: % -> Boolean
@@ -248,9 +248,9 @@ TextFile: Cat == Def where
 ++ Related Constructors:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: 
+++ Keywords:
 ++ References:
-++ Description: 
+++ Description:
 ++   This domain provides an implementation of binary files. Data is
 ++   accessed one byte at a time as a small integer.
 
@@ -307,22 +307,22 @@ BinaryFile: Cat == Def where
             f
 
         close_! f ==
-            f.fileIOmode = "output" => 
+            f.fileIOmode = "output" =>
                  BINARY__CLOSE__OUTPUT()$Lisp
                  f
-            f.fileIOmode = "input" => 
+            f.fileIOmode = "input" =>
                   BINARY__CLOSE__INPUT()$Lisp
                   f
             error "file must be in read or write state"
 
         read! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            BINARY__SELECT__INPUT(f.fileState)$Lisp 
+            BINARY__SELECT__INPUT(f.fileState)$Lisp
             BINARY__READBYTE()$Lisp
 --          READ_-BYTE(f.fileState)$Lisp
         readIfCan_! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            BINARY__SELECT__INPUT(f.fileState)$Lisp 
+            BINARY__SELECT__INPUT(f.fileState)$Lisp
             n:SingleInteger:=BINARY__READBYTE()$Lisp
             n = -1 => "failed"
             n::Union(SingleInteger,"failed")
@@ -336,12 +336,12 @@ BinaryFile: Cat == Def where
             x
 
 --      # f == FILE_-LENGTH(f.fileState)$Lisp
-        position f == 
+        position f ==
            f.fileIOmode ~= "input"  => error "file must be in read state"
            FILE_-POSITION(f.fileState)$Lisp
-        position_!(f,i) == 
+        position_!(f,i) ==
            f.fileIOmode ~= "input"  => error "file must be in read state"
-           (FILE_-POSITION(f.fileState,i)$Lisp ; i) 
+           (FILE_-POSITION(f.fileState,i)$Lisp ; i)
 
 @
 \section{domain KAFILE KeyedAccessFile}
@@ -350,11 +350,11 @@ BinaryFile: Cat == Def where
 ++ Author: Stephen M. Watt
 ++ Date Created: 1985
 ++ Date Last Updated: June 4, 1991
-++ Basic Operations: 
-++ Related Domains: 
+++ Basic Operations:
+++ Related Domains:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: 
+++ Keywords:
 ++ Examples:
 ++ References:
 ++ Description:
@@ -371,7 +371,7 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
         Join(FileCategory(Name, Record(key: Key, entry: Entry)),
              TableAggregate(Key, Entry), finiteAggregate) with
                  pack_!: % -> %
-                     ++ pack!(f) reorganizes the file f on disk to recover 
+                     ++ pack!(f) reorganizes the file f on disk to recover
                      ++ unused space.
 
     KAFcapsule == add
@@ -476,11 +476,11 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
 ++ Author: Stephen M. Watt
 ++ Date Created: 1985
 ++ Date Last Updated: June 4, 1991
-++ Basic Operations: 
+++ Basic Operations:
 ++ Related Domains: KeyedAccessFile
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: 
+++ Keywords:
 ++ Examples:
 ++ References:
 ++ Description:
@@ -489,7 +489,7 @@ Library(): TableAggregate(String, Any) with
          library:  FileName -> %
              ++ library(ln) creates a new library file.
          pack_!: % -> %
-             ++ pack!(f) reorganizes the file f on disk to recover 
+             ++ pack!(f) reorganizes the file f on disk to recover
              ++ unused space.
 
          elt : (%, Symbol) -> Any

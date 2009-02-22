@@ -39,7 +39,7 @@ DrawComplex(): Exports == Implementation where
       ++   rRange : the range of the real values
       ++   iRange : the range of imaginary values
       ++   arrows? : a flag indicating whether to draw the phase arrows for f
-      ++ Call the functions \axiomFunFrom{setRealSteps}{DrawComplex} and 
+      ++ Call the functions \axiomFunFrom{setRealSteps}{DrawComplex} and
       ++ \axiomFunFrom{setImagSteps}{DrawComplex} to change the
       ++ number of steps used in each direction.
     drawComplexVectorField: (C -> C,S,S) -> VIEW3D
@@ -54,12 +54,12 @@ DrawComplex(): Exports == Implementation where
       ++   f : the function to draw
       ++   rRange : the range of the real values
       ++   iRange : the range of the imaginary values
-      ++ Call the functions \axiomFunFrom{setRealSteps}{DrawComplex} and 
+      ++ Call the functions \axiomFunFrom{setRealSteps}{DrawComplex} and
       ++ \axiomFunFrom{setImagSteps}{DrawComplex} to change the
       ++ number of steps used in each direction.
     setRealSteps: INT -> INT
       ++ setRealSteps(i)
-      ++ sets to i the number of steps to use in the real direction 
+      ++ sets to i the number of steps to use in the real direction
       ++ when drawing complex functions. Returns i.
     setImagSteps: INT -> INT
       ++ setImagSteps(i)
@@ -81,24 +81,24 @@ DrawComplex(): Exports == Implementation where
     -- has length 'len', and and angle 'arg'.  We pass 'len' and 'arg' as
     -- arguments since thet were already computed by the calling program
     makeArrow(p1:Point SF, p2:Point SF, len: SF, arg:SF):List List Point SF ==
-      c1 := cos(arg + arrowAngle) 
+      c1 := cos(arg + arrowAngle)
       s1 := sin(arg + arrowAngle)
-      c2 := cos(arg - arrowAngle) 
+      c2 := cos(arg - arrowAngle)
       s2 := sin(arg - arrowAngle)
-      p3 := point [p2.1 + c1*arrowScale*len, p2.2 + s1*arrowScale*len, 
+      p3 := point [p2.1 + c1*arrowScale*len, p2.2 + s1*arrowScale*len,
                    p2.3, p2.4]
-      p4 := point [p2.1 + c2*arrowScale*len, p2.2 + s2*arrowScale*len, 
+      p4 := point [p2.1 + c2*arrowScale*len, p2.2 + s2*arrowScale*len,
                    p2.3, p2.4]
       [[p1, p2, p3], [p2, p4]]
 
     -- clip a value in the interval (-clip...clip)
-    clipFun(x:SF):SF == 
+    clipFun(x:SF):SF ==
       min(max(x, -clipValue), clipValue)
 
     drawComplex(f, realRange, imagRange, arrows?) ==
       delReal := (hi(realRange) - lo(realRange))/realSteps::SF
       delImag := (hi(imagRange) - lo(imagRange))/imagSteps::SF
-      funTable: ARRAY2(PC) := 
+      funTable: ARRAY2(PC) :=
          new((realSteps::NNI)+1, (imagSteps::NNI)+1, [0,0]$PC)
       real := lo(realRange)
       for i in 1..realSteps+1 repeat
@@ -120,7 +120,7 @@ DrawComplex(): Exports == Implementation where
         real := real + delReal
         llp := cons(lp, llp)
       space := mesh(llp)$(ThreeSpace SF)
-      if arrows? then 
+      if arrows? then
         real := lo(realRange)
         for i in 1..realSteps+1 repeat
           imag := lo(imagRange)
@@ -128,7 +128,7 @@ DrawComplex(): Exports == Implementation where
             arg := funTable(i,j).th
             p1 := point [real,imag, funTable(i,j).rr, arg]
             len := delReal*2.0::SF
-            p2 := point [p1.1 + len*cos(arg), p1.2 + len*sin(arg), 
+            p2 := point [p1.1 + len*cos(arg), p1.2 + len*sin(arg),
                          p1.3, p1.4]
             arrow := makeArrow(p1, p2, len, arg)
             for a in arrow repeat curve(space, a)$(ThreeSpace SF)
@@ -157,7 +157,7 @@ DrawComplex(): Exports == Implementation where
           -- scale the arrow length so it isn't too long
           scaleLen := delReal * len
           -- create the point at the top of the arrow
-          p2 := point [p1.1 + scaleLen*cos(arg), p1.2 + scaleLen*sin(arg), 
+          p2 := point [p1.1 + scaleLen*cos(arg), p1.2 + scaleLen*sin(arg),
                        0::SF, arg]
           -- make the pointer at the top of the arrow
           arrow := makeArrow(p1, p2, scaleLen, arg)
@@ -176,7 +176,7 @@ DrawComplex(): Exports == Implementation where
     setImagSteps(n) ==
       imagSteps := n
 
-    -- set the maximum value to plot 
+    -- set the maximum value to plot
     setClipValue clip ==
       clipValue := clip
 

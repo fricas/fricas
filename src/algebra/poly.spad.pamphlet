@@ -41,7 +41,7 @@ FreeModule(R:Ring,S:OrderedSet):
        f: R -> R
        s: S
     --define
-       if R has EntireRing then 
+       if R has EntireRing then
          r * x  ==
              zero? r => 0
 --             one? r => x
@@ -137,7 +137,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
          null p => 0$R
          not null p.rest => "failed"
          zero?(p.first.k) => p.first.c
-         "failed" 
+         "failed"
        coefficient(p,e)  ==
           for tm in p repeat
             tm.k=e => return tm.c
@@ -162,34 +162,34 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
 
        entireRing? := R has EntireRing
 
-       times!(r: R, x: %): % == 
+       times!(r: R, x: %): % ==
          res, endcell, newend, xx: Rep
-         if entireRing? then 
+         if entireRing? then
                 for tx in x repeat tx.c := r*tx.c
-         else 
+         else
                 xx := x
                 res := empty()
-                while not empty? xx repeat 
+                while not empty? xx repeat
                         tx := first xx
                         tx.c := r * tx.c
-                        if zero? tx.c then 
+                        if zero? tx.c then
                                 xx := rest xx
-                        else 
+                        else
                                 newend := xx
                                 xx := rest xx
-                                if empty? res then 
+                                if empty? res then
                                         res := newend
                                         endcell := res
-                                else 
+                                else
                                         qsetrest!(endcell, newend)
                                         endcell := newend
                 res;
 
-        --- term * polynomial 
+        --- term * polynomial
        termTimes: (R, E, Term) -> Term
        termTimes(r: R, e: E, tx:Term): Term == [e+tx.k, r*tx.c]
-       times(tco: R, tex: E, rx: %): % == 
-        if entireRing? then 
+       times(tco: R, tex: E, rx: %): % ==
+        if entireRing? then
                 map(termTimes(tco, tex, #1), rx::Rep)
         else
                 [[tex + tx.k, r] for tx in rx::Rep | not zero? (r := tco * tx.c)]
@@ -201,19 +201,19 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
         -- p1 + coef*x^E * p2
         -- `spare' (commented out) is for storage efficiency (not so good for
         -- performance though.
-       addm!(p1:Rep, coef:R, exp: E, p2:Rep): Rep == 
+       addm!(p1:Rep, coef:R, exp: E, p2:Rep): Rep ==
                 --local res, newend, last: Rep
                 res, newcell, endcell: Rep
                 spare: List Rep
                 res     := empty()
                 endcell := empty()
                 --spare   := empty()
-                while not empty? p1 and not empty? p2 repeat 
+                while not empty? p1 and not empty? p2 repeat
                         tx := first p1
                         ty := first p2
                         exy := exp + ty.k
                         newcell := empty();
-                        if tx.k = exy then 
+                        if tx.k = exy then
                                 newcoef := tx.c + coef * ty.c
                                 if not zero? newcoef then
                                         tx.c    := newcoef
@@ -222,10 +222,10 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
                                 --      spare   := cons(p1, spare)
                                 p1 := rest p1
                                 p2 := rest p2
-                        else if tx.k > exy then 
+                        else if tx.k > exy then
                                 newcell := p1
                                 p1      := rest p1
-                        else 
+                        else
                                 newcoef := coef * ty.c
                                 if not entireRing? and zero? newcoef then
                                         newcell := empty()
@@ -257,14 +257,14 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
                 qsetrest!(endcell, newcell)
                 res
        pomopo! (p1, r, e, p2) ==  addm!(p1, r, e, p2)
-       p1 * p2 == 
+       p1 * p2 ==
                 xx := p1::Rep
                 empty? xx => p1
                 yy := p2::Rep
                 empty? yy => p2
                 zero? first(xx).k => first(xx).c * p2
                 zero? first(yy).k => p1 * first(yy).c
-                --if #xx > #yy then 
+                --if #xx > #yy then
                 --      (xx, yy) := (yy, xx)
                 --      (p1, p2) := (p2, p1)
                 xx := reverse xx
@@ -427,12 +427,12 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
    pp,qq: FP
    lpp:List FP
 
-   -- for karatsuba 
+   -- for karatsuba
    kBound: NonNegativeInteger := 63
    upmp := UnivariatePolynomialMultiplicationPackage(R,%)
 
 
-   if R has FieldOfPrimeCharacteristic  then 
+   if R has FieldOfPrimeCharacteristic  then
          p ^ np == p ^ (np pretend NonNegativeInteger)
          p ^ np  == p ^ (np pretend NonNegativeInteger)
          p ^ n  == p ^ n
@@ -444,7 +444,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
             empty? p.rest =>
               zero?(cc:=p.first.c ^ n) => 0
               [[n * p.first.k, cc]]
-            -- not worth doing special trick if characteristic is too small 
+            -- not worth doing special trick if characteristic is too small
             if characteristic()$R < 3 then return expt(p,n pretend PositiveInteger)$RepeatedSquaring(%)
             y:%:=1
             -- break up exponent in qn * characteristic + rn
@@ -452,16 +452,16 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
             rec := divide(n, characteristic()$R)
             qn:= rec.quotient
             rn:= rec.remainder
-            repeat 
-                if rn = 1 then y := y * p 
+            repeat
+                if rn = 1 then y := y * p
                 if rn > 1 then y:= y * binomThmExpt([p.first], p.rest, rn)
                 zero? qn => return y
                 -- raise to the characteristic power
                 p:= [[t.k * characteristic()$R , primeFrobenius(t.c)$R ]$Term for t in p]
                 rec := divide(qn, characteristic()$R)
-                qn:= rec.quotient 
+                qn:= rec.quotient
                 rn:= rec.remainder
-            y 
+            y
 
 
 

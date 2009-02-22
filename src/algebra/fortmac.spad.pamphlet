@@ -53,7 +53,7 @@ MachineInteger(): Exports == Implementation where
 
     coerce(u:Integer):$ ==
       import S
-      abs(u) > MAXINT => 
+      abs(u) > MAXINT =>
         message: S := concat [convert(u)@S,"  > MAXINT(",convert(MAXINT)@S,")"]
         error message
       u pretend $
@@ -95,7 +95,7 @@ MachineFloat(): Exports == Implementation where
     precision : PI -> PI
       ++ precision(p) sets the number of digits in the model to p
     precision : () -> PI
-      ++ precision() returns the number of digits in the model 
+      ++ precision() returns the number of digits in the model
     base   : PI -> PI
       ++ base(b) sets the base of the model to b
     base   : () -> PI
@@ -135,7 +135,7 @@ MachineFloat(): Exports == Implementation where
     -- Useful constants
     POWER : PI := 53  -- The maximum power of B which will yield P
                       -- decimal digits.
-    MMAX  : PI := B^POWER 
+    MMAX  : PI := B^POWER
 
 
     -- locals
@@ -144,7 +144,7 @@ MachineFloat(): Exports == Implementation where
     normalise:($)->$
     newPower:(PI,PI)->Void
 
-    retractIfCan(u:$):Union(FI,"failed") == 
+    retractIfCan(u:$):Union(FI,"failed") ==
       mantissa(u)*(B/1)^(exponent(u))
 
     wholePart(u:$):Integer ==
@@ -162,7 +162,7 @@ MachineFloat(): Exports == Implementation where
       BB  : I  := B pretend I
       sgn : I := sign man ; man := abs man
       zero? man => [0,0]$Rep
-      if man < MMAX then 
+      if man < MMAX then
         while man < MMAX repeat
           exp := exp - 1
           man := man * BB
@@ -172,7 +172,7 @@ MachineFloat(): Exports == Implementation where
         while wholePart(q1) > MMAX repeat
           q1:= q1 / BBF
           exp:=exp + 1
-        man := locRound(q1)  
+        man := locRound(q1)
       positive?(sgn) => checkExponent [man,exp]$Rep
       checkExponent [-man,exp]$Rep
 
@@ -215,7 +215,7 @@ MachineFloat(): Exports == Implementation where
         error message
       u
 
-    coerce(u:$):OutputForm == 
+    coerce(u:$):OutputForm ==
       coerce(u::F)
 
     coerce(u:MachineInteger):$ ==
@@ -235,7 +235,7 @@ MachineFloat(): Exports == Implementation where
 
     coerce(u:FI):$ == (numer u)::$/(denom u)::$
 
-    retract(u:$):FI == 
+    retract(u:$):FI ==
       value : Union(FI,"failed") := retractIfCan(u)
       value case "failed" => error "Cannot retract to a Fraction Integer"
       value::FI
@@ -303,14 +303,14 @@ MachineFloat(): Exports == Implementation where
       zero? f1 => "failed"
       normalise [ locRound(B^(2*POWER)/mantissa f1),-(exponent f1 + 2*POWER)]
 
-    f1 * f2 == 
+    f1 * f2 ==
       normalise [mantissa(f1)*mantissa(f2),exponent(f1)+exponent(f2)]$Rep
 
     f1 ^(p:FI) ==
       ((f1::F)^p)::%
 
 --inline
-    f1 / f2 == 
+    f1 / f2 ==
       zero? f2 => error "division by zero"
       zero? f1 => 0
       f1=f2 => 1
@@ -325,23 +325,23 @@ MachineFloat(): Exports == Implementation where
 
     f1 quo f2 == f1/f2
     f1 rem f2 == 0
-    u:I * f1 == 
+    u:I * f1 ==
       normalise [u*mantissa(f1),exponent(f1)]$Rep
 
     f1 = f2 == mantissa(f1)=mantissa(f2) and exponent(f1)=exponent(f2)
 
-    f1 + f2 == 
+    f1 + f2 ==
       m1 : I := mantissa f1
       m2 : I := mantissa f2
       e1 : I := exponent f1
       e2 : I := exponent f2
-      e1 > e2 => 
+      e1 > e2 =>
 --insignificance
-         e1 > e2 + POWER + 2 => 
+         e1 > e2 + POWER + 2 =>
                zero? f1 => f2
-               f1 
+               f1
          normalise [m1*(B pretend I)^((e1-e2) pretend NNI)+m2,e2]$Rep
-      e2 > e1 + POWER +2 => 
+      e2 > e1 + POWER +2 =>
                zero? f2 => f1
                f2
       normalise [m2*(B pretend I)^((e2-e1) pretend NNI)+m1,e1]$Rep
@@ -350,7 +350,7 @@ MachineFloat(): Exports == Implementation where
 
     f1 - f2 == f1 + (-f2)
 
-    f1 < f2 == 
+    f1 < f2 ==
       m1 : I := mantissa f1
       m2 : I := mantissa f2
       e1 : I := exponent f1
@@ -398,7 +398,7 @@ MachineComplex():Exports == Implementation where
 
   Implementation ==> Complex MachineFloat add
 
-    coerce(u:Complex Float):$ == 
+    coerce(u:Complex Float):$ ==
       complex(real(u)::MachineFloat,imag(u)::MachineFloat)
 
     coerce(u:Complex Integer):$ ==
@@ -407,7 +407,7 @@ MachineComplex():Exports == Implementation where
     coerce(u:Complex MachineInteger):$ ==
       complex(real(u)::MachineFloat,imag(u)::MachineFloat)
 
-    coerce(u:Complex MachineFloat):$ == 
+    coerce(u:Complex MachineFloat):$ ==
       complex(real(u),imag(u))
 
     coerce(u:$):Complex Float ==

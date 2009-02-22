@@ -67,26 +67,26 @@ SortedCache(S:CachableSet): Exports == Implementation where
 
     expandCache(x) ==
         if cache__size = cache__use then
-	    ocache := cache
-	    cache__size := 2*cache__size + 10
+            ocache := cache
+            cache__size := 2*cache__size + 10
             cache := new(cache__size, x)$(PrimitiveArray S)
-	    for k in 0..(cache__use - 1) repeat
-	        cache(k) := ocache(k)
+            for k in 0..(cache__use - 1) repeat
+                cache(k) := ocache(k)
         void
 
     insertBefore(l, x) ==
         k : Integer
         expandCache(x)
-	vscan := cache
-	for k in 0..(cache__use - l - 1) repeat
-	    vscan(cache__use - k) := vscan(cache__use - k - 1)
-	vscan(l) := x
-	cache__use := cache__use + 1
-	void
-	    
+        vscan := cache
+        for k in 0..(cache__use - l - 1) repeat
+            vscan(cache__use - k) := vscan(cache__use - k - 1)
+        vscan(l) := x
+        cache__use := cache__use + 1
+        void
+
     shiftCache(l, n) ==
         k : Integer
-	vscan := cache
+        vscan := cache
         for k in l..(cache__use - 1) repeat
             x := vscan(k)
             setPosition(x, n + position x)
@@ -94,20 +94,20 @@ SortedCache(S:CachableSet): Exports == Implementation where
 
     clearCache() ==
         k : Integer
-	vscan := cache
-	for k in 0..(cache__use - 1) repeat
-	    x := vscan(k)
-	    setPosition(x, 0)
-	cache := empty()$(PrimitiveArray S)
-	cache__size := 0
-	cache__use := 0
+        vscan := cache
+        for k in 0..(cache__use - 1) repeat
+            x := vscan(k)
+            setPosition(x, 0)
+        cache := empty()$(PrimitiveArray S)
+        cache__size := 0
+        cache__use := 0
         void
 
     insertAtEnd(x:S):Void ==
         expandCache(x)
         cache(cache__use) := x
         cache__use := cache__use + 1
-	void
+        void
 
     enterInCache(x:S, equal?:S -> Boolean) ==
         k : Integer
@@ -118,7 +118,7 @@ SortedCache(S:CachableSet): Exports == Implementation where
                 setPosition(x, position y)
                 return y
         setPosition(x, 1 + cache__use)
-	insertAtEnd(x)
+        insertAtEnd(x)
         x
 
     enterInCache(x:S, triage:(S, S) -> Integer) ==
@@ -128,7 +128,7 @@ SortedCache(S:CachableSet): Exports == Implementation where
         m0 := m
         zero?(cache__use) =>
             setPosition(x, DIFF)
-	    insertAtEnd(x)
+            insertAtEnd(x)
             return x
         while (l + 1) < m repeat
             i := shift(l + m, -1)
@@ -142,7 +142,7 @@ SortedCache(S:CachableSet): Exports == Implementation where
                 l := i
         m = m0 =>
             setPosition(x, (position qelt(vscan, m - 1)) + DIFF)
-	    insertAtEnd(x)
+            insertAtEnd(x)
             return x
         pos :N :=
                 l < 0 => 0
@@ -153,7 +153,7 @@ SortedCache(S:CachableSet): Exports == Implementation where
         y := cache(before)
         if ((pos+1) = position y) then shiftCache(before, DIFF)
         setPosition(x, pos + (((position y) - pos)::N quo 2))
-	insertBefore(before, x)
+        insertBefore(before, x)
         x
 
 @

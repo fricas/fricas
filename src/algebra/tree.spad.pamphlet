@@ -31,7 +31,7 @@ Tree(S: SetCategory): T==C where
        ++ tree(nd,ls) creates a tree with value nd, and children
        ++ ls.
      tree: List S -> %
-       ++ tree(ls) creates a tree from a list of elements of s. 
+       ++ tree(ls) creates a tree from a list of elements of s.
      tree: S -> %
        ++ tree(nd) creates a tree with value nd, and no children
      cyclic?: % -> Boolean
@@ -41,7 +41,7 @@ Tree(S: SetCategory): T==C where
      cyclicEntries:    % -> List %
        ++ cyclicEntries(t) returns a list of top-level cycles in tree t.
      cyclicEqual?: (%, %) -> Boolean
-       ++ cyclicEqual?(t1, t2) tests of two cyclic trees have 
+       ++ cyclicEqual?(t1, t2) tests of two cyclic trees have
        ++ the same structure.
      cyclicParents: % -> List %
        ++ cyclicParents(t) returns a list of cycles that are parents of t.
@@ -61,16 +61,16 @@ Do we really throw an error if we pass [[children]] and empty tree?  This
 implies also that we need to override [[child?]].
 
 <<domain TREE Tree>>=
-    children t == 
-      t case empty => error "cannot take the children of an empty tree" 
+    children t ==
+      t case empty => error "cannot take the children of an empty tree"
       (t.node.args)@List(%)
-    setchildren_!(t,lt) == 
+    setchildren_!(t,lt) ==
       t case empty => error "cannot set children of an empty tree"
       (t.node.args:=lt;t pretend %)
-    setvalue_!(t,s) == 
+    setvalue_!(t,s) ==
       t case empty => error "cannot set value of an empty tree"
       (t.node.value:=s;s)
-    count(n, t) == 
+    count(n, t) ==
       t case empty => 0
       i := +/[count(n, c) for c in children t]
       value t = n => i + 1
@@ -80,10 +80,10 @@ implies also that we need to override [[child?]].
       i := +/[count(fn, c) for c in children t]
       fn value t => i + 1
       i
-    map(fn, t) == 
+    map(fn, t) ==
       t case empty => t
       tree(fn value t,[map(fn, c) for c in children t])
-    map_!(fn, t) == 
+    map_!(fn, t) ==
       t case empty => t
       setvalue_!(t, fn value t)
       for c in children t repeat map_!(fn, c)
@@ -93,7 +93,7 @@ implies also that we need to override [[child?]].
       empty? ls => empty()
       tree(first ls, [tree s for s in rest ls])
     value t ==
-      t case empty => error "cannot take the value of an empty tree" 
+      t case empty => error "cannot take the value of an empty tree"
       t.node.value
 @
 
@@ -101,16 +101,16 @@ We cannot inherit [[child?]] from [[RecursiveAggregate]], since we have
 overridden [[children]], which now yields an error if passed an empty tree.
 
 <<domain TREE Tree>>=
-    child?(t1,t2) == 
+    child?(t1,t2) ==
       empty? t2 => false
       member?(t1, children t2)
     distance1(t1: %, t2: %): Integer ==
       t1 = t2 => 0
       t2 case empty => -1
       u := [n for t in children t2 | (n := distance1(t1,t)) >= 0]
-      #u > 0 => 1 + "min"/u 
-      -1 
-    distance(t1,t2) == 
+      #u > 0 => 1 + "min"/u
+      -1
+    distance(t1,t2) ==
       n := distance1(t1, t2)
       n >= 0 => n
       distance1(t2, t1)
@@ -119,10 +119,10 @@ overridden [[children]], which now yields an error if passed an empty tree.
       t case empty => false
       any?(inode?, children t2) where
          inode?(t: %): Boolean == node?(t1, t)
-    leaf? t == 
+    leaf? t ==
       t case empty => false
       empty? children t
-    leaves t == 
+    leaves t ==
       t case empty => empty()
       leaf? t => [value t]
       "append"/[leaves c for c in children t]
@@ -139,12 +139,12 @@ overridden [[children]], which now yields an error if passed an empty tree.
       fn value t => true
       for c in children t | any?(fn, c) repeat return true
       false
-    every?(fn, t) == 
+    every?(fn, t) ==
       t case empty => true
       not fn value t => false
       for c in children t | not every?(fn, c) repeat return false
       true
-    member?(n, t) == 
+    member?(n, t) ==
       t case empty => false
       n = value t or any?(mem?, children t) where
           mem?(c: %): Boolean == member?(n, c)
@@ -157,27 +157,27 @@ overridden [[children]], which now yields an error if passed an empty tree.
 
     ---Functions that guard against cycles: =, #, copy-------------
 
-    -----> =   
+    -----> =
     equal?: (%, %, %, %, Integer) -> Boolean
 
-    t1 = t2 == equal?(t1, t2, t1, t2, 0) 
+    t1 = t2 == equal?(t1, t2, t1, t2, 0)
 
     equal?(t1, t2, ot1, ot2, k) ==
-      k = cycleTreeMax and (cyclic? ot1 or cyclic? ot2) => 
+      k = cycleTreeMax and (cyclic? ot1 or cyclic? ot2) =>
         error "use cyclicEqual? to test equality on cyclic trees"
       t1 case empty => t2 case empty
       t2 case empty => false
       not (value t1 = value t2 and (c1 := children t1) = (c2 := children t2))
           => false
-      for x in c1 for y in c2 | not equal?(x,y,ot1, ot2,k + 1) repeat 
+      for x in c1 for y in c2 | not equal?(x,y,ot1, ot2,k + 1) repeat
           return false
       true
 
     -----> #
-    treeCount: (%, %, NonNegativeInteger) -> NonNegativeInteger    
+    treeCount: (%, %, NonNegativeInteger) -> NonNegativeInteger
     # t == treeCount(t, t, 0)
     treeCount(t, origTree, k) ==
-      k = cycleTreeMax and cyclic? origTree => 
+      k = cycleTreeMax and cyclic? origTree =>
         error "# is not defined on cyclic trees"
       t case empty => 0
       1 + +/[treeCount(c, origTree, k + 1) for c in children t]
@@ -185,8 +185,8 @@ overridden [[children]], which now yields an error if passed an empty tree.
     -----> copy
     copy1: (%, %, Integer) -> %
     copy t == copy1(t, t, 0)
-    copy1(t, origTree, k) == 
-      k = cycleTreeMax and cyclic? origTree => 
+    copy1(t, origTree, k) ==
+      k = cycleTreeMax and cyclic? origTree =>
         error "use cyclicCopy to copy a cyclic tree"
       t case empty  => t
       empty? children t => tree value t
@@ -209,13 +209,13 @@ overridden [[children]], which now yields an error if passed an empty tree.
 
       coerce1(t,parents, pl) ==
         t case empty => empty()@List(S)::OutputForm
-        eqMember?(t, parents) => 
+        eqMember?(t, parents) =>
           multipleOverbar((".")::OutputForm,eqMemberIndex(t, pl,0),pl)
         empty? children t => value t::OutputForm
         nodeForm := (value t)::OutputForm
         if (k := eqMemberIndex(t, pl, 0)) > 0 then
            nodeForm := multipleOverbar(nodeForm, k, pl)
-        prefix(nodeForm, 
+        prefix(nodeForm,
           [coerce1(br,cons(t,parents),pl) for br in children t])
 
       multipleOverbar(x, k, pl) ==
@@ -230,7 +230,7 @@ overridden [[children]], which now yields an error if passed an empty tree.
 
     cyclic? t == cyclic2?(t, empty()$(List %))
 
-    cyclic2?(x,parents) ==  
+    cyclic2?(x,parents) ==
       empty? x => false
       eqMember?(x, parents) => true
       for y in children x repeat
@@ -248,13 +248,13 @@ overridden [[children]], which now yields an error if passed an empty tree.
       eqMember?(t, cycles) => return copyCycle2(t, cycles)
       tree(value t, [cyclicCopy2(c, cycles) for c in children t])
 
-    copyCycle2(cycle, cycleList) == 
+    copyCycle2(cycle, cycleList) ==
       newCycle := tree(value cycle, nil)
       setchildren!(newCycle,
         [copyCycle4(c,cycle,newCycle, cycleList) for c in children cycle])
       newCycle
 
-    copyCycle4(t, cycle, newCycle, cycleList) == 
+    copyCycle4(t, cycle, newCycle, cycleList) ==
       empty? cycle => empty()
       eq?(t, cycle) => newCycle
       eqMember?(t, cycleList) => copyCycle2(t, cycleList)
@@ -283,7 +283,7 @@ overridden [[children]], which now yields an error if passed an empty tree.
       #cp1 ~= #cp2 or null cp1 => t1 = t2
       cyclicEqual4?(t1, t2, cp1, cp2)
 
-    cyclicEqual4?(t1, t2, cp1, cp2) == 
+    cyclicEqual4?(t1, t2, cp1, cp2) ==
       t1 case empty => t2 case empty
       t2 case empty => false
       0 ~= (k := eqMemberIndex(t1, cp1, 0)) => eq?(t2, cp2 . k)
@@ -300,11 +300,11 @@ overridden [[children]], which now yields an error if passed an empty tree.
 
     cyclicParents3(x, parents, pl) ==
       empty? x => pl
-      eqMember?(x, parents) => 
+      eqMember?(x, parents) =>
         cycleMembers := [y for y in parents while not eq?(x,y)]
         eqUnion(cons(x, cycleMembers), pl)
       parents := cons(x, parents)
-      for y in children x repeat 
+      for y in children x repeat
         pl := cyclicParents3(y, parents, pl)
       pl
 
@@ -351,7 +351,7 @@ overridden [[children]], which now yields an error if passed an empty tree.
 ++ References:
 ++ Description: \spadtype{BinaryTreeCategory(S)} is the category of
 ++ binary trees: a tree which is either empty or else is a \spadfun{node} consisting
-++ of a value and a \spadfun{left} and \spadfun{right}, both binary trees. 
+++ of a value and a \spadfun{left} and \spadfun{right}, both binary trees.
 BinaryTreeCategory(S: SetCategory): Category ==_
      Join(BinaryRecursiveAggregate(S), shallowlyMutable, finiteAggregate) with
    node: (%,S,%) -> %
@@ -393,7 +393,7 @@ BinaryTree(S: SetCategory): Exports == Implementation where
      binaryTree: S -> %
        ++ binaryTree(v) is an non-empty binary tree
        ++ with value v, and left and right empty.
-     binaryTree: (%,S,%) -> %    
+     binaryTree: (%,S,%) -> %
        ++ binaryTree(l,v,r) creates a binary tree with
        ++ value v with left subtree l and right subtree r.
   Implementation == add

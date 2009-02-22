@@ -14,7 +14,7 @@
 )abbrev package SMITH SmithNormalForm
 ++ Author: Patrizia Gianni
 ++ Date Created: October 1992
-++ Date Last Updated: 
+++ Date Last Updated:
 ++ Basic Operations:
 ++ Related Domains: Matrix(R)
 ++ Also See:
@@ -36,7 +36,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
   I            ==> Integer
   NNI          ==> NonNegativeInteger
   HermiteForm  ==>   Record(Hermite:M,eqMat:M)
-  SmithForm    ==>   Record(Smith : M, leftEqMat : M, rightEqMat : M) 
+  SmithForm    ==>   Record(Smith : M, leftEqMat : M, rightEqMat : M)
   PartialV     ==> Union(Col, "failed")
   Both         ==> Record(particular: PartialV, basis: List Col)
 
@@ -55,7 +55,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
       ++ the Smith normal form H of the matrix and the left and right
       ++ equivalence matrices U and V such that U*m*v = H
     diophantineSystem : (M,Col) -> Both
-      ++ \spad{diophantineSystem(A,B)} returns a particular integer solution and 
+      ++ \spad{diophantineSystem(A,B)} returns a particular integer solution and
       ++ an integer  basis  of the equation \spad{AX = B}.
 
   Implementation == add
@@ -71,12 +71,12 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
     elRow2       :  (M,R,I,I)        ->  M
     elColumn2    :  (M,R,I,I)        ->  M
     isDiagonal?  :      M            ->  Boolean
-    ijDivide     : (SmithForm ,I,I)  ->  SmithForm 
+    ijDivide     : (SmithForm ,I,I)  ->  SmithForm
     lastStep     :   SmithForm       ->  SmithForm
     test1        :  (M,Col,NNI)      ->  Union(NNI, "failed")
     test2        : (M, Col,NNI,NNI)  ->  Union( Col, "failed")
 
-     -- inconsistent system : case  0 = c -- 
+     -- inconsistent system : case  0 = c --
     test1(sm:M,b:Col,m1 : NNI) : Union(NNI , "failed") ==
       km:=m1
       while zero? sm(km,km) repeat
@@ -94,7 +94,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
           sol(k):= c::R
         sol
 
-     -- test if the matrix is diagonal or pseudo-diagonal --   
+     -- test if the matrix is diagonal or pseudo-diagonal --
     isDiagonal?(m : M) : Boolean ==
       m1:= nrows m
       n1:= ncols m
@@ -169,7 +169,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
       m1:=nrows m
       n1:=ncols m
       "and"/[zero? t(m1,j) for j in 1..n1] => -- there are 0 rows
-         if "and"/[zero? t(1,j) for j in 1..n1] 
+         if "and"/[zero? t(1,j) for j in 1..n1]
          then return [m,scalarMatrix(m1,1)]  -- m is the zero matrix
          mm:=horizConcat(m,scalarMatrix(m1,1))
          mmh:=rowEchelon mm
@@ -179,7 +179,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
       while t(1,j)=0 repeat j:=j+1  -- there are 0 columns
       t1:=copy t
       mm:=copy m
-      if j>1 then 
+      if j>1 then
         t1:=subMatrix(t,1,m1,j,n1)
         mm:=subMatrix(m,1,m1,j,n1)
       t11:=t1(1,1)
@@ -211,7 +211,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
       cm1:=completeHermite transpose m1
       rightm:= transpose cm1.eqMat
       m1:=cm1.Hermite
-      isDiagonal? m1 => 
+      isDiagonal? m1 =>
         cm2:=lastStep([m1,leftm,rightm])
         nrows(m:=cm2.Smith) = nr => cm2
         [transpose m,cm2.leftEqMat, cm2.rightEqMat]

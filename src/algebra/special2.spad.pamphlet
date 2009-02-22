@@ -29,7 +29,7 @@ FloatSpecialFunctions() : Exports == Implementation where
       ++ Gamma(x) is the Euler Gamma function.
 
   Implementation ==> add
-    
+
     bernoulli__gamma__series(z : Complex Float, n : Integer): Complex Float ==
        zinv := 1/z
        zk := zinv
@@ -41,16 +41,16 @@ FloatSpecialFunctions() : Exports == Implementation where
            bk := (bernoulli(2*k+2)$IntegerNumberTheoryFunctions)::Float
            s := s + ((bk*kinv)::(Complex Float))*zk
        s
-    
+
     logGamma__a1(z : Complex Float) : Complex Float ==
        (z - ((1/2)::(Complex Float)))*log(z) - z _
            + ((1/2)::(Complex Float))_
              *((log((2 :: Float)*pi()))::(Complex Float))
-    
+
     logGamma__asymptotic(z : Complex Float, n : Integer): Complex Float ==
        lg1 := logGamma__a1(z)
        lg1 + bernoulli__gamma__series(z, n)
-    
+
     gamma__series(z : Complex Float, l : Float, n : Integer) : Complex Float ==
        tk := exp(z*(log(l)::(Complex Float)))/z
        s := tk
@@ -58,7 +58,7 @@ FloatSpecialFunctions() : Exports == Implementation where
           tk := tk*(l::(Complex Float))/(z + (k::(Complex Float)))
           s := s + tk
        s*(exp(-l)::(Complex Float))
-    
+
     Gamma(z : Complex Float) : Complex Float ==
         (base()$Float ~= 2) =>
             error "Gamma can only handle base 2 Float-s"
@@ -99,14 +99,14 @@ FloatSpecialFunctions() : Exports == Implementation where
         result := exp(logGamma__asymptotic(z, l quo 6 + 1 ))
         bits(l0)
         result
-    
+
     -- in exact arithmetic |imag(logGamma__a1(z) - logGamma(z))| < pi/2
     logGamma__lift(z : Complex Float, lg2 : Complex Float) : Complex Float ==
         lg2i := imag(lg2)
         k := round((imag(logGamma__a1(z)) - lg2i)/(2*pi()))
         lg2 + (imaginary()$(Complex Float))*((k*(2::Float)*pi())::(Complex Float))
-    
-    
+
+
     logGamma(z : Complex Float) : Complex Float ==
         (base()$Float ~= 2) =>
             error "Gamma can only handle base 2 Float-s"

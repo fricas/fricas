@@ -22,7 +22,7 @@
 ++ Keywords:
 ++ References:
 ++ Description: \spadtype{OpenMathErrorKind} represents different kinds
-++ of OpenMath errors: specifically parse errors, unknown CD or symbol 
+++ of OpenMath errors: specifically parse errors, unknown CD or symbol
 ++ errors, and read errors.
 OpenMathErrorKind() : SetCategory with
   coerce           : Symbol -> %
@@ -39,7 +39,7 @@ OpenMathErrorKind() : SetCategory with
   OMReadError?     : % -> Boolean
   ++ OMReadError?(u) tests whether u is an OpenMath read error.
  == add
-  Rep := Union(parseError:"OMParseError", unknownCD:"OMUnknownCD", 
+  Rep := Union(parseError:"OMParseError", unknownCD:"OMUnknownCD",
                unknownSymbol:"OMUnknownSymbol",readError:"OMReadError")
 
   OMParseError?(u) == (u case parseError)$Rep
@@ -47,7 +47,7 @@ OpenMathErrorKind() : SetCategory with
   OMUnknownSymbol?(u) == (u case unknownSymbol)$Rep
   OMReadError?(u) == (u case readError)$Rep
 
-  coerce(s:Symbol):% == 
+  coerce(s:Symbol):% ==
     s = OMParseError    => ["OMParseError"]$Rep
     s = OMUnknownCD     => ["OMUnknownCD"]$Rep
     s = OMUnknownSymbol => ["OMUnknownSymbol"]$Rep
@@ -77,7 +77,7 @@ OpenMathError() : SetCategory with
   ++ errorKind(u) returns the type of error which u represents.
   errorInfo : % -> List Symbol
   ++ errorInfo(u) returns information about the error u.
-  omError   : (OpenMathErrorKind, List Symbol) -> % 
+  omError   : (OpenMathErrorKind, List Symbol) -> %
   ++ omError(k,l) creates an instance of OpenMathError.
  == add
   Rep := Record(err:OpenMathErrorKind, info:List Symbol)
@@ -87,7 +87,7 @@ OpenMathError() : SetCategory with
   coerce(e:%):OutputForm ==
     OMParseError? e.err => message "Error parsing OpenMath object"
     infoSize := #(e.info)
-    OMUnknownCD? e.err => 
+    OMUnknownCD? e.err =>
 --      not one? infoSize => error "Malformed info list in OMUnknownCD"
       not (infoSize = 1) => error "Malformed info list in OMUnknownCD"
       message concat("Cannot handle CD ",string first e.info)
