@@ -110,6 +110,10 @@
 
 (defun QUOTIENT2 (X Y) (values (TRUNCATE X Y)))
 
+(defun INTEXQUO(X Y)
+    (multiple-value-bind (quo remv) (TRUNCATE X Y)
+         (if (= 0 remv) quo nil)))
+
 (define-function 'REMAINDER2 #'REM)
 
 (defun DIVIDE2 (X Y) (multiple-value-call #'cons (TRUNCATE X Y)))
