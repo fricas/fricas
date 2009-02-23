@@ -411,23 +411,50 @@ TransSolvePackage(R) : Exports == Implementation where
        else
          error "This should never happen"
 
+     dropfun (x : RE) : RE ==
+        ((k := retractIfCan(x)@Union(K, "failed")) case "failed") or
+          empty?(argument(k::K)) => 0
+        first argument(k::K)
+
      funcinv(k:RE,l:RE) : Union(RE,"failed") ==
-       is?(k, "sin"::Symbol)   => asin(l)
-       is?(k, "cos"::Symbol)   => acos(l)
-       is?(k, "tan"::Symbol)   => atan(l)
-       is?(k, "cot"::Symbol)   => acot(l)
+       is?(k, "sin"::Symbol)   =>
+           is?(l, "sin"::Symbol) => dropfun(l)
+           asin(l)
+       is?(k, "cos"::Symbol)   =>
+           is?(l, "cos"::Symbol) => dropfun(l)
+           acos(l)
+       is?(k, "tan"::Symbol)   =>
+           is?(l, "tan"::Symbol) => dropfun(l)
+           atan(l)
+       is?(k, "cot"::Symbol)   =>
+           is?(l, "cot"::Symbol) => dropfun(l)
+           acot(l)
        is?(k, "sec"::Symbol)   =>
            l = 0 => "failed"
+           is?(l, "sec"::Symbol) => dropfun(l)
            asec(l)
        is?(k, "csc"::Symbol)   =>
            l = 0 => "failed"
+           is?(l, "csc"::Symbol) => dropfun(l)
            acsc(l)
-       is?(k, "sinh"::Symbol)  => asinh(l)
-       is?(k, "cosh"::Symbol)  => acosh(l)
-       is?(k, "tanh"::Symbol)  => atanh(l)
-       is?(k, "coth"::Symbol)  => acoth(l)
-       is?(k, "sech"::Symbol)  => asech(l)
-       is?(k, "csch"::Symbol)  => acsch(l)
+       is?(k, "sinh"::Symbol)  =>
+           is?(l, "sinh"::Symbol) => dropfun(l)
+           asinh(l)
+       is?(k, "cosh"::Symbol)  =>
+           is?(l, "cosh"::Symbol) => dropfun(l)
+           acosh(l)
+       is?(k, "tanh"::Symbol)  =>
+           is?(l, "tanh"::Symbol) => dropfun(l)
+           atanh(l)
+       is?(k, "coth"::Symbol)  =>
+           is?(l, "coth"::Symbol) => dropfun(l)
+           acoth(l)
+       is?(k, "sech"::Symbol)  =>
+           is?(l, "sech"::Symbol) => dropfun(l)
+           asech(l)
+       is?(k, "csch"::Symbol)  =>
+           is?(l, "csch"::Symbol) => dropfun(l)
+           acsch(l)
        is?(k, "atan"::Symbol)  => tan(l)
        is?(k, "acot"::Symbol)  =>
            l = 0 => "failed"
