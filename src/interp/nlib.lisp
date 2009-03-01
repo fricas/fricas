@@ -50,7 +50,6 @@
 
 
 ;; (RDEFIOSTREAM ((MODE . IO) (FILE fn ft dir))) IO is I,O,INPUT,OUTPUT
-#-:CCL
 (defun rdefiostream (options &optional (missing-file-error-flag t))
   (let ((mode (cdr (assoc 'mode options)))
         (file (assoc 'file options))
@@ -84,34 +83,6 @@
                                :indexstream stream ))
               ('t  (ERROR "Unknown MODE")))))
 
-#+:CCL
-(defun rdefiostream (options &optional (missing-file-error-flag t))
-  (let ((mode (cdr (assoc 'mode options)))
-        (file (assoc 'file options))
-        (stream nil)
-        (fullname nil)
-        (indextable nil))
-        (cond ((equal (elt (string mode) 0) #\I)
-               (setq fullname (make-input-filename (cdr file) NIL))
-               (setq stream (get-input-index-stream fullname))
-               (if (null stream)
-                   (if missing-file-error-flag
-                       (ERROR (format nil "Library ~s doesn't exist"
-                              (make-filename (cdr file) NIL)))
-                     NIL)
-               (make-libstream :mode 'input  :dirname fullname
-                               :indextable (get-index-table-from-stream stream)
-                               :indexstream stream)))
-              ((equal (elt (string mode) 0) #\O)
-               (setq fullname (make-full-namestring (cdr file) NIL))
-               (create-directory fullname)
-               (multiple-value-setq (stream indextable)
-                        (get-io-index-stream fullname))
-               (make-libstream :mode 'output  :dirname fullname
-                               :indextable indextable
-                               :indexstream stream ))
-              ('t  (ERROR "Unknown MODE")))))
-
 (defvar *index-filename* "index.KAF")
 
 ;get the index table of the lisplib in dirname
@@ -134,7 +105,6 @@
            (read stream))
           (t pos))))
 
-#-:CCL
 (defun get-io-index-stream (dirname)
   (let* ((index-file (concat dirname "/" *index-filename*))
          (stream (open index-file :direction :io :if-exists :overwrite
@@ -150,24 +120,6 @@
              (setq indextable pos)))
     (values stream indextable)))
 
-#+:CCL
-(defun get-io-index-stream (dirname)
-  (let ((index-file (concat dirname "/" *index-filename*))
-        (indextable ())
-        (stream) (pos))
-    (cond ((probe-file index-file)
-           (setq stream (open index-file :direction :io :if-exists :overwrite))
-           (setq pos (read stream))
-           (file-position stream pos)
-           (setq indextable (read stream))
-           (file-position stream pos))
-          (t (setq stream (open index-file :direction :io
-                       :if-does-not-exist :create))
-             ;(file-position stream 0)
-             (princ "                    " stream)))
-    (values stream indextable)))
-
-
 ;substitute indextable in dirname
 
 (defun write-indextable (indextable stream)
@@ -178,14 +130,6 @@
     (princ pos stream)
     (finish-output stream)))
 
-;;#+:ccl
-;;(defun putindextable (indextable dirname)
-;;  (with-open-file
-;;    (stream (concat dirname "/" *index-filename*)
-;;             :direction :io :if-does-not-exist :create)
-;;    (file-position stream :end)
-;;    (write-indextable indextable stream)))
-;;#-:ccl
 (defun putindextable (indextable dirname)
   (with-open-file
     (stream (concat dirname "/" *index-filename*)
@@ -312,7 +256,7 @@ do the compile, and then rename the result back to [[code.o]].
          (if (and bdate (> bdate ldate)) nil
            (progn (compile-lib-file lfile) (list bfile))))))
 
-#+:AKCL
+#+:GCL
 (defun spad-fixed-arg (fname )
    (and (equal (symbol-package fname) (find-package "BOOT"))
         (not (get fname 'compiler::spad-var-arg))
@@ -321,7 +265,7 @@ do the compile, and then rename the result back to [[code.o]].
             (setf (get fname 'compiler::fixed-args) t)))
    nil)
 
-#+:AKCL
+#+:GCL
 (defun compile-lib-file (fn &rest opts)
   (unwind-protect
       (progn
@@ -332,7 +276,7 @@ do the compile, and then rename the result back to [[code.o]].
                 :entrycond (spad-fixed-arg (caar system::arglist))))
         (apply #'compile-file fn opts))
     (untrace compiler::fast-link-proclaimed-type-p compiler::t1defun)))
-#-:AKCL
+#-:GCL
 (define-function 'compile-lib-file 
   (if FRICAS-LISP::algebra-optimization
       #'(lambda (f)
@@ -422,8 +366,6 @@ do the compile, and then rename the result back to [[code.o]].
 (defun $erase (&rest filearg)
   (setq filearg (make-full-namestring filearg))
   (if (fricas-probe-file filearg)
-#+:CCL (delete-file filearg)
-#-:CCL
       (if (library-file filearg)
           (delete-directory filearg)
           (delete-file filearg))
@@ -480,7 +422,7 @@ do the compile, and then rename the result back to [[code.o]].
         (copy-file name1 name2))))
 
 
-#+(OR :GCL (AND :CCL :UNIX))
+#+:GCL
 (defun copy-lib-directory (name1 name2)
    (makedir name2)
    (LISP::system (concat "sh -c 'cp " name1 "/* " name2 "'")))
@@ -501,7 +443,7 @@ do the compile, and then rename the result back to [[code.o]].
    (makedir name2)
    (OBEY (concat "sh -c 'cp " name1 "/* " name2 "'")))    
 
-#+(OR :GCL (AND :CCL :UNIX))
+#+:GCL
 (defun copy-file (namestring1 namestring2)
   (LISP::system (concat "cp " namestring1 " " namestring2)))
 

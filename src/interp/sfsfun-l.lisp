@@ -37,9 +37,6 @@
 ;; SMW Feb 91
 ;;
 
-;; #-:CCL
-;; (defun |float| (x) (|float| x))
-
 ;; Conversion between spad and lisp complex representations
 (defun s-to-c (c) (complex (car c) (cdr c)))
 (defun c-to-s (c) (cons (realpart c) (imagpart c)))
@@ -53,7 +50,6 @@
 (defun rlngamma  (x)           (|lnrgamma| x) )
 (defun clngamma  (z)   (c-to-s (|lncgamma| (s-to-c z)) ))
 
-;; #-:CCL
 (defun rgamma    (x)           (|rgamma|   x))
 (defun cgamma    (z)   (c-to-s (|cgamma|   (s-to-c z)) ))
 

@@ -327,12 +327,12 @@ database.
  (browseopen)
  (setq *category-stream-stamp* '(0 . 0))
  (categoryopen) ;note: this depends on constructorform in browse.daase
-#-:CCL (initial-getdatabase)
+ (initial-getdatabase)
  (close *interp-stream*)
  (close *operation-stream*)
  (close *category-stream*)
  (close *browse-stream*)
-#+:AKCL (LISP::gbc t)
+#+:GCL (LISP::gbc t)
 )
 
 (defun initial-getdatabase ()
@@ -886,15 +886,6 @@ database.
                                        skipasos :test #'string=)))
                     (list (namestring f))))
            aos)
-     ;; At the moment we will only look for user.lib: others are taken care
-     ;; of by localasy and localnrlib.
-#+:CCL
-          (mapcan #'(lambda (f)
-              (when (and (string= (pathname-type f) "lib")
-                         (string= (pathname-name f) "user"))
-                   (list (namestring f))))
-           (directory "*.*"))
-#-:CCL
           nil
     ))))
 
@@ -1168,7 +1159,7 @@ database.
 ;browse.daase
   (|oldCompilerAutoloadOnceTrigger|)
   (|browserAutoloadOnceTrigger|)
-#+:AKCL    (|mkTopicHashTable|)
+#+:GCL    (|mkTopicHashTable|)
   (|buildLibdb|)
   (|dbSplitLibdb|)
   (|mkUsersHashTable|)
@@ -1198,7 +1189,7 @@ database.
                                         ; note: genCategoryTable creates *ancestors-hash*. write-interpdb
                                         ; does gethash calls into it rather than doing a getdatabase call.
   (write-interpdb)
-#+:AKCL  (write-warmdata)
+#+:GCL  (write-warmdata)
   (create-initializers)
   (when (probe-file (final-name "compress"))
         (delete-file (final-name "compress")))

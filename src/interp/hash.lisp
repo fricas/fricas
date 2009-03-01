@@ -61,16 +61,7 @@
         #'(lambda (key val) (declare (ignore val)) (push key keys)) table)
         keys))
 
-#-:CCL
 (define-function 'HASHTABLE-CLASS #'hash-table-test)
-
-#+:CCL
-(defun HASHTABLE-CLASS (table)
-  (case (hashtable-flavour table)
-        (0 'EQ)
-        (1 'EQL)
-        (2 'EQUAL)
-        (t (format nil "error unknown hash table class ~a" (hashtable-flavour table)))))
 
 (define-function 'HCOUNT #'hash-table-count)
 

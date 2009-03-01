@@ -85,7 +85,6 @@ at load time.
   #+:clisp "fas"
   #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
   #+:ecl "fas"
-  #+:ccl "not done this way at all"
   )
 
 ;;; The relative directory list specifies a search path for files 
@@ -109,7 +108,7 @@ at load time.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
-;;; When we are building a {\bf depsys} image for AKCL (now GCL) we need
+;;; When we are building a {\bf depsys} image for GCL we need
 ;;; need to initialize some optimization routines. Each time a file is
 ;;; compiled in GCL we collect some function information and write it
 ;;; out to a {\bf .fn} file. If this {\bf .fn} file exists at compile
@@ -118,7 +117,7 @@ at load time.
 (defun make-depsys (build-interp-dir)
   ;; perform system initializations for building a starter system
   (init-memory-config)
-  #+:AKCL
+  #+:GCL
   (let ()
    (mapcar
      #'load
@@ -138,9 +137,6 @@ at load time.
 
 #+:oldboot
 (defun boottran::boottocl (file &optional ofile) ;; translates a single boot file
-#+:CCL
-  (setq *package* (find-package "BOOT"))
-#-:CCL
   (in-package "BOOT")
   (let (*print-level* *print-length* (fn (pathname-name file)))
     (boot::boot
@@ -300,10 +296,7 @@ called {\bf setBootAutoLoadProperty} to set up the autoload trigger.
 This helper function is listed below.
 |#
 (defun |setBootAutloadProperties| (fun-list file-list)
-#-:CCL
   (mapc #'(lambda (fun) (|setBootAutoLoadProperty| fun file-list)) fun-list)
-#+:CCL
-  (mapc #'(lambda (fun) (lisp::set-autoload fun file-list)) fun-list)
 )
 
 ;;; This function knows where the {\bf autoload} subdirectory lives.
@@ -389,8 +382,8 @@ where the [[${AXIOM}]] variable points to installed tree.
                            (cpages 3000)
                            (rpages 1000)
                            (hole 2000) )
-  ;; initialize AKCL memory allocation parameters
-  #+:AKCL
+  ;; initialize GCL memory allocation parameters
+  #+:GCL
   (progn
     (system:allocate 'cons cons)
     (system:allocate 'fixnum fixnum)
@@ -402,7 +395,7 @@ where the [[${AXIOM}]] variable points to installed tree.
     (system:allocate-contiguous-pages cpages)
     (system:allocate-relocatable-pages rpages)
     (system:set-hole-size hole))
-  #-:AKCL
+  #-:GCL
   nil)
 
 #|
@@ -436,7 +429,7 @@ as the final build location. This function is called in the
 src/interp/Makefile. 
 
 This function calls {\bf initroot} to set up pathnames we need. Next
-it sets up the lisp system memory (at present only for AKCL/GCL). Next
+it sets up the lisp system memory (at present only for GCL). Next
 it loads all of the named files, resets a few global state variables,
 loads the databases, sets up autoload triggers and clears out hash tables.
 After this function is called the image is clean and can be saved.
@@ -452,8 +445,8 @@ After this function is called the image is clean and can be saved.
   (if (and (boundp 'FRICAS-LISP::*building-axiomsys*)
                 FRICAS-LISP::*building-axiomsys*)
        (progn
-           #+:gcl(setf compiler::*default-system-p* nil)
-           #+:gcl(compiler::emit-fn nil)
+           #+:GCL(setf compiler::*default-system-p* nil)
+           #+:GCL(compiler::emit-fn nil)
            (setq *load-verbose* nil)
            #+:clisp(setf custom:*suppress-check-redefinition* t)
            (setf |$createLocalLibDb| t)
@@ -508,11 +501,11 @@ After this function is called the image is clean and can be saved.
              translate-files asauto-files spad)
   (push :oldboot *features*)
   (initroot spad)
-  #+:AKCL
+  #+:GCL
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
                       :array 400 :string 500 :cfun 100 :cpages 1000
                       :rpages 1000 :hole 2000)
-  #+:AKCL
+  #+:GCL
   (setq compiler::*suppress-compiler-notes* t)
   (|resetWorkspaceVariables|)
   (|initHist|)
@@ -522,8 +515,6 @@ After this function is called the image is clean and can be saved.
   (interpopen)
   (create-initializers)
   (|start| :fin)
-#+:CCL
-  (resethashtables)
   (setq *load-verbose* nil)
   (|setBootAutloadProperties| comp-functions comp-files)
   (|setBootAutloadProperties| parse-functions parse-files)
@@ -541,15 +532,13 @@ After this function is called the image is clean and can be saved.
 ;;; image but it does not have any autoload triggers or databases
 ;;; loaded.
 (defun build-depsys (load-files spad build-interp-dir)
-#+:CCL
-  (setq *package* (find-package "BOOT"))
-#+:AKCL
+#+:GCL
   (in-package "BOOT")
   (push :oldboot *features*)
   (mapcar #'load load-files)
   (make-depsys build-interp-dir)
   (initroot spad)
-  #+:AKCL
+  #+:GCL
   (init-memory-config :cons 1000 :fixnum 400 :symbol 1000 :package 16
                       :array 800 :string 1000 :cfun 200 :cpages 2000
                       :rpages 2000 :hole 4000) )
@@ -674,19 +663,15 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 (defvar *fricas-load-libspad* t)
 
 (defun fricas-init ()
-#+:akcl
+#+:GCL
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
     :array 400 :string 500 :cfun 100 :cpages 3000 :rpages 1000 :hole 2000)
-#+:akcl (setq compiler::*compile-verbose* nil)
-#+:akcl (setq compiler::*suppress-compiler-warnings* t)
-#+:akcl (setq compiler::*suppress-compiler-notes* t)
-#-:CCL
+#+:GCL (setq compiler::*compile-verbose* nil)
+#+:GCL (setq compiler::*suppress-compiler-warnings* t)
+#+:GCL (setq compiler::*suppress-compiler-notes* t)
   (in-package "BOOT")
-#+:CCL
-  (setq *package* (find-package "BOOT"))
-#+:CCL (setpchar "") ;; Turn off CCL read prompts
   (initroot)
-#+:akcl (system:gbc-time 0)
+#+:GCL (system:gbc-time 0)
     #+(or :sbcl :clisp :openmcl)
     (if *fricas-load-libspad*
         (let* ((ax-dir (|getEnv| "AXIOM"))
@@ -707,28 +692,17 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
                         (FRICAS-LISP::clisp-init-foreign-calls)))
                 (setf $openServerIfTrue nil))))
-    #+(or :gcl (and :clisp :ffi) :sbcl :openmcl :ecl)
+    #+(or :GCL (and :clisp :ffi) :sbcl :openmcl :ecl)
     (if $openServerIfTrue
         (let ((os (|openServer| $SpadServerName)))
              (format t "openServer result ~S~%" os)
              (if (zerop os)
                  (progn
                       (setf $openServerIfTrue nil)
-                      #+:gcl
+                      #+:GCL
                       (if (fboundp 'si::readline-off)
                           (si::readline-off))
                       (setq |$SpadServer| t)))))
-;; We do the following test at runtime to allow us to use the same images
-;; with Saturn and Sman.  MCD 30-11-95
-#+:CCL
-  (when 
-     (and (memq :unix *features*) $openServerIfTrue (fboundp '|openServer|))
-   (prog (os)
-    (setq os (|openServer| $SpadServerName))
-    (if (zerop os) 
-     (progn 
-      (setq $openServerIfTrue nil) 
-      (setq |$SpadServer| t)))))
   (setq |$IOindex| 1)
   (setq |$InteractiveFrame| (|makeInitialModemapFrame|))
   (setq |$printLoadMsgs| '|on|)
@@ -746,9 +720,9 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 (defun fricas-restart ()
   (fricas-init)
   (|readSpadProfileIfThere|)
-  #+(or :GCL :CCL)
+  #+:GCL
   (|spad|)
-  #-(or :GCL :CCL)
+  #-:GCL
   (let ((*debugger-hook* 
             (lambda (condition previous-handler)
                 (spad-system-error-handler condition)) 
@@ -767,7 +741,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 
 (defun |statisticsInitialization| () 
  "initialize the garbage collection timer"
- #+:akcl (system:gbc-time 0)
+ #+:GCL (system:gbc-time 0)
  nil)
 
 
