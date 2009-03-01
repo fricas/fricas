@@ -159,16 +159,16 @@
 (deftype |HInt| () '(integer #.(- (expt 2 15)) #.(1- (expt 2 15))))
 (deftype |SInt| () '(integer #.(- (expt 2 31)) #.(1- (expt 2 31))))
 
-#+:AKCL
+#+:GCL
 (deftype |BInt| () t)
-#-:AKCL
+#-:GCL
 (deftype |BInt| () 'integer)
 
 (deftype |SFlo| () 'short-float)
 
-#+:AKCL
+#+:GCL
 (deftype |DFlo| () t)
-#-:AKCL
+#-:GCL
 (deftype |DFlo| () 'double-float)
 
 (deftype |Level| () t) ;; structure??
@@ -493,11 +493,6 @@
                                    (cddr ,x) nil))
 (defmacro |SetEnvInfo|  (x val)   `(rplacd (cdr  ,x) ,val))
 
-#+:CCL
-(defmacro |FoamEnvEnsure| (e) 
-  `(let ((einf (|EnvInfo| ,e)))
-     (if einf (|CCall| einf) nil)))
-#-:CCL
 (defmacro |FoamEnvEnsure| (e) 
   `(if (|EnvInfo| ,e) (|CCall| (|EnvInfo| ,e)) nil))
 
@@ -654,7 +649,6 @@
 (defmacro block-return (obj val)
   `(return-from ,obj ,val))
 
-#-:CCL
 (defmacro typed-let (letvars &rest forms)
   `(let ,(mapcar #'(lambda (var)
                      (list (car var) (type2init (cadr var))))
@@ -662,12 +656,6 @@
      (declare ,@(mapcar #'(lambda (var)
                             (list 'type (cadr var) (car var)))
                         letvars))
-     ,@forms))
-
-#+:CCL
-(defmacro typed-let (letvars &rest forms)
-  `(let ,(mapcar #'(lambda (var) (car var))
-                 letvars )
      ,@forms))
 
 (defmacro cases (&rest junk)
@@ -697,7 +685,6 @@
                :element-type ',type
                :initial-element ,(type2init type))))
 
-#-:CCL
 (defun type2init (x)
   (cond
    ((eq x '|Char|) '|CharInit|)
@@ -718,9 +705,6 @@
    ((eq x '|Level|) '|LevelInit|)
    ((eq x '|Nil|) nil)
    (t nil)))
-
-#+:CCL
-(defun type2init (x) nil)
 
 ;; opsys interface
 (defvar |G-mainArgc| 0)

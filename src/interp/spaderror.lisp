@@ -33,13 +33,13 @@
 ;; this files contains basic routines for error handling
 (in-package "BOOT")
 
-#+(or :GCL :CCL)
+#+:GCL
 (defun error-format (message args)
   (let ((|$BreakMode| '|break|))
     (declare (special |$BreakMode|))
    (if (stringp message) (apply #'format nil message args) nil)))
 
-#-(or :GCL :CCL)
+#-:GCL
 (defun error-format (c)
   (let ((|$BreakMode| '|break|))
     (declare (special |$BreakMode|))
@@ -47,13 +47,13 @@
 
 ;;(defmacro |trappedSpadEval| (form) form) ;;nop for now
 
-#+:akcl
+#+:GCL
 (setq |$quitTag| system::*quit-tag*)
-#+:akcl
+#+:GCL
 (defun |resetStackLimits| () (system:reset-stack-limits))
-#-:akcl
+#-:GCL
 (setq |$quitTag| (gensym))
-#-:akcl
+#-:GCL
 (defun |resetStackLimits| () nil)
 
 ;; failed union branch --  value returned for numeric failure
@@ -72,7 +72,7 @@
      (if (eq val |$numericFailure|) val
        (cons 0 val))))
 
-#-(or :GCL :CCL)
+#-:GCL
 (defmacro |trapNumericErrors| (form)
     `(handler-case (cons 0 ,form)
          (arithmetic-error () |$numericFailure|)))
@@ -85,7 +85,7 @@
 
 (defparameter |$inLispVM| nil)
 
-#-(or :GCL :CCL)
+#-:GCL
 (defun spad-system-error-handler (c)
   (block nil
     (setq |$NeedToSignalSessionManager| T)

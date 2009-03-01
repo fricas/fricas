@@ -177,8 +177,8 @@ makeint.lisp:
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	echo '#-:ecl(load "$(srcdir)/../algebra/warm.data")' >> makeint.lisp
 	echo '#-:ecl(|clearClams|)' >> makeint.lisp
-	@ echo '#+:akcl (setq compiler::*suppress-compiler-notes* t)' >> makeint.lisp
-	@ echo '#+:akcl (si::gbc-time 0)' >> makeint.lisp
+	@ echo '#+:GCL (setq compiler::*suppress-compiler-notes* t)' >> makeint.lisp
+	@ echo '#+:GCL (si::gbc-time 0)' >> makeint.lisp
 
 ${SAVESYS}:
 	echo '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
@@ -220,14 +220,14 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
 	    echo '(maybe-compile "$(srcdir)/'$$A'.lisp"' \
 	         '"'$$A'.$(LISPOBJEXT)")' >> makedep.lisp ; \
 	done
-	echo '#-:gcl(maybe-compile "$(srcdir)/sys-pkg.lisp"' \
+	echo '#-:GCL(maybe-compile "$(srcdir)/sys-pkg.lisp"' \
 	             '"sys-pkg.$(LISPOBJEXT)")' >> makedep.lisp
 	echo '(load "makedep.lisp")' | ${LOADSYS}
 	echo '(in-package "FRICAS-LISP")' > makedep2.lisp
 	echo '(make-program "$(BASE)$@" (quote (' >> makedep2.lisp
-	echo '#+:gcl"$(srcdir)/sys-pkg.lisp"' \
-	     '#-:gcl"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
-	echo '#+:gcl"$(srcdir)/interp-proclaims.lisp"' >> makedep2.lisp
+	echo '#+:GCL"$(srcdir)/sys-pkg.lisp"' \
+	     '#-:GCL"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
+	echo '#+:GCL"$(srcdir)/interp-proclaims.lisp"' >> makedep2.lisp
 	for A in util ${DEP} \
                  `cat makedep2.lst` ; do \
               echo '"'$$A'.$(LISPOBJEXT)"' >> makedep2.lisp ; \

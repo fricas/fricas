@@ -81,8 +81,6 @@
   (if (vmlisp::fricas-probe-file (namestring f)) 't nil))
 
 (defun |fnameReadable?| (f)
-#+:CCL (file-readablep f)
-#-:CCL
   (let ((s 
           #-:GCL
           (ignore-errors (open f :direction :input :if-does-not-exist nil))

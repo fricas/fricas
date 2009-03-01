@@ -103,11 +103,9 @@
 (defmacro fetchchar (x i)
  `(char ,x ,i))
 
-#-:CCL  ;; fixp in ccl tests for fixnum
 (defmacro fixp (x)
  `(integerp ,x))
 
-#-:CCL
 (defmacro greaterp (&rest args)
  `(> ,@args))
 
@@ -165,8 +163,6 @@
 
 (defmacro ne (a b) `(not (equal ,a ,b)))
 
-;;; This may need adjustment in CCL where NEQ means (NOT (EQUAL ..)))
-#-:CCL
 (defmacro neq (a b) `(not (eq ,a ,b)))
 
 (defmacro |opOf| (x) ;(if (atom x) x (qcar x))
@@ -449,7 +445,6 @@
 
 ; 9.5 Identifiers
 
-#-:CCL
 (defun gensymp (x) (and (symbolp x) (null (symbol-package x))))
 
 (defun digitp (x)
@@ -462,19 +457,18 @@
     (digit-char-p (char (symbol-name x) 0))
     (digit-char-p x)))
 
-#-:CCL
 (defun LOG2 (x) (LOG x 2.0))
 (defun |log| (x) (LOG x 10.0))
 
 ; 9.13 Streams
 
-#+KCL
+#+GCL
 (defun IS-CONSOLE (stream)
   (and (streamp stream) (output-stream-p stream)
        (eq (system:fp-output-stream stream)
            (system:fp-output-stream *terminal-io*))))
 
-#-(OR Lucid KCL :CCL)
+#-:GCL
 (defun IS-CONSOLE (stream)  
      (or (eq stream *standard-output*)
          (and (typep stream 'synonym-stream)
@@ -814,8 +808,7 @@
           (setq start1 (1+ start1))
           (setq start2 (1+ start2)))
       (let* ((l1 (length cvec1))
-#+:CCL       (r (make-simple-string (- (+ l1 length2) length1)))
-#-:CCL       (r (make-string (- (+ l1 length2) length1)))
+             (r (make-string (- (+ l1 length2) length1)))
              (i 0))
          (do ((j 0 (1+ j)))
              ((= j start1))
@@ -1152,7 +1145,7 @@
 (defun OBEY (S)
    (ext:run-program (make-absolute-filename "/lib/obey")
                     (list "-c" S) :input t :output t))
-#+(OR IBCL KCL :CCL)
+#+:GCL
 (defun OBEY (S) (LISP::SYSTEM S))
 
 #+:allegro
@@ -1187,14 +1180,12 @@
 
 ;; Contributed by Juergen Weiss from a suggestion by Arthur Norman.
 ;; This is a Mantissa and Exponent function. 
-#-:CCL
 (defun manexp (u)
   (multiple-value-bind (f e s) 
     (decode-float u)
     (cons (* s f) e)))
 
 ;;; Contributed by Juergen Weiss from Arthur Norman's CCL.
-#-:CCL
 (defun acot (a)
   (if (> a 0.0)
     (if (> a 1.0)
@@ -1205,7 +1196,6 @@
        (+ (/ pi 2.0) (atan (- a))))))
 
 ;;; Contributed by Juergen Weiss from Arthur Norman's CCL.
-#-:CCL
 (defun cot (a)
   (if (or (> a 1000.0) (< a -1000.0))
     (/ (cos a) (sin a))
@@ -1240,9 +1230,7 @@
            (remove pr l :test #'eq)
            l) ))
 
-;; CCL supplies a slightly more efficient version of logs to base 10, which
-;; is useful in the WIDTH function. MCD.
-#-:CCL (defun log10 (u) (log u 10.0d0))
+(defun log10 (u) (log u 10.0d0))
 
 (defun |make_spaces| (len)
     (make-string len :initial-element #\ ))

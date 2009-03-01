@@ -240,33 +240,27 @@
 
 (defun |makeList| (size el) (make-list size :initial-element el) )
 
-#+:akcl
+#+:GCL
 (defun print-xdr-stream (x y z) (format y "XDR:~A" (xdr-stream-name x)))
-#+:akcl
+#+:GCL
 (defstruct (xdr-stream
                 (:print-function  print-xdr-stream))
            "A structure to hold XDR streams. The stream is printed out."
            (handle ) ;; this is what is used for xdr-open xdr-read xdr-write
            (name ))  ;; this is used for printing
-#+(and :gcl (not (or :dos :win32)))
+#+(and :GCL (not (or :dos :win32)))
 (defun |xdrOpen| (str dir) (make-xdr-stream :handle (system:xdr-open str) :name str))
-#+:CCL
-(defun |xdrOpen| (str dir) (xdr-open str dir) )
-#+(and :gcl (or :dos :win32))
+#+(and :GCL (or :dos :win32))
 (defun |xdrOpen| (str dir) (format t "xdrOpen called"))
 
-#+(and :akcl (not (or :dos :win32)))
+#+(and :GCL (not (or :dos :win32)))
 (defun |xdrRead| (xstr r) (system:xdr-read (xdr-stream-handle xstr) r) )
-#+:CCL
-(defun |xdrRead| (xstr r) (xdr-read xstr r) )
-#+(and :gcl (or :dos :win32))
+#+(and :GCL (or :dos :win32))
 (defun |xdrRead| (str) (format t "xdrRead called"))
 
-#+(and :akcl (not (or :dos :win32)))
+#+(and :GCL (not (or :dos :win32)))
 (defun |xdrWrite| (xstr d) (system:xdr-write (xdr-stream-handle xstr) d) )
-#+:CCL
-(defun |xdrWrite| (xstr d) (xdr-write xstr d) )
-#+(and :gcl (or :dos :win32))
+#+(and :GCL (or :dos :win32))
 (defun |xdrWrite| (str) (format t "xdrWrite called"))
 
 ;; here is a test for XDR

@@ -61,8 +61,6 @@
   (if restart
    (sys::disksave core-image :restart-function restart)
    (sys::disksave core-image))
-#+:CCL
-  (preserve)
 #+:sbcl
   (let* ((restart-fun 
                (if restart
@@ -138,7 +136,7 @@
   (mapcar #'(lambda (f) (load f)) files))
 
 ;;; How to exit Lisp process
-#+(and :gcl :common-lisp)
+#+(and :GCL :common-lisp)
 (defun quit() (lisp::quit))
 
 #+:sbcl
@@ -188,7 +186,7 @@
 
 ;;; Chdir function
 
-#+:gcl
+#+:GCL
 (defun chdir (dir)
  (system::chdir dir))
 
@@ -230,10 +228,10 @@
 
 (defun |load_quietly| (f)
     ;;; (format *error-output* "entred load_quietly ~&") 
-    #-(or :GCL :CCL)
+    #-:GCL
     (handler-bind ((warning #'muffle-warning))
                   (load f))
-    #+(or :GCL :CCL)
+    #+:GCL
     (load f)
     ;;; (format *error-output* "finished load_quietly ~&") 
 )
@@ -252,7 +250,7 @@
 
 )
 
-#+:gcl
+#+:GCL
 (eval-when (:compile-toplevel :load-toplevel :execute)
 (setf *c-type-to-ffi* '(
     (int LISP::int)
@@ -435,7 +433,7 @@
         (purpose int)
         (val int))
 
-#+:gcl
+#+:GCL
 (LISP::clines "extern double sock_get_float();")
 
 (fricas-foreign-call |sockGetFloat| "sock_get_float" double
@@ -463,7 +461,7 @@
        (purpose int)
        (sig int))
 
-#+:gcl
+#+:GCL
 (progn
 
 (LISP::defentry sock_get_string_buf (LISP::int LISP::object LISP::int)
@@ -660,7 +658,7 @@
 (defun get-current-directory ()
   (namestring (extensions::default-directory)))
 
-#+(or :ecl :gcl :sbcl :clisp :openmcl)
+#+(or :ecl :GCL :sbcl :clisp :openmcl)
 (defun get-current-directory ()
     (trim-directory-name (namestring (truename ""))))
 
@@ -698,7 +696,7 @@
     (let ((ns (namestring name)))
          (if (and (consp (pathname-directory name))
                   (eq (car (pathname-directory name))
-                      #-:gcl :absolute #+:gcl :root))
+                      #-:GCL :absolute #+:GCL :root))
              ns
              (concatenate 'string (get-current-directory)  "/" ns))))
 

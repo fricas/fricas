@@ -491,8 +491,7 @@
       (CONS (LIST 'SPADLET (CAR VARS) (CAR INITS))
            (DO_LET (CDR VARS) (CDR INITS)))))
  
-#-:CCL
-(defun NREVERSE0 (X) ; Already built-in to CCL
+(defun NREVERSE0 (X) 
   "Returns LST, reversed. The argument is modified.
 This version is needed so that (COLLECT (IN X Y) ... (RETURN 'JUNK))=>JUNK."
  (if (ATOM X) X (NREVERSE X)))
@@ -902,7 +901,6 @@ LP  (COND ((NULL X)
 ;;; if a modemap is only partially complete. If this is true then the 
 ;;; modemap will contain the constant [[$EmptyMode]]. So the call 
 ;;; ends up being [[CONTAINED |$EmptyMode| Y]]. 
-#-:CCL
 (DEFUN CONTAINED (X Y)
   (if (symbolp x)
       (contained\,eq X Y)
@@ -1163,13 +1161,9 @@ LP  (COND ((NULL X)
  
 (defmacro |elapsedUserTime| () '(get-internal-run-time))
  
-#+IBCL
-(defmacro |elapsedGcTime| () '(system:gbc-time-report))
-#+AKCL
+#+:GCL
 (defmacro |elapsedGcTime| () '(system:gbc-time))
-#+:CCL
-(defmacro |elapsedGcTime| () '(lisp:gctime))
-#-(OR :CCL IBCL AKCL)
+#-:GCL
 (defmacro |elapsedGcTime| () '0)
  
 (defmacro |do| (&rest args) (CONS 'PROGN args))

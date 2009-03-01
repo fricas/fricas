@@ -63,7 +63,7 @@ editFile file ==
     OBEY STRCONC('"notepad ", namestring pathname file)
   OBEY STRCONC('"$AXIOM/lib/SPADEDIT ",namestring pathname file)
 
--- Reads a line, defaulting stream to *standard-input*
-READLINE(:s) ==
-  read_-line(first s)
+-- Reads a line,
+READLINE(s) ==
+  read_-line(s)
 

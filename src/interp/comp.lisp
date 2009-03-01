@@ -77,38 +77,20 @@
          (if |$InteractiveMode| (make-broadcast-stream)
            *standard-output*))
         (*compile-verbose* nil))
-    #-(or :GCL :CCL)
+    #-:GCL
     (handler-bind ((warning #'muffle-warning)
                    #+:sbcl (sb-ext::compiler-note #'muffle-warning))
       (funcall driver fn)
       )
-    #+(or :GCL :CCL)
+    #+:GCL
       (funcall driver fn)
 ))
 
 (defun |compQuietly| (fn)
     (comp_quietly_using_driver #'COMP fn))
 
-#-:CCL
 (defun |compileFileQuietly| (fn)
     (comp_quietly_using_driver #'COMPILE-FILE fn))
-
-#+:CCL
-(defun |compileFileQuietly| (fn)
-  (let (
-     ;; following creates a null outputstream if $InteractiveMode
-     (*standard-output*
-       (if |$InteractiveMode| (make-broadcast-stream) *standard-output*)))
-     ;; The output-library is not opened before use unless set explicitly
-     (if (null output-library)
-         (|openOutputLibrary| 
-           (setq |$outputLibraryName|
-            (if (null |$outputLibraryName|)
-                (make-pathname :directory (get-current-directory)
-                               :name "user.lib")
-                (if (filep |$outputLibraryName|) (truename |$outputLibraryName|)
-                                                 |$outputLibraryName|)))))
-     (compile-lib-file fn)))
 
 ;; The following are used mainly in setvars.boot
 (defun notEqualLibs (u v)
