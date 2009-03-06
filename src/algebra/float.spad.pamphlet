@@ -863,13 +863,21 @@ Float():
       t
 
    fixed f ==
-      zero? f => "0.0"
-      zero? exponent f =>
-        padFromRight concat(convert(mantissa f)@S, ".0")
-      negative? f => concat("-", fixed abs f)
       d := if OUTPREC() = -1 then digits::I else OUTPREC()
---    g := convert10(abs f,digits); m := g.mantissa; e := g.exponent
-      g := convert10(abs f,d); m := g.mantissa; e := g.exponent
+      zero? f => 
+         OUTPREC() = -1 => "0.0"
+         concat("0", concat(".", padFromLeft new(d::N, zero)))
+      zero? exponent f =>
+        concat(padFromRight convert(mantissa f)@S,
+               concat(".", padFromLeft new(d::N, zero)))
+      negative? f => concat("-", fixed abs f)
+      bl := LENGTH(f.mantissa) + f.exponent
+      dd :=
+          OUTPREC() = -1 => d
+          bl > 0 => (146*bl) quo 485 + 1 + d
+          d
+      g := convert10(abs f, dd)
+      m := g.mantissa; e := g.exponent
       if OUTPREC() ~= -1 then
          -- round g to OUTPREC digits after the decimal point
          l := length10 m
