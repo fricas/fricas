@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-01-25], 
+AC_INIT([FriCAS], [2009-03-11], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -627,7 +627,7 @@ LDF=
 LISP=lsp
 
 case $target in
-    *bsd*)
+    *bsd*|*dragonfly*)
         AC_DEFINE([BSDplatform], [], [BSD flavour])
         CCF="-O2 -pipe -fno-strength-reduce -Wall -D_GNU_SOURCE -I/usr/local/include"
         LDF="-L/usr/local/lib"
