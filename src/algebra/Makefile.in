@@ -334,9 +334,6 @@ GUESSLIST= SUPEXPR FAMR2 NEWTON UFPS GOPT GUESSF1 \
 TESTLIST= TESTCNT TESTAUX TESTUNIT
 
 
-# The algebra build is not yet ready for parallel build.
-.NOTPARALLEL:
-
 .PHONY: all all-algebra
 all: all-ax
 
@@ -418,9 +415,18 @@ stamp-oboo3: stamp-db
 
 stamp-bootstrap: stamp-oboo3
 	if [ ! -f stamp-bootstrap ] ; then \
-	   for A in ${SPADLIST} ; do \
-	      echo ')compile "'$$A'.spad"' | DAASE=./r7 ${INTERPSYS} ; \
-	   done ; \
+           echo -n 'main-bootstrap: ' > boot.mak ; \
+           for A in ${SPADLIST} ; do \
+               echo -n $${A}.NRLIB/$${A}.lsp "" >> boot.mak ; \
+           done ; \
+           echo >> boot.mak ; \
+           for A in ${SPADLIST} ; do \
+              echo $${A}.NRLIB/$${A}.lsp: $${A}.spad >> boot.mak ; \
+              echo -e '\techo ")compile" $$< | DAASE=./r7 ${INTERPSYS}' \
+                      >> boot.mak ; \
+              echo >> boot.mak ; \
+           done ; \
+           ${MAKE} -f boot.mak main-bootstrap ; \
 	   echo ')lisp (make-databases "" nil)' | DAASE=./r7 ${INTERPSYS} ; \
 	   mkdir -p r8/algebra ; \
 	   mv browse.daase  category.daase  compress.daase  interp.daase \
@@ -600,6 +606,4 @@ clean-local: mostlyclean-local
 distclean-local: clean-local
 
 include extract-spad.mk
-
-.NOTPARALLEL:
 
