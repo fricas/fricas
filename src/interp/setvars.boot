@@ -690,16 +690,15 @@ setOutputAlgebra arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    if null fm then fm := 'A
-    filename := $FILEP(fn,ft,fm)
+    filename := $FILEP(fn, ft)
     null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft,fm])
+      sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $algebraOutputStream
       $algebraOutputStream := testStream
       $algebraOutputFile := object2String filename
       sayKeyedMsg("S2IV0004",['"Algebra",$algebraOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft,fm])
+    sayKeyedMsg("S2IV0003",[fn,ft])
 
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputAlgebra()
@@ -810,15 +809,14 @@ setOutputFortran arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    if null fm then fm := 'A
-    filename := $FILEP(fn,ft,fm)
-    null filename => sayKeyedMsg("S2IV0003",[fn,ft,fm])
+    filename := $FILEP(fn, ft)
+    null filename => sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := makeStream(append,filename)) =>
       SHUT $fortranOutputStream
       $fortranOutputStream := testStream
       $fortranOutputFile := object2String filename
       if null quiet then sayKeyedMsg("S2IV0004",['FORTRAN,$fortranOutputFile])
-    if null quiet then sayKeyedMsg("S2IV0003",[fn,ft,fm])
+    if null quiet then sayKeyedMsg("S2IV0003",[fn,ft])
   if null quiet then sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputFortran()
 
@@ -883,16 +881,15 @@ setOutputMathml arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    if null fm then fm := 'A
-    filename := $FILEP(fn,ft,fm)
+    filename := $FILEP(fn, ft)
     null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft,fm])
+      sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $mathmlOutputStream
       $mathmlOutputStream := testStream
       $mathmlOutputFile := object2String filename
       sayKeyedMsg("S2IV0004",['"MathML",$mathmlOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft,fm])
+    sayKeyedMsg("S2IV0003",[fn,ft])
 
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputMathml()
@@ -957,16 +954,15 @@ setOutputOpenMath arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    if null fm then fm := 'A
-    filename := $FILEP(fn,ft,fm)
+    filename := $FILEP(fn, ft)
     null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft,fm])
+      sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $openMathOutputStream
       $openMathOutputStream := testStream
       $openMathOutputFile := object2String filename
       sayKeyedMsg("S2IV0004",['"OpenMath",$openMathOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft,fm])
+    sayKeyedMsg("S2IV0003",[fn,ft])
 
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputOpenMath()
@@ -1030,16 +1026,15 @@ setOutputFormula arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    if null fm then fm := 'A
-    filename := $FILEP(fn,ft,fm)
+    filename := $FILEP(fn, ft)
     null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft,fm])
+      sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $formulaOutputStream
       $formulaOutputStream := testStream
       $formulaOutputFile := object2String filename
       sayKeyedMsg("S2IV0004",['"IBM Script formula",$formulaOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft,fm])
+    sayKeyedMsg("S2IV0003",[fn,ft])
 
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputFormula()
@@ -1103,16 +1098,15 @@ setOutputTex arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    if null fm then fm := 'A
-    filename := $FILEP(fn,ft,fm)
+    filename := $FILEP(fn, ft)
     null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft,fm])
+      sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
       SHUT $texOutputStream
       $texOutputStream := testStream
       $texOutputFile := object2String filename
       sayKeyedMsg("S2IV0004",['"TeX",$texOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft,fm])
+    sayKeyedMsg("S2IV0003",[fn,ft])
 
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputTex()

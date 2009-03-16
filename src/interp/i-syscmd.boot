@@ -2201,7 +2201,7 @@ reportOpsFromUnitDirectly0 D ==
   reportOpsFromUnitDirectly D
 
 reportOpsFromUnitDirectly1 D ==
-  showFile := pathname ['SHOW,'LISTING,$listingDirectory]
+  showFile := pathname ['SHOW,'LISTING]
   _$ERASE showFile
   $sayBrightlyStream : fluid := MAKE_-OUTSTREAM(showFile)
   sayShowWarning()
@@ -2223,7 +2223,7 @@ reportOpsFromLisplib0(unitForm,u)  ==
   reportOpsFromLisplib(unitForm,u)
 
 reportOpsFromLisplib1(unitForm,u)  ==
-  showFile := pathname ['SHOW,'LISTING,$listingDirectory]
+  showFile := pathname ['SHOW,'LISTING]
   _$ERASE showFile
   $sayBrightlyStream : fluid := MAKE_-OUTSTREAM (showFile)
   sayShowWarning()

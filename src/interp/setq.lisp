@@ -213,11 +213,9 @@
 ;; These are for the output routines in OUT BOOT
 
 (SETQ $LINELENGTH 77)
-(SETQ $MARGIN 3)
-(SETQ *TALLPAR NIL)
-(SETQ BLANK " ")
-(SETQ MATBORCH "*")
-(SETQ UNDERBAR "_")
+(DEFPARAMETER $MARGIN 3)
+(DEFCONST BLANK " ")
+(DEFCONST UNDERBAR "_")
 (SETQ |$fortranArrayStartingIndex| 0)
 
 ;; These were originally in INIT LISP
@@ -275,10 +273,6 @@
 
 (SETQ |$useIntegerSubdomain| 'T)
 
-;; Directories/disks on which to place various kinds of files
-(SETQ |$libraryDirectory| 'A)
-(SETQ |$listingDirectory| 'A)
-
 ;; See CLAMMED BOOT for defs of following functions
 (SETQ |$clamList| '(
   (|canCoerce| |hash| UEQUAL |count|)
@@ -295,8 +289,6 @@
 ;  (|isSubDomain|   |hash| UEQUAL |count|)
 ))
 
-;; following is symbol denoting a failed operation
-(SETQ |$failure| (GENSYM))
 ;; the following symbol holds the canonical "failed" value
 (SETQ |$failed| "failed")
 
@@ -333,8 +325,6 @@
 (SETQ |$tracedMapSignatures| ())
 (SETQ |$highlightAllowed| 'T)
          ;" used in BRIGHTPRINT and is a )set variable"
-
-(SETQ |$abbreviationTable| NIL)
 
 (SETQ |$ConstructorNames| '(
   |SubDomain| |Union| |Record|
@@ -401,10 +391,7 @@
 (SETQ |$NoValueMode| '|NoValueMode|)
 (SETQ |$DummyFunctorNames| '(|Mapping|))
 (SETQ |$form| NIL)
-(SETQ |$DoubleQuote| '"\"")
-(SETQ |$EmptyString| "")
 (SETQ |$EmptyVector| (VECTOR))
-(SETQ |$EmptyList| ())
 (SETQ |$Index| 0)
 (SETQ |$true| ''T)
 (SETQ |$false| NIL)
@@ -485,9 +472,6 @@
 (SETQ |$NRTmonitorIfTrue| NIL)
 
 (SETQ |$useConvertForCoercions| NIL)
-
-(MAKEPROP '|One| '|defaultType| |$Integer|)
-(MAKEPROP '|Zero| '|defaultType| |$Integer|)
 
 ;; ---- start of initial settings for variables used in test.boot
 

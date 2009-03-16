@@ -197,11 +197,8 @@
         (|AXL-error| l))
 )
 
-(defmacro define-constant (name value)
-   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
-
 (eval-when (:execute :load-toplevel)
-    (define-constant |G-axclique_string_305639517| (cons #'H-String nil))
-    (define-constant |G-axclique_integer_685864888| (cons #'H-integer nil))
-    (define-constant |G-axclique_error_011667951| (cons #'H-error nil))
+    (DEFCONST |G-axclique_string_305639517| (cons #'H-String nil))
+    (DEFCONST |G-axclique_integer_685864888| (cons #'H-integer nil))
+    (DEFCONST |G-axclique_error_011667951| (cons #'H-error nil))
 )

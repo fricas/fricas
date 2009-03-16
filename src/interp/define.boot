@@ -104,8 +104,6 @@ getTargetFromRhs(lhs,rhs,e) ==
   rhs is ['add,D,['CAPSULE,:.]] => getTargetFromRhs(lhs,D,e)
   rhs is ['Record,:l] => ['RecordCategory,:l]
   rhs is ['Union,:l] => ['UnionCategory,:l]
-  rhs is ['List,:l] => ['ListCategory,:l]
-  rhs is ['Vector,:l] => ['VectorCategory,:l]
   [.,target,.]:= compOrCroak(rhs,$EmptyMode,e)
   target
  

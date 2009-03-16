@@ -211,11 +211,6 @@
 
 ; **** X. Random tables
 
-(defvar MATBORCH "*")
-(defvar $MARGIN 3)
-(defvar *TALLPAR NIL)
-(defvar BLANK " ")
-
 (MAKEPROP 'COND '|Nud| '(|if| |if| 130 0))
 (MAKEPROP 'CONS '|Led| '(CONS CONS 1000 1000))
 (MAKEPROP 'APPEND '|Led| '(APPEND APPEND 1000 1000))

@@ -271,7 +271,7 @@ SigListOpSubsume([[name1,sig1,:.],:.],list) ==
   lsig1:=LENGTH sig1
   ans:=[]
   for (n:=[[name2,sig2,:.],:.]) in list repeat
-    EQ(name1, name2) and EQ(lsig1,LENGTH sig2) and SourceLevelSubsume(sig1,sig2) =>
+    EQ(name1, name2) and EQL(lsig1,LENGTH sig2) and SourceLevelSubsume(sig1,sig2) =>
       ans:=[n,:ans]
   return ans
  

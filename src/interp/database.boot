@@ -89,15 +89,15 @@ augmentLisplibModemapsFromFunctor(form,opAlist,signature) ==
           :$lisplibModemapAlist]
 
 saveUsersHashTable() ==
-  _$ERASE('USERS,'DATABASE,'a)
-  stream:= writeLib1('USERS,'DATABASE,'a)
+  _$ERASE('USERS,'DATABASE)
+  stream:= writeLib('USERS,'DATABASE)
   for k in MSORT HKEYS $usersTb repeat
     rwrite(k, HGET($usersTb, k), stream)
   RSHUT stream
 
 saveDependentsHashTable() ==
-  _$ERASE('DEPENDENTS,'DATABASE,'a)
-  stream:= writeLib1('DEPENDENTS,'DATABASE,'a)
+  _$ERASE('DEPENDENTS,'DATABASE)
+  stream:= writeLib('DEPENDENTS,'DATABASE)
   for k in MSORT HKEYS $depTb repeat
     rwrite(k, HGET($depTb, k), stream)
   RSHUT stream

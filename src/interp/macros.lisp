@@ -41,7 +41,7 @@
 (provide 'Boot)
  
 (in-package "BOOT")
- 
+
 (defvar |$compilingMap| ())
 (defvar |$definingMap| nil)
  
@@ -1085,7 +1085,7 @@ LP  (COND ((NULL X)
  
 (defun |sayMSG2File| (msg)
   (PROG (file str)
-        (SETQ file (|makePathname| '|spadmsg| '|listing| |$listingDirectory|))
+        (SETQ file (|makePathname| '|spadmsg| '|listing|))
         (SETQ str (MAKE-OUTSTREAM file))
         (sayBrightly1 msg str)
         (SHUT str) ) )
