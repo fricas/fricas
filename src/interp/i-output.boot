@@ -59,6 +59,11 @@ SETANDFILEQ($plainRTspecialCharacters,[
     '_\       -- back slash
      ])
 
+DEFPARAMETER($tallPar, false)
+DEFCONST(MATBORCH, '"*")
+DEFCONST($EmptyString, '"")
+DEFCONST($DoubleQuote, '"_"")
+
 makeCharacter n == INTERN(STRING(CODE_-CHAR n))
 
 SETANDFILEQ($RTspecialCharacters,[
@@ -1662,7 +1667,7 @@ appargs1(u,x,y,d,s) ==
   true => appargs(rest u, 1 + temp, y, temparg2)
 
 apprpar(x, y, y1, y2, d) ==
-  (not (_*TALLPAR) or (y2 - y1 < 2)) => APP('")", x, y, d)
+  (not ($tallPar) or (y2 - y1 < 2)) => APP('")", x, y, d)
   true => APP('")", x, y2, apprpar1(x, y, y1, y2 - 1, d))
 
 apprpar1(x, y, y1, y2, d) ==
@@ -1670,7 +1675,7 @@ apprpar1(x, y, y1, y2, d) ==
   true => APP('")", x, y2, apprpar1(x, y, y1, y2 - 1, d))
 
 applpar(x, y, y1, y2, d) ==
-  (not (_*TALLPAR) or (y2 - y1 < 2)) => APP('"(", x, y, d)
+  (not ($tallPar) or (y2 - y1 < 2)) => APP('"(", x, y, d)
   true => APP('"(", x, y2, applpar1(x, y, y1, y2 - 1, d))
 
 applpar1(x, y, y1, y2, d) ==

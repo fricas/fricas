@@ -298,7 +298,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
             ok := true),
       RSHUT $libFile)
   if ok then lisplibDoRename(libName)
-  filearg := $FILEP(libName,$spadLibFT,$libraryDirectory)
+  filearg := $FILEP(libName, $spadLibFT)
   RPACKFILE filearg
   FRESH_-LINE $algebraOutputStream
   sayMSG fillerSpaces(72,'"-")
@@ -317,9 +317,9 @@ getLisplibVersion libName ==
   version
  
 initializeLisplib libName ==
-  _$ERASE(libName,'ERRORLIB,$libraryDirectory)
+  _$ERASE(libName,'ERRORLIB)
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
-  $libFile:= writeLib1(libName,'ERRORLIB,$libraryDirectory)
+  $libFile:= writeLib(libName,'ERRORLIB)
   ADDOPTIONS('FILE, $libFile, libName)
   $lisplibOpAlist := nil  --operations alist for new runtime system
   $lisplibSignatureAlist := nil
@@ -362,8 +362,8 @@ finalizeLisplib libName ==
     sayMSG ['"     not replacing ",$spadLibFT,'" for",:bright libName]
 
 lisplibDoRename(libName) ==
-  _$REPLACE([libName,$spadLibFT,$libraryDirectory],
-    [libName,'ERRORLIB,$libraryDirectory])
+  _$REPLACE([libName,$spadLibFT],
+    [libName,'ERRORLIB])
  
 lisplibError(cname,fname,type,cn,fn,typ,error) ==
   sayMSG bright ['"  Illegal ",$spadLibFT]

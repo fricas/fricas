@@ -93,6 +93,8 @@ getCaps x ==
   "STRCONC"/[first clist,:[DOWNCASE u for u in rest clist]]
  
 --% abbreviation code
+
+DEFPARAMETER($abbreviationTable, '())
  
 getAbbreviation(name,c) ==
   --returns abbreviation of name with c arguments

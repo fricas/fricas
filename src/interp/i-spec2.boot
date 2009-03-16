@@ -192,9 +192,6 @@ uphas t ==
   putValue(op,objNew(code,$Boolean))
   putModeSet(op,[$Boolean])
 
---hasTest(a,b) ==
---  newHasTest(a,b)  --see NRUNFAST BOOT
-
 --% Handlers for IF
 
 upIF t ==

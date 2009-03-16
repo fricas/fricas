@@ -722,3 +722,6 @@
          (maybe-compile f cf)
          (load #-:ecl cf #+:ecl f))
 
+(defmacro DEFCONST (name value)
+   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
+

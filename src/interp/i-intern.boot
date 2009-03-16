@@ -57,6 +57,8 @@ slot         description
 SETANDFILEQ($useParserSrcPos, NIL)
 SETANDFILEQ($transferParserSrcPos, NIL)
 
+DEFCONST($failure, GENSYM())
+
 --  Making Trees
 
 mkAtreeNode x ==

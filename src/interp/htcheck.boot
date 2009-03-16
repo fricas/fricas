@@ -88,7 +88,7 @@ buildHtMacroTable() ==
         HPUT($htMacroTable,string,numOfArgs)
     for [s,:n] in $primitiveHtCommands repeat HPUT($htMacroTable,s,n)
   else
-    sayBrightly '"Warning: macro table not found"
+    sayBrightly '"Warning: HyperTeX macro table not found"
   $htMacroTable
 
 getHtMacroItem line ==
