@@ -523,16 +523,13 @@ printStats [byteCount,elapsedSeconds] ==
  
 extendsCategoryForm(domain,form,form') ==
   --is domain of category form also of category form'?
-  --domain is only used for SubsetCategory resolution.
-  --and ensuring that X being a Ring means that it
+  --domain is only used for ensuring that X being a Ring means that it
   --satisfies (Algebra X)
   form=form' => true
   form=$Category => nil
   form' is ["Join",:l] => and/[extendsCategoryForm(domain,form,x) for x in l]
   form' is ["CATEGORY",.,:l] =>
     and/[extendsCategoryForm(domain,form,x) for x in l]
-  form' is ["SubsetCategory",cat,dom] =>
-    extendsCategoryForm(domain,form,cat) and isSubset(domain,dom,$e)
   form is ["Join",:l] => or/[extendsCategoryForm(domain,x,form') for x in l]
   form is ["CATEGORY",.,:l] =>
     member(form',l) or
