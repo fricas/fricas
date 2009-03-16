@@ -782,7 +782,6 @@ extendsCategory(dom,u,v) ==
   u=v => true
   v is ["Join",:l] => and/[extendsCategory(dom,u,x) for x in l]
   v is ["CATEGORY",.,:l] => and/[extendsCategory(dom,u,x) for x in l]
-  v is ["SubsetCategory",cat,d] => extendsCategory(dom,u,cat) and isSubset(dom,d,$e)
   v := substSlotNumbers(v,$template,$functorForm)
   extendsCategoryBasic0(dom,u,v) => true
   $why :=

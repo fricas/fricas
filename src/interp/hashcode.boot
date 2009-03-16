@@ -98,10 +98,5 @@ hashString str ==
 hashCombine(hash1, hash2) ==
          MOD(ASH(LOGAND(hash2, 16777215), 6) + hash1, $hashModulus)
 
-
 $VoidHash := hashString '"Void"
 
-
--- following two lines correct bad coSig properties due to SubsetCategory
---putConstructorProperty('LocalAlgebra,'coSig,'(NIL T T T))
---putConstructorProperty('Localize,'coSig,'(NIL T T T))

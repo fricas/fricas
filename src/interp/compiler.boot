@@ -113,7 +113,7 @@ comp2(x,m,e) ==
   [y,m',e]
 
 comp3(x,m,$e) ==
-  --returns a Triple or %else nil to signalcan't do'
+  --returns a Triple or else nil to signal can't do
   $e:= addDomain(m,$e)
   e:= $e --for debugging purposes
   m is ["Mapping",:.] => compWithMappingMode(x,m,e)
@@ -496,10 +496,6 @@ substituteIntoFunctorModemap(argl,modemap is [[dc,:sig],:.],e) ==
   nil
 
 --% SPECIAL EVALUATION FUNCTIONS
-
-compConstructorCategory(x,m,e) == [x,resolve($Category,m),e]
-
-compString(x,m,e) == [x,resolve($StringCategory,m),e]
 
 --% CONS
 

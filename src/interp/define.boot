@@ -577,11 +577,8 @@ genDomainViewList(id,catlist,firsttime) ==
  
 genDomainView(viewName,originalName,c,viewSelector) ==
   c is ['CATEGORY,.,:l] => genDomainOps(viewName,originalName,c)
-  code:=
-    c is ['SubsetCategory,c',.] => c'
-    c
+  code:= c
   $e:= augModemapsFromCategory(originalName,viewName,nil,c,$e)
-  --$alternateViewList:= ((viewName,:code),:$alternateViewList)
   cd:= ['LET,viewName,[viewSelector,originalName,mkDomainConstructor code]]
   if null member(cd,$getDomainCode) then
           $getDomainCode:= [cd,:$getDomainCode]

@@ -337,18 +337,18 @@
 (SETQ |$abbreviationTable| NIL)
 
 (SETQ |$ConstructorNames| '(
-  |SubDomain| |List| |Union| |Record| |Vector|
+  |SubDomain| |Union| |Record|
       ))
            ;" Used in isFunctor test, and compDefine "
 
 (SETQ |$SpecialDomainNames| '(
-  |add| CAPSULE |SubDomain| |List| |Union| |Record| |Vector|
+  |add| CAPSULE |SubDomain| |Union| |Record|
       ))
                  ;" Used in isDomainForm, addEmptyCapsuleIfnecessary"
 
 (SETQ |$CategoryNames| '(
    |Category| |CATEGORY| |RecordCategory| |Join| |EnumerationCategory|
-   |StringCategory| |SubsetCategory| |UnionCategory|
+   |UnionCategory|
       ))
 
 (SETQ |$printStorageIfTrue| NIL) ;; storage info disabled in common lisp
@@ -380,7 +380,6 @@
 (SETQ |$PositiveInteger| '(|PositiveInteger|))
 (SETQ |$RationalNumber| '(|Fraction| (|Integer|)))
 (SETQ |$String| '(|String|))
-(SETQ |$StringCategory| '(|StringCategory|))
 (SETQ |$Symbol| '(|Symbol|))
 (SETQ |$Void|  '(|Void|))
 (SETQ |$QuotientField| '|Fraction|)
