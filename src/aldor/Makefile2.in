@@ -2,6 +2,7 @@ VPATH=@srcdir@
 ALDOR=@ALDOR@
 INTERPSYS = DAASE=$(axiom_targetdir) $(axiom_target_bindir)/AXIOMsys
 
+# We assume here that the directory 'al' has already been created.
 default: al/libaxiom.al
 
 ###################################################################
@@ -29,10 +30,9 @@ ap/%.lsp:
 
 ###################################################################
 # All the files that should go into libaxiom.al
-libaxiom_members=$(patsubst %,al/libaxiom.al(%.ao),$(CLIQUES))
-al/libaxiom.al: al/.dir $(libaxiom_members)
-al/libaxiom.al(%.ao): ao/%.ao
-	ar r $@ $<
+libaxiom_members=$(patsubst %,ao/%.ao,$(CLIQUES))
+al/libaxiom.al: $(libaxiom_members)
+	ar r $@ $+
 
 # From the .ap dependency we get a lot more dependencies, see cliques.mk.
 $(patsubst %,ao/%.ao,$(aldor_src)): extra_ao_options=

@@ -521,15 +521,11 @@ MakefileGeneration: with {
 		}
 		-- Now we know that there is at least one dependency.
 		-- What goes into the temporary library...
-		out << libname << ": " << libname << depmember << nl;
 		-- The order of members in the temporary library is
 		-- as in libaxiom.al.
-		out << libname << "(%.ao): ao/%.ao ";
-		out << libaxiom << "(%.ao)" << nl;
-		out << tab << "ar r $@ $<" << nl;
-		-- A libaxiom.al member depends on DEPS_...
-		out << libaxiom << "(" << name << ".ao): ";
-		out << libaxiom << depmember << nl;
+		out << libname << ": ";
+		out << "$(patsubst %,ao/%,$(DEPS__" + name + "))" << nl;
+		out << tab << "ar r $@ $+" << nl;
 	}
 
 	---------------------------------------------------

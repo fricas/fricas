@@ -111,13 +111,32 @@ initlist.ap: initlist.as tmp/.dir
 	$(ALDOR) -Fap=tmp/$@ $<
 	sed -e 's/\([->A-Za-z0-9\\]\+\)/|\1|/g' tmp/$@ > $@
 
+
+###################################################################
+# Generate easlist.lsp. It is used internally in the
+# 'print-dependencies' function in $(GENAX) and used in all
+# the later calls of $(GENAX).
+easylist.lsp: mkeasy.lsp initlist.ap tmp/.dir
+	$(INTERPSYS) < $< > tmp/mkeasy.log
+	test -f $@
+
+mkeasy.lsp:
+	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (generate-easy "easylist.lsp")' >> $@
+	echo ')lisp (quit)' >> $@
+
+
+
+###################################################################
+# Generate (from initlist.ap) initlist.lst and initial files and
+# dependencies in the init_ap and gendeps directories.
 geninit_dirs = init_ap ap gendeps tmp
-initlist.lst: mkinit.lsp initlist.ap $(patsubst %,%/.dir,$(geninit_dirs))
+initlist.lst: mkinit.lsp easylist.lsp $(patsubst %,%/.dir,$(geninit_dirs))
 	$(INTERPSYS) < $< > tmp/mkinit.log
 	test -f $@
 
-# here and in the following we use )lisp instead of )fin, because )fin does not
-# work in ecl based FriCAS.
+# here and in the following we use )lisp instead of )fin, because )fin
+# does not work in ecl based FriCAS.
 mkinit.lsp:
 	echo ')lisp (load "$(GENAX)")' > $@
 	echo ')lisp (generate-init "initlist.lst")' >> $@
@@ -128,7 +147,7 @@ mkinit.lsp:
 # 2. Dependencies generated from the $(domains).
 ###################################################################
 domain_dep_files = $(patsubst %,gendeps/%.dep,$(domains))
-$(domain_dep_files): gendeps/%.dep: tmp/dep_%.lsp tmp/.dir
+$(domain_dep_files): gendeps/%.dep: tmp/dep_%.lsp tmp/.dir initlist.lst
 	$(INTERPSYS) < $< > tmp/dep_$*.log
 	test -f $@
 
@@ -217,7 +236,7 @@ aldor_misc = subsetc
 aldor_srcs = $(aldor_lang) $(aldor_basics) $(aldor_extensions) $(aldor_misc)
 
 aldor_dep_files = $(patsubst %,gendeps/%.dep,$(aldor_srcs))
-$(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.ap gendeps/.dir
+$(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.lst gendeps/.dir
 	echo 'Generating dependency of $*.'
 	$(INTERPSYS) < $< > tmp/dep_$*.log
 	test -f $@
@@ -273,7 +292,7 @@ cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
 ###################################################################
 # After we have generated cliques.mk, we can do the real work an start
 # compilation of al/libaxiom.al.
-al/libaxiom.al: cliques.mk
+al/libaxiom.al: cliques.mk al/.dir
 	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)"
 
 
@@ -286,13 +305,13 @@ aldor_lsp_files := $(patsubst %,lsp/%.lsp, $(aldor_srcs))
 lsp/runtime.lsp: runtime.ao lsp/.dir
 	$(ALDOR) -flsp=$@ $<
 
-runtime.ao: $(ALDORROOT)/lib/libfoam.al
+runtime.ao: $(ALDORROOT)/lib/libfoam.al ao/.dir
 	ar x $< $@
 
-$(aldor_lsp_files): lsp/%.lsp: lsp/.dir al/libaxiom.al(%.ao)
-	ar x al/libaxiom.al $*.ao
-	$(ALDOR) -flsp=$@ $*.ao
-	rm $*.ao
+ao/%.ao: al/libaxiom.al ; # The .ao file will be built via Makefile2.
+
+$(aldor_lsp_files): lsp/%.lsp: ao/%.ao lsp/.dir
+	$(ALDOR) -flsp=$@ $<
 
 $(runtime_files): lib/%.$(FASLEXT): tmp/mko_%.lsp lsp/%.lsp lib/.dir
 	$(INTERPSYS) < $< > tmp/mko_$*.log
