@@ -65,20 +65,19 @@
 ;;
 ; Among them are List, VectorCategory, and CoercibleTo.
 ; We need a list of such types since if some type T in find-deps
-; appear in an apply context (|Apply| E) with the function E being an
+; appears in an apply context (|Apply| E) with the function E being an
 ; easy type then we do not need full information from T.
-(defun easy-types (filename)
+(defun generate-easy (filename)
   (let ((fname (pathname filename))
 	(saved-extended-domains |$extendedDomains|))
-    (if (|fnameReadable?| fname)
-	(with-open-file (str fname) (read str))
-      (with-open-file (str fname :direction :output)
-	; We don't have to bother with initforms here!!!
-	(|setExtendedDomains| nil)
-	(print (append (mapcan 'easy-type (all-constructors))
-		       '(|Tuple| |->|)) ; special "easy" constructors
-	       str)
-	(|setExtendedDomains| saved-extended-domains)))))
+    (with-open-file (str fname :direction :output)
+      ; We don't have to bother with initforms here!!!
+      (|setExtendedDomains| nil)
+      (print (append (mapcan 'easy-type (all-constructors))
+		     '(|Tuple| |->|)) ; special "easy" constructors
+	     str))))
+
+
 (defun not-package-name (x)
   (unless (|isDefaultPackageName| x) (list x)))
 (defun all-constructors () 
@@ -121,11 +120,6 @@
 	((not (eq (caddr apform) '|Type|)) nil)
 	(t t)))
 
-; This is the list of all univariate type constructors whose
-; argument type is 'Type'.
-(setq *easytypes* (easy-types "easylist.lsp"))
-
-(debug-print "*easytypes*" *easytypes*)
 
 
 ;;
@@ -210,6 +204,10 @@
 ; Find and print dependencies for 'apform' to a file with name 'name'.
 (defun print-dependencies (apform name)
   (let ((filename (pathname (format nil "gendeps/~a.dep" name))))
+    ; *easytypes* is the list of all univariate type constructors
+    ; whose argument type is 'Type'.
+    (setq *easytypes*
+	  (with-open-file (str (pathname "easylist.lsp")) (read str)))
     (with-open-file (str filename :direction :output)
       (debug-print "print-dependencies (name)" name)
       (debug-print "print-dependencies (apform)" apform)
