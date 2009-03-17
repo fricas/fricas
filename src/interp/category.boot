@@ -418,11 +418,6 @@ JoinInner(l,$e) ==
     [[$NewCatVec.(0)],:FundamentalAncestors]
                     --principal ancestor . all those already included
   copied:= nil
-  originalVector:= true
-  -- we can not decide to extend the vector in multiple ways
-  -- this flag helps us detect this case
-  originalVector := false
-    -- this skips buggy code which discards needed categories
   for [b,condition] in FindFundAncs l' repeat
       --This loop implements Category Subsumption
           --as described in SYSTEM SCRIPT

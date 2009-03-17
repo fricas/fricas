@@ -310,10 +310,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 --  1. bind global variables
     $addForm: local := nil
  
-            --This list is only used in genDomainViewName, for generating names
-            --for alternate views, if they do not already exist.
-            --format: Alist: (domain name . sublist)
-            --sublist is alist: category . name of view
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
     $form: local := nil
@@ -559,25 +555,21 @@ makeFunctorArgumentParameters(argl,sigl,target) ==
       ['Join,s,['CATEGORY,'package,:ss]]
     fn(a,s) ==
       isCategoryForm(s,$CategoryFrame) =>
-        s is ["Join",:catlist] => genDomainViewList0(a,rest s)
-        [genDomainView(a,a,s,"getDomainView")]
+        s is ["Join", :catlist] => genDomainViewList(a, rest s)
+        [genDomainView(a, s, "getDomainView")]
       [a]
  
-genDomainViewList0(id,catlist) ==
-  l:= genDomainViewList(id,catlist,true)
-  l
- 
-genDomainViewList(id,catlist,firsttime) ==
+genDomainViewList(id, catlist) ==
   null catlist => nil
   catlist is [y] and not isCategoryForm(y,$EmptyEnvironment) => nil
-  [genDomainView(if firsttime then id else genDomainViewName(id,first catlist),
-    id,first catlist,"getDomainView"),:genDomainViewList(id,rest catlist,nil)]
+  [genDomainView(id, first catlist, "getDomainView"),_
+     :genDomainViewList(id, rest catlist)]
  
-genDomainView(viewName,originalName,c,viewSelector) ==
-  c is ['CATEGORY,.,:l] => genDomainOps(viewName,originalName,c)
+genDomainView(viewName, c, viewSelector) ==
+  c is ['CATEGORY, ., :l] => genDomainOps(viewName, viewName, c)
   code:= c
-  $e:= augModemapsFromCategory(originalName,viewName,nil,c,$e)
-  cd:= ['LET,viewName,[viewSelector,originalName,mkDomainConstructor code]]
+  $e := augModemapsFromCategory(viewName, viewName, nil, c, $e)
+  cd := ['LET, viewName, [viewSelector, viewName, mkDomainConstructor code]]
   if null member(cd,$getDomainCode) then
           $getDomainCode:= [cd,:$getDomainCode]
   viewName
@@ -596,27 +588,6 @@ genDomainOps(viewName,dom,cat) ==
     [op,sig]:=opsig
     $e:= addModemap(op,dom,sig,cond,['ELT,viewName,i],$e)
   viewName
- 
-mkOpVec(dom,siglist) ==
-  dom:= getPrincipalView dom
-  substargs:= [['$,:dom.0],:
-    [[a,:x] for a in $FormalMapVariableList for x in rest dom.0]]
-  oplist:= getOperationAlistFromLisplib opOf dom.0
-  --new form is (<op> <signature> <slotNumber> <condition> <kind>)
-  ops:= MAKE_-VEC (#siglist)
-  for (opSig:= [op,sig]) in siglist for i in 0.. repeat
-    u:= ASSQ(op,oplist)
-    assoc(sig,u) is [.,n,.,'ELT] => ops.i := dom.n
-    noplist:= SUBLIS(substargs,u)
- -- following variation on assoc needed for GENSYMS in Mutable domains
-    AssocBarGensym(substitute(dom.0, '$, sig), noplist) is [., n, ., 'ELT] =>
-                   ops.i := dom.n
-    ops.i := [Undef,[dom.0,i],:opSig]
-  ops
- 
-genDomainViewName(a,category) ==
---+
-  a
  
 compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
 -- form is lhs (f a1 ... an) of definition; body is rhs;
