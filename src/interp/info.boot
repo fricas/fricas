@@ -245,8 +245,8 @@ actOnInfo(u,$e) ==
       if name="$"
         then $e:= augModemapsFromCategory(name,name,name,cat,$e)
         else
-          viewName:=genDomainViewName(name,cat)
-          genDomainView(viewName,name,cat,"HasCategory")
+          viewName := name
+          genDomainView(viewName, cat, "HasCategory")
           if not MEMQ(viewName,$functorLocalParameters) then
              $functorLocalParameters:=[:$functorLocalParameters,viewName]
       SAY("augmenting ",name,": ",cat)

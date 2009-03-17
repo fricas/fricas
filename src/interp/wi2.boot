@@ -35,12 +35,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     signature := markKillAll signature
 --  1. bind global variables
     $addForm: local
-    $viewNames: local:= nil
  
-            --This list is only used in genDomainViewName, for generating names
-            --for alternate views, if they do not already exist.
-            --format: Alist: (domain name . sublist)
-            --sublist is alist: category . name of view
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
     $DEFdepth :    local  := 0            --for conversion to new compiler 3/93
@@ -250,8 +245,8 @@ makeFunctorArgumentParameters(argl,sigl,target) ==
       ['Join,s,['CATEGORY,'package,:ss]]
     fn(a,s) ==
       isCategoryForm(s,$CategoryFrame) =>
-        s is ["Join",:catlist] => genDomainViewList0(a,rest s)
-        [genDomainView(a,a,s,"getDomainView")]
+        s is ["Join", :catlist] => genDomainViewList(a, rest s)
+        [genDomainView(a, s, "getDomainView")]
       [a]
 
 compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
