@@ -411,6 +411,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (\@ |compAtSign|)
   (|:| |compColon|)
   (\:\: |compCoerce|)
+  (|+->| |compLambda|)
   (QUOTE |compQuote|)
 
   (|add| |compAdd|)

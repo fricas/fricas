@@ -143,6 +143,34 @@ hasFormalMapVariable(x, vl) ==
   ScanOrPairVec('hasone?,x) where
      hasone? x == MEMQ(x,$formalMapVariables)
 
+argsToSig(args) ==
+    args is [":", v, t] => [[v], [t]]
+    sig1 := []
+    arg1 := []
+    bad := false
+    for arg in args repeat
+        arg is [":", v, t] =>
+             sig1 := [t, :sig1]
+             arg1 := [v, :arg1]
+        bad := true
+    bad => [nil, nil]
+    [REVERSE(arg1), REVERSE(sig1)]
+
+compLambda(x is ["+->", vl, body], m, e) ==
+    vl is [":", args, target] =>
+        args := 
+             args is ["Tuple", :a1] => a1
+             args
+        LISTP(args) =>
+             [arg1, sig1] := argsToSig(args)
+             sig1 =>
+                 ress := compAtSign(["@", ["+->", arg1, body],
+                                  ["Mapping", target, :sig1]], m, e)
+                 ress
+             stackAndThrow ["compLambda", x]
+        stackAndThrow ["compLambda", x]
+    stackAndThrow ["compLambda", x]
+
 compWithMappingMode(x,m is ["Mapping",m',:sl],oldE) ==
   $killOptimizeIfTrue: local:= true
   e:= oldE
@@ -151,9 +179,28 @@ compWithMappingMode(x,m is ["Mapping",m',:sl],oldE) ==
       (and/[extendsCategoryForm("$",s,mode) for mode in argModeList for s in sl]
         ) and extendsCategoryForm("$",target,m') then return [x,m,e]
   if STRINGP x then x:= INTERN x
-  for m in sl for v in (vl:= take(#sl,$FormalMapVariableList)) repeat
+  ress := nil
+  old__style := true
+  if x is ["+->", vl, nx] then
+      old__style := false
+      vl is [":", :.] =>
+         ress := compLambda(x,m,oldE)
+         -- In case Boot gets fixed
+         ress
+      vl := 
+          vl is ["Tuple", :vl1] => vl1
+          vl
+      vl := 
+         SYMBOLP(vl) => [vl]
+         LISTP(vl) and (and/[SYMBOLP(v) for v in vl])=> vl
+         stackAndThrow ["bad +-> arguments:", vl]
+      x := nx
+  else
+      vl:= take(#sl,$FormalMapVariableList)
+  ress => ress
+  for m in sl for v in vl repeat
     [.,.,e]:= compMakeDeclaration([":",v,m],$EmptyMode,e)
-  not null vl and not hasFormalMapVariable(x, vl) => return
+  old__style and not null vl and not hasFormalMapVariable(x, vl) => return
     [u,.,.] := comp([x,:vl],m',e) or return nil
     extractCodeAndConstructTriple(u, m, oldE)
   null vl and (t := comp([x], m', e)) => return
@@ -212,20 +259,14 @@ compWithMappingMode(x,m is ["Mapping",m',:sl],oldE) ==
       ['LAMBDA,[:vl,vec], :CDDR expandedFunction]
     scode:=nil
     vec:=nil
-    slist:=nil
     locals:=nil
     i:=-1
     for v in frees repeat
       i:=i+1
       vec:=[first v,:vec]
-      rest v = 1 =>
-                --Only used once
-        slist:=[[first v,($QuickCode => 'QREFELT;'ELT),"$$",i],:slist]
-      scode:=[['SETQ,first v,[($QuickCode => 'QREFELT;'ELT),"$$",i]],:scode]
-      locals:=[first v,:locals]
-    body:=
-      slist => SUBLISNQ(slist,CDDR expandedFunction)
-      CDDR expandedFunction
+      scode:=[['SETQ, first v, [($QuickCode => 'QREFELT;'ELT),"$$",i]], :scode]
+      locals:=[first v, :locals]
+    body:= CDDR expandedFunction
     if locals then
       if body is [['DECLARE,:.],:.] then
         body:=[CAR body,['PROG,locals,:scode,['RETURN,['PROGN,:CDR body]]]]
