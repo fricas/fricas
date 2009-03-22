@@ -171,7 +171,10 @@ compLambda(x is ["+->", vl, body], m, e) ==
         stackAndThrow ["compLambda", x]
     stackAndThrow ["compLambda", x]
 
-compWithMappingMode(x,m is ["Mapping",m',:sl],oldE) ==
+compWithMappingMode(x, m, oldE) ==
+  compWithMappingMode1(x, m, oldE, $formalArgList)
+
+compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   $killOptimizeIfTrue: local:= true
   e:= oldE
   isFunctor x =>
@@ -194,6 +197,7 @@ compWithMappingMode(x,m is ["Mapping",m',:sl],oldE) ==
          SYMBOLP(vl) => [vl]
          LISTP(vl) and (and/[SYMBOLP(v) for v in vl])=> vl
          stackAndThrow ["bad +-> arguments:", vl]
+      $formalArgList := [:vl, :$formalArgList]
       x := nx
   else
       vl:= take(#sl,$FormalMapVariableList)
