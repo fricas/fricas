@@ -154,6 +154,12 @@ knownInfo pred ==
   pred=true => true
   --pred = "true" => true
   member(pred,get("$Information","special",$e)) => true
+  $infoHash and (ress := HGET($infoHash, pred)) => ress
+  ress := knownInfo1 pred
+  if $infoHash then HPUT($infoHash, pred, ress)
+  ress
+
+knownInfo1 pred ==
   pred is ["OR",:l] => or/[knownInfo u for u in l]
   pred is ["AND",:l] => and/[knownInfo u for u in l]
   pred is ["or",:l] => or/[knownInfo u for u in l]
