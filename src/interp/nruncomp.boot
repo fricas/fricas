@@ -550,12 +550,18 @@ changeDirectoryInSlot1() ==  --called by buildFunctor
 genSlotSig(sig,pred,$e) ==
    [genDeltaSig t for t in sig]
 
+DEFPARAMETER($infoHash, nil)
+
 deepChaseInferences(pred,$e) ==
+    $infoHash : local := MAKE_-HASHTABLE 'EQUAL
+    deepChaseInferences1(pred,$e)
+
+deepChaseInferences1(pred,$e) ==
     pred is ['AND,:preds] or pred is ['and,:preds] =>
-        for p in preds repeat $e := deepChaseInferences(p,$e)
+        for p in preds repeat $e := deepChaseInferences1(p,$e)
         $e
-    pred is ['OR,pred1,:.] or pred is ['or,pred1,:.] =>
-        deepChaseInferences(pred1,$e)
+    pred is ['OR,pred1,:.] or pred is ['or,pred1,:.] => $e
+    --    deepChaseInferences1(pred1,$e)
     pred is 'T or pred is ['NOT,:.] or pred is ['not,:.] => $e
     chaseInferences(pred,$e)
 
