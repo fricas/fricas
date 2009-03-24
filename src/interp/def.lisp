@@ -154,7 +154,7 @@ foo defined inside of fum gets renamed as fum,foo.")
       (if (STRINGP X) `(QUOTE ,(intern x))  X)
       (let ((g (gensym)))
         (setq $body (mkprogn
-                     (list (def-let (comp\,fluidize x) g)
+                     (list (def-let (|compFluidize1| x) g)
                            $body)))
         g)))
 

@@ -293,7 +293,7 @@ computeTypeWithVariablesTarget(p, q) ==
 bottomUpCompile t ==
   $genValue:local := false
   ms := bottomUp t
-  COMP_-TRAN_-1 objVal getValue t
+  compTran1 objVal getValue t
   ms
 
 bottomUpUseSubdomain t ==

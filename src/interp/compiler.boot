@@ -218,7 +218,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   --  pass this as the environment to our inner function.
   $FUNNAME :local := nil
   $FUNNAME__TAIL :local := [nil]
-  expandedFunction:=COMP_-TRAN CADR uu
+  expandedFunction := compTran CADR uu
   frees:=FreeList(expandedFunction,vl,nil,e)
     where FreeList(u,bound,free,e) ==
       atom u =>
