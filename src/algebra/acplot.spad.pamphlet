@@ -44,7 +44,7 @@ RealSolvePackage(): Exports == Implementation where
 
     prn2rfi: P RN -> RFI
     prn2rfi p ==
-      map(#1 :: RFI,(numer(#1) :: RFI)/(denom(#1) :: RFI),p)$LIFT
+      map(x +-> x::RFI, x +-> (numer(x)::RFI)/(denom(x)::RFI), p)$LIFT
 
     pi2rfi: P I -> RFI
     pi2rfi p == p :: RFI
@@ -308,12 +308,10 @@ PlaneAlgebraicCurvePlot():Exports == Implementation where
       newX(vtanPts,singPts,yMinNF,yMaxNF,xNF,xRN,horizInc) ==
         xNewNF := xNF + RNtoNF horizInc
         xRtNF := max(xNF,xNewNF); xLftNF := min(xNF,xNewNF)
---      ptsSuchThat?(singPts,inRect?(#1,xLftNF,xRtNF,yMinNF,yMaxNF)) =>
-        foo : L NF -> B := inRect?(#1,xLftNF,xRtNF,yMinNF,yMaxNF)
+        foo : L NF -> B := x +-> inRect?(x, xLftNF, xRtNF, yMinNF, yMaxNF)
         ptsSuchThat?(singPts,foo) =>
           newX(vtanPts,singPts,yMinNF,yMaxNF,xNF,xRN,horizInc/2::RN)
---      ptsSuchThat?(vtanPts,onVertSeg?(#1,yMinNF,yMaxNF,xNewNF)) =>
-        goo : L NF -> B := onVertSeg?(#1,yMinNF,yMaxNF,xNewNF)
+        goo : L NF -> B := x +-> onVertSeg?(x, yMinNF, yMaxNF, xNewNF)
         ptsSuchThat?(vtanPts,goo) =>
           newX(vtanPts,singPts,yMinNF,yMaxNF,xNF,xRN,horizInc/2::RN)
         xRN + horizInc
@@ -321,12 +319,10 @@ PlaneAlgebraicCurvePlot():Exports == Implementation where
       newY(htanPts,singPts,xMinNF,xMaxNF,yNF,yRN,vertInc) ==
         yNewNF := yNF + RNtoNF vertInc
         yTopNF := max(yNF,yNewNF); yBotNF := min(yNF,yNewNF)
---      ptsSuchThat?(singPts,inRect?(#1,xMinNF,xMaxNF,yBotNF,yTopNF)) =>
-        foo : L NF -> B := inRect?(#1,xMinNF,xMaxNF,yBotNF,yTopNF)
+        foo : L NF -> B := x +-> inRect?(x, xMinNF, xMaxNF, yBotNF, yTopNF)
         ptsSuchThat?(singPts,foo) =>
           newY(htanPts,singPts,xMinNF,xMaxNF,yNF,yRN,vertInc/2::RN)
---      ptsSuchThat?(htanPts,onHorzSeg?(#1,xMinNF,xMaxNF,yNewNF)) =>
-        goo : L NF -> B := onHorzSeg?(#1,xMinNF,xMaxNF,yNewNF)
+        goo : L NF -> B := x +-> onHorzSeg?(x, xMinNF, xMaxNF, yNewNF)
         ptsSuchThat?(htanPts,goo) =>
           newY(htanPts,singPts,xMinNF,xMaxNF,yNF,yRN,vertInc/2::RN)
         yRN + vertInc
@@ -535,7 +531,7 @@ PlaneAlgebraicCurvePlot():Exports == Implementation where
         numUPolySF := SFPolyToUPoly(coerceCoefsToSFs(num))
         denUPolySF := SFPolyToUPoly(coerceCoefsToSFs(den))
         -- this is the rational function
-        f : SF -> SF := elt(numUPolySF,#1)/elt(denUPolySF,#1)
+        f  : SF -> SF := s +-> elt(numUPolySF, s)/elt(denUPolySF, s)
         -- values of the dependent and independent variables
         if depVar = x then
           indVarMin   := yMin;   indVarMax   := yMax
@@ -567,21 +563,21 @@ PlaneAlgebraicCurvePlot():Exports == Implementation where
           for root in roots repeat
             if (indVarMinNF < root) and (root < indVarMaxNF) then
               outList := cons(NFtoSF root,outList)
-          sort(#1 < #2,outList)
+          sort((x, y) +-> x < y, outList)
         topList : L SF :=
           roots : L NF := kinte(eval(pRN,depVar,depVarMax),EPSILON)
           outList : L SF := nil()
           for root in roots repeat
             if (indVarMinNF < root) and (root < indVarMaxNF) then
               outList := cons(NFtoSF root,outList)
-          sort(#1 < #2,outList)
+          sort((x, y) +-> x < y, outList)
         botList : L SF :=
           roots : L NF := kinte(eval(pRN,depVar,depVarMin),EPSILON)
           outList : L SF := nil()
           for root in roots repeat
             if (indVarMinNF < root) and (root < indVarMaxNF) then
               outList := cons(NFtoSF root,outList)
-          sort(#1 < #2,outList)
+          sort((x, y) +-> x < y, outList)
         -- We wish to determine if the graph has points on the 'left'
         -- and 'right' boundaries, so we compute the value of the
         -- rational function at the lefthand and righthand values of
@@ -702,8 +698,7 @@ PlaneAlgebraicCurvePlot():Exports == Implementation where
         yMinNF := RNtoNF yMin; yMaxNF := RNtoNF yMax
         -- compute singular points; error if singularities in region
         singPts := rsolve([p,dpdx,dpdy],[x,y],EPSILON)
---      ptsSuchThat?(singPts,inRect?(#1,xMinNF,xMaxNF,yMinNF,yMaxNF)) =>
-        foo : L NF -> B := inRect?(#1,xMinNF,xMaxNF,yMinNF,yMaxNF)
+        foo : L NF -> B := s +-> inRect?(s, xMinNF, xMaxNF, yMinNF, yMaxNF)
         ptsSuchThat?(singPts,foo) =>
           error "singular pts in region of sketch"
         -- compute critical points
@@ -715,23 +710,19 @@ PlaneAlgebraicCurvePlot():Exports == Implementation where
         -- any singular points
         hInc : RN := (1/20) * (xMax - xMin)
         vInc : RN := (1/20) * (yMax - yMin)
---      if ptsSuchThat?(critPts,onVertSeg?(#1,yMinNF,yMaxNF,xMinNF)) then
-        foo : L NF -> B := onVertSeg?(#1,yMinNF,yMaxNF,xMinNF)
+        foo : L NF -> B := s +-> onVertSeg?(s, yMinNF, yMaxNF, xMinNF)
         if ptsSuchThat?(critPts,foo) then
           xMin := newX(critPts,singPts,yMinNF,yMaxNF,xMinNF,xMin,-hInc)
           xMinNF := RNtoNF xMin
---      if ptsSuchThat?(critPts,onVertSeg?(#1,yMinNF,yMaxNF,xMaxNF)) then
-        foo : L NF -> B := onVertSeg?(#1,yMinNF,yMaxNF,xMaxNF)
+        foo : L NF -> B := s +-> onVertSeg?(s, yMinNF, yMaxNF, xMaxNF)
         if ptsSuchThat?(critPts,foo) then
           xMax := newX(critPts,singPts,yMinNF,yMaxNF,xMaxNF,xMax,hInc)
           xMaxNF := RNtoNF xMax
---      if ptsSuchThat?(critPts,onHorzSeg?(#1,xMinNF,xMaxNF,yMinNF)) then
-        foo : L NF -> B := onHorzSeg?(#1,xMinNF,xMaxNF,yMinNF)
+        foo : L NF -> B := s +-> onHorzSeg?(s, xMinNF, xMaxNF, yMinNF)
         if ptsSuchThat?(critPts,foo) then
           yMin := newY(critPts,singPts,xMinNF,xMaxNF,yMinNF,yMin,-vInc)
           yMinNF := RNtoNF yMin
---      if ptsSuchThat?(critPts,onHorzSeg?(#1,xMinNF,xMaxNF,yMaxNF)) then
-        foo : L NF -> B := onHorzSeg?(#1,xMinNF,xMaxNF,yMaxNF)
+        foo : L NF -> B := s +-> onHorzSeg?(s, xMinNF, xMaxNF, yMaxNF)
         if ptsSuchThat?(critPts,foo) then
           yMax := newY(critPts,singPts,xMinNF,xMaxNF,yMaxNF,yMax,vInc)
           yMaxNF := RNtoNF yMax

@@ -88,7 +88,7 @@ InnerAlgFactor(F, UP, AlExt, AlPol): Exports == Implementation where
                                             for sqterm in factors sqf]
 
     p := definingPolynomial()$AlExt
-    newp := map(#1::UP, p)$UPCF2(F, UP, UP, NUP)
+    newp := map(x +-> x::UP, p)$UPCF2(F, UP, UP, NUP)
 
     pnorm  q == resultant(convrt q, newp)
     change q == map(coerce, q)$UPCF2(F,UP,AlExt,AlPol)
@@ -155,12 +155,12 @@ RationalFunctionFactor(UP): Exports == Implementation where
     dummy := new()$SE
 
     likuniv(p, x, d) ==
-      map(#1 / d, univariate(p, x))$UPCF2(P,SparseUnivariatePolynomial P,
+      map(y +-> y/d, univariate(p, x))$UPCF2(P, SparseUnivariatePolynomial P,
                                           RF, UP)
 
     factor p ==
       d  := denom(q := elt(p,dummy::P :: RF))
-      map(likuniv(#1,dummy,d),
+      map(x +-> likuniv(x, dummy, d),
           factor(numer q)$MultivariateFactorize(SE,
                IndexedExponents SE,Integer,P))$FactoredFunctions2(P, UP)
 
@@ -247,8 +247,8 @@ AlgFactor(UP): Exports == Implementation where
     irred?  : UP  -> Boolean
 
     allk l       == removeDuplicates concat [kernels x for x in l]
-    liftpoly p   == map(#1::AN,  p)$UPCF2(Q, UPQ, AN, UP)
-    downpoly p   == map(retract(#1)@Q, p)$UPCF2(AN, UP ,Q, UPQ)
+    liftpoly p   == map(x +-> x::AN,  p)$UPCF2(Q, UPQ, AN, UP)
+    downpoly p   == map(x +-> retract(x)@Q, p)$UPCF2(AN, UP ,Q, UPQ)
     ifactor(p,l) == (fact(p pretend UP, l)) pretend Factored(SUP)
     factor p     == fact(p, allk coefficients p)
 
@@ -284,15 +284,16 @@ AlgFactor(UP): Exports == Implementation where
           _*/[primeFactor(liftpoly dc.factor,dc.exponent)
             for dc in factors dr]
       q   := minPoly(alpha := "max"/l)$AN
-      newl  := remove(alpha = #1, l)
+      newl  := remove((x : K): Boolean +-> alpha = x, l)
       sae := SimpleAlgebraicExtension(AN, SUP, q)
       ups := SparseUnivariatePolynomial sae
-      fr  := factor(map(reduce univariate(#1, alpha, q),
+      fr  := factor(map(x +-> reduce univariate(x, alpha, q),
                      p)$UPCF2(AN, UP, sae, ups),
-                      ifactor(#1, newl))$InnerAlgFactor(AN, SUP, sae, ups)
+                    x +-> ifactor(x, newl))$InnerAlgFactor(AN, SUP, sae, ups)
       newalpha := alpha::AN
-      map((lift(#1)$sae) newalpha, unit fr)$UPCF2(sae, ups, AN, UP) *
-            _*/[primeFactor(map((lift(#1)$sae) newalpha,
+      map((x : sae) : AN +-> (lift(x)$sae) newalpha, unit fr)$UPCF2(sae,
+                                ups, AN, UP) *
+            _*/[primeFactor(map((x : sae) : AN +-> (lift(x)$sae) newalpha,
                       fc.factor)$UPCF2(sae, ups, AN, UP),
                                  fc.exponent) for fc in factors fr]
 
