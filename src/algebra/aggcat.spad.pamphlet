@@ -153,7 +153,7 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
 
   add
    if S has Evalable S then
-     eval(u:%,l:List Equation S):% == map(eval(#1,l),u)
+     eval(u : %, l : List Equation S) : % == map(x +-> eval(x, l), u)
    if % has finiteAggregate then
      #c                   == # parts c
      any?(f, c) ==
@@ -165,8 +165,8 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
      count(f:S -> Boolean, c:%) == _+/[1 for x in parts c | f x]
      members x            == parts x
      if S has SetCategory then
-       count(s:S, x:%) == count(s = #1, x)
-       member?(e, c)   == any?(e = #1,c)
+       count(s : S, x : %) == count(y +-> s = y, x)
+       member?(e, c)   == any?(x +-> e = x, c)
        x = y ==
           not size?(x, #y) => false
           for a in parts x for b in parts y | a ~= b repeat return false
@@ -252,7 +252,7 @@ Collection(S:Type): Category == HomogeneousAggregate(S) with
        construct select(f, parts x)
 
      if S has SetCategory then
-       remove(s:S, x:%) == remove(#1 = s, x)
+       remove(s : S, x : %) == remove(y +-> y = s, x)
        reduce(f:(S,S)->S, x:%, s1:S, s2:S) == reduce(f, parts x, s1, s2)
        removeDuplicates(x) == construct removeDuplicates parts x
 
@@ -518,7 +518,7 @@ Dictionary(S:SetCategory): Category ==
    if % has finiteAggregate then
     -- remove(f:S->Boolean,t:%)  == remove_!(f, copy t)
     -- select(f, t)        == select_!(f, copy t)
-     select_!(f, t)      == remove_!(not f #1, t)
+     select_!(f, t)      == remove_!((x : S) : Boolean +-> not f(x), t)
 
      --extract_! d ==
      --  empty? d => error "empty dictionary"
@@ -528,6 +528,7 @@ Dictionary(S:SetCategory): Category ==
      s = t ==
        eq?(s,t) => true
        #s ~= #t => false
+       -- every?((x: S): Boolean +-> member?(x, t), parts s)
 -- I'd rather write
 --       every?(member?(#1, t), parts s)
 -- but the compiler complains
@@ -1866,7 +1867,7 @@ FiniteLinearAggregate(S:Type): Category == Join(LinearAggregate S,_
 
     if S has OrderedSet then
 --    sorted? l   == sorted?(_<$S, l)
-      sorted? l   == sorted?(#1 < #2 or #1 = #2, l)
+      sorted? l   == sorted?((x, y) +-> x < y or x = y, l)
       merge(x, y) == merge(_<$S, x, y)
       sort l      == sort(_<$S, l)
 
@@ -2188,7 +2189,7 @@ ExtensibleLinearAggregate(S:Type):Category == Join(LinearAggregate S,_
    concat_!(x:%, y:S)      == concat_!(x, new(1, y))
    if S has SetCategory then
      remove(s:S, x:%)        == remove_!(s, copy x)
-     remove_!(s:S, x:%)      == remove_!(#1 = s, x)
+     remove_!(s : S, x : %)  == remove_!(y +-> y = s, x)
      removeDuplicates(x:%)   == removeDuplicates_!(copy x)
 
    if S has OrderedSet then
@@ -2402,7 +2403,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
      removeDuplicates_! l ==
        p := l
        while not empty? p repeat
-         p := setrest_!(p, remove_!(#1 = first p, rest p))
+         p := setrest_!(p, remove_!((x : S) : Boolean +-> x = first p, rest p))
        l
 
    if S has OrderedSet then
