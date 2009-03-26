@@ -723,10 +723,15 @@ findUniqueOpInDomain(op,opName,dom) ==
   mmList := subCopy(mmList,constructSubst dom)
   null mmList =>
     throwKeyedMsg("S2IS0021",[opName,dom])
-  if #CDR mmList > 1 then
-    mm := selectMostGeneralMm CDR mmList
+  mmList := rest mmList   -- ignore the operator name
+  -- use evaluation type context to narrow down the candidate set
+  if target := getTarget op then
+      mmList := [mm for mm in mmList | mm is [=rest target,:.]]
+      null mmList => throwKeyedMsg("S2IS0061",[opName,target,dom])
+  if #mmList > 1 then
+    mm := selectMostGeneralMm mmList
     sayKeyedMsg("S2IS0022",[opName,dom,['Mapping,:CAR mm]])
-  else mm := CADR mmList
+  else mm := CAR mmList
   [sig,slot,:.] := mm
   fun :=
 --+
