@@ -475,9 +475,7 @@ COMP_-2(args) ==
     [name, [type, argl, :bodyl], :junk] := args
     junk => MOAN (FORMAT(nil, '"******pren error in (~S (~S ...) ...)",_
                          name, type))
-    type is "SLAM" =>
-       BREAK()
-       compSLAM(name, argl, bodyl)
+    type is "SLAM" => BREAK()
     LASSQ(name, $clamList) => compClam(name, argl, bodyl, $clamList)
     type is "SPADSLAM" => compSPADSLAM(name, argl, bodyl)
     bodyl := [name, [type, argl, :bodyl]]
@@ -521,35 +519,6 @@ compSPADSLAM(name, argl, bodyl) ==
     COMP370([u])
     name
 
-compSLAM(name, argl, bodyl) ==
-    al := INTERNL(name, '";AL")
-    auxfn := INTERNL(name, '";")
-    g1 := GENSYM()
-    g2 := GENSYM()
-    u :=
-         not(argl) => [[], [auxfn]]
-         not(CDR(argl)) => [[g1], [auxfn, g1]]
-         [g1, ["APPLY", ["FUNCTION", auxfn], g1]]
-    [arg, app] := u
-    la1 :=
-         argl => [["SETQ", g2, ["assoc", g1, al]], ["CDR", g2]]
-         [al]
-    la2 := 
-         argl =>
-              [true, ["SETQ", g2, app],
-                    ["SETQ", al, ["CONS", ["CONS", g1, g2], al]],
-                            g2]
-         [true, ["SETQ", al, app]]
-    lamex := ["LAMBDA", arg, ["LET", [g2] ["COND", la1, la2]]]
-    SET(al, nil)
-    u := [name,lamex]
-    if $PrettyPrint then PRETTYPRINT(u)
-    COMP370([u])
-    u := [auxfn, ["LAMBDA", argl, :bodyl]]
-    if $PrettyPrint then PRETTYPRINT(u)
-    COMP370([u])
-    name
-
 makeClosedfnName() ==
     INTERNL($FUNNAME, '"!", STRINGIMAGE(LENGTH($CLOSEDFNS)))
 
@@ -565,7 +534,7 @@ compTran1(x) ==
     u := CAR(x)
     u = "QUOTE" => nil
     if u = "MAKEPROP" and $TRACELETFLAG then
-        RPLAC(CAR X, "MAKEPROP-SAY")
+        RPLAC(CAR x, "MAKEPROP-SAY")
     u = "DCQ" =>
         SAY(["DCQ found in", x])
         BREAK()
