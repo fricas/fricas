@@ -137,7 +137,7 @@ Expression(R:OrderedSet): Exports == Implementation where
       coerce(p:MP):%   == coerce(p)$Rep
       reduce x         == reduc(x, algkernels kernels x)
       commonk(x, y)    == commonk0(algkernels kernels x, algkernels kernels y)
-      algkernels l     == select_!(has?(operator #1, ALGOP), l)
+      algkernels l     == select_!(x+->has?(operator x, ALGOP), l)
       toprat f == ratDenom(f, algkernels kernels f)$AlgebraicManipulations(R, %)
 
       x:MP / y:MP ==
@@ -300,10 +300,10 @@ Expression(R:OrderedSet): Exports == Implementation where
 
 
           coerce(x:AN):% == smp2expr(numer x) / smp2expr(denom x)
-          k2expr k       == map(#1::%, k)$ExpressionSpaceFunctions2(AN, %)
+          k2expr k       == map(x+->x::%, k)$ExpressionSpaceFunctions2(AN, %)
 
           smp2expr p ==
-            map(k2expr,#1::%,p)$PolynomialCategoryLifting(IndexedExponents KAN,
+            map(k2expr,x+->x::%,p)$PolynomialCategoryLifting(IndexedExponents KAN,
                    KAN, Integer, SparseMultivariatePolynomial(Integer, KAN), %)
 
           retractIfCan(x:%):Union(AN, "failed") ==
@@ -448,11 +448,14 @@ Expression(R:OrderedSet): Exports == Implementation where
           coerce(x:R):%  == (zero? x => 0; constantKernel(x)::%)
           retract(x:%):R == (zero? x => 0; retNotUnit x)
           coerce(x:%):OutputForm == coerce(x)$Rep
-          kereval(k, lk, lv) == match(lk, lv, k, map(eval(#1, lk, lv), #1))
+          kereval(k, lk, lv) ==
+            match(lk, lv, k, (x2:K):% +->
+              map(x1+->eval(x1,lk,lv), x2))
 
           subeval(k, lk, lv) ==
             match(lk, lv, k,
-              kernel(operator #1, [subst(a, lk, lv) for a in argument #1]))
+              (x:K):% +->
+                kernel(operator x, [subst(a, lk, lv) for a in argument x]))
 
           isPlus x ==
             empty?(l := terms x) or empty? rest l => "failed"
@@ -508,11 +511,12 @@ Expression(R:OrderedSet): Exports == Implementation where
             coerce(x:%):OutputForm               == coerce(x)$Rep
 
             eval(x:%, lk:List K, lv:List %) ==
-              match(lk, lv, x pretend K, map(eval(#1, lk, lv), #1))
+              match(lk, lv, x pretend K, (x1:K):% +->
+                map(x2+->eval(x2, lk, lv), x1))
 
             subst(x, lk, lv) ==
-              match(lk, lv, x pretend K,
-                kernel(operator #1, [subst(a, lk, lv) for a in argument #1]))
+              match(lk, lv, x pretend K, (x1:K):% +->
+                  kernel(operator x1, [subst(a, lk, lv) for a in argument x1]))
 
             if R has ConvertibleTo InputForm then
               convert(x:%):InputForm == convert(x)$Rep
@@ -553,7 +557,7 @@ PolynomialAN2Expression():Target == Implementation where
         ++ algebraic number coefficients to \spadtype{Expression Integer}.
   Implementation ==> add
     coerce(p:PAN):EXPR ==
-        map(#1::EXPR, #1::EXPR, p)$PolynomialCategoryLifting(
+        map(x+->x::EXPR, x+->x::EXPR, p)$PolynomialCategoryLifting(
                                   IndexedExponents SY, SY, AN, PAN, EXPR)
     coerce(rf:Fraction PAN):EXPR ==
         numer(rf)::EXPR / denom(rf)::EXPR
@@ -581,7 +585,7 @@ ExpressionFunctions2(R:OrderedSet, S:OrderedSet):
     if S has Ring and R has Ring then
       map(f, r) == map(f, r)$F2
     else
-      map(f, r) == map(map(f, #1), retract r)$E2
+      map(f, r) == map(x+->map(f, x), retract r)$E2
 
 @
 \section{package PMPREDFS FunctionSpaceAttachPredicates}
@@ -833,12 +837,14 @@ Pi(): Exports == Implementation where
       p2i(numer x) / p2i(denom x)
 
     p2sf p ==
-      map(#1::DoubleFloat, p)$SparseUnivariatePolynomialFunctions2(
-        Integer, DoubleFloat) (pi()$DoubleFloat)
+      map((x:Integer):DoubleFloat+->x::DoubleFloat,
+        p)$SparseUnivariatePolynomialFunctions2(Integer, DoubleFloat)
+          (pi()$DoubleFloat)
 
     p2f p ==
-      map(#1::Float, p)$SparseUnivariatePolynomialFunctions2(
-        Integer, Float) (pi()$Float)
+      map((x:Integer):Float+->x::Float,
+        p)$SparseUnivariatePolynomialFunctions2(Integer, Float)
+          (pi()$Float)
 
 @
 \section{package PICOERCE PiCoercions}
@@ -862,8 +868,9 @@ PiCoercions(R:Join(OrderedSet, IntegralDomain)): with
     p2e(numer f) / p2e(denom f)
 
   p2e p ==
-    map(#1::Expression(R), p)$SparseUnivariatePolynomialFunctions2(
-        Integer, Expression R) (pi()$Expression(R))
+    map((x1:Integer):Expression(R)+->x1::Expression(R),
+      p)$SparseUnivariatePolynomialFunctions2(Integer, Expression R)
+        (pi()$Expression(R))
 
 @
 \section{License}

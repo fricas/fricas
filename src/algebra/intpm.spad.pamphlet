@@ -84,10 +84,12 @@ PatternMatchIntegration(R, F): Exports == Implementation where
     pmb := new pm
 
     c := optional(pmc::F)
-    w := suchThat(optional(pmw::F), empty? variables #1)
-    s := suchThat(optional(pms::F), empty? variables #1 and real? #1)
-    m := suchThat(optional(pmm::F), _
-                    (zz := retractIfCan(#1)@Union(Z,"failed");
+    w := suchThat(optional(pmw::F),
+      (x1:F):Boolean+->empty? variables x1)
+    s := suchThat(optional(pms::F),
+      (x1:F):Boolean+->empty? variables x1 and real? x1)
+    m := suchThat(optional(pmm::F), (x1:F):Boolean+->_
+                    (zz := retractIfCan(x1)@Union(Z,"failed");
                     zz case Z => zz >= 0; false))
 
     spi := sqrt(pi()$F)
@@ -183,8 +185,9 @@ PatternMatchIntegration(R, F): Exports == Implementation where
            matchdilog(f, x) ==
              n := numer f
              df := (d := denom f)::F
-             for k in select_!(gooddilog?(#1, n, d), variables n)$List(K) repeat
-               not empty?(l := matchdilog0(f, k, x, n, df)) => return l
+             for k in select_!((x1:K):Boolean+->gooddilog?(x1, n, d),
+               variables n)$List(K) repeat
+                 not empty?(l := matchdilog0(f, k, x, n, df)) => return l
              empty()
 
 -- matches the integral to a result of the form d * dilog(a) + int(v)
@@ -201,8 +204,9 @@ PatternMatchIntegration(R, F): Exports == Implementation where
 -- returns [u,d,v] or []
            matchli(f, x) ==
              d := denom f
-             for k in select_!(goodlilog?(#1, d), variables d)$List(K) repeat
-               not empty?(l := matchli0(f, k, x)) => return l
+             for k in select_!((x1:K):Boolean+->goodlilog?(x1, d),
+               variables d)$List(K) repeat
+                 not empty?(l := matchli0(f, k, x)) => return l
              empty()
 
 -- matches the integral to a result of the form d * li(a) + int(v)
@@ -347,7 +351,8 @@ and
            pmintegrate(f, x, a, b) ==
 --             zero? a and one? whatInfinity b =>
              zero? a and ((whatInfinity b) = 1) =>
-               formula1(f, x, constant(x::F), suchThat(c, freeOf?(#1, x)))
+               formula1(f, x, constant(x::F),
+                  suchThat(c, (x1:F):Boolean+->freeOf?(x1, x)))
              "failed"
 
 @
