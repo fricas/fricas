@@ -101,7 +101,8 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
         error "clipDraw: fraction should be between 0 and 1"
       empty? pointLists => [nil(),segment(0,0),segment(0,0)]
       -- put all points together , sort them according to norm
-      sortedList := sort(norm(#1) < norm(#2),select(not Pnan? #1,concat pointLists))
+      sortedList := sort((x : Pt, y : Pt) : Boolean +-> norm(x) < norm(x),
+            select((x : Pt) : Boolean +-> not Pnan? x, concat pointLists))
       empty? sortedList => [nil(),segment(0,0),segment(0,0)]
       n := # sortedList
       num := numer fraction
@@ -216,7 +217,7 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
         error "clipDraw: plot has more than one branch"
       empty?(pointList := first pointLists) =>
         [nil(),xVals,segment(0,0)]
-      sortedList := sort(yCoord(#1) < yCoord(#2),pointList)
+      sortedList := sort((x, y) +-> yCoord(x) < yCoord(y), pointList)
       n := # sortedList; num := numer fraction; den := denom fraction
       clipNum := (n * num) quo den
       -- throw out points with large and small y-coordinates
@@ -230,8 +231,9 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       xMin := lo xVals; xMax := hi xVals
       yMin := yMin - (numm :: SF) * yDiff / (denn :: SF)
       yMax := yMax + (numm :: SF) * yDiff / (denn :: SF)
-      lists := discardAndSplit(pointList,_
-         (yCoord(#1) < yMax) and (yCoord(#1) > yMin),xMin,xMax,yMin,yMax)
+      lists := discardAndSplit(pointList,
+         x +-> (yCoord(x) < yMax) and (yCoord(x) > yMin),
+         xMin, xMax, yMin, yMax)
       yMin := yCoord(sortedList.clipNum)
       yMax := yCoord(sortedList.(n - 1 - clipNum))
       if Fnan? yMin then yMin : SF := 0
@@ -270,8 +272,8 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
       lists : L L Pt := nil()
       for pointList in pointLists repeat
         lists := concat(lists,discardAndSplit(pointList,_
-           (xCoord(#1) <= xMax) and (xCoord(#1) >= xMin) and _
-           (yCoord(#1) <= yMax) and (yCoord(#1) >= yMin), _
+           (x : Pt) : Boolean +-> (xCoord(x) <= xMax) and (xCoord(x) >= xMin)_
+              and (yCoord(x) <= yMax) and (yCoord(x) >= yMin), _
            xMin,xMax,yMin,yMax))
       (pt := findPt lists) case "failed" =>
         [nil(),segment(0,0),segment(0,0)]
