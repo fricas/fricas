@@ -49,7 +49,7 @@ SubResultantPackage(R, UP): Exports == Implementation where
       primitivePart(p, q) ==
          rec := extendedEuclidean(leadingCoefficient p, q,
                                   1)::Record(coef1:R, coef2:R)
-         unitCanonical primitivePart map((rec.coef1 * #1) rem q, p)
+         unitCanonical primitivePart map(x1+->(rec.coef1 * x1) rem q, p)
 
     subresultantVector(p1, p2) ==
        F : UP -- auxiliary stuff !
@@ -411,12 +411,12 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
     logprmderiv(f, derivation) == differentiate(f, derivation) / f
 
     UP2UP2 p ==
-      map(#1::UP, p)$UnivariatePolynomialCategoryFunctions2(F, UP, UP, UP2)
+      map(x1+->x1::UP, p)$UnivariatePolynomialCategoryFunctions2(F, UP, UP, UP2)
 
     UP2UPR p ==
-      map(#1::UP::RF, p)$UnivariatePolynomialCategoryFunctions2(F, UP, RF, UPR)
+      map(x1+->x1::UP::RF, p)$UnivariatePolynomialCategoryFunctions2(F, UP, RF, UPR)
 
-    UP22UPR p == map(#1::RF, p)$SparseUnivariatePolynomialFunctions2(UP, RF)
+    UP22UPR p == map(x1+->x1::RF, p)$SparseUnivariatePolynomialFunctions2(UP, RF)
 
 -- given p in k[z] and a derivation on k[t] returns the coefficient lifting
 -- in k[z] of the restriction of D to k.
@@ -437,7 +437,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       resultvec := subresultantVector(UP2UP2 inum -
                                  (x::UP2) * UP2UP2 derivation iden, UP2UP2 iden)
       respoly := primitivePart leadingCoefficient resultvec 0
-      rec := splitSquarefree(respoly, kappa(#1, derivation))
+      rec := splitSquarefree(respoly, x1+->kappa(x1, derivation))
       logs:List(LOG) := [
               [1, UP2UPR(term.factor),
                UP22UPR swap primitivePart(resultvec(term.exponent),term.factor)]
@@ -446,7 +446,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
 --           one? derivation x => r.logpart
            ((derivation x) = 1) => r.logpart
            differentiate(mkAnswer(0, logs, empty()),
-                         differentiate(#1, derivation))
+                         (x1:RF):RF+->differentiate(x1, derivation))
       (u := retractIfCan(p := r.logpart - dlog)@Union(UP, "failed")) case UP =>
         [mkAnswer(r.answer, logs, empty), r.specpart, r.polypart + u::UP]
       [mkAnswer(r.answer, logs, [[p, dummy]]), r.specpart, r.polypart]
@@ -590,7 +590,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       degree numer f >= degree denom f => error "Not a proper fraction"
       r := HermiteIntegrate(f, derivation)
       zero?(r.logpart) => [r.answer, empty()]
-      (u := limitedLogs(r.logpart, logprmderiv(#1, derivation), lu))
+      (u := limitedLogs(r.logpart, x1+->logprmderiv(x1, derivation), lu))
         case "failed" => "failed"
       [r.answer, u::LLG]
 
@@ -604,7 +604,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       r  := HermiteIntegrate(f, derivation)
       zero?(r.logpart) => [r.answer, empty()]
       eta' := coefficient(derivation monomial(1, 1), 1)
-      (u := limitedLogs(r.logpart, logexpderiv(#1,derivation,eta'), lu))
+      (u := limitedLogs(r.logpart, x1+->logexpderiv(x1,derivation,eta'), lu))
         case "failed" => "failed"
       [r.answer - eta'::UP *
         +/[((degree numer(v.logand))::Z - (degree denom(v.logand))::Z) *
@@ -656,7 +656,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
          zero? c => empty()
          [[1, monomial(1,1)$UPR - (c/(2::F))::UP::RF::UPR, (1 + t^2)::RF::UPR]]
       c0 := coefficient(r.polypart, 0)
-      (u := tanintegratespecial(rec.specpart, differentiate(#1, derivation),
+      (u := tanintegratespecial(rec.specpart, x1+->differentiate(x1, derivation),
        FRDE)) case RFRF =>
         [i1 + mkAnswer(r.answer::RF + u.elem, logs, [[u.notelem,dummy]$NE]), c0]
       [i1 + mkAnswer(r.answer::RF + u.answer, logs, empty()), u.a0 + c0]
@@ -841,17 +841,17 @@ RationalFunctionIntegration(F): Exports == Implementation where
                                                        SE, F, P, Q)
 
     infieldIntegrate(f, x) ==
-      map(multivariate(#1, x), infieldint univariate(f, x))
+      map(x1+->multivariate(x1, x), infieldint univariate(f, x))
 
     internalIntegrate(f, x) ==
-      map(multivariate(#1, x), integrate univariate(f, x))
+      map(x1+->multivariate(x1, x), integrate univariate(f, x))
 
     extendedIntegrate(f, x, g) ==
-      map(multivariate(#1, x),
+      map(x1+->multivariate(x1, x),
           extendedint(univariate(f, x), univariate(g, x)))
 
     limitedIntegrate(f, x, lu) ==
-      map(multivariate(#1, x),
+      map(x1+->multivariate(x1, x),
           limitedint(univariate(f, x), [univariate(u, x) for u in lu]))
 
 @

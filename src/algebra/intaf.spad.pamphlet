@@ -138,15 +138,15 @@ GenusZeroIntegration(R, F, L): Exports == Implementation where
     checkroot(f, l)        == (empty? l => f; rootNormalize(f, first l))
     univ(c, l, x)          == univariate(checkroot(c, l), x)
     univariate(f, x, y, p) == lift(univariate(f, y, p), x)
-    lift(p, k)             == map(univariate(#1, k), p)
+    lift(p, k)             == map(x1+->univariate(x1, k), p)
 
     palgint0(f, x, y, den, radi) ==
       -- y is a square root so write f as f1 y + f0 and integrate separately
       ff := univariate(f, x, y, minPoly y)
       f0 := reductum ff
       pr := quadsubst(x, y, den, radi)
-      map(#1(x::F), integrate(retract(f0)@RF)) +
-        map(#1(pr.diff),
+      map(f1+->f1(x::F), integrate(retract(f0)@RF)) +
+        map(f1+->f1(pr.diff),
             integrate
               mkRat(multivariate(leadingMonomial ff,x,y::F), pr.subs, pr.newk))
 
@@ -197,14 +197,14 @@ GenusZeroIntegration(R, F, L): Exports == Implementation where
       numer(rat) / denom(rat)
 
     palgint0(f, x, y, z, xx, dx) ==
-      map(multivariate(#1, y), integrate mkRatlx(f, x, y, xx, z, dx))
+      map(x1+->multivariate(x1, y), integrate mkRatlx(f, x, y, xx, z, dx))
 
     palgextint0(f, x, y, g, z, xx, dx) ==
-      map(multivariate(#1, y),
+      map(x1+->multivariate(x1, y),
             extendedint(mkRatlx(f,x,y,xx,z,dx), mkRatlx(g,x,y,xx,z,dx)))
 
     palglimint0(f, x, y, lu, z, xx, dx) ==
-      map(multivariate(#1, y), limitedint(mkRatlx(f, x, y, xx, z, dx),
+      map(x1+->multivariate(x1, y), limitedint(mkRatlx(f, x, y, xx, z, dx),
                              [mkRatlx(u, x, y, xx, z, dx) for u in lu]))
 
     palgRDE0(f, g, x, y, rischde, z, xx, dx) ==
@@ -215,18 +215,18 @@ GenusZeroIntegration(R, F, L): Exports == Implementation where
 
 -- given p = sum_i a_i(X) Y^i, returns  sum_i a_i(x) y^i
     multivariate(p, x, y) ==
-      (map(multivariate(#1, x),
+      (map((x1:RF):F+->multivariate(x1, x),
            p)$SparseUnivariatePolynomialFunctions2(RF, F))
               (y)
 
     palgextint0(f, x, y, g, den, radi) ==
       pr := quadsubst(x, y, den, radi)
-      map(#1(pr.diff),
+      map(f1+->f1(pr.diff),
           extendedint(mkRat(f, pr.subs, pr.newk), mkRat(g, pr.subs, pr.newk)))
 
     palglimint0(f, x, y, lu, den, radi) ==
       pr := quadsubst(x, y, den, radi)
-      map(#1(pr.diff),
+      map(f1+->f1(pr.diff),
          limitedint(mkRat(f, pr.subs, pr.newk),
                     [mkRat(u, pr.subs, pr.newk) for u in lu]))
 
@@ -380,9 +380,9 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
     chv(f, n, a, b)          == univariate(chv0(f, n, a, b), dumk)
 
     RF2UPUP(f, modulus) ==
-      bc := extendedEuclidean(map(#1::UP::RF, denom f), modulus,
+      bc := extendedEuclidean(map((x1:F):RF+->x1::UP::RF, denom f), modulus,
                                       1)::Record(coef1:UPUP, coef2:UPUP)
-      (map(#1::UP::RF, numer f) * bc.coef1) rem modulus
+      (map((x1:F):RF+->x1::UP::RF, numer f) * bc.coef1) rem modulus
 
 -- returns "failed", or (xx, c) such that f(x, y)dx = f(xx, y) c dy
 -- if p(x, y) = 0 is linear in x
@@ -404,7 +404,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
       ((r := retractIfCan(rf)@Union(RF,"failed")) case RF) and rf ~= 0 =>
             -- in this case, ff := lc(ff) y^i + r so we integrate both terms
             -- separately to gain time
-            map(#1(x::F), integrate(r::RF)) +
+            map(f1+->f1(x::F), integrate(r::RF)) +
                  prootintegrate1(leadingMonomial ff, x, y, modulus)
       prootintegrate1(ff, x, y, modulus)
 
@@ -418,17 +418,17 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
         newf := multivariate(chv.int, ku := dumk, newalg)
         vu := (chv.right)(x::F)
         vz := (chv.den)(x::F) * (y::F) * denom(newalg)::F
-        map(eval(#1, [ku, kz], [vu, vz]), palgint(newf, ku, kz))
+        map(x1+->eval(x1, [ku, kz], [vu, vz]), palgint(newf, ku, kz))
       cv     := chvar(ff, modulus)
       r      := radPoly(cv.poly)::Record(radicand:RF, deg:N)
       qprime := differentiate(q := retract(r.radicand)@UP)::RF
       not zero? qprime and
        ((u := chvarIfCan(cv.func, 1, q, inv qprime)) case UPUP) =>
          m := monomial(1, r.deg)$UPUP - q::RF::UPUP
-         map(UPUP2F1(RF2UPUP(#1, m), cv.c1, cv.c2, x, y),
+         map(x1+->UPUP2F1(RF2UPUP(x1, m), cv.c1, cv.c2, x, y),
             rationalInt(u::UPUP, r.deg, monomial(1, 1)))
       curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
-      algaddx(map(UPUP2F1(lift #1, cv.c1, cv.c2, x, y),
+      algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, y),
         palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, x::F)
 
 -- Do the rationalizing change of variable
@@ -526,7 +526,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
           if ((v:=chvarIfCan(uu:=univariate(u,x,k,p),rec.coef,q,dqdx))case UPUP)
             then l := concat(n * chv(v::UPUP,rec.exponent, 1, 0), l) else FAIL
         m := monomial(1, rec.exponent)$UPUP - q::RF::UPUP
-        map(UPUP2F0(RF2UPUP(#1,m), x, k),
+        map(x1+->UPUP2F0(RF2UPUP(x1,m), x, k),
             limitedint(n * chv(uf::UPUP, rec.exponent, 1, 0), reverse_! l))
       cv     := chvar(ff, modulus)
       r      := radPoly(cv.poly)::Record(radicand:RF, deg:N)
@@ -545,7 +545,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
         ((ug:=chvarIfCan(gg:=univariate(g,x,k,p),rec.coef,q,dqdx)) case UPUP) =>
           m := monomial(1, rec.exponent)$UPUP - q::RF::UPUP
           n := rec.exponent * monomial(1, (rec.exponent - 1)::N)$UP
-          map(UPUP2F0(RF2UPUP(#1,m), x, k),
+          map(x1+->UPUP2F0(RF2UPUP(x1,m), x, k),
               extendedint(n * chv(uf::UPUP, rec.exponent, 1, 0),
                           n * chv(ug::UPUP, rec.exponent, 1, 0)))
       cv     := chvar(ff, modulus)
@@ -578,7 +578,7 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
       cv     := chvar(univariate(f, x, k, p), modulus)
       curve  := AlgebraicFunctionField(F, UP, UPUP, cv.poly)
       knownInfBasis(cv.deg)
-      algaddx(map(UPUP2F1(lift #1, cv.c1, cv.c2, x, k),
+      algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, k),
         palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, x::F)
 
     palglim(f, x, k, lu) ==
@@ -704,7 +704,7 @@ AlgebraicIntegration(R, F): Exports == Implementation where
       r      := radPoly(r1.poly)::Record(radicand:RF, deg:N)
       q      := retract(r.radicand)
       curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
-      map(UPUP2F(lift #1, r1.coef, t, k),
+      map(x1+->UPUP2F(lift x1, r1.coef, t, k),
                             algintegrate(reduce f1, derivation)$ALG)$IR2
 
     algintegrate(f, t, k, derivation) ==
@@ -712,14 +712,14 @@ AlgebraicIntegration(R, F): Exports == Implementation where
       f1     := F2UPUP(f, t, k, p) monomial(inv(r1.coef), 1)
       modulus:= UP2UPUP(p := minPoly k, t)
       curve  := AlgebraicFunctionField(F, UP, UPUP, r1.poly)
-      map(UPUP2F(lift #1, r1.coef, t, k),
+      map(x1+->UPUP2F(lift x1, r1.coef, t, k),
                             algintegrate(reduce f1, derivation)$ALG)$IR2
 
     UP2UPUP(p, k) ==
-      map(univariate(#1,k),p)$SparseUnivariatePolynomialFunctions2(F,RF)
+      map(x1+->univariate(x1,k),p)$SparseUnivariatePolynomialFunctions2(F,RF)
 
     UPUP2F(p, cf, t, k) ==
-      map(multivariate(#1, t),
+      map((x1:RF):F+->multivariate(x1, t),
          p)$SparseUnivariatePolynomialFunctions2(RF, F)
                                             (multivariate(cf, t) * k::F)
 

@@ -47,10 +47,10 @@ DoubleResultantPackage(F, UP, UPUP, R): Exports == Implementation where
       primitivePart((p exquo monomial(1, minimumDegree p))::UP)
 
     UP22 p ==
-      map(#1::UP, p)$UnivariatePolynomialCategoryFunctions2(F,UP,UP,UP2)
+      map(x+->x::UP, p)$UnivariatePolynomialCategoryFunctions2(F,UP,UP,UP2)
 
     UP23 p ==
-      map(UP22(retract(#1)@UP),
+      map(x1+->UP22(retract(x1)@UP),
           p)$UnivariatePolynomialCategoryFunctions2(RF, UPUP, UP2, UP3)
 
     doubleResultant(h, derivation) ==
@@ -123,10 +123,10 @@ AlgebraicHermiteIntegration(F,UP,UPUP,R):Exports == Implementation where
                 qelt(vec, i))) case "failed" => return new(0, 0)
               qsetelt_!(ans, i, bc.coef1)
         ans
-      sol := particularSolution(map(#1::RF, mat)$MatrixCategoryFunctions2(UP,
+      sol := particularSolution(map(x+->x::RF, mat)$MatrixCategoryFunctions2(UP,
                          Vector UP, Vector UP, Matrix UP, RF,
                            Vector RF, Vector RF, Matrix RF),
-                             map(#1::RF, vec)$VectorFunctions2(UP,
+                             map(x+->x::RF, vec)$VectorFunctions2(UP,
                                RF))$LinearSystemMatrixPackage(RF,
                                         Vector RF, Vector RF, Matrix RF)
       sol case "failed" => new(0, 0)
@@ -236,7 +236,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
         qsetelt_!(vp, i, r.polyPart)
       ff := represents(vf, w := integralBasis())
       h := HermiteIntegrate(ff, derivation)
-      p := represents(map(convert(#1)@QF, vp)$VectorFunctions2(GP, QF), w)
+      p := represents(map((x1:GP):QF+->convert(x1)@QF, vp)$VectorFunctions2(GP, QF), w)
       zero?(h.logpart) and zero? p => h.answer::IR
       (u := alglogint(h.logpart, derivation)) case "failed" =>
                        mkAnswer(h.answer, empty(), [[p + h.logpart, dummy]])
@@ -282,13 +282,13 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
 
 
     UPQ2F p ==
-      map(#1::F, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,F,UP)
+      map((x:Q):F+->x::F, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,F,UP)
 
     UP2SUP p ==
-       map(#1, p)$UnivariatePolynomialCategoryFunctions2(F, UP, F, SUP)
+       map((x:F):F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, UP, F, SUP)
 
     SUP2UP p ==
-       map(#1, p)$UnivariatePolynomialCategoryFunctions2(F, SUP, F, UP)
+       map((x:F):F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, SUP, F, UP)
 
     varRoot?(p, derivation) ==
       for c in coefficients primitivePart p repeat
@@ -316,9 +316,10 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
 
     R2UP(f, k) ==
       x := dumx :: F
-      g := (map(#1 x, lift f)$UnivariatePolynomialCategoryFunctions2(QF,
-                              UPUP, F, UP)) (y := dumy::F)
-      map(rlift(#1, dumx, dumy), univariate(g, k,
+      g := (map((f1:QF):F+->f1(x),
+        lift f)$UnivariatePolynomialCategoryFunctions2(QF, UPUP, F, UP))
+          (y := dumy::F)
+      map((x1:F):R+->rlift(x1, dumx, dumy), univariate(g, k,
          minPoly k))$UnivariatePolynomialCategoryFunctions2(F,SUP,R,UPR)
 
     univ(f, k) ==
@@ -326,7 +327,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       (SUP2UP numer g) / (SUP2UP denom g)
 
     rlift(f, kx, ky) ==
-      reduce map(univ(#1, kx), retract(univariate(f,
+      reduce map(x1+->univ(x1, kx), retract(univariate(f,
          ky))@SUP)$UnivariatePolynomialCategoryFunctions2(F,SUP,QF,UPUP)
 
     nonQ(rec, p) ==
@@ -416,7 +417,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
         ((u := palglogint(h.logpart, derivation)) case "failed") =>
                       mkAnswer(h.answer, empty(), [[h.logpart, dummy]])
       zero?(difFirstKind := h.logpart - +/[pLogDeriv(lg,
-            differentiate(#1, derivation)) for lg in u::List(LOG)]) =>
+            x1+->differentiate(x1, derivation)) for lg in u::List(LOG)]) =>
                 mkAnswer(h.answer, u::List(LOG), empty())
       mkAnswer(h.answer, u::List(LOG), [[difFirstKind, dummy]])
 
@@ -431,7 +432,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
 
     alglogint(f, derivation) ==
       varRoot?(doubleResultant(f, derivation),
-                         retract(derivation(#1::UP))@F) => "failed"
+                         x1+->retract(derivation(x1::UP))@F) => "failed"
       FAIL0
 
 @
