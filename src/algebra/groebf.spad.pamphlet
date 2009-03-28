@@ -257,7 +257,7 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
          if fnP ~= 1$Dpol
            then
              newInputPolys : L Dpol  := _
-               sort( degree #1 > degree #2 ,cons(fnP,inputPolys))
+               sort((x, y) +-> degree x > degree y ,cons(fnP,inputPolys))
              listOfBases := createGroebnerBases(basis, redPols, _
                nonZeroRestrictions,newInputPolys,lcP,listOfBases,info)
              -- update "nonZeroRestrictions"
@@ -278,7 +278,7 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
 
      --  we found a groebner basis and put it into the list "listOfBases"
      --  (auto)reduce each basis element modulo the others
-     newBasis := minGbasis(sort(degree #1 > degree #2,[p.pol for p in basis]))
+     newBasis := minGbasis(sort((x, y) +-> degree x > degree y,[p.pol for p in basis]))
      -- now check whether the normalized basis again has reducible
      -- polynomials, in this case continue splitting!
      if info then
@@ -291,7 +291,7 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
 
    createAllFactors(p: Dpol) ==
      loF : L Dpol := [el.fctr for el in factorList factor(p)$MF]
-     sort(degree #1 < degree #2, loF)
+     sort((x, y) +-> degree x < degree y, loF)
    newPairs(lp : L sugarPol,p : Dpol) ==
      totdegreeOfp : NNI := virtualDegree p
      -- next list lcP contains all critPair constructed from
@@ -328,12 +328,12 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
 
    groebnerFactorize(basis, nonZeroRestrictions, info) ==
      basis = [] => [basis]
-     basis := remove(#1 = 0$Dpol,basis)
+     basis := remove((x: Dpol): Boolean +-> x = 0$Dpol,basis)
      basis = [] => [[0$Dpol]]
      -- normalize all input polynomial
      basis := [hMonic p for p in basis]
      member?(1$Dpol,basis) => [[1$Dpol]]
-     basis :=  sort(degree #1 > degree #2, basis)
+     basis :=  sort((x, y) +-> degree x > degree y, basis)
      createGroebnerBases([],[],nonZeroRestrictions,basis,[],[],info)
 
    groebnerFactorize(basis) == groebnerFactorize(basis, [], false)
