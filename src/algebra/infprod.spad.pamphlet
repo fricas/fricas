@@ -68,14 +68,14 @@ StreamInfiniteProduct(Coef): Exports == Implementation where
 
       applyOverQF:(ST QF Coef -> ST QF Coef,ST Coef) -> ST Coef
       applyOverQF(f,st) ==
-        stQF := map(#1 :: QF(Coef),st)$StreamFunctions2(Coef,QF Coef)
-        map(retract(#1)@Coef,f stQF)$StreamFunctions2(QF Coef,Coef)
+        stQF := map(z1 +-> z1 :: QF(Coef),st)$StreamFunctions2(Coef,QF Coef)
+        map(z1 +-> retract(z1)@Coef,f stQF)$StreamFunctions2(QF Coef,Coef)
 
-      infiniteProduct st     == applyOverQF(exp lambert log #1,st)
-      evenInfiniteProduct st == applyOverQF(exp evenlambert log #1,st)
-      oddInfiniteProduct st  == applyOverQF(exp oddlambert log #1,st)
+      infiniteProduct st     == applyOverQF(z1 +-> exp lambert log z1,st)
+      evenInfiniteProduct st == applyOverQF(z1 +-> exp evenlambert log z1,st)
+      oddInfiniteProduct st  == applyOverQF(z1 +-> exp oddlambert log z1,st)
       generalInfiniteProduct(st,a,d) ==
-        applyOverQF(exp generalLambert(log #1,a,d),st)
+        applyOverQF(z1 +-> exp generalLambert(log z1,a,d),st)
 
 @
 \section{package INFPROD0 InfiniteProductCharacteristicZero}
@@ -174,8 +174,8 @@ InfiniteProductPrimeField(Coef,UTS): Exports == Implementation where
 
     applyOverZ:(ST I -> ST I,ST Coef) -> ST Coef
     applyOverZ(f,st) ==
-      stZ := map(convert(#1)@Integer,st)$StreamFunctions2(Coef,I)
-      map(#1 :: Coef,f stZ)$StreamFunctions2(I,Coef)
+      stZ := map(z1 +-> convert(z1)@Integer,st)$StreamFunctions2(Coef,I)
+      map(z1 +-> z1 :: Coef,f stZ)$StreamFunctions2(I,Coef)
 
     infiniteProduct x ==
       series applyOverZ(infiniteProduct,coefficients x)
@@ -184,7 +184,7 @@ InfiniteProductPrimeField(Coef,UTS): Exports == Implementation where
     oddInfiniteProduct x ==
       series applyOverZ(oddInfiniteProduct,coefficients x)
     generalInfiniteProduct(x,a,d) ==
-      series applyOverZ(generalInfiniteProduct(#1,a,d),coefficients x)
+      series applyOverZ((z1: ST(I)): ST(I) +-> generalInfiniteProduct(z1,a,d),coefficients x)
 
 @
 \section{package INPRODFF InfiniteProductFiniteField}
