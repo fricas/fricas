@@ -252,8 +252,8 @@ TopLevelDrawFunctionsForCompiledFunctions():
       xDiff := xHi - xLo; yDiff := yHi - yLo
       pad := abs(yDiff - xDiff)/2
       yDiff > xDiff =>
-        [segment(xLo - pad,xHi + pad),map(convert(#1)@Float,yVals)]
-      [map(convert(#1)@Float,xVals),segment(yLo - pad,yHi + pad)]
+        [segment(xLo - pad, xHi + pad), map(x +-> convert(x)@Float, yVals)]
+      [map(x +-> convert(x)@Float, xVals), segment(yLo - pad, yHi + pad)]
 
     drawPlot: (PLOT,L DROP) -> VIEW2
     drawPlot(plot,l) ==
@@ -294,8 +294,8 @@ TopLevelDrawFunctionsForCompiledFunctions():
         -- add scaled ranges to list of options
         l := concat(ranges scaledRanges,l)
       else
-        xRangeFloat : SEG := map(convert(#1)@Float,xRange)
-        yRangeFloat : SEG := map(convert(#1)@Float,yRange)
+        xRangeFloat : SEG := map(x +-> convert(x)@Float, xRange)
+        yRangeFloat : SEG := map(x +-> convert(x)@Float, yRange)
         -- add ranges to list of options
         l := concat(ranges(ll : L SEG := [xRangeFloat,yRangeFloat]),l)
       -- process color information
@@ -334,14 +334,14 @@ TopLevelDrawFunctionsForCompiledFunctions():
       oldAdaptive := adaptive?()$PLOT
       setAdaptive(adaptive(l,oldAdaptive))$PLOT
       -- create function SF -> Point SF
-      ff : L(SF -> Point SF) := [makePt2(myTrap1(f,#1),#1)]
+      ff : L(SF -> Point SF) := [x +-> makePt2(myTrap1(f, x), x)]
       -- process change of coordinates
       if (c := option(l,"coordinates" :: Symbol)) case "failed" then
         -- default coordinate transformation
-        ff := [makePt2(#1,myTrap1(f,#1))]
+        ff := [x +-> makePt2(x, myTrap1(f, x))]
       else
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
-        ff := [(first cc)((first ff)(#1))]
+        ff := [x +-> (first cc)((first ff)(x))]
       -- create PLOT
       pl := pointPlot(first ff,normalize seg)
       -- reset adaptive plotting
@@ -359,11 +359,11 @@ TopLevelDrawFunctionsForCompiledFunctions():
       setAdaptive(adaptive(l,oldAdaptive))$PLOT
       -- create function SF -> Point SF
       f := coordinate(ppc,1); g := coordinate(ppc,2)
-      fcn : L(SF -> Pt) := [makePt2(myTrap1(f,#1),myTrap1(g,#1))]
+      fcn : L(SF -> Pt) := [x +-> makePt2(myTrap1(f, x), myTrap1(g, x))]
       -- process change of coordinates
       if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
-        fcn := [(first cc)((first fcn)(#1))]
+        fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
       pl := pointPlot(first fcn,normalize seg)
       -- reset adaptive plotting
@@ -402,17 +402,17 @@ TopLevelDrawFunctionsForCompiledFunctions():
       f := coordinate(psc,1); g := coordinate(psc,2); h := coordinate(psc,3)
       -- create function SF -> Point SF with default or user-specified
       -- color function
-      fcn : L(SF -> Pt) := [makePt4(myTrap1(f,#1),myTrap1(g,#1),myTrap1(h,#1),_
-                            myTrap1(id,#1))]
+      fcn : L(SF -> Pt) := [x +-> makePt4(myTrap1(f, x), myTrap1(g, x),_
+                            myTrap1(h, x), myTrap1(id, x))]
       pointsColored? : Boolean := false
       if not (c1 := option(l,"colorFunction1" :: Symbol)) case "failed" then
         pointsColored? := true
-        fcn := [makePt4(myTrap1(f,#1),myTrap1(g,#1),myTrap1(h,#1),_
-                retract(c1 :: Any)$ANY1(SF -> SF)(#1))]
+        fcn := [x +-> makePt4(myTrap1(f, x), myTrap1(g, x),_
+                myTrap1(h, x), retract(c1 :: Any)$ANY1(SF -> SF)(x))]
       -- process change of coordinates
       if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
-        fcn := [(first cc)((first fcn)(#1))]
+        fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
       pl := pointPlot(first fcn,normalize seg)$Plot3D
       -- create ThreeSpace
@@ -444,11 +444,11 @@ TopLevelDrawFunctionsForCompiledFunctions():
       pointsColored? : Boolean := false
       if not (c1 := option(l,"colorFunction1" :: Symbol)) case "failed" then
         pointsColored? := true
-        fcn := [concat(psc(#1), retract(c1 :: Any)$ANY1(SF -> SF)(#1))]
+        fcn := [x +-> concat(psc(x), retract(c1 :: Any)$ANY1(SF -> SF)(x))]
       -- process change of coordinates
       if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
-        fcn := [(first cc)((first fcn)(#1))]
+        fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
       pl := pointPlot(first fcn,normalize seg)$Plot3D
       -- create ThreeSpace
@@ -501,9 +501,10 @@ TopLevelDrawFunctionsForCompiledFunctions():
       r
 
     recolor(ptFunc,colFunc) ==
-      pt := ptFunc(#1,#2)
-      pt.4 := colFunc(pt.1,pt.2,pt.3)
-      pt
+      (f1, f2) +->
+        pt := ptFunc(f1, f2)
+        pt.4 := colFunc(pt.1,pt.2,pt.3)
+        pt
 
     xCoord: (SF,SF) -> SF
     xCoord(x,y) == x
@@ -519,14 +520,14 @@ TopLevelDrawFunctionsForCompiledFunctions():
         pointsColored? := true
         col2 := [retract(c2 :: Any)$ANY1((SF,SF) -> SF)]
       fcn : L((SF,SF) -> Pt) :=
-        [makePt4(myTrap2(f,#1,#2),#1,#2,(first col2)(#1,#2))]
+        [(x, y) +-> makePt4(myTrap2(f, x, y), x, y, (first col2)(x, y))]
       -- process change of coordinates
       if (c := option(l,"coordinates" :: Symbol)) case "failed" then
         -- default coordinate transformation
-        fcn := [makePt4(#1,#2,myTrap2(f,#1,#2),(first col2)(#1,#2))]
+        fcn := [(x, y) +-> makePt4(x, y, myTrap2(f, x, y),(first col2)(x, y))]
       else
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
-        fcn := [(first cc)((first fcn)(#1,#2))]
+        fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- process color function of three variables, if there was no
       -- color function of two variables
       if not pointsColored? then
@@ -563,12 +564,12 @@ TopLevelDrawFunctionsForCompiledFunctions():
         pointsColored? := true
         col2 := [retract(c2 :: Any)$ANY1((SF,SF) -> SF)]
       fcn : L((SF,SF) -> Pt) :=
-        [makePt4(myTrap2((first f),#1,#2),myTrap2((first g),#1,#2),myTrap2((first h),#1,#2),_
-                 myTrap2((first col2),#1,#2))]
+        [(x, y) +-> makePt4(myTrap2((first f), x, y), myTrap2((first g), x, y),
+         myTrap2((first h), x, y), myTrap2((first col2), x, y))]
       -- process change of coordinates
       if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
-        fcn := [(first cc)((first fcn)(#1,#2))]
+        fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- process color function of three variables, if there was no
       -- color function of two variables
       if not pointsColored? then
@@ -589,12 +590,12 @@ TopLevelDrawFunctionsForCompiledFunctions():
         pointsColored? := true
         col2 := [retract(c2 :: Any)$ANY1((SF,SF) -> SF)]
       fcn : L((SF,SF) -> Pt) :=
-        pointsColored? => [concat(s(#1, #2), (first col2)(#1, #2))]
+        pointsColored? => [(x, y) +-> concat(s(x, y), (first col2)(x, y))]
         [s]
       -- process change of coordinates
       if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
-        fcn := [(first cc)((first fcn)(#1,#2))]
+        fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- create mesh
       mesh := meshPar2Var(sp,first fcn,normalize uSeg,normalize vSeg,l)
       mesh
@@ -1043,8 +1044,8 @@ TopLevelDrawFunctionsForAlgebraicCurves(R,Ex): Exports == Implementation where
         ranges := retract(ratRange :: Any)$ANY1(L SEG RN)
         not size?(ranges,2) => error "draw: you must specify two ranges"
         xRange := first ranges; yRange := second ranges
-        xRangeFloat := map(convert(#1)@Float,xRange)@(SEG F)
-        yRangeFloat := map(convert(#1)@Float,yRange)@(SEG F)
+        xRangeFloat := map((s : RN) : F +-> convert(s)@Float, xRange)@(SEG F)
+        yRangeFloat := map((s : RN) : F +-> convert(s)@Float, yRange)@(SEG F)
         floatRanges := [xRangeFloat,yRangeFloat]
       else
         floatRanges := retract(floatRange :: Any)$ANY1(L SEG F)
@@ -1052,8 +1053,8 @@ TopLevelDrawFunctionsForAlgebraicCurves(R,Ex): Exports == Implementation where
           error "draw: you must specify two ranges"
         xRangeFloat := first floatRanges
         yRangeFloat := second floatRanges
-        xRange := map(retract(#1)@RN,xRangeFloat)@(SEG RN)
-        yRange := map(retract(#1)@RN,yRangeFloat)@(SEG RN)
+        xRange := map((s : F) : RN +-> retract(s)@RN, xRangeFloat)@(SEG RN)
+        yRange := map((s : F) : RN +-> retract(s)@RN, yRangeFloat)@(SEG RN)
         ranges := [xRange,yRange]
       -- create curve plot
       acplot := makeSketch(p,x,y,xRange,yRange)
