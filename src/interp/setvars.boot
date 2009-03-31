@@ -80,7 +80,6 @@ resetWorkspaceVariables () ==
   SETQ(_/TIMERLIST                  , NIL)
   SETQ($BOOT                        , NIL)
   SETQ($CommandSynonymAlist         , COPY($InitialCommandSynonymAlist))
-  SETQ($msgDatabaseName             , NIL)
   SETQ($IOindex                     , 1  )
   SETQ($e                           , [[NIL]])
   SETQ($env                         , [[NIL]])

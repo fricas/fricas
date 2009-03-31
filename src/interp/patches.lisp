@@ -200,8 +200,7 @@
        ('else
         (setq msg (concatenate 'string msg line)))))))))
 
-(defun |fetchKeyedMsg| (key ignore)
- (declare (ignore ignore))
+(defun |fetchKeyedMsg| (key)
  (setq key (|object2Identifier| key))
  (unless *msghash*
   (setq *msghash* (make-hash-table))

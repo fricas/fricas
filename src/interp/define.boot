@@ -394,7 +394,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       then $e:= augModemapsFromCategoryRep('_$,ab,cb,target,$e)
       else $e:= augModemapsFromCategory('_$,'_$,'_$,target,$e)
     $signature:= signature'
-    operationAlist:= SUBLIS($pairlis,$domainShell.(1))
     parSignature:= SUBLIS($pairlis,signature')
     parForm:= SUBLIS($pairlis,form)
  
@@ -1117,9 +1116,12 @@ compCapsuleInner(itemList,m,e) ==
   localParList:= $functorLocalParameters
   if $addForm then data:= ['add,$addForm,data]
   code:=
-    $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => data
+    $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => BREAK()
     processFunctor($form,$signature,data,localParList,e)
-  [MKPF([:$getDomainCode,code],"PROGN"),m,e]
+  if $getDomainCode then
+      SAY(["$getDomainCode =", $getDomainCode])
+      BREAK()
+  [MKPF([code],"PROGN"),m,e]
  
 --% PROCESS FUNCTOR CODE
  
@@ -1175,7 +1177,7 @@ doIt(item,$predl) ==
       RPLACA(item,($QuickCode => 'QSETREFV;'SETELT))
       rhsCode:=
        rhs'
-      RPLACD(item,['$,NRTgetLocalIndexClear lhs,rhsCode])
+      RPLACD(item, ['$, NRTgetLocalIndex lhs, rhsCode])
     RPLACA(item,first code)
     RPLACD(item,rest code)
   item is [":",a,t] => [.,.,$e]:= compOrCroak(item,$EmptyMode,$e)

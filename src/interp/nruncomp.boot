@@ -212,11 +212,7 @@ NRTassocIndex x == --returns index of "domain" entry x in al
     $NRTbase + $NRTdeltaLength - k
   nil
 
-NRTgetLocalIndexClear item == NRTgetLocalIndex1(item,true)
-
-NRTgetLocalIndex item == NRTgetLocalIndex1(item,false)
-
-NRTgetLocalIndex1(item,killBindingIfTrue) ==
+NRTgetLocalIndex(item) ==
   k := NRTassocIndex item => k
   item = $NRTaddForm => 5
   item = '$ => 0

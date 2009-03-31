@@ -60,7 +60,6 @@ ppos p ==
     org  := porigin pfFileName p
     [org,'" ",'"line",'" ",lpos]
  
-%key keyStuff == [function pkey, keyStuff]
 --keyStuff ::= keynumber | [ one or more keySeqs ]
 --keySeq   ::= keynumber optargList optdbn
 --optARgL  ::= [ 0 or more arguments ] | nothing at all
