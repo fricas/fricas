@@ -135,7 +135,6 @@ htShowIntegerPage(htPage, setData) ==
   page := htInitPage(mkSetTitle(), htpPropertyList htPage)
   htpSetProperty(page, 'variable, setData.setVar)
   bcHt ['"\centerline{Set {\em ", setData.setName, '"}}\newline"]
---  message := isKeyedMsgInDb($path,'(setvar text A)) or setData.setLabel
   message := setData.setLabel
   bcHt ['"{\em Description: } ", message, '"\newline\vspace{1} "]
   [$htInitial,$htFinal] := setData.setLeaf

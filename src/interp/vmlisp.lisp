@@ -371,8 +371,9 @@
 ; 8.1 Definition and Transformation Operations
 
 (defun COMP370 (fnlist)
-  (cond ((atom (car fnlist)) (list (COMPILE1 fnlist)))
-        (t (MAPCAR #'(lambda (x) (COMPILE1 x)) fnlist))))
+  (cond ((atom (car fnlist)) (BREAK) (list (COMPILE1 fnlist)))
+        ((cdr fnlist) (BREAK))
+        (t (MAPCAR #'(lambda (x) (COMPILE1 x)) fnlist)) ))
 
 (defun COMPILE1 (fn)
   (let* (nargs

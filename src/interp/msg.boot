@@ -130,7 +130,6 @@ putDatabaseStuff msg ==
     setMsgText(msg,text)
  
 getMsgInfoFromKey msg ==
-    $msgDatabaseName : local := []
     msgText :=
         msgKey := getMsgKey? msg =>   --temp  oldmsgs use key tostoretext
            getKeyedMsg msgKey

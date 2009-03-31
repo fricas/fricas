@@ -818,24 +818,7 @@ object2Identifier x ==
   INTERN WRITE_-TO_-STRING x
 
 blankList x == "append"/[[BLANK,y] for y in x]
---------------------> NEW DEFINITION (see cformat.boot.pamphlet)
-pkey keyStuff ==
-    if not PAIRP keyStuff then keyStuff := [keyStuff]
-    allMsgs := ['" "]
-    while not null keyStuff repeat
-        dbN := NIL
-        argL := NIL
-        key := first keyStuff
-        keyStuff := IFCDR keyStuff
-        next := IFCAR keyStuff
-        while PAIRP next repeat
-            if CAR next = 'dbN then dbN := CADR next
-            else argL := next
-            keyStuff  := IFCDR keyStuff
-            next      := IFCAR keyStuff
-        oneMsg  := returnStLFromKey(key,argL,dbN)
-        allMsgs := ['" ", :NCONC (oneMsg,allMsgs)]
-    allMsgs
+
 
 string2Float s ==
   -- takes a string, calls the parser on it and returns a float object

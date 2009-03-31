@@ -649,7 +649,7 @@ compMapCond''(cexpr,dc) ==
 --======================================================================
 --                    From nruncomp.boot
 --======================================================================
-NRTgetLocalIndex1(item,killBindingIfTrue) ==
+NRTgetLocalIndex(item) ==
   k := NRTassocIndex item => k
   item = $NRTaddForm => 5
   item = '$ => 0 
@@ -1098,7 +1098,7 @@ doItLet1 item ==
   code is ['LET,:.] =>
       rhsCode:= rhs'
       op := ($QuickCode => 'QSETREFV;'SETELT)
-      wiReplaceNode(item,[op,'$,NRTgetLocalIndexClear lhs,rhsCode], 16)
+      wiReplaceNode(item, [op, '$, NRTgetLocalIndex lhs, rhsCode], 16)
   wiReplaceNode(item, code, 18)
 
 rhsOfLetIsDomainForm code ==

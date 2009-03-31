@@ -44,7 +44,7 @@ at load time.
 |#
 (in-package "BOOT")
 (export '($spadroot $directory-list reroot
-          make-absolute-filename |$msgDatabaseName| |$defaultMsgDatabaseName|))
+          make-absolute-filename |$defaultMsgDatabaseName|))
 
 ;;; Get the write date of a file. In GCL we need to check that it
 ;;; exists first. This is a simple helper function.
@@ -359,7 +359,7 @@ where the [[${AXIOM}]] variable points to installed tree.
    (mapcar #'make-absolute-filename $relative-library-directory-list))
   (setq |$defaultMsgDatabaseName|
         (pathname (make-absolute-filename "/share/msgs/s2-us.msgs")))
-  (setq |$msgDatabaseName| ()))
+  )
 
 ;;; Sets up the system to use the {\bf AXIOM} shell variable if we can
 ;;; and default to the {\bf \$spadroot} variable (which was the value

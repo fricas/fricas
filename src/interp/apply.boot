@@ -196,20 +196,17 @@ compMapCond'([cexpr,fnexpr],op,dc,bindings) ==
 
 compMapCond''(cexpr,dc) ==
   cexpr=true => true
-  --cexpr = "true" => true
-  cexpr is ["AND",:l] => and/[compMapCond''(u,dc) for u in l]
-  cexpr is ["OR",:l] => or/[compMapCond''(u,dc) for u in l]
+  cexpr is ["AND", :l] or cexpr is ["and", :l] =>
+      and/[compMapCond''(u, dc) for u in l]
+  cexpr is ["OR", :l] or cexpr is ["or", :l] =>
+      or/[compMapCond''(u, dc) for u in l]
   cexpr is ["not",u] => not compMapCond''(u,dc)
   cexpr is ["has",name,cat] => (knownInfo cexpr => true; false)
         --for the time being we'll stop here - shouldn't happen so far
         --$disregardConditionIfTrue => true
         --stackSemanticError(("not known that",'%b,name,
         -- '%d,"has",'%b,cat,'%d),nil)
-  --now it must be an attribute
-  member(["ATTRIBUTE",dc,cexpr],get("$Information","special",$e)) => true
-  --for the time being we'll stop here - shouldn't happen so far
-  stackMessage ["not known that",'%b,dc,'%d,"has",'%b,cexpr,'%d]
-  false
+  BREAK()
 
 compMapCondFun(fnexpr,op,dc,bindings) == [fnexpr,bindings]
 

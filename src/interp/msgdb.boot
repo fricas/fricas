@@ -78,7 +78,6 @@ above for examples.
 --% Message Database Code and Message Utility Functions
 
 SETANDFILEQ($cacheMessages,'T)  -- for debugging purposes
-SETANDFILEQ($msgDatabaseName,NIL)
 SETANDFILEQ($testingErrorPrefix, '"Daly Bug")
 
 SETANDFILEQ($texFormatting, false)
@@ -102,7 +101,7 @@ wordFrom(l,i) ==
   if k = maxIndex and (c := l.k) ~= char ('_ ) then buf := STRCONC(buf,c)
   [buf,k+1]
 
-getKeyedMsg key == fetchKeyedMsg(key,false)
+getKeyedMsg key == fetchKeyedMsg(key)
 
 --% Formatting and Printing Keyed Messages
 
@@ -426,38 +425,6 @@ popSatOutput(newmode) ==
 
 systemErrorHere functionName ==
   keyedSystemError("S2GE0017",[functionName])
-
-isKeyedMsgInDb(key,dbName) ==
-  $msgDatabaseName : fluid := pathname dbName
-  fetchKeyedMsg(key,true)
-
-getKeyedMsgInDb(key,dbName) ==
-  $msgDatabaseName : fluid := pathname dbName
-  fetchKeyedMsg(key,false)
-
-sayKeyedMsgFromDb(key,args,dbName) ==
-  $msgDatabaseName : fluid := pathname dbName
-  msg := segmentKeyedMsg getKeyedMsg key
-  msg := substituteSegmentedMsg(msg,args)
-  if $displayMsgNumber then msg := ['"%b",key,":",'%d,:msg]
---sayMSG flowSegmentedMsg(msg,$LINELENGTH,3)
-  u := flowSegmentedMsg(msg,$LINELENGTH,3)
-  sayBrightly u
-
-returnStLFromKey(key,argL,:optDbN) ==
-    savedDbN := $msgDatabaseName
-    if IFCAR optDbN then
-        $msgDatabaseName := pathname CAR optDbN
-    text := fetchKeyedMsg(key, false)
-    $msgDatabaseName := savedDbN
-    text := segmentKeyedMsg text
-    text := substituteSegmentedMsg(text,argL)
-
-throwKeyedMsgFromDb(key,args,dbName) ==
-  sayMSG '" "
-  if $testingSystem then sayMSG $testingErrorPrefix
-  sayKeyedMsgFromDb(key,args,dbName)
-  spadThrow()
 
 queryUserKeyedMsg(key,args) ==
   -- display message and return reply
