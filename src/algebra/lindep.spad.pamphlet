@@ -93,11 +93,23 @@ LinearDependence(S, R): Exports == Implementation where
       solveLinear(m : Matrix R, v : Vector R) : Union(Vector Q, "failed") ==
         v = zero(#v) => new(ncols(m), 0)
         sys := reducedSystem(m, v)
-        particularSolution(map(#1::Q, sys.mat)$MatrixCategoryFunctions2(S,
+        particularSolution(map((z1:S):Q +-> z1::Q, sys.mat)$MatrixCategoryFunctions2(S,
                Vector S,Vector S,Matrix S,Q,Vector Q,Vector Q,Matrix Q),
-                  map(#1::Q, sys.vec)$VectorFunctions2(S, Q)
+                  map((z1:S):Q +-> z1 ::Q, sys.vec)$VectorFunctions2(S, Q)
                                     )$LinearSystemMatrixPackage(Q,
                                            Vector Q, Vector Q, Matrix Q)
+
+
+--rhx: Suggested improvement...
+--      lift(q1:S): Q == q1::Q
+--      solveLinear(m : Matrix R, v : Vector R) : Union(Vector Q, "failed") ==
+--        v = zero(#v) => new(ncols(m), 0)
+--        sys: Record(mat:Matrix S, vec: Vector S) := reducedSystem(m, v)
+--        mm: Matrix Q := map(lift@(S->Q), sys.mat)$MatrixCategoryFunctions2(
+--            S,Vector S,Vector S,Matrix S,Q,Vector Q,Vector Q,Matrix Q)
+--        vv: Vector Q := map(lift@(S->Q), sys.vec)$VectorFunctions2(S, Q)
+--        particularSolution(mm, vv)$LinearSystemMatrixPackage(
+--            Q, Vector Q, Vector Q, Matrix Q)
 
 @
 \section{package ZLINDEP IntegerLinearDependence}
