@@ -42,7 +42,7 @@ UnivariateFormalPowerSeriesFunctions(Coef: Ring): Exports == Implementation
     Implementation == add
 
       hadamard(f, g) ==
-        series map(#1*#2, coefficients f, coefficients g)
+        series map((z1: Coef, z2: Coef): Coef +-> z1*z2, coefficients f, coefficients g)
                   $StreamFunctions3(Coef, Coef, Coef)
 
 @
@@ -211,7 +211,7 @@ GuessOption(): Exports == Implementation where
 
     checkOptions l ==
       if not empty? l then
-        if find((first l).keyword = #1.keyword, rest l) case "failed"
+        if find((z1: %): Boolean +-> (first l).keyword = z1.keyword, rest l) case "failed"
         then checkOptions rest l
         else error "GuessOption: Option specified twice"
 
@@ -760,7 +760,7 @@ SUPS2SUPF(p: SUP S): SUP F ==
   if F is S then
     p pretend SUP(F)
   else if F is Fraction S then
-    map(coerce(#1)$Fraction(S), p)
+    map((z1: S): F +-> coerce(z1)$Fraction(S), p)
       $SparseUnivariatePolynomialFunctions2(S, F)
   else error "Guess: type parameter F should be either equal to S or equal _
               to Fraction S"
@@ -805,7 +805,7 @@ POLYS2POLYF(p: POLYS): POLYF ==
   if F is S then
     p pretend POLYF
   else if F is Fraction S then
-    map(coerce(#1)$Fraction(S), p)$MPCSF
+    map((z1: S): F +-> coerce(z1)$Fraction(S), p)$MPCSF
   else error "Guess: type parameter F should be either equal to S or equal _
               to Fraction S"
 
@@ -823,7 +823,7 @@ SUPFPOLYS2FSUPPOLYS(p: SUP FPOLYS): Fraction SUP POLYS  ==
          $UnivariatePolynomialCommonDenominator(POLYS, FPOLYS,SUP FPOLYS)
 
   pnum: SUP POLYS
-       := map(retract(#1 * cden.den)$FPOLYS, p)
+       := map((z1: FPOLYS): POLYS +-> retract(z1 * cden.den)$FPOLYS, p)
              $SparseUnivariatePolynomialFunctions2(FPOLYS, POLYS)
   pden: SUP POLYS := (cden.den)::SUP POLYS
 
@@ -831,7 +831,7 @@ SUPFPOLYS2FSUPPOLYS(p: SUP FPOLYS): Fraction SUP POLYS  ==
 
 
 POLYF2EXPRR(p: POLYF): EXPRR ==
-  map(convert(#1)@Symbol::EXPRR, coerce(#1)@EXPRR, p)
+  map((v1: V): EXPRR +-> convert(v1)@Symbol::EXPRR, (f1: F): EXPRR +-> coerce(f1)@EXPRR, p)
      $PolynomialCategoryLifting(IndexedExponents V, V,
                                 F, POLYF, EXPRR)
 
@@ -1009,9 +1009,9 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 
 <<implementation: Guess - guessExpRat - Main>>=
     y: NNI -> FPOLYS :=
-        F2FPOLYS(list.#1) * _
-        p(last xValues, (xValues.#1)::Integer, a1, A, basis)^_
-            (-(xValues.#1)::Integer)
+        (z1: NNI): FPOLYS +-> F2FPOLYS(list.z1) * _
+        p(last xValues, (xValues.z1)::Integer, a1, A, basis)^_
+            (-(xValues.z1)::Integer)
 
     ylist: List FPOLYS := [y i for i in 1..len]
 
@@ -1242,10 +1242,10 @@ guessExpRatAux0(list: List F, basis: DIFFSPECN, options: LGOPT): GUESSRESULT ==
         := [eval(zeros * f, xx::EXPRR, xx::EXPRR) _
             for f in guessExpRatAux(xx, newlist, basis, xValues, options)]
 
-    reslist := map([#1, checkResult(#1, xx, len, list, options)], res)
+    reslist := map(z1 +-> [z1, checkResult(z1, xx, len, list, options)], res)
                   $ListFunctions2(EXPRR, Record(function: EXPRR, order: NNI))
 
-    select(#1.order < len-safety(options)$GOPT0, reslist)
+    select(z1 +-> z1.order < len-safety(options)$GOPT0, reslist)
 
 guessExpRat(list : List F): GUESSRESULT ==
     guessExpRatAux0(list, defaultD, [])
@@ -1256,7 +1256,8 @@ guessExpRat(list: List F, options: LGOPT): GUESSRESULT ==
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessExpRat(q: Symbol): GUESSER ==
-        guessExpRatAux0(#1, q::EXPRR^#1, #2)
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
+            guessExpRatAux0(z1, (i1:EXPRR): EXPRR +-> q::EXPRR^i1, z2)
 
 @
 
@@ -1319,8 +1320,8 @@ $y(n)=s_n*\binom{a+bn}{n}^-1$.
 
 <<implementation: Guess - guessBinRat>>=
     y: NNI -> FPOLYS :=
-        F2FPOLYS(list.#1) / _
-        ext((xValues.#1)::Integer, a1, A)
+        (z1: NNI): FPOLYS +-> F2FPOLYS(list.z1) / _
+        ext((xValues.z1)::Integer, a1, A)
 
     ylist: List FPOLYS := [y i for i in 1..len]
 
@@ -1542,10 +1543,10 @@ guessBinRatAux0(list: List F,
             for f in guessBinRatAux(xx, newlist, basis, ext, extEXPR, xValues, _
                                     options)]
 
-    reslist := map([#1, checkResult(#1, xx, len, list, options)], res)
+    reslist := map(z1 +-> [z1, checkResult(z1, xx, len, list, options)], res)
                   $ListFunctions2(EXPRR, Record(function: EXPRR, order: NNI))
 
-    select(#1.order < len-safety(options)$GOPT0, reslist)
+    select(z1 +-> z1.order < len-safety(options)$GOPT0, reslist)
 
 guessBinRat(list : List F): GUESSRESULT ==
     guessBinRatAux0(list, defaultD, binExt, binExtEXPR, [])
@@ -1557,7 +1558,7 @@ guessBinRat(list: List F, options: LGOPT): GUESSRESULT ==
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     qD: Symbol -> DIFFSPECN
-    qD q == (q::EXPRR)^#1
+    qD q == (z1: EXPRR): EXPRR +-> (q::EXPRR)^z1
 
 
     qBinExtAux(q: Symbol, i: Integer, va1: V, vA: V): FPOLYS ==
@@ -1569,7 +1570,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         reduce(_*, fl, 1)
 
     qBinExt: Symbol -> EXT
-    qBinExt q == qBinExtAux(q, #1, #2, #3)
+    qBinExt q == (z1: Integer, z2: V, z3: V): FPOLYS +-> qBinExtAux(q, z1, z2, z3)
 
     qBinExtEXPRaux(q: Symbol, i: Symbol, a1v: F, Av: F): EXPRR ==
         l: Symbol := 'l
@@ -1580,10 +1581,10 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
                 equation(l, 1$EXPRR..i::EXPRR))
 
     qBinExtEXPR: Symbol -> EXTEXPR
-    qBinExtEXPR q == qBinExtEXPRaux(q, #1, #2, #3)
+    qBinExtEXPR q == (z1: Symbol, z2: F, z3: F): EXPRR +-> qBinExtEXPRaux(q, z1, z2, z3)
 
     guessBinRat(q: Symbol): GUESSER ==
-        guessBinRatAux0(#1, qD q, qBinExt q, qBinExtEXPR q, #2)_
+         (z1: List F, z2: LGOPT): GUESSRESULT +-> guessBinRatAux0(z1, qD q, qBinExt q, qBinExtEXPR q, z2)_
 
 @
 
@@ -1673,7 +1674,7 @@ termAsUFPSF2(f: UFPSF, partition: List Integer,
 -- first of each element of ll is the derivative, second is the power
 
         fl: List UFPSF
-            := [map(#1^ second(part)::NNI, DS(f, (first part -1)::NNI)) _
+            := [map(z1 +-> z1^ second(part)::NNI, DS(f, (first part -1)::NNI)) _
                 for part in ll]
 
         reduce(hadamard$UFPS1(F), fl)
@@ -1702,7 +1703,7 @@ termAsUFPSSUPF2(f: UFPSSUPF, partition: List Integer,
 -- first of each element of ll is the derivative, second is the power
 
         fl: List UFPSSUPF
-           := [map(#1 ^ second(part)::NNI, DSF(f, (first part -1)::NNI)) _
+           := [map(z1 +-> z1 ^ second(part)::NNI, DSF(f, (first part -1)::NNI)) _
                for part in ll]
 
         reduce(hadamard$UFPS1(SUP F), fl)
@@ -1754,7 +1755,7 @@ FilteredPartitionStream(options: LGOPT): Stream List Integer ==
     else
         s1: Stream Integer := generate(inc, 1)$Stream(Integer)
         s2: Stream Stream List Integer
-           := map(partitions(#1)$PartitionsAndPermutations, s1)
+           := map(z1 +-> partitions(z1)$PartitionsAndPermutations, s1)
                  $StreamFunctions2(Integer, Stream List Integer)
         s3: Stream List Integer
            := concat(s2)$StreamFunctions1(List Integer)
@@ -1764,14 +1765,14 @@ FilteredPartitionStream(options: LGOPT): Stream List Integer ==
 --                     and ((maxP = -1) or (# #1 <= maxP)), s3))
 
         s := cons([],
-                  select(((maxD? case "arbitrary") or (# #1 <= maxD?::NNI+1)) _
-                     and ((maxP? case "arbitrary") or (first #1 <= maxP?::PI)),
+                  select(z1 +-> ((maxD? case "arbitrary") or (# z1 <= maxD?::NNI+1)) _
+                     and ((maxP? case "arbitrary") or (first z1 <= maxP?::PI)),
                          s3))
 
     s := conjugates(s)$PartitionsAndPermutations
 
     if homD? case PI
-    then select(# #1 = homD?, s)
+    then select(z1 +-> # z1 = homD?, s)
     else s
 
 @
