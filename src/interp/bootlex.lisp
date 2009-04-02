@@ -128,6 +128,8 @@
       (IOClear in-stream out-stream)))
   T)
 
+(defvar |$MacroTable|)
+
 (defun spad (&optional
               (spad-input-file nil)
               (spad-output-file nil)
@@ -167,6 +169,7 @@
          (format out-stream "~&;;; -*- Mode:Lisp; Package:Boot  -*-~%~%")
          (print-package "BOOT"))
       (setq curoutstream out-stream)
+      (setf |$MacroTable| (make-hash-table))
       (loop
        (if (or *eof* file-closed) (return nil))
        (catch 'SPAD_READER
