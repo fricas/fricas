@@ -133,6 +133,14 @@
 ;; This is used in the domain Boolean (BOOLEAN.NRLIB/code.lsp)
 (defun |BooleanEquality| (x y) (if x y (null y)))
 
+(defvar |$RawParseOnly| nil)
+(defvar |$PostTranOnly| nil)
+(defvar |$FlatParseOnly| nil)
+(defvar |$noEarlyMacroexpand| t)
+(defvar |$SaveParseOnly| nil)
+(defvar |$globalDefs| nil)
+(defvar |$MacroTable|)
+
 (defun S-PROCESS (X)
   (let ((|$Index| 0)
         ($MACROASSOC ())
@@ -155,8 +163,20 @@
   (prog ((CURSTRM CUROUTSTREAM) |$s| |$x| |$m| u)
      (declare (special CURSTRM |$s| |$x| |$m| CUROUTSTREAM))
       (if (NOT X) (RETURN NIL))
-      (setq X (if $BOOT (DEF-RENAME (|new2OldLisp| X))
-                  (|parseTransform| (|postTransform| X))))
+      (if |$SaveParseOnly|
+          (progn
+               (setf X (|walkForm| X))
+               (if X (push X |$globalDefs|))
+               (RETURN NIL)))
+      (if |$RawParseOnly| (RETURN (PRETTYPRINT X)))
+      (if |$FlatParseOnly| (RETURN (PRETTYPRINT (|flattenSemi| X))))
+      (if |$PostTranOnly| (RETURN (PRETTYPRINT (|postTransform| X))))
+      (if $BOOT
+          (setq X (DEF-RENAME (|new2OldLisp| X)))
+          (let ((nform (if |$noEarlyMacroexpand| X (|walkForm| X))))
+               (if nform
+                   (setq X (|parseTransform| (|postTransform| nform)))
+                   (RETURN NIL))))
       (if |$TranslateOnly| (RETURN (SETQ |$Translation| X)))
       (when |$postStack| (|displayPreCompilationErrors|) (RETURN NIL))
       (COND (|$PrintOnly|
