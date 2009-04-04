@@ -148,9 +148,9 @@ MappingPackage1(A:SetCategory): MPcat == MPdef where
 
         -- Composition and recursion.
         id a        == a
-        g^n        == iter(g, n, #1)
+        g^n        == (a1: A): A +-> iter(g, n, a1)
 
-        recur fnaa  == recur(fnaa, #1, #2)
+        recur fnaa  == (n1: NNI, a2: A): A +-> recur(fnaa, n1, a2)
 
 @
 \section{package MAPPKG2 MappingPackage2}
@@ -188,11 +188,10 @@ MappingPackage2(A:SetCategory, C:SetCategory): MPcat == MPdef where
         fac:  A -> C
         faac: (A,A)->C
 
-        const c     == arg2(#1, c)
-        curry(fac, a)  == fac a
-        constant f0c      == arg2(#1, f0c())
-
-        diag  faac  == faac(#1, #1)
+        const c       == (a1: A): C +-> arg2(a1, c)
+        curry(fac, a) == fac a
+        constant f0c  == (a1: A): C +-> arg2(a1, f0c())
+        diag faac     == (a1: A): C +-> faac(a1, a1)
 
 @
 \section{package MAPPKG3 MappingPackage3}
@@ -243,17 +242,17 @@ MappingPackage3(A:SetCategory, B:SetCategory, C:SetCategory):_
         faac: (A,A)->C
 
         -- Fix left and right arguments as constants.
-        curryRight(fabc,b) == fabc(#1,b)
-        curryLeft(fabc,a) == fabc(a, #1)
+        curryRight(fabc,b) == (a: A): C +-> fabc(a,b)
+        curryLeft(fabc,a)  == (b: B): C +-> fabc(a, b)
 
         -- Add left and right arguments which are ignored.
-        constantRight fac     == fac #1
-        constantLeft fbc     == fbc #2
+        constantRight fac     == (a: A, b: B): C +-> fac a
+        constantLeft fbc      == (a: A, b: B): C +-> fbc b
 
         -- Combinators to rearrange arguments.
-        twist fabc  == fabc(#2, #1)
+        twist fabc  == (b: B, a: A): C +-> fabc(a, b)
         -- Functional composition
-        fbc*fab == comp(fbc,fab,#1)
+        fbc*fab == (a: A): C +-> comp(fbc,fab,a)
 
 @
 \section{License}

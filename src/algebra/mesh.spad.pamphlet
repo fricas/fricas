@@ -75,9 +75,10 @@ MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
 
     makePt:(SF,SF,SF,SF) -> POINT
     makePt(x,y,z,c) == point(l : List SF := [x,y,z,c])
-    ptFunc(f,g,h,c) ==
-      x := f(#1,#2); y := g(#1,#2); z := h(#1,#2)
-      makePt(x,y,z,c(x,y,z))
+    ptFunc(f,g,h,c) == 
+      (z1: SF, z2: SF): POINT +-> 
+           x := f(z1,z2); y := g(z1,z2); z := h(z1,z2)
+           makePt(x,y,z,c(x,y,z))
 
     -- parameterized equations of two variables
     meshPar2Var(sp,ptFun,uSeg,vSeg,opts) ==
@@ -140,7 +141,7 @@ MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
     -- explicit equations of two variables
     meshFun2Var(zFun,colorFun,xSeg,ySeg,opts) ==
       -- here, we construct the data for a function of two variables
-      meshPar2Var(#1,#2,zFun,colorFun,xSeg,ySeg,opts)
+      meshPar2Var((z1: SF, z2: SF): SF +-> z1, (z1: SF, z2: SF): SF +-> z2,zFun,colorFun,xSeg,ySeg,opts)
 
 @
 \section{License}
