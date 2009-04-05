@@ -1548,7 +1548,7 @@ guessBinRatAux0(list: List F,
 
     select(z1 +-> z1.order < len-safety(options)$GOPT0, reslist)
 
-guessBinRat(list : List F): GUESSRESULT ==
+guessBinRat(list: List F): GUESSRESULT ==
     guessBinRatAux0(list, defaultD, binExt, binExtEXPR, [])
 
 guessBinRat(list: List F, options: LGOPT): GUESSRESULT ==
@@ -1559,7 +1559,6 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     qD: Symbol -> DIFFSPECN
     qD q == (z1: EXPRR): EXPRR +-> (q::EXPRR)^z1
-
 
     qBinExtAux(q: Symbol, i: Integer, va1: V, vA: V): FPOLYS ==
         fl: List FPOLYS
@@ -1785,30 +1784,30 @@ corresponding streams of power series or expressions.
 -- for functions
 ADEguessStream(f: UFPSF, partitions: Stream List Integer,
                DS: DIFFSPECS, D1: DIFFSPEC1): Stream UFPSF ==
-    map(termAsUFPSF(f, #1, DS, D1), partitions)
+    map((z1: List Integer): UFPSF +-> termAsUFPSF(f, z1, DS, D1), partitions)
        $StreamFunctions2(List Integer, UFPSF)
 
 -- for coefficients, i.e., using the Hadamard product
 ADEguessStream2(f: UFPSF, partitions: Stream List Integer,
                 DS: DIFFSPECS, D1: DIFFSPEC1): Stream UFPSF ==
-    map(termAsUFPSF2(f, #1, DS, D1), partitions)
+    map((z1: List Integer): UFPSF +-> termAsUFPSF2(f, z1, DS, D1), partitions)
        $StreamFunctions2(List Integer, UFPSF)
 
 -- for functions
 ADEtestStream(f: UFPSSUPF, partitions: Stream List Integer,
               DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream UFPSSUPF ==
-    map(termAsUFPSSUPF(f, #1, DSF, D1F), partitions)
+    map((z1: List Integer): UFPSSUPF +-> termAsUFPSSUPF(f, z1, DSF, D1F), partitions)
        $StreamFunctions2(List Integer, UFPSSUPF)
 
 -- for coefficients, i.e., using the Hadamard product
 ADEtestStream2(f: UFPSSUPF, partitions: Stream List Integer,
               DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream UFPSSUPF ==
-    map(termAsUFPSSUPF2(f, #1, DSF, D1F), partitions)
+    map((z1: List Integer): UFPSSUPF +-> termAsUFPSSUPF2(f, z1, DSF, D1F), partitions)
        $StreamFunctions2(List Integer, UFPSSUPF)
 
 ADEEXPRRStream(f: EXPRR, xx: Symbol, partitions: Stream List Integer,
                DX: DIFFSPECX, D1X: DIFFSPEC1X): Stream EXPRR ==
-    map(termAsEXPRR(f, xx, #1, DX, D1X), partitions)
+    map((z1: List Integer): EXPRR +-> termAsEXPRR(f, xx, z1, DX, D1X), partitions)
        $StreamFunctions2(List Integer, EXPRR)
 
 @
@@ -1822,7 +1821,7 @@ increasing.
 
 <<implementation: Guess - Hermite-Pade - Streams>>=
 ADEdegreeStream(partitions: Stream List Integer): Stream NNI ==
-    scan(0, max((if empty? #1 then 0 else (first #1 - 1)::NNI), #2),
+    scan(0, (z1: List Integer, z2: NNI): NNI +-> max((if empty? z1 then 0 else (first z1 - 1)::NNI), z2),
          partitions)$StreamFunctions2(List Integer, NNI)
 @
 %$
@@ -1900,10 +1899,10 @@ diffHP options ==
     then error "Guess: no support for mixed shifts in differential equations"
     if displayAsGF(options)$GOPT0 then
         partitions := FilteredPartitionStream options
-        [ADEguessStream(#1, partitions, diffDS, 1$UFPSF), _
+        [(z1: UFPSF): Stream UFPSF +-> ADEguessStream(z1, partitions, diffDS, 1$UFPSF), _
          ADEdegreeStream partitions, _
-         ADEtestStream(#1, partitions, diffDSF, 1$UFPSSUPF), _
-         ADEEXPRRStream(#1, #2, partitions, diffDX, diff1X), _
+         (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStream(z1, partitions, diffDSF, 1$UFPSSUPF), _
+         (z1: EXPRR, z2: Symbol): Stream EXPRR +-> ADEEXPRRStream(z1, z2, partitions, diffDX, diff1X), _
          diffA, diffAF, diffAX, diffC]$HPSPEC
     else
         error "Guess: guessADE supports only displayAsGF"
@@ -1922,23 +1921,30 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         eval(expr, x::EXPRR, (q::EXPRR)^n*x::EXPRR)
 
     qDiffDS(q: Symbol, s: UFPSF, n: NonNegativeInteger): UFPSF ==
-        multiplyCoefficients((q::F)^((n*#1)::NonNegativeInteger), s)
+        multiplyCoefficients((z1: Integer): F +-> (q::F)^((n*z1)::NonNegativeInteger), s)
 
     qDiffDSF(q: Symbol, s: UFPSSUPF, n: NonNegativeInteger): UFPSSUPF ==
-        multiplyCoefficients((q::F::SUP F)^((n*#1)::NonNegativeInteger), s)
+        multiplyCoefficients((z1: Integer): SUP F +-> (q::F::SUP F)^((n*z1)::NonNegativeInteger), s)
 
     diffHP(q: Symbol): (LGOPT -> HPSPEC) ==
-        if not zero? maxMixedDegree(#1)$GOPT0
-        then error "Guess: no support for mixed shifts in differential equations"
-        if displayAsGF(#1)$GOPT0 then
-            partitions := FilteredPartitionStream #1
-            [ADEguessStream(#1, partitions, qDiffDS(q, #1, #2), 1$UFPSF), _
-             repeating([0$NNI])$Stream(NNI), _
-             ADEtestStream(#1, partitions, qDiffDSF(q, #1, #2), 1$UFPSSUPF), _
-             ADEEXPRRStream(#1, #2, partitions, qDiffDX(q, #1, #2, #3), diff1X), _
-             diffA, diffAF, diffAX, diffC]$HPSPEC
-        else
-            error "Guess: guessADE supports only displayAsGF"
+        (l1: LGOPT): HPSPEC +->
+            if not zero? maxMixedDegree(l1)$GOPT0
+            then error "Guess: no support for mixed shifts in differential equations"
+            if displayAsGF(l1)$GOPT0 then
+                partitions := FilteredPartitionStream l1
+                [(z1: UFPSF): Stream UFPSF +-> _
+                     ADEguessStream(z1, partitions, _
+                                    (w1: UFPSF, w2: NNI): UFPSF +-> qDiffDS(q, w1, w2), 1$UFPSF), _
+                 repeating([0$NNI])$Stream(NNI), _
+                 (z1: UFPSSUPF): Stream UFPSSUPF +-> _
+                     ADEtestStream(z1, partitions, _
+                                    (w1: UFPSSUPF, w2: NNI): UFPSSUPF +-> qDiffDSF(q, w1, w2), 1$UFPSSUPF), _
+                 (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+                     ADEEXPRRStream(z1, z2, partitions, _
+                                    (w1: EXPRR, w2: Symbol, w3: NNI): EXPRR +-> qDiffDX(q, w1, w2, w3), diff1X), _
+                 diffA, diffAF, diffAX, diffC]$HPSPEC
+            else
+                error "Guess: guessADE supports only displayAsGF"
 
 @
 %$
@@ -1966,10 +1972,10 @@ ShiftSXGF(expr: EXPRR, x: Symbol, n: NNI): EXPRR ==
         (expr-reduce(_+, l))/(x::EXPRR^n)
 
 ShiftSS(s:UFPSF, n:NNI): UFPSF ==
-    ((quoByVar #1)^n)$MappingPackage1(UFPSF) (s)
+    (((z1: UFPSF): UFPSF +-> (quoByVar z1))^n)$MappingPackage1(UFPSF) (s)
 
 ShiftSF(s:UFPSSUPF, n: NNI):UFPSSUPF ==
-    ((quoByVar #1)^n)$MappingPackage1(UFPSSUPF) (s)
+    (((z1: UFPSSUPF): UFPSSUPF +-> quoByVar z1)^n)$MappingPackage1(UFPSSUPF) (s)
 
 @
 %$
@@ -2003,19 +2009,21 @@ shiftHP options ==
     partitions := FilteredPartitionStream options
     if displayAsGF(options)$GOPT0 then
         if maxPower(options)$GOPT0 = 1 then
-            [ADEguessStream(#1, partitions, ShiftSS, (1-monomial(1,1))^(-1)),_
+            [(z1: UFPSF): Stream UFPSF +-> ADEguessStream(z1, partitions, ShiftSS, (1-monomial(1,1))^(-1)),_
              ADEdegreeStream partitions, _
-             ADEtestStream(#1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
-             ADEEXPRRStream(#1, #2, partitions, ShiftSXGF, 1/(1-#1::EXPRR)), _
+             (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStream(z1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
+             (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+                 ADEEXPRRStream(z1, z2, partitions, ShiftSXGF, (w1: Symbol): EXPRR +-> 1/(1-w1::EXPRR)), _
              ShiftA, ShiftAF, ShiftAXGF, ShiftC]$HPSPEC
        else
             error "Guess: no support for the Shift operator with displayAsGF _
                    and maxPower>1"
     else
-        [ADEguessStream2(#1, partitions, ShiftSS, (1-monomial(1,1))^(-1)), _
+        [(z1: UFPSF): Stream UFPSF +-> ADEguessStream2(z1, partitions, ShiftSS, (1-monomial(1,1))^(-1)), _
          ADEdegreeStream partitions, _
-         ADEtestStream2(#1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
-         ADEEXPRRStream(#1, #2, partitions, ShiftSX, diff1X), _
+         (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStream2(z1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
+         (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+             ADEEXPRRStream(z1, z2, partitions, ShiftSX, diff1X), _
          ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
 
 @
@@ -2063,46 +2071,52 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
                            partitions: Stream List Integer, _
                            maxMD: Integer): Stream UFPSF ==
         s := ADEguessStream2(f, partitions, ShiftSS, (1-monomial(1,1))^(-1))
-        tensorMap(s, qSubstUFPSF(q, #1, maxMD))$StreamTensor(UFPSF)
+        tensorMap(s, (z1: UFPSF): List UFPSF +-> qSubstUFPSF(q, z1, maxMD))$StreamTensor(UFPSF)
 
     ADEdegreeStreamMixShift(partitions: Stream List Integer, _
                             maxMD: Integer): Stream NNI ==
         s := ADEdegreeStream partitions
-        tensorMap(s, [#1 for i in 0..maxMD])$StreamTensor(NNI)
+        tensorMap(s, (z1: NNI): List NNI +-> [z1 for i in 0..maxMD])$StreamTensor(NNI)
 
     ADEtestStreamMixShift(q: Symbol, f: UFPSSUPF, _
                           partitions: Stream List Integer, _
                           maxMD: Integer): Stream UFPSSUPF ==
         s := ADEtestStream2(f, partitions, ShiftSF, (1-monomial(1,1))^(-1))
-        tensorMap(s, qSubstUFPSSUPF(q, #1, maxMD))$StreamTensor(UFPSSUPF)
+        tensorMap(s, (z1: UFPSSUPF): List UFPSSUPF +-> qSubstUFPSSUPF(q, z1, maxMD))$StreamTensor(UFPSSUPF)
 
     ADEEXPRRStreamMixShift(q: Symbol, f: EXPRR, xx: Symbol, _
                            partitions: Stream List Integer, _
                            maxMD: Integer): Stream EXPRR ==
         s := ADEEXPRRStream(f, xx, partitions, ShiftSX, diff1X)
-        tensorMap(s, qSubstEXPRR(q, xx, #1, maxMD))$StreamTensor(EXPRR)
+        tensorMap(s, (z1: EXPRR): List EXPRR +-> qSubstEXPRR(q, xx, z1, maxMD))$StreamTensor(EXPRR)
 
     shiftHP(q: Symbol): (LGOPT -> HPSPEC) ==
-        partitions := FilteredPartitionStream #1
-
-        if displayAsGF(#1)$GOPT0 then
-            error "Guess: no support for the qShift operator with displayAsGF"
-        else
-            if zero?(maxMD := maxMixedDegree(#1)$GOPT0) then
-                [ADEguessStream2(#1, partitions, ShiftSS, _
-                                 (1-monomial(1,1))^(-1)), _
-                 ADEdegreeStream partitions, _
-                 ADEtestStream2(#1, partitions, ShiftSF, _
-                                (1-monomial(1,1))^(-1)), _
-                 ADEEXPRRStream(#1, #2, partitions, ShiftSX, diff1X), _
-                 qShiftA(q, #1, #2, #3), qShiftAF(q, #1, #2, #3), _
-                 qShiftAX(q, #1, #2, #3), qShiftC(q, #1)]$HPSPEC
+        (l1: LGOPT): HPSPEC +->
+            partitions := FilteredPartitionStream l1
+            
+            if displayAsGF(l1)$GOPT0 then
+                error "Guess: no support for the qShift operator with displayAsGF"
             else
-                [ADEguessStreamMixShift(q, #1, partitions, maxMD), _
-                 ADEdegreeStreamMixShift(partitions, maxMD), _
-                 ADEtestStreamMixShift(q, #1, partitions, maxMD), _
-                 ADEEXPRRStreamMixShift(q, #1, #2, partitions, maxMD), _
-                 ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
+                if zero?(maxMD := maxMixedDegree(l1)$GOPT0) then
+                    [(z1: UFPSF): Stream UFPSF +-> _
+                         ADEguessStream2(z1, partitions, ShiftSS, _
+                                         (1-monomial(1,1))^(-1)), _
+                     ADEdegreeStream partitions, _
+                     (z1: UFPSSUPF): Stream UFPSSUPF +-> _
+                         ADEtestStream2(z1, partitions, ShiftSF, _
+                                        (1-monomial(1,1))^(-1)), _
+                     (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+                         ADEEXPRRStream(z1, z2, partitions, ShiftSX, diff1X), _
+                     (z1: NNI, z2: NNI, z3: SUP S): S +-> qShiftA(q, z1, z2, z3), _
+                     (z1: NNI, z2: NNI, z3: UFPSSUPF): SUP F +-> qShiftAF(q, z1, z2, z3), _
+                     (z1: NNI, z2: Symbol, z3: EXPRR): EXPRR +-> qShiftAX(q, z1, z2, z3), _
+                     (z1: NNI): List S +-> qShiftC(q, z1)]$HPSPEC
+                else
+                    [(z1: UFPSF): Stream UFPSF +-> ADEguessStreamMixShift(q, z1, partitions, maxMD), _
+                     ADEdegreeStreamMixShift(partitions, maxMD), _
+                     (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStreamMixShift(q, z1, partitions, maxMD), _
+                     (z1: EXPRR, z2: Symbol): Stream EXPRR +-> ADEEXPRRStreamMixShift(q, z1, z2, partitions, maxMD), _
+                     ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
 
 @
 %$
@@ -2148,7 +2162,7 @@ list2UFPSSUPF(list: List F): UFPSSUPF ==
 
 <<implementation: Guess - Hermite-Pade - Utilities>>=
 SUPF2SUPSUPF(p: SUP F): SUP SUP F ==
-    map(#1::SUP F, p)$SparseUnivariatePolynomialFunctions2(F, SUP F)
+    map((z1: F): SUP F +-> z1::SUP F, p)$SparseUnivariatePolynomialFunctions2(F, SUP F)
 
 @
 %$
@@ -2161,7 +2175,7 @@ UFPSF2SUPF(f: UFPSF, deg: NNI): SUP F ==
     makeSUP univariatePolynomial(f, deg)
 
 getListSUPF(s: Stream UFPSF, o: NNI, deg: NNI): List SUP F ==
-    map(UFPSF2SUPF(#1, deg), entries complete first(s, o))
+    map((z1: UFPSF): SUP F +-> UFPSF2SUPF(z1, deg), entries complete first(s, o))
        $ListFunctions2(UFPSF, SUP F)
 
 S2EXPRR(s: S): EXPRR ==
@@ -2283,7 +2297,7 @@ non-zero term in [[list]], we reject the proposed solution.
 
 <<implementation: Guess - testInterpolant>>=
     else
-        resiSUPF := map(SUPF2SUPSUPF SUPS2SUPF #1, resi)
+        resiSUPF := map((z1: SUP S): SUP SUP F +-> SUPF2SUPSUPF SUPS2SUPF z1, resi)
                        $ListFunctions2(SUP S, SUP SUP F)
 
         iterate? := true;
@@ -2316,7 +2330,7 @@ make the result monic.
     if S has Field
     then g := leadingCoefficient(find(not zero? #1, reverse resi)::SUP(S))::SUP(S)
     else g := gcd resi
-    resiF := map(SUPS2SUPF((#1 exquo g)::SUP(S)), resi)
+    resiF := map((z1: SUP S): SUP F +-> SUPS2SUPF((z1 exquo g)::SUP(S)), resi)
                 $ListFunctions2(SUP S, SUP F)
 
 
@@ -2684,27 +2698,31 @@ guessPade(list: List F): GUESSRESULT == guessPade(list, [])
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessADE(q: Symbol): GUESSER ==
-        if (hom? := homogeneous(#2)$GOPT0) case Boolean and hom? then
-            if (maxP? := maxPower(#2)$GOPT0) case PI then
-                concat [guessADE(q)(#1, cons(homogeneous(i::PI)$GuessOption, #2)) _
-                        for i in 1..maxP?]
+        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+            if (hom? := homogeneous(z2)$GOPT0) case Boolean and hom? then
+                if (maxP? := maxPower(z2)$GOPT0) case PI then
+                    concat [guessADE(q)(z1, cons(homogeneous(i::PI)$GuessOption, z2)) _
+                            for i in 1..maxP?]
+                else
+                    error "Guess: setting homogeneous true requires that maxPower is also set"
+    
             else
-                error "Guess: setting homogeneous true requires that maxPower is also set"
-
-        else
-            opts: LGOPT := cons(displayAsGF(true)$GuessOption, #2)
-            guessHPaux(#1, (diffHP q)(opts), opts)
+                opts: LGOPT := cons(displayAsGF(true)$GuessOption, z2)
+                guessHPaux(z1, (diffHP q)(opts), opts)
 
     guessAlg(q: Symbol): GUESSER ==
-        guessADE(q)(#1, cons(maxDerivative(0)$GuessOption, #2))
+        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+            guessADE(q)(z1, cons(maxDerivative(0)$GuessOption, z2))
 
     guessHolo(q: Symbol): GUESSER ==
-        guessADE(q)(#1, cons(maxPower(1)$GuessOption, #2))
+        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+            guessADE(q)(z1, cons(maxPower(1)$GuessOption, z2))
 
     guessPade(q: Symbol): GUESSER ==
-        guessADE(q)(#1, append(#2, [maxDerivative(0)$GuessOption,
-                                    maxPower(1)$GuessOption,
-                                    allDegrees(true)$GuessOption]))
+        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+            guessADE(q)(z1, append(z2, [maxDerivative(0)$GuessOption,
+                                        maxPower(1)$GuessOption,
+                                        allDegrees(true)$GuessOption]))
 
 @
 %$
@@ -2747,24 +2765,27 @@ guessRat(list: List F): GUESSRESULT == guessRat(list, [])
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessRec(q: Symbol): GUESSER ==
-        if (hom? := homogeneous(#2)$GOPT0) case Boolean and hom? then
-            if (maxP? := maxPower(#2)$GOPT0) case PI then
-                concat [guessRec(q)(#1, cons(homogeneous(i::PI)$GuessOption, #2)) _
-                        for i in 1..maxP?]
+        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+            if (hom? := homogeneous(z2)$GOPT0) case Boolean and hom? then
+                if (maxP? := maxPower(z2)$GOPT0) case PI then
+                    concat [guessRec(q)(z1, cons(homogeneous(i::PI)$GuessOption, z2)) _
+                            for i in 1..maxP?]
+                else
+                    error "Guess: setting homogeneous true requires that maxPower is also set"
+    
             else
-                error "Guess: setting homogeneous true requires that maxPower is also set"
-
-        else
-            opts: LGOPT := cons(displayAsGF(false)$GuessOption, #2)
-            guessHPaux(#1, (shiftHP q)(opts), opts)
+                opts: LGOPT := cons(displayAsGF(false)$GuessOption, z2)
+                guessHPaux(z1, (shiftHP q)(opts), opts)
 
     guessPRec(q: Symbol): GUESSER ==
-        guessRec(q)(#1, cons(maxPower(1)$GuessOption, #2))
+        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+            guessRec(q)(z1, cons(maxPower(1)$GuessOption, z2))
 
     guessRat(q: Symbol): GUESSER ==
-        guessRec(q)(#1, append(#2, [maxShift(0)$GuessOption,
-                                    maxPower(1)$GuessOption,
-                                    allDegrees(true)$GuessOption]))
+        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+            guessRec(q)(z1, append(z2, [maxShift(0)$GuessOption,
+                                        maxPower(1)$GuessOption,
+                                        allDegrees(true)$GuessOption]))
 @
 %$
 
@@ -2839,7 +2860,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
                           $OutputPackage
 
                 for guess in prodGuess
-                        | not any?(guess.function = #1.function, res) repeat
+                        | not any?((z1: Record(function: EXPRR, order: NNI)): Boolean +-> guess.function = z1.function, res) repeat
                     res := cons(guess, res)
 
     if one(options)$GOPT0 and not empty? res then return res
@@ -2847,7 +2868,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
     if member?('guessSum, ops) then
         sumList: List F := [(list.(i+1))-(list.i) for i in 1..(len-1)]
 
-        if not every?(#1=sumList.1, sumList) then
+        if not every?((z1: F): Boolean +-> z1 = sumList.1, sumList) then
             var: Symbol := subscript('s, [len::OutputForm])
             sumGuess :=
                 [[coerce(list.(guess.order+1)) _
@@ -2862,7 +2883,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
                                            options))$%]
 
             for guess in sumGuess
-                    | not any?(guess.function = #1.function, res) repeat
+                    | not any?((z1: Record(function: EXPRR, order: NNI)): Boolean +-> guess.function = z1.function, res) repeat
                 res := cons(guess, res)
 
     res
@@ -2979,9 +3000,9 @@ MyUnivariatePolynomial(x:Symbol, R:Ring):
     coerce(p: Polynomial R): % ==
         poly: SparseUnivariatePolynomial(Polynomial R)
              := univariate(p, x)$(Polynomial R)
-        map(retract(#1), poly)$UnivariatePolynomialCategoryFunctions2(Polynomial R,
-                    SparseUnivariatePolynomial Polynomial R,
-                    R, %)
+        map((z1: Polynomial R): R +-> retract z1, poly)_
+           $UnivariatePolynomialCategoryFunctions2(Polynomial R,
+                                                   SparseUnivariatePolynomial Polynomial R, R, %)
 
 
 )abbrev domain MYEXPR MyExpression
@@ -3010,9 +3031,10 @@ MyExpression(q: Symbol, R): Exports == Implementation where
     iunivariate(p: Polynomial R): UP ==
         poly: SparseUnivariatePolynomial(Polynomial R)
              := univariate(p, q)$(Polynomial R)
-        map(retract(#1), poly)$UnivariatePolynomialCategoryFunctions2(Polynomial R,
-                    SparseUnivariatePolynomial Polynomial R,
-                    R, UP)
+        map((z1: Polynomial R): R +-> retract z1, poly)_
+           $UnivariatePolynomialCategoryFunctions2(Polynomial R,
+                                                   SparseUnivariatePolynomial Polynomial R,
+                                                   R, UP)
 
     retract(p: %): Fraction UP ==
         poly: Fraction Polynomial R := retract p
