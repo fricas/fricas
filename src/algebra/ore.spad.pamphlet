@@ -338,12 +338,12 @@ Automorphism(R:Ring): Join(Group, Eltable(R, R)) with
       ident(r, n)                     == r
       f = g                           == EQ(f, g)$Lisp
       elt(f, r)                       == apply(f, r, 1)
-      inv f                           == apply(f, #1, - #2)
-      f ^ n                          == apply(f, #1, n * #2)
+      inv f                           == (r1: R, i2: Integer): R +-> apply(f, r1, - i2)
+      f ^ n                           == (r1: R, i2: Integer): R +-> apply(f, r1, n * i2)
       coerce(f:%):OutputForm          == message("R -> R")
       morphism(f:(R, Integer) -> R):% == f
       morphism(f:R -> R):%            == morphism(f, err)
-      morphism(f, g)                  == iterat(f, g, #2, #1)
+      morphism(f, g)                  == (r1: R, i2: Integer): R +-> iterat(f, g, i2, r1)
       apply(f, r, n) == (g := f pretend ((R, Integer) -> R); g(r, n))
 
       iterat(f, g, n, r) ==
@@ -356,7 +356,10 @@ Automorphism(R:Ring): Join(Group, Eltable(R, R)) with
 
       f * g ==
         f = g => f^2
-        iterat(f g #1, (inv g)(inv f) #1, #2, #1)
+        (r1: R, i2: Integer): R +-> 
+            iterat((u1: R): R +-> f g u1, _
+                   (v1: R): R +-> (inv g)(inv f) v1, _
+                   i2, r1)
 
 @
 \section{package OREPCTO UnivariateSkewPolynomialCategoryOps}

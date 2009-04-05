@@ -132,7 +132,7 @@ BasicOperator(): Exports == Implementation where
     nary? op             == negative?(op.narg)
     equality(op, func)   == setProperty(op, EQUAL?, func pretend None)
     comparison(op, func) == setProperty(op, LESS?, func pretend None)
-    display(op:$, f:O -> O)        == display(op, f first #1)
+    display(op:$, f:O -> O)        == display(op, (l1: List(O)): O +-> f first l1)
     deleteProperty_!(op, name)     == (remove_!(name, properties op); op)
     setProperty(op, name, valu)    == (op.props.name := valu; op)
     coerce(op:$):OutputForm        == name(op)::OutputForm
@@ -247,7 +247,7 @@ BasicOperatorFunctions1(A:SetCategory): Exports == Implementation where
     CONST   := "%constant"::Symbol
     DIFF    := "%diff"::Symbol
 
-    evaluate(op:OP, func:A -> A) == evaluate(op, func first #1)
+    evaluate(op:OP, func:A -> A) == evaluate(op, (l1: List(A)): A +-> func first l1)
 
     evaluate op ==
       (func := property(op, EVAL)) case "failed" => "failed"
@@ -269,7 +269,7 @@ BasicOperatorFunctions1(A:SetCategory): Exports == Implementation where
 
     derivative(op:OP, f:A -> A) ==
       unary? op or nary? op =>
-        derivative(op, [f first #1]$List(List A -> A))
+        derivative(op, [(l1: List(A)): A +-> f first l1]$List(List A -> A))
       error "Operator is not unary"
 
     if A has OrderedSet then
@@ -297,7 +297,7 @@ BasicOperatorFunctions1(A:SetCategory): Exports == Implementation where
            ((va::None) pretend A) < ((vb::None) pretend A)
 
       constOp a ==
-        setProperty(display(copy opconst, cdisp(a::OutputForm, #1)),
+        setProperty(display(copy opconst, (l1: List(OutputForm)): OutputForm +-> cdisp(a::OutputForm, l1)),
                                                   CONST, a pretend None)
 
       constantOpIfCan op ==
@@ -306,7 +306,7 @@ BasicOperatorFunctions1(A:SetCategory): Exports == Implementation where
         "failed"
 
       if A has ConvertibleTo InputForm then
-        constantOperator a == input(constOp a, csex(convert a, #1))
+        constantOperator a == input(constOp a,  (l1: List(InputForm)): InputForm +-> csex(convert a, l1))
       else
         constantOperator a == constOp a
 
@@ -465,18 +465,18 @@ CommonOperators(): Exports == Implementation where
       display(opGamma2, dgamma)
       display(opfact, dfact)
       display(opquote, dquote)
-      display(opperm, supersub("A"::Symbol::O, #1))
-      display(opbinom, binomial(first #1, second #1))
-      display(oppow, first(#1) ^ second(#1))
-      display(opsum,   sum(first #1, second #1, third #1))
-      display(opprod, prod(first #1, second #1, third #1))
-      display(opint, int(first #1 * hconcat("d"::Symbol::O, second #1),
-                                                   empty(), third #1))
-      input(oppren, convert concat(convert("("::Symbol)@InputForm,
-                            concat(#1, convert(")"::Symbol)@InputForm)))
-      input(oppow, convert concat(convert("^"::Symbol)@InputForm, #1))
+      display(opperm, (z1: List O): O +-> supersub("A"::Symbol::O, z1))
+      display(opbinom, (z1: List O): O +-> binomial(first z1, second z1))
+      display(oppow, (z1: List O): O +-> first(z1) ^ second(z1))
+      display(opsum, (z1: List O): O +-> sum(first z1, second z1, third z1))
+      display(opprod, (z1: List O): O +-> prod(first z1, second z1, third z1))
+      display(opint, (z1: List O): O +-> int(first z1 * hconcat("d"::Symbol::O, second z1),
+                                                   empty(), third z1))
+      input(oppren, (z1: List InputForm): InputForm +-> convert concat(convert("("::Symbol)@InputForm,
+                            concat(z1, convert(")"::Symbol)@InputForm)))
+      input(oppow, (z1: List InputForm): InputForm +-> convert concat(convert("^"::Symbol)@InputForm, z1))
       input(oproot,
-            convert [convert("^"::Symbol)@InputForm, first #1, 1 / second #1])
+            (z1: List InputForm): InputForm +-> convert [convert("^"::Symbol)@InputForm, first z1, 1 / second z1])
       for op in algop   repeat assert(op, ALGOP)
       for op in rtrigop repeat assert(op, "rtrig"::Symbol)
       for op in htrigop repeat assert(op, "htrig"::Symbol)
