@@ -48,7 +48,7 @@ BalancedFactorisation(R, UP): Exports == Implementation where
       */[balSqfr1(f.factor, n, b) for f in factors balSqfr(a,n,rest l)]
 
     balancedFactorisation(a:UP, l:List UP) ==
-      empty?(ll := select(#1 ~= 0, l)) =>
+      empty?(ll := select(z1 +-> z1 ~= 0, l)) =>
         error "balancedFactorisation: 2nd argument is empty or all 0"
       sa := squareFree a
       unit(sa) * */[balSqfr(f.factor,f.exponent,ll) for f in factors sa])
@@ -125,7 +125,7 @@ BoundIntegerRoots(F, UP): Exports == Implementation where
       integerBound p ==
 --        one? degree p => zroot1 p
         (degree p) = 1 => zroot1 p
-        qbound(p, map(retract(#1)@Q, p))
+        qbound(p, map((z1: F): Q +-> retract(z1)@Q, p))
 
 -- we can probably do better here (i.e. without factoring)
     qbound(p, q) ==
@@ -217,7 +217,7 @@ PrimitiveRatDE(F, UP, L, LQ): Exports == Implementation where
 
     diff := D()$L
 
-    UP2UP2 p                    == map(#1::UP, p)
+    UP2UP2 p                    == map((f1: F): UP +-> f1::UP, p)
     indicialEquations(op:L)     == indicialEquations(op, leadingCoefficient op)
     indicialEquation(op:L, a:F) == indeq(monomial(1, 1) - a::UP, op)
 
@@ -363,7 +363,7 @@ UTSodetools(F, UP, L, UTS): Exports == Implementation where
           a := recip(UP2UTS(- leadingCoefficient op))::UTS
           n := (degree(op) - 1)::NonNegativeInteger
           v := [a * UP2UTS coefficient(op, i) for i in 0..n]$Vector(UTS)
-          fun(v, #1)
+          (l1: List UTS): UTS +-> fun(v, l1)
 
       fun(v, l) ==
           ans:UTS := 0
@@ -533,7 +533,7 @@ RationalLODE(F, UP): Exports == Implementation where
       hom := [UTS2UP(dd * ode(f, unitlist(i, q))$solver, n)$tools /$RF d
                    for i in 1..q]$List(RF)
       a1 := inv(leadingCoefficient(op)::RF)
-      part := [UTS2UP(dd * ode(RF2UTS(a1 * g)$tools + f #1, e)$solver, n)$tools
+      part := [UTS2UP(dd * ode((l1: List(uts)): uts +-> RF2UTS(a1 * g)$tools + f l1, e)$solver, n)$tools
                 /$RF d for g in lg | g ~= 0]$List(RF)
       [hom, part]
 
@@ -652,7 +652,7 @@ ODETools(F, LODO): Exports == Implementation where
       m:M := zero(q, #v)
       for i in minRowIndex m .. maxRowIndex m repeat
         setRow_!(m, i, v)
-        v := map_!(diff #1, v)
+        v := map_!((f1: F): F +-> diff f1, v)
       m
 
     variationOfParameters(op, g, b) ==
@@ -709,7 +709,7 @@ ODEIntegration(R, F): Exports == Implementation where
     isQlog: F -> Union(REC, "failed")
     mkprod: List REC -> F
 
-    diff x == differentiate(#1, x)
+    diff x == (f1: F): F +-> differentiate(f1, x)
 
 -- This is the integration function to be used for quadratures
     int(f, x) ==
@@ -722,7 +722,7 @@ ODEIntegration(R, F): Exports == Implementation where
       empty? l => 1
       rec := first l
       d := denom(rec.coef)
-      ll := select(denom(#1.coef) = d, l)
+      ll := select((z1: REC): Boolean +-> denom(z1.coef) = d, l)
       nthRoot(*/[r.logand ^ numer(r.coef) for r in ll], d) *
         mkprod setDifference(l, ll)
 
@@ -804,7 +804,7 @@ ConstantLODE(R, F, L): Exports == Implementation where
 
     constDsolve(op, g, x) ==
       b := homoBasis(op, x::F)
-      [particularSolution(op, g, b, int(#1, x))::F, b]
+      [particularSolution(op, g, b, (f1: F): F +-> int(f1, x))::F, b]
 
     homoBasis(op, x) ==
       p:SUP := 0

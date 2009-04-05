@@ -89,7 +89,7 @@ SystemODESolver(F, LO): Exports == Implementation where
       m:N := 0             -- number of Solutions
       part:V := new(n, 0)
       -- count first the different solutions
-      for sol in sols repeat m := m + count(#1 ~= 0, sol.basis)$List(F)
+      for sol in sols repeat m := m + count((f1: F): Boolean +-> f1 ~= 0, sol.basis)$List(F)
       SolMatrix:MF := new(n, m, 0)
       m := 0
       for sol in reverse_! sols repeat
@@ -112,7 +112,7 @@ SystemODESolver(F, LO): Exports == Implementation where
 
     triangulate(m:MF, v:V) ==
       k:N := 0       -- sum of companion-dimensions
-      rat := normalForm(m, 1, - diff #1)
+      rat := normalForm(m, 1, (f1: F): F +-> - diff f1)
       l   := companionBlocks(rat.R, rat.Ainv * v)
       ler:List(ER) := empty()
       for er in l repeat
@@ -166,7 +166,7 @@ SystemODESolver(F, LO): Exports == Implementation where
     solveInField(m, v, solve) ==
       ((n := nrows m) = ncols m) and
          ((u := M2F(diagonalMatrix [diff for i in 1..n] - m)) case MF) =>
-             (uu := solve(u::MF, v, FSL2USL solve(#1, #2))) case "failed" =>
+             (uu := solve(u::MF, v, (l1: LO, f2: F): USL +-> FSL2USL solve(l1, f2))) case "failed" =>
                   ["failed", empty()]
              rc := uu::Record(particular:V, basis:MF)
              [rc.particular, [column(rc.basis, i) for i in 1..ncols(rc.basis)]]
@@ -277,7 +277,7 @@ ReduceLODE(F, L, UP, A, LO): Exports == Implementation where
 
 -- coerces a matrix of elements of F into a matrix of (order 0) L.O.D.O's
     matF2L m ==
-      map(#1::L, m)$MatrixCategoryFunctions2(F, V, V, Matrix F,
+      map((f1: F): L +-> f1::L, m)$MatrixCategoryFunctions2(F, V, V, Matrix F,
                                                 L, Vector L, Vector L, M)
 
 -- This follows the algorithm and notation of
@@ -286,7 +286,7 @@ ReduceLODE(F, L, UP, A, LO): Exports == Implementation where
     reduceLODE(l, g) ==
       n := rank()$A
 -- md is the basic differential matrix (D x I + Dy)
-      md := matF2L transpose derivationCoordinates(basis(), diff #1)
+      md := matF2L transpose derivationCoordinates(basis(), (f1: F): F +-> diff f1)
       for i in minRowIndex md .. maxRowIndex md
         for j in minColIndex md .. maxColIndex md repeat
           md(i, j) := diff + md(i, j)
