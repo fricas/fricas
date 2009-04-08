@@ -49,6 +49,10 @@ SortedCache(S:CachableSet): Exports == Implementation where
       ++ enterInCache(x, f) enters x in the cache, calling \spad{f(y)} to
       ++ determine whether x is equal to y. It returns x with an integer
       ++ associated with it.
+    linearSearch: (S, S -> Boolean) -> Union(S, "failed")
+      ++ linearSearch(x, f) searches x in the cache, calling \spad{f(y)}
+      ++ to determine whether x is equal to y.  It returns y from cache
+      ++ such that f(y) or failed is no such y exists.
     enterInCache: (S, (S, S) -> Integer) -> S
       ++ enterInCache(x, f) enters x in the cache, calling \spad{f(x, y)} to
       ++ determine whether \spad{x < y (f(x,y) < 0), x = y (f(x,y) = 0)}, or
@@ -109,14 +113,25 @@ SortedCache(S:CachableSet): Exports == Implementation where
         cache__use := cache__use + 1
         void
 
-    enterInCache(x:S, equal?:S -> Boolean) ==
-        k : Integer
-        vscan := cache
-        for k in 0..(cache__use - 1) repeat
+    linearSearch(x:S, equal?:S -> Boolean) ==
+        k : Integer := 0
+        -- Can not use for loop because equal? can insert new elements
+        -- and change cache__use
+        while k < cache__use repeat
+            vscan := cache
             y := vscan(k)
             equal?(y) =>
                 setPosition(x, position y)
                 return y
+            vscan := cache
+            -- skip over elements possibly inserted by equal?
+            while not(EQ(y, vscan(k))$Lisp) repeat k := k + 1
+            k := k + 1
+        return "failed"
+
+    enterInCache(x:S, equal?:S -> Boolean) ==
+        (res := linearSearch(x, equal?)) case S =>
+            res::S
         setPosition(x, 1 + cache__use)
         insertAtEnd(x)
         x
@@ -274,20 +289,35 @@ Kernel(S:OrderedSet): Exports == Implementation where
       has?(operator k, SYMBOL) => name operator k
       "failed"
 
+    kerEqual(k1 : %, k2 : %, f : (%, %) -> Boolean) : Boolean ==
+        k1.nest   ~= k2.nest   => false
+        k1.op ~= k2.op => false
+        (n1 := #(argument k1)) ~= (n2 := #(argument k2)) => false
+        f(k1, k2)
+
+    -- kernelEnterInCache : % -> %
+
+    kernelEnterInCache(k : %) : % ==
+        if (f0 := property(operator k, SPECIALEQUAL)) case None then
+            f1 := (f0::None)  pretend ((%, %) -> Boolean)
+            (res := linearSearch(k, y +-> kerEqual(k, y, f1))) case % =>
+                return res::%
+        enterInCache(k, triage)
+
     k1 = k2 ==
-      if k1.posit = 0 then enterInCache(k1, triage)
-      if k2.posit = 0 then enterInCache(k2, triage)
+      if k1.posit = 0 then k1 := kernelEnterInCache(k1)
+      if k2.posit = 0 then k2 := kernelEnterInCache(k2)
       k1.posit = k2.posit
 
     k1 < k2 ==
-      if k1.posit = 0 then enterInCache(k1, triage)
-      if k2.posit = 0 then enterInCache(k2, triage)
+      if k1.posit = 0 then k1 := kernelEnterInCache(k1)
+      if k2.posit = 0 then k2 := kernelEnterInCache(k2)
       k1.posit < k2.posit
 
     kernel(fn, x, n) ==
       ((u := arity fn) case N) and (#x ~= u::N)
                                     => error "Wrong number of arguments"
-      enterInCache([fn, x, n, 0]$Rep, triage)
+      kernelEnterInCache([fn, x, n, 0]$Rep)
 
     -- SPECIALDISP contains a map List S -> OutputForm
     -- it is used when the converting the arguments first is not good,
@@ -304,8 +334,9 @@ Kernel(S:OrderedSet): Exports == Implementation where
       k1.nest   ~= k2.nest   => B2Z(k1.nest   < k2.nest)
       k1.op ~= k2.op => B2Z(k1.op < k2.op)
       (n1 := #(argument k1)) ~= (n2 := #(argument k2)) => B2Z(n1 < n2)
-      ((func := property(operator k1, SPECIALEQUAL)) case None) and
-        (((func::None) pretend ((%, %) -> Boolean)) (k1, k2)) => 0
+      -- Handled by linear search earlier
+      -- ((func := property(operator k1, SPECIALEQUAL)) case None) and
+      --  (((func::None) pretend ((%, %) -> Boolean)) (k1, k2)) => 0
       for x1 in argument(k1) for x2 in argument(k2) repeat
         x1 ~= x2 => return B2Z(x1 < x2)
       0
