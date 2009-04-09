@@ -48,8 +48,12 @@ Prerequisities:
     * ECL, 0.9j or later
   GCL currently is best tested, but on some platforms there are known
   build problems.  All Lisp impementations should give essentially
-  the same functionality.  Gcl sources are included in full+gcl distribution
-  tarball.
+  the same functionality, however performance (speed) may differ quite
+  a lot.  On 64-bit AMD64 on average sbcl is the fastest one (7 times faster
+  than clisp), Closure CL the second (about 2.5 times slower than sbcl),
+  than gcl and ECL (about 3 times slower than sbcl) and clisp is the slowest
+  one.  Note: older versions of ECL were much (about 4 times) slower,
+  you should use newest version if you care about speed.
 
 - noweb literate programing tool (http://www.eecs.harvard.edu/~nr/noweb/).
   Noweb sources are included in full distribution tarball.
@@ -90,18 +94,15 @@ Known problems:
 
     module 'syscalls' requires package OS.
 
-- On Mac OSX tiger some users report problems with pseudoterminals,
-  build stops with message:
+- On Mac OSX Tiger some users reported problems with pseudoterminals,
+  build stoped with message:
 
     fork_Axiom: Failed to reopen server: No such file or directory
 
-  One can avoid this problem building text only FriCAS (that is
-  using '--with-x=no' option to configure).
-  This problem is under investigation, progress here depends on
-  input from Mac users.
+  This problem is believed to be fixed in FriCAS-1.0.5 (and later).
 
 - ECL 0.9j has serious performance problems.  ECL version 0.9l is much
-  faster.
+  faster.  However, for best speed we advise to use newest ECL version.
 
 - ECL up to version 0.9l may segfault at exit.  This is usually harmless,
   but may cause build to hang (for example when generating ug13.pht).  Using
@@ -111,7 +112,7 @@ Known problems:
 
 - Closure CL earlier than release 1.2 (former Openmcl) has a bug in Lisp
   printer.  This bug causes incorrect printing of FriCAS types.  Also,
-  Closure CL earlier than release 1.2 has bug in compex
+  Closure CL earlier than release 1.2 has bug in complex
   cosine function.  Those bugs are fixed in release 1.2.  If you want to
   use earlier version you can work around the bugs applying
   the 'contib/omcl.diff' patch and recompiling the compiler (see the patch
@@ -257,10 +258,7 @@ process should automatically build gcl and later use the freshly
 build gcl.
 
 Currently --with-lisp option accepts all supported lisp variants, namely
-sbcl, clisp, ecl, gcl and Closure CL (openmcl).  Build machinery
-must know which Lisp variant is in use. gcl, sbcl, clisp and ecl
-can be autodetected, for Closure CL (openmcl) one has to give an
-extra argument --with-lisp-flavor=openmcl (you can also specify
-flavor for other Lisps, but this argument is required only for
-Closure CL (openmcl)).
+sbcl, clisp, ecl, gcl and Closure CL (openmcl).  Note: the argument
+is just command to invoke choosen Lisp.  Build machinery will
+automatically detect which Lisp is in use and adjust as needed.
 
