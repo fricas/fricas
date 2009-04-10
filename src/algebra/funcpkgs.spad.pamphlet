@@ -63,10 +63,10 @@ FunctionSpaceUnivariatePolynomialFactor(R, F, UP):
       UPQ2AN: UPQ -> UPA
 
       UPAN2F p ==
-        map(#1::F, p)$UnivariatePolynomialCategoryFunctions2(AN,UPA,F,UP)
+        map(x +-> x::F, p)$UnivariatePolynomialCategoryFunctions2(AN,UPA,F,UP)
 
       UPQ2AN p ==
-        map(#1::AN, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,AN,UPA)
+        map(x +-> x::AN, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,AN,UPA)
 
       ffactor p ==
         (pq := anfactor p) case FRA =>
@@ -105,7 +105,7 @@ FunctionSpaceUnivariatePolynomialFactor(R, F, UP):
       UPQ2F: UPQ -> UP
 
       UPQ2F p ==
-        map(#1::F, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,F,UP)
+        map(x +-> x::F, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,F,UP)
 
       ffactor p ==
         (pq := qfactor p) case FRQ =>
@@ -124,17 +124,17 @@ FunctionSpaceUnivariatePolynomialFactor(R, F, UP):
     ffactor0 p ==
       smp := numer(ep := p(dummy::F))
       (q := P2QifCan smp) case "failed" => p::FR
-      map(UPQ2UP(univariate(#1, dummy), denom(ep)::F), factor(q::PQ
+      map(x +-> UPQ2UP(univariate(x, dummy), denom(ep)::F), factor(q::PQ
              )$MRationalFactorize(IndexedExponents K, K, Integer,
                   PQ))$FactoredFunctions2(PQ, UP)
 
     UPQ2UP(p, d) ==
-      map(PQ2F(#1, d), p)$UnivariatePolynomialCategoryFunctions2(PQ,
+      map(x +-> PQ2F(x, d), p)$UnivariatePolynomialCategoryFunctions2(PQ,
                                    SparseUnivariatePolynomial PQ, F, UP)
 
     PQ2F(p, d) ==
-      map(#1::F, #1::F, p)$PolynomialCategoryLifting(IndexedExponents K,
-                                                K, Q, PQ, F) / d
+      map((x : K) : F +-> x::F, (x : Q) : F +-> x::F,
+           p)$PolynomialCategoryLifting(IndexedExponents K, K, Q, PQ, F) / d
 
     qfactor p ==
       (q := UP2ifCan p) case overq => factor(q.overq)
@@ -143,7 +143,7 @@ FunctionSpaceUnivariatePolynomialFactor(R, F, UP):
     P2QifCan p ==
       and/[retractIfCan(c::F)@Union(Q, "failed") case Q
            for c in coefficients p] =>
-            map(#1::PQ, retract(#1::F)@Q :: PQ,
+            map(x +-> x::PQ, x +-> retract(x::F)@Q :: PQ,
               p)$PolynomialCategoryLifting(IndexedExponents K,K,R,PR,PQ)
       "failed"
 

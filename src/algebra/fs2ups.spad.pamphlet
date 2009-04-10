@@ -228,9 +228,11 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
         [polyToUPS univariate(poly :: POL,x)]
       (sum := isPlus fcn) case L(FE) =>
-        listToUPS(sum :: L(FE),exprToUPS,posCheck?,atanFlag,0,#1 + #2)
+        listToUPS(sum :: L(FE), exprToUPS, posCheck?, atanFlag, 0,
+                  (y1, y2) +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-        listToUPS(prod :: L(FE),exprToUPS,posCheck?,atanFlag,1,#1 * #2)
+        listToUPS(prod :: L(FE), exprToUPS, posCheck?, atanFlag, 1,
+                  (y1, y2) +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val:FE,exponent:I) =>
         power := expt :: Record(val:FE,exponent:I)
         powerToUPS(power.val,power.exponent,posCheck?,atanFlag)
@@ -457,7 +459,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
     -- functions are expressed in terms of exp
       smpElem(numer f) / smpElem(denom f)
 
-    smpElem p == map(k2Elem,#1::FE,p)$PCL
+    smpElem p == map(k2Elem, x +-> x::FE, p)$PCL
 
     k2Elem k ==
     -- rewrites a kernel; all trig functions are
@@ -504,9 +506,11 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
         [polyToUPS univariate(poly :: POL,x)]
       (sum := isPlus fcn) case L(FE) =>
-        listToUPS(sum :: L(FE),iExprToGenUPS,posCheck?,atanFlag,0,#1 + #2)
+        listToUPS(sum :: L(FE), iExprToGenUPS, posCheck?, atanFlag, 0,
+                  (y1, y2) +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-        listToUPS(prod :: L(FE),iExprToGenUPS,posCheck?,atanFlag,1,#1 * #2)
+        listToUPS(prod :: L(FE), iExprToGenUPS, posCheck?, atanFlag, 1,
+                  (y1, y2) +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val:FE,exponent:I) =>
         power := expt :: Record(val:FE,exponent:I)
         powerToGenUPS(power.val,power.exponent,posCheck?,atanFlag)

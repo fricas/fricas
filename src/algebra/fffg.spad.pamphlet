@@ -240,8 +240,8 @@ FractionFreeFastGaussian(D, V): Exports == Implementation where
                          f: Vector V,
                          eta: List NonNegativeInteger): Matrix SUP D ==
 
-      c: cFunction := generalCoefficient(coeffAction, f,
-                                         (#1-1)::NonNegativeInteger, #2)
+      c: cFunction := (x, y) +-> generalCoefficient(coeffAction, f,
+                                         (x - 1)::NonNegativeInteger, y)
       fffg(C, c, eta)
 
 
@@ -259,7 +259,7 @@ non-negative components smaller than [[p]] with the same sum as [[v]].
     nextVector!(p: NonNegativeInteger, v: List NonNegativeInteger)
                : Union("failed", List NonNegativeInteger) ==
       n := #v
-      pos := position(#1 < p, v)
+      pos := position(x +-> x < p, v)
       zero? pos => return "failed"
       if pos = 1 then
         sum: Integer := v.1
@@ -337,12 +337,12 @@ becomes much more complicated, thus we did not implement it.
       <<generate an initial degree vector>>
 
       if #f = 2 then
-        map(generalInterpolation(C, coeffAction, f, #1),
+        map(x +-> generalInterpolation(C, coeffAction, f, x),
             cons(eta, vectorStream2(maxEta, eta)))
            $StreamFunctions2(List NonNegativeInteger,
                              Matrix SUP D)
       else
-        map(generalInterpolation(C, coeffAction, f, #1),
+        map(x +-> generalInterpolation(C, coeffAction, f, x),
             cons(eta, vectorStream(maxEta, eta)))
            $StreamFunctions2(List NonNegativeInteger,
                            Matrix SUP D)
@@ -392,7 +392,7 @@ We want to generate all vectors with sum of entries being at most
         error "interpolate: number of points and values must match"
       if N <= d then
         error "interpolate: numerator degree must be smaller than number of data points"
-      c: cFunction := y.#1 * elt(#2.2, x.#1) - elt(#2.1, x.#1)
+      c: cFunction := (s, u) +-> y.s * elt(u.2, x.s) - elt(u.1, x.s)
       eta: List NonNegativeInteger := [d, (N-d)::NonNegativeInteger]
       M := fffg(x, c, eta)
 
@@ -578,7 +578,7 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
       for i in 1..n repeat
         c := coefficients(f.i)
         den.i := commonDenominator(c)$CommonDenominator(D, F, List F)
-        g.i := map(retract(#1*den.i)@D, f.i)
+        g.i := map(x +-> retract(x*den.i)@D, f.i)
                   $FAMR2(NonNegativeInteger, Fraction D, VF, D, V)
 
       M := generalInterpolation(C, coeffAction, g, eta)$FFFG(D, V)
@@ -602,11 +602,12 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
       for i in 1..n repeat
         c := coefficients(f.i)
         den.i := commonDenominator(c)$CommonDenominator(D, F, List F)
-        g.i := map(retract(#1*den.i)@D, f.i)
+        g.i := map(x +-> retract(x*den.i)@D, f.i)
                   $FAMR2(NonNegativeInteger, Fraction D, VF, D, V)
 
-      c: cFunction := generalCoefficient(coeffAction, g,
-                                         (#1-1)::NonNegativeInteger, #2)$FFFG(D, V)
+      c: cFunction := (x, y) +-> generalCoefficient(coeffAction, g,
+                                         (x - 1)::NonNegativeInteger,
+                                         y)$FFFG(D, V)
 
 
       MS: Stream Matrix SUP D
@@ -616,7 +617,7 @@ FractionFreeFastGaussianFractions(D, V, VF): Exports == Implementation where
 -- each column. Possibly I could factor out gcd den, but I'm not sure whether
 -- this is efficient.
 
-      map(multiplyRows!(den, #1), MS)$Stream(Matrix SUP D)
+      map(x +-> multiplyRows!(den, x), MS)$Stream(Matrix SUP D)
 
 @
 
