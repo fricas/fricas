@@ -913,7 +913,7 @@ getCommonImports() ==
   hash := MAKE_-HASHTABLE 'EQUAL
   for x in importList repeat
     for y in x repeat HPUT(hash,y,1 + (HGET(hash,y) or 0))
-  threshold := FLOOR (.5 * #importList)
+  threshold := FLOOR (0.5 * #importList)
   [x for x in HKEYS hash | HGET(hash,x) >= threshold]
   
 markPrintAttributes addForm ==
