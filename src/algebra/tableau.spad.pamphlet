@@ -147,7 +147,7 @@ TableauxBumpers(S:OrderedSet):T==C where
                  then cons(rw.td, bumptab(cf,rw.sd,rest llls))
                  else cons(rw.td,rest llls))
 
-       bumptab1(x,llls)==bumptab(#1<#2,x,llls)
+       bumptab1(x, llls) == bumptab((s1, s2) +-> s1 < s2, x, llls)
 
        rd==> reduce$StreamFunctions2(PAIR,L L PAIR)
        tab1(lls:(L PAIR))== rd([],bumptab1,lls::(ST PAIR))
@@ -155,10 +155,12 @@ TableauxBumpers(S:OrderedSet):T==C where
        srt==>sort$(PAIR)
        lexorder:(PAIR,PAIR)->B
        lexorder(p1,p2)==if p1.1=p2.1 then p1.2<p2.2 else p1.1<p2.1
-       lex lp==(sort$(L PAIR))(lexorder(#1,#2),lp)
-       slex ls==lex([[i,j] for i in srt(#1<#2,ls) for j in ls])
+       lex lp == (sort$(L PAIR))((s1, s2) +-> lexorder(s1, s2), lp)
+       slex ls == lex([[i, j] for i in srt((s1, s2) +-> s1 < s2, ls)
+                              for j in ls])
        inverse ls==[lss.2 for lss in
-                    lex([[j,i] for i in srt(#1<#2,ls) for j in ls])]
+                    lex([[j, i] for i in srt((s1, s2) +-> s1 < s2, ls)
+                               for j in ls])]
 
        tab(ls:(PAIR))==(tableau tab1 slex ls )
 
@@ -177,7 +179,8 @@ TableauxBumpers(S:OrderedSet):T==C where
          if null llls
          then lp
          else (rc:RC:=mr llls;
-               rv:=reverse (bumptab(#2<#1,rc.f1,rc.f2));
+               rv := reverse (bumptab((s1 : S, s2 : S) : B +-> s2 < s1,
+                                      rc.f1, rc.f2));
                untab(cons(first first rv,lp)
                      ,append(rest rv,
                                          if null rc.f3
