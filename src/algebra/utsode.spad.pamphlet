@@ -62,15 +62,15 @@ UnivariateTaylorSeriesODESolver(Coef,UTS):_
 
   Implementation ==> add
 
-    stFunc1 f == coefficients f series(#1)
-    stFunc2 f == coefficients f(series(#1),series(#2))
-    stFuncN f == coefficients f map(series,#1)$ListFunctions2(ST,UTS)
+    stFunc1 f == s +-> coefficients f series(s)
+    stFunc2 f == (s1, s2) +-> coefficients f(series(s1), series(s2))
+    stFuncN f == ls +-> coefficients f map(series, ls)$ListFunctions2(ST, UTS)
 
     import StreamTaylorSeriesOperations(Coef)
     divloopre:(Coef,ST,Coef,ST,ST) -> ST
     divloopre(hx,tx,hy,ty,c) == delay(concat(hx*hy,hy*(tx-(ty*c))))
     divloop: (Coef,ST,Coef,ST) -> ST
-    divloop(hx,tx,hy,ty) == YS(divloopre(hx,tx,hy,ty,#1))
+    divloop(hx, tx, hy, ty) == YS(s +-> divloopre(hx, tx, hy, ty, s))
 
     sdiv:(ST,ST) -> ST
     sdiv(x,y) == delay
@@ -93,7 +93,7 @@ UnivariateTaylorSeriesODESolver(Coef,UTS):_
     ode1re(f,c,y) == lazyIntegrate(c,f y)$STT
 
     iOde1: ((ST -> ST),Coef) -> ST
-    iOde1(f,c) == YS ode1re(f,c,#1)
+    iOde1(f, c) == YS(s +-> ode1re(f, c, s))
 
     ode1(f,c) == series iOde1(stFunc1 f,c)
 
@@ -105,7 +105,7 @@ UnivariateTaylorSeriesODESolver(Coef,UTS):_
       lazyIntegrate(c0,yi)$STT
 
     iOde2: ((ST,ST) -> ST,Coef,Coef) -> ST
-    iOde2(f,c0,c1) == YS ode2re(f,c0,c1,#1)
+    iOde2(f, c0, c1) == YS(s +-> ode2re(f, c0, c1, s))
 
     ode2(f,c0,c1) == series iOde2(stFunc2 f,c0,c1)
 
@@ -120,7 +120,7 @@ UnivariateTaylorSeriesODESolver(Coef,UTS):_
       concat(yil,[f yil])
 
     iOde: ((L ST) -> ST,List Coef) -> ST
-    iOde(f,cl) == first YS(odeNre(f,cl,#1),#cl + 1)
+    iOde(f, cl) == first YS(ls +-> odeNre(f, cl, ls), #cl + 1)
 
     ode(f,cl) == series iOde(stFuncN f,cl)
 
@@ -129,7 +129,7 @@ UnivariateTaylorSeriesODESolver(Coef,UTS):_
       [lazyIntegrate(csti,lsfi concat(monom(1,1)$STT,c))_
           for csti in cst for lsfi in lsf]
     iMpsode:(L Coef,L ((L ST) -> ST)) -> L ST
-    iMpsode(cs,lsts) == YS(simulre(cs,lsts,#1),# cs)
+    iMpsode(cs, lsts) == YS(ls +-> simulre(cs, lsts, ls), #cs)
     mpsode(cs,lsts) ==
 --       stSol := iMpsode(cs,map(stFuncN,lsts)$L2(FN,(L ST) -> ST))
       stSol := iMpsode(cs,[stFuncN(lst) for lst in lsts])
