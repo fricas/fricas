@@ -367,6 +367,8 @@ spleI1(dig,zro) ==
 
 scanCheckRadix(r,w)==
        ns:=#w
+       ns = 0 =>
+            ncSoftError([$linepos, :lnExtraBlanks $linepos+$n], "S2CN0004", [])
        done:=false
        for i in 0..ns-1  repeat
          a:=rdigit? w.i
@@ -395,7 +397,7 @@ scanNumber() ==
            else lfinteger a
          else
              $n:=$n+1
-             w:=spleI1(function rdigit?,true)
+             w:=spleI1(function rdigit?, false)
              scanCheckRadix(PARSE_-INTEGER a,w)
              if $n>=$sz
              then
@@ -410,7 +412,7 @@ scanNumber() ==
                        lfrinteger(a,w)
                     else
                     --$n:=$n+1
-                      v:=spleI1(function rdigit?,true)
+                      v:=spleI1(function rdigit?, false)
                       scanCheckRadix(PARSE_-INTEGER a,v)
                       scanExponent(CONCAT(a,'"r",w),v)
                   else lfrinteger(a,w)
