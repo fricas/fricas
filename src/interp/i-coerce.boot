@@ -625,7 +625,7 @@ canCoerceTower(t1,t2) ==
         TL:= [c,arg,:TL]
         arg and coerceIntTest(t,t2) and
           CDDR TL =>
-            s:= constructT(c1,replaceLast(arg1,bubbleConstructor TL))
+            s := constructM(c1, replaceLast(arg1, bubbleConstructor TL))
             canCoerceLocal(t1,s) and
               [c2,:arg2]:= deconstructT last s
               s1:= bubbleConstructor [c2,arg2,c1,arg1]
@@ -1177,7 +1177,7 @@ coerceIntTower(triple,t2) ==
       TL:= [c,arg,:TL]
       x := arg and coerceIntTest(t,t2) =>
         CDDR TL =>
-          s := constructT(c1,replaceLast(arg1,bubbleConstructor TL))
+          s := constructM(c1, replaceLast(arg1, bubbleConstructor TL))
           (null isValidType(s)) => (x := NIL)
           x := (coerceIntByMap(triple,s) or
             coerceIntTableOrFunction(triple,s)) =>

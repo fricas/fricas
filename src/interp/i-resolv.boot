@@ -279,6 +279,27 @@ resolveTTSpecial(t1,t2) ==
     dom' := resolveTT(dom, t2)
     null dom' => nil
     ['Segment, dom']
+  op1 := CAR(t1)
+  op2 := CAR(t2)
+  MEMQ(op1, '(GeneralUnivariatePowerSeries SparseUnivariateLaurentSeries _
+            SparseUnivariatePuiseuxSeries SparseUnivariateTaylorSeries _
+            UnivariateLaurentSeries UnivariatePuiseuxSeries _
+            UnivariateTaylorSeries)) =>
+      [., S1, var1, cen1] := t1
+      op1 = op2 =>
+          [., S2, var2, cen2] := t2
+          not algEqual(var1, var2, $Symbol) => nil
+          (U := resolveTT1(S1, S2)) =>
+               cen1 :=
+                   U = S1 => cen1
+                   objValUnwrap(coerceInt(objNewWrap(cen1, S1), U))
+               cen2 :=
+                   U = S2 => cen2
+                   objValUnwrap(coerceInt(objNewWrap(cen2, S2), U))
+               algEqual(cen1, cen2, U) =>
+                   [op1, U, var1, cen1]
+               nil
+          nil
   nil
 
 resolveTTCC(t1,t2) ==
@@ -680,6 +701,7 @@ resolveTMEq2(cm,argm,TL) ==
   [ct,argt,:TL] :=
     $Coerce => bubbleType TL
     TL
+  argt0 := argt
   null TL and
     null argm => constructM(ct,argt)
 --  null argm => NIL
@@ -691,6 +713,7 @@ resolveTMEq2(cm,argm,TL) ==
       argm := CDR argm
       tt := resolveTM1(x1,x2) =>
         arg := CONS(tt,arg)
+    tt and arg = argt0 => constructT(ct, argt0)
     null argt and null argm and tt and constructM(ct,nreverse arg)
 
 resolveTMRed(t,m) ==
@@ -777,6 +800,7 @@ constructT(c,A) ==
 
 constructM(c,A) ==
   -- replaces top level RE's or QF's by equivalent types, if possible
+  #c > 1 and nontrivialCosig(CAR(c)) => nil
   containsVars(c) or containsVars(A) => NIL
   -- collapses illegal FE's
   CAR(c) = $FunctionalExpression => eqType defaultTargetFE CAR A
@@ -785,6 +809,11 @@ constructM(c,A) ==
 replaceLast(A,t) ==
   -- replaces the last element of the nonempty list A by t (constructively
   nreverse RPLACA(reverse A,t)
+
+nontrivialCosig(x) ==
+   cs := GETDATABASE(x, "COSIG")
+   sig := getConstructorSignature x
+   not("and"/[c or freeOfSharpVars s for c in CDR cs for s in CDR sig])
 
 destructT(functor)==
   -- provides a list of booleans, which indicate whether the arguments

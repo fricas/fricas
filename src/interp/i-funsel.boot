@@ -1005,6 +1005,7 @@ isTowerWithSubdomain(towerType,elem) ==
   dt := deconstructT towerType
   2 ~= #dt => NIL
   s := underDomainOf(towerType)
+  s = elem => towerType
   isEqualOrSubDomain(s,elem) and constructM(first dt,[elem])
 
 selectMmsGen(op,tar,args1,args2) ==
@@ -1640,6 +1641,10 @@ unifyStruct(s1,s2,SL) ==
     SL:= unifyStruct(CAR s1,CAR s2,SL)
     s1:= CDR s1
     s2:= CDR s2
+    atom s1 =>
+        if s1 = s2 then s2 := nil
+        s1 := nil
+    atom s2 => s2 := nil
   s1 or s2 => 'failed
   SL
 
