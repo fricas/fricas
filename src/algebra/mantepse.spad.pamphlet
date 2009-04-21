@@ -705,7 +705,7 @@ Section~\ref{sec:Hermite-Pade}.
 --ShiftSXGF: (EXPRR, Symbol, NNI) -> EXPRR
 --ShiftAXGF: (NNI, Symbol, EXPRR) -> EXPRR
 --
-FilteredPartitionStream: LGOPT -> Stream List Integer
+--FilteredPartitionStream: LGOPT -> Stream List Integer
 --
 --guessInterpolate: (List SUP F, List NNI, HPSPEC) -> Matrix SUP S
 --testInterpolant: (List SUP S, List F, List UFPSSUPF, List EXPRR, List EXPRR, _
@@ -2219,7 +2219,7 @@ guessInterpolate2(guessList: List SUP F,
                 to Fraction S"
 @
 
-[[testInterpolant]] checks whether p is really a solution.
+[[testInterpolant]] checks whether [[resi]] is really a solution.
 <<implementation: Guess - testInterpolant>>=
 testInterpolant(resi: List SUP S,
                 list: List F,
@@ -2237,10 +2237,14 @@ we cannot check this if [[maxDegree]] is set, in which case some initial
 solutions may have been overlooked.
 
 <<implementation: Guess - testInterpolant>>=
-    ((maxDegree(options)$GOPT0 case "arbitrary") and
-     (allDegrees(options)$GOPT0 = false) and
-     zero?(last resi))
-     => return "failed"
+    ((maxDegree(options)$GOPT0 case "arbitrary") and 
+     (allDegrees(options)$GOPT0 = false) and 
+     zero?(last resi)) => 
+        if debug(options)$GOPT0 then 
+            output(hconcat("solution should have been found already ", _
+                           resi::OutputForm))
+                  $OutputPackage
+        return "failed"
 @
 
 Then we check all the coefficients that should be valid.  We want the zero
@@ -2248,6 +2252,12 @@ solution only, if the function is really zero. Without this test, every
 sequence ending with zero is interpreted as the zero sequence, since the factor
 in front of the only non-vanishing term can cancel everything else.
 
+We set [[nonZeroCoefficient]] to the only non zero coefficient or, if there are
+several, it is $0$. It should not happen that all coefficients in [[resi]]
+vanish.
+\begin{ToDo}
+  Check that not all coefficients in [[resi]] can vanish simultaneously.
+\end{ToDo}
 <<implementation: Guess - testInterpolant>>=
     nonZeroCoefficient: Integer := 0
 
@@ -2260,25 +2270,42 @@ in front of the only non-vanishing term can cancel everything else.
                 break
 @
 
-We set [[nonZeroCoefficient]] to the only non zero coefficient or, if there are
-several, it is $0$. It should not happen that all coefficients in [[resi]]
-vanish.
+We first deal with the case that there is only one non-vanishing coefficient in
+[[resi]].  If the only expression in [[exprList]] whose coefficient does not
+vanish does not contain the name of the generating function, or if there is a
+non-zero term in [[list]], we reject the proposed solution.
+
 \begin{ToDo}
-  Check that not all coefficients in [[resi]] can vanish simultaneously.
+  Maybe we should not reject the solution in any case!  In the shifting
+  setting, it amounts to rejecting the zero solution if any term is non-zero.
+  Unfortunately, in the case of [[allDegrees==true]], allowing such solutions
+  will produce a solution always when the final term is zero, see above.
+
+  In the differentiation setting we will not reject, since even for polynomials
+  we need two non-zero terms.
 \end{ToDo}
 
 <<implementation: Guess - testInterpolant>>=
     if not zero? nonZeroCoefficient then
-        (freeOf?(exprList.nonZeroCoefficient, name op)) => return "failed"
+        (freeOf?(exprList.nonZeroCoefficient, name op)) => 
+            if debug(options)$GOPT0 then 
+                output("solution would not involve generating function")
+                      $OutputPackage
+
+            return "failed"
 
         for e in list repeat
-            if not zero? e then return "failed"
+            if not zero? e then 
+                if debug(options)$GOPT0 then 
+                    output("list contains non-zero element")
+                          $OutputPackage
+                return "failed"
 @
 
-We first deal with the case that there is only one non-vanishing coefficient in
-[[resi]]. If the only expression in [[exprList]] whose coefficient does not
-vanish does not contain the name of the generating function, or if there is a
-non-zero term in [[list]], we reject the proposed solution.
+Here we check for each degree [[d]] larger than [[guessDegree]] whether the
+proposed linear combination vanishes.  When the first coefficient that does not
+vanish contains the transcendental element we accept the linear combination as
+a solution.
 
 <<implementation: Guess - testInterpolant>>=
     else
@@ -2295,13 +2322,12 @@ non-zero term in [[list]], we reject the proposed solution.
                 iterate? := ground? c
                 break
 
-        iterate? => return "failed"
+        iterate? => 
+            if debug(options)$GOPT0 then 
+                output("proposed solution does not fit")
+                      $OutputPackage
+            return "failed"
 @
-
-Here we check for each degree [[d]] larger than [[guessDegree]] whether the
-proposed linear combination vanishes. When the first coefficient that does not
-vanish contains the transcendental element we accept the linear combination as
-a solution.
 
 Finally, it seems that we have found a solution. Now we cancel the greatest
 common divisor of the equation. Note that this may take quite some time, it
