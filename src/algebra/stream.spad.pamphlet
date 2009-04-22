@@ -637,15 +637,19 @@ Stream(S): Exports == Implementation where
     --    [value: S,             rest: %]
     --    [nullstream:    Magic, NIL    ]
     --    [nonnullstream: Magic, fun: () -> %]
+    --    [uninitializedstream : Magic, 0]
     -- Could use a record of unions if we could guarantee no tags.
 
     NullStream:    S := _$NullStream$Lisp    pretend S
     NonNullStream: S := _$NonNullStream$Lisp pretend S
+    UninitializedStream : S := _$UninitializedStream$Lisp pretend S
 
     Rep := Record(firstElt: S, restOfStream: %)
 
     explicitlyEmpty? x == EQ(frst x,NullStream)$Lisp
     lazy? x            == EQ(frst x,NonNullStream)$Lisp
+    uninitialized? : % -> Boolean
+    uninitialized? x   == EQ(frst x, UninitializedStream)$Lisp
 
 --% signatures of local functions
 
@@ -913,6 +917,7 @@ Stream(S): Exports == Implementation where
         st := lazyEval x
         setfrst_!(x, frst st)
         setrst_!(x,if EQ(rst st,st)$Lisp then x else rst st)
+      uninitialized? x => error "Trying to use uninitialized stream"
       explicitlyEmpty? x
 
     --setvalue(x,s) == setfirst_!(x,s)

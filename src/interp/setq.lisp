@@ -80,6 +80,7 @@
 (setq |$ReadingFile| NIL)
 (setq |$NonNullStream| "NonNullStream")
 (setq |$NullStream| "NullStream")
+(setq |$UninitializedStream| "UninitializedStream")
 (setq |$domPvar| nil)
 (defvar $dalymode nil "if true then leading paren implies lisp cmd")
 (setq |$Newline| #\Newline)
