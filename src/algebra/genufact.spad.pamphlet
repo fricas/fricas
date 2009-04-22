@@ -58,11 +58,18 @@ GenUFactorize(R) : public == private where
 
    -- following is to handle SAE
       R has generator : () -> R =>
-        var := symbol(convert(generator()::OutputForm)@InputForm)
-        up:=UnivariatePolynomial(var,Fraction Integer)
+        giform := convert(generator()::OutputForm)@InputForm
+        up : UnivariatePolynomialCategory(Fraction Integer)
+        upp : UnivariatePolynomialCategory(Fraction Polynomial Integer)
+        if symbol?(giform) then
+           var := symbol(giform)
+           up := UnivariatePolynomial(var, Fraction Integer)
+           upp := UnivariatePolynomial(var, Fraction Polynomial Integer)
+        else
+           up := SparseUnivariatePolynomial(Fraction Integer)
+           upp := SparseUnivariatePolynomial(Fraction Polynomial Integer)
         R has MonogenicAlgebra(Fraction Integer, up) =>
            factor(f)$SimpleAlgebraicExtensionAlgFactor(up, R, PR)
-        upp:=UnivariatePolynomial(var,Fraction Polynomial Integer)
         R has MonogenicAlgebra(Fraction Polynomial Integer, upp) =>
            factor(f)$SAERationalFunctionAlgFactor(upp, R, PR)
         factorWarning(f::OutputForm)
