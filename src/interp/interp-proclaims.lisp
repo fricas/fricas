@@ -4,1464 +4,1428 @@
                  (proclaim '(optimize (safety 1) (debug 3))))
 
 (IN-PACKAGE "BOOT") 
+(PROCLAIM '(FTYPE (FUNCTION NIL (*)) FIRST-ERROR)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION NIL (*)) FIRST-ERROR |sendHTErrorSignal|
-            |queryClients| |sendNagmanErrorSignal|)) 
-(PROCLAIM '(FTYPE (FUNCTION (*) (VALUES T T)) READLINE)) 
-(PROCLAIM
-    '(FTYPE (FUNCTION (T) FIXNUM) LINE-CURRENT-INDEX LINE-LAST-INDEX
-            LINE-NUMBER |hitListOfTarget| |eq0| |widthSC|
-            FOAM:|ProgHashCode| FOAM:|strLength| |nothingSuper|
-            |nothingSub| |nothingWidth| CHAR2NUM)) 
+    '(FTYPE (FUNCTION (T) FIXNUM) LINE-NUMBER |eq0| |nothingWidth|
+            |nothingSuper| |nothingSub| |widthSC| LINE-CURRENT-INDEX
+            FOAM:|ProgHashCode| FOAM:|strLength| CHAR2NUM
+            |hitListOfTarget| LINE-LAST-INDEX)) 
 (PROCLAIM
     '(FTYPE (FUNCTION (T) FUNCTION) FOAM::FOAMPROGINFOSTRUCT-FUNCALL)) 
 (PROCLAIM
     '(FTYPE (FUNCTION (T) FOAM:|SInt|)
             FOAM::FOAMPROGINFOSTRUCT-HASHVAL)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T) (VALUES T T)) MONITOR-INFO
-            |makeInternalMapMinivectorName| |mkAuxiliaryName|
-            |mkCacheName| |getKeyedMsg| |mapCatchName| FILE-GETTER-NAME
-            |makeCharacter| |queryUser| FOAM:AXIOMXL-FILE-INIT-NAME
-            |mkSharpVar|)) 
+    '(FTYPE (FUNCTION (T) (VALUES T T)) FILE-GETTER-NAME
+            |makeInternalMapMinivectorName| |fetchKeyedMsg|
+            |mkSharpVar| |makeCharacter| READLINE |mkCacheName|
+            |mkAuxiliaryName| |getKeyedMsg| FOAM:AXIOMXL-FILE-INIT-NAME
+            MONITOR-INFO |mapCatchName| |queryUser|)) 
 (PROCLAIM
     '(FTYPE (FUNCTION ((VECTOR T) (VECTOR T)) T) VMLISP::VGREATERP
             VMLISP::LEXVGREATERP)) 
-(PROCLAIM '(FTYPE (FUNCTION ((VECTOR T)) T) TRIMLZ)) 
-(PROCLAIM
-    '(FTYPE (FUNCTION (T) (*)) |killHTPage| |linkToHTPage|
-            |startHTPage| |issueHT| |startHTPopUpPage|
-            |startReplaceHTPage|)) 
 (PROCLAIM '(FTYPE (FUNCTION (T *) (VALUES T T)) |read-line|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T) FIXNUM) QSREMAINDER QENUM QSQUOTIENT
-            |attributeCategoryParentCount| FOAM:|SetProgHashCode|)) 
-(PROCLAIM '(FTYPE (FUNCTION (T T) (VALUES T T)) |fetchKeyedMsg|)) 
+    '(FTYPE (FUNCTION (T T) FIXNUM) QSREMAINDER QSQUOTIENT
+            FOAM:|SetProgHashCode| QENUM)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T) (*)) |replaceNamedHTPage|
-            |popUpNamedHTPage|)) 
+    '(FTYPE (FUNCTION (T T T) *) |selectOption| |parseIf,ifTran|
+            |templateVal| |getSlotFromDomain| |augModemapsFromDomain1|
+            |getVal| |Qf2F| |htMkPath| BUILD-DEPSYS |asytranForm|
+            |asytranApplySpecial| |asytranFormSpecial| |ncloopInclude0|
+            |exp2FortSpecial| |selectOptionLC| GETOP)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T) *) |Qf2F| |asytranApplySpecial|
-            |ncloopInclude0| BUILD-DEPSYS |getVal| GETOP
-            |parseIf,ifTran| |getSlotFromDomain|
-            |augModemapsFromDomain1| |selectOptionLC| |selectOption|
-            |htMkPath| |extendsCategory| |NRTextendsCategory1|
-            |asytranFormSpecial| |asytranForm| |exp2FortSpecial|
-            |templateVal|)) 
+    '(FTYPE (FUNCTION (T T T T) *) |overlabelApp| |overbarApp|
+            |argsapp| |appparu1| |appsc| |appsetq| |appsub| |appfrac|
+            |slashApp| |appmat| |inApp| |exptApp|
+            |constructorAbbreviationErrorCheck| |quoteApp| APP
+            |appargs| |appagg| |appHorizLine| |appparu| |charyTrouble1|
+            |newExpandLocalTypeArgs| |patternCheck,mknew|
+            |makeStatString| FOAM:|fputss| FOAM:|fgetss| |binomialApp|)) 
+(PROCLAIM '(FTYPE (FUNCTION (T T *) *) CONCAT |ncBug| LOCALDATABASE)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T) *) LOCALNRLIB |apprpar1| |appagg1|
-            |applpar1| |appvertline| |appargs1| |matrixBorder| |apphor|
-            |apprpar| |applpar| |compileAndLink|)) 
-(PROCLAIM
-    '(FTYPE (FUNCTION (T T T T) *) |newExpandLocalTypeArgs|
-            |appHorizLine| |charyTrouble1| |appparu|
-            |constructorAbbreviationErrorCheck| |appargs| |inApp|
-            |quoteApp| |makeStatString| |appparu1| |appsc| |appsetq|
-            |slashApp| |appsub| |binomialApp| APP |exptApp| |appfrac|
-            |argsapp| |appagg| |patternCheck,mknew| |appmat|
-            |overlabelApp| |overbarApp| FOAM:|fputss| FOAM:|fgetss|)) 
-(PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T T) *) |makeLongStatStringByProperty|
-            |addModemap| INTERPSYS-IMAGE-INIT)) 
-(PROCLAIM '(FTYPE (FUNCTION (T T T T T T T) *) |lisplibError|)) 
-(PROCLAIM '(FTYPE (FUNCTION (T T *) *) CONCAT LOCALDATABASE |ncBug|)) 
+    '(FTYPE (FUNCTION (T T T T T T) *) INTERPSYS-IMAGE-INIT
+            |addModemap| |makeLongStatStringByProperty|)) 
 (PROCLAIM '(FTYPE (FUNCTION (T T T T T T T T T T) *) |makeFortranFun|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T) T) |canCoerceByFunction1| |L2Sm| L2M
-            |Scr2Scr| |Sm2M| |altTypeOf| |Sm2Rm| |getMappingArgValue|
-            I2NNI |spad2BootCoerce| |P2Uts| |augProplistInteractive|
-            |Expr2Mp| |Expr2Dmp| |Dmp2Mp| |augProplist| I2EI L2V
-            |getArgValueComp| |coerceIntX| |addBindingInteractive|
-            |Set2L| |position,posn| |Rm2Sm| |Var2Up| |evalFormMkValue|
-            |Expr2Up| |rewriteMap| |NRTcompileEvalForm| OV2OV
-            |isRectangularList| |sideEffectedArg?| |substring?|
-            |patternCheck,equal| PUTALIST |stringPosition|
-            |centerString| RWRITE |setMsgForcedAttr| ADDOPTIONS
-            |BesselIAsympt| |get1| |get2| |PsiBack|
-            |PsiAsymptoticOrder| |cotdiffeval| |get0|
-            |setMsgUnforcedAttr| |addIntSymTabBinding| |remprop|
-            |insertShortAlist| |PiMinusLogSinPi| |logH|
-            |recordOldValue| |recordNewValue| QESET |chebstarevalarr|
-            |chebf01coefmake| |fortFormatHead|
-            |transferPropsToNode,transfer| |besselIcheb| AS-INSERT
-            |getfortarrayexp| |P2Expr| |NDmp2NDmp| |orderPredTran|
-            |Dmp2NDmp| |Dmp2Dmp| |Up2SUP| |Ker2Expr| |substVars|
-            |addMap| |Var2NDmp| |Var2P| |Var2FS| |replaceVars|
-            |fnameNew| |Qf2EF| HPUT |orderPredicateItems| |fnameMake|
-            |Rn2F| |coerceDmp2| |optSpecialCall|
-            |getOplistWithUniqueSignatures| |mapRecurDepth| |writeLib1|
-            |Qf2Qf| MAKE-PARSE-FUNC-FLATTEN-1 |lookupInDomainByName|
-            |augLisplibModemapsFromCategory| |sigDomainVal|
-            |NDmp2domain| |P2Uls| I2OI |Complex2Expr| |L2Tuple|
-            |mkInterpFun| |newExpandGoGetTypeSlot| |P2Dmp| |P2Mp|
-            |Qf2domain| |Mp2FR| |domain2NDmp| |displaySingleRule|
-            |Sy2Up| |npAndOr| |Sy2NDmp| OV2P |restoreDependentMapInfo|
-            |Sm2V| SUBSTRING M2V |Un2E| |analyzeNonRecur| |V2Sm| |L2Rm|
-            |intloopInclude0| |M2Rm| |analyzeMap0| |Mp2Up| |Rm2L| M2L
-            |npListofFun| |application2String| |Sy2Dmp| DP2DP
-            |Dmp2Expr| |deleteMap| |Rm2V| |compileDeclaredMap| |SUP2Up|
-            |pileForests| |Sm2L| |Dmp2Up| |mkNewUnionFunList| |V2Rm|
-            |EnumEqual| PROPERTY |nopile| |compileCoerceMap|
-            |UnionEqual| DEF |countParens| |MappingEqual| |RecordEqual|
-            PUT |charPosition| MAKESPAD |rewriteMap1| |interpret1|
-            DEF-INNER |assignSymbol| |moreGeneralCategoryPredicate|
-            |upTableSetelt| |encodeUnion| |upSetelt|
-            |simpHasPred,simpHas| |NRTisRecurrenceRelation| SUBLISLIS
-            |evalQUOTE| |makeCatPred| |upLETtype| |nsubst| |evalis|
-            |compiledLookup| |upwhereMain| REDUCE-1 |evalIF|
-            |sublisMatAlist| |upLETWithFormOnLhs| |charybdis|
-            |upwhereMkAtree| |upwhereClause| |IFcodeTran| |charyTop|
-            |splitConcat| |interpret2| SUBSTEQ |coerceTraceFunValue2E|
-            |evalIsntPredicate| ADDASSOC |pfTLambda| |evalIsPredicate|
-            |getFunctionFromDomain| AS-INSERT1
-            |coerceConvertMmSelection;| |reportOpSymbol,sayMms|
-            |outputString| |longext| |isLegitimateMode;|
-            |hasFileProperty;| ELEMN |fortCall| |writeStringLengths|
-            |hasFilePropertyNoCache| B-MDEF |writeXDR| |isEltable|
-            |selectMms| |keyedMsgCompFailureSP| |throwKeyedMsgSP|
-            |rwrite| |getConditionalCategoryOfType| |resolveTMEq2|
-            |filterListOfStringsWithFn| |rread| |flowSegmentedMsg|
-            |makeResultRecord| |pushDownOnArithmeticVariables|
-            |selectMmsGen,exact?| |prepareResults,defaultValue|
-            |displayModemap| |filterModemapsFromPackages|
-            |displayModemap,g| |resolveTTEq2| |getLocalMms|
-            |resolveTTEq1| |evalMmCond0| |userLevelErrorMessage|
-            |addToConstructorCache| |commandAmbiguityError| |incZip|
-            |recordInstantiation| |resolveTTRed2| |coerceTypeArgs|
-            |resolveTTRed1| |recordInstantiation1| |nextown|
-            |evalMmCond| |intCodeGenCoerce1| |matchTypes| |displayType|
-            |recordNewValue0| |displayMode| |recordOldValue0|
-            |getValueFromSpecificEnvironment| |matchUpToPatternVars|
-            |displayCondition| CARCDRX1 |mkAtree2| |mkAtree3|
-            |coerceOrThrowFailure| |displayValue| MKPFFLATTEN-1 |get|
-            |pfInfApplication| |mkIterFun| |mapLetPrint| SETDATABASE
-            |letPrint| |upStreamIterIN| |loadLibNoUpdate| |letPrint2|
-            |augmentLisplibModemapsFromFunctor| |maprinSpecial|
-            SMALL-ENOUGH-COUNT |upLoopIterIN| |putI| |readLib1|
-            |insertAlist| |coerceTraceArgs2E| MONITOR-PRINARGS
-            |updateDatabase| |npList| |traceDomainLocalOps| |sigsMatch|
-            |asyCattranOp1| |pfWith| VMLISP::MAKE-ENTRY
-            |getConstructorOpsAndAtts| THETACHECK |pfPushBody|
-            |pfLambda| |infixArgNeedsParens| |ncPutQ| |lisplibWrite|
-            |pfIf| |pfWIf| |outputNumber| |mkRecordFunList|
-            |mkUnionFunList| |mkMappingFunList| |unabbrevSpecialForms|
-            |mkEnumerationFunList| |needBlankForRoot|
-            |throwKeyedErrorMsg| |lassocShiftWithFunction| |nAssocQ|
-            |LargeMatrixp| |findCommonSigInDomain|
-            |mkUserConstructorAbbreviation| |evalMmCat1| |hasCaty|
-            |augmentSub| |hasCate| |getCatForm| |getLocalMms,f|
-            |findUniqueOpInDomain| |chebevalarr| |lazyOldAxiomAddChild|
-            |BesselasymptA| |evalREPEAT| |errorSupervisor1|
-            |upNullTuple| |hasAtt| |unifyStruct| |evalSEQ|
-            |lazyDomainSet| |newExpandLocalType| EQSUBSTLIST |clngamma|
-            |hasSigOr| |newExpandLocalTypeForm| |clngammacase23|
-            |hasSigAnd| |clngammacase1| |hasAttSig| |unifyStructVar|
-            |argumentDataError| |oldAxiomAddChild| |constrArg|
-            |attributeCategoryBuild| |isOpInDomain| |newExpandTypeSlot|
-            |commandErrorMessage| |postCollect,finish| /MONITORX
-            |domainVal| |domArg2| |oldAxiomCategoryBuild|
-            |oldAxiomPreCategoryBuild| SPADRWRITE SPADRWRITE0
-            |interpCOLLECT| |evalCOLLECT|
-            |getSlotNumberFromOperationAlist| |addBinding|
-            |interpRewriteRule| |oldAxiomCategoryNthParent|
-            |filterAndFormatConstructors| |PARSE-getSemanticForm|
-            |getOpCode| PRINT-XDR-STREAM |throwKeyedMsgFromDb|
-            |sayKeyedMsgFromDb| |substringMatch| |pushDownTargetInfo|
-            |putAtree| |evalCOERCE| |upTaggedUnionConstruct|
-            |throwListOfKeyedMsgs| |upRecordConstruct| |subVecNodes|
-            |upNullList| |extendsCategoryBasic0| |substSlotNumbers|
-            |lffloat| |interpCOLLECTbody| |assocCacheShiftCount|
-            |assocCacheShift| |extendsCategoryBasic| |assocCache|
-            FOAM:|FormatNumber| |catExtendsCat?| |NRTgetLookupFunction|
-            |stuffSlot| |asytranApply| COMP-SPADSLAM COMP-SLAM
-            |asySig1| |rewriteMap0| |asytranForm1| |findLocalsInLoop|
-            |displayMap| |getOpBindingPower|
-            |sayFunctionSelectionResult| |hput|
-            |fortFormatLabelledIfGoto| MSUBST |compiledLookupCheck|
-            |asGetExports| |mkFortFn| |coerceOrCroak|
-            |SpadInterpretStream| |NRTcompiledLookup| |intloopProcess|
-            |asyMakeOperationAlist| |coerceOrFail| |matchSegment?|
-            |anySubstring?| |insertEntry| |exp2Fort2| |exp2FortFn| I2PI
-            |infix?| P2FR |stringMatch| RPLNODE |makeEijSquareMatrix|
-            |rightCharPosition| |Sm2PolyType| |Factored2Factored|
-            |coerceFFE| |Mp2P| |intloopSpadProcess,interp| |Mp2Mp|
-            |Dmp2P| |Ker2Ker| |Var2Mp| |Up2Expr| |Up2FR| |Up2Up|
-            |Var2Dmp| |npBackTrack| |expandType| |expandTypeArgs|
-            |Agg2Agg| |dcSig| |L2Record| |permuteToOrder| |Mp2Dmp|
-            |computeTTTranspositions,compress| |Up2Dmp| |Var2Gdmp|
-            |OV2Sy| HREMPROP |throwKeyedMsgCannotCoerceWithValue|
-            |Var2SUP| |algCoerceInteractive| |mac0Define|
-            |isRectangularVector| |incPrefix?| |getSubDomainPredicate|
-            |Sy2Var| |buildPredVector,fn| |Sy2OV| |cleanUpAfterNagman|
-            |sySpecificErrorAtToken| |makeCompilation| |Expr2Complex|
-            |Complex2underDomain| |Sy2P| |algEqual| |inclmsgIfSyntax|
-            |Var2OtherPS| |Up2P| |makeAspGenerators| |Var2UpS| |P2Upxs|
-            |makeAspGenerators1| V2M OV2SE |Sy2Mp| |Complex2FR| |Up2Mp|
-            |OV2poly| |mac0InfiniteExpansion| |Agg2L2Agg| |Qf2PF|
-            |Mp2Expr| |mungeAddGensyms,fn| |insertAlist,fn| |Var2OV|
-            |npParenthesize| V2DP |Var2QF| |P2Up| |coerceSubDomain|
-            |buildPredVector| V2L L2DP |Rm2M| M2M |L2Set| |M2Sm|
-            MAKE-DEFUN |retractUnderDomain| |coerceDmpCoeffs|)) 
+    '(FTYPE (FUNCTION (T T T T T) *) LOCALNRLIB |appagg1| |appargs1|
+            |apprpar1| |applpar1| |applpar| |apprpar| |appvertline|
+            |matrixBorder| |apphor| |compileAndLink|)) 
+(PROCLAIM '(FTYPE (FUNCTION (T T T T T T T) *) |lisplibError|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T) T) |xlOK1| |getArgValueComp2|
-            |commuteMultivariatePolynomial| |getNewDefaultPackage|
-            |coerceDmp1| |newCompareSig| |newLookupInDomain|
+    '(FTYPE (FUNCTION (T T T) T) |pfLambda|
+            |throwKeyedMsgCannotCoerceWithValue| |argumentDataError|
+            THETACHECK |retractUnderDomain| |pfInfApplication| |evalIF|
+            |IFcodeTran| |evalis| |pfIf| |subVecNodes|
+            |simpHasPred,simpHas| |upNullList| |upRecordConstruct|
+            |upTaggedUnionConstruct| |maprinSpecial| SMALL-ENOUGH-COUNT
+            |encodeUnion| |moreGeneralCategoryPredicate| DEF
+            |makeCatPred| |userLevelErrorMessage|
+            |commandAmbiguityError| |commandErrorMessage| SETDATABASE
+            |inclmsgIfSyntax| |postCollect,finish| |throwKeyedErrorMsg|
+            |get| |throwListOfKeyedMsgs| |unabbrevSpecialForms|
+            ADDOPTIONS |evalCOERCE| |interpCOLLECT|
+            |mkUserConstructorAbbreviation| |evalCOLLECT| |nAssocQ|
+            |longext| |upLoopIterIN| HPUT |interpCOLLECTbody|
+            |upStreamIterIN| |mkIterFun| |writeLib1| QESET SUBSTRING
+            |lffloat| |mapRecurDepth| |substringMatch|
+            |analyzeNonRecur| |compSPADSLAM| |restoreDependentMapInfo|
+            |buildPredVector,fn| |rread| |rwrite| |readLib1|
+            |incPrefix?| |orderPredTran| |sySpecificErrorAtToken|
+            |findLocalsInLoop| |sideEffectedArg?| |replaceVars|
+            |rewriteMap1| EQSUBSTLIST |substVars| |rewriteMap|
+            |orderPredicateItems| |evalFormMkValue| |displayMap|
+            |altTypeOf| |dcSig| |infixArgNeedsParens|
+            |getMappingArgValue| |getArgValueComp|
+            |getOplistWithUniqueSignatures| |insertAlist|
+            |NRTextendsCategory1| |insertShortAlist| |extendsCategory|
+            |augLisplibModemapsFromCategory|
+            |transferPropsToNode,transfer| |substSlotNumbers|
+            |augmentLisplibModemapsFromFunctor| |LargeMatrixp|
+            |extendsCategoryBasic0| |setMsgUnforcedAttr|
+            |getValueFromSpecificEnvironment| |extendsCategoryBasic|
+            |get0| |catExtendsCat?| |setMsgForcedAttr| |get1|
+            |expandType| |expandTypeArgs| |get2| |updateDatabase|
+            |splitConcat| |recordNewValue| |charybdis| |recordOldValue|
+            |remprop| |addMap| |addIntSymTabBinding|
+            |NRTgetLookupFunction| |RecordEqual| |deleteMap| |charyTop|
+            |compiledLookup| |UnionEqual| |buildPredVector|
+            |sublisMatAlist| |outputNumber| |outputString| |putI|
+            |displaySingleRule| |MappingEqual| |EnumEqual|
+            |mkNewUnionFunList| |analyzeMap0| |mkInterpFun|
+            PRINT-XDR-STREAM |mkMappingFunList| |mkRecordFunList|
+            |mkEnumerationFunList| |mkUnionFunList| |rewriteMap0|
+            |interpret1| |compileCoerceMap| MSUBST |compileDeclaredMap|
+            |ncPutQ| |stuffSlot| |getSlotNumberFromOperationAlist|
+            |mac0Define| |sigsMatch| |rightCharPosition| |stringMatch|
+            |matchSegment?| |infix?| |nsubst| |mungeAddGensyms,fn|
+            RPLNODE |newExpandGoGetTypeSlot| |isLegitimateMode;|
+            |domainVal| |augProplistInteractive| |getCatForm| |incZip|
+            |augProplist| |getOpBindingPower| |addBindingInteractive|
+            |needBlankForRoot| |position,posn| |mapLetPrint| |letPrint|
+            |lazyOldAxiomAddChild| |letPrint2| |nextown| |charPosition|
+            PUTALIST |oldAxiomCategoryNthParent| |centerString|
+            |oldAxiomCategoryBuild| |oldAxiomAddChild| HREMPROP
+            |mac0InfiniteExpansion| |addBinding|
+            |NRTisRecurrenceRelation| |loadLibNoUpdate| |interpret2|
+            |fortCall| VMLISP::MAKE-ENTRY |resolveTTEq1| |resolveTTEq2|
+            |makeResultRecord| |resolveTTRed1| |resolveTTRed2|
+            |prepareResults,defaultValue|
+            |getConditionalCategoryOfType| |PARSE-getSemanticForm|
+            |matchUpToPatternVars| |mkAtree2| |cleanUpAfterNagman|
+            |mkAtree3| |getOpCode| |resolveTMEq2| |newExpandTypeSlot|
+            |lazyDomainSet| |hasAttSig| |hasAtt| RWRITE |domArg2|
+            |application2String| |unifyStruct| |hasFileProperty;|
+            |hasFilePropertyNoCache| |hasSigAnd| |lookupInDomainByName|
+            |hasSigOr| |sigDomainVal| |newExpandLocalType|
+            |unifyStructVar| |newExpandLocalTypeForm| |isOpInDomain|
+            |findCommonSigInDomain| |findUniqueOpInDomain|
+            |coerceConvertMmSelection;| |npList|
+            |getFunctionFromDomain| |pfPushBody|
+            |addToConstructorCache| |recordInstantiation| SUBLISLIS
+            |recordInstantiation1| PUT |writeXDR| |writeStringLengths|
+            AS-INSERT |getLocalMms| |getLocalMms,f| |makeAspGenerators|
+            |makeCompilation| |makeAspGenerators1|
+            |oldAxiomPreCategoryBuild| |flowSegmentedMsg| |npAndOr|
+            |hasCaty| FOAM:|FormatNumber| |assocCacheShiftCount| |P2Up|
+            |matchTypes| |assocCacheShift| |Qf2PF| |chebevalarr|
+            |assocCache| |Qf2domain| |filterModemapsFromPackages|
+            |BesselIAsympt| |Qf2EF| |selectMmsGen,exact?| |Qf2Qf|
+            |Rm2L| |Rm2M| |evalMmCond| |substring?| |Rm2Sm|
+            |stringPosition| |Rm2V| |Scr2Scr| |SUP2Up|
+            |lassocShiftWithFunction| |Sm2L| AS-INSERT1 |Sm2M|
+            |evalMmCond0| |Sm2PolyType| |Sm2Rm| |reportOpSymbol,sayMms|
+            |Sm2V| |Sy2OV| |Sy2Dmp| |coerceTypeArgs| |Sy2Mp|
+            |filterAndFormatConstructors| |Sy2NDmp| |Sy2P| |constrArg|
+            |Sy2Up| |filterListOfStringsWithFn| |Sy2Var| |augmentSub|
+            |Up2Dmp| |Up2Expr| |Up2FR| |evalMmCat1| |Up2Mp|
+            |traceDomainLocalOps| ELEMN |Up2P| |hasCate| |Up2SUP|
+            |Up2Up| |Un2E| |Var2OV| |pfWith| |Var2Dmp| |Var2Gdmp|
+            |Var2Mp| |Var2NDmp| |Var2P| |Var2QF| |Var2FS| |Var2SUP|
+            |asyCattranOp1| |Var2OtherPS| V2M |V2Rm| |V2Sm| |P2Uts|
+            |computeTTTranspositions,compress| |P2Uls| |pfWIf|
+            |npListofFun| |permuteToOrder| |P2Upxs| PROPERTY
+            |NRTcompiledLookup| |spad2BootCoerce| DEF-INNER
+            |insertAlist,fn| |hput| |Var2Up| |Var2UpS|
+            |isRectangularVector| |makeEijSquareMatrix| DP2DP |Dmp2Mp|
+            |getfortarrayexp| |domain2NDmp| |Dmp2NDmp|
+            |throwKeyedMsgSP| |Dmp2P| SPADRWRITE |Dmp2Up| B-MDEF
+            |isEltable| |NDmp2domain| |fortFormatLabelledIfGoto|
+            |NDmp2NDmp| |clngamma| |Expr2Complex| |clngammacase1|
+            |Expr2Mp| |fortFormatHead| |clngammacase23|
+            |keyedMsgCompFailureSP| |recordNewValue0| |Expr2Up|
+            |PiMinusLogSinPi| |recordOldValue0| |Ker2Ker| |Ker2Expr|
+            |logH| |optSpecialCall| |Factored2Factored| SPADRWRITE0
+            |Complex2underDomain| |Complex2FR| |Complex2Expr| I2EI
+            |asGetExports| I2OI I2PI I2NNI |cotdiffeval| |L2Tuple|
+            CARCDRX1 L2DP |pfTLambda| L2V |PsiAsymptoticOrder| V2L
+            |L2Record| |PsiBack| |npBackTrack| |L2Rm| |L2Sm|
+            MKPFFLATTEN-1 |L2Set| |Set2L| |Agg2Agg| |lisplibWrite|
+            |Agg2L2Agg| |coerceOrCroak| |M2Rm| |M2Sm| |chebf01coefmake|
+            |isRectangularList| |Mp2Dmp| |chebstarevalarr| |Mp2Expr|
+            |coerceOrFail| |Mp2FR| |Mp2P| |besselIcheb| |fnameMake|
+            |Mp2Up| REDUCE-1 OV2OV |asyMakeOperationAlist|
+            |BesselasymptA| |sayFunctionSelectionResult| OV2P
+            |compiledLookupCheck| |OV2poly| |asytranForm1| OV2SE
+            |countParens| |fnameNew| |algEqual| |OV2Sy| |nopile| P2FR
+            |asytranApply| |SpadInterpretStream| |P2Dmp|
+            |upLETWithFormOnLhs| |P2Expr| |intCodeGenCoerce1| |P2Mp|
+            |upLETtype| |pileForests| |getConstructorOpsAndAtts|
+            |upSetelt| SUBSTEQ |evalQUOTE| ADDASSOC
+            |canCoerceByFunction1| |exp2Fort2| |evalREPEAT|
+            |algCoerceInteractive| |exp2FortFn| |evalSEQ| |upNullTuple|
+            |intloopProcess| |asySig1| |upwhereClause|
+            |pushDownOnArithmeticVariables| |upwhereMkAtree|
+            |upwhereMain| |coerceTraceArgs2E|
+            |intloopSpadProcess,interp| MONITOR-PRINARGS
+            |coerceSubDomain| |coerceDmp2| |coerceDmpCoeffs|
+            |coerceTraceFunValue2E| |NRTcompileEvalForm| |mkFortFn|
+            |Dmp2Dmp| |coerceIntX| |putAtree| |getSubDomainPredicate|
+            |pushDownTargetInfo| |patternCheck,equal| |Expr2Dmp|
+            |upTableSetelt| |displayValue| |coerceFFE| |assignSymbol|
+            |displayCondition| |displayMode| |coerceOrThrowFailure|
+            |displayType| V2DP |intloopInclude0| L2M |displayModemap|
+            M2M |displayModemap,g| |Dmp2Expr| |insertEntry|
+            |interpRewriteRule| |Mp2Mp| |Rn2F| M2L M2V |selectMms|
+            |npParenthesize| |evalIsPredicate| |evalIsntPredicate|
+            |errorSupervisor1| /MONITORX |anySubstring?|)) 
+(PROCLAIM
+    '(FTYPE (FUNCTION (T T T T) T) |catchCoerceFailure| REDUCE-N
+            |interpIF| |indefIntegralApp| |intApp| |putFileProperty|
+            |appext| |appneg| |mkAndApplyZippedPredicates|
+            |mkIterZippedFun| |simpHasSignature| |evalTupleConstruct|
+            |evalInfiniteTupleConstruct| |evalconstruct| |rootApp|
+            |boxApp| |nothingApp| |zagApp| |catPairUnion| |stringApp|
+            |timesApp| |stepApp| |centerApp| |concatApp| |concatbApp|
+            |say2Split| |plusApp| |bracketApp| |xlPrematureEOF|
+            |braceApp| |xlSkip| |xlOK| |aggApp| |sigmaApp| |sigma2App|
+            |xlConsole| |evalTargetedADEF| |xlSkippingFin|
+            |evalUntargetedADEF| |xlPrematureFin| |compileTargetedADEF|
+            |mkInterpTargetedADEF| |condUnabbrev| |piApp| |xlIfBug|
+            |pi2App| |xlCmdBug| |charyMinus| |charySplit|
+            |charyEquatnum| |collectStream| |upLoopIterSTEP|
+            |charySemiColon| |interpLoop| |collectStream1|
+            |collectOneStream| |appInfix| |collectSeveralStreams|
+            |upStreamIterSTEP| |appsum| |boxLApp| |getFileProperty|
+            |termMatch| |analyzeNonRecursiveMap| |put| |getArgValue2|
+            |fixUpPredicate| |appSum| |appconc| |xLate| |bigopWidth|
+            |putIntSymTab| |lookupInTable| |srcPosNew| |charyElse|
+            |charyTrouble| |constoken| |clearDep1| |lookupComplete|
+            |analyzeUndeclaredMap| |findConstructorSlotNumber|
+            |makeInternalMapName| |appChar| |appelse| |lazyMatch|
+            |hashNewLookupInCategories| |lazyMatchAssocV|
+            |semchkProplist| |mac0ExpandBody| |letPrint3| |nextown2|
+            STRPOSL |interpCOLLECTbodyIter| |compareSig|
+            |mac0MLambdaApply| |lookupDisplay| |augProplistOf|
+            |lazyCompareSigEqual| |compareSigEqual| |lookupIncomplete|
+            |prepareData| |getConditionalCategoryOfType1|
+            |protectedNagCall| MAKE-FLOAT |newLookupInCategories|
+            |newLookupInAddChain| |sayLooking| |reportFunctionCacheAll|
+            |basicLookup| |hasCateSpecial| |hasCateSpecialNew|
+            |lookupInDomainVector| |newLookupInCategories1| |hasSig|
+            |nrunNumArgCheck| |mkDomPvar| |domArg| |lazyMatchArg|
+            |lazyMatchArgDollarCheck| |mergeSort| |mergeInPlace|
+            |putHist| |printDec| |writeMalloc| |printCName| |compClam|
+            |analyzeMap| |axiomType| |allOrMatchingMms|
+            |oldCompLookupNoDefaults| |oldCompLookup| |matchMmSig|
+            |basicLookupCheckDefaults| |evalMm| |matchAnySegment?|
+            |evalMmFreeFunction| |evalMmCat| |hasCate1| |haddProp|
+            |P2Us| STRPOS |optCallSpecially| |clngammacase2|
+            ASHARPMKAUTOLOADCATEGORY |selectDollarMms|
+            ASHARPMKAUTOLOADFUNCTOR |defaultTarget| |selectMmsGen|
+            |asGetModemaps| |asytranDeclaration| |BesselasymptB|
+            REDUCE-N-1 |asytranCategory| REDUCE-N-2
+            |canCoerceTopMatching| |asytranCategoryItem|
+            |NRTgetMinivectorIndex| |intloopSpadProcess| |interpREPEAT|
+            |typeToForm,fn| |evalTuple| |coerceImmediateSubDomain|
+            |superSubApp| |getReduceFunction| |binomApp|
+            |altSuperSubApp| |bottomUpDefault| |MpP2P| |vconcatapp|
+            |selectLocalMms| |evalForm| |npEnclosed|)) 
+(PROCLAIM
+    '(FTYPE (FUNCTION (T T T T T) T) |interpLoopIter| |compileIF|
+            LOCALASY |incLine| |xlMsg| |xlOK1| |xlSay| |xlNoSuchFile|
+            |xlCannotRead| |xlFileCycle| |xlConActive| |xlConStill|
+            |compileADEFBody| FINCOMBLOCK |charyBinary| |concatTrouble|
+            |split2| |incLude| |reportFunctionCompilation|
+            |analyzeRecursiveMap| TOKEN-INSTALL1 |needStar|
+            |getArgValueComp2| |concatApp1| |aggregateApp| |augmentMap|
+            |analyzeDeclaredMap| |getNewDefaultPackage|
+            |hashNewLookupInTable| |prepareResults| |resolveTT2|
+            |spadify| |putSrcPos| |compileRecurrenceRelation|
+            |newCompareSig| |newLookupInDomain| |lazyMatchArg2|
+            |selectMms1;| |selectMms2| |newLookupInTable|
+            |commuteNewDistributedMultivariatePolynomial| |mkCacheVec|
+            |selectMmsGen,matchMms| |makeConstrArg| |printLabelledList|
+            |coerceByTable| |commuteComplex| |commuteQuaternion|
+            |commuteFraction| |commuteSquareMatrix|
+            |commuteUnivariatePolynomial| |commutePolynomial|
+            |commuteMultivariatePolynomial|
             |commuteDistributedMultivariatePolynomial|
-            |commuteQuaternion| |analyzeRecursiveMap|
-            |analyzeDeclaredMap| |augmentMap|
-            |compileRecurrenceRelation| |reportFunctionCompilation|
-            FINCOMBLOCK -REDUCE |split2| |compileIF| |concatTrouble|
-            |selectMms1;| |charyBinary| |spadify| |selectMms2|
-            |aggregateApp| |incLude| |bottomUpFormRetract|
-            |bottomUpForm0| |bottomUpFormTuple|
-            |bottomUpFormUntaggedUnionRetract| |selectMmsGen,matchMms|
-            |bottomUpForm2| |bottomUpForm3| |resolveTT2|
-            |printLabelledList| |putSrcPos| LOCALASY |needStar| |logS|
-            |concatApp1| WRITE-TAG-LINE |interpLoopIter| |mkCacheVec|
-            |makeConstrArg| |lazyMatchArg2| |newLookupInTable|
-            |hashNewLookupInTable| |bottomUpDefaultCompile|
-            |compileADEFBody| |bottomUpDefaultEval|
-            |bottomUpFormAnyUnionRetract| |bottomUpForm|
-            |sayFunctionSelection| |orderMms| |commuteSquareMatrix|
-            |fortFormatDo| |incLine| |xlCannotRead| |xlMsg|
-            |xlConStill| |commuteComplex|
-            |commuteSparseUnivariatePolynomial|
-            |commuteUnivariatePolynomial| |commuteMPolyCat|
-            |commutePolynomial| |prepareResults| |coerceByTable|
-            |commuteNewDistributedMultivariatePolynomial|
-            |commuteFraction| |xlConActive| |xlFileCycle|
-            |xlNoSuchFile| |xlSay|)) 
+            |commuteSparseUnivariatePolynomial| |commuteMPolyCat|
+            |fortFormatDo| |bottomUpFormRetract|
+            |bottomUpFormAnyUnionRetract| |logS| |sayFunctionSelection|
+            |orderMms| -REDUCE |coerceDmp1| |bottomUpForm|
+            |bottomUpDefaultEval| |bottomUpDefaultCompile|
+            |bottomUpForm3| |bottomUpForm2|
+            |bottomUpFormUntaggedUnionRetract| |bottomUpFormTuple|
+            |bottomUpForm0|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T *) T) |lnCreate| |ncSoftError|
-            TOKEN-INSTALL |asCategoryParts| |ncHardError|)) 
+    '(FTYPE (FUNCTION (T T *) T) |pfLeaf| |listSort| |categoryParts|
+            NREMOVE MATCH-TOKEN |remove| RREAD |wasIs| |pfAdd| BPITRACE
+            |tokConstruct|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T T) T) |getArgValue2| |xlPrematureEOF|
-            |P2Us| |canCoerceTopMatching| |semchkProplist| |domArg|
-            |mkDomPvar| |augProplistOf| |putIntSymTab|
-            |asytranCategory| |asytranCategoryItem| |fixUpPredicate|
-            |optCallSpecially| |lazyMatchArg| |newLookupInCategories|
-            |nrunNumArgCheck| MAKE-FLOAT |appneg|
-            |analyzeUndeclaredMap| |npEnclosed|
-            |analyzeNonRecursiveMap| |clearDep1| MAKELIB |interpREPEAT|
-            |reportFunctionCacheAll| |put| |putHist| REDUCE-N-1
-            REDUCE-N-2 |evalTuple| |appconc| |interpIF| |charyTrouble|
-            |charyElse| |charySemiColon| STRPOS |charyEquatnum|
-            |charySplit| |charyMinus| |printCName| |writeMalloc|
-            |printDec| |axiomType| |evalForm| |analyzeMap|
-            |selectLocalMms| |protectedNagCall| |evalMmFreeFunction|
-            |evalMm| |nextown2| |getConditionalCategoryOfType1|
-            |compClam| |collectOneStream| |upStreamIterSTEP|
-            |letPrint3| |srcPosNew| |upLoopIterSTEP|
-            ASHARPMKAUTOLOADFUNCTOR ASHARPMKAUTOLOADCATEGORY
-            |getFileProperty| REDUCE-N |appInfix| |putFileProperty|
-            |appSum| |termMatch| |bigopWidth| |condUnabbrev|
-            |evalMmCat| |lookupComplete| |hasCateSpecial|
-            |hasCateSpecialNew| |hasCate1| |clngammacase2|
-            |compareSigEqual| |oldCompLookupNoDefaults|
-            |intloopSpadProcess| |haddProp| |BesselasymptB|
-            |selectMmsGen| |xLate| |boxLApp| |basicLookupCheckDefaults|
-            |hasSig| |getReduceFunction| |lazyMatchAssocV|
-            |NRTgetMinivectorIndex| |newLookupInCategories1|
-            |lookupDisplay| |basicLookup| |matchMmSig| |sayLooking|
-            |lazyMatch| |lazyMatchArgDollarCheck| |aggApp| |concatbApp|
-            |allOrMatchingMms| |defaultTarget| |selectDollarMms|
-            |concatApp| |collectStream| |lookupIncomplete|
-            |bottomUpDefault| |findConstructorSlotNumber| |stringApp|
-            |sigmaApp| |lookupInDomainVector| |oldCompLookup|
-            |evalconstruct| |newLookupInAddChain| |sigma2App|
-            |evalInfiniteTupleConstruct| |evalTupleConstruct|
-            |hashNewLookupInCategories| |collectStream1|
-            |collectSeveralStreams| |intApp| |evalUntargetedADEF|
-            |evalTargetedADEF| |indefIntegralApp|
-            |mkInterpTargetedADEF| |compileTargetedADEF| |piApp|
-            |pi2App| |bracketApp| |braceApp| |mkIterZippedFun|
-            |interpCOLLECTbodyIter| |mkAndApplyZippedPredicates|
-            |rootApp| |say2Split| |interpLoop| |catPairUnion|
-            |superSubApp| |simpHasSignature| |vconcatapp| |zagApp|
-            |makeInternalMapName| |plusApp| |timesApp| |stepApp|
-            |appsum| |typeToForm,fn| |appChar| |binomApp|
-            |asGetModemaps| |asytranDeclaration| |altSuperSubApp|
-            |boxApp| |appelse| |matchAnySegment?| |centerApp| |appext|
-            |MpP2P| |nothingApp| |lazyCompareSigEqual| |constoken|
-            |compareSig| |lookupInTable| |xlOK| |xlCmdBug| STRPOSL
-            |xlPrematureFin| |catchCoerceFailure| |xlSkip|
-            |coerceImmediateSubDomain| |xlIfBug| |prepareData|
-            |mergeSort| |xlSkippingFin| |mac0MLambdaApply| |xlConsole|
-            |mac0ExpandBody| |mergeInPlace|)) 
+    '(FTYPE (FUNCTION (T T T T T T T T) T) |makeFort1| BUILD-INTERPSYS
+            |P2MpAux|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T *) T) MATCH-TOKEN NREMOVE BPITRACE |wasIs|
-            |tokConstruct| MATCH-LISP-TAG |categoryParts| |remove|
-            RREAD |returnStLFromKey| |pfLeaf| |pfAdd| |listSort|)) 
+    '(FTYPE (FUNCTION (T T T T T T T T T T) T) |makeSpadFun|
+            |P2DmpAux|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T T) T) |genMapCode| |putMapCode|
-            |upDollarTuple| |bracketagglist| |nagCall|
-            |oldAxiomCategoryLookupExport| |BesselIBackRecur|
-            |compHash| |mmCost0| |findFunctionInDomain1|
-            |compDefineLisplib| |mmCost| |attributeLookupExport|
-            |incLine1| |makeFort| |invokeFortran| |xlIfSyntax|)) 
-(PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T T T T T) T) |writeCFile| /MONITOR
+    '(FTYPE (FUNCTION (T T T T T T T T T) T) /MONITOR |writeCFile|
             |Mp2MpAux2|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T T T) T) |Expr2Dmp1|
-            |findFunctionInCategory| |invokeNagman| |appInfixArg|
+    '(FTYPE (FUNCTION (T T T T T T T) T) |appInfixArg|
             |abbreviationError| |bigopAppAux|
             |lazyOldAxiomDomainLookupExport|
-            |oldAxiomDomainLookupExport| |findFunctionInDomain|
-            |Mp2MpAux1| |Mp2MpAux0| |mkDiffAssoc| |Mp2SimilarDmp|)) 
+            |oldAxiomDomainLookupExport| |mkDiffAssoc| |invokeNagman|
+            |findFunctionInCategory| |findFunctionInDomain| |Expr2Dmp1|
+            |Mp2SimilarDmp| |Mp2MpAux0| |Mp2MpAux1|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T T T T) T) |P2MpAux| BUILD-INTERPSYS
-            |makeFort1|)) 
+    '(FTYPE (FUNCTION (T T T T T T) T) |upDollarTuple| |incLine1|
+            |xlIfSyntax| |bracketagglist| |compDefineLisplib|
+            |putMapCode| |genMapCode| |oldAxiomCategoryLookupExport|
+            |nagCall| |makeFort| |compHash| |mmCost0| |mmCost|
+            |findFunctionInDomain1| |BesselIBackRecur| |invokeFortran|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T T T T T T T T) T) |P2DmpAux|
-            |makeSpadFun|)) 
-(PROCLAIM '(FTYPE (FUNCTION (T T T T *) T) RPLACSTR)) 
+    '(FTYPE (FUNCTION (T T T *) T) |ncSoftError| |lnCreate|
+            TOKEN-INSTALL |ncHardError| |asCategoryParts|)) 
 (PROCLAIM '(FTYPE (FUNCTION (T T T T T *) T) |msgCreate|)) 
+(PROCLAIM '(FTYPE (FUNCTION (T T T T *) T) RPLACSTR)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION NIL *) |npPrimary1| PARSE-SEXPR PARSE-REF_SEXPR
-            PARSE-CONS_SEXPR PARSE-LOCAL_VAR
-            |describeSetStreamsCalculate| |printStatisticsSummary|
-            |printStorage| MKPROMPT |princPrompt| |disableHist|
-            RESETHASHTABLES |leaveScratchpad| |generateDataName|
-            |displayFrameNames| |readSpadProfileIfThere|
-            |listConstructorAbbreviations| MAKE-TAGS-FILE
-            |npMDEFinition| |npCategory| |PARSE-Leave| |testPage|
-            |clearCmdAll| |pquitSpad2Cmd| |quitSpad2Cmd| |PARSE-Label|
-            HELP |PARSE-Sexpr| |pquit| |quit| |scanS| PARSE-EXPR1
-            PARSE-EXPR2 RECLAIM |copyright| |PARSE-Category|
-            |PARSE-Selector| |PARSE-Primary1| |PARSE-FloatBasePart|
-            |npRule| |PARSE-Enclosure| |npDefn| |PARSE-Sexpr1|
-            |npMacro| |generateResultsName| |npDefinitionItem|
-            |executeQuietCommand|)) 
+    '(FTYPE (FUNCTION NIL *) |executeQuietCommand| |testPage|
+            |sendHTErrorSignal| |listConstructorAbbreviations|
+            |clearCmdAll| |queryClients| HELP |scanS| |copyright|
+            |pquit| |quit| /RF-1 |/RQ,LIB| RECLAIM /RQ |printStorage|
+            |printStatisticsSummary| MKPROMPT |princPrompt|
+            |generateDataName| |generateResultsName|
+            |sendNagmanErrorSignal| |npDefinitionItem| /RF |npCategory|
+            RESETHASHTABLES |npMDEFinition| |readSpadProfileIfThere|
+            |pquitSpad2Cmd| |quitSpad2Cmd| |leaveScratchpad|
+            |npPrimary1| |npMacro| |npDefn| |npRule|
+            |describeSetStreamsCalculate| |displayFrameNames|
+            |PARSE-Primary1| |PARSE-Label| |PARSE-Sexpr| |PARSE-Sexpr1|
+            |disableHist| |PARSE-Category| |PARSE-Selector|
+            |PARSE-Leave| |PARSE-Enclosure|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION NIL T) |npSynthetic| |npBreak| |npPileExit|
-            |npEncl| |traceReply| |inclmsgIfBug| |npCommaBackSet|
-            |npSLocalItem| MONITOR-UNTESTED MONITOR-INITTABLE
-            REDUCE-STACK-SHOW |voidValue| MONITOR-END CURRENT-SYMBOL
-            NEXT-CHAR ADVANCE-CHAR IOSTAT EMBEDDED WRITE-WARMDATA
-            WRITE-INTERPDB WRITE-CATEGORYDB |saveDependentsHashTable|
-            |saveUsersHashTable| UNGET-TOKENS SKIP-BLANKS
-            |initialiseIntrinsicList| CURRENT-CHAR |getIntrinsicList|
-            |resetTimers| |displayHiddenConstructors| NEXT-LINES-SHOW
-            TOKEN-STACK-SHOW INPUT-CLEAR NEXT-LINES-CLEAR
-            IOSTREAMS-SHOW |cc| TERSYSCOMMAND |npWhile| PARSE-RULE1
-            PARSE-FID |fin| |npConstTok| PARSE-EXPR |npNext|
-            PARSE-SUBEXPR PARSE-FIL_TEST |npAmpersandFrom| PARSE-N_TEST
-            |npFromdom| |rbrkSch| PARSE-TEST |npAmpersand| |npIterator|
-            |npSuchThat| |lbrkSch| |npForIn| PARSE-SEXPR_STRING
-            |random| PARSE-NON_DEST_REF |prTraceNames| PARSE-DEST_REF
-            INITIALIZE |describeSetOutputAlgebra| ERRHUH
-            |describeSetLinkerArgs| |npInfixOp| |npPushId| |npBy|
-            |npVariable| |npSCategory| |describeSetOutputFormula|
-            |npApplication| |npPrimary| |describeSetFortDir|
-            |npDefaultValue| |npBacksetElse| |describeSetOutputFortran|
-            YEARWEEK |npTagged| |npExpress1|
-            |describeSetOutputOpenMath| |npADD|
-            |npConditionalStatement| |describeSetOutputTex|
-            |npTypeVariable| |npSignatureDefinee| IS-GENSYM
-            |describeOutputLibraryArgs| |describeInputLibraryArgs|
-            CURRENTTIME |npItem| |sayAllCacheCounts| |npFirstTok|
-            |describeSetFunctionsCache| |npLocalItem| |poNoPosition|
-            |describeSetOutputMathml| |npLocalDecl| |simpCategoryTable|
-            |simpTempCategoryTable| |npDiscrim| |npDefTail|
-            |npDefinitionOrStatement| |describeSetFortTmpDir|
-            |pfNoPosition| |describeAsharpArgs| |spadThrow| |pspacers|
-            |terminateSystemCommand| |spadPrompt|
-            |displayPreCompilationErrors| |spadpo| |intUnsetQuiet|
-            |clock| |intSetQuiet| |writeHistModesAndValues|
-            |updateFromCurrentInterpreterFrame|
-            |updateCurrentInterpreterFrame| |resetInCoreHist|
-            $TOTAL-GC-TIME |clearCmdSortedCaches| |updateInCoreHist|
-            TOP |spadReply| INIT-BOOT/SPAD-READER |PARSE-Expression|
-            |sayShowWarning| POP-REDUCTION |processSynonyms|
-            |PARSE-NewExpr| ADVANCE-TOKEN |makeInitialModemapFrame|
-            |mkOutputConsoleStream| |loadExposureGroupData|
-            |nextInterpreterFrame| |statisticsInitialization|
-            |initializeInterpreterFrameRing| |previousInterpreterFrame|
-            |spadStartUpMsgs| |statRecordInstantiationEvent|
-            CURRENT-TOKEN RESTART0 NEXT-TOKEN FRICAS-INIT /TRACEREPLY
-            |spad| |createCurrentInterpreterFrame|
-            |reportAndClearClams| WRITE-OPERATIONDB
+    '(FTYPE (FUNCTION NIL T) |npPPf| CURRENT-SCANNER-CHAR |spadThrow|
+            |PARSE-VarForm| |PARSE-Name| |npPPg| |PARSE-Application|
+            |PARSE-Statement| |npPCff| TOP |coercionFailure|
+            |PARSE-Form| |npPCg| /TRACEREPLY |PARSE-Reduction|
+            |npState| |npPushId| |npInfixOp| |describeAsharpArgs|
+            |npLogical| |npBacksetElse| /EMBEDREPLY FRICAS-RESTART
+            |resetWorkspaceVariables| OPERATIONOPEN |initHist|
+            |initNewWorld| BROWSEOPEN CATEGORYOPEN INITIAL-GETDATABASE
+            |ncError| |quadSch| WRITE-COMPRESS WRITE-BROWSEDB
+            WRITE-OPERATIONDB WRITE-CATEGORYDB WRITE-INTERPDB
+            TERSYSCOMMAND WRITE-WARMDATA |terminateSystemCommand|
+            |genCategoryTable| |npFirstTok| |npItem| |inclmsgConsole|
+            |inclmsgFinSkipped| |clearCmdCompletely| |inclmsgIfBug|
+            |checkWarningIndentation| |clearCmdSortedCaches|
+            |inclmsgCmdBug| |updateCurrentInterpreterFrame|
+            |resetInCoreHist| |histFileName| |clearMacroTable|
+            |getParserMacroNames| |incConsoleInput|
+            |mkLowerCaseConTable| |PARSE-SemiColon| NEXT-SCANNER-CHAR
+            |PARSE-InfixWith| EMBEDDED |PARSE-Suffix| |PARSE-Seg|
+            SPAD_SHORT_ERROR ERRHUH SPAD_LONG_ERROR IOSTAT GET-INTVAL
+            CURRENT-CHAR ADVANCE-CHAR |version| |scanKeyTableCons|
+            |scanDictCons| |scanPunCons| |makeClosedfnName| NEXT-CHAR
+            BOOT-SKIP-BLANKS NEXT-LINES-CLEAR NEXT-LINES-SHOW
+            |syGeneralErrorHere| |npRecoverTrap| PARSE-NUMBER
+            ADVANCE-TOKEN |getCodeVector| PARSE-IDENTIFIER
+            PARSE-SPADFLOAT PARSE-ARGUMENT-DESIGNATOR PARSE-KEYWORD
+            PARSE-SPADSTRING |genTempCategoryTable| |allConstructors|
+            |dcSizeAll| |simpTempCategoryTable| |simpCategoryTable|
+            |credits| |fin| |saveUsersHashTable|
+            |saveDependentsHashTable| |getInfovecCode| |piles|
+            |displayExposedGroups| |displayExposedConstructors|
+            |displayHiddenConstructors| |scanToken| |startsComment?|
+            |scanComment| RESET-HIGHLIGHT |startsNegComment?|
+            |displayPreCompilationErrors| CLEAR-HIGHLIGHT
+            |scanNegComment| CURRENT-TOKEN |scanPunct|
+            REDUCE-STACK-SHOW |scanSpace| |scanString| |scanNumber|
+            NEXT-TOKEN |scanEscape| |setViewportProcess| |scanError|
+            |waitForViewport| |scanEsc| TOKEN-STACK-SHOW CURRENTTIME
+            |NRTgenFinalAttributeAlist| |NRTmakeCategoryAlist| |random|
+            INITIALIZE |createResolveTTRules| |createResolveTMRules|
+            |createTypeEquivRules| |processGlobals1| |setOptKeyBlanks|
+            |initializeRuleSets| |makeConstructorsAutoLoad|
+            |processGlobals| |runspad| IS-GENSYM |intSetQuiet|
+            |intUnsetQuiet| |spadpo| |PARSE-Iterator|
+            |computeElapsedSpace| |displayHeapStatsIfWanted|
+            |statisticsSummary| |PARSE-Primary| CURRENT-SYMBOL
+            |PARSE-FormalParameterTok| |npVariableName| |npDefinition|
+            |npCommaBackSet| |npComma| |npDefinitionlist|
+            |npTypeVariablelist| |npSignatureDefinee|
+            |npDefaultItemlist| |cacheStats| |clearClams|
+            |npSDefaultItem| |clearCategoryCaches| |npDefaultDecl|
+            |npDefaultItem| |clearConstructorCaches|
+            |npPileDefinitionlist| |npDefTail| YEARWEEK
+            |statRecordInstantiationEvent| |npAssignVariablelist|
+            |reportAndClearClams| BUMPCOMPERRORCOUNT
             |clearConstructorAndLisplibCaches|
-            |clearHashReferenceCounts| |oldParserAutoloadOnceTrigger|
-            |reportInstantiations| BUMPCOMPERRORCOUNT WRITE-BROWSEDB
-            FAIL |displayExposedConstructors| |removeAllClams|
-            |displayExposedGroups| |coercionFailure| |npPop1|
-            PARSE-KEYWORD |npPop2| PARSE-ARGUMENT-DESIGNATOR
-            |setOptKeyBlanks| INITIAL-GETDATABASE |npState|
-            |npSignature| |npExit| |pfNothing| |npPPf|
-            |displayWorkspaceNames| |npSigItemlist| |npApplication2|
-            CATEGORYOPEN |npTerm| |npRemainder| BROWSEOPEN /EMBEDREPLY
-            WRITE-COMPRESS |updateHist| |npTrap| |allOperations|
-            |npDefinition| |npType| OPERATIONOPEN |npMDEF|
-            |npSymbolVariable| |stopTimer| |npCategoryL| |npSigItem|
-            |npSigDecl| |npId| |npDefaultItemlist| |npColon|
-            |npRelation| |startTimer| |PARSE-SemiColon| |npTypified|
-            |npAssignVariablelist| |npSQualTypelist| |npInterval|
-            |PARSE-InfixWith| |npSegment| |PARSE-Suffix| |npArith|
-            |npDisjand| |npSemiBackSet| |npVariablelist| |PARSE-Seg|
-            |npSDefaultItem| |npPop3| |npTypeStyle| |PARSE-Loop|
-            |npColonQuery| |PARSE-Import| |npPretend| |PARSE-With|
-            |npCoerceTo| |PARSE-Data| |npRestrict| |PARSE-LabelExpr|
-            |npDefinitionlist| |npSum| |npDecl| |PARSE-Return|
-            |extendConstructorDataTable| |npExport| |PARSE-Exit|
-            |PARSE-Conditional| |npLocalItemlist| |npPCff|
-            |npAssignVariableName| |asList| |npLocal| |npInline|
-            |npAtom2| |npProduct| |npMatch| |npPPff| |resetSpacers|
-            |mkLowerCaseConTable| |pcounters| |ptimers| |quadSch|
-            |clamStats| |intSetNeedToSignalSessionManager|
-            |getInterpMacroNames| |version| |nangenericcomplex|
-            |checkWarningIndentation| FRICAS-RESTART
-            |resetWorkspaceVariables| |returnToReader| |initHist|
-            $TOTAL-ELAPSED-TIME |returnToTopLevel| |initNewWorld|
-            COMPRESSOPEN INTERPOPEN CREATE-INITIALIZERS |cacheStats|
-            |clearClams| |clearCategoryCaches| |frameNames|
-            |clearConstructorCaches| |allConstructors|
-            |historySpad2Cmd| |clearFrame| |printableArgModeSetList|
-            |PARSE-AnyId| |PARSE-Sequence| |PARSE-Sequence1|
-            |getParserMacroNames| |PARSE-OpenBracket| |getParserMacros|
-            |getWorkspaceNames| |PARSE-OpenBrace| |initHistList|
-            BOOT-SKIP-BLANKS |clearCmdCompletely| |histFileName|
-            |oldHistFileName| |PARSE-TokTail| |popTimedName|
-            |setViewportProcess| |createTypeEquivRules|
-            |interpFunctionDepAlists| CLEAR-HIGHLIGHT
-            |PARSE-ElseClause| |createResolveTMRules| |peekTimedName|
-            SPAD_LONG_ERROR |PARSE-Primary| |createResolveTTRules|
-            |statRecordLoadEvent| RESET-HIGHLIGHT SPAD_SHORT_ERROR
-            |getSystemCommandLine| |computeElapsedTime|
-            |waitForViewport| |?t| |PARSE-PrimaryNoFloat|
-            |PARSE-String| |resetCounters| |PARSE-IntegerTok|
-            |PARSE-FormalParameter| |writeHiFi|
-            |PARSE-FormalParameterTok| |clearMacroTable|
-            |displayHeapStatsIfWanted| |piles| |PARSE-IteratorTail|
-            |computeElapsedSpace| |scanEsc| |statisticsSummary|
-            PARSE-SPADSTRING |reportWhatOptions| |synonymSpad2Cmd|
-            |scanKeyTableCons| |reportCount| |scanDictCons| |scanError|
-            |scanEscape| |scanNumber| |initializeSystemCommands|
-            |genTempCategoryTable| |runspad| |makeConstructorsAutoLoad|
-            |initializeRuleSets| |genCategoryTable| |intNewFloat|
-            |inclmsgConsole| |inclmsgFinSkipped| FOAM:|fiGetDebugVar|
-            |resetStackLimits| PARSE-OPT_EXPR PARSE-REPEATOR
-            PARSE-HEADER PARSE-RULE |currentSP| PARSE-REP_TEST
-            |ncTopLevel| |ncIntLoop| |credits| |intloop|
-            |PARSE-Statement| |PARSE-Infix| |PARSE-Prefix|
-            |PARSE-Qualification| |newFortranTempVar| |ncError|
-            |PARSE-Iterator| |tempLen| |PARSE-Reduction|
-            |PARSE-ReductionOp| |npPrefixColon| |PARSE-Form|
-            |npInfixOperator| |scanToken| |PARSE-Application| |npName|
-            |npPileDefinitionlist| |scanString| |scanSpace|
-            |npSelector| |scanPunct| |PARSE-Float| |npGives|
-            |PARSE-FloatBase| MONITOR-AUTOLOAD MONITOR-PERCENT
-            |scanNegComment| |PARSE-FloatExponent| |startsNegComment?|
-            |npQualDef| MONITOR-HELP |scanComment| |PARSE-FloatTok|
-            |startsComment?| |PARSE-Quad| |npAssignVariable|
-            |inclmsgCmdBug| |scanPunCons| |PARSE-VarForm| |PARSE-Name|
-            |npQualifiedDefinition| MONITOR-READINTERP
-            |npBPileDefinition| |getCodeVector| |getInfovecCode|
-            MONITOR-RESULTS |NRTmakeCategoryAlist| |npQualTypelist|
-            |NRTgenFinalAttributeAlist| |npFix| MONITOR-REPORT
-            |npLogical| |npComma| |npFree| |npDefaultItem|
-            |syGeneralErrorHere| |npDefaultDecl| |npIterators|
-            |npAssignment| |npQualType| |npLet| |npAtom1| |npLambda|
-            |npRecoverTrap| |npBDefinition| |npDollar| |npPDefinition|
-            |npExpress| IN-META PARSE-PROGRAM |npAssign| |npSingleRule|
-            |npVoid| |npReturn| |npPrimary2| |npVariableName| |npPPg|
-            |npIterate| |npQuiver| |npPower| PARSE-STRING |npDef|
-            |dcSizeAll| |npSuch| PARSE-BSTRING |npStatement|
-            |incConsoleInput| |npLoop| PARSE-IDENTIFIER |npImport|
-            PARSE-NUMBER |npTyping| |npPCg| |npTypeVariablelist|
-            |npMdef|)) 
+            |clearHashReferenceCounts| |reportInstantiations|
+            |removeAllClams| |lbrkSch| |npExit| |rbrkSch| |npLambda|
+            |npDef| |npVariable| |npQualType| |npSQualTypelist|
+            |sayNewLine| |npQualTypelist| |reportWhatOptions|
+            |npTypeVariable| |npLocalDecl| |npSLocalItem| |npLocalItem|
+            |npLocalItemlist| |npDefinitionOrStatement| |peekTimedName|
+            |npSingleRule| |clamStats| |statRecordLoadEvent|
+            |npCategoryL| |popTimedName| |computeElapsedTime|
+            |pfNoPosition| |npSCategory| FOAM:|fiGetDebugVar|
+            |npDefaultValue| |npSignature| |pspacers| |npSigDecl|
+            |npSigItem| |prTraceNames| |npSigItemlist| |npSemiBackSet|
+            |npVariablelist| |asList| |npRemainder| |cc| |npTerm|
+            MONITOR-RESULTS |npSum| |initializeSystemCommands|
+            MONITOR-READINTERP |npArith| |npSegment| |tempLen|
+            |npInterval| |extendConstructorDataTable| |npBy|
+            |npAmpersandFrom| MONITOR-HELP |npSynthetic| |npRelation|
+            |writeHistModesAndValues| |npQuiver| |npDiscrim|
+            |reportCount| |npDisjand| |clearFrame| MONITOR-INITTABLE
+            |npSuch| MONITOR-END |npMatch| |npQualifiedDefinition|
+            |npConditionalStatement| |printableArgModeSetList| |npADD|
+            |npExpress1| |npIterators| MONITOR-UNTESTED
+            |nangenericcomplex| |npForIn| $TOTAL-ELAPSED-TIME
+            |updateInCoreHist| |npIterator| |writeHiFi| |npWhile|
+            |npSuchThat| MONITOR-AUTOLOAD COMPRESSOPEN $TOTAL-GC-TIME
+            |npExpress| |currentSP| INTERPOPEN |updateHist| |npLoop|
+            MONITOR-REPORT |initialiseIntrinsicList|
+            CREATE-INITIALIZERS |npIterate| |getIntrinsicList|
+            |npReturn| MONITOR-PERCENT |npBreak| |npFree| |npImport|
+            INIT-BOOT/SPAD-READER |npInline| |PARSE-Expression|
+            |npLocal| |intNewFloat| POP-REDUCTION |npExport| |npTyping|
+            FAIL |npVoid| |processSynonyms| |npStatement|
+            |PARSE-NewExpr| |makeInitialModemapFrame| |npMdef|
+            |loadExposureGroupData| |statisticsInitialization| |npMDEF|
+            |initializeInterpreterFrameRing| |npAssignment|
+            |spadStartUpMsgs| |npAssignVariable| RESTART0 |npGives|
+            FRICAS-INIT |spad| |npDecl| |npAssignVariableName|
+            |traceReply| |oldParserAutoloadOnceTrigger|
+            |mkOutputConsoleStream| |npAssign| |npPileExit|
+            |resetStackLimits| |ptimers| |ncTopLevel| |pcounters|
+            |ncIntLoop| |resetSpacers| |intloop| |resetTimers|
+            |describeSetFortTmpDir| |npId| |resetCounters|
+            |npSymbolVariable| |?t| |describeSetFortDir|
+            |describeSetLinkerArgs| |sayShowWarning|
+            |describeSetFunctionsCache| |sayAllCacheCounts| |npAtom1|
+            |describeSetOutputAlgebra| |npLet|
+            |describeSetOutputFortran| |npFix| |synonymSpad2Cmd|
+            |npBPileDefinition| |getSystemCommandLine|
+            |describeSetOutputMathml| |describeSetOutputOpenMath|
+            |npAtom2| |newFortranTempVar| |describeSetOutputFormula|
+            |npPDefinition| |describeSetOutputTex| |npName|
+            |npConstTok| |npDollar| |spadPrompt| |npBDefinition|
+            |stopTimer| |npFromdom| |poNoPosition| |npInfixOperator|
+            |describeOutputLibraryArgs| |npAmpersand|
+            |describeInputLibraryArgs| |npPrefixColon|
+            |intSetNeedToSignalSessionManager| |npEncl| |voidValue|
+            |startTimer| |npApplication| |clock|
+            |displayWorkspaceNames| |spadReply| |npPrimary2|
+            |npSelector| |npPrimary| |getParserMacros|
+            |getWorkspaceNames| |npApplication2| |npType|
+            |allOperations| |interpFunctionDepAlists|
+            |getInterpMacroNames| |npCoerceTo| |npRestrict| |npPretend|
+            |npColonQuery| |npTypeStyle| |npTypified| |npTagged|
+            |previousInterpreterFrame| |npColon| |npPower|
+            |nextInterpreterFrame| |npProduct| |initHistList|
+            |PARSE-TokTail| |npQualDef|
+            |updateFromCurrentInterpreterFrame| |PARSE-PrimaryNoFloat|
+            |npPop1| |createCurrentInterpreterFrame| |PARSE-ElseClause|
+            |frameNames| |PARSE-Float| |historySpad2Cmd|
+            |oldHistFileName| |PARSE-Loop| |PARSE-String|
+            |PARSE-Import| |PARSE-IntegerTok| |npNext| |PARSE-With|
+            |PARSE-Data| |PARSE-LabelExpr| |PARSE-AnyId| |PARSE-Return|
+            |PARSE-Exit| |PARSE-ReductionOp| |PARSE-Sequence|
+            |PARSE-Conditional| |PARSE-OpenBrace| |returnToTopLevel|
+            |PARSE-Sequence1| |returnToReader| |PARSE-OpenBracket|
+            |pfNothing| |PARSE-FormalParameter| |PARSE-IteratorTail|
+            |PARSE-Qualification| |npTrap| |npPop3| |PARSE-Infix|
+            |npPop2| |PARSE-Prefix| |npPPff| |PARSE-Quad|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (*) *) NEXT-LINE |newGoGet| /RQ /RF |Undef|
-            META-SYNTAX-ERROR INIT-MEMORY-CONFIG |/RQ,LIB| /EF $ERASE)) 
+    '(FTYPE (FUNCTION (*) *) NEXT-LINE INIT-MEMORY-CONFIG |Undef|
+            $ERASE META-SYNTAX-ERROR |newGoGet|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (*) T) MAKE-LINE MAKE-STACK MONITOR-ENABLE
-            |incIgen1| MONITOR-TESTED |incRgen1| |next1| NEXT-META-LINE
-            META-META-ERROR-HANDLER RDEFINSTREAM RDEFOUTSTREAM
-            MAKE-REDUCTION $FILEP MAKE-TOKEN STREAM-EOF |sayNewLine|
-            READ-A-LINE SAY |displayCategoryTable| META MOAN
-            ENABLE-BACKTRACE RKEYIDS LISP-BREAK-FROM-AXIOM INTERRUPT
-            IOCLEAR |Enumeration0| |incZip1| |incAppend1| |nextown1|
-            CROAK MAKE-DATABASE FOAM::MAKE-FOAMPROGINFOSTRUCT
-            |RecordCategory| |EnumerationCategory| |UnionCategory|
-            NEXT-BOOT-LINE SPAD BOOT |runOldAxiomFunctor| |concat|
-            |throwMessage| INITROOT TOPLEVEL |start| |canCoerce|
-            |canCoerceFrom| |coerceConvertMmSelection|
-            |hasFileProperty| |isLegitimateMode| SPAD_SYNTAX_ERROR
-            |resolveTT| |selectMms1| |Union| |Mapping| MAKE-XDR-STREAM
-            |synonym| |dc| |buildBitTable| VMLISP::MAKE-LIBSTREAM
-            MONITOR-RESET MONITOR-DISABLE MAKE-MONITOR-DATA |sum|
-            |incLude1| |dcSize|)) 
+    '(FTYPE (FUNCTION (T) *) GET-TOKEN |pfFileName| |overlabelWidth|
+            |overbarWidth| |setExposeAdd| |setExposeDrop| |agggsub|
+            |agggsuper| |agggwidth| |parseAndEvalStr| |protectedEVAL|
+            |parseTransform| MONITOR-PRINTREST |parseAndEvalStr1|
+            |outputTran| |systemCommand| |rootSub| |startHTPopUpPage|
+            |startReplaceHTPage| |killHTPage| |linkToHTPage|
+            INIT-FILE-GETTER |abbreviationsSpad2Cmd|
+            INIT-LIB-FILE-GETTER |postInSeq| |whatSpad2Cmd|
+            |clearSpad2Cmd| |exptSub| |sayDisplayWidth| |postMakeCons|
+            |sayDisplayWidth,fn| |sayWidth,fn| |aggSub|
+            |fixObjectForPrinting| |aggSuper| |outformWidth| |quoteSub|
+            |quoteSuper| |sayDisplayStringWidth| |clearCmdParts|
+            |transSeq| |parseUpArrow| |ExecuteInterpSystemCommand|
+            |abbQuery| OBEY VMLISP::DELETE-DIRECTORY |parseLhs|
+            VMLISP::GET-IO-INDEX-STREAM |aggwidth| |parseTranList|
+            |apropos| VMLISP::GET-INPUT-INDEX-STREAM
+            |NRTinnerGetLocalIndex| WIDTH |makeSimplePredicateOrNil|
+            |assignSlotToPred| |matSub| DEFTRAN BPINAME
+            |incHandleMessage| |editFile| |subspan|
+            |escapeSpecialChars| |postCategory,fn| |superspan|
+            |NRTtypeHack| |brightPrint0| |brightPrint0AsTeX|
+            |brightPrintHighlight| |abbreviations|
+            |brightPrintHighlightAsTeX| |compiler| |brightPrintCenter|
+            |cd| |halfWordSize| |brightPrintCenterAsTeX| |clear|
+            |close| |poFileName| |display| |frame| |history|
+            |savesystem| |mathprintWithNumber| |set| |parseLeftArrow|
+            |show| |summary| |printBasic| |what| |spleI| MAKE-OUTSTREAM
+            |verbatimize| |ncAlist| |ncTag| |transHasCode| |obj2String|
+            |startHTPage| |issueHT| |getMsgPos2| |spadcall1|
+            |getBrowseDatabase| MAKE-APPENDSTREAM MAKE-INSTREAM
+            |setOutputAlgebra| |getMsgTag| |NRTevalDomain| |postTran|
+            |intern| |justifyMyType| |mathObject2String| DEF-MESSAGE1
+            |compQuietly| |compileFileQuietly| |parseAnd| |parseIf|
+            |parseNot| |parseOr| |parseSeq| |parseTran| |postSlash|
+            |postConstruct| |postBigFloat| |compileQuietly|
+            |tuple2String,f| |clearClam| |mkEvalable| |reportOpSymbol|
+            SRCABBREVS |mac0InfiniteExpansion,name| |entryWidth|
+            |formString| |sayMSGNT| |object2String| |replaceSharpCalls|
+            |mkEvalableCategoryForm| |sayWidth| |npPC| BRIGHTPRINT-0
+            |doReplaceSharpCalls| |htCommandToInputLine|
+            MAKE-REASONABLE |normalizeStatAndStringify| |roundStat|
+            |lnFileName| |tabsToBlanks| |unAbbreviateKeyword|
+            |form2String1| |asyJoinPart| |poGlobalLinePosn|
+            |timedEvaluate| |pfGlobalLinePosn| |phBegin|
+            DEF-WHERECLAUSELIST |writifyComplain| |doSystemCommand|
+            DEF-ISNT |subrname| |parseLessEqual| MONITOR-RESTORE
+            |parseGreaterEqual| |optCall| |parseNotEqual| |numMapArgs|
+            |optCallEval| MAKE-DEPSYS |initializeLisplib| |safeWritify|
+            |numArgs| |npPP| |optSPADCALL| BOOT-LOAD |showSpad2Cmd|
+            |reportOpsFromUnitDirectly0| |reportOpsFromUnitDirectly1|
+            |InterpExecuteSpadSystemCommand| |tokType|
+            |setOutputFortran| |asyGetAbbrevFromComments|
+            |setOutputMathml| |setOutputOpenMath| |setOutputFormula|
+            |exp2FortOptimizeArray| |setOutputTex| |compileAsharpCmd1|
+            |withAsharpCmd| |fortError1| |setExpose| |displaySpad2Cmd|
+            |setLinkerArgs| MONITOR-EVALAFTER |setFunctionsCache|
+            |setStreamsCalculate| |fortPre1| |qTSub| |qTSuper|
+            |mkParameterList,par2string| |subSuper|
+            |fortFormatCharacterTypes,par2string|
+            |fortFormatCharacterTypes,mkCharName| |frameSpad2Cmd|
+            |importFromFrame| |fix2FortranFloat| |checkPrecision|
+            |addNewInterpreterFrame| |vConcatSuper| |mathPrint|
+            |histFileErase| |setHistoryCore| |saveHistory|
+            |showHistory| |changeHistListLen| |restoreHistory|
+            |sayString| FILE-RUNNER |popSatOutput| |porigin| |pfname|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T) *) |NRTtypeHack| INIT-FILE-GETTER
-            |fortFormatCharacterTypes,par2string| INIT-LIB-FILE-GETTER
-            QUOTE-IF-STRING BPINAME OBEY GET-TOKEN |sayMSGNT| |optCall|
-            WIDTH |optSPADCALL| |formatOpType| |form2String| |tokType|
-            |form2String1| |subrname| |optCallEval| |npPP|
-            |setStreamsCalculate| |setLinkerArgs| |setOutputFormula|
-            |numArgs| DEF-MESSAGE1 |getBrowseDatabase| |object2String|
-            |setOutputFortran| |tr| |setOutputOpenMath| |setOutputTex|
-            DEF-WHERECLAUSELIST |setOutputMathml| |npPC| MAKE-OUTSTREAM
-            |setFunctionsCache| |setExposeDrop| |setExposeAdd| DEF-ISNT
-            |setExpose| |lnFileName| |pfGlobalLinePosn|
-            |parseTransform| |setOutputAlgebra| |doSystemCommand|
-            |justifyMyType| MONITOR-EVALAFTER |form2StringAsTeX|
-            |form2StringLocal| |mathprintWithNumber| |reportOpSymbol|
-            BRIGHTPRINT-0 |prefix2StringAsTeX| |restoreHistory|
-            |changeHistListLen| |showHistory| |saveHistory|
-            |outformWidth| |setHistoryCore| MAKE-REASONABLE
-            |clearSpad2Cmd| |incHandleMessage| DEFTRAN |sayWidth|
-            |prefix2String| |tuple2String,f| |mathObject2String|
-            |numMapArgs| |prefix2String0| MAKE-DEPSYS
-            |reportOpsFromUnitDirectly1| |editFile|
-            |htCommandToInputLine| |reportOpsFromUnitDirectly0|
-            |formString| |compileAsharpCmd1| |addNewInterpreterFrame|
-            |doReplaceSharpCalls| |abbreviationsSpad2Cmd| |spadcall1|
-            |importFromFrame| BOOT-LOAD |entryWidth| |getMsgPos2|
-            |fixObjectForPrinting| |parseTranList| |withAsharpCmd|
-            FILE-RUNNER COMPILE-BOOT-FILE |unAbbreviateKeyword|
-            |getMsgTag| VMLISP::DELETE-DIRECTORY |parseLhs|
-            MONITOR-PRINTREST VMLISP::GET-IO-INDEX-STREAM |outputTran|
-            |makeSimplePredicateOrNil| |poFileName|
-            VMLISP::GET-INPUT-INDEX-STREAM |transSeq| |parseUpArrow|
-            |parseLeftArrow| |postTran| |ncTag| |ncAlist|
-            |mac0InfiniteExpansion,name| |parseLessEqual| SRCABBREVS
-            |parseGreaterEqual| |parseDollarLessEqual|
-            |parseDollarGreaterEqual| |parseDollarNotEqual| |parseNot|
-            |parseNotEqual| |NRTinnerGetLocalIndex| |obj2String|
-            |parseAnd| |abbQuery| |assignSlotToPred| |parseIf|
-            |mathPrint| |parseOr| |popSatOutput| |sayString| |parseSeq|
-            |parseTran| |postMakeCons| |postSlash| |postConstruct|
-            |postCategory,fn| |postBigFloat| |clearClam|
-            |replaceSharpCalls| |postInSeq| |mkEvalableCategoryForm|
-            |aggSub| |frameSpad2Cmd| |aggSuper| |initializeLisplib|
-            |verbatimize| |quoteSub| |displaySpad2Cmd| |quoteSuper|
-            |NRTevalDomain| |histFileErase| /RF-1 |whatSpad2Cmd|
-            |systemCommand| |timedEvaluate| |tabsToBlanks|
-            |showSpad2Cmd| |sayWidth,fn| |safeWritify| |spleI|
-            |writifyComplain| |normalizeStatAndStringify| |savesystem|
-            |escapeSpecialChars| |roundStat| |set| |show| |summary|
-            |brightPrint0| |what| |clearCmdParts| |sayDisplayWidth|
-            |sayDisplayWidth,fn| |overbarWidth|
-            |brightPrintCenterAsTeX| |rootSub| |transHasCode|
-            |brightPrintCenter| |brightPrintHighlightAsTeX| |apropos|
-            |sayDisplayStringWidth| |brightPrintHighlight|
-            |brightPrint0AsTeX| |subSuper| |compQuietly|
-            |compileFileQuietly| |vConcatSuper| |compileQuietly|
-            |InterpExecuteSpadSystemCommand|
-            |ExecuteInterpSystemCommand| |pfFileName| |asyJoinPart|
-            |porigin| |pfname| |exptSub| |subspan| |superspan|
-            |poGlobalLinePosn| |agggsub| |agggsuper| |agggwidth|
-            |abbreviations| |compiler| |fortPre1| |cd|
-            |asyGetAbbrevFromComments| |printBasic| |clear|
-            |checkPrecision| |close|
-            |fortFormatCharacterTypes,mkCharName| |aggwidth|
-            |fix2FortranFloat| |display| |qTSub| |frame| |qTSuper|
-            |history| |intern| |phBegin| |form2StringWithPrens|
-            |matSub| |mkEvalable| |fortError1| |exp2FortOptimizeArray|
-            |pred2English| |overlabelWidth| |formatAttributeArg|
-            |formatSignatureArgs0| |mkParameterList,par2string|
-            |formatSignatureArgs| MAKE-APPENDSTREAM MAKE-INSTREAM
-            |halfWordSize| MONITOR-RESTORE KILL-TRAILING-BLANKS
-            |parseAndEvalStr1| |parseAndEvalStr|)) 
+    '(FTYPE (FUNCTION (*) T) READ-A-LINE |hasFileProperty|
+            |throwMessage| |isLegitimateMode| |resolveTT| |selectMms1|
+            MAKE-STACK NEXT-BOOT-LINE |Union| |Mapping| |Enumeration0|
+            BOOT |RecordCategory| INITROOT |EnumerationCategory|
+            |UnionCategory| |displayCategoryTable| |incLude1|
+            META-META-ERROR-HANDLER MAKE-REDUCTION
+            FOAM::MAKE-FOAMPROGINFOSTRUCT MAKE-TOKEN $FILEP
+            VMLISP::MAKE-LIBSTREAM |canCoerce| |canCoerceFrom|
+            |coerceConvertMmSelection| |dcSize| MAKE-DATABASE
+            SPAD_SYNTAX_ERROR |sum| |runOldAxiomFunctor|
+            |buildBitTable| |synonym| MAKE-LINE MAKE-XDR-STREAM
+            RDEFINSTREAM RDEFOUTSTREAM |incRgen1| |incIgen1| |incZip1|
+            |incAppend1| |next1| |nextown1| MAKE-MONITOR-DATA |dc| SAY
+            |concat| MONITOR-ENABLE MONITOR-DISABLE MONITOR-RESET
+            MONITOR-TESTED |start| CROAK RKEYIDS IOCLEAR SPAD MOAN
+            ENABLE-BACKTRACE INTERRUPT TOPLEVEL)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T) CHARACTER) LINE-CURRENT-CHAR NUM2CHAR EBCDIC)) 
+    '(FTYPE (FUNCTION (T) CHARACTER) LINE-CURRENT-CHAR EBCDIC NUM2CHAR)) 
 (PROCLAIM '(FTYPE (FUNCTION (T T *) FIXNUM) LINE-NEW-LINE)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T) STRING) DROPTRAILINGBLANKS LINE-BUFFER
-            |stripSpaces| |make_spaces|)) 
+    '(FTYPE (FUNCTION (T) STRING) LINE-BUFFER |stripSpaces|
+            |make_spaces|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T) T) |macId| |parse2Outform| |pfSequenceArgs|
-            |isHasDollarPred| |evaluateFormAsType|
-            |typeIsASmallInteger| |str2Outform| |dcData|
-            |pfCheckMacroOut| |macMacro| |wrap| |incFileName|
-            |evaluateType1| |bubbleConstructor| |macLambda|
-            |inclmsgConActive| |pfApplication?| |inclmsgNoSuchFile|
-            |pfBreak| IS-CONSOLE |pfMacro?| |objValUnwrap| |pfTyping|
-            LINE-P |pfWhere?| |inclmsgPrematureEOF| |pfNovalue|
-            |mkEvalableMapping| |pfNothing?| |incFile| |makeOrdinal|
-            |pfMacroRhs| |getAndEvalConstructorArgument| |pfMacroLhs|
-            |evaluateType| |fileNameStrings| MAKE-ABSOLUTE-FILENAME
-            STACK-P |mkEvalableUnion| MONITOR-INCR |mkEvalableRecord|
-            TOKEN-P |getUnnameIfCan| |evaluateSignature| |rightTrim|
-            |leftTrim| |incIgen| |simpBool| MONITOR-DIRNAME
-            |asTupleAsList| |simpCatPredicate| MONITOR-FILE |npNull|
-            |devaluateDeeply| |StreamNull| |charDigitVal|
-            VMLISP::LIBRARY-FILE |bool| MONITOR-DECR |incRgen|
-            |length2?| |evaluateType0| |failCheck| OPTIONAL ACTION
-            |getMsgPos| |erMsgSep| |dropLeadingBlanks| |poNopos?|
-            MATCH-ADVANCE-STRING MSORT |getLineText|
-            VMLISP::GET-DIRECTORY-LIST NMSORT |processKeyedError|
-            |orderList| |selectMostGeneralMm| |str2Tex| |whichCat|
-            GET-META-TOKEN |trimString| VMLISP::PROBE-NAME |pr|
-            |getLinePos| GET-A-LINE |msgOutputter| |msgImPr?|
-            |hashable| |getIProplist| |getMsgPrefix?| |getMsgKey|
-            |getMsgTag?| TRANSPGVAR |getMsgPosTagOb| GETGENSYM COPY
-            |srcPosLine| |listOutputter| DOWNCASE DATABASE-CONSTRUCTOR
-            |srcPosDisplay| |pfOr?| DATABASE-ANCESTORS |srcPosColumn|
-            |pfAndRight| |makeLazyOldAxiomDispatchDomain| FLOATEXPID
-            |srcPosSource| |pfAndLeft| DATABASE-SPARE |getToken|
-            |srcPosFile| |pfAnd?| |processChPosesForOneLine|
-            DATABASE-DEPENDENTS |pfWrong?| SHOWDATABASE |asTupleSize|
-            |pf0LocalItems| |pfLocal?| |mkAtreeExpandMacros|
-            |pf0FreeItems| |negintp| |isInterpMacro| |pfFree?|
-            |fracpart| |pfRestrictType| |initToWhere| COMP
-            |pfRestrictExpr| |initImPr| |fortexp0| |pfRestrict?|
-            |putDatabaseStuff| |cgammat| |expression2Fortran|
-            |pfDefinition?| |fortranCleanUp| |pfAssignRhs|
-            |getMsgInfoFromKey| |intpart| |pf0AssignLhsItems|
-            |getMsgArgL| |fortSize| |pfAssign?| |fortSize,elen|
-            |pfTypedType| BVEC-COPY |pfTyped?| |pfDoBody| LINE-AT-END-P
-            |devaluateList| |fortFormatElseIf| |removeBindingI| |pfDo?|
-            DATABASE-CONSTRUCTORCATEGORY |pfSourceText|
-            |pfSuchthatCond| DATABASE-OPERATIONALIST |poGetLineObject|
-            |pfSuchthat?| |phiRatapprox| |fortFormatIntrinsics|
-            |lnPlaceOfOrigin| |pfWhileCond| DATABASE-OBJECT
-            |lnrgammaRatapprox| |pfPosOrNopos| |pfWhile?| STACK-POP
-            DATABASE-NILADIC |fortFormatIf| |computedMode|
-            |pfForinWhole| DATABASE-MODEMAPS |PsiIntpart|
-            |dispfortexp1| |pf0ForinLhs| DATABASE-USERS BVEC-NOT
-            |pfForin?| DATABASE-PARENTS |fortran2Lines1|
-            |pf0LoopIterators| |asyComma?| |loopIters2Sex|
-            |makeOldAxiomDispatchDomain| |pfLoop?| MATCH-STRING
-            |pfExitExpr| |dispStatement| |pfExitCond| CONSOLEINPUTP
-            |pfExit?| |getfortexp1| |pfFromdomDomain| UNDERSCORE
-            |pfFromdomWhat| |pfFromdom?| |pfPretendType|
-            LINE-CURRENT-SEGMENT |analyzeMap,f| |pfPretendExpr|
-            |testPredList| |sayTeX| |pfPretend?| |isDomainSubst|
-            |pfCoercetoType| |signatureTran| |mapPredTran|
-            |pfCoercetoExpr| MAKE-SYMBOL-OF |pfCoerceto?| TRY-GET-TOKEN
-            |notCoaf| |saySpadMsg| |fnameReadable?| |pfTaggedExpr| SHUT
-            |sayALGEBRA| |fnameName| |pfTaggedTag| |optEQ|
-            LINE-NEXT-CHAR |interactiveModemapForm,fn| |dnf2pf|
-            |sayMSG| |DirToString| |pfTagged?| |hashString|
-            |optMkRecord| LINE-ADVANCE-CHAR |be| |pfIfElse| |bnot|
-            |sayMSG2File| |pfIfThen| |getOplistForConstructorForm|
-            |notDnf| |sayFORTRAN| |myWritable?| |pfIfCond| |b2dnf|
-            |sayFORMULA| |StringToDir| |getUserIdentifiersIn| |pfIf?|
-            |optimize| |getOperationAlistFromLisplib|
-            MAKE-STRING-ADJUSTABLE |bor| |newHasTest,evalCond|
-            |fnameType| |pfLiteral?| |optimize,opt| REROOT STACK-CLEAR
-            |list3| |removeEXITFromCOND| |fnameDirectory|
-            |pfSequence2Sex0| DIG2FIX |mkDatabasePred| |band|
-            |mergeCONDsWithEXITs| |fnameExists?| |pfLambdaTran|
-            VMLISP::COMPILE1 |length1?| |fnameWritable?|
-            |pfDefinitionRhs| |optLESSP| |mkAlistOfExplicitCategoryOps|
-            |extractCONDClauses| |pf0DefinitionLhsItems| |optSEQ|
-            |bootCOND| |pfLambdaBody| |optSEQ,tryToRemoveSEQ|
-            |bootPushEXITintoCONDclause| |pfLambdaRets|
-            |optSEQ,getRidOfTemps| |bootTran| |optSEQ,SEQToCOND|
-            |bootSEQ| |optimizeFunctionDef| |bootPROGN|
+    '(FTYPE (FUNCTION (T) T) |pfNoPosition?| |pfSecond|
+            |npListAndRecover| TOKEN-PRINT |pfImmediate?| |pfAppend|
+            /TRACE-0 |pfCharPosn| LINE-AT-END-P /OPTIONS |pfLinePosn|
+            |npPileBracketed| FOAM-USER::|AXL-spitSInt|
+            |overlabelSuper| REDUCTION-RULE |%id| |incFile|
+            |IdentityError| |%origin| |retract1| NREVERSE0 STACK-P
+            |overbarSuper| OPTIONS2UC |%fname| |retract2Specialization|
+            |npInfGeneric| LINE-ADVANCE-CHAR |isFunctor| |%pos|
+            |isValidType| GET-A-LINE |fileNameStrings| |pfIdSymbol|
+            MAKE-STRING-ADJUSTABLE |pfMLambda?| |indefIntegralSub|
+            |pf0MLambdaArgs| |spadThrowBrightly| |indefIntegralSup|
+            |coerceUnion2Branch| |translateYesNo2TrueFalse|
+            |underDomainOf| |npRestore| |pfAbSynOp|
+            |initializeSetVariables| |isUncompiledMap|
+            |indefIntegralWidth| |hashString| |isInterpOnlyMap|
+            |intSub| |isDomainOrPackage| |pfLeafPosition| |intSup|
+            |pf2Sex1| |quote2Wrapped| |npInfKey| |pfSymbol?|
+            |translateTrueFalse2YesNo| |npDDInfKey|
+            |isSubForRedundantMapName| |intWidth| |pfSymbolSymbol|
+            |upisAndIsnt| |pfLiteral?| |removeConstruct| |npElse|
+            |getOutputAbbreviatedForm| |pfLiteral2Sex| COND-UCASE
+            |printMap| |setExposeAddGroup| |pfApplication2Sex|
+            |isLocalPred| |setExposeAddConstr| /UNTRACE-0
+            |setExposeDropGroup| |pfTuple?| GET-BOOT-TOKEN |error|
+            |setExposeDropConstr| |pf0TupleParts| /UNTRACE-REDUCE
+            |pfIf?| |upLETWithPatternOnLhs| |untraceDomainConstructor|
+            |pfIfCond| |Record0| |pfIfThen| SMALL-ENOUGH |mkZipCode|
+            |pfIfElse| |pfTagged?| |pfTaggedTag| |simpHasPred,simp|
+            HAS_SHARP_VAR |pfTaggedExpr| |parseAndInterpret|
+            |pfCoerceto?| |hasIdent| |extsub| |iterVarPos|
+            |oldParseAndInterpret| |pfCoercetoExpr| |simpHasPred,eval|
+            IS_SHARP_VAR |extsuper| |mkNestedElts| |pfCoercetoType|
+            |postTransform| |extwidth| |pfPretend?|
+            |simpHasPred,simpDevaluate|
+            |parseAndEvalToStringForHypertex| |pfPretendExpr|
+            VMLISP::SPAD-FIXED-ARG |simpBool| |fracsub| |pfPretendType|
+            MONITOR-BLANKS |fracsuper| |pfFromdom?|
+            |getCategoryExtensionAlist0| |fracwidth|
+            |parseAndEvalToHypertex| |pfFromdomWhat| |slashSub|
+            |parseAndEvalToString| |opTran| |addToCategoryTable|
+            |slashSuper| |parseAndEvalToStringEqNum| |pfFromdomDomain|
+            |simpCatPredicate| |parseAndInterpToString|
+            |pfSequence2Sex| |slashWidth| |pfExit?| |pfExitCond|
+            |getCategoryExtensionAlist| /UNEMBED-1 |pfExitExpr|
+            |boxSub| |pfLoop?| |boxSuper| |pf0LoopIterators| |boxWidth|
+            |upADEF| |loopIters2Sex| |upAlgExtension| |pfCollect?|
+            |upand| |upor| |mkCategoryExtensionAlist| |upcase|
+            UNSQUEEZE |isFormalArgumentList|
+            VMLISP::GET-INDEX-TABLE-FROM-STREAM |upTARGET|
+            |mkCategoryExtensionAlistBasic| |zagWidth| |upCOERCE|
+            |astran| |rootWidth| |falseFun| |upconstruct| |rootSuper|
+            |upDeclare| SET-FILE-GETTER |isOkInterpMode| |simpOrUnion|
+            |matWidth| |minusWidth| |constructor?| |pathnameType|
+            |incNConsoles| |KeepPart?| |stringWidth| |incPos| |sayMath|
+            |categoryParts,exportsOf| |helpSpad2Cmd|
+            |getCategoryOpsAndAtts| |updateCategoryTableForCategory|
+            |commandsForUserLevel| |getFunctorOpsAndAtts| |postDefArgs|
+            |stepSub| |clearTempCategoryTable| |satisfiesUserLevel|
+            |transformOperationAlist| |stepSuper| |clearCategoryTable|
+            |postDoubleSharp| |stepWidth| |showCategoryTable| SQUEEZE
+            VMLISP::GET-DIRECTORY-LIST |killColons|
+            |makeOldAxiomDispatchDomain| |inclmsgPrematureEOF|
+            |removeSuperfluousMapping| |inSub| |newConstruct| |inSuper|
+            |inclmsgPrematureFin| |newIf2Cond| |inWidth| |tokPosn|
+            |postIteratorList| |makeLazyOldAxiomDispatchDomain|
+            |inclmsgNoSuchFile| |pfDocument| |inclmsgCannotRead|
+            |newDef2Def| |pfListOf| |concatSub| |inclmsgConActive|
+            |postBlockItem| |concatSuper| |inclmsgConStill|
+            |postTransformCheck| |concatWidth| |postCapsule|
+            |concatbWidth| DATABASE-P |comma2Tuple| |clearCmdExcept|
+            |inclmsgSay| |postQuote| |exptSuper| |Top?| |tuple2List|
+            |exptWidth| |Else?| |say2PerLineThatFit| |timesWidth|
+            |checkWarning| |sayLongOperation| |deleteFile|
+            |postSEGMENT| |incClassify| |aggWidth| |clearParserMacro|
+            |Skipping?| |postElt| |augmentLowerCaseConTable|
+            |getConstructorAbbreviation| |postSequence|
+            |closeInterpreterFrame| |compileAsharpCmd| |abbreviation?|
+            |splitSayBrightlyArgument| |parseTran,g| |splitSayBrightly|
+            |transIs1| |setAutoLoadProperty| |splitListSayBrightly|
+            |transIs| |dbSpecialDisplayOpChar?| |quoteWidth|
+            PREPARSEREADLINE |sigmaSub| |incFileInput| SKIP-TO-ENDIF
+            |sigmaSup| |getPartialConstructorModemapSig| SKIP-IFBLOCK
+            |postError| |readLibPathFast| |parseJoin,fn| |sigmaWidth|
+            PREPARSEREADLINE1 |sigma2Width| |objMode| |sigma2Sub|
+            |isDomainValuedVariable| |sigma2Sup| |parseAtom| |piSub|
+            |isListConstructor| INFIXTOK |center80| |piSup|
+            |parseHas,fn| |If?| PARSEPRINT |parseHasRhs|
+            FOAM::TYPE2INIT |Elseif?| PREPARSE1 |piWidth| |pi2Width|
+            |eq2AlgExtension| |domainForm?| |SkipEnd?| |pi2Sub|
+            |packageForm?| |SkipPart?| |pi2Sup| |parseHas,mkand|
+            |getImmediateSuperDomain| PREPARSE-ECHO |upCOLLECT1|
+            |maximalSuperType| ATENDOFUNIT |upCOLLECT0|
+            |getLisplibName| |incStringStream| |interpOnlyCOLLECT|
+            |getConstructorUnabbreviation| |isStreamCollect|
+            |parseType| |intProcessSynonyms| |parseTypeEvaluate|
+            |unabbrevAndLoad| |upLoopIters| |isNameOfType| SHUT COPY
+            DOWNCASE |evalLoopIter| |interpIter| |parseCases| TOKEN-P
+            |outputTranIterate| REROOT |upCOLLECT| DIG2FIX STACK-CLEAR
+            |pathname?| |upStreamIters|
+            |NRTgetOperationAlistFromLisplib| |setDefOp|
+            |isExistingFile| |addConsDB| |transUnCons| |unInstantiate|
+            |markUnique| |parseBigelt| |loadIfNecessaryAndExists|
+            |mkAndApplyPredicates| LOG2 |NRTaddInner| |mathprint|
+            |lfspaces| SIZE |mapConsDB| SPAD_ERROR_LOC |lfstring| EOFP
+            |scanTransform| LINE-PRINT |zagSuper| RSHUT |zagSub|
+            |scanW| LINE-PAST-END-P |matSuper| |keyword?| DEF-IS
+            |rdigit?| |lfinteger| |bootOR,flatten| |matLSum2|
+            |bootAND,flatten| MAKE-ADJUSTABLE-STRING |matSubList|
+            |bootLabelsForGO| |matLSum| |bootIF| |pfMacroLhs|
+            |matSuperList| |lferror| LINE-SUBSEQ-FROM |bootOR|
+            |pfMacroRhs| |sumoverlist| |bootAND| |pfSourcePosition|
+            DIGITP |compTran| |compNewnam| |sumWidthA| |compTran1|
+            VEC2LIST PUSHLOCVAR GET-SPECIAL-TOKEN
+            |mkAlistOfExplicitCategoryOps| |lambdaHelper1|
+            GET-SPADSTRING-TOKEN MAKE-VEC REDUCTION-VALUE
+            |lambdaHelper2| |interactiveModemapForm| |vConcatWidth|
+            GCMSG |compExpand| |formal2Pattern| |mathPrintTran|
+            PREPARSE |compFluidize| |incRenumber| |mkMapPred|
+            PRINT-PACKAGE |mapPredTran| |namestring| |bitsOf|
+            |listOfPatternIds| |compFluidize1| GET-SPADNUM-TOKEN
+            |mkEvalableUnion| |isSharpVarWithNum| |depthAssocList|
+            |mkDatabasePred| |removeEXITFromCOND?| |mkEvalableMapping|
+            |NRTcatCompare| |bootTransform| |string2Words|
+            |loadIfNecessary| |hasDefaultPackage| MSORT
+            GET-ARGUMENT-DESIGNATOR-TOKEN |postcheck|
+            |segmentedMsgPreprocess| |evaluateSignature|
+            |encodeCatform| FOAM::INSERT-TYPES |incCommand?| |postForm|
+            |isLocalVar| |evaluateType| |signatureTran| |isFreeVar|
+            |postAtom| |evaluateType1| |depthAssoc|
+            BOOT-TOKEN-LOOKAHEAD-TYPE |postTranList| |operationLink|
+            |getCatAncestors| |postOp| |listOfVariables| |addBlanks|
+            |evaluateFormAsType| VMLISP::REMOVE-FLUIDS |dcAll|
+            |isDomainSubst| |incFileName| |postBlock| |noBlankAfterP|
+            |getAndEvalConstructorArgument| |dcSlots| |pfSourceStok|
+            |postBlockItemList| |incBiteOff| |isInternalMapName|
+            |noBlankBeforeP| |makeOrdinal| |dcAtts| |dcCats| |npMoveTo|
+            |loadFunctor| |unTuple| |dcData|
+            |interactiveModemapForm,fn| |isRationalNumber| |dcOps|
+            |new2OldDefForm| |args2Tuple| |isQuotient| BUMPERRORCOUNT
+            |devaluateDeeply| |getLisplibVersion| |new2OldTran|
+            |dcOpTable| |postType| |minimalise,min| TOKEN-SYMBOL
+            |exptNeedsPren| |minimalise,HashCheck| |formatSlotDomain|
+            |moveORsOutside| |minimalise| |isFreeFunctionFromMmCond|
+            |height| |isFreeFunctionFromMm| |getOpSegment|
+            VMLISP::GETINDEXTABLE |getDomainFromMm| |bright| |syminusp|
+            |getUnnameIfCan| |dcCats1| |isExposedConstructor| |absym|
+            |blankIndicator| |evaluateType0| |dcData1|
+            |flattenSignatureList| |getConstrCat| |numberOfNodes|
+            |mkAlistOfExplicitCategoryOps,atomizeOp| |vectorSize|
+            |putWidth| |brightPrintRightJustify| |nodeSize|
+            |clearAllSlams| |tabber| |maprin0| |brightPrint1|
+            |updateCategoryFrameForCategory|
+            |getOperationAlistFromLisplib| |compressHashTable|
+            |updateCategoryFrameForConstructor| |ppTemplate|
+            |brightPrint| |maprinChk| |frameName| |dcPreds|
+            |maprinRows| |sayBrightlyLength1|
+            VMLISP::LIBSTREAM-INDEXTABLE |getExportCategory| |maPrin|
+            |opOf| |unVectorize| VMLISP::LIBRARY-FILE |deMatrix|
+            |poLinePosn| |largeMatrixAlist| |edit|
+            |SubstWhileDesizingList| |getUnname1| |PushMatrix| |help|
+            |getUsersOfConstructor| |whichCat| |SubstWhileDesizing|
+            |getDependentsOfConstructor| |getFirstArgTypeFromMm|
+            |library| |load| |getUserIdentifiersIn| |getLinePos|
+            |getConstructorModemap| |ltrace| |getLineText| |nopiles|
+            |getOplistForConstructorForm| |getMsgPosTagOb|
+            |concatTrouble,fixUp| |stuffDomainSlots| |predicateBitRef|
+            |dropPrefix| |From| |makePredicateBitVector| |To|
+            |formulaFormat| |transCategoryItem| |read| |texFormat|
+            |template| MAKE-CVEC |makeArgumentIntoNumber|
+            |mathmlFormat| |srcPosFile| |dispfortexp| |srcPosLine|
+            |spool| |outputOp| |srcPosSource| |findEqualFun|
+            |sayRemoveFunctionOrValue| |srcPosColumn| |isInitialMap|
+            |asTupleAsVector| FOAM:|fiSetDebugVar| |trace| |undo|
+            |objValUnwrap| |charyTopWidth| VMLISP::EQUABLE
+            |getUserIdentifiersInIterators| |workfiles|
+            |getIteratorIds| |isLeaf| |nextline| |mkAliasList|
+            |computedMode| |mkPredList| |getFlag| LINE-P
+            |stripUnionTags| |walkForm| TRY-GET-TOKEN |evalDomain|
+            |sayMessage| |flattenSemi| |getIProplist|
+            |isConstantArgument| |removeBindingI| |isPatternArgument|
+            |lfid| DEF-PROCESS |coerceMap2E| CACHEKEYEDMSG |getSrcPos|
+            |punctuation?| XDR-STREAM-NAME |srcPosDisplay|
+            INITIALIZE-PREPARSE |simplifyMapPattern,unTrivialize|
+            |scanWord| |knownEqualPred| |simplifyMapConstructorRefs|
+            |constructorCategory| |predTran| |systemErrorHere|
+            |getEqualSublis| |asTupleNewCode0| |digit?| |asTupleSize|
+            |analyzeMap,f| |isDefaultPackageName| |isRecord|
+            |gensymInt| |lfnegcomment| |lfcomment| |scanKeyTr|
+            LINE-NEXT-CHAR XDR-STREAM-P |makeDomainTemplate|
+            |scanPossFloat| |compFailure| |makeCompactDirect| |lfkey|
+            |scanCloser?| |combineMapParts| |killNestedInstantiations|
+            |makeCompactSigCode| |removeBodyFromEnv| XDR-STREAM-HANDLE
+            |predicateBitIndex| FOAM:|formatDFloat| |getMsgKey|
+            |orderBySubsumption| FOAM:|formatSFloat| |getMsgPrefix?|
+            |verifyRecordFile| |makeCompactDirect1,fn|
+            FOAM:|formatBInt| |htTrimAtBackSlash| |getLookupFun|
+            FOAM:|formatSInt| |msgImPr?| |msgOutputter| |last|
+            |makeSpadConstant| |remWidth| |getMsgInfoFromKey|
+            |simplifyAttributeAlist| |untraceMapSubNames| S-PROCESS
+            |getMsgKey?| |bustUnion| |predicateBitIndexRemop|
+            |macSubstituteOuter| |removeAttributes| TRIMSTRING
+            |getMsgArgL| /VERSIONCHECK |removeAttributePredicates|
+            |pfNothing?| |stringer| |posPointers| |isHasDollarPred|
+            |pfMLambdaBody| |getMsgFTTag?| |stripOutNonDollarPreds|
+            |maprin| |orderByContainment| |makeByteWordVec|
+            |texFormat1| |getMsgPos| |hashable| |poCharPosn|
+            |outputTranMatrix| COMP370 |outputMapTran| |getMsgPrefix|
+            |removeAttributePredicates,fn| VMLISP::VARP |flattenOps|
+            GETREFV |removeAttributePredicates,fnl| |outputTranIf|
+            |makeLeaderMsg| |log| VMLISP::PROBE-NAME
+            |outputTranCollect| BVEC-COPY |outputTranReduce| MBPIP
+            |outputTranRepeat| |getMsgText| |StreamNull|
+            |outputTranSEQ| |erMsgSort| QSORT |outputConstructTran|
+            |makeMsgFromLine| |eqType| PLACEP |incRgen| |listOutputter|
+            GENSYMP |erMsgSep| |equiType| |incIgen|
+            |outputTranIteration| |isPolynomialMode|
+            |outputTranMatrix,outtranRow| |listOfDuplicates| BVEC-NOT
+            |poNopos?| |isLegitimateRecordOrTaggedUnion| |keyp|
+            |underDomainOf;| |closeOldAxiomFunctor| |deconstructT|
+            |getUnderModeOf| HKEYS |mac0Get| |rightTrim|
+            |processChPosesForOneLine| |leftTrim| |msgNoRep?|
+            |expandMacros| |pfApplicationOp| |charDigitVal|
+            |getStFromMsg| |bool| |leader?| |npNull| |length2?| |line?|
+            |walkWhereList| |toScreen?| |toFile?| |getCon|
+            |alreadyOpened?| |isNiladic| |alqlGetKindString|
+            |getMsgToWhere| |alqlGetOrigin| UPCASE |handleKind|
+            |alqlGetParams| |getPreStL| |postMapping|
+            |dropLeadingBlanks| |postExit| NMSORT |getPosStL|
+            |postTuple| |orderList| |getMsgLitSym| |pf0ApplicationArgs|
+            |tabbing| DEF-COLLECT |str2Tex| |showMsgPos?|
+            |isCategoryPackageName| DEF-SEQ FBPIP |packageTran|
+            |convertOpAlist2compilerInfo| LIST2CONS
+            |loadLibIfNotLoaded| |remLine| LIST2CONS-1 |trimString|
+            |remFile| DEF-LESSP |pr| |msgLeader?| SMINT-ABLE
+            |poPosImmediate?| |macExpand| |recordAndPrintTest|
+            |isDomain| DEF-SETELT |pfWhere?| |getDomainHash| DEF-ELT
+            |macWhere| |DEF-:| |pfLambda?| DEF-RENAME1 COMP
+            MONITOR-DELETE |script2String| DEF-MESSAGE |loadLib|
+            |linearFormatName| DEF-STRING |isSystemDirectory|
+            |numOfSpadArguments| |printAsTeX| DEF-COND COMP-2
+            DEF-IS-REMDUP1 COMP-1 |segmentKeyedMsg| DEF-INSERT_LET1
+            |object2Identifier| |blankList| |string2Float|
+            |compAndDefine| |form2StringList|
+            |ncParseAndInterpretString| |makeOutputAsFortran|
+            |addSpaces| |constructor| |macLambda| |pair2list|
+            |pfMacro?| |vec2Lists1| |as| UNEMBED |macMacro| |macId|
+            |vec2Lists| |isSharpVar| |complexRows| |bassertNot|
+            |pathname| |spad2lisp| |testPredList| |mkEvalableRecord|
+            IVECP |printNamedStats| LIST2VEC VMLISP::LIBSTREAM-P
+            OPTIONAL |bubbleType| |int2Bool| |timedAlgebraEvaluation|
+            |variableNumber| |timedOptimization| |timedEVALFUN|
+            |PARSE-Expr| |lispType| |checkForBoolean| IS-CONSOLE
+            |pfApplication?| |resolveTTRed3| |macApplication|
+            |mkAtreeExpandMacros| |interpOp?| |nakedEXIT?| |mkAtree1|
+            |mkCircularAlist| |flattenCOND| |infovec| |mergeableCOND|
+            |removeEXITFromCOND| |pfPosOrNopos| |mergeCONDsWithEXITs|
+            |poGetLineObject| |nodeCount| |length1?| |lnPlaceOfOrigin|
+            |extractCONDClauses| ACTION |pfSourceText|
+            VMLISP::SIMPLE-ARGLIST |bootCOND| MAKE-ABSOLUTE-FILENAME
+            |bootPushEXITintoCONDclause| |isInterpMacro| |parseColon|
+            EXPAND-TABS |bootTran| |PARSE-LedPart| |parseCoerce|
+            |getCacheCount| |bootSEQ| STACK-SIZE |transformCollect|
+            |parseAtSign| |breakIntoLines| |bootPROGN|
+            |getDomainByteVector| |transformREPEAT|
+            |bootAbsorbSEQsAndPROGNs,flatten| |parseCategory|
+            |clearSlam| |bootAbsorbSEQsAndPROGNs|
+            |isDefaultPackageForm?| |multiToUnivariate|
+            |parseConstruct| |tryToRemoveSEQ| |collectDefTypesAndPreds|
+            |functionAndJacobian| |parseDEF| |mkAtreeValueOf|
+            |resolveTMRed1| |vectorOfFunctions| |parseExit| |destructT|
+            |parseHas| MKPROGN |nontrivialCosig| |mkAtreeValueOf1|
+            |parseIn| |parseInBy| |parseIs| |parseIsnt| |parseJoin|
+            |parseLeave| |parseLET| |constructorName| |parseMDEF|
+            |record2String| MONITOR-DATA-NAME MONITOR-DATA-MONITORP
+            |listOfSharpVars| |freeOfSharpVars| MONITOR-DATA-SOURCEFILE
+            |removeZeroOne| |parsePretend| |removeZeroOneDestructively|
+            |isValidType;| |parseReturn| |Identity| |isPartialMode|
+            |parseSegment| |formJoin2String| |getInfovec| |break|
+            |tuple2String| |getConstructorSignature| |parseWhere|
+            |formCollect2String| |matrix2String| |formatUnabbreviated|
+            |containsVars1| |categoryForm?| |appOrParen|
+            |formatUnabbreviatedTuple| |postWith| |isBinaryInfix|
+            |formatUnabbreviatedSig| |newHasTest,evalCond|
+            |binop2String| |matrix2String,outtranRow| |parse2Outform|
+            |postQUOTE| |sumOrParen| |str2Outform| |isNewWorldDomain|
+            |postCollect| |productOrParen| |wrap| |powerOrParen|
+            |postin| |coerceOrParen| |npQualified| |postIn|
+            |postRepeat| |pfTupleListOf| |formJoin2| |npTuple|
+            |compileInteractive| |postTupleCollect| |pp| |postAdd|
+            |formatAttribute| |formTuple2String| |npBracketed|
+            |postReduce| |formIterator2String| |stopTimingProcess|
+            |postComma| |postSemiColon| |postWhere| |linearFormat|
+            |pfTyping| |postColonColon| |formatArgList| |postColon|
+            |clearCategoryCache| |postAtSign| |isInternalFunctionName|
+            FOAM::FOAM-FUNCTION-INFO |postPretend| |form2Fence|
+            |postIf| |pred2English| |pfSequence| |reportHashCacheStats|
+            |postJoin| |formatPredParts| |ncParseFromString|
+            |displayCacheFrequency| |postSignature| |pfCheckItOut|
+            |mkHashCountAlist| |makeFort,untangle2| |postCategory|
+            |form2Fence1| |remHashEntriesWith0Count|
+            |makeFort,untangle| |postDef| |postMDef| |form2FenceQuote|
+            |numberOfEmptySlots| |string2SpadTree| LASTATOM
+            |form2FenceQuoteTail| |pfCheckMacroOut| SOURCEPATH
+            |formatOpType| MONITOR-INCR |formatOperationAlistEntry|
+            |getCType| |pfSequenceToList| |processKeyedError|
+            |formatOpConstant| |pfSequenceArgs|
+            |outputDomainConstructor| |formatSignatureAsTeX| |npParse|
+            |typeTimePrin| |formatSignatureArgs| |mac0GetName|
+            |putDatabaseStuff| |constructor2ConstructorForm| REMDUP
+            |expr2String| |initImPr| ASSOCLEFT |prefix2StringAsTeX|
+            |initToWhere| ASSOCRIGHT |form2StringWithWhere|
+            |getMsgTag?| |form2StringWithPrens| |getModeSet|
+            |unparseInputForm| |getModeSetUseSubdomain|
+            |clearConstructorCache| |XDRFun| |prefix2Infix| |isMap|
+            |displayHashtable| |spadTypeTTT| |mkQuote,addQuote|
+            |keyword| |CompStrToString| |makeLispList| STREAM-EOF
+            |DNameToSExpr1| |DNameToSExpr| |mkQuote| |DNameFixEnum|
+            |domainDepth| |StringToCompStr| |stripNil| |sayTeX|
+            |makeUnion| |constructSubst| |instantiate| |saySpadMsg|
+            |displayTranModemap| |selectMostGeneralMm| |sayALGEBRA|
+            |quoteCatOp| |sayMSG| |formatModemap| |isHomogeneousList|
+            |opIsHasCat| |sayMSG2File| |hashCode?| |sayFORTRAN|
+            |intpart| |sayFORMULA| |cleanUpSegmentedMsg| |matchMmCond|
+            |sayModemap| |listOfPredOfTypePatternIds| |pfReturnNoName|
+            |isPatternVar| |npCompMissing| |findSubstitutionOrder?|
+            VMLISP::COMPILE1 |pfLoop1| |pfSuchthat| |initCache|
+            |prefix2String| |pfWhile| |formatModemap,fn| |evalMmStack|
+            |canRemoveIsDomain?| |pfBreak| DROPTRAILINGBLANKS
+            |pfIterate| |fixUpTypeArgs| |removeIsDomains|
+            |devaluateList| |removeIsDomainD| |containsVars|
+            |CDRwithIncrement| |undoCount| |formatIf| |pfParts|
+            |evalMmStackInner| |reportUndo| |pfUnSequence| |evalMmDom|
+            |recordFrame| |getSymbolType| |pfImport| BRIGHTPRINT
+            |undoLocalModemapHack| |unabbrev| |pfInline| |hashCount|
+            VMLISP::LIBSTREAM-MODE |form2String| |evaluateLines|
+            MESSAGEPRINT |whatSpad2Cmd,fixpat| |noSharpCallsHere|
+            MESSAGEPRINT-1 |pfPosn| MESSAGEPRINT-2 |whatCommands|
+            |formatSignature| |lnString| |whatConstructors|
+            |specialChar| |poIsPos?| |be| |systemError|
+            |formatAttributeArg| |asyTypeJoinStack| |lnFileName?|
+            |reduceDnf| |pp2Cols| |formatMapping| |pfFree|
+            |asyTypeJoinPartWith| |pfFirst| |dnf2pf| |devaluate|
+            |prefix2String0| |pfLocal| |orderMmCatStack|
+            |asyTypeJoinPartExport| |pfSourcePositionlist|
+            |synonymsForUserLevel| |dollarPercentTran| |pfExport|
+            |asyTypeJoinPartIf| |pfSourcePositions| MACROEXPANDALL
+            |formatSignature0| FOAM:|fiStrHash| |asyTypeJoinItem|
+            |recordAndPrintTest,fn| |lnLocalNum| |formatSignatureArgs0|
+            |npLetQualified| |asyTypeJoinPartPred| |lnGlobalNum|
+            NEXT-TAB-LOC |workfilesSpad2Cmd| |atom2String| |pfFix|
+            |updateTimedName| |asyTypeUnit| |untraceAllDomainLocalOps|
+            NONBLANKLOC |form2StringAsTeX| |pushTimedName|
+            |pfExitNoCond| |poFileName?| |b2dnf| INDENT-POS
+            |getFirstWord| |form2StringLocal| |pfHide?|
+            |asyTypeUnitList| |getBpiNameIfTracedMap| |poPlaceOfOrigin|
+            |bassert| BLANKP |pfHidePart| |lnImmediate?|
+            |shortenForPrinting| |band| |abbreviate|
+            FOAM:|fiGetDebugger| |pfTupleList| |poImmediate?| |bor|
+            |splitIntoOptionBlocks| |formWrapId| |pfExpr?| |bnot|
+            |pfSequence?| |pfWrongWhy| |asyCatItem|
+            |spadReply,printName| |lnExtraBlanks| |pf0SequenceArgs|
+            |lispize| |pf0WrongRubble| |asyCattran| |prTraceNames,fn|
+            |pfGetLineObject| |pfAddAddin| |asyCattran1| |addTraceItem|
+            |pfSourceToken| |notDnf| |stripLisp| |npWConditional|
+            |splitIntoBlocksOf200| |pfAddAddon| |stupidIsSpadFunction|
+            |nplisp| |pf0AddBase| |asyCattranOp| |compileBoot|
+            |pfFileName?| |npboot| |significantStat| |pfPlaceOfOrigin|
+            |functionp| |pfAttribute| |macroExpanded| |pfDWhereContext|
+            |pfNopos?| |notCoaf| |macrop| |ncConversationPhase,wrapup|
+            FOAM:|Halt| |pfDWhereExpr| |isTraceGensym|
+            |pfPosImmediate?| |npProcessSynonym| |pfWithWithon|
+            |asyPredTran1| |isIntegerString| |ncSetCurrentLine|
+            |pf0WithBase| |simpCattran| |dumbTokenize|
+            |decomposeTypeIntoTower| |pf0WithWithin| |asyTypeItem|
+            |parseSystemCmd| |asyUnTuple| |list1| |tokTran| |pfWIf?|
+            |list2| |parseFromString| |reassembleTowerIntoType|
+            |pfWIfCond| |asCategoryParts,exportsOf| |list3|
+            |npParenthesized| DEF-WHERECLAUSE |pfWIfThen|
+            |asyTypeMakePred| |ordList| DEF-ADDLET |pfWIfElse| |prove|
+            |pfWDeclare?| |asAll| IS_GENVAR |countCache| DEF-SELECT
+            |pfWDeclareSignature| |domainOne| |pfWDeclareDoc|
+            |displayDatabase| MONITOR-DATA-COUNT |domainZero|
+            DEF-STRINGTOQUOTE |startTimingProcess| |pfAttribute?|
+            |asyExportAlist| MONITOR-EXPOSEDP DEF-INSERT_LET
+            |pfAttributeExpr| |asyIsCatForm|
+            |changeToNamedInterpreterFrame| MONITOR-PARSE
+            |pfRetractTo?| MONITOR-LIBNAME |pfRetractToExpr|
+            |undoInCore| |pfRetractToType| |undoFromFile|
+            |isTaggedUnion| |dispStatement| DEF-IS-REMDUP |pfTLambda?|
+            DEF-IS-EQLIST |pfTLambdaRets| |fortexp0| DEF-IN2ON
+            |pfTLambdaBody| MONITOR-DATA-P DEF-WHERE |pf0TLambdaArgs|
+            HACKFORIS1 |pf0CollectIterators| |fracpart| |getfortexp1|
+            |pfIterateFrom| |intnplisp| |DEF-::| |pfReturnFrom|
+            |gammaStirling| |optimize| DEF-REPEAT |gammaRatapprox|
             |optimizeFunctionDef,removeTopLevelCatch|
-            |bootAbsorbSEQsAndPROGNs,flatten| LOG2
-            |bootAbsorbSEQsAndPROGNs| |tryToRemoveSEQ| |asTupleNew0|
-            |optCond| |TruthP| SIZE |optCONDtail| |asytranEnumItem|
-            EOFP |optPredicateIfTrue| |asyTypeJoinStack|
-            |asyTypeMakePred| RSHUT |combineMapParts| |optMINUS|
-            |mkMapPred| |bootOR,flatten| |isFreeVar| |bootAND,flatten|
-            |sumWidth| |optCatch| |bootLabelsForGO| |bootIF| |optCons|
-            EXPAND-TABS |bootOR| |unabbrev| |bootAND|
-            |matrix2String,outtranRow| |compileTimeBindingOf|
-            |breakIntoLines| |removeEXITFromCOND?| |optQSMINUS| CSCH
-            |optSETRECORDELT| |isLocalVar| |tuple2String|
-            |listOfPredOfTypePatternIds| |npTuple| |removeIsDomains|
-            |optIF2COND| |untrace| MANEXP |optXLAMCond|
-            |removeTracedMapSigs| ACOT S-PROCESS |optRECORDCOPY| COT
-            |pfEnSequence| |formWrapId| DIGITP |shortenForPrinting|
-            |opt-| SEC |isInternalFunctionName| |optSuchthat| CSC
-            DEF-INSERT_LET1 |pfListOf| |optRECORDELT| |stripUnionTags|
-            ACSC |pfTuple| |binop2String| |mkPredList|
-            |translateYesNo2TrueFalse| ASEC |functionp| MKPROGN
-            |matrix2String| VEC2LIST |isRecord| COTH |macrop|
-            |isInternalMapName| |npPileBracketed| |formCollect2String|
-            |pileColumn| SECH |asyTypeJoinPartWith|
-            |sayRemoveFunctionOrValue| DEF-ADDLET |formJoin2String|
-            MAKE-VEC |string2Float| |pileCforest| ACSCH DEF-RENAME1
-            GCMSG |enPile| ACOTH DEF-STRING |constructorName|
-            |separatePiles| |initializeSetVariables| ASECH
-            |makeArgumentIntoNumber| DEF-WHERE |record2String|
-            DEF-REPEAT |npCompMissing| |pilePlusComments|
-            |translateTrueFalse2YesNo| DEF-COLLECT |isBinaryInfix|
-            |pilePlusComment| |setOutputLibrary| |appOrParen|
-            |insertpile| INTERPSYS-ECL-IMAGE-INIT DEF-COND
-            |pfAttribute| |formatSignature| DEF-MESSAGE |pileComment|
-            |string2BootTree| IS_GENVAR |evalDomain| |string2SpadTree|
-            |IS_#GENVAR| |mkAliasList| HACKFORIS |findEqualFun|
-            |setFortDir| |npWConditional| |lastTokPosn|
-            |validateOutputDirectory| SPAD-CLEAR-INPUT HACKFORIS1
-            |concatList| |coerceMap2E| |firstTokPosn| SOURCEPATH
-            |freeOfSharpVars| |getIteratorIds| DEF-IS |listOfSharpVars|
-            |alqlGetOrigin| |constructorCategory| |args2Tuple|
-            DEF-IN2ON |makeByteWordVec| |isPatternVar| LIBCHECK
-            |getUserIdentifiersInIterators| DEFIOSTREAM DEF-IS-REMDUP
-            |setExposeDropConstr| |untraceMapSubNames| DEF-IS-EQLIST
-            |npParenthesized| |poImmediate?| |setExposeDropGroup|
-            |npParse| |lnString| |removeBodyFromEnv| LIST2CONS
-            |lnGlobalNum| |pfDocument| |pfPosn| |countCache|
-            DEF-IS-REMDUP1 |pfPlaceOfOrigin| |setExposeAddGroup|
-            |getEqualSublis| LIST2CONS-1 |poPlaceOfOrigin|
-            |simpHasPred,simp| |pfSourcePositions| |predTran|
-            DEF-WHERECLAUSE |mkCircularAlist| |poNoPosition?|
-            |lnImmediate?| |clearTempCategoryTable| |setInputLibrary|
-            |npInfKey| |pfSourcePositionlist| |DEF-:| |pfPosImmediate?|
-            |upisnt| DEF-ELT |nodeCount| |pfFileName?| |upisAndIsnt|
-            DEF-SETELT |poFileName?| DEF-LESSP |setFortTmpDir| DEF-SEQ
-            |last| |lnExtraBlanks| |setHistory| LASTATOM
-            |altSeteltable| DEF-EQUAL |pfSourceToken|
-            |categoryParts,exportsOf| |copyHack| |pfFirst|
-            |copyHack,fn| |DEF-::| |pfGetLineObject| |setAsharpArgs|
-            DEF-SELECT |simpHasPred,simpDevaluate| |lnLocalNum|
-            |getConstrCat| |transTraceItem| |getCacheCount|
-            |lnFileName?| |poIsPos?| |pfNopos?|
-            |getCategoryExtensionAlist0| |getTraceOption| REMDUP
-            ASSOCLEFT |upQUOTE| |postTransform| ASSOCRIGHT |upbreak|
-            |uppretend| |timedOptimization| |upreturn| |typeOfType|
-            DEF-PROCESS |clearCache| |upfree| |clearAllSlams|
-            VMLISP::FLAT-BV-LIST |isTupleForm| INITIALIZE-PREPARSE
-            |clearSlam| PREPARSE1 |uptypeOf| PARSEPRINT SEQOPT
-            PREPARSEREADLINE |removeConstruct| |knownEqualPred|
-            |recordAndPrintTest| MKQSADD1 ATENDOFUNIT PREPARSE-ECHO
-            |isHomogeneous| |outputTranMatrix,outtranRow|
-            VMLISP::REMOVE-FLUIDS GENSYMP |texFormat| PREPARSEREADLINE1
-            |upis| SKIP-IFBLOCK |ncParseAndInterpretString|
-            |packageTran| THETA_ERROR SKIP-TO-ENDIF |userError|
-            INFIXTOK |upLETWithPatternOnLhs| LISTOFATOMS
-            |quote2Wrapped| |nakedEXIT?| |flattenCOND|
-            |segmentKeyedMsg| NUMOFNODES |mergeableCOND| |printAsTeX|
-            |isLocalPred| |pfTLambdaArgs| |isHomogeneousArgs|
-            |pfCheckInfop| SUBANQ |upequation| |pfAttributeExpr|
-            |pf0FlattenSyntacticTuple| |formatSignature0| |uplocal|
-            |pfRetractTo?| |underDomainOf;| |pfExpression?|
-            |specialChar| |pfQualTypeType| |sumoverlist|
-            |getUnderModeOf| |pfWith?| |removeIsDomainD| |pfAdd?|
-            |deconstructT| |pfWIfElse| |pfCollectVariable1| |upLET|
-            |pfIterateFrom| UNVEC |upwhere| |pfInline| |pfSecond|
-            |handleLispBreakLoop| |upIF| |pfDocumentText| |npboot|
-            |changeToNamedInterpreterFrame| |variableNumber|
-            |pfLoopIterators| |pfExpr?| |pfCollect1?| |pfAddAddon|
-            |charyTopWidth| BRIGHTPRINT |pfWithWithin|
-            |form2StringWithWhere| |pfWithWithon| |pfReturnFrom|
-            |productOrParen| |pf0CollectIterators| |remWidth| |eqType|
-            MESSAGEPRINT |pfImport| |powerOrParen| |pfTLambdaBody|
-            MESSAGEPRINT-1 |pfTaggedToTyped1| |formJoin2| |pfWIfThen|
-            |isValidType;| MESSAGEPRINT-2 |pfAttribute?| |pfWDeclare?|
-            |pfTupleParts| |pfComDefinitionDef| |systemError|
-            |form2Fence| VMLISP::VARP |pfSemiColon|
-            |isLegitimateRecordOrTaggedUnion| |pfDocument?|
-            |pfTupleListOf| |listOfDuplicates| |devaluate|
-            |pf0WrongRubble| |pfInlineItems| |isPolynomialMode|
-            |formatAttribute| |asyTypeUnitList| |pfWrongRubble|
-            |mathmlFormat| |removeUndoLines| |equiType| MACROEXPANDALL
-            |pfWithBase| |formatIf| |pf0ExportItems|
-            |histInputFileName| |incFileInput| |pfRetractToType|
-            |pfExportItems| |dispfortexp| |readHiFi| |Else?|
-            |isPartialMode| NEXT-TAB-LOC |pfAddAddin| |formulaFormat|
-            |pf0TypingItems| NONBLANKLOC |formatArgList| |asyParents|
-            |pfTLambdaRets| |processSynonymLine,removeKeyFromLine|
-            INDENT-POS |pfTypingItems| |script2String| |pfTupleList|
-            |spad2lisp| BLANKP |pfTransformArg| |displayTranModemap|
-            TRACEOPTIONS |pfWIfCond| STACK-SIZE |pf0WithWithin|
-            |formatModemap| |stripLisp| CHARP |pfSexpr,strip|
-            |categoryForm?| DEF-INSERT_LET |pf0ImportItems|
-            |dumbTokenize| |incPos| |formatModemap,fn|
-            DEF-STRINGTOQUOTE |pfImportItems| |stringer|
-            VMLISP::SIMPLE-ARGLIST |pfFreeItems|
-            |getConstructorSignature| |incStringStream|
-            |interactiveModemapForm| |bootTransform| |pfQualType?|
-            |outputOp| |closeInterpreterFrame| |pfComDefinitionDoc|
-            |incRenumber| |asIsCategoryForm| SMINT-ABLE
-            |pfAssignLhsItems| |canRemoveIsDomain?| |pfInline?|
-            /UNEMBED-Q |makeHistFileName| REDUCTION-VALUE |pfSexpr|
-            |pfWhile| |updateSourceFiles| |pfSemiColonBody|
-            |pfDWhereExpr| |pathnameName| |bottomUpElt|
-            |form2StringList| |pfHidePart| |pathnameType|
-            |pfExitNoCond| |sayModemap| |pfWrongWhy| |getCType|
-            |pathnameDirectory| RPACKFILE |pf0AddBase| |mkAtreeNode|
-            |pfWIf?| |reportOpsFromUnitDirectly| STACK-STORE
-            |pfQualTypeQual| |formatMapping| |int2Bool|
-            |pfStringConstString| |say2PerLine| |pfExport?| DROPENV
-            |whatConstructors| SHOWBIND |nplisp| |pfRetractToExpr|
-            VMLISP::EQUABLE |spadTypeTTT| |getMapSubNames|
-            |pfLambdaArgs| |getUnionOrRecordTags| |makeUnion|
-            |coerceSpadFunValue2E| |getModeOrFirstModeSetIfThere|
-            |abbreviate| |stripNil| |setIOindex|
-            RECOMPILE-LIB-FILE-IF-NECESSARY |pfDeclPart?| |error|
-            |isSharpVar| |sumOrParen| STACK-UPDATED |pfDWhere?|
-            |pfImport?| |namestring| |emptyAtree| |new2OldLisp|
-            |Record0| |pfTyping?| |bubbleType| |isIntegerString|
-            LIBSTREAM-DIRNAME DEF-RENAME |pfSuchthat| GETZEROVEC
-            |cleanUpSegmentedMsg| |tokTran| LINE-PRINT
-            |pfDefinitionLhsItems| |form2FenceQuoteTail|
-            |parseSystemCmd| |pfSemiColon?| |containsPolynomial|
-            |form2FenceQuote| |resolveTMRed1| PNAME LINE-PAST-END-P
-            |parseFromString| |bottomUpPercent| |linearFormat|
-            |evaluateLines| |lispType| |resolveTTRed3| |pf0WithBase|
-            |fetchOutput| |formatOpConstant| |interpOp?|
-            |compileAsharpArchiveCmd| |coerceOrParen| |isAVariableType|
-            |compileSpadLispCmd| MAKE-BVEC |pfComDefinition?|
-            |dollarPercentTran| |makeLispList| |compileAsharpLispCmd|
-            TOKEN-PRINT |pf0TLambdaArgs| |mkHashCountAlist|
-            |compileAsharpCmd| |displayProperties,sayFunctionDeps|
-            |remHashEntriesWith0Count| |destructT| |polyVarlist|
-            |removeQuote| |numberOfEmptySlots| |bottomUpCompile|
-            |multiToUnivariate| FOAM-USER::|AXL-spitSInt| TOKEN-SYMBOL
-            /TRACE-0 /OPTIONS |noSharpCallsHere| |fixUpTypeArgs|
-            |functionAndJacobian| |reportUndo| |XDRFun| OPTIONS2UC
-            |outputDomainConstructor| |prefix2Infix|
-            |emptyInterpreterFrame| |removeAttributes| |isFunctor|
-            |typeTimePrin| FOAM:|printNewLine| LOAD-DIRECTORY
-            |getMsgKey?| |constructor2ConstructorForm| |evalMmStack|
-            |sayAsManyPerLineAsPossible| |makeMsgFromLine|
-            RECOMPILE-ALL-ALGEBRA-FILES |poLinePosn|
-            |spadThrowBrightly| |evalMmStackInner| |parseAtom|
-            RECOMPILE-ALL-FILES |containsVariables| |parseTran,g|
-            RECOMPILE-LIB-DIRECTORY |getMsgFTTag?| |isUncompiledMap|
-            RECOMPILE-ALL-LIBS |alreadyOpened?| |isInterpOnlyMap|
-            |transIs| RETRANSLATE-DIRECTORY |erMsgSort|
-            |isDomainOrPackage| |wrapped2Quote| |clearConstructorCache|
-            |isListConstructor| |toFile?| |transIs1| SQUEEZE
-            |frameEnvironment| |getMsgToWhere| IDENT-CHAR-LIT
-            |isSubForRedundantMapName| |objCodeVal| |displayHashtable|
-            |opOf| |makeLeaderMsg| EQUABLE |objCodeMode| TRANSLIST
-            |recordFrame| |msgLeader?| MKQ |minimalise,HashCheck|
-            |wrapMapBodyWithCatch| |parseType| |minimalise| COND-UCASE
-            |transUnCons| RENAME |minimalise,min| |parseTypeEvaluate|
-            |processSynonymLine| |toScreen?| /UNTRACE-0 |isTaggedUnion|
-            DATABASE-PREDICATES |printSynonyms| |getMsgPrefix|
-            |constructor?| DATABASE-ATTRIBUTES |line?| /UNTRACE-REDUCE
-            |mkAtree1| |pathname| DATABASE-DOCUMENTATION
-            |synonymsForUserLevel| |leader?| |untraceDomainConstructor|
-            |transformREPEAT| |isExistingFile| DATABASE-CONSTRUCTORFORM
-            |isDomain| |transformCollect| |abbreviation?|
-            DATABASE-SOURCEFILE |displayMacro| |getMsgText|
-            |getConstructorModemap| SET-FILE-GETTER |poCharPosn|
-            |mkAlistOfExplicitCategoryOps,atomizeOp| SMALL-ENOUGH
-            |getUnname1| |flattenSignatureList| |getStFromMsg|
-            |npRestore| |getFlag| UNSQUEEZE |tabbing| |mkAtreeValueOf|
-            |parseHas,fn| |clearParserMacro| |getDomainFromMm|
-            |getMsgLitSym| HAS_SHARP_VAR |mkAtreeValueOf1|
-            |parseHas,mkand| |isExposedConstructor| |getPosStL|
-            |getSrcPos| |mkAndApplyPredicates| |unabbrevAndLoad|
-            |undoCount| |isFreeFunctionFromMm| |getPreStL|
-            |isSharpVarWithNum| |unVectorize| |upStreamIters|
-            DATABASE-COSIG |splitIntoOptionBlocks| |npPush|
-            |asTupleNewCode0| |parseHasRhs| |remFile| |npInfGeneric|
-            IS_SHARP_VAR |collectDefTypesAndPreds| |loadIfNecessary|
-            |remLine| |formal2Pattern| |posPointers|
-            |satisfiesUserLevel| |dropPrefix| |npSemiListing|
-            |parseJoin,fn| MONITOR-BLANKS |prTraceNames,fn|
-            |asTupleAsVector| DATABASE-P |poPosImmediate?|
-            |displayMacros| |moveORsOutside| |npQualified| |isLeaf|
-            DATABASE-DEFAULTDOMAIN |asyTypeUnit| |displayOperations|
-            |getFirstArgTypeFromMm| |npLetQualified| |undoFromFile|
-            |msgNoRep?| |spadReply,printName| |postin|
-            |getUsersOfConstructor| |npAdd| |postIn| |writify|
-            |showMsgPos?| |orderBySlotNumber| |postRepeat|
-            |writify,writifyInner| |isFreeFunctionFromMmCond| |npEqKey|
-            /UNEMBED-1 |getFirstWord| |To| |postTupleCollect|
-            |getDependentsOfConstructor| |From| |tokPosn| WHOCALLED
-            |postAdd| |transCategoryItem| |tokPart| SPADSYSNAMEP
-            DATABASE-CONSTRUCTORMODEMAP |postReduce| |readLibPathFast|
-            |traceSpad2Cmd| |postComma| |killNestedInstantiations|
-            |parseBigelt| MONITOR-EVALBEFORE |setExposeAddConstr|
-            |parseCases| |npAnyNo| |postSemiColon|
-            DATABASE-CONSTRUCTORKIND |postWhere| |npBracketed|
-            |isTraceGensym| |postColonColon| DATABASE-ABBREVIATION
-            |npAngleBared| |npDDInfKey| |postColon| |npBraced|
-            |domainToGenvar| |postAtSign| |npBracked| |postPretend|
-            |unInstantiate| |npParened| |pfDWhereContext| |postIf|
-            |pfHide?| |postJoin| |asyTypeJoinPartExport|
-            |pfWDeclareDoc| |center80| |asyConstructorArg|
-            |postSignature| |splitSayBrightlyArgument| |pfParts|
-            |astran| |postCategory| |pfAppend| |as| |pfTLambda?|
-            |postDef| |npListing| |pfSymbolVariable?| |npEqPeek|
-            |asyCattran1| |pfAddBase| |postMDef| |asyConstructorArgs|
-            |pfTweakIf| |pfForinLhs| |isSystemDirectory| |dqUnit|
-            |asyCosig| |pfDo| |bassert| |postMapping| |asyTypeMapping|
-            |pfListOf?| |dqUnitCopy| |pfLoop| |postExit| |dqConcat|
-            |pfExportDef| |prove| |pfExport| |pfMLambdaArgs|
-            |postTuple| |dqToList| |asyCattranOp| |pfCheckArg|
-            |pfCheckId| |list2| |simpCattran| |reduceDnf| |pfId?|
-            |bassertNot| |loadLibIfNotLoaded| |list1|
-            |convertOpAlist2compilerInfo| |pfLocal| |loadFunctor|
-            |asyType| |pfWDeclareSignature| |npWith| |pfLocalItems|
-            |ordList| |loadIfNecessaryAndExists| |npTrapForm|
-            |pfWhereContext| |getFunctorOpsAndAtts| NREVERSE0
-            |pfDefinitionSequenceArgs| |getCategoryOpsAndAtts|
-            |pfFlattenApp| |pfNot| |transformOperationAlist|
-            |pfCheckItOut| |pfTaggedToTyped| |texFormat1|
-            |isInitialMap| |pfId| |npElse| |outputTranReduce|
-            |NRTgenInitialAttributeAlist| |exptNeedsPren|
-            |getLisplibVersion| |absym| |syminusp| |compileBoot|
-            |stupidIsSpadFunction| |maprin| |coerceSpadArgs2E|
-            |outputTranCollect| C-TO-S S-TO-C |outputTranIf|
-            |isQuotient| RGAMMA GET-BOOT-TOKEN |rgamma|
-            |largeMatrixAlist| |mac0GetName|
-            |getPartialConstructorModemapSig| |pfIdSymbol|
-            |isDomainValuedVariable| |printMap| C-TO-R
-            |isRationalNumber| |parseGreaterThan| CGAMMA |cgamma|
-            |flattenOps| |CDRwithIncrement|
-            |NRTgetOperationAlistFromLisplib| |parseDollarGreaterThan|
-            RLNGAMMA |makeSpadConstant| |lnrgamma|
-            |getOutputAbbreviatedForm| |mapConsDB|
-            |augmentLowerCaseConTable| |maprin0| |mathPrintTran|
-            |addConsDB| |constructSubst| |setAutoLoadProperty|
-            |parseColon| |maximalSuperType| |outputMapTran|
-            |NRTaddInner| |parseCoerce| |hashCount| CLNGAMMA
-            |getConstructorAbbreviation| |outputTranMatrix|
-            |parseAtSign| |lncgamma| |getLisplibName| |markUnique|
-            |parseCategory| |orderMmCatStack| |packageForm?|
-            |matSuperList| |getImmediateSuperDomain| |matSubList|
-            |parseConstruct| |quoteCatOp| |matLSum| |parseDEF|
-            |flattenOperationAlist| |isNameOfType| |containsVars|
-            |objMode| |matLSum2| |parseExit| MAKE-DIRECTORY
-            |spadTrace,g| |domainForm?| |parseHas| |clngammacase3|
-            |getConstructorUnabbreviation| RECOMPILE-FILE-IF-NECESSARY
-            |cgammaBernsum| |parseIn| OUR-WRITE-DATE |parseInBy|
-            |upREPEAT0| RETRANSLATE-FILE-IF-NECESSARY |DNameFixEnum|
-            |cgammaAdjust| |postTransformCheck| |parseIs|
-            |interpOnlyREPEAT| |CompStrToString| |ncloopParse|
-            |outputTranIterate| |parseIsnt| |sayMath| |containsVars1|
-            |upREPEAT1| |pfPrintSrcLines| |postAtom| |parseJoin|
-            |getSymbolType| |uperror| SPADTAGS-FROM-FILE
-            |IdentityError| |postOp| |mkRationalFunction|
-            |DNameToSExpr1| |postTranList| |parseLeave| |domainDepth|
-            |postForm| |parseLET| |evalMmDom| |upREPEAT| BLANKCHARP
-            |gammaRatapprox| |postCapsule| |parseMDEF| TRANSLATE
-            |mathprint| |resolveTypeList| |hasDefaultPackage|
-            |postError| |uphas| |gammaRatkernel| |parsePretend|
-            |bright| |upiterate| |gammaStirling| |checkWarning|
-            |pushSatOutput| |parseReturn| |getInfovec| |upSEQ|
-            |orderCatAnc| |postBlockItem| |parseSegment| |upTuple|
-            |upDEF| |mkMessage| |postBlockItemList| |upDollar|
-            |intProcessSynonyms| PRINT-PACKAGE |postType| |parseWhere|
-            SET-PREFIX |comma2Tuple| PRINT-RULE |startTimingProcess|
-            |isDefaultPackageForm?| |postWith| |loadLib| |tuple2List|
-            |getModeSetUseSubdomain| |compileInteractive|
-            BUMPERRORCOUNT |getModeSet| |pp| |StringToCompStr|
-            |postQUOTE| |postCollect| |stopTimingProcess| |hashCode?|
-            |postDefArgs| |helpSpad2Cmd| |stepSuper| |newHelpSpad2Cmd|
-            |unTuple| |matchMmCond| |inWidth| |postIteratorList|
-            |getDomainByteVector| |inSub| |clearCategoryCache|
-            |isValidType| |inSuper| |printMms| |bottomUpUseSubdomain|
-            |systemErrorHere| |isMap| |underDomainOf| |postBlock|
-            |getBasicObject| |reportHashCacheStats| |postDoubleSharp|
-            |getValue| |htTrimAtBackSlash| |killColons| |getUnname|
-            |updateCategoryFrameForConstructor| |displayCacheFrequency|
-            |removeSuperfluousMapping| |editSpad2Cmd| |bottomUp|
-            |updateCategoryFrameForCategory| |verifyRecordFile|
-            |closeOldAxiomFunctor| |concatSub| |postcheck|
-            |isHomogeneousList| |upCOLLECT0| |recordAndPrintTest,fn|
-            |concatSuper| |setDefOp| |interpOnlyCOLLECT| |getBasicMode|
-            |lisplibDoRename| |opIsHasCat| |concatbWidth| |new2OldTran|
-            |loadSpad2Cmd| |upCOLLECT1| |finalizeLisplib|
-            |DNameToSExpr| |newDef2Def| |concatWidth| |newIf2Cond|
-            |npProcessSynonym| |newConstruct| |new2OldDefForm| PREPARSE
-            |isMapExpr| |upLoopIters| |bustUnion| |isStreamCollect|
-            |quoteWidth| |postElt| |mkNestedElts| |clearCmdExcept|
-            |postQuote| BOOT-TOKEN-LOOKAHEAD-TYPE |objVal| |upCOLLECT|
-            |addTraceItem| |stringWidth| |postSEGMENT| |getTarget|
-            |iterVarPos| |isCategoryPackageName| |postSequence|
-            GET-ARGUMENT-DESIGNATOR-TOKEN |upDeclare| |trace1|
-            |dewritify| GET-SPADSTRING-TOKEN |isType| |upor|
-            |saveMapSig| |sigmaSub| |dewritify,dewritifyInner|
-            |PARSE-GliphTok| |sigmaSup| |updateTimedName|
-            |isNewWorldDomain| |whatCommands| |sigmaWidth|
-            |setOutputCharacters| |workfilesSpad2Cmd| |instantiate|
-            |pushTimedName| |commandsForUserLevel| CACHEKEYEDMSG
-            SPAD_ERROR_LOC |getMode| |sigma2Sub| |findFrameInRing|
-            |pp2Cols| |sigma2Sup| XDR-STREAM-HANDLE |eq2AlgExtension|
-            |getTraceOptions| |sigma2Width| |splitIntoBlocksOf200|
-            XDR-STREAM-NAME |segmentedMsgPreprocess| |timedEVALFUN|
-            |genDomainTraceName| |displayOperationsFromLisplib|
-            |lispize| |retract| |scanCloser?| |undoLocalModemapHack|
-            |intSub| |printNamedStats| XDR-STREAM-P |unwrap| |load|
-            |keyword| |intSup| |timedAlgebraEvaluation| /VERSIONCHECK
-            |isWrapped| |ltrace| |spadClosure?| |intWidth| |dcData1|
-            |upADEF| |nopiles| |scanPossFloat| |PARSE-NBGliphTok|
-            |deleteFile| |encodeCatform| |lfkey| |indefIntegralSub|
-            |significantStat| |indefIntegralSup| |dcCats| |read|
-            |digit?| |indefIntegralWidth| |removeAttributePredicates|
-            |retractAtree| |falseFun| |pathname?|
-            |removeAttributePredicates,fn| |evalLoopIter| |scanW|
-            |intnplisp| |dbSpecialDisplayOpChar?| |piSub| |upCOERCE|
-            |readSpad2Cmd| |piSup| |ppTemplate| |spool|
-            |pathnameTypeId| |piWidth| |dcAtts| FOAM::INSERT-TYPES
-            |splitListSayBrightly| |removeAttributePredicates,fnl|
-            |lfstring| |dcSlots| |pi2Sub| |trace| |scanTransform|
-            |unwritable?| |brightPrint| |pi2Sup| |isOkInterpMode|
-            |undo| |pi2Width| |upAlgExtension| |sayBrightlyLength|
-            |sayBrightlyLength1| |aggWidth| |workfiles|
-            |displayParserMacro| |dcAll| |upand| |lfspaces|
-            |dewritify,is?| |dcPreds| |nopilesSpad2Cmd| |string2Words|
-            |interpIter| |lferror| |setNopiles| |noBlankBeforeP|
-            |bitsOf| |upcase| |whatSpad2Cmd,fixpat| |tabber|
-            |getExportCategory| |scanWord| |replaceGoGetSlot|
-            |upconstruct| |nextline| |undoChanges| |upTARGET|
-            |undoInCore| |sayLongOperation| |say2PerLineThatFit|
-            |lfinteger| |mkZipCode| |initCache| |noBlankAfterP|
-            |makePredicateBitVector| |rootSuper|
-            |brightPrintRightJustify| |simpHasPred,eval| |rootWidth|
-            |brightPrint1| |addToCategoryTable| |splitSayBrightly|
-            |getCategoryExtensionAlist| |simplifyAttributeAlist|
-            |addBlanks| |simpOrUnion| |operationLink| |getDomainHash|
-            |mkCategoryExtensionAlist| |mkCategoryExtensionAlistBasic|
-            COMP-2 |NRTcatCompare| |asyAncestorList| |letWidth| COMP-1
-            |template| |isFormalArgumentList| |infovec| |slashSub|
-            |blankIndicator| |predicateBitIndexRemop|
-            |alqlGetKindString| |slashSuper| |compressHashTable|
-            |predicateBitRef| FOAM::FOAMPROGINFOSTRUCT-P
-            |alqlGetParams| |slashWidth| |clearCategoryTable|
-            |dropInputLibrary| |stuffDomainSlots|
-            |updateCategoryTableForCategory| COMP-NEWNAM |subSub|
-            |pfSuchThat2Sex| COMP-EXPAND |pf2Sex1| |suScWidth|
-            COMP-TRAN-1 |pf0TupleParts| COMP-FLUIDIZE |float2Sex|
-            |COMP,FLUIDIZE| |superSubSub| PUSHLOCVAR |patternVarsOf|
-            |superSubSuper| |showCategoryTable| |compAndDefine|
-            |superSubWidth| |hasIdent| |pfRule2Sex| |rulePredicateTran|
-            |openOutputLibrary| |ruleLhsTran| |vConcatSub|
-            |simplifyMapConstructorRefs| |addInputLibrary| |pfRuleRhs|
-            FOAM:|fiStrHash| |pfRhsRule2Sex| |asyExtractAbbreviation|
-            |vConcatWidth| |pfRuleLhsItems| |pfLhsRule2Sex|
-            |asytranLiteral| |binomialSub| COMP-TRAN |pfOp2Sex|
-            |binomialSuper| |compFailure| |%id| |binomialWidth|
-            |%origin| |pmDontQuote?| |simplifyMapPattern,unTrivialize|
-            |%key| |pfSymbol?| |asyPredTran| FOAM:|fiGetDebugger|
-            |ppos| |pfApplication2Sex| |asyPredTran1| |zagSub|
-            |isPatternArgument| RECOMPILE-DIRECTORY |hasOptArgs?|
-            |zagSuper| |isConstantArgument| |pfTuple?| |zagWidth|
-            |pfLinePosn| |pfApplicationArg| |break| |frameName|
-            |pfCharPosn| |opTran| |sayMessage| |pfImmediate?|
-            |asyDocumentation| |pfNoPosition?| |pfLiteral2Sex|
-            |asyExtractDescription| |timesWidth| |%pos| |inclmsgSay|
-            |pfSymbolSymbol| |trimComments| |pfLiteralString|
-            FOAM:|fiSetDebugVar| |exptWidth| |listOfVariables| |%fname|
-            |pfLeafToken| |hackToRemoveAnd| |pfLiteralClass| |asAll|
-            |exptSuper| |pfCollectArgTran| |pfCollectBody| LOG10
-            |asyArgs| |stepWidth| VMLISP::LIBSTREAM-P
-            |pfCollectIterators| |asyArg| |stepSub|
-            |resolveTypeListAny| |pfCollect?| |asyConstructorModemap|
-            |varsInPoly| |mkLineList| |pfLambda2Sex| |asyUnTuple|
-            |minusWidth| |nonBlank| |pfDefinition2Sex| |asyTypeItem|
-            |pfCollect2Sex| MAKE-CVEC |pfSequence2Sex| |asyCATEGORY|
-            |fracsub| |pfWhereExpr| |asyCattran| |pf0WhereContext|
-            |asyCatItem| |fracsuper| |domainZero| |pfIterate?|
-            |asCategoryParts,exportsOf| |fracwidth| |pfReturnExpr|
-            |maprinRows| |setCurrentLine| |pfReturn?| |asyIsCatForm|
-            |maprinChk| |intloopEchoParse| |pfBreakFrom|
-            |indentFortLevel| |ncloopPrintLines| |pfBreak?|
-            |asyExportAlist| |sumWidthA| |ncloopIncFileName|
-            |asMakeAlist| |pfRule?| |checkLines| |outputConstructTran|
-            |asMakeAlistForFunction| |pfNovalueExpr| |asytran|
-            |fortran2Lines| |putWidth| |pfNovalue?| |statement2Fortran|
-            |maPrin| |ncloopEscaped| |pfNotArg| |binomSub|
-            |changeExprLength| |deMatrix| |zeroOneConversion| |pfNot?|
-            |mkNiladics| |binomSuper| |mkMat| |PushMatrix| |pfOrRight|
-            |asyTypeJoin| |binomWidth| |concatTrouble,fixUp|
-            |serverReadLine| |getAttributesFromCATEGORY| |pfOrLeft|
-            |asyCosigType| |outputTranSEQ| |fortPreRoot| |height|
-            |typeToInputForm| |asySubstMapping|
-            FOAM::PROCESS-IMPORT-ENTRY |asyShorten| |altSuperSubSub|
-            |constructor| |altSuperSubSuper|
-            |exp2FortOptimizeCS1,popCsStacks| |createAbbreviation|
-            |altSuperSubWidth| |incString| TRIMSTRING |boxSub|
-            |isFloat| |boxSuper| |asyMkpred| |boxWidth| FOAM::TYPE2INIT
-            |asyTypeJoinItem| |SpadInterpretFile| |edit| |keyp|
-            FOAM:|formatDFloat| |displayDatabase| |addCommas|
-            |outputTranRepeat| COMP370 |ncSetCurrentLine| |help|
-            FOAM:|formatSFloat| |asyLooksLikeCatForm?| |qTWidth|
-            |outputTranIteration| |phInterpret| FOAM:|formatBInt|
-            |asyTypeJoinPartIf| GETREFV |intInterpretPform|
-            FOAM:|formatSInt| |asyTypeJoinPartPred|
-            FOAM::FOAM-FUNCTION-INFO |library| |patternCheck| |log|
-            |pf2Sex| |displayLines| |zeroOneTran| |extsub| |nameLen|
-            MBPIP VMLISP::SPAD-FIXED-ARG |phMacro| |formatPredParts|
-            |extsuper| |exp2FortOptimizeCS| |formIterator2String|
-            |extwidth| |exp2FortOptimizeCS1| |macroExpanded| QSORT
-            |blankList| |matSuper| PLACEP |ncConversationPhase,wrapup|
-            |form2Fence1| |matWidth| |fortExpSize| |numOfSpadArguments|
-            |findSubstitutionOrder?| |PARSE-Expr| |expr2String|
-            VMLISP::LIBSTREAM-INDEXSTREAM |atom2String| |PARSE-LedPart|
-            |pkey| |PARSE-NudPart| |fortFormatCharacterTypes|
-            |linearFormatName|
-            |fortFormatCharacterTypes,mkParameterList2|
-            |formatOperationAlistEntry| |overlabelSuper|
-            |exp2FortOptimize| |mkParameterList| |Zeros| HKEYS
-            |formTuple2String| |npListAndRecover| |overbarSuper|
-            |displayLines1| |formatSignatureAsTeX|
-            |fortFormatTypes,unravel| |punctuation?|
-            VMLISP::LIBSTREAM-INDEXTABLE |object2Identifier|
-            |incNConsoles| |checkType| |lfid| |fortPre| |npItem1|
-            |Elseif?| MONITOR-DATA-COUNT FOAM:|Halt| |segment|
-            |inclmsgConStill| VMLISP::LIBSTREAM-MODE |npDotted|
-            |inclmsgCannotRead| |exp2Fort1| MONITOR-DELETE
-            MONITOR-LIBNAME STACK-TOP |keyword?| |scanKeyTr|
-            |npConditional| TOKEN-TYPE |makeFort,untangle|
-            |getOpSegment| MONITOR-CHECKPOINT |LZeros| UPCASE
-            TOKEN-NONBLANK |rdigit?| |makeFort,untangle2| |pfSequence|
-            MONITOR-DATA-MONITORP |lineoftoks|
-            |reassembleTowerIntoType| |checkForBoolean|
-            MONITOR-DATA-SOURCEFILE REDUCTION-RULE |lfnegcomment|
-            |pair2list| |makeCompactSigCode| |pfUnSequence|
-            MONITOR-DATA-NAME |incCommand?| |lfcomment| |complexRows|
-            |pf0SequenceArgs| |inclmsgPrematureFin|
-            |decomposeTypeIntoTower| |vectorOfFunctions| |pfSequence?|
-            |pfPile| MONITOR-NRLIB |stackTraceOptionError| |npMissing|
-            |makeCompactDirect| |isListOfIdentifiers| |pfFix|
-            |makeDomainTemplate| |mac0Get| MONITOR-EXPOSEDP
-            |isListOfIdentifiersOrStrings| |depthAssoc| |addSpaces|
-            MONITOR-APROPOS |incClassify| FBPIP |getTraceOption,hn|
-            |pfFree| |depthAssocList| VMLISP::GETINDEXTABLE
-            |makeOutputAsFortran| |macWhere| |isDefaultPackageName|
-            MONITOR-PARSE |getCatAncestors| MONITOR-SPADFILE
-            |gensymInt| |mkQuote| |pfSourceStok| |mkQuote,addQuote|
-            |pfLeafPosition| MONITOR-DATA-P |npMoveTo| |pfAbSynOp|
-            |predicateBitIndex| |If?| |coerceUnion2Branch| |vec2Lists|
-            |pf0MLambdaArgs| |vec2Lists1| |pfMLambda?| |incBiteOff|
-            |nodeSize| |pfTypedId| |asyAncestors| |formatSlotDomain|
-            |pf0LambdaArgs| |npEncAp| |Top?| |vectorSize|
-            |transOnlyOption| |pfLambda?| |Skipping?| KILL-COMMENTS
-            |getPreviousMapSubNames| |typeToOutputForm| |pfLeaf?|
-            |KeepPart?| |dcOpTable| UNEMBED |getBpiNameIfTracedMap|
-            |macExpand| TOKEN-LOOKAHEAD-TYPE |untraceAllDomainLocalOps|
-            |pfMLambdaBody| |npFromdom1| GET-IDENTIFIER-TOKEN
-            VMLISP::GET-INDEX-TABLE-FROM-STREAM |domainOne|
-            |listOfPatternIds| |pfReturnNoName| |SkipPart?|
-            |orderBySubsumption| GET-NUMBER-TOKEN
-            |parseAndEvalToStringForHypertex| |removeZeroOne|
-            |npZeroOrMore| |SkipEnd?| GET-STRING-TOKEN
-            |removeZeroOneDestructively| |dcCats1| GET-BSTRING-TOKEN
-            |parseAndEvalToHypertex| |Identity| |makeCompactDirect1,fn|
-            GET-SPECIAL-TOKEN |oldParseAndInterpret|
-            |macSubstituteOuter| |pfIterate| MAKE-ADJUSTABLE-STRING
-            |parseAndInterpret| IVECP |protectedEVAL| |mkAtree|
-            |formatUnabbreviated| |getLookupFun| LIST2VEC
-            |parseAndInterpToString| |pfSourcePosition| |retract1|
-            |formatUnabbreviatedTuple| |pfLoop1| |numberOfNodes|
-            |parseAndEvalToStringEqNum| |macApplication|
-            |formatUnabbreviatedSig| |orderByContainment|
-            |parseAndEvalToString| |pf0ApplicationArgs| |dcOps|
-            PRINT-FLUIDS |pfApplicationOp| |retract2Specialization|
-            |ncParseFromString| |stripOutNonDollarPreds|
-            |pfSequenceToList|)) 
+            |pfComDefinitionDoc| |lnrgammaRatapprox| |optXLAMCond|
+            MONITOR-DECR |indentFortLevel| HACKFORIS
+            |pfComDefinitionDef| |phiRatapprox| |readHiFi| |optIF2COND|
+            |pfDefinitionSequenceArgs| |retract| |pfExportDef|
+            |gammaRatkernel| |histInputFileName| |optimize,opt|
+            |pf0TypingItems| |removeUndoLines| |fortFormatIf|
+            |pf0ExportItems| INTERPSYS-ECL-IMAGE-INIT
+            MONITOR-CHECKPOINT |fortFormatElseIf| |pf0ImportItems|
+            |parseGreaterThan| DATABASE-ABBREVIATION |npZeroOrMore|
+            |pfInlineItems| |string2BootTree| DATABASE-ANCESTORS
+            MONITOR-DIRNAME |pfQualType?| DATABASE-CONSTRUCTOR
+            |fetchOutput| |fortFormatIntrinsics| |pfQualTypeType|
+            DATABASE-CONSTRUCTORCATEGORY |undoChanges| MONITOR-NRLIB
+            |printMms| |pfQualTypeQual| |pfDefinitionRhs|
+            DATABASE-CONSTRUCTORKIND |retractAtree| CHARP |emptyAtree|
+            |cgammat| |pfLambdaTran| DATABASE-CONSTRUCTORMODEMAP
+            MONITOR-SPADFILE |pfCollectArgTran| DATABASE-COSIG
+            |bottomUpCompile| |clngammacase3| |pfLambdaRets|
+            DATABASE-DEFAULTDOMAIN |setIOindex| |bottomUpUseSubdomain|
+            |compileTimeBindingOf| MONITOR-APROPOS
+            |getAttributesFromCATEGORY| |cgammaBernsum| |pfLambdaBody|
+            IDENT-CHAR-LIT DATABASE-MODEMAPS DEF-EQUAL
+            |resolveTypeList| |pfCollectIterators| EQUABLE
+            DATABASE-NILADIC |TruthP| |zeroOneConversion|
+            |cgammaAdjust| |pfCollectBody| MKQ DATABASE-OBJECT
+            |dewritify| |pfSequence2Sex0| DATABASE-OPERATIONALIST
+            RPACKFILE FOAM::PROCESS-IMPORT-ENTRY |isAVariableType|
+            RENAME DATABASE-DOCUMENTATION |writify|
+            |optPredicateIfTrue| |mkRationalFunction| |pfRuleLhsItems|
+            |new2OldLisp| DATABASE-CONSTRUCTORFORM |optCONDtail|
+            |dqUnit| |pfLhsRule2Sex| DEF-RENAME DATABASE-ATTRIBUTES
+            |replaceGoGetSlot| |optSEQ| |dqConcat| |pfDo| |pfRuleRhs|
+            DATABASE-PREDICATES |spadClosure?| |pfLoop|
+            |asIsCategoryForm| |pfRhsRule2Sex| DATABASE-SOURCEFILE
+            |writify,writifyInner| RECOMPILE-LIB-FILE-IF-NECESSARY
+            |optSEQ,getRidOfTemps| |dqUnitCopy| |trimComments|
+            |ruleLhsTran| DATABASE-PARENTS |unwritable?|
+            |optSEQ,SEQToCOND| |dqToList| |pfTupleParts| |PsiIntpart|
+            |rulePredicateTran| DATABASE-USERS |optSEQ,tryToRemoveSEQ|
+            |pfAdd?| |asyExtractDescription| |patternVarsOf|
+            |finalizeLisplib| LIBSTREAM-DIRNAME |optimizeFunctionDef|
+            |pfComDefinition?| DATABASE-DEPENDENTS |lisplibDoRename|
+            |dewritify,dewritifyInner| |optCatch| |pfDeclPart?|
+            |asyAncestors| |negintp| |dewritify,is?| |pfExport?|
+            |asyArgs| DATABASE-SPARE PNAME |optCons| |pfInline?|
+            |hackToRemoveAnd| |loadSpad2Cmd| |optMkRecord| |varsInPoly|
+            |pfWith?| |sayBrightlyLength| |fnameExists?| |optCond|
+            |resolveTypeListAny| |pfTyping?| |asyPredTran|
+            |traceSpad2Cmd| SEQOPT |nopilesSpad2Cmd| MAKE-BVEC |pfId?|
+            |fnameDirectory| |pfImport?| |asyAncestorList|
+            |getMapSubNames| MKQSADD1 |setNopiles| |failCheck|
+            |StringToDir| |optRECORDELT| |typeIsASmallInteger|
+            |pfDWhere?| |mkNiladics| |DirToString| |optSETRECORDELT|
+            |pfWrongRubble| OUR-WRITE-DATE |trace1| |objCodeMode|
+            |myWritable?| |optRECORDCOPY| |pfAddBase|
+            |asyLooksLikeCatForm?| MAKE-DIRECTORY |objCodeVal|
+            |npListing| |optSuchthat| |pfWithBase| |asyMkpred|
+            |getTraceOption| |readSpad2Cmd| |fnameName| |optMINUS|
+            |pfWithWithin| |pathnameTypeId| |fnameType| |optQSMINUS|
+            |pfLambdaArgs| |asyArg| |untrace| |wrapped2Quote| |opt-|
+            |fnameReadable?| |pfId| |fnameWritable?| |optLESSP|
+            |pfTLambdaArgs| |npConditional| |optEQ| |pfMLambdaArgs|
+            |pfTweakIf| THETA_ERROR |containsVariables|
+            |pfWhereContext| |pilePlusComment| |pfLoopIterators|
+            |validateOutputDirectory| |pilePlusComments| |pfForinLhs|
+            |asytranLiteral| |isTupleForm| |userError|
+            |reportOpsFromUnitDirectly| |transTraceItem|
+            |pfDefinitionLhsItems| |asytranEnumItem| |pileCforest|
+            LISTOFATOMS |npEqPeek| |SpadInterpretFile|
+            |getTraceOptions| FOAM::FOAMPROGINFOSTRUCT-P
+            |pfAssignLhsItems| |pileColumn| |wrapMapBodyWithCatch|
+            FOAM:|printNewLine| |setCurrentLine| |saveMapSig|
+            |pfTypingItems| |serverReadLine| |statement2Fortran|
+            |pfExportItems| NUMOFNODES |npEncAp| |say2PerLine|
+            |fortran2Lines| |pfLocalItems| |asyCosig|
+            |stackTraceOptionError| |NRTgenInitialAttributeAlist|
+            |checkLines| |pfFreeItems| |asyConstructorArgs|
+            |altSeteltable| |domainToGenvar|
+            |displayOperationsFromLisplib| |ncloopEscaped|
+            |bubbleConstructor| |exp2FortOptimize| |pfImportItems|
+            |asyConstructorArg| |transOnlyOption| SUBANQ |fortPre|
+            |asyCosigType| |isHomogeneousArgs| |enPile|
+            |getTraceOption,hn| |segment| |pfCollect1?| |separatePiles|
+            |isListOfIdentifiersOrStrings| |printSynonyms| |exp2Fort1|
+            |pfCollectVariable1| |createAbbreviation| |upREPEAT1|
+            |lastTokPosn| |isListOfIdentifiers| |processSynonymLine|
+            |fortranCleanUp| |pfTaggedToTyped| |upREPEAT0|
+            |firstTokPosn| |genDomainTraceName|
+            |processSynonymLine,removeKeyFromLine| |mkLineList|
+            |pfFlattenApp| |asyShorten| |interpOnlyREPEAT|
+            |pileComment| |npAdd| |ncloopPrintLines| |pfTaggedToTyped1|
+            |removeTracedMapSigs| |compileAsharpLispCmd| |npWith|
+            |intloopEchoParse| |pfTransformArg| |coerceSpadArgs2E|
+            |compileSpadLispCmd| |insertpile| |npTrapForm|
+            |asyExtractAbbreviation| |compileAsharpArchiveCmd|
+            |lineoftoks| |pfCheckId| |coerceSpadFunValue2E|
+            |typeToOutputForm| |exp2FortOptimizeCS| |pfCheckArg|
+            |getPreviousMapSubNames| |polyVarlist| |ncloopIncFileName|
+            |typeToInputForm| |exp2FortOptimizeCS1| |typeOfType|
+            |setAsharpArgs| |removeQuote| |ncloopParse| |pfSexpr,strip|
+            |asyTypeJoin| |setInputLibrary| |updateSourceFiles|
+            WHOCALLED |incString| |pf0FlattenSyntacticTuple|
+            |asyCATEGORY| |setOutputLibrary| |pathnameName|
+            |pfPrintSrcLines| SPADSYSNAMEP
+            |exp2FortOptimizeCS1,popCsStacks| |pfListOf?| |spadTrace,g|
+            |poNoPosition?| |getTarget| |pfSemiColon| |asyType|
+            |copyHack| |pathnameDirectory| |pfSemiColon?|
+            |fortran2Lines1| |pfCollect2Sex| |asyTypeMapping|
+            |copyHack,fn| |flattenOperationAlist| |getUnname|
+            MONITOR-EVALBEFORE |displayLines| |pfSemiColonBody|
+            |pfForin?| |upDEF| |setFortTmpDir| |containsPolynomial|
+            |npAnyNo| |asTupleAsList| |expression2Fortran|
+            |pfSymbolVariable?| VMLISP::LIBSTREAM-INDEXSTREAM
+            |pf0ForinLhs| |upDollar| |setFortDir| |patternCheck|
+            |displayOperations| |phMacro| |dispfortexp1| |pfForinWhole|
+            |pfDocument?| |upequation| |displayMacros| |getValue|
+            |npFromdom1| |orderBySlotNumber| |pfWhile?|
+            |pfDocumentText| |uperror| |phInterpret| |mkAtree|
+            |displayLines1| |pfStringConstString| |pfWhileCond|
+            |upfree| |setHistory| GETZEROVEC |intInterpretPform|
+            |LZeros| |pfSuchthat?| |pfExpression?| |uplocal|
+            |setOutputCharacters| |displayParserMacro| |pf2Sex| |mkMat|
+            |pfSuchthatCond| |pfNot| |uphas| |displayMacro|
+            |zeroOneTran| |pfDo?| |upIF| |npDotted| UNVEC |pfDoBody|
+            |upis| |bottomUp| |pfTyped?| |upisnt|
+            |sayAsManyPerLineAsPossible| |nonBlank| |pfTypedType|
+            |upiterate| |changeExprLength| |pfAssign?| |upbreak|
+            |qTWidth| |checkType| |pf0AssignLhsItems| |upLET| |objVal|
+            |subSub| |pfAssignRhs| |lnrgamma| |getMode|
+            |fortFormatTypes,unravel| |pfDefinition?| S-TO-C |letWidth|
+            |fortFormatCharacterTypes| |pfDefinition2Sex| |lncgamma|
+            |asTupleNew0| |sumWidth| |mkParameterList| CSCH
+            |pfLambda2Sex| |upQUOTE| C-TO-S VMLISP::FLAT-BV-LIST
+            |pfRestrict?| |uppretend| |rgamma|
+            |displayProperties,sayFunctionDeps| |superSubSub| |nameLen|
+            |pfRestrictExpr| |cgamma| |isWrapped| |addCommas|
+            |pfRestrictType| |isHomogeneous| |unwrap| |binomSub|
+            |pfFree?| |upREPEAT| |editSpad2Cmd| |getBasicMode|
+            |binomSuper| MANEXP |pf0FreeItems| |upreturn|
+            |newHelpSpad2Cmd| |getBasicObject| |binomWidth| ACOT
+            |pfLocal?| |upSEQ| C-TO-R
+            |fortFormatCharacterTypes,mkParameterList2| COT
+            |pf0LocalItems| |upTuple| |isType| |altSuperSubSub| SEC
+            |pfWrong?| |uptypeOf| |altSuperSubSuper| |isFloat| CSC
+            |pfAnd?| |upwhere| RLNGAMMA |altSuperSubWidth|
+            |PARSE-NudPart| ACSC |pfAndLeft| CLNGAMMA STACK-UPDATED
+            |superSubWidth| |fortPreRoot| ASEC |pfAndRight| RGAMMA
+            |isMapExpr| |superSubSuper| COTH |pfOr?| CGAMMA
+            TRACEOPTIONS |suScWidth| |PARSE-GliphTok| |fortExpSize|
+            SECH |pfOrLeft| |emptyInterpreterFrame| |fortSize| ACSCH
+            |pfOrRight| |fortSize,elen| ACOTH |pfNot?| |npEqKey|
+            |makeHistFileName| |vConcatSub| ASECH |pfNotArg|
+            |pfNovalue?| |npItem1| |findFrameInRing| |Zeros|
+            |binomialSub| |pfNovalueExpr| |pfEnSequence|
+            |binomialSuper| |pfRule?| |npPush| |frameEnvironment|
+            |bottomUpPercent| |binomialWidth| |pfRule2Sex| |pfNovalue|
+            /UNEMBED-Q LOG10 |pfBreak?| |pfBreakFrom| |tokPart|
+            |pfReturn?| STACK-STORE |pfReturnExpr| |mkAtreeNode|
+            |pfIterate?| |PARSE-NBGliphTok| |pf0WhereContext| |pfTuple|
+            |getModeOrFirstModeSetIfThere| DROPENV |pfWhereExpr|
+            |getUnionOrRecordTags| SHOWBIND |pfLiteralClass|
+            |bottomUpElt| MONITOR-FILE |pfLiteralString| |float2Sex|
+            |pfLeafToken| |asytran| |pmDontQuote?|
+            |handleLispBreakLoop| MAKE-SYMBOL-OF
+            |asyConstructorModemap| |asyDocumentation| |pfOp2Sex|
+            |npParened| |asyParents| |pfApplicationArg| |npBracked|
+            |asMakeAlist| |pfSuchThat2Sex| |npBraced| |asySubstMapping|
+            |hasOptArgs?| |npAngleBared| |getToken|
+            |pf0DefinitionLhsItems| |asyComma?| SHOWDATABASE
+            |npMissing| STACK-POP |pfLeaf?| |pfSexpr|
+            |asMakeAlistForFunction| |pfPile| |pushSatOutput|
+            |pf0LambdaArgs| TOKEN-TYPE |pfTypedId| STACK-TOP
+            |pfCheckInfop| |clearCache| TOKEN-FIRST-CHAR TOKEN-NONBLANK
+            |concatList| |npSemiListing| |mkMessage| |ppos|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T *) *) ASHARP |sayBrightlyNT| |ioHook|
-            COMPILE-LIB-FILE FOAM:COMPILE-AS-FILE)) 
+    '(FTYPE (FUNCTION (T *) *) ASHARP |ioHook| |sayBrightlyNT|
+            FOAM:COMPILE-AS-FILE COMPILE-LIB-FILE)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T T) (VALUES T T)) |spadTraceAlias|
-            FOAM:AXIOMXL-GLOBAL-NAME)) 
+    '(FTYPE (FUNCTION (T T T) (VALUES T T)) FOAM:AXIOMXL-GLOBAL-NAME
+            |spadTraceAlias|)) 
 (PROCLAIM '(FTYPE (FUNCTION (T *) STRING) MAKE-FULL-CVEC)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T) *) SUFFIX VMLISP::COPY-FILE
-            VMLISP::COPY-LIB-DIRECTORY |spadcall2| |mkAtreeWithSrcPos|
-            COMPILE-DEFUN |set1| |displaySetOptionInformation| $FCOPY
-            |makeLongTimeString| |makeStream| SPAD-SAVE
-            |printTypeAndTime| |printTypeAndTimeNormal| |msgText|
-            ADDCLOSE MONITOR-PRINVALUE |getMinimalVarMode|
-            SAYBRIGHTLYNT1 |writeInputLines| DEFSTREAM |inclHandleBug|
-            |readData,xdrRead1| |print| |xdrRead|
-            |formArguments2String,fn| |xdrWrite| COERCE-FAILURE-MSG
-            |reportOperations| |reportOpsFromLisplib0| /TRACE-2
-            |spadTrace| |handleParsedSystemCommands|
-            |handleTokensizeSystemCommands| PRINMATHOR0
-            |tokenSystemCommand| MONITOR-PRINT |handleNoParseCommands|
-            MONITOR-PRINARGS-1 |displayProperties| /TRACELET-PRINT
-            |ncEltQ| |rwriteLispForm| |evalAndRwriteLispForm|
-            |isDomainConstructorForm| |isDomainForm| |output|
-            |sayErrorly| |saturnSayErrorly| |sayKeyedMsg|
-            |evalSlotDomain| |nrtEval| |htCommandToInputLine,fn|
-            QUOTIENT |makeLongSpaceString| |ScanOrPairVec| |npsystem|
-            |reportOpsFromLisplib| |ppPair| |reportOpsFromLisplib1|
-            |spleI1| COMP_QUIETLY_USING_DRIVER |ncloopInclude|
-            |intSayKeyedMsg| |intloopReadConsole| |ncloopCommand|
-            |ncloopInclude1| |printMap1| |patternCheck,subWild|
-            |ncConversationPhase| |fortError| |LAM,FILEACTQ|)) 
+    '(FTYPE (FUNCTION (T *) T) BOOTTRAN::BOOTTOCL |pfSymb|
+            |getConstructorExports| |centerNoHighlight| PRETTYPRINT
+            MAKE-HASHTABLE MAKE-FILENAME MACERR
+            GET-BOOT-IDENTIFIER-TOKEN MATCH-CURRENT-TOKEN |simpHasPred|
+            |centerAndHighlight| CATCHALL TAB |F,PRINT-ONE|
+            |printRecordFile| |htFile2RecordFile| VMREAD
+            |LAM,EVALANDFILEACTQ| PRETTYPRIN0 MONITOR-ADD PRINT-FULL
+            |desiredMsg| |fillerSpaces| |sayBrightlyI| BLANKS
+            |sayBrightly| |htFile2InputFile| |inputFile2RecordFile|
+            MAKE-INPUT-FILENAME VMLISP::MAKE-FULL-NAMESTRING
+            |interpret| |defaultTargetFE| RDEFIOSTREAM MATCH-NEXT-TOKEN
+            |pfSymbol| |pfExpression|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T *) T) MONITOR-ADD MATCH-NEXT-TOKEN
-            |desiredMsg| PRINT-NEW-LINE MAKE-HASHTABLE MAKE-FILENAME
-            MACERR |centerAndHighlight| |sayBrightlyI| BLANKS
-            PRETTYPRINT |defaultTargetFE| |pfSymb| PRINT-FULL
-            RDEFIOSTREAM |simpHasPred| VMLISP::MAKE-FULL-NAMESTRING
-            VMREAD |LAM,EVALANDFILEACTQ| PRETTYPRIN0 |sayBrightly|
-            |pfExpression| |htFile2RecordFile| |inputFile2RecordFile|
-            |htFile2InputFile| MAKE-INPUT-FILENAME MATCH-CURRENT-TOKEN
-            COMPSPADFILES |fillerSpaces| FINDTAG |centerNoHighlight|
-            |pfSymbol| |printRecordFile| GET-BOOT-IDENTIFIER-TOKEN
-            |getConstructorExports| CATCHALL TAB |F,PRINT-ONE|
-            |interpret| BOOTTRAN::BOOTTOCL)) 
+    '(FTYPE (FUNCTION (T T) *) /TRACE-2 |set1|
+            |isDomainConstructorForm| |displaySetOptionInformation|
+            |spadTrace| |evalAndRwriteLispForm| COERCE-FAILURE-MSG
+            PRINMATHOR0 MONITOR-PRINT MONITOR-PRINARGS-1 |sayKeyedMsg|
+            |replaceNamedHTPage| |popUpNamedHTPage| |inclHandleBug|
+            |ppPair| ADDCLOSE |rwriteLispForm| |output| |spleI1|
+            QUOTIENT |printMap1| |mkAtreeWithSrcPos| |ncEltQ|
+            VMLISP::COPY-FILE VMLISP::COPY-LIB-DIRECTORY |spadcall2|
+            |printTypeAndTime| /TRACELET-PRINT |printTypeAndTimeNormal|
+            |msgText| COMP_QUIETLY_USING_DRIVER |isDomainForm|
+            |makeLongTimeString| |LAM,FILEACTQ| |makeLongSpaceString|
+            |xdrWrite| |xdrRead| COMPILE-DEFUN |readData,xdrRead1|
+            SUFFIX |evalSlotDomain| |getMinimalVarMode| |nrtEval|
+            |formArguments2String,fn| $FCOPY SPAD-SAVE SAYBRIGHTLYNT1
+            |htCommandToInputLine,fn| |handleNoParseCommands|
+            |ncloopInclude1| |handleTokensizeSystemCommands|
+            |handleParsedSystemCommands| |npsystem|
+            |tokenSystemCommand| |print| |writeInputLines|
+            |ScanOrPairVec| |reportOperations| |reportOpsFromLisplib0|
+            |intloopReadConsole| |reportOpsFromLisplib1|
+            |reportOpsFromLisplib| |ncloopCommand| |makeStream|
+            |ncConversationPhase| |patternCheck,subWild|
+            |displayProperties| MONITOR-PRINVALUE |fortError|
+            |intSayKeyedMsg| DEFSTREAM |ncloopInclude| |sayErrorly|
+            |saturnSayErrorly|)) 
 (PROCLAIM
     '(FTYPE (FUNCTION (T T T) (*)) MACRO-INVALIDARGS MACRO-MISSINGARGS)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION (T T) T) |pfPushMacroBody|
-            |getAliasIfTracedMapParameter| |pfCopyWithPos| |pfMacro|
-            |throwEvalTypeMsg| |canCoerceTower| |getMapSig| |mkObj|
-            |replaceLast| |coerceInt| |getArgValue1| |constructT|
-            |canCoerceLocal| |search| |searchCurrentEnv| |incDrop|
-            |coerceInt0| |getProplist| |objSetMode| |retractByFunction|
-            |coerceInt1| |coerceIntAlgebraicConstant| GGREATERP
-            |coerceIntTower| CGREATERP VMLISP::PUTINDEXTABLE
-            |compareTypeLists| |Delay| VMLISP::WRITE-INDEXTABLE SORTBY
-            |getArgValueOrThrow| |suffix?| |pairList| |incAppend|
-            GETALIST |next| |match?| |member| |maskMatch?| REMALIST
-            |deleteAssocWOC| |insertWOC| |erMsgCompare| |compareposns|
-            |stringPrefix?| |matchMmSigTar| |stringChar2Integer|
-            |getOpArgTypes| |getOpArgTypes,f| |getOpArgTypes1|
-            |sublisNQ| |insert| |setMsgCatlessAttr| |rep| |quickAnd|
-            |isKeyQualityP| |quickOr| |assoc| |fastSearchCurrentEnv|
-            |putFlag| EFFACE |rPsiW| |insertPos| CHAR-EQ |setMsgText|
-            CHAR-NE EMBED |queueUpErrors| |cpsireflect|
-            |BesselIAsymptOrder| |dollarTran| |thisPosIsEqual| |horner|
-            |redundant| MAKE-DATABASES |BesselKAsymptOrder|
-            |thisPosIsLess| |f01| |setMsgUnforcedAttrList| |objNewCode|
-            |cbeta| |PsiXotic| |setMsgForcedAttrList| |putMode|
-            BVEC-MAKE-FULL LEXGREATERP |rempropI| |cgammaG|
-            |dispfortarrayexp| |mkAtree1WithSrcPos| |BesselJRecur|
-            |expression2Fortran1| |transferSrcPosInfo| BVEC-CONCAT
-            SET-LIB-FILE-GETTER |BesselJAsymptOrder| BVEC-EQUAL
-            BVEC-GREATER RPLPAIR |BesselJAsympt| |updateSymbolTable|
-            BVEC-AND DELDATABASE |asyWrap| BVEC-OR
-            |integerAssignment2Fortran1| BVEC-XOR |chebstareval|
-            BVEC-NAND |asySignature| BVEC-NOR |asySig| HPUT*
-            |asySigTarget| INITIAL-SUBSTRING-P |besselIback|
-            |dispfortexpf| |objSetVal| |dispfortexpj| |asTupleNewCode|
-            LENGTHENVEC |mkAtreeNodeWithSrcPos| STRING2ID-N
-            |coafAndCoaf| |addDmpLikeTermsAsTarget| ESCAPE-KEYWORDS
-            |ordUnion| |ordIntersection| |mkValueCheck| |andReduce|
-            |mkValCheck| |orDnf| |coafOrDnf| |addDefMap|
-            |EqualBarGensym| |EqualBarGensym,fn| |modemapPattern|
-            |simpBoolGiven| |clearDependencies| |putDependencies|
-            |makeNewDependencies| |optCallSpecially,lookup|
-            |findLocalVars| |mkLocalVar| |newHasTest|
-            |optimizeFunctionDef,fn| |removeVectorElt|
-            |optimizeFunctionDef,replaceThrowByReturn|
-            MAKE-PARSE-FUNCTION1 |andDnf| MAKE-PARSE-FUNC-FLATTEN
-            MAKE-PARSE-FUNCTION $FINDFILE |AssocBarGensym|
-            |optCatch,changeThrowToGo| |getMapBody| |newHasTest,fn|
-            PRINT-AND-EVAL-DEFUN |defLetForm| EVAL-DEFUN |defLET2|
-            |defLET1| |mkFreeVar| |addCARorCDR|
-            |optCatch,changeThrowToExit| |sayDroppingFunctions|
-            |defISReverse| |deleteWOC| |defIS1| |leftBindingPowerOf|
-            /READ |position| |rightBindingPowerOf| |sort|
-            |optCatch,hasNoThrows| QUOTIENT2 |compileBody|
-            |applyWithOutputToString| |makeLocalModemap| DIVIDE2
-            |saveDependentMapInfo| |makeSF| |getOption|
-            |asyTypeJoinPart| |putBodyInEnv| |BooleanEquality|
-            |mapDefsWithCorrectArgCount| |app2StringWrap| |hasPair|
-            |lassocSub| |evalSharpOne| |coerceUn2E| |npMissingMate|
-            |coerceVal2E| GLESSEQP |containedRight|
-            |displaySetVariableSettings| |depthOfRecursion| DEF-LET
-            LEXLESSEQP |pileCtree| |getLocalVars| |pileForest|
-            |varIsOnlyVarInPoly| |coerceRe2E| |formDecl2String|
-            |createEnum| |mkMapAlias| |pfForin| |EnumPrint| |pileTree|
-            |printNamedStatsByProperty| |mkFormalArg| |formJoin1|
-            |UnionPrint| FLAG |makePattern| |RecordPrint|
-            |addPatternPred| |defIS| |objNewWrap| |sayCacheCount|
-            |canMakeTuple| |deleteLassoc| |coerceByFunction|
-            |deleteAssoc| |formArguments2String| |deleteAssocWOC,fn|
-            |pileForest1| RDROPITEMS |insertWOC,fn| |eqpileTree|
-            |mkAliasList,fn| DEF-IT |MappingPrint| SEGMENT |union|
-            |putDependencies,removeObsoleteDependencies| DEF-SELECT1
-            |concat1| |stringMatches?| |getEqualSublis,fn| DEF-SELECT2
-            |npTypedForm1| |basicMatch?| |findLocalVars1| |defLET|
-            |makeByteWordVec2| DEF-IS2 |nonRecursivePart| STRINGPAD
-            |pfWrong| |interpMap| DEF-IS-REV |makeRuleForm| $REPLACE
-            |assocCircular| UNIONQ |testExtend| |predCircular|
-            |formalSubstitute| WHDEF |delete| |recurrenceError|
-            |hasCat| AND2 |encodeCategoryAlist| OR2 |mergeOr|
-            |catPairUnion,addConflict| |simpOrUnion1| TRUNCLIST
-            |upIFgenValue| SUBLISNQ |evalLETchangeValue| CONTAINED
-            |isPatternMatch| S+ |isPatMatch| |intersection|
-            |addDomainToTable| |untraceDomainLocalOps| PREDECESSOR
-            |evalLET| |evalLETput| LASSOC |rassoc| |processInteractive|
-            |clearAllSlams,fn| QLASSQ DEFINE-FUNCTION PAIR S*
-            ASSOCIATER |recordAndPrint| |putPvarModes| DO_LET |agg|
-            NLIST PARSEPILES |interpretTopLevel| |processInteractive1|
-            ESCAPED |genIFvalCode| -REDUCE-OP DELASC INITIAL-SUBSTRING
-            |seteltable| STOREBLANKS |prnd| |printTypeAndTimeSaturn|
-            ADD-PARENS-AND-SEMIS-TO-LINE |matSuperList1|
-            |substituteSegmentedMsg| TAKE DROP |compileIs| |opWidth|
-            TRUNCLIST-1 |sameUnionBranch| |scylla| SUBB |CONTAINED,EQ|
-            |CONTAINED,EQUAL| |canCoerce;| DELLASOS |matSubList1|
-            |canCoerce1| ?ORDER |pfTLam| |HasSignature| SAYBRIGHTLY1
-            |pfCoerceto| |pfBraceBar| |everyNth| |isEqualOrSubDomain|
-            |queryUserKeyedMsg| |hasCorrectTarget| |resolveTT;|
-            |makePathname| |resolveTT1| SETDIFFERENCEQ |pfMLambda|
-            |formatJoinKey| |app2StringConcat0| |pfDWhere| |plural|
-            |findSubstitutionOrder?,fn| PRINT-DEFUN |ofCategory|
-            |formatOpSignature| |pfWDeclare| |linearFormatForm|
-            SPADRREAD |canCoerceFrom;| |canCoerceFrom0|
-            |filterListOfStrings| |inclHandleSay|
-            |satisfiesRegularExpressions| |inclHandleWarning|
-            |evalCategory| |pfParen| |inclHandleError| |pfBracketBar|
-            |replaceSharps| INTERSECTIONQ /GETOPTION |isPointer?|
-            |substInOrder| |pfComDefinition| SETANDFILE |pfBracket|
-            |wt| STACK-LOAD |incRenumberLine| |pfRetractTo|
-            |incRenumberItem| PAIRTRACE BPIUNTRACE STACK-PUSH
-            |getFortranType| |getConditionsForCategoryOnType| |wl|
-            |isString?| |pfRestrict| |coerceInteractive|
-            |formatOperation| |showInput| |formatOpSymbol| |showInOut|
-            PUSH-REDUCTION |pfOr| |getArgValue| |writeData|
+    '(FTYPE (FUNCTION (T T) T) |coerceOrConvertOrRetract| /TRACE-1
+            |coerceOrRetract| NREVERSE-N |incStream| CONS-N
+            |traceOptionError| |incTrunc| |upLispCall| APPEND-N
+            |npRightAssoc| |traceDomainConstructor| |coerceRetract|
+            |pfApplication| /GETTRACEOPTIONS |constructT| |tracelet|
+            |genIFvalCode| |hashCombine| |displaySetVariableSettings|
+            |readLib| |upIFgenValue| |macLambdaParameterHandling|
+            |rassocSub| |mac0SubstituteOuter| |spadPrint|
+            |putPvarModes| |SymMemQ| |pfIfThenOnly| |compileIs|
+            /UNTRACE-1 |isPatMatch| |spadUntrace| |positionInVec|
+            |hasCat| MONITOR-EVALTRAN |mkIterVarSub| MONITOR-EVALTRAN1
+            MONITOR-GETVALUE |modemapsHavingTarget| |replaceSymbols|
+            |quickAnd| |setBootAutoLoadProperty| |mkBootAutoLoad|
+            GLESSEQP /EMBED-1 |declare| /EMBED-Q |uplocalWithType|
+            |upfreeWithType| |declareMap| |deleteAll| |tempExtendsCat|
+            |mkCategoryOr| |simpCategoryOr| |formalSubstitute|
+            DAASENAME |has| |quickOr| |catPairUnion,addConflict|
+            ASHARPMKAUTOLOADFUNCTION ADDOPERATIONS
+            VMLISP::PUTINDEXTABLE |simpOrUnion1| |mergeOr| |testExtend|
+            VMLISP::WRITE-INDEXTABLE |categoryParts,build|
+            |inclHandleError| |inclHandleWarning|
+            |updateCategoryTableForDomain| |inclHandleSay|
+            |getSlotFromCategoryForm| |updateCategoryTable|
+            |inclmsgFileCycle| DELDATABASE GETCONSTRUCTOR WRAPDOMARGS
+            |postFlatten| |say2PerLineWidth| |getValueFromEnvironment|
+            |postTranSegment| |splitListOn| |canFit2ndEntry|
+            |throwKeyedMsg| |center| |inclFname| |installConstructor|
+            |getCDTEntry| |incActive?| |parseTranCheckForRecord|
+            |condAbbrev| STOREBLANKS |unabbrev1| INITIAL-SUBSTRING
+            |throwPatternMsg| ADD-PARENS-AND-SEMIS-TO-LINE |assertCond|
+            |ifCond| |unabbrevUnionComponent| |checkForFreeVariables|
+            |unabbrevRecordComponent| ESCAPED PARSEPILES
+            |BooleanEquality| |assoc| ERROR-FORMAT MAKEOP MAKENEWOP
+            |parseTypeEvaluateArgs| EFFACE |rePackageTran|
+            |parseCases,casefn| EMBED |getLisplib| |getLisplibNoCache|
+            $FINDFILE |NRTdescendCodeTran| |agg| /UNTRACE-2 LEXGREATERP
+            |scanExponent| |posend| |position| RPLPAIR |defLET|
+            |termRW1| |matWList| TRANSLABEL1 HPUT* |scanCheckRadix|
+            |subCopy0| |lfrinteger| |subCopyOrNil| REMOVE-ESCAPES
+            |macSubstituteId| |deepSubCopy0| |deepSubCopyOrNil|
+            |termRW| |matWList1| |scanInsert| |saveDependentMapInfo|
+            |matSubList1| STRING2ID-N |matSuperList1| GET-GLIPH-TOKEN
+            |nonRecursivePart| ASSOCIATER |expandRecursiveBody|
+            |nonRecursivePart1| |everyNth| |containsOp| |notCalled|
+            |mathPrint1| |allLASSOCs| |lnSetGlobalNum| |mkValueCheck|
+            |HasCategory| |wordFrom| |incRenumberItem| |mkValCheck|
+            |HasSignature| CHAR-EQ |writeLib| RDROPITEMS
+            |incRenumberLine| |findLocalVars1| |union| |incDrop|
+            |mkFreeVar| |throwEvalTypeMsg| |sySpecificErrorHere|
+            |insertWOC| |incCommandTail| |isDomainSubst,findSub|
+            |postFlattenLeft| |isDomainSubst,fn| |sayPatternMsg|
+            |syIgnoredFromTo| |autoLoad| TRANSLABEL |addDefMap|
+            |sayKeyedMsgLocal| |modemapPattern| |makeRuleForm|
+            |saturnThrowKeyedMsg| PUSH-REDUCTION |displayRule|
+            |throwKeyedMsg1| |dcOpLatchPrint| |outputFormat|
+            |sayKeyedMsgAsTeX| |saturnKeyedSystemError| |getArgValue1|
+            |simplifyMapPattern| |keyedSystemError1|
+            |getSystemModemaps| |clearCategoryTable1| |breakKeyedMsg|
+            |dcOpPrint| GETDATABASE |mkAlistOfExplicitCategoryOps,fn|
+            |getBindingPowerOf| |getArgValueOrThrow| |addDomainToTable|
+            |pairList| |opWidth| |encodeCategoryAlist|
+            |loadLibIfNecessary| REMOVER
+            |convertOpAlist2compilerInfo,formatSig| SETDIFFERENCE
+            GETALIST |isKeyQualityP| |putMode| |getMsgCatAttr|
+            |setMsgCatlessAttr| |fastSearchCurrentEnv|
+            |getAllModemapsFromDatabase| |rep|
+            |getModemapsFromDatabase| |mkLocalVar| |getI|
+            |findLocalVars| |insertModemap| |makeNewDependencies|
+            |putDependencies| |prnd| |clearDependencies| |FromTo|
+            |mkFormalArg| |RecordPrint| |mkMapAlias| |coerceRe2E|
+            |depthOfRecursion| |objNewWrap| |makePattern|
+            |coerceByFunction| |sayDroppingFunctions|
+            |mkAtree1WithSrcPos| |mkAtreeNodeWithSrcPos| |coerceVal2E|
+            |scylla| |putValueValue| |scanIgnoreLine| |UnionPrint|
+            |mkAliasList,fn| |addPatternPred| |augmentPredVector|
+            |canMakeTuple| |putFlag| |coerceUn2E| |MappingPrint|
+            |rempropI| |putDependencies,removeObsoleteDependencies|
+            |makeByteWordVec2| |EnumPrint| |objNewCode| |createEnum|
+            |objSetVal| |asTupleNewCode| |getEqualSublis,fn|
+            |mapDefsWithCorrectArgCount| |subMatch| FOAM:|fputs|
+            FOAM:|fputc| $REPLACE |putBodyInEnv| UNIONQ |makeGoGetSlot|
+            |interpMap| |sort| |testPrin| |resolveTTAny|
+            |makeCompactDirect1| QUOTIENT2 |resolveTMOrCroak|
+            |hyperize| INTEXQUO DIVIDE DIVIDE2 |getMapBody|
+            |getLocalVars| GETL |makeSF| |makeLocalModemap|
+            |compileBody| |setMsgUnforcedAttrList| |makePrefixForm|
+            |setMsgText| |predicateBitIndex,pn| LEXLESSEQP
+            |intersection| |putFTText| |mungeAddGensyms|
+            |augmentPredCode| BVEC-MAKE-FULL DEFINE-FUNCTION
+            |setMsgPrefix| |insertPos| |buildBitTable,fn| BVEC-CONCAT
+            BVEC-EQUAL BVEC-GREATER |Delay| BVEC-AND |mkSuperSub|
+            |queueUpErrors| |resolveTT1| BVEC-OR |searchCurrentEnv|
+            |checkArgs| BVEC-XOR |outputMapTran0| BVEC-NAND
+            |getProplist| |erMsgCompare| BVEC-NOR |compareposns|
+            |thisPosIsLess| |incAppend| |redundant| |thisPosIsEqual|
+            |next| |lazyOldAxiomDomainHashCode| |pfCopyWithPos|
+            |lazyOldAxiomDomainDevaluate| |sameMsg?| |replaceArgDef1|
+            |oldAxiomPreCategoryHashCode| |replaceArgDef|
+            |oldAxiomPreCategoryDevaluate| |replaceArgDefs1|
+            |basicMatch?| |oldAxiomCategoryDevaluate| |replaceArgDefs|
+            REMALIST |oldAxiomCategoryParentCount| |stringMatches?|
+            |deleteAssocWOC| |stringPrefix?| |oldAxiomCategoryHashCode|
+            |stringChar2Integer| |computeTargetMode|
+            |oldAxiomDomainHashCode| |oldAxiomDomainDevaluate|
+            |NRTreplaceLocalTypes| |processInteractive1| |sublisNQ|
+            |interpretTopLevel| |recordAndPrint| |decideHowMuch|
+            |listDecideHowMuch| NCONC2 |processInteractive| |insert|
+            |systemDependentMkAutoload| |substDomainArgs|
+            SET-LIB-FILE-GETTER |printTypeAndTimeSaturn| |hashType|
+            |sameUnionBranch| |isNestedInstantiation| |plural|
+            |substituteSegmentedMsg| POSN1 |resolveTTUnion|
+            |makeVector| |acceptableTypesToResolve| |compareTT|
+            |simpBoolGiven| |resolveTTSpecial| |resolveTTRed| REMAINDER
+            |resolveTTCC| |resolveTTEq| |initializeTimedNames|
+            |acceptableTypesToResolve1| |inFirstNotSecond|
+            |constructTowerT| FOAM::ALLOC-PROG-INFO STACK-PUSH
+            |makeList| |term1RW| |term1RWall| |asTupleNew| |xdrOpen|
+            |assocCircular| |predCircular| EVAL-DEFUN |pfMapParts|
+            |resolveTCat1| |macWhere,mac|
+            |getConditionsForCategoryOnType| |transferSrcPosInfo|
+            |recurrenceError| |PARSE-Operation| |writeData|
+            |leftBindingPowerOf| |rightBindingPowerOf|
+            |PARSE-rightBindingPowerOf| |resolveTMUnion| |readData|
+            |resolveTMRecord| |PARSE-leftBindingPowerOf| |resolveTMEq|
+            |resolveTMRed| |resolveTM2| |applyWithOutputToString|
+            |resolveTMTaggedUnion| |functionAndJacobian,DF| GGREATERP
+            |spliceTypeListForEmptyMode| |clearAllSlams,fn| CGREATERP
+            |resolveTMSpecial| |mkLessOrEqual| |resolveTMEq1|
+            |testBitVector| |defLetForm| SORTBY |defLET2| |mkAtree3,fn|
+            |collectDefTypesAndPreds,addPred| |sayLooking1| |defLET1|
+            |addCARorCDR| |defISReverse| |defIS1| |member| |defIS|
+            |deleteLassoc| |canCoerceFrom;| |app2StringWrap|
+            |deleteAssoc| |canCoerceFrom0| |match?| |formJoin1|
+            |deleteAssocWOC,fn| |canCoerce;| |insertWOC,fn|
+            |canCoerce1| |concat1| |hasCaty1| |formArguments2String|
+            |formDecl2String| |ofCategory| |hasCatExpression|
+            |breaklet| |replaceSharps| |evalCategory| |sublisNQ,fn|
+            |newHasTest,fn| |newHasCategory| |hasCorrectTarget|
+            |isEqualOrSubDomain| |pfWhere| |mkObj| |resolveTT;|
+            |coerceInt| |coerceInteractive| |search| |keyedSystemError|
+            |formatJoinKey| |linearFormatForm|
+            |reportCircularCacheStats| |delete| |pfLam|
+            |mkCircularCountAlist| |pfReturnTyped| AND2
+            FOAM::|magicEq1| OR2 |pfDefinition|
+            |remHashEntriesWith0Count,fn| |getFortranType|
+            |displayOpModemaps| |pfMacro| |pfPushMacroBody|
+            FOAM-USER::H-ERROR TRUNCLIST |pfRule| SUBLISNQ
+            |listTruncate| |formatOperation| |wl| CONTAINED S+
+            |setMsgForcedAttrList| PREDECESSOR |rightJustifyString|
+            |wt| |isPointer?| LASSOC |getOpArgTypes,f| |rassoc|
+            |isString?| QLASSQ |argCouldBelongToSubdomain| PAIR
+            |CONTAINEDisDomain| LENGTHENVEC |addToSlam|
+            FOAM-USER::H-STRING |lassocShiftQ| |app2StringConcat0|
+            |globalHashtableStats| |SExprToDName| |domainEqualList|
+            |hashTypeForm| |domainEqual| |subCopy|
+            |oldAxiomCategoryDefaultPackage|
+            |oldAxiomPreCategoryParents| FOAM-USER::H-INTEGER |cbeta|
+            |pfReturn| |cpsireflect| |matchMmSigTar| |f01| |chebeval|
+            |pfLp| |containedRight| |isTowerWithSubdomain|
+            |chebstareval| |findSubstitutionOrder?,fn|
+            |countCircularAlist| |pfForin| |substInOrder| |pfQualType|
+            |deepSubCopy| PRINT-AND-EVAL-DEFUN |suffix?| ?ORDER
+            |undoSteps| |lassocShift| |diffAlist|
+            |sayModemapWithNumber| |commandError| SAYBRIGHTLY1
+            |queryUserKeyedMsg| |commandUserLevelError|
+            |undoSingleStep| |resolveTM1| |testInput2Output|
+            |commandErrorIfAmbiguous| |makePathname| |pfSpread|
+            |formatOpSignature| |formatOpSymbol| |asyTypeJoinPart|
+            |optionError| |mmCatComp| |filterListOfStrings|
+            |dnfContains| PRINT-DEFUN |dnfContains,fn| |mergeSubs|
+            |satisfiesRegularExpressions|
             |untraceDomainConstructor,keepTraced?|
-            |sayModemapWithNumber| |xdrOpen| |pushDownOp?| |testPrin|
-            |resolveTMEq1| |resolveTMSpecial| |testInput2Output|
-            |makeVector| |pfAnd| |isTowerWithSubdomain|
-            |ScanOrPairVec,ScanOrInner| |makeList| |constructM|
-            |pfTagged| |readData| |functionAndJacobian,DF|
-            |constructTowerT| |resolveTCat| |mergePathnames| |after|
-            |remHashEntriesWith0Count,fn| |resolveTTAny| |hasOption|
-            |resolveTM1| FOAM:|printDFloat| |resolveTTEq| |resolveTTCC|
-            FOAM:|printSFloat| |resolveTTRed| /TRACE-1 FOAM:|printBInt|
-            |diffAlist| |listTruncate| FOAM:|printSInt|
-            |resolveTTSpecial| FOAM:|printString| |deepSubCopy|
-            |resolveTCat1| FOAM:|printChar| |intCodeGenCOERCE|
-            |compareTT| |traceDomainConstructor|
-            |acceptableTypesToResolve| |canCoerceByMap|
-            /GETTRACEOPTIONS |rightJustifyString|
-            |acceptableTypesToResolve1| |commandErrorIfAmbiguous|
-            |canCoerceByFunction| |resolveTTUnion| |tracelet| MARKHASH
-            |isSubDomain| |resolveTM2| |absolutelyCanCoerceByCheating|
-            |resolveTMRed| |term1RWall| |term1RW| |resolveTMEq|
-            |rassocSub| |getValueFromEnvironment| |resolveTMRecord|
-            |parseTranCheckForRecord| |addToSlam| CARCDREXPAND
-            |mkObjCode| |getI| |resolveTMUnion| |setMsgPrefix|
-            |lassocShiftQ| |mkAtree3,fn| |resolveTMTaggedUnion|
-            |globalHashtableStats| |spliceTypeListForEmptyMode|
-            /UNTRACE-1 |domainEqualList| |resolveTMOrCroak| REPEAT-TRAN
-            -REPEAT |allLASSOCs| |putFTText| MKPF
-            |mkAlistOfExplicitCategoryOps,fn| FLAGP |spadUntrace|
-            |putValueValue| |npRightAssoc| |parseTypeEvaluateArgs|
-            MKPF1 |coerceOrRetract| |getSystemModemaps| MKPFFLATTEN
-            MONITOR-EVALTRAN DAASENAME S- |getAndSay| MONITOR-EVALTRAN1
-            |pfApplication| TRANSLABEL |isDomainSubst,fn|
-            MONITOR-GETVALUE |undoSteps| |getAllModemapsFromDatabase|
-            |undoSingleStep| |getModemapsFromDatabase| |pfExit|
-            |collectDefTypesAndPreds,addPred| |deleteAll| WRAPDOMARGS
-            |reportSpadTrace| |declare| |parseCases,casefn|
-            GETCONSTRUCTOR |sameMsg?| |spadTrace,isTraceable|
-            |declareMap| |insertModemap| |listDecideHowMuch| |pfWDec|
-            |upfreeWithType| |removeOption| |mkLessOrEqual|
-            |uplocalWithType| |asyTypeUnitDeclare| |decideHowMuch|
-            |asTupleNew| |asyCatSignature| |isDomainSubst,findSub|
-            |pfWhere| |asCategoryParts,build| |getMsgCatAttr| /EMBED-1
-            /EMBED-Q |FromTo| REMOVER MAKEOP MAKENEWOP |subTypes|
-            |installConstructor| |traceOptionError|
-            |isNestedInstantiation| |loadLibIfNecessary| |mkAutoLoad|
-            ADDOPERATIONS |keyedSystemError1| |readLib| |breakKeyedMsg|
-            ASHARPMKAUTOLOADFUNCTION |getLisplib| |center| |funfind|
-            |saturnKeyedSystemError| |writeLib| |sayKeyedMsgAsTeX|
-            |npLeftAssoc| |pfPretend| |pfTree| |autoLoad|
-            |asyCattranConstructors| |systemDependentMkAutoload|
-            |coafAndDnf| |npTypedForm|
-            |convertOpAlist2compilerInfo,formatSig| |dqAddAppend|
-            |dnfContains,fn| |pfTyped| |dnfContains| |asySimpPred|
-            |dqAppend| |asyCattranSig| |pfFromdom| |pfBrace|
-            |asyMkSignature| |pfIdPos| |ordSetDiff| |orDel|
-            |getLisplibNoCache| NREVERSE-N CONS-N
-            |getSlotFromCategoryForm| APPEND-N |pfDefinition| |pfSuch|
-            |pfIfThenOnly| |pfHide| |termRW| |has| |matWList1|
-            |termRW1| |subCopy0| |subCopyOrNil| CPSI |deepSubCopy0|
-            |unabbrevRecordComponent| |cPsi| |unabbrev1|
-            |deepSubCopyOrNil| |getCDTEntry| CHYPER0F1 |spadPrint|
-            |macSubstituteId| |chebf01| RBESSELJ |BesselJ| CBESSELJ
-            |unabbrevUnionComponent| |checkArgs| |lassocShift|
-            |NRTdescendCodeTran| RBESSELI |BesselI| RPSI |mkSuperSub|
-            |subCopy| |rPsi| |mergeSubs| CBESSELI |SExprToDName|
-            |condAbbrev| |matWList| |oldAxiomCategoryDevaluate|
-            |attributeNthParent| |mathPrint1| |domainEqual|
-            |oldAxiomPreCategoryParents| |mmCatComp|
-            SPADTAGS-FROM-DIRECTORY |PsiEps| |pfAbSynOp?|
-            |lazyOldAxiomDomainDevaluate| /UNTRACE-2 |sayErrorly1|
-            |outputMapTran0| |upLispCall|
-            |oldAxiomCategoryDefaultPackage| |FloatError|
-            |setBootAutoLoadProperty| |hasCatExpression|
-            |oldAxiomPreCategoryDevaluate| |mkBootAutoLoad|
-            |orderedDefaults| |chebeval| |PsiAsymptotic|
-            |errorSupervisor| |sayLooking1| |postFlatten|
-            |attributeHashCode| |newHasCategory| |brutef01|
-            |oldAxiomDomainDevaluate| |postTranSegment|
-            |defaultTypeForCategory| |keyedSystemError|
-            |oldAxiomPreCategoryHashCode| |argCouldBelongToSubdomain|
-            |hashTypeForm| |oldAxiomCategoryHashCode|
-            |attributeDevaluate| |oldAxiomCategoryParentCount|
-            GETDATABASE |setBootAutloadProperties| |rePackageTran|
-            |throwKeyedMsg| |commandError| |CONTAINEDisDomain|
-            |putModeSet| |postFlattenLeft| |putValue|
-            |reportCircularCacheStats| |hasCaty1|
-            |mkCircularCountAlist| |unloadOneConstructor|
-            |getBasicMode0| |npsynonym| |bottomUpIdentifier|
-            |optionError| |bottomUpType| |hyperize|
-            |lazyOldAxiomDomainHashCode| LET_ERROR
-            |optionUserLevelError| |resolveTM| |oldAxiomDomainHashCode|
-            |PARSE-rightBindingPowerOf| |augmentTraceNames|
-            |transferPropsToNode| |HasCategory| FOAM::|magicEq1|
-            GET-GLIPH-TOKEN |getMinimalVariableTower|
-            |checkForFreeVariables| TRANSLABEL1 |positionInVec|
-            FOAM-USER::H-ERROR |keyedMsgCompFailure| |objNew|
-            |PARSE-Operation| |PARSE-leftBindingPowerOf|
-            |testBitVector| |sayIntelligentMessageAboutOpAvailability|
-            |wordFrom| |replaceSymbols| |modemapsHavingTarget|
-            |initializeTimedNames| |computeTypeWithVariablesTarget|
-            |getKeyedMsgInDb| |makePrefixForm| |putTarget|
-            |scanExponent| |sayKeyedMsgLocal| FOAM-USER::H-STRING
-            |sayPatternMsg| |getAtree| |canFit2ndEntry|
-            |scanIgnoreLine| |bottomUpCompilePredicate|
-            |dcOpLatchPrint| |bottomUpPredicate| FOAM-USER::H-INTEGER
-            |posend| |mkIterVarSub| |scanInsert| |throwKeyedMsg1|
-            |saturnThrowKeyedMsg| |makeCompactDirect1|
-            |say2PerLineWidth| |lfrinteger| |commandUserLevelError|
-            |scanCheckRadix| |countCircularAlist| |clearCategoryTable1|
-            FOAM::ALLOC-PROG-INFO |buildBitTable,fn| |hashType|
-            |isKeyedMsgInDb| |hashCombine| |augmentPredVector|
-            |splitListOn| |updateCategoryTableForDomain|
-            |throwPatternMsg| NOTEQUALLIBS |updateCategoryTable|
-            |mkCategoryOr| |simpCategoryOr| |tempExtendsCat|
-            |categoryParts,build| |patternVarsOf1| |nonRecursivePart1|
-            POSN1 |notCalled| |containsOp| |pvarPredTran|
-            |expandRecursiveBody| |symEqual| |simplifyMapPattern|
-            SETDIFFERENCE FOAM:|fiSetDebugger| |breaklet| |SymMemQ|
-            |outputFormat| |displayRule| |inclmsgFileCycle|
-            |AlistAssocQ| |asyDocumentation,fn| |ListMemberQ?|
-            |ListMember?| |AlistRemoveQ| |intloopInclude|
-            |canConvertByFunction| |coerceIntByMapInner|
-            |ncloopDQlines| |asyMapping| |isSubTowerOf| |streamChop|
-            ERROR-FORMAT |valueArgsEqual?| |getBindingPowerOf|
-            |phReportMsgs| |coerceIntByMap| |processMsgList|
-            |constantInDomain?| |coerceIntTableOrFunction|
-            |asyExportAlist,fn| |coerceIntSpecial| DIVIDE
-            |coerceCommuteTest| |intloopProcessString| |asyDisplay|
-            |coerceIntPermute| GETL |coerceOrConvertOrRetract|
-            |intloopPrefix?| |clearDependentMaps| |intloopInclude1|
-            |asyAbbreviation,chk| |SubstWhileDesizingList| |mkObjWrap|
-            |asyAbbreviation| |asySplit| |SubstWhileDesizing|
-            |fortranifyFunctionName| |equalOne| FOAM:|fputs|
-            |fortranifyIntrinsicFunctionName| |ncloopPrefix?|
-            FOAM:|fputc| |asyGetAbbrevFromComments,fn|
-            |displayDatabase,fn| |patternCheck,wild| |ncINTERPFILE|
-            |assignment2Fortran1| |patternCheck,pos| |logicalMatch?|
-            |superMatch?| |translateMpVars2PVars| |prefix?|
-            |fortFormatIfGoto| |phIntReportMsgs| |fortFormatTypes1|
-            |position1| |beenHere| |exp2FortOptimizeCS1,pushCsStacks|
-            |phParse| |segment2| |displayOpModemaps| |getStatement|
-            |sortAndReorderDmpExponents| |NRTreplaceLocalTypes|
-            |substDomainArgs| |fortFormatTypes| |incActive?| |segment1|
-            |dcOpPrint| |subMatch| |computeTTTranspositions|
-            FOAM:|PtrMagicEQ| |makeGoGetSlot| MONITOR-WRITE
-            |lnSetGlobalNum| |canCoerceCommute| |removeListElt| NCONC2
-            |macWhere,mac| |incTrunc| |sySpecificErrorHere|
-            |coerceInt2Union| |macLambdaParameterHandling| |ifCond|
-            |pfAssign| |coerceBranch2Union| |pfQualType|
-            |incCommandTail| |canCoerceExplicit2Mapping| |pfSpread|
-            |coerceIntFromUnion| |pfReturnTyped| |incStream|
-            |predicateBitIndex,pn| |syIgnoredFromTo| |equalZero|
-            |pfLam| |getConstantFromDomain| |pfCollect|
-            |absolutelyCannotCoerce| |pfRule| |typeToForm|
-            |inFirstNotSecond| |pfFromDom| |augmentPredCode|
-            |coerceIntTest| |mungeAddGensyms| |canCoerceUnion|
-            |macLambda,mac| |pfReturn| REMAINDER |pfMapParts|
-            |canCoercePermute| |mac0SubstituteOuter| |assertCond|
-            |newCanCoerceCommute| |coerceIntCommute| |coerceRetract|
-            |pfLp| |sublisNQ,fn| |inclFname| |genMpFromDmpTerm|)) 
-(PROCLAIM '(FTYPE (FUNCTION NIL FIXNUM) HEAPELAPSED)) 
+            |defaultTypeForCategory| |andReduce|
+            |getAliasIfTracedMapParameter| |asyTypeUnitDeclare|
+            |ncloopPrefix?| |asyCatSignature| |hasPair|
+            |printNamedStatsByProperty| FOAM:|fiSetDebugger| |andDnf|
+            |streamChop| |orDnf| SETANDFILE |asyCattranConstructors|
+            |coafOrDnf| |coafAndDnf| |coerceIntPermute| |pfDWhere|
+            |ordUnion| |coerceIntSpecial| |asySimpPred| |funfind|
+            |npsynonym| |coerceIntTableOrFunction| |asyCattranSig|
+            |ordIntersection| |ncINTERPFILE| |orDel|
+            |coerceCommuteTest| |ordSetDiff| |pfWDec| |intloopInclude1|
+            |coafAndCoaf| |phReportMsgs| DEF-SELECT1 DEF-SELECT2
+            |asCategoryParts,build| FLAG |mkObjWrap| FOAM:|PtrMagicEQ|
+            DEF-LET |constantInDomain?| |asyMkSignature| CPSI RBESSELJ
+            |hasOption| CBESSELJ |optionUserLevelError| |equalOne|
+            RBESSELI |equalZero| |segment2| WHDEF CBESSELI
+            |isSubTowerOf| |assignment2Fortran1| LET_ERROR CHYPER0F1
+            |canConvertByFunction| |integerAssignment2Fortran1| DEF-IS2
+            |getStatement| SETDIFFERENCEQ |dispfortexpf| |dispfortexpj|
+            |optimizeFunctionDef,replaceThrowByReturn| |FloatError|
+            |optimizeFunctionDef,fn| |dispfortarrayexp|
+            |pfComDefinition| DEF-IT DEF-IS-REV |horner|
+            |fortFormatIfGoto| |pfCollect| |optCatch,changeThrowToExit|
+            MONITOR-WRITE |optCatch,hasNoThrows|
+            |sayIntelligentMessageAboutOpAvailability|
+            |optCatch,changeThrowToGo| |fortFormatTypes| |cgammaG|
+            MARKHASH |optCallSpecially,lookup| |getOpArgTypes|
+            |asyAbbreviation| |showInOut| INTERSECTIONQ
+            |setBootAutloadProperties| |showInput|
+            |bottomUpCompilePredicate| |mkAutoLoad| SPADRREAD
+            |EqualBarGensym| |resolveTCat| |PsiEps| CARCDREXPAND
+            |EqualBarGensym,fn| |asyDisplay| |rPsiW| |getOpArgTypes1|
+            |asySignature| |displayDatabase,fn| REPEAT-TRAN |dqAppend|
+            |PsiAsymptotic| -REPEAT |pfIdPos| MKPF
+            |asyDocumentation,fn| FLAGP |dqAddAppend|
+            |asyExportAlist,fn| |PsiXotic| |pvarPredTran| MKPF1
+            |patternVarsOf1| MKPFFLATTEN |unloadOneConstructor|
+            |brutef01| S- |ScanOrPairVec,ScanOrInner| |BesselJAsympt|
+            S* |BesselJAsymptOrder| |pfAssign| |AssocBarGensym|
+            |augmentTraceNames| |BesselJRecur| |pfTyped|
+            |retractByFunction| |besselIback| DO_LET NLIST
+            |untraceDomainLocalOps| |intCodeGenCOERCE| -REDUCE-OP /READ
+            |pfExit| |BesselIAsymptOrder| DELASC
+            |absolutelyCanCoerceByCheating| |getConstantFromDomain|
+            |BesselKAsymptOrder| SEGMENT |isSubDomain|
+            FOAM:|printDFloat| FOAM:|printSFloat| |canCoerceUnion|
+            |canCoerceByFunction| FOAM:|printBInt|
+            |absolutelyCannotCoerce| |canCoerceByMap| FOAM:|printSInt|
+            |canCoerceExplicit2Mapping| |pileTree| FOAM:|printString|
+            |mkObjCode| FOAM:|printChar| |canCoerceLocal| |evalLET|
+            TAKE |canCoerceTower| |evalLETput| DROP
+            |newCanCoerceCommute| |getMapSig| |asyWrap| |seteltable|
+            |sayCacheCount| |pileForest1| |intloopPrefix?|
+            |canCoercePermute| |eqpileTree| TRUNCLIST-1 |coerceIntTest|
+            |pileForest| |pileCtree| |intloopProcessString|
+            |replaceLast| |pfSuch| SUBB |pfAbSynOp?| |constructM|
+            |CONTAINED,EQ| |canCoerceCommute| |CONTAINED,EQUAL|
+            |ncloopDQlines| |coerceIntCommute| |asySplit|
+            |computeTTTranspositions| |lassocSub| DELLASOS
+            |updateSymbolTable| |asyAbbreviation,chk| |typeToForm|
+            |asyGetAbbrevFromComments,fn| |subTypes| |asySig|
+            |mergePathnames| |getBasicMode0| |asySigTarget| |pfMLambda|
+            |reportSpadTrace| |clearDependentMaps| |beenHere|
+            |coerceInt0| |exp2FortOptimizeCS1,pushCsStacks| |getOption|
+            |pushDownOp?| |objSetMode| |asyMapping| |coerceInt1|
+            |removeOption| |putTarget| |phParse|
+            |spadTrace,isTraceable| |transferPropsToNode|
+            |coerceIntFromUnion| |logicalMatch?| |phIntReportMsgs|
+            |coerceInt2Union| |expression2Fortran1| |superMatch?|
+            |getMinimalVariableTower| |pfFromDom| |genMpFromDmpTerm|
+            |resolveTM| |compareTypeLists| |bottomUpIdentifier|
+            |addDmpLikeTermsAsTarget| |coerceIntTower| |pfTLam|
+            |putModeSet| |processMsgList| |sortAndReorderDmpExponents|
+            |coerceIntAlgebraicConstant| |translateMpVars2PVars|
+            |fortranifyFunctionName| |getAtree| |removeVectorElt|
+            |fortranifyIntrinsicFunctionName| |pfRestrict|
+            |removeListElt| |patternCheck,pos| |npTypedForm|
+            |getAndSay| |pfCoerceto| |evalSharpOne| |patternCheck,wild|
+            |pfRetractTo| |coerceBranch2Union|
+            |computeTypeWithVariablesTarget| |pfPretend|
+            |valueArgsEqual?| |objNew| |coerceIntByMap|
+            |fortFormatTypes1| |putValue| |rPsi| |cPsi| |pfTagged|
+            |BesselJ| |npTypedForm1| |bottomUpPredicate| |BesselI|
+            |chebf01| |bottomUpType| |position1| |npLeftAssoc| RPSI
+            |pfWrong| |varIsOnlyVarInPoly| |keyedMsgCompFailure|
+            |segment1| /GETOPTION |AlistAssocQ| |ListMemberQ?|
+            |ListMember?| |newHasTest| |AlistRemoveQ| PAIRTRACE
+            BPIUNTRACE |intloopInclude| |npMissingMate| |getArgValue|
+            |pfParen| |isPatternMatch| |pfBracket| |errorSupervisor|
+            CHAR-NE |pfBracketBar| |pfBrace| |pfBraceBar| |symEqual|
+            |pfHide| |pfTree| |macLambda,mac| |prefix?| |sayErrorly1|
+            |maskMatch?| MAKE-DATABASES |evalLETchangeValue|
+            |dollarTran| |pfWDeclare| |pfAnd| |coerceIntByMapInner|
+            |pfOr| |after| |pfFromdom|)) 
 (PROCLAIM
-    '(FTYPE (FUNCTION NIL (VALUES T T)) GENVAR MAKE-CLOSEDFN-NAME))
-)
+    '(FTYPE (FUNCTION NIL FIXNUM) CURRENT-CHAR-INDEX HEAPELAPSED)) 
+(PROCLAIM '(FTYPE (FUNCTION NIL (VALUES T T)) GENVAR))
+) 
