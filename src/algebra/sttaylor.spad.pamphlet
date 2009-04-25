@@ -185,18 +185,18 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
     x + y == delay
       empty? y => x
       empty? x => y
-      eq?(x,rst x) => map(frst x + #1,y)
-      eq?(y,rst y) => map(frst y + #1,x)
+      eq?(x, rst x) => map(z +-> frst x + z, y)
+      eq?(y, rst y) => map(z +-> frst y + z, x)
       concat(frst x + frst y,rst x + rst y)
 
     x - y == delay
       empty? y => x
       empty? x => -y
-      eq?(x,rst x) => map(frst x - #1,y)
-      eq?(y,rst y) => map(#1 - frst y,x)
+      eq?(x, rst x) => map(z +-> frst x - z, y)
+      eq?(y, rst y) => map(z +-> z - frst y, x)
       concat(frst x - frst y,rst x - rst y)
 
-    -y == map(_-#1,y)
+    -y == map(z +-> -z, y)
 
     (x:ST A) * (y:ST A) == delay
       empty? y => zro()
@@ -205,11 +205,11 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
 
     (s:A) * (x:ST A) ==
       zero? s => zro()
-      map(s * #1,x)
+      map(z +-> s*z, x)
 
     (x:ST A) * (s:A) ==
       zero? s => zro()
-      map(#1 * s,x)
+      map(z +-> z*s, x)
 
     iDiv: (ST A,ST A,A) -> ST A
     iDiv(x,y,ry0) == delay
@@ -227,7 +227,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
           return "failed"
         leave "first entry in y is non-zero"
       (ry0 := recip frst y) case "failed" => "failed"
-      empty? rst y => map(#1 * (ry0 :: A),x)
+      empty? rst y => map(z +-> z*(ry0 :: A), x)
       iDiv(x,y,ry0 :: A)
 
     (x:ST A) / (y:ST A) == delay
@@ -235,7 +235,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
       empty? x => empty()
       (ry0 := recip frst y) case "failed" =>
         error "/: second argument is not invertible"
-      empty? rst y => map(#1 * (ry0 :: A),x)
+      empty? rst y => map(z +-> z*(ry0 :: A), x)
       iDiv(x,y,ry0 :: A)
 
     recip x ==
@@ -266,10 +266,10 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
 
 --% some streams of integers
     nnintegers: NNI -> ST NNI
-    nnintegers zz == generate(#1 + 1,zz)
-    integers z == generate(#1 + 1,z)
-    oddintegers z == generate(#1 + 2,z)
-    int s == generate(#1 + 1,s)
+    nnintegers zz == generate(y +-> y + 1, zz)
+    integers z == generate(y +-> y + 1, z)
+    oddintegers z == generate(y +-> y + 2, z)
+    int s == generate(y +-> y + 1, s)
 
 --% derivatives
 
@@ -294,7 +294,8 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
 
 --% evaluations and compositions
 
-    eval(x,at) == scan(0,#1 + #2,mapmult(x,generate(at * #1,1)))$SP2(A,A)
+    eval(x, at) == scan(0, (y, z) +-> y + z, 
+                       mapmult(x, generate(y +-> at * y, 1)))$SP2(A, A)
 
     compose(x,y) == delay
       empty? y => concat(frst x,zro())
@@ -307,7 +308,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
 
     lagrangere:(ST A,ST A) -> ST A
     lagrangere(x,c) == delay(concat(0,compose(x,c)))
-    lagrange x == YS(lagrangere(x,#1))
+    lagrange x == YS(y +-> lagrangere(x, y))
 
     revert x ==
       empty? x => error "revert should start 0,1,..."
@@ -367,7 +368,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
         error "generalLambert: both integer arguments must be positive"
       empty? st => zro()
       zero? frst st =>
-        concat(0,addiag(map(rptg3(a,d,#1,#2),_
+        concat(0, addiag(map((x, y) +-> rptg3(a, d, x, y),_
                  integers 1,rst st)$SP3(I,A,ST A)))
       error "generalLambert: constant coefficient should be zero"
 
@@ -398,7 +399,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
     comps(ststa,x) == delay$(ST ST A)
        empty? ststa => empty()$(ST ST A)
        empty? x => cssa(frst ststa,empty()$(ST ST A))
-       cssa(frst ststa,mapsa((rst x) * #1,comps(rst ststa,x)))
+       cssa(frst ststa, mapsa(y +-> (rst x)*y, comps(rst ststa, x)))
 
     if A has Algebra RN then
       integre: (ST A,I) -> ST A
@@ -414,12 +415,12 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
 
       nldere:(ST ST A,ST A) -> ST A
       nldere(lslsa,c) == lazyIntegrate(0,addiag(comps(lslsa,c)))
-      nlde lslsa == YS(nldere(lslsa,#1))
+      nlde lslsa == YS(y +-> nldere(lslsa, y))
 
       RATPOWERS : Boolean := A has "^": (A,RN) -> A
 
       smult: (RN,ST A) -> ST A
-      smult(rn,x) == map(rn * #1,x)
+      smult(rn, x) == map(y +-> rn*y, x)
       powerrn:(RN,ST A,ST A) -> ST A
       powerrn(rn,x,c) == delay
         concat(1,integ(smult(rn + 1,c * deriv x)) - rst x * c)
@@ -440,15 +441,15 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
            error "^ rational power of coefficient undefined"
 -- This error message is misleading, isn't it? see sups.spad/cRationalPower
         power :=
---          one? co => YS(powerrn(rn,x,#1))
-          (co = 1) => YS(powerrn(rn,x,#1))
+--          one? co => YS(y +-> powerrn(rn, x, y))
+          (co = 1) => YS(y +-> powerrn(rn, x, y))
           (denom rn) = 1 =>
             not negative?(num := numer rn) =>
 -- It seems that this cannot happen, but I don't know why
-              (co^num::NNI) * YS(powerrn(rn,(invCo :: A) * x,#1))
-            (invCo :: A)^((-num)::NNI) * YS(powerrn(rn,(invCo :: A) * x,#1))
+              (co^num::NNI) * YS(y +-> powerrn(rn, (invCo::A)*x, y))
+            (invCo::A)^((-num)::NNI) * YS(y +-> powerrn(rn,(invCo::A)*x, y))
 
-          RATPOWERS => co^rn * YS(powerrn(rn,(invCo :: A) * x,#1))
+          RATPOWERS => co^rn * YS(y +-> powerrn(rn, (invCo::A)*x, y))
           error "^ rational power of coefficient undefined"
         monom(1,(ord :: I) * numer(rn)) * power
 
@@ -470,7 +471,7 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
         empty? x => zro()
         frst x ~= 1 => error "^:constant coefficient should be 1"
         concat(frst x,finteg((s+1)*(c*deriv x))-rst x * c)
-      power(s,x) == YS(powerre(s,x,#1))
+      power(s, x) == YS(y +-> powerre(s, x, y))
 
 @
 \section{License}

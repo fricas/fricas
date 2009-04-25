@@ -104,7 +104,8 @@ TaylorSolve(F, UTSF, UTSSUPF): Exports == Implementation where
 
 <<implementation: UTSSOL TaylorSolve>>=
         seriesSolve(f, l) ==
-            c1 := map(#1::(SUP F), l)$ListFunctions2(F, SUP F)::(Stream SUP F)
+            c1 := map((x : F) : SUP F +-> x::(SUP F),
+                      l)$ListFunctions2(F, SUP F)::(Stream SUP F)
             coeffs: Stream SUP F := concat(c1, generate(monomial(1$F,1$NNI)))
 --            coeffs: Stream SUP F := concat(c1, monomial(1$F,1$NNI))
 @
@@ -290,7 +291,8 @@ coefficient ring, since it will complain otherwise.
         seriesSolve(expr, op, sy, l) ==
             ex := replaceDiffs(expr, op, sy)
             f := compiledFunction(ex, name op, sy)$MKF
-            seriesSolve(f(#1, monomial(1,1)$UTSSUPF), l)$TaylorSolve(F, UTSF, UTSSUPF)
+            seriesSolve(x +-> f(x, monomial(1,1)$UTSSUPF),
+                        l)$TaylorSolve(F, UTSF, UTSSUPF)
 @
 %$
 
