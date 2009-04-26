@@ -91,7 +91,7 @@ PolynomialFactorizationByRecursionUnivariate(R, S): public == private where
        lpolysLower:=[lower u for u in lpolys]
        answer:List SupS := [0 for u in lpolys]
        for i in 0..rhsdeg repeat
-         ppx:=map(coefficient(#1,i),pp)
+         ppx:=map((z1: S): R +-> coefficient(z1,i),pp)
          zero? ppx => "next"
          recAns:= solveLinearPolynomialEquation(lpolysLower,ppx)
          recAns case "failed" => return "failed"
@@ -120,7 +120,7 @@ PolynomialFactorizationByRecursionUnivariate(R, S): public == private where
              -- then we have all the factors
              return [append(foundFactors, factors)]
           step:=solveLinearPolynomialEquation(origFactors,
-                                              map(elt(#1,r::S),
+                                              map(z1 +-> elt(z1,r::S),
                                                   Ecart))
           step case "failed" => return "failed" -- must be a false split
           factors:=[a+b*pn for a in factors for b in step]
@@ -148,17 +148,17 @@ PolynomialFactorizationByRecursionUnivariate(R, S): public == private where
      while true repeat
         substns:= randomR()
         zero? elt(leadingCoefficient pp,substns ) => "next"
-        ppR:=map( elt(#1,substns),pp)
+        ppR:=map(z1 +-> elt(z1,substns),pp)
         degree gcd(ppR,differentiate ppR)>0 => "next"
         leave
      [substns,ppR]
-   raise(supR) == map((#1::R)::S,supR)
-   lower(pp) == map(retract(#1)::R,pp)
+   raise(supR) == map(z1 +-> (z1::R)::S,supR)
+   lower(pp) == map(z1 +-> retract(z1)::R,pp)
    factorSFBRlcUnitInner(pp,r) ==
       -- pp is square-free as a Sup, but the Up  variable occurs.
       -- Furthermore, its LC is a unit
       -- returns "failed" if the substitution is bad, else a factorization
-      ppR:=map(elt(#1,r),pp)
+      ppR:=map(z1 +-> elt(z1,r),pp)
       degree ppR < degree pp => "failed"
       degree gcd(ppR,differentiate ppR) >0 => "failed"
       factors:=
@@ -209,7 +209,7 @@ PolynomialFactorizationByRecursionUnivariate(R, S): public == private where
      unit? c => refine(squareFree pp,factorSquareFreeByRecursion)
      pp:=(pp exquo c)::SupS
      mergeFactors(refine(squareFree pp,factorSquareFreeByRecursion),
-                  map((#1::S)::SupS,factor(c)$S))
+                  map(z1 +-> (z1::S)::SupS,factor(c)$S))
    factorSquareFreeByRecursion pp ==
      and/[zero? degree u for u in coefficients pp] =>
         map(raise,factorSquareFreePolynomial lower pp)
@@ -358,7 +358,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
              -- then we have all the factors
              return [append(foundFactors, factors)]
           step:=solveLinearPolynomialEquation(origFactors,
-                                              map(eval(#1,vv,r),
+                                              map(z1 +->eval(z1,vv,r),
                                                   Ecart))
           step case "failed" => return "failed" -- must be a false split
           factors:=[a+b*pn for a in factors for b in step]
@@ -384,12 +384,12 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
       -- pp is square-free as a Sup, and its coefficients have precisely
       -- the variables of lvpp. Furthermore, its LC is a unit
       -- returns "failed" if the substitution is bad, else a factorization
-      ppR:=map(eval(#1,first lvpp,r),pp)
+      ppR:=map(z1 +-> eval(z1,first lvpp,r),pp)
       degree ppR < degree pp => "failed"
       degree gcd(ppR,differentiate ppR) >0 => "failed"
       factors:=
          empty? rest lvpp =>
-            fDown:=factorSquareFreePolynomial map(retract(#1)::R,ppR)
+            fDown:=factorSquareFreePolynomial map(z1 +-> retract(z1)::R,ppR)
             [raise (unit fDown * factorList(fDown).first.fctr),
              :[raise u.fctr for u in factorList(fDown).rest]]
          fSame:=factorSFBRlcUnit(rest lvpp,ppR)
@@ -426,7 +426,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
        ppR: SupSupR:=map(univariate,pp)
        ans:=solveLinearPolynomialEquation(lpolysR,ppR)$SupR
        ans case "failed" => "failed"
-       [map(multivariate(#1,v),w) for w in ans]
+       [map(z1 +-> multivariate(z1,v),w) for w in ans]
    else
      bivariateSLPEBR(lpolys,pp,v) ==
        solveLinearPolynomialEquationByFractions(lpolys,pp)$LPEBFS
@@ -436,7 +436,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
      while true repeat
         substns:= [randomR() for v in lvpp]
         zero? eval(leadingCoefficient pp,lvpp,substns ) => "next"
-        ppR:=map((retract eval(#1,lvpp,substns))::R,pp)
+        ppR:=map(z1 +-> (retract eval(z1,lvpp,substns))::R,pp)
         degree gcd(ppR,differentiate ppR)>0 => "next"
         leave
      [substns,ppR]
@@ -449,7 +449,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
         zero? eval(leadingCoefficient pp,lvpolys,substns ) => "next"
         "or"/[zero? eval(leadingCoefficient u,lvpolys,substns)
                     for u in lpolys] => "next"
-        lpolysR:=[map((retract eval(#1,lvpolys,substns))::R,u)
+        lpolysR:=[map(z1 +-> (retract eval(z1,lvpolys,substns))::R,u)
                   for u in lpolys]
         uu:=lpolysR
         while not empty? uu repeat
@@ -457,15 +457,15 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
           uu:=rest uu
         not empty? uu => "next"
         leave
-     ppR:=map((retract eval(#1,lvpolys,substns))::R,pp)
+     ppR:=map(z1 +-> (retract eval(z1,lvpolys,substns))::R,pp)
      [substns,lpolysR,ppR]
-   raise(supR) == map((#1::R)::S,supR)
-   lower(pp) == map(retract(#1)::R,pp)
+   raise(supR) == map(z1 +-> (z1::R)::S,supR)
+   lower(pp) == map(z1 +-> retract(z1)::R,pp)
    SLPEBR(lpolys,lvpolys,pp,lvpp) ==
      not empty? (m:=setDifference(lvpp,lvpolys)) =>
          v:=first m
          lvpp:=remove(v,lvpp)
-         pp1:SupSupS :=swap map(univariate(#1,v),pp)
+         pp1:SupSupS :=swap map(z1 +-> univariate(z1,v),pp)
          -- pp1 is mathematically equal to pp, but is in S[z][v]
          -- so we wish to operate on all of its coefficients
          ans:List SupSupS:= [0 for u in lpolys]
@@ -474,7 +474,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
              ans1 case "failed" => return "failed"
              d:=degree m
              ans:=[monomial(a1,d)+a for a in ans for a1 in ans1]
-         [map(multivariate(#1,v),swap pp1) for pp1 in ans]
+         [map(z1 +-> multivariate(z1,v),swap pp1) for pp1 in ans]
      empty? lvpolys =>
          lpolysR:List SupR
          ppR:SupR
@@ -482,7 +482,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
          ppR:=map(retract,pp)
          ansR:=solveLinearPolynomialEquation(lpolysR,ppR)
          ansR case "failed" => return "failed"
-         [map(#1::S,uu) for uu in ansR]
+         [map(z1 +-> z1::S,uu) for uu in ansR]
      cVS:=chooseSLPEViableSubstitutions(lvpolys,lpolys,pp)
      ansR:=solveLinearPolynomialEquation(cVS.lpolysRField,cVS.ppRField)
      ansR case "failed" => "failed"
@@ -506,7 +506,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
      unit? c => refine(squareFree pp,factorSquareFreeByRecursion)
      pp:=(pp exquo c)::SupS
      mergeFactors(refine(squareFree pp,factorSquareFreeByRecursion),
-                  map((#1::S)::SupS,factor(c)$S))
+                  map(z1 +-> (z1::S)::SupS,factor(c)$S))
    factorSquareFreeByRecursion pp ==
      lv:List(VarSet) := removeDuplicates_!
                            concat [variables z for z in coefficients pp]

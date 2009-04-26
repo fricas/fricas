@@ -157,7 +157,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       m := nrows mat; n := ncols mat
       ans : Matrix R := new(m,n,0)
       for i in 1..m repeat for j in 1..n repeat
-        qsetelt_!(ans,i,j,map(#1 ^ q,qelt(mat,i,j)))
+        qsetelt_!(ans,i,j,map((k1: K): K +-> k1 ^ q,qelt(mat,i,j)))
       ans
 
     listConjugateBases(bas,q,n) ==
@@ -166,7 +166,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       for i in 1..(n-1) repeat
         b := applyFrobToMatrix(b,q)
         bInv := applyFrobToMatrix(bInv,q)
-        bDen := map(#1 ^ q,bDen)
+        bDen := map((k1: K): K +-> k1 ^ q,bDen)
         newBasis : Result := [b,bDen,bInv]
         outList := concat(newBasis,outList)
       reverse_! outList
@@ -203,25 +203,26 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       -- coef1 * f + coef2 * g = 1 (mod p^n)
       sae := SAE(K,R,p)
       fSUP : SUP R := makeSUP f; gSUP : SUP R := makeSUP g
-      fBar : SUP sae := map(convert(#1)@sae,fSUP)$SUP2(R,sae)
-      gBar : SUP sae := map(convert(#1)@sae,gSUP)$SUP2(R,sae)
+      fBar : SUP sae := map((r1: R): sae +-> convert(r1)@sae,fSUP)$SUP2(R,sae)
+      gBar : SUP sae := map((r1: R): sae +-> convert(r1)@sae,gSUP)$SUP2(R,sae)
       ee := extendedEuclidean(fBar,gBar)
 --      not one?(ee.generator) =>
       not (ee.generator = 1) =>
         error "polynomials aren't relatively prime"
       ss1 := ee.coef1; tt1 := ee.coef2
-      s1 : SUP R := map(convert(#1)@R,ss1)$SUP2(sae,R); s := s1
-      t1 : SUP R := map(convert(#1)@R,tt1)$SUP2(sae,R); t := t1
+      s1 : SUP R := map((z1:sae):R +-> convert(z1)@R,ss1)$SUP2(sae,R); s := s1
+      t1 : SUP R := map((z1:sae):R +-> convert(z1)@R,tt1)$SUP2(sae,R); t := t1
       pPower := p
       for i in 2..n repeat
         num := 1 - s * fSUP - t * gSUP
         rhs := (num exquo pPower) :: SUP R
-        sigma := map(#1 rem p,s1 * rhs); tau := map(#1 rem p,t1 * rhs)
+        sigma := map((r1: R): R +-> r1 rem p,s1 * rhs);
+        tau   := map((r1: R): R +-> r1 rem p,t1 * rhs)
         s := s + pPower * sigma; t := t + pPower * tau
         quorem := monicDivide(s,gSUP)
         pPower := pPower * p
-        s := map(#1 rem pPower,quorem.remainder)
-        t := map(#1 rem pPower,t + fSUP * (quorem.quotient))
+        s := map((r1: R): R +-> r1 rem pPower,quorem.remainder)
+        t := map((r1: R): R +-> r1 rem pPower,t + fSUP * (quorem.quotient))
       [unmakeSUP s,unmakeSUP t]
 
     --mapChineseToList: (L SUP Q,L SUP Q,I) -> L SUP Q
@@ -365,7 +366,7 @@ PAdicWildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
     import TriangularMatrixOperations(R, Vector R, Vector R, Matrix R)
 
     reducedDiscriminant f ==
-      ff : SUP Q := mapUnivariate(#1 :: Q,f)$IBPTOOLS(R,UP,SUP UP,Q)
+      ff : SUP Q := mapUnivariate((r1: R): Q +-> r1 :: Q,f)$IBPTOOLS(R,UP,SUP UP,Q)
       ee := extendedEuclidean(ff,differentiate ff)
       cc := concat(coefficients(ee.coef1),coefficients(ee.coef2))
       cden := splitDenominator(cc)$CDEN(R,Q,L Q)
@@ -394,14 +395,14 @@ PAdicWildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
       -- construct extension of degree r over K
       E := SAE(K,SUP K,irrPoly)
       -- lift coefficients to elements of E
-      poly := mapBivariate(#1 :: E,poly0)$IBPTOOLS(K,R,UP,E)
+      poly := mapBivariate((k1: K): E +-> k1 :: E,poly0)$IBPTOOLS(K,R,UP,E)
       redDisc0 := reducedDiscriminant poly0
-      redDisc := mapUnivariate(#1 :: E,redDisc0)$IBPTOOLS(K,R,UP,E)
-      prime := mapUnivariate(#1 :: E,prime0)$IBPTOOLS(K,R,UP,E)
+      redDisc := mapUnivariate((k1: K): E +-> k1 :: E,redDisc0)$IBPTOOLS(K,R,UP,E)
+      prime := mapUnivariate((k1: K): E +-> k1 :: E,prime0)$IBPTOOLS(K,R,UP,E)
       sae := SAE(E,SUP E,prime)
       -- reduction (mod prime) of polynomial of which poly is the kth power
       redIrrPoly :=
-        pp := mapBivariate(#1 :: E,irrPoly0)$IBPTOOLS(K,R,UP,E)
+        pp := mapBivariate((k1: K): E +-> k1 :: E,irrPoly0)$IBPTOOLS(K,R,UP,E)
         mapUnivariate(reduce,pp)$IBPTOOLS(SUP E,SUP SUP E,SUP SUP SUP E,sae)
       -- factor the reduction
       factorListSAE := factors factor(redIrrPoly)$DDFACT(sae,SUP sae)
