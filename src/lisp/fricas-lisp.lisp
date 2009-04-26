@@ -136,27 +136,28 @@
   (mapcar #'(lambda (f) (load f)) files))
 
 ;;; How to exit Lisp process
-#+(and :GCL :common-lisp)
-(defun quit() (lisp::quit))
+#+:GCL
+(defun exit-with-status (s) (lisp::quit s))
 
 #+:sbcl
-(defun quit()
+(defun exit-with-status (s)
     (setf *terminal-io* *saved-terminal-io*)
-    (sb-ext::quit))
+    (sb-ext::quit :UNIX-STATUS s))
 
 #+:clisp
-(defun quit() (ext::quit))
+(defun exit-with-status (s) (ext::quit s))
 
 #+:openmcl
-(defun quit() (ccl::quit))
+(defun exit-with-status (s) (ccl::quit s))
 
 #+:ecl
-(defun quit ()
-    (SI:quit))
+(defun exit-with-status (s)
+    (SI:quit s))
 
-#+:poplog
-(defun quit() (poplog::bye))
+;;; #+:poplog
+;;; (defun quit() (pop11::sysexit))
 
+(defun quit() (exit-with-status 0))
 ;;; -----------------------------------------------------------------
 
 ;;; Making (linking) program

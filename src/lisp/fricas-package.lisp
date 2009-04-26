@@ -20,6 +20,9 @@
 (defmacro IN-PACKAGE (package &rest options) 
   `(COMMON-LISP:IN-PACKAGE ,package))
 
+#+gcl
+(shadow "QUIT")
+
 (do-symbols (x "FRICAS-LISP") (export (list x)))
 
 (export '(quit chdir |getEnv| |load_quietly| get-current-directory
