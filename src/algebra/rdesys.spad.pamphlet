@@ -75,7 +75,8 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
       n := getBound(u.a, bb := retract(u.b), u.h,
                     cc1 := retract(u.c1), cc2 := retract(u.c2))
       (v := SPDEsys(u.a, bb, u.h, cc1, cc2, n, differentiate,
-                    DSPDEsys(#1, #2::UP, #3::UP, #4, #5, #6, differentiate)))
+                    (z1, z2, z3, z4, z5, z6) +->
+                    DSPDEsys(z1, z2::UP, z3::UP, z4, z5, z6, differentiate)))
                           case "failed" => "failed"
       l := v::List(UP)
       [first(l) / u.t, second(l) / u.t]
@@ -138,11 +139,17 @@ TranscendentalRischDESystem(F, UP): Exports == Implementation where
       lb := leadingCoefficient b
       lh := leadingCoefficient h
       bb < hh =>
-        DSPDEsys0(a,b,h,c1,c2,lb,lh,n,derivation,DSPDEhdom(#1,#2,#3,#4,#5,hh))
+        DSPDEsys0(a, b, h, c1, c2, lb, lh, n, derivation,
+                  (z1, z2, z3, z4, z5) +->
+                  DSPDEhdom(z1, z2, z3, z4, z5, hh))
       bb > hh =>
-        DSPDEsys0(a,b,h,c1,c2,lb,lh,n,derivation,DSPDEbdom(#1,#2,#3,#4,#5,bb))
+        DSPDEsys0(a, b, h, c1, c2, lb, lh, n, derivation,
+                  (z1, z2, z3, z4, z5) +->
+                  DSPDEbdom(z1, z2, z3, z4, z5, bb))
       det := lb * lb + lh * lh
-      DSPDEsys0(a,b,h,c1,c2,lb,lh,n,derivation,DSPDEmix(#1,#2,#3,#4,#5,bb,det))
+      DSPDEsys0(a, b, h, c1, c2, lb, lh, n, derivation,
+                (z1, z2, z3, z4, z5) +->
+                DSPDEmix(z1, z2, z3, z4, z5, bb, det))
 
     DSPDEsys0(a, b, h, c1, c2, lb, lh, n, derivation, getlc) ==
       ans1 := ans2 := 0::UP
