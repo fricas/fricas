@@ -577,7 +577,8 @@ QuasiComponentPackage(R,E,V,P,TS): Exports == Implementation where
 
      removeSuperfluousCases (cases:List LpWT) ==
        #cases < 2 => cases
-       toSee := sort(supDimElseRittWu?(#1.tower,#2.tower),cases)
+       toSee := sort((x : LpWT, y : LpWT) : Boolean +->
+                        supDimElseRittWu?(x.tower, y.tower), cases)
        lpwt1,lpwt2 : LpWT
        toSave,headmaxcases,maxcases,copymaxcases : List LpWT
        while not empty? toSee repeat
@@ -724,7 +725,7 @@ QuasiComponentPackage(R,E,V,P,TS): Exports == Implementation where
              branches:= cons(newBranch::Branch,branches)
            lq := cons(f,lq)
          toSee := branches
-       sort(supDimElseRittWu?(#1.tower,#2.tower),toSee)
+       sort((x, y) +-> supDimElseRittWu?(x.tower, y.tower), toSee)
 
 @
 \section{package RSETGCD RegularTriangularSetGcdPackage}
@@ -902,7 +903,7 @@ RegularTriangularSetGcdPackage(R,E,V,P,TS): Exports == Implementation where
          -- CAN BE OPTIMIZED if the input tower is separable
          inv := toseInvertible?(q,ts_h)@(List BWT)
          lbwt := concat([bwt for bwt in inv | bwt.val],lbwt)
-       sort(#1.val < #2.val,lbwt)
+       sort((x, y) +-> x.val < y.val, lbwt)
 
      toseInvertibleSet(p:P,ts:TS): Split ==
        k: KeyInvSet := [p,ts]

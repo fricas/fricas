@@ -234,7 +234,8 @@ ElementaryRischDE(R, F): Exports == Implementation where
 
     rischDEalg(n, nfp, f, g, k, l, x, limint, extint) ==
       symbolIfCan(kx := ksec(k, l, x)) case SE =>
-        (u := palgRDE(nfp, f, g, kx, k, normal0(n, #1, #2, #3))) case "failed"
+        (u := palgRDE(nfp, f, g, kx, k,
+                      (z1, z2, z3) +-> normal0(n, z1, z2, z3))) case "failed"
              => [0, 0, false]
         [u::F, g, true]
       has?(operator kx, ALGOP) =>
@@ -300,12 +301,12 @@ ElementaryRischDE(R, F): Exports == Implementation where
       ans1 :=
         is?(k, "log"::SE) =>
           rischDElog(twr, newf, newg, x, k,
-                       differentiate(#1, differentiate(#1, x),
+                z1 +-> differentiate(z1, z2 +-> differentiate(z2, x),
                              differentiate(k::F, x)::UP),
                                             limitedint, extendedint)
         is?(k, "exp"::SE) =>
           rischDEexp(twr, newf, newg, x, k,
-                     differentiate(#1, differentiate(#1, x),
+            z1 +-> differentiate(z1, z2 +-> differentiate(z2, x),
                       monomial(differentiate(first argument k, x), 1)),
                                                 limitedint, extendedint)
       ans1 case "failed" => [0, 0, false]
@@ -346,7 +347,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       t' := differentiate(t::F, x)
       zero? bb =>
         (u := cc exquo aa) case "failed" => "failed"
-        primintfldpoly(u::UP, extint(#1, t'), t')
+        primintfldpoly(u::UP, z1 +-> extint(z1, t'), t')
       n := degree(cc)::Z - (db := degree(bb)::Z)
       if ((da := degree(aa)::Z) = db) and (da > 0) then
         lk0 := tower(f0 :=
@@ -376,7 +377,8 @@ ElementaryRischDE(R, F): Exports == Implementation where
       w := v.eq
       zero?(w.b) =>
         degree(w.c) > w.m => "failed"
-        (u := primintfldpoly(w.c, extint(#1,t'), t')) case "failed" => "failed"
+        u := primintfldpoly(w.c, z1 +-> extint(z1, t'), t')
+        u case "failed" => "failed"
         degree(u::UP) > w.m => "failed"
         w.alpha * u::UP + w.beta
       (u := logdegrad(twr, retract(w.b), w.c, w.m, x, t, limint, extint))
@@ -387,8 +389,8 @@ ElementaryRischDE(R, F): Exports == Implementation where
       zero? c => 0
       zero? b =>
         (u := c exquo (a::GP)) case "failed" => "failed"
-        expintfldpoly(u::GP,
-                   rischDE(#1, first argument t, #2, x, limint, extint))
+        expintfldpoly(u::GP, (z1, z2) +-> rischDE(z1, first argument t, z2,
+                                                  x, limint, extint))
       lb := boundAt0(twr, - coefficient(b, 0) / coefficient(a, 0),
                      nb := order b, nc := order c, x, t, limint)
       tm := monomial(1, (m := max(0, max(-nb, lb - nc)))::N)$UP
@@ -402,7 +404,8 @@ ElementaryRischDE(R, F): Exports == Implementation where
       zero? cc => 0
       zero? bb =>
         (u := cc exquo aa) case "failed" => "failed"
-        exppolyint(u::UP, rischDE(#1, first argument t, #2, x, limint, extint))
+        exppolyint(u::UP, (z1, z2) +-> rischDE(z1, first argument t, z2,
+                                               x, limint, extint))
       n := boundInf(twr,-leadingCoefficient(bb) / (leadingCoefficient aa),
                  degree(aa)::Z, degree(bb)::Z, degree(cc)::Z, x, t, limint)
       (v := polyRDE(aa, bb, cc, n, driv)) case ans =>
@@ -411,8 +414,8 @@ ElementaryRischDE(R, F): Exports == Implementation where
       w := v.eq
       zero?(w.b) =>
         degree(w.c) > w.m => "failed"
-        (u := exppolyint(w.c,
-                  rischDE(#1, first argument t, #2, x, limint, extint)))
+        (u := exppolyint(w.c, (z1, z2) +-> rischDE(z1, first argument t, z2,
+                                                   x, limint, extint)))
                          case "failed" => "failed"
         w.alpha * u::UP + w.beta
       (u := expdegrad(twr, retract(w.b), w.c, w.m, x, t, limint, extint))
@@ -458,7 +461,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       (if0 := limitedint(f0, [first argument u for u in lk1]))
                        case "failed" => error "Risch's theorem violated"
       (alpha := validExponential(lk0, RRF2F(if0::RRF), x)) case F =>
-        (u1 := primintfldpoly(inv(alpha::F) * c, extint(#1, t'), t'))
+        (u1 := primintfldpoly(inv(alpha::F) * c, z1 +-> extint(z1, t'), t'))
                                                case "failed" => "failed"
         degree(u1::UP)::Z > n => "failed"
         alpha::F * u1::UP
@@ -494,7 +497,8 @@ ElementaryRischDE(R, F): Exports == Implementation where
         zero?(al.fracPart) and monomial?(al.polyPart) and
          (degree(al.polyPart) >= 0) =>
           (u1 := expintfldpoly(c::GP * recip(al.polyPart)::GP,
-                  rischDE(#1, first argument t, #2, x, limint, extint)))
+                  (z1, z2) +->
+                  rischDE(z1, first argument t, z2, x, limint, extint)))
                                                case "failed" => "failed"
           degree(u1::GP) > n => "failed"
           retractIfCan(al.polyPart * u1::GP)@Union(UP, "failed")
