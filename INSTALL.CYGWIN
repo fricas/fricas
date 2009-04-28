@@ -11,13 +11,13 @@ hesitate to ask at fricas-devel@googlegroups.com.
 
 To compile FriCAS on MS Windows, we proceed as follows:
 
-I) If you do not have cygwin installed, go to
+I) If you do not have Cygwin installed, go to
 
-    http://cygwin.com/
+    http://cygwin.org/
 
     Look for a link called setup.exe and save it to disk.
 
-II) Start cygwin's setup program.  The first few questions can be answered with
+II) Start Cygwin's setup program.  The first few questions can be answered with
     the default values, until you get to the "Select Packages" dialog.
 
     Clicking on a little + will expand the list of packages. You should select
@@ -42,16 +42,23 @@ II) Start cygwin's setup program.  The first few questions can be answered with
                           tetex-x11
            In Web: wget
            In X11: xterm
-                   xorg-x11-devel
-optional   In Editors: emacs
-(see V)                emacs-X11
+                   libICE-devel
+                   libXpm-devel
+                   libSM-devel
+                   libX11-devel
+                   xinit
+                   font-adobe-dpi75
+           In Editors: emacs
+                       emacs-X11
 
-    Complete the cygwin installation process.
+    Complete the Cygwin installation process.
 
-III) start cygwin - a black console window should appear
+III) start Cygwin - a black console window should appear.  Note that
+    it's better *not* to start Cygwin/X, but rather an "ordinary"
+    shell.  Furthermore, it seems that it's a good idea to close all
+    other applications before building.
 
-
-  find a place to build FriCAS.
+    find a place to build FriCAS.
 
   cd /cygdrive/c
   mkdir scratch
@@ -66,32 +73,35 @@ IV) follow the instructions in INSTALL (but note that we are going to build
     1) Fetch sources:
 
   svn co https://fricas.svn.sourceforge.net/svnroot/fricas/trunk fricas
- 
 
-    2) Fetch nonstandard prerequisites:
+    alternatively, download a release version of the source.  In this
+    case step 2) and 6) below should also be omitted.
+
+    2) Fetch and nonstandard prerequisites
 
   cd fricas
   mkdir zips
   cd zips
   wget https://axiom.svn.sourceforge.net/svnroot/axiom/trunk/axiom/zips/noweb-2.10a.tgz
 
-    or, if this doesn't work:
+    or, if the last command fails:
 
   wget --no-check-certificate https://axiom.svn.sourceforge.net/svnroot/axiom/trunk/axiom/zips/noweb-2.10a.tgz
 
     3) create the build directory (again: without spaces!)
 
   cd ../..
-  mkdir ax-build
-  cd ax-build
+  mkdir fri-build
+  cd fri-build
  
-    4) configure.  Possibly, you will have to restrict the PATH to Cygwin
-        programs, because otherwise configure may pick, for example, Borland
-        grep which causes failure later.  You can do this by typing
+    4) configure.  Possibly, you will have to restrict the PATH to
+    Cygwin programs, because otherwise configure may pick, for
+    example, Borland grep which causes failure later.  You can do
+    this by typing
 
   export PATH=/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin
 
-  ../fricas/configure --with-lisp=clisp
+  ../fricas/configure --prefix=/usr --with-lisp=clisp
 
     5) build and install:
 
@@ -104,7 +114,7 @@ IV) follow the instructions in INSTALL (but note that we are going to build
       cp elisp/noweb-mode.el /dev/null
       cp: cannot create regular file `/dev/null': Invalid request code
       make[1]: *** [install-elisp] Error 1
-      make[1]: Leaving directory `/cygdrive/c/scratch/ax-build/noweb/src'
+      make[1]: Leaving directory `/cygdrive/c/scratch/fri-build/noweb/src'
       make: *** [stamp-noweb] Error 2
 
     we ignore this error (which occurs because the ELISP environment variable
@@ -113,50 +123,39 @@ IV) follow the instructions in INSTALL (but note that we are going to build
   touch stamp-noweb
   make
 
-     6) make the graphics examples:
+    6) make the graphics examples:
 
-        IMPORTANT NOTE: this step failed when I tried.  After the first drawing
-        appeared and disappeared, it did not continue.  The example graphics
-        are in no way essential though and can be easily reproduced in the
-        installed system.
+    IMPORTANT NOTE: this step failed when I tried.  After the first
+    drawing appeared and disappeared, it did not continue.  The
+    example graphics are in no way essential though and can be easily
+    reproduced in the installed system.
 
-     6a) start X:
+    6a) start a Cygwin/X shell
 
-  sh /usr/X11R6/bin/startxwin.sh
+    6b) run the examples
 
-        a new (white) console should appear
-
-     6b) run the examples
-
-  cd /cygwin/c/scratch/ax-build/src/paste
+  cd /cygwin/c/scratch/fri-build/src/paste
   make gphts
 
-        at this point (which will take a while), graphics should appear and
+       at this point (which will take a while), graphics should appear and
        disappear.
 
   cd ../..
   make
 
   
-     7) install
+    7) install
 
   make install
 
-V) you may want to install the emacs mode coming with FriCAS.  In this case you
-   need to:
+V) You can now start fricas with a comfortable user interface by
+    starting a Cygwin/X shell and typing
 
-     1) start cygwin's setup program again and select the packages:
-
-           In Editors: emacs
-                       emacs-X11
-
-     2) install the emacs mode and a startup script:
-
-  cd /cygwin/c/scratch/fricas/contrib/emacs
-  cp fricas*.el /usr/share/emacs/site-lisp
-  cp efricas /usr/bin
-
-     4) if you installed the startup script, you can start FriCAS now with
-
-  sh /usr/X11R6/bin/startxwin.sh
   efricas
+
+    or, without emacs, using
+
+  fricas
+
+    efricas may sometimes randomly fail, this is a known
+    inconvenience.  A fix is very welcome.
