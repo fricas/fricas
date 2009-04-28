@@ -1018,6 +1018,9 @@ str. Returns:
       (message "FriCAS is ready")
       (set-process-filter fricas-process (function fricas-filter)))))
 
+(defun fricas-strip-ctrl-m (str)
+  (replace-regexp-in-string "\r\n" "\n" str))
+
 (defun fricas-filter (proc str)
   (with-current-buffer (process-buffer proc)
     (let ((output-index 0) 
@@ -1029,7 +1032,8 @@ str. Returns:
 	  query-user-prompt
 	  ;; we need to create a prompt for user queries
 	  output-type)
-      (setq fricas-output-buffer (concat fricas-output-buffer str))
+      (setq fricas-output-buffer (concat fricas-output-buffer 
+					 (fricas-strip-ctrl-m str)))
       (save-excursion
         (goto-char (process-mark proc))
         (while (setq output-type
