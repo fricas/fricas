@@ -113,14 +113,14 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
              -- elementary operation of second kind: add to row i--
                          -- a*row j  (i ~= j) --
     elRow2(m : M,a:R,i:I,j:I) : M ==
-      vec:= map(a*#1,row(m,j))
+      vec := map(x +-> a*x, row(m, j))
       vec:=map("+",row(m,i),vec)
       setRow!(m,i,vec)
       m
              -- elementary operation of second kind: add to column i --
                            -- a*column j (i ~= j) --
     elColumn2(m : M,a:R,i:I,j:I) : M ==
-      vec:= map(a*#1,column(m,j))
+      vec:= map(x +-> a*x, column(m, j))
       vec:=map("+",column(m,i),vec)
       setColumn!(m,i,vec)
       m
@@ -149,7 +149,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
       -- add to column j -mjj*column i --
       rMat:=elColumn2(rMat,-mjj,j,i)
       -- multiply by -1 column j --
-      setColumn!(rMat,j,map(-1 * #1,column(rMat,j)))
+      setColumn!(rMat, j, map(x +-> -1*x, column(rMat, j)))
       [m,lMat,rMat]
 
 
@@ -190,7 +190,7 @@ SmithNormalForm(R,Row,Col,M) : Exports == Implementation where
           while zero?(tjj:=t1(j,j0)) repeat j0:=j0+1
           u(i,j) :=((mm(i,j0) - ("+"/[u(i,k) * t1(k,j0) for k in 1..(j-1)])) exquo
                     tjj) :: R
-      u1:M2:= map(#1 :: QF,u)$MATCAT1
+      u1 : M2 := map(x +-> x::QF, u)$MATCAT1
       [t,map(retract$QF,(inverse u1)::M2)$MATCAT2]
 
                 --- Hermite normal form of m ---

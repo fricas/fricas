@@ -47,21 +47,21 @@ CRApackage(R:EuclideanDomain): Exports == Implementation where
       x := setleaves_!(x, lm)
       mapUp_!(x,"*")
       y := balancedBinaryTree(#lm, 1$R)
-      y := mapUp_!(copy y,x,#1 * #4 + #2 * #3)
+      y := mapUp_!(copy y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)
       (u := extendedEuclidean(value y, value x,1)) case "failed" =>
         error "moduli not relatively prime"
       inv := u . coef1
       linv := modTree(inv, lm)
       l := [(u*v) rem m for v in lv for u in linv for m in lm]
       y := setleaves_!(y,l)
-      value(mapUp_!(y, x, #1 * #4 + #2 * #3)) rem value(x)
+      value(mapUp_!(y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)) rem value(x)
 
     chineseRemainder(llv:List List(R), lm:List(R)):List(R) ==
       x := balancedBinaryTree(#lm, 0$R)
       x := setleaves_!(x, lm)
       mapUp_!(x,"*")
       y := balancedBinaryTree(#lm, 1$R)
-      y := mapUp_!(copy y,x,#1 * #4 + #2 * #3)
+      y := mapUp_!(copy y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)
       (u := extendedEuclidean(value y, value x,1)) case "failed" =>
         error "moduli not relatively prime"
       inv := u . coef1
@@ -70,7 +70,8 @@ CRApackage(R:EuclideanDomain): Exports == Implementation where
       for lv in llv repeat
         l := [(u3*v) rem m for v in lv for u3 in linv for m in lm]
         y := setleaves!(y,l)
-        retVal := cons(value(mapUp!(y, x, #1*#4+#2*#3)) rem value(x),retVal)
+        retVal := cons(value(mapUp!(y, x, (x1, x2, x3, x4) +-> 
+                                      x1*x4 + x2*x3)) rem value(x), retVal)
       reverse retVal
 
     extEuclidean: (R, R, R) -> List R

@@ -66,9 +66,9 @@ PrimitiveElement(F): Exports == Implementation where
     triangularLinearIfCan:(List P,List SY,SY) -> Union(List UP,"failed")
     innerPrimitiveElement: (List P, List SY, SY) -> REC
 
-    multi(p, v)            == multivariate(map(#1, p), v)
+    multi(p, v)            == multivariate(map((f1: F): F +-> f1, p), v)
     randomInts(n, m)       == [symmetricRemainder(random(m)$Integer, m) for i in 1..n]
-    incl?(a, b)            == every?(member?(#1, b), a)
+    incl?(a, b)            == every?((s1: SY): Boolean +-> member?(s1, b), a)
     primitiveElement(l, v) == primitiveElement(l, v, new()$SY)
 
     primitiveElement(p1, a1, p2, a2) ==
@@ -96,9 +96,9 @@ PrimitiveElement(F): Exports == Implementation where
           (degree(p := univariate(u::P, v)) ~= 1) => return "failed"
         (bc := extendedEuclidean(univariate leadingCoefficient p, pw,1))
            case "failed" => error "Should not happen"
-        ll := concat(map(#1,
+        ll := concat(map((z1: F): F +-> z1,
                 (- univariate(coefficient(p,0)) * bc.coef1) rem pw), ll)
-      concat(map(#1, pw), reverse_! ll)
+      concat(map((f1: F): F +-> f1, pw), reverse_! ll)
 
     primitiveElement(l, vars, uu) ==
       u    := uu::P
@@ -161,7 +161,7 @@ FunctionSpacePrimitiveElement(R, F): Exports == Implementation where
     F2P: (F, List SY) -> P
     K2P: (K, List SY) -> P
 
-    F2P(f, l) == inv(denom(f)::F) * map(K2P(#1, l), #1::F::P, numer f)
+    F2P(f, l) == inv(denom(f)::F) * map((k1: K): P +-> K2P(k1, l), (r1: R): P +-> r1::F::P, numer f)
 
     K2P(k, l) ==
       ((v := symbolIfCan k) case SY) and member?(v::SY, l) => v::SY::P
@@ -198,7 +198,7 @@ FunctionSpacePrimitiveElement(R, F): Exports == Implementation where
         b   := (bb := new()$SY)::F
         l   := [aa, bb]$List(SY)
         p1  := minPoly(k1 := retract(a1)@K)
-        p2  := map(subst(ratDenom(#1, [k1]), [k1], [a]),
+        p2  := map((z1: F): F +-> subst(ratDenom(z1, [k1]), [k1], [a]),
                                                  minPoly(retract(a2)@K))
         rec := primitiveElement(F2P(p1 a, l), aa, F2P(p2 b, l), bb)
         w   := rec.coef1 * a1 + rec.coef2 * a2

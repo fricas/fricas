@@ -323,7 +323,7 @@ AssociatedEquations(R, L):Exports == Implementation where
       n := nrows m
       v:Vector MAT := new(n, zero(1, 0)$MAT)
       v.1 := mi := m
-      for i in 2..n repeat v.i := mi := map(diff #1, mi) + mi * m
+      for i in 2..n repeat v.i := mi := map((z1: R): R +-> diff z1, mi) + mi * m
       [makeMatrix(v, i) for i in 1..n]
 
     if R has Field then
@@ -437,7 +437,7 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
       degree r > 1 or not ((leadingCoefficient r) = 1) =>
         recurfactor(op, r, zeros, ezfactor, adj?)
       op1 := opeval(op, dd - coefficient(r, 0)::L)
-      map_!(opeval(#1, r), recurfactor(op1, dd, zeros, ezfactor, adj?))
+      map_!((z1: L): L +-> opeval(z1, r), recurfactor(op1, dd, zeros, ezfactor, adj?))
 
 -- r1? is true means look for 1st-order right-factor also
     innerFactor(l, zeros, ezfactor, r1?) ==
@@ -467,18 +467,18 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
         concat [zro1(r.factor) for r in factors ezfactor p]
 
       zro1 p ==
-        [zeroOf(map(#1, p)$UnivariatePolynomialCategoryFunctions2(F, UP,
+        [zeroOf(map((z1: F): F +-> z1, p)$UnivariatePolynomialCategoryFunctions2(F, UP,
                                              F, SparseUnivariatePolynomial F))]
 
       if F is AlgebraicNumber then
         import AlgFactor UP
 
-        factor l  == innerFactor(l, zro(#1, factor), factor, true)
-        factor1 l == innerFactor(l, zro(#1, factor), factor, false)
+        factor l  == innerFactor(l, (p1: UP): List(F) +-> zro(p1, factor), factor, true)
+        factor1 l == innerFactor(l, (p1: UP): List(F) +-> zro(p1, factor), factor, false)
 
       else
-        factor l  == innerFactor(l, zro(#1, squareFree), squareFree, true)
-        factor1 l == innerFactor(l, zro(#1, squareFree), squareFree, false)
+        factor l  == innerFactor(l, (p1: UP): List(F) +-> zro(p1, squareFree), squareFree, true)
+        factor1 l == innerFactor(l, (p1: UP): List(F) +-> zro(p1, squareFree), squareFree, false)
 
 @
 \section{License}

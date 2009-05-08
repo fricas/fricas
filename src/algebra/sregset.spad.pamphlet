@@ -287,7 +287,8 @@ SquareFreeQuasiComponentPackage(R,E,V,P,TS): Exports == Implementation where
 
      removeSuperfluousCases (cases:List LpWT) ==
        #cases < 2 => cases
-       toSee := sort(supDimElseRittWu?(#1.tower,#2.tower),cases)
+       toSee := sort((x : LpWT, y : LpWT) : Boolean 
+                        +-> supDimElseRittWu?(x.tower, y.tower), cases)
        lpwt1,lpwt2 : LpWT
        toSave,headmaxcases,maxcases,copymaxcases : List LpWT
        while not empty? toSee repeat
@@ -434,7 +435,7 @@ SquareFreeQuasiComponentPackage(R,E,V,P,TS): Exports == Implementation where
              branches:= cons(newBranch::Branch,branches)
            lq := cons(f,lq)
          toSee := branches
-       sort(supDimElseRittWu?(#1.tower,#2.tower),toSee)
+       sort((x, y) +-> supDimElseRittWu?(x.tower, y.tower), toSee)
 
 @
 \section{package SFRGCD SquareFreeRegularTriangularSetGcdPackage}
@@ -737,7 +738,7 @@ SquareFreeRegularTriangularSetGcdPackage(R,E,V,P,TS): Exports == Implementation 
          -- USE stoseInternalAugment with parameters ??
          for ts_h in lts_h repeat
            lbwt := cons([true, ts_h]$BWT,lbwt)
-       sort(#1.val < #2.val,lbwt)
+       sort((x, y) +-> x.val < y.val, lbwt)
 
      stoseInvertibleSet_sqfreg(p:P,ts:TS): Split ==
        --iprint("*")$iprintpack
@@ -823,7 +824,7 @@ SquareFreeRegularTriangularSetGcdPackage(R,E,V,P,TS): Exports == Implementation 
          for ts_h in lts_h repeat
            inv := stoseInvertible?_reg(q,ts_h)@(List BWT)
            lbwt := concat([bwt for bwt in inv | bwt.val],lbwt)
-       sort(#1.val < #2.val,lbwt)
+       sort((x, y) +-> x.val < y.val, lbwt)
 
      stoseInvertibleSet_reg(p:P,ts:TS): Split ==
        --iprint("/")$iprintpack

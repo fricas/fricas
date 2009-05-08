@@ -413,9 +413,9 @@ RealClosedField : Category == PUB where
           negative?(n) => inv(sqrt(x,(-n) :: PI))
           sqrt(x,n :: PI)
 
-        allRootsOf(p:SUP(RN)) == allRootsOf(map(#1 :: $ ,p)$PACK(RN,$))
+        allRootsOf(p : SUP(RN)) == allRootsOf(map(z +-> z::%, p)$PACK(RN, %))
 
-        allRootsOf(p:SUP(Z)) == allRootsOf(map(#1 :: $ ,p)$PACK(Z,$))
+        allRootsOf(p : SUP(Z)) == allRootsOf(map(z +-> z::%, p)$PACK(Z, %))
 
         allRootsOf(p:POLY($)) == allRootsOf(univariate(p))
 
@@ -612,7 +612,7 @@ RightOpenIntervalRootCharacterization(TheField,ThePolDom) : PUB == PRIV where
 
    invert(p) ==
         d := degree(p)
-        mapExponents((d-#1)::N, p)
+        mapExponents(z +-> (d - z)::N, p)
 
    rootBound(p) ==
      res : TheField := 1
@@ -1109,13 +1109,13 @@ RealClosure(TheField): PUB == PRIV where
           x case TheField => n *$TheField x
           zero?(n) => 0
           one?(n) => x
-          [x.seg,map(n * #1, x.val),x.outForm,x.order]$Rec
+          [x.seg, map(z +-> n*z, x.val), x.outForm, x.order]$Rec
 
        (rn:TheField * x:$):$ ==
           x case TheField => rn *$TheField x
           zero?(rn) => 0
           one?(rn) => x
-          [x.seg,map(rn * #1, x.val),x.outForm,x.order]$Rec
+          [x.seg, map(z +-> rn*z, x.val), x.outForm, x.order]$Rec
 
        (x:$ * y:$):$ ==
           (x case TheField) and (y case TheField) => x *$TheField y
@@ -1124,9 +1124,9 @@ RealClosure(TheField): PUB == PRIV where
           (y case TheField) => y::TheField * x
               -- now both are algebraic
           y.order > x.order =>
-            [y.seg,map(x * #1 , y.val),y.outForm,y.order]$Rec
+            [y.seg, map(z +-> x*z , y.val), y.outForm, y.order]$Rec
           x.order > y.order =>
-            [x.seg,map( #1 * y , x.val),x.outForm,x.order]$Rec
+            [x.seg, map(z +-> z*y , x.val), x.outForm, x.order]$Rec
               -- now x.exp = y.exp
               -- we will multiply the polynomials and then reduce
               -- however wee need to call lessAlgebraic

@@ -199,13 +199,13 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
                    FSUP, VFSUP, VFSUP, Matrix FSUP)
       MATCAT22 := MatrixCategoryFunctions2(FSUP, VFSUP, VFSUP, Matrix FSUP,
                    R, Row, Col, M)
-      y:= map(coerce(coerce(#1)$SUP)$(Fraction SUP),x)$MATCAT2
+      y:= map((r1: R): FSUP +-> coerce(coerce(r1)$SUP)$FSUP,x)$MATCAT2
       ty:=transpose y
       yy:=ty*y
       nc:=ncols yy
       var:=monomial(1,1)$SUP ::(Fraction SUP)
       yy:=inverse(yy+scalarMatrix(ncols yy,var))::Matrix(FSUP)*ty
-      map(elt(#1,0),yy)$MATCAT22
+      map((z1: FSUP): R +-> elt(z1,0), yy)$MATCAT22
 
     inverse x ==
       (ndim := nrows x) ~= (ncols x) =>
@@ -408,7 +408,7 @@ InnerMatrixQuotientFieldFunctions(R,Row,Col,M,QF,Row2,Col2,M2):_
   Implementation ==> add
 
     qfMat: M -> M2
-    qfMat m == map(#1 :: QF,m)$MATCAT2
+    qfMat m == map((r1: R): QF +-> r1 :: QF, m)$MATCAT2
 
     rowEchelon m == rowEchelon(qfMat m)$IMATLIN
     inverse m ==
@@ -555,14 +555,14 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
              -- elementary operation of second kind: add to row i--
                          -- a*row j  (i~=j) --
     elRow2!(m : M,a:R,i:I,j:I) : M ==
-      vec:= map(a*#1,row(m,j))
+      vec:= map((r1: R): R +-> a*r1, row(m,j))
       vec:=map("+",row(m,i),vec)
       setRow!(m,i,vec)
       m
              -- elementary operation of second kind: add to column i --
                            -- a*column j (i~=j) --
     elColumn2!(m : M,a:R,i:I,j:I) : M ==
-      vec:= map(a*#1,column(m,j))
+      vec:= map((r1: R): R +-> a*r1, column(m,j))
       vec:=map("+",column(m,i),vec)
       setColumn!(m,i,vec)
       m
@@ -656,7 +656,8 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
         nullSpace y == nullSpace(y)$IMATLIN
       else
         nullSpace y ==
-          [map(#1, v)$FLA2 for v in nullSpace(map(#1, y)$MAT2)$MMATLIN]
+          [map((r1: R): R +-> r1, v)$FLA2 
+               for v in nullSpace(map((r1: R): R +-> r1, y)$MAT2)$MMATLIN]
 
     else if R has IntegralDomain then
       QF      ==> Fraction R

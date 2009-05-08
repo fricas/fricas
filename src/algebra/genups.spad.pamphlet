@@ -125,7 +125,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       coerce(series(genStream(f,0))$UTS(FE,x,a))$ANY1(UTS(FE,x,a))
 
     taylor(an:FE,n:SY,eq:EQ FE) ==
-      taylor(eval(an,(n :: FE) = (#1 :: FE)),eq)
+      taylor((i:I):FE +-> eval(an,(n :: FE) = (i :: FE)),eq)
 
     taylor(f:I -> FE,eq:EQ FE,seg:SEG NNI) ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
@@ -143,7 +143,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       coerce(uts)$ANY1(UTS(FE,x,a))
 
     taylor(an,n,eq,seg) ==
-      taylor(eval(an,(n :: FE) = (#1 :: FE)),eq,seg)
+      taylor((i:I):FE +-> eval(an,(n :: FE) = (i :: FE)),eq,seg)
 
     laurent(f,eq,seg) ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
@@ -159,7 +159,7 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
       coerce(laurent(n0,uts)$ULS(FE,x,a))$ANY1(ULS(FE,x,a))
 
     laurent(an,n,eq,seg) ==
-      laurent(eval(an,(n :: FE) = (#1 :: FE)),eq,seg)
+      laurent((i:I):FE +-> eval(an,(n :: FE) = (i :: FE)),eq,seg)
 
     modifyFcn:(RN -> FE,I,I,I,I) -> FE
     modifyFcn(f,n0,nn,q,m) == (zero?((m - n0) rem nn) => f(m/q); 0)
@@ -178,27 +178,27 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
         q := lcm(lcm(q0,q1),q2)
         n0 := p0 * (q quo q0); n1 := p1 * (q quo q1)
         nn := p2 * (q quo q2)
-        ulsUnion := laurent(modifyFcn(f,n0,nn,q,#1),eq,segment(n0,n1))
+        ulsUnion := laurent((i:I):FE +-> modifyFcn(f,n0,nn,q,i),eq,segment(n0,n1))
         uls := retract(ulsUnion)$ANY1(ULS(FE,x,a))
         coerce(puiseux(1/q,uls)$UPXS(FE,x,a))$ANY1(UPXS(FE,x,a))
       p0 := numer(r0 := lo seg); q0 := denom r0
       p2 := numer r; q2 := denom r
       q := lcm(q0,q2)
       n0 := p0 * (q quo q0); nn := p2 * (q quo q2)
-      ulsUnion := laurent(modifyFcn(f,n0,nn,q,#1),eq,segment n0)
+      ulsUnion := laurent((i:I):FE +-> modifyFcn(f,n0,nn,q,i),eq,segment n0)
       uls := retract(ulsUnion)$ANY1(ULS(FE,x,a))
       coerce(puiseux(1/q,uls)$UPXS(FE,x,a))$ANY1(UPXS(FE,x,a))
 
     puiseux(an,n,eq,r0,m) ==
-      puiseux(eval(an,(n :: FE) = (#1 :: FE)),eq,r0,m)
+      puiseux((r:RN):FE +-> eval(an,(n :: FE) = (r :: FE)),eq,r0,m)
 
-    series(f:I -> FE,eq:EQ FE) == puiseux(f(numer #1),eq,segment 0,1)
+    series(f:I -> FE,eq:EQ FE) == puiseux(r +-> f(numer r),eq,segment 0,1)
     series(an:FE,n:SY,eq:EQ FE) == puiseux(an,n,eq,segment 0,1)
     series(f:I -> FE,eq:EQ FE,seg:SEG I) ==
-      ratSeg : SEG RN := map(#1::RN,seg)$UniversalSegmentFunctions2(I,RN)
-      puiseux(f(numer #1),eq,ratSeg,1)
+      ratSeg : SEG RN := map(x +-> x::RN,seg)$UniversalSegmentFunctions2(I,RN)
+      puiseux((r:RN):FE +-> f(numer r),eq,ratSeg,1)
     series(an:FE,n:SY,eq:EQ FE,seg:SEG I) ==
-      ratSeg : SEG RN := map(#1::RN,seg)$UniversalSegmentFunctions2(I,RN)
+      ratSeg : SEG RN := map(i+->i::RN,seg)$UniversalSegmentFunctions2(I,RN)
       puiseux(an,n,eq,ratSeg,1)
     series(f:RN -> FE,eq:EQ FE,seg:SEG RN,r:RN) == puiseux(f,eq,seg,r)
     series(an:FE,n:SY,eq:EQ FE,seg:SEG RN,r:RN) == puiseux(an,n,eq,seg,r)

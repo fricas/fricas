@@ -163,7 +163,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
             -- two non-trivial primitive (or, at least, we don't care
             -- about content)
             -- polynomials with precisely the same degree
-          #lv = 0 => map(#1::P,gcdPolynomial(map(ground,p1),
+          #lv = 0 => map(x +-> x::P,gcdPolynomial(map(ground,p1),
                                              map(ground,p2)))
           degree p2 = 1 =>
             p1 exquo p2 case SUPP => p2
@@ -176,8 +176,8 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
                   lr:=[randomR() for vv in lv]
                   count:=count+1
             count = 10 => error "too many evaluations in GCD code"
-            up1:SUPR:=map(ground eval(#1,lv,lr),p1)
-            up2:SUPR:=map(ground eval(#1,lv,lr),p2)
+            up1:SUPR:=map(x +-> ground eval(x,lv,lr),p1)
+            up2:SUPR:=map(x +-> ground eval(x,lv,lr),p2)
             u:=gcdPolynomial(up1,up2)
             degree u = 0 => return 1
             -- let's pick a second one, just to check
@@ -186,8 +186,8 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
                   lrr:=[randomR() for vv in lv]
                   count:=count+1
             count = 10 => error "too many evaluations in GCD code"
-            vp1:SUPR:=map(ground eval(#1,lv,lrr),p1)
-            vp2:SUPR:=map(ground eval(#1,lv,lrr),p2)
+            vp1:SUPR:=map(x +-> ground eval(x,lv,lrr),p1)
+            vp2:SUPR:=map(x +-> ground eval(x,lv,lrr),p2)
             v:=gcdPolynomial(vp1,vp2)
             degree v = 0 => return 1
             if degree v < degree u then
@@ -220,15 +220,15 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
         -- lift the coprime factorisation gR*cfR = (univariate of p)
         -- where the variables lv have been evaluated at lr
         lcp:=leadingCoefficient p
-        g:=monomial(lcp,degree gR)+map(#1::P,reductum gR)
-        cf:=monomial(lcp,degree cfR)+map(#1::P,reductum cfR)
+        g:=monomial(lcp,degree gR)+map(x +-> x::P,reductum gR)
+        cf:=monomial(lcp,degree cfR)+map(x +-> x::P,reductum cfR)
         p:=lcp*p       -- impose leaidng coefficient of p on each factor
         while lv ~= [] repeat
            v:=first lv
            r:=first lr
            lv:=rest lv
            lr:=rest lr
-           thisp:=map(eval(#1,lv,lr),p)
+           thisp:=map(x +-> eval(x,lv,lr),p)
            d:="max"/[degree(c,v) for c in coefficients p]
            prime:=v::P - r::P
            pn:=prime
@@ -239,7 +239,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
                  error "failed lifting in hensel in Complex Polynomial GCD"
               zero? Ecart => leave
               step:=solveLinearPolynomialEquation(origFactors,
-                                                  map(eval(#1,v,r),Ecart::SUPP))
+                                                  map(x +-> eval(x,v,r),Ecart::SUPP))
               step case "failed" => return "failed"
               g:=g+pn*first step
               cf:=cf+pn*second step
@@ -251,7 +251,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
          pv:=rest pv    -- and recurse on pv as necessary
          d:="max"/[degree(u,mv) for u in coefficients p]
          for i in 0..d repeat
-             p1:=map(coefficient(#1,mv,i),p)
+             p1:=map(x +-> coefficient(x,mv,i),p)
              oldg:=g
              if pv = [] then g:=gcdSameVariables(g,p1,v)
              else g:=recursivelyGCDCoefficients(p,v,p1,pv)
@@ -266,7 +266,7 @@ GeneralPolynomialGcdPackage(E,OV,R,P):C == T where
          #lv = 0 => p1
          lr:=[ randomR() for vv in lv]
          dg:=degree p1
-         while dg ~= degree (ans:= map(eval(#1,lv,lr),p1)) repeat
+         while dg ~= degree (ans:= map(x +-> eval(x,lv,lr),p1)) repeat
            lr:=[ randomR() for vv in lv]
          ans
 --      eval(p1:SUPP,lv:List OV,lr:List R) == map(eval(#1,lv,lr),p1)

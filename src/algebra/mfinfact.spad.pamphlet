@@ -118,9 +118,9 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
             [lfg.contp,append(factorlist,lfg.factors)]
 
 
-        om:=map(pushup(#1,basicVar),um)$UPCF2(P,SUP P,PG,SUP PG)
+        om:=map((p1: P): PG +-> pushup(p1,basicVar),um)$UPCF2(P,SUP P,PG,SUP PG)
         sqfacs:=squareFree(om)
-        lcont:=map(pushdown(#1,basicVar),unit sqfacs)$UPCF2(PG,SUP PG,P,SUP P)
+        lcont:=map((p1: PG): P +-> pushdown(p1,basicVar),unit sqfacs)$UPCF2(PG,SUP PG,P,SUP P)
 
                                    ----   Factorize the content  ----
         if ground? lcont then
@@ -131,7 +131,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
         factorlist:=flead.factors
 
                                  ----  Make the polynomial square-free  ----
-        sqqfact:=[[map(pushdown(#1,basicVar),ff.factor),ff.exponent]
+        sqqfact:=[[map((p1: PG): P +-> pushdown(p1,basicVar),ff.factor),ff.exponent]
                       for ff in factors sqfacs]
 
                         ---  Factorize the primitive square-free terms ---
@@ -156,10 +156,10 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
         ld:=degree(um,lv)
         dx:="min"/ld
         basicVar:=lv.position(dx,ld)
-        cm:=map(pushdown(#1,basicVar),um)$UPCF2(PG,SUP PG,P,SUP P)
+        cm:=map((p1: PG): P +-> pushdown(p1,basicVar),um)$UPCF2(PG,SUP PG,P,SUP P)
         flist := supFactor(cm,dx)
         pushupconst(flist.contp,basicVar)::SUP(PG) *
-          (*/[primeFactor(map(pushup(#1,basicVar),u.irr)$UPCF2(P,SUP P,PG,SUP PG),
+          (*/[primeFactor(map((p1: P): PG +-> pushup(p1,basicVar),u.irr)$UPCF2(P,SUP P,PG,SUP PG),
                  u.pow) for u in flist.factors])
 
 
@@ -255,7 +255,7 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
 
       ----  push x in the coefficient domain for a term ----
     pushdcoef(t:PG):P ==
-       map(coerce(#1)$R,t)$MPolyCatFunctions2(OV,E,
+       map((f1: F): R +-> coerce(f1)$R,t)$MPolyCatFunctions2(OV,E,
                                            IndexedExponents OV,F,R,PG,P)
 
 
