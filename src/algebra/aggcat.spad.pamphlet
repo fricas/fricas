@@ -528,12 +528,7 @@ Dictionary(S:SetCategory): Category ==
      s = t ==
        eq?(s,t) => true
        #s ~= #t => false
-       -- every?((x: S): Boolean +-> member?(x, t), parts s)
--- I'd rather write
---       every?(member?(#1, t), parts s)
--- but the compiler complains
-       every?(mem?, parts s) where
-           mem?(x: S): Boolean == member?(x, t)
+       every?((x: S): Boolean +-> member?(x, t), parts s)
 
      remove_!(f:S->Boolean, t:%) ==
        for m in parts t repeat if f m then remove_!(m, t)
@@ -694,14 +689,8 @@ FiniteSetAggregate(S:SetCategory): Category ==
    cardinality s   == #s
    construct l     == (s := set(); for x in l repeat insert_!(x,s); s)
    count(x:S, s:%) == (member?(x, s) => 1; 0)
--- I'd rather write
---   subset?(s, t)   == #s < #t and every?(x +-> member?(x, t), parts s)
--- but the compiler complains
    subset?(s, t)   ==
-       #s >= #t => false
-       every?(mem?, parts s) where
-           mem?(x: S): Boolean == member?(x, t)
-
+       #s < #t and every?((x : S) : Boolean +-> member?(x, t), parts s)
 
    coerce(s:%):OutputForm ==
      brace [x::OutputForm for x in parts s]$List(OutputForm)

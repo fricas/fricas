@@ -116,9 +116,8 @@ overridden [[children]], which now yields an error if passed an empty tree.
       distance1(t2, t1)
     node?(t1, t2) ==
       t1 = t2 => true
-      t case empty => false
-      any?(inode?, children t2) where
-         inode?(t: %): Boolean == node?(t1, t)
+      t2 case empty => false
+      any?((t: %): Boolean +-> node?(t1, t), children t2)
     leaf? t ==
       t case empty => false
       empty? children t
@@ -146,8 +145,7 @@ overridden [[children]], which now yields an error if passed an empty tree.
       true
     member?(n, t) ==
       t case empty => false
-      n = value t or any?(mem?, children t) where
-          mem?(c: %): Boolean == member?(n, c)
+      n = value t or any?((c: %): Boolean +-> member?(n, c), children t)
     members t == parts t
     parts t == --buggy?
       t case empty => empty()
