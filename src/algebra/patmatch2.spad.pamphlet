@@ -72,9 +72,9 @@ PatternMatchIntegerNumberSystem(I:IntegerNumberSystem): with
                                          uur.exponent, l,1)) => failed()
        patternMatchRestricted(pr.base, uur.val, l, 1)
      (w := isTimes p) case List(PAT) =>
-       patternMatchSumProd(x, w::List(PAT), l, #1 exquo #2, 1)
+       patternMatchSumProd(x, w::List(PAT), l, (i1:I, i2: I): Union(I, "failed") +-> i1 exquo i2, 1)
      (w := isPlus p) case List(PAT) =>
-      patternMatchSumProd(x,w::List(PAT),l,(#1-#2)::Union(I,"failed"),0)
+      patternMatchSumProd(x,w::List(PAT),l,(i1:I, i2: I): Union(I, "failed") +-> (i1-i2)::Union(I,"failed"),0)
      (uv := isQuotient p) case Record(num:PAT, den:PAT) =>
        uvr := uv::Record(num:PAT, den:PAT)
        (r := retractIfCan(uvr.num)@Union(Integer,"failed")) case Integer
@@ -177,8 +177,8 @@ PatternMatchPolynomialCategory(S,E,V,R,P):Exports== Implementation where
         vmatch(v::V, p, l)
       (u := isPlus p) case List(PAT) =>
         (lx := isPlus x) case List(P) =>
-          patternMatch(lx::List(P), u::List(PAT), +/#1, l,
-                                       patternMatch(#1, #2, #3, vmatch))
+          patternMatch(lx::List(P), u::List(PAT), (l1: List(P)): P +-> +/l1, l,
+              (p1: P, p2: PAT, p3: PRS): PRS +-> patternMatch(p1, p2, p3, vmatch))
         (u := optpair(u::List(PAT))) case List(PAT) =>
           failed?(l := addMatch(first(u::List(PAT)), 0, l)) => failed()
           patternMatch(x, second(u::List(PAT)), l, vmatch)
@@ -186,7 +186,7 @@ PatternMatchPolynomialCategory(S,E,V,R,P):Exports== Implementation where
       (u := isTimes p) case List(PAT) =>
         (lx := isTimes x) case List(P) =>
           patternMatchTimes(lx::List(P), u::List(PAT), l,
-                                       patternMatch(#1, #2, #3, vmatch))
+              (p1: P, p2: PAT, p3: PRS): PRS +-> patternMatch(p1, p2, p3, vmatch))
         (u := optpair(u::List(PAT))) case List(PAT) =>
           failed?(l := addMatch(first(u::List(PAT)), 1, l)) => failed()
           patternMatch(x, second(u::List(PAT)), l, vmatch)
@@ -254,7 +254,7 @@ PatternMatchFunctionSpace(S, R, F): Exports== Implementation where
         patternMatch(denom(x)::F, uq.den, l)
       (u := isPlus p) case List(PAT) =>
         (lx := isPlus x) case List(F) =>
-          patternMatch(lx::List(F), u::List(PAT), +/#1, l, patternMatch)
+          patternMatch(lx::List(F), u::List(PAT), l1 +-> +/l1, l, patternMatch)
         (u := optpair(u::List(PAT))) case List(PAT) =>
           failed?(l := addMatch(first(u::List(PAT)), 0, l)) => failed()
           patternMatch(x, second(u::List(PAT)), l)

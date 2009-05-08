@@ -245,8 +245,10 @@ ContinuedFraction(R): Exports == Implementation where
         concat([1,wlo], delay genReducedForm(wh0, apps, shift(mt, -wlo::Q)))
 
     wholePart c           == c.value.whole
-    partialNumerators c   == map(#1.num, c.value.fract)$StreamFunctions2(Rec,R)
-    partialDenominators c == map(#1.den, c.value.fract)$StreamFunctions2(Rec,R)
+    partialNumerators c   == map(x +-> x.num,
+                               c.value.fract)$StreamFunctions2(Rec,R)
+    partialDenominators c == map(x +-> x.den,
+                               c.value.fract)$StreamFunctions2(Rec,R)
     partialQuotients c    == concat(c.value.whole, partialDenominators c)
 
     approximants c ==
@@ -299,16 +301,16 @@ ContinuedFraction(R): Exports == Implementation where
     0 == (0$R) :: %
     1 == (1$R) :: %
 
-    c + d   == genFromSequence map(#1 + #2, apx c, apx d)
-    c - d   == genFromSequence map(#1 - #2, apx c, rest apx d)
-    - c     == genFromSequence map(   - #1, rest apx c)
-    c * d   == genFromSequence map(#1 * #2, apx c, apx d)
-    a * d   == genFromSequence map( a * #1, apx d)
-    q * d   == genFromSequence map( q * #1, apx d)
-    n * d   == genFromSequence map( n * #1, apx d)
-    c / d   == genFromSequence map(#1 / #2, apx c, rest apx d)
+    c + d   == genFromSequence map((x, y) +-> x + y, apx c, apx d)
+    c - d   == genFromSequence map((x, y) +-> x - y, apx c, rest apx d)
+    - c     == genFromSequence map(x +->  - x, rest apx c)
+    c * d   == genFromSequence map((x, y) +-> x*y, apx c, apx d)
+    a * d   == genFromSequence map(x +-> a*x, apx d)
+    q * d   == genFromSequence map(x +-> q*x, apx d)
+    n * d   == genFromSequence map(x +-> n*x, apx d)
+    c / d   == genFromSequence map((x, y) +-> x/y, apx c, rest apx d)
     recip c ==(c = 0 => "failed";
-               genFromSequence map( 1 / #1, rest apx c))
+               genFromSequence map(x +-> 1/x, rest apx c))
 
     showAll?: () -> Boolean
     showAll?() ==

@@ -133,7 +133,7 @@ TwoFactorize(F) : C == T
           exchangeVarTerm(reductum c, e)
 
     pthRoot(poly:R,p:NonNegativeInteger,PthRootPow:NonNegativeInteger):R ==
-       tmp:=divideExponents(map((#1::F)^PthRootPow,poly),p)
+       tmp := divideExponents(map((x : F) : F +-> (x::F)^PthRootPow, poly), p)
        tmp case "failed" => error "consistency error in TwoFactor"
        tmp
 
@@ -197,7 +197,8 @@ TwoFactorize(F) : C == T
               map(differentiate,fac) = 0 =>
                 p:=characteristic$F
                 PthRootPow:=(size$F exquo p)::NonNegativeInteger
-                m1:=divideExponents(map(pthRoot(#1,p,PthRootPow),fac),p)
+                m1:=divideExponents(
+                       map(x +-> pthRoot(x, p, PthRootPow), fac), p)
                 m1 case "failed" => error "consistency error in TwoFactor"
                 res:=generalTwoFactor m1
                 unitPart:=unitPart*unit(res)^((p*expon)::NNI)
@@ -228,7 +229,7 @@ TwoFactorize(F) : C == T
           vval := random()$F
           i:=i+1
           zero? elt(lcm, vval) => "next value"
-          umv := map(elt(#1,vval), m)$UPCF2(R, P, F, R)
+          umv := map(x +-> elt(x, vval), m)$UPCF2(R, P, F, R)
           degree(gcd(umv,differentiate umv)) ~= 0 => "next val"
           n := 1
           look := false
@@ -251,7 +252,7 @@ TwoFactorize(F) : C == T
          val:=random()$extField
          i:=i+1
          elt(lcmm,val)=0 => "next value"
-         umex := map(elt(#1,val), mm)$UPCF2(SUEx, TP, extField, SUEx)
+         umex := map(x +-> elt(x, val), mm)$UPCF2(SUEx, TP, extField, SUEx)
          degree(gcd(umex,differentiate umex)) ~= 0 => "next val"
          look:=false
        prime:SUEx:=monomial(1,1)-monomial(val,0)

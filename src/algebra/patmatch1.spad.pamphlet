@@ -387,11 +387,11 @@ PatternMatchPushDown(S, A, B): Exports == Implementation where
     fixPredicates: (PAT, PRB, PRA) -> Union(REC, "failed")
     fixList:(List PAT -> PAT, List PAT, PRB, PRA) -> Union(REC,"failed")
 
-    fixPredicate f == f(#1::B)
+    fixPredicate f == (a1: A): Boolean +-> f(a1::B)
 
     patternMatch(a, p, l) ==
       (u := fixPredicates(p, l, new())) case "failed" => failed()
-      union(l, map(#1::B, patternMatch(a, (u::REC).pat, (u::REC).res)))
+      union(l, map((a1: A): B +-> a1::B, patternMatch(a, (u::REC).pat, (u::REC).res)))
 
     inA(p, l) ==
       (u := getMatch(p, l)) case "failed" => empty()
@@ -416,11 +416,11 @@ PatternMatchPushDown(S, A, B): Exports == Implementation where
       (r:=retractIfCan(p)@Union(S,"failed")) case S or quoted? p =>[p,la]
       (u := isOp p) case Record(op:BasicOperator, arg:List PAT) =>
         ur := u::Record(op:BasicOperator, arg:List PAT)
-        fixList((ur.op) #1, ur.arg, lb, la)
+        fixList((l1: List(PAT)): PAT +-> (ur.op) l1, ur.arg, lb, la)
       (us := isPlus p) case List(PAT) =>
-        fixList(reduce("+", #1), us::List(PAT), lb, la)
+        fixList((l1: List(PAT)): PAT +-> reduce("+", l1), us::List(PAT), lb, la)
       (us := isTimes p) case List(PAT) =>
-        fixList(reduce("*", #1), us::List(PAT), lb, la)
+        fixList((l1: List(PAT)): PAT +-> reduce("*", l1), us::List(PAT), lb, la)
       (v := isQuotient p) case Record(num:PAT, den:PAT) =>
         vr := v::Record(num:PAT, den:PAT)
         (fn := fixPredicates(vr.num, lb, la)) case "failed" => "failed"
@@ -519,8 +519,8 @@ PatternMatchTools(S, R, P): Exports == Implementation where
       member?(mn1, lp) =>
         (u := negConstant ls) case "failed" => failed()
         if (u::P ~= -1::P) then ls := concat(-u::P, ls)
-        patternMatch(remove(u::P,ls), remove(mn1,lp), */#1, l, pmatch)
-      patternMatch(ls, lp, */#1, l, pmatch)
+        patternMatch(remove(u::P,ls), remove(mn1,lp), (l1: List(P)): P +-> */l1, l, pmatch)
+      patternMatch(ls, lp, (l1: List(P)): P +-> */l1, l, pmatch)
 
 -- finds a match for p in ls, try not to match to a "bad" value
     findMatch(p, ls, l, ident, pmatch) ==
@@ -585,13 +585,13 @@ PatternMatchTools(S, R, P): Exports == Implementation where
       -- l1 = constant patterns (i.e. 'x, or sin('x))
       l1 := select(constant?, lp)
       -- l2 = patterns with a predicate attached to them
-      l2 := select(hasPredicate? #1 and not constant? #1, lp)
+      l2 := select((p1: PAT): Boolean +-> hasPredicate? p1 and not constant? p1, lp)
       -- l3 = non-generic patterns without predicates
-      l3 := sort_!(depth(#1) > depth(#2),
-        select(not(hasPredicate? #1 or generic? #1 or constant? #1),lp))
+      l3 := sort_!((z1: PAT, z2: PAT): Boolean +-> depth(z1) > depth(z2),
+        select((p1: PAT): Boolean +-> not(hasPredicate? p1 or generic? p1 or constant? p1),lp))
       -- l4 = generic patterns with predicates
-      l4 := select(generic? #1 and
-                              not(hasPredicate? #1 or constant? #1), lp)
+      l4 := select((p1: PAT): Boolean +-> generic? p1 and
+                              not(hasPredicate? p1 or constant? p1), lp)
       rec:REC := [l, ls]
       (u := tryToMatch(l1, rec, ident, pmatch)) case "failed" =>
         failed()

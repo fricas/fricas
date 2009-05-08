@@ -107,10 +107,10 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
     diff  := D()$L
     diffq := D()$LQ
 
-    lambda(c, l)        == innerlb(l, order(#1, c)::Z)
-    infLambda l         == innerlb(l, -(degree(#1)::Z))
-    infmax(rec, l)      == innermax(rec, l, degree(#1)::Z)
-    dmax(rec, c, l)     == innermax(rec, l, - order(#1, c)::Z)
+    lambda(c, l)        == innerlb(l, z +-> order(z, c)::Z)
+    infLambda l         == innerlb(l, z +-> -(degree(z)::Z))
+    infmax(rec, l)      == innermax(rec, l, z +-> degree(z)::Z)
+    dmax(rec, c, l)     == innermax(rec, l, z +-> - order(z, c)::Z)
     tau0(p, q)          == ((q exquo (p ^ order(q, p)))::UP) rem p
     poly1(c, cp, i)     == */[monomial(1,1)$UP2 - (j * cp)::UP2 for j in 0..i-1]
     getIndices(n, l)    == removeDuplicates_! concat [r.ij for r in l | r.deg=n]
@@ -126,7 +126,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       ans:List(FRC) := empty()
       finite? and zero? b => ans
       lc := leadingDenomRicDE(c, op)
-      if finite? then lc := select_!(#1.deg <= b, lc)
+      if finite? then lc := select_!(z +-> z.deg <= b, lc)
       for rec in lc repeat
         for r in zeros(c, rec.eq) | r ~= 0 repeat
           rcn := r /$RF (c ^ rec.deg)
@@ -146,7 +146,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
         not(empty?(ind := dmax(rec, c, l))) repeat
           ans := concat([rec.deg, getPol(rec, c, l, ind)], ans)
           done := concat(rec.deg, done)
-      sort_!(#1.deg > #2.deg, ans)
+      sort_!((z1, z2) +-> z1.deg > z2.deg, ans)
 
     getPol(rec, c, l, ind) ==
 --      one?(rec.deg) => getPol1(ind, c, l)
@@ -193,7 +193,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
         not(empty?(ind := infmax(rec, l))) repeat
           ans := concat([rec.deg, getPoly(rec, l, ind)], ans)
           done := concat(rec.deg, done)
-      sort_!(#1.deg > #2.deg, ans)
+      sort_!((z1, z2) +-> z1.deg > z2.deg, ans)
 
     factoredDenomRicDE l ==
       bd := factors balancedFactorisation(leadingCoefficient l, coefficients l)
@@ -255,7 +255,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       ans:List(POL) := empty()
       finite? and zero? b => ans
       lc := leadingCoefficientRicDE l
-      if finite? then lc := select_!(#1.deg <= b, lc)
+      if finite? then lc := select_!(z +-> z.deg <= b, lc)
       for rec in lc repeat
         for a in zeros(rec.eq) | a ~= 0 repeat
           atn:UP := monomial(a, rec.deg)
@@ -380,7 +380,8 @@ RationalRicDE(F, UP): Exports == Implementation where
 
     dummy := new()$SY
 
-    UP2SUP p == map(#1::P,p)$UnivariatePolynomialCategoryFunctions2(F,UP,P,SUP)
+    UP2SUP p == map(z +-> z::P,
+                    p)$UnivariatePolynomialCategoryFunctions2(F, UP, P, SUP)
     logDerOnly l == [differentiate(s) / s for s in ratDsolve(l, 0).basis]
     ricDsolve(l:LQ, zeros:UP -> List F) == ricDsolve(l, zeros, squareFree)
     ricDsolve(l:L,  zeros:UP -> List F) == ricDsolve(l, zeros, squareFree)
@@ -390,7 +391,7 @@ RationalRicDE(F, UP): Exports == Implementation where
       ricDsolve(splitDenominator(l, empty()).eq, zeros, ezfactor)
 
     mapeval(p, ls, lv) ==
-      map(ground eval(#1, ls, lv),
+      map(z +-> ground eval(z, ls, lv),
           p)$UnivariatePolynomialCategoryFunctions2(P, SUP, F, UP)
 
     FifCan f ==
@@ -513,7 +514,8 @@ RationalRicDE(F, UP): Exports == Implementation where
 -- stop when the number of solutions reaches the order of the equation
     nopoly(n, p, l, zeros) ==
       ans:List(QF) := empty()
-      for rec in constantCoefficientRicDE(l, constantRic(#1, zeros)) repeat
+      for rec in constantCoefficientRicDE(l, z +-> constantRic(z, zeros)) _
+      repeat
         ans := removeDuplicates_! concat_!(ans,
                   [(rec.constant::UP + p)::QF + f for f in logDerOnly(rec.eq)])
         #ans = n => return ans
@@ -538,17 +540,18 @@ RationalRicDE(F, UP): Exports == Implementation where
       ricDsolve(l:LQ) == ricDsolve(l, squareFree)
 
       ricDsolve(l:L, ezfactor:UP -> Factored UP) ==
-        ricDsolve(l, zro(#1, ezfactor), ezfactor)
+        ricDsolve(l, z +-> zro(z, ezfactor), ezfactor)
 
       ricDsolve(l:LQ, ezfactor:UP -> Factored UP) ==
-        ricDsolve(l, zro(#1, ezfactor), ezfactor)
+        ricDsolve(l, z +-> zro(z, ezfactor), ezfactor)
 
       zro(p, ezfactor) ==
         concat [zro1(r.factor) for r in factors ezfactor p]
 
       zro1 p ==
-        [zeroOf(map(#1, p)$UnivariatePolynomialCategoryFunctions2(F, UP,
-                                              F, SparseUnivariatePolynomial F))]
+        [zeroOf(map((z : F) : F +-> z,
+                     p)$UnivariatePolynomialCategoryFunctions2(F,
+                              UP, F, SparseUnivariatePolynomial F))]
 
 @
 \section{License}

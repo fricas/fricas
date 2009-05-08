@@ -76,7 +76,7 @@ PartitionsAndPermutations: Exports == Implementation where
     partitions(M,N,n) ==
       zero? n => concat(empty()$L(I),empty()$(ST L I))
       zero? M or zero? N or n < 0 => empty()
-      c := map(concat(N,#1),partitions(M - 1,N,n - N))
+      c := map((l1: List(I)): List(I) +-> concat(N,l1),partitions(M - 1,N,n - N))
       concat(c,partitions(M,N - 1,n))
 
     partitions n == partitions(n,n,n)
@@ -99,11 +99,11 @@ PartitionsAndPermutations: Exports == Implementation where
     shuffle(x,y)==
       empty? x => concat(y,empty())$(ST L I)
       empty? y => concat(x,empty())$(ST L I)
-      concat(map(concat(first x,#1),shuffle(rest x,y)),_
-             map(concat(first y,#1),shuffle(x,rest y)))
+      concat(map((l1: List(I)): List(I) +-> concat(first x,l1),shuffle(rest x,y)),_
+             map((l1: List(I)): List(I) +-> concat(first y,l1),shuffle(x,rest y)))
 
     shufflein(x,yy) ==
-      concat(map(shuffle(x,#1),yy)$ST2(L I,ST L I))$ST1(L I)
+      concat(map((l1: List(I)): ST(L I) +-> shuffle(x,l1),yy)$ST2(L I,ST L I))$ST1(L I)
 
     -- rpt(n,m) is the list of n m's
     rpt: (I,I) -> L I

@@ -178,7 +178,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
         z   := rootOf(rec.prim)
         lk:List K := [kx, k]
         lv:List F := [(rec.pol1) z, (rec.pol2) z]
-        (u := solve(localmap(eval(#1, lk, lv), op), eval(g, lk, lv), x))
+        (u := solve(localmap((f1: F): F +-> eval(f1, lk, lv), op), eval(g, lk, lv), x))
             case "failed" => "failed"
         rc := u::REC
         kz := retract(z)@K
@@ -187,7 +187,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
       lastChance(op, g, x)
 
     doVarParams(eq, g, bas, x) ==
-      (u := particularSolution(eq, g, bas, int(#1, x))) case "failed" =>
+      (u := particularSolution(eq, g, bas, (f1: F): F +-> int(f1, x))) case "failed" =>
          lastChance(eq, g, x)
       [u::F, bas]
 
@@ -267,7 +267,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
       b := coefficient(op, 1)
       a := coefficient(op, 2)
       (u := kovacic(coefficient(op, 0), b, a, ffactor)) case "failed" => empty()
-      p := map(multivariate(#1, k), u::UPUP)
+      p := map(z1 +-> multivariate(z1, k), u::UPUP)
       ba := multivariate(- b / a, k)
 -- if p has degree 2 (case 2), then it must be squarefree since the
 -- ode is irreducible over the rational functions, so the 2 roots of p
@@ -309,7 +309,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
       for i in minIndex v .. maxIndex v for yy in y0 repeat
         v.i := yy - eval(h, kx, a)
         h := diff h
-      (sol := particularSolution(map_!(eval(#1,kx,a),wronskianMatrix(b,n)), v))
+      (sol := particularSolution(map_!((f1: F): F +-> eval(f1,kx,a),wronskianMatrix(b,n)), v))
          case "failed" => "failed"
       for f in b for i in minIndex(s := sol::V) .. repeat
         hp := hp + s.i * f
@@ -457,7 +457,7 @@ ElementaryFunctionODESolver(R, F): Exports == Implementation where
 
     solve(m:M, v:V, x:SY) ==
         Lx := LinearOrdinaryDifferentialOperator(F, diff x)
-        uu := solve(m, v, solve(#1, #2,
+        uu := solve(m, v, (z1, z2) +-> solve(z1, z2,
                x)$ElementaryFunctionLODESolver(R, F, Lx))$SystemODESolver(F, Lx)
         uu case "failed" => "failed"
         rec := uu::Record(particular: V, basis: M)

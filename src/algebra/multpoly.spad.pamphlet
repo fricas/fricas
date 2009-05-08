@@ -71,7 +71,7 @@ PolynomialFunctions2(R:Ring, S:Ring): with
     ++ map(f, p) produces a new polynomial as a result of applying
     ++ the function f to every coefficient of the polynomial p.
  == add
-  map(f, p) == map(#1::Polynomial(S), f(#1)::Polynomial(S),
+  map(f, p) == map(x1+->x1::Polynomial(S), x2+->f(x2)::Polynomial(S),
                    p)$PolynomialCategoryLifting(IndexedExponents Symbol,
                                    Symbol, R, Polynomial R, Polynomial S)
 
@@ -189,7 +189,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       moreThanOneVariable? p ==
          p case R => false
          q:=p.ts
-         any?(not ground? #1 ,coefficients q) => true
+         any?(x1+->not ground? x1 ,coefficients q) => true
          false
 
       -- if we already know we use this (slighlty) faster function
@@ -428,7 +428,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       map(fn,p) ==
          p case R => fn(p)
          mvar:=p.v
-         up:=map(map(fn,#1),p.ts)
+         up:=map(x1+->map(fn,x1),p.ts)
          if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
 
       if R has Field then
@@ -567,7 +567,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
         mvar := Lvar.first
         mvar > p.v => evalSortedVarlist(p,Lvar.rest,Lpval.rest)
         pval := Lpval.first
-        pts := map(evalSortedVarlist(#1,Lvar,Lpval),p.ts)
+        pts := map(x1+->evalSortedVarlist(x1,Lvar,Lpval),p.ts)
         mvar=p.v =>
              pval case R => pts (pval::R)
              pts pval
@@ -575,8 +575,8 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 
       eval(p,Lvar,Lpval) ==
         empty? rest Lvar => evalSortedVarlist(p,Lvar,Lpval)
-        sorted?(#1 > #2, Lvar) => evalSortedVarlist(p,Lvar,Lpval)
-        nlvar := sort(#1 > #2,Lvar)
+        sorted?((x1,x2)+->(x1 > x2), Lvar) => evalSortedVarlist(p,Lvar,Lpval)
+        nlvar := sort((x1,x2)+->(x1 > x2),Lvar)
         nlpval :=
            Lvar = nlvar => Lpval
            nlpval := [Lpval.position(mvar,Lvar) for mvar in nlvar]
@@ -631,7 +631,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
           mvar=p.v =>
              up:=differentiate p.ts
              if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
-          up:=map(differentiate(#1,mvar),p.ts)
+          up:=map(x1+->differentiate(x1,mvar),p.ts)
           if ground? up then leadingCoefficient(up) else [p.v,up]$VPoly
 
       leadingCoefficient(p) ==

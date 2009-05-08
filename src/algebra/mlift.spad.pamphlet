@@ -80,8 +80,8 @@ MultivariateLifting(E,OV,R,P) : C == T
       a:P:= fval.first ::P
       y:OV:=lvar.first
       lvar:=lvar.rest
-      listpolv:L SUP := [map(eval(#1,y,a),f1) for f1 in flist]
-      um:=map(eval(#1,y,a),m)
+      listpolv:L SUP := [map((p1: P): P +-> eval(p1,y,a),f1) for f1 in flist]
+      um:=map((p1: P): P +-> eval(p1,y,a),m)
       flcoef:=corrPoly(um,lvar,fval.rest,ld.rest,listpolv,table,pmod)
       if flcoef case "failed" then return "failed"
       else lcoef:=flcoef :: L SUP
@@ -92,7 +92,7 @@ MultivariateLifting(E,OV,R,P) : C == T
       for l in 1..deg1 repeat
         if diff=0 then return lcoef
         pol := pol*polc
-        (ddiff:= map(eval(normalDerivM(#1,l,y),y,a),diff)) = 0 => "next l"
+        (ddiff:= map((p1: P): P +-> eval(normalDerivM(p1,l,y),y,a),diff)) = 0 => "next l"
         fbeta := corrPoly(ddiff,lvar,fval.rest,ld.rest,listpolv,table,pmod)
         if fbeta case "failed" then return "failed"
         else beta:=fbeta :: L SUP
@@ -142,7 +142,7 @@ MultivariateLifting(E,OV,R,P) : C == T
           if not(empty? coeflist) then
             plist:=[subscoef(tpol,clist)
                    for tpol in plist for clist in clv]
-        mj := map(eval(#1,li,vlist),m)  --m(x1,..,xj,aj+1,..,an
+        mj := map((p1: P): P +-> eval(p1,li,vlist),m)  --m(x1,..,xj,aj+1,..,an
         polc := x::P - v::P  --(xj-aj)
         pol:= 1$P
       --Construction of Rik, k in 1..right degree for xj+1
@@ -151,8 +151,8 @@ MultivariateLifting(E,OV,R,P) : C == T
          mc := */[term for term in plist]-mj
          if mc=0 then leave "next var"
          --Modulus Dk
-         mc:=map(normalDerivM(#1,k,x),mc)
-         (mc := map(eval(#1,[x],[v]),mc))=0 => "next k"
+         mc:=map((p1: P): P +-> normalDerivM(p1,k,x),mc)
+         (mc := map((p1: P): P +-> eval(p1,[x],[v]),mc))=0 => "next k"
          flalpha:=corrPoly(mc,subsvar.rest,subsval.rest,
                           ldeg.rest,conglist,table,pmod)
          if flalpha case "failed" then return "failed"

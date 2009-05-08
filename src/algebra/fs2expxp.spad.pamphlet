@@ -139,7 +139,7 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
       -- and log
       smpElem(numer f) / smpElem(denom f)
 
-    smpElem p == map(k2Elem,#1::FE,p)$PCL
+    smpElem p == map(k2Elem, (x1: R) : FE +-> x1::FE, p)$PCL
 
     k2Elem k ==
     -- rewrites a kernel; all trig functions are
@@ -179,9 +179,11 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
         [exprToUPS(fcn,false,"real:two sides").%series :: XXP]
       (sum := isPlus fcn) case L(FE) =>
-        listToXXP(sum :: L(FE),posCheck?,0,#1 + #2)
+        listToXXP(sum :: L(FE), posCheck?, 0, (y1 : XXP, y2 : XXP) : XXP 
+                                               +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-        listToXXP(prod :: L(FE),posCheck?,1,#1 * #2)
+        listToXXP(prod :: L(FE), posCheck?, 1, (y1 : XXP, y2 : XXP) : XXP
+                                                +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val:FE,exponent:I) =>
         power := expt :: Record(val:FE,exponent:I)
         powerToXXP(power.val,power.exponent,posCheck?)

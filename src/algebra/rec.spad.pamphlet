@@ -167,7 +167,7 @@ how many initial values are necessary.
       getShiftRec(op: BasicOperator, f: Kernel F, n: Symbol)
                  : Union(Integer, "failed") ==
           a := argument f
-          if every?(freeOf?(#1, n::F), a) then return 0
+          if every?(z +-> freeOf?(z, n::F), a) then return 0
 
           if #a ~= 1 then error "RECOP: operator should have only one argument"
 
@@ -177,7 +177,7 @@ how many initial values are necessary.
           num := numer p
 
           if degree num = 1 and coefficient(num, 1) = 1
-             and every?(freeOf?(#1, n::F), coefficients num)
+             and every?(z +-> freeOf?(z, n::F), coefficients num)
           then return retractIfCan(coefficient(num, 0))
           else return "failed"
 
@@ -269,7 +269,8 @@ how many initial values are necessary.
                 nextval := eval(next, argsym::F,
                                 (len-(shiftInfo.max)::Integer)::F)
                 newval := eval(nextval, op,
-                               evalRec(op, argsym, argdisp, #1, eq, values))
+                               z +->
+                               evalRec(op, argsym, argdisp, z, eq, values))
                 evalRec(op, argsym, argdisp, arg, eq, cons(newval, values))
               else
                 kernel(oprecur,

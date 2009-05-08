@@ -73,7 +73,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
 
     internalIntegrate(f, x) ==
       f := distribute(f, x::F)
-      any?(has?(operator #1, RTRIG),
+      any?(x1+->has?(operator x1, RTRIG),
        [k for k in tower(g := realElementary(f, x))
         | member?(x, variables(k::F))]$List(Kernel F))$List(Kernel F) =>
           h := trigs2explogs(F2FG g, [K2KG k for k in tower f
@@ -154,7 +154,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     tan2temp k == kernel(optemp, argument k, height k)$K
 
     trans? f ==
-      any?(is?(#1,"log"::SE) or is?(#1,"exp"::SE) or is?(#1,"atan"::SE),
+      any?(x1+->is?(x1,"log"::SE) or is?(x1,"exp"::SE) or is?(x1,"atan"::SE),
            operators f)$List(BasicOperator)
 
     mkPrimh(f, x, h, comp) ==
@@ -207,14 +207,14 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
       tf  := [k for k in tower f | member?(x, variables(k::F)@List(SE))]$List(K)
-      ltf := select(is?(operator #1, "tan"::SE), tf)
-      ht  := any?(has?(operator #1, HTRIG), tf)
+      ltf := select(x1+->is?(operator x1, "tan"::SE), tf)
+      ht  := any?(x1+->has?(operator x1, HTRIG), tf)
       rec := rischNormalize(realElementary(f, x), x)
       g   := rootSimp(rec.func)
       tg  := [k for k in tower g | member?(x, variables(k::F))]$List(K)
-      ltg := select(is?(operator #1, "tan"::SE), tg)
-      rtg := any?(has?(operator #1, RTRIG), tg)
-      el  := any?(has?(operator #1, ELEM), tg)
+      ltg := select(x1+->is?(operator x1, "tan"::SE), tg)
+      rtg := any?(x1+->has?(operator x1, RTRIG), tg)
+      el  := any?(x1+->has?(operator x1, ELEM), tg)
       i:IR
       if (comp := goComplex?(rtg, tg, ltg)) then
         gg : FG := trigs2explogs(F2FG g,

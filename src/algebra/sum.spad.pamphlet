@@ -43,7 +43,7 @@ InnerPolySum(E, V, R, P): Exports == Impl where
 
         pmul(c, p) ==
             pn := (rec := splitDenominator p).num
-            [map(numer(#1) * c,
+            [map(x +-> numer(x)*c,
                 pn)$SparseUnivariatePolynomialFunctions2(Q, P), rec.den]
 
         sum(p, v, s) ==
@@ -125,7 +125,7 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
       RFQ2R f    == PQ2R(numer f) / PQ2R(denom f)
 
       PQ2R p ==
-        map(#1::P::Q, #1::Q, p)$PolynomialCategoryLifting(
+        map(x +-> x::P::Q, y +-> y::Q, p)$PolynomialCategoryLifting(
                                        IndexedExponents V, V, RN, PQ, Q)
 
       GospersMethod(aquo, n, newV) ==
@@ -141,7 +141,8 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
 
       UP2QIfCan p ==
         every?(rat?, coefficients p) =>
-          map(#1::PQ, (retractIfCan(#1::P::Q)@Union(RN, "failed"))::RN::PQ,
+          map(x +-> x::PQ,
+              y +-> (retractIfCan(y::P::Q)@Union(RN, "failed"))::RN::PQ,
               p)$PolynomialCategoryLifting(E, V, R, P, PQ)
         "failed"
 
@@ -318,7 +319,8 @@ RationalFunctionSum(R): Exports == Impl where
 
       sum(f:RF, s:SegmentBinding RF) ==
         (indef := innersum(f, v := variable s)) case "failed" =>
-          summation(f::FE,map(#1::FE,s)$SegmentBindingFunctions2(RF,FE))
+          summation(f::FE, map((z : RF) : FE +-> z::FE,
+                               s)$SegmentBindingFunctions2(RF, FE))
         eval(indef::RF, v, 1 + hi segment s)
           - eval(indef::RF, v,lo segment s)
 

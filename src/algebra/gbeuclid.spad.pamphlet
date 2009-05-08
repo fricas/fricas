@@ -181,9 +181,9 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
 
      ---------   create D and Pol
 
-     Pol1:= sort( (degree #1 > degree #2) or
-                    ((degree #1 = degree #2 ) and
-                       sizeLess?(leadingCoefficient #2,leadingCoefficient #1)),
+     Pol1:= sort((z1:Dpol,z2:Dpol):Boolean +-> (degree z1 > degree z2) or
+                    ((degree z1 = degree z2) and
+                       sizeLess?(leadingCoefficient z2,leadingCoefficient z1)),
                  Pol)
      Pol:= [first(Pol1)]
      H:= Pol
@@ -196,20 +196,20 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
         lch:= lc h
         dd1:= [[sup(degree(x), en), lcm(leadingCoefficient x, lch), x, h]$critPair
             for x in Pol]
-        D:= updatD(ecritMTondd1(sort((#1.lcmfij < #2.lcmfij) or
-                                      (( #1.lcmfij = #2.lcmfij ) and
-                                        ( sizeLess?(#1.lcmcij,#2.lcmcij)) ),
+        D:= updatD(ecritMTondd1(sort((z1:critPair, z2:critPair):Boolean +-> (z1.lcmfij < z2.lcmfij) or
+                                      (( z1.lcmfij = z2.lcmfij ) and
+                                        ( sizeLess?(z1.lcmcij,z2.lcmcij)) ),
                                      dd1)), ecritBonD(h,D))
         Pol:= cons(h, eupdatF(h, Pol))
         ((en = degree(first(H))) and (leadingCoefficient(h) = leadingCoefficient(first(H)) ) ) =>
               " go to top of while "
         H:= updatH(h,H,crithdelH(h,H),[h])
-        H:= sort((degree #1 > degree #2) or
-                ((degree #1 = degree #2 ) and
-                  sizeLess?(leadingCoefficient #2,leadingCoefficient #1)), H)
-     D:= sort((#1.lcmfij < #2.lcmfij) or
-             (( #1.lcmfij = #2.lcmfij ) and
-               ( sizeLess?(#1.lcmcij,#2.lcmcij)) ) ,D)
+        H:= sort((z1, z2) +-> (degree z1 > degree z2) or
+                ((degree z1 = degree z2) and
+                  sizeLess?(leadingCoefficient z2,leadingCoefficient z1)), H)
+     D:= sort((z1, z2) +-> (z1.lcmfij < z2.lcmfij) or
+             ((z1.lcmfij = z2.lcmfij) and
+              (sizeLess?(z1.lcmcij, z2.lcmcij))) ,D)
      xx:= xx2
 
      --------  loop
@@ -231,9 +231,9 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
          leh:= lc eh
          dd1:= [[sup(degree(x), e), lcm(leadingCoefficient x, leh), x, eh]$critPair
             for x in Pol]
-         D:= updatD(ecritMTondd1(sort( (#1.lcmfij <
-              #2.lcmfij) or (( #1.lcmfij = #2.lcmfij ) and
-               ( sizeLess?(#1.lcmcij,#2.lcmcij)) ), dd1)), ecritBonD(eh,D))
+         D:= updatD(ecritMTondd1(sort((z1, z2) +-> (z1.lcmfij <
+              z2.lcmfij) or (( z1.lcmfij = z2.lcmfij ) and
+               ( sizeLess?(z1.lcmcij,z2.lcmcij)) ), dd1)), ecritBonD(eh,D))
          Pol:= cons(eh,eupdatF(eh,Pol))
          not ecrithinH(eh,H) or
            ((e = degree(first(H))) and (leadingCoefficient(eh) = leadingCoefficient(first(H)) ) ) =>
@@ -242,9 +242,9 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol): T == C where
                   xx:= 2
               " go to top of while "
          H:= updatH(eh,H,crithdelH(eh,H),[eh])
-         H:= sort( (degree #1 > degree #2) or
-             ((degree #1 = degree #2 ) and
-                 sizeLess?(leadingCoefficient #2,leadingCoefficient #1)), H)
+         H:= sort((z1, z2) +-> (degree z1 > degree z2) or
+             ((degree z1 = degree z2 ) and
+                 sizeLess?(leadingCoefficient z2,leadingCoefficient z1)), H)
          if xx2 = 1 then
            ala:= prindINFO(D0,ep,eh,#H, #D, xx)
            xx:= 2

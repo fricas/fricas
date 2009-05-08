@@ -90,12 +90,12 @@ the stream should always be $n-1$.
 
     evalstream:(%,L Var,L SMP) -> StS
     evalstream(s:%,lv:(L Var),lsmp:(L SMP)):(ST SMP) ==
-      scan(0,_+$SMP,map(eval(#1,lv,lsmp),s pretend StS))$ST2(SMP,SMP)
+      scan(0,_+$SMP,map((z1: SMP): SMP +-> eval(z1,lv,lsmp),s pretend StS))$ST2(SMP,SMP)
 
     addvariable:(Var,InnerTaylorSeries Coef) -> %
     addvariable(v,s) ==
       ints := integers(0)$STT pretend ST NNI
-      map(monomial(#2 :: SMP,v,#1)$SMP,ints,s pretend ST Coef)$ST3(NNI,Coef,SMP)
+      map((n1: NNI, c2: Coef): SMP +-> monomial(c2 :: SMP,v,n1)$SMP,ints,s pretend ST Coef)$ST3(NNI,Coef,SMP)
 
 @
 
@@ -112,7 +112,7 @@ The function \spadfun{coefficient} carries three different semantics.  We can ex
   the stream by a constant.
 <<domain SMTS SparseMultivariateTaylorSeries>>=
     coefficient(s: %, lv: List Var, ln: List NNI): % ==
-        map(coefficient(#1, lv, ln), rest(s, reduce(_+, ln)))
+        map((z1: SMP): SMP +-> coefficient(z1, lv, ln), rest(s, reduce(_+, ln)))
 @
 \item the coefficient of a particular monomial:
 <<domain SMTS SparseMultivariateTaylorSeries>>=
@@ -191,11 +191,11 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
 
     sortmfirst:(SMP,L Var,L %) -> %
     sortmfirst(p,vl,q) ==
-      nlv : L Var := sort(#1 > #2,vl)
+      nlv : L Var := sort((v1: Var, v2: Var): Boolean +-> v1 > v2,vl)
       nq : L % := [q position$(L Var) (i,vl) for i in nlv]
       substvar(p,nlv,nq)
 
-    csubst(vl,q) == sortmfirst(#1,vl,q pretend L(%)) pretend StS
+    csubst(vl,q) == (p1: SMP): StS +-> sortmfirst(p1,vl,q pretend L(%)) pretend StS
 
     restCheck(s:StS):StS ==
       -- checks that stream is null or first element is 0
@@ -225,7 +225,7 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
       substmts(v,p,q pretend %) pretend StS
 
     comp1:(Var,StS,StS) -> StS
-    comp1(v,r,t)== addiag(map(subststream(v,#1,t),r)$ST2(SMP,StS))$STT
+    comp1(v,r,t)== addiag(map((p1: SMP): StS +-> subststream(v,p1,t),r)$ST2(SMP,StS))$STT
 
     comp(v:Var,s:StS,t:StS):StS == delay
       empty? s => s
@@ -242,15 +242,15 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
 
     differentiate(s:%,v:Var):% ==
       empty? s => 0
-      map(differentiate(#1,v),rst s)
+      map((z1: SMP): SMP +-> differentiate(z1,v),rst s)
 
     stream(x:%):Rep == x pretend Rep
 
     if Coef has Algebra Fraction Integer then
 
       (x:%) ^ (r:RN) == powern(r,stream x)$STT
-      (r:RN) * (x:%)  == map(r * #1, stream x)$ST2(SMP,SMP) pretend %
-      (x:%) * (r:RN)  == map(#1 * r,stream x )$ST2(SMP,SMP) pretend %
+      (r:RN) * (x:%)  == map((z1: SMP): SMP +-> r * z1, stream x)$ST2(SMP,SMP) pretend %
+      (x:%) * (r:RN)  == map((z1: SMP): SMP +-> z1 * r,stream x )$ST2(SMP,SMP) pretend %
 
       exp x == exp(stream x)$STF
       log x == log(stream x)$STF
@@ -294,9 +294,9 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
         ss
 
       fintegrate(f,v,r) ==
-        concat(r::SMP,delay map(intsmp(v,#1),f() pretend StS))
+        concat(r::SMP,delay map((z1: SMP): SMP +-> intsmp(v,z1),f() pretend StS))
       integrate(s,v,r) ==
-        concat(r::SMP,map(intsmp(v,#1),s pretend StS))
+        concat(r::SMP,map((z1: SMP): SMP +-> intsmp(v,z1),s pretend StS))
 
     -- If there is more than one term of the same order, group them.
     tout(p:SMP):OUT ==
@@ -329,7 +329,7 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
       reduce("+",reverse_! l)
     if Coef has Field then
          SF2==> StreamFunctions2
-         p:% / r:Coef ==(map(#1/$SMP r,stream p)$SF2(SMP,SMP))pretend %
+         p:% / r:Coef ==(map((z1: SMP): SMP +-> z1/$SMP r,stream p)$SF2(SMP,SMP))pretend %
 
 @
 \section{domain TS TaylorSeries}

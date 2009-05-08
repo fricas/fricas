@@ -269,8 +269,8 @@ AlgebraicManipulations(R, F): Exports == Implementation where
     ratDenom(x:F, l:List K):F == innerRF(x, algkernels l)
     ratDenom(x:F, y:F)        == ratDenom(x, [y])
     ratDenom(x:F, l:List F)   == ratDenom(x, [retract(y)@K for y in l]$List(K))
-    algkernels l              == select_!(has?(operator #1, ALGOP), l)
-    rootkernels l             == select_!(is?(operator #1, NTHR::SY), l)
+    algkernels l              == select_!((z1: K): Boolean +-> has?(operator z1, ALGOP), l)
+    rootkernels l             == select_!((z1: K): Boolean +-> is?(operator z1, NTHR::SY), l)
 
     ratPoly x ==
       numer univariate(denom(ratDenom inv(dummy::P::F - x))::F, dummy)
@@ -287,16 +287,16 @@ AlgebraicManipulations(R, F): Exports == Implementation where
 
 -- all the kernels in ll must be algebraic
     innerRF(x, ll) ==
-      empty?(l := sort_!(#1 > #2, kernels x)$List(K)) or
+      empty?(l := sort_!((z1: K, z2: K): Boolean +-> z1 > z2, kernels x)$List(K)) or
         empty? setIntersection(ll, tower x) => x
       lk := empty()$List(K)
       while not member?(k := first l, ll) repeat
         lk := concat(k, lk)
         empty?(l := rest l) =>
-          return eval(x, lk, [map(innerRF(#1, ll), kk) for kk in lk])
+          return eval(x, lk, [map((z1: F): F +-> innerRF(z1, ll), kk) for kk in lk])
       q := univariate(eval(x, lk,
-                 [map(innerRF(#1, ll), kk) for kk in lk]), k, minPoly k)
-      map(innerRF(#1, ll), q) (map(innerRF(#1, ll), k))
+                 [map((z1: F): F +-> innerRF(z1, ll), kk) for kk in lk]), k, minPoly k)
+      map((z1: F): F +-> innerRF(z1, ll), q) (map((z1: F): F +-> innerRF(z1, ll), k))
 
     if R has Join(OrderedSet, GcdDomain, RetractableTo Integer)
      and F has FunctionSpace(R) then
@@ -676,7 +676,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
     termexp p ==
       exponent:F := 0
       coef := (leadingCoefficient p)::P
-      lpow := select(is?(#1, POWER)$K, lk := variables p)$List(K)
+      lpow := select((z1: K): Boolean +-> is?(z1, POWER)$K, lk := variables p)$List(K)
       for k in lk repeat
         d := degree(p, k)
         if is?(k, "exp"::Symbol) then
@@ -688,7 +688,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       coef::F * exp exponent * powersimp(p, lpow)
 
     expandPower f ==
-      l := select(is?(#1, POWER)$K, kernels f)$List(K)
+      l := select((z1: K): Boolean +-> is?(z1, POWER)$K, kernels f)$List(K)
       eval(f, l, [expandpow k for k in l])
 
 -- l is a list of pure powers appearing as kernels in p
@@ -697,7 +697,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       k := first l                           -- k = a^b
       a := first(arg := argument k)
       exponent := degree(p, k) * second arg
-      empty?(lk := select(a = first argument #1, rest l)) =>
+      empty?(lk := select((z1: K): Boolean +-> a = first argument z1, rest l)) =>
         (a ^ exponent) * powersimp(p, rest l)
       for k0 in lk repeat
         exponent := exponent + degree(p, k0) * second argument k0
@@ -715,32 +715,32 @@ TranscendentalManipulations(R, F): Exports == Implementation where
     sh2ch2 x      == cosh(x)^2 - 1
     ueval(x, s,f) == eval(x, s::Symbol, f)
     ueval2(x,s,f) == eval(x, s::Symbol, 2, f)
-    cos2sec x     == ueval(x, "cos", inv sec #1)
-    sin2csc x     == ueval(x, "sin", inv csc #1)
+    cos2sec x     == ueval(x, "cos", (z1: F): F +-> inv sec z1)
+    sin2csc x     == ueval(x, "sin", (z1: F): F +-> inv csc z1)
     csc2sin x     == ueval(x, "csc", c2s)
     sec2cos x     == ueval(x, "sec", s2c)
-    tan2cot x     == ueval(x, "tan", inv cot #1)
-    cot2tan x     == ueval(x, "cot", inv tan #1)
+    tan2cot x     == ueval(x, "tan", (z1: F): F +-> inv cot z1)
+    cot2tan x     == ueval(x, "cot", (z1: F): F +-> inv tan z1)
     tan2trig x    == ueval(x, "tan", t2t)
     cot2trig x    == ueval(x, "cot", c2t)
-    cosh2sech x   == ueval(x, "cosh", inv sech #1)
-    sinh2csch x   == ueval(x, "sinh", inv csch #1)
+    cosh2sech x   == ueval(x, "cosh", (z1: F): F +-> inv sech z1)
+    sinh2csch x   == ueval(x, "sinh", (z1: F): F +-> inv csch z1)
     csch2sinh x   == ueval(x, "csch", ch2sh)
     sech2cosh x   == ueval(x, "sech", sh2ch)
-    tanh2coth x   == ueval(x, "tanh", inv coth #1)
-    coth2tanh x   == ueval(x, "coth", inv tanh #1)
+    tanh2coth x   == ueval(x, "tanh", (z1: F): F +-> inv coth z1)
+    coth2tanh x   == ueval(x, "coth", (z1: F): F +-> inv tanh z1)
     tanh2trigh x  == ueval(x, "tanh", th2th)
     coth2trigh x  == ueval(x, "coth", ch2th)
-    removeCosSq x == ueval2(x, "cos", 1 - (sin #1)^2)
+    removeCosSq x == ueval2(x, "cos", (z1: F): F +-> 1 - (sin z1)^2)
     removeSinSq x == ueval2(x, "sin", s2c2)
-    removeCoshSq x== ueval2(x, "cosh", 1 + (sinh #1)^2)
+    removeCoshSq x== ueval2(x, "cosh", (z1: F): F +-> 1 + (sinh z1)^2)
     removeSinhSq x== ueval2(x, "sinh", sh2ch2)
     expandLog x   == smplog(numer x) / smplog(denom x)
     simplifyExp x == (smpexp numer x) / (smpexp denom x)
     expand x      == (smpexpand numer x) / (smpexpand denom x)
-    smpexpand p   == map(kerexpand, #1::F, p)
-    smplog p      == map(logexpand, #1::F, p)
-    smp2htrigs p  == map(htrigs(#1::F), #1::F, p)
+    smpexpand p   == map(kerexpand, (r1: R): F +-> r1::F, p)
+    smplog p      == map(logexpand, (r1: R): F +-> r1::F, p)
+    smp2htrigs p  == map((k1: K): F +-> htrigs(k1::F), (r1: R): F +-> r1::F, p)
 
     htrigs f ==
       (m := mainKernel f) case "failed" => f
