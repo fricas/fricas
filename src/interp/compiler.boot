@@ -211,6 +211,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
     [u,.,.] := t
     extractCodeAndConstructTriple(u, m, oldE)
   [u,.,.]:= comp(x,m',e) or return nil
+  (uu := simpleCall(u, vl, m, oldE)) => uu
   uu:=optimizeFunctionDef [nil,['LAMBDA,vl,u]]
   --  At this point, we have a function that we would like to pass.
   --  Unfortunately, it makes various free variable references outside
@@ -283,6 +284,12 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
     frees => ['CONS,fname,vec]
     ['LIST,fname]
   [uu,m,oldE]
+
+simpleCall(u, vl, m, oldE) ==
+    u is ["call", fn, :avl] and avl = vl =>
+        if fn is ["applyFun", a] then fn := a
+        [fn,m,oldE]
+    nil
 
 extractCodeAndConstructTriple(u, m, oldE) ==
   u is ["call",fn,:.] =>
