@@ -681,7 +681,7 @@ ODETools(F, LODO): Exports == Implementation where
 ++ This package is intended for use
 ++ by the differential equations solver but not at top-level.
 ODEIntegration(R, F): Exports == Implementation where
-  R: Join(OrderedSet, EuclideanDomain, RetractableTo Integer,
+  R: Join(Comparable, EuclideanDomain, RetractableTo Integer,
           LinearlyExplicitRingOver Integer, CharacteristicZero)
   F: Join(AlgebraicallyClosedFunctionSpace R, TranscendentalFunctionCategory,
                                               PrimitiveFunctionCategory)
@@ -754,8 +754,9 @@ ODEIntegration(R, F): Exports == Implementation where
 -- checks if a non-sum expr is of the form c * log(g) for a rational number c
     isQlog f ==
       is?(f, "log"::SY) => [1, first argument(retract(f)@K)]
+      -- fixme FIXME
       (v := isTimes f) case List(F) and (#(l := v::List(F)) <= 3) =>
-          l := reverse_! sort_! l
+          l := reverse_! sort_!(smaller?, l)
           is?(first l, "log"::SY) and ((u := isQ rest l) case Q) =>
               [u::Q, first argument(retract(first(l))@K)]
           "failed"
@@ -770,7 +771,7 @@ ODEIntegration(R, F): Exports == Implementation where
 ++ Date Last Updated: 3 February 1994
 ++ Description: Solution of linear ordinary differential equations, constant coefficient case.
 ConstantLODE(R, F, L): Exports == Implementation where
-  R: Join(OrderedSet, EuclideanDomain, RetractableTo Integer,
+  R: Join(Comparable, EuclideanDomain, RetractableTo Integer,
           LinearlyExplicitRingOver Integer, CharacteristicZero)
   F: Join(AlgebraicallyClosedFunctionSpace R,
           TranscendentalFunctionCategory, PrimitiveFunctionCategory)

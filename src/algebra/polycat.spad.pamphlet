@@ -287,7 +287,7 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
         ++ primitiveMonomials(p) gives the list of monomials of the
         ++ polynomial p with their coefficients removed.
         ++ Note: \spad{primitiveMonomials(sum(a_(i) X^(i))) = [X^(1),...,X^(n)]}.
-    if R has OrderedSet  then OrderedSet
+    if R has Comparable then Comparable
     -- OrderedRing view removed to allow EXPR to define abs
     --if R has OrderedRing then OrderedRing
     if (R has ConvertibleTo InputForm) and
@@ -573,11 +573,12 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
       primitivePart(p,v) ==
         zero? p => p
         unitNormal((p exquo content(p,v)) ::%).canonical
-    if R has OrderedSet then
-      p:% < q:% ==
-        (dp:= degree p) < (dq := degree q) => (leadingCoefficient q) > 0
-        dq < dp => (leadingCoefficient p) < 0
-        leadingCoefficient(p - q) < 0
+    if R has Comparable then
+      smaller?(p:%, q:%) ==
+        (dp:= degree p) < (dq := degree q) =>
+             smaller?(0, leadingCoefficient q)
+        dq < dp => smaller?(leadingCoefficient p, 0)
+        smaller?(leadingCoefficient(p - q), 0)
       if (R has PatternMatchable Integer) and
          (VarSet has PatternMatchable Integer) then
            patternMatch(p:%, pat:Pattern Integer,
