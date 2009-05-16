@@ -18,7 +18,7 @@
 ++ Date Last Updated: October 1993 (P.Gianni), February 1995 (MB)
 ++ Description: Expressions involving symbolic functions.
 ++ Keywords: operator, kernel, function.
-Expression(R:OrderedSet): Exports == Implementation where
+Expression(R : Comparable): Exports == Implementation where
   Q   ==> Fraction Integer
   K   ==> Kernel %
   MP  ==> SparseMultivariatePolynomial(R, K)
@@ -130,7 +130,7 @@ Expression(R:OrderedSet): Exports == Implementation where
         n = 1 => x
         simplifyPower(numerator x,n pretend Integer) / simplifyPower(denominator x,n pretend Integer)
 
-      x:% < y:%        == x <$Rep y
+      smaller?(x:%, y:%)  == smaller?(x, y)$Rep
       x:% = y:%        == x =$Rep y
       numer x          == numer(x)$Rep
       denom x          == denom(x)$Rep
@@ -380,7 +380,7 @@ Expression(R:OrderedSet): Exports == Implementation where
         x:% * y:%      == x *$Rep y
         x:% + y:%      == x +$Rep y
         x:% = y:%      == x =$Rep y
-        x:% < y:%      == x <$Rep y
+        smaller?(x:%, y:%)      == smaller?(x, y)$Rep
         numer x        == x@Rep
         coerce(p:MP):% == p
 
@@ -442,7 +442,7 @@ Expression(R:OrderedSet): Exports == Implementation where
           0              == 0$Rep
           x:% + y:%      == x +$Rep y
           x:% = y:%      == x =$Rep y
-          x:% < y:%      == x <$Rep y
+          smaller?(x:%, y:%)      == smaller?(x, y)$Rep
           coerce(k:K):%  == coerce(k)$Rep
           kernels x      == [f.gen for f in terms x]
           coerce(x:R):%  == (zero? x => 0; constantKernel(x)::%)
@@ -501,7 +501,7 @@ Expression(R:OrderedSet): Exports == Implementation where
 
             Rep := K
 
-            x:% < y:%      == x <$Rep y
+            smaller?(x:%, y:%)      == smaller?(x, y)$Rep
             x:% = y:%      == x =$Rep y
             coerce(k:K):%  == k
             kernels x      == [x pretend K]
@@ -571,7 +571,7 @@ PolynomialAN2Expression():Target == Implementation where
 ++ Description: Lifting of maps to Expressions.
 ++ Date Created: 16 Jan 1989
 ++ Date Last Updated: 22 Jan 1990
-ExpressionFunctions2(R:OrderedSet, S:OrderedSet):
+ExpressionFunctions2(R: Comparable, S : Comparable):
  Exports == Implementation where
   K   ==> Kernel R
   F2  ==> FunctionSpaceFunctions2(R, Expression R, S, Expression S)
@@ -598,7 +598,7 @@ ExpressionFunctions2(R:OrderedSet, S:OrderedSet):
 ++ Date Last Updated: 23 May 1990
 ++ Keywords: pattern, matching.
 FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
-  R: OrderedSet
+  R: Comparable
   F: FunctionSpace R
   D: Type
 
@@ -655,7 +655,7 @@ FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
 ++ Date Last Updated: 23 May 1990
 ++ Keywords: pattern, matching.
 FunctionSpaceAssertions(R, F): Exports == Implementation where
-  R: OrderedSet
+  R: Comparable
   F: FunctionSpace R
 
   K  ==> Kernel F
@@ -857,7 +857,7 @@ Pi(): Exports == Implementation where
 ++ integer coefficients to any Expression type.
 ++ Date Created: 21 Feb 1990
 ++ Date Last Updated: 21 Feb 1990
-PiCoercions(R:Join(OrderedSet, IntegralDomain)): with
+PiCoercions(R : Join(Comparable, IntegralDomain)): with
   coerce: Pi -> Expression R
     ++ coerce(f) returns f as an Expression(R).
  == add

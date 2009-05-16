@@ -19,7 +19,7 @@
 ++ Description:
 ++   A cachable set is a set whose elements keep an integer as part
 ++   of their structure.
-CachableSet: Category == OrderedSet with
+CachableSet: Category == SetCategory with
   position   : % -> NonNegativeInteger
     ++ position(x) returns the integer n associated to x.
   setPosition: (%, NonNegativeInteger) -> Void
@@ -199,10 +199,10 @@ MakeCachableSet(S:SetCategory): Exports == Implementation where
     coerce(x:%):OutputForm == x::S::OutputForm
     coerce(s:S):%          == enterInCache([s, 0]$Rep, x1+->(s = x1::S))
 
-    x < y ==
-      if position(x) = 0 then enterInCache(x, x1+->(x::S = x1::S))
-      if position(y) = 0 then enterInCache(y, x1+->(y::S = x1::S))
-      position(x) < position(y)
+--    x < y ==
+--      if position(x) = 0 then enterInCache(x, x1+->(x::S = x1::S))
+--      if position(y) = 0 then enterInCache(y, x1+->(y::S = x1::S))
+--      position(x) < position(y)
 
     x = y ==
       if position(x) = 0 then enterInCache(x, x1+->(x::S = x1::S))
@@ -220,12 +220,12 @@ MakeCachableSet(S:SetCategory): Exports == Implementation where
 ++ Description:
 ++ A kernel over a set S is an operator applied to a given list
 ++ of arguments from S.
-Kernel(S:OrderedSet): Exports == Implementation where
+Kernel(S : Comparable): Exports == Implementation where
   O  ==> OutputForm
   N  ==> NonNegativeInteger
   OP ==> BasicOperator
 
-  Exports ==> Join(CachableSet, Patternable S) with
+  Exports ==> Join(CachableSet, OrderedSet, Patternable S) with
     name    : % -> Symbol
       ++ name(op(a1,...,an)) returns the name of op.
     operator: % -> OP
@@ -268,6 +268,7 @@ Kernel(S:OrderedSet): Exports == Implementation where
 
     B2Z   : Boolean -> Integer
     triage: (%, %)  -> Integer
+    -- isEqual: (%, %)  -> Boolean
     preds : OP      -> List Any
 
     is?(k:%, s:Symbol) == is?(operator k, s)
@@ -314,10 +315,19 @@ Kernel(S:OrderedSet): Exports == Implementation where
       if k2.posit = 0 then k2 := kernelEnterInCache(k2)
       k1.posit < k2.posit
 
+)if false
+    smaller?(k1, k2) ==
+      if k1.posit = 0 then k1 := kernelEnterInCache(k1)
+      if k2.posit = 0 then k2 := kernelEnterInCache(k2)
+      k1.posit < k2.posit
+)endif
+
     kernel(fn, x, n) ==
       ((u := arity fn) case N) and (#x ~= u::N)
                                     => error "Wrong number of arguments"
       kernelEnterInCache([fn, x, n, 0]$Rep)
+      -- y := [fn, x, n, 0]$Rep
+      -- enterInCache(y, isEqual(#1, y))
 
     -- SPECIALDISP contains a map List S -> OutputForm
     -- it is used when the converting the arguments first is not good,
@@ -330,6 +340,7 @@ Kernel(S:OrderedSet): Exports == Implementation where
       (u := display o) case "failed" => prefix(name(o)::OutputForm, l)
       (u::(List OutputForm -> OutputForm)) l
 
+)if true
     triage(k1, k2) ==
       k1.nest   ~= k2.nest   => B2Z(k1.nest   < k2.nest)
       k1.op ~= k2.op => B2Z(k1.op < k2.op)
@@ -338,8 +349,21 @@ Kernel(S:OrderedSet): Exports == Implementation where
       -- ((func := property(operator k1, SPECIALEQUAL)) case None) and
       --  (((func::None) pretend ((%, %) -> Boolean)) (k1, k2)) => 0
       for x1 in argument(k1) for x2 in argument(k2) repeat
-        x1 ~= x2 => return B2Z(x1 < x2)
+        x1 ~= x2 => return B2Z(smaller?(x1, x2))
       0
+)endif
+
+)if false
+    isEqual(k1, k2) ==
+        k1.nest  ~= k2.nest => false
+        k1.op ~= k2.op => false
+        (n1 := #(argument k1)) ~= (n2 := #(argument k2)) => false
+        ((func := property(operator k1, SPECIALEQUAL)) case None) and
+            (((func::None) pretend ((%, %) -> Boolean)) (k1, k2)) => true
+        for x1 in argument(k1) for x2 in argument(k2) repeat
+            x1 ~= x2 => return false
+        true
+)endif
 
     if S has ConvertibleTo InputForm then
       convert(k:%):InputForm ==
@@ -377,7 +401,7 @@ Kernel(S:OrderedSet): Exports == Implementation where
 )abbrev package KERNEL2 KernelFunctions2
 ++ Description:
 ++ This package exports some auxiliary functions on kernels
-KernelFunctions2(R:OrderedSet, S:OrderedSet): with
+KernelFunctions2(R:Comparable, S: Comparable): with
   constantKernel: R -> Kernel S
         ++ constantKernel(r) \undocumented
   constantIfCan : Kernel S -> Union(R, "failed")

@@ -27,7 +27,7 @@ ExpressionSpace(): Category == Defn where
   PAREN  ==> "%paren"::SY
   BOX    ==> "%box"::SY
 
-  Defn ==> Join(OrderedSet, RetractableTo K,
+  Defn ==> Join(Comparable, RetractableTo K, 
                 InnerEvalable(K, %), Evalable %) with
     elt          : (OP, %) -> %
       ++ elt(op,x) or op(x) applies the unary operator op to x.
@@ -384,7 +384,7 @@ ExpressionSpaceFunctions2(E:ExpressionSpace, F:ExpressionSpace): with
 ++   A space of formal functions with arguments in an arbitrary
 ++   ordered set.
 ++ Keywords: operator, kernel, function.
-FunctionSpace(R:OrderedSet): Category == Definition where
+FunctionSpace(R : Comparable): Category == Definition where
   OP ==> BasicOperator
   O  ==> OutputForm
   SY ==> Symbol
@@ -622,7 +622,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
 
       elt(op:OP, args:List %) ==
         unary? op and ((od? := has?(op, ODD)) or has?(op, EVEN)) and
-          leadingCoefficient(numer first args) < 0 =>
+          smaller?(leadingCoefficient(numer first args), 0) =>
             x := op(- first args)
             od? => -x
             x
@@ -1037,7 +1037,7 @@ FunctionSpace(R:OrderedSet): Category == Definition where
 ++   This package allows a mapping R -> S to be lifted to a mapping
 ++   from a function space over R to a function space over S;
 FunctionSpaceFunctions2(R, A, S, B): Exports == Implementation where
-  R, S: Join(Ring, OrderedSet)
+  R, S: Join(Ring, Comparable)
   A   : FunctionSpace R
   B   : FunctionSpace S
 

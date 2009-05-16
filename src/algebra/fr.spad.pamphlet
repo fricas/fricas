@@ -192,6 +192,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
         binary(convert(_*::Symbol)@InputForm, l)@InputForm
 
     orderedR? := R has OrderedSet
+    comparableR? := R has Comparable
 
   -- Private function signatures:
     reciprocal              : % -> %
@@ -291,7 +292,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
       empty? x => empty()
       x := sort_!(LispLessP, x)
       x := SimplifyFactorization1(first x, rest x)
-      if orderedR? then x := sort_!(LispLessP, x)
+      if comparableR? then x := sort_!(LispLessP, x)
       x
 
     SimplifyFactorization1(f, x) ==
@@ -336,6 +337,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
 
     LispLessP(y, y1) ==
       orderedR? => y.fctr < y1.fctr
+      comparableR? => smaller?(y.fctr, y1.fctr)
       GGREATERP(y.fctr, y1.fctr)$Lisp => false
       true
 
@@ -520,7 +522,7 @@ which causes wrong results as soon as units are involved, for example in
               f1 := rest f1
             x1 := concat(y, x1)
           f3 := rest f3
-        if orderedR? then x1 := sort_!(LispLessP, x1)
+        if comparableR? then x1 := sort_!(LispLessP, x1)
         mkFF(1, x1)
 
     else   -- R not a GCD domain
