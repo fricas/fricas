@@ -167,9 +167,9 @@ compLambda(x is ["+->", vl, body], m, e) ==
                  ress := compAtSign(["@", ["+->", arg1, body],
                                   ["Mapping", target, :sig1]], m, e)
                  ress
-             stackAndThrow ["compLambda", x]
-        stackAndThrow ["compLambda", x]
-    stackAndThrow ["compLambda", x]
+             stackAndThrow ["compLambda: malformed argument list", x]
+        stackAndThrow ["compLambda: malformed argument list", x]
+    stackAndThrow ["compLambda: signature needed", x]
 
 compWithMappingMode(x, m, oldE) ==
   compWithMappingMode1(x, m, oldE, $formalArgList)
@@ -198,6 +198,9 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
          LISTP(vl) and (and/[SYMBOLP(v) for v in vl])=> vl
          stackAndThrow ["bad +-> arguments:", vl]
       $formalArgList := [:vl, :$formalArgList]
+      #sl ~= #vl =>
+         stackAndThrow [_
+           "number of arguments to +-> does not match, expected:", #sl]
       x := nx
   else
       vl:= take(#sl,$FormalMapVariableList)
