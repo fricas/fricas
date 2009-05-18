@@ -256,7 +256,7 @@ AlgebraicManipulations(R, F): Exports == Implementation where
   Implementation ==> add
     import PolynomialCategoryQuotientFunctions(IndexedExponents K,K,R,P,F)
 
-    ALGOP := "%alg"::Symbol
+    ALGOP := '%alg
 
     innerRF    : (F, List K) -> F
     rootExpand : K -> F
@@ -421,7 +421,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
   K       ==> Kernel F
   P       ==> SparseMultivariatePolynomial(R, K)
   UP      ==> SparseUnivariatePolynomial P
-  POWER   ==> "%power"::Symbol
+  POWER   ==> '%power
   POW     ==> Record(val: F,exponent: Z)
   PRODUCT ==> Record(coef : Z, var : K)
   FPR     ==> Fraction Polynomial R
@@ -594,11 +594,11 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       sum  : F := 0
       arg  : F := 1
       for term in l repeat
-        is?(term,"log"::Symbol) =>
+        is?(term,'log) =>
           arg := arg * simplifyLog(first(argument(first(kernels(term)))))
         -- Now look for multiples, including negative ones.
         prod : Union(PRODUCT, "failed") := isMult(term)
-        (prod case PRODUCT) and is?(prod.var,"log"::Symbol) =>
+        (prod case PRODUCT) and is?(prod.var,'log) =>
             arg := arg * simplifyLog ((first argument(prod.var))^(prod.coef))
         sum := sum+term
       sum+log(arg)
@@ -607,11 +607,11 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       simplifyLog1(numerator e)/simplifyLog1(denominator e)
 
     simplifyLog1(e:F):F ==
-      freeOf?(e,"log"::Symbol) => e
+      freeOf?(e,'log) => e
 
       -- Check for n*log(u)
       prod : Union(PRODUCT, "failed") := isMult(e)
-      (prod case PRODUCT) and is?(prod.var,"log"::Symbol) =>
+      (prod case PRODUCT) and is?(prod.var,'log) =>
         log simplifyLog ((first argument(prod.var))^(prod.coef))
 
       termList : Union(List(F),"failed") := isTimes(e)
@@ -636,7 +636,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
           i : NonNegativeInteger := 0
           while (not(foundLog) and (i < #terms)) repeat
             i := i+1
-            if is?(terms.i,"log"::Symbol) then
+            if is?(terms.i,'log) then
               args : List F := argument(retract(terms.i)@K)
               setelt(terms,i, log simplifyLog1(first(args)^(*/exprs)))
               foundLog := true
@@ -679,7 +679,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       lpow := select((z1: K): Boolean +-> is?(z1, POWER)$K, lk := variables p)$List(K)
       for k in lk repeat
         d := degree(p, k)
-        if is?(k, "exp"::Symbol) then
+        if is?(k, 'exp) then
           exponent := exponent + d * first argument k
         else if not is?(k, POWER) then
           -- Expand arguments to functions as well ... MCD 23/1/97
@@ -748,7 +748,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       arg := [htrigs x for x in argument k]$List(F)
       num := univariate(numer f, k)
       den := univariate(denom f, k)
-      is?(op, "exp"::Symbol) =>
+      is?(op, 'exp) =>
         g1 := cosh(a := first arg) + sinh(a)
         g2 := cosh(a) - sinh(a)
         supexp(num,g1,g2,b:= (degree num)::Z quo 2)/supexp(den,g1,g2,b)
@@ -771,7 +771,7 @@ TranscendentalManipulations(R, F): Exports == Implementation where
 
     logexpand k ==
       nullary?(op := operator k) => k::F
-      is?(op, "log"::Symbol) =>
+      is?(op, 'log) =>
          exlog(numer(x := expandLog first argument k)) - exlog denom x
       op [expandLog x for x in argument k]$List(F)
 
@@ -779,24 +779,24 @@ TranscendentalManipulations(R, F): Exports == Implementation where
       nullary?(op := operator k) => k::F
       is?(op, POWER) => expandpow k
       arg := first argument k
-      is?(op, "sec"::Symbol) => inv expand cos arg
-      is?(op, "csc"::Symbol) => inv expand sin arg
-      is?(op, "log"::Symbol) =>
+      is?(op, 'sec) => inv expand cos arg
+      is?(op, 'csc) => inv expand sin arg
+      is?(op, 'log) =>
          exlog(numer(x := expand arg)) - exlog denom x
       num := numer arg
       den := denom arg
       (b := (reductum num) / den) ~= 0 =>
         a := (leadingMonomial num) / den
-        is?(op, "exp"::Symbol) => exp(expand a) * expand(exp b)
-        is?(op, "sin"::Symbol) =>
+        is?(op, 'exp) => exp(expand a) * expand(exp b)
+        is?(op, 'sin) =>
            sin(expand a) * expand(cos b) + cos(expand a) * expand(sin b)
-        is?(op, "cos"::Symbol) =>
+        is?(op, 'cos) =>
            cos(expand a) * expand(cos b) - sin(expand a) * expand(sin b)
-        is?(op, "tan"::Symbol) =>
+        is?(op, 'tan) =>
           ta := tan expand a
           tb := expand tan b
           (ta + tb) / (1 - ta * tb)
-        is?(op, "cot"::Symbol) =>
+        is?(op, 'cot) =>
           cta := cot expand a
           ctb := expand cot b
           (cta * ctb - 1) / (ctb + cta)
@@ -816,10 +816,10 @@ TranscendentalManipulations(R, F): Exports == Implementation where
     --   pass3 groups exponentials together
     simplify0 x ==
       simplifyExp eval(eval(x,
-          ["tan"::Symbol,"cot"::Symbol,"sec"::Symbol,"csc"::Symbol,
-           "tanh"::Symbol,"coth"::Symbol,"sech"::Symbol,"csch"::Symbol],
+          ['tan,'cot,'sec,'csc,
+           'tanh,'coth,'sech,'csch],
               [t2t,c2t,s2c,c2s,th2th,ch2th,sh2ch,ch2sh]),
-                ["sin"::Symbol, "sinh"::Symbol], [2, 2], [s2c2, sh2ch2])
+                ['sin, 'sinh], [2, 2], [s2c2, sh2ch2])
 
 @
 \section{License}

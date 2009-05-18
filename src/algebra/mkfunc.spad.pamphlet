@@ -116,9 +116,9 @@ InputForm():
       sy := new()$Symbol
       n:NonNegativeInteger := 0
       l2 := [flatten0(x, sy, n := n + 1) for x in rest(l := destruct s)]
-      conv(concat(convert("SEQ"::Symbol)@%,
+      conv(concat(convert('SEQ)@%,
         concat(concat [u.lst for u in l2], conv(
-           [convert("exit"::Symbol)@%, 1$%, conv(concat(first l,
+           [convert('exit)@%, 1$%, conv(concat(first l,
                [u.symb for u in l2]))@%]$List(%))@%)))@%
 
     flatten0(s, sy, n) ==
@@ -126,7 +126,7 @@ InputForm():
       a := convert(concat(string sy, convert(n)@String)::Symbol)@%
       l2 := [flatten0(x, sy, n := n+1) for x in rest(l := destruct s)]
       [concat(concat [u.lst for u in l2], conv([convert(
-        "LET"::Symbol)@%, a, conv(concat(first l,
+        'LET)@%, a, conv(concat(first l,
              [u.symb for u in l2]))@%]$List(%))@%), a]
 
     strsym s ==
@@ -163,11 +163,11 @@ InputForm():
     tuplify l ==
       empty? rest l => convert first l
       conv
-        concat(convert("Tuple"::Symbol), [convert x for x in l]$List(%))
+        concat(convert('Tuple), [convert x for x in l]$List(%))
 
     function(f, l, name) ==
       nn := convert(new(1 + #l, convert(nil()$List(%)))$List(%))@%
-      conv([convert("DEF"::Symbol), conv(cons(convert(name)@%,
+      conv([convert('DEF), conv(cons(convert(name)@%,
                         [convert(x)@% for x in l])), nn, nn, f]$List(%))
 
     s1 + s2 ==
@@ -243,7 +243,7 @@ InputFormFunctions1(R:Type):with
   atType form == convert([convert("@"::Symbol), form,
                      Rname]$List(InputForm))@InputForm
 
-  pretendOfType form == convert([convert("pretend"::Symbol), form,
+  pretendOfType form == convert([convert('pretend), form,
                      Rname]$List(InputForm))@InputForm
 
   interpret form ==
@@ -405,14 +405,14 @@ MakeFloatCompiledFunction(S): Exports == Implementation where
     mkPretend : INF -> INF
     mkCTOR : INF -> INF
 
-    lsf := convert([convert("DoubleFloat"::Symbol)@INF]$List(INF))@INF
+    lsf := convert([convert('DoubleFloat)@INF]$List(INF))@INF
 
     streq?(s, st)    == s = convert(st::Symbol)@INF
     gencode(s, l)    == convert(concat(convert(s::Symbol)@INF, l))@INF
     streqlist?(s, l) == member?(string symbol s, l)
 
     mkPretend form ==
-      convert([convert("pretend"::Symbol), form, lsf]$List(INF))@INF
+      convert([convert('pretend), form, lsf]$List(INF))@INF
 
     mkCTOR form ==
       convert([convert("C-TO-R"::Symbol), form]$List(INF))@INF
@@ -420,11 +420,11 @@ MakeFloatCompiledFunction(S): Exports == Implementation where
 
     mkLispCall name ==
       convert([convert("$elt"::Symbol),
-                           convert("Lisp"::Symbol), name]$List(INF))@INF
+                           convert('Lisp), name]$List(INF))@INF
 
     mkDefun(s, lv) ==
       name := convert(new()$Symbol)@INF
-      fun  := convert([convert("DEFUN"::Symbol), name, convert lv,
+      fun  := convert([convert('DEFUN), name, convert lv,
               gencode("DECLARE",[gencode("FLOAT",lv)]),mkCTOR s]$List(INF))@INF
       EVAL(fun)$Lisp
       if _$compileDontDefineFunctions$Lisp then COMPILE(name)$Lisp

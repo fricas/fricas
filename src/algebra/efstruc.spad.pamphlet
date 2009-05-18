@@ -127,8 +127,8 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
   SMP ==> SparseMultivariatePolynomial(R, K)
   REC ==> Record(func:F, kers: List K, vals:List F)
   U   ==> Union(vec:Vector Q, func:F, fail: Boolean)
-  POWER ==> "%power"::SY
-  NTHR  ==> "nthRoot"::SY
+  POWER ==> '%power
+  NTHR  ==> 'nthRoot
 
   Exports ==> with
     normalize: F -> F
@@ -168,8 +168,8 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     import InnerCommonDenominator(Z, Q, Vector Z, Vector Q)
     P  ==> SparseMultivariatePolynomial(R, K)
 
-    HTRIG := "htrig"::Symbol
-    TRIG := "trig"::Symbol
+    HTRIG := 'htrig
+    TRIG := 'trig
 
     k2Elem             : (K, List SY) -> F
     realElem           : (F, List SY) -> F
@@ -293,12 +293,12 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
         (u := solveLinearlyOverQ(mat, v)) case Vector(Q) => [u::Vector(Q)]
         [true]
 
-    ALGOP  := "%alg"::Symbol
+    ALGOP  := '%alg
     transkers(x : List K) : List K ==
         [k for k in x | not(has?(operator k, ALGOP))]
 
     ktoQ(ker : K) : Q ==
-       is?(ker, "log"::SY) and F has RetractableTo Q =>
+       is?(ker, 'log) and F has RetractableTo Q =>
           z : F := argument(ker).1
           qu := retractIfCan(z)@Union(Q, "failed")
           qu case Q => qu::Q
@@ -306,7 +306,7 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
        1
 
     toQ(lk: List K) : List Q ==
-        [ktoQ(k) for k in lk | is?(k, "log"::SY) or is?(k, "exp"::SY)]
+        [ktoQ(k) for k in lk | is?(k, 'log) or is?(k, 'exp)]
 
     import MultiplicativeDependence()
 
@@ -326,11 +326,11 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
         lpars1f: List F := [kernel(s)::F for s in lpars1]
         ly : List F
         nz : F
-        if is?(ker, "log"::SY) then
+        if is?(ker, 'log) then
             ly := [log(eval(x, lpars0, lpars1f)) for x in lz]
             nz := log(eval(z, lpars0, lpars1f))
         else
-            not(is?(ker, "atan"::SY)) =>
+            not(is?(ker, 'atan)) =>
                 error "findLinearRelation2: kernel should be log or atan"
             ly := [atan(eval(x, lpars0, lpars1f)) for x in lz]
             nz := atan(eval(z, lpars0, lpars1f))
@@ -338,40 +338,40 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
 
     findRelation(lv : List Symbol, lpar: List Symbol, lk : List K,_
               ker : K) : U ==
-        is?(ker, "log"::SY) or is?(ker, "exp"::SY) =>
+        is?(ker, 'log) or is?(ker, 'exp) =>
             null(variables(ker::F)) =>
-                is?(ker, "exp"::SY) => findLinearRelation1(toY lk, ktoY ker)
+                is?(ker, 'exp) => findLinearRelation1(toY lk, ktoY ker)
                 findLinearRelation2(lk, toZ lk, ker)
             findQRelation(lv, lpar, toY lk, ktoY ker)
-        is?(ker, "atan"::SY) or is?(ker, "tan"::SY) =>
+        is?(ker, 'atan) or is?(ker, 'tan) =>
             null(variables(ker::F)) =>
-                is?(ker, "tan"::SY) => findLinearRelation1(toU lk, ktoU ker)
+                is?(ker, 'tan) => findLinearRelation1(toU lk, ktoU ker)
                 findLinearRelation2(lk, toV lk, ker)
             findQRelation(lv, lpar, toU lk, ktoU ker)
         is?(ker, NTHR) => rootDep(lk, ker)
-        comb? and is?(ker, "factorial"::SY) =>
-            factdeprel([x for x in lk | is?(x,"factorial"::SY) and x ~= ker],
+        comb? and is?(ker, 'factorial) =>
+            factdeprel([x for x in lk | is?(x,'factorial) and x ~= ker],
                        ker)
         [true]
 
     ktoY k ==
-      is?(k, "log"::SY) => k::F
-      is?(k, "exp"::SY) => first argument k
+      is?(k, 'log) => k::F
+      is?(k, 'exp) => first argument k
       0
 
     ktoZ k ==
-      is?(k, "log"::SY) => first argument k
-      is?(k, "exp"::SY) => k::F
+      is?(k, 'log) => first argument k
+      is?(k, 'exp) => k::F
       0
 
     ktoU k ==
-      is?(k, "atan"::SY) => k::F
-      is?(k,  "tan"::SY) => first argument k
+      is?(k, 'atan) => k::F
+      is?(k,  'tan) => first argument k
       0
 
     ktoV k ==
-      is?(k,  "tan"::SY) => k::F
-      is?(k, "atan"::SY) => first argument k
+      is?(k,  'tan) => k::F
+      is?(k, 'atan) => first argument k
       0
 
     smpElem(p, l) ==
@@ -388,41 +388,41 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       z := first args
 
       is?(k, POWER)       => (zero? z => 0; exp(last(args) * log z))
-      is?(k, "cot"::SY)   => inv tan z
-      is?(k, "acot"::SY)  => atan inv z
-      is?(k, "asin"::SY)  => atan(z / sqrt(1 - z^2))
-      is?(k, "acos"::SY)  => atan(sqrt(1 - z^2) / z)
-      is?(k, "asec"::SY)  => atan sqrt(1 - z^2)
-      is?(k, "acsc"::SY)  => atan inv sqrt(1 - z^2)
-      is?(k, "asinh"::SY) => log(sqrt(1 + z^2) + z)
-      is?(k, "acosh"::SY) => log(sqrt(z^2 - 1) + z)
-      is?(k, "atanh"::SY) => log((z + 1) / (1 - z)) / (2::F)
-      is?(k, "acoth"::SY) => log((z + 1) / (z - 1)) / (2::F)
-      is?(k, "asech"::SY) => log((inv z) + sqrt(inv(z^2) - 1))
-      is?(k, "acsch"::SY) => log((inv z) + sqrt(1 + inv(z^2)))
-      is?(k, "%paren"::SY) or is?(k, "%box"::SY) =>
+      is?(k, 'cot)   => inv tan z
+      is?(k, 'acot)  => atan inv z
+      is?(k, 'asin)  => atan(z / sqrt(1 - z^2))
+      is?(k, 'acos)  => atan(sqrt(1 - z^2) / z)
+      is?(k, 'asec)  => atan sqrt(1 - z^2)
+      is?(k, 'acsc)  => atan inv sqrt(1 - z^2)
+      is?(k, 'asinh) => log(sqrt(1 + z^2) + z)
+      is?(k, 'acosh) => log(sqrt(z^2 - 1) + z)
+      is?(k, 'atanh) => log((z + 1) / (1 - z)) / (2::F)
+      is?(k, 'acoth) => log((z + 1) / (z - 1)) / (2::F)
+      is?(k, 'asech) => log((inv z) + sqrt(inv(z^2) - 1))
+      is?(k, 'acsch) => log((inv z) + sqrt(1 + inv(z^2)))
+      is?(k, '%paren) or is?(k, '%box) =>
         empty? rest args => z
         kf
       if has?(op := operator k, HTRIG) then iez  := inv(ez  := exp z)
-      is?(k, "sinh"::SY)  => (ez - iez) / (2::F)
-      is?(k, "cosh"::SY)  => (ez + iez) / (2::F)
-      is?(k, "tanh"::SY)  => (ez - iez) / (ez + iez)
-      is?(k, "coth"::SY)  => (ez + iez) / (ez - iez)
-      is?(k, "sech"::SY)  => 2 * inv(ez + iez)
-      is?(k, "csch"::SY)  => 2 * inv(ez - iez)
+      is?(k, 'sinh)  => (ez - iez) / (2::F)
+      is?(k, 'cosh)  => (ez + iez) / (2::F)
+      is?(k, 'tanh)  => (ez - iez) / (ez + iez)
+      is?(k, 'coth)  => (ez + iez) / (ez - iez)
+      is?(k, 'sech)  => 2 * inv(ez + iez)
+      is?(k, 'csch)  => 2 * inv(ez - iez)
       if has?(op, TRIG) then tz2  := tan(z / (2::F))
-      is?(k, "sin"::SY)   => 2 * tz2 / (1 + tz2^2)
-      is?(k, "cos"::SY)   => (1 - tz2^2) / (1 + tz2^2)
-      is?(k, "sec"::SY)   => (1 + tz2^2) / (1 - tz2^2)
-      is?(k, "csc"::SY)   => (1 + tz2^2) / (2 * tz2)
+      is?(k, 'sin)   => 2 * tz2 / (1 + tz2^2)
+      is?(k, 'cos)   => (1 - tz2^2) / (1 + tz2^2)
+      is?(k, 'sec)   => (1 + tz2^2) / (1 - tz2^2)
+      is?(k, 'csc)   => (1 + tz2^2) / (2 * tz2)
       op args
 
 --The next 5 functions are used by normalize, once a relation is found
     depeval(f, lk, k, v) ==
-      is?(k, "log"::SY)  => logeval(f, lk, k, v)
-      is?(k, "exp"::SY)  => expeval(f, lk, k, v)
-      is?(k, "tan"::SY)  => taneval(f, lk, k, v)
-      is?(k, "atan"::SY) => ataneval(f, lk, k, v)
+      is?(k, 'log)  => logeval(f, lk, k, v)
+      is?(k, 'exp)  => expeval(f, lk, k, v)
+      is?(k, 'tan)  => taneval(f, lk, k, v)
+      is?(k, 'atan) => ataneval(f, lk, k, v)
       is?(k, NTHR) => rooteval(f, lk, k, v(minIndex v))
       [f, empty(), empty()]
 
@@ -532,8 +532,8 @@ height(k1) to be maximal
       j:Integer := 0
       ll : List K := [];
       for k in l repeat
-        if (is?(k, "log"::SY) or is?(k, "exp"::SY)
-            or is?(k, "tan"::SY) or is?(k, "atan"::SY)) then
+        if (is?(k, 'log) or is?(k, 'exp)
+            or is?(k, 'tan) or is?(k, 'atan)) then
               ll := [k, :ll]
               h := h + 1
       not (h = (maxIndex(v) - minIndex(v) + 1)) => "failed"
@@ -555,7 +555,7 @@ height(k1) to be maximal
       u := first argument k
       fns := toU lk
       c := u - +/[qelt(v, i) * x for i in minIndex v .. maxIndex v for x in fns]
-      (rec := goodCoef(v, lk, "tan"::SY)) case "failed" =>
+      (rec := goodCoef(v, lk, 'tan)) case "failed" =>
           tannosimp(f, lk, k, v, fns, c)
       v0 := retract(inv qelt(v, rec.index))@Z
       lv := [qelt(v, i) for i in minIndex v .. maxIndex v |
@@ -567,9 +567,9 @@ height(k1) to be maximal
 
     tannosimp(f, lk, k, v, fns, c) ==
       n := maxIndex v
-      lk := [x for x in lk | is?(x, "tan"::SY) or is?(x, "atan"::SY)]
+      lk := [x for x in lk | is?(x, 'tan) or is?(x, 'atan)]
       lk1 := [x for x in lk for i in 1..n | not(qelt(v, i) = 0)]
-      every?(x +-> is?(x, "tan"::SY), lk1) =>
+      every?(x +-> is?(x, 'tan), lk1) =>
         dd := (d := (cd := splitDenominator v).den)::F
         newt := [tan(u / dd) for u in fns
                     for i in 1..n | not(qelt(v, i) = 0)]$List(F)
@@ -586,9 +586,9 @@ height(k1) to be maximal
 
     expnosimp(f, lk, k, v, fns, g) ==
       n := maxIndex v
-      lk := [x for x in lk | is?(x, "exp"::SY) or is?(x, "log"::SY)]
+      lk := [x for x in lk | is?(x, 'exp) or is?(x, 'log)]
       lk1 := [x for x in lk for i in 1..n | not(qelt(v, i) = 0)]
-      every?(x +-> is?(x, "exp"::SY), lk1) =>
+      every?(x +-> is?(x, 'exp), lk1) =>
         dd := (d := (cd := splitDenominator v).den)::F
         newe := [exp(y / dd) for y in fns
                     for i in 1..n | not(qelt(v, i) = 0)]$List(F)
@@ -685,7 +685,7 @@ height(k1) to be maximal
       y   := first argument k
       fns := toY lk
       g := y - +/[qelt(v, i) * z for i in minIndex v .. maxIndex v for z in fns]
-      (rec := goodCoef(v, lk, "exp"::SY)) case "failed" =>
+      (rec := goodCoef(v, lk, 'exp)) case "failed" =>
         expnosimp(f, lk, k, v, fns, exp g)
       v0 := retract(inv qelt(v, rec.index))@Z
       lv := [qelt(v, i) for i in minIndex v .. maxIndex v |
@@ -742,7 +742,7 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
   KG  ==> Kernel FG
   PG  ==> SparseMultivariatePolynomial(GR, KG)
   UP  ==> SparseUnivariatePolynomial PG
-  NTHR  ==> "nthRoot"::SY
+  NTHR  ==> 'nthRoot
 
   Exports ==> with
     GF2FG        : GF -> FG
@@ -794,10 +794,10 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
                                     for a in argument k]$List(FG)) => kf
       im := complex(0, 1)$GR :: FG
       z  := first args
-      is?(k, "tan"::Symbol)  =>
+      is?(k, 'tan)  =>
         e := (member?(k, l) => exp(im * z) ^ 2;  exp(2 * im * z))
         - im * (e - 1) /$FG (e + 1)
-      is?(k, "atan"::Symbol) =>
+      is?(k, 'atan) =>
         im * log((1 -$FG im *$FG z)/$FG (1 +$FG im *$FG z))$FG / (2::FG)
       (operator k) args
 
@@ -810,33 +810,33 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       "and"/[zero? imag x for x in arg] =>
         complex(op [real x for x in arg]$List(F), 0)
       a := first arg
-      is?(op, "exp"::Symbol)  => exp a
-      is?(op, "log"::Symbol)  => log a
-      is?(op, "sin"::Symbol)  => sin a
-      is?(op, "cos"::Symbol)  => cos a
-      is?(op, "tan"::Symbol)  => tan a
-      is?(op, "cot"::Symbol)  => cot a
-      is?(op, "sec"::Symbol)  => sec a
-      is?(op, "csc"::Symbol)  => csc a
-      is?(op, "asin"::Symbol)  => asin a
-      is?(op, "acos"::Symbol)  => acos a
-      is?(op, "atan"::Symbol)  => atan a
-      is?(op, "acot"::Symbol)  => acot a
-      is?(op, "asec"::Symbol)  => asec a
-      is?(op, "acsc"::Symbol)  => acsc a
-      is?(op, "sinh"::Symbol)  => sinh a
-      is?(op, "cosh"::Symbol)  => cosh a
-      is?(op, "tanh"::Symbol)  => tanh a
-      is?(op, "coth"::Symbol)  => coth a
-      is?(op, "sech"::Symbol)  => sech a
-      is?(op, "csch"::Symbol)  => csch a
-      is?(op, "asinh"::Symbol)  => asinh a
-      is?(op, "acosh"::Symbol)  => acosh a
-      is?(op, "atanh"::Symbol)  => atanh a
-      is?(op, "acoth"::Symbol)  => acoth a
-      is?(op, "asech"::Symbol)  => asech a
-      is?(op, "acsch"::Symbol)  => acsch a
-      is?(op, "abs"::Symbol)    => sqrt(norm a)::GF
+      is?(op, 'exp)  => exp a
+      is?(op, 'log)  => log a
+      is?(op, 'sin)  => sin a
+      is?(op, 'cos)  => cos a
+      is?(op, 'tan)  => tan a
+      is?(op, 'cot)  => cot a
+      is?(op, 'sec)  => sec a
+      is?(op, 'csc)  => csc a
+      is?(op, 'asin)  => asin a
+      is?(op, 'acos)  => acos a
+      is?(op, 'atan)  => atan a
+      is?(op, 'acot)  => acot a
+      is?(op, 'asec)  => asec a
+      is?(op, 'acsc)  => acsc a
+      is?(op, 'sinh)  => sinh a
+      is?(op, 'cosh)  => cosh a
+      is?(op, 'tanh)  => tanh a
+      is?(op, 'coth)  => coth a
+      is?(op, 'sech)  => sech a
+      is?(op, 'csch)  => csch a
+      is?(op, 'asinh)  => asinh a
+      is?(op, 'acosh)  => acosh a
+      is?(op, 'atanh)  => atanh a
+      is?(op, 'acoth)  => acoth a
+      is?(op, 'asech)  => asech a
+      is?(op, 'acsch)  => acsch a
+      is?(op, 'abs)    => sqrt(norm a)::GF
       nth and is?(op, NTHR) => nthRoot(a, retract(second arg)@Z)
       error "ker2trigs: cannot convert kernel to gaussian function"
 
@@ -854,7 +854,7 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       arg := [explogs2trigs x for x in argument k]
       num := univariate(numer f, k)
       den := univariate(denom f, k)
-      is?(op, "exp"::Symbol) =>
+      is?(op, 'exp) =>
         e  := exp real first arg
         y  := imag first arg
         g  := complex(e *  cos y, e * sin y)$GF
@@ -937,7 +937,7 @@ TrigonometricManipulations(R, F): Exports == Implementation where
     import ElementaryFunctionStructurePackage(R, F)
     import ElementaryFunctionStructurePackage(Complex R, FG)
 
-    RTRIG := "rtrig"::Symbol
+    RTRIG := 'rtrig
 
     s1  := sqrt(-1::F)
     ipi := pi()$F * s1
@@ -967,12 +967,12 @@ TrigonometricManipulations(R, F): Exports == Implementation where
 -- "failed" otherwise
     kcomplex k ==
       op := operator k
-      is?(k, "nthRoot"::SY) =>
+      is?(k, 'nthRoot) =>
         arg := argument k
         even?(retract(n := second arg)@Z) and ((u := sign(first arg)) case Z)
           and (u::Z < 0) => op(s1, n / 2::F) * op(- first arg, n)
         "failed"
-      is?(k, "log"::SY) and ((u := sign(a := first argument k)) case Z)
+      is?(k, 'log) and ((u := sign(a := first argument k)) case Z)
           and (u::Z < 0) => op(- a) + ipi
       "failed"
 
@@ -1017,7 +1017,7 @@ TrigonometricManipulations(R, F): Exports == Implementation where
 
     localexplogs(f, g, lx) ==
       trigs2explogs(F2FG g, [K2KG k for k in tower f
-                          | is?(k, "tan"::SY) or is?(k, "cot"::SY)], lx)
+                          | is?(k, 'tan) or is?(k, 'cot)], lx)
 
     trigs f ==
       real? f => f
@@ -1079,7 +1079,7 @@ ComplexTrigonometricManipulations(R, F): Exports == Implementation where
     import InnerTrigonometricManipulations(R, FR, F)
     import ElementaryFunctionStructurePackage(Complex R, F)
 
-    RTRIG := "rtrig"::Symbol
+    RTRIG := 'rtrig
 
     rreal?: Complex R -> Boolean
     kreal?: Kernel F -> Boolean
@@ -1100,7 +1100,7 @@ ComplexTrigonometricManipulations(R, F): Exports == Implementation where
 
     localexplogs(f, g, lx) ==
       trigs2explogs(g, [k for k in tower f
-                          | is?(k, "tan"::SY) or is?(k, "cot"::SY)], lx)
+                          | is?(k, 'tan) or is?(k, 'cot)], lx)
 
     complexElementary f ==
       any?(x +-> has?(x, RTRIG),

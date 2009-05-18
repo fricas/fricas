@@ -41,7 +41,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
   ANS ==> Record(special:F, integrand:F)
   PSOL==> Record(ans:F, right:F, sol?:Boolean)
   FAIL==> error "failed - cannot handle that integrand"
-  OPDIFF ==> "%diff"::SE
+  OPDIFF ==> '%diff
 
   Exports ==> with
     lfextendedint: (F, SE, F) -> U2
@@ -76,8 +76,8 @@ ElementaryIntegration(R, F): Exports == Implementation where
     import PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
 
-    PRIM := "prim"::Symbol
-    ALGOP := "%alg"::Symbol
+    PRIM := 'prim
+    ALGOP := '%alg
 
     alglfint    : (F, K, List K, SE) -> IR
     alglfextint : (F, K, List K, SE, F) -> U2
@@ -102,7 +102,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
     tryChangeVar: (F, K, SE) -> Union(IR, "failed")
     droponex    : (F, F, K, F) -> Union(F, "failed")
 
-    prim?(k, x)      == is?(k, "log"::SE) or has?(operator k, PRIM)
+    prim?(k, x)      == is?(k, 'log) or has?(operator k, PRIM)
 
     tanint(f, x, k) ==
       eta' := differentiate(eta := first argument k, x)
@@ -156,7 +156,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
     alglfint(f, k, l, x) ==
       xf := x::F
       symbolIfCan(kx := ksec(k,l,x)) case SE => addx(palgint(f, kx, k), xf)
-      is?(kx, "exp"::SE) => addx(algexpint(f, kx, k, x), xf)
+      is?(kx, 'exp) => addx(algexpint(f, kx, k, x), xf)
       prim?(kx, x)       => addx(algprimint(f, kx, k, x), xf)
       has?(operator kx, ALGOP) =>
         rec := primitiveElement(kx::F, k::F)
@@ -176,7 +176,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
         ky := retract(y)@K
         r := u::Record(ratpart:F, coeff:F)
         [eval(r.ratpart,ky,rec.primelt), eval(r.coeff,ky,rec.primelt)]
-      is?(kx, "exp"::SE) or is?(kx, "log"::SE) => FAIL
+      is?(kx, 'exp) or is?(kx, 'log) => FAIL
       unkextint(f, x, g)
 
     alglflimint(f, k, l, x, lu) ==
@@ -192,7 +192,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
         [eval(r.mainpart, ky, rec.primelt),
           [[eval(rc.coeff, ky, rec.primelt),
             eval(rc.logand,ky, rec.primelt)] for rc in r.limitedlogs]]
-      is?(kx, "exp"::SE) or is?(kx, "log"::SE) => FAIL
+      is?(kx, 'exp) or is?(kx, 'log) => FAIL
       unklimint(f, x, lu)
 
     if R has Join(ConvertibleTo Pattern Integer, PatternMatchable Integer)
@@ -208,8 +208,8 @@ ElementaryIntegration(R, F): Exports == Implementation where
       empty?(l := varselect(kernels f, x)) => (xf * f)::IR
       symbolIfCan(k := kmax l) case SE =>
         map((x1:RF):F+->multivariate(x1, k), integrate univariate(f, k))
-      is?(k, "tan"::SE)  => addx(tanint(f, x, k), xf)
-      is?(k, "exp"::SE)  => addx(expint(f, x, k), xf)
+      is?(k, 'tan)  => addx(tanint(f, x, k), xf)
+      is?(k, 'exp)  => addx(expint(f, x, k), xf)
       prim?(k, x)        => addx(primint(f, x, k), xf)
       has?(operator k, ALGOP) => alglfint(f, k, l, x)
       unknownint(f, x)
@@ -250,7 +250,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
                0::F
           map((x1:RF):F+->multivariate(x1, k), extendedint(univariate(f, k),
                                                univariate(g1, k)))
-      is?(k, "exp"::SE) => expextint(f, x, k, g)
+      is?(k, 'exp) => expextint(f, x, k, g)
       prim?(k, x)       => primextint(f, x, k, g)
       has?(operator k, ALGOP) => alglfextint(f, k, l, x, g)
       unkextint(f, x, g)
@@ -260,7 +260,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
       symbolIfCan(k := kmax(l)) case SE =>
        map((x1:RF):F+->multivariate(x1, k), limitedint(univariate(f, k),
                                         [univariate(u, k) for u in lu]))
-      is?(k, "exp"::SE) => explimint(f, x, k, lu)
+      is?(k, 'exp) => explimint(f, x, k, lu)
       prim?(k, x)       => primlimint(f, x, k, lu)
       has?(operator k, ALGOP) => alglflimint(f, k, l, x, lu)
       unklimint(f, x, lu)
@@ -271,7 +271,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     primextint(f, x, k, g) ==
       lk := varselect([a for a in tower f
-                                     | k ~= a and is?(a, "log"::SE)], x)
+                                     | k ~= a and is?(a, 'log)], x)
       (u1 := primextendedint(univariate(f, k),
            (x1:UP):UP+->differentiate(x1,
              (x2:F):F+->differentiate(x2, x), differentiate(k::F, x)::UP),
@@ -299,7 +299,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     primint(f, x, k) ==
       lk := varselect([a for a in tower f
-                                     | k ~= a and is?(a, "log"::SE)], x)
+                                     | k ~= a and is?(a, 'log)], x)
       r1 := primintegrate(univariate(f, k),
               (x1:UP):UP+->differentiate(x1,
                 (x2:F):F+->differentiate(x2, x), differentiate(k::F, x)::UP),
@@ -311,7 +311,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
         case "failed") => u1
       twr := tower f
       empty?(lg := [kk for kk in lk | not member?(kk, twr)]) => "failed"
-      is?(k, "log"::SE) =>
+      is?(k, 'log) =>
         (u2 := lflimitedint(f, x,
           [first argument u for u in union(lg, [k])])) case "failed"
                                                              => "failed"
@@ -338,7 +338,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     primlimint(f, x, k, lu) ==
       lk := varselect([a for a in tower f
-                                     | k ~= a and is?(a, "log"::SE)], x)
+                                     | k ~= a and is?(a, 'log)], x)
       (u1 := primlimitedint(univariate(f, k),
           (x1:UP):UP+->differentiate(x1,
             (x2:F):F+->differentiate(x2, x), differentiate(k::F, x)::UP),
