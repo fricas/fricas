@@ -722,7 +722,10 @@ compConstruct(form is ["construct",:l],m,e) ==
       (T:= compVector(l,["Vector",CADR y],e)) and (T':= convert(T,m)) =>
          return T'
 
-compQuote(expr,m,e) == [expr,m,e]
+compQuote(expr is [QUOTE, e1], m, e) ==
+  SYMBOLP(e1) => [expr, ["Symbol"], e]
+  stackAndThrow ["Strange argument to QUOTE", expr]
+  -- [expr,m,e]
 
 compList(l,m is ["List",mUnder],e) ==
   null l => [NIL,m,e]

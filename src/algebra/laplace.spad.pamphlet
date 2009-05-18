@@ -30,7 +30,7 @@ LaplaceTransform(R, F): Exports == Implementation where
   OFE ==> OrderedCompletion F
   EQ  ==> Equation OFE
 
-  SPECIALDIFF ==> "%specialDiff"::Symbol
+  SPECIALDIFF ==> '%specialDiff
 
   Exports ==> with
     laplace: (F, SE, SE) -> F
@@ -48,7 +48,7 @@ LaplaceTransform(R, F): Exports == Implementation where
     import FunctionSpaceIntegration(R, F)
     import TrigonometricManipulations(R, F)
 
-    ALGOP       := "%alg"::Symbol
+    ALGOP       := '%alg
 
     locallaplace : (F, SE, F, SE, F) -> F
     lapkernel    : (F, SE, F, F) -> Union(F, "failed")
@@ -61,7 +61,7 @@ LaplaceTransform(R, F): Exports == Implementation where
     aexp         : (F, SE) -> Union(Record(coef:F, coef1:F, coef0:F), "failed")
     algebraic?   : (F, SE) -> Boolean
 
-    oplap := operator("laplace"::Symbol, 3)$BasicOperator
+    oplap := operator('laplace, 3)$BasicOperator
 
     laplace(f,t,s) == locallaplace(complexElementary(f,t),t,t::F,s,s::F)
 
@@ -117,7 +117,7 @@ LaplaceTransform(R, F): Exports == Implementation where
 -- returns [a, c, b] iff f = a * exp(c * t + b)
 -- and b and c do not involve t
     aexp(f, t) ==
-      is?(f, "exp"::SE) =>
+      is?(f, 'exp) =>
         (v := isLinear(first argument(retract(f)@K),t)) case "failed" =>
            "failed"
         [1, v.nconst, v.const]
@@ -163,7 +163,7 @@ LaplaceTransform(R, F): Exports == Implementation where
     lapkernel(f, t, tt, ss) ==
       (k := retractIfCan(f)@Union(K, "failed")) case "failed" => "failed"
       empty?(arg := argument(k::K)) => "failed"
-      is?(op := operator k, "%diff"::SE) =>
+      is?(op := operator k, '%diff) =>
         not( #arg = 3) => "failed"
         not(is?(arg.3, t)) => "failed"
         fint := eval(arg.1, arg.2, tt)
@@ -171,11 +171,11 @@ LaplaceTransform(R, F): Exports == Implementation where
         ss * locallaplace(fint, t, tt, s, ss) - eval(fint, tt = 0)
       not (empty?(rest arg)) => "failed"
       member?(t, variables(a := first(arg) / tt)) => "failed"
-      is?(op := operator k, "Si"::SE) => atan(a / ss) / ss
-      is?(op, "Ci"::SE) => log((ss^2 + a^2) / a^2) / (2 * ss)
-      is?(op, "Ei"::SE) => log((ss + a) / a) / ss
+      is?(op := operator k, 'Si) => atan(a / ss) / ss
+      is?(op, 'Ci) => log((ss^2 + a^2) / a^2) / (2 * ss)
+      is?(op, 'Ei) => log((ss + a) / a) / ss
       if F has SpecialFunctionCategory then
-        is?(op, "log"::SE) => (digamma(1) - log(a) - log(ss)) / ss
+        is?(op, 'log) => (digamma(1) - log(a) - log(ss)) / ss
       "failed"
 
     -- Below we try to apply one of the texbook rules for computing

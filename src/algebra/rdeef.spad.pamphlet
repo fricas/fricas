@@ -57,7 +57,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
 
   Impl ==> add
 
-    ALGOP := "%alg"::Symbol
+    ALGOP := '%alg
 
     better?: (K, K) -> Boolean
 
@@ -78,7 +78,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
     better?(x, y) ==
       height(y) ~= height(x) => height(y) < height(x)
       has?(operator y, ALGOP) or
-              (is?(y, "exp"::SE) and not is?(x, "exp"::SE)
+              (is?(y, 'exp) and not is?(x, 'exp)
                                  and not has?(operator x, ALGOP))
 
     if R has IntegralDomain then
@@ -110,7 +110,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
         cont(unitNormal(leadingCoefficient q).unit * content q, rest l)
 
       linearLog?(k, f, x) ==
-        is?(k, "log"::SE) and
+        is?(k, 'log) and
          ((u := retractIfCan(univariate(f,k))@Union(UP,"failed")) case UP)
 --             and one?(degree(u::UP))
              and (degree(u::UP) = 1)
@@ -202,7 +202,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
     import PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
 
-    ALGOP := "%alg"::Symbol
+    ALGOP := '%alg
 
     RF2GP:     RF -> GP
     makeData  : (F, SE, K)    -> Data
@@ -230,7 +230,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
     RF2GP f == (numer(f)::GP exquo denom(f)::GP)::GP
 
     logdiff(twr, bad) ==
-      [u for u in twr | is?(u, "log"::SE) and not member?(u, bad)]
+      [u for u in twr | is?(u, 'log) and not member?(u, bad)]
 
     rischDEalg(n, nfp, f, g, k, l, x, limint, extint) ==
       symbolIfCan(kx := ksec(k, l, x)) case SE =>
@@ -257,7 +257,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       freeOf?(y := g / nfp, x) => [y, g, true]
       vl := varselect(union(kernels nfp, kernels g), x)
       symbolIfCan(k := kmax vl) case SE => normalise0(n, f, g, x)
-      is?(k, "log"::SE) or is?(k, "exp"::SE) =>
+      is?(k, 'log) or is?(k, 'exp) =>
         normalise(n, nfp, f, g, x, k, limitedint, extendedint)
       has?(operator k, ALGOP) =>
         rischDEalg(n, nfp, f, g, k, vl, x, limitedint, extendedint)
@@ -299,12 +299,12 @@ ElementaryRischDE(R, F): Exports == Implementation where
       newg := univariate(p::F * g, k)
       twr := union(logdiff(tower f, empty()), logdiff(tower g, empty()))
       ans1 :=
-        is?(k, "log"::SE) =>
+        is?(k, 'log) =>
           rischDElog(twr, newf, newg, x, k,
                 z1 +-> differentiate(z1, (z2 : F) : F +-> differentiate(z2, x),
                              differentiate(k::F, x)::UP),
                                             limitedint, extendedint)
-        is?(k, "exp"::SE) =>
+        is?(k, 'exp) =>
           rischDEexp(twr, newf, newg, x, k,
             z1 +-> differentiate(z1, (z2 : F) : F +-> differentiate(z2, x),
                       monomial(differentiate(first argument k, x), 1)),
@@ -317,7 +317,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       disasters := empty()$Data
       fnum := numer f
       fden := denom f
-      for u in varselect(kernels f, x) | is?(u, "log"::SE) repeat
+      for u in varselect(kernels f, x) | is?(u, 'log) repeat
         logand := first argument u
         if zero?(degree univariate(fden, u)) and
 --           one?(degree(num := univariate(fnum, u))) then

@@ -24,8 +24,8 @@ ExpressionSpace(): Category == Defn where
   K   ==> Kernel %
   OP  ==> BasicOperator
   SY  ==> Symbol
-  PAREN  ==> "%paren"::SY
-  BOX    ==> "%box"::SY
+  PAREN  ==> '%paren
+  BOX    ==> '%box
 
   Defn ==> Join(Comparable, RetractableTo K, 
                 InnerEvalable(K, %), Evalable %) with
@@ -161,7 +161,7 @@ ExpressionSpace(): Category == Defn where
 
    add
 
-    DUMMYVAR := "%dummyVar"::Symbol
+    DUMMYVAR := '%dummyVar
 -- the 7 functions not provided are:
 --        kernels   minPoly   definingPolynomial
 --        coerce:K -> %  eval:(%, List K, List %) -> %
@@ -289,7 +289,7 @@ ExpressionSpace(): Category == Defn where
     distribute(x, y) ==
       ky := retract y
       unwrap([k for k in listk x |
-              is?(k, "%paren"::SY) and member?(ky, listk(k::%))], x)
+              is?(k, '%paren) and member?(ky, listk(k::%))], x)
 
     -- in case of conflicting substitutions e.g. [x = a, x = b],
     -- the first one prevails.
@@ -396,9 +396,9 @@ FunctionSpace(R : Comparable): Category == Definition where
   MP ==> SparseMultivariatePolynomial(R, K)
   QF==> PolynomialCategoryQuotientFunctions(IndexedExponents K,K,R,MP,%)
 
-  SPECIALDISP  ==> "%specialDisp"::Symbol
-  SPECIALEQUAL ==> "%specialEqual"::Symbol
-  SPECIALINPUT ==> "%specialInput"::Symbol
+  SPECIALDISP  ==> '%specialDisp
+  SPECIALEQUAL ==> '%specialEqual
+  SPECIALINPUT ==> '%specialInput
 
   Definition ==> Join(ExpressionSpace, RetractableTo SY, Patternable R,
                      FullyPatternMatchable R, FullyRetractableTo R) with
@@ -519,9 +519,9 @@ FunctionSpace(R : Comparable): Category == Definition where
    add
     import BasicOperatorFunctions1(%)
 
-    ODD  := "odd"::Symbol
-    EVEN := "even"::Symbol
-    SPECIALDIFF  := "%specialDiff"::Symbol
+    ODD  := 'odd
+    EVEN := 'even
+    SPECIALDIFF  := '%specialDiff
 
     -- these are needed in Ring only, but need to be declared here
     -- because of compiler bug: if they are declared inside the Ring
@@ -555,8 +555,8 @@ FunctionSpace(R : Comparable): Category == Definition where
 
     equaldiff : (K,K)->Boolean
     debugA: (List % ,List %,Boolean) -> Boolean
-    opdiff := operator("%diff"::SY)$CommonOperators()
-    opquote := operator("applyQuote"::SY)$CommonOperators
+    opdiff := operator('%diff)$CommonOperators()
+    opquote := operator('applyQuote)$CommonOperators
 
     ground? x                == retractIfCan(x)@Union(R,"failed") case R
     ground  x                == retract x
@@ -571,8 +571,8 @@ FunctionSpace(R : Comparable): Category == Definition where
     subs(fn, k) == kernel(operator k,[fn x for x in argument k]$List(%))
 
     operator op ==
-      is?(op, "%diff"::SY) => opdiff
-      is?(op, "%quote"::SY) => opquote
+      is?(op, '%diff) => opdiff
+      is?(op, '%quote) => opquote
       error "Unknown operator"
 
     if R has ConvertibleTo InputForm then
@@ -583,9 +583,9 @@ FunctionSpace(R : Comparable): Category == Definition where
       differentiand: List % -> %
 
       differentiand l    == eval(first l, retract(second l)@K, third l)
-      pint l  == convert concat(convert("D"::SY)@INP, l)
+      pint l  == convert concat(convert('D)@INP, l)
       indiff l ==
-         r2:= convert([convert("::"::SY)@INP,convert(third l)@INP,convert("Symbol"::SY)@INP]@List INP)@INP
+         r2:= convert([convert("::"::SY)@INP,convert(third l)@INP,convert('Symbol)@INP]@List INP)@INP
          pint [convert(differentiand l)@INP, r2]
       eval(f:%, s:SY)            == eval(f, [s])
       eval(f:%, s:OP, g:%, x:SY) == eval(f, [s], [g], x)
@@ -609,7 +609,7 @@ FunctionSpace(R : Comparable): Category == Definition where
       import UserDefinedPartialOrdering(SY)
 
 -- cannot use new()$Symbol because of possible re-instantiation
-      gendiff := "%%0"::SY
+      gendiff := '%%0
 
       characteristic()    == characteristic()$R
       coerce(k:K):%       == k::MP::%

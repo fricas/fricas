@@ -54,7 +54,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
     import ElementaryFunctionStructurePackage(G, FG)
     import InnerTrigonometricManipulations(R, F, FG)
 
-    RTRIG := "rtrig"::Symbol
+    RTRIG := 'rtrig
 
     K2KG: Kernel F -> Kernel FG
 
@@ -77,7 +77,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
        [k for k in tower(g := realElementary(f, x))
         | member?(x, variables(k::F))]$List(Kernel F))$List(Kernel F) =>
           h := trigs2explogs(F2FG g, [K2KG k for k in tower f
-                         | is?(k, "tan"::SE) or is?(k, "cot"::SE)], [x])
+                         | is?(k, 'tan) or is?(k, 'cot)], [x])
           real?(g := FG2F h) =>
             internalIntegrate0(rootSimp(rischNormalize(g, x).func), x)
           real?(g := FG2F(h := rootSimp(rischNormalize(h, x).func))) =>
@@ -111,7 +111,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
   SE  ==> Symbol
   IR  ==> IntegrationResult F
   FG  ==> Expression G
-  TANTEMP ==> "%temptan"::SE
+  TANTEMP ==> '%temptan
 
   Exports ==> with
     integrate: (F, SE) -> Union(F, List F)
@@ -133,10 +133,10 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     import PolynomialCategoryQuotientFunctions(IndexedExponents K,
                       K, R, SparseMultivariatePolynomial(R, K), F)
 
-    RTRIG := "rtrig"::Symbol
-    HTRIG := "htrig"::Symbol
-    ELEM := "elem"::Symbol
-    ALGOP := "%alg"::Symbol
+    RTRIG := 'rtrig
+    HTRIG := 'htrig
+    ELEM := 'elem
+    ALGOP := '%alg
 
     K2KG      : K -> Kernel FG
     postSubst : (F, List F, List K, B, List K, SE) -> F
@@ -154,7 +154,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     tan2temp k == kernel(optemp, argument k, height k)$K
 
     trans? f ==
-      any?(x1+->is?(x1,"log"::SE) or is?(x1,"exp"::SE) or is?(x1,"atan"::SE),
+      any?(x1+->is?(x1,'log) or is?(x1,'exp) or is?(x1,'atan),
            operators f)$List(BasicOperator)
 
     mkPrimh(f, x, h, comp) ==
@@ -207,19 +207,19 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
       tf  := [k for k in tower f | member?(x, variables(k::F)@List(SE))]$List(K)
-      ltf := select(x1+->is?(operator x1, "tan"::SE), tf)
+      ltf := select(x1+->is?(operator x1, 'tan), tf)
       ht  := any?(x1+->has?(operator x1, HTRIG), tf)
       rec := rischNormalize(realElementary(f, x), x)
       g   := rootSimp(rec.func)
       tg  := [k for k in tower g | member?(x, variables(k::F))]$List(K)
-      ltg := select(x1+->is?(operator x1, "tan"::SE), tg)
+      ltg := select(x1+->is?(operator x1, 'tan), tg)
       rtg := any?(x1+->has?(operator x1, RTRIG), tg)
       el  := any?(x1+->has?(operator x1, ELEM), tg)
       i:IR
       if (comp := goComplex?(rtg, tg, ltg)) then
         gg : FG := trigs2explogs(F2FG g,
-                    [K2KG k for k in tf | is?(k, "tan"::SE) or
-                       is?(k, "cot"::SE)], [x])
+                    [K2KG k for k in tf | is?(k, 'tan) or
+                       is?(k, 'cot)], [x])
         -- FIXME: we should really rerun algebraic normalization
         -- but currently we do nothing
         -- rootSimp caused regression on arc trigonometric functions
