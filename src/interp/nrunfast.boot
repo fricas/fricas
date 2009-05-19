@@ -460,6 +460,7 @@ sigDomainVal(dollar,domain,index) ==
 -- in spad code.  Please do not break this!  An example is the use of
 -- Interval (an Aldor domain) by SIGNEF in limitps.spad.  MCD.
 newHasTest(domform,catOrAtt) ==
+  NULL(domform) => systemError '"newHasTest expects domain form"
   domform is [dom,:.] and dom in '(Union Record Mapping Enumeration) =>
     ofCategory(domform, catOrAtt)
   catOrAtt = '(Type) => true
