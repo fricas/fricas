@@ -528,13 +528,6 @@
 (defun find-deps-pretend (env args)
   (map-find-deps env args))
 
-; (PretendTo A B)
-;   syntax: A pretend B
-;   A == some domain
-;   B == some category
-(defun find-deps-pretend (env args)
-  (map-find-deps env args))
-
 ; (Qualify A B)
 ;   syntax: A $ B
 ;   A == an identifier
