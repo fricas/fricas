@@ -162,181 +162,6 @@ OrderedFreeMonoid(S: OrderedSet): OFMcategory == OFMdefinition where
         mirror x == reverse(x)$Rep
 
 @
-\section{category FMCAT FreeModuleCat}
-<<category FMCAT FreeModuleCat>>=
-)abbrev category FMCAT FreeModuleCat
-++ Author: Michel Petitot petitot@lifl.fr
-++ Date Created: 91
-++ Date Last Updated: 7 Juillet 92
-++ Fix History: compilation v 2.1 le 13 dec 98
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++   A domain of this category
-++   implements formal linear combinations
-++   of elements from a domain \spad{Basis} with coefficients
-++   in a domain \spad{R}. The domain \spad{Basis} needs only
-++   to belong to the category \spadtype{SetCategory} and \spad{R}
-++   to the category \spadtype{Ring}. Thus the coefficient ring
-++   may be non-commutative.
-++   See the \spadtype{XDistributedPolynomial} constructor
-++   for examples of domains built with the \spadtype{FreeModuleCat}
-++   category constructor.
-++   Author: Michel Petitot (petitot@lifl.fr)
-
-FreeModuleCat(R, Basis):Category == Exports where
-   R: Ring
-   Basis: SetCategory
-   TERM ==> Record(k: Basis, c: R)
-
-   Exports == Join(BiModule(R,R), RetractableTo Basis) with
-        "*"                : (R, Basis) -> %
-          ++ \spad{r*b} returns the product of \spad{r} by \spad{b}.
-        coefficient        : (%, Basis) -> R
-          ++ \spad{coefficient(x,b)} returns the coefficient
-          ++ of \spad{b} in \spad{x}.
-        map                : (R -> R, %) -> %
-          ++ \spad{map(fn,u)} maps function \spad{fn} onto the coefficients
-          ++  of the non-zero monomials of \spad{u}.
-        monom              : (Basis, R) -> %
-          ++ \spad{monom(b,r)} returns the element with the single monomial
-          ++  \spad{b} and coefficient \spad{r}.
-        monomial?          : % -> Boolean
-          ++ \spad{monomial?(x)} returns true if \spad{x} contains a single
-          ++ monomial.
-        ListOfTerms        : % -> List TERM
-          ++ \spad{ListOfTerms(x)} returns a list \spad{lt} of terms with type
-          ++ \spad{Record(k: Basis, c: R)} such that \spad{x} equals
-          ++ \spad{reduce(+, map(x +-> monom(x.k, x.c), lt))}.
-        coefficients       : % -> List R
-          ++ \spad{coefficients(x)} returns the list of coefficients of \spad{x}.
-        monomials          : % -> List %
-          ++ \spad{monomials(x)} returns the list of \spad{r_i*b_i}
-          ++ whose sum is \spad{x}.
-        numberOfMonomials  : % -> NonNegativeInteger
-          ++ \spad{numberOfMonomials(x)} returns the number of monomials of \spad{x}.
-        leadingMonomial    : % -> Basis
-          ++ \spad{leadingMonomial(x)} returns the first element from \spad{Basis}
-          ++ which appears in \spad{ListOfTerms(x)}.
-        leadingCoefficient : % -> R
-          ++ \spad{leadingCoefficient(x)} returns the first coefficient
-          ++ which appears in \spad{ListOfTerms(x)}.
-        leadingTerm        : % -> TERM
-          ++ \spad{leadingTerm(x)} returns the first term which
-          ++ appears in \spad{ListOfTerms(x)}.
-        reductum           : % -> %
-          ++ \spad{reductum(x)} returns \spad{x} minus its leading term.
-
-      -- attributs
-        if R has CommutativeRing then Module(R)
-
-@
-\section{domain FM1 FreeModule1}
-<<domain FM1 FreeModule1>>=
-)abbrev domain FM1 FreeModule1
-++ Author: Michel Petitot petitot@lifl.fr
-++ Date Created: 91
-++ Date Last Updated: 7 Juillet 92
-++ Fix History: compilation v 2.1 le 13 dec 98
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++   This domain implements linear combinations
-++   of elements from the domain \spad{S} with coefficients
-++   in the domain \spad{R} where \spad{S} is an ordered set
-++   and \spad{R} is a ring (which may be non-commutative).
-++   This domain is used by domains of non-commutative algebra such as:
-++       \spadtype{XDistributedPolynomial},
-++       \spadtype{XRecursivePolynomial}.
-++   Author: Michel Petitot (petitot@lifl.fr)
-
-FreeModule1(R:Ring,S:OrderedSet): FMcat == FMdef where
-  EX ==> OutputForm
-  TERM ==> Record(k:S,c:R)
-
-  FMcat == FreeModuleCat(R,S) with
-    "*":(S,R) -> %
-      ++ \spad{s*r} returns the product \spad{r*s}
-      ++ used by \spadtype{XRecursivePolynomial}
-  FMdef == FreeModule(R,S) add
-    -- representation
-      Rep := List TERM
-
-    -- declarations
-      lt: List TERM
-      x : %
-      r : R
-      s : S
-
-    -- define
-      numberOfMonomials p ==
-         # (p::Rep)
-
-      ListOfTerms(x) == (x::Rep)
-
-      leadingTerm x == x.first
-      leadingMonomial x == x.first.k
-      coefficients x == [t.c for t in x]
-      monomials x == [ monom (t.k, t.c) for t in x]
-
-      retractIfCan x ==
-         numberOfMonomials(x) ~= 1 => "failed"
-         x.first.c = 1 => x.first.k
-         "failed"
-
-      coerce(s:S):% == [[s,1$R]]
-      retract x ==
-         (rr := retractIfCan x) case "failed" => error "FM1.retract impossible"
-         rr :: S
-
-      if R has noZeroDivisors then
-         r * x  ==
-             r = 0 => 0
-             [[u.k,r * u.c]$TERM for u in x]
-         x * r  ==
-             r = 0 => 0
-             [[u.k,u.c * r]$TERM for u in x]
-       else
-         r * x  ==
-             r = 0 => 0
-             [[u.k,a] for u in x | not (a:=r*u.c)= 0$R]
-         x * r  ==
-             r = 0 => 0
-             [[u.k,a] for u in x | not (a:=u.c*r)= 0$R]
-
-      r * s ==
-        r = 0 => 0
-        [[s,r]$TERM]
-
-      s * r ==
-        r = 0 => 0
-        [[s,r]$TERM]
-
-      monom(b,r):% == [[b,r]$TERM]
-
-      outTerm(r:R, s:S):EX ==
-            r=1  => s::EX
-            r::EX * s::EX
-
-      coerce(a:%):EX ==
-            empty? a => (0$R)::EX
-            reduce(_+, reverse_! [outTerm(t.c, t.k) for t in a])$List(EX)
-
-      coefficient(x,s) ==
-         null x => 0$R
-         x.first.k > s => coefficient(rest x,s)
-         x.first.k = s => x.first.c
-         0$R
-
-@
 \section{category XALG XAlgebra}
 <<category XALG XAlgebra>>=
 )abbrev category XALG XAlgebra
@@ -511,7 +336,7 @@ XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
   EX     ==> OutputForm
   NNI    ==> NonNegativeInteger
 
-  T == Join(Ring, XAlgebra(R), FreeModuleCat(R,E)) with
+  T == Join(Ring, XAlgebra(R), FreeModuleCategory(R,E)) with
     --operations
       "*": (%,R) -> %
         ++ \spad{p*r} returns the product of \spad{p} by \spad{r}.
@@ -554,7 +379,7 @@ XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
           ++ associates of any particular element.
 
 
-  C == FreeModule1(R,E) add
+  C == FreeModule(R,E) add
     --representations
        Rep:=  List TERM
     --uses
@@ -678,7 +503,7 @@ XDistributedPolynomial(vl:OrderedSet,R:Ring): XDPcat == XDPdef where
   NNI  ==> NonNegativeInteger
   TERM ==> Record(k:WORD, c:R)
 
-  XDPcat == Join(FreeModuleCat(R, WORD), XPolynomialsCat(vl,R))
+  XDPcat == Join(FreeModuleCategory(R, WORD), XPolynomialsCat(vl,R))
 
   XDPdef == XPolynomialRing(R,WORD) add
 
@@ -794,7 +619,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
   WORD   ==> OrderedFreeMonoid(VarSet)
   TERM   ==> Record(k:VarSet , c:%)
   LTERMS ==> List(TERM)
-  REGPOLY==> FreeModule1(%, VarSet)
+  REGPOLY==> FreeModule(%, VarSet)
   VPOLY  ==> Record(c0:R, reg:REGPOLY)
 
   Xcat == XPolynomialsCat(VarSet,R) with
@@ -838,14 +663,14 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
        rquo(p1:%, p2:%):% ==
          p2 case R => p1 * p2::R
          p1 case R => p1  * p2.c0
-         x:REGPOLY := construct [[t.k, a]$TERM for t in ListOfTerms(p1.reg) _
+         x:REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms(p1.reg) _
                          | (a:= rquo(t.c,p2)) ~= 0$% ]$LTERMS
          simplifie [coef(p1,p2) , x]$VPOLY
 
        trunc(p,n) ==
          n = 0 or (p case R) => (constant p)::%
          n1: NNI := (n-1)::NNI
-         lt: LTERMS := [[t.k, r]$TERM for t in ListOfTerms p.reg _
+         lt: LTERMS := [[t.k, r]$TERM for t in listOfTerms p.reg _
                         | (r := trunc(t.c, n1)) ~= 0]$LTERMS
          x: REGPOLY := construct lt
          simplifie [constant p, x]$VPOLY
@@ -863,25 +688,25 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
             p case R => (p::R)^ n
             n1: NNI := (n-1)::NNI
             p1: % := n * sh(p, n1)
-            lt: LTERMS := [[t.k, sh(t.c, p1)]$TERM for t in ListOfTerms p.reg]
+            lt: LTERMS := [[t.k, sh(t.c, p1)]$TERM for t in listOfTerms p.reg]
             [p.c0 ^ n, construct lt]$VPOLY
 
          sh(p1:%, p2:%) ==
             p1 case R => p1::R * p2
             p2 case R => p1 * p2::R
-            lt1:LTERMS := ListOfTerms p1.reg ; lt2:LTERMS := ListOfTerms p2.reg
+            lt1:LTERMS := listOfTerms p1.reg ; lt2:LTERMS := listOfTerms p2.reg
             x: REGPOLY := construct [[t.k,sh(t.c,p2)]$TERM for t in lt1]
             y: REGPOLY := construct [[t.k,sh(p1,t.c)]$TERM for t in lt2]
             [p1.c0*p2.c0,x + y]$VPOLY
 
        RemainderList p ==
            p case R => []
-           ListOfTerms( p.reg)$REGPOLY
+           listOfTerms( p.reg)$REGPOLY
 
        lquo(p1:%,p2:%):% ==
          p2 case R => p1 * p2
          p1 case R => p1  *$R p2.c0
-         p1 * p2.c0 +$% lquo1(ListOfTerms p1.reg, ListOfTerms p2.reg)
+         p1 * p2.c0 +$% lquo1(listOfTerms p1.reg, listOfTerms p2.reg)
 
        lquo1(x:LTERMS,y:LTERMS):% ==
          null x => 0$%
@@ -894,7 +719,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
        coef(p1:%, p2:%):R ==
          p1 case R => p1::R * constant p2
          p2 case R => p1.c0 * p2::R
-         p1.c0 * p2.c0 +$R coef1(ListOfTerms p1.reg, ListOfTerms p2.reg)
+         p1.c0 * p2.c0 +$R coef1(listOfTerms p1.reg, listOfTerms p2.reg)
 
        coef1(x:LTERMS,y:LTERMS):R ==
          null x => 0$R
@@ -906,7 +731,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
 
        --------------------------------------------------------------
        outForm(p:REGPOLY): EX ==
-          le : List EX :=  [t.k::EX * t.c::EX for t in ListOfTerms p]
+          le : List EX :=  [t.k::EX * t.c::EX for t in listOfTerms p]
           reduce(_+, reverse_! le)$List(EX)
 
        coerce(p:$): EX ==
@@ -936,7 +761,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
 
        expand p ==
          p case R => p::R::XDPOLY
-         lt:LTERMS := ListOfTerms(p.reg)
+         lt:LTERMS := listOfTerms(p.reg)
          ep:XDPOLY := (p.c0)::XDPOLY
          for t in lt repeat
            ep:= ep + t.k * expand(t.c)
@@ -998,7 +823,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
 
        rquo(p:%, v:VarSet):% ==
          p case R => 0
-         x:REGPOLY := construct [[t.k, a]$TERM for t in ListOfTerms(p.reg)
+         x:REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms(p.reg)
                          | (a:= rquo(t.c,v)) ~= 0 ]
          simplifie [constant(coefficient(p.reg,v)) , x]$VPOLY
 
@@ -1027,13 +852,13 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
            p = 0 => error "XRPOLY.mindeg: polynome nul !!"
            1$WORD
          p.c0 ~= 0 => 1$WORD
-         "min"/[(t.k) *$WORD mindeg(t.c) for t in ListOfTerms p.reg]
+         "min"/[(t.k) *$WORD mindeg(t.c) for t in listOfTerms p.reg]
 
        maxdeg p ==
          p case R =>
             p = 0 => error "XRPOLY.maxdeg: polynome nul !!"
             1$WORD
-         "max"/[(t.k) *$WORD maxdeg(t.c) for t in ListOfTerms p.reg]
+         "max"/[(t.k) *$WORD maxdeg(t.c) for t in listOfTerms p.reg]
 
        degree p ==
           p = 0 => error "XRPOLY.degree: polynome nul !!"
@@ -1041,14 +866,14 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
 
        map(fn,p) ==
          p case R => fn(p::R)
-         x:REGPOLY := construct [[t.k,a]$TERM for t in ListOfTerms p.reg
+         x:REGPOLY := construct [[t.k,a]$TERM for t in listOfTerms p.reg
                          |(a := map(fn,t.c)) ~= 0$R]
          simplifie [fn(p.c0),x]$VPOLY
 
        varList p ==
          p case R => []
-         lv: List VarSet := "setUnion"/[varList(t.c) for t in ListOfTerms p.reg]
-         lv:= setUnion(lv,[t.k for t in ListOfTerms p.reg])
+         lv: List VarSet := "setUnion"/[varList(t.c) for t in listOfTerms p.reg]
+         lv:= setUnion(lv,[t.k for t in listOfTerms p.reg])
          sort_!(lv)
 
 @
@@ -1115,8 +940,6 @@ XPolynomial(R:Ring) == XRecursivePolynomial(Symbol, R)
 <<license>>
 
 <<domain OFMONOID OrderedFreeMonoid>>
-<<category FMCAT FreeModuleCat>>
-<<domain FM1 FreeModule1>>
 <<category XALG XAlgebra>>
 <<category XFALG XFreeAlgebra>>
 <<category XPOLYC XPolynomialsCat>>
