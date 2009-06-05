@@ -9,6 +9,79 @@
 \eject
 \tableofcontents
 \eject
+\section{category FMCAT FreeModuleCategory}
+   \emph{Notes} (Franz Lehner (lehner@finanz.math.tugraz.at), june 4 2009).
+
+   Since ``leading term'' makes no sense
+   for unordered base sets,
+   and at the time of this writing it was never used for such,
+   it was changed to [[OrderedSet]].
+   [[FreeModule]] originally was not of FreeModuleCategory.
+   Some functions (like [[support]], [[coefficients]], [[monomials]], ...) 
+   from here could be moved to [[IndexedDirectProductCategory]]
+   but at the moment there is no need for this.
+
+<<category FMCAT FreeModuleCategory>>=
+)abbrev category FMCAT FreeModuleCategory
+++ Author: Michel Petitot petitot@lifl.fr
+++ Date Created: 91
+++ Date Last Updated: 7 Juillet 92
+++ Fix History: compilation v 2.1 le 13 dec 98
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   A domain of this category
+++   implements formal linear combinations
+++   of elements from a domain \spad{Basis} with coefficients
+++   in a domain \spad{R}. The domain \spad{Basis} needs only
+++   to belong to the category \spadtype{SetCategory} and \spad{R}
+++   to the category \spadtype{Ring}. Thus the coefficient ring
+++   may be non-commutative.
+++   See the \spadtype{XDistributedPolynomial} constructor
+++   for examples of domains built with the \spadtype{FreeModuleCategory}
+++   category constructor.
+++   Author: Michel Petitot (petitot@lifl.fr)
+FreeModuleCategory(R, S):Category == Exports where
+   R: Ring
+   S: OrderedSet
+   Term ==> Record(k: S, c: R)
+
+   Exports == Join(BiModule(R,R), RetractableTo S, IndexedDirectProductCategory(R,S)) with
+        "*"                : (R, S) -> %
+          ++ \spad{r*b} returns the product of \spad{r} by \spad{b}.
+        "*":(S,R) -> %
+          ++ \spad{s*r} returns the product \spad{r*s}
+          ++ used by \spadtype{XRecursivePolynomial}
+        coefficients       : % -> List R
+          ++ \spad{coefficients(x)} returns the list of coefficients of \spad{x}.
+        support            : % -> List S
+          ++ \spad{support(x)} returns the list of basis elements with nonzero coefficients.
+        monomials          : % -> List %
+          ++ \spad{monomials(x)} returns the list of \spad{r_i*b_i}
+          ++ whose sum is \spad{x}.
+        numberOfMonomials  : % -> NonNegativeInteger
+          ++ \spad{numberOfMonomials(x)} returns the number of monomials of \spad{x}.
+        monomial?: % -> Boolean
+          ++ \spad{monomial?(x)} returns true if \spad{x} contains a single
+          ++ monomial.
+        leadingMonomial    : % -> S
+          ++ \spad{leadingMonomial(x)} returns the first element from \spad{S}
+          ++ which appears in \spad{listOfTerms(x)}.
+        leadingCoefficient : % -> R
+          ++ \spad{leadingCoefficient(x)} returns the first coefficient
+          ++ which appears in \spad{listOfTerms(x)}.
+        monom : (S, R) -> %
+          ++ \spad{monom(s,r)} returns the product of the basis element \spad{s} by the coefficient \spad{r}.
+        coefficient :(%,S) -> R
+          ++ \spad{coefficient(x,s)} returns the coefficient of the basis element s
+      -- attributs
+        if R has CommutativeRing then Module(R)
+
+@
 \section{domain FM FreeModule}
 <<domain FM FreeModule>>=
 )abbrev domain FM FreeModule
@@ -27,20 +100,33 @@
 ++ Each element can be expressed as a finite linear combination of
 ++ generators. Only non-zero terms are stored.
 
+++ old domain FreeModule1 was merged to it in May 2009
+++ The description of the latter:
+++   This domain implements linear combinations
+++   of elements from the domain \spad{S} with coefficients
+++   in the domain \spad{R} where \spad{S} is an ordered set
+++   and \spad{R} is a ring (which may be non-commutative).
+++   This domain is used by domains of non-commutative algebra such as:
+++       \spadtype{XDistributedPolynomial},
+++       \spadtype{XRecursivePolynomial}.
+++   Author: Michel Petitot (petitot@lifl.fr)
+
+
 FreeModule(R:Ring,S:OrderedSet):
-        Join(BiModule(R,R),IndexedDirectProductCategory(R,S)) with
+        Join(BiModule(R,R),FreeModuleCategory(R,S)) with
     if R has CommutativeRing then Module(R)
  == IndexedDirectProductAbelianGroup(R,S) add
     --representations
-       Term:=  Record(k:S,c:R)
-       Rep:=  List Term
+       Term ==>  Record(k:S,c:R)
+       Rep :=  List Term
     --declarations
        x,y: %
        r: R
        n: Integer
        f: R -> R
        s: S
-    --define
+       lt: List Term
+   --define
        if R has EntireRing then
          r * x  ==
              zero? r => 0
@@ -78,6 +164,48 @@ FreeModule(R:Ring,S:OrderedSet):
            le := cons(rec.c :: OutputForm *  rec.k :: OutputForm, le)
          reduce("+",le)
 
+       leadingMonomial x == x.first.k
+ 
+       coefficients x == [t.c for t in x]
+
+       monomials x == [ monom (t.k, t.c) for t in x]
+
+       retractIfCan x ==
+         numberOfMonomials(x) ~= 1 => "failed"
+         x.first.c = 1 => x.first.k
+         "failed"
+
+       retract x ==
+         (rr := retractIfCan x) case "failed" => error "FM1.retract impossible"
+         rr :: S
+
+       coerce(s:S):% == [[s,1$R]]
+
+-- the following is to be replaced by monomial(r,b) everywhere
+       monom(b,r):% == [[b,r]$Term]
+
+       coefficient(x,s) ==
+         null x => 0$R
+         x.first.k > s => coefficient(rest x,s)
+         x.first.k = s => x.first.c
+         0$R
+
+       monomial? x ==       
+         numberOfMonomials x = 1
+
+--       listOfTerms        : % -> List Term
+
+       listOfTerms(x) ==
+--          (x::Rep)
+--          coerce(x)@Rep
+         x pretend Rep
+
+       numberOfMonomials x ==
+--         # (x::Rep)
+         # (listOfTerms x)
+
+
+
 @
 \section{domain PR PolynomialRing}
 <<domain PR PolynomialRing>>=
@@ -113,7 +241,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
 
   C == FreeModule(R,E) add
     --representations
-       Term:=  Record(k:E,c:R)
+       Term ==>  Record(k:E,c:R)
        Rep:=  List Term
 
 
@@ -418,7 +546,7 @@ SparseUnivariatePolynomial(R:Ring): UnivariatePolynomialCategory(R) with
     == PolynomialRing(R,NonNegativeInteger)
   add
    --representations
-   Term := Record(k:NonNegativeInteger,c:R)
+   Term ==> Record(k:NonNegativeInteger,c:R)
    Rep  := List Term
    p:%
    n:NonNegativeInteger
@@ -1231,6 +1359,7 @@ UnivariatePolynomialMultiplicationPackage(R: Ring, U: UnivariatePolynomialCatego
 <<*>>=
 <<license>>
 
+<<category FMCAT FreeModuleCategory>>
 <<domain FM FreeModule>>
 <<domain PR PolynomialRing>>
 <<package UPSQFREE UnivariatePolynomialSquareFree>>
