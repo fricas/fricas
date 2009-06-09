@@ -1193,19 +1193,19 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
   LP ==> List P
   PtoP ==> P -> P
   PS ==> GeneralPolynomialSet(R,E,V,P)
-  PWT ==> Record(val : P, tower : $)
-  BWT ==> Record(val : Boolean, tower : $)
-  LpWT ==> Record(val : (List P), tower : $)
-  Split ==> List $
+  PWT ==> Record(val : P, tower : %)
+  BWT ==> Record(val : Boolean, tower : %)
+  LpWT ==> Record(val : (List P), tower : %)
+  Split ==> List %
   iprintpack ==> InternalPrintPackage()
   polsetpack ==> PolynomialSetUtilitiesPackage(R,E,V,P)
-  quasicomppack ==> SquareFreeQuasiComponentPackage(R,E,V,P,$)
-  regsetgcdpack ==> SquareFreeRegularTriangularSetGcdPackage(R,E,V,P,$)
-  regsetdecomppack ==> SquareFreeRegularSetDecompositionPackage(R,E,V,P,$)
+  quasicomppack ==> SquareFreeQuasiComponentPackage(R,E,V,P,%)
+  regsetgcdpack ==> SquareFreeRegularTriangularSetGcdPackage(R,E,V,P,%)
+  regsetdecomppack ==> SquareFreeRegularSetDecompositionPackage(R,E,V,P,%)
 
   Exports ==  SquareFreeRegularTriangularSetCategory(R,E,V,P) with
 
-     internalAugment: (P,$,B,B,B,B,B) -> List $
+     internalAugment: (P,%,B,B,B,B,B) -> List %
        ++ \axiom{internalAugment(p,ts,b1,b2,b3,b4,b5)}
        ++ is an internal subroutine, exported only for developement.
      zeroSetSplit: (LP, B, B) -> Split
@@ -1229,30 +1229,30 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
 
      Rep ==> LP
 
-     rep(s:$):Rep == s pretend Rep
-     per(l:Rep):$ == l pretend $
+     rep(s:%):Rep == s pretend Rep
+     per(l:Rep):% == l pretend %
 
      copy ts ==
        per(copy(rep(ts))$LP)
      empty() ==
        per([])
-     empty?(ts:$) ==
+     empty?(ts:%) ==
        empty?(rep(ts))
      parts ts ==
        rep(ts)
      members ts ==
        rep(ts)
-     map (f : PtoP, ts : $) : $ ==
+     map (f : PtoP, ts : %) : % ==
        construct(map(f,rep(ts))$LP)$%
-     map! (f : PtoP, ts : $) : $  ==
+     map! (f : PtoP, ts : %) : %  ==
        construct(map!(f,rep(ts))$LP)$%
      member? (p,ts) ==
        member?(p,rep(ts))$LP
      unitIdealIfCan() ==
-       "failed"::Union($,"failed")
+       "failed"::Union(%,"failed")
      roughUnitIdeal? ts ==
        false
-     coerce(ts:$) : OutputForm ==
+     coerce(ts:%) : OutputForm ==
        lp : List(P) := reverse(rep(ts))
        brace([p::OutputForm for p in lp]$List(OutputForm))$OutputForm
      mvar ts ==
@@ -1265,9 +1265,9 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
        empty? ts => "failed"::Union(P,"failed")
        last(rep(ts))::Union(P,"failed")
      rest ts ==
-       empty? ts => "failed"::Union($,"failed")
-       per(rest(rep(ts)))::Union($,"failed")
-     coerce(ts:$) : (List P) ==
+       empty? ts => "failed"::Union(%,"failed")
+       per(rest(rep(ts)))::Union(%,"failed")
+     coerce(ts:%) : (List P) ==
        rep(ts)
 
      collectUpper (ts,v) ==
@@ -1287,30 +1287,30 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
        per(lp)
 
      construct(lp:List(P)) ==
-       ts : $ := per([])
+       ts : % := per([])
        empty? lp => ts
        lp := sort(infRittWu?,lp)
        while not empty? lp repeat
          eif := extendIfCan(ts,first(lp))
-         not (eif case $) =>
-           error"in construct : List P -> $  from SREGSET : bad #1"
-         ts := eif::$
+         not (eif case %) =>
+           error"in construct : List P -> %  from SREGSET : bad #1"
+         ts := eif::%
          lp := rest lp
        ts
 
-     extendIfCan(ts:$,p:P) ==
-       ground? p => "failed"::Union($,"failed")
+     extendIfCan(ts:%,p:P) ==
+       ground? p => "failed"::Union(%,"failed")
        empty? ts =>
          p := squareFreePart primitivePart p
-         (per([p]))::Union($,"failed")
-       not (mvar(ts) < mvar(p)) => "failed"::Union($,"failed")
+         (per([p]))::Union(%,"failed")
+       not (mvar(ts) < mvar(p)) => "failed"::Union(%,"failed")
        invertible?(init(p),ts)@Boolean =>
          lts: Split := augment(p,ts)
-         #lts ~= 1 => "failed"::Union($,"failed")
-         (first lts)::Union($,"failed")
-       "failed"::Union($,"failed")
+         #lts ~= 1 => "failed"::Union(%,"failed")
+         (first lts)::Union(%,"failed")
+       "failed"::Union(%,"failed")
 
-     removeZero(p:P, ts:$): P ==
+     removeZero(p:P, ts:%): P ==
        (ground? p) or (empty? ts) => p
        v := mvar(p)
        ts_v_- := collectUnder(ts,v)
@@ -1326,17 +1326,17 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
           p := tail(p)
        q + removeZero(p,ts_v_-)
 
-     internalAugment(p:P,ts:$): $ ==
+     internalAugment(p:P,ts:%): % ==
        -- ASSUME that adding p to ts DOES NOT require any split
        ground? p => error "in internalAugment$SREGSET: ground? #1"
        first(internalAugment(p,ts,false,false,false,false,false))
 
-     internalAugment(lp:List(P),ts:$): $ ==
+     internalAugment(lp:List(P),ts:%): % ==
        -- ASSUME that adding p to ts DOES NOT require any split
        empty? lp => ts
        internalAugment(rest lp, internalAugment(first lp, ts))
 
-     internalAugment(p:P,ts:$,rem?:B,red?:B,prim?:B,sqfr?:B,extend?:B): Split ==
+     internalAugment(p:P,ts:%,rem?:B,red?:B,prim?:B,sqfr?:B,extend?:B): Split ==
        -- ASSUME p is not a constant
        -- ASSUME mvar(p) is not algebraic w.r.t. ts
        -- ASSUME init(p) invertible modulo ts
@@ -1367,7 +1367,7 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
        extend? => extend(members(ts_v_+),lts)
        [per(concat(rep(ts_v_+),rep(us))) for us in lts]
 
-     augment(p:P,ts:$): List $ ==
+     augment(p:P,ts:%): List % ==
        ground? p => error "in augment$SREGSET: ground? #1"
        algebraic?(mvar(p),ts) => error "in augment$SREGSET: bad #1"
        -- ASSUME init(p) invertible modulo ts
@@ -1375,34 +1375,34 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
        -- THUS reduction, mainPrimitivePart and squareFree are NEEDED
        internalAugment(p,ts,true,true,true,true,true)
 
-     extend(p:P,ts:$): List $ ==
+     extend(p:P,ts:%): List % ==
        ground? p => error "in extend$SREGSET: ground? #1"
        v := mvar(p)
        not (mvar(ts) < mvar(p)) => error "in extend$SREGSET: bad #1"
-       split: List($) := invertibleSet(init(p),ts)
-       lts: List($) := []
+       split: List(%) := invertibleSet(init(p),ts)
+       lts: List(%) := []
        for us in split repeat
          lts := concat(augment(p,us),lts)
        lts
 
-     invertible?(p:P,ts:$): Boolean ==
+     invertible?(p:P,ts:%): Boolean ==
        stoseInvertible?(p,ts)$regsetgcdpack
 
-     invertible?(p:P,ts:$): List BWT ==
+     invertible?(p:P,ts:%): List BWT ==
        stoseInvertible?_sqfreg(p,ts)$regsetgcdpack
 
-     invertibleSet(p:P,ts:$): Split ==
+     invertibleSet(p:P,ts:%): Split ==
        stoseInvertibleSet_sqfreg(p,ts)$regsetgcdpack
 
-     lastSubResultant(p1:P,p2:P,ts:$): List PWT ==
+     lastSubResultant(p1:P,p2:P,ts:%): List PWT ==
        stoseLastSubResultant(p1,p2,ts)$regsetgcdpack
 
-     squareFreePart(p:P, ts: $): List PWT ==
+     squareFreePart(p:P, ts: %): List PWT ==
        stoseSquareFreePart(p,ts)$regsetgcdpack
 
-     intersect(p:P, ts: $): List($) == decompose([p], [ts], false, false)$regsetdecomppack
+     intersect(p:P, ts: %): List(%) == decompose([p], [ts], false, false)$regsetdecomppack
 
-     intersect(lp: LP, lts: List($)): List($) == decompose(lp, lts, false, false)$regsetdecomppack
+     intersect(lp: LP, lts: List(%)): List(%) == decompose(lp, lts, false, false)$regsetdecomppack
         -- SOLVE in the regular zero sense
         -- and DO NOT PRINT info
 
@@ -1455,7 +1455,7 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
            lp := pp.val
            lts := pp.towers
          else
-           ts: $ := [[]]
+           ts: % := [[]]
            lts := [ts]
        lp := remove(zero?, lp)
        any?(ground?, lp) => []
@@ -1472,7 +1472,7 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
        -- Gonnet and Gerdt and not Wu-Wang.2
        #lp > 16 => true
        #lp < 13 => false
-       lts: List($) := []
+       lts: List(%) := []
        (#lp :: Z - numberOfVariables(lp,lts)$regsetdecomppack :: Z) > 3
 
      smallSystem?(lp:LP): Boolean ==
@@ -1481,7 +1481,7 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
 
      mediumSystem?(lp:LP): Boolean ==
        -- f-633 and not Hairer-2
-       lts: List($) := []
+       lts: List(%) := []
        (numberOfVariables(lp,lts)$regsetdecomppack :: Z - #lp :: Z) < 2
 
 --     lin?(p:P):Boolean == ground?(init(p)) and one?(mdeg(p))
@@ -1490,7 +1490,7 @@ SquareFreeRegularTriangularSet(R,E,V,P) : Exports == Implementation where
      pre_process(lp:LP,clos?:B,info?:B): Record(val: LP, towers: Split) ==
        -- if info? then PRINT information
        -- if clos? then SOLVE in the closure sense
-       ts: $ := [[]];
+       ts: % := [[]];
        lts: Split := [ts]
        empty? lp => [lp,lts]
        lp1: List P := []

@@ -29,7 +29,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
   O   ==> OutputForm
 
   Exports ==> Join(SetCategory, RetractableTo S) with
-    outputForm    : ($, (O, O) -> O, (O, O) -> O, Integer) -> O
+    outputForm    : (%, (O, O) -> O, (O, O) -> O, Integer) -> O
       ++ outputForm(l, fop, fexp, unit) converts the monoid element
       ++ represented by l to an \spadtype{OutputForm}.
       ++ Argument unit is the output form
@@ -40,61 +40,61 @@ ListMonoidOps(S, E, un): Exports == Implementation where
       ++ and \spad{fexp(a, n)} is the output form
       ++ for the exponentiation operation applied to \spad{a} and n
       ++ (e.g. \spad{n a}, \spad{n * a}, \spad{a ^ n}, \spad{a\^n}).
-    listOfMonoms  : $ -> List REC
+    listOfMonoms  : % -> List REC
       ++ listOfMonoms(l) returns the list of the monomials forming l.
-    makeTerm      : (S, E) -> $
+    makeTerm      : (S, E) -> %
       ++ makeTerm(s, e) returns the monomial s exponentiated by e
       ++ (e.g. s^e or e * s).
-    makeMulti     : List REC -> $
+    makeMulti     : List REC -> %
       ++ makeMulti(l) returns the element whose list of monomials is l.
-    nthExpon      : ($, Integer) -> E
+    nthExpon      : (%, Integer) -> E
       ++ nthExpon(l, n) returns the exponent of the n^th monomial of l.
-    nthFactor     : ($, Integer) -> S
+    nthFactor     : (%, Integer) -> S
       ++ nthFactor(l, n) returns the factor of the n^th monomial of l.
-    reverse       : $ -> $
+    reverse       : % -> %
       ++ reverse(l) reverses the list of monomials forming l. This
       ++ has some effect if the monoid is non-abelian, i.e.
       ++ \spad{reverse(a1\^e1 ... an\^en) = an\^en ... a1\^e1} which is different.
-    reverse_!     : $ -> $
+    reverse_!     : % -> %
       ++ reverse!(l) reverses the list of monomials forming l, destroying
       ++ the element l.
-    size          : $ -> NonNegativeInteger
+    size          : % -> NonNegativeInteger
       ++ size(l) returns the number of monomials forming l.
-    makeUnit      : () -> $
+    makeUnit      : () -> %
       ++ makeUnit() returns the unit element of the monomial.
-    rightMult     : ($, S) -> $
+    rightMult     : (%, S) -> %
       ++ rightMult(a, s) returns \spad{a * s} where \spad{*}
       ++ is the monoid operation,
       ++ which is assumed non-commutative.
-    leftMult      : (S, $) -> $
+    leftMult      : (S, %) -> %
       ++ leftMult(s, a) returns \spad{s * a} where
       ++ \spad{*} is the monoid operation,
       ++ which is assumed non-commutative.
-    plus          : (S, E, $) -> $
+    plus          : (S, E, %) -> %
       ++ plus(s, e, x) returns \spad{e * s + x} where \spad{+}
       ++ is the monoid operation,
       ++ which is assumed commutative.
-    plus          : ($, $) -> $
+    plus          : (%, %) -> %
       ++ plus(x, y) returns \spad{x + y} where \spad{+}
       ++ is the monoid operation,
       ++ which is assumed commutative.
-    commutativeEquality: ($, $) -> Boolean
+    commutativeEquality: (%, %) -> Boolean
       ++ commutativeEquality(x,y) returns true if x and y are equal
       ++ assuming commutativity
-    mapExpon      : (E -> E, $) -> $
+    mapExpon      : (E -> E, %) -> %
       ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
-    mapGen        : (S -> S, $) -> $
+    mapGen        : (S -> S, %) -> %
       ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
 
   Implementation ==> add
     Rep := List REC
 
-    localplus: ($, $) -> $
+    localplus: (%, %) -> %
 
     makeUnit()       == empty()$Rep
     size l           == # listOfMonoms l
-    coerce(s:S):$    == [[s, un]]
-    coerce(l:$):O    == coerce(l)$Rep
+    coerce(s:S):%    == [[s, un]]
+    coerce(l:%):O    == coerce(l)$Rep
     makeTerm(s, e)   == (zero? e => makeUnit(); [[s, e]])
     makeMulti l      == l
     f = g            == f =$Rep g
@@ -117,27 +117,27 @@ ListMonoidOps(S, E, un): Exports == Implementation where
          [(p.exp = un => p.gen::O; opexp(p.gen::O, p.exp::O)) for p in l]
       reduce(op, l)
 
-    retractIfCan(l:$):Union(S, "failed") ==
+    retractIfCan(l:%):Union(S, "failed") ==
       not empty? l and empty? rest l and l.first.exp = un => l.first.gen
       "failed"
 
     rightMult(f, s) ==
-      empty? f => s::$
+      empty? f => s::%
       s = f.last.gen => (setlast_!(h := copy f, [s, f.last.exp + un]); h)
       concat(f, [s, un])
 
     leftMult(s, f) ==
-      empty? f => s::$
+      empty? f => s::%
       s = f.first.gen => concat([s, f.first.exp + un], rest f)
       concat([s, un], f)
 
-    commutativeEquality(s1:$, s2:$):Boolean ==
+    commutativeEquality(s1:%, s2:%):Boolean ==
       #s1 ~= #s2 => false
       for t1 in s1 repeat
           if not member?(t1,s2) then return false
       true
 
-    plus_!(s:S, n:E, f:$):$ ==
+    plus_!(s:S, n:E, f:%):% ==
       h := g := concat([s, n], f)
       h1 := rest h
       while not empty? h1 repeat
@@ -181,45 +181,45 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
     Ex  ==> OutputForm
 
     FMcategory ==> Join(Monoid, RetractableTo S) with
-        "*":    (S, $) -> $
+        "*":    (S, %) -> %
           ++ s * x returns the product of x by s on the left.
-        "*":    ($, S) -> $
+        "*":    (%, S) -> %
           ++ x * s returns the product of x by s on the right.
-        "^":   (S, NonNegativeInteger) -> $
+        "^":   (S, NonNegativeInteger) -> %
           ++ s ^ n returns the product of s by itself n times.
-        hclf:   ($, $) -> $
+        hclf:   (%, %) -> %
           ++ hclf(x, y) returns the highest common left factor of x and y,
           ++ i.e. the largest d such that \spad{x = d a} and \spad{y = d b}.
-        hcrf:   ($, $) -> $
+        hcrf:   (%, %) -> %
           ++ hcrf(x, y) returns the highest common right factor of x and y,
           ++ i.e. the largest d such that \spad{x = a d} and \spad{y = b d}.
-        lquo:   ($, $) -> Union($, "failed")
+        lquo:   (%, %) -> Union(%, "failed")
           ++ lquo(x, y) returns the exact left quotient of x by y i.e.
           ++ q such that \spad{x = y * q},
           ++ "failed" if x is not of the form \spad{y * q}.
-        rquo:   ($, $) -> Union($, "failed")
+        rquo:   (%, %) -> Union(%, "failed")
           ++ rquo(x, y) returns the exact right quotient of x by y i.e.
           ++ q such that \spad{x = q * y},
           ++ "failed" if x is not of the form \spad{q * y}.
-        divide:   ($, $) -> Union(Record(lm: $, rm: $), "failed")
+        divide:   (%, %) -> Union(Record(lm: %, rm: %), "failed")
           ++ divide(x, y) returns the left and right exact quotients of
           ++ x by y, i.e. \spad{[l, r]} such that \spad{x = l * y * r},
           ++ "failed" if x is not of the form \spad{l * y * r}.
-        overlap: ($, $) -> Record(lm: $, mm: $, rm: $)
+        overlap: (%, %) -> Record(lm: %, mm: %, rm: %)
           ++ overlap(x, y) returns \spad{[l, m, r]} such that
           ++ \spad{x = l * m}, \spad{y = m * r} and l and r have no overlap,
           ++ i.e. \spad{overlap(l, r) = [l, 1, r]}.
-        size         :   $ -> NNI
+        size         :   % -> NNI
           ++ size(x) returns the number of monomials in x.
-        factors      : $ -> List Record(gen: S, exp: NonNegativeInteger)
+        factors      : % -> List Record(gen: S, exp: NonNegativeInteger)
           ++ factors(a1\^e1,...,an\^en) returns \spad{[[a1, e1],...,[an, en]]}.
-        nthExpon     : ($, Integer) -> NonNegativeInteger
+        nthExpon     : (%, Integer) -> NonNegativeInteger
           ++ nthExpon(x, n) returns the exponent of the n^th monomial of x.
-        nthFactor    : ($, Integer) -> S
+        nthFactor    : (%, Integer) -> S
           ++ nthFactor(x, n) returns the factor of the n^th monomial of x.
-        mapExpon     : (NNI -> NNI, $) -> $
+        mapExpon     : (NNI -> NNI, %) -> %
           ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
-        mapGen       : (S -> S, $) -> $
+        mapGen       : (S -> S, %) -> %
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
         if S has OrderedSet then OrderedSet
 
@@ -228,16 +228,16 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
 
         1               == makeUnit()
         one? f          == empty? listOfMonoms f
-        coerce(f:$): Ex == outputForm(f, "*", "^", 1)
+        coerce(f:%): Ex == outputForm(f, "*", "^", 1)
         hcrf(f, g)      == reverse_! hclf(reverse f, reverse g)
-        f:$ * s:S       == rightMult(f, s)
-        s:S * f:$       == leftMult(s, f)
+        f:% * s:S       == rightMult(f, s)
+        s:S * f:%       == leftMult(s, f)
         factors f       == copy listOfMonoms f
         mapExpon(f, x)  == mapExpon(f, x)$Rep
         mapGen(f, x)    == mapGen(f, x)$Rep
         s:S ^ n:NonNegativeInteger == makeTerm(s, n)
 
-        f:$ * g:$ ==
+        f:% * g:% ==
 --            one? f => g
             (f = 1) => g
 --            one? g => f
@@ -265,14 +265,14 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
                                                               rest lar)]
                 if lla.first.exp >= lar.first.exp then
                   if (ru:= lquo(makeMulti rest lar,
-                    makeMulti rest lla)) case $ then
+                    makeMulti rest lla)) case % then
                       if lla.first.exp > lar.first.exp then
                         l := concat_!(l, [lla.first.gen,
                                   (lla.first.exp - lar.first.exp)::NNI])
                         m := concat([lla.first.gen, lar.first.exp],
                                                                rest lla)
                       else m := lla
-                      return [makeMulti l, makeMulti m, ru::$]
+                      return [makeMulti l, makeMulti m, ru::%]
               l  := concat_!(l, lla.first)
               lla := rest lla
             [makeMulti la0, 1, makeMulti lar]
@@ -288,11 +288,11 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
                  llar.first.exp >= la.first.exp then
                 -- Can match a portion of this lar factor.
                 -- Now match tail.
-                (q:=lquo(makeMulti rest llar,makeMulti rest la))case $ =>
+                (q:=lquo(makeMulti rest llar,makeMulti rest la))case % =>
                    if llar.first.exp > la.first.exp then
                        l := concat_!(l, [la.first.gen,
                                   (llar.first.exp - la.first.exp)::NNI])
-                   return [makeMulti l, q::$]
+                   return [makeMulti l, q::%]
               l    := concat_!(l, first llar)
               llar  := rest llar
               Nlar := Nlar - 1
@@ -318,7 +318,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
 
         rquo(qa, a) ==
             (u := lquo(reverse qa, reverse a)) case "failed" => "failed"
-            reverse_!(u::$)
+            reverse_!(u::%)
 
         if S has OrderedSet then
           a < b ==
@@ -359,23 +359,23 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
 ++ the form \spad{reduce(*,[si ^ ni])} where the si's are in S, and the ni's
 ++ are integers. The multiplication is not commutative.
 FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
-        "*":    (S, $) -> $
+        "*":    (S, %) -> %
           ++ s * x returns the product of x by s on the left.
-        "*":    ($, S) -> $
+        "*":    (%, S) -> %
           ++ x * s returns the product of x by s on the right.
-        "^"         : (S, Integer) -> $
+        "^"         : (S, Integer) -> %
           ++ s ^ n returns the product of s by itself n times.
-        size         : $ -> NonNegativeInteger
+        size         : % -> NonNegativeInteger
           ++ size(x) returns the number of monomials in x.
-        nthExpon     : ($, Integer) -> Integer
+        nthExpon     : (%, Integer) -> Integer
           ++ nthExpon(x, n) returns the exponent of the n^th monomial of x.
-        nthFactor    : ($, Integer) -> S
+        nthFactor    : (%, Integer) -> S
           ++ nthFactor(x, n) returns the factor of the n^th monomial of x.
-        mapExpon     : (Integer -> Integer, $) -> $
+        mapExpon     : (Integer -> Integer, %) -> %
           ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
-        mapGen       : (S -> S, $) -> $
+        mapGen       : (S -> S, %) -> %
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
-        factors      : $ -> List Record(gen: S, exp: Integer)
+        factors      : % -> List Record(gen: S, exp: Integer)
           ++ factors(a1\^e1,...,an\^en) returns \spad{[[a1, e1],...,[an, en]]}.
     == ListMonoidOps(S, Integer, 1) add
         Rep := ListMonoidOps(S, Integer, 1)
@@ -383,15 +383,15 @@ FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
         1                       == makeUnit()
         one? f                  == empty? listOfMonoms f
         s:S ^ n:Integer        == makeTerm(s, n)
-        f:$ * s:S               == rightMult(f, s)
-        s:S * f:$               == leftMult(s, f)
+        f:% * s:S               == rightMult(f, s)
+        s:S * f:%               == leftMult(s, f)
         inv f                   == reverse_! mapExpon("-", f)
         factors f               == copy listOfMonoms f
         mapExpon(f, x)          == mapExpon(f, x)$Rep
         mapGen(f, x)            == mapGen(f, x)$Rep
-        coerce(f:$):OutputForm  == outputForm(f, "*", "^", 1)
+        coerce(f:%):OutputForm  == outputForm(f, "*", "^", 1)
 
-        f:$ * g:$ ==
+        f:% * g:% ==
             one? f => g
             one? g => f
             r := reverse listOfMonoms f
@@ -422,30 +422,30 @@ FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
 ++ are in a given abelian monoid. The operation is commutative.
 FreeAbelianMonoidCategory(S: SetCategory, E:CancellationAbelianMonoid): Category ==
   Join(CancellationAbelianMonoid, RetractableTo S) with
-        "+"        : (S, $) -> $
+        "+"        : (S, %) -> %
           ++ s + x returns the sum of s and x.
-        "*"        : (E, S) -> $
+        "*"        : (E, S) -> %
           ++ e * s returns e times s.
-        size       : $ -> NonNegativeInteger
+        size       : % -> NonNegativeInteger
           ++ size(x) returns the number of terms in x.
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
-        terms      : $ -> List Record(gen: S, exp: E)
+        terms      : % -> List Record(gen: S, exp: E)
           ++ terms(e1 a1 + ... + en an) returns \spad{[[a1, e1],...,[an, en]]}.
-        nthCoef    : ($, Integer) -> E
+        nthCoef    : (%, Integer) -> E
           ++ nthCoef(x, n) returns the coefficient of the n^th term of x.
-        nthFactor  : ($, Integer) -> S
+        nthFactor  : (%, Integer) -> S
           ++ nthFactor(x, n) returns the factor of the n^th term of x.
-        coefficient: (S, $) -> E
+        coefficient: (S, %) -> E
           ++ coefficient(s, e1 a1 + ... + en an) returns ei such that
           ++ ai = s, or 0 if s is not one of the ai's.
-        mapCoef    : (E -> E, $) -> $
+        mapCoef    : (E -> E, %) -> %
           ++ mapCoef(f, e1 a1 +...+ en an) returns
           ++ \spad{f(e1) a1 +...+ f(en) an}.
-        mapGen     : (S -> S, $) -> $
+        mapGen     : (S -> S, %) -> %
           ++ mapGen(f, e1 a1 +...+ en an) returns
           ++ \spad{e1 f(a1) +...+ en f(an)}.
         if E has OrderedAbelianMonoid then
-          highCommonTerms: ($, $) -> $
+          highCommonTerms: (%, %) -> %
             ++ highCommonTerms(e1 a1 + ... + en an, f1 b1 + ... + fm bm) returns
             ++   \spad{reduce(+,[max(ei, fi) ci])}
             ++ where ci ranges in the intersection
@@ -470,12 +470,12 @@ InnerFreeAbelianMonoid(S: SetCategory, E:CancellationAbelianMonoid, un:E):
         terms f                    == copy listOfMonoms f
         nthCoef(f, i)              == nthExpon(f, i)
         nthFactor(f, i)            == nthFactor(f, i)$Rep
-        s:S + f:$                  == plus(s, un, f)
-        f:$ + g:$                  == plus(f, g)
-        (f:$ = g:$):Boolean        == commutativeEquality(f,g)
+        s:S + f:%                  == plus(s, un, f)
+        f:% + g:%                  == plus(f, g)
+        (f:% = g:%):Boolean        == commutativeEquality(f,g)
         n:E * s:S                  == makeTerm(s, n)
-        n : NonNegativeInteger * f : $ == mapExpon(x +-> n * x, f)
-        coerce(f : $) : OutputForm     == outputForm(f, "+", (x, y) +-> y*x, 0)
+        n : NonNegativeInteger * f : % == mapExpon(x +-> n * x, f)
+        coerce(f : %) : OutputForm     == outputForm(f, "+", (x, y) +-> y*x, 0)
         mapCoef(f, x)              == mapExpon(f, x)
         mapGen(f, x)               == mapGen(f, x)$Rep
 

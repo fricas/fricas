@@ -90,42 +90,42 @@ TexFormat(): public == private where
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
-    coerce:   E -> $
+    coerce:   E -> %
       ++ coerce(o) changes o in the standard output format to TeX
       ++ format.
-    convert:  (E,I) -> $
+    convert:  (E,I) -> %
       ++ convert(o,step) changes o in standard output format to
       ++ TeX format and also adds the given step number. This is useful
       ++ if you want to create equations with given numbers or have the
       ++ equation numbers correspond to the interpreter step numbers.
-    convert:  (E,I,E) -> $
+    convert:  (E,I,E) -> %
       ++ convert(o,step,type) changes o in standard output format to
       ++ TeX format and also adds the given step number and type. This
       ++ is useful if you want to create equations with given numbers
       ++ or have the equation numbers correspond to the interpreter step
       ++ numbers.
-    display:  ($, I) -> Void
+    display:  (%, I) -> Void
       ++ display(t,width) outputs the TeX formatted code t so that each
       ++ line has length less than or equal to \spadvar{width}.
-    display:  $ -> Void
+    display:  % -> Void
       ++ display(t) outputs the TeX formatted code t so that each
       ++ line has length less than or equal to the value set by
       ++ the system command \spadsyscom{set output length}.
-    epilogue: $ -> L S
+    epilogue: % -> L S
       ++ epilogue(t) extracts the epilogue section of a TeX form t.
-    tex:      $ -> L S
+    tex:      % -> L S
       ++ tex(t) extracts the TeX section of a TeX form t.
-    new:      () -> $
+    new:      () -> %
       ++ new() create a new, empty object. Use \spadfun{setPrologue!},
       ++ \spadfun{setTex!} and \spadfun{setEpilogue!} to set the various
       ++ components of this object.
-    prologue: $ -> L S
+    prologue: % -> L S
       ++ prologue(t) extracts the prologue section of a TeX form t.
-    setEpilogue!: ($, L S) -> L S
+    setEpilogue!: (%, L S) -> L S
       ++ setEpilogue!(t,strings) sets the epilogue section of a TeX form t to strings.
-    setTex!:  ($, L S) -> L S
+    setTex!:  (%, L S) -> L S
       ++ setTex!(t,strings) sets the TeX section of a TeX form t to strings.
-    setPrologue!: ($, L S) -> L S
+    setPrologue!: (%, L S) -> L S
       ++ setPrologue!(t,strings) sets the prologue section of a TeX form t to strings.
 
   private == add
@@ -197,7 +197,7 @@ TexFormat(): public == private where
     formatSpecial:  (S,L E, I) -> S
     formatUnary:    (S,  E, I) -> S
     formatTex:      (E,I) -> S
-    newWithNum:     I -> $
+    newWithNum:     I -> %
     parenthesize:   S -> S
     precondition:   E -> E
     postcondition:  S -> S
@@ -208,29 +208,29 @@ TexFormat(): public == private where
 
     -- public function definitions
 
-    new() : $ ==
+    new() : % ==
 --    [["\["]$(L S), [""]$(L S), ["\]"]$(L S)]$Rep
       [["$$"]$(L S), [""]$(L S), ["$$"]$(L S)]$Rep
 
-    newWithNum(stepNum: I) : $ ==
+    newWithNum(stepNum: I) : % ==
 --    num : S := concat("%AXIOM STEP NUMBER: ",string(stepNum)$S)
 --    [["\["]$(L S), [""]$(L S), ["\]",num]$(L S)]$Rep
       num : S := concat(concat("\leqno(",string(stepNum)$S),")")$S
       [["$$"]$(L S), [""]$(L S), [num,"$$"]$(L S)]$Rep
 
-    coerce(expr : E): $ ==
-      f : $ := new()$%
+    coerce(expr : E): % ==
+      f : % := new()$%
       f.TeX := [postcondition
         formatTex(precondition expr, minPrec)]$(L S)
       f
 
-    convert(expr : E, stepNum : I): $ ==
-      f : $ := newWithNum(stepNum)
+    convert(expr : E, stepNum : I): % ==
+      f : % := newWithNum(stepNum)
       f.TeX := [postcondition
         formatTex(precondition expr, minPrec)]$(L S)
       f
 
-    display(f : $, len : I) ==
+    display(f : %, len : I) ==
       s,t : S
       for s in f.prolog repeat sayTeX$Lisp s
       for s in f.TeX repeat
@@ -238,18 +238,18 @@ TexFormat(): public == private where
       for s in f.epilog repeat sayTeX$Lisp s
       void()$Void
 
-    display(f : $) ==
+    display(f : %) ==
       display(f, _$LINELENGTH$Lisp pretend I)
 
-    prologue(f : $) == f.prolog
-    tex(f : $)  == f.TeX
-    epilogue(f : $) == f.epilog
+    prologue(f : %) == f.prolog
+    tex(f : %)  == f.TeX
+    epilogue(f : %) == f.epilog
 
-    setPrologue!(f : $, l : L S) == f.prolog := l
-    setTex!(f : $, l : L S)  == f.TeX := l
-    setEpilogue!(f : $, l : L S) == f.epilog := l
+    setPrologue!(f : %, l : L S) == f.prolog := l
+    setTex!(f : %, l : L S)  == f.TeX := l
+    setEpilogue!(f : %, l : L S) == f.epilog := l
 
-    coerce(f : $): E ==
+    coerce(f : %): E ==
       s,t : S
       l : L S := nil
       for s in f.prolog repeat l := concat(s,l)

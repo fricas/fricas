@@ -35,24 +35,24 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
   FPF ==> Record(polyPart: UP, fracPart: List REC)
 
   Exports ==> Join(SetCategory, ConvertibleTo RF)  with
-    "+":                 (UP, $) -> $
+    "+":                 (UP, %) -> %
       ++ p + x returns the sum of p and x
-    fullPartialFraction: RF -> $
+    fullPartialFraction: RF -> %
       ++ fullPartialFraction(f) returns \spad{[p, [[j, Dj, Hj]...]]} such that
       ++ \spad{f = p(x) + \sum_{[j,Dj,Hj] in l} \sum_{Dj(a)=0} Hj(a)/(x - a)\^j}.
-    polyPart:            $ -> UP
+    polyPart:            % -> UP
       ++ polyPart(f) returns the polynomial part of f.
-    fracPart:            $  -> List REC
+    fracPart:            %  -> List REC
       ++ fracPart(f) returns the list of summands of the fractional part of f.
-    construct:           List REC -> $
+    construct:           List REC -> %
       ++ construct(l) is the inverse of fracPart.
-    differentiate:       $ -> $
+    differentiate:       % -> %
       ++ differentiate(f) returns the derivative of f.
-    D:                    $ -> $
+    D:                    % -> %
       ++ D(f) returns the derivative of f.
-    differentiate:       ($, N) -> $
+    differentiate:       (%, N) -> %
       ++ differentiate(f, n) returns the n-th derivative of f.
-    D: ($, NonNegativeInteger) -> $
+    D: (%, NonNegativeInteger) -> %
       ++ D(f, n) returns the n-th derivative of f.
 
   Implementation ==> add
@@ -79,7 +79,7 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
     D(r, n)         == differentiate(r,n)
     polyPart f      == f.polyPart
     fracPart f      == f.fracPart
-    p:UP + f:$      == [p + polyPart f, fracPart f]
+    p:UP + f:%      == [p + polyPart f, fracPart f]
 
     differentiate f ==
       differentiate(polyPart f) + construct [diffrec rec for rec in fracPart f]
@@ -95,7 +95,7 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
       e := rec.exponent
       [e + 1, rec.center, - e * rec.num]
 
-    convert(f:$):RF ==
+    convert(f:%):RF ==
       ans := polyPart(f)::RF
       for rec in fracPart f repeat
         ans := ans + REC2RF(rec.center, rec.num, rec.exponent)
@@ -158,7 +158,7 @@ FullPartialFractionExpansion(F, UP): Exports == Implementation where
         bm   := (b * bm) rem q0     -- bm = b^{m+1} modulo q now
       ans
 
-    coerce(f:$):O ==
+    coerce(f:%):O ==
       ans := FP2O(l := fracPart f)
       zero?(p := polyPart f) =>
         empty? l => (0$N)::O

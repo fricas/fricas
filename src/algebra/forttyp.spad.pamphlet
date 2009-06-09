@@ -27,39 +27,39 @@
 FortranScalarType() : exports == implementation where
 
   exports == CoercibleTo OutputForm with
-    coerce : String -> $
+    coerce : String -> %
       ++ coerce(s) transforms the string s into an element of
       ++ FortranScalarType provided s is one of "real", "double precision",
       ++ "complex", "logical", "integer", "character", "REAL",
       ++ "COMPLEX", "LOGICAL", "INTEGER", "CHARACTER",
       ++ "DOUBLE PRECISION"
-    coerce : Symbol -> $
+    coerce : Symbol -> %
       ++ coerce(s) transforms the symbol s into an element of
       ++ FortranScalarType provided s is one of real, complex,double precision,
       ++ logical, integer, character, REAL, COMPLEX, LOGICAL,
       ++ INTEGER, CHARACTER, DOUBLE PRECISION
-    coerce : $ -> Symbol
+    coerce : % -> Symbol
       ++ coerce(x) returns the symbol associated with x
-    coerce : $ -> SExpression
+    coerce : % -> SExpression
       ++ coerce(x) returns the s-expression associated with x
-    real?  : $ -> Boolean
+    real?  : % -> Boolean
       ++ real?(t) tests whether t is equivalent to the FORTRAN type REAL.
-    double? : $ -> Boolean
+    double? : % -> Boolean
       ++ double?(t) tests whether t is equivalent to the FORTRAN type
       ++ DOUBLE PRECISION
-    integer?  : $ -> Boolean
+    integer?  : % -> Boolean
       ++ integer?(t) tests whether t is equivalent to the FORTRAN type INTEGER.
-    complex?  : $ -> Boolean
+    complex?  : % -> Boolean
       ++ complex?(t) tests whether t is equivalent to the FORTRAN type COMPLEX.
-    doubleComplex?  : $ -> Boolean
+    doubleComplex?  : % -> Boolean
       ++ doubleComplex?(t) tests whether t is equivalent to the (non-standard)
       ++ FORTRAN type DOUBLE COMPLEX.
-    character?  : $ -> Boolean
+    character?  : % -> Boolean
       ++ character?(t) tests whether t is equivalent to the FORTRAN type
       ++ CHARACTER.
-    logical?  : $ -> Boolean
+    logical?  : % -> Boolean
       ++ logical?(t) tests whether t is equivalent to the FORTRAN type LOGICAL.
-    "=" : ($,$) -> Boolean
+    "=" : (%,%) -> Boolean
       ++ x=y tests for equality
 
   implementation == add
@@ -88,7 +88,7 @@ FortranScalarType() : exports == implementation where
       u case DoubleComplexThing and v case DoubleComplexThing => true
       false
 
-    coerce(t:$):OutputForm ==
+    coerce(t:%):OutputForm ==
       t case RealThing => coerce(REAL)$Symbol
       t case IntegerThing => coerce(INTEGER)$Symbol
       t case ComplexThing => coerce(COMPLEX)$Symbol
@@ -97,7 +97,7 @@ FortranScalarType() : exports == implementation where
       t case DoubleComplexThing => coerce(upperDoubleComplexSymbol)$Symbol
       coerce(LOGICAL)$Symbol
 
-    coerce(t:$):SExpression ==
+    coerce(t:%):SExpression ==
       t case RealThing => convert(real::Symbol)@SExpression
       t case IntegerThing => convert(integer::Symbol)@SExpression
       t case ComplexThing => convert(complex::Symbol)@SExpression
@@ -106,7 +106,7 @@ FortranScalarType() : exports == implementation where
       t case DoubleComplexThing => convert(doubleComplexSymbol)@SExpression
       convert(logical::Symbol)@SExpression
 
-    coerce(t:$):Symbol ==
+    coerce(t:%):Symbol ==
       t case RealThing => real::Symbol
       t case IntegerThing => integer::Symbol
       t case ComplexThing => complex::Symbol
@@ -115,7 +115,7 @@ FortranScalarType() : exports == implementation where
       t case DoublePrecisionThing => doubleComplexSymbol
       logical::Symbol
 
-    coerce(s:Symbol):$ ==
+    coerce(s:Symbol):% ==
       s = real => ["real"]$Rep
       s = REAL => ["real"]$Rep
       s = integer => ["integer"]$Rep
@@ -131,7 +131,7 @@ FortranScalarType() : exports == implementation where
       s = doubleComplexSymbol => ["double complex"]$Rep
       s = upperDoubleCOmplexSymbol => ["double complex"]$Rep
 
-    coerce(s:String):$ ==
+    coerce(s:String):% ==
       s = "real" => ["real"]$Rep
       s = "integer" => ["integer"]$Rep
       s = "complex" => ["complex"]$Rep
@@ -148,19 +148,19 @@ FortranScalarType() : exports == implementation where
       s = "DOUBLE COMPLEX" => ["double complex"]$Rep
       error concat([s," is invalid as a Fortran Type"])$String
 
-    real?(t:$):Boolean == t case RealThing
+    real?(t:%):Boolean == t case RealThing
 
-    double?(t:$):Boolean == t case DoublePrecisionThing
+    double?(t:%):Boolean == t case DoublePrecisionThing
 
-    logical?(t:$):Boolean == t case LogicalThing
+    logical?(t:%):Boolean == t case LogicalThing
 
-    integer?(t:$):Boolean == t case IntegerThing
+    integer?(t:%):Boolean == t case IntegerThing
 
-    character?(t:$):Boolean == t case CharacterThing
+    character?(t:%):Boolean == t case CharacterThing
 
-    complex?(t:$):Boolean == t case ComplexThing
+    complex?(t:%):Boolean == t case ComplexThing
 
-    doubleComplex?(t:$):Boolean == t case DoubleComplexThing
+    doubleComplex?(t:%):Boolean == t case DoubleComplexThing
 
 @
 \section{domain FT FortranType}
@@ -184,34 +184,34 @@ FortranType() : exports == implementation where
   FSTU   ==> Union(fst:FST,void:"void")
 
   exports == SetCategory with
-    coerce : $ -> OutputForm
+    coerce : % -> OutputForm
       ++ coerce(x) provides a printable form for x
-    coerce : FST -> $
+    coerce : FST -> %
       ++ coerce(t) creates an element from a scalar type
-    scalarTypeOf : $ -> FSTU
+    scalarTypeOf : % -> FSTU
       ++ scalarTypeOf(t) returns the FORTRAN data type of t
-    dimensionsOf : $ -> List Polynomial Integer
+    dimensionsOf : % -> List Polynomial Integer
       ++ dimensionsOf(t) returns the dimensions of t
-    external? : $ -> Boolean
+    external? : % -> Boolean
       ++ external?(u) returns true if u is declared to be EXTERNAL
-    construct : (FSTU,List Symbol,Boolean) -> $
+    construct : (FSTU,List Symbol,Boolean) -> %
       ++ construct(type,dims) creates an element of FortranType
-    construct : (FSTU,List Polynomial Integer,Boolean) -> $
+    construct : (FSTU,List Polynomial Integer,Boolean) -> %
       ++ construct(type,dims) creates an element of FortranType
-    fortranReal : () -> $
+    fortranReal : () -> %
       ++ fortranReal() returns REAL, an element of FortranType
-    fortranDouble : () -> $
+    fortranDouble : () -> %
       ++ fortranDouble() returns DOUBLE PRECISION, an element of FortranType
-    fortranInteger : () -> $
+    fortranInteger : () -> %
       ++ fortranInteger() returns INTEGER, an element of FortranType
-    fortranLogical : () -> $
+    fortranLogical : () -> %
       ++ fortranLogical() returns LOGICAL, an element of FortranType
-    fortranComplex : () -> $
+    fortranComplex : () -> %
       ++ fortranComplex() returns COMPLEX, an element of FortranType
-    fortranDoubleComplex: () -> $
+    fortranDoubleComplex: () -> %
       ++ fortranDoubleComplex() returns DOUBLE COMPLEX, an element of
       ++ FortranType
-    fortranCharacter : () -> $
+    fortranCharacter : () -> %
       ++ fortranCharacter() returns CHARACTER, an element of FortranType
 
   implementation == add
@@ -219,7 +219,7 @@ FortranType() : exports == implementation where
     Dims == List Polynomial Integer
     Rep := Record(type : FSTU, dimensions : Dims, external : Boolean)
 
-    coerce(a:$):OutputForm ==
+    coerce(a:%):OutputForm ==
      t : OutputForm
      if external?(a) then
       if scalarTypeOf(a) case void then
@@ -233,41 +233,41 @@ FortranType() : exports == implementation where
      sub(t,
          paren([u::OutputForm for u in dimensionsOf(a)])$OutputForm)$OutputForm
 
-    scalarTypeOf(u:$):FSTU ==
+    scalarTypeOf(u:%):FSTU ==
       u.type
 
-    dimensionsOf(u:$):Dims ==
+    dimensionsOf(u:%):Dims ==
       u.dimensions
 
-    external?(u:$):Boolean ==
+    external?(u:%):Boolean ==
       u.external
 
-    construct(t:FSTU, d:List Symbol, e:Boolean):$ ==
+    construct(t:FSTU, d:List Symbol, e:Boolean):% ==
       e and not empty? d => error "EXTERNAL objects cannot have dimensions"
       not(e) and t case void => error "VOID objects must be EXTERNAL"
       construct(t,[l::Polynomial(Integer) for l in d],e)$Rep
 
-    construct(t:FSTU, d:List Polynomial Integer, e:Boolean):$ ==
+    construct(t:FSTU, d:List Polynomial Integer, e:Boolean):% ==
       e and not empty? d => error "EXTERNAL objects cannot have dimensions"
       not(e) and t case void => error "VOID objects must be EXTERNAL"
       construct(t,d,e)$Rep
 
-    coerce(u:FST):$ ==
+    coerce(u:FST):% ==
       construct([u]$FSTU,[]@List Polynomial Integer,false)
 
-    fortranReal():$ == ("real"::FST)::$
+    fortranReal():% == ("real"::FST)::%
 
-    fortranDouble():$ == ("double precision"::FST)::$
+    fortranDouble():% == ("double precision"::FST)::%
 
-    fortranInteger():$ == ("integer"::FST)::$
+    fortranInteger():% == ("integer"::FST)::%
 
-    fortranComplex():$ == ("complex"::FST)::$
+    fortranComplex():% == ("complex"::FST)::%
 
-    fortranDoubleComplex():$ == ("double complex"::FST)::$
+    fortranDoubleComplex():% == ("double complex"::FST)::%
 
-    fortranCharacter():$ == ("character"::FST)::$
+    fortranCharacter():% == ("character"::FST)::%
 
-    fortranLogical():$ == ("logical"::FST)::$
+    fortranLogical():% == ("logical"::FST)::%
 
 @
 \section{domain SYMTAB SymbolTable}
@@ -296,68 +296,68 @@ SymbolTable() : exports == implementation where
   FSTU ==> Union(fst:FortranScalarType,void:"void")
 
   exports ==> CoercibleTo OutputForm with
-    coerce : $ -> Table(Symbol,FortranType)
+    coerce : % -> Table(Symbol,FortranType)
       ++ coerce(x) returns a table view of x
-    empty  : () -> $
+    empty  : () -> %
       ++ empty() returns a new, empty symbol table
-    declare! : (L Symbol,FortranType,$) -> FortranType
+    declare! : (L Symbol,FortranType,%) -> FortranType
       ++ declare!(l,t,tab) creates new entrys in tab, declaring each of l
       ++ to be of type t
-    declare! : (Symbol,FortranType,$) -> FortranType
+    declare! : (Symbol,FortranType,%) -> FortranType
       ++ declare!(u,t,tab) creates a new entry in tab, declaring u to be of
       ++ type t
-    fortranTypeOf : (Symbol,$) -> FortranType
+    fortranTypeOf : (Symbol,%) -> FortranType
       ++ fortranTypeOf(u,tab) returns the type of u in tab
-    parametersOf: $ -> L Symbol
+    parametersOf: % -> L Symbol
       ++ parametersOf(tab) returns a list of all the symbols declared in tab
-    typeList : (FortranScalarType,$) -> TL
+    typeList : (FortranScalarType,%) -> TL
       ++ typeList(t,tab) returns a list of all the objects of type t in tab
-    externalList : $ -> L Symbol
+    externalList : % -> L Symbol
       ++ externalList(tab) returns a list of all the external symbols in tab
-    typeLists : $ -> L TL
+    typeLists : % -> L TL
       ++ typeLists(tab) returns a list of lists of types of objects in tab
-    newTypeLists : $ -> SEX
+    newTypeLists : % -> SEX
       ++ newTypeLists(x) \undocumented
-    printTypes: $ -> Void
+    printTypes: % -> Void
       ++ printTypes(tab) produces FORTRAN type declarations from tab, on the
       ++ current FORTRAN output stream
-    symbolTable: L Record(key:Symbol,entry:FortranType) -> $
+    symbolTable: L Record(key:Symbol,entry:FortranType) -> %
       ++ symbolTable(l) creates a symbol table from the elements of l.
 
   implementation ==> add
 
     Rep := Table(Symbol,FortranType)
 
-    coerce(t:$):OFORM ==
+    coerce(t:%):OFORM ==
       coerce(t)$Rep
 
-    coerce(t:$):Table(Symbol,FortranType) ==
+    coerce(t:%):Table(Symbol,FortranType) ==
       t pretend Table(Symbol,FortranType)
 
-    symbolTable(l:L Record(key:Symbol,entry:FortranType)):$ ==
+    symbolTable(l:L Record(key:Symbol,entry:FortranType)):% ==
       table(l)$Rep
 
-    empty():$ ==
+    empty():% ==
       empty()$Rep
 
-    parametersOf(tab:$):L(Symbol) ==
+    parametersOf(tab:%):L(Symbol) ==
       keys(tab)
 
-    declare!(name:Symbol,type:FortranType,tab:$):FortranType ==
+    declare!(name:Symbol,type:FortranType,tab:%):FortranType ==
       setelt(tab,name,type)$Rep
       type
 
-    declare!(names:L Symbol,type:FortranType,tab:$):FortranType ==
+    declare!(names:L Symbol,type:FortranType,tab:%):FortranType ==
       for name in names repeat setelt(tab,name,type)$Rep
       type
 
-    fortranTypeOf(u:Symbol,tab:$):FortranType ==
+    fortranTypeOf(u:Symbol,tab:%):FortranType ==
       elt(tab,u)$Rep
 
-    externalList(tab:$):L(Symbol) ==
+    externalList(tab:%):L(Symbol) ==
      [u for u in keys(tab) | external? fortranTypeOf(u,tab)]
 
-    typeList(type:FortranScalarType,tab:$):TL ==
+    typeList(type:FortranScalarType,tab:%):TL ==
       scalarList := []@TL
       arrayList  := []@TL
       for u in keys(tab)$Rep repeat
@@ -373,7 +373,7 @@ SymbolTable() : exports == implementation where
       -- used as an array dimension.
       append(scalarList,arrayList)
 
-    typeList2(type:FortranScalarType,tab:$):TL ==
+    typeList2(type:FortranScalarType,tab:%):TL ==
       tl := []@TL
       symbolType : Symbol := coerce(type)$FortranScalarType
       for u in keys(tab)$Rep repeat
@@ -393,7 +393,7 @@ SymbolTable() : exports == implementation where
       RPLACD(l,CONS(entry,cdr l)$Lisp)$Lisp
       tl
 
-    newTypeLists(tab:$):SEX ==
+    newTypeLists(tab:%):SEX ==
       tl := []$Lisp
       for u in keys(tab)$Rep repeat
         uType : FortranType := fortranTypeOf(u,tab)
@@ -406,7 +406,7 @@ SymbolTable() : exports == implementation where
         tl := updateList(lType,convert(u)@SEX,convert(lDims)@SEX,tl)
       tl
 
-    typeLists(tab:$):L(TL) ==
+    typeLists(tab:%):L(TL) ==
       fortranTypes := ["real"::FortranScalarType, _
              "double precision"::FortranScalarType, _
              "integer"::FortranScalarType, _
@@ -433,7 +433,7 @@ SymbolTable() : exports == implementation where
     outForm(t:TL):L OFORM ==
      [oForm(u) for u in t]
 
-    printTypes(tab:$):Void ==
+    printTypes(tab:%):Void ==
       -- It is important that INTEGER is the first element of this
       -- list since INTEGER symbols used in type declarations must
       -- be declared in advance.
@@ -475,16 +475,16 @@ TheSymbolTable() : Exports == Implementation where
   FSTU ==> Union(fst:FST,void:"void")
 
   Exports == CoercibleTo OutputForm with
-    showTheSymbolTable : () -> $
+    showTheSymbolTable : () -> %
       ++ showTheSymbolTable() returns the current symbol table.
     clearTheSymbolTable : () -> Void
       ++ clearTheSymbolTable() clears the current symbol table.
     clearTheSymbolTable : Symbol -> Void
       ++ clearTheSymbolTable(x) removes the symbol x from the table
-    declare! : (Symbol,FortranType,Symbol,$) -> FortranType
+    declare! : (Symbol,FortranType,Symbol,%) -> FortranType
       ++ declare!(u,t,asp,tab) declares the parameter u of subprogram asp
       ++ to have type t in symbol table tab.
-    declare! : (List Symbol,FortranType,Symbol,$) -> FortranType
+    declare! : (List Symbol,FortranType,Symbol,%) -> FortranType
       ++ declare!(u,t,asp,tab) declares the parameters u of subprogram asp
       ++ to have type t in symbol table tab.
     declare! : (Symbol,FortranType) -> FortranType
@@ -501,7 +501,7 @@ TheSymbolTable() : Exports == Implementation where
     endSubProgram : () -> Symbol
       ++ endSubProgram() asserts that we are no longer processing the current
       ++ subprogram.
-    argumentList! : (Symbol,List Symbol,$) -> Void
+    argumentList! : (Symbol,List Symbol,%) -> Void
       ++ argumentList!(f,l,tab) declares that the argument list for subprogram f
       ++ in symbol table tab is l.
     argumentList! : (Symbol,List Symbol) -> Void
@@ -510,7 +510,7 @@ TheSymbolTable() : Exports == Implementation where
     argumentList! : List Symbol -> Void
       ++ argumentList!(l) declares that the argument list for the current
       ++ subprogram in the global symbol table is l.
-    returnType! : (Symbol,FSTU,$) -> Void
+    returnType! : (Symbol,FSTU,%) -> Void
       ++ returnType!(f,t,tab) declares that the return type of subprogram f in
       ++ symbol table tab is t.
     returnType! : (Symbol,FSTU) -> Void
@@ -519,7 +519,7 @@ TheSymbolTable() : Exports == Implementation where
     returnType! : FSTU -> Void
       ++ returnType!(t) declares that the return type of he current subprogram
       ++ in the global symbol table is t.
-    printHeader : (Symbol,$) -> Void
+    printHeader : (Symbol,%) -> Void
       ++ printHeader(f,tab) produces the FORTRAN header for subprogram f in
       ++ symbol table tab on the current FORTRAN output stream.
     printHeader : Symbol -> Void
@@ -531,13 +531,13 @@ TheSymbolTable() : Exports == Implementation where
     printTypes:  Symbol -> Void
       ++ printTypes(tab) produces FORTRAN type declarations from tab, on the
       ++ current FORTRAN output stream
-    empty : () -> $
+    empty : () -> %
       ++ empty() creates a new, empty symbol table.
-    returnTypeOf : (Symbol,$) -> FSTU
+    returnTypeOf : (Symbol,%) -> FSTU
       ++ returnTypeOf(f,tab) returns the type of the object returned by f
-    argumentListOf : (Symbol,$) -> List(Symbol)
+    argumentListOf : (Symbol,%) -> List(Symbol)
       ++ argumentListOf(f,tab) returns the argument list of f
-    symbolTableOf : (Symbol,$) -> SymbolTable
+    symbolTableOf : (Symbol,%) -> SymbolTable
       ++ symbolTableOf(f,tab) returns the symbol table of f
 
   Implementation == add
@@ -549,30 +549,30 @@ TheSymbolTable() : Exports == Implementation where
     Rep := Table(Symbol,Entry)
 
     -- These are the global variables we want to update:
-    theSymbolTable : $ := empty()$Rep
+    theSymbolTable : % := empty()$Rep
     currentSubProgramName : Symbol := MAIN
 
     newEntry():Entry ==
       construct(empty()$SymbolTable,["void"]$FSTU,[]::List(Symbol))$Entry
 
-    checkIfEntryExists(name:Symbol,tab:$) : Void ==
+    checkIfEntryExists(name:Symbol,tab:%) : Void ==
       key?(name,tab) => void()$Void
       setelt(tab,name,newEntry())$Rep
       void()$Void
 
-    returnTypeOf(name:Symbol,tab:$):FSTU ==
+    returnTypeOf(name:Symbol,tab:%):FSTU ==
       elt(elt(tab,name)$Rep,returnType)$Entry
 
-    argumentListOf(name:Symbol,tab:$):List(Symbol) ==
+    argumentListOf(name:Symbol,tab:%):List(Symbol) ==
       elt(elt(tab,name)$Rep,argList)$Entry
 
-    symbolTableOf(name:Symbol,tab:$):SymbolTable ==
+    symbolTableOf(name:Symbol,tab:%):SymbolTable ==
       elt(elt(tab,name)$Rep,symtab)$Entry
 
-    coerce(u:$):OutputForm ==
+    coerce(u:%):OutputForm ==
       coerce(u)$Rep
 
-    showTheSymbolTable():$ ==
+    showTheSymbolTable():% ==
       theSymbolTable
 
     clearTheSymbolTable():Void ==
@@ -583,7 +583,7 @@ TheSymbolTable() : Exports == Implementation where
       remove!(u,theSymbolTable)$Rep
       void()$Void
 
-    empty():$ ==
+    empty():% ==
       empty()$Rep
 
     currentSubProgram():Symbol ==
@@ -600,7 +600,7 @@ TheSymbolTable() : Exports == Implementation where
       currentSubProgramName := u
       void()$Void
 
-    argumentList!(u:Symbol,args:List Symbol,symbols:$):Void ==
+    argumentList!(u:Symbol,args:List Symbol,symbols:%):Void ==
       checkIfEntryExists(u,symbols)
       setelt(elt(symbols,u)$Rep,argList,args)$Entry
 
@@ -612,7 +612,7 @@ TheSymbolTable() : Exports == Implementation where
       setelt(elt(theSymbolTable,currentSubProgramName)$Rep, _
              argList,args)$Entry
 
-    returnType!(u:Symbol,type:FSTU,symbols:$):Void ==
+    returnType!(u:Symbol,type:FSTU,symbols:%):Void ==
       checkIfEntryExists(u,symbols)
       setelt(elt(symbols,u)$Rep,returnType,type)$Entry
 
@@ -627,11 +627,11 @@ TheSymbolTable() : Exports == Implementation where
     declare!(u:Symbol,type:FortranType):FortranType ==
       declare!(u,type,currentSubProgramName,theSymbolTable)
 
-    declare!(u:Symbol,type:FortranType,asp:Symbol,symbols:$):FortranType ==
+    declare!(u:Symbol,type:FortranType,asp:Symbol,symbols:%):FortranType ==
       checkIfEntryExists(asp,symbols)
       declare!(u,type, elt(elt(symbols,asp)$Rep,symtab)$Entry)$SymbolTable
 
-    declare!(u:List Symbol,type:FortranType,asp:Symbol,syms:$):FortranType ==
+    declare!(u:List Symbol,type:FortranType,asp:Symbol,syms:%):FortranType ==
       checkIfEntryExists(asp,syms)
       declare!(u,type, elt(elt(syms,asp)$Rep,symtab)$Entry)$SymbolTable
 
@@ -639,7 +639,7 @@ TheSymbolTable() : Exports == Implementation where
       checkIfEntryExists(asp,theSymbolTable)
       declare!(u,type,elt(elt(theSymbolTable,asp)$Rep,symtab)$Entry)$SymbolTable
 
-    printHeader(u:Symbol,symbols:$):Void ==
+    printHeader(u:Symbol,symbols:%):Void ==
       entry := elt(symbols,u)$Rep
       fortFormatHead(elt(entry,returnType)$Entry::OutputForm,u::OutputForm, _
                      elt(entry,argList)$Entry::OutputForm)$Lisp

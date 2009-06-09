@@ -37,7 +37,7 @@ IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
   mnRow, mnCol : Integer
   Row ==> IndexedVector(R,mnCol)
   Col ==> IndexedVector(R,mnRow)
-  MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,$)
+  MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,%)
 
   Exports ==> MatrixCategory(R,Row,Col)
 
@@ -55,7 +55,7 @@ IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
         row1 := qelt(xx,n1)
         qsetelt_!(xx,n1,qelt(xx,n2))
         qsetelt_!(xx,n2,row1)
-        xx pretend $
+        xx pretend %
 
       if R has CommutativeRing then
 
@@ -99,30 +99,30 @@ Matrix(R): Exports == Implementation where
   Col ==> Vector R
   mnRow ==> 1
   mnCol ==> 1
-  MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,$)
+  MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,%)
   MATSTOR ==> StorageEfficientMatrixOperations(R)
 
   Exports ==> MatrixCategory(R,Row,Col) with
-    diagonalMatrix: Vector R -> $
+    diagonalMatrix: Vector R -> %
       ++ \spad{diagonalMatrix(v)} returns a diagonal matrix where the elements
       ++ of v appear on the diagonal.
 
     if R has ConvertibleTo InputForm then ConvertibleTo InputForm
 
     if R has Field then
-      inverse: $ -> Union($,"failed")
+      inverse: % -> Union(%,"failed")
         ++ \spad{inverse(m)} returns the inverse of the matrix m.
         ++ If the matrix is not invertible, "failed" is returned.
         ++ Error: if the matrix is not square.
---     matrix: Vector Vector R -> $
+--     matrix: Vector Vector R -> %
 --       ++ \spad{matrix(v)} converts the vector of vectors v to a matrix, where
 --       ++ the vector of vectors is viewed as a vector of the rows of the
 --       ++ matrix
---     diagonalMatrix: Vector $ -> $
+--     diagonalMatrix: Vector % -> %
 --       ++ \spad{diagonalMatrix([m1,...,mk])} creates a block diagonal matrix
 --       ++ M with block matrices {\em m1},...,{\em mk} down the diagonal,
 --       ++ with 0 block matrices elsewhere.
---     vectorOfVectors: $ -> Vector Vector R
+--     vectorOfVectors: % -> Vector Vector R
 --       ++ \spad{vectorOfVectors(m)} returns the rows of the matrix m as a
 --       ++ vector of vectors
 
@@ -149,9 +149,9 @@ Matrix(R): Exports == Implementation where
         row1 := qelt(xx,n1)
         qsetelt_!(xx,n1,qelt(xx,n2))
         qsetelt_!(xx,n2,row1)
-        xx pretend $
+        xx pretend %
 
-    positivePower:($,Integer,NonNegativeInteger) -> $
+    positivePower:(%,Integer,NonNegativeInteger) -> %
     positivePower(x,n,nn) ==
 --      one? n => x
       (n = 1) => x
@@ -163,9 +163,9 @@ Matrix(R): Exports == Implementation where
       b := new(nn,nn,0) pretend Matrix(R)
       c := new(nn,nn,0) pretend Matrix(R)
       xx := x pretend Matrix(R)
-      power_!(a,b,c,xx,n :: NonNegativeInteger)$MATSTOR pretend $
+      power_!(a,b,c,xx,n :: NonNegativeInteger)$MATSTOR pretend %
 
-    x:$ ^ n:NonNegativeInteger ==
+    x:% ^ n:NonNegativeInteger ==
       not((nn := nrows x) = ncols x) =>
         error "^: matrix must be square"
       zero? n => scalarMatrix(nn,1)
@@ -190,7 +190,7 @@ Matrix(R): Exports == Implementation where
 
         inverse     x == inverse(x)$MATLIN
 
-        x:$ ^ n:Integer ==
+        x:% ^ n:Integer ==
           nn := nrows x
           not(nn = ncols x) =>
             error "^: matrix must be square"
@@ -198,7 +198,7 @@ Matrix(R): Exports == Implementation where
           positive? n => positivePower(x,n,nn)
           (xInv := inverse x) case "failed" =>
             error "^: matrix must be invertible"
-          positivePower(xInv :: $,-n,nn)
+          positivePower(xInv :: %,-n,nn)
 
 --     matrix(v: Vector Vector R) ==
 --       (rows := # v) = 0 => new(0,0,0)
@@ -219,7 +219,7 @@ Matrix(R): Exports == Implementation where
           for k in mini(v)..maxi(v) repeat qsetelt_!(ans,i,j,qelt(v,k))
       ans
 
---     diagonalMatrix(vec: Vector $) ==
+--     diagonalMatrix(vec: Vector %) ==
 --       rows : NonNegativeInteger := 0
 --       cols : NonNegativeInteger := 0
 --       for r in mini(vec)..maxi(vec) repeat
@@ -248,7 +248,7 @@ Matrix(R): Exports == Implementation where
 --       vv
 
     if R has ConvertibleTo InputForm then
-      convert(x:$):InputForm ==
+      convert(x:%):InputForm ==
          convert [convert('matrix)@InputForm,
                   convert listOfLists x]$List(InputForm)
 
@@ -281,10 +281,10 @@ RectangularMatrix(m,n,R): Exports == Implementation where
 
     if R has ConvertibleTo InputForm then ConvertibleTo InputForm
 
-    rectangularMatrix: Matrix R -> $
+    rectangularMatrix: Matrix R -> %
       ++ \spad{rectangularMatrix(m)} converts a matrix of type \spadtype{Matrix}
       ++ to a matrix of type \spad{RectangularMatrix}.
-    coerce: $ -> Matrix R
+    coerce: % -> Matrix R
       ++ \spad{coerce(m)} converts a matrix of type \spadtype{RectangularMatrix}
       ++ to a matrix of type \spad{Matrix}.
 
@@ -296,10 +296,10 @@ RectangularMatrix(m,n,R): Exports == Implementation where
     mini ==> minIndex
     maxi ==> maxIndex
 
-    ZERO := new(m,n,0)$Matrix(R) pretend $
+    ZERO := new(m,n,0)$Matrix(R) pretend %
     0    == ZERO
 
-    coerce(x:$):OutputForm == coerce(x pretend Matrix R)$Matrix(R)
+    coerce(x:%):OutputForm == coerce(x pretend Matrix R)$Matrix(R)
 
     matrix(l: List List R) ==
       -- error check: this is a top level function
@@ -310,21 +310,21 @@ RectangularMatrix(m,n,R): Exports == Implementation where
       for i in minr(ans)..maxr(ans) for ll in l repeat
         for j in minc(ans)..maxc(ans) for r in ll repeat
           qsetelt_!(ans,i,j,r)
-      ans pretend $
+      ans pretend %
 
     row(x,i)    == directProduct row(x pretend Matrix(R),i)
     column(x,j) == directProduct column(x pretend Matrix(R),j)
 
-    coerce(x:$):Matrix(R) == copy(x pretend Matrix(R))
+    coerce(x:%):Matrix(R) == copy(x pretend Matrix(R))
 
     rectangularMatrix x ==
       (nrows(x) ~= m) or (ncols(x) ~= n) =>
         error "rectangularMatrix: matrix of bad dimensions"
-      copy(x) pretend $
+      copy(x) pretend %
 
     if R has EuclideanDomain then
 
-      rowEchelon x == rowEchelon(x pretend Matrix(R)) pretend $
+      rowEchelon x == rowEchelon(x pretend Matrix(R)) pretend %
 
       columnSpace x ==
         [directProduct c for c in columnSpace(x pretend Matrix R)]
@@ -341,7 +341,7 @@ RectangularMatrix(m,n,R): Exports == Implementation where
       dimension() == (m * n) :: CardinalNumber
 
     if R has ConvertibleTo InputForm then
-      convert(x:$):InputForm ==
+      convert(x:%):InputForm ==
          convert [convert('rectangularMatrix)@InputForm,
                   convert(x::Matrix(R))]$List(InputForm)
 
@@ -367,20 +367,20 @@ SquareMatrix(ndim,R): Exports == Implementation where
   R    : Ring
   Row ==> DirectProduct(ndim,R)
   Col ==> DirectProduct(ndim,R)
-  MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,$)
+  MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,%)
 
   Exports ==> Join(SquareMatrixCategory(ndim,R,Row,Col),_
                    CoercibleTo Matrix R) with
 
-    transpose: $ -> $
+    transpose: % -> %
       ++ \spad{transpose(m)} returns the transpose of the matrix m.
-    squareMatrix: Matrix R -> $
+    squareMatrix: Matrix R -> %
       ++ \spad{squareMatrix(m)} converts a matrix of type \spadtype{Matrix}
       ++ to a matrix of type \spadtype{SquareMatrix}.
-    coerce: $ -> Matrix R
+    coerce: % -> Matrix R
       ++ \spad{coerce(m)} converts a matrix of type \spadtype{SquareMatrix}
       ++ to a matrix of type \spadtype{Matrix}.
---  symdecomp : $ -> Record(sym:$,antisym:$)
+--  symdecomp : % -> Record(sym:%,antisym:%)
 --    ++ \spad{symdecomp(m)} decomposes the matrix m as a sum of a symmetric
 --    ++ matrix \spad{m1} and an antisymmetric matrix \spad{m2}. The object
 --    ++ returned is the Record \spad{[m1,m2]}
@@ -416,34 +416,34 @@ SquareMatrix(ndim,R): Exports == Implementation where
       for i in minr(ans)..maxr(ans) for ll in l repeat
         for j in minc(ans)..maxc(ans) for r in ll repeat
           qsetelt_!(ans,i,j,r)
-      ans pretend $
+      ans pretend %
 
     row(x,i)    == directProduct row(x pretend Matrix(R),i)
     column(x,j) == directProduct column(x pretend Matrix(R),j)
-    coerce(x:$):OutputForm == coerce(x pretend Matrix R)$Matrix(R)
+    coerce(x:%):OutputForm == coerce(x pretend Matrix R)$Matrix(R)
 
-    scalarMatrix r == scalarMatrix(ndim,r)$Matrix(R) pretend $
+    scalarMatrix r == scalarMatrix(ndim,r)$Matrix(R) pretend %
 
     diagonalMatrix l ==
       #l ~= ndim =>
         error "diagonalMatrix: wrong number of entries in list"
-      diagonalMatrix(l)$Matrix(R) pretend $
+      diagonalMatrix(l)$Matrix(R) pretend %
 
-    coerce(x:$):Matrix(R) == copy(x pretend Matrix(R))
+    coerce(x:%):Matrix(R) == copy(x pretend Matrix(R))
 
     squareMatrix x ==
       (nrows(x) ~= ndim) or (ncols(x) ~= ndim) =>
         error "squareMatrix: matrix of bad dimensions"
-      copy(x) pretend $
+      copy(x) pretend %
 
-    x:$ * v:Col ==
+    x:% * v:Col ==
       directProduct((x pretend Matrix(R)) * (v :: Vector(R)))
 
-    v:Row * x:$ ==
+    v:Row * x:% ==
       directProduct((v :: Vector(R)) * (x pretend Matrix(R)))
 
-    x:$ ^ n:NonNegativeInteger ==
-      ((x pretend Matrix(R)) ^ n) pretend $
+    x:% ^ n:NonNegativeInteger ==
+      ((x pretend Matrix(R)) ^ n) pretend %
 
     if R has CommutativeRing then
 
@@ -453,7 +453,7 @@ SquareMatrix(ndim,R): Exports == Implementation where
 
     if R has EuclideanDomain then
 
-      rowEchelon x == rowEchelon(x pretend Matrix(R)) pretend $
+      rowEchelon x == rowEchelon(x pretend Matrix(R)) pretend %
 
     if R has IntegralDomain then
 
@@ -468,15 +468,15 @@ SquareMatrix(ndim,R): Exports == Implementation where
 
       inverse x ==
         (u := inverse(x pretend Matrix(R))) case "failed" => "failed"
-        (u :: Matrix(R)) pretend $
+        (u :: Matrix(R)) pretend %
 
-      x:$ ^ n:Integer ==
-        ((x pretend Matrix(R)) ^ n) pretend $
+      x:% ^ n:Integer ==
+        ((x pretend Matrix(R)) ^ n) pretend %
 
       recip x == inverse x
 
     if R has ConvertibleTo InputForm then
-      convert(x:$):InputForm ==
+      convert(x:%):InputForm ==
          convert [convert('squareMatrix)@InputForm,
                   convert(x::Matrix(R))]$List(InputForm)
 

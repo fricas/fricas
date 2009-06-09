@@ -16,9 +16,9 @@
 --    factorsOfCyclicGroupSize() changed.
 -- 12.05.92: JG: long lines
 -- 25.02.92: AS: added functions order and primitive?
--- 19.02.92: AS: implementation of basis:PI -> Vector $ changed .
+-- 19.02.92: AS: implementation of basis:PI -> Vector % changed .
 -- 17.02.92: AS: implementation of coordinates corrected.
--- 10.02.92: AS: implementation of coerce:GF -> $ corrected.
+-- 10.02.92: AS: implementation of coerce:GF -> % corrected.
 -- 05.08.91: JG: AS implementation of missing functions in FFC and FAXF
 
 
@@ -147,24 +147,24 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
     initializeZech:() -> Void
     initializeElt: () -> Void
 
-    order(x:$):PI ==
+    order(x:%):PI ==
       zero?(x) =>
         error"order: order of zero undefined"
       (sizeCG quo gcd(sizeCG,x pretend NNI))::PI
 
-    primitive?(x:$) ==
+    primitive?(x:%) ==
 --      zero?(x) or one?(x) => false
       zero?(x) or (x = 1) => false
       gcd(x::Rep,sizeCG)$Rep = 1$Rep => true
       false
 
-    coordinates(x:$) ==
+    coordinates(x:%) ==
       x=0 => new(extdeg,0)$(Vector GF)
       primElement:SAE:=convert(monomial(1,1)$(SUP GF))$SAE
 -- the primitive element in the corresponding algebraic extension
       coordinates(primElement ^$SAE (x pretend SI))$SAE
 
-    x:$ + y:$ ==
+    x:% + y:% ==
       if initzech? then initializeZech()
       zero? x => y
       zero? y => x
@@ -188,22 +188,22 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       extensionDegree() rem n ~= 0 =>
         error("argument must divide extension degree")
       m:=sizeCG quo (size()$GF^n-1)
-      [index((1+i*m) ::PI) for i in 0..(n-1)]::Vector $
+      [index((1+i*m) ::PI) for i in 0..(n-1)]::Vector %
 
-    n:I * x:$ == ((n::GF)::$) * x
+    n:I * x:% == ((n::GF)::%) * x
 
     minimalPolynomial(a) ==
-      f:SUP $:=monomial(1,1)$(SUP $) - monomial(a,0)$(SUP $)
-      u:$:=Frobenius(a)
+      f:SUP %:=monomial(1,1)$(SUP %) - monomial(a,0)$(SUP %)
+      u:%:=Frobenius(a)
       while not(u = a) repeat
-        f:=f * (monomial(1,1)$(SUP $) - monomial(u,0)$(SUP $))
+        f:=f * (monomial(1,1)$(SUP %) - monomial(u,0)$(SUP %))
         u:=Frobenius(u)
       p:SUP GF:=0$(SUP GF)
-      while not zero?(f)$(SUP $) repeat
-        g:GF:=retract(leadingCoefficient(f)$(SUP $))
+      while not zero?(f)$(SUP %) repeat
+        g:GF:=retract(leadingCoefficient(f)$(SUP %))
         p:=p+monomial(g,_
-                      degree(f)$(SUP $))$(SUP GF)
-        f:=reductum(f)$(SUP $)
+                      degree(f)$(SUP %))$(SUP GF)
+        f:=reductum(f)$(SUP %)
       p
 
     factorsOfCyclicGroupSize() ==
@@ -225,7 +225,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 
 
 
-    coerce(e:GF):$ ==
+    coerce(e:GF):% ==
       zero?(e)$GF => 0
       log:I:=discreteLog(primEltGF,e)$GF::NNI *$I sizeFG
       -- version before 10.20.92: log pretend Rep
@@ -234,18 +234,18 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       positiveRemainder(log,sizeCG) pretend Rep
 
 
-    retractIfCan(x:$) ==
+    retractIfCan(x:%) ==
       zero? x => 0$GF
       u:= (x::Rep) exquo$Rep (sizeFG pretend Rep)
       u = "failed" => "failed"
-      primEltGF ^$GF ((u::$) pretend SI)
+      primEltGF ^$GF ((u::%) pretend SI)
 
-    retract(x:$) ==
+    retract(x:%) ==
       a:=retractIfCan(x)
       a="failed" => error "element not in groundfield"
       a :: GF
 
-    basis() == [index(i :: PI) for i in 1..extdeg]::Vector $
+    basis() == [index(i :: PI) for i in 1..extdeg]::Vector %
 
 
     inGroundField?(x) ==
@@ -253,14 +253,14 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       positiveRemainder(x::Rep,sizeFG pretend Rep)$Rep =$Rep 0$Rep => true
       false
 
-    discreteLog(b:$,x:$) ==
+    discreteLog(b:%,x:%) ==
       zero? x => "failed"
       e:= extendedEuclidean(b,sizeCG,x)$Rep
       e = "failed" => "failed"
-      e1:Record(coef1:$,coef2:$) := e :: Record(coef1:$,coef2:$)
+      e1:Record(coef1:%,coef2:%) := e :: Record(coef1:%,coef2:%)
       positiveRemainder(e1.coef1,sizeCG)$Rep pretend NNI
 
-    - x:$ ==
+    - x:% ==
         zero? x => 0
         characteristic() =$I 2 => x
         addmod(x,shift(sizeCG,-1)$SI pretend Rep,sizeCG)
@@ -269,13 +269,13 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
     createPrimitiveElement() == 1$SI
     primitiveElement() == 1$SI
 
-    discreteLog(x:$) ==
+    discreteLog(x:%) ==
       zero? x => error "discrete logarithm error"
       x pretend NNI
 
     normalElement() ==
       if initelt? then initializeElt()
-      normalElt::$
+      normalElt::%
 
     initializeElt() ==
       facOfGroupSize := factors(factor(sizeCG)$Integer)
@@ -287,7 +287,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 
     characteristic() == characteristic()$GF
 
-    lookup(x:$) ==
+    lookup(x:%) ==
       x =$Rep (-$Rep 1$Rep) => sizeFF pretend PI
       (x +$Rep 1$Rep) pretend PI
 
@@ -299,37 +299,37 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
     1 == 0$Rep
 
 -- to get a "exponent like" output form
-    coerce(x:$):OUT ==
+    coerce(x:%):OUT ==
       x =$Rep (-$Rep 1$Rep) => "0"::OUT
       x =$Rep 0$Rep => "1"::OUT
       y:I:=lookup(x)-1
       alpha ^$OUT (y::OUT)
 
-    x:$ = y:$ ==  x =$Rep y
+    x:% = y:% ==  x =$Rep y
 
-    x:$ * y:$ ==
+    x:% * y:% ==
       x = 0 => 0
       y = 0 => 0
       addmod(x,y,sizeCG)$Rep
 
-    a:GF * x:$ == coerce(a)@$ * x
-    x:$/a:GF == x/coerce(a)@$
+    a:GF * x:% == coerce(a)@% * x
+    x:%/a:GF == x/coerce(a)@%
 
---    x:$ / a:GF ==
+--    x:% / a:GF ==
 --      a = 0$GF => error "division by zero"
 --      x * inv(coerce(a))
 
-    inv(x:$)  ==
+    inv(x:%)  ==
       zero?(x) => error "inv: not invertible"
 --      one?(x) => 1
       (x = 1) => 1
       sizeCG -$Rep x
 
-    x:$ ^ n:PI == x ^ n::I
+    x:% ^ n:PI == x ^ n::I
 
-    x:$ ^ n:NNI == x ^ n::I
+    x:% ^ n:NNI == x ^ n::I
 
-    x:$ ^ n:I ==
+    x:% ^ n:I ==
       m:Rep:=positiveRemainder(n,sizeCG)$I pretend Rep
       m =$Rep 0$Rep => 1
       x = 0 => 0
