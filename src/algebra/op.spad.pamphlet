@@ -27,77 +27,77 @@ BasicOperator(): Exports == Implementation where
   SEX ==> InputForm
 
   Exports ==> OrderedSet with
-    name      : $ -> Symbol
+    name      : % -> Symbol
       ++ name(op) returns the name of op.
-    properties: $ -> P
+    properties: % -> P
       ++ properties(op) returns the list of all the properties
       ++ currently attached to op.
-    copy      : $ -> $
+    copy      : % -> %
       ++ copy(op) returns a copy of op.
-    operator  : Symbol -> $
+    operator  : Symbol -> %
       ++ operator(f) makes f into an operator with arbitrary arity.
-    operator  : (Symbol, NonNegativeInteger) -> $
+    operator  : (Symbol, NonNegativeInteger) -> %
       ++ operator(f, n) makes f into an n-ary operator.
-    arity     : $ -> Union(NonNegativeInteger, "failed")
+    arity     : % -> Union(NonNegativeInteger, "failed")
       ++ arity(op) returns n if op is n-ary, and
       ++ "failed" if op has arbitrary arity.
-    nullary?  : $ -> Boolean
+    nullary?  : % -> Boolean
       ++ nullary?(op) tests if op is nullary.
-    unary?    : $ -> Boolean
+    unary?    : % -> Boolean
       ++ unary?(op) tests if op is unary.
-    nary?     : $ -> Boolean
+    nary?     : % -> Boolean
       ++ nary?(op) tests if op has arbitrary arity.
-    weight    : $ -> NonNegativeInteger
+    weight    : % -> NonNegativeInteger
       ++ weight(op) returns the weight attached to op.
-    weight    : ($, NonNegativeInteger) -> $
+    weight    : (%, NonNegativeInteger) -> %
       ++ weight(op, n) attaches the weight n to op.
-    equality   : ($, ($, $) -> Boolean) -> $
+    equality   : (%, (%, %) -> Boolean) -> %
       ++ equality(op, foo?) attaches foo? as the "%equal?" property
       ++ to op. If op1 and op2 have the same name, and one of them
       ++ has an "%equal?" property f, then \spad{f(op1, op2)} is called to
       ++ decide whether op1 and op2 should be considered equal.
-    comparison : ($, ($, $) -> Boolean) -> $
+    comparison : (%, (%, %) -> Boolean) -> %
       ++ comparison(op, foo?) attaches foo? as the "%less?" property
       ++ to op. If op1 and op2 have the same name, and one of them
       ++ has a "%less?" property f, then \spad{f(op1, op2)} is called to
       ++ decide whether \spad{op1 < op2}.
-    display    : $ -> Union(List O -> O, "failed")
+    display    : % -> Union(List O -> O, "failed")
       ++ display(op) returns the "%display" property of op if
       ++ it has one attached, and "failed" otherwise.
-    display    : ($, List O -> O)      -> $
+    display    : (%, List O -> O)      -> %
       ++ display(op, foo) attaches foo as the "%display" property
       ++ of op. If op has a "%display" property f, then \spad{op(a1,...,an)}
       ++ gets converted to OutputForm as \spad{f(a1,...,an)}.
-    display    : ($, O -> O)           -> $
+    display    : (%, O -> O)           -> %
       ++ display(op, foo) attaches foo as the "%display" property
       ++ of op. If op has a "%display" property f, then \spad{op(a)}
       ++ gets converted to OutputForm as \spad{f(a)}.
       ++ Argument op must be unary.
-    input      : ($, List SEX -> SEX)  -> $
+    input      : (%, List SEX -> SEX)  -> %
       ++ input(op, foo) attaches foo as the "%input" property
       ++ of op. If op has a "%input" property f, then \spad{op(a1,...,an)}
       ++ gets converted to InputForm as \spad{f(a1,...,an)}.
-    input      : $ -> Union(List SEX -> SEX, "failed")
+    input      : % -> Union(List SEX -> SEX, "failed")
       ++ input(op) returns the "%input" property of op if
       ++ it has one attached, "failed" otherwise.
-    is?        : ($, Symbol) -> Boolean
+    is?        : (%, Symbol) -> Boolean
       ++ is?(op, s) tests if the name of op is s.
-    has?       : ($, Symbol) -> Boolean
+    has?       : (%, Symbol) -> Boolean
       ++ has?(op, s) tests if property s is attached to op.
-    assert     : ($, Symbol) -> $
+    assert     : (%, Symbol) -> %
       ++ assert(op, s) attaches property s to op.
       ++ Argument op is modified "in place", i.e. no copy is made.
-    deleteProperty_!: ($, Symbol) -> $
+    deleteProperty_!: (%, Symbol) -> %
       ++ deleteProperty!(op, s) unattaches property s from op.
       ++ Argument op is modified "in place", i.e. no copy is made.
-    property      : ($, Symbol) -> Union(None, "failed")
+    property      : (%, Symbol) -> Union(None, "failed")
       ++ property(op, s) returns the value of property s if
       ++ it is attached to op, and "failed" otherwise.
-    setProperty   : ($, Symbol, None) -> $
+    setProperty   : (%, Symbol, None) -> %
       ++ setProperty(op, s, v) attaches property s to op,
       ++ and sets its value to v.
       ++ Argument op is modified "in place", i.e. no copy is made.
-    setProperties : ($, P) -> $
+    setProperties : (%, P) -> %
       ++ setProperties(op, l) sets the property list of op to l.
       ++ Argument op is modified "in place", i.e. no copy is made.
 
@@ -113,7 +113,7 @@ BasicOperator(): Exports == Implementation where
     SEXPR   := '%input
 
 
-    oper: (Symbol, SingleInteger, P) -> $
+    oper: (Symbol, SingleInteger, P) -> %
 
     is?(op, s)           == name(op) = s
     name op              == op.opname
@@ -132,12 +132,12 @@ BasicOperator(): Exports == Implementation where
     nary? op             == negative?(op.narg)
     equality(op, func)   == setProperty(op, EQUAL?, func pretend None)
     comparison(op, func) == setProperty(op, LESS?, func pretend None)
-    display(op:$, f:O -> O)        == display(op, (l1: List(O)): O +-> f first l1)
+    display(op:%, f:O -> O)        == display(op, (l1: List(O)): O +-> f first l1)
     deleteProperty_!(op, name)     == (remove_!(name, properties op); op)
     setProperty(op, name, valu)    == (op.props.name := valu; op)
-    coerce(op:$):OutputForm        == name(op)::OutputForm
-    input(op:$, f:List SEX -> SEX) == setProperty(op, SEXPR, f pretend None)
-    display(op:$, f:List O -> O)   == setProperty(op, DISPLAY, f pretend None)
+    coerce(op:%):OutputForm        == name(op)::OutputForm
+    input(op:%, f:List SEX -> SEX) == setProperty(op, SEXPR, f pretend None)
+    display(op:%, f:List O -> O)   == setProperty(op, DISPLAY, f pretend None)
 
     display op ==
       (u := property(op, DISPLAY)) case "failed" => "failed"
@@ -163,7 +163,7 @@ BasicOperator(): Exports == Implementation where
       op1.narg ~= op2.narg => false
       brace(keys properties op1) ~=$Set(Symbol) brace(keys properties op2) => false
       (func := property(op1, EQUAL?)) case None =>
-                   ((func::None) pretend (($, $) -> Boolean)) (op1, op2)
+                   ((func::None) pretend ((%, %) -> Boolean)) (op1, op2)
       true
 
 -- property WEIGHT allows one to change the ordering around
@@ -185,9 +185,9 @@ BasicOperator(): Exports == Implementation where
         n1 ~= (n2 := #(d2 := difference(k2, k1))) => n1 < n2
         inspect(d1) < inspect(d2)
       (func := property(op1, LESS?)) case None =>
-                   ((func::None) pretend (($, $) -> Boolean)) (op1, op2)
+                   ((func::None) pretend ((%, %) -> Boolean)) (op1, op2)
       (func := property(op1, EQUAL?)) case None =>
-              not(((func::None) pretend (($, $) -> Boolean)) (op1, op2))
+              not(((func::None) pretend ((%, %) -> Boolean)) (op1, op2))
       false
 
 @

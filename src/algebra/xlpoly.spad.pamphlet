@@ -32,47 +32,47 @@ Magma(VarSet:OrderedSet):Public == Private where
    EX   ==> OutputForm
 
    Public == Join(OrderedSet,RetractableTo VarSet) with
-      "*"           : ($,$) -> $
+      "*"           : (%,%) -> %
         ++ \axiom{x*y} returns the tree \axiom{[x,y]}.
-      coerce        : $ -> WORD
+      coerce        : % -> WORD
         ++ \axiom{coerce(x)} returns the element of \axiomType{OrderedFreeMonoid}(VarSet)
         ++ corresponding to \axiom{x} by removing parentheses.
-      first         : $ -> VarSet
+      first         : % -> VarSet
         ++ \axiom{first(x)} returns the first entry of the tree \axiom{x}.
-      left          : $ -> $
+      left          : % -> %
         ++ \axiom{left(x)} returns left subtree of \axiom{x} or
         ++ error if \axiomOpFrom{retractable?}{Magma}(\axiom{x}) is true.
-      length        : $ -> PositiveInteger
+      length        : % -> PositiveInteger
         ++ \axiom{length(x)} returns the number of entries in \axiom{x}.
-      lexico        : ($,$) -> Boolean
+      lexico        : (%,%) -> Boolean
         ++ \axiom{lexico(x,y)} returns \axiom{true} iff  \axiom{x} is smaller than
         ++ \axiom{y} w.r.t. the lexicographical ordering induced by \axiom{VarSet}.
         ++ N.B. This operation does not take into account the tree structure of
         ++ its arguments. Thus this is not a total ordering.
-      mirror        : $ -> $
+      mirror        : % -> %
         ++ \axiom{mirror(x)} returns the reversed word of \axiom{x}.
         ++ That is \axiom{x} itself if \axiomOpFrom{retractable?}{Magma}(\axiom{x}) is true and
         ++ \axiom{mirror(z) * mirror(y)} if \axiom{x} is \axiom{y*z}.
-      rest          : $ -> $
+      rest          : % -> %
         ++ \axiom{rest(x)} return \axiom{x} without the first entry or
         ++ error if \axiomOpFrom{retractable?}{Magma}(\axiom{x}) is true.
-      retractable?  : $ -> Boolean
+      retractable?  : % -> Boolean
         ++ \axiom{retractable?(x)} tests if \axiom{x} is a tree with only one entry.
-      right         : $ -> $
+      right         : % -> %
         ++ \axiom{right(x)} returns right subtree of \axiom{x} or
         ++ error if \axiomOpFrom{retractable?}{Magma}(\axiom{x}) is true.
-      varList       : $ -> List VarSet
+      varList       : % -> List VarSet
         ++ \axiom{varList(x)} returns the list of distinct entries of \axiom{x}.
 
    Private == add
     -- representation
-      VWORD := Record(left:$ ,right:$)
+      VWORD := Record(left:% ,right:%)
       Rep:= Union(VarSet,VWORD)
 
-      recursif: ($,$) -> Boolean
+      recursif: (%,%) -> Boolean
 
     -- define
-      x:$ = y:$ ==
+      x:% = y:% ==
         x case VarSet =>
            y case VarSet => x::VarSet = y::VarSet
            false
@@ -98,17 +98,17 @@ Magma(VarSet:OrderedSet):Public == Private where
          error "Not retractable"
 
       retractIfCan x == (retractable? x => x::VarSet ; "failed")
-      coerce(l:VarSet):$  == l
+      coerce(l:VarSet):%  == l
 
       mirror x ==
         x case VarSet => x
         [mirror x.right, mirror x.left]$VWORD
 
-      coerce(x:$): WORD ==
+      coerce(x:%): WORD ==
         x case VarSet => x::VarSet::WORD
         x.left::WORD * x.right::WORD
 
-      coerce(x:$):EX ==
+      coerce(x:%):EX ==
          x case VarSet => x::VarSet::EX
          bracket [x.left::EX, x.right::EX]
 
@@ -120,7 +120,7 @@ Magma(VarSet:OrderedSet):Public == Private where
 
       rest x ==
          x case VarSet => error "rest$Magma: inexistant rest"
-         lx:$ := x.left
+         lx:% := x.left
          lx case VarSet => x.right
          [rest lx , x.right]$VWORD
 
@@ -194,40 +194,40 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
    ARRAY1==> OneDimensionalArray
 
    Public == Join(OrderedSet,RetractableTo VarSet) with
-      retractable?  : $ -> Boolean
+      retractable?  : % -> Boolean
         ++ \axiom{retractable?(x)} tests if \axiom{x} is a tree with only one entry.
-      left          : $ -> $
+      left          : % -> %
         ++ \axiom{left(x)} returns left subtree of \axiom{x} or
         ++ error if \axiomOpFrom{retractable?}{LyndonWord}(\axiom{x}) is true.
-      right  :  $ -> $
+      right  :  % -> %
         ++ \axiom{right(x)} returns right subtree of \axiom{x} or
         ++ error if \axiomOpFrom{retractable?}{LyndonWord}(\axiom{x}) is true.
-      length :  $ -> PI
+      length :  % -> PI
         ++ \axiom{length(x)} returns the number of entries in \axiom{x}.
-      lexico :  ($,$) -> Boolean
+      lexico :  (%,%) -> Boolean
         ++ \axiom{lexico(x,y)} returns \axiom{true} iff  \axiom{x} is smaller than
         ++ \axiom{y} w.r.t. the lexicographical ordering induced by \axiom{VarSet}.
-      coerce :  $ -> OFMON
+      coerce :  % -> OFMON
         ++ \axiom{coerce(x)} returns the element of \axiomType{OrderedFreeMonoid}(VarSet)
         ++ corresponding to \axiom{x}.
-      coerce :  $ -> Magma VarSet
+      coerce :  % -> Magma VarSet
         ++ \axiom{coerce(x)} returns the element of \axiomType{Magma}(VarSet)
         ++ corresponding to \axiom{x}.
-      factor :  OFMON -> List $
+      factor :  OFMON -> List %
         ++ \axiom{factor(x)} returns the decreasing factorization into Lyndon words.
       lyndon?:  OFMON -> Boolean
         ++ \axiom{lyndon?(w)} test if \axiom{w} is a Lyndon word.
-      lyndon :  OFMON -> $
+      lyndon :  OFMON -> %
         ++ \axiom{lyndon(w)} convert \axiom{w} into a Lyndon word,
         ++ error if \axiom{w} is not a Lyndon word.
-      lyndonIfCan : OFMON -> Union($, "failed")
+      lyndonIfCan : OFMON -> Union(%, "failed")
         ++ \axiom{lyndonIfCan(w)} convert \axiom{w} into a Lyndon word.
-      varList     : $ -> List VarSet
+      varList     : % -> List VarSet
         ++ \axiom{varList(x)} returns the list of distinct entries of \axiom{x}.
-      LyndonWordsList1: (List VarSet, PI)  -> ARRAY1 List $
+      LyndonWordsList1: (List VarSet, PI)  -> ARRAY1 List %
         ++ \axiom{LyndonWordsList1(vl, n)} returns an array of lists of Lyndon
         ++ words over the alphabet \axiom{vl}, up to order \axiom{n}.
-      LyndonWordsList : (List VarSet, PI)  -> List $
+      LyndonWordsList : (List VarSet, PI)  -> List %
         ++ \axiom{LyndonWordsList(vl, n)} returns the list of Lyndon
         ++ words over the alphabet \axiom{vl}, up to order \axiom{n}.
 
@@ -237,7 +237,7 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
 
      -- Fonctions locales
        LetterList : OFMON -> List VarSet
-       factor1    : (List $, $, List $) -> List $
+       factor1    : (List %, %, List %) -> List %
 
      -- Definitions
        lyndon? w ==
@@ -249,12 +249,12 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
          true
 
        lyndonIfCan w ==
-         l: List $ := factor w
+         l: List % := factor w
          # l = 1 => first l
          "failed"
 
        lyndon w ==
-         l: List $ := factor w
+         l: List % := factor w
          # l = 1 => first l
          error "This word is not a Lyndon word"
 
@@ -263,7 +263,7 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
          cons(first w , LetterList rest w)
 
        factor1 (gauche, x, droite) ==
-         g: List $ := gauche; d: List $ := droite
+         g: List % := gauche; d: List % := droite
          while not null g repeat             ++ (l in g or l=x) et u in d
            lexico(  g.first , x ) =>         ++  => right(l) >= u
               x  := g.first *$Rep x          -- crochetage
@@ -278,7 +278,7 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
 
        factor w ==
          w = 1 => []
-         l : List $ := reverse [ u::$ for u in LetterList w]
+         l : List % := reverse [ u::% for u in LetterList w]
          factor1( rest l, first l , [] )
 
        x < y ==                     -- lexicographique par longueur
@@ -287,15 +287,15 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
          lx = ly => lexico(x,y)
          lx < ly
 
-       coerce(x:$):OF == bracket(x::OFMON::OF)
-       coerce(x:$):Magma VarSet == x::Rep
+       coerce(x:%):OF == bracket(x::OFMON::OF)
+       coerce(x:%):Magma VarSet == x::Rep
 
        LyndonWordsList1 (vl,n) ==    -- a ameliorer !!!!!!!!!!!
             null vl => error "empty list"
-            base: ARRAY1 List $ := new(n::I::NNI ,[])
+            base: ARRAY1 List % := new(n::I::NNI ,[])
 
            -- mots de longueur 1
-            lbase1:List $ := [w::$ for w in sort(vl)]
+            lbase1:List % := [w::% for w in sort(vl)]
             base.1 := lbase1
 
            -- calcul des mots de longueur ll
@@ -315,7 +315,7 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
             return base
 
        LyndonWordsList (vl,n) ==
-           v:ARRAY1 List $ := LyndonWordsList1(vl,n)
+           v:ARRAY1 List % := LyndonWordsList1(vl,n)
            "append"/ [v.i for i in 1..n]
 
 @
@@ -338,10 +338,10 @@ LyndonWord(VarSet:OrderedSet):Public == Private where
 ++ \axiomType{LiePolynomial} and
 ++ \axiomType{XPBWPolynomial}. \newline Author : Michel Petitot (petitot@lifl.fr).
 LieAlgebra(R: CommutativeRing): Category ==  Module(R) with
-    construct:  ($,$) -> $
+    construct:  (%,%) -> %
           ++ \axiom{construct(x,y)} returns the Lie bracket of \axiom{x} and \axiom{y}.
     if R has Field then
-       "/"   :  ($,R) -> $
+       "/"   :  (%,R) -> %
          ++ \axiom{x/r} returns the division of \axiom{x} by \axiom{r}.
 
 
@@ -375,36 +375,36 @@ FreeLieAlgebra(VarSet:OrderedSet, R:CommutativeRing) :Category == CatDef where
    LWORD   ==> LyndonWord(VarSet)
 
    CatDef ==  Join(LieAlgebra(R)) with
-      coef      : (XRPOLY , $) -> R
+      coef      : (XRPOLY , %) -> R
          ++ \axiom{coef(x,y)} returns the scalar product of \axiom{x} by \axiom{y},
          ++ the set of words being regarded as an orthogonal basis.
-      coerce    : VarSet -> $
+      coerce    : VarSet -> %
          ++ \axiom{coerce(x)} returns \axiom{x} as a Lie polynomial.
-      coerce    : $ -> XDPOLY
+      coerce    : % -> XDPOLY
          ++ \axiom{coerce(x)} returns \axiom{x} as distributed polynomial.
-      coerce    : $ -> XRPOLY
+      coerce    : % -> XRPOLY
          ++ \axiom{coerce(x)} returns \axiom{x} as a recursive polynomial.
-      degree    : $ -> NonNegativeInteger
+      degree    : % -> NonNegativeInteger
          ++ \axiom{degree(x)} returns the greatest length of a word in the support of \axiom{x}.
       --if R has Module(RN) then
-      --  Hausdorff : ($,$,PositiveInteger) -> $
-      lquo      : (XRPOLY , $) -> XRPOLY
+      --  Hausdorff : (%,%,PositiveInteger) -> %
+      lquo      : (XRPOLY , %) -> XRPOLY
          ++ \axiom{lquo(x,y)} returns the left simplification of \axiom{x} by \axiom{y}.
-      rquo      : (XRPOLY , $) -> XRPOLY
+      rquo      : (XRPOLY , %) -> XRPOLY
          ++ \axiom{rquo(x,y)} returns the right simplification of \axiom{x} by \axiom{y}.
-      LiePoly   : LWORD -> $
+      LiePoly   : LWORD -> %
          ++ \axiom{LiePoly(l)} returns the bracketed form of \axiom{l} as a Lie polynomial.
-      mirror    : $ -> $
+      mirror    : % -> %
          ++ \axiom{mirror(x)} returns \axiom{Sum(r_i mirror(w_i))}
          ++ if \axiom{x} is \axiom{Sum(r_i w_i)}.
-      trunc     : ($, NonNegativeInteger) -> $
+      trunc     : (%, NonNegativeInteger) -> %
          ++ \axiom{trunc(p,n)} returns the polynomial \axiom{p}
          ++ truncated at order \axiom{n}.
-      varList   : $ -> List VarSet
+      varList   : % -> List VarSet
          ++ \axiom{varList(x)} returns the list of distinct entries of \axiom{x}.
-      eval      : ($, VarSet, $) -> $
+      eval      : (%, VarSet, %) -> %
          ++ \axiom{eval(p, x, v)} replaces \axiom{x} by \axiom{v}  in \axiom{p}.
-      eval      : ($, List VarSet, List $) -> $
+      eval      : (%, List VarSet, List %) -> %
          ++ \axiom{eval(p, [x1,...,xn], [v1,...,vn])} replaces \axiom{xi} by \axiom{vi}
          ++ in \axiom{p}.
 
@@ -511,15 +511,15 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
    TERM    ==> Record(k: LWORD, c: R)
 
    Public == Join(FreeLieAlgebra(VarSet,R), FreeModuleCategory(R,LWORD)) with
-      LiePolyIfCan: XDPOLY -> Union($, "failed")
+      LiePolyIfCan: XDPOLY -> Union(%, "failed")
         ++ \axiom{LiePolyIfCan(p)} returns \axiom{p} in Lyndon basis
         ++ if \axiom{p} is a Lie polynomial, otherwise \axiom{"failed"}
         ++ is returned.
-      construct: (LWORD, LWORD) -> $
+      construct: (LWORD, LWORD) -> %
         ++ \axiom{construct(x,y)} returns the Lie bracket \axiom{[x,y]}.
-      construct: (LWORD, $) -> $
+      construct: (LWORD, %) -> %
         ++ \axiom{construct(x,y)} returns the Lie bracket \axiom{[x,y]}.
-      construct: ($, LWORD) -> $
+      construct: (%, LWORD) -> %
         ++ \axiom{construct(x,y)} returns the Lie bracket \axiom{[x,y]}.
 
    Private ==  FreeModule(R, LWORD) add
@@ -529,17 +529,17 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
         Rep :=  List TERM
 
       -- fonctions locales
-        cr1 : (LWORD, $    ) -> $
-        cr2 : ($, LWORD    ) -> $
-        crw : (LWORD, LWORD) -> $     -- crochet de 2 mots de Lyndon
+        cr1 : (LWORD, %) -> %
+        cr2 : (%, LWORD    ) -> %
+        crw : (LWORD, LWORD) -> %     -- crochet de 2 mots de Lyndon
         DPoly: LWORD -> XDPOLY
         lquo1: (XRPOLY , LWORD) -> XRPOLY
-        lyndon: (LWORD, LWORD) -> $
+        lyndon: (LWORD, LWORD) -> %
         makeLyndon: (LWORD, LWORD) -> LWORD
         rquo1: (XRPOLY , LWORD) -> XRPOLY
         RPoly: LWORD -> XRPOLY
-        eval1: (LWORD, VarSet, $) -> $                     -- 08/03/98
-        eval2: (LWORD, List VarSet, List $) -> $           -- 08/03/98
+        eval1: (LWORD, VarSet, %) -> %                     -- 08/03/98
+        eval2: (LWORD, List VarSet, List %) -> %           -- 08/03/98
 
 
       -- Evaluation
@@ -555,15 +555,15 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
           p: Integer
           (s := retractIfCan(lw)$LWORD) case VarSet =>
              p := position(s::VarSet, lv)$List(VarSet)
-             if p=0 then lw::$ else elt(lnv,p)$List($)
+             if p=0 then lw::% else elt(lnv,p)$List(%)
           l: LWORD := left lw
           r: LWORD := right lw
           construct(eval2(l,lv,lnv), eval2(r,lv,lnv))
 
-        eval(p:$, v: VarSet, nv: $): $ ==                  -- 08/03/98
+        eval(p:%, v: VarSet, nv: %): % ==                  -- 08/03/98
           +/ [t.c * eval1(t.k, v, nv) for t in p]
 
-        eval(p:$, lv: List(VarSet), lnv: List($)): $ ==    -- 08/03/98
+        eval(p:%, lv: List(VarSet), lnv: List(%)): % ==    -- 08/03/98
           +/ [t.c * eval2(t.k, lv, lnv) for t in p]
 
         lquo1(p,lw) ==
@@ -587,12 +587,12 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
 
         LiePolyIfCan p ==         -- inefficace a cause de la rep. de XDPOLY
            not quasiRegular? p => "failed"
-           p1: XDPOLY := p ; r:$ := 0
+           p1: XDPOLY := p ; r:% := 0
            while p1 ~= 0 repeat
              t: Record(k:WORD, c:R) := mindegTerm p1
              w: WORD := t.k; coef:R := t.c
              (l := lyndonIfCan(w)$LWORD) case "failed" => return "failed"
-             lp:$ := coef * LiePoly(l::LWORD)
+             lp:% := coef * LiePoly(l::LWORD)
              r := r + lp
              p1 := p1 - lp::XDPOLY
            r
@@ -634,17 +634,17 @@ LiePolynomial(VarSet:OrderedSet, R:CommutativeRing) : Public == Private where
 
         coerce(v:VarSet) == monom(v::LWORD , 1)
 
-        construct(x:$ , y:$):$ ==
+        construct(x:% , y:%):% ==
             +/[t.c * cr1(t.k, y) for t in x]
 
-        construct(l:LWORD , p:$):$ == cr1(l,p)
-        construct(p:$ , l:LWORD):$ == cr2(p,l)
-        construct(u:LWORD , v:LWORD):$ == crw(u,v)
+        construct(l:LWORD , p:%):% == cr1(l,p)
+        construct(p:% , l:LWORD):% == cr2(p,l)
+        construct(u:LWORD , v:LWORD):% == crw(u,v)
 
-        coerce(p:$):XDPOLY ==
+        coerce(p:%):XDPOLY ==
             +/ [t.c * DPoly(t.k) for t in p]
 
-        coerce(p:$):XRPOLY ==
+        coerce(p:%):XRPOLY ==
             +/ [t.c * RPoly(t.k) for t in p]
 
         LiePoly(l) == monom(l,1)
@@ -708,22 +708,22 @@ PoincareBirkhoffWittLyndonBasis(VarSet: OrderedSet): Public == Private where
    Public == Join(OrderedSet, RetractableTo LWORD) with
       1: constant -> %
          ++ \spad{1} returns the empty list.
-      coerce       : $ -> WORD
+      coerce       : % -> WORD
          ++ \spad{coerce([l1]*[l2]*...[ln])} returns the word \spad{l1*l2*...*ln},
          ++ where \spad{[l_i]} is the backeted form of the Lyndon word \spad{l_i}.
-      coerce       : VarSet -> $
+      coerce       : VarSet -> %
          ++ \spad{coerce(v)} return \spad{v}
-      first        : $ -> LWORD
+      first        : % -> LWORD
          ++ \spad{first([l1]*[l2]*...[ln])} returns the Lyndon word \spad{l1}.
-      length       : $ -> NNI
+      length       : % -> NNI
          ++ \spad{length([l1]*[l2]*...[ln])} returns the length of the word \spad{l1*l2*...*ln}.
-      listOfTerms  : $ -> LWORDS
+      listOfTerms  : % -> LWORDS
          ++ \spad{listOfTerms([l1]*[l2]*...[ln])} returns the list of words \spad{l1, l2, .... ln}.
-      rest         : $ -> $
+      rest         : % -> %
          ++ \spad{rest([l1]*[l2]*...[ln])} returns the list \spad{l2, .... ln}.
-      retractable? : $ -> Boolean
+      retractable? : % -> Boolean
          ++ \spad{retractable?([l1]*[l2]*...[ln])} returns true iff \spad{n}  equals \spad{1}.
-      varList      : $ -> List VarSet
+      varList      : % -> List VarSet
          ++ \spad{varList([l1]*[l2]*...[ln])} returns the list of
          ++ variables in the word \spad{l1*l2*...*ln}.
 
@@ -733,7 +733,7 @@ PoincareBirkhoffWittLyndonBasis(VarSet: OrderedSet): Public == Private where
      Rep := LWORDS
 
     -- Locales
-     recursif: ($,$) -> Boolean
+     recursif: (%,%) -> Boolean
 
     -- Define
      1 == nil
@@ -747,15 +747,15 @@ PoincareBirkhoffWittLyndonBasis(VarSet: OrderedSet): Public == Private where
      first x == first(x)$Rep
      rest x == rest(x)$Rep
 
-     coerce(v: VarSet):$ == [ v::LWORD ]
-     coerce(l: LWORD):$ == [l]
-     listOfTerms(x:$):LWORDS == x pretend LWORDS
+     coerce(v: VarSet):% == [ v::LWORD ]
+     coerce(l: LWORD):% == [l]
+     listOfTerms(x:%):LWORDS == x pretend LWORDS
 
-     coerce(x:$):WORD ==
+     coerce(x:%):WORD ==
        null x => 1
        x.first :: WORD *$WORD coerce(x.rest)
 
-     coerce(x:$):EX ==
+     coerce(x:%):EX ==
        null x => outputForm(1$Integer)$EX
        reduce(_* ,[l :: EX for l in x])$List(EX)
 
@@ -825,22 +825,22 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
   RN     ==> Fraction(Integer)
 
   XDPcat == Join(XPolynomialsCat(VarSet,R), FreeModuleCategory(R, BASIS)) with
-    coerce      : LPOLY -> $
+    coerce      : LPOLY -> %
       ++ \axiom{coerce(p)} returns \axiom{p}.
-    coerce      : $ -> XDPOLY
+    coerce      : % -> XDPOLY
       ++ \axiom{coerce(p)} returns \axiom{p} as a distributed polynomial.
-    coerce      : $ -> XRPOLY
+    coerce      : % -> XRPOLY
       ++ \axiom{coerce(p)} returns \axiom{p} as a recursive polynomial.
-    LiePolyIfCan: $ -> Union(LPOLY,"failed")
+    LiePolyIfCan: % -> Union(LPOLY,"failed")
       ++ \axiom{LiePolyIfCan(p)} return  \axiom{p} if \axiom{p} is a Lie polynomial.
-    product     : ($,$,NNI) -> $           -- produit tronque a l'ordre n
+    product     : (%,%,NNI) -> %           -- produit tronque a l'ordre n
       ++ \axiom{product(a,b,n)} returns \axiom{a*b} (truncated up to order \axiom{n}).
 
     if R has Module(RN) then
-       exp      : ($,NNI) -> $
+       exp      : (%,NNI) -> %
           ++ \axiom{exp(p,n)} returns the exponential of \axiom{p}
           ++ (truncated up to order \axiom{n}).
-       log      : ($,NNI) -> $
+       log      : (%,NNI) -> %
           ++ \axiom{log(p,n)} returns the logarithm of \axiom{p}
           ++ (truncated up to order \axiom{n}).
 
@@ -851,18 +851,18 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
        Rep:= LTERMS
 
     -- local functions
-       prod1: (BASIS, $) -> $
-       prod2: ($, BASIS) -> $
-       prod : (BASIS, BASIS) -> $
+       prod1: (BASIS, %) -> %
+       prod2: (%, BASIS) -> %
+       prod : (BASIS, BASIS) -> %
 
-       prod11: (BASIS, $, NNI) -> $
-       prod22: ($, BASIS, NNI) -> $
+       prod11: (BASIS, %, NNI) -> %
+       prod22: (%, BASIS, NNI) -> %
 
        outForm : TERM -> EX
        Dexpand : BASIS -> XDPOLY
        Rexpand : BASIS -> XRPOLY
-       process : (List LWORD, LWORD, List LWORD) -> $
-       mirror1 : BASIS -> $
+       process : (List LWORD, LWORD, List LWORD) -> %
+       mirror1 : BASIS -> %
 
     -- functions locales
        outForm t ==
@@ -870,10 +870,10 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
            t.k =$BASIS 1 => t.c :: EX
            t.c::EX * t.k ::EX
 
-       prod1(b:BASIS, p:$):$ ==
+       prod1(b:BASIS, p:%):% ==
          +/ [t.c * prod(b, t.k) for t in p]
 
-       prod2(p:$, b:BASIS):$ ==
+       prod2(p:%, b:BASIS):% ==
          +/ [t.c * prod(t.k, b) for t in p]
 
        prod11(b,p,n) ==
@@ -897,15 +897,15 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
          b = 1 => 1$XRPOLY
          */ [LiePoly(l)$LPOLY :: XRPOLY for l in listOfTerms b]
 
-       mirror1(b:BASIS):$ ==
+       mirror1(b:BASIS):% ==
          b = 1 => 1
          lp: LPOLY := LiePoly first b
          lp := mirror lp
-         mirror1(rest b) * lp :: $
+         mirror1(rest b) * lp :: %
 
        process(gauche, x, droite) ==    -- algo du "collect process"
          null gauche => monom( cons(x, droite) pretend BASIS, 1$R)
-         r1, r2 : $
+         r1, r2 : %
          not lexico(first gauche, x) =>     -- cas facile !!!
            monom(append(reverse gauche, cons(x, droite)) pretend BASIS , 1$R)
 
@@ -927,22 +927,22 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
     -- definitions
        1 == monom(1$BASIS, 1$R)
 
-       coerce(r:R):$ == [[1$BASIS , r]$TERM ]
+       coerce(r:R):% == [[1$BASIS , r]$TERM ]
 
-       coerce(p:$):EX ==
+       coerce(p:%):EX ==
          null p => (0$R) :: EX
          le : List EX := nil
          for rec in p repeat le := cons(outForm rec, le)
          reduce(_+, le)$List(EX)
 
-       coerce(v: VarSet):$ == monom(v::BASIS , 1$R)
-       coerce(p: LPOLY):$ ==
+       coerce(v: VarSet):% == monom(v::BASIS , 1$R)
+       coerce(p: LPOLY):% ==
           [[t.k :: BASIS , t.c ]$TERM for t in listOfTerms p]
 
-       coerce(p:$):XDPOLY ==
+       coerce(p:%):XDPOLY ==
          +/ [t.c * Dexpand t.k for t in p]
 
-       coerce(p:$):XRPOLY ==
+       coerce(p:%):XRPOLY ==
          p = 0 => 0$XRPOLY
          +/ [t.c * Rexpand t.k for t in p]
 
@@ -958,7 +958,7 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
          p.last.k = 1$BASIS => delete(p, maxIndex p)
          p
 
-       x:$ * y:$ ==
+       x:% * y:% ==
          y = 0$% => 0
          +/ [t.c * prod1(t.k, y) for t in x]
 
@@ -987,7 +987,7 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
              p = 0 => 1
              not quasiRegular? p =>
                error "a proper polynomial is required"
-             s : $ := 1 ; r: $ := 1                  -- resultat
+             s : % := 1 ; r: % := 1                  -- resultat
              for i in 1..n repeat
                 k1 :RN := 1/i
                 k2 : R := k1 * 1$R
@@ -997,10 +997,10 @@ XPBWPolynomial(VarSet:OrderedSet,R:CommutativeRing): XDPcat == XDPdef where
 
          log (p,n) ==
              p = 1 => 0
-             p1: $ := 1 - p
+             p1: % := 1 - p
              not quasiRegular? p1 =>
                error "constant term <> 1, impossible log "
-             s : $ := - 1 ; r: $ := 0                 -- resultat
+             s : % := - 1 ; r: % := 0                 -- resultat
              for i in 1..n repeat
                k1 :RN := 1/i
                k2 : R := k1 * 1$R
@@ -1065,26 +1065,26 @@ LieExponentials(VarSet, R, Order): XDPcat == XDPdef where
   EQ     ==> Equation(R)
 
   XDPcat == Group with
-    exp         : LPOLY -> $
+    exp         : LPOLY -> %
       ++ \axiom{exp(p)} returns the exponential of \axiom{p}.
-    log         : $ -> LPOLY
+    log         : % -> LPOLY
       ++ \axiom{log(p)} returns the logarithm of \axiom{p}.
-    listOfTerms : $ -> LTERMS
+    listOfTerms : % -> LTERMS
       ++ \axiom{listOfTerms(p)} returns the internal representation of \axiom{p}.
-    coerce      : $ -> XDPOLY
+    coerce      : % -> XDPOLY
       ++ \axiom{coerce(g)} returns the internal representation of \axiom{g}.
-    coerce      : $ -> PBWPOLY
+    coerce      : % -> PBWPOLY
       ++ \axiom{coerce(g)} returns the internal representation of \axiom{g}.
-    mirror      : $ -> $
+    mirror      : % -> %
       ++ \axiom{mirror(g)} is the mirror of the internal representation of \axiom{g}.
-    varList     : $ -> List VarSet
+    varList     : % -> List VarSet
       ++ \axiom{varList(g)} returns the list of variables of \axiom{g}.
     LyndonBasis : List VarSet -> List LPOLY
       ++ \axiom{LyndonBasis(lv)} returns the Lyndon basis of the nilpotent free
       ++ Lie algebra.
-    LyndonCoordinates: $ -> List TERM1
+    LyndonCoordinates: % -> List TERM1
       ++ \axiom{LyndonCoordinates(g)} returns the exponential coordinates of \axiom{g}.
-    identification: ($,$) -> List EQ
+    identification: (%,%) -> List EQ
       ++ \axiom{identification(g,h)} returns the list of equations \axiom{g_i = h_i},
       ++ where \axiom{g_i} (resp. \axiom{h_i}) are exponential coordinates
       ++ of \axiom{g} (resp. \axiom{h}).
@@ -1132,13 +1132,13 @@ LieExponentials(VarSet, R, Order): XDPcat == XDPdef where
                              (l := retractIfCan(t.k)$BASIS) case LWORD ]
          lt := sort(compareTerm1s,lt)
 
-       x:$ * y:$ == product(x::Rep, y::Rep, Order::I::NNI)$Rep
+       x:% * y:% == product(x::Rep, y::Rep, Order::I::NNI)$Rep
 
        exp p == exp(p::Rep , Order::I::NNI)$Rep
 
        log p == LiePolyIfCan(log(p,Order::I::NNI))$Rep :: LPOLY
 
-       coerce(p:$):EX ==
+       coerce(p:%):EX ==
           p = 1$% => 1$R :: EX
           lt : List TERM1 := LyndonCoordinates p
           reduce(_*, [out t for t in lt])$List(EX)
@@ -1147,13 +1147,13 @@ LieExponentials(VarSet, R, Order): XDPcat == XDPdef where
        LyndonBasis(lv) ==
          [LiePoly(l)$LPOLY for l in LyndonWordsList(lv,Order)$LWORD]
 
-       coerce(p:$):PBWPOLY == p::Rep
+       coerce(p:%):PBWPOLY == p::Rep
 
        inv x ==
          x = 1 => 1
          lt:LTERMS := listOfTerms mirror x
          lt:= [[t.k, (odd? length(t.k)$BASIS => - t.c; t.c)]$TERM for t in lt ]
-         lt pretend $
+         lt pretend %
 
 @
 \section{License}

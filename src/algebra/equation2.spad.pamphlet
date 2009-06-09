@@ -34,17 +34,17 @@
 Equation(S: Type): public == private where
   Ex ==> OutputForm
   public ==> Type with
-    "=": (S, S) -> $
+    "=": (S, S) -> %
         ++ a=b creates an equation.
-    equation: (S, S) -> $
+    equation: (S, S) -> %
         ++ equation(a,b) creates an equation.
-    swap: $ -> $
+    swap: % -> %
         ++ swap(eq) interchanges left and right hand side of equation eq.
-    lhs: $ -> S
+    lhs: % -> S
         ++ lhs(eqn) returns the left hand side of equation eqn.
-    rhs: $ -> S
+    rhs: % -> S
         ++ rhs(eqn) returns the right hand side of equation eqn.
-    map: (S -> S, $) -> $
+    map: (S -> S, %) -> %
         ++ map(f,eqn) constructs a new equation by applying f to both
         ++ sides of eqn.
     if S has InnerEvalable(Symbol,S) then
@@ -53,49 +53,49 @@ Equation(S: Type): public == private where
         SetCategory
         CoercibleTo Boolean
         if S has Evalable(S) then
-           eval: ($, $) -> $
+           eval: (%, %) -> %
                ++ eval(eqn, x=f) replaces x by f in equation eqn.
-           eval: ($, List $) -> $
+           eval: (%, List %) -> %
                ++ eval(eqn, [x1=v1, ... xn=vn]) replaces xi by vi in equation eqn.
     if S has AbelianSemiGroup then
         AbelianSemiGroup
-        "+": (S, $) -> $
+        "+": (S, %) -> %
             ++ x+eqn produces a new equation by adding x to both sides of
             ++ equation eqn.
-        "+": ($, S) -> $
+        "+": (%, S) -> %
             ++ eqn+x produces a new equation by adding x to  both sides of
             ++ equation eqn.
     if S has AbelianGroup then
         AbelianGroup
-        leftZero : $ -> $
+        leftZero : % -> %
           ++ leftZero(eq) subtracts the left hand side.
-        rightZero : $ -> $
+        rightZero : % -> %
           ++ rightZero(eq) subtracts the right hand side.
-        "-": (S, $) -> $
+        "-": (S, %) -> %
             ++ x-eqn produces a new equation by subtracting both sides of
             ++ equation eqn from x.
-        "-": ($, S) -> $
+        "-": (%, S) -> %
             ++ eqn-x produces a new equation by subtracting x from  both sides of
             ++ equation eqn.
     if S has SemiGroup then
         SemiGroup
-        "*": (S, $) -> $
+        "*": (S, %) -> %
             ++ x*eqn produces a new equation by multiplying both sides of
             ++ equation eqn by x.
-        "*": ($, S) -> $
+        "*": (%, S) -> %
             ++ eqn*x produces a new equation by multiplying both sides of
             ++ equation eqn by x.
     if S has Monoid then
         Monoid
-        leftOne : $ -> Union($,"failed")
+        leftOne : % -> Union(%,"failed")
           ++ leftOne(eq) divides by the left hand side, if possible.
-        rightOne : $ -> Union($,"failed")
+        rightOne : % -> Union(%,"failed")
           ++ rightOne(eq) divides by the right hand side, if possible.
     if S has Group then
         Group
-        leftOne : $ -> Union($,"failed")
+        leftOne : % -> Union(%,"failed")
           ++ leftOne(eq) divides by the left hand side.
-        rightOne : $ -> Union($,"failed")
+        rightOne : % -> Union(%,"failed")
           ++ rightOne(eq) divides by the right hand side.
     if S has Ring then
       Ring
@@ -104,7 +104,7 @@ Equation(S: Type): public == private where
       Module(S)
       --Algebra(S)
     if S has IntegralDomain then
-      factorAndSplit : $ -> List $
+      factorAndSplit : % -> List %
         ++ factorAndSplit(eq) make the right hand side 0 and
         ++ factors the new left hand side. Each factor is equated
         ++ to 0 and put into the resulting list without repetitions.
@@ -112,19 +112,19 @@ Equation(S: Type): public == private where
       PartialDifferentialRing(Symbol)
     if S has Field then
       VectorSpace(S)
-      "/": ($, $) -> $
+      "/": (%, %) -> %
           ++ e1/e2 produces a new equation by dividing the left and right
           ++ hand sides of equations e1 and e2.
-      inv: $ -> $
+      inv: % -> %
           ++ inv(x) returns the multiplicative inverse of x.
     if S has ExpressionSpace then
-        subst: ($, $) -> $
+        subst: (%, %) -> %
              ++ subst(eq1,eq2) substitutes eq2 into both sides of eq1
              ++ the lhs of eq2 should be a kernel
 
   private ==> add
     Rep := Record(lhs: S, rhs: S)
-    eq1,eq2: $
+    eq1,eq2: %
     s : S
     if S has IntegralDomain then
         factorAndSplit eq ==
@@ -147,17 +147,17 @@ Equation(S: Type): public == private where
         eval(eqn,s,x) == eval(eqn.lhs,s,x) = eval(eqn.rhs,s,x)
         eval(eqn,ls,lx) == eval(eqn.lhs,ls,lx) = eval(eqn.rhs,ls,lx)
     if S has Evalable(S) then
-        eval(eqn1:$, eqn2:$):$ ==
+        eval(eqn1:%, eqn2:%):% ==
            eval(eqn1.lhs, eqn2 pretend Equation S) =
                eval(eqn1.rhs, eqn2 pretend Equation S)
-        eval(eqn1:$, leqn2:List $):$ ==
+        eval(eqn1:%, leqn2:List %):% ==
            eval(eqn1.lhs, leqn2 pretend List Equation S) =
                eval(eqn1.rhs, leqn2 pretend List Equation S)
     if S has SetCategory then
         eq1 = eq2 == (eq1.lhs = eq2.lhs)@Boolean and
                      (eq1.rhs = eq2.rhs)@Boolean
-        coerce(eqn:$):Ex == eqn.lhs::Ex = eqn.rhs::Ex
-        coerce(eqn:$):Boolean == eqn.lhs = eqn.rhs
+        coerce(eqn:%):Ex == eqn.lhs::Ex = eqn.rhs::Ex
+        coerce(eqn:%):Boolean == eqn.lhs = eqn.rhs
     if S has AbelianSemiGroup then
         eq1 + eq2 == eq1.lhs + eq2.lhs = eq1.rhs + eq2.rhs
         s + eq2 == [s,s] + eq2
@@ -171,10 +171,10 @@ Equation(S: Type): public == private where
         0 == equation(0$S,0$S)
         eq1 - eq2 == eq1.lhs - eq2.lhs = eq1.rhs - eq2.rhs
     if S has SemiGroup then
-        eq1:$ * eq2:$ == eq1.lhs * eq2.lhs = eq1.rhs * eq2.rhs
-        l:S   * eqn:$ == l       * eqn.lhs = l       * eqn.rhs
-        l:S * eqn:$  ==  l * eqn.lhs    =    l * eqn.rhs
-        eqn:$ * l:S  ==  eqn.lhs * l    =    eqn.rhs * l
+        eq1:% * eq2:% == eq1.lhs * eq2.lhs = eq1.rhs * eq2.rhs
+        l:S   * eqn:% == l       * eqn.lhs = l       * eqn.rhs
+        l:S * eqn:%  ==  l * eqn.lhs    =    l * eqn.rhs
+        eqn:% * l:S  ==  eqn.lhs * l    =    eqn.rhs * l
         -- We have to be a bit careful here: raising to a +ve integer is OK
         -- (since it's the equivalent of repeated multiplication)
         -- but other powers may cause contradictions
@@ -197,7 +197,7 @@ Equation(S: Type): public == private where
         rightOne eq == lhs eq * inv rhs eq = 1
     if S has Ring then
         characteristic() == characteristic()$S
-        i:Integer * eq:$ == (i::S) * eq
+        i:Integer * eq:% == (i::S) * eq
     if S has IntegralDomain then
         factorAndSplit eq ==
           (S has factor : S -> Factored S) =>
@@ -211,11 +211,11 @@ Equation(S: Type): public == private where
             [equation((rcf.factor) pretend S,0) for rcf in factors factor(p)$MF]
           [eq]
     if S has PartialDifferentialRing(Symbol) then
-        differentiate(eq:$, sym:Symbol):$ ==
+        differentiate(eq:%, sym:Symbol):% ==
            [differentiate(lhs eq, sym), differentiate(rhs eq, sym)]
     if S has Field then
         dimension() == 2 :: CardinalNumber
-        eq1:$ / eq2:$ == eq1.lhs / eq2.lhs = eq1.rhs / eq2.rhs
+        eq1:% / eq2:% == eq1.lhs / eq2.lhs = eq1.rhs / eq2.rhs
         inv eq == [inv lhs eq, inv rhs eq]
     if S has ExpressionSpace then
         subst(eq1,eq2) ==
@@ -262,20 +262,20 @@ EquationFunctions2(S: Type, R: Type): with
 ++    This category provides a selection of evaluation operations
 ++    depending on what the argument type R provides.
 FullyEvalableOver(R:SetCategory): Category == with
-    map: (R -> R, $) -> $
+    map: (R -> R, %) -> %
         ++ map(f, ex) evaluates ex, applying f to values of type R in ex.
-    if R has Eltable(R, R) then Eltable(R, $)
+    if R has Eltable(R, R) then Eltable(R, %)
     if R has Evalable(R) then Evalable(R)
     if R has InnerEvalable(Symbol, R) then InnerEvalable(Symbol, R)
  add
     if R has Eltable(R, R) then
-      elt(x : $, r : R) == map(y +-> y(r), x)
+      elt(x : %, r : R) == map(y +-> y(r), x)
 
     if R has Evalable(R) then
-      eval(x : $, l : List Equation R) == map(y +-> eval(y, l), x)
+      eval(x : %, l : List Equation R) == map(y +-> eval(y, l), x)
 
     if R has InnerEvalable(Symbol, R) then
-      eval(x : $, ls : List Symbol, lv : List R) ==
+      eval(x : %, ls : List Symbol, lv : List R) ==
           map(y +-> eval(y, ls, lv), x)
 
 @

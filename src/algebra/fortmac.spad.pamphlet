@@ -34,7 +34,7 @@ MachineInteger(): Exports == Implementation where
      ++ maxint(u) sets the maximum integer in the model to u
     maxint : () -> PositiveInteger
      ++ maxint() returns the maximum integer in the model
-    coerce : Expression Integer -> Expression $
+    coerce : Expression Integer -> Expression %
      ++ coerce(x) returns x with coefficients in the domain
 
   Implementation  ==> Integer add
@@ -48,19 +48,19 @@ MachineInteger(): Exports == Implementation where
       MAXINT := new
       old
 
-    coerce(u:Expression Integer):Expression($) ==
-      map(coerce,u)$ExpressionFunctions2(Integer,$)
+    coerce(u:Expression Integer):Expression(%) ==
+      map(coerce,u)$ExpressionFunctions2(Integer,%)
 
-    coerce(u:Integer):$ ==
+    coerce(u:Integer):% ==
       import S
       abs(u) > MAXINT =>
         message: S := concat [convert(u)@S,"  > MAXINT(",convert(MAXINT)@S,")"]
         error message
-      u pretend $
+      u pretend %
 
-    retract(u:$):Integer == u pretend Integer
+    retract(u:%):Integer == u pretend Integer
 
-    retractIfCan(u:$):Union(Integer,"failed") == u pretend Integer
+    retractIfCan(u:%):Union(Integer,"failed") == u pretend Integer
 
 @
 \section{domain MFLOAT MachineFloat}
@@ -108,15 +108,15 @@ MachineFloat(): Exports == Implementation where
       ++ minimumExponent(e) sets the minimum exponent in the model to e
     minimumExponent : () -> I
       ++ minimumExponent() returns the minimum exponent in the model
-    coerce : $ -> F
+    coerce : % -> F
       ++ coerce(u) transforms a MachineFloat to a standard Float
-    coerce : MachineInteger -> $
+    coerce : MachineInteger -> %
       ++ coerce(u) transforms a MachineInteger into a MachineFloat
-    mantissa  : $ -> I
+    mantissa  : % -> I
       ++ mantissa(u) returns the mantissa of u
-    exponent  : $ -> I
+    exponent  : % -> I
       ++ exponent(u) returns the exponent of u
-    changeBase : (I,I,PI) -> $
+    changeBase : (I,I,PI) -> %
       ++ changeBase(exp,man,base) \undocumented{}
 
   Implementation ==> add
@@ -140,21 +140,21 @@ MachineFloat(): Exports == Implementation where
 
     -- locals
     locRound:(FI)->I
-    checkExponent:($)->$
-    normalise:($)->$
+    checkExponent:(%)->%
+    normalise:(%)->%
     newPower:(PI,PI)->Void
 
-    retractIfCan(u:$):Union(FI,"failed") ==
+    retractIfCan(u:%):Union(FI,"failed") ==
       mantissa(u)*(B/1)^(exponent(u))
 
-    wholePart(u:$):Integer ==
+    wholePart(u:%):Integer ==
        man:I:=mantissa u
        exp:I:=exponent u
        f:=
            positive? exp => man*B^(exp pretend PI)
            zero? exp => man
            wholePart(man/B^((-exp) pretend PI))
-    normalise(u:$):$ ==
+    normalise(u:%):% ==
       -- We want the largest possible mantissa, to ensure a canonical
       -- representation.
       exp : I  := exponent u
@@ -176,8 +176,8 @@ MachineFloat(): Exports == Implementation where
       positive?(sgn) => checkExponent [man,exp]$Rep
       checkExponent [-man,exp]$Rep
 
-    mantissa(u:$):I == elt(u,mantissa)$Rep
-    exponent(u:$):I == elt(u,exponent)$Rep
+    mantissa(u:%):I == elt(u,mantissa)$Rep
+    exponent(u:%):I == elt(u,exponent)$Rep
 
     newPower(base:PI,prec:PI):Void ==
       power   : PI := 1
@@ -188,7 +188,7 @@ MachineFloat(): Exports == Implementation where
       MMAX  := B^POWER
       void()
 
-    changeBase(exp:I,man:I,base:PI):$ ==
+    changeBase(exp:I,man:I,base:PI):% ==
       newExp : I  := 0
       f      : FI := man*(base pretend I)::FI^exp
       sign   : I  := sign f
@@ -208,48 +208,48 @@ MachineFloat(): Exports == Implementation where
           newMan := wholePart f
       [sign*newMan,newExp]$Rep
 
-    checkExponent(u:$):$ ==
+    checkExponent(u:%):% ==
       exponent(u) < EMIN or exponent(u) > EMAX =>
         message :S := concat(["Exponent out of range: ",
                               convert(EMIN)@S, "..", convert(EMAX)@S])$S
         error message
       u
 
-    coerce(u:$):OutputForm ==
+    coerce(u:%):OutputForm ==
       coerce(u::F)
 
-    coerce(u:MachineInteger):$ ==
+    coerce(u:MachineInteger):% ==
       checkExponent changeBase(0,retract(u)@Integer,10)
 
-    coerce(u:$):F ==
+    coerce(u:%):F ==
       oldDigits : PI := digits(P)$F
       r : F := float(mantissa u,exponent u,B)$Float
       digits(oldDigits)$F
       r
 
-    coerce(u:F):$ ==
+    coerce(u:F):% ==
       checkExponent changeBase(exponent(u)$F,mantissa(u)$F,base()$F)
 
-    coerce(u:I):$ ==
+    coerce(u:I):% ==
        checkExponent changeBase(0,u,10)
 
-    coerce(u:FI):$ == (numer u)::$/(denom u)::$
+    coerce(u:FI):% == (numer u)::%/(denom u)::%
 
-    retract(u:$):FI ==
+    retract(u:%):FI ==
       value : Union(FI,"failed") := retractIfCan(u)
       value case "failed" => error "Cannot retract to a Fraction Integer"
       value::FI
 
-    retract(u:$):F == u::F
+    retract(u:%):F == u::F
 
-    retractIfCan(u:$):Union(F,"failed") == u::F::Union(F,"failed")
+    retractIfCan(u:%):Union(F,"failed") == u::F::Union(F,"failed")
 
-    retractIfCan(u:$):Union(I,"failed") ==
+    retractIfCan(u:%):Union(I,"failed") ==
       value:FI := mantissa(u)*(B pretend I)::FI^exponent(u)
       zero? fractionPart(value) => wholePart(value)::Union(I,"failed")
       "failed"::Union(I,"failed")
 
-    retract(u:$):I ==
+    retract(u:%):I ==
       result : Union(I,"failed") := retractIfCan u
       result = "failed" => error "Not an Integer"
       result::I
@@ -287,12 +287,12 @@ MachineFloat(): Exports == Implementation where
     0 == [0,0]$Rep
     1 == changeBase(0,1,10)
 
-    zero?(u:$):Boolean == u=[0,0]$Rep
+    zero?(u:%):Boolean == u=[0,0]$Rep
 
 
 
-    f1:$
-    f2:$
+    f1:%
+    f2:%
 
 
     locRound(x:FI):I ==
@@ -385,32 +385,32 @@ MachineComplex():Exports == Implementation where
 
   Exports ==> Join (FortranMachineTypeCategory,
                     ComplexCategory(MachineFloat)) with
-    coerce : Complex Float -> $
+    coerce : Complex Float -> %
       ++ coerce(u) transforms u into a MachineComplex
-    coerce : Complex Integer -> $
+    coerce : Complex Integer -> %
       ++ coerce(u) transforms u into a MachineComplex
-    coerce : Complex MachineFloat -> $
+    coerce : Complex MachineFloat -> %
       ++ coerce(u) transforms u into a MachineComplex
-    coerce : Complex MachineInteger -> $
+    coerce : Complex MachineInteger -> %
       ++ coerce(u) transforms u into a MachineComplex
-    coerce : $ -> Complex Float
+    coerce : % -> Complex Float
       ++ coerce(u) transforms u into a COmplex Float
 
   Implementation ==> Complex MachineFloat add
 
-    coerce(u:Complex Float):$ ==
+    coerce(u:Complex Float):% ==
       complex(real(u)::MachineFloat,imag(u)::MachineFloat)
 
-    coerce(u:Complex Integer):$ ==
+    coerce(u:Complex Integer):% ==
       complex(real(u)::MachineFloat,imag(u)::MachineFloat)
 
-    coerce(u:Complex MachineInteger):$ ==
+    coerce(u:Complex MachineInteger):% ==
       complex(real(u)::MachineFloat,imag(u)::MachineFloat)
 
-    coerce(u:Complex MachineFloat):$ ==
+    coerce(u:Complex MachineFloat):% ==
       complex(real(u),imag(u))
 
-    coerce(u:$):Complex Float ==
+    coerce(u:%):Complex Float ==
       complex(real(u)::Float,imag(u)::Float)
 
 @

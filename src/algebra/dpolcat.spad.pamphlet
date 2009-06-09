@@ -72,41 +72,41 @@ DifferentialVariableCategory(S:OrderedSet): Category ==
   Join(OrderedSet, RetractableTo S) with
     -- Examples:
     -- v:=makeVariable('s,5)
-    makeVariable  : (S, NonNegativeInteger) -> $
+    makeVariable  : (S, NonNegativeInteger) -> %
        ++ makeVariable(s, n) returns the n-th derivative of a
        ++ differential indeterminate s as an algebraic indeterminate.
        -- Example: makeVariable('s, 5)
-    order         : $ -> NonNegativeInteger
+    order         : % -> NonNegativeInteger
        ++ order(v) returns n if v is the n-th derivative of any
        ++ differential indeterminate.
        -- Example: order(v)
-    variable      : $ -> S
+    variable      : % -> S
        ++ variable(v) returns s if v is any derivative of the differential
        ++ indeterminate s.
        -- Example: variable(v)
           --  default implementation using above primitives --
 
-    weight        : $ -> NonNegativeInteger
+    weight        : % -> NonNegativeInteger
        ++ weight(v) returns the weight of the derivative v.
        -- Example: weight(v)
-    differentiate : $ -> $
+    differentiate : % -> %
        ++ differentiate(v) returns the derivative of v.
        -- Example: differentiate(v)
-    differentiate : ($, NonNegativeInteger) -> $
+    differentiate : (%, NonNegativeInteger) -> %
        ++ differentiate(v, n) returns the n-th derivative of v.
        -- Example: differentiate(v,2)
-    coerce        : S  -> $
+    coerce        : S  -> %
        ++ coerce(s) returns s, viewed as the zero-th order derivative of s.
        -- Example: coerce('s); differentiate(%,5)
  add
     import NumberFormats
-    coerce (s:S):$ == makeVariable(s, 0)
+    coerce (s:S):% == makeVariable(s, 0)
     differentiate v     == differentiate(v, 1)
     differentiate(v, n) == makeVariable(variable v, n + order v)
     retractIfCan v == (zero?(order v) => variable v; "failed")
     v = u      == (variable v = variable u) and (order v = order u)
 
-    coerce(v:$):OutputForm ==
+    coerce(v:%):OutputForm ==
       a := variable(v)::OutputForm
       zero?(nn := order v) => a
       sub(a, outputForm nn)
@@ -244,7 +244,7 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
     --  all functions below have default implementations
     --  using primitives from V
 
-    makeVariable: S -> (NonNegativeInteger -> $)
+    makeVariable: S -> (NonNegativeInteger -> %)
        ++ makeVariable(s) views s as a differential
        ++ indeterminate,  in such a way that the n-th
        ++ derivative of s may be simply referenced as z.n
@@ -253,58 +253,58 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
        ++ given as an internal map, which may be ignored.
        -- Example: makeVariable('s); %.5
 
-    differentialVariables: $ ->  List S
+    differentialVariables: % ->  List S
       ++ differentialVariables(p) returns a list of differential
       ++ indeterminates occurring in a differential polynomial p.
-    order : ($, S) -> NonNegativeInteger
+    order : (%, S) -> NonNegativeInteger
       ++ order(p,s) returns the order of the differential
       ++ polynomial p in differential indeterminate s.
-    order : $   -> NonNegativeInteger
+    order : %   -> NonNegativeInteger
       ++ order(p) returns the order of the differential polynomial p,
       ++ which is the maximum number of differentiations of a
       ++ differential indeterminate, among all those appearing in p.
-    degree: ($, S) -> NonNegativeInteger
+    degree: (%, S) -> NonNegativeInteger
       ++ degree(p, s) returns the maximum degree of
       ++ the differential polynomial p viewed as a differential polynomial
       ++ in the differential indeterminate s alone.
-    weights: $ -> List NonNegativeInteger
+    weights: % -> List NonNegativeInteger
       ++ weights(p) returns a list of weights of differential monomials
       ++ appearing in differential polynomial p.
-    weight: $   -> NonNegativeInteger
+    weight: %   -> NonNegativeInteger
       ++ weight(p) returns the maximum weight of all differential monomials
       ++ appearing in the differential polynomial p.
-    weights: ($, S) -> List NonNegativeInteger
+    weights: (%, S) -> List NonNegativeInteger
       ++ weights(p, s) returns a list of
       ++ weights of differential monomials
       ++ appearing in the differential polynomial p when p is viewed
       ++ as a differential polynomial in the differential indeterminate s
       ++ alone.
-    weight: ($, S) -> NonNegativeInteger
+    weight: (%, S) -> NonNegativeInteger
       ++ weight(p, s) returns the maximum weight of all differential
       ++ monomials appearing in the differential polynomial p
       ++ when p is viewed as a differential polynomial in
       ++ the differential indeterminate s alone.
-    isobaric?: $ -> Boolean
+    isobaric?: % -> Boolean
       ++ isobaric?(p) returns true if every differential monomial appearing
       ++ in the differential polynomial p has same weight,
       ++ and returns false otherwise.
-    leader: $   -> V
+    leader: %   -> V
       ++ leader(p) returns the derivative of the highest rank
       ++ appearing in the differential polynomial p
       ++ Note: an error occurs if p is in the ground ring.
-    initial:$   -> $
+    initial:%   -> %
       ++ initial(p) returns the
       ++ leading coefficient when the differential polynomial p
       ++ is written as a univariate polynomial in its leader.
-    separant:$  -> $
+    separant:%  -> %
       ++ separant(p) returns the
       ++ partial derivative of the differential polynomial p
       ++ with respect to its leader.
     if R has DifferentialRing then
       InnerEvalable(S, R)
-      InnerEvalable(S, $)
-      Evalable $
-      makeVariable: $ -> (NonNegativeInteger -> $)
+      InnerEvalable(S, %)
+      Evalable %
+      makeVariable: % -> (NonNegativeInteger -> %)
        ++ makeVariable(p) views p as an element of a differential
        ++ ring,  in such a way that the n-th
        ++ derivative of p may be simply referenced as z.n
@@ -314,26 +314,26 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
        -- Example: makeVariable(p); %.5; makeVariable(%^2); %.2
 
  add
-    p:$
+    p:%
     s:S
-    makeVariable s == n +-> makeVariable(s, n)::$
+    makeVariable s == n +-> makeVariable(s, n)::%
 
     if R has IntegralDomain then
-      differentiate(p:$, d:R -> R) ==
-        ans:$ := 0
+      differentiate(p:%, d:R -> R) ==
+        ans:% := 0
         l := variables p
         while (u:=retractIfCan(p)@Union(R, "failed")) case "failed" repeat
           t := leadingMonomial p
           lc := leadingCoefficient t
-          ans := ans + d(lc)::$ * (t exquo lc)::$
-              + +/[differentiate(t, v) * (differentiate v)::$ for v in l]
+          ans := ans + d(lc)::% * (t exquo lc)::%
+              + +/[differentiate(t, v) * (differentiate v)::% for v in l]
           p := reductum p
-        ans + d(u::R)::$
+        ans + d(u::R)::%
 
-    order (p:$):NonNegativeInteger ==
+    order (p:%):NonNegativeInteger ==
       ground? p => 0
       "max"/[order v for v in variables p]
-    order (p:$,s:S):NonNegativeInteger ==
+    order (p:%,s:S):NonNegativeInteger ==
       ground? p => 0
       empty? (vv:= [order v for v in variables p | (variable v) = s ]) =>0
       "max"/vv
@@ -384,9 +384,9 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
     initial p == leadingCoefficient univariate(p,leader p)
     separant p == differentiate(p, leader p)
 
-    coerce(s:S):$   == s::V::$
+    coerce(s:S):%   == s::V::%
 
-    retractIfCan(p:$):Union(S, "failed") ==
+    retractIfCan(p:%):Union(S, "failed") ==
       (v := retractIfCan(p)@Union(V,"failed")) case "failed" => "failed"
       retractIfCan(v::V)
 
@@ -397,7 +397,7 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
 
       makeVariable p == n +-> differentiate(p, n)
 
-      eval(p:$, sl:List S, rl:List R) ==
+      eval(p:%, sl:List S, rl:List R) ==
         ordp:= order p
         vl  := concat [[makeVariable(s,j)$V for j in  0..ordp]
                                 for s in sl]$List(List V)
@@ -408,19 +408,19 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
                 concat(r, [t := differentiate t for i in 1..ordp]))
         eval(p, vl, rrl)
 
-      eval(p:$, sl:List S, rl:List $) ==
+      eval(p:%, sl:List S, rl:List %) ==
         ordp:= order p
         vl  := concat [[makeVariable(s,j)$V for j in  0..ordp]
                                 for s in sl]$List(List V)
-        rrl:=nil$List($)
+        rrl:=nil$List(%)
         for r in rl repeat
           t:=r
           rrl:=concat(rrl,
                concat(r, [t:=differentiate t for i in 1..ordp]))
         eval(p, vl, rrl)
-      eval(p:$, l:List Equation $) ==
+      eval(p:%, l:List Equation %) ==
         eval(p, [retract(lhs e)@S for e in l]$List(S),
-              [rhs e for e in l]$List($))
+              [rhs e for e in l]$List(%))
 
 @
 \section{domain DSMP DifferentialSparseMultivariatePolynomial}
@@ -460,14 +460,14 @@ DifferentialSparseMultivariatePolynomial(R, S, V):
                    RetractableTo SMP)
 
   Implementation ==> P add
-    retractIfCan(p:$):Union(SMP, "failed") ==
+    retractIfCan(p:%):Union(SMP, "failed") ==
       zero? order p =>
         map(x +-> retract(x)@S :: SMP, x +-> x::SMP, p)$PCL(
-                                  IndexedExponents V, V, R, $, SMP)
+                                  IndexedExponents V, V, R, %, SMP)
       "failed"
 
-    coerce(p:SMP):$ ==
-      map(x +-> x::V::$, x +-> x::$, p)$PCL(IndexedExponents S, S, R, SMP, $)
+    coerce(p:SMP):% ==
+      map(x +-> x::V::%, x +-> x::%, p)$PCL(IndexedExponents S, S, R, SMP, %)
 
 @
 \section{domain ODPOL OrderlyDifferentialPolynomial}

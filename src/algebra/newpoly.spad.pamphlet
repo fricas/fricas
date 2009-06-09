@@ -40,54 +40,54 @@ NewSparseUnivariatePolynomial(R): Exports == Implementation where
      fmecg : (%,NNI,R,%) -> %
         ++ \axiom{fmecg(p1,e,r,p2)} returns \axiom{p1 - r * X^e * p2}
         ++ where \axiom{X} is \axiom{monomial(1,1)}
-     monicModulo : ($, $) -> $
+     monicModulo : (%, %) -> %
         ++ \axiom{monicModulo(a,b)} returns \axiom{r} such that \axiom{r} is
         ++ reduced w.r.t. \axiom{b} and \axiom{b} divides \axiom{a -r}
         ++ where \axiom{b} is monic.
-     lazyResidueClass: ($,$) -> Record(polnum:$, polden:R, power:NNI)
+     lazyResidueClass: (%,%) -> Record(polnum:%, polden:R, power:NNI)
         ++ \axiom{lazyResidueClass(a,b)} returns \axiom{[r,c,n]} such that
         ++ \axiom{r} is reduced w.r.t. \axiom{b} and \axiom{b} divides
         ++ \axiom{c^n * a - r} where \axiom{c} is \axiom{leadingCoefficient(b)}
         ++ and \axiom{n} is as small as possible with the previous properties.
-     lazyPseudoRemainder: ($,$) -> $
+     lazyPseudoRemainder: (%,%) -> %
         ++ \axiom{lazyPseudoRemainder(a,b)} returns \axiom{r} if \axiom{lazyResidueClass(a,b)}
         ++ returns \axiom{[r,c,n]}. This lazy pseudo-remainder is computed by
         ++ means of the \axiomOpFrom{fmecg}{NewSparseUnivariatePolynomial} operation.
-     lazyPseudoDivide: ($,$) -> Record(coef:R, gap:NNI, quotient:$, remainder: $)
+     lazyPseudoDivide: (%,%) -> Record(coef:R, gap:NNI, quotient:%, remainder: %)
         ++ \axiom{lazyPseudoDivide(a,b)} returns \axiom{[c,g,q,r]} such that
         ++ \axiom{c^n * a = q*b +r} and \axiom{lazyResidueClass(a,b)} returns \axiom{[r,c,n]}
         ++ where \axiom{n + g = max(0, degree(b) - degree(a) + 1)}.
-     lazyPseudoQuotient: ($,$) -> $
+     lazyPseudoQuotient: (%,%) -> %
         ++ \axiom{lazyPseudoQuotient(a,b)} returns \axiom{q} if \axiom{lazyPseudoDivide(a,b)}
         ++ returns \axiom{[c,g,q,r]}
      if R has IntegralDomain
      then
-       subResultantsChain: ($, $) -> List $
+       subResultantsChain: (%, %) -> List %
          ++ \axiom{subResultantsChain(a,b)} returns the list of the non-zero
          ++ sub-resultants of \axiom{a} and \axiom{b} sorted by increasing
          ++ degree.
-       lastSubResultant: ($, $) -> $
+       lastSubResultant: (%, %) -> %
          ++ \axiom{lastSubResultant(a,b)} returns \axiom{resultant(a,b)}
          ++ if \axiom{a} and \axiom{b} has no non-trivial gcd in \axiom{R^(-1) P}
          ++ otherwise the non-zero sub-resultant with smallest index.
-       extendedSubResultantGcd: ($, $) -> Record(gcd: $, coef1: $, coef2: $)
+       extendedSubResultantGcd: (%, %) -> Record(gcd: %, coef1: %, coef2: %)
          ++ \axiom{extendedSubResultantGcd(a,b)} returns \axiom{[g,ca, cb]} such
          ++ that \axiom{g} is a gcd of \axiom{a} and \axiom{b} in \axiom{R^(-1) P}
          ++ and \axiom{g = ca * a + cb * b}
-       halfExtendedSubResultantGcd1: ($, $) -> Record(gcd: $, coef1: $)
+       halfExtendedSubResultantGcd1: (%, %) -> Record(gcd: %, coef1: %)
          ++ \axiom{halfExtendedSubResultantGcd1(a,b)} returns \axiom{[g,ca]} such that
          ++ \axiom{extendedSubResultantGcd(a,b)} returns \axiom{[g,ca, cb]}
-       halfExtendedSubResultantGcd2: ($, $) -> Record(gcd: $, coef2: $)
+       halfExtendedSubResultantGcd2: (%, %) -> Record(gcd: %, coef2: %)
          ++ \axiom{halfExtendedSubResultantGcd2(a,b)} returns \axiom{[g,cb]} such that
          ++ \axiom{extendedSubResultantGcd(a,b)} returns \axiom{[g,ca, cb]}
-       extendedResultant: ($, $) -> Record(resultant: R, coef1: $, coef2: $)
+       extendedResultant: (%, %) -> Record(resultant: R, coef1: %, coef2: %)
          ++ \axiom{extendedResultant(a,b)} returns  \axiom{[r,ca,cb]} such that
          ++ \axiom{r} is the resultant of \axiom{a} and \axiom{b} and
          ++ \axiom{r = ca * a + cb * b}
-       halfExtendedResultant1: ($, $) -> Record(resultant: R, coef1: $)
+       halfExtendedResultant1: (%, %) -> Record(resultant: R, coef1: %)
          ++ \axiom{halfExtendedResultant1(a,b)} returns \axiom{[r,ca]} such that
          ++ \axiom{extendedResultant(a,b)}  returns \axiom{[r,ca, cb]}
-       halfExtendedResultant2: ($, $) -> Record(resultant: R, coef2: $)
+       halfExtendedResultant2: (%, %) -> Record(resultant: R, coef2: %)
          ++ \axiom{halfExtendedResultant2(a,b)} returns \axiom{[r,ca]} such that
          ++ \axiom{extendedResultant(a,b)} returns \axiom{[r,ca, cb]}
 
@@ -96,16 +96,16 @@ NewSparseUnivariatePolynomial(R): Exports == Implementation where
      Term == Record(k:NonNegativeInteger,c:R)
      Rep ==> List Term
 
-     rep(s:$):Rep == s pretend Rep
-     per(l:Rep):$ == l pretend $
+     rep(s:%):Rep == s pretend Rep
+     per(l:Rep):% == l pretend %
 
-     coerce (p:$):SUPR ==
+     coerce (p:%):SUPR ==
        p pretend SUPR
 
-     coerce (p:SUPR):$ ==
-       p pretend $
+     coerce (p:SUPR):% ==
+       p pretend %
 
-     retractIfCan (p:$) : Union(SUPR,"failed") ==
+     retractIfCan (p:%) : Union(SUPR,"failed") ==
        (p pretend SUPR)::Union(SUPR,"failed")
 
      monicModulo(x,y) ==
@@ -204,27 +204,27 @@ NewSparseUnivariatePolynomial(R): Exports == Implementation where
        resultant(p1,p2) == resultant(p1,p2)$pack
 
        extendedResultant(p1,p2) ==
-          re: Record(coef1: $, coef2: $, resultant: R) := resultantEuclidean(p1,p2)$pack
+          re: Record(coef1: %, coef2: %, resultant: R) := resultantEuclidean(p1,p2)$pack
           [re.resultant, re.coef1, re.coef2]
 
-       halfExtendedResultant1(p1:$, p2: $): Record(resultant: R, coef1: $) ==
-          re: Record(coef1: $, resultant: R) := semiResultantEuclidean1(p1, p2)$pack
+       halfExtendedResultant1(p1:%, p2: %): Record(resultant: R, coef1: %) ==
+          re: Record(coef1: %, resultant: R) := semiResultantEuclidean1(p1, p2)$pack
           [re.resultant, re.coef1]
 
-       halfExtendedResultant2(p1:$, p2: $): Record(resultant: R, coef2: $) ==
-          re: Record(coef2: $, resultant: R) := semiResultantEuclidean2(p1, p2)$pack
+       halfExtendedResultant2(p1:%, p2: %): Record(resultant: R, coef2: %) ==
+          re: Record(coef2: %, resultant: R) := semiResultantEuclidean2(p1, p2)$pack
           [re.resultant, re.coef2]
 
        extendedSubResultantGcd(p1,p2) ==
-          re: Record(coef1: $, coef2: $, gcd: $) := subResultantGcdEuclidean(p1,p2)$pack
+          re: Record(coef1: %, coef2: %, gcd: %) := subResultantGcdEuclidean(p1,p2)$pack
           [re.gcd, re.coef1, re.coef2]
 
-       halfExtendedSubResultantGcd1(p1:$, p2: $): Record(gcd: $, coef1: $) ==
-          re: Record(coef1: $, gcd: $) := semiSubResultantGcdEuclidean1(p1, p2)$pack
+       halfExtendedSubResultantGcd1(p1:%, p2: %): Record(gcd: %, coef1: %) ==
+          re: Record(coef1: %, gcd: %) := semiSubResultantGcdEuclidean1(p1, p2)$pack
           [re.gcd, re.coef1]
 
-       halfExtendedSubResultantGcd2(p1:$, p2: $): Record(gcd: $, coef2: $) ==
-          re: Record(coef2: $, gcd: $) := semiSubResultantGcdEuclidean2(p1, p2)$pack
+       halfExtendedSubResultantGcd2(p1:%, p2: %): Record(gcd: %, coef2: %) ==
+          re: Record(coef2: %, gcd: %) := semiSubResultantGcdEuclidean2(p1, p2)$pack
           [re.gcd, re.coef2]
 
        pseudoDivide(x,y) ==
@@ -319,156 +319,156 @@ NewSparseUnivariatePolynomialFunctions2(R:Ring, S:Ring): with
 
 RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Category ==
   PolynomialCategory(R, E, V) with
-     mvar : $ -> V
+     mvar : % -> V
          ++ \axiom{mvar(p)} returns an error if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns its main variable w. r. t. to the total ordering
          ++ on the elements in \axiom{V}.
-     mdeg  : $ -> NonNegativeInteger
+     mdeg  : % -> NonNegativeInteger
          ++ \axiom{mdeg(p)} returns an error if \axiom{p} is \axiom{0},
          ++ otherwise, if \axiom{p} belongs to \axiom{R} returns \axiom{0},
          ++ otherwise, returns the degree of \axiom{p} in its main variable.
-     init : $ -> $
+     init : % -> %
          ++ \axiom{init(p)} returns an error if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns its leading coefficient, where \axiom{p} is viewed
          ++ as a univariate polynomial in its main variable.
-     head  : $ -> $
+     head  : % -> %
          ++ \axiom{head(p)} returns \axiom{p} if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns its leading term (monomial in the FriCAS sense),
          ++ where \axiom{p} is viewed as a univariate polynomial in its main variable.
-     tail  : $ -> $
+     tail  : % -> %
          ++ \axiom{tail(p)} returns its reductum, where \axiom{p} is viewed as a univariate
          ++ polynomial in its main variable.
-     deepestTail : $ -> $
+     deepestTail : % -> %
          ++ \axiom{deepestTail(p)} returns \axiom{0} if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns tail(p), if \axiom{tail(p)} belongs to  \axiom{R}
          ++ or \axiom{mvar(tail(p)) < mvar(p)}, otherwise returns \axiom{deepestTail(tail(p))}.
-     iteratedInitials : $ -> List $
+     iteratedInitials : % -> List %
          ++ \axiom{iteratedInitials(p)} returns \axiom{[]} if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns the list of the iterated initials of \axiom{p}.
-     deepestInitial : $ -> $
+     deepestInitial : % -> %
          ++ \axiom{deepestInitial(p)} returns an error if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns the last term of \axiom{iteratedInitials(p)}.
-     leadingCoefficient : ($,V) -> $
+     leadingCoefficient : (%,V) -> %
          ++ \axiom{leadingCoefficient(p,v)} returns the leading coefficient of \axiom{p},
          ++ where \axiom{p} is viewed as A univariate polynomial in \axiom{v}.
-     reductum  : ($,V) -> $
+     reductum  : (%,V) -> %
          ++ \axiom{reductum(p,v)} returns the reductum of \axiom{p}, where \axiom{p} is viewed as
          ++ a univariate polynomial in \axiom{v}.
-     monic? : $ -> Boolean
+     monic? : % -> Boolean
          ++ \axiom{monic?(p)} returns false if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns true iff \axiom{p} is monic as a univariate polynomial
          ++ in its main variable.
-     quasiMonic? : $ -> Boolean
+     quasiMonic? : % -> Boolean
          ++ \axiom{quasiMonic?(p)} returns false if \axiom{p} belongs to \axiom{R},
          ++ otherwise returns true iff the initial of \axiom{p} lies in the base ring \axiom{R}.
-     mainMonomial : $ -> $
+     mainMonomial : % -> %
          ++ \axiom{mainMonomial(p)} returns an error if \axiom{p} is \axiom{O},
          ++ otherwise, if \axiom{p} belongs to \axiom{R} returns \axiom{1},
          ++ otherwise, \axiom{mvar(p)} raised to the power \axiom{mdeg(p)}.
-     leastMonomial : $ -> $
+     leastMonomial : % -> %
          ++ \axiom{leastMonomial(p)} returns an error if \axiom{p} is \axiom{O},
          ++ otherwise, if \axiom{p} belongs to \axiom{R} returns \axiom{1},
          ++ otherwise, the monomial of \axiom{p} with lowest degree,
          ++ where \axiom{p} is viewed as a univariate polynomial in its main variable.
-     mainCoefficients : $ -> List $
+     mainCoefficients : % -> List %
          ++ \axiom{mainCoefficients(p)} returns an error if \axiom{p} is \axiom{O},
          ++ otherwise, if \axiom{p} belongs to \axiom{R} returns [p],
          ++ otherwise returns the list of the coefficients of \axiom{p},
          ++ where \axiom{p} is viewed as a univariate polynomial in its main variable.
-     mainMonomials : $ -> List $
+     mainMonomials : % -> List %
          ++ \axiom{mainMonomials(p)} returns an error if \axiom{p} is \axiom{O},
          ++ otherwise, if \axiom{p} belongs to \axiom{R} returns [1],
          ++ otherwise returns the list of the monomials of \axiom{p},
          ++ where \axiom{p} is viewed as a univariate polynomial in its main variable.
-     RittWuCompare : ($, $) -> Union(Boolean,"failed")
+     RittWuCompare : (%, %) -> Union(Boolean,"failed")
          ++ \axiom{RittWuCompare(a,b)} returns \axiom{"failed"} if \axiom{a} and \axiom{b} have same rank w.r.t.
          ++ Ritt and Wu Wen Tsun ordering using the refinement of Lazard,
          ++ otherwise returns \axiom{infRittWu?(a,b)}.
-     infRittWu?  : ($, $) -> Boolean
+     infRittWu?  : (%, %) -> Boolean
          ++ \axiom{infRittWu?(a,b)} returns true if \axiom{a} is less than \axiom{b}
          ++ w.r.t. the Ritt and Wu Wen Tsun ordering using the refinement of Lazard.
-     supRittWu? : ($, $) -> Boolean
+     supRittWu? : (%, %) -> Boolean
          ++ \axiom{supRittWu?(a,b)} returns true if \axiom{a} is greater than \axiom{b}
          ++ w.r.t. the Ritt and Wu Wen Tsun ordering using the refinement of Lazard.
-     reduced? : ($,$) -> Boolean
+     reduced? : (%,%) -> Boolean
          ++ \axiom{reduced?(a,b)} returns true iff \axiom{degree(a,mvar(b)) < mdeg(b)}.
-     reduced? : ($,List($)) -> Boolean
+     reduced? : (%,List(%)) -> Boolean
          ++ \axiom{reduced?(q,lp)} returns true iff \axiom{reduced?(q,p)} holds
          ++ for every \axiom{p} in \axiom{lp}.
-     headReduced? : ($,$) -> Boolean
+     headReduced? : (%,%) -> Boolean
          ++ \axiom{headReduced?(a,b)} returns true iff \axiom{degree(head(a),mvar(b)) < mdeg(b)}.
-     headReduced? : ($,List($)) -> Boolean
+     headReduced? : (%,List(%)) -> Boolean
          ++ \axiom{headReduced?(q,lp)} returns true iff \axiom{headReduced?(q,p)} holds
          ++ for every \axiom{p} in \axiom{lp}.
-     initiallyReduced? : ($,$) -> Boolean
+     initiallyReduced? : (%,%) -> Boolean
          ++ \axiom{initiallyReduced?(a,b)} returns false iff there exists an iterated initial
          ++ of \axiom{a} which is not reduced w.r.t \axiom{b}.
-     initiallyReduced? :  ($,List($)) -> Boolean
+     initiallyReduced? :  (%,List(%)) -> Boolean
          ++ \axiom{initiallyReduced?(q,lp)} returns true iff \axiom{initiallyReduced?(q,p)} holds
          ++ for every \axiom{p} in \axiom{lp}.
-     normalized? : ($,$) -> Boolean
+     normalized? : (%,%) -> Boolean
          ++ \axiom{normalized?(a,b)} returns true iff \axiom{a} and its iterated initials have
          ++ degree zero w.r.t. the main variable of \axiom{b}
-     normalized? : ($,List($)) -> Boolean
+     normalized? : (%,List(%)) -> Boolean
          ++ \axiom{normalized?(q,lp)} returns true iff \axiom{normalized?(q,p)} holds
          ++ for every \axiom{p} in \axiom{lp}.
-     prem : ($, $) -> $
+     prem : (%, %) -> %
          ++ \axiom{prem(a,b)} computes the pseudo-remainder of \axiom{a} by \axiom{b},
          ++ both viewed as univariate polynomials in the main variable of \axiom{b}.
-     pquo : ($, $) -> $
+     pquo : (%, %) -> %
          ++ \axiom{pquo(a,b)} computes the pseudo-quotient of \axiom{a} by \axiom{b},
          ++ both viewed as univariate polynomials in the main variable of \axiom{b}.
-     prem : ($, $, V) -> $
+     prem : (%, %, V) -> %
          ++ \axiom{prem(a,b,v)} computes the pseudo-remainder of \axiom{a} by \axiom{b},
          ++ both viewed as univariate polynomials in \axiom{v}.
-     pquo : ($, $, V) -> $
+     pquo : (%, %, V) -> %
          ++ \axiom{pquo(a,b,v)} computes the pseudo-quotient of \axiom{a} by \axiom{b},
          ++ both viewed as univariate polynomials in \axiom{v}.
-     lazyPrem : ($, $) ->  $
+     lazyPrem : (%, %) ->  %
          ++ \axiom{lazyPrem(a,b)} returns the polynomial \axiom{r} reduced w.r.t. \axiom{b}
          ++ and such that \axiom{b} divides \axiom{init(b)^e a - r} where \axiom{e}
          ++ is the number of steps of this pseudo-division.
-     lazyPquo : ($, $) ->  $
+     lazyPquo : (%, %) ->  %
          ++ \axiom{lazyPquo(a,b)} returns the polynomial \axiom{q} such that
          ++ \axiom{lazyPseudoDivide(a,b)} returns \axiom{[c,g,q,r]}.
-     lazyPrem : ($, $, V) -> $
+     lazyPrem : (%, %, V) -> %
          ++ \axiom{lazyPrem(a,b,v)} returns the polynomial \axiom{r}
          ++ reduced w.r.t. \axiom{b} viewed as univariate polynomials in the variable
          ++ \axiom{v} such that \axiom{b} divides \axiom{init(b)^e a - r}
          ++ where \axiom{e} is the number of steps of this pseudo-division.
-     lazyPquo : ($, $, V) ->  $
+     lazyPquo : (%, %, V) ->  %
          ++ \axiom{lazyPquo(a,b,v)} returns the polynomial \axiom{q} such that
          ++ \axiom{lazyPseudoDivide(a,b,v)} returns \axiom{[c,g,q,r]}.
-     lazyPremWithDefault : ($, $) ->  Record (coef : $, gap : NonNegativeInteger, remainder : $)
+     lazyPremWithDefault : (%, %) ->  Record (coef : %, gap : NonNegativeInteger, remainder : %)
          ++ \axiom{lazyPremWithDefault(a,b)} returns \axiom{[c,g,r]}
          ++ such that \axiom{r = lazyPrem(a,b)} and \axiom{(c^g)*r = prem(a,b)}.
-     lazyPremWithDefault : ($, $, V) ->  Record (coef : $, gap : NonNegativeInteger, remainder : $)
+     lazyPremWithDefault : (%, %, V) ->  Record (coef : %, gap : NonNegativeInteger, remainder : %)
          ++ \axiom{lazyPremWithDefault(a,b,v)} returns \axiom{[c,g,r]}
          ++ such that \axiom{r = lazyPrem(a,b,v)} and \axiom{(c^g)*r = prem(a,b,v)}.
-     lazyPseudoDivide : ($,$) ->  Record(coef:$, gap: NonNegativeInteger,quotient:$, remainder:$)
+     lazyPseudoDivide : (%,%) ->  Record(coef:%, gap: NonNegativeInteger,quotient:%, remainder:%)
          ++ \axiom{lazyPseudoDivide(a,b)} returns \axiom{[c,g,q,r]}
          ++ such that \axiom{[c,g,r] = lazyPremWithDefault(a,b)} and
          ++ \axiom{q} is the pseudo-quotient computed in this lazy pseudo-division.
-     lazyPseudoDivide : ($,$,V) ->  Record(coef:$, gap:NonNegativeInteger, quotient:$, remainder: $)
+     lazyPseudoDivide : (%,%,V) ->  Record(coef:%, gap:NonNegativeInteger, quotient:%, remainder: %)
          ++ \axiom{lazyPseudoDivide(a,b,v)} returns \axiom{[c,g,q,r]} such that
          ++ \axiom{r = lazyPrem(a,b,v)}, \axiom{(c^g)*r = prem(a,b,v)} and \axiom{q}
          ++ is the pseudo-quotient computed in this lazy pseudo-division.
-     pseudoDivide : ($, $) -> Record (quotient : $, remainder : $)
+     pseudoDivide : (%, %) -> Record (quotient : %, remainder : %)
          ++ \axiom{pseudoDivide(a,b)} computes \axiom{[pquo(a,b),prem(a,b)]}, both
          ++ polynomials viewed as univariate polynomials in the main variable of \axiom{b},
          ++ if \axiom{b} is not a constant polynomial.
-     monicModulo : ($, $) -> $
+     monicModulo : (%, %) -> %
          ++ \axiom{monicModulo(a,b)} computes \axiom{a mod b}, if \axiom{b} is
          ++ monic as univariate polynomial in its main variable.
-     lazyResidueClass : ($,$) -> Record(polnum:$, polden:$, power:NonNegativeInteger)
+     lazyResidueClass : (%,%) -> Record(polnum:%, polden:%, power:NonNegativeInteger)
          ++ \axiom{lazyResidueClass(a,b)} returns \axiom{[p,q,n]} where \axiom{p / q^n}
          ++ represents the residue class of \axiom{a} modulo \axiom{b}
          ++ and \axiom{p} is reduced w.r.t. \axiom{b} and \axiom{q} is \axiom{init(b)}.
-     headReduce: ($, $) ->  $
+     headReduce: (%, %) ->  %
          ++ \axiom{headReduce(a,b)} returns a polynomial \axiom{r} such that
          ++ \axiom{headReduced?(r,b)} holds and there exists an integer \axiom{e}
          ++ such that \axiom{init(b)^e a - r} is zero modulo \axiom{b}.
-     initiallyReduce: ($, $) ->  $
+     initiallyReduce: (%, %) ->  %
          ++ \axiom{initiallyReduce(a,b)} returns a polynomial \axiom{r} such that
          ++ \axiom{initiallyReduced?(r,b)} holds and there exists an integer \axiom{e}
          ++ such that \axiom{init(b)^e a - r} is zero modulo \axiom{b}.
@@ -479,63 +479,63 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        ConvertibleTo(Polynomial R)
        if R has Algebra Fraction Integer
          then
-           retractIfCan : Polynomial Fraction Integer -> Union($,"failed")
+           retractIfCan : Polynomial Fraction Integer -> Union(%,"failed")
                ++ \axiom{retractIfCan(p)} returns \axiom{p} as an element of the current domain
                ++ if all its variables belong to \axiom{V}.
-           retract : Polynomial Fraction Integer -> $
+           retract : Polynomial Fraction Integer -> %
                ++ \axiom{retract(p)} returns \axiom{p} as an element of the current domain
                ++ if \axiom{retractIfCan(p)} does not return "failed", otherwise an error
                ++ is produced.
-           convert : Polynomial Fraction Integer -> $
+           convert : Polynomial Fraction Integer -> %
                ++ \axiom{convert(p)} returns the same as \axiom{retract(p)}.
-           retractIfCan : Polynomial Integer -> Union($,"failed")
+           retractIfCan : Polynomial Integer -> Union(%,"failed")
                ++ \axiom{retractIfCan(p)} returns \axiom{p} as an element of the current domain
                ++ if all its variables belong to \axiom{V}.
-           retract : Polynomial Integer -> $
+           retract : Polynomial Integer -> %
                ++ \axiom{retract(p)} returns \axiom{p} as an element of the current domain
                ++ if \axiom{retractIfCan(p)} does not return "failed", otherwise an error
                ++ is produced.
-           convert : Polynomial Integer -> $
+           convert : Polynomial Integer -> %
                ++ \axiom{convert(p)} returns the same as \axiom{retract(p)}
            if not (R has QuotientFieldCategory(Integer))
              then
-               retractIfCan : Polynomial R -> Union($,"failed")
+               retractIfCan : Polynomial R -> Union(%,"failed")
                  ++ \axiom{retractIfCan(p)} returns \axiom{p} as an element of the current domain
                  ++ if all its variables belong to \axiom{V}.
-               retract : Polynomial R -> $
+               retract : Polynomial R -> %
                  ++ \axiom{retract(p)} returns \axiom{p} as an element of the current domain
                  ++ if \axiom{retractIfCan(p)} does not return "failed", otherwise an error
                  ++ is produced.
        if (R has Algebra Integer) and not(R has Algebra Fraction Integer)
          then
-           retractIfCan : Polynomial Integer -> Union($,"failed")
+           retractIfCan : Polynomial Integer -> Union(%,"failed")
                ++ \axiom{retractIfCan(p)} returns \axiom{p} as an element of the current domain
                ++ if all its variables belong to \axiom{V}.
-           retract : Polynomial Integer -> $
+           retract : Polynomial Integer -> %
                ++ \axiom{retract(p)} returns \axiom{p} as an element of the current domain
                ++ if \axiom{retractIfCan(p)} does not return "failed", otherwise an error
                ++ is produced.
-           convert : Polynomial Integer -> $
+           convert : Polynomial Integer -> %
                ++ \axiom{convert(p)} returns the same as \axiom{retract(p)}.
            if not (R has IntegerNumberSystem)
              then
-               retractIfCan : Polynomial R -> Union($,"failed")
+               retractIfCan : Polynomial R -> Union(%,"failed")
                  ++ \axiom{retractIfCan(p)} returns \axiom{p} as an element of the current domain
                  ++ if all its variables belong to \axiom{V}.
-               retract : Polynomial R -> $
+               retract : Polynomial R -> %
                  ++ \axiom{retract(p)} returns \axiom{p} as an element of the current domain
                  ++ if \axiom{retractIfCan(p)} does not return "failed", otherwise an error
                  ++ is produced.
        if not(R has Algebra Integer) and not(R has Algebra Fraction Integer)
          then
-           retractIfCan : Polynomial R -> Union($,"failed")
+           retractIfCan : Polynomial R -> Union(%,"failed")
              ++ \axiom{retractIfCan(p)} returns \axiom{p} as an element of the current domain
              ++ if all its variables belong to \axiom{V}.
-           retract : Polynomial R -> $
+           retract : Polynomial R -> %
              ++ \axiom{retract(p)} returns \axiom{p} as an element of the current domain
              ++ if \axiom{retractIfCan(p)} does not return "failed", otherwise an error
              ++ is produced.
-       convert : Polynomial R -> $
+       convert : Polynomial R -> %
          ++ \axiom{convert(p)} returns \axiom{p} as an element of the current domain if all
          ++ its variables belong to \axiom{V}, otherwise an error is produced.
 
@@ -545,62 +545,62 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      if R has IntegralDomain
      then
-       primPartElseUnitCanonical : $ -> $
+       primPartElseUnitCanonical : % -> %
            ++ \axiom{primPartElseUnitCanonical(p)} returns \axiom{primitivePart(p)}
            ++ if \axiom{R} is a gcd-domain, otherwise \axiom{unitCanonical(p)}.
-       primPartElseUnitCanonical! : $ -> $
+       primPartElseUnitCanonical! : % -> %
            ++ \axiom{primPartElseUnitCanonical!(p)} replaces  \axiom{p}
            ++ by \axiom{primPartElseUnitCanonical(p)}.
-       exactQuotient : ($,R) -> $
+       exactQuotient : (%,R) -> %
            ++ \axiom{exactQuotient(p,r)} computes the exact quotient of \axiom{p}
            ++ by \axiom{r}, which is assumed to be a divisor of \axiom{p}.
            ++ No error is returned if this exact quotient fails!
-       exactQuotient! : ($,R) -> $
+       exactQuotient! : (%,R) -> %
            ++ \axiom{exactQuotient!(p,r)} replaces \axiom{p} by \axiom{exactQuotient(p,r)}.
-       exactQuotient : ($,$) -> $
+       exactQuotient : (%,%) -> %
            ++ \axiom{exactQuotient(a,b)} computes the exact quotient of \axiom{a}
            ++ by \axiom{b}, which is assumed to be a divisor of \axiom{a}.
            ++ No error is returned if this exact quotient fails!
-       exactQuotient! : ($,$) -> $
+       exactQuotient! : (%,%) -> %
            ++ \axiom{exactQuotient!(a,b)} replaces \axiom{a} by \axiom{exactQuotient(a,b)}
-       subResultantGcd : ($, $) -> $
+       subResultantGcd : (%, %) -> %
            ++ \axiom{subResultantGcd(a,b)} computes a gcd of \axiom{a} and \axiom{b}
            ++ where \axiom{a} and \axiom{b} are assumed to have the same main variable \axiom{v}
            ++ and are viewed as univariate polynomials in \axiom{v} with coefficients
            ++ in the fraction field of the polynomial ring generated by their other variables
            ++ over \axiom{R}.
-       extendedSubResultantGcd : ($, $) -> Record (gcd : $, coef1 : $, coef2 : $)
+       extendedSubResultantGcd : (%, %) -> Record (gcd : %, coef1 : %, coef2 : %)
            ++ \axiom{extendedSubResultantGcd(a,b)} returns \axiom{[ca,cb,r]}
            ++ such that \axiom{r} is \axiom{subResultantGcd(a,b)} and we have
            ++ \axiom{ca * a + cb * cb = r} .
-       halfExtendedSubResultantGcd1: ($, $) -> Record (gcd : $, coef1 : $)
+       halfExtendedSubResultantGcd1: (%, %) -> Record (gcd : %, coef1 : %)
            ++ \axiom{halfExtendedSubResultantGcd1(a,b)} returns \axiom{[g,ca]}
            ++ if \axiom{extendedSubResultantGcd(a,b)} returns \axiom{[g,ca,cb]}
            ++ otherwise produces an error.
-       halfExtendedSubResultantGcd2: ($, $) -> Record (gcd : $, coef2 : $)
+       halfExtendedSubResultantGcd2: (%, %) -> Record (gcd : %, coef2 : %)
            ++ \axiom{halfExtendedSubResultantGcd2(a,b)} returns \axiom{[g,cb]}
            ++ if \axiom{extendedSubResultantGcd(a,b)} returns \axiom{[g,ca,cb]}
            ++ otherwise produces an error.
-       resultant  : ($, $) -> $
+       resultant  : (%, %) -> %
            ++ \axiom{resultant(a,b)} computes the resultant of \axiom{a} and \axiom{b}
            ++ where \axiom{a} and \axiom{b} are assumed to have the same main variable \axiom{v}
            ++ and are viewed as univariate polynomials in \axiom{v}.
-       subResultantChain : ($, $) -> List $
+       subResultantChain : (%, %) -> List %
            ++ \axiom{subResultantChain(a,b)}, where \axiom{a} and \axiom{b} are not
            ++ contant polynomials with the same
            ++ main variable, returns the subresultant chain of \axiom{a} and \axiom{b}.
-       lastSubResultant: ($, $) -> $
+       lastSubResultant: (%, %) -> %
            ++ \axiom{lastSubResultant(a,b)} returns the last non-zero subresultant
            ++ of \axiom{a} and \axiom{b} where \axiom{a} and \axiom{b} are assumed to have
            ++ the same main variable \axiom{v} and are viewed as univariate polynomials in \axiom{v}.
-       LazardQuotient: ($, $, NonNegativeInteger) -> $
+       LazardQuotient: (%, %, NonNegativeInteger) -> %
            ++ \axiom{LazardQuotient(a,b,n)} returns \axiom{a^n exquo b^(n-1)}
            ++ assuming that this quotient does not fail.
-       LazardQuotient2: ($, $, $, NonNegativeInteger) -> $
+       LazardQuotient2: (%, %, %, NonNegativeInteger) -> %
            ++ \axiom{LazardQuotient2(p,a,b,n)} returns
            ++ \axiom{(a^(n-1) * p) exquo b^(n-1)}
            ++ assuming that this quotient does not fail.
-       next_subResultant2: ($, $, $, $) -> $
+       next_subResultant2: (%, %, %, %) -> %
            ++ \axiom{nextsubResultant2(p,q,z,s)} is the multivariate version
            ++ of the operation \axiomOpFrom{next_sousResultant2}{PseudoRemainderSequence} from
            ++ the \axiomType{PseudoRemainderSequence} constructor.
@@ -609,19 +609,19 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      if R has GcdDomain
      then
-       gcd : (R,$) -> R
+       gcd : (R,%) -> R
            ++ \axiom{gcd(r,p)} returns the gcd of \axiom{r} and the content of \axiom{p}.
-       primitivePart! : $ -> $
+       primitivePart! : % -> %
            ++ \axiom{primitivePart!(p)} replaces \axiom{p}  by its primitive part.
-       mainContent : $ -> $
+       mainContent : % -> %
            ++ \axiom{mainContent(p)} returns the content of \axiom{p} viewed as a univariate
            ++ polynomial in its main variable and with coefficients in the
            ++ polynomial ring generated by its other variables over \axiom{R}.
-       mainPrimitivePart : $ -> $
+       mainPrimitivePart : % -> %
            ++ \axiom{mainPrimitivePart(p)} returns the primitive part of \axiom{p} viewed as a
            ++ univariate polynomial in its main variable and with coefficients
            ++ in the polynomial ring generated by its other variables over \axiom{R}.
-       mainSquareFreePart : $ -> $
+       mainSquareFreePart : % -> %
            ++ \axiom{mainSquareFreePart(p)} returns the square free part of \axiom{p} viewed as a
            ++ univariate polynomial in its main variable and with coefficients
            ++ in the polynomial ring generated by its other variables over \axiom{R}.
@@ -633,7 +633,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      exactQuo : (R,R) -> R
 
-     coerce(p:$):O ==
+     coerce(p:%):O ==
        ground? (p) => (ground(p))::O
 --       if one?((ip := init(p)))
        if (((ip := init(p))) = 1)
@@ -711,7 +711,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        p := init(p)
        cons(p,iteratedInitials(p))
 
-     localDeepestInitial (p : $) : $ ==
+     localDeepestInitial (p : %) : % ==
        ground? p => p
        localDeepestInitial init p
 
@@ -721,7 +721,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      monic? p ==
        ground? p => false
-       (recip(init(p))$% case $)@Boolean
+       (recip(init(p))$% case %)@Boolean
 
      quasiMonic?  p ==
        ground? p => false
@@ -743,13 +743,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        zero? p => error"Error in mainCoefficients from RPOLCAT : #1 is zero"
        ground? p => [p]
        v := mainVariable(p)::V
-       coefficients(univariate(p,v)@SparseUnivariatePolynomial($))
+       coefficients(univariate(p,v)@SparseUnivariatePolynomial(%))
 
      mainMonomials p ==
        zero? p => error"Error in mainMonomials from RPOLCAT : #1 is zero"
        ground? p => [1$%]
        v := mainVariable(p)::V
-       lm := monomials(univariate(p,v)@SparseUnivariatePolynomial($))
+       lm := monomials(univariate(p,v)@SparseUnivariatePolynomial(%))
        [monomial(1$%,v,degree(m)) for m in lm]
 
      RittWuCompare (a,b) ==
@@ -772,33 +772,33 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
      supRittWu? (a,b) ==
        infRittWu? (b,a)
 
-     prem (a:$, b:$)  : $ ==
+     prem (a:%, b:%)  : % ==
        cP := lazyPremWithDefault (a,b)
        ((cP.coef) ^ (cP.gap)) * cP.remainder
 
-     pquo (a:$, b:$)  : $ ==
+     pquo (a:%, b:%)  : % ==
        cPS := lazyPseudoDivide (a,b)
        c := (cPS.coef) ^ (cPS.gap)
        c * cPS.quotient
 
-     prem (a:$, b:$, v:V) : $ ==
+     prem (a:%, b:%, v:V) : % ==
        cP := lazyPremWithDefault (a,b,v)
        ((cP.coef) ^ (cP.gap)) * cP.remainder
 
-     pquo (a:$, b:$, v:V)  : $ ==
+     pquo (a:%, b:%, v:V)  : % ==
        cPS := lazyPseudoDivide (a,b,v)
        c := (cPS.coef) ^ (cPS.gap)
        c * cPS.quotient
 
-     lazyPrem (a:$, b:$) : $ ==
+     lazyPrem (a:%, b:%) : % ==
        (not ground?(b)) and (monic?(b)) => monicModulo(a,b)
        (lazyPremWithDefault (a,b)).remainder
 
-     lazyPquo (a:$, b:$) : $ ==
+     lazyPquo (a:%, b:%) : % ==
        (lazyPseudoDivide (a,b)).quotient
 
-     lazyPrem (a:$, b:$, v:V) : $ ==
-       zero? b =>  error"Error in lazyPrem : ($,$,V) -> $ from RPOLCAT : #2 is zero"
+     lazyPrem (a:%, b:%, v:V) : % ==
+       zero? b =>  error"Error in lazyPrem : (%,%,V) -> % from RPOLCAT : #2 is zero"
        ground?(b) => 0$%
        (v = mvar(b)) => lazyPrem(a,b)
        dbv : NNI := degree(b,v)
@@ -806,7 +806,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        dav : NNI  := degree(a,v)
        zero? dav => a
        test : INT := dav::INT - dbv
-       lcbv : $ := leadingCoefficient(b,v)
+       lcbv : % := leadingCoefficient(b,v)
        while not zero?(a) and not negative?(test) repeat
          lcav := leadingCoefficient(a,v)
          term := monomial(lcav,v,test::NNI)
@@ -814,11 +814,11 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
          test := degree(a,v)::INT - dbv
        a
 
-     lazyPquo (a:$, b:$, v:V) : $ ==
+     lazyPquo (a:%, b:%, v:V) : % ==
        (lazyPseudoDivide (a,b,v)).quotient
 
-     headReduce (a:$,b:$) ==
-       ground? b => error"Error in headReduce : ($,$) -> Boolean from TSETCAT : #2 is constant"
+     headReduce (a:%,b:%) ==
+       ground? b => error"Error in headReduce : (%,%) -> Boolean from TSETCAT : #2 is constant"
        ground? a => a
        mvar(a) = mvar(b) => lazyPrem(a,b)
        while not reduced?((ha := head a),b) repeat
@@ -830,8 +830,8 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
              a := lrc.polnum +  (lrc.polden)^(lrc.power) * tail(a)
        a
 
-     initiallyReduce(a:$,b:$) ==
-       ground? b => error"Error in initiallyReduce : ($,$) -> Boolean from TSETCAT : #2 is constant"
+     initiallyReduce(a:%,b:%) ==
+       ground? b => error"Error in initiallyReduce : (%,%) -> Boolean from TSETCAT : #2 is constant"
        ground? a => a
        v := mvar(b)
        mvar(a) = v => lazyPrem(a,b)
@@ -865,7 +865,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        xa := mvar a
        xb := mvar b
        xa < xb => [1$%,0$NNI,a]
-       lcb : $ := init b
+       lcb : % := init b
        db : NNI := mdeg b
        test : INT := degree(a,xb)::INT - db
        delta : INT := max(test + 1$INT, 0$INT)
@@ -886,7 +886,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        [lcb, (delta::NNI), a]
 
      lazyPremWithDefault (a,b,v) ==
-       zero? b =>  error"Error in lazyPremWithDefault : ($,$,V) -> $ from RPOLCAT : #2 is zero"
+       zero? b =>  error"Error in lazyPremWithDefault : (%,%,V) -> % from RPOLCAT : #2 is zero"
        ground?(b) => [b,1$NNI,0$%]
        (v = mvar(b)) => lazyPremWithDefault(a,b)
        dbv : NNI := degree(b,v)
@@ -895,7 +895,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        zero? dav => [1$%,0$NNI,a]
        test : INT := dav::INT - dbv
        delta : INT := max(test + 1$INT, 0$INT)
-       lcbv : $ := leadingCoefficient(b,v)
+       lcbv : % := leadingCoefficient(b,v)
        while not zero?(a) and not negative?(test) repeat
          lcav := leadingCoefficient(a,v)
          term := monomial(lcav,v,test::NNI)
@@ -915,7 +915,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        xa := mvar a
        xb := mvar b
        xa < xb => [1$%,0$NNI,0$%, a]
-       lcb : $ := init b
+       lcb : % := init b
        db : NNI := mdeg b
        q := 0$%
        test : INT := degree(a,xb)::INT - db
@@ -939,7 +939,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        [lcb, (delta::NNI), q, a]
 
      lazyPseudoDivide (a,b,v) ==
-       zero? b =>  error"Error in lazyPseudoDivide : ($,$,V) -> $ from RPOLCAT : #2 is zero"
+       zero? b =>  error"Error in lazyPseudoDivide : (%,%,V) -> % from RPOLCAT : #2 is zero"
        ground?(b) => [b,1$NNI,a,0$%]
        (v = mvar(b)) => lazyPseudoDivide(a,b)
        dbv : NNI := degree(b,v)
@@ -948,7 +948,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        zero? dav => [1$%,0$NNI,0$%, a]
        test : INT := dav::INT - dbv
        delta : INT := max(test + 1$INT, 0$INT)
-       lcbv : $ := leadingCoefficient(b,v)
+       lcbv : % := leadingCoefficient(b,v)
        q := 0$%
        while not zero?(a) and not negative?(test) repeat
          lcav := leadingCoefficient(a,v)
@@ -961,11 +961,11 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
      monicModulo (a,b) ==
        ground?(b) => error"Error in monicModulo from RPOLCAT : #2 is constant"
-       rec : Union($,"failed")
+       rec : Union(%,"failed")
        rec := recip((ib := init(b)))$%
        (rec case "failed")@Boolean => error"Error in monicModulo from RPOLCAT : #2 is not monic"
        ground? a => a
-       ib * ((lazyPremWithDefault ((rec::$) * a,(rec::$) * b)).remainder)
+       ib * ((lazyPremWithDefault ((rec::%) * a,(rec::%) * b)).remainder)
 
      lazyResidueClass(a,b) ==
        zero? b => [a,1$%,0$NNI]
@@ -975,7 +975,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
        xb := mvar b
        xa < xb => [a,1$%,0$NNI]
        monic?(b) => [monicModulo(a,b),1$%,0$NNI]
-       lcb : $ := init b
+       lcb : % := init b
        db : NNI := mdeg b
        test : INT := degree(a,xb)::INT - db
        pow : NNI := 0
@@ -995,42 +995,42 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
              test := degree(a,xb)::INT - db
        [a,lcb,pow]
 
-     reduced? (a:$,b:$) : Boolean ==
+     reduced? (a:%,b:%) : Boolean ==
        degree(a,mvar(b)) < mdeg(b)
 
-     reduced? (p:$, lq : List($)) : Boolean ==
+     reduced? (p:%, lq : List(%)) : Boolean ==
        ground? p => true
        while (not empty? lq) and (reduced?(p, first lq)) repeat
          lq := rest lq
        empty? lq
 
-     headReduced? (a:$,b:$) : Boolean ==
+     headReduced? (a:%,b:%) : Boolean ==
        reduced?(head(a),b)
 
-     headReduced? (p:$, lq : List($)) : Boolean ==
+     headReduced? (p:%, lq : List(%)) : Boolean ==
        reduced?(head(p),lq)
 
-     initiallyReduced? (a:$,b:$) : Boolean ==
-       ground? b => error"Error in initiallyReduced? : ($,$) -> Bool. from RPOLCAT : #2 is constant"
+     initiallyReduced? (a:%,b:%) : Boolean ==
+       ground? b => error"Error in initiallyReduced? : (%,%) -> Bool. from RPOLCAT : #2 is constant"
        ground?(a) => true
        mvar(a) < mvar(b) => true
        (mvar(a) = mvar(b)) => reduced?(a,b)
        initiallyReduced?(init(a),b)
 
-     initiallyReduced? (p:$, lq : List($)) : Boolean ==
+     initiallyReduced? (p:%, lq : List(%)) : Boolean ==
        ground? p => true
        while (not empty? lq) and (initiallyReduced?(p, first lq)) repeat
          lq := rest lq
        empty? lq
 
-     normalized?(a:$,b:$) : Boolean ==
-       ground? b => error"Error in  normalized? : ($,$) -> Boolean from TSETCAT : #2 is constant"
+     normalized?(a:%,b:%) : Boolean ==
+       ground? b => error"Error in  normalized? : (%,%) -> Boolean from TSETCAT : #2 is constant"
        ground? a => true
        mvar(a) < mvar(b) => true
        (mvar(a) = mvar(b)) => false
        normalized?(init(a),b)
 
-     normalized? (p:$, lq : List($)) : Boolean ==
+     normalized? (p:%, lq : List(%)) : Boolean ==
        while (not empty? lq) and (normalized?(p, first lq)) repeat
          lq := rest lq
        empty? lq
@@ -1048,16 +1048,16 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
        exactQuo(r:R,s:R):R == iexactQuo(r, s)
 
-       exactQuotient (p:$,r:R) ==
-         (p exquo$% r)::$
+       exactQuotient (p:%,r:R) ==
+         (p exquo$% r)::%
 
-       exactQuotient (a:$,b:$) ==
+       exactQuotient (a:%,b:%) ==
          ground? b => exactQuotient(a,ground(b))
-         (a exquo$% b)::$
+         (a exquo$% b)::%
 
-       exactQuotient! (a:$,b:$) ==
+       exactQuotient! (a:%,b:%) ==
          ground? b => exactQuotient!(a,ground(b))
-         a := (a exquo$% b)::$
+         a := (a exquo$% b)::%
 
        if (R has GcdDomain) and not(R has Field)
        then
@@ -1089,7 +1089,7 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
      if R has GcdDomain
      then
 
-       gcd(r:R,p:$):R ==
+       gcd(r:R,p:%):R ==
 --         one? r => r
          (r = 1) => r
          zero? p => r
@@ -1102,13 +1102,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
        mainPrimitivePart p ==
          zero? p => p
-         (unitNormal((p exquo$% mainContent(p))::$)).canonical
+         (unitNormal((p exquo$% mainContent(p))::%)).canonical
 
        mainSquareFreePart p ==
          ground? p => p
          v := mainVariable(p)::V
-         sfp : SparseUnivariatePolynomial($)
-         sfp := squareFreePart(univariate(p,v)@SparseUnivariatePolynomial($))
+         sfp : SparseUnivariatePolynomial(%)
+         sfp := squareFreePart(univariate(p,v)@SparseUnivariatePolynomial(%))
          multivariate(sfp,v)
 
      if (V has ConvertibleTo(Symbol))
@@ -1121,21 +1121,21 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
          Q ==> Fraction Integer
          Z ==> Integer
 
-         convert(p:$) : PR ==
+         convert(p:%) : PR ==
            ground? p => (ground(p)$%)::PR
            v : V := mvar(p)
            d : NNI := mdeg(p)
            convert(init(p))@PR *$PR ((convert(v)@Symbol)::PR)^d +$PR convert(tail(p))@PR
 
-         coerce(p:$) : PR ==
+         coerce(p:%) : PR ==
            convert(p)@PR
 
-         localRetract : PR -> $
-         localRetractPQ : PQ -> $
-         localRetractPZ : PZ -> $
-         localRetractIfCan : PR -> Union($,"failed")
-         localRetractIfCanPQ : PQ -> Union($,"failed")
-         localRetractIfCanPZ : PZ -> Union($,"failed")
+         localRetract : PR -> %
+         localRetractPQ : PQ -> %
+         localRetractPZ : PZ -> %
+         localRetractIfCan : PR -> Union(%,"failed")
+         localRetractIfCanPQ : PQ -> Union(%,"failed")
+         localRetractIfCanPZ : PZ -> Union(%,"failed")
 
          if V has Finite
            then
@@ -1144,13 +1144,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
              lv : List Symbol
              lv := [convert(index(i::PositiveInteger)$V)@Symbol for i in 1..sizeV]
 
-             localRetract(p : PR) : $ ==
-               ground? p => (ground(p)$PR)::$
+             localRetract(p : PR) : % ==
+               ground? p => (ground(p)$PR)::%
                mvp : Symbol := (mainVariable(p)$PR)::Symbol
                d : NNI
                imvp : PositiveInteger := (position(mvp,lv)$(List Symbol))::PositiveInteger
                vimvp : V := index(imvp)$V
-               xvimvp,c : $
+               xvimvp,c : %
                newp := 0$%
                while (not zero? (d := degree(p,mvp))) repeat
                  c := localRetract(coefficient(p,mvp,d)$PR)
@@ -1161,13 +1161,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
              if R has Algebra Fraction Integer
                then
-                 localRetractPQ(pq:PQ):$ ==
-                   ground? pq => ((ground(pq)$PQ)::R)::$
+                 localRetractPQ(pq:PQ):% ==
+                   ground? pq => ((ground(pq)$PQ)::R)::%
                    mvp : Symbol := (mainVariable(pq)$PQ)::Symbol
                    d : NNI
                    imvp : PositiveInteger := (position(mvp,lv)$(List Symbol))::PositiveInteger
                    vimvp : V := index(imvp)$V
-                   xvimvp,c : $
+                   xvimvp,c : %
                    newp := 0$%
                    while (not zero? (d := degree(pq,mvp))) repeat
                      c := localRetractPQ(coefficient(pq,mvp,d)$PQ)
@@ -1178,13 +1178,13 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
              if R has Algebra Integer
                then
-                 localRetractPZ(pz:PZ):$ ==
-                   ground? pz => ((ground(pz)$PZ)::R)::$
+                 localRetractPZ(pz:PZ):% ==
+                   ground? pz => ((ground(pz)$PZ)::R)::%
                    mvp : Symbol := (mainVariable(pz)$PZ)::Symbol
                    d : NNI
                    imvp : PositiveInteger := (position(mvp,lv)$(List Symbol))::PositiveInteger
                    vimvp : V := index(imvp)$V
-                   xvimvp,c : $
+                   xvimvp,c : %
                    newp := 0$%
                    while (not zero? (d := degree(pz,mvp))) repeat
                      c := localRetractPZ(coefficient(pz,mvp,d)$PZ)
@@ -1211,17 +1211,17 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                  lvp := rest lvp
                empty? lvp
 
-             localRetractIfCan(p : PR): Union($,"failed") ==
-               not retractable?(p) => "failed"::Union($,"failed")
-               localRetract(p)::Union($,"failed")
+             localRetractIfCan(p : PR): Union(%,"failed") ==
+               not retractable?(p) => "failed"::Union(%,"failed")
+               localRetract(p)::Union(%,"failed")
 
-             localRetractIfCanPQ(p : PQ): Union($,"failed") ==
-               not retractablePQ?(p) => "failed"::Union($,"failed")
-               localRetractPQ(p)::Union($,"failed")
+             localRetractIfCanPQ(p : PQ): Union(%,"failed") ==
+               not retractablePQ?(p) => "failed"::Union(%,"failed")
+               localRetractPQ(p)::Union(%,"failed")
 
-             localRetractIfCanPZ(p : PZ): Union($,"failed") ==
-               not retractablePZ?(p) => "failed"::Union($,"failed")
-               localRetractPZ(p)::Union($,"failed")
+             localRetractIfCanPZ(p : PZ): Union(%,"failed") ==
+               not retractablePZ?(p) => "failed"::Union(%,"failed")
+               localRetractPZ(p)::Union(%,"failed")
 
          if R has Algebra Integer or _
             R has Algebra Fraction Integer then
@@ -1236,52 +1236,52 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
              PQToPR (pq:PQ):PR == map(QToR,pq)$mpc2Q
 
              retract(pz:PZ) ==
-               rif : Union($,"failed") := retractIfCan(pz)@Union($,"failed")
-               (rif case "failed") => error"failed in retract: POLY Z -> $ from RPOLCAT"
-               rif::$
+               rif : Union(%,"failed") := retractIfCan(pz)@Union(%,"failed")
+               (rif case "failed") => error"failed in retract: POLY Z -> % from RPOLCAT"
+               rif::%
 
              convert(pz:PZ) ==
-               retract(pz)@$
+               retract(pz)@%
 
              retract(pq:PQ) ==
-               rif : Union($,"failed") := retractIfCan(pq)@Union($,"failed")
-               (rif case "failed") => error"failed in retract: POLY Z -> $ from RPOLCAT"
-               rif::$
+               rif : Union(%,"failed") := retractIfCan(pq)@Union(%,"failed")
+               (rif case "failed") => error"failed in retract: POLY Z -> % from RPOLCAT"
+               rif::%
 
              convert(pq:PQ) ==
-               retract(pq)@$
+               retract(pq)@%
 
              if not (R has QuotientFieldCategory(Integer))
                then
-                 -- the only operation to implement is retractIfCan : PR -> Union($,"failed")
+                 -- the only operation to implement is retractIfCan : PR -> Union(%,"failed")
                  -- when V does not have Finite
 
                  if V has Finite
                    then
                      retractIfCan(pr:PR) ==
-                       localRetractIfCan(pr)@Union($,"failed")
+                       localRetractIfCan(pr)@Union(%,"failed")
 
                      retractIfCan(pq:PQ) ==
-                       localRetractIfCanPQ(pq)@Union($,"failed")
+                       localRetractIfCanPQ(pq)@Union(%,"failed")
                    else
                      retractIfCan(pq:PQ) ==
                        pr : PR := PQToPR(pq)
-                       retractIfCan(pr)@Union($,"failed")
+                       retractIfCan(pr)@Union(%,"failed")
 
                  retractIfCan(pz:PZ) ==
                    pr : PR := PZToPR(pz)
-                   retractIfCan(pr)@Union($,"failed")
+                   retractIfCan(pr)@Union(%,"failed")
 
                  retract(pr:PR) ==
-                   rif : Union($,"failed") := retractIfCan(pr)@Union($,"failed")
-                   (rif case "failed") => error"failed in retract: POLY Z -> $ from RPOLCAT"
-                   rif::$
+                   rif : Union(%,"failed") := retractIfCan(pr)@Union(%,"failed")
+                   (rif case "failed") => error"failed in retract: POLY Z -> % from RPOLCAT"
+                   rif::%
 
                  convert(pr:PR) ==
-                   retract(pr)@$
+                   retract(pr)@%
 
                else
-                 -- the only operation to implement is retractIfCan : PQ -> Union($,"failed")
+                 -- the only operation to implement is retractIfCan : PQ -> Union(%,"failed")
                  -- when V does not have Finite
                  mpc2ZQ := MPolyCatFunctions2(Symbol,IES,IES,Z,Q,PZ,PQ)
                  mpc2RQ := MPolyCatFunctions2(Symbol,IES,IES,R,Q,PR,PQ)
@@ -1293,60 +1293,60 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
 
                  retractIfCan(pz:PZ) ==
                    pq : PQ := PZToPQ(pz)
-                   retractIfCan(pq)@Union($,"failed")
+                   retractIfCan(pq)@Union(%,"failed")
 
                  if V has Finite
                    then
                      retractIfCan(pq:PQ) ==
-                       localRetractIfCanPQ(pq)@Union($,"failed")
+                       localRetractIfCanPQ(pq)@Union(%,"failed")
 
                      convert(pr:PR) ==
-                       lrif : Union($,"failed") := localRetractIfCan(pr)@Union($,"failed")
-                       (lrif case "failed") => error"failed in convert: PR->$ from RPOLCAT"
-                       lrif::$
+                       lrif : Union(%,"failed") := localRetractIfCan(pr)@Union(%,"failed")
+                       (lrif case "failed") => error"failed in convert: PR->% from RPOLCAT"
+                       lrif::%
                    else
                      convert(pr:PR) ==
                        pq : PQ := PRToPQ(pr)
-                       retract(pq)@$
+                       retract(pq)@%
 
            if (R has Algebra Integer) and _
               not(R has Algebra Fraction Integer) then
 
              retract(pz:PZ) ==
-               rif : Union($,"failed") := retractIfCan(pz)@Union($,"failed")
-               (rif case "failed") => error"failed in retract: POLY Z -> $ from RPOLCAT"
-               rif::$
+               rif : Union(%,"failed") := retractIfCan(pz)@Union(%,"failed")
+               (rif case "failed") => error"failed in retract: POLY Z -> % from RPOLCAT"
+               rif::%
 
              convert(pz:PZ) ==
-               retract(pz)@$
+               retract(pz)@%
 
              if not (R has IntegerNumberSystem)
                then
-                 -- the only operation to implement is retractIfCan : PR -> Union($,"failed")
+                 -- the only operation to implement is retractIfCan : PR -> Union(%,"failed")
                  -- when V does not have Finite
 
                  if V has Finite
                    then
                      retractIfCan(pr:PR) ==
-                       localRetractIfCan(pr)@Union($,"failed")
+                       localRetractIfCan(pr)@Union(%,"failed")
 
                      retractIfCan(pz:PZ) ==
-                       localRetractIfCanPZ(pz)@Union($,"failed")
+                       localRetractIfCanPZ(pz)@Union(%,"failed")
                    else
                      retractIfCan(pz:PZ) ==
                        pr : PR := PZToPR(pz)
-                       retractIfCan(pr)@Union($,"failed")
+                       retractIfCan(pr)@Union(%,"failed")
 
                  retract(pr:PR) ==
-                   rif : Union($,"failed") := retractIfCan(pr)@Union($,"failed")
-                   (rif case "failed") => error"failed in retract: POLY Z -> $ from RPOLCAT"
-                   rif::$
+                   rif : Union(%,"failed") := retractIfCan(pr)@Union(%,"failed")
+                   (rif case "failed") => error"failed in retract: POLY Z -> % from RPOLCAT"
+                   rif::%
 
                  convert(pr:PR) ==
-                   retract(pr)@$
+                   retract(pr)@%
 
                else
-                 -- the only operation to implement is retractIfCan : PZ -> Union($,"failed")
+                 -- the only operation to implement is retractIfCan : PZ -> Union(%,"failed")
                  -- when V does not have Finite
 
                  mpc2RZ := MPolyCatFunctions2(Symbol,IES,IES,R,Z,PR,PZ)
@@ -1356,43 +1356,43 @@ RecursivePolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, V:OrderedSet): Ca
                  if V has Finite
                    then
                      convert(pr:PR) ==
-                       lrif : Union($,"failed") := localRetractIfCan(pr)@Union($,"failed")
-                       (lrif case "failed") => error"failed in convert: PR->$ from RPOLCAT"
-                       lrif::$
+                       lrif : Union(%,"failed") := localRetractIfCan(pr)@Union(%,"failed")
+                       (lrif case "failed") => error"failed in convert: PR->% from RPOLCAT"
+                       lrif::%
                      retractIfCan(pz:PZ) ==
-                       localRetractIfCanPZ(pz)@Union($,"failed")
+                       localRetractIfCanPZ(pz)@Union(%,"failed")
                    else
                      convert(pr:PR) ==
                        pz : PZ := PRToPZ(pr)
-                       retract(pz)@$
+                       retract(pz)@%
 
 
          if not(R has Algebra Integer) and not(R has Algebra Fraction Integer)
            then
-             -- the only operation to implement is retractIfCan : PR -> Union($,"failed")
+             -- the only operation to implement is retractIfCan : PR -> Union(%,"failed")
 
              if V has Finite
                then
                  retractIfCan(pr:PR) ==
-                   localRetractIfCan(pr)@Union($,"failed")
+                   localRetractIfCan(pr)@Union(%,"failed")
 
              retract(pr:PR) ==
-               rif : Union($,"failed") := retractIfCan(pr)@Union($,"failed")
-               (rif case "failed") => error"failed in retract: POLY Z -> $ from RPOLCAT"
-               rif::$
+               rif : Union(%,"failed") := retractIfCan(pr)@Union(%,"failed")
+               (rif case "failed") => error"failed in retract: POLY Z -> % from RPOLCAT"
+               rif::%
 
              convert(pr:PR) ==
-               retract(pr)@$
+               retract(pr)@%
 
          if (R has RetractableTo(INT))
            then
 
-             convert(pol:$):String ==
+             convert(pol:%):String ==
                ground?(pol) => convert(retract(ground(pol))@INT)@String
-               ipol : $ := init(pol)
+               ipol : % := init(pol)
                vpol : V := mvar(pol)
                dpol : NNI := mdeg(pol)
-               tpol: $  := tail(pol)
+               tpol: %  := tail(pol)
                sipol,svpol,sdpol,stpol : String
 --               if one? ipol
                if (ipol = 1)
@@ -1468,14 +1468,14 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
   Z ==> Integer
   SUP ==> NewSparseUnivariatePolynomial
   SMPR ==> SparseMultivariatePolynomial(R, VarSet)
-  SUP2 ==> NewSparseUnivariatePolynomialFunctions2($,$)
+  SUP2 ==> NewSparseUnivariatePolynomialFunctions2(%,%)
 
   Exports == Join(RecursivePolynomialCategory(R,IndexedExponents VarSet, VarSet),
                   CoercibleTo(SMPR),RetractableTo(SMPR))
 
   Implementation ==  SparseMultivariatePolynomial(R, VarSet) add
 
-     D := NewSparseUnivariatePolynomial($)
+     D := NewSparseUnivariatePolynomial(%)
      VPoly:=  Record(v:VarSet,ts:D)
      Rep:= Union(R,VPoly)
 
@@ -1485,13 +1485,13 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
      PSimp(up,mv) ==
        if degree(up) = 0 then leadingCoefficient(up) else [mv,up]$VPoly
 
-     coerce (p:$):SMPR ==
+     coerce (p:%):SMPR ==
        p pretend SMPR
 
-     coerce (p:SMPR):$ ==
-       p pretend $
+     coerce (p:SMPR):% ==
+       p pretend %
 
-     retractIfCan (p:$) : Union(SMPR,"failed") ==
+     retractIfCan (p:%) : Union(SMPR,"failed") ==
        (p pretend SMPR)::Union(SMPR,"failed")
 
      mvar p ==
@@ -1521,7 +1521,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        p := leadingCoefficient(p.ts)$D
        cons(p,iteratedInitials(p))
 
-     localDeepestInitial (p : $) : $ ==
+     localDeepestInitial (p : %) : % ==
        p case R => p
        localDeepestInitial leadingCoefficient(p.ts)$D
 
@@ -1544,17 +1544,17 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        p case R => [p]
        coefficients(p.ts)$D
 
-     leadingCoefficient(p:$,x:VarSet):$ ==
+     leadingCoefficient(p:%,x:VarSet):% ==
        (p case R) => p
        p.v = x => leadingCoefficient(p.ts)$D
        zero? (d := degree(p,x)) => p
        coefficient(p,x,d)
 
-     localMonicModulo(a:$,b:$):$ ==
+     localMonicModulo(a:%,b:%):% ==
        -- b is assumed to have initial 1
        a case R => a
        a.v < b.v => a
-       mM: $
+       mM: %
        if a.v > b.v
          then
            m : D := map((a1: %): % +-> localMonicModulo(a1,b),a.ts)$SUP2
@@ -1569,10 +1569,10 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
 
      monicModulo (a,b) ==
        b case R => error"Error in monicModulo from NSMP : #2 is constant"
-       ib : $ := init(b)@$
+       ib : % := init(b)@%
        not ground?(ib)$% =>
          error"Error in monicModulo from NSMP : #2 is not monic"
-       mM : $
+       mM : %
 --       if not one?(ib)$%
        if not ((ib) = 1)$%
          then
@@ -1588,12 +1588,12 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
            mM := localMonicModulo (a,b)
        mM
 
-     prem(a:$, b:$): $ ==
+     prem(a:%, b:%): % ==
        -- with pseudoRemainder$NSUP
        b case R =>
          error "in prem$NSMP: ground? #2"
        db: N := degree(b.ts)$D
-       lcb: $ := leadingCoefficient(b.ts)$D
+       lcb: % := leadingCoefficient(b.ts)$D
        test: Z := degree(a,b.v)::Z - db
        delta: Z := max(test + 1$Z, 0$Z)
        (a case R) or (a.v < b.v) => lcb ^ (delta::N) * a
@@ -1608,26 +1608,26 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          test := degree(a,b.v)::Z - db
        lcb ^ (delta::N) * a
 
-     pquo (a:$, b:$)  : $ ==
+     pquo (a:%, b:%)  : % ==
        cPS := lazyPseudoDivide (a,b)
        c := (cPS.coef) ^ (cPS.gap)
        c * cPS.quotient
 
-     pseudoDivide(a:$, b:$): Record (quotient : $, remainder : $) ==
+     pseudoDivide(a:%, b:%): Record (quotient : %, remainder : %) ==
        -- from RPOLCAT
        cPS := lazyPseudoDivide(a,b)
        c := (cPS.coef) ^ (cPS.gap)
        [c * cPS.quotient, c * cPS.remainder]
 
-     lazyPrem(a:$, b:$): $ ==
+     lazyPrem(a:%, b:%): % ==
        -- with lazyPseudoRemainder$NSUP
-       -- Uses leadingCoefficient: ($, V) -> $
+       -- Uses leadingCoefficient: (%, V) -> %
        b case R =>
          error "in lazyPrem$NSMP: ground? #2"
        (a case R) or (a.v < b.v) =>  a
        a.v = b.v => PSimp(lazyPseudoRemainder(a.ts,b.ts)$D,a.v)
        db: N := degree(b.ts)$D
-       lcb: $ := leadingCoefficient(b.ts)$D
+       lcb: % := leadingCoefficient(b.ts)$D
        test: Z := degree(a,b.v)::Z - db
        while not zero?(a) and not negative?(test) repeat
          term := monomial(leadingCoefficient(a,b.v),b.v,test::N)
@@ -1635,14 +1635,14 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          test := degree(a,b.v)::Z - db
        a
 
-     lazyPquo (a:$, b:$) : $ ==
+     lazyPquo (a:%, b:%) : % ==
        -- with lazyPseudoQuotient$NSUP
        b case R =>
          error " in lazyPquo$NSMP: #2 is conctant"
        (a case R) or (a.v < b.v) => 0
        a.v = b.v => PSimp(lazyPseudoQuotient(a.ts,b.ts)$D,a.v)
        db: N := degree(b.ts)$D
-       lcb: $ := leadingCoefficient(b.ts)$D
+       lcb: % := leadingCoefficient(b.ts)$D
        test: Z := degree(a,b.v)::Z - db
        q := 0$%
        test: Z := degree(a,b.v)::Z - db
@@ -1653,7 +1653,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          test := degree(a,b.v)::Z - db
        q
 
-     lazyPseudoDivide(a:$, b:$): Record(coef:$, gap: N,quotient:$, remainder:$) ==
+     lazyPseudoDivide(a:%, b:%): Record(coef:%, gap: N,quotient:%, remainder:%) ==
        -- with lazyPseudoDivide$NSUP
        b case R =>
          error " in lazyPseudoDivide$NSMP: #2 is conctant"
@@ -1662,7 +1662,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          cgqr := lazyPseudoDivide(a.ts,b.ts)
          [cgqr.coef, cgqr.gap, PSimp(cgqr.quotient,a.v), PSimp(cgqr.remainder,a.v)]
        db: N := degree(b.ts)$D
-       lcb: $ := leadingCoefficient(b.ts)$D
+       lcb: % := leadingCoefficient(b.ts)$D
        test: Z := degree(a,b.v)::Z - db
        q := 0$%
        delta: Z := max(test + 1$Z, 0$Z)
@@ -1674,11 +1674,11 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          test := degree(a,b.v)::Z - db
        [lcb, (delta::N), q, a]
 
-     lazyResidueClass(a:$, b:$): Record(polnum:$, polden:$, power:N) ==
+     lazyResidueClass(a:%, b:%): Record(polnum:%, polden:%, power:N) ==
        -- with lazyResidueClass$NSUP
        b case R =>
          error " in lazyResidueClass$NSMP: #2 is conctant"
-       lcb: $ := leadingCoefficient(b.ts)$D
+       lcb: % := leadingCoefficient(b.ts)$D
        (a case R) or (a.v < b.v) => [a,lcb,0]
        a.v = b.v =>
          lrc := lazyResidueClass(a.ts,b.ts)$D
@@ -1696,20 +1696,20 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
      if R has IntegralDomain
      then
 
-       packD := PseudoRemainderSequence($,D)
+       packD := PseudoRemainderSequence(%,D)
 
-       exactQuo(x:$, y:$):$ ==
-         ex: Union($,"failed") := x exquo$% y
-         (ex case $) => ex::$
+       exactQuo(x:%, y:%):% ==
+         ex: Union(%,"failed") := x exquo$% y
+         (ex case %) => ex::%
          error "in exactQuotient$NSMP: bad args"
 
-       LazardQuotient(x:$, y:$, n: N):$ ==
+       LazardQuotient(x:%, y:%, n: N):% ==
          zero?(n) => error("LazardQuotient$NSMP : n = 0")
 --         one?(n) => x
          (n = 1) => x
          a: N := 1
          while n >= (b := 2*a) repeat a := b
-         c: $ := x
+         c: % := x
          n := (n - a)::N
          repeat
 --           one?(a) => return c
@@ -1718,24 +1718,24 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
            c := exactQuo(c*c,y)
            if n >= a then ( c := exactQuo(c*x,y) ; n := (n - a)::N )
 
-       LazardQuotient2(p:$, a:$, b:$, n: N) ==
+       LazardQuotient2(p:%, a:%, b:%, n: N) ==
          zero?(n) => error " in LazardQuotient2$NSMP: bad #4"
 --         one?(n) => p
          (n = 1) => p
-         c: $  := LazardQuotient(a,b,(n-1)::N)
+         c: %  := LazardQuotient(a,b,(n-1)::N)
          exactQuo(c*p,b)
 
-       next_subResultant2(p:$, q:$, z:$, s:$) ==
+       next_subResultant2(p:%, q:%, z:%, s:%) ==
          PSimp(next_sousResultant2(p.ts,q.ts,z.ts,s)$packD,p.v)
 
-       subResultantGcd(a:$, b:$): $ ==
+       subResultantGcd(a:%, b:%): % ==
          (a case R) or (b case R) =>
            error "subResultantGcd$NSMP: one arg is constant"
          a.v ~= b.v =>
            error "subResultantGcd$NSMP: mvar(#1) ~= mvar(#2)"
          PSimp(subResultantGcd(a.ts,b.ts),a.v)
 
-       halfExtendedSubResultantGcd1(a:$,b:$): Record (gcd: $, coef1: $) ==
+       halfExtendedSubResultantGcd1(a:%,b:%): Record (gcd: %, coef1: %) ==
          (a case R) or (b case R) =>
            error "halfExtendedSubResultantGcd1$NSMP: one arg is constant"
          a.v ~= b.v =>
@@ -1743,7 +1743,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          hesrg := halfExtendedSubResultantGcd1(a.ts,b.ts)$D
          [PSimp(hesrg.gcd,a.v), PSimp(hesrg.coef1,a.v)]
 
-       halfExtendedSubResultantGcd2(a:$,b:$): Record (gcd: $, coef2: $) ==
+       halfExtendedSubResultantGcd2(a:%,b:%): Record (gcd: %, coef2: %) ==
          (a case R) or (b case R) =>
            error "halfExtendedSubResultantGcd2$NSMP: one arg is constant"
          a.v ~= b.v =>
@@ -1751,7 +1751,7 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          hesrg := halfExtendedSubResultantGcd2(a.ts,b.ts)$D
          [PSimp(hesrg.gcd,a.v), PSimp(hesrg.coef2,a.v)]
 
-       extendedSubResultantGcd(a:$,b:$): Record (gcd: $, coef1: $, coef2: $) ==
+       extendedSubResultantGcd(a:%,b:%): Record (gcd: %, coef1: %, coef2: %) ==
          (a case R) or (b case R) =>
            error "extendedSubResultantGcd$NSMP: one arg is constant"
          a.v ~= b.v =>
@@ -1759,21 +1759,21 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
          esrg := extendedSubResultantGcd(a.ts,b.ts)$D
          [PSimp(esrg.gcd,a.v),PSimp(esrg.coef1,a.v),PSimp(esrg.coef2,a.v)]
 
-       resultant(a:$, b:$): $ ==
+       resultant(a:%, b:%): % ==
          (a case R) or (b case R) =>
            error "resultant$NSMP: one arg is constant"
          a.v ~= b.v =>
            error "resultant$NSMP: mvar(#1) ~= mvar(#2)"
          resultant(a.ts,b.ts)$D
 
-       subResultantChain(a:$, b:$): List $ ==
+       subResultantChain(a:%, b:%): List % ==
          (a case R) or (b case R) =>
            error "subResultantChain$NSMP: one arg is constant"
          a.v ~= b.v =>
            error "subResultantChain$NSMP: mvar(#1) ~= mvar(#2)"
          [PSimp(up,a.v) for up in subResultantsChain(a.ts,b.ts)]
 
-       lastSubResultant(a:$, b:$): $ ==
+       lastSubResultant(a:%, b:%): % ==
          (a case R) or (b case R) =>
            error "lastSubResultant$NSMP: one arg is constant"
          a.v ~= b.v =>
@@ -1783,42 +1783,42 @@ NewSparseMultivariatePolynomial(R,VarSet) : Exports == Implementation where
        if R has EuclideanDomain
        then
 
-         exactQuotient (a:$,b:R) ==
+         exactQuotient (a:%,b:R) ==
 --           one? b => a
            (b = 1) => a
-           a case R => (a::R quo$R b)::$
+           a case R => (a::R quo$R b)::%
            ([a.v, map((a1: %): % +-> exactQuotient(a1,b),a.ts)$SUP2]$VPoly)::Rep
 
-         exactQuotient! (a:$,b:R) ==
+         exactQuotient! (a:%,b:R) ==
 --           one? b => a
            (b = 1) => a
-           a case R => (a::R quo$R b)::$
+           a case R => (a::R quo$R b)::%
            a.ts := map((a1: %): % +-> exactQuotient!(a1,b),a.ts)$SUP2
            a
 
        else
 
-         exactQuotient (a:$,b:R) ==
+         exactQuotient (a:%,b:R) ==
 --           one? b => a
            (b = 1) => a
-           a case R => ((a::R exquo$R b)::R)::$
+           a case R => ((a::R exquo$R b)::R)::%
            ([a.v, map((a1: %): % +-> exactQuotient(a1,b),a.ts)$SUP2]$VPoly)::Rep
 
-         exactQuotient! (a:$,b:R) ==
+         exactQuotient! (a:%,b:R) ==
 --           one? b => a
            (b = 1) => a
-           a case R => ((a::R exquo$R b)::R)::$
+           a case R => ((a::R exquo$R b)::R)::%
            a.ts := map((a1: %): % +-> exactQuotient!(a1,b),a.ts)$SUP2
            a
 
      if R has GcdDomain
      then
 
-       localGcd(r:R,p:$):R ==
+       localGcd(r:R,p:%):R ==
          p case R => gcd(r,p::R)$R
          gcd(r,content(p))$R
 
-       gcd(r:R,p:$):R ==
+       gcd(r:R,p:%):R ==
 --         one? r => r
          (r = 1) => r
          zero? p => r

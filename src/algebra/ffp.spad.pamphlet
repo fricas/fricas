@@ -16,7 +16,7 @@
 --    included in function initializeElt. Function createNormalElement() set
 --    into comments. factorsOfCyclicGroupSize() changed.
 -- 12.05.92: JG: long lines
--- 18.02.92: AS: degree: $ -> PI added, faster then category version
+-- 18.02.92: AS: degree: % -> PI added, faster then category version
 -- 18.06.91: AS: createNormalElement added:
 --          the version in ffcat.spad needs too long
 --          for finding a normal element, because of the "correlation" between
@@ -127,19 +127,19 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
     initializeLog: () -> Void
     basis(n:PI) ==
       (extdeg rem n) ~= 0 => error "argument must divide extension degree"
-      a:$:=norm(primitiveElement(),n)
+      a:%:=norm(primitiveElement(),n)
       vector [a^i for i in 0..n-1]
 
     degree(x) ==
-      y:$:=1
+      y:%:=1
       m:=zero(extdeg,extdeg+1)$(Matrix GF)
       for i in 1..extdeg+1 repeat
         setColumn_!(m,i,coordinates(y))$(Matrix GF)
         y:=y*x
       rank(m)::PI
 
-    minimalPolynomial(x:$) ==
-      y:$:=1
+    minimalPolynomial(x:%) ==
+      y:%:=1
       m:=zero(extdeg,extdeg+1)$(Matrix GF)
       for i in 1..extdeg+1 repeat
         setColumn_!(m,i,coordinates(y))$(Matrix GF)
@@ -158,27 +158,27 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
       false
 
 
-    a:GF * x:$ == a *$Rep x
-    n:I * x:$ == n *$Rep x
+    a:GF * x:% == a *$Rep x
+    n:I * x:% == n *$Rep x
     -x == -$Rep x
     random() == random()$Rep
-    coordinates(x:$) == coordinates(x)$Rep
+    coordinates(x:%) == coordinates(x)$Rep
     represents(v) == represents(v)$Rep
-    coerce(x:GF):$ == coerce(x)$Rep
+    coerce(x:GF):% == coerce(x)$Rep
     definingPolynomial() == defpol
     retract(x) == retract(x)$Rep
     retractIfCan(x) == retractIfCan(x)$Rep
     index(x) == index(x)$Rep
     lookup(x) == lookup(x)$Rep
-    x:$/y:$ == x /$Rep y
-    x:$/a:GF == x/coerce(a)
---    x:$ / a:GF ==
+    x:%/y:% == x /$Rep y
+    x:%/a:GF == x/coerce(a)
+--    x:% / a:GF ==
 --      a = 0$GF => error "division by zero"
 --      x * inv(coerce(a))
-    x:$ * y:$ == x *$Rep y
-    x:$ + y:$ == x +$Rep y
-    x:$ - y:$ == x -$Rep y
-    x:$ = y:$ == x =$Rep y
+    x:% * y:% == x *$Rep y
+    x:% + y:% == x +$Rep y
+    x:% - y:% == x -$Rep y
+    x:% = y:% == x =$Rep y
     basis() == basis()$Rep
     0 == 0$Rep
     1 == 1$Rep
@@ -226,7 +226,7 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
     -- the minimum size for the discrete logarithm table
       for f in facOfGroupSize repeat
         fac:=f.factor
-        base:$:=primitiveElement() ^ (sizeCG quo fac)
+        base:%:=primitiveElement() ^ (sizeCG quo fac)
         l:Integer:=length(fac)$Integer
         n:Integer:=0
         if odd?(l)$Integer then n:=shift(fac,-(l quo 2))
@@ -235,7 +235,7 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
           d:=(fac-1) quo limit + 1
           n:=(fac-1) quo d + 1
         tbl:TBL:=table()$TBL
-        a:$:=1
+        a:%:=1
         for i in (0::NNI)..(n-1)::NNI repeat
           insert_!([lookup(a),i::NNI]$R,tbl)$TBL
           a:=a*base
@@ -247,7 +247,7 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
       --print("discrete logarithm tables initialized"::OUT)
       void()$Void
 
-    coerce(e:$):OutputForm == outputForm(lift(e),alpha)
+    coerce(e:%):OutputForm == outputForm(lift(e),alpha)
 
     extensionDegree() == extdeg
 

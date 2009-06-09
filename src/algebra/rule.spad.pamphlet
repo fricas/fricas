@@ -28,29 +28,29 @@ RewriteRule(Base, R, F): Exports == Implementation where
 
   Exports ==>
    Join(SetCategory, Eltable(F, F), RetractableTo Equation F) with
-    rule    : (F, F) -> $
+    rule    : (F, F) -> %
       ++ rule(f, g) creates the rewrite rule: \spad{f == eval(g, g is f)},
       ++ with left-hand side f and right-hand side g.
-    rule    : (F, F, List Symbol) -> $
+    rule    : (F, F, List Symbol) -> %
       ++ rule(f, g, [f1,...,fn]) creates the rewrite rule
       ++ \spad{f == eval(eval(g, g is f), [f1,...,fn])},
       ++ that is a rule with left-hand side f and right-hand side g;
       ++ The symbols f1,...,fn are the operators that are considered
       ++ quoted, that is they are not evaluated during any rewrite,
       ++ but just applied formally to their arguments.
-    suchThat: ($, List Symbol, List F -> Boolean) -> $
+    suchThat: (%, List Symbol, List F -> Boolean) -> %
       ++ suchThat(r, [a1,...,an], f) returns the rewrite rule r with
       ++ the predicate \spad{f(a1,...,an)} attached to it.
-    pattern : $ -> P
+    pattern : % -> P
       ++ pattern(r) returns the pattern corresponding to
       ++ the left hand side of the rule r.
-    lhs     : $ -> F
+    lhs     : % -> F
       ++ lhs(r) returns the left hand side of the rule r.
-    rhs     : $ -> F
+    rhs     : % -> F
       ++ rhs(r) returns the right hand side of the rule r.
-    elt     : ($, F, PositiveInteger) -> F
+    elt     : (%, F, PositiveInteger) -> F
       ++ elt(r,f,n) or r(f, n) applies the rule r to f at most n times.
-    quotedOperators: $ -> List Symbol
+    quotedOperators: % -> List Symbol
       ++ quotedOperators(r) returns the list of operators
       ++ on the right hand side of r that are considered
       ++ quoted, that is they are not evaluated during any rewrite,
@@ -63,7 +63,7 @@ RewriteRule(Base, R, F): Exports == Implementation where
 
     Rep := Record(pat: P, lft: F, rgt: F, qot: List Symbol)
 
-    mkRule      : (P, F, F, List Symbol) -> $
+    mkRule      : (P, F, F, List Symbol) -> %
     transformLhs: P -> Record(plus: F, times: F)
     bad?        : Union(List P, "failed") -> Boolean
     appear?     : (P, List P) -> Boolean
@@ -75,9 +75,9 @@ RewriteRule(Base, R, F): Exports == Implementation where
     rhs x                    == x.rgt
     quotedOperators x        == x.qot
     mkRule(pt, p, s, l)      == [pt, p, s, l]
-    coerce(eq:Equation F):$  == rule(lhs eq, rhs eq, empty())
+    coerce(eq:Equation F):%  == rule(lhs eq, rhs eq, empty())
     rule(l, r)               == rule(l, r, empty())
-    elt(r:$, s:F) == applyRules([r pretend RewriteRule(Base, R, F)], s)
+    elt(r:%, s:F) == applyRules([r pretend RewriteRule(Base, R, F)], s)
 
     suchThat(x, l, f) ==
       mkRule(suchThat(pattern x,l,f),  lhs x, rhs x, quotedOperators x)
@@ -86,7 +86,7 @@ RewriteRule(Base, R, F): Exports == Implementation where
      (lhs x = lhs y) and (rhs x = rhs y) and
         (quotedOperators x = quotedOperators y)
 
-    elt(r:$, s:F, n:PositiveInteger) ==
+    elt(r:%, s:F, n:PositiveInteger) ==
       applyRules([r pretend RewriteRule(Base, R, F)], s, n)
 
 -- remove the extra properties from the constant symbols in f
@@ -137,7 +137,7 @@ RewriteRule(Base, R, F): Exports == Implementation where
       bad? isTimes p => [0, new()$Symbol :: F]
       [0, 1]
 
-    coerce(x:$):OutputForm ==
+    coerce(x:%):OutputForm ==
       infix(" == "::Symbol::OutputForm,
             lhs(x)::OutputForm, rhs(x)::OutputForm)
 
@@ -282,11 +282,11 @@ Ruleset(Base, R, F): Exports == Implementation where
   RR ==> RewriteRule(Base, R, F)
 
   Exports ==> Join(SetCategory, Eltable(F, F)) with
-    ruleset: List RR -> $
+    ruleset: List RR -> %
       ++ ruleset([r1,...,rn]) creates the rule set \spad{{r1,...,rn}}.
-    rules  : $ -> List RR
+    rules  : % -> List RR
       ++ rules(r) returns the rules contained in r.
-    elt    : ($, F, PositiveInteger) -> F
+    elt    : (%, F, PositiveInteger) -> F
       ++ elt(r,f,n) or r(f, n) applies all the rules of r to f at most n times.
 
   Implementation ==> add
@@ -295,10 +295,10 @@ Ruleset(Base, R, F): Exports == Implementation where
     Rep := Set RR
 
     ruleset l                        == {l}$Rep
-    coerce(x:$):OutputForm           == coerce(x)$Rep
+    coerce(x:%):OutputForm           == coerce(x)$Rep
     x = y                            == x =$Rep y
-    elt(x:$, f:F)                    == applyRules(rules x, f)
-    elt(r:$, s:F, n:PositiveInteger) == applyRules(rules r, s, n)
+    elt(x:%, f:F)                    == applyRules(rules x, f)
+    elt(r:%, s:F, n:PositiveInteger) == applyRules(rules r, s, n)
     rules x                          == parts(x)$Rep
 
 @

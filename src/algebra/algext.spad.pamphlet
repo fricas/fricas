@@ -36,7 +36,7 @@ SimpleAlgebraicExtension(R:CommutativeRing,
     if (r := recip leadingCoefficient M) case "failed" then
                                     error "Modulus cannot be made monic"
     Rep := UP
-    x,y :$
+    x,y :%
     c: R
 
     mkDisc   : Boolean -> Void
@@ -58,11 +58,11 @@ SimpleAlgebraicExtension(R:CommutativeRing,
     1 == 1$Rep
     c * x == c *$Rep x
     n:Integer * x == n *$Rep x
-    coerce(n:Integer):$   == coerce(n)$Rep
+    coerce(n:Integer):%   == coerce(n)$Rep
     coerce(c) == monomial(c,0)$Rep
     coerce(x):OutputForm == coerce(x)$Rep
     lift(x) == x pretend Rep
-    reduce(p:UP):$ == (monicDivide(p,M)$Rep).remainder
+    reduce(p:UP):% == (monicDivide(p,M)$Rep).remainder
     x = y == x =$Rep y
     x + y == x +$Rep y
     - x == -$Rep x
@@ -72,20 +72,20 @@ SimpleAlgebraicExtension(R:CommutativeRing,
     definingPolynomial()  == M
     characteristic()      == characteristic()$R
     rank()                == d::PositiveInteger
-    basis()               == copy(bsis@Vector(Rep) pretend Vector($))
+    basis()               == copy(bsis@Vector(Rep) pretend Vector(%))
     --!! I inserted 'copy' in the definition of 'basis'  -- cjw 7/19/91
 
     if R has Field then
       minimalPolynomial x == squareFreePart characteristicPolynomial x
 
     if R has Field then
-      coordinates(x:$,bas: Vector $) ==
+      coordinates(x:%,bas: Vector %) ==
         (m := inverse transpose coordinates bas) case "failed" =>
           error "coordinates: second argument must be a basis"
         (m :: Matrix R) * coordinates(x)
 
     else if R has IntegralDomain then
-      coordinates(x:$,bas: Vector $) ==
+      coordinates(x:%,bas: Vector %) ==
         -- we work over the quotient field of R to invert a matrix
         qf := Fraction R
         imatqf := InnerMatrixQuotientFieldFunctions(R,Vector R,Vector R,_
@@ -104,14 +104,14 @@ SimpleAlgebraicExtension(R:CommutativeRing,
           error "coordinates: coordinates are not integral over ground ring"
         vec
 
-    reducedSystem(m:Matrix $):Matrix(R) ==
-      reducedSystem(map(lift, m)$MatrixCategoryFunctions2($, Vector $,
-               Vector $, Matrix $, UP, Vector UP, Vector UP, Matrix UP))
+    reducedSystem(m:Matrix %):Matrix(R) ==
+      reducedSystem(map(lift, m)$MatrixCategoryFunctions2(%, Vector %,
+               Vector %, Matrix %, UP, Vector UP, Vector UP, Matrix UP))
 
-    reducedSystem(m:Matrix $, v:Vector $):Record(mat:Matrix R,vec:Vector R) ==
-      reducedSystem(map(lift, m)$MatrixCategoryFunctions2($, Vector $,
-               Vector $, Matrix $, UP, Vector UP, Vector UP, Matrix UP),
-                                    map(lift, v)$VectorFunctions2($, UP))
+    reducedSystem(m:Matrix %, v:Vector %):Record(mat:Matrix R,vec:Vector R) ==
+      reducedSystem(map(lift, m)$MatrixCategoryFunctions2(%, Vector %,
+               Vector %, Matrix %, UP, Vector UP, Vector UP, Matrix UP),
+                                    map(lift, v)$VectorFunctions2(%, UP))
 
     discriminant() ==
       if nodisc?() then mkDisc false
@@ -144,7 +144,7 @@ SimpleAlgebraicExtension(R:CommutativeRing,
        index k ==
          i:Integer := k rem size()
          p:Integer := size()$R
-         ans:$ := 0
+         ans:% := 0
          for j in 0.. while i > 0 repeat
            h := i rem p
            -- index(p) = 0$R

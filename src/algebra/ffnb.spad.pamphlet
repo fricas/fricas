@@ -511,8 +511,8 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
     initializeMult: ()     -> Void
 
 
-    coerce(v:GF):$  == new(extdeg,v /$GF traceAlpha)$Rep
-    represents(v)   ==  v::$
+    coerce(v:GF):%  == new(extdeg,v /$GF traceAlpha)$Rep
+    represents(v)   ==  v::%
 
     degree(a) ==
       d:PI:=1
@@ -548,22 +548,22 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
       if initmult? then initializeMult()
       sizeMultiplication(multTable)$FFF
 
-    trace(a:$) == retract trace(a,1)
-    norm(a:$) == retract norm(a,1)
+    trace(a:%) == retract trace(a,1)
+    norm(a:%) == retract norm(a,1)
     generator() == normalElement(extdeg)$INBFF
     basis(n:PI) ==
       (extdeg rem n) ~= 0 => error "argument must divide extension degree"
-      [Frobenius(trace(normalElement,n),i) for i in 0..(n-1)]::(Vector $)
+      [Frobenius(trace(normalElement,n),i) for i in 0..(n-1)]::(Vector %)
 
-    a:GF * x:$ == a *$Rep x
+    a:GF * x:% == a *$Rep x
 
-    x:$/a:GF == x/coerce(a)
---    x:$ / a:GF ==
+    x:%/a:GF == x/coerce(a)
+--    x:% / a:GF ==
 --      a = 0$GF => error "division by zero"
 --      x * inv(coerce(a))
 
 
-    coordinates(x:$)  == x::Rep
+    coordinates(x:%)  == x::Rep
 
     Frobenius(e) == qPot(e::Rep,1)$INBFF
     Frobenius(e,n) == qPot(e::Rep,n)$INBFF
@@ -579,7 +579,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
       error("element not in ground field")
 
 -- to get a "normal basis like" output form
-    coerce(x:$):OUT ==
+    coerce(x:%):OUT ==
       l:List OUT:=nil()$(List OUT)
       n : PI := extdeg
 --      one? n => (x.1) :: OUT
@@ -616,7 +616,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
       -- the minimum size for the discrete logarithm table
       for f in facOfGroupSize repeat
         fac:=f.factor
-        base:$:=index(primitiveElt)^((size()$GF^extdeg -$I 1$I) quo$I fac)
+        base:%:=index(primitiveElt)^((size()$GF^extdeg -$I 1$I) quo$I fac)
         l:Integer:=length(fac)$Integer
         n:Integer:=0
         if odd?(l)$I then n:=shift(fac,-$I (l quo$I 2))$I
@@ -625,7 +625,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF,uni): Exports == _
           d:=(fac -$I 1$I) quo$I limit +$I 1$I
           n:=(fac -$I 1$I) quo$I d +$I 1$I
         tbl:TBL:=table()$TBL
-        a:$:=1
+        a:%:=1
         for i in (0::NNI)..(n-1)::NNI repeat
           insert_!([lookup(a),i::NNI]$R,tbl)$TBL
           a:=a*base
@@ -669,7 +669,7 @@ divisor of the order of the multiplicative group"
 
     random() == random(extdeg)$INBFF
 
-    x:$ * y:$ ==
+    x:% * y:% ==
       if initmult? then initializeMult()
       setFieldInfo(multTable,traceAlpha)$INBFF
       x::Rep *$INBFF y::Rep
@@ -683,26 +683,26 @@ divisor of the order of the multiplicative group"
 
     index(n:PI) == index(extdeg,n)$INBFF
 
-    lookup(x:$) == lookup(x::Rep)$INBFF
+    lookup(x:%) == lookup(x::Rep)$INBFF
 
 
     basis() ==
       a:=basis(extdeg)$INBFF
-      vector([e::$ for e in entries a])
+      vector([e::% for e in entries a])
 
 
-    x:$ ^ e:I ==
+    x:% ^ e:I ==
       if initmult? then initializeMult()
       setFieldInfo(multTable,traceAlpha)$INBFF
       (x::Rep) ^$INBFF e
 
     normal?(x) == normal?(x::Rep)$INBFF
 
-    -(x:$) == -$Rep x
-    x:$ + y:$ == x +$Rep y
-    x:$ - y:$ == x -$Rep y
-    x:$ = y:$ == x =$Rep y
-    n:I * x:$ == x *$Rep (n::GF)
+    -(x:%) == -$Rep x
+    x:% + y:% == x +$Rep y
+    x:% - y:% == x -$Rep y
+    x:% = y:% == x =$Rep y
+    n:I * x:% == x *$Rep (n::GF)
 
 
 
@@ -721,7 +721,7 @@ divisor of the order of the multiplicative group"
         not(x.i =$GF x.1) => erg:=false
       erg
 
-    x:$ / y:$ ==
+    x:% / y:% ==
       if initmult? then initializeMult()
       setFieldInfo(multTable,traceAlpha)$INBFF
       x::Rep /$INBFF y::Rep

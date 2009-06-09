@@ -45,15 +45,15 @@
 ++  of fields of prime characteristic.
 FieldOfPrimeCharacteristic:Category == _
   Join(Field,CharacteristicNonZero) with
-    order: $ -> OnePointCompletion PositiveInteger
+    order: % -> OnePointCompletion PositiveInteger
       ++ order(a) computes the order of an element in the multiplicative
       ++ group of the field.
       ++ Error: if \spad{a} is 0.
-    discreteLog: ($,$) -> Union(NonNegativeInteger,"failed")
+    discreteLog: (%,%) -> Union(NonNegativeInteger,"failed")
       ++ discreteLog(b,a) computes s with \spad{b^s = a} if such an s exists.
-    primeFrobenius: $ -> $
+    primeFrobenius: % -> %
       ++ primeFrobenius(a) returns \spad{a ^ p} where p is the characteristic.
-    primeFrobenius: ($,NonNegativeInteger) -> $
+    primeFrobenius: (%,NonNegativeInteger) -> %
       ++ primeFrobenius(a,s) returns \spad{a^(p^s)} where p
       ++ is the characteristic.
   add
@@ -81,16 +81,16 @@ FieldOfPrimeCharacteristic:Category == _
 ExtensionField(F:Field) : Category  == Join(Field,RetractableTo F,VectorSpace F) with
     if F has CharacteristicZero then CharacteristicZero
     if F has CharacteristicNonZero then FieldOfPrimeCharacteristic
-    algebraic? : $ -> Boolean
+    algebraic? : % -> Boolean
       ++ algebraic?(a) tests whether an element \spad{a} is algebraic with
       ++ respect to the ground field F.
-    transcendent? : $ -> Boolean
+    transcendent? : % -> Boolean
       ++ transcendent?(a) tests whether an element \spad{a} is transcendent
       ++ with respect to the ground field F.
-    inGroundField?: $ -> Boolean
+    inGroundField?: % -> Boolean
       ++ inGroundField?(a) tests whether an element \spad{a}
       ++ is already in the ground field F.
-    degree : $ -> OnePointCompletion PositiveInteger
+    degree : % -> OnePointCompletion PositiveInteger
       ++ degree(a) returns the degree of minimal polynomial of an element
       ++ \spad{a} if \spad{a} is algebraic
       ++ with respect to the ground field F, and \spad{infinity} otherwise.
@@ -103,9 +103,9 @@ ExtensionField(F:Field) : Category  == Join(Field,RetractableTo F,VectorSpace F)
     -- perhaps more absolute degree functions
     if F has Finite then
       FieldOfPrimeCharacteristic
-      Frobenius: $ -> $
+      Frobenius: % -> %
         ++ Frobenius(a) returns \spad{a ^ q} where q is the \spad{size()$F}.
-      Frobenius:   ($,NonNegativeInteger) -> $
+      Frobenius:   (%,NonNegativeInteger) -> %
         ++ Frobenius(a,s) returns \spad{a^(q^s)} where q is the size()$F.
   add
     algebraic?(a) == not infinite? (degree(a)@OnePointCompletion_
@@ -161,23 +161,23 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
   Join(ExtensionField F, RetractableTo F) with
   -- should be unified with algebras
   -- Join(ExtensionField F, FramedAlgebra F, RetractableTo F) with
-    basis : () -> Vector $
+    basis : () -> Vector %
       ++ basis() returns a fixed basis of \$ as \spad{F}-vectorspace.
-    basis : PositiveInteger -> Vector $
+    basis : PositiveInteger -> Vector %
       ++ basis(n) returns a fixed basis of a subfield of \$ as
       ++ \spad{F}-vectorspace.
-    coordinates : $ -> Vector F
+    coordinates : % -> Vector F
       ++ coordinates(a) returns the coordinates of \spad{a} with respect
       ++ to the fixed \spad{F}-vectorspace basis.
-    coordinates : Vector $ -> Matrix F
+    coordinates : Vector % -> Matrix F
       ++ coordinates([v1,...,vm]) returns the coordinates of the
       ++ vi's with to the fixed basis.  The coordinates of vi are
       ++ contained in the ith row of the matrix returned by this
       ++ function.
-    represents:  Vector F -> $
+    represents:  Vector F -> %
       ++ represents([a1,..,an]) returns \spad{a1*v1 + ... + an*vn}, where
       ++ v1,...,vn are the elements of the fixed basis.
-    minimalPolynomial: $ -> SparseUnivariatePolynomial F
+    minimalPolynomial: % -> SparseUnivariatePolynomial F
       ++ minimalPolynomial(a) returns the minimal polynomial of an
       ++ element \spad{a} over the ground field F.
     definingPolynomial: () -> SparseUnivariatePolynomial F
@@ -185,37 +185,37 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
       ++ the field extension.
     extensionDegree : () ->  PositiveInteger
       ++ extensionDegree() returns the degree of field extension.
-    degree : $ -> PositiveInteger
+    degree : % -> PositiveInteger
       ++ degree(a) returns the degree of the minimal polynomial of an
       ++ element \spad{a} over the ground field F.
-    norm: $  -> F
+    norm: %  -> F
       ++ norm(a) computes the norm of \spad{a} with respect to the
       ++ field considered as an algebra with 1 over the ground field F.
-    trace: $ -> F
+    trace: % -> F
       ++ trace(a) computes the trace of \spad{a} with respect to
       ++ the field considered as an algebra with 1 over the ground field F.
     if F has Finite then
       FiniteFieldCategory
-      minimalPolynomial: ($,PositiveInteger) -> SparseUnivariatePolynomial $
+      minimalPolynomial: (%,PositiveInteger) -> SparseUnivariatePolynomial %
         ++ minimalPolynomial(x,n) computes the minimal polynomial of x over
         ++ the field of extension degree n over the ground field F.
-      norm: ($,PositiveInteger)  -> $
+      norm: (%,PositiveInteger)  -> %
         ++ norm(a,d) computes the norm of \spad{a} with respect to the field of
         ++ extension degree d over the ground field of size.
         ++ Error: if d does not divide the extension degree of \spad{a}.
         ++ Note: norm(a,d) = reduce(*,[a^(q^(d*i)) for i in 0..n/d])
-      trace: ($,PositiveInteger)   -> $
+      trace: (%,PositiveInteger)   -> %
         ++ trace(a,d) computes the trace of \spad{a} with respect to the
         ++ field of extension degree d over the ground field of size q.
         ++ Error: if d does not divide the extension degree of \spad{a}.
         ++ Note: \spad{trace(a,d) = reduce(+,[a^(q^(d*i)) for i in 0..n/d])}.
-      createNormalElement: () -> $
+      createNormalElement: () -> %
         ++ createNormalElement() computes a normal element over the ground
         ++ field F, that is,
         ++ \spad{a^(q^i), 0 <= i < extensionDegree()} is an F-basis,
         ++ where \spad{q = size()\$F}.
         ++ Reference: Such an element exists Lidl/Niederreiter: Theorem 2.35.
-      normalElement: () -> $
+      normalElement: () -> %
         ++ normalElement() returns a element, normal over the ground field F,
         ++ i.e. \spad{a^(q^i), 0 <= i < extensionDegree()} is an F-basis,
         ++ where \spad{q = size()\$F}.
@@ -224,16 +224,16 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
         ++ then cached in a global variable.
         ++ On subsequent calls, the element is retrieved by referencing the
         ++ global variable.
-      normal?: $ -> Boolean
+      normal?: % -> Boolean
         ++ normal?(a) tests whether the element \spad{a} is normal over the
         ++ ground field F, i.e.
         ++ \spad{a^(q^i), 0 <= i <= extensionDegree()-1} is an F-basis,
         ++ where \spad{q = size()\$F}.
         ++ Implementation according to Lidl/Niederreiter: Theorem 2.39.
-      generator: () -> $
+      generator: () -> %
         ++ generator() returns a root of the defining polynomial.
         ++ This element generates the field as an algebra over the ground field.
-      linearAssociatedExp:($,SparseUnivariatePolynomial F) -> $
+      linearAssociatedExp:(%,SparseUnivariatePolynomial F) -> %
         ++ linearAssociatedExp(a,f) is linear over {\em F}, i.e.
         ++ for elements {\em a} from {\em \$}, {\em c,d} form {\em F} and
         ++ {\em f,g} univariate polynomials over {\em F} we have
@@ -245,13 +245,13 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
         ++ \spadfun{linearAssociatedExp}(a,monomial(1,k)\$SUP(F)) is defined to
         ++ be \spadfun{Frobenius}(a,k) which is {\em a^(q^k)},
         ++ where {\em q=size()\$F}.
-      linearAssociatedOrder: $ -> SparseUnivariatePolynomial F
+      linearAssociatedOrder: % -> SparseUnivariatePolynomial F
         ++ linearAssociatedOrder(a) retruns the monic polynomial {\em g} of
         ++ least degree, such that \spadfun{linearAssociatedExp}(a,g) is 0.
-      linearAssociatedLog: $ -> SparseUnivariatePolynomial F
+      linearAssociatedLog: % -> SparseUnivariatePolynomial F
         ++ linearAssociatedLog(a) returns a polynomial {\em g}, such that
         ++ \spadfun{linearAssociatedExp}(normalElement(),g) equals {\em a}.
-      linearAssociatedLog: ($,$) -> Union(SparseUnivariatePolynomial F,"failed")
+      linearAssociatedLog: (%,%) -> Union(SparseUnivariatePolynomial F,"failed")
         ++ linearAssociatedLog(b,a) returns a polynomial {\em g}, such that the
         ++ \spadfun{linearAssociatedExp}(b,g) equals {\em a}.
         ++ If there is no such polynomial {\em g}, then
@@ -264,7 +264,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
     DLP ==> DiscreteLogarithmPackage
 
     represents(v) ==
-      a:$:=0
+      a:%:=0
       b:=basis()
       for i in 1..extensionDegree()@PI repeat
         a:=a+(v.i)*(b.i)
@@ -276,7 +276,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
     degree(a):OnePointCompletion(PositiveInteger) ==
       degree(a)@PI::OnePointCompletion(PositiveInteger)
 
-    coordinates(v:Vector $) ==
+    coordinates(v:Vector %) ==
       m := new(#v, extensionDegree(), 0)$Matrix(F)
       for i in minIndex v .. maxIndex v for j in minRowIndex m .. repeat
         setRow_!(m, j, coordinates qelt(v, i))
@@ -299,7 +299,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
       determinant(m)
     if F has Finite then
       linearAssociatedExp(x,f) ==
-        erg:$:=0
+        erg:%:=0
         y:=x
         for i in 0..degree(f) repeat
           erg:=erg + coefficient(f,i) * y
@@ -308,7 +308,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
       linearAssociatedLog(b,x) ==
         x=0 => 0
         l:List List F:=[entries coordinates b]
-        a:$:=b
+        a:%:=b
         extdeg:NNI:=extensionDegree()@PI
         for i in 2..extdeg repeat
           a:=Frobenius(a)
@@ -332,24 +332,24 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
       linearAssociatedOrder(x) ==
         x=0 => 0
         l:List List F:=[entries coordinates x]
-        a:$:=x
+        a:%:=x
         for i in 1..extensionDegree()@PI repeat
           a:=Frobenius(a)
           l:=concat(l,entries coordinates a)$(List List F)
         v:=first nullSpace transpose matrix(l)$(Matrix F)
         +/[monomial(v.(i+1),i::NNI) for i in 0..(#v-1)]
 
-      charthRoot(x):Union($,"failed") ==
-        (charthRoot(x)@$)::Union($,"failed")
+      charthRoot(x):Union(%,"failed") ==
+        (charthRoot(x)@%)::Union(%,"failed")
       -- norm(e) == norm(e,1) pretend F
       -- trace(e) == trace(e,1) pretend F
       minimalPolynomial(a,n) ==
         extensionDegree()@PI rem n ~= 0 =>
           error "minimalPolynomial: 2. argument must divide extension degree"
-        f:SUP $:=monomial(1,1)$(SUP $) - monomial(a,0)$(SUP $)
-        u:$:=Frobenius(a,n)
+        f:SUP %:=monomial(1,1)$(SUP %) - monomial(a,0)$(SUP %)
+        u:%:=Frobenius(a,n)
         while not(u = a) repeat
-          f:=f * (monomial(1,1)$(SUP $) - monomial(u,0)$(SUP $))
+          f:=f * (monomial(1,1)$(SUP %) - monomial(u,0)$(SUP %))
           u:=Frobenius(u,n)
         f
       norm(e,s) ==
@@ -362,7 +362,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
         qr:=divide(extensionDegree(),s)
         q:=size()$F
         zero?(qr.remainder) =>
-          a:$:=0
+          a:%:=0
           for i in 0..qr.quotient-1 repeat
             a:=a + e^(q^(s*i))
           a
@@ -370,7 +370,7 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
       size() == size()$F ^ extensionDegree()
       createNormalElement() ==
         characteristic() = size() => 1
-        res : $
+        res : %
         for i in 1.. repeat
           res := index(i :: PI)
           not inGroundField? res =>
@@ -378,14 +378,14 @@ FiniteAlgebraicExtensionField(F : Field) : Category == _
         -- theorem: there exists a normal element, this theorem is
         -- unknown to the compiler
         res
-      normal?(x:$) ==
-        p:SUP $:=(monomial(1,extensionDegree()) - monomial(1,0))@(SUP $)
-        f:SUP $:= +/[monomial(Frobenius(x,i),i)$(SUP $) _
+      normal?(x:%) ==
+        p:SUP %:=(monomial(1,extensionDegree()) - monomial(1,0))@(SUP %)
+        f:SUP %:= +/[monomial(Frobenius(x,i),i)$(SUP %) _
                    for i in 0..extensionDegree()-1]
         gcd(p,f) = 1 => true
         false
       degree a ==
-        y:$:=Frobenius a
+        y:%:=Frobenius a
         deg:PI:=1
         while y ~= a repeat
           y := Frobenius(y)
@@ -498,10 +498,10 @@ DiscreteLogarithmPackage(M): public == private where
 FiniteFieldCategory() : Category ==_
   Join(FieldOfPrimeCharacteristic,Finite,StepThrough,DifferentialRing) with
 --                 ,PolynomialFactorizationExplicit) with
-    charthRoot: $ -> $
+    charthRoot: % -> %
       ++ charthRoot(a) takes the characteristic'th root of {\em a}.
       ++ Note: such a root is alway defined in finite fields.
-    conditionP: Matrix $ -> Union(Vector $,"failed")
+    conditionP: Matrix % -> Union(Vector %,"failed")
       ++ conditionP(mat), given a matrix representing a homogeneous system
       ++ of equations, returns a vector whose characteristic'th powers
       ++ is a non-trivial solution, or "failed" if no such vector exists.
@@ -517,7 +517,7 @@ FiniteFieldCategory() : Category ==_
     -- shanksDiscLogAlgorithm on category level
     -- computing the necessary exponentiation tables in the respective
     -- domains once and for all
-    -- absoluteDegree : $ -> PositiveInteger
+    -- absoluteDegree : % -> PositiveInteger
     --  ++ degree of minimal polynomial, if algebraic with respect
     --  ++ to the prime subfield
     tableForDiscreteLogarithm: Integer -> _
@@ -527,26 +527,26 @@ FiniteFieldCategory() : Category ==_
       ++ key \spad{lookup(a^i)} returns i for i in \spad{0..n-1}.
       ++ Error: if not called for prime divisors of order of
       ++        multiplicative group.
-    createPrimitiveElement: () -> $
+    createPrimitiveElement: () -> %
       ++ createPrimitiveElement() computes a generator of the (cyclic)
       ++ multiplicative group of the field.
       -- RDJ: Are these next lines to be included?
       -- we run through the field and test, algorithms which construct
       -- elements of larger order were found to be too slow
-    primitiveElement: () -> $
+    primitiveElement: () -> %
       ++ primitiveElement() returns a primitive element stored in a global
       ++ variable in the domain.
       ++ At first call, the primitive element is computed
       ++ by calling \spadfun{createPrimitiveElement}.
-    primitive?: $ -> Boolean
+    primitive?: % -> Boolean
       ++ primitive?(b) tests whether the element b is a generator of the
       ++ (cyclic) multiplicative group of the field, i.e. is a primitive
       ++ element.
       ++ Implementation Note: see ch.IX.1.3, th.2 in D. Lipson.
-    discreteLog: $ -> NonNegativeInteger
+    discreteLog: % -> NonNegativeInteger
       ++ discreteLog(a) computes the discrete logarithm of \spad{a}
       ++ with respect to \spad{primitiveElement()} of the field.
-    order: $ -> PositiveInteger
+    order: % -> PositiveInteger
       ++ order(b) computes the order of an element b in the multiplicative
       ++ group of the field.
       ++ Error: if b equals 0.
@@ -570,13 +570,13 @@ FiniteFieldCategory() : Category ==_
     order(e):OnePointCompletion(PositiveInteger) ==
       (order(e)@PI)::OnePointCompletion(PositiveInteger)
 
-    conditionP(mat:Matrix $) ==
+    conditionP(mat:Matrix %) ==
       l:=nullSpace mat
       empty? l => "failed"
       map(charthRoot,first l)
-    charthRoot(x:$):$ == x^(size() quo characteristic())
-    charthRoot(x:%):Union($,"failed") ==
-        (charthRoot(x)@$)::Union($,"failed")
+    charthRoot(x:%):% == x^(size() quo characteristic())
+    charthRoot(x:%):Union(%,"failed") ==
+        (charthRoot(x)@%)::Union(%,"failed")
     createPrimitiveElement() ==
       sm1  : PositiveInteger := (size()$%-1) pretend PositiveInteger
       start : Integer :=
@@ -586,7 +586,7 @@ FiniteFieldCategory() : Category ==_
         1
       found : Boolean := false
       for i in start..  while not found repeat
-        e : $ := index(i::PositiveInteger)
+        e : % := index(i::PositiveInteger)
         found := (order(e) = sm1)
       e
     primitive? a ==
@@ -680,7 +680,7 @@ generated by first argument")$OutputForm
         for t in 0..f.exponent-1 repeat
           exp:=exp quo fac
           rhoHelp:= shanksDiscLogAlgorithm(primroot,_
-                a^exp,fac pretend NonNegativeInteger)$DLP($)
+                a^exp,fac pretend NonNegativeInteger)$DLP(%)
           rhoHelp case "failed" => return "failed"
           rho := (rhoHelp :: NNI) * mult
           disclog := disclog + rho
@@ -688,15 +688,15 @@ generated by first argument")$OutputForm
           a:=a * (logbase ^ (-rho))
       disclog pretend NonNegativeInteger
 
-    FP ==> SparseUnivariatePolynomial($)
+    FP ==> SparseUnivariatePolynomial(%)
     FRP ==> Factored FP
     f,g:FP
     squareFreePolynomial(f:FP):FRP ==
-          squareFree(f)$UnivariatePolynomialSquareFree($,FP)
-    factorPolynomial(f:FP):FRP == factor(f)$DistinctDegreeFactorize($,FP)
+          squareFree(f)$UnivariatePolynomialSquareFree(%,FP)
+    factorPolynomial(f:FP):FRP == factor(f)$DistinctDegreeFactorize(%,FP)
     factorSquareFreePolynomial(f:FP):FRP ==
         f = 0 => 0
-        flist := distdfact(f,true)$DistinctDegreeFactorize($,FP)
+        flist := distdfact(f,true)$DistinctDegreeFactorize(%,FP)
         (flist.cont :: FP) *
             (*/[primeFactor(u.irr,u.pow) for u in flist.factors])
     gcdPolynomial(f:FP,g:FP):FP ==
