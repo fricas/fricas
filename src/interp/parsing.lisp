@@ -196,7 +196,6 @@ NonBlank is true if the token is not preceded by a blank."
   (Symbol nil)
   (Type nil)
   (NonBlank t)
-  (first-char nil)
 )
 
 (defparameter Prior-Token (make-token) "What did I see last")
@@ -208,13 +207,7 @@ NonBlank is true if the token is not preceded by a blank."
 (defun Token-Install (symbol type token &optional (nonblank t))
   (setf (token-symbol token) symbol (token-type token) type
         (token-nonblank token) nonblank
-        (token-first-char token) nil)
-  token)
-
-(defun Token-Install1 (symbol type token nonblank first-char)
-  (setf (token-symbol token) symbol (token-type token) type
-        (token-nonblank token) nonblank
-        (token-first-char token) first-char)
+  )
   token)
 
 (defun Token-Print (token)

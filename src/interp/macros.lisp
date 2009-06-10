@@ -633,8 +633,10 @@ LP  (COND ((NULL X)
  
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
  
-(defmacro spadREDUCE (OP AXIS BOD) (REDUCE-1 OP AXIS BOD))
- 
+(defun |expandSPADREDUCE| (op axis bod)
+    (if (not $BOOT) (BREAK))
+    (REDUCE-1 op axis bod)) 
+
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
       '((PLUS 0) (+ (|Zero|)) (|lcm| (|One|)) (STRCONC "") (|strconc| "")
         (MAX -999999) (MIN 999999) (TIMES 1) (* (|One|)) (CONS NIL)
@@ -765,18 +767,7 @@ LP  (COND ((NULL X)
                       (MOAN "NO THETA PROPERTY"))
                   (CAR (SETQ L (NREVERSE (CDR L))))
                   (NREVERSE (CDR L)))))))
- 
-(defmacro THETA1 (&rest LL)
-  (let (U (L (copy-list LL)))
-    (if (EQ (KAR L) '\,)
-        (LIST 'NREVERSE-N (CONS 'THETA1 (CONS 'CONS (CDR L))) 1)
-        (-REDUCE (CAR L) 1
-                 (if (SETQ U (GET (CAR L) 'THETA)) (CAR U)
-                     (MOAN "NO THETA PROPERTY"))
-                 (CAR (SETQ L (NREVERSE (CDR L))))
-                 (NREVERSE (CDR L))))))
- 
- 
+
 (defun THETACHECK (VAL VAR OP) (if (EQL VAL VAR) (THETA_ERROR OP) val))
  
 (defun THETA_ERROR (OP)

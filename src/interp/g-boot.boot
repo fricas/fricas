@@ -631,6 +631,8 @@ PUSHLOCVAR(x) ==
 compExpand(x) ==
     ATOM(x) => x
     x is ["QUOTE",:.] => x
+    x is ["SPADREDUCE", op, axis, body] =>
+       compExpand(expandSPADREDUCE(op, axis, body))
     MEMQ(CAR x, $COMP_-MACROLIST) => compExpand (MACROEXPAND_-1 (x))
     a := compExpand (car x)
     b := compExpand (cdr x)
