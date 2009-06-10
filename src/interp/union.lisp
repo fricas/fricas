@@ -52,25 +52,6 @@
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
       (GO LP) ) )
 
-(DEFUN INTERSECTIONQ (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
-    (PROG (I H V)
-      (SETQ V (SETQ H (CONS NIL NIL)))
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-1))
-          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-2))
-          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
-  LP  (COND
-        ( (NOT (PAIRP LIST-OF-ITEMS-1))
-          (RETURN (QCDR H)) )
-        ( (MEMQ
-            (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
-            (QCDR H)) )
-        ( (MEMQ I LIST-OF-ITEMS-2)
-          (QRPLACD V (SETQ V (CONS I NIL))) ) )
-      (GO LP) ) )
-
 (DEFUN |union| (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
     (PROG (I H V)
       (SETQ H (SETQ V (CONS NIL NIL)))
@@ -94,29 +75,6 @@
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
       (GO LP1) ) )
 
-(DEFUN UNIONQ (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
-    (PROG (I H V)
-      (SETQ H (SETQ V (CONS NIL NIL)))
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-1))
-          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-2))
-          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
-  LP1 (COND
-        ( (NOT (PAIRP LIST-OF-ITEMS-1))
-          (COND
-            ( (PAIRP LIST-OF-ITEMS-2)
-              (SETQ LIST-OF-ITEMS-1 (RESETQ LIST-OF-ITEMS-2 NIL)) )
-            ( 'T
-              (RETURN (QCDR H)) ) ) )
-        ( (NOT
-            (MEMQ
-              (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
-              (QCDR H)))
-          (QRPLACD V (SETQ V (CONS I NIL))) ) )
-      (GO LP1) ) )
-
 (DEFUN SETDIFFERENCE (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
     (PROG (I H V)
       (SETQ H (SETQ V (CONS NIL NIL)))
@@ -133,24 +91,5 @@
             (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
             (QCDR H)) )
         ( (NOT (|member| I LIST-OF-ITEMS-2))
-          (QRPLACD V (SETQ V (CONS I NIL))) ) )
-      (GO LP1) ) )
-
-(DEFUN SETDIFFERENCEQ (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
-    (PROG (I H V)
-      (SETQ H (SETQ V (CONS NIL NIL)))
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-1))
-          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-2))
-          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
-  LP1 (COND
-        ( (NOT (PAIRP LIST-OF-ITEMS-1))
-          (RETURN (QCDR H)) )
-        ( (MEMQ
-            (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
-            (QCDR H)) )
-        ( (NOT (MEMQ I LIST-OF-ITEMS-2))
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
       (GO LP1) ) )

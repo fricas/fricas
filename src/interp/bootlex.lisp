@@ -289,9 +289,9 @@ Otherwise, get a .. identifier."
 
 (defun get-argument-designator-token (token)
   (advance-char)
-  (token-install1 (intern (strconc "#" (format nil "~D"
+  (token-install (intern (strconc "#" (format nil "~D"
                                          (read-from-string (get-intval)))))
-                 'argument-designator token nonblank #\#))
+                 'argument-designator token nonblank))
 
 (defvar Keywords '(|or| |and| |isnt| |is| |otherwise| |when| |where|
                   |has| |with| |add| |case| |in| |by| |pretend| |mod|
@@ -332,7 +332,7 @@ or the chracters ?, !, ' or %"
          (num-escaped 0)
          (nbuf nil)
          (default-package NIL)
-         (first-char (current-char)))
+        )
       (advance-char)
    id (let ((cur-char (current-char)))
          (cond ((char= cur-char XCape)
@@ -377,18 +377,18 @@ or the chracters ?, !, ' or %"
               (format t "nbuf is ->~S<-~%" nbuf)))
 |#
       (setq sbuf (intern nbuf (or default-package "BOOT")))
-      (return (token-install1
+      (return (token-install
                 sbuf
                 (if (and (not escaped?)
                          (member sbuf Keywords :test #'eq))
                     'keyword 'identifier)
                 token
                 nonblank
-                first-char))))
+                ))))
 
 (defun get-gliph-token (token gliph-list)
    (prog ((ress nil)
-          (first-char (current-char)))
+         )
     loop
        (advance-char)
        (setf gliph-list (nth 1 gliph-list))
@@ -404,8 +404,8 @@ or the chracters ?, !, ' or %"
            (go loop)
            (progn
                  (setf *after_dot* (eq ress '\.))
-                 (return (token-install1 ress 'gliph token 
-                                         nonblank first-char))))))
+                 (return (token-install ress 'gliph token 
+                                         nonblank))))))
 
 (defun make-adjustable-string (n)
   (make-array (list n) :element-type 'character :adjustable t))
@@ -424,8 +424,8 @@ or the chracters ?, !, ' or %"
              (PROGN (|sayBrightly| "Close quote inserted") (RETURN nil)))
          )
         (advance-char)
-        (return (token-install1 (copy-seq buf) ;should make a simple string
-                               'spadstring token t #\"))))   ;"
+        (return (token-install (copy-seq buf) ;should make a simple string
+                               'spadstring token t))))
 
 (defun get-special-token (token)
   "Take a special character off the input stream.  We let the type name of each
@@ -437,7 +437,7 @@ special character be the atom whose print name is the character itself."
                       (#\/ |/|) (#\; |;|) (#\[ |[|) (#\] |]|))))
          (symbol (if as (second as) char)))
     (advance-char)
-    (token-install1 symbol 'special-char token t char)))
+    (token-install symbol 'special-char token t)))
 
 (defun get-intval ()
     (prog (buf
@@ -457,7 +457,7 @@ special character be the atom whose print name is the character itself."
   "Take a number off the input stream."
   (prog (buf cur-char
           intval (fracval 0) (fraclen 0) (expval 0)
-          (first-char (current-char)))
+        )
         (setf intval (read-from-string (get-intval)))
         (setf cur-char (current-char))
         (cond
@@ -497,17 +497,16 @@ special character be the atom whose print name is the character itself."
         (setf expval (read-from-string (get-intval)))
     formfloat
         (setf *after_dot* nil)
-        (return (token-install1
+        (return (token-install
                 (MAKE-FLOAT intval fracval fraclen expval)
                 'spadfloat token
-                 t first-char))
+                 t))
  formint
         (setf *after_dot* nil)
-        (return (token-install1
+        (return (token-install
                   intval
                   'number token
                   t 
-                  first-char
                   ))))
 
 ; **** 4. BOOT token parsing actions

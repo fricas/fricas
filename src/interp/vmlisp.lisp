@@ -459,7 +459,6 @@
     (digit-char-p x)))
 
 (defun LOG2 (x) (LOG x 2.0))
-(defun |log| (x) (LOG x 10.0))
 
 ; 9.13 Streams
 
@@ -551,12 +550,12 @@
 
 ; note default test for union, intersection and set-difference is eql
 ;; following are defined so as to preserve ordering in union.lisp
-;;(defun SETDIFFERENCE (l1 l2) (set-difference l1 l2 :test #'equalp))
-;;(defun SETDIFFERENCEQ (l1 l2) (set-difference l1 l2 :test #'eq))
-;;(defun |union| (l1 l2) (union l1 l2 :test #'equalp))
-;;(defun UNIONQ (l1 l2) (union l1 l2 :test #'eq))
-;;(defun |intersection| (l1 l2) (intersection l1 l2 :test #'equalp))
-;;(defun INTERSECTIONQ (l1 l2) (intersection l1 l2 :test #'eq))
+;; (defun SETDIFFERENCE (l1 l2) (set-difference l1 l2 :test #'equalp))
+;; (defun SETDIFFERENCEQ (l1 l2) (set-difference l1 l2 :test #'eq))
+;; (defun |union| (l1 l2) (union l1 l2 :test #'equalp))
+(defun UNIONQ (l1 l2) (union l1 l2 :test #'eq))
+;; (defun |intersection| (l1 l2) (intersection l1 l2 :test #'equalp))
+(defun INTERSECTIONQ (l1 l2) (intersection l1 l2 :test #'eq))
 (defun |member| (item sequence)
    (cond ((symbolp item) (member item sequence :test #'eq))
          ((stringp item) (member item sequence :test #'equal))
@@ -766,8 +765,6 @@
            (setf (elt cvec l) id)
            cvec))
         (t (concat cvec id))))
-
-(defun trimstring (x) x)
 
 ;;-- (defun rplacstr (cvec1 start1 length1 cvec2
 ;;--                        &optional (start2 0) (length2 nil)

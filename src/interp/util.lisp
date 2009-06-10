@@ -46,33 +46,6 @@ at load time.
 (export '($spadroot $directory-list reroot
           make-absolute-filename |$defaultMsgDatabaseName|))
 
-;;; Get the write date of a file. In GCL we need to check that it
-;;; exists first. This is a simple helper function.
-(defun our-write-date (file) (and #+kcl (probe-file file)
-                                  (file-write-date file)))
-
-;;; Make a directory relative to the {\bf \$spadroot} variable.
-(defun make-directory (direc)
-  (setq direc (namestring direc))
-  (if (string= direc "")  $SPADROOT
-   (if (or (memq :unix *features*)
-           (memq 'unix *features*))
-    (progn
-      (if (char/= (char direc 0) #\/)
-          (setq direc (concat $SPADROOT "/" direc)))
-      (if (char/= (char direc (1- (length direc))) #\/)
-          (setq direc (concat direc "/")))
-      direc)
-    (progn ;; Assume Windows conventions
-      (if (not (or (char= (char direc 0) #\/)
-                   (char= (char direc 0) #\\)
-                   (find #\: direc)))
-          (setq direc (concat $SPADROOT "\\" direc)))
-      (if (not (or (char= (char direc (1- (length direc))) #\/)
-                   (char= (char direc (1- (length direc))) #\\ )))
-          (setq direc (concat direc "\\")))
-      direc))))
-
 ;;; Various lisps use different ``extensions'' on the filename to indicate
 ;;; that a file has been compiled. We set this variable correctly depending
 ;;; on the system we are using.
@@ -638,8 +611,6 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
       (push (subseq expr (1+ mark)) names)))))
   (values longnames names)))
 
-
-(in-package "BOOT")
 
 ;;; moved from bookvol5
 
