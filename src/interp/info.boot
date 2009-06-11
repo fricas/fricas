@@ -248,9 +248,10 @@ actOnInfo(u,$e) ==
         --SAY("Category extension error:
         --cat shouldn't be a join
                       --what was being asserted is an ancestor of what was known
-      if name="$"
+      if ATOM(name)
         then $e:= augModemapsFromCategory(name,name,name,cat,$e)
         else
+          -- xxxx do we really need this?
           viewName := name
           genDomainView(viewName, cat, "HasCategory")
           if not MEMQ(viewName,$functorLocalParameters) then
