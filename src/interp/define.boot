@@ -371,8 +371,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $NRTdeltaListComp: local := nil --list of COMP-ed forms for $NRTdeltaList
     $NRTaddList: local := nil --list of fncts not defined in capsule (added)
     $NRTdeltaLength: local := 0 -- =length of block of extra entries in vector
-    $NRTloadTimeAlist: local := nil --used for things in slot4 (NRTsetVector4)
-    $NRTdomainFormList: local := nil -- of form ((gensym . (Repe...)) ...
     -- the above optimizes the calls to local domains
     $template: local:= nil --stored in the lisplib (if $NRTvec = true)
     $functionLocations: local := nil --locations of defined functions in source
@@ -909,36 +907,7 @@ putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
  
  
 compileCases(x,$e) == -- $e is referenced in compile
-  $specialCaseKeyList: local := nil
-  not ($insideFunctorIfTrue=true) => compile x
-  specialCaseAssoc:=
-    [y for y in getSpecialCaseAssoc() | not get(first y,"specialCase",$e) and
-          ([R,R']:= y) and isEltArgumentIn(FindNamesFor(R,R'),x)] where
-        FindNamesFor(R,R') ==
-          [R,:
-            [v
-              for ['LET,v,u,:.] in $getDomainCode | CADR u=R and
-                eval substitute(R',R,u)]]
-        isEltArgumentIn(Rlist,x) ==
-          atom x => nil
-          x is ['ELT,R,.] => MEMQ(R,Rlist) or isEltArgumentIn(Rlist,rest x)
-          x is ["QREFELT",R,.] => MEMQ(R,Rlist) or isEltArgumentIn(Rlist,rest x)
-          isEltArgumentIn(Rlist,first x) or isEltArgumentIn(Rlist,rest x)
-  null specialCaseAssoc => compile x
-  listOfDomains:= ASSOCLEFT specialCaseAssoc
-  listOfAllCases:= outerProduct ASSOCRIGHT specialCaseAssoc
-  cl:=
-    [u for l in listOfAllCases] where
-      u() ==
-        $specialCaseKeyList:= [[D,:C] for D in listOfDomains for C in l]
-        [MKPF([["EQUAL",D,C] for D in listOfDomains for C in l],"AND"),
-          compile COPY x]
-  $specialCaseKeyList:= nil
-  ["COND",:cl,[$true,compile x]]
- 
-getSpecialCaseAssoc() ==
-  [[R,:l] for R in rest $functorForm
-    for l in rest $functorSpecialCases | l]
+    compile x
  
 compile u ==
   [op,lamExpr] := u
@@ -1230,7 +1199,7 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
             -- of functorLocalParameters that were added during the
             -- conditional compilation
             nils:=ans:=[]
-            for u in flp1 repeat -- is =u form always an ATOM?
+            for u in flp1 repeat
               if ATOM u or (or/[v is [.,=u,:.] for v in $getDomainCode])
                 then
                   nils:=[u,:nils]
@@ -1247,9 +1216,6 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
     y':=localExtras(oldFLP)
   RPLACA(item,"COND")
   RPLACD(item,[[p',x,:x'],['(QUOTE T),y,:y']])
- 
---compSingleCapsuleIf(x,predl,e,$functorLocalParameters) ==
---  compSingleCapsuleItem(x,predl,e)
  
 --% CATEGORY AND DOMAIN FUNCTIONS
  

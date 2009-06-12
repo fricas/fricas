@@ -144,10 +144,9 @@ addModemap1(op,mc,sig,pred,fn,e) ==
   newModemapList:=
     mkNewModemapList(mc,sig,pred,fn,LASSOC('modemap,currentProplist),e,nil)
   newProplist:= augProplist(currentProplist,'modemap,newModemapList)
-  newProplist':= augProplist(newProplist,"FLUID",true)
   unErrorRef op
         --There may have been a warning about op having no value
-  addBinding(op,newProplist',e)
+  addBinding(op, newProplist, e)
  
 mkNewModemapList(mc,sig,pred,fn,curModemapList,e,filenameOrNil) ==
   entry:= [map:= [mc,:sig],[pred,fn],:filenameOrNil]

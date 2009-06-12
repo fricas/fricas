@@ -32,8 +32,6 @@
  
 -- Functions for building categories
 
-DEFPARAMETER($noSubsumption, true)
- 
 Category() == nil --sorry to say, this hack is needed by isCategoryType
  
 CategoryPrint(D,$e) ==
@@ -284,12 +282,7 @@ SourceLevelSubsume([out1,:in1],[out2,:in2]) ==
 SourceLevelSubset(a,b) ==
   --true if a is a source-level subset of b
   a=b => true
-  $noSubsumption=true => false
-  b is ["Union",:blist] and member(a,blist) => true
-  BOUNDP '$noSubsets and $noSubsets => false
-  atom b and assoc(a,GETL(b,"Subsets")) => true
-  a is [a1] and b is [b1] and assoc(a1,GETL(b1,"Subsets")) => true
-  nil
+  false
  
 MachineLevelSubsume([name1,[out1,:in1],:flag1],[name2,[out2,:in2],:flag2]) ==
   -- Checks for machine-level subsumption in the sense of SYSTEM SCRIPT

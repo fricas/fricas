@@ -155,20 +155,10 @@ optCall (x is ["call",:u]) ==
   systemErrorHere '"optCall"
  
 optCallSpecially(q,x,n,R) ==
-    y:= LASSOC(R,$specialCaseKeyList) => optSpecialCall(x,y,n)
     MEMQ(KAR R,$optimizableConstructorNames) => optSpecialCall(x,R,n)
     (y:= get(R,"value",$e)) and
       MEMQ(opOf y.expr,$optimizableConstructorNames) =>
         optSpecialCall(x,y.expr,n)
-    (
-      (y:= lookup(R,$getDomainCode)) and ([op,y,prop]:= y) and
-        (yy:= LASSOC(y,$specialCaseKeyList)) =>
-         optSpecialCall(x,[op,yy,prop],n)) where
-            lookup(a,l) ==
-              null l => nil
-              [l',:l]:= l
-              l' is ["LET", =a,l',:.] => l'
-              lookup(a,l)
     nil
  
 optCallEval u ==

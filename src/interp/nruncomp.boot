@@ -123,9 +123,6 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
     dc = '$ => $functorForm
     atom dc and (dcval := get(dc,'value,$e)) => dcval.expr
     dc
---if (atom dc) and (dcval := get(dc,'value,$e))
---   then ndc := dcval.expr
---   else ndc := dc
   sig := substitute(ndc, dc, sig)
   not MEMQ(KAR ndc,$optimizableConstructorNames) => nil
   dcval := optCallEval ndc
@@ -181,7 +178,6 @@ genDeltaEntry opMmPair ==
       saveNRTdeltaListComp:= $NRTdeltaListComp:=[nil,:$NRTdeltaListComp]
       $NRTdeltaLength := $NRTdeltaLength+1
       compEntry:= compOrCroak(odc,$EmptyMode,$e).expr
---      dc
       RPLACA(saveNRTdeltaListComp,compEntry)
   u :=
     [eltOrConst,'$,$NRTbase+$NRTdeltaLength-index] where index ==
@@ -231,7 +227,6 @@ NRTgetLocalIndex(item) ==
   saveIndex := $NRTbase + $NRTdeltaLength
   $NRTdeltaLength := $NRTdeltaLength+1
   compEntry:= compOrCroak(item,$EmptyMode,$e).expr
---    item
   RPLACA(saveNRTdeltaListComp,compEntry)
   saveIndex
 
@@ -321,7 +316,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $catvecList: local    --list of vectors v1..vn for each view
   $hasCategoryAlist: local  --list of GENSYMs bound to (HasCategory ..) items
   $catNames: local      --list of names n1..nn for each view
-  $maximalViews: local  --list of maximal categories for domain (???)
   $catsig: local        --target category (used in ProcessCond)
   $SetFunctions: local  --copy of p view with preds telling when fnct defined
   $MissingFunctionInfo: local --vector marking which functions are assigned
@@ -331,11 +325,7 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $extraParms:local  --Set in DomainSubstitutionFunction, used in setVector12
   $devaluateList: local --Bound to ((#1 . dv$1)..) where &1 := devaluate #1 later
   $devaluateList:= [[arg,:b] for arg in args for b in $ModeVariableList]
-  $supplementaries: local := nil
-   --set in InvestigateConditions to represent any additional
-   --category membership tests that may be needed(see buildFunctor for details)
 ------------------------
-  $maximalViews: local := nil
   oldtime:= TEMPUS_-FUGIT()
   [$catsig,:argsig]:= sig
   catvecListMaker:=REMDUP
@@ -353,7 +343,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $template := GETREFV (6 + $NRTdeltaLength)
   $catvecList:= [domainShell,:[emptyVector for u in CADR domainShell.4]]
   $catNames := ['$] -- for DescendCode -- to be changed below for slot 4
-  $maximalViews:= nil
   $SetFunctions:= GETREFV SIZE domainShell
   $MissingFunctionInfo:= GETREFV SIZE domainShell
   $catNames:= ['$,:[GENVAR() for u in rest catvecListMaker]]
@@ -382,11 +371,9 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
 
   $CheckVectorList := NRTcheckVector domainShell
 --CODE: part 1
-  codePart1:= [:devaluateCode,:domainFormCode,createDomainCode,
+  codePart1:= [:devaluateCode, createDomainCode,
                 createViewCode,setVector0Code, slot3Code,:slamCode] where
     devaluateCode:= [['LET,b,['devaluate,a]] for [a,:b] in $devaluateList]
-    domainFormCode := [['LET,a,b] for [a,:b] in NREVERSE $NRTdomainFormList]
-      --$NRTdomainFormList is unused now
     createDomainCode:=
       ['LET,domname,['LIST,MKQ CAR $definition,:ASSOCRIGHT $devaluateList]]
     createViewCode:= ['LET,'$,['GETREFV, 6+$NRTdeltaLength]]
