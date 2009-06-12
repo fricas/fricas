@@ -61,7 +61,6 @@
 (defvar |$env| nil "checked in isDomainValuedVariable")
 (defvar |$e| nil "checked in isDomainValuedVariable")
 (defvar |$getPutTrace| nil)
-(defvar |$specialCaseKeyList| nil "checked in optCall")
 (defvar |$formulaFormat| nil "if true produce script formula output")
 (defvar |$texFormat| nil "if true produce tex output")
 (defvar |$fortranFormat| nil "if true produce fortran output")

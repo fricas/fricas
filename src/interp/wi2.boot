@@ -112,8 +112,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $NRTdeltaListComp: local := nil --list of COMP-ed forms for $NRTdeltaList
     $NRTaddList: local := nil --list of fncts not defined in capsule (added)
     $NRTdeltaLength: local := 0 -- =length of block of extra entries in vector
-    $NRTloadTimeAlist: local := nil --used for things in slot4 (NRTsetVector4)
-    $NRTdomainFormList: local := nil -- of form ((gensym . (Repe...)) ...
     -- the above optimizes the calls to local domains
     $template: local:= nil --stored in the lisplib (if $NRTvec = true)
     $functionLocations: local := nil --locations of defined functions in source

@@ -507,7 +507,6 @@ InvestigateConditions catvecListMaker ==
               old
         list2
   list:= [[sec,:ICformat u] for u in list for sec in secondaries]
-  pv:= getPossibleViews $principal
 -- $HackSlot4 is used in SetVector4 to ensure that conditional
 -- extensions of the principal view are handles correctly
 -- here we build the code necessary to remove spurious extensions
@@ -516,10 +515,6 @@ InvestigateConditions catvecListMaker ==
       ['COND,[TryGDC ICformat rest u],
              ['(QUOTE T),['RPLACA,'(CAR TrueDomain),
                              ['delete,['QUOTE,first u],'(CAAR TrueDomain)]]]]
-  $supplementaries:=
-    [u
-      for u in list | not member(first u,masterSecondaries)
-        and not (true=rest u) and not member(first u,pv)]
   [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
  
 ICformat u ==
@@ -574,16 +569,6 @@ partPessimise(a,trueconds) ==
   a is ['SIGNATURE,:.] => a
   a is ['IF,cond,:.] => (member(cond,trueconds) => a; nil)
   [partPessimise(first a,trueconds),:partPessimise(rest a,trueconds)]
- 
-getPossibleViews u ==
-  --returns a list of all the categories that can be views of this one
-  [vec,:.]:= compMakeCategoryObject(u,$e) or
-    systemErrorHere '"getPossibleViews"
-  views:= [first u for u in CADR vec.4]
-  null vec.0 => [CAAR vec.4,:views] --*
-  [vec.0,:views] --*
-      --the two lines marked  ensure that the principal view comes first
-      --if you don't want it, CDR it off
  
 getViewsConditions u ==
  

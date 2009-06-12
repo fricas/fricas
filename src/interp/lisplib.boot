@@ -223,7 +223,6 @@ loadFunctor u ==
 makeConstructorsAutoLoad() ==
   for cnam in allConstructors() repeat
     REMPROP(cnam,'LOADED)
---    fn:=GETDATABASE(cnam,'ABBREVIATION)
     if GETDATABASE(cnam,'NILADIC)
      then PUT(cnam,'NILADIC,'T)
      else REMPROP(cnam,'NILADIC)
@@ -248,7 +247,6 @@ autoLoad(abb,cname) ==
   SYMBOL_-FUNCTION cname
  
 setAutoLoadProperty(name) ==
---  abb := constructor? name
   REMPROP(name,'LOADED)
   SETF(SYMBOL_-FUNCTION name,mkAutoLoad(name, name))
 
@@ -276,7 +274,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $lisplibOperationAlist: local := NIL
   $lisplibSuperDomain: local := NIL
   $libFile: local := NIL
---  $lisplibRelatedDomains: local := NIL   --from ++ Related Domains: see c-doc
   $lisplibCategory: local := nil        
   --for categories, is rhs of definition; otherwise, is target of functor
   --will eventually become the "constructorCategory" property in lisplib
