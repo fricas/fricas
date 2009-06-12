@@ -112,7 +112,7 @@
         |Integer| |NonNegativeInteger| |PositiveInteger|
         |SmallInteger| |String| |Boolean| |Symbol| |BooleanFunctions|)
    "used in optCall to decide which domains can be optimized")
-(def-boot-val |$printLoadMsgs|  '|on|          "Interpreter>SetVarT.boot")
+(def-boot-val |$printLoadMsgs|  '|off|          "Interpreter>SetVarT.boot")
 (def-boot-var |$PrintOnly|                          "Compiler>LispLib.boot")
 (def-boot-var |$reportBottomUpFlag|                 "Interpreter>SetVarT.boot")
 (def-boot-var |$reportFlag|                         "Interpreter>SetVars.boot")

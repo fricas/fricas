@@ -676,7 +676,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                       (setq |$SpadServer| t)))))
   (setq |$IOindex| 1)
   (setq |$InteractiveFrame| (|makeInitialModemapFrame|))
-  (setq |$printLoadMsgs| '|on|)
+  (setq |$printLoadMsgs| '|off|)
   (|loadExposureGroupData|)
   (|statisticsInitialization|)
   (|initHist|)
