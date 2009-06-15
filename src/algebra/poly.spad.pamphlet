@@ -10,17 +10,6 @@
 \tableofcontents
 \eject
 \section{category FMCAT FreeModuleCategory}
-   \emph{Notes} (Franz Lehner (lehner@finanz.math.tugraz.at), june 4 2009).
-
-   Since ``leading term'' makes no sense
-   for unordered base sets,
-   and at the time of this writing it was never used for such,
-   it was changed to [[OrderedSet]].
-   [[FreeModule]] originally was not of FreeModuleCategory.
-   Some functions (like [[support]], [[coefficients]], [[monomials]], ...) 
-   from here could be moved to [[IndexedDirectProductCategory]]
-   but at the moment there is no need for this.
-
 <<category FMCAT FreeModuleCategory>>=
 )abbrev category FMCAT FreeModuleCategory
 ++ Author: Michel Petitot petitot@lifl.fr
@@ -45,6 +34,17 @@
 ++   for examples of domains built with the \spadtype{FreeModuleCategory}
 ++   category constructor.
 ++   Author: Michel Petitot (petitot@lifl.fr)
+++
+++   Note (Franz Lehner, June 2009):
+++   Since \spad{leadingTerm} makes no sense
+++   for unordered base sets,
+++   and at the time of this writing this domain was never used for such,
+++   it was changed to \spad{OrderedSet}.
+++   \spad{FreeModule} originally was not of FreeModuleCategory.
+++   Some functions (like \spad{support}, \spad{coefficients},
+++   \spad{monomials}, ...) from here could be moved to
+++   \spad{IndexedDirectProductCategory}
+++   but at the moment there is no need for this.
 FreeModuleCategory(R, S):Category == Exports where
    R: Ring
    S: OrderedSet
@@ -156,6 +156,14 @@ FreeModule(R:Ring,S:OrderedSet):
            --map(x1+->r*x1,x)
              [[u.k,a] for u in x | (a:=u.c*r) ~= 0$R]
 
+       r * s ==
+         r = 0 => 0
+         [[s,r]$Term]
+ 
+       s * r ==
+         r = 0 => 0
+         [[s,r]$Term]
+
        coerce(x) : OutputForm ==
          null x => (0$R) :: OutputForm
          le : List OutputForm := nil
@@ -166,6 +174,8 @@ FreeModule(R:Ring,S:OrderedSet):
 
        leadingMonomial x == x.first.k
  
+       support x == [t.k for t in x]
+
        coefficients x == [t.c for t in x]
 
        monomials x == [ monom (t.k, t.c) for t in x]
@@ -207,6 +217,42 @@ FreeModule(R:Ring,S:OrderedSet):
 
 
 @
+\section{package FM2 FreeModuleFunctions2}
+<<package FM2 FreeModuleFunctions2>>=
+)abbrev package FM2 FreeModuleFunctions2
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at
+++ Date Created: 2009
+++ Date Last Updated: 7 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   linear extensions of maps on the basis
+FreeModuleFunctions2(R:CommutativeRing, S:OrderedSet,M1:FreeModuleCategory(R,S),M2:Module(R)): public == private where
+    TERM1 ==> Record(k:S, c:R) 
+
+    public ==> with
+        mapLinear:(S->M2,M1)->M2
+        ++ \spad{mapLinear:(f,x)} returns the linear extension
+        ++ of a map defined on the basis of M2 applied to a linear combination
+
+    private ==> add
+        f:S->M2
+        x:M1
+        t:TERM1
+        mapLinear(f,x) ==
+            res:M2:= 0
+            for t in listOfTerms x repeat
+                res := res + (t c)*f(t k)
+            res
+
+
+@
+
 \section{domain PR PolynomialRing}
 <<domain PR PolynomialRing>>=
 )abbrev domain PR PolynomialRing
@@ -1361,6 +1407,7 @@ UnivariatePolynomialMultiplicationPackage(R: Ring, U: UnivariatePolynomialCatego
 
 <<category FMCAT FreeModuleCategory>>
 <<domain FM FreeModule>>
+<<package FM2 FreeModuleFunctions2>>
 <<domain PR PolynomialRing>>
 <<package UPSQFREE UnivariatePolynomialSquareFree>>
 <<package PSQFR PolynomialSquareFree>>
