@@ -75,8 +75,6 @@ deltaTran(item,compItem) ==
   newSig := [NRTassocIndex x or x for x in formalSig]
   [newSig,dcCode,op,:kindFlag]
 
---NRTencodeSig x == [NRTencode y for y in x]
-
 NRTreplaceAllLocalReferences(form) ==
   $devaluateList :local := []
   NRTputInLocalReferences form
@@ -151,7 +149,6 @@ genDeltaEntry opMmPair ==
 --called from compApplyModemap
 --$NRTdeltaLength=0.. always equals length of $NRTdeltaList
   [.,[odc,:.],.] := opMmPair
-  --opModemapPair := SUBLIS($LocalDomainAlist,opMmPair)
   [op,[dc,:sig],[.,cform:=[eltOrConst,.,nsig]]] := opMmPair
   if $profileCompiler = true then profileRecord(dc,op,sig)
   eltOrConst = 'XLAM => cform
@@ -421,7 +418,6 @@ mkDomainCatName id == INTERN STRCONC(id,";CAT")
 NRTsetVector4Part1(siglist,formlist,condlist) ==
   $uncondList: local := nil
   $condList: local := nil
-  $count: local := 0
   for sig in reverse siglist for form in reverse formlist
          for cond in reverse condlist repeat
                   NRTsetVector4a(sig,form,cond)
@@ -431,7 +427,6 @@ NRTsetVector4Part1(siglist,formlist,condlist) ==
   revCondlist := reverseCondlist reducedConlist
   orCondlist := [[x,:MKPF(y,'OR)] for [x,:y] in revCondlist]
   [reducedUncondlist,:orCondlist]
-  --NRTsetVector4a(first siglist,first formlist,first condlist)
 
 reverseCondlist cl ==
   alist := nil
@@ -442,11 +437,6 @@ reverseCondlist cl ==
       member(x,CDR u) => nil
       RPLACD(u,[x,:CDR u])
   alist
-
-mergeAppend(l1,l2) ==
-  ATOM l1 => l2
-  member(QCAR l1,l2) => mergeAppend(QCDR l1, l2)
-  CONS(QCAR l1, mergeAppend(QCDR l1, l2))
 
 NRTsetVector4a(sig,form,cond) ==
   sig = '$ =>
@@ -576,25 +566,11 @@ NRTputInLocalReferences bod ==
 
 NRTputInHead bod ==
   atom bod => bod
---  LASSOC(bod,$devaluateList) => nil
---  k:= NRTassocIndex bod => [$elt,'_$,k]
---  systemError '"unexpected position of domain reference"
---  bod
---bod is ['LET,var,val,:extra] and IDENTP var =>
---  NRTputInTail extra
---  k:= NRTassocIndex var => RPLAC(CADDR bod,[$elt,'$,k])
---  NRTputInHead val
---  bod
   bod is ['SPADCALL,:args,fn] =>
     NRTputInTail rest bod --NOTE: args = COPY of rest bod
     -- The following test allows function-returning expressions
     fn is [elt,dom,ind] and not (dom='$) and MEMQ(elt,'(ELT QREFELT CONST)) =>
       k:= NRTassocIndex dom => RPLACA(LASTNODE bod,[$elt,'_$,k])
---    sayBrightlyNT '"unexpected SPADCALL:"
---    pp fn
---    nil
---    keyedSystemError("S2GE0016",['"NRTputInHead",
---       '"unexpected SPADCALL form"])
       nil
     NRTputInHead fn
     bod

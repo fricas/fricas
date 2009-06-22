@@ -307,12 +307,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
      else updateCategoryFrameForConstructor op
   res
  
-getLisplibVersion libName ==
-  stream := RDEFIOSTREAM [['FILE,libName,$spadLibFT],['MODE, :'I]]
-  version:= CADR rread('VERSION, stream,nil)
-  RSHUT(stream)
-  version
- 
 initializeLisplib libName ==
   _$ERASE(libName,'ERRORLIB)
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
@@ -414,66 +408,6 @@ transformOperationAlist operationAlist ==
     itemList:= [signatureItem,:LASSQ(op,newAlist)]
     newAlist:= insertAlist(op,itemList,newAlist)
   newAlist
- 
--- flattenOperationAlist operationAlist ==
---   --new form is (<op> <signature> <slotNumber> <condition> <kind>)
---   [:[[op,:x] for x in y] for [op,:y] in operationAlist]
- 
-getSlotFromDomain(dom,op,oldSig) ==
-  --  returns the slot number in the domain where the function whose
-  --  signature is oldSig may be found in the domain dom
-  oldSig:= removeOPT oldSig
-  dom:= removeOPT dom
-  sig := substitute("$", dom, oldSig)
-  loadIfNecessary first dom
-  isPackageForm dom => getSlotFromPackage(dom,op,oldSig)
-  domain:= evalDomain dom
-  n:= findConstructorSlotNumber(dom,domain,op,sig) =>
-    (slot:= domain.n).0 = Undef =>
-      throwKeyedMsg("S2IL0023A",[op,formatSignature sig,dom])
-    slot
-  throwKeyedMsg("S2IL0024A",[op,formatSignature sig,dom])
- 
-findConstructorSlotNumber(domainForm,domain,op,sig) ==
-  null domain.1 => getSlotNumberFromOperationAlist(domainForm,op,sig)
-  sayMSG ['"   using slot 1 of ",domainForm]
-  constructorArglist:= rest domainForm
-  nsig:=#sig
-  tail:= or/[r for [[op1,sig1],:r] in domain.1 | op=op1 and nsig=#sig1 and
-    and/[compare for a in sig for b in sig1]] where compare ==
-      a=b => true
-      FIXP b => a=constructorArglist.b
-      isSuperDomain(bustUnion b,bustUnion a,$CategoryFrame)
-  tail is [.,["ELT",.,n]] => n
-  systemErrorHere '"findSlotNumber"
- 
-bustUnion d ==
-  d is ["Union",domain,utype] and utype='"failed" => domain
-  d
- 
-getSlotNumberFromOperationAlist(domainForm,op,sig) ==
-  constructorName:= CAR domainForm
-  constructorArglist:= CDR domainForm
-  operationAlist:=
-    GETDATABASE(constructorName, 'OPERATIONALIST) or
-      keyedSystemError("S2IL0026",[constructorName])
-  entryList:= QLASSQ(op,operationAlist) or return nil
-  tail:= or/[r for [sig1,:r] in entryList | sigsMatch(sig,sig1,domainForm)] =>
-    first tail
-  nil
- 
-sigsMatch(sig,sig1,domainForm) ==
-  --  does signature "sig" match "sig1", where integers 1,2,.. in
-  --  sig1 designate corresponding arguments of domainForm
-  while sig and sig1 repeat
-    partsMatch:=
-      (item:= CAR sig)=(item1:= CAR sig1) => true --ok, go to next iteration
-      FIXP item1 => item = domainForm.item1       --item1=n means nth arg
-      isSuperDomain(bustUnion item,bustUnion item1,$CategoryFrame)
-    null partsMatch => return nil
-    sig:= rest sig; sig1 := rest sig1
-  sig or sig1 => nil
-  true
  
 getConstructorModemap form ==
   GETDATABASE(opOf form, 'CONSTRUCTORMODEMAP)

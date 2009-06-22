@@ -376,7 +376,6 @@ SetFunctionSlots(sig,body,flag,mode) == --mode is either "original" or "adding"
                     else body:= SetFunctionSlots(truename,body,nil,mode)
                else nil
            else
-            if not (catImplem is ['PAC,:.]) then
               keyedSystemError("S2OR0002",[catImplem])
   body is ['SETELT,:.] => body
   body is ['QSETREFV,:.] => body

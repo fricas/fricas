@@ -132,7 +132,7 @@
      ((and (string= type "input")
            |$useNewParser|)
       (|ncINTERPFILE| input-file Echo-Meta))
-     (t (spad input-file)))))
+     (t (|spadCompile| input-file)))))
 
 (setq |$algebraOutputStream|
    (setq |$fortranOutputStream|

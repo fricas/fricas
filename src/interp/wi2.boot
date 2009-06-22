@@ -56,8 +56,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $signature: local
     $Representation: local
          --Set in doIt, accessed in the compiler - compNoStacking
-    $LocalDomainAlist: local  --set in doIt, accessed in genDeltaEntry
-    $LocalDomainAlist:= nil
     $functorForm: local
     $functorLocalParameters: local
     $CheckVectorList: local
@@ -405,12 +403,10 @@ getSuccessEnvironment(a,e) ==
   --  prevent implicit ones from being generated
   a is ["has",x,m] =>
     x := unLet x   
-    IDENTP x and isDomainForm(m,$EmptyEnvironment) => put(x,"specialCase",m,e)
     e
   a is ["is",id,m] =>
     id := unLet id
     IDENTP id and isDomainForm(m,$EmptyEnvironment) =>
-         e:=put(id,"specialCase",m,e)
          currentProplist:= getProplist(id,e)
          [.,.,e] := T := comp(m,$EmptyMode,e) or return nil -- duplicates compIs
          newProplist:= consProplistOf(id,currentProplist,"value",removeEnv T)
@@ -428,7 +424,6 @@ getInverseEnvironment(a,E) ==
   op="has" =>
     [x,m]:= argl
     x := unLet x
-    IDENTP x and isDomainForm(m,$EmptyEnvironment) => put(x,"specialCase",m,E)
     E
   a is ["case",x,m] and (x := unLet x) and IDENTP x =>
            --the next two lines are necessary to get 3-branched Unions to work
@@ -678,7 +673,6 @@ genDeltaEntry opMmPair ==
 --called from compApplyModemap
 --$NRTdeltaLength=0.. always equals length of $NRTdeltaList
   [.,[odc,:.],.] := opMmPair
-  --opModemapPair := SUBLIS($LocalDomainAlist,opMmPair)
   [op,[dc,:sig],[.,cform:=[eltOrConst,:.]]] := opMmPair
   if $profileCompiler = true then 
     profileRecord(dc,op,sig)
@@ -1087,11 +1081,6 @@ doItLet1 item ==
       if lhs="Rep" then
         $Representation:= (get("Rep",'value,$e)).(0)
            --$Representation bound by compDefineFunctor, used in compNoStacking
---+
---+
-      $LocalDomainAlist:= --see genDeltaEntry
-        [[lhs,:SUBLIS($LocalDomainAlist,get(lhs,'value,$e).0)],:$LocalDomainAlist]
---+
   qe(6,$e)
   code is ['LET,:.] =>
       rhsCode:= rhs'

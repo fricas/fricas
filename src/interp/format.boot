@@ -664,10 +664,10 @@ linearFormatForm(op,argl) ==
     nil
   if #indexList > 1 then
     scriptArgs:= formatArgList take(indexList.1,argl)
-    argl := drop(indexList.1,argl)
+    argl := DROP(indexList.1,argl)
     for i in rest rest indexList repeat
       subArglist:= take(i,argl)
-      argl:= drop(i,argl)
+      argl:= DROP(i,argl)
       scriptArgs:= concat(scriptArgs,";",formatArgList subArglist)
   scriptArgs:=
     scriptArgs => concat(specialChar 'lbrk,scriptArgs, specialChar 'rbrk)

@@ -51,7 +51,6 @@ pfname x ==
     PathnameString x
  
 
-%pos p == [function ppos, p]
 ppos p ==
     pfNoPosition? p => ['"no position"]
     pfImmediate? p  => ['"console"]

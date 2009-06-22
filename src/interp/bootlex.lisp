@@ -130,7 +130,7 @@
 
 (defvar |$MacroTable|)
 
-(defun spad (&optional
+(defun |spadCompile| (&optional
               (spad-input-file nil)
               (spad-output-file nil)
              &aux
@@ -180,7 +180,7 @@
                (let ((parseout (pop-stack-1)) )
                  (when parseout
                        (let ((*standard-output* out-stream))
-                         (S-PROCESS parseout))
+                         (|S_process| parseout))
                        (format out-stream "~&")))
                ;(IOClear in-stream out-stream)
                )))

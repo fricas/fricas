@@ -56,7 +56,7 @@
         (stream nil)
         (fullname nil)
         (indextable nil))
-        (cond ((equal (elt (string mode) 0) #\I)
+        (cond ((eq mode 'INPUT)
                ;;(setq fullname (make-input-filename (cdr file) 'LISPLIB))
                (setq fullname (make-input-filename (cdr file) 'NIL))
                (setq stream (get-input-index-stream fullname))
@@ -69,7 +69,7 @@
                (make-libstream :mode 'input  :dirname fullname
                                :indextable (get-index-table-from-stream stream)
                                :indexstream stream)))
-              ((equal (elt (string mode) 0) #\O)
+              ((eq mode 'OUTPUT)
                ;;(setq fullname (make-full-namestring (cdr file) 'LISPLIB))
                (setq fullname (make-full-namestring (cdr file) 'NIL))
                (case (file-kind fullname)

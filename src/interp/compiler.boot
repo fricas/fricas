@@ -954,15 +954,12 @@ compBoolean(p,m,E) ==
   [p',m,getSuccessEnvironment(p,E),getInverseEnvironment(p,E)]
 
 getSuccessEnvironment(a,e) ==
-
   -- the next four lines try to ensure that explicit special-case tests
   --  prevent implicit ones from being generated
   a is ["has",x,m] =>
-    IDENTP x and isDomainForm(m,$EmptyEnvironment) => put(x,"specialCase",m,e)
     e
   a is ["is",id,m] =>
     IDENTP id and isDomainForm(m,$EmptyEnvironment) =>
-         e:=put(id,"specialCase",m,e)
          currentProplist:= getProplist(id,e)
          [.,.,e] := T := comp(m,$EmptyMode,e) or return nil -- duplicates compIs
          newProplist:= consProplistOf(id,currentProplist,"value",[m,:rest removeEnv T])
@@ -979,7 +976,6 @@ getInverseEnvironment(a,E) ==
 -- prevent implicit ones from being generated
   op="has" =>
     [x,m]:= argl
-    IDENTP x and isDomainForm(m,$EmptyEnvironment) => put(x,"specialCase",m,E)
     E
   a is ["case",x,m] and IDENTP x =>
            --the next two lines are necessary to get 3-branched Unions to work
@@ -1041,7 +1037,6 @@ compCase1(x,m,e) ==
 compColon([":",f,t],m,e) ==
   $insideExpressionIfTrue=true => compColonInside(f,m,e,t)
     --if inside an expression, ":" means to convert to m "on faith"
-  $lhsOfColon: local:= f
   t:=
     atom t and (t':= assoc(t,getDomainsInScope e)) => t'
     isDomainForm(t,e) and not $insideCategoryIfTrue =>

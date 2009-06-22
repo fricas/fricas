@@ -55,9 +55,6 @@
 
 ;;; Common Block section
 
-(defparameter |$fluidVars| nil)
-(defparameter |$locVars| nil)
-
 (defun |compAndDefine| (L)
   (let ((*comp370-apply* (function print-and-eval-defun)))
     (declare (special *comp370-apply*))
@@ -100,4 +97,4 @@
 ; $COMP-MACROLIST is actually a macro call
 
 (defparameter $COMP-MACROLIST
-  '(COLLECT REPEAT SUCHTHATCLAUSE THETA COLLECTV COLLECTVEC SPADDO))
+  '(COLLECT REPEAT SUCHTHATCLAUSE COLLECTV COLLECTVEC))

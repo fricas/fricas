@@ -140,7 +140,7 @@
 (defvar |$globalDefs| nil)
 (defvar |$MacroTable|)
 
-(defun S-PROCESS (X)
+(defun |S_process| (X)
   (let ((|$Index| 0)
         ($MACROASSOC ())
         (|$compUniquelyIfTrue| nil)

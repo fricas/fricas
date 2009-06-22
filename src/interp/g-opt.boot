@@ -127,7 +127,7 @@ optSPADCALL(form is ['SPADCALL,:argl]) ==
   null $InteractiveMode => form
   -- last arg is function/env, but may be a form
   argl is [:argl,fun] =>
-    fun is ['ELT,dom,slot] or fun is ['LISPELT,dom,slot] =>
+    fun is ['ELT,dom,slot] =>
       optCall ['call,['ELT,dom,slot],:argl]
     form
   form
@@ -139,7 +139,6 @@ optCall (x is ["call",:u]) ==
   atom first x => first x
   [fn,:a]:= first x
   atom fn => (RPLAC(rest x,a); RPLAC(first x,fn))
-  fn is ["PAC",:.] => optPackageCall(x,fn,a)
   fn is ["applyFun",name] =>
     (RPLAC(first x,"SPADCALL"); RPLAC(rest x,[:a,name]); x)
   fn is [q,R,n] and MEMQ(q,'(ELT QREFELT CONST)) =>
@@ -162,11 +161,13 @@ optCallSpecially(q,x,n,R) ==
     nil
  
 optCallEval u ==
+  -- Integer() is a lie, but otherwise we could not evaluate
+  -- needed domains
   u is ["List",:.] => List Integer()
   u is ["Vector",:.] => Vector Integer()
   u is ["PrimitiveArray",:.] => PrimitiveArray Integer()
-  u is ["FactoredForm",:.] => FactoredForm Integer()
-  u is ["Matrix",:.] => Matrix Integer()
+  -- u is ["FactoredForm",:.] => FactoredForm Integer()
+  -- u is ["Matrix",:.] => Matrix Integer()
   eval u
  
 optCons (x is ["CONS",a,b]) ==

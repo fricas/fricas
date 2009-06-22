@@ -187,13 +187,9 @@
 (defun CARCDREXPAND (X FG)    ; FG = TRUE FOR CAR AND CDR
     (let (n hx)
       (COND ((ATOM X) X)
-            ((SETQ N (GET (RENAME (SETQ HX (CARCDREXPAND (CAR X) FG))) 'SELCODE))
+            ((SETQ N (GET (SETQ HX (CARCDREXPAND (CAR X) FG)) 'SELCODE))
              (CARCDRX1 (CARCDREXPAND (CADR X) FG) N FG))
             ((CONS HX (MAPCAR #'(LAMBDA (Y) (CARCDREXPAND Y FG)) (CDR X)))))))
- 
-(DEFUN RENAME (U) 
- (let (x)
-  (if (AND (IDENTP U) (SETQ X (GET U 'NEWNAM))) X U)))
  
 (defun CARCDRX1 (X N FG)      ; FG = TRUE FOR CAR AND CDR
     (COND ((< N 1) (fail))
@@ -316,8 +312,8 @@
         funPLUSform funGTform)
     (DO ((X SPL (CDR X)))
         ((ATOM X)
-         (LIST 'spadDO (NREVERSE IL) (LIST (MKPF (NREVERSE XCL) 'OR) XV)
-               (SEQOPT (CONS 'SEQ (NCONC (NREVERSE RSL) (LIST (LIST 'EXIT BD)))))))
+         (|expandDO| (LIST (NREVERSE IL) (LIST (MKPF (NREVERSE XCL) 'OR) XV)
+               (SEQOPT (CONS 'SEQ (NCONC (NREVERSE RSL) (LIST (LIST 'EXIT BD))))))))
       (COND ((ATOM (CAR X)) (FAIL)))
       (COND ((AND (EQ (CAAR X) 'STEP)
                   (|member| (CADDAR X) '(2 1 0 (|One|) (|Zero|)))
@@ -432,7 +428,7 @@
  
 (defvar $BOOT NIL)
  
-(defmacro spadDO (&rest OL)
+(defun |expandDO| (OL)
     (PROG (VARS L VL V U INITS U-VARS U-VALS ENDTEST EXITFORMS BODYFORMS)
          (if $BOOT (return (CONS 'DO OL)))
          (SETQ L  (copy-list OL))
@@ -499,8 +495,8 @@ This version is needed so that (COLLECT (IN X Y) ... (RETURN 'JUNK))=>JUNK."
 ; 7.8.4 Mapping
  
 (defmacro COLLECT (&rest L)
-  (let ((U (REPEAT-TRAN L NIL)))
-    (CONS 'THETA (CONS '\, (NCONC (CAR U) (LIST (CDR U)))))))
+    (let ((U (REPEAT-TRAN L NIL)))
+        (-REDUCE 'CONS 0 NIL (CDR U) (CAR U))))
  
 (defmacro COLLECTVEC (&rest L)
    `(COLLECTV ,@L))
@@ -756,17 +752,6 @@ LP  (COND ((NULL X)
   (COND ((NULL L) ACC)
         (RIGHT (REDUCE-N-2 OP RIGHT (CDR L) (funcall (symbol-function OP) (CAR L) ACC)))
         ((REDUCE-N-2 OP RIGHT (CDR L) (funcall (symbol-function OP) ACC (CAR L))))))
- 
-(defmacro THETA (&rest LL)
-  (let (U (L (copy-list LL)))
-    (if (EQ (KAR L) '\,)  `(theta CONS . ,(CDR L))
-        (progn
-         (if (EQCAR (CAR L) 'QUOTE) (RPLAC (CAR L) (CADAR L)))
-         (-REDUCE (CAR L) 0
-                  (if (SETQ U (GET (CAR L) 'THETA)) (CAR U)
-                      (MOAN "NO THETA PROPERTY"))
-                  (CAR (SETQ L (NREVERSE (CDR L))))
-                  (NREVERSE (CDR L)))))))
 
 (defun THETACHECK (VAL VAR OP) (if (EQL VAL VAR) (THETA_ERROR OP) val))
  
@@ -820,8 +805,6 @@ LP  (COND ((NULL X)
  
 (define-function 'LASTTAIL #'last)
  
-(define-function 'LISPELT #'ELT)
- 
 (defun DROP (N X &aux m)
   "Return a pointer to the Nth cons of X, counting 0 as the first cons."
   (COND ((EQL N 0) X)
@@ -833,7 +816,7 @@ LP  (COND ((NULL X)
   "Returns a list of the first N elements of list X."
   (COND ((EQL N 0) NIL)
         ((> N 0) (CONS (CAR X) (TAKE (1- N) (CDR X))))
-        ((>= (setq m (+ (length x) N)) 0) (drop m x))
+        ((>= (setq m (+ (length x) N)) 0) (DROP m x))
         ((CROAK (list "Bad args to DROP" N X)))))
  
 (DEFUN NUMOFNODES (X) (if (ATOM X) 0 (+ 1 (NUMOFNODES (CAR X)) (NUMOFNODES (CDR X)))))

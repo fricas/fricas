@@ -59,28 +59,10 @@ domainMember(dom,domList) == or/[modeEqual(dom,d) for d in domList]
  
 --% MODEMAP FUNCTIONS
  
---getTargetMode(x is [op,:argl],e) ==
---  CASES(#(mml:= getModemapList(op,#argl,e)),
---    (1 =>
---    ([[.,target,:.],:.]:= first mml; substituteForFormalArguments(argl,target))
---      ; 0 => MOAN(x," has no modemap"); systemError [x," has duplicate modemaps"]))
- 
 getModemap(x is [op,:.],e) ==
   for modemap in get(op,'modemap,e) repeat
     if u:= compApplyModemap(x,modemap,e,nil) then return
       ([.,.,sl]:= u; SUBLIS(sl,modemap))
- 
-getUniqueSignature(form,e) ==
-  [[.,:sig],:.]:= getUniqueModemap(first form,#rest form,e) or return nil
-  sig
- 
-getUniqueModemap(op,numOfArgs,e) ==
-  1=#(mml:= getModemapList(op,numOfArgs,e)) => first mml
-  1<#mml =>
-    stackWarning [numOfArgs,'" argument form of: ",op,
-      '" has more than one modemap"]
-    first mml
-  nil
  
 getModemapList(op,numOfArgs,e) ==
   op is ['elt,D,op'] => getModemapListFromDomain(op',numOfArgs,D,e)
@@ -181,27 +163,10 @@ mergeModemap(entry is [[mc,:sig],[pred,:.],:.],modemapList,e) ==
       return modemapList
   if entry then [:modemapList,entry] else modemapList
  
--- next definition RPLACs, and hence causes problems.
--- In ptic., SubResGcd in SparseUnivariatePolynomial is miscompiled
---mergeModemap(entry:=((mc,:sig),:.),modemapList,e) ==
---    for (mmtail:= (((mc',:sig'),:.),:.)) in tails modemapList do
---       mc=mc' or isSuperDomain(mc',mc,e)  =>
---         RPLACD(mmtail,(first mmtail,: rest mmtail))
---         RPLACA(mmtail,entry)
---         entry := nil
---         return modemapList
---     if entry then (:modemapList,entry) else modemapList
- 
 isSuperDomain(domainForm,domainForm',e) ==
   isSubset(domainForm',domainForm,e) => true
   domainForm='Rep and domainForm'="$" => true --regard $ as a subdomain of Rep
   LASSOC(opOf domainForm',get(domainForm,"SubDomain",e))
- 
---substituteForRep(entry is [[mc,:sig],:.],curModemapList) ==
---  --change 'Rep to "$" unless the resulting signature is already in $
---  member(entry':= substitute("$",'Rep,entry),curModemapList) =>
---    [entry,:curModemapList]
---  [entry,entry',:curModemapList]
  
 addNewDomain(domain,e) ==
   augModemapsFromDomain(domain,domain,e)
@@ -232,7 +197,6 @@ augModemapsFromCategoryRep(domainName,repDefn,functorBody,categoryForm,e) ==
   [repFnAlist,e]:= evalAndSub('Rep,'Rep,repDefn,getmode(repDefn,e),e)
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)
-  $base:= 4
   for [lhs:=[op,sig,:.],cond,fnsel] in fnAlist repeat
     u := assoc(substitute('Rep, domainName, lhs), repFnAlist)
     u and not AMFCR_,redefinedList(op,functorBody) =>
@@ -254,7 +218,6 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   --if not $InteractiveMode then
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)
-  $base:= 4
   condlist:=[]
   for [[op,sig,:.],cond,fnsel] in fnAlist repeat
 --  e:= addModemap(op,domainName,sig,cond,fnsel,e)
@@ -274,7 +237,6 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   e
  
 evalAndSub(domainName,viewName,functorForm,form,$e) ==
-  $lhsOfColon: local:= domainName
   isCategory form => [substNames(domainName,viewName,functorForm,form.(1)),$e]
   --next lines necessary-- see MPOLY for which $ is actual arg. --- RDJ 3/83
   if CONTAINED("$$",form) then $e:= put("$$","mode",get("$","mode",$e),$e)
@@ -284,7 +246,6 @@ evalAndSub(domainName,viewName,functorForm,form,$e) ==
  
 getOperationAlist(name,functorForm,form) ==
   if atom name and GETDATABASE(name,'NILADIC) then functorForm:= [functorForm]
--- (null isConstructorForm functorForm) and (u:= isFunctor functorForm)
   (u:= isFunctor functorForm) and not
     ($insideFunctorIfTrue and first functorForm=first $functorForm) => u
   $insideFunctorIfTrue and name="$" =>

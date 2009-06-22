@@ -683,7 +683,6 @@ compColon([":",f,t],m,e) ==
   $insideExpressionIfTrue=true => compPretend(["pretend",f,t],m,e)
     --if inside an expression, ":" means to convert to m "on faith"
   f := markKillAll f
-  $lhsOfColon: local:= f
   t:=
     t := markKillAll t
     atom t and (t':= assoc(t,getDomainsInScope e)) => t'
