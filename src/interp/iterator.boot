@@ -213,14 +213,6 @@ compIterator(it,e) ==
     [["|",u.expr],u.env]
   nil
  
---isAggregateMode(m,e) ==
---  m is [c,R] and MEMQ(c,'(Vector List)) => R
---  name:=
---    m is [fn,:.] => fn
---    m="$" => "Rep"
---    m
---  get(name,"value",e) is [c,R] and MEMQ(c,'(Vector List)) => R
- 
 modeIsAggregateOf(ListOrVector,m,e) ==
   m is [ =ListOrVector,R] => [m,R]
 --m = '$EmptyMode => [m,m] I don't think this is correct, breaks POLY +

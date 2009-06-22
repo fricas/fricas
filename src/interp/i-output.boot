@@ -468,14 +468,14 @@ mkSuperSub(op,argl) ==
   -- if there is just a subscript use the SUB special form
   #indexList=2 =>
     subPart:= ['SUB,cleanOp,:take(indexList.1,argl)]
-    l:= drop(indexList.1,argl) => [subPart,:l]
+    l:= DROP(indexList.1,argl) => [subPart,:l]
     subPart
   -- otherwise use the SUPERSUB form
   superSubPart := NIL
   for i in rest indexList repeat
     scripts :=
       this:= take(i,argl)
-      argl:= drop(i,argl)
+      argl:= DROP(i,argl)
       i=0 => ['AGGLST]
       i=1 => first this
       ['AGGLST,:this]
@@ -1366,21 +1366,6 @@ outputDomainConstructor form ==
   v:= [object2String(x) for x in u]
   -- return INTERNL eval ['STRCONC,:v]
   return INTERN (FORMAT(NIL, '"~{~A~}", v))
-
-getOutputAbbreviatedForm form ==
-  form is [op,:argl] =>
-    op in '(Union Record) => outputDomainConstructor form
-    op is "Mapping" => formatMapping argl
-    u:= constructor? op or op
-    null argl => u
-    ml:= getPartialConstructorModemapSig(op)
-    argl:= [fn for x in argl for m in ml] where fn ==
-      categoryForm?(m) => outputDomainConstructor x
-      x' := coerceInteractive(objNewWrap(x,m),$OutputForm)
-      x' => objValUnwrap x'
-      '"unprintableObject"
-    [u,:argl]
-  form
 
 outputOp x ==
   x is [op,:args] and (GETL(op,"LED") or GETL(op,"NUD")) =>

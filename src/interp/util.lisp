@@ -130,7 +130,7 @@ at load time.
         |PARSE-Expression|
         boot-parse-1
         BOOT
-        SPAD
+        |spadCompile|
         init-boot/spad-reader))
 
 ;;; This is the {\bf spad compiler} subsystem. It is only needed by

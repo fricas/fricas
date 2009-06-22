@@ -176,7 +176,6 @@ for i in [ _
   ["cons",        "CONS"]  , _
   ["copy",        "COPY"]  , _
   ["croak",      "CROAK"]  , _
-  ["drop",        "DROP"]  , _
   ["exit",        "EXIT"]  , _
   ["false",        'NIL]   , _
   ["first",        "CAR"]  , _
@@ -188,7 +187,6 @@ for i in [ _
   ["lastNode",    "LAST"]  , _
   ["LAST",        "last"] , _
   ["list",        "LIST"]  , _
---  ["member",        "MEMBER"]  , _
   ["mkpf",        "MKPF"]  , _
   ["nconc",      "NCONC"]  , _
   ["nil"           ,NIL ]  , _
