@@ -110,7 +110,17 @@ Any(): SetCategory with
      obj x      == x.ob
      dom x      == x.dm
      domainOf x == x.dm pretend OutputForm
-     x = y      == (x.dm = y.dm) and EQ(x.ob, y.ob)$Lisp
+     x = y      ==
+         dx := dom x
+         dy := dom y
+         dx ~= dy => false
+         Dx : Type := evalType(dx)$Lisp
+         Dx has BasicType =>
+             (obj x) pretend Dx = (obj y) pretend Dx
+         -- FIXME: we want
+         -- error "Comparison in domain which is not a BasicType"
+         -- but currently pattern matching needs
+         EQ(obj x, obj y)$Lisp
 
      objectOf(x : %) : OutputForm ==
        spad2BootCoerce(x.ob, x.dm,
