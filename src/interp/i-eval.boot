@@ -32,6 +32,22 @@
 
 --% Constructor Evaluation
 
+-- For use from compiled code
+
+quoteNontypeArgs(t) ==
+    t is [.] => t
+    op := opOf t
+    loadIfNecessary op
+    args := rest t
+    cs := rest GETDATABASE(op, 'COSIG)
+    nargs := [if c then quoteNontypeArgs(a) else ["QUOTE", a]
+                for a in args for c in cs]
+    [op, :nargs]
+
+evalType(t) == EVAL(quoteNontypeArgs(t))
+
+---
+
 $noEvalTypeMsg := nil
 $evalDomain := nil
 
