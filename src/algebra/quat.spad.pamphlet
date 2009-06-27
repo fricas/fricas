@@ -82,9 +82,7 @@ QuaternionCategory(R: CommutativeRing): Category ==
          quatern(real x, - imagI x, - imagJ x, - imagK x)
        map(fn, x)       ==
          quatern(fn real x, fn imagI x, fn imagJ x, fn imagK x)
-       norm x ==
-         real x * real x + imagI x * imagI x +
-           imagJ x * imagJ x + imagK x * imagK x
+       norm x == retract(x*conjugate x)@R 
        x = y            ==
          (real x = real y) and (imagI x = imagI y) and
            (imagJ x = imagJ y) and (imagK x = imagK y)
@@ -193,8 +191,9 @@ QuaternionCategory(R: CommutativeRing): Category ==
 
 @
 \section{domain QUAT Quaternion}
-<<domain QUAT Quaternion>>=
-)abbrev domain QUAT Quaternion
+
+<<domain QUAT2 GeneralQuaternion>>=
+)abbrev domain QUAT2 GeneralQuaternion
 ++ Author: Robert S. Sutor
 ++ Date Created: 23 May 1990
 ++ Change History:
@@ -202,16 +201,16 @@ QuaternionCategory(R: CommutativeRing): Category ==
 ++ Basic Operations: (Algebra)
 ++   abs, conjugate, imagI, imagJ, imagK, norm, quatern, rational,
 ++   rational?, real
-++ Related Constructors: QuaternionCategoryFunctions2
+++ Related Constructors: Quaternion, QuaternionCategoryFunctions2
 ++ Also See: QuaternionCategory, DivisionRing
 ++ AMS Classifications: 11R52
 ++ Keywords: quaternions, division ring, algebra
-++ Description: \spadtype{Quaternion} implements quaternions over a
-++   commutative ring. The main constructor function is \spadfun{quatern}
-++   which takes 4 arguments: the real part, the i imaginary part, the j
-++   imaginary part and the k imaginary part.
-
-Quaternion(R:CommutativeRing): QuaternionCategory(R) == add
+++ Description: \spadtype{GeneralQuaternion} implements general quaternions
+++   over a commutative ring. The main constructor function is
+++   \spadfun{quatern} which takes 4 arguments: the real part,
+++   the i imaginary part, the j imaginary part and the k imaginary part.
+GeneralQuaternion(R:CommutativeRing, p : R, q : R): QuaternionCategory(R)_
+     == add
   Rep := Record(r:R,i:R,j:R,k:R)
 
   0 == [0,0,0,0]
@@ -226,13 +225,20 @@ Quaternion(R:CommutativeRing): QuaternionCategory(R) == add
   imagK x == x.k
 
   quatern(a,b,c,d) == [a,b,c,d]
-
-  x * y == [x.r*y.r-x.i*y.i-x.j*y.j-x.k*y.k,
-               x.r*y.i+x.i*y.r+x.j*y.k-x.k*y.j,
-                 x.r*y.j+x.j*y.r+x.k*y.i-x.i*y.k,
-                   x.r*y.k+x.k*y.r+x.i*y.j-x.j*y.i]
-
+  x*y == [x.r*y.r + p*x.i*y.i + q*x.j*y.j - p*q*x.k*y.k,
+           x.r*y.i + x.i*y.r + q*(x.k*y.j - x.j*y.k),
+            x.r*y.j + x.j*y.r + p*(x.i*y.k - x.k*y.i),
+              x.r*y.k + x.k*y.r + x.i*y.j - x.j*y.i]
 @
+
+<<domain QUAT Quaternion>>=
+)abbrev domain QUAT Quaternion
+++ Description: \spadtype{Quaternion} implements Hamilton quaternions
+++   over a commutative ring.
+Quaternion(R:CommutativeRing): QuaternionCategory(R) ==
+   GeneralQuaternion(R, -1, -1)
+@
+
 \section{package QUATCT2 QuaternionCategoryFunctions2}
 <<package QUATCT2 QuaternionCategoryFunctions2>>=
 )abbrev package QUATCT2 QuaternionCategoryFunctions2
