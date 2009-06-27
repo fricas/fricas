@@ -610,7 +610,7 @@ getSigSubst(u, pl, vl, fl) ==
        getSigSubst(r, pl, vl, fl)
     [key, v, f] := item
     key = 'isDomain => getSigSubst(r, pl, [v, :vl], [f, :fl])
-    key = 'ofCategory => getSigSubst(r, pl, ['D, :vl], [f, :fl])
+    key = 'ofCategory => getSigSubst(r, pl, [$Dmarker, :vl], [f, :fl])
     key = 'ofType    => getSigSubst(r, pl, vl, fl)
     key = 'has => getSigSubst(r, [item, :pl], vl, fl)
     key = 'not => getSigSubst(r, [item, :pl], vl, fl)
