@@ -103,15 +103,17 @@ findSubstitutionOrder? alist == fn(alist,nil) where
 
 containedRight(x,alist)== or/[CONTAINED(x,y) for [.,:y] in alist]
 
+DEFPARAMETER($Dmarker, "<Dmarker>")
+
 removeIsDomainD pred ==
-  pred is ['isDomain,'D,D] =>
+  pred is ['isDomain, =$Dmarker, D] =>
     [D,nil]
   pred is ['AND,:preds] =>
     D := nil
     for p in preds while not D repeat
-      p is ['isDomain,'D,D1] =>
+      p is ['isDomain, =$Dmarker, D1] =>
         D := D1
-        npreds := delete(['isDomain,'D,D1],preds)
+        npreds := delete(['isDomain, $Dmarker, D1], preds)
     D =>
       1 = #npreds => [D,first npreds]
       [D,['AND,:npreds]]
@@ -126,9 +128,9 @@ formatModemap modemap ==
     target:= substInOrder(alist,target)
     sl:= substInOrder(alist,sl)
   else if removeIsDomainD pred is [D,npred] then
-    pred := SUBST(D,'D,npred)
-    target := SUBST(D,'D,target)
-    sl := SUBST(D,'D,sl)
+    pred := SUBST(D, $Dmarker, npred)
+    target := SUBST(D, $Dmarker, target)
+    sl := SUBST(D, $Dmarker, sl)
   predPart:= formatIf pred
   targetPart:= prefix2String target
   argTypeList:=
@@ -141,7 +143,7 @@ formatModemap modemap ==
     #sl<2 => argTypeList
     ['"_(",:argTypeList,'"_)"]
   fromPart:=
-    if dc = 'D and D
+    if dc = $Dmarker and D
       then concat('%b,'"from",'%d,prefix2String D)
       else concat('%b,'"from",'%d,prefix2String dc)
   firstPart:= concat('" ",argPart,'" -> ",targetPart)
