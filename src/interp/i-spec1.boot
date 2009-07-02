@@ -573,7 +573,7 @@ upLoopIterSTEP(index,lower,step,upperList) ==
 evalCOLLECT(op,[:itrl,body],m) ==
   iters := [evalLoopIter itr for itr in itrl]
   bod := getArgValue(body,computedMode body)
-  if bod isnt ['SPADCALL,:.] then bode := ['unwrap,bod]
+  if bod isnt ['SPADCALL,:.] then bod := ['unwrap, bod]
   code := timedOptimization asTupleNewCode0 ['COLLECT,:iters,bod]
   if $genValue then code := wrap timedEVALFUN code
   putValue(op,objNew(code,m))
