@@ -331,13 +331,6 @@ optRECORDCOPY ["RECORDCOPY",name,len] ==
   len=2 => ["CONS",["CAR",name],["CDR",name]]
   ["MOVEVEC",["MAKE_-VEC",len],name]
  
---mkRecordAccessFunction(ind,len) ==
---  stringOfDs:= $EmptyString
---  for i in 0..(ind-1) do stringOfDs:= STRCONC(stringOfDs,PNAME "D")
---  prefix:= if ind=len-1 then PNAME "C" else PNAME "CA"
---  if $QuickCode then prefix:=STRCONC("Q",prefix)
---  INTERN(STRCONC(prefix,stringOfDs,PNAME "R"))
- 
 optSuchthat [.,:u] == ["SUCHTHAT",:u]
  
 optMINUS u ==

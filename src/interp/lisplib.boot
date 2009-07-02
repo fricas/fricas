@@ -327,8 +327,7 @@ finalizeLisplib libName ==
   lisplibWrite('"constructorCategory",$lisplibCategory,$libFile)
   lisplibWrite('"sourceFile",namestring _/EDITFILE,$libFile)
   lisplibWrite('"modemaps",removeZeroOne $lisplibModemapAlist,$libFile)
-  opsAndAtts:= getConstructorOpsAndAtts(
-    $lisplibForm,kind,$lisplibModemap)
+  opsAndAtts:= getConstructorOpsAndAtts($lisplibForm, kind)
   lisplibWrite('"operationAlist",removeZeroOne CAR opsAndAtts,$libFile)
   if kind='category then
      $pairlis : local := [[a,:v] for a in rest $lisplibForm
@@ -368,13 +367,13 @@ getPartialConstructorModemapSig(c) ==
   (s := getConstructorSignature c) => rest s
   throwEvalTypeMsg("S2IL0015",[c])
  
-getConstructorOpsAndAtts(form,kind,modemap) ==
+getConstructorOpsAndAtts(form, kind) ==
   kind is 'category => getCategoryOpsAndAtts(form)
   getFunctorOpsAndAtts(form)
  
 getCategoryOpsAndAtts(catForm) ==
   -- returns [operations,:attributes] of CAR catForm
-  [transformOperationAlist getSlotFromCategoryForm(catForm,1)]
+  [transformOperationAlist getSlot1FromCategoryForm(catForm)]
  
 getFunctorOpsAndAtts(form) ==
   [transformOperationAlist $lisplibOperationAlist]
@@ -432,11 +431,11 @@ augModemapsFromDomain1(name,functorForm,e) ==
   stackMessage [functorForm," is an unknown mode"]
   e
  
-getSlotFromCategoryForm ([op,:argl],index) ==
+getSlot1FromCategoryForm ([op, :argl]) ==
   u:= eval [op,:MAPCAR('MKQ,TAKE(#argl,$FormalMapVariableList))]
   null VECP u =>
     systemErrorHere '"getSlotFromCategoryForm"
-  u . index
+  u.1 
  
  
 --% constructor evaluation
