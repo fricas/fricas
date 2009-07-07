@@ -210,10 +210,12 @@ updateCategoryFrameForConstructor(constructor) ==
            put(constructor, 'mode, ['Mapping,:sig], $CategoryFrame)))
 
 updateCategoryFrameForCategory(category) ==
-   [[dc,:sig],[pred,impl]] := GETDATABASE(category, 'CONSTRUCTORMODEMAP) 
-   $CategoryFrame :=
-     put(category, 'isCategory, 'T,
-         addModemap(category, dc, sig, pred, impl, $CategoryFrame))
+   di := GETDATABASE(category, 'CONSTRUCTORMODEMAP)
+   if di then
+       [[dc,:sig],[pred,impl]] := di
+       $CategoryFrame :=
+           addModemap(category, dc, sig, pred, impl, $CategoryFrame)
+   $CategoryFrame := put(category, 'isCategory, 'T, $CategoryFrame)
 
 loadFunctor u ==
   null atom u => loadFunctor first u
