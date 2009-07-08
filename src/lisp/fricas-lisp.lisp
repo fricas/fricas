@@ -635,12 +635,20 @@
 
 ;;;
 
+#+:sbcl
+(defmacro sbcl-file-kind(x)
+    (let ((file-kind-fun
+            (or (find-symbol "NATIVE-FILE-KIND" :sb-impl)
+                (find-symbol "UNIX-FILE-KIND" :sb-unix))))
+         `(,file-kind-fun ,x)))
+
 (defun file-kind (filename)
    #+(or :GCL :ecl) (file_kind filename)
-   #+:sbcl (case (sb-unix::unix-file-kind filename)
-                 (:directory 1)
-                 ((nil) -1)
-               (t 0))
+   #+:sbcl
+           (case (sbcl-file-kind filename)
+                (:directory 1)
+                ((nil) -1)
+                (t 0))
    #+:openmcl (if (ccl::directoryp filename)
                   1
                   (if (probe-file filename)
@@ -685,7 +693,7 @@
              ((equal fk 0)
                (truename fname))
              (t nil)))
-#+:sbcl (if (sb-unix::unix-file-kind file) (truename file))
+#+:sbcl (if (sbcl-file-kind file) (truename file))
 #+(or :openmcl :ecl) (probe-file file)
 #+:clisp(let* ((fname (trim-directory-name (namestring file)))
                (dname (pad-directory-name fname)))
