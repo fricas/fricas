@@ -45,6 +45,7 @@
       (if (or (zerop i) (< (abs i) (* 1.0E-10 (abs r))))
           r
         (|error| "Result is not real.")) ))
+(defun C-TO-RF (c) (coerce (c-to-r c) 'DOUBLE-FLOAT))
 
 ;; Wrappers for functions in the special function package
 (defun rlngamma  (x)           (|lnrgamma| x) )
