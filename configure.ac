@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-03-11], 
+AC_INIT([FriCAS], [2009-07-20], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -92,8 +92,6 @@ case $build in
         FRICAS_CHECK_PROG([AWK], [gawk], [FriCAS needs gawk])
 
         FRICAS_CHECK_PROG([TAR], [gtar], [FriCAS needs gtar])
-
-        FRICAS_CHECK_PROG([PATCH], [gpatch], [FriCAS needs gpatch]) 
         ;;
 
       *)
@@ -101,8 +99,6 @@ case $build in
 
         FRICAS_CHECK_PROGS([TAR], [gtar tar], [FriCAS needs a tar program])
 
-        FRICAS_CHECK_PROGS([PATCH], [gpatch patch],
-                           [FriCAS needs a patch program])
         ;;
 esac
 
