@@ -569,3 +569,28 @@ gensymInt g ==
   for i in 2..#p-1 repeat n := 10 * n + charDigitVal p.i
   n
 
+
+-- from packtran
+
+rePackageTran(sex, package) ==
+  _*PACKAGE_* : fluid := FIND_-PACKAGE STRING package
+  packageTran sex
+
+packageTran sex ==
+-- destructively translate all the symbols in the given s-expression to the 
+-- current package
+  SYMBOLP sex =>
+    EQ(_*PACKAGE_*, SYMBOL_-PACKAGE sex) => sex
+    INTERN STRING sex
+  CONSP sex =>
+    RPLACA(sex, packageTran CAR sex)
+    RPLACD(sex, packageTran CDR sex)
+    sex
+  sex
+
+zeroOneTran sex ==
+-- destructively translate the symbols |0| and |1| to their 
+-- integer counterparts
+  NSUBST("$EmptyMode", "?", sex)
+  sex
+
