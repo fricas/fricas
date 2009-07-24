@@ -62,7 +62,6 @@ markUnique x ==
 --          Creation of System Sig/Pred Vectors & Hash Tables
 --=======================================================================
 
-mapConsDB x == [addConsDB y for y in x]
 addConsDB x == x
 
 --=======================================================================
@@ -114,13 +113,6 @@ NRTinnerGetLocalIndex x ==
   MEMQ(opOf x,'(Union Record Mapping)) => NRTgetLocalIndex x
   constructor?(x) => NRTgetLocalIndex x
   NRTaddInner x
-
-assignSlotToPred cond ==
---called by ProcessCond
-  cond is ['AND,:u] => ['AND,:[assignSlotToPred x for x in u]]
-  cond is ['OR,:u] => ['OR,:[assignSlotToPred x for x in u]]
-  cond is ['NOT,u] => ['NOT,assignSlotToPred u]
-  thisNeedsTOBeFilledIn()
 
 makeSpadConstant [fn,dollar,slot] ==
   val := FUNCALL(fn,dollar)

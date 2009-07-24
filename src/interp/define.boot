@@ -239,7 +239,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
     for x in sargl for t in rest signature' repeat
       [.,.,e]:= compMakeDeclaration([":",x,t],m,e)
  
---   4. compile body in environment of %type declarations for arguments
+--   4. compile body in environment of type declarations for arguments
     op':= $op
     -- following line causes cats with no with or Join to be fresh copies
     if opOf(formalBody)~='Join and opOf(formalBody)~='mkCategory then
@@ -362,7 +362,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $NRTslot1PredicateList: local :=
       REMDUP [CADR x for x in attributeList]
 -->>-- next global initialized here, used by NRTgenAttributeAlist (NRUNOPT)
-    $NRTattributeAlist: local := NRTgenInitialAttributeAlist attributeList
     $NRTslot1Info: local  --set in NRTmakeSlot1 called by NRTbuildFunctor
        --this is used below to set $lisplibSlot1 global
     $NRTbase: local := 6 -- equals length of $domainShell
@@ -470,7 +469,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
             ['MAKEPROP, ['QUOTE,op'], ['QUOTE,'NILADIC], true])
     [fun,['Mapping,:signature'],originale]
  
-disallowNilAttribute x == 
+disallowNilAttribute x ==
   res := [y for y in x | car y and car y ~= "nil"]
 --HACK to get rid of nil attibutes ---NOTE: nil is RENAMED to NIL
 
@@ -674,8 +673,6 @@ compInternalFunction(df is ['DEF,form,signature,specialCases,body], m, e) ==
         stackAndThrow ['"Bad name for internal function:", op]
     #argl = 0 =>
         stackAndThrow ['"Argumentless internal functions unsupported:", op]
---    nf := ["where", ["LET", [":", op, ["Mapping", :signature]], nbody], _
---            :whereList1, :whereList2]
     nbody := ["+->", argl, body]
     nf := ["LET",  [":", op, ["Mapping", :signature]], nbody]
     ress := comp(nf, m, e)
@@ -1343,7 +1340,9 @@ compCategoryItem(x,predl) ==
   pred:= (predl => MKPF(predl,"AND"); true)
  
   --2. if attribute, push it and return
-  x is ["ATTRIBUTE", 'nil] => 'iterate
+  x is ["ATTRIBUTE", 'nil] =>
+       BREAK()
+       'iterate
   x is ["ATTRIBUTE",y] =>
        -- should generate something else for conditional categories
        -- BREAK()

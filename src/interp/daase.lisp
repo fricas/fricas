@@ -220,7 +220,6 @@ database.
  operationalist             ; interp.
  documentation              ; browse.
  constructorform            ; browse.
- attributes                 ; browse.
  predicates                 ; browse.
  sourcefile                 ; browse.
  parents                    ; browse.
@@ -500,7 +499,6 @@ database.
 ;     sourcefile
 ;     constructorform
 ;     documentation
-;     attributes
 ;     predicates
 ; )
 
@@ -529,9 +527,8 @@ database.
     (setf (database-sourcefile dbstruct) (second item))
     (setf (database-constructorform dbstruct) (third item))
     (setf (database-documentation dbstruct) (fourth item))
-    (setf (database-attributes dbstruct) (fifth item))
-    (setf (database-predicates dbstruct) (sixth item))
-    (setf (database-parents dbstruct) (seventh item))))
+    (setf (database-predicates dbstruct) (fifth item))
+    (setf (database-parents dbstruct) (sixth item))))
   (format t "~&")))
 
 (defun categoryOpen ()
@@ -626,8 +623,6 @@ database.
   (getdatabase constructor 'constructorform))
  (format t "~a: ~a~%" 'constructorargs
   (getdatabase constructor 'constructorargs))
- (format t "~a: ~a~%" 'attributes
-  (getdatabase constructor 'attributes))
  (format t "~a: " 'predicates)
   (pprint (getdatabase constructor 'predicates))
  (format t "~&~a: ~a~%" 'documentation
@@ -743,10 +738,6 @@ database.
      (setq data (database-constructorform struct))))
    (constructorargs
     (setq data (cdr (getdatabase constructor 'constructorform))))
-   (attributes
-    (setq stream *browse-stream*)
-    (when (setq struct (get constructor 'database))
-     (setq data (database-attributes struct))))
    (predicates
     (setq stream *browse-stream*)
     (when (setq struct (get constructor 'database))
@@ -787,7 +778,6 @@ database.
     (constructor         (setf (database-constructor struct) data))
     (ancestors           (setf (database-ancestors struct) data))
     (constructorform     (setf (database-constructorform struct) data))
-    (attributes          (setf (database-attributes struct) data))
     (predicates          (setf (database-predicates struct) data))
     (documentation       (setf (database-documentation struct) data))
     (parents             (setf (database-parents struct) data))
@@ -972,8 +962,6 @@ database.
         (setf (get abbrev 'abbreviationfor) key)
         (setf (database-constructorcategory dbstruct)
          (fetchdata alist "constructorCategory"))
-        (setf (database-attributes dbstruct)
-         (fetchdata alist "attributes"))
         (setf (database-sourcefile dbstruct)
          (fetchdata alist "sourceFile"))
         (setf (database-operationalist dbstruct)
@@ -1057,8 +1045,6 @@ database.
     (fetchdata alist in "constructorCategory"))
    (setf (database-documentation dbstruct)
     (fetchdata alist in "documentation"))
-   (setf (database-attributes dbstruct)
-    (fetchdata alist in "attributes"))
    (setf (database-predicates dbstruct)
     (fetchdata alist in "predicates"))
    (setf (database-niladic dbstruct)
@@ -1378,11 +1364,9 @@ database.
     (print (squeeze (database-constructorform struct)) out)
     (setq docpos (file-position out))
     (print (database-documentation struct) out)
-    (setq attpos (file-position out))
-    (print (squeeze (database-attributes struct)) out)
     (setq predpos (file-position out))
     (print (squeeze (database-predicates struct)) out)
-    (push (list constructor src formpos docpos attpos predpos) master)))
+    (push (list constructor src formpos docpos predpos) master)))
   (finish-output out)
   (setq masterpos (file-position out))
   (print (mapcar #'squeeze master) out)

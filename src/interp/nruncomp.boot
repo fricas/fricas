@@ -66,10 +66,8 @@ deltaTran(item,compItem) ==
   [dc,:sig] := dcSig
   sig := substitute('$,dc,substitute("$$",'$,sig))
   dcCode :=
-    dc = '$ =>
-      --$NRTaddForm => -5
-      0
-    NRTassocIndexAdd dc or keyedSystemError("S2NR0004",[dc])
+    dc = '$ => 0
+    NRTassocIndex dc or keyedSystemError("S2NR0004",[dc])
   formalSig:= SUBLISLIS($FormalMapVariableList,$formalArgList,sig)
   kindFlag:= (kind = 'CONST => 'CONST; nil)
   newSig := [NRTassocIndex x or x for x in formalSig]
@@ -148,7 +146,6 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
 genDeltaEntry opMmPair ==
 --called from compApplyModemap
 --$NRTdeltaLength=0.. always equals length of $NRTdeltaList
-  [.,[odc,:.],.] := opMmPair
   [op,[dc,:sig],[.,cform:=[eltOrConst,.,nsig]]] := opMmPair
   if $profileCompiler = true then profileRecord(dc,op,sig)
   eltOrConst = 'XLAM => cform
@@ -192,10 +189,6 @@ genDeltaSig x ==
 genDeltaSpecialSig x ==
   x is [":",y,z] => [":",y,genDeltaSig z]
   genDeltaSig x
-
-NRTassocIndexAdd x ==
-  x = $NRTaddForm => 5
-  NRTassocIndex x
 
 NRTassocIndex x == --returns index of "domain" entry x in al
   NULL x => x
@@ -516,11 +509,11 @@ changeDirectoryInSlot1() ==  --called by buildFunctor
             $lastPred := pred
        newfnsel :=
          fnsel is ['Subsumed,op1,sig1] =>
-           ['Subsumed,op1,genSlotSig(sig1,'T,$newEnv)]
+           ['Subsumed, op1, genSlotSig(sig1, $newEnv)]
          fnsel
-       [[op, genSlotSig(sig,pred,$newEnv)] ,pred,newfnsel]
+       [[op, genSlotSig(sig, $newEnv)], pred, newfnsel]
 
-genSlotSig(sig,pred,$e) ==
+genSlotSig(sig, $e) ==
    [genDeltaSig t for t in sig]
 
 DEFPARAMETER($infoHash, nil)

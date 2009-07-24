@@ -263,7 +263,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   sayMSG fillerSpaces(72,'"-")
   $LISPLIB: local := 'T
   $op: local := op
-  $lisplibAttributes: local := NIL
   $lisplibPredicates: local := NIL -- set by makePredicateBitVector
   $lisplibForm: local := NIL
   $lisplibKind: local := NIL
@@ -335,11 +334,9 @@ finalizeLisplib libName ==
      $pairlis : local := [[a,:v] for a in rest $lisplibForm
                                  for v in $FormalMapVariableList]
      $NRTslot1PredicateList : local := []
-     NRTgenInitialAttributeAlist CDR opsAndAtts
   lisplibWrite('"superDomain",removeZeroOne $lisplibSuperDomain,$libFile)
   lisplibWrite('"signaturesAndLocals",
     removeZeroOne $lisplibSignatureAlist, $libFile)
-  lisplibWrite('"attributes",removeZeroOne $lisplibAttributes,$libFile)
   lisplibWrite('"predicates",removeZeroOne  $lisplibPredicates,$libFile)
   lisplibWrite('"abbreviation",$lisplibAbbreviation,$libFile)
   lisplibWrite('"parents",removeZeroOne $lisplibParents,$libFile)

@@ -264,7 +264,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
       NREVERSE [v for u in REVERSE codelist |
                     (v:= DescendCode(u,flag,viewAssoc,EnvToPass))~=nil]]
   code is ['COND,:condlist] =>
-    c:= [[u2:= ProcessCond(first u,viewAssoc),:q] for u in condlist] where q ==
+    c := [[u2 := ProcessCond(first u), :q] for u in condlist] where q ==
           null u2 => nil
           f:=
             TruthP u2 => flag;
@@ -292,7 +292,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
           code:=[($QuickCode => 'QSETREFV; 'SETELT),[($QuickCode => 'QREFELT; 'ELT),'$,5],#$locals-#u,code]
           $epilogue:=
             TruthP flag => [code,:$epilogue]
-            [['COND,[ProcessCond(flag,viewAssoc),code]],:$epilogue]
+            [['COND, [ProcessCond(flag), code]], :$epilogue]
           nil
         code
     code -- doItIf deletes entries from $locals so can't optimize this
@@ -305,7 +305,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
     body:= ['CONS,implem,dom]
     u:= SetFunctionSlots(sig,body,flag,'original)
     ConstantCreator u =>
-      if not (flag=true) then u:= ['COND,[ProcessCond(flag,viewAssoc),u]]
+      if not (flag=true) then u := ['COND, [ProcessCond(flag), u]]
       $ConstantAssignments:= [u,:$ConstantAssignments]
       nil
     u
@@ -326,7 +326,7 @@ ConstantCreator u ==
   u is ['CONS,:.] => nil
   true
  
-ProcessCond(cond,viewassoc) ==
+ProcessCond(cond) ==
   ncond := SUBLIS($pairlis,cond)
   INTEGERP POSN1(ncond,$NRTslot1PredicateList) => predicateBitRef ncond
   cond

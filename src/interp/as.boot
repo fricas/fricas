@@ -104,26 +104,6 @@ asySubstMapping u ==
     [asySubstMapping x for x in u]
   u
 
---asyFilePackage asyFile ==
---  name := INTERN PATHNAME_-NAME asyFile
---  modemap :=
---    [[[name],['CATEGORY,'domain,
---      :[asyMkSignature(con,CDAR mm) for [con,:mm] in $mmAlist]]],['T,name]]
---  opAlist := [[con,[CDAR mm]] for [con,:mm] in $mmAlist]
---  documentation :=
---    [[con,[CDAR mm,fn LASSOC(con,$docAlist)]] for [con,:mm] in $mmAlist]
---      where fn u ==
---            LASSOC('constructor,u) is [[=nil,doc]] => doc
---            '""
---  res := [['constructorForm,name],['constant,:'true],
---           ['constructorKind,:'file],
---             ['constructorModemap,:modemap],
---               ['sourceFile,:PNAME name],
---                 ['operationAlist,:zeroOneConversion opAlist],
---                     ['documentation,:documentation]]
---asyDisplay(name,res)
---  [name,:res]
-
 asyMkSignature(con,sig) ==
 --  atom sig => ['TYPE,con,sig]
 -- following line converts constants into nullary functions
