@@ -488,7 +488,7 @@ newHasTest(domform,catOrAtt) ==
       systemError '"strange Mapping type in newHasTest"
   GETDATABASE(opOf domform,'CONSTRUCTORKIND) = 'category =>
       domform = catOrAtt => 'T
-      for [aCat,:cond] in [:ancestorsOf(domform,NIL),:SUBLISLIS (rest domform,$FormalMapVariableList,GETDATABASE(opOf domform,'ATTRIBUTES))] |  aCat = catOrAtt  repeat
+      for [aCat,:cond] in ancestorsOf(domform,NIL) |  aCat = catOrAtt  repeat
          return evalCond cond where
            evalCond x ==
              ATOM x => x

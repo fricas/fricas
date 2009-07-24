@@ -129,7 +129,6 @@ compDefineLisplib(df,m,e,prefix,fal,fn) ==
   sayMSG fillerSpaces(72,'"-")
   $LISPLIB: local := 'T
   $op: local := op
-  $lisplibAttributes: local := NIL
   $lisplibPredicates: local := NIL -- set by makePredicateBitVector
   $lisplibForm: local := NIL
   $lisplibKind: local := NIL

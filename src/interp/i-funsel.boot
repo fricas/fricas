@@ -1172,7 +1172,8 @@ evalMmStack(mmC) ==
     evalMmStack CONS('AND,[['ofCategory,pvar,c] for c in args])
   mmC is ['ofType,:.] => [NIL]
   mmC is ['has,pat,x] =>
-    MEMQ(x,'(ATTRIBUTE SIGNATURE)) =>
+    x = 'ATTRIBUTE => BREAK()
+    x = 'SIGNATURE =>
       [[['ofCategory,pat,['CATEGORY,'unknown,x]]]]
     [['ofCategory,pat,x]]
   [[mmC]]
@@ -1187,7 +1188,8 @@ evalMmStackInner(mmC) ==
   mmC is ['ofType,:.] => NIL
   mmC is ['isAsConstant] => NIL
   mmC is ['has,pat,x] =>
-    MEMQ(x,'(ATTRIBUTE SIGNATURE)) =>
+    x = 'ATTRIBUTE => BREAK()
+    x = 'SIGNATURE =>
       [['ofCategory,pat,['CATEGORY,'unknown,x]]]
     [['ofCategory,pat,x]]
   [mmC]
@@ -1473,7 +1475,7 @@ hasCaty(d,cat,SL) ==
   cat is ['CATEGORY,.,:y] => hasAttSig(d,subCopy(y,constructSubst d),SL)
   cat is ['SIGNATURE,foo,sig] =>
     hasSig(d,foo,subCopy(sig,constructSubst d),SL)
-  cat is ['ATTRIBUTE,a] => hasAtt(d,subCopy(a,constructSubst d),SL)
+  cat is ['ATTRIBUTE,a] => BREAK()
   x:= hasCat(opOf d,opOf cat) =>
     y:= KDR cat =>
       S  := constructSubst d
@@ -1540,7 +1542,7 @@ hasAttSig(d,x,SL) ==
   -- d is domain, x a list of attributes and signatures
   -- the result is an augmented SL, if d has x, 'failed otherwise
   for y in x until SL='failed repeat SL:=
-    y is ['ATTRIBUTE,a] => hasAtt(d,a,SL)
+    y is ['ATTRIBUTE,a] => BREAK()
     y is ['SIGNATURE,foo,s] => hasSig(d,foo,s,SL)
     keyedSystemError("S2GE0016",
       ['"hasAttSig",'"unexpected form of unnamed category"])
@@ -1593,25 +1595,6 @@ hasSig(dom,foo,sig,SL) ==
           keyedSystemError("S2GE0016",
              ['"hasSig",'"unexpected condition for signature"])
         not (S='failed) => S:= unifyStruct(subCopy(x,S0),sig,S)
-      S
-    'failed
-  'failed
-
-hasAtt(dom,att,SL) ==
-  -- tests whether dom has attribute att under SL
-  -- needs S0 similar to hasSig above ??
-  $domPvar: local := nil
-  fun:= CAR dom =>
-    atts:= subCopy(GETDATABASE(fun,'ATTRIBUTES),constructSubst dom) =>
-      PAIRP (u := getInfovec CAR dom) =>
-        --UGH! New world has attributes stored as pairs not as lists!!
-        for [x,:cond] in atts until not (S='failed) repeat
-          S:= unifyStruct(x,att,copy SL)
-          not atom cond and not (S='failed) => S := hasCatExpression(cond,S)
-        S
-      for [x,cond] in atts until not (S='failed) repeat
-        S:= unifyStruct(x,att,copy SL)
-        not atom cond and not (S='failed) => S := hasCatExpression(cond,S)
       S
     'failed
   'failed

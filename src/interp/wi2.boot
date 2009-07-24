@@ -101,7 +101,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $NRTslot1PredicateList: local :=
       REMDUP [CADR x for x in attributeList]
 -->>-- next global initialized here, used by NRTgenAttributeAlist (NRUNOPT)
-    $NRTattributeAlist: local := NRTgenInitialAttributeAlist attributeList
     $NRTslot1Info: local  --set in NRTmakeSlot1 called by NRTbuildFunctor
        --this is used below to set $lisplibSlot1 global
     $NRTbase: local := 6 -- equals length of $domainShell

@@ -186,25 +186,7 @@ stuffSlot(dollar,i,item) ==
 --=======================================================================
 --                Generate Slot 2 Attribute Alist
 --=======================================================================
-NRTgenInitialAttributeAlist attributeList ==
-  --alist has form ((item pred)...) where some items are constructor forms
-  alist := [x for x in attributeList | -- throw out constructors
-    null MEMQ(opOf first x,allConstructors())]
-  $lisplibAttributes := simplifyAttributeAlist
-    [[a,:b] for [a,b] in SUBLIS($pairlis,alist) | a ~= 'nothing]
-
-simplifyAttributeAlist al ==
-  al is [[a,:b],:r] =>
-    u := [x for x in r | x is [=a,:b]] 
-    null u => [first al,:simplifyAttributeAlist rest al]
-    pred := simpBool makePrefixForm([b,:ASSOCRIGHT u],'OR)
-    $NRTslot1PredicateList := insert(pred,$NRTslot1PredicateList)
-    s := [x for x in r | x isnt [=a,:b]]
-    [[a,:pred],:simplifyAttributeAlist s]
-  nil
- 
-NRTgenFinalAttributeAlist() ==
-  [[a,:k] for [a,:b] in $NRTattributeAlist | (k := predicateBitIndex(b)) ~= -1]
+NRTgenFinalAttributeAlist() == []
  
 predicateBitIndex x == 
   pn(x,nil) where

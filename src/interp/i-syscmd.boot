@@ -2317,15 +2317,6 @@ reportOpsFromLisplib(op,u) ==
       dc1 fn
     opt = 'views => sayBrightly ['"To get",:bright '"views",
       '"you must give parameters of constructor"]
-    opt = 'attributes =>
-      centerAndHighlight('"Attributes",$LINELENGTH,specialChar 'hbar)
-      sayBrightly '""
-      attList:= REMDUP MSORT [x for [x,:.] in
-        GETDATABASE(op,'ATTRIBUTES)]
-      null attList => sayBrightly
-        concat('%b,form2String functorForm,'%d,"has no attributes.",'%l)
-      say2PerLine [formatAttribute x for x in attList]
-      NIL
     opt = 'operations => displayOperationsFromLisplib functorForm
     nil
 
