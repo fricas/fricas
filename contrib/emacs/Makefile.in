@@ -1,6 +1,5 @@
-VPATH=@srcdir@
 
-default: efricas fricas.el fricas-cpl.el
+default: efricas fricas-cpl.el
 
 clean:
 	-rm efricas
@@ -26,7 +25,13 @@ efricas: Makefile
 	echo "  echo You must have installed emacs to run efricas.;" >> $@
 	echo "fi" >> $@
 
+fricas-cpl.el: fricas-cpl.in ${srcdir}/fricas-cpl.hd ${srcdir}/fricas-cpl.tl
+	cat ${srcdir}/fricas-cpl.hd fricas-cpl.in ${srcdir}/fricas-cpl.tl > $@
 
+fricas-cpl.in: ${srcdir}/gen-cpl.lisp
+	echo ')read ${srcdir}/gen-cpl.lisp' | \
+            AXIOM=$(axiom_targetdir) DAASE=$(axiom_targetdir) \
+            $(axiom_target_bindir)/AXIOMsys
 
 ###################################################################
 # We need libaxiom.al and the .o (runtime support) files in the lib
@@ -37,5 +42,5 @@ install: install-emacs
 install_target_dir = $(DESTDIR)$(install_emacs_dir)
 install-emacs:
 	$(INSTALL_DATA) ${srcdir}/fricas.el $(install_target_dir)/fricas.el
-	$(INSTALL_DATA) ${srcdir}/fricas-cpl.el $(install_target_dir)/fricas-cpl.el
+	$(INSTALL_DATA) fricas-cpl.el $(install_target_dir)/fricas-cpl.el
 	$(INSTALL_SCRIPT) efricas '$(DESTDIR)$(bindir)/efricas'
