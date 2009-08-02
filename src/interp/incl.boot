@@ -126,11 +126,11 @@ incFileName x == first incBiteOff x
 fileNameStrings fn==[PNAME(fn.0),PNAME(fn.1),PNAME(fn.2)]
  
 ifCond(s, info) ==
-    word := INTERN StringTrim(incCommandTail(s, info), WhiteSpaceCset)
+    word := INTERN DROPTRAILINGBLANKS(incCommandTail(s, info))
     ListMemberQ?(word, $inclAssertions)
  
 assertCond(s, info) ==
-    word := INTERN StringTrim(incCommandTail(s, info), WhiteSpaceCset)
+    word := INTERN DROPTRAILINGBLANKS(incCommandTail(s, info))
     if not ListMemberQ?(word, $inclAssertions) then
         $inclAssertions := [word, :$inclAssertions]
  
