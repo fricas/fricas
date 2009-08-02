@@ -102,7 +102,10 @@
                T))
         ((ATOM V) NIL)
         ((EQUAL U V))
-        ((NOT (string> (write-to-string U) (write-to-string V))))))
+        ((EQUAL (CAR U) (CAR V))
+           (?ORDER (CDR U) (CDR V)))
+        ((?ORDER (CAR U) (CAR V)))
+))
  
 (defmacro boot-equal (a b)
    (cond ((ident-char-lit a)
