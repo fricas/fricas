@@ -279,7 +279,13 @@ clearClams() ==
  
 clearClam fn ==
   infovec:= GETL(fn,'cacheInfo) or keyedSystemError("S2GE0003",[fn])
-  eval infovec.cacheReset
+  -- eval infovec.cacheReset
+  ir := infovec.cacheReset
+  ir is ["SETQ", var , ['MAKE_-HASHTABLE, ["QUOTE", mode]]] =>
+     SETF(SYMBOL_-VALUE(var), MAKE_-HASHTABLE(mode))
+  ir is ["SETQ", var , ["initCache", val]] =>
+     SETF(SYMBOL_-VALUE(var), initCache(val))
+  BREAK()
  
 reportAndClearClams() ==
   cacheStats()
