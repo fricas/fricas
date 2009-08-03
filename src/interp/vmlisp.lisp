@@ -1057,12 +1057,6 @@
 
 ; 99.0 Ancient Stuff We Decided To Keep
 
-(defun LAM\,EVALANDFILEACTQ (name &optional (form name))
-    (LAM\,FILEACTQ name form) (eval form))
-
-(defun LAM\,FILEACTQ (name form)
-       (if *FILEACTQ-APPLY* (FUNCALL *FILEACTQ-APPLY* name form)))
-
 (define-function 'EVALFUN #'eval) ;EVALFUN drops lexicals before evaluating
 
 (defun PLACEP (item) (eq item *read-place-holder*))

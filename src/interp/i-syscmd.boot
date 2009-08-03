@@ -1403,7 +1403,7 @@ setHistoryCore inCore ==
     sayKeyedMsg("S2IH0032",NIL)
   $HiFiAccess:= 'NIL
   histFileErase histFileName()
-  str := RDEFIOSTREAM ['(MODE . OUTPUT),['FILE,:histFileName()]]
+  str := rMkOstream(histFileName())
   for [n,:rec] in reverse $internalHistoryTable repeat
     SPADRWRITE(object2Identifier n,rec,str)
   RSHUT str
@@ -1585,7 +1585,7 @@ saveHistory(fn) ==
  
   if $useInternalHistoryTable
     then
-      saveStr := RDEFIOSTREAM ['(MODE . OUTPUT),['FILE,:savefile]]
+      saveStr := rMkOstream(savefile)
       for [n,:rec] in reverse $internalHistoryTable repeat
         val := SPADRWRITE0(object2Identifier n,rec,saveStr)
         val = 'writifyFailed =>
@@ -1729,7 +1729,7 @@ readHiFi(n) ==
     ATOM pair => keyedSystemError("S2IH0034",NIL)
     vec := QCDR pair
   else
-    HiFi:= RDEFIOSTREAM ['(MODE . INPUT),['FILE,:histFileName()]]
+    HiFi:= rMkOstream(histFileName())
     vec:= SPADRREAD(object2Identifier n,HiFi)
     RSHUT HiFi
   vec
@@ -1741,7 +1741,7 @@ writeHiFi() ==
     $internalHistoryTable := CONS([$IOindex,$currentLine,:$HistRecord],
       $internalHistoryTable)
   else
-    HiFi:= RDEFIOSTREAM ['(MODE . OUTPUT),['FILE,:histFileName()]]
+    HiFi:= rMkOstream(histFileName())
     SPADRWRITE(object2Identifier $IOindex, CONS($currentLine,$HistRecord),HiFi)
     RSHUT HiFi
 

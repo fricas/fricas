@@ -49,29 +49,21 @@
              optionlist)))
 
 
-;; (RDEFIOSTREAM ((MODE . IO) (FILE fn ft dir))) IO is I,O,INPUT,OUTPUT
-(defun rdefiostream (options &optional (missing-file-error-flag t))
-  (let ((mode (cdr (assoc 'mode options)))
-        (file (assoc 'file options))
-        (stream nil)
-        (fullname nil)
-        (indextable nil))
-        (cond ((eq mode 'INPUT)
-               ;;(setq fullname (make-input-filename (cdr file) 'LISPLIB))
-               (setq fullname (make-input-filename (cdr file) 'NIL))
+(defun |rMkIstream| (file)
+  (let ((stream nil)
+        (fullname (make-input-filename file 'NIL)))
                (setq stream (get-input-index-stream fullname))
                (if (null stream)
-                   (if missing-file-error-flag
-                       (ERROR (format nil "Library ~s doesn't exist"
-                              ;;(make-filename (cdr file) 'LISPLIB))
-                              (make-filename (cdr file) 'NIL)))
-                     NIL)
+                   (ERROR (format nil "Library ~s doesn't exist"
+                              (make-filename file 'NIL))))
                (make-libstream :mode 'input  :dirname fullname
                                :indextable (get-index-table-from-stream stream)
                                :indexstream stream)))
-              ((eq mode 'OUTPUT)
-               ;;(setq fullname (make-full-namestring (cdr file) 'LISPLIB))
-               (setq fullname (make-full-namestring (cdr file) 'NIL))
+
+(defun |rMkOstream| (file)
+  (let ((stream nil)
+        (indextable nil)
+        (fullname (make-full-namestring file 'NIL)))
                (case (file-kind fullname)
                      (-1 (makedir fullname))
                      (0 (error (format nil "~s is an existing file, not a library" fullname)))
@@ -80,8 +72,7 @@
                (multiple-value-setq (stream indextable) (get-io-index-stream fullname))
                (make-libstream :mode 'output  :dirname fullname
                                :indextable indextable
-                               :indexstream stream ))
-              ('t  (ERROR "Unknown MODE")))))
+                               :indexstream stream )))
 
 (defvar *index-filename* "index.KAF")
 

@@ -42,11 +42,11 @@ readLib1(fn,ft,fm) ==
 readLibPathFast p ==
   -- DO NOT assume 1) p is a valid pathname
   --               2) file has already been checked for existence
-  RDEFIOSTREAM([['FILE,:p], '(MODE . INPUT)])
+  rMkIstream(p)
  
 writeLib(fn,ft) == writeLib1(fn,ft,"*")
  
-writeLib1(fn,ft,fm) == RDEFIOSTREAM [['FILE,fn,ft,fm],'(MODE . OUTPUT)]
+writeLib1(fn,ft,fm) == rMkOstream([fn,ft,fm])
  
 putFileProperty(fn,ft,id,val) ==
   fnStream:= writeLib1(fn,ft,"*")
@@ -67,7 +67,7 @@ evalAndRwriteLispForm(key,form) ==
 rwriteLispForm(key,form) ==
   if $LISPLIB then
     rwrite( key,form,$libFile)
-    LAM_,FILEACTQ(key,form)
+    outputLispForm(key,form)
  
 getLisplib(name,id) ==
   -- this version does cache the returned value
@@ -316,7 +316,7 @@ initializeLisplib libName ==
   $lisplibOpAlist := nil  --operations alist for new runtime system
   $lisplibSignatureAlist := nil
   if pathnameTypeId(_/EDITFILE) = 'SPAD
-    then LAM_,FILEACTQ('VERSION,['_/VERSIONCHECK,_/MAJOR_-VERSION])
+    then outputLispForm('VERSION,['_/VERSIONCHECK,_/MAJOR_-VERSION])
  
 finalizeLisplib libName ==
   lisplibWrite('"constructorForm",removeZeroOne $lisplibForm,$libFile)
@@ -433,7 +433,7 @@ augModemapsFromDomain1(name,functorForm,e) ==
 getSlot1FromCategoryForm ([op, :argl]) ==
   u:= eval [op,:MAPCAR('MKQ,TAKE(#argl,$FormalMapVariableList))]
   null VECP u =>
-    systemErrorHere '"getSlotFromCategoryForm"
+    systemErrorHere '"getSlot1FromCategoryForm"
   u.1 
  
  
