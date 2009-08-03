@@ -270,12 +270,12 @@
 (defun RDEFINSTREAM (&rest fn)
   ;; following line prevents rdefiostream from adding a default filetype
   (if (null (rest fn)) (setq fn (list (pathname (car fn)))))
-  (rdefiostream (list (cons 'FILE fn) '(mode . INPUT))))
+  (|rMkIstream| fn))
 
 (defun RDEFOUTSTREAM (&rest fn)
   ;; following line prevents rdefiostream from adding a default filetype
   (if (null (rest fn)) (setq fn (list (pathname (car fn)))))
-  (rdefiostream (list (cons 'FILE fn) '(mode . OUTPUT))))
+  (|rMkOstream|  fn))
 
 (defmacro |spadConstant| (dollar n)
  `(spadcall (svref ,dollar (the fixnum ,n))))

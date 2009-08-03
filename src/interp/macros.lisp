@@ -53,8 +53,15 @@
 ; 5 PROGRAM STRUCTURE
  
 ; 5.3 Top-Level Forms
+
  
 (defun SETANDFILE (x y) (LAM\,EVALANDFILEACTQ `(defparameter ,x ',y)))
+
+(defun LAM\,EVALANDFILEACTQ (name &optional (form name))
+    (|outputLispForm| name form) (eval form))
+
+(defun |outputLispForm| (name form)
+       (if *FILEACTQ-APPLY* (FUNCALL *FILEACTQ-APPLY* name form)))
  
 ; 5.3.2 Declaring Global Variables and Named Constants
  

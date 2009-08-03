@@ -709,7 +709,7 @@ HasCategory(domain,catform') ==
   slot4 := domain.4
   catlist := slot4.1
   member(catform,catlist) or
-   MEMQ(opOf(catform),'(Type)) or  --temporary hack
+   opOf(catform) = "Type" or  --temporary hack
     or/[compareSigEqual(catform,cat,domain0,domain) for cat in catlist]
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)

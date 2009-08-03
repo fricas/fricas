@@ -258,9 +258,6 @@ timedEvaluate code ==
 displayHeapStatsIfWanted() ==
    $printStorageIfTrue => sayBrightly OLDHEAPSTATS()
  
---EVALANDFILEACTQ(
---  PUTGCEXIT function displayHeapStatsIfWanted )
- 
 --% stubs for the stats summary fns
 statRecordInstantiationEvent() == nil
 statRecordLoadEvent()          == nil
