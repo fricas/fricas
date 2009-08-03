@@ -135,12 +135,10 @@ resolveTT(t1,t2) ==
   -- can be coerced
   -- if resolveTT fails, the result will be NIL
   startTimingProcess 'resolve
-  t1 := eqType t1
-  t2 := eqType t2
   null (t := resolveTT1(t1,t2)) =>
     stopTimingProcess 'resolve
     nil
-  isValidType (t := eqType t) =>
+  isValidType (t) =>
     stopTimingProcess 'resolve
     t
   stopTimingProcess 'resolve
@@ -161,7 +159,6 @@ isLegitimateMode(t,hasPolyMode,polyVarList) ==
     ofCategory(D,'(Field)) => NIL
   t = '(Complex (AlgebraicNumber)) => NIL
 
-  t := equiType t
   vl := isPolynomialMode t =>
     if vl~='all then
       var:= or/[(x in polyVarList => x;nil) for x in vl] => return false

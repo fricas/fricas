@@ -1406,7 +1406,7 @@ hasCateSpecial(v,dom,cat,SL) ==
     hasCaty(d,cat,SL)
   EQCAR(cat,'Field) or EQCAR(cat, 'DivisionRing) =>
     if isSubDomain(dom,$Integer) then dom := $Integer
-    d:= eqType [$QuotientField, dom]
+    d:= [$QuotientField, dom]
     hasCaty(dom,'(IntegralDomain),augmentSub(v,d,SL))
   cat is ['PolynomialCategory, d, :.] =>
     dom' := ['Polynomial, d]

@@ -40,8 +40,6 @@ a term rewrite system is represented by a pair (varlist,varRules) where
   is an alist (no variables may occur in varRules)
 
 the following rewrite functions are available:
-  termRW looks for a fixpoint in applying varRules, where the outermost
-    leftmost is reduced first by term1RW
   term1RW applies the first rule
 
 subCopy uses an alist (calls of ASSQ) to substitute a list structure
@@ -52,24 +50,6 @@ in both cases copying is only done if necessary to avoid destruction
 this means, EQ can be used to check whether something was done
 )endif
 
-termRW(t,R) ==
-  -- reduce t by rewrite system R
-  until b repeat
-    t0:= termRW1(t,R)
-    b:= EQ(t,t0)
-    t:= t0
-  t
- 
-termRW1(t,R) ==
-  -- tries to do one reduction on the leftmost outermost subterm of t
-  t0:= term1RW(t,R)
-  not EQ(t0,t) or atom t => t0
-  [t1,:t2]:= t
-  tt1:= termRW1(t1,R)
-  tt2:= t2 and termRW1(t2,R)
-  EQ(t1,tt1) and EQ(t2,tt2) => t
-  CONS(tt1,tt2)
- 
 term1RW(t,R) ==
   -- tries to reduce t at the top node
   [vars,:varRules]:= R

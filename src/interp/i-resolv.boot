@@ -420,7 +420,7 @@ resolveTCat(t,c) ==
 
   -- now check some specific niladic categories
   c in '((Field) (EuclideanDomain)) and ofCategory(t,'(IntegralDomain))=>
-    eqType [$QuotientField, t]
+      [$QuotientField, t]
 
   c = '(Field) and t = $Symbol => ['RationalFunction,$Integer]
 
@@ -521,10 +521,9 @@ resolveTM(t,m) ==
   startTimingProcess 'resolve
   $Subst : local := NIL
   $Coerce : local := 'T
-  t := eqType t
-  m := eqType SUBSTQ("**",$EmptyMode,m)
+  m := SUBSTQ("**",$EmptyMode,m)
   tt := resolveTM1(t,m)
-  result := tt and isValidType tt and eqType tt
+  result := tt and isValidType tt and tt
   stopTimingProcess 'resolve
   result
 
@@ -754,20 +753,6 @@ resolveTMRed1(t) ==
 
 --% Type and Mode Representation
 
-eqType(t) ==
-  -- looks for an equivalent but more simple type
-  -- eg, eqType QF I = RN
-  -- the new algebra orginization no longer uses these sorts of types
---  termRW(t,$TypeEQ)
-  t
-
-equiType(t) ==
-  -- looks for an equivalent but expanded type
-  -- eg, equiType RN == QF I
-  -- the new algebra orginization no longer uses these sorts of types
---  termRW(t,$TypeEqui)
-  t
-
 getUnderModeOf d ==
   not PAIRP d => NIL
   for a in rest d for m in rest destructT d repeat
@@ -803,8 +788,8 @@ constructM(c,A) ==
   #c > 1 and nontrivialCosig(CAR(c)) => nil
   containsVars(c) or containsVars(A) => NIL
   -- collapses illegal FE's
-  CAR(c) = $FunctionalExpression => eqType defaultTargetFE CAR A
-  eqType constructT(c,A)
+  CAR(c) = $FunctionalExpression => defaultTargetFE CAR A
+  constructT(c,A)
 
 replaceLast(A,t) ==
   -- replaces the last element of the nonempty list A by t (constructively
