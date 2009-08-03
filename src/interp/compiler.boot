@@ -1115,7 +1115,6 @@ coerceEasy(T,m) ==
   m=$EmptyMode => T
   m=$NoValueMode or m=$Void => [T.expr,m,T.env]
   T.mode =m => T
-  T.mode =$NoValueMode => T
   T.mode =$Exit =>
       [["PROGN", T.expr, ["userError", '"Did not really exit."]],
         m,T.env]

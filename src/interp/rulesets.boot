@@ -99,7 +99,6 @@ SETANDFILEQ($generalTTRules, '( _
   ((Resolve (RN) (UPS x t1)) . (UPS x (Resolve (RN) t1))) _
   ((Resolve (RN) (CFPS x t1)) . (CFPS x (Resolve (RN) t1))) _
  _
-  ((Resolve (RR) (EF t1)) . (EF (Resolve (RR) t1))) _
   ((Resolve (P t1) (AF t2)) . (AF (Resolve t1 t2 ))) _
   ((Resolve (P t1) (EF t2)) . (EF (Resolve t1 t2 ))) _
   ((Resolve (P t1) (LF t2)) . (LF (Resolve t1 t2 ))) _
@@ -236,8 +235,6 @@ SETANDFILEQ($resolveAbbreviations, '( _
     (HDMP . HomogeneousDistributedMultivariatePolynomial) _
     (QF . QuotientField) _
     (RF . RationalFunction) _
-    (RE . RadicalExtension) _
-    (RR . RationalRadicals) _
     (UPS . UnivariatePowerSeries) _
     (CFPS . ContinuedFractionPowerSeries) _
     (ELFPS . EllipticFunctionPowerSeries) _
@@ -281,15 +278,6 @@ createResolveTMRules() ==
     EQSUBSTLIST($nameList,$abList,append(mpRules,$generalTMRules)))
   true
 
-createTypeEquivRules() ==
-  -- used by eqType, for example
-  $TypeEQ := CONS('(t1), EQSUBSTLIST($nameList,$abList,'(
-    ((QF (P t1)) . (RF t1))
-      ((QF (I)) . (RN))
-        ((RE (RN)) . (RR)) )))
-  $TypeEqui := CONS(CAR $TypeEQ, [[b,:a] for [a,:b] in CDR $TypeEQ])
-  true
-
 initializeRuleSets() ==
   $abList: local :=
     ASSOCLEFT $newResolveAbbreviations
@@ -297,6 +285,5 @@ initializeRuleSets() ==
     ASSOCRIGHT $newResolveAbbreviations
   createResolveTTRules()
   createResolveTMRules()
-  createTypeEquivRules()
   $ruleSetsInitialized := true
   true

@@ -111,9 +111,8 @@ retract object ==
   type = $EmptyMode => 'failed
   val := objVal object
   not isWrapped val and val isnt ['MAP,:.] => 'failed
-  type' := equiType(type)
-  (ans := retract1 objNew(val,equiType(type))) = 'failed => ans
-  objNew(objVal ans,eqType objMode ans)
+  (ans := retract1 objNew(val, type)) = 'failed => ans
+  objNew(objVal ans, objMode ans)
 
 retract1 object ==
   -- this function is the new version of the old "pullback"
@@ -127,14 +126,12 @@ retract1 object ==
   type = $PositiveInteger =>    objNew(val,$NonNegativeInteger)
   type = $NonNegativeInteger => objNew(val,$Integer)
   type = $Integer and SINTP unwrap val => objNew(val, $SingleInteger)
-  type' := equiType(type)
-  if not EQ(type,type') then object := objNew(val,type')
-  (1 = #type') or (type' is ['Union,:.]) or
-    (type' is ['FunctionCalled,.])
-     or (type' is ['OrderedVariableList,.]) or (type is ['Variable,.]) =>
+  (1 = #type) or (type is ['Union,:.]) or
+    (type is ['FunctionCalled,.])
+     or (type is ['OrderedVariableList,.]) or (type is ['Variable,.]) =>
       (object' := retract2Specialization(object)) => object'
       'failed
-  null (underDomain := underDomainOf type') => 'failed
+  null (underDomain := underDomainOf type) => 'failed
   -- try to retract the "coefficients"
   -- think of P RN -> P I or M RN -> M I
   object' := retractUnderDomain(object,type,underDomain)
@@ -211,7 +208,6 @@ retract2Specialization object ==
         tl := [objMode e',:tl]
       bad => NIL
       (m := resolveTypeListAny tl) = D => NIL
-      D = equiType(m) => NIL
       vl' := nil
       for e in vl for t in tl repeat
         t = m => vl' := [e,:vl']
@@ -243,7 +239,7 @@ retract2Specialization object ==
     -- element of k
     val' := retract objNew(val,rep)
     while (val' ~= 'failed) and
-      (equiType(objMode val') ~= k) repeat
+      (objMode(val') ~= k) repeat
         val' := retract val'
     val' = 'failed => NIL
     val'
@@ -495,8 +491,6 @@ canCoerceFrom0(t1,t2) ==
   startTimingProcess 'querycoerce
   q :=
     isEqualOrSubDomain(t1,t2) or t1 = '(None) or t2 = '(Any) or
-      if t2 = $OutputForm then (s1 := t1; s2 := t2)
-      else (s1:= equiType(t1); s2:= equiType(t2))
 
       -- make sure we are trying to coerce to a legal type
       -- in particular, polynomials are repeated, etc.
@@ -505,8 +499,8 @@ canCoerceFrom0(t1,t2) ==
 
       t1 = $RationalNumber =>
         isEqualOrSubDomain(t2,$Integer) => NIL
-        canCoerce(t1,t2) or canCoerce(s1,s2)
-      canCoerce(s1,s2)
+        canCoerce(t1, t2)
+      canCoerce(t1, t2)
   stopTimingProcess 'querycoerce
   q
 
@@ -683,18 +677,9 @@ canCoerceByFunction1(m1,m2,fun) ==
   -- calls selectMms with $Coerce=NIL and tests for required target=m2
   $declaredMode:local:= NIL
   $reportBottomUpFlag:local:= NIL
-  -- have to handle cases where we might have changed from RN to QF I
-  -- make 2 lists of expanded and unexpanded types
-  l1 := REMDUP [m1,eqType m1]
-  l2 := REMDUP [m2,eqType m2]
-  ans  := NIL
-  for t1 in l1 while not ans repeat
-    for t2 in l2 while not ans repeat
-      l := selectMms1(fun,t2,[t1],[t1],NIL)
-      ans := [x for x in l | x is [sig,:.] and CADR sig=t2 and
-       CADDR sig=t1 and
-        CAR(sig) isnt ['TypeEquivalence,:.]] and true
-  ans
+  l := selectMms1(fun, m2, [m1], [m1], NIL)
+  [x for x in l | x is [sig,:.] and CADR sig = m2 and
+      CADDR sig = m1] and true
 
 absolutelyCanCoerceByCheating(t1,t2) ==
   -- this typically involves subdomains and towers where the only
@@ -820,13 +805,6 @@ coerceInt0(triple,t2) ==
 
   val='_$fromCoerceable_$ => canCoerceFrom(t1,t2)
   t1 = t2 => triple
-  if t2 = $OutputForm then
-    s1 := t1
-    s2 := t2
-  else
-    s1 := equiType(t1)
-    s2 := equiType(t2)
-    s1 = s2 => return objNew(val,t2)
   -- t1 is ['Mapping,:.] and t2 ~= '(Any) => NIL
   -- note: may be able to coerce TO mapping
   -- treat Exit like Any
@@ -836,11 +814,7 @@ coerceInt0(triple,t2) ==
       intCodeGenCOERCE(triple,t2)
   t1 = $Any and t2 ~= $OutputForm and ([t1',:val'] := unwrap val) and
     (ans := coerceInt0(objNewWrap(val',t1'),t2)) => ans
-  if not EQ(s1,t1) then triple := objNew(val,s1)
-  x := coerceInt(triple,s2) =>
-    EQ(s2,t2) => x
-    objSetMode(x,t2)
-    x
+  x := coerceInt(triple, t2) => x
   NIL
 
 coerceInt(triple, t2) ==
@@ -1418,10 +1392,6 @@ coerceByFunction(T,m2) ==
     code := ['failCheck, ['SPADCALL, x, env]]
 --  tar is ['Union,:.] => objNew(['failCheck,code],m2)
     objNew(code,m2)
-  -- try going back to types like RN instead of QF I
-  m1' := eqType m1
-  m2' := eqType m2
-  (m1 ~= m1') or (m2 ~= m2') => coerceByFunction(objNew(x,m1'),m2')
   NIL
 
 hasCorrectTarget(m,sig is [dc,tar,:.]) ==
