@@ -2018,7 +2018,7 @@ matSub(x) ==
 matWidth(x) ==
   y := CDDR x  -- list of rows, each of form ((ROW . w) element element ...)
   numOfColumns := LENGTH CDAR y
-  widthList := matLSum2 matWList(y, NLIST(numOfColumns, 0))
+  widthList := matLSum2 matWList(y, [0 for j in 1..numOfColumns])
     --returns ["max width of entries in column i" for i in 1..numberOfRows]
   subspanList := matLSum matSubList y
   superspanList := matLSum matSuperList y

@@ -174,7 +174,6 @@
 (defmacro SPADLET (A B)
   (if (ATOM A) `(SETQ ,A ,B)
       (BREAK)))
-;;;     `(OR (IS ,B ,A) (LET_ERROR ,(MK_LEFORM A) ,(MKQ B) ))))
  
 (defmacro RPLAC (&rest L)
   (if (EQCAR (CAR L) 'ELT)
@@ -506,7 +505,7 @@ This version is needed so that (COLLECT (IN X Y) ... (RETURN 'JUNK))=>JUNK."
  
 (defmacro COLLECT (&rest L)
     (let ((U (REPEAT-TRAN L NIL)))
-        (-REDUCE 'CONS 0 NIL (CDR U) (CAR U))))
+        (-REDUCE 'CONS NIL (CDR U) (CAR U))))
  
 (defmacro COLLECTVEC (&rest L)
    `(COLLECTV ,@L))
@@ -629,19 +628,14 @@ LP  (COND ((NULL X)
 ; 14 SEQUENCES
  
 ; 14.1 Simple Sequence Functions
- 
-(DEFUN NLIST (N FN)
-  "Returns a list of N items, each initialized to the value of an
- invocation of FN"
-  (if (LT N 1) NIL (CONS (EVAL FN) (NLIST (SUB1 N) FN))))
- 
+
 (define-function 'getchar #'elt)
  
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
  
-(defun |expandSPADREDUCE| (op axis bod)
+(defun |expandSPADREDUCE| (op bod)
     (if (not $BOOT) (BREAK))
-    (REDUCE-1 op axis bod)) 
+    (REDUCE-1 op bod)) 
 
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
       '((PLUS 0) (+ (|Zero|)) (|lcm| (|One|)) (STRCONC "") (|strconc| "")
@@ -656,19 +650,12 @@ LP  (COND ((NULL X)
    (cond ((symbolp item) (remove item sequence :test #'eq))
          ((and (atom item) (not (arrayp item))) (remove item sequence))
          (T (remove item sequence :test #'equalp))))
- 
-(MAPC #'(LAMBDA (J) (MAKEPROP (CAR J) 'UNMACRO (CADR J)))
-      '( (AND AND2) (OR OR2)))
- 
-(defun and2 (x y) (and x y))
- 
-(defun or2 (x y) (or x y))
- 
+
 (MAKEPROP 'CONS 'RIGHT-ASSOCIATIVE T)
  
-(defun REDUCE-1 (OP AXIS BOD)
+(defun REDUCE-1 (OP BOD)
   (let (u op1 tran iden)
-    (SEQ (SETQ OP1 (cond ((EQ OP '\,) 'CONS)
+    (SEQ (SETQ OP1 (cond ((EQ OP '\,) (BREAK) 'CONS)
                          ((EQCAR OP 'QUOTE) (CADR OP))
                          (OP)))
          (SETQ IDEN (if (SETQ U (GET OP1 'THETA)) (CAR U) 'NO_THETA_PROPERTY))
@@ -677,14 +664,12 @@ LP  (COND ((NULL X)
                               (SETQ L (REVERSE (CDR BOD)))
                               (SETQ BOD1 (CAR L))
                               (SETQ ITL (NREVERSE (CDR L)))
-                              (RETURN (-REDUCE OP1 AXIS IDEN BOD1 ITL)) )
-                        (progn (SETQ U (-REDUCE-OP OP1 AXIS))
-                               (LIST 'REDUCE-N (MKQ (OR (GET U 'UNMACRO) U))
-                                     (GET OP1 'RIGHT-ASSOCIATIVE)
-                                     BOD IDEN))))
-         (if (EQ OP '\,) (LIST 'NREVERSE-N TRAN AXIS) TRAN))))
+                              (RETURN (-REDUCE OP1 IDEN BOD1 ITL)) )
+                        (BREAK)
+                               ))
+         TRAN)))
  
-(defun -REDUCE (OP AXIS Y BODY SPL)
+(defun -REDUCE (OP Y BODY SPL)
   (PROG (X G AUX EXIT VALUE PRESET CONSCODE RESETCODE)
    (SETQ G (GENSYM))
    ; create preset of accumulate
@@ -700,7 +685,7 @@ LP  (COND ((NULL X)
    ; CONSCODE= code which conses a member onto the list
    (SETQ VALUE (COND ((EQ Y 'NO_THETA_PROPERTY) (GENSYM))
                      (BODY)))
-   (SETQ CONSCODE (CONS (-REDUCE-OP OP AXIS) (COND
+   (SETQ CONSCODE (CONS OP (COND
       ((FLAGP OP 'RIGHT-ASSOCIATIVE) (LIST VALUE G))
       ((LIST G VALUE) ) ) ) )
    ; next reset code which varies if THETA property is|/is not given
@@ -716,52 +701,10 @@ LP  (COND ((NULL X)
       ((EQ OP 'AND) (LIST (LIST 'UNTIL (LIST 'NULL G))))
       ((EQ OP 'OR) (LIST (LIST 'UNTIL G)))
       (NIL) )))
-   (RETURN (COND
-      ((NULL $BOOT) (LIST 'PROGN PRESET
-         (CONS 'REPEAT (APPEND AUX (APPEND SPL (LIST BODY))) )))
-      ((LIST 'PROG
-                (COND ((EQ RESETCODE BODY) (LIST G)) ((LIST G VALUE)))
-                PRESET (LIST 'RETURN
-         (CONS 'REPEAT (APPEND AUX (APPEND SPL (LIST BODY)))))))))))
- 
-(defun -REDUCE-OP (OP AXIS)
-  (COND ((EQL AXIS 0) OP)
-        ((EQL AXIS 1)
-         (COND ((EQ OP 'CONS) 'CONS-N)
-               ((EQ OP 'APPEND) 'APPEND-N)
-               ((FAIL))))
-        ((FAIL))))
- 
-(defun NREVERSE-N (X AXIS)
-  (COND ((EQL AXIS 0) (NREVERSE X))
-        ((MAPCAR #'(LAMBDA (Y) (NREVERSE-N Y (SUB1 AXIS))) X))))
- 
-(defun CONS-N (X Y)
-  (COND ((NULL Y) (CONS-N X (NLIST (LENGTH X) NIL)))
-        ((MAPCAR #'CONS X Y))))
- 
-(defun APPEND-N (X Y)
-  (COND ((NULL X) (APPEND-N (NLIST (LENGTH Y) NIL) Y))
-        ((MAPCAR #'APPEND X Y))))
- 
-(defun REDUCE-N (OP RIGHT L ACC)
-  (COND (RIGHT (PROG (U L1)
-                     (SETQ L1 (NREVERSE L))
-                     (SETQ U (REDUCE-N-1 OP 'T L1 ACC))
-                     (NREVERSE L1)
-                     (RETURN U) ))
-        ((REDUCE-N-1 OP NIL L ACC))))
- 
-(defun REDUCE-N-1 (OP RIGHT L ACC)
-  (COND ((EQ ACC 'NO_THETA_PROPERTY)
-         (COND ((NULL L) (THETA_ERROR OP))
-               ((REDUCE-N-2 OP RIGHT (CDR L) (CAR L))) ))
-        ((REDUCE-N-2 OP RIGHT L ACC))))
- 
-(defun REDUCE-N-2 (OP RIGHT L ACC)
-  (COND ((NULL L) ACC)
-        (RIGHT (REDUCE-N-2 OP RIGHT (CDR L) (funcall (symbol-function OP) (CAR L) ACC)))
-        ((REDUCE-N-2 OP RIGHT (CDR L) (funcall (symbol-function OP) ACC (CAR L))))))
+   (RETURN 
+      (LIST 'PROGN PRESET
+         (CONS 'REPEAT (APPEND AUX (APPEND SPL (LIST BODY))) ))
+      )))
 
 (defun THETACHECK (VAL VAR OP) (if (EQL VAL VAR) (THETA_ERROR OP) val))
  
