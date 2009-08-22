@@ -17,16 +17,15 @@
 PrimitiveArray(S:Type): OneDimensionalArrayAggregate S == add
    Qmax ==> QVMAXINDEX$Lisp
    Qsize ==> QVSIZE$Lisp
---   Qelt ==> QVELT$Lisp
---   Qsetelt ==> QSETVELT$Lisp
-   Qelt ==> ELT$Lisp
-   Qsetelt ==> SETELT$Lisp
-   Qnew ==> GETREFV$Lisp
+   Qelt ==> QAREF1$Lisp
+   Qsetelt ==> QSETAREF1$Lisp
+   Qnew ==> MAKE_-ARRAY$Lisp
+   Qnew1 ==> MAKEARR1$Lisp
 
    #x                          == Qsize x
    minIndex x                  == 0
    empty()                     == Qnew(0$Lisp)
-   new(n, x)                   == fill_!(Qnew n, x)
+   new(n, x)                   == Qnew1(n, x)
    qelt(x, i)                  == Qelt(x, i)
    elt(x:%, i:Integer)         == Qelt(x, i)
    qsetelt_!(x, i, s)          == Qsetelt(x, i, s)
@@ -358,7 +357,8 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
    Qsetelt ==> SETELT$Lisp
 --   Qelt1 ==> QVELT_-1$Lisp
 --   Qsetelt1 ==> QSETVELT_-1$Lisp
-   Qnew ==> GETREFV$Lisp
+   Qnew ==> MAKE_-ARRAY$Lisp
+   Qnew1 ==> MAKEARR1$Lisp
    I ==> Integer
 
    #x               == Qsize x
@@ -366,7 +366,7 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
    minIndex x       == mn
 
    empty()          == Qnew(0$Lisp)
-   new(n, s)        == fill_!(Qnew n,s)
+   new(n, s)        == Qnew1(n,s)
 
    map_!(f, s1)  ==
       n:Integer := Qmax(s1)
@@ -443,6 +443,15 @@ OneDimensionalArray(S:Type): Exports == Implementation where
     oneDimensionalArray: (NonNegativeInteger, S) -> %
         ++ oneDimensionalArray(n,s) creates an array from n copies of element s
   Implementation == IndexedOneDimensionalArray(S, ARRAYMININDEX) add
+
+    -- qelt and qsetelt_! are logically unnecessary, but good for
+    -- performance
+    Qelt1 ==> QAREF1O$Lisp
+    Qsetelt1 ==> QSETAREF1O$Lisp
+
+    qelt(x, i) == Qelt1(x, i, ARRAYMININDEX)
+    qsetelt_!(x, i, s) == Qsetelt1(x, i, s, ARRAYMININDEX)
+
     oneDimensionalArray(u) ==
       n := #u
       n = 0 => empty()

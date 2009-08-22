@@ -165,9 +165,11 @@ optCallEval u ==
   -- needed domains
   u is ["List",:.] => List Integer()
   u is ["Vector",:.] => Vector Integer()
+  u is ["OneDimensionalArray", :.] => OneDimensionalArray Integer()
   u is ["PrimitiveArray",:.] => PrimitiveArray Integer()
   -- u is ["FactoredForm",:.] => FactoredForm Integer()
-  -- u is ["Matrix",:.] => Matrix Integer()
+  u is ["Matrix", :.] => Matrix Integer()
+  u is ["TwoDimensionalArray", :.] => TwoDimensionalArray Integer()
   eval u
  
 optCons (x is ["CONS",a,b]) ==
