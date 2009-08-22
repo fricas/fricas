@@ -164,7 +164,7 @@ foo defined inside of fum gets renamed as fum,foo.")
 (defun DEF-RENAME (X) (DEF-RENAME1 X))
 
 (defun DEF-RENAME1 (X)
-  (COND ((symbolp X) (let ((y (get x 'rename))) (if y (first y) x)))
+  (COND ((symbolp X) (let ((y (get x 'RENAME))) (if y (first y) x)))
         ((and (listp X) X)
          (if (EQCAR X 'QUOTE)
              X
