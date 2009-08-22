@@ -439,7 +439,8 @@
             ;" also used by putInLocalDomainReferences and optCall"
 (SETQ |$optimizableConstructorNames|
    '(|List| |Integer| |PositiveInteger| |NonNegativeInteger| |SingleInteger|
-     |String| |Boolean| |Symbol| |DoubleFloat| |PrimitiveArray| |Vector|))
+     |String| |Boolean| |Symbol| |DoubleFloat| |PrimitiveArray| |Vector|
+     |Matrix| |OneDimensionalArray| |TwoDimensionalArray|))
             ;" used by optCallSpecially"
 (SETQ |$Zero| '(|Zero|))
 (SETQ |$One| '(|One|))
