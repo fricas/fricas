@@ -244,6 +244,7 @@ AC_ARG_WITH([lisp-flavor],
             esac])
 if test x"$axiom_include_gcl" != xyes ; then
   AC_MSG_CHECKING([Lisp implementation])
+  rm -f config_cl.out
   echo '(load "'"$axiom_top_srcdir"'/config.lisp")' | $fricas_lisp
 
   if test x$fricas_lisp_flavor = xunknown ; then
