@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-09-15], 
+AC_INIT([FriCAS], [2009-09-17], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -196,7 +196,7 @@ fi
 ## We need to build our own GCL is none is avalaible
 if test x"$axiom_include_gcl" != xyes ; then
   if test -z $fricas_lisp ; then
-    AC_PATH_PROG([FRICAS_LISP], [gcl])
+    AC_PATH_PROG([FRICAS_LISP], [sbcl])
     fricas_lisp=$FRICAS_LISP
   else
     ## Honor use of Lisp image specified on command line
@@ -310,6 +310,12 @@ if test x"$axiom_include_gcl" != xyes ; then
            echo $fricas_lisp_version | grep '^1\.0.[[0-6]]$' > /dev/null ; then
              AC_MSG_ERROR([sbcl $fricas_lisp_version is too old])
         fi
+        case $fricas_lisp_version in
+           1.0.29)
+             AC_MSG_ERROR([sbcl $fricas_lisp_version has a bug which does not allow building FriCAS. 
+Please use different sbcl version])
+                  ;;
+        esac
         ;;
    esac
   fi
