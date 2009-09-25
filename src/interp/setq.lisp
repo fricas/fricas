@@ -440,7 +440,7 @@
 (SETQ |$optimizableConstructorNames|
    '(|List| |Integer| |PositiveInteger| |NonNegativeInteger| |SingleInteger|
      |String| |Boolean| |Symbol| |DoubleFloat| |PrimitiveArray| |Vector|
-     |Matrix| |OneDimensionalArray| |TwoDimensionalArray|))
+     |Matrix| |OneDimensionalArray| |TwoDimensionalArray| |U32Vector|))
             ;" used by optCallSpecially"
 (SETQ |$Zero| '(|Zero|))
 (SETQ |$One| '(|One|))

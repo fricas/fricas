@@ -1,0 +1,560 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra vecrec.spad}
+\author{Waldek Hebisch}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Rational reconstruction}
+
+<<domain SOREXPV SortedExponentVector>>=
+
+)abbrev domain SOREXPV SortedExponentVector
+++ Domain for storing information about structure of polynomials
+++ as vectors of exponents
+SortedExponentVector == U32Vector
+
+@
+<<domain VECREC1 VectorModularReconstructor>>=
+
+)abbrev domain VECREC1 VectorModularReconstructor
+++ Description: This domian supports modular methods based on
+++  evaluation and rational reconstruction.  All computation
+++  are done on polynomials modulo machine sized prime p -- p must
+++  be choosen small enough to avoid overflow in intermediate
+++  calculations. Each evaluation is usupposed to produce vector of
+++  values. Once enough evaluations are known rational reconstruction
+++  produces vector of rational functions or multivariate polynomials.
+VectorModularReconstructor(): Export == Implementation where
+    PA ==> U32Vector
+    RR ==> Record(numers : PrimitiveArray PA, denoms : PrimitiveArray PA)
+    RatRec ==> Record(numer : PA, denom : PA)
+    VI ==> Vector Integer
+    PPA ==> PrimitiveArray PA
+    PDR ==> Record(nvars : Integer, offsetdata : VI, _
+                   expdata : SortedExponentVector, _
+                   coeffdata : PA)
+    Export ==> with
+        empty : (Integer, Integer) -> %
+          ++ empty(n, p) initializes reconstructor with n slots
+          ++ working modulo p
+        add__slots : (List Integer, %) -> Void
+          ++ extend reconstructor adding zeros at specified
+          ++ positions.
+        chinese__update : (PA, Integer, %) -> Void
+          ++ chinese__update(v, pt, r) informs r that
+          ++ evaluation at pt gave vector of values v
+        rational__reconstruction : % -> Union(RR, "failed")
+          ++ reconstruct vector of rational functions based on
+          ++ information stored in reconstructor.
+        rational__reconstruction : (PA, PA, Integer, Integer) _
+                            -> Union(RatRec, "failed")
+          ++ reconstuct rational function
+        repack__polys : (Integer, VI, SortedExponentVector, PPA) -> PDR
+          ++ convert polynomials represented as parallel vector
+          ++ of exponents in k variables and vector of univariate
+          ++ polynomials to parallel vector of exponents in k+1
+          ++ variables and coefficients
+        remove__denoms : (VI, PPA, PPA, Integer) -> PPA
+          ++ remove__denoms(offsets, nums, denoms, p) removes common
+          ++ denominator from vectors of rational functions.  Several
+          ++ vectors of rational functions are packed into nums
+          ++ (storing numerators) and dens (storing denomiantors)
+          ++ Vector i starts at position offsets(i).  Computations
+          ++ are done modulo p.
+        reconstruct : (Integer, VI, VI, SortedExponentVector, _
+                       PPA, PPA, Integer) -> PDR
+          ++ reconstruct polynomials in n + 1 variables from
+          ++ result of rational reconstruction
+        reconstruct : (%, Integer, VI, VI, SortedExponentVector) _
+                       -> Union(PDR, "failed")
+          ++ reconstruct polynomials in n + 1 variables
+
+    Implementation ==> add
+        Rep := Record(prime : Integer, lpol : PA, curj : Integer, _
+                      npoints : Integer, npolys : Integer, _
+                      palloc : Integer, polys : PrimitiveArray PA, _
+                      numers : PrimitiveArray PA, _
+                      denoms : PrimitiveArray PA)
+
+        modInverse ==> invmod
+
+        import U32VectorPolynomialOperations
+
+        empty(npoly, np) ==
+            polyvec := new(npoly::NonNegativeInteger, _
+                           empty()$U32Vector)$PrimitiveArray(U32Vector)
+            for i in 0..(npoly - 1) repeat
+                polyvec(i) := new(5, 0)$U32Vector
+            state := [np, new(5, 0)$U32Vector, 0, 0, npoly, _
+                      5, polyvec, empty()$PrimitiveArray(PA), _
+                      empty()$PrimitiveArray(PA)]$Rep
+            setelt(state.lpol, 0, 1)
+            state
+
+        add__slots(ndl : List Integer, statearg : %) : Void ==
+            state := statearg::Rep
+            polyvec := state.polys
+            m := state.palloc
+            n0 := #polyvec
+            n1 := #ndl
+            npoly := n0 + n1
+            nvec := new(npoly::NonNegativeInteger, _
+                           empty()$U32Vector)$PrimitiveArray(U32Vector)
+            li := first(ndl)
+            j : Integer := 0
+            for i in 0..(npoly - 1) repeat
+                i = li =>
+                    nvec(i) := new(m ::NonNegativeInteger, 0)$PA
+                    ndl := rest(ndl)
+                    li :=
+                        empty?(ndl) => npoly
+                        first(ndl)
+                nvec(i) := polyvec(j)
+                j := j + 1
+            if not(empty?(state.numers)) then
+                state.numers := new(npoly::NonNegativeInteger, _
+                                    empty()$PA)$PrimitiveArray(U32Vector)
+                state.denoms := new(npoly::NonNegativeInteger, _
+                                    empty()$PA)$PrimitiveArray(U32Vector)
+            state.polys := polyvec
+            state.npolys := npoly
+
+        double__poly__space(statearg : %) : Void ==
+            state := statearg::Rep
+            polyvec := state.polys
+            m := state.palloc
+            n := 2*m
+            for i in 0..(state.npolys - 1) repeat
+                np := new(n::NonNegativeInteger, 0)$U32Vector
+                op := polyvec(i)
+                copy__first(np, op, m)
+                polyvec(i) := np
+            state.palloc := n
+
+        chinese__update(vec, pt, statearg) ==
+            state := statearg::Rep
+            mtvec := state.lpol
+            npt := state.npoints
+            npt1 := npt + 1
+            p := state.prime
+            mtval := eval__at(mtvec, npt, pt, p)
+            mtval = 0 => error "Duplicate point in update"
+            mtcor := modInverse(mtval, p)
+            state.npoints := npt1
+            if npt1 > state.palloc then
+                double__poly__space(statearg)
+            polyvec := state.polys
+            nn := npt - 1
+            for i in 0..(state.npolys - 1) repeat
+               pol := polyvec(i)
+               cor := vec(i) - eval__at(pol, nn, pt, p)
+               cor :=
+                   cor < 0 => cor + p
+                   cor
+               cor := positiveRemainder(cor*mtcor, p)
+               vector__add__mul(pol, mtvec, 0, npt, cor, p)
+            if #mtvec < npt1 + 1 then
+                nmt := new(2*(npt1::NonNegativeInteger), 0)$U32Vector
+                copy__first(nmt, mtvec, npt1)
+                mtvec := nmt
+            mul__by__binomial(mtvec, npt1 + 1, p - pt, p)
+            state.lpol := mtvec
+
+        rational__reconstruction(x : PA, y : PA, i : Integer, p : Integer) : _
+                            Union(RatRec, "failed") ==
+            -- invariant: r0 = t0*y + s0*x, r1 = t1*y + s1*x
+            -- we do not need t0 and t1, so we do not compute them
+            j := degree(y)
+            r0 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            copy__first(r0, y, j + 1)
+            dr0 := j
+            -- s0 is 0
+            s0 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            ds0 := 0$Integer
+            r1 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            dr1 := degree(x)
+            copy__first(r1, x, dr1 + 1)
+            -- s1 is 1
+            s1 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            s1(0) := 1
+            ds1 := 0$Integer
+            while dr1 > i repeat
+                while dr0 >= dr1 repeat
+                    delta := dr0 - dr1
+                    c1 := p - r0(dr0)
+                    c0 := r1(dr1)
+                    r0(dr0) := 0
+                    dr0 := dr0 - 1
+                    vector__combination(r0, c0, r1, c1, dr0, delta, p)
+                    while r0(dr0) = 0 repeat
+                        dr0 := dr0 - 1
+                        if dr0 < 0 then break
+                    ds0a := ds1 + delta
+                    ds0a :=
+                        ds0 > ds0a => ds0
+                        ds0a
+                    vector__combination(s0, c0, s1, c1, ds0a, delta, p)
+                    ds0 :=
+                        ds0 > ds0a => ds0
+                        ds0 < ds0a => ds0a
+                        while s0(ds0a) = 0 repeat ds0a := ds0a - 1
+                        ds0a
+                tmpp := r0
+                tmp := dr0
+                r0 := r1
+                dr0 := dr1
+                r1 := tmpp
+                dr1 := tmp
+                tmpp := s0
+                tmp := ds0
+                s0 := s1
+                ds0 := ds1
+                s1 := tmpp
+                ds1 := tmp
+            ds1 > j - i - 2 => "failed"
+            degree(gcd(s1, y, p)) ~= 0 => "failed"
+            c := s1(ds1)
+            c := modInverse(c, p)
+            mul__by__scalar(r1, dr1, c, p)
+            mul__by__scalar(s1, ds1, c, p)
+            [r1, s1]
+
+        rational__reconstruction(statearg : %) : Union(RR, "failed") ==
+            state := statearg::Rep
+            modulus := state.lpol
+            polyvec := state.polys
+            p := state.prime
+            j0 := state.curj
+            -- Compiler bug
+            -- j0 <= 3 => "failed"
+            m := state.npoints
+            m <= 3 => return "failed"
+            bound := m quo 2
+            ok := true
+            pp := rational__reconstruction(polyvec(j0), modulus, bound, p)
+            pp case "failed" => "failed"
+            n := state.npolys
+            if empty?(state.numers) then
+               state.numers := new(n::NonNegativeInteger, _
+                                   empty()$PA)$PrimitiveArray(PA)
+               state.denoms := new(n::NonNegativeInteger, _
+                                   empty()$PA)$PrimitiveArray(PA)
+            nums := state.numers
+            dens := state.denoms
+            ppr := pp :: RatRec
+            nums(j0) := ppr.numer
+            dens(j0) := ppr.denom
+            -- cden := ppr.den
+            j := j0
+            repeat
+               j := j + 1
+               if j >= n then j := j - n
+               j = j0 => return [nums, dens]
+               r1 := polyvec(j)
+               pp := rational__reconstruction(r1, modulus, bound, p)
+               pp case "failed" =>
+                   state.curj := j
+                   return "failed"
+               ppr := pp :: RatRec
+               nums(j) := ppr.numer
+               dens(j) := ppr.denom
+
+
+        repack__polys(var__cnt : Integer, poly__offsets : VI, _
+                      exps : SortedExponentVector, _
+                      coeffs : PrimitiveArray U32Vector) : PDR ==
+            m : Integer := 0
+            n := #coeffs
+            -- count nonzero coefficients
+            for i in 0..(n - 1) repeat
+                ci := coeffs(i)
+                k := #ci
+                for j in 0..(k - 1) repeat
+                    if ci(j) ~= 0 then m := m + 1
+            nnvars := var__cnt + 1
+            nexps := new((m*nnvars) pretend NonNegativeInteger, _
+                         0)$SortedExponentVector
+            ncoeffs := new(m pretend NonNegativeInteger, 0)$U32Vector
+            pi__cnt := #poly__offsets
+            npo := new(pi__cnt, 0)$VI
+            pi : Integer := 1
+            opi := poly__offsets(pi)
+            nm : SingleInteger := 0
+            oei : SingleInteger := 0
+            nei : SingleInteger := 0
+            for i in 0..(n - 1) repeat
+                while opi = i repeat
+                    npo(pi) := nm
+                    pi := pi + 1
+                    opi := 
+                        pi <= pi__cnt =>
+                            opi := poly__offsets(pi)
+                        -1
+                ci := coeffs(i)
+                k := #ci
+                for j in 0..(k - 1) repeat
+                    cij := ci(j)
+                    if cij ~= 0 then
+                        ncoeffs(nm) := cij
+                        nm := nm + 1
+                        oei0 := oei
+                        for i1 in 1..var__cnt repeat
+                            nexps(nei) := exps(oei0)
+                            nei := nei + 1
+                            oei0 := oei0 + 1
+                        nexps(nei) := j
+                        nei := nei + 1
+                oei := oei + var__cnt pretend SingleInteger
+            for i in pi..pi__cnt repeat npo(i) := nm
+            [nnvars, npo, nexps, ncoeffs]
+
+        remove__denoms(block__offsets : VI, nums : PPA, _
+                       dens : PPA, p : Integer) : PPA ==
+            nb := #block__offsets
+            np := #nums
+            res := new(np, empty()$PA)$PPA
+            tmpp1 : PA
+            tmpp2 : PA
+            for ib in 1..nb repeat
+                li := block__offsets(ib)
+                hi : Integer :=
+                    ib = nb => np
+                    block__offsets(ib + 1)
+                hi := hi - 1
+                cden := lcm(dens, li, hi, p)
+                dcden := degree(cden)
+                tmpp1 := new((dcden + 1) pretend NonNegativeInteger, 0)$PA
+                tmpp2 := new((dcden + 1) pretend NonNegativeInteger, 0)$PA
+                for i in li..hi repeat
+                    copy__first(tmpp1, cden, dcden + 1)
+                    for j in 0..dcden repeat tmpp2(j) := 0
+                    divide!(tmpp1, dens(i), tmpp2, p)
+                    dt := degree(tmpp2)
+                    res(i) := 
+                        dt > 0 => mul(tmpp2, nums(i), p)
+                        nums(i)
+                cfactor := gcd(res, li, hi, p)
+                dcf := degree(cfactor)
+                dtmp := dcden
+                if dcf > 1 then
+                    for i in li..hi repeat
+                        resi := res(i)
+                        dresi := degree(resi)
+                        if dresi > dtmp then
+                            dtmp := dresi
+                            tmpp1 := new((dtmp + 1) _
+                                          pretend NonNegativeInteger, 0)$PA
+                            tmpp2 := new((dcden + 1) _
+                                          pretend NonNegativeInteger, 0)$PA
+                        copy__first(tmpp1, resi, dresi + 1)
+                        divide!(tmpp1, cfactor, tmpp2, p)
+                        dt := degree(tmpp2)
+                        res(i) := new((dt + 1) pretend NonNegativeInteger, 0)$PA
+                        copy__first(res(i), tmpp2, dt + 1)
+            res
+
+        reconstruct(var__cnt : Integer, block__offsets : VI, _
+                    poly__offsets : VI, exps : SortedExponentVector, _
+                    nums : PPA, dens : PPA, p : Integer) : PDR ==
+            ppa := remove__denoms(block__offsets, nums, dens, p)
+            repack__polys(var__cnt, poly__offsets, exps, ppa)
+
+        reconstruct(statearg : %, var__cnt : Integer, _
+                    block__offsets : VI, poly__offsets : VI, _
+                    exps : SortedExponentVector) _
+                    : Union(PDR, "failed") ==
+            pp := rational__reconstruction(statearg)
+            pp case "failed" => return "failed"
+            state := statearg::Rep
+            ppr := pp::RR
+            reconstruct(var__cnt, block__offsets, poly__offsets, _
+                        exps, ppr.numers, ppr.denoms, state.prime)
+
+@
+<<domain VECREC2 VectorIntegerReconstructor>>=
+
+)abbrev domain VECREC2 VectorIntegerReconstructor
+++ Description: This domian supports modular methods based on
+++  evaluation and rational reconstruction.  Each evaluation
+++  is done modulo machine sized prime p.  Both Chinese
+++  remaindering and (linear) Hensel lift are supported. 
+++  Once enough evaluations are known rational reconstruction
+++  produces vector of rational numbers or integers.
+VectorIntegerReconstructor(): Export == Implementation where
+   RatRec ==> Record(num : Integer, den : Integer)
+   PAI ==> PrimitiveArray Integer
+   RR ==> Record(numers : PAI, denoms : PAI)
+   VI ==> Vector Integer
+   Export ==> with
+       empty : (Integer) -> %
+         ++ empty(n) produces recinstructor with n slots
+       chinese__update : (U32Vector, Integer, %) -> Void
+         ++ chinese__update(v, p, r) informs r about evaluation at p
+       hensel__update : (U32Vector, Integer, %) -> Void
+         ++ one step of Hensel lifting
+       rational__reconstruction: (Integer, Integer, Integer, Integer) -> _
+           Union(RatRec, "failed")
+       rational__reconstruction : % -> Union(RR, "failed")
+       remove__denoms : (VI, PAI, PAI) -> PAI
+         ++ remove common denomiantors in blocks
+       reconstruct : (%, VI) -> Union(PAI, "failed")
+         ++ combines rational reconstruction with removal of
+         ++ common denominators in blocks.
+
+   Implementation ==> add
+       Rep := Record(cmod : Integer, curj : Integer,  _
+                     nmods : Integer, nints : Integer, _
+                     ints : PrimitiveArray Integer,
+                     numers : PrimitiveArray Integer,
+                     denoms : PrimitiveArray Integer)
+
+
+       modInverse(c : Integer, p : Integer) : Integer ==
+          (extendedEuclidean(c,p,1)::Record(coef1 : Integer, _
+               coef2 : Integer)).coef1
+
+       empty(nint) ==
+           intvec := new(nint::NonNegativeInteger, _
+                          0)$PrimitiveArray(Integer)
+           [1, 0, 0, nint, intvec, empty()$PrimitiveArray(Integer), _
+            empty()$PrimitiveArray(Integer)]$Rep
+
+       chinese__update(vec, p, statearg) ==
+           state := statearg::Rep
+           mp := state.cmod
+           mpval := positiveRemainder(mp, p)
+           mpval = 0 => error "Duplicate modulus in update"
+           mpcor := modInverse(mpval, p)
+           mpfact := mpcor*mp
+           nmp := mp*p
+           mpfact := positiveRemainder(mpfact, nmp)
+           state.nmods := state.nmods + 1
+           intvec := state.ints
+           for i in 0..(state.nints - 1) repeat
+               ii := intvec(i)
+               cor := positiveRemainder(vec(i) - ii, p)
+               intvec(i) := positiveRemainder(ii + mpfact*cor, nmp)
+           state.cmod := nmp
+
+       hensel__update(vec, p, statearg) ==
+           state := statearg::Rep
+           mp := state.cmod
+           intvec := state.ints
+           for i in 0..(state.nints - 1) repeat
+               intvec(i) := intvec(i) + vec(i)*mp
+           state.cmod := p*mp
+
+       rational__reconstruction(x : Integer, y : Integer, i : Integer, _
+                 j : Integer) : Union(RatRec, "failed") ==
+           r0 : Integer := y
+           s0 : Integer := 0
+           r1 : Integer := positiveRemainder(x, y)
+           s1 : Integer := 1
+           while r1 > i repeat
+               qr := divide(r0, r1)
+               r0 := r1
+               r1 := qr.remainder
+               tmp := s0 - qr.quotient*s1
+               s0 := s1
+               s1 := tmp
+           if s1 < 0 then
+               s1 := -s1
+               r1 := -r1
+           s1 > j => "failed"
+           gcd(s1, y) ~= 1 => "failed"
+           [r1, s1]
+
+
+       rational__reconstruction(statearg : %) : Union(RR, "failed") ==
+           state := statearg::Rep
+           modulus := state.cmod
+           intvec := state.ints
+           j0 := state.curj
+           bound := approxSqrt(modulus)$IntegerRoots(Integer) quo 10
+           bound2 := modulus - bound
+           ok := true
+           pp := rational__reconstruction(intvec(j0), modulus, bound, bound)
+           pp case "failed" => "failed"
+           n := state.nints
+           if empty?(state.numers) then
+               state.numers := new(n::NonNegativeInteger, _
+                                   0)$PrimitiveArray(Integer)
+               state.denoms := new(n::NonNegativeInteger, _
+                                   0)$PrimitiveArray(Integer)
+           nums := state.numers
+           dens := state.denoms
+           ppr := pp :: RatRec
+           nums(j0) := ppr.num
+           dens(j0) := ppr.den
+           cden := ppr.den
+           j := j0
+           repeat
+               j := j + 1
+               if j >= n then j := j - n
+               j = j0 => return [nums, dens]
+               r1 := positiveRemainder(cden*intvec(j), modulus)
+               r1 < bound =>
+                   nums(j) := r1
+                   dens(j) := cden
+               r1 > bound2 =>
+                   nums(j) := r1 - modulus
+                   dens(j) := cden
+               pp := rational__reconstruction(r1, modulus, bound, bound)
+               pp case "failed" =>
+                   state.curj := j
+                   return "failed"
+               ppr := pp :: RatRec
+               cden := cden*ppr.den
+               cden > bound =>
+                   state.curj := j
+                   return "failed"
+               nums(j) := ppr.num
+               dens(j) := cden
+
+       lcm(nums : PAI, lo : Integer, hi : Integer) : Integer ==
+           res := nums(lo)
+           for i in (lo + 1)..hi repeat
+               res := lcm(res, nums(i))
+           res
+
+       gcd(nums : PAI, lo : Integer, hi : Integer) : Integer ==
+           res := nums(lo)
+           for i in (lo + 1)..hi repeat
+               res := gcd(res, nums(i))
+           res
+
+       remove__denoms(block__offsets : VI, nums : PAI, _
+                      dens : PAI) : PAI ==
+            nb := #block__offsets
+            np := #nums
+            res := new(np, 0)$PAI
+            for ib in 1..nb repeat
+                li := block__offsets(ib)
+                hi : Integer :=
+                    ib = nb => np
+                    block__offsets(ib + 1)
+                hi := hi - 1
+                cden := lcm(dens, li, hi)
+                for i in li..hi repeat
+                    tmpp2  := (cden exquo dens(i))::Integer
+                    res(i) := nums(i)*tmpp2
+                cfactor := gcd(res, li, hi)
+                if cfactor ~= 1 then
+                    for i in li..hi repeat
+                        res(i) := (res(i) exquo cfactor)::Integer
+            res
+
+       reconstruct(statearg : %, block__offsets : VI) : _
+               Union(PAI, "failed") ==
+           pp := rational__reconstruction(statearg)
+           pp case "failed" => return "failed"
+           ppr := pp::RR
+           remove__denoms(block__offsets, ppr.numers, ppr.denoms)
+
+@
+\end{document}
