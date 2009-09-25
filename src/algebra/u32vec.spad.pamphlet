@@ -1,0 +1,385 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra muldep.spad}
+\author{Waldek Hebisch}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Vectors of machine sized integers}
+
+<<domain U32VEC U32Vector>>=
+
+)abbrev domain U32VEC U32Vector
+++ Description: This is a low-level domain which implements vectors
+++ (one dimensional arrays) of unsigned 32-bit numbers.  Indexing
+++ is 0 based, there is no bound checking (unless provided by
+++ lower level).
+U32Vector() : OneDimensionalArrayAggregate Integer == add
+   Qsize ==> QV32LEN$Lisp
+   Qelt ==> ELT32$Lisp
+   Qsetelt ==> SETELT32$Lisp
+   Qnew ==> GETREFV32$Lisp
+
+   #x                          == Qsize x
+   minIndex x                  == 0
+   empty()                     == Qnew(0$Lisp, 0$Lisp)
+   new(n, x)                   == Qnew (n, x)
+   qelt(x, i)                  == Qelt(x, i)
+   elt(x:%, i:Integer)         == Qelt(x, i)
+   qsetelt_!(x, i, s)          == Qsetelt(x, i, s)
+   setelt(x:%, i:Integer, s:Integer) == Qsetelt(x, i, s)
+   fill_!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
+
+@
+<<package POLYVEC U32VectorPolynomialOperations>>=
+
+)abbrev package POLYVEC U32VectorPolynomialOperations
+++ Description: This is a low-level package which implements operations
+++  on vectors treated as univariate modular polynomials.  Most
+++  operations takes modulus as parameter.  Modulus is machine
+++  sized prime which should be small enough to avoid overflow
+++  in intermediate calculations.
+U32VectorPolynomialOperations() : Export == Implementation where
+    PA ==> U32Vector
+    Export ==> with
+        copy__first : (PA, PA, Integer) -> Void
+          ++ copy__first(v1, v2, n) copies first n elements
+          ++ of v2 into n first positions in v1.
+        copy__slice : (PA, PA, Integer, Integer) -> Void
+          ++ copy__first(v1, v2, m, n) copies the slice of v2 starting
+          ++ at m elements and having n elements into corresponding
+          ++ positions in v1.
+        eval__at : (PA, Integer, Integer, Integer) -> Integer
+          ++ eval__at(v, deg, pt, p) treats v as coefficients of
+          ++ polynomial of degree deg and evaluates the
+          ++ polynomial at point pt modulo p
+        vector__add__mul : (PA, PA, Integer, Integer, Integer, Integer) _
+            -> Void
+          ++ vector__add__mul(v1, v2, m, n, c, p) sets v1(m), ...,
+          ++ v1(n) to corresponding extries in v1 + c*v2
+          ++ modulo p.
+        mul__by__binomial : (PA, Integer, Integer) -> Void
+          ++ mul__by__binomial(v,  pt, p) treats v a polynomial
+          ++ and multiplies in place this polynomial by binomial (x + pt).
+          ++ Highest coefficient of product is ignored.
+        mul__by__binomial : (PA, Integer, Integer, Integer) -> Void
+          ++ mul__by__binomial(v, deg, pt, p) treats v as
+          ++ coefficients of polynomial of degree deg and
+          ++ multiplies in place this polynomial by binomial (x + pt).
+          ++ Highest coefficient of product is ignored.
+        mul__by__scalar : (PA, Integer, Integer, Integer) -> Void
+          ++ mul__by__scalar(v, deg, c, p) treats v as
+          ++ coefficients of polynomial of degree deg and
+          ++ multiplies in place this polynomial by scalar c
+        mul : (PA, PA, Integer) -> PA
+          ++ Polynomial multiplication.
+        truncated__multiplication : (PA, PA, Integer, Integer) -> PA
+          ++ truncated__multiplication(x, y, d, p) computes
+          ++ x*y truncated after degree d 
+        truncated__mul__add : (PA, PA, PA, Integer, Integer) -> Void
+          ++ truncated__mul__add(x, y, z, d, p) adds to z
+          ++ the produce x*y truncated after degree d
+        pow : (PA, PositiveInteger, NonNegativeInteger, Integer) -> PA
+          ++ pow(u, n, d, p) returns u^n truncated after degree d, except if
+          ++ n=1, in which case u itself is returned
+        differentiate : (PA, Integer) -> PA
+          ++ Polynomial differentiation.
+        differentiate : (PA, NonNegativeInteger, Integer) -> PA
+          ++ Polynomial differentiation.
+        divide! : (PA, PA, PA, Integer) -> Void
+          ++ Polynomial division.
+        vector__combination : (PA, Integer, PA, Integer, _
+                               Integer, Integer, p : Integer) -> Void
+          ++ vector__combination(v1, c1, v2, c2, n, delta, p) replaces
+          ++ first n + 1 entires of v1 by corresponding entries of
+          ++ c1*v1+c2*x^delta*v2 mod p.
+        gcd : (PA, PA, Integer) -> PA
+          ++ Polynomial gcd.
+        gcd : (PrimitiveArray PA, Integer, Integer, Integer) -> PA
+          ++ gcd(a, lo, hi, p) computes gcd of elements
+          ++ a(lo), a(lo+1), ..., a(hi).
+        lcm : (PrimitiveArray PA, Integer, Integer, Integer) -> PA
+          ++ lcm(a, lo, hi, p) computes lcm of elements
+          ++ a(lo), a(lo+1), ..., a(hi).
+        degree : PA -> Integer
+          ++ degree(v) is degree of v treated as polynomial
+
+    Implementation ==> add
+
+        Qmuladdmod ==> QSMULADDMOD64_-32$Lisp
+        Qmuladd  ==> QSMULADD64_-32$Lisp
+        Qmul ==> QSMULMOD32$Lisp
+        Qdot2 ==> QSDOT2MOD64_-32$Lisp
+        Qrem ==> QSMOD64_-32$Lisp
+        modInverse ==> invmod
+
+        copy__first(np : PA, op : PA, n : Integer) : Void ==
+            ns := n pretend SingleInteger
+            for j in 0..(ns - 1) repeat
+                np(j) := op(j)
+
+        copy__slice(np : PA, op : PA, m : Integer, _
+                    n : Integer) : Void ==
+            ms := m pretend SingleInteger
+            ns := n pretend SingleInteger
+            for j in ms..(ms + ns - 1) repeat
+                np(j) := op(j)
+
+        eval__at(v : PA, deg : Integer, pt : Integer, _
+               p : Integer) : Integer ==
+            i : SingleInteger := deg::SingleInteger
+            res : Integer := 0
+            while i >= 0 repeat
+                res := Qmuladdmod(pt, res, v(i), p)
+                i := i - 1
+            res
+
+        vector__add__mul(v1 : PA, v2 : PA, m : Integer, n : Integer, _
+                         c : Integer, p : Integer) : Void ==
+            ms := m pretend SingleInteger
+            ns := n pretend SingleInteger
+            for i in ms..ns repeat
+                v1(i) := Qmuladdmod(c, v2(i), v1(i), p)
+
+        mul__by__binomial(v : PA, n : Integer, pt : Integer, _
+                          p : Integer) : Void ==
+            prev__coeff : Integer := 0
+            ns := n pretend SingleInteger
+            for i in 0..(ns - 1) repeat
+                pp := v(i)
+                v(i) := Qmuladdmod(pt, pp, prev__coeff, p)
+                prev__coeff := pp
+
+        mul__by__binomial(v : PA, pt : Integer, _
+                          p : Integer) : Void ==
+            mul__by__binomial(v, #v, pt, p)
+
+        mul__by__scalar(v : PA, n : Integer, c : Integer, _
+                        p : Integer) : Void ==
+            ns := n pretend SingleInteger
+            for i in 0..ns repeat
+                v(i) := Qmul(c, v(i), p) 
+
+        degree(v : PA) : Integer ==
+            n := #v
+            for i in (n - 1)..0 by -1 repeat
+                v(i) ~= 0 => return i
+            -1 
+
+        vector__combination(v1 : PA, c1 : Integer, _
+                            v2 : PA, c2 : Integer, _
+                            n : Integer, delta : Integer, _
+                            p : Integer) : Void ==
+            ns := n pretend SingleInteger
+            ds := delta pretend SingleInteger
+            for i in 0..(delta - 1) repeat
+                v1(i) := Qmul(v1(i), c1, p)
+            for i in delta..ns repeat
+                v1(i) := Qdot2(v1(i), c1, v2(i - delta), c2, p)
+
+        divide!(r0 : PA, r1 : PA, res : PA, p: Integer) : Void ==
+            dr0 := degree(r0)
+            dr1 := degree(r1)
+            c0 := r1(dr1)
+            c0 := modInverse(c0, p)
+            while dr0 >= dr1 repeat
+                delta := dr0 - dr1
+                c1 := Qmul(c0, r0(dr0), p)
+                res(delta) := c1
+                c1 := p - c1
+                r0(dr0) := 0
+                dr0 := dr0 - 1
+                if dr0 < 0 then break
+                vector__combination(r0, 1, r1, c1, dr0, delta, p)
+                while r0(dr0) = 0 repeat
+                    dr0 := dr0 - 1
+                    if dr0 < 0 then break
+
+        gcd(x : PA, y : PA, p : Integer) : PA ==
+            dr0 := degree(y)
+            if dr0 < 0 then
+                tmpp := x
+                x := y
+                y := tmpp
+                dr1 := dr0
+                dr0 := degree(y)
+            else
+                dr1 := degree(x)
+            dr0 < 0 =>
+                dr1 < 0 =>
+                    return new(1, 0)$PA
+                r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
+                copy__first(r1, x, dr1 + 1)
+                c := r1(dr1)
+                c := modInverse(c, p)
+                mul__by__scalar(r1, dr1, c, p)
+                return r1
+            r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
+            copy__first(r0, y, dr0 + 1)
+            r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
+            copy__first(r1, x, dr1 + 1)
+            while dr1 > 0 repeat
+                while dr0 >= dr1 repeat
+                    delta := dr0 - dr1
+                    c1 := p - r0(dr0)
+                    c0 := r1(dr1)
+                    r0(dr0) := 0
+                    dr0 := dr0 - 1
+                    vector__combination(r0, c0, r1, c1, dr0, delta, p)
+                    while r0(dr0) = 0 repeat
+                        dr0 := dr0 - 1
+                        if dr0 < 0 then break
+                tmpp := r0
+                tmp := dr0
+                r0 := r1
+                dr0 := dr1
+                r1 := tmpp
+                dr1 := tmp
+            dr1 >= 0 =>
+                r1(0) := 1
+                return r1
+            c := r0(dr0)
+            c := modInverse(c, p)
+            mul__by__scalar(r0, dr0, c, p)
+            r0
+
+        gcd(a : PrimitiveArray PA, lo : Integer, hi: Integer, p: Integer) _
+              : PA ==
+            res := a(lo)
+            for i in (lo + 1)..hi repeat
+                res := gcd(a(i), res, p)
+            res
+
+        lcm2(v1 : PA, v2 : PA, p : Integer) : PA ==
+            pp := gcd(v1, v2, p)
+            dv2 := degree(v2)
+            dpp := degree(pp)
+            dv2 = dpp =>
+                v1
+            dpp = 0 => mul(v1, v2, p)
+            tmp1 := new((dv2 + 1) pretend NonNegativeInteger, 0)$PA
+            tmp2 := new((dv2 - dpp + 1) pretend NonNegativeInteger, 0)$PA
+            copy__first(tmp1, v2, dv2 + 1)
+            divide!(tmp1, pp, tmp2, p)
+            mul(v1, tmp2, p)
+
+        lcm(a : PrimitiveArray PA, lo : Integer, hi: Integer, p: Integer) _
+              : PA ==
+            res := a(lo)
+            for i in (lo + 1)..hi repeat
+                res := lcm2(a(i), res, p)
+            res
+
+        inner__mul : (PA, PA, PA,  SingleInteger, SingleInteger, _
+                      SingleInteger, Integer) -> Void
+
+        mul(x : PA, y : PA, p : Integer) : PA ==
+            xdeg := degree(x)::SingleInteger
+            ydeg := degree(y)::SingleInteger
+            if xdeg > ydeg then
+                tmpp := x
+                tmp := xdeg
+                x := y
+                xdeg := ydeg
+                y := tmpp
+                ydeg := tmp
+            xcoeffs := x
+            ycoeffs := y
+            xdeg = 0 and xcoeffs(0) = 0 => x
+            xdeg = 0 and xcoeffs(0) = 1 => copy(y)
+            zdeg : SingleInteger := xdeg + ydeg
+            zdeg0 := (zdeg::Integer) pretend NonNegativeInteger
+            zcoeffs := new(zdeg0 + 1, 0)$PA
+            inner__mul(xcoeffs, ycoeffs, zcoeffs, xdeg, ydeg, zdeg, p)
+            zcoeffs
+
+        inner__mul(x, y, z, xdeg, ydeg, zdeg, p) ==
+            if xdeg > ydeg then
+                tmpp := x
+                tmp := xdeg
+                x := y
+                xdeg := ydeg
+                y := tmpp
+                ydeg := tmp
+            xdeg :=
+                xdeg > zdeg => zdeg
+                xdeg
+            ydeg :=
+                ydeg > zdeg => zdeg
+                ydeg
+            ss : Integer
+            i : SingleInteger
+            j : SingleInteger
+            for i in 0..xdeg repeat
+                ss := z(i)
+                for j in 0..i repeat
+                    ss := Qmuladd(x(i - j), y(j), ss)
+                z(i) := Qrem(ss, p)
+            for i in (xdeg+1)..ydeg repeat
+                ss := z(i)
+                for j in 0..xdeg repeat
+                    ss := Qmuladd(x(j), y(i-j), ss)
+                z(i) := Qrem(ss, p)
+            for i in (ydeg+1)..zdeg repeat
+                ss := z(i)
+                for j in (i-xdeg)..ydeg repeat
+                    ss := Qmuladd(x(i - j), y(j), ss)
+                z(i) := Qrem(ss, p)
+
+        truncated__mul__add(x, y, z, m, p) ==
+            xdeg := (#x - 1)::SingleInteger
+            ydeg := (#y - 1)::SingleInteger
+            inner__mul(x, y, z, xdeg, ydeg, m::SingleInteger, p)
+
+        truncated__multiplication(x, y, m, p) ==
+            xdeg := (#x - 1)::SingleInteger
+            ydeg := (#y - 1)::SingleInteger
+            z := new((m+1) pretend NonNegativeInteger, 0)$PA
+            inner__mul(x, y, z, xdeg, ydeg, m::SingleInteger, p)
+            z
+
+        pow(x : PA, n : PositiveInteger, d: NonNegativeInteger, _
+            p : Integer) : PA ==
+            one? n => x
+            odd?(n)$Integer => 
+                truncated__multiplication(x, 
+                    pow(truncated__multiplication(x, x, d, p), 
+                        shift(n,-1) pretend PositiveInteger, 
+                        d,
+                        p),
+                    d,
+                    p)
+            pow(truncated__multiplication(x, x, d, p),
+                shift(n,-1) pretend PositiveInteger,
+                d,
+                p)
+
+        differentiate(x: PA, p: Integer): PA ==
+            d := #x - 1
+            if zero? d then empty()$PA
+            else
+                r := new(d::NonNegativeInteger, 0)$PA
+                for i in 0..d-1 repeat
+                    i1 := i+1
+                    r.i := Qmul(i1, x.i1, p)
+                r
+
+        differentiate(x: PA, n: NonNegativeInteger, p: Integer): PA ==
+            zero? n => x
+            d := #x - 1
+            if d < n then empty()$PA
+            else
+                r := new((d-n+1) pretend NonNegativeInteger, 0)$PA
+                for i in n..d repeat
+                    j := i-n
+                    f := j+1
+                    for k in j+2..i repeat f := Qmul(f, k, p)
+                    r.(j pretend NonNegativeInteger) := Qmul(f, x.i, p)
+                r
+
+@
+\end{document}
