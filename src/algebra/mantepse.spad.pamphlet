@@ -379,7 +379,7 @@ GuessOptionFunctions0(): Exports == Implementation where
 ++ Description: This package implements guessing of sequences. Packages for the
 ++ most common cases are provided as \spadtype{GuessInteger},
 ++ \spadtype{GuessPolynomial}, etc.
-Guess(F, S, EXPRR, R, retract, coerce): Exports == Implementation where
+Guess(F, S, EXPRR, retract, coerce): Exports == Implementation where
     F: Field                                 -- zB.: FRAC POLY PF 5
 -- in F we interpolate und check
 
@@ -389,12 +389,10 @@ Guess(F, S, EXPRR, R, retract, coerce): Exports == Implementation where
 -- F is a quotientfield, I can get rid of the denominator.  In this case F is
 -- roughly QFCAT S
 
-    R: Join(Comparable, IntegralDomain)      -- zB.: FRAC POLY INT
-
 -- results are given as elements of EXPRR
 --    EXPRR: Join(ExpressionSpace, IntegralDomain,
     EXPRR: Join(FunctionSpace Integer, IntegralDomain,
-                RetractableTo R, RetractableTo Symbol,
+                RetractableTo Symbol,
                 RetractableTo Integer, CombinatorialOpsCategory,
                 PartialDifferentialRing Symbol) with
               _* : (%,%) -> %
@@ -404,7 +402,7 @@ Guess(F, S, EXPRR, R, retract, coerce): Exports == Implementation where
               denominator : % -> %
               ground? : % -> Boolean
 
-                                             -- zB.: EXPR INT
+                                             -- eg.: EXPR INT
 -- EXPR FRAC POLY INT is forbidden. Thus i cannot just use EXPR R
 
 -- EXPRR exists, in case at some point there is support for EXPR PF 5.
@@ -412,9 +410,8 @@ Guess(F, S, EXPRR, R, retract, coerce): Exports == Implementation where
 
 -- the following I really would like to get rid of
 
-    retract: R -> F                          -- zB.: i+->i
-    coerce: F -> EXPRR                       -- zB.: i+->i
--- attention: EXPRR ~= EXPR R
+    retract: EXPRR -> F                      -- eg.: i+->i
+    coerce: F -> EXPRR                       -- eg.: i+->i
 
     LGOPT ==> List GuessOption
     GOPT0 ==> GuessOptionFunctions0
@@ -752,7 +749,7 @@ checkResult(res: EXPRR, n: Symbol, l: Integer, list: List F,
         den := eval(denominator res, n::EXPRR, (i-1)::EXPRR)
         if den = 0 then return i::NNI
         num := eval(numerator res, n::EXPRR, (i-1)::EXPRR)
-        if list.i ~= retract(retract(num/den)@R)
+        if list.i ~= retract(num/den)@F
         then return i::NNI
     0$NNI
 
@@ -830,11 +827,6 @@ SUPFPOLYS2FSUPPOLYS(p: SUP FPOLYS): Fraction SUP POLYS  ==
   pnum/pden
 
 
-POLYF2EXPRR(p: POLYF): EXPRR ==
-  map((v1: V): EXPRR +-> convert(v1)@Symbol::EXPRR, (f1: F): EXPRR +-> coerce(f1)@EXPRR, p)
-     $PolynomialCategoryLifting(IndexedExponents V, V,
-                                F, POLYF, EXPRR)
-
 -- this needs documentation. In particular, why is V appearing here?
 GF ==> GeneralizedMultivariateFactorize(SingletonAsOrderedSet,
                                         IndexedExponents V, F, F,
@@ -855,7 +847,7 @@ defaultD(expr: EXPRR): EXPRR == expr
 
 -- applies n+->q^n or whatever DN is to i
 DN2DL: (DIFFSPECN, Integer) -> F
-DN2DL(DN, i) == retract(retract(DN(i::EXPRR))@R)
+DN2DL(DN, i) == retract(DN(i::EXPRR))@F
 
 <<implementation: Guess - guessExpRat - evalResultant>>
 <<implementation: Guess - guessExpRat - substitute>>
@@ -1230,8 +1222,7 @@ guessExpRatAux0(list: List F, basis: DIFFSPECN, options: LGOPT): GUESSRESULT ==
     for x in shortlist repeat
         i := i+1
         if x ~= 0 then
-            newlist := cons(x/retract(retract(eval(zeros, xx::EXPRR,
-                                                          i::EXPRR))@R),
+            newlist := cons(x/retract(eval(zeros, xx::EXPRR, i::EXPRR))@F,
                             newlist)
             xValues := cons(i, xValues)
 
@@ -1530,8 +1521,7 @@ guessBinRatAux0(list: List F,
     for x in shortlist repeat
         i := i+1
         if x ~= 0 then
-            newlist := cons(x/retract(retract(eval(zeros, xx::EXPRR,
-                                                          i::EXPRR))@R),
+            newlist := cons(x/retract(eval(zeros, xx::EXPRR, i::EXPRR))@F,
                             newlist)
             xValues := cons(i, xValues)
 
@@ -2178,15 +2168,6 @@ getListSUPF(s: Stream UFPSF, o: NNI, deg: NNI): List SUP F ==
     map((z1: UFPSF): SUP F +-> UFPSF2SUPF(z1, deg), entries complete first(s, o))
        $ListFunctions2(UFPSF, SUP F)
 
-S2EXPRR(s: S): EXPRR ==
-    if F is S then
-        coerce(s pretend F)@EXPRR
-    else if F is Fraction S then
-        coerce(s::Fraction(S))@EXPRR
-    else error "Guess: type parameter F should be either equal to S or equal _
-                to Fraction S"
-
-
 <<implementation: Guess - guessInterpolate>>
 <<implementation: Guess - guessInterpolate2>>
 <<implementation: Guess - testInterpolant>>
@@ -2445,7 +2426,7 @@ the differentiation setting:
 \begin{ToDo}
   I am not sure whether it is better to get rid of denominators in [[list]]
   here or, as I currently do it, only in [[generalInterpolation$FFFG]]. %$
-  If we clear them at here, we cannot take advantage of factors that may appear
+  If we clear them here, we cannot take advantage of factors that may appear
   only after differentiating or powering.
 
   Also, dealing with them in [[generalInterpolation$FFFG]]%$
@@ -2460,8 +2441,8 @@ the differentiation setting:
     exprS   := (D.exprStream)(op(dummy::EXPRR)::EXPRR, dummy)
 @
 
-We call the number of terms of the linear combination its \emph{order}.  We
-consider linear combinations of at least two terms, since otherwise the
+We call the number of terms [[o]] of the linear combination its \emph{order}.
+We consider linear combinations of at least two terms, since otherwise the
 function would have to vanish identically\dots
 
 When proceeding in the stream [[guessS]], it may happen that we loose valid
@@ -2476,7 +2457,10 @@ f^{\prime\prime}, \dots$.  Suppose [[listDegree]] equals $2$, i.e. we have
 Thus, each time we differentiate the series, we loose one term for guessing.
 Therefore, we cannot use the coefficient of $x^2$ of $f^{\prime\prime}$ for
 generating a linear combination.  [[guessDegree]] contains the degree up to
-which all the generated series are correct, taking into account [[safety]].
+which the given coefficients in the list can be used for guessing, after
+subtracting [[safety]].  This coincides with the degree up to which any linear
+combination of the series in [[first(guessS, o)]] is certainly correct,
+assuming [[safety]] equals zero.
 
 <<implementation: Guess - guessHPaux>>=
     iterate?: Boolean := false -- this is necessary because the compiler
@@ -2498,8 +2482,8 @@ We now have to distinguish between the case where we try all combination of
 degrees and the case where we try only an (nearly) evenly distributed vector of
 degrees.
 
-In the first case, [[guessInterpolate2]] is going to look at all degree vectors
-with [[o]] elements with total degree [[guessDegree+1]].  We give up as soon as
+In the first case, [[guessInterpolate2]] is going to look at all [[eta]] with
+[[o]] elements with sum of entries [[guessDegree+1]].  We give up as soon as
 the order [[o]] is greater than the number of available terms plus one.  In the
 extreme case, i.e., when [[o=guessDegree+2]], we allow for example constant
 coefficients for all terms of the linear combination.  It seems that it is a
@@ -2551,21 +2535,11 @@ partitions, unless we cannot increase the order anymore.
   partitions $\lambda_1 \subseteq \lambda_2 \subseteq \dots$ occurring in the
   stream, exactly one is actually tried.
 
-  In the case of an infinite stream, we assume that [[maxParams]] is weakly
-  decreasing.  But how can we determine whether that the current element is not
-  the last one with respect to inclusion?  Possibly, we should assume that the
-  lists of partitions are actually closed under inclusion.  However, this still
-  allows the case that [[maxParams]] is too large for one partition but too
-  small for the next.  Hm, it seems that this cannot happen, at least not for
-  [[maxPower==1]].
-
-  In the case of finite streams, it seems best to have an oracle that tells us
-  whether we want to try it or not, rather than sort the partitions according
-  to [[maxParams]].
-
-  One possibility is to add every partition we would like to skip to a list,
-  then throw away those which are not maximal with respect to inclusion, or
-  which are smaller than one we wouldn't skip anyway.
+  We currently simply assume that [[guessDegree]] is weakly decreasing and that
+  the lists of partitions are actually closed under inclusion.  However, this
+  still allows the case that [[maxParams]] is too large for one partition but
+  too small for the next.  Hm, it seems that this cannot happen, at least not
+  for [[maxPower==1]].
 \end{ToDo}
 
 <<implementation: Guess - guessHPaux>>=
@@ -2935,8 +2909,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol)
 ++ Description:
 ++ This package exports guessing of sequences of rational numbers
 GuessInteger() == Guess(Fraction Integer, Integer, Expression Integer,
-                     Fraction Integer,
-                     id$MappingPackage1(Fraction Integer),
+                     retract$Expression(Integer),
                      coerce$Expression(Integer))
 
 @
@@ -2945,7 +2918,8 @@ GuessInteger() == Guess(Fraction Integer, Integer, Expression Integer,
 <<package GUESSF1 GuessFiniteFunctions>>=
 )abbrev package GUESSF1 GuessFiniteFunctions
 ++ Description:
-++ This package exports guessing of sequences of numbers in a finite field
+++ This package exports coercion and retraction from EXPR INT to
+++ finite fields
 GuessFiniteFunctions(F:Join(FiniteFieldCategory, ConvertibleTo Integer)):
   Exports == Implementation where
 
@@ -2954,10 +2928,12 @@ GuessFiniteFunctions(F:Join(FiniteFieldCategory, ConvertibleTo Integer)):
     Exports == with
 
       F2EXPRR: F -> EXPRR
+      EXPRR2F: EXPRR -> F
 
     Implementation == add
 
       F2EXPRR(p: F): EXPRR == convert(p)@Integer::EXPRR
+      EXPRR2F(p: EXPRR): F == retract(p)@Fraction(Integer)::F
 
 @
 
@@ -2967,22 +2943,80 @@ GuessFiniteFunctions(F:Join(FiniteFieldCategory, ConvertibleTo Integer)):
 ++ Description:
 ++ This package exports guessing of sequences of numbers in a finite field
 GuessFinite(F:Join(FiniteFieldCategory, ConvertibleTo Integer)) ==
-  Guess(F, F, Expression Integer, Integer, coerce$F,
+  Guess(F, F, Expression Integer, EXPRR2F$GuessFiniteFunctions(F),
         F2EXPRR$GuessFiniteFunctions(F))
 
 @
+
+\section{package GUESSP1 GuessPolynomialFunctions}
+<<package GUESSP1 GuessPolynomialFunctions>>=
+)abbrev package GUESSP1 GuessPolynomialFunctions
+++ Description:
+++ This package exports coercion and retraction from EXPR INT to
+++ polynomials
+GuessPolynomialFunctions(R: Ring):
+  Exports == Implementation where
+
+    EXPRR ==> Expression Integer
+
+    Exports == with
+
+      F2EXPRR: Fraction Polynomial R -> EXPRR
+      EXPRR2F: EXPRR -> Fraction Polynomial R
+
+    Implementation == add
+
+-- strange compiler error: when moving m1 or m3 into the conditional
+-- the compiler doesn't find coerce: Symbol -> EXPRR anymore
+
+      m1(var: Symbol): EXPRR == coerce(var)$EXPRR@EXPRR
+
+      m3(var: Kernel EXPRR): EXPRR == var::EXPRR
+
+      if EXPRR has RetractableTo R then
+          PL1 ==> PolynomialCategoryLifting(IndexedExponents(Symbol), Symbol,
+                                            R, Polynomial(R), EXPRR)
+
+          m2(coeff: R): EXPRR == coeff::EXPRR
+
+          S2EXPRR(p: Polynomial R): EXPRR ==
+              map((var: Symbol): EXPRR +-> m1 var, 
+                  (coeff: R): EXPRR +-> m2 coeff, p)$PL1
+
+          F2EXPRR(p: Fraction Polynomial R): EXPRR ==
+              S2EXPRR(numer p) / S2EXPRR(denom p)
+
+          retractVar(v: Kernel EXPRR): Polynomial R ==
+              v2 := m3 v
+              (r := retractIfCan(v2)@Union(R,"failed")) case "failed" =>
+                  retract(v2)@Symbol::Polynomial(R)
+              r::R::Polynomial(R)
+
+          SMP ==> SparseMultivariatePolynomial(Integer, Kernel EXPRR)
+          PL2 ==> PolynomialCategoryLifting(IndexedExponents Kernel EXPRR, 
+                                            Kernel EXPRR, Integer, SMP,
+                                            Polynomial R)
+
+          SMP2S(p: SMP): Polynomial R == 
+              map((var: Kernel EXPRR): Polynomial(R) +-> retractVar(var), 
+                  (coeff: Integer): Polynomial(R) +-> coeff::R::Polynomial(R), p)$PL2
+
+          EXPRR2F(p: EXPRR): Fraction Polynomial R == 
+              SMP2S(numer p)/SMP2S(denom p)
+
+      else error "retraction and coercion to EXPR INT is not implemented for this Ring"
+@
+%$
 
 \section{package GUESSP GuessPolynomial}
 <<package GUESSP GuessPolynomial>>=
 )abbrev package GUESSP GuessPolynomial
 ++ Description:
 ++ This package exports guessing of sequences of rational functions
-GuessPolynomial() == Guess(Fraction Polynomial Integer, Polynomial Integer,
-                           Expression Integer,
-                           Fraction Polynomial Integer,
-                           id$MappingPackage1(Fraction Polynomial Integer),
-                           coerce$Expression(Integer))
-
+GuessPolynomial(R: Ring) == 
+    Guess(Fraction Polynomial R, Polynomial R, Expression Integer,
+          EXPRR2F$GuessPolynomialFunctions(R),
+          F2EXPRR$GuessPolynomialFunctions(R))
 @
 
 \section{package GUESSAN GuessAlgebraicNumber}
@@ -2991,16 +3025,14 @@ GuessPolynomial() == Guess(Fraction Polynomial Integer, Polynomial Integer,
 ++ Description:
 ++ This package exports guessing of sequences of rational functions
 GuessAlgebraicNumber() == Guess(AlgebraicNumber, AlgebraicNumber,
-                           Expression Integer,
-                           AlgebraicNumber,
-                           id$MappingPackage1(AlgebraicNumber),
-                           coerce$Expression(Integer))
+                                Expression Integer,
+                                retract$Expression(Integer),
+                                coerce$Expression(Integer))
 
 @
 
-
-\section{package GUESSUP GuessUnivariatePolynomial}
-<<package GUESSUP GuessUnivariatePolynomial>>=
+\section{domain MYUP MyUnivariatePolynomial}
+<<domain MYUP MyUnivariatePolynomial>>=
 )abbrev domain MYUP MyUnivariatePolynomial
 MyUnivariatePolynomial(x:Symbol, R:Ring):
   UnivariatePolynomialCategory(R) with
@@ -3030,7 +3062,10 @@ MyUnivariatePolynomial(x:Symbol, R:Ring):
            $UnivariatePolynomialCategoryFunctions2(Polynomial R,
                                                    SparseUnivariatePolynomial Polynomial R, R, %)
 
+@
 
+\section{domain MYEXPR MyExpression}
+<<domain MYEXPR MyExpression>>=
 )abbrev domain MYEXPR MyExpression
 MyExpression(q: Symbol, R): Exports == Implementation where
 
@@ -3080,9 +3115,10 @@ MyExpression(q: Symbol, R): Exports == Implementation where
        quot: Fraction Polynomial R := u/v
 
        quot::(Expression R)
+@
 
-
-
+\section{package GUESSUP GuessUnivariatePolynomial}
+<<package GUESSUP GuessUnivariatePolynomial>>=
 )abbrev package GUESSUP GuessUnivariatePolynomial
 ++ Description:
 ++ This package exports guessing of sequences of univariate rational functions
@@ -3308,8 +3344,7 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
 
     Implementation == Guess(Fraction UP, UP,
                             MyExpression(q, Integer),
-                            Fraction UP,
-                            id$MappingPackage1(Fraction UP),
+                            retract$MyExpression(q, Integer),
                             coerce$MyExpression(q, Integer))
 @
 
@@ -3353,10 +3388,13 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
 <<package GOPT0 GuessOptionFunctions0>>
 <<package GUESS Guess>>
 <<package GUESSINT GuessInteger>>
-<<package GUESSAN GuessAlgebraicNumber>>
 <<package GUESSF1 GuessFiniteFunctions>>
 <<package GUESSF GuessFinite>>
+<<package GUESSP1 GuessPolynomialFunctions>>
 <<package GUESSP GuessPolynomial>>
+<<package GUESSAN GuessAlgebraicNumber>>
+<<domain MYUP MyUnivariatePolynomial>>
+<<domain MYEXPR MyExpression>>
 <<package GUESSUP GuessUnivariatePolynomial>>
 @
 \end{document}
