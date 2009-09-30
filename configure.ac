@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-09-17], 
+AC_INIT([FriCAS], [2009-09-30], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -457,27 +457,31 @@ case $host in
     *) ;;
 esac
 
-AC_EGREP_HEADER([has_af_local],
-                [#if HAVE_SYS_SOCKET_H
-                 #  include <sys/socket.h>
-                 #else
-                 #  include <winsock2.h>
-                 #endif
-                 #ifdef AF_LOCAL
-                   has_af_local
-                 #endif],
+AC_EGREP_CPP([has_af_local],
+                [
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#else
+#  include <winsock2.h>
+#endif
+#ifdef AF_LOCAL
+   has_af_local
+#endif
+                 ],
                  [AC_DEFINE([HAVE_AF_LOCAL], [1], [Host has AF_LOCAL])])
 
 
-AC_EGREP_HEADER([has_af_unix],
-                [#if HAVE_SYS_SOCKET_H
-                 #  include <sys/socket.h>
-                 #else
-                 #  include <winsock2.h>
-                 #endif
-                 #ifdef AF_UNIX
-                   has_af_unix
-                 #endif],
+AC_EGREP_CPP([has_af_unix],
+                [
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#else
+#  include <winsock2.h>
+#endif
+#ifdef AF_UNIX
+   has_af_unix
+#endif
+                 ],
                  [AC_DEFINE([HAVE_AF_UNIX], [1], [Host has AF_UNIX])])
 
 
@@ -489,11 +493,12 @@ AC_CHECK_HEADERS([util.h],
 AC_CHECK_DECL([openpty],
                  [AC_DEFINE([HAVE_OPENPTY_DECL], [1], 
                               [openpty is declared])], [],
-                 [#if defined(HAVE_UTIL_H)
-                  # include <util.h>
-                  #elif defined(HAVE_PTY_H)
-                  # include <pty.h>
-                  #endif
+                 [
+#if defined(HAVE_UTIL_H)
+# include <util.h>
+#elif defined(HAVE_PTY_H)
+# include <pty.h>
+#endif
                  ]) # HAVE_OPENPTY_DECL
 
 AC_CHECK_LIB([c], [openpty],
