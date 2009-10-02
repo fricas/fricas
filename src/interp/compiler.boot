@@ -1253,8 +1253,18 @@ modeEqual(x,y) ==
   (and/[modeEqual(u,v) for u in x for v in y])
 
 modeEqualSubst(m1,m,e) ==
+  atom m1 and EQ(m1, m) => true
+  if atom m1 then 
+      m1 := 
+          get(m1,"value",e) is [m0,:.] => m0
+          m1
+  if atom m then
+      m := 
+          get(m,"value",e) is [m2,:.] => m2
+          m
+  atom m1 or atom m => m1 = m
   modeEqual(m1, m) => true
-  atom m1 => get(m1,"value",e) is [m',:.] and modeEqual(m',m)
+  -- atom m1 => get(m1,"value",e) is [m',:.] and modeEqual(m',m)
   m1 is [op,:l1] and m is [=op,:l2]  and # l1 = # l2 =>
 -- Above length test inserted JHD 4:47 on 15/8/86
 -- Otherwise Records can get fouled up - consider expressIdealElt
