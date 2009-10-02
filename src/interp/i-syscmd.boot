@@ -1313,7 +1313,10 @@ makeHistFileName(fname) ==
 oldHistFileName() ==
   makeHistFileName($oldHistoryFileName)
 
+DEFPARAMETER($curHistFileName, nil)
+
 histFileName() ==
+  $curHistFileName => makeHistFileName($curHistFileName)
   makeHistFileName($interpreterFrameName)
 
 
@@ -1607,15 +1610,24 @@ restoreHistory(fn) ==
   -- if clear is changed to be undoable, this should be a reset-clear
   $options: local := nil
   clearSpad2Cmd '(all)
- 
-  curfile := histFileName()
-  histFileErase curfile
-  _$FCOPY(restfile,curfile)
- 
-  l:= LENGTH RKEYIDS curfile
-  $HiFiAccess:= 'T
   oldInternal := $useInternalHistoryTable
-  $useInternalHistoryTable := NIL
+  restoreHistory2(oldInternal, restfile, fn')
+  sayKeyedMsg("S2IH0025",[namestring(restfile)])
+  clearCmdSortedCaches()
+  nil
+
+restoreHistory2(oldInternal, restfile, fn) ==
+  $curHistFileName : local := fn
+  $useInternalHistoryTable : local := nil
+  if not(oldInternal) then 
+     curfile := histFileName()
+     histFileErase curfile
+     _$FCOPY(restfile,curfile)
+     $curHistFileName := nil
+     restfile := curfile
+ 
+  l:= LENGTH RKEYIDS restfile
+  $HiFiAccess:= 'T
   if oldInternal then $internalHistoryTable := NIL
   for i in 1..l repeat
     vec:= UNWIND_-PROTECT(readHiFi(i),disableHist())
@@ -1635,9 +1647,6 @@ restoreHistory(fn) ==
       rempropI(a,'mapBody)
   $IOindex:= l+1
   $useInternalHistoryTable := oldInternal
-  sayKeyedMsg("S2IH0025",[namestring(restfile)]) 
-  clearCmdSortedCaches()
-  nil
 
 
 -- the following used to be the show command when that was used to
@@ -1729,7 +1738,7 @@ readHiFi(n) ==
     ATOM pair => keyedSystemError("S2IH0034",NIL)
     vec := QCDR pair
   else
-    HiFi:= rMkOstream(histFileName())
+    HiFi:= rMkIstream(histFileName())
     vec:= SPADRREAD(object2Identifier n,HiFi)
     RSHUT HiFi
   vec
