@@ -8,12 +8,21 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
     (setf SB-IMPL::*DEFAULT-EXTERNAL-FORMAT* :LATIN-1))
 
+#+:cmu
+(eval-when (:execute :compile-toplevel :load-toplevel)
+    (setf STREAM::*DEFAULT-EXTERNAL-FORMAT* :ISO8859-1))
+
 (in-package "FRICAS-LISP")
 ;;; Aldor 1.1.0 and before produces IN-PACKAGE statements with :use options.
 ;;; These are not allowed in ANSI Common Lisp, so we have to provide our own
 ;;; IN-PACKAGE.  The :use options can actually be ignored, so we do not use
 ;;; (defpackage package options)
 ;;; (in-package package)
+#+:cmu
+(shadow "UNION" "FRICAS-LISP")
+#+:cmu
+(shadow "NUNION" "FRICAS-LISP")
+
 #-gcl
 (shadow "IN-PACKAGE" "FRICAS-LISP")
 #-gcl

@@ -53,7 +53,7 @@ at load time.
   #+:GCL "o"
   #+lucid "bbin"
   #+symbolics "bin"
-  #+cmulisp "fasl"
+  #+:cmu (c:backend-fasl-file-type c:*target-backend*)
   #+:sbcl "fasl"
   #+:clisp "fas"
   #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
@@ -663,7 +663,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
                         (FRICAS-LISP::clisp-init-foreign-calls)))
                 (setf $openServerIfTrue nil))))
-    #+(or :GCL (and :clisp :ffi) :sbcl :openmcl :ecl)
+    #+(or :GCL (and :clisp :ffi) :sbcl :cmu :openmcl :ecl)
     (if $openServerIfTrue
         (let ((os (|openServer| $SpadServerName)))
              (format t "openServer result ~S~%" os)

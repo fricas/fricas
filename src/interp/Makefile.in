@@ -220,13 +220,14 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
 	    echo '(maybe-compile "$(srcdir)/'$$A'.lisp"' \
 	         '"'$$A'.$(LISPOBJEXT)")' >> makedep.lisp ; \
 	done
-	echo '#-:GCL(maybe-compile "$(srcdir)/sys-pkg.lisp"' \
+	echo '#-(OR :GCL :CMU)(maybe-compile "$(srcdir)/sys-pkg.lisp"' \
 	             '"sys-pkg.$(LISPOBJEXT)")' >> makedep.lisp
+	echo '(quit)' >> makedep.lisp
 	echo '(load "makedep.lisp")' | ${LOADSYS}
 	echo '(in-package "FRICAS-LISP")' > makedep2.lisp
 	echo '(make-program "$(BASE)$@" (quote (' >> makedep2.lisp
-	echo '#+:GCL"$(srcdir)/sys-pkg.lisp"' \
-	     '#-:GCL"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
+	echo '#+(OR :GCL :CMU)"$(srcdir)/sys-pkg.lisp"' \
+	     '#-(OR :GCL :CMU)"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
 	echo '#+:GCL"$(srcdir)/interp-proclaims.lisp"' >> makedep2.lisp
 	for A in util ${DEP} \
                  `cat makedep2.lst` ; do \
@@ -242,6 +243,12 @@ all-axiomsys: ${AXIOMSYS}
 ${AXIOMSYS}:
 	echo '(defparameter FRICAS-LISP::*building-axiomsys* t)' \
 	   '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
+	   '#+:cmu (setf (ext:search-list "libspad:")' \
+	   '(list "${AXIOM}/lib/" "${libdir}/fricas/target/${target}/lib/"))' \
+	   '#+:cmu (setq ext:*top-level-auto-declare* t)' \
+	   '#+:cmu (setq *compile-verbose* nil)' \
+	   '#+:cmu (setq *compile-print* nil)' \
+	   '#+:cmu (declaim (optimize (ext:inhibit-warnings 3)))' \
 	   '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
 	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' \
              | DAASE="$(BASE)$(axiom_targetdir)" ${LOADSYS}

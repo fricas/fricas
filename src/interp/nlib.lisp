@@ -377,6 +377,11 @@ do the compile, and then rename the result back to [[code.o]].
    #+:win32 (obey (concat "rmdir /q /s " "\"" dirname "\""))
   )
 
+#+:cmu
+(defun delete-directory (dirname)
+   (ext::run-program "rm" (list "-r" dirname))
+  )
+
 #+:openmcl
 (defun delete-directory (dirname)
    (ccl::run-program "rm" (list "-r" dirname)))
@@ -424,6 +429,12 @@ do the compile, and then rename the result back to [[code.o]].
    (sb-ext::run-program "/bin/sh" (list "-c" (concat "cp " name1 "/* " name2)))
  )
 
+#+:cmu
+(defun copy-lib-directory (name1 name2)
+   (makedir name2)
+   (ext::run-program "sh" (list "-c" (concat "cp " name1 "/* " name2)))
+ )
+
 #+:openmcl
 (defun copy-lib-directory (name1 name2)
    (makedir name2)
@@ -441,6 +452,10 @@ do the compile, and then rename the result back to [[code.o]].
 #+:sbcl
 (defun copy-file (namestring1 namestring2)
   (sb-ext::run-program "/bin/cp" (list namestring1 namestring2)))
+
+#+:cmu
+(defun copy-file (namestring1 namestring2)
+  (ext::run-program "cp" (list namestring1 namestring2)))
 
 #+:openmcl
 (defun copy-file (namestring1 namestring2)

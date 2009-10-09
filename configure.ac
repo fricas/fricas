@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-09-30], 
+AC_INIT([FriCAS], [2009-10-09], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -233,14 +233,14 @@ esac
 
 AC_ARG_WITH([lisp-flavor],
             [  --with-lisp-flavor=F    your Lisp is brand F
-                          where F if one F gcl clisp sbcl ecl openmcl
+                          where F if one F gcl clisp sbcl cmucl ecl openmcl
                           should be autodetected],
             [case $withval in
-            gcl|clisp|sbcl|ecl|openmcl)
+            gcl|clisp|sbcl|cmucl|ecl|openmcl)
                    fricas_lisp_flavor=$withval
                    ;;
             *)
-              AC_MSG_ERROR([--with-lisp-flavor requires one of gcl clisp sbcl ecl openmcl]);;
+              AC_MSG_ERROR([--with-lisp-flavor requires one of gcl clisp sbcl cmucl ecl openmcl]);;
             esac])
 if test x"$axiom_include_gcl" != xyes ; then
   AC_MSG_CHECKING([Lisp implementation])
@@ -325,7 +325,7 @@ AC_SUBST(fricas_lisp_flavor)
 
 ## Check if we need shared libspad library.
 case $fricas_lisp_flavor in
-    sbcl|clisp|openmcl)
+    sbcl|cmucl|clisp|openmcl)
        LIBSPAD_SO_TARGET="libspad_so"
         ;;
     *)
@@ -369,6 +369,10 @@ case $fricas_lisp_flavor in
     sbcl) 
        fricas_quiet_flags='--noinform --noprint --no-userinit'
        axiom_eval_flags='--eval'
+       ;;
+    cmucl) 
+       fricas_quiet_flags='-batch -noinit'
+       axiom_eval_flags='-eval'
        ;;
     clisp) 
        fricas_quiet_flags='--quiet -norc'
