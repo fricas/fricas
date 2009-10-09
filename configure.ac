@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-10-09], 
+AC_INIT([FriCAS], [2009-10-10], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -748,7 +748,7 @@ AC_ARG_ENABLE(aldor,
 ###################################################################
 # The installation is currently not done by recursively calling
 # install in the src subdirectories, so we have to hardcode the
-# intallation of the aldor interface in src/Makefile.in and let a
+# intallation of the aldor interface in Makefile.in and let a
 # variable decide whether or not the interface stuff should be
 # installed.
 AC_SUBST(BUILD_ALDOR_INTERFACE)
@@ -759,9 +759,10 @@ else
   AC_MSG_NOTICE([Aldor interface will be built.])
   axiom_src_subdirs="$axiom_src_subdirs aldor"
   axiom_src_all="$axiom_src_all all-aldor"
-  AXIOM_MAKEFILE([src/aldor/Makefile])
-  AXIOM_MAKEFILE([src/aldor/Makefile2])
 fi
+AXIOM_MAKEFILE([src/aldor/Makefile])
+AXIOM_MAKEFILE([src/aldor/Makefile2])
+AXIOM_MAKEFILE([src/aldor/Makefile3])
 ###################################################################
 
 

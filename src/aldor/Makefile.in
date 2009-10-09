@@ -55,7 +55,7 @@ clean:
 spaddir=$(abs_top_builddir)/src/algebra
 domains.mk:
 	echo "domains := \\" > $@
-	grep '^)abbrev' $(spaddir)/*.spad | $(AWK) '{print $$3,"\\"}' >> $@
+	echo ')lisp (dolist (c (|allConstructors|)) (format t "~A \\~%" (|constructor?| c))) (quit)'|($(INTERPSYS))|grep '\\'|grep -v '.*- \\'|grep -v NIL|sed -e 's/.*-> //'|sort >> $@
 	echo >> $@
 
 include domains.mk
@@ -203,32 +203,9 @@ subsetc.as: stub.as
 	grep AxiomLib $< > $@
 	tail -4 $< >> $@
 
-# The file attrib.as is not taken from the Aldor repository since
-# that would mean to edit it manually in case any attribute setting
-# in Axiom changes. We rather generated it from Axiom itself.
-# The following translates
-# (commutative *) to
-# Attribute commutative(T: Type);
-# Actually it translates everything starting with a parenthesis
-# to a category with one argument.
-attrib.as: tmp/attrib.all
-	echo 'import from AxiomLib; inline from AxiomLib;' > $@
-	echo 'Attribute X ==> X: Category == with;' >> $@
-	sort $< | uniq |\
-	sed -e 's/(\([a-z]*\) .*/\1(T: Type)/;s/\(.*\)/Attribute \1;/' >> $@
-
-# attrib.all lists all attributes of constructors in Axiom.
-tmp/attrib.all: tmp/attrib.lsp tmp/.dir
-	$(INTERPSYS) < $< > tmp/attrib.as.log
-	test -f $@
-
-# Write all attributes to tmp/attrib.all
-tmp/attrib.lsp: tmp/.dir
-	echo ")lisp (with-open-file (str (pathname \"tmp/attrib.all\") :direction :output) (dolist (a (mapcar #'car (mapcan #'(lambda (x) (getdatabase x 'ATTRIBUTES)) (|allConstructors|)))) (format str \"~a~%\" a)))" > $@
-	echo ")lisp (quit)" >> $@
 
 aldor_lang       = lang
-aldor_basics     = minimach boolean0 attrib
+aldor_basics     = minimach boolean0
 aldor_extensions = axextend axlit
 # subsetc.as contains a definition for the SPAD builtin type
 # SubsetCategory.
@@ -280,7 +257,7 @@ libaxiom.lst: initlist.lst
 # The program 'cliques' computes cliques according to the dependencies from
 # the gendeps directory. It writes a collection of Makefile variable
 # assignments and Makefile targets to stdout.
-CLIQUEOPTS=-mno-abbrev -mno-mactext -laldor -fx
+CLIQUEOPTS=-mno-abbrev -mno-mactext -laldor -fx -c args=-lm
 cliques: cliques.as
 #	$(ALDOR) $(CLIQUEOPTS) $<
 	$(ALDOR) $(CLIQUEOPTS) -dTRACE $<
@@ -298,30 +275,13 @@ al/libaxiom.al: cliques.mk al/.dir
 
 ###################################################################
 # Runtime - things required to run aldor files
-# It is not clear whether actually all files in $(aldor_srcs) are needed.
-runtime_files := $(patsubst %,lib/%.$(FASLEXT), runtime $(aldor_srcs))
-$(runtime_files): lib/%.$(FASLEXT): lsp/%.lsp
-aldor_lsp_files := $(patsubst %,lsp/%.lsp, $(aldor_srcs))
-lsp/runtime.lsp: runtime.ao lsp/.dir
-	$(ALDOR) -flsp=$@ $<
+runtimefiles: al/libaxiom.al
+	$(MAKE) runtimelib
 
-runtime.ao: $(ALDORROOT)/lib/libfoam.al ao/.dir
-	ar x $< $@
-
-ao/%.ao: al/libaxiom.al ; # The .ao file will be built via Makefile2.
-
-$(aldor_lsp_files): lsp/%.lsp: ao/%.ao lsp/.dir
-	$(ALDOR) -flsp=$@ $<
-
-$(runtime_files): lib/%.$(FASLEXT): tmp/mko_%.lsp lsp/%.lsp lib/.dir
-	$(INTERPSYS) < $< > tmp/mko_$*.log
-	test -f $@
-
-tmp/mko_%.lsp:
-	echo ')lisp (compile-file "$(abs_builddir)/lsp/$*.lsp" :output-file "$(abs_builddir)/lib/$*.$(FASLEXT)")' > $@
-	echo ')lisp (quit)' >> $@
-
-runtimefiles: $(runtime_files)
+# The target 'runtimelib' is here as a direct entry point for cases
+# where al/libaxiom.al is already assumed to be up-to-date.
+runtimelib:
+	$(MAKE) -f Makefile3 aldor_srcs="$(aldor_srcs)"
 
 
 #
@@ -353,6 +313,8 @@ install-libalgebra:
 	$(INSTALL_DATA) al/libaxiom.al $(install_algebra_dir)
 	$(INSTALL_DATA) axiom.as $(install_algebra_dir)
 
+# runtime_files should be the same as in Makefile3.in
+runtime_files = $(patsubst %,lib/%.$(FASLEXT), runtime $(aldor_srcs))
 install_aldor_dir = $(install_target_dir)/aldor
 install-runtimefiles: installdir-runtimefiles
 	for f in $(runtime_files); do \
