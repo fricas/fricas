@@ -350,7 +350,7 @@
 (defun $TOTAL-ELAPSED-TIME ()
    (list (get-internal-run-time) (get-internal-real-time)))
 
-#-(OR :GCL :CMULISP)
+#-(OR :GCL :CMU)
 (defun $TOTAL-GC-TIME () (list 0 0))
 
 #+:GCL
@@ -360,7 +360,7 @@
   (list gcruntime gcruntime))
 
 ;;; note: this requires the 11/9/89 gc patch in code/lisp/daly/misc.lisp
-#+:cmulisp
+#+:cmu
 (defun $TOTAL-GC-TIME ()
  (declare (special ext::*gc-runtime* ext::*gc-walltime*))
  (list ext::*gc-runtime* ext::*gc-walltime*))
@@ -1068,7 +1068,7 @@
 #+(OR IBCL KCL)
 (defun gcmsg (x)
    (prog1 system:*gbc-message* (setq system:*gbc-message* x)))
-#+:cmulisp
+#+:cmu
 (defun gcmsg (x)
    (prog1 ext:*gc-verbose* (setq ext:*gc-verbose* x)))
 #+:allegro
@@ -1088,7 +1088,7 @@
 (defun reclaim () (excl::gc t))
 #+clisp
 (defun reclaim () (#+lisp=cl ext::gc #-lisp=cl lisp::gc))
-#+(or :cmulisp :cmu)
+#+:cmu
 (defun reclaim () (ext:gc))
 #+cormanlisp
 (defun reclaim () (cl::gc))
@@ -1112,15 +1112,15 @@
             ((compiled-function-p func)
              (system:compiled-function-name func))
             ('t func))))
-#+:cmulisp
+#+:cmu
 (defun BPINAME (func)
  (when (functionp func)
   (cond
     ((symbolp func) func)
     ((and (consp func) (eq (car func) 'lambda)) (second (third func)))
     ((compiled-function-p func)
-      (system::%primitive header-ref func system::%function-name-slot))
-    ('else func))))
+     (kernel::%function-name func))
+    ('t func))))
 
 #+(or :sbcl :clisp :openmcl :ecl)
 (defun BPINAME (func)
@@ -1133,10 +1133,11 @@
                  func)))
       ((symbolp func) func)))
 
-#+:cmulisp
+#+:cmu
 (defun OBEY (S)
-   (ext:run-program (make-absolute-filename "/lib/obey")
-                    (list "-c" S) :input t :output t))
+  (ext::process-exit-code
+   (ext::run-program "sh" (list "-c" S) :input t :output t)))
+
 #+:GCL
 (defun OBEY (S) (LISP::SYSTEM S))
 

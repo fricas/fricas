@@ -2,6 +2,13 @@
 ;;; differences between Lisp dialects.
 
 (in-package "FRICAS-LISP")
+#+:cmu
+(progn
+     (defvar *saved-terminal-io* *terminal-io*)
+     (setf *terminal-io* (make-two-way-stream *standard-input*
+                                             *standard-output*))
+ )
+
 #+:sbcl
 (progn
      (defvar *saved-terminal-io* *terminal-io*)
@@ -10,8 +17,15 @@
      (setf sb-ext:*evaluator-mode* :interpret)
  )
 
+#-:cmu
 (defun set-initial-parameters()
     (setf *read-default-float-format* 'double-float))
+
+#+:cmu
+(defun set-initial-parameters()
+  (setq debug:*debug-print-length* 1024)
+  (setq debug:*debug-print-level* 1024)
+  (setf *read-default-float-format* 'double-float))
 
 #-:sbcl
 (eval-when (:execute :load-toplevel)
@@ -61,6 +75,18 @@
   (if restart
    (sys::disksave core-image :restart-function restart)
    (sys::disksave core-image))
+#+:cmu
+  (let* ((restart-fun 
+               (if restart
+                   restart
+                   #'(lambda () nil)))
+         (top-fun #'(lambda ()
+                       (set-initial-parameters)
+                       (funcall restart-fun)
+                       (lisp::%top-level))))
+        (ext::save-lisp
+	 (unix::unix-maybe-prepend-current-directory core-image)
+	 :init-function top-fun :executable t :print-herald nil))
 #+:sbcl
   (let* ((restart-fun 
                (if restart
@@ -139,6 +165,11 @@
 #+:GCL
 (defun exit-with-status (s) (lisp::quit s))
 
+#+:cmu
+(defun exit-with-status (s)
+    (setf *terminal-io* *saved-terminal-io*)
+    (unix:unix-exit s))
+
 #+:sbcl
 (defun exit-with-status (s)
     (setf *terminal-io* *saved-terminal-io*)
@@ -191,6 +222,15 @@
 (defun chdir (dir)
  (system::chdir dir))
 
+#+:cmu
+(defun chdir (dir)
+ (let ((tdir (probe-file dir)))
+  (cond
+    (tdir
+       (unix::unix-chdir dir) 
+       (setq *default-pathname-defaults* tdir))
+     (t nil))))
+
 #+:sbcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
     (require :sb-posix))
@@ -219,6 +259,7 @@
 
 (defun |getEnv| (var-name)
   #+:GCL (system::getenv var-name)
+  #+:cmu (cdr (ext::assq (intern var-name "KEYWORD" )  ext:*environment-list*))
   #+:sbcl (sb-ext::posix-getenv var-name)
   #+:clisp (ext::getenv var-name)
   #+:openmcl (ccl::getenv var-name)
@@ -299,6 +340,30 @@
 
 (defmacro fricas-foreign-call (name c-name return-type &rest arguments)
      (clisp-foreign-call name c-name return-type arguments))
+
+)
+
+#+:cmu
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(setf *c-type-to-ffi* '(
+    (int c-call:int)
+    (c-string c-call:c-string)
+    (double c-call:double)
+))
+
+(defun c-args-to-cmucl (arguments)
+  (mapcar (lambda (x) (list (nth 0 x) (c-type-to-ffi (nth 1 x))))
+	  arguments))
+
+(defun cmucl-foreign-call (name c-name return-type arguments)
+    (let ((cmucl-args (c-args-to-cmucl arguments))
+          (cmucl-ret (c-type-to-ffi return-type)))
+       `(alien:def-alien-routine (,c-name ,name) ,cmucl-ret
+           ,@cmucl-args)))
+
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+       (cmucl-foreign-call name c-name return-type arguments))
 
 )
 
@@ -527,6 +592,38 @@
             :int purpose :address tmp-buf :int 10000)
         (ccl::%get-cstring tmp-buf)))
 
+#+:cmu
+(defun |sockGetStringFrom| (purpose)
+    (let ((buf nil))
+        (alien:with-alien ((tmp-buf (alien:array
+                                         c-call:char 10000)))
+            (alien:alien-funcall
+                (alien:extern-alien
+                    "sock_get_string_buf"
+                        (alien:function c-call:void
+                            c-call:int
+                            (alien:* c-call:char)
+                            c-call:int))
+                purpose
+                (alien:addr (alien:deref tmp-buf 0))
+                10000)
+            (prog ((len2 10000))
+                (dotimes (i 10000)
+                    (if (eql 0 (alien:deref tmp-buf i))
+                        (progn
+                            (setf len2 i)
+                            (go nn1))))
+              nn1
+                (setf buf (make-string len2))
+                (dotimes (i len2)
+                    (setf (aref buf i)
+                        (code-char (alien:deref tmp-buf i))))
+            )
+        )
+        buf
+    )
+)
+
 #+:sbcl
 (defun |sockGetStringFrom| (purpose)
     (let ((buf nil))
@@ -621,6 +718,10 @@
 #+(or :GCL :ecl)
 (defun makedir (fname) (|makedir| fname))
 
+#+:cmu
+(defun makedir (fname)
+    (ext::run-program "mkdir" (list fname)))
+
 #+:sbcl
 (defun makedir (fname)
     (sb-ext::run-program "mkdir" (list fname) :search t))
@@ -644,6 +745,11 @@
 
 (defun file-kind (filename)
    #+(or :GCL :ecl) (file_kind filename)
+   #+:cmu
+           (case (unix:unix-file-kind filename)
+                (:directory 1)
+                ((nil) -1)
+                (t 0))
    #+:sbcl
            (case (sbcl-file-kind filename)
                 (:directory 1)
@@ -665,7 +771,8 @@
  
 #+:cmu
 (defun get-current-directory ()
-  (namestring (extensions::default-directory)))
+  (multiple-value-bind (win dir) (unix::unix-current-directory)
+		       (declare (ignore win))  dir))
 
 #+(or :ecl :GCL :sbcl :clisp :openmcl)
 (defun get-current-directory ()
@@ -693,6 +800,7 @@
              ((equal fk 0)
                (truename fname))
              (t nil)))
+#+:cmu (if (unix:unix-file-kind file) (truename file))
 #+:sbcl (if (sbcl-file-kind file) (truename file))
 #+(or :openmcl :ecl) (probe-file file)
 #+:clisp(let* ((fname (trim-directory-name (namestring file)))
@@ -701,6 +809,7 @@
                      (ignore-errors (truename fname))))
          )
 
+#-:cmu
 (defun relative-to-absolute (name)
     (let ((ns (namestring name)))
          (if (and (consp (pathname-directory name))
@@ -708,6 +817,9 @@
                       #-:GCL :absolute #+:GCL :root))
              ns
              (concatenate 'string (get-current-directory)  "/" ns))))
+#+:cmu
+(defun relative-to-absolute (name)
+  (unix::unix-maybe-prepend-current-directory name))
 
 ;;; Saner version of compile-file
 #+:ecl
@@ -734,3 +846,91 @@
 (defmacro DEFCONST (name value)
    `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
 
+#+:cmu
+(defconstant +list-based-union-limit+ 80)
+
+#+:cmu
+(defun union (list1 list2 &key key (test #'eql testp) (test-not nil notp))
+  "Return the union of LIST1 and LIST2."
+  (declare (inline member))
+  (when (and testp notp)
+    (error ":TEST and :TEST-NOT were both supplied."))
+  ;; We have to possibilities here: for shortish lists we pick up the
+  ;; shorter one as the result, and add the other one to it. For long
+  ;; lists we use a hash-table when possible.
+  (let ((n1 (length list1))
+        (n2 (length list2))
+        (key (and key (coerce key 'function)))
+        (test (if notp
+                  (let ((test-not-fun (coerce test-not 'function)))
+                    (lambda (x y) (not (funcall test-not-fun x y))))
+                  (coerce test 'function))))
+    (multiple-value-bind (short long n-short)
+        (if (< n1 n2)
+            (values list1 list2 n1)
+            (values list2 list1 n2))
+      (if (or (< n-short +list-based-union-limit+)
+              (not (member test (list #'eq #'eql #'equal #'equalp))))
+          (let ((orig short))
+            (dolist (elt long)
+              (unless (member
+		       (lisp::apply-key key elt) orig :key key :test test)
+                (push elt short)))
+            short)
+          (let ((table (make-hash-table :test test :size (+ n1 n2)))
+                (union nil))
+            (dolist (elt long)
+              (setf (gethash (lisp::apply-key key elt) table) elt))
+            (dolist (elt short)
+              (setf (gethash (lisp::apply-key key elt) table) elt))
+            (maphash (lambda (k v)
+                       (declare (ignore k))
+                       (push v union))
+                     table)
+            union)))))
+
+#+:cmu
+(defun nunion (list1 list2 &key key (test #'eql testp) (test-not nil notp))
+  "Destructively return the union of LIST1 and LIST2."
+  (declare (inline member))
+  (when (and testp notp)
+    (error ":TEST and :TEST-NOT were both supplied."))
+  ;; We have to possibilities here: for shortish lists we pick up the
+  ;; shorter one as the result, and add the other one to it. For long
+  ;; lists we use a hash-table when possible.
+  (let ((n1 (length list1))
+        (n2 (length list2))
+        (key (and key (coerce key 'function)))
+        (test (if notp
+                  (let ((test-not-fun (coerce test-not 'function)))
+                    (lambda (x y) (not (funcall test-not-fun x y))))
+                  (coerce test 'function))))
+    (multiple-value-bind (short long n-short)
+        (if (< n1 n2)
+            (values list1 list2 n1)
+            (values list2 list1 n2))
+      (if (or (< n-short +list-based-union-limit+)
+              (not (member test (list #'eq #'eql #'equal #'equalp))))
+          (let ((orig short))
+            (do ((elt (car long) (car long)))
+                ((endp long))
+              (if (not (member
+			(lisp::apply-key key elt) orig :key key :test test))
+                  (lisp::steve-splice long short)
+                  (setf long (cdr long))))
+            short)
+          (let ((table (make-hash-table :test test :size (+ n1 n2))))
+            (dolist (elt long)
+              (setf (gethash (lisp::apply-key key elt) table) elt))
+            (dolist (elt short)
+              (setf (gethash (lisp::apply-key key elt) table) elt))
+            (let ((union long)
+                  (head long))
+              (maphash (lambda (k v)
+                         (declare (ignore k))
+                         (if head
+                             (setf (car head) v
+                                   head (cdr head))
+                             (push v union)))
+                      table)
+              union))))))
