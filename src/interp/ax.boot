@@ -44,25 +44,9 @@ $extendedDomains := nil
 setExtendedDomains(l) == 
         $extendedDomains := l
 
-fileConstructors name ==
-   [INTERN(con,"BOOT") for con in SRCABBREVS SOURCEPATH STRING name]
-
+--rhx: Function seems to be unused.
 makeAxFile(filename, constructors) ==
-  $defaultFlag : local := false
-  $literals := []
-  axForms :=
-     [modemapToAx(modemap) for cname in constructors |
-            (modemap:=GETDATABASE(cname,'CONSTRUCTORMODEMAP)) and
-              (not cname in '(Tuple Exit Type)) and
-                not isDefaultPackageName cname]
-  if $baseForms then
-     axForms := [:$baseForms, :axForms]
-  if $defaultFlag then
-     axForms :=
-        [['Foreign, ['Declare, 'dummyDefault, 'Exit], 'Lisp], :axForms]
-  axForms := APPEND(axDoLiterals(), axForms)
-  axForm := ['Sequence, _
-               ['Import, [], 'AxiomLib], ['Import, [], 'Boolean], :axForms]
+  axForm := makeAxExportForm(filename, constructors)
   st := MAKE_-OUTSTREAM(filename)
   PPRINT(axForm,st)
   CLOSE st
@@ -70,6 +54,8 @@ makeAxFile(filename, constructors) ==
 makeAxExportForm(filename, constructors) ==
   $defaultFlag : local := false
   $literals := []
+  -- Note that Tuple, Exit, Type are language defined idenifiers
+  -- in Aldor.
   axForms :=
      [modemapToAx(modemap) for cname in constructors |
             (modemap:=GETDATABASE(cname,'CONSTRUCTORMODEMAP)) and
@@ -77,6 +63,9 @@ makeAxExportForm(filename, constructors) ==
                 not isDefaultPackageName cname]
   if $baseForms then
      axForms := [:$baseForms, :axForms]
+  -- If the category has a default definition then $defaultFlag will be true.
+  -- That is used to give dummy definitions for functions inside the
+  -- default body.
   if $defaultFlag then
      axForms :=
         [['Foreign, ['Declare, 'dummyDefault, 'Exit], 'Lisp], :axForms]

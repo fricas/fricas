@@ -161,7 +161,7 @@
 ;; Generate .ap files from Axiom types.
 (defun generate-ax-file (name content inits)
   (let* ((filename (pathname (format nil "ap/~a.ap" name)))
-	 (constructors (mapcan '|fileConstructors| content))
+	 (constructors (mapcar '|abbreviation?| content))
 	 (apform (|makeAxExportForm| "UnusedArgument" constructors)))
   (with-open-file (str filename :direction :output)
     (pprint (append apform (mapcar 'load-init inits)) str))))
@@ -174,9 +174,9 @@
 (defun generate-deps (namelist)
   (setq *extends-axiom-domains* nil)
   (dolist (name namelist)
-    (let* ((constructors (|fileConstructors| name))
-	   (apform (|makeAxExportForm| "UnusedArgument" constructors)))
-      (debug-print "generate-deps" constructors)
+    (let* ((constructor (|abbreviation?| name))
+	   (apform (|makeAxExportForm| "UnusedArgument" (list constructor))))
+      (debug-print "generate-deps" constructor)
       (print-dependencies apform name))))
 
 ;; .dep from .ap file (corresponds to .as sources)
