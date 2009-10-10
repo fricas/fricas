@@ -220,7 +220,7 @@ ExpressionSpace(): Category == Defn where
     operator op ==
       is?(op, PAREN) => oppren
       is?(op, BOX) => opbox
-      error "Unknown operator"
+      error concat("Unknown operator 1: ",string(name(op)))$String
 
     mainKernel x ==
       empty?(l := kernels x) => "failed"
@@ -250,14 +250,14 @@ ExpressionSpace(): Category == Defn where
       s
 
     kernel(op:OP, args:List %) ==
-      not belong? op => error "Unknown operator"
+      not belong? op => error concat("Unknown operator 2: ",string(name(op)))$String
       okkernel(op, args)
 
     okkernel(op, l) ==
       kernel(op, l, 1 + reduce("max", [height f for f in l], 0))$K :: %
 
     elt(op:OP, args:List %) ==
-      not belong? op => error "Unknown operator"
+      not belong? op => error concat("Unknown operator 3: ",string(name(op)))$String
       ((u := arity op) case N) and (#args ~= u::N)
                                     => error "Wrong number of arguments"
       (v := evaluate(op,args)$BasicOperatorFunctions1(%)) case % => v::%
@@ -556,7 +556,7 @@ FunctionSpace(R : Comparable): Category == Definition where
     equaldiff : (K,K)->Boolean
     debugA: (List % ,List %,Boolean) -> Boolean
     opdiff := operator('%diff)$CommonOperators()
-    opquote := operator('applyQuote)$CommonOperators
+    opquote := operator('%quote)$CommonOperators
 
     ground? x                == retractIfCan(x)@Union(R,"failed") case R
     ground  x                == retract x
@@ -573,7 +573,7 @@ FunctionSpace(R : Comparable): Category == Definition where
     operator op ==
       is?(op, '%diff) => opdiff
       is?(op, '%quote) => opquote
-      error "Unknown operator"
+      error concat("Unknown operator 4: ",string(name(op)))$String
 
     if R has ConvertibleTo InputForm then
       INP==>InputForm
