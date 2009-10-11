@@ -61,9 +61,11 @@ testcase "guessRat$GUESSP"
 GUESSRESULT ==> Record(function: EXPR INT, order: NNI)
 testEquals("(guessRat(q)$GUESSP(INT))([1,q,q^2], [])",
            "[[q^n,0]$GUESSRESULT]")
-testEquals("(guessRat(q)$GUESSP(INT))([i^3*q^i + q^(2*i) for i in 0..5], maxMixedDegree==2)",
+testEquals("(guessRat(q)$GUESSP(INT))([i^3*q^i + q^(2*i) for i in 0..5], "
+                "maxMixedDegree==2, allDegrees==true)",
            "[[n^3*q^n+q^(2*n),0]$GUESSRESULT]")
-
+testEquals("(guessRat(q)$GUESSP(INT))([i^3*q^i + q^(2*i) for i in 0..6], maxMixedDegree==2)",
+           "[[n^3*q^n+q^(2*n),0]$GUESSRESULT]")
 @
 %$
 \subsection{rational functions}
@@ -90,7 +92,10 @@ GUESSRESULT ==> Record(function: EXPR INT, order: NNI)
 f := operator 'f
 -- 3 terms, total number of parameters is 3
 testEquals("getEq guessAlg([1/(2*n+1)*binomial(2*n+1, n) "
-                           "for n in 0..3]).1.function",
+                           "for n in 0..3], allDegrees==true).1.function",
+           "x*f(x)^2-f(x)+1")
+testEquals("getEq guessAlg([1/(2*n+1)*binomial(2*n+1, n) for n in 0..5] "
+                          ").1.function",
            "x*f(x)^2-f(x)+1")
 @
 %$
@@ -110,9 +115,9 @@ testEquals("# guessPRec([1,2,6,20,70,252])",
 testEquals("# guessPRec([1,2,6,20], homogeneous==true, allDegrees==true)",
            "0")
 testEquals("getEq guessPRec([1,2,6,20,70], homogeneous==true).1.function",
-           "(n+1)*f(n+1)-2*(2*n+1)*f(n)")
+           "(-n-1)*f(n+1)+2*(2*n+1)*f(n)")
 testEquals("getEq guessPRec([1,2,6,20,70], allDegrees==true).1.function",
-           "(n+1)*f(n+1)-2*(2*n+1)*f(n)")
+           "(-n-1)*f(n+1)+2*(2*n+1)*f(n)")
 
 testcase "guessPRec$GUESSP"
 f := operator 'f
@@ -140,16 +145,23 @@ testTrue("not empty? guessPRec([0,0,1,0,0,0,0,0], homogeneous==true)")
 testcase "guessADE$GUESSINT"
 f := operator 'f
 -- Lambert W
-testEquals("getEq guessADE([n^n/factorial n for n in 0..6]).1.function",
-           "-x*D(f x, x) + f(x)^3-f(x)^2")
+testEquals("#guessADE([n^n/factorial n for n in 0..5], allDegrees==true)", "1")
+testEquals("getEq guessADE([n^n/factorial n for n in 0..6], "
+               "allDegrees==true).1.function",
+           "x*D(f x, x) - f(x)^3 + f(x)^2")
+testEquals("getEq guessADE([n^n/factorial n for n in 0..9]).1.function",
+           "x*D(f x, x) - f(x)^3 + f(x)^2")
 
 testcase "guessADE$GUESSP"
 f := operator 'f
 -- q-Carlitz
 l := [1, 1, q+1, q^3+q^2+2*q+1, q^6+q^5+2*q^4+3*q^3+3*q^2+3*q+1, _
       q^10+q^9+2*q^8+3*q^7+5*q^6+5*q^5+7*q^4+7*q^3+6*q^2+4*q+1];
-testEquals("getEq((guessADE(q)$GUESSP(INT))(l, maxPower==2).1.function)",
-           "-x*f(x)*f(q*x)+f(x)-1")
+testEquals("#((guessADE(q)$GUESSP(INT))(first(l, 4), maxPower==2, "
+                 "allDegrees==true))", "1")
+testEquals("getEq((guessADE(q)$GUESSP(INT))(l, maxPower==2, "
+                  "allDegrees==true).1.function)",
+           "x*f(x)*f(q*x)-f(x)+1")
 
 
 @
@@ -164,10 +176,10 @@ s: INT -> INT;
 s(0)==1; s(1)==1; s(2)==1; s(3)==1; 
 s(n)==(s(n-1)*s(n-3)+s(n-2)^2)/s(n-4);
 testEquals("getEq guessRec([s m for m in 0..18], maxPower==2).1.function",
-           "f(n)*f(n+4)-f(n+1)*f(n+3)-f(n+2)^2")
+           "-f(n)*f(n+4)+f(n+1)*f(n+3)+f(n+2)^2")
 
 testEquals("getEq guessRec([s m for m in 0..12], maxPower==2, homogeneous==true).1.function",
-           "f(n)*f(n+4)-f(n+1)*f(n+3)-f(n+2)^2")
+           "-f(n)*f(n+4)+f(n+1)*f(n+3)+f(n+2)^2")
 @
 %$
 

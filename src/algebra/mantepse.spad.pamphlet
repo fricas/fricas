@@ -62,6 +62,7 @@ StreamTensor(R: Type): with
         tensorMap(s, f) ==
             empty? s => empty()
             concat([f first s], delay tensorMap(rest s, f))
+
 @
 %$
 
@@ -130,6 +131,12 @@ GuessOption(): Exports == Implementation where
       ++ solutions found. This option is expressed in the form \spad{safety ==
       ++ d}.
 
+    MonteCarlo : Boolean -> %
+      ++ MonteCarlo(d) specifies whether we are satisfied with
+      ++ probabilistic Monte Carlo solution or we want deterministic
+      ++ verification.  This option is expressed in the form
+      ++ \spad{MonteCarlo == d}
+
     one: Boolean -> %
       ++ one(d) specifies whether we are happy with one solution. This option
       ++ is expressed in the form \spad{one == d}.
@@ -188,6 +195,7 @@ GuessOption(): Exports == Implementation where
     allDegrees d     == ['allDegrees,     d::Any]
     maxPower d       == ['maxPower,       d::Any]
     safety d         == ['safety,         d::Any]
+    MonteCarlo d     == ['MonteCarlo,     d::Any]
     homogeneous d    == ['homogeneous,    d::Any]
     debug d          == ['debug,          d::Any]
     one d            == ['one,            d::Any]
@@ -257,6 +265,10 @@ GuessOptionFunctions0(): Exports == Implementation where
 
     safety: LGOPT -> NonNegativeInteger
       ++ safety returns the specified safety or 1 as default.
+
+    MonteCarlo : LGOPT -> Boolean
+      ++ MonteCarlo returns whether we are satisfied with
+      ++ probabilistic Monte Carlo solution, default being false.
 
     one: LGOPT -> Boolean
       ++ one returns whether we need only one solution, default being true.
@@ -328,6 +340,12 @@ GuessOptionFunctions0(): Exports == Implementation where
       else
         retract(opt :: Any)$AnyFunctions1(NonNegativeInteger)
 
+    MonteCarlo l ==
+       if (opt := option(l, 'MonteCarlo)) case "failed" then
+           false
+       else
+           retract(opt :: Any)$AnyFunctions1(Boolean)
+
     one l ==
       if (opt := option(l, "one" :: Symbol)) case "failed" then
         true
@@ -380,13 +398,13 @@ GuessOptionFunctions0(): Exports == Implementation where
 ++ most common cases are provided as \spadtype{GuessInteger},
 ++ \spadtype{GuessPolynomial}, etc.
 Guess(F, S, EXPRR, retract, coerce): Exports == Implementation where
-    F: Field                                 -- zB.: FRAC POLY PF 5
--- in F we interpolate und check
+    F: Field                          -- for example: FRAC POLY PF 5
+-- in F we interpolate and check
 
     S: GcdDomain
 
 -- in guessExpRat I would like to determine the roots of polynomials in F. When
--- F is a quotientfield, I can get rid of the denominator.  In this case F is
+-- F is a quotient field, I can get rid of the denominator.  In this case F is
 -- roughly QFCAT S
 
 -- results are given as elements of EXPRR
@@ -403,7 +421,7 @@ Guess(F, S, EXPRR, retract, coerce): Exports == Implementation where
               ground? : % -> Boolean
 
                                              -- eg.: EXPR INT
--- EXPR FRAC POLY INT is forbidden. Thus i cannot just use EXPR R
+-- EXPR FRAC POLY INT is forbidden. Thus I cannot just use EXPR R
 
 -- EXPRR exists, in case at some point there is support for EXPR PF 5.
 
@@ -443,11 +461,36 @@ Guess(F, S, EXPRR, retract, coerce): Exports == Implementation where
 -- the diagonal of the C-matrix
     DIFFSPECC ==> NNI -> List S
 
+@
 
-    HPSPEC ==> Record(guessStream:  UFPSF -> Stream UFPSF,
-                      degreeStream: Stream NNI,
-                      testStream:   UFPSSUPF -> Stream UFPSSUPF,
+We need to create several streams.  Let $P$ be the univariate power series
+whose first few coefficients [[list]] are given.  As an example, consider the
+differentiation setting:
+\begin{itemize}
+\item the elements of [[guessStream]] consist of $P$ differentiated and taken
+  to some power
+\item the elements of [[degreeStream]] are integers that tell us how many terms
+  less than in [[list]] are valid in the corresponding element of
+  [[guessStream]]
+\item the elements of [[testStream]] are very similar to those of
+  [[guessStream]], with the difference that they are derived from $P$ with an
+  transcendental element added, which corresponds to $O(x^d)$
+\item finally, the elements of [[exprStream]] contain representations of the
+  transformations applied to $P$ as expressions.
+\end{itemize}
+
+<<package GUESS Guess>>=
+    FPSGEN ==> UFPSSUPF -> Vector UFPSSUPF
+-- the second argument is the modulus, the last argument is q
+    SEQGEN ==> (U32Vector, Integer, Integer) -> Vector U32Vector
+
+    HPSPEC ==> Record(degreeStream: Stream NNI,
+                      guessStream: UFPSF -> Stream UFPSF,
+                      guessModGen: NNI -> SEQGEN,
+                      testGen: List PositiveInteger -> FPSGEN,
                       exprStream:   (EXPRR, Symbol) -> Stream EXPRR,
+                      kind: Symbol,
+                      qvar: Symbol,
                       A:  DIFFSPECA,
                       AF: DIFFSPECAF,
                       AX: DIFFSPECAX,
@@ -477,7 +520,7 @@ The following should be commented out when not debugging, see also
 Section~\ref{sec:Hermite-Pade}.
 
 <<package GUESS Guess>>=
-    --@<<implementation: Guess - Hermite-Pade - Types for Operators>>
+    <<implementation: Guess - Hermite-Pade - Types for Operators>>
     -- EXT ==> (Integer, V, V) -> FPOLYS
     -- EXTEXPR ==> (Symbol, F, F) -> EXPRR
 @
@@ -688,36 +731,6 @@ Section~\ref{sec:Hermite-Pade}.
               ++ rational generating function whose
               ++ first Taylor coefficients are given by l, using the given
               ++ options.
-
-        --@<<debug exports: Guess>>
-@
-
-<<debug exports: Guess>>=
---termAsUFPSF: (UFPSF, List Integer, DIFFSPECS, DIFFSPEC1) -> UFPSF
---termAsUFPSF2: (UFPSF, List Integer, DIFFSPECS, DIFFSPEC1) -> UFPSF
---termAsEXPRR: (EXPRR, Symbol, List Integer, DIFFSPECX, DIFFSPEC1X) -> EXPRR
---termAsUFPSSUPF: (UFPSSUPF, List Integer, DIFFSPECSF, DIFFSPEC1F) -> UFPSSUPF
---termAsUFPSSUPF2: (UFPSSUPF, List Integer, DIFFSPECSF, DIFFSPEC1F) -> UFPSSUPF
---
---ShiftSXGF: (EXPRR, Symbol, NNI) -> EXPRR
---ShiftAXGF: (NNI, Symbol, EXPRR) -> EXPRR
---
---FilteredPartitionStream: LGOPT -> Stream List Integer
---
---guessInterpolate: (List SUP F, List NNI, HPSPEC) -> Matrix SUP S
---testInterpolant: (List SUP S, List F, List UFPSSUPF, List EXPRR, List EXPRR, _
---                  NNI, HPSPEC, Symbol, BasicOperator, LGOPT) _
---                  -> Union("failed", Record(function: EXPRR, order: NNI))
-
---checkResult: (EXPRR, Symbol, Integer, List F, LGOPT) -> NNI
---
---guessBinRatAux: (Symbol, List F, DIFFSPECN, EXT, EXTEXPR,
---                 List Integer, LGOPT) -> List EXPRR
---guessBinRatAux0: (List F, DIFFSPECN, EXT, EXTEXPR,
---                  LGOPT) -> GUESSRESULT
---binExt: EXT
---binExtEXPR: EXTEXPR
---defaultD: DIFFSPECN
 
 @
 
@@ -1331,6 +1344,7 @@ $y(n)=s_n*\binom{a+bn}{n}^-1$.
 --                $OutputPackage
 
 @
+%$
 
 \begin{ToDo}
   Shouldn't we use the algorithm over [[POLYS]] here? Strange enough, for
@@ -1581,7 +1595,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 \subsection{Hermite Pad\'e interpolation}\label{sec:Hermite-Pade}
 
 <<implementation: Guess - Hermite-Pade>>=
-<<implementation: Guess - Hermite-Pade - Types for Operators>>
+--@<<implementation: Guess - Hermite-Pade - Types for Operators>>
 <<implementation: Guess - Hermite-Pade - Streams>>
 <<implementation: Guess - Hermite-Pade - Operators>>
 <<implementation: Guess - Hermite-Pade - Utilities>>
@@ -1595,21 +1609,27 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
 -- the differentiation operator
 DIFFSPECX ==> (EXPRR, Symbol, NonNegativeInteger) -> EXPRR
-                                               -- eg.: f(x)+->f(q*x)
-                                               --      f(x)+->D(f, x)
+                                               -- eg.: f(x),k +-> f(q^k*x)
+                                               --      f(x),k +-> D(f, x, k)
 DIFFSPECS ==> (UFPSF, NonNegativeInteger) -> UFPSF
-                                               -- eg.: f(x)+->f(q*x)
+                                               -- eg.: f(x),k +-> f(q^k*x)
+                                               -- eg.: f(x),k +-> f(x)/x^k
 
 DIFFSPECSF ==> (UFPSSUPF, NonNegativeInteger) -> UFPSSUPF
-                                               -- eg.: f(x)+->f(q*x)
+                                               -- eg.: f(x),k +-> f(q^k*x)
+
+-- the third argument is the modulus, the last q
+DIFFSPECSV ==> (U32Vector, NonNegativeInteger, Integer, Integer) -> U32Vector
 
 -- the constant term for the inhomogeneous case
+
+DIFFSPEC1X ==> Symbol -> EXPRR
 
 DIFFSPEC1 ==> UFPSF
 
 DIFFSPEC1F ==> UFPSSUPF
 
-DIFFSPEC1X ==> Symbol -> EXPRR
+DIFFSPEC1V ==> U32Vector
 
 @
 
@@ -1617,87 +1637,6 @@ DIFFSPEC1X ==> Symbol -> EXPRR
 
 In this section we define some functions that provide streams for
 [[HermitePade]].
-
-The following three functions [[termAsEXPRR]], [[termAsUFPSF]],
-[[termAsUFPSSUPF]] transform a partition into a product of derivatives of
-[[f]], using the given operators.  We need to provide the same functionality
-for expressions, series and series with a transcendental element.  Only for
-expressions we do not provide a version using the Hadamard product, although it
-would be quite easy to define an appropriate operator on expressions.
-
-A partition $(\lambda_1^{p_1},\lambda_2^{p_2},\dots)$ is transformed into the
-expression $(f^{(\lambda_1-1)})^{p_1}(f^{(\lambda_2-1)})^{p_2}\cdots$, i.e.,
-the size of the part is interpreted as derivative, the exponent as power.
-
-<<implementation: Guess - Hermite-Pade - Streams>>=
-termAsEXPRR(f: EXPRR, xx: Symbol, partition: List Integer,
-            DX: DIFFSPECX, D1X: DIFFSPEC1X): EXPRR ==
-    if empty? partition then D1X(xx)
-    else
-        ll: List List Integer := powers(partition)$Partition
-
-        fl: List EXPRR := [DX(f, xx, (first part-1)::NonNegativeInteger)
-                           ^ second(part)::NNI for part in ll]
-        reduce(_*, fl)
-
-
-termAsUFPSF(f: UFPSF, partition: List Integer, DS: DIFFSPECS, D1: DIFFSPEC1): UFPSF ==
-    if empty? partition then D1
-    else
-        ll: List List Integer := powers(partition)$Partition
-
--- first of each element of ll is the derivative, second is the power
-
-        fl: List UFPSF := [DS(f, (first part -1)::NonNegativeInteger) _
-                           ^ second(part)::NNI for part in ll]
-
-        reduce(_*, fl)
-
--- returns \prod f^(partition.i), but using the Hadamard product
-termAsUFPSF2(f: UFPSF, partition: List Integer,
-             DS: DIFFSPECS, D1: DIFFSPEC1): UFPSF ==
-    if empty? partition then D1
-    else
-        ll: List List Integer := powers(partition)$Partition
-
--- first of each element of ll is the derivative, second is the power
-
-        fl: List UFPSF
-            := [map(z1 +-> z1^ second(part)::NNI, DS(f, (first part -1)::NNI)) _
-                for part in ll]
-
-        reduce(hadamard$UFPS1(F), fl)
-
-termAsUFPSSUPF(f: UFPSSUPF, partition: List Integer,
-               DSF: DIFFSPECSF, D1F: DIFFSPEC1F): UFPSSUPF ==
-    if empty? partition then D1F
-    else
-        ll: List List Integer := powers(partition)$Partition
-
--- first of each element of ll is the derivative, second is the power
-
-        fl: List UFPSSUPF
-           := [DSF(f, (first part -1)::NonNegativeInteger)
-               ^ second(part)::NNI for part in ll]
-
-        reduce(_*, fl)
-
--- returns \prod f^(partition.i), but using the Hadamard product
-termAsUFPSSUPF2(f: UFPSSUPF, partition: List Integer,
-                DSF: DIFFSPECSF, D1F: DIFFSPEC1F): UFPSSUPF ==
-    if empty? partition then D1F
-    else
-        ll: List List Integer := powers(partition)$Partition
-
--- first of each element of ll is the derivative, second is the power
-
-        fl: List UFPSSUPF
-           := [map(z1 +-> z1 ^ second(part)::NNI, DSF(f, (first part -1)::NNI)) _
-               for part in ll]
-
-        reduce(hadamard$UFPS1(SUP F), fl)
-@
-%$
 
 \spad{FilteredPartitionStream} returns a stream of partitions.  We will
 interpret each partition $(\lambda_1,\lambda_2,\dots)$ as $\prod_i
@@ -1743,20 +1682,20 @@ FilteredPartitionStream(options: LGOPT): Stream List Integer ==
         s := partitions(maxD?::NNI+1, maxP?::PI)$PartitionsAndPermutations
     else
         s1: Stream Integer := generate(inc, 1)$Stream(Integer)
-        s2: Stream Stream List Integer
-           := map(z1 +-> partitions(z1)$PartitionsAndPermutations, s1)
-                 $StreamFunctions2(Integer, Stream List Integer)
+        s2 : Stream Stream List Integer :=
+            maxD? case NNI =>
+               map(z1 +-> partitions(maxD? + 1, z1,
+                                     z1)$PartitionsAndPermutations,
+                   s1)$StreamFunctions2(Integer, Stream List Integer)
+            maxP? case PI =>
+               map(z1 +-> partitions(z1, maxP?,
+                                     z1)$PartitionsAndPermutations,
+                   s1)$StreamFunctions2(Integer, Stream List Integer)
+            map(z1 +-> partitions(z1)$PartitionsAndPermutations,
+                s1)$StreamFunctions2(Integer, Stream List Integer)
         s3: Stream List Integer
-           := concat(s2)$StreamFunctions1(List Integer)
-
---        s := cons([],
---                  select(((maxD = 0) or (first #1 <= maxD)) _
---                     and ((maxP = -1) or (# #1 <= maxP)), s3))
-
-        s := cons([],
-                  select(z1 +-> ((maxD? case "arbitrary") or (# z1 <= maxD?::NNI+1)) _
-                     and ((maxP? case "arbitrary") or (first z1 <= maxP?::PI)),
-                         s3))
+            := concat(s2)$StreamFunctions1(List Integer)
+        s := cons([], s3)
 
     s := conjugates(s)$PartitionsAndPermutations
 
@@ -1764,6 +1703,111 @@ FilteredPartitionStream(options: LGOPT): Stream List Integer ==
     then select(z1 +-> # z1 = homD?, s)
     else s
 
+@
+%$
+
+The following three functions [[termAsEXPRR]], [[termAsUFPSF]],
+[[termAsUFPSSUPF]] transform a partition into a product of derivatives of
+[[f]], using the given operators.  We need to provide the same functionality
+for expressions, series and series with a transcendental element.  Only for
+expressions we do not provide a version using the Hadamard product, although it
+would be quite easy to define an appropriate operator on expressions.
+
+A partition $(\lambda_1^{p_1},\lambda_2^{p_2},\dots)$ is transformed into the
+expression $(f^{(\lambda_1-1)})^{p_1}(f^{(\lambda_2-1)})^{p_2}\cdots$, i.e.,
+the size of the part is interpreted as derivative, the exponent as power.
+
+<<implementation: Guess - Hermite-Pade - Streams>>=
+termAsEXPRR(f: EXPRR, xx: Symbol, partition: List Integer,
+            DX: DIFFSPECX, D1X: DIFFSPEC1X): EXPRR ==
+    if empty? partition then D1X(xx)
+    else
+        ll: List List Integer := powers(partition)$Partition
+
+        fl: List EXPRR := [DX(f, xx, (first part-1)::NonNegativeInteger)
+                           ^ second(part)::NNI for part in ll]
+        reduce(_*, fl)
+
+termAsU32VectorDiff: (U32Vector, List Integer, Integer, NonNegativeInteger) ->  U32Vector
+termAsU32VectorDiff(f, partition, prime, degreeLoss) ==
+    if empty? partition then construct(cons(1, [0 for i in degreeLoss+2..#f]))$U32Vector
+    else
+        d := (#f - degreeLoss - 1)::NonNegativeInteger
+        ll: List List Integer := powers(partition)$Partition
+-- first of each element of ll is the derivative, second is the power
+
+        fl: List U32Vector
+           := [pow(differentiate(f, (first part -1)::NonNegativeInteger, prime)
+                                $U32VectorPolynomialOperations,
+                   second(part)::PI,
+                   d,
+                   prime)$U32VectorPolynomialOperations for part in ll]
+
+        reduce((f1,f2) +-> truncated__multiplication(f1, f2, d, prime)$U32VectorPolynomialOperations, fl)
+
+termAsU32VectorShift: (U32Vector, List Integer, Integer, NonNegativeInteger) -> U32Vector
+termAsU32VectorShift(f, partition, prime, degreeLoss) ==
+    if empty? partition then construct([1 for i in degreeLoss+1..#f])$U32Vector
+    else
+        d := (#f - degreeLoss - 1)::NonNegativeInteger
+        ll: List List Integer := powers(partition)$Partition
+
+-- first of each element of ll is the derivative, second is the power
+        fl: List U32Vector
+           := [construct([QSMOD64_-32(f(j)^(second(part)::PI) rem prime, prime)$Lisp _
+                          for j in first part -1..first part -1+d])$U32Vector _
+               for part in ll]
+
+        r := new(d+1, 0)$U32Vector
+        copy__first(r, first fl, d+1)$U32VectorPolynomialOperations
+        for i in 0..d repeat
+            for e in rest fl repeat
+                r(i) := QSMULMOD32(r(i), e(i), prime)$Lisp
+
+        r
+
+termAsUFPSF(f: UFPSF, partition: List Integer, DS: DIFFSPECS, D1: DIFFSPEC1): UFPSF ==
+    if empty? partition then D1
+    else
+        ll: List List Integer := powers(partition)$Partition
+
+-- first of each element of ll is the derivative, second is the power
+
+        fl: List UFPSF := [DS(f, (first part -1)::NonNegativeInteger) _
+                           ^ second(part)::NNI for part in ll]
+
+        reduce(_*, fl)
+
+-- returns \prod f^(partition.i), but using the Hadamard product
+termAsUFPSF2(f: UFPSF, partition: List Integer,
+             DS: DIFFSPECS, D1: DIFFSPEC1): UFPSF ==
+    if empty? partition then D1
+    else
+        ll: List List Integer := powers(partition)$Partition
+
+-- first of each element of ll is the derivative, second is the power
+
+        fl: List UFPSF
+            := [map(z1 +-> z1 ^ second(part)::NNI, _
+                    DS(f, (first part -1)::NNI)) _
+                for part in ll]
+
+        reduce(hadamard$UFPS1(F), fl)
+
+-- returns \prod f^(partition.i), but using the Hadamard product
+termAsUFPSSUPF2(f: UFPSSUPF, partition: List Integer,
+                DSF: DIFFSPECSF, D1F: DIFFSPEC1F): UFPSSUPF ==
+    if empty? partition then D1F
+    else
+        ll: List List Integer := powers(partition)$Partition
+
+-- first of each element of ll is the derivative, second is the power
+
+        fl: List UFPSSUPF
+           := [map(z1 +-> z1 ^ second(part)::NNI, DSF(f, (first part -1)::NNI)) _
+               for part in ll]
+
+        reduce(hadamard$UFPS1(SUP F), fl)
 @
 %$
 
@@ -1783,17 +1827,159 @@ ADEguessStream2(f: UFPSF, partitions: Stream List Integer,
     map((z1: List Integer): UFPSF +-> termAsUFPSF2(f, z1, DS, D1), partitions)
        $StreamFunctions2(List Integer, UFPSF)
 
--- for functions
-ADEtestStream(f: UFPSSUPF, partitions: Stream List Integer,
-              DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream UFPSSUPF ==
-    map((z1: List Integer): UFPSSUPF +-> termAsUFPSSUPF(f, z1, DSF, D1F), partitions)
-       $StreamFunctions2(List Integer, UFPSSUPF)
+PAIR ==> List Integer
 
--- for coefficients, i.e., using the Hadamard product
-ADEtestStream2(f: UFPSSUPF, partitions: Stream List Integer,
-              DSF: DIFFSPECSF, D1F: DIFFSPEC1F): Stream UFPSSUPF ==
-    map((z1: List Integer): UFPSSUPF +-> termAsUFPSSUPF2(f, z1, DSF, D1F), partitions)
-       $StreamFunctions2(List Integer, UFPSSUPF)
+ADEguessModGenCached: (U32Vector, Boolean, NonNegativeInteger, _
+                       List List Integer, _
+                       List Integer, Integer) -> Vector U32Vector
+ADEguessModGenCached(f: U32Vector,
+                     addOne: Boolean,
+                     maxD: NonNegativeInteger,
+                     prodl: List PAIR,
+                     terml: List Integer,
+                     prime: Integer): Vector U32Vector ==
+    sigma := #f - maxD
+    np := # prodl
+    cache := new(maxD + 1 + np, empty()$U32Vector)$(PrimitiveArray U32Vector)
+    cache(0) := f
+    for i in 1..maxD repeat
+        cache(i) := differentiate(cache(i-1), prime)
+                                 $U32VectorPolynomialOperations
+
+    for i in maxD+1..maxD+np for pp in prodl repeat
+        cache(i) := truncated__multiplication(cache first pp,
+                                              cache second pp, sigma-1, prime)
+                                             $U32VectorPolynomialOperations
+    nt := # terml
+    if addOne then
+        res := new(nt + 1, empty()$U32Vector)$Vector(U32Vector)
+        res1 := new(sigma::NNI, 0)$U32Vector
+        res1(0) := 1
+        res(1) := res1
+        for i in 2..nt+1 for r in terml repeat
+            res(i) := cache r
+    else
+        res := new(nt, empty()$U32Vector)$Vector(U32Vector)
+        for i in 1..nt for r in terml repeat
+            res(i) := cache r
+    res
+
+ADEtestGenCached(f: UFPSSUPF,
+                 addOne: Boolean,
+                 maxD: NonNegativeInteger,
+                 prodl: List PAIR,
+                 terml: List Integer,
+                 DSF: DIFFSPECSF,
+                 D1F: DIFFSPEC1F): Vector UFPSSUPF ==
+    np := # prodl
+    cache := new(maxD + 1 + np, 0$UFPSSUPF)$(PrimitiveArray UFPSSUPF)
+    cache(0) := f
+    for i in 1..maxD repeat
+        cache(i) := DSF(cache(i-1), 1)
+
+    for i in maxD+1..maxD+np for pp in prodl repeat
+        cache(i) := cache first pp * cache second pp
+
+    nt := # terml
+    if addOne then
+        res := new(nt + 1, 0$UFPSSUPF)$Vector(UFPSSUPF)
+        res(1) := D1F
+        for i in 2..nt+1 for r in terml repeat
+            res(i) := cache r
+    else
+        res := new(nt, 0$UFPSSUPF)$Vector(UFPSSUPF)
+        for i in 1..nt for r in terml repeat
+            res(i) := cache r
+    res
+
+
+-- checks whether partition is a product of two elememts in partitions
+optimiseFactor(partition: Partition,
+               partitions: List Partition): Union(PAIR, "failed") ==
+    n := # partitions
+    for p in partitions for i in 1..n repeat
+         r := subtractIfCan(partition, p)
+         if r case Partition then
+             j := position(r, partitions)
+             if j > 0 then return [i, j]
+    "failed"
+
+-- destructively adds rule for computing p to prods0 and parts0
+optimiseProducts1(p: Partition, _
+                  prods0: Reference List PAIR, _
+                  parts0: Reference List Partition): Void ==
+    r: Union(PAIR, "failed")
+    if (r := optimiseFactor(p, deref parts0)) case "failed" then
+        optimiseProducts1(partition(rest(p::List Integer))$Partition,
+                          prods0, parts0)
+        r := optimiseFactor(p, deref parts0)
+
+    r case "failed" =>
+            error "Internal error: failed adding intermediate partition"
+
+    lp0 := #(deref parts0)
+    setref(prods0, cons([lp0-first(r::PAIR), lp0-second(r::PAIR)], _
+                        deref prods0))
+    setref(parts0, cons(p, deref parts0))
+
+-- addOne says that the constant term is part of the list
+-- maxDiff is the maximal derivative encountered
+-- cache.i = prods.j.1 * prods.j.2
+-- terms is the list of indices in cache actually appearing,
+--       where 0 to maxD refer to derivatives
+-- we assume that partitions is a set
+optimiseProducts(partitions: List List Integer)
+                : Record(addOne: Boolean,
+                         maxDiff: NonNegativeInteger,
+                         prods: List PAIR,
+                         terms: List Integer) ==
+
+    addOne0 := empty? first partitions
+    if addOne0 then
+        partitions := rest partitions
+        if empty? partitions then return [addOne0, 0, [], []]
+-- this is actually degree+1
+    maxD0: Integer := reduce(max, map((p:List Integer): Integer +->
+                                       first p, partitions)
+                                     $ListFunctions2(List Integer, Integer))
+    prods0: Reference List PAIR := ref []
+    terms0: List Integer := []
+
+-- we need the list of partitions we have already in the cache to find out
+-- whether the next partition is a product of two previous ones
+    parts0: Reference List Partition := _
+         ref [partition([i]) for i in maxD0..1 by -1]
+    for p in partitions repeat
+        one?(# p) =>
+            terms0 := cons(first(p)-1, terms0)
+        optimiseProducts1(partition(p)$Partition, prods0, parts0)
+        terms0 := cons(#(deref parts0) - 1, terms0)
+
+    [addOne0, (maxD0-1)::NNI, reverse! deref prods0, reverse! terms0]
+
+ADEguessModOptimisedGen: (List List Integer) -> SEQGEN
+ADEguessModOptimisedGen(partitions): SEQGEN ==
+    r := optimiseProducts(partitions)
+    (f: U32Vector, prime: Integer, q: Integer): Vector U32Vector +-> _
+                        ADEguessModGenCached(f, r.addOne,
+                                             r.maxDiff, r.prods, r.terms, prime)
+
+ADEguessModGen2: (List List Integer, NonNegativeInteger) -> SEQGEN
+ADEguessModGen2(partitions, d): SEQGEN ==
+    (f, prime, q) +-> vector([termAsU32VectorShift(f, p, prime, d) _
+                              for p in partitions])$(Vector U32Vector)
+
+ADEtestOptimisedGen: (List List Integer, DIFFSPECSF, DIFFSPEC1F) -> FPSGEN
+ADEtestOptimisedGen(partitions, DSF, D1F): FPSGEN ==
+    r := optimiseProducts(partitions)
+    (f: UFPSSUPF): Vector UFPSSUPF +-> _
+        ADEtestGenCached(f, r.addOne, r.maxDiff, r.prods, r.terms, DSF, D1F)
+
+ADEtestGen2: (List List Integer, DIFFSPECSF, DIFFSPEC1F) -> FPSGEN
+ADEtestGen2(partitions, DSF, D1F): FPSGEN ==
+    (f: UFPSSUPF): Vector UFPSSUPF +-> _
+        vector([termAsUFPSSUPF2(f, p, DSF, D1F) _
+                for p in partitions])$(Vector UFPSSUPF)
 
 ADEEXPRRStream(f: EXPRR, xx: Symbol, partitions: Stream List Integer,
                DX: DIFFSPECX, D1X: DIFFSPEC1X): Stream EXPRR ==
@@ -1889,11 +2075,17 @@ diffHP options ==
     then error "Guess: no support for mixed shifts in differential equations"
     if displayAsGF(options)$GOPT0 then
         partitions := FilteredPartitionStream options
-        [(z1: UFPSF): Stream UFPSF +-> ADEguessStream(z1, partitions, diffDS, 1$UFPSF), _
-         ADEdegreeStream partitions, _
-         (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStream(z1, partitions, diffDSF, 1$UFPSSUPF), _
-         (z1: EXPRR, z2: Symbol): Stream EXPRR +-> ADEEXPRRStream(z1, z2, partitions, diffDX, diff1X), _
-         diffA, diffAF, diffAX, diffC]$HPSPEC
+        degrees := ADEdegreeStream partitions
+        [degrees, _
+         (z1: UFPSF): Stream UFPSF +->
+             ADEguessStream(z1, partitions, diffDS, 1$UFPSF), _
+         (o: NNI): SEQGEN +-> _
+             ADEguessModOptimisedGen entries complete first(partitions, o), _
+         (l: List PositiveInteger): FPSGEN +-> _
+             ADEtestOptimisedGen([partitions.i for i in l], diffDSF, 1$UFPSSUPF), _
+         (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+             ADEEXPRRStream(z1, z2, partitions, diffDX, diff1X), _
+         'diffHP, 'dummy, diffA, diffAF, diffAX, diffC]$HPSPEC
     else
         error "Guess: guessADE supports only displayAsGF"
 
@@ -1911,10 +2103,51 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         eval(expr, x::EXPRR, (q::EXPRR)^n*x::EXPRR)
 
     qDiffDS(q: Symbol, s: UFPSF, n: NonNegativeInteger): UFPSF ==
-        multiplyCoefficients((z1: Integer): F +-> (q::F)^((n*z1)::NonNegativeInteger), s)
+        multiplyCoefficients((z1: Integer): F +->
+        (q::F)^((n*z1)::NonNegativeInteger), s)
+
+-- compiler bug: would complain in diffHP, if replaced
+--    qDiffDSV: DIFFSPECSV
+    qDiffDSV(f: U32Vector, n: NonNegativeInteger, prime: Integer, q: Integer): U32Vector ==
+        (zero? n) => f
+        d := degree(f)$U32VectorPolynomialOperations
+        r := new(d::NNI+1, 0)$U32Vector
+        r.0 := f.0
+        if d > 0 then
+            Q: Integer := 1
+            qn := q^n rem prime
+            for i in 1..d repeat
+                Q := QSMULMOD32(qn, Q, prime)$Lisp
+                r.i := QSMULMOD32(f.i, Q, prime)$Lisp
+        r
 
     qDiffDSF(q: Symbol, s: UFPSSUPF, n: NonNegativeInteger): UFPSSUPF ==
         multiplyCoefficients((z1: Integer): SUP F +-> (q::F::SUP F)^((n*z1)::NonNegativeInteger), s)
+
+
+    termAsU32VectorqDiff: (U32Vector, List Integer, Integer, Integer, NNI) -> U32Vector
+    termAsU32VectorqDiff(f, partition, prime, q, dl) ==
+        if empty? partition then construct(cons(1, [0 for i in dl+2..#f]))$U32Vector
+        else
+            d := (#f - dl - 1)::NonNegativeInteger
+            ll: List List Integer := powers(partition)$Partition
+    -- first of each element of ll is the derivative, second is the power
+
+            fl: List U32Vector
+               := [pow(qDiffDSV(f, (first part -1)::NonNegativeInteger, prime, q),
+                       second(part)::PI,
+                       d,
+                       prime)$U32VectorPolynomialOperations for part in ll]
+
+            reduce((f1,f2) +->
+                truncated__multiplication(f1, f2, d, prime)
+                                         $U32VectorPolynomialOperations, fl)
+
+    ADEguessModGenq: (List List Integer, NonNegativeInteger) -> SEQGEN
+    ADEguessModGenq(partitions, d): SEQGEN ==
+        (f, prime, q) +-> vector([termAsU32VectorqDiff(f, p, prime, q, d) _
+                                  for p in partitions])$(Vector U32Vector)
+
 
     diffHP(q: Symbol): (LGOPT -> HPSPEC) ==
         (l1: LGOPT): HPSPEC +->
@@ -1922,17 +2155,22 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
             then error "Guess: no support for mixed shifts in differential equations"
             if displayAsGF(l1)$GOPT0 then
                 partitions := FilteredPartitionStream l1
-                [(z1: UFPSF): Stream UFPSF +-> _
+                [map((c: List Integer):NNI +-> 0, partitions)$StreamFunctions2(List Integer, NNI), _
+                 (z1: UFPSF): Stream UFPSF +-> _
                      ADEguessStream(z1, partitions, _
-                                    (w1: UFPSF, w2: NNI): UFPSF +-> qDiffDS(q, w1, w2), 1$UFPSF), _
-                 repeating([0$NNI])$Stream(NNI), _
-                 (z1: UFPSSUPF): Stream UFPSSUPF +-> _
-                     ADEtestStream(z1, partitions, _
-                                    (w1: UFPSSUPF, w2: NNI): UFPSSUPF +-> qDiffDSF(q, w1, w2), 1$UFPSSUPF), _
+                                    (w1: UFPSF, w2: NNI): UFPSF +-> _
+                                        qDiffDS(q, w1, w2), 1$UFPSF), _
+                 (o: NNI): SEQGEN +-> _
+                     ADEguessModGenq(entries complete first(partitions, o), 0), _
+                 (l: List PositiveInteger): FPSGEN +->
+                     ADEtestOptimisedGen([partitions.i for i in l], _
+                     (w1: UFPSSUPF, w2: NNI): UFPSSUPF +-> qDiffDSF(q, w1, w2), _
+                     1$UFPSSUPF), _
                  (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
                      ADEEXPRRStream(z1, z2, partitions, _
-                                    (w1: EXPRR, w2: Symbol, w3: NNI): EXPRR +-> qDiffDX(q, w1, w2, w3), diff1X), _
-                 diffA, diffAF, diffAX, diffC]$HPSPEC
+                                    (w1: EXPRR, w2: Symbol, w3: NNI): EXPRR +-> _
+                                        qDiffDX(q, w1, w2, w3), diff1X), _
+                 'qdiffHP, q, diffA, diffAF, diffAX, diffC]$HPSPEC
             else
                 error "Guess: guessADE supports only displayAsGF"
 
@@ -1998,23 +2236,32 @@ shiftHP options ==
     then error "Guess: need a symbol for mixed Shifting"
     partitions := FilteredPartitionStream options
     if displayAsGF(options)$GOPT0 then
-        if maxPower(options)$GOPT0 = 1 then
-            [(z1: UFPSF): Stream UFPSF +-> ADEguessStream(z1, partitions, ShiftSS, (1-monomial(1,1))^(-1)),_
-             ADEdegreeStream partitions, _
-             (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStream(z1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
-             (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
-                 ADEEXPRRStream(z1, z2, partitions, ShiftSXGF, (w1: Symbol): EXPRR +-> 1/(1-w1::EXPRR)), _
-             ShiftA, ShiftAF, ShiftAXGF, ShiftC]$HPSPEC
-       else
-            error "Guess: no support for the Shift operator with displayAsGF _
-                   and maxPower>1"
+--        if maxPower(options)$GOPT0 = 1 then
+--            [(z1: UFPSF): Stream UFPSF +-> ADEguessStream(z1, partitions, ShiftSS, (1-monomial(1,1))^(-1)),_
+--             (o: NNI): SEQGEN +-> _
+--                 ADEguessModGen(entries complete first(partitions, o), _
+--                                shiftSV, construct([1,1,1,1])$U32Vector), _
+--             ADEdegreeStream partitions, _
+--             (z1: UFPSSUPF): Stream UFPSSUPF +-> _
+--                 ADEtestStream(z1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
+--             (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+--                 ADEEXPRRStream(z1, z2, partitions, ShiftSXGF, (w1: Symbol): EXPRR +-> 1/(1-w1::EXPRR)), _
+--             'shiftHP, 'dummy, ShiftA, ShiftAF, ShiftAXGF, ShiftC]$HPSPEC
+--       else
+            error "Guess: no support for the Shift operator with displayAsGF"
+--                   and maxPower>1"
     else
-        [(z1: UFPSF): Stream UFPSF +-> ADEguessStream2(z1, partitions, ShiftSS, (1-monomial(1,1))^(-1)), _
-         ADEdegreeStream partitions, _
-         (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStream2(z1, partitions, ShiftSF, (1-monomial(1,1))^(-1)), _
+        degrees := ADEdegreeStream partitions
+        [degrees, _
+         (z1: UFPSF): Stream UFPSF +-> _
+             ADEguessStream2(z1, partitions, ShiftSS, (1-monomial(1,1))^(-1)), _
+         (o: NNI): SEQGEN +-> _
+            ADEguessModGen2(entries complete first(partitions, o), degrees.o), _
+         (l: List PositiveInteger): FPSGEN +->
+             ADEtestGen2([partitions.i for i in l], ShiftSF, (1-monomial(1,1))^(-1)), _
          (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
              ADEEXPRRStream(z1, z2, partitions, ShiftSX, diff1X), _
-         ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
+         'shiftHP, 'dummy, ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
 
 @
 %$
@@ -2048,65 +2295,140 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
     qShiftC(q: Symbol, total: NNI): List S ==
         qShiftC(q::S, total)$FFFG(S, SUP S)
 
-    qSubstUFPSF(q: Symbol, s: UFPSF, maxMD: Integer): List UFPSF ==
+    qSubstUFPSF(q: Symbol, s: UFPSF, maxMD: NNI): List UFPSF ==
         [s((q::F)^i*monomial(1,1)) for i in 0..maxMD]
 
-    qSubstUFPSSUPF(q: Symbol, s: UFPSSUPF, maxMD: Integer): List UFPSSUPF ==
+    qSubstUFPSSUPF(q: Symbol, s: UFPSSUPF, maxMD: NNI): List UFPSSUPF ==
         [s(((q::F)^i)::SUP(F)*monomial(1,1)) for i in 0..maxMD]
 
-    qSubstEXPRR(q: Symbol, xx: Symbol, s: EXPRR, maxMD: Integer): List EXPRR ==
+    qSubstEXPRR(q: Symbol, xx: Symbol, s: EXPRR, maxMD: NNI): List EXPRR ==
         [(q::EXPRR)^(i*xx::EXPRR)*s for i in 0..maxMD]
 
     ADEguessStreamMixShift(q: Symbol, f: UFPSF, _
                            partitions: Stream List Integer, _
-                           maxMD: Integer): Stream UFPSF ==
+                           maxMD: NNI): Stream UFPSF ==
         s := ADEguessStream2(f, partitions, ShiftSS, (1-monomial(1,1))^(-1))
         tensorMap(s, (z1: UFPSF): List UFPSF +-> qSubstUFPSF(q, z1, maxMD))$StreamTensor(UFPSF)
 
-    ADEdegreeStreamMixShift(partitions: Stream List Integer, _
-                            maxMD: Integer): Stream NNI ==
+    ADEguessModGen2Mixed: (Stream List Integer, NonNegativeInteger, NNI, NNI) -> SEQGEN
+    ADEguessModGen2Mixed(partitions, dl, maxMD, o): SEQGEN ==
+        (f, prime, q) +->
+            d := (#f - dl - 1)::NNI
+            qv := new(d+1, 1)$U32Vector
+            for i in 1..d repeat
+                qv(i) := QSMOD64_-32((q^i) rem prime, prime)$Lisp
+
+            O := (ceiling(o/(maxMD+1))$Fraction(Integer))::NNI
+            vv1: List U32Vector := [termAsU32VectorShift(f, p, prime, dl) _
+                                    for p in entries complete first(partitions, O)]
+            l: List Vector U32Vector := []
+            vv: List U32Vector
+            vn: U32Vector
+            lastv: U32Vector := first vv1
+            for v in vv1 for w in rest vv1 repeat
+                lastv := w
+                vv := [v]
+                vn := v
+                for i in 1..maxMD repeat
+                    vn := copy vn
+                    for e in 1..d repeat
+                        vn(e) := QSMULMOD32(vn(e), qv(e), prime)$Lisp
+                    vv := cons(vn, vv)
+
+                l := cons(vector reverse! vv, l)
+
+            vv := [lastv]
+            vn := lastv
+            r := (o rem (maxMD+1))-1
+            if r = -1 then r := maxMD
+            for i in 1..r repeat
+                vn := copy vn
+                for e in 1..d repeat
+                    vn(e) := QSMULMOD32(vn(e), qv(e), prime)$Lisp
+                vv := cons(vn, vv)
+
+            l := cons(vector reverse! vv, l)
+
+            concat(reverse! l)$(Vector U32Vector)
+
+    ADEdegreeStreamMixShift: (Stream List Integer, NNI) -> Stream NNI
+    ADEdegreeStreamMixShift(partitions, maxMD) ==
         s := ADEdegreeStream partitions
         tensorMap(s, (z1: NNI): List NNI +-> [z1 for i in 0..maxMD])$StreamTensor(NNI)
 
-    ADEtestStreamMixShift(q: Symbol, f: UFPSSUPF, _
-                          partitions: Stream List Integer, _
-                          maxMD: Integer): Stream UFPSSUPF ==
-        s := ADEtestStream2(f, partitions, ShiftSF, (1-monomial(1,1))^(-1))
-        tensorMap(s, (z1: UFPSSUPF): List UFPSSUPF +-> qSubstUFPSSUPF(q, z1, maxMD))$StreamTensor(UFPSSUPF)
+    ADEtestMixShiftGen: (Symbol, Stream List Integer, NNI, List PositiveInteger) -> FPSGEN
+    ADEtestMixShiftGen(q, partitions, maxMD, l): FPSGEN ==
+        (f: UFPSSUPF): Vector UFPSSUPF +->
+            res: List UFPSSUPF  := []
+            f0: UFPSSUPF
+            exponents: List NNI := []
+            oldPartition: PositiveInteger :=
+                (ceiling((first l)/(maxMD+1))$Fraction(Integer))::PositiveInteger
 
-    ADEEXPRRStreamMixShift(q: Symbol, f: EXPRR, xx: Symbol, _
-                           partitions: Stream List Integer, _
-                           maxMD: Integer): Stream EXPRR ==
+            newPartition: PositiveInteger
+            for p in l repeat
+                newPartition := (ceiling(p/(maxMD+1))$Fraction(Integer))::PositiveInteger
+                if newPartition > oldPartition then
+                    f0 := termAsUFPSSUPF2(f, partitions.oldPartition,
+                                          ShiftSF, (1-monomial(1,1))^(-1))
+                    res := concat([f0(((q::F)^i)::SUP(F)*monomial(1,1))
+                                   for i in exponents],
+                                  res)
+                    exponents := []
+                    oldPartition := newPartition
+
+                exponents := cons(((p::Integer-1) rem (maxMD+1))::NNI, exponents)
+
+            f0 := termAsUFPSSUPF2(f, partitions.oldPartition,
+                                  ShiftSF, (1-monomial(1,1))^(-1))
+            res := concat([f0(((q::F)^i)::SUP(F)*monomial(1,1))
+                           for i in exponents],
+                          res)
+
+            vector reverse! res
+
+    ADEEXPRRStreamMixShift: (Symbol, EXPRR, Symbol, Stream List Integer, NNI) -> Stream EXPRR
+    ADEEXPRRStreamMixShift(q, f, xx, partitions, maxMD): Stream EXPRR ==
         s := ADEEXPRRStream(f, xx, partitions, ShiftSX, diff1X)
         tensorMap(s, (z1: EXPRR): List EXPRR +-> qSubstEXPRR(q, xx, z1, maxMD))$StreamTensor(EXPRR)
 
     shiftHP(q: Symbol): (LGOPT -> HPSPEC) ==
         (l1: LGOPT): HPSPEC +->
-            partitions := FilteredPartitionStream l1
-            
             if displayAsGF(l1)$GOPT0 then
                 error "Guess: no support for the qShift operator with displayAsGF"
             else
+                partitions := FilteredPartitionStream l1
                 if zero?(maxMD := maxMixedDegree(l1)$GOPT0) then
-                    [(z1: UFPSF): Stream UFPSF +-> _
+                    degrees := ADEdegreeStream partitions
+                    [degrees, _
+                     (z1: UFPSF): Stream UFPSF +-> _
                          ADEguessStream2(z1, partitions, ShiftSS, _
                                          (1-monomial(1,1))^(-1)), _
-                     ADEdegreeStream partitions, _
-                     (z1: UFPSSUPF): Stream UFPSSUPF +-> _
-                         ADEtestStream2(z1, partitions, ShiftSF, _
-                                        (1-monomial(1,1))^(-1)), _
+                     (o: NNI): SEQGEN +-> _
+                         ADEguessModGen2(entries complete first(partitions, o), _
+                                         degrees.o), _
+                     (l: List PositiveInteger): FPSGEN +-> _
+                         ADEtestGen2([partitions.i for i in l],
+                                     ShiftSF, (1-monomial(1,1))^(-1)), _
                      (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
                          ADEEXPRRStream(z1, z2, partitions, ShiftSX, diff1X), _
+                     'qshiftHP, q, _
                      (z1: NNI, z2: NNI, z3: SUP S): S +-> qShiftA(q, z1, z2, z3), _
                      (z1: NNI, z2: NNI, z3: UFPSSUPF): SUP F +-> qShiftAF(q, z1, z2, z3), _
                      (z1: NNI, z2: Symbol, z3: EXPRR): EXPRR +-> qShiftAX(q, z1, z2, z3), _
                      (z1: NNI): List S +-> qShiftC(q, z1)]$HPSPEC
                 else
-                    [(z1: UFPSF): Stream UFPSF +-> ADEguessStreamMixShift(q, z1, partitions, maxMD), _
-                     ADEdegreeStreamMixShift(partitions, maxMD), _
-                     (z1: UFPSSUPF): Stream UFPSSUPF +-> ADEtestStreamMixShift(q, z1, partitions, maxMD), _
-                     (z1: EXPRR, z2: Symbol): Stream EXPRR +-> ADEEXPRRStreamMixShift(q, z1, z2, partitions, maxMD), _
-                     ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
+                    degrees := ADEdegreeStreamMixShift(partitions, maxMD)
+                    [degrees, _
+                     (z1: UFPSF): Stream UFPSF +-> _
+                         ADEguessStreamMixShift(q, z1, partitions, maxMD), _
+                     (o: NNI): SEQGEN +-> _
+                         ADEguessModGen2Mixed(partitions, degrees.o, maxMD, o), _
+                     (l: List PositiveInteger): FPSGEN +-> _
+                         ADEtestMixShiftGen(q, partitions, maxMD, l), _
+                     (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+                         ADEEXPRRStreamMixShift(q, z1, z2, partitions, maxMD), _
+                     'qmixed, q, ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
 
 @
 %$
@@ -2134,10 +2456,7 @@ derivatives much cheaper, since, because of laziness, only coefficients that
 are actually used are computed.
 
 The second of the two procedures augments the list with a transcendental
-element. This way we can easily check whether a coefficient is valid or not: if
-it contains the transcendental element, it depends on data we do not have. In
-other words, this transcendental element simply represents the $O(x^d)$, when
-$d$ is the number of elements in the list.
+element.
 
 <<implementation: Guess - Hermite-Pade - Utilities>>=
 list2UFPSF(list: List F): UFPSF == series(list::Stream F)$UFPSF
@@ -2157,75 +2476,290 @@ SUPF2SUPSUPF(p: SUP F): SUP SUP F ==
 @
 %$
 
-[[getListSUPF]] returns the first [[o]] elements of the stream, each truncated
-after degree [[deg]].
+[[getListSUPF]] truncates each element of the list after degree [[deg]].
 
 <<implementation: Guess - Hermite-Pade - Utilities>>=
 UFPSF2SUPF(f: UFPSF, deg: NNI): SUP F ==
     makeSUP univariatePolynomial(f, deg)
 
-getListSUPF(s: Stream UFPSF, o: NNI, deg: NNI): List SUP F ==
-    map((z1: UFPSF): SUP F +-> UFPSF2SUPF(z1, deg), entries complete first(s, o))
+getListSUPF(s: List UFPSF, deg: NNI): List SUP F ==
+    map((z1: UFPSF): SUP F +-> UFPSF2SUPF(z1, deg), s)
        $ListFunctions2(UFPSF, SUP F)
 
+<<implementation: Guess - testInterpolant>>
 <<implementation: Guess - guessInterpolate>>
 <<implementation: Guess - guessInterpolate2>>
-<<implementation: Guess - testInterpolant>>
+
 @
 %$
 
-[[guessInterpolate]] calls the appropriate [[generalInterpolation]] from
-[[FFFG]], for one vector of degrees, namely [[eta]].
+\subsubsection{The main routines}
+
+We factor the main routine into two subroutines:
+\begin{itemize}
+\item [[guessHPaux]] determines the search space, and
+\item [[guessInterpolate]] calls the appropriate solver and prepares the
+  solutions.
+\end{itemize}
+
+[[guessHPaux]] determines the search space, i.e., the set of power series of
+which we try to find a vanishing linear combination and the sum of the degrees
+of the coefficient polynomials.  For every such configuration it calls
+[[guessInterpolate]].
+
+[[guessInterpolate]] decides which solver to use, and then converts the
+solution into a [[GUESSRESULT]].
+
+There are three different kinds of checks:
+\begin{itemize}
+\item a priori, any proposed solution has to interpolate correctly up to (but
+  excluding) degree [[sigma]].  These checks should be done by the solver.
+\item depending on the solution, it may happen that we can check a few more
+  terms.  For example, if $f'(z)$ is part of the linear combination, a priori
+  we loose one term for checking.  But if the solver returns $z f'(z)$, we
+  don't.  The modular solver can do these checks before lifting the solution.
+
+  Unfortunately we do not know of an easy and efficient way to find out how
+  many terms are valid.  As an example, consider
+  $$(f(z)f'(z)-f'(z)-f(z)+1-z^2=(f(z)-1)f'(z)-f(z)+1-z^2$$
+  with initial value $f(0)=1$.  A priori we would expect to loose one term, but
+  it turns out that we don't because of cancellation.
+
+  One possibility that is (probably) exact is to augment the truncated power
+  series with an additional transcendental, element representing $O(x^d)$.  We
+  then compute the proposed linear combination using the augmented series.  If
+  its lowest degree term contains the transcendental element, it depends on
+  data we do not have, and the solution is correct.  Unfortunately, it turns
+  out that this method is too inefficient for our purpose.
+
+  Therefore, we rely on a probabilistic check: instead of a transcendental
+  element, we add a random value and recompute the linear combination.
+\item finally, there are certain solutions which we may want to reject under
+  some circumstances:
+  \begin{itemize}
+  \item a trailing zero implies that [[guessPade]] will \emph{always} find a
+    solution
+  \item solutions may have unattainable points, like $(n-1)f(n)=(n-1)n$ can
+    have any value for $f(1)$.
+  \end{itemize}
+\end{itemize}
+
+
+% THIS IS NOT UP TO DATE ANYMORE
+%
+% In the case of [[generalInterpolation]] from [[FFFG]], for one vector of
+% degrees, namely [[eta]].  [[testDegree]] indicates the degree up to which any
+% given linear combination of elements in [[guessList]] should be correct.
+%
+% We now have to distinguish between the case where we try all combination of
+% degrees and the case where we try only an (nearly) evenly distributed vector
+% of degrees.
+%
+% In the first case, [[guessInterpolate2]] is going to look at all degree
+% combinations with [[o]] elements with sum of entries [[guessDegree+2-o]].  We
+% give up as soon as the order [[o]] is greater than the number of available
+% terms plus one.  In the extreme case, i.e., when [[guessDegree+2=o]], we
+% allow for example constant coefficients for all terms of the linear
+% combination.  It seems that it is a bit arbitrary at what point we stop,
+% however, we would like to be consistent with the evenly distributed case.
+%
+% We want to pass only the minimal number of terms to [[FFFG]].
+
 
 <<implementation: Guess - guessInterpolate>>=
-guessInterpolate(guessList: List SUP F, eta: List NNI, D: HPSPEC)
+import ModularHermitePadeSolver(F, S)
+
+guessInterpolateModular(list: List F, degs: List NNI, _
+                        o: NNI, degreeLoss : Integer, _
+                        guessDegree: NNI, D: HPSPEC, options: LGOPT)
+                       : Union(Matrix SUP S, Boolean) ==
+@
+
+The sum of degrees of the coefficient polynomials has to be at most
+[[guessDegree]].  [[sigma-1]] is the degree up to which any solution should be
+correct a priori.
+
+<<implementation: Guess - guessInterpolate>>=
+    sigma: NNI := (guessDegree+safety(options)$GOPT0+o-1)::NNI
+
+    leadingZeros : Integer := 0
+    for el in list while el = 0 repeat
+        leadingZeros := leadingZeros + 1
+
+    if leadingZeros > degreeLoss then
+        del := leadingZeros - degreeLoss
+        del > guessDegree => return false
+        guessDegree := (guessDegree - del)::NNI
+
+    if not(allDegrees(options)$GOPT0) then
+        if (maxD := maxDegree(options)$GOPT0) case NNI and
+           maxD*o < guessDegree then
+            degs := [maxD for i in 1..o]
+        else
+            deg := divide(guessDegree, o)
+            degs := [(if i <= deg.remainder   _
+                      then deg.quotient + 1   _
+                      else deg.quotient) for i in 1..o]
+    check : ((List SUP S) -> Union("good", "reject", "no__solution"))
+    check := x +-> checkInterpolant(list, o, x, D, options, sigma)
+    if MonteCarlo(options)$GOPT0 then
+        check := gen__Monte__Carlo__check(check, list, _
+                   D.kind, D.qvar, sigma, (D.guessModGen)(o))
+    else
+        -- XXX stupid compiler ...
+        check := check
+    HP__solve(list, degs, D.kind, D.qvar, sigma, _
+              (D.guessModGen)(o),check)
+
+@
+%$
+
+If we cannot use the modular solver, we fall back on [[FFFG]].
+
+We distribute the parameters as evenly as possible.  Is it better to have
+higher degrees at the end or at the beginning?
+
+<<implementation: Guess - guessInterpolate>>=
+guessInterpolateFFFG(list: List F, degs : List NNI, o: NNI, _
+                 guessDegree: NNI, D: HPSPEC, options: LGOPT)
                 : Matrix SUP S ==
+    M: Matrix SUP S
+    eta: List NNI
+    if allDegrees(options)$GOPT0 then
+        eta := copy(degs)
+        eta(1) := eta(1) + 1
+    else
+        if (maxD := maxDegree(options)$GOPT0) case NNI and
+           maxD*o < guessDegree then
+            eta := [(if i < o _
+                     then maxD + 1 _
+                     else maxD)::NNI for i in 1..o]
+        else
+            deg := divide((guessDegree+o-1)::NNI, o)
+            eta := [(if i <= deg.remainder _
+                     then deg.quotient + 1 _
+                     else deg.quotient)::NNI for i in 1..o]
+    sumEta := reduce(_+, eta)
+
+    guessS  := (D.guessStream)(list2UFPSF list)
+    guessList: List UFPSF  := entries complete first(guessS, o)
+    guessPolys: List SUP F := getListSUPF(guessList, (sumEta-1)::NNI)
+
     if F is S then
-        vguessList: Vector SUP S := vector(guessList pretend List(SUP(S)))
-        generalInterpolation((D.C)(reduce(_+, eta)), D.A,
-                             vguessList, eta)$FFFG(S, SUP S)
+        vguessList: Vector SUP S := vector(guessPolys pretend List SUP S)
+        M := generalInterpolation((D.C)(sumEta), D.A,
+                                  vguessList, eta)$FFFG(S, SUP S)
     else if F is Fraction S then
-        vguessListF: Vector SUP F := vector(guessList)
-        generalInterpolation((D.C)(reduce(_+, eta)), D.A,
-                             vguessListF, eta)$FFFGF(S, SUP S, SUP F)
+        vguessListF: Vector SUP F := vector(guessPolys)
+        M := generalInterpolation((D.C)(sumEta), D.A,
+                                  vguessListF, eta)$FFFGF(S, SUP S, SUP F)
 
     else error "Guess: type parameter F should be either equal to S or equal _
                 to Fraction S"
+
+    rl : List Integer := []
+    for i in 1..ncols M repeat
+        ce := entries column(M, i)
+        if checkInterpolant(list, o, entries column(M, i), D, _
+                         options, guessDegree) case "good" then
+            rl := cons(i, rl)
+
+    empty?(rl) => empty()
+    rl := reverse!(rl)
+    m := nrows M
+    Mr := new(m, #rl, 0)$Matrix(SUP S)
+    for i1 in 1..#rl for i2 in rl repeat
+        for j in 1..m repeat
+            Mr(j, i1) := M(j, i2)
+    Mr
+
 @
 
-[[guessInterpolate2]] calls the appropriate [[generalInterpolation]] from
-[[FFFG]], for all degree vectors with given [[sumEta]] and [[maxEta]].
+[[guessInterpolate2]] calls the appropriate [[guessInterpolate]]
+for all degree vectors with given [[sumEta]] and [[maxEta]].
 
 <<implementation: Guess - guessInterpolate2>>=
-guessInterpolate2(guessList: List SUP F,
-                  sumEta: NNI, maxEta: NNI,
-                  D: HPSPEC): Stream Matrix SUP S ==
-    if F is S then
-        vguessList: Vector SUP S := vector(guessList pretend List(SUP(S)))
-        generalInterpolation((D.C)(sumEta), D.A,
-                             vguessList, sumEta, maxEta)
-                            $FFFG(S, SUP S)
-    else if F is Fraction S then
-        vguessListF: Vector SUP F := vector(guessList)
-        generalInterpolation((D.C)(sumEta), D.A,
-                             vguessListF, sumEta, maxEta)
-                            $FFFGF(S, SUP S, SUP F)
+guessInterpolate3: (List F, NNI, Integer, NNI, HPSPEC, LGOPT, _
+                    Stream List NonNegativeInteger) -> _
+                    Stream Matrix SUP S
+guessInterpolate3(list: List F, o: NNI, degreeLoss : Integer, _
+                  guessDegree: NNI, D: HPSPEC, options: LGOPT, _
+                  vs : Stream List NonNegativeInteger) _
+                 : Stream Matrix SUP S == delay
+    explicitlyEmpty? vs or empty? vs => empty()$Stream(Matrix SUP S)
+    M0 := guessInterpolateModular(list, frst vs, o, _
+             degreeLoss, guessDegree, D, options)
+    skip := false
+    M : Matrix SUP S :=
+        M0 case Boolean =>
+            skip := not(M0::Boolean)
+            M0::Boolean =>
+                guessInterpolateFFFG(list, frst vs, o, _
+                    guessDegree, D, options)
+            empty()$(Matrix SUP S)
+        M0::Matrix SUP S
+    skip =>
+        guessInterpolate3(list, o, degreeLoss, _
+            guessDegree, D, options, rst vs)
+    concat(M, guessInterpolate3(list, o, degreeLoss, _
+                  guessDegree, D, options, rst vs))
 
-    else error "Guess: type parameter F should be either equal to S or equal _
-                to Fraction S"
+guessInterpolate2(list: List F, o: NNI, degreeLoss: Integer, _
+                  guessDegree: NNI, D: HPSPEC, options: LGOPT) _
+                 : Stream Matrix SUP S ==
+    vs : Stream List NonNegativeInteger
+    vs :=
+        allDegrees(options)$GOPT0 =>
+            maxD0 := maxDegree(options)$GOPT0
+            maxD : NNI :=
+                maxD0 case NNI => maxD0::NNI
+                guessDegree
+            genVectorStream(guessDegree, maxD, o)$FFFG(S, SUP S)
+        concat(empty()$List(NonNegativeInteger),
+               empty()$Stream(List NonNegativeInteger))
+    guessInterpolate3(list, o, degreeLoss, guessDegree, D, _
+                 options, vs)
+
 @
 
-[[testInterpolant]] checks whether [[resi]] is really a solution.
+[[checkInterpolant]] checks whether [[resi]] is really a solution.
+
 <<implementation: Guess - testInterpolant>>=
-testInterpolant(resi: List SUP S,
-                list: List F,
-                testList: List UFPSSUPF,
+checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer) -> Union("good", "reject", "no__solution")
+checkInterpolant(list, o, resi, D, options, sigma) ==
+    flist: List PositiveInteger := [i::PositiveInteger for i in 1..o | not zero? resi.i]
+    testList := ((D.testGen)(flist))(list2UFPSSUPF list)
+    resiSUPF := [SUPF2SUPSUPF SUPS2SUPF(resi.i) for i in flist]
+
+    c: SUP F
+    order : Integer := 0
+    for d in 0.. repeat
+        c := generalCoefficient(D.AF, testList,
+                                d, vector resiSUPF)
+                               $FFFG(SUP F, UFPSSUPF)
+        if not zero? c then
+            order := d
+            break
+
+    order < sigma =>
+        print("Order too low"::OutputForm)
+        return "no__solution"
+
+    ground? c =>
+        if debug(options)$GOPT0 then
+            output("proposed solution does not fit")
+                  $OutputPackage
+        return "reject"
+    "good"
+
+wrapInterpolant(o: NNI,
+                resi: List SUP S,
                 exprList: List EXPRR,
                 initials: List EXPRR,
-                guessDegree: NNI,
                 D: HPSPEC,
                 dummy: Symbol, op: BasicOperator, options: LGOPT)
-               : Union("failed", Record(function: EXPRR, order: NNI)) ==
+               : Union(Record(function: EXPRR, order: NNI), "failed") ==
+
 @
 
 First we make sure it is not a solution we should have found already. Note that
@@ -2233,10 +2767,10 @@ we cannot check this if [[maxDegree]] is set, in which case some initial
 solutions may have been overlooked.
 
 <<implementation: Guess - testInterpolant>>=
-    ((maxDegree(options)$GOPT0 case "arbitrary") and 
-     (allDegrees(options)$GOPT0 = false) and 
-     zero?(last resi)) => 
-        if debug(options)$GOPT0 then 
+    ((maxDegree(options)$GOPT0 case "arbitrary") and
+     (allDegrees(options)$GOPT0 = false) and
+     zero?(last resi)) =>
+        if debug(options)$GOPT0 then
             output(hconcat("solution should have been found already ", _
                            resi::OutputForm))
                   $OutputPackage
@@ -2245,11 +2779,11 @@ solutions may have been overlooked.
 
 Then we check all the coefficients that should be valid.  We want the zero
 solution only, if the function is really zero. Without this test, every
-sequence ending with zero is interpreted as the zero sequence, since the factor
-in front of the only non-vanishing term can cancel everything else.
+sequence ending with zero can be interpreted as the zero sequence, since the
+factor in front of the only non-vanishing term can cancel everything else.
 
 We set [[nonZeroCoefficient]] to the only non zero coefficient or, if there are
-several, it is $0$. It should not happen that all coefficients in [[resi]]
+several, it is $0$.  It should not happen that all coefficients in [[resi]]
 vanish.
 \begin{ToDo}
   Check that not all coefficients in [[resi]] can vanish simultaneously.
@@ -2283,67 +2817,35 @@ non-zero term in [[list]], we reject the proposed solution.
 
 <<implementation: Guess - testInterpolant>>=
     if not zero? nonZeroCoefficient then
-        (freeOf?(exprList.nonZeroCoefficient, name op)) => 
-            if debug(options)$GOPT0 then 
+        (freeOf?(exprList.nonZeroCoefficient, name op)) =>
+            if debug(options)$GOPT0 then
                 output("solution would not involve generating function")
                       $OutputPackage
 
             return "failed"
 
-        for e in list repeat
-            if not zero? e then 
-                if debug(options)$GOPT0 then 
-                    output("list contains non-zero element")
-                          $OutputPackage
-                return "failed"
 @
 
-Here we check for each degree [[d]] larger than [[guessDegree]] whether the
+Here we check for each degree [[d]] larger than [[testDegree]] whether the
 proposed linear combination vanishes.  When the first coefficient that does not
 vanish contains the transcendental element we accept the linear combination as
 a solution.
 
-<<implementation: Guess - testInterpolant>>=
-    else
-        resiSUPF := map((z1: SUP S): SUP SUP F +-> SUPF2SUPSUPF SUPS2SUPF z1, resi)
-                       $ListFunctions2(SUP S, SUP SUP F)
-
-        iterate? := true;
-        for d in guessDegree+1.. repeat
-            c: SUP F := generalCoefficient(D.AF, vector testList,
-                                           d, vector resiSUPF)
-                                          $FFFG(SUP F, UFPSSUPF)
-
-            if not zero? c then
-                iterate? := ground? c
-                break
-
-        iterate? => 
-            if debug(options)$GOPT0 then 
-                output("proposed solution does not fit")
-                      $OutputPackage
-            return "failed"
-@
-
-Finally, it seems that we have found a solution. Now we cancel the greatest
-common divisor of the equation. Note that this may take quite some time, it
-seems to be quicker to check [[generalCoefficient]] with the original [[resi]].
-
-If [[S]] is a [[Field]], the [[gcd]] will always be $1$.  Thus, in this case we
-make the result monic.
+\begin{ToDo}
+  Finally, it seems that we have found a solution.  We do not want to cancel
+  the greatest common divisor of the equation, but only the greatest common
+  divisor of the coefficients of the solution.  If [[S]] is a [[Field]], we
+  normalize the leading coefficient of the first polynomial.
+\end{ToDo}
 
 <<implementation: Guess - testInterpolant>>=
     g: SUP S
     if S has Field
-    then g := leadingCoefficient(find((z1: SUP(S)): Boolean +-> not zero? z1, reverse resi)::SUP(S))::SUP(S)
+    then g := leadingCoefficient(find((z1: SUP(S)): Boolean +-> _
+                  not zero? z1, reverse resi)::SUP(S))::SUP(S)
     else g := gcd resi
     resiF := map((z1: SUP S): SUP F +-> SUPS2SUPF((z1 exquo g)::SUP(S)), resi)
                 $ListFunctions2(SUP S, SUP F)
-
-
-    if debug(options)$GOPT0 then
-        output(hconcat("trying possible solution ", resiF::OutputForm))
-              $OutputPackage
 
 -- transform each term into an expression
 
@@ -2360,22 +2862,17 @@ make the result monic.
                        reverse initials)
                       $RecurrenceOperator(Integer, EXPRR)
         ord: NNI := 0
--- FIXME: checkResult doesn't really work yet for generating functions
     else
         res := evalRec(op, dummy, indexName(options)$GOPT0::EXPRR,
                        indexName(options)$GOPT0::EXPRR,
                        numerator reduce(_+, ex),
                        reverse initials)
                       $RecurrenceOperator(Integer, EXPRR)
-        ord: NNI := checkResult(res, indexName(options)$GOPT0, _
-                                #list, list, options)
-
+        ord: NNI := 0
 
     [res, ord]$Record(function: EXPRR, order: NNI)
 
 @
-
-\subsubsection{The main routine}
 
 The following is the main guessing routine, called by all others -- except
 [[guessExpRat]] and [[guessBinRat]].
@@ -2383,61 +2880,29 @@ The following is the main guessing routine, called by all others -- except
 <<implementation: Guess - guessHPaux>>=
 guessHPaux(list: List F, D: HPSPEC, options: LGOPT): GUESSRESULT ==
     reslist: GUESSRESULT := []
-
-    listDegree := #list-1-safety(options)$GOPT0
-    if listDegree < 0 then return reslist
 @
-%$
 
-\sloppypar We do as if we knew only the coefficients up to and including degree
-[[listDegree]].  Thus, if we have less elements of the sequence than
-[[safety]], there remain no elements for guessing.  Originally we demanded to
-have at least two elements for guessing.  However, we want to be able to induce
-from $[c,c]$ that the function equals $c$ with [[safety]] one.  This is
-important if we apply, for example, [[guessRat]] recursively.  In this case,
-[[listDegree]] equals zero.
+We consider the elements of list as the first few coefficients of a formal
+power series $f$.  We use the coefficients up to and including degree
+[[listDegree]] to determine a vanishing linear combination of power series
+derived from $f$, eg. by taking derivatives or powers.  The remaining elements,
+whose number is given by the option [[safety]], are used as a plauibility
+check.  Originally we demanded to have at least two elements for guessing.
+However, we want to be able to induce from $[c,c]$ that the function equals $c$
+with [[safety]] one.  This is important if we apply, for example, [[guessRat]]
+recursively.  In this case, [[listDegree]] equals zero.
 
 <<implementation: Guess - guessHPaux>>=
-    a := functionName(options)$GOPT0
-    op := operator a
+    listDegree := #list-1-safety(options)$GOPT0
+    if listDegree < 0 then return reslist
+
+    op := operator functionName(options)$GOPT0
     x := variableName(options)$GOPT0
     dummy := new$Symbol
 
     initials: List EXPRR := [coerce(e)@EXPRR for e in list]
 
-@
-%$
-
-We need to create several streams.  Let $P$ be the univariate power series
-whose first few coefficients are given by [[list]].  As an example, consider
-the differentiation setting:
-\begin{itemize}
-\item the elements of [[guessS]] consist of $P$ differentiated and taken to
-  some power
-\item the elements of [[degreeS]] are integers that tell us how many terms less
-  than in [[list]] are valid in the corresponding element of [[guessS]]
-\item the elements of [[testS]] are very similar to those of [[guessS]], with
-  the difference that they are derived from $P$ with an transcendental element
-  added, which corresponds to $O(x^d)$
-\item finally, the elements of [[exprS]] contain representations of the
-  transformations applied to $P$ as expressions.
-\end{itemize}
-
-\begin{ToDo}
-  I am not sure whether it is better to get rid of denominators in [[list]]
-  here or, as I currently do it, only in [[generalInterpolation$FFFG]]. %$
-  If we clear them here, we cannot take advantage of factors that may appear
-  only after differentiating or powering.
-
-  Also, dealing with them in [[generalInterpolation$FFFG]]%$
-  gives us the chance to use a different algorithm some day.
-\end{ToDo}
-
-
-<<implementation: Guess - guessHPaux>>=
-    guessS  := (D.guessStream)(list2UFPSF list)
     degreeS := D.degreeStream
-    testS   := (D.testStream)(list2UFPSSUPF list)
     exprS   := (D.exprStream)(op(dummy::EXPRR)::EXPRR, dummy)
 @
 
@@ -2445,10 +2910,12 @@ We call the number of terms [[o]] of the linear combination its \emph{order}.
 We consider linear combinations of at least two terms, since otherwise the
 function would have to vanish identically\dots
 
-When proceeding in the stream [[guessS]], it may happen that we loose valid
-terms.  For example, when trying to find a linear ordinary differential
-equation, we are looking for a linear combination of $f, f^\prime,
-f^{\prime\prime}, \dots$.  Suppose [[listDegree]] equals $2$, i.e. we have
+We need to determine the number of parameters we can determine using the given
+coefficients.  Note that it may happen that we loose valid terms when we
+proceed in the stream of derived powerseries.  For example, when trying to find
+a linear ordinary differential equation, we are looking for a linear
+combination of $f, f^\prime, f^{\prime\prime}, \dots$.  Suppose [[listDegree]]
+equals $2$, i.e. we have
 \begin{align*}
   f                &= l_0 + l_1 x + l_2 x^2\\
   f^\prime         &= l_1 + 2l_2 x\\
@@ -2456,199 +2923,81 @@ f^{\prime\prime}, \dots$.  Suppose [[listDegree]] equals $2$, i.e. we have
 \end{align*}
 Thus, each time we differentiate the series, we loose one term for guessing.
 Therefore, we cannot use the coefficient of $x^2$ of $f^{\prime\prime}$ for
-generating a linear combination.  [[guessDegree]] contains the degree up to
-which the given coefficients in the list can be used for guessing, after
-subtracting [[safety]].  This coincides with the degree up to which any linear
-combination of the series in [[first(guessS, o)]] is certainly correct,
-assuming [[safety]] equals zero.
+generating a linear combination.
+
+[[guessDegree]] will contain the maximal sum of degrees of the coefficient
+polynomials we are going to determine.  Note that [[listDegree-degreeS.o]] is
+the degree up to which any linear combination of the [[o]] selected series is
+certainly correct, assuming [[safety]] equals zero.
 
 <<implementation: Guess - guessHPaux>>=
-    iterate?: Boolean := false -- this is necessary because the compiler
-                               -- doesn't understand => "iterate" properly
-                               -- the latter just leaves the current block, it
-                               -- seems
     for o in 2.. repeat
-        empty? rest(guessS, (o-1)::NNI) => break
-        guessDegree: Integer := listDegree-(degreeS.o)::Integer
-        guessDegree < 0 => break
+        empty? rest(degreeS, (o-1)::NNI) => break
+        degreeLoss := (degreeS.o)::Integer
+        guessDegree: Integer := listDegree + 2 - degreeLoss - o
+
+        if guessDegree < 0 then
+            if debug(options)$GOPT0 then
+                output("not enough values for guessing")$OutputPackage
+            return reslist
+
         if debug(options)$GOPT0 then
             output(hconcat("Trying order ", o::OutputForm))$OutputPackage
             output(hconcat("guessDegree is ", guessDegree::OutputForm))
                   $OutputPackage
-@
-%$"
 
-We now have to distinguish between the case where we try all combination of
-degrees and the case where we try only an (nearly) evenly distributed vector of
-degrees.
-
-In the first case, [[guessInterpolate2]] is going to look at all [[eta]] with
-[[o]] elements with sum of entries [[guessDegree+1]].  We give up as soon as
-the order [[o]] is greater than the number of available terms plus one.  In the
-extreme case, i.e., when [[o=guessDegree+2]], we allow for example constant
-coefficients for all terms of the linear combination.  It seems that it is a
-bit arbitrary at what point we stop, however, we would like to be consistent
-with the evenly distributed case.
-
-<<implementation: Guess - guessHPaux>>=
-        if allDegrees(options)$GOPT0 then
-            (o > guessDegree+2) =>
-                if debug(options)$GOPT0 then
-                    output("order larger than guessDegree+2")$OutputPackage
-                return reslist
-
-            maxEta: NNI
-            if (maxD := maxDegree(options)$GOPT0) case NNI
-            then maxEta := maxD + 1
-            else maxEta := guessDegree::NNI+1
-        else
-@
-
-In the second case, we first compute the number of parameters available for
-determining the coefficient polynomials.  We have to take care of the fact,
-that HermitePade produces solutions with sum of degrees being one more than the
-sum of elements in [[eta]].
-
-<<implementation: Guess - guessHPaux>>=
-            maxParams := divide(guessDegree::NNI+1, o)
-            if debug(options)$GOPT0
-            then output(hconcat("maxParams: ", maxParams::OutputForm))
-                       $OutputPackage
-@
-
-If we do not have enough parameters, we give up.  We allow for at most one zero
-entry in the degree vector, because then there is one column that allows at
-least a constant term in each entry.
-
-<<implementation: Guess - guessHPaux>>=
-            if maxParams.quotient = 0 and maxParams.remainder < o-1 then
-                if debug(options)$GOPT0
-                then output("guessDegree too small")$OutputPackage
-                return reslist
-@
-
-If [[maxDegree]] is set but [[allDegrees]] is not, we skip the first few
-partitions, unless we cannot increase the order anymore.
-\begin{ToDo}
-  I have no satisfactory way to determine whether we should skip the current
-  partition or not.  We really want to make sure that for each sequence of
-  partitions $\lambda_1 \subseteq \lambda_2 \subseteq \dots$ occurring in the
-  stream, exactly one is actually tried.
-
-  We currently simply assume that [[guessDegree]] is weakly decreasing and that
-  the lists of partitions are actually closed under inclusion.  However, this
-  still allows the case that [[maxParams]] is too large for one partition but
-  too small for the next.  Hm, it seems that this cannot happen, at least not
-  for [[maxPower==1]].
-\end{ToDo}
-
-<<implementation: Guess - guessHPaux>>=
-            if ((maxD := maxDegree(options)$GOPT0) case NNI and
-                maxD < maxParams.quotient) and
-               not (empty? rest(guessS, o) or
-                    ((newGuessDegree := listDegree-(degreeS.(o+1))::Integer)
-                         < 0) or
-                    (((newMaxParams := divide(newGuessDegree::NNI+1, o+1))
-                          .quotient = 0) and
-                       (newMaxParams.remainder < o)))
-            then iterate? := true
-@
-We distribute the parameters as evenly as possible.  Is it better to have
-higher degrees at the end or at the beginning?
-<<implementation: Guess - guessHPaux>>=
-            else if (maxD := maxDegree(options)$GOPT0) case NNI and
-                    maxD < maxParams.quotient
-                 then
-                     guessDegree := o*(1+maxD)-2
-                     eta: List NNI
-                         := [(if i < o    _
-                               then maxD + 1   _
-                               else maxD)::NNI _
-                             for i in 1..o]
-                 else eta: List NNI
-                          := [(if i <= maxParams.remainder   _
-                               then maxParams.quotient + 1   _
-                               else maxParams.quotient)::NNI for i in 1..o]
 @
 %$
 
-It remains to prepare [[guessList]], which is the list of [[o]] power series
-polynomials truncated after degree [[guessDegree]]. Then we can call
-HermitePade.
-
-\begin{ToDo}
-  [[maxDegree]] should be handled differently, maybe: we should only pass as
-  many coefficients to [[FFFG]] as [[maxDegree]] implies! That is, if we cannot
-  increase the order anymore, we should decrease [[guessDegree]] to %
-  $o\cdot [[maxDegree]] - 2$ and set [[eta]] accordingly.  I might have to take
-  care of [[allDegrees]], too.
-\end{ToDo}
+If [[maxDegree]] is set, we skip the first few partitions, until
+[[guessDegree]] would drop below [[o*maxDegree]].  Of course we also want to
+make sure that for each sequence of partitions $\lambda_1 \subseteq \lambda_2
+\subseteq \dots$ occurring in the stream, exactly one is actually tried.  To
+achieve this we assume that [[guessDegree]] is weakly decreasing and that the
+lists of partitions are closed under inclusion.
 
 <<implementation: Guess - guessHPaux>>=
-        if iterate?
+        if (maxD := maxDegree(options)$GOPT0) case NNI and _
+           not empty? rest(degreeS, o) and _
+           maxD*o     <  guessDegree  and _
+           maxD*(o+1) <= listDegree+2-(degreeS.(o+1))::Integer-(o+1)
         then
-            iterate? := false
-            if debug(options)$GOPT0 then output("iterating")$OutputPackage
+            1 -- compiler bug
+            if debug(options)$GOPT0
+            then output("iterating")$OutputPackage
         else
-            guessList: List SUP F    := getListSUPF(guessS, o, guessDegree::NNI)
-            testList:  List UFPSSUPF := entries complete first(testS, o)
-            exprList:  List EXPRR    := entries complete first(exprS, o)
-
+            exprList: List EXPRR := []
             if debug(options)$GOPT0 then
+                exprList := entries complete first(exprS, o)
                 output("The list of expressions is")$OutputPackage
                 output(exprList::OutputForm)$OutputPackage
 
-            if allDegrees(options)$GOPT0 then
-                MS: Stream Matrix SUP S := guessInterpolate2(guessList,
-                                                             guessDegree::NNI+1,
-                                                             maxEta, D)
-                repeat
-                    (empty? MS) => break
-                    M := first MS
+            MS: Stream Matrix SUP S
+               := guessInterpolate2(list, o,
+                                    degreeLoss,
+                                    guessDegree::NNI,
+                                    D, options)
 
-                    for i in 1..o repeat
-                        res := testInterpolant(entries column(M, i),
-                                               list,
-                                               testList,
-                                               exprList,
-                                               initials,
-                                               guessDegree::NNI,
-                                               D, dummy, op, options)
-
-                        (res case "failed") => "iterate"
-
-                        if not member?(res, reslist)
-                        then reslist := cons(res, reslist)
-
-                        if one(options)$GOPT0 then return reslist
-
-                    MS := rest MS
-            else
-                M: Matrix SUP S := guessInterpolate(guessList, eta, D)
-
-                for i in 1..o repeat
-                    res := testInterpolant(entries column(M, i),
-                                           list,
-                                           testList,
+            repeat
+                (empty? MS) => break
+                M := first MS
+                MS := rst MS
+                if empty?(exprList) then
+                    exprList := entries complete first(exprS, o)
+                for i in 1..ncols M repeat
+                    res := wrapInterpolant(o, entries column(M, i),
                                            exprList,
                                            initials,
-                                           guessDegree::NNI,
                                            D, dummy, op, options)
-                    (res case "failed") => "iterate"
 
-                    if not member?(res, reslist)
+                    if not ((res case "failed") or member?(res, reslist))
                     then reslist := cons(res, reslist)
-
-                    if one(options)$GOPT0 then return reslist
+                if not empty? reslist and one(options)$GOPT0
+                then return reslist
 
     reslist
 
 @
-
-\begin{ToDo}
-  The duplicated block at the end should really go into [[testInterpolant]], I
-  guess. Furthermore, it would be better to remove duplicates already there.
-\end{ToDo}
 
 \subsubsection{Specialisations}
 
@@ -2698,28 +3047,28 @@ guessPade(list: List F): GUESSRESULT == guessPade(list, [])
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessADE(q: Symbol): GUESSER ==
-        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
             if (hom? := homogeneous(z2)$GOPT0) case Boolean and hom? then
                 if (maxP? := maxPower(z2)$GOPT0) case PI then
                     concat [guessADE(q)(z1, cons(homogeneous(i::PI)$GuessOption, z2)) _
                             for i in 1..maxP?]
                 else
                     error "Guess: setting homogeneous true requires that maxPower is also set"
-    
+
             else
                 opts: LGOPT := cons(displayAsGF(true)$GuessOption, z2)
                 guessHPaux(z1, (diffHP q)(opts), opts)
 
     guessAlg(q: Symbol): GUESSER ==
-        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
             guessADE(q)(z1, cons(maxDerivative(0)$GuessOption, z2))
 
     guessHolo(q: Symbol): GUESSER ==
-        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
             guessADE(q)(z1, cons(maxPower(1)$GuessOption, z2))
 
     guessPade(q: Symbol): GUESSER ==
-        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
             guessADE(q)(z1, append(z2, [maxDerivative(0)$GuessOption,
                                         maxPower(1)$GuessOption,
                                         allDegrees(true)$GuessOption]))
@@ -2765,24 +3114,24 @@ guessRat(list: List F): GUESSRESULT == guessRat(list, [])
 if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessRec(q: Symbol): GUESSER ==
-        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
             if (hom? := homogeneous(z2)$GOPT0) case Boolean and hom? then
                 if (maxP? := maxPower(z2)$GOPT0) case PI then
                     concat [guessRec(q)(z1, cons(homogeneous(i::PI)$GuessOption, z2)) _
                             for i in 1..maxP?]
                 else
                     error "Guess: setting homogeneous true requires that maxPower is also set"
-    
+
             else
                 opts: LGOPT := cons(displayAsGF(false)$GuessOption, z2)
                 guessHPaux(z1, (shiftHP q)(opts), opts)
 
     guessPRec(q: Symbol): GUESSER ==
-        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
             guessRec(q)(z1, cons(maxPower(1)$GuessOption, z2))
 
     guessRat(q: Symbol): GUESSER ==
-        (z1: List F, z2: LGOPT): GUESSRESULT +-> 
+        (z1: List F, z2: LGOPT): GUESSRESULT +->
             guessRec(q)(z1, append(z2, [maxShift(0)$GuessOption,
                                         maxPower(1)$GuessOption,
                                         allDegrees(true)$GuessOption]))
@@ -2948,8 +3297,10 @@ GuessFinite(F:Join(FiniteFieldCategory, ConvertibleTo Integer)) ==
 
 @
 
-\section{package GUESSP1 GuessPolynomialFunctions}
+\section{package GUESSP GuessPolynomial}
+
 <<package GUESSP1 GuessPolynomialFunctions>>=
+
 )abbrev package GUESSP1 GuessPolynomialFunctions
 ++ Description:
 ++ This package exports coercion and retraction from EXPR INT to
@@ -2980,7 +3331,7 @@ GuessPolynomialFunctions(R: Ring):
           m2(coeff: R): EXPRR == coeff::EXPRR
 
           S2EXPRR(p: Polynomial R): EXPRR ==
-              map((var: Symbol): EXPRR +-> m1 var, 
+              map((var: Symbol): EXPRR +-> m1 var,
                   (coeff: R): EXPRR +-> m2 coeff, p)$PL1
 
           F2EXPRR(p: Fraction Polynomial R): EXPRR ==
@@ -2993,27 +3344,27 @@ GuessPolynomialFunctions(R: Ring):
               r::R::Polynomial(R)
 
           SMP ==> SparseMultivariatePolynomial(Integer, Kernel EXPRR)
-          PL2 ==> PolynomialCategoryLifting(IndexedExponents Kernel EXPRR, 
+          PL2 ==> PolynomialCategoryLifting(IndexedExponents Kernel EXPRR,
                                             Kernel EXPRR, Integer, SMP,
                                             Polynomial R)
 
-          SMP2S(p: SMP): Polynomial R == 
-              map((var: Kernel EXPRR): Polynomial(R) +-> retractVar(var), 
+          SMP2S(p: SMP): Polynomial R ==
+              map((var: Kernel EXPRR): Polynomial(R) +-> retractVar(var),
                   (coeff: Integer): Polynomial(R) +-> coeff::R::Polynomial(R), p)$PL2
 
-          EXPRR2F(p: EXPRR): Fraction Polynomial R == 
+          EXPRR2F(p: EXPRR): Fraction Polynomial R ==
               SMP2S(numer p)/SMP2S(denom p)
 
       else error "retraction and coercion to EXPR INT is not implemented for this Ring"
-@
-%$
 
-\section{package GUESSP GuessPolynomial}
+@
+
 <<package GUESSP GuessPolynomial>>=
+
 )abbrev package GUESSP GuessPolynomial
 ++ Description:
 ++ This package exports guessing of sequences of rational functions
-GuessPolynomial(R: Ring) == 
+GuessPolynomial(R: Ring) ==
     Guess(Fraction Polynomial R, Polynomial R, Expression Integer,
           EXPRR2F$GuessPolynomialFunctions(R),
           F2EXPRR$GuessPolynomialFunctions(R))
@@ -3031,8 +3382,8 @@ GuessAlgebraicNumber() == Guess(AlgebraicNumber, AlgebraicNumber,
 
 @
 
-\section{domain MYUP MyUnivariatePolynomial}
-<<domain MYUP MyUnivariatePolynomial>>=
+\section{package GUESSUP GuessUnivariatePolynomial}
+<<package GUESSUP GuessUnivariatePolynomial>>=
 )abbrev domain MYUP MyUnivariatePolynomial
 MyUnivariatePolynomial(x:Symbol, R:Ring):
   UnivariatePolynomialCategory(R) with
@@ -3062,10 +3413,7 @@ MyUnivariatePolynomial(x:Symbol, R:Ring):
            $UnivariatePolynomialCategoryFunctions2(Polynomial R,
                                                    SparseUnivariatePolynomial Polynomial R, R, %)
 
-@
 
-\section{domain MYEXPR MyExpression}
-<<domain MYEXPR MyExpression>>=
 )abbrev domain MYEXPR MyExpression
 MyExpression(q: Symbol, R): Exports == Implementation where
 
@@ -3115,10 +3463,9 @@ MyExpression(q: Symbol, R): Exports == Implementation where
        quot: Fraction Polynomial R := u/v
 
        quot::(Expression R)
-@
 
-\section{package GUESSUP GuessUnivariatePolynomial}
-<<package GUESSUP GuessUnivariatePolynomial>>=
+
+
 )abbrev package GUESSUP GuessUnivariatePolynomial
 ++ Description:
 ++ This package exports guessing of sequences of univariate rational functions
@@ -3388,13 +3735,10 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
 <<package GOPT0 GuessOptionFunctions0>>
 <<package GUESS Guess>>
 <<package GUESSINT GuessInteger>>
+<<package GUESSAN GuessAlgebraicNumber>>
 <<package GUESSF1 GuessFiniteFunctions>>
 <<package GUESSF GuessFinite>>
-<<package GUESSP1 GuessPolynomialFunctions>>
 <<package GUESSP GuessPolynomial>>
-<<package GUESSAN GuessAlgebraicNumber>>
-<<domain MYUP MyUnivariatePolynomial>>
-<<domain MYEXPR MyExpression>>
 <<package GUESSUP GuessUnivariatePolynomial>>
 @
 \end{document}
