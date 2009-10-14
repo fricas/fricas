@@ -51,9 +51,22 @@ libspad.a: $(libspad_a_objects)
 	$(AR) ru libspad.a $(libspad_a_objects)
 	$(RANLIB) libspad.a
 
+lisp_flavor=@fricas_lisp_flavor@
+
+ifeq ($(shell uname -m)$(lisp_flavor),x86_64cmucl)
+core_objects_32 = $(core_sources:.c=.$(OBJEXT)32)
+
+.PRECIOUS: %.$(OBJEXT)32
+
+%.$(OBJEXT)32: $(srcdir)/%.c $(axiom_c_macros_h)
+	$(CC) -g -m32 -fPIC $(CCF) -c $(axiom_includes) $(AXIOM_X11_CFLAGS) $< -o $@
+
+$(LIBSPAD_SO): $(core_objects_32)
+	$(CC) -g -m32 @SOLIB_FLAGS@ $(core_objects_32) @axiom_c_runtime_extra@ -o $@
+else
 $(LIBSPAD_SO): $(core_objects)
 	$(CC) -g @SOLIB_FLAGS@ $(core_objects) @axiom_c_runtime_extra@ -o $@
-
+endif
 
 .PRECIOUS: %.$(OBJEXT)
 
