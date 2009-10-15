@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-10-10], 
+AC_INIT([FriCAS], [2009-10-15], 
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd "$srcdir" && pwd`
 if pwd | grep ' ' ; then
@@ -691,42 +691,9 @@ AXIOM_MAKEFILE([src/etc/Makefile])
 ## The following section deals with the generation of the
 ## aldor interface.
 ##
-## If one of the Aldor related tests fail we should warn and
-## not build the Aldor interface. Default is to build it.
-## The test only fails if --enable-aldor is given explicitly
-## and some prerequisite is not available.
-BUILD_ALDOR_INTERFACE=build-aldor-interface
-
-## check whether Aldor is available
-AC_CHECK_PROGS([ALDOR], [aldor])
-if test -z $ALDOR; then
-  AC_MSG_WARN([Aldor not found.])
-  BUILD_ALDOR_INTERFACE=
-fi
-
-# The following is only necessary to get some files that do not yet
-# have a free license.
-# Not having svn, curl, or wget is not a show stopper, because the files
-# can be obtained manually via a webbrowser.
-AC_CHECK_PROGS([SVN], [svn])
-AC_CHECK_PROGS([CURL], [curl])
-AC_CHECK_PROGS([WGET], [wget])
-
-## check for $ALDORROOT/include/aldor.conf
-if test -z $ALDORROOT || ! test -f $ALDORROOT/include/aldor.conf; then
-  AC_MSG_WARN([The environment variable ALDORROOT is not set.])
-  BUILD_ALDOR_INTERFACE=
-fi
-
-## check for $ALDORROOT/lib/libfoam.al (needed for aldor interface)
-if ! test -f $ALDORROOT/lib/libfoam.al; then
-  AC_MSG_WARN([Couldn't find libfoam.al.])
-  BUILD_ALDOR_INTERFACE=
-fi
 
 ## This handles the cases if one of the following options is given on the
-## command line. If none is given, then the aldor interface will be built
-## if and only if all prerequisites are available.
+## command line. If none is given, then we will skip aldor interface.
 ## --enable-aldor, --enable-aldor=yes:
 ##   User requires to build the aldor interface. In this case,
 ##   any missing prerequisite counts as error (not just warning).
@@ -734,16 +701,50 @@ fi
 ##   User asks to skip the build of the aldor interface.
 ## --enable-aldor=SOMETHING DIFFERENT FROM yes/no
 ##   User made a mistake. This is an error.
+BUILD_ALDOR_INTERFACE=no
 AC_ARG_ENABLE(aldor,
   [AC_HELP_STRING([--enable-aldor],
                   [build an interface to the Aldor compiler])],
   [case $enableval in
-    yes) if test -z "$BUILD_ALDOR_INTERFACE"; then
-           AC_MSG_ERROR([prerequisites for Aldor interface missing])
-         fi;;
-    no)  BUILD_ALDOR_INTERFACE=;;
+    yes|no) BUILD_ALDOR_INTERFACE=$enableval ;;
     *)   AC_MSG_ERROR([only yes/no allowed as value for --enable-aldor]);;
    esac])
+
+###################################################################
+## If one of the Aldor related tests fail we should warn and
+## not build the Aldor interface.
+
+if test x"$BUILD_ALDOR_INTERFACE" = xyes ; then
+  ## check whether Aldor is available
+  AC_CHECK_PROGS([ALDOR], [aldor])
+  if test -z $ALDOR; then
+    AC_MSG_WARN([Aldor not found.])
+    AC_MSG_ERROR([prerequisites for Aldor interface missing])
+    BUILD_ALDOR_INTERFACE=no
+  fi
+
+  # The following is only necessary to get some files that do not yet
+  # have a free license.
+  # Not having svn, curl, or wget is not a show stopper, because the files
+  # can be obtained manually via a webbrowser.
+  AC_CHECK_PROGS([SVN], [svn])
+  AC_CHECK_PROGS([CURL], [curl])
+  AC_CHECK_PROGS([WGET], [wget])
+
+  ## check for $ALDORROOT/include/aldor.conf
+  if test -z $ALDORROOT || ! test -f $ALDORROOT/include/aldor.conf; then
+    AC_MSG_WARN([The environment variable ALDORROOT is not set.])
+    AC_MSG_ERROR([prerequisites for Aldor interface missing])
+    BUILD_ALDOR_INTERFACE=no
+  fi
+
+  ## check for $ALDORROOT/lib/libfoam.al (needed for aldor interface)
+  if ! test -f $ALDORROOT/lib/libfoam.al; then
+    AC_MSG_WARN([Couldn't find libfoam.al.])
+    AC_MSG_ERROR([prerequisites for Aldor interface missing])
+    BUILD_ALDOR_INTERFACE=no
+  fi
+fi
 
 ###################################################################
 # The installation is currently not done by recursively calling
@@ -753,12 +754,12 @@ AC_ARG_ENABLE(aldor,
 # installed.
 AC_SUBST(BUILD_ALDOR_INTERFACE)
 
-if test -z "$BUILD_ALDOR_INTERFACE"; then
-  AC_MSG_WARN([Aldor interface will not be built.])
-else
+if test x"$BUILD_ALDOR_INTERFACE" = xyes ; then
   AC_MSG_NOTICE([Aldor interface will be built.])
   axiom_src_subdirs="$axiom_src_subdirs aldor"
   axiom_src_all="$axiom_src_all all-aldor"
+else
+  AC_MSG_WARN([Aldor interface will not be built.])
 fi
 AXIOM_MAKEFILE([src/aldor/Makefile])
 AXIOM_MAKEFILE([src/aldor/Makefile2])
