@@ -19,6 +19,7 @@
 
 #-:cmu
 (defun set-initial-parameters()
+    (setf *print-circle* t)
     (setf *read-default-float-format* 'double-float))
 
 #+:cmu
