@@ -2854,6 +2854,25 @@ guessInterpolate2(list: List F, o: NNI, degreeLoss: Integer, _
 checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer) -> Union("good", "reject", "no__solution")
 checkInterpolant(list, o, resi, D, options, sigma) ==
 
+    nonZeroCoefficient: Integer := 0
+    reject__one__term := false
+
+    for i in 1..#resi repeat
+        if not zero? resi.i then
+            if zero? nonZeroCoefficient then
+                nonZeroCoefficient := i
+            else
+                nonZeroCoefficient := 0
+                break
+
+    if not zero? nonZeroCoefficient then
+        for e in list repeat
+            if not zero? e then
+                if debug(options)$GOPT0 then
+                    output("list contains non-zero element")
+                          $OutputPackage
+                reject__one__term := true
+
     flist: List PositiveInteger := [i::PositiveInteger for i in 1..o | not zero? resi.i]
     testList := ((D.testGen)(flist))(list2UFPSSUPF list)
     resiSUPF := [SUPF2SUPSUPF SUPS2SUPF(resi.i) for i in flist]
@@ -2867,6 +2886,8 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
         if not zero? c then
             order := d
             break
+        if reject__one__term and d = sigma then
+            return "reject"
 
     order < sigma =>
         print("Order too low"::OutputForm)
