@@ -85,6 +85,13 @@ GuessOption(): Exports == Implementation where
       ++ maxShift(d) specifies the maximum shift in a recurrence
       ++ equation.  This option is expressed in the form \spad{maxShift == d}.
 
+    maxSubst: Union(PositiveInteger, "arbitrary") -> %
+      ++ maxSubst(d) specifies the maximum degree of the monomial substituted
+      ++ into the function we are looking for.  That is, if \spad{maxSubst ==
+      ++ d}, we look for polynomials such that $p(f(x), f(x^2), ...,
+      ++ f(x^d))=0$.  equation.  This option is expressed in the form
+      ++ \spad{maxSubst == d}.
+
     maxPower: Union(PositiveInteger, "arbitrary") -> %
       ++ maxPower(d) specifies the maximum degree in an algebraic differential
       ++ equation. For example, the degree of (f'')^3 f' is 4. maxPower(-1)
@@ -189,6 +196,10 @@ GuessOption(): Exports == Implementation where
     maxLevel d       == ['maxLevel,       d::Any]
     maxDerivative d  == ['maxDerivative,  d::Any]
     maxShift d       == maxDerivative d
+    maxSubst d       == 
+        if d case PositiveInteger 
+        then maxDerivative((d::Integer-1)::NonNegativeInteger)
+        else maxDerivative d
     maxDegree d      == ['maxDegree,      d::Any]
     maxMixedDegree d == ['maxMixedDegree, d::Any]
     allDegrees d     == ['allDegrees,     d::Any]
@@ -241,6 +252,9 @@ GuessOptionFunctions0(): Exports == Implementation where
 
     maxShift: LGOPT -> Union(NonNegativeInteger, "arbitrary")
       ++ maxShift returns the specified maxShift.
+
+    maxSubst: LGOPT -> Union(PositiveInteger, "arbitrary")
+      ++ maxSubst returns the specified maxSubst.
 
     maxPower: LGOPT -> Union(PositiveInteger, "arbitrary")
       ++ maxPower returns the specified maxPower.
@@ -308,6 +322,12 @@ GuessOptionFunctions0(): Exports == Implementation where
         retract(opt :: Any)$AnyFunctions1(Union(NonNegativeInteger, "arbitrary"))
 
     maxShift l == maxDerivative l
+
+    maxSubst l == 
+        d := maxDerivative l 
+        if d case NonNegativeInteger
+        then (d+1)::PositiveInteger
+        else d
 
     maxDegree l ==
       if (opt := option(l, "maxDegree" :: Symbol)) case "failed" then
@@ -593,6 +613,17 @@ Section~\ref{sec:Hermite-Pade}.
           ++ differential equation for a generating function whose first Taylor
           ++ coefficients are given by l, using the given options.
 
+        guessFE: List F -> GUESSRESULT
+          ++ \spad{guessFE l} tries to find an algebraic substitution equation
+          ++ for a generating function whose first Taylor coefficients are
+          ++ given by l, using the default options described in
+          ++ \spadtype{GuessOptionFunctions0}.
+
+        guessFE: (List F, LGOPT) -> GUESSRESULT
+          ++ \spad{guessFE(l, options)} tries to find an algebraic
+          ++ substitution equation for a generating function whose first Taylor
+          ++ coefficients are given by l, using the given options.
+
         guessAlg: List F -> GUESSRESULT
           ++ \spad{guessAlg l} tries to find an algebraic equation for a
           ++ generating function whose first Taylor coefficients are given by
@@ -672,6 +703,10 @@ Section~\ref{sec:Hermite-Pade}.
         diffHP: LGOPT -> HPSPEC
           ++ \spad{diffHP options} returns a specification for Hermite-Pade
           ++ approximation with the differential operator
+
+        substHP: LGOPT -> HPSPEC
+          ++ \spad{substHP options} returns a specification for Hermite-Pade
+          ++ approximation with the substitution operator
 
         shiftHP: LGOPT -> HPSPEC
           ++ \spad{shiftHP options} returns a specification for Hermite-Pade
@@ -1883,6 +1918,50 @@ ADEtestGenCached(f: UFPSSUPF,
             res(i) := cache r
     res
 
+multiplyExponents: (U32Vector, NNI) -> U32Vector
+multiplyExponents(f, n) ==
+    nn := #f
+    f0 := new(nn, 0)$U32Vector
+    deg := nn - 1
+    for i in 0..deg while n*i <= deg repeat
+        f0.(n*i) := f.i
+    f0
+
+FEguessModGenCached: (U32Vector, Boolean, NonNegativeInteger, _
+                       List List Integer, _
+                       List Integer, Integer) -> Vector U32Vector
+FEguessModGenCached(f: U32Vector,
+                     addOne: Boolean,
+                     maxD: NonNegativeInteger,
+                     prodl: List PAIR,
+                     terml: List Integer,
+                     prime: Integer): Vector U32Vector ==
+    sigma := #f
+    np := # prodl
+    cache := new(maxD + 1 + np, empty()$U32Vector)$(PrimitiveArray U32Vector)
+    cache(0) := f
+    for i in 1..maxD repeat
+        cache(i) := multiplyExponents(cache(0), i+1)
+--                                 $U32VectorPolynomialOperations
+
+    for i in maxD+1..maxD+np for pp in prodl repeat
+        cache(i) := truncated__multiplication(cache first pp,
+                                              cache second pp, sigma-1, prime)
+                                             $U32VectorPolynomialOperations
+    nt := # terml
+    if addOne then
+        res := new(nt + 1, empty()$U32Vector)$Vector(U32Vector)
+        res1 := new(sigma::NNI, 0)$U32Vector
+        res1(0) := 1
+        res(1) := res1
+        for i in 2..nt+1 for r in terml repeat
+            res(i) := cache r
+    else
+        res := new(nt, empty()$U32Vector)$Vector(U32Vector)
+        for i in 1..nt for r in terml repeat
+            res(i) := cache r
+    res
+
 -- checks whether partition is a product of two elememts in partitions
 optimiseFactor(partition: Partition,
                partitions: List Partition): Union(PAIR, "failed") ==
@@ -1951,8 +2030,14 @@ ADEguessModOptimisedGen: (List List Integer) -> SEQGEN
 ADEguessModOptimisedGen(partitions): SEQGEN ==
     r := optimiseProducts(partitions)
     (f: U32Vector, prime: Integer, q: Integer): Vector U32Vector +-> _
-                        ADEguessModGenCached(f, r.addOne,
-                                             r.maxDiff, r.prods, r.terms, prime)
+        ADEguessModGenCached(f, r.addOne, r.maxDiff, r.prods, r.terms, prime)
+
+FEguessModOptimisedGen: (List List Integer) -> SEQGEN
+FEguessModOptimisedGen(partitions): SEQGEN ==
+    r := optimiseProducts(partitions)
+    (f: U32Vector, prime: Integer, q: Integer): Vector U32Vector +-> _
+        FEguessModGenCached(f, r.addOne, r.maxDiff, r.prods, r.terms, prime)
+
 
 ADEguessModGen2: (List List Integer, NonNegativeInteger) -> SEQGEN
 ADEguessModGen2(partitions, d): SEQGEN ==
@@ -2079,6 +2164,48 @@ diffHP options ==
          'diffHP, 'dummy, diffA, diffAF, diffAX, diffC]$HPSPEC
     else
         error "Guess: guessADE supports only displayAsGF"
+
+@
+%$
+
+\paragraph{The Substitution - Functional Equation Setting} In this setting, we
+have $z f(x) := x f(x)$, but instead of differentiation, we substitute powers
+of $x$ into $f$.
+
+<<implementation: Guess - Hermite-Pade - Operators>>=
+substDX: DIFFSPECX
+substDX(expr, x, n) == eval(expr, x::EXPRR, (x::EXPRR)^(n+1))
+
+substDS: DIFFSPECS
+substDS(s, n) == multiplyExponents(s, (n+1)::PositiveInteger)
+
+substDSF: DIFFSPECSF
+substDSF(s, n) == multiplyExponents(s, (n+1)::PositiveInteger)
+
+@
+
+The next three functions extract the coefficient of $x^k$ in $z^l f(x)$. Only,
+for expressions, we rather need $\sum_{k\ge0} \langle x^k\rangle z^l f(x)$,
+i.e., the function itself, which is by definition equal to $x^l f(x)$.
+
+<<implementation: Guess - Hermite-Pade - Operators>>=
+substHP options ==
+    if not zero? maxMixedDegree(options)$GOPT0
+    then error "Guess: no support for mixed shifts in functional equations"
+    if displayAsGF(options)$GOPT0 then
+        partitions := FilteredPartitionStream options
+        [map((c: List Integer):NNI +-> 0, partitions)$StreamFunctions2(List Integer, NNI), _
+         (z1: UFPSF): Stream UFPSF +->
+             ADEguessStream(z1, partitions, substDS, 1$UFPSF), _
+         (o: NNI): SEQGEN +-> _
+             FEguessModOptimisedGen entries complete first(partitions, o), _
+         (l: List PositiveInteger): FPSGEN +-> _
+             ADEtestOptimisedGen([partitions.i for i in l], substDSF, 1$UFPSSUPF), _
+         (z1: EXPRR, z2: Symbol): Stream EXPRR +-> _
+             ADEEXPRRStream(z1, z2, partitions, substDX, diff1X), _
+         'diffHP, 'dummy, diffA, diffAF, diffAX, diffC]$HPSPEC
+    else
+        error "Guess: guessSubst supports only displayAsGF"
 
 @
 %$
@@ -3029,6 +3156,21 @@ guessPade(list: List F, options: LGOPT): GUESSRESULT ==
     guessADE(list, opts)
 
 guessPade(list: List F): GUESSRESULT == guessPade(list, [])
+
+guessFE(list: List F, options: LGOPT): GUESSRESULT ==
+    if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
+        if (maxP? := maxPower(options)$GOPT0) case PI then
+            concat [guessFE(list, cons(homogeneous(i::PI)$GuessOption, options)) _
+                    for i in 1..maxP?]
+        else
+            error "Guess: setting homogeneous true requires that maxPower is also set"
+
+    else
+        opts: LGOPT := cons(displayAsGF(true)$GuessOption, options)
+        guessHPaux(list, substHP opts, opts)
+
+guessFE(list: List F): GUESSRESULT == guessFE(list, [])
+
 @
 %$
 
