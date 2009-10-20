@@ -114,11 +114,10 @@ GuessOption(): Exports == Implementation where
 
     maxMixedDegree: NonNegativeInteger -> %
       ++ maxMixedDegree(d) specifies the maximum q-degree of the coefficient
-      ++ polynomials in an algebraic differential equation or a recursion with
-      ++ polynomial coefficients, in the case of mixed shifts.
-      ++ Although slightly inconsistent, maxMixedDegree(0) specifies that no
-      ++ mixed shifts are allowed. This option is expressed in the form
-      ++ \spad{maxMixedDegree == d}.
+      ++ polynomials in a recurrence with polynomial coefficients, in the case
+      ++ of mixed shifts.  Although slightly inconsistent, maxMixedDegree(0)
+      ++ specifies that no mixed shifts are allowed. This option is expressed
+      ++ in the form \spad{maxMixedDegree == d}.
 
     allDegrees: Boolean -> %
       ++ allDegrees(d) specifies whether all possibilities of the degree vector
@@ -437,7 +436,7 @@ Guess(F, S, EXPRR, retract, coerce): Exports == Implementation where
     NNI ==> NonNegativeInteger
     PI ==> PositiveInteger
     EXPRI ==> Expression Integer
-    GUESSRESULT ==> List Record(function: EXPRR, order: NNI)
+    GUESSRESULT ==> List EXPRR
 
     UFPSF ==> UnivariateFormalPowerSeries F
     UFPS1 ==> UnivariateFormalPowerSeriesFunctions
@@ -529,28 +528,27 @@ Section~\ref{sec:Hermite-Pade}.
     Exports == with
 
         guess: List F -> GUESSRESULT
-          ++ \spad{guess l} applies recursively \spadfun{guessRec} and
-          ++ \spadfun{guessADE} to the successive differences and quotients of
-          ++ the list. Default options as described in
-          ++ \spadtype{GuessOptionFunctions0} are used.
+          ++ \spad{guess l} applies recursively \spadfun{guessRat} to the
+          ++ successive differences and quotients of the list.  Default options
+          ++ as described in \spadtype{GuessOptionFunctions0} are used.
 
         guess: (List F, LGOPT) -> GUESSRESULT
-          ++ \spad{guess(l, options)} applies recursively \spadfun{guessRec}
-          ++ and \spadfun{guessADE} to the successive differences and quotients
-          ++ of the list. The given options are used.
+          ++ \spad{guess(l, options)} applies recursively \spadfun{guessRat}
+          ++ to the successive differences and quotients of the list.  The
+          ++ given options are used.
 
         guess: (List F, List GUESSER, List Symbol) -> GUESSRESULT
           ++ \spad{guess(l, guessers, ops)} applies recursively the given
           ++ guessers to the successive differences if ops contains the symbol
           ++ guessSum and quotients if ops contains the symbol guessProduct to
-          ++ the list. Default options as described in
+          ++ the list.  Default options as described in
           ++ \spadtype{GuessOptionFunctions0} are used.
 
         guess: (List F, List GUESSER, List Symbol, LGOPT) -> GUESSRESULT
           ++ \spad{guess(l, guessers, ops)} applies recursively the given
           ++ guessers to the successive differences if ops contains the symbol
           ++ \spad{guessSum} and quotients if ops contains the symbol
-          ++ \spad{guessProduct} to the list. The given options are used.
+          ++ \spad{guessProduct} to the list.  The given options are used.
 
         guessExpRat: List F -> GUESSRESULT
           ++ \spad{guessExpRat l} tries to find a function of the form
@@ -747,17 +745,16 @@ Section~\ref{sec:Hermite-Pade}.
 <<implementation: Guess - guessExpRat - Order and Degree>>
 
 <<implementation: Guess - Utilities>>
+<<implementation: Guess - guess>>
 <<implementation: Guess - guessExpRat>>
 <<implementation: Guess - guessBinRat>>
 <<implementation: Guess - Hermite-Pade>>
-<<implementation: Guess - guess>>
 @
 
 \subsection{general utilities}
 
 <<implementation: Guess - Utilities>>=
-checkResult(res: EXPRR, n: Symbol, l: Integer, list: List F,
-            options: LGOPT): NNI ==
+checkResult(res: EXPRR, n: Symbol, l: Integer, list: List F): NNI ==
     for i in l..1 by -1 repeat
         den := eval(denominator res, n::EXPRR, (i-1)::EXPRR)
         if den = 0 then return i::NNI
@@ -1246,10 +1243,7 @@ guessExpRatAux0(list: List F, basis: DIFFSPECN, options: LGOPT): GUESSRESULT ==
         := [eval(zeros * f, xx::EXPRR, xx::EXPRR) _
             for f in guessExpRatAux(xx, newlist, basis, xValues, options)]
 
-    reslist := map(z1 +-> [z1, checkResult(z1, xx, len, list, options)], res)
-                  $ListFunctions2(EXPRR, Record(function: EXPRR, order: NNI))
-
-    select(z1 +-> z1.order < len-safety(options)$GOPT0, reslist)
+    select(z1 +-> checkResult(z1, xx, len, list) < len-safety(options)$GOPT0, res)
 
 guessExpRat(list : List F): GUESSRESULT ==
     guessExpRatAux0(list, defaultD, [])
@@ -1547,10 +1541,7 @@ guessBinRatAux0(list: List F,
             for f in guessBinRatAux(xx, newlist, basis, ext, extEXPR, xValues, _
                                     options)]
 
-    reslist := map(z1 +-> [z1, checkResult(z1, xx, len, list, options)], res)
-                  $ListFunctions2(EXPRR, Record(function: EXPRR, order: NNI))
-
-    select(z1 +-> z1.order < len-safety(options)$GOPT0, reslist)
+    select(z1 +-> checkResult(z1, xx, len, list) < len-safety(options)$GOPT0, res)
 
 guessBinRat(list: List F): GUESSRESULT ==
     guessBinRatAux0(list, defaultD, binExt, binExtEXPR, [])
@@ -1875,7 +1866,7 @@ ADEtestGenCached(f: UFPSSUPF,
     cache := new(maxD + 1 + np, 0$UFPSSUPF)$(PrimitiveArray UFPSSUPF)
     cache(0) := f
     for i in 1..maxD repeat
-        cache(i) := DSF(cache(i-1), 1)
+        cache(i) := DSF(cache(0), i)
 
     for i in maxD+1..maxD+np for pp in prodl repeat
         cache(i) := cache first pp * cache second pp
@@ -1891,7 +1882,6 @@ ADEtestGenCached(f: UFPSSUPF,
         for i in 1..nt for r in terml repeat
             res(i) := cache r
     res
-
 
 -- checks whether partition is a product of two elememts in partitions
 optimiseFactor(partition: Partition,
@@ -1999,6 +1989,7 @@ increasing.
 ADEdegreeStream(partitions: Stream List Integer): Stream NNI ==
     scan(0, (z1: List Integer, z2: NNI): NNI +-> max((if empty? z1 then 0 else (first z1 - 1)::NNI), z2),
          partitions)$StreamFunctions2(List Integer, NNI)
+
 @
 %$
 
@@ -2104,7 +2095,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     qDiffDS(q: Symbol, s: UFPSF, n: NonNegativeInteger): UFPSF ==
         multiplyCoefficients((z1: Integer): F +->
-        (q::F)^((n*z1)::NonNegativeInteger), s)
+                                 (q::F)^((n*z1)::NonNegativeInteger), s)
 
 -- compiler bug: would complain in diffHP, if replaced
 --    qDiffDSV: DIFFSPECSV
@@ -2435,7 +2426,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 \paragraph{Extend the action to polynomials}
 
 The following operation uses the given action of $z$ on a function to multiply
-a $f$ with a polynomial.
+an $f$ with a polynomial.
 
 <<implementation: Guess - Hermite-Pade - Operators>>=
 makeEXPRR(DAX: DIFFSPECAX, x: Symbol, p: SUP F, expr: EXPRR): EXPRR ==
@@ -2608,6 +2599,7 @@ correct a priori.
     else
         -- XXX stupid compiler ...
         check := check
+
     HP__solve(list, degs, D.kind, D.qvar, sigma, _
               (D.guessModGen)(o),check)
 
@@ -2621,8 +2613,8 @@ higher degrees at the end or at the beginning?
 
 <<implementation: Guess - guessInterpolate>>=
 guessInterpolateFFFG(list: List F, degs : List NNI, o: NNI, _
-                 guessDegree: NNI, D: HPSPEC, options: LGOPT)
-                : Matrix SUP S ==
+                     guessDegree: NNI, D: HPSPEC, options: LGOPT)
+                    : Matrix SUP S ==
     M: Matrix SUP S
     eta: List NNI
     if allDegrees(options)$GOPT0 then
@@ -2669,8 +2661,18 @@ guessInterpolateFFFG(list: List F, degs : List NNI, o: NNI, _
     m := nrows M
     Mr := new(m, #rl, 0)$Matrix(SUP S)
     for i1 in 1..#rl for i2 in rl repeat
+        c: S
+        if S has Field then
+            c := 0
+            for j in 1..m while zero? c repeat
+                c := leadingCoefficient M(j, i2)
+        else
+-- This does not really do the right thing when, for example, S is POLY AN.
+-- Eg. [[content univariate(((33+66*x)::SUP AN)*x+33)]] gives 1, not 33.
+            cl: List S := [content(M(j, i2))$(SUP S) for j in 1..m]
+            c := gcd cl
         for j in 1..m repeat
-            Mr(j, i1) := M(j, i2)
+            Mr(j, i1) := (M(j, i2) exquo c)::(SUP S)
     Mr
 
 @
@@ -2679,30 +2681,27 @@ guessInterpolateFFFG(list: List F, degs : List NNI, o: NNI, _
 for all degree vectors with given [[sumEta]] and [[maxEta]].
 
 <<implementation: Guess - guessInterpolate2>>=
-guessInterpolate3: (List F, NNI, Integer, NNI, HPSPEC, LGOPT, _
-                    Stream List NonNegativeInteger) -> _
-                    Stream Matrix SUP S
 guessInterpolate3(list: List F, o: NNI, degreeLoss : Integer, _
                   guessDegree: NNI, D: HPSPEC, options: LGOPT, _
                   vs : Stream List NonNegativeInteger) _
                  : Stream Matrix SUP S == delay
     explicitlyEmpty? vs or empty? vs => empty()$Stream(Matrix SUP S)
     M0 := guessInterpolateModular(list, frst vs, o, _
-             degreeLoss, guessDegree, D, options)
+                                  degreeLoss, guessDegree, D, options)
     skip := false
     M : Matrix SUP S :=
         M0 case Boolean =>
             skip := not(M0::Boolean)
             M0::Boolean =>
-                guessInterpolateFFFG(list, frst vs, o, _
-                    guessDegree, D, options)
+                guessInterpolateFFFG(list, frst vs, o, 
+                                     guessDegree, D, options)
             empty()$(Matrix SUP S)
         M0::Matrix SUP S
     skip =>
-        guessInterpolate3(list, o, degreeLoss, _
-            guessDegree, D, options, rst vs)
-    concat(M, guessInterpolate3(list, o, degreeLoss, _
-                  guessDegree, D, options, rst vs))
+        guessInterpolate3(list, o, degreeLoss,
+                          guessDegree, D, options, rst vs)
+    concat(M, guessInterpolate3(list, o, degreeLoss,
+                                guessDegree, D, options, rst vs))
 
 guessInterpolate2(list: List F, o: NNI, degreeLoss: Integer, _
                   guessDegree: NNI, D: HPSPEC, options: LGOPT) _
@@ -2727,6 +2726,7 @@ guessInterpolate2(list: List F, o: NNI, degreeLoss: Integer, _
 <<implementation: Guess - testInterpolant>>=
 checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer) -> Union("good", "reject", "no__solution")
 checkInterpolant(list, o, resi, D, options, sigma) ==
+
     flist: List PositiveInteger := [i::PositiveInteger for i in 1..o | not zero? resi.i]
     testList := ((D.testGen)(flist))(list2UFPSSUPF list)
     resiSUPF := [SUPF2SUPSUPF SUPS2SUPF(resi.i) for i in flist]
@@ -2758,7 +2758,7 @@ wrapInterpolant(o: NNI,
                 initials: List EXPRR,
                 D: HPSPEC,
                 dummy: Symbol, op: BasicOperator, options: LGOPT)
-               : Union(Record(function: EXPRR, order: NNI), "failed") ==
+               : Union(EXPRR, "failed") ==
 
 @
 
@@ -2836,41 +2836,32 @@ a solution.
   the greatest common divisor of the equation, but only the greatest common
   divisor of the coefficients of the solution.  If [[S]] is a [[Field]], we
   normalize the leading coefficient of the first polynomial.
+
+  This is now done already in [[guessInterpolateFFFG]].  The modular solver
+  should not produce factors, although it currently does.
 \end{ToDo}
 
 <<implementation: Guess - testInterpolant>>=
-    g: SUP S
-    if S has Field
-    then g := leadingCoefficient(find((z1: SUP(S)): Boolean +-> _
-                  not zero? z1, reverse resi)::SUP(S))::SUP(S)
-    else g := gcd resi
-    resiF := map((z1: SUP S): SUP F +-> SUPS2SUPF((z1 exquo g)::SUP(S)), resi)
-                $ListFunctions2(SUP S, SUP F)
-
 -- transform each term into an expression
 
-    ex: List EXPRR := [makeEXPRR(D.AX, dummy, p, e) _
-                       for p in resiF for e in exprList]
+    ex: List EXPRR := [makeEXPRR(D.AX, dummy, SUPS2SUPF p, e) _
+                       for p in resi for e in exprList]
 
 -- transform the list of expressions into a sum of expressions
 
     res: EXPRR
     if displayAsGF(options)$GOPT0 then
-        res := evalADE(op, dummy, variableName(options)$GOPT0::EXPRR,
-                       indexName(options)$GOPT0::EXPRR,
-                       numerator reduce(_+, ex),
-                       reverse initials)
-                      $RecurrenceOperator(Integer, EXPRR)
-        ord: NNI := 0
+        evalADE(op, dummy, variableName(options)$GOPT0::EXPRR,
+                indexName(options)$GOPT0::EXPRR,
+                numerator reduce(_+, ex),
+                reverse initials)
+               $RecurrenceOperator(Integer, EXPRR)
     else
-        res := evalRec(op, dummy, indexName(options)$GOPT0::EXPRR,
-                       indexName(options)$GOPT0::EXPRR,
-                       numerator reduce(_+, ex),
-                       reverse initials)
-                      $RecurrenceOperator(Integer, EXPRR)
-        ord: NNI := 0
-
-    [res, ord]$Record(function: EXPRR, order: NNI)
+        evalRec(op, dummy, indexName(options)$GOPT0::EXPRR,
+                indexName(options)$GOPT0::EXPRR,
+                numerator reduce(_+, ex),
+                reverse initials)
+               $RecurrenceOperator(Integer, EXPRR)
 
 @
 
@@ -3157,7 +3148,7 @@ following operators:
 guess(list: List F, guessers: List GUESSER, ops: List Symbol,
       options: LGOPT): GUESSRESULT ==
     newMaxLevel := maxLevel(options)$GOPT0
-    xx := indexName(options)$GOPT0
+    xx := (indexName(options)$GOPT0)::EXPRR
     if debug(options)$GOPT0 and newMaxLevel case NNI then
         output(hconcat("guessing level ", newMaxLevel::OutputForm))
               $OutputPackage
@@ -3191,25 +3182,26 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
 
             if not every?(one?, prodList) then
                 var: Symbol := subscript('p, [len::OutputForm])
-                prodGuess :=
-                    [[coerce(list.(guess.order+1))
-                      * product(guess.function, _
-                                equation(var, _
-                                         (guess.order)::EXPRR..xx::EXPRR-1)), _
-                      guess.order] _
-                     for guess in guess(prodList, guessers, ops,
-                                        append([indexName(var)$GuessOption,
-                                                maxLevel(newMaxLevel)
-                                                        $GuessOption],
-                                               options))$%]
+                prodGuess: List EXPRR := []
+                for guess in guess(prodList, guessers, ops,
+                                   append([indexName(var)$GuessOption,
+                                           maxLevel(newMaxLevel)$GuessOption],
+                                           options))$% repeat
+--                    o := checkResult(guess, var, #prodList, prodList)
+--                    init: EXPRR := coerce(list.(o+1))
+--                    prod: EXPRR := product(guess, _
+--                                           equation(var, o::EXPRR..xx-1))
+                    init: EXPRR := coerce(list.1)
+                    prod: EXPRR := product(guess, _
+                                           equation(var, 0$EXPRR..xx-1))
+                    prodGuess := cons(init*prod, prodGuess)
 
                 if debug(options)$GOPT0 then
                     output(hconcat("prodGuess "::OutputForm,
                                    prodGuess::OutputForm))
                           $OutputPackage
 
-                for guess in prodGuess
-                        | not any?((z1: Record(function: EXPRR, order: NNI)): Boolean +-> guess.function = z1.function, res) repeat
+                for guess in prodGuess | not member?(guess, res) repeat
                     res := cons(guess, res)
 
     if one(options)$GOPT0 and not empty? res then return res
@@ -3219,20 +3211,21 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
 
         if not every?((z1: F): Boolean +-> z1 = sumList.1, sumList) then
             var: Symbol := subscript('s, [len::OutputForm])
-            sumGuess :=
-                [[coerce(list.(guess.order+1)) _
-                  + summation(guess.function, _
-                              equation(var, _
-                                       (guess.order)::EXPRR..xx::EXPRR-1)),_
-                  guess.order] _
-                 for guess in guess(sumList, guessers, ops,
-                                    append([indexName(var)$GuessOption,
-                                            maxLevel(newMaxLevel)
-                                                    $GuessOption],
-                                           options))$%]
+            sumGuess: List EXPRR := []
+            for guess in guess(sumList, guessers, ops,
+                               append([indexName(var)$GuessOption,
+                                       maxLevel(newMaxLevel)$GuessOption],
+                                       options))$% repeat
+--                o := checkResult(guess, var, #sumList, sumList)
+--                init: EXPRR := coerce(list.(o+1))
+--                summ: EXPRR := summation(guess, _
+--                                         equation(var, o::Integer::EXPRR..xx-1))
+                init: EXPRR := coerce(list.1)
+                summ: EXPRR := summation(guess, _
+                                         equation(var, 0$EXPRR..xx-1))
+                sumGuess := cons(init + summ, sumGuess)
 
-            for guess in sumGuess
-                    | not any?((z1: Record(function: EXPRR, order: NNI)): Boolean +-> guess.function = z1.function, res) repeat
+            for guess in sumGuess | not member?(guess, res) repeat
                 res := cons(guess, res)
 
     res
@@ -3298,7 +3291,6 @@ GuessFinite(F:Join(FiniteFieldCategory, ConvertibleTo Integer)) ==
 @
 
 \section{package GUESSP GuessPolynomial}
-
 <<package GUESSP1 GuessPolynomialFunctions>>=
 
 )abbrev package GUESSP1 GuessPolynomialFunctions
@@ -3371,14 +3363,12 @@ GuessPolynomial(R: Ring) ==
 @
 
 \section{package GUESSPI GuessPolynomialInteger}
-
 <<package GUESSPI GuessPolynomialInteger>>=
-
 )abbrev package GUESSPI GuessPolynomialInteger
-++ Shortcat for GuessPolynomial(Integer), so that intepreter will
-++ infer correct type
-GuessPolynomialInteger == GuessPolynomial(Integer)
-
+++ Description:
+++ This package exports guessing of sequences of rational functions over the 
+++ integers
+GuessPolynomialInteger() == GuessPolynomial Integer
 @
 
 \section{package GUESSAN GuessAlgebraicNumber}
@@ -3488,7 +3478,7 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
     S ==> UP
     NNI ==> NonNegativeInteger
     LGOPT ==> List GuessOption
-    GUESSRESULT ==> List Record(function: EXPRR, order: NNI)
+    GUESSRESULT ==> List EXPRR
     GUESSER ==> (List F, LGOPT) -> GUESSRESULT
 
     Exports == with
@@ -3750,6 +3740,7 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
 <<package GUESSF1 GuessFiniteFunctions>>
 <<package GUESSF GuessFinite>>
 <<package GUESSP GuessPolynomial>>
+<<package GUESSPI GuessPolynomialInteger>>
 <<package GUESSUP GuessUnivariatePolynomial>>
 @
 \end{document}

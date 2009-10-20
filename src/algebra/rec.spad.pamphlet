@@ -242,12 +242,24 @@ how many initial values are necessary.
           else
             p := univariate(eq, shiftInfo.ker)
             num := numer p
+            if not one? denom p then
+                error "evalRec assumes that the equation has no denominator"
 
--- If the degree is 1, we can return the function explicitly.
+-- If the degree is 1, we can return the function explicitly, if no
+-- cancellation happens...
 
-            if degree num = 1 then
-              eval(-coefficient(num, 0)/coefficient(num, 1), argsym::F,
-                   arg::F-(shiftInfo.max)::Integer::F)
+            argsymKer := retract(argsym::F)@Kernel(F)
+            c0 := coefficient(num, 0)
+            c1 := coefficient(num, 1)
+            if degree num = 1 and _
+               (freeOf?(c1, argsym) or _
+                (not zero? c0 and _
+                 one? gcdPolynomial(numer(uc0 := univariate(c0, argsymKer)), _
+                                    numer(uc1 := univariate(c1, argsymKer)))$F and _
+                 one? gcdPolynomial(denom uc0, denom uc1)$F))
+            then
+                eval(-c0/c1, argsym::F,
+                     arg::F-(shiftInfo.max)::Integer::F)
             else
               kernel(oprecur,
                      append([eq, argsym::F, argdisp, op(arg)], values))
@@ -262,6 +274,8 @@ how many initial values are necessary.
               p := univariate(eq, shiftInfo.ker)
 
               num := numer p
+              if not one? denom p then
+                  error "evalRec assumes that the equation has no denominator"
 
               if degree num = 1 then
 
