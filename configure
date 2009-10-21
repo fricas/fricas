@@ -693,6 +693,7 @@ AWK_FOR_TARGET
 AUTO_GOOD_SHELL
 NOTANGLE
 NOWEAVE
+noweb_tarball
 FRICAS_LISP
 axiom_include_gcl
 fricas_lisp_flavor
@@ -1327,7 +1328,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-included-noweb   build noweb from included sources
+  --with-noweb            specify place of the noweb-2.10a.tgz tarball
   --with-lisp=L           use L as Lisp platform
   --with-lisp-flavor=F    your Lisp is brand F
                           where F if one F gcl clisp sbcl cmucl ecl openmcl
@@ -3659,24 +3660,53 @@ esac
 ## -------------------------
 ##
 
-axiom_build_noweb=
+## The logic is as follows.
+## No "--with-noweb" option:
+##    Check for "notangle" and "noweave" in the PATH.
+##    If not present, but $axiom_top_srcdir/zips/noweb-2.10a.tgz is
+##    configure to build the noweb binaries.
+##    Error, if neither noweb binaries or .tgz could not be found.
+## "--without-noweb" or "--with-noweb=no":
+##    notangle and noweave must be found in the PATH
+##    Error if missing.
+## "--with-noweb" or "--with-noweb=yes":
+##    Look for $axiom_top_srcdir/zips/noweb-2.10a.tgz and extract
+##    and compile noweb.
+##    Error, if .tgz cannot be found.
+## "--with-noweb=/path/to/noweb-2.10a.tgz":
+##    Like above, but with an explicit path to the noweb tarball.
+##    Error, if the .tgz is not present.
 
-# Check whether --with-included-noweb was given.
-if test "${with_included_noweb+set}" = set; then
-  withval=$with_included_noweb; case $withval in
-                yes) if test -f "$axiom_top_srcdir/zips/noweb-2.10a.tgz" ; then
-                         axiom_build_noweb=yes
-                     else
-                         { { echo "$as_me:$LINENO: error: --with-included-noweb specified, but no noweb sources is present" >&5
-echo "$as_me: error: --with-included-noweb specified, but no noweb sources is present" >&2;}
+internal_noweb="$axiom_top_srcdir/zips/noweb-2.10a.tgz"
+
+# Check whether --with-noweb was given.
+if test "${with_noweb+set}" = set; then
+  withval=$with_noweb; # Action if --with-noweb is given.
+    case $withval in
+        yes) if test -f "$internal_noweb" ; then
+                 axiom_build_noweb=yes
+                 noweb_tarball="$internal_noweb"
+             else
+                 { { echo "$as_me:$LINENO: error: --with-noweb specified, but noweb tarball is not present" >&5
+echo "$as_me: error: --with-noweb specified, but noweb tarball is not present" >&2;}
    { (exit 1); exit 1; }; }
-                     fi  ;;
-                no) axiom_build_noweb=no ;;
-                *) { { echo "$as_me:$LINENO: error: erroneous value for --with-included-noweb" >&5
-echo "$as_me: error: erroneous value for --with-included-noweb" >&2;}
-   { (exit 1); exit 1; }; } ;;
-             esac
+             fi  ;;
+        no)  axiom_build_noweb=no ;;
+        *)   if test -f "$withval"; then
+                 axiom_build_noweb=yes
+                 noweb_tarball="$withval"
+             else
+                 { { echo "$as_me:$LINENO: error: Could not find the file \"$withval\"." >&5
+echo "$as_me: error: Could not find the file \"$withval\"." >&2;}
+   { (exit 1); exit 1; }; }
+             fi ;;
+    esac
+else
+  # Action if --with-noweb is not given.
+    noweb_tarball=; axiom_build_noweb=
+
 fi
+
 
 ## Check for notangle and noweb if we are not explicitly told
 ## to build noweb from FriCAS sources.
@@ -3767,13 +3797,14 @@ done
 
 
     ## In case noweb is missing we need to build our own.
-    if test -z $NOTANGLE -o -z $NOWEAVE ; then
+    if test -z $NOTANGLE ; then
         if test x$axiom_build_noweb = xno ; then
-           { { echo "$as_me:$LINENO: error: noweb utils are missing but --without-included-noweb is specified" >&5
-echo "$as_me: error: noweb utils are missing but --without-included-noweb is specified" >&2;}
+           { { echo "$as_me:$LINENO: error: noweb utils are missing but --without-noweb is specified" >&5
+echo "$as_me: error: noweb utils are missing but --without-noweb is specified" >&2;}
    { (exit 1); exit 1; }; }
-        elif test -f "$axiom_top_srcdir/zips/noweb-2.10a.tgz" ; then
+        elif test -f "$internal_noweb" ; then
            axiom_build_noweb=yes
+           noweb_tarball="$internal_noweb"
         else
            { { echo "$as_me:$LINENO: error: noweb utils and noweb sources missing" >&5
 echo "$as_me: error: noweb utils and noweb sources missing" >&2;}
@@ -3788,6 +3819,7 @@ if test x$axiom_build_noweb = xyes ; then
     NOTANGLE=$axiom_build_bindir/notangle
     NOWEAVE=$axiom_build_bindir/noweave
 fi
+
 
 
 
@@ -9643,6 +9675,7 @@ AWK_FOR_TARGET!$AWK_FOR_TARGET$ac_delim
 AUTO_GOOD_SHELL!$AUTO_GOOD_SHELL$ac_delim
 NOTANGLE!$NOTANGLE$ac_delim
 NOWEAVE!$NOWEAVE$ac_delim
+noweb_tarball!$noweb_tarball$ac_delim
 FRICAS_LISP!$FRICAS_LISP$ac_delim
 axiom_include_gcl!$axiom_include_gcl$ac_delim
 fricas_lisp_flavor!$fricas_lisp_flavor$ac_delim
@@ -9661,7 +9694,6 @@ EGREP!$EGREP$ac_delim
 axiom_c_runtime_extra!$axiom_c_runtime_extra$ac_delim
 XMKMF!$XMKMF$ac_delim
 X_CFLAGS!$X_CFLAGS$ac_delim
-X_PRE_LIBS!$X_PRE_LIBS$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -9703,6 +9735,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+X_PRE_LIBS!$X_PRE_LIBS$ac_delim
 X_LIBS!$X_LIBS$ac_delim
 X_EXTRA_LIBS!$X_EXTRA_LIBS$ac_delim
 X_CLFAGS!$X_CLFAGS$ac_delim
@@ -9724,7 +9757,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 19; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 20; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
