@@ -133,18 +133,47 @@ AC_SUBST(AUTO_GOOD_SHELL)
 ## -------------------------
 ##
 
-axiom_build_noweb=
-AC_ARG_WITH([included-noweb],
-            [  --with-included-noweb   build noweb from included sources],
-            [case $withval in
-                yes) if test -f "$axiom_top_srcdir/zips/noweb-2.10a.tgz" ; then
-                         axiom_build_noweb=yes
-                     else
-                         AC_MSG_ERROR([--with-included-noweb specified, but no noweb sources is present])
-                     fi  ;;
-                no) axiom_build_noweb=no ;;
-                *) AC_MSG_ERROR([erroneous value for --with-included-noweb]) ;;
-             esac])
+## The logic is as follows. 
+## No "--with-noweb" option:
+##    Check for "notangle" and "noweave" in the PATH.
+##    If not present, but $axiom_top_srcdir/zips/noweb-2.10a.tgz is
+##    configure to build the noweb binaries.
+##    Error, if neither noweb binaries or .tgz could not be found.
+## "--without-noweb" or "--with-noweb=no":
+##    notangle and noweave must be found in the PATH
+##    Error if missing.
+## "--with-noweb" or "--with-noweb=yes":
+##    Look for $axiom_top_srcdir/zips/noweb-2.10a.tgz and extract
+##    and compile noweb.
+##    Error, if .tgz cannot be found.
+## "--with-noweb=/path/to/noweb-2.10a.tgz":
+##    Like above, but with an explicit path to the noweb tarball.
+##    Error, if the .tgz is not present.
+
+internal_noweb="$axiom_top_srcdir/zips/noweb-2.10a.tgz"
+AC_ARG_WITH([noweb],
+    [AS_HELP_STRING([--with-noweb],
+                    [specify place of the noweb-2.10a.tgz tarball])],
+    # Action if --with-noweb is given.
+    [case $withval in
+        yes) if test -f "$internal_noweb" ; then
+                 axiom_build_noweb=yes
+                 noweb_tarball="$internal_noweb"
+             else
+                 AC_MSG_ERROR([--with-noweb specified, but noweb tarball is not present])
+             fi  ;;
+        no)  axiom_build_noweb=no ;;
+        *)   if test -f "$withval"; then
+                 axiom_build_noweb=yes
+                 noweb_tarball="$withval"
+             else
+                 AC_MSG_ERROR([Could not find the file "$withval".])
+             fi ;;
+    esac],
+    # Action if --with-noweb is not given.
+    [noweb_tarball=; axiom_build_noweb=]
+)
+
 ## Check for notangle and noweb if we are not explicitly told
 ## to build noweb from FriCAS sources.
 if test x$axiom_build_noweb != xyes ; then
@@ -152,11 +181,12 @@ if test x$axiom_build_noweb != xyes ; then
     AC_CHECK_PROGS([NOWEAVE], [noweave])
 
     ## In case noweb is missing we need to build our own.
-    if test -z $NOTANGLE -o -z $NOWEAVE ; then
+    if test -z $NOTANGLE ; then
         if test x$axiom_build_noweb = xno ; then
-           AC_MSG_ERROR([noweb utils are missing but --without-included-noweb is specified])
-        elif test -f "$axiom_top_srcdir/zips/noweb-2.10a.tgz" ; then
+           AC_MSG_ERROR([noweb utils are missing but --without-noweb is specified])
+        elif test -f "$internal_noweb" ; then
            axiom_build_noweb=yes
+           noweb_tarball="$internal_noweb"
         else
            AC_MSG_ERROR([noweb utils and noweb sources missing])
         fi
@@ -171,6 +201,7 @@ if test x$axiom_build_noweb = xyes ; then
 fi
 AC_SUBST(NOTANGLE)
 AC_SUBST(NOWEAVE)
+AC_SUBST(noweb_tarball)
 
 
 ## ------------------------
