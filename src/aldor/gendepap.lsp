@@ -160,7 +160,8 @@
 
 ;; Generate .ap files from Axiom types.
 (defun generate-ax-file (name content inits)
-  (let* ((filename (pathname (format nil "ap/~a.ap" name)))
+  (let* ((*print-circle* nil)
+         (filename (pathname (format nil "ap/~a.ap" name)))
 	 (constructors (mapcar '|abbreviation?| content))
 	 (apform (|makeAxExportForm| "UnusedArgument" constructors)))
   (with-open-file (str filename :direction :output)
