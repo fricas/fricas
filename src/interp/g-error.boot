@@ -45,13 +45,6 @@ SETANDFILEQ($SystemError,'SystemError)
 SETANDFILEQ($UserError,'UserError)
 SETANDFILEQ($AlgebraError,'AlgebraError)
 
--- REDERR is used in BFLOAT LISP, should be a macro
--- REDERR msg == error msg
-
--- BFLERRMSG func ==
---  errorSupervisor($AlgebraError,STRCONC(
---    '"BigFloat: invalid argument to ",func))
-
 argumentDataError(argnum, condit, funname) ==
   msg := ['"The test",:bright pred2English condit,'"evaluates to",
     :bright '"false",'%l,'"   for argument",:bright argnum,_
@@ -167,9 +160,6 @@ sayErrorly1(errorLabel, msg) ==
 -- systemError is being phased out. Please use keyedSystemError.
 systemError(x) == errorSupervisor($SystemError, x)
 
--- unexpectedSystemError() ==
---  systemError '"Oh, no.  Unexpected internal error."
-
 userError x == errorSupervisor($UserError,x)
 
 error(x) == errorSupervisor($AlgebraError,x)
@@ -183,4 +173,3 @@ throwMessage(:msg) ==
   sayMSG msg'
   if $printMsgsToFile then sayMSG2File msg'
   spadThrow()
-

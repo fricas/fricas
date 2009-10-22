@@ -85,9 +85,6 @@ maximalSuperType d ==
   d' := GETDATABASE(opOf d, 'SUPERDOMAIN) => maximalSuperType first d'
   d
 
--- probably will switch over to 'libName soon
-getLisplibName(c) == getConstructorAbbreviation(c)
- 
 getConstructorAbbreviation op ==
   constructor?(op) or throwKeyedMsg("S2IL0015",[op])
  
@@ -215,13 +212,3 @@ condUnabbrev(op,arglist,argtypes,modeIfTrue) ==
   [newArg for arg in arglist for type in argtypes] where newArg ==
     categoryForm?(type) => unabbrev1(arg,modeIfTrue)
     arg
- 
---% Code Being Phased Out
- 
-nAssocQ(x,l,n) ==
-  repeat
-    if atom l then return nil
-    if EQ(x,(QCAR l).n) then return QCAR l
-    l:= QCDR l
- 
-

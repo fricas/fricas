@@ -574,24 +574,6 @@ prepareResults(results,args,dummies,values,decls) ==
         error ['"Unrecognised Fortran type: ",type]
   NREVERSE data
 
--- TTT this is dead code now
---      transposeVector(u,type) ==
---        -- Take a vector of vectors and return a single vector which is in column
---        -- order (i.e. swap from C to Fortran order).
---        els  := nil
---        rows := CAR ARRAY_-DIMENSIONS(u)-1
---        cols := CAR ARRAY_-DIMENSIONS(ELT(u,0))-1
---        -- Could be a 3D Matrix
---        if VECTORP ELT(ELT(u,0),0) then
---          planes := CAR ARRAY_-DIMENSIONS(ELT(ELT(u,0),0))-1
---          for k in 0..planes repeat for j in 0..cols repeat for i in 0..rows repeat
---            els := [ELT(ELT(ELT(u,i),j),k),:els]
---        else
---          for j in 0..cols repeat for i in 0..rows repeat
---            els := [ELT(ELT(u,i),j),:els]
---        makeVector(NREVERSE els,type)
-
-
 writeData(tmpFile,indata) ==
   -- Write the elements of the list data to a temporary file.  Return the
   -- name of that file.
@@ -791,8 +773,3 @@ vectorOfFunctions f ==
     funBodies := NSUBST(["elt",newVariable,index+1],vars.(index),funBodies)
   target := [["Vector",["DoubleFloat"]],["Vector",["DoubleFloat"]]]
   rest interpret ["ADEF",[newVariable],target,[[],[]],["vector",["construct",:funBodies]]]
-
-
-
-
-

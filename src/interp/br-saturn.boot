@@ -61,51 +61,10 @@ off()==
   $saturn := false
   $standard := true
 
---=======================================================================
---            Function for testing SATURN output
---=======================================================================
--- protectedEVAL x ==
---  $saturn =>
---    protectedEVAL0(x, true, false)
---    if $aixTestSaturn then protectedEVAL0(x, false, true)
---  protectedEVAL1 x
---
---protectedEVAL0(x, $saturn, $standard) ==
---  protectedEVAL1 x
---
---protectedEVAL1 x ==
---  error := true
---  val := NIL
---  UNWIND_-PROTECT((val := saturnEVAL x; error := NIL),
---                   error => (resetStackLimits(); sendHTErrorSignal()))
---  val
---
---saturnEVAL x ==
---  fn :=
---    $aixTestSaturn => '"/tmp/sat.text"
---    '"/windows/temp/browser.text"
---  $saturn =>
---    saturnEvalToFile(x, fn)
---    OBEY  '"cat /tmp/sat.text"
---  EVAL x
-
-
---=======================================================================
---            Functions to write DOS files to disk
---=======================================================================
-ts(command) ==
-  $saturn := true
-  $standard := false
-  saturnEvalToFile(command, '"/tmp/sat.text")
-
-ut() ==
-  $saturn := false
-  $standard := true
-  'done
-
 page() ==
   $standard => $curPage
   $saturnPage
+
 --=======================================================================
 --            Functions that affect $saturnPage
 --=======================================================================

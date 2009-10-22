@@ -32,12 +32,6 @@
 
 )package "BOOT"
 
---% Utility Functions of General Use
-
--- Convert an arbitrary lisp object to canonical boolean.
-bool x ==
-    NULL NULL x
-
 --% Various lispy things
 
 Identity x == x
@@ -48,7 +42,6 @@ length2? l == PAIRP l and PAIRP (l := QCDR l) and not PAIRP QCDR l
 
 pairList(u,v) == [[x,:y] for x in u for y in v]
 
--- GETALIST(alist,prop) == IFCDR assoc(prop,alist)
 GETALIST(alist,prop) == CDR assoc(prop,alist)
 
 PUTALIST(alist,prop,val) ==
@@ -241,9 +234,6 @@ NMSORT list == listSort(function GLESSEQP, list)
 
 -- non-destructive merge sort using ?ORDER as predicate
 orderList l == listSort(function _?ORDER, COPY_-LIST l)
-
--- dummy defn until clean-up
--- order     l == orderList l
 
 mergeInPlace(f,g,p,q) ==
    -- merge the two sorted lists p and q
@@ -593,4 +583,3 @@ zeroOneTran sex ==
 -- integer counterparts
   NSUBST("$EmptyMode", "?", sex)
   sex
-
