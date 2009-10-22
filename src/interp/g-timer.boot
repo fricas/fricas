@@ -123,8 +123,6 @@ popTimedName() ==
 pushTimedName name ==
   PUSH(name,$timedNameStack)
  
---currentlyTimedName() == CAR $timedNameStack
- 
 startTimingProcess name ==
   updateTimedName peekTimedName()
   pushTimedName name

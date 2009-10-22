@@ -584,34 +584,6 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                       (elt monvec (1- month)) date year hour min sec))))
       (setq *yearweek* "no timestamp")))
 
-(defun sourcepath (f)
- "find the sourcefile in the system directories"
- (let (axiom algebra)
-  (setq axiom (|getEnv| "AXIOM"))
-  (setq algebra (concatenate 'string axiom "/../../src/algebra/" f ".spad"))
-  (cond
-   ((probe-file algebra) algebra)
-   ('else nil))))
-
-(defun srcabbrevs (sourcefile)
- "read spad source files and return the constructor names and abbrevs"
- (let (expr point mark names longnames)
-  (catch 'done
-   (with-open-file (in sourcefile)
-    (loop
-     (setq expr (read-line in nil 'done))
-     (when (eq expr 'done) (throw 'done nil))
-     (when (and (> (length expr) 4) (string= ")abb" (subseq expr 0 4)))
-      (setq expr (string-right-trim '(#\space #\tab) expr))
-      (setq point (position #\space expr :from-end t :test #'char=))
-      (push (subseq expr (1+ point)) longnames)
-      (setq expr (string-right-trim '(#\space #\tab)
-                       (subseq expr 0 point)))
-      (setq mark (position #\space expr  :from-end t))
-      (push (subseq expr (1+ mark)) names)))))
-  (values longnames names)))
-
-
 ;;; moved from bookvol5
 
 (defvar |$HiFiAccess| t               "t means turn on history mechanism")

@@ -139,24 +139,12 @@ cons5(p,l) ==
   RPLACD(QCDDDDR l,nil)
   [p,:l]
  
--- TrimEnvironment e ==
---   [TrimLocalEnvironment u for u in e] where
---     TrimLocalEnvironment e ==
---       [TrimContour u for u in e] where
---         TrimContour e ==
---           [u for u in e | Interesting u] where Interesting u == nil
---                         --clearly a temporary definition
- 
 --presence of GENSYM in arg-list differentiates mutable-domains
 -- addMutableArg nameFormer ==
 --   $mutableDomain =>
 --     nameFormer is ['LIST,:.] => [:nameFormer, '(GENSYM)]
 --     ['APPEND,nameFormer,'(LIST (GENSYM))]
 --   nameFormer
- 
---getname D ==
---  isDomain D or isCategory D => D.0
---  D
  
 mkDomainConstructor x ==
   atom x => mkDevaluate x
@@ -595,4 +583,3 @@ DescendCodeVarAdd(base,flag) ==
 resolvePatternVars(p,args) ==
   p := SUBLISLIS(args, $TriangleVariableList, p)
   SUBLISLIS(args, $FormalMapVariableList, p)
-

@@ -44,18 +44,6 @@ asList() ==
   CLOSE instream
   lines
 
-asAll lines ==
-  for x in lines repeat
-    sayBrightly ['"-----> ",x]
-    asTran x
-  'done
-
-as name ==
-  astran STRCONC(STRINGIMAGE name,'".asy")
---  astran STRCONC(getEnv('"AXIOM"),
---     '"/../../obj/rios/as/",STRINGIMAGE name,'".asy")
-  'done
-
 astran asyFile ==
 --global hash tables for new compiler
   $docHash  := MAKE_-HASH_-TABLE()
@@ -349,7 +337,6 @@ asyMakeOperationAlist(con,proplist, key) ==
       [sig]
     HPUT(ht,id,[entry,:HGET(ht,id)])
   opalist := [[op,:REMDUP HGET(ht,op)] for op in HKEYS ht]
-  --HPUT($opHash,con,[ancestorAlist,attributeAlist,:opalist])
   HPUT($opHash,con,[ancestorAlist,nil,:opalist])
 
 hackToRemoveAnd p ==
@@ -406,7 +393,6 @@ asytran fn ==
 mkNiladics u ==
   [name for x in u | x is ['Declare,name,y,:.] and y isnt ['Apply,'_-_>,:.]]
 
---OLD DEFINITION FOLLOWS
 asytranDeclaration(dform,levels,predlist,local?) ==
   ['Declare,id,form,r] := dform
   id = 'failed => id
@@ -446,31 +432,6 @@ asyLooksLikeCatForm? x ==
 --TTT don't see a Third in my version ....
   x is ['Define, ['Declare, ., ['Apply, 'Third,:.],:.],:.] or
    x is ['Define, ['Declare, ., 'Category ],:.]
-
---asytranDeclaration(dform,levels,predlist,local?) ==
---  ['Declare,id,form,r] := dform
---  id = 'failed => id
---  levels isnt ['top,:.] => asytranForm(form,[id,:levels],local?)
---  idForm   :=
---    form is ['Apply,'_-_>,source,target] => [id,:asyArgs source]
---    id
---  if form isnt ['Apply,"->",:.] then HPUT($constantHash,id,true)
---  comments := LASSOC('documentation,r) or '""
---  newsig  := asytranForm(form,[idForm,:levels],local?)
---  key :=
---    MEMQ(id,'(%% Category Type)) => 'constant
---    form is ['Apply,'Third,:.] => 'category
---    form is ['Apply,.,.,target] and target is ['Apply,name,:.]
---      and MEMQ(name,'(Third Join)) => 'category
---    'domain
---  record := [newsig,asyMkpred predlist,key,true,comments,:$asyFile]
---  if not local? then
---    ht :=
---      levels = '(top) => $conHash
---      $docHashLocal
---    HPUT(ht,id,[record,:HGET(ht,id)])
---  if levels = '(top) then asyMakeOperationAlist(id,r)
---  ['Declare,id,newsig,r]
 
 asyIsCatForm form ==
   form is ['Apply,:r] =>
@@ -797,15 +758,6 @@ asySig1(u,name?,target?) ==
   x = '_% => '_$
   x
 
--- old version was :
---asyMapping([a,b],name?) ==
---  a := asySig(a,name?)
---  b := asySig(b,name?)
---  args :=
---    a is [op,:r] and asyComma? op => r
---    [a]
---  ['Mapping,b,:args]
-
 asyMapping([a,b],name?) ==
   newa := asySig(a,name?)
   b    := asySig(b,name?)
@@ -990,7 +942,6 @@ asySimpPred(p, predlist) ==
 
 asyCattranSig(op,y) ==
   y isnt ["->",source,t] =>
---     ['SIGNATURE, op, asyTypeUnit y]
 -- following makes constants into nullary functions
      ['SIGNATURE, op, [asyTypeUnit y]]
   s :=
@@ -1014,7 +965,6 @@ asyCatSignature(op,sig) ==
   sig is ['_-_>,source,target] =>
      ['SIGNATURE,op, [asyTypeItem target,:asyUnTuple source]]
   ----------> Constants change <--------------
---  ['TYPE,op,asyTypeItem sig]
 -- following line converts constants into nullary functions
   ['SIGNATURE,op,[asyTypeItem sig]]
 
@@ -1137,7 +1087,3 @@ asyTypeJoinStack r ==
 asyTypeMakePred [p,:u] ==
   while u is [q,:u] repeat p := quickAnd(q,p)
   p
-
-
-
-

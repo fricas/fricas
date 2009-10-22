@@ -198,18 +198,6 @@ checkExtractItemList l ==  --items are separated by commas or end of line
     l := rest l
   "STRCONC"/[x for x in NREVERSE acc]
 
---NREVERSE("append"/[fn string for string in acc]) where
---  fn(string) ==
---    m := MAXINDEX string
---    acc := nil
---    i := 0
---    while i < m and (k := charPosition(char '_,,string,i)) < m repeat
---      if (t := trimString SUBSTRING(string,i,k-i)) ~= '"" then acc := [t,:acc]
---      i := k + 1
---    if i < m then
---      if (t := trimString SUBSTRING(string,i,k-i)) ~= '"" then acc := [t,:acc]
---    acc
-
 transformAndRecheckComments(name,lines) ==
   $checkingXmptex? := false
   $x            : local := name
@@ -1188,14 +1176,5 @@ checkDecorateForHt u ==
         if $checkingXmptex? then
           checkDocError ["Symbol ",x,'" appearing outside \spad{}"]
       x = '"$" or x = '"%" => checkDocError ['"Unescaped ",x]
---      null spadflag and STRINGP x and (member(x,$argl) or #x = 1
---        and ALPHA_-CHAR_-P x.0) and not member(x,'("a" "A")) =>
---          checkDocError1 ['"Naked ",x]
---      null spadflag and STRINGP x and (not x.0 = $charBack and not DIGITP(x.0) and DIGITP(x.(MAXINDEX x))or member(x,'("true" "false")))
---        => checkDocError1 ["Naked ",x]
     u := rest u
   u
-
-
-
-

@@ -161,12 +161,6 @@ compClam(op,argl,body,$clamList) ==
 compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
   --Note: when cacheNameOrNil~=nil, it names a global hashtable
  
--- cacheNameOrNil => compHashGlobal(op,argl,body,cacheNameOrNil,eqEtc,countFl)
---   This branch to compHashGlobal is now omitted; as a result,
---   entries will be stored on the global hashtable in a uniform way:
---        (<argument list>, <reference count>,:<value>)
---   where the reference count is optional
- 
   if cacheNameOrNil and cacheNameOrNil~='_$ConstructorCache then
     keyedSystemError("S2GE0010",[op])
     --restriction due to omission of call to hputNewValue (see *** lines below)
@@ -580,30 +574,6 @@ lassocShiftWithFunction(x,l,fn) ==
       QRPLACA(l,result)
     QCDR result
   nil
- 
-lassocShiftQ(x,l) ==
-  y:= l
-  while not atom y repeat
-    EQ(x,CAR CAR y) => return (result := CAR y)
-    y:= CDR y
-  result =>
-    if NEQ(y,l) then
-      RPLACA(y,CAR l)
-      RPLACA(l,result)
-    CDR result
-  nil
- 
--- rassocShiftQ(x,l) ==
---   y:= l
---   while not atom y repeat
---     EQ(x,CDR CAR y) => return (result := CAR y)
---     y:= CDR y
---   result =>
---     if NEQ(y,l) then
---       RPLACA(y,CAR l)
---       RPLACA(l,result)
---     CAR result
---   nil
  
 globalHashtableStats(x,sortFn) ==
   --assumed to be a hashtable with reference counts
