@@ -31,43 +31,43 @@
 
 
 --% Functions to handle specific errors (mostly syntax)
- 
+
 )package "BOOT"
 
 syGeneralErrorHere() ==
    sySpecificErrorHere('S2CY0002, [])
- 
+
 sySpecificErrorHere(key, args) ==
    sySpecificErrorAtToken($stok, key, args)
- 
+
 sySpecificErrorAtToken(tok, key, args) ==
    pos := tokPosn tok
    ncSoftError(pos, key, args)
- 
+
 syIgnoredFromTo(pos1, pos2) ==
   if pfGlobalLinePosn pos1 = pfGlobalLinePosn pos2 then
       ncSoftError(FromTo(pos1,pos2), 'S2CY0005, [])
   else
       ncSoftError(From pos1, 'S2CY0003, [])
       ncSoftError(To   pos2, 'S2CY0004, [])
- 
+
 npMissingMate(close,open)==
    ncSoftError(tokPosn open, 'S2CY0008, [])
    npMissing close
- 
+
 npMissing s==
    ncSoftError(tokPosn $stok,'S2CY0007, [PNAME s])
    THROW("TRAPPOINT","TRAPPED")
- 
+
 npCompMissing s == npEqKey s or npMissing s
- 
+
 pfSourceStok x==
        if pfLeaf? x
        then x
        else if null pfParts x
             then 'NoToken
             else pfSourceStok pfFirst x
- 
+
 npTrapForm(x)==
    a:=pfSourceStok x
    EQ(a,'NoToken)=>
@@ -75,11 +75,11 @@ npTrapForm(x)==
          THROW("TRAPPOINT","TRAPPED")
    ncSoftError(tokPosn a, 'S2CY0002, [])
    THROW("TRAPPOINT","TRAPPED")
- 
+
 npTrap()==
    ncSoftError(tokPosn $stok,'S2CY0002,[])
    THROW("TRAPPOINT","TRAPPED")
- 
+
 npRecoverTrap()==
   npFirstTok()
   pos1 := tokPosn $stok
@@ -87,8 +87,8 @@ npRecoverTrap()==
   pos2 := tokPosn $stok
   syIgnoredFromTo(pos1, pos2)
   npPush [pfWrong(pfDocument ['"pile syntax error"],pfListOf [])]
- 
- 
+
+
 npListAndRecover(f)==
    a:=$stack
    b:=nil
@@ -124,7 +124,7 @@ npListAndRecover(f)==
      b:=cons(npPop1(),b)
    $stack:=a
    npPush NREVERSE b
- 
+
 npMoveTo n==
       if null $inputStream
       then true

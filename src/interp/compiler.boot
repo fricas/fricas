@@ -158,7 +158,7 @@ argsToSig(args) ==
 
 compLambda(x is ["+->", vl, body], m, e) ==
     vl is [":", args, target] =>
-        args := 
+        args :=
              args is ["Tuple", :a1] => a1
              args
         LISTP(args) =>
@@ -190,10 +190,10 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
          ress := compLambda(x,m,oldE)
          -- In case Boot gets fixed
          ress
-      vl := 
+      vl :=
           vl is ["Tuple", :vl1] => vl1
           vl
-      vl := 
+      vl :=
          SYMBOLP(vl) => [vl]
          LISTP(vl) and (and/[SYMBOLP(v) for v in vl])=> vl
          stackAndThrow ["bad +-> arguments:", vl]
@@ -1254,12 +1254,12 @@ modeEqual(x,y) ==
 
 modeEqualSubst(m1,m,e) ==
   atom m1 and EQ(m1, m) => true
-  if atom m1 then 
-      m1 := 
+  if atom m1 then
+      m1 :=
           get(m1,"value",e) is [m0,:.] => m0
           m1
   if atom m then
-      m := 
+      m :=
           get(m,"value",e) is [m2,:.] => m2
           m
   atom m1 or atom m => m1 = m
@@ -1423,5 +1423,3 @@ compilerDoitWithScreenedLisplib(constructor, fun) ==
                           (RWRITE KEY VALUE STREAM)))) )
     UNWIND_-PROTECT(compilerDoit(constructor,fun),
                    UNEMBED 'RWRITE)
-
-

@@ -32,7 +32,7 @@
 
 -- This one is not currently in general use, but can be applied
 -- to various situations are required
- 
+
 minimalise x ==
   $hash:local:=MAKE_-HASHTABLE 'UEQUAL
   min x where
@@ -61,5 +61,3 @@ minimalise x ==
       HPUT($hash,x,x)
       x
   x
- 
- 

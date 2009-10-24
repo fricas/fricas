@@ -33,48 +33,48 @@
 -- This file implements the Common Lisp pathname functions for
 -- Lisp/VM.  On VM, a filename is 3-list consisting of the filename,
 -- filetype and filemode. We also UPCASE everything.
- 
+
 -- This file also contains some other VM specific functions for
 -- dealing with files.
- 
+
 --% Common Lisp Pathname Functions
- 
+
 pathname? p == p=[] or PATHNAMEP p
- 
+
 pathname p ==
   if SYMBOLP(p) then p := SYMBOL_-NAME(p)
   PATHNAMEP p => p
   not PAIRP p => PATHNAME p
   if #p>2 then p:=[p.0,p.1]
   PATHNAME APPLY(FUNCTION MAKE_-FILENAME, p)
- 
+
 namestring p == NAMESTRING pathname p
- 
+
 pathnameName p == PATHNAME_-NAME pathname p
- 
+
 pathnameType p == PATHNAME_-TYPE pathname p
- 
+
 pathnameTypeId p == UPCASE object2Identifier pathnameType p
- 
+
 pathnameDirectory p ==
    NAMESTRING MAKE_-PATHNAME(KEYWORD'DIRECTORY,PATHNAME_-DIRECTORY pathname p)
- 
+
 deleteFile f == DELETE_-FILE f
- 
+
 isExistingFile f ==
 --  p := pathname f
   if MAKE_-INPUT_-FILENAME f
     then
       true
     else false
- 
+
 --% Scratchpad II File Name Functions
- 
+
 makePathname(name,type) ==
   -- Common Lisp version of this will have to be written
   -- using MAKE-PATHNAME and the optional args.
   pathname [object2String name,object2String type]
- 
+
 mergePathnames(a,b) ==
   (fn := pathnameName(a)) = '"*" => b
   fn ~= pathnameName(b) => a
@@ -82,9 +82,9 @@ mergePathnames(a,b) ==
   ft ~= pathnameType(b) => a
   (fm := pathnameDirectory(a)) = ['"*"] => b
   a
- 
+
 isSystemDirectory dir == EVERY(function CHAR_=,$SPADROOT,dir)
- 
+
 updateSourceFiles p ==
   p := pathname p
   p := pathname [pathnameName p, pathnameType p, '"*"]

@@ -120,4 +120,3 @@ makeSpadConstant [fn,dollar,slot] ==
   RPLACA(u,function IDENTITY)
   RPLACD(u,val)
   val
-

@@ -285,4 +285,3 @@
 (setq /MAJOR-VERSION 2)
 (setq echo-meta nil)
 (defun /versioncheck (n) (unless (= n /MAJOR-VERSION) (throw 'versioncheck -1)))
-

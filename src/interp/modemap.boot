@@ -31,10 +31,10 @@
 
 
 --% EXTERNAL ROUTINES
- 
+
 --These functions are called from outside this file to add a domain
 --   or to get the current domains in scope;
- 
+
 addDomain(domain,e) ==
   atom domain =>
     EQ(domain,"$EmptyMode") => e
@@ -54,26 +54,26 @@ addDomain(domain,e) ==
     not member(name,'(Mapping CATEGORY)) then
       unknownTypeError name
   e        --is not a functor
- 
+
 domainMember(dom,domList) == or/[modeEqual(dom,d) for d in domList]
- 
+
 --% MODEMAP FUNCTIONS
- 
+
 getModemap(x is [op,:.],e) ==
   for modemap in get(op,'modemap,e) repeat
     if u:= compApplyModemap(x,modemap,e,nil) then return
       ([.,.,sl]:= u; SUBLIS(sl,modemap))
- 
+
 getModemapList(op,numOfArgs,e) ==
   op is ['elt,D,op'] => getModemapListFromDomain(op',numOfArgs,D,e)
   [mm for
     (mm:= [[.,.,:sigl],:.]) in get(op,'modemap,e) | numOfArgs=#sigl]
- 
+
 getModemapListFromDomain(op,numOfArgs,D,e) ==
   [mm
     for (mm:= [[dc,:sig],:.]) in get(op,'modemap,e) | dc=D and #rest sig=
       numOfArgs]
- 
+
 addModemapKnown(op,mc,sig,pred,fn,$e) ==
 --  if knownInfo pred then pred:=true
 --  that line is handled elsewhere
@@ -82,7 +82,7 @@ addModemapKnown(op,mc,sig,pred,fn,$e) ==
       addModemap0(op,mc,sig,pred,fn,$CapsuleModemapFrame)
     $e
   addModemap0(op,mc,sig,pred,fn,$e)
- 
+
 addModemap0(op,mc,sig,pred,fn,e) ==
   --mc is the "mode of computation"; fn the "implementation"
   $functorForm is ['CategoryDefaults,:.] and mc="$" => e
@@ -91,7 +91,7 @@ addModemap0(op,mc,sig,pred,fn,e) ==
                                -- breaks -:($,$)->U($,failed) in DP
   op='elt or op='setelt => addEltModemap(op,mc,sig,pred,fn,e)
   addModemap1(op,mc,sig,pred,fn,e)
- 
+
 addEltModemap(op,mc,sig,pred,fn,e) ==
    --hack to change selectors from strings to identifiers; and to
    --add flag identifiers as literals in the envir
@@ -114,7 +114,7 @@ addEltModemap(op,mc,sig,pred,fn,e) ==
     -- atom sel => systemError '"addEltModemap"
     addModemap1(op,mc,sig,pred,fn,e)
   systemErrorHere '"addEltModemap"
- 
+
 addModemap1(op,mc,sig,pred,fn,e) ==
    --mc is the "mode of computation"; fn the "implementation"
   if mc='Rep then
@@ -129,7 +129,7 @@ addModemap1(op,mc,sig,pred,fn,e) ==
   unErrorRef op
         --There may have been a warning about op having no value
   addBinding(op, newProplist, e)
- 
+
 mkNewModemapList(mc,sig,pred,fn,curModemapList,e,filenameOrNil) ==
   entry:= [map:= [mc,:sig],[pred,fn],:filenameOrNil]
   member(entry,curModemapList) => curModemapList
@@ -138,12 +138,12 @@ mkNewModemapList(mc,sig,pred,fn,curModemapList,e,filenameOrNil) ==
     opred=true => curModemapList
     if pred~=true and pred~=opred then pred:= ["OR",pred,opred]
     [if x=oldMap then [map,[pred,fn],:filenameOrNil] else x
- 
+
   --if new modemap less general, put at end; otherwise, at front
       for x in curModemapList]
   $InteractiveMode => insertModemap(entry,curModemapList)
   mergeModemap(entry,curModemapList,e)
- 
+
 mergeModemap(entry is [[mc,:sig],[pred,:.],:.],modemapList,e) ==
   for (mmtail:= [[[mc',:sig'],[pred',:.],:.],:.]) in tails modemapList repeat
     mc=mc' or isSuperDomain(mc',mc,e) =>
@@ -162,15 +162,15 @@ mergeModemap(entry is [[mc,:sig],[pred,:.],:.],modemapList,e) ==
       entry:= nil
       return modemapList
   if entry then [:modemapList,entry] else modemapList
- 
+
 isSuperDomain(domainForm,domainForm',e) ==
   isSubset(domainForm',domainForm,e) => true
   domainForm='Rep and domainForm'="$" => true --regard $ as a subdomain of Rep
   LASSOC(opOf domainForm',get(domainForm,"SubDomain",e))
- 
+
 addNewDomain(domain,e) ==
   augModemapsFromDomain(domain,domain,e)
- 
+
 augModemapsFromDomain(name,functorForm,e) ==
   member(KAR name or name,$DummyFunctorNames) => e
   name=$Category or isCategoryForm(name,e) => e
@@ -183,12 +183,12 @@ augModemapsFromDomain(name,functorForm,e) ==
                          repeat e:= addDomain(d,e)
   augModemapsFromDomain1(name,functorForm,e)
      --see LISPLIB BOOT
- 
+
 substituteCategoryArguments(argl,catform) ==
   argl:= substitute("$$","$",argl)
   arglAssoc:= [[INTERNL("#",STRINGIMAGE i),:a] for i in 1.. for a in argl]
   SUBLIS(arglAssoc,catform)
- 
+
          --Called, by compDefineFunctor, to add modemaps for $ that may
          --be equivalent to those of Rep. We must check that these
          --operations are not being redefined.
@@ -204,15 +204,15 @@ augModemapsFromCategoryRep(domainName,repDefn,functorBody,categoryForm,e) ==
       e:= addModemap(op,domainName,sig,cond,fnsel',e)
     e:= addModemap(op,domainName,sig,cond,fnsel,e)
   e
- 
+
 AMFCR_,redefinedList(op,l) == "OR"/[AMFCR_,redefined(op,u) for u in l]
- 
+
 AMFCR_,redefined(opname,u) ==
   not(u is [op,:l]) => nil
   op = 'DEF => opname = CAAR l
   MEMQ(op,'(PROGN SEQ)) => AMFCR_,redefinedList(opname,l)
   op = 'COND => "OR"/[AMFCR_,redefinedList(opname,CDR u) for u in l]
- 
+
 augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   [fnAlist,e]:= evalAndSub(domainName,domainView,functorForm,categoryForm,e)
   --if not $InteractiveMode then
@@ -235,7 +235,7 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
 --                     (not isCategoryForm(u,e)) do
 --     e:= addNewDomain(u,e)
   e
- 
+
 evalAndSub(domainName,viewName,functorForm,form,$e) ==
   isCategory form => [substNames(domainName,viewName,functorForm,form.(1)),$e]
   --next lines necessary-- see MPOLY for which $ is actual arg. --- RDJ 3/83
@@ -243,7 +243,7 @@ evalAndSub(domainName,viewName,functorForm,form,$e) ==
   opAlist:= getOperationAlist(domainName,functorForm,form)
   substAlist:= substNames(domainName,viewName,functorForm,opAlist)
   [substAlist,$e]
- 
+
 getOperationAlist(name,functorForm,form) ==
   if atom name and GETDATABASE(name,'NILADIC) then functorForm:= [functorForm]
   (u:= isFunctor functorForm) and not
@@ -252,7 +252,7 @@ getOperationAlist(name,functorForm,form) ==
     ($domainShell => $domainShell.(1); systemError '"$ has no shell now")
   T:= compMakeCategoryObject(form,$e) => ([.,.,$e]:= T; T.expr.(1))
   stackMessage ["not a category form: ",form]
- 
+
 substNames(domainName,viewName,functorForm,opalist) ==
   functorForm := SUBSTQ("$$","$", functorForm)
   nameForDollar :=
@@ -267,7 +267,7 @@ substNames(domainName,viewName,functorForm,opalist) ==
      for [:modemapform,[sel,"$",pos]] in
           EQSUBSTLIST(KDR functorForm,$FormalMapVariableList, opalist)]
 
- 
+
 compCat(form is [functorName,:argl],m,e) ==
   fn:= GETL(functorName,"makeFunctionList") or return nil
   [funList,e]:= FUNCALL(fn,form,form,e)
@@ -277,7 +277,7 @@ compCat(form is [functorName,:argl],m,e) ==
   --RDJ: for coercion purposes, it necessary to know it's a Set; I'm not
   --sure if it uses any of the other signatures(see extendsCategoryForm)
   [form,catForm,e]
- 
+
 addConstructorModemaps(name,form is [functorName,:.],e) ==
   $InteractiveMode: local:= nil
   e:= putDomainsInScope(name,e) --frame
@@ -290,19 +290,18 @@ addConstructorModemaps(name,form is [functorName,:.],e) ==
           opcode := [sel,dc,nsig]
     e:= addModemap(op,name,sig,true,opcode,e)
   e
- 
- 
+
+
 --The way XLAMs work:
 --  ((XLAM ($1 $2 $3) (SETELT $1 0 $3)) X "c" V) ==> (SETELT X 0 V)
- 
+
 getDomainsInScope e ==
   $insideCapsuleFunctionIfTrue=true => $CapsuleDomainsInScope
   get("$DomainsInScope","special",e)
- 
+
 putDomainsInScope(x,e) ==
   l:= getDomainsInScope e
   if member(x,l) then SAY("****** Domain: ",x," already in scope")
   newValue:= [x,:delete(x,l)]
   $insideCapsuleFunctionIfTrue => ($CapsuleDomainsInScope:= newValue; e)
   put("$DomainsInScope","special",newValue,e)
- 

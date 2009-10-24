@@ -200,7 +200,7 @@ compileADEFBody(t,vars,types,body,computedResultType) ==
   -- "fly", for example:
   --  [map(h +-> D(h, t), v) for v in [t]]
   --
-  -- $genValue: This seems to be needed when we create a map as an argument 
+  -- $genValue: This seems to be needed when we create a map as an argument
   -- for a constructor, e.g.:
   --  Dx: LODO(EXPR INT, f +-> D(f, x)) := D()
   --
@@ -840,7 +840,7 @@ checkForFreeVariables(v,locals) ==
     CDR(LASTTAIL v) => -- Must be a better way to check for a genuine list?
       v
     [op,:args] := v
-    LISTP op => 
+    LISTP op =>
       -- Might have a mode at the front of a list, or be calling a function
       -- which returns a function.
       [checkForFreeVariables(op,locals),:[checkForFreeVariables(a,locals) for a in args]]
@@ -865,7 +865,7 @@ checkForFreeVariables(v,locals) ==
         -- This is some bizarre LET, not what one would expect in Common Lisp!
         -- Treat var as a free variable, since it may be bound out of scope
         -- if we are in a lambda within another lambda.
-        newvar := 
+        newvar :=
           p := POSITION(var,$freeVariables) =>
             ["ELT","envArg",positionInVec(p,#($freeVariables))]
           $freeVariables := [var,:$freeVariables]
@@ -1275,4 +1275,3 @@ deleteAll(x,l) ==
   null l => nil
   x = CAR(l) => deleteAll(x,CDR l)
   [first l,:deleteAll(x,rest l)]
-

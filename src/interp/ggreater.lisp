@@ -77,7 +77,7 @@
           ('else t)))
       ((numberp COMPERAND-2) NIL)
       ((CHARACTERP COMPERAND-1)
-        (COND 
+        (COND
           ((CHARACTERP COMPERAND-2)
             (CHAR-GREATERP COMPERAND-1 COMPERAND-2) )
           ('else t)))
@@ -161,7 +161,7 @@
           ('else t)))
       ((numberp COMPERAND-2) NIL)
       ((CHARACTERP COMPERAND-1)
-        (COND 
+        (COND
           ((CHARACTERP COMPERAND-2)
             (CHAR> COMPERAND-1 COMPERAND-2) )
           ('else t)))
@@ -200,6 +200,3 @@
       (RETURN (GGREATERP T1 T2)) ) )
 
 (defvar SORTGREATERP #'GGREATERP "default sorting predicate")
-
-
-

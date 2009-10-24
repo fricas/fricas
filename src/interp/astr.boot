@@ -35,7 +35,7 @@
 --% Attributed Structures (astr)
 -- For objects which are pairs where the CAR field is either just a tag
 -- (an identifier) or a pair which is the tag and an association list.
- 
+
 -- Pick off the tag
 ncTag x ==
    not PAIRP x => ncBug('S2CB0031,[])
@@ -43,7 +43,7 @@ ncTag x ==
    IDENTP x => x
    not PAIRP x => ncBug('S2CB0031,[])
    QCAR x
- 
+
 -- Pick off the property list
 ncAlist x ==
    not PAIRP x => ncBug('S2CB0031,[])
@@ -57,7 +57,7 @@ ncEltQ(x,k) ==
    r := ASSQ(k,ncAlist x)
    NULL r => ncBug ('S2CB0007,[k])
    CDR r
- 
+
 -- Put (k . v) on the association list of x and return v
 -- case1: ncPutQ(x,k,v) where k is a key (an identifier), v a value
 --        put the pair (k . v) on the association list of x and return v
@@ -74,4 +74,3 @@ ncPutQ(x,k,v) ==
    else
       RPLACD(r,v)
    v
- 

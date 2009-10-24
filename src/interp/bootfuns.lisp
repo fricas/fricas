@@ -137,4 +137,3 @@
 
 (def-boot-val |$inputPromptType| '|step|  "checked in MKPROMPT")
 (def-boot-val |$IOindex| 0                 "step counter")
-

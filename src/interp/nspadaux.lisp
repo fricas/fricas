@@ -36,10 +36,10 @@
 (defvar |$localMacroStack| nil)
 (defvar |$globalMacroStack| nil)
 (defvar |$abbreviationStack| nil)
-(defvar |$knownAttributes| nil "cumulative list of known attributes of a file") 
+(defvar |$knownAttributes| nil "cumulative list of known attributes of a file")
 
 (setq |$underscoreChar| (|char| '_))
-(defvar |$back| nil) 
+(defvar |$back| nil)
 
 (setq |$markChoices| '(ATOM COLON LAMBDA AUTOSUBSET AUTOHARD AUTOREP REPPER FREESI RETRACT))
 (setq |$convert2NewCompiler| 'T)
@@ -58,7 +58,7 @@
         '((PART |compPART|)
           (WI |compWI|)
           (MI |compWI|)))
-        
+
 (mapcar #'(lambda (X) (MAKEPROP (CAR X) 'PSPAD (CADR X)))
         '((|default| |formatDefault|)
           (|local| |formatLocal|)
@@ -112,5 +112,3 @@
 (remprop 'cons   '|Led|)
 (remprop 'append 'format)
 (remprop 'cons   'format)
-
-

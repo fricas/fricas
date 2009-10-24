@@ -1760,5 +1760,3 @@ defaultTypeForCategory(cat, SL) ==
       ['Matrix, d]
     NIL
   NIL
-
-

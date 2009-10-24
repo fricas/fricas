@@ -58,4 +58,3 @@ parseFromString(s) ==
 
 ncParseFromString(s) ==
    zeroOneTran(packageTran(CATCH('SPAD__READER, parseFromString(s))))
-

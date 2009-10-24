@@ -33,14 +33,14 @@
 mkList u ==
   u => ["LIST",:u]
   nil
- 
+
 mkOperatorEntry(opSig is [op,sig,:flag],pred,count) ==
   null flag => [opSig,pred,["ELT","$",count]]
   first flag="constant" => [[op,sig],pred,["CONST","$",count]]
   systemError ["unknown variable mode: ",flag]
- 
+
 --% Code for encoding function names inside package or domain
- 
+
 encodeFunctionName(fun,package is [packageName,:arglist],signature,sep,count)
    ==
     signature':= substitute("$",package,signature)
@@ -56,7 +56,7 @@ encodeFunctionName(fun,package is [packageName,:arglist],signature,sep,count)
       $lisplibSignatureAlist:=
         [[encodedName,:signature'],:$lisplibSignatureAlist]
     encodedName
- 
+
 splitEncodedFunctionName(encodedName, sep) ==
     -- [encodedPackage, encodedItem, encodedSig, sequenceNo] or NIL
     -- sep0 is the separator used in "encodeFunctionName".
@@ -72,7 +72,7 @@ splitEncodedFunctionName(encodedName, sep) ==
     s3 := SUBSTRING(encodedName, p2+1, p3-p2-1)
     s4 := SUBSTRING(encodedName, p3+1, nil)
     [s1, s2, s3, s4]
- 
+
 mkRepititionAssoc l ==
   mkRepfun(l,1) where
     mkRepfun(l,n) ==
@@ -80,22 +80,22 @@ mkRepititionAssoc l ==
       l is [x] => [[n,:x]]
       l is [x, =x,:l'] => mkRepfun(rest l,n+1)
       [[n,:first l],:mkRepfun(rest l,1)]
- 
+
 encodeItem x ==
   x is [op,:argl] => getCaps op
   IDENTP x => PNAME x
   STRINGIMAGE x
- 
+
 getCaps x ==
   s:= STRINGIMAGE x
   clist:= [c for i in 0..MAXINDEX s | UPPER_-CASE_-P (c:= s.i)]
   null clist => '"__"
   "STRCONC"/[first clist,:[DOWNCASE u for u in rest clist]]
- 
+
 --% abbreviation code
 
 DEFPARAMETER($abbreviationTable, '())
- 
+
 getAbbreviation(name,c) ==
   --returns abbreviation of name with c arguments
   x := constructor? name
@@ -110,18 +110,16 @@ getAbbreviation(name,c) ==
     newAbbreviation
   $abbreviationTable:= [[x,[name,[c,:x]]],:$abbreviationTable]
   x
- 
+
 mkAbbrev(X,x) == addSuffix(alistSize rest X,x)
- 
+
 alistSize c ==
   count(c,1) where
     count(x,level) ==
       level=2 => #x
       null x => 0
       count(CDAR x,level+1)+count(rest x,level)
- 
+
 addSuffix(n,u) ==
   ALPHA_-CHAR_-P (s:= STRINGIMAGE u).(MAXINDEX s) => INTERN STRCONC(s,STRINGIMAGE n)
   INTERNL STRCONC(s,STRINGIMAGE ";",STRINGIMAGE n)
- 
-

@@ -31,7 +31,7 @@
 
 
 simpBool x == dnf2pf reduceDnf be x
- 
+
 reduceDnf u ==
 -- (OR (AND ..b..) b) ==> (OR  b  )
   atom u => u
@@ -42,10 +42,10 @@ reduceDnf u ==
       dnfContains(x,y) => return (ok := false)
     ok = true => acc := [x,:acc]
   NREVERSE acc
- 
+
 dnfContains([a,b],[c,d]) == fn(a,c) and fn(b,d) where
   fn(x,y) == and/[member(u,x) for u in y]
- 
+
 prove x ==
   world := [p for y in listOfUserIds x | (p := getPredicate y)] =>
     'false = be MKPF([['NOT,x],:world],'AND) => true
@@ -60,7 +60,7 @@ simpBoolGiven(x,world) ==
     'false = be MKPF([['NOT,x],:world],'AND) => true
     'false = (y := be MKPF([x,:world],'AND)) => false
     (u := andReduce(dnf2pf y,world)) is ['AND,:v] and
-      (w := SETDIFFERENCE(v,world)) ~= v => simpBool ['AND,:w] 
+      (w := SETDIFFERENCE(v,world)) ~= v => simpBool ['AND,:w]
     u
   'false = (y := be x) => false
   'true = y => true
@@ -143,7 +143,7 @@ coafAndDnf(a,b) ==              --and: (coaf, dnf) -> dnf
   a = 'true => b
   a = 'false => 'false
   [c,:r] := b
-  null r => coafAndCoaf(a,c) 
+  null r => coafAndCoaf(a,c)
   x := coafAndCoaf(a,c)      --dnf
   y := coafAndDnf(a,r)       --dnf
   x = 'false => y
@@ -177,7 +177,7 @@ orDel(a,l) ==
 ordList l ==
   l is [h,:t] and t => orDel(h,ordList t)
   l
-ordUnion(a,b) ==                           
+ordUnion(a,b) ==
   a isnt [c,:r] => b
   b isnt [d,:s] => a
   c=d => [c,:ordUnion(r,s)]

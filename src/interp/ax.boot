@@ -41,7 +41,7 @@ spad2AxTranslatorAutoloadOnceTrigger any == true
 
 $extendedDomains := nil
 
-setExtendedDomains(l) == 
+setExtendedDomains(l) ==
         $extendedDomains := l
 
 --rhx: Function seems to be unused.
@@ -162,7 +162,7 @@ axFormatType(typeform) ==
   typeform is ['construct,: args] =>
       axAddLiteral('bracket, ['Apply, 'List, 'Symbol], [ 'Apply, 'Tuple, 'Symbol])
       axAddLiteral('string, 'Symbol, 'Literal)
-      ['RestrictTo, ['Apply, 'bracket, 
+      ['RestrictTo, ['Apply, 'bracket,
                         :[axFormatType a for a in args]],
                           ['Apply, 'List, 'Symbol] ]
   typeform is [op] =>
@@ -353,14 +353,13 @@ get1defaultOp(op,index) ==
      $opList := [[op,signumList],:$opList]
   index + 1
 
-axAddLiteral(name, type, dom) == 
+axAddLiteral(name, type, dom) ==
   elt := [name, type, dom]
   if not member( elt, $literals) then
      $literals := [elt, :$literals]
 
-axDoLiterals() == 
+axDoLiterals() ==
   [ [ 'Import,
-          [ 'With, [], 
+          [ 'With, [],
             ['Declare, name, [ 'Apply, '_-_> , dom , '_% ]]],
                  type ] for [name, type, dom] in $literals]
-

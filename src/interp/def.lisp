@@ -83,7 +83,7 @@ foo defined inside of fum gets renamed as fum,foo.")
        ; ((AND (EQCAR (SECOND X) 'QUOTE) (IDENTP (CADADR X))) (CONS 'EQ X))
         ($BOOT (CONS 'BOOT-EQUAL X))
         ((CONS 'EQUAL X))))
- 
+
 (defun DEF-LESSP (x)
   (cond ((null (cdr x)) (cons '< x))
         ((eq (cadr x) 0) (list 'minusp (car x)))
@@ -497,4 +497,3 @@ foo defined inside of fum gets renamed as fum,foo.")
       (COND (y (COND ((INTEGERP Y) (LIST 'SETELT VAR Y EXPR))
                      ((LIST 'RPLAC (LIST Y VAR) EXPR))))
             ((LIST 'SETELT VAR SEL EXPR))))))
-

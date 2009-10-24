@@ -802,7 +802,7 @@ database.
                                         "." *lisp-bin-filetype*)
                (car data)))
       (when (and data (string= (directory-namestring data) ""))
-       (setq data (concatenate 'string $spadroot "/algebra/" data 
+       (setq data (concatenate 'string $spadroot "/algebra/" data
                                           "." *lisp-bin-filetype*)))))))
   data))
 
@@ -879,7 +879,7 @@ database.
           nil
     ))))
 
- (let (thisdir nrlibs asos asys libs object only dir key 
+ (let (thisdir nrlibs asos asys libs object only dir key
       (|$forceDatabaseUpdate| t) noexpose)
   (declare (special |$forceDatabaseUpdate|))
   ;;; FIXME: make this _really_ portable
@@ -1119,7 +1119,7 @@ database.
     (make-database :operationalist nil :constructorkind '|domain|))
    (push '|Enumeration| *allconstructors*)
    )
-  (final-name (root) 
+  (final-name (root)
     (format nil "~a.daase~a" root ext))
   )
  (let (d)
@@ -1136,10 +1136,10 @@ database.
      (list (list '|dir| (namestring (truename "./")) ))
      'make-database)
   (dolist (dir dirlist)
-          (localdatabase nil 
-                         (list (list '|dir| 
-                                     (namestring (truename 
-                                                  (format nil "./~a" 
+          (localdatabase nil
+                         (list (list '|dir|
+                                     (namestring (truename
+                                                  (format nil "./~a"
                                                           dir)))))
                          'make-database))
 ;browse.daase
@@ -1186,13 +1186,13 @@ database.
   (when (probe-file (final-name "operation"))
         (delete-file (final-name "operation")))
   (rename-file "operation.build" (final-name "operation"))
-  (when (probe-file (final-name "browse")) 
+  (when (probe-file (final-name "browse"))
         (delete-file (final-name "browse")))
-  (rename-file "browse.build" 
+  (rename-file "browse.build"
                (final-name "browse"))
   (when (probe-file (final-name "category"))
         (delete-file (final-name "category")))
-  (rename-file "category.build" 
+  (rename-file "category.build"
                (final-name "category")))))
 
 (defun DaaseName (name erase?)
@@ -1310,11 +1310,11 @@ database.
                  ((consp dob) ; if asharp code
                       (cons (pathname-name (car dob))
                             (cdr dob)))
-                 (dob 
+                 (dob
                       (pathname-name
                           (first (last (pathname-directory dob)))))
                  (t "NIL")))
-    ) 
+    )
     (setq concategory (squeeze (database-constructorcategory struct)))
     (if concategory  ; if category then write data else write nil
      (progn

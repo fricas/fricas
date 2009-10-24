@@ -33,9 +33,9 @@
 )package "BOOT"
 
 --% Transformation of Parser Output
- 
+
 )if false
-This is the top-level function in this file. 
+This is the top-level function in this file.
 
 When parsing spad code we walk an source code expression such as
 
@@ -64,7 +64,7 @@ parseTransform x ==
 
 It walks the
 expression, which is a list, item by item (note the tail recursive
-call in this function). In general, we are converting certain 
+call in this function). In general, we are converting certain
 source-level constructs into internal constructs. Note the subtle
 way that functions get called in this file. The information about
 what function to call is stored on the property list of the symbol.
@@ -76,9 +76,9 @@ assigns [[$op]] to be [[|has|]] and [[argl]] to be the list
 for the compile-time elts, returns [[$op]] unchanged. The variable
 [[u]] is set to [[|has|]].
 
-Since [[|has|]] is an atom we do 
+Since [[|has|]] is an atom we do
 [[(GET '|has| '|parseTran|)]] which returns [[|parseHas|]]
-because the symbol [[|has|]] contains the association 
+because the symbol [[|has|]] contains the association
 [[|parseTran| |parseHas|]] on it's symbol property list.
 You can see this by calling [[(symbol-plist '|has|)]].
 
@@ -101,38 +101,38 @@ parseTran x ==
     r
   atom u and (fn:= GETL(u,'parseTran)) => FUNCALL(fn,argl)
   [parseTran $op,:parseTranList argl]
- 
+
 
 parseAtom x ==
  -- next line for compatibility with new compiler
   x = 'break => parseLeave ['$NoValue]
   x
- 
+
 parseTranList l ==
   atom l => parseTran l
   [parseTran first l,:parseTranList rest l]
 
 DEFPARAMETER($insideConstructIfTrue, nil)
- 
+
 parseConstruct u ==
   $insideConstructIfTrue: local:= true
   l:= parseTranList u
   ["construct",:l]
- 
+
 parseUpArrow u ==  parseTran ["**",:u]
- 
+
 parseLeftArrow u == parseTran ["LET",:u]
- 
+
 parseIs [a,b] == ["is",parseTran a,transIs parseTran b]
- 
+
 parseIsnt [a,b] == ["isnt",parseTran a,transIs parseTran b]
- 
+
 transIs u ==
   isListConstructor u => ['construct,:transIs1 u]
   u
- 
+
 isListConstructor u == u is [op,:.] and op in '(construct append cons)
- 
+
 transIs1 u ==
   u is ['construct,:l] => [transIs x for x in l]
   u is ['append,x,y] =>
@@ -148,12 +148,12 @@ transIs1 u ==
     atom v => [h,[":",v]]
     [h,:v]
   u
- 
+
 parseLET [x,y] ==
   p := ['LET,parseTran x,parseTranCheckForRecord(y,opOf x)]
   opOf x = 'cons => ['LET,transIs p.1,p.2]
   p
- 
+
 parseColon u ==
   u is [x] => [":",parseTran x]
   u is [x,typ] =>
@@ -161,10 +161,10 @@ parseColon u ==
       $insideConstructIfTrue=true => ['TAG,parseTran x,parseTran typ]
       [":",parseTran x,parseTran parseType typ]
     [":",parseTran x,parseTran typ]
- 
+
 parseBigelt [typ,consForm] ==
   [['elt,typ,'makeRecord],:transUnCons consForm]
- 
+
 transUnCons u ==
   atom u => systemErrorHere '"transUnCons"
   u is ["APPEND",x,y] =>
@@ -173,24 +173,24 @@ transUnCons u ==
   u is ["CONS",x,y] =>
     atom y => [x,:y]
     [x,:transUnCons y]
- 
+
 parseCoerce [x,typ] ==
   $InteractiveMode => ["::",parseTran x,parseTran parseType typ]
   ["::",parseTran x,parseTran typ]
- 
+
 parseAtSign [x,typ] ==
   $InteractiveMode => ["@",parseTran x,parseTran parseType typ]
   ["@",parseTran x,parseTran typ]
- 
+
 parsePretend [x,typ] ==
   $InteractiveMode => ['pretend,parseTran x,parseTran parseType typ]
   ['pretend,parseTran x,parseTran typ]
- 
+
 parseType x ==
   x := MSUBST($EmptyMode,$quadSymbol,x)
   x is ['typeOf,val] => ['typeOf,parseTran val]
   x
- 
+
 parseTypeEvaluate form ==
   form is [op,:argl] =>
     $op: local:= op
@@ -212,12 +212,12 @@ parseTypeEvaluate form ==
     cmm is [[.,.,:argml],:.] => [op,:parseTypeEvaluateArgs(argl,argml)]
     throwKeyedMsg("S2IL0015",[op])
   form
- 
+
 parseTypeEvaluateArgs(argl,argml) ==
   [argVal for arg in argl for md in argml for i in 1..] where argVal ==
       isCategoryForm(md,$CategoryFrame) => parseTypeEvaluate arg
       arg
- 
+
 parseHas [x,y] ==
   if $InteractiveMode then
     x:=
@@ -242,7 +242,7 @@ parseHas [x,y] ==
       $InteractiveMode => parseHasRhs y
       MOAN '"Attribute support is removed"
       [y]
- 
+
 parseHasRhs u ==   --$InteractiveMode = true
   get(u,'value,$CategoryFrame) is [D,m,.]
     and m in '((Mode) (Domain) (SubDomain (Domain))) => m
@@ -250,68 +250,68 @@ parseHasRhs u ==   --$InteractiveMode = true
     loadIfNecessary y => [unabbrevAndLoad y]
     BREAK()
   BREAK()
- 
+
 parseDEF [$lhs,tList,specialList,body] ==
   setDefOp $lhs
   ['DEF,parseLhs $lhs,parseTranList tList,parseTranList specialList,
     parseTranCheckForRecord(body,opOf $lhs)]
- 
+
 parseLhs x ==
   atom x => parseTran x
   atom first x => [parseTran first x,:[transIs parseTran y for y in rest x]]
   parseTran x
- 
+
 parseMDEF [$lhs,tList,specialList,body] ==
   ['MDEF,parseTran $lhs,parseTranList tList,parseTranList specialList,
     parseTranCheckForRecord(body,opOf $lhs)]
- 
+
 parseTranCheckForRecord(x,op) ==
   (x:= parseTran x) is ['Record,:l] =>
     or/[y for y in l | y isnt [":",.,.]] =>
       postError ['"   Constructor",:bright x,'"has missing label"]
     x
   x
- 
+
 parseCases [expr,ifClause] ==
   casefn(expr,ifClause) where
     casefn(x,ifExpr) ==
       ifExpr='noBranch => ['ifClauseError,x]
       ifExpr is ['IF,a,b,c] => ['IF,parseTran a,parseTran b,casefn(x,c)]
       postError ['"   CASES format error: cases ",x," of ",ifExpr]
- 
+
 parseCategory x ==
   l:= parseTranList x
   key:=
     CONTAINED("$",l) => "domain"
     'package
   ['CATEGORY,key,:l]
- 
+
 parseGreaterThan [x,y] ==
   [SUBST("<", ">", $op), parseTran y, parseTran x]
- 
+
 parseGreaterEqual u == parseTran ['not, [SUBST("<", ">=", $op), :u]]
- 
+
 parseLessEqual u == parseTran ['not, [SUBST(">", "<=", $op), :u]]
- 
+
 parseNotEqual u == parseTran ['not, [SUBST("=", "~=", $op), :u]]
- 
+
 parseAnd u ==
   $InteractiveMode => ["and",:parseTranList u]
   null u => 'true
   null rest u => first u
   parseIf [parseTran first u,parseAnd rest u,"false"]
- 
+
 parseOr u ==
   $InteractiveMode => ["or",:parseTranList u]
   null u => 'false
   null rest u => first u
   (x:= parseTran first u) is ['not,y] => parseIf [y,parseOr rest u,'true]
   true => parseIf [x,'true,parseOr rest u]
- 
+
 parseNot u ==
   $InteractiveMode => ['not,parseTran first u]
   parseTran ['IF,first u,:'(false true)]
- 
+
 parseExit [a,:b] ==
   --  note: I wanted to convert 1s to 0s here to facilitate indexing in
   --   comp code; unfortunately, parseTran-ning is sometimes done more
@@ -323,7 +323,7 @@ parseExit [a,:b] ==
       (MOAN('"first arg ",a,'" for exit must be integer"); ['exit,1,a])
     ['exit,a,:b]
   ['exit,1,a]
- 
+
 parseLeave [a,:b] ==
   a:= parseTran a
   b:= parseTran b
@@ -332,34 +332,34 @@ parseLeave [a,:b] ==
       (MOAN('"first arg ",a,'" for 'leave' must be integer"); ['leave,1,a])
     ['leave,a,:b]
   ['leave,1,a]
- 
+
 parseReturn [a,:b] ==
   a:= parseTran a
   b:= parseTran b
   b =>
     (if a~=1 then MOAN '"multiple-level 'return' not allowed"; ["return",1,:b])
   ["return",1,a]
- 
+
 parseJoin l ==
   ['Join,:fn parseTranList l] where
     fn l ==
       null l => nil
       l is [['Join,:x],:y] => [:x,:fn y]
       [first l,:fn rest l]
- 
+
 parseInBy [i,n,inc] ==
   (u:= parseIn [i,n]) isnt ['STEP,i,a,j,:r] =>
     postError ["   You cannot use",:bright '"by",
       '"except for an explicitly indexed sequence."]
   inc:= parseTran inc
   ['STEP,i,a,parseTran inc,:r]
- 
+
 parseSegment p ==
   p is [a,b] =>
     b => ['SEGMENT,parseTran a, parseTran b]
     ['SEGMENT,parseTran a]
   ['SEGMENT,:p]
- 
+
 parseIn [i,n] ==
   i:= parseTran i
   n:= parseTran n
@@ -372,7 +372,7 @@ parseIn [i,n] ==
     postError ['"  You cannot reverse an infinite sequence."]
   n is ['tails,s] => ['ON,i,s]
   ['IN,i,n]
- 
+
 parseIf t ==
   t isnt [p,a,b] => t
   ifTran(parseTran p,parseTran a,parseTran b) where
@@ -389,20 +389,20 @@ parseIf t ==
       makeSimplePredicateOrNil p is ['SEQ,:s,['exit,1,val]] =>
         parseTran ['SEQ,:s,['exit,1,incExitLevel ['IF,val,a,b]]]
       ['IF,p,a,b]
- 
+
 makeSimplePredicateOrNil p ==
   isSimple p => nil
   u:= isAlmostSimple p => u
   true => wrapSEQExit [['LET,g:= GENSYM(),p],g]
- 
+
 parseWhere l == ["where",:mapInto(l,'parseTran)]
- 
- 
+
+
 parseSeq l ==
   not (l is [:.,['exit,:.]]) =>
     postError ['"   Invalid ending to block: ",last l]
   transSeq mapInto(l,'parseTran)
- 
+
 transSeq l ==
   null l => nil
   null rest l => decExitLevel first l
@@ -417,7 +417,7 @@ transSeq l ==
     ['IF,decExitLevel a,transSeq tail,decExitLevel b]
   (y:= transSeq tail) is ['SEQ,:s] => ['SEQ,item,:s]
   ['SEQ,item,['exit,1,incExitLevel y]]
- 
+
 transCategoryItem x ==
   x is ['SIGNATURE,lhs,rhs] =>
     lhs is ['LISTOF,:y] =>

@@ -32,9 +32,9 @@
 
 )if false
 This file contains functions to initialize the {\bf )set} command
-in the interpreter. 
+in the interpreter.
 
-The structure of each list item consists of 7 items.  Consider this 
+The structure of each list item consists of 7 items.  Consider this
 example:
 
   (userlevel
@@ -52,7 +52,7 @@ found in {\bf property.lisp.pamphlet\cite{1}}. Look for "setName".):
 the user would say "{\bf )set output userlevel}".
 \item {\bf 2} {\sl Label} the message the user will see. In this example
 the user would see "operation access level of system user".
-\item {\bf 3} {\sl Level} the level where the command will be 
+\item {\bf 3} {\sl Level} the level where the command will be
 accepted. There are three levels: interpreter, compiler, development.
 These commands are restricted to keep the user from causing damage.
 \item {\bf 4} {\sl Type} a symbol, one of {\bf FUNCTION}, {\bf INTEGER},
@@ -87,7 +87,7 @@ SETANDFILEQ($setOptions,'(
        FUNCTION
        setOutputLibrary
        NIL
-       htSetOutputLibrary 
+       htSetOutputLibrary
         )
       (input
        "controls libraries from which to load compiled code"

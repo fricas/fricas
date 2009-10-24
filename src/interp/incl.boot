@@ -31,46 +31,46 @@
 
 
 )package "BOOT"
- 
+
 incStringStream s==
    incRenumber incLude(0,incRgen s,0,['"strings"] ,[Top])
- 
+
 incFile fn==
    incRenumber incLude(0,incRgen OPEN fn,0,[fn],[Top])
- 
+
 incStream(st, fn) ==
    incRenumber incLude(0,incRgen st,0,[fn],[Top])
 
 incFileInput    fn == incRgen  MAKE_-INSTREAM fn
 incConsoleInput () == incRgen  MAKE_-INSTREAM 0
- 
+
 incLine(eb, str, gno, lno, ufo) ==
             ln := lnCreate(eb,str,gno,lno,ufo)
             CONS(CONS(ln,1), str)
- 
+
 incPos f == CAR f
- 
+
 incRenumberItem(f, i) ==
             l := CAAR f
             lnSetGlobalNum(l, i)
             f
- 
+
 incRenumberLine(xl, gno) ==
             l := incRenumberItem(xl.0, gno)
             incHandleMessage xl
             l
- 
+
 incRenumber ssx == incZip (function incRenumberLine, ssx, incIgen 0)
- 
+
 incPrefix?(prefix, start, whole) ==
             #prefix > #whole-start => false
             good:=true
             for i in 0..#prefix-1 for j in start.. while good repeat
                 good:= prefix.i = whole.j
             good
- 
+
 incCommand?(s) == #s > 1 and s.0 = char ")" and not (s.1 = char " ")
- 
+
 incCommands :=
             ['"say"    , _
              '"include", _
@@ -81,7 +81,7 @@ incCommands :=
              '"elseif" , _
              '"else"   , _
              '"endif" ]
- 
+
 incClassify(s) ==
             not incCommand? s => [false,0, '""]
             i := 1; n := #s
@@ -94,18 +94,18 @@ incClassify(s) ==
                     bad:=false
                     p1 :=p
             if bad then [true,0,'"other"] else [true,eb,p1]
- 
+
 incCommandTail(s, info) ==
             start := (info.1 = 0 => 1; info.1)
             incDrop(start+#info.2+1, s)
- 
+
 incDrop(n, b) ==
             n >= #b => ""
             SUBSTRING(b,n,nil)
- 
- 
+
+
 inclFname(s, info) == incFileName incCommandTail(s, info)
- 
+
 incBiteOff x ==
           n:=STRPOSL('" ",x,0,true)-- first nonspace
           if null n
@@ -115,32 +115,32 @@ incBiteOff x ==
              if null n1 -- all nonspaces
              then [SUBSTRING(x,n,nil),'""]
              else [SUBSTRING(x,n,n1-n),SUBSTRING(x,n1,nil)]
- 
+
 incTrunc (n,x)==
      if #x>n
      then SUBSTRING(x,0,n)
      else x
- 
+
 incFileName x == first incBiteOff x
- 
+
 fileNameStrings fn==[PNAME(fn.0),PNAME(fn.1),PNAME(fn.2)]
- 
+
 ifCond(s, info) ==
     word := INTERN DROPTRAILINGBLANKS(incCommandTail(s, info))
     ListMemberQ?(word, $inclAssertions)
- 
+
 assertCond(s, info) ==
     word := INTERN DROPTRAILINGBLANKS(incCommandTail(s, info))
     if not ListMemberQ?(word, $inclAssertions) then
         $inclAssertions := [word, :$inclAssertions]
- 
- 
+
+
 incActive?(fn,ufos)==MEMBER(fn,ufos)
- 
+
 incNConsoles ufos==
         a:=MEMBER('"console",ufos)
         if a then 1+incNConsoles CDR a else 0
- 
+
 Top            := 01
 IfSkipToEnd    := 10
 IfKeepPart     := 11
@@ -150,7 +150,7 @@ ElseifKeepPart := 21
 ElseifSkipPart := 22
 ElseSkipToEnd  := 30
 ElseKeepPart   := 31
- 
+
 Top?     (st) == QUOTIENT(st,10) = 0
 If?      (st) == QUOTIENT(st,10) = 1
 Elseif?  (st) == QUOTIENT(st,10) = 2
@@ -159,7 +159,7 @@ SkipEnd? (st) == REMAINDER(st,10) = 0
 KeepPart?(st) == REMAINDER(st,10) = 1
 SkipPart?(st) == REMAINDER(st,10) = 2
 Skipping?(st) == not KeepPart? st
- 
+
         --% Message Handling
 incHandleMessage(xl) ==
           xl.1.1 = "none" =>
@@ -171,71 +171,71 @@ incHandleMessage(xl) ==
           xl.1.1 = "say" =>
               inclHandleSay(incPos xl.0, xl.1.0)
           inclHandleBug(incPos xl.0, xl.1.0)
- 
+
 xlOK(eb, str, lno, ufo)  ==
                 [incLine(eb, str, -1, lno, ufo), [NIL, "none"]]
- 
+
 xlOK1(eb, str,str1, lno, ufo)  ==
                 [incLine1(eb, str,str1, -1, lno, ufo), [NIL, "none"]]
- 
+
 incLine1(eb, str,str1, gno, lno, ufo) ==
             ln := lnCreate(eb,str,gno,lno,ufo)
             CONS(CONS(ln,1), str1)
 xlSkip(eb, str, lno, ufo) ==
         str := CONCAT('"-- Omitting:", str)
         [incLine(eb, str, -1, lno, ufo), [NIL, "none"]]
- 
+
 xlMsg(eb, str, lno, ufo, mess) ==
                 [incLine(eb, str, -1, lno, ufo), mess]
- 
+
 xlPrematureEOF(eb, str, lno, ufos) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgPrematureEOF(ufos.0),"error"])
- 
+
 xlPrematureFin(eb, str, lno, ufos) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgPrematureFin(ufos.0),"error"])
- 
+
 xlFileCycle(eb, str, lno, ufos, fn) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgFileCycle(ufos,fn),"error"])
- 
+
 xlNoSuchFile(eb, str, lno, ufos, fn) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgNoSuchFile(fn), "error"])
- 
+
 xlCannotRead(eb, str, lno, ufos, fn) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgCannotRead(fn), "error"])
- 
+
 xlConsole(eb, str, lno, ufos)  ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgConsole(),"say"])
- 
+
 xlConActive(eb, str, lno, ufos, n) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgConActive(n),"warning"])
- 
+
 xlConStill(eb, str, lno, ufos, n) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgConStill(n), "say"])
- 
+
 xlSkippingFin(eb, str, lno, ufos) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgFinSkipped(),"warning"])
- 
+
 xlIfBug(eb, str, lno, ufos) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgIfBug(), "bug"])
- 
+
 xlCmdBug(eb, str, lno, ufos) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgCmdBug(), "bug"])
- 
+
 xlSay(eb, str, lno, ufos, x) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgSay(x), "say"])
- 
+
 xlIfSyntax(eb, str, lno,ufos,info,sts) ==
           st := sts.0
           found := info.2
@@ -245,43 +245,43 @@ xlIfSyntax(eb, str, lno,ufos,info,sts) ==
               "but can't figure out where"
           xlMsg(eb, str, lno, ufos.0,
                [inclmsgIfSyntax(ufos.0,found,context), "error"])
- 
+
         --% This is it
- 
+
 incLude(eb, ss, ln, ufos, states) ==
        Delay(function incLude1,[eb, ss, ln, ufos, states])
- 
+
 Rest s==>incLude (eb,CDR ss,lno,ufos,states)
- 
+
 incLude1 (:z) ==
             [eb, ss, ln, ufos, states]:=z
             lno       := ln+1
             state     := states.0
- 
+
             StreamNull ss =>
                 not Top? state =>
                     cons(xlPrematureEOF(eb,
                      '")--premature end",  lno,ufos), StreamNil)
                 StreamNil
- 
+
             str  :=  EXPAND_-TABS CAR ss
             info :=  incClassify str
- 
+
             not info.0 =>
                 Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), Rest s)
                 cons(xlOK(eb, str, lno, ufos.0),Rest s)
- 
+
             info.2 = '"other" =>
                 Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), Rest s)
                 cons(xlOK1(eb, str,CONCAT('")command",str), lno, ufos.0),
                                           Rest s)
- 
+
             info.2 = '"say" =>
                 Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), Rest s)
                 str := incCommandTail(str, info)
                 cons(xlSay(eb, str, lno, ufos, str),
                      cons(xlOK(eb,str,lno,ufos.0), Rest s))
- 
+
             info.2 = '"include" =>
                 Skipping? state =>
                      cons(xlSkip(eb,str,lno,ufos.0), Rest s)
@@ -298,36 +298,36 @@ incLude1 (:z) ==
                 cons(
                     xlOK(eb,str,lno,ufos.0),
                           incAppend(Includee, Rest s))
- 
+
             info.2 = '"console" =>
                 Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), Rest s)
                 Head :=
                  incLude(eb+info.1,incConsoleInput(),0,
                      cons('"console",ufos),cons(Top,states) )
                 Tail := Rest s
- 
+
                 n := incNConsoles ufos
                 if n > 0 then
                    Head := cons(xlConActive(eb, str, lno,ufos,n),Head)
                    Tail :=
                        cons(xlConStill (eb, str, lno,ufos,n),Tail)
- 
+
                 Head := cons (xlConsole(eb, str, lno,ufos), Head)
                 cons(xlOK(eb,str,lno,ufos.0),incAppend(Head,Tail))
- 
+
             info.2 = '"fin" =>
                 Skipping? state =>
                     cons(xlSkippingFin(eb, str, lno,ufos), Rest s)
                 not Top? state  =>
                     cons(xlPrematureFin(eb, str, lno,ufos), StreamNil)
                 cons(xlOK(eb,str,lno,ufos.0), StreamNil)
- 
+
             info.2 = '"assert" =>
                 Skipping? state =>
                     cons(xlSkippingFin(eb, str, lno,ufos), Rest s)
                 assertCond(str, info)
                 cons(xlOK(eb,str,lno,ufos.0), incAppend(Includee, Rest s))
- 
+
             info.2 = '"if" =>
                 s1 :=
                     Skipping? state => IfSkipToEnd
@@ -338,7 +338,7 @@ incLude1 (:z) ==
                 not If? state and not Elseif? state =>
                     cons(xlIfSyntax(eb, str,lno,ufos,info,states),
                             StreamNil)
- 
+
                 if SkipEnd? state or KeepPart? state or SkipPart? state
                 then
                      s1:=if SkipPart? state
@@ -352,7 +352,7 @@ incLude1 (:z) ==
                         incLude(eb,CDR ss,lno,ufos,cons(s1,rest states)))
                 else
                     cons(xlIfBug(eb, str, lno,ufos), StreamNil)
- 
+
             info.2 = '"else" =>
                 not If? state and not Elseif? state =>
                     cons(xlIfSyntax(eb, str,lno,ufos,info,states),
@@ -366,19 +366,19 @@ incLude1 (:z) ==
                         incLude(eb,CDR ss,lno,ufos,cons(s1,rest states)))
                 else
                     cons(xlIfBug(eb, str, lno,ufos), StreamNil)
- 
+
             info.2 = '"endif" =>
                 Top? state =>
                     cons(xlIfSyntax(eb, str,lno,ufos,info,states),
                         StreamNil)
                 cons(xlOK(eb,str,lno,ufos.0),
                          incLude(eb,CDR ss,lno,ufos,rest states))
- 
+
             cons(xlCmdBug(eb, str, lno,ufos), StreamNil)
- 
+
 --% Message handling for the source includer
 --  SMW June 88
- 
+
 inclHandleError(pos, [key, args]) ==
     ncSoftError(pos, key, args)
 inclHandleWarning(pos, [key, args]) ==
@@ -387,7 +387,7 @@ inclHandleBug(pos, [key, args]) ==
     ncBug(key, args)
 inclHandleSay(pos, [key, args]) ==
     ncSoftError(pos, key, args)
- 
+
 inclmsgSay str  ==
     ['S2CI0001, [%id str]]
 inclmsgPrematureEOF ufo  ==
@@ -418,4 +418,3 @@ inclmsgIfBug() ==
     ['S2CB0002, []]
 inclmsgCmdBug() ==
     ['S2CB0003, []]
- 

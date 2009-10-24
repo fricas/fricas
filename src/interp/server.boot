@@ -44,7 +44,7 @@ SETANDFILEQ($sockBufferLength, 9217)
 serverReadLine(stream) ==
 -- used in place of read_-line in a scratchpad server system.
   FORCE_-OUTPUT()
-  not $SpadServer => 
+  not $SpadServer =>
     read_-line(stream)
   IN_-STREAM: fluid := stream
   _*EOF_*: fluid := NIL
@@ -92,7 +92,7 @@ serverReadLine(stream) ==
       FINISH_-OUTPUT()
     action = $NonSmanSession =>
       $SpadServer := nil
-    action = $KillLispSystem => 
+    action = $KillLispSystem =>
       QUIT()
     NIL
   line => line

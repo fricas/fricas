@@ -621,6 +621,3 @@ getSigSubst(u, pl, vl, fl) ==
 pairlis(u,v) ==
   null u or null v => nil
   [[first u,:first v],:pairlis(rest u, rest v)]
-
-
-

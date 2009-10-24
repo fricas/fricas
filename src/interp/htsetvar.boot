@@ -343,10 +343,10 @@ htSetHistory htPage ==
   data := ['history,msg,'history,'LITERALS,'$HiFiAccess,'(on off yes no)]
   htShowLiteralsPage(htPage,data)
 
-htSetOutputLibrary htPage == 
+htSetOutputLibrary htPage ==
   htSetNotAvailable(htPage,'")set compiler output")
 
-htSetInputLibrary htPage == 
+htSetInputLibrary htPage ==
   htSetNotAvailable(htPage,'")set compiler input")
 
 htSetExpose htPage ==
@@ -467,11 +467,3 @@ htCacheOne names ==
        "" 5 10 c1 ALLPI)))
   htSetvarDoneButton('"Select to Set Value",'htCacheSet)
   htShowPage()
-
-
-
-
-
-
-
-

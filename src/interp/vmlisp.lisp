@@ -95,7 +95,7 @@
        (and (consp ,xx) (,test (qcar ,xx) ,y)))))))
 
 (defmacro evalandfileactq (name &optional (form name))
- `(eval-when (eval load) ,form))  
+ `(eval-when (eval load) ,form))
 
 (defmacro exit (&rest value)
  `(return-from seq ,@value))
@@ -122,8 +122,8 @@
 
 (defmacro |idChar?| (x)
  `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
- 
-(defmacro identp (x) 
+
+(defmacro identp (x)
  (if (atom x)
   `(and ,x (symbolp ,x))
    (let ((xx (gensym)))
@@ -173,7 +173,7 @@
          (if (consp ,xx) (qcar ,xx) ,xx)))))
 
 (defmacro pairp (x)
- `(consp ,x)) 
+ `(consp ,x))
 
 (defmacro plus (&rest args)
  `(+ ,@ args))
@@ -305,7 +305,7 @@
  `(typep ,v '(vector float)))
 
 (defmacro setandfileq (id item)
- `(eval-when (:execute :load-toplevel) 
+ `(eval-when (:execute :load-toplevel)
    (defparameter ,id ,item)))
 
 (defmacro setelt (vec ind val)
@@ -393,7 +393,7 @@
           ((simple-arglist args) (setq nargs args))
 	  ((symbolp args)
 	       (setq nargs `(&rest ,args)))
-          (t 
+          (t
 	     (let ((blargs (butlast args)))
 	          (setf nargs (last args))
 		  (setf blargs (append blargs (cons (car nargs) nil)))
@@ -469,7 +469,7 @@
            (system:fp-output-stream *terminal-io*))))
 
 #-:GCL
-(defun IS-CONSOLE (stream)  
+(defun IS-CONSOLE (stream)
      (or (eq stream *standard-output*)
          (and (typep stream 'synonym-stream)
               (eq (SYNONYM-STREAM-SYMBOL stream) '*standard-output*))))
@@ -539,7 +539,7 @@
   (RPLACD pair1 (CDR pair2)) pair1)
 
 (defun RPLNODE (pair1 ca2 cd2)
- (RPLACA pair1 ca2) 
+ (RPLACA pair1 ca2)
  (RPLACD pair1 cd2) pair1)
 
 ; 14.0 Operations on Lists
@@ -647,7 +647,7 @@
 ; 16.2 Accessing
 
 
-(defun size (l) 
+(defun size (l)
   (cond ((vectorp l) (length l))
         ((consp l)   (list-length l))
         (t           0)))
@@ -888,7 +888,7 @@
 
 (defun MAKE-APPENDSTREAM (filespec)
  "fortran support"
- (cond 
+ (cond
   ((numberp filespec) (make-synonym-stream '*standard-output*))
   ((null filespec) (error "make-appendstream: not handled yet"))
   ('else (open (make-filename filespec) :direction :output
@@ -1013,7 +1013,7 @@
 
 (defun MACRO-INVALIDARGS (NAME FORM MESSAGE)
     (setq MACERRORCOUNT  (+ 1 (eval 'MACERRORCOUNT)))
-    (error (format nil 
+    (error (format nil
                    "invalid arguments to macro ~S with invalid argument ~S, ~S"
                    name form message)))
 
@@ -1172,9 +1172,9 @@
 (in-package "BOOT")
 
 ;; Contributed by Juergen Weiss from a suggestion by Arthur Norman.
-;; This is a Mantissa and Exponent function. 
+;; This is a Mantissa and Exponent function.
 (defun manexp (u)
-  (multiple-value-bind (f e s) 
+  (multiple-value-bind (f e s)
     (decode-float u)
     (cons (* s f) e)))
 
@@ -1241,4 +1241,3 @@
                     (|ncloopInclude0| st name n)))
 
 ;;; end of moved fragment
-

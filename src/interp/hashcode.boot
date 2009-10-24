@@ -40,7 +40,7 @@ hashType(type, percentHash) ==
            type = '$ => percentHash
            type = "%" => percentHash
            hashString SYMBOL_-NAME type
-        STRINGP type  => hashCombine(hashString type, 
+        STRINGP type  => hashCombine(hashString type,
                                         hashString('"Enumeration"))
         type is ['QUOTE, val] => hashType(val, percentHash)
         type is [dom] => hashString SYMBOL_-NAME dom
@@ -99,4 +99,3 @@ hashCombine(hash1, hash2) ==
          MOD(ASH(LOGAND(hash2, 16777215), 6) + hash1, $hashModulus)
 
 $VoidHash := hashString '"Void"
-

@@ -32,7 +32,7 @@
 
 )if false
 Algorithms for Term Reduction
- 
+
 The following assumptions are made:
 
 a term rewrite system is represented by a pair (varlist,varRules) where
@@ -58,13 +58,13 @@ term1RW(t,R) ==
     not (SL='failed) =>
       t:= subCopy(copy CDR r,SL)
   t
- 
+
 term1RWall(t,R) ==
   -- same as term1RW, but returns a list
   [vars,:varRules]:= R
   [not (SL='failed) and subCopy(copy CDR r,SL) for r in varRules |
     not EQ(SL:= termMatch(CAR r,t,NIL,vars),'failed)]
- 
+
 termMatch(tp,t,SL,vars) ==
   -- t is a term pattern, t a term
   -- then the result is the augmented substitution SL or 'failed
@@ -82,10 +82,10 @@ termMatch(tp,t,SL,vars) ==
   tp2 and t2 => termMatch(tp2,t2,SL,vars)
   tp2 or t2 => 'failed
   SL
- 
- 
+
+
 --% substitution handling
- 
+
 augmentSub(v,t,SL) ==
   -- destructively adds the pair (v,t) to the substitution list SL
   -- t doesn't contain any of the variables of SL
@@ -93,7 +93,7 @@ augmentSub(v,t,SL) ==
   null SL => [q]
 --  for p in SL repeat RPLACD(p,SUBSTQ(t,v,CDR p))
   CONS(q,SL)
- 
+
 mergeSubs(S1,S2) ==
   -- augments S2 by each pair of S1
   -- S1 doesn't contain any of the variables of S2
@@ -102,17 +102,17 @@ mergeSubs(S1,S2) ==
   S3 := [p for p in S2 | not ASSQ(CAR p, S1)]
 --  for p in S1 repeat S3:= augmentSub(CAR p,CDR p,S3)
   APPEND(S1,S3)
- 
+
 subCopy(t,SL) ==
   -- t is any LISP structure, SL a substitution list for sharp variables
   -- then t is substituted and copied if necessary
   SL=NIL => t
   subCopy0(t,SL)
- 
+
 subCopy0(t, SL) ==
   p := subCopyOrNil(t, SL) => CDR p
   t
-  
+
 subCopyOrNil(t,SL) ==
   -- the same as subCopy, but the result is NIL if nothing was copied
   p:= assoc(t,SL) => p
@@ -123,18 +123,18 @@ subCopyOrNil(t,SL) ==
     CONS(t,CONS(CDR t0,t2))
   t2 and ( t0:= subCopyOrNil(t2,SL) ) => CONS(t, CONS(t1,CDR t0))
   NIL
- 
- 
+
+
 deepSubCopy(t,SL) ==
   -- t is any LISP structure, SL a substitution list for sharp variables
   -- then t is substituted and copied if necessary
   SL=NIL => t
   deepSubCopy0(t,SL)
- 
+
 deepSubCopy0(t, SL) ==
   p := deepSubCopyOrNil(t, SL) => CDR p
   t
-  
+
 deepSubCopyOrNil(t,SL) ==
   -- the same as subCopy, but the result is NIL if nothing was copied
   p:= assoc(t,SL) => CONS(t, deepSubCopy0(CDR p, SL))
@@ -144,5 +144,3 @@ deepSubCopyOrNil(t,SL) ==
     t2 => CONS(t, CONS(CDR t0, deepSubCopy0(t2,SL)))
     CONS(t,CONS(CDR t0,t2))
   t2 and ( t0:= deepSubCopyOrNil(t2,SL) ) => CONS(t, CONS(t1,CDR t0))
- 
- 

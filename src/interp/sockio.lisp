@@ -60,4 +60,3 @@
 (defconstant |$KillLispSystem|  14)
 
 (defconstant |$CreateFrameAnswer|  50)
-

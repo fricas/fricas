@@ -55,27 +55,27 @@ for example:
  >(monitor-file "/u/daly/testmon.lisp")
  monitoring "/u/daly/testmon.lisp"
  NIL
- 
+
  ; FOURTH WE CALL A FUNCTION FROM THE FILE (BUMP ITS COUNT)
  >(foo1)
- 
- FOO1 
+
  FOO1
- 
+ FOO1
+
  ; AND ANOTHER FUNCTION (BUMP ITS COUNT)
  >(foo2)
- 
- FOO2 
+
  FOO2
- 
+ FOO2
+
  ; AND A THIRD FUNCTION THAT CALLS THE OTHER TWO (BUMP ALL THREE)
  >(foo3)
 
- FOO1 
- FOO2 
- FOO3 
+ FOO1
+ FOO2
  FOO3
- 
+ FOO3
+
  ; CHECK THAT THE RESULTS ARE CORRECT
 
  >(monitor-results)
@@ -89,20 +89,20 @@ for example:
         "/u/daly/testmon.lisp"))
 
  ; STOP COUNTING CALLS TO FOO2
- 
+
  >(monitor-disable 'foo2)
  NIL
 
  ; INVOKE FOO2 THRU FOO3
 
  >(foo3)
- 
- FOO1 
- FOO2 
- FOO3 
+
+ FOO1
+ FOO2
+ FOO3
  FOO3
 
- ; NOTICE THAT FOO1 AND FOO3 WERE BUMPED BUT NOT FOO2 
+ ; NOTICE THAT FOO1 AND FOO3 WERE BUMPED BUT NOT FOO2
  >(monitor-results)
  (#S(MONITOR-DATA NAME FOO1 COUNT 3 MONITORP T SOURCEFILE
         "/u/daly/testmon.lisp")
@@ -112,23 +112,23 @@ for example:
         "/u/daly/testmon.lisp"))
   #S(MONITOR-DATA NAME FOO4 COUNT 0 MONITORP T SOURCEFILE
         "/u/daly/testmon.lisp"))
- 
+
  ; TEMPORARILY STOP ALL MONITORING
 
  >(monitor-disable)
  NIL
 
  ; CHECK THAT NOTHING CHANGES
- 
+
  >(foo3)
- 
- FOO1 
- FOO2 
- FOO3 
+
+ FOO1
+ FOO2
+ FOO3
  FOO3
 
  ; NO COUNT HAS CHANGED
- 
+
  >(monitor-results)
  (#S(MONITOR-DATA NAME FOO1 COUNT 3 MONITORP NIL SOURCEFILE
         "/u/daly/testmon.lisp")
@@ -140,21 +140,21 @@ for example:
         "/u/daly/testmon.lisp"))
 
  ; MONITOR ONLY CALLS TO FOO1
- 
+
  >(monitor-enable 'foo1)
  T
 
  ; FOO3 CALLS FOO1
- 
+
  >(foo3)
- 
- FOO1 
- FOO2 
- FOO3 
+
+ FOO1
+ FOO2
+ FOO3
  FOO3
 
  ; FOO1 HAS CHANGED BUT NOT FOO2 OR FOO3
- 
+
  >(monitor-results)
  (#S(MONITOR-DATA NAME FOO1 COUNT 4 MONITORP T SOURCEFILE
         "/u/daly/testmon.lisp")
@@ -164,23 +164,23 @@ for example:
         "/u/daly/testmon.lisp"))
   #S(MONITOR-DATA NAME FOO4 COUNT 0 MONITORP T SOURCEFILE
         "/u/daly/testmon.lisp"))
- 
+
  ; MONITOR EVERYBODY
 
  >(monitor-enable)
  NIL
 
  ; CHECK THAT EVERYBODY CHANGES
- 
+
  >(foo3)
- 
- FOO1 
- FOO2 
- FOO3 
+
+ FOO1
+ FOO2
+ FOO3
  FOO3
 
  ; EVERYBODY WAS BUMPED
- 
+
  >(monitor-results)
  (#S(MONITOR-DATA NAME FOO1 COUNT 5 MONITORP T SOURCEFILE
         "/u/daly/testmon.lisp")
@@ -202,12 +202,12 @@ for example:
  (FOO4)
 
  ; UNTRACE THE WHOLE WORLD, MONITORING CANNOT RESTART
- 
+
  >(monitor-end)
  NIL
 
  ; CHECK THE RESULTS
- 
+
  >(monitor-results)
  (#S(MONITOR-DATA NAME FOO1 COUNT 5 MONITORP T SOURCEFILE
         "/u/daly/testmon.lisp")
@@ -219,14 +219,14 @@ for example:
         "/u/daly/testmon.lisp"))
 
  ; CHECK THAT THE FUNCTIONS STILL WORK
- 
+
  >(foo3)
- 
- FOO1 
- FOO2 
- FOO3 
+
+ FOO1
+ FOO2
  FOO3
- 
+ FOO3
+
  ; CHECK THAT MONITORING IS NOT OCCURING
 
  >(monitor-results)
@@ -244,77 +244,77 @@ for example:
 
 (defun monitor-help ()
  (format t "~%
-;;; MONITOR                                                                
-;;;                                                                        
-;;; This file contains a set of function for monitoring the execution      
-;;; of the functions in a file. It constructs a hash table that contains   
-;;; the function name as the key and monitor-data structures as the value  
-;;;                                                                        
-;;; The technique is to use a :cond parameter on trace to call the         
+;;; MONITOR
+;;;
+;;; This file contains a set of function for monitoring the execution
+;;; of the functions in a file. It constructs a hash table that contains
+;;; the function name as the key and monitor-data structures as the value
+;;;
+;;; The technique is to use a :cond parameter on trace to call the
 ;;; monitor-incr function to incr the count every time a function is called
-;;;                                                                        
-;;; *monitor-table*                                HASH TABLE              
-;;;    is the monitor table containing the hash entries                    
+;;;
+;;; *monitor-table*                                HASH TABLE
+;;;    is the monitor table containing the hash entries
 ;;; *monitor-nrlibs*                               LIST of STRING
 ;;;    list of NRLIB filenames that are monitored
 ;;; *monitor-domains*                              LIST of STRING
 ;;;    list of domains to monitor-report (default is all exposed domains)
-;;; monitor-data                                   STRUCTURE               
-;;;    is the defstruct name of records in the table                       
-;;;    name is the first field and is the name of the monitored function   
-;;;    count contains a count of times the function was called             
-;;;    monitorp is a flag that skips counting if nil, counts otherwise     
-;;;    sourcefile is the name of the file that contains the source code    
-;;;                                                                        
-;;;  ***** SETUP, SHUTDOWN ****                                            
-;;;                                                                        
-;;; monitor-inittable ()                           FUNCTION                
-;;;    creates the hashtable and sets *monitor-table*                      
-;;;    note that it is called every time this file is loaded               
-;;; monitor-end ()                                 FUNCTION                
-;;;    unhooks all of the trace hooks                                      
-;;;                                                                        
-;;;  ***** TRACE, UNTRACE *****                                            
-;;;                                                                        
-;;; monitor-add (name &optional sourcefile)        FUNCTION                
-;;;    sets up the trace and adds the function to the table                
-;;; monitor-delete (fn)                            FUNCTION                
-;;;    untraces a function and removes it from the table                   
-;;; monitor-enable (&optional fn)                  FUNCTION                
-;;;    starts tracing for all (or optionally one) functions that           
-;;;    are in the table                                                    
-;;; monitor-disable (&optional fn)                 FUNCTION                
-;;;    stops tracing for all (or optionally one) functions that            
-;;;    are in the table                                                    
-;;;                                                                        
-;;; ***** COUNTING, RECORDING  *****                                       
-;;;                                                                        
-;;; monitor-reset (&optional fn)                   FUNCTION                
-;;;    reset the table count for the table (or optionally, for a function) 
-;;; monitor-incr (fn)                              FUNCTION                
-;;;    increments the count information for a function                     
-;;;    it is called by trace to increment the count                        
-;;; monitor-decr (fn)                              FUNCTION                
-;;;    decrements the count information for a function                     
-;;; monitor-info (fn)                              FUNCTION                
-;;;    returns the monitor-data structure for a function                   
-;;;                                                                        
-;;; ***** FILE IO *****                                                    
-;;;                                                                        
-;;; monitor-write (items file)                     FUNCTION                
-;;;    writes a list of symbols or structures to a file                    
-;;; monitor-file (file)                            FUNCTION                
-;;;    will read a file, scan for defuns, monitor each defun               
-;;;    NOTE: monitor-file assumes that the file has been loaded            
-;;;                                                                        
-;;; ***** RESULTS *****                                                    
-;;;                                                                        
-;;; monitor-results ()                             FUNCTION                
-;;;    returns a list of the monitor-data structures                       
-;;; monitor-untested ()                            FUNCTION                
-;;;    returns a list of files that have zero counts                       
-;;; monitor-tested (&optional delete)              FUNCTION                
-;;;    returns a list of files that have nonzero counts                    
+;;; monitor-data                                   STRUCTURE
+;;;    is the defstruct name of records in the table
+;;;    name is the first field and is the name of the monitored function
+;;;    count contains a count of times the function was called
+;;;    monitorp is a flag that skips counting if nil, counts otherwise
+;;;    sourcefile is the name of the file that contains the source code
+;;;
+;;;  ***** SETUP, SHUTDOWN ****
+;;;
+;;; monitor-inittable ()                           FUNCTION
+;;;    creates the hashtable and sets *monitor-table*
+;;;    note that it is called every time this file is loaded
+;;; monitor-end ()                                 FUNCTION
+;;;    unhooks all of the trace hooks
+;;;
+;;;  ***** TRACE, UNTRACE *****
+;;;
+;;; monitor-add (name &optional sourcefile)        FUNCTION
+;;;    sets up the trace and adds the function to the table
+;;; monitor-delete (fn)                            FUNCTION
+;;;    untraces a function and removes it from the table
+;;; monitor-enable (&optional fn)                  FUNCTION
+;;;    starts tracing for all (or optionally one) functions that
+;;;    are in the table
+;;; monitor-disable (&optional fn)                 FUNCTION
+;;;    stops tracing for all (or optionally one) functions that
+;;;    are in the table
+;;;
+;;; ***** COUNTING, RECORDING  *****
+;;;
+;;; monitor-reset (&optional fn)                   FUNCTION
+;;;    reset the table count for the table (or optionally, for a function)
+;;; monitor-incr (fn)                              FUNCTION
+;;;    increments the count information for a function
+;;;    it is called by trace to increment the count
+;;; monitor-decr (fn)                              FUNCTION
+;;;    decrements the count information for a function
+;;; monitor-info (fn)                              FUNCTION
+;;;    returns the monitor-data structure for a function
+;;;
+;;; ***** FILE IO *****
+;;;
+;;; monitor-write (items file)                     FUNCTION
+;;;    writes a list of symbols or structures to a file
+;;; monitor-file (file)                            FUNCTION
+;;;    will read a file, scan for defuns, monitor each defun
+;;;    NOTE: monitor-file assumes that the file has been loaded
+;;;
+;;; ***** RESULTS *****
+;;;
+;;; monitor-results ()                             FUNCTION
+;;;    returns a list of the monitor-data structures
+;;; monitor-untested ()                            FUNCTION
+;;;    returns a list of files that have zero counts
+;;; monitor-tested (&optional delete)              FUNCTION
+;;;    returns a list of files that have nonzero counts
 ;;;    optionally calling monitor-delete on those functions
 ;;;
 ;;; ***** CHECKPOINT/RESTORE *****
@@ -331,12 +331,12 @@ for example:
 ;;;   NOTE: this requires the /spad/int/algebra directory
 ;;; monitor-dirname (args)                        FUNCTION
 ;;;   expects a list of 1 libstream (loadvol's arglist) and monitors the source
-;;;   this is a function called by monitor-autoload 
+;;;   this is a function called by monitor-autoload
 ;;; monitor-nrlib (nrlib)                         FUNCTION
-;;;   takes an nrlib name as a string (eg POLY) and returns a list of 
+;;;   takes an nrlib name as a string (eg POLY) and returns a list of
 ;;;   monitor-data structures from that source file
 ;;; monitor-report ()                             FUNCTION
-;;;   generate a report of the monitored activity for domains in 
+;;;   generate a report of the monitored activity for domains in
 ;;;   *monitor-domains*
 ;;; monitor-spadfile (name)                       FUNCTION
 ;;;   given a spad file, report all NRLIBS it creates
@@ -361,12 +361,12 @@ for example:
  "initialize the table"
  (setq *monitor-table* (make-hash-table)))
 
-(eval-when (eval load) 
+(eval-when (eval load)
  (unless *monitor-table* (monitor-inittable)))
 
 (defun monitor-end ()
  "stop the whole monitoring process. we cannot restart"
- (maphash 
+ (maphash
   #'(lambda (key value)
      (declare (ignore value))
      (eval `(untrace ,key)))
@@ -375,7 +375,7 @@ for example:
 (defun monitor-results ()
  "return a list of the monitor-data structures"
  (let (result)
-  (maphash 
+  (maphash
   #'(lambda (key value)
      (declare (ignore key))
      (push value result))
@@ -385,11 +385,11 @@ for example:
 (defun monitor-add (name &optional sourcefile)
  "add a function to the hash table"
  (unless (fboundp name) (load sourcefile))
- (when (gethash name *monitor-table*) 
+ (when (gethash name *monitor-table*)
   (monitor-delete name))
  (eval `(trace (,name :cond (progn (monitor-incr ',name) nil))))
  (setf (gethash name *monitor-table*)
-  (make-monitor-data 
+  (make-monitor-data
      :name name :count 0 :monitorp t :sourcefile sourcefile)))
 
 (defun monitor-delete (fn)
@@ -399,11 +399,11 @@ for example:
 
 (defun monitor-enable (&optional fn)
  "enable all (or optionally one) function for monitoring"
- (if fn 
+ (if fn
   (progn
    (eval `(trace (,fn :cond (progn (monitor-incr ',fn) nil))))
    (setf (monitor-data-monitorp (gethash fn *monitor-table*)) t))
-  (maphash 
+  (maphash
    #'(lambda (key value)
       (declare (ignore value))
       (eval `(trace (,fn :cond (progn (monitor-incr ',fn) nil))))
@@ -414,9 +414,9 @@ for example:
  "disable all (or optionally one) function for monitoring"
  (if fn
   (progn
-   (eval `(untrace ,fn))   
+   (eval `(untrace ,fn))
    (setf (monitor-data-monitorp (gethash fn *monitor-table*)) nil))
-  (maphash 
+  (maphash
    #'(lambda (key value)
       (declare (ignore value))
       (eval `(untrace ,fn))
@@ -427,7 +427,7 @@ for example:
  "reset the table count for the table (or optionally, for a function)"
  (if fn
   (setf (monitor-data-count (gethash fn *monitor-table*)) 0)
-  (maphash 
+  (maphash
    #'(lambda (key value)
       (declare (ignore value))
       (setf (monitor-data-count (gethash key *monitor-table*)) 0))
@@ -437,7 +437,7 @@ for example:
  "incr the count of fn by 1"
  (let (data)
   (setq data (gethash fn *monitor-table*))
-  (if data 
+  (if data
    (incf (monitor-data-count data))  ;; change table entry by side-effect
    (warn "~s is monitored but not in table..do (untrace ~s)~%" fn fn))))
 
@@ -445,7 +445,7 @@ for example:
  "decr the count of fn by 1"
  (let (data)
   (setq data (gethash fn *monitor-table*))
-  (if data 
+  (if data
    (decf (monitor-data-count data))  ;; change table entry by side-effect
    (warn "~s is monitored but not in table..do (untrace ~s)~%" fn fn))))
 
@@ -472,7 +472,7 @@ for example:
 (defun monitor-untested ()
  "return a list of the functions with zero count fields"
  (let (result)
-  (maphash 
+  (maphash
    #'(lambda (key value)
       (if (and (monitor-data-monitorp value) (= (monitor-data-count value) 0))
        (push key result)))
@@ -482,7 +482,7 @@ for example:
 (defun monitor-tested (&optional delete)
  "return a list of the functions with non-zero count fields, optionally deleting them"
  (let (result)
-  (maphash 
+  (maphash
    #'(lambda (key value)
       (when (and (monitor-data-monitorp value) (> (monitor-data-count value) 0))
        (when delete (monitor-delete key))
@@ -512,7 +512,7 @@ for example:
     (format out "(monitor-add '~s ~s)~%"
      (monitor-data-name data)
      (monitor-data-sourcefile data))
-    (format out "(setf (gethash '~s *monitor-table*) 
+    (format out "(setf (gethash '~s *monitor-table*)
                   (make-monitor-data :name '~s :count ~s :monitorp ~s
                                      :sourcefile ~s))~%"
      (monitor-data-name data)
@@ -540,7 +540,7 @@ for example:
 (defun monitor-autoload ()
  "traces autoload of algebra to monitor corresponding source files"
 #|
- (trace (vmlisp::loadvol 
+ (trace (vmlisp::loadvol
           :entrycond nil
           :exitcond (progn (monitor-dirname system::arglist) nil)))
 |#
@@ -548,13 +548,13 @@ for example:
 )
 
 (defun monitor-nrlib (nrlib)
- "takes an nrlib name as a string (eg POLY) and returns a list of 
+ "takes an nrlib name as a string (eg POLY) and returns a list of
   monitor-data structures from that source file"
  (let (result)
-  (maphash 
+  (maphash
    #'(lambda (k v)
       (declare (ignore k))
-      (when (string= nrlib 
+      (when (string= nrlib
              (pathname-name (car (last
                 (pathname-directory (monitor-data-sourcefile v))))))
        (push v result)))
@@ -603,7 +603,7 @@ for example:
   (unless *monitor-domains* (monitor-readinterp))
   (setq nonzero 0)
   (setq total 0)
-  (maphash 
+  (maphash
    #'(lambda (k v)
       (declare (ignore k))
       (let (nextlib point)
@@ -615,7 +615,7 @@ for example:
          (setf (cdr (first point)) (cons v (cdr (first point))))
          (push (cons nextlib (list v)) nrlibs))))
    *monitor-table*)
-  (format t "~d of ~d (~d percent) tested~%" nonzero total 
+  (format t "~d of ~d (~d percent) tested~%" nonzero total
     (round (/ (* 100.0 nonzero) total)))
   (setq nrlibs (sort nrlibs #'string< :key #'car))
   (dolist (pair nrlibs)
@@ -626,14 +626,14 @@ for example:
       (when (monitor-exposedp (monitor-data-name item))
        (incf exposedcount)
        (when (> (monitor-data-count item) 0) (incf testcount))
-       (format t "~5d ~s~%" 
-         (monitor-data-count item) 
+       (format t "~5d ~s~%"
+         (monitor-data-count item)
          (monitor-data-name item))))
       (if (= exposedcount testcount)
        (format t "~a has all exposed functions tested~%" (car pair))
        (format t "Daly bug:~a has untested exposed functions~%" (car pair))))))
  nil))
-      
+
 (defun monitor-parse (expr)
   (let (point1 point2)
    (setq point1 (position #\space expr :test #'char=))
@@ -652,31 +652,31 @@ for example:
      (setq expr (read-line in nil 'done))
      (when (eq expr 'done) (throw 'done nil))
      (when (and (> (length expr) 4) (string= (subseq expr 0 4) ")abb"))
-      (setq *monitor-domains* 
+      (setq *monitor-domains*
        (adjoin (monitor-parse expr) *monitor-domains* :test #'string=))))))))
 
 (defun monitor-percent ()
  (let (nonzero total)
   (setq nonzero 0)
   (setq total 0)
-  (maphash 
+  (maphash
    #'(lambda (k v)
       (declare (ignore k))
       (when (> (monitor-data-count v) 0) (incf nonzero))
       (incf total))
    *monitor-table*)
-   (format t "~d of ~d (~d percent) tested~%" nonzero total 
+   (format t "~d of ~d (~d percent) tested~%" nonzero total
      (round (/ (* 100.0 nonzero) total)))))
 
 (defun monitor-apropos (str)
   "given a string, find all monitored symbols containing the string
    the search is case-insensitive. returns a list of monitor-data items"
  (let (result)
-  (maphash 
+  (maphash
    #'(lambda (k v)
       (when
-       (search (string-upcase str) 
-               (string-upcase (symbol-name k)) 
+       (search (string-upcase str)
+               (string-upcase (symbol-name k))
                :test #'string=)
         (push v result)))
    *monitor-table*)

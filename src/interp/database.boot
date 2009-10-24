@@ -542,5 +542,3 @@ displayHiddenConstructors() ==
       '"there are no explicitly hidden constructors"
     else for c in $localExposureData.2 repeat
       centerAndHighlight c
-
-

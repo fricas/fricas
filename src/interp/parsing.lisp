@@ -594,7 +594,7 @@ is a token separator, which blank is equivalent to."
              (incf $num_of_meta_errors)
              (setq Meta_Errors_Occurred t)))
    nil)
-       
+
 
 (defun meta-syntax-error (&optional (wanted nil) (parsing nil))
   (funcall Meta_Error_Handler wanted parsing))

@@ -237,14 +237,14 @@ wt (l,fp) ==
 --   -- This will be the returned type of the spad function which calls the
 --   -- Fortran code.
 --   ["Record",:[spadRecordType1(u,decs) for u in v]]
--- 
+--
 -- spadRecordType1(u,decls) ==
 --   -- Create a list of the form '( |:| u <spadTypeTTT u>)
 --   [":",u,spadTypeTTT getFortranType(u,decls)]
 
 spadTypeTTT u ==
   -- Return the spad domain equivalent to the given Fortran type.
-  -- Changed by MCD 8/4/94 to reflect correct format for domains in 
+  -- Changed by MCD 8/4/94 to reflect correct format for domains in
   -- current system.
   LISTP u =>
     first(u)="character" => ["String"]
@@ -420,7 +420,7 @@ makeResultRecord(name,type,value) ==
 
 spadify(l,results,decls,names,actual) ==
   -- The elements of list l are the output forms returned from the Fortran
-  -- code: integers, floats and vectors.  Return spad forms of these, of 
+  -- code: integers, floats and vectors.  Return spad forms of these, of
   -- type Record(key:Symbol,entry:Any) (for use with the Result domain).
   SETQ(RESULTS,l)
   spadForms := nil
@@ -506,7 +506,7 @@ spadify(l,results,decls,names,actual) ==
     atom fort and ty="logical" =>
       spadForms := [makeResultRecord(name,ty,int2Bool fort), :spadForms]
     -- Result is a Scalar
-    atom fort => 
+    atom fort =>
       spadForms := [makeResultRecord(name,ty,fort),:spadForms]
     error ['"Unrecognised output format: ",fort]
   NREVERSE spadForms
@@ -534,7 +534,7 @@ getVal(u,names,values) ==
 
 
 prepareData(args,dummies,values,decls) ==
--- TTT: we don't 
+-- TTT: we don't
 -- writeData handles all the mess
    [args,dummies,values,decls]
 
@@ -583,27 +583,27 @@ writeData(tmpFile,indata) ==
   [args,dummies,values,decls] := indata
   for v in values repeat
         -- the two Boolean values
-        v = "T" => 
+        v = "T" =>
                 xdrWrite(xstr,1)
-        NULL v =>   
+        NULL v =>
                 xdrWrite(xstr,0)
-        -- characters  
-        STRINGP v => 
+        -- characters
+        STRINGP v =>
                 xdrWrite(xstr,v)
         -- some array
-        VECTORP v =>  
+        VECTORP v =>
                 rows := CAR ARRAY_-DIMENSIONS(v)
                 -- is it 2d or more (most likely) ?
-                VECTORP ELT(v,0) =>     
+                VECTORP ELT(v,0) =>
                         cols := CAR ARRAY_-DIMENSIONS(ELT(v,0))
                         -- is it 3d ?
                         VECTORP ELT(ELT(v,0),0) =>
                                 planes := CAR ARRAY_-DIMENSIONS(ELT(ELT(v,0),0))
                                 -- write 3d array
                                 xdrWrite(xstr,rows*cols*planes)
-                                for k in 0..planes-1 repeat 
-                                        for j in 0..cols-1 repeat 
-                                                for i in 0..rows-1 repeat 
+                                for k in 0..planes-1 repeat
+                                        for j in 0..cols-1 repeat
+                                                for i in 0..rows-1 repeat
                                                         xdrWrite(xstr,ELT(ELT(ELT(v,i),j),k))
                         -- write 2d array
                         xdrWrite(xstr,rows*cols)
@@ -613,15 +613,15 @@ writeData(tmpFile,indata) ==
                 xdrWrite(xstr,rows)
                 for i in 0..rows-1 repeat xdrWrite(xstr,ELT(v,i))
         -- this is used for lists of booleans apparently in f01
-        LISTP v => 
+        LISTP v =>
                 xdrWrite(xstr,LENGTH v)
-                for el in v repeat 
-                        if el then xdrWrite(xstr,1) else xdrWrite(xstr,0) 
+                for el in v repeat
+                        if el then xdrWrite(xstr,1) else xdrWrite(xstr,0)
         -- integers
-        INTEGERP v => 
+        INTEGERP v =>
                 xdrWrite(xstr,v)
         -- floats
-        FLOATP v => 
+        FLOATP v =>
                 xdrWrite(xstr,v)
   SHUT(str)
   tmpFile
@@ -738,11 +738,11 @@ functionAndJacobian f ==
     vars := CDADR f -- throw away 'Tuple at start of variable list
   else
     vars := [CADR f]
-  #(vars) ~= #(CDADDR f) => 
+  #(vars) ~= #(CDADDR f) =>
     error "number of variables should equal number of functions"
   funBodies := COPY_-TREE CDADDR f
   jacBodies := [:[DF(f,v) for v in vars] for f in funBodies] where
-    DF(fn,var) == 
+    DF(fn,var) ==
       ["@",["convert",["differentiate",fn,var]],"InputForm"]
   jacBodies := CDDR interpret [["$elt",["List",["InputForm"]],"construct"],:jacBodies]
   newVariable := GENSYM()

@@ -67,10 +67,10 @@ $groupAssoc := '((extended . 1) (basic . 2) (hidden . 4))
 mkTopicHashTable() ==                         --given $groupAssoc = ((extended . 1)(basic . 2)(xx . 4)..)
   $defaultsHash := MAKE_-HASHTABLE 'ID        --keys are ops, value is list of topic names
   for [kind,:items] in $topicsDefaults repeat --$topicsDefaults is ((<topic> op ...) ..)
-    for item in items repeat 
+    for item in items repeat
       HPUT($defaultsHash,item,[kind,:HGET($defaultsHash,item)])
   $conTopicHash  := MAKE_-HASHTABLE 'EQL      --key is constructor name; value is
-  instream := OPEN '"topics.data"           
+  instream := OPEN '"topics.data"
   while not EOFP instream repeat
     line := READLINE instream
     while blankLine? line repeat line := READLINE instream
@@ -81,7 +81,7 @@ mkTopicHashTable() ==                         --given $groupAssoc = ((extended .
     m := MAXINDEX line                        --     (blank line) ...
     line.m ~= (char '_:) => systemError('"wrong heading")
     con := INTERN SUBSTRING(line,0,m)
-    alist := [lst while not EOFP instream and 
+    alist := [lst while not EOFP instream and
        not (blankLine? (line := READLINE instream)) and
          line.0 ~= char '_- for i in 1..
            | lst := string2OpAlist line]
@@ -95,15 +95,15 @@ mkTopicHashTable() ==                         --given $groupAssoc = ((extended .
   --store under each construct an OR of all codes
   for con in HKEYS $conTopicHash repeat
     conCode := 0
-    for pair in HGET($conTopicHash,con) repeat 
+    for pair in HGET($conTopicHash,con) repeat
       RPLACD(pair,code := topicCode CDR pair)
       conCode := LOGIOR(conCode,code)
     HPUT($conTopicHash,con,
-      [['constructor,:conCode],:HGET($conTopicHash,con)])      
+      [['constructor,:conCode],:HGET($conTopicHash,con)])
   SHUT instream
 
 --reduce integers stored under names to 1 + its power of 2
-  for key in HKEYS $topicHash repeat 
+  for key in HKEYS $topicHash repeat
     HPUT($topicHash,key,INTEGER_-LENGTH HGET($topicHash,key))
 
   $conTopicHash   --keys are ops or 'constructor', values are codes
@@ -119,7 +119,7 @@ string2OpAlist s ==
   while (k := skipBlanks(s,k,m)) repeat
     acc := [INTERN SUBSTRING(s,k,-k + (k := charPosition(char '_ ,s,k + 1))),:acc]
   acc := NREVERSE acc
-  --now add defaults 
+  --now add defaults
   if u := getDefaultProps first acc then acc := [first acc,:u,:rest acc]
   acc
 
@@ -128,7 +128,7 @@ getDefaultProps name ==
   if (s := PNAME name).(m := MAXINDEX s) = char '? then u := ['p,:u]
   if s.m = char '_! then u := ['destructive,:u]
   u
-  
+
 skipBlanks(u,i,m) ==
   while i < m and u.i = $charBlank repeat i := i + 1
   i >= m => nil
@@ -159,30 +159,30 @@ addTopic2Documentation(con,docAlist) ==
   [y for x in docAlist] where y ==
     [op,:pairlist] := x
     code := LASSOC(op,alist) or 0
-    for sigDoc in pairlist repeat 
+    for sigDoc in pairlist repeat
       sigDoc is [.,.] => RPLACD(rest sigDoc,code)
       systemError sigDoc
   docAlist
-    
+
 --=======================================================================
 --           Test: Display Topics for a given constructor
 --=======================================================================
 td con ==
   $topicClasses := ASSOCRIGHT mySort
-      [[HGET($topicHash,key),:key] for key in HKEYS $topicHash]      
+      [[HGET($topicHash,key),:key] for key in HKEYS $topicHash]
   hash := MAKE_-HASHTABLE 'ID
   tdAdd(con,hash)
-  tdPrint hash 
+  tdPrint hash
 
 tdAdd(con,hash) ==
   v := HGET($conTopicHash,con)
   u := addTopic2Documentation(con,v)
---u := GETDATABASE(con,'DOCUMENTATION) 
+--u := GETDATABASE(con,'DOCUMENTATION)
   for pair in u | FIXP (code := myLastAtom pair) and (op := CAR pair) ~= 'construct repeat
     for x in (names := code2Classes code) repeat HPUT(hash,x,insert(op,HGET(hash,x)))
 
 tdPrint hash ==
-  for key in mySort HKEYS hash repeat 
+  for key in mySort HKEYS hash repeat
     sayBrightly [key,'":"]
     sayBrightlyNT '"   "
     for x in HGET(hash,key) repeat sayBrightlyNT ['" ",x]
@@ -191,24 +191,24 @@ tdPrint hash ==
 topics con ==
   --assumes that DOCUMENTATION property already has #s added
   $topicClasses := ASSOCRIGHT mySort
-      [[HGET($topicHash,key),:key] for key in HKEYS $topicHash]      
+      [[HGET($topicHash,key),:key] for key in HKEYS $topicHash]
   hash := MAKE_-HASHTABLE 'ID
   tdAdd(con,hash)
   for x in REMDUP [CAAR y for y in ancestorsOf(getConstructorForm con,nil)] repeat
     tdAdd(x,hash)
   for x in HKEYS hash repeat HPUT(hash,x,mySort HGET(hash,x))
-  tdPrint hash 
+  tdPrint hash
 
 code2Classes cc ==
   cc := 2*cc
   [x while cc ~= 0 for x in $topicClasses | ODDP (cc := QUOTIENT(cc,2))]
-  
-myLastAtom x == 
+
+myLastAtom x ==
   while x is [.,:x] repeat nil
   x
 
 --=======================================================================
---           Transfer Codes to opAlist 
+--           Transfer Codes to opAlist
 --=======================================================================
 
 transferClassCodes(conform,opAlist) ==
@@ -217,7 +217,7 @@ transferClassCodes(conform,opAlist) ==
     transferCodeCon(CAAR x,opAlist)
 
 transferCodeCon(con,opAlist) ==
-  for pair in GETDATABASE(con,'DOCUMENTATION) 
+  for pair in GETDATABASE(con,'DOCUMENTATION)
     | FIXP (code := myLastAtom pair) repeat
       u := assoc(QCAR pair,opAlist) => RPLACD(LASTNODE u,code)
 
@@ -227,7 +227,7 @@ transferCodeCon(con,opAlist) ==
 
 filterByTopic(opAlist,topic) ==
   bitNumber := HGET($topicHash,topic)
-  [x for x in opAlist 
+  [x for x in opAlist
     | FIXP (code := myLastAtom x) and LOGBITP(bitNumber,code)]
 
 listOfTopics(conname) ==
@@ -236,4 +236,3 @@ listOfTopics(conname) ==
   code := myLastAtom u
 --null FIXP code => nil
   mySort [key for key in HKEYS($topicHash) | LOGBITP(HGET($topicHash,key),code)]
-

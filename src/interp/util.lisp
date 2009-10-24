@@ -34,7 +34,7 @@ This file is a collection of utility functions that are useful
 for system level work. A couple of the functions, {\bf build-depsys}
 and {\bf build-interpsys} interface to the src/interp/Makefile.
 
-A third group of related functions are used to set up the 
+A third group of related functions are used to set up the
 {\bf autoload} mechanism. These enable whole subsystems to
 be kept out of memory until they are used.
 
@@ -60,7 +60,7 @@ at load time.
   #+:ecl "fas"
   )
 
-;;; The relative directory list specifies a search path for files 
+;;; The relative directory list specifies a search path for files
 ;;; for the current directory structure.
 (defvar $relative-directory-list
   '("/../../src/input/"
@@ -104,9 +104,9 @@ at load time.
 
 ;;; The {\bf boottocl} function is the workhorse function that translates
 ;;; {\bf .boot} files to {\bf Common Lisp}. It basically wraps the actual
-;;; {\bf boot} function call to ensure that we don't truncate lines 
+;;; {\bf boot} function call to ensure that we don't truncate lines
 ;;; because of {\bf *print-level*} or {\bf *print-length*}.
-(in-package "BOOTTRAN") 
+(in-package "BOOTTRAN")
 
 #+:oldboot
 (defun boottran::boottocl (file &optional ofile) ;; translates a single boot file
@@ -120,7 +120,7 @@ at load time.
 
 (in-package "BOOT")
 
-;;; This is the {\bf boot parser} subsystem. It is only needed by 
+;;; This is the {\bf boot parser} subsystem. It is only needed by
 ;;; algebra developers and developers who translate boot code to
 ;;; Common Lisp.
 (setq parse-functions
@@ -252,14 +252,14 @@ have their definitions replaced by a special ``autoloader'' function.
 The first time a function named here is called it will trigger a
 load of the associated subsystem, the autoloader functions will get
 overwritten, the function call is retried and now succeeds. Files
-containing functions listed here are assumed to exist in the 
+containing functions listed here are assumed to exist in the
 {\bf autoload} subdirectory. The list of files to load is defined
 in the src/interp/Makefile.
 |#
 
 #|
 This function is called by {\bf build-interpsys}. It takes two lists.
-The first is a list of functions that need to be used as 
+The first is a list of functions that need to be used as
 ``autoload triggers''. The second is a list of files to load if one
 of the trigger functions is called. At system build time each of the
 functions in the first list is set up to load every file in the second
@@ -283,7 +283,7 @@ This helper function is listed below.
 
 ;;; This is a helper function to set up the autoload trigger. It sets
 ;;; the function cell of each symbol to {\bf mkBootAutoLoad} which is
-;;; listed below. 
+;;; listed below.
 (defun |setBootAutoLoadProperty| (func file-list)
   (setf (symbol-function func) (|mkBootAutoLoad| func file-list)) )
 
@@ -341,9 +341,9 @@ where the [[${AXIOM}]] variable points to installed tree.
   (reroot (or (BOOT::|getEnv| "AXIOM") newroot $spadroot
               (error "setenv AXIOM or (setq $spadroot)"))))
 
-;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes 
+;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
 ;;; to the default memory setup to run Axiom efficently.
-;;; This function performs those setup commands. 
+;;; This function performs those setup commands.
 (defun init-memory-config (&key
                            (cons 500)
                            (fixnum 200)
@@ -394,12 +394,12 @@ where the [[${AXIOM}]] variable points to installed tree.
 ;############################################################################
 
 The {\bf build-interpsys} function takes a list of files to load
-into the image ({\bf load-files}). It also takes several lists of files, 
+into the image ({\bf load-files}). It also takes several lists of files,
 one for each subsystem which will be autoloaded. Autoloading is explained
-below. Next it takes a set of shell variables, the most important of 
+below. Next it takes a set of shell variables, the most important of
 which is the {\bf spad} variable. This is normally set to be the same
-as the final build location. This function is called in the 
-src/interp/Makefile. 
+as the final build location. This function is called in the
+src/interp/Makefile.
 
 This function calls {\bf initroot} to set up pathnames we need. Next
 it sets up the lisp system memory (at present only for GCL). Next
@@ -500,7 +500,7 @@ After this function is called the image is clean and can be saved.
 ;;; The {\bf depsys} image is one of the two images we build from
 ;;; the src/interp subdirectory (the other is {\bf interpsys}). We
 ;;; use {\bf depsys} as a compile-time image as it contains all of
-;;; the necessary functions and macros to compile any file. The 
+;;; the necessary functions and macros to compile any file. The
 ;;; {\bf depsys} image is almost the same as an {\bf interpsys}
 ;;; image but it does not have any autoload triggers or databases
 ;;; loaded.
@@ -554,14 +554,14 @@ After this function is called the image is clean and can be saved.
 #|
 We need a way of distinguishing different versions of the system.
 There used to be a way to touch the src/timestamp file whenever
-you checked in a change to the change control subsystem. 
+you checked in a change to the change control subsystem.
 During make PART=interp (the default for make) we set timestamp
 to the filename of this timestamp file. This function converts it
 to a luser readable string and sets the *yearweek* variable.
 
-The result of this function is a string that is printed as a banner 
+The result of this function is a string that is printed as a banner
 when Axiom starts. The actual printing is done by the function
-[[spadStartUpMsgs]] in [[src/interp/msgdb.boot]]. It uses a 
+[[spadStartUpMsgs]] in [[src/interp/msgdb.boot]]. It uses a
 format string from the file [[src/doc/msgs/s2-us.msgs]].
 |#
 (defun yearweek ()
@@ -654,7 +654,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
   (|initHist|)
   (|initializeInterpreterFrameRing|)
 
-  (when |$displayStartMsgs| 
+  (when |$displayStartMsgs|
    (|spadStartUpMsgs|))
   (setq |$currentLine| nil)
   (restart0)
@@ -666,9 +666,9 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
   #+:GCL
   (|spad|)
   #-:GCL
-  (let ((*debugger-hook* 
+  (let ((*debugger-hook*
             (lambda (condition previous-handler)
-                (spad-system-error-handler condition)) 
+                (spad-system-error-handler condition))
        ))
      (handler-bind ((error #'spad-system-error-handler))
        (|spad|)))
@@ -682,10 +682,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
          (if do-restart #'boot::fricas-restart nil))
 )
 
-(defun |statisticsInitialization| () 
+(defun |statisticsInitialization| ()
  "initialize the garbage collection timer"
  #+:GCL (system:gbc-time 0)
  nil)
-
-
-

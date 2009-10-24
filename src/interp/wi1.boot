@@ -278,7 +278,7 @@ compNoStacking01(x,m,e) ==
 --compNoStacking0(x,m,e) ==
   if CONTAINED('MI,m) then m := markKillAll(m)
   T:= comp2(x,m,e) =>
-    (m=$EmptyMode and T.mode=IFCAR(get('Rep,'value,e)) => 
+    (m=$EmptyMode and T.mode=IFCAR(get('Rep,'value,e)) =>
        [T.expr,"Rep",T.env]; qt(12,T))
          --$Representation is bound in compDefineFunctor, set by doIt
          --this hack says that when something is undeclared, $ is
@@ -341,7 +341,7 @@ compAtom(x,m,e) ==
     isSymbol x =>
       compSymbol(x,m,e) or return nil
     m = $OutputForm and primitiveType x => [x, m, e]
-    STRINGP x => 
+    STRINGP x =>
       x ~= '"failed" and (member('(Symbol), $localImportStack) or
         member('(Symbol), $globalImportStack)) => markAt [x, '(String), e]
       [x, x, e]
@@ -433,7 +433,7 @@ compForm3(form is [op,:argl],m,e,modemapList) ==
       [compFormWithModemap(form,m,e,first (mml:= ml))
         for ml in tails modemapList] or return nil
   qt(14,T)
-  result := 
+  result :=
     $compUniquelyIfTrue =>
       or/[compFormWithModemap(form,m,e,mm) for mm in rest mml] =>
         THROW("compUniquely",nil)
@@ -446,7 +446,7 @@ compFormOrderModemaps(mml,targetIsDollar?) ==
 --exceptions: if $ is the target and there are 2 modemaps with
 --            identical signatures, move the $ one ahead
   repMms := [mm for (mm:= [[dc,:.],:.]) in mml | dc = 'Rep]
-  if repMms and targetIsDollar? then 
+  if repMms and targetIsDollar? then
     dollarMms := [mm for (mm := [[dc,:sig],:.]) in mml | dc = "$"
        and or/[mm1 for (mm1:= [[dc1,:sig1],:.]) in repMms | sig1 = sig]]
     repMms := [:dollarMms, :repMms]
@@ -530,7 +530,7 @@ setqSingle(id,val,m,E) ==
   $insideSetqSingleIfTrue: local:= true
     --used for comping domain forms within functions
   currentProplist:= getProplist(id,E)
-  m'':= get(id,'mode,E) or getmode(id,E) or 
+  m'':= get(id,'mode,E) or getmode(id,E) or
        (if m=$NoValueMode then $EmptyMode else m)
 -----------------------> new <-------------------------
   trialT := m'' = "$" and get("Rep",'value,E) and comp(val,'Rep,E)
@@ -710,8 +710,8 @@ compColon([":",f,t],m,e) ==
         e:= put(f,"value",[genSomeVariable(),t,$noEnv],e)
   ["/throwAway",getmode(f,e),e]
 
-compConstruct(form,m,e) == (T := compConstruct1(form,m,e)) and markConstruct(form,T) 
-  
+compConstruct(form,m,e) == (T := compConstruct1(form,m,e)) and markConstruct(form,T)
+
 compConstruct1(form is ["construct",:l],m,e) ==
   y:= modeIsAggregateOf("List",m,e) =>
     T:= compList(l,["List",CADR y],e) => convert(T,m)
@@ -914,7 +914,7 @@ coerceByModemap([x,m,e],m') ==
   fn := genDeltaEntry ['coerce,:mm]
   T := [["call",fn,x],m',e]
   markCoerceByModemap(x,m,m',markCallCoerce(x,m',T),nil)
- 
+
 autoCoerceByModemap([x,source,e],target) ==
   u:=
     [cexpr
@@ -953,7 +953,7 @@ comp3(x,m,$e) ==
 yyyyy x == x
 compExpression(x,m,e) ==
   $insideExpressionIfTrue: local:= true
-  if x is ['LET,['PART,.,w],[['elt,B,'new],['PART,.,["#",['PART,.,l]]],:.],:.] then yyyyy x 
+  if x is ['LET,['PART,.,w],[['elt,B,'new],['PART,.,["#",['PART,.,l]]],:.],:.] then yyyyy x
   x := compRenameOp x
   atom first x and (fn:= GETL(first x,"SPECIAL")) =>
     FUNCALL(fn,x,m,e)
@@ -978,11 +978,11 @@ compCase1(x,m,e) ==
   if m' = "$" then (m' := IFCAR get('Rep,'value,e)) and (switchMode := true)
   --------------------------------------------------------------------------
   m' isnt ['Union,:r] => nil
-  mml := [mm for (mm := [map,cexpr]) in getModemapList("case",2,e') 
-    | map is [.,.,s,t] and modeEqual(t,m) and 
+  mml := [mm for (mm := [map,cexpr]) in getModemapList("case",2,e')
+    | map is [.,.,s,t] and modeEqual(t,m) and
          (modeEqual(s,m') or switchMode and modeEqual(s,"$"))]
         or return nil
-  u := [cexpr for [.,cexpr] in mml] 
+  u := [cexpr for [.,cexpr] in mml]
   fn:= (or/[selfn for [cond,selfn] in u | cond=true]) or return nil
   tag := genCaseTag(m, r, 1) or return nil
   x1 :=
@@ -992,7 +992,7 @@ compCase1(x,m,e) ==
 
 genCaseTag(t,l,n) ==
   l is [x, :l] =>
-    x = t     => 
+    x = t     =>
       STRINGP x => INTERN x
       INTERN STRCONC("value", STRINGIMAGE n)
     x is ["::",=t,:.] => t
@@ -1017,24 +1017,24 @@ compIf(["IF",aOrig,b,c],m,E) ==
 
 compBoolean(p,pWas,m,Einit) ==
   op := opOf p
-  [p',m,E]:= 
+  [p',m,E]:=
     fop := LASSOC(op,'((and . compAnd) (or . compOr) (not . compNot))) =>
        APPLY(fop,[p,pWas,m,Einit]) or return nil
     T := comp(p,m,Einit) or return nil
-    markAny('compBoolean,pWas,T) 
+    markAny('compBoolean,pWas,T)
   [p',m,getSuccessEnvironment(markKillAll p,E),
         getInverseEnvironment(markKillAll p,E)]
 
 compAnd([op,:args], pWas, m, e) ==
 --called ONLY from compBoolean
-  cargs := [T.expr for x in args 
+  cargs := [T.expr for x in args
               | [.,.,e,.] := T := compBoolean(x,x,$Boolean,e) or return nil]
   null cargs => nil
   coerce(markAny('compAnd,pWas,[["AND",:cargs],$Boolean,e]),m)
 
 compOr([op,:args], pWas, m, e) ==
 --called ONLY from compBoolean
-  cargs := [T.expr for x in args 
+  cargs := [T.expr for x in args
               | [.,.,.,e] := T := compBoolean(x,x,$Boolean,e) or return nil]
   null cargs => nil
   coerce(markAny('compOr,pWas, [["OR",:cargs],$Boolean,e]),m)

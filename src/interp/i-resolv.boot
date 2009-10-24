@@ -845,4 +845,3 @@ compareTT(t1,t2) ==
   EQCAR(t1,$QuotientField) or
     MEMQ(opOf t2,[$QuotientField, 'SimpleAlgebraicExtension]) => NIL
     CGREATERP(PRIN2CVEC opOf t1,PRIN2CVEC opOf t2)
-

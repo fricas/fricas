@@ -35,16 +35,16 @@
 -- @(#)g-boot.boot      2.2      89/11/02  14:44:09
 
 --% BOOT to LISP Translation
- 
+
 -- these supplement those in DEF and MACRO LISP
- 
+
 --% Utilities
- 
+
 DEFPARAMETER($fluidVars, nil)
 DEFPARAMETER($locVars, nil)
- 
+
 $LET := 'SPADLET    -- LET is a standard macro in Common Lisp
- 
+
 nakedEXIT? c ==
   ATOM c => NIL
   [a,:d] := c
@@ -54,7 +54,7 @@ nakedEXIT? c ==
     MEMQ(a,'(SEQ PROG LAMBDA MLAMBDA LAM)) => NIL
     nakedEXIT?(d)
   nakedEXIT?(a) or nakedEXIT?(d)
- 
+
 mergeableCOND x ==
   ATOM(x) or x isnt ['COND,:cls] => NIL
   -- to be mergeable, every result must be an EXIT and the last
@@ -67,7 +67,7 @@ mergeableCOND x ==
     NULL(cls) and ATOM(p) => ok := NIL
     NULL(cls) and (p = ''T) => ok := NIL
   ok
- 
+
 mergeCONDsWithEXITs l ==
   -- combines things like
   -- (COND (foo (EXIT a)))
@@ -86,7 +86,7 @@ mergeCONDsWithEXITs l ==
   CDR(l) is [b] and am =>
     [removeEXITFromCOND flattenCOND ['COND,:QCDR a,[''T,b]]]
   [a,:mergeCONDsWithEXITs CDR l]
- 
+
 removeEXITFromCOND? c ==
   -- c is '(COND ...)
   -- only can do it if every clause simply EXITs
@@ -100,7 +100,7 @@ removeEXITFromCOND? c ==
     r1 isnt ['EXIT,r2] => ok := NIL
     nakedEXIT? r2 => ok := NIL
   ok
- 
+
 removeEXITFromCOND c ==
   -- c is '(COND ...)
   z := NIL
@@ -118,12 +118,12 @@ removeEXITFromCOND c ==
       z := CONS(REVERSE CONS(CADR lastSE,CDR cl'),z)
     z := CONS(cl,z)
   CONS('COND,NREVERSE z)
- 
+
 flattenCOND body ==
   -- transforms nested COND clauses to flat ones, if possible
   body isnt ['COND,:.] => body
   ['COND,:extractCONDClauses body]
- 
+
 extractCONDClauses clauses ==
   -- extracts nested COND clauses into a flat structure
   clauses is ['COND, [pred1,:act1],:restClauses] =>
@@ -132,15 +132,15 @@ extractCONDClauses clauses ==
       [[pred1,:act1],:extractCONDClauses restCond]
     [[pred1,:act1],:restClauses]
   [[''T,clauses]]
- 
+
 --% COND and IF
- 
+
 bootIF c ==
   -- handles IF expressions by turning them into CONDs
   c is [.,p,t] => bootCOND ['COND,[p,t]]
   [.,p,t,e] := c
   bootCOND ['COND,[p,t],[''T,e]]
- 
+
 bootCOND c ==
   -- handles COND expressions: c is ['COND,:.]
   cls := CDR c
@@ -161,7 +161,7 @@ bootCOND c ==
       CONS([''T,:mcls],ncls)
     CONS(fcls,ncls)
   ['COND,:REVERSE ncls]
- 
+
 bootPushEXITintoCONDclause e ==
   e isnt [''T,['EXIT,['COND,:cls]]] => e
   ncls := NIL
@@ -172,12 +172,12 @@ bootPushEXITintoCONDclause e ==
       r is [r1]           => CONS([p,['EXIT,r1]],ncls)
       CONS([p,['EXIT,bootTran ['PROGN,:r]]],ncls)
   [''T,['COND,:NREVERSE ncls]]
- 
+
 --% SEQ and PROGN
- 
+
 -- following is a more sophisticated def than that in MACRO LISP
 -- it is used for boot code
- 
+
 tryToRemoveSEQ e ==
   -- returns e if unsuccessful
   e isnt ['SEQ,cl,:cls] => NIL
@@ -189,7 +189,7 @@ tryToRemoveSEQ e ==
       bootCOND ['COND,[p,r],[''T,bootSEQ ['SEQ,['COND,:ccls],:cls]]]
     e
   bootPROGN ['PROGN,cl,bootSEQ ['SEQ,:cls]]
- 
+
 bootAbsorbSEQsAndPROGNs e ==
   -- assume e is a list from a SEQ or a PROGN
   ATOM e => e
@@ -214,7 +214,7 @@ bootAbsorbSEQsAndPROGNs e ==
   lcl is ['COND,[pred,['EXIT,h]]] =>
     APPEND(g,[['COND,[pred,h]]])
   APPEND(g,[lcl])
- 
+
 bootSEQ e ==
   e := ['SEQ,:mergeCONDsWithEXITs bootAbsorbSEQsAndPROGNs CDR e]
   if e is [.,:cls,lcl] and IDENTP lcl and not MEMQ(lcl,$labelsForGO) then
@@ -231,21 +231,21 @@ bootSEQ e ==
       tryToRemoveSEQ e
     bootTran ['COND,[pred,r1],[''T,:r2]]
   tryToRemoveSEQ e
- 
+
 bootPROGN e ==
   e := ['PROGN,:bootAbsorbSEQsAndPROGNs CDR e]
   [.,:cls] := e
   NULL cls => NIL
   cls is [body] => body
   e
- 
+
 --% LET
- 
+
 defLetForm(lhs,rhs) ==
 --if functionp lhs then
 --  sayMSG ['"Danger: Reassigning value to LISP function:",:bright lhs]
   [$LET,lhs,rhs]
- 
+
 defLET1(lhs,rhs) ==
   IDENTP lhs         => defLetForm(lhs,rhs)
   lhs is ['FLUID,id] => defLetForm(lhs,rhs)
@@ -269,7 +269,7 @@ defLET1(lhs,rhs) ==
   EQCAR(let','PROGN) => MKPROGN [rhs',:CDR let']
   if IDENTP CAR let' then let' := CONS(let',NIL)
   MKPROGN [rhs',:let',g]
- 
+
 defLET2(lhs,rhs) ==
   IDENTP lhs => defLetForm(lhs,rhs)
   NULL lhs   => NIL
@@ -310,12 +310,12 @@ defLET2(lhs,rhs) ==
     $inDefIS => defIS1(rhs,lhs)
     defIS(rhs,lhs)
   ['COND,[isPred,rhs]]
- 
+
 defLET(lhs,rhs) ==
   $letGenVarCounter : local := 1
   $inDefLET : local := true
   defLET1(lhs,rhs)
- 
+
 addCARorCDR(acc,expr) ==
   NULL PAIRP expr => [acc,expr]
   acc = 'CAR and EQCAR(expr,'REVERSE) =>
@@ -330,10 +330,10 @@ addCARorCDR(acc,expr) ==
              CDADDR CDDAAR CDDDAR CDDADR CDDDDR)
   if acc = 'CAR then CONS(funsA.p,QCDR expr)
   else               CONS(funsR.p,QCDR expr)
- 
- 
+
+
 --% IS
- 
+
 defISReverse(x,a) ==
   -- reverses forms coming from APPENDs in patterns
   -- pretty much just a translation of DEF-IS-REV
@@ -343,7 +343,7 @@ defISReverse(x,a) ==
     RPLAC(CADDR y,['CONS,CADR x,a])
     y
   ERRHUH()
- 
+
 defIS1(lhs,rhs) ==
   NULL rhs =>
     ['NULL,lhs]
@@ -396,14 +396,14 @@ defIS1(lhs,rhs) ==
     ['AND,rev,:l2,['PROGN,defLetForm(a,['NREVERSE,a]),''T]]
   SAY '"WARNING (defIS1): possibly bad IS code being generated"
   DEF_-IS [lhs,rhs]
- 
+
 defIS(lhs,rhs) ==
   $isGenVarCounter : local := 1
   $inDefIS : local := true
   defIS1(DEFTRAN lhs,rhs)
- 
+
 --% OR and AND
- 
+
 bootOR e ==
   -- flatten any contained ORs.
   cls := CDR e
@@ -414,7 +414,7 @@ bootOR e ==
       x is ['OR,:.] => QCDR x
       [x]
   ['OR,:ncls]
- 
+
 bootAND e ==
   -- flatten any contained ANDs.
   cls := CDR e
@@ -425,9 +425,9 @@ bootAND e ==
       x is ['AND,:.] => QCDR x
       [x]
   ['AND,:ncls]
- 
+
 --% Main Transformation Functions
- 
+
 bootLabelsForGO e ==
   ATOM e => NIL
   [head,:tail] := e
@@ -437,7 +437,7 @@ bootLabelsForGO e ==
     bootLabelsForGO tail
   bootLabelsForGO head
   bootLabelsForGO tail
- 
+
 bootTran e ==
   ATOM e => e
   [head,:tail] := e
@@ -453,7 +453,7 @@ bootTran e ==
     head = 'AND   => bootAND  e
     e
   [bootTran head,:QCDR e]
- 
+
 bootTransform e ==
 --NULL $BOOT => e
   $labelsForGO : local := NIL
@@ -493,7 +493,7 @@ compSPADSLAM(name, argl, bodyl) ==
     auxfn := INTERNL(name, '";")
     g1 := GENSYM()
     g2 := GENSYM()
-    u := 
+    u :=
          not(argl) => [[], [], [auxfn]]
          not(CDR(argl)) => [[g1], ["devaluate", g1], [auxfn, g1]]
          [g1, ["devaluateList", g1], _
@@ -502,10 +502,10 @@ compSPADSLAM(name, argl, bodyl) ==
     la1 :=
          argl => [["SETQ", g2, ["assoc", argtran, al]], ["CDR", g2]]
          [al]
-    la2 := 
+    la2 :=
          argl =>
               [true, ["SETQ", al,
-                           ["cons5", 
+                           ["cons5",
                                 ["CONS", argtran, ["SETQ", g2, app]], al]],
                             g2]
          [true, ["SETQ", al, app]]
@@ -528,7 +528,7 @@ lambdaHelper1(y) ==
     NOT(MEMQ(y, $locVars)) =>
         $locVars := [y, :$locVars]
         $newBindings := [y, :$newBindings]
-    
+
 lambdaHelper2(y) == MEMQ(y, $newBindings)
 
 compTran1(x) ==
@@ -629,7 +629,7 @@ PUSHLOCVAR(x) ==
       and (not(SCHAR('",", 0) = SCHAR(PNAME(x), 1)) or BREAK())
       and not(DIGITP (SCHAR(PNAME(x), 1))) => nil
     PUSH(x, $locVars)
-  
+
 compExpand(x) ==
     ATOM(x) => x
     x is ["QUOTE",:.] => x

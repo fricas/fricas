@@ -34,7 +34,7 @@
 ;; Lisp support for cleaned up FileName domain.
 ;;
 ;; Created: June 20, 1991 (Stephen Watt)
-;; 
+;;
 
 (in-package "BOOT")
 
@@ -49,7 +49,7 @@
   (cond
     ((string= s "/") '(:root))
     ((string= s "")  nil)
-    ('t 
+    ('t
       (let ((lastc (aref s (- (length s) 1))))
         (if (char= lastc #\/)
           (pathname-directory (concat s "name.type"))
@@ -76,12 +76,12 @@
 (defun |fnameType| (f)
   (let ((s (pathname-type f)))
     (if s s "") ))
- 
+
 (defun |fnameExists?| (f)
   (if (vmlisp::fricas-probe-file (namestring f)) 't nil))
 
 (defun |fnameReadable?| (f)
-  (let ((s 
+  (let ((s
           #-:GCL
           (ignore-errors (open f :direction :input :if-does-not-exist nil))
           #+:GCL

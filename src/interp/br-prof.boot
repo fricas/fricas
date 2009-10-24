@@ -260,6 +260,3 @@ getInfoAlist conname ==
     [.,dollarName,:.] := GETDATABASE(conname,'CONSTRUCTORFORM)
     alist := substitute("$", dollarName, alist)
   alist
-
-
-

@@ -42,29 +42,29 @@
 --
 --    $macActive is a list of the bodies being expanded.
 --    $posActive is a list of the parse forms where the bodies came from.
- 
+
 -- Beware: the name macroExpand is used by the old compiler.
 macroExpanded pf ==
     $macActive: local := []
     $posActive: local := []
- 
+
     macExpand pf
- 
+
 macExpand pf ==
     pfWhere?       pf => macWhere   pf
     pfLambda?      pf => macLambda  pf
     pfMacro?       pf => macMacro pf
- 
+
     pfId?          pf => macId pf
     pfApplication? pf => macApplication pf
     pfMapParts(function macExpand, pf)
- 
+
 macWhere pf ==
     mac(pf,$pfMacros) where
         mac(pf,$pfMacros) ==
             -- pfWhereContext is before pfWhereExpr
             pfMapParts(function macExpand, pf)
- 
+
 macLambda pf ==
     mac(pf,$pfMacros) where
         mac(pf,$pfMacros) ==
@@ -84,24 +84,24 @@ macLambdaParameterHandling( replist , pform )  ==
 
 macSubstituteId( replist , pform ) ==
     ex := AlistAssocQ( pfIdSymbol pform , replist )
-    ex => 
+    ex =>
         RPLPAIR(pform,CDR ex)
         pform
-    pform 
+    pform
 
-macSubstituteOuter( pform ) == 
-    mac0SubstituteOuter( macLambdaParameterHandling( [] , pform ) , pform ) 
-    
-mac0SubstituteOuter( replist , pform ) == 
+macSubstituteOuter( pform ) ==
+    mac0SubstituteOuter( macLambdaParameterHandling( [] , pform ) , pform )
+
+mac0SubstituteOuter( replist , pform ) ==
     pfId? pform => macSubstituteId( replist , pform )
     pfLeaf? pform => pform
-    pfLambda? pform => 
+    pfLambda? pform =>
         tmplist := macLambdaParameterHandling( replist , pform )
         for p in pfParts pform repeat mac0SubstituteOuter( tmplist , p )
         pform
     for p in pfParts pform repeat mac0SubstituteOuter( replist , p )
     pform
- 
+
 -- This function adds the appropriate definition and returns
 -- the original Macro pform.
 macMacro pf ==
@@ -113,16 +113,16 @@ macMacro pf ==
     sy := pfIdSymbol lhs
 
     mac0Define(sy, if pfMLambda? rhs then 'mlambda else 'mbody, macSubstituteOuter rhs)
- 
+
     if pfNothing? rhs then pf else pfMacro(lhs, pfNothing())
- 
+
 mac0Define(sy, state, body) ==
     $pfMacros := cons([sy, state, body], $pfMacros)
- 
+
 -- Returns [state, body] or NIL.
 mac0Get sy ==
     IFCDR ASSOC(sy, $pfMacros)
- 
+
 -- Returns [sy, state] or NIL.
 mac0GetName body ==
     name := nil
@@ -131,26 +131,26 @@ mac0GetName body ==
             bd := pfMLambdaBody bd
         EQ(bd, body) => name := [sy,st]
     name
- 
+
 macId pf ==
     sy := pfIdSymbol pf
     not (got := mac0Get sy) => pf
     [state, body] := got
- 
+
     state = 'mparam     => body                                         -- expanded already
     state = 'mlambda    => pfCopyWithPos( body , pfSourcePosition pf )  -- expanded later
- 
+
     pfCopyWithPos( mac0ExpandBody(body, pf, $macActive, $posActive) , pfSourcePosition pf )
- 
+
 macApplication pf ==
     pf := pfMapParts(function macExpand, pf)
- 
+
     op := pfApplicationOp pf
     not pfMLambda? op => pf
- 
+
     args := pf0ApplicationArgs pf
     mac0MLambdaApply(op, args, pf, $pfMacros)
- 
+
 mac0MLambdaApply(mlambda, args, opf, $pfMacros) ==
     params := pf0MLambdaArgs mlambda
     body   := pfMLambdaBody  mlambda
@@ -162,9 +162,9 @@ mac0MLambdaApply(mlambda, args, opf, $pfMacros) ==
             pos := pfSourcePosition opf
             ncHardError(pos, 'S2CM0004, [%pform p])
         mac0Define(pfIdSymbol p, 'mparam, a)
- 
+
     mac0ExpandBody( body , opf, $macActive, $posActive)
- 
+
 mac0ExpandBody(body, opf, $macActive, $posActive) ==
     MEMQ(body,$macActive) =>
         [.,pf] := $posActive
@@ -173,7 +173,7 @@ mac0ExpandBody(body, opf, $macActive, $posActive) ==
     $macActive := [body, :$macActive]
     $posActive := [opf,  :$posActive]
     macExpand body
- 
+
 mac0InfiniteExpansion(posn, body, active) ==
     blist := [body, :active]
     [fname, :rnames] := [name b for b in blist] where
@@ -185,5 +185,5 @@ mac0InfiniteExpansion(posn, body, active) ==
             PNAME sy
     ncSoftError (posn, 'S2CM0005, _
        [ [:[n,'"==>"] for n in reverse rnames], fname, %pform body ]  )
- 
+
     body

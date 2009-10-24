@@ -99,7 +99,7 @@ walkWhereList(tree) ==
 --
 
 walkForm(tree) ==
-    tree is ["==>", name, def] => 
+    tree is ["==>", name, def] =>
         HPUT($MacroTable, name, def)
         nil
     tree is ["==", head, def] =>
@@ -165,7 +165,7 @@ processGlobals () ==
 handleKind(df is ['DEF,form,sig,sc,body]) ==
     [op,:argl] := form
 
-    null CAR(sig) => nil 
+    null CAR(sig) => nil
     if sig is [["Category"], :.] then
         if body is ['add,cat,capsule] then
             body := cat
@@ -234,7 +234,7 @@ computeTargetMode(lhs, rhs) ==
  modemaps                   ; almost unused in the compiler -- used to
                               invalidate old modemaps when updating
                               *operation-hash* (which in turn is used
-                              only in intepreter). 
+                              only in intepreter).
  niladic                    ; +
  object                     ; +-
  operationalist             ; interp.

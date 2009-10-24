@@ -61,8 +61,8 @@ showImp(dom,:options) ==
     others := [x,:others]   --add chain domains go here
   sayBrightly
     nowheres => ['"Functions exported but not implemented by",
-      :bright form2String domainForm,'":"] 
-    [:bright form2String domainForm,'"implements all exported operations"]  
+      :bright form2String domainForm,'":"]
+    [:bright form2String domainForm,'"implements all exported operations"]
   showDomainsOp1(nowheres,'nowhere)
   missingOnlyFlag => 'done
 
@@ -71,7 +71,7 @@ showImp(dom,:options) ==
   while u repeat
     [.,.,:key] := CAR u
     sayBrightly
-      key = 'constant => 
+      key = 'constant =>
         ["Constants implemented by",:bright form2String key,'":"]
       ["Functions implemented by",:bright form2String key,'":"]
     u := showDomainsOp1(u,key)
@@ -104,7 +104,7 @@ showFrom(D,:option) ==
   for [conform,:l] in alist repeat
     sayBrightly concat('"From ",form2String conform,'":")
     for [op,sig] in l repeat sayBrightly ['"   ",:formatOpSignature(op,sig)]
- 
+
 --=======================================================================
 --               Functions implementing showFrom
 --=======================================================================
@@ -113,23 +113,23 @@ getDomainOps D ==
   conname := CAR domname
   $predicateList: local := GETDATABASE(conname,'PREDICATES)
   REMDUP listSort(function GLESSEQP,ASSOCLEFT getDomainOpTable(D,nil))
- 
+
 getDomainSigs(D,:option) ==
   domname := D.0
   conname := CAR domname
   $predicateList: local := GETDATABASE(conname,'PREDICATES)
   getDomainSigs1(D,first option)
-  
+
 getDomainSigs1(D,ops) == listSort(function GLESSEQP,u) where
   u == [x for x in getDomainOpTable(D,nil) | null ops or MEMQ(CAR x,ops)]
- 
+
 getDomainDocs(D,:option) ==
   domname := D.0
   conname := CAR domname
   $predicateList: local := GETDATABASE(conname,'PREDICATES)
   ops := KAR option
   [[op,sig,:getInheritanceByDoc(D,op,sig)] for [op,sig] in getDomainSigs1(D,ops)]
- 
+
 --=======================================================================
 --          Getting Inheritance Info from Documentation in Lisplib
 --=======================================================================
@@ -157,29 +157,29 @@ devaluateSlotDomain(u,dollar) ==
   u is ['QUOTE,y] => u
   u is [op,:argl] => [op,:[devaluateSlotDomain(x,dollar) for x in argl]]
   devaluate evalSlotDomain(u,dollar)
- 
+
 getCategoriesOfDomain domain ==
   predkeyVec := domain.4.0
   catforms := CADR domain.4
-  [fn for i in 0..MAXINDEX predkeyVec | test] where 
-     test == predkeyVec.i and 
+  [fn for i in 0..MAXINDEX predkeyVec | test] where
+     test == predkeyVec.i and
        (x := catforms . i) isnt ['DomainSubstitutionMacro,:.]
      fn ==
        VECP x => devaluate x
        devaluateSlotDomain(x,domain)
 
 getInheritanceByDoc(D,op,sig,:options) ==
---gets inheritance and documentation information by looking in the LISPLIB      
+--gets inheritance and documentation information by looking in the LISPLIB
 --for each ancestor of the domain
   catList := KAR options or getExtensionsOfDomain D
   getDocDomainForOpSig(op,sig,devaluate D,D) or
     or/[fn for x in catList] or '(NIL NIL)
       where fn == getDocDomainForOpSig(op,sig,substDomainArgs(D,x),D)
- 
+
 getDocDomainForOpSig(op,sig,dollar,D) ==
   (u := LASSOC(op,GETDATABASE(CAR dollar,'DOCUMENTATION)))
     and (doc := or/[[d,dollar] for [s,:d] in u | compareSig(sig,s,D,dollar)])
- 
+
 --=======================================================================
 --               Functions implementing showImp
 --=======================================================================
@@ -201,18 +201,18 @@ getDomainSeteltForm ['SETELT,.,.,form] ==
   form is ['evalSlotDomain,u,d] => devaluateSlotDomain(u,d)
   VECP form => systemError()
   form
- 
+
 showPredicates dom ==
   sayBrightly '"--------------------Predicate summary-------------------"
   conname := CAR dom.0
   predvector := dom.3
   predicateList := GETDATABASE(conname,'PREDICATES)
   for i in 1.. for p in predicateList repeat
-    prefix := 
+    prefix :=
       testBitVector(predvector,i) => '"true : "
       '"false: "
     sayBrightly [prefix,:pred2English p]
- 
+
 showAttributes dom ==
   sayBrightly '"--------------------Attribute summary-------------------"
   conname := CAR dom.0
@@ -229,10 +229,10 @@ showGoGet dom ==
   for i in 6..MAXINDEX dom | (slot := dom.i) is [=FUNCTION newGoGet,dol,index,:op] repeat
     numOfArgs := numvec.index
     whereNumber := numvec.(index := index + 1)
-    signumList := 
+    signumList :=
       [formatLazyDomainForm(dom,numvec.(index + i)) for i in 0..numOfArgs]
     index := index + numOfArgs + 1
-    namePart := 
+    namePart :=
       concat(bright "from",form2String formatLazyDomainForm(dom,whereNumber))
     sayBrightly [i,'": ",:formatOpSignature(op,signumList),:namePart]
 
@@ -240,13 +240,10 @@ formatLazyDomain(dom,x) ==
   VECP x => devaluate x
   x is [dollar,slotNumber,:form] => formatLazyDomainForm(dom,form)
   systemError nil
- 
+
 formatLazyDomainForm(dom,x) ==
   x = 0 => ["$"]
   FIXP x => formatLazyDomain(dom,dom.x)
   atom x => x
   x is ['NRTEVAL,y] => (atom y => [y]; y)
   [first x,:[formatLazyDomainForm(dom,y) for y in rest x]]
- 
-
-

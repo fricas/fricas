@@ -281,7 +281,7 @@ dollarPercentTran x ==
     x = "$" or x = '"$" => "%%"
     x
 
-formatSignatureAsTeX sig == 
+formatSignatureAsTeX sig ==
   $formatSigAsTeX: local := 2
   formatSignature0 sig
 
@@ -292,7 +292,7 @@ formatSignature sig ==
 formatSignatureArgs sml ==
   $formatSigAsTeX: local := 1
   formatSignatureArgs0 sml
-  
+
 formatSignature0 sig ==
   null sig => "() -> ()"
   INTEGERP sig => '"hashcode"
@@ -332,7 +332,7 @@ prefix2String0 form ==
 --  atom form =>
 --    form=$EmptyMode or form=$quadSymbol => formWrapId specialChar 'quad
 --    STRINGP form => formWrapId form
---    IDENTP form => 
+--    IDENTP form =>
 --      constructor? form => app2StringWrap(formWrapId form, [form])
 --      formWrapId form
 --    formWrapId STRINGIMAGE form
@@ -359,11 +359,11 @@ unparseInputForm u ==
   $InteractiveMode: local := false
   form2StringLocal u
 
-form2String u == 
+form2String u ==
   $formatSigAsTeX: local := 1
   form2StringLocal u
 
-form2StringAsTeX u == 
+form2StringAsTeX u ==
   $formatSigAsTeX: local := 2
   form2StringLocal u
 
@@ -378,7 +378,7 @@ constructorName con ==
   con
 
 form2String1 u ==
-  ATOM u => 
+  ATOM u =>
     u=$EmptyMode or u=$quadSymbol => formWrapId specialChar 'quad
     IDENTP u =>
       constructor? u => app2StringWrap(formWrapId u, [u])
@@ -525,9 +525,9 @@ appOrParen(x) ==
    form2String1 x
 
 
-formWrapId id == 
+formWrapId id ==
   $formatSigAsTeX = 1 => id
-  $formatSigAsTeX = 2 => 
+  $formatSigAsTeX = 2 =>
     sep := '"`"
     FORMAT(NIL,'"\verb~a~a~a",sep, id, sep)
   error "Bad formatSigValue"
@@ -737,7 +737,7 @@ app2StringWrap(string, linkInfo) ==
   $formatSigAsTeX = 2 =>
     str2 :=  "app2StringConcat0"/form2Fence linkInfo
     sep := '"`"
-    FORMAT(NIL, '"\lispLink{\verb!(|conPage| '~a)!}{~a}", 
+    FORMAT(NIL, '"\lispLink{\verb!(|conPage| '~a)!}{~a}",
           str2, string)
   error "Bad value for $formatSigAsTeX"
 
@@ -833,7 +833,7 @@ string2Float s ==
 
 
 
-form2Fence form == 
+form2Fence form ==
   -- body of dbMkEvalable
   [op, :.] := form
   kind := GETDATABASE(op,'CONSTRUCTORKIND)
@@ -851,7 +851,7 @@ form2Fence1 x ==
 form2FenceQuote x ==
   NUMBERP x => [STRINGIMAGE x]
   SYMBOLP x => [FORMAT(NIL, '"|~a|", x)]
-  atom    x => '"??"   
+  atom    x => '"??"
   ['"(",:form2FenceQuote first x,:form2FenceQuoteTail rest x]
 
 form2FenceQuoteTail x ==

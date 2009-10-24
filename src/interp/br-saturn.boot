@@ -396,7 +396,7 @@ mkDocLink(code,s) ==
 saturnTranText x ==
   STRINGP x         => [unTab x]
   null x            => nil
-  -- FIXME 
+  -- FIXME
   -- x is [s,fn,:.] and s ????
   r is [s,fn,:.] and s = '"\unixcommand{" => ['"{\it ",s,'".spad}"]
   x is [['text, :s],:r] => unTab [:s, :saturnTranText r]
@@ -717,15 +717,15 @@ saturnHasExamplePage conname ==
   if not $exampleConstructors then
      $exampleConstructors := getSaturnExampleList()
   ASSQ(conname, $exampleConstructors)
-  
-getSaturnExampleList() == 
+
+getSaturnExampleList() ==
   file := STRCONC( getEnv('"AXIOM"), "/doc/axug/examples.lsp")
   not PROBE_-FILE file => nil
   fp := MAKE_-INSTREAM file
   lst := VMREAD fp
   SHUT fp
   lst
-  
+
 --------------------> NEW DEFINITION (see br-con.boot.pamphlet)
 dbPresentCons(htPage,kind,:exclusions) ==
   $saturn => dbPresentConsSaturn(htPage,kind,exclusions)
@@ -1313,11 +1313,11 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     htSayIndentRel(15)
     if doc = $charFauxNewline then htSay $charNewline
     else
-       ndoc:= 
+       ndoc:=
           -- we are confused whether doc is a string or a list of strings
           CONSP doc =>  [SUBSTITUTE($charNewline, $charFauxNewline, i) for i in doc]
           SUBSTITUTE($charNewline, $charFauxNewline,doc)
-       htSay ndoc 
+       htSay ndoc
 --  htSaySaturn '"\\"
     htSayIndentRel(-15)
   --------> print abbr and source file for constructors <---------
@@ -1697,5 +1697,3 @@ purgeLocalLibdb() ==   --called by the user through a clear command?
 --  LOCALDATABASE(args,$options)
 --  extendLocalLibdb $newConlist
 --  TERSYSCOMMAND()
-
-

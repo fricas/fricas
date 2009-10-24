@@ -36,7 +36,7 @@
 The input stream is parsed into a large s-expression by repeated calls
 to Delay. Delay takes a function f and an argument x and returns a list
 consisting of ("nonnullstream" f x). Eventually multiple calls are made
-and a large list structure is created that consists of 
+and a large list structure is created that consists of
 ("nonnullstream" f x ("nonnullstream" f1 x1 ("nonnullstream" f2 x2...
 
 This delay structure is given to StreamNull which walks along the
@@ -50,9 +50,9 @@ explains the strange parsing technique).
 )endif
 
 --% Stream Utilities
- 
+
 npNull x== StreamNull x
- 
+
 StreamNull x==
   null x or EQCAR (x,"nullstream") => true
   while EQCAR(x,"nonnullstream") repeat
@@ -60,13 +60,13 @@ StreamNull x==
           RPLACA(x,CAR st)
           RPLACD(x,CDR st)
   EQCAR(x,"nullstream")
- 
+
 Delay(f,x)==cons("nonnullstream",[f,:x])
- 
+
 StreamNil:= ["nullstream"]
- 
+
 incRgen s==Delay(function incRgen1,[s])
- 
+
 incRgen1(:z)==
         [s]:=z
         a := READ_-LINE(s, nil, nil)
@@ -74,22 +74,22 @@ incRgen1(:z)==
         then (CLOSE s;StreamNil)
 
         else cons(a,incRgen s)
- 
+
 incIgen n==Delay(function incIgen1,[n])
 incIgen1(:z)==
         [n]:=z
         n:=n+1
         cons(n,incIgen n)
- 
+
 incZip(g,f1,f2)==Delay(function incZip1,[g,f1,f2])
 incZip1(:z)==
      [g,f1,f2]:=z
      StreamNull f1 => StreamNil
      StreamNull f2 => StreamNil
      cons(FUNCALL(g,car f1,car f2),incZip(g,cdr f1,cdr f2))
- 
+
 incAppend(x,y)==Delay(function incAppend1,[x,y])
- 
+
 incAppend1(:z)==
      [x,y]:=z
      if StreamNull x
@@ -97,14 +97,14 @@ incAppend1(:z)==
           then StreamNil
           else y
      else cons(car x,incAppend(cdr x,y))
- 
+
 next(f,s)==Delay(function next1,[f,s])
 next1(:z)==
       [f,s]:=z
       StreamNull s=> StreamNil
       h:= APPLY(f, [s])
       incAppend(car h,next(f,cdr h))
- 
+
 nextown(f,g,s)==Delay(function nextown1,[f,g,s])
 nextown1 (:z)==
       [f,g,s]:=z
@@ -114,13 +114,13 @@ nextown1 (:z)==
       StreamNull s
       h:=spadcall2 (f, s)
       incAppend(car h,nextown(f,g,cdr h))
- 
+
 nextown2(f,g,e,x)==nextown(cons(f,e),cons(g,e),x)
- 
+
 spadcall1(g)==
     [impl, :env] := g
     APPLY(impl, [env])
- 
+
 spadcall2(f,args) ==
     [impl, :env] := f
     APPLY(impl, [args, env])

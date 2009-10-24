@@ -31,20 +31,20 @@
 
 
 --% OPTIMIZER
- 
+
 optimizeFunctionDef(def) ==
   if $reportOptimization then
     sayBrightlyI bright '"Original LISP code:"
     pp def
- 
+
   def' := optimize COPY def
- 
+
   if $reportOptimization then
     sayBrightlyI bright '"Optimized LISP code:"
     pp def'
     sayBrightlyI bright '"Final LISP code:"
   [name,[slamOrLam,args,body]] := def'
- 
+
   body':=
     removeTopLevelCatch body where
       removeTopLevelCatch body ==
@@ -62,7 +62,7 @@ optimizeFunctionDef(def) ==
         replaceThrowByReturn(first x,g)
         replaceThrowByReturn(rest x,g)
   [name,[slamOrLam,args,body']]
- 
+
 optimize x ==
   (opt x; x) where
     opt x ==
@@ -85,12 +85,12 @@ optimize x ==
         (optimize rest x; RPLAC(first x,FUNCALL(op,optimize first x)))
       RPLAC(first x,optimize first x)
       optimize rest x
- 
+
 subrname u ==
   IDENTP u => u
   COMPILED_-FUNCTION_-P u or MBPIP u => BPINAME u
   nil
- 
+
 optCatch (x is ["CATCH",g,a]) ==
   $InteractiveMode => x
   atom a => a
@@ -122,7 +122,7 @@ optCatch (x is ["CATCH",g,a]) ==
     rplac(first x,"SEQ")
     rplac(rest x,[["EXIT",a],CADR g,["EXIT",CADR g]])
   x
- 
+
 optSPADCALL(form is ['SPADCALL,:argl]) ==
   null $InteractiveMode => form
   -- last arg is function/env, but may be a form
@@ -131,7 +131,7 @@ optSPADCALL(form is ['SPADCALL,:argl]) ==
       optCall ['call,['ELT,dom,slot],:argl]
     form
   form
- 
+
 optCall (x is ["call",:u]) ==
   -- destructively optimizes this new x
   x:= optimize [u]
@@ -152,14 +152,14 @@ optCall (x is ["call",:u]) ==
     RPLAC(rest x,[:a,fn])
     x
   systemErrorHere '"optCall"
- 
+
 optCallSpecially(q,x,n,R) ==
     MEMQ(KAR R,$optimizableConstructorNames) => optSpecialCall(x,R,n)
     (y:= get(R,"value",$e)) and
       MEMQ(opOf y.expr,$optimizableConstructorNames) =>
         optSpecialCall(x,y.expr,n)
     nil
- 
+
 optCallEval u ==
   -- Integer() is a lie, but otherwise we could not evaluate
   -- needed domains
@@ -171,7 +171,7 @@ optCallEval u ==
   u is ["Matrix", :.] => Matrix Integer()
   u is ["TwoDimensionalArray", :.] => TwoDimensionalArray Integer()
   eval u
- 
+
 optCons (x is ["CONS",a,b]) ==
   a="NIL" =>
     b='NIL => (rplac(first x,'QUOTE); rplac(rest x,['NIL,:'NIL]); x)
@@ -182,7 +182,7 @@ optCons (x is ["CONS",a,b]) ==
     b is ['QUOTE,:c] => (rplac(first x,'QUOTE); rplac(rest x,[a',:c]); x)
     x
   x
- 
+
 optSpecialCall(x,y,n) ==
   yval := optCallEval y
   CAAAR x="CONST" =>
@@ -194,7 +194,7 @@ optSpecialCall(x,y,n) ==
     rplac(rest x,CDAR x)
     rplac(first x,fn)
     if fn is ["XLAM",:.] then x:=first optimize [x]
-    x is ["EQUAL",:args] => 
+    x is ["EQUAL",:args] =>
                 --DEF-EQUAL is really an optimiser
                 -- RPLACW(x,DEF_-EQUAL args)
                 z := DEF_-EQUAL args
@@ -207,17 +207,17 @@ optSpecialCall(x,y,n) ==
   if $QuickCode then RPLACA(fn,"QREFELT")
   RPLAC(rest x,[:a,fn])
   x
- 
+
 compileTimeBindingOf u ==
   NULL(name:= BPINAME u)  => keyedSystemError("S2OO0001",[u])
   name="Undef" => MOAN "optimiser found unknown function"
   name
- 
+
 optMkRecord ["mkRecord",:u] ==
   u is [x] => ["LIST",x]
   #u=2 => ["CONS",:u]
   ["VECTOR",:u]
- 
+
 optCond (x is ['COND,:l]) ==
   if l is [a,[aa,b]] and TruthP aa and b is ["COND",:c] then
     RPLACD(rest x,c)
@@ -239,12 +239,12 @@ optCond (x is ['COND,:l]) ==
       RPLAC(first first y,a)
       RPLAC(rest y,y')
   x
- 
+
 AssocBarGensym(key,l) ==
   for x in l repeat
     PAIRP x =>
       EqualBarGensym(key,CAR x) => return x
- 
+
 EqualBarGensym(x,y) ==
   $GensymAssoc: fluid := nil
   fn(x,y) where
@@ -258,16 +258,16 @@ EqualBarGensym(x,y) ==
       null y => x is [g] and GENSYMP g
       atom x or atom y => false
       fn(first x,first y) and fn(rest x,rest y)
- 
+
 --Called early, to change IF to COND
- 
+
 optIF2COND ["IF",a,b,c] ==
   b is "noBranch" => ["COND",[["NULL",a],c]]
   c is "noBranch" => ["COND",[a,b]]
   c is ["IF",:.] => ["COND",[a,b],:rest optIF2COND c]
   c is ["COND",:p] => ["COND",[a,b],:p]
   ["COND",[a,b],[$true,c]]
- 
+
 optXLAMCond x ==
   x is ["COND",u:= [p,c],:l] =>
     (optPredicateIfTrue p => c; ["COND",u,:optCONDtail l])
@@ -275,19 +275,19 @@ optXLAMCond x ==
   RPLAC(first x,optXLAMCond first x)
   RPLAC(rest x,optXLAMCond rest x)
   x
- 
+
 optPredicateIfTrue p ==
   p is ['QUOTE,:.] => true
   p is [fn,x] and MEMQ(fn,$BasicPredicates) and FUNCALL(fn,x) => true
   nil
- 
+
 optCONDtail l ==
   null l => nil
   [frst:= [p,c],:l']:= l
   optPredicateIfTrue p => [[$true,c]]
   null rest l => [frst,[$true,["CondError"]]]
   [frst,:optCONDtail l']
- 
+
 optSEQ ["SEQ",:l] ==
   tryToRemoveSEQ SEQToCOND getRidOfTemps l where
     getRidOfTemps l ==
@@ -307,7 +307,7 @@ optSEQ ["SEQ",:l] ==
     tryToRemoveSEQ l ==
       l is ["SEQ",[op,a]] and MEMQ(op,'(EXIT RETURN THROW)) => a
       l
- 
+
 optRECORDELT ["RECORDELT",name,ind,len] ==
   len=1 =>
     ind=0 => ["QCAR",name]
@@ -317,7 +317,7 @@ optRECORDELT ["RECORDELT",name,ind,len] ==
     ind=1 => ["QCDR",name]
     keyedSystemError("S2OO0002",[ind])
   ["QVELT",name,ind]
- 
+
 optSETRECORDELT ["SETRECORDELT",name,ind,len,expr] ==
   len=1 =>
     ind=0 => ["PROGN",["RPLACA",name,expr],["QCAR",name]]
@@ -327,45 +327,45 @@ optSETRECORDELT ["SETRECORDELT",name,ind,len,expr] ==
     ind=1 => ["PROGN",["RPLACD",name,expr],["QCDR",name]]
     keyedSystemError("S2OO0002",[ind])
   ["QSETVELT",name,ind,expr]
- 
+
 optRECORDCOPY ["RECORDCOPY",name,len] ==
   len=1 => ["LIST",["CAR",name]]
   len=2 => ["CONS",["CAR",name],["CDR",name]]
   ["MOVEVEC",["MAKE_-VEC",len],name]
- 
+
 optSuchthat [.,:u] == ["SUCHTHAT",:u]
- 
+
 optMINUS u ==
   u is ['MINUS,v] =>
     NUMBERP v => -v
     u
   u
- 
+
 optQSMINUS u ==
   u is ['QSMINUS,v] =>
     NUMBERP v => -v
     u
   u
- 
+
 opt_- u ==
   u is ['_-,v] =>
     NUMBERP v => -v
     u
   u
- 
+
 optLESSP u ==
   u is ['LESSP,a,b] =>
     b = 0 => ['MINUSP,a]
     ['GREATERP,b,a]
   u
- 
+
 optEQ u ==
   u is ['EQ,l,r] =>
     NUMBERP l and NUMBERP r => ['QUOTE,EQ(l,r)]
     -- That undoes some weird work in Boolean to do with the definition of true
     u
   u
- 
+
 EVALANDFILEACTQ
  (
    for x in '( (call         optCall) _
@@ -386,5 +386,3 @@ EVALANDFILEACTQ
       repeat MAKEPROP(CAR x,'OPTIMIZE, CADR x)
           --much quicker to call functions if they have an SBC
     )
- 
-

@@ -33,15 +33,15 @@
   -- HyperTeX basic Solve Command
 $systemType := nil
 $numberOfEquations := 0
-$solutionMethod := nil 
+$solutionMethod := nil
 
 bcSolve() ==
   htInitPage('"Solve Basic Command", nil)
   htMakePage '(
-   (text . "What do you want to solve? ") 
+   (text . "What do you want to solve? ")
    (text . "\beginmenu")
    (text . "\item ")
-   (bcLinks ("\menuitemstyle{A System Of Linear Equations}" "" bcLinearSolve linear)) 
+   (bcLinks ("\menuitemstyle{A System Of Linear Equations}" "" bcLinearSolve linear))
    (text . "\item ")
    (bcLinks ("\menuitemstyle{A System of Polynomial Equations}" "" bcSystemSolve  polynomial))
    (text . "\item ")
@@ -52,7 +52,7 @@ bcSolve() ==
 bcLinearSolve(p,nn) ==
   htInitPage('"Basic Solve Command", nil)
   htMakePage '(
-    (text . "How do you want to enter the equations?")    
+    (text . "How do you want to enter the equations?")
     (text . "\beginmenu")
     (text . "\item ")
     (text . "\newline ")
@@ -70,7 +70,7 @@ bcLinearSolveEqns(htPage, p) ==
   htInitPage('"Basic Solve Command", nil)
   htMakePage '(
     (domainConditions (isDomain PI (PositiveInteger)))
-    (inputStrings  
+    (inputStrings
       ("Enter the {\em number} of equations:" "" 5 2 numberOfEquations PI)))
   htMakeDoneButton('"Continue", 'bcLinearSolveEqns1)
   htShowPage()
@@ -79,7 +79,7 @@ bcSystemSolve(htPage, p) ==
   htInitPage('"Basic Solve Command", nil)
   htMakePage '(
     (domainConditions (isDomain PI (PositiveInteger)))
-    (inputStrings  
+    (inputStrings
       ("Enter the {\em number} of equations:" "" 5 2 numberOfEquations PI)))
   htMakeDoneButton('"Continue", 'bcSystemSolveEqns1)
   htShowPage()
@@ -93,31 +93,31 @@ bcSystemSolveEqns1 htPage ==
   htpSetProperty(htPage,'systemType,'polynomial)
   htpSetProperty(htPage,'exitFunction,'bcInputSolveInfo)
   bcInputEquations(htPage,'exact)
- 
+
 bcLinearSolveEqns1 htPage ==
   htpSetProperty(htPage,'systemType,'linear)
   htpSetProperty(htPage,'exitFunction,'bcLinearSolveEqnsGen)
   bcInputEquations(htPage,'exact)
- 
+
 bcInputSolveInfo htPage ==
   page := htInitPage('"Solve Basic Command", htpPropertyList htPage)
   htpSetProperty(page,'numberOfEquations,htpProperty(htPage,'numberOfEquations))
   htpSetProperty(page,'inputArea,htpInputAreaAlist htPage)
   htMakePage '(
    (domainConditions (isDomain PI (PositiveInteger)))
-   (text . "What would you like?")  
+   (text . "What would you like?")
    (text . "\beginmenu")
    (text . "\item ")
    (bcLinks ("\menuitemstyle{Exact Solutions}" "" bcSolveEquations exact))
    (text . "\indentrel{18}\tab{0} ")
-   (text . "Solutions expressed in terms of {\em roots} of irreducible polynomials")  
+   (text . "Solutions expressed in terms of {\em roots} of irreducible polynomials")
    (text . "\indentrel{-18}")
    (text . "\item ")
    (bcLinks ("\menuitemstyle{Numeric Solutions}" "" bcSolveEquationsNumerically numeric))
    (text . "\indentrel{18}\tab{0} ")
-   (text . "Solutions expressed in terms of approximate real or complex {\em numbers}") 
+   (text . "Solutions expressed in terms of approximate real or complex {\em numbers}")
    (text . "\indentrel{-18}")
-   (text . "\item ")  
+   (text . "\item ")
    (bcLinks ("\menuitemstyle{Radical Solutions}" "" bcSolveEquations radical))
    (text . "\indentrel{18}\tab{0} ")
    (text . "Solutions expressed in terms of {\em radicals} if it is possible")
@@ -126,12 +126,12 @@ bcInputSolveInfo htPage ==
   htShowPage()
 
 bcInputEquations(htPage,solutionMethod) ==
-  numEqs := 
+  numEqs :=
     htpProperty(htPage, 'systemType) = 'onePolynomial => 1
     $bcParseOnly => PARSE_-INTEGER htpLabelInputString(htPage,'numberOfEquations)
     objValUnwrap htpLabelSpadValue(htPage, 'numberOfEquations)
   linearPred := htpProperty(htPage,'systemType) = 'linear
-  labelList := 
+  labelList :=
     numEqs = 1 => '(
       (bcStrings (42 "x^2+1" l1 P))
       (text . " = ")
@@ -142,12 +142,12 @@ bcInputEquations(htPage,solutionMethod) ==
       prefix := STRCONC(prefix,'"\space{",STRINGIMAGE spacer,'"}")
       lnam := INTERN STRCONC('"l",STRINGIMAGE i)
       rnam := INTERN STRCONC('"r",STRINGIMAGE i)
-      var:= 
+      var:=
         linearp => bcMakeLinearEquations(i,n)
         bcMakeEquations(i,n)
       [['text,:prefix],['bcStrings,[30,var,lnam,'P]],'(text . " = "),['bcStrings,[5,"0",rnam,'P]]]
   equationPart := [
-     '(domainConditions 
+     '(domainConditions
         (isDomain P (Polynomial $EmptyMode))
          (isDomain S (String))
           (isDomain PI (PositiveInteger))),
@@ -163,7 +163,7 @@ bcInputEquations(htPage,solutionMethod) ==
   htMakePage equationPart
   bcHt '"\blankline "
   htSay '"\newline\menuitemstyle{}\tab{2}"
-  htMakePage 
+  htMakePage
     numEqs = 1 =>  '(
       (text ."Enter the {\em unknown} (leave blank if implied): ")
       (text . "\tab{48}")
@@ -174,12 +174,12 @@ bcInputEquations(htPage,solutionMethod) ==
   htMakeDoneButton('"Continue", 'bcInputEquationsEnd)
   htShowPage()
 
-bcCreateVariableString(i) == 
+bcCreateVariableString(i) ==
    STRCONC('"x",STRINGIMAGE i)
 
 bcMakeUnknowns(number)==
    APPLY('CONCAT,[STRCONC(bcCreateVariableString(i)," ") for i in 1..number])
-   
+
 bcMakeEquations(i,number)==
    number =1 => STRCONC(bcCreateVariableString(1),"^2+1")
    bcCreateVariableString(i)
@@ -191,14 +191,14 @@ bcMakeEquations(i,number)==
 
 bcMakeLinearEquations(i,number)==
    number = 1 => bcCreateVariableString(1)
-   number = 2 => 
+   number = 2 =>
         i=1 => STRCONC(bcCreateVariableString(1),STRCONC("+",bcCreateVariableString(2)))
         STRCONC(bcCreateVariableString(1),STRCONC("-",bcCreateVariableString(2)))
    STRCONC(
      STRCONC(
       APPLY('CONCAT,[STRCONC(bcCreateVariableString(j),"+") for j in 1..number]),"1"),
         STRCONC("-2*",bcCreateVariableString(i)))
-      
+
 
 bcInputEquationsEnd htPage ==
   fun := htpProperty(htPage, 'exitFunction) => FUNCALL(fun,htPage)
@@ -225,7 +225,7 @@ bcSolveNumerically1(htPage) ==
 --bcSolveNumerically1(htPage,kind) ==
 -- htpSetProperty(htPage,'kind,kind)
 -- bcSolveEquations(htPage,'numeric)
-    
+
 bcSolveEquations(htPage,solutionMethod) ==
   if solutionMethod = 'numeric then
     digits := htpLabelInputString(htPage,'acc)
@@ -262,11 +262,11 @@ bcLinearSolveMatrix1 htPage ==
   htShowPage()
 
 bcLinearExtractMatrix htPage == REVERSE htpInputAreaAlist htPage
- 
+
 bcLinearSolveMatrixInhomo(htPage,junk) ==
   nrows := htpProperty(htPage,'nrows)
   ncols := htpProperty(htPage,'ncols)
-  labelList := 
+  labelList :=
     [f(i) for i in 1..ncols] where f(i) ==
       spacer := (i > 99 => 0; i > 9 => 1; 2)
       prefix := STRCONC('"{\em Coefficient ",STRINGIMAGE i,'":}")
@@ -292,24 +292,24 @@ bcLinearSolveMatrixInhomoGen(htPage,key) ==  bcLinearMatrixGen(htPage,key)
 
 bcLinearSolveMatrixHomo(htPage,key) == bcLinearMatrixGen(htPage,'homo)
 
-bcLinearMatrixGen(htPage,key) == 
+bcLinearMatrixGen(htPage,key) ==
   matform := bcMatrixGen htPage
   key = 'homo => bcFinish('"nullSpace",matform)
   vector := [x.1 for x in REVERSE htpInputAreaAlist htPage]
-  vecform := bcVectorGen vector 
+  vecform := bcVectorGen vector
   form := bcMkFunction('"solve",matform,[vecform])
   bcGen
     key = 'particular => STRCONC(form,'".particular")
     form
-  
-linearFinalRequest(nhh,mat,vect) ==     
+
+linearFinalRequest(nhh,mat,vect) ==
   sayBrightly '"Do you want more information on the meaning of the output"
   sayBrightly '"   (1) no "
   sayBrightly '"   (2) yes "
   tt := bcQueryInteger(1,2,true)
   tt=1 => sayBrightly '"Bye Bye"
   tt=2 => explainLinear(nhh)
- 
+
 explainLinear(flag) ==
   flag="notHomogeneous" =>
    '("solve returns a particular solution and a basis for"
@@ -319,7 +319,7 @@ explainLinear(flag) ==
     '("solve returns a basis for"
       "the vector space of solutions for the homogeneous part")
   systemError nil
- 
+
 finalExactRequest(equations,unknowns) ==
   sayBrightly '"Do you like:"
   sayBrightly '"   (1) the solutions how they are displayed"
@@ -330,9 +330,9 @@ finalExactRequest(equations,unknowns) ==
   tt=2 => moreExactSolution(equations,unknowns,flag)
   tt=3 => explainExact(equations,unknowns)
 
-bcLinearSolveEqnsGen htPage == 
+bcLinearSolveEqnsGen htPage ==
   alist := htpInputAreaAlist htPage
-  if vars := htpLabelInputString(htPage,'unknowns) then 
+  if vars := htpLabelInputString(htPage,'unknowns) then
     varlist := bcString2WordList vars
     varString := (rest varlist => bcwords2liststring varlist; first varlist)
     alist := rest alist  --know these are first on the list
@@ -349,14 +349,3 @@ bcGenEquations alist ==
     eqnlist := [STRCONC(left,'" = ",right),:eqnlist]
   rest eqnlist => bcwords2liststring eqnlist
   first eqnlist
-  
- 
-
-
-
-
-
-
-
-
-

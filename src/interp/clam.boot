@@ -34,7 +34,7 @@
 
 --% Cache Lambda Facility
 -- for remembering previous values to functions
- 
+
 --to CLAM a function f, there must be an entry on $clamList as follows:
 --    (functionName  --the name of the function to be CLAMed (e.g. f)
 --     kind          --"hash" or number of values to be stored in
@@ -63,9 +63,9 @@
 --     to 0 on garbage collection; those with 0 use count at garbage collection
 --     are cleared
 -- see definition of COMP,2 in COMP LISP which calls clamComp below
- 
+
 -- see SETQ LISP for initial def of $hashNode
- 
+
 compClam(op,argl,body,$clamList) ==
   --similar to reportFunctionCompilation in SLAM BOOT
   if $InteractiveMode then startTimingProcess 'compilation
@@ -138,16 +138,16 @@ compClam(op,argl,body,$clamList) ==
   lamex:= ['LAMBDA, arg, codeBody]
   mainFunction:= [op,lamex]
   computeFunction:= [auxfn,['LAMBDA,argl,:body]]
- 
+
   -- compile generated function stub
   compileInteractive mainFunction
- 
+
   -- compile main body: this has already been compTran'ed
   if $reportCompilation then
     sayBrightlyI bright '"Generated LISP code for function:"
     pp computeFunction
   compileQuietly [computeFunction]
- 
+
   cacheType:= 'function
   cacheResetCode:= ['SETQ,cacheName,['initCache,cacheCount]]
   cacheCountCode:= ['countCircularAlist,cacheName,cacheCount]
@@ -157,14 +157,14 @@ compClam(op,argl,body,$clamList) ==
   LAM_,EVALANDFILEACTQ cacheResetCode
   if $InteractiveMode then stopTimingProcess 'compilation
   op
- 
+
 compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
   --Note: when cacheNameOrNil~=nil, it names a global hashtable
- 
+
   if cacheNameOrNil and cacheNameOrNil~='_$ConstructorCache then
     keyedSystemError("S2GE0010",[op])
     --restriction due to omission of call to hputNewValue (see *** lines below)
- 
+
   if null argl then
     null cacheNameOrNil => keyedSystemError("S2GE0011",[op])
     nil
@@ -238,16 +238,16 @@ compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
   lamex:= ['LAMBDA, arg, codeBody]
   mainFunction:= [op,lamex]
   computeFunction:= [auxfn,['LAMBDA,argl,:body]]
- 
+
   -- compile generated function stub
   compileInteractive mainFunction
- 
+
   -- compile main body: this has already been compTran'ed
   if $reportCompilation then
     sayBrightlyI bright '"Generated LISP code for function:"
     pp computeFunction
   compileQuietly [computeFunction]
- 
+
   if null cacheNameOrNil then
     cacheType:=
       countFl => 'hash_-tableWithCounts
@@ -262,15 +262,15 @@ compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
     LAM_,EVALANDFILEACTQ ['PUT, MKQ op, MKQ 'cacheInfo, MKQ cacheVector]
     LAM_,EVALANDFILEACTQ cacheResetCode
   op
- 
+
 CDRwithIncrement x ==
   RPLACA(x,QSADD1 CAR x)
   CDR x
- 
+
 clearClams() ==
   for [fn,kind,:.] in $clamList | kind = 'hash or INTEGERP kind repeat
     clearClam fn
- 
+
 clearClam fn ==
   infovec:= GETL(fn,'cacheInfo) or keyedSystemError("S2GE0003",[fn])
   -- eval infovec.cacheReset
@@ -280,24 +280,24 @@ clearClam fn ==
   ir is ["SETQ", var , ["initCache", val]] =>
      SETF(SYMBOL_-VALUE(var), initCache(val))
   BREAK()
- 
+
 reportAndClearClams() ==
   cacheStats()
   clearClams()
- 
+
 clearConstructorCaches() ==
   clearCategoryCaches()
   CLRHASH $ConstructorCache
- 
+
 clearConstructorCache(cname) ==
   (kind := GETDATABASE(cname,'CONSTRUCTORKIND)) =>
     kind = 'category => clearCategoryCache cname
     HREM($ConstructorCache,cname)
- 
+
 clearConstructorAndLisplibCaches() ==
   clearClams()
   clearConstructorCaches()
- 
+
 clearCategoryCaches() ==
   for name in allConstructors() repeat
     if GETDATABASE(name,'CONSTRUCTORKIND) = 'category then
@@ -305,17 +305,17 @@ clearCategoryCaches() ==
             then SET(cacheName,nil)
     if BOUNDP(cacheName:= INTERNL STRCONC(PNAME name,'";CAT"))
           then SET(cacheName,nil)
- 
+
 clearCategoryCache catName ==
   cacheName:= INTERNL STRCONC(PNAME catName,'";AL")
   SET(cacheName,nil)
- 
+
 displayHashtable x ==
   l:= NREVERSE SORTBY('CAR,[[opOf HGET(x,key),key] for key in HKEYS x])
   for [a,b] in l repeat
     sayBrightlyNT ['%b,a,'%d]
     pp b
- 
+
 cacheStats() ==
   for [fn,kind,:u] in $clamList repeat
     not MEMQ('count,u) =>
@@ -323,7 +323,7 @@ cacheStats() ==
     INTEGERP kind => reportCircularCacheStats(fn,kind)
     kind = 'hash => reportHashCacheStats fn
     sayBrightly ["Unknown cache type for","%b",fn,"%d"]
- 
+
 reportCircularCacheStats(fn,n) ==
   infovec:= GETL(fn,'cacheInfo)
   circList:= eval infovec.cacheName
@@ -332,13 +332,13 @@ reportCircularCacheStats(fn,n) ==
   sayBrightly ["%b",fn,"%d","has","%b",numberUsed,"%d","/ ",n," values cached"]
   displayCacheFrequency mkCircularCountAlist(circList,n)
   TERPRI()
- 
+
 displayCacheFrequency al ==
   al := NREVERSE SORTBY('CAR,al)
   sayBrightlyNT "    #hits/#occurrences: "
   for [a,:b] in al repeat sayBrightlyNT [a,"/",b,"  "]
   TERPRI()
- 
+
 mkCircularCountAlist(cl,len) ==
   for [x,count,:.] in cl for i in 1..len while x ~= '_$failed repeat
     u:= assoc(count,al) => RPLACD(u,1 + CDR u)
@@ -347,7 +347,7 @@ mkCircularCountAlist(cl,len) ==
       pp x
     al:= [[count,:1],:al]
   al
- 
+
 reportHashCacheStats fn ==
   infovec:= GETL(fn,'cacheInfo)
   hashTable:= eval infovec.cacheName
@@ -355,30 +355,30 @@ reportHashCacheStats fn ==
   sayBrightly [:bright fn,'"has",:bright(# hashValues),'"values cached."]
   displayCacheFrequency mkHashCountAlist hashValues
   TERPRI()
- 
+
 mkHashCountAlist vl ==
   for [count,:.] in vl repeat
     u:= assoc(count,al) => RPLACD(u,1 + CDR u)
     al:= [[count,:1],:al]
   al
- 
+
 clearHashReferenceCounts() ==
   --free all cells with 0 reference counts; clear other counts to 0
   for x in $clamList repeat
     x.cacheType='hash_-tableWithCounts =>
       remHashEntriesWith0Count eval x.cacheName
     x.cacheType='hash_-table => CLRHASH eval x.cacheName
- 
+
 remHashEntriesWith0Count $hashTable ==
   MAPHASH(FUNCTION fn,$hashTable) where fn(key,obj) ==
     CAR obj = 0 => HREM($hashTable,key)  --free store
     nil
- 
+
 initCache n ==
   tail:= '(0 . $failed)
   l:= [[$failed,:tail] for i in 1..n]
   RPLACD(LASTNODE l,l)
- 
+
 assocCache(x,cacheName,fn) ==
   --fn=equality function; do not SHIFT or COUNT
   al:= eval cacheName
@@ -391,7 +391,7 @@ assocCache(x,cacheName,fn) ==
   val => val
   SET(cacheName,backPointer)
   nil
- 
+
 assocCacheShift(x,cacheName,fn) ==  --like ASSOC except that al is circular
   --fn=equality function; SHIFT but do not COUNT
   al:= eval cacheName
@@ -408,7 +408,7 @@ assocCacheShift(x,cacheName,fn) ==  --like ASSOC except that al is circular
   val => val
   SET(cacheName,backPointer)
   nil
- 
+
 assocCacheShiftCount(x,al,fn) ==
   -- if x is found, entry containing x becomes first element of list; if
   -- x is not found, entry with smallest use count is shifted to front so
@@ -431,7 +431,7 @@ assocCacheShiftCount(x,al,fn) ==
     RPLACA(newFrontPointer,CAR al)
     RPLACA(al,temp)
   val
- 
+
 clamStats() ==
   for [op,kind,:.] in $clamList repeat
     cacheVec:= GETL(op,'cacheInfo) or systemErrorHere "clamStats"
@@ -451,22 +451,22 @@ clamStats() ==
       [" (","%b",kind-empties,"/",kind,"%d","slots used)"]
     sayBrightly
       [:prefix,op,:postString]
- 
+
 numberOfEmptySlots cache==
   count:= (CAAR cache ='$failed => 1; 0)
   for x in tails rest cache while NEQ(x,cache) repeat
     if CAAR x='$failed then count:= count+1
   count
- 
+
 addToSlam([name,:argnames],shell) ==
   $mutableDomain => return nil
   null argnames => addToConstructorCache(name,nil,shell)
   args:= ['LIST,:[mkDevaluate a for a in argnames]]
   addToConstructorCache(name,args,shell)
- 
+
 addToConstructorCache(op,args,value) ==
   ['haddProp,'$ConstructorCache,MKQ op,args,['CONS,1,value]]
- 
+
 haddProp(ht,op,prop,val) ==
   --called inside functors (except for union and record types ??)
   --presently, ht always = $ConstructorCache
@@ -484,12 +484,12 @@ haddProp(ht,op,prop,val) ==
     val
   HPUT(ht,op,[[prop,:val]])
   val
- 
+
 recordInstantiation(op,prop,dropIfTrue) ==
   startTimingProcess 'debug
   recordInstantiation1(op,prop,dropIfTrue)
   stopTimingProcess 'debug
- 
+
 recordInstantiation1(op,prop,dropIfTrue) ==
   op in '(CategoryDefaults RepeatedSquaring) => nil--ignore defaults for now
   if $reportEachInstantiation = true then
@@ -517,7 +517,7 @@ recordInstantiation1(op,prop,dropIfTrue) ==
     dropIfTrue => [0,:1]
     [1,:0]
   HPUT($instantRecord,op,[[prop,:val]])
- 
+
 reportInstantiations() ==
   --assumed to be a hashtable with reference counts
     conList:=
@@ -538,7 +538,7 @@ reportInstantiations() ==
          '"         ",rTotal,'" reinstantiated","%l",
           '"         ",mTotal,'" dropped","%l",
            '"         ",nForms,'" distinct domains instantiated/dropped"]
- 
+
 listTruncate(l,n) ==
   u:= l
   n:= QSSUB1 n
@@ -550,7 +550,7 @@ listTruncate(l,n) ==
       recordInstantiation($op,CAADR u,true)
     RPLACD(u,nil)
   l
- 
+
 lassocShift(x,l) ==
   y:= l
   while not atom y repeat
@@ -562,7 +562,7 @@ lassocShift(x,l) ==
       QRPLACA(l,result)
     QCDR result
   nil
- 
+
 lassocShiftWithFunction(x,l,fn) ==
   y:= l
   while not atom y repeat
@@ -574,7 +574,7 @@ lassocShiftWithFunction(x,l,fn) ==
       QRPLACA(l,result)
     QCDR result
   nil
- 
+
 globalHashtableStats(x,sortFn) ==
   --assumed to be a hashtable with reference counts
   keys:= HKEYS x
@@ -588,16 +588,16 @@ globalHashtableStats(x,sortFn) ==
   for [n,fn,args] in NREVERSE SORTBY(sortFn,reportList) repeat
     sayBrightlyNT [:rightJustifyString(n,6),"  ",fn,": "]
     pp args
- 
+
 constructor2ConstructorForm x ==
   VECP x => x.0
   x
- 
+
 rightJustifyString(x,maxWidth) ==
   size:= entryWidth x
   size > maxWidth => keyedSystemError("S2GE0014",[x])
   [fillerSpaces(maxWidth-size," "),x]
- 
+
 domainEqualList(argl1,argl2) ==
   --function used to match argument lists of constructors
   while argl1 and argl2 repeat
@@ -610,7 +610,7 @@ domainEqualList(argl1,argl2) ==
     argl1:= rest argl1; argl2 := rest argl2
   argl1 or argl2 => nil
   true
- 
+
 removeAllClams() ==
   for [fun,:.] in $clamList repeat
     sayBrightly ['"Un-clamming function",'%b,fun,'%d]

@@ -66,7 +66,7 @@ $mkTestFlag := nil           -- referenced by READLN to stash input
 $mkTestInputStack := nil     -- saves input for $testStream (see READLN)
 $mkTestOutputStack := nil    -- saves output for $testStream (see maPrin)
 $mkTestOutputType := nil     -- saves the type for $testStream
- 
+
 --=======================================================================
 --                Function for Creating a `record' file
 --=======================================================================
@@ -89,7 +89,7 @@ inputFile2RecordFile(pathname,:option) ==
   --for trailing system commands
   if not null $currentLine then recordAndPrintTest '(ForSystemCommands)
   SHUT $testStream
-  opathname 
+  opathname
 --=======================================================================
 --                Function for Displaying a `record' file
 --=======================================================================
@@ -106,7 +106,7 @@ printRecordFile(pathname,:option) ==
     sayNewLine()
     for x in o repeat maPrin x
     if t~= '(Void) then printTypeAndTime(nil,t)
- 
+
 testPrin(u,w) == --same as maPrin but lines are stored in $testOutputLineList
                  --these lines are needed for pasting into HT files
   $LINELENGTH: local := w
@@ -117,7 +117,7 @@ testPrin(u,w) == --same as maPrin but lines are stored in $testOutputLineList
   res := REVERSE $testOutputLineList
   for x in res repeat sayBrightly x
   res
- 
+
 --=======================================================================
 --     Function for converting a maPrin expression to HyperTeX format
 --=======================================================================
@@ -131,7 +131,7 @@ hyperize(u,w) ==
   null res => '""
   null rest res => first res
   "STRCONC"/[first res,:[STRCONC("\newline ",x) for x in rest res]]
- 
+
 verbatimize u ==
   u = '"" => u
   STRCONC('"\begin{verbatim}",u,'"\end{verbatim}")
@@ -149,8 +149,8 @@ verifyRecordFile(pathname) ==
     NULL (PEEK_-CHAR ( true, stream ,nil,nil ))=>return nil
     [i,t,:o] := dewritify VMREAD stream
     null i => return nil
-    t = 'ForSystemCommands => 
-      return testInput2Output(i,nil)  
+    t = 'ForSystemCommands =>
+      return testInput2Output(i,nil)
         --read trailing system commands
     [typ,:output] := testInput2Output(i,j)
     typ = t =>
@@ -191,7 +191,7 @@ evaluateLines lines ==
 
 wasIs(old,new,:typePart) ==
   sayBrightly '"*************************************************************"
-  if old ~= new then 
+  if old ~= new then
     sayBrightly '"Was ----------> "
     for x in old repeat maPrin x
     sayBrightly '"Is -----------> "
@@ -213,41 +213,41 @@ htFile2InputFile(pathname,:option) ==
   opathname := htMkPath(odirect,ifn,'"input")
   if isExistingFile opathname then DELETE_-FILE opathname
   $htStream : local := MAKE_-INSTREAM pathname
-  alist := [[htGetPageName u,:htGetSpadCommands()] 
+  alist := [[htGetPageName u,:htGetSpadCommands()]
               while (u := htExampleFind '"\begin{page}")]
   SHUT $htStream
   outStream := MAKE_-OUTSTREAM opathname
   for [pageName,:commands] in alist repeat
     PRINTEXP('"-- ",outStream)
     PRINTEXP(pageName,outStream)
-    TERPRI outStream 
+    TERPRI outStream
     PRINTEXP('")cl all",outStream)
     TERPRI outStream
-    for x in commands repeat 
+    for x in commands repeat
       PRINTEXP(htCommandToInputLine x,outStream)
       TERPRI outStream
     TERPRI outStream
   SHUT outStream
   opathname
- 
+
 htCommandToInputLine s == fn(s,0) where fn(s,init) ==
 --similar to htTrimAtBackSlash except removes all \
   k := or/[i for i in init..MAXINDEX s | s.i = char '_\] =>
     member(s.(k + 1),[char 'f,char 'b]) => SUBSTRING(s,init,k - init)
     STRCONC(SUBSTRING(s,init,k - init),fn(s,k + 1))
   SUBSTRING(s,init,nil)
- 
+
 htTrimAtBackSlash s ==
   backslash := char '_\
-  k := or/[i for i in 0..MAXINDEX s | s.i = backslash 
+  k := or/[i for i in 0..MAXINDEX s | s.i = backslash
           and member(s.(i + 1),[char 'f,char 'b])] => SUBSTRING(s,0,k - 1)
   s
- 
+
 htMkPath(directory,name,typ) ==
   nameType := STRCONC(name,'".",typ)
   null directory => nameType
   STRCONC(directory,nameType)
-      
+
 --=======================================================================
 --              Creating Record File from HT Files
 --=======================================================================
@@ -255,14 +255,14 @@ htFile2RecordFile(pathname,:option) ==
   inputFile2RecordFile htFile2InputFile(pathname,KAR option)
 
 --=======================================================================
---           Function to record and print values into $testStream  
+--           Function to record and print values into $testStream
 --=======================================================================
 recordAndPrintTest md ==  --called by recordAndPrint
   input :=
     STRINGP $currentLine => [$currentLine]
     fn $currentLine where fn x ==
-      x is [y,:r] =>     
-        y.(k := MAXINDEX y) = char '__ => 
+      x is [y,:r] =>
+        y.(k := MAXINDEX y) = char '__ =>
           u := fn r
           [STRCONC(SUBSTRING(y,0,k),'" ",first u),:rest u]
         [y,:fn r]
@@ -271,5 +271,3 @@ recordAndPrintTest md ==  --called by recordAndPrint
   PRINT(writify [input,prefix2String md,:output],$testStream)
   $mkTestInputStack := nil
   $mkTestOutputStack := nil
- 
- 

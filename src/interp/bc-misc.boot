@@ -920,5 +920,3 @@ bcComplexLimitGen htPage ==
     '"%infinity"
   varPart := STRCONC(var,'" = ",loc)
   bcFinish('"complexLimit",fun,varPart)
-
-

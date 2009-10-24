@@ -39,7 +39,7 @@ tail-recursion.
 Normally we never really exit this function.
 
 We read a string from the input. The serverReadLine\cite{1} function
-is a special readline function that handles communication with the 
+is a special readline function that handles communication with the
 session manager code, which is a separate process running in parallel.
 In the usual case it just returns the current string.
 
@@ -57,7 +57,7 @@ If the user typed [[)fin]] then we exit the loop and drop into the
 underlying common lisp. You can use the [[(restart)]] function call
 to return to the top level loop.
 
-If the input line starts with a close parenthesis we parse the 
+If the input line starts with a close parenthesis we parse the
 input line as a command rather than an expression. We execute the command
 and then tail-recursively call [[intloopReadConsole]].
 
@@ -139,21 +139,21 @@ SpadInterpretStream(str, source, interactive?) ==
     $libQuiet        : local := not interactive?
 --  following seems useless and causes ccl package problems
 --    $InteractiveMode : local := false
- 
+
     $newcompErrorCount: local := 0 -- SMW Feb 2/90.
                                    -- Used in highComplete, ncHardError etc.
- 
+
     $okToExecuteMachineCode: local := true -- set false on error
     $inclAssertions: local := ["AIX", "CommonLisp"] -- Jan 28/90
- 
- 
+
+
     $lastPos               : local := $nopos   ------------>!!!
     $erMsgToss             : local := false --------------->!!!
     $ncMsgList             : local := nil
- 
+
     $systemCommandFunction : local := function InterpExecuteSpadSystemCommand
     $promptMsg             : local := 'S2CTP023
- 
+
     interactive? =>
 --  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
                 princPrompt()
@@ -161,7 +161,7 @@ SpadInterpretStream(str, source, interactive?) ==
                 []
     intloopInclude (source,0)
     []
- 
+
     -----------------------------------------------------------------
 
 SpadInterpretFile fn ==
@@ -174,7 +174,7 @@ ncINTERPFILE(file, echo) ==
 
 setCurrentLine s ==
   v := $currentLine
-  $currentLine := 
+  $currentLine :=
      NULL(v) => s
      u :=
         STRINGP(s) => [s]
@@ -210,7 +210,7 @@ intloopReadConsole(b, n)==
     c := intloopProcessString(a, n)
     princPrompt()
     intloopReadConsole('"", c)
- 
+
 -- The 'intloopPrefix?' function tests if the string 'prefix' is
 -- is a prefix of the string 'whole', ignoring leading whitespace.
 intloopPrefix?(prefix,whole) ==
@@ -224,13 +224,13 @@ intloopPrefix?(prefix,whole) ==
      for j in 0.. while (good and i < len and j < wlen) repeat
        good := (prefix.i = whole.j) or (leading and (whole.j = char " "))
        if prefix.i = whole.j then i := i+1
-       if (whole.j = char " ") and leading then 
+       if (whole.j = char " ") and leading then
          spaces := spaces + 1
        else leading := false
      spaces = wlen => nil
      if good then SUBSTRING(whole,spaces,nil) else good
- 
- 
+
+
 intloopProcess(n,interactive,s)==
      StreamNull s => n
      [lines,ptree]:=CAR s
@@ -240,7 +240,7 @@ intloopProcess(n,interactive,s)==
             intloopProcess(n ,interactive ,CDR s)
      intloopProcess(intloopSpadProcess(n,lines,ptree,interactive)
                  ,interactive ,CDR s)
- 
+
 intloopEchoParse s==
          [dq,stream]:=CAR s
          [lines,rest]:=ncloopDQlines(dq,$lines)
@@ -248,25 +248,25 @@ intloopEchoParse s==
          if $EchoLines then ncloopPrintLines lines
          $lines:=rest
          cons([[lines,npParse dqToList dq]],CDR s)
- 
+
 intloopInclude0(st, name, n) ==
     $lines:local:=incStream(st,name)
     intloopProcess(n,false,
       next(function intloopEchoParse,
         next(function insertpile,
           next(function lineoftoks,$lines))))
- 
+
 intloopInclude1(name,n) ==
           a:=ncloopIncFileName name
           a => intloopInclude(a,n)
           n
- 
+
 intloopProcessString(s,n) ==
      setCurrentLine s
      intloopProcess(n,true,
          next(function ncloopParse,
            next(function lineoftoks,incString s)))
- 
+
 $pfMacros := []
 
 clearMacroTable() ==
@@ -292,13 +292,13 @@ intloopSpadProcess(stepNo,lines,ptree,interactive?)==
     result := CATCH("SpadCompileItem",
      CATCH("coerceFailure", CATCH("SPAD__READER",
        interp(cc, ptree, interactive?)))) where
- 
+
         interp(cc, ptree, interactive?) ==
             ncConversationPhase(function phParse,            [cc, ptree])
             ncConversationPhase(function phMacro,            [cc])
             ncConversationPhase(function phIntReportMsgs,[cc, interactive?])
             ncConversationPhase(function phInterpret,        [cc])
- 
+
             #ncEltQ(cc, 'messages) ~= 0 => ncError()
 
     intSetNeedToSignalSessionManager()
@@ -307,7 +307,7 @@ intloopSpadProcess(stepNo,lines,ptree,interactive?)==
     result = 'ncError   => stepNo
     result = 'ncEndItem => stepNo
     stepNo+1
- 
+
 phInterpret carrier ==
   ptree := ncEltQ(carrier, 'ptree)
   val := intInterpretPform(ptree)
@@ -315,7 +315,7 @@ phInterpret carrier ==
 
 intInterpretPform pf ==
   processInteractive(zeroOneTran(packageTran(pf2Sex pf)), pf)
- 
+
 --% phReportMsgs: carrier[lines,messages,..]-> carrier[lines,messages,..]
 phIntReportMsgs(carrier, interactive?) ==
     $erMsgToss => 'OK
@@ -343,7 +343,7 @@ nonBlank str ==
       value := true
       return value
   value
-      
+
 ncloopCommand (line,n) ==
          a:=ncloopPrefix?('")include",line)=>
                   ncloopInclude1( a,n)
@@ -367,7 +367,7 @@ ncloopDQlines (dq,stream)==
         a:= poGlobalLinePosn tokPosn CADR dq
         b:= poGlobalLinePosn CAAR stream
         streamChop (a-b+1,stream)
- 
+
 streamChop(n,s)==
     if StreamNull s
     then [nil,nil]
@@ -379,11 +379,11 @@ streamChop(n,s)==
             c:=ncloopPrefix?('")command",CDR line)
             d:= cons(car line,if c then c else cdr line)
             [cons(d,a),b]
- 
+
 ncloopPrintLines lines ==
         for line in lines repeat WRITE_-LINE CDR line
         WRITE_-LINE '" "
- 
+
 ncloopIncFileName string==
                 fn := incFileName string
                 not fn =>
@@ -395,14 +395,14 @@ ncloopParse s==
          [dq,stream]:=CAR s
          [lines,rest]:=ncloopDQlines(dq,stream)
          cons([[lines,npParse dqToList dq]],CDR s)
- 
+
 ncloopInclude0(st, name, n) ==
      $lines:local := incStream(st, name)
      ncloopProcess(n,false,
          next(function ncloopEchoParse,
            next(function insertpile,
             next(function lineoftoks,$lines))))
- 
+
 ncloopInclude1(name,n) ==
           a:=ncloopIncFileName name
           a => ncloopInclude(a,n)
@@ -426,21 +426,21 @@ phParse(carrier,ptree) ==
            intSayKeyedMsg ('S2CTP003,[%pform ptree])
     ncPutQ(carrier, 'ptree, ptree)
     'OK
- 
+
 
 --% phMacro: carrier[ptree,...] -> carrier[ptree, ptreePremacro,...]
 phMacro carrier ==
     phBegin 'Macroing
     ptree  := ncEltQ(carrier, 'ptree)
     ncPutQ(carrier, 'ptreePremacro, ptree)
- 
+
     ptree  := macroExpanded ptree
     if $ncmMacro then
         intSayKeyedMsg ('S2CTP007,[%pform ptree] )
- 
+
     ncPutQ(carrier, 'ptree, ptree)
     'OK
- 
+
 --% phReportMsgs: carrier[lines,messages,..]-> carrier[lines,messages,..]
 phReportMsgs(carrier, interactive?) ==
     $erMsgToss => 'OK
@@ -452,26 +452,25 @@ phReportMsgs(carrier, interactive?) ==
     processMsgList(msgs, lines)
     intSayKeyedMsg ('S2CTP010,[nerr])
     'OK
- 
+
 ncConversationPhase(fn, args) ==
     carrier := first args
- 
+
     $ncMsgList: local := []
     $convPhase: local := 'NoPhase
- 
+
     UNWIND_-PROTECT( APPLY(fn, args), wrapup(carrier) ) where
         wrapup(carrier) ==
             for m in $ncMsgList repeat
                 ncPutQ(carrier, 'messages, [m, :ncEltQ(carrier, 'messages)])
- 
+
 ncloopPrefix?(prefix,whole) ==
      #prefix > #whole => false
      good:=true
      for i in 0..#prefix-1 for j in 0.. while good repeat
                 good:= prefix.i = whole.j
      if good then SUBSTRING(whole,#prefix,nil) else good
- 
+
 phBegin id ==
     $convPhase := id
     if $ncmPhase then intSayKeyedMsg('S2CTP021,[id])
- 

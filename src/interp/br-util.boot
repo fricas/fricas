@@ -630,8 +630,3 @@ dbTickIndex(line,n,k) == --returns index of nth tick in line starting at k
   dbTickIndex(line,n - 1,1 + charPosition($tick,line,k))
 
 mySort u == listSort(function GLESSEQP,u)
-
-
-
-
-

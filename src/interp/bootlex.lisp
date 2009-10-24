@@ -404,7 +404,7 @@ or the chracters ?, !, ' or %"
            (go loop)
            (progn
                  (setf *after_dot* (eq ress '\.))
-                 (return (token-install ress 'gliph token 
+                 (return (token-install ress 'gliph token
                                          nonblank))))))
 
 (defun make-adjustable-string (n)
@@ -431,7 +431,7 @@ or the chracters ?, !, ' or %"
   "Take a special character off the input stream.  We let the type name of each
 special character be the atom whose print name is the character itself."
   (let* ((char (current-char))
-         (as (assoc char 
+         (as (assoc char
                     '((#\# |#|) (#\$ |$|) (#\@ |@|) #| ( |#
                       (#\) |)|) (#\, |,|) (#\' |'|) (#\{ |{|) (#\} |}|)
                       (#\/ |/|) (#\; |;|) (#\[ |[|) (#\] |]|))))
@@ -446,7 +446,7 @@ special character be the atom whose print name is the character itself."
          (advance-char)
       nu (let ((cur-char (current-char)))
               (if (digitp cur-char)
-                  (progn 
+                  (progn
                        (advance-char)
                        (go nu))))
          (setf buf (Line-subseq-from start-pos))
@@ -487,7 +487,7 @@ special character be the atom whose print name is the character itself."
                    (go formfloat))
         )
     exppart
-        (if (not 
+        (if (not
                 (or
                     (digitp (next-char))
                     (char-eq (next-char) #\-)
@@ -506,7 +506,7 @@ special character be the atom whose print name is the character itself."
         (return (token-install
                   intval
                   'number token
-                  t 
+                  t
                   ))))
 
 ; **** 4. BOOT token parsing actions
@@ -542,7 +542,7 @@ special character be the atom whose print name is the character itself."
 (defun SPAD_SYNTAX_ERROR (&rest byebye)
   "Print syntax error indication, underline character, scrub line."
   (BUMPERRORCOUNT '|syntax|)
-  (COND ((EQ DEBUGMODE 'YES) 
+  (COND ((EQ DEBUGMODE 'YES)
            (SPAD_LONG_ERROR))
         ((SPAD_SHORT_ERROR)))
   (IOClear)
@@ -568,6 +568,3 @@ special character be the atom whose print name is the character itself."
                          (|semantic| 2)
                          (T (ERROR "BUMPERRORCOUNT")))))
             (SETELT $SPAD_ERRORS INDEX (1+ (ELT $SPAD_ERRORS INDEX))))))
-
-
-

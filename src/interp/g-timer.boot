@@ -34,7 +34,7 @@
 --  These functions can be used with arbitrary lists of
 --  named stats (listofnames) grouped in classes (listofclasses)
 --  and with measurement types (property, classproperty).
- 
+
 printNamedStatsByProperty(listofnames, property) ==
   total := +/[GETL(name,property) for [name,:.] in listofnames]
   for [name,:.] in listofnames repeat
@@ -46,7 +46,7 @@ printNamedStatsByProperty(listofnames, property) ==
   sayBrightly bright fillerSpaces(72,'"-")
   sayBrightly concat(bright '"Total",
     fillerSpaces(65-# STRINGIMAGE total,'"."),bright STRINGIMAGE total)
- 
+
 makeLongStatStringByProperty _
  (listofnames, listofclasses, property, classproperty, units, flag) ==
   total := 0
@@ -84,7 +84,7 @@ makeLongStatStringByProperty _
   total := STRCONC(normalizeStatAndStringify total,'" ", units)
   str = '"" =>  total
   STRCONC(str, '" = ", total)
- 
+
 normalizeStatAndStringify t ==
   FLOATP t =>
       t := roundStat t
@@ -97,54 +97,54 @@ normalizeStatAndStringify t ==
       t > 9*K => CONCAT(STRINGIMAGE((t + 512)/K),   '"K")
       STRINGIMAGE t
   STRINGIMAGE t
- 
+
 significantStat t ==
    FLOATP t => (t > 0.01)
    INTEGERP  t => (t > 100)
    true
- 
+
 roundStat t ==
   not FLOATP t => t
   (TRUNCATE (0.5 + t * 1000.0)) / 1000.0
- 
+
 makeStatString(oldstr,time,abb,flag) ==
   time = '"" => oldstr
   opening := (flag = 'long => '"("; '" (")
   oldstr = '"" => STRCONC(time,opening,abb,'")")
   STRCONC(oldstr,'" + ",time,opening,abb,'")")
- 
+
 peekTimedName() == IFCAR $timedNameStack
- 
+
 popTimedName() ==
   name := IFCAR $timedNameStack
   $timedNameStack := IFCDR $timedNameStack
   name
- 
+
 pushTimedName name ==
   PUSH(name,$timedNameStack)
- 
+
 startTimingProcess name ==
   updateTimedName peekTimedName()
   pushTimedName name
   if EQ(name, 'load) then          statRecordLoadEvent()
- 
+
 stopTimingProcess name ==
   (name ~= peekTimedName()) and null $InteractiveMode =>
     keyedSystemError("S2GL0015",[name,peekTimedName()])
   updateTimedName peekTimedName()
   popTimedName()
- 
+
 --% Instrumentation specific to the interpreter
 SETANDFILEQ($oldElapsedSpace, 0)
 SETANDFILEQ($oldElapsedGCTime,0.0)
 SETANDFILEQ($oldElapsedTime,0.0)
 SETANDFILEQ($gcTimeTotal,0.0)
- 
+
 -- $timedNameStack is used to hold the names of sections of the
 -- code being timed.
- 
+
 SETANDFILEQ($timedNameStack,'(other))
- 
+
 SETANDFILEQ($interpreterTimedNames,'(
 -- name         class abbrev
   (algebra        2 .   B) _
@@ -165,7 +165,7 @@ SETANDFILEQ($interpreterTimedNames,'(
   (print          3 .   P) _
   (resolve        1 .   R) _
   ))
- 
+
 SETANDFILEQ($interpreterTimedClasses, '(
 -- number class name    short name
   ( 1    interpreter     .  IN) _
@@ -173,7 +173,7 @@ SETANDFILEQ($interpreterTimedClasses, '(
   ( 3    other           .  OT) _
   ( 4    reclaim         .  GC) _
   ))
- 
+
 initializeTimedNames(listofnames,listofclasses) ==
   for [name,:.] in listofnames repeat
     PUT(name, 'TimeTotal, 0.0)
@@ -186,27 +186,27 @@ initializeTimedNames(listofnames,listofclasses) ==
   PUT('gc, 'TimeTotal, 0.0)
   PUT('gc, 'SpaceTotal,  0)
   NIL
- 
+
 updateTimedName name ==
   count := (GETL(name,'TimeTotal) or 0) + computeElapsedTime()
-  PUT(name,'TimeTotal, count) 
- 
+  PUT(name,'TimeTotal, count)
+
 printNamedStats listofnames ==
   printNamedStatsByProperty(listofnames, 'TimeTotal)
   sayBrightly '" "
   sayBrightly '"Space (in bytes):"
   printNamedStatsByProperty(listofnames, 'SpaceTotal)
- 
+
 makeLongTimeString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,  _
                                'TimeTotal, 'ClassTimeTotal, _
                                '"sec", $printTimeIfTrue)
- 
+
 makeLongSpaceString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,    _
                                'SpaceTotal, 'ClassSpaceTotal, _
                                '"bytes", $printStorageIfTrue)
- 
+
 computeElapsedTime() ==
   -- in total time lists, CAR is VIRTCPU and CADR is TOTCPU
   currentTime:= elapsedUserTime()
@@ -219,19 +219,19 @@ computeElapsedTime() ==
   $oldElapsedTime := elapsedUserTime()
   $oldElapsedGCTime := elapsedGcTime()
   elapsedSeconds
- 
+
 computeElapsedSpace() ==
   currentElapsedSpace := HEAPELAPSED()
   elapsedBytes := currentElapsedSpace - $oldElapsedSpace
   $oldElapsedSpace := currentElapsedSpace
   elapsedBytes
- 
+
 timedAlgebraEvaluation(code) ==
   startTimingProcess 'algebra
   r := eval code
   stopTimingProcess 'algebra
   r
- 
+
 timedOptimization(code) ==
   startTimingProcess 'optimization
   $getDomainCode : local := NIL
@@ -241,23 +241,23 @@ timedOptimization(code) ==
     pp r
   stopTimingProcess 'optimization
   r
- 
+
 timedEVALFUN(code) ==
   startTimingProcess 'evaluation
   r := timedEvaluate code
   stopTimingProcess 'evaluation
   r
- 
+
 timedEvaluate code ==
   code is ["LIST",:a] and #a > 200 =>
     "append"/[eval ["LIST",:x] for x in splitIntoBlocksOf200 a]
   eval code
- 
+
 displayHeapStatsIfWanted() ==
    $printStorageIfTrue => sayBrightly OLDHEAPSTATS()
- 
+
 --% stubs for the stats summary fns
 statRecordInstantiationEvent() == nil
 statRecordLoadEvent()          == nil
- 
+
 statisticsSummary()  == '"No statistics available."

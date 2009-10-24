@@ -747,5 +747,3 @@ extendLocalLibdb conlist ==   --  called by astran
   newlines := dbReadLines '"temp.text"
   dbWriteLines(MSORT union(oldlines,newlines), '"libdb.text")
   PROBE_-FILE '"temp.text" => deleteFile '"temp.text"
-
-

@@ -57,7 +57,7 @@ The use of two representations is admitted to be clumsy
 printInfo $e ==
   for u in get("$Information","special",$e) repeat PRETTYPRINT u
   nil
- 
+
 addInformation(m,$e) ==
   $Information: local := nil
   --$Information:= nil: done by previous statement anyway
@@ -72,16 +72,16 @@ addInformation(m,$e) ==
     put("$Information","special",[:$Information,:
       get("$Information","special",$e)],$e)
   $e
- 
+
 addInfo u == $Information:= [formatInfo u,:$Information]
- 
+
 formatInfo u ==
   atom u => u
   u is ["SIGNATURE",:v] => ["SIGNATURE","$",:v]
  --u is ("CATEGORY",junk,:l) => ("PROGN",:(formatInfo v for v in l))
   u is ["PROGN",:l] => ["PROGN",:[formatInfo v for v in l]]
   u is ["ATTRIBUTE",v] =>
- 
+
     -- The parser can't tell between those attributes that really
     -- are attributes, and those that are category names
     atom v and isCategoryForm([v],$e) => ["has","$",[v]]
@@ -94,7 +94,7 @@ formatInfo u ==
     ["COND",:liftCond [formatPred a,formatInfo b],:
       liftCond [["not",formatPred a],formatInfo c]]
   systemError '"formatInfo"
- 
+
 liftCond (clause is [ante,conseq]) ==
   conseq is ["COND",:l] =>
     [[lcAnd(ante,a),:b] for [a,:b] in l] where
@@ -102,7 +102,7 @@ liftCond (clause is [ante,conseq]) ==
         conj is ["and",:ll] => ["and",pred,:ll]
         ["and",pred,conj]
   [clause]
- 
+
 formatPred u ==
          --Assumes that $e is set up to point to an environment
   u is ["has",a,b] =>
@@ -115,7 +115,7 @@ formatPred u ==
   atom u => u
   u is ["and",:v] => ["and",:[formatPred w for w in v]]
   systemError '"formatPred"
- 
+
 chaseInferences(pred,$e) ==
   foo hasToInfo pred where
     foo pred ==
@@ -138,17 +138,17 @@ chaseInferences(pred,$e) ==
                   get("$Information","special",$e)],$e)
             nil
   $e
- 
+
 hasToInfo (pred is ["has",a,b]) ==
   b is ["SIGNATURE",:data] => ["SIGNATURE",a,:data]
   b is ["ATTRIBUTE",c] => BREAK()
   pred
- 
+
 infoToHas a ==
   a is ["SIGNATURE",b,:data] => ["has",b,["SIGNATURE",:data]]
   a is ["ATTRIBUTE",b,c] => BREAK()
   a
- 
+
 knownInfo pred ==
                --true %if the information is already known
   pred=true => true
@@ -201,7 +201,7 @@ knownInfo1 pred ==
         --return false
         --error '"knownInfo"
   false
- 
+
 actOnInfo(u,$e) ==
   null u => $e
   u is ["PROGN",:l] => (for v in l repeat $e:= actOnInfo(v,$e); $e)
@@ -238,7 +238,7 @@ actOnInfo(u,$e) ==
       --    JHD 82/08/08 01:40 This does not mean that we can ignore the
       --    extension, since this may not be compatible with the view we
       --    were passed
- 
+
       --we are adding a principal descendant of what was already known
       --    $e:= augModemapsFromCategory(name,name,nil,catvec,$e)
       --    SAY("augmenting ",name,": ",cat)
@@ -261,13 +261,12 @@ actOnInfo(u,$e) ==
     SAY("extension of ",vval," to ",cat," ignored")
     $e
   systemError '"knownInfo"
- 
+
 mkJoin(cat,mode) ==
   mode is ['Join,:cats] => ['Join,cat,:cats]
   ['Join,cat,mode]
- 
+
 GetValue name ==
   u:= get(name,"value",$e) => u
   u:= comp(name,$EmptyMode,$e) => u  --name may be a form
   systemError [name,'" is not bound in the current environment"]
- 

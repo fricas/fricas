@@ -32,30 +32,30 @@
 
 )package "BOOT"
 
- 
- 
+
+
 $compBugPrefix :=      '"Bug!"
 $compErrorPrefix :=    '"Error"
 
 --error message facility
 $nopos   := ['noposition]
 $showKeyNum   :=        NIL
- 
+
 -- Miscellaneous nonsense.
 $newcompErrorCount :=           0
- 
+
 -- Items from MSG BOOT I
 $preLength := 11
 $LOGLENGTH := $LINELENGTH - 6
 $specificMsgTags := []
- 
+
 $imPrTagGuys := ['unimple, 'bug, 'debug, 'say, 'warn]
 $toWhereGuys := ['fileOnly, 'screenOnly ]
 $imPrGuys    := ['imPr]
 $repGuys     := ['noRep, 'rep]
 $attrCats    := ['$imPrGuys, '$toWhereGuys, '$repGuys]
- 
- 
+
+
 $ncMsgList := nil
 
 
@@ -67,7 +67,7 @@ ncSoftError(pos, erMsgKey, erArgL,:optAttr) ==
   desiredMsg erMsgKey =>
     processKeyedError _
        msgCreate ('error, pos, erMsgKey, erArgL, $compErrorPrefix,optAttr)
- 
+
 -- The program being compiled is seriously incorrect.
 -- Give message and throw to a recovery point.
 ncHardError(pos, erMsgKey, erArgL,:optAttr) ==
@@ -76,7 +76,7 @@ ncHardError(pos, erMsgKey, erArgL,:optAttr) ==
     erMsg := processKeyedError _
        msgCreate('error,pos,erMsgKey, erArgL, $compErrorPrefix,optAttr)
   ncError()
- 
+
 -- Bug in the compiler: something which shouldn't have happened did.
 ncBug (erMsgKey, erArgL,:optAttr) ==
   $newcompErrorCount := $newcompErrorCount + 1
@@ -87,9 +87,9 @@ ncBug (erMsgKey, erArgL,:optAttr) ==
   ENABLE_-BACKTRACE(nil)
   BREAK()
   ncAbort()
- 
+
 --% Lower level functions
- 
+
 --msgObject  tag -- catagory of msg
 --                    -- attributes as a-list
 --                        'imPr  => dont save for list processing
@@ -100,7 +100,7 @@ ncBug (erMsgKey, erArgL,:optAttr) ==
 --          argL -- arguments to be placed in the msg test
 --        prefix -- things like "Error: "
 --          text -- the actual text
- 
+
 msgCreate(tag,posWTag,key,argL,optPre,:optAttr) ==
     if PAIRP key then tag := 'old
     msg := [tag,posWTag,key,argL,optPre,NIL]
@@ -110,7 +110,7 @@ msgCreate(tag,posWTag,key,argL,optPre,:optAttr) ==
     initImPr    msg
     initToWhere msg
     msg
- 
+
 processKeyedError msg ==
     getMsgTag? msg = 'old  =>                                 --temp
         erMsg := getMsgKey msg                                --temp
@@ -121,14 +121,14 @@ processKeyedError msg ==
     msgImPr? msg =>
       msgOutputter msg
     $ncMsgList := cons (msg, $ncMsgList)
- 
+
 ---------------------------------
 --%getting info from db.
 putDatabaseStuff msg ==
     [text,attributes] := getMsgInfoFromKey msg
     if attributes then setMsgUnforcedAttrList(msg,aL)
     setMsgText(msg,text)
- 
+
 getMsgInfoFromKey msg ==
     msgText :=
         msgKey := getMsgKey? msg =>   --temp  oldmsgs use key tostoretext
@@ -138,11 +138,11 @@ getMsgInfoFromKey msg ==
     [msgText,attributes] := removeAttributes msgText
     msgText := substituteSegmentedMsg(msgText, getMsgArgL msg)
     [msgText,attributes]
- 
- 
+
+
 -----------------------
 --%character position marking
- 
+
 processChPosesForOneLine msgList ==
     chPosList := posPointers msgList
     for msg in msgList repeat
@@ -154,7 +154,7 @@ processChPosesForOneLine msgList ==
                      MAKE_-FULL_-CVEC ($preLength - 4 - SIZE oldPre),posLetter) )
     leaderMsg := makeLeaderMsg chPosList
     NCONC(msgList,LIST leaderMsg)  --a back cons
- 
+
 posPointers msgList ==
 --gets all the char posns for msgs on one line
 --associates them with a uppercase letter
@@ -174,7 +174,7 @@ posPointers msgList ==
         posLetterList := [[pos,:pointers.increment],:posLetterList]
         increment := increment + 1
     posLetterList
- 
+
 insertPos(newPos,posList) ==
 --insersts a position in the proper place of a positon list
 --used for the 2nd pos of a fromto
@@ -192,7 +192,7 @@ insertPos(newPos,posList) ==
             top := [newPos,:top]
             true
     [CDR reverse top,:bot]
- 
+
 putFTText (msg,chPosList) ==
     tag := getMsgFTTag? msg
     pos := poCharPosn getMsgPos msg
@@ -209,17 +209,17 @@ putFTText (msg,chPosList) ==
        markingText := ['"(from ",charMarker,'" up to ",_
            charMarker2,'") "]
        setMsgText(msg,[:markingText,:getMsgText msg])
- 
+
 rep (c,n)  ==
     n > 0 =>
       MAKE_-FULL_-CVEC(n, c)
     '""
- 
+
 --called from parameter list of nc message functions
 From   pos == ['FROM,   pos]
 To     pos == ['TO,     pos]
 FromTo (pos1,pos2) == ['FROMTO, pos1, pos2]
- 
+
 ------------------------
 --%processing error lists
 processMsgList (erMsgList,lineList) ==
@@ -235,18 +235,18 @@ processMsgList (erMsgList,lineList) ==
     $outputList := append(erMsgList,$outputList)  --the nopos's
     st := '"---------SOURCE-TEXT-&-ERRORS------------------------"
     listOutputter reverse $outputList
- 
+
 erMsgSort erMsgList ==
     [msgWPos,msgWOPos] := erMsgSep erMsgList
     msgWPos  := listSort(function erMsgCompare, msgWPos)
     msgWOPos := reverse msgWOPos
     [:msgWPos,:msgWOPos]
- 
+
 erMsgCompare(ob1,ob2)==
     pos1 :=  getMsgPos ob1
     pos2 :=  getMsgPos ob2
     compareposns(pos2,pos1)
- 
+
 erMsgSep erMsgList ==
     msgWPos  := []
     msgWOPos := []
@@ -256,10 +256,10 @@ erMsgSep erMsgList ==
         else
           msgWPos  := [msg,:msgWPos]
     [msgWPos,msgWOPos]
- 
+
 getLinePos line  == CAR line
 getLineText line == CDR line
- 
+
 queueUpErrors(globalNumOfLine,msgList)==
     thisPosMsgs  := []
     notThisLineMsgs := []
@@ -280,7 +280,7 @@ queueUpErrors(globalNumOfLine,msgList)==
     if notThisPosMsgs then
         $outputList := NCONC(notThisPosMsgs,$outputList)
     msgList
- 
+
 redundant(msg,thisPosMsgs) ==
     found := NIL
     if msgNoRep? msg then
@@ -288,26 +288,26 @@ redundant(msg,thisPosMsgs) ==
             sameMsg?(msg,item) => return (found := true)
         $noRepList := [msg,$noRepList]
     found or MEMBER(msg,thisPosMsgs)
- 
+
 sameMsg? (msg1,msg2) ==
     (getMsgKey   msg1 = getMsgKey  msg2) and _
     (getMsgArgL  msg1 = getMsgArgL msg2)
- 
- 
+
+
 thisPosIsLess(pos,num) ==
     poNopos? pos => NIL
     poGlobalLinePosn pos < num
- 
+
 thisPosIsEqual(pos,num) ==
     poNopos? pos => NIL
     poGlobalLinePosn pos = num
- 
+
 --%outputting stuff
- 
+
 listOutputter outputList ==
     for msg in outputList repeat
         msgOutputter msg
- 
+
 msgOutputter msg  ==
     st := getStFromMsg msg
     shouldFlow := not (leader? msg or line? msg)
@@ -319,16 +319,16 @@ msgOutputter msg  ==
        if shouldFlow then
           st := flowSegmentedMsg(st,$LOGLENGTH,0)
        alreadyOpened := alreadyOpened? msg
-        
+
 toScreen? msg ==  getMsgToWhere msg ~= 'fileOnly
 toFile? msg   ==
      PAIRP $fn and _
      getMsgToWhere msg ~= 'screenOnly
- 
- 
+
+
 alreadyOpened? msg ==
        not msgImPr? msg
- 
+
 getStFromMsg msg ==
     $optKeyBlanks : local := '""  --set in setOptKeyBlanks()
     setOptKeyBlanks()
@@ -345,19 +345,19 @@ getStFromMsg msg ==
     st :=[posStL,getMsgLitSym msg,_
           optKey,:preStL,_
           tabbing msg,:getMsgText msg]
- 
+
 tabbing msg ==
     chPos := 2
     if getMsgPrefix? msg then
       chPos := chPos + $preLength - 1
     if $showKeyNum then chPos := chPos + 8
     ["%t",:chPos]
- 
+
 setOptKeyBlanks() ==
     $optKeyBlanks :=
         $showKeyNum => '"%x8"
         '""
- 
+
 getPosStL msg ==
     not showMsgPos? msg => '""
     msgPos := getMsgPos msg
@@ -376,17 +376,17 @@ getPosStL msg ==
     howMuch  = 'ALL  => [$optKeyBlanks,:printedFileName, '%l,_
                          $optKeyBlanks,:printedLineNum,  '%l]
     '""
- 
+
 showMsgPos? msg ==
     $erMsgToss or (not msgImPr? msg and not msgLeader? msg)
- 
- 
+
+
 remFile positionList ==
         IFCDR IFCDR positionList
- 
+
 remLine positionList ==
         [IFCAR positionList]
- 
+
 decideHowMuch(pos,oldPos) ==
 --when printing a msg, we wish not to show pos infor that was
 --shown for a previous msg with identical pos info.
@@ -398,7 +398,7 @@ decideHowMuch(pos,oldPos) ==
     poFileName oldPos ~= poFileName pos => 'ALL
     poLinePosn oldPos ~= poLinePosn pos => 'LINE
     'NONE
- 
+
 listDecideHowMuch(pos,oldPos) ==
     ((poNopos? pos) and (poNopos? oldPos)) or _
       ((poPosImmediate? pos) and (poPosImmediate? oldPos))  => 'NONE
@@ -409,7 +409,7 @@ listDecideHowMuch(pos,oldPos) ==
         'LINE
     --(poNopos? pos) or (poPosImmediate? pos) => 'ORG
     'NONE
- 
+
 getPreStL optPre ==
     null optPre => [MAKE_-FULL_-CVEC 2]
     spses :=
@@ -417,7 +417,7 @@ getPreStL optPre ==
         MAKE_-FULL_-CVEC extraPlaces
       '""
     ['%b, optPre,spses,'":", '%d]
- 
+
 -------------------
 --%   a-list stuff
 desiredMsg (erMsgKey,:optCatFlag) ==
@@ -425,59 +425,59 @@ desiredMsg (erMsgKey,:optCatFlag) ==
     isKeyQualityP(erMsgKey,'stifle) => false
     not null optCatFlag  => CAR optCatFlag
     true
- 
+
 isKeyQualityP (key,qual)  ==
     --returns pair if found, else NIL
     found := false
     while not found and (qualPair := ASSOC(key,$specificMsgTags)) repeat
         if CDR qualPair = qual then found := true
     qualPair
- 
+
 -----------------------------
 --% these functions handle the attributes
- 
+
 initImPr msg  ==
     $erMsgToss or MEMQ (getMsgTag msg,$imPrTagGuys) =>
         setMsgUnforcedAttr (msg,'$imPrGuys,'imPr)
- 
+
 initToWhere msg  ==
     MEMBER ('trace,getMsgCatAttr (msg,'catless)) =>
           setMsgUnforcedAttr (msg,'$toWhereGuys,'screenOnly)
- 
+
 msgImPr? msg ==
     (getMsgCatAttr (msg,'$imPrGuys) = 'imPr)
- 
+
 msgNoRep? msg ==
     (getMsgCatAttr (msg,'$repGuys) = 'noRep)
- 
+
 msgLeader? msg ==
     getMsgTag msg = 'leader
- 
+
 getMsgToWhere msg ==
     getMsgCatAttr (msg,'$toWhereGuys)
- 
+
 getMsgCatAttr  (msg,cat) ==
     IFCDR ASSQ(cat, ncAlist msg)
- 
+
 setMsgForcedAttrList (msg,aL) ==
     for attr in aL repeat
         setMsgForcedAttr(msg,whichCat attr,attr)
- 
+
 setMsgUnforcedAttrList (msg,aL) ==
     for attr in aL repeat
         setMsgUnforcedAttr(msg,whichCat attr,attr)
- 
+
 setMsgForcedAttr(msg,cat,attr) ==
     cat = 'catless => setMsgCatlessAttr(msg,attr)
     ncPutQ(msg,cat,attr)
- 
+
 setMsgUnforcedAttr(msg,cat,attr) ==
     cat = 'catless => setMsgCatlessAttr(msg,attr)
     not ASSQ(cat, ncAlist msg) => ncPutQ(msg,cat,attr)
- 
+
 setMsgCatlessAttr(msg,attr) ==
     ncPutQ(msg,catless,CONS (attr, IFCDR ASSQ(catless, ncAlist msg)))
- 
+
 whichCat attr ==
     found := 'catless
     for cat in $attrCats repeat
@@ -485,10 +485,10 @@ whichCat attr ==
           found := cat
           return found
     found
- 
+
 --------------------------------------
 --% these functions directly interact with the message object
- 
+
 makeLeaderMsg chPosList ==
     st := MAKE_-FULL_-CVEC ($preLength- 3)
     oldPos := -1
@@ -497,7 +497,7 @@ makeLeaderMsg chPosList ==
             rep(char ".", (posNum - oldPos - 1)),posLetter)
         oldPos := posNum
     ['leader,$nopos,'nokey,NIL,NIL,[st]]
- 
+
 makeMsgFromLine line ==
     posOfLine  := getLinePos line
     textOfLine := getLineText line
@@ -509,52 +509,48 @@ makeMsgFromLine line ==
          stNum)
     ['line,posOfLine,NIL,NIL, STRCONC('"Line", localNumOfLine),_
         textOfLine]
- 
+
 getMsgTag msg == ncTag msg
- 
+
 getMsgTag? msg ==
    IFCAR MEMBER (getMsgTag msg,_
        ['line,'old,'error,'warn,'bug,'unimple,'remark,'stat,'say,'debug])
- 
+
 leader? msg == getMsgTag msg = 'leader
 line?   msg == getMsgTag msg = 'line
- 
+
 getMsgPosTagOb msg == msg.1
- 
+
 getMsgPos msg ==
     getMsgFTTag? msg => CADR getMsgPosTagOb msg
     getMsgPosTagOb msg
- 
+
 getMsgPos2 msg ==
     getMsgFTTag? msg => CADDR getMsgPosTagOb msg
     ncBug('"not a from to",[])
- 
+
 getMsgFTTag? msg == IFCAR MEMBER (IFCAR getMsgPosTagOb msg,_
                       ['FROM,'TO,'FROMTO])
- 
+
 getMsgKey msg == msg.2
- 
+
 getMsgKey? msg == IDENTP (val := getMsgKey msg) => val
- 
+
 getMsgArgL msg == msg.3
- 
+
 getMsgPrefix? msg ==
     (pre := msg.4) = 'noPre => NIL
     pre
- 
+
 getMsgPrefix  msg == msg.4
- 
- 
+
+
 getMsgLitSym msg ==
     getMsgKey? msg => '" "
     '"*"
- 
+
 getMsgText msg == msg.5
- 
+
 setMsgPrefix (msg,val) == msg.4 := val
 
 setMsgText (msg,val) == msg.5 := val
- 
- 
-
- 

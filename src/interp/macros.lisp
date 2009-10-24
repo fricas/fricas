@@ -39,22 +39,22 @@
 ;;;    there isn't a cleaner and non-VM-specific way of doing things.
 
 (provide 'Boot)
- 
+
 (in-package "BOOT")
 
 (defvar |$compilingMap| ())
 (defvar |$definingMap| nil)
- 
+
 (defmacro KAR (ARG) `(ifcar ,arg))
 (defmacro KDR (ARG) `(ifcdr ,arg))
 (defmacro KADR (ARG) `(ifcar (ifcdr ,arg)))
 (defmacro KADDR (ARG) `(ifcar (ifcdr (ifcdr ,arg))))
 
 ; 5 PROGRAM STRUCTURE
- 
+
 ; 5.3 Top-Level Forms
 
- 
+
 (defun SETANDFILE (x y) (LAM\,EVALANDFILEACTQ `(defparameter ,x ',y)))
 
 (defun LAM\,EVALANDFILEACTQ (name &optional (form name))
@@ -62,32 +62,32 @@
 
 (defun |outputLispForm| (name form)
        (if *FILEACTQ-APPLY* (FUNCALL *FILEACTQ-APPLY* name form)))
- 
+
 ; 5.3.2 Declaring Global Variables and Named Constants
- 
+
 (defmacro |function| (name) `(FUNCTION ,name))
 (defmacro |dispatchFunction| (name) `(FUNCTION ,name))
- 
+
 (defun |functionp| (fn)
    (if (identp fn) (and (fboundp fn) (not (macro-function fn))) (functionp fn)))
 (defun |macrop| (fn) (and (identp fn) (macro-function fn)))
- 
+
 ; 6 PREDICATES
- 
+
 ; 6.2 Data Type Predicates
- 
+
 ; 6.3 Equality Predicates
- 
+
 ;; qeqcar should be used when you know the first arg is a pair
 ;; the second arg should either be a literal fixnum or a symbol
 ;; the car of the first arg is always of the same type as the second
 ;; use eql unless we are sure fixnums are represented canonically
- 
+
 (defmacro qeqcar (x y)
   (if (integerp y) `(eql (the fixnum (qcar ,x)) (the fixnum ,y))
       `(eq (qcar ,x) ,y)))
- 
- 
+
+
 (DEFUN ?ORDER (U V)  "Multiple-type ordering relation."
   (COND ((NULL U))
         ((NULL V) NIL)
@@ -113,39 +113,39 @@
            (?ORDER (CDR U) (CDR V)))
         ((?ORDER (CAR U) (CAR V)))
 ))
- 
+
 (defmacro boot-equal (a b)
    (cond ((ident-char-lit a)
            `(or (eql ,a ,b) (eql (character ,a) ,b)))
          ((ident-char-lit b)
            `(or (eql ,a ,b) (eql ,a (character ,b))))
          (t `(eqqual ,a ,b))))
- 
+
 (defun ident-char-lit (x)
    (and (eqcar x 'quote) (identp (cadr x)) (= (length (pname (cadr x))) 1)))
- 
+
 (defmacro EQQUAL (a b)
   (cond ((OR (EQUABLE a) (EQUABLE b)) `(eq ,a ,b))
         ((OR (numberp a) (numberp b)) `(eql ,a ,b))
         (t  `(equal ,a ,b))))
- 
+
 (defmacro NEQUAL (a b) `(not (BOOT-EQUAL ,a ,b)))
- 
+
 (defun EQUABLE (X)
   (OR (NULL X) (AND (EQCAR X 'QUOTE) (symbolp (CADR X)))))
- 
+
 ; 7 CONTROL STRUCTURE
- 
+
 ; 7.1 Constants and Variables
- 
+
 ; 7.1.1 Reference
- 
+
 (DEFUN MKQ (X)
   "Evaluates an object and returns it with QUOTE wrapped around it."
   (if (NUMBERP X) X (LIST 'QUOTE X)))
- 
+
 ; 7.2 Generalized Variables
- 
+
 (defmacro LETT (var val &rest L)
   (COND
     (|$QuickLet| `(SETQ ,var ,val))
@@ -170,11 +170,11 @@
                     (t `(|letPrint2| ,(MKQ var) ,(car l) (QUOTE ,(KADR L))))))
          ,var))
      ('T (ERROR "Cannot compileLET construct"))))
- 
+
 (defmacro SPADLET (A B)
   (if (ATOM A) `(SETQ ,A ,B)
       (BREAK)))
- 
+
 (defmacro RPLAC (&rest L)
   (if (EQCAR (CAR L) 'ELT)
       (LIST 'SETELT (CADAR L) (CADDR (CAR L)) (CADR L))
@@ -183,7 +183,7 @@
               ((EQCAR A 'CAR) (LIST 'RPLACA (CADR A) B))
               ((EQCAR A 'CDR) (LIST 'RPLACD (CADR A) B))
               ((ERROR 'RPLAC))))))
- 
+
 (MAPC #'(LAMBDA (J) (MAKEPROP (CAR J) 'SELCODE (CADR J)))
       '((CAR 2) (CDR 3) (CAAR 4) (CADR 5) (CDAR 6) (CDDR 7)
         (CAAAR 8) (CAADR 9) (CADAR 10) (CADDR 11) (CDAAR 12)
@@ -191,7 +191,7 @@
         (CAADAR 18) (CAADDR 19) (CADAAR 20) (CADADR 21) (CADDAR 22)
         (CADDDR 23) (CDAAAR 24) (CDAADR 25) (CDADAR 26) (CDADDR 27)
         (CDDAAR 28) (CDDADR 29) (CDDDAR 30) (CDDDDR 31)))
- 
+
 (eval-when (compile eval load)
 (defun CARCDREXPAND (X FG)    ; FG = TRUE FOR CAR AND CDR
     (let (n hx)
@@ -199,7 +199,7 @@
             ((SETQ N (GET (SETQ HX (CARCDREXPAND (CAR X) FG)) 'SELCODE))
              (CARCDRX1 (CARCDREXPAND (CADR X) FG) N FG))
             ((CONS HX (MAPCAR #'(LAMBDA (Y) (CARCDREXPAND Y FG)) (CDR X)))))))
- 
+
 (defun CARCDRX1 (X N FG)      ; FG = TRUE FOR CAR AND CDR
     (COND ((< N 1) (fail))
           ((EQL N 1) X)
@@ -207,33 +207,33 @@
              (CARCDRX1 (LIST (if (EQL (CADR D) 0) (if FG 'CAR 'CAR) (if FG 'CDR 'CDR)) X)
                        (CAR D)
                        FG))))))
- 
- 
+
+
 ; 7.3 Function Invocation
- 
+
 ; 7.8 Iteration
- 
+
 ; 7.8.2 General Iteration
- 
+
 (defmacro REPEAT (&rest L)
   (let ((U (REPEAT-TRAN L NIL))) (-REPEAT (CDR U) (CAR U))))
- 
+
 (defun REPEAT-TRAN (L LP)
   (COND ((ATOM L) (ERROR "REPEAT FORMAT ERROR"))
         ((MEMBER (KAR (KAR L))
                  '(EXIT RESET IN ON GSTEP ISTEP STEP GENERAL UNTIL WHILE SUCHTHAT EXIT))
          (REPEAT-TRAN (CDR L) (CONS (CAR L) LP)))
         ((CONS (NREVERSE LP) (MKPF L 'PROGN)))))
- 
+
 (DEFUN MKPF (L OP)
   (if (FLAGP OP 'NARY) (SETQ L (MKPFFLATTEN-1 L OP NIL)))
   (MKPF1 L OP))
- 
+
 (DEFUN MKPFFLATTEN (X OP)
   (COND ((ATOM X) X)
         ((EQL (CAR X) OP) (CONS OP (MKPFFLATTEN-1 (CDR X) OP NIL)))
         ((CONS (MKPFFLATTEN (CAR X) OP) (MKPFFLATTEN (CDR X) OP)))))
- 
+
 (DEFUN MKPFFLATTEN-1 (L OP R)
   (let (X)
     (if (NULL L)
@@ -242,7 +242,7 @@
            (APPEND R (if (EQCAR (SETQ X
                                       (MKPFFLATTEN (CAR L) OP)) OP)
                          (CDR X) (LIST X)))))))
- 
+
 (DEFUN MKPF1 (L OP)
   (let (X) (case OP (PLUS (COND ((EQL 0 (SETQ X (LENGTH
                                                  (SETQ L (S- L '(0 (ZERO))))))) 0)
@@ -305,17 +305,17 @@
                  (LIST (if L (cons 'LIST L)))
                  (CONS (if (cdr L) (cons 'CONS L) (car L)))
                  (t (CONS OP L) ))))
- 
+
 (defvar $TRACELETFLAG NIL "Also referred to in Comp.Lisp")
- 
-(defmacro |Zero| (&rest L) 
- (declare (ignore l)) 
+
+(defmacro |Zero| (&rest L)
+ (declare (ignore l))
  "Needed by spadCompileOrSetq" 0)
- 
+
 (defmacro |One| (&rest L)
  (declare (ignore l))
  "Needed by spadCompileOrSetq" 1)
- 
+
 (defun -REPEAT (BD SPL)
   (let (u g g1 inc final xcl xv il rsl tll funPLUS funGT fun? funIdent
         funPLUSform funGTform)
@@ -339,7 +339,7 @@
           (SETQ funGTform   (CAR (SETQ tll (QCDR tll))))
           (PUSH (LIST (SETQ funPLUS (GENSYM)) funPLUSform) IL)
           (PUSH (LIST (SETQ funGT   (GENSYM)) funGTform) IL)
-          (COND ((SETQ tll (CDR tll)) 
+          (COND ((SETQ tll (CDR tll))
             (SETQ fun?     (CAR tll))
             (SETQ funIdent (CAR (SETQ tll (QCDR tll))))))
           (IF (NOT (ATOM (SETQ inc (CADDR U)) ))
@@ -350,9 +350,9 @@
                    ((PUSH (LIST (SETQ final (GENSYM)) (CADDDR U)) IL)))
                  ; If CADDDR U is not an atom, only compute the value once
              (PUSH
-                (if fun? 
+                (if fun?
                       (if (FUNCALL fun? INC)
-                          (if  (FUNCALL (EVAL funGTform) INC funIdent) 
+                          (if  (FUNCALL (EVAL funGTform) INC funIdent)
                                (LIST 'FUNCALL funGT (CAR U) FINAL)
                                (LIST 'FUNCALL funGT FINAL (CAR U)))
                            (LIST 'IF (LIST 'FUNCALL funGT INC funIdent)
@@ -426,17 +426,17 @@
         (WHILE (PUSH (LIST 'NULL (CAR U)) XCL))
         (SUCHTHAT (SETQ BD (LIST 'SUCHTHATCLAUSE BD (CAR U))))
         (EXIT (SETQ XV (CAR U))) (FAIL)))))
- 
+
 
 (defun SEQOPT (U)
   (if (AND (EQCAR U 'SEQ) (EQCAR (CADR U) 'EXIT) (EQCAR (CADADR U) 'SEQ))
       (CADADR U)
       U))
- 
+
 (defmacro SUCHTHATCLAUSE  (&rest L) (LIST 'COND (LIST (CADR L) (CAR L))))
- 
+
 (defvar $BOOT NIL)
- 
+
 (defun |expandDO| (OL)
     (PROG (VARS L VL V U INITS U-VARS U-VALS ENDTEST EXITFORMS BODYFORMS)
          (if $BOOT (return (CONS 'DO OL)))
@@ -490,23 +490,23 @@
                      (SEQ G190 ,ENDTEST ,BODYFORMS ,U-VARS (GO G190) G191 ,EXITFORMS))
                   (NRECONC INITS NIL)))))
    BADO  (ERROR (FORMAT NIL "BAD DO FORMAT~%~A" OL))))
- 
+
 (defun DO_LET (VARS INITS)
   (if (OR (NULL VARS) (NULL INITS)) NIL
       (CONS (LIST 'SPADLET (CAR VARS) (CAR INITS))
            (DO_LET (CDR VARS) (CDR INITS)))))
- 
-(defun NREVERSE0 (X) 
+
+(defun NREVERSE0 (X)
   "Returns LST, reversed. The argument is modified.
 This version is needed so that (COLLECT (IN X Y) ... (RETURN 'JUNK))=>JUNK."
  (if (ATOM X) X (NREVERSE X)))
- 
+
 ; 7.8.4 Mapping
- 
+
 (defmacro COLLECT (&rest L)
     (let ((U (REPEAT-TRAN L NIL)))
         (-REDUCE 'CONS NIL (CDR U) (CAR U))))
- 
+
 (defmacro COLLECTVEC (&rest L)
    `(COLLECTV ,@L))
 
@@ -558,84 +558,84 @@ LP  (COND ((NULL X)
                                  CONDS))))
             (GO LP)))
   (ERROR "Cannot handle macro expansion")))
- 
+
 (defun MKQSADD1 (X)
   (COND ((ATOM X) `(QSADD1 ,X))
         ((AND (member (CAR X) '(-DIFFERENCE QSDIFFERENCE -) :test #'eq)
               (EQL 1 (CADDR X)))
          (CADR X))
         (`(QSADD1 ,X))))
- 
+
 ; 10.1 The Property List
- 
+
 (DEFUN FLAG (L KEY)
   "Set the KEY property of every item in list L to T."
   (mapc #'(lambda (item) (makeprop item KEY T)) L))
- 
+
 (FLAG '(* + AND OR PROGN) 'NARY)                ; flag for MKPF
- 
+
 (DEFUN FLAGP (X KEY)
   "If X has a KEY property, then FLAGP is true."
   (GET X KEY))
- 
+
 (defun PROPERTY (X IND N)
   "Returns the Nth element of X's IND property, if it exists."
   (let (Y) (if (AND (INTEGERP N) (SETQ Y (GET X IND)) (>= (LENGTH Y) N)) (ELEM Y N))))
- 
+
 ; 10.3 Creating Symbols
- 
+
 (defmacro INTERNL (a &rest b) (if (not b) `(intern ,a) `(intern (strconc ,a . ,b))))
 
 (defvar $GENNO 0)
- 
+
 (DEFUN GENVAR () (INTERNL "$" (STRINGIMAGE (SETQ $GENNO (1+ $GENNO)))))
- 
+
 (DEFUN IS_GENVAR (X)
   (AND (IDENTP X)
        (let ((y (symbol-name x)))
          (and (char= #\$ (elt y 0)) (> (size y) 1) (digitp (elt y 1))))))
- 
+
 ; 12 NUMBERS
- 
+
 ; 12.3 Comparisons on Numbers
- 
+
 (defmacro IEQUAL (&rest L) `(eql . ,L))
 (defmacro GE (&rest L) `(>= . ,L))
 (defmacro GT (&rest L) `(> . ,L))
 (defmacro LE (&rest L) `(<= . ,L))
 (defmacro LT (&rest L) `(< . ,L))
- 
+
 ; 12.4 Arithmetic Operations
- 
+
 (defmacro SPADDIFFERENCE (&rest x) `(- . ,x))
- 
+
 ; 12.6 Small Finite Field ops with vector trimming
- 
+
 ;; following macros assume 0 <= x,y < z
 
 (defmacro qsaddmod (x y z)
   `(let* ((sum (qsplus ,x ,y))
           (rsum (qsdifference sum ,z)))
      (if (qsminusp rsum) sum rsum)))
- 
+
 (defmacro qsdifmod (x y z)
   `(let ((dif (qsdifference ,x ,y)))
      (if (qsminusp dif) (qsplus dif ,z) dif)))
- 
+
 (defmacro qsmultmod (x y z)
  `(rem (* ,x ,y) ,z))
- 
+
 ; 14 SEQUENCES
- 
+
 ; 14.1 Simple Sequence Functions
 
 (define-function 'getchar #'elt)
- 
+
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
- 
+
 (defun |expandSPADREDUCE| (op bod)
     (if (not $BOOT) (BREAK))
-    (REDUCE-1 op bod)) 
+    (REDUCE-1 op bod))
 
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
       '((PLUS 0) (+ (|Zero|)) (|lcm| (|One|)) (STRCONC "") (|strconc| "")
@@ -643,16 +643,16 @@ LP  (COND ((NULL X)
         (APPEND NIL) (|append| NIL) (UNION NIL) (UNIONQ NIL) (|gcd| (|Zero|))
         (|union| NIL) (NCONC NIL) (|and| |true|) (|or| |false|) (AND 'T)
         (OR NIL)))
- 
+
 (define-function '|append| #'APPEND)
- 
+
 (defun |delete| (item sequence)
    (cond ((symbolp item) (remove item sequence :test #'eq))
          ((and (atom item) (not (arrayp item))) (remove item sequence))
          (T (remove item sequence :test #'equalp))))
 
 (MAKEPROP 'CONS 'RIGHT-ASSOCIATIVE T)
- 
+
 (defun REDUCE-1 (OP BOD)
   (let (u op1 tran iden)
     (SEQ (SETQ OP1 (cond ((EQ OP '\,) (BREAK) 'CONS)
@@ -668,7 +668,7 @@ LP  (COND ((NULL X)
                         (BREAK)
                                ))
          TRAN)))
- 
+
 (defun -REDUCE (OP Y BODY SPL)
   (PROG (X G AUX EXIT VALUE PRESET CONSCODE RESETCODE)
    (SETQ G (GENSYM))
@@ -701,89 +701,89 @@ LP  (COND ((NULL X)
       ((EQ OP 'AND) (LIST (LIST 'UNTIL (LIST 'NULL G))))
       ((EQ OP 'OR) (LIST (LIST 'UNTIL G)))
       (NIL) )))
-   (RETURN 
+   (RETURN
       (LIST 'PROGN PRESET
          (CONS 'REPEAT (APPEND AUX (APPEND SPL (LIST BODY))) ))
       )))
 
 (defun THETACHECK (VAL VAR OP) (if (EQL VAL VAR) (THETA_ERROR OP) val))
- 
+
 (defun THETA_ERROR (OP)
   (Boot::|userError|
         (LIST "Sorry, do not know the identity element for " OP)))
- 
+
 ; 15 LISTS
- 
+
 ; 15.1 Conses
- 
- 
+
+
 (defmacro |SPADfirst| (l)
   (let ((tem (gensym)))
     `(let ((,tem ,l)) (if ,tem (car ,tem) (first-error)))))
- 
+
 (defun first-error () (error "Cannot take first of an empty list"))
- 
+
 ; 15.2 Lists
- 
- 
+
+
 (defmacro ELEM (val &rest indices)
    (if (null indices) val `(ELEM (nth (1- ,(car indices)) ,val) ,@(cdr indices))))
- 
+
 (defun ELEMN (X N DEFAULT)
   (COND ((NULL X) DEFAULT)
         ((EQL N 1) (CAR X))
         ((ELEMN (CDR X) (SUB1 N) DEFAULT))))
- 
+
 (defmacro SPADCONST (&rest L) (cons 'qrefelt L))
- 
+
 (defmacro SPADCALL (&rest L)
-  (let ((args (butlast l)) 
-	(fn (car (last l))) 
+  (let ((args (butlast l))
+	(fn (car (last l)))
 	(gi (gensym)))
      ;; (values t) indicates a single return value
-    `(let ((,gi ,fn)) 
-       (the (values t) 
-	 (funcall 
-	  (the (function ,(make-list (length l) :initial-element t) t) 
+    `(let ((,gi ,fn))
+       (the (values t)
+	 (funcall
+	  (the (function ,(make-list (length l) :initial-element t) t)
 	    (car ,gi))
-	  ,@args 
+	  ,@args
 	  (cdr ,gi))))))
- 
+
 (defun LISTOFATOMS (X)
   (COND ((NULL X) NIL)
         ((ATOM X) (LIST X))
         ((NCONC (LISTOFATOMS (CAR X)) (LISTOFATOMS (CDR X))))))
- 
+
 (DEFUN LASTATOM (L) (if (ATOM L) L (LASTATOM (CDR L))))
- 
+
 (define-function 'LASTTAIL #'last)
- 
+
 (defun DROP (N X &aux m)
   "Return a pointer to the Nth cons of X, counting 0 as the first cons."
   (COND ((EQL N 0) X)
         ((> N 0) (DROP (1- N) (CDR X)))
         ((>= (setq m (+ (length x) N)) 0) (take m x))
         ((CROAK (list "Bad args to DROP" N X)))))
- 
+
 (DEFUN TAKE (N X &aux m)
   "Returns a list of the first N elements of list X."
   (COND ((EQL N 0) NIL)
         ((> N 0) (CONS (CAR X) (TAKE (1- N) (CDR X))))
         ((>= (setq m (+ (length x) N)) 0) (DROP m x))
         ((CROAK (list "Bad args to DROP" N X)))))
- 
+
 (DEFUN NUMOFNODES (X) (if (ATOM X) 0 (+ 1 (NUMOFNODES (CAR X)) (NUMOFNODES (CDR X)))))
- 
+
 (DEFUN TRUNCLIST (L TL) "Truncate list L at the point marked by TL."
   (let ((U L)) (TRUNCLIST-1 L TL) U))
- 
+
 (DEFUN TRUNCLIST-1 (L TL)
   (COND ((ATOM L) L)
         ((EQL (CDR L) TL) (RPLACD L NIL))
         ((TRUNCLIST-1 (CDR L) TL))))
- 
+
 ; 15.4 Substitution of Expressions
- 
+
 (DEFUN SUBSTEQ (NEW OLD FORM)
   "Version of SUBST that uses EQ rather than EQUAL on the world."
   (PROG (NFORM HNFORM ITEM)
@@ -804,18 +804,18 @@ LP  (COND ((NULL X)
 
 
 (DEFUN SUBLISNQ (KEY E) (declare (special KEY)) (if (NULL KEY) E (SUBANQ E)))
- 
+
 (DEFUN SUBANQ (E)
   (declare (special key))
   (COND ((ATOM E) (SUBB KEY E))
         ((EQCAR E (QUOTE QUOTE)) E)
         ((MAPCAR #'(LAMBDA (J) (SUBANQ J)) E))))
- 
+
 (DEFUN SUBB (X E)
   (COND ((ATOM X) E)
         ((EQ (CAAR X) E) (CDAR X))
         ((SUBB (CDR X) E))))
- 
+
 (defun SUBLISLIS (newl oldl form)
    (sublis (mapcar #'cons oldl newl) form))
 
@@ -825,68 +825,68 @@ LP  (COND ((NULL X)
 ;;; such as modemaps to see if the $X$ object occurs within $Y$. One
 ;;; particular use is in a function called [[isPartialMode]] (see
 ;;; i-funsel.boot) to decide
-;;; if a modemap is only partially complete. If this is true then the 
-;;; modemap will contain the constant [[$EmptyMode]]. So the call 
-;;; ends up being [[CONTAINED |$EmptyMode| Y]]. 
+;;; if a modemap is only partially complete. If this is true then the
+;;; modemap will contain the constant [[$EmptyMode]]. So the call
+;;; ends up being [[CONTAINED |$EmptyMode| Y]].
 (DEFUN CONTAINED (X Y)
   (if (symbolp x)
       (contained\,eq X Y)
       (contained\,equal X Y)))
- 
+
 (defun contained\,eq (x y)
        (if (atom y) (eq x y)
            (or (contained\,eq x (car y)) (contained\,eq x (cdr y)))))
- 
+
 (defun contained\,equal (x y)
    (cond ((atom y) (equal x y))
          ((equal x y) 't)
          ('t (or (contained\,equal x (car y)) (contained\,equal x (cdr y))))))
-  
+
 (DEFUN S+ (X Y)
   (COND ((ATOM Y) X)
         ((ATOM X) Y)
         ((MEMBER (CAR X) Y :test #'equal) (S+ (CDR X) Y))
         ((S+ (CDR X) (CONS (CAR X) Y)))))
- 
+
 (defun S* (l1 l2) (INTERSECTION l1 l2 :test #'equal))
 (defun S- (l1 l2) (set-difference l1 l2 :test #'equal))
- 
+
 (DEFUN PREDECESSOR (TL L)
   "Returns the sublist of L whose CDR is EQ to TL."
   (COND ((ATOM L) NIL)
         ((EQ TL (CDR L)) L)
         ((PREDECESSOR TL (CDR L)))))
- 
+
 (defun remdup (l) (remove-duplicates l :test #'equalp))
- 
+
 ; 15.6 Association Lists
- 
+
 (defun DELASC (u v) "Returns a copy of a-list V in which any pair with key U is deleted."
    (cond ((atom v) nil)
          ((or (atom (car v))(not (equal u (caar v))))
           (cons (car v) (DELASC u (cdr v))))
          ((cdr v))))
- 
+
 (DEFUN ADDASSOC (X Y L)
   "Put the association list pair (X . Y) into L, erasing any previous association for X"
   (COND ((ATOM L) (CONS (CONS X Y) L))
         ((EQUAL X (CAAR L)) (CONS (CONS X Y) (CDR L)))
         ((CONS (CAR L) (ADDASSOC X Y (CDR L))))))
- 
+
 (DEFUN DELLASOS (U V)
   "Remove any assocation pair (U . X) from list V."
   (COND ((ATOM V) NIL)
         ((EQUAL U (CAAR V)) (CDR V))
         ((CONS (CAR V) (DELLASOS U (CDR V))))))
- 
+
 (DEFUN ASSOCLEFT (X)
   "Returns all the keys of association list X."
   (if (ATOM X) X (mapcar #'car x)))
- 
+
 (DEFUN ASSOCRIGHT (X)
   "Returns all the datums of association list X."
   (if (ATOM X) X (mapcar #'cdr x)))
- 
+
 (DEFUN LASSOC (X Y)
   "Return the datum associated with key X in association list Y."
   (PROG NIL
@@ -894,7 +894,7 @@ LP  (COND ((NULL X)
               ((EQUAL (CAAR Y) X) (RETURN (CDAR Y))) )
         (SETQ Y (CDR Y))
         (GO A)))
- 
+
 (DEFUN |rassoc| (X Y)
   "Return the datum associated with key X in association list Y."
   (PROG NIL
@@ -902,16 +902,16 @@ LP  (COND ((NULL X)
               ((EQUAL (CDAR Y) X) (RETURN (CAAR Y))) )
         (SETQ Y (CDR Y))
         (GO A)))
- 
+
 ; (defun QLASSQ (p a-list) (let ((y (assoc p a-list :test #'eq))) (if y (cdr y))))
 (defun QLASSQ (p a-list) (cdr (assq p a-list)))
 
 (define-function 'LASSQ #'QLASSQ)
- 
+
 (defun pair (x y) (mapcar #'cons x y))
- 
+
 ;;; Operations on Association Sets (AS)
- 
+
 (defun AS-INSERT (A B L)
    ;; PF(item) x PF(item) x LIST(of pairs) -> LIST(of pairs with (A . B) added)
    ;; destructive on L; if (A . C) appears already, C is replaced by B
@@ -919,69 +919,69 @@ LP  (COND ((NULL X)
          ((equal a (caar l)) (rplac (cdar l) b) l)
          ((?order a (caar l)) (cons (cons a b) l))
          (t (as-insert1 a b l) l)))
- 
+
 (defun as-insert1 (a b l)
    (cond ((null (cdr l)) (rplac (cdr l) (list (cons a b))))
          ((equal a (caadr l)) (rplac (cdadr l) b))
          ((?order a (caadr l)) (rplac (cdr l) (cons (cons a b) (cdr l))))
          (t (as-insert1 a b (cdr l)))))
- 
- 
+
+
 ; 17 ARRAYS
- 
+
 ; 17.6 Changing the Dimensions of an Array
- 
+
 
 ;;; The function below continually adds one element to a vector.
 ;;; We use vectors with fill pointers to limit numbers of
 ;;; copies made (otherwise this function would use too much time).
 (defun lengthenvec (v n)
-  (if 
+  (if
     (and (array-has-fill-pointer-p v) (adjustable-array-p v))
-    (if 
-      (>= n (array-total-size v)) 
-        (adjust-array v (* n 2) :fill-pointer n) 
-        (progn 
-          (setf (fill-pointer v) n) 
+    (if
+      (>= n (array-total-size v))
+        (adjust-array v (* n 2) :fill-pointer n)
+        (progn
+          (setf (fill-pointer v) n)
           v))
     (replace (make-array n :fill-pointer t) v)))
 
- 
+
 ; 22 INPUT/OUTPUT
- 
+
 ; 22.2 Input Functions
- 
+
 ; 22.2.1 Input from Character Streams
- 
-(DEFUN STREAM-EOF (STRM) 
+
+(DEFUN STREAM-EOF (STRM)
   "T if input stream STRM is at the end or saw a ~."
   (not (peek-char nil STRM nil nil nil))     )
- 
+
 (defvar $filelinenumber 0)
 (defvar $prompt "--->")
 (defvar stream-buffer nil)
- 
+
 (defvar *EOF* NIL)
- 
- 
+
+
 ; 22.3 Output Functions
- 
+
 ; 22.3.1 Output to Character Streams
- 
+
 (defun |sayTeX| (x) (if (null x) nil (sayBrightly1 x |$texOutputStream|)))
- 
+
 (defvar |$sayBrightlyStream| nil "if not nil, gives stream for sayBrightly output")
- 
+
 (defun |sayBrightly| (x &optional (out-stream *standard-output*))
   (COND ((NULL X) NIL)
         (|$sayBrightlyStream| (sayBrightly1 X |$sayBrightlyStream|))
         ((IS-CONSOLE out-stream) (sayBrightly1 X out-stream))
         ((sayBrightly1 X out-stream) (sayBrightly1 X *error-output*))))
- 
+
 (defun |sayBrightlyI| (x &optional (s *error-output*))
     "Prints at console or output stream."
   (if (NULL X) NIL (sayBrightly1 X S)))
- 
+
 (defun |sayBrightlyNT| (x &optional (S *standard-output*))
   (COND ((NULL X) NIL)
         (|$sayBrightlyStream| (sayBrightlyNT1 X |$sayBrightlyStream|))
@@ -989,55 +989,55 @@ LP  (COND ((NULL X)
         ((sayBrightly1 X S) (sayBrightlyNT1 X *error-output*))))
 
 (defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
- 
+
 (defun sayBrightlyNT1 (X |$fricasOutput|)
     (if (ATOM X) (BRIGHTPRINT-0 X) (BRIGHTPRINT X)))
- 
+
 (defun sayBrightly1 (X str)
     (sayBrightlyNT1 X str)
-    (TERPRI str) 
+    (TERPRI str)
     (force-output str))
- 
+
 (defun |saySpadMsg| (X)
   (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
- 
+
 (defun |sayALGEBRA| (X) "Prints on Algebra output stream."
   (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
- 
+
 (defun |sayMSG| (X)
   (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
- 
+
 (defun |sayMSGNT| (X)
   (if (NULL X) NIL (sayBrightlyNT1 X |$algebraOutputStream|)))
- 
+
 (defun |sayMSG2File| (msg)
   (PROG (file str)
         (SETQ file (|makePathname| '|spadmsg| '|listing|))
         (SETQ str (MAKE-OUTSTREAM file))
         (sayBrightly1 msg str)
         (SHUT str) ) )
- 
+
 (defvar |$fortranOutputStream|)
- 
+
 (defun |sayFORTRAN| (x) "Prints on Fortran output stream."
   (if (NULL X) NIL (sayBrightly1 X |$fortranOutputStream|)))
- 
+
 (defvar |$formulaOutputStream|)
- 
+
 (defun |sayFORMULA| (X) "Prints on formula output stream."
   (if (NULL X) NIL (sayBrightly1 X |$formulaOutputStream|)))
- 
+
 (defvar |$highlightAllowed| nil "Used in BRIGHTPRINT and is a )set variable.")
- 
+
 (defvar |$highlightFontOn| (concat " " |$boldString|)
                      "switch to highlight font")
 (defvar |$highlightFontOff| (concat |$normalString| " ")
                      "return to normal font")
- 
+
 (defun SAY (&rest x) (progn (MESSAGEPRINT X) (TERPRI)))
- 
+
 (DEFUN MESSAGEPRINT (X) (mapc #'messageprint-1 X))
- 
+
 (DEFUN MESSAGEPRINT-1 (X)
   (COND ((OR (EQ X '|%l|) (EQUAL X "%l")) (TERPRI))
         ((STRINGP X) (PRINC X))
@@ -1045,54 +1045,54 @@ LP  (COND ((NULL X)
         ((ATOM X) (PRINC X))
         ((PRINC "(") (MESSAGEPRINT-1 (CAR X))
          (MESSAGEPRINT-2 (CDR X)) (PRINC ")"))))
- 
+
 (DEFUN MESSAGEPRINT-2 (X)
   (if (ATOM X)
       (if (NULL X) NIL (progn (PRINC " . ") (MESSAGEPRINT-1 X)))
       (progn (PRINC " ") (MESSAGEPRINT-1 (CAR X)) (MESSAGEPRINT-2 (CDR X)))))
- 
+
 (DEFUN BLANKS (N &optional (stream *standard-output*)) "Print N blanks."
     (do ((i 1 (the fixnum(1+ i))))
         ((> i N))(declare (fixnum i n)) (princ " " stream)))
- 
+
 ; 24 ERRORS
- 
+
 ; 24.2 Specialized Error-Signalling Forms and Macros
- 
+
 (defun MOAN (&rest x) (|sayBrightly| `(|%l| "===> " ,@X |%l|)))
- 
+
 (DEFUN FAIL () (|systemError| '"Antique error (FAIL ENTERED)"))
- 
+
 (defun CROAK (&rest x) (|systemError| x))
- 
+
 ; 25 MISCELLANEOUS FEATURES
- 
+
 ;; range tests and assertions
- 
+
 (defmacro |assert| (x y) `(IF (NULL ,x) (|error| ,y)))
- 
+
 (defun coerce-failure-msg (val mode)
    (STRCONC (MAKE-REASONABLE (STRINGIMAGE val))
             " cannot be coerced to mode "
             (STRINGIMAGE (|devaluate| mode))))
- 
+
 (defmacro |check-subtype| (pred submode val)
    `(|assert| ,pred (coerce-failure-msg ,val ,submode)))
- 
+
 (defmacro |check-union| (pred branch val)
    `(|assert| ,pred (coerce-failure-msg ,val ,branch )))
- 
+
 (defun MAKE-REASONABLE (Z)
    (if (> (length Z) 30) (CONCAT "expression beginning " (subseq Z 0 20)) Z))
- 
- 
+
+
 (defmacro |elapsedUserTime| () '(get-internal-run-time))
- 
+
 #+:GCL
 (defmacro |elapsedGcTime| () '(system:gbc-time))
 #-:GCL
 (defmacro |elapsedGcTime| () '0)
- 
+
 (defmacro |do| (&rest args) (CONS 'PROGN args))
 
 (defmacro |char| (arg)
@@ -1107,7 +1107,7 @@ LP  (COND ((NULL X)
                   (char= (char LINE (1- l)) #\ ))
              (string-right-trim " " LINE)
              LINE)))
- 
+
 ; # Gives the number of elements of a list, 0 for atoms.
 ; If we quote it, then an interpreter trip is necessary every time
 ; we call #, and this costs us - 4% in the RATINT DEMO."
@@ -1124,7 +1124,7 @@ LP  (COND ((NULL X)
 ; This function was modified by Greg Vanuxem on March 31, 2005
 ; to handle the special case of #'(lambda ..... which expands
 ; into (function (lambda .....
-; 
+;
 ; The extra if clause fixes bugs #196 and #114
 ;
 ; an example that used to cause the failure was:
@@ -1136,16 +1136,16 @@ LP  (COND ((NULL X)
 ;
 ; (defun |xl;f;1;initial| (|#1| |envArg|)
 ;  (prog (#:G1420)
-;   (return 
+;   (return
 ;    (progn
 ;     (lett #:G1420 'uninitialized_variable |f| |#1;f;1:initial|)
-;      (spadcall 
+;      (spadcall
 ;       (cons (|function| (lambda (#:G1420 |envArg|) #:G1420)) (vector))
 ;       |#1|
 ;       (qrefelt |*1;f;1;initial;MV| 0))))))
 ;
 ; the (|function| (lambda form used to cause an infinite expansion loop
-;      
+;
 (defun macroexpandall (sexpr)
  (cond
   ((atom sexpr) sexpr)
@@ -1158,14 +1158,14 @@ LP  (COND ((NULL X)
        ((not (and (consp sexpr) (symbolp (car sexpr))
                   (macro-function (car sexpr)))))
      (setq sexpr (macroexpand sexpr)))
-   (if (consp sexpr) 
+   (if (consp sexpr)
       (let ((a (car sexpr)) (b (cadr sexpr)))
          (if (and (eq a 'function) (consp b) (eq (car b) 'lambda))
             (cons a (list (cons (car b)
                                 (mapcar #'macroexpandall (cdadr sexpr)))))
             (mapcar #'macroexpandall sexpr)))
       sexpr))
-  ('else        
+  ('else
     (mapcar #'macroexpandall sexpr))))
 
 
@@ -1206,7 +1206,7 @@ LP  (COND ((NULL X)
 ;; moved here from preparse.lisp
 
 (defun NEXT-TAB-LOC (i) (* (1+ (truncate i 8)) 8))
- 
+
 (defun INDENT-POS (STR)
   (do ((i 0 (1+ i))
        (pos 0))
@@ -1226,7 +1226,7 @@ LP  (COND ((NULL X)
    (if (and (stringp str) (> (length str) 0))
       (let ((bpos (nonblankloc str))
             (tpos (indent-pos str)))
-        (setq str 
+        (setq str
               (if (eql bpos tpos)
                   str
                   (concatenate 'string
@@ -1238,9 +1238,9 @@ LP  (COND ((NULL X)
     str))
 
 (defun blankp (char) (or (eq char #\Space) (eq char #\tab)))
- 
+
 (defun nonblankloc (str) (position-if-not #'blankp str))
- 
+
 ;; stream handling for paste-in generation
 
 (defun |applyWithOutputToString| (func args)
@@ -1263,7 +1263,7 @@ LP  (COND ((NULL X)
     (loop
      (setq eol (position #\Newline str :start bol))
      (if (null eol) (return))
-     (if (> eol bol) 
+     (if (> eol bol)
          (setq line-list (cons (subseq str bol eol) line-list)))
      (setq bol (+ eol 1)))
     (nreverse line-list)))
@@ -1282,7 +1282,7 @@ LP  (COND ((NULL X)
 (defmacro |embrace| (X) `(|wrapBraces| (|saveC|) ,X (|restoreC|)))
 (defmacro |indentNB| (X) `(|wrapBraces| (|saveD|) ,X (|restoreD|)))
 
-(defmacro |tryBreak| (a b c d) 
+(defmacro |tryBreak| (a b c d)
 ; Try to format <a b> by:
 ; (1) with no line breaking ($autoLine = nil)
 ; (2) with possible line breaks within a;
@@ -1296,16 +1296,16 @@ LP  (COND ((NULL X)
          (and ,a (|formatRight| '|formatPreferPile| ,b ,c ,d)))
       (|restoreState| state)
       (and (eqcar ,b (quote seq))
-               (|embrace| (and 
+               (|embrace| (and
                   ,a
                   (|formatLB|)
                   (|formatRight| '|formatPreferPile| ,b ,c ,d))))
       (|restoreState| state)
-      (|embrace| (and ,a 
+      (|embrace| (and ,a
                   (|formatLB|)
                   (|formatRight| '|formatPreferPile| ,b ,c ,d))))))
 
-(defmacro |tryBreakNB| (a b c d) 
+(defmacro |tryBreakNB| (a b c d)
 ; Try to format <a b> by:
 ; (1) with no line breaking ($autoLine = nil)
 ; (2) with possible line breaks within a;
@@ -1321,20 +1321,18 @@ LP  (COND ((NULL X)
       (|restoreState| state)
       (markhash ,b 1)
       (and (eqcar ,b (quote seq))
-               (|embrace| (and 
+               (|embrace| (and
                   ,a
                   (|formatLB|)
                   (|formatRight| '|formatPreferPile| ,b ,c ,d))))
       (markhash ,b 2)
       (|restoreState| state)
-      (|indentNB| (and ,a 
+      (|indentNB| (and ,a
                   (|formatRight| '|formatPreferPile| ,b ,c ,d)))
       (markhash ,b 3)
 
-)))   
+)))
 
 (defun markhash (key n) (progn (cond
   ((equal n 3) (remhash key ht))
   ('t (hput ht key n)) ) nil))
-
-

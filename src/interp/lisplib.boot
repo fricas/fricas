@@ -31,58 +31,58 @@
 
 
 --% Standard Library Creation Functions
- 
+
 readLib(fn,ft) == readLib1(fn,ft,"*")
- 
+
 readLib1(fn,ft,fm) ==
   -- see if it exists first
   p := pathname [fn,ft,fm]
   readLibPathFast p
- 
+
 readLibPathFast p ==
   -- DO NOT assume 1) p is a valid pathname
   --               2) file has already been checked for existence
   rMkIstream(p)
- 
+
 writeLib(fn,ft) == writeLib1(fn,ft,"*")
- 
+
 writeLib1(fn,ft,fm) == rMkOstream([fn,ft,fm])
- 
+
 putFileProperty(fn,ft,id,val) ==
   fnStream:= writeLib1(fn,ft,"*")
   val:= rwrite( id,val,fnStream)
   RSHUT fnStream
   val
- 
+
 lisplibWrite(prop,val,filename) ==
   -- this may someday not write NIL keys, but it will now
   if $LISPLIB then
      rwrite(prop,val,filename)
- 
- 
+
+
 evalAndRwriteLispForm(key,form) ==
   eval form
   rwriteLispForm(key,form)
- 
+
 rwriteLispForm(key,form) ==
   if $LISPLIB then
     rwrite( key,form,$libFile)
     outputLispForm(key,form)
- 
+
 getLisplib(name,id) ==
   -- this version does cache the returned value
   getFileProperty(name,$spadLibFT,id,true)
- 
+
 getLisplibNoCache(name,id) ==
   -- this version does not cache the returned value
   getFileProperty(name,$spadLibFT,id,false)
- 
+
 getFileProperty(fn,ft,id,cache) ==
   fn in '(DOMAIN SUBDOM MODE) => nil
   p := pathname [fn,ft,'"*"]
   cache => hasFileProperty(p,id,fn)
   hasFilePropertyNoCache(p,id,fn)
- 
+
 hasFilePropertyNoCache(p,id,abbrev) ==
   -- it is assumed that the file exists and is a proper pathname
   -- startTimingProcess 'diskread
@@ -93,41 +93,41 @@ hasFilePropertyNoCache(p,id,abbrev) ==
   RSHUT fnStream
   -- stopTimingProcess 'diskread
   val
- 
+
 --% Uninstantiating
- 
+
 unInstantiate(clist) ==
   for c in clist repeat
     clearConstructorCache(c)
   killNestedInstantiations(clist)
- 
+
 killNestedInstantiations(deps) ==
   for key in HKEYS($ConstructorCache)
     repeat
       for [arg,count,:inst] in HGET($ConstructorCache,key) repeat
         isNestedInstantiation(inst.0,deps) =>
           HREMPROP($ConstructorCache,key,arg)
- 
+
 isNestedInstantiation(form,deps) ==
   form is [op,:argl] =>
     op in deps => true
     or/[isNestedInstantiation(x,deps) for x in argl]
   false
- 
+
 --% Loading
- 
+
 loadLibIfNotLoaded libName ==
   -- replaces old SpadCondLoad
   -- loads is library is not already loaded
   $PrintOnly = 'T => NIL
   GETL(libName,'LOADED) => NIL
   loadLib libName
- 
+
 loadLib cname ==
   startTimingProcess 'load
   fullLibName := GETDATABASE(cname,'OBJECT) or return nil
   systemdir? := isSystemDirectory(pathnameDirectory fullLibName)
-  update? := $forceDatabaseUpdate or not systemdir? 
+  update? := $forceDatabaseUpdate or not systemdir?
   not update? =>
      loadLibNoUpdate(cname, cname, fullLibName)
   kind := GETDATABASE(cname,'CONSTRUCTORKIND)
@@ -160,7 +160,7 @@ loadLibNoUpdate(cname, libName, fullLibName) ==
   if $printLoadMsgs = "on" then
     sayKeyedMsg("S2IL0002",[namestring fullLibName,kind,cname])
   if CATCH('VERSIONCHECK,load__quietly(fullLibName)) = -1
-    then 
+    then
       PRINC('"   wrong library version...recompile ")
       PRINC(fullLibName)
       TERPRI()
@@ -172,11 +172,11 @@ loadLibNoUpdate(cname, libName, fullLibName) ==
      if $InteractiveMode then $CategoryFrame := [[nil]]
      stopTimingProcess 'load
   'T
- 
+
 loadIfNecessary u == loadLibIfNecessary(u,true)
- 
+
 loadIfNecessaryAndExists u == loadLibIfNecessary(u,nil)
- 
+
 loadLibIfNecessary(u,mustExist) ==
   u = '$EmptyMode => u
   null atom u => loadLibIfNecessary(first u,mustExist)
@@ -192,7 +192,7 @@ loadLibIfNecessary(u,mustExist) ==
          updateCategoryFrameForConstructor u
       throwKeyedMsg("S2IL0005",[u])
   value
- 
+
 convertOpAlist2compilerInfo(opalist) ==
    "append"/[[formatSig(op,sig) for sig in siglist]
                 for [op,:siglist] in opalist] where
@@ -200,10 +200,10 @@ convertOpAlist2compilerInfo(opalist) ==
           pred := if stuff then first stuff else 'T
           impl := if CDR stuff then CADR stuff else 'ELT -- handles 'CONST
           [[op, typelist], pred, [impl, '$, slot]]
-   
+
 updateCategoryFrameForConstructor(constructor) ==
    opAlist := GETDATABASE(constructor, 'OPERATIONALIST)
-   [[dc,:sig],[pred,impl]] := GETDATABASE(constructor, 'CONSTRUCTORMODEMAP) 
+   [[dc,:sig],[pred,impl]] := GETDATABASE(constructor, 'CONSTRUCTORMODEMAP)
    $CategoryFrame := put(constructor,'isFunctor,
        convertOpAlist2compilerInfo(opAlist),
        addModemap(constructor, dc, sig, pred, impl,
@@ -221,7 +221,7 @@ loadFunctor u ==
   null atom u => loadFunctor first u
   loadLibIfNotLoaded u
   u
- 
+
 makeConstructorsAutoLoad() ==
   for cnam in allConstructors() repeat
     REMPROP(cnam,'LOADED)
@@ -229,7 +229,7 @@ makeConstructorsAutoLoad() ==
      then PUT(cnam,'NILADIC,'T)
      else REMPROP(cnam,'NILADIC)
     systemDependentMkAutoload(cnam,cnam)
- 
+
 systemDependentMkAutoload(fn,cnam) ==
     FBOUNDP(cnam) => "next"
     asharpName := GETDATABASE(cnam, 'ASHARP?) =>
@@ -247,7 +247,7 @@ autoLoad(abb,cname) ==
       FMAKUNBOUND cname
       loadLib cname
   SYMBOL_-FUNCTION cname
- 
+
 setAutoLoadProperty(name) ==
   REMPROP(name,'LOADED)
   SETF(SYMBOL_-FUNCTION name,mkAutoLoad(name, name))
@@ -257,7 +257,7 @@ unloadOneConstructor(cnam,fn) ==
     SETF(SYMBOL_-FUNCTION cnam,mkAutoLoad(fn, cnam))
 
 --% Compilation
- 
+
 compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   --fn= compDefineCategory OR compDefineFunctor
   sayMSG fillerSpaces(72,'"-")
@@ -275,7 +275,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $lisplibOperationAlist: local := NIL
   $lisplibSuperDomain: local := NIL
   $libFile: local := NIL
-  $lisplibCategory: local := nil        
+  $lisplibCategory: local := nil
   --for categories, is rhs of definition; otherwise, is target of functor
   --will eventually become the "constructorCategory" property in lisplib
   --set in compDefineCategory1 if category, otherwise in finalizeLisplib
@@ -307,7 +307,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
     then updateCategoryFrameForCategory op
      else updateCategoryFrameForConstructor op
   res
- 
+
 initializeLisplib libName ==
   _$ERASE(libName,'ERRORLIB)
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
@@ -317,7 +317,7 @@ initializeLisplib libName ==
   $lisplibSignatureAlist := nil
   if pathnameTypeId(_/EDITFILE) = 'SPAD
     then outputLispForm('VERSION,['_/VERSIONCHECK,_/MAJOR_-VERSION])
- 
+
 finalizeLisplib libName ==
   lisplibWrite('"constructorForm",removeZeroOne $lisplibForm,$libFile)
   lisplibWrite('"constructorKind",kind:=removeZeroOne $lisplibKind,$libFile)
@@ -353,7 +353,7 @@ finalizeLisplib libName ==
 lisplibDoRename(libName) ==
   _$REPLACE([libName,$spadLibFT],
     [libName,'ERRORLIB])
- 
+
 lisplibError(cname,fname,type,cn,fn,typ,error) ==
   sayMSG bright ['"  Illegal ",$spadLibFT]
   error in '(duplicateAbb  wrongType) =>
@@ -361,22 +361,22 @@ lisplibError(cname,fname,type,cn,fn,typ,error) ==
       [namestring [fname,$spadLibFT],type,cname,typ,cn])
   error is 'abbIsName =>
     throwKeyedMsg("S2IL0008",[fname,typ,namestring [fn,$spadLibFT]])
- 
+
 getPartialConstructorModemapSig(c) ==
   (s := getConstructorSignature c) => rest s
   throwEvalTypeMsg("S2IL0015",[c])
- 
+
 getConstructorOpsAndAtts(form, kind) ==
   kind is 'category => getCategoryOpsAndAtts(form)
   getFunctorOpsAndAtts(form)
- 
+
 getCategoryOpsAndAtts(catForm) ==
   -- returns [operations,:attributes] of CAR catForm
   [transformOperationAlist getSlot1FromCategoryForm(catForm)]
- 
+
 getFunctorOpsAndAtts(form) ==
   [transformOperationAlist $lisplibOperationAlist]
- 
+
 transformOperationAlist operationAlist ==
   --  this transforms the operationAlist which is written out onto LISPLIBs.
   --  The original form of this list is a list of items of the form:
@@ -406,18 +406,18 @@ transformOperationAlist operationAlist ==
     itemList:= [signatureItem,:LASSQ(op,newAlist)]
     newAlist:= insertAlist(op,itemList,newAlist)
   newAlist
- 
+
 getConstructorModemap form ==
   GETDATABASE(opOf form, 'CONSTRUCTORMODEMAP)
- 
+
 getConstructorSignature form ==
   (mm := GETDATABASE(opOf(form),'CONSTRUCTORMODEMAP)) =>
     [[.,:sig],:.] := mm
     sig
   NIL
- 
+
 --% from MODEMAP BOOT
- 
+
 augModemapsFromDomain1(name,functorForm,e) ==
   GETL(KAR functorForm,"makeFunctionList") =>
     addConstructorModemaps(name,functorForm,e)
@@ -429,18 +429,18 @@ augModemapsFromDomain1(name,functorForm,e) ==
     augModemapsFromCategory(name,name,functorForm,catform,e)
   stackMessage [functorForm," is an unknown mode"]
   e
- 
+
 getSlot1FromCategoryForm ([op, :argl]) ==
   u:= eval [op,:MAPCAR('MKQ,TAKE(#argl,$FormalMapVariableList))]
   null VECP u =>
     systemErrorHere '"getSlot1FromCategoryForm"
-  u.1 
- 
- 
+  u.1
+
+
 --% constructor evaluation
 --  The following functions are used by the compiler but are modified
 --  here for use with new LISPLIB scheme
- 
+
 mkEvalableCategoryForm c ==       --from DEFINE
   c is [op,:argl] =>
     op="Join" => ["Join",:[mkEvalableCategoryForm x for x in argl]]
@@ -460,19 +460,19 @@ mkEvalableCategoryForm c ==       --from DEFINE
     [x,m,$e]:= compOrCroak(c,$EmptyMode,$e)
     m=$Category => x
   MKQ c
- 
+
 isDomainForm(D,e) ==
   --added for MPOLY 3/83 by RDJ
   MEMQ(KAR D,$SpecialDomainNames) or isFunctor D or
     -- ((D is ['Mapping,target,:.]) and isCategoryForm(target,e)) or
      ((getmode(D,e) is ['Mapping,target,:.]) and isCategoryForm(target,e)) or
        isCategoryForm(getmode(D,e),e) or isDomainConstructorForm(D,e)
- 
+
 isDomainConstructorForm(D,e) ==
   D is [op,:argl] and (u:= get(op,"value",e)) and
     u is [.,["Mapping",target,:.],:.] and
       isCategoryForm(EQSUBSTLIST(argl,$FormalMapVariableList,target),e)
- 
+
 isFunctor x ==
   op:= opOf x
   not IDENTP op => false
@@ -488,4 +488,3 @@ isFunctor x ==
       else updateCategoryFrameForConstructor op
     get(op,'isFunctor,$CategoryFrame)
   nil
- 
