@@ -41,7 +41,7 @@ profileWrite() ==  --called from finalizeLisplib
 
 profileTran alist ==
   $profileHash := MAKE_-HASH_-TABLE()
-  for [opSig,:info] in alist repeat 
+  for [opSig,:info] in alist repeat
     op := opOf opSig
     sig := KAR KDR opSig
     HPUT($profileHash,op,[[sig,:info],:HGET($profileHash,op)])
@@ -76,14 +76,13 @@ profileDisplayOp(op,alist1) ==
   sayBrightly op
   if LASSOC('arguments,alist1) then
     sayBrightly '"  arguments"
-    for [x,:t] in MSORT LASSOC('arguments,alist1) repeat 
+    for [x,:t] in MSORT LASSOC('arguments,alist1) repeat
       sayBrightly concat('"     ",x,": ",prefix2String t)
   if LASSOC('locals,alist1) then
     sayBrightly '"  locals"
-    for [x,:t] in MSORT LASSOC('locals,alist1) repeat 
+    for [x,:t] in MSORT LASSOC('locals,alist1) repeat
       sayBrightly concat('"     ",x,": ",prefix2String t)
   for [con,:alist2] in alist1 | not MEMQ(con,'(locals arguments)) repeat
     sayBrightly concat('"  ",prefix2String con)
     for [op1,:sig] in MSORT alist2 repeat
       sayBrightly ['"    ",:formatOpSignature(op1,sig)]
-

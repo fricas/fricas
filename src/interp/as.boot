@@ -241,7 +241,7 @@ asGetModemaps(opAlist,oform,kind,modemap) ==
     kind = 'function => [["isFreeFunction","*1",opOf form]]
     [['ofCategory,:u] for u in [:pred1,:domainList]]
 --  for [op,:itemlist] in SUBLISLIS(rpvl, $FormalMapVariableList,opAlist) repeat
---  the code seems to oscillate between generating $FormalMapVariableList 
+--  the code seems to oscillate between generating $FormalMapVariableList
 --  and generating $TriangleVariableList
   for [op,:itemlist] in SUBLISLIS(rpvl, $FormalMapVariableList,opAlist) repeat
     for [sig0, pred] in itemlist repeat
@@ -489,9 +489,9 @@ asytranApply(['Apply,name,:arglist],levels,local?) ==
   MEMQ(name,'(Record Union)) =>
     [name,:[asytranApplySpecial(x, levels, local?) for x in arglist]]
   null arglist => [name]
-  name is [ 'RestrictTo, :.] => 
+  name is [ 'RestrictTo, :.] =>
     asytranApply(['Apply, CAR CDR name,:arglist], levels, local?)
-  name is [ 'Qualify, :.] => 
+  name is [ 'Qualify, :.] =>
     asytranApply(['Apply, CAR CDR name,:arglist], levels, local?)
   name is 'string => asytranLiteral CAR arglist
   name is 'integer => asytranLiteral CAR arglist

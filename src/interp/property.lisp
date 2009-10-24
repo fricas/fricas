@@ -444,4 +444,3 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (VECTOR |compVector|)
   (|where| |compWhere|)
 )) (MAKEPROP (CAR X) 'SPECIAL  (CADR X)))
-

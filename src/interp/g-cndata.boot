@@ -57,15 +57,15 @@ getCDTEntry(info,isName) ==
     not isName and EQ(abb,info) => entry
     NIL
   entry
- 
+
 abbreviation? abb ==
   -- if it is an abbreviation, return the corresponding name
   GETDATABASE(abb,'CONSTRUCTOR)
- 
+
 constructor? name ==
   -- if it is a constructor name, return the abbreviation
   GETDATABASE(name,'ABBREVIATION)
- 
+
 domainForm? d ==
   GETDATABASE(opOf d,'CONSTRUCTORKIND) = 'domain
 
@@ -87,10 +87,10 @@ maximalSuperType d ==
 
 getConstructorAbbreviation op ==
   constructor?(op) or throwKeyedMsg("S2IL0015",[op])
- 
+
 getConstructorUnabbreviation op ==
   abbreviation?(op) or throwKeyedMsg("S2IL0019",[op])
- 
+
 mkUserConstructorAbbreviation(c,a,type) ==
   if not atom c then c:= CAR c  --  Existing constructors will be wrapped
   constructorAbbreviationErrorCheck(c,a,type,'abbreviationError)
@@ -98,19 +98,19 @@ mkUserConstructorAbbreviation(c,a,type) ==
   clearConstructorCache(c)
   installConstructor(c,type)
   setAutoLoadProperty(c)
- 
+
 abbQuery(x) ==
   abb := GETDATABASE(x,'ABBREVIATION) =>
    sayKeyedMsg("S2IZ0001",[abb,GETDATABASE(x,'CONSTRUCTORKIND),x])
   sayKeyedMsg("S2IZ0003",[x])
- 
+
 installConstructor(cname,type) ==
   (entry := getCDTEntry(cname,true)) => entry
   item := [cname,GETDATABASE(cname,'ABBREVIATION),nil]
   if BOUNDP '$lowerCaseConTb and $lowerCaseConTb then
     HPUT($lowerCaseConTb,cname,item)
     HPUT($lowerCaseConTb,DOWNCASE cname,item)
- 
+
 constructorAbbreviationErrorCheck(c,a,typ,errmess) ==
   siz := SIZE (s := PNAME a)
   if typ = 'category and siz > 7
@@ -123,7 +123,7 @@ constructorAbbreviationErrorCheck(c,a,typ,errmess) ==
   a=abb and c~=name => lisplibError(c,a,typ,abb,name,type,'duplicateAbb)
   a=name and c~=name => lisplibError(c,a,typ,abb,name,type,'abbIsName)
   c=name and typ~=type => lisplibError(c,a,typ,abb,name,type,'wrongType)
- 
+
 abbreviationError(c,a,typ,abb,name,type,error) ==
   sayKeyedMsg("S2IL0009",[a,typ,c])
   error='duplicateAbb =>
@@ -133,7 +133,7 @@ abbreviationError(c,a,typ,abb,name,type,error) ==
   error='wrongType =>
     throwKeyedMsg("S2IL0012",[c,type])
   NIL
- 
+
 abbreviate u ==
   u is ['Union,:arglist] =>
     ['Union,:[abbreviate a for a in arglist]]
@@ -142,11 +142,11 @@ abbreviate u ==
       [abb,:condAbbrev(arglist,getPartialConstructorModemapSig(op))]
     u
   constructor?(u) or u
- 
+
 unabbrev u == unabbrev1(u,nil)
- 
+
 unabbrevAndLoad u == unabbrev1(u,true)
- 
+
 isNameOfType x ==
   $doNotAddEmptyModeIfTrue:local:= true
   (val := get(x,'value,$InteractiveFrame)) and
@@ -154,7 +154,7 @@ isNameOfType x ==
       domain in '((Mode) (Domain) (SubDomain (Domain))) => true
   y := opOf unabbrev x
   constructor? y
- 
+
 unabbrev1(u,modeIfTrue) ==
   atom u =>
     modeIfTrue =>
@@ -179,7 +179,7 @@ unabbrev1(u,modeIfTrue) ==
     [cname,:condUnabbrev(op,arglist,
       getPartialConstructorModemapSig(cname),modeIfTrue)]
   u
- 
+
 unabbrevSpecialForms(op,arglist,modeIfTrue) ==
   op = 'Mapping => [op,:[unabbrev1(a,modeIfTrue) for a in arglist]]
   op = 'Union   =>
@@ -187,24 +187,24 @@ unabbrevSpecialForms(op,arglist,modeIfTrue) ==
   op = 'Record =>
     [op,:[unabbrevRecordComponent(a,modeIfTrue) for a in arglist]]
   nil
- 
+
 unabbrevRecordComponent(a,modeIfTrue) ==
   a is ["Declare",b,T] or a is [":",b,T] =>
     [":",b,unabbrev1(T,modeIfTrue)]
   userError "wrong format for Record type"
- 
+
 unabbrevUnionComponent(a,modeIfTrue) ==
   a is ["Declare",b,T] or a is [":",b,T] =>
     [":",b,unabbrev1(T,modeIfTrue)]
   unabbrev1(a, modeIfTrue)
- 
+
 condAbbrev(arglist,argtypes) ==
   res:= nil
   for arg in arglist for type in argtypes repeat
     if categoryForm?(type) then arg:= abbreviate arg
     res:=[:res,arg]
   res
- 
+
 condUnabbrev(op,arglist,argtypes,modeIfTrue) ==
   #arglist ~= #argtypes =>
     throwKeyedMsg("S2IL0014",[op,plural(#argtypes,'"argument"),

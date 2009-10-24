@@ -197,7 +197,7 @@ mathprintWithNumber x ==
     x
   ioHook("endOfAlgebraOutput")
 
-mathprint x == 
+mathprint x ==
    x := outputTran x
    $saturn => texFormat1 x
    maprin x
@@ -305,9 +305,9 @@ outputTran x ==
      l is [a] => outputTran a
      l is [["-",a],:b] =>
        -- now this is tricky because we've already outputTran the list
-       -- expect trouble when outputTran hits b again 
+       -- expect trouble when outputTran hits b again
        -- some things object to being outputTran twice ,e.g.matrices
-       -- same thing a bit lower down for "/" 
+       -- same thing a bit lower down for "/"
        a=1 => outputTran ["-",[op,:b]]
        outputTran ["-",[op,a,:b]]
      [op,:"append"/[(ss is ["*",:ll] => ll; [ss]) for ss in l]]
@@ -318,10 +318,10 @@ outputTran x ==
     $fractionDisplayType = 'horizontal =>
         op := 'SLASH
         l is [a, b] =>
-            a := 
+            a :=
                  ATOM(a) => a
                  ['PAREN, a]
-            b := 
+            b :=
                  ATOM(b) => b
                  ['PAREN, b]
             [outputTran op, a, b]
@@ -362,7 +362,7 @@ checkArgs(op,tail) ==
     head := [term,:head]
     tail := rest tail
   REVERSE head
-   
+
 outputTranSEQ ['SEQ,:l,exitform] ==
   if exitform is ['exit,.,a] then exitform := a
   ['SC,:[outputTran x for x in l],outputTran exitform]
@@ -765,8 +765,8 @@ WIDTH u ==
     u = $EmptyString => 0
     u.0="%" and ((u.1 = char 'b) or (u.1 = char 'd)) => 1
     #u
-  INTEGERP u => 
-    if (u < 0) then 
+  INTEGERP u =>
+    if (u < 0) then
       negative := 1
       u := -u
     else
@@ -793,7 +793,7 @@ WIDTH u ==
         l10 := LOG10 (FLOAT (u, 1.0))
     else
         su := ASH(u, - (k - 54))
-        l10 := LOG10 (FLOAT (su, 1.0)) 
+        l10 := LOG10 (FLOAT (su, 1.0))
               -- we want full double precision here because the second
               -- term may be much bigger than the first one, so we use
               -- very precise estimate of log(2)/log(10)
@@ -1033,15 +1033,15 @@ SubstWhileDesizing(u) ==
 
 SubstWhileDesizingList(u) ==
    u is [a,:b] =>
-     res:= 
-       ATOM a => [a] 
-       [SubstWhileDesizing(a)] 
+     res:=
+       ATOM a => [a]
+       [SubstWhileDesizing(a)]
      tail:=res
      for i in b repeat
         if ATOM i then  RPLACD(tail,[i]) else RPLACD(tail,[SubstWhileDesizing(i)])
         tail:=CDR tail
-     res   
-   u  
+     res
+   u
 
 --% Printing of Sigmas , Pis and Intsigns
 
@@ -1267,7 +1267,7 @@ formulaFormat expr ==
 texFormat expr ==
   ioHook("startTeXOutput")
   tf := '(TexFormat)
-  formatFn := 
+  formatFn :=
     getFunctionFromDomain("convert",tf,[$OutputForm,$Integer])
   displayFn := getFunctionFromDomain("display",tf,[tf])
   SPADCALL(SPADCALL(expr,$IOindex,formatFn),displayFn)
@@ -1337,7 +1337,7 @@ outputNumber(start,linelength,num) ==
   under:='"__"
   firsttime:=(linelength>3)
   if linelength>2 then
-     linelength:=linelength-1 
+     linelength:=linelength-1
   while SIZE(num) > linelength repeat
     if $collectOutput then
        $outputLines := [CONCAT(blnks, SUBSTRING(num,0,linelength),under),
@@ -1346,7 +1346,7 @@ outputNumber(start,linelength,num) ==
       sayALGEBRA [blnks,
                   SUBSTRING(num,0,linelength),under]
     num := SUBSTRING(num,linelength,NIL)
-    if firsttime then 
+    if firsttime then
          blnks:=CONCAT(blnks,'" ")
          linelength:=linelength-1
          firsttime:=NIL

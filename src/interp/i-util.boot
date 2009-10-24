@@ -113,7 +113,7 @@ $variableNumberAlist := nil
 
 variableNumber(x) ==
   p := ASSQ(x, $variableNumberAlist)
-  null p => 
+  null p =>
     $variableNumberAlist := [[x,:0], :$variableNumberAlist]
     0
   RPLACD(p, 1+CDR p)
@@ -159,4 +159,3 @@ TruthP x ==
   x=true => true
   x is ['QUOTE,:.] => true
   nil
-

@@ -794,4 +794,3 @@ isEltable(op,argl,numArgs) ==
   arg := first argl
   (getUnname arg) ~= 'construct => nil
   true
-

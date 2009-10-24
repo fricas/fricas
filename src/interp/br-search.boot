@@ -206,7 +206,7 @@ grepSplit(lines,doc?) ==
   while lines is [line, :lines] repeat
     if doc? then
         N:=PARSE_-INTEGER dbPart(line,1,-1)
-        if NUMBERP N then 
+        if NUMBERP N then
            FILE_-POSITION(instream2,N)
            line := READLINE instream2
     kind := dbKind line
@@ -480,7 +480,7 @@ genSearchSay(pair,summarize,kind,who,fn) ==
     htSay('"{\em 1 ",kind,'"} ")
   else
     htSay('"{\em ",count,'" ",pluralize kind,'"} ")
-  short => 'done        
+  short => 'done
   if uniqueCount ~= 1 then
     htSayStandard '"\indent{4}"
     htSay '"\newline "
@@ -996,7 +996,3 @@ dbUnpatchLines lines ==  --concatenate long lines together, skip blank lines
       [line,:acc]
   -- following call to NREVERSE needed to keep lines properly sorted
   NREVERSE acc  ------> added by BMT 12/95
-
-
-
-

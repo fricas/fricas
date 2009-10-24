@@ -279,5 +279,3 @@
 
 (defmacro |spadConstant| (dollar n)
  `(spadcall (svref ,dollar (the fixnum ,n))))
-
-

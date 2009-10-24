@@ -51,6 +51,3 @@ alqlGetParams(x) ==
   field :=dbPart(x,5,1)
   k := charPosition(char '_(,field,2)
   SUBSTRING(field,k,nil)
-
-
-

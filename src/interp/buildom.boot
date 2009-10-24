@@ -185,7 +185,7 @@ coerceMap2E(x) ==
   -- nrlib domain
   ARRAYP CDR x => ['theMap, BPINAME CAR x,
     if $testingSystem then 0 else REMAINDER(HASHEQ CDR x, 1000)]
-  -- aldor 
+  -- aldor
   ['theMap, BPINAME CAR x  ]
 
 --% Enumeration
@@ -348,4 +348,3 @@ mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
     op
   cList:= substitute(op,g,cList)
   [cList,e]
-

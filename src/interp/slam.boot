@@ -100,11 +100,11 @@ reportFunctionCompilation(op,nam,argl,body,isRecursive) ==
   eval cacheResetCode
   SETANDFILE(cacheName,mkCircularAlist cacheCount)
   nam
- 
+
 getCacheCount fn ==
   n:= LASSOC(fn,$cacheAlist) => n
   $cacheCount
- 
+
 reportFunctionCacheAll(op,nam,argl,body) ==
   sayKeyedMsg("S2IX0004",[op])
   auxfn:= mkAuxiliaryName nam
@@ -132,21 +132,21 @@ reportFunctionCacheAll(op,nam,argl,body) ==
   $e:= put(nam,'cacheInfo, cacheVector,$e)
   eval cacheResetCode
   nam
- 
+
 hashCount table ==
   +/[ADD1 nodeCount HGET(table,key) for key in HKEYS table]
- 
+
 mkCircularAlist n ==
   l:= [[$failed,:$failed] for i in 1..n]
   RPLACD(LASTNODE l,l)
- 
+
 countCircularAlist(cal,n) ==
   +/[nodeCount x for x in cal for i in 1..n]
- 
+
 predCircular(al,n) ==
   for i in 1..QSSUB1 n repeat al:= QCDR al
   al
- 
+
 assocCircular(x,al) ==  --like ASSOC except that al is circular
   forwardPointer:= al
   val:= nil
@@ -154,7 +154,7 @@ assocCircular(x,al) ==  --like ASSOC except that al is circular
     EQUAL(CAAR forwardPointer,x) => return (val:= CAR forwardPointer)
     forwardPointer:= CDR forwardPointer
   val
- 
+
 compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   k:= #initCode
   extraArgumentCode :=
@@ -177,12 +177,12 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   gsRev:= REVERSE gsList
   rotateCode:= [['LET,p,q] for p in gsRev for q in [:rest gsRev,g]]
   advanceCode:= ['LET,gIndex,['ADD1,gIndex]]
- 
+
   newTripleCode := ['LIST,sharpArg,:gsList]
   newStateCode :=
     null extraArguments => ['SETQ,stateNam,newTripleCode]
     ['HPUT,stateNam,extraArgumentCode,newTripleCode]
- 
+
   computeFunction:= [auxfn,['LAMBDA, cargl, cbody]] where
     cargl:= [:argl,lastArg]
     returnValue:= ['PROGN,newStateCode,first gsList]
@@ -203,7 +203,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
     margl:= [:argl,'envArg]
     max:= GENSYM()
     tripleCode := ['CONS,n,['LIST,:initCode]]
- 
+
     -- initialSetCode initializes the global variable if necessary and
     --  also binds "stateVar" to its current value
     initialSetCode :=
@@ -215,7 +215,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
                           ['PAIRP,stateNam]]],    _
                  ['LET,stateVar,cacheResetCode]], _
              [''T, ['LET,stateVar,stateNam]]]
- 
+
     -- when there are extra arguments, initialResetCode resets "stateVar"
     --  to the hashtable entry for the extra arguments
     initialResetCode :=
@@ -223,7 +223,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
       [['LET,stateVar,['OR,
          ['HGET,stateVar,extraArgumentCode],
           ['HPUT,stateVar,extraArgumentCode,tripleCode]]]]
- 
+
     mbody :=
       preset := [initialSetCode,:initialResetCode,['LET,max,['ELT,stateVar,0]]]
       phrase1:= [['AND,['LET,max,['ELT,stateVar,0]],['GE,sharpArg,max]],
@@ -243,14 +243,14 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   cacheVector:= mkCacheVec(op,stateNam,cacheType,cacheResetCode,cacheCountCode)
   $e:= put(nam,'cacheInfo, cacheVector,$e)
   nam
- 
+
 nodeCount x == NUMOFNODES x
- 
+
 recurrenceError(op,arg) == throwKeyedMsg("S2IX0002",[op,arg])
- 
+
 mkCacheVec(op,nam,kind,resetCode,countCode) ==
   [op,nam,kind,resetCode,countCode]
- 
+
 -- reportCacheStore vl ==
 --   sayMSG concat(centerString('"Name",22,'" "),"   Kind          #Cells")
 --   sayMSG concat(centerString('"----",22,'" "),"   ----          ------")
@@ -279,7 +279,7 @@ mkCacheVec(op,nam,kind,resetCode,countCode) ==
 --   u:= getI(op,"cache") =>
 --     reportCacheStorePrint(op,'variable,nodeCount u)
 --   nil
- 
+
 clearCache x ==
   get(x,'localModemap,$e) or get(x,'mapBody,$e) =>
     for [map,:sub] in $mapSubNameAlist repeat
@@ -288,7 +288,7 @@ clearCache x ==
     $e:= putHist(x,'mapBody,nil,$e)
     $e:= putHist(x,'localVars,nil,$e)
     sayKeyedMsg("S2IX0007",[x])
- 
+
 compileInteractive fn ==
   if $InteractiveMode then startTimingProcess 'compilation
   --following not used for common lisp
@@ -302,7 +302,7 @@ compileInteractive fn ==
   result := compQuietly optfn
   if $InteractiveMode then stopTimingProcess 'compilation
   result
- 
+
 clearAllSlams x ==
   fn(x,nil) where
     fn(thoseToClear,thoseCleared) ==
@@ -314,7 +314,7 @@ clearAllSlams x ==
           setDifference(LASSOC(x,$functorDependencyAlist),[:thoseToClear,:
             thoseCleared])
         NCONC(thoseToClear,someMoreToClear)
- 
+
 clearSlam(functor)==
   id:= mkCacheName functor
   SET(id,nil)

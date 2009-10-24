@@ -31,7 +31,7 @@
 
 
 -- Used to be SPECFNSF
-)package "BOOT" 
+)package "BOOT"
 
 FloatError(formatstring,arg) ==
 --        ERROR(formatstring,arg)
@@ -434,7 +434,7 @@ cotdiffeval(n,z,skipit) ==
 cPsi(n,z) ==
         x := REALPART(z)
         y := IMAGPART(z)
-        if ZEROP y 
+        if ZEROP y
         then    --- call real function if real
                 return rPsi(n,x)
         if y<0.0
@@ -701,10 +701,10 @@ BesselJ(v,z) ==
              --- $J_{-n}(z)=(-1)^{n} J_{n}(z)$
              BesselJ(-v,z)*EXPT(-1.0,v)
         (FLOATP(z) and  (z<0)) or (COMPLEXP(z) and REALPART(z)<0.0) =>
-          --- negative argument (9.1.35 A&S) 
+          --- negative argument (9.1.35 A&S)
           --- $J_{\nu}(z e^{m \pi i}) = e^{m \nu \pi i} J_{\nu}(z)$
              BesselJ(v,-z)*EXPT(-1.0,v)
-        ZEROP z and ((FLOATP(v) and (v>=0.0)) or (COMPLEXP(v) and 
+        ZEROP z and ((FLOATP(v) and (v>=0.0)) or (COMPLEXP(v) and
            ZEROP IMAGPART(v) and REALPART(v)>=0.0)) =>  --- zero arg, pos. real order
             ZEROP v => 1.0  --- J(0,0)=1
             0.0  --- J(v,0)=0 for real v>0
@@ -733,14 +733,14 @@ BesselJRecur(v,z) ==
         --Numerical.Recipes. suggest so:=v+sqrt(n.s.f.^2*v)
         so:=15.0*z
         -- reduce order until non-zero
-        while ZEROP ABS(BesselJAsymptOrder(so,z)) repeat so:=so/2.0 
+        while ZEROP ABS(BesselJAsymptOrder(so,z)) repeat so:=so/2.0
         if ABS(so)<ABS(z) then so:=v+18.*SQRT(v)
         m:= FLOOR(ABS(so-v))+1
         w:=MAKE_-ARRAY(m)
         SETF(AREF(w,m-1),BesselJAsymptOrder(v+m-1,z))
         SETF(AREF(w,m-2),BesselJAsymptOrder(v+m-2,z))
         for i in m-3 .. 0 by -1 repeat
-          SETF(AREF(w,i), 2.0 * (v+i+1.0) * AREF(w,i+1) /z -AREF(w,i+2)) 
+          SETF(AREF(w,i), 2.0 * (v+i+1.0) * AREF(w,i+1) /z -AREF(w,i+2))
         AREF(w,0)
 
 BesselI(v,z) ==
@@ -896,7 +896,7 @@ BesselIAsympt(v,z,n) ==
 ---Expansion good for 0<=phase(v)<Pi
 ---A&S recommend "uniform expansion" with complicated coefficients and Airy function.
 ---Debye's Formula is in 9.3.7,9.3.9,9.3.10 of A&S
----AXIOM recurrence for u_{k} 
+---AXIOM recurrence for u_{k}
 ---f(0)==1::EXPR INT
 ---f(n)== (t^2)*(1-t^2)*D(f(n-1),t)/2 + (1/8)*integrate( (1-5*t^2)*f(n-1),t)
 BesselJAsymptOrder(v,z) ==
@@ -924,7 +924,7 @@ BesselJAsymptOrder(v,z) ==
                                                                 ca2)*ca4*ca/(6688604160.0*v*v*v*v*v)+_
         horner([1023694168371875.0,-3685299006138750.0,5104696716244125.0,-3369032068261860.0,1050760774457901.0,-127577298354750.0,2757049477875.0],_
                                                                 ca2)*ca4*ca2/(4815794995200.0*v*v*v*v*v*v))
-                
+
 
 ---  See Olver, p. 376-382.
 BesselIAsymptOrder(v,vz) ==
@@ -971,10 +971,3 @@ BesselKAsymptOrder (v,vz) ==
         u5p := ((59535.0/262144.0+(-67608983.0/9175040.0+(250881631.0/5898240.0+(-108313205.0/1179648.0+(5391411025.0/63700992.0-5391411025.0/191102976.0*p2)*p2)*p2)*p2)*p2)*p4*p)*(-1.0)
         hornerresult := horner([u5p,u4p,u3p,u2p,u1p,u0p],vinv)
         SQRT(dfPi/(2.0*v))*EXP(-v*eta)/(SQRT(opzsqroh))*hornerresult
-
-
-
-
-
-
-

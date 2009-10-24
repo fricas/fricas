@@ -353,7 +353,7 @@ queryClients () ==
 
 
 close args ==
-  $saturn => 
+  $saturn =>
     sayErrorly('"Obsolete system command", _
       ['" The )close  system command is obsolete in this version of AXIOM.",
        '" Please use Close from the File menu instead."])
@@ -1023,7 +1023,7 @@ displayValue($op,u,omitVariableNameIfTrue) ==
 edit l == editSpad2Cmd l
 
 editSpad2Cmd l ==
-  l:= 
+  l:=
     null l => _/EDITFILE
     CAR l
   l := pathname l
@@ -1033,7 +1033,7 @@ editSpad2Cmd l ==
     $UserLevel = 'interpreter => '("input" "INPUT" "spad" "SPAD")
     $UserLevel = 'compiler    => '("input" "INPUT" "spad" "SPAD")
     '("input" "INPUT" "spad" "SPAD" "boot" "BOOT" "lisp" "LISP" "meta" "META")
-  ll := 
+  ll :=
        oldDir = '"" => pathname $FINDFILE (pathnameName l, fileTypes)
        l
   l := pathname ll
@@ -1303,7 +1303,7 @@ SETANDFILEQ($internalHistoryTable,NIL)
 SETANDFILEQ($useInternalHistoryTable, true)
 
 history l ==
-  l or null $options => sayKeyedMsg("S2IH0006",NIL) 
+  l or null $options => sayKeyedMsg("S2IH0006",NIL)
   historySpad2Cmd()
 
 
@@ -1356,12 +1356,12 @@ historySpad2Cmd() ==
     for [opt,:optargs] in $options]
   for [opt,:optargs] in opts repeat
     opt in '(on yes) =>
-      $HiFiAccess => sayKeyedMsg("S2IH0007",NIL) 
+      $HiFiAccess => sayKeyedMsg("S2IH0007",NIL)
       $IOindex = 1 =>       -- haven't done anything yet
         $HiFiAccess:= 'T
         initHistList()
-        sayKeyedMsg("S2IH0008",NIL) 
-      x := UPCASE queryUserKeyedMsg("S2IH0009",NIL) 
+        sayKeyedMsg("S2IH0008",NIL)
+      x := UPCASE queryUserKeyedMsg("S2IH0009",NIL)
       MEMQ(STRING2ID_-N(x,1),'(Y YES)) =>
         histFileErase histFileName()
         $HiFiAccess:= 'T
@@ -1388,7 +1388,7 @@ historySpad2Cmd() ==
 
 setHistoryCore inCore ==
   inCore = $useInternalHistoryTable =>
-    sayKeyedMsg((inCore => "S2IH0030"; "S2IH0029"),NIL) 
+    sayKeyedMsg((inCore => "S2IH0030"; "S2IH0029"),NIL)
   not $HiFiAccess =>
     $useInternalHistoryTable := inCore
     inCore => sayKeyedMsg("S2IH0032",NIL)
@@ -1416,7 +1416,7 @@ setHistoryCore inCore ==
   sayKeyedMsg("S2IH0031",NIL)
 
 
-writeInputLines(fn,initial) == 
+writeInputLines(fn,initial) ==
   -- writes all input lines into file histInputFileName()
   not $HiFiAccess => sayKeyedMsg("S2IH0013",NIL) -- history not on
   null fn =>
@@ -1461,7 +1461,7 @@ resetInCoreHist() ==
 
 changeHistListLen(n) ==
   -- changes the length of $HistList.  n must be nonnegative
-  NULL INTEGERP n => sayKeyedMsg("S2IH0015",[n]) 
+  NULL INTEGERP n => sayKeyedMsg("S2IH0015",[n])
   dif:= n-$HistListLen
   $HistListLen:= n
   l:= CDR $HistList
@@ -1579,13 +1579,13 @@ saveHistory(fn) ==
   not $HiFiAccess => sayKeyedMsg("S2IH0016",NIL)
   not $useInternalHistoryTable and
     null MAKE_-INPUT_-FILENAME histFileName() => sayKeyedMsg("S2IH0022",NIL)
-  null fn => 
+  null fn =>
     throwKeyedMsg("S2IH0037", nil)
   savefile := makeHistFileName(fn)
   inputfile := histInputFileName(fn)
   writeInputLines(fn,1)
   histFileErase savefile
- 
+
   if $useInternalHistoryTable
     then
       saveStr := rMkOstream(savefile)
@@ -1606,7 +1606,7 @@ restoreHistory(fn) ==
   restfile := makeHistFileName(fn')
   null MAKE_-INPUT_-FILENAME restfile =>
     sayKeyedMsg("S2IH0024",[namestring(restfile)]) -- no history file
- 
+
   -- if clear is changed to be undoable, this should be a reset-clear
   $options: local := nil
   clearSpad2Cmd '(all)
@@ -1619,13 +1619,13 @@ restoreHistory(fn) ==
 restoreHistory2(oldInternal, restfile, fn) ==
   $curHistFileName : local := fn
   $useInternalHistoryTable : local := nil
-  if not(oldInternal) then 
+  if not(oldInternal) then
      curfile := histFileName()
      histFileErase curfile
      _$FCOPY(restfile,curfile)
      $curHistFileName := nil
      restfile := curfile
- 
+
   l:= LENGTH RKEYIDS restfile
   $HiFiAccess:= 'T
   if oldInternal then $internalHistoryTable := NIL
@@ -1776,7 +1776,7 @@ SPADRREAD(vec, stream) ==
 --  These functions transform an object to a writable form and back.
 --  SMW
 SPADRWRITE(vec, item, stream) ==
-  val := SPADRWRITE0(vec, item, stream) 
+  val := SPADRWRITE0(vec, item, stream)
   val = 'writifyFailed =>
     throwKeyedMsg("S2IH0036", nil) -- cannot save value to file
   item
@@ -1794,12 +1794,12 @@ writify ob ==
     not ScanOrPairVec(function(unwritable?), ob) => ob
     $seen:     local := MAKE_-HASHTABLE 'EQ
     $writifyComplained: local := false
- 
+
     writifyInner ob where
         writifyInner ob ==
             null ob                => nil
             (e := HGET($seen, ob)) => e
- 
+
             PAIRP ob =>
                 qcar := QCAR ob
                 qcdr := QCDR ob
@@ -1837,7 +1837,7 @@ writify ob ==
                 nob
             ob = 'WRITIFIED_!_! =>
                 ['WRITIFIED_!_!, 'SELF]
-            -- In CCL constructors are also compiled functions, so we 
+            -- In CCL constructors are also compiled functions, so we
             -- need this line:
             constructor? ob => ob
             COMPILED_-FUNCTION_-P ob =>
@@ -1885,11 +1885,11 @@ unwritable? ob ==
 -- Note that  dewritify(writify(x))  preserves UEQUALity of hashtables.
 -- HASHTABLEs go both ways.
 -- READTABLEs cannot presently be transformed back.
- 
+
 writifyComplain s ==
    $writifyComplained  = true => nil
    $writifyComplained := true
-   sayKeyedMsg("S2IH0027",[s]) 
+   sayKeyedMsg("S2IH0027",[s])
 
 spadClosure? ob ==
   fun := QCAR ob
@@ -1902,14 +1902,14 @@ spadClosure? ob ==
 dewritify ob ==
     (not ScanOrPairVec(function is?, ob)
             where  is? a == a = 'WRITIFIED_!_!) => ob
- 
+
     $seen:     local := MAKE_-HASHTABLE 'EQ
- 
+
     dewritifyInner ob where
         dewritifyInner ob ==
             null ob => nil
             e := HGET($seen, ob) => e
- 
+
             PAIRP ob and CAR ob = 'WRITIFIED_!_! =>
                 type := ob.1
                 type = 'SELF =>
@@ -1940,7 +1940,7 @@ dewritify ob ==
                 type = 'SPADCLOSURE =>
                     vec := dewritifyInner ob.2
                     name := ob.3
-                    not FBOUNDP name => 
+                    not FBOUNDP name =>
                        error STRCONC('"undefined function: ", SYMBOL_-NAME name)
                     nob := CONS(SYMBOL_-FUNCTION name, vec)
                     HPUT($seen, ob, nob)
@@ -1961,7 +1961,7 @@ dewritify ob ==
                    sign<0 => -fval
                    fval
                 error '"Unknown type to de-writify."
- 
+
             PAIRP ob =>
                 qcar := QCAR ob
                 qcdr := QCDR ob
@@ -1984,7 +1984,7 @@ dewritify ob ==
 
 ScanOrPairVec(f, ob) ==
     $seen:     local := MAKE_-HASHTABLE 'EQ
- 
+
     CATCH('ScanOrPairVecAnswer, ScanOrInner(f, ob)) where
         ScanOrInner(f, ob) ==
             HGET($seen, ob) => nil
@@ -2857,7 +2857,7 @@ handleNoParseCommands(unab, string) ==
                   piles    _
                   pquit    _
                   credits  _
-                  copyright )) => 
+                  copyright )) =>
     sayKeyedMsg("S2IV0005", NIL)
     nil
   funName := INTERN CONCAT('"np",STRING unab)
@@ -3002,7 +3002,3 @@ npProcessSynonym(str) ==
       PUTALIST($CommandSynonymAlist,CAR pair, CDR pair)
     else $CommandSynonymAlist := [pair]
   terminateSystemCommand()
-
-
-
-

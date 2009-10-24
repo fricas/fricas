@@ -40,11 +40,11 @@ initNewWorld() ==
   $NRTmonitorIfTrue := false
   $updateCatTableIfTrue := false
   $doNotCompressHashTableIfTrue := true
- 
+
 isNewWorldDomain domain == INTEGERP domain.3    --see HasCategory/Attribute
- 
+
 getDomainByteVector dom == CDDR dom.4
- 
+
 --=======================================================
 --                 Lookup From Compiled Code
 --=======================================================
@@ -52,11 +52,11 @@ newGoGet(:l) ==
   [:arglist,env] := l
   slot := replaceGoGetSlot env
   APPLY(first slot,[:arglist,rest slot])  --SPADCALL it!
- 
+
 --=======================================================
 --       Lookup Function in Slot 1 (via SPADCALL)
 --=======================================================
- 
+
 newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   dollar = nil => systemError()
   $lookupDefaults = true =>
@@ -127,12 +127,12 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   subsumptionSig and (u:= basicLookup(op,subsumptionSig,domain,dollar)) => u
   flag or someMatch => newLookupInAddChain(op,sig,domain,dollar)
   nil
- 
- 
+
+
 isDefaultPackageForm? x == x is [op,:.]
   and IDENTP op and (s := PNAME op).(MAXINDEX s) = "&"
- 
- 
+
+
 --=======================================================
 --       Lookup Addlist (from lookupInDomainTable or lookupInDomain)
 --=======================================================
@@ -145,7 +145,7 @@ newLookupInAddChain(op,sig,addFormDomain,dollar) ==
         form2String devaluate addFormDomain,'"<----"),CDR addFunction)
     addFunction
   nil
- 
+
 --=======================================================
 --   Lookup In Domain (from lookupInAddChain)
 --=======================================================
@@ -156,7 +156,7 @@ newLookupInDomain(op,sig,addFormDomain,dollar,index) ==
     if null VECP addFormCell then lazyDomainSet(addFormCell,addFormDomain,index)
     lookupInDomainVector(op,sig,addFormDomain.index,dollar)
   nil
- 
+
 --=======================================================
 --       Category Default Lookup (from goGet or lookupInAddChain)
 --=======================================================
@@ -224,13 +224,13 @@ newLookupInCategories(op,sig,dom,dollar) ==
     if $monitorNewWorld = true then
       sayBrightly '"candidate fails -- continuing to search categories"
     nil
- 
+
 nrunNumArgCheck(num,bytevec,start,finish) ==
    args := bytevec.start
    num = args => true
    (start := start + args + 4) = finish => nil
    nrunNumArgCheck(num,bytevec,start,finish)
- 
+
 newLookupInCategories1(op,sig,dom,dollar) ==
   $lookupDefaults : local := nil
   if $monitorNewWorld = true then sayBrightly concat('"----->",
@@ -291,11 +291,11 @@ newLookupInCategories1(op,sig,dom,dollar) ==
     if $monitorNewWorld = true then
       sayBrightly '"candidate fails -- continuing to search categories"
     nil
- 
+
 --=======================================================
 --     Instantiate Default Package if Signature Matches
 --=======================================================
- 
+
 getNewDefaultPackage(op,sig,infovec,dom,dollar) ==
   hohohoho()
   opvec := infovec . 1
@@ -319,7 +319,7 @@ getNewDefaultPackage(op,sig,infovec,dom,dollar) ==
     start := QSPLUS(start,QSPLUS(numTableArgs,4))
   null success => nil
   defaultPackage := cacheCategoryPackage(packageVec,catVec,i)
- 
+
 --=======================================================
 --         Compare Signature to One Derived from Table
 --=======================================================
@@ -331,12 +331,12 @@ newCompareSig(sig, numvec, index, dollar, domain) ==
               for s in rest sig for i in (index+1)..] => numvec.(QSINC1 k)
      nil
   nil
- 
+
 --=======================================================
 --     Compare Signature to One Derived from Table
 --=======================================================
 lazyMatchArg(s,a,dollar,domain) == lazyMatchArg2(s,a,dollar,domain,true)
- 
+
 lazyMatch(source,lazyt,dollar,domain) ==
   lazyt is [op,:argl] and null atom source and op=CAR source
     and #(sargl := CDR source) = #argl =>
@@ -358,11 +358,11 @@ lazyMatch(source,lazyt,dollar,domain) ==
   -- A hideous hack on the same lines as the previous four lines JHD/MCD
   nil
 
- 
+
 lazyMatchArgDollarCheck(s,d,dollarName,domainName) ==
   #s ~= #d => nil
   scoSig := GETDATABASE(opOf s,'COSIG) or return nil
-  if MEMQ(opOf s, '(Union Mapping Record)) then 
+  if MEMQ(opOf s, '(Union Mapping Record)) then
      scoSig := [true for x in s]
   and/[fn for x in rest s for arg in rest d for xt in rest scoSig] where
    fn ==
@@ -400,18 +400,18 @@ lookupInDomainByName(op,domain,arg) ==
     null atom slot and EQ(CAR slot,CAR arg) and EQ(CDR slot,CDR arg) => return (success := true)
     start := QSPLUS(start,QSPLUS(numberOfArgs,4))
   success
- 
+
 --=======================================================
 --        Expand Signature from Encoded Slot Form
 --=======================================================
 newExpandGoGetTypeSlot(slot,dollar,domain) ==
   newExpandTypeSlot(slot,domain,domain)
- 
+
 newExpandTypeSlot(slot, dollar, domain) ==
 --> returns domain form for dollar.slot
    newExpandLocalType(sigDomainVal(dollar, domain, slot), dollar,domain)
- 
- 
+
+
 newExpandLocalTypeForm([functorName,:argl],dollar,domain) ==
   MEMQ(functorName, '(Record Union)) and first argl is [":",:.] =>
     [functorName,:[['_:,tag,newExpandLocalTypeArgs(dom,dollar,domain,true)]
@@ -423,7 +423,7 @@ newExpandLocalTypeForm([functorName,:argl],dollar,domain) ==
   NULL coSig => error ["bad functorName", functorName]
   [functorName,:[newExpandLocalTypeArgs(a,dollar,domain,flag)
         for a in argl for flag in rest coSig]]
- 
+
 newExpandLocalTypeArgs(u,dollar,domain,typeFlag) ==
   u = '$ => u
   INTEGERP u =>
@@ -434,11 +434,11 @@ newExpandLocalTypeArgs(u,dollar,domain,typeFlag) ==
   u = "$$" => domain.0
   atom u => u   --can be first, rest, etc.
   newExpandLocalTypeForm(u,dollar,domain)
- 
+
 nrtEval(expr,dom) ==
   $:fluid := dom
   eval expr
- 
+
 domainVal(dollar,domain,index) ==
 --returns a domain or a lazy slot
   index = 0 => dollar
@@ -450,7 +450,7 @@ sigDomainVal(dollar,domain,index) ==
   index = 0 => "$"
   index = 2 => domain
   domain.index
-  
+
 --=======================================================
 --                   HasCategory/Attribute
 --=======================================================
@@ -471,7 +471,7 @@ newHasTest(domform,catOrAtt) ==
       isPartialMode a => throwKeyedMsg("S2IS0025",NIL)
       b is ["SIGNATURE",:opSig] =>
         HasSignature(evalDomain a,opSig)
-      b is ["ATTRIBUTE",attr] => 
+      b is ["ATTRIBUTE",attr] =>
           BREAK()
       hasCaty(a,b,NIL) ~= 'failed
       HasCategory(evalDomain a,b) => true -- for asharp domains: must return Boolean
@@ -493,24 +493,24 @@ newHasTest(domform,catOrAtt) ==
            evalCond x ==
              ATOM x => x
              [pred,:l] := x
-             pred = 'has => 
+             pred = 'has =>
                   l is [ w1,['ATTRIBUTE,w2]] =>
                        BREAK()
-                       newHasTest(w1,w2) 
+                       newHasTest(w1,w2)
                   l is [ w1,['SIGNATURE,:w2]] => compiledLookup(CAR w2,CADR w2, eval mkEvalable w1)
-                  newHasTest(first  l ,first rest l) 
+                  newHasTest(first  l ,first rest l)
              pred = 'OR => or/[evalCond i for i in l]
              pred = 'AND => and/[evalCond i for i in l]
-             x  
+             x
   null isAtom and constructor? op  =>
     domain := eval mkEvalable domform
     newHasCategory(domain,catOrAtt)
   systemError '"newHasTest expects category form"
- 
+
 --=======================================================
 --                   Utility Functions
 --=======================================================
- 
+
 sayLooking(prefix,op,sig,dom) ==
   $monitorNewWorld := false
   dollar := devaluate dom
@@ -518,7 +518,7 @@ sayLooking(prefix,op,sig,dom) ==
   sayBrightly
     concat(prefix,formatOpSignature(op,sig),bright '"from ",form2String dollar)
   $monitorNewWorld := true
- 
+
 sayLooking1(prefix,dom) ==
   $monitorNewWorld := false
   dollar :=
@@ -526,7 +526,7 @@ sayLooking1(prefix,dom) ==
     devaluateList dom
   sayBrightly concat(prefix,form2String dollar)
   $monitorNewWorld := true
- 
+
 cc() == -- don't remove this function
   clearConstructorCaches()
   clearClams()

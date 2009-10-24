@@ -216,5 +216,3 @@ suffix?(s,t) ==
   m := #s; n := #t
   if m > n then return false
   substring?(s,t,(n-m))
-
-

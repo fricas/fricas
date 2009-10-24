@@ -685,4 +685,3 @@ substringMatch (l,d,i)==
        s1
 
 punctuation? c== scanPun.c=1
-

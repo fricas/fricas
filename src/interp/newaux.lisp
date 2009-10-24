@@ -29,7 +29,7 @@
 ;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- 
+
 (in-package "BOOT")
 ; PURPOSE: This file sets up properties which are used by the Boot lexical
 ;          analyzer for bottom-up recognition of operators.  Also certain
@@ -42,45 +42,45 @@
 ;               2. GLIPH  Table
 ;               3. RENAMETOK Table
 ;               4. GENERIC Table
-;               5. Character syntax class predicates 
+;               5. Character syntax class predicates
 ; **** 1. LED and NUD Tables
- 
+
 ; ** TABLE PURPOSE
- 
+
 ; Led and Nud have to do with operators. An operator with a Led property takes
 ; an operand on its left (infix/suffix operator).
- 
+
 ; An operator with a Nud takes no operand on its left (prefix/nilfix).
 ; Some have both (e.g. - ).  This terminology is from the Pratt parser.
 ; The translator for Scratchpad II is a modification of the Pratt parser which
 ; branches to special handlers when it is most convenient and practical to
 ; do so (Pratt's scheme cannot handle local contexts very easily).
- 
-; Both LEDs and NUDs have right and left binding powers.  This is meaningful 
-; for prefix and infix operators.  These powers are stored as the values of 
-; the LED and NUD properties of an atom, if the atom has such a property. 
+
+; Both LEDs and NUDs have right and left binding powers.  This is meaningful
+; for prefix and infix operators.  These powers are stored as the values of
+; the LED and NUD properties of an atom, if the atom has such a property.
 ; The format is:
- 
+
 ;       <Operator Left-Binding-Power  Right-Binding-Power <Special-Handler>>
- 
+
 ; where the Special-Handler is the name of a function to be evaluated when that
 ; keyword is encountered.
- 
-; The default values of Left and Right Binding-Power are NIL.  NIL is a 
+
+; The default values of Left and Right Binding-Power are NIL.  NIL is a
 ; legitimate value signifying no precedence.  If the Special-Handler is NIL,
-; this is just an ordinary operator (as opposed to a surfix operator like 
+; this is just an ordinary operator (as opposed to a surfix operator like
 ; if-then-else).
- 
+
 ; ** TABLE CREATION
- 
+
 (defun MAKENEWOP (X Y) (MAKEOP X Y))
- 
+
 (defun MAKEOP (X Y)
   (if (OR (NOT (CDR X)) (NUMBERP (SECOND X)))
       (SETQ X (CONS (FIRST X) X)))
   (MAKEPROP (FIRST X) Y X)
   (SECOND X))
- 
+
 (mapcar #'(LAMBDA(J) (MAKENEWOP J '|Led|))
         '((* 800 801)   (|rem| 800 801)   (|mod| 800 801)
           (|quo| 800 801)   (|div| 800 801)
@@ -113,7 +113,7 @@
           (==\> MDEF 122 121)
           (\| 108 111)                          ;was 190 190
           #|(\:- LETD 125 124)|# (\:= LET 125 124)))
- 
+
 (mapcar #'(LAMBDA (J) (MAKENEWOP J `|Nud|))
         '((|for| 130 350 (|PARSE-Loop|))
           (|while| 130 190 (|PARSE-Loop|))

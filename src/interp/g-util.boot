@@ -398,7 +398,7 @@ addBinding(var,proplist,e is [[curContour,:tailContour],:tailEnv]) ==
   EQ(proplist,getProplist(var,e)) => e
   if $envHashTable then
     for u in proplist repeat
-      HPUT($envHashTable, [var, CAR u], true) 
+      HPUT($envHashTable, [var, CAR u], true)
   $InteractiveMode => addBindingInteractive(var,proplist,e)
   if curContour is [[ =var,:.],:.] then curContour:= rest curContour
                  --Previous line should save some space
@@ -567,7 +567,7 @@ rePackageTran(sex, package) ==
   packageTran sex
 
 packageTran sex ==
--- destructively translate all the symbols in the given s-expression to the 
+-- destructively translate all the symbols in the given s-expression to the
 -- current package
   SYMBOLP sex =>
     EQ(_*PACKAGE_*, SYMBOL_-PACKAGE sex) => sex
@@ -579,7 +579,7 @@ packageTran sex ==
   sex
 
 zeroOneTran sex ==
--- destructively translate the symbols |0| and |1| to their 
+-- destructively translate the symbols |0| and |1| to their
 -- integer counterparts
   NSUBST("$EmptyMode", "?", sex)
   sex

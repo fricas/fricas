@@ -160,7 +160,7 @@ genTempCategoryTable() ==
     GETDATABASE(con,'CONSTRUCTORKIND) = 'category =>
       addToCategoryTable con
   for id in HKEYS _*ANCESTORS_-HASH_* repeat
-    item := HGET(_*ANCESTORS_-HASH_*, id) 
+    item := HGET(_*ANCESTORS_-HASH_*, id)
     for (u:=[.,:b]) in item repeat
       RPLACD(u,simpCatPredicate simpBool b)
     HPUT(_*ANCESTORS_-HASH_*,id,listSort(function GLESSEQP,item))
@@ -417,11 +417,3 @@ clearTempCategoryTable(catNames) ==
         MEMQ(CAR catForm,catNames) => nil
         extensions:= [extension,:extensions]
     HPUT(_*ANCESTORS_-HASH_*,key,extensions)
-
-
-
-
-
-
-
-

@@ -36,20 +36,20 @@
 --  These are used as [%origin o, %id n] for %1f %2f... style arguments
 --  in a keyed message.
 --  SMW, SG June 88
- 
+
 %id a     == [IDENTITY, a]
- 
+
 -- Union(FileName,"strings","console")
 %origin x ==
     [function porigin, x]
 porigin x ==
     (STRINGP x => x; pfname x)
- 
+
 %fname x ==
     [function pfname, x]
 pfname x ==
     PathnameString x
- 
+
 
 ppos p ==
     pfNoPosition? p => ['"no position"]
@@ -58,9 +58,8 @@ ppos p ==
     lpos := pfLinePosn p
     org  := porigin pfFileName p
     [org,'" ",'"line",'" ",lpos]
- 
+
 --keyStuff ::= keynumber | [ one or more keySeqs ]
 --keySeq   ::= keynumber optargList optdbn
 --optARgL  ::= [ 0 or more arguments ] | nothing at all
 --optDbn   ::= ['dbN , databaseName ] | nothing at all
-

@@ -86,7 +86,7 @@ postAdd ['add,a,:b] ==
   ['add,postTran a,postCapsule first b]
 
 checkWarning msg == postError concat('"Parsing error: ",msg)
- 
+
 checkWarningIndentation() ==
   checkWarning ['"Apparent indentation error following",:bright "add"]
 
@@ -403,7 +403,7 @@ postTuple u ==
 
 postWhere ["where",a,b] ==
   x:=
-    b is ['Block,:c] => BREAK() 
+    b is ['Block,:c] => BREAK()
     LIST b
   ["where",postTran a,:postTranList x]
 
@@ -442,7 +442,7 @@ unTuple x ==
 new2OldLisp(x) == new2OldTran (postTransform (x))
 
 new2OldTran(x) ==
-    ATOM x => 
+    ATOM x =>
          EQ(x, "'") => BREAK()
          x
     x is ["where", a, b] and b is ["SEQ", :c, ["exit", d]] =>

@@ -29,11 +29,11 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- 
+
 -- Functions for building categories
 
 Category() == nil --sorry to say, this hack is needed by isCategoryType
- 
+
 CategoryPrint(D,$e) ==
   SAY "--------------------------------------"
   SAY "Name (and arguments) of category:"
@@ -80,7 +80,7 @@ sigParams(sigList) ==
           v is ["List",w] => Prepare2 (w, l)
           v is ["Record",.,:w] =>
             for x in w repeat l := Prepare2 (CADDR x, l)
-            l 
+            l
           [v,:l]
   for s in NewLocals repeat
      if null(HGET(myhash, s)) then
@@ -94,7 +94,7 @@ sigParams(sigList) ==
 --                           object)
 --   sigList              - list of all signatures
 --   attList              - list of all attributes
---   PrincipalAncestor    - principal ancestor (if any) 
+--   PrincipalAncestor    - principal ancestor (if any)
 mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
   NSigList:= nil
   if PrincipalAncestor=nil then count:= 6 else count:= SIZE PrincipalAncestor
@@ -129,15 +129,15 @@ mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
   v
 
 isCategory a == REFVECP a and #a>5 and a.3=["Category"]
- 
+
 --% Subsumption code (for operators)
- 
+
 DropImplementations (a is [sig,pred,:implem]) ==
   if implem is [[q,:.]] and (q="ELT" or q="CONST")
      then if (q="ELT")  then [sig,pred]
                         else [[:sig,:'(constant)],pred]
      else a
- 
+
 SigListUnion(extra,original) ==
   --augments original %with everything in extra that is not in original
   for (o:=[[ofn,osig,:.],opred,:.]) in original repeat
@@ -177,7 +177,7 @@ SigListUnion(extra,original) ==
        else epred:=mkOr(epred,xpred)
 -- this used always to be done, as noted below, but that's not safe
       if not(ximplem is [["Subsumed",:.],:.]) then eimplem:= ximplem
-      if eimplem then esig:=[CAR esig,CADR esig] 
+      if eimplem then esig:=[CAR esig,CADR esig]
            -- in case there's a constant marker
       e:= [esig,epred,:eimplem]
 --    e:= [esig,mkOr(xpred,epred),:ximplem]
@@ -189,7 +189,7 @@ SigListUnion(extra,original) ==
         then $NewCatVec. index:= e
     original:= [e,:original]
   original
- 
+
 mkOr(a,b) ==
   a=true => true
   b=true => true
@@ -210,7 +210,7 @@ mkOr(a,b) ==
     [a,b]
   LENGTH l = 1 => CAR l
   ["OR",:l]
- 
+
 mkOr2(a,b) ==
   --a is a condition, "b" a list of them
   member(a,b) => b
@@ -223,7 +223,7 @@ mkOr2(a,b) ==
     aRedundant => b
     [a,:b]
   [a,:b]
- 
+
 mkAnd(a,b) ==
   a=true => b
   b=true => a
@@ -240,7 +240,7 @@ mkAnd(a,b) ==
     [a,b]
   LENGTH l = 1 => CAR l
   ["AND",:l]
- 
+
 mkAnd2(a,b) ==
   --a is a condition, "b" a list of them
   member(a,b) => b
@@ -253,7 +253,7 @@ mkAnd2(a,b) ==
     aRedundant => b
     [a,:b]
   [a,:b]
- 
+
 PredImplies(a,b) ==
     --true if a => b in the sense of logical implication
 --a = "true" => true
@@ -261,7 +261,7 @@ PredImplies(a,b) ==
   a=b => true
   false         -- added by RDJ: 12/21/82
 --error()       -- for the time being
- 
+
 SigListOpSubsume([[name1,sig1,:.],:.],list) ==
   --does m subsume another operator in the list?
         --see "operator subsumption" in SYSTEM SCRIPT
@@ -272,18 +272,18 @@ SigListOpSubsume([[name1,sig1,:.],:.],list) ==
     EQ(name1, name2) and EQL(lsig1,LENGTH sig2) and SourceLevelSubsume(sig1,sig2) =>
       ans:=[n,:ans]
   return ans
- 
+
 SourceLevelSubsume([out1,:in1],[out2,:in2]) ==
   -- Checks for source-level subsumption in the sense of SYSTEM SCRIPT
   --   true if the first signature subsumes the second
   SourceLevelSubset(out1,out2) and
     (and/[SourceLevelSubset(inarg2,inarg1) for inarg1 in in1 for inarg2 in in2])
- 
+
 SourceLevelSubset(a,b) ==
   --true if a is a source-level subset of b
   a=b => true
   false
- 
+
 MachineLevelSubsume([name1,[out1,:in1],:flag1],[name2,[out2,:in2],:flag2]) ==
   -- Checks for machine-level subsumption in the sense of SYSTEM SCRIPT
   --  true if the first signature subsumes the second
@@ -291,7 +291,7 @@ MachineLevelSubsume([name1,[out1,:in1],:flag1],[name2,[out2,:in2],:flag2]) ==
   name1=name2 and MachineLevelSubset(out1,out2) and
     (and/[MachineLevelSubset(inarg2,inarg1) for inarg1 in in1 for inarg2 in in2]
       )
- 
+
 MachineLevelSubset(a,b) ==
   --true if a is a machine-level subset of b
   a=b => true
@@ -302,9 +302,9 @@ MachineLevelSubset(a,b) ==
   a is [a1] and b is [b1] and assoc(a1,GETL(b1,"Subsets")) => true
              --we assume all subsets are true at the machine level
   nil
- 
+
 --% Ancestor chasing code
- 
+
 FindFundAncs l ==
   --l is a list of categories and associated conditions (a list of 2-lists
   --returns a list of them and all their fundamental ancestors
@@ -333,24 +333,24 @@ FindFundAncs l ==
   -- Our new thing may have, as an alternate view, a principal
   -- descendant of something previously added which is therefore
   -- subsumed
- 
+
 CatEval x ==
   REFVECP x => x
   $InteractiveMode => CAR compMakeCategoryObject(x,$CategoryFrame)
   CAR compMakeCategoryObject(x,$e)
- 
+
 --RemovePrinAncs(l,leaves) ==
 --  l=nil => nil
 --  leaves:= [first y for y in leaves]
 --               --remove the slot pointers
 --  [x for x in l | not AncestorP(x.(0),leaves)]
- 
+
 AncestorP(xname,leaves) ==
   -- checks for being a principal ancestor of one of the leaves
   member(xname,leaves) => xname
   for y in leaves repeat
     member(xname,first (CatEval y).4) => return y
- 
+
 CondAncestorP(xname,leaves,condition) ==
   -- checks for being a principal ancestor of one of the leaves
   for u in leaves repeat
@@ -360,7 +360,7 @@ CondAncestorP(xname,leaves,condition) ==
       first rest u
     xname = u' or member(xname,first (CatEval u').4) =>
       PredImplies(ucond,condition) => return u'
- 
+
 DescendantP(a,b) ==
   -- checks to see if a is any kind of Descendant of b
   a=b => true
@@ -371,9 +371,9 @@ DescendantP(a,b) ==
   member(b,first a.4) => true
   AncestorP(b,[first u for u in CADR a.4]) => true
   nil
- 
+
 --% The implementation of Join
- 
+
 JoinInner(l,$e) ==
   $NewCatVec: local := nil
   CondList:= nil
@@ -432,7 +432,7 @@ JoinInner(l,$e) ==
              else (anccond:= true; ancindex:= nil)
           if PredImplies(condition,anccond)
              then FundamentalAncestors:=
- 
+
                -- the new 'b' is more often true than the old one 'anc'
               [[bname,condition,ancindex],:delete(anc,FundamentalAncestors)]
            else
@@ -496,7 +496,7 @@ JoinInner(l,$e) ==
   mkCategory("domain",sigl,attl,globalDomains,$NewCatVec)
 
 Join(:L) ==
-  env := 
+  env :=
      not(BOUNDP('$e)) or NULL($e) or $InteractiveMode => $CategoryFrame
      $e
   JoinInner(L, env)
@@ -504,4 +504,3 @@ Join(:L) ==
 isCategoryForm(x,e) ==
   x is [name,:.] => categoryForm? name
   atom x => u:= get(x,"macro",e) => isCategoryForm(u,e)
- 

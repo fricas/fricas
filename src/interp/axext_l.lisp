@@ -155,7 +155,7 @@
 (defmacro |AXL-rplacd| (x y) `(rplacd ,x ,y))
 
 (defmacro |AXL-error| (msg) `(error ,msg))
-  
+
 ;; arrays
 ;; 0 based!
 (defmacro |AXL-arrayRef| (arr i)
@@ -189,7 +189,7 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
     (defun H-integer (l e)
         (|AXL-LiteralToInteger| l))
-        
+
     (defun  H-string (l e)
         (|AXL-LiteralToString| l))
 

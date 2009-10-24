@@ -31,7 +31,7 @@
 
 
 --% ITERATORS
- 
+
 compReduce(form,m,e) ==
  compReduce1(form,m,e,$formalArgList)
 
@@ -69,18 +69,18 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
     [untilCode,.,e]:= comp($until,$Boolean,e)
     finalCode:= substitute(["UNTIL",untilCode],'$until,finalCode)
   [finalCode,m,e]
- 
+
 getIdentity(x,e) ==
   GETL(x,"THETA") is [y] =>
     y => y
     "nil"
- 
+
 numberize x ==
   x=$Zero => 0
   x=$One => 1
   atom x => x
   [numberize first x,:numberize rest x]
- 
+
 compRepeatOrCollect(form,m,e) ==
   fn(form,[m,:$exitModeStack],[#$exitModeStack,:$leaveLevelStack],$formalArgList
     ,e) where
@@ -126,7 +126,7 @@ compRepeatOrCollect(form,m,e) ==
             ["Vector",m']
           m'
         coerceExit([form',m'',e'],targetMode)
- 
+
 --constructByModemap([x,source,e],target) ==
 --  u:=
 --    [cexpr
@@ -134,10 +134,10 @@ compRepeatOrCollect(form,m,e) ==
 --        .,t,s] and modeEqual(t,target) and modeEqual(s,source)] or return nil
 --  fn:= (or/[selfn for [cond,selfn] in u | cond=true]) or return nil
 --  [["call",fn,x],target,e]
- 
+
 listOrVectorElementMode x ==
   x is [a,b,:.] and member(a,'(PrimitiveArray Vector List)) => b
- 
+
 compIterator(it,e) ==
   it is ["IN",x,y] =>
     --these two lines must be in this order, to get "for f in list f"
@@ -212,7 +212,7 @@ compIterator(it,e) ==
         stackMessage ["SUCHTHAT operand: ",x," is not Boolean value"]
     [["|",u.expr],u.env]
   nil
- 
+
 modeIsAggregateOf(ListOrVector,m,e) ==
   m is [ =ListOrVector,R] => [m,R]
 --m = '$EmptyMode => [m,m] I don't think this is correct, breaks POLY +
@@ -224,11 +224,11 @@ modeIsAggregateOf(ListOrVector,m,e) ==
     m="$" => "Rep"
     m
   get(name,"value",e) is [[ =ListOrVector,R],:.] => [m,R]
- 
+
 --% VECTOR ITERATORS
- 
+
 --the following 4 functions are not currently used
- 
+
 --compCollectV(form,m,e) ==
 --  fn(form,[m,:$exitModeStack],[#$exitModeStack,:$leaveLevelStack],e) where
 --    fn(form,$exitModeStack,$leaveLevelStack,e) ==
@@ -284,4 +284,3 @@ modeIsAggregateOf(ListOrVector,m,e) ==
 --  y=0 => x
 --  FIXP x and FIXP y => DIFFERENCE(x,y)
 --  ["DIFFERENCE",x,y]
- 

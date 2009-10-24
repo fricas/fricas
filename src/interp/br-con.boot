@@ -236,7 +236,7 @@ kePageOpAlist oplist ==
   opAlist := nil
   for [op,sig,:pred] in oplist repeat
     u := LASSOC(op,opAlist)
---was 
+--was
 --    opAlist := insertAlist(op,[[sig,pred],:u],opAlist)
     opAlist := insertAlist(zeroOneConvert op,[[sig,pred],:u],opAlist)
   opAlist
@@ -601,7 +601,7 @@ parseNoMacroFromString(s) ==
         next(function lineoftoks,incString s))
    StreamNull s => nil
    pf2Sex first rest first s
- 
+
 
 
 mkConform(kind,name,argString) ==

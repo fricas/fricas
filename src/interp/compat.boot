@@ -32,12 +32,12 @@
 
 -- some functions that may need to be changed on different lisp
 -- systems.
- 
+
 -- tests if x is an identifier beginning with #
- 
+
 isSharpVar x ==
   IDENTP x and SCHAR(SYMBOL_-NAME x,0) = char "#"
- 
+
 isSharpVarWithNum x ==
   null isSharpVar x => nil
   (n := QCSIZE(p := PNAME x)) < 2 => nil
@@ -47,23 +47,22 @@ isSharpVarWithNum x ==
     d := ELT(p,i)
     ok := DIGITP d => c := 10*c + DIG2FIX d
   if ok then c else nil
- 
+
 -- RREAD which takes erroval to return if key is missing
 rread(key,rstream,errorval) ==
   if IDENTP key then key := PNAME key
-  RREAD(key,rstream,errorval)   
+  RREAD(key,rstream,errorval)
 
 rwrite(key,val,stream) ==
   if IDENTP key then key := PNAME key
-  RWRITE(key,val,stream) 
+  RWRITE(key,val,stream)
 
 
 editFile file ==
-  MEMQ(INTERN('"WIN32",FIND_-PACKAGE("KEYWORD")),_*FEATURES_*) => 
+  MEMQ(INTERN('"WIN32",FIND_-PACKAGE("KEYWORD")),_*FEATURES_*) =>
     OBEY STRCONC('"notepad ", namestring pathname file)
   OBEY STRCONC('"$AXIOM/lib/SPADEDIT ",namestring pathname file)
 
 -- Reads a line,
 READLINE(s) ==
   read_-line(s)
-

@@ -33,21 +33,21 @@
 )package "BOOT"
 
 -- Dequeue functions
- 
+
 -- dqUnit makes a unit dq i.e. a dq with one item, from the item
- 
+
 -- dqUnitCopy copies a unit dq
- 
+
 -- dqAppend appends 2 dq's, destroying the first
- 
+
 -- dqConcat concatenates a list of dq's, destroying all but the last
- 
+
 -- dqToList transforms a dq to a list
- 
+
 dqUnit s==(a:=[s];CONS(a,a))
- 
+
 dqUnitCopy s== dqUnit(CAAR s)
- 
+
 dqAppend(x,y)==
     if null x
     then y
@@ -57,16 +57,16 @@ dqAppend(x,y)==
               RPLACD (CDR x,CAR y)
               RPLACD (x,    CDR y)
               x
- 
+
 dqConcat ld==
     if null ld
     then nil
     else if null rest ld
          then first ld
          else dqAppend(first ld,dqConcat rest ld)
- 
+
 dqToList s==if null s then nil else CAR s
- 
+
 dqAddAppend(x,y)==
     if null x
     then nil

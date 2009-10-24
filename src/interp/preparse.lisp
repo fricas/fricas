@@ -57,22 +57,22 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
 |#
 
 (provide 'Boot)
- 
+
 (in-package "BOOT")
- 
+
 ; Global storage
- 
+
 (defparameter $INDEX 0                          "File line number of most recently read line.")
 (defparameter $preparse-last-line ()            "Most recently read line.")
 (defparameter $preparseReportIfTrue NIL         "Should we print listings?")
 (defparameter $LineList nil                     "Stack of preparsed lines.")
 (defparameter $EchoLineStack nil                "Stack of lines to list.")
 (defparameter $IOIndex 0                        "Number of latest terminal input line.")
- 
+
 (defun Initialize-Preparse (strm)
   (setq $INDEX 0 $LineList nil $EchoLineStack nil)
   (setq $preparse-last-line (get-a-line strm)))
- 
+
 (defun PREPARSE (Strm &aux (stack ()))
   (SETQ $COMBLOCKLIST NIL $skipme NIL)
   (when $preparse-last-line
@@ -183,9 +183,9 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
             (setq $preparse-last-line nil)
              (RETURN (PAIR (NREVERSE NUMS)
                            (PARSEPILES (NREVERSE LOCS) (NREVERSE LINES)))))
- 
+
          (GO READLOOP)))
- 
+
 ;; NUM is the line number of the current line
 ;; OLDNUMS is the list of line numbers of previous lines
 ;; OLDLOCS is the list of previous indentation locations
@@ -210,20 +210,20 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
                     (return (car onums))))
             (REVERSE (CDR NCBLOCK)))))
     $COMBLOCKLIST))
- 
+
 (defun PARSEPRINT (L)
   (if L
       (progn (format t "~&~%       ***       PREPARSE      ***~%~%")
              (dolist (X L) (format t "~5d. ~a~%" (car x) (cdr x)))
              (format t "~%"))))
- 
+
 (DEFUN STOREBLANKS (LINE N)
    (DO ((I 0 (ADD1 I))) ((= I N) LINE) (SETF (CHAR LINE I) #\ )))
- 
+
 (DEFUN INITIAL-SUBSTRING (PATTERN LINE)
    (let ((ind (mismatch PATTERN LINE)))
      (OR (NULL IND) (EQL IND (SIZE PATTERN)))))
- 
+
 (DEFUN SKIP-IFBLOCK (X)
    (PROG (LINE IND)
      (DCQPAIR (IND . LINE) (preparseReadLine1 X))
@@ -246,7 +246,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
             ((INITIAL-SUBSTRING ")fin" LINE)
              (RETURN (CONS IND NIL))))))
       (RETURN (SKIP-IFBLOCK X)) ) )
- 
+
 (DEFUN SKIP-TO-ENDIF (X)
    (PROG (LINE IND)
      (DCQPAIR (IND . LINE) (preparseReadLine1 X))
@@ -255,7 +255,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
              (RETURN (preparseReadLine X)))
             ((INITIAL-SUBSTRING LINE ")fin") (RETURN (CONS IND NIL)))
             ('T (RETURN (SKIP-TO-ENDIF X))))))
- 
+
 (DEFUN preparseReadLine (X)
     (PROG (LINE IND)
       (DCQPAIR (IND . LINE) (preparseReadLine1 X))
@@ -274,9 +274,9 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
              (RETURN (SKIP-TO-ENDIF X)))
             ((INITIAL-SUBSTRING ")endif" LINE)
              (RETURN (preparseReadLine X)))
-            ((and $BOOT 
+            ((and $BOOT
                   (INITIAL-SUBSTRING #|(|# ")package" LINE)
-                  (equal 
+                  (equal
                           (string-trim '(#\Space) (SUBSEQ LINE 9))
                           "\"BOOT\""))
                   (RETURN (preparseReadLine X)))
@@ -284,7 +284,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
              (SETQ *EOF* T)
              (RETURN (CONS IND NIL)) ) )))
       (RETURN (CONS IND LINE)) ))
- 
+
 (DEFUN preparseReadLine1 (X)
     (PROG (LINE IND)
       (SETQ LINE (if $LINELIST
@@ -307,7 +307,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
                     (STRCONC (SUBSTRING LINE 0 IND) (CDR (preparseReadLine1 X))) ))
             ( 'T
               LINE ) ))) ) )
- 
+
 ;;(defun preparseReadLine (X)
 ;;  (declare (special $LINELIST $echoLineStack))
 ;;  (PROG (LINE IND)
@@ -329,32 +329,32 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
 ;;                        (STRCONC (SUBSEQ LINE 0 IND)
 ;;                                 (CDR (preparseReadLine X))))
 ;;                    LINE)))))
- 
+
 (defun PREPARSE-ECHO (linelist)
   (if Echo-Meta (REPEAT (IN X (REVERSE $EchoLineStack))
                         (format out-stream "~&;~A~%" X)))
   (setq $EchoLineStack ()))
- 
+
 (defun ESCAPED (STR N) (and (> N 0) (EQ (CHAR STR (1- N)) XCAPE)))
- 
+
 (defun atEndOfUnit (X) (NULL (STRINGP X)) )
- 
+
 (defun PARSEPILES (LOCS LINES)
   "Add parens and semis to lines to aid parsing."
   (mapl #'add-parens-and-semis-to-line (NCONC LINES '(" ")) (nconc locs '(nil)))
   LINES)
- 
+
 (defun add-parens-and-semis-to-line (slines slocs)
- 
+
   "The line to be worked on is (CAR SLINES).  It's indentation is (CAR SLOCS).  There
 is a notion of current indentation. Then:
- 
+
 A. Add open paren to beginning of following line if following line's indentation
    is greater than current, and add close paren to end of last succeeding line
    with following line's indentation.
 B. Add semicolon to end of line if following line's indentation is the same.
 C. If the entire line consists of the single keyword then or else, leave it alone."
- 
+
   (let ((start-column (car slocs)))
     (if (and start-column (> start-column 0))
         (let ((count 0) (i 0))
@@ -377,10 +377,10 @@ C. If the entire line consists of the single keyword then or else, leave it alon
                            #\( )
                      (setq slines (DROP (1- i) slines))
                      (rplaca slines (addclose (car slines) #\) ))))))))
- 
+
 (defun INFIXTOK (S) (MEMBER (STRING2ID-N S 1) '(|then| |else|) :test #'eq))
- 
- 
+
+
 (defun ADDCLOSE (LINE CHAR)
   (cond ((char= (FETCHCHAR LINE (MAXINDEX LINE)) #\; )
          (SETELT LINE (MAXINDEX LINE) CHAR)

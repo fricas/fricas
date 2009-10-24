@@ -857,7 +857,7 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
           u :=
             tail is [.,origin,:.] and origin =>
 --  must change any % into $ otherwise we will not pick up comments properly
---  delete the SUBLISLIS when we fix on % or $ 
+--  delete the SUBLISLIS when we fix on % or $
               dbGetDocTable(op,SUBLISLIS(['$],['%],sig),dbDocTable origin,which,nil)
             if packageSymbol then sig := substitute('_$, packageSymbol, sig)
             dbGetDocTable(op,sig,docTable,which,nil)
@@ -993,5 +993,3 @@ evalDomainOpPred(dom,pred) == process(dom,pred) where
       nil
     pred = 'T => true
     systemError '"unknown atomic predicate form"
-
-

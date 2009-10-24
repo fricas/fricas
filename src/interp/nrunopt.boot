@@ -33,7 +33,7 @@
 --=======================================================================
 --            Generate Code to Create Infovec
 --=======================================================================
-getInfovecCode() == 
+getInfovecCode() ==
 --Function called by compDefineFunctor1 to create infovec at compile time
   ['LIST,
     MKQ makeDomainTemplate $template,
@@ -45,7 +45,7 @@ getInfovecCode() ==
 --=======================================================================
 --         Generation of Domain Vector Template (Compile Time)
 --=======================================================================
-makeDomainTemplate vec ==   
+makeDomainTemplate vec ==
 --NOTES: This function is called at compile time to create the template
 --  (slot 0 of the infovec); called by getInfovecCode from compDefineFunctor1
   newVec := GETREFV SIZE vec
@@ -55,10 +55,10 @@ makeDomainTemplate vec ==
     newVec.index :=
       atom item => item
       null atom first item => makeGoGetSlot(item,index)
-      item   
+      item
   $byteVec := "append"/NREVERSE $byteVec
   newVec
- 
+
 makeGoGetSlot(item,index) ==
 --NOTES: creates byte vec strings for LATCH slots
 --these parts of the $byteVec are created first; see also makeCompactDirect
@@ -69,7 +69,7 @@ makeGoGetSlot(item,index) ==
   curAddress := $byteAddress
   $byteAddress := $byteAddress + n + 4
   [curAddress,:op]
- 
+
 --=======================================================================
 --                Generate OpTable at Compile Time
 --=======================================================================
@@ -78,11 +78,11 @@ makeCompactDirect u ==
   $predListLength :local := LENGTH $NRTslot1PredicateList
   $byteVecAcc: local := nil
   [nam,[addForm,:opList]] := u
-  --pp opList 
+  --pp opList
   d := [[op,y] for [op,:items] in opList | y := makeCompactDirect1(op,items)]
   $byteVec := [:$byteVec,:"append"/NREVERSE $byteVecAcc]
   LIST2VEC ("append"/d)
- 
+
 makeCompactDirect1(op,items) ==
 --NOTES: creates byte codes for ops implemented by the domain
     curAddress := $byteAddress
@@ -115,14 +115,14 @@ makeCompactDirect1(op,items) ==
   $byteAddress := $byteAddress + n + 4
   res := [n,predCode,:makeCompactSigCode(sig),slot]
   res
- 
+
 orderBySubsumption items ==
   acc := subacc := nil
   for x in items repeat
     not MEMQ($op,'(Zero One)) and x is [.,.,.,'Subsumed] => subacc := [x,:subacc]
     acc := [x,:acc]
   y := z := nil
-  for [a,b,:.] in subacc | b repeat   
+  for [a,b,:.] in subacc | b repeat
   --NOTE: b = nil means that the signature a will appear in acc, that this
   --  entry is be ignored (e.g. init: -> $ in ULS)
     while (u := assoc(b,subacc)) repeat b := CADR u
@@ -131,14 +131,14 @@ orderBySubsumption items ==
     y := [[a,'Subsumed],u,:y] --makes subsuming signature follow one subsumed
     z := insert(b,z)  --mark a signature as already present
   [:y,:[w for (w := [c,:.]) in acc | not member(c,z)]] --add those not subsuming
- 
-makeCompactSigCode(sig) == [fn for x in sig] where 
-  fn == 
+
+makeCompactSigCode(sig) == [fn for x in sig] where
+  fn ==
     x = '_$_$ => 2
     x = '$ => 0
     NULL INTEGERP x => systemError ['"code vector slot is ",x,"; must be number"]
     x
-  
+
 --=======================================================================
 --              Instantiation Code (Stuffslots)
 --=======================================================================
@@ -156,7 +156,7 @@ stuffDomainSlots dollar ==
   dollar.1 := LIST(lookupFunction,dollar,infovec.1)
   dollar.2 := infovec.2
   proto4 := infovec.3
-  dollar.4 := 
+  dollar.4 :=
     VECP CDDR proto4 =>
          BREAK()
          [COPY_-SEQ CAR proto4,:CDR proto4]   --old style
@@ -187,8 +187,8 @@ stuffSlot(dollar,i,item) ==
 --                Generate Slot 2 Attribute Alist
 --=======================================================================
 NRTgenFinalAttributeAlist() == []
- 
-predicateBitIndex x == 
+
+predicateBitIndex x ==
   pn(x,nil) where
     pn(x,flag) ==
       u := simpBool transHasCode x
@@ -200,15 +200,15 @@ predicateBitIndex x ==
 
 predicateBitIndexRemop p==
 --transform attribute predicates taken out by removeAttributePredicates
-  p is [op,:argl] and op in '(AND and OR or NOT not) => 
+  p is [op,:argl] and op in '(AND and OR or NOT not) =>
     simpBool makePrefixForm([predicateBitIndexRemop x for x in argl],op)
   p is ['has,'$,['ATTRIBUTE,a]] => BREAK()
   p
- 
+
 predicateBitRef x ==
   x = 'T => 'T
   ['testBitVector,'pv_$,predicateBitIndex x]
- 
+
 makePrefixForm(u,op) ==
   u := MKPF(u,op)
   u = ''T => 'T
@@ -219,18 +219,18 @@ makePrefixForm(u,op) ==
 makePredicateBitVector pl ==   --called by buildFunctor
   if $insideCategoryPackageIfTrue = true then
     pl := union(pl,$categoryPredicateList)
-  $predGensymAlist := nil 
+  $predGensymAlist := nil
   for p in removeAttributePredicates pl repeat
     pred := simpBool transHasCode p
     atom pred => 'skip                --skip over T and NIL
-    if isHasDollarPred pred then 
+    if isHasDollarPred pred then
       lasts := insert(pred,lasts)
       for q in stripOutNonDollarPreds pred repeat firsts := insert(q,firsts)
-    else 
+    else
       firsts := insert(pred,firsts)
   firstPl := SUBLIS($pairlis,NREVERSE orderByContainment firsts)
   lastPl  := SUBLIS($pairlis,NREVERSE orderByContainment lasts)
-  firstCode:= 
+  firstCode:=
     ['buildPredVector,0,0,mungeAddGensyms(firstPl,$predGensymAlist)]
   lastCode := augmentPredCode(# firstPl,lastPl)
   $lisplibPredicates := [:firstPl,:lastPl] --what is stored under 'predicates
@@ -239,7 +239,7 @@ makePredicateBitVector pl ==   --called by buildFunctor
 augmentPredCode(n,lastPl) ==
   ['LIST,:pl] := mungeAddGensyms(lastPl,$predGensymAlist)
   delta := 2 ** n
-  l := [(u := MKPF([x,['augmentPredVector,$,delta]],'AND); 
+  l := [(u := MKPF([x,['augmentPredVector,$,delta]],'AND);
          delta:=2 * delta; u) for x in pl]
 
 augmentPredVector(dollar,value) ==
@@ -253,7 +253,7 @@ isHasDollarPred pred ==
   false
 
 stripOutNonDollarPreds pred ==
-  pred is [op,:r] and MEMQ(op,'(AND and OR or NOT not)) => 
+  pred is [op,:r] and MEMQ(op,'(AND and OR or NOT not)) =>
     "append"/[stripOutNonDollarPreds x for x in r]
   not isHasDollarPred pred => [pred]
   nil
@@ -261,19 +261,19 @@ stripOutNonDollarPreds pred ==
 removeAttributePredicates pl ==
   [fn p for p in pl] where
     fn p ==
-      p is [op,:argl] and op in '(AND and OR or NOT not) => 
+      p is [op,:argl] and op in '(AND and OR or NOT not) =>
           makePrefixForm(fnl argl,op)
       p is ['has,'$,['ATTRIBUTE,a]] => BREAK()
       p
     fnl p == [fn x for x in p]
- 
+
 transHasCode x ==
   atom x => x
   op := QCAR x
   op is "HasCategory" => x
   EQ(op,'has) => compHasFormat x
   [transHasCode y for y in x]
- 
+
 mungeAddGensyms(u,gal) ==
   ['LIST,:[fn(x,gal,0) for x in u]] where fn(x,gal,n) ==
     atom x => x
@@ -281,7 +281,7 @@ mungeAddGensyms(u,gal) ==
       n = 0 => ['LET,g,x]
       g
     [first x,:[fn(y,gal,n + 1) for y in rest x]]
- 
+
 orderByContainment pl ==
   null pl or null rest pl => pl
   max := first pl
@@ -293,13 +293,13 @@ orderByContainment pl ==
          then if null assoc(x,$predGensymAlist) then $predGensymAlist := [[x,:GENSYM()],:$predGensymAlist]
     if y then max := x
   [max,:orderByContainment delete(max,pl)]
- 
+
 buildBitTable(:l) == fn(REVERSE l,0) where fn(l,n) ==
   null l => n
   n := n + n
   if QCAR l then n := n + 1
   fn(rest l,n)
- 
+
 buildPredVector(init,n,l) == fn(init,2 ** n,l) where fn(acc,n,l) ==
   null l => acc
   if CAR l then acc := acc + n
@@ -309,11 +309,11 @@ testBitVector(vec,i) ==
 --bit vector indices are always 1 larger than position in vector
   EQ(i,0) => true
   LOGBITP(i - 1,vec)
- 
+
 bitsOf n ==
   n = 0 => 0
   1 + bitsOf (n/2)
- 
+
 --=======================================================================
 --               Generate Slot 4 Constructor Vectors
 --=======================================================================
@@ -324,7 +324,7 @@ NRTmakeCategoryAlist() ==
   $levelAlist: local := depthAssocList [CAAR x for x in pcAlist]
   opcAlist := NREVERSE SORTBY(function NRTcatCompare,pcAlist)
   newPairlis := [[5 + i,:b] for [.,:b] in $pairlis for i in 1..]
-  slot1 := [[a,:k] for [a,:b] in SUBLIS($pairlis,opcAlist) 
+  slot1 := [[a,:k] for [a,:b] in SUBLIS($pairlis,opcAlist)
                    | (k := predicateBitIndex b) ~= -1]
   slot0 := [hasDefaultPackage opOf a for [a,:b] in slot1]
   sixEtc := [5 + i for i in 1..#$pairlis]
@@ -336,34 +336,34 @@ NRTmakeCategoryAlist() ==
   maxPredList := "MAX"/predList
   catformvec := ASSOCLEFT slot1
   maxElement := "MAX"/$byteVec
-  ['CONS, ['makeByteWordVec2,MAX(maxPredList,1),MKQ predList], 
-    ['CONS, MKQ LIST2VEC slot0, 
+  ['CONS, ['makeByteWordVec2,MAX(maxPredList,1),MKQ predList],
+    ['CONS, MKQ LIST2VEC slot0,
       ['CONS, MKQ LIST2VEC [encodeCatform x for x in catformvec],
         ['makeByteWordVec2,maxElement,MKQ $byteVec]]]]
   --NOTE: this is new form: old form satisfies VECP CDDR form
 
-encodeCatform x == 
+encodeCatform x ==
   k := NRTassocIndex x => k
   atom x or atom rest x => x
   [first x,:[encodeCatform y for y in rest x]]
- 
+
 NRTcatCompare [catform,:pred] == LASSOC(first catform,$levelAlist)
- 
+
 hasDefaultPackage catname ==
   defname := INTERN STRCONC(catname,'"&")
   constructor? defname => defname
 --MEMQ(defname,allConstructors()) => defname
   nil
- 
- 
+
+
 --=======================================================================
 --             Generate Category Level Alist
 --=======================================================================
- 
-depthAssocList u == 
+
+depthAssocList u ==
   u := delete('DomainSubstitutionMacro,u)  --hack by RDJ 8/90
   REMDUP ("append"/[depthAssoc(y) for y in u])
- 
+
 depthAssoc x ==
   y := HGET($depthAssocCache,x) => y
   x is ['Join,:u] or (u := getCatAncestors x) =>
@@ -371,9 +371,9 @@ depthAssoc x ==
     HPUT($depthAssocCache,x,[[x,:n],:v])
       where n == 1 + "MAX"/[rest y for y in v]
   HPUT($depthAssocCache,x,[[x,:0]])
- 
+
 getCatAncestors x ==  [CAAR y for y in parentsOf opOf x]
- 
+
 --=======================================================================
 --                     Display Template
 --=======================================================================
@@ -383,7 +383,7 @@ dc(:r) ==
   ok := MEMQ(con,allConstructors()) or (con := abbreviation? con)
   null ok =>
     sayBrightly '"Format is: dc(<constructor name or abbreviation>,option)"
-    sayBrightly 
+    sayBrightly
       '"options are: all (default), slots, atts, cats, data, ops, optable"
   option := KAR options
   option = 'all or null option => dcAll con
@@ -407,7 +407,7 @@ dcSlots con ==
     atom item => sayBrightly ['"fun  ",item]
     item is ['CONS,.,['FUNCALL,[.,a],b]] => sayBrightly ['"constant ",a]
     sayBrightly concat('"lazy ",form2String formatSlotDomain i)
- 
+
 dcOpLatchPrint(op,index) ==
   numvec := getCodeVector()
   numOfArgs := numvec.index
@@ -417,7 +417,7 @@ dcOpLatchPrint(op,index) ==
   namePart := concat(bright "from",
     dollarPercentTran form2String formatSlotDomain whereNumber)
   sayBrightly ['"latch",:formatOpSignature(op,signumList),:namePart]
- 
+
 getInfovec name ==
   u := GETL(name,'infovec) => u
   GETL(name,'LOADED) => nil
@@ -425,7 +425,7 @@ getInfovec name ==
   startTimingProcess 'load
   loadLibNoUpdate(name, name, fullLibName)
   GETL(name,'infovec)
- 
+
 getOpSegment index ==
   numOfArgs := (vec := getCodeVector()).index
   [vec.i for i in index..(index + numOfArgs + 3)]
@@ -448,7 +448,7 @@ formatSlotDomain x ==
   atom x => x
   x is ['NRTEVAL,y] => (atom y => [y]; y)
   [first x,:[formatSlotDomain y for y in rest x]]
- 
+
 --=======================================================================
 --                     Display OpTable
 --=======================================================================
@@ -468,7 +468,7 @@ dcOpTable con ==
     curIndex := startIndex
     while curIndex < stopIndex repeat
       curIndex := dcOpPrint(op,curIndex)
- 
+
 dcOpPrint(op,index) ==
   numvec := getCodeVector()
   segment := getOpSegment index
@@ -490,10 +490,10 @@ dcOpPrint(op,index) ==
     '"looked up"
   sayBrightly [:formatOpSignature(op,signumList),:namePart, :suffix]
   index + 1
- 
+
 dcSig(numvec,index,numOfArgs) ==
   [formatSlotDomain numvec.(index + i) for i in 0..numOfArgs]
- 
+
 dcPreds con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
@@ -501,7 +501,7 @@ dcPreds con ==
   for i in 0..MAXINDEX $predvec repeat
     sayBrightlyNT bright (i + 1)
     sayBrightly pred2English $predvec.i
- 
+
 dcAtts con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
@@ -513,7 +513,7 @@ dcAtts con ==
       predNumber = 0 => nil
       [:bright '"if",:pred2English $predvec.(predNumber - 1)]
     sayBrightly [a,:suffix]
- 
+
 dcCats con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
@@ -537,7 +537,7 @@ dcCats con ==
       IDENTP info => bright '"package"
       bright '"instantiated"
     sayBrightly concat(form2String formatSlotDomain form,suffix,extra)
- 
+
 dcCats1 con ==
   $predvec:= GETDATABASE(con,'PREDICATES)
   u := $infovec.3
@@ -554,7 +554,7 @@ dcCats1 con ==
       IDENTP info => bright '"package"
       bright '"instantiated"
     sayBrightly concat(form2String formatSlotDomain form,suffix,extra)
- 
+
 dcData con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
@@ -594,7 +594,7 @@ dcSize(:options) ==
   for i in 5..maxindex repeat
     atom (item := template.i) =>   fun := fun + 1
     INTEGERP first item    => latch := latch + 1
-    'T                 =>  
+    'T                 =>
        lazy := lazy + 1
        lazyNodes := lazyNodes + numberOfNodes item
   tSize := sum(vectorSize(1 + maxindex),nodeSize(lazyNodes + latch))
@@ -602,7 +602,7 @@ dcSize(:options) ==
   oSize := vectorSize(SIZE infovec.1)
   aSize := numberOfNodes infovec.2
   slot4 := infovec.3
-  catvec := 
+  catvec :=
     VECP CDDR slot4 => CADR slot4
     CADDR slot4
   n := MAXINDEX catvec
@@ -630,7 +630,7 @@ dcSize(:options) ==
   vtotal := itotal + nodeSize(fun)       --fun   slot is ($ . function)
   vtotal := vtotal + nodeSize(2 * latch) --latch slot is (newGoGet $ . code)
   --NOTE: lazy slots require no cost     --lazy  slot is lazyDomainForm
-  if null quiet then sayBrightly ['"domain size = ",vtotal,'" BYTES"] 
+  if null quiet then sayBrightly ['"domain size = ",vtotal,'" BYTES"]
   etotal := nodeSize(fun + 2 * latch) + vectorSize(1 + maxindex)
   if null quiet then sayBrightly ['"cost per instantiation = ",etotal,'" BYTES"]
   vtotal
@@ -644,15 +644,15 @@ dcSizeAll() ==
     sayBrightly [s,'" : ",x]
     total := total + s
   sayBrightly '"------------total-------------"
-  sayBrightly [count," constructors; ",total," BYTES"]  
-    
+  sayBrightly [count," constructors; ",total," BYTES"]
+
 sum(:l) == +/l
 
 nodeSize(n) == 12 * n
 
 vectorSize(n) == 4 * (1 + n)
 
-halfWordSize(n) == 
+halfWordSize(n) ==
   n < 128 => n / 2
   n < 256 => n
   2 * n
@@ -670,7 +670,7 @@ ppTemplate vec ==
     sayBrightlyNT bright i
     pp vec.i
 
-infovec con == 
+infovec con ==
   con := abbreviation? con or con
   u := getInfovec con
   sayBrightly '"---------------slot 0 is template-------------------"
@@ -692,7 +692,7 @@ infovec con ==
 dcAll con ==
   con := abbreviation? con or con
   $infovec : local := getInfovec con
-  complete? := 
+  complete? :=
     #$infovec = 4 => false
     $infovec.4 = 'lookupComplete
   sayBrightly '"----------------Template-----------------"
@@ -716,13 +716,13 @@ dcAll con ==
 dcOps conname ==
   for [op,:u] in REVERSE getOperationAlistFromLisplib conname repeat
     for [sig,slot,pred,key,:.] in u repeat
-      suffix := 
+      suffix :=
         atom pred => nil
         concat('" if ",pred2English pred)
       key = 'Subsumed =>
         sayBrightly [:formatOpSignature(op,sig),'" subsumed by ",:formatOpSignature(op,slot),:suffix]
       sayBrightly [:formatOpSignature(op,sig),:suffix]
-  
+
 --=======================================================================
 --              Compute the lookup function (complete or incomplete)
 --=======================================================================
@@ -732,7 +732,7 @@ NRTgetLookupFunction(domform,exCategory,addForm) ==
   $why: local := nil
   atom addForm => 'lookupComplete
   extends := NRTextendsCategory1(domform,exCategory,getExportCategory addForm)
-  if null extends then 
+  if null extends then
     [u,msg,:v] := $why
     sayBrightly '"--------------non extending category----------------------"
     sayBrightlyNT ['"..",:bright form2String domform,"of cat "]
@@ -749,9 +749,9 @@ getExportCategory form ==
   functorModemap := GETDATABASE(op,'CONSTRUCTORMODEMAP)
   [[.,target,:tl],:.] := functorModemap
   EQSUBSTLIST(argl,$FormalMapVariableList,target)
- 
+
 NRTextendsCategory1(domform,exCategory,addForm) ==
-  addForm is ['Tuple,:r] => 
+  addForm is ['Tuple,:r] =>
     and/[extendsCategory(domform,exCategory,x) for x in r]
   extendsCategory(domform,exCategory,addForm)
 
@@ -770,7 +770,7 @@ extendsCategory(dom,u,v) ==
     v is ['SIGNATURE,op,sig] => [u,['"  has no ",:formatOpSignature(op,sig)]]
     [u,'" has no",v]
   nil
- 
+
 extendsCategoryBasic0(dom,u,v) ==
   v is ['IF,p,['ATTRIBUTE,c],.] =>
     -- BREAK()
@@ -781,7 +781,7 @@ extendsCategoryBasic0(dom,u,v) ==
     slot2 := uVec.2
     LASSOC(c,slot2) is [=p,:.]
   extendsCategoryBasic(dom,u,v)
- 
+
 extendsCategoryBasic(dom,u,v) ==
   u is ["Join",:l] => or/[extendsCategoryBasic(dom,x,v) for x in l]
   u = v => true
@@ -793,7 +793,7 @@ extendsCategoryBasic(dom,u,v) ==
     v is ['IF,:.] => member(v,l)
     nil
   nil
- 
+
 catExtendsCat?(u,v,uvec) ==
   u = v => true
   uvec := uvec or compMakeCategoryObject(u,$EmptyEnvironment).expr
@@ -808,7 +808,7 @@ catExtendsCat?(u,v,uvec) ==
     sayBrightlyNT '"   but not "
     PRINT v
   or/[catExtendsCat?(x,v,nil) for x in ASSOCLEFT CADR slot4]
- 
+
 substSlotNumbers(form,template,domain) ==
   form is [op,:.] and
     MEMQ(op,allConstructors()) => expandType(form,template,domain)
@@ -817,7 +817,7 @@ substSlotNumbers(form,template,domain) ==
   form is ['CATEGORY,k,:u] =>
     ['CATEGORY,k,:[substSlotNumbers(x,template,domain) for x in u]]
   expandType(form,template,domain)
- 
+
 expandType(lazyt,template,domform) ==
   atom lazyt => expandTypeArgs(lazyt,template,domform)
   [functorName,:argl] := lazyt
@@ -828,7 +828,7 @@ expandType(lazyt,template,domform) ==
     n := POSN1(x,$FormalMapVariableList)
     ELT(domform,1 + n)
   [functorName,:[expandTypeArgs(a,template,domform) for a in argl]]
- 
+
 expandTypeArgs(u,template,domform) ==
   u = '$ => u --template.0      -------eliminate this as $ is rep by 0
   INTEGERP u => expandType(templateVal(template, domform, u), template,domform)
@@ -836,9 +836,8 @@ expandTypeArgs(u,template,domform) ==
   u is ['QUOTE,y] => y
   atom u => u
   expandType(u,template,domform)
- 
+
 templateVal(template,domform,index) ==
 --returns a domform or a lazy slot
   index = 0 => harhar() --template
   template.index
-   

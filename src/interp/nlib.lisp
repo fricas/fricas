@@ -42,7 +42,7 @@
 (defun addoptions (key value basename) "adds pairs to optionlist"
   (push (cons key value) optionlist)
   (if (equal key 'FILE)
-      (push 
+      (push
        (cons 'COMPILER-OUTPUT-STREAM
                    (open (concat (libstream-dirname value) "/" basename ".lsp")
                          :direction :output :if-exists :supersede))
@@ -205,8 +205,8 @@
   (if (string= (pathname-type filespec) "NRLIB")
 #|
 When we compile an algebra file we create an NRLIB directory which contains
-several files. One of the files is named [[code.lsp]]. 
-On certain platforms this causes linking problems for GCL. 
+several files. One of the files is named [[code.lsp]].
+On certain platforms this causes linking problems for GCL.
 The problem is that the compiler produces an init code block which is
 sensitive to the name of the source file.
 Since all of the [[code.lsp]] files have the same name all of
@@ -217,7 +217,7 @@ do the compile, and then rename the result back to [[code.o]].
     (let ((base (pathname-name filespec)))
          (recompile-lib-file-if-necessary
              (concatenate 'string (namestring filespec) "/" base ".lsp")))
-  ;; only pack non libraries to avoid lucid file handling problems    
+  ;; only pack non libraries to avoid lucid file handling problems
     (let* ((rstream (rdefiostream (list (cons 'file filespec) (cons 'mode 'input))))
            (nstream nil)
            (nindextable nil)
@@ -268,14 +268,14 @@ do the compile, and then rename the result back to [[code.o]].
         (apply #'compile-file fn opts))
     (untrace compiler::fast-link-proclaimed-type-p compiler::t1defun)))
 #-:GCL
-(define-function 'compile-lib-file 
+(define-function 'compile-lib-file
   (if FRICAS-LISP::algebra-optimization
       #'(lambda (f)
-	  (locally (proclaim (cons 'optimize 
+	  (locally (proclaim (cons 'optimize
 				   FRICAS-LISP::algebra-optimization)))
 	  (compile-file f))
     #'compile-file))
-    
+
 
 ;; (RDROPITEMS filearg keys) don't delete, used in files.spad
 (defun rdropitems (filearg keys &aux (ctable (getindextable filearg)))
@@ -286,11 +286,11 @@ do the compile, and then rename the result back to [[code.o]].
 
 ;; cms file operations
 (defun make-filename (filearg &optional (filetype nil))
-  (let ((filetype (if (symbolp filetype) 
+  (let ((filetype (if (symbolp filetype)
                       (symbol-name filetype)
                       filetype)))
     (cond
-     ((pathnamep filearg) 
+     ((pathnamep filearg)
       (cond ((pathname-type filearg) (namestring filearg))
             (t (namestring (make-pathname :directory (pathname-directory filearg)
                                           :name (pathname-name filearg)
@@ -302,14 +302,14 @@ do the compile, and then rename the result back to [[code.o]].
      ;;    (or (pathname-type filearg) (null filetype)))
      ;;     filearg)
      ((and (stringp filearg) (stringp filetype)
-           (pathname-type filearg) 
+           (pathname-type filearg)
            (string-equal (pathname-type filearg) filetype))
       filearg)
      ((consp filearg)
       (make-filename (car filearg) (or (cadr filearg) filetype)))
      (t (if (stringp filetype) (setq filetype (intern filetype "BOOT")))
         (let ((ft (or (cdr (assoc filetype $filetype-table)) filetype)))
-          (if ft 
+          (if ft
               (concatenate 'string (string filearg) "." (string ft))
               (string filearg)))))))
 
@@ -321,9 +321,9 @@ do the compile, and then rename the result back to [[code.o]].
            (if (eq BOOT::|$UserLevel| 'BOOT::|development|)
                (cons cd $library-directory-list)
                $library-directory-list))
-        (t (adjoin cd 
-              (adjoin (namestring (user-homedir-pathname)) $directory-list 
-                      :test #'string=) 
+        (t (adjoin cd
+              (adjoin (namestring (user-homedir-pathname)) $directory-list
+                      :test #'string=)
               :test #'string=))))
 
 (defun probe-name (file)
@@ -338,8 +338,8 @@ do the compile, and then rename the result back to [[code.o]].
       (newfn nil))
     (if (or (null dirname) (eqcar dirname :relative))
         (dolist (dir dirs (probe-name filename))
-                (when 
-                 (fricas-probe-file 
+                (when
+                 (fricas-probe-file
                   (setq newfn (concatenate 'string dir "/" filename)))
                  (return newfn)))
         (probe-name filename))))
@@ -390,7 +390,7 @@ do the compile, and then rename the result back to [[code.o]].
 (defun delete-directory (dirname)
     #-:win32
     (obey (concat "rm -r " dirname))
-    #+:win32 
+    #+:win32
     (obey (concat "rmdir /q /s " "\"" dirname "\"")))
 
 #+:ecl
@@ -443,7 +443,7 @@ do the compile, and then rename the result back to [[code.o]].
 #+(or :clisp :ecl)
 (defun copy-lib-directory (name1 name2)
    (makedir name2)
-   (OBEY (concat "sh -c 'cp " name1 "/* " name2 "'")))    
+   (OBEY (concat "sh -c 'cp " name1 "/* " name2 "'")))
 
 #+:GCL
 (defun copy-file (namestring1 namestring2)

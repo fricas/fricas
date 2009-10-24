@@ -197,7 +197,7 @@ evaluateType1 form ==
           evalCategory(x' := (evaluateType x), m) => x'
           throwEvalTypeMsg("S2IE0004",[form])
         m := evaluateType m
-        GETDATABASE(opOf m,'CONSTRUCTORKIND) = 'domain and 
+        GETDATABASE(opOf m,'CONSTRUCTORKIND) = 'domain and
             (tree := mkAtree x) and  putTarget(tree,m) and ((bottomUp tree) is [m1]) =>
                 [zt,:zv]:= z1:= getAndEvalConstructorArgument tree
                 (v:= coerceOrRetract(z1,m)) => objValUnwrap v
@@ -323,13 +323,13 @@ getMappingArgValue(a,t,m is ['Mapping,:ml]) ==
       a.0 := name
       mmS := selectLocalMms(a,name,rest ml, nil)
       or/[mm for mm in mmS |
-        (mm is [[., :ml1],oldName,:.] and ml=ml1)] => 
+        (mm is [[., :ml1],oldName,:.] and ml=ml1)] =>
             MKQ [COERCE(oldName, 'FUNCTION)]
       NIL
     una
   mmS := selectLocalMms(a,una,rest ml, nil)
   or/[mm for mm in mmS |
-    (mm is [[., :ml1],oldName,:.] and ml=ml1)] => 
+    (mm is [[., :ml1],oldName,:.] and ml=ml1)] =>
         MKQ [COERCE(oldName, 'FUNCTION)]
   NIL
 

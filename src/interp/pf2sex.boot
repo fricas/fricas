@@ -357,7 +357,7 @@ float2Sex num ==
   $useBFasDefault =>
     [., frac, exp] := bfForm
     [["$elt", intNewFloat(), 'float], frac, exp, 10]
-  bfForm 
+  bfForm
 
 loopIters2Sex iterList ==
   result := nil
@@ -456,7 +456,3 @@ pfSuchThat2Sex args ==
   rhsSex := pf2Sex CADR argList
   $predicateList := [[name, lhsSex, :rhsSex], :$predicateList]
   name
-
-
-
-

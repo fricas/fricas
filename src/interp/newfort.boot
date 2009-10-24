@@ -75,7 +75,7 @@ newFortranTempVar() ==
   newVar := INTERN STRCONC('"T",STRINGIMAGE $exp2FortTempVarIndex)
   updateSymbolTable(newVar,$defaultFortranType)
   newVar
- 
+
 fortranCleanUp l ==
   -- takes reversed list and cleans up a bit, putting it in
   -- correct order
@@ -85,18 +85,18 @@ fortranCleanUp l ==
     if not (oldTok = '"-" and e = '"+") then m := [e,:m]
     oldTok := e
   m
- 
+
 exp2Fort1 l ==
   s := nil
   for e in l repeat s := [:exp2Fort2(e,0,nil),:s]
   s
- 
+
 exp2Fort2(e,prec,oldOp) ==
   null e    => nil
   atom e    => [object2String e]
   e is [ "=",lhs,rhs] or e is [ '"=",lhs,rhs] =>
     ['"%l",:exp2Fort2(rhs,prec,'"="),'"=",:exp2Fort2(lhs,prec,'"=")]
- 
+
   unaryOps    := ['"-",'"~"]
   unaryPrecs  := [700,50]
   binaryOps   := ['"|",'"**",'"/",'".LT.",'".GT.",'".EQ.",'".LE.",'".GE.", _
@@ -141,8 +141,8 @@ exp2Fort2(e,prec,oldOp) ==
     nprec <= prec => ['")",:s,'"("]
     s
   exp2FortFn(op,args,nargs)
- 
- 
+
+
 exp2FortFn(op,args,nargs) ==
   s := ['"(",op]
   while args repeat
@@ -150,10 +150,10 @@ exp2FortFn(op,args,nargs) ==
     args := rest args
   if nargs > 0 then ['")",:rest s]
   else ['")",:s]
- 
- 
+
+
 --% Optimization of Expression
- 
+
 exp2FortOptimize e ==
   -- $fortranOptimizationLevel means:
   --   0         just extract arrays
@@ -170,7 +170,7 @@ exp2FortOptimize e ==
     $exprStack := [e2,:$exprStack]
   NREVERSE $exprStack
 
- 
+
 exp2FortOptimizeCS e ==
   $fortCsList : local := NIL
   $fortCsHash : local := MAKE_-HASHTABLE 'EQ
@@ -178,10 +178,10 @@ exp2FortOptimizeCS e ==
   $fortCsFuncStack : local := NIL
   f := exp2FortOptimizeCS1 e
   NREVERSE [f,:$fortCsList]
- 
--- bug fix to beenHere 
+
+-- bug fix to beenHere
 -- Thu Nov 05 12:01:46 CUT 1992 , Author: TTT
--- Used in exp2FortOprtimizeCS 
+-- Used in exp2FortOprtimizeCS
 -- Original file : newfort.boot
 beenHere(e,n) ==
   n.0 := n.0 + 1                      -- increase count (initially 1)
@@ -244,7 +244,7 @@ exp2FortOptimizeCS1 e ==
   beenHere(e,n)
 
 
- 
+
 exp2FortOptimizeArray e ==
   -- this handles arrays
   atom e => e
@@ -266,14 +266,14 @@ exp2FortOptimizeArray e ==
     var
   [exp2FortOptimizeArray op,:exp2FortOptimizeArray args]
 
- 
+
 --% FORTRAN Line Breaking
- 
+
 fortran2Lines f ==
   -- f is a list of strings
   -- returns: a list of strings where each string is a valid
   -- FORTRAN line in fixed form
- 
+
   -- collect strings up to first %l or end of list. Then feed to
   -- fortran2Lines1.
   fs := NIL
@@ -286,7 +286,7 @@ fortran2Lines f ==
     lines := append(fortran2Lines1 nreverse fs,lines)
     fs := nil
   nreverse lines
- 
+
 fortran2Lines1 f ==
   -- f is a list of strings making up 1 FORTRAN statement
   -- return: a reverse list of FORTRAN lines
@@ -320,20 +320,20 @@ fortran2Lines1 f ==
       line := contPref
     if ll > $fortIndent then lines := [line,:lines]
   lines
- 
+
 -- The Fortran error functions
 fortError1 u ==
   $fortError := "t"
   sayErrorly("Fortran translation error",
              "   No corresponding Fortran structure for:")
   mathPrint u
- 
+
 fortError(u,v) ==
   $fortError := "t"
   msg := STRCONC("   ",STRINGIMAGE u);
   sayErrorly("Fortran translation error",msg)
   mathPrint v
- 
+
 --% Top Level Things to Call
 -- The names are the same as those used in the old fortran code
 
@@ -356,14 +356,14 @@ fortexp0 x ==
     [t,:f] := f
     l := [t,:l]
   NREVERSE ['"...",:l]
- 
+
 dispfortexp x ==
   if atom(x) or x is [op,:.] and not object2Identifier op in
     '(_= MATRIX construct ) then
       var := INTERN STRCONC('"R",object2String $IOindex)
       x := ['"=",var,x]
   dispfortexp1 x
- 
+
 dispfortexpf (xf, fortranName) ==
   $fortError : fluid := nil
   linef := fortran2Lines BUTLAST(expression2Fortran1(fortranName,xf),2)
@@ -391,7 +391,7 @@ displayLines1 lines ==
 
 displayLines lines ==
   if not $fortError then displayLines1 lines
- 
+
 checkLines lines ==
   $fortError => []
   lines
@@ -405,17 +405,17 @@ getfortarrayexp(fortranName,m,ints2floats?) ==
   $fortError : fluid := nil
   checkLines fortran2Lines BUTLAST(expression2Fortran1(fortranName,m),2)
 
- 
+
 -- Globals
 $currentSubprogram := nil
 $symbolTable := nil
- 
+
 
 
 --fix [x,exp x]
- 
+
 ------------ exp2FortSpecial.boot --------------------
- 
+
 exp2FortSpecial(op,args,nargs) ==
   op = "CONCAT" and first args in ["<",">","<=",">=","~","and","or"] =>
     mkFortFn(first args,CDADAR rest args,#(CDADAR rest args))
@@ -475,11 +475,11 @@ mkMat(args) ==
   $fortInts2Floats : fluid := nil
   mkFortFn(first rest args,rest rest args,#(rest rest args))
 
- 
+
 mkFortFn(op,args,nargs) ==
-  [fortranifyFunctionName(STRINGIMAGE op,nargs), 
+  [fortranifyFunctionName(STRINGIMAGE op,nargs),
    :MAPCAR(function fortPre1 , args) ]
- 
+
 fortranifyFunctionName(op,nargs) ==
   op = '"<" => '".LT."
   op = '">" => '".GT."
@@ -636,7 +636,7 @@ fortFormatElseIf(switch) ==
 fortFormatHead(returnType,name,args) ==
   $fortError : fluid := nil
   $fortranSegment : fluid := nil
-  -- if returnType = '"_"_(_)_"" then 
+  -- if returnType = '"_"_(_)_"" then
   if returnType = '"void" then
     asp := ['"SUBROUTINE "]
     changeExprLength(l := -11)
@@ -715,23 +715,23 @@ fortFormatIntrinsics(l) ==
   $fortError : fluid := nil
   null l => return nil
   displayLines fortran2Lines ['"INTRINSIC ",:addCommas(l)]
-  
- 
+
+
 ------------------ fortDec.boot --------------------
- 
+
 -- This file contains the stuff for creating and updating the Fortran symbol
 -- table.
- 
+
 currentSP () ==
   -- Return the name of the current subprogram being generated
   $currentSubprogram or "MAIN"
- 
+
 updateSymbolTable(name,type) ==
     fun := ['$elt,'SYMS,'declare_!]
     coercion := ['_:_:,STRING type,'FST]
     $insideCompileBodyIfTrue: local := false
     interpret([fun,["QUOTE",name],coercion])
- 
+
 addCommas l ==
   not l => nil
   r := [STRINGIMAGE first l]
@@ -739,15 +739,15 @@ addCommas l ==
   reverse r
 
 $intrinsics := []
-initialiseIntrinsicList() == 
+initialiseIntrinsicList() ==
   $intrinsics := []
 
 getIntrinsicList() ==
   $intrinsics
 
- 
+
 -------------------- fortPre.boot ------------------
- 
+
 fortPre l ==
   -- Essentially, the idea is to fix things so that we know what size of
   -- expression we will generate, which helps segment large expressions
@@ -758,7 +758,7 @@ fortPre l ==
   for e in l repeat if new := fortPre1 e then
      $exprStack := [new,:$exprStack]
   reverse $exprStack
- 
+
 fortPre1 e ==
   -- replace spad function names by Fortran equivalents
   -- where appropriate, replace integers by floats
@@ -821,18 +821,18 @@ fortPre1 e ==
   mkFortFn(op,args,#args)
 
 fortPreRoot e ==
--- To set $fortInts2Floats 
+-- To set $fortInts2Floats
   $fortInts2Floats : fluid := true
   fortPre1 e
- 
+
 fix2FortranFloat e ==
   -- Return a Fortran float for a given integer.
   $fortranPrecision = "double" => STRCONC(STRINGIMAGE(e),".0D0")
   STRCONC(STRINGIMAGE(e),".")
- 
+
 isFloat e ==
   FLOATP(e) or STRINGP(e) and FIND(char ".",e)
- 
+
 checkPrecision e ==
   -- Do we have a string?
   STRINGP(e) and CHAR_-CODE(CHAR(e,0)) = 34 => e
@@ -846,9 +846,9 @@ checkPrecision e ==
       "0"
     STRCONC(iPart,rPart,"D",expt)
   e
- 
+
 ----------------- segment.boot -----------------------
- 
+
 fortExpSize e ==
   -- computes a tree reflecting the number of characters of the printed
   -- expression.
@@ -872,15 +872,15 @@ fortExpSize e ==
       2+fortSize MAPCAR(function fortExpSize, e)
     1+fortSize [fortExpSize arg1,fortExpSize arg2]
   2+fortSize MAPCAR(function fortExpSize, e)
- 
+
 fortSize e ==
   +/[elen u for u in e] where
     elen z ==
       atom z => z
       first z
- 
+
 tempLen () == 1 + LENGTH STRINGIMAGE $exp2FortTempVarIndex
- 
+
 segment l ==
   not $fortranSegment => l
   s := nil
@@ -896,7 +896,7 @@ segment l ==
       s := [:[[first e,car exprs],:cdr exprs],:s]
     else s:= [e,:s]
   reverse s
- 
+
 segment1(e,maxSize) ==
   (size := fortExpSize e) < maxSize => [e]
   expressions := nil;
@@ -917,7 +917,7 @@ segment1(e,maxSize) ==
     newE := [:newE,(car exprs)]
     safeSize := safeSize - fortExpSize car exprs
   [newE,:expressions]
- 
+
 segment2(e,topSize) ==
   maxSize := $maximumFortranExpressionLength -tempLen()-1
   atom(e) => [e]
@@ -942,4 +942,3 @@ segment2(e,topSize) ==
   topSize > 0 => [newE,:exprs]
   newVar := newFortranTempVar()
   [newVar,['"=",newVar,newE],:exprs]
- 

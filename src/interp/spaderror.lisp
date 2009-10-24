@@ -57,7 +57,7 @@
 (defun |resetStackLimits| () nil)
 
 ;; failed union branch --  value returned for numeric failure
-(setq |$numericFailure| (cons 1 "failed")) 
+(setq |$numericFailure| (cons 1 "failed"))
 
 (defvar |$oldBreakMode|)
 
@@ -99,7 +99,7 @@
                ((eq |$BreakMode| '|letPrint2|)
                    (setq |$BreakMode| nil)
                    (throw '|letPrint2| nil))))))
-        
+
 
 
 ;; the following form embeds around the akcl error handler
@@ -133,4 +133,3 @@
                            (throw '|letPrint2| nil))))
                 (apply system:universal-error-handler type correctable? op
                        continue-string error-string args )))))
-

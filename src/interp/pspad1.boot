@@ -30,7 +30,7 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-$escapeWords := ["always", "assert", "but", "define", 
+$escapeWords := ["always", "assert", "but", "define",
   "delay", "do", "except", "export", "extend", "fix", "fluid",
     "from", "generate", "goto", "import", "inline", "never", "select",
        "try", "yield"]
@@ -45,7 +45,7 @@ $pspadRelationAlist := '((_= . _~_=) (_< . _>_=) (_<_= . _>)(_~_= . _=)(_>_= . _
 $lineBuffer := nil
 $formatForcePren := nil
 $underScore := char ('__)
-$rightBraceFlag := nil 
+$rightBraceFlag := nil
 $semicolonFlag := nil
 $newLineWritten := nil
 $comments := nil
@@ -91,21 +91,21 @@ lisp2Boot x ==
   format x
   formatOutput REVERSE $lineFragmentBuffer
   [fragmentsToLine y for y in REVERSE $lineBuffer]
- 
+
 fragmentsToLine fragments ==
   string:= lispStringList2String fragments
   line:= GETSTR 240
   for i in 0..MAXINDEX string repeat line:= SUFFIX(string.i,line)
   line
- 
+
 lispStringList2String x ==
   null x => '""
   atom x => STRINGIMAGE x
   CDR x => APPLY(function STRCONC,MAPCAR(function lispStringList2String,x))
   lispStringList2String CAR x
- 
+
 --% routines for buffer and margin adjustment
- 
+
 formatOutput x ==
   for [currentColumn,start,end,stack] in REVERSE $commentsToPrint repeat
     startY:= rest start
@@ -127,35 +127,35 @@ formatOutput x ==
   for y in extraLines repeat consLineBuffer LIST y
   if after then putOut after
   $commentsToPrint:= nil
- 
+
 consLineBuffer x ==  $lineBuffer := [x,:$lineBuffer]
 
 putOut x ==
   eject ("min"/[gap for [.,.,gap,:.] in x])
   for u in orderList x repeat addComment u
- 
+
 eject n == for i in 2..n repeat consLineBuffer nil
- 
+
 addComment u ==
   for x in mkCommentLines u repeat consLineBuffer LIST x
- 
+
 mkCommentLines [.,n,.,s] ==
   lines:= breakComments s
   lines1:= [fragmentsToLine [nBlanks n,"_{",first lines],:rest lines]
   [:l,last]:= lines1
   [:l,fragmentsToLine [last,"_}"]]
- 
+
 breakComments s ==
   n:= containsString(s,PNAME "ENDOFLINECHR") =>
     #s>n+12 => [SUBSTRING(s,0,n),:breakComments SUBSTRING(s,n+12,NIL)]
     LIST SUBSTRING(s,0,n)
   LIST s
- 
+
 containsString(x,y) ==
                        --if string x contains string y, return start index
   for i in 0..MAXINDEX x-MAXINDEX y repeat
     and/[x.(i+j)=y.j for j in 0..MAXINDEX y] => return i
- 
+
 --======================================================================
 --               Character/String Buffer Functions
 --======================================================================
@@ -186,12 +186,12 @@ consBuffer item ==
   $rightBraceFlag := item = "}"
   $semicolonFlag  := item = "; "   --prevents consecutive semicolons
   $c:= $c+n
- 
+
 isSpecialBufferItem item ==
   item = "; " or STRINGP item => true
   false
 
-isCloseDelimiter item ==   EQ(item,")") or EQ(item,"]") or EQ(item,"}") 
+isCloseDelimiter item ==   EQ(item,")") or EQ(item,"]") or EQ(item,"}")
 
 --======================================================================
 --               Formatting/Line Control Functions
@@ -202,7 +202,7 @@ newLine() ==
   formatOutput REVERSE $lineFragmentBuffer
   $lineFragmentBuffer:= LIST nBlanks $m
   $c:= $m
- 
+
 optNewLine() ==
   $newLineWritten => newLine()
   $c
@@ -213,15 +213,15 @@ spillLine() ==
   $c:= $m+2*($numberOfSpills:= $numberOfSpills+1)
   $lineFragmentBuffer:= LIST nBlanks $c
   $c
- 
+
 indent() ==
   $m:= $m+2*($numberOfSpills+1)
   $marginStack:= [$m,:$marginStack]
   $numberOfSpills:= 0
   $m
- 
+
 undent() ==
---  $doNotResetMarginIfTrue=true => 
+--  $doNotResetMarginIfTrue=true =>
 --    pp '"hoho"
 --    $c
   $marginStack is [m,:r] =>
@@ -229,25 +229,25 @@ undent() ==
     $m := m
   0
 
-spill(fn,a) == 
+spill(fn,a) ==
   u := try FUNCALL(fn,a) => u
   (nearMargin() or spillLine()) and FUNCALL(fn,a)
- 
+
 formatSpill(fn,a) ==
   u := try FUNCALL(fn,a) => u
-  v := (stay:= nearMargin() or indent() and newLine()) and FUNCALL(fn,a) 
+  v := (stay:= nearMargin() or indent() and newLine()) and FUNCALL(fn,a)
   w := stay or undent()
   v and w
- 
+
 formatSpill2(fn,f,a) ==
   u := try FUNCALL(fn,f,a) => u
-  v := (stay:= nearMargin() or indent() and newLine()) and FUNCALL(fn,f,a) 
+  v := (stay:= nearMargin() or indent() and newLine()) and FUNCALL(fn,f,a)
   w := stay or undent()
   v and w
- 
+
 nearMargin() ==
   $c=$m or $c=$m+1 => $c
- 
+
 --======================================================================
 --               Main Formatting Functions
 --======================================================================
@@ -259,9 +259,9 @@ format(x,:options) ==
       if op = 'return then argl := rest argl
       n := #argl
       op is ['elt,y,"construct"] => formatDollar(y,'construct,argl)
-      op is ['elt,name,p] and UPPER_-CASE_-P (STRINGIMAGE opOf name).0 => 
+      op is ['elt,name,p] and UPPER_-CASE_-P (STRINGIMAGE opOf name).0 =>
         formatDollar(name,p,argl)
-      op = 'elt and UPPER_-CASE_-P (STRINGIMAGE opOf CAR argl).0 => 
+      op = 'elt and UPPER_-CASE_-P (STRINGIMAGE opOf CAR argl).0 =>
         formatDollar1(CAR argl,CADR argl)
       fn:= GETL(op,"PSPAD") => formatFn(fn,x,$m,$c)
       if MEMQ(op,'(AND OR NOT)) then op:= DOWNCASE op
@@ -274,7 +274,7 @@ format(x,:options) ==
   null newCOrNil => ($c:= oldC; nil)
   null FIXP newCOrNil => error()
   $c:= newCOrNil
- 
+
 
 getOp(op,kind) ==
   kind = 'Led =>
@@ -287,20 +287,20 @@ formatDollar(name,p,argl) ==
   n := #argl
   kind := (n=1 => "Nud"; "Led")
   IDENTP name and GETL(p,kind) => format([p,:argl],name)
-  formatForcePren [p,:argl] and 
-    (try (format "$$" and formatForcePren name) 
+  formatForcePren [p,:argl] and
+    (try (format "$$" and formatForcePren name)
       or (indent() and format "$__" and formatForcePren name and undent()))
- 
+
 formatMacroCheck name ==
   ATOM name => name
   u := or/[x for [x,:y] in $globalMacroStack | y = name] => u
   u := or/[x for [x,:y] in $localMacroStack  | y = name] => u
   [op,:argl] := name
-  MEMQ(op,'(Record Union)) => 
+  MEMQ(op,'(Record Union)) =>
     pp ['"Cannot find: ",name]
     name
   [op,:[formatMacroCheck x for x in argl]]
-  
+
 formatDOLLAR ['DOLLAR,x,y] == formatDollar1(y, x)
 
 formatDollar1(name,arg) ==
@@ -309,33 +309,33 @@ formatDollar1(name,arg) ==
     name is [p] and GETL(p,'NILADIC) => p
     name
   format arg and format "$$" and formatForcePren id
- 
- 
+
+
 formatForcePren x ==
   $formatForcePren: local := true
   format x
- 
+
 formatAtom(x,:options) ==
   if u := LASSOC(x,$renameAlist) then x := u
-  null x or isIdentifier x => 
-    if MEMQ(x,$escapeWords) then 
+  null x or isIdentifier x =>
+    if MEMQ(x,$escapeWords) then
       consBuffer $underScore
     consBuffer ident2PrintImage PNAME x
   consBuffer x
- 
+
 formatFn(fn,x,$m,$c) == FUNCALL(fn,x)
 
 formatFree(['free,:u]) ==
   format 'free and format " " and formatComma u
 
-formatUnion(['Union,:r]) == 
+formatUnion(['Union,:r]) ==
   $count : local := 0
   formatFormNoColonDecl formatTestForPartial ['Union,:[fn x for x in r]] where fn x ==
     x is [":",y,'Branch] => fn STRINGIMAGE y
     STRINGP x => [":", INTERN x, ['Enumeration,x]]
     x is [":",:.] => x
     tag := INTERN STRCONC("value",STRINGIMAGE ($count := $count + 1))
-    [":", tag, x]      
+    [":", tag, x]
 
 formatTestForPartial u ==
   u is ['Union,a,b] and b is [":","failed",:.] and a is [":",.,S] =>
@@ -350,15 +350,15 @@ formatRecord(u) == formatFormNoColonDecl u
 
 formatFormNoColonDecl u ==
   $noColonDeclaration: local := true
-  formatForm u  
+  formatForm u
 
-formatElt(u) ==  
+formatElt(u) ==
   u is ["elt",a,b] => formatApplication rest u
   formatForm u
- 
+
 formatForm (u) ==
   [op,:argl] := u
-  if MEMQ(op, '(Record Union)) then 
+  if MEMQ(op, '(Record Union)) then
     $fieldNames := union(getFieldNames argl,$fieldNames)
   MEMQ(op,'((QUOTE T) true)) => format "true"
   MEMQ(op,'(false nil)) => format op
@@ -366,31 +366,31 @@ formatForm (u) ==
   u='(One) => format 1
   1=#argl => formatApplication u
   formatFunctionCall u
- 
+
 formatFunctionCall u ==
   $pilesAreOkHere: local := nil
   spill("formatFunctionCall1",u)
- 
+
 formatFunctionCall1 [op,:argl] ==
 --null argl and getConstructorProperty(op,'niladic) => formatOp op
-  null argl => 
+  null argl =>
     GETL(op,'NILADIC) => formatOp op
     formatOp op and format "()"
-  formatOp op and formatFunctionCallTail argl 
- 
+  formatOp op and formatFunctionCallTail argl
+
 formatFunctionCallTail argl == format "_(" and formatComma argl and format "_)"
 
-formatComma argl == 
+formatComma argl ==
   format first argl and (and/[format "," and formatCut x for x in rest argl]) and $c
- 
+
 formatOp op ==
   atom op => formatAtom op
   formatPren op
- 
+
 formatApplication u ==
   [op,a] := u
   MEMQ(a, $fieldNames) => formatSelection u
-  atom op => 
+  atom op =>
     formatHasDotLeadOp a => formatOpPren(op,a)
     formatApplication0 u
   formatSelection u
@@ -402,17 +402,17 @@ formatApplication0 u ==
 --format as f(x) as f x if possible
   $pilesAreOkHere: local := nil
   formatSpill("formatApplication1",u)
- 
+
 formatApplication1 u ==
   [op,x] := u
-  formatHasDollarOp x or $formatForcePren or 
+  formatHasDollarOp x or $formatForcePren or
     pspadBindingPowerOf("left",x) < 1000  => formatOpPren(op,x)
-  try (formatOp op and format " ") and 
+  try (formatOp op and format " ") and
     (try formatApplication2 x or
       format "(" and formatApplication2 x and format ")")
 
 formatHasDollarOp x ==
-  x is ["elt",a,b] and isTypeProbably? a 
+  x is ["elt",a,b] and isTypeProbably? a
 
 isTypeProbably? x ==
   IDENTP x and UPPER_-CASE_-P (PNAME x).0
@@ -420,7 +420,7 @@ isTypeProbably? x ==
 formatOpPren(op,x) == formatOp op and formatPren x
 
 formatApplication2 x ==
-  leadOp := 
+  leadOp :=
     x is [['elt,.,y],:.] => y
     opOf x
   MEMQ(leadOp,'(COLLECT LIST construct)) or
@@ -431,45 +431,45 @@ formatDot ["dot",a,x] ==
   try (formatOp a and format ".") and
     ATOM x => format x
     formatPren x
- 
+
 formatSelection u ==
   $pilesAreOkHere: local := nil
   formatSpill("formatSelection1",u)
- 
-formatSelection1 [f,x] == formatSelectionOp f and format "." and 
+
+formatSelection1 [f,x] == formatSelectionOp f and format "." and
     ATOM x => format x
     formatPren x
- 
+
 formatSelectionOp op ==
-  op is [f,.] and not GETL(f,'Nud) or 
+  op is [f,.] and not GETL(f,'Nud) or
     1000 < pspadBindingPowerOf("right",op) => formatSelectionOp1 op
   formatPren1("formatSelectionOp1",op)
- 
+
 formatSelectionOp1 f ==
-  f is [op,:argl] => 
-    argl is [a] => 
+  f is [op,:argl] =>
+    argl is [a] =>
       not ATOM op and ATOM a => formatSelection1 [op,a]
       formatPren f
     format f
   formatOp f
- 
+
 formatPren a ==
   $pilesAreOkHere: local := nil
   formatSpill("formatPrenAux",a)
- 
+
 formatPrenAux a == format "_(" and format a and format "_)"
- 
+
 formatPren1(f,a) ==
   $pilesAreOkHere: local := nil
   formatSpill2("formatPren1Aux",f,a)
- 
+
 formatPren1Aux(f,a) == format "_(" and FUNCALL(f,a) and format "_)"
- 
+
 formatLeft(fn,x,op,key) ==
   lbp:= formatOpBindingPower(op,key,"left")
   formatOpBindingPower(opOf x,key,"right")<lbp => formatPren1(fn,x)
   FUNCALL(fn,x)
- 
+
 formatRight(fn,x,op,key) ==
   --are there exceptional cases where piles are ok?
   x is ['LET,:.] => FUNCALL(fn,x)
@@ -478,9 +478,9 @@ formatRight(fn,x,op,key) ==
   lbp := formatOpBindingPower(opOf x,key,"left")
   lbp < rbp => formatPren1(fn,x)
   FUNCALL(fn,x)
- 
+
 formatCut a == formatSpill("format",a)
- 
+
 --======================================================================
 --               Prefix/Infix Operators
 --======================================================================
@@ -489,11 +489,11 @@ formatPrefix(op,arg,lbp,rbp,:options) ==
   $pilesAreOkHere: local := nil
   formatPrefixOp(op,qualification) and
     (rbp>formatGetBindingPowerOf("left",arg) => formatPren arg; format arg)
- 
+
 formatPrefixOp(op,:options) ==
   qualification := IFCAR options
   op=char '" " => format " ="
-  qualification or GETL(op,"Nud") and not MEMQ(op,$spadTightList) => 
+  qualification or GETL(op,"Nud") and not MEMQ(op,$spadTightList) =>
     formatQual(op,qualification) and format " "
   format op
 
@@ -505,15 +505,15 @@ formatInfix(op,[a,b],lbp,rbp,:options) ==
   qualification  := IFCAR options
   $pilesAreOkHere: local := nil
   (if formatGetBindingPowerOf("right",a)<lbp then formatPren a else format a) and
-    formatInfixOp(op,qualification) and (if rbp>formatGetBindingPowerOf("left",b) 
+    formatInfixOp(op,qualification) and (if rbp>formatGetBindingPowerOf("left",b)
       then formatPren b else format b)
- 
+
 formatGetBindingPowerOf(leftOrRight,x) ==
 --  this function is nearly identical with getBindingPowerOf
 --    leftOrRight = "left" => 0
 --    1
   pspadBindingPowerOf(leftOrRight,x)
- 
+
 pspadBindingPowerOf(key,x) ==
   --binding powers can be found in file NEWAUX LISP
   x is ['REDUCE,:.] => (key='left => 130; key='right => 0)
@@ -563,13 +563,13 @@ formatOpBindingPower(op,key,leftOrRight) ==
     leftOrRight = 'left => KAR r or 0
     KAR KDR r or 1
   1000
- 
+
 formatInfixOp(op,:options) ==
   qualification := IFCAR options
-  qualification or 
+  qualification or
     (op ~= '_$) and not MEMQ(op,$spadTightList) => format " " and formatQual(op,qualification) and format " "
   format op
- 
+
 --======================================================================
 --            Special Handlers: DEF forms
 --======================================================================
@@ -577,8 +577,8 @@ formatInfixOp(op,:options) ==
 formatDEF def == formatDEF0(def,$DEFdepth + 1)
 
 formatDEF0(["DEF",form,tlist,sclist,body],$DEFdepth) ==
-  if not MEMQ(KAR form,'(Exports Implementation)) then 
-    $form := 
+  if not MEMQ(KAR form,'(Exports Implementation)) then
+    $form :=
       form is [":",a,:.] => a
       form
   con := opOf $form
@@ -597,22 +597,22 @@ formatDEF0(["DEF",form,tlist,sclist,body],$DEFdepth) ==
     impname := 'Implementation
     form is [":",.,=exname] or body = impname => nil
     exports :=
-      form is [":",a,b] => 
+      form is [":",a,b] =>
         form := a
         [["MDEF",exname,'(NIL),'(NIL),b]]
       nil
     [op,:argl] := form
 --  decls := [x for x in argl | x is [":",:.]]
 --  form := [op,:[(a is [":",b,t] => b; a) for a in argl]]
---  $DEFdepth := $DEFdepth - 1  
+--  $DEFdepth := $DEFdepth - 1
     formatWHERE(["where",
       ["DEF",[":",form,exname],[nil for x in form],sclist,impname],
         ['PROGN,:exports,["MDEF",impname,'(NIL),'(NIL),body]]])
   $insideTypeExpression: local := true
   body := formatDeftran(body,false)
-  body is ["add",a,:b] => formatAddDef(form,a,b) 
+  body is ["add",a,:b] => formatAddDef(form,a,b)
 --body is ["with",a,:b] => formatWithDef(form,a,b)
-  tryBreakNB(format form and format " == ",body,"==","Led") 
+  tryBreakNB(format form and format " == ",body,"==","Led")
 
 formatDEF1 ["DEF",form,tlist,b,body] ==
   $insideDEF: local := $DEFdepth > 1
@@ -625,12 +625,12 @@ formatDEF1 ["DEF",form,tlist,b,body] ==
   prefix := (opOf tlist = 'Category => "define "; nil)
   body is ["add",a,b] => formatAddDef(form,a,b)
   body is ["with",a,:b] => formatWithDef(form,a,b,"==",prefix)
-  prefix => 
-    tryBreak(format prefix and format form and format " == ",body,"==","Led") 
-  tryBreak(format form and format " == ",body,"==","Led") 
+  prefix =>
+    tryBreak(format prefix and format form and format " == ",body,"==","Led")
+  tryBreak(format form and format " == ",body,"==","Led")
 
 formatDefForm(form,:options) ==
-  prefix := IFCAR options 
+  prefix := IFCAR options
   $insideTypeExpression : local := true
   form is [":",form1,["with",a,:b]] => formatWithDef(form1,a,b,":",prefix)
   prefix => format prefix and format form
@@ -644,7 +644,7 @@ formatAddDef(form,a,b) ==
   $m := $c := 0
   $insideTypeExpression : local := false
   cap := (b => b; "")
-  tryBreakNB(newLine() and format "== " and formatLeft("format",a,"add","Led") 
+  tryBreakNB(newLine() and format "== " and formatLeft("format",a,"add","Led")
       and format " add ", cap,"add","Led")
 
 formatWithDef(form,a,b,separator,:options) ==
@@ -654,10 +654,10 @@ formatWithDef(form,a,b,separator,:options) ==
   $insideDEF     : local := false
   $insideTypeExpression : local := false
   a1 := formatWithKillSEQ a
-  b => tryBreakNB(formatDefForm(form,prefix) and format separator and format " with " and formatLeft("format",a,"with","Led") 
+  b => tryBreakNB(formatDefForm(form,prefix) and format separator and format " with " and formatLeft("format",a,"with","Led")
       and format " with ",first b,"with","Led")
   tryBreak(formatDefForm(form,prefix) and format separator and format " with ",a1,"with","Nud")
- 
+
 formatWithKillSEQ x ==
   x is ['SEQ,['exit,.,y]] => ['BRACE, y]
   x
@@ -666,7 +666,7 @@ formatBrace ['BRACE, x]  == format "{" and format x and format "}"
 
 formatWith ["with",a,:b] ==
   $pilesAreOkHere: local := true
-  b => 
+  b =>
     tryBreakNB(formatLeft("format",a,"with","Led") and format " with ",first b,"with","Led")
   tryBreak(format "with ",a,"with","Nud")
 
@@ -680,7 +680,7 @@ formatWithDefault ["withDefault",a,b] ==
       a := part2
       b := nil
   $pilesAreOkHere: local := true
-  b => 
+  b =>
     tryBreakNB(formatLeft("format",a,"with","Led") and format " with ",first b,"with","Led")
   tryBreak(format "with ",a,"with","Nud")
 
@@ -688,8 +688,8 @@ formatDefaultDefs ["default",a, :b] ==
   $insideCAPSULE : local := true
   $insideDEF     : local := false
   $insideTypeExpression : local := false
-  b => 
-    tryBreak(formatLeft("format",a,"default","Led") and 
+  b =>
+    tryBreak(formatLeft("format",a,"default","Led") and
       format " default ", first b,"default","Led")
   tryBreak(format "default ",a,"default","Nud")
 --format "add " and formatRight("formatPreferPile",a,"add","Nud")   --==> brace
@@ -698,8 +698,8 @@ formatAdd ["add",a,:b] ==
   $insideCAPSULE : local := true
   $insideDEF     : local := false
   $insideTypeExpression : local := false
-  b => 
-    tryBreakNB(formatLeft("format",a,"and","Led") and 
+  b =>
+    tryBreakNB(formatLeft("format",a,"and","Led") and
       format " and ", first b,"and","Led")
   tryBreakNB(format "add ",a,"and","Nud")
 --format "add " and formatRight("formatPreferPile",a,"add","Nud")   --==> brace
@@ -710,13 +710,13 @@ formatMDEF ["MDEF",form,.,.,body] ==
   $insideTypeExpression: local := true
   body := formatDeftran(body,false)
   name := opOf form
-  tryBreakNB(format name and format " ==> ",body,"==","Led") 
+  tryBreakNB(format name and format " ==> ",body,"==","Led")
    and ($insideCAPSULE and $c or format(";"))
 
-insideCat() == $insideCategoryIfTrue and not $insideFunctorIfTrue 
+insideCat() == $insideCategoryIfTrue and not $insideFunctorIfTrue
    or $noColonDeclaration
 
-formatImport ["import",a] == 
+formatImport ["import",a] ==
   addFieldNames a
   addFieldNames macroExpand(a,$e)
   format "import from " and formatLocal1 a
@@ -732,8 +732,7 @@ getFieldNames r ==
   nil
 
 formatLocal ["local",a] == format "local " and formatLocal1 a
- 
+
 formatLocal1 a ==
   $insideTypeExpression: local := true
   format a
-

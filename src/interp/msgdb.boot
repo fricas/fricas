@@ -63,8 +63,8 @@ digit is the parameter number ans the letters following indicate
 additional formatting. You can indicate as many additional formatting
 qualifiers as you like, to the degree they make sense. The "p" code
 means to call prefix2String on the parameter, a standard way of
-printing abbreviated types.  The "P" operator maps prefix2String over 
-its arguments.  The "o" operation formats the argument as an operation 
+printing abbreviated types.  The "P" operator maps prefix2String over
+its arguments.  The "o" operation formats the argument as an operation
 name.  "b" means to print that parameter in
 a bold (bright) font. "c" means to center that parameter on a
 new line.  "f" means that the parameter is a list [fn, :args]
@@ -178,9 +178,9 @@ substituteSegmentedMsg(msg,args) ==
               arg
       if MEMQ(char 'm,q) then arg := [['"%m",:arg]]
       if MEMQ(char 's,q) then arg := [['"%s",:arg]]
-      if MEMQ(char 'p,q) then 
+      if MEMQ(char 'p,q) then
           $texFormatting => arg := prefix2StringAsTeX arg
-          arg := prefix2String arg 
+          arg := prefix2String arg
       if MEMQ(char 'P,q) then
           $texFormatting => arg := [prefix2StringAsTeX x for x in arg]
           arg := [prefix2String x for x in arg]
@@ -297,7 +297,7 @@ throwPatternMsg(key,args) ==
   sayPatternMsg(key,args)
   spadThrow()
 
-sayKeyedMsgAsTeX(key, args) == 
+sayKeyedMsgAsTeX(key, args) ==
   $texFormatting: fluid := true
   sayKeyedMsgLocal(key, args)
 
@@ -401,7 +401,7 @@ keyedSystemError1(key,args) ==
 pushSatOutput(arg) ==
   $saturnMode = arg => arg
   was := $saturnMode
-  arg = "verb" => 
+  arg = "verb" =>
     $saturnMode := "verb"
     sayString '"\begin{verbatim}"
     was
@@ -411,10 +411,10 @@ pushSatOutput(arg) ==
     was
   sayString FORMAT(nil, '"What is: ~a", $saturnMode)
   $saturnMode
- 
-popSatOutput(newmode) == 
+
+popSatOutput(newmode) ==
   newmode = $saturnMode => nil
-  newmode = "verb" => 
+  newmode = "verb" =>
     $saturnMode := "verb"
     sayString '"\begin{verbatim}"
   newmode = "line" =>
@@ -442,12 +442,12 @@ flowSegmentedMsg(msg, len, offset) ==
   -- msgs that are entirely centered or right justified are not flowed
   msg is [[ce,:.]] and ce in '(%ce "%ce" %rj "%rj") => msg
 
-  -- if we are formatting latex, then we assume 
+  -- if we are formatting latex, then we assume
   -- that nothing needs to be done
   $texFormatting => msg
   -- msgs that are entirely centered are not flowed
   msg is [[ce,:.]] and ListMember?(ce,'(%ce "%ce")) => msg
- 
+
   potentialMarg := 0
   actualMarg    := 0
 
@@ -630,7 +630,7 @@ brightPrint0 x ==
   STRINGP x => sayString x
   brightPrintHighlight x
 
-brightPrint0AsTeX x == 
+brightPrint0AsTeX x ==
   x = '"%l" =>
     sayString('"\\")
     for i in 1..$MARG repeat sayString '"\ "
@@ -650,9 +650,9 @@ brightPrint0AsTeX x ==
   k := blankIndicator x => for i in 1..k repeat sayString '"\ "
   x = '"%d" =>
     sayString '"} "
-  x = '"_"$_"" => 
+  x = '"_"$_"" =>
     sayString('"_"\verb!$!_"")
-  x = '"$" => 
+  x = '"$" =>
     sayString('"\verb!$!")
   STRINGP x => sayString x
   brightPrintHighlight x
@@ -708,7 +708,7 @@ brightPrintHighlightAsTeX x ==
   [key,:rst] := x
   key = '"%m" => mathprint rst
   key = '"%m" => rst
-  key = '"%s" => 
+  key = '"%s" =>
     sayString '"\verb__"
     PRETTYPRIN0 rst
     sayString '"__"
@@ -766,7 +766,7 @@ brightPrintCenterAsTeX x ==
     sayString x
     sayString '"}"
   lst := x
-  while lst repeat 
+  while lst repeat
     words := nil
     while lst and not CAR(lst) = "%l" repeat
       words := [CAR lst,: words]
@@ -777,7 +777,7 @@ brightPrintCenterAsTeX x ==
     for zz in words repeat
       brightPrint0 zz
     sayString '"}"
-  nil 
+  nil
 
 brightPrintRightJustify x ==
   -- right justifies rst within $LINELENGTH, checking for %l's
@@ -1019,4 +1019,3 @@ escapeSpecialChars s ==
   buf
 
 dbSpecialDisplayOpChar? c == (c = char '_~)
-

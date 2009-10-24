@@ -33,21 +33,21 @@
 )package "BOOT"
 
 -- insertpiles converts a line-list to a line-forest where
- 
+
 -- a line is a token-dequeue and has a column which is an integer.
 -- an A-forest is an A-tree-list
 -- an A-tree has a root which is an A, and subtrees which is an A-forest.
- 
+
 -- A forest with more than one tree corresponds to a Scratchpad pile
 -- structure (t1;t2;t3;...;tn), and a tree corresponds to a pile item.
 -- The ( ; and ) tokens are inserted into a >1-forest, otherwise
 -- the root of the first tree is concatenated with its forest.
 -- column t is the number of spaces before the first non-space in line t
- 
+
 pileColumn t==CDR tokPosn CAAR t
 pileComment t== EQ(tokType CAAR t,"negcomment")
 pilePlusComment t== EQ(tokType CAAR t,"comment")
- 
+
 -- insertpile is used by next so s is non-null
 -- bite off a line-tree, return it and the remaining line-list.
 
@@ -89,7 +89,7 @@ setNopiles (t) ==
 
 piles () ==
     $nopiles := false
- 
+
 insertpile (s)==
      $nopiles = "{" => nopile (s, "{", "}")
      $nopiles = "(" => nopile (s, "(", ")")
@@ -106,7 +106,7 @@ insertpile (s)==
          stream:=CADAR s
          a:=pileTree(-1,s)
          cons([[a.2,stream]],a.3)
- 
+
 pilePlusComments s==
       if npNull s
       then [[],s]
@@ -117,7 +117,7 @@ pilePlusComments s==
          [h1,t1]:=pilePlusComments t
          [cons(h,h1),t1]
        else [[],s]
- 
+
 pileTree(n,s)==
     if npNull s
     then [false,n,[],s]
@@ -127,7 +127,7 @@ pileTree(n,s)==
         if hh > n
         then pileForests(CAR h,hh,t)
         else [false,n,[],s]
- 
+
 eqpileTree(n,s)==
     if npNull s
     then [false,n,[],s]
@@ -137,7 +137,7 @@ eqpileTree(n,s)==
         if hh = n
         then pileForests(CAR h,hh,t)
         else [false,n,[],s]
- 
+
 pileForest(n,s)==
      [b,hh,h,t]:= pileTree(n,s)
      if b
@@ -145,7 +145,7 @@ pileForest(n,s)==
        [h1,t1]:=pileForest1(hh,t)
        [cons(h,h1),t1]
      else [[],s]
- 
+
 pileForest1(n,s)==
      [b,n1,h,t]:= eqpileTree(n,s)
      if b
@@ -153,17 +153,17 @@ pileForest1(n,s)==
        [h1,t1]:=pileForest1(n,t)
        [cons(h,h1),t1]
      else [[],s]
- 
+
 pileForests(h,n,s)==
       [h1,t1]:=pileForest(n,s)
       if npNull h1
       then [true,n,h,s]
       else pileForests(pileCtree(h,h1),n,t1)
- 
+
 pileCtree(x,y)==dqAppend(x,pileCforest y)
- 
+
 -- only enpiles forests with >=2 trees
- 
+
 pileCforest x==
    if null x
    then []
@@ -174,10 +174,10 @@ pileCforest x==
            then enPile f
            else f
         else enPile separatePiles x
- 
+
 firstTokPosn t== tokPosn CAAR t
 lastTokPosn  t== tokPosn CADR t
- 
+
 separatePiles x==
   if null x
   then []
@@ -187,9 +187,8 @@ separatePiles x==
          a:=car x
          semicolon:=dqUnit tokConstruct("key", "BACKSET",lastTokPosn a)
          dqConcat [a,semicolon,separatePiles cdr x]
- 
+
 enPile x==
    dqConcat [dqUnit tokConstruct("key","SETTAB",firstTokPosn x),
              x, _
              dqUnit tokConstruct("key","BACKTAB",lastTokPosn  x)]
- 

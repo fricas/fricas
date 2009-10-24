@@ -31,24 +31,24 @@
 
 
 --% Debugging Functions
- 
+
 continue() == FIN comp($x,$m,$f)
- 
+
 LEVEL(:l) == APPLY('level,l)
 level(:l) ==
   null l => same()
   l is [n] and INTEGERP n => displayComp ($level:= n)
   SAY '"Correct format: (level n) where n is the level you want to go to"
- 
+
 UP() == up()
 up() == displayComp ($level:= $level-1)
- 
+
 SAME() == same()
 same() == displayComp $level
- 
+
 DOWN() == down()
 down() == displayComp ($level:= $level+1)
- 
+
 displaySemanticErrors() ==
   n:= #($semanticErrorStack:= REMDUP $semanticErrorStack)
   n=0 => nil
@@ -58,11 +58,11 @@ displaySemanticErrors() ==
   displaySemanticError(l,CUROUTSTREAM)
   sayBrightly '" "
   displayWarnings()
- 
+
 displaySemanticError(l,stream) ==
   for x in l for i in 1.. repeat
     sayBrightly(['"      [",i,'"] ",:first x],stream)
- 
+
 displayWarnings() ==
   n:= #($warningStack:= REMDUP $warningStack)
   n=0 => nil
@@ -71,11 +71,11 @@ displayWarnings() ==
   displayWarning(l,CUROUTSTREAM)
   $warningStack:= nil
   sayBrightly '" "
- 
+
 displayWarning(l,stream) ==
   for x in l for i in 1.. repeat
     sayBrightly(['"      [",i,'"] ",:x],stream)
- 
+
 displayComp level ==
   $bright:= " << "
   $dim:= " >> "
@@ -91,7 +91,7 @@ displayComp level ==
   SAY "$f:="
   F_,PRINT_-ONE $f
   nil
- 
+
 mkErrorExpr level ==
   bracket ASSOCLEFT DROP(level-#$s,$s) where
     bracket l ==
@@ -108,30 +108,30 @@ mkErrorExpr level ==
                 a is [ =b,:c] => [$bright,b,$dim,:c]
                 [highlight1(b,first a),:highlight1(b,rest a)]
       substitute(bracket rest l,first rest l,first l)
- 
+
 errorRef s == stackWarning ['%b,s,'%d,'"has no value"]
- 
+
 unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
- 
+
 --% ENVIRONMENT FUNCTIONS
- 
+
 consProplistOf(var,proplist,prop,val) ==
   semchkProplist(var,proplist,prop,val)
   $InteractiveMode and (u:= assoc(prop,proplist)) =>
     RPLACD(u,val)
     proplist
   [[prop,:val],:proplist]
- 
+
 warnLiteral x ==
   stackSemanticError(['%b,x,'%d,
     '"is BOTH a variable and a literal"],nil)
- 
+
 intersectionEnvironment(e,e') ==
   ce:= makeCommonEnvironment(e,e')
   ic:= intersectionContour(deltaContour(e,ce),deltaContour(e',ce))
   e'':= (ic => addContour(ic,ce); ce)
   --$ie:= e''   this line is for debugging purposes only
- 
+
 deltaContour([[c,:cl],:el],[[c',:cl'],:el']) ==
   not el=el' => systemError '"deltaContour" --a cop out for now
   eliminateDuplicatePropertyLists contourDifference(c,c') where
@@ -143,7 +143,7 @@ deltaContour([[c,:cl],:el],[[c',:cl'],:el']) ==
           [first contour,:DELLASOS(x,eliminateDuplicatePropertyLists contour')]
         [first contour,:eliminateDuplicatePropertyLists contour']
       nil
- 
+
 intersectionContour(c,c') ==
   $var: local := nil
   computeIntersection(c,c') where
@@ -199,7 +199,7 @@ intersectionContour(c,c') ==
         if u is ["Union",:u'] and (and/[member(v,u') for v in rest m]) then
           return m
         --this loop will return NIL if not satisfied
- 
+
 addContour(c,E is [cur,:tail]) ==
   [NCONC(fn(c,E),cur),:tail] where
     fn(c,e) ==
@@ -219,7 +219,7 @@ addContour(c,E is [cur,:tail]) ==
                           stackWarning ["The conditional modes ",
                                      v," and ",vv," conflict"]
         LIST c
- 
+
 makeCommonEnvironment(e,e') ==
   interE makeSameLength(e,e') where  --$ie:=
     interE [e,e'] ==
@@ -238,7 +238,7 @@ makeCommonEnvironment(e,e') ==
           nx>ny => fn(rest x,y,nx-1,ny)
           nx<ny => fn(x,rest y,nx,ny-1)
           [x,y]
- 
+
 printEnv E ==
   for x in E for i in 1.. repeat
     for y in x for j in 1.. repeat
@@ -253,7 +253,7 @@ printEnv E ==
             tran(val,prop) ==
               prop="value" => DROP(-1,val)
               val
- 
+
 prEnv E ==
   for x in E for i in 1.. repeat
     for y in x for j in 1.. repeat
@@ -268,7 +268,7 @@ prEnv E ==
             tran(val,prop) ==
               prop="value" => DROP(-1,val)
               val
- 
+
 prModemaps E ==
   listOfOperatorsSeenSoFar:= nil
   for x in E for i in 1.. repeat
@@ -280,13 +280,13 @@ prModemaps E ==
           PRIN0 first z
           printString ": "
           PRETTYPRINT modemap
- 
+
 prTriple T ==
    SAY '"Code:"
    pp T.0
    SAY '"Mode:"
    pp T.1
- 
+
 TrimCF() ==
   new:= nil
   old:= CAAR $CategoryFrame
@@ -298,39 +298,39 @@ TrimCF() ==
       new:= [[first u,:NREVERSE unew],:new]
   $CategoryFrame:= [[NREVERSE new]]
   nil
- 
- 
+
+
 --% PREDICATES
- 
- 
+
+
 isConstantId(name,e) ==
   IDENTP name =>
     pl:= getProplist(name,e) =>
       (LASSOC("value",pl) or LASSOC("mode",pl) => false; true)
     true
   false
- 
+
 isFalse() == nil
- 
+
 isFluid s == atom s and "$"=(PNAME s).(0)
- 
+
 isFunction(x,e) ==
   get(x,"modemap",e) or GETL(x,"SPECIAL") or x="case" or getmode(x,e) is [
     "Mapping",:.]
- 
+
 isLiteral(x,e) == get(x,"isLiteral",e)
- 
+
 makeLiteral(x,e) == put(x,"isLiteral","true",e)
- 
+
 isSomeDomainVariable s ==
   IDENTP s and #(x:= PNAME s)>2 and x.(0)="#" and x.(1)="#"
- 
+
 isSubset(x,y,e) ==
   x="$" and y="Rep" or x=y or
     LASSOC(opOf x, GETL(opOf y,"Subsets")) or
       LASSOC(opOf x,get(opOf y,"SubDomain",e)) or
         opOf(y)='Type
- 
+
 isDomainInScope(domain,e) ==
   domainList:= getDomainsInScope e
   atom domain =>
@@ -343,18 +343,18 @@ isDomainInScope(domain,e) ==
 --   false
   isFunctor name => false
   true --is not a functor
- 
+
 isSymbol x == IDENTP x or x=nil
- 
+
 isSimple x ==
   atom x or $InteractiveMode => true
   x is [op,:argl] and
     isSideEffectFree op and (and/[isSimple y for y in argl])
- 
+
 isSideEffectFree op ==
   member(op,$SideEffectFreeFunctionList) or op is ["elt",.,op'] and
     isSideEffectFree op'
- 
+
 isAlmostSimple x ==
   --returns (<new predicate> . <list of assignments>) or nil
   $assignmentList: local --$assigmentList is only used in this function
@@ -375,18 +375,18 @@ isAlmostSimple x ==
         $assignmentList:= [:$assignmentList,:x]
   $assignmentList="failed" => nil
   wrapSEQExit [:$assignmentList,transform]
- 
+
 incExitLevel u ==
   adjExitLevel(u,1,1)
   u
- 
+
 decExitLevel u ==
   (adjExitLevel(u,1,-1); removeExit0 u) where
     removeExit0 x ==
       atom x => x
       x is ["exit",0,u] => removeExit0 u
       [removeExit0 first x,:removeExit0 rest x]
- 
+
 adjExitLevel(x,seqnum,inc) ==
   atom x => x
   x is [op,:l] and MEMQ(op,'(SEQ REPEAT COLLECT)) =>
@@ -394,43 +394,43 @@ adjExitLevel(x,seqnum,inc) ==
   x is ["exit",n,u] =>
     (adjExitLevel(u,seqnum,inc); seqnum>n => x; rplac(CADR x,n+inc))
   x is [op,:l] => for u in l repeat adjExitLevel(u,seqnum,inc)
- 
+
 wrapSEQExit l ==
   null rest l => first l
   [:c,x]:= [incExitLevel u for u in l]
   ["SEQ",:c,["exit",1,x]]
- 
- 
+
+
 --% UTILITY FUNCTIONS
- 
+
 removeEnv t == [t.expr,t.mode,$EmptyEnvironment]  -- t is a triple
- 
+
 makeNonAtomic x ==
   atom x => [x]
   x
- 
+
 flatten(l,key) ==
   null l => nil
   first l is [k,:r] and k=key => [:r,:flatten(rest l,key)]
   [first l,:flatten(rest l,key)]
- 
+
 genDomainVar() ==
   $Index:= $Index+1
   INTERNL STRCONC("#D",STRINGIMAGE $Index)
- 
+
 genVariable() ==
   INTERNL STRCONC("#G",STRINGIMAGE ($genSDVar:= $genSDVar+1))
- 
+
 genSomeVariable() ==
   INTERNL STRCONC("##",STRINGIMAGE ($genSDVar:= $genSDVar+1))
- 
+
 listOfIdentifiersIn x ==
   IDENTP x => [x]
   x is [op,:l] => REMDUP ("append"/[listOfIdentifiersIn y for y in l])
   nil
- 
+
 mapInto(x,fn) == [FUNCALL(fn,y) for y in x]
- 
+
 numOfOccurencesOf(x,y) ==
   fn(x,y,0) where
     fn(x,y,n) ==
@@ -438,14 +438,14 @@ numOfOccurencesOf(x,y) ==
       x=y => n+1
       atom y => n
       fn(x,first y,n)+fn(x,rest y,n)
- 
+
 compilerMessage x ==
   $PrintCompilerMessageIfTrue => APPLY("SAY",x)
- 
+
 printDashedLine() ==
   SAY
    '"--------------------------------------------------------------------------"
- 
+
 stackSemanticError(msg,expr) ==
   BUMPERRORCOUNT "semantic"
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
@@ -456,35 +456,35 @@ stackSemanticError(msg,expr) ==
   $scanIfTrue and $insideCapsuleFunctionIfTrue=true and #$semanticErrorStack-
     $initCapsuleErrorCount>3 => THROW("compCapsuleBody",nil)
   nil
- 
+
 stackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   if not member(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
   nil
- 
+
 unStackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   $warningStack:= EFFACE(msg,$warningStack)
   nil
- 
+
 stackMessage msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
   nil
- 
+
 stackMessageIfNone msg ==
   --used in situations such as compForm where the earliest message is wanted
   if null $compErrorMessageStack then $compErrorMessageStack:=
     [msg,:$compErrorMessageStack]
   nil
- 
+
 stackAndThrow msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
   THROW("compOrCroak",nil)
- 
+
 printString x == PRINTEXP (STRINGP x => x; PNAME x)
- 
+
 printAny x == if atom x then printString x else PRIN0 x
- 
+
 printSignature(before,op,[target,:argSigList]) ==
   printString before
   printString op
@@ -495,9 +495,9 @@ printSignature(before,op,[target,:argSigList]) ==
   printString "_) -> "
   printAny target
   TERPRI()
- 
+
 pmatch(s,p) == pmatchWithSl(s,p,"ok")
- 
+
 pmatchWithSl(s,p,al) ==
   s=$EmptyMode => nil
   s=p => al
@@ -505,22 +505,22 @@ pmatchWithSl(s,p,al) ==
   MEMQ(p,$PatternVariableList) => [[p,:s],:al]
   null atom p and null atom s and (al':= pmatchWithSl(first s,first p,al)) and
     pmatchWithSl(rest s,rest p,al')
- 
+
 elapsedTime() ==
   currentTime:= TEMPUS_-FUGIT()
   elapsedSeconds:= (currentTime-$previousTime)*1.0/$timerTicksPerSecond
   $previousTime:= currentTime
   elapsedSeconds
- 
+
 addStats([a,b],[c,d]) == [a+c,b+d]
- 
+
 printStats [byteCount,elapsedSeconds] ==
   timeString := normalizeStatAndStringify elapsedSeconds
   if byteCount = 0 then SAY('"Time: ",timeString,'" SEC.") else
     SAY('"Size: ",byteCount,'" BYTES     Time: ",timeString,'" SEC.")
   TERPRI()
   nil
- 
+
 extendsCategoryForm(domain,form,form') ==
   --is domain of category form also of category form'?
   --domain is only used for ensuring that X being a Ring means that it
@@ -556,34 +556,34 @@ extendsCategoryForm(domain,form,form') ==
         [extendsCategoryForm(domain,SUBSTQ(domain,"$",cat),form')
           for [cat,:.] in CADR catvlist])
   nil
- 
+
 getmode(x,e) ==
   prop:=getProplist(x,e)
   u:= LASSQ("value",prop) => u.mode
   LASSQ("mode",prop)
- 
+
 getmodeOrMapping(x,e) ==
   u:= getmode(x,e) => u
   (u:= get(x,"modemap",e)) is [[[.,:map],.],:.] => ["Mapping",:map]
   nil
- 
+
 outerProduct l ==
                 --of a list of lists
   null l => LIST nil
   "append"/[[[x,:y] for y in outerProduct rest l] for x in first l]
- 
+
 sublisR(al,u) ==
   atom u => u
   y:= rassoc(t:= [sublisR(al,x) for x in u],al) => y
   true => t
- 
+
 substituteOp(op',op,x) ==
   atom x => x
   [(op=(f:= first x) => op'; f),:[substituteOp(op',op,y) for y in rest x]]
- 
+
 --substituteForFormalArguments(argl,expr) ==
 --  SUBLIS([[v,:a] for a in argl for v in $FormalMapVariableList],expr)
- 
+
  -- following is only intended for substituting in domains slots 1 and 4
  -- signatures and categories
 sublisV(p,e) ==
@@ -598,9 +598,9 @@ sublisV(p,e) ==
       v:= suba(p,QCDR e)
       EQ(QCAR e,u) and EQ(QCDR e,v) => e
       [u,:v]
- 
+
 --% DEBUGGING PRINT ROUTINES used in breaks
- 
+
 _?MODEMAPS x == _?modemaps x
 _?modemaps x ==
   env:=
@@ -622,30 +622,30 @@ traceUp() ==
     u:= comp(y,$EmptyMode,$f) =>
       sayBrightly [y,'" ==> mode",'%b,u.mode,'%d]
     sayBrightly [y,'" does not compile"]
- 
+
 _?M x == _?m x
 _?m x ==
   u:= comp(x,$EmptyMode,$f) => u.mode
   nil
- 
+
 traceDown() ==
   mmList:= getFormModemaps($x,$f) =>
     for mm in mmList repeat if u:= qModemap mm then return u
   sayBrightly "no modemaps for $x"
- 
+
 qModemap mm ==
   sayBrightly ['%b,"modemap",'%d,:formatModemap mm]
   [[dc,target,:sl],[pred,:.]]:= mm
   and/[qArg(a,m) for a in rest $x for m in sl] => target
   sayBrightly ['%b,"fails",'%d,'%l]
- 
+
 qArg(a,m) ==
   yesOrNo:=
     u:= comp(a,m,$f) => "yes"
     "no"
   sayBrightly [a," --> ",m,'%b,yesOrNo,'%d]
   yesOrNo="yes"
- 
+
 _?COMP x == _?comp x
 _?comp x ==
   msg:=
@@ -653,19 +653,19 @@ _?comp x ==
       [MAKESTRING "compiles to mode",'%b,u.mode,'%d]
     nil
   sayBrightly msg
- 
+
 _?domains() == pp getDomainsInScope $f
 _?DOMAINS() == ?domains()
- 
+
 _?mode x == displayProplist(x,[["mode",:getmode(x,$f)]])
 _?MODE x == _?mode x
- 
+
 _?properties x == displayProplist(x,getProplist(x,$f))
 _?PROPERTIES x == _?properties x
- 
+
 _?value x == displayProplist(x,[["value",:get(x,"value",$f)]])
 _?VALUE x == _?value x
- 
+
 displayProplist(x,alist) ==
   sayBrightly ["properties of",'%b,x,'%d,":"]
   fn alist where
@@ -674,7 +674,7 @@ displayProplist(x,alist) ==
         if prop="value" then val:= [val.expr,val.mode,'"..."]
         sayBrightly ["   ",'%b,prop,'%d,": ",val]
         fn deleteAssoc(prop,l)
- 
+
 displayModemaps E ==
   listOfOperatorsSeenSoFar:= nil
   for x in E for i in 1.. repeat
@@ -683,4 +683,3 @@ displayModemaps E ==
         (modemaps:= LASSOC("modemap",rest z)) repeat
           listOfOperatorsSeenSoFar:= [first z,:listOfOperatorsSeenSoFar]
           displayOpModemaps(first z,modemaps)
- 

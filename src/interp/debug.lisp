@@ -31,12 +31,12 @@
 
 
 ;;;  @(#)debug.lisp     2.5      90/02/15  10:27:33
- 
+
 ; NAME:    Debugging Package
 ; PURPOSE: Debugging hooks for Boot code
- 
+
 (in-package "BOOT")
- 
+
 (DEFPARAMETER /COUNTLIST NIL)
 (DEFPARAMETER /TIMERLIST NIL)
 (DEFPARAMETER /TRACESIZE NIL "sets limit on size of object to be mathprinted")
@@ -62,9 +62,9 @@
 (MAKEPROP 'BOOT '/TRAN '/TRANSNBOOT)
 (MAKEPROP 'SPAD '/READFUN '|New,LEXPR|)
 (MAKEPROP 'SPAD '/TRAN '/TRANSPAD)
- 
+
 (defun enable-backtrace (&rest arg))
- 
+
 (defun heapelapsed () 0)
 
 (DEFUN DEFSTREAM (file MODE)
@@ -73,20 +73,20 @@
          (MAKE-OUTSTREAM file)))
 
 (defmacro /TRACE (&rest L) `',(/TRACE-0 L))
- 
+
 (DEFUN /TRACE-0 (L)
     (let* ((options (/OPTIONS L)) (FNL (TRUNCLIST L OPTIONS)))
         (/TRACE-1 FNL OPTIONS)))
- 
+
 (defmacro /TRACEANDCOUNT (&rest L) `',
   (let* ((OPTIONS (/OPTIONS L))
          (FNL (TRUNCLIST L OPTIONS)))
     (/TRACE-1 FNL (CONS '(DEPTH) OPTIONS))))
- 
+
 (DEFUN /TRACE-1 (FNLIST OPTIONS)
    (mapcar #'(lambda (X) (/TRACE-2 X OPTIONS)) FNLIST)
    (/TRACEREPLY))
- 
+
 (DEFUN /TRACE-2 (FN OPTIONS)
   (PROG (U FNVAL COUNTNAM TRACECODE BEFORE AFTER CONDITION
          TRACENAME CALLER VARS BREAK FROM_CONDITION VARBREAK TIMERNAM
@@ -198,7 +198,7 @@
                       DEPTH_CONDITION )
                 'AND))
         (SETQ ONLYS (/GETTRACEOPTIONS OPTIONS 'ONLY))
- 
+
         ;TRACECODE meaning:
         ; 0:        Caller (0,1)           print caller if 1
         ; 1:        Value (0,1)            print value if 1
@@ -234,32 +234,32 @@
                         (RETURN BUF))))
         (/MONITOR FN TRACECODE BEFORE AFTER CONDITION TIMERNAM
                   COUNTNAM TRACENAME BREAK )))
- 
+
 (DEFUN OPTIONS2UC (L)
   (COND ((NOT L) NIL)
         ((ATOM (CAR L))
          (|spadThrowBrightly|
            (format nil "~A has wrong format for an option" (car L))))
         ((CONS (CONS (UPCASE (CAAR L)) (CDAR L)) (OPTIONS2UC (CDR L))))))
- 
+
 (DEFUN COND-UCASE (X) (COND ((INTEGERP X) X) ((UPCASE X))))
- 
+
 (DEFUN TRACEOPTIONS (X)
   (COND ((NOT X) NIL)
         ((EQ (CAR X) '/) X)
         ((TRACEOPTIONS (CDR X)))))
- 
+
 (defmacro |/untrace| (&rest L) `', (/UNTRACE-0 L))
- 
+
 (defmacro /UNTRACE (&rest L) `', (/UNTRACE-0 L))
- 
+
 (DEFUN /UNTRACE-0 (L)
     (PROG (OPTIONL OPTIONS FNL)
       (SETQ OPTIONL (/OPTIONS L))
       (SETQ FNL (TRUNCLIST L OPTIONL))
       (SETQ OPTIONS (if OPTIONL (CAR OPTIONL)))
       (RETURN (/UNTRACE-1 FNL OPTIONS))))
- 
+
 (defun /UNTRACE-1 (L OPTIONS)
   (cond
     ((NOT L)
@@ -269,9 +269,9 @@
                  (APPEND /TRACENAMES NIL))))
     ((mapcar #'(lambda (x) (/UNTRACE-2 X OPTIONS)) L)))
   (/TRACEREPLY))
- 
+
 (DEFUN /UNTRACE-REDUCE (X) (if (ATOM X) X (first X))) ; (CAR X) is now a domain
- 
+
 (DEFUN /UNTRACE-2 (X OPTIONS)
  (let (u y)
   (COND ((AND (|isFunctor| X) (ATOM X))
@@ -312,7 +312,7 @@
                     (LIST '|%b| (|rassocSub| Y |$mapSubNameAlist|)
                   '|%d| "untraced"))))
            (UNEMBED X)))))
- 
+
 (DEFUN MONITOR-PRINVALUE (VAL NAME)
   (let (u)
     (COND ((setq U (GET NAME '/TRANSFORM))
@@ -328,18 +328,18 @@
                  (/PRETTY (PRETTYPRINT VAL CURSTRM))
                  (T (COND (|$mathTrace| (TERPRI)))
                     (PRINMATHOR0 VAL CURSTRM)))))))
- 
+
 (DEFUN MONITOR-BLANKS (N) (PRINC (MAKE-FULL-CVEC N " ") CURSTRM))
- 
+
 (DEFUN MONITOR-EVALBEFORE (X) (EVALFUN (MONITOR-EVALTRAN X NIL)) X)
- 
+
 (DEFUN MONITOR-EVALAFTER (X) (EVALFUN (MONITOR-EVALTRAN X 'T)))
- 
+
 (DEFUN MONITOR-EVALTRAN (X FG)
   (if (HAS_SHARP_VAR X) (MONITOR-EVALTRAN1 X FG) X))
- 
+
 (define-function 'MONITOR\,EVALTRAN #'MONITOR-EVALTRAN)
- 
+
 (DEFUN MONITOR-EVALTRAN1 (X FG)
   (let (n)
     (COND
@@ -347,17 +347,17 @@
       ((ATOM X) X)
       ((CONS (MONITOR-EVALTRAN1 (CAR X) FG)
              (MONITOR-EVALTRAN1 (CDR X) FG))))))
- 
+
 (DEFUN HAS_SHARP_VAR (X)
   (COND ((AND (ATOM X) (IS_SHARP_VAR X)) 'T)
         ((ATOM X) NIL)
         ((OR (HAS_SHARP_VAR (CAR X)) (HAS_SHARP_VAR (CDR X))))))
- 
+
 (DEFUN IS_SHARP_VAR (X)
   (AND (IDENTP X)
        (EQL (ELT (PNAME X) 0) #\#)
        (INTEGERP (parse-integer (symbol-name X) :start 1))))
- 
+
 (DEFUN MONITOR-GETVALUE (N FG)
   (COND ((= N 0)
          (if FG
@@ -367,7 +367,7 @@
         ((<= N (SIZE /ARGS)) (MKQ (ELT /ARGS (1- N))))
         ((|spadThrowBrightly| (LIST 'function '|%b| /NAME '|%d|
                               "does not have" '|%b| N '|%d| "arguments")))))
- 
+
 (DEFUN MONITOR-PRINARGS (L CODE /TRANSFORM)
   (let (N)
     (cond
@@ -403,7 +403,7 @@
          (PRINMATHOR0 N CURSTRM)
          (PRINC ": " CURSTRM)
          (MONITOR-PRINARGS-1 L N)))))))
- 
+
 (DEFUN MONITOR-PRINTREST (X)
   (COND ((NOT (SMALL-ENOUGH X))
          (PROGN (TERPRI)
@@ -413,23 +413,23 @@
         ((PROGN (if (NOT |$mathTrace|) (PRINC "\\" CURSTRM))
                 (COND (/PRETTY (PRETTYPRINT X CURSTRM))
                       ((PRINMATHOR0 X CURSTRM)))))))
- 
+
 (DEFUN MONITOR-PRINARGS-1 (L N)
   (COND ((OR (ATOM L) (LESSP N 1)) NIL)
         ((EQ N 1) (MONITOR-PRINT (CAR L) CURSTRM))
         ((MONITOR-PRINARGS-1 (CDR L) (1- N)))))
- 
+
 (DEFUN MONITOR-PRINT (X CURSTRM)
   (COND ((NOT (SMALL-ENOUGH X)) (|F,PRINT-ONE| X CURSTRM))
         (/PRETTY (PRETTYPRINT X CURSTRM))
         ((PRINMATHOR0 X CURSTRM))))
- 
+
 (DEFUN PRINMATHOR0 (X CURSTRM)
   (if |$mathTrace| (|maprinSpecial| (|outputTran| X) /DEPTH 80)
       (PRIN0 X CURSTRM)))
- 
+
 (DEFUN SMALL-ENOUGH (X) (if /TRACESIZE (SMALL-ENOUGH-COUNT X 0 /TRACESIZE) t))
- 
+
 (DEFUN SMALL-ENOUGH-COUNT (X N M)
   "Returns number if number of nodes < M otherwise nil."
   (COND ((< M N) NIL)
@@ -441,28 +441,28 @@
         ((ATOM X) N)
         ((AND (SETQ N (SMALL-ENOUGH-COUNT (CAR X) (1+ N) M))
               (SMALL-ENOUGH-COUNT (CDR X) N M)))))
- 
+
 (DEFUN /OPTIONS (X)
   (COND ((ATOM X) NIL)
         ((OR (ATOM (CAR X)) (|isFunctor| (CAAR X))) (/OPTIONS (CDR X)))
         (X)))
- 
+
 (DEFUN /GETOPTION (L OPT) (KDR (/GETTRACEOPTIONS L OPT)))
- 
+
 (DEFUN /GETTRACEOPTIONS (L OPT)
   (COND ((ATOM L) NIL)
         ((EQ (KAR (CAR L)) OPT) (CAR L))
         ((/GETTRACEOPTIONS (CDR L) OPT))))
- 
+
 (defmacro /TRACE-LET (A B)
   `(PROG1 (SPADLET ,A ,B)
           . ,(mapcar #'(lambda (x) `(/tracelet-print ',x ,x))
                      (if (ATOM A) (LIST A) A))))
- 
+
 (defun /TRACELET-PRINT (X Y &AUX (/PRETTY 'T))
   (PRINC (STRCONC (PNAME X) ": ") *terminal-io*)
   (MONITOR-PRINT Y *terminal-io*))
- 
+
 (defmacro /EMBED (&rest L) `',
  (COND ((NOT L) (/EMBEDREPLY))
        ((EQ 2 (LENGTH L)) (/EMBED-1 (CAR L) (CADR L)))
@@ -490,7 +490,7 @@
   (if (atom (embedded)) '(|none| |embedded|)
       (append (embedded) (list '|embedded|))))
 
- 
+
 (defmacro /UNEMBED (&rest L) `',
   (COND ((NOT L)
          (if (ATOM (EMBEDDED)) NIL
@@ -500,7 +500,7 @@
         ((mapcar #'/unembed-1 L)
          (SETQ /TRACENAMES (S- /TRACENAMES L)) ))
   (/EMBEDREPLY))
- 
+
 (defun /UNEMBED-Q (X)
   (COND
     ((NOT (MEMBER X /EMBEDNAMES))
@@ -508,7 +508,7 @@
     ((PROGN
        (SETQ /EMBEDNAMES (REMOVE X /EMBEDNAMES))
        (UNEMBED X)))))
- 
+
 (defun /UNEMBED-1 (X)
   (COND
     ((NOT (MEMBER X /EMBEDNAMES))
@@ -517,9 +517,9 @@
        (SETQ /EMBEDNAMES (REMOVE X /EMBEDNAMES))
        (|sayBrightly| (LIST '|%b| (PNAME X) '|%d| "unembeded" '|%l|))
        (UNEMBED X)))  ))
- 
- 
- 
+
+
+
 (defun /MONITOR ;;(&rest G5)
   (G1 TRACECODE BEFORE AFTER CONDITION TIMERNAM COUNTNAM TRACENAME BREAK)
   (PROG () ;; (G1 G4 TRACECODE BEFORE AFTER CONDITION
@@ -545,7 +545,7 @@
                   COUNTNAM TIMERNAM BEFORE AFTER
                   CONDITION BREAK |$tracedModemap| ''T)))))
         (RETURN G1)))
- 
+
 (defun /MONITORX (/ARGS FUNCT OPTS &AUX NAME TYPE TRACECODE COUNTNAM TIMERNAM
                         BEFORE AFTER CONDITION BREAK TRACEDMODEMAP
                         BREAKCONDITION)
@@ -649,7 +649,7 @@
             (|break| (LIST "Break on exiting" '|%b| NAME1 '|%d| ":")))
         (|startTimer|)
         (RETURN /VALUE)))
- 
+
 ; Functions to run a timer for tracing
 ; It avoids timing the tracing function itself by turning the timer
 ; on and off
@@ -660,19 +660,19 @@
     (SETQ $delay (PLUS $delay (DIFFERENCE (TEMPUS-FUGIT) |$oldTime|)))
     (SETQ |$timerOn| 'T)
     (|clock|))
- 
+
 (defun |stopTimer| () (SETQ |$oldTime| (TEMPUS-FUGIT) |$timerOn| NIL) (|clock|))
- 
+
 (defun |clock| ()
   (if |$timerOn| (- (TEMPUS-FUGIT) $delay) (- |$oldTime| $delay)))
- 
+
 ; Functions to trace/untrace a BPI; use as follows:
 ; To trace a BPI-value <bpi>, evaluate (SETQ <name> (BPITRACE <bpi>))
 ; To later untrace <bpi>, evaluate (BPITRACE <name>)
- 
+
 (defun PAIRTRACE (PAIR ALIAS)
    (RPLACA PAIR (BPITRACE (CAR PAIR) ALIAS )) NIL)
- 
+
 (defun BPITRACE (BPI ALIAS &optional OPTIONS)
   (SETQ NEWNAME (GENSYM))
   (IF (identp bpi) (setq bpi (symbol-function bpi)))
@@ -680,9 +680,9 @@
   (SETF (symbol-function NEWNAME) BPI)
   (/TRACE-0 (APPEND (LIST NEWNAME (LIST 'ALIAS ALIAS)) OPTIONS))
   NEWNAME)
- 
+
 (defun BPIUNTRACE (X ALIAS) (/UNTRACE-0 (LIST X (LIST 'ALIAS ALIAS))))
- 
+
 (defun SPADSYSNAMEP (STR)
   (let (n i j)
     (AND (SETQ N (MAXINDEX STR))
@@ -691,26 +691,26 @@
          (do ((k (1+ j) (1+ k)))
              ((> k n) t)
            (if (not (digitp (elt str k))) (return nil))))))
- 
+
 ; **********************************************************************
 ;            Utility functions for Tracing Package
 ; **********************************************************************
- 
+
 (MAKEPROP '|coerce| '/TRANSFORM '(& & *))
 (MAKEPROP '|comp| '/TRANSFORM '(& * * &))
 (MAKEPROP '|compIf| '/TRANSFORM '(& * * &))
- 
+
 ;  by having no transform for the 3rd argument, it is simply not printed
- 
+
 (MAKEPROP '|compFormWithModemap| '/TRANSFORM '(& * * & *))
- 
+
 (defun UNVEC (X)
   (COND ((REFVECP X) (CONS '$ (VEC_TO_TREE X)))
         ((ATOM X) X)
         ((CONS (UNVEC (CAR X)) (UNVEC (CDR X))))))
- 
+
 (defun DROPENV (X) (AND X (LIST (CAR X) (CADR X))))
- 
+
 (defun SHOWBIND (E)
   (do ((v e (cdr v))
        (llev 1 (1+ llev)))
@@ -721,10 +721,9 @@
         ((not w))
       (PRINT (LIST "CONTOUR LEVEL" CLEV))
       (PRINT (mapcar #'car (car W))))))
- 
+
 
 ;;; A "resumable" break loop for use in trace etc. Unfortunately this
 ;;; only worked for CCL. We need to define a Common Lisp version. For
 ;;; now the function is defined but does nothing.
 (defun interrupt (&rest ignore))
-

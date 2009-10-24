@@ -551,10 +551,10 @@ traceDomainConstructor(domainConstructor,options) ==
 
 untraceDomainConstructor domainConstructor ==
   --untrace all the domains in domainConstructor, and unembed it
-  SETQ(_/TRACENAMES, 
-    [df for df in _/TRACENAMES | keepTraced?(df, domainConstructor)]) where 
+  SETQ(_/TRACENAMES,
+    [df for df in _/TRACENAMES | keepTraced?(df, domainConstructor)]) where
       keepTraced?(df, domainConstructor) ==
-        (df is [dc,:.]) and (isDomainOrPackage dc) and 
+        (df is [dc,:.]) and (isDomainOrPackage dc) and
            ((KAR devaluate dc) = domainConstructor) =>
                _/UNTRACE_-0 [dc]
                false
@@ -826,6 +826,5 @@ break msg ==
     sayBrightly msg
     INTERRUPT()
 
-compileBoot fn == 
+compileBoot fn ==
   SAY("need to recompile: ", fn)
-

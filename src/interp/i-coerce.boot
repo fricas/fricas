@@ -898,7 +898,7 @@ coerceInt1(triple,t2) ==
     val := NRTcompileEvalForm(unwrap val, CDR CAAR mms, evalDomain dc)
     objNew(val, t2)
   (t1 is ['Variable,sym]) and (t2 is ['Mapping,target,:margl]) =>
-    null (mms := selectMms1(sym,target,margl,margl,NIL)) => 
+    null (mms := selectMms1(sym,target,margl,margl,NIL)) =>
        null (mms := selectMms1(sym,target,margl,margl,true)) => NIL
     [dc,targ,:argl] := CAAR mms
     targ ~= target => NIL
@@ -1402,4 +1402,3 @@ hasCorrectTarget(m,sig is [dc,tar,:.]) ==
   m=tar => 'T
   tar is ['Union,t,'failed] => t=m
   tar is ['Union,'failed,t] and t=m
-

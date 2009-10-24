@@ -285,5 +285,3 @@ mkUnixPattern s ==
   if u.(k := MAXINDEX u) ~= $wild then u := STRCONC(u,'"[^a-zA-Z]")
                                   else u := SUBSTRING(u,0,k)
   u
-
-

@@ -107,4 +107,3 @@ stringList2String x ==
   STRCONC('"(",first x,"STRCONC"/[STRCONC('",",y) for y in rest x],'")")
 
 htMkName(s,n) == STRCONC(s,STRINGIMAGE n)
-

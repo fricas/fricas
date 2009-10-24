@@ -35,7 +35,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     signature := markKillAll signature
 --  1. bind global variables
     $addForm: local
- 
+
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
     $DEFdepth :    local  := 0            --for conversion to new compiler 3/93
@@ -72,14 +72,14 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     $pairlis := [[a,:v] for a in argl for v in $FormalMapVariableList]
     $mutableDomain: local :=
       -- all defaulting packages should have caching turned off
-       isCategoryPackageName $op or   
+       isCategoryPackageName $op or
          (if BOUNDP '$mutableDomains then MEMQ($op,$mutableDomains)
             else false )   --true if domain has mutable state
     signature':=
       [first signature,:[getArgumentModeOrMoan(a,form,$e) for a in argl]]
     $functorForm:= $form:= [$op,:argl]
-    $globalImportStack := 
-       [markKillAll x for x in rest $functorForm for typ in rest signature' 
+    $globalImportStack :=
+       [markKillAll x for x in rest $functorForm for typ in rest signature'
            | GETDATABASE(opOf typ,'CONSTRUCTORKIND) = 'category]
     if null first signature' then BREAK()
     target:= first signature'
@@ -133,7 +133,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     operationAlist:= SUBLIS($pairlis,$domainShell.(1))
     parSignature:= SUBLIS($pairlis,signature')
     parForm:= SUBLIS($pairlis,form)
- 
+
 --  (3.1) now make a list of the functor's local parameters; for
 --  domain D in argl,check its signature: if domain, its type is Join(A1,..,An);
 --  in this case, D is replaced by D1,..,Dn (gensyms) which are set
@@ -149,14 +149,14 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     rettype:= signature'.target
     T:= compFunctorBody(body,rettype,$e,parForm)
 ---------------> new <---------------------
-    BOUNDP '$convert2NewCompiler and $convert2NewCompiler => 
+    BOUNDP '$convert2NewCompiler and $convert2NewCompiler =>
        return markFinish($originalBody,[$form,['Mapping,:signature'],T.env])
 ---------------> new <---------------------
     -- If only compiling certain items, then ignore the body shell.
     $compileOnlyCertainItems =>
        reportOnFunctorCompilation()
        [nil, ['Mapping, :signature'], originale]
- 
+
     body':= T.expr
     lamOrSlam:= if $mutableDomain then 'LAMBDA else 'SPADSLAM
     fun:= compile SUBLIS($pairlis, [op',[lamOrSlam,argl,body']])
@@ -166,7 +166,7 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
     if $LISPLIB then
       augmentLisplibModemapsFromFunctor(parForm,operationAlist,parSignature)
     reportOnFunctorCompilation()
- 
+
 --  5. give operator a 'modemap property
     $insideFunctorIfTrue:= false
     if $LISPLIB then
@@ -249,7 +249,7 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     signature := markKillAll originalSignature
     $markFreeStack: local := nil       --holds "free variables"
     $localImportStack : local := nil   --local import stack for function
-    $localDeclareStack: local := nil   
+    $localDeclareStack: local := nil
     $localLoopVariables: local := nil
     originalDef := COPY df
     [lineNumber,:specialCases] := specialCases
@@ -271,7 +271,7 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     $form:= [$op,:argl]
     argl:= stripOffArgumentConditions argl
     $formalArgList:= [:argl,:$formalArgList]
- 
+
     --let target and local signatures help determine modes of arguments
     argModeList:=
       identSig:= hasSigInTargetCategory(argl,form,first signature,e) =>
@@ -281,34 +281,34 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     signature':= [first signature,:argModeList]
     if null identSig then  --make $op a local function
       oldE := put($op,'mode,['Mapping,:signature'],oldE)
- 
+
     --obtain target type if not given
     if null first signature' then signature':=
       identSig => identSig
       getSignature($op,rest signature',e) or return nil
     e:= giveFormalParametersValues(argl,e)
- 
+
     $signatureOfForm:= signature' --this global is bound in compCapsuleItems
     $functionLocations := [[[$op,$signatureOfForm],:lineNumber],
       :$functionLocations]
     e:= addDomain(first signature',e)
     e:= compArgumentConditions e
- 
+
     if $profileCompiler then
       for x in argl for t in rest signature' repeat profileRecord('arguments,x,t)
- 
- 
+
+
     --4. introduce needed domains into extendedEnv
     for domain in signature' repeat e:= addDomain(domain,e)
- 
+
     --6. compile body in environment with extended environment
     rettype:= resolve(signature'.target,$returnMode)
- 
+
     localOrExported :=
       null member($op,$formalArgList) and
         getmode($op,e) is ['Mapping,:.] => 'local
       'exported
- 
+
     --6a skip if compiling only certain items but not this one
     -- could be moved closer to the top
     formattedSig := formatUnabbreviated ['Mapping,:signature']
@@ -322,24 +322,24 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     returnType := signature'.target
 --  trialT := returnType = "$" and get("Rep",'value,e) and comp(body,'Rep,e)
     trialT := returnType = "$" and comp(body,$EmptyMode,e)
-    ------------------------------------------------------  11/1/94    
-    -- try comp-ing in $EmptyMode; if succeed 
+    ------------------------------------------------------  11/1/94
+    -- try comp-ing in $EmptyMode; if succeed
     --   if we succeed then trialT.mode = "$" or "Rep"
     --   do a coerce to get the correct result
-    T := (trialT and coerce(trialT,returnType)) 
+    T := (trialT and coerce(trialT,returnType))
          -------------------------------------- 11/1/94
           or CATCH('compCapsuleBody, compOrCroak(body,returnType,e))
     markChanges(originalDef,T,$signatureOfForm)
     [nil,['Mapping,:signature'],oldE]
     ---------------------------------
- 
+
 compCapsuleInner(itemList,m,e) ==
   e:= addInformation(m,e)
            --puts a new 'special' property of $Information
   data:= ["PROGN",:itemList]
       --RPLACd by compCapsuleItems and Friends
   e:= compCapsuleItems(itemList,nil,e)
-  BOUNDP '$convert2NewCompiler and $convert2NewCompiler => 
+  BOUNDP '$convert2NewCompiler and $convert2NewCompiler =>
      [nil,m,e] --nonsense but that's fine
   localParList:= $functorLocalParameters
   if $addForm then data:= ['add,$addForm,data]
@@ -357,21 +357,21 @@ compSingleCapsuleItem(item,$predl,$e) ==
   doIt(newItem, $predl)
   qe(27,$e)
   $e
- 
+
 compImport(["import",:doms],m,e) ==
-  for dom in doms repeat 
+  for dom in doms repeat
     dom := markKillAll dom
     markImport dom
     e:=addDomain(dom,e)
   ["/throwAway",$NoValueMode,e]
- 
+
 mkUnion(a,b) ==
   b="$" and $Rep is ["Union",:l] => b
   a is ["Union",:l] =>
     b is ["Union",:l'] => ["Union",:union(l,l')]
     member(b, l) => a
     ["Union",:union([b],l)]
-  b is ["Union",:l] => 
+  b is ["Union",:l] =>
     member(a, l) => b
     ["Union",:union([a],l)]
   STRINGP a => ["Union",b,a]
@@ -381,27 +381,27 @@ compForMode(x,m,e) ==
   $compForModeIfTrue: local:= true
   $convert2NewCompiler: local := nil
   comp(x,m,e)
- 
+
 compMakeCategoryObject(c,$e) ==
   not isCategoryForm(c,$e) => nil
   c := markKillAll c
   u:= mkEvalableCategoryForm c => [eval markKillAll u,$Category,$e]
   nil
- 
+
 macroExpand(x,e) ==   --not worked out yet
   atom x => (u:= get(x,'macro,e) => macroExpand(u,e); x)
   x is ['DEF,lhs,sig,spCases,rhs] =>
     ['DEF,macroExpand(lhs,e), macroExpandList(sig,e),macroExpandList(spCases,e),
       macroExpand(rhs,e)]
-  x is ['MI,a,b] => 
+  x is ['MI,a,b] =>
       ['MI,a,macroExpand(b,e)]
   macroExpandList(x,e)
- 
+
 getSuccessEnvironment(a,e) ==
   -- the next four lines try to ensure that explicit special-case tests
   --  prevent implicit ones from being generated
   a is ["has",x,m] =>
-    x := unLet x   
+    x := unLet x
     e
   a is ["is",id,m] =>
     id := unLet id
@@ -414,7 +414,7 @@ getSuccessEnvironment(a,e) ==
   a is ["case",x,m] and (x := unLet x) and IDENTP x =>
     put(x,"condition",[a,:get(x,"condition",e)],e)
   e
- 
+
 getInverseEnvironment(a,E) ==
   atom a => E
   [op,:argl]:= a
@@ -481,7 +481,7 @@ applyMapping([op,:argl],m,e,ml) ==
     ['call,['applyFun,op],:argl']
   pairlis:= [[v,:a] for a in argl' for v in $FormalMapVariableList]
   convert([form,SUBLIS(pairlis,first ml),e],m)
- 
+
 compFormWithModemap(form,m,e,modemap) ==
   compFormWithModemap1(form,m,e,modemap,true) or compFormWithModemap1(form,m,e,modemap,false)
 
@@ -489,7 +489,7 @@ compFormWithModemap1(form,m,e,modemap,Rep2Dollar?) ==
   [op,:argl] := form := markKillExpr form
   [[dc,:.],:.] := modemap
 ----------> new: <-----------
-  if Rep2Dollar? then 
+  if Rep2Dollar? then
     if dc = 'Rep then
       modemap := SUBST('Rep,'_$,modemap)
       m       := SUBST('Rep,'_$,m)
@@ -513,7 +513,7 @@ compFormWithModemap1(form,m,e,modemap,Rep2Dollar?) ==
   markMap := map
   map:= [target',:rest map]
   [f,Tl,sl]:= compApplyModemap(form,modemap,e,nil) or return nil
- 
+
   --generate code; return
   T:=
     e':=
@@ -573,52 +573,52 @@ compElt(origForm,m,E) ==
     x := markTran(origForm,[val],sig,[E])
     [x,first rest sig,E] --implies fn calls used to access constants
   compForm(origForm,m,E)
- 
+
 pause op == op
 compApplyModemap(form,modemap,$e,sl) ==
   [op,:argl] := form                   --form to be compiled
   [[mc,mr,:margl],:fnsel] := modemap   --modemap we are testing
- 
+
   -- $e     is the current environment
   -- sl     substitution list, nil means bottom-up, otherwise top-down
- 
+
   -- 0.  fail immediately if #argl=#margl
- 
+
   if #argl~=#margl then return nil
- 
+
   -- 1.  use modemap to evaluate arguments, returning failed if
   --     not possible
- 
+
   lt:=
     [[.,m',$e]:=
       comp(y,g,$e) or return "failed" where
         g:= SUBLIS(sl,m) where
             sl:= pmatchWithSl(m',m,sl) for y in argl for m in margl]
   lt="failed" => return nil
- 
+
   -- 2.  coerce each argument to final domain, returning failed
   --     if not possible
- 
+
   lt':= [coerce(y,d) or return "failed"
          for y in lt for d in SUBLIS(sl,margl)]
   lt'="failed" => return nil
- 
+
   -- 3.  obtain domain-specific function, if possible, and return
- 
+
   --$bindings is bound by compMapCond
   [f,$bindings]:= compMapCond(op,mc,sl,fnsel) or return nil
- 
+
 --+ can no longer trust what the modemap says for a reference into
 --+ an exterior domain (it is calculating the displacement based on view
 --+ information which is no longer valid; thus ignore this index and
 --+ store the signature instead.
- 
+
 --$NRTflag=true and f is [op1,d,.] and NE(d,'$) and member(op1,'(ELT CONST)) =>
   f is [op1,d,.] and member(op1,'(ELT CONST Subsumed)) =>
     [genDeltaEntry [op,:modemap],lt',$bindings]
   markImport mc
   [f,lt',$bindings]
- 
+
 compMapCond''(cexpr,dc) ==
   cexpr=true => true
   --cexpr = "true" => true
@@ -637,19 +637,19 @@ compMapCond''(cexpr,dc) ==
   --for the time being we'll stop here - shouldn't happen so far
   stackMessage ["not known that",'%b,dc,'%d,"has",'%b,cexpr,'%d]
   false
- 
+
 --======================================================================
 --                    From nruncomp.boot
 --======================================================================
 NRTgetLocalIndex(item) ==
   k := NRTassocIndex item => k
   item = $NRTaddForm => 5
-  item = '$ => 0 
+  item = '$ => 0
   item = '_$_$ => 2
   value:=
     MEMQ(item,$formalArgList) => item
     nil
-  atom item and null MEMQ(item,'($ _$_$)) 
+  atom item and null MEMQ(item,'($ _$_$))
    and null value =>  --give slots to atoms
     $NRTdeltaList:= [['domain,NRTaddInner item,:value],:$NRTdeltaList]
     $NRTdeltaListComp:=[item,:$NRTdeltaListComp]
@@ -667,13 +667,13 @@ NRTgetLocalIndex(item) ==
 
 optDeltaEntry(op,sig,dc,eltOrConst) ==
   return nil    --------> kill it
- 
+
 genDeltaEntry opMmPair ==
 --called from compApplyModemap
 --$NRTdeltaLength=0.. always equals length of $NRTdeltaList
   [.,[odc,:.],.] := opMmPair
   [op,[dc,:sig],[.,cform:=[eltOrConst,:.]]] := opMmPair
-  if $profileCompiler = true then 
+  if $profileCompiler = true then
     profileRecord(dc,op,sig)
 --  markImport dc
   eltOrConst = 'XLAM => cform
@@ -735,7 +735,7 @@ parseIf t ==
 parseNot u ==  ['not,parseTran first u]
 
 makeSimplePredicateOrNil p == nil
- 
+
 --======================================================================
 --                         From g-cndata.boot
 --======================================================================
@@ -748,7 +748,7 @@ mkUserConstructorAbbreviation(c,a,type) ==
   clearConstructorCache(c)
   installConstructor(c,type)
   setAutoLoadProperty(c)
- 
+
 --======================================================================
 --                         From iterator.boot
 --======================================================================
@@ -772,10 +772,10 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
   e:= $e
   T0 := comp0(body,m,e) or return nil
   md := T0.mode
-  T1 := compOrCroak(collectForm,["List",md],e) 
+  T1 := compOrCroak(collectForm,["List",md],e)
   T  := [["REDUCE",op,nil,T1.expr],md,T1.env]
   markReduce(form,T)
- 
+
 compIterator(it,e) ==
   it is ["IN",x,y] =>
     --these two lines must be in this order, to get "for f in list f"
@@ -855,7 +855,7 @@ smallIntegerStep(it,index,start,inc,optFinal,e) ==
   optFinal := markKillAll optFinal
   startNum := source2Number start
   incNum   := source2Number inc
-  mode := get(index,"mode",e) 
+  mode := get(index,"mode",e)
 --fail if
 ----> a) index has a mode that is not $SmallInteger
 ----> b) one of start,inc, final won't comp as a $SmallInteger
@@ -883,8 +883,8 @@ smallIntegerStep(it,index,start,inc,optFinal,e) ==
     nil
   e:= put(index,"range",range,e)
   e:= put(index,"value",[genSomeVariable(),indexmode,e],e)
-  noptFinal := 
-    final' => 
+  noptFinal :=
+    final' =>
       [final'.expr]
     nil
   [markStepSI(it,["ISTEP",index,start'.expr,inc'.expr,:noptFinal]),e]
@@ -940,7 +940,7 @@ compRepeatOrCollect(form,m,e) ==
         markImport m''
 --------> new <--------------
         markRepeat(form,coerceExit([form',m'',e'],targetMode))
- 
+
 chaseInferences(origPred,$e) ==
   pred := markKillAll origPred
   ----------------------------12/4/94 do this immediately
@@ -965,20 +965,20 @@ chaseInferences(origPred,$e) ==
                   get("$Information","special",$e)],$e)
             nil
   $e
- 
+
 --======================================================================
 --                   doit Code
 --======================================================================
 doIt(item,$predl) ==
   $GENNO: local:= 0
   $coerceList: local := nil
-  --->                 
+  --->
   if item is ['PART,.,a] then item := a
   -------------------------------------
   item is ['SEQ,:.] => doItSeq item
   isDomainForm(item,$e) => doItDomain item
   item is ['LET,:.] => doItLet item
-  item is [":",a,t] => [.,.,$e]:= 
+  item is [":",a,t] => [.,.,$e]:=
     markDeclaredImport markKillAll t
     compOrCroak(item,$EmptyMode,$e)
   item is ['import,:doms] =>
@@ -995,7 +995,7 @@ doIt(item,$predl) ==
   true => cannotDo()
 
 holdIt item == item
- 
+
 doItIf(item is [.,p,x,y],$predl,$e) ==
   olde:= $e
   [p',.,$e]:= qt(19,comp(p,$Boolean,$e)) or userError ['"not a Boolean:",p]
@@ -1034,11 +1034,11 @@ doItIf(item is [.,p,x,y],$predl,$e) ==
   if y~="noBranch" then
 --> new <-----------------------
     qe(21,compSingleCapsuleItem(y,[['not, p],:$predl],getInverseEnvironment(markKillAll p,olde)))
--->                                                      ----------- 
+-->                                                      -----------
     y':=localExtras(oldFLP)
   wiReplaceNode(item,["COND",[p',x,:x'],['(QUOTE T),y,:y']],12)
 
-doItSeq item == 
+doItSeq item ==
   ['SEQ,:l,['exit,1,x]] := item
   RPLACA(item,"PROGN")
   RPLACA(LASTNODE item,x)
@@ -1059,7 +1059,7 @@ doItLet item ==
   res := doItLet1 item
   qe(4,$e)
   res
- 
+
 doItLet1 item ==
   ['LET,lhs,rhs,:.] := item
   not (compOrCroak(item,$EmptyMode,$e) is [code,.,$e]) =>
@@ -1094,7 +1094,7 @@ rhsOfLetIsDomainForm code ==
     false
   false
 
-doItDef item == 
+doItDef item ==
   ['DEF,[op,:.],:.] := item
   body:= isMacro(item,$e) => $e:= put(op,'macro,body,$e)
   [.,.,$e]:= t:= compOrCroak(item,$EmptyMode,$e)
@@ -1128,7 +1128,7 @@ wiReplaceNode(node,ocode,key) ==
   chk(code, key)
   chk(node, key + 1)
 
-replaceNodeInStructureBy(node, x) == 
+replaceNodeInStructureBy(node, x) ==
   $nodeCopy: local := [CAR node,:CDR node]
   replaceNodeBy(node, x)
   node
@@ -1136,14 +1136,13 @@ replaceNodeInStructureBy(node, x) ==
 replaceNodeBy(node, x) ==
   atom x => nil
   for y in tails x | EQCAR(x,node) repeat RPLAC(CAR x, $nodeCopy)
-  nil  
+  nil
 
 chk(x,key) == fn(x,0,key) where fn(x,cnt,key) ==
-  cnt > 10000 => 
+  cnt > 10000 =>
     sayBrightly ["--> ", key, " <---"]
     hahaha(key)
   atom x => cnt
   VECP x => systemError nil
   for y in x repeat cnt := fn(y, cnt + 1, key)
   cnt
- 

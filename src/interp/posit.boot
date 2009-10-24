@@ -34,69 +34,69 @@
 
 poNoPosition()    == $nopos
 pfNoPosition() == poNoPosition()
- 
+
 poNoPosition? pos == EQCAR(pos,'noposition)
 pfNoPosition? pos == poNoPosition? pos
- 
+
 pfSourceText pf ==
     lnString poGetLineObject pfPosn pf
- 
+
 pfPosOrNopos pf ==
     poIsPos? (pos := pfSourcePosition pf) => pos
     poNoPosition()
- 
+
 poIsPos? pos ==
     PAIRP pos and PAIRP CAR pos and LENGTH CAR pos = 5
- 
+
 lnCreate(extBl, st, gNo, :optFileStuff) ==
     lNo :=
         num := IFCAR optFileStuff => num
         0
     fN  := IFCAR IFCDR optFileStuff
     [extBl, st, gNo, lNo, fN]
- 
+
 lnString lineObject ==
     lineObject.1
- 
+
 lnExtraBlanks lineObject ==
     lineObject.0
- 
+
 lnGlobalNum lineObject   ==
     lineObject.2
- 
+
 lnSetGlobalNum(lineObject, num) ==
     lineObject.2 := num
- 
+
 lnLocalNum lineObject    ==
     lineObject.3
- 
+
 lnFileName lineObject    ==
     (fN := lnFileName? lineObject)  => fN
     ncBug('"there is no file name in %1", [lineObject] )
- 
+
 lnFileName? lineObject   ==
     NOT PAIRP (fN := lineObject.4)  => NIL
     fN
- 
+
 lnPlaceOfOrigin lineObject ==
     lineObject.4
- 
+
 lnImmediate? lineObject  ==
     not lnFileName? lineObject
- 
+
 poGetLineObject posn ==
     CAR posn
 pfGetLineObject posn == poGetLineObject posn
- 
+
 pfSourceToken form ==
     if pfLeaf? form
     then pfLeafToken form
     else if null pfParts form
          then 'NoToken
          else pfSourceToken(pfFirst form)
- 
+
 pfPosn pf == pfSourcePosition pf
- 
+
 pfSourcePosition form ==
     --null form => pfNoPosition()
     pfLeaf? form => pfLeafPosition form
@@ -105,7 +105,7 @@ pfSourcePosition form ==
     for p in parts while poNoPosition? pos repeat
         pos := pfSourcePosition p
     pos
- 
+
 pfSourcePositions form ==
     if pfLeaf? form
     then
@@ -114,41 +114,41 @@ pfSourcePositions form ==
      then nil
      else [a]
     else  pfSourcePositionlist pfParts form
- 
+
 pfSourcePositionlist x==
       if null x
       then nil
       else APPEND(pfSourcePositions first x,pfSourcePositionlist rest x)
- 
- 
+
+
 poCharPosn posn       == CDR posn
 pfCharPosn posn == poCharPosn posn
- 
+
 poLinePosn posn       ==
     posn => lnLocalNum  poGetLineObject posn  --VECP posn =>
     CDAR posn
 pfLinePosn posn == poLinePosn posn
- 
+
 poGlobalLinePosn posn ==
     posn => lnGlobalNum poGetLineObject posn
     ncBug('"old style pos objects have no global positions",[])
 pfGlobalLinePosn posn == poGlobalLinePosn posn
- 
+
 poFileName posn       ==
     posn => lnFileName poGetLineObject posn
     CAAR posn
 pfFileName posn == poFileName posn
- 
+
 poFileName? posn       ==
     posn = ['noposition] => NIL
     posn => lnFileName? poGetLineObject posn
     CAAR posn
 pfFileName? posn == poFileName? posn
- 
+
 poPlaceOfOrigin posn ==
     lnPlaceOfOrigin poGetLineObject posn
 pfPlaceOfOrigin posn == poPlaceOfOrigin posn
- 
+
 poNopos? posn ==
     posn = ['noposition]
 pfNopos? posn == poNopos? posn
@@ -156,12 +156,12 @@ poPosImmediate? txp==
     poNopos? txp => NIL
     lnImmediate? poGetLineObject txp
 pfPosImmediate? txp == poPosImmediate? txp
- 
+
 poImmediate? txp==
     lnImmediate? poGetLineObject txp
 pfImmediate? txp == poImmediate? txp
- 
- 
+
+
 compareposns(a,b)==
  c:=poGlobalLinePosn a
  d:=poGlobalLinePosn b
@@ -172,7 +172,6 @@ pfPrintSrcLines(pf) ==
   lno := 0
   for l in lines repeat
     line := car l
-    if lno < lnGlobalNum(line) then 
+    if lno < lnGlobalNum(line) then
       FORMAT(true, '"   ~A~%",  lnString line)
       lno := lnGlobalNum(line)
-

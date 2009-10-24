@@ -31,7 +31,7 @@
 
 
 -- note domainObjects are now (dispatchVector hashCode . domainVector)
--- lazy oldAxiomDomainObjects are (dispatchVector hashCode  (Call form) . backptr), 
+-- lazy oldAxiomDomainObjects are (dispatchVector hashCode  (Call form) . backptr),
 -- pre oldAxiomCategory is (dispatchVector . (cat form))
 -- oldAxiomCategory objects are (dispatchVector . ( (cat form)  hash defaultpack parentlist))
 
@@ -46,7 +46,7 @@ $domainTypeTokens := ['lazyOldAxiomDomain, 'oldAxiomDomain, 'oldAxiomPreCategory
 -- b) cons(1, type-name, arg-names...)
 -- c) cons(2, arg-names...)
 -- d) cons(3, value)
--- NB: (c) is for tuple-ish constructors, 
+-- NB: (c) is for tuple-ish constructors,
 --     and (d) is for dependent types.
 
 DNameStringID := 0
@@ -56,11 +56,11 @@ DNameOtherID  := 3
 
 DNameToSExpr1 dname ==
   NULL dname => error "unexpected domain name"
-  CAR dname = DNameStringID => 
+  CAR dname = DNameStringID =>
     INTERN(CompStrToString CDR dname)
   name0 := DNameToSExpr1 CAR CDR dname
   args  := CDR CDR dname
-  name0 = '_-_> => 
+  name0 = '_-_> =>
     froms := CAR args
     froms := MAPCAR(function DNameToSExpr, CDR froms)
     ret   := CAR CDR args -- a tuple
@@ -81,8 +81,8 @@ DNameToSExpr dname ==
   LIST sx
 
 DNameFixEnum arg == CompStrToString CDR arg
-  
-SExprToDName(sexpr, cosigVal) == 
+
+SExprToDName(sexpr, cosigVal) ==
   -- is it a non-type valued object?
   NOT cosigVal => [DNameOtherID, :sexpr]
   if CAR sexpr = '_: then sexpr := CAR CDR CDR sexpr
@@ -94,17 +94,17 @@ SExprToDName(sexpr, cosigVal) ==
                  [DNameTupleID, CAR args]]
   name0 :=   [DNameStringID, : StringToCompStr SYMBOL_-NAME CAR sexpr]
   CAR sexpr = 'Union or CAR sexpr = 'Record =>
-    [DNameApplyID, name0, 
+    [DNameApplyID, name0,
         [DNameTupleID,: [ SExprToDName(sx, 'T) for sx in CDR sexpr]]]
   newCosig := CDR GETDATABASE(CAR sexpr, QUOTE COSIG)
   [DNameApplyID, name0,
    : MAPCAR(function SExprToDName, CDR sexpr, newCosig)]
 
 -- local garbage because Compiler strings are null terminated
-StringToCompStr(str) == 
+StringToCompStr(str) ==
    CONCATENATE(QUOTE STRING, str, STRING (CODE_-CHAR 0))
 
-CompStrToString(str) == 
+CompStrToString(str) ==
    SUBSTRING(str, 0, (LENGTH str - 1))
 -- local garbage ends
 
@@ -159,7 +159,7 @@ oldAxiomPreCategoryBuild(catform, dom, env) ==
        [catform, hashTypeForm(catform,0), pack, oldAxiomPreCategoryParents(catform,dom), dom])
 oldAxiomPreCategoryHashCode(catform, env) == hashTypeForm(catform,0)
 oldAxiomCategoryDefaultPackage(catform, dom) ==
-    hasDefaultPackage opOf catform 
+    hasDefaultPackage opOf catform
 
 oldAxiomPreCategoryDevaluate([op,:args], env) ==
    SExprToDName([op,:devaluateList args], T)
@@ -185,7 +185,7 @@ oldAxiomPreCategoryParents(catform,dom) ==
     LIST2VEC
       [EVAL quoteCatOp cat for [cat,:pred] in parents | EVAL pred])
 
-quoteCatOp cat == 
+quoteCatOp cat ==
    atom cat => MKQ cat
    ['LIST, MKQ CAR cat,: CDR cat]
 
@@ -241,7 +241,7 @@ instantiate domenv ==
   RPLACD(oldDom, [CADR oldDom,: domvec])
   oldDom
 
-hashTypeForm([fn,: args], percentHash) == 
+hashTypeForm([fn,: args], percentHash) ==
    hashType([fn,:devaluateList args], percentHash)
 
 --------------------> NEW DEFINITION (override in i-util.boot.pamphlet)
@@ -280,17 +280,17 @@ oldAxiomDomainLookupExport _
        sig := '($)
        constant := true
      val :=
-       skipdefaults => 
+       skipdefaults =>
           oldCompLookupNoDefaults(op, sig, domainVec, self)
        oldCompLookup(op, sig, domainVec, self)
      null val => val
      if constant then val := SPADCALL val
      RPLACA(box, val)
      box
-     
+
 oldAxiomDomainHashCode(domenv, env) == CAR domenv
 
-oldAxiomDomainDevaluate(domenv, env) == 
+oldAxiomDomainDevaluate(domenv, env) ==
    SExprToDName(CDR(domenv).0, 'T)
 
 oldAxiomAddChild(domenv, child, env) == CONS($oldAxiomDomainDispatch, domenv)
@@ -420,12 +420,12 @@ lookupInDomainVector(op,sig,domain,dollar) ==
 lookupComplete(op,sig,dollar,env) ==
    hashCode? sig => hashNewLookupInTable(op,sig,dollar,env,nil)
    newLookupInTable(op,sig,dollar,env,nil)
- 
+
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
-lookupIncomplete(op,sig,dollar,env) == 
+lookupIncomplete(op,sig,dollar,env) ==
    hashCode? sig => hashNewLookupInTable(op,sig,dollar,env,true)
    newLookupInTable(op,sig,dollar,env,true)
- 
+
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
 lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
@@ -457,7 +457,7 @@ lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
   lazyMatch(s,a,dollar,domain)
   --above line is temporarily necessary until system is compiled 8/15/90
 --s = a
- 
+
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
 getOpCode(op,vec,max) ==
 --search Op vector for "op" returning code if found, nil otherwise
@@ -478,7 +478,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   hashPercent :=
     VECP dollar => hashType(dollar.0,0)
     hashType(dollar,0)
-  if hashCode? sig and EQL(sig, hashPercent) then 
+  if hashCode? sig and EQL(sig, hashPercent) then
          sig := hashType('(Mapping $), hashPercent)
   dollar = nil => systemError()
   $lookupDefaults = true =>
@@ -664,7 +664,7 @@ replaceGoGetSlot env ==
   slot
 
 newHasCategory(domain,catform) ==
-  catform = '(Type) => true  
+  catform = '(Type) => true
   slot4 := domain.4
   auxvec := CAR slot4
   catvec := CADR slot4
@@ -737,15 +737,15 @@ evalSlotDomain(u,dollar) ==
     VECP (y := dollar.u) => y
     isDomain y => y
     y is ['SETELT,:.] => eval y--lazy domains need to marked; this is dangerous?
-    y is [v,:.] => 
+    y is [v,:.] =>
       VECP v =>
           BREAK()
           lazyDomainSet(y,dollar,u)               --old style has [$,code,:lazyt]
-      constructor? v or MEMQ(v,'(Record Union Mapping)) => 
+      constructor? v or MEMQ(v,'(Record Union Mapping)) =>
         lazyDomainSet(y,dollar,u)                       --new style has lazyt
       y
     y
-  u is ['NRTEVAL,y] => 
+  u is ['NRTEVAL,y] =>
     y is ['ELT,:.] => evalSlotDomain(y,dollar)
     eval  y
   u is ['QUOTE,y] => y
@@ -761,12 +761,12 @@ evalSlotDomain(u,dollar) ==
   u is ['ELT,d,n] =>
     dom := evalSlotDomain(d,dollar)
     slot := dom . n
-    slot is [=FUNCTION newGoGet,:env] => 
+    slot is [=FUNCTION newGoGet,:env] =>
         replaceGoGetSlot env
     slot
   u is [op,:argl] => APPLY(op,[evalSlotDomain(x,dollar) for x in argl])
   systemErrorHere '"evalSlotDomain"
- 
+
 --------------------> NEW DEFINITION (override in i-util.boot.pamphlet)
 domainEqual(a,b) ==
   devaluate(a) = devaluate(b)
@@ -806,4 +806,3 @@ lookupDisplay(op,sig,vectorOrForm,suffix) ==
 isCategoryPackageName nam ==
     p := PNAME opOf nam
     p.(MAXINDEX p) = char '_&
-

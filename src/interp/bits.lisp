@@ -32,7 +32,7 @@
 
 ;;; The types "bit" and "bit vector" are implemented differently
 ;;; in different variants of lisp.
-;;; These lisp macros/functions will have different implementations 
+;;; These lisp macros/functions will have different implementations
 ;;; on different lisp systems.
 
 ;;; The operations which traverse entire vectors are given as functions
@@ -43,11 +43,11 @@
 (in-package "BOOT")
 
 ;;; SMW Nov 88: Created
- 
+
 (defmacro truth-to-bit (x) `(cond (,x 1) ('else 0)))
 (defmacro bit-to-truth (b) `(eq ,b 1))
 
-(defun    bvec-make-full (n x) 
+(defun    bvec-make-full (n x)
     (make-array (list n) :element-type 'bit :initial-element x))
 
 (defmacro bvec-elt       (bv i)    `(sbit ,bv ,i))

@@ -47,7 +47,7 @@
                      (EQL #'eql)
                      #+Lucid ((UEQUAL EQUALP) #'EQUALP)
                      #-Lucid ((UEQUAL EQUAL) #'equal)
-                     (otherwise (error "bad arg to make-hashtable")))))     
+                     (otherwise (error "bad arg to make-hashtable")))))
       (make-hash-table :test test)))
 
 ;17.2 Accessing

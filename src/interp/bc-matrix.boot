@@ -33,13 +33,13 @@
 -- Basic Command matrix entry
 
 bcMatrix() ==  bcReadMatrix nil
-  
+
 bcReadMatrix exitFunctionOrNil ==
   page := htInitPage('"Matrix Basic Command", nil)
   htpSetProperty(page,'exitFunction,exitFunctionOrNil)
-  htMakePage 
-   '((domainConditions 
-     (isDomain PI (PositiveInteger)))  
+  htMakePage
+   '((domainConditions
+     (isDomain PI (PositiveInteger)))
     (text . "Enter the size of the matrix:")
     (inputStrings
      ("Number of {\em rows}:\space{3}" "" 5 2 rows PI)
@@ -77,10 +77,10 @@ bcInputMatrixByFormula(htPage,junk) ==
     (text . "\newline\tab{2} ")
     (bcStrings (40 "1/(x - i - j - 1)" formula FE)))
   htMakeDoneButton('"Continue", 'bcInputMatrixByFormulaGen)
-  nrows := 
+  nrows :=
     null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'rows)
     PARSE_-INTEGER htpLabelInputString(htPage,'rows)
-  ncols := 
+  ncols :=
     null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'cols)
     PARSE_-INTEGER htpLabelInputString(htPage,'cols)
   htpSetProperty(page, 'nrows, nrows)
@@ -98,17 +98,17 @@ bcInputMatrixByFormulaGen htPage ==
     STRINGIMAGE ncols,'"] for ",rowVar,'" in 1..",STRINGIMAGE nrows,'"])")
 
 bcInputExplicitMatrix(htPage,junk) ==
-  nrows := 
+  nrows :=
     null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'rows)
     PARSE_-INTEGER htpLabelInputString(htPage,'rows)
-  ncols := 
+  ncols :=
     null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'cols)
     PARSE_-INTEGER htpLabelInputString(htPage,'cols)
   cond := nil
   k := 0
   wrows := # STRINGIMAGE nrows
   wcols := # STRINGIMAGE ncols
-  labelList := 
+  labelList :=
     "append"/[[f for j in 1..ncols] for i in 1..nrows] where f ==
       rowpart := STRCONC('"{\em Row",htStringPad(i,wrows))
       colpart := STRCONC('", Column",htStringPad(j,wcols),'":}\space{2}")
@@ -116,7 +116,7 @@ bcInputExplicitMatrix(htPage,junk) ==
  --     name := INTERN STRCONC(htMkName('"row",i),htMkName('"col",j))
       name := INTERN STRINGIMAGE (k := k + 1)
       [prefix,'"",30, 0,name,'P]
-  labelList := 
+  labelList :=
     [['domainConditions, '(isDomain P (Polynomial $EmptyMode)), cond],
      ['inputStrings, :labelList] ]
   page := htInitPage('"Solve Basic Command", htpPropertyList htPage)
@@ -127,7 +127,7 @@ bcInputExplicitMatrix(htPage,junk) ==
   htpSetProperty(page,'ncols,ncols)
   htShowPage()
 
-bcGenExplicitMatrix htPage == 
+bcGenExplicitMatrix htPage ==
   htpSetProperty(htPage,'matrix,htpInputAreaAlist htPage)
   fun :=  htpProperty(htPage,'exitFunction) => FUNCALL(fun, htPage)
   bcGen bcMatrixGen htPage
@@ -150,4 +150,3 @@ bcMatrixGen htPage ==
     matstring := bcwords2liststring [bcwords2liststring x for x in matform]
     STRCONC('"matrix(",matstring,'")")
   systemError nil
-  

@@ -200,4 +200,3 @@ underDomainOf t ==
   1 = #d => NIL
   u := getUnderModeOf(t) => u
   last d
-

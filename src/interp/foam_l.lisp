@@ -49,12 +49,12 @@
 (export '(
  compile-as-file cases
 
- |Clos| |Char| |Bool| |Byte| |HInt| |SInt| |BInt| |SFlo| |DFlo| |Ptr| 
+ |Clos| |Char| |Bool| |Byte| |HInt| |SInt| |BInt| |SFlo| |DFlo| |Ptr|
  |Word| |Arb| |Env| |Level| |Arr| |Record| |Nil|
 
- |ClosInit| |CharInit| |BoolInit| |ByteInit| |HIntInit| |SIntInit| 
+ |ClosInit| |CharInit| |BoolInit| |ByteInit| |HIntInit| |SIntInit|
  |BIntInit| |SFloInit| |DFloInit| |PtrInit| |WordInit| |ArbInit| |EnvInit|
- |ArrInit| |RecordInit| |LevelInit| 
+ |ArrInit| |RecordInit| |LevelInit|
 
  |BoolFalse| |BoolTrue| |BoolNot| |BoolAnd| |BoolOr| |BoolEQ| |BoolNE|
 
@@ -127,9 +127,9 @@
  |MakeEnv| |EnvLevel| |EnvNext| |EnvInfo| |SetEnvInfo| |FoamEnvEnsure|
  |MakeLit| |MakeLevel|
  |printNewLine| |printChar| |printString| |printSInt| |printBInt| |printSFloat|
- |printDFloat| 
+ |printDFloat|
  |strLength| |formatSInt| |formatBInt| |formatSFloat| |formatDFloat|
- 
+
  |ProgHashCode| |SetProgHashCode| |ProgFun|
  |G-mainArgc| |G-mainArgv|
  |stdinFile| |stdoutFile| |stderrFile|
@@ -137,7 +137,7 @@
 
 
  ;; trancendental functions
- |sqrt| |pow| |log| |exp| |sin| |cos| |tan| |sinh| |cosh| |tanh| 
+ |sqrt| |pow| |log| |exp| |sin| |cos| |tan| |sinh| |cosh| |tanh|
  |asin| |acos| |atan| |atan2|
 
  ;; debuging
@@ -484,7 +484,7 @@
 (defmacro |SetClosFun| (x y) `(rplaca ,x ,y))
 (defmacro |SetClosEnv| (x y) `(rplacd ,x ,y))
 
-(defmacro |MakeEnv|     (x y) 
+(defmacro |MakeEnv|     (x y)
   `(let ((xx ,x) (yy ,y)) (cons yy (cons xx nil))))
 
 (defmacro |EnvLevel|    (x)   `(car ,x))
@@ -493,7 +493,7 @@
                                    (cddr ,x) nil))
 (defmacro |SetEnvInfo|  (x val)   `(rplacd (cdr  ,x) ,val))
 
-(defmacro |FoamEnvEnsure| (e) 
+(defmacro |FoamEnvEnsure| (e)
   `(if (|EnvInfo| ,e) (|CCall| (|EnvInfo| ,e)) nil))
 
 (defparameter null-char-string (string (code-char 0)))
@@ -617,7 +617,7 @@
 ;; cdr is its type.
 
 ;; in the ANSI Common Lisp ftype function declaration, the names of the
-;; arguments do not appear, actually.  In GCL, they did.  
+;; arguments do not appear, actually.  In GCL, they did.
 
 ;; Example:
 ;; (declare-prog
@@ -769,7 +769,7 @@
                                (- n i1))
                       (aux (+ n 1)))))))
           (aux i1)))
-                
+
 ;; write s[i1..i2) to the output stream f
 ;; stop on any null characters
 
@@ -779,7 +779,7 @@
                   (let ((c (schar s n)))
                     (if  (equal (code-char 0) c)
                          (- n i1)
-                      (progn (princ c f)        
+                      (progn (princ c f)
                              (aux (+ n 1))))))))
           (setq i2 (if (minusp i2) (|strLength| s)
                      (min i2 (|strLength| s))))
@@ -833,7 +833,7 @@
 (defmacro |atan| (a) `(atan ,a))
 (defmacro |atan2| (a b) `(atan ,a ,b))
 
-(defun |Halt| (n) 
+(defun |Halt| (n)
   (error (cond ((= n 101) "System Error: Unfortunate use of dependant type")
                ((= n 102) "User error: Reached a 'never'")
                ((= n 103) "User error: Bad union branch")
@@ -856,19 +856,19 @@
 (defun foam::|fiStrHash| (x) (boot::|hashString| (subseq x 0 (- (length x) 1))))
 
 ;; These three functions check that two cons's contain identical entries.
-;; We use EQL to test numbers and EQ everywhere else.  If the structure 
+;; We use EQL to test numbers and EQ everywhere else.  If the structure
 ;; of the two items is different, or any elements are different, we
 ;; return false.
-(defmacro |politicallySound| (u v) 
+(defmacro |politicallySound| (u v)
  `(or (eql ,u ,v) (eq ,u ,v)))
 
-(defun |PtrMagicEQ| (u v) 
-;; I find (as-eg4) that these buggers can be numbers 
+(defun |PtrMagicEQ| (u v)
+;; I find (as-eg4) that these buggers can be numbers
  (cond ( (or (NULL u) (NULL v)) nil)
        ( (and (ATOM u) (ATOM v)) (eql u v))
        ( (or (ATOM u) (ATOM v)) nil)
 ;; removed for Aldor integration
-;;       ( (equal (length u) (length v)) (|magicEq1| u v)) 
+;;       ( (equal (length u) (length v)) (|magicEq1| u v))
        (t (eq u v) )))
 
 (defun |magicEq1| (u v)
@@ -876,4 +876,3 @@
        ( (or (atom u) (atom v)) nil)
        ( (|politicallySound| (car u) (car v)) (|magicEq1| (cdr u) (cdr v)))
        (t nil) ))
-

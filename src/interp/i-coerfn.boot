@@ -2266,4 +2266,3 @@ SETANDFILEQ($CommuteTable, '(                                           _
     (UnivariatePolynomial                 commute    commuteSm2)        _
     ))                                                                  _
   ))
-
