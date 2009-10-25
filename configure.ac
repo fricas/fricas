@@ -1,18 +1,7 @@
 sinclude(config/axiom.m4)
 AC_INIT([FriCAS], [2009-10-15], 
         [fricas-devel@googlegroups.com])
-axiom_top_srcdir=`cd "$srcdir" && pwd`
-if pwd | grep ' ' ; then
-    AC_MSG_WARN([Please make sure that name of source directory])
-    AC_MSG_WARN([and name of build directory does not contain spaces.])
-    AC_MSG_ERROR([Name of build directory contains space.])
-fi
-if echo "$srcdir" | grep ' ' || echo "axiom_top_srcdir" | grep ' ' ; then
-    AC_MSG_WARN([Please make sure that name of source directory])
-    AC_MSG_WARN([and name of build directory does not contain spaces.])
-    AC_MSG_ERROR([Name of source directory contains space.])
-fi
-AC_SUBST(axiom_top_srcdir)
+
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([config/axiom-c-macros.h])
@@ -36,14 +25,38 @@ AC_SUBST(axiom_src_subdirs)
 
 AC_CANONICAL_SYSTEM
 
+case $build in
+  *mingw*)
+    fricas_pwd=`pwd -W`
+    axiom_top_srcdir=`cd "$srcdir" && pwd -W`
+     ;;
+  *)
+    fricas_pwd=`pwd`
+    axiom_top_srcdir=`cd "$srcdir" && pwd`
+     ;;
+esac
+
+AC_SUBST(axiom_top_srcdir)
+
+if echo "$fricas_pwd" | grep ' ' ; then
+    AC_MSG_WARN([Please make sure that name of source directory])
+    AC_MSG_WARN([and name of build directory does not contain spaces.])
+    AC_MSG_ERROR([Name of build directory contains space.])
+fi
+if echo "$srcdir" | grep ' ' || echo "axiom_top_srcdir" | grep ' ' ; then
+    AC_MSG_WARN([Please make sure that name of source directory])
+    AC_MSG_WARN([and name of build directory does not contain spaces.])
+    AC_MSG_ERROR([Name of source directory contains space.])
+fi
+
 ## Where tools for the build machine are built
-axiom_builddir=`pwd`/build/$build
+axiom_builddir=$fricas_pwd/build/$build
 AC_SUBST(axiom_builddir)
 axiom_build_bindir=$axiom_builddir/bin
 AC_SUBST(axiom_build_bindir)
 
 ## Prefix for the staging target inistallation directory
-axiom_targetdir=`pwd`/target/$target
+axiom_targetdir=$fricas_pwd/target/$target
 AC_SUBST(axiom_targetdir)
 if test $build != $target; then
    AC_MSG_WARN([Cross build is not supported.])
@@ -634,14 +647,7 @@ fi
 # We need the Makefile (for util.ht) even if we do not build HyperDoc.
 AXIOM_MAKEFILE([src/hyper/Makefile])
 
-case $host in
-    *mingw*)
-        BASE=`(cd /;pwd -W)`
-        ;;
-    *)
-        BASE=""
-        ;;
-esac
+BASE=""
 AC_SUBST(BASE)
 AXIOM=${BASE}${axiom_targetdir}
 AC_SUBST(AXIOM)
