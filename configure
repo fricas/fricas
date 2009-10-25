@@ -652,7 +652,6 @@ LIBS
 build_alias
 host_alias
 target_alias
-axiom_top_srcdir
 axiom_src_subdirs
 build
 build_cpu
@@ -666,6 +665,7 @@ target
 target_cpu
 target_vendor
 target_os
+axiom_top_srcdir
 axiom_builddir
 axiom_build_bindir
 axiom_targetdir
@@ -1780,25 +1780,6 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-axiom_top_srcdir=`cd "$srcdir" && pwd`
-if pwd | grep ' ' ; then
-    { echo "$as_me:$LINENO: WARNING: Please make sure that name of source directory" >&5
-echo "$as_me: WARNING: Please make sure that name of source directory" >&2;}
-    { echo "$as_me:$LINENO: WARNING: and name of build directory does not contain spaces." >&5
-echo "$as_me: WARNING: and name of build directory does not contain spaces." >&2;}
-    { { echo "$as_me:$LINENO: error: Name of build directory contains space." >&5
-echo "$as_me: error: Name of build directory contains space." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if echo "$srcdir" | grep ' ' || echo "axiom_top_srcdir" | grep ' ' ; then
-    { echo "$as_me:$LINENO: WARNING: Please make sure that name of source directory" >&5
-echo "$as_me: WARNING: Please make sure that name of source directory" >&2;}
-    { echo "$as_me:$LINENO: WARNING: and name of build directory does not contain spaces." >&5
-echo "$as_me: WARNING: and name of build directory does not contain spaces." >&2;}
-    { { echo "$as_me:$LINENO: error: Name of source directory contains space." >&5
-echo "$as_me: error: Name of source directory contains space." >&2;}
-   { (exit 1); exit 1; }; }
-fi
 
 ac_aux_dir=
 for ac_dir in config "$srcdir"/config; do
@@ -1975,14 +1956,46 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
+case $build in
+  *mingw*)
+    fricas_pwd=`pwd -W`
+    axiom_top_srcdir=`cd "$srcdir" && pwd -W`
+     ;;
+  *)
+    fricas_pwd=`pwd`
+    axiom_top_srcdir=`cd "$srcdir" && pwd`
+     ;;
+esac
+
+
+
+if echo "$fricas_pwd" | grep ' ' ; then
+    { echo "$as_me:$LINENO: WARNING: Please make sure that name of source directory" >&5
+echo "$as_me: WARNING: Please make sure that name of source directory" >&2;}
+    { echo "$as_me:$LINENO: WARNING: and name of build directory does not contain spaces." >&5
+echo "$as_me: WARNING: and name of build directory does not contain spaces." >&2;}
+    { { echo "$as_me:$LINENO: error: Name of build directory contains space." >&5
+echo "$as_me: error: Name of build directory contains space." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if echo "$srcdir" | grep ' ' || echo "axiom_top_srcdir" | grep ' ' ; then
+    { echo "$as_me:$LINENO: WARNING: Please make sure that name of source directory" >&5
+echo "$as_me: WARNING: Please make sure that name of source directory" >&2;}
+    { echo "$as_me:$LINENO: WARNING: and name of build directory does not contain spaces." >&5
+echo "$as_me: WARNING: and name of build directory does not contain spaces." >&2;}
+    { { echo "$as_me:$LINENO: error: Name of source directory contains space." >&5
+echo "$as_me: error: Name of source directory contains space." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
 ## Where tools for the build machine are built
-axiom_builddir=`pwd`/build/$build
+axiom_builddir=$fricas_pwd/build/$build
 
 axiom_build_bindir=$axiom_builddir/bin
 
 
 ## Prefix for the staging target inistallation directory
-axiom_targetdir=`pwd`/target/$target
+axiom_targetdir=$fricas_pwd/target/$target
 
 if test $build != $target; then
    { echo "$as_me:$LINENO: WARNING: Cross build is not supported." >&5
@@ -8556,14 +8569,7 @@ fi
 ac_config_files="$ac_config_files src/hyper/Makefile:config/var-def.mk:src/hyper/Makefile.in:config/setup-dep.mk"
 
 
-case $host in
-    *mingw*)
-        BASE=`(cd /;pwd -W)`
-        ;;
-    *)
-        BASE=""
-        ;;
-esac
+BASE=""
 
 AXIOM=${BASE}${axiom_targetdir}
 
@@ -9634,7 +9640,6 @@ LIBS!$LIBS$ac_delim
 build_alias!$build_alias$ac_delim
 host_alias!$host_alias$ac_delim
 target_alias!$target_alias$ac_delim
-axiom_top_srcdir!$axiom_top_srcdir$ac_delim
 axiom_src_subdirs!$axiom_src_subdirs$ac_delim
 build!$build$ac_delim
 build_cpu!$build_cpu$ac_delim
@@ -9648,6 +9653,7 @@ target!$target$ac_delim
 target_cpu!$target_cpu$ac_delim
 target_vendor!$target_vendor$ac_delim
 target_os!$target_os$ac_delim
+axiom_top_srcdir!$axiom_top_srcdir$ac_delim
 axiom_builddir!$axiom_builddir$ac_delim
 axiom_build_bindir!$axiom_build_bindir$ac_delim
 axiom_targetdir!$axiom_targetdir$ac_delim
