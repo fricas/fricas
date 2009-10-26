@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2009-10-15], 
+AC_INIT([FriCAS], [2009-10-26], 
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -147,33 +147,33 @@ AC_SUBST(AUTO_GOOD_SHELL)
 ##
 
 ## The logic is as follows. 
-## No "--with-noweb" option:
+## No "--with-noweb-tarball" option:
 ##    Check for "notangle" and "noweave" in the PATH.
 ##    If not present, but $axiom_top_srcdir/zips/noweb-2.10a.tgz is
 ##    configure to build the noweb binaries.
 ##    Error, if neither noweb binaries or .tgz could not be found.
-## "--without-noweb" or "--with-noweb=no":
+## "--without-noweb-tarball" or "--with-noweb-tarball=no":
 ##    notangle and noweave must be found in the PATH
 ##    Error if missing.
-## "--with-noweb" or "--with-noweb=yes":
+## "--with-noweb-tarball" or "--with-noweb-tarball=yes":
 ##    Look for $axiom_top_srcdir/zips/noweb-2.10a.tgz and extract
 ##    and compile noweb.
 ##    Error, if .tgz cannot be found.
-## "--with-noweb=/path/to/noweb-2.10a.tgz":
+## "--with-noweb-tarball=/path/to/noweb-2.10a.tgz":
 ##    Like above, but with an explicit path to the noweb tarball.
 ##    Error, if the .tgz is not present.
 
 internal_noweb="$axiom_top_srcdir/zips/noweb-2.10a.tgz"
-AC_ARG_WITH([noweb],
-    [AS_HELP_STRING([--with-noweb],
+AC_ARG_WITH([noweb-tarball],
+    [AS_HELP_STRING([--with-noweb-tarball],
                     [specify place of the noweb-2.10a.tgz tarball])],
-    # Action if --with-noweb is given.
+    # Action if --with-noweb-tarball is given.
     [case $withval in
         yes) if test -f "$internal_noweb" ; then
                  axiom_build_noweb=yes
                  noweb_tarball="$internal_noweb"
              else
-                 AC_MSG_ERROR([--with-noweb specified, but noweb tarball is not present])
+                 AC_MSG_ERROR([--with-noweb-tarball specified, but noweb tarball is not present])
              fi  ;;
         no)  axiom_build_noweb=no ;;
         *)   if test -f "$withval"; then
@@ -183,7 +183,7 @@ AC_ARG_WITH([noweb],
                  AC_MSG_ERROR([Could not find the file "$withval".])
              fi ;;
     esac],
-    # Action if --with-noweb is not given.
+    # Action if --with-noweb-tarball is not given.
     [noweb_tarball=; axiom_build_noweb=]
 )
 
