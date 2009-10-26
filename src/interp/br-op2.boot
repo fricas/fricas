@@ -138,6 +138,8 @@ dbGetDisplayFormForOp(op,sig,doc) ==
   dbGetFormFromDocumentation(op,sig,doc) or dbGetContrivedForm(op,sig)
 
 dbGetFormFromDocumentation(op,sig,x) ==
+  $ncMsgList : local := nil
+  $newcompErrorCount : local := 0
   doc := (STRINGP x => x; first x)
   STRINGP doc and
      (stringPrefix?('"\spad{",doc) and (k := 6) or
