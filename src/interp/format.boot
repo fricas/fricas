@@ -461,7 +461,6 @@ binop2String x ==
     $curExpr : local := x
     x is ["=", arg1, arg2] or x is ['"=", arg1, arg2] =>
         concat(sumOrParen(arg1), '"=", sumOrParen(arg2))
-        sumOrParen(x)
     sumOrParen(x)
 
 sumOrParen(x) ==
