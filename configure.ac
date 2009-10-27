@@ -634,7 +634,7 @@ if test x"$axiom_has_xpm" = xyes; then
     AXIOM_MAKEFILE([src/graph/viewAlone/Makefile])
     AXIOM_MAKEFILE([src/graph/viewman/Makefile])
 else
-    AC_MSG_NOTICE([The Gaphics and HyperDoc components are disabled.])
+    AC_MSG_NOTICE([The Graphics and HyperDoc components are disabled.])
 fi
 AC_SUBST(axiom_src_all)
 if test x"$axiom_has_xpm" = xyes; then
