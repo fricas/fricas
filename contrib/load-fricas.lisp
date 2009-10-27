@@ -59,6 +59,7 @@ FriCAS settings may interfere with other programs.
 (let ((*default-pathname-defaults* 
        #P"/full_path_to_FriCAS_build_directory/src/interp/"))
      (load "../lisp/fricas-package.lisp")
+     (load "../lisp/fricas-config.lisp")
      (load "../lisp/fricas-lisp")
      (load "makeint.lisp"))
 (in-package "BOOT")
