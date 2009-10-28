@@ -98,7 +98,7 @@
                        (funcall restart-fun)
                        (sb-impl::toplevel-repl nil))))
         (sb-ext::save-lisp-and-die core-image :toplevel top-fun
-            :executable t))
+            :executable t :save-runtime-options t))
 #+:clisp
   (if restart
      (ext::saveinitmem core-image :INIT-FUNCTION restart :QUIET t
