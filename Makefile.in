@@ -3,7 +3,6 @@
 ## -- Old-style Axiom makefile variables --
 ## ----------------------------------------
 
-## CCLBASE=${OBJ}/${SYS}/ccl/ccllisp
 COMMAND=$(DESTDIR)$(libdir)/fricas/target/$(target)/bin/axiom
 
 GCLOPTS=@GCLOPTS@
@@ -36,6 +35,8 @@ all-ax: all-src
 	@echo finished system build on `date` | tee >lastBuildDate
 
 all-src: stamp-rootdirs @axiom_all_prerequisites@
+
+all-input: all-src
 
 $(AXIOM_SRC_TARGETS):
 	cd $(build_srcdir) && $(MAKE) $@
@@ -171,13 +172,13 @@ mostlyclean-local:
 	@-rm -f lastBuildDate
 
 clean-local: mostlyclean-local
-	@ rm -f stamp-*
-	@ rm -rf int
-	@ rm -rf obj
+	-rm -f stamp-*
+	-cd contrib/emacs && ${MAKE} clean
+	-rm -rf $(axiom_targetdir)
+	-rm -rf build/$(target)
 
 distclean-local: clean-local
 	@-rm -rf build
-	@-rm -rf $(axiom_targetdir)
 	@-rm -f config.status config.log
 	@-rm -f Makefile
 

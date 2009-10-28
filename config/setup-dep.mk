@@ -135,7 +135,7 @@ mostlyclean-ax: mostlyclean-generic mostlyclean-local
 
 .PHONY: clean-generic clean-local clean clean-ax
 clean-generic: mostlyclean-generic
-	-rm -f *.tex *.dvi
+	-rm -f *.dvi
 
 clean: clean-recursive
 clean-ax: clean-generic clean-local
