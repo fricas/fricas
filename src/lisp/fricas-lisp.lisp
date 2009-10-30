@@ -97,8 +97,13 @@
                        (set-initial-parameters)
                        (funcall restart-fun)
                        (sb-impl::toplevel-repl nil))))
-        (sb-ext::save-lisp-and-die core-image :toplevel top-fun
-            :executable t :save-runtime-options t))
+        (if (find-symbol "SAVE-RUNTIME-OPTIONS" "KEYWORD")
+            (sb-ext::save-lisp-and-die core-image :toplevel top-fun
+                :executable t :save-runtime-options t)
+            (sb-ext::save-lisp-and-die core-image :toplevel top-fun
+                :executable t)
+        )
+  )
 #+:clisp
   (if restart
      (ext::saveinitmem core-image :INIT-FUNCTION restart :QUIET t
