@@ -96,13 +96,14 @@
          (top-fun #'(lambda ()
                        (set-initial-parameters)
                        (funcall restart-fun)
-                       (sb-impl::toplevel-repl nil))))
-        (if (find-symbol "SAVE-RUNTIME-OPTIONS" "KEYWORD")
-            (sb-ext::save-lisp-and-die core-image :toplevel top-fun
-                :executable t :save-runtime-options t)
-            (sb-ext::save-lisp-and-die core-image :toplevel top-fun
-                :executable t)
+                       (sb-impl::toplevel-repl nil)))
+         (save-options-keyword (find-symbol "SAVE-RUNTIME-OPTIONS" "KEYWORD"))
+         (save-options-arg
+             (if save-options-keyword (list save-options-keyword t) nil))
         )
+        (apply #'sb-ext::save-lisp-and-die
+              (append `(,core-image :toplevel ,top-fun :executable t)
+                      save-options-arg))
   )
 #+:clisp
   (if restart
