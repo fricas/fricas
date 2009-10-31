@@ -51,10 +51,9 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 
 (REPEAT (IN X '(
    (LET " := ")
-   (= "=")
    (|/| "/")
-   (+ "+")
    (* "*")
+   (TENSOR " # ")
    (** "**")
    (^ "^")
    (|:| ":")
@@ -78,12 +77,15 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
    (JOIN " JOIN ")
    (EQUATNUM "  ")
    (IQUOTIENT "//")
+;;   (= "=")
    (= "= ")
+;;   (= " = ")
    (|>=| " >= ")
    (|>| " > ")
    (|<=| " <= ")
    (|<| " < ")
    (\| " \| ")
+;;   (+ "+")
    (+ " + ")
    (- " - ")
    (WHERE " WHERE ")
@@ -101,7 +103,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
  )) (MAKEPROP (CAR X) 'PREFIXOP (CADR X)))
 
 (REPEAT (IN X '(
-  (+ WIDTH |sumWidth|)
   (- APP |appneg|)
   (- WIDTH |minusWidth|)
   (/ APP |appfrac|)
@@ -194,8 +195,11 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 
 (REPEAT (IN X '(
   (+ APP |plusApp|)
+  (+ WIDTH |sumWidth|)
   (* APP |timesApp|)
   (* WIDTH |timesWidth|)
+  (TENSOR APP |tensorApp|)
+  (TENSOR WIDTH |tensorWidth|)
   (** APP |exptApp|)
   (** WIDTH |exptWidth|)
   (** SUBSPAN |exptSub|)
@@ -281,7 +285,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|NegativeInteger| . (|<| * 0))
   ))
 
-(FLAG '(* + AND OR PROGN) 'NARY)
+(FLAG '(TENSOR * + AND OR PROGN) 'NARY)
 
 (REPEAT (IN X '(
   (|Record| |mkRecordFunList|)
