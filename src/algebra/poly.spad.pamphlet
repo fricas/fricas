@@ -79,7 +79,12 @@ FreeModuleCategory(R, S):Category == Exports where
         coefficient :(%,S) -> R
           ++ \spad{coefficient(x,s)} returns the coefficient of the basis element s
       -- attributs
-        if R has CommutativeRing then Module(R)
+        if R has CommutativeRing then
+             Module(R)
+             linearExtend:(S->R,%)->R
+          ++ \spad{linearExtend:(f,x)} returns the linear extension
+          ++ of a map defined on the basis applied to a linear combination
+
 
 @
 \section{domain FM FreeModule}
@@ -203,17 +208,23 @@ FreeModule(R:Ring,S:OrderedSet):
        monomial? x ==
          numberOfMonomials x = 1
 
---       listOfTerms        : % -> List Term
-
        listOfTerms(x) ==
 --          (x::Rep)
 --          coerce(x)@Rep
          x pretend Rep
 
-       numberOfMonomials x ==
---         # (x::Rep)
-         # (listOfTerms x)
+       numberOfMonomials x == # (listOfTerms x)
 
+       if R has CommutativeRing then
+           f:S->R
+           x:%
+           t:Term
+           linearExtend(f,x) ==
+               zero? x => 0
+               res:R:= 0
+               for t in listOfTerms x repeat
+                   res := res + (t c)*f(t k)
+               res
 
 
 @
@@ -236,15 +247,16 @@ FreeModuleFunctions2(R:CommutativeRing, S:OrderedSet,M1:FreeModuleCategory(R,S),
     TERM1 ==> Record(k:S, c:R)
 
     public ==> with
-        mapLinear:(S->M2,M1)->M2
-        ++ \spad{mapLinear:(f,x)} returns the linear extension
+        linearExtend:(S->M2,M1)->M2
+        ++ \spad{linearExtend:(f,x)} returns the linear extension
         ++ of a map defined on the basis of M2 applied to a linear combination
 
     private ==> add
         f:S->M2
         x:M1
         t:TERM1
-        mapLinear(f,x) ==
+        linearExtend(f,x) ==
+            zero? x => 0
             res:M2:= 0
             for t in listOfTerms x repeat
                 res := res + (t c)*f(t k)

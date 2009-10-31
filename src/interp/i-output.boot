@@ -494,6 +494,40 @@ mkSuperSub(op,argl) ==
   argl => [superSub,:argl]
   superSub
 
+tensorApp(u,x,y,d) ==
+  rightPrec:= getOpBindingPower("*","Led","right")
+  firstTime:= true
+  for arg in rest u repeat
+    op:= keyp arg
+    if not firstTime then
+      opString:= GETL('TENSOR,"INFIXOP") or '"#"
+      d:= APP(opString,x,y,d)
+      x:= x + #opString
+    [d,x]:= appInfixArg(arg,x,y,d,rightPrec,"left",nil) --app in a right arg
+    wasSimple:= atom arg and not NUMBERP arg or isRationalNumber arg
+    wasQuotient:= isQuotient op
+    wasNumber:= NUMBERP arg
+    lastOp := op
+    firstTime:= nil
+  d
+
+tensorWidth u ==
+  rightPrec:= getOpBindingPower("*","Led","right")
+  firstTime:= true
+  w:= 0
+  for arg in rest u repeat
+    op:= keyp arg
+    if not firstTime then
+      opString:= GETL('TENSOR,"INFIXOP") or '"#"
+      w:= w + #opString
+    if infixArgNeedsParens(arg, rightPrec, "left") then w:= w+2
+    w:= w+WIDTH arg
+    wasSimple:= atom arg and not NUMBERP arg --or isRationalNumber arg
+    wasQuotient:= isQuotient op
+    wasNumber:= NUMBERP arg
+    firstTime:= nil
+  w
+
 timesApp(u,x,y,d) ==
   rightPrec:= getOpBindingPower("*","Led","right")
   firstTime:= true

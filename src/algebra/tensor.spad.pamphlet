@@ -1,0 +1,593 @@
+% -*- mode: Noweb; noweb-code-mode: aldor-mode -*-
+
+\documentclass{article}
+\usepackage{axiom,amsthm,amsmath,url}
+\newtheorem{ToDo}{ToDo}[section]
+\usepackage{a4wide}
+\newcommand{\Axiom}{{\tt Axiom}}
+
+
+\begin{document}
+\title{tensor.spad}
+\author{Waldek Hebisch, Franz Lehner, Bill Page}
+\maketitle
+
+\tableofcontents
+\section{category TENSCAT TensorProductCategory}
+<<category TENSCAT TensorProductCategory>>=
+)abbrev category TENSCAT TensorProductCategory
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
+++ Date Created: 2009
+++ Date Last Updated: 19 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   Category of tensor products of modules over commutative rings.
+TensorProductCategory(R:CommutativeRing, M : Module(R), N : Module(R)):Category == Module(R) with
+    tensor: (M, N) -> %
+      ++ \spad{tensor(x,y)} constructs the tensor product
+      ++ of the elements \spad{x} and \spad{y}.
+@ 
+\section{category TENSPRP TensorProductProperty}
+<<category TENSPRP TensorProductProperty>>=
+)abbrev category TENSPRP TensorProductProperty
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
+++ Date Created: 2009
+++ Date Last Updated: 19 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   Universal property of tensor products.
+TensorProductProperty(R:CommutativeRing, M : Module(R), N : Module(R), _
+      MxN : TensorProductCategory(R, M, N), S : Module(R)): Category == with
+    eval: (MxN, (M, N) -> S) -> S
+      ++ \spad{eval(x,f)} evaluates the bivariate function \spad{f}
+      ++ linearly on the tensor product.
+@
+\section{domain TENSOR TensorProduct}
+Tensor products are universal objects and can only be
+treated in restricted situations.
+For example, both $Z/2$ and $2Z$ are $Z$-modules,
+but their tensor product $Z/2\otimes 2Z$ vanishes.
+
+Here we only allow free modules, where such pathologies do not occur.
+A module $M$ over a ring $R$ is free if it has a basis $(b_i)_{i\in I}$
+such that every element $x\in M$ has a unique decomposition
+$x=\sum r_i b_i$. Given two free modules $M$ and $N$ over the same
+ring $R$ with bases $(b_i)_{i\in I}$ and $(c_j)_{j\in J}$ respectively,
+the tensor product $M\otimes N$ has basis $(b_i\otimes c_j)_{i\in I, j\in J}$.
+Therefore we take the representation of the tensor product to be
+the free module of formal sums over the basis $B\times C$.
+Note that $M$ and $N$ are only required 
+to provide a function [[listOfTerms]] 
+to create the list of terms with respect to the basis on the fly.
+This list is assumed to be in reverse order with respect to the
+order on the monomials.
+
+<<domain TENSOR TensorProduct>>=
+)abbrev domain TENSOR TensorProduct
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
+++ Date Created: 2009
+++ Date Last Updated: 19 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   Tensor product of free modules over a commutative ring.
+++   It is represented as a free module over the direct product
+++   of the respective bases. The factor domains must provide
+++   operations \spad{listOfTerms}, whose result is assumed
+++   to be stored in reverse order.
+TensorProduct(R: CommutativeRing, B1: OrderedSet, B2: OrderedSet, _
+    M1: FreeModuleCategory(R, B1), M2: FreeModuleCategory(R, B2)): TPcat == TPimp where
+    TPcat == Join(TensorProductCategory(R,M1,M2), _ 
+        FreeModuleCategory(R,Product(B1,B2))) with
+            if M1 has Algebra(R) and M2 has Algebra(R) then Algebra(R)
+
+    TERM1 ==> Record(k: B1, c: R)
+    TERM2 ==> Record(k: B2, c: R)
+    B1xB2 ==> Product(B1,B2)
+    TERM  ==> Record(k: B1xB2, c: R)
+
+    TPimp == FreeModule(R, Product(B1, B2)) add
+        import TERM1, TERM2, TERM, B1xB2
+        
+        termgreater?:(TERM,TERM)->Boolean
+        
+        termgreater?(t1: TERM, t2: TERM) == t2.k < t1.k
+        
+        <<TensorProduct - tensor>>
+
+        if M1 has Algebra(R) and M2 has Algebra(R) then 
+            <<TensorProduct - algebra multiplication>>
+	<<TensorProduct - outform>> 
+@
+\subsection{Output}
+
+<<TensorProduct - outform>>=
+coerce(x:%):OutputForm ==
+    zero? x => (0$R) ::OutputForm
+    le: List OutputForm := nil
+    rec: TERM
+    for rec in reverse listOfTerms x repeat
+      ko:OutputForm := tensor((selectfirst rec k)::OutputForm,(selectsecond rec k)::OutputForm)
+      rec.c = 1 => le := cons(ko, le)
+      le := cons(rec.c :: OutputForm * ko, le)
+    reduce("+", le)
+    
+@ 
+\subsection{Creating tensors}
+
+<<TensorProduct - tensor>>=
+tensor(x1:M1,x2:M2):% ==
+    zero? x1 or zero? x2 => return 0
+    ltx1:List TERM1 := listOfTerms x1
+    ltx2:List TERM2 := listOfTerms x2
+    <<TensorProduct - tensor - result construct>>
+
+@
+There are several ways to finish the product,
+a fast one just using concatenation of lists and [[constructOrdered]].
+It relies on the assumption that the terms of the two factors are 
+in reserve order and that the product basis uses lexicographical order.
+
+The following table shows a comparison of speed
+(Debian 4.0 amd64 on \verb|Intel(R) Core(TM)2 Duo CPU T7100 @ 1.80GHz|)
+for tensoring two elements with $n$ terms and different methods
+of finishing the tensor product.
+<<profiling.input>>=
+n:=1000
+
+M:=FreeModule(Integer,Symbol)
+N:=FreeModule(Integer,Symbol)
+MxN:=TensorProduct(Integer,Symbol,Symbol,M,N)
+
+aa:= [subscript('a,[k])::M for k in 1..n];
+bb:= [subscript('b,[k])::N for k in 1..n];
+
+a:=reduce(+,aa);
+b:=reduce(+,bb);
+
+)lisp (require :sb-sprof)
+)lisp (sb-sprof:start-profiling)
+t:=tensor(a,b)$MxN;
+)lisp (sb-sprof:stop-profiling)
+)lisp (sb-sprof:report)
+@ 
+
+We compare the following methods.
+\begin{enumerate}
+\item sum: adding elementary tensors term by term (very slow)
+<<TensorProduct - tensor - result sum>>=
+res : % := 0
+for s1 in ltx1 repeat
+    for s2 in ltx2 repeat
+        res := res + monom(makeprod(s1.k, s2.k), s1.c*s2.c)
+res
+@ 
+\item concat!: append elementary tensors at the end
+<<TensorProduct - tensor - result concat!>>=
+res : List TERM := []
+for s1 in ltx1 repeat
+    for s2 in ltx2 repeat
+        res := concat!(res,[makeprod(s1.k, s2.k), s1.c*s2.c]$TERM)
+res pretend %
+@
+
+\item construct: using [[constructOrdered]] without checking
+if the list of terms is ordered
+<<TensorProduct - tensor - result construct>>=
+res : List TERM := []
+for s1 in reverse ltx1 repeat
+    for s2 in reverse ltx2 repeat
+        res := cons([makeprod(s1.k, s2.k), s1.c*s2.c]$TERM,res)
+constructOrdered res
+@
+\item reverse+sort!: sort the list of terms before committing
+<<TensorProduct - tensor - result sort!>>=
+res : List TERM := []
+for s1 in reverse ltx1 repeat
+    for s2 in reverse ltx2 repeat
+        res := cons([makeprod(s1.k, s2.k), s1.c*s2.c]$TERM,res)
+res:=sort!(termgreater?,res)
+constructOrdered res
+@
+
+\item reverse+sorted?+sort!: only sort the list if it is not sorted
+<<TensorProduct - tensor - result sorted? + sort!>>=
+res : List TERM := []
+for s1 in reverse ltx1 repeat
+    for s2 in reverse ltx2 repeat
+        res := cons([makeprod(s1.k, s2.k), s1.c*s2.c]$TERM,res)
+if not sorted?(termgreater?,res) then
+    res:=sort!(termgreater?,res)
+constructOrdered res
+@
+\end{enumerate}
+The time is measured in seconds.
+\begin{verbatim}
+ n     sum     concat!   construct   reverse+sort!  reverse+sorted?+sort!
+100   17.47      0.25      0.02        0.04             0.02
+200     -        6.06      0.02        0.09             0.02           
+500     -      139.38      0.08        0.56             0.11
+1000    -         -        0.19        2.5              0.38
+\end{verbatim}
+
+For a tensor product of $1000$ times $1000$ terms
+this shows for example that skipping the check
+if the result is in the correct order
+gains a speedup by a factor $2$.
+
+\subsection{Multiplication in the algebra}
+We must reconstruct the elements of the factors. Take all terms,
+extract the coefficients, take the product of the basis elements
+in the algebras and tensorize.
+Again experiments show a large speed gain by pushing
+the sorting of the result to the very end.
+
+<<TensorProduct - algebra multiplication>>=
+(x1:% * x2:%):% ==
+    res : List TERM := empty()
+    for t1 in listOfTerms x1 repeat
+        for t2 in listOfTerms x2 repeat 
+            -- the coefficients
+            t1c:R := t1.c
+            t2c:R := t2.c
+            -- the basis elements
+            t1k:B1xB2 := t1.k
+            t2k:B1xB2 := t2.k
+            t1a: M1 := monomial(t1.c,selectfirst t1k)
+            t1b: M2 := monomial(1,selectsecond t1k)
+            t2a: M1 := monomial(t2.c,selectfirst t2k)
+            t2b: M2 := monomial(1,selectsecond t2k)
+            for t in listOfTerms tensor(t1a*t2a,t1b*t2b) repeat
+                res:=cons(t,res)
+    construct res
+@ 
+
+\section{category TENSPC TensorPowerCategory}
+See comment in DivisionRing() (catdef.spad):
+\begin{verbatim}
+-- Q-algebra is a lie, should be conditional on characteristic 0,
+-- but knownInfo cannot handle the following commented
+--    if % has CharacteristicZero then Algebra Fraction Integer
+\end{verbatim}
+Same here: we want TensorPowerCategory(2,R,M) 
+to be TenworProductCategory(R,M,M),
+but apparently knownInfo cannot handle conditionals in categories.
+<<category TENSPC TensorPowerCategory>>=
+)abbrev category TENSPC TensorPowerCategory
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
+++ Date Created: 2009
+++ Date Last Updated: 19 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   Category of tensor powers of modules over commutative rings.
+TensorPowerCategory(n:NonNegativeInteger, R:CommutativeRing, M : Module(R)):Category == Module(R) with
+        tensor: (List M) -> %
+          ++ \spad{tensor([x1,x2,...,xn])} constructs the tensor
+          ++ product of \spad{x1,x2,...,xn}.
+        if M has Algebra(R) then Algebra(R)    
+-- knownInfo cannot the following commented
+--    if n is 2 then TensorProductCategory(R,M,M)
+-- workaround
+        TensorProductCategory(R,M,M)
+    add
+--    if n is 2 then
+        tensor(a:M,b:M):% == 
+	    --workaround knownInfo bug
+            not n=2 => error "not of order 2!"
+	    tensor [a,b]
+@ 
+
+\section{domain TENSPOW TensorPower}
+We rely on the fact that Vector OrderedSet is an OrderedSet
+with deglex order;
+[[DirectProduct(n,B)]] does \emph{not} have OrderedSet.
+
+<<domain TENSPOW TensorPower>>=
+)abbrev domain TENSPOW TensorPower
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at
+++ Date Created: 2009
+++ Date Last Updated: 19 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   Tensor powers of a free module over a commutative ring.
+++   It is represented as a free module over the cartesian power
+++   of the basis.
+TensorPower(n:NonNegativeInteger, R : CommutativeRing, B : OrderedSet, _
+    M : FreeModuleCategory(R, B)): TPcat == TPimp where
+    TPcat == Join(TensorPowerCategory(n,R,M), FreeModuleCategory(R,Vector(B))) with
+        tensor:List B -> %
+
+    TERM1 ==> Record(k: B, c: R)
+
+    Bn ==> Vector B
+    Bntmp ==> List B
+    TERM  ==> Record(k: Bn, c: R)
+    TERMtmp ==> Record(k:Bntmp, c:R)
+
+    TPimp == FreeModule(R, Bn) add
+        <<TensorPower - out>>
+        <<TensorPower - tensor>>
+
+        if M has Algebra(R) then 
+            <<TensorPower - algebra multiplication>>
+@ 
+
+
+<<TensorPower - out>>=
+coerce(x:%):OutputForm ==
+    zero? x => (0$R) :: OutputForm
+    le : List OutputForm := nil
+    rec:TERM
+    for rec in reverse listOfTerms x repeat
+      ko:OutputForm := reduce(tensor,[b::OutputForm for b in parts rec k])
+      rec.c = 1 => le := cons(ko, le)
+      le := cons(rec.c :: OutputForm * ko, le)
+    reduce("+",le)
+@
+\subsection{Creating tensors}
+
+[[partialTensor(bb,xx)]] computes the tensor product
+of the basis elements [[bb]] with the tensor product
+of the elements of xx. The result is a list of terms
+in non-reversed order.
+In the very end of [[tensor]] this list is reversed.
+This way concatenation of lists is avoided
+(at the cost of some list reversals)
+and also no sorting is required.
+
+
+<<TensorPower - tensor>>=
+partialTensor:(List B,List M)->List TERMtmp
+
+
+partialTensor(bb:List B, xx:List M):List TERMtmp ==
+    res:List TERMtmp
+    x1:M:=first xx
+    xr:List M := rest xx
+    s1:List TERM1
+    tt:List TERMtmp
+    if empty? xr then
+        for s1 in listOfTerms x1 repeat
+	    res:=cons([ cons(s1.k,bb),s1.c], res)
+      else
+        for s1 in listOfTerms x1 repeat
+            for tt in partialTensor(cons(s1.k,bb), xr) repeat
+	        res:=cons([tt k,s1 c*tt c],res)
+    reverse res
+
+tensor(bb:List B):% == monomial(1,vector bb)
+    
+tensor(xx:List M):% ==
+    not size?(xx,n) => error "wrong size"
+    any?(zero?,xx) => 0
+    res:List TERM := []
+    tt:TERMtmp
+    for tt in partialTensor(empty()$(List B), xx) repeat
+        res:=cons([vector reverse tt k, tt c],res)
+    constructOrdered reverse res
+
+@
+
+\subsection{Multiplication in the algebra}
+We must reconstruct the elements of the factors. Take all terms,
+extract the coefficients, take the product of the basis elements
+in the algebras and tensorize.
+<<TensorPower - algebra multiplication>>=
+(x1:% * x2:%):% ==
+    res : List TERM := empty()
+    for t1 in listOfTerms x1 repeat
+        for t2 in listOfTerms x2 repeat 
+            -- the coefficients
+            t1c:R := t1.c
+            t2c:R := t2.c
+            -- the basis elements
+            t1k:Bn := t1.k
+            t2k:Bn := t2.k
+            t1t2:% :=  (t1 c)*(t2 c)*tensor([monomial(1,b1)*monomial(1,b2)_
+                for b1 in parts t1 k for b2 in parts t2 k])
+            for t in listOfTerms t1t2 repeat
+                res:=cons(t,res)
+    construct res
+@ 
+
+\section{domain TENSPO2 TensorPowerFunctions2}
+<<domain TENSPO2 TensorPowerFunctions2>>=
+)abbrev package TENSPO2 TensorPowerFunctions2
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at
+++ Date Created: 2009
+++ Date Last Updated: 13 October 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   linear extensions of maps on the basis
+TensorPowerFunctions2(n:NonNegativeInteger, R:CommutativeRing, B:OrderedSet, M1:FreeModuleCategory(R,B),M2:Module(R)): public == private where
+    TERM1 ==> Record(k:S, c:R) 
+    M1xM1 ==> TensorPower(n,R,B,M1)
+    public ==> with
+        linearExtend:(List B->M2,M1xM1)->M2
+        ++ \spad{linearExtend:(f,x)} returns the linear extension
+        ++ of a multilinear map defined on the basis of M2 applied to a linear combination
+
+    private ==> add
+        f:List B->M2
+        x: M1xM1
+        t: TERM1
+        linearExtend(f,x) ==
+            res:M2:= 0
+            for t in listOfTerms x repeat
+                res := res + (t c)*f(parts t k)
+            res
+
+
+@
+
+\section{category COALG Coalgebra}
+<<category COALG Coalgebra TensorPower>>=
+--Bialgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)) : Category == _
+@ 
+but this is too restrictive and fails with aldor.
+
+<<category COALG Coalgebra>>=
+)abbrev category COALG Coalgebra
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
+++ Date Created: 2009
+++ Date Last Updated: 7 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   A coalgebra A over a ring is an R-module
+++   with a coassociative comultiplication from A
+++   to the tensor product of A with itself
+++   and which possesses a counit.
+Coalgebra(R : CommutativeRing, MxM : Module R) : Category == _
+        Module(R) with
+    coproduct : % -> MxM
+      ++ \spad{coproduct(x)} computes the coproduct of an element \spad{x}
+    counit: % -> R
+      ++ \spad{counit(x)} evaluates the counit at an element \spad{x}
+--Coalgebra(R : CommutativeRing, MxM : TensorPowerCategory(2,R, %)) : Category == _
+
+@
+
+
+\section{category BIALG Bialgebra}
+Originally it was
+<<category BIALG Bialgebra TensorPower>>=
+--Bialgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)) : Category == _
+@ 
+but this is too restrictive and fails with aldor.
+
+
+<<category BIALG Bialgebra>>=
+)abbrev category BIALG Bialgebra
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
+++ Date Created: 2009
+++ Date Last Updated: 7 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   A bialgebra is a coalgebra which at the same time
+++   is an algebra such that the comultiplication is also
+++   an algebra homomorphism.
+++   MxM: Module(R) should be replaced by a more restricted category,
+++   but it is not clear at this point which one.
+
+Bialgebra(R : CommutativeRing, MxM : Module R) : Category == _
+     Join(Algebra(R), Coalgebra(R, MxM))
+
+@
+
+
+\section{category HOPFALG HopfAlgebra}
+Originally it was
+<<category HOPFALG HopfAlgebra TensorPower>>=
+HopfAlgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)) : Category _
+@ 
+but this is too restrictive and fails with aldor.
+
+<<category HOPFALG HopfAlgebra>>=
+)abbrev category HOPFALG HopfAlgebra
+++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
+++ Date Created: 2009
+++ Date Last Updated: 7 June 2009
+++ Fix History: 
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   A Hopf algebra is a bialgebra with antipode.
+HopfAlgebra(R : CommutativeRing, MxM : Module(R)) : Category _
+     == Bialgebra(R, MxM) with
+    antipode : % -> %
+       ++ \spad{antipode(x)} computes the antipode of an element \spad{x}.
+@
+
+
+\section{License}
+<<license>>=
+--Copyright (c) 2009, Franz Lehner <lehner@finanz.math.tu-graz.ac.at>
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+<<*>>=
+<<category TENSCAT TensorProductCategory>>
+<<category TENSPRP TensorProductProperty>>
+<<domain TENSOR TensorProduct>>
+<<category TENSPC TensorPowerCategory>>
+<<domain TENSPOW TensorPower>>
+<<domain TENSPO2 TensorPowerFunctions2>>
+<<category COALG Coalgebra>>
+<<category BIALG Bialgebra>>
+<<category HOPFALG HopfAlgebra>>
+<<license>>
+@
+\end{document}
