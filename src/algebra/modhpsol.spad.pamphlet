@@ -1342,6 +1342,8 @@ ModularHermitePade(): with
        nsols : Integer := m + 1
        oldva : Vector(Integer)
        oldciv : Vector(Integer)
+       empty__offsets : Boolean := true
+       offsets : VI
        repeat
            ok := false
            for k in 1..100 while not(ok) repeat
@@ -1391,7 +1393,7 @@ ModularHermitePade(): with
                oldciv := civ
                rstate := empty(nsols*degs__sum)
                rv := new((nsols::PositiveInteger)*degs__sum, 0)$U32Vector
-
+               empty__offsets := true
            k : Integer := 0
            if positiveRemainder(nprimes, 100) = 0 then
                print("number of primes"::OutputForm)
@@ -1404,13 +1406,18 @@ ModularHermitePade(): with
                        rv(k) := cp(l)
                        k := k + 1
            chinese__update(rv, prime, rstate)
-           pp := rational__reconstruction(rstate)
+           j : Integer
+           if empty__offsets then
+               offsets := new(nsols::NNI, 0)$VI
+               j := 0
+               for i in 1..nsols repeat
+                   offsets(i) := j
+                   j := j + degs__sum
+               empty__offsets := false
+           pp := reconstruct(rstate, offsets)
            pp case "failed" =>
                "iterate"
-           ppr := pp::RR
-           nums := ppr.numers
-           dens := pp.denoms
-           cden := lcm entries dens
+           ppr := pp::PAI
            k := 0
            resv :=  new(nsols::NonNegativeInteger, _
                         empty()$Vector(SparseUnivariatePolynomial Integer) _
@@ -1423,8 +1430,7 @@ ModularHermitePade(): with
                    mm := ve(j)
                    s : SparseUnivariatePolynomial(Integer) := 0
                    for l in 0..mm repeat
-                       cc := nums(k) * ((cden exquo dens(k))::Integer)
-                       s := s + monomial(cc, l_
+                       s := s + monomial(ppr(k), l_
                             )$SparseUnivariatePolynomial(Integer)
                        k := k + 1
                    resvi(j) := s
