@@ -686,7 +686,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $form: local := nil
     $op: local := nil
     $functionStats: local:= [0,0]
-    $argumentConditionList: local := nil
     $finalEnv: local := nil
              --used by ReplaceExitEtc to get a common environment
     $initCapsuleErrorCount: local:= #$semanticErrorStack
@@ -697,7 +696,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $returnMode:= m
     [$op,:argl]:= form
     $form:= [$op,:argl]
-    argl:= stripOffArgumentConditions argl
     $formalArgList:= [:argl,:$formalArgList]
 
     --let target and local signatures help determine modes of arguments
@@ -705,7 +703,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
       identSig:= hasSigInTargetCategory(argl,form,first signature,e) =>
         (e:= checkAndDeclare(argl,form,identSig,e); rest identSig)
       [getArgumentModeOrMoan(a,form,e) for a in argl]
-    argModeList:= stripOffSubdomainConditions(argModeList,argl)
     signature':= [first signature,:argModeList]
     if null identSig then  --make $op a local function
       oldE := put($op,'mode,['Mapping,:signature'],oldE)
@@ -726,7 +723,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $functionLocations := [[[$op,$signatureOfForm],:lineNumber],
       :$functionLocations]
     e:= addDomain(first signature',e)
-    e:= compArgumentConditions e
 
     if $profileCompiler then
       for x in argl for t in rest signature' repeat profileRecord('arguments,x,t)
@@ -765,7 +761,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     catchTag:= MKQ GENSYM()
     fun:=
       body':= replaceExitEtc(T.expr,catchTag,"TAGGEDreturn",$returnMode)
-      body':= addArgumentConditions(body',$op)
       finalBody:= ["CATCH",catchTag,body']
       compileCases([$op,["LAMBDA",[:argl,'_$],finalBody]],oldE)
     $functorStats:= addStats($functorStats,$functionStats)
@@ -852,49 +847,6 @@ getSignature(op,argModeList,$e) ==
   1=#sigl => first sigl
   stackSemanticError(["duplicate signatures for ",op,": ",argModeList],nil)
 
---% ARGUMENT CONDITION CODE
-
-stripOffArgumentConditions argl ==
-  [f for x in argl for i in 1..] where
-    f() ==
-      x is ["|",arg,condition] =>
-        condition := substitute('_#1, arg, condition)
-        -- in case conditions are given in terms of argument names, replace
-        $argumentConditionList:= [[i,arg,condition],:$argumentConditionList]
-        arg
-      x
-
-stripOffSubdomainConditions(margl,argl) ==
-  [f for x in margl for arg in argl for i in 1..] where
-    f ==
-      x is ['SubDomain,marg,condition] =>
-        pair:= assoc(i,$argumentConditionList) =>
-          (RPLAC(CADR pair,MKPF([condition,CADR pair],'AND)); marg)
-        $argumentConditionList:= [[i,arg,condition],:$argumentConditionList]
-        marg
-      x
-
-compArgumentConditions e ==
-  $argumentConditionList:=
-    [f for [n,a,x] in $argumentConditionList] where
-      f ==
-        y:= SUBST(a,'_#1,x)
-        T := [.,.,e]:= compOrCroak(y,$Boolean,e)
-        [n,x,T.expr]
-  e
-
-addArgumentConditions($body,$functionName) ==
-  $argumentConditionList =>
-               --$body is only used in this function
-    fn $argumentConditionList where
-      fn clist ==
-        clist is [[n,untypedCondition,typedCondition],:.] =>
-          ['COND,[typedCondition,fn rest clist],
-            [$true,["argumentDataError",n,
-              MKQ untypedCondition,MKQ $functionName]]]
-        null clist => $body
-        systemErrorHere '"addArgumentConditions"
-  $body
 
 putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
   $elt: local := ($QuickCode => 'QREFELT; 'ELT)
