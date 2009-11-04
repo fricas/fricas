@@ -185,7 +185,6 @@ displayDatabase x == main where
        ABBREVIATION _
        CONSTRUCTORCATEGORY _
        PARENTS _
-       ATTRIBUTES _
        ANCESTORS _
        SOURCEFILE _
        OPERATIONALIST _

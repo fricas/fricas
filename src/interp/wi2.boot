@@ -258,7 +258,6 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     $form: local
     $op: local
     $functionStats: local:= [0,0]
-    $argumentConditionList: local
     $finalEnv: local
              --used by ReplaceExitEtc to get a common environment
     $initCapsuleErrorCount: local:= #$semanticErrorStack
@@ -269,7 +268,6 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     $returnMode:= m
     [$op,:argl]:= form
     $form:= [$op,:argl]
-    argl:= stripOffArgumentConditions argl
     $formalArgList:= [:argl,:$formalArgList]
 
     --let target and local signatures help determine modes of arguments
@@ -277,7 +275,6 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
       identSig:= hasSigInTargetCategory(argl,form,first signature,e) =>
         (e:= checkAndDeclare(argl,form,identSig,e); rest identSig)
       [getArgumentModeOrMoan(a,form,e) for a in argl]
-    argModeList:= stripOffSubdomainConditions(argModeList,argl)
     signature':= [first signature,:argModeList]
     if null identSig then  --make $op a local function
       oldE := put($op,'mode,['Mapping,:signature'],oldE)
@@ -292,7 +289,6 @@ compDefineCapsuleFunction(df,m,oldE,$prefix,$formalArgList) ==
     $functionLocations := [[[$op,$signatureOfForm],:lineNumber],
       :$functionLocations]
     e:= addDomain(first signature',e)
-    e:= compArgumentConditions e
 
     if $profileCompiler then
       for x in argl for t in rest signature' repeat profileRecord('arguments,x,t)
