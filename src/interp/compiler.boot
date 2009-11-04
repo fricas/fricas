@@ -29,6 +29,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+DEFPARAMETER($currentFunctionLevel, 0)
 
 initEnvHashTable(l) ==
   for u in CAR(CAR(l)) repeat
@@ -205,6 +206,8 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   else
       vl:= take(#sl,$FormalMapVariableList)
   ress => ress
+  $returnMode : local := m'
+  $currentFunctionLevel : local := #$exitModeStack
   for m in sl for v in vl repeat
     [.,.,e]:= compMakeDeclaration([":",v,m],$EmptyMode,e)
   old__style and not null vl and not hasFormalMapVariable(x, vl) => return
@@ -215,7 +218,10 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
     extractCodeAndConstructTriple(u, m, oldE)
   [u,.,.]:= comp(x,m',e) or return nil
   (uu := simpleCall(u, vl, m, oldE)) => uu
-  uu:=optimizeFunctionDef [nil,['LAMBDA,vl,u]]
+  catchTag:= MKQ GENSYM()
+  u := replaceExitEtc(u, catchTag, "TAGGEDreturn", $returnMode)
+  u := ["CATCH", catchTag, u]
+  uu := optimizeFunctionDef [nil, ['LAMBDA, vl, u]]
   --  At this point, we have a function that we would like to pass.
   --  Unfortunately, it makes various free variable references outside
   --  itself.  So we build a mini-vector that contains them all, and
@@ -783,8 +789,8 @@ replaceExitEtc(x,tag,opFlag,opMode) ==
       atom x => nil
       x is ["QUOTE",:.] => nil
       x is [ =opFlag,n,t] =>
-        rplac(CAADDR x,replaceExitEtc(CAADDR x,tag,opFlag,opMode))
-        n=0 =>
+        rplac(first t,replaceExitEtc(first t, tag, opFlag, opMode))
+        n = 0 =>
           $finalEnv:=
                   --bound in compSeq1 and compDefineCapsuleFunction
             $finalEnv => intersectionEnvironment($finalEnv,t.env)
@@ -833,16 +839,16 @@ compLeave(["leave",level,x],m,e) ==
 --% return
 
 compReturn(["return",level,x],m,e) ==
-  null $exitModeStack =>
+  ns := #$exitModeStack
+  ns = $currentFunctionLevel =>
     stackSemanticError(["the return before","%b",x,"%d","is unneccessary"],nil)
     nil
   level~=1 => userError '"multi-level returns not supported"
-  index:= MAX(0,#$exitModeStack-1)
-  if index>=0 then $returnMode:= resolve($exitModeStack.index,$returnMode)
+  index := MAX(0, ns - $currentFunctionLevel - 1)
+  $returnMode:= resolve($exitModeStack.index,$returnMode)
   [x',m',e']:= u:= comp(x,$returnMode,e) or return nil
-  if index>=0 then
-    $returnMode:= resolve(m',$returnMode)
-    modifyModeStack(m',index)
+  $returnMode:= resolve(m',$returnMode)
+  modifyModeStack(m',index)
   [["TAGGEDreturn",0,u],m,e']
 
 --% ELT
