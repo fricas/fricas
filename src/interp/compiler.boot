@@ -208,14 +208,18 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   ress => ress
   $returnMode : local := m'
   $currentFunctionLevel : local := #$exitModeStack
-  for m in sl for v in vl repeat
-    [.,.,e]:= compMakeDeclaration([":",v,m],$EmptyMode,e)
-  old__style and not null vl and not hasFormalMapVariable(x, vl) => return
-    [u,.,.] := comp([x,:vl],m',e) or return nil
-    extractCodeAndConstructTriple(u, m, oldE)
-  null vl and (t := comp([x], m', e)) => return
+  old__style and not null vl and not hasFormalMapVariable(x, vl) =>
+      vln := [GENSYM() for v in vl]
+      $formalArgList := [:vln, :$formalArgList]
+      for m in sl for v in vln repeat
+          [.,.,e]:= compMakeDeclaration([":",v,m],$EmptyMode,e)
+      [u,.,.] := comp([x,:vln],m',e) or return nil
+      extractCodeAndConstructTriple(u, m, oldE)
+  null vl and (t := comp([x], m', e)) =>
     [u,.,.] := t
     extractCodeAndConstructTriple(u, m, oldE)
+  for m in sl for v in vl repeat
+      [.,.,e]:= compMakeDeclaration([":",v,m],$EmptyMode,e)
   [u,.,.]:= comp(x,m',e) or return nil
   (uu := simpleCall(u, vl, m, oldE)) => uu
   catchTag:= MKQ GENSYM()
