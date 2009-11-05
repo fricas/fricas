@@ -117,7 +117,7 @@ walkForm(tree) ==
 
 isNiladic(head1) ==
     SYMBOLP head1 => true
-    head1 is [., ["Tuple"]]
+    head1 is [., ["@Tuple"]]
 
 getCon(head1) ==
     SYMBOLP head1 => head1

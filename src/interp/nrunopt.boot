@@ -751,7 +751,7 @@ getExportCategory form ==
   EQSUBSTLIST(argl,$FormalMapVariableList,target)
 
 NRTextendsCategory1(domform,exCategory,addForm) ==
-  addForm is ['Tuple,:r] =>
+  addForm is ["@Tuple", :r] =>
     and/[extendsCategory(domform,exCategory,x) for x in r]
   extendsCategory(domform,exCategory,addForm)
 

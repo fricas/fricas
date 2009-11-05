@@ -317,7 +317,7 @@ foo defined inside of fum gets renamed as fum,foo.")
 
 (defun DEF-IS2 (FORM STRUCT)
   (let ($IS-EQLIST $IS-SPILL_LIST (FORM (DEFTRAN FORM)))
-    (if (EQCAR STRUCT '|Tuple|)
+    (if (EQCAR STRUCT '|@Tuple|)
         (MOAN "you must use square brackets around right arg. to" '%b "is" '%d))
     (let* ((X (DEF-IS-EQLIST (DEF-IS-REMDUP STRUCT)))
            (CODE (if (IDENTP X)

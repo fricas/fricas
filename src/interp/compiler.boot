@@ -160,7 +160,7 @@ argsToSig(args) ==
 compLambda(x is ["+->", vl, body], m, e) ==
     vl is [":", args, target] =>
         args :=
-             args is ["Tuple", :a1] => a1
+             args is ["@Tuple", :a1] => a1
              args
         LISTP(args) =>
              [arg1, sig1] := argsToSig(args)
@@ -192,7 +192,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
          -- In case Boot gets fixed
          ress
       vl :=
-          vl is ["Tuple", :vl1] => vl1
+          vl is ["@Tuple", :vl1] => vl1
           vl
       vl :=
          SYMBOLP(vl) => [vl]
@@ -591,7 +591,7 @@ compSetq1(form,val,m,E) ==
     compSetq(["LET",x,val],m,E')
   form is [op,:l] =>
     op="CONS"  => setqMultiple(uncons form,val,m,E)
-    op="Tuple" => setqMultiple(l,val,m,E)
+    op = "@Tuple" => setqMultiple(l, val, m, E)
     setqSetelt(form,val,m,E)
 
 compMakeDeclaration(x,m,e) ==
@@ -654,7 +654,8 @@ assignError(val,m',form,m) ==
 setqMultiple(nameList,val,m,e) ==
   val is ["CONS",:.] and m=$NoValueMode =>
     setqMultipleExplicit(nameList,uncons val,m,e)
-  val is ["Tuple",:l] and m=$NoValueMode => setqMultipleExplicit(nameList,l,m,e)
+  val is ["@Tuple", :l] and m = $NoValueMode =>
+      setqMultipleExplicit(nameList,l,m,e)
   1 --create a gensym, %add to local environment, compile and assign rhs
   g:= genVariable()
   e:= addBinding(g,nil,e)

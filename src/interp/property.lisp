@@ -355,7 +355,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|==>| |postMDef|)
   (|->| |postMapping|)
   (|=>| |postExit|)
-  (|Tuple| |postTuple|)
+  (|@Tuple| |postTuple|)
 )) (MAKEPROP (CAR X) '|postTran| (CADR X)))
 
 ;; Many of the following are now in COMPAT LISP
