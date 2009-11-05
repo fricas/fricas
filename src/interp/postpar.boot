@@ -39,8 +39,8 @@
 postTransform y ==
   x:= y
   u:= postTran x
-  if u is ['Tuple,:l,[":",y,t]] and (and/[IDENTP x for x in l]) then u:=
-    [":",['LISTOF,:l,y],t]
+  if u is ["@Tuple", :l, [":", y, t]] and (and/[IDENTP x for x in l]) then
+      u := [":", ['LISTOF, :l, y], t]
   postTransformCheck u
   u
 
@@ -118,7 +118,7 @@ postConstruct u ==
   u is ['construct,b] =>
     a:= (b is [",",:.] => comma2Tuple b; b)
     a is ['SEGMENT,p,q] => ['construct,postTranSegment(p,q)]
-    a is ['Tuple,:l] =>
+    a is ["@Tuple", :l] =>
       or/[x is [":",y] for x in l] => postMakeCons l
       or/[x is ['SEGMENT,:.] for x in l] => tuple2List l
       ['construct,:postTranList l]
@@ -156,7 +156,7 @@ postBlockItemList l == [postBlockItem x for x in l]
 
 postBlockItem x ==
   x:= postTran x
-  x is ['Tuple,:l,[":",y,t]] and (and/[IDENTP x for x in l]) =>
+  x is ["@Tuple", :l, [":", y, t]] and (and/[IDENTP x for x in l]) =>
     [":",['LISTOF,:l,y],t]
   x
 
@@ -172,7 +172,7 @@ postCategory (u is ['CATEGORY,:l]) ==
 
 postComma u == postTuple comma2Tuple u
 
-comma2Tuple u == ['Tuple,:postFlatten(u,",")]
+comma2Tuple u == ["@Tuple", :postFlatten(u, ",")]
 
 postDef [defOp,lhs,rhs] ==
 --+
@@ -245,12 +245,12 @@ postForm (u is [op,:argl]) ==
       argl':= postTranList argl
       [op,:argl']
     u:= postTranList u
-    if u is [['Tuple,:.],:.] then
+    if u is [["@Tuple", :.], :.] then
       postError ['"  ",:bright u,
         '"is illegal because tuples cannot be applied!",'%l,
           '"   Did you misuse infix dot?"]
     u
-  x is [.,['Tuple,:y]] => [first x,:y]
+  x is [., ["@Tuple", :y]] => [first x, :y]
   x
 
 postQuote [.,a] == ['QUOTE,a]
@@ -266,7 +266,7 @@ postJoin ['Join,a,:l] ==
   if l is [b] and b is [name,:.] and MEMQ(name,'(ATTRIBUTE SIGNATURE)) then l
     := LIST ['CATEGORY,b]
   al:=
-    a is ['Tuple,:c] => c
+    a is ["@Tuple", :c] => c
     LIST a
   ['Join,:al,:l]
 
@@ -296,7 +296,7 @@ postCollect [constructOp,:m,x] ==
   finish(constructOp,itl,y) where
     finish(op,itl,y) ==
       y is [":",a] => ['REDUCE,'append,0,[op,:itl,a]]
-      y is ['Tuple,:l] =>
+      y is ["@Tuple", :l] =>
         newBody:=
           or/[x is [":",y] for x in l] => postMakeCons l
           or/[x is ['SEGMENT,:.] for x in l] => tuple2List l
@@ -325,7 +325,7 @@ postIn arg ==
 
 postInSeq seq ==
   seq is ['SEGMENT,p,q] => postTranSegment(p,q)
-  seq is ['Tuple,:l] => tuple2List l
+  seq is ["@Tuple", :l] => tuple2List l
   postTran seq
 
 postTranSegment(p,q) == ['SEGMENT,postTran p,(q => postTran q; nil)]
@@ -396,10 +396,8 @@ postType typ ==
   LIST postTran typ
 
 postTuple u ==
-  u is ['Tuple] => u
-  u is ['Tuple,:l,a] => (['Tuple,:postTranList rest u])
---u is ['Tuple,:l,a] => (--a:= postTran a; ['Tuple,:postTranList rest u])
-    --RDJ: don't understand need for above statement that is commented out
+  u is ["@Tuple"] => u
+  u is ["@Tuple", :l, a] => (["@Tuple", :postTranList rest u])
 
 postWhere ["where",a,b] ==
   x:=
@@ -434,7 +432,7 @@ setDefOp f ==
   if $topOp then $defOp:= f else $topOp:= f
 
 unTuple x ==
-  x is ['Tuple,:y] => y
+  x is ["@Tuple", :y] => y
   LIST x
 
 -- Boot only section

@@ -967,7 +967,7 @@ bootStrapError(functorForm,sourceFile) ==
 
 compAdd(['add,$addForm,capsule],m,e) ==
   $bootStrapMode = true =>
-    if $addForm is ['Tuple,:.] then code := nil
+    if $addForm is ["@Tuple", :.] then code := nil
        else [code,m,e]:= comp($addForm,m,e)
     [['COND, _
        ['$bootStrapMode, _
@@ -986,8 +986,8 @@ compAdd(['add,$addForm,capsule],m,e) ==
 --+
     $NRTaddForm := $addForm
     [$addForm,.,e]:=
-      $addForm is ['Tuple,:.] =>
-        $NRTaddForm := ['Tuple,:[NRTgetLocalIndex x for x in rest $addForm]]
+      $addForm is ["@Tuple", :.] =>
+        $NRTaddForm := ["@Tuple", :[NRTgetLocalIndex x for x in rest $addForm]]
         compOrCroak(compTuple2Record $addForm,$EmptyMode,e)
       compOrCroak($addForm,$EmptyMode,e)
   compCapsule(capsule,m,e)
