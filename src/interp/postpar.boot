@@ -77,7 +77,7 @@ postTranList x == [postTran y for y in x]
 
 postBigFloat x ==
   [.,mant, expon] := x
-  $BOOT => FLOAT(mant) * FLOAT(10) ** expon
+  $BOOT => FLOAT(mant) * FLOAT(10)^expon
   eltword := if $InteractiveMode then "$elt" else 'elt
   postTran [[eltword,'(Float),'float],[",",[",",mant,expon],10]]
 

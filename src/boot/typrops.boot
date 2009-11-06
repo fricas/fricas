@@ -56,7 +56,7 @@ shoeKeyWords := [  _
             ['",", "COMMA"], _
             ['";", "SEMICOLON"], _
             ['"*", "TIMES"], _
-            ['"**", "POWER"], _
+            ['"^", "POWER"], _
             ['"/",  "SLASH"], _
             ['"+", "PLUS"], _
             ['"-", "MINUS"], _
@@ -65,7 +65,7 @@ shoeKeyWords := [  _
             ['"<=","LE" ], _
             ['">=","GE" ], _
             ['"=", "SHOEEQ"], _
-            ['"^", "NOT"], _
+            ['"~", "NOT"], _
             ['"~=","SHOENE" ], _
             ['"..","SEG" ], _
             ['"#", "LENGTH"], _
@@ -131,7 +131,7 @@ for i in [      _
         ["AND"  ,"and"], _
         ["OR"   ,"or"], _
         ["SLASH"    ,"/"], _
-        ["POWER"   ,"**"], _
+        ["POWER"   ,"^"], _
         ["MINUS"    ,"-"], _
         ["LT"    ,"<"], _
         ["GT"    ,">"], _

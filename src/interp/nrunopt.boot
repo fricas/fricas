@@ -238,7 +238,7 @@ makePredicateBitVector pl ==   --called by buildFunctor
 
 augmentPredCode(n,lastPl) ==
   ['LIST,:pl] := mungeAddGensyms(lastPl,$predGensymAlist)
-  delta := 2 ** n
+  delta := 2^n
   l := [(u := MKPF([x,['augmentPredVector,$,delta]],'AND);
          delta:=2 * delta; u) for x in pl]
 
@@ -300,7 +300,7 @@ buildBitTable(:l) == fn(REVERSE l,0) where fn(l,n) ==
   if QCAR l then n := n + 1
   fn(rest l,n)
 
-buildPredVector(init,n,l) == fn(init,2 ** n,l) where fn(acc,n,l) ==
+buildPredVector(init, n, l) == fn(init, 2^n, l) where fn(acc, n, l) ==
   null l => acc
   if CAR l then acc := acc + n
   fn(acc,n + n,rest l)
