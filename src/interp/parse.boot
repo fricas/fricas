@@ -119,8 +119,6 @@ parseConstruct u ==
   l:= parseTranList u
   ["construct",:l]
 
-parseUpArrow u ==  parseTran ["**",:u]
-
 parseLeftArrow u == parseTran ["LET",:u]
 
 parseIs [a,b] == ["is",parseTran a,transIs parseTran b]

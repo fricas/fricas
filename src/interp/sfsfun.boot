@@ -90,7 +90,7 @@ lnrgammaRatapprox(x) ==
        (x-.5)*LOG(x) - x + LOG(SQRT(2.0*dfPi)) + phiRatapprox(x)
 
 phiRatapprox(x) ==
-        arg := 1/(x**2)
+        arg := 1/(x^2)
         p := horner([.0666629070402007526,_
                      .6450730291289920251389,_
                      .670827838343321349614617,_
@@ -131,7 +131,7 @@ gammaRatapprox (x) ==
                           FloatError ('"Gamma undefined for non-positive integers: ~D",x)
                           result := nangenericcomplex ()
                         else
-                          result := Pi/(gammaRatapprox(1.0-x)*(-1.0)**(intpartx+1)*SIN(restx*Pi))
+                          result := Pi/(gammaRatapprox(1.0-x)*(-1.0)^(intpartx+1)*SIN(restx*Pi))
         result
 
 gammaRatkernel(x) ==
@@ -210,7 +210,7 @@ logH(z1,z2,z) ==
         piz2 := dfPi*z2
         twopiz2 := 2.0*piz2
         i := COMPLEX(0.0,1.0)
-        part2 := EXP(twopiz2)*(2.0*SIN(piz1bar)**2 + SIN(2.0*piz1bar)*i)
+        part2 := EXP(twopiz2)*(2.0*SIN(piz1bar)^2 + SIN(2.0*piz1bar)*i)
         part1 := -TANH(piz2)*(1.0+EXP(twopiz2))
 --- part1 is another way of saying 1 - exp(2*Pi*z1bar)
         LOG(part1+part2)
@@ -273,7 +273,7 @@ $PsiAsymptoticBern := VECTOR(0.0, 0.1666666666666667, -0.03333333333333333, 0.02
 
 
 PsiAsymptotic(n,x) ==
-        xn := x**n
+        xn := x^n
         xnp1 := xn*x
         xsq := x*x
         xterm := xsq
@@ -294,7 +294,7 @@ PsiEps(n,x) ==
         then
                 result := -LOG(x)
         else
-                result :=  1.0/(float(n)*(x**n))
+                result :=  1.0/(float(n)*(x^n))
         result
 
 PsiAsymptoticOrder(n,x,nterms) ==
@@ -302,7 +302,7 @@ PsiAsymptoticOrder(n,x,nterms) ==
         xterm := 1.0
         np1 := n+1
         for k in 0..nterms repeat
-                xterm := (x+float(k))**np1
+                xterm := (x+float(k))^np1
                 sum := sum + 1.0/xterm
         sum
 
@@ -314,18 +314,18 @@ rPsi(n,x) ==
                 then FloatError('"singularity encountered at ~D",x)
                 else
                         m := MOD(n,2)
-                        sign := (-1)**m
+                        sign := (-1)^m
                         if fracpart(x)=.5
                         then
                                 skipit := 1
                         else
                                 skipit := 0
-                        sign*((dfPi**(n+1))*cotdiffeval(n,dfPi*(-x),skipit) + rPsi(n,1.0-x))
+                        sign*((dfPi^(n+1))*cotdiffeval(n,dfPi*(-x),skipit) + rPsi(n,1.0-x))
         else if n=0
         then
                 - rPsiW(n,x)
         else
-                rgamma(float(n+1))*rPsiW(n,x)*(-1)**MOD(n+1,2)
+                rgamma(float(n+1))*rPsiW(n,x)*(-1)^MOD(n+1,2)
 
 ---Amos' w function, with w(0,x) picked to be -psi(x) for x>0
 rPsiW(n,x) ==
@@ -334,7 +334,7 @@ rPsiW(n,x) ==
                 HardError('"rPsiW not implemented for negative n or non-positive x")
         nd := 6         -- magic number for number of digits in a word?
         alpha := 3.5 + .40*nd
-        beta := 0.21 + (.008677e-3)*(nd-3) + (.0006038e-4)*(nd-3)**2
+        beta := 0.21 + (.008677e-3)*(nd-3) + (.0006038e-4)*(nd-3)^2
         xmin := float(FLOOR(alpha + beta*n) + 1)
         if n>0
         then
@@ -363,7 +363,7 @@ PsiBack(n,x,xmin) ==
         result := PsiAsymptotic(n,x0+xmin+1.0)
         for k in xmin..xintpart by -1 repeat
 --- Why not decrement from x?   See Amos p. 498
-                result := result + 1.0/((x0 + float(k))**(n+1))
+                result := result + 1.0/((x0 + float(k))^(n+1))
         result
 
 
@@ -378,7 +378,7 @@ PsiIntpart(x) ==
 
 ---Code for computation of derivatives of cot(z), necessary for
 --- polygamma reflection formula.  If you want to compute n-th derivatives of
----cot(Pi*x), you have to multiply the result of cotdiffeval by Pi**n.
+---cot(Pi*x), you have to multiply the result of cotdiffeval by Pi^n.
 
 -- MCD: This is defined at the Lisp Level.
 -- COT(z) ==
@@ -407,7 +407,7 @@ cotdiffeval(n,z,skipit) ==
                         SETF(AREF(a,k), t1+t2)
         --- evaluate d^N/dX^N cot(z) via Horner-like rule
         v := COT(z)
-        sq := v**2
+        sq := v^2
         s := AREF(a,n+1)
         for i in (n-1)..0 by -2 repeat
                 s := s*sq + AREF(a,i)
@@ -454,16 +454,16 @@ cPsi(n,z) ==
                 m := CEILING(SQRT(bound*bound - y*y) - x + 1.0)
                 result := COMPLEX(0.0,0.0)
                 for k in 0..(m-1) repeat
-                        result := result + 1.0/((z + float(k))**(n+1))
+                        result := result + 1.0/((z + float(k))^(n+1))
                 return PsiXotic(n,result+PsiAsymptotic(n,z+m))
 
 PsiXotic(n,result) ==
-        rgamma(float(n+1))*(-1)**MOD(n+1,2)*result
+        rgamma(float(n+1))*(-1)^MOD(n+1,2)*result
 
 cpsireflect(n,z) ==
         m := MOD(n,2)
-        sign := (-1)**m
-        sign*dfPi**(n+1)*cotdiffeval(n,dfPi*z,0) + cPsi(n,1.0-z)
+        sign := (-1)^m
+        sign*dfPi^(n+1)*cotdiffeval(n,dfPi*z,0) + cPsi(n,1.0-z)
 
 --- c parameter to 0F1, possibly complex
 --- z argument to 0F1
@@ -556,9 +556,9 @@ f01(c,z)==
 ---             c1 := c-1.0
 ---             p := PHASE(c)
 ---             if ABS(c)>10.0*ABS(t) and p>=0.0 and PHASE(c)<.90*dfPi
----             then BesselJAsymptOrder(c1,2*t)*cgamma(c/(t**(c1)))
+---             then BesselJAsymptOrder(c1,2*t)*cgamma(c/(t^(c1)))
 ---             else if ABS(t)>10.0*ABS(c) and ABS(t)>50.0
----             then BesselJAsympt(c1,2*t)*cgamma(c/(t**(c1)))
+---             then BesselJAsympt(c1,2*t)*cgamma(c/(t^(c1)))
 ---             else
 ---                     FloatError('"0F1 not implemented for ~S",[c,z])
         else if (10.0*ABS(c)>ABS(z)) and ABS(c)<1.0E4 and ABS(z)<1.0E4
@@ -842,13 +842,13 @@ BesselIBackRecur(largev,argm,v,z,type,n) ==
 
 ---Asymptotic functions for large values of z.  See p. 204 Luke 1969 vol. 1.
 
---- mu is 4*v**2
---- zsqr is z**2
---- zfth is z**4
+--- mu is 4*v^2
+--- zsqr is z^2
+--- zfth is z^4
 
 BesselasymptA(mu,zsqr,zfth) ==
         (mu -1)/(16.0*zsqr) * (1 + (mu - 13.0)/(8.0*zsqr) + _
-                (mu**2 - 53.0*mu + 412.0)/(48.0*zfth))
+                (mu^2 - 53.0*mu + 412.0)/(48.0*zfth))
 
 BesselasymptB(mu,z,zsqr,zfth) ==
         musqr := mu*mu
@@ -876,13 +876,13 @@ BesselIAsympt(v,z,n) ==
         then return EXPT(i,v)*BesselJ(v,-IMAGPART(z))
         sum1 := 0.0
         sum2 := 0.0
-        fourvsq := 4.0*v**2
+        fourvsq := 4.0*v^2
         two := 2.0
         eight := 8.0
         term1 := 1.0
 ---             sum1, sum2, fourvsq,two,i,eight,term1])
         for r in 1..n repeat
-                term1 := -term1 *(fourvsq-(two*float(r)-1.0)**2)/_
+                term1 := -term1 *(fourvsq-(two*float(r)-1.0)^2)/_
                         (float(r)*eight*z)
                 sum1 := sum1 + term1
                 sum2 := sum2 + ABS(term1)
@@ -960,10 +960,10 @@ BesselKAsymptOrder (v,vz) ==
         opzsqroh := SQRT(1.0+z*z)
         eta := opzsqroh + LOG(z/(1.0+opzsqroh))
         p := 1.0/opzsqroh
-        p2 := p**2
-        p4 := p2**2
+        p2 := p^2
+        p4 := p2^2
         u0p := 1.
-        u1p := (1.0/8.0*p-5.0/24.0*p**3)*(-1.0)
+        u1p := (1.0/8.0*p-5.0/24.0*p^3)*(-1.0)
         u2p := (9.0/128.0+(-77.0/192.0+385.0/1152.0*p2)*p2)*p2
         u3p := ((75.0/1024.0+(-4563.0/5120.0+(17017.0/9216.0-85085.0/82944.0*p2)_
                 *p2)*p2)*p2*p)*(-1.0)
