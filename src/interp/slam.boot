@@ -98,7 +98,7 @@ reportFunctionCompilation(op,nam,argl,body,isRecursive) ==
     mkCacheVec(op,cacheName,cacheType,cacheResetCode,cacheCountCode)
   $e:= put(nam,'cacheInfo, cacheVector,$e)
   eval cacheResetCode
-  SETANDFILE(cacheName,mkCircularAlist cacheCount)
+  SET(cacheName,mkCircularAlist cacheCount)
   nam
 
 getCacheCount fn ==

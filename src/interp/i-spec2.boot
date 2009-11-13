@@ -1126,12 +1126,10 @@ copyHack(env) ==
 -- Creates the function names of the special function handlers and puts
 --  them on the property list of the function name
 
-EVALANDFILEACTQ
- (
-   for name in $specialOps repeat
+
+for name in $specialOps repeat
     (
       functionName:=INTERNL('up,name) ;
       MAKEPROP(name,'up,functionName) ;
       functionName
      )
-  )

@@ -656,17 +656,17 @@ setqMultiple(nameList,val,m,e) ==
     setqMultipleExplicit(nameList,uncons val,m,e)
   val is ["@Tuple", :l] and m = $NoValueMode =>
       setqMultipleExplicit(nameList,l,m,e)
-  1 --create a gensym, %add to local environment, compile and assign rhs
+  -- 1 create a gensym, add to local environment, compile and assign rhs
   g:= genVariable()
   e:= addBinding(g,nil,e)
   T:= [.,m1,.]:= compSetq1(g,val,$EmptyMode,e) or return nil
   e:= put(g,"mode",m1,e)
   [x,m',e]:= convert(T,m) or return nil
-  1.1 --exit if result is a list
+  -- 1.1 exit if result is a list
   m1 is ["List",D] =>
     for y in nameList repeat e:= put(y,"value",[genSomeVariable(),D,$noEnv],e)
     convert([["PROGN",x,["LET",nameList,g],g],m',e],m)
-  2 --verify that the #nameList = number of parts of right-hand-side
+  -- 2 verify that the #nameList = number of parts of right-hand-side
   selectorModePairs:=
                                                 --list of modes
     decompose(m1,#nameList,e) or return nil where
@@ -677,7 +677,7 @@ setqMultiple(nameList,val,m,e) ==
         stackMessage ["no multiple assigns to mode: ",t]
   #nameList~=#selectorModePairs =>
     stackMessage [val," must decompose into ",#nameList," components"]
-  3 --generate code; return
+  -- 3 generate code; return
   assignList:=
     [([.,.,e]:= compSetq1(x,["elt",g,y],z,e) or return "failed").expr
       for x in nameList for [y,:z] in selectorModePairs]

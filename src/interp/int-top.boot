@@ -183,9 +183,6 @@ setCurrentLine s ==
      RPLACD(LASTNODE(v), u)
      v
 
-
-ncSetCurrentLine c == setCurrentLine(c)
-
 intloopReadConsole(b, n)==
     ioHook("startReadLine")
     a:= serverReadLine(_*STANDARD_-INPUT_*)

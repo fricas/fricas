@@ -366,11 +366,10 @@ optEQ u ==
     u
   u
 
-EVALANDFILEACTQ
- (
-   for x in '( (call         optCall) _
+
+for x in '( (call         optCall) _
               (SEQ          optSEQ)_
-              (EQ optEQ)
+              (EQ           optEQ)_
               (MINUS        optMINUS)_
               (QSMINUS      optQSMINUS)_
               (_-           opt_-)_
@@ -384,5 +383,3 @@ EVALANDFILEACTQ
               (SETRECORDELT optSETRECORDELT)_
               (RECORDCOPY   optRECORDCOPY)) _
       repeat MAKEPROP(CAR x,'OPTIMIZE, CADR x)
-          --much quicker to call functions if they have an SBC
-    )

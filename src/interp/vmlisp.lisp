@@ -94,9 +94,6 @@
      `(let ((,xx ,x))
        (and (consp ,xx) (,test (qcar ,xx) ,y)))))))
 
-(defmacro evalandfileactq (name &optional (form name))
- `(eval-when (eval load) ,form))
-
 (defmacro exit (&rest value)
  `(return-from seq ,@value))
 
