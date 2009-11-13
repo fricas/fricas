@@ -31,10 +31,6 @@
 
 
 getOperationAlistFromLisplib x ==
-  -- used to be in clammed.boot. Moved on 1/24/94
-  NRTgetOperationAlistFromLisplib x
-
-NRTgetOperationAlistFromLisplib x ==
   u := GETDATABASE(x, 'OPERATIONALIST)
 --  u := removeZeroOneDestructively u
   null u => u          -- this can happen for Object

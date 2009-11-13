@@ -690,4 +690,4 @@ SETANDFILEQ($setOptions,'(
 
 SETANDFILEQ($setOptionNames, [x.0 for x in $setOptions])
 
-EVALANDFILEACTQ (initializeSetVariables $setOptions)
+initializeSetVariables $setOptions
