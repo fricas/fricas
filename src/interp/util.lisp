@@ -454,6 +454,8 @@ After this function is called the image is clean and can be saved.
 
 (defun interpsys-ecl-image-init (spad)
      (format *standard-output* "Starting interpsys~%")
+     #+:ecl (if (fboundp 'ext:trap-fpe) (ext:trap-fpe T T))
+     #+:ecl (if (boundp SI:*BREAK-ENABLE*) (setf SI:*BREAK-ENABLE* t))
      (initroot spad)
      (setf spad $spadroot)
      (format *standard-output* "spad = ~s~%" spad)
