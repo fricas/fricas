@@ -51,11 +51,11 @@
 
 (defun |rMkIstream| (file)
   (let ((stream nil)
-        (fullname (make-input-filename file 'NIL)))
+        (fullname (make-input-filename file NIL)))
                (setq stream (get-input-index-stream fullname))
                (if (null stream)
                    (ERROR (format nil "Library ~s doesn't exist"
-                              (make-filename file 'NIL))))
+                              (make-filename file NIL))))
                (make-libstream :mode 'input  :dirname fullname
                                :indextable (get-index-table-from-stream stream)
                                :indexstream stream)))
@@ -63,7 +63,7 @@
 (defun |rMkOstream| (file)
   (let ((stream nil)
         (indextable nil)
-        (fullname (make-full-namestring file 'NIL)))
+        (fullname (make-full-namestring file NIL)))
                (case (file-kind fullname)
                      (-1 (makedir fullname))
                      (0 (error (format nil "~s is an existing file, not a library" fullname)))
@@ -152,7 +152,7 @@
 ;; (RKEYIDS filearg) -- interned version of keys
 (defun rkeyids (&rest filearg)
   (mapcar #'intern (mapcar #'car (getindextable
-                                  (make-input-filename filearg 'NIL)))))
+                                  (make-input-filename filearg NIL)))))
 ;;(defun rkeyids (&rest filearg)
 ;;  (mapcar #'intern (mapcar #'car (getindextable
 ;;                                (make-input-filename filearg 'LISPLIB)))))
