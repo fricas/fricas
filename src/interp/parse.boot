@@ -160,18 +160,6 @@ parseColon u ==
       [":",parseTran x,parseTran parseType typ]
     [":",parseTran x,parseTran typ]
 
-parseBigelt [typ,consForm] ==
-  [['elt,typ,'makeRecord],:transUnCons consForm]
-
-transUnCons u ==
-  atom u => systemErrorHere '"transUnCons"
-  u is ["APPEND",x,y] =>
-    null y => x
-    systemErrorHere '"transUnCons"
-  u is ["CONS",x,y] =>
-    atom y => [x,:y]
-    [x,:transUnCons y]
-
 parseCoerce [x,typ] ==
   $InteractiveMode => ["::",parseTran x,parseTran parseType typ]
   ["::",parseTran x,parseTran typ]
@@ -269,13 +257,6 @@ parseTranCheckForRecord(x,op) ==
       postError ['"   Constructor",:bright x,'"has missing label"]
     x
   x
-
-parseCases [expr,ifClause] ==
-  casefn(expr,ifClause) where
-    casefn(x,ifExpr) ==
-      ifExpr='noBranch => ['ifClauseError,x]
-      ifExpr is ['IF,a,b,c] => ['IF,parseTran a,parseTran b,casefn(x,c)]
-      postError ['"   CASES format error: cases ",x," of ",ifExpr]
 
 parseCategory x ==
   l:= parseTranList x

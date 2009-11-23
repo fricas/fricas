@@ -320,10 +320,7 @@ compExpression(x,m,e) ==
 compAtom(x,m,e) ==
   T:= compAtomWithModemap(x,m,e,get(x,"modemap",e)) => T
   x="nil" =>
-    T:=
-      modeIsAggregateOf('List,m,e) is [.,R]=> compList(x,['List,R],e)
-      modeIsAggregateOf('Vector,m,e) is [.,R]=> compVector(x,['Vector,R],e)
-    T => convert(T,m)
+    BREAK()
   t:=
     isSymbol x =>
       compSymbol(x,m,e) or return nil
@@ -561,24 +558,6 @@ substituteIntoFunctorModemap(argl,modemap is [[dc,:sig],:.],e) ==
   nil
 
 --% SPECIAL EVALUATION FUNCTIONS
-
---% CONS
-
-compCons(form,m,e) == compCons1(form,m,e) or compForm(form,m,e)
-
-compCons1(["CONS",x,y],m,e) ==
-  [x,mx,e]:= comp(x,$EmptyMode,e) or return nil
-  null y => convert([["LIST",x],["List",mx],e],m)
-  yt:= [y,my,e]:= comp(y,$EmptyMode,e) or return nil
-  T:=
-    my is ["List",m',:.] =>
-      mr:= ["List",resolve(m',mx) or return nil]
-      yt':= convert(yt,mr) or return nil
-      [x,.,e]:= convert([x,mx,yt'.env],CADR mr) or return nil
-      yt'.expr is ["LIST",:.] => [["LIST",x,:rest yt'.expr],mr,e]
-      [["CONS",x,yt'.expr],mr,e]
-    [["CONS",x,y],["Pair",mx,my],e]
-  convert(T,m)
 
 --% SETQ
 

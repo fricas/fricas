@@ -35,7 +35,7 @@
 
 ;; browser stuff:
 (defvar |$standard| 't)
-(defvar |$saturn| 'nil)
+(defvar |$saturn| nil)
 
 (defun CATCHALL (a &rest b) a) ;; not correct but ok for now
 (defvar |$demoFlag| nil)
