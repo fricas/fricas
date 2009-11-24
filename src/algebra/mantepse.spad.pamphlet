@@ -777,6 +777,31 @@ Section~\ref{sec:Hermite-Pade}.
 \subsection{general utilities}
 
 <<implementation: Guess - Utilities>>=
+getVariables(lF: List F): List EXPRR ==
+    lvar: List Symbol := []
+            
+    if S has variables: S -> List Symbol then
+        if F is S then
+            ll: List List Symbol 
+               := map((f: S): (List Symbol) +-> 
+                          variables(f)$S, lF pretend List S)
+                     $ListFunctions2(S, List Symbol)
+        
+        else if F is Fraction S then
+            ll: List List Symbol
+               :=  map((g: F): (List Symbol) +-> 
+                           setUnion(variables(numer(g)$Fraction(S)), 
+                                    variables(denom(g)$Fraction(S))), lF)
+                      $ListFunctions2(F, List Symbol)
+	
+        else error "Guess: type parameter F should be either equal to S or equal _
+                    to Fraction S"
+
+        lvar := reduce((a:List Symbol, b:List Symbol):List Symbol +-> setUnion(a,b), ll)
+    else lvar := []
+        
+    map((mys: Symbol): EXPRR +-> mys::EXPRR, lvar)$ListFunctions2(Symbol, EXPRR)
+
 checkResult(res: EXPRR, n: Symbol, l: Integer, list: List F): NNI ==
     for i in l..1 by -1 repeat
         den := eval(denominator res, n::EXPRR, (i-1)::EXPRR)
@@ -2887,9 +2912,9 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
 wrapInterpolant(o: NNI,
                 resi: List SUP S,
                 exprList: List EXPRR,
-                initials: List EXPRR,
+		initials: List F,
                 D: HPSPEC,
-                dummy: Symbol, op: BasicOperator, options: LGOPT)
+                op: BasicOperator, options: LGOPT)
                : Union(EXPRR, "failed") ==
 
 @
@@ -2963,36 +2988,35 @@ proposed linear combination vanishes.  When the first coefficient that does not
 vanish contains the transcendental element we accept the linear combination as
 a solution.
 
-\begin{ToDo}
-  Finally, it seems that we have found a solution.  We do not want to cancel
-  the greatest common divisor of the equation, but only the greatest common
-  divisor of the coefficients of the solution.  If [[S]] is a [[Field]], we
-  normalize the leading coefficient of the first polynomial.
+Finally, it seems that we have found a solution.  We do not want to cancel the
+greatest common divisor of the equation, but only the greatest common divisor
+of the coefficients of the solution.  If [[S]] is a [[Field]], we normalize the
+leading coefficient of the first polynomial.
 
-  This is now done already in [[guessInterpolateFFFG]].  The modular solver
-  should not produce factors, although it currently does.
-\end{ToDo}
+This is now done already in [[guessInterpolateFFFG]].  The modular solver
+should not produce factors.
 
 <<implementation: Guess - testInterpolant>>=
--- transform each term into an expression
-
-    ex: List EXPRR := [makeEXPRR(D.AX, dummy, SUPS2SUPF p, e) _
-                       for p in resi for e in exprList]
-
--- transform the list of expressions into a sum of expressions
-
-    res: EXPRR
     if displayAsGF(options)$GOPT0 then
-        evalADE(op, dummy, variableName(options)$GOPT0::EXPRR,
-                indexName(options)$GOPT0::EXPRR,
+        ex: List EXPRR
+           := [makeEXPRR(D.AX, variableName(options)$GOPT0, SUPS2SUPF p, e) _
+               for p in resi for e in exprList]    
+
+        makeFEq(op, variableName(options)$GOPT0, 
+                indexName(options)$GOPT0,
                 numerator reduce(_+, ex),
-                reverse initials)
+                getVariables initials, 
+		map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
                $RecurrenceOperator(Integer, EXPRR)
     else
-        evalRec(op, dummy, indexName(options)$GOPT0::EXPRR,
-                indexName(options)$GOPT0::EXPRR,
+        ex: List EXPRR
+           := [makeEXPRR(D.AX, indexName(options)$GOPT0, SUPS2SUPF p, e) _
+               for p in resi for e in exprList]    
+
+        makeRec(op, indexName(options)$GOPT0,
                 numerator reduce(_+, ex),
-                reverse initials)
+                getVariables initials, 
+		map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
                $RecurrenceOperator(Integer, EXPRR)
 
 @
@@ -3020,13 +3044,14 @@ recursively.  In this case, [[listDegree]] equals zero.
     if listDegree < 0 then return reslist
 
     op := operator functionName(options)$GOPT0
-    x := variableName(options)$GOPT0
-    dummy := new$Symbol
-
-    initials: List EXPRR := [coerce(e)@EXPRR for e in list]
 
     degreeS := D.degreeStream
-    exprS   := (D.exprStream)(op(dummy::EXPRR)::EXPRR, dummy)
+    if displayAsGF(options)$GOPT0 then
+        exprS := (D.exprStream)(op((variableName(options)$GOPT0)::EXPRR), 
+                                variableName(options)$GOPT0)
+    else
+        exprS := (D.exprStream)(op((indexName(options)$GOPT0)::EXPRR), 
+                                indexName(options)$GOPT0)
 @
 
 We call the number of terms [[o]] of the linear combination its \emph{order}.
@@ -3110,8 +3135,8 @@ lists of partitions are closed under inclusion.
                 for i in 1..ncols M repeat
                     res := wrapInterpolant(o, entries column(M, i),
                                            exprList,
-                                           initials,
-                                           D, dummy, op, options)
+					   list,
+                                           D, op, options)
 
                     if not ((res case "failed") or member?(res, reslist))
                     then reslist := cons(res, reslist)
