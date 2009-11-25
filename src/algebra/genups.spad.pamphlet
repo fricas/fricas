@@ -114,9 +114,14 @@ GenerateUnivariatePowerSeries(R,FE): Exports == Implementation where
     genStream(f,n) == delay concat(f(n),genStream(f,n + 1))
 
     genFiniteStream: (I -> FE,I,I) -> ST FE
-    genFiniteStream(f,n,m) == delay
-      n > m => empty()
-      concat(f(n),genFiniteStream(f,n + 1,m))
+    genFiniteStream0 : (I -> FE, I, I) -> ST FE
+    genFiniteStream(f, n, m) ==
+        n > m => empty()
+        genFiniteStream0(f, n, m)
+    genFiniteStream0(f, n, m) == delay
+        -- make sure tail is explicitly empty
+        n = m => concat(f(n), empty())
+        concat(f(n), genFiniteStream0(f, n + 1, m))
 
     taylor(f,eq) ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>

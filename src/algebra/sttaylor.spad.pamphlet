@@ -198,11 +198,6 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
 
     -y == map(z +-> -z, y)
 
-    (x:ST A) * (y:ST A) == delay
-      empty? y => zro()
-      empty? x => zro()
-      concat(frst x * frst y,frst x * rst y + rst x * y)
-
     (s:A) * (x:ST A) ==
       zero? s => zro()
       map(z +-> s*z, x)
@@ -270,6 +265,47 @@ StreamTaylorSeriesOperations(A): Exports == Implementation where
     integers z == generate(y +-> y + 1, z)
     oddintegers z == generate(y +-> y + 2, z)
     int s == generate(y +-> y + 1, s)
+
+--% multiplication
+
+    stmult(n0 : Integer, x0 : ST A, y0 : ST A, _
+           ll0 : List A) : ST A == delay
+        x := x0
+        y := y0
+        n := n0
+        ll := ll0
+        if empty? y then
+             n < 0 => return empty()
+             empty? x => return empty()
+             x := rst x
+        else
+             c := frst y
+             y := rst y
+             if n < 0 and c = 0 then
+                 return concat(0, stmult(n, x, y, ll))
+             else
+                 ll := cons(c, ll)
+                 n := n + 1
+        res : A := 0
+        xp := x
+        llp := ll
+        for i in 0..n repeat
+            empty? xp =>
+                i = 0 => return empty()
+                break
+            res := res + frst xp * first(llp)
+            llp := rest(llp)
+            xp := rst xp
+        -- make sure that when we multiply finite streams
+        -- tail is explicitly empty
+        explicitlyEmpty? rst x and
+          explicitlyEmpty? y => concat(res, empty())
+        concat(res, stmult(n, x, y, ll))
+
+    (x : ST A) * (y : ST A) == delay
+        empty? y => zro()
+        empty? x => zro()
+        stmult(-1, x, y, [])
 
 --% derivatives
 
