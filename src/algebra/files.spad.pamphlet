@@ -66,7 +66,12 @@ FileCategory(Name, S): Category == FCdefinition where
           ++ The state of f is modified so subsequents call to \spad{write!}
           ++ will append one after another.
 
+        flush: % -> Void
+            ++ flush(f) make sure that buffered data in written out to
+            ++ the operating system.
+
 @
+
 \section{domain FILE File}
 <<domain FILE File>>=
 )abbrev domain FILE File
@@ -149,7 +154,12 @@ File(S:SetCategory): FileCategory(FileName, S) with
             TERPRI(f.fileState)$Lisp
             x
 
+        flush f ==
+            f.fileIOmode ~= "output" => error "File not in write state"
+            FORCE_-OUTPUT(f.fileState)$Lisp
+
 @
+
 \section{domain TEXTFILE TextFile}
 <<domain TEXTFILE TextFile>>=
 )abbrev domain TEXTFILE TextFile
