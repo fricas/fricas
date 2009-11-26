@@ -20,6 +20,7 @@
 #-:cmu
 (defun set-initial-parameters()
     (setf *print-circle* t)
+    (setf *compile-print* nil)
     (setf *read-default-float-format* 'double-float))
 
 #+:cmu
