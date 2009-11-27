@@ -62,6 +62,7 @@ ComplexCategory(R:CommutativeRing): Category ==
          polarCoordinates: % -> Record(r:R, phi:R)
            ++ polarCoordinates(x) returns (r, phi) such that x = r * exp(%i * phi).
      if R has IntegerNumberSystem then
+       UniqueFactorizationDomain
        rational?    : % -> Boolean
          ++ rational?(x) tests if x is a rational number.
        rational     : % -> Fraction Integer
@@ -97,6 +98,7 @@ ComplexCategory(R:CommutativeRing): Category ==
              --!gcdPolynomial(pp,qq) == modularGcd(pp,qq)$TT
              solveLinearPolynomialEquation(lp:List Sup,p:Sup) ==
                solveLinearPolynomialEquation(lp,p)$ComplexIntegerSolveLinearPolynomialEquation(R,%)
+
           normPolynomial: Sup -> SupR
           normPolynomial pp ==
               map(retract@(%->R), pp * map(conjugate,pp))
@@ -122,6 +124,24 @@ ComplexCategory(R:CommutativeRing): Category ==
                   lF:=cons(["irred",p2,1],lF)
                   pp:=(pp exquo p2)::Sup
               makeFR(pp,lF)
+
+       if R has IntegerNumberSystem then
+
+           factor x ==
+               y: Complex Integer := complex(convert(real x)@Integer,
+                                             convert(imag x)@Integer)
+               z: Factored Complex Integer :=
+                     factor(y)$GaussianFactorizationPackage
+               map(f +-> complex(real(f)::R, imag(f)::R),
+                   z)$FactoredFunctions2(Complex Integer, %)
+
+           squareFree x == factor x
+
+           prime? x ==
+               y: Complex Integer := complex(convert(real x)@Integer,
+                                             convert(imag x)@Integer)
+               prime?(y)$GaussianFactorizationPackage
+
        rank()           == 2
        discriminant()   == -4 :: R
        norm x           == real(x)^2 + imag(x)^2
