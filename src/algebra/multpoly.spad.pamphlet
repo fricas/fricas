@@ -133,6 +133,8 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
     --D := F(%) replaced by next line until compiler support completed
 
     --representations
+    -- Used in SparsePolynomialCoercionHelpers and InnerModularHermitePade
+    -- (search for SmpRep)
       D := SparseUnivariatePolynomial(%)
       VPoly:=  Record(v:VarSet,ts:D)
       Rep:=  Union(R,VPoly)
@@ -677,6 +679,91 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 --           PSimp(p1.v, gcd(p1.ts, p2.ts))
 
 @
+
+<<package SMPCOER SparsePolynomialCoercionHelpers>>=
+
+)abbrev package SMPCOER SparsePolynomialCoercionHelpers
+
+SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
+                                VarSet2: OrderedSet): _
+  with 
+    remap_variables: (SparseMultivariatePolynomial(R, VarSet1), List VarSet1, _
+              List VarSet2) -> _
+             SparseMultivariatePolynomial(R, VarSet2)
+       ++ remap_variables(p, lv1, lv2) replaces corresponding variables
+       ++ from l1 by variables from lv2.  Assumes that 
+       ++ lv1 and lv2 have the same length and that p has
+       ++ variables in lv1.
+  == add
+
+    MP1 ==> SparseMultivariatePolynomial(R, VarSet1)
+    MP2 ==> SparseMultivariatePolynomial(R, VarSet2)
+
+    SmpTerm1 ==> Record(k : NonNegativeInteger, c : MP1)
+    VPoly1 ==>  Record(v: VarSet1, ts: List SmpTerm1)
+    SmpRep1 ==>  Union(R, VPoly1)
+
+    SmpTerm2 ==> Record(k : NonNegativeInteger, c : MP2)
+    VPoly2 ==>  Record(v: VarSet2, ts: List SmpTerm2)
+    SmpRep2 ==>  Union(R, VPoly2)
+
+    LV1 ==> List VarSet1
+    LV2 ==> List VarSet2
+
+    convert__sorted(p1 : SmpRep1, lv1 : LV1, lv2 : LV2) : SmpRep2 ==
+        p1 case R => (p1 :: R)
+        empty?(lv1) => error "p has variable not in lv1"
+        v1 : VarSet1 := p1.v
+        v2 := first(lv2)
+        lv2 := rest(lv2)
+        v1 ~= first(lv1) => return convert__sorted(p1, rest(lv1), lv2)
+        lv1 := rest(lv1)
+        pu1 : List SmpTerm1 := p1.ts
+        pu2 : List SmpTerm2 := []
+        p2 : SmpRep2
+        for t0 in pu1 repeat
+            t1 := t0.c pretend SmpRep1
+            p2 :=
+                t1 case R => t1
+                convert__sorted(t1, lv1, lv2)
+            pu2 := cons([t0.k, p2 pretend MP2], pu2)
+        [v2, reverse!(pu2)]
+        
+    LIFT ==> PolynomialCategoryLifting(IndexedExponents VarSet1, _
+               VarSet1, R, MP1, MP2)
+
+    PLR ==> Record(elt1 : VarSet1, elt2 : VarSet2)
+    LPLR ==> List PLR
+
+    PLR2 ==> Record(elt1 : VarSet1, elt2 : MP2)
+    LPLR2 ==> List PLR2
+
+    find_var(x : VarSet1, pl : LPLR2) : MP2 ==
+       for y in pl repeat
+           if x = y.elt1 then return y.elt2
+       error "Impossible"
+
+    remap_variables(p, lv1, lv2) ==
+        n := #lv1
+        n ~= #lv2 => error "lv1 and lv2 have different lengths"
+        if not(sorted?(lv1)) then
+            pl : LPLR := 
+               [[el1, el2] for el1 in lv1 for el2 in lv2]
+            pl := sort((x : PLR, y : PLR) _
+                          : Boolean +-> x.elt1 < y.elt1, pl)
+            lv1 := [x.elt1 for x in pl]
+            lv2 := [x.elt2 for x in pl]
+        not(sorted?(lv2)) =>
+            -- Must use slow general case
+            pl2 : LPLR2 := [[el1, monomial(1, el2, 1)$MP2] _
+                              for el1 in lv1 for el2 in lv2]
+            map(z +-> find_var(z, pl2), x +-> x::MP2, p)$LIFT
+        lv1 := reverse(lv1)
+        lv2 := reverse(lv2)
+        convert__sorted(p pretend SmpRep1, lv1, lv2) pretend MP2
+
+@
+
 \section{domain INDE IndexedExponents}
 <<domain INDE IndexedExponents>>=
 )abbrev domain INDE IndexedExponents
