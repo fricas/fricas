@@ -603,7 +603,7 @@ InnerModularHermitePade: with
                        sigma : NonNegativeInteger, _
                        pts : PA, _
                        prime : Integer, kind : Symbol) : List Any ==
-        kind = 'diffHP or kind = qdiffHP =>
+        kind = 'diffHP or kind = 'qdiffHP =>
             naiveBeckermannLabahn(gv, ve, sigma, prime)$MS
         kind = 'shiftHP or kind = 'qshiftHP or kind = 'qmixed =>
             naiveBeckermannLabahnMultipoint(gv, ve, pts, prime)$MS
@@ -614,17 +614,55 @@ InnerModularHermitePade: with
                        pts : PA, _
                        prime : Integer, kind : Symbol) _
                       : Union(NBR, "no__solution") ==
-        blr := do__modular__solve0(gv, ve, sigma, pts, prime, kind)
+        m0 := #ve
+        m1 := 0
+        for i in 1..m0 repeat
+            if ve(i) >= 0 then
+                m1 := m1 + 1
+        if m1 < m0 then
+            ngv := new(m1, empty()$PA)$VPA
+            nve := new(m1, 0)$VI
+            j := 1
+            for i in 1..m0 repeat
+                if ve(i) >= 0 then
+                    ngv(j) := gv(i)
+                    nve(j) := ve(i)
+                    j := j + 1
+        else
+            ngv := gv
+            nve := ve
+        blr := do__modular__solve0(ngv, nve, sigma, pts, prime, kind)
         dva := blr(3)
         va := retract(dva)$AnyFunctions1(Vector Integer)
         ok := false
-        m := #va
-        for i in 1..m repeat
+        m2 := #va
+        for i in 1..m2 repeat
             ok := ok or va(i) >= 0
         not(ok) => return "no__solution"
         dbm := blr(1)
         bm := retract(dbm)$AnyFunctions1(Vector PA)
-        return reduceBasis(bm, ve, va, prime)$MS
+        res := reduceBasis(bm, nve, va, prime)$MS
+        if m1 < m0 then
+            bas := res.basis
+            nr := nrows(bas)
+            nbas := new(nr, m0, empty()$PA)$MPA
+            j := 1
+            for i in 1..m0 repeat
+                if ve(i) >= 0 then
+                    for k in 1..nr repeat
+                        qsetelt!(nbas, k, i, qelt(bas, k, j))
+                    j := j + 1
+            res.basis := nbas
+            for k in 1..nr repeat
+                cindk := (res.cinds)(k)
+                j := 1
+                for i in 1..m0 repeat
+                    if ve(i) >= 0 then
+                        if j = cindk then
+                            (res.cinds)(k) := i
+                            break
+                        j := j + 1
+        res
 
     compute__blocks(offsets : VI, rowlen : Integer, nsols : Integer) : VI ==
         block__offsets := new(nsols pretend NonNegativeInteger, 0)$VI
@@ -1165,25 +1203,25 @@ GEN ==> (U32Vector, Integer, Integer) -> Vector U32Vector
 CHKR ==> Union("good", "reject", "no__solution")
 SUP ==> SparseUnivariatePolynomial
 ModularHermitePade(): with
-   HP__solve__I : (List Fraction(Integer), List NNI, Symbol, NNI, _
+   HP__solve__I : (List Fraction(Integer), List Integer, Symbol, NNI, _
                    GEN, (List SUP Integer) -> CHKR) -> Union(MPI, Boolean)
      ++ implements  HP__solve over integers.
 
-   HP__solve__A : (List AlgebraicNumber, List NNI, Symbol, NNI, GEN, _
+   HP__solve__A : (List AlgebraicNumber, List Integer, Symbol, NNI, GEN, _
                     (List SUP AlgebraicNumber) -> CHKR) -> Union(MPAN, Boolean)
      ++ Fake solver over algebraic numbers.
 
-   HP__solve__P : (List Fraction(MP), List NNI, Symbol, Symbol, NNI, GEN,
+   HP__solve__P : (List Fraction(MP), List Integer, Symbol, Symbol, NNI, GEN,
                     (List SUP MP) -> CHKR) -> Union(MPPI, Boolean)
      ++ implements  HP__solve over integer polynomials.
 
-   HP__solve__PA : (List Fraction(Polynomial(AlgebraicNumber)), List NNI, _
+   HP__solve__PA : (List Fraction(Polynomial(AlgebraicNumber)), List Integer, _
                       Symbol, Symbol, NNI, GEN,
                      ((List SUP Polynomial(AlgebraicNumber))) -> CHKR) _
                     -> Union(MPPA, Boolean)
      ++ Fake solver over polynomials having algebraic coefficients.
 
-   HP__solve__M : (List Integer, List NNI, Symbol, Integer, NNI, GEN) _
+   HP__solve__M : (List Integer, List Integer, Symbol, Integer, NNI, GEN) _
                   -> Union(MPI, Boolean)
      ++ implements  HP__solve over $Z_p$ with machine-sized $p$.
 
@@ -1316,13 +1354,13 @@ ModularHermitePade(): with
    RR ==> Record(numers : PrimitiveArray Integer, _
                  denoms : PrimitiveArray Integer)
 
-   HP__solve__I(list : List Fraction(Integer), degs: List NNI, kind: Symbol, _
+   HP__solve__I(list : List Fraction(Integer), degs: List Integer, kind: Symbol, _
                 sigma: NNI, gen: GEN, check : (List SUP Integer) -> CHKR) _
                : Union(MPI, Boolean) ==
        lp := []@List(Integer)
        kind = 'qdiffHP or kind = 'qshiftHP => true
        m := #degs
-       degs__sum := reduce(_+, degs) + m
+       degs__sum := (reduce(_+, degs) + m) pretend NNI
        ve: Vector Integer := vector [d::Integer for d in degs]
        pts :=
            kind = 'diffHP => empty()$PA
@@ -1515,7 +1553,7 @@ ModularHermitePade(): with
    LPI__to__LPPI(lp : List SUP Integer) : List SUP MP ==
        [PI__to__PPI(p) for p in lp]
 
-   trivial__poly__solve(list : List Fraction(MP), degs : List NNI,
+   trivial__poly__solve(list : List Fraction(MP), degs : List Integer,
                         kind : Symbol, sigma : NNI, gen: GEN,
                         check : (List SUP MP) -> CHKR) : Union(MPPI, Boolean) ==
         kind = 'qshiftHP => return true
@@ -1684,7 +1722,7 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
 
     Exports ==>
         with
-            HP__solve : (List F, List NNI, Symbol, Symbol, NNI, GEN, CHKT) _
+            HP__solve : (List F, List Integer, Symbol, Symbol, NNI, GEN, CHKT) _
                          -> Union(MPS, Boolean)
               ++ HP__solve(l, degs, kind, sigma, gen check) finds a sigma
               ++ basis with degree bounds given by degs.  It returns false
