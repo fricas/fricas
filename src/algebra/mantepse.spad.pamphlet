@@ -2700,7 +2700,7 @@ There are three different kinds of checks:
 <<implementation: Guess - guessInterpolate>>=
 import ModularHermitePadeSolver(F, S)
 
-guessInterpolateModular(list: List F, degs: List NNI, _
+guessInterpolateModular(list: List F, degs: List Integer, _
                         o: NNI, degreeLoss : Integer, _
                         guessDegree: NNI, D: HPSPEC, options: LGOPT)
                        : Union(Matrix SUP S, Boolean) ==
@@ -2711,7 +2711,7 @@ The sum of degrees of the coefficient polynomials has to be at most
 correct a priori.
 
 <<implementation: Guess - guessInterpolate>>=
-    sigma: NNI := (guessDegree+safety(options)$GOPT0+o-1)::NNI
+    sigma: NNI := (#list - degreeLoss)::NNI
 
     leadingZeros : Integer := 0
     for el in list while el = 0 repeat
@@ -2752,14 +2752,14 @@ We distribute the parameters as evenly as possible.  Is it better to have
 higher degrees at the end or at the beginning?
 
 <<implementation: Guess - guessInterpolate>>=
-guessInterpolateFFFG(list: List F, degs : List NNI, o: NNI, _
+guessInterpolateFFFG(list: List F, degs : List Integer, o: NNI, _
                      guessDegree: NNI, D: HPSPEC, options: LGOPT)
                     : Matrix SUP S ==
     M: Matrix SUP S
     eta: List NNI
     if allDegrees(options)$GOPT0 then
-        eta := copy(degs)
-        eta(1) := eta(1) + 1
+        eta := [d::NNI for d in degs]
+        eta(1) := (eta(1) + 1)
     else
         if (maxD := maxDegree(options)$GOPT0) case NNI and
            maxD*o < guessDegree then
@@ -2823,15 +2823,16 @@ for all degree vectors with given [[sumEta]] and [[maxEta]].
 <<implementation: Guess - guessInterpolate2>>=
 guessInterpolate3(list: List F, o: NNI, degreeLoss : Integer, _
                   guessDegree: NNI, D: HPSPEC, options: LGOPT, _
-                  vs : Stream List NonNegativeInteger) _
+                  vs : Stream List Integer) _
                  : Stream Matrix SUP S == delay
     explicitlyEmpty? vs or empty? vs => empty()$Stream(Matrix SUP S)
-    M0 := guessInterpolateModular(list, frst vs, o, _
+    degs := frst vs
+    M0 := guessInterpolateModular(list, degs, o, _
                                   degreeLoss, guessDegree, D, options)
     M : Matrix SUP S :=
         M0 case Boolean =>
-            M0::Boolean =>
-                guessInterpolateFFFG(list, frst vs, o, 
+            M0::Boolean and every?(x +-> x >= 0, degs) =>
+                guessInterpolateFFFG(list, degs, o,
                                      guessDegree, D, options)
             return guessInterpolate3(list, o, degreeLoss,
                                      guessDegree, D, options, rst vs)
@@ -2839,19 +2840,23 @@ guessInterpolate3(list: List F, o: NNI, degreeLoss : Integer, _
     concat(M, guessInterpolate3(list, o, degreeLoss,
                                 guessDegree, D, options, rst vs))
 
+listDecr(l : List(NNI)) : List(Integer) ==
+    map(x +-> x - 1, l)$ListFunctions2(NNI, Integer)
+
 guessInterpolate2(list: List F, o: NNI, degreeLoss: Integer, _
                   guessDegree: NNI, D: HPSPEC, options: LGOPT) _
                  : Stream Matrix SUP S ==
-    vs : Stream List NonNegativeInteger
+    vs : Stream List Integer
     vs :=
         allDegrees(options)$GOPT0 =>
             maxD0 := maxDegree(options)$GOPT0
             maxD : NNI :=
                 maxD0 case NNI => maxD0::NNI
-                guessDegree
-            genVectorStream(guessDegree, maxD, o)$FFFG(S, SUP S)
-        concat(empty()$List(NonNegativeInteger),
-               empty()$Stream(List NonNegativeInteger))
+                (guessDegree + o - 2) pretend NNI
+            vs0 := genVectorStream(guessDegree + o, maxD + 1, o)$FFFG(S, SUP S)
+            map(listDecr, vs0)$StreamFunctions2(List NNI, List Integer)
+        concat(empty()$List(Integer),
+               empty()$Stream(List Integer))
     guessInterpolate3(list, o, degreeLoss, guessDegree, D, _
                  options, vs)
 
