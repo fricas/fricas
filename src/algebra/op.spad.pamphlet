@@ -234,11 +234,11 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
       ++ derivative(op) returns the value of the "%diff" property of
       ++ op if it has one, and "failed" otherwise.
     constantOperator: A -> OP
-        ++ constantOperator(a) returns a nullary operator op
-        ++ such that \spad{op()} always evaluate to \spad{a}.
+      ++ constantOperator(a) returns a nullary operator op
+      ++ such that \spad{op()} always evaluate to \spad{a}.
     constantOpIfCan : OP -> Union(A, "failed")
-        ++ constantOpIfCan(op) returns \spad{a} if op is the constant
-        ++ nullary operator always returning \spad{a}, "failed" otherwise.
+      ++ constantOpIfCan(op) returns \spad{a} if op is the constant
+      ++ nullary operator always returning \spad{a}, "failed" otherwise.
 
   Implementation ==> add
 
@@ -271,43 +271,44 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
         derivative(op, [(l1: List(A)): A +-> f first l1]$List(List A -> A))
       error "Operator is not unary"
 
-    if A has OrderedSet then
-      cdisp   : (OutputForm, List OutputForm) -> OutputForm
-      csex    : (InputForm,  List InputForm) -> InputForm
-      eqconst?: (OP, OP) -> Boolean
+    cdisp   : (OutputForm, List OutputForm) -> OutputForm
+    csex    : (InputForm,  List InputForm) -> InputForm
+    eqconst?: (OP, OP) -> Boolean
+    constOp : A -> OP
+
+    cdisp(a, l) == a
+    csex(a, l)  == a
+
+    eqconst?(a, b) ==
+      (va := property(a, CONST)) case "failed" => not has?(b, CONST)
+      ((vb := property(b, CONST)) case None) and
+         ((va::None) pretend A) = ((vb::None) pretend A)
+    opconst:OP
+    if A has Comparable then
       ltconst?: (OP, OP) -> Boolean
-      constOp : A -> OP
-
-      opconst:OP :=
-        comparison(equality(operator('constant, 0), eqconst?),
-                                                               ltconst?)
-
-      cdisp(a, l) == a
-      csex(a, l)  == a
-
-      eqconst?(a, b) ==
-        (va := property(a, CONST)) case "failed" => not has?(b, CONST)
-        ((vb := property(b, CONST)) case None) and
-           ((va::None) pretend A) = ((vb::None) pretend A)
-
       ltconst?(a, b) ==
         (va := property(a, CONST)) case "failed" => has?(b, CONST)
         ((vb := property(b, CONST)) case None) and
-           ((va::None) pretend A) < ((vb::None) pretend A)
+           smaller?((va::None) pretend A,(vb::None) pretend A)
+      opconst :=
+        comparison(equality(operator('constant, 0), eqconst?), ltconst?)
+    else
+      opconst := equality(operator('constant, 0), eqconst?)
 
-      constOp a ==
-        setProperty(display(copy opconst, (l1: List(OutputForm)): OutputForm +-> cdisp(a::OutputForm, l1)),
+    constOp a ==
+      setProperty(display(copy opconst,
+        (l1: List(OutputForm)): OutputForm +-> cdisp(a::OutputForm, l1)),
                                                   CONST, a pretend None)
 
-      constantOpIfCan op ==
-        is?(op, 'constant) and
-          ((u := property(op, CONST)) case None) => (u::None) pretend A
-        "failed"
+    constantOpIfCan op ==
+      is?(op, 'constant) and
+        ((u := property(op, CONST)) case None) => (u::None) pretend A
+      "failed"
 
-      if A has ConvertibleTo InputForm then
-        constantOperator a == input(constOp a,  (l1: List(InputForm)): InputForm +-> csex(convert a, l1))
-      else
-        constantOperator a == constOp a
+    if A has ConvertibleTo InputForm then
+      constantOperator a == input(constOp a,  (l1: List(InputForm)): InputForm +-> csex(convert a, l1))
+    else
+      constantOperator a == constOp a
 
 @
 \section{package COMMONOP CommonOperators}
