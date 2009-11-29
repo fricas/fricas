@@ -2866,6 +2866,99 @@ guessInterpolate2(list: List F, o: NNI, degreeLoss: Integer, _
 
 <<implementation: Guess - testInterpolant>>=
 checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer) -> Union("good", "reject", "no__solution")
+
+precCheck(list : List F, resi : List SUP S,
+           options : LGOPT, sigma : Integer, bad : Boolean) _
+         : Union("good", "reject", "no__solution") ==
+    homp := homogeneous(options)$GOPT0
+    homo : Boolean :=
+                      homp case Boolean => homp
+                      true
+    resv := vector(resi)$Vector(SUP S)
+    m := #resv
+    gl0 := vector(list)$Vector(F)
+    degree__loss : Integer :=
+        homo => m - 1
+        m - 2
+    max__ind := #gl0 - degree__loss - 1
+    svar := create()$SingletonAsOrderedSet
+    j0 : Integer :=
+                    homo => 1
+                    2
+    order : Integer := 0
+    p2 : SUP S
+    F is Fraction(S) =>
+        gl := gl0
+        for i in 0..max__ind repeat
+            res1 : S := 0
+            cden : S := 1
+            si := i::S
+            if not(homo) then
+                res1 := retract(eval(resv(1), svar, si))@S
+            for j in j0..m repeat
+                p2 := resv(j)
+                p2val := retract(eval(p2, svar, si))@S
+                vi := gl(i + j - j0 + 1)
+                vd := denom(vi)
+                pp := gcd(cden, vd)
+                c1 := (cden exquo pp)::S
+                c2 := (vd exquo pp)::S
+                res1 := c2*res1 + p2val*c1*numer(vi)
+                cden := cden*c2
+            res1 ~= 0 =>
+                i < sigma =>
+                    return "no__solution"
+                return "reject"
+        bad => return "reject"
+        for i in 1..degree__loss repeat
+            si := (i + max__ind)::S
+            for j in (m - i)..m repeat
+                p2 := resv(j)
+                p2val := retract(eval(p2, svar, si))@S
+                p2val ~= 0 => return "good"
+            res2 : Fraction(S)  := 0
+            if homo then
+                res2 := (retract(eval(resv(1), svar, si))@S)::Fraction(S)
+            for j in j0..(m - i) repeat
+                p2 := resv(j)
+                p2val := retract(eval(p2, svar, si))@S
+                res2 := res2 + p2val*gl(i + max__ind + j - j0 + 1)
+            res2 ~= 0 => return "reject"
+        return "good"
+    F is S =>
+        gl := gl0 pretend Vector(S)
+        for i in 0..max__ind repeat
+            res1 : S := 0
+            si := i::S
+            if not(homo) then
+                res1 := retract(eval(resv(1), svar, si))@S
+            for j in j0..m repeat
+                p2 := resv(j)
+                p2val := retract(eval(p2, svar, si))@S
+                vi := gl(i + j - j0 + 1)
+                res1 := res1 + p2val*gl(i + j - j0 + 1)
+            res1 ~= 0 =>
+                i < sigma =>
+                    return "no__solution"
+                return "reject"
+        bad => return "reject"
+        for i in 1..degree__loss repeat
+            si := (i + max__ind)::S
+            for j in (m - i)..m repeat
+                p2 := resv(j)
+                p2val := retract(eval(p2, svar, si))@S
+                p2val ~= 0 => return "good"
+            res2 : S  := 0
+            if homo then
+                res2 := retract(eval(resv(1), svar, si))@S
+            for j in j0..(m - i) repeat
+                p2 := resv(j)
+                p2val := retract(eval(p2, svar, si))@S
+                res2 := res2 + p2val*gl(i + max__ind + j - j0 + 1)
+            res2 ~= 0 => return "reject"
+        return "good"
+    error "F must be S or Fraction(S)"
+
 checkInterpolant(list, o, resi, D, options, sigma) ==
 
     nonZeroCoefficient: Integer := 0
@@ -2886,6 +2979,18 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
                     output("list contains non-zero element")
                           $OutputPackage
                 reject__one__term := true
+
+    len := #list
+    maxPow : Integer
+    maxP : Union(PositiveInteger, "arbitrary") :=
+        maxPower(options)$GOPT0
+    if maxP case PositiveInteger then
+        maxPow := maxP
+    else
+        maxPow := len+2
+
+    maxPow = 1 and D.kind = 'shiftHP =>
+        precCheck(list, resi, options, sigma, reject__one__term)
 
     flist: List PositiveInteger := [i::PositiveInteger for i in 1..o | not zero? resi.i]
     testList := ((D.testGen)(flist))(list2UFPSSUPF list)
