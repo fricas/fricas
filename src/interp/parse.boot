@@ -208,7 +208,7 @@ parseHas [x,y] ==
   if $InteractiveMode then
     x:=
       get(x,'value,$CategoryFrame) is [D,m,.]
-        and m in '((Mode) (Domain) (SubDomain (Domain))) => D
+        and m in '((Mode) (Type) (Category)) => D
       parseType x
   mkand [['has,x,u] for u in fn y] where
     mkand x ==
@@ -231,7 +231,7 @@ parseHas [x,y] ==
 
 parseHasRhs u ==   --$InteractiveMode = true
   get(u,'value,$CategoryFrame) is [D,m,.]
-    and m in '((Mode) (Domain) (SubDomain (Domain))) => m
+    and m in '((Mode) (Type) (Category)) => m
   y := abbreviation? u =>
     loadIfNecessary y => [unabbrevAndLoad y]
     BREAK()

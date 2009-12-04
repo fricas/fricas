@@ -250,7 +250,7 @@ upAlgExtension t ==
     throwKeyedMsgCannotCoerceWithValue(objVal T,objMode T,pd)
   sae:= ['SimpleAlgebraicExtension,field,pd,objValUnwrap canonicalAE]
   saeTypeSynonym := INTERN STRCONC('"SAE",STRINGIMAGE a)
-  saeTypeSynonymValue := objNew(sae,'(Domain))
+  saeTypeSynonymValue := objNew(sae,'(Type))
   fun := getFunctionFromDomain('generator,sae,NIL)
   expr:= wrap SPADCALL(fun)
   putHist(saeTypeSynonym,'value,saeTypeSynonymValue,$e)
@@ -1197,7 +1197,7 @@ declareMap(var,mode) ==
 
 getAndEvalConstructorArgument tree ==
   triple := getValue tree
-  objMode triple = '(Domain) => triple
+  objMode triple = '(Type) => triple
   isWrapped objVal(triple) => triple
   isLocalVar objVal triple => compFailure('"   Local variable or parameter used in type")
   objNewWrap(timedEVALFUN objVal(triple), objMode(triple))
@@ -1219,9 +1219,8 @@ isDomainValuedVariable form ==
   IDENTP form and (val := (
     get(form,'value,$InteractiveFrame) or _
     (PAIRP($env) and get(form,'value,$env)) or _
-    (PAIRP($e) and get(form,'value,$e)))) and
-      ((m := objMode(val)) in '((Domain) (SubDomain (Domain)))
-          or categoryForm? m) =>
+    (PAIRP($e) and get(form,'value,$e)))) and _
+      categoryForm?(objMode(val)) =>
         objValUnwrap(val)
   nil
 

@@ -151,7 +151,7 @@ isNameOfType x ==
   $doNotAddEmptyModeIfTrue:local:= true
   (val := get(x,'value,$InteractiveFrame)) and
     (domain := objMode val) and
-      domain in '((Mode) (Domain) (SubDomain (Domain))) => true
+      domain in '((Mode) (Type) (Category)) => true
   y := opOf unabbrev x
   constructor? y
 

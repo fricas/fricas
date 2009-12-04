@@ -1337,7 +1337,7 @@ output(expr,domain) ==
     if $texFormat     then texFormat expr
     if $algebraFormat then mathprintWithNumber expr
     if $mathmlFormat  then mathmlFormat expr
-  categoryForm? domain or domain in '((Mode) (Domain) (SubDomain (Domain))) =>
+  categoryForm? domain or domain = ["Mode"] =>
     if $algebraFormat then
       mathprintWithNumber outputDomainConstructor expr
     if $texFormat     then

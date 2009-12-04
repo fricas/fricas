@@ -261,7 +261,7 @@ bottomUp t ==
     -- If this is a type producing form, then we don't want
     -- to store the representation object in the environment.
     -- Rather, we want to record the reified canonical form.
-    if ms is [m] and (m in '((Mode) (Domain) (SubDomain (Domain))) or isCategoryForm(m,$e))
+    if ms is [m] and (m is ["Mode"] or isCategoryForm(m,$e))
     then putValue(t,objNew(devaluate objValUnwrap getValue t, m))
 
     -- given no target or package calling, force integer constants to
@@ -591,7 +591,7 @@ sayIntelligentMessageAboutOpAvailability(opName, nArgs) ==
   NUMBERP opName => NIL
 
   oo :=  object2Identifier opOf opName
-  if ( oo = "%" ) or ( oo = "Domain" ) or ( domainForm? opName ) then
+  if ( oo = "%" ) or ( domainForm? opName ) then
     opName := "elt"
 
   nAllExposedMmsWithName := #getModemapsFromDatabase(opName, NIL)
@@ -618,8 +618,8 @@ sayIntelligentMessageAboutOpAvailability(opName, nArgs) ==
 bottomUpType(t, type) ==
   mode :=
     if isPartialMode type then '(Mode)
-    else if categoryForm?(type) then '(SubDomain (Domain))
-         else '(Domain)
+    else if categoryForm?(type) then '(Category)
+         else '(Type)
   val:= objNew(type,mode)
   putValue(t,val)
   -- have to fix the following

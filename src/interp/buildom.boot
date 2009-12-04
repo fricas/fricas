@@ -35,7 +35,7 @@
 -- are very cheap to instantiate.
 -- SMW and SCM July 86
 
-SETANDFILEQ($noCategoryDomains, '(Domain Mode SubDomain))
+SETANDFILEQ($noCategoryDomains, '(Mode))
 SETANDFILEQ($nonLisplibDomains,
   APPEND($Primitives,$noCategoryDomains))
 

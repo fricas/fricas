@@ -438,7 +438,7 @@ canCoerce1(t1,t2) ==
   -- the result is NIL if it fails
   t1 = t2 => true
   absolutelyCanCoerceByCheating(t1,t2) or t1 = '(None) or t2 = '(Any) or
-    t1 in '((Mode)  (Domain) (SubDomain (Domain))) =>
+    t1 in '((Mode) (Type) (Category)) =>
       t2 = $OutputForm => true
       NIL
     -- next is for tagged union selectors for the time being
@@ -777,7 +777,7 @@ coerceInteractive(triple,t2) ==
   t2 = '$NoValueMode => objNew(val,t2)
   if t2 is ['SubDomain,x,.] then t2:= x
   -- JHD added category Aug 1996 for BasicMath
-  t1 in '((Category) (Mode) (Domain) (SubDomain (Domain))) =>
+  t1 in '((Category) (Mode) (Type)) =>
     t2 = $OutputForm => objNewWrap(typeToOutputForm(val), t2)
     t2 = '(InputForm) => objNewWrap(typeToInputForm(val), t2)
     NIL
