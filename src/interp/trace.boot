@@ -298,7 +298,7 @@ transTraceItem x ==
   $doNotAddEmptyModeIfTrue: local:=true
   atom x =>
     (value:=get(x,"value",$InteractiveFrame)) and
-      (objMode value in '((Mode) (Domain) (SubDomain (Domain)))) =>
+      (objMode value in '((Mode) (Type) (Category))) =>
         x := objVal value
         (y:= domainToGenvar x) => y
         x

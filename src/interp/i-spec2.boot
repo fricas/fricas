@@ -712,8 +712,8 @@ upLETtype(op,lhs,type) ==
     compFailure ['"   Cannot compile type assignment to",:bright opName]
   mode :=
     if isPartialMode type then '(Mode)
-    else if categoryForm?(type) then '(SubDomain (Domain))
-         else '(Domain)
+    else if categoryForm?(type) then '(Category)
+         else '(Type)
   val:= objNew(type,mode)
   if isLocalVar(opName) then put(opName,'value,val,$env)
   else putHist(opName,'value,val,$e)
@@ -1065,17 +1065,17 @@ uptypeOf form ==
   if VECP arg then transferPropsToNode(getUnname arg,arg)
   if m := isType(arg) then
     m :=
-      categoryForm?(m) => '(SubDomain (Domain))
+      categoryForm?(m) => '(Category)
       isPartialMode m  => '(Mode)
-      '(Domain)
+      '(Type)
   else if not (m := getMode arg) then [m] := bottomUp arg
   t := typeOfType m
   putValue(op, objNew(m,t))
   putModeSet(op,[t])
 
 typeOfType type ==
-  type in '((Mode) (Domain)) => '(SubDomain (Domain))
-  '(Domain)
+  type in '((Mode) (Type)) => '(Category)
+  '(Type)
 
 --% Handler for where
 

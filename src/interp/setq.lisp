@@ -356,7 +356,6 @@
 (SETQ |$BFtag| '|:BF:|)
 (SETQ |$Boolean| '(|Boolean|))
 (SETQ |$Category| '(|Category|))
-(SETQ |$Domain| '(|Domain|))
 (SETQ |$Exit|  '(|Exit|))
 
 (SETQ |$OutputForm| '(|OutputForm|))

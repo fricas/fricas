@@ -103,8 +103,6 @@ selectMms(op,args,$declaredMode) ==
 
   types1 := getOpArgTypes(n,args)
   numArgs := #args
-  member('(SubDomain (Domain)),types1) => NIL
-  member('(Domain),types1) => NIL
   member($EmptyMode,types1) => NIL
 
   tar := getTarget op

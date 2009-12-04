@@ -584,7 +584,7 @@ kisValidType typeForm ==
   $ProcessInteractiveValue: fluid := true
   $noEvalTypeMsg: fluid := true
   CATCH('SPAD__READER, processInteractive(typeForm,nil))
-    is [[h,:.],:t] and member(h,'(Domain SubDomain)) =>
+    is [[h,:.],:t] and member(h,'(Type Category)) =>
       kCheckArgumentNumbers t and t
   false
 
