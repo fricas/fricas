@@ -410,6 +410,9 @@ VectorIntegerReconstructor(): Export == Implementation where
        Rep := Record(cmod : Integer, curj : Integer,  _
                      nmods : Integer, nints : Integer, _
                      ints : PrimitiveArray Integer,
+                     bints : PrimitiveArray Integer,
+                     bcmod : Integer, bnmods : Integer,
+                     nrecs : Integer,
                      numers : PrimitiveArray Integer,
                      denoms : PrimitiveArray Integer)
 
@@ -422,6 +425,7 @@ VectorIntegerReconstructor(): Export == Implementation where
            intvec := new(nint::NonNegativeInteger, _
                           0)$PrimitiveArray(Integer)
            [1, 0, 0, nint, intvec, empty()$PrimitiveArray(Integer), _
+            1, 0, 0, empty()$PrimitiveArray(Integer), _
             empty()$PrimitiveArray(Integer)]$Rep
 
        chinese__update(vec, p, statearg) ==
@@ -439,6 +443,32 @@ VectorIntegerReconstructor(): Export == Implementation where
                ii := intvec(i)
                cor := positiveRemainder(vec(i) - ii, p)
                intvec(i) := positiveRemainder(ii + mpfact*cor, nmp)
+           if state.nmods >= 200 and
+             positiveRemainder(state.nmods, 100) = 0 then
+               state.bnmods := state.nmods
+               empty?(state.bints) =>
+                   state.bints := new(state.nints::NonNegativeInteger, _
+                          0)$PrimitiveArray(Integer)
+                   bintvec := state.bints
+                   for i in 0..(state.nints - 1) repeat
+                       bintvec(i) := intvec(i)
+                       intvec(i) := 0
+                   state.bcmod := nmp
+                   nmp := 1
+               bintvec := state.bints
+               bmp := state.bcmod
+               mpval := positiveRemainder(bmp, nmp)
+               mpcor := modInverse(mpval, nmp)
+               mpfact := mpcor*bmp
+               nbmp := bmp*nmp
+               mpfact := positiveRemainder(mpfact, nbmp)
+               for i in 0..(state.nints - 1) repeat
+                   ii := bintvec(i)
+                   cor := positiveRemainder(intvec(i) - ii, nmp)
+                   bintvec(i) := positiveRemainder(ii + mpfact*cor, nbmp)
+                   intvec(i) := 0
+               state.bcmod := nbmp
+               nmp := 1
            state.cmod := nmp
 
        hensel__update(vec, p, statearg) ==
@@ -470,10 +500,20 @@ VectorIntegerReconstructor(): Export == Implementation where
            [r1, s1]
 
 
-       rational__reconstruction(statearg : %) : Union(RR, "failed") ==
+       rational__reconstruction2(statearg : %, block__offsets : VI) _
+              : Union(RR, "failed") ==
            state := statearg::Rep
            modulus := state.cmod
            intvec := state.ints
+           if state.nmods >= 200 then
+               if state.nmods - state.nrecs < 150 then
+                   state.cmod ~= 1 =>
+                       positiveRemainder(state.nmods, 100) = 0 =>
+                           error "impossible"
+                       return "failed"
+               state.nrecs := state.bnmods
+               modulus := state.bcmod
+               intvec := state.bints
            j0 := state.curj
            bound := approxSqrt(modulus)$IntegerRoots(Integer) quo 10
            bound2 := modulus - bound
@@ -481,6 +521,7 @@ VectorIntegerReconstructor(): Export == Implementation where
            pp := rational__reconstruction(intvec(j0), modulus, bound, bound)
            pp case "failed" => "failed"
            n := state.nints
+           mm := #block__offsets
            if empty?(state.numers) then
                state.numers := new(n::NonNegativeInteger, _
                                    0)$PrimitiveArray(Integer)
@@ -492,10 +533,24 @@ VectorIntegerReconstructor(): Export == Implementation where
            nums(j0) := ppr.num
            dens(j0) := ppr.den
            cden := ppr.den
+           co : Integer := 0
+           cb : Integer := 1
+           for jj in 1..mm repeat
+              ctmp := block__offsets(jj)
+              if ctmp > j0 then
+                  cb := jj
+                  co := ctmp
+                  break
            j := j0
            repeat
                j := j + 1
                if j >= n then j := j - n
+               if j = co and mm > 1 then
+                   cden := 1
+                   cb :=
+                       cb = mm => 1
+                       cb + 1
+                   co := block__offsets(cb)
                j = j0 => return [nums, dens]
                r1 := positiveRemainder(cden*intvec(j), modulus)
                r1 < bound =>
@@ -515,6 +570,9 @@ VectorIntegerReconstructor(): Export == Implementation where
                    return "failed"
                nums(j) := ppr.num
                dens(j) := cden
+
+       rational__reconstruction(statearg : %) : Union(RR, "failed") ==
+           rational__reconstruction2(statearg, new(1, 0)$VI)
 
        lcm(nums : PAI, lo : Integer, hi : Integer) : Integer ==
            res := nums(lo)
@@ -551,7 +609,7 @@ VectorIntegerReconstructor(): Export == Implementation where
 
        reconstruct(statearg : %, block__offsets : VI) : _
                Union(PAI, "failed") ==
-           pp := rational__reconstruction(statearg)
+           pp := rational__reconstruction2(statearg, block__offsets)
            pp case "failed" => return "failed"
            ppr := pp::RR
            remove__denoms(block__offsets, ppr.numers, ppr.denoms)
