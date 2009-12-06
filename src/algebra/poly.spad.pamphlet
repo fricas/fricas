@@ -349,8 +349,9 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
 
        ground?(p): Boolean == empty? p or (empty? rest p and zero? degree p)
 
-       qsetrest!: (Rep, Rep) -> Rep
-       qsetrest!(l: Rep, e: Rep): Rep == RPLACD(l, e)$Lisp
+       -- qsetrest!: (Rep, Rep) -> Rep
+       -- qsetrest!(l: Rep, e: Rep): Rep == RPLACD(l, e)$Lisp
+       qsetrest! ==> RPLACD$Lisp
 
        times!: (R,    %) -> %
        times:  (R, E, %) -> %
@@ -397,10 +398,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
         -- p1 + coef*x^E * p2
         -- `spare' (commented out) is for storage efficiency (not so good for
         -- performance though.
-       addm!(p1:Rep, coef:R, exp: E, p2:Rep): Rep ==
-                --local res, newend, last: Rep
-                res, newcell, endcell: Rep
-                spare: List Rep
+       ADDM_BODY ==>
                 res     := empty()
                 endcell := empty()
                 --spare   := empty()
@@ -445,15 +443,61 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
                                 else
                                         qsetrest!(endcell, newcell)
                                         endcell := newcell
-                if not empty? p1 then  -- then end is const * p1
-                        newcell := p1
-                else  -- then end is (coef, exp) * p2
-                        newcell := times(coef, exp, p2)
-                empty? res => newcell
-                qsetrest!(endcell, newcell)
-                res
+
+       addm!(p1:Rep, coef:R, exp: E, p2:Rep): Rep ==
+           res, newcell, endcell: Rep
+           spare: List Rep
+           ADDM_BODY
+           if not empty? p1 then  -- then end is const * p1
+               newcell := p1
+           else  -- then end is (coef, exp) * p2
+               newcell := times(coef, exp, p2)
+           empty? res => newcell
+           qsetrest!(endcell, newcell)
+           res
+
+       TermS ==>  Record(k : SingleInteger, c : R)
+       RepS ==> List TermS
+
        pomopo! (p1, r, e, p2) ==  addm!(p1, r, e, p2)
-       p1 * p2 ==
+
+       if E is NonNegativeInteger then
+           -- addms! works only for SingleInteger exponents
+           -- but is much faster than general case
+           addms!(pp1 : Rep, coef:R, exp1 : E, pp2 :Rep): Rep ==
+               res, newcell, endcell: RepS
+               spare: List RepS
+               p1 : RepS := pp1 pretend RepS
+               p2 : RepS := pp2 pretend RepS
+               exp : SingleInteger := exp1 pretend SingleInteger
+               ADDM_BODY
+               if not empty? p1 then  -- then end is const * p1
+                   newcell := p1
+               else  -- then end is (coef, exp) * p2
+                   newcell := times(coef, exp pretend NonNegativeInteger,
+                                    p2 pretend Rep) pretend RepS
+               empty? res => newcell pretend Rep
+               qsetrest!(endcell, newcell)
+               res pretend Rep
+
+           p1 * p2 ==
+                xx := p1::Rep
+                empty? xx => p1
+                yy := p2::Rep
+                empty? yy => p2
+                degx := first(xx).k
+                degy := first(yy).k
+                zero? degx => first(xx).c * p2
+                zero? degy => p1 * first(yy).c
+                xx := reverse xx
+                res : Rep := empty()
+                if degx + degy < max()$SingleInteger then
+                    for tx in xx repeat res := addms!(res, tx.c, tx.k, yy)
+                else
+                    for tx in xx repeat res := addm!(res, tx.c, tx.k, yy)
+                res
+       else
+           p1 * p2 ==
                 xx := p1::Rep
                 empty? xx => p1
                 yy := p2::Rep
