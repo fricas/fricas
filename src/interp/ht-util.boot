@@ -451,7 +451,7 @@ doDoitButton(htPage, command) ==
 executeInterpreterCommand command ==
   PRINC command
   TERPRI()
-  ncSetCurrentLine(command)
+  setCurrentLine(command)
   CATCH('SPAD__READER, parseAndInterpret command)
 --  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
   princPrompt()
