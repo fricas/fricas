@@ -301,6 +301,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
 simpleCall(u, vl, m, oldE) ==
     u is ["call", fn, :avl] and avl = vl =>
         if fn is ["applyFun", a] then fn := a
+        fn = "mkRecord" => nil
         [fn,m,oldE]
     nil
 
