@@ -9,7 +9,7 @@
 \begin{abstract}
 \end{abstract}
 \tableofcontents
-\section{domain SUPEXPR SparseUnivariatePolynomialExpressions}
+\section{domain SMPEXPR SparseMultivariatePolynomialExpressions}
 
 This domain is a hack, in some sense. What I'd really like to do -
 automatically - is to provide all operations supported by the coefficient
@@ -17,16 +17,16 @@ domain, as long as the polynomials can be retracted to that domain, i.e., as
 long as they are just constants. I don't see another way to do this,
 unfortunately.
 
-<<domain SUPEXPR SparseUnivariatePolynomialExpressions>>=
-)abb domain SUPEXPR SparseUnivariatePolynomialExpressions
-SparseUnivariatePolynomialExpressions(R: Ring): Exports == Implementation where
+<<domain SMPEXPR SparseMultivariatePolynomialExpressions>>=
+)abb domain SMPEXPR SparseMultivariatePolynomialExpressions
+SparseMultivariatePolynomialExpressions(R: Ring): Exports == Implementation where
 
-    Exports == UnivariatePolynomialCategory R with
+    Exports ==> PolynomialCategory(R, IndexedExponents NonNegativeInteger, NonNegativeInteger) with
 
         if R has TranscendentalFunctionCategory
         then TranscendentalFunctionCategory
 
-    Implementation == SparseUnivariatePolynomial R add
+    Implementation ==> SparseMultivariatePolynomial(R, NonNegativeInteger) add
 
         if R has TranscendentalFunctionCategory then
             log(p: %): % ==
@@ -88,44 +88,23 @@ It uses the method of undetermined coefficients.
 
 <<package UTSSOL TaylorSolve>>=
 )abb package UTSSOL TaylorSolve
-TaylorSolve(F, UTSF, UTSSUPF): Exports == Implementation where
+TaylorSolve(F, UTSF, UTSSMPF): Exports == Implementation where
     F: Field
-    SUP  ==> SparseUnivariatePolynomialExpressions
+    SMPF  ==> SparseMultivariatePolynomialExpressions F
     UTSF: UnivariateTaylorSeriesCategory F
-    UTSSUPF: UnivariateTaylorSeriesCategory SUP F
+    UTSSMPF: UnivariateTaylorSeriesCategory SMPF
     NNI  ==> NonNegativeInteger
 
     Exports == with
-        seriesSolve: (UTSSUPF -> UTSSUPF, List F) -> UTSF
+        seriesSolve: (UTSSMPF -> UTSSMPF, List F) -> UTSF
 
     Implementation == add
 <<implementation: UTSSOL TaylorSolve>>
 @
 
-<<implementation: UTSSOL TaylorSolve>>=
-        seriesSolve(f, l) ==
-            c1 := map((x : F) : SUP F +-> x::(SUP F),
-                      l)$ListFunctions2(F, SUP F)::(Stream SUP F)
-            coeffs: Stream SUP F := concat(c1, generate(monomial(1$F,1$NNI)))
---            coeffs: Stream SUP F := concat(c1, monomial(1$F,1$NNI))
-@
-
-[[coeffs]] is the stream of the already computed coefficients of the solution,
-plus one which is so far undetermined. We store in [[st.2]] the complete stream
-and in [[st.1]] the stream starting with the first coefficient that has
-possibly not yet been computed.
-
-\begin{ToDo}
-  The mathematics is not quite worked out. If [[coeffs]] is initialized as
-  stream with all coefficients set to the \emph{same} transcendental value,
-  and not enough initial values are given, then the missing ones are
-  implicitely assumed to be all identical. It may well happen that a solution
-  is produced, although it is not uniquely determined\dots
-\end{ToDo}
-
-<<implementation: UTSSOL TaylorSolve>>=
-            st: List Stream SUP F := [coeffs, coeffs]
-@
+[[coeffs]] is the stream of coefficients of the solution.  We store in [[st.2]]
+the stream of equations, and in [[st.1]] the stream starting with the first
+coefficient that has possibly not yet been computed.
 
 Consider an arbitrary equation $f\big(x, y(x)\big)=0$. When setting $x=0$, we
 obtain $f\big(0, y(0)\big)=0$. It is not necessarily the case that this
@@ -161,44 +140,84 @@ $y^{\prime\prime}$.
 \end{ToDo}
 
 <<implementation: UTSSOL TaylorSolve>>=
+        seriesSolve(f, l) ==
+            l1 := [e::SMPF for e in l]::Stream SMPF
+            s1: Stream Integer := generate(inc, 0)$Stream(Integer)
+            l2 := map(i +-> monomial(1, monomial(1, i::NNI)
+                                                $IndexedExponents(NNI))
+                            $SMPF, s1)$StreamFunctions2(Integer, SMPF)
+
+            coeffs: Stream SMPF := concat(l1, l2)
+            st: List Stream SMPF := [coeffs, coefficients f series coeffs]
+
             next: () -> F :=
+--                output("enter next")$OutputPackage
+--                output(hconcat("The coefficients are: ", (st.1)::OutputForm))
+--                      $OutputPackage
+--                output(hconcat("The equations are: ", (st.2)::OutputForm))
+--                      $OutputPackage
+
                 nr := st.1
                 res: F
 
-                if ground?(coeff: SUP F := nr.1)$(SUP F)
-@
-%$
+                if ground?(coeff: SMPF := nr.1)$SMPF then
+-- If the next element was already calculated, we can simply return it:
 
-If the next element was already calculated, we can simply return it:
-
-<<implementation: UTSSOL TaylorSolve>>=
-                then
                     res := ground coeff
                     st.1 := rest nr
                 else
-@
 
-Otherwise, we have to find the first non-satisfied relation and solve it. It
-should be linear, or a single non-constant monomial. That is, the solution
-should be unique.
+-- Otherwise, we have to find the first non-satisfied relation and solve it.  It
+-- should be linear, or a single non-constant monomial. That is, the solution
+-- should be unique.
+                    eq: SMPF
+                    while zero?(eq := first(st.2)) repeat st.2 := rest(st.2)
+ 
+                    vars := variables eq
+                    if not member?(retract(coeff)@NNI, vars) then
+                        output(hconcat("The variable is: ", coeff::OutputForm))
+                              $OutputPackage
+                        output(hconcat("The next equations are: ", (st.2)::OutputForm))
+                              $OutputPackage
 
-<<implementation: UTSSOL TaylorSolve>>=
-                    ns := st.2
-                    eqs: Stream SUP F := coefficients f series ns
-                    while zero? first eqs repeat eqs := rest eqs
-                    eq: SUP F := first eqs
-                    if degree eq > 1 then
-                        if monomial? eq then res := 0
+                        if empty? vars then 
+                            error "seriesSolve: there is no solution with the given initial values"
                         else
+                            error "seriesSolve: coefficient does not appear in equation"
+
+                    if not one?(# vars) or degree(eq, first vars) > 1 then
+                        if monomial? eq then 
+                            for var in vars repeat
+                                res := 0
+                                i: Integer := 1
+                                while ground?(nr.i) or (retract(nr.i)@NNI ~= var) repeat 
+                                    i := i+1
+                                nr.i := 0
+                            st.1 := rest nr
+                            st.2 := map(eq +-> eval(eq, vars, _
+                                                    [res for v in vars]::List(F))$SMPF, _
+                                        rest(st.2))
+       
+                        else
+                            output(hconcat("The variable is: ", coeff::OutputForm))
+                                  $OutputPackage
                             output(hconcat("The equation is: ", eq::OutputForm))
                                   $OutputPackage
-                            error "seriesSolve: equation for coefficient not linear"
-                    else res := (-coefficient(eq, 0$NNI)$(SUP F)
-                                 /coefficient(eq, 1$NNI)$(SUP F))
+                            error "seriesSolve: coefficient not uniquely determined"
+                    else
+--                        output(hconcat("The equation is: ", eq::OutputForm))
+--                              $OutputPackage
+ 
+                        res := (-coefficient(eq, monomial(0$NNI, first vars)$IndexedExponents(NNI))$(SMPF)
+                                 /coefficient(eq, monomial(1$NNI, first vars)$IndexedExponents(NNI))$(SMPF))
 
-                    nr.1 := res::SUP F
---                    concat!(st.2, monomial(1$F,1$NNI))
-                    st.1 := rest nr
+                        st.1 := rest nr
+                        st.2 := map(eq +-> eval(eq, first vars, res), rest(st.2))
+--                        output(hconcat("The coefficients are: ", (st.1)::OutputForm))
+--                              $OutputPackage
+--                        output(hconcat("The equations are: ", (st.2)::OutputForm))
+--                              $OutputPackage
+
 
                 res
 
@@ -219,16 +238,16 @@ should be unique.
 
 <<package EXPRSOL ExpressionSolve>>=
 )abb package EXPRSOL ExpressionSolve
-ExpressionSolve(R, F, UTSF, UTSSUPF): Exports == Implementation where
+ExpressionSolve(R, F, UTSF, UTSSMPF): Exports == Implementation where
     R: Join(Comparable, IntegralDomain, ConvertibleTo InputForm)
     F: FunctionSpace R
     UTSF: UnivariateTaylorSeriesCategory F
-    SUP  ==> SparseUnivariatePolynomialExpressions
-    UTSSUPF: UnivariateTaylorSeriesCategory SUP F
+    SMPF ==> SparseMultivariatePolynomialExpressions F
+    UTSSMPF: UnivariateTaylorSeriesCategory SMPF
     OP   ==> BasicOperator
     SY   ==> Symbol
     NNI  ==> NonNegativeInteger
-    MKF ==> MakeBinaryCompiledFunction(F, UTSSUPF, UTSSUPF, UTSSUPF)
+    MKF ==> MakeBinaryCompiledFunction(F, UTSSMPF, UTSSMPF, UTSSMPF)
 
     Exports == with
 
@@ -291,28 +310,35 @@ coefficient ring, since it will complain otherwise.
         seriesSolve(expr, op, sy, l) ==
             ex := replaceDiffs(expr, op, sy)
             f := compiledFunction(ex, name op, sy)$MKF
-            seriesSolve(x +-> f(x, monomial(1,1)$UTSSUPF),
-                        l)$TaylorSolve(F, UTSF, UTSSUPF)
+            seriesSolve(x +-> f(x, monomial(1,1)$UTSSMPF),
+                        l)$TaylorSolve(F, UTSF, UTSSMPF)
 @
 %$
 
-\section{Bugs}
+\section{Tests}
 
-<<inp: seriesSolve>>=
-seriesSolve(sin f x / cos x, f, x, [1])$EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SUPEXPR EXPR INT)
+<<TEST SSOLVE>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "SSOLVE"
+testcase "fractions"
+SSOLVE ==> EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
+USOLVE ==> UTSSOL(EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
+f := operator 'f
+testEquals("coefficient(seriesSolve(s +-> 1/2-s, [])$USOLVE, 0)", "1/2")
+testEquals("coefficient(seriesSolve(1- 2*f x, f, x, [])$SSOLVE, 0)", "1/2")
+testEquals("coefficient(seriesSolve(1/2-f x, f, x, [])$SSOLVE, 0)", "1/2")
+-- failure probably due to missing / in UFPS.
+
+testcase "initial values"
+SSOLVE ==> EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
+USOLVE ==> UTSSOL(EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
+f := operator 'f
+testLibraryError("seriesSolve(s +-> 1/2-s, [1])$USOLVE")
+testLibraryError("seriesSolve(D(f x, x, 2) - f x - 1, f, x, [1])$SSOLVE")
+
+statistics()
 @
-returns
-\begin{verbatim}
-(((0 . 1) 0 . 1) NonNullStream #<compiled-function |STREAM;generate;M$;62!0|> . UNPRINTABLE)
-\end{verbatim}
-
-but
-<<inp: seriesSolve>>=
-U ==> UFPS SUPEXPR EXPR INT
-seriesSolve(s +-> sin s *((cos monomial(1,1)$U)^-1)$U, f, x, [0])$EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SUPEXPR EXPR INT)
-@
-
-works. This is probably due to missing [[/]] in [[UFPS]].
 
 \section{License}
 <<license>>=
@@ -347,7 +373,7 @@ works. This is probably due to missing [[/]] in [[UFPS]].
 <<*>>=
 <<license>>
 
-<<domain SUPEXPR SparseUnivariatePolynomialExpressions>>
+<<domain SMPEXPR SparseMultivariatePolynomialExpressions>>
 
 <<package UTSSOL TaylorSolve>>
 
