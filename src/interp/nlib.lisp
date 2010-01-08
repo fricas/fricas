@@ -397,6 +397,10 @@ do the compile, and then rename the result back to [[code.o]].
 (defun delete-directory (dirname)
   (ext:system (concat "rm -r " dirname)))
 
+#+:lispworks
+(defun delete-directory (dirname)
+  (system:call-system (concatenate 'string "rm -r " dirname)))
+
 (defun $REPLACE (filespec1 filespec2)
     ($erase (setq filespec1 (make-full-namestring filespec1)))
     #-(or :clisp :openmcl :ecl)
@@ -445,6 +449,11 @@ do the compile, and then rename the result back to [[code.o]].
    (makedir name2)
    (OBEY (concat "sh -c 'cp " name1 "/* " name2 "'")))
 
+#+:lispworks
+(defun copy-lib-directory (name1 name2)
+   (makedir name2)
+   (system:call-system (concat "cp " (concat name1 "/*") " " name2)))
+
 #+:GCL
 (defun copy-file (namestring1 namestring2)
   (LISP::system (concat "cp " namestring1 " " namestring2)))
@@ -464,6 +473,10 @@ do the compile, and then rename the result back to [[code.o]].
 #+(or :clisp :ecl)
 (defun copy-file (namestring1 namestring2)
   (OBEY (concat "cp " namestring1 " " namestring2)))
+
+#+:lispworks
+(defun copy-file (namestring1 namestring2)
+  (system:call-system (concat "/bin/cp " namestring1 " " namestring2)))
 
 (defvar vmlisp::$filetype-table
   '((BOOT::LISPLIB . |LILIB|)

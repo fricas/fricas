@@ -123,6 +123,19 @@
                                        :application-class 'fricas-application))
             (CCL::save-application core-image :PREPEND-KERNEL t))
         (quit))
+#+:lispworks
+  (progn
+    ; LispWorks by default loads a siteinit and an init file.
+    ; It complains when saving an image, if init files are already loaded.
+    ; LispWorks can be started with  lispworks -siteinit - -init -  and
+    ; then doesn't load these init files. That would mean changing
+    ; the FriCAS scripts. Here we let LispWorks load the init files,
+    ; but use the undocumented system variable preventing LispWorks
+    ; from presenting an error.
+    (setf SYSTEM::*COMPLAIN-ABOUT-INIT-FILE-LOADED* nil)
+    (if restart
+        (hcl:save-image core-image :restart-function restart)
+      (hcl:save-image core-image)))
 #|
   (let ((ccl-dir (|getEnv| "CCL_DEFAULT_DIRECTORY"))
         (core-fname (concatenate 'string core-image ".image"))
@@ -190,6 +203,10 @@
 #+:ecl
 (defun exit-with-status (s)
     (SI:quit s))
+
+#+:lispworks
+(defun exit-with-status (s)
+  (lispworks:quit :status s))
 
 ;;; #+:poplog
 ;;; (defun quit() (pop11::sysexit))
@@ -261,6 +278,10 @@
 (defun chdir (dir)
    (SI:CHDIR (pad-directory-name dir) t))
 
+#+:lispworks
+(defun chdir (dir)
+  (hcl:change-directory dir))
+
 ;;; Environment access
 
 (defun |getEnv| (var-name)
@@ -270,6 +291,7 @@
   #+:clisp (ext::getenv var-name)
   #+:openmcl (ccl::getenv var-name)
   #+:ecl (si::getenv var-name)
+  #+:lispworks (lispworks:environment-variable var-name)
   )
 
 ;;; Silent loading of files
@@ -481,6 +503,32 @@
 
 )
 
+;; LispWorks FFI interface
+
+#+:lispworks
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(setf *c-type-to-ffi*
+      '((int      :int)
+        (c-string (:reference-pass :ef-mb-string))
+        (double   :double)))
+
+(defun c-args-to-lispworks (arguments)
+  (mapcar (lambda (x) (list (nth 0 x) (c-type-to-ffi (nth 1 x))))
+          arguments))
+
+(defun lispworks-foreign-call (name c-name return-type arguments)
+  (let ((lispworks-args (c-args-to-lispworks arguments))
+        (lispworks-ret (c-type-to-ffi return-type)))
+    `(fli::define-foreign-function (,name ,c-name)
+         ,lispworks-args
+       :result-type ,lispworks-ret)))
+
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+  (lispworks-foreign-call name c-name return-type arguments))
+
+)
+
 ;;;
 ;;; Foreign routines
 ;;;
@@ -675,6 +723,22 @@
         (uffi:convert-from-foreign-string buf)))
 
 )
+
+#+:lispworks
+(progn
+
+(fli:define-foreign-function (sock_get_string_buf_wrapper "sock_get_string_buf")
+    ((purpose :int)
+     (buf :pointer)
+     (len :int))
+  :result-type :void)
+
+(defun |sockGetStringFrom| (purpose)
+  (fli:with-dynamic-foreign-objects
+      ((buf (:ef-mb-string :limit 10000)))
+    (sock_get_string_buf_wrapper purpose buf 10000)
+    (fli:convert-from-foreign-string buf)))
+)
       
 ;;; -------------------------------------------------------
 ;;; File and directory support
@@ -740,6 +804,10 @@
 (defun makedir (fname)
     (ext:make-dir (pad-directory-name (namestring fname))))
 
+#+:lispworks
+(defun makedir (fname)
+    (system:call-system (concatenate 'string "mkdir " fname)))
+
 ;;;
 
 #+:sbcl
@@ -773,7 +841,12 @@
                  (if (ignore-errors (truename fname))
                      0
                      -1)))
-   )
+   #+:lispworks
+   (if filename
+       (if (lispworks:file-directory-p filename)
+           1
+         (if (probe-file filename) 0 -1))
+     -1))
  
 #+:cmu
 (defun get-current-directory ()
@@ -788,6 +861,12 @@
 (defun get-current-directory ()
    (let ((name (namestring (truename "."))))
         (trim-directory-name (subseq name 0 (1- (length name))))))
+
+#+lispworks
+(defun get-current-directory ()
+  (let ((directory (namestring (system:current-directory))))
+    (trim-directory-name directory)))
+
 
 (defun fricas-probe-file (file)
 #|
@@ -808,7 +887,7 @@
              (t nil)))
 #+:cmu (if (unix:unix-file-kind file) (truename file))
 #+:sbcl (if (sbcl-file-kind file) (truename file))
-#+(or :openmcl :ecl) (probe-file file)
+#+(or :openmcl :ecl :lispworks) (probe-file file)
 #+:clisp(let* ((fname (trim-directory-name (namestring file)))
                (dname (pad-directory-name fname)))
                  (or (ignore-errors (truename dname))

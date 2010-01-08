@@ -1078,6 +1078,8 @@
 (defun gcmsg (x))
 #+:ecl
 (defun gcmsg (x))
+#+:lispworks
+(defun gcmsg (x))
 
 #+abcl
 (defun reclaim () (ext::gc))
@@ -1092,7 +1094,7 @@
 #+:GCL
 (defun reclaim () (si::gbc t))
 #+lispworks
-(defun reclaim () (hcl::normal-gc))
+(defun reclaim () )
 #+sbcl
 (defun reclaim () (sb-ext::gc))
 #+openmcl
@@ -1119,7 +1121,7 @@
      (kernel::%function-name func))
     ('t func))))
 
-#+(or :sbcl :clisp :openmcl :ecl)
+#+(or :sbcl :clisp :openmcl :ecl :lispworks)
 (defun BPINAME (func)
   (cond
       ((functionp func)
@@ -1162,6 +1164,10 @@
 #+:ecl
 (defun OBEY (S)
    (ext:system S))
+
+#+:lispworks
+(defun OBEY (S)
+   (system:call-system S))
 
 (defun MAKE-BVEC (n)
  (make-array (list n) :element-type 'bit :initial-element 0))

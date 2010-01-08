@@ -58,6 +58,7 @@ at load time.
   #+:clisp "fas"
   #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
   #+:ecl "fas"
+  #+:lispworks (pathname-type (compile-file-pathname "foo.lisp"))
   )
 
 ;;; The relative directory list specifies a search path for files
@@ -617,7 +618,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
   (in-package "BOOT")
   (initroot)
 #+:GCL (system:gbc-time 0)
-    #+(or :sbcl :clisp :openmcl)
+    #+(or :sbcl :clisp :openmcl :lispworks)
     (if *fricas-load-libspad*
         (let* ((ax-dir (|getEnv| "AXIOM"))
                (spad-lib (concatenate 'string ax-dir "/lib/libspad.so")))
@@ -635,9 +636,11 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                     #+(and :clisp :ffi)
                     (progn
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
-                        (FRICAS-LISP::clisp-init-foreign-calls)))
+                        (FRICAS-LISP::clisp-init-foreign-calls))
+                    #+:lispworks
+                    (fli:register-module spad-lib))
                 (setf $openServerIfTrue nil))))
-    #+(or :GCL (and :clisp :ffi) :sbcl :cmu :openmcl :ecl)
+    #+(or :GCL (and :clisp :ffi) :sbcl :cmu :openmcl :ecl :lispworks)
     (if $openServerIfTrue
         (let ((os (|openServer| $SpadServerName)))
              (format t "openServer result ~S~%" os)

@@ -744,7 +744,9 @@ LP  (COND ((NULL X)
     `(let ((,gi ,fn))
        (the (values t)
 	 (funcall
-	  (the (function ,(make-list (length l) :initial-element t) t)
+          (the #-(or :genera :lispworks)
+                   (function ,(make-list (length l) :initial-element t) t)
+               #+(or :genera :lispworks)function
 	    (car ,gi))
 	  ,@args
 	  (cdr ,gi))))))
