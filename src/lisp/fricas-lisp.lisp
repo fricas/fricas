@@ -113,17 +113,15 @@
      (ext::saveinitmem core-image :executable t :NORC t :QUIET t))
 #+:openmcl
   (let* ((ccl-dir (or *ccl-default-directory*
-                 (|getEnv| "CCL_DEFAULT_DIRECTORY")))
-         (kname (concatenate 'string ccl-dir "/"
-                             (ccl::standard-kernel-name))))
+                 (|getEnv| "CCL_DEFAULT_DIRECTORY"))))
         (setf *ccl-default-directory* ccl-dir)
         (if restart
             (progn
                 (setf *my-toplevel-function* restart)
                 (CCL::save-application core-image
-                                       :PREPEND-KERNEL kname
+                                       :PREPEND-KERNEL t
                                        :application-class 'fricas-application))
-            (CCL::save-application core-image :PREPEND-KERNEL kname))
+            (CCL::save-application core-image :PREPEND-KERNEL t))
         (quit))
 #|
   (let ((ccl-dir (|getEnv| "CCL_DEFAULT_DIRECTORY"))
