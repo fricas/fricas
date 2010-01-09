@@ -34,7 +34,7 @@ ii := integrate(2^x/sqrt(1+4^x), x)
 testEquals("normalize(ii - asinh(2^x)/log(2))", "0") 
 
 testcase "asin complex(1.0,0) (issue #138)"
-testEquals("asin complex(1.0,0)", "pi()$Complex(Float)/2")
+xftestEquals("asin complex(1.0,0)", "pi()$Complex(Float)/2")
 
 testcase "atanh 1.0 (issue #437)"
 testLibraryError("atanh 1.0")
@@ -48,10 +48,22 @@ testIntegrate(f: String, x: String, issue: String): Void ==
     testTrue("not is?(operator first kernels res, 'integral)")
     testEquals("normalize(D(res, " x ") - (" f "))", "0")
 
-testIntegrate("sqrt(1+tan(x)^2)", "x", "#436")
-testIntegrate("1/(-3+v^3)*v/(-4+v^3)^(1/2)", "v", "#360")
+xf1testIntegrate(f: String, x: String, issue: String): Void ==
+    testcaseNoClear("integrate(" f ", " x ") (" issue ")")
+    xftestTrue("(res := integrate(" f ", " x "); true)")
+    testTrue("not is?(operator first kernels res, 'integral)")
+    testEquals("normalize(D(res, " x ") - (" f "))", "0")
+
+xf2testIntegrate(f: String, x: String, issue: String): Void ==
+    testcaseNoClear("integrate(" f ", " x ") (" issue ")")
+    testTrue("(res := integrate(" f ", " x "); true)")
+    xftestTrue("not is?(operator first kernels res, 'integral)")
+    xftestEquals("normalize(D(res, " x ") - (" f "))", "0")
+
+xf1testIntegrate("sqrt(1+tan(x)^2)", "x", "#436")
+xf1testIntegrate("1/(-3+v^3)*v/(-4+v^3)^(1/2)", "v", "#360")
 testIntegrate("log(1-z^3)*(%i*z)^(1/2)", "z", "#440")
-testIntegrate("csc(z)*(1-1/(%i*z)^(1/2))^(1/2)", "z", "#442")
+xf2testIntegrate("csc(z)*(1-1/(%i*z)^(1/2))^(1/2)", "z", "#442")
 
 testIntegrate("asin(x/a)", "x", " ")
 
