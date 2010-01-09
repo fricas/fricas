@@ -94,6 +94,15 @@ UnittestCount(): with
        ++ incFail(s, o) is an internal function that steps the number of
        ++ failed tests and records in- and output.
 
+     incXfPass: (String, List OutputForm) -> Void
+       ++ incXfPass(s, o) is an internal function that steps the number
+       ++ of tests that passed but were expected to fail and records
+       ++ in- and output.
+
+     incXfFail:() -> Void
+       ++ incXfFail() is an internal function that steps the number
+       ++ expected failures.
+
      chkLibraryError: () -> Void
        ++ chkLibraryError is an internal function that steps the number of
        ++ tests.
@@ -102,14 +111,22 @@ UnittestCount(): with
        ++ incLibraryError is an internal function that steps the number of
        ++ failed tests, but not the number of tests.
 
+     xfincLibraryError: (String, List OutputForm) -> Void
+       ++ like incLibraryError, but using expected failures.
+
      incFatal: String -> Void
        ++ incFatal s is an internal function that steps the number of fatal
        ++ tests and records input.
+
+     xfincFatal: String -> Void
+       ++ like incFatal, but for expected failures.
 
      decFatal: () -> Void
        ++ decFatal is an internal function that declares that the preceding
        ++ test did not fail with a fatal error.
 
+     xfdecFatal: () -> Void
+        ++ like decFatal, but for expected failures.
      addWarning: OutputForm -> Void
        ++ addWarning s is an internal function that adds s, together with an
        ++ indication of the current testcase and the current testsuite to the
@@ -131,7 +148,10 @@ UnittestCount(): with
 
      TESTCASE  ==> Record(total: Integer,
                           fail: Integer,
+                          xfail: Integer,
+                          xfpassed: Integer,
                           fatalities: List FATAL,
+                          xpassed_list: List FAILED,
                           failed: List FAILED)
 
      TESTSUITE ==> AssociationList(String, TESTCASE)
@@ -165,7 +185,7 @@ UnittestCount(): with
 
          currentTestcase := s
          insert!([currentTestcase, _
-                  [0, 0, [], []]$TESTCASE]$Record(key: String, entry: TESTCASE), _
+                  [0, 0, 0, 0, [], [], []]$TESTCASE]$Record(key: String, entry: TESTCASE), _
                  tests.currentTestsuite)
 
      testcase s ==
@@ -189,6 +209,15 @@ UnittestCount(): with
 -- number must not be stepped
          cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
 
+     xfincLibraryError(inp, out) ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.xfail := cur.xfail + 1
+
+     incXfFail() ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.xfail := cur.xfail + 1
+         cur.total := cur.total + 1
+
      incFail(inp, out) ==
          cur := tests.currentTestsuite.currentTestcase
          cur.fail := cur.fail + 1
@@ -197,12 +226,24 @@ UnittestCount(): with
          cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
          cur.total := cur.total + 1
 
+     incXfPass(inp, out) ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.xfpassed := cur.xfpassed + 1
+         cur.xpassed_list := cons([cur.total, inp, out]$FAILED,
+                                  cur.xpassed_list)
+         cur.total := cur.total + 1
+
      incFatal inp ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
          cur.fail := cur.fail + 1
          cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
 
+     xfincFatal inp ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total + 1
+         cur.xfail := cur.xfail + 1
+         cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
 
      decFatal() ==
          cur := tests.currentTestsuite.currentTestcase
@@ -210,6 +251,11 @@ UnittestCount(): with
          cur.fail := cur.fail - 1
          cur.fatalities := rest(cur.fatalities)
 
+     xfdecFatal() ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total - 1
+         cur.xfail := cur.xfail - 1
+         cur.fatalities := rest(cur.fatalities)
 
      addWarning s ==
          idx := tests.currentTestsuite.currentTestcase.total
@@ -245,6 +291,12 @@ UnittestCount(): with
                  output(w)$P
 
          output("")$P
+
+         totalTests: Integer := 0
+         failedTests: Integer := 0
+         xfailedTests: Integer := 0
+         xfpassedTests: Integer := 0         
+
          for tstsuite in reverse parts(tests)_
                              @List Record(key: String, entry: TESTSUITE) repeat
 
@@ -255,6 +307,11 @@ UnittestCount(): with
                               @List Record(key: String, entry: TESTCASE) repeat
                  totalCases := totalCases + 1
                  if tstcase.entry.fail > 0 then failedCases := failedCases + 1
+                 totalTests := totalTests + tstcase.entry.total
+                 failedTests := failedTests + tstcase.entry.fail
+                 xfailedTests := xfailedTests + tstcase.entry.xfail
+                 xfpassedTests := xfpassedTests + tstcase.entry.xfpassed
+                 
 
              messagePrint(new(maxWidth, char "=")$String)$O
              messagePrint("Testsuite: " tstsuite.key)$O
@@ -300,20 +357,20 @@ UnittestCount(): with
              failedCases: Integer := 0
              totalCases: Integer := 0
 
-             failedTests: Integer := 0
-             totalTests: Integer := 0
+             tsfailedTests: Integer := 0
+             tstotalTests: Integer := 0
 
              for tstcase in reverse parts(tstsuite.entry)_
                               @List Record(key: String, entry: TESTCASE) repeat
                  totalCases := totalCases + 1
                  if tstcase.entry.fail > 0 then failedCases := failedCases + 1
-                 totalTests := totalTests + tstcase.entry.total
-                 failedTests := failedTests + tstcase.entry.fail
+                 tstotalTests := tstotalTests + tstcase.entry.total
+                 tsfailedTests := tsfailedTests + tstcase.entry.fail
 
              sfailedCases := string failedCases
              stotalCases := string totalCases
-             sfailedTests := string failedTests
-             stotalTests := string totalTests
+             sfailedTests := string tsfailedTests
+             stotalTests := string tstotalTests
              messagePrint(tstsuite.key _
                           new(max(24-#(tstsuite.key),0)::NonNegativeInteger, _
                               char " ") _
@@ -325,7 +382,12 @@ UnittestCount(): with
                               char " ") sfailedTests _
                           new(max(6-#stotalTests, 0)::NonNegativeInteger, _
                               char " ") "(" stotalTests ")")$O
-
+         messagePrint(new(maxWidth, char "=")$String)$O
+         messagePrint("File summary.")$O
+         messagePrint("unexpected failures: " string failedTests)$O
+         messagePrint("expected failures: " string xfailedTests)$O
+         messagePrint("unexpected passes: " string xfpassedTests)$O
+         messagePrint("total tests: " string totalTests)$O
 
 @
 
@@ -343,16 +405,31 @@ UnittestAux(R: BasicType): with
        ++ R performs some simplifications, we convert ex1 and ex2 to
        ++ \axiom{InputForm}, if possible.
 
+     xftestEqualsAux: (String, R, R) -> Void
+       ++ like testEquals, but expects failure.
+
      testNotEqualsAux: (String, R, R) -> Void
        ++ testNotEquals(inp, ex1, ex2) states that ex1 and ex2 should be
        ++ different.
 
+     xftestNotEqualsAux: (String, R, R) -> Void
+       ++ like testEquals, but expects failure.
+
      testTrueAux: (String, R) -> Void
        ++ testTrueAux(inp, ex) states that ex should be true.
+
+     xftestTrueAux: (String, R) -> Void
+       ++ like testEquals, but expects failure.
 
      testLibraryErrorAux: (String, R) -> Void
        ++ testLibraryError(inp, ex) states that ex should throw an error. Such
        ++ a test will never count as a fatal error.
+
+     xftestLibraryErrorAux: (String, R) -> Void
+       ++ like testEquals, but expects failure.
+
+     testEqualsAuxCmp : (R, R) -> Boolean
+       ++ testEqualsAuxCmp should be local but is conditional 
 
      if R has RealNumberSystem then
          testRealEqualsAux: (String, R, R) -> Void
@@ -361,11 +438,17 @@ UnittestAux(R: BasicType): with
            ++ \spadfun{testAbsolutePrecision} and
            ++ \spadfun{testRelativePrecision}.
 
+         xftestRealEqualsAux: (String, R, R) -> Void
+           ++ like testEquals, but expects failure.
+
          testComplexEqualsAux: (String, Complex R, Complex R) -> Void
            ++ testComplexEquals(inp ex1, ex2) states that ex1 and ex2 should be
            ++ approximately equal as complex numbers, taking into acount
            ++ \spadfun{testAbsolutePrecision} and
            ++ \spadfun{testRelativePrecision}.
+
+         xftestComplexEqualsAux: (String, Complex R, Complex R) -> Void
+           ++ like testEquals, but expects failure.
 
          testAbsolutePrecision: R -> R
            ++ testAbsolutePrecision(eps) returns the current absolute precision
@@ -382,23 +465,55 @@ UnittestAux(R: BasicType): with
      O ==> OutputForm
      U ==> UnittestCount
 
+     REPF ==> (String, List OutputForm) -> Void
+
+     nPassInc : REPF
+     nPassInc(s, o) == incPass()$U
+
+     nFailInc : REPF
+     nFailInc(s, o) == incFail(s, o)$U
+
+     xPassInc : REPF
+     xPassInc(s, o) == incXfPass(s, o)$U
+ 
+     xFailInc : REPF
+     xFailInc(s, o) == incXfFail()$U
+
+     testEqualsAux0 : (String, R, R, REPF, REPF) -> Void
+     -- testEqualsAuxCmp: (R, R) -> Boolean
+
      if R has ConvertibleTo InputForm then
-         testEqualsAux(inp, ex1, ex2) ==
-             if (convert(ex1)@InputForm=convert(ex2)@InputForm)@Boolean
-             then incPass()$U
-             else
-                 if R has CoercibleTo O
-                 then incFail(inp, [ex1::O, ex2::O])$U
-                 else incFail(inp, [])$U
+
+         testEqualsAuxCmp(ex1, ex2) ==
+             (convert(ex1)@InputForm=convert(ex2)@InputForm)@Boolean
+
+     else if R is InputForm then
+
+         testEqualsAuxCmp(ex1, ex2) ==
+             (ex1=ex2)@Boolean
+
      else
-         testEqualsAux(inp, ex1, ex2) ==
+
+         testEqualsAuxCmp(ex1, ex2) ==
              addWarning(message("testing in a domain without InputForm!")$O)$U
-             if (ex1=ex2)@Boolean
-             then incPass()$U
+             (ex1=ex2)@Boolean
+        
+     testEqualsAux0(inp, ex1, ex2, prep, frep) ==
+             if testEqualsAuxCmp(ex1, ex2)
+             then
+                 if R has CoercibleTo O
+                 then prep(inp, [ex1::O, ex2::O])
+                 else prep(inp, [])
              else
                  if R has CoercibleTo O
-                 then incFail(inp, [ex1::O, ex2::O])$U
-                 else incFail(inp, [])$U
+                 then frep(inp, [ex1::O, ex2::O])
+                 else prep(inp, [])
+
+     testEqualsAux(inp, ex1, ex2) ==
+         testEqualsAux0(inp, ex1, ex2, nPassInc, nFailInc)
+
+     xftestEqualsAux(inp, ex1, ex2) ==
+         testEqualsAux0(inp, ex1, ex2, xPassInc, xFailInc)
 
      if R has RealNumberSystem then
 
@@ -415,7 +530,9 @@ UnittestAux(R: BasicType): with
              epsilonAbsolute := eps
              old
 
-         testRealEqualsAux(inp, ex1, ex2) ==
+         testRealEqualsAux0: (String, R, R, REPF, REPF) -> Void
+
+         testRealEqualsAux0(inp, ex1, ex2, prep, frep) ==
              absolute: R := norm(ex1-ex2)$R
              if not zero? ex2
              then relative: R := norm(ex1/ex2-1)$R
@@ -434,10 +551,19 @@ UnittestAux(R: BasicType): with
                  else res := cons(message("abs err ")$O, res)
 
              if empty? res
-             then incPass()$U
-             else incFail(inp, concat([ex1::O, ex2::O], res))$U
+             then prep(inp, [ex1::O, ex2::O])
+             else frep(inp, concat([ex1::O, ex2::O], res))
 
-         testComplexEqualsAux(inp, ex1, ex2) ==
+         testRealEqualsAux(inp, ex1, ex2) ==
+             testRealEqualsAux0(inp, ex1, ex2, nPassInc, nFailInc)
+
+         xftestRealEqualsAux(inp, ex1, ex2) ==
+             testRealEqualsAux0(inp, ex1, ex2, xPassInc, xFailInc)
+
+         testComplexEqualsAux0: (String, Complex R, Complex R, REPF,
+                                 REPF) -> Void
+
+         testComplexEqualsAux0(inp, ex1, ex2, prep, frep) ==
              absolute: R := norm(ex1-ex2)$Complex(R)
              if not zero? ex2
              then relative: R := norm(ex1/ex2-1)$Complex(R)
@@ -456,26 +582,39 @@ UnittestAux(R: BasicType): with
                  else res := cons(message("abs err ")$O, res)
 
              if empty? res
-             then incPass()$U
-             else incFail(inp, concat([ex1::O, ex2::O], res))$U
+             then prep(inp, [ex1::O, ex2::O])
+             else frep(inp, concat([ex1::O, ex2::O], res))
+
+         testComplexEqualsAux(inp, ex1, ex2) ==
+             testComplexEqualsAux0(inp, ex1, ex2, nPassInc, nFailInc)
+
+         xftestComplexEqualsAux(inp, ex1, ex2) ==
+             testComplexEqualsAux0(inp, ex1, ex2, xPassInc, xFailInc)
+
 
      testNotEqualsAux(inp, ex1, ex2) ==
-         if (ex1=ex2)@Boolean
-         then
-             if R has CoercibleTo O
-             then incFail(inp, [ex1::O, ex2::O])$U
-             else incFail(inp, [])$U
-         else incPass()$U
+         testEqualsAux0(inp, ex1, ex2, nFailInc, nPassInc)
 
-     testTrueAux(inp, ex) ==
+     xftestNotEqualsAux(inp, ex1, ex2) ==
+         testEqualsAux0(inp, ex1, ex2, xFailInc, xPassInc)
+
+     testTrueAux0: (String, R, REPF, REPF) -> Void
+
+     testTrueAux0(inp, ex, prep, frep) ==
          if R is Boolean then
              if ex
-             then incPass()$U
-             else incFail(inp, [ex::Boolean::O])$U
+             then prep(inp, [ex::Boolean::O])
+             else frep(inp, [ex::Boolean::O])
          else
              if R has CoercibleTo O
-             then incFail(inp, [ex::O])$U
-             else incFail(inp, [])$U
+             then frep(inp, [ex::O])
+             else frep(inp, [])
+
+     testTrueAux(inp, ex) ==
+         testTrueAux0(inp, ex, nPassInc, nFailInc)
+
+     xftestTrueAux(inp, ex) ==
+         testTrueAux0(inp, ex, xPassInc, xFailInc)
 
      testLibraryErrorAux(inp, ex) ==
 -- at this point, ex was already evaluated.  If there would have been an error,
@@ -483,6 +622,13 @@ UnittestAux(R: BasicType): with
          if R has CoercibleTo O
          then incLibraryError(inp, [ex::O])$U
          else incLibraryError(inp, [])$U
+
+     xftestLibraryErrorAux(inp, ex) ==
+-- at this point, ex was already evaluated.  If there would have been an error,
+-- incLibraryError would not be invoked.
+         if R has CoercibleTo O
+         then xfincLibraryError(inp, [ex::O])$U
+         else xfincLibraryError(inp, [])$U
 
 @
 
@@ -501,26 +647,44 @@ Unittest: with
        ++ performs some simplifications, we convert ex1 and ex2 to
        ++ \axiom{InputForm}, if possible
 
+     xftestEquals: (String, String) -> Void
+       ++ like testEquals, but expects failure.
+
      testRealEquals: (String, String) -> Void
        ++ testRealEquals(ex1, ex2) states that ex1 and ex2 should be
        ++ approximately equal as real numbers, taking into acount
        ++ \spadfun{testAbsolutePrecision} and \spadfun{testRelativePrecision}.
+
+     xftestRealEquals: (String, String) -> Void
+       ++ like testRealEquals, but expects failure.
 
      testComplexEquals: (String, String) -> Void
        ++ testComplexEquals(ex1, ex2) states that ex1 and ex2 should be
        ++ approximately equal as complex numbers, taking into acount
        ++ \spadfun{testAbsolutePrecision} and \spadfun{testRelativePrecision}.
 
+     xftestComplexEquals: (String, String) -> Void
+       ++ like testComplexEquals, but expects failure.
+
      testNotEquals: (String, String) -> Void
        ++ testNotEquals(ex1, ex2) states that ex1 and ex2 should be
        ++ different.
 
+     xftestNotEquals: (String, String) -> Void
+       ++ like testNotEquals, but expects failure.
+
      testTrue: String -> Void
        ++ testTrue ex states that ex should be true.
+
+     xftestTrue: String -> Void
+       ++ like testTrue, but expects failure.
 
      testLibraryError: String -> Void
        ++ testLibraryError ex states that ex should throw an error. Such a test
        ++ will never count as a fatal error.
+
+     xftestLibraryError: String -> Void
+       ++ like testLibraryError, but expects failure.
 
   == add
 
@@ -532,11 +696,23 @@ Unittest: with
          interpretString("testEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
          decFatal()$UnittestCount
 
+     xftestEquals(s1, s2) ==
+         inp := "EQUL: (" s1 ", " s2 ")"
+         xfincFatal(inp)$UnittestCount
+         interpretString("xftestEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         xfdecFatal()$UnittestCount
+
      testRealEquals(s1, s2) ==
          inp := "EQLR: (" s1 ", " s2 ")"
          incFatal(inp)$UnittestCount
          interpretString("testRealEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
          decFatal()$UnittestCount
+
+     xftestRealEquals(s1, s2) ==
+         inp := "EQLR: (" s1 ", " s2 ")"
+         xfincFatal(inp)$UnittestCount
+         interpretString("xftestRealEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         xfdecFatal()$UnittestCount
 
      testComplexEquals(s1, s2) ==
          inp := "EQLC: (" s1 ", " s2 ")"
@@ -544,11 +720,23 @@ Unittest: with
          interpretString("testComplexEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
          decFatal()$UnittestCount
 
+     xftestComplexEquals(s1, s2) ==
+         inp := "EQLC: (" s1 ", " s2 ")"
+         xfincFatal(inp)$UnittestCount
+         interpretString("xftestComplexEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         xfdecFatal()$UnittestCount
+
      testNotEquals(s1, s2) ==
          inp := "DIFF: (" s1 ", " s2 ")"
          incFatal(inp)$UnittestCount
          interpretString("testNotEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
          decFatal()$UnittestCount
+
+     xftestNotEquals(s1, s2) ==
+         inp := "DIFF: (" s1 ", " s2 ")"
+         xfincFatal(inp)$UnittestCount
+         interpretString("xftestNotEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         xfdecFatal()$UnittestCount
 
      testTrue(s) ==
          inp := "TRUE: (" s ")"
@@ -556,11 +744,21 @@ Unittest: with
          interpretString("testTrueAux(_"" inp "_", " s ")")$T
          decFatal()$UnittestCount
 
+     xftestTrue(s) ==
+         inp := "TRUE: (" s ")"
+         xfincFatal(inp)$UnittestCount
+         interpretString("xftestTrueAux(_"" inp "_", " s ")")$T
+         xfdecFatal()$UnittestCount
+
      testLibraryError(s) ==
          chkLibraryError()$UnittestCount
          inp := "ERROR: (" s ")"
          interpretString("testLibraryErrorAux(_"" inp "_", " s ")")$T
 
+     xftestLibraryError(s) ==
+         chkLibraryError()$UnittestCount
+         inp := "ERROR: (" s ")"
+         interpretString("xftestLibraryErrorAux(_"" inp "_", " s ")")$T
 @
 
 
