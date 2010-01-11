@@ -15,24 +15,41 @@
 @
 <<*>>=
 <<license>>
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "prime?$Integer"
+testcase "strong pseudoprimes"
+testFactor(l: List Integer): Void ==
+    free n
+    n := reduce(*, l)
+    s := delete(reduce(concat, _
+                       [concat ["* primeFactor(", string f, ",1)"] _
+                        for f in l]), 1)
+
+    testTrue("not prime? n")
+    testEquals("factor(n)", s)
+
+
 --The first two (2152302898747 and 3474749660383) are the only strong
 --pseudoprimes bases 2,3,5,7,11 less than 10^13: the remaining three
 --are the only Carmichael numbers less than 10^16 with this property.
-n := 6763*10627*29947 
-prime?(n)  
-factor(n)
-n := 1303*16927*157543  
-prime?(n)
-factor(n)
-n := 3739*18691*153259  
-prime?(n)
-factor(n)
-n := 46411*232051*417691  
-prime?(n)
-factor(n)
-n := 21319*106591*3005839  
-prime?(n)
-factor(n)
+testFactor [6763, 10627, 29947]
+testFactor [1303, 16927, 157543]
+testFactor [3739, 18691, 153259]
+testFactor [46411, 232051, 417691]
+testFactor [21319, 106591, 3005839]
+
+testcase "negative integers"
+testTrue("prime?(-5)")
+testTrue("not prime?(-15)")
+
+testcase "Davenport Primality Testing Revisited"
+-- Jaeschke
+testTrue("not prime?(137716125329053 * 413148375987157)")
+-- Arnault (k+1)(2k+1)
+testTrue("not prime?(24444516448431392447461 * 48889032896862784894921)")
+
+statistics()
 @
 \eject
 \begin{thebibliography}{99}
