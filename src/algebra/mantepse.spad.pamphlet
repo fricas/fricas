@@ -143,6 +143,11 @@ GuessOption(): Exports == Implementation where
       ++ verification.  This option is expressed in the form
       ++ \spad{MonteCarlo == d}
 
+    check: Boolean -> %
+      ++ check(d) specifies whether we want to check the solution.  If false,
+      ++ we simply return the solutions found by the interpolation
+      ++ routine. This option is expressed in the form \spad{check == d}
+
     one: Boolean -> %
       ++ one(d) specifies whether we are happy with one solution. This option
       ++ is expressed in the form \spad{one == d}.
@@ -208,6 +213,7 @@ GuessOption(): Exports == Implementation where
     MonteCarlo d     == ['MonteCarlo,     d::Any]
     homogeneous d    == ['homogeneous,    d::Any]
     debug d          == ['debug,          d::Any]
+    check d          == ['check,          d::Any]
     one d            == ['one,            d::Any]
     functionName d   == ['functionName,   d::Any]
     variableName d   == ['variableName,   d::Any]
@@ -282,6 +288,11 @@ GuessOptionFunctions0(): Exports == Implementation where
     MonteCarlo : LGOPT -> Boolean
       ++ MonteCarlo returns whether we are satisfied with
       ++ probabilistic Monte Carlo solution, default being false.
+
+    check: LGOPT -> Boolean
+      ++ check(d) specifies whether we want to check the solution.  If false,
+      ++ we simply return the solutions found by the interpolation
+      ++ routine.  The default is true.
 
     one: LGOPT -> Boolean
       ++ one returns whether we need only one solution, default being true.
@@ -362,6 +373,12 @@ GuessOptionFunctions0(): Exports == Implementation where
     MonteCarlo l ==
        if (opt := option(l, 'MonteCarlo)) case "failed" then
            false
+       else
+           retract(opt :: Any)$AnyFunctions1(Boolean)
+
+    check l ==
+       if (opt := option(l, 'check)) case "failed" then
+           true
        else
            retract(opt :: Any)$AnyFunctions1(Boolean)
 
@@ -2886,7 +2903,11 @@ precCheck(list : List F, resi : List SUP S,
     degree__loss : Integer :=
         homo => m - 1
         m - 2
-    max__ind := #gl0 - degree__loss - 1
+    if check(options)$GOPT0 then
+        max__ind := #gl0 - degree__loss - 1
+    else
+        max__ind := sigma - 1
+
     svar := create()$SingletonAsOrderedSet
     j0 : Integer :=
                     homo => 1
@@ -2915,6 +2936,7 @@ precCheck(list : List F, resi : List SUP S,
                 i < sigma =>
                     return "no__solution"
                 return "reject"
+        if check(options)$GOPT0 then return "good"
         bad => return "reject"
         for i in 1..degree__loss repeat
             si := (i + max__ind)::S
@@ -2947,6 +2969,7 @@ precCheck(list : List F, resi : List SUP S,
                 i < sigma =>
                     return "no__solution"
                 return "reject"
+        if check(options)$GOPT0 then return "good"
         bad => return "reject"
         for i in 1..degree__loss repeat
             si := (i + max__ind)::S
@@ -2966,6 +2989,8 @@ precCheck(list : List F, resi : List SUP S,
     error "F must be S or Fraction(S)"
 
 checkInterpolant(list, o, resi, D, options, sigma) ==
+    if debug(options)$GOPT0 then
+        output("checking solution")$OutputPackage
 
     nonZeroCoefficient: Integer := 0
     reject__one__term := false
@@ -3006,6 +3031,8 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     order: Integer := 0
     dmax := 10*#list
     for d in 0.. repeat
+        if not check(options)$GOPT0 and d = sigma then 
+            return "good"
         if reject__one__term and d = sigma then
             return "reject"
 
@@ -3034,95 +3061,16 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
             print(hconcat("sigma: ", sigma::OutputForm))
         return "reject"
     "good"
+@
 
-wrapInterpolant(o: NNI,
-                resi: List SUP S,
+
+<<implementation: Guess - testInterpolant>>=
+wrapInterpolant(resi: List SUP S,
                 exprList: List EXPRR,
                 initials: List F,
                 D: HPSPEC,
-                op: BasicOperator, options: LGOPT)
-               : Union(EXPRR, "failed") ==
+                op: BasicOperator, options: LGOPT): EXPRR ==
 
-@
-
-First we make sure it is not a solution we should have found already. Note that
-we cannot check this if [[maxDegree]] is set, in which case some initial
-solutions may have been overlooked.
-
-<<implementation: Guess - testInterpolant>>=
-    ((maxDegree(options)$GOPT0 case "arbitrary") and
-     (allDegrees(options)$GOPT0 = false) and
-     zero?(last resi)) =>
-        if debug(options)$GOPT0 then
-            output(hconcat("solution should have been found already ", _
-                           resi::OutputForm))
-                  $OutputPackage
-        return "failed"
-@
-
-Then we check all the coefficients that should be valid.  We want the zero
-solution only, if the function is really zero. Without this test, every
-sequence ending with zero can be interpreted as the zero sequence, since the
-factor in front of the only non-vanishing term can cancel everything else.
-
-We set [[nonZeroCoefficient]] to the only non zero coefficient or, if there are
-several, it is $0$.  It should not happen that all coefficients in [[resi]]
-vanish.
-\begin{ToDo}
-  Check that not all coefficients in [[resi]] can vanish simultaneously.
-\end{ToDo}
-<<implementation: Guess - testInterpolant>>=
-    nonZeroCoefficient: Integer := 0
-
-    for i in 1..#resi repeat
-        if not zero? resi.i then
-            if zero? nonZeroCoefficient then
-                nonZeroCoefficient := i
-            else
-                nonZeroCoefficient := 0
-                break
-@
-
-We first deal with the case that there is only one non-vanishing coefficient in
-[[resi]].  If the only expression in [[exprList]] whose coefficient does not
-vanish does not contain the name of the generating function, or if there is a
-non-zero term in [[list]], we reject the proposed solution.
-
-\begin{ToDo}
-  Maybe we should not reject the solution in any case!  In the shifting
-  setting, it amounts to rejecting the zero solution if any term is non-zero.
-  Unfortunately, in the case of [[allDegrees==true]], allowing such solutions
-  will produce a solution always when the final term is zero, see above.
-
-  In the differentiation setting we will not reject, since even for polynomials
-  we need two non-zero terms.
-\end{ToDo}
-
-<<implementation: Guess - testInterpolant>>=
-    if not zero? nonZeroCoefficient then
-        (freeOf?(exprList.nonZeroCoefficient, name op)) =>
-            if debug(options)$GOPT0 then
-                output("solution would not involve generating function")
-                      $OutputPackage
-
-            return "failed"
-
-@
-
-Here we check for each degree [[d]] larger than [[testDegree]] whether the
-proposed linear combination vanishes.  When the first coefficient that does not
-vanish contains the transcendental element we accept the linear combination as
-a solution.
-
-Finally, it seems that we have found a solution.  We do not want to cancel the
-greatest common divisor of the equation, but only the greatest common divisor
-of the coefficients of the solution.  If [[S]] is a [[Field]], we normalize the
-leading coefficient of the first polynomial.
-
-This is now done already in [[guessInterpolateFFFG]].  The modular solver
-should not produce factors.
-
-<<implementation: Guess - testInterpolant>>=
     if displayAsGF(options)$GOPT0 then
         ex: List EXPRR
            := [makeEXPRR(D.AX, variableName(options)$GOPT0, SUPS2SUPF p, e) _
@@ -3259,12 +3207,12 @@ lists of partitions are closed under inclusion.
                 if empty?(exprList) then
                     exprList := entries complete first(exprS, o)
                 for i in 1..ncols M repeat
-                    res := wrapInterpolant(o, entries column(M, i),
+                    res := wrapInterpolant(entries column(M, i),
                                            exprList,
                                            list,
                                            D, op, options)
 
-                    if not ((res case "failed") or member?(res, reslist))
+                    if not member?(res, reslist)
                     then reslist := cons(res, reslist)
                 if not empty? reslist and one(options)$GOPT0
                 then return reslist
