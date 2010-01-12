@@ -137,7 +137,7 @@ GuessOption(): Exports == Implementation where
       ++ solutions found. This option is expressed in the form \spad{safety ==
       ++ d}.
 
-    MonteCarlo : Boolean -> %
+    MonteCarlo: Boolean -> %
       ++ MonteCarlo(d) specifies whether we are satisfied with
       ++ probabilistic Monte Carlo solution or we want deterministic
       ++ verification.  This option is expressed in the form
@@ -285,7 +285,7 @@ GuessOptionFunctions0(): Exports == Implementation where
     safety: LGOPT -> NonNegativeInteger
       ++ safety returns the specified safety or 1 as default.
 
-    MonteCarlo : LGOPT -> Boolean
+    MonteCarlo: LGOPT -> Boolean
       ++ MonteCarlo returns whether we are satisfied with
       ++ probabilistic Monte Carlo solution, default being false.
 
@@ -1697,11 +1697,11 @@ In this section we define some functions that provide streams for
 [[HermitePade]].
 
 \spad{FilteredPartitionStream} returns a stream of partitions.  We will
-interpret each partition $(\lambda_1,\lambda_2,\dots)$ as $\prod_i
-f^{(\lambda_i-1)}$.  Thus, each partition corresponds to a expressions.  For
-given $n$ we will then try to find a linear combination of the first $n$
-expressions in the stream, such that its Taylor coefficients match the given
-data.
+interpret each partition $(\lambda_1,\lambda_2,\dots)$ as the expression
+$\prod_i D(f, \lambda_i-1)$, where the meaning of $D$ can be differentiation,
+shift, or substitution.  For given $n$ we will then try to find a linear
+combination of the first $n$ expressions in the stream, such that its Taylor
+coefficients match the given data.
 
 It is not clear whether we should \lq prefer\rq\ shifting and differentiation over
 powering. Currently, we produce the stream
@@ -2216,10 +2216,6 @@ substDSF(s, n) == multiplyExponents(s, (n+1)::PositiveInteger)
 
 @
 
-The next three functions extract the coefficient of $x^k$ in $z^l f(x)$. Only,
-for expressions, we rather need $\sum_{k\ge0} \langle x^k\rangle z^l f(x)$,
-i.e., the function itself, which is by definition equal to $x^l f(x)$.
-
 <<implementation: Guess - Hermite-Pade - Operators>>=
 substHP options ==
     if not zero? maxMixedDegree(options)$GOPT0
@@ -2605,8 +2601,8 @@ polynomial instead, but the present approach makes computing powers and
 derivatives much cheaper, since, because of laziness, only coefficients that
 are actually used are computed.
 
-The second of the two procedures augments the list with a transcendental
-element.
+The second of the two procedures augments the list with transcendental
+elements.
 
 <<implementation: Guess - Hermite-Pade - Utilities>>=
 list2UFPSF(list: List F): UFPSF == series(list::Stream F)$UFPSF
@@ -2719,6 +2715,9 @@ There are three different kinds of checks:
 %
 % We want to pass only the minimal number of terms to [[FFFG]].
 
+The sum of degrees of the coefficient polynomials has to be at most
+[[guessDegree]].  [[sigma-1]] is the degree up to which any solution should be
+correct a priori.
 
 <<implementation: Guess - guessInterpolate>>=
 import ModularHermitePadeSolver(F, S)
@@ -2727,13 +2726,6 @@ guessInterpolateModular(list: List F, degs: List Integer, _
                         o: NNI, degreeLoss : Integer, _
                         guessDegree: NNI, D: HPSPEC, options: LGOPT)
                        : Union(Matrix SUP S, Boolean) ==
-@
-
-The sum of degrees of the coefficient polynomials has to be at most
-[[guessDegree]].  [[sigma-1]] is the degree up to which any solution should be
-correct a priori.
-
-<<implementation: Guess - guessInterpolate>>=
     sigma: NNI := (#list - degreeLoss)::NNI
 
     leadingZeros : Integer := 0
@@ -2816,7 +2808,7 @@ guessInterpolateFFFG(list: List F, degs : List Integer, o: NNI, _
     for i in 1..ncols M repeat
         ce := entries column(M, i)
         if checkInterpolant(list, o, entries column(M, i), D, _
-                         options, guessDegree) case "good" then
+                            options, guessDegree) case "good" then
             rl := cons(i, rl)
 
     empty?(rl) => empty()
@@ -2885,13 +2877,22 @@ guessInterpolate2(list: List F, o: NNI, degreeLoss: Integer, _
 
 @
 
-[[checkInterpolant]] checks whether [[resi]] is really a solution.
+[[checkInterpolant]] checks whether [[resi]] is really a solution.  This is one
+of the most time consuming parts of the whole procedure.  For efficiency, we
+special case the linear recurrences:
+
+In both routines, [["no__solution"]] means that modular solver produced
+something which is not a solution to Hermite-Pade problem, so (at least in
+principle) modular solver should work harder to find correct solution to the
+Hermite-Pade problem, which [[checkInterpolant]] or [[precCheck]] then will
+verify.
+
+[["reject"]] means that the modular solver solved the Hermite-Pade problem, but
+we discard the solution.
 
 <<implementation: Guess - testInterpolant>>=
-checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer) -> Union("good", "reject", "no__solution")
-
-precCheck(list : List F, resi : List SUP S,
-           options : LGOPT, sigma : Integer, bad : Boolean) _
+precCheck(list: List F, resi: List SUP S,
+          options: LGOPT, sigma: Integer, bad: Boolean) _
          : Union("good", "reject", "no__solution") ==
     homp := homogeneous(options)$GOPT0
     homo : Boolean :=
@@ -2988,6 +2989,40 @@ precCheck(list : List F, resi : List SUP S,
         return "good"
     error "F must be S or Fraction(S)"
 
+@
+
+%$
+Unfortunately, we cannot simply discard solutions where the corresponding list
+of expressions has a non-trivial gcd, since it is quite possible that a linear
+combination of such solutions will be the one we are actually looking for.
+
+In fact, we should not discard \emph{single} solutions at all, because the
+result of the modular solver is a basis of a vector space, reduced and
+normalised.  However, the set of interpolating solutions is \emph{not} a vector
+space: consider two solutions $r_1$ and $r_2$, one interpolating, the other not
+interpolating but having higher order than the first.  Then the sum $r_1+r_2$
+of the two is interpolating, but $(r_1+r_2) - r_1$ is not.
+
+Thus, we check for each coefficient whether the proposed linear combination
+vanishes.  When the first coefficient that does not vanish contains the
+transcendental element we accept the basis as a solution.
+
+\begin{ToDo}
+  possible we should add the first interpolating solution to all the others, or
+  at least to all the solutions which are not interpolating.
+\end{ToDo}
+
+We are not allowed to skip checking the low degrees when using the modular
+solver, since it is possible to get spurious solution after modular reduction.
+If at least one modular reduction has no spurious solutions, the solver will
+discover that other reductions are bad and discard them.  But it is possible
+(or at least without deeper analysis we cannot exlude the possiblity) that all
+reductions are bad.  In this case the solver would reconstruct something which
+is not a solution to Hermite-Pade problem.
+
+<<implementation: Guess - testInterpolant>>=
+checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer) 
+                  -> Union("good", "reject", "no__solution")
 checkInterpolant(list, o, resi, D, options, sigma) ==
     if debug(options)$GOPT0 then
         output("checking solution")$OutputPackage
@@ -3012,15 +3047,15 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
                 reject__one__term := true
 
     len := #list
-    maxPow : Integer
-    maxP : Union(PositiveInteger, "arbitrary") :=
+    maxPow: Integer
+    maxP: Union(PositiveInteger, "arbitrary") :=
         maxPower(options)$GOPT0
     if maxP case PositiveInteger then
         maxPow := maxP
     else
         maxPow := len+2
 
-    maxPow = 1 and D.kind = 'shiftHP =>
+    (one? maxPow and D.kind = 'shiftHP) =>
         precCheck(list, resi, options, sigma, reject__one__term)
 
     flist: List PositiveInteger := [i::PositiveInteger for i in 1..o | not zero? resi.i]
@@ -3060,7 +3095,9 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
                           order::OutputForm))
             print(hconcat("sigma: ", sigma::OutputForm))
         return "reject"
+
     "good"
+
 @
 
 
@@ -3107,7 +3144,7 @@ We consider the elements of list as the first few coefficients of a formal
 power series $f$.  We use the coefficients up to and including degree
 [[listDegree]] to determine a vanishing linear combination of power series
 derived from $f$, eg. by taking derivatives or powers.  The remaining elements,
-whose number is given by the option [[safety]], are used as a plauibility
+whose number is given by the option [[safety]], are used as a plausibility
 check.  Originally we demanded to have at least two elements for guessing.
 However, we want to be able to induce from $[c,c]$ that the function equals $c$
 with [[safety]] one.  This is important if we apply, for example, [[guessRat]]
