@@ -465,7 +465,9 @@ Guess(F, S, EXPRR, retract, coerce): Exports == Implementation where
 
     SUP ==> SparseUnivariatePolynomial
 
-    UFPSSUPF ==> UnivariateFormalPowerSeries SUP F
+    SMPF ==> SparseMultivariatePolynomial(F, NNI)
+
+    UFPSSUPF ==> UnivariateFormalPowerSeries SMPF
 
     FFFG ==> FractionFreeFastGaussian
     FFFGF ==> FractionFreeFastGaussianFractions
@@ -473,7 +475,7 @@ Guess(F, S, EXPRR, retract, coerce): Exports == Implementation where
 -- CoeffAction
     DIFFSPECA ==> (NNI, NNI, SUP S) -> S
 
-    DIFFSPECAF ==> (NNI, NNI, UFPSSUPF) -> SUP F
+    DIFFSPECAF ==> (NNI, NNI, UFPSSUPF) -> SMPF
 
     DIFFSPECAX ==> (NNI, Symbol, EXPRR) -> EXPRR
 
@@ -1846,7 +1848,7 @@ termAsUFPSSUPF2(f: UFPSSUPF, partition: List Integer,
            := [map(z1 +-> z1 ^ second(part)::NNI, DSF(f, (first part -1)::NNI)) _
                for part in ll]
 
-        reduce(hadamard$UFPS1(SUP F), fl)
+        reduce(hadamard$UFPS1(SMPF), fl)
 @
 %$
 
@@ -2131,7 +2133,7 @@ diffDS(s, n) == D(s, n)
 diffDSF: DIFFSPECSF
 diffDSF(s, n) ==
 -- I have to help the compiler here a little to choose the right signature...
-    if SUP F has _*: (NonNegativeInteger, SUP F) -> SUP F
+    if SMPF has _*: (NonNegativeInteger, SMPF) -> SMPF
     then D(s, n)
 
 @
@@ -2150,8 +2152,8 @@ diffA(k: NNI, l: NNI, f: SUP S): S ==
     DiffAction(k, l, f)$FFFG(S, SUP S)
 
 diffAF: DIFFSPECAF
-diffAF(k: NNI, l: NNI, f: UFPSSUPF): SUP F ==
-    DiffAction(k, l, f)$FFFG(SUP F, UFPSSUPF)
+diffAF(k: NNI, l: NNI, f: UFPSSUPF): SMPF ==
+    DiffAction(k, l, f)$FFFG(SMPF, UFPSSUPF)
 
 diffC: DIFFSPECC
 diffC(total: NNI): List S == DiffC(total)$FFFG(S, SUP S)
@@ -2253,7 +2255,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         r
 
     qDiffDSF(q: Symbol, s: UFPSSUPF, n: NonNegativeInteger): UFPSSUPF ==
-        multiplyCoefficients((z1: Integer): SUP F +-> (q::F::SUP F)^((n*z1)::NonNegativeInteger), s)
+        multiplyCoefficients((z1: Integer): SMPF +-> (q::F::SMPF)^((n*z1)::NonNegativeInteger), s)
 
 
     termAsU32VectorqDiff: (U32Vector, List Integer, Integer, Integer, NNI) -> U32Vector
@@ -2356,8 +2358,8 @@ ShiftAXGF(l: NNI, x: Symbol, f: EXPRR): EXPRR ==
 ShiftA(k: NNI, l: NNI, f: SUP S): S ==
     ShiftAction(k, l, f)$FFFG(S, SUP S)
 
-ShiftAF(k: NNI, l: NNI, f: UFPSSUPF): SUP F ==
-    ShiftAction(k, l, f)$FFFG(SUP F, UFPSSUPF)
+ShiftAF(k: NNI, l: NNI, f: UFPSSUPF): SMPF ==
+    ShiftAction(k, l, f)$FFFG(SMPF, UFPSSUPF)
 
 ShiftC(total: NNI): List S ==
     ShiftC(total)$FFFG(S, SUP S)
@@ -2420,8 +2422,8 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
     qShiftA(q: Symbol, k: NNI, l: NNI, f: SUP S): S ==
         qShiftAction(q::S, k, l, f)$FFFG(S, SUP S)
 
-    qShiftAF(q: Symbol, k: NNI, l: NNI, f: UFPSSUPF): SUP F ==
-        qShiftAction(q::F::SUP(F), k, l, f)$FFFG(SUP F, UFPSSUPF)
+    qShiftAF(q: Symbol, k: NNI, l: NNI, f: UFPSSUPF): SMPF ==
+        qShiftAction(q::F::SMPF, k, l, f)$FFFG(SMPF, UFPSSUPF)
 
     qShiftC(q: Symbol, total: NNI): List S ==
         qShiftC(q::S, total)$FFFG(S, SUP S)
@@ -2429,8 +2431,8 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
     qSubstUFPSF(q: Symbol, s: UFPSF, maxMD: NNI): List UFPSF ==
         [s((q::F)^i*monomial(1,1)) for i in 0..maxMD]
 
-    qSubstUFPSSUPF(q: Symbol, s: UFPSSUPF, maxMD: NNI): List UFPSSUPF ==
-        [s(((q::F)^i)::SUP(F)*monomial(1,1)) for i in 0..maxMD]
+--    qSubstUFPSSUPF(q: Symbol, s: UFPSSUPF, maxMD: NNI): List UFPSSUPF ==
+--        [s(((q::F)^i)::SUP(F)*monomial(1,1)) for i in 0..maxMD]
 
     qSubstEXPRR(q: Symbol, xx: Symbol, s: EXPRR, maxMD: NNI): List EXPRR ==
         [(q::EXPRR)^(i*xx::EXPRR)*s for i in 0..maxMD]
@@ -2502,7 +2504,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
                 if newPartition > oldPartition then
                     f0 := termAsUFPSSUPF2(f, partitions.oldPartition,
                                           ShiftSF, (1-monomial(1,1))^(-1))
-                    res := concat([f0(((q::F)^i)::SUP(F)*monomial(1,1))
+                    res := concat([f0(((q::F)^i)::SMPF*monomial(1,1))
                                    for i in exponents],
                                   res)
                     exponents := []
@@ -2512,7 +2514,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
             f0 := termAsUFPSSUPF2(f, partitions.oldPartition,
                                   ShiftSF, (1-monomial(1,1))^(-1))
-            res := concat([f0(((q::F)^i)::SUP(F)*monomial(1,1))
+            res := concat([f0(((q::F)^i)::SMPF*monomial(1,1))
                            for i in exponents],
                           res)
 
@@ -2545,7 +2547,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
                          ADEEXPRRStream(z1, z2, partitions, ShiftSX, diff1X), _
                      'qshiftHP, q, _
                      (z1: NNI, z2: NNI, z3: SUP S): S +-> qShiftA(q, z1, z2, z3), _
-                     (z1: NNI, z2: NNI, z3: UFPSSUPF): SUP F +-> qShiftAF(q, z1, z2, z3), _
+                     (z1: NNI, z2: NNI, z3: UFPSSUPF): SMPF +-> qShiftAF(q, z1, z2, z3), _
                      (z1: NNI, z2: Symbol, z3: EXPRR): EXPRR +-> qShiftAX(q, z1, z2, z3), _
                      (z1: NNI): List S +-> qShiftC(q, z1)]$HPSPEC
                 else
@@ -2593,16 +2595,20 @@ element.
 list2UFPSF(list: List F): UFPSF == series(list::Stream F)$UFPSF
 
 list2UFPSSUPF(list: List F): UFPSSUPF ==
-    l := [e::SUP(F) for e in list for i in 0..]::Stream SUP F
-    series(l)$UFPSSUPF + monomial(monomial(1,1)$SUP(F), #list)$UFPSSUPF
+    l1 := [e::SMPF for e in list]::Stream SMPF
+    s1: Stream Integer := generate(inc, 0)$Stream(Integer)
+    l2 := map(i +-> monomial(1, monomial(1, i::NNI)
+                                        $IndexedExponents(NNI))
+                            $SMPF, s1)$StreamFunctions2(Integer, SMPF)
+    series(concat(l1, l2))$UFPSSUPF
 
 @
 
 [[SUPF2SUPSUPF]] interprets each coefficient as a univariate polynomial.
 
 <<implementation: Guess - Hermite-Pade - Utilities>>=
-SUPF2SUPSUPF(p: SUP F): SUP SUP F ==
-    map((z1: F): SUP F +-> z1::SUP F, p)$SparseUnivariatePolynomialFunctions2(F, SUP F)
+SUPF2SUPSUPF(p: SUP F): SUP SMPF ==
+    map((z1: F): SMPF +-> z1::SMPF, p)$SparseUnivariatePolynomialFunctions2(F, SMPF)
 
 @
 %$
@@ -2996,26 +3002,36 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     testList := ((D.testGen)(flist))(list2UFPSSUPF list)
     resiSUPF := [SUPF2SUPSUPF SUPS2SUPF(resi.i) for i in flist]
 
-    c: SUP F
-    order : Integer := 0
+    c: SMPF
+    order: Integer := 0
+    dmax := 10*#list
     for d in 0.. repeat
-        c := generalCoefficient(D.AF, testList,
-                                d, vector resiSUPF)
-                               $FFFG(SUP F, UFPSSUPF)
-        if not zero? c then
-            order := d
-            break
         if reject__one__term and d = sigma then
             return "reject"
 
+        c := generalCoefficient(D.AF, testList,
+                                d, vector resiSUPF)
+                               $FFFG(SMPF, UFPSSUPF)
+        if not zero? c then
+            order := d
+            break
+
+        if d > dmax then
+            print("bailing out from checkInterpolant"::OutputForm)
+            print("please report the input to fricas-devel@googlegroups.com"::OutputForm)
+            order := d
+            break
+
     order < sigma =>
-        print("Order too low"::OutputForm)
+        print(hconcat("Order too low: ", order::OutputForm))
+        print(hconcat("sigma: ", sigma::OutputForm))
         return "no__solution"
 
     ground? c =>
         if debug(options)$GOPT0 then
-            output("proposed solution does not fit")
-                  $OutputPackage
+            print(hconcat("Proposed solution does not fit coefficient ", _
+                          order::OutputForm))
+            print(hconcat("sigma: ", sigma::OutputForm))
         return "reject"
     "good"
 
