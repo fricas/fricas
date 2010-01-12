@@ -793,7 +793,7 @@ getVariables(lF: List F): List EXPRR ==
                            setUnion(variables(numer(g)$Fraction(S)), 
                                     variables(denom(g)$Fraction(S))), lF)
                       $ListFunctions2(F, List Symbol)
-	
+        
         else error "Guess: type parameter F should be either equal to S or equal _
                     to Fraction S"
 
@@ -1793,7 +1793,7 @@ termAsU32VectorShift(f, partition, prime, degreeLoss) ==
 
 -- first of each element of ll is the derivative, second is the power
         fl: List U32Vector
-           := [construct([QSMOD64_-32(f(j)^(second(part)::PI) rem prime, prime)$Lisp _
+           := [construct([f(j)^(second(part)::PI) rem prime _
                           for j in first part -1..first part -1+d])$U32Vector _
                for part in ll]
 
@@ -2447,7 +2447,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
             d := (#f - dl - 1)::NNI
             qv := new(d+1, 1)$U32Vector
             for i in 1..d repeat
-                qv(i) := QSMOD64_-32((q^i) rem prime, prime)$Lisp
+                qv(i) := (q^i) rem prime
 
             O := (ceiling(o/(maxMD+1))$Fraction(Integer))::NNI
             vv1: List U32Vector := [termAsU32VectorShift(f, p, prime, dl) _
@@ -3022,7 +3022,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
 wrapInterpolant(o: NNI,
                 resi: List SUP S,
                 exprList: List EXPRR,
-		initials: List F,
+                initials: List F,
                 D: HPSPEC,
                 op: BasicOperator, options: LGOPT)
                : Union(EXPRR, "failed") ==
@@ -3116,7 +3116,7 @@ should not produce factors.
                 indexName(options)$GOPT0,
                 numerator reduce(_+, ex),
                 getVariables initials, 
-		map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
+                map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
                $RecurrenceOperator(Integer, EXPRR)
     else
         ex: List EXPRR
@@ -3126,7 +3126,7 @@ should not produce factors.
         makeRec(op, indexName(options)$GOPT0,
                 numerator reduce(_+, ex),
                 getVariables initials, 
-		map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
+                map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
                $RecurrenceOperator(Integer, EXPRR)
 
 @
@@ -3245,7 +3245,7 @@ lists of partitions are closed under inclusion.
                 for i in 1..ncols M repeat
                     res := wrapInterpolant(o, entries column(M, i),
                                            exprList,
-					   list,
+                                           list,
                                            D, op, options)
 
                     if not ((res case "failed") or member?(res, reslist))
