@@ -446,13 +446,16 @@ stamp-fasls99: copy-cached-lisp
 	echo '(quit)' ) | \
 	DAASE=$(axiom_src_datadir) $(INTERPSYS)
 
-stamp-fasls: stamp-fasls1 stamp-fasls2 stamp-fasls3 stamp-fasls4 \
-             stamp-fasls5 stamp-fasls6 stamp-fasls7 stamp-fasls8 \
-             stamp-fasls99
+do-stamp-fasls: stamp-fasls1 stamp-fasls2 stamp-fasls3 stamp-fasls4 \
+                stamp-fasls5 stamp-fasls6 stamp-fasls7 stamp-fasls8 \
+                stamp-fasls99
 	for A in $(patsubst %, %.$(FASLEXT), ${FULL_FASL_LIST}) ; do \
 	  cp $$A ${OUT} || exit 1 ; \
 	done
 	touch stamp-fasls
+
+stamp-fasls:
+	${MAKE} BUILD_WAY=use_lisp do-stamp-fasls
 
 endif
 
