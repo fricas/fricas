@@ -4,7 +4,7 @@
 % \input{diagrams.tex}
 \begin{document}
 \title{\$SPAD/src/algebra clifford.spad}
-\author{Stephen M. Watt}
+\author{Martin J Baker, Stephen M. Watt}
 \maketitle
 \begin{abstract}
 \end{abstract}
@@ -65,235 +65,335 @@ QuadraticForm(n, K): T == Impl where
 
 @
 \section{domain CLIF CliffordAlgebra\cite{7,12}}
-\subsection{Vector (linear) spaces}
-This information is originally from Paul Leopardi's presentation on
-the {\sl Introduction to Clifford Algebras} and is included here as
-an outline with his permission. Further details are based on the book
-by Doran and Lasenby called {\sl Geometric Algebra for Physicists}.
+When using this algebra for geometry and physics we want to be able to mix the Clifford product with the Grassmann (exterior or wedge) product and inner products in the same equation..
 
-Consider the various kinds of products that can occur between vectors.
-There are scalar and vector products from 3D geometry. There are the
-complex and quaterion products. There is also
-the {\sl outer} or {\sl exterior} product.
+For example we may want to create a geometric object using meet and join then transform using conjugation.
 
-Vector addition commutes:
-\[a + b = b + a\]
-Vector addtion is associative:
-\[a + (b + c) = (a + b) + c\]
-The identity vector exists:
-\[a + 0 = a\]
-Every vector has an inverse:
-\[a + (-a) = 0\]
+In physics we need to combine these products by analogy with the way that vector algebra combines scalar, dot and cross products. When modeling solid bodies (isometries) we want to model either 'projective space' or 'conformal space'.
 
-If we consider vectors to be directed line segments, thus establishing
-a geometric meaning for a vector, then each of these properties has a
-geometric meaning.
+We also want these to work with a basis from non-diagonal quadratic form (such as bases which square to +ve and -ve and then rotated).
+\subsection{Why So Many Product Types?}
+Why So Many Product Types?
 
-A multiplication operator exists between scalars and vectors with
-the properties:
-\[\lambda(a + b) = \lambda a + \lambda b\]
-\[(\lambda + \mu)a = \lambda a + \mu a\]
-\[(\lambda\mu)a = \lambda(\mu a)\]
-\[{\rm If\ }1\lambda = \lambda{\rm\ for\ all\ scalars\ }\lambda
-{\rm\ then\ }1a=a{\rm\ for\ all\ vectors\ }a\]
+The exterior and inner products can be introduced in different ways, one way is to look at the exterior product as the product which generates the structure:
 
-These properties completely define a vector (linear) space. The
-$+$ operation for scalar arithmetic is not the same as the $+$
-operation for vectors.
+<e1, e2...en | ei/\ei=0, ei/\ej= -ej/\ei>
 
-{\bf Definition: Isomorphic} The vector space $A$ is isomorphic to
-the vector space $B$ if their exists a one-to-one correspondence
-between their elements which preserves sums and there is a one-to-one
-correspondence between the scalars which preserves sums and products.
+and the interior product defines the metric structure.
 
-{\bf Definition: Subspace} Vector space $B$ is a subspace of vector
-space $A$ if all of the elements of $B$ are contained in $A$ and
-they share the same scalars.
-
-{\bf Definition: Linear Combination} Given vectors $a_1,\ldots,a_n$
-the vector $b$ is a linear combination of the vectors if we can find
-scalars $\lambda_i$ such that
-\[b = \lambda_1 a_1+\ldots+\lambda_n a_n = \sum_{k=1}^n \lambda_i a_i\]
-
-{\bf Definition: Linearly Independent} If there exists scalars $\lambda_i$
-such that
-\[\lambda_1 a_1 + \ldots + \lambda_n a_n = 0\]
-and at least one of the $\lambda_i$ is not zero
-then the vectors $a_1,\ldots,a_n$ are linearly dependent. If no such
-scalars exist then the vectors are linearly independent.
-
-{\bf Definition: Span} If every vector can be written as a linear
-combination of a fixed set of vectors $a_1,\ldots,a_n$ then this set
-of vectors is said to span the vector space.
-
-{\bf Definition: Basis} If a set of vectors $a_1,\ldots,a_n$ is linearly
-independent and spans a vector space $A$ then the vectors form a basis
-for $A$.
-
-{\bf Definition: Dimension} The dimension of a vector space is the
-number of basis elements, which is unique since all bases of a
-vector space have the same number of elements.
-\subsection{Quadratic Forms\cite{1}}
-For vector space $\mathbb{V}$ over field $\mathbb{F}$, characteristic
-$\ne 2$:
+Or we can look at exterior and inner products as duals:
 \begin{list}{}
-\item Map $f:\mathbb{V} \rightarrow \mathbb{F}$, with
-$$f(\lambda x)=\lambda^2f(x),\forall \lambda \in \mathbb{F}, x \in \mathbb{V}$$
-\item $f(x) = b(x,x)$, where
-$$b:\mathbb{V}{\rm\ x\ }\mathbb{V} \rightarrow \mathbb{F}{\rm\ ,given\ by\ }$$
-$$b(x,y):=\frac{1}{2}(f(x+y)-f(x)=f(y))$$
-is a symmetric bilinear form
+topic 	concept 	dual concept
+product 	exterior 	inner
+geometric interpretation 	intersection of spaces	meet
+	union of spaces	join
+element 	grade=m 	grade = n-m
 \end{list}
-\subsection{Quadratic spaces, Clifford Maps\cite{1,2}}
+
+Or we can look at the exterior and inner products as components of the Clifford product.
+
+When we are dealing with pure vectors in orthogonal bases these concepts all coincide, however when we move to higher grades or use metrics with a non-diagonal quadratic form, the inner product types start to diverge and we end up with the regressive inner product, the contraction inner products, and so on. 
+
+\subsection{instantiate an instance of CliffordAlgebra}
+We first need to instantiate an instance of CliffordAlgebra, the constructor takes 3 parameters:
 \begin{list}{}
-\item A quadratic space is the pair($\mathbb{V}$,$f$), where $f$ is a
-quadratic form on $\mathbb{V}$
-\item A Clifford map is a vector space homomorphism
-$$\rho : \mathbb{V} \rightarrow \mathbb{A}$$
-where $\mathbb{A}$ is an associated algebra, and
-$$(\rho v)^2 = f(v),{\rm\ \ \ } \forall v \in \mathbb{V}$$
+parameter 	type 	meaning
+1st 	PositiveInteger 	dimension of the underling algebra (module over)
+2nd 	Type 	type over which this is defined
+3rd 	SquareMatrix of dimension defined by 1st parameter 	bilinear form
 \end{list}
-\subsection{Universal Clifford algebras\cite{1}}
+
+In the following example we will define a 3 dimensional Euclidean space so the bilinear form is the identity matrix:
+
+(1) -> Eu := CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])                
+
+   (1)  CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+                                                                 Type: Domain
+\subsection{Entering Multivectors}
+Entering Multivectors
+
+We can then create some elements in the algebra (I will call the general element in this algebra a 'multivector' to be consistent with most of the literature). First we can create some basis vectors using e(PI):
+
+(2) -> e1:Eu := e(1)                                                         
+
+   (2)  e
+         1
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(3) -> e2:Eu := e(2)                                                         
+
+   (3)  e
+         2
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+
+There are many options for creating higher grade basis,
+
+    * by multiplying basis vectors,
+    * or by using ee(List PI) to specify the higher order term in one go with a list of its indices (exterior product of indicies)
+    * or from a binary map of the indicies
+    * or using the monomial function (Clifford product of indicies)
+    * or using the pseudoscalar.
+
+(4) -> e12:Eu := e(1) /\ e(2)
+
+   (4)  e e
+         1 2
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(5) -> e12:Eu := ee[1,2]
+
+   (5)  e e
+         1 2
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(6) -> e12:Eu := eFromBinaryMap(3)
+
+   (6)  e e
+         1 2
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(7) -> e12:Eu := monomial(1,[1,2])
+
+   (7)  e e
+         1 2
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(8) -> p:Eu := ePseudoscalar()
+
+   (8)  e e e
+         1 2 3
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+
+We can create vectors from a linear sum of its bases and similarly we can create a bivector from a sum of bases with grade 2:
+
+(9) -> v:Eu := 2*e(1) + 3*e(2) + 4*e(3)
+
+   (9)  2e  + 3e  + 4e
+          1     2     3
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(10) -> m:Eu := 2*ee[1,2] + 3*ee[1,3] + 4*ee[2,3]
+
+   (10)  2e e  + 3e e  + 4e e
+          1 2     1 3     2 3
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+
+If we want a more complicated multivector, then it may be easier to specify it in one, by using the multivector function. Note that the indices are specified in binary order, that is multivector[scalar,e1,e2,e12,e3,e13,e23,e123...] so we only need specify the multipliers for these:
+
+(11) -> m:Eu := multivector[0,0,0,2,0,3,4,0]
+
+   (11)  2e e  + 3e e  + 4e e
+          1 2     1 3     2 3
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+
+\subsection{Algebraic Operations}
+Algebraic Operations
+
+We can then do some operations such as:
 \begin{list}{}
-\item The {\sl universal Clifford algebra} $Cl(f)$ for the quadratic space
-$(\mathbb{V},f)$ is the algebra generated by the image of the Clifford
-map $\phi_f$ such that $Cl(f)$ is the universal initial object such
-that $\forall$ suitable algebra $\mathbb{A}$ with Clifford map
-$\phi_{\mathbb{A}} \exists$ a homomorphism
-$$P_\mathbb{A}:Cl(f) \rightarrow \mathbb{A}$$
-$$\rho_\mathbb{A} = P_\mathbb{A}\circ\rho_f$$
+operator 	meaning
+/\ 	exterior
+\/ 	regression
+* 	Clifford
+lc 	left contraction
+rc 	right contraction
 \end{list}
-\subsection{Real Clifford algebras $\mathbb{R}_{p,q}$\cite{2}}
+
+examples:
+
+(12) -> e1 /\ e2                                                              
+
+   (12)  e e
+         1 2
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(13) -> e1 /\ e1                                                              
+                                                                                                    
+   (13)  0                                                                                           
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])                       
+(14) -> e1 \/ e2                                                                                     
+                                                                                                    
+   (14)  0                                                                                           
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])                       
+(15) -> e1 \/ e1                                                                                     
+                                                                                                    
+   (15)  0                                                                                           
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])                       
+(16) -> lc(e1,e2)                                                                                    
+                                                                                                    
+   (16)  0                                                                                           
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])                       
+(17) -> lc(e1,e1)                                                                                    
+                                                                                                    
+   (17)  1
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(18) -> rc(e1,e2)
+
+   (18)  0
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(19) -> rc(e1,e1)
+
+   (19)  1
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+
+\subsection{Functions}
+Functions
+
+Here are some functions available for the algebra :
 \begin{list}{}
-\item The real quadratic space $\mathbb{R}^{p,q}$ is $\mathbb{R}^{p+q}$ with
-$$\phi(x):=-\sum_{k:=-q}^{-1}{x_k^2}+\sum_{k=1}^p{x_k^2}$$
-\item For each $p,q \in \mathbb{N}$, the real universal Clifford algebra
-for $\mathbb{R}^{p,q}$ is called $\mathbb{R}_{p,q}$
-\item $\mathbb{R}_{p,q}$ is isomorphic to some matrix algebra over one of:
-$\mathbb{R}$,$\mathbb{R}\oplus\mathbb{R}$,$\mathbb{C}$,
-$\mathbb{H}$,$\mathbb{H}\oplus\mathbb{H}$
-\item For example, $\mathbb{R}_{1,1} \cong \mathbb{R}(2)$
+coefficient(%,List NNI) 	extracts the scalar coefficient of a given basis which is specified by a list of indices.
+~(%) 	Clifford dual
+gradeInvolution(%) 	invert (multiply by -1) vector and modify other grades accordingly
+reverse(%) 	reverse order of basis vectors in each blade
+conj(%) 	equivalent to applying both gradeInvolution and reverse
+grade(%) 	returns an integer representing the maximum grade of the non-zero blades in this multivector. 0 for scalar, 1 for vector and so on.
 \end{list}
-\subsection{Notation for integer sets}
-\begin{list}{}
-\item For $S \subseteq \mathbb{Z}$, define
-$$\sum_{k \in S}{f_k}:=\sum_{k={\rm min\ }S, k \in S}^{{\rm max\ } S}{f_k}$$
-$$\prod_{k \in S}{f_k}:=\prod_{k={\rm min\ }S, k \in S}^{{\rm max\ } S}{f_k}$$
-$$\mathbb{P}(S):={\rm\ the\ }\ power\ set\ {\rm\ of\ }S$$
-\item For $m \le n \in \mathbb{Z}$, define
-$$\zeta(m,n):=\{m,m+1,\ldots,n-1,n\}\backslash\{0\}$$
-\end{list}
-\subsection{Frames for Clifford algebras\cite{9,10,11}}
-\begin{list}{}
-\item A {\sl frame} is an ordered basis $(\gamma_{-q},\ldots,\gamma_p)$
-for $\mathbb{R}^{p,q}$ which puts a quadratic form into the canonical
-form $\phi$
-\item For $p,q \in \mathbb{N}$, embed the frame for $\mathbb{R}^{p,q}$
-into $\mathbb{R}_{p,q}$ via the maps
-$$\gamma:\zeta(-q,p) \rightarrow \mathbb{R}^{p,q}$$
-$$\rho:\mathbb{R}^{p,q} \rightarrow \mathbb{R}_{p,q}$$
-$$(\rho\gamma k)^2 = \phi\gamma k = {\rm\ sgn\ }k$$
-\end{list}
-\subsection{Real frame groups\cite{5,6}}
-\begin{list}{}
-\item For $p,q \in \mathbb{N}$, define the real {\sl frame group} $\mathbb{G}_{p,q}$
-via the map
-$$g:\zeta(-q,p) \rightarrow \mathbb{G}_{p,q}$$
-with generators and relations
-$$\langle \mu,g_k | \mu g_k = g_k \mu,{\rm\ \ \ }\mu^2 = 1,$$
-$$(g_k)^2 =
-\left\{
-\begin{array}{lcc}
-\mu,&{\rm\ \ }&{\rm\ if\ }k < 0\\
-1&{\rm\ \ }&{\rm\ if\ }k > 0
-\end{array}
-\right.$$
-$$g_kg_m = \mu g_mg_k{\rm\ \ \ }\forall k \ne m\rangle$$
-\end{list}
-\subsection{Canonical products\cite{1,3,4}}
-\begin{list}{}
-\item The real frame group $\mathbb{G}_{p,q}$ has order $2^{p+q+1}$
-\item Each member $w$ can be expressed as the canonically ordered product
-$$w=\mu^a\prod_{k \in T}{g_k}$$
-$$\ =\mu^a\prod_{k=-q,k\ne0}^p{g_k^{b_k}}$$
-where $T \subseteq \zeta(-q,p),a,b_k \in \{0,1\}$
-\end{list}
-\subsection{Clifford algebra of frame group\cite{1,4,5,6}}
-\begin{list}{}
-\item For $p,q \in \mathbb{N}$ embed $\mathbb{G}_{p,q}$ into
-$\mathbb{R}_{p,q}$ via the map
-$$\alpha  \mathbb{G}_{p,q} \rightarrow \mathbb{R}_{p,q}$$
-$$\alpha 1 := 1,{\rm\ \ \ \ \ } \alpha\mu := -1$$
-$$\alpha g_k := \rho\gamma_k, {\rm \ \ \ \ \ }
-\alpha(gh) := (\alpha g)(\alpha h)$$
-\item Define {\sl basis elements} via the map
-$$e:\mathbb{P}\zeta(-q,p) \rightarrow \mathbb{R}_{p,q},
-{\rm \ \ \ \ \ }e_T := \alpha \prod_{k \in T}{g_k}$$
-\item Each $a \in \mathbb{R}_{p,q}$ can be expressed as
-$$a = \sum_{T \subseteq \zeta(-q,p)}{a_T e_T}$$
-\end{list}
-\subsection{Neutral matrix representations\cite{1,2,8}}
-The {\sl representation map} $P_m$ and {\sl representation matrix} $R_m$
-make the following diagram commute:
-% \begin{diagram}
-% \mathbb{R}_{m,m} & \rTo^{coord} & \mathbb{R}^{4^m}\\
-% \dTo^{P_m} & & \dTo_{R_m}\\
-% \mathbb{R}(2^m) & \rTo_{reshape} &  \mathbb{R}^{4^m}\\
-% \end{diagram}
-\begin{verbatim}
-                                           m
-                  coord                  4
-      R      ----------------------->   R
-       m,m                              |
-       |                                |
-       |                                |
-       |  P                             | R
-       |   m                            |  m
-       V                                V
-         m                                m
-        2        reshape                 4
-       R    ------------------------>   R
-\end{verbatim}
+
+examples:
+
+(20) -> c:Eu := coefficient(p,[1,2])
+
+   (20)  0
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(21) -> c:Eu := coefficient(p,[1,2,3])
+
+   (21)  1
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(22) -> ~e12
+
+   (22)  - 1
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(23) -> gradeInvolution(e12)
+
+   (23)  e e
+         1 2
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(24) -> gradeInvolution(p)
+
+   (24)  - e e e
+           1 2 3
+        Type: CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]])
+(25) -> grade(p)
+
+   (25)  3
+                                                        Type: PositiveInteger
+\subsection{Tables}
+Tables
+
+We can produce tables (Cayley table) of the built-in operations, unary and binary functions by using 'toTable'. The result is a matrix showing all combinations of the basis for each operand:
+
+(26) -> toTable(lc)$Eu
+
+         +1  e   e   e e   e   e e   e e   e e e +
+         |    1   2   1 2   3   1 3   2 3   1 2 3|
+         |                                       |
+         |0  1   0    e    0    e     0     e e  |
+         |             2         3           2 3 |
+         |                                       |
+         |0  0   1   - e   0    0     e    - e e |
+         |              1              3      1 3|
+         |                                       |
+         |0  0   0   - 1   0    0     0     - e  |
+   (26)  |                                     3 |
+         |                                       |
+         |0  0   0    0    1   - e   - e    e e  |
+         |                        1     2    1 2 |
+         |                                       |
+         |0  0   0    0    0   - 1    0      e   |
+         |                                    2  |
+         |                                       |
+         |0  0   0    0    0    0    - 1    - e  |
+         |                                     1 |
+         |                                       |
+         +0  0   0    0    0    0     0     - 1  +
+Type: Matrix(CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]]))
+(27) -> toTable(*)$Eu
+
+         +  1       e        e       e e      e       e e      e e    e e e +
+         |           1        2       1 2      3       1 3      2 3    1 2 3|
+         |                                                                  |
+         |  e       1       e e       e      e e       e      e e e    e e  |
+         |   1               1 2       2      1 3       3      1 2 3    2 3 |
+         |                                                                  |
+         |  e     - e e      1       - e     e e    - e e e     e     - e e |
+         |   2       1 2                1     2 3      1 2 3     3       1 3|
+         |                                                                  |
+         | e e     - e       e       - 1    e e e    - e e     e e     - e  |
+         |  1 2       2       1              1 2 3      2 3     1 3       3 |
+   (27)  |                                                                  |
+         |  e     - e e    - e e    e e e     1       - e      - e     e e  |
+         |   3       1 3      2 3    1 2 3               1        2     1 2 |
+         |                                                                  |
+         | e e     - e    - e e e    e e      e       - 1     - e e     e   |
+         |  1 3       3      1 2 3    2 3      1                 1 2     2  |
+         |                                                                  |
+         | e e    e e e     - e     - e e     e       e e      - 1     - e  |
+         |  2 3    1 2 3       3       1 3     2       1 2                1 |
+         |                                                                  |
+         |e e e    e e     - e e     - e     e e       e       - e     - 1  |
+         + 1 2 3    2 3       1 3       3     1 2       2         1         +
+Type: Matrix(CliffordAlgebra(3,Fraction(Integer),[[1,0,0],[0,1,0],[0,0,1]]))
+
+\subsection{Debugging}
+Debugging
+
+There are some commands to help with debugging:
+
+setMode("orthogonal",false)
+
+The "orthogonal" flag is set to true if the non-diagonal terms in the matrix are zero.
+This allows a more optimised Clifford multiplication for this case. The above setMode command
+would turn that optimisation off forcing all multiplications to be done by the more general algorithm.
+This allows the output of the two algorithms to be compared.
+
+setMode("debug",true)
+
+This "debug" flag causes the internal working of the algorithms to be displayed during calculations.
+
 <<domain CLIF CliffordAlgebra>>=
 )abbrev domain CLIF CliffordAlgebra
-++ Author: Stephen M. Watt
+++ Author: Martin Baker (adapted from a version by Stephen M. Watt)
 ++ Date Created: August 1988
-++ Date Last Updated: May 17, 1991
+++ Date Last Updated: Dec 2009
 ++ Basic Operations: wholeRadix, fractRadix, wholeRagits, fractRagits
 ++ Related Domains: QuadraticForm, Quaternion, Complex
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: clifford algebra, grassman algebra, spin algebra
+++ Keywords: clifford algebra, grassmann algebra, spin algebra
 ++ Examples:
 ++ References:
 ++
 ++ Description:
-++  CliffordAlgebra(n, K, Q) defines a vector space of dimension \spad{2^n}
-++  over K, given a quadratic form Q on \spad{K^n}.
-++
-++  If \spad{e[i]}, \spad{1<=i<=n} is a basis for \spad{K^n} then
-++     1, \spad{e[i]} (\spad{1<=i<=n}), \spad{e[i1]*e[i2]}
-++  (\spad{1<=i1<i2<=n}),...,\spad{e[1]*e[2]*..*e[n]}
-++  is a basis for the Clifford Algebra.
-++
-++  The algebra is defined by the relations
-++     \spad{e[i]*e[j] = -e[j]*e[i]}  (\spad{i \~~= j}),
-++     \spad{e[i]*e[i] = Q(e[i])}
+++  CliffordAlgebra(n, K, bLin) defines a module of dimension \spad{2^n}
+++  over K, given a bilinear form bLin on \spad{K^n}.
 ++
 ++  Examples of Clifford Algebras are: gaussians, quaternions, exterior
 ++  algebras and spin algebras.
 
-CliffordAlgebra(n, K, Q): T == Impl where
+CliffordAlgebra(n, K, bLin): T == Impl where
     n: PositiveInteger
     K: Field
-    Q: QuadraticForm(n, K)
+    bLin: SquareMatrix(n, K)
 
     PI ==> PositiveInteger
     NNI==> NonNegativeInteger
+    SINT==> SingleInteger
 
-    T ==> Join(Ring, Algebra(K), VectorSpace(K)) with
+    T ==> Join(Ring, Algebra(K)) with
         e: PI -> %
-          ++ e(n) produces the appropriate unit element.
+          ++ e(n) produces phi(e_i) where e_i is i-th basis
+          ++ vector in K^n and phi is canonical embedding of
+          ++ K^n into Clifford algebra.
+        ee: List PI -> %
+          ++ to allow entries like: ee[1,2]
+        multivector: List K -> %
+          ++ to allow entries like: 1+2*e1+3*e2+4*e1e2 = multivector[1,2,3,4]
+        eFromBinaryMap: NNI -> %
+          ++ eFromBinaryMap(n) sets the appropriate Grassmann basis, for example:
+          ++ eFromBinaryMap(0) = 1  (scalar)
+          ++ eFromBinaryMap(1) = e1
+          ++ eFromBinaryMap(2) = e2
+          ++ eFromBinaryMap(3) = e1/\e2
+        ePseudoscalar: () -> %
+          ++ unit pseudoscalar
+        grade: (%) -> NNI
+          ++ return the max grade of multivector, for example
+          ++ 1 is grade 0
+          ++ e1 is grade 1
+          ++ e1/\e2 is grade 2 and so on
         monomial: (K, List PI) -> %
           ++ monomial(c,[i1,i2,...,iN]) produces the value given by
           ++ \spad{c*e(i1)*e(i2)*...*e(iN)}.
@@ -303,13 +403,55 @@ CliffordAlgebra(n, K, Q): T == Impl where
         recip: % -> Union(%, "failed")
           ++ recip(x) computes the multiplicative inverse of x or "failed"
           ++ if x is not invertible.
+        toTable: ((%, %) -> %) -> Matrix %
+          ++ displays multiplication table for binary operation which
+          ++ is represented as a function with two parameters.
+          ++ row number represents first operand in binary order
+          ++ column number represents second operand in binary order
+          ++ could have returned type 'List List %' but matrix displays better
+        toTable: ((%) -> %) -> Matrix %
+          ++ displays table of unary function such as inverse, reverse,
+          ++ complement, or dual basis
+          ++ could have returned type 'List List %' but matrix displays better
+        _/_\: (%, %) -> %
+          ++ Implement exterior grassmann product operator
+          ++ need to check precidence when used as an infix operator
+        _\_/: (%, %) -> %
+          ++ Implement regressive inner,meet product operator
+          ++ need to check precidence when used as an infix operator
+        lc: (%, %) -> %
+          ++ left contraction inner product
+        rc: (%, %) -> %
+          ++ right contraction inner product
+        _~: (%) -> %
+          ++ reverse, complement,canonical dual basis
+        gradeInvolution: (%) -> %
+          ++ x = ((-1)^grade(x))*x
+        reverse: (%) -> %
+          ++ implements reverse for a single term by using:
+          ++ grade: 0  1  2  3...
+          ++ multi: 1  1 -1 -1...
+        conj: (%) -> %
+          ++ implements Clifford conjugate for a multivector by involution and reverse
+          ++ of each term seperately using:
+          ++ grade: 0  1  2  3...
+          ++ multi: 1 -1 -1  1...
+        setMode: (String,Boolean) -> Boolean
+          ++ allows override of parameters such as orthogonal
+          ++ used for debugging
+
 
     Impl ==> add
-        Qeelist :=  [Q unitVector(i::PositiveInteger) for i in 1..n]
+        Qeelist:Vector K :=  diagonal(bLin)::Vector K
+          ++ contains the diagonal terms of bLin (what the base vectors square to)
+        orthogonal:Boolean :=  diagonal?(bLin)
+          ++ true if bininear form is diagonal (non diagonal terms are zero)
+        debug:Boolean := false
+          ++ if set to true displays working when calculating results
         dim     :=  2^n
-
+          ++ the total dimension of all the grades from scalar up to pseudoscalar
         Rep     := PrimitiveArray K
-
+          ++ array of Field which can hold the multivector values
         New     ==> new(dim, 0$K)$Rep
 
         x, y, z: %
@@ -317,7 +459,7 @@ CliffordAlgebra(n, K, Q): T == Impl where
         m: Integer
 
         characteristic() == characteristic()$K
-        dimension()      == dim::CardinalNumber
+        dimension(): CardinalNumber == dim::CardinalNumber
 
         x = y ==
             for i in 0..dim-1 repeat
@@ -329,48 +471,467 @@ CliffordAlgebra(n, K, Q): T == Impl where
         - x   == (z := New; for i in 0..dim-1 repeat z.i := - x.i; z)
         m * x == (z := New; for i in 0..dim-1 repeat z.i := m*x.i; z)
         c * x == (z := New; for i in 0..dim-1 repeat z.i := c*x.i; z)
+        -- we want module over non-commutative
+        -- but no available signatures for:
+        --x * m == (z := New; for i in 0..dim-1 repeat z.i := x*m.i; z)
+        --x * c == (z := New; for i in 0..dim-1 repeat z.i := x*c.i; z)
 
         0            == New
         1            == (z := New; z.0 := 1; z)
         coerce(m): % == (z := New; z.0 := m::K; z)
         coerce(c): % == (z := New; z.0 := c; z)
 
+        -- output single term to string
+        -- this produces a simple one line string unlike coerceMonom
+        -- no formatting such as subscript is done
+        -- this is intended mainly for debug purposes
+        toStringTerm(c: K, b: SINT): String ==
+            mult:String := (mathObject2String$Lisp c)@String
+            b = 0 => mult
+            c = 0 => "0"
+            if c=1 then mult := "e"
+            if c= -1 then mult := "-e"
+            if c~=1 and c~= -1 then mult := concat(mult,"e")
+            for i in 0..n-1 repeat
+              if bit?(b,i) then mult := concat(mult,string(i+1)$String)
+            mult
+
+        -- output multivector to string
+        -- this produces a simple one line string unlike coerce(x): Ex
+        -- no formatting such as subscript is done
+        -- this is intended mainly for debug purposes
+        toString(m:%): String ==
+            res:String := ""
+            for im in 0..dim-1 repeat
+              if m.im ~= 0 then
+                s:String := (mathObject2String$Lisp m.im)@String
+                neg:Boolean := false
+                if #s > 0 then neg := (s.1 = char "-")
+                if res ~= "" and not neg then
+                  res := concat[res,"+",toStringTerm(m.im,im::SINT)]
+                if res = "" or neg then
+                  res := concat(res,toStringTerm(m.im,im::SINT))
+            if res = "" then res:="0"
+            res
+
+        -- NOTE tempoary name change to: es(n) to avoid name clash with e(l) below
+        -- e(n) produces the appropriate unit element.
+        --        iz   z
+        -- e(1) = 1    e1
+        -- e(2) = 2    e2
+        -- e(3) = 4    e3
         e b ==
             b::NNI > n => error "No such basis element"
             iz := 2^((b-1)::NNI)
             z := New; z.iz := 1; z
 
+        -- to allow entries like e[1,2]
+        ee(l) == 
+          lst:List % := [e i for i in l]
+          reduce(_/_\, lst , 1)
+
+        -- to allow entries like: 1+2*e1+3*e2+4*e1e2 = multivector[1,2,3,4]
+        multivector(scalar:List K) == (z := New; for i in 0..dim-1 repeat z.i := scalar(i+1); z) 
+
+        -- eFromBinaryMap(n) sets the appropriate unit elements, for example,
+        -- eFromBinaryMap(0) = 1  (scalar)
+        -- eFromBinaryMap(1) = e1
+        -- eFromBinaryMap(2) = e2
+        -- eFromBinaryMap(3) = e1/\e2
+        eFromBinaryMap b ==
+            b >= dim => error "Too big"
+            z := New; z.b := 1; z
+
+        -- unit pseudoscalar
+        ePseudoscalar() ==
+            p := New
+            i := (dim-1)::NNI
+            p.i := 1
+            p
+
+        -- displays multiplication table for binary operation which
+        -- is represented as a function with two parameters.
+        -- row number represents first operand in binary order
+        -- column number represents second operand in binary order
+        -- could have returned type 'List List %' but matrix displays better
+        toTable(fn:(%, %) -> %) ==
+          l: List % := [eFromBinaryMap(i) for i in 0..dim-1]
+          matrix [[fn(k,j) for j in l] for k in l]
+
+        -- displays table of unary function such as inverse, reverse, complement,
+        -- or dual basis
+        -- could have returned type 'List List %' but matrix displays better
+        toTable(fn:(%) -> %) ==
+          l: List % := [eFromBinaryMap(i) for i in 0..dim-1]
+          matrix [[j for j in l],[fn(k) for k in l]]
+
+        -- return the grade of the term, for example
+        -- 1 is grade 0
+        -- e1 is grade 1
+        -- e1^e2 is grade 2 and so on
+        gradeTerm(b:SINT): NNI ==
+          grade:NNI := 0
+          for i in 0..n-1 repeat
+            if bit?(b,i) then grade := grade + 1
+          grade
+
+        -- return the max grade of multivector, for example
+        -- 1 is grade 0
+        -- e1 is grade 1
+        -- e1/\e2 + e1 is grade 2 and so on
+        grade(x:%): NNI ==
+          gr:NNI := 0         
+          for ix in 0..dim-1 repeat
+            if x.ix ~= 0 then
+              gr := max(gr,gradeTerm(ix::SINT))
+          gr
+
+        -- implements gradeInvolution for a single term by using:
+        -- x = ((-1)^grade(x))*x
+        gradeInvolutionTerm(mult: K,type1:SINT): % ==
+          resul:% := New; resul.type1:=mult
+          g:NNI := gradeTerm(type1)
+          sign:Integer := if odd?(g) then -1 else 1
+          resul := sign*resul
+          resul
+
+        -- implements gradeInvolution for a multivector by involution
+        -- of each term seperately using:
+        -- x = ((-1)^grade(x))*x
+        gradeInvolution(x:%): % ==
+            z := New
+            for ix in 0..dim-1 repeat
+                if x.ix ~= 0 then z := z + gradeInvolutionTerm(x.ix,ix::SINT)
+            z
+
+        -- implements reverse for a single term by using:
+        -- grade: 0  1  2  3...
+        -- multi: 1  1 -1 -1...
+        reverseTerm(mult: K,type1:SINT): % ==
+          resul:% := New; resul.type1:=mult
+          g := gradeTerm(type1)::SINT
+          sign:Integer := if odd?(shift(g,-1)) then -1 else 1
+          resul := sign*resul
+          resul
+
+        -- implements reversal for a multivector by reverse
+        -- of each term seperately using:
+        -- grade: 0  1  2  3...
+        -- multi: 1  1 -1 -1...
+        reverse(x:%): % ==
+            z := New
+            for ix in 0..dim-1 repeat
+                if x.ix ~= 0 then z := z + reverseTerm(x.ix,ix::SINT)
+            z
+
+        -- implements Clifford conjugation for a single term by using:
+        -- grade: 0  1  2  3...
+        -- multi: 1 -1 -1  1...
+        conjTerm(mult: K,type1:SINT): % ==
+          resul:% := New; resul.type1:=mult
+          g := gradeTerm(type1)::SINT
+          sign:Integer := if odd?(shift(g+1,-1)) then -1 else 1
+          resul := sign*resul
+          resul
+
+        -- implements Clifford conjugate for a multivector by involution and reverse
+        -- of each term seperately using:
+        -- grade: 0  1  2  3...
+        -- multi: 1 -1 -1  1...
+        conj(x:%): % ==
+            z := New
+            for ix in 0..dim-1 repeat
+                if x.ix ~= 0 then z := z + conjTerm(x.ix,ix::SINT)
+            z
+
+        -- allows override of parameters such as orthogonal
+        -- used for debugging
+        setMode(s:String,val:Boolean): Boolean ==
+          if s = "orthogonal" then (orthogonal := val; return true)
+          if s = "debug" then (debug := val; return true)
+          false
+
+        -- return the base vector number from binary, for example
+        -- binary for e1 is 001 which returns 1
+        -- binary for e2 is 010 which  returns 2 and so on
+        baseVect(b:SINT): NNI ==
+          for i in 0..n-1 repeat
+            if bit?(b,i) then return i+1
+          0
+
+        -- return a term from bilinear product
+        bilinear(b1:SINT,b2:SINT): K ==
+          bv1 := baseVect(b1)
+          bv2 := baseVect(b2)
+          if bv1 = 0$NNI then return 0
+          if bv2 = 0$NNI then return 0
+          bLin(bv1,bv2)
+
+        -- for a given term, return the base furthest on the left, for example
+        -- e1^e2^e3
+        -- would return e1
+        leftMostBase(b:SINT): SINT ==
+          mask:SINT := 1
+          for i in 0..n-1 repeat
+            if And(mask,b) ~= 0 then return mask
+            mask := shift(mask,1)::SINT
+          0
+
+        -- for a given term, return the base furthest on the right, for example
+        -- e1^e2^e3
+        -- would return e3
+        rightMostBase(b:SINT): SINT ==
+          mask:SINT := shift(1,(n-1)::SINT)$SINT
+          for i in 0..n-1 repeat
+            if And(mask,b) ~= 0 then return mask
+            mask := shift(mask,-1)::SINT
+          0
+
+        -- Implement exterior grassmann product on individual term in a
+        -- multivector.
+        exteriorProdTerm(op1mult: K, op1type:SINT, op2mult: K, op2type:SINT): % ==
+          resul:% := New
+          And(op1type,op2type) ~= 0 => resul -- if common terms return without adding
+          c := op1mult * op2mult
+          bz := Or(op1type,op2type)-- combine terms from both operands
+          for i in 0..n-1 | bit?(op1type,i) repeat
+            -- Apply rule  ei*ej = -ej*ei for i ~= j
+            k := 0
+            for j in i+1..n-1 | bit?(op1type, j) repeat k := k+1
+            for j in 0..i-1   | bit?(bz, j) repeat k := k+1
+            if odd? k then c := -c
+          resul.bz := resul.bz + c
+          resul
+
+        -- Implement regressive inner,meet product on individual term in a
+        -- multivector.
+        regressiveProdTerm(op1mult: K, op1type:SINT, op2mult: K, op2type:SINT): % ==
+          op1 := New; op1.op1type := 1$K
+          op2 := New; op2.op2type := 1$K
+          res := _/_\(op2*ePseudoscalar(),op1*ePseudoscalar()) *ePseudoscalar()
+          res := (op1mult * op2mult)*res
+          res
+
+        -- Implement exterior grassmann product
+        _/_\(x:%,y:%): % ==
+            z := New
+            for ix in 0..dim-1 repeat
+                if x.ix ~= 0 then for iy in 0..dim-1 repeat
+                    if y.iy ~= 0 then z := z + exteriorProdTerm(x.ix,ix::SINT,y.iy,iy::SINT)
+            z
+
+        -- Implement regressive inner,meet product operator
+        _\_/(x:%,y:%): % ==
+            z := New
+            for ix in 0..dim-1 repeat
+                if x.ix ~= 0 then for iy in 0..dim-1 repeat
+                    if y.iy ~= 0 then z := z + regressiveProdTerm(x.ix,ix::SINT,y.iy,iy::SINT)
+            z
+
+        -- Implement left contraction on individual term in a
+        -- multivector.
+        lcProdTerm(op1mult: K, op1type:SINT, op2mult: K, op2type:SINT): % ==
+          resul:% := New
+          grade1 := gradeTerm(op1type) -- grade of first operand
+          grade2 := gradeTerm(op2type) -- grade of second operand
+          if grade1 = 0 then -- 1st operand is scalar so return scalar product
+            resul.op2type := resul.op2type + op1mult*op2mult
+            return resul
+          grade2 = 0 => resul -- 2nd operand is scalar so return 0
+          if grade1 = 1 and grade2 = 1 then -- vect _| vect = bilinear
+            resul.(0$NNI) := resul.(0$NNI) + op1mult * op2mult * bilinear(op1type,op2type) -- add scalar term
+            return resul
+          if grade1 = 1 then -- 1st operand is vector so apply: x_|(u^v)=(x_|u)^v - u^(x_|v)
+            uType:SINT := leftMostBase(op2type) -- highest ^factor
+            vType:SINT := xor(op2type,uType) -- remaining ^factors
+            inner2:% := New; inner2.vType := 1$K
+            left:% := _/_\(lcProdTerm(op1mult, op1type,op2mult, uType),inner2)
+            inner4:% := New; inner4.uType := 1$K
+            resul := resul + left + _/_\(inner4,lcProdTerm(-op1mult, op1type,op2mult, vType))
+            return resul
+          -- if none of the above is true then apply:
+          -- (u/\v) _| w = u _| (v _| w)
+          uType:SINT := leftMostBase(op1type) -- highest ^factor
+          vType:SINT := xor(op1type,uType) -- remaining ^factors
+          inner2:% := New
+          inner2.uType := 1$K
+          resul := resul+ lc(inner2,lcProdTerm(op1mult,vType,op2mult,op2type))
+          resul
+
+        -- Implement right contraction on individual term in a
+        -- multivector.
+        rcProdTerm(op1mult: K, op1type:SINT, op2mult: K, op2type:SINT): % ==
+          resul:% := New
+          grade1 := gradeTerm(op1type) -- grade of first operand
+          grade2 := gradeTerm(op2type) -- grade of second operand
+          if grade2 = 0 then -- 2nd operand is scalar so return scalar product
+            resul.op1type := resul.op1type + op1mult*op2mult
+            return resul
+          grade1 = 0 => resul -- 1st operand is scalar so return 0
+          if grade1 = 1 and grade2 = 1 then -- vect |_ vect = bilinear
+            resul.(0$NNI) := resul.(0$NNI) + op1mult * op2mult * bilinear(op1type,op2type) -- add scalar term
+            return resul
+          if grade2 = 1 then -- 2nd operand is vector so apply: (v^u)|_x=v^(u|_x) - (v|_x)^u
+            uType:SINT := rightMostBase(op1type) -- lowest ^factor
+            vType:SINT := xor(op1type,uType) -- remaining ^factors
+            inner2:% := New; inner2.vType := 1$K
+            right:% := _/_\(inner2,rcProdTerm(op1mult, uType,op2mult, op2type))
+            inner4:% := New; inner4.uType := 1$K
+            resul := resul + _/_\(rcProdTerm(op1mult, vType,-op2mult, op2type),inner4) + right
+            if debug then
+              s1 := concat[toStringTerm(op1mult,op1type),"L",toStringTerm(op2mult,op2type)]
+              s2 := concat["= ",toStringTerm(op1mult, vType),"L",toStringTerm(-op2mult, op2type)]
+              s3 := concat["/\",toString(inner4),"+",toString(right)]
+              s4 := concat("=",toString(resul))
+              sayTeX$Lisp concat ["rcProdTerm: ",s1,s2,s3,s4]
+            return resul
+          -- if none of the above is true then apply:
+          -- w |_ (v/\u) = (w |_ v) |_ u
+          uType:SINT := rightMostBase(op2type) -- lowest ^factor
+          vType:SINT := xor(op2type,uType) -- remaining ^factors
+          inner2:% := New
+          inner2.uType := 1$K
+          resul := resul+ rc(rcProdTerm(op1mult,op1type,op2mult,vType),inner2)
+          if debug then
+            s1 := concat[toStringTerm(op1mult,op1type),"L",toStringTerm(op2mult,op2type)]
+            s2 := concat["= (",toStringTerm(op1mult,op1type),"L",toStringTerm(op2mult,vType)]
+            s3 := concat(") L",toString(inner2))
+            s4 := concat("=",toString(resul))
+            sayTeX$Lisp concat ["rcProdTerm: ",s1,s2,s3,s4]
+          resul
+
+        -- Implement left contraction inner product
+        lc(x:%,y:%): % ==
+            z := New
+            for ix in 0..dim-1 repeat
+                if x.ix ~= 0 then for iy in 0..dim-1 repeat
+                    if y.iy ~= 0 then z := z + lcProdTerm(x.ix,ix::SINT,y.iy,iy::SINT)
+            z
+
+        -- Implement right contraction inner product
+        rc(x:%,y:%): % ==
+            z := New
+            for ix in 0..dim-1 repeat
+                if x.ix ~= 0 then for iy in 0..dim-1 repeat
+                    if y.iy ~= 0 then z := z + rcProdTerm(x.ix,ix::SINT,y.iy,iy::SINT)
+            z
+
+        -- Implement Clifford multiplication on individual term in a
+        -- multivector.
+        cliffordProdTerm(op1mult: K, op1type:SINT, op2mult: K, op2type:SINT): % ==
+          resul:% := New
+          grade1 := gradeTerm(op1type) -- grade of first operand
+          grade2 := gradeTerm(op2type) -- grade of second operand
+          if grade1 = 0 then -- 1st operand is scalar so return scalar product
+            resul.op2type := resul.op2type + op1mult*op2mult
+            return resul
+          if grade2 = 0 then -- 2nd operand is scalar so return scalar product
+            resul.op1type := resul.op1type + op1mult*op2mult
+            return resul
+          if grade1 = 1 and grade2 = 1 then -- vect * vect = bilinear + x/\y
+            resul.(0$NNI) := resul.(0$NNI) + op1mult * op2mult * bilinear(op1type,op2type) -- add scalar term
+            resul := resul + exteriorProdTerm(op1mult,op1type,op2mult,op2type) -- add exterior term
+            return resul
+          if grade1 = 1 then -- 1st operand is vector so apply:
+            -- x*(u/\v) = x /\ u /\ v + x _| (u/\v)
+            -- = x/\u/\v + (x_|u)/\v + gradeinvolution(u) /\ (x _| v)
+            uType:SINT := leftMostBase(op2type) -- highest ^factor
+            vType:SINT := xor(op2type,uType) -- remaining ^factors
+            xt:% := New; xt.op1type := 1$K
+            ut:% := New; ut.uType := 1$K
+            vt:% := New; vt.vType := 1$K
+            resul := _/_\(xt,exteriorProdTerm(1$K,uType,1$K,vType))_
+              +  _/_\(lcProdTerm(1$K,op1type,1$K,uType),vt)_
+              +  _/_\(gradeInvolutionTerm(1$K,uType),lcProdTerm(1$K,op1type,1$K,vType)) -- gradeinvolution(u) /\ (x _| v)
+            resul := (op1mult*op2mult)*resul -- apply 'scalar' multipliers
+            return resul
+          if grade2 = 1 then -- 2nd operand is vector so apply:
+            -- (v/\u)*x = v /\ u /\ x + rc(v/\u,x)
+            -- = v/\u/\x + v/\rc(u,x) +  rc(u, x)/\ gradeinvolution(v)
+            uType:SINT := rightMostBase(op1type) -- lowest ^factor
+            vType:SINT := xor(op1type,uType) -- remaining ^factors
+            xt:% := New; xt.op2type := 1$K
+            ut:% := New; ut.uType := 1$K
+            vt:% := New; vt.vType := 1$K
+            resul := _/_\(exteriorProdTerm(1$K,vType,1$K,uType),xt)_
+              +  _/_\(vt,rcProdTerm(1$K,uType,1$K,op2type))_
+              +  _/_\(rcProdTerm(1$K,vType,1$K,op2type),gradeInvolutionTerm(1$K,uType)) -- (v |_ x)/\ gradeinvolution(u)
+            resul := (op1mult*op2mult)*resul -- apply 'scalar' multipliers
+            return resul
+          -- if none of the above is true then apply:
+          -- (u /\ x) * v = u * (x _| v + x /\v) - (u |_ x) * v
+          xType:SINT := rightMostBase(op1type) -- highest ^factor
+          uType:SINT := xor(op1type,xType) -- remaining ^factors
+          ut:% := New; ut.uType := 1$K
+          vt:% := New; vt.op2type := 1$K
+          -- factor1 := x * v = x _| v + x /\v
+          -- factor1:% := cliffordProdTerm(1$K,xType,1$K,op2type)
+          factor1:% := lcProdTerm(1$K,xType,1$K,op2type)_
+            + exteriorProdTerm(1$K,xType,1$K,op2type)
+          -- factor2 := u |_ x
+          factor2:% := rcProdTerm(1$K,uType,1$K,xType)
+          resul := ut * factor1 - factor2 * vt
+          if debug then
+            s1 := concat[toStringTerm(op1mult,op1type),"*",toStringTerm(op2mult,op2type)]
+            s2 := concat["=",toString(ut),"*",toString(factor1)]
+            s3 := concat["-",toString(factor2),"*",toString(vt)]
+            s4 := concat["=",toString(resul)]
+            sayTeX$Lisp concat ["cliffordProdTerm: ",s1,s2,s3,s4]
+          resul := (op1mult*op2mult)*resul -- apply 'scalar' multipliers
+          resul
+
+        -- Implement Clifford multiplication for orthogonal bases
+        -- on individual term in a multivector.
+        -- If the bilinear form is diagonal then this may be
+        -- more efficient than cliffordProdTerm as it does not
+        -- require recursion.
         -- The ei*ej products could instead be precomputed in
-        -- a (2^n)^2 multiplication table.
-        addMonomProd(c1: K, b1: NNI, c2: K, b2: NNI, z: %): % ==
-            c  := c1 * c2
-            bz := b2
-            for i in 0..n-1 | bit?(b1,i) repeat
+        -- a (2^n)^2 multiplication table although only 
+        -- practical for low dimension size.
+        cliffordDiagonalTerm(op1mult: K, op1type:SINT, op2mult: K, op2type:SINT): % ==
+            c  := op1mult * op2mult
+            bz := op2type
+            for i in 0..n-1 | bit?(op1type,i) repeat
                 -- Apply rule  ei*ej = -ej*ei for i ~= j
                 k := 0
-                for j in i+1..n-1 | bit?(b1, j) repeat k := k+1
+                for j in i+1..n-1 | bit?(op1type, j) repeat k := k+1
                 for j in 0..i-1   | bit?(bz, j) repeat k := k+1
                 if odd? k then c := -c
                 -- Apply rule  ei^2 = Q(ei)
                 if bit?(bz,i) then
                     c := c * Qeelist.(i+1)
-                    bz:= (bz - 2^i)::NNI
+                    bz:= bz - (2^i)::SINT
                 else
-                    bz:= bz + 2^i
-            z.bz := z.bz + c
-            z
+                    bz:= bz + (2^i)::SINT
+            result := New; result.bz := c
+            result
 
+        -- Clifford product
+        -- if orthogonal then this operation will use faster algorithm
         x * y ==
-            z := New
+          z := New
+          if orthogonal then
             for ix in 0..dim-1 repeat
-                if x.ix ~= 0 then for iy in 0..dim-1 repeat
-                    if y.iy ~= 0 then addMonomProd(x.ix,ix,y.iy,iy,z)
-            z
+              if x.ix ~= 0 then for iy in 0..dim-1 repeat
+                if y.iy ~= 0 then
+                  z := z + cliffordDiagonalTerm(x.ix,ix::SINT,y.iy,iy::SINT)
+          if not orthogonal then
+            for ix in 0..dim-1 repeat
+              if x.ix ~= 0 then for iy in 0..dim-1 repeat
+                if y.iy ~= 0 then
+                  z := z + cliffordProdTerm(x.ix,ix::SINT,y.iy,iy::SINT)
+          z
 
+        -- Implement reverse, complement,canonical dual basis
+        _~(x:%): % ==
+            x * ePseudoscalar()
+
+        -- used by monomial which is used by recip
+        -- this only uses the diagonal terms in the bilinear form
+        -- so may not be completely general
         canonMonom(c: K, lb: List PI): Record(coef: K, basel: NNI) ==
             -- 0. Check input
             for b in lb repeat b > n => error "No such basis element"
-
             -- 1. Apply identity ei*ej = -ej*ei, i ~= j.
             -- The Rep assumes n is small so bubble sort is ok.
             -- Using bubble sort keeps the exchange info obvious.
@@ -384,7 +945,6 @@ CliffordAlgebra(n, K, Q): T == Impl where
                         exchanges := exchanges + 1
                         wasordered := false
             if odd? exchanges then c := -c
-
             -- 2. Prepare the basis element
             -- Apply identity ei*ei = Q(ei).
             bz := 0
@@ -397,29 +957,46 @@ CliffordAlgebra(n, K, Q): T == Impl where
                     bz:= bz + 2^bn
             [c, bz::NNI]
 
+        -- monomial(c,[i1,i2,...,iN]) produces the value given by
+        -- \spad{c*e(i1)*e(i2)*...*e(iN)}.
+        -- this uses canonMonom which only uses the diagonal terms in the bilinear form
+        -- so may not be completely general
+        -- (K, List PI) -> %
         monomial(c, lb) ==
             r := canonMonom(c, lb)
             z := New
             z r.basel := r.coef
             z
+
+        -- coefficient(x,[i1,i2,...,iN])  extracts the coefficient of
+        -- \spad{e(i1)*e(i2)*...*e(iN)} in x.
+        -- (%, List PI) -> K
         coefficient(z, lb) ==
             r := canonMonom(1, lb)
             r.coef = 0 => error "Cannot take coef of 0"
             z r.basel/r.coef
 
+        -- use Ex instead of OutputForm
         Ex ==> OutputForm
 
+        -- output single term to output device
+        -- vector bases have the form e1, e2 ...
+        -- bivector bases have the form e12, e23 ...
+        -- and so on
         coerceMonom(c: K, b: NNI): Ex ==
             b = 0 => c::Ex
             ml := [sub("e"::Ex, i::Ex) for i in 1..n | bit?(b,i-1)]
             be := reduce("*", ml)
             c = 1 => be
             c::Ex * be
+
+        -- output multivector to output device
+        -- as sum of terms, like,
+        -- 1 + 2*e1 + 3*e2 + 4*e1e2
         coerce(x): Ex ==
             tl := [coerceMonom(x.i,i) for i in 0..dim-1 | x.i ~= 0]
             null tl => "0"::Ex
             reduce("+", tl)
-
 
         localPowerSets(j:NNI): List(List(PI)) ==
           l: List List PI := list []
@@ -433,6 +1010,12 @@ CliffordAlgebra(n, K, Q): T == Impl where
 
         Pn:List List PI := powerSets(n)
 
+        -- Clifford multiplicative inverse
+        -- not guaranteed to exist, if we cant
+        -- find an inverse then we return the string "failed"
+        -- this generates a matrix representation and then inverts matrix
+        -- this uses monomial which uses canonMonom which only uses the
+        -- diagonal terms in the bilinear form so may not be completely general 
         recip(x: %): Union(%, "failed") ==
           one:% := 1
           -- tmp:c := x*yC - 1$C
@@ -441,7 +1024,6 @@ CliffordAlgebra(n, K, Q): T == Impl where
           lhsEqi: List K
           for pi in Pn repeat
             rhsEqs := cons(coefficient(one, pi), rhsEqs)
-
             lhsEqi := []
             for pj in Pn repeat
                 lhsEqi := cons(coefficient(x*monomial(1,pj),pi),lhsEqi)
