@@ -159,7 +159,14 @@
 
 (defun whocalled (n) nil) ;; no way to look n frames up the stack
 
-(define-function '|eval| #'eval)
+(defun |eval|(x)
+    #-:GCL
+    (handler-bind ((warning #'muffle-warning)
+                   #+:sbcl (sb-ext::compiler-note #'muffle-warning))
+            (eval  x))
+    #+:GCL
+    (eval  x)
+)
 
 ;;--------------------> NEW DEFINITION (see cattable.boot.pamphlet)
 (defun |compressHashTable| (ht) ht)
