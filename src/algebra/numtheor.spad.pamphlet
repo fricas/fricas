@@ -264,6 +264,10 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     ++ \spad{bernoulli(n)} returns the nth Bernoulli number.
     ++ this is \spad{B(n,0)}, where \spad{B(n,x)} is the \spad{n}th Bernoulli
     ++ polynomial.
+  carmichaelLambda : I -> I
+    ++ \spad{carmichaelLambda(n)} returns exponent of the multiplicative
+    ++ group of integers modulo n, that is smallest positive integer
+    ++ k such that \spad{i^k rem n = 1} for all i relatively prime to n.
 <<chineseRemainder: (I,I,I,I) -> I>>
   divisors : I -> List I
     ++ \spad{divisors(n)} returns a list of the divisors of n.
@@ -342,6 +346,13 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
       (f1,f2) := (t+f1^2,t+2*f1*f2)
       if bit?(n,k) then (f1,f2) := (f2,f1+f2)
     f2
+
+  carmichaelLambda(n: Integer): Integer ==
+      n <= 0 => error "carmichaelLambda defined only for positive integers"
+      lcm [(if pk.factor >= 3 or pk.exponent <= 2 then
+              (pk.factor)^((pk.exponent-1) pretend NNI)*(pk.factor-1)
+            else 2^((pk.exponent-2) pretend NNI)) _
+           for pk in factors factor n]
 
   euler n ==
     n < 0 => error "euler not defined for negative integers"
