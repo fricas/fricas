@@ -208,10 +208,12 @@
 (defun exit-with-status (s)
   (lispworks:quit :status s))
 
-;;; #+:poplog
-;;; (defun quit() (pop11::sysexit))
+#+:poplog
+(defun quit() (pop11::sysexit))
 
+#-:poplog
 (defun quit() (exit-with-status 0))
+
 ;;; -----------------------------------------------------------------
 
 ;;; Making (linking) program
@@ -291,6 +293,8 @@
   #+:clisp (ext::getenv var-name)
   #+:openmcl (ccl::getenv var-name)
   #+:ecl (si::getenv var-name)
+  #+:poplog (let ((pres (POP11::systranslate var-name)))
+                (if (stringp pres) pres))
   #+:lispworks (lispworks:environment-variable var-name)
   )
 
@@ -503,6 +507,13 @@
 
 )
 
+#+:poplog
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(defmacro fricas-foreign-call (name c-name return-type &rest arguments)
+    nil)
+
+)
 ;; LispWorks FFI interface
 
 #+:lispworks
@@ -913,7 +924,14 @@
         (compile-file f :output-file (relative-to-absolute output-file)
                         :system-p t)
         (compile-file f :system-p t)))
-#-:ecl
+
+#+:poplog
+(defun fricas-compile-file (f &key output-file)
+    (if (not output-file)
+        (setf output-file (namestring (merge-pathnames ".lsp" f))))
+    (POP11::sysobey (concatenate 'string "cp " f " " output-file)))
+
+#-(or :ecl :poplog)
 (defun fricas-compile-file (f &key output-file)
     (if output-file
         (compile-file f :output-file (relative-to-absolute output-file))
@@ -924,9 +942,14 @@
             (< (file-write-date cf) (file-write-date f)))
         (fricas-compile-file f :output-file cf)))
 
+#-:poplog
 (defun load-maybe-compiling (f cf)
          (maybe-compile f cf)
          (load #-:ecl cf #+:ecl f))
+
+#+:poplog
+(defun load-maybe-compiling (f)
+    (load f))
 
 (defmacro DEFCONST (name value)
    `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))

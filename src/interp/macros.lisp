@@ -406,7 +406,9 @@
                             (CONS
                               (LIST 'SETQ (CAR U) (LIST 'CAR G))
                               (APPEND
-                                (COND ((AND (symbol-package (car U)) $TRACELETFLAG)
+                                (COND ((AND (symbolp (car U))
+                                            (symbol-package (car U))
+                                             $TRACELETFLAG)
                                        (LIST (LIST '/TRACELET-PRINT (CAR U)
                                                    (CAR U))))
                                       (NIL))

@@ -1078,6 +1078,8 @@
 (defun gcmsg (x))
 #+:ecl
 (defun gcmsg (x))
+#+:poplog
+(defun gcmsg (x))
 #+:lispworks
 (defun gcmsg (x))
 
@@ -1101,6 +1103,9 @@
 (defun reclaim () (ccl::gc))
 #+:ecl
 (defun reclaim () (si::gc t))
+#+:poplog
+(defun reclaim () nil)
+
 
 #+(OR IBCL KCL)
 (defun BPINAME (func)
@@ -1121,7 +1126,7 @@
      (kernel::%function-name func))
     ('t func))))
 
-#+(or :sbcl :clisp :openmcl :ecl :lispworks)
+#+(or :sbcl :clisp :openmcl :ecl :lispworks :poplog)
 (defun BPINAME (func)
   (cond
       ((functionp func)
@@ -1164,6 +1169,11 @@
 #+:ecl
 (defun OBEY (S)
    (ext:system S))
+
+#+:poplog
+(defun OBEY (S)
+   (POP11:sysobey S))
+
 
 #+:lispworks
 (defun OBEY (S)

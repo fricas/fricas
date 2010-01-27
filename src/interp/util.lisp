@@ -59,6 +59,7 @@ at load time.
   #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
   #+:ecl "fas"
   #+:lispworks (pathname-type (compile-file-pathname "foo.lisp"))
+  #+:poplog "lsp"
   )
 
 ;;; The relative directory list specifies a search path for files
@@ -617,6 +618,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 #+:GCL (setq compiler::*suppress-compiler-notes* t)
   (in-package "BOOT")
   (initroot)
+#+:poplog (setf POPLOG:*READ-PROMPT* "") ;; Turn off Poplog read prompts
 #+:GCL (system:gbc-time 0)
     #+(or :sbcl :clisp :openmcl :lispworks)
     (if *fricas-load-libspad*
@@ -668,9 +670,9 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 (defun fricas-restart ()
   (fricas-init)
   (|readSpadProfileIfThere|)
-  #+:GCL
+  #+(or :GCL :poplog)
   (|spad|)
-  #-:GCL
+  #-(or :GCL :poplog)
   (let ((*debugger-hook*
             (lambda (condition previous-handler)
                 (spad-system-error-handler condition))
