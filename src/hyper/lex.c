@@ -833,7 +833,7 @@ reset_connection(void)
         spad_socket->socket = 0;
         spad_socket = NULL;
         if (input_string)
-            input_string[0] = '\0';
+            input_string = "";
         read_again = 0;
         str_len = 0;
         still_reading = 0;
