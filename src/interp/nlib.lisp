@@ -397,6 +397,10 @@ do the compile, and then rename the result back to [[code.o]].
 (defun delete-directory (dirname)
   (ext:system (concat "rm -r " dirname)))
 
+#+:poplog
+(defun delete-directory (dirname)
+    (POP11:sysobey (concat "rm -r " dirname)))
+
 #+:lispworks
 (defun delete-directory (dirname)
   (system:call-system (concatenate 'string "rm -r " dirname)))
@@ -449,6 +453,11 @@ do the compile, and then rename the result back to [[code.o]].
    (makedir name2)
    (OBEY (concat "sh -c 'cp " name1 "/* " name2 "'")))
 
+#+:poplog
+(defun copy-lib-directory (name1 name2)
+    (makedir name2)
+    (POP11:sysobey (concat "cp " name1 "/* " name2)))
+
 #+:lispworks
 (defun copy-lib-directory (name1 name2)
    (makedir name2)
@@ -473,6 +482,10 @@ do the compile, and then rename the result back to [[code.o]].
 #+(or :clisp :ecl)
 (defun copy-file (namestring1 namestring2)
   (OBEY (concat "cp " namestring1 " " namestring2)))
+
+#+:poplog
+(defun copy-file (namestring1 namestring2)
+   (POP11:sysobey (concat "cp " namestring1 " " namestring2)))
 
 #+:lispworks
 (defun copy-file (namestring1 namestring2)

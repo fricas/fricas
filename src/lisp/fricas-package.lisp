@@ -12,6 +12,10 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
     (setf STREAM::*DEFAULT-EXTERNAL-FORMAT* :ISO8859-1))
 
+#+:poplog
+(eval-when (:compile-toplevel :execute :load-toplevel)
+      (set-syntax-from-char #\@ #\@))
+
 (in-package "FRICAS-LISP")
 ;;; Aldor 1.1.0 and before produces IN-PACKAGE statements with :use options.
 ;;; These are not allowed in ANSI Common Lisp, so we have to provide our own
