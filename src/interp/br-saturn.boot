@@ -129,13 +129,13 @@ htShowPageNoScroll() ==
   if $standard then
     $htLineList := nil
     htMakePage htpPageDescription $curPage
-    if $htLineList then line := APPLY(function CONCAT, nreverse $htLineList)
+    if $htLineList then line := concatenateStringList(nreverse $htLineList)
     issueHTStandard line
   ----------------------
   if $saturn then
     $htLineList := nil
     htMakePage htpPageDescription $saturnPage
-    if $htLineList then line := APPLY(function CONCAT, nreverse $htLineList)
+    if $htLineList then line := concatenateStringList(nreverse $htLineList)
     issueHTSaturn line
   ----------------------
   endHTPage()
@@ -175,7 +175,7 @@ htMakeErrorPage htPage ==
   if $standard then $curPage := htPage
   if $saturn then $saturnPage := htPage
   htMakePage htpPageDescription htPage
-  line := APPLY(function CONCAT, nreverse $htLineList)
+  line := concatenateStringList(nreverse $htLineList)
   issueHT line
   endHTPage()
 

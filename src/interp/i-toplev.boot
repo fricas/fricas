@@ -266,7 +266,7 @@ msgText(key, args) ==
   msg := segmentKeyedMsg getKeyedMsg key
   msg := substituteSegmentedMsg(msg,args)
   msg := flowSegmentedMsg(msg,$LINELENGTH,$MARGIN)
-  APPLY(function CONCAT, [STRINGIMAGE x for x in CDAR msg])
+  concatenateStringList([STRINGIMAGE x for x in CDAR msg])
 
 justifyMyType(t) ==
   len := #t
