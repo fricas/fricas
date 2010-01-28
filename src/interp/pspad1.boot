@@ -101,7 +101,7 @@ fragmentsToLine fragments ==
 lispStringList2String x ==
   null x => '""
   atom x => STRINGIMAGE x
-  CDR x => APPLY(function STRCONC,MAPCAR(function lispStringList2String,x))
+  CDR x => concatenateStringList(MAPCAR(function lispStringList2String,x))
   lispStringList2String CAR x
 
 --% routines for buffer and margin adjustment

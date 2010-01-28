@@ -935,6 +935,8 @@ LP  (COND ((NULL X)
 
 ; 17.6 Changing the Dimensions of an Array
 
+(defmacro |replaceString| (result part start)
+    `(replace ,result ,part :start1 ,start))
 
 ;;; The function below continually adds one element to a vector.
 ;;; We use vectors with fill pointers to limit numbers of

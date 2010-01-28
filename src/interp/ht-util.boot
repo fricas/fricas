@@ -499,7 +499,7 @@ checkCondition(s1, string, condList) ==
 
 condErrorMsg type ==
   typeString := form2String type
-  if PAIRP typeString then typeString := APPLY(function CONCAT, typeString)
+  if PAIRP typeString then typeString := concatenateStringList(typeString)
   CONCAT('"Error: Could not make your input into a ", typeString)
 
 parseAndEval string ==
@@ -532,6 +532,7 @@ oldParseString string ==
   CAR tree => parseTransform postTransform CAR tree
   CDR tree
 
+-- XXX unused
 makeSpadCommand(:l) ==
   opForm := CONCAT(first l, '"(")
   lastArg := last l
@@ -540,8 +541,9 @@ makeSpadCommand(:l) ==
   for arg in l while arg ~= lastArg repeat
     argList := [CONCAT(arg, '", "), :argList]
   argList := nreverse [lastArg, :argList]
-  CONCAT(opForm, APPLY(function CONCAT, argList), '")")
+  CONCAT(opForm, concatenateStringList(argList), '")")
 
+-- XXX unused
 htMakeInputList stringList ==
 -- makes an input form for constructing a list
   lastArg := last stringList
@@ -549,7 +551,7 @@ htMakeInputList stringList ==
   for arg in stringList while arg ~= lastArg repeat
     argList := [CONCAT(arg, '", "), :argList]
   argList := nreverse [lastArg, :argList]
-  bracketString APPLY(function CONCAT, argList)
+  bracketString concatenateStringList(argList)
 
 
 -- predefined filter strings

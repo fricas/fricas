@@ -137,7 +137,7 @@ obj2String o ==
     o = ")" => '")"
     o = "(" => '"("
     STRINGIMAGE o
-  APPLY('STRCONC,[obj2String o' for o' in o])
+  concatenateStringList([obj2String o' for o' in o])
 
 APP(u,x,y,d) ==
   atom u => appChar(atom2String u,x,y,d)

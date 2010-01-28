@@ -42,6 +42,17 @@ length2? l == PAIRP l and PAIRP (l := QCDR l) and not PAIRP QCDR l
 
 pairList(u,v) == [[x,:y] for x in u for y in v]
 
+-- concatenateStringList(l) == FORMAT(nil, '"~{~A~}", l)
+concatenateStringList(l) ==
+    ll := 0
+    for s in l repeat ll := ll + LENGTH(s)
+    result := MAKE_-STRING(ll)
+    ll := 0
+    for s in l repeat
+        replaceString(result, s, ll)
+        ll := ll + LENGTH(s)
+    result
+
 GETALIST(alist,prop) == CDR assoc(prop,alist)
 
 PUTALIST(alist,prop,val) ==
