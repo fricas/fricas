@@ -323,7 +323,7 @@ coefficient ring, since it will complain otherwise.
 testsuite "SSOLVE"
 testcase "fractions"
 SSOLVE ==> EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
-USOLVE ==> UTSSOL(EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
+USOLVE ==> UTSSOL(FRAC INT, UFPS FRAC INT, UFPS SMPEXPR FRAC INT)
 f := operator 'f
 testEquals("coefficient(seriesSolve(s +-> 1/2-s, [])$USOLVE, 0)", "1/2")
 testEquals("coefficient(seriesSolve(1- 2*f x, f, x, [])$SSOLVE, 0)", "1/2")
@@ -332,10 +332,23 @@ xftestEquals("coefficient(seriesSolve(1/2-f x, f, x, [])$SSOLVE, 0)", "1/2")
 
 testcase "initial values"
 SSOLVE ==> EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
-USOLVE ==> UTSSOL(EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
+USOLVE ==> UTSSOL(FRAC INT, UFPS FRAC INT, UFPS SMPEXPR FRAC INT)
 f := operator 'f
 testLibraryError("seriesSolve(s +-> 1/2-s, [1])$USOLVE")
 testLibraryError("seriesSolve(D(f x, x, 2) - f x - 1, f, x, [1])$SSOLVE")
+
+testcase "Bell numbers"
+U ==> UFPS SMPEXPR FRAC INT
+USOLVE ==> UTSSOL(FRAC INT, UFPS FRAC INT, U)
+h(z: U): U ==
+    x := monomial(1,1)$U 
+    z.(x*recip(1+x)) - 1 - x*z
+testEquals("coefficient(seriesSolve(h, [])$USOLVE, 6)", "203")
+
+SSOLVE ==> EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
+f := operator 'f
+
+xftestEquals("coefficient(seriesSolve(f(z/(1+z)) - 1 - z*f z, f, z, [])$SSOLVE, 6)", "203")
 
 statistics()
 @
