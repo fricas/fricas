@@ -20,10 +20,16 @@ following functions:
   several tests,
 \item[\spadfun{testEquals}] checks equality of two elements and steps an
   appropriate counter, depending on whether equality holds or not,
-\item[\spadfun{testNotEquals}] checks inequality of two elements,
-\item[\spadfun{testTrue}] checks whether a statement is true, and
-\item[\spadfun{statistics}] that outputs for each testcase the number of tests
-  and the number and indices of failed tests.
+\item[\spadfun{testNotEquals}] checks inequality of two elements and
+\item[\spadfun{testTrue}] checks whether a statement is true.
+\item[\spadfun{testLibraryError}] asserts that an error should be raised.
+\item[\spadfun{testRealEquals}, \spadfun{testComplexEquals}] assert equality up
+  to rounding error.
+\item[\spadfun{xftestEquals}] asserts that a failure is expected, similarly for
+  the other operations.
+\item[\spadfun{statistics}] outputs for each testcase the number of tests and
+  the number and indices of failed (or fatal) tests and tests that pass
+  unexpectedly.
 \end{description}
 
 To be able to detect fatal errors, we have to pass the arguments to
@@ -111,21 +117,21 @@ UnittestCount(): with
        ++ incLibraryError is an internal function that steps the number of
        ++ failed tests, but not the number of tests.
 
-     xfincLibraryError: (String, List OutputForm) -> Void
+     incXfLibraryError: (String, List OutputForm) -> Void
        ++ like incLibraryError, but using expected failures.
 
      incFatal: String -> Void
        ++ incFatal s is an internal function that steps the number of fatal
        ++ tests and records input.
 
-     xfincFatal: String -> Void
+     incXfFatal: String -> Void
        ++ like incFatal, but for expected failures.
 
      decFatal: () -> Void
        ++ decFatal is an internal function that declares that the preceding
        ++ test did not fail with a fatal error.
 
-     xfdecFatal: () -> Void
+     decXfFatal: () -> Void
         ++ like decFatal, but for expected failures.
      addWarning: OutputForm -> Void
        ++ addWarning s is an internal function that adds s, together with an
@@ -149,9 +155,9 @@ UnittestCount(): with
      TESTCASE  ==> Record(total: Integer,
                           fail: Integer,
                           xfail: Integer,
-                          xfpassed: Integer,
+                          xfpass: Integer,
                           fatalities: List FATAL,
-                          xpassed_list: List FAILED,
+                          xfpassed: List FAILED,
                           failed: List FAILED)
 
      TESTSUITE ==> AssociationList(String, TESTCASE)
@@ -176,7 +182,6 @@ UnittestCount(): with
                  $Record(key: String, entry: TESTSUITE), _
                  tests)
 
-
      testcaseNoClear s ==
          if #s > maxWidth - # "  Testcase: "
          then messagePrint("WARNING: string for testcase should have less then "
@@ -192,11 +197,9 @@ UnittestCount(): with
          systemCommand("clear all")$MoreSystemCommands
          testcaseNoClear s
 
-
      incPass() ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
-
 
      chkLibraryError() ==
          cur := tests.currentTestsuite.currentTestcase
@@ -209,7 +212,7 @@ UnittestCount(): with
 -- number must not be stepped
          cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
 
-     xfincLibraryError(inp, out) ==
+     incXfLibraryError(inp, out) ==
          cur := tests.currentTestsuite.currentTestcase
          cur.xfail := cur.xfail + 1
 
@@ -228,9 +231,9 @@ UnittestCount(): with
 
      incXfPass(inp, out) ==
          cur := tests.currentTestsuite.currentTestcase
-         cur.xfpassed := cur.xfpassed + 1
-         cur.xpassed_list := cons([cur.total, inp, out]$FAILED,
-                                  cur.xpassed_list)
+         cur.xfpass := cur.xfpass + 1
+         cur.xfpassed := cons([cur.total, inp, out]$FAILED,
+                                  cur.xfpassed)
          cur.total := cur.total + 1
 
      incFatal inp ==
@@ -239,11 +242,10 @@ UnittestCount(): with
          cur.fail := cur.fail + 1
          cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
 
-     xfincFatal inp ==
+     incXfFatal inp ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
          cur.xfail := cur.xfail + 1
-         cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
 
      decFatal() ==
          cur := tests.currentTestsuite.currentTestcase
@@ -251,11 +253,10 @@ UnittestCount(): with
          cur.fail := cur.fail - 1
          cur.fatalities := rest(cur.fatalities)
 
-     xfdecFatal() ==
+     decXfFatal() ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total - 1
          cur.xfail := cur.xfail - 1
-         cur.fatalities := rest(cur.fatalities)
 
      addWarning s ==
          idx := tests.currentTestsuite.currentTestcase.total
@@ -301,18 +302,20 @@ UnittestCount(): with
                              @List Record(key: String, entry: TESTSUITE) repeat
 
              failedCases: Integer := 0
+             xfpassedCases: Integer := 0
              totalCases: Integer := 0
 
              for tstcase in reverse parts(tstsuite.entry)_
                               @List Record(key: String, entry: TESTCASE) repeat
                  totalCases := totalCases + 1
                  if tstcase.entry.fail > 0 then failedCases := failedCases + 1
+                 if tstcase.entry.xfpass > 0 then xfpassedCases := xfpassedCases + 1
+
                  totalTests := totalTests + tstcase.entry.total
                  failedTests := failedTests + tstcase.entry.fail
                  xfailedTests := xfailedTests + tstcase.entry.xfail
-                 xfpassedTests := xfpassedTests + tstcase.entry.xfpassed
+                 xfpassedTests := xfpassedTests + tstcase.entry.xfpass
                  
-
              messagePrint(new(maxWidth, char "=")$String)$O
              messagePrint("Testsuite: " tstsuite.key)$O
              messagePrint("  failed (total): " _
@@ -331,7 +334,7 @@ UnittestCount(): with
                           string(tstcase.entry.fail) _
                           " (" string(tstcase.entry.total) ")")$O
 
-                     if # tstcase.entry.failed > 0 then
+                     if not empty?(tstcase.entry.failed) then
                          output("")$P
                          messagePrint("    failed tests were:")$O
                          for f in reverse(tstcase.entry.failed) repeat
@@ -341,12 +344,30 @@ UnittestCount(): with
                                  outstring := "      Output" string(i) ": "
                                  output(hconcat(message outstring, o)$O)$P
 
-                     if # tstcase.entry.fatalities > 0 then
+                     if not empty?(tstcase.entry.fatalities) then
                          output("")$P
                          messagePrint("  fatal tests were:")$O
                          for f in reverse(tstcase.entry.fatalities) repeat
                              output("")$P
                              messagePrint("      " string(f.index) ": " f.input)$O
+
+             if xfpassedCases > 0 then
+                 output("")$P
+                 messagePrint("  testcases with unexpected passed tests were:")$O
+                 for tstcase in reverse parts(tstsuite.entry)_
+                              @List Record(key: String, entry: TESTCASE) _
+                     |  tstcase.entry.xfpass > 0 repeat
+                     messagePrint("  " new((maxWidth-2)::NonNegativeInteger, _
+                                           char "-")$String)$O
+                     messagePrint("  Testcase: " tstcase.key)$O
+
+                     if not empty?(tstcase.entry.xfpassed) then
+                         output("")$P
+                         messagePrint("  unexpected passed tests were:")$O
+                         for f in reverse(tstcase.entry.xfpassed) repeat
+                             output("")$P
+                             messagePrint("      " string(f.index) ": " f.input)$O
+
 
          output("")$P
          messagePrint(new(maxWidth, char "=")$String)$O
@@ -627,8 +648,8 @@ UnittestAux(R: BasicType): with
 -- at this point, ex was already evaluated.  If there would have been an error,
 -- incLibraryError would not be invoked.
          if R has CoercibleTo O
-         then xfincLibraryError(inp, [ex::O])$U
-         else xfincLibraryError(inp, [])$U
+         then incXfLibraryError(inp, [ex::O])$U
+         else incXfLibraryError(inp, [])$U
 
 @
 
@@ -698,9 +719,9 @@ Unittest: with
 
      xftestEquals(s1, s2) ==
          inp := "EQUL: (" s1 ", " s2 ")"
-         xfincFatal(inp)$UnittestCount
+         incXfFatal(inp)$UnittestCount
          interpretString("xftestEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
-         xfdecFatal()$UnittestCount
+         decXfFatal()$UnittestCount
 
      testRealEquals(s1, s2) ==
          inp := "EQLR: (" s1 ", " s2 ")"
@@ -710,9 +731,9 @@ Unittest: with
 
      xftestRealEquals(s1, s2) ==
          inp := "EQLR: (" s1 ", " s2 ")"
-         xfincFatal(inp)$UnittestCount
+         incXfFatal(inp)$UnittestCount
          interpretString("xftestRealEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
-         xfdecFatal()$UnittestCount
+         decXfFatal()$UnittestCount
 
      testComplexEquals(s1, s2) ==
          inp := "EQLC: (" s1 ", " s2 ")"
@@ -722,9 +743,9 @@ Unittest: with
 
      xftestComplexEquals(s1, s2) ==
          inp := "EQLC: (" s1 ", " s2 ")"
-         xfincFatal(inp)$UnittestCount
+         incXfFatal(inp)$UnittestCount
          interpretString("xftestComplexEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
-         xfdecFatal()$UnittestCount
+         decXfFatal()$UnittestCount
 
      testNotEquals(s1, s2) ==
          inp := "DIFF: (" s1 ", " s2 ")"
@@ -734,9 +755,9 @@ Unittest: with
 
      xftestNotEquals(s1, s2) ==
          inp := "DIFF: (" s1 ", " s2 ")"
-         xfincFatal(inp)$UnittestCount
+         incXfFatal(inp)$UnittestCount
          interpretString("xftestNotEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
-         xfdecFatal()$UnittestCount
+         decXfFatal()$UnittestCount
 
      testTrue(s) ==
          inp := "TRUE: (" s ")"
@@ -746,9 +767,9 @@ Unittest: with
 
      xftestTrue(s) ==
          inp := "TRUE: (" s ")"
-         xfincFatal(inp)$UnittestCount
+         incXfFatal(inp)$UnittestCount
          interpretString("xftestTrueAux(_"" inp "_", " s ")")$T
-         xfdecFatal()$UnittestCount
+         decXfFatal()$UnittestCount
 
      testLibraryError(s) ==
          chkLibraryError()$UnittestCount
