@@ -961,8 +961,8 @@ constructSubst(d) ==
   -- constructs a substitution which substitutes d for $
   -- and the arguments of d for #1, #2 ..
   SL:= list CONS('$,d)
-  for x in CDR d for i in 1.. repeat
-    SL:= CONS(CONS(INTERNL('"#",STRINGIMAGE i),x),SL)
+  for x in CDR d for v in $FormalMapVariableList repeat
+    SL:= CONS(CONS(v,x),SL)
   SL
 
 filterModemapsFromPackages(mms, names, op) ==
