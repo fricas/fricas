@@ -257,7 +257,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
       monomContent(p:SUPP):SUPP ==
         degree(p)=0 => 1
         md:= minimumDegree(p)
-        monomial(gcd sort(better,coefficients p),md)
+        monomial(gcd (coefficients p), md)
 
   -- Ordering for gcd purposes
       better(p1:P,p2:P):Boolean ==
@@ -265,11 +265,22 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
         ground? p2 => false
         degree(p1,mainVariable(p1)::OV) < degree(p2,mainVariable(p2)::OV)
 
+      best__to__front(l : List P) : List P ==
+          ress := [];
+          best := first(l)
+          for p in rest l repeat
+              if better(p, best) then
+                  ress := cons(best, ress)
+                  best := p
+              else
+                  ress := cons(p, ress)
+          cons(best, ress)
+
   -- Gcd between polynomial p1 and p2 with
   -- mainVariable p1 < x=mainVariable p2
       gcdTermList(p1:P,p2:P) : P ==
-        termList:=sort(better,
-           cons(p1,coefficients univariate(p2,(mainVariable p2)::OV)))
+        termList := best__to__front(
+           cons(p1, coefficients univariate(p2,(mainVariable p2)::OV)))
         q:P:=termList.first
         for term in termList.rest until q = 1$P repeat q:= gcd(q,term)
         q
@@ -363,7 +374,7 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
 
   -- Gcd for a list of multivariate polynomials
       gcd(listp:List P) : P ==
-        lf:=sort(better,listp)
+        lf := best__to__front(listp)
         f:=lf.first
         for g in lf.rest repeat
           f:=gcd(f,g)

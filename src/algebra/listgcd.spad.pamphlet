@@ -64,7 +64,7 @@ HeuGcd (BP):C == T
     lincase      : (List NNI ,List BP ) -> List BP
     myNextPrime  :        ( Z , NNI )   -> Z
 
-    bigPrime:= prevPrime(2^26)$IntegerPrimesPackage(Integer)
+    bigPrime := 4010021
 
     myNextPrime(val:Z,bound:NNI) : Z == nextPrime(val)$IntegerPrimesPackage(Z)
 
@@ -94,11 +94,22 @@ HeuGcd (BP):C == T
         val:=(val-val1) quo value
       d
 
+    smallest__to__front(l : List Z) : List Z ==
+        ress := [];
+        smallest := first(l)
+        for p in rest l repeat
+            if p < smallest then
+                ress := cons(smallest, ress)
+                smallest := p
+            else
+                ress := cons(p, ress)
+        cons(smallest, ress)
+
     --gcd of a list of integers
     lintgcd(lval:List(Z)):Z ==
       empty? lval => 0$Z
       member?(1,lval) => 1$Z
-      lval:=sort((z1, z2) +-> z1<z2, lval)
+      lval := smallest__to__front(lval)
       val:=lval.first
       for val1 in lval.rest while val ~= 1 repeat val:=gcd(val,val1)
       val
@@ -172,6 +183,8 @@ HeuGcd (BP):C == T
       gg:=modularGcdPrimitive(listf)$IMG
       cons(gg,[(f exquo gg) :: BP for f in listf])
 
+    PolyV ==> U32VectorPolynomialOperations
+
     --internal function:it evaluates the gcd and avoids duplication of
     --code.
     internal(flag:Cases,listf:List BP ):List BP  ==
@@ -197,12 +210,14 @@ HeuGcd (BP):C == T
       listdeg:=[degree f for f in listf ]
       f:= first listf
       if positiveRemainder(leadingCoefficient(f), bigPrime) ~= 0 then
+          fa := to__mod__pa(makeSUP(f), bigPrime)$PolyV
           for g in rest listf  repeat
               lcg := leadingCoefficient(g)
               if positiveRemainder(lcg, bigPrime) = 0 then
                   leave
-              f:=gcd(f,g,bigPrime)
-              if degree f = 0 then return cons(minpol,listf)
+              ga := to__mod__pa(makeSUP(g), bigPrime)$PolyV
+              fa := gcd(fa, ga, bigPrime)$PolyV
+              if degree(fa)$PolyV = 0 then return cons(minpol,listf)
       ans:List BP :=
          --one polynomial is constant
          member?(0,listdeg) => constcase(listdeg,listf)
