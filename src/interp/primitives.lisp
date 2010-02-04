@@ -38,7 +38,23 @@
 (defmacro SETELT32(v i s)
     `(setf (aref (the (simple-array (unsigned-byte 32) (*)) ,v) ,i)
            ,s))
+#+:sbcl
+(progn
 
+(defmacro sbcl-make-u32-vector(n)
+    (multiple-value-bind (typetag n-bits)
+        (SB-IMPL::%VECTOR-WIDETAG-AND-N-BITS '(unsigned-byte 32))
+        `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n 
+                       (ceiling (* ,n ,n-bits) sb-vm:n-word-bits))))
+
+(defun GETREFV32(n x)
+    (let ((vec (sbcl-make-u32-vector n)))
+        (fill vec x)
+        vec))
+
+)
+
+#-:sbcl
 (defun GETREFV32(n x) (make-array n :initial-element x
                                      :element-type '(unsigned-byte 32)))
 

@@ -97,6 +97,9 @@ U32VectorPolynomialOperations() : Export == Implementation where
           ++ vector__combination(v1, c1, v2, c2, n, delta, p) replaces
           ++ first n + 1 entires of v1 by corresponding entries of
           ++ c1*v1+c2*x^delta*v2 mod p.
+        to__mod__pa : (SparseUnivariatePolynomial Integer, Integer) -> PA
+          ++ to__mod__pa(s, p) reduces coefficients of polynomial
+          ++ s modulo primte p and converts the resut to vector
         gcd : (PA, PA, Integer) -> PA
           ++ Polynomial gcd.
         gcd : (PrimitiveArray PA, Integer, Integer, Integer) -> PA
@@ -137,6 +140,16 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 res := Qmuladdmod(pt, res, v(i), p)
                 i := i - 1
             res
+
+        to__mod__pa(s : SparseUnivariatePolynomial Integer, p : Integer) : PA ==
+            zero?(s) => new(1, 0)$PA
+            n0 := degree(s) pretend SingleInteger
+            ncoeffs := new((n0+1) pretend NonNegativeInteger, 0)$PA
+            while not(zero?(s)) repeat
+                n := degree(s)
+                ncoeffs(n) := positiveRemainder(leadingCoefficient(s), p)
+                s := reductum(s)
+            ncoeffs
 
         vector__add__mul(v1 : PA, v2 : PA, m : Integer, n : Integer, _
                          c : Integer, p : Integer) : Void ==
@@ -200,15 +213,16 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     if dr0 < 0 then break
 
         gcd(x : PA, y : PA, p : Integer) : PA ==
-            dr0 := degree(y)
+            dr0 := degree(y) pretend SingleInteger
+            dr1 : SingleInteger
             if dr0 < 0 then
                 tmpp := x
                 x := y
                 y := tmpp
                 dr1 := dr0
-                dr0 := degree(y)
+                dr0 := degree(y) pretend SingleInteger
             else
-                dr1 := degree(x)
+                dr1 := degree(x) pretend SingleInteger
             dr0 < 0 =>
                 dr1 < 0 =>
                     return new(1, 0)$PA
@@ -225,7 +239,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
             while dr1 > 0 repeat
                 while dr0 >= dr1 repeat
                     delta := dr0 - dr1
-                    c1 := p - r0(dr0)
+                    c1 := QSDIFFERENCE(p, r0(dr0))$Lisp
                     c0 := r1(dr1)
                     r0(dr0) := 0
                     dr0 := dr0 - 1
@@ -278,8 +292,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
                       SingleInteger, Integer) -> Void
 
         mul(x : PA, y : PA, p : Integer) : PA ==
-            xdeg := degree(x)::SingleInteger
-            ydeg := degree(y)::SingleInteger
+            xdeg := degree(x) pretend SingleInteger
+            ydeg := degree(y) pretend SingleInteger
             if xdeg > ydeg then
                 tmpp := x
                 tmp := xdeg
@@ -331,15 +345,16 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 z(i) := Qrem(ss, p)
 
         truncated__mul__add(x, y, z, m, p) ==
-            xdeg := (#x - 1)::SingleInteger
-            ydeg := (#y - 1)::SingleInteger
-            inner__mul(x, y, z, xdeg, ydeg, m::SingleInteger, p)
+            xdeg := (#x - 1) pretend SingleInteger
+            ydeg := (#y - 1) pretend SingleInteger
+            inner__mul(x, y, z, xdeg, ydeg, m pretend SingleInteger, p)
 
         truncated__multiplication(x, y, m, p) ==
-            xdeg := (#x - 1)::SingleInteger
-            ydeg := (#y - 1)::SingleInteger
-            z := new((m+1) pretend NonNegativeInteger, 0)$PA
-            inner__mul(x, y, z, xdeg, ydeg, m::SingleInteger, p)
+            xdeg := (#x - 1) pretend SingleInteger
+            ydeg := (#y - 1) pretend SingleInteger
+            z := new((m pretend SingleInteger + 1)
+                        pretend NonNegativeInteger, 0)$PA
+            inner__mul(x, y, z, xdeg, ydeg, m pretend SingleInteger, p)
             z
 
         pow(x : PA, n : PositiveInteger, d: NonNegativeInteger, _
