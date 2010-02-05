@@ -337,6 +337,35 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
         x / b       == x * inv b
         dimension() == dim::CardinalNumber
 
+      if R has Finite then
+          size() == size()$R ^ dim
+
+          random() == index((1+random(size()$%))::PositiveInteger)
+
+          index n ==
+              s := size()$R
+              r := new(dim, index(1)$R)$Vector(R)
+              n0: Integer := n-1
+              for i in 1..dim repeat
+                  d := divide(n0, s)
+                  r.i := index((1+d.remainder)::PositiveInteger)$R
+                  n0 := d.quotient
+
+              directProduct r
+
+          lookup v ==
+              s := size()$R
+              pow: NonNegativeInteger := 1
+              res: Integer := 1
+              for i in 1..dim repeat
+                  res := res + (lookup(v.i)$R - 1)*pow
+                  pow := pow * s
+
+              res::PositiveInteger
+
+
+              
+
 @
 \section{domain DIRPROD DirectProduct}
 <<domain DIRPROD DirectProduct>>=
