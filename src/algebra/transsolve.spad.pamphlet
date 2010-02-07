@@ -532,8 +532,49 @@ TransSolvePackage(R) : Exports == Implementation where
            sols := "append"/[solve1Pol(p,v,sol) for sol in sols]
         sols
 
+     frac__to__expr(q : Fraction(SparseMultivariatePolynomial(R, K))) : RE ==
+         numer(q) /$RE denom(q)
+
+     tryLinear(lexpr:L RE, lvar:L S) : Union(L L EQ RE, "failed") ==
+        lvk := [kernel(v)@K for v in lvar]
+        "or"/[totalDegree(numer expr, lvk) > 1 for expr in lexpr] =>
+            "failed"
+        "or"/[not(null(setIntersection(lvk, variables(denom expr)))) _
+              for expr in lexpr] => "failed"
+        -- if any kernel is not a variable but depends on
+        -- lvar, then system is nonlinear
+        llk := [tower(expr)$RE for expr in lexpr]
+        kers := reduce(setUnion, llk)
+        for ker in kers repeat
+            symbolIfCan(ker) case S => "iterate"
+            if not(null(setIntersection(lvar, variables(ker::RE)))) then
+                return "failed"
+        ps := [numer(expr) for expr in lexpr]
+        r := intoMatrix(ps, lvk)$LinearSystemPolynomialPackage(R,
+            IndexedExponents K,
+            K,
+            SparseMultivariatePolynomial(R, K))
+        mate := matrix([[frac__to__expr(q) for q in row] _
+                   for row in listOfLists r.mat])$Matrix(RE)
+        vece := vector([frac__to__expr(q) for q in parts(r.vec)])$Vector(RE)
+        sol := solve(mate, vece)$LinearSystemMatrixPackage(
+                  RE, Vector(RE), Vector(RE), Matrix(RE))
+        sol.particular case "failed" => []
+        rhs := sol.particular::Vector RE
+        zeron : Vector RE := zero(#lvar)
+        for p in sol.basis | p ~= zeron repeat
+            sym := (new()$Symbol)::RE
+            for i in 1..#lvar repeat
+                rhs.i := rhs.i + sym*p.i
+        eqs: L EQ RE := []
+        for i in 1..#lvar repeat
+            eqs := append(eqs, [(lvar.i)::RE = rhs.i])
+        [eqs]
+
      solveList(lexpr:L RE, lvar:L S):L L EQ RE ==
         ans1 := solveRetract(lexpr, lvar)
+        not(ans1 case "failed") => ans1 :: L L EQ RE
+        ans1 := tryLinear(lexpr, lvar)
         not(ans1 case "failed") => ans1 :: L L EQ RE
         lfrac:L Fraction Polynomial RE :=
            [makeFracPoly(expr, lvar) for expr in lexpr]
