@@ -1,0 +1,105 @@
+\documentclass{article}
+\usepackage{axiom,url}
+\begin{document}
+\title{\$SPAD/src/input mantepse.input}
+\author{Martin Rubey}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Testing domains that have Finite}
+The following yields a list of all domains that may (possibly conditionally)
+export the Category [[Finite]]:
+
+\begin{verbatim}
+getDomains(cat: Symbol): Set Symbol == 
+    set map(d +-> symbol first destruct first destruct d, _
+            destruct domainsOf(cat, nil)$Lisp)
+\end{verbatim}
+
+namely - as of revision 798
+
+\begin{verbatim}
+   {AlgebraicFunctionField, Boolean, Character, CharacterClass, Complex,
+    DirectProduct, DirectProductMatrixModule, DirectProductModule, FiniteField,
+    FiniteFieldCyclicGroup, FiniteFieldCyclicGroupExtension,
+    FiniteFieldCyclicGroupExtensionByPolynomial, FiniteFieldExtension,
+    FiniteFieldExtensionByPolynomial, FiniteFieldNormalBasis,
+    FiniteFieldNormalBasisExtension,
+    FiniteFieldNormalBasisExtensionByPolynomial, HomogeneousDirectProduct,
+    InnerFiniteField, InnerPrimeField, IntegerMod, LieSquareMatrix,
+    MachineComplex, ModMonic, MonoidRing, Octonion, OrderedDirectProduct,
+    OrderedVariableList, PrimeField, Product, RadicalFunctionField,
+    RectangularMatrix, Set, SetOfMIntegersInOneToN, SimpleAlgebraicExtension,
+    SplitHomogeneousDirectProduct, SquareMatrix}
+\end{verbatim}
+
+Actually, there is a bug: [[AlgebraicFunctionField]] and
+[[RadicalFunctionField]] do not export [[Finite]].  [[MachineComplex]] only
+exports [[Finite]] when [[MachineFloat]] does, but it doesn't.
+
+For the others, we test whether [[lookup]] is the inverse of [[index]].
+
+For some we hit an internal error, thus we commented them out.  For others, we
+did not find an example domain -- namely because we have no
+[[OrderedAbelianMonoidSup]] with [[Finite]] currently.
+
+<<*>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)se fu co off
+testsuite "Finite"
+
+testLookupIndex(A: Type): Boolean ==
+    reduce(_and, [lookup(index(i)$A)$A = i for i in 1..min(size()$A, 200)])
+        
+testcaseNoClear "lookup index"
+
+-- AlgebraicFunctionField
+testTrue "testLookupIndex(Boolean)"
+testTrue "testLookupIndex(Character)"
+xftestTrue "testLookupIndex(CharacterClass)"
+xftestTrue "testLookupIndex(Complex ZMOD 6)"
+testTrue "testLookupIndex(DirectProduct(4, Boolean))"
+testTrue "testLookupIndex(DirectProductMatrixModule(3, ZMOD 6, SquareMatrix(3, ZMOD 6), ZMOD 6))"
+testTrue "testLookupIndex(DirectProductModule(3, ZMOD 6,  ZMOD 6))"
+testTrue "testLookupIndex(FiniteField(7,2))"
+testTrue "testLookupIndex(FiniteFieldCyclicGroup(7,2))"
+testTrue "testLookupIndex(FiniteFieldCyclicGroupExtension(PF 7,2))"
+testTrue "testLookupIndex(FiniteFieldCyclicGroupExtensionByPolynomial(PF 7,x^2+1))"
+testTrue "testLookupIndex(FiniteFieldExtension(PF 7,2))"
+testTrue "testLookupIndex(FiniteFieldExtensionByPolynomial(PF 7,x^2+1))"
+testTrue "testLookupIndex(FiniteFieldNormalBasis(7,2))"
+testTrue "testLookupIndex(FiniteFieldNormalBasisExtension(PF 7,2))"
+testTrue "testLookupIndex(FiniteFieldNormalBasisExtensionByPolynomial(PF 7,x^2+1))"
+-- HomogeneousDirectProduct
+-- InnerFiniteField
+-- InnerPrimeField
+testTrue "testLookupIndex(IntegerMod 6)"
+testTrue "testLookupIndex(LieSquareMatrix(4, ZMOD 6))"
+-- MachineComplex
+xftestTrue "testLookupIndex(ModMonic(ZMOD 12,  SUP ZMOD 12))"
+testTrue "testLookupIndex(MonoidRing(ZMOD 6, PF 7))"
+xftestTrue "testLookupIndex(Octonion ZMOD 6)"
+-- OrderedDirectProduct
+testTrue "testLookupIndex(OrderedVariableList ['a, 'b, 'c])"
+testTrue "testLookupIndex(PrimeField 7)"
+testTrue "testLookupIndex(Product(Boolean, Character))"
+-- RadicalFunctionField
+testTrue "testLookupIndex(RectangularMatrix(3,2, ZMOD 6))"
+testTrue "testLookupIndex(Set Boolean)"
+testTrue "testLookupIndex(SetOfMIntegersInOneToN(2,5))"
+testTrue "testLookupIndex(SimpleAlgebraicExtension(ZMOD 6, SUP ZMOD 6, x^2+1))"
+-- SplitHomogeneousDirectProduct
+testTrue "testLookupIndex(SquareMatrix(3, ZMOD 6))"
+
+statistics()
+@ 
+
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}
