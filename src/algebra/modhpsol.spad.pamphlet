@@ -1225,7 +1225,8 @@ ModularHermitePade(): with
                     -> Union(MPPA, Boolean)
      ++ Fake solver over polynomials having algebraic coefficients.
 
-   HP__solve__M : (List Integer, List Integer, Symbol, Integer, NNI, GEN) _
+   HP__solve__M : (List Integer, List Integer, Symbol, Integer, NNI, GEN, _
+                   (List SUP Integer) -> CHKR) _
                   -> Union(MPI, Boolean)
      ++ implements  HP__solve over $Z_p$ with machine-sized $p$.
 
@@ -1654,7 +1655,7 @@ ModularHermitePade(): with
            print(resvi::OutputForm)
            error "giving up"
 
-   HP__solve__M(list, degs, kind, prime, sigma, gen) ==
+   HP__solve__M(list, degs, kind, prime, sigma, gen, check) ==
        lp := []@List(Integer)
        kind = 'qdiffHP or kind = 'qshiftHP => true
        -- print(sigma::OutputForm)
@@ -1679,6 +1680,7 @@ ModularHermitePade(): with
        resv :=  new(nsols::NonNegativeInteger, _
                     empty()$Vector(SparseUnivariatePolynomial Integer) _
                     )$Vector(Vector(SparseUnivariatePolynomial Integer))
+       ii : Integer := 1
        for i in 1..nsols repeat
            resvi := new(m, 0)$Vector(SparseUnivariatePolynomial Integer)
            for j in 1..m repeat
@@ -1689,9 +1691,14 @@ ModularHermitePade(): with
                     s := s + monomial(bmij(l), l _
                             )$SparseUnivariatePolynomial(Integer)
                 resvi(j) := s
-           resv(i) := resvi
-       mress := new(m, nsols::NonNegativeInteger, 0)$MPI
-       for i in 1..nsols repeat
+           sol__okp  := check(entries resvi)
+           sol__okp case "reject" => "iterate"
+           sol__okp case "no__solution" =>
+               error "HP_solve_M: check should never return no_solution for finite fields"
+           resv(ii) := resvi
+           ii := ii + 1
+       mress := new(m, (ii - 1)::NonNegativeInteger, 0)$MPI
+       for i in 1..(ii - 1) repeat
             for l in 1..m repeat
                  mress(l, i) := resv(i)(l)
        return mress
@@ -1791,11 +1798,15 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
                 check
         else
             p := characteristic()$F
-            if p > 0 and p < 32000000 and F is PrimeField(p::PositiveInteger) then
+            if p > 0 and p < 32000000 and _
+               F is PrimeField(p::PositiveInteger) and _
+               S is PrimeField(p::PositiveInteger) then
                 HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
+                    checkPF : (List SUP Integer) -> CHKR
+                    checkPF := ll +-> check(ll pretend List SUP S)
                     pp := HP__solve__M(l pretend List Integer,
                                         degs, kind, p, sigma,
-                                        gen)
+                                        gen, checkPF)
                     pp case Matrix SUP Integer =>
                         return (pp::Matrix(SUP Integer) pretend Matrix(SUP S))
                     return (pp::Boolean)

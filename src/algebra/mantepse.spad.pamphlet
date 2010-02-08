@@ -558,7 +558,7 @@ The following should be commented out when not debugging, see also
 Section~\ref{sec:Hermite-Pade}.
 
 <<package GUESS Guess>>=
-    <<implementation: Guess - Hermite-Pade - Types for Operators>>
+    --@<<implementation: Guess - Hermite-Pade - Types for Operators>>
     -- EXT ==> (Integer, V, V) -> FPOLYS
     -- EXTEXPR ==> (Symbol, F, F) -> EXPRR
 @
@@ -1653,7 +1653,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 \subsection{Hermite Pad\'e interpolation}\label{sec:Hermite-Pade}
 
 <<implementation: Guess - Hermite-Pade>>=
---@<<implementation: Guess - Hermite-Pade - Types for Operators>>
+<<implementation: Guess - Hermite-Pade - Types for Operators>>
 <<implementation: Guess - Hermite-Pade - Streams>>
 <<implementation: Guess - Hermite-Pade - Operators>>
 <<implementation: Guess - Hermite-Pade - Utilities>>
@@ -3565,7 +3565,6 @@ GuessFinite(F:Join(FiniteFieldCategory, ConvertibleTo Integer)) ==
 
 \section{package GUESSP GuessPolynomial}
 <<package GUESSP1 GuessPolynomialFunctions>>=
-
 )abbrev package GUESSP1 GuessPolynomialFunctions
 ++ Description:
 ++ This package exports coercion and retraction from EXPR INT to
@@ -3580,47 +3579,62 @@ GuessPolynomialFunctions(R: Ring):
       F2EXPRR: Fraction Polynomial R -> EXPRR
       EXPRR2F: EXPRR -> Fraction Polynomial R
 
-    Implementation == add
+      iim2: R -> EXPRR
+      ++ should be local but conditional
+      iiretractVar: Kernel EXPRR -> Polynomial R
+      ++ should be local but conditional
 
--- strange compiler error: when moving m1 or m3 into the conditional
--- the compiler doesn't find coerce: Symbol -> EXPRR anymore
+    Implementation == add
 
       m1(var: Symbol): EXPRR == coerce(var)$EXPRR@EXPRR
 
       m3(var: Kernel EXPRR): EXPRR == var::EXPRR
 
       if EXPRR has RetractableTo R then
-          PL1 ==> PolynomialCategoryLifting(IndexedExponents(Symbol), Symbol,
-                                            R, Polynomial(R), EXPRR)
+          iim2(coeff: R): EXPRR == coeff::EXPRR
 
-          m2(coeff: R): EXPRR == coeff::EXPRR
-
-          S2EXPRR(p: Polynomial R): EXPRR ==
-              map((var: Symbol): EXPRR +-> m1 var,
-                  (coeff: R): EXPRR +-> m2 coeff, p)$PL1
-
-          F2EXPRR(p: Fraction Polynomial R): EXPRR ==
-              S2EXPRR(numer p) / S2EXPRR(denom p)
-
-          retractVar(v: Kernel EXPRR): Polynomial R ==
+          iiretractVar(v: Kernel EXPRR): Polynomial R ==
               v2 := m3 v
-              (r := retractIfCan(v2)@Union(R,"failed")) case "failed" =>
+              (r := retractIfCan(v2)@Union(R, "failed")) case "failed" =>
                   retract(v2)@Symbol::Polynomial(R)
               r::R::Polynomial(R)
 
-          SMP ==> SparseMultivariatePolynomial(Integer, Kernel EXPRR)
-          PL2 ==> PolynomialCategoryLifting(IndexedExponents Kernel EXPRR,
-                                            Kernel EXPRR, Integer, SMP,
-                                            Polynomial R)
+      else 
+          if R has ConvertibleTo Integer then
+              iim2(coeff: R): EXPRR == (convert(coeff)@Integer)::EXPRR
 
-          SMP2S(p: SMP): Polynomial R ==
-              map((var: Kernel EXPRR): Polynomial(R) +-> retractVar(var),
-                  (coeff: Integer): Polynomial(R) +-> coeff::R::Polynomial(R), p)$PL2
+              iiretractVar(v: Kernel EXPRR): Polynomial R ==
+                  v2 := m3 v
+                  (r := retractIfCan(v2)@Union(Integer, "failed")) case "failed" =>
+                      retract(v2)@Symbol::Polynomial(R)
+                  r::Integer::R::Polynomial(R)
+          else
+              error "retraction and coercion to EXPR INT is not implemented for this Ring"
 
-          EXPRR2F(p: EXPRR): Fraction Polynomial R ==
-              SMP2S(numer p)/SMP2S(denom p)
 
-      else error "retraction and coercion to EXPR INT is not implemented for this Ring"
+      PL1 ==> PolynomialCategoryLifting(IndexedExponents(Symbol), Symbol,
+                                        R, Polynomial(R), EXPRR)
+
+
+      S2EXPRR(p: Polynomial R): EXPRR ==
+          map((var: Symbol): EXPRR +-> m1 var,
+              (coeff: R): EXPRR +-> iim2 coeff, p)$PL1
+
+      F2EXPRR(p: Fraction Polynomial R): EXPRR ==
+          S2EXPRR(numer p) / S2EXPRR(denom p)
+
+      SMP ==> SparseMultivariatePolynomial(Integer, Kernel EXPRR)
+      PL2 ==> PolynomialCategoryLifting(IndexedExponents Kernel EXPRR,
+                                        Kernel EXPRR, Integer, SMP,
+                                        Polynomial R)
+
+      SMP2S(p: SMP): Polynomial R ==
+          map((var: Kernel EXPRR): Polynomial(R) +-> iiretractVar(var),
+              (coeff: Integer): Polynomial(R) +-> coeff::R::Polynomial(R), p)$PL2
+
+      EXPRR2F(p: EXPRR): Fraction Polynomial R ==
+          SMP2S(numer p)/SMP2S(denom p)
+
 
 @
 
@@ -4000,6 +4014,7 @@ GuessUnivariatePolynomial(q: Symbol): Exports == Implementation where
 <<package GUESSAN GuessAlgebraicNumber>>
 <<package GUESSF1 GuessFiniteFunctions>>
 <<package GUESSF GuessFinite>>
+<<package GUESSP1 GuessPolynomialFunctions>>
 <<package GUESSP GuessPolynomial>>
 <<package GUESSPI GuessPolynomialInteger>>
 <<package GUESSUP GuessUnivariatePolynomial>>
