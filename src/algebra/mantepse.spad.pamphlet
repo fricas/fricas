@@ -1095,7 +1095,7 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 
     for i in 0..maxDeg repeat
         if debug(options)$GOPT0 then
-            output(hconcat("degree ExpRat "::OutputForm, i::OutputForm))
+            output(hconcat("Guess: degree ExpRat "::OutputForm, i::OutputForm))
                 $OutputPackage
 
 @
@@ -1115,7 +1115,7 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 <<implementation: Guess - guessExpRat - Main>>=
         if debug(options)$GOPT0 then
             systemCommand("sys date +%s")$MoreSystemCommands
-            output("interpolating..."::OutputForm)$OutputPackage
+            output("Guess: interpolating..."::OutputForm)$OutputPackage
 
         ri: FSUPFPOLYS
            := interpolate(xlist, ylist, (len-1-i)::NNI) _
@@ -1130,8 +1130,8 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 --            output(hconcat("xlist: ", xlist::OutputForm))$OutputPackage
 --            output(hconcat("ylist: ", ylist::OutputForm))$OutputPackage
 --            output(hconcat("ri: ", ri::OutputForm))$OutputPackage
-            systemCommand("sys date +%s")$MoreSystemCommands
-            output("polynomials..."::OutputForm)$OutputPackage
+--            systemCommand("sys date +%s")$MoreSystemCommands
+            output("Guess: polynomials..."::OutputForm)$OutputPackage
 
         poly1: POLYS := numer(elt(ri, x1)$SUP(FPOLYS) - y1)
         poly2: POLYS := numer(elt(ri, x2)$SUP(FPOLYS) - y2)
@@ -1156,8 +1156,8 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 -- another compiler bug: using i as iterator here makes the loop break
 
         if debug(options)$GOPT0 then
-            systemCommand("sys date +%s")$MoreSystemCommands
-            output("interpolating resultants..."::OutputForm)$OutputPackage
+--            systemCommand("sys date +%s")$MoreSystemCommands
+            output("Guess: interpolating resultants..."::OutputForm)$OutputPackage
 
         res1: SUP S
              := newton(evalResultant(poly1, poly3, o1, d1, a1, A))
@@ -1167,7 +1167,7 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
              := newton(evalResultant(poly2, poly3, o2, d2, a1, A))
                       $NewtonInterpolation(S)
 
-        if debug(options)$GOPT0 then
+--        if debug(options)$GOPT0 then
 --            res1: SUP S := univariate(resultant(poly1, poly3, a1))
 --            res2: SUP S := univariate(resultant(poly2, poly3, a1))
 --            if res1 ~= res1res or res2 ~= res2res then
@@ -1176,35 +1176,35 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 --            output(hconcat("poly3 ", poly3::OutputForm))$OutputPackage
 --                output(hconcat("res1 ", res1::OutputForm))$OutputPackage
 --                output(hconcat("res2 ", res2::OutputForm))$OutputPackage
-            output("n/i: " string(n) " " string(i))$OutputPackage
-            output("res1 ord: " string(o1) " " string(minimumDegree res1))
-                  $OutputPackage
-            output("res1 deg: " string(d1) " " string(degree res1))
-                  $OutputPackage
-            output("res2 ord: " string(o2) " " string(minimumDegree res2))
-                  $OutputPackage
-            output("res2 deg: " string(d2) " " string(degree res2))
-                  $OutputPackage
+--            output("n/i: " string(n) " " string(i))$OutputPackage
+--            output("res1 ord: " string(o1) " " string(minimumDegree res1))
+--                  $OutputPackage
+--            output("res1 deg: " string(d1) " " string(degree res1))
+--                  $OutputPackage
+--            output("res2 ord: " string(o2) " " string(minimumDegree res2))
+--                  $OutputPackage
+--            output("res2 deg: " string(d2) " " string(degree res2))
+--                  $OutputPackage
 
         if debug(options)$GOPT0 then
-            systemCommand("sys date +%s")$MoreSystemCommands
-            output("computing gcd..."::OutputForm)$OutputPackage
+--            systemCommand("sys date +%s")$MoreSystemCommands
+            output("Guess: computing gcd..."::OutputForm)$OutputPackage
 
 -- we want to solve over F
 -- for polynomial domains S this seems to be very costly!
         res3: SUP F := SUPS2SUPF(primitivePart(gcd(res1, res2)))
 
         if debug(options)$GOPT0 then
-            systemCommand("sys date +%s")$MoreSystemCommands
-            output("solving..."::OutputForm)$OutputPackage
+--            systemCommand("sys date +%s")$MoreSystemCommands
+            output("Guess: solving..."::OutputForm)$OutputPackage
 
 -- res3 is a polynomial in A=a0+(len+3)*a1
 -- now we have to find the roots of res3
 
         for f in factors factor(res3)$GF | degree f.factor = 1 repeat
 -- we are only interested in the linear factors
-             if debug(options)$GOPT0 then
-                 output(hconcat("f: ", f::OutputForm))$OutputPackage
+--             if debug(options)$GOPT0 then
+--                 output(hconcat("f: ", f::OutputForm))$OutputPackage
 
              Av: F := -coefficient(f.factor, 0)
                      / leadingCoefficient f.factor
@@ -1224,8 +1224,8 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
 
              for g in factors factor(univariate evalPoly)$GF
                       | degree g.factor = 1 repeat
-                 if debug(options)$GOPT0 then
-                     output(hconcat("g: ", g::OutputForm))$OutputPackage
+--                 if debug(options)$GOPT0 then
+--                     output(hconcat("g: ", g::OutputForm))$OutputPackage
 
                  a1v: F := -coefficient(g.factor, 0)
                           / leadingCoefficient g.factor
@@ -1260,7 +1260,7 @@ a rational function. To obtain $y$, we compute $y(n)=s_n*(a+b n)^{-n}$.
                                             ^xx::EXPRR
                              res := cons(res4, res)
                          else if zero? numr and debug(options)$GOPT0 then
-                             output("numerator and denominator vanish!")
+                             output("Guess: numerator and denominator vanish!")
                                    $OutputPackage
 
 -- If we are only interested in one solution, we do not try other degrees if we
@@ -1443,7 +1443,7 @@ $y(n)=s_n*\binom{a+bn}{n}^-1$.
         n:Integer := len - i
         res1: SUP S := univariate(resultant(poly1, poly3, a1))
         res2: SUP S := univariate(resultant(poly2, poly3, a1))
-        if debug(options)$GOPT0 then
+--        if debug(options)$GOPT0 then
 --            output(hconcat("res1 ", res1::OutputForm))$OutputPackage
 --            output(hconcat("res2 ", res2::OutputForm))$OutputPackage
 
@@ -1454,17 +1454,17 @@ $y(n)=s_n*\binom{a+bn}{n}^-1$.
 --                output(hconcat("res1 ", res1::OutputForm))$OutputPackage
 --                output(hconcat("res2 ", res2::OutputForm))$OutputPackage
 --            output("n/i: " string(n) " " string(i))$OutputPackage
-            output("res1 ord: " string(minimumDegree res1))
-                  $OutputPackage
-            output("res1 deg: " string(degree res1))
-                  $OutputPackage
-            output("res2 ord: " string(minimumDegree res2))
-                  $OutputPackage
-            output("res2 deg: " string(degree res2))
-                  $OutputPackage
+--            output("res1 ord: " string(minimumDegree res1))
+--                  $OutputPackage
+--            output("res1 deg: " string(degree res1))
+--                  $OutputPackage
+--            output("res2 ord: " string(minimumDegree res2))
+--                  $OutputPackage
+--            output("res2 deg: " string(degree res2))
+--                  $OutputPackage
 
         if debug(options)$GOPT0 then
-            output("computing gcd..."::OutputForm)$OutputPackage
+            output("Guess: computing gcd..."::OutputForm)$OutputPackage
 
 -- we want to solve over F
         res3: SUP F := SUPS2SUPF(primitivePart(gcd(res1, res2)))
@@ -1554,7 +1554,7 @@ $y(n)=s_n*\binom{a+bn}{n}^-1$.
 
                              res := cons(res4, res)
                          else if zero? numr and debug(options)$GOPT0 then
-                             output("numerator and denominator vanish!")
+                             output("Guess: numerator and denominator vanish!")
                                    $OutputPackage
 
 -- If we are only interested in one solution, we do not try other degrees if we
@@ -2728,8 +2728,8 @@ guessInterpolateModular(list: List F, degs: List Integer, _
                        : Union(Matrix SUP S, Boolean) ==
     sigma: NNI := (#list - degreeLoss)::NNI
 
-    leadingZeros : Integer := 0
-    for el in list while el = 0 repeat
+    leadingZeros: Integer := 0
+    for el in list while zero? el repeat
         leadingZeros := leadingZeros + 1
 
     if leadingZeros > degreeLoss then
@@ -2746,7 +2746,7 @@ guessInterpolateModular(list: List F, degs: List Integer, _
             degs := [(if i <= deg.remainder   _
                       then deg.quotient + 1   _
                       else deg.quotient) for i in 1..o]
-    check : ((List SUP S) -> Union("good", "reject", "no__solution"))
+    check: ((List SUP S) -> Union("good", "reject", "no__solution"))
     check := x +-> checkInterpolant(list, o, x, D, options, sigma)
     if MonteCarlo(options)$GOPT0 then
         check := gen__Monte__Carlo__check(check, list, _
@@ -2996,19 +2996,22 @@ Unfortunately, we cannot simply discard solutions where the corresponding list
 of expressions has a non-trivial gcd, since it is quite possible that a linear
 combination of such solutions will be the one we are actually looking for.
 
-In fact, we should not discard \emph{single} solutions at all, because the
+In fact, we \emph{should} not discard any solutions at all, because the
 result of the modular solver is a basis of a vector space, reduced and
 normalised.  However, the set of interpolating solutions is \emph{not} a vector
 space: consider two solutions $r_1$ and $r_2$, one interpolating, the other not
 interpolating but having higher order than the first.  Then the sum $r_1+r_2$
 of the two is interpolating, but $(r_1+r_2) - r_1$ is not.
 
+However, heuristically it still seems to be useful to discard non-interpolating
+basis vectors and solutions that consist of a single term only.
+
 Thus, we check for each coefficient whether the proposed linear combination
 vanishes.  When the first coefficient that does not vanish contains the
-transcendental element we accept the basis as a solution.
+transcendental element we accept the solution.
 
 \begin{ToDo}
-  possible we should add the first interpolating solution to all the others, or
+  possibly we should add the first interpolating solution to all the others, or
   at least to all the solutions which are not interpolating.
 \end{ToDo}
 
@@ -3025,26 +3028,32 @@ checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer)
                   -> Union("good", "reject", "no__solution")
 checkInterpolant(list, o, resi, D, options, sigma) ==
     if debug(options)$GOPT0 then
-        output("checking solution")$OutputPackage
+        output("Guess: checking solution")$OutputPackage
 
-    nonZeroCoefficient: Integer := 0
+
+-- FIXME: we should also check that the non-zero terms contain the generating
+--        function
+
+    nonZeroCoefficients: Union("one", "several", "none") := "none"
     reject__one__term := false
 
     for i in 1..#resi repeat
         if not zero? resi.i then
-            if zero? nonZeroCoefficient then
-                nonZeroCoefficient := i
+            if nonZeroCoefficients case "none" then
+                nonZeroCoefficients := "one"
             else
-                nonZeroCoefficient := 0
+                nonZeroCoefficients := "several"
                 break
 
-    if not zero? nonZeroCoefficient then
-        for e in list repeat
-            if not zero? e then
-                if debug(options)$GOPT0 then
-                    output("list contains non-zero element")
-                          $OutputPackage
-                reject__one__term := true
+    if not((nonZeroCoefficients case "several") or every?(zero?, list)) then
+        reject__one__term := true
+        if debug(options)$GOPT0 then
+            output("Guess: encountered single-term solution")
+                  $OutputPackage
+
+
+-- FIXME: we really should special case the check of recurrences also if
+--        it *happens* to be a linear recurrence.
 
     len := #list
     maxPow: Integer
@@ -3197,12 +3206,12 @@ certainly correct, assuming [[safety]] equals zero.
 
         if guessDegree < 0 then
             if debug(options)$GOPT0 then
-                output("not enough values for guessing")$OutputPackage
+                output("Guess: not enough values for guessing")$OutputPackage
             return reslist
 
         if debug(options)$GOPT0 then
-            output(hconcat("Trying order ", o::OutputForm))$OutputPackage
-            output(hconcat("guessDegree is ", guessDegree::OutputForm))
+            output(hconcat(["Guess: trying order ", o::OutputForm, _
+                            ", guessDegree is ", guessDegree::OutputForm]))
                   $OutputPackage
 
 @
@@ -3223,12 +3232,12 @@ lists of partitions are closed under inclusion.
         then
             1 -- compiler bug
             if debug(options)$GOPT0
-            then output("iterating")$OutputPackage
+            then output("Guess: iterating")$OutputPackage
         else
             exprList: List EXPRR := []
             if debug(options)$GOPT0 then
                 exprList := entries complete first(exprS, o)
-                output("The list of expressions is")$OutputPackage
+                output("Guess: The list of expressions is")$OutputPackage
                 output(exprList::OutputForm)$OutputPackage
 
             MS: Stream Matrix SUP S
@@ -3423,7 +3432,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
     newMaxLevel := maxLevel(options)$GOPT0
     xx := (indexName(options)$GOPT0)::EXPRR
     if debug(options)$GOPT0 and newMaxLevel case NNI then
-        output(hconcat("guessing level ", newMaxLevel::OutputForm))
+        output(hconcat("Guess: guessing level ", newMaxLevel::OutputForm))
               $OutputPackage
 
 --        output(hconcat("guessing ", list::OutputForm))$OutputPackage
@@ -3434,8 +3443,8 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
     for guesser in guessers repeat
         res := append(guesser(list, options), res)
 
-        if debug(options)$GOPT0 then
-            output(hconcat("res ", res::OutputForm))$OutputPackage
+--        if debug(options)$GOPT0 then
+--            output(hconcat("res ", res::OutputForm))$OutputPackage
 
         if one(options)$GOPT0 and not empty? res then return res
 
@@ -3449,7 +3458,7 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
         if member?(0$F, list) then
             0 -- this must be here due to bug #430
             if debug(options)$GOPT0 then
-                output("cannot use guessProduct because of zeros")$OutputPackage
+                output("Guess: cannot use guessProduct because of zeros")$OutputPackage
         else
             prodList: List F := [(list.(i+1))/(list.i) for i in 1..(len-1)]
 
@@ -3469,10 +3478,10 @@ guess(list: List F, guessers: List GUESSER, ops: List Symbol,
                                            equation(var, 0$EXPRR..xx-1))
                     prodGuess := cons(init*prod, prodGuess)
 
-                if debug(options)$GOPT0 then
-                    output(hconcat("prodGuess "::OutputForm,
-                                   prodGuess::OutputForm))
-                          $OutputPackage
+--                if debug(options)$GOPT0 then
+--                    output(hconcat("prodGuess "::OutputForm,
+--                                   prodGuess::OutputForm))
+--                          $OutputPackage
 
                 for guess in prodGuess | not member?(guess, res) repeat
                     res := cons(guess, res)
