@@ -353,6 +353,7 @@ lazyMatch(source,lazyt,dollar,domain) ==
   NUMBERP source =>
       lazyt is ['_#, slotNum] => source = #(domain.slotNum)
       lazyt is ['call,'LENGTH, slotNum] => source = #(domain.slotNum)
+      lazyt is ['LENGTH, slotNum] => source = #(domain.slotNum)
       nil
   source is ['construct,:l] => l = lazyt
   -- A hideous hack on the same lines as the previous four lines JHD/MCD
