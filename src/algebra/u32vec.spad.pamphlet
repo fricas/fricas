@@ -189,10 +189,14 @@ U32VectorPolynomialOperations() : Export == Implementation where
                             p : Integer) : Void ==
             ns := n pretend SingleInteger
             ds := delta pretend SingleInteger
-            for i in 0..(delta - 1) repeat
-                v1(i) := Qmul(v1(i), c1, p)
-            for i in delta..ns repeat
-                v1(i) := Qdot2(v1(i), c1, v2(i - delta), c2, p)
+            if c1 ~= 1 then
+                for i in 0..(ds - 1) repeat
+                    v1(i) := Qmul(v1(i), c1, p)
+                for i in ds..ns repeat
+                    v1(i) := Qdot2(v1(i), c1, v2(i - ds), c2, p)
+            else
+                for i in ds..ns repeat
+                    v1(i) := Qmuladdmod(c2, v2(i - ds), v1(i), p)
 
         divide!(r0 : PA, r1 : PA, res : PA, p: Integer) : Void ==
             dr0 := degree(r0)
@@ -241,6 +245,10 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     delta := dr0 - dr1
                     c1 := QSDIFFERENCE(p, r0(dr0))$Lisp
                     c0 := r1(dr1)
+                    if c0 ~= 1 and delta > 30 then
+                        c0 :=  modInverse(c0, p)
+                        mul__by__scalar(r1, dr1, c0, p)
+                        c0 := 1
                     r0(dr0) := 0
                     dr0 := dr0 - 1
                     vector__combination(r0, c0, r1, c1, dr0, delta, p)
