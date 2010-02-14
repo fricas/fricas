@@ -655,6 +655,37 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
           p case R => 0
           p - leadingMonomial p
 
+      SmpTerm ==> Record(k : NonNegativeInteger, c : %)
+
+      monomials1(p : VPoly, vars : List VarSet,
+                 degs : List NonNegativeInteger, res : List(%)): List(%) ==
+          tl := p.ts pretend List SmpTerm
+          v1 := p.v
+          for t in tl repeat
+              p1 := t.c
+              k1 := t.k
+              if p1 case R then
+                  mon : % :=
+                      k1 > 0 => [v1, [t] pretend D]$VPoly
+                      p1
+                  for var in vars for deg in degs repeat
+                      mon1 := [deg, mon]$SmpTerm
+                      mon := [var, [mon1] pretend D]$VPoly
+                  res := cons(mon, res)
+              else
+                  vars1 :=
+                      k1 > 0 => cons(v1, vars)
+                      vars
+                  degs1 :=
+                      k1 > 0 => cons(k1, degs)
+                      degs
+                  res := monomials1(p1, vars1, degs1, res)
+          res
+
+      monomials(p) ==
+          p = 0 => []
+          p case R => [p]
+          reverse!(monomials1(p, [], [], []))
 
 --        if R is Integer then
 --           pgcd := PolynomialGcdPackage(%,VarSet)
