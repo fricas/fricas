@@ -1351,7 +1351,9 @@ Sm2V(x,[.,.,R],target) == M2V(x,['Matrix,R],target)
 
 Sy2OV(u,source,target is [.,vl]) ==
   u = '_$fromCoerceable_$ => nil
-  position1(u,vl)
+  res := position1(u,vl)
+  res = 0 => coercionFailure()
+  res
 
 Sy2Dmp(u,source,target is [dmp,vl,S]) ==
   u = '_$fromCoerceable_$ => canCoerce(source,S)
