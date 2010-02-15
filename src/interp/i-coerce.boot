@@ -1024,9 +1024,11 @@ coerceUnion2Branch(object) ==
   predicate := NIL
   targetType:= NIL
   for typ in doms for pred in predList while not targetType repeat
-    evalSharpOne(pred,val') =>
       predicate := pred
-      targetType := typ
+      pred is ["EQCAR", "#1", i] =>
+          if EQCAR(val', i) then targetType := typ
+      evalSharpOne(pred,val') =>
+          targetType := typ
   null targetType => keyedSystemError("S2IC0013",NIL)
   predicate is ['EQCAR,.,p] => objNewWrap(CDR val',targetType)
   objNew(objVal object,targetType)

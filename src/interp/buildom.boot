@@ -132,30 +132,40 @@ UnionEqual(x, y, dom) ==
   ['Union,:branches] := dom.0
   predlist := mkPredList branches
   same := false
+  res := false
   for b in stripUnionTags branches for p in predlist while not same repeat
+    p is ["EQCAR", "#1", n] =>
+        EQCAR(x, n) and EQCAR(y, n) =>
+            same := true
+            STRINGP b => res := (x = y)
+            x := rest x
+            y := rest y
+            res := SPADCALL(x, y, findEqualFun(evalDomain b))
     typeFun := COERCE(['LAMBDA, '(_#1), p], 'FUNCTION)
     FUNCALL(typeFun,x) and FUNCALL(typeFun,y) =>
-      STRINGP b => same := (x = y)
-      if p is ['EQCAR, :.] then (x := rest x; y := rest y)
-      same := SPADCALL(x, y, findEqualFun(evalDomain b))
-  same
+        same := true
+        STRINGP b => res := (x = y)
+        res := SPADCALL(x, y, findEqualFun(evalDomain b))
+  res
 
 UnionPrint(x, dom) == coerceUn2E(x, dom.0)
 
 coerceUn2E(x,source) ==
   ['Union,:branches] := source
   predlist := mkPredList branches
-  byGeorge := byJane := GENSYM()
-  for b in stripUnionTags branches for p in predlist  repeat
-    typeFun := COERCE(['LAMBDA, '(_#1), p], 'FUNCTION)
-    if FUNCALL(typeFun,x) then return
-      if p is ['EQCAR, :.] then x := rest x
---    STRINGP b => return x  -- to catch "failed" etc.
-      STRINGP b => byGeorge := x  -- to catch "failed" etc.
-      byGeorge := coerceVal2E(x,b)
-  byGeorge = byJane =>
+  found := false
+  for b in stripUnionTags branches for p in predlist while not(found) repeat
+      found :=
+          p is ["EQCAR", "#1", n] => EQCAR(x, n)
+          typeFun := COERCE(['LAMBDA, '(_#1), p], 'FUNCTION)
+          FUNCALL(typeFun,x)
+      if found then
+          if p is ['EQCAR, :.] then x := rest x
+          STRINGP b => res := x  -- to catch "failed" etc.
+          res := coerceVal2E(x,b)
+  not(found) =>
     error '"Union bug: Cannot find appropriate branch for coerce to E"
-  byGeorge
+  res
 
 --% Mapping
 --  Want to eventually have elt: ($, args) -> target
