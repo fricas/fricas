@@ -311,6 +311,8 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
        Term ==>  Record(k:E,c:R)
        Rep:=  List Term
 
+       TermS ==>  Record(k : SingleInteger, c : R)
+       RepS ==> List TermS
 
     --declarations
        x,y,p,p1,p2: %
@@ -333,11 +335,31 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
          not null p.rest => "failed"
          zero?(p.first.k) => p.first.c
          "failed"
-       coefficient(p,e)  ==
-          for tm in p repeat
-            tm.k=e => return tm.c
-            tm.k < e => return 0$R
-          0$R
+
+       if E is NonNegativeInteger then
+           coefficient(p : %, e : E)  ==
+               null(p) => 0$R
+               degp := first(p).k pretend Integer
+               degp < max()$SingleInteger =>
+                   not(e pretend Integer < max()$SingleInteger) => 0$R
+                   ps := p pretend RepS
+                   es := e pretend SingleInteger
+                   for tms in ps repeat
+                       ks := tms.k pretend SingleInteger
+                       ks = es => return tms.c
+                       ks < es => return 0$R
+                   return 0$R
+               for tm in p repeat
+                   tm.k=e => return tm.c
+                   tm.k < e => return 0$R
+               0$R
+       else
+           coefficient(p : %, e : E)  ==
+               for tm in p repeat
+                   tm.k=e => return tm.c
+                   tm.k < e => return 0$R
+               0$R
+
        recip(p) ==
            null p => "failed"
            p.first.k > 0$E => "failed"
@@ -455,9 +477,6 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
            empty? res => newcell
            qsetrest!(endcell, newcell)
            res
-
-       TermS ==>  Record(k : SingleInteger, c : R)
-       RepS ==> List TermS
 
        pomopo! (p1, r, e, p2) ==  addm!(p1, r, e, p2)
 
