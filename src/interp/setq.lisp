@@ -287,6 +287,8 @@
   (|resolveTT|   |hash| UEQUAL |count|)
   (|selectMms1| |hash| UEQUAL |count|)
   (|underDomainOf|   |hash| UEQUAL |count|)
+  (|findRetractMms| |hash| UEQUAL |count|)
+  (|getConstantFromDomain|  |hash| UEQUAL |count|)
 ;  (|isSubDomain|   |hash| UEQUAL |count|)
 ))
 
