@@ -200,3 +200,8 @@ underDomainOf t ==
   1 = #d => NIL
   u := getUnderModeOf(t) => u
   last d
+
+findRetractMms(st, tt) == findRetractMms1(st, tt)
+
+getConstantFromDomain(form,domainForm) ==
+    getConstantFromDomain1(form,domainForm)

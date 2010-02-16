@@ -281,16 +281,15 @@ coerceRetract(object,t2) ==
   t1 = $Symbol     => NIL
   t1 = $OutputForm => NIL
   (c := retractByFunction(object, t2)) => c
-  t1 is [D,:.] =>
-    fun := GETL(D,'retract) or
-           INTERN STRCONC('"retract",STRINGIMAGE D)
-    functionp fun =>
-      PUT(D,'retract,fun)
-      c := CATCH('coerceFailure,FUNCALL(fun,object,t2))
-      (c = $coerceFailure) => NIL
-      c
-    NIL
   NIL
+
+findRetractMms1(st, tt) ==
+    target := ['Union, tt, '"failed"]
+    fn := 'retractIfCan
+    mms := append(findFunctionInDomain(fn, tt, target, [st], [st], NIL, 'T),
+                  findFunctionInDomain(fn, st, target, [st],[st], NIL, 'T))
+    mms => orderMms(fn, mms, [st], [st], target)
+    mms
 
 retractByFunction(object,u) ==
   -- tries to retract by using function "retractIfCan"
@@ -299,21 +298,13 @@ retractByFunction(object,u) ==
   t := objMode object
   -- JHD/CRF not ofCategory(t,['RetractableTo,u]) => NIL
   val := objValUnwrap object
-
   -- try to get and apply the function "retractable?"
   target := ['Union,u,'"failed"]
   funName := 'retractIfCan
   if $reportBottomUpFlag then
     sayFunctionSelection(funName,[t],target,NIL,
       '"coercion facility (retraction)")
-  -- JHD/CRF if (mms := findFunctionInDomain(funName,t,target,[t],[t],'T,'T))
-  -- MCD: changed penultimate variable to NIL.
-  if (mms := append(findFunctionInDomain(funName,t,target,[t],[t],NIL,'T),
-                    findFunctionInDomain(funName,u,target,[t],[t],NIL,'T)))
--- The above two lines were:      (RDJ/BMT 6/95)
---  if (mms := append(findFunctionInDomain(funName,t,target,[t],[t],'T,'T),
---                    findFunctionInDomain(funName,u,target,[t],[t],'T,'T)))
-    then mms := orderMms(funName,mms,[t],[t],target)
+  mms := findRetractMms(t, u)
   if $reportBottomUpFlag then
     sayFunctionSelectionResult(funName,[t],mms)
   null mms => NIL
@@ -354,7 +345,7 @@ constantInDomain?(form,domainForm) ==
 -- if [[isPartialMode]] (see i-funsel.boot) returns true then the
 -- domain modemap contains the constant [[$EmptyMode]] which indicates
 -- that the domain is not fully formed. In this case we return [[NIL]].
-getConstantFromDomain(form,domainForm) ==
+getConstantFromDomain1(form,domainForm) ==
     isPartialMode domainForm => NIL
     opAlist := getOperationAlistFromLisplib first domainForm
     key := opOf form
