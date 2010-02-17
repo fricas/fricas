@@ -1059,12 +1059,30 @@ UnivariatePolynomialCategoryFunctions2(R,PR,S,PS): Exports == Impl where
      ++ to zero.
 
   Impl ==> add
-    map(f, p) ==
-      ans:PS := 0
-      while p ~= 0 repeat
-        ans := ans + monomial(f leadingCoefficient p, degree p)
-        p   := reductum p
-      ans
+
+    op_of_PS : Symbol := CAR(devaluate(PS)$Lisp)$Lisp
+
+    if op_of_PS = 'UnivariatePolynomial
+         or PS is SparseUnivariatePolynomial(S) then
+
+        TermPS ==>  Record(k : Integer, c : S)
+        RepPS :=  List TermPS
+
+        map(f, p) ==
+            ans : RepPS := []
+            while p ~= 0 repeat
+                nc := f leadingCoefficient p
+                if nc ~= 0 then
+                    ans := cons([degree p, nc]$TermPS, ans)
+                p := reductum p
+            reverse!(ans) pretend PS
+    else
+        map(f, p) ==
+            ans:PS := 0
+            while p ~= 0 repeat
+                ans := ans + monomial(f leadingCoefficient p, degree p)
+                p   := reductum p
+            ans
 
 @
 \section{package COMMUPC CommuteUnivariatePolynomialCategory}
