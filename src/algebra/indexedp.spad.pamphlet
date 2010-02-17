@@ -184,14 +184,16 @@ IndexedDirectProductAbelianMonoid(A:AbelianMonoid,S:OrderedSet):
 --          r:= x.first.c + y.first.c
 --          r = 0 => x.rest + y.rest
 --          cons([x.first.k,r],(x.rest + y.rest))
-       qsetrest!: (Rep, Rep) -> Rep
-       qsetrest!(l: Rep, e: Rep): Rep == RPLACD(l, e)$Lisp
+       -- qsetrest!: (Rep, Rep) -> Rep
+       -- qsetrest!(l: Rep, e: Rep): Rep == RPLACD(l, e)$Lisp
+       qsetrest! ==> RPLACD$Lisp
 
-       x + y ==
-                null x => y
-                null y => x
-                endcell: Rep := empty()
-                res:  Rep := empty()
+       TermS ==>  Record(k : SingleInteger, c : A)
+       RepS ==> List TermS
+
+       PLUS_BODY ==>
+                endcell := empty()
+                res := empty()
                 while not empty? x and not empty? y repeat
                         newcell := empty()
                         if x.first.k = y.first.k then
@@ -218,6 +220,34 @@ IndexedDirectProductAbelianMonoid(A:AbelianMonoid,S:OrderedSet):
                 if empty? res then res := end
                 else qsetrest!(endcell, end)
                 res
+
+       add_gen(x : Rep, y : Rep) : Rep ==
+           null x => y
+           null y => x
+           endcell: Rep
+           res:  Rep
+           newcell : Rep
+           PLUS_BODY
+
+       if S is NonNegativeInteger then
+           add_si(x : RepS, y : RepS) : RepS ==
+                endcell: RepS
+                res:  RepS
+                newcell : RepS
+                PLUS_BODY
+
+           x + y ==
+               null x => y
+               null y => x
+               degx := (x.first.k) pretend Integer
+               degy := (y.first.k) pretend Integer
+               msi := max()$SingleInteger
+               degx < msi and degy < msi =>
+                   return add_si(x pretend RepS, y pretend RepS) pretend %
+               add_gen(x, y)
+
+       else
+           x + y == add_gen(x, y)
 
        n * x  ==
              n = 0 => 0
