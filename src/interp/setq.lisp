@@ -289,6 +289,7 @@
   (|underDomainOf|   |hash| UEQUAL |count|)
   (|findRetractMms| |hash| UEQUAL |count|)
   (|getConstantFromDomain|  |hash| UEQUAL |count|)
+  (|interpLookup| |hash| UEQUAL |count|)
 ;  (|isSubDomain|   |hash| UEQUAL |count|)
 ))
 

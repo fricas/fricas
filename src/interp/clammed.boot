@@ -205,3 +205,7 @@ findRetractMms(st, tt) == findRetractMms1(st, tt)
 
 getConstantFromDomain(form,domainForm) ==
     getConstantFromDomain1(form,domainForm)
+
+interpLookup(funName, sig, dc) ==
+    dcVector:= evalDomain dc  
+    NRTcompiledLookup(funName, sig, dcVector)

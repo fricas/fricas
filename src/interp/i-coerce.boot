@@ -312,14 +312,11 @@ retractByFunction(object,u) ==
   -- [[dc,:.],slot,.]:= CAR mms
   dc := CAAAR mms
   slot := CADAR mms
-  dcVector:= evalDomain dc
-  fun :=
+  fun := interpLookup(funName, [target,t], dc)
 --+
-    compiledLookup(funName,[target,t],dcVector)
   NULL fun => NIL
   CAR(fun) = function Undef => NIL
 --+
-  $: fluid := dcVector
   object' := coerceUnion2Branch objNewWrap(SPADCALL(val,fun),target)
   u' := objMode object'
   u = u' => object'
@@ -1369,15 +1366,13 @@ coerceByFunction(T,m2) ==
     mm := coerceConvertMmSelection(funName := 'convert,m1,m2)
   mm =>
     [[dc,tar,:args],slot,.]:= mm
-    dcVector := evalDomain(dc)
     fun:=
       isWrapped x =>
-        NRTcompiledLookup(funName,slot,dcVector)
-      NRTcompileEvalForm(funName,slot,dcVector)
+        interpLookup(funName, slot, dc)
+      NRTcompileEvalForm(funName, slot, evalDomain(dc))
     [fn,:d]:= fun
     fn = function Undef => NIL
     isWrapped x =>
-      $: fluid := dcVector
       val := CATCH('coerceFailure, SPADCALL(unwrap x,fun))
       (val = $coerceFailure) => NIL
       objNewWrap(val,m2)
