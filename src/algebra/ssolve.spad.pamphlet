@@ -103,8 +103,8 @@ TaylorSolve(F, UTSF, UTSSMPF): Exports == Implementation where
 @
 
 [[coeffs]] is the stream of coefficients of the solution.  We store in [[st.2]]
-the stream of equations, and in [[st.1]] the stream starting with the first
-coefficient that has possibly not yet been computed.
+the stream of all coefficients, and in [[st.1]] the stream starting with the
+first coefficient that has possibly not yet been computed.
 
 Consider an arbitrary equation $f\big(x, y(x)\big)=0$. When setting $x=0$, we
 obtain $f\big(0, y(0)\big)=0$. It is not necessarily the case that this
@@ -148,19 +148,13 @@ $y^{\prime\prime}$.
                             $SMPF, s1)$StreamFunctions2(Integer, SMPF)
 
             coeffs: Stream SMPF := concat(l1, l2)
-            st: List Stream SMPF := [coeffs, coefficients f series coeffs]
+            st: List Stream SMPF := [coeffs, coeffs]
 
             next: () -> F :=
---                output("enter next")$OutputPackage
---                output(hconcat("The coefficients are: ", (st.1)::OutputForm))
---                      $OutputPackage
---                output(hconcat("The equations are: ", (st.2)::OutputForm))
---                      $OutputPackage
-
-                nr := st.1
+                nr: Stream SMPF := st.1
                 res: F
 
-                if ground?(coeff: SMPF := nr.1)$SMPF then
+                if ground?(coeff: SMPF := first nr)$SMPF then
 -- If the next element was already calculated, we can simply return it:
 
                     res := ground coeff
@@ -170,9 +164,10 @@ $y^{\prime\prime}$.
 -- Otherwise, we have to find the first non-satisfied relation and solve it.  It
 -- should be linear, or a single non-constant monomial. That is, the solution
 -- should be unique.
+                    eqs: Stream SMPF := coefficients f series(st.2)
                     eq: SMPF
-                    while zero?(eq := first(st.2)) repeat st.2 := rest(st.2)
- 
+                    while zero?(eq := first eqs) repeat eqs := rest eqs
+
                     vars := variables eq
                     if not member?(retract(coeff)@NNI, vars) then
                         output(hconcat("The variable is: ", coeff::OutputForm))
@@ -180,24 +175,20 @@ $y^{\prime\prime}$.
                         output(hconcat("The next equations are: ", (st.2)::OutputForm))
                               $OutputPackage
 
-                        if empty? vars then 
+                        if empty? vars then
                             error "seriesSolve: there is no solution with the given initial values"
                         else
                             error "seriesSolve: coefficient does not appear in equation"
 
                     if not one?(# vars) or degree(eq, first vars) > 1 then
-                        if monomial? eq then 
+                        if monomial? eq then
                             for var in vars repeat
-                                res := 0
                                 i: Integer := 1
-                                while ground?(nr.i) or (retract(nr.i)@NNI ~= var) repeat 
+                                while ground?(nr.i) or (retract(nr.i)@NNI ~= var) repeat
                                     i := i+1
                                 nr.i := 0
                             st.1 := rest nr
-                            st.2 := map(eq +-> eval(eq, vars, _
-                                                    [res for v in vars]::List(F))$SMPF, _
-                                        rest(st.2))
-       
+                            res := 0
                         else
                             output(hconcat("The variable is: ", coeff::OutputForm))
                                   $OutputPackage
@@ -205,19 +196,11 @@ $y^{\prime\prime}$.
                                   $OutputPackage
                             error "seriesSolve: coefficient not uniquely determined"
                     else
---                        output(hconcat("The equation is: ", eq::OutputForm))
---                              $OutputPackage
- 
                         res := (-coefficient(eq, monomial(0$NNI, first vars)$IndexedExponents(NNI))$(SMPF)
                                  /coefficient(eq, monomial(1$NNI, first vars)$IndexedExponents(NNI))$(SMPF))
 
+                        nr.1 := res::SMPF
                         st.1 := rest nr
-                        st.2 := map(eq +-> eval(eq, first vars, res), rest(st.2))
---                        output(hconcat("The coefficients are: ", (st.1)::OutputForm))
---                              $OutputPackage
---                        output(hconcat("The equations are: ", (st.2)::OutputForm))
---                              $OutputPackage
-
 
                 res
 
@@ -341,7 +324,7 @@ testcase "Bell numbers"
 U ==> UFPS SMPEXPR FRAC INT
 USOLVE ==> UTSSOL(FRAC INT, UFPS FRAC INT, U)
 h(z: U): U ==
-    x := monomial(1,1)$U 
+    x := monomial(1,1)$U
     z.(x*recip(1+x)) - 1 - x*z
 testEquals("coefficient(seriesSolve(h, [])$USOLVE, 6)", "203")
 
@@ -349,6 +332,23 @@ SSOLVE ==> EXPRSOL(INT, EXPR INT, UFPS EXPR INT, UFPS SMPEXPR EXPR INT)
 f := operator 'f
 
 xftestEquals("coefficient(seriesSolve(f(z/(1+z)) - 1 - z*f z, f, z, [])$SSOLVE, 6)", "203")
+
+testcase "eval in map"
+R ==> FRAC POLY INT
+U ==> UTS(R, t, 0)
+UE ==> UTS(SMPEXPR R, t, 0)
+USOLVE ==> UTSSOL(R, U, UE)
+t0 := monomial(1,1)$UE;
+Fxeq0 f == map(c +-> map(d +-> eval(d, 'x=0), c), f)
+Fyeq0 f == map(c +-> map(d +-> eval(d, 'y=0), c), f)
+Fyeqx f == map(c +-> map(d +-> eval(d, 'y=x), c), f)
+s: UE -> UE
+s := f +-> (-1*t0*x*y^3+((-4*t0+1)*x+-1*t0)*y^2+((2*t0+-1)*x^2+-1*t0*x)*y+t0*x^2)*f+((_
+  t0*x^2+2*t0*x+t0)*y^2*Fyeqx f+((-1*t0*y^2+2*t0*x*y+-1*t0*x^2)*Fyeq0 f+(((t0*x+t0)*y_
+  ^2+(-1*t0*x^2+-1*t0*x)*y)*Fxeq0 f+(-1*x*y^2+x^2*y))));
+r := seriesSolve(s, [])$USOLVE;
+testEquals("entries complete first(coefficients r, 4)",
+           "[1,y+1,y^2+(x+4)*y+2,y^3+(2*x+7)*y^2+(2*x^2+10*x+17)*y+(x+6)]")
 
 statistics()
 @
