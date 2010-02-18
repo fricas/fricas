@@ -1174,13 +1174,18 @@ P2Up(u,source is [.,S],target is [.,x,T]) ==
     (u' := coerceInt(objNewWrap(u,source),T)) or coercionFailure()
     [[0,:objValUnwrap(u')]]
 
+  #vars = 1 and S = T =>
+      univariate := getFunctionFromDomain('univariate,
+          source,[source])
+      SPADCALL(u, univariate)
   -- do a univariate to transform u to a UP(x,P S) and then coerce again
-  UPP := ['UnivariatePolynomial,x,source]
+  UPP := ['SparseUnivariatePolynomial, source]
   univariate := getFunctionFromDomain('univariate,
     source,[source,$Symbol])
   upU := SPADCALL(u,x,univariate)  -- we may assume this has type UPP
-  (u' := coerceInt(objNewWrap(upU,UPP),target)) or coercionFailure()
-  objValUnwrap(u')
+  SUP2Up_aux(upU, UPP, target)
+  -- (u' := coerceInt(objNewWrap(upU,UPP),target)) or coercionFailure()
+  -- objValUnwrap(u')
 
 --% Fraction
 
@@ -1290,21 +1295,25 @@ Scr2Scr(u, source is [.,S], target is [.,T]) ==
 
 --% SparseUnivariatePolynomialnimial
 
+SUP2Up_aux(u,source is [.,S],target is [.,x,T]) ==
+    -- must be careful in case any of the coeffs come back 0
+    u' := NIL
+    zero := getConstantFromDomain('(Zero),T)
+    for [e,:c] in u repeat
+        c' := objValUnwrap (coerceInt(objNewWrap(c,S),T) or
+            coercionFailure())
+        c' = zero => 'iterate
+        u' := [[e,:c'],:u']
+    nreverse u'
+
+
 SUP2Up(u,source is [.,S],target is [.,x,T]) ==
   u = '_$fromCoerceable_$ => canCoerce(source,T) or canCoerce(S,T)
   null u => u
   S = T => u
   -- try to go underneath first
   null (u' := coerceInt(objNewWrap(u,source),T)) =>
-    -- must be careful in case any of the coeffs come back 0
-    u' := NIL
-    zero := getConstantFromDomain('(Zero),T)
-    for [e,:c] in u repeat
-      c' := objValUnwrap (coerceInt(objNewWrap(c,S),T) or
-        coercionFailure())
-      c' = zero => 'iterate
-      u' := [[e,:c'],:u']
-    nreverse u'
+      SUP2Up_aux(u, source, target)
   [[0,:objValUnwrap u']]
 
 --% SquareMatrix
@@ -1511,6 +1520,11 @@ Up2P(u,source is [.,var,S],target is [.,T]) ==
   u is [[e,:c]] and e=0 =>
     x:= coerceInt(objNewWrap(c,S),target) => objValUnwrap(x)
     coercionFailure()
+  S = T =>
+      res := []
+      for [e,:c] in u repeat
+          res := cons([e, 0, :c], res)
+      [1, var, :NREVERSE res]
   pol:= domainZero(target)
   one:= domainOne(T)
   plusfunc := getFunctionFromDomain("+",target,[target,target])
