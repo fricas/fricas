@@ -78,6 +78,7 @@ VectorModularReconstructor(): Export == Implementation where
         Rep := Record(prime : Integer, lpol : PA, curj : Integer, _
                       npoints : Integer, npolys : Integer, _
                       palloc : Integer, polys : PrimitiveArray PA, _
+                      next_rec : Integer, rec_step : Integer, _
                       numers : PrimitiveArray PA, _
                       denoms : PrimitiveArray PA)
 
@@ -91,7 +92,7 @@ VectorModularReconstructor(): Export == Implementation where
             for i in 0..(npoly - 1) repeat
                 polyvec(i) := new(5, 0)$U32Vector
             state := [np, new(5, 0)$U32Vector, 0, 0, npoly, _
-                      5, polyvec, empty()$PrimitiveArray(PA), _
+                      5, polyvec, 3, 1, empty()$PrimitiveArray(PA), _
                       empty()$PrimitiveArray(PA)]$Rep
             setelt(state.lpol, 0, 1)
             state
@@ -233,7 +234,13 @@ VectorModularReconstructor(): Export == Implementation where
             -- Compiler bug
             -- j0 <= 3 => "failed"
             m := state.npoints
-            m <= 3 => return "failed"
+            m <= state.next_rec => return "failed"
+            state.next_rec := state.next_rec + state.rec_step
+            if m > 30 then
+                state.rec_step :=
+                    state.rec_step +
+                           m > 200 => 4
+                           1
             bound := m quo 2
             ok := true
             pp := rational__reconstruction(polyvec(j0), modulus, bound, p)
@@ -249,20 +256,31 @@ VectorModularReconstructor(): Export == Implementation where
             ppr := pp :: RatRec
             nums(j0) := ppr.numer
             dens(j0) := ppr.denom
-            -- cden := ppr.den
+            cden := ppr.denom
             j := j0
             repeat
                j := j + 1
                if j >= n then j := j - n
                j = j0 => return [nums, dens]
                r1 := polyvec(j)
+               r1 := mul(r1, cden, p)
+               remainder!(r1, modulus, p)
+               (deg_r1 := degree(r1)) < bound =>
+                   rp := new((deg_r1 + 1) pretend NonNegativeInteger, 0)$PA
+                   copy__first(rp, r1, deg_r1 + 1)
+                   nums(j) := rp
+                   dens(j) := cden
                pp := rational__reconstruction(r1, modulus, bound, p)
                pp case "failed" =>
                    state.curj := j
                    return "failed"
                ppr := pp :: RatRec
+               cden := mul(cden, ppr.denom, p)
+               degree(cden) > bound =>
+                   state.curj := j
+                   return "failed"
                nums(j) := ppr.numer
-               dens(j) := ppr.denom
+               dens(j) := cden
 
 
         repack__polys(var__cnt : Integer, poly__offsets : VI, _
