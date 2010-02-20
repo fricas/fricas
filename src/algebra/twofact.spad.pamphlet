@@ -88,6 +88,10 @@ TwoFactorize(F) : C == T
       ++ generalTwoFactor(p) returns the factorisation of polynomial p,
       ++ a sparse univariate polynomial (sup) over a
       ++ sup over F.
+    tryTwoFactor   : (P) -> Factored P
+      ++ tryTwoFactor(p) returns the factorisation of polynomial p,
+      ++ if it does not require using field extensions, otherwise
+      ++ returns p unfactored (nil factorization).
     generalSqFr    : (P)  ->  Factored P
       ++ generalSqFr(p) returns the square-free factorisation of polynomial p,
       ++ a sparse univariate polynomial (sup) over a
@@ -166,8 +170,16 @@ TwoFactorize(F) : C == T
            makeFR(unit(sqp)*unitPart,pfaclist)
        makeFR(unitPart,pfaclist)
 
+    doTwoFactor : (P, Boolean) -> Factored P
+    doFactor : (P, Integer, Boolean) -> Factored P
 
-    generalTwoFactor(m:P): Factored P ==
+    tryTwoFactor(m : P) : Factored P ==
+       doTwoFactor(m, false)
+
+    generalTwoFactor(m : P) : Factored P ==
+       doTwoFactor(m, true)
+
+    doTwoFactor(m : P, do_ext : Boolean) : Factored P ==
        m = 0 => 0
        degree m = 0 =>
          l:=factor(leadingCoefficient m)$DistinctDegreeFactorize(F,R)
@@ -207,32 +219,43 @@ TwoFactorize(F) : C == T
               unitPart:=unitPart*unit(m2)^(expon::NNI)
               ll:=[:[[v.flg,swap v.fctr,expon*v.xpnt] for v in factorList m2],:ll]
            ydeg:="max"/[degree w for w in coefficients fac]
-           twoF:=twoFactor(fac,ydeg)
+           twoF := doFactor(fac, ydeg, do_ext)
+           nfl := factorList(twoF)
+           #nfl = 1 and nfl(1).flg case "nil" =>
+               return twoF
            unitPart:=unitPart*unit(twoF)^expon
            ll:=[:[[v.flg,v.fctr,expon*v.xpnt] for v in factorList twoF],
                 :ll]
        makeFR(unitPart,ll)
 
     -- factorization of a primitive square-free bivariate polynomial --
-    twoFactor(m:P,dx:Integer):Factored P ==
+    twoFactor(m : P, dx : Integer) : Factored P ==
+        doFactor(m, dx, true)
+
+    doFactor(m : P, dx : Integer, do_ext : Boolean) : Factored P ==
        -- choose the degree for the extension
        n:PI:=computeDegree(m,dx,size()$F)
        -- extend the field
        -- find the substitution for x
        look:Boolean:=true
        dm:=degree m
-       try:Integer:=min(5,size()$F)
+       try : Integer := min(dx + 5, size()$F)
        i:Integer:=0
        lcm := leadingCoefficient m
        umv : R
+       use_random := 2*try < size()$F
        while look and i < try repeat
-          vval := random()$F
-          i:=i+1
+          i := i + 1
+          if use_random then
+              vval := random()$F
+          else
+              vval := index(i pretend PositiveInteger)$F
           zero? elt(lcm, vval) => "next value"
           umv := map(x +-> elt(x, vval), m)$UPCF2(R, P, F, R)
           degree(gcd(umv,differentiate umv)) ~= 0 => "next val"
           n := 1
           look := false
+       look and not do_ext => return makeFR(1, [["nil", m, 1]])
        extField:=FiniteFieldExtension(F,n)
        SUEx:=SUP extField
        TP:=SparseUnivariatePolynomial SUEx
