@@ -92,6 +92,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
           ++ Polynomial differentiation.
         divide! : (PA, PA, PA, Integer) -> Void
           ++ Polynomial division.
+        remainder! : (PA, PA, Integer) -> Void
+          ++ Polynomial remainder
         vector__combination : (PA, Integer, PA, Integer, _
                                Integer, Integer, p : Integer) -> Void
           ++ vector__combination(v1, c1, v2, c2, n, delta, p) replaces
@@ -207,6 +209,23 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 delta := dr0 - dr1
                 c1 := Qmul(c0, r0(dr0), p)
                 res(delta) := c1
+                c1 := p - c1
+                r0(dr0) := 0
+                dr0 := dr0 - 1
+                if dr0 < 0 then break
+                vector__combination(r0, 1, r1, c1, dr0, delta, p)
+                while r0(dr0) = 0 repeat
+                    dr0 := dr0 - 1
+                    if dr0 < 0 then break
+
+        remainder!(r0 : PA, r1 : PA, p: Integer) : Void ==
+            dr0 := degree(r0)
+            dr1 := degree(r1)
+            c0 := r1(dr1)
+            c0 := modInverse(c0, p)
+            while dr0 >= dr1 repeat
+                delta := dr0 - dr1
+                c1 := Qmul(c0, r0(dr0), p)
                 c1 := p - c1
                 r0(dr0) := 0
                 dr0 := dr0 - 1
