@@ -40,6 +40,7 @@
 --   break    -- always enter a lisp break when an error is signalled
 --   nobreak  -- do not enter lisp break mode
 --   query    -- ask the user if break mode should be entered
+--   quit     -- quit on error with exit status 1
 
 SETANDFILEQ($SystemError,'SystemError)
 SETANDFILEQ($UserError,'UserError)
@@ -120,6 +121,8 @@ handleLispBreakLoop($BreakMode) ==
       THROW('SPAD__READER, nil)
   $BreakMode = 'resume =>
     returnToReader()
+  $BreakMode = 'quit =>
+    EXIT_-WITH_-STATUS(1)
   returnToTopLevel()
 
 TOP() == returnToTopLevel()

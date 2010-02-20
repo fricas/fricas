@@ -93,7 +93,7 @@
         (cond ((eq |$BreakMode| '|validate|)
                    (|systemError| (error-format c)))
                ((and (null |$inLispVM|)
-                     (memq |$BreakMode| '(|nobreak| |query| |resume|)))
+                     (memq |$BreakMode| '(|nobreak| |query| |resume| |quit|)))
                    (let ((|$inLispVM| T)) ;; turn off handler
                         (return (|systemError| (error-format c)))))
                ((eq |$BreakMode| '|letPrint2|)
@@ -124,7 +124,7 @@
                                 (setq |$BreakMode| |$oldBreakMode|)
                                 nil)) ;; resets error handler
                           ((and (null |$inLispVM|)
-                                (memq |$BreakMode| '(|nobreak| |query| |resume|)))
+                                (memq |$BreakMode| '(|nobreak| |query| |resume| |quit|)))
                            (let ((|$inLispVM| T)) ;; turn off handler
                              (return
                               (|systemError| (error-format error-string args)))))

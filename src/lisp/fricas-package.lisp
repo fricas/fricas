@@ -41,7 +41,7 @@
 (export '(quit chdir |getEnv| |load_quietly| get-current-directory
           fricas-probe-file trim-directory-name pad-directory-name
           file-kind makedir fricas-compile-file load-maybe-compiling
-          maybe-compile DEFCONST
+          maybe-compile DEFCONST exit-with-status
           |writeablep| |openServer| |sockGetInt|
           |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
           |serverSwitch| |sockSendSignal| |sockGetStringFrom|))
