@@ -312,6 +312,10 @@ postIteratorList x ==
     (p:= postTran p) is ['IN,y,u] =>
       u is ["|",a,b] => [['IN,y,postInSeq a],["|",b],:postIteratorList l]
       [['IN,y,postInSeq u],:postIteratorList l]
+    p is  ['INBY, y, u, v] =>
+      u is ["|",a,b] =>
+          [['INBY, y, postInSeq a, v], ["|",b], :postIteratorList l]
+      [['INBY, y, u, v], :postIteratorList l]
     [p,:postIteratorList l]
   x
 

@@ -35,24 +35,19 @@ OBJ_files= vmlisp hash bootfuns macros setq astr bits \
 	i-code i-coerce	i-coerfn i-eval i-funsel i-intern \
 	i-map i-output i-resolv	i-spec1 i-spec2 i-syscmd \
 	i-toplev i-util incl int-top lisplib macex match \
-	monitor msg msgdb newaux newfort nlib nrunfast \
+	monitor msg msgdb newfort nlib nrunfast \
 	nrungo nrunopt osyscmd pathname pf2sex pile \
 	posit property ptrees record rulesets scan \
 	serror server setvars sfsfun-l sfsfun simpbool slam \
 	sockio spad spaderror template termrw trace \
-	union daase fortcall ncomp primitives
+	union daase fortcall ncomp primitives parsing \
+	bootlex def parse postpar preparse s-parser
 
 OBJS= $(patsubst %, %.$(LISPOBJEXT), $(OBJ_files))
 
 INOBJ_files= setvart interop patches
 
 INOBJS= $(patsubst %, %.$(LISPOBJEXT), $(INOBJ_files))
-
-# These are autloaded old parser files
-OPOBJ_files= parsing bootlex def fnewmeta \
-	parse postpar preparse
-
-OPOBJS= $(patsubst %, ${AUTO}/%.$(LISPOBJEXT), $(OPOBJ_files))
 
 OCOBJ_files= apply c-doc c-util profile category compiler \
 	define functor info iterator modemap nruncomp \
@@ -144,7 +139,7 @@ distclean-local: clean-local
 ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     ${DEPSYS} ${OBJS}  util.$(LISPOBJEXT) \
     $(srcdir)/sys-pkg.lisp \
-    ${OCOBJS} ${OPOBJS} ${BROBJS} \
+    ${OCOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
     ${NAGBROBJS} ${TRANOBJS} \
     ${LOADSYS} \
@@ -167,7 +162,7 @@ makeint.lisp:
 	@ echo '${YEARWEEK}' >> makeint.lisp
 	echo '(build-interpsys' \
 	  '(quote ($(patsubst %, "%", ${OBJS} ${ASCOMP} ${INOBJS} )))' \
-	  '(quote ($(patsubst %, "$(BASE)%", ${OPOBJS})))' \
+	  '(quote ())' \
 	  '(quote ($(patsubst %, "$(BASE)%", ${OCOBJS})))' \
 	  '(quote ($(patsubst %, "$(BASE)%", ${BROBJS})))' \
 	  '(quote ($(patsubst %, "$(BASE)%", ${TRANOBJS})))' \
@@ -187,11 +182,10 @@ ${SAVESYS}:
 
 	@ echo 6 ${SAVESYS} created
 
-depsys_boot_sources = postpar parse clam slam \
-			g-boot g-util
+depsys_boot_sources = clam g-boot g-util parse postpar s-parser slam
 
 # Lisp files beyond DEP needed for DEPSYS
-depsys_lisp_files = parsing bootlex newaux preparse def fnewmeta
+depsys_lisp_files = parsing bootlex preparse def
 
 ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
                     ${DEP} $(depsys_lisp_files) sys-pkg util) \
@@ -208,7 +202,7 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
 	echo > makedep2.lst
 	for A in postpar.clisp parse.clisp \
 	         $(patsubst %, $(srcdir)/%.lisp, $(depsys_lisp_files)) \
-	         clam.clisp slam.clisp \
+	         clam.clisp s-parser.clisp slam.clisp \
 	         g-boot.clisp g-util.clisp; do \
 	   B=$${A##*/} ; \
 	   C=$${B%.*} ; \
@@ -268,8 +262,7 @@ database.date:
 	touch database.date
 
 AUTO_from_IN=\
- bootlex def fnewmeta parsing preparse \
- parse postpar nspadaux
+ bootlex def nspadaux parse parsing postpar preparse s-parser
 
 $(addprefix $(AUTO)/, $(addsuffix .$(LISPOBJEXT), $(AUTO_from_IN))): \
    $(AUTO)/%.$(LISPOBJEXT) : %.$(LISPOBJEXT)
