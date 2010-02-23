@@ -129,7 +129,7 @@ at load time.
       '(
 ;;      loadparser
         |oldParserAutoloadOnceTrigger|
-        |PARSE-Expression|
+        |parse_Expression|
         boot-parse-1
         BOOT
         |spadCompile|
@@ -433,7 +433,7 @@ After this function is called the image is clean and can be saved.
            (append FRICAS-LISP::*fricas-initial-lisp-objects*
                    '("sys-pkg.o" "util.o")
                    load-files))
-      (dolist (el `(("parse-files" ,parse-files)
+      (dolist (el `(
                     ("comp-files" ,comp-files)
                     ("browse-files" ,browse-files)
                     ("translate-files" ,translate-files)
@@ -494,7 +494,6 @@ After this function is called the image is clean and can be saved.
   (|start| :fin)
   (setq *load-verbose* nil)
   (|setBootAutloadProperties| comp-functions comp-files)
-  (|setBootAutloadProperties| parse-functions parse-files)
   (|setBootAutloadProperties| browse-functions browse-files)
   (|setBootAutloadProperties| translate-functions translate-files)
   (|setBootAutloadProperties| asauto-functions asauto-files)
@@ -531,7 +530,7 @@ After this function is called the image is clean and can be saved.
      ($SPAD NIL)
      (XTOKENREADER 'GET-BOOT-TOKEN)
      (LINE-HANDLER 'NEXT-BOOT-LINE)
-     (PARSEOUT (PROGN (|PARSE-Expression|) (POP-STACK-1))))
+     (PARSEOUT (PROGN (|parse_Expression|) (POP-STACK-1))))
     (DECLARE (SPECIAL BOOT-LINE-STACK $BOOT $SPAD XTOKENREADER LINE-HANDLER))
     (DEF-RENAME (|new2OldLisp| PARSEOUT))))
 

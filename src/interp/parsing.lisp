@@ -277,6 +277,15 @@ NonBlank is true if the token is not preceded by a blank."
 (defmacro nth-stack (x)
   `(reduction-value (nth (1- ,x) (stack-store Reduce-Stack))))
 
+(defun |pushreduction|(x y) (PUSH-REDUCTION x y))
+(defun |popstack1|() (POP-STACK-1))
+(defun |popstack2|() (POP-STACK-2))
+(defun |popstack3|() (POP-STACK-3))
+(defun |currentsymbol|() (CURRENT-SYMBOL))
+(defun |nextsymbol|() (NEXT-SYMBOL))
+(defun |advancetoken|() (ADVANCE-TOKEN))
+(defun |matchcurrenttoken|(x y) (MATCH-CURRENT-TOKEN x y))
+
 ; 2B. Routines for applying certain metagrammatical elements
 ;     of a production (e.g., Star).
 
@@ -284,66 +293,21 @@ NonBlank is true if the token is not preceded by a blank."
 
 ; FUNCTIONS DEFINED IN THIS SECTION:
 ;
-;       Star, Bang, Must, Optional, Action, Sequence
+;       MUST, OPTIONAL, ACTION
 
-(defmacro Star (lab prod)
-
-"Succeeds if there are one or more of PROD, stacking as one unit
-the sub-reductions of PROD and labelling them with LAB.
-E.G., (Star IDs (parse-id)) with A B C will stack (3 IDs (A B C)),
-where (parse-id) would stack (1 ID (A)) when applied once."
-
-  `(prog ((oldstacksize (stack-size reduce-stack)))
-         (if (not ,prod) ;(progn (format t "~&Star failed for ~A.~%" ',lab) (return nil)))
-             (return nil))
-    loop (if (not ,prod)
-             (let* ((newstacksize (stack-size reduce-stack))
-                    (number-of-new-reductions (- newstacksize oldstacksize)))
-;              (format t "~&Starring ~A with ~D new reductions.~%"
-;                      ',lab number-of-new-reductions)
-               (if (> number-of-new-reductions 0)
-                   (return (do ((i 0 (1+ i)) (accum nil))
-                               ((= i number-of-new-reductions)
-                                (Push-Reduction ',lab accum)
-;                               (format t "~&Star accumulated ~D reductions.~%"
-;                                       (length accum))
-                                (return t))
-                             (push (pop-stack-1) accum)))
-                   (return t)))
-             (go loop))))
-
-(defmacro Bang (lab prod)
-
-"If the execution of prod does not result in an increase in the size of
-the stack, then stack a NIL. Return the value of prod."
-
-  `(progn (setf (stack-updated reduce-stack) nil)
-;         (format t "~&Banging ~A~:[~; and I think the stack is updated!~].~%" ',lab
-;                 (stack-updated reduce-stack))
-          (let* ((prodvalue ,prod)
-                 (updated (stack-updated reduce-stack)))
-;           (format t "~&Bang thinks that ~A ~:[didn't do anything~;did something~].~&"
-;                   ',lab prodvalue)
-            (if updated
-                (progn ; (format t "~&Banged ~A and I think the stack is updated!~%" ',lab)
-                       prodvalue)
-                (progn (push-reduction ',lab nil)
-                       ; (format t "~&Banged ~A.~%" ',lab)
-                       prodvalue)))))
-
-(defmacro must (dothis &optional (this-is nil) (in-rule nil))
+(defmacro MUST (dothis &optional (this-is nil) (in-rule nil))
   `(or ,dothis (meta-syntax-error ,this-is ,in-rule)))
 
 ; Optional means that if it is present in the token stream, that is a good thing,
 ; otherwise don't worry (like [ foo ] in BNF notation).
 
-(defun Optional (dothis) (or dothis t))
+(defun OPTIONAL (dothis) (or dothis t))
 
 ; Action is something we do as a consequence of successful parsing; it is
 ; inserted at the end of the conjunction of requirements for a successful
 ; parse, and so should return T.
 
-(defun action (dothis) (or dothis t))
+(defun ACTION (dothis) (or dothis t))
 
 ; 3. Routines for handling lexical scanning
 ;
@@ -393,7 +357,7 @@ the stack, then stack a NIL. Return the value of prod."
 ; can be shoved back on the input stream (to the current line) with Unget-Tokens.
 
 (defmacro Defun-Parse-Token (token)
-  `(defun ,(intern (concatenate 'string "PARSE-" (string token))) ()
+  `(defun ,(intern (concatenate 'string "parse_" (string token))) ()
      (let* ((tok (match-current-token ',token))
             (symbol (if tok (token-symbol tok))))
        (if tok (progn (Push-Reduction
@@ -449,6 +413,8 @@ the stack, then stack a NIL. Return the value of prod."
     (if tok (progn (incf Valid-Tokens) token))))
 
 (defun current-symbol () (make-symbol-of (current-token)))
+
+(defun next-symbol () (make-symbol-of (next-token)))
 
 (defun make-symbol-of (token)
   (let ((u (and token (token-symbol token))))

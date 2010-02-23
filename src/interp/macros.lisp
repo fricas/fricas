@@ -1247,6 +1247,17 @@ LP  (COND ((NULL X)
 
 (defun nonblankloc (str) (position-if-not #'blankp str))
 
+;; Temporary parser macros
+
+(defmacro |symbolis?| (x)
+   `(eq (current-symbol) ,x))
+
+(defmacro |matchsymbol| (x)
+   `(if (|symbolis?| ,x)
+          (progn
+             (advance-token)
+             t)))
+
 ;; stream handling for paste-in generation
 
 (defun |applyWithOutputToString| (func args)

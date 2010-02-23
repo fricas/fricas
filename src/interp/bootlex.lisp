@@ -113,7 +113,7 @@
       (loop (if (and (not File-Closed)
                      (setq Boot-Line-Stack (PREPARSE in-stream)))
                 (progn
-                       (|PARSE-Expression|)
+                       (|parse_Expression|)
                        (let ((parseout (pop-stack-1)) )
                          (setq parseout (|new2OldLisp| parseout))
                          (setq parseout (DEF-RENAME parseout))
@@ -176,7 +176,7 @@
          (if (setq Boot-Line-Stack (PREPARSE in-stream))
              (let ((LINE (cdar Boot-Line-Stack)))
                (declare (special LINE))
-               (|PARSE-NewExpr|)
+               (|parse_new_expr|)
                (let ((parseout (pop-stack-1)) )
                  (when parseout
                        (let ((*standard-output* out-stream))
@@ -404,7 +404,7 @@ or the chracters ?, !, ' or %"
            (go loop)
            (progn
                  (setf *after_dot* (eq ress '\.))
-                 (return (token-install ress 'gliph token
+                 (return (token-install ress 'keyword token
                                          nonblank))))))
 
 (defun make-adjustable-string (n)
@@ -437,7 +437,7 @@ special character be the atom whose print name is the character itself."
                       (#\/ |/|) (#\; |;|) (#\[ |[|) (#\] |]|))))
          (symbol (if as (second as) char)))
     (advance-char)
-    (token-install symbol 'special-char token t)))
+    (token-install symbol 'keyword token t)))
 
 (defun get-intval ()
     (prog (buf
@@ -519,6 +519,10 @@ special character be the atom whose print name is the character itself."
 (defun-parse-token SPADFLOAT)
 (defun-parse-token IDENTIFIER)
 (defun-parse-token NUMBER)
+
+(defun |parse_AKEYWORD|()
+    (AND (MEMBER (CURRENT-SYMBOL) KEYWORDS)
+         (|parse_KEYWORD|)))
 
 (defun TRANSLABEL (X AL) (TRANSLABEL1 X AL) X)
 
