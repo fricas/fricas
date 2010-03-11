@@ -49,8 +49,8 @@ PermutationGroup(S:SetCategory): public == private where
   OUT   ==> OutputForm
   SYM  ==> Symbol
   REC  ==> Record ( orb : L NNI , svc : V I )
-  REC2 ==> Record(order:NNI,sgset:L V NNI,_
-             gpbase:L NNI,orbs:L REC,mp:L S,wd:L L NNI)
+  REC2 ==> Record(order : NNI, sgset : L V NNI,_
+             gpbase : L NNI, orbs : V REC, mp : L S, wd : L L NNI)
   REC3 ==> Record(elt:V NNI,lst:L NNI)
   REC4 ==> Record(bool:B,lst:L NNI)
 
@@ -111,7 +111,8 @@ PermutationGroup(S:SetCategory): public == private where
     wordInStrongGenerators : (PERM S, %)-> L NNI
       ++ wordInStrongGenerators(p,gp) returns the word for the
       ++ permutation p in the strong generators of the group {\em gp},
-      ++ represented by the indices of the list, given by {\em strongGenerators}.
+      ++ represented by the indices of the list, given by
+      ++ {\em strongGenerators}.
     wordInGenerators : (PERM S, %)-> L NNI
       ++ wordInGenerators(p,gp) returns the word for the permutation p
       ++ in the original generators of the group {\em gp},
@@ -145,7 +146,10 @@ PermutationGroup(S:SetCategory): public == private where
       ++ information about your group (but will recompute it again).
       ++ (3) users need not call this function normally for the soultion of
       ++ the word problem.
-
+    pointList : % -> L S
+      ++ pointList(gp) should be local but conditional
+    perm_to_vec : (L S, PERM S, NNI) -> V NNI
+      ++ perm_to_vec(supp, p, degree) should be local but conditional
   private ==> add
 
     -- representation of the object:
@@ -159,38 +163,16 @@ PermutationGroup(S:SetCategory): public == private where
     import Symbol
     import Void
 
-  --first the local variables
-
-    sgs               : L V NNI       := []
-    baseOfGroup       : L NNI         := []
-    sizeOfGroup       : NNI           := 1
-    degree            : NNI           := 0
-    gporb             : L REC         := []
-    out               : L L V NNI     := []
-    outword           : L L L NNI     := []
-    wordlist          : L L NNI       := []
-    basePoint         : NNI           := 0
-    newBasePoint      : B             := true
-    supp              : L S           := []
-    ord               : NNI           := 1
-    wordProblem       : B             := true
-
   --local functions first, signatures:
 
     shortenWord:(L NNI, %)->L NNI
     times:(V NNI, V NNI)->V NNI
-    strip:(V NNI,REC,L V NNI,L L NNI)->REC3
     orbitInternal:(%,L S )->L L S
     inv: V NNI->V NNI
     ranelt:(L V NNI,L L NNI, I)->REC3
     testIdentity:V NNI->B
-    pointList: %->L S
     orbitWithSvc:(L V NNI ,NNI )->REC
-    cosetRep:(NNI ,REC ,L V NNI )->REC3
     bsgs1:(L V NNI,NNI,L L NNI,I,%,I)->NNI
-    computeOrbits: I->L NNI
-    reduceGenerators: I->Void
-    bsgs:(%, I, I)->NNI
     initialize: %->FSET PERM S
     knownGroup?: %->Void
     subgroup:(%, %)->B
@@ -209,49 +191,113 @@ PermutationGroup(S:SetCategory): public == private where
           -- removing the trivial element
             pos := position(i,newlw)
             newlw := delete(newlw,pos)
-      flag : B := true
-      while flag repeat
-        actualLength : NNI := (maxIndex newlw) pretend NNI
-        pointer := actualLength
-        test := newlw.pointer
-        anzahl : NNI := 1
-        flag := false
-        while pointer > 1 repeat
-          pointer := ( pointer - 1 )::NNI
-          if newlw.pointer ~= test then
-            -- don't get a trivial element, try next
-            test := newlw.pointer
-            anzahl := 1
-          else
-            anzahl := anzahl + 1
-            if anzahl = orderList.test then
-              -- we have an identity, so remove it
-              for i in (pointer+anzahl)..actualLength repeat
-                newlw.(i-anzahl) := newlw.i
-              newlw := first(newlw, (actualLength - anzahl) :: NNI)
-              flag := true
-              pointer := 1
+      #newlw < 2 => newlw
+      test := first(newlw)
+      anzahl : NNI := 0
+      flag1 : B := true
+      do_res : B := false
+      res : L NNI
+      while flag1 repeat
+          test := first(newlw)
+          anzahl := 1
+          if do_res then res := [test]
+          flag2 : B := true
+          for el in newlw while flag2 repeat
+              if do_res then res := cons(el, res)
+              anzahl := anzahl + 1
+              anzahl = 1 => test := el
+              test ~= el =>
+                  test := el
+                  anzahl := 1
+              anzahl = orderList.test =>
+                  if do_res then
+                      res := rest(res, anzahl)
+                  else
+                      flag2 := false
+                  anzahl := 0
+          if do_res then
+              newlw := reverse!(res)
+          flag1 := do_res
+          do_res := not(flag2)
       newlw
 
+    -- internal multiplication of permutations
+    times!(res : V NNI, p : V NNI, q : V NNI) : Void ==
+        degree := #p
+        for i in 1..degree repeat
+            qsetelt!(res, i, qelt(p,qelt(q,i)))
+
     times ( p : V NNI , q : V NNI ) : V NNI ==
-      -- internal multiplication of permutations
-      [ qelt(p,qelt(q,i)) for i in 1..degree ]
+        degree := #p
+        res : V NNI := new(degree, 0)
+        times!(res, p, q)
+        res
 
-    strip(element:V NNI,orbit:REC,group:L V NNI,words:L L NNI) : REC3 ==
-      -- strip an element into the stabilizer
-      actelt         := element
-      schreierVector := orbit.svc
-      point          := orbit.orb.1
-      outlist        := nil()$(L NNI)
-      entryLessZero  : B := false
-      while not entryLessZero repeat
-        entry := schreierVector.(actelt.point)
-        entryLessZero  := (entry < 0)
-        if  not entryLessZero then
-          actelt := times(group.entry, actelt)
-          if wordProblem then outlist := append ( words.(entry::NNI) , outlist )
-      [ actelt , reverse outlist ]
+    -- internal inverse of a permutation
+    inv ( p : V NNI ) : V NNI ==
+        degree := #p
+        q : V NNI := new(degree,0)$(V NNI)
+        for i in 1..degree repeat qsetelt!(q, (qelt(p,i)), i)
+        q
 
+    -- internal test for identity
+    testIdentity ( p : V NNI ) : B ==
+        degree := #p
+        for i in 1..degree repeat qelt(p,i) ~= i => return false
+        true
+
+    cosetRep1(ppt : NNI, do_words : Boolean, o : REC, grpv : V V NNI,
+              wordv : V L NNI) : REC3 ==
+        #grpv = 0 => error "cosetRep needs nonempty group"
+        degree := #(grpv(1))
+        xelt : V NNI := [ n for n in 1..degree ]
+        word         := nil()$(L NNI)
+        oorb         := o.orb
+        osvc         := o.svc
+        p := qelt(osvc, ppt)
+        p < 0 => return [xelt, word]
+        tmpv : V NNI := new(degree, 0)
+        repeat
+            x    := qelt(grpv, p)
+            times!(tmpv, x, xelt)
+            (tmpv, xelt) := (xelt, tmpv)
+            if do_words then word := append(wordv.p, word)
+            ppt  := qelt(x, ppt)
+            p := qelt(osvc, ppt)
+            p < 0 => return [xelt, word]
+
+    strip1(element:V NNI,orbit:REC,group:L V NNI,words:L L NNI) : REC3 ==
+        grpv := vector(group)$Vector(V NNI)
+        wordv : V L NNI := empty()
+        do_words := not(empty?(words))
+        if do_words then
+            wordv := vector(words)
+        point := qelt(element, qelt(orbit.orb, 1))
+        cr := cosetRep1(point, do_words, orbit, grpv, wordv)
+        [times(cr.elt, element), reverse(cr.lst)]$REC3
+
+    strip(z : V NNI, i : I, do_words : Boolean,
+            orbs : V REC, grpv : V V NNI, wordv : V L NNI) : REC3 ==
+        degree := #z
+        word := nil()$(L NNI)
+        tmpv : V NNI := new(degree, 0)
+        noresult : Boolean := true
+        for j in i..1 by -1 while noresult repeat
+            orbj := qelt(orbs, j)
+            s := orbj.svc
+            p := first(orbj.orb)
+            while noresult repeat
+                entry := qelt(s, qelt(z, p))
+                if entry < 0 then
+                    if entry = -1 then break
+                    noresult := false
+                else
+                    ee := qelt(grpv, entry)
+                    times!(tmpv, ee, z)
+                    (z, tmpv) := (tmpv, z)
+                    if do_words then word := append(wordv.entry, word)
+        [z, word]
+        
     orbitInternal ( gp : % , startList : L S ) : L L S ==
       orbitList : L L S := [ startList ]
       pos  : I := 1
@@ -268,19 +314,14 @@ PermutationGroup(S:SetCategory): public == private where
         pos := pos - 1
       reverse orbitList
 
-    inv ( p : V NNI ) : V NNI ==
-      -- internal inverse of a permutation
-      q : V NNI := new(degree,0)$(V NNI)
-      for i in 1..degree repeat q.(qelt(p,i)) := i
-      q
-
     ranelt ( group : L V NNI , word : L L NNI , maxLoops : I ) : REC3 ==
       -- generate a "random" element
       numberOfGenerators    := # group
       randomInteger : I     := 1 + random(numberOfGenerators)$Integer
       randomElement : V NNI := group.randomInteger
       words                 := nil()$(L NNI)
-      if wordProblem then words := word.(randomInteger::NNI)
+      do_words : Boolean := not(empty?(word))
+      if do_words then words := word.(randomInteger::NNI)
       if maxLoops > 0 then
         numberOfLoops : I  := 1 + random(maxLoops)$Integer
       else
@@ -288,60 +329,117 @@ PermutationGroup(S:SetCategory): public == private where
       while numberOfLoops > 0 repeat
         randomInteger : I := 1 + random(numberOfGenerators)$Integer
         randomElement := times ( group.randomInteger , randomElement )
-        if wordProblem then words := append ( word.(randomInteger::NNI) , words)
+        if do_words then words := append ( word.(randomInteger::NNI) , words)
         numberOfLoops := numberOfLoops - 1
       [ randomElement , words ]
 
-    testIdentity ( p : V NNI ) : B ==
-      -- internal test for identity
-      for i in 1..degree repeat qelt(p,i) ~= i => return false
-      true
+    if S has OrderedSet then
+        pointList(group : %) : L S ==
+            not(empty?(group.information.mp)) => group.information.mp
+            support : L S := []
+            for perm in group.gens repeat
+                support := merge(sort((listRepresentation perm).preimage),
+                                 support)
+            res :  L S := []
+            empty?(support) => res
+            p0 := first(support)
+            res := [p0]
+            for p in rest(support) repeat
+                p = p0 => "iterate"
+                p0 := p
+                res := cons(p, res)
+            group.information.mp := reverse!(res)
+    else
+        pointList(group : %) : L S ==
+            not(empty?(group.information.mp)) => group.information.mp
+            support : FSET S :=  brace()   -- empty set !!
+            for perm in group.gens repeat
+                support := union(support, movedPoints perm)
+            group.information.mp := parts support
 
-    pointList(group : %) : L S ==
-      support : FSET S :=  brace()   -- empty set !!
-      for perm in group.gens repeat
-        support := union(support, movedPoints perm)
-      parts support
+    if S has OrderedSet then
+        REC5 ==> Record(preimage : NNI, image : S)
+        ls_to_lnni(ls : L S, supp : L S) : L NNI ==
+            empty?(ls) => []
+            ls2 := [[i, p]$REC5 for p in ls for i in 1..]
+            ls2 := sort((x : REC5, y : REC5) : Boolean +->
+                           x.image <= y.image,
+                        ls2)
+            pel := first(ls2)
+            p1 := pel.image
+            ls2 := rest(ls2)
+            rp2 : L L NNI := []
+            flag : Boolean := true
+            for p2 in supp for i in 1.. while flag repeat
+                if p1 = p2 then
+                    rp2 := cons([pel.preimage, i], rp2)
+                    empty?(ls2) => flag := false
+                    pel := first(ls2)
+                    p1 := pel.image
+                    ls2 := rest(ls2)
+            rp2 := sort((x : L NNI, y : L NNI) : Boolean +->
+                           first(x) <= first(y),
+                        rp2)
+            [second(pp) for pp in rp2]
 
-    orbitWithSvc ( group : L V NNI , point : NNI ) : REC ==
+        perm_to_vec(supp : L S, p : PERM S, degree : NNI) : V NNI ==
+            pr := listRepresentation p
+            q := new(degree,0)$(V NNI)
+            for i in 1..degree repeat
+                q(i) := i
+            pl := ls_to_lnni(pr.preimage, supp)
+            il := ls_to_lnni(pr.image, supp)
+            for pp in pl for ip in il repeat
+                q(pp) := ip
+            q
+    else
+        perm_to_vec(supp : L S, p : PERM S, degree : NNI) : V NNI ==
+            q := new(degree,0)$(V NNI)
+            for i in 1..degree repeat
+                newEl := eval(p, supp.i)
+                pos2  := position(newEl, supp)
+                q.i   := pos2 pretend NNI
+            q
+
+    orbitWithSvc1(group : L V NNI, grpinv : L V NNI, point : NNI) : REC ==
       -- compute orbit with Schreier vector, "-2" means not in the orbit,
       -- "-1" means starting point, the PI correspond to generators
-      newGroup := nil()$(L V NNI)
-      for el in group repeat
-        newGroup := cons ( inv el , newGroup )
-      newGroup               := reverse newGroup
+      degree := #(first(group))
       orbit          : L NNI := [ point ]
+      orbitv         : V NNI := new(degree, 0)
+      orbitv(1) := point
+      orbit_size : NNI := 1
       schreierVector : V I   := new ( degree , -2 )
       schreierVector.point   := -1
       position : I := 1
       while not zero? position repeat
-        for i in 1..#newGroup repeat
-          newPoint := orbit.position
-          newPoint := newGroup.i.newPoint
-          if not member? ( newPoint , orbit ) then
+        for i in 1..#grpinv for grv in grpinv repeat
+          newPoint := qelt(orbitv, orbit_size - position + 1)
+          newPoint := qelt(grv, newPoint)
+          if qelt(schreierVector, newPoint) = -2 then
             orbit                   := cons ( newPoint , orbit )
+            orbit_size := orbit_size + 1
+            orbitv(orbit_size) := newPoint
             position                := position + 1
             schreierVector.newPoint := i
         position := position - 1
-      [ reverse orbit , schreierVector ]
+      [reverse!(orbit), schreierVector ]
 
-    cosetRep ( point : NNI , o : REC , group : L V NNI ) : REC3 ==
-      ppt          := point
-      xelt : V NNI := [ n for n in 1..degree ]
-      word         := nil()$(L NNI)
-      oorb         := o.orb
-      osvc         := o.svc
-      while degree > 0 repeat
-        p := osvc.ppt
-        p < 0 => return [ xelt , word ]
-        x    := group.p
-        xelt := times ( x , xelt )
-        if wordProblem then word := append ( wordlist.p , word )
-        ppt  := x.ppt
+    orbitWithSvc(group : L V NNI, point : NNI) : REC ==
+        grpinv := nil()$(L V NNI)
+        for el in group repeat
+            grpinv := cons(inv el, grpinv)
+        grpinv := reverse grpinv
+        orbitWithSvc1(group, grpinv, point)
 
-    bsgs1 (group:L V NNI,number1:NNI,words:L L NNI,maxLoops:I,gp:%,diff:I)_
+    bsgs1 (group:L V NNI,number1:NNI,words:L L NNI,maxLoops:I,gp:%,diff:I,
+           out : Reference(L L V NNI), outword : Reference(L L L NNI))_
         : NNI ==
       -- try to get a good approximation for the strong generators and base
+      degree := #(first(group))
+      gp_info := gp.information
+      wordProblem : Boolean := not(empty?(words))
+      -- i := find moved point
       for i in number1..degree repeat
         ort := orbitWithSvc ( group , i )
         k   := ort.orb
@@ -350,6 +448,7 @@ PermutationGroup(S:SetCategory): public == private where
       gpsgs := nil()$(L V NNI)
       words2 := nil()$(L L NNI)
       gplength : NNI := #group
+      -- j := nontrivial element
       for jj in 1..gplength repeat if (group.jj).i ~= i then leave
       for k in 1..gplength repeat
         el2 := group.k
@@ -358,15 +457,15 @@ PermutationGroup(S:SetCategory): public == private where
           if wordProblem then words2 := cons ( words.k , words2 )
         else
           gpsgs := cons ( times ( group.jj , el2 ) , gpsgs )
-          if wordProblem _
-            then words2 := cons ( append ( words.jj , words.k ) , words2 )
+          if wordProblem then
+              words2 := cons ( append ( words.jj , words.k ) , words2 )
       group2 := nil()$(L V NNI)
       words3 := nil()$(L L NNI)
       j : I  := 15
       while j > 0 repeat
         -- find generators for the stabilizer
-        ran := ranelt ( group , words , maxLoops )
-        str := strip ( ran.elt , ort , group , words )
+        ran := ranelt(group, words, maxLoops)
+        str := strip1(ran.elt, ort, group, words)
         el2 := str.elt
         if not testIdentity el2 then
           if not member?(el2,group2) then
@@ -380,163 +479,166 @@ PermutationGroup(S:SetCategory): public == private where
       -- this is for word length control
       if wordProblem then maxLoops    := maxLoops - diff
       if ( null group2 ) or ( maxLoops < 0 ) then
-        sizeOfGroup := k1
-        baseOfGroup := [ i ]
-        out         := [ gpsgs ]
-        outword     := [ words2 ]
-        return sizeOfGroup
-      k2          := bsgs1 ( group2 , i + 1 , words3 , maxLoops , gp , diff )
-      sizeOfGroup := k1 * k2
-      out         := append ( out , [ gpsgs ] )
-      outword     := append ( outword , [ words2 ] )
-      baseOfGroup := cons ( i , baseOfGroup )
+        gp_info.gpbase := [i]
+        setref(out, [gpsgs])
+        setref(outword, [words2])
+        return k1
+      k2 := bsgs1(group2, i + 1, words3, maxLoops, gp, diff,
+                  out, outword)
+      sizeOfGroup : NNI := k1 * k2
+      setref(out, append(deref(out), [gpsgs]))
+      setref(outword, append(deref(outword), [words2]))
+      gp_info.gpbase := cons(i, gp_info.gpbase)
       sizeOfGroup
 
-    computeOrbits ( kkk : I ) : L NNI ==
-      -- compute the orbits for the stabilizers
-      sgs         := nil()
-      orbitLength := nil()$(L NNI)
-      gporb       := nil()
-      for i in 1..#baseOfGroup repeat
-        sgs         := append ( sgs , out.i )
-        pt          := #baseOfGroup - i + 1
-        obs         := orbitWithSvc ( sgs , baseOfGroup.pt )
-        orbitLength := cons ( #obs.orb , orbitLength )
-        gporb       := cons ( obs , gporb )
-      gporb := reverse gporb
-      reverse orbitLength
-
-    reduceGenerators ( kkk : I ) : Void ==
-      -- try to reduce number of strong generators
-      orbitLength := computeOrbits ( kkk )
-      sgs         := nil()
-      wordlist    := nil()
-      for i in 1..(kkk-1) repeat
-        sgs := append ( sgs , out.i )
-        if wordProblem then wordlist := append ( wordlist , outword.i )
-      removedGenerator := false
-      baseLength : NNI := #baseOfGroup
-      for nnn in kkk..(baseLength-1) repeat
-        sgs := append ( sgs , out.nnn )
-        if wordProblem then wordlist := append ( wordlist , outword.nnn )
-        pt  := baseLength - nnn + 1
-        obs := orbitWithSvc ( sgs , baseOfGroup.pt )
+    reduceGenerators(kkk : I, do_words : Boolean, gp_info : REC2,
+                     outl : L L V NNI, outword : L L L NNI) : L V NNI ==
+        -- try to reduce number of strong generators
+        base_lst := gp_info.gpbase
+        orbv := gp_info.orbs
+        sgs : L V NNI := nil()
+        res : L V NNI := nil()
+        grpinv := nil()$(L V NNI)
+        for i in 1..kkk repeat
+            sgs := append(sgs, outl(i))
+            grpinv := append(grpinv, map(inv, outl(i)))
+        removedGenerator : Boolean := false
+        baseLength : NNI := #base_lst
+        pt  := baseLength - kkk + 1
+        obs := orbitWithSvc1(sgs, grpinv, base_lst(pt))
+        orbv(kkk) := obs
+        obs_len := # obs.orb
+        if obs_len = 1 then
+            removedGenerator := true
+            outl(kkk) := []
         i   := 1
-        while not ( i > # out.nnn ) repeat
-          pos  := position ( out.nnn.i , sgs )
-          sgs2 := delete(sgs, pos)
-          obs2 := orbitWithSvc ( sgs2 , baseOfGroup.pt )
-          if # obs2.orb = orbitLength.nnn then
-            test := true
-            for j in (nnn+1)..(baseLength-1) repeat
-              pt2  := baseLength - j + 1
-              sgs2 := append ( sgs2 , out.j )
-              obs2 := orbitWithSvc ( sgs2 , baseOfGroup.pt2 )
-              if # obs2.orb ~= orbitLength.j then
-                test := false
-                leave
-            if test then
-              removedGenerator := true
-              sgs              := delete (sgs, pos)
-              if wordProblem then wordlist    := delete(wordlist, pos)
-              out.nnn          := delete (out.nnn, i)
-              if wordProblem then _
-                outword.nnn := delete(outword.nnn, i )
-            else
-              i := i + 1
-          else
-            i := i + 1
-      if removedGenerator then orbitLength := computeOrbits ( kkk )
-      void()
+        outlk := outl(kkk)
+        while not (i > # outlk) and # outlk > 1 repeat
+            pos  := position(outlk(i), sgs)
+            sgs2 := delete(sgs, pos)
+            grpinv2 := delete(grpinv, pos)
+            obs2 := orbitWithSvc1(sgs2, grpinv2, base_lst(pt))
+            if # obs2.orb = obs_len then
+                res := cons(outlk(i), res)
+                sgs := sgs2
+                grpinv := grpinv2
+                outlk := delete(outlk, i)
+                outl(kkk) := outlk
+                orbv(kkk) := obs2
+                if do_words then _
+                    outword(kkk) := delete(outword(kkk), i)
+             else
+                i := i + 1
+        res
 
 
-    bsgs ( group : % ,maxLoops : I , diff : I ) : NNI ==
+    bsgs(group : %, wordProblem : Boolean, maxLoops : I, diff : I) : NNI ==
       -- the MOST IMPORTANT part of the package
+      basePoint    : NNI           := 0
+      newBasePoint : B := false
+      baseOfGroup  : L NNI         := []
+      out               : L L V NNI     := []
+      outword           : L L L NNI     := []
+      outr              : Reference(L L V NNI) := ref([])
+      outwordr          : Reference(L L L NNI) := ref([])
       supp   := pointList group
       degree := # supp
+      gp_info := [1, [], [], [], [], []]$REC2
       if degree = 0 then
-        sizeOfGroup := 1
-        sgs         := [ [ 0 ] ]
-        baseOfGroup := nil()
-        gporb       := nil()
-        return sizeOfGroup
+          group.information := gp_info
+          return 1
       newGroup := nil()$(L V NNI)
+      tmpv : V NNI := new(degree, 0)
       gp       : L PERM S := group.gens
       words := nil()$(L L NNI)
-      for ggg in 1..#gp repeat
-        q := new(degree,0)$(V NNI)
-        for i in 1..degree repeat
-          newEl := eval ( gp.ggg , supp.i )
-          pos2  := position ( newEl , supp )
-          q.i   := pos2 pretend NNI
-        newGroup := cons ( q , newGroup )
-        if wordProblem then words    := cons(list ggg, words)
+      for ggg in 1..#gp for ggp in gp repeat
+          q := perm_to_vec(supp, ggp, degree)
+          newGroup := cons(q ,newGroup )
+          if wordProblem then words := cons(list ggg, words)
       if maxLoops < 1 then
         -- try to get the (approximate) base length
         if zero? (# ((group.information).gpbase)) then
-          wordProblem := false
-          k           := bsgs1 ( newGroup , 1 , words , 20 , group , 0 )
-          wordProblem := true
-          maxLoops    := (# baseOfGroup) - 1
-        else
-          maxLoops    := (# ((group.information).gpbase)) - 1
-      k       := bsgs1 ( newGroup , 1 , words , maxLoops , group , diff )
+          k           := bsgs1(newGroup, 1, nil()$(L L NNI), 20, group, 0,
+                               outr, outwordr)
+        maxLoops    := (# ((group.information).gpbase)) - 1
+      k := bsgs1(newGroup, 1, words, maxLoops, group, diff, outr, outwordr)
+      out := deref(outr)
+      outword := deref(outwordr)
       kkk : I := 1
       newGroup := reverse newGroup
       noAnswer : B := true
+      z : V NNI
+      add_cnt : I := 0
+      wordlist : L L NNI
+      dummy_rec : REC := [[], empty()]
+      baseOfGroup := (group.information).gpbase
+      gp_info.gpbase := baseOfGroup
+      orbv : V REC := new(# baseOfGroup, dummy_rec)$(V REC)
       while noAnswer repeat
-        reduceGenerators kkk
--- ^* Here is former "bsgs2" ^* --
+        gp_info.gpbase := baseOfGroup
+        gp_info.orbs := orbv
         -- test whether we have a base and a strong generating set
-        sgs := nil()
+        sgs : L V NNI := nil()
         wordlist := nil()
         for i in 1..(kkk-1) repeat
           sgs := append ( sgs , out.i )
-          if wordProblem then wordlist := append ( wordlist , outword.i )
+          if wordProblem then wordlist := append (wordlist, outword.i)
         noresult : B := true
+        z := new(degree, 0)
         for i in kkk..#baseOfGroup while noresult repeat
-          sgs    := append ( sgs , out.i )
-          if wordProblem then wordlist := append ( wordlist , outword.i )
-          gporbi := gporb.i
+          rejects := reduceGenerators(i, wordProblem, gp_info, out, outword)
+          sgs    := append (sgs , out.i)
+          sgsv := vector(sgs)$V(V NNI)
+          wordv : V L NNI := empty()
+          if wordProblem then
+              wordlist := append(wordlist, outword.i)
+              wordv := vector(wordlist)
+          gporbi := orbv(i)
+          for z0 in rejects while noresult repeat
+              z := copy(z0)
+              ppp := strip(z, i, false, orbv, sgsv, wordv)
+              noresult := testIdentity ppp.elt
+              if not(noresult) then
+                  if wordProblem then
+                      z := copy(z0)
+                      ppp := strip(z, i, true, orbv, sgsv, wordv)
+                  z := ppp.elt
+                  word := ppp.lst
           for pt in gporbi.orb while noresult repeat
-            ppp   := cosetRep ( pt , gporbi , sgs )
+            ppp   := cosetRep1(pt, wordProblem, gporbi, sgsv, wordv)
             y1    := inv ppp.elt
             word3 := ppp.lst
             for jjj in 1..#sgs while noresult repeat
               word         := nil()$(L NNI)
-              z            := times ( sgs.jjj , y1 )
-              if wordProblem then word := append ( wordlist.jjj , word )
-              ppp          := cosetRep ( (sgs.jjj).pt , gporbi , sgs )
-              z            := times ( ppp.elt , z )
-              if wordProblem then word := append ( ppp.lst , word )
-              newBasePoint := false
-              for j in (i-1)..1 by -1 while noresult repeat
-                s := gporb.j.svc
-                p := gporb.j.orb.1
-                while ( degree > 0 ) and noresult repeat
-                  entry := s.(z.p)
-                  if entry < 0 then
-                    if entry = -1 then leave
-                    basePoint := j::NNI
-                    noresult := false
-                  else
-                    ee := sgs.entry
-                    z  := times ( ee , z )
-                    if wordProblem then word := append ( wordlist.entry , word )
-              if noresult then
-                basePoint    := 1
-                newBasePoint := true
-                noresult := testIdentity z
+              times!(z, qelt(sgsv, jjj), y1)
+              if wordProblem then word := qelt(wordv, jjj)
+              ppp := strip(z, i, false, orbv, sgsv, wordv)
+              z := ppp.elt
+              noresult := testIdentity z
+              if not(noresult) and wordProblem then
+                  z := times (qelt(sgsv, jjj), y1)
+                  ppp := strip(z, i, true, orbv, sgsv, wordv)
+                  z := ppp.elt
+                  word := append(ppp.lst, word)
+          if not(noresult) then
+              for p in baseOfGroup for ii in 1.. repeat
+                  basePoint    := 1
+                  newBasePoint := true
+                  if qelt(z, p) ~= p then
+                      newBasePoint := false
+                      basePoint    := (#baseOfGroup - ii + 1)::NNI
+                      break
         noAnswer := not (testIdentity z)
         if noAnswer then
+          add_cnt := add_cnt + 1
           -- we have missed something
           word2 := nil()$(L NNI)
           if wordProblem then
-            for wd in word3 repeat
-              ttt := newGroup.wd
+            for wdi in word3 repeat
+              ttt := newGroup.wdi
               while not (testIdentity ttt) repeat
-                word2 := cons ( wd , word2 )
-                ttt   := times ( ttt , newGroup.wd )
+                word2 := cons(wdi, word2)
+                ttt   := times(ttt, newGroup.wdi)
             word := append ( word , word2 )
             word := shortenWord ( word , group )
           if newBasePoint then
@@ -544,15 +646,18 @@ PermutationGroup(S:SetCategory): public == private where
               if z.i ~= i then
                 baseOfGroup := append ( baseOfGroup , [ i ] )
                 leave
+            orbv := new(# baseOfGroup, dummy_rec)$(V REC)
             out := cons (list  z, out )
             if wordProblem then outword := cons (list word , outword )
           else
             out.basePoint := cons ( z , out.basePoint )
             if wordProblem then outword.basePoint := cons(word ,outword.basePoint )
           kkk := basePoint
-      sizeOfGroup  := 1
+      sizeOfGroup : NNI := 1
       for j in 1..#baseOfGroup repeat
-        sizeOfGroup := sizeOfGroup * # gporb.j.orb
+        sizeOfGroup := sizeOfGroup * # orbv(j).orb
+      group.information := [sizeOfGroup, sgs, baseOfGroup, orbv, supp,
+                            wordlist]$REC2
       sizeOfGroup
 
 
@@ -565,19 +670,8 @@ PermutationGroup(S:SetCategory): public == private where
 
     knownGroup? (gp : %) : Void ==
       -- do we know the group already?
-      result := gp.information
-      if result.order = 0 then
-        wordProblem       := false
-        ord               := bsgs ( gp , 20 , 0 )
-        result            := [ ord , sgs , baseOfGroup , gporb , supp , [] ]
-        gp.information    := result
-      else
-        ord         := result.order
-        sgs         := result.sgset
-        baseOfGroup := result.gpbase
-        gporb       := result.orbs
-        supp        := result.mp
-        wordlist    := result.wd
+      if gp.information.order = 0 then
+        bsgs(gp, false, 20, 0)
       void
 
     subgroup ( gp1 : % , gp2 : % ) : B ==
@@ -588,43 +682,33 @@ PermutationGroup(S:SetCategory): public == private where
         not member? (el,  gp2) => return false
       true
 
-    memberInternal ( p : PERM S , gp : % , flag : B ) : REC4 ==
+    memberInternal(p : PERM S, gp : %, do_words : B) : REC4 ==
       -- internal membership testing
-      supp     := pointList gp
-      outlist := nil()$(L NNI)
+      gr_supp     := pointList gp
       mP : L S := parts movedPoints p
+      gp_info : REC2 
       for x in mP repeat
-        not member? (x, supp) => return [ false , nil()$(L NNI) ]
-      if flag then
-        member? ( p , gp.gens ) => return [ true , nil()$(L NNI) ]
-        knownGroup? gp
-      else
-        result := gp.information
-        if #(result.wd) = 0 then
-          initializeGroupForWordProblem gp
-        else
-          ord         := result.order
-          sgs         := result.sgset
-          baseOfGroup := result.gpbase
-          gporb       := result.orbs
-          supp        := result.mp
-          wordlist    := result.wd
-      degree := # supp
-      pp := new(degree,0)$(V NNI)
-      for i in 1..degree repeat
-        el   := eval ( p , supp.i )
-        pos  := position ( el , supp )
-        pp.i := pos::NNI
-      words := nil()$(L L NNI)
-      if wordProblem then
-        for i in 1..#sgs repeat
-          lw : L NNI := [ (#sgs - i + 1)::NNI ]
-          words := cons ( lw , words )
-      for i in #baseOfGroup..1 by -1 repeat
-        str := strip ( pp , gporb.i , sgs , words )
-        pp := str.elt
-        if wordProblem then outlist := append ( outlist , str.lst )
-      [ testIdentity pp , reverse outlist ]
+          not member?(x, gr_supp) =>
+              return [false, nil()$(L NNI) ]
+      if not(do_words) then
+          member?(p, gp.gens) => return [true , nil()$(L NNI) ]
+      knownGroup? gp
+      gp_info := gp.information
+      sgsl := gp_info.sgset
+      orbv := gp_info.orbs
+      base_lst := gp_info.gpbase
+      degree : NNI := #gr_supp
+
+      pp := perm_to_vec(gr_supp, p, degree)
+
+      wordv : V L NNI := empty()
+      if do_words then
+          wordv := new(#sgsl, [])
+          for i in 1..#sgsl repeat
+              wordv(i) := [i]
+      grpv : V V NNI := vector(sgsl)
+      str := strip(pp, #base_lst, do_words, orbv, grpv, wordv)
+      [testIdentity str.elt, str.lst]
 
   --now the exported functions
 
@@ -633,12 +717,14 @@ PermutationGroup(S:SetCategory): public == private where
 
     strongGenerators ( group ) ==
       knownGroup? group
-      degree := # supp
+      gr_supp := group.information.mp
+      gr_sgs := group.information.sgset
+      degree := # gr_supp
       strongGens := nil()$(L PERM S)
-      for i in sgs repeat
+      for i in gr_sgs repeat
         pairs := nil()$(L L S)
         for j in 1..degree repeat
-          pairs := cons ( [ supp.j , supp.(i.j) ] , pairs )
+          pairs := cons ( [ gr_supp.j , gr_supp.(i.j) ] , pairs )
         strongGens := cons ( coerceListOfPairs pairs , strongGens )
       reverse strongGens
 
@@ -663,20 +749,22 @@ PermutationGroup(S:SetCategory): public == private where
 
     order ( group ) ==
       knownGroup? group
-      ord
+      group.information.order
 
     degree ( group ) == # pointList group
 
     base ( group ) ==
       knownGroup? group
+      gr_base := group.information.gpbase
+      gr_supp := group.information.mp
       groupBase := nil()$(L S)
-      for i in baseOfGroup repeat
-        groupBase := cons ( supp.i , groupBase )
+      for i in gr_base repeat
+          groupBase := cons(gr_supp.i, groupBase)
       reverse groupBase
 
     wordsForStrongGenerators ( group ) ==
       knownGroup? group
-      wordlist
+      group.information.wd
 
     coerce ( gp : L PERM S ) : % ==
       result : REC2 := [ 0 , [] , [] , [] , [] , [] ]
@@ -711,22 +799,25 @@ PermutationGroup(S:SetCategory): public == private where
         spp      := difference ( spp , orbitSet )
       brace orbits
 
-    member? (p,  gp) ==
-      wordProblem := false
-      mi := memberInternal ( p , gp , true )
-      mi.bool
+    member? (p, gp) ==
+        mi := memberInternal(p, gp, false)
+        mi.bool
 
-    wordInStrongGenerators (p, gp ) ==
-      mi := memberInternal ( inv p , gp , false )
-      not mi.bool => error "p is not an element of gp"
-      mi.lst
+    wordInStrongGenerators (p, gp) ==
+        mi := memberInternal(inv p, gp, true)
+        not mi.bool => error "p is not an element of gp"
+        mi.lst
 
-    wordInGenerators (p,  gp) ==
-      lll : L NNI := wordInStrongGenerators (p, gp)
-      outlist := nil()$(L NNI)
-      for wd in lll repeat
-        outlist := append ( outlist , wordlist.wd )
-      shortenWord ( outlist , gp )
+    wordInGenerators(p, gp) ==
+        gp_info := gp.information
+        if #(gp_info.wd) = 0 then
+            initializeGroupForWordProblem gp
+        lll : L NNI := wordInStrongGenerators(p, gp)
+        outlist := nil()$(L NNI)
+        words := gp.information.wd
+        for n in lll repeat
+            outlist := append (outlist, words(n))
+        shortenWord(outlist, gp)
 
     gp1 < gp2 ==
       not empty? difference ( movedPoints gp1 , movedPoints gp2 ) => false
@@ -760,9 +851,7 @@ PermutationGroup(S:SetCategory): public == private where
       brace orbitInternal(gp, startList)
 
     initializeGroupForWordProblem ( gp , maxLoops , diff ) ==
-      wordProblem    := true
-      ord            := bsgs ( gp , maxLoops , diff )
-      gp.information := [ ord , sgs , baseOfGroup , gporb , supp , wordlist ]
+      bsgs(gp, true, maxLoops, diff)
       void
 
     initializeGroupForWordProblem ( gp ) == initializeGroupForWordProblem ( gp , 0 , 1 )
