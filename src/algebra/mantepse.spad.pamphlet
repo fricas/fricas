@@ -196,8 +196,8 @@ GuessOption(): Exports == Implementation where
     maxLevel d       == ['maxLevel,       d::Any]
     maxDerivative d  == ['maxDerivative,  d::Any]
     maxShift d       == maxDerivative d
-    maxSubst d       == 
-        if d case PositiveInteger 
+    maxSubst d       ==
+        if d case PositiveInteger
         then maxDerivative((d::Integer-1)::NonNegativeInteger)
         else maxDerivative d
     maxDegree d      == ['maxDegree,      d::Any]
@@ -327,8 +327,8 @@ GuessOptionFunctions0(): Exports == Implementation where
 
     maxShift l == maxDerivative l
 
-    maxSubst l == 
-        d := maxDerivative l 
+    maxSubst l ==
+        d := maxDerivative l
         if d case NonNegativeInteger
         then (d+1)::PositiveInteger
         else d
@@ -436,25 +436,35 @@ GuessOptionFunctions0(): Exports == Implementation where
           if one? Somo then
               error "Guess: Somos must be Boolean or at least two"
 
-          if maxD case NNI and maxD ~= Somo then
-              error "Guess: only one of Somos and maxDerivative/maxShift/maxSubst may be an integer"
+          if maxP case PI and one? maxP then
+              error "Guess: Somos requires that maxPower is at least two"
 
+          if maxD case NNI and maxD > Somo then
+              error "Guess: if Somos is an integer, it should be larger than maxDerivative/maxShift or at least as big as maxSubst"
       else
-          if Somo and (not (maxD case NNI) or zero? maxD or one? maxD) then
-                  error "Guess: Somos requires that maxDerivative/maxShift is an integer and least two or maxSubst is an integer and at least three"
+          if Somo then
+              if maxP case PI and one? maxP then
+                  error "Guess: Somos requires that maxPower is at least two"
+
+              if not (maxD case NNI) or zero? maxD or one? maxD then
+                  error "Guess: Somos==true requires that maxDerivative/maxShift is an integer, at least two, or maxSubst is an integer, at least three"
+
+              if not (maxP case PI) and homo case Boolean and not homo then
+                  error "Guess: Somos requires that maxPower is set or homogeneous is not false"
 
       if homo case PI then
           if maxP case PI and maxP ~= homo then
               error "Guess: only one of homogeneous and maxPower may be an integer"
 
-          1
+          if maxD case NNI and zero? maxD then
+              error "Guess: homogeneous requires that maxShift/maxDerivative is at least one or maxSubst is at least two"
       else
           if homo then
               if not maxP case PI then
-                  error "Guess: homogeneous requires that maxPower is an integer"
+                  error "Guess: homogeneous==true requires that maxPower is an integer"
 
               if maxD case NNI and zero? maxD then
-                  error "Guess: the option homogeneous requires that maxShift/maxDerivative is at least one or maxSubst is at least two"
+                  error "Guess: homogeneous requires that maxShift/maxDerivative is at least one or maxSubst is at least two"
 @
 
 \section{package GUESS Guess}
@@ -829,27 +839,27 @@ Section~\ref{sec:Hermite-Pade}.
 <<implementation: Guess - Utilities>>=
 getVariables(lF: List F): List EXPRR ==
     lvar: List Symbol := []
-            
+
     if S has variables: S -> List Symbol then
         if F is S then
-            ll: List List Symbol 
-               := map((f: S): (List Symbol) +-> 
+            ll: List List Symbol
+               := map((f: S): (List Symbol) +->
                           variables(f)$S, lF pretend List S)
                      $ListFunctions2(S, List Symbol)
-        
+
         else if F is Fraction S then
             ll: List List Symbol
-               :=  map((g: F): (List Symbol) +-> 
-                           setUnion(variables(numer(g)$Fraction(S)), 
+               :=  map((g: F): (List Symbol) +->
+                           setUnion(variables(numer(g)$Fraction(S)),
                                     variables(denom(g)$Fraction(S))), lF)
                       $ListFunctions2(F, List Symbol)
-        
+
         else error "Guess: type parameter F should be either equal to S or equal _
                     to Fraction S"
 
         lvar := reduce((a:List Symbol, b:List Symbol):List Symbol +-> setUnion(a,b), ll)
     else lvar := []
-        
+
     map((mys: Symbol): EXPRR +-> mys::EXPRR, lvar)$ListFunctions2(Symbol, EXPRR)
 
 checkResult(res: EXPRR, n: Symbol, l: Integer, list: List F): NNI ==
@@ -1754,21 +1764,32 @@ instead, i.e., to leave the partitions unconjugated. Note however, that
 shifting and differentiation decrease the number of valid terms, while powering
 does not.
 
+\begin{ToDo}
+  \begin{itemize}
+  \item should we eliminate lists that have nontrivial gcd?
+  \item should \spad{Somos} imply that there at least one partition contains a
+    part equal to one?
+  \end{itemize}
+\end{ToDo}
+
 <<implementation: Guess - Hermite-Pade - Streams>>=
 FilteredPartitionStream(options: LGOPT): Stream List Integer ==
-    maxP := maxPower(options)$GOPT0 
+    maxP := maxPower(options)$GOPT0
     homo := homogeneous(options)$GOPT0
-    if homo case Boolean then     
+    if homo case Boolean then
         homo => error "Guess: internal error - homogeneous should not be true in FilteredPartitionStream"
     else
         maxP := homo::PI
 
-    maxD := maxDerivative(options)$GOPT0    
-    Somo := Somos(options)$GOPT0
-    if Somo case Boolean then     
+    maxD := maxDerivative(options)$GOPT0
+    Somo: Union(PositiveInteger, Boolean) := Somos(options)$GOPT0
+    if Somo case Boolean then
         Somo => error "Guess: internal error - Somos should not be true in FilteredPartitionStream"
     else
-        maxD := Somo::PI::NNI
+        if maxD case NNI then
+            maxD := min(maxD::NNI, Somo::PI::NNI)
+        else
+            maxD := Somo::PI::NNI
 
     s: Stream List Integer
     if maxD case NNI and maxP case PI then
@@ -1795,11 +1816,11 @@ FilteredPartitionStream(options: LGOPT): Stream List Integer ==
 
     s := conjugates(s)$PartitionsAndPermutations
 
-    if homo case PI then 
+    if homo case PI then
         s := select(z1 +-> # z1 = (maxP::PI), s)
 
     if Somo case PI then
-        s := select(z1 +-> reduce(_+, z1, 0) = (maxD::NNI) + # z1, s)
+        s := select(z1 +-> reduce(_+, z1, 0) = Somo::PI::NNI + # z1, s)
 
     s
 
@@ -3065,7 +3086,7 @@ reductions are bad.  In this case the solver would reconstruct something which
 is not a solution to Hermite-Pade problem.
 
 <<implementation: Guess - testInterpolant>>=
-checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer) 
+checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer)
                   -> Union("good", "reject", "no__solution")
 checkInterpolant(list, o, resi, D, options, sigma) ==
     if debug(options)$GOPT0 then
@@ -3116,7 +3137,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     order: Integer := 0
     dmax := 10*#list
     for d in 0.. repeat
-        if not check(options)$GOPT0 and d = sigma then 
+        if not check(options)$GOPT0 and d = sigma then
             return "good"
         if reject__one__term and d = sigma then
             return "reject"
@@ -3161,22 +3182,22 @@ wrapInterpolant(resi: List SUP S,
     if displayAsGF(options)$GOPT0 then
         ex: List EXPRR
            := [makeEXPRR(D.AX, variableName(options)$GOPT0, SUPS2SUPF p, e) _
-               for p in resi for e in exprList]    
+               for p in resi for e in exprList]
 
-        makeFEq(op, variableName(options)$GOPT0, 
+        makeFEq(op, variableName(options)$GOPT0,
                 indexName(options)$GOPT0,
                 numerator reduce(_+, ex),
-                getVariables initials, 
+                getVariables initials,
                 map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
                $RecurrenceOperator(Integer, EXPRR)
     else
         ex: List EXPRR
            := [makeEXPRR(D.AX, indexName(options)$GOPT0, SUPS2SUPF p, e) _
-               for p in resi for e in exprList]    
+               for p in resi for e in exprList]
 
         makeRec(op, indexName(options)$GOPT0,
                 numerator reduce(_+, ex),
-                getVariables initials, 
+                getVariables initials,
                 map(g +-> coerce(g)@EXPRR, initials::(Stream F))$StreamFunctions2(F, EXPRR))
                $RecurrenceOperator(Integer, EXPRR)
 
@@ -3208,10 +3229,10 @@ recursively.  In this case, [[listDegree]] equals zero.
 
     degreeS := D.degreeStream
     if displayAsGF(options)$GOPT0 then
-        exprS := (D.exprStream)(op((variableName(options)$GOPT0)::EXPRR), 
+        exprS := (D.exprStream)(op((variableName(options)$GOPT0)::EXPRR),
                                 variableName(options)$GOPT0)
     else
-        exprS := (D.exprStream)(op((indexName(options)$GOPT0)::EXPRR), 
+        exprS := (D.exprStream)(op((indexName(options)$GOPT0)::EXPRR),
                                 indexName(options)$GOPT0)
 @
 
@@ -3316,25 +3337,47 @@ situations.
 \paragraph{generating functions}
 
 <<implementation: Guess - guessHP>>=
+processOptions(options: LGOPT): List LGOPT ==
+    if (Som? := Somos(options)$GOPT0) case Boolean and Som? then
+        maxD: NNI := (maxDerivative(options)$GOPT0)::NNI
+        maxSomos: PI
+        if maxPower(options)$GOPT0 case PI then
+            maxSomos := maxD::PI * (maxPower(options)$GOPT0)::PI
+        else if homogeneous(options)$GOPT0 case PI then
+            maxSomos := maxD::PI * (homogeneous(options)$GOPT0)::PI
+        else error "Guess: internal error - inconsistent options"
+
+        return concat [processOptions cons(Somos(i::PI)$GuessOption, _
+                                           options) _
+                       for i in 2..maxSomos]
+
+    if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
+        minP: PI
+        if Somos(options)$GOPT0 case PI then
+            minP := 2
+        else
+            minP := 1
+        return [concat([homogeneous(i::PI)$GuessOption, _
+                        maxPower(i::PI)$GuessOption], _
+                       options) _
+                for i in minP..(maxPower(options)$GOPT0)::PI]
+
+    [options]
+
 guessADE(list: List F, options: LGOPT): GUESSRESULT ==
     checkOptions(options)$GOPT0
 
-    if (Som? := Somos(options)$GOPT0) case Boolean and Som? then
-        return concat [guessADE(list, _
-                                concat([Somos(i::PI)$GuessOption, _
-                                        maxDerivative(i::NNI)$GuessOption], _
-                                       options)) _
-                       for i in 2..(maxDerivative(options)$GOPT0)::NNI]
+    lopts := processOptions cons(displayAsGF(true)$GuessOption, options)
+    lres: GUESSRESULT := []
+    res: GUESSRESULT := []
 
-    if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
-        return concat [guessADE(list, _
-                                concat([homogeneous(i::PI)$GuessOption, _
-                                        maxPower(i::PI)$GuessOption], _
-                                       options)) _
-                           for i in 1..(maxPower(options)$GOPT0)::PI]
+    for opts in lopts repeat
+         res := guessHPaux(list, diffHP opts, opts)
+         if not empty? res and one(options)$GOPT0 then
+             return res
+         lres := append(res, lres)
 
-    opts: LGOPT := cons(displayAsGF(true)$GuessOption, options)
-    guessHPaux(list, diffHP opts, opts)
+    reverse! lres
 
 guessADE(list: List F): GUESSRESULT == guessADE(list, [])
 
@@ -3349,9 +3392,9 @@ guessHolo(list: List F, options: LGOPT): GUESSRESULT ==
 guessHolo(list: List F): GUESSRESULT == guessHolo(list, [])
 
 guessPade(list: List F, options: LGOPT): GUESSRESULT ==
-    opts := append(options, [maxDerivative(0)$GuessOption,
-                             maxPower(1)$GuessOption,
-                             allDegrees(true)$GuessOption])
+    opts := concat([[maxDerivative(0)$GuessOption,
+                     maxPower(1)$GuessOption], options,
+                    [allDegrees(true)$GuessOption]])
     guessADE(list, opts)
 
 guessPade(list: List F): GUESSRESULT == guessPade(list, [])
@@ -3359,22 +3402,18 @@ guessPade(list: List F): GUESSRESULT == guessPade(list, [])
 guessFE(list: List F, options: LGOPT): GUESSRESULT ==
     checkOptions(options)$GOPT0
 
-    if (Som? := Somos(options)$GOPT0) case Boolean and Som? then
-        return concat [guessFE(list, _
-                               concat([Somos(i::PI)$GuessOption, _
-                                       maxDerivative(i::NNI)$GuessOption], _
-                                      options)) _
-                       for i in 2..(maxDerivative(options)$GOPT0)::NNI]
 
-    if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
-        return concat [guessFE(list, _
-                                concat([homogeneous(i::PI)$GuessOption, _
-                                        maxPower(i::PI)$GuessOption], _
-                                       options)) _
-                           for i in 1..(maxPower(options)$GOPT0)::PI]
+    lopts := processOptions cons(displayAsGF(true)$GuessOption, options)
+    lres: GUESSRESULT := []
+    res: GUESSRESULT := []
 
-    opts: LGOPT := cons(displayAsGF(true)$GuessOption, options)
-    guessHPaux(list, substHP opts, opts)
+    for opts in lopts repeat
+         res := guessHPaux(list, substHP opts, opts)
+         if not empty? res and one(options)$GOPT0 then
+             return res
+         lres := append(res, lres)
+
+    reverse! lres
 
 guessFE(list: List F): GUESSRESULT == guessFE(list, [])
 
@@ -3390,22 +3429,17 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         (list: List F, options: LGOPT): GUESSRESULT +->
             checkOptions(options)$GOPT0
 
-            if (Som? := Somos(options)$GOPT0) case Boolean and Som? then
-                return concat [guessADE(q)(list, _
-                                           concat([Somos(i::PI)$GuessOption, _
-                                                   maxDerivative(i::NNI)$GuessOption], _
-                                           options)) _
-                               for i in 2..(maxDerivative(options)$GOPT0)::NNI]
-        
-            if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
-                return concat [guessADE(q)(list, _
-                                concat([homogeneous(i::PI)$GuessOption, _
-                                        maxPower(i::PI)$GuessOption], _
-                                       options)) _
-                                   for i in 1..(maxPower(options)$GOPT0)::PI]
-        
-            opts: LGOPT := cons(displayAsGF(true)$GuessOption, options)
-            guessHPaux(list, (diffHP q)(opts), opts)
+            lopts := processOptions cons(displayAsGF(true)$GuessOption, options)
+            lres: GUESSRESULT := []
+            res: GUESSRESULT := []
+
+            for opts in lopts repeat
+                 res := guessHPaux(list, (diffHP q)(opts), opts)
+                 if not empty? res and one(options)$GOPT0 then
+                     return res
+                 lres := append(res, lres)
+
+            reverse! lres
 
     guessHolo(q: Symbol): GUESSER ==
         (z1: List F, z2: LGOPT): GUESSRESULT +->
@@ -3420,22 +3454,17 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 guessRec(list: List F, options: LGOPT): GUESSRESULT ==
     checkOptions(options)$GOPT0
 
-    if (Som? := Somos(options)$GOPT0) case Boolean and Som? then
-        return concat [guessRec(list, _
-                                concat([Somos(i::PI)$GuessOption, _
-                                        maxDerivative(i::NNI)$GuessOption], _
-                                options)) _
-                       for i in 2..(maxDerivative(options)$GOPT0)::NNI]
+    lopts := processOptions cons(displayAsGF(false)$GuessOption, options)
+    lres: GUESSRESULT := []
+    res: GUESSRESULT := []
 
-    if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
-        return concat [guessRec(list, _
-                                concat([homogeneous(i::PI)$GuessOption, _
-                                        maxPower(i::PI)$GuessOption], _
-                                       options)) _
-                           for i in 1..(maxPower(options)$GOPT0)::PI]
+    for opts in lopts repeat
+         res := guessHPaux(list, shiftHP opts, opts)
+         if not empty? res and one(options)$GOPT0 then
+             return res
+         lres := append(res, lres)
 
-    opts: LGOPT := cons(displayAsGF(false)$GuessOption, options)
-    guessHPaux(list, shiftHP opts, opts)
+    reverse! lres
 
 guessRec(list: List F): GUESSRESULT == guessRec(list, [])
 
@@ -3445,9 +3474,9 @@ guessPRec(list: List F, options: LGOPT): GUESSRESULT ==
 guessPRec(list: List F): GUESSRESULT == guessPRec(list, [])
 
 guessRat(list: List F, options: LGOPT): GUESSRESULT ==
-    opts := append(options, [maxShift(0)$GuessOption,
-                             maxPower(1)$GuessOption,
-                             allDegrees(true)$GuessOption])
+    opts := concat([[maxShift(0)$GuessOption,
+                     maxPower(1)$GuessOption],
+                     options, [allDegrees(true)$GuessOption]])
     guessRec(list, opts)
 
 guessRat(list: List F): GUESSRESULT == guessRat(list, [])
@@ -3464,22 +3493,17 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
         (list: List F, options: LGOPT): GUESSRESULT +->
             checkOptions(options)$GOPT0
 
-            if (Som? := Somos(options)$GOPT0) case Boolean and Som? then
-                return concat [guessRec(q)(list, _
-                                           concat([Somos(i::PI)$GuessOption, _
-                                                   maxDerivative(i::NNI)$GuessOption], _
-                                                  options)) _
-                               for i in 2..(maxDerivative(options)$GOPT0)::NNI]
-        
-            if (hom? := homogeneous(options)$GOPT0) case Boolean and hom? then
-                return concat [guessRec(q)(list, _
-                                concat([homogeneous(i::PI)$GuessOption, _
-                                        maxPower(i::PI)$GuessOption], _
-                                       options)) _
-                                   for i in 1..(maxPower(options)$GOPT0)::PI]
-        
-            opts: LGOPT := cons(displayAsGF(false)$GuessOption, options)
-            guessHPaux(list, (shiftHP q)(opts), opts)
+            lopts := processOptions cons(displayAsGF(false)$GuessOption, options)
+            lres: GUESSRESULT := []
+            res: GUESSRESULT := []
+
+            for opts in lopts repeat
+                 res := guessHPaux(list, shiftHP(q)(opts), opts)
+                 if not empty? res and one(options)$GOPT0 then
+                     return res
+                 lres := append(res, lres)
+
+            reverse! lres
 
     guessPRec(q: Symbol): GUESSER ==
         (z1: List F, z2: LGOPT): GUESSRESULT +->
@@ -3487,9 +3511,9 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
 
     guessRat(q: Symbol): GUESSER ==
         (z1: List F, z2: LGOPT): GUESSRESULT +->
-            guessRec(q)(z1, append(z2, [maxShift(0)$GuessOption,
-                                        maxPower(1)$GuessOption,
-                                        allDegrees(true)$GuessOption]))
+            guessRec(q)(z1, concat([[maxShift(0)$GuessOption,
+                                     maxPower(1)$GuessOption], z2,
+                                    [allDegrees(true)$GuessOption]]))
 @
 %$
 
@@ -3690,7 +3714,7 @@ GuessPolynomialFunctions(R: Ring):
                   retract(v2)@Symbol::Polynomial(R)
               r::R::Polynomial(R)
 
-      else 
+      else
           if R has ConvertibleTo Integer then
               iim2(coeff: R): EXPRR == (convert(coeff)@Integer)::EXPRR
 
@@ -3744,7 +3768,7 @@ GuessPolynomial(R: Ring) ==
 <<package GUESSPI GuessPolynomialInteger>>=
 )abbrev package GUESSPI GuessPolynomialInteger
 ++ Description:
-++ This package exports guessing of sequences of rational functions over the 
+++ This package exports guessing of sequences of rational functions over the
 ++ integers
 GuessPolynomialInteger() == GuessPolynomial Integer
 @
