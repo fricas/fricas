@@ -105,6 +105,11 @@ UnittestCount(): with
        ++ of tests that passed but were expected to fail and records
        ++ in- and output.
 
+     decXfPass: () -> Void
+       ++ decXfPass() is an internal function that declares that the preceding
+       ++ test did not pass unexpectedly.  This function should only be used
+       ++ for testing library errors
+
      incXfFail:() -> Void
        ++ incXfFail() is an internal function that steps the number
        ++ expected failures.
@@ -133,6 +138,7 @@ UnittestCount(): with
 
      decXfFatal: () -> Void
         ++ like decFatal, but for expected failures.
+
      addWarning: OutputForm -> Void
        ++ addWarning s is an internal function that adds s, together with an
        ++ indication of the current testcase and the current testsuite to the
@@ -236,22 +242,28 @@ UnittestCount(): with
                                   cur.xfpassed)
          cur.total := cur.total + 1
 
+     decXfPass() ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total - 1
+         cur.xfpassed := rest(cur.xfpassed)
+         cur.xfpass := cur.xfpass - 1
+
      incFatal inp ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
          cur.fail := cur.fail + 1
          cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
 
-     incXfFatal inp ==
-         cur := tests.currentTestsuite.currentTestcase
-         cur.total := cur.total + 1
-         cur.xfail := cur.xfail + 1
-
      decFatal() ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total - 1
          cur.fail := cur.fail - 1
          cur.fatalities := rest(cur.fatalities)
+
+     incXfFatal inp ==
+         cur := tests.currentTestsuite.currentTestcase
+         cur.total := cur.total + 1
+         cur.xfail := cur.xfail + 1
 
      decXfFatal() ==
          cur := tests.currentTestsuite.currentTestcase
@@ -638,15 +650,15 @@ UnittestAux(R: BasicType): with
          testTrueAux0(inp, ex, xPassInc, xFailInc)
 
      testLibraryErrorAux(inp, ex) ==
--- at this point, ex was already evaluated.  If there would have been an error,
--- incLibraryError would not be invoked.
+-- at this point, ex was already evaluated.  
+-- this will only be called if ex (unexpectedly) did not fail fatally
          if R has CoercibleTo O
          then incLibraryError(inp, [ex::O])$U
          else incLibraryError(inp, [])$U
 
      xftestLibraryErrorAux(inp, ex) ==
--- at this point, ex was already evaluated.  If there would have been an error,
--- incLibraryError would not be invoked.
+-- at this point, ex was already evaluated.
+-- this will only be called if ex (expectedly) did not fail fatally
          if R has CoercibleTo O
          then incXfLibraryError(inp, [ex::O])$U
          else incXfLibraryError(inp, [])$U
@@ -777,9 +789,13 @@ Unittest: with
          interpretString("testLibraryErrorAux(_"" inp "_", " s ")")$T
 
      xftestLibraryError(s) ==
-         chkLibraryError()$UnittestCount
          inp := "ERROR: (" s ")"
+         incXfPass(inp, empty()$List(OutputForm))$UnittestCount
          interpretString("xftestLibraryErrorAux(_"" inp "_", " s ")")$T
+         decXfPass()$UnittestCount
+-- when there was as expected no fatal error, we need only step the
+-- counter for the number of tests
+         chkLibraryError()$UnittestCount
 @
 
 
