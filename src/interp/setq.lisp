@@ -350,8 +350,8 @@
 (SETQ |$evalDomain| NIL)
 
 (SETQ |$SideEffectFreeFunctionList| '(
-  |null| |case| |Zero| |One| \: |::| |has| |Mapping|
-  |elt| = |>| |>=| |<| |<=| MEMBER |is| |isnt| ATOM
+  |null| |case| |Zero| |One| \: |::| |has| |Mapping| |Record| |Union|
+  |Enumeration| |elt| = |>| |>=| |<| |<=| MEMBER |is| |isnt| ATOM
 ))
 
 (SETQ |$AnonymousFunction| '(|AnonymousFunction|))
