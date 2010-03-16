@@ -352,8 +352,8 @@ isSimple x ==
     isSideEffectFree op and (and/[isSimple y for y in argl])
 
 isSideEffectFree op ==
-  member(op,$SideEffectFreeFunctionList) or op is ["elt",.,op'] and
-    isSideEffectFree op'
+  constructor? op or member(op,$SideEffectFreeFunctionList) or
+    op is ["elt",.,op'] and isSideEffectFree op'
 
 isAlmostSimple x ==
   --returns (<new predicate> . <list of assignments>) or nil
