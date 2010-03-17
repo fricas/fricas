@@ -135,7 +135,7 @@
 (defvar |$RawParseOnly| nil)
 (defvar |$PostTranOnly| nil)
 (defvar |$FlatParseOnly| nil)
-(defvar |$noEarlyMacroexpand| t)
+(defvar |$noEarlyMacroexpand| nil)
 (defvar |$SaveParseOnly| nil)
 (defvar |$globalDefs| nil)
 (defvar |$MacroTable|)
