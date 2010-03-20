@@ -85,6 +85,112 @@ writeTitle(void)
 
 }
 
+float
+calcUnitX(int ii, XWindowAttributes vwInfo)
+{
+    return (vwInfo.width * 
+                       ((graphArray[0].unitX * ii + 
+                        graphArray[0].originX - graphStateArray[0].centerX) *
+                        graphStateArray[0].scaleX + 0.5));
+}
+
+float
+calcUnitY(int ii, XWindowAttributes vwInfo, float aspectR)
+{
+    return (vwInfo.height * aspectR * 
+                       (1 - ((graphArray[0].unitY*aspectR * ii +
+                              graphArray[0].originY*aspectR -
+                              graphStateArray[0].centerY) * 
+                             graphStateArray[0].scaleY + 0.5*aspectR )));
+}
+
+/* Globals:
+     unitGC
+     graphArray
+*/
+
+void
+do_x_tick(Window vw, int jj, int ii, XWindowAttributes vwInfo,
+          int dFlag, int descent)
+{
+    char aunit[20];
+    int strlength;
+    int halflength;
+    /* ticks stuck to viewport*/
+    GDrawLine(unitGC, vw, jj, vwInfo.height - 8,
+              jj, vwInfo.height - 4, dFlag);
+
+    sprintf(aunit, "%0.3g", ii*graphArray[0].spadUnitX);
+    strlength = strlen(aunit);
+    halflength = XTextWidth(unitFont,aunit,strlength)/2;
+
+    if (dFlag == Xoption) {
+        GDrawImageString(unitGC, vw, jj - halflength,
+                         vwInfo.height - 8 - descent,
+                         aunit, strlength, dFlag);
+    }
+    if (dFlag == PSoption) {
+        GDrawImageString(unitGC, vw, jj - (strlength*3),
+                         vwInfo.height - 14,
+                         aunit, strlength, dFlag);
+        /* these are "eyeball" parameters for the given PS font */
+    }
+}
+
+/* Globals:
+     unitGC
+     graphArray
+     unitFont
+*/
+
+void
+do_y_tick(Window vw, int jj, int ii, XWindowAttributes vwInfo,
+          int dFlag, int charlength)
+{
+    char aunit[20];
+    int strlength;
+    int halflength;
+    int dummyInt, ascent, descent;
+    XCharStruct       overall;
+
+    /* ticks stuck to viewport*/
+    /* on the right */
+#if 0
+    /* on the right */
+    GDrawLine(unitGC, vw, vwInfo.width-6, jj,
+              vwInfo.width-2, jj, dFlag);
+#endif
+    /* on the left */
+    GDrawLine(unitGC, vw, 2, jj,
+              6, jj, dFlag);
+
+    sprintf(aunit, "%0.3g", ii*graphArray[0].spadUnitY);
+    strlength = strlen(aunit);
+    XTextExtents(unitFont, aunit, strlength, &dummyInt,
+                 &ascent, &descent, &overall);
+    halflength = overall.width;
+    if (dFlag == Xoption) {
+#if 0
+        /* on the right */
+        GDrawImageString(unitGC, vw, vwInfo.width - halflength - 6 - descent,
+                         jj + ascent/2, aunit, strlength, dFlag);
+#endif
+        /* on the left */
+        GDrawImageString(unitGC, vw, 8 + charlength/2,
+                         jj + ascent/2 , aunit, strlength, dFlag);
+    }
+    if (dFlag == PSoption) {
+#if 0
+        /* on the right */
+        GDrawImageString(unitGC, vw, vwInfo.width - 6 - (strlength*6),
+                         jj + 4, aunit, strlength, dFlag);
+#endif
+        /* on the left */
+        GDrawImageString(unitGC, vw, 8, jj + 4,
+                         aunit, strlength, dFlag);
+        /* these are "eyeball" parameters for the given PS font */
+    }
+}
 
 /********************************/
 /***  void drawTheViewport()  ***/
@@ -103,11 +209,10 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
   Vertex            *anX10Point;
   float             jj,diffX, diffY, tickStart,oneTickUnit;
   int               i,j,k,ii,halfSize;
-  int               charlength,strlength,halflength,halfheight;
+  int               charlength, halfheight;
   int               ptX,ptY,ptX1,ptY1,clipped, clipped1;
   int               xAxis,yAxis,dummyInt, ascent, descent;
   int               unitWidth,boxX,boxY,boxW,boxH;
-  char              aunit[20];
   XCharStruct       overall;
 
   drawMore = yes;
@@ -340,8 +445,8 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
                          dFlag);
  
 
-        tickStart   = calcUnitX(0);
-        oneTickUnit = calcUnitX(1) - tickStart;
+        tickStart   = calcUnitX(0, vwInfo);
+        oneTickUnit = calcUnitX(1, vwInfo) - tickStart;
 
         /* ticks along the positive X axis */
 
@@ -351,32 +456,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
              jj < vwInfo.width;
              ii=ii+k,jj =jj+k* oneTickUnit) {
           if (jj >= 0) {
-
-            /* ticks stuck to viewport*/
-            GDrawLine(unitGC,vw,
-                      (int)rint(jj),vwInfo.height-8,(int)rint(jj),vwInfo.height-4,
-                      dFlag);
-
-            sprintf(aunit,"%0.3g",ii*graphArray[0].spadUnitX);
-            strlength=strlen(aunit);
-            halflength=XTextWidth(unitFont,aunit,strlength)/2;
-
-            if (dFlag == Xoption) GDrawImageString(unitGC,
-                                             vw,
-                                             (int)rint(jj) - halflength,
-                                             vwInfo.height -8 -descent, 
-                                             aunit,
-                                             strlength, 
-                                             dFlag);
-            if (dFlag == PSoption) GDrawImageString(unitGC,
-                                              vw,
-                                              (int)rint(jj) -(strlength*3) ,
-                                              vwInfo.height -14, 
-                                              aunit,
-                                              strlength, 
-                                              dFlag); 
-            /* these are "eyeball" parameters for the given PS font */
-              
+              do_x_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, descent);
           }
             
         }
@@ -385,36 +465,12 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
              jj > 0;
              ii=ii-k,jj = jj-k*oneTickUnit) {
           if (jj <= vwInfo.width) {
-
-            /* ticks stuck to viewport*/
-            GDrawLine(unitGC,vw,
-                      (int)rint(jj),vwInfo.height-8,(int)rint(jj),vwInfo.height-4,
-                      dFlag);
-
-            sprintf(aunit,"%0.3g",ii*graphArray[0].spadUnitX);
-            strlength=strlen(aunit);
-            halflength=XTextWidth(unitFont,aunit,strlength)/2;
-
-            if (dFlag == Xoption) GDrawImageString(unitGC,
-                                             vw,
-                                             (int)rint(jj) - halflength,
-                                             vwInfo.height -8 -descent, 
-                                             aunit,
-                                             strlength, 
-                                             dFlag);
-            if (dFlag == PSoption) GDrawImageString(unitGC,
-                                              vw,
-                                              (int)rint(jj) -(strlength*3) ,
-                                              vwInfo.height -14, 
-                                              aunit,
-                                              strlength, 
-                                              dFlag);
-            /* these are "eyeball" parameters for the given PS font */
+              do_x_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, descent);
           }
         }
       
-        tickStart = calcUnitY(0);
-        oneTickUnit = calcUnitY(1) - tickStart;
+        tickStart = calcUnitY(0, vwInfo, aspectR);
+        oneTickUnit = calcUnitY(1, vwInfo, aspectR) - tickStart;
      
         /* ticks along the positive Y axis */
         unitWidth = 2*(ascent+descent);                 /* limit of acceptable separation */
@@ -423,53 +479,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
              jj > 0;
              ii=ii+k,jj =jj+k*oneTickUnit ) {
           if  (jj < vwInfo.height) {
- 
-            /* ticks stuck to viewport*/
-            /* on the right */
-            /*
-              GDrawLine(unitGC,vw,
-              vwInfo.width-6,(int)rint(jj),
-              vwInfo.width-2,(int)rint(jj),dFlag);
-              */
-            /* on the left */
-            GDrawLine(unitGC,vw,
-                      2,(int)rint(jj),
-                      6,(int)rint(jj),
-                      dFlag);
-            sprintf(aunit,"%0.3g",ii*graphArray[0].spadUnitY);
-            strlength=strlen(aunit);
-            XTextExtents(unitFont,aunit,strlength,&dummyInt,
-                         &ascent,&descent,&overall);
-            halflength=overall.width;           /* let's reuse that variable */
-
-            if(dFlag == Xoption){
-              /* on the right */
-              /*
-                GDrawImageString(unitGC, vw,
-                vwInfo.width-halflength -6-descent,
-                (int)rint(jj)+ascent/2 , 
-                aunit, strlength, dFlag);
-                */
-              /* on the left */
-              GDrawImageString(unitGC, vw,
-                               8 + charlength/2,
-                               (int)rint(jj)+ascent/2 , 
-                               aunit, strlength, dFlag);
-            }
-            if(dFlag == PSoption){
-              /* on the right */
-              /*
-                GDrawImageString(unitGC, vw,
-                vwInfo.width - 6 - (strlength*6),
-                (int)rint(jj)+4, 
-                aunit, strlength, dFlag);
-                */
-              /* on the left */
-              GDrawImageString(unitGC, vw,
-                               8,(int)rint(jj)+4, 
-                               aunit, strlength, dFlag);
-              /* these are "eyeball" parameters for the given PS font */
-            }
+              do_y_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, charlength);
           }
         }
 
@@ -479,56 +489,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
              jj < vwInfo.height;
              ii=ii-k,jj =jj-k*oneTickUnit) {
           if (jj > 0) {
-
-            /* ticks stuck to viewport*/
-            /* on the right */
-            /*
-              GDrawLine(unitGC,vw,
-              vwInfo.width-6,(int)rint(jj),
-              vwInfo.width-2,(int)rint(jj),
-              dFlag);
-              */
-            /* on the left */
-            GDrawLine(unitGC,vw,
-                      2,(int)rint(jj),
-                      6,(int)rint(jj),
-                      dFlag);
-
-            sprintf(aunit,"%0.3g",ii*graphArray[0].spadUnitY);
-            strlength=strlen(aunit);
-            XTextExtents(unitFont,aunit,strlength,&dummyInt,
-                         &ascent,&descent,&overall);
-            halflength=overall.width;           /* let's reuse that variable */
-
-            if(dFlag == Xoption){
-              /* on the right */
-              /*
-                GDrawImageString(unitGC, vw,
-                vwInfo.width-halflength -6-descent,
-                (int)rint(jj)+ascent/2 , 
-                aunit, strlength, dFlag);
-                */
-              /* on the left */
-              GDrawImageString(unitGC, vw,
-                               8 + charlength/2,
-                               (int)rint(jj)+ascent/2 , 
-                               aunit, strlength, dFlag);
-            }
-            if(dFlag == PSoption){
-              /* on the right */
-              /*
-                GDrawImageString(unitGC, vw,
-                vwInfo.width -6 -(strlength*6),
-                (int)rint(jj)+4 , 
-                aunit, strlength, dFlag);
-                */
-              /* on the left */
-              GDrawImageString(unitGC, vw,
-                               8,
-                               (int)rint(jj)+4 , 
-                               aunit, strlength, dFlag);
-              /* these are "eyeball" parameters for the given PS font */
-            }
+              do_y_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, charlength);
           }
         }
       

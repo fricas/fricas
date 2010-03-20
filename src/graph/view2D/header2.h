@@ -191,16 +191,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define controlMessageY     181
 #define controlMessageColor monoColor(29)
 
-#define pi_half         1.570796326794896619231321691639751442099
-#define pi              3.141592653589793238462643383279502884197
-#define three_pi_halves 4.712388980384689857693965074919254326296
-#define two_pi          6.283185307179586476925286766559005768394
-
-#define degrees_in_two_pi 57
-#define d2Pi 57
-
-#define viewBackground 0
-
 #define nbuckets         128
 
 #define anywhere 0
@@ -212,8 +202,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* type is X, PS,... */
 
 #define drawViewport(type) drawTheViewport(type);
-#define spadDrawViewport() spadMode++; drawTheViewport(X); spadMode--;
-
 
 typedef struct _buttonStruct {
   int buttonKey, pot, mask, graphNum, graphSelect;
@@ -256,18 +244,6 @@ typedef struct _xPointStruct {
   Vertex *x10Point;
   XArc   *arc;
 } xPointStruct;
-
-
-
-#define calcUnitX(ii) (vwInfo.width * \
-		       ((graphArray[0].unitX * ii + \
-                     	graphArray[0].originX - graphStateArray[0].centerX) *\
-			graphStateArray[0].scaleX + 0.5))
-#define calcUnitY(ii) (vwInfo.height * aspectR * \
-		       (1 - ((graphArray[0].unitY*aspectR * ii + \
-			      graphArray[0].originY*aspectR - \
-			      graphStateArray[0].centerY) * \
-			     graphStateArray[0].scaleY + 0.5*aspectR )))
 
 #define projX(x,w,i) ((((float)x/w-0.5)/graphStateArray[i].scaleX + \
 		       graphStateArray[i].centerX + 0.5) / 	\
