@@ -53,6 +53,10 @@ LiouvillianFunction(R, F): Exports == Implementation where
       ++ erf(f) denotes the error function
     dilog   : F  -> F
       ++ dilog(f) denotes the dilogarithm
+    fresnelS : F  -> F
+      ++ fresnelS(f) denotes the Fresnel integral \spad{S}
+    fresnelC : F  -> F
+      ++ fresnelC(f) denotes the Fresnel integral \spad{C}
     integral: (F, SE) -> F
       ++ integral(f,x) indefinite integral of f with respect to x.
     integral: (F, SegmentBinding F) -> F
@@ -86,6 +90,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     opci   := operator('Ci)$CommonOperators
     opli2  := operator('dilog)$CommonOperators
     operf  := operator('erf)$CommonOperators
+    opfis  := operator('fresnelS)$CommonOperators
+    opfic  := operator('fresnelC)$CommonOperators
 
     Si x                == opsi x
     Ci x                == opci x
@@ -93,6 +99,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     erf x               == operf x
     li  x               == opli x
     dilog x             == opli2 x
+    fresnelS x          == opfis x
+    fresnelC x          == opfic x
 
     belong? op     == has?(op, PRIM)
     isi x          == kernel(opsi, x)
@@ -100,6 +108,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     ierf x         == (zero? x => 0; kernel(operf, x))
 --    ili2 x         == (one? x => INV; kernel(opli2, x))
     ili2 x         == ((x = 1) => INV; kernel(opli2, x))
+    ifis(x : F) : F == (zero? x => 0; kernel(opfis, x))
+    ific(x : F) : F == (zero? x => 0; kernel(opfic, x))
     integrand l    == eval(first l, retract(second l)@K, third l)
     integral(f:F, x:SE) == opint [eval(f, k:=kernel(x)$K, dummy), dummy, k::F]
 
@@ -156,6 +166,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
       is?(op, 'li)         => opli
       is?(op, 'erf)        => operf
       is?(op, 'dilog)      => opli2
+      is?(op, 'fresnelC)   => opfis
+      is?(op, 'fresnelS)   => opfic
       error "Not a Liouvillian operator"
 
     evaluate(opei,   iei)$BasicOperatorFunctions1(F)
@@ -164,6 +176,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     evaluate(opci,   ici)
     evaluate(operf,  ierf)
     evaluate(opli2,  ili2)
+    evaluate(opfis,  ifis)
+    evaluate(opfic,  ific)
     evaluate(opint,  iint)
     derivative(opsi, (z1:F):F +-> sin(z1) / z1)
     derivative(opci, (z1:F):F +-> cos(z1) / z1)
@@ -171,6 +185,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     derivative(opli, (z1:F):F +-> inv log(z1))
     derivative(operf, (z1:F):F +-> 2 * exp(-(z1^2)) / sqrt(pi()))
     derivative(opli2, (z1:F):F +-> log(z1) / (1 - z1))
+    derivative(opfis, (z1:F):F +-> sin(z1^2))
+    derivative(opfic, (z1:F):F +-> cos(z1^2))
     setProperty(opint,SPECIALEQUAL,eqint@((K,K) -> Boolean) pretend None)
     setProperty(opint,SPECIALDIFF,dvint@((List F,SE) -> F) pretend None)
     setProperty(opdint,SPECIALDIFF,dvdint@((List F,SE)->F) pretend None)

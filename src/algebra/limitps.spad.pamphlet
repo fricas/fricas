@@ -119,6 +119,8 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       is?(ker, 'acsc) => true
       is?(ker, 'acsch) => true
       is?(ker, 'acoth) => true
+      is?(ker, 'fresnelS) => true
+      is?(ker, 'fresnelC) => true
       false
 
     knownValueAtInfinity?: Kernel FE -> Boolean
@@ -249,8 +251,10 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
             is?(ker, 'asec) => pi()/(2 :: FE)
             is?(ker, 'acsc) => 0
             is?(ker, 'acsch) => 0
-            -- ker must be acoth
-            0
+            is?(ker, 'acoth) => 0
+            is?(ker, 'fresnelS) => sqrt(pi()/(8 :: FE))
+            is?(ker, 'fresnelC) => sqrt(pi()/(8 :: FE))
+            error "finiteValueAtInfinity? true, but unknown value at infinity"
           val :: OFE
         knownValueAtInfinity? ker =>
           lim -- limit(exp, cosh, sinh ,x=inf) = inf
@@ -268,8 +272,10 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
           is?(ker, 'asec) => -pi()/(2 :: FE)
           is?(ker, 'acsc) => -pi()
           is?(ker, 'acsch) => 0
-          -- ker must be acoth
-          0
+          is?(ker, 'acoth) => 0
+          is?(ker, 'fresnelS) => -sqrt(pi()/(8 :: FE))
+          is?(ker, 'fresnelC) => -sqrt(pi()/(8 :: FE))
+          error "finiteValueAtInfinity? true, but unknown value at -infinity"
         val :: OFE
       knownValueAtInfinity? ker =>
         is?(ker, 'exp) => (0@FE) :: OFE
