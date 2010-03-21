@@ -169,7 +169,6 @@ GraphImage (): Exports == Implementation where
       ++ putColorInfo(llp,lpal) takes a list of list of points, \spad{llp},
       ++ and returns the points with their hue and shade components
       ++ set according to the list of palette colors, \spad{lpal}.
-    figureUnits : L L P                       -> UNITSF
 
   Implementation ==> add
     import Color()
@@ -188,7 +187,7 @@ GraphImage (): Exports == Implementation where
 --%Internal Functions
 
     graph       : RANGEF                          -> %
-    scaleStep   : SF                          -> SF
+    scaleStep   : SEG SF -> SF
     makeGraph   :  %                          -> %
 
 
@@ -236,7 +235,8 @@ GraphImage (): Exports == Implementation where
           segment(convert(lo demRanges.1)@SF,convert(hi demRanges.1)@SF)$(Segment(SF)) ]
       [ 0, demRangesSF, [], [], [], [], [], [] ]
 
-    scaleStep(range) ==                        -- MGR
+    scaleStep(range_seg) ==                        -- MGR
+      range := hi(range_seg) - lo(range_seg)
 
       adjust:NNI
       tryStep:SF
@@ -251,31 +251,25 @@ GraphImage (): Exports == Implementation where
       scaleDown := (10@I ^$I (((#(numerals)@I) - 1$I) pretend PI))::SF
       scaleDown*ceiling(tryStep/scaleDown - 0.5::SF)/((10 ^$I adjust)::SF)
 
-    figureUnits(listOfListsOfPoints) ==
-        -- figure out the min/max and divide by 10 for unit markers
-      xMin := xMax := xCoord first first listOfListsOfPoints
-      yMin := yMax := yCoord first first listOfListsOfPoints
-      if xMin ~= xMin then xMin:=max()
-      if xMax ~= xMax then xMax:=min()
-      if yMin ~= yMin then yMin:=max()
-      if yMax ~= yMax then yMax:=min()
-      for pL in listOfListsOfPoints repeat
-        for p in pL repeat
-          if ((px := (xCoord p)) < xMin) then
-            xMin := px
-          if px > xMax then
-            xMax := px
-          if ((py := (yCoord p)) < yMin) then
-            yMin := py
-          if py > yMax then
-            yMax := py
-      if xMin = xMax then
-        xMin := xMin - convert(0.5)$Float
-        xMax := xMax + convert(0.5)$Float
-      if yMin = yMax then
-        yMin := yMin - convert(0.5)$Float
-        yMax := yMax + convert(0.5)$Float
-      [scaleStep(xMax-xMin),scaleStep(yMax-yMin)]
+    figureUnits(ranges : RANGESF) : UNITSF ==
+        [scaleStep(first(ranges)), scaleStep(second(ranges))]
+
+    roundRange(range : SEG SF) : SEG SF ==
+        single_eps := (2.0::SF)^(-19)
+        low := lo(range)
+        low :=
+            abs(low) < 1 => low - single_eps
+            low < 0 => (1.0::SF + single_eps)*low
+            (1.0::SF - single_eps)*low
+        high := hi(range)
+        high :=
+            abs(high) < 1 =>  high + single_eps
+            high < 0 => (1.0::SF - single_eps)*high
+            (1.0::SF + single_eps)*high
+        low..high
+
+    roundRanges(ranges : RANGESF) : RANGESF ==
+        [roundRange(first(ranges)), roundRange(second(ranges))]
 
     plotLists(graf:Rep,listOfListsOfPoints:L L P,listOfPointColors:L PAL,listOfLineColors:L PAL,listOfPointSizes:L PI):% ==
       givenLen := #listOfListsOfPoints
@@ -314,8 +308,9 @@ GraphImage (): Exports == Implementation where
       graf.llPoints:= putColorInfo(graf.llPoints,graf.pointColors)
       if null(ranges graf) then  -- figure out best ranges for points
         graf.rangesField := calcRanges(graf.llPoints)  --::V SEG SF
+      graf.rangesField := roundRanges(graf.rangesField)
       if null(units graf) then  -- figure out best ranges for points
-        graf.unitsField := figureUnits(graf.llPoints)  --::V SEG SF
+        graf.unitsField := figureUnits(graf.rangesField)  --::V SEG SF
       sayBrightly(["   Graph data being transmitted to the viewport manager..."::E]$List(E))$Lisp
       sendI(VIEW,typeGRAPH)$Lisp
       sendI(VIEW,makeGRAPH)$Lisp
