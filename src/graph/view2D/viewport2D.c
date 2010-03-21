@@ -86,22 +86,20 @@ writeTitle(void)
 }
 
 float
-calcUnitX(int ii, XWindowAttributes vwInfo)
+calcStartX(XWindowAttributes vwInfo)
 {
-    return (vwInfo.width * 
-                       ((graphArray[0].unitX * ii + 
-                        graphArray[0].originX - graphStateArray[0].centerX) *
-                        graphStateArray[0].scaleX + 0.5));
+    return vwInfo.width *
+              ((graphArray[0].originX - graphStateArray[0].centerX) *
+                   graphStateArray[0].scaleX + 0.5);
 }
 
 float
-calcUnitY(int ii, XWindowAttributes vwInfo, float aspectR)
+calcStartY(XWindowAttributes vwInfo, float aspectR)
 {
-    return (vwInfo.height * aspectR * 
-                       (1 - ((graphArray[0].unitY*aspectR * ii +
-                              graphArray[0].originY*aspectR -
-                              graphStateArray[0].centerY) * 
-                             graphStateArray[0].scaleY + 0.5*aspectR )));
+    return vwInfo.height * aspectR *
+                    (1 - ((graphArray[0].originY*aspectR -
+                           graphStateArray[0].centerY) *
+                           graphStateArray[0].scaleY + 0.5*aspectR));
 }
 
 /* Globals:
@@ -443,10 +441,10 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
           GSetForeground(unitGC,
                          (float)monoColor(graphStateArray[i].unitsColor),
                          dFlag);
- 
 
-        tickStart   = calcUnitX(0, vwInfo);
-        oneTickUnit = calcUnitX(1, vwInfo) - tickStart;
+        tickStart   = calcStartX(vwInfo);
+        oneTickUnit = vwInfo.width*graphArray[0].unitX*
+                        graphStateArray[0].scaleX;
 
         /* ticks along the positive X axis */
 
@@ -454,45 +452,45 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
         k = floor(unitWidth/oneTickUnit) +1;    /* get skipping integer */
         for (ii=0, jj = tickStart;
              jj < vwInfo.width;
-             ii=ii+k,jj =jj+k* oneTickUnit) {
+             ii = ii + k, jj = tickStart + ii*oneTickUnit) {
           if (jj >= 0) {
               do_x_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, descent);
           }
-            
+
         }
         /* ticks along the negative X axis */
         for (ii=-k,jj=tickStart - k*oneTickUnit;
              jj > 0;
-             ii=ii-k,jj = jj-k*oneTickUnit) {
+             ii = ii - k, jj = tickStart + ii*oneTickUnit) {
           if (jj <= vwInfo.width) {
               do_x_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, descent);
           }
         }
-      
-        tickStart = calcUnitY(0, vwInfo, aspectR);
-        oneTickUnit = calcUnitY(1, vwInfo, aspectR) - tickStart;
-     
+
+        tickStart = calcStartY(vwInfo, aspectR);
+        oneTickUnit = -vwInfo.height * aspectR * graphArray[0].unitY *
+                        aspectR * graphStateArray[0].scaleY;
+
         /* ticks along the positive Y axis */
         unitWidth = 2*(ascent+descent);                 /* limit of acceptable separation */
         k = floor(unitWidth/fabs(oneTickUnit)) +1;  /* get skipping integer */
         for (ii=0,jj = tickStart;
              jj > 0;
-             ii=ii+k,jj =jj+k*oneTickUnit ) {
+             ii = ii + k, jj = tickStart + ii*oneTickUnit) {
           if  (jj < vwInfo.height) {
               do_y_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, charlength);
           }
         }
 
         /* ticks along the negative Y axis */
-    
+
         for (ii=(-k),jj = tickStart - k*oneTickUnit;
              jj < vwInfo.height;
-             ii=ii-k,jj =jj-k*oneTickUnit) {
+             ii = ii - k, jj = tickStart + ii*oneTickUnit) {
           if (jj > 0) {
               do_y_tick(vw, (int)rint(jj), ii, vwInfo, dFlag, charlength);
           }
         }
-      
       }  /* if unitsOn */
     }    /* if graph i exists and is showing */
   }   /* for i in graphs */

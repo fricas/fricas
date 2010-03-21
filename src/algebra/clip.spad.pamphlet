@@ -127,8 +127,16 @@ TwoDimensionalPlotClipping(): Exports == Implementation where
         yDiff = 0 =>
           [pointLists,segment(xMin-1,xMax+1),segment(yMin-1,yMax+1)]
         [pointLists,segment(xMin-1,xMax+1),segment(yMin,yMax)]
-      yDiff = 0 =>
-        [pointLists,segment(xMin,xMax),segment(yMin-1,yMax+1)]
+      single_eps := (2.0::SF)^(-19)
+      if yDiff < single_eps then
+          yMin :=
+              abs(yMin) < 1 => yMin - single_eps
+              yMin < 0 => yMin*(1 + single_eps)
+              yMin*(1 - single_eps)
+          yMax :=
+              abs(yMax) < 1 => yMax + single_eps
+              yMax < 0 => yMax*(1 - single_eps)
+              yMax*(1 + single_eps)
       numm := numer scale; denn := denom scale
       -- now expand the range by scale
       xMin := xMin - (numm :: SF) * xDiff / (denn :: SF)
