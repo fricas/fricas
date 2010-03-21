@@ -329,12 +329,12 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
       empty?(args := argument ker) => [monomial(ker :: FE,0)$UPXS :: XXP]
       empty? rest args =>
         arg := first args
-        is?(ker,"%paren" :: Symbol) => iExprToXXP(arg,posCheck?)
-        is?(ker,"log" :: Symbol) => logToXXP(arg,posCheck?)
-        is?(ker,"exp" :: Symbol) => expToXXP(arg,posCheck?)
+        is?(ker, "%paren"::Symbol) => iExprToXXP(arg, posCheck?)
+        is?(ker, 'log) => logToXXP(arg, posCheck?)
+        is?(ker, 'exp) => expToXXP(arg, posCheck?)
         tranToXXP(ker,arg,posCheck?)
-      is?(ker,"%power" :: Symbol) => genPowerToXXP(args,posCheck?)
-      is?(ker,"nthRoot" :: Symbol) =>
+      is?(ker, "%power"::Symbol) => genPowerToXXP(args, posCheck?)
+      is?(ker, 'nthRoot) =>
         n := retract(second args)@I
         nthRootToXXP(first args,n :: NNI,posCheck?)
       stateProblem(string name ker,"unknown kernel")
@@ -350,7 +350,7 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
         error "exp of function with sigularity"
       deg > 0 => [exp(ups)]
       lc := coefficient(ups,0); varOpList := opsInvolvingX lc
-      not opInOpList?("log" :: Symbol,varOpList) => [exp(ups)]
+      not opInOpList?('log, varOpList) => [exp(ups)]
       -- try to fix exp(lc) if necessary
       expCoef := normalize(exp lc,x)$ElementaryFunctionStructurePackage(R,FE)
       result := exprToGenUPS(expCoef,posCheck?,"real:right side")$FS2UPS
@@ -473,7 +473,7 @@ FunctionSpaceToExponentialExpansion(R,FE,x,cen):_
     exponential? fcn ==
       -- is 'fcn' of the form exp(f)?
       (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-        is?(ker :: K,"exp" :: Symbol)
+        is?(ker::K, 'exp)
       false
 
     productOfNonZeroes? fcn ==

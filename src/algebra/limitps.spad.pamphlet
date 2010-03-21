@@ -100,7 +100,7 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       list := kernels fcn
       while not empty? list repeat
         ker := first list
-        not is?(ker,"log" :: Symbol) and member?(x,variables(ker::FE)) _
+        not is?(ker, 'log) and member?(x, variables(ker::FE)) _
                and not(x = name(ker)) =>
           return list
         list := rest list
@@ -108,24 +108,24 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
 
     finiteValueAtInfinity?: Kernel FE -> Boolean
     finiteValueAtInfinity? ker ==
-      is?(ker,"erf" :: Symbol) => true
-      is?(ker,"sech" :: Symbol) => true
-      is?(ker,"csch" :: Symbol) => true
-      is?(ker,"tanh" :: Symbol) => true
-      is?(ker,"coth" :: Symbol) => true
-      is?(ker,"atan" :: Symbol) => true
-      is?(ker,"acot" :: Symbol) => true
-      is?(ker,"asec" :: Symbol) => true
-      is?(ker,"acsc" :: Symbol) => true
-      is?(ker,"acsch" :: Symbol) => true
-      is?(ker,"acoth" :: Symbol) => true
+      is?(ker, 'erf) => true
+      is?(ker, 'sech) => true
+      is?(ker, 'csch) => true
+      is?(ker, 'tanh) => true
+      is?(ker, 'coth) => true
+      is?(ker, 'atan) => true
+      is?(ker, 'acot) => true
+      is?(ker, 'asec) => true
+      is?(ker, 'acsc) => true
+      is?(ker, 'acsch) => true
+      is?(ker, 'acoth) => true
       false
 
     knownValueAtInfinity?: Kernel FE -> Boolean
     knownValueAtInfinity? ker ==
-      is?(ker,"exp" :: Symbol) => true
-      is?(ker,"sinh" :: Symbol) => true
-      is?(ker,"cosh" :: Symbol) => true
+      is?(ker, 'exp) => true
+      is?(ker, 'sinh) => true
+      is?(ker, 'cosh) => true
       false
 
     leftOrRight: (FE,SY,FE) -> SingleInteger
@@ -166,7 +166,7 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       fcn ~= nfcn => limitPlus(nfcn,x)
       xkers := [k for k in tower fcn | member?(x,variables(k::FE))]
       # xkers ~= 2 => "failed"
-      expKers := [k for k in xkers | is?(k, "exp" :: Symbol)]
+      expKers := [k for k in xkers | is?(k, 'exp)]
       # expKers ~= 1 => "failed"
     -- fcn is a rational function of x and exp(g(x)) for some rational function g
       expKer := first expKers
@@ -201,7 +201,7 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
 
     -- limit of single kernel involving x
     specialLimitKernel(ker,x) ==
-      is?(ker,"log" :: Symbol) =>
+      is?(ker, 'log) =>
           args := argument ker
           empty? args => "failed" -- error "No argument"
           not empty? rest args => "failed" -- error "Too many arugments"
@@ -231,7 +231,7 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       -- compute limit(x -> 0+,f(arg))
       -- case where 'lim' is finite
       (inf := whatInfinity lim) = 0 =>
-         is?(ker,"erf" :: Symbol) => erf(retract(lim)@FE)$LF(R,FE) :: OFE
+         is?(ker, 'erf) => erf(retract(lim)@FE)$LF(R, FE)::OFE
          (kerValue := locallimit(f,var,lim)) case "failed" => "failed"
          kerValue case OFE => kerValue :: OFE
          "failed"
@@ -239,16 +239,16 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       inf = 1 =>
         finiteValueAtInfinity? ker =>
           val : FE :=
-            is?(ker,"erf" :: Symbol) => 1
-            is?(ker,"sech" :: Symbol) => 0
-            is?(ker,"csch" :: Symbol) => 0
-            is?(ker,"tanh" :: Symbol) => 0
-            is?(ker,"coth" :: Symbol) => 0
-            is?(ker,"atan" :: Symbol) => pi()/(2 :: FE)
-            is?(ker,"acot" :: Symbol) => 0
-            is?(ker,"asec" :: Symbol) => pi()/(2 :: FE)
-            is?(ker,"acsc" :: Symbol) => 0
-            is?(ker,"acsch" :: Symbol) => 0
+            is?(ker, 'erf) => 1
+            is?(ker, 'sech) => 0
+            is?(ker, 'csch) => 0
+            is?(ker, 'tanh) => 0
+            is?(ker, 'coth) => 0
+            is?(ker, 'atan) => pi()/(2 :: FE)
+            is?(ker, 'acot) => 0
+            is?(ker, 'asec) => pi()/(2 :: FE)
+            is?(ker, 'acsc) => 0
+            is?(ker, 'acsch) => 0
             -- ker must be acoth
             0
           val :: OFE
@@ -258,23 +258,23 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       -- case where 'lim' is minus infinity
       finiteValueAtInfinity? ker =>
         val : FE :=
-          is?(ker,"erf" :: Symbol) => -1
-          is?(ker,"sech" :: Symbol) => 0
-          is?(ker,"csch" :: Symbol) => 0
-          is?(ker,"tanh" :: Symbol) => 0
-          is?(ker,"coth" :: Symbol) => 0
-          is?(ker,"atan" :: Symbol) => -pi()/(2 :: FE)
-          is?(ker,"acot" :: Symbol) => pi()
-          is?(ker,"asec" :: Symbol) => -pi()/(2 :: FE)
-          is?(ker,"acsc" :: Symbol) => -pi()
-          is?(ker,"acsch" :: Symbol) => 0
+          is?(ker, 'erf) => -1
+          is?(ker, 'sech) => 0
+          is?(ker, 'csch) => 0
+          is?(ker, 'tanh) => 0
+          is?(ker, 'coth) => 0
+          is?(ker, 'atan) => -pi()/(2 :: FE)
+          is?(ker, 'acot) => pi()
+          is?(ker, 'asec) => -pi()/(2 :: FE)
+          is?(ker, 'acsc) => -pi()
+          is?(ker, 'acsch) => 0
           -- ker must be acoth
           0
         val :: OFE
       knownValueAtInfinity? ker =>
-        is?(ker,"exp" :: Symbol) => (0@FE) :: OFE
-        is?(ker,"sinh" :: Symbol) => lim
-        is?(ker,"cosh" :: Symbol) => plusInfinity()
+        is?(ker, 'exp) => (0@FE) :: OFE
+        is?(ker, 'sinh) => lim
+        is?(ker, 'cosh) => plusInfinity()
         "failed"
       "failed"
 
@@ -323,11 +323,11 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       -- or if 'fcn' has any kernels which are inverse trig functions
       -- which could produce series expansions with fractional exponents
       for kernel in tower fcn repeat
-        is?(kernel,"nthRoot" :: Symbol) => return true
-        is?(kernel,"asin" :: Symbol) => return true
-        is?(kernel,"acos" :: Symbol) => return true
-        is?(kernel,"asec" :: Symbol) => return true
-        is?(kernel,"acsc" :: Symbol) => return true
+        is?(kernel, 'nthRoot) => return true
+        is?(kernel, 'asin) => return true
+        is?(kernel, 'acos) => return true
+        is?(kernel, 'asec) => return true
+        is?(kernel, 'acsc) => return true
       false
 
     complLimit(fcn,x) ==
