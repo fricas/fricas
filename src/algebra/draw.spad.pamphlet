@@ -260,7 +260,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       branches := listBranches plot
       xRange := xRange plot; yRange := yRange plot
       -- process clipping information
-      if (cl := option(l,"clipSegment" :: Symbol)) case "failed" then
+      if (cl := option(l, 'clipSegment)) case "failed" then
         if clipBoolean(l,clipPointsDefault()) then
           clipInfo :=
             parametric? plot => clipParametric plot
@@ -336,7 +336,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- create function SF -> Point SF
       ff : L(SF -> Point SF) := [x +-> makePt2(myTrap1(f, x), x)]
       -- process change of coordinates
-      if (c := option(l,"coordinates" :: Symbol)) case "failed" then
+      if (c := option(l, 'coordinates)) case "failed" then
         -- default coordinate transformation
         ff := [x +-> makePt2(x, myTrap1(f, x))]
       else
@@ -361,7 +361,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       f := coordinate(ppc,1); g := coordinate(ppc,2)
       fcn : L(SF -> Pt) := [x +-> makePt2(myTrap1(f, x), myTrap1(g, x))]
       -- process change of coordinates
-      if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
+      if not (c := option(l, 'coordinates)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
         fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
@@ -405,12 +405,12 @@ TopLevelDrawFunctionsForCompiledFunctions():
       fcn : L(SF -> Pt) := [x +-> makePt4(myTrap1(f, x), myTrap1(g, x),_
                             myTrap1(h, x), myTrap1(id, x))]
       pointsColored? : Boolean := false
-      if not (c1 := option(l,"colorFunction1" :: Symbol)) case "failed" then
+      if not (c1 := option(l, 'colorFunction1)) case "failed" then
         pointsColored? := true
         fcn := [x +-> makePt4(myTrap1(f, x), myTrap1(g, x),_
                 myTrap1(h, x), retract(c1 :: Any)$ANY1(SF -> SF)(x))]
       -- process change of coordinates
-      if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
+      if not (c := option(l, 'coordinates)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
         fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
@@ -419,14 +419,14 @@ TopLevelDrawFunctionsForCompiledFunctions():
       s := sp
       -- draw Tube
 --      print(pl::OutputForm)
-      option?(l,"tubeRadius" :: Symbol) =>
+      option?(l, 'tubeRadius) =>
         pts := tubePoints(l,8)
         rad := convert(tubeRadius(l,0.25))@DoubleFloat
         tub := tube(pl,rad,pts)$NumericTubePlot(Plot3D)
         loops := listLoops tub
         -- color points if this has not been done already
         if not pointsColored? then
-          if (c3 := option(l,"colorFunction3" :: Symbol)) case "failed"
+          if (c3 := option(l, 'colorFunction3)) case "failed"
             then colorPoints(loops,zCoord)  -- default color function
             else colorPoints(loops,retract(c3 :: Any)$ANY1((SF,SF,SF) -> SF))
         mesh(s,loops,false,false)
@@ -442,11 +442,11 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- color function
       fcn : L(SF -> Pt) := [psc]
       pointsColored? : Boolean := false
-      if not (c1 := option(l,"colorFunction1" :: Symbol)) case "failed" then
+      if not (c1 := option(l, 'colorFunction1)) case "failed" then
         pointsColored? := true
         fcn := [x +-> concat(psc(x), retract(c1 :: Any)$ANY1(SF -> SF)(x))]
       -- process change of coordinates
-      if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
+      if not (c := option(l, 'coordinates)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
         fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
@@ -454,7 +454,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- create ThreeSpace
       s := sp
       -- draw Tube
-      option?(l,"tubeRadius" :: Symbol) =>
+      option?(l, 'tubeRadius) =>
         pts := tubePoints(l,8)
         rad := convert(tubeRadius(l,0.25))@DoubleFloat
         tub := tube(pl,rad,pts)$NumericTubePlot(Plot3D)
@@ -516,13 +516,13 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- process color function of two variables
       col2 : L((SF,SF) -> SF) := [xCoord]     -- dummy color function
       pointsColored? : Boolean := false
-      if not (c2 := option(l,"colorFunction2" :: Symbol)) case "failed" then
+      if not (c2 := option(l, 'colorFunction2)) case "failed" then
         pointsColored? := true
         col2 := [retract(c2 :: Any)$ANY1((SF,SF) -> SF)]
       fcn : L((SF,SF) -> Pt) :=
         [(x, y) +-> makePt4(myTrap2(f, x, y), x, y, (first col2)(x, y))]
       -- process change of coordinates
-      if (c := option(l,"coordinates" :: Symbol)) case "failed" then
+      if (c := option(l, 'coordinates)) case "failed" then
         -- default coordinate transformation
         fcn := [(x, y) +-> makePt4(x, y, myTrap2(f, x, y),(first col2)(x, y))]
       else
@@ -531,7 +531,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- process color function of three variables, if there was no
       -- color function of two variables
       if not pointsColored? then
-        c := option(l,"colorFunction3" :: Symbol)
+        c := option(l, 'colorFunction3)
         fcn :=
           c case "failed" => [recolor((first fcn),zCoord)]
           [recolor((first fcn),retract(c :: Any)$ANY1((SF,SF,SF) -> SF))]
@@ -560,21 +560,21 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- process color function of two variables
       col2 : L((SF,SF) -> SF) := [xCoord]     -- dummy color function
       pointsColored? : Boolean := false
-      if not (c2 := option(l,"colorFunction2" :: Symbol)) case "failed" then
+      if not (c2 := option(l, 'colorFunction2)) case "failed" then
         pointsColored? := true
         col2 := [retract(c2 :: Any)$ANY1((SF,SF) -> SF)]
       fcn : L((SF,SF) -> Pt) :=
         [(x, y) +-> makePt4(myTrap2((first f), x, y), myTrap2((first g), x, y),
          myTrap2((first h), x, y), myTrap2((first col2), x, y))]
       -- process change of coordinates
-      if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
+      if not (c := option(l, 'coordinates)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
         fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- process color function of three variables, if there was no
       -- color function of two variables
       if not pointsColored? then
         col3 : L((SF,SF,SF) -> SF) := [zCoord]  -- default color function
-        if not (c := option(l,"colorFunction3" :: Symbol)) case "failed" then
+        if not (c := option(l, 'colorFunction3)) case "failed" then
           col3 := [retract(c :: Any)$ANY1((SF,SF,SF) -> SF)]
         fcn := [recolor((first fcn),(first col3))]
       -- create mesh
@@ -586,14 +586,14 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- process color function of two variables
       col2 : L((SF,SF) -> SF) := [xCoord]     -- dummy color function
       pointsColored? : Boolean := false
-      if not (c2 := option(l,"colorFunction2" :: Symbol)) case "failed" then
+      if not (c2 := option(l, 'colorFunction2)) case "failed" then
         pointsColored? := true
         col2 := [retract(c2 :: Any)$ANY1((SF,SF) -> SF)]
       fcn : L((SF,SF) -> Pt) :=
         pointsColored? => [(x, y) +-> concat(s(x, y), (first col2)(x, y))]
         [s]
       -- process change of coordinates
-      if not (c := option(l,"coordinates" :: Symbol)) case "failed" then
+      if not (c := option(l, 'coordinates)) case "failed" then
         cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
         fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- create mesh
@@ -782,7 +782,7 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
 
     draw(f:Ex,bind:BIND,l:L DROP) ==
       -- create title if necessary
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, 'title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS2D",l)
@@ -797,7 +797,7 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
     draw(ppc:PPC,bind:BIND,l:L DROP) ==
       f := coordinate(ppc,1); g := coordinate(ppc,2)
       -- create title if necessary
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS2D",l)
@@ -819,13 +819,13 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
       t := variable tBind; tSeg := segment tBind
       f := coordinate(psc,1); g := coordinate(psc,2); h := coordinate(psc,3)
       -- create title if necessary
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, 'title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS3D",l)
         else l := concat(title s,l)
       -- indicate draw style if necessary
-      if not option?(l,"style" :: Symbol) then
+      if not option?(l, 'style) then
         l := concat(style unparse(convert(f)@InputForm),l)
       -- create curve with functions as coordinates
       curve : PSCF := curve(makeFloatFunction(f,t),_
@@ -842,13 +842,13 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
       t := variable tBind; tSeg := segment tBind
       f := coordinate(psc,1); g := coordinate(psc,2); h := coordinate(psc,3)
       -- create title if necessary
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, 'title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS3D",l)
         else l := concat(title s,l)
       -- indicate draw style if necessary
-      if not option?(l,"style" :: Symbol) then
+      if not option?(l, 'style) then
         l := concat(style unparse(convert(f)@InputForm),l)
       -- create curve with functions as coordinates
       curve : PSCF := curve(makeFloatFunction(f,t),_
@@ -868,13 +868,13 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
 
     makeObject(f:Ex,xBind:BIND,yBind:BIND,l:L DROP) ==
       -- create title if necessary
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, 'title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS3D",l)
         else l := concat(title s,l)
       -- indicate draw style if necessary
-      if not option?(l,"style" :: Symbol) then
+      if not option?(l, 'style) then
         l := concat(style unparse(convert(f)@InputForm),l)
       -- obtain dependent variables and their ranges
       x := variable xBind; xSeg := segment xBind
@@ -887,13 +887,13 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
 
     draw(f:Ex,xBind:BIND,yBind:BIND,l:L DROP) ==
       -- create title if necessary
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, 'title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS3D",l)
         else l := concat(title s,l)
       -- indicate draw style if necessary
-      if not option?(l,"style" :: Symbol) then
+      if not option?(l, 'style) then
         l := concat(style unparse(convert(f)@InputForm),l)
       -- obtain dependent variables and their ranges
       x := variable xBind; xSeg := segment xBind
@@ -908,12 +908,12 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
 
     makeObject(s:PSF,uBind:BIND,vBind:BIND,l:L DROP) ==
       f := coordinate(s,1); g := coordinate(s,2); h := coordinate(s,3)
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, 'title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS3D",l)
         else l := concat(title s,l)
-      if not option?(l,"style" :: Symbol) then
+      if not option?(l, 'style) then
         l := concat(style unparse(convert(f)@InputForm),l)
       u := variable uBind; uSeg := segment uBind
       v := variable vBind; vSeg := segment vBind
@@ -928,13 +928,13 @@ TopLevelDrawFunctions(Ex:Join(ConvertibleTo InputForm,SetCategory)):
     draw(s:PSF,uBind:BIND,vBind:BIND,l:L DROP) ==
       f := coordinate(s,1); g := coordinate(s,2); h := coordinate(s,3)
       -- create title if necessary
-      if not option?(l,"title" :: Symbol) then
+      if not option?(l, 'title) then
         s:String := unparse(convert(f)@InputForm)
         if sayLength(s)$DisplayPackage > 50 then
           l := concat(title "FriCAS3D",l)
         else l := concat(title s,l)
       -- indicate draw style if necessary
-      if not option?(l,"style" :: Symbol) then
+      if not option?(l, 'style) then
         l := concat(style unparse(convert(f)@InputForm),l)
       -- obtain dependent variables and their ranges
       u := variable uBind; uSeg := segment uBind
@@ -1030,8 +1030,8 @@ TopLevelDrawFunctionsForAlgebraicCurves(R,Ex): Exports == Implementation where
       -- obtain polynomial equation
       p := polyEquation eq
       -- extract ranges from option list
-      floatRange := option(l,"rangeFloat" :: Symbol)
-      ratRange := option(l,"rangeRat" :: Symbol)
+      floatRange := option(l, 'rangeFloat)
+      ratRange := option(l, 'rangeRat)
       (floatRange case "failed") and (ratRange case "failed") =>
         error "draw: you must specify ranges for an implicit plot"
       ranges : L SEG RN := nil()             -- dummy value
