@@ -32,7 +32,7 @@ RecurrenceOperator(R, F): Exports == Implementation where
           CombinatorialOpsCategory)
 
   Exports == with
-  
+
     makeRec: (BasicOperator, Symbol, F, List F, Stream F) -> F
       ++ \spad{makeRec(u, n, eq, parameters, values)} creates an expression
       ++ that stands for u(n), where u(n) is given by the equation eq. The
@@ -53,11 +53,11 @@ RecurrenceOperator(R, F): Exports == Implementation where
       ++ coefficient of an ADE or a recurrence.
 
     values: () -> NonNegativeInteger
-      ++ \spad{values()} returns the number of initial values to display at 
+      ++ \spad{values()} returns the number of initial values to display at
       ++ most.
 
     values: NonNegativeInteger -> NonNegativeInteger
-      ++ \spad{values N} sets the number of initial values to display at 
+      ++ \spad{values N} sets the number of initial values to display at
       ++ most.
 
     eltable?: F -> Boolean
@@ -106,22 +106,22 @@ I decided not to include the name of the operator itself as a parameter for the
 moment, similar to the indexing variable in sum and product.
 
 <<implementation: RecurrenceOperator>>=
-    INFOREC ==> Record(eqn: F, 
+    INFOREC ==> Record(eqn: F,
                        idx: Symbol,
                        fnc: BasicOperator,
                        par: List F,
                        val: Stream F,
                        ord: Union(NonNegativeInteger, "failed"),
                        gen: Union(List F -> List F, "failed"))
-                   
+
     getINFOREC(infoOp: BasicOperator): INFOREC ==
         property(infoOp, '%INFOREC)::None pretend INFOREC
-        
+
     setINFOREC(infoOp: BasicOperator, rec: INFOREC): Void ==
         setProperty(infoOp, '%INFOREC, rec pretend None)
 
-   
-    INFOSER ==> Record(eqn: F, 
+
+    INFOSER ==> Record(eqn: F,
                        idx: Symbol,
                        fnc: BasicOperator,
 		       var: Symbol,
@@ -130,10 +130,10 @@ moment, similar to the indexing variable in sum and product.
                        ord: Union(NonNegativeInteger, "failed"),
                        gen: Union(() -> Stream F, "failed"),
                        ex?: Boolean)
-                   
+
     getINFOSER(infoOp: BasicOperator): INFOSER ==
         property(infoOp, '%INFOSER)::None pretend INFOSER
-        
+
     setINFOSER(infoOp: BasicOperator, ser: INFOSER): Void ==
         setProperty(infoOp, '%INFOSER, ser pretend None)
 @
@@ -205,7 +205,7 @@ how many initial values are necessary.
                     else return "failed"
 
         if error? then error "evalRec: equation does not contain operator"
-        
+
         [(maxShift - minShift)::NonNegativeInteger, maxShift, nextKernel]
 @
 
@@ -214,30 +214,30 @@ how many initial values are necessary.
 <<implementation: RecurrenceOperator>>=
     makeRec(op, argsym, eq, params, values) ==
         shiftInfo := shiftInfoRec(op, argsym, eq)
-            
+
 -- if we cannot use the dependence equation to determine the sequence, we just
 -- return it
         if (shiftInfo case "failed") then
             info := operator(new('inforec)$Symbol, 0)$BasicOperator
             setINFOREC(info, [eq, argsym, op, params, values, _
                               "failed", "failed"]$INFOREC)
-            return kernel(oprecur, concat([argsym::F, kernel(info, [])], 
+            return kernel(oprecur, concat([argsym::F, kernel(info, [])],
                                           params))
-        else 
+        else
             p := univariate(eq, shiftInfo.ker)
-            num := numer p              
-            
+            num := numer p
+
             if not one? denom p then
                 error "makeRec assumes that the equation has no denominator"
 
 -- if shiftInfo.ord is an Integer, then so is shiftInfo.max
-    
+
 -- if the recurrence is linear in f(n+m), we can evaluate
             if one? degree num then
                 argsymKer := retract(argsym::F)@Kernel(F)
                 c0 := coefficient(num, 0)
                 c1 := coefficient(num, 1)
-                    
+
 -- if it is additionally of order zero, we can return the function explicitly,
 -- provided no cancellation happens...
                 if zero?(shiftInfo.ord) and _
@@ -245,7 +245,7 @@ how many initial values are necessary.
                     (not zero? c0 and _
                      one? gcdPolynomial(numer(uc0 := univariate(c0, argsymKer)), _
                                         numer(uc1 := univariate(c1, argsymKer)))$F and _
-                     one? gcdPolynomial(denom uc0, denom uc1)$F)) 
+                     one? gcdPolynomial(denom uc0, denom uc1)$F))
                 then
                     return eval(-c0/c1, argsym::F,
                                 argsym::F-(shiftInfo.max)::F)
@@ -255,7 +255,7 @@ how many initial values are necessary.
                     next: F := -coefficient(num, 0)/coefficient(num, 1)
                     max1 := shiftInfo.max
                     ord1 := shiftInfo.ord - 1
-                    fl: List F := cons(argsym::F, 
+                    fl: List F := cons(argsym::F,
                                        [op(argsym::F+(max1-i)::F) _
                                         for i in 1..ord1+1])
 
@@ -263,7 +263,7 @@ how many initial values are necessary.
 -- we could possibly make the following more efficient by creating a function
 -- explicitely via InputForm or so
 	                fn := (l: List F): List F +-> _
-                             concat([first l+1, eval(next, fl, l)], 
+                             concat([first l+1, eval(next, fl, l)],
                                     first(rest l, ord1::NonNegativeInteger))
                     else
                         fn := (l: List F): List F +-> _
@@ -272,15 +272,15 @@ how many initial values are necessary.
                     info := operator(new('inforec)$Symbol, 0)$BasicOperator
                     setINFOREC(info, [eq, argsym, op, params, values, _
                                       shiftInfo.ord, fn]$INFOREC)
-                            
-                    return kernel(oprecur, 
-                                  concat([argsym::F, kernel(info, [])], 
+
+                    return kernel(oprecur,
+                                  concat([argsym::F, kernel(info, [])],
                                          params))
             else
                 info := operator(new('inforec)$Symbol, 0)$BasicOperator
                 setINFOREC(info, [eq, argsym, op, params, values, _
                                   shiftInfo.ord, "failed"]$INFOREC)
-                return kernel(oprecur, concat([argsym::F, kernel(info, [])], 
+                return kernel(oprecur, concat([argsym::F, kernel(info, [])],
                                               params))
 
 @
@@ -294,7 +294,7 @@ how many initial values are necessary.
     irecur l ==
         arg := first l
         if (n := retractIfCan(arg)@Union(Integer, "failed")) case Integer _
-           and n >= 0 
+           and n >= 0
         then
             info := getINFOREC operator(retract(second l)@(Kernel F))
 -- is the stream of values long enough?
@@ -339,7 +339,7 @@ how many initial values are necessary.
 
         RecCoeff: OutputForm := hconcat(f(n)::OutputForm, ": ")
 
-        RecEq: OutputForm 
+        RecEq: OutputForm
             := hconcat(RecCoeff,                         _
                        e::OutputForm = 0::OutputForm)
 
@@ -411,7 +411,7 @@ solution and determine the valuation.
            freeOf?(coefficient(num, 1), name op) then
             explicit? := true
             eq := -coefficient(num, 0)/coefficient(num, 1)/coefficient(den, 0)
-                
+
             uts := UnivariateTaylorSeries(F, v, 0$F)
             a := taylor(eq, equation(v::F, 0$F))$ExpressionToUnivariatePowerSeries(R, F)
             s := retract(a)$AnyFunctions1(uts)
@@ -419,7 +419,7 @@ solution and determine the valuation.
         else
             explicit? := false
             fn: () -> Stream F :=
-                coefficients 
+                coefficients
                     seriesSolve(eq, op, v, entries complete values)
                                $ExpressionSolve(R, F,
                                             UnivariateFormalPowerSeries F,
@@ -434,7 +434,7 @@ solution and determine the valuation.
     iADE l ==
         arg := first l
         if (n := retractIfCan(arg)@Union(Integer, "failed")) case Integer _
-           and n >= 0 
+           and n >= 0
         then
             info := getINFOSER operator(retract(second l)@(Kernel F))
 -- is the stream of values long enough?
@@ -462,11 +462,11 @@ solution and determine the valuation.
             if is?(op, 'rootOfADE) then
                 info := operator(retract(second arg)@(Kernel F))
                 return (getINFOSER info).eqn
-  
+
             if is?(op, 'rootOfRec) then
                 info := operator(retract(second arg)@(Kernel F))
                 return (getINFOREC info).eqn
-  
+
         error "getEq: argument should be a single rootOfADE or rootOfRec object"
 
     eltable?(f: F): Boolean ==
@@ -477,11 +477,11 @@ solution and determine the valuation.
             if is?(op, 'rootOfADE) then
                 info := operator(retract(second arg)@(Kernel F))
                 return not ((getINFOSER info).gen case "failed")
-  
+
             if is?(op, 'rootOfRec) then
                 info := operator(retract(second arg)@(Kernel F))
                 return not ((getINFOREC info).gen case "failed")
-  
+
         error "eltable?: argument should be a single rootOfADE or rootOfRec object"
 
 
@@ -494,7 +494,7 @@ solution and determine the valuation.
 
     values(): NonNegativeInteger == vals
 
-    values(n: NonNegativeInteger): NonNegativeInteger == 
+    values(n: NonNegativeInteger): NonNegativeInteger ==
         v := values()
         vals := n
         v
@@ -519,7 +519,7 @@ solution and determine the valuation.
                    := hconcat([TaylorCoeff, _
                                f(x)::OutputForm, ": ", _
                                (e::OutputForm = 0::OutputForm)])$OutputForm
-        
+
             v := values()
             if info.ord case NonNegativeInteger then
                 v := min(v, (info.ord)::NonNegativeInteger)

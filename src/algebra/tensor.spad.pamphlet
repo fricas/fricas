@@ -19,7 +19,7 @@
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
 ++ Date Last Updated: 19 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -32,14 +32,14 @@ TensorProductCategory(R:CommutativeRing, M : Module(R), N : Module(R)):Category 
     tensor: (M, N) -> %
       ++ \spad{tensor(x,y)} constructs the tensor product
       ++ of the elements \spad{x} and \spad{y}.
-@ 
+@
 \section{category TENSPRP TensorProductProperty}
 <<category TENSPRP TensorProductProperty>>=
 )abbrev category TENSPRP TensorProductProperty
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
 ++ Date Last Updated: 19 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -68,8 +68,8 @@ ring $R$ with bases $(b_i)_{i\in I}$ and $(c_j)_{j\in J}$ respectively,
 the tensor product $M\otimes N$ has basis $(b_i\otimes c_j)_{i\in I, j\in J}$.
 Therefore we take the representation of the tensor product to be
 the free module of formal sums over the basis $B\times C$.
-Note that $M$ and $N$ are only required 
-to provide a function [[listOfTerms]] 
+Note that $M$ and $N$ are only required
+to provide a function [[listOfTerms]]
 to create the list of terms with respect to the basis on the fly.
 This list is assumed to be in reverse order with respect to the
 order on the monomials.
@@ -79,7 +79,7 @@ order on the monomials.
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
 ++ Date Last Updated: 19 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -94,7 +94,7 @@ order on the monomials.
 ++   to be stored in reverse order.
 TensorProduct(R: CommutativeRing, B1: OrderedSet, B2: OrderedSet, _
     M1: FreeModuleCategory(R, B1), M2: FreeModuleCategory(R, B2)): TPcat == TPimp where
-    TPcat == Join(TensorProductCategory(R,M1,M2), _ 
+    TPcat == Join(TensorProductCategory(R,M1,M2), _
         FreeModuleCategory(R,Product(B1,B2))) with
             if M1 has Algebra(R) and M2 has Algebra(R) then Algebra(R)
 
@@ -105,16 +105,16 @@ TensorProduct(R: CommutativeRing, B1: OrderedSet, B2: OrderedSet, _
 
     TPimp == FreeModule(R, Product(B1, B2)) add
         import TERM1, TERM2, TERM, B1xB2
-        
+
         termgreater?:(TERM,TERM)->Boolean
-        
+
         termgreater?(t1: TERM, t2: TERM) == t2.k < t1.k
-        
+
         <<TensorProduct - tensor>>
 
-        if M1 has Algebra(R) and M2 has Algebra(R) then 
+        if M1 has Algebra(R) and M2 has Algebra(R) then
             <<TensorProduct - algebra multiplication>>
-	<<TensorProduct - outform>> 
+	<<TensorProduct - outform>>
 @
 \subsection{Output}
 
@@ -128,8 +128,8 @@ coerce(x:%):OutputForm ==
       rec.c = 1 => le := cons(ko, le)
       le := cons(rec.c :: OutputForm * ko, le)
     reduce("+", le)
-    
-@ 
+
+@
 \subsection{Creating tensors}
 
 <<TensorProduct - tensor>>=
@@ -142,7 +142,7 @@ tensor(x1:M1,x2:M2):% ==
 @
 There are several ways to finish the product,
 a fast one just using concatenation of lists and [[constructOrdered]].
-It relies on the assumption that the terms of the two factors are 
+It relies on the assumption that the terms of the two factors are
 in reserve order and that the product basis uses lexicographical order.
 
 The following table shows a comparison of speed
@@ -167,7 +167,7 @@ b:=reduce(+,bb);
 t:=tensor(a,b)$MxN;
 )lisp (sb-sprof:stop-profiling)
 )lisp (sb-sprof:report)
-@ 
+@
 
 We compare the following methods.
 \begin{enumerate}
@@ -178,7 +178,7 @@ for s1 in ltx1 repeat
     for s2 in ltx2 repeat
         res := res + monom(makeprod(s1.k, s2.k), s1.c*s2.c)
 res
-@ 
+@
 \item concat!: append elementary tensors at the end
 <<TensorProduct - tensor - result concat!>>=
 res : List TERM := []
@@ -222,7 +222,7 @@ The time is measured in seconds.
 \begin{verbatim}
  n     sum     concat!   construct   reverse+sort!  reverse+sorted?+sort!
 100   17.47      0.25      0.02        0.04             0.02
-200     -        6.06      0.02        0.09             0.02           
+200     -        6.06      0.02        0.09             0.02
 500     -      139.38      0.08        0.56             0.11
 1000    -         -        0.19        2.5              0.38
 \end{verbatim}
@@ -243,7 +243,7 @@ the sorting of the result to the very end.
 (x1:% * x2:%):% ==
     res : List TERM := empty()
     for t1 in listOfTerms x1 repeat
-        for t2 in listOfTerms x2 repeat 
+        for t2 in listOfTerms x2 repeat
             -- the coefficients
             t1c:R := t1.c
             t2c:R := t2.c
@@ -257,7 +257,7 @@ the sorting of the result to the very end.
             for t in listOfTerms tensor(t1a*t2a,t1b*t2b) repeat
                 res:=cons(t,res)
     construct res
-@ 
+@
 
 \section{category TENSPC TensorPowerCategory}
 See comment in DivisionRing() (catdef.spad):
@@ -266,7 +266,7 @@ See comment in DivisionRing() (catdef.spad):
 -- but knownInfo cannot handle the following commented
 --    if % has CharacteristicZero then Algebra Fraction Integer
 \end{verbatim}
-Same here: we want TensorPowerCategory(2,R,M) 
+Same here: we want TensorPowerCategory(2,R,M)
 to be TenworProductCategory(R,M,M),
 but apparently knownInfo cannot handle conditionals in categories.
 <<category TENSPC TensorPowerCategory>>=
@@ -274,7 +274,7 @@ but apparently knownInfo cannot handle conditionals in categories.
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
 ++ Date Last Updated: 19 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -287,18 +287,18 @@ TensorPowerCategory(n:NonNegativeInteger, R:CommutativeRing, M : Module(R)):Cate
         tensor: (List M) -> %
           ++ \spad{tensor([x1,x2,...,xn])} constructs the tensor
           ++ product of \spad{x1,x2,...,xn}.
-        if M has Algebra(R) then Algebra(R)    
+        if M has Algebra(R) then Algebra(R)
 -- knownInfo cannot the following commented
 --    if n is 2 then TensorProductCategory(R,M,M)
 -- workaround
         TensorProductCategory(R,M,M)
     add
 --    if n is 2 then
-        tensor(a:M,b:M):% == 
+        tensor(a:M,b:M):% ==
 	    --workaround knownInfo bug
             not n=2 => error "not of order 2!"
 	    tensor [a,b]
-@ 
+@
 
 \section{domain TENSPOW TensorPower}
 We rely on the fact that Vector OrderedSet is an OrderedSet
@@ -310,7 +310,7 @@ with deglex order;
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at
 ++ Date Created: 2009
 ++ Date Last Updated: 19 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -337,9 +337,9 @@ TensorPower(n:NonNegativeInteger, R : CommutativeRing, B : OrderedSet, _
         <<TensorPower - out>>
         <<TensorPower - tensor>>
 
-        if M has Algebra(R) then 
+        if M has Algebra(R) then
             <<TensorPower - algebra multiplication>>
-@ 
+@
 
 
 <<TensorPower - out>>=
@@ -385,7 +385,7 @@ partialTensor(bb:List B, xx:List M):List TERMtmp ==
     reverse res
 
 tensor(bb:List B):% == monomial(1,vector bb)
-    
+
 tensor(xx:List M):% ==
     not size?(xx,n) => error "wrong size"
     any?(zero?,xx) => 0
@@ -405,7 +405,7 @@ in the algebras and tensorize.
 (x1:% * x2:%):% ==
     res : List TERM := empty()
     for t1 in listOfTerms x1 repeat
-        for t2 in listOfTerms x2 repeat 
+        for t2 in listOfTerms x2 repeat
             -- the coefficients
             t1c:R := t1.c
             t2c:R := t2.c
@@ -417,7 +417,7 @@ in the algebras and tensorize.
             for t in listOfTerms t1t2 repeat
                 res:=cons(t,res)
     construct res
-@ 
+@
 
 \section{domain TENSPO2 TensorPowerFunctions2}
 <<domain TENSPO2 TensorPowerFunctions2>>=
@@ -425,7 +425,7 @@ in the algebras and tensorize.
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at
 ++ Date Created: 2009
 ++ Date Last Updated: 13 October 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -435,7 +435,7 @@ in the algebras and tensorize.
 ++ Description:
 ++   linear extensions of maps on the basis
 TensorPowerFunctions2(n:NonNegativeInteger, R:CommutativeRing, B:OrderedSet, M1:FreeModuleCategory(R,B),M2:Module(R)): public == private where
-    TERM1 ==> Record(k:S, c:R) 
+    TERM1 ==> Record(k:S, c:R)
     M1xM1 ==> TensorPower(n,R,B,M1)
     public ==> with
         linearExtend:(List B->M2,M1xM1)->M2
@@ -458,7 +458,7 @@ TensorPowerFunctions2(n:NonNegativeInteger, R:CommutativeRing, B:OrderedSet, M1:
 \section{category COALG Coalgebra}
 <<original category COALG Coalgebra>>=
 Bialgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)) : Category == _
-@ 
+@
 but this is too restrictive and fails with aldor.
 
 <<category COALG Coalgebra>>=
@@ -466,7 +466,7 @@ but this is too restrictive and fails with aldor.
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
 ++ Date Last Updated: 7 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -493,7 +493,7 @@ Coalgebra(R : CommutativeRing, MxM : Module R) : Category == _
 Originally it was
 <<original category BIALG Bialgebra>>=
 Bialgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)) : Category == _
-@ 
+@
 but this is too restrictive and fails with aldor.
 
 
@@ -502,7 +502,7 @@ but this is too restrictive and fails with aldor.
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
 ++ Date Last Updated: 7 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -526,7 +526,7 @@ Bialgebra(R : CommutativeRing, MxM : Module R) : Category == _
 Originally it was
 <<original category HOPFALG HopfAlgebra>>=
 HopfAlgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)) : Category _
-@ 
+@
 but this is too restrictive and fails with aldor.
 
 <<category HOPFALG HopfAlgebra>>=
@@ -534,7 +534,7 @@ but this is too restrictive and fails with aldor.
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
 ++ Date Last Updated: 7 June 2009
-++ Fix History: 
+++ Fix History:
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
