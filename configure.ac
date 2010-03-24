@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2010-01-08], 
+AC_INIT([FriCAS], [2010-03-23],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -146,7 +146,7 @@ AC_SUBST(AUTO_GOOD_SHELL)
 ## -------------------------
 ##
 
-## The logic is as follows. 
+## The logic is as follows.
 ## No "--with-noweb-tarball" option:
 ##    Check for "notangle" and "noweave" in the PATH.
 ##    If not present, but $axiom_top_srcdir/zips/noweb-2.10a.tgz is
@@ -221,92 +221,55 @@ AC_SUBST(noweb_tarball)
 ## -- Which Lisp to use? --
 ## ------------------------
 ##
-## We will default to GCL later, if no lisp implementation is specified.
+## We will default to SBCL later, if no lisp implementation is specified.
 fricas_lisp=
 fricas_lisp_flavor=unknown
-AC_ARG_WITH([lisp], 
-            [  --with-lisp=L           use L as Lisp platform],
-              [fricas_lisp=$withval])
-## If --enable-gcl is specified, we need to check for coonsistency
-axiom_include_gcl=
+AC_ARG_WITH([lisp],
+            [AS_HELP_STRING([--with-lisp=L], [use L as Lisp platform])],
+            [fricas_lisp=$withval])
+## Default to SBCL if no lisp given
 if test -z $fricas_lisp ; then
-    AC_ARG_ENABLE([gcl], 
-                  [  --enable-gcl            build GCL from FriCAS source],
-                  [case $enableval in
-                       yes|no) axiom_include_gcl=$enableval ;;
-                       *) AC_MSG_ERROR([erroneous value for --enable-gcl]) ;;
-                   esac])
-fi
-## We need to build our own GCL is none is avalaible
-if test x"$axiom_include_gcl" != xyes ; then
-  if test -z $fricas_lisp ; then
     AC_PATH_PROG([FRICAS_LISP], [sbcl])
+    if test -z $FRICAS_LISP ; then
+        AC_MSG_ERROR([sbcl not found and no Lisp specified.
+                      Install supported Lisp implementation and
+                      use --with-lisp option to tell FriCAS
+                      how to invoke your Lisp])
+    fi
     fricas_lisp=$FRICAS_LISP
-  else
+else
     ## Honor use of Lisp image specified on command line
     FRICAS_LISP=$fricas_lisp
     AC_SUBST(FRICAS_LISP)
     :
-  fi
 fi
-## Coherence check for GCL inclusion.
-case $axiom_include_gcl,$fricas_lisp in
-    ,|no,|yes*)
-       ## It doesn't make sense not to include GCL when no Lisp image
-       ## is available.  Give up.
-       if test $axiom_include_gcl,$FRICAS_LISP = no,; then
-           AC_MSG_ERROR([--disable-gcl specified but no GCL image found])
-       fi
-
-       ## No Lisp image was specified and none was available from
-       ## the build environment; build GCL from FriCAS source.
-       if test -f $axiom_top_srcdir/gcl/configure.in ; then
-         FRICAS_LISP='$(axiom_build_bindir)/gcl'
-         axiom_all_prerequisites="$axiom_all_prerequisites all-gcl"
-         axiom_include_gcl=yes
-         fricas_lisp_flavor=gcl
-         fricas_fasl_type=o
-       else
-          AC_MSG_ERROR([GCL and GCL sources missing, see INSTALL])
-       fi
-       ;;
-    yes,*)
-       AC_MSG_ERROR([--with-lisp=$fricas_lisp conflicts with --enable-gcl])
-       ;;
-esac
 
 AC_ARG_WITH([lisp-flavor],
-            [  --with-lisp-flavor=F    your Lisp is brand F
-                          where F if one F gcl clisp sbcl cmucl ecl openmcl lispworks
-                          should be autodetected],
-            [case $withval in
-            gcl|clisp|sbcl|cmucl|ecl|openmcl|lispworks)
-                   fricas_lisp_flavor=$withval
-                   ;;
-            *)
-              AC_MSG_ERROR([--with-lisp-flavor requires one of gcl clisp sbcl cmucl ecl openmcl lispworks]);;
-            esac])
-if test x"$axiom_include_gcl" != xyes ; then
-  AC_MSG_CHECKING([Lisp implementation])
-  rm -f config_cl.out
-  echo '(load "'"$axiom_top_srcdir"'/config.lisp")' | $fricas_lisp
+            [AS_HELP_STRING([--with-lisp-flavor=F],
+                           [obsolete and ignored])],
+            [AC_MSG_WARN([--with-lisp-flavor is ignored now])]
+           )
 
-  if test x$fricas_lisp_flavor = xunknown ; then
+AC_MSG_CHECKING([Lisp implementation])
+rm -f config_cl.out
+echo '(load "'"$axiom_top_srcdir"'/config.lisp")' | $fricas_lisp
+
+if test x$fricas_lisp_flavor = xunknown ; then
       fricas_lisp_flavor=`sed -n -e 's/fricas_lisp_flavor=//p' config_cl.out`
-  fi
+fi
 
-  if test -z "$fricas_lisp_flavor" ; then
+if test -z "$fricas_lisp_flavor" ; then
     AC_MSG_ERROR([Unable to determine Lisp flavor])
-  fi
+fi
 
-  AC_MSG_RESULT([$fricas_lisp_flavor])
+AC_MSG_RESULT([$fricas_lisp_flavor])
 
-  fricas_fasl_type=`sed -n -e 's/fricas_fasl_type=//p' config_cl.out`
-  fricas_lisp_version=`sed -n -e 's/fricas_lisp_version=//p' config_cl.out`
+fricas_fasl_type=`sed -n -e 's/fricas_fasl_type=//p' config_cl.out`
+fricas_lisp_version=`sed -n -e 's/fricas_lisp_version=//p' config_cl.out`
 
-  if test -z "$fricas_lisp_version" ; then
+if test -z "$fricas_lisp_version" ; then
     AC_MSG_WARN([Unable to determine Lisp version.])
-  else
+else
    case $fricas_lisp_flavor in
      clisp)
         if echo $fricas_lisp_version | grep '^[[0-1]]\.' > /dev/null || \
@@ -356,15 +319,14 @@ if test x"$axiom_include_gcl" != xyes ; then
         fi
         case $fricas_lisp_version in
            1.0.29)
-             AC_MSG_ERROR([sbcl $fricas_lisp_version has a bug which does not allow building FriCAS. 
+             AC_MSG_ERROR([sbcl $fricas_lisp_version has a bug which does not allow building FriCAS.
 Please use different sbcl version])
                   ;;
         esac
         ;;
    esac
-  fi
 fi
-AC_SUBST(axiom_include_gcl)
+
 AC_SUBST(fricas_lisp_flavor)
 
 ## Check if we need shared libspad library.
@@ -394,7 +356,7 @@ case $fricas_lisp_flavor,$target in
     gcl,*mingw*)
         axiom_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(FRICAS_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
         ;;
-    *) 
+    *)
         axiom_gcl_rsym_hack=':'
         ;;
 esac
@@ -402,23 +364,23 @@ AC_SUBST(axiom_gcl_rsym_hack)
 ## How are we supposed to tell the Lisp system to eval an expression
 ## in batch mode?  What is the extension of a compiled Lisp file?
 case $fricas_lisp_flavor in
-    gcl) 
+    gcl)
        fricas_quiet_flags='-batch'
        axiom_eval_flags='-eval'
        ;;
-    ecl) 
+    ecl)
        fricas_quiet_flags='-norc'
        axiom_eval_flags='-eval'
        ;;
-    sbcl) 
+    sbcl)
        fricas_quiet_flags='--noinform --noprint --no-userinit'
        axiom_eval_flags='--eval'
        ;;
-    cmucl) 
+    cmucl)
        fricas_quiet_flags='-batch -noinit'
        axiom_eval_flags='-eval'
        ;;
-    clisp) 
+    clisp)
        fricas_quiet_flags='--quiet -norc'
        axiom_eval_flags='-x'
        ;;
@@ -453,16 +415,16 @@ AC_SUBST(fricas_fasl_type2)
 fricas_algebra_optimization=nil
 
 AC_ARG_WITH([algebra-optimization],
-            [  --with-algebra-optimization=S
-                          use S as Lisp optimize declaration for compiling the 
-                          algebra],
+            [AS_HELP_STRING([--with-algebra-optimization=S],
+                            [use S as Lisp optimize declaration for compiling
+                             the algebra])],
             [fricas_algebra_optimization=$withval])
 
 AC_SUBST(fricas_algebra_optimization)
 
 AC_SUBST(axiom_all_prerequisites)
 
-# FIXME: Move this out of here.  
+# FIXME: Move this out of here.
 # The core runtime is always built.
 axiom_c_runtime=core
 AC_SUBST(axiom_c_runtime)
@@ -470,7 +432,7 @@ AC_SUBST(axiom_c_runtime)
 AC_CHECK_HEADERS([signal.h],
                  [],
                  [AC_MSG_ERROR([FriCAS needs signal support.])])
-AC_CHECK_DECLS([sigaction], [], [], 
+AC_CHECK_DECLS([sigaction], [], [],
                [#include <signal.h>])
 AC_CHECK_HEADERS([sys/stat.h],
                  [],
@@ -490,7 +452,7 @@ case $host in
         axiom_c_runtime_extra="-lwsock32"
         ;;
     *)
-        AC_CHECK_HEADERS([sys/socket.h], 
+        AC_CHECK_HEADERS([sys/socket.h],
                          [axiom_host_has_socket=yes],
                          [])
         ;;
@@ -543,7 +505,7 @@ AC_CHECK_HEADERS([util.h],
                    ]) # HAVE_UTIL_H or HAVE_PTY_H
 
 AC_CHECK_DECL([openpty],
-                 [AC_DEFINE([HAVE_OPENPTY_DECL], [1], 
+                 [AC_DEFINE([HAVE_OPENPTY_DECL], [1],
                               [openpty is declared])], [],
                  [
 #if defined(HAVE_UTIL_H)
@@ -574,9 +536,9 @@ AC_SUBST(axiom_c_runtime_extra)
 AC_CHECK_HEADERS([sys/wait.h])
 
 if test x"$ac_cv_header_sys_wait_h" = xyes; then \
-    AC_CHECK_DECLS([wait], 
-                   [], 
-                   [], 
+    AC_CHECK_DECLS([wait],
+                   [],
+                   [],
                    [#include <sys/wait.h>])
 fi
 
@@ -642,7 +604,7 @@ else
 fi
 AC_SUBST(axiom_src_all)
 if test x"$axiom_has_xpm" = xyes; then
-   AC_CHECK_HEADER([regex.h], 
+   AC_CHECK_HEADER([regex.h],
                    [axiom_src_all="$axiom_src_all all-hyper all-paste"
                     axiom_src_subdirs="$axiom_src_subdirs hyper paste"
                     AXIOM_MAKEFILE([src/paste/Makefile])],
@@ -655,24 +617,6 @@ BASE=""
 AC_SUBST(BASE)
 AXIOM=${BASE}${axiom_targetdir}
 AC_SUBST(AXIOM)
-
-# axiom_host_has_libbfd=
-# AC_CHECK_HEADER([bfd.h])
-# AC_HAVE_LIBRARY([bfd], [axiom_host_has_libbfd=yes])
-
-# axiom_gcl_bfd_option=
-# if test x"$ac_cv_header_bfd_h" = xyes \
-#    && test x"$axiom_host_has_libbfd" = xyes; then
-#    axiom_gcl_bfd_option="--disable-dynsysbfd"
-# else
-#     axiom_gcl_bfd_option="--disable-statsysbfd --enable-locbfd"
-#fi
-
-# Modern system seem to have bfd which is incompatible with gcl
-axiom_gcl_bfd_option="--disable-dynsysbfd --disable-statsysbfd --enable-locbfd"
-
-# axiom_gcl_mm_option="--enable-maxpage=256*1024"
-axiom_gcl_x_option="--disable-tkconfig --disable-x --disable-xgcl"
 
 PFL=
 CCF="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE"
@@ -702,19 +646,13 @@ case $target in
         AC_DEFINE([MACOSXplatform], [], [MACOX flavour])
         CCF="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE \
             -I/usr/include -I/usr/include/sys"
-        axiom_gcl_bfd_option="--disable-statsysbfd \
-                                --enable-machine=powerpc-macosx"
-        axiom_gcl_mm_option="--enable-vssize=65536*2"
         ;;
 esac
-
-GCLOPTS="$axiom_gcl_bfd_option $axiom_gcl_mm_option $axiom_gcl_x_option"
 
 AC_SUBST(PLF)
 AC_SUBST(CCF)
 AC_SUBST(LDF)
 AC_SUBST(LISP)
-AC_SUBST(GCLOPTS)
 
 AXIOM_MAKEFILE([Makefile])
 AXIOM_MAKEFILE([src/Makefile])
@@ -744,7 +682,7 @@ AXIOM_MAKEFILE([src/etc/Makefile])
 ##   User made a mistake. This is an error.
 BUILD_ALDOR_INTERFACE=no
 AC_ARG_ENABLE(aldor,
-  [AC_HELP_STRING([--enable-aldor],
+  [AS_HELP_STRING([--enable-aldor],
                   [build an interface to the Aldor compiler])],
   [case $enableval in
     yes|no) BUILD_ALDOR_INTERFACE=$enableval ;;
@@ -824,7 +762,7 @@ AXIOM_MAKEFILE([contrib/emacs/Makefile])
 
 
 ## We now generate the "document" script and support files at configure time.
-## We put them in the build directory because they are intended to be 
+## We put them in the build directory because they are intended to be
 ## build support utils only.
 AC_CONFIG_FILES(build/scripts/document:$srcdir/src/scripts/document.in, \
                 [chmod +x build/scripts/document])
