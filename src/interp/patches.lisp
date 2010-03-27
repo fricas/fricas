@@ -129,8 +129,7 @@
       (load lfile))
      ((string= type "lisp") (load input-file))
      ((string= type "bbin") (load input-file))
-     ((and (string= type "input")
-           |$useNewParser|)
+     ((string= type "input")
       (|ncINTERPFILE| input-file Echo-Meta))
      (t (|spadCompile| input-file)))))
 

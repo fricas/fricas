@@ -536,31 +536,9 @@ is a token separator, which blank is equivalent to."
 
 ; 3B. Error handling
 
-(defparameter errcol nil)
 (defparameter line nil)
 
-(defparameter Meta_Errors_Occurred nil  "Did any errors occur")
-
-(defparameter Meta_Error_Handler 'meta-meta-error-handler)
-
-(defun meta-meta-error-handler (&optional (wanted nil) (parsing nil))
-  "Print syntax error indication, underline character, scrub line."
-  (format out-stream "~&% MetaLanguage syntax error: ")
-  (if (Line-Past-End-P Current-Line)
-      (cond ((and wanted parsing)
-             (format out-stream "wanted ~A while parsing ~A.~%"
-                     wanted parsing))
-            (wanted (format out-stream "wanted ~A.~%" wanted))
-            (parsing (format out-stream "while parsing ~A.~%" parsing)))
-      (progn (format out-stream "~:[here~;wanted ~A here~]" wanted wanted)
-             (format out-stream "~:[~; while parsing ~A~]:~%" parsing parsing)
-             (current-line-print)
-             (current-line-clear)
-             (current-token)
-             (incf $num_of_meta_errors)
-             (setq Meta_Errors_Occurred t)))
-   nil)
-
+(defparameter Meta_Error_Handler nil)
 
 (defun meta-syntax-error (&optional (wanted nil) (parsing nil))
   (funcall Meta_Error_Handler wanted parsing))

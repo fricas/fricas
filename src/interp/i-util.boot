@@ -97,8 +97,6 @@ LZeros n ==
   for i in 2..n repeat l := [0, :l]
   l
 
--- subrToName x == BPINAME x
-
 -- formerly in clammed.boot
 
 isSubDomain(d1,d2) ==

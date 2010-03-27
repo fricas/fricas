@@ -185,8 +185,8 @@ uphas t ==
     MKQ unabbrev type
   catCode :=
     prop := unabbrev prop
-    evaluateType0 prop => ['evaluateType, MKQ prop]
-    MKQ prop
+    prop is [":", :.] => MKQ prop
+    ['evaluateType, MKQ prop]
   code:=['newHasTest,['evaluateType, type], catCode]
   if $genValue then code := wrap timedEVALFUN code
   putValue(op,objNew(code,$Boolean))

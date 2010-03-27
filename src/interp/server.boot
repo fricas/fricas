@@ -103,14 +103,7 @@ parseAndInterpret str ==
   $BOOT: fluid := NIL
   $SPAD: fluid := true
   $e:fluid := $InteractiveFrame
-  $useNewParser =>
-    ncParseAndInterpretString str
-  oldParseAndInterpret str
-
-oldParseAndInterpret str ==
-  tree := string2SpadTree str
-  tree => processInteractive(parseTransform postTransform tree, NIL)
-  NIL
+  ncParseAndInterpretString str
 
 executeQuietCommand() ==
   $QuietCommand: fluid := true

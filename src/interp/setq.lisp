@@ -95,10 +95,6 @@
 
 (SETQ |$ruleSetsInitialized| NIL)
 
-;;; The $useNewParser flag controls which parser will be used in the interpreter
-;;; If nil then the old parser is used, otherwise Bill Burge's parser is used
-(SETQ |$useNewParser| T)
-
 (SETQ |$NRTmakeCompactDirect| NIL)
 (SETQ |$returnNowhereFromGoGet| NIL)
 
@@ -227,17 +223,13 @@
 
 (SETQ |$InitialCommandSynonymAlist| '(
        (|?|          . "what commands")
-       (|ap|         . "what things")
-       (|apr|        . "what things")
        (|apropos|    . "what things")
        (|cache|      . "set functions cache")
        (|cl|         . "clear")
-       (|cms|        . "system")
        (|co|         . "compiler")
        (|d|          . "display")
        (|dep|        . "display dependents")
        (|dependents| . "display dependents")
-       (|e|          . "edit")
        (|expose|     . "set expose add constructor")
        (|fortran|    . "set output fortran")
        (|h|          . "help")
@@ -254,10 +246,8 @@
        (|type|       . "set message type")
        (|unexpose|   . "set expose drop constructor")
        (|version|    . "lisp *yearweek*")
-       (|w|          . "what")
        (|wc|         . "what categories")
        (|wd|         . "what domains")
-       (|who|        . "lisp (pprint credits)")
        (|wp|         . "what packages")
        (|ws|         . "what synonyms")
 ))
