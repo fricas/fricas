@@ -304,7 +304,6 @@ interpret(x, :restargs) ==
   posnForm := if PAIRP restargs then CAR restargs else restargs
   --type analyzes and evaluates expression x, returns object
   $env:local := [[NIL]]
-  $eval:local := true           --generate code-- don't just type analyze
   $genValue:local := true       --evaluate all generated code
   interpret1(x,nil,posnForm)
 
@@ -322,7 +321,6 @@ interpret1(x,rootMode,posnForm) ==
   -- do type analysis and evaluation of expression.  The real guts
 
   modeSet:= bottomUp node
-  not $eval => modeSet
   newRootMode := (null rootMode => first modeSet ; rootMode)
   argVal := getArgValue(node, newRootMode)
   argVal and not $genValue => objNew(argVal, newRootMode)
