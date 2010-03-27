@@ -115,7 +115,6 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
   allDecs := true
   mapmode := ['Mapping]
   $env:local := [[NIL]]
-  $eval:local := true           --generate code-- don't just type analyze
   $genValue:local := true       --evaluate all generated code
   for d in mapsig repeat
     if d then
@@ -732,7 +731,6 @@ compileBody(body,target) ==
   $insideCompileBodyIfTrue: local := true
   $genValue: local := false
   $declaredMode:local := target
-  $eval:local:= true
   r := interpret1(body,target,nil)
 
 compileCoerceMap(op,argTypes,mm) ==
