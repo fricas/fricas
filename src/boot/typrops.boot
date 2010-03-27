@@ -79,7 +79,6 @@ shoeKeyWords := [  _
             ['"|)", "CBRACK"], _
             ['"[", "OBRACK"], _
             ['"]", "CBRACK"], _
-            ['"suchthat","BAR"], _
             ['"'", "QUOTE"], _
             ['"|", "BAR"]                          ]
  

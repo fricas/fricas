@@ -281,10 +281,6 @@ dollarPercentTran x ==
     x = "$" or x = '"$" => "%%"
     x
 
-formatSignatureAsTeX sig ==
-  $formatSigAsTeX: local := 2
-  formatSignature0 sig
-
 formatSignature sig ==
   $formatSigAsTeX: local := 1
   formatSignature0 sig

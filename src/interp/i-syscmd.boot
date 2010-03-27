@@ -3002,3 +3002,28 @@ npProcessSynonym(str) ==
       PUTALIST($CommandSynonymAlist,CAR pair, CDR pair)
     else $CommandSynonymAlist := [pair]
   terminateSystemCommand()
+
+InterpExecuteSpadSystemCommand string ==
+  CATCH("coerceFailure",
+    CATCH("SPAD__READER", ExecuteInterpSystemCommand string) )
+
+intProcessSynonyms str ==
+   LINE:local := str
+   processSynonyms()
+   LINE
+
+ExecuteInterpSystemCommand string ==
+   string := intProcessSynonyms(string)
+   $currentLine:local:=string
+   string:=SUBSTRING(string,1,nil)
+   string = '"" => nil
+   doSystemCommand string
+
+parseFromString(s) ==
+   s := next(function ncloopParse,
+        next(function lineoftoks,incString s))
+   StreamNull s => nil
+   pf2Sex macroExpanded first rest first s
+
+ncParseFromString(s) ==
+   zeroOneTran(packageTran(CATCH('SPAD__READER, parseFromString(s))))

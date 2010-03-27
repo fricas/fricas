@@ -96,43 +96,6 @@ mkEvalableUnion form ==
     [first form,:[[":",n,mkEvalable d] for [":",n,d] in rest form]]
   [first form,:[mkEvalable d for d in rest form]]
 
-evaluateType0 form ==
-  -- Takes a parsed, unabbreviated type and evaluates it, replacing
-  --  type valued variables with their values, and calling bottomUp
-  --  on non-type valued arguemnts to the constructor
-  --  and finally checking to see whether the type satisfies the
-  --  conditions of its modemap
-  -- However, the input might be an attribute, not a type
-  -- $noEvalTypeMsg: fluid := true
-  domain:= isDomainValuedVariable form => domain
-  form = $EmptyMode => form
-  form = "?"        => $EmptyMode
-  STRINGP form => form
-  form = "$" => form
-  $expandSegments : local := nil
-  form is ['typeOf,.] =>
-    form' := mkAtree form
-    bottomUp form'
-    objVal getValue(form')
-  form is [op,:argl] =>
-    op='CATEGORY =>
-      argl is [x,:sigs] => [op,x,:[evaluateSignature(s) for s in sigs]]
-      form
-    op in '(Join Mapping) =>
-      [op,:[evaluateType arg for arg in argl]]
-    op='Union  =>
-      argl and first argl is [x,.,.] and member(x,'(_: Declare)) =>
-        [op,:[['_:,sel,evaluateType type] for ['_:,sel,type] in argl]]
-      [op,:[evaluateType arg for arg in argl]]
-    op='Record =>
-      [op,:[['_:,sel,evaluateType type] for ['_:,sel,type] in argl]]
-    op='Enumeration => form
-    constructor? op => evaluateType1 form
-    NIL
-  constructor? form =>
-    ATOM form => evaluateType [form]
-    throwEvalTypeMsg("S2IE0003",[form,form])
-
 evaluateType form ==
   -- Takes a parsed, unabbreviated type and evaluates it, replacing
   --  type valued variables with their values, and calling bottomUp

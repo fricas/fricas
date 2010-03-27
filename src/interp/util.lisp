@@ -534,20 +534,6 @@ After this function is called the image is clean and can be saved.
     (DECLARE (SPECIAL BOOT-LINE-STACK $BOOT $SPAD XTOKENREADER LINE-HANDLER))
     (DEF-RENAME (|new2OldLisp| PARSEOUT))))
 
-(DEFUN |string2SpadTree| (LINE)
-  (DECLARE (SPECIAL LINE))
-  (if (and (> (LENGTH LINE) 0) (EQ (CHAR LINE 0) #\) ))
-    (|processSynonyms|))
-  (ioclear)
-  (LET* ((BOOT-LINE-STACK (LIST (CONS 1 LINE)))
-     ($BOOT NIL)
-     ($SPAD T)
-     (XTOKENREADER 'GET-BOOT-TOKEN)
-     (LINE-HANDLER 'NEXT-BOOT-LINE)
-     (PARSEOUT (PROG2 (|PARSE-NewExpr|) (POP-STACK-1))))
-    (DECLARE (SPECIAL BOOT-LINE-STACK $BOOT $SPAD XTOKENREADER LINE-HANDLER))
-    PARSEOUT))
-
 (defun |processSynonyms| () nil) ;;dummy def for depsys, redefined later
 
 

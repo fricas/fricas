@@ -513,12 +513,10 @@ parseAndEval string ==
 parseAndEval1 string ==
   syntaxError := false
   pform :=
-    $useNewParser =>
       v := applyWithOutputToString('ncParseFromString, [string])
       CAR v => CAR v
       syntaxError := true
       CDR v
-    oldParseString string
   syntaxError =>
      '"Syntax Error "
   pform =>
@@ -526,33 +524,6 @@ parseAndEval1 string ==
     CAR val => CAR val
     '"Type Analysis Error"
   nil
-
-oldParseString string ==
-  tree := applyWithOutputToString('string2SpadTree, [string])
-  CAR tree => parseTransform postTransform CAR tree
-  CDR tree
-
--- XXX unused
-makeSpadCommand(:l) ==
-  opForm := CONCAT(first l, '"(")
-  lastArg := last l
-  l := rest l
-  argList := nil
-  for arg in l while arg ~= lastArg repeat
-    argList := [CONCAT(arg, '", "), :argList]
-  argList := nreverse [lastArg, :argList]
-  CONCAT(opForm, concatenateStringList(argList), '")")
-
--- XXX unused
-htMakeInputList stringList ==
--- makes an input form for constructing a list
-  lastArg := last stringList
-  argList := nil
-  for arg in stringList while arg ~= lastArg repeat
-    argList := [CONCAT(arg, '", "), :argList]
-  argList := nreverse [lastArg, :argList]
-  bracketString concatenateStringList(argList)
-
 
 -- predefined filter strings
 bracketString string == CONCAT('"[",string,'"]")
