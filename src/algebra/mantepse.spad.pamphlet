@@ -142,16 +142,17 @@ GuessOption(): Exports == Implementation where
       ++ solutions found. This option is expressed in the form \spad{safety ==
       ++ d}.
 
-    MonteCarlo: Boolean -> %
-      ++ MonteCarlo(d) specifies whether we are satisfied with
-      ++ probabilistic Monte Carlo solution or we want deterministic
-      ++ verification.  This option is expressed in the form
-      ++ \spad{MonteCarlo == d}
+    check: Union("skip", "MonteCarlo", "deterministic") -> %
+      ++ check(d) specifies how we want to check the solution.  If
+      ++ the value is "skip", we return the solutions found by the
+      ++ interpolation routine without checking.  If the value is
+      ++ "MonteCarlo", we use a probabilistic check.  This option is
+      ++ expressed in the form \spad{check == d}
 
-    check: Boolean -> %
-      ++ check(d) specifies whether we want to check the solution.  If false,
-      ++ we simply return the solutions found by the interpolation
-      ++ routine. This option is expressed in the form \spad{check == d}
+    checkExtraValues: Boolean -> %
+      ++ checkExtraValues(d) specifies whether we want to check the
+      ++ solution beyond the order given by the degree bounds. This
+      ++ option is expressed in the form \spad{checkExtraValues == d}
 
     one: Boolean -> %
       ++ one(d) specifies whether we are happy with one solution. This option
@@ -190,6 +191,7 @@ GuessOption(): Exports == Implementation where
     import AnyFunctions1(Union(NonNegativeInteger, "arbitrary"))
     import AnyFunctions1(Union(PositiveInteger, "arbitrary"))
     import AnyFunctions1(Union(PositiveInteger, Boolean))
+    import AnyFunctions1(Union("skip", "MonteCarlo", "deterministic"))
 
     Rep := Record(keyword: Symbol, value: Any)
 
@@ -200,21 +202,21 @@ GuessOption(): Exports == Implementation where
         if d case PositiveInteger
         then maxDerivative((d::Integer-1)::NonNegativeInteger)
         else maxDerivative d
-    maxDegree d      == ['maxDegree,      d::Any]
-    maxMixedDegree d == ['maxMixedDegree, d::Any]
-    allDegrees d     == ['allDegrees,     d::Any]
-    maxPower d       == ['maxPower,       d::Any]
-    safety d         == ['safety,         d::Any]
-    MonteCarlo d     == ['MonteCarlo,     d::Any]
-    homogeneous d    == ['homogeneous,    d::Any]
-    Somos d          == ['Somos,          d::Any]
-    debug d          == ['debug,          d::Any]
-    check d          == ['check,          d::Any]
-    one d            == ['one,            d::Any]
-    functionName d   == ['functionName,   d::Any]
-    variableName d   == ['variableName,   d::Any]
-    indexName d      == ['indexName,      d::Any]
-    displayAsGF d    == ['displayAsGF,    d::Any]
+    maxDegree d        == ['maxDegree,        d::Any]
+    maxMixedDegree d   == ['maxMixedDegree,   d::Any]
+    allDegrees d       == ['allDegrees,       d::Any]
+    maxPower d         == ['maxPower,         d::Any]
+    safety d           == ['safety,           d::Any]
+    homogeneous d      == ['homogeneous,      d::Any]
+    Somos d            == ['Somos,            d::Any]
+    debug d            == ['debug,            d::Any]
+    check d            == ['check,            d::Any]
+    checkExtraValues d == ['checkExtraValues, d::Any]
+    one d              == ['one,              d::Any]
+    functionName d     == ['functionName,     d::Any]
+    variableName d     == ['variableName,     d::Any]
+    indexName d        == ['indexName,        d::Any]
+    displayAsGF d      == ['displayAsGF,      d::Any]
 
     coerce(x:%):OutputForm == x.keyword::OutputForm = x.value::OutputForm
     x:% = y:%              == x.keyword = y.keyword and x.value = y.value
@@ -274,14 +276,17 @@ GuessOptionFunctions0(): Exports == Implementation where
     safety: LGOPT -> NonNegativeInteger
       ++ safety returns the specified safety or 1 as default.
 
-    MonteCarlo: LGOPT -> Boolean
-      ++ MonteCarlo returns whether we are satisfied with
-      ++ probabilistic Monte Carlo solution, default being false.
+    check: LGOPT -> Union("skip", "MonteCarlo", "deterministic")
+      ++ check(d) specifies how we want to check the solution.  If
+      ++ the value is "skip", we return the solutions found by the
+      ++ interpolation routine without checking.  If the value is
+      ++ "MonteCarlo", we use a probabilistic check.  The default is
+      ++ "deterministic".
 
-    check: LGOPT -> Boolean
-      ++ check(d) specifies whether we want to check the solution.  If false,
-      ++ we simply return the solutions found by the interpolation
-      ++ routine.  The default is true.
+    checkExtraValues: LGOPT -> Boolean
+      ++ checkExtraValues(d) specifies whether we want to check the
+      ++ solution beyond the order given by the degree bounds.  The
+      ++ default is true.
 
     one: LGOPT -> Boolean
       ++ one returns whether we need only one solution, default being true.
@@ -363,14 +368,14 @@ GuessOptionFunctions0(): Exports == Implementation where
       else
         retract(opt :: Any)$AnyFunctions1(NonNegativeInteger)
 
-    MonteCarlo l ==
-       if (opt := option(l, 'MonteCarlo)) case "failed" then
-           false
-       else
-           retract(opt :: Any)$AnyFunctions1(Boolean)
-
     check l ==
        if (opt := option(l, 'check)) case "failed" then
+           "deterministic"
+       else
+           retract(opt :: Any)$AnyFunctions1(Union("skip", "MonteCarlo", "deterministic"))
+
+    checkExtraValues l ==
+       if (opt := option(l, 'checkExtraValues)) case "failed" then
            true
        else
            retract(opt :: Any)$AnyFunctions1(Boolean)
@@ -2810,16 +2815,21 @@ guessInterpolateModular(list: List F, degs: List Integer, _
                       then deg.quotient + 1   _
                       else deg.quotient) for i in 1..o]
     check: ((List SUP S) -> Union("good", "reject", "no__solution"))
-    check := x +-> checkInterpolant(list, o, x, D, options, sigma)
-    if MonteCarlo(options)$GOPT0 then
+    if check(options)$GOPT0 case "MonteCarlo" then
+        check := x +-> checkInterpolant(list, o, x, D, options, sigma)
         check := gen__Monte__Carlo__check(check, list, _
                    D.kind, D.qvar, sigma, (D.guessModGen)(o))
     else
-        -- XXX stupid compiler ...
-        check := check
+        if check(options)$GOPT0 case "skip" then
+            if debug(options)$GOPT0 then
+                output("Guess: skipping checks")$OutputPackage
+            check := x +-> "good"
+        else
+            -- XXX stupid compiler ...
+            check := x +-> checkInterpolant(list, o, x, D, options, sigma)
 
     HP__solve(list, degs, D.kind, D.qvar, sigma, _
-              (D.guessModGen)(o),check)
+              (D.guessModGen)(o), check)
 
 @
 %$
@@ -2833,6 +2843,9 @@ higher degrees at the end or at the beginning?
 guessInterpolateFFFG(list: List F, degs : List Integer, o: NNI, _
                      guessDegree: NNI, D: HPSPEC, options: LGOPT)
                     : Matrix SUP S ==
+    if debug(options)$GOPT0 then
+        output("Guess: using FFFG")$OutputPackage
+
     M: Matrix SUP S
     eta: List NNI
     if allDegrees(options)$GOPT0 then
@@ -2967,7 +2980,7 @@ precCheck(list: List F, resi: List SUP S,
     degree__loss : Integer :=
         homo => m - 1
         m - 2
-    if check(options)$GOPT0 then
+    if checkExtraValues(options)$GOPT0 then
         max__ind := #gl0 - degree__loss - 1
     else
         max__ind := sigma - 1
@@ -3000,7 +3013,7 @@ precCheck(list: List F, resi: List SUP S,
                 i < sigma =>
                     return "no__solution"
                 return "reject"
-        if not check(options)$GOPT0 then return "good"
+        if not checkExtraValues(options)$GOPT0 then return "good"
         bad => return "reject"
         for i in 1..degree__loss repeat
             si := (i + max__ind)::S
@@ -3032,7 +3045,7 @@ precCheck(list: List F, resi: List SUP S,
                 i < sigma =>
                     return "no__solution"
                 return "reject"
-        if not check(options)$GOPT0 then return "good"
+        if not checkExtraValues(options)$GOPT0 then return "good"
         bad => return "reject"
         for i in 1..degree__loss repeat
             si := (i + max__ind)::S
@@ -3137,7 +3150,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     order: Integer := 0
     dmax := 10*#list
     for d in 0.. repeat
-        if not check(options)$GOPT0 and d = sigma then
+        if not checkExtraValues(options)$GOPT0 and d = sigma then
             return "good"
         if reject__one__term and d = sigma then
             return "reject"
