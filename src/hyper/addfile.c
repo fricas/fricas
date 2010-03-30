@@ -31,8 +31,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _ADDFILE_C
-#include "useproto.h"
 #include "debug.h"
 
 #include "hyper.h"
@@ -45,6 +43,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 char *gDatabasePath = NULL;
+
+static int pathname(char * name);
 
 static int
 strpostfix(char *s, char *t)

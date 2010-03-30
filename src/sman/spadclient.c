@@ -31,8 +31,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _SPADCLIENT_C
-
 #include <stdio.h>
 #include <signal.h>
 
@@ -42,11 +40,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "bsdsignal.H1"
 #include "sockio-c.H1"
-#include "spadclient.H1"
 
 Sock *sock;
 
-static void 
+static void
 inter_handler(int sig)
 {
   send_signal(sock, SIGUSR2);
@@ -54,11 +51,11 @@ inter_handler(int sig)
 }
 
 
-int 
+int
 main(void)
 {
   sock = connect_to_local_server(SessionServer, InterpWindow, Forever);
-  bsdSignal(SIGINT, inter_handler,RestartSystemCalls); 
+  bsdSignal(SIGINT, inter_handler,RestartSystemCalls);
   remote_stdio(sock);
   return(0);
 }

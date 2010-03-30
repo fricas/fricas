@@ -39,7 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
 #define _GROUP_C
-#include "useproto.h"
 #include "debug.h"
 
 

@@ -34,9 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Still a problem with close_client */
 
 /* Communication interface for external AXIOM buffers */
-#define _SPADINT_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include <signal.h>
@@ -51,6 +50,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "sockio-c.H1"
 #include "bsdsignal.H1"
 
+static void start_user_buffer(HyperDocPage * page);
+static void clear_execution_marks(HashTable * depend_hash);
+static void issue_dependent_commands(HyperDocPage * page, TextNode * command,
+                                     int type);
+static void send_pile(Sock * sock, char * str);
+static void mark_as_executed(HyperDocPage * page, TextNode * command,
+                             int type);
+static void accept_menu_server_connection(HyperDocPage * page);
+static void switch_frames(void);
+static void close_client(int pid);
 
 typedef struct sock_list {      /* linked list of Sock */
     Sock Socket;
@@ -372,7 +381,7 @@ print_to_string(TextNode *command)
     return print_to_string1(command, NULL);
 }
 
-/* 
+/*
 see the code in ht-util.boot
         $funnyQuote := char 127
         $funnyBacks := char 128
@@ -480,10 +489,10 @@ print_to_string1(TextNode *command,int * sizeBuf)
             node = node->next;
             break;
           case BoxValue:
-            box = 
+            box =
              (InputBox *) hash_find(gWindow->page->box_hash, node->data.text);
             if (box == NULL) {
-                fprintf(stderr, 
+                fprintf(stderr,
                         "Print_to_string:Box %s Has no symbol table entry\n",
                         node->data.text);
                 exit(-1);
@@ -984,7 +993,7 @@ print_source_to_string1(TextNode *command,int * sizeBuf)
                 if (node->space) {  storeChar(' '); }
                 curr_line = item->lines;
                 while (curr_line != NULL) {
-                    for (lcount = 0, s = curr_line->buffer; 
+                    for (lcount = 0, s = curr_line->buffer;
                          *s && lcount < item->size;
                          s++, lcount++) {
                         storeChar(funnyUnescape(*s));
@@ -1125,7 +1134,7 @@ print_source_to_string1(TextNode *command,int * sizeBuf)
             break;
           case Inputbitmap:
             storeString("\\inputbitmap{");
-            storeString(node->data.text); 
+            storeString(node->data.text);
             storeString("}\n");
             node = node->next;
             break;
@@ -1171,7 +1180,7 @@ print_source_to_string1(TextNode *command,int * sizeBuf)
             node = node->next;
             break;
 /*** LINKS ***/
-/* all these guys are ended by Endbutton 
+/* all these guys are ended by Endbutton
 we close the brace then */
           case Spadlink:
             storeString("\\fauxspadlink{");

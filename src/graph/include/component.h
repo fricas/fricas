@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   Copyright The Numerical Algorithms Group Limited 1991.
   */
 
-/* 
+/*
    This file contains the definitions for the generalized point
    structures in 3D.
    */
@@ -44,13 +44,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tube.h"
 
 /* viewman's and viewAlone's refPt */
-#define refPt(v,x) ((v).points + (x))
+#define refPt(v, x) ((v).points + (x))
 /* view3D's refPt - allows reference into new, dynamically generated points
    a function called traverse(n) is expected - it returns the nth point in
    the resevoir. note that x should be zero based (if numOfPoints is 10,
    then x=10 would access the first point on the resevoir list).
    */
-#define refPt3D(v,x) ( (x)>(v).numOfPoints?traverse(resMax - ((x)-((v).numOfPoints-1))):(v).points + (x) )
+#define refPt3D(v, x) ( (x)>(v).numOfPoints?traverse(resMax - ((x)-((v).numOfPoints-1))):(v).points + (x) )
 
 typedef struct _componentProp {
   int closed,

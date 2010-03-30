@@ -98,7 +98,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define axesOnOff    6
 #define opaqueMesh   7
 #define resetView    8
-#define transparent  9 
+#define transparent  9
 
 #define lighting     10
 #define viewVolume   11
@@ -107,8 +107,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define zoomx        14
 #define zoomy        15
-#define zoomz        16      
-#define originr      17   
+#define zoomz        16
+#define originr      17
 #define objectr      18
 #define xy           19
 #define xz           20
@@ -146,7 +146,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define translucenceDef    109 /* for 3D */
 #define writeView          110 /* for both */
 #define eyeDistanceData    111 /* for 3D */
-#define axesColor2D        112 /* for 2D */  
+#define axesColor2D        112 /* for 2D */
 #define unitsColor2D       113 /* for 2D */
 #define modifyPOINT        114 /* for 3D */
 #define hitherPlaneData    116 /* for 3D */

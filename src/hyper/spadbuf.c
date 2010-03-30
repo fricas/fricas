@@ -31,9 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _SPADBUF_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include <termios.h>
@@ -53,7 +51,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "edible.h"
 #include "com.h"
 
-#include "spadbuf.H1"
 #include "bsdsignal.H1"
 #include "sockio-c.H1"
 #include "edin.H1"
@@ -61,8 +58,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "prt.H1"
 #include "cursor.H1"
 #include "fnct_key.H1"
-
-
 
 unsigned char _INTR, _QUIT, _ERASE, _KILL, _EOF, _EOL, _RES1, _RES2;
 int contNum;                    /* do reading and all the other fun stuff
@@ -82,7 +77,7 @@ short ECHOIT;              /* Flag for echoing */
 short PTY;
 int MODE;                  /* Am I in cbreak, raw, or canonical */
 
-char in_buff[1024];        /* buffer for storing characters read 
+char in_buff[1024];        /* buffer for storing characters read
                               until they are processed */
 char buff[MAXLINE];        /* Buffers for collecting input and */
 int  buff_flag[MAXLINE];   /* flags for whether buff chars
@@ -115,7 +110,7 @@ spadbuf_function_chars(void)
     return;
 }
 
-/* act as terminal session for sock connected to stdin 
+/* act as terminal session for sock connected to stdin
    and stdout of another process */
 static void
 interp_io(void)

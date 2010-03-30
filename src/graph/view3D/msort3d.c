@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _MSORT3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 /*****************************************************
  * Mergesort routine                                 *
@@ -69,7 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *        (since this routine is called recursively, *
  *        this field is kept for clarity; it will    *
  *        always be zero at top level)               *
- *      N the number of elements in the list         * 
+ *      N the number of elements in the list         *
  *        minus one                                  *
  *      compare(X,Y) is a comparison function that   *
  *        returns a -1 if X is less than Y           *
@@ -155,7 +154,7 @@ msort(linkThing *p,int min,int max,int (*compare)(linkThing *, linkThing *))
     xxx = merge(msort(p,min,mid,compare),
                 msort(temp,mid+1,max,compare), compare);
 
-    return(xxx); 
+    return(xxx);
   }
 
 } /* msort() */

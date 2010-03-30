@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _STUFF2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -49,7 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /***  float absolute(x) ***/
 /**************************/
 
-float 
+float
 absolute(float x)
 {
   if (x<0.0) {
@@ -65,7 +64,7 @@ absolute(float x)
 /***  void goodbye()  ***/
 /************************/
 
-void 
+void
 goodbye(int sig)
 {
   int Command,i;

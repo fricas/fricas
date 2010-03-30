@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _MESH3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include <math.h>
 
 #include "header.h"
@@ -43,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *** void getMeshNormal(x0,y0,z0,x1,y1,z1,x2,y2,z2,zMin,zRange,Normal);  ***
  ***************************************************************************/
 
-void 
+void
 getMeshNormal(float x0,float y0,float z0,float x1,float y1,float z1,
               float x2,float y2,float z2,float zMin,float zRange,float Normal[3])
 {
@@ -81,7 +80,7 @@ getMeshNormal(float x0,float y0,float z0,float x1,float y1,float z1,
  ****  void normalizeVector(v)  ****
  ***********************************/
 
-void 
+void
 normalizeVector(float *v)
 {
    /* v should be a triple (ignoring the rest of the array if necessary) */
@@ -104,7 +103,7 @@ normalizeVector(float *v)
  ****  void dotProduct(a,b,size) ****
  ************************************/
 
-float 
+float
 dotProduct(float * a,float *b,int size)
 {
   int i;

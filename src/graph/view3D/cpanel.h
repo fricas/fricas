@@ -32,72 +32,72 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-/* 
+/*
 to be included in control.c for drawing the colormap and
 process.c for getting the mouse input
  */
 
-#define controlMASK		(ButtonPressMask + ButtonReleaseMask + ExposureMask)
-#define potMASK			(ButtonPressMask + ButtonReleaseMask + ButtonMotionMask + LeaveWindowMask)
-#define buttonMASK		(ButtonPressMask + ButtonReleaseMask + ButtonMotionMask + LeaveWindowMask)
-#define colorMASK		(ButtonPressMask + ButtonReleaseMask + ButtonMotionMask + LeaveWindowMask)
+#define controlMASK             (ButtonPressMask + ButtonReleaseMask + ExposureMask)
+#define potMASK                 (ButtonPressMask + ButtonReleaseMask + ButtonMotionMask + LeaveWindowMask)
+#define buttonMASK              (ButtonPressMask + ButtonReleaseMask + ButtonMotionMask + LeaveWindowMask)
+#define colorMASK               (ButtonPressMask + ButtonReleaseMask + ButtonMotionMask + LeaveWindowMask)
 
 
-#define mouseWait		50
+#define mouseWait               50
        /* make mouse grab for stationary mouse on a potentiometer slower */
 
-#define controlCreateMASK	CWBackPixel | CWBorderPixel | CWEventMask |CWCursor |CWColormap | CWOverrideRedirect
-#define buttonCreateMASK	CWEventMask  
-#define messageCreateMASK	0
-#define colormapCreateMASK	CWEventMask
+#define controlCreateMASK       CWBackPixel | CWBorderPixel | CWEventMask |CWCursor |CWColormap | CWOverrideRedirect
+#define buttonCreateMASK        CWEventMask
+#define messageCreateMASK       0
+#define colormapCreateMASK      CWEventMask
 
-#define controlWidth		300
-#define controlHeight		400
-#define quitWidth               63              
+#define controlWidth            300
+#define controlHeight           400
+#define quitWidth               63
 #define quitHeight              107
 #define saveWidth               63
 #define saveHeight              107
-#define borderWidth		22
-#define borderHeight		45
+#define borderWidth             22
+#define borderHeight            45
 
 
-#define controlCursorForeground	monoColor(4)
-#define controlCursorBackground	monoColor(54)
-#define controlTitleColor	monoColor(36)
-#define controlPotHeaderColor	monoColor(52)
-#define controlColorColor	monoColor(13)
-#define controlColorSignColor	monoColor(22)
+#define controlCursorForeground monoColor(4)
+#define controlCursorBackground monoColor(54)
+#define controlTitleColor       monoColor(36)
+#define controlPotHeaderColor   monoColor(52)
+#define controlColorColor       monoColor(13)
+#define controlColorSignColor   monoColor(22)
 
-#define headerHeight		headerFont->max_bounds.ascent
-#define controlMessageHeight	globalFont->max_bounds.ascent +globalFont->max_bounds.descent+4
+#define headerHeight            headerFont->max_bounds.ascent
+#define controlMessageHeight    globalFont->max_bounds.ascent +globalFont->max_bounds.descent+4
 
-#define potA			25   /* y coordinate of line dividing 
-					potentiometers from stuff above it */
-#define potB			173  /* y coordinate of line dividing 
-					potentiometers from title */
+#define potA                    25   /* y coordinate of line dividing
+                                        potentiometers from stuff above it */
+#define potB                    173  /* y coordinate of line dividing
+                                        potentiometers from title */
 
-#define cmapA			233  /* y coordinate of line dividing 
-					colormap from stuff above it */
+#define cmapA                   233  /* y coordinate of line dividing
+                                        colormap from stuff above it */
 
-#define butA			((cp->buttonQueue[render]).buttonY - 5)
+#define butA                    ((cp->buttonQueue[render]).buttonY - 5)
 
-#define closeL			((cp->buttonQueue[closeAll]).buttonX - 5)
-#define closeA			((cp->buttonQueue[closeAll]).buttonY - 5)
+#define closeL                  ((cp->buttonQueue[closeAll]).buttonX - 5)
+#define closeA                  ((cp->buttonQueue[closeAll]).buttonY - 5)
 
-#define controlMessageY		181
-#define controlMessageColor	monoColor(68)
+#define controlMessageY         181
+#define controlMessageColor     monoColor(68)
 
-#define offColor	13
-#define onColor		98
-#define	modeColor	44
+#define offColor        13
+#define onColor         98
+#define modeColor       44
 
-#define colormapX	        21
-#define colormapY		240
-#define colormapW		290
-#define colormapH		48
-#define colorWidth		8 
-#define colorHeight		8  
-#define colorOffset		3
-#define colorOffsetX		24
-#define colorOffsetY		16
-#define colorPointer		16
+#define colormapX               21
+#define colormapY               240
+#define colormapW               290
+#define colormapH               48
+#define colorWidth              8
+#define colorHeight             8
+#define colorOffset             3
+#define colorOffsetX            24
+#define colorOffsetY            16
+#define colorPointer            16

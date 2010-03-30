@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _VIEWPORT3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <math.h>
 #include <stdio.h>

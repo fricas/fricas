@@ -33,13 +33,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _SAVEBUT3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "header.h"
 #include "cpanel.h"
 
 #include "all_3d.H1"
-int 
+int
 initSaveButtons (buttonStruct *saveButtons)
 {
   int ii;

@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _COMPONENT3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "header.h"
 #include "draw.h"
@@ -53,35 +52,35 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MIN_POINT       -1000.0
 
 
-void 
+void
 scaleComponents (void)
 {
-  
+
   double xRange,yRange,zRange;
   int i;
   viewTriple *aPoint;
-  
+
   /* Temporary range limits until the three dimensional clipping
      package is fully functional */
-  
+
   if (viewData.xmin < MIN_POINT) viewData.xmin = MIN_POINT;
   if (viewData.xmax > MAX_POINT) viewData.xmax = MAX_POINT;
   if (viewData.ymin < MIN_POINT) viewData.ymin = MIN_POINT;
   if (viewData.ymax > MAX_POINT) viewData.ymax = MAX_POINT;
   if (viewData.zmin < MIN_POINT) viewData.zmin = MIN_POINT;
   if (viewData.zmax > MAX_POINT) viewData.zmax = MAX_POINT;
-  
+
   xRange = viewData.xmax - viewData.xmin;
   yRange = viewData.ymax - viewData.ymin;
   zRange = viewData.zmax - viewData.zmin;
-  
+
   /* We scale down, normalize the data, if it is coming from AXIOM
      (handled by viewman).  If the data is coming from a file (handled by
-     viewAlone) then it should already been scaled down. 
+     viewAlone) then it should already been scaled down.
      */
-  
+
   /* Find the coordinate axis with the larges range of data and scale
-     the others relative to it. 
+     the others relative to it.
      */
   /* compare x and y ranges */
   if (xRange > yRange) {
@@ -109,7 +108,7 @@ scaleComponents (void)
         viewData.scaleToView = axisLength/(absolute(viewData.zmin));
     }
   }
-  
+
   /* We now normalize all the points in this program. The information
      needed to link the normalized set of points back to the real object
      space scale created in AXIOM is held in viewData.scaleToView. */
@@ -125,21 +124,21 @@ scaleComponents (void)
   viewData.clipYmax = viewData.ymax;
   viewData.clipZmin = viewData.zmin;
   viewData.clipZmax = viewData.zmax;
-  
+
   for (i=0, aPoint=viewData.points; i<viewData.numOfPoints; i++,aPoint++) {
     aPoint->x *= viewData.scaleToView;
     aPoint->y *= viewData.scaleToView;
     aPoint->z *= viewData.scaleToView;
   }
-  
+
 } /* scaleComponents() */
 
 
 /*
- void makeTriangle(a,b,c)   
- Given three indices to three points, a triangular polygon is created 
- and inserted into the polygon list of viewData. If two or more of the 
- points are coincidental, no polygon is created since that would be a 
+ void makeTriangle(a,b,c)
+ Given three indices to three points, a triangular polygon is created
+ and inserted into the polygon list of viewData. If two or more of the
+ points are coincidental, no polygon is created since that would be a
  degenerate (collapsed) polygon.
  */
 
@@ -147,7 +146,7 @@ void
 makeTriangle (int a, int b, int c)
 {
   poly *aPoly;
-  
+
   if (!(samePoint(a,b) || samePoint(b,c) || samePoint(c,a))) {
     /* create triangle only if the three vertex points are distinct */
     aPoly = (poly *)saymem("component.c",1,sizeof(poly));
@@ -163,7 +162,7 @@ makeTriangle (int a, int b, int c)
     aPoly->next = viewData.polygons;
     viewData.polygons = aPoly;
   } /* if all points are unique */
-  
+
 } /* makeTriangle() */
 
 
@@ -171,30 +170,30 @@ makeTriangle (int a, int b, int c)
 
 /*
   void triangulate()
- 
-  Only if there is more than one list do we triangulate; a single list 
-  is used for either a space curve or simply a point.  Actually, in that 
-  case, we now make "flat" *polygons, flagged by the primitiveType field 
+
+  Only if there is more than one list do we triangulate; a single list
+  is used for either a space curve or simply a point.  Actually, in that
+  case, we now make "flat" *polygons, flagged by the primitiveType field
   (pointComponent, etc. in tube.h).  We need to examine two lists at a time
-  (and if the structure is closed, the last and first as well). For every 
+  (and if the structure is closed, the last and first as well). For every
   three points in the two lists, alternating between one in one and two in
-  the other, we construct triangles. If one list is shorter, then its last 
+  the other, we construct triangles. If one list is shorter, then its last
   point becomes the vertex for the remaining pairs of points from the other
-  list.  It turns out that any distribution of points in the two lists 
+  list.  It turns out that any distribution of points in the two lists
   (preserving cyclic order) will produce the same desired polygon.
   */
 
 void
 triangulate (void)
 {
-  
+
   int u,l;
   int uBound,lBound;
   int i,j,k;
   LLPoint *anLLPoint;
   LPoint *list1,*list2;
   poly *aPoly;
-  
+
   anLLPoint = viewData.lllp.llp;
   for (i=0; i<viewData.lllp.numOfComponents; i++,anLLPoint++) {
     if (anLLPoint->numOfLists > 1) {
@@ -220,10 +219,10 @@ triangulate (void)
           }
         } /* while (uBound || lBound) */
       } /* for j<anLLPoint->numOfLists */
-    } /* if anLLPoint->numOfLists > 1 */ 
+    } /* if anLLPoint->numOfLists > 1 */
     else {
       /* if anLLPoint->numOfLists <= 1...assume this means =1 */
-      /* Flat polygons are to be drawn when hidden 
+      /* Flat polygons are to be drawn when hidden
          surface algorithm is used.*/
       if (anLLPoint->numOfLists == 1) {
         if (anLLPoint->lp->numOfPoints == 1) {
@@ -272,7 +271,7 @@ triangulate (void)
       } /* point, line, polygon, surface components are taken care of above */
     } /* else anLLPoint->numOfLists <= 1 */
   } /* for LLPoints in LLLPoints (i) */
-  
+
 } /* triangulate */
 
 
@@ -287,9 +286,9 @@ readComponentsFromViewman (void)
   /* maxLength holds the max(llp,lp) figure regarding how large to
      make the array of XPoints, i.e. quadMesh, for use in calling XDraw(). */
   int maxLength=0;
-  
+
   int *anIndex;
-  
+
   readViewman(&(viewData.numOfPoints),intSize);
   aPoint = viewData.points =
     (viewTriple *)saymem("component.c",viewData.numOfPoints,
@@ -304,7 +303,7 @@ readComponentsFromViewman (void)
       fprintf(stderr,"%g\n", aPoint->z);
 #endif
   }
-  
+
   readViewman(&(viewData.lllp.numOfComponents),intSize);
   anLLPoint = viewData.lllp.llp =
     (LLPoint *)saymem("component.c, i",viewData.lllp.numOfComponents,
@@ -333,9 +332,9 @@ readComponentsFromViewman (void)
       }
     } /* for LPoints in LLPoints (j) */
   } /* for LLPoints in LLLPoints (i) */
-  
+
   quadMesh = (XPoint *)saymem("component.c",maxLength+2,sizeof(XPoint));
-  
+
 } /* readComponentsFromViewman() */
 
 
@@ -344,19 +343,19 @@ readComponentsFromViewman (void)
   void calcNormData()       *
   Calculates the surface normals for the polygons that make up the tube.
   Also finds the fourth coefficient to the plane equation:
-  Ax + By + Cz + D = 0  
+  Ax + By + Cz + D = 0
   A,B, and C are in the normal N[3] and D is the planeConst.
-  Figures out the color as well (from the average of the points) and 
-  resets the moved flag    
+  Figures out the color as well (from the average of the points) and
+  resets the moved flag
   */
 
 void
 calcNormData (void)
 {
-  
+
   poly *aPoly;
   int *index;
-  
+
   for (aPoly = viewData.polygons; aPoly != NIL(poly); aPoly = aPoly->next) {
     index = aPoly->indexPtr;
     switch (aPoly->primitiveType) {
@@ -381,7 +380,7 @@ calcNormData (void)
                     refPt3D(viewData,*(index+2))->x,
                     refPt3D(viewData,*(index+2))->y,
                     refPt3D(viewData,*(index+2))->z, 0.0, 1.0, aPoly->N);
-      
+
       /* calculate the constant term, D,  for the plane equation */
       aPoly->planeConst =
         -(aPoly->N[0] * refPt3D(viewData,*index)->x +
@@ -394,7 +393,7 @@ calcNormData (void)
       break;
     } /* switch */
   }
-  
+
 }  /* calcNormData() */
 
 
@@ -402,14 +401,14 @@ calcNormData (void)
 /*
   viewPoints *make3DComponents()
 
-  Read in all the 3D data from the viewport manager and construct the 
-  model of it. The model is based upon a list of lists of lists of points. 
-  Each top level list makes a component in 3-space. The interpretation 
-  really begins at the level below that, where the list of lists of 
-  points is. For 3D explicit equations of two variables, the closed 
-  boolean for this level is False and the closed boolean for each sublist 
-  is False as well. For 3D parameterized curves of one variable, the 
-  closed boolean for this level is defined by the user from AXIOM , 
+  Read in all the 3D data from the viewport manager and construct the
+  model of it. The model is based upon a list of lists of lists of points.
+  Each top level list makes a component in 3-space. The interpretation
+  really begins at the level below that, where the list of lists of
+  points is. For 3D explicit equations of two variables, the closed
+  boolean for this level is False and the closed boolean for each sublist
+  is False as well. For 3D parameterized curves of one variable, the
+  closed boolean for this level is defined by the user from AXIOM ,
   (which defaults to False) and the closed boolean for each sublist is True.
   */
 
@@ -425,7 +424,7 @@ make3DComponents (void)
   viewData.clipXmin = viewData.xmin;  viewData.clipXmax = viewData.xmax;
   viewData.clipYmin = viewData.ymin;  viewData.clipYmax = viewData.ymax;
   viewData.clipZmin = viewData.zmin;  viewData.clipZmax = viewData.zmax;
-  
+
   /* normalize the data coordinates */
   if (viewData.scaleDown) scaleComponents();
   viewData.numPolygons = 0;
@@ -435,9 +434,9 @@ make3DComponents (void)
   triangulate();
   /* calculate the plane equations for all the polygons */
   calcNormData();
-  
+
   graphData = makeViewport();
-  
+
   imageX = XCreateImage(/* display */        dsply,
                         /* visual */         DefaultVisual(dsply,scrn),
                         /* depth */          DefaultDepth(dsply,scrn),
@@ -449,7 +448,7 @@ make3DComponents (void)
                         /* bitmap_pad */     32,
                         /* bytes_per_line */ 0);
   imageX->data = NIL(char);
-  
+
   /* windowing displaying */
   writeTitle();
   postMakeViewport();
@@ -458,9 +457,9 @@ make3DComponents (void)
   XMapWindow(dsply, graphData->viewWindow);
   XMapWindow(dsply, graphData->titleWindow);
   XFlush(dsply);
-  
+
   return(graphData);
-  
+
 } /* make3DComponents */
 
 
@@ -470,7 +469,7 @@ make3DComponents (void)
 void
 draw3DComponents (int dFlag)
 {
-  
+
   int        i, j, k, hue, x1, y1, x2, y2;
   LLPoint    *anLLPoint;
   LPoint     *anLPoint;
@@ -481,12 +480,12 @@ draw3DComponents (int dFlag)
   viewTriple *aLPt;
   XPoint     line[2];
   RGB        col_rgb;
-  
+
   calcEyePoint();
   while ((XPending(dsply) > 0) && (scanline > 0))
     XNextEvent(dsply,&peekEvent);
   switch (viewData.style) {
-    
+
   case transparent:
     GSetLineAttributes(componentGC,0,LineSolid,CapButt,JoinMiter,dFlag);
     if (dFlag==Xoption) {
@@ -499,7 +498,7 @@ draw3DComponents (int dFlag)
     }
     /* no need to check "keep drawing" for ps */
     if (dFlag == Xoption) drawMore = keepDrawingViewport();
-    
+
     /*
       This is where we interpret the list of lists of lists of points struct.
       We want to extract the following forms of data:
@@ -515,7 +514,7 @@ draw3DComponents (int dFlag)
       appropriately.
 
       ************************************************************************
-      
+
       Traverse each component.
       We decide here, before we begin traversing the
       component what we want to interpret it as.
@@ -528,7 +527,7 @@ draw3DComponents (int dFlag)
       #anLPoint->numOfPoints is 1
       - surface:        #anLLPoint->numOfLists was some m>1
       #anLPoint->numOfPoints all point lists are the same.
-      
+
       */
 
     anLLPoint = viewData.lllp.llp;
@@ -546,11 +545,11 @@ draw3DComponents (int dFlag)
       /* Check for corrupt data and NaN data is made in AXIOM . */
       if (componentType == stillDontKnow)
         componentType = surfaceComponent;
-      
+
       anLPoint = anLLPoint->lp;
-      
+
       switch (componentType) {
-        
+
       case pointComponent:
         /* anLLPoint->numOfLists == anLLPoint->lp->numOfPoints == 1 here */
         aLPt = refPt3D(viewData,*(anLPoint->indices));
@@ -566,7 +565,7 @@ draw3DComponents (int dFlag)
         GFillArc(componentGC,viewport->viewWindow,quadMesh->x,quadMesh->y,
                  viewData.pointSize,viewData.pointSize,0,360*64,dFlag);
         break;
-        
+
       case lineComponent:
         /* anLLPoint->numOfLists == 1 here */
         anIndex = anLPoint->indices;
@@ -618,7 +617,7 @@ draw3DComponents (int dFlag)
             }
             if (!eqNANQ(x1) && !eqNANQ(y1) && !eqNANQ(x2) && !eqNANQ(y2))
               GDrawLine(componentGC,viewport->viewWindow,x1,y1,x2,y2,dFlag);
-          } 
+          }
           else {
             if (dFlag==PSoption && !mono && !viewport->monoOn) {
               hue = getHue(aLPt->c);
@@ -626,7 +625,7 @@ draw3DComponents (int dFlag)
               line[0].x = x1;  line[0].y = y1;
               line[1].x = x2;  line[1].y = y2;
               PSDrawColor(col_rgb.r,col_rgb.g,col_rgb.b,line,2);
-            } 
+            }
             else {
               if (foregroundColor == white)
                 GSetForeground(componentGC, 0.0, dFlag);
@@ -638,7 +637,7 @@ draw3DComponents (int dFlag)
           }
         }
         break;
-        
+
       case polygonComponent:
         /* first pt of polygon is a single list */
         project(refPt3D(viewData,*(anLPoint->indices)),quadMesh,0);
@@ -659,7 +658,7 @@ draw3DComponents (int dFlag)
             }
             if (!eqNANQ(x1) && !eqNANQ(y1) && !eqNANQ(x2) && !eqNANQ(y2))
               GDrawLine(componentGC,viewport->viewWindow,x1,y1,x2,y2,dFlag);
-          } 
+          }
           else {
             if (dFlag==PSoption && !mono && !viewport->monoOn) {
               hue = getHue(aLPt->c);
@@ -667,7 +666,7 @@ draw3DComponents (int dFlag)
               line[0].x = x1;  line[0].y = y1;
               line[1].x = x2;  line[1].y = y2;
               PSDrawColor(col_rgb.r,col_rgb.g,col_rgb.b,line,2);
-            } 
+            }
             else {
               if (foregroundColor == white)
                 GSetForeground(componentGC, 0.0, dFlag);
@@ -698,7 +697,7 @@ draw3DComponents (int dFlag)
             line[0].x = x1;  line[0].y = y1;
             line[1].x = x2;  line[1].y = y2;
             PSDrawColor(col_rgb.r,col_rgb.g,col_rgb.b,line,2);
-          } 
+          }
           else {
             if (foregroundColor == white)
               GSetForeground(componentGC, 0.0, dFlag);
@@ -710,7 +709,7 @@ draw3DComponents (int dFlag)
         }
         /* close a polygon */
         break;
-        
+
       case surfaceComponent:
         if (dFlag==Xoption) {
           if (mono || viewport->monoOn)
@@ -721,8 +720,8 @@ draw3DComponents (int dFlag)
         else {
           GSetForeground(componentGC, psBlack, dFlag);
         }
-        
-        /* traverse down one direction first (all points 
+
+        /* traverse down one direction first (all points
            in a list at a time) */
         for (j=0; drawMore && j<anLLPoint->numOfLists; j++,anLPoint++) {
           anIndex = anLPoint->indices;
@@ -732,9 +731,9 @@ draw3DComponents (int dFlag)
                k++, anIndex++, clip_i++) {
             aLPt = refPt3D(viewData,*anIndex);
             project(aLPt,quadMesh,k);
-            
-            if (behindClipPlane(aLPt->pz) || 
-                (viewData.clipStuff && 
+
+            if (behindClipPlane(aLPt->pz) ||
+                (viewData.clipStuff &&
                  outsideClippedBoundary(aLPt->x, aLPt->y, aLPt->z))) {
               if (clip_i - clip_a > 1) {
                 GDrawLines(componentGC,viewport->viewWindow,(quadMesh+clip_a),
@@ -742,7 +741,7 @@ draw3DComponents (int dFlag)
               }
               clip_a = clip_i + 1;
             }
-            
+
             drawMore = keepDrawingViewport();
           } /* for points in LPoints (k) */
           if (drawMore) {
@@ -753,7 +752,7 @@ draw3DComponents (int dFlag)
                  just copy over from the first one */
               aLPt = refPt3D(viewData,*(anLPoint->indices));
               project(aLPt,quadMesh, anLPoint->numOfPoints);
-              if (behindClipPlane(aLPt->pz) || 
+              if (behindClipPlane(aLPt->pz) ||
                   (viewData.clipStuff &&
                    outsideClippedBoundary(aLPt->x, aLPt->y, aLPt->z))) {
                 if (clip_i - clip_a > 1) {
@@ -771,7 +770,7 @@ draw3DComponents (int dFlag)
             }
           } /* drawMore */
         } /* for LPoints in LLPoints (j) */
-        
+
         /* now traverse down the list in the other direction
            (one point from each list at a time) */
         for (j=0; drawMore && j<anLLPoint->lp->numOfPoints; j++) {
@@ -781,8 +780,8 @@ draw3DComponents (int dFlag)
                k++, clip_i++) {
             aLPt = refPt3D(viewData,*((anLLPoint->lp + k)->indices + j));
             project(aLPt, quadMesh,k);
-            
-            if (behindClipPlane(aLPt->pz) || 
+
+            if (behindClipPlane(aLPt->pz) ||
                 (viewData.clipStuff &&
                  outsideClippedBoundary(aLPt->x, aLPt->y, aLPt->z))) {
               if (clip_i - clip_a > 1) {
@@ -793,7 +792,7 @@ draw3DComponents (int dFlag)
             }
             drawMore = keepDrawingViewport();
           } /* for points in LPoints (k) */
-          
+
           if (drawMore) {
             /* if drawMore is true, then the above loop terminated with
                clip_i incremented properly */
@@ -802,7 +801,7 @@ draw3DComponents (int dFlag)
                  just copy over from the first one */
               aLPt = refPt3D(viewData,*((anLLPoint->lp + 0)->indices + j));
               project(aLPt, quadMesh, anLLPoint->numOfLists);
-              if (behindClipPlane(aLPt->pz) || 
+              if (behindClipPlane(aLPt->pz) ||
                   (viewData.clipStuff &&
                    outsideClippedBoundary(aLPt->x, aLPt->y, aLPt->z))) {
                 if (clip_i - clip_a > 1) {
@@ -824,7 +823,7 @@ draw3DComponents (int dFlag)
       } /* switch componentType */
     } /* for LLPoints in LLLPoints (i) */
     break;
-    
+
   case opaqueMesh:
     if (dFlag==Xoption) {
       GSetForeground(globGC, (float)opaqueForeground, dFlag);
@@ -837,7 +836,7 @@ draw3DComponents (int dFlag)
     GSetLineAttributes(opaqueGC,0,LineSolid,CapButt,JoinRound,dFlag);
     drawPolygons(dFlag);
     break;
-    
+
   case render:
     if (viewData.outlineRenderOn) {
       GSetLineAttributes(renderGC,0,LineSolid,CapButt,JoinRound,dFlag);
@@ -846,12 +845,12 @@ draw3DComponents (int dFlag)
     }
     drawPolygons(dFlag);
     break;
-    
+
   case smooth:
     drawPhong(dFlag);
     break;
-    
+
   } /* switch on style */
-  
+
 } /* draw3DComponents() */
 

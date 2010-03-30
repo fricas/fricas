@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _LIGHTING3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <math.h>
 #include <string.h>
@@ -188,7 +187,7 @@ makeLightingPanel(void)
  * void drawLightingAxes() *
  ***************************/
 
-void 
+void
 drawLightingAxes(void)
 {
 
@@ -288,7 +287,7 @@ drawLightingAxes(void)
  * void drawLightTransArrow() *
  ******************************/
 
-void 
+void
 drawLightTransArrow(void)
 {
 

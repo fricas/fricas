@@ -31,12 +31,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
- /* This is a description of script character labels for the 
+ /* This is a description of script character labels for the
     x, y, and z axes */
 
 static float axes[3][6] = {{-117,0,0,117,0,0},     /* x axis */
-			   {0,-117,0,0,117,0},     /* y axis */
-			   {0,0,-117,0,0,117}};    /* z axis */
+                           {0,-117,0,0,117,0},     /* y axis */
+                           {0,0,-117,0,0,117}};    /* z axis */
 
 /* text labels are currently used */
 static float labels[basicScreen][7] = {
@@ -58,4 +58,4 @@ static float labels[basicScreen][7] = {
   {0,10,111,0,11,110,labelColor},
   {0,11,110,0,11,103,labelColor},
   {0,11,103,0,9,102,labelColor},
-  {0,9,102,0,9,105,labelColor}};  
+  {0,9,102,0,9,105,labelColor}};

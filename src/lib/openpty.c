@@ -66,9 +66,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * If it fails it simply exits the program.
  *
  *
- * ptyopen(controller, server, controllerPath, serverPath) 
- * int *controller;     The file descriptor for controller side of the pty 
- * int *server;         The file descriptor for the server side 
+ * ptyopen(controller, server, controllerPath, serverPath)
+ * int *controller;     The file descriptor for controller side of the pty
+ * int *server;         The file descriptor for the server side
  * char *controllerPath;  actually , this is not used anywhere on return
                           and can be taken out of the call sequence
  * char *serverPath;
@@ -77,7 +77,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
-int  
+int
 ptyopen(int *controller,int * server, char *controllerPath,char * serverPath)
 {
 #if AXIOM_USE_OPENPTY
@@ -86,7 +86,7 @@ ptyopen(int *controller,int * server, char *controllerPath,char * serverPath)
 #if defined(SUNplatform) || defined (HP9platform) || defined(RTplatform) ||defined(AIX370platform) || defined(BSDplatform)
   int looking = 1, i;
   int oflag = O_RDWR;                  /* flag for opening the pty */
-  
+
   for (i = 0; looking && i < 1000; i++) {
     makeNextPtyNames(controllerPath, serverPath);
     if (access(controllerPath, 6) != 0) continue;
@@ -184,7 +184,7 @@ extern char* ptsname(int);
 }
 
 
-void 
+void
 makeNextPtyNames(char *cont,char * serv)
 {
 #ifdef AIX370platform

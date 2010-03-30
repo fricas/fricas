@@ -94,7 +94,7 @@ axiom_sleep(int n)
    Sleep(n * 1000);
 #else
    sleep(n);
-#endif   
+#endif
 }
 
 /* Windows require some handshaking with the WinSock DLL before
@@ -111,13 +111,13 @@ axiom_load_socket_module()
       perror("could not find suitable WinSock DLL.");
       exit(WSAGetLastError());
    }
-   
+
    if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0) {
       perror("could not find suitable WinSock DLL.");
       WSACleanup();
       exit(WSAGetLastError());
    }
-#endif   
+#endif
 }
 
 
@@ -140,7 +140,7 @@ is_invalid_socket(const Sock* s)
    return s->socket == INVALID_SOCKET;
 #else
    return s->socket < 0;
-#endif   
+#endif
 }
 
 /* Returns 1 if SOCKET is a valid socket.  Otherwise return 0.  */
@@ -152,7 +152,7 @@ is_valid_socket(const Sock* s)
    return s->socket != INVALID_SOCKET;
 #else
    return s->socket > 0;
-#endif   
+#endif
 }
 
 
@@ -172,7 +172,7 @@ axiom_close_socket(axiom_socket s)
 #else
    close(s);
 #endif
-}  
+}
 
 /* Return 1 is the last call was cancelled. */
 
@@ -195,17 +195,17 @@ axiom_connection_refused(void)
    return WSAGetLastError() == WSAECONNREFUSED;
 #else
    return errno == ECONNREFUSED;
-#endif   
+#endif
 }
 
 
-void  
+void
 sigpipe_handler(int sig)
 {
   socket_closed = 1;
 }
 
-int 
+int
 wait_for_client_read(Sock *sock, char *buf, int buf_size, char *msg)
 {
   int ret_val;
@@ -222,7 +222,7 @@ wait_for_client_read(Sock *sock, char *buf, int buf_size, char *msg)
   }
 }
 
-int 
+int
 wait_for_client_write(Sock *sock,char *buf,int buf_size,char *msg)
 {
   int ret_val;
@@ -239,7 +239,7 @@ wait_for_client_write(Sock *sock,char *buf,int buf_size,char *msg)
   }
 }
 
-int 
+int
 sread(Sock *sock, char *buf, int buf_size, char *msg)
 {
   int ret_val;
@@ -264,7 +264,7 @@ sread(Sock *sock, char *buf, int buf_size, char *msg)
   return ret_val;
 }
 
-int 
+int
 swrite(Sock *sock,char *buf,int buf_size,char *msg)
 {
   int ret_val;
@@ -290,7 +290,7 @@ swrite(Sock *sock,char *buf,int buf_size,char *msg)
   return ret_val;
 }
 
-int 
+int
 sselect(int n,fd_set  *rd, fd_set  *wr, fd_set *ex, void *timeout)
 {
   int ret_val;
@@ -300,7 +300,7 @@ sselect(int n,fd_set  *rd, fd_set  *wr, fd_set *ex, void *timeout)
   return ret_val;
 }
 
-int 
+int
 fill_buf(Sock *sock,char *buf, int len, char *msg)
 {
   int bytes =  0, ret_val;
@@ -312,7 +312,7 @@ fill_buf(Sock *sock,char *buf, int len, char *msg)
   return bytes;
 }
 
-int 
+int
 get_int(Sock *sock)
 {
   int val = -1, len;
@@ -329,7 +329,7 @@ get_int(Sock *sock)
   return val;
 }
 
-int 
+int
 sock_get_int(int purpose)
 {
   if (accept_if_needed(purpose) != -1)
@@ -337,7 +337,7 @@ sock_get_int(int purpose)
   else return -1;
 }
 
-int 
+int
 get_ints(Sock *sock, int *vals, int num)
 {
   int i;
@@ -346,7 +346,7 @@ get_ints(Sock *sock, int *vals, int num)
   return 0;
 }
 
-int 
+int
 sock_get_ints(int purpose, int *vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -354,7 +354,7 @@ sock_get_ints(int purpose, int *vals, int num)
   return -1;
 }
 
-int 
+int
 send_int(Sock *sock,int val)
 {
   int ret_val;
@@ -365,7 +365,7 @@ send_int(Sock *sock,int val)
   return 0;
 }
 
-int 
+int
 sock_send_int(int purpose,int  val)
 {
   if (accept_if_needed(purpose) != -1)
@@ -373,7 +373,7 @@ sock_send_int(int purpose,int  val)
   return -1;
 }
 
-int 
+int
 send_ints(Sock *sock, int *vals, int num)
 {
   int i;
@@ -383,7 +383,7 @@ send_ints(Sock *sock, int *vals, int num)
   return 0;
 }
 
-int 
+int
 sock_send_ints(int purpose, int *vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -391,7 +391,7 @@ sock_send_ints(int purpose, int *vals, int num)
   return -1;
 }
 
-int 
+int
 send_string_len(Sock *sock,char *str,int len)
 {
   int val;
@@ -416,7 +416,7 @@ send_string_len(Sock *sock,char *str,int len)
   return 0;
 }
 
-int 
+int
 send_string(Sock *sock, char *str)
 {
   int val, len = strlen(str);
@@ -429,7 +429,7 @@ send_string(Sock *sock, char *str)
 }
 
 
-int 
+int
 sock_send_string(int purpose, char *str)
 {
   if (accept_if_needed(purpose) != -1)
@@ -437,7 +437,7 @@ sock_send_string(int purpose, char *str)
   return -1;
 }
 
-int 
+int
 sock_send_string_len(int purpose, char * str, int len)
 {
   if (accept_if_needed(purpose) != -1)
@@ -445,7 +445,7 @@ sock_send_string_len(int purpose, char * str, int len)
   return -1;
 }
 
-int 
+int
 send_strings(Sock *sock, char ** vals, int num)
 {
   int i;
@@ -455,7 +455,7 @@ send_strings(Sock *sock, char ** vals, int num)
   return 0;
 }
 
-int 
+int
 sock_send_strings(int purpose, char **vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -520,7 +520,7 @@ sock_get_string_buf(int purpose, char * buf, int buf_len)
   return NULL;
 }
 
-int 
+int
 get_strings(Sock *sock,char **vals,int num)
 {
   int i;
@@ -529,7 +529,7 @@ get_strings(Sock *sock,char **vals,int num)
   return 0;
 }
 
-int 
+int
 sock_get_strings(int purpose, char ** vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -537,7 +537,7 @@ sock_get_strings(int purpose, char ** vals, int num)
   return -1;
 }
 
-int 
+int
 send_float(Sock *sock, double num)
 {
   int val;
@@ -548,7 +548,7 @@ send_float(Sock *sock, double num)
   return 0;
 }
 
-int 
+int
 sock_send_float(int purpose, double num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -556,7 +556,7 @@ sock_send_float(int purpose, double num)
   return -1;
 }
 
-int 
+int
 send_sfloats(Sock *sock, float *vals,int  num)
 {
   int i;
@@ -566,7 +566,7 @@ send_sfloats(Sock *sock, float *vals,int  num)
   return 0;
 }
 
-int 
+int
 sock_send_sfloats(int purpose, float * vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -574,7 +574,7 @@ sock_send_sfloats(int purpose, float * vals, int num)
   return -1;
 }
 
-int 
+int
 send_floats(Sock *sock, double *vals, int num)
 {
   int i;
@@ -584,7 +584,7 @@ send_floats(Sock *sock, double *vals, int num)
   return 0;
 }
 
-int 
+int
 sock_send_floats(int purpose, double  *vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -592,7 +592,7 @@ sock_send_floats(int purpose, double  *vals, int num)
   return -1;
 }
 
-double 
+double
 get_float(Sock *sock)
 {
   int val;
@@ -604,7 +604,7 @@ get_float(Sock *sock)
   return num;
 }
 
-double 
+double
 sock_get_float(int purpose)
 {
   if (accept_if_needed(purpose) != -1)
@@ -612,7 +612,7 @@ sock_get_float(int purpose)
   else return 0.0;
 }
 
-int 
+int
 get_sfloats(Sock *sock, float *vals, int num)
 {
   int i;
@@ -622,7 +622,7 @@ get_sfloats(Sock *sock, float *vals, int num)
 }
 
 
-int 
+int
 sock_get_sfloats(int purpose,float * vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -630,7 +630,7 @@ sock_get_sfloats(int purpose,float * vals, int num)
   return -1;
 }
 
-int 
+int
 get_floats(Sock *sock,double *vals,int num)
 {
   int i;
@@ -640,7 +640,7 @@ get_floats(Sock *sock,double *vals,int num)
 }
 
 
-int 
+int
 sock_get_floats(int purpose, double *vals, int num)
 {
   if (accept_if_needed(purpose) != -1)
@@ -648,7 +648,7 @@ sock_get_floats(int purpose, double *vals, int num)
   return -1;
 }
 
-int 
+int
 wait_for_client_kill(Sock *sock, int sig)
 {
   int ret_val;
@@ -666,7 +666,7 @@ wait_for_client_kill(Sock *sock, int sig)
 }
 
 
-int 
+int
 sock_get_remote_fd(int purpose)
 {
   if (accept_if_needed(purpose) != -1)
@@ -674,7 +674,7 @@ sock_get_remote_fd(int purpose)
   return -1;
 }
 
-int 
+int
 send_signal(Sock *sock, int sig)
 {
   int ret_val;
@@ -682,7 +682,7 @@ send_signal(Sock *sock, int sig)
   ret_val = kill(sock->pid, sig);
 #else
   ret_val = raise(sig);
-#endif  
+#endif
   if (ret_val == -1 && errno == ESRCH) {
     FD_CLR(sock->socket, &socket_mask);
     purpose_table[sock->purpose] = NULL;
@@ -693,7 +693,7 @@ send_signal(Sock *sock, int sig)
   return ret_val;
 }
 
-int 
+int
 sock_send_signal(int purpose,int  sig)
 {
   if (accept_if_needed(purpose) != -1)
@@ -701,17 +701,17 @@ sock_send_signal(int purpose,int  sig)
   return -1;
 }
 
-int 
+int
 send_wakeup(Sock *sock)
 {
-#ifdef SIGUSR1   
+#ifdef SIGUSR1
   return send_signal(sock, SIGUSR1);
 #else
   return -1;
-#endif  
+#endif
 }
 
-int 
+int
 sock_send_wakeup(int purpose)
 {
   if (accept_if_needed(purpose) != -1)
@@ -779,7 +779,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
 
 /* act as terminal session for sock connected to stdin and stdout of another
    process */
-void 
+void
 remote_stdio(Sock *sock)
 {
   char buf[1024];
@@ -819,7 +819,7 @@ remote_stdio(Sock *sock)
 }
 
 /* initialize the table of dedicated sockets */
-void 
+void
 init_purpose_table(void)
 {
   int i;
@@ -829,14 +829,14 @@ init_purpose_table(void)
 }
 
 
-int 
+int
 make_server_number(void)
 {
   spad_server_number = getpid();
   return spad_server_number;
 }
 
-void 
+void
 close_socket(axiom_socket socket_num, char *name)
 {
   axiom_close_socket(socket_num);
@@ -845,7 +845,7 @@ close_socket(axiom_socket socket_num, char *name)
 #endif
 }
 
-int 
+int
 make_server_name(char *name,char * base)
 {
   char *num;
@@ -866,7 +866,7 @@ make_server_name(char *name,char * base)
 
 /* client Spad server sockets.  Two sockets are created: server[0]
    is the internet server socket, and server[1] is a local domain socket. */
-int 
+int
 open_server(char *server_name)
 {
   char *s, name[256];
@@ -874,7 +874,7 @@ open_server(char *server_name)
   init_socks();
 #ifdef SIGPIPE
   bsdSignal(SIGPIPE, sigpipe_handler,RestartSystemCalls);
-#endif  
+#endif
   if (make_server_name(name, server_name) == -1)
     return -2;
   /* create the socket internet socket */
@@ -932,7 +932,7 @@ open_server(char *server_name)
   return 0;
 }
 
-int 
+int
 fricas_accept_connection(Sock *sock)
 {
   int client;
@@ -953,7 +953,7 @@ fricas_accept_connection(Sock *sock)
 }
 
 /* reads a the socket purpose declaration for classification */
-void 
+void
 get_socket_type(Sock *sock)
 {
   sock->pid = get_int(sock);
@@ -975,7 +975,7 @@ get_socket_type(Sock *sock)
   }
 }
 
-int 
+int
 sock_accept_connection(int purpose)
 {
   fd_set rd;
@@ -999,7 +999,7 @@ sock_accept_connection(int purpose)
 }
 
 /* direct stdin and stdout from the given socket */
-void 
+void
 redirect_stdio(Sock *sock)
 {
   int fd;
@@ -1031,7 +1031,7 @@ init_socks(void)
 
 /* Socket I/O selection called from the BOOT serverLoop function */
 
-int 
+int
 server_switch(void)
 {
   int ret_val, i, cmd = 0;
@@ -1078,7 +1078,7 @@ server_switch(void)
   }
 }
 
-void 
+void
 flush_stdout(void)
 {
   static FILE *fp = NULL;
@@ -1092,7 +1092,7 @@ flush_stdout(void)
   fflush(fp);
 }
 
-void 
+void
 print_line(char *s)
 {
   printf("%s\n", s);
@@ -1104,7 +1104,7 @@ typedef union {
   long          l[2];
         } DoubleFloat;
 
-double 
+double
 plus_infinity(void )
 {
   static int init = 0;
@@ -1117,7 +1117,7 @@ plus_infinity(void )
   return pinf.f;
 }
 
-double 
+double
 minus_infinity(void)
 {
   static int init = 0;
@@ -1130,7 +1130,7 @@ minus_infinity(void)
   return minf.f;
 }
 
-double 
+double
 NANQ(void)
 {
   static int init = 0;

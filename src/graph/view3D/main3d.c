@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _MAIN3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +66,7 @@ int             followMouse=no,
                 viewportKeyNum=0;
 Window          rtWindow;
 GC              globalGC1, globalGC2, anotherGC, globGC, trashGC,
-                controlMessageGC, lightingGC, volumeGC, quitGC, 
+                controlMessageGC, lightingGC, volumeGC, quitGC,
                 saveGC, graphGC, componentGC, opaqueGC, renderGC;
 XSizeHints      viewSizeHints;
 HashTable       *table;
@@ -79,16 +78,16 @@ viewPoints      *viewport;
 controlPanelStruct      *control;
 XGCValues       gcVals;
 char            *s;
-int             someInt;  
+int             someInt;
 
 /* check /usr/include/X11 for current implementation of
    pixels (e.g. BlackPixel()) */
-unsigned long   foregroundColor, backgroundColor;  
+unsigned long   foregroundColor, backgroundColor;
 
            /** totalShades is initially set to totalShadesConst.
                If X cannot allocate 8 shades for each hue, total-
                Shades is decremented. there is currently only a check for
-               this value to be positive. --> something to add: change over 
+               this value to be positive. --> something to add: change over
                to monochrome if totalShades=0. just modify the spadcolors.c
                file. spadcolors.c has been modified so that it returns the
                value for totalShades. since the return value had previously
@@ -96,14 +95,14 @@ unsigned long   foregroundColor, backgroundColor;
                support of other routines calling this function (e.g.
                hypertex stuff). **/
 
-int             mono, totalColors, totalSolid, totalDithered, totalHues, 
+int             mono, totalColors, totalSolid, totalDithered, totalHues,
                 totalSolidShades, totalDitheredAndSolids,totalShades;
 
 int             drawMore;
 
 int             spadMode=no,            /* yes if receiving AXIOM command and
                                            calling drawViewport */
-                spadDraw=no;            /* yes if drawing viewport for 
+                spadDraw=no;            /* yes if drawing viewport for
                                            an AXIOM command */
 int             spadSignalReceived=0;  /* yes if current state is a result of
                                            a signal from AXIOM */
@@ -121,7 +120,7 @@ Window          quitWindow, saveWindow;
 
 Window          lightingWindow, lightingAxes;
 float           lightPointer[3], tempLightPointer[3];
-                
+
 int             axesXY[3][4];
 float           axesZ[3][2];
 
@@ -133,7 +132,7 @@ char            filename[256];
 
 
                 /** used for draw viewport routines */
-float           sinTheta, sinPhi, cosTheta, cosPhi, viewScale, 
+float           sinTheta, sinPhi, cosTheta, cosPhi, viewScale,
                 viewScaleX, viewScaleY, viewScaleZ, reScale;
 int             xCenter, yCenter;
 
@@ -146,7 +145,7 @@ int             *xPts;   /* pointer to projected points (x followed by y) */
 float           transform[4][4], transform1[4][4],
                 R[4][4], R1[4][4], S[4][4], T[4][4], I[4][4];
 float           A[4][4], B[4][4], D[4], E[4][4], F[4], array[4][4];
-                
+
 
 int             scanline, polyCount;
 polyList        *scanList[ARRAY_HEIGHT];
@@ -236,8 +235,8 @@ int    smoothConst = 50;
 
 
 
-int 
-the_handler(Display *display,XErrorEvent *event) 
+int
+the_handler(Display *display,XErrorEvent *event)
 {
   char buffer[512];
   XGetErrorText(display,event->error_code,buffer,511);
@@ -246,7 +245,7 @@ the_handler(Display *display,XErrorEvent *event)
 }
 
 int
-main(void) 
+main(void)
 {
 
   XGCValues     controlGCVals;
@@ -270,7 +269,7 @@ main(void)
   /*   XSynchronize(dsply,False); */
 
   /**** link Xwindows to viewports - X10 feature ****/
-  table = XCreateAssocTable(nbuckets);  
+  table = XCreateAssocTable(nbuckets);
 
   /**** Create AXIOM color map ****/
   totalShades = 0;
@@ -282,7 +281,7 @@ main(void)
     exitWithAck(RootWindow(dsply,scrn),Window,-1);
   }
 
-  
+
   mergeDatabases();
 
   /*** Determine whether monochrome or color is used ***/
@@ -435,7 +434,7 @@ main(void)
                   psMiterJoin, psWhite, psBlack);
 
                      /* trashGC */
-  controlGCVals.function = GXcopy; 
+  controlGCVals.function = GXcopy;
   trashGC  = XCreateGC(dsply,rtWindow,0 ,&controlGCVals);
   carefullySetFont(trashGC,buttonFont);
   PSCreateContext(trashGC, "trashGC", psNormalWidth, psButtCap,
@@ -468,7 +467,7 @@ main(void)
                 /* anotherGC */
   controlGCVals.line_width = colorWidth;
   anotherGC  = XCreateGC(dsply,rtWindow,GCBackground | GCLineWidth |
-                         GCFunction ,&controlGCVals);  
+                         GCFunction ,&controlGCVals);
   carefullySetFont(anotherGC,titleFont);
   PSCreateContext(anotherGC, "anotherGC", psNormalWidth, psButtCap,
                   psMiterJoin, psWhite, psBlack);
@@ -494,23 +493,23 @@ main(void)
 
 
              /* volumeGC */
-  volumeGC = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
+  volumeGC = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
                        ,&controlGCVals);
   carefullySetFont(volumeGC,volumeFont);
 
               /* quitGC */
-  quitGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
+  quitGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
                       ,&controlGCVals);
   carefullySetFont(quitGC,buttonFont);
 
               /* saveGC */
-  saveGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
+  saveGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
                       ,&controlGCVals);
   carefullySetFont(saveGC,buttonFont);
 
 
               /* graphGC */
-  graphGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
+  graphGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
                        ,&controlGCVals);
   carefullySetFont(graphGC,buttonFont);
 
@@ -577,7 +576,7 @@ main(void)
   i = 345;
 
   sprintf(errorStr,"sending window info to viewport manager");
-  check(write(Socket,&(viewport->viewWindow),sizeof(Window))); 
+  check(write(Socket,&(viewport->viewWindow),sizeof(Window)));
 
   viewmap = XCreatePixmap(dsply,viewport->viewWindow,
                           vwInfo.width,vwInfo.height,
@@ -589,7 +588,7 @@ main(void)
   goodbye(-1);
   return(0); /* control never gets here but compiler complains */
 }     /* main() */
-     
+
 
 
 void

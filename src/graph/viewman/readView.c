@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _READVIEW_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -43,14 +42,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "cleanup.H1"
 
-int 
+int
 readViewport (viewManager *viewPort,void *info,int size)
 {
 
   int canRead;
 
-again:  
-  if ((canRead=read(viewPort->viewIn,info,size)) > 0)   return(canRead); 
+again:
+  if ((canRead=read(viewPort->viewIn,info,size)) > 0)   return(canRead);
   if (errno==EINTR || errno==EAGAIN) goto again;
   return(-1);
 }

@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _MAKE3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 
@@ -43,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "sockio-c.H1"
 #include "make3D.H1"
 
-void 
+void
 makeView3DFromSpadData(view3DStruct *viewdata,int typeOfViewport)
 {
 
@@ -74,7 +73,7 @@ makeView3DFromSpadData(view3DStruct *viewdata,int typeOfViewport)
   viewdata->vY = get_int(spadSock);
   viewdata->vW = get_int(spadSock);
   viewdata->vH = get_int(spadSock);
-  
+
   viewdata->showCP    = get_int(spadSock);
   viewdata->style     = get_int(spadSock);
   viewdata->AxesOn    = get_int(spadSock);
@@ -152,7 +151,7 @@ makeView3DFromSpadData(view3DStruct *viewdata,int typeOfViewport)
     if (constantColor) refPt(*viewdata,i)->c = 0.5;
     else refPt(*viewdata,i)->c = (refPt(*viewdata,i)->c - cMin)/cNorm;
 
-  viewdata->scaleDown = yes; 
+  viewdata->scaleDown = yes;
 
 }
 

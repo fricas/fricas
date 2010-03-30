@@ -38,8 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _MEM_C
-#include "useproto.h"
+
 #include "debug.h"
 
 
@@ -50,7 +49,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 
-
+static void free_cond(CondNode * cond);
+static void free_depend(SpadcomDepend * sd);
+static void dont_free(void * link);
+static void free_input_box(InputBox * box);
+static void free_paste(PasteNode * paste, short des);
+static void free_pastearea(TextNode * node, short des);
+static void free_pastebutton(TextNode * node, short des);
+static void free_radio_boxes(RadioBoxes * radio);
 
 extern HashTable init_page_hash;
 extern HashTable init_macro_hash;
@@ -86,16 +92,16 @@ alloc_hd_window(void)
   /* Now I initialize the hash tables for the page */
   w->fCondHashTable = (HashTable *) halloc(sizeof(HashTable), "cond hash");
   hash_init(
-            w->fCondHashTable, 
-            CondHashSize, 
-            (EqualFunction) string_equal, 
+            w->fCondHashTable,
+            CondHashSize,
+            (EqualFunction) string_equal,
             (HashcodeFunction) string_hash);
 
   w->fPasteHashTable = (HashTable *) halloc(sizeof(HashTable), "paste hash");
   hash_init(
-            w->fPasteHashTable, 
-            PasteHashSize, 
-            (EqualFunction) string_equal, 
+            w->fPasteHashTable,
+            PasteHashSize,
+            (EqualFunction) string_equal,
             (HashcodeFunction) string_hash);
   w->fPageHashTable = hash_copy_table(&init_page_hash);
   w->fPatchHashTable = hash_copy_table(&init_patch_hash);
@@ -116,13 +122,13 @@ free_hd_window(HDWindow *w)
     free(w->fDownLinkStack);
     free(w->fDownLinkStackTop);
     /*
-      free(w->fWindowHashTable); will be taken care of by freeing 
+      free(w->fWindowHashTable); will be taken care of by freeing
       free_hash(w->fPageHashTable, free_page); below
       cf free_page
       */
-    free_hash(w->fMacroHashTable, (FreeFunction)dont_free); 
-    free_hash(w->fPasteHashTable, (FreeFunction)dont_free); 
-    free_hash(w->fPatchHashTable, (FreeFunction)dont_free); 
+    free_hash(w->fMacroHashTable, (FreeFunction)dont_free);
+    free_hash(w->fPasteHashTable, (FreeFunction)dont_free);
+    free_hash(w->fPatchHashTable, (FreeFunction)dont_free);
 
     free_hash(w->fCondHashTable, (FreeFunction)free_cond);
     free_hash(w->fPageHashTable, (FreeFunction)free_page);
@@ -426,7 +432,7 @@ free_page(HyperDocPage *page)
        links should have been freed by the recursive free_node's above (cf.free_node)
        this is apparently because we are called from free_hd_window
        and we had made a call to free w->fWindowHashTable which is made
-       to point to the same thing 
+       to point to the same thing
        so we do it HERE not THERE
        */
     free_hash(page->fLinkHashTable, (FreeFunction)dont_free);
@@ -530,7 +536,7 @@ dont_free(void  *link)
   return;
 }
 
-#if 0 
+#if 0
 ----------- NOT USED
 static void
 free_link(HyperLink *link)
@@ -619,7 +625,7 @@ free_macro(MacroStore *macro)
   }
 }
 --------------- NOT USED
-#endif 
+#endif
 
 
 

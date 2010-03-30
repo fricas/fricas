@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _CONTROL3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -72,22 +71,22 @@ static XPoint translateArrow[translateArrowN] = {
 static int rotateX, rotateY, rotateR;
 
 /*
-  void drawColorMap () 
+  void drawColorMap ()
   */
 
 void
 drawColorMap (void)
 {
-  
+
   controlPanelStruct *cp;
   int i,shadeWidth;
-  
+
   /* Draw the color map window */
-  
+
   cp = viewport->controlPanel;
-  
+
   XClearArea(dsply,cp->controlWindow,5,colormapY,colormapW,colormapH,False);
-  
+
   /* if window is grayscale, show the grayscale colormap */
   if (mono || (viewport->monoOn)) {
     shadeWidth = 230/maxGreyShade;

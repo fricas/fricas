@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _LIGHTBUT3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "header.h"
 #include "cpanel.h"
@@ -48,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *                                                   *
  *****************************************************/
 
-int 
+int
 initLightButtons (buttonStruct *lightButtons)
 {
   int ii;
@@ -57,7 +56,7 @@ initLightButtons (buttonStruct *lightButtons)
   /* Not functional -- can be used to allow light window as a potentiometer */
   ii = lightMove;
   lightButtons[ii].buttonX      = 63;
-  lightButtons[ii].buttonY      = 30;  
+  lightButtons[ii].buttonY      = 30;
   lightButtons[ii].buttonWidth  = 171;
   lightButtons[ii].buttonHeight = 171;
   lightButtons[ii].buttonKey    = ii;
@@ -71,7 +70,7 @@ initLightButtons (buttonStruct *lightButtons)
   /* Change x and y coordinate of light source */
   ii = lightMoveXY;
   lightButtons[ii].buttonX      = 20;
-  lightButtons[ii].buttonY      = 247;  
+  lightButtons[ii].buttonY      = 247;
   lightButtons[ii].buttonWidth  = 110;
   lightButtons[ii].buttonHeight = 110;
   lightButtons[ii].buttonKey    = ii;
@@ -81,11 +80,11 @@ initLightButtons (buttonStruct *lightButtons)
   lightButtons[ii].xHalf        = lightButtons[ii].buttonWidth/2;
   lightButtons[ii].yHalf        = lightButtons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Change z coordinate of light source */
   ii = lightMoveZ;
   lightButtons[ii].buttonX      = 149;
-  lightButtons[ii].buttonY      = 247; 
+  lightButtons[ii].buttonY      = 247;
   lightButtons[ii].buttonWidth  = 58;
   lightButtons[ii].buttonHeight = 110;
   lightButtons[ii].buttonKey    = ii;
@@ -95,11 +94,11 @@ initLightButtons (buttonStruct *lightButtons)
   lightButtons[ii].xHalf        = lightButtons[ii].buttonWidth/2;
   lightButtons[ii].yHalf        = lightButtons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Change intensity of light source */
   ii = lightTranslucent;
   lightButtons[ii].buttonX      = 250;
-  lightButtons[ii].buttonY      = 247; 
+  lightButtons[ii].buttonY      = 247;
   lightButtons[ii].buttonWidth  = 34;
   lightButtons[ii].buttonHeight = 110;
   lightButtons[ii].buttonKey    = ii;

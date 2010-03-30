@@ -59,7 +59,7 @@ typedef struct _segment_struct {
 } segment_struct;
 
 typedef struct _segment_list_struct {
-  int		  num_segs;
+  int             num_segs;
   segment_struct *segments;
   int num, max_num;  /* num=slice num, max_num=#slices for this contour */
 } segment_list_struct;
@@ -67,15 +67,15 @@ typedef struct _segment_list_struct {
   /*=====================================================================*
     Macro Definitions
    *=====================================================================*/
-#define foreach_slice(index, slice, slice_list, max_slices) 	\
-  for (index=0;							\
-       (index<max_slices) && (int)(slice=(slice_list+index)); 	\
+#define foreach_slice(index, slice, slice_list, max_slices)     \
+  for (index=0;                                                 \
+       (index<max_slices) && (int)(slice=(slice_list+index));   \
        index++)
-#define foreach_segment(seg, slice, fl)				\
+#define foreach_segment(seg, slice, fl)                         \
   for (seg=slice->segments; (fl) && (seg != NIL(segment_struct)); seg=seg->next)
 
 #define foreach_segment_old(idx, s, sl, max, fl) \
-  for (idx=0; idx<max; idx++) 					\
+  for (idx=0; idx<max; idx++)                                   \
     for (s=(sl+idx)->segments; (fl) && (s != NIL(segment_struct)); s=s->next)
 
   /*---------------------------------------------------------------------*
@@ -89,23 +89,23 @@ typedef struct _segment_list_struct {
 #define contourCursorBackground monoColor(197)
 #endif
 
-#define contourMASK	ExposureMask
+#define contourMASK     ExposureMask
 
 #define contourPlaneTextCOLOR 28
 
         /*---------------------------------------------------*
-	  title, dividing lines & stuff
+          title, dividing lines & stuff
          *---------------------------------------------------*/
 #define contourTitleColor moColor(blue0, normal)
-#define contourTitleA	190
-#define contourTitleB	217
+#define contourTitleA   190
+#define contourTitleB   217
 
 #define dotSize 8
 #define dotExt  12
 #define dotColor moColor(red2, pastel)
 
         /*---------------------------------------------------*
-	  Button Positions & Dimensions
+          Button Positions & Dimensions
          *---------------------------------------------------*/
 #define contourPlaneXY_X 150
 #define contourPlaneXY_Y 250
@@ -121,14 +121,14 @@ typedef struct _segment_list_struct {
 #define contourAppendSegs_X 120
 #define contourAppendSegs_Y 320
 #ifdef oldie
-#define contourBigButt_W  170 
-#define contourBigButt_H   20 
+#define contourBigButt_W  170
+#define contourBigButt_H   20
 #else
-#define contourBigButt_W  10 
-#define contourBigButt_H  10 
+#define contourBigButt_W  10
+#define contourBigButt_H  10
 #endif
         /*---------------------------------------------------*
-	  Line & button colors
+          Line & button colors
          *---------------------------------------------------*/
 #define abort_FG      moColor(red1, pastel)
 #define return_FG     moColor(green2, pastel)
@@ -136,7 +136,7 @@ typedef struct _segment_list_struct {
 #define bigButt_FG    moColor(orange1, pastel)
 
         /*---------------------------------------------------*
-	  longitude part
+          longitude part
          *---------------------------------------------------*/
 #define contourLongitude_X  10
 #define contourLongitude_Y  55
@@ -157,7 +157,7 @@ typedef struct _segment_list_struct {
 #define long_str_Y 48
 
         /*---------------------------------------------------*
-	  latitude part
+          latitude part
          *---------------------------------------------------*/
 #define contourLatitude_X   160
 #define contourLatitude_Y   55
@@ -177,7 +177,7 @@ typedef struct _segment_list_struct {
 #define lat_str_Y 48
 
         /*---------------------------------------------------*
-	  slice part
+          slice part
          *---------------------------------------------------*/
 #define contourSliceNum_X   10
 #define contourSliceNum_Y   245

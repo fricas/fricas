@@ -31,8 +31,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "axiom-c-macros.h"
-#define _PARSE_INPUT_C
 /***
   Contains all the code needed to parse input items,
   InputString
@@ -40,7 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   RadioBox.
   ****/
 
-#include "useproto.h"
+#include "axiom-c-macros.h"
+
 #include "debug.h"
 
 #include "parse.h"
@@ -49,6 +48,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mem.h"
 
 #include "all_hyper_proto.H1"
+
+static void insert_item(InputItem * item);
+static void add_box_to_rb_list(char * name, InputBox * box);
+static int check_others(InputBox * list);
 
 /* create an unmapped input window for getting strings * */
 extern int make_input_file;
@@ -294,9 +297,9 @@ parse_simplebox(void)
       gPageBeingParsed->box_hash = (HashTable *) halloc(sizeof(HashTable),
                                                         "Box Hash");
       hash_init(
-                gPageBeingParsed->box_hash, 
-                BoxHashSize, 
-                (EqualFunction) string_equal, 
+                gPageBeingParsed->box_hash,
+                BoxHashSize,
+                (EqualFunction) string_equal,
                 (HashcodeFunction) string_hash);
     }
     hash_insert(gPageBeingParsed->box_hash, (char *)box, box->name);
@@ -393,9 +396,9 @@ parse_radiobox(void)
     gPageBeingParsed->box_hash = (HashTable *) halloc(sizeof(HashTable),
                                                       "Box Hash");
     hash_init(
-              gPageBeingParsed->box_hash, 
-              BoxHashSize, 
-              (EqualFunction) string_equal, 
+              gPageBeingParsed->box_hash,
+              BoxHashSize,
+              (EqualFunction) string_equal,
               (HashcodeFunction) string_hash);
   }
   hash_insert(gPageBeingParsed->box_hash, (char *)box, box->name);

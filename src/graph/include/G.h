@@ -37,39 +37,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-#define Xoption		0	/* Gdraw routine option */
-#define PSoption		1	/* Gdraw routine option */
+#define Xoption         0       /* Gdraw routine option */
+#define PSoption                1       /* Gdraw routine option */
 
-#define psError		-1	/* error return status */
+#define psError         -1      /* error return status */
 
 /* Black and white definitions of PS */
 
-#define psBlack		0.0	/* def for black in PS */
-#define psWhite		1.0	/* def for white in PS */
+#define psBlack         0.0     /* def for black in PS */
+#define psWhite         1.0     /* def for white in PS */
 
 /* Foreground and background definition */
 
-#define psForeground	psBlack /* foreground color: black */
-#define psBackground	psWhite /* background color: white */
+#define psForeground    psBlack /* foreground color: black */
+#define psBackground    psWhite /* background color: white */
 
 /* Gray scale defintions -- same as that in src/XShade.h for XShadeMax */
 
-#define psShadeMax	17.0	/* same as XShadeMax */
-#define psShadeMul	(1.0/(psShadeMax-1.0))	/* white and 16 gray shades */
+#define psShadeMax      17.0    /* same as XShadeMax */
+#define psShadeMul      (1.0/(psShadeMax-1.0))  /* white and 16 gray shades */
 
-#define psNormalWidth	1	/* def for line width */
+#define psNormalWidth   1       /* def for line width */
 
 /* These are all the line join styles available in PS */
 
-#define psMiterJoin	0
-#define psRoundJoin	1
-#define psBevelJoin	2
+#define psMiterJoin     0
+#define psRoundJoin     1
+#define psBevelJoin     2
 
 /* These are all the line cap styles available in PS */
 
-#define psButtCap	0
-#define psRoundCap	1
-#define psPSqCap	2
+#define psButtCap       0
+#define psRoundCap      1
+#define psPSqCap        2
 
 
 
@@ -82,8 +82,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 typedef struct _GCstruct {
-  GC	 GCint;
-  char		 GCchar[10];
+  GC     GCint;
+  char           GCchar[10];
   struct _GCstruct *next;
 } GCstruct, *GCptr;
 
@@ -95,7 +95,7 @@ typedef struct _GCstruct {
 
 extern char *PSfilename;  /* User-definable output file name. */
 
-extern int   psInit;	  /* Flag for one-time PS initialization routine. */
+extern int   psInit;      /* Flag for one-time PS initialization routine. */
 
 extern GCptr GChead;      /* Points to the head of GCstruct linked list. */
 

@@ -38,9 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _EXTENT1_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 
@@ -52,6 +51,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 
+static void compute_begin_items_extent(TextNode * node);
+static void compute_bf_extent(TextNode * node);
+static void compute_box_extent(TextNode * node);
+static void compute_button_extent(TextNode * node);
+static void compute_center_extent(TextNode * node);
+static void compute_em_extent(TextNode * node);
+static void compute_ifcond_extent(TextNode * node);
+static void compute_image_extent(TextNode * node);
+static void compute_ir_extent(TextNode * node);
+static void compute_it_extent(TextNode * node);
+static void compute_item_extent(TextNode * node);
+static void compute_mbox_extent(TextNode * node);
+static void compute_mitem_extent(TextNode * node);
+static void compute_paste_extent(TextNode * node);
+static void compute_pastebutton_extent(TextNode * node);
+static void compute_rm_extent(TextNode * node);
+static void compute_spadcommand_extent(TextNode * node);
+static void compute_spadsrc_extent(TextNode * node);
+static void compute_table_extent(TextNode * * node);
+static void end_spadcommand_extent(TextNode * node);
+static void end_spadsrc_extent(TextNode * node);
+static void endbutton_extent(TextNode * node);
+static void endif_extent(TextNode * node);
+static void endpastebutton_extent(TextNode * node);
 
 /*
  * Now we declare all the values which are shared among the extent routines

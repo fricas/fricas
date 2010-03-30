@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _STUFF3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "header.h"
 
@@ -123,7 +122,7 @@ norm_dist(void)
   if (ss == 0.0) ss += .1;
   rad = -2.0*log(ss)/ss;
   pert.x = v1 * sqrt(rad);
-  pert.y = v2 * sqrt(rad);    
+  pert.y = v2 * sqrt(rad);
 
   return(pert);
 }

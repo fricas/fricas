@@ -38,9 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _PARSE_TYPES_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include "parse.h"
@@ -53,6 +52,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hterror.h"
 
 #include "all_hyper_proto.H1"
+
+static void parse_condnode(void);
+static void parse_hasreturnto(void);
 
 boolean gInButton = FALSE;
 boolean gInIf = FALSE;

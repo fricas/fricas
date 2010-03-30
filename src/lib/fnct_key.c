@@ -77,7 +77,7 @@ char editorfilename[100];
  * should be the one that the user wishes to have execed
  */
 
-void 
+void
 set_editor_key(void)
 {
     int pid;
@@ -219,13 +219,13 @@ get_str(int fd,char * string)
     return count;
 }
 
-void 
+void
 null_fnct(int sig)
 {
     return;
 }
 
-void 
+void
 handle_function_key(int key,int  chann)
 {
     /** this procedure simply adds the string specified by the function key

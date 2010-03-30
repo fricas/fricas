@@ -33,10 +33,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern viewManager *viewports,*slot,*stepSlot;
 extern Sock        *spadSock;
-extern int         viewType, viewCommand; 
+extern int         viewType, viewCommand;
 extern fd_set         filedes;
 extern int             acknow;
-extern int         graphKey; 
+extern int         graphKey;
 extern graphStruct *graphList;
 extern char *s1;
 extern Display *dsply;

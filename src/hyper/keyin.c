@@ -38,9 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _KEYIN_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 
@@ -134,36 +133,36 @@ handle_key(XEvent *event)
       gWindow->fMacroHashTable =
         (HashTable *) halloc(sizeof(HashTable), "macro hash");
       hash_init(
-                gWindow->fMacroHashTable, 
-                MacroHashSize, 
-                (EqualFunction ) string_equal, 
+                gWindow->fMacroHashTable,
+                MacroHashSize,
+                (EqualFunction ) string_equal,
                 (HashcodeFunction) string_hash);
       gWindow->fPatchHashTable = (HashTable *) halloc(sizeof(HashTable), "patch hash");
       hash_init(
-                gWindow->fPatchHashTable, 
-                PatchHashSize, 
-                (EqualFunction ) string_equal, 
+                gWindow->fPatchHashTable,
+                PatchHashSize,
+                (EqualFunction ) string_equal,
                 (HashcodeFunction) string_hash);
       gWindow->fPasteHashTable = (HashTable *) halloc(sizeof(HashTable), "paste hash");
-      hash_init(gWindow->fPasteHashTable, 
+      hash_init(gWindow->fPasteHashTable,
                 PasteHashSize,
-                (EqualFunction ) string_equal, 
+                (EqualFunction ) string_equal,
                 (HashcodeFunction) string_hash);
       gWindow->fCondHashTable = (HashTable *) halloc(sizeof(HashTable), "cond hash");
       hash_init(
-                gWindow->fCondHashTable, 
+                gWindow->fCondHashTable,
                 CondHashSize,
-                (EqualFunction ) string_equal, 
+                (EqualFunction ) string_equal,
                 (HashcodeFunction) string_hash);
       gWindow->fPageHashTable = (HashTable *) halloc(sizeof(HashTable), "page hash");
       hash_init(
-                gWindow->fPageHashTable, 
+                gWindow->fPageHashTable,
                 PageHashSize,
-                (EqualFunction ) string_equal, 
+                (EqualFunction ) string_equal,
                 (HashcodeFunction) string_hash);
       make_special_pages(gWindow->fPageHashTable);
       read_ht_db(
-                 gWindow->fPageHashTable, 
+                 gWindow->fPageHashTable,
                  gWindow->fMacroHashTable,
                  gWindow->fPatchHashTable);
       gWindow->page = (HyperDocPage *) hash_find(gWindow->fPageHashTable, name);
@@ -241,9 +240,9 @@ get_modifier_mask(KeySym sym)
 {
     unsigned int       i, mask;
     XModifierKeymap    *mod;
-    KeyCode            kcode; 
+    KeyCode            kcode;
     const int          masks[8] = {
-        ShiftMask, LockMask, ControlMask, 
+        ShiftMask, LockMask, ControlMask,
             Mod1Mask, Mod2Mask, Mod3Mask, Mod4Mask, Mod5Mask
     };
 
@@ -277,7 +276,7 @@ init_keyin(void)
     char *prop;
     unsigned int nlm;
 
-    
+
     nlm = get_modifier_mask(XK_Num_Lock);
     UnsupportedModMask &= ~nlm;
     ModifiersMask &= ~nlm;

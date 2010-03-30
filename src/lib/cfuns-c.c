@@ -116,7 +116,7 @@ makedir(char *path)
 #endif
 }
 
-int 
+int
 make_path_from_file(char *s, char *t)
 {
     char *pos = NULL;
@@ -185,7 +185,7 @@ axiom_has_write_access(const struct stat* file_info)
    return file_info->st_mode & S_IWOTH;
 #else
    return 0;
-#endif   
+#endif
 }
 
 

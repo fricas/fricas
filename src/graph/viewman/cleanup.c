@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _CLEANUP_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -75,15 +74,15 @@ endChild(int sig)
  * from the viewport list   *
 *****************************/
 
-void 
+void
 rmViewMgr(viewManager *slotPtr)
 {
-  
+
   int i,throwAway,code;
   viewManager *somePort, *someOtherPort;
   graphStruct *someGraph,*someOtherGraph;   /* used in discarding graphs */
   viewsWithThisGraph *someView,*someOtherView;
-  
+
   for (somePort=someOtherPort=viewports;
        (somePort != 0) && (somePort != slotPtr);
        somePort=(someOtherPort=somePort)->nextViewport)
@@ -128,12 +127,12 @@ rmViewMgr(viewManager *slotPtr)
                   (someView == someOtherView->nextViewthing));
 
           if (someView) {     /* if found (should always be true) */
-            if (someView == someGraph->views) 
+            if (someView == someGraph->views)
               /* first */
               someGraph->views = someGraph->views->nextViewthing;
             else
               someOtherView->nextViewthing = someView->nextViewthing;
-            free(someView);                    /* remove this viewport 
+            free(someView);                    /* remove this viewport
                                                   from list */
           }
           /* if now nothing is pointing  to this graph , remove the graph from the list*/
@@ -165,14 +164,14 @@ rmViewMgr(viewManager *slotPtr)
  * viewports via rmViewMgr().      *
  ***********************************/
 
-void  
+void
 closeChildViewport(viewManager *slotPtr)
 {
-  
+
   int status;
   rmViewMgr(slotPtr);
-  wait(&status); 
-  
+  wait(&status);
+
 }  /* closeChildViewport */
 
 
@@ -184,7 +183,7 @@ closeChildViewport(viewManager *slotPtr)
  * then kill self.   *
  *********************/
 
-void 
+void
 goodbye(int sig)
 {
 

@@ -31,7 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define view3D 
+#define view3D
 
 
 #include <X11/Xlib.h>
@@ -81,7 +81,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GC9991 ((GC)9991)
 
 
-/* For smooth shading buffers. Should be screen resolution size, 
+/* For smooth shading buffers. Should be screen resolution size,
    and one for each of screen width and height may be needed, or
    it can be changed dynamically if desired. */
 
@@ -173,7 +173,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define d2Pi              57
 
 #define nbuckets         128
-                               
+
 
 #define anywhere        0
 
@@ -185,7 +185,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define floatSize       sizeof(float)
 
 /* Types so far are X, PS */
-#define drawViewport(type) { drawPreViewport(type); drawTheViewport(type); } 
+#define drawViewport(type) { drawPreViewport(type); drawTheViewport(type); }
 #define spadDrawViewport()   spadMode++; drawTheViewport(X); spadMode--;
 
 
@@ -193,12 +193,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                       /***       lighting panel     ***/
                       /********************************/
 
-/* These are the lighting panel buttons, they start at 101 
+/* These are the lighting panel buttons, they start at 101
    (numbers less than 101 are reserved for control panel buttons */
 
 /* From ../include/actions.h */
 
-#define lightingButtonsStart controlButtonsEnd3D  
+#define lightingButtonsStart controlButtonsEnd3D
 
 #define lightMove        (lightingButtonsStart)
 #define lightMoveXY      (lightingButtonsStart+1)
@@ -214,7 +214,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                       /***       view volume panel     ***/
                       /***********************************/
 
-/* These are the volume panel buttons, they start at 200 
+/* These are the volume panel buttons, they start at 200
    (numbers less than 101 are reserved for control panel buttons */
 
 #define volumeButtonsStart lightingButtonsEnd
@@ -229,7 +229,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define clipSurfaceBut  (volumeButtonsStart+7)
 #define volumeAbort     (volumeButtonsStart+8)
 
-#define maxVolumeButtons 9 
+#define maxVolumeButtons 9
 #define volumeButtonsEnd (volumeButtonsStart + maxVolumeButtons)
 
                        /**** quit panel ****/
@@ -282,7 +282,7 @@ typedef struct _mouseCoord {
     float       x, y;
 } mouseCoord;
 
-  
+
                       /**********************************/
                       /***         mesh stuff         ***/
                       /**********************************/
@@ -361,14 +361,14 @@ typedef struct _controlXY {
 
 
       /************************** Bitmap Files ***************************/
-#if 0 
+#if 0
 #include "../include/purty/mouse11.bitmap"
 #include "../include/purty/mouse11.mask"
 #include "../include/purty/spadBitmap.bitmap"
 #include "../include/purty/spadMask.mask"
 #include "../include/purty/light11.bitmap"
 #include "../include/purty/light11.mask"
-#endif 
+#endif
 
 
       /******* useful definitions *******/

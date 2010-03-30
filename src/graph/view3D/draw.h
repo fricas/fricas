@@ -41,13 +41,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* recalculation occurs if any of these situations have occured */
 
 #define recalc (rotated || zoomed || translated || !finishedList || \
-		firstTime || switchedPerspective || changedEyeDistance)
+                firstTime || switchedPerspective || changedEyeDistance)
 
 
 /*** projection macros if matrices are not used  ***/
 #define projPersp(z) (viewData.eyeDistance / (z+viewData.eyeDistance))
 
-#define proj2PX(x,y)   -(x*cosTheta + y*sinTheta) 
+#define proj2PX(x,y)   -(x*cosTheta + y*sinTheta)
 #define proj2PY(x,y,z) -(y*cosTheta*cosPhi - x*sinTheta*cosPhi + z*sinPhi)
 
 /*** For clipping points ***/
@@ -55,16 +55,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define behindClipPlane(pz) lessThan(pz,viewData.clipPlane)
 
 #define outsideClippedBoundary(x,y,z) (lessThan(x,viewData.clipXmin) ||    \
-				       greaterThan(x,viewData.clipXmax) || \
-				       lessThan(y,viewData.clipYmin) ||    \
-				       greaterThan(y,viewData.clipYmax) || \
-				       lessThan(z,viewData.clipZmin) ||    \
-				       greaterThan(z,viewData.clipZmax) || \
-				       isNaNPoint(x,y,z))
+                                       greaterThan(x,viewData.clipXmax) || \
+                                       lessThan(y,viewData.clipYmin) ||    \
+                                       greaterThan(y,viewData.clipYmax) || \
+                                       lessThan(z,viewData.clipZmin) ||    \
+                                       greaterThan(z,viewData.clipZmax) || \
+                                       isNaNPoint(x,y,z))
 #include <limits.h>
 
-#define NotPoint	(SHRT_MAX)
-#define eqNANQ(x)	(x == NotPoint)
+#define NotPoint        (SHRT_MAX)
+#define eqNANQ(x)       (x == NotPoint)
 
 
 

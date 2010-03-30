@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _GRAPH2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,10 +44,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.H1"
 
 
-void 
+void
 getGraphFromViewman(int i)
 {
- /** This routine should be called right after a read of the graph key 
+ /** This routine should be called right after a read of the graph key
      was made from the viewport manager (or defined in some other way). **/
 
   int j,k,xPointsNeeded;
@@ -68,13 +67,13 @@ getGraphFromViewman(int i)
   readViewman(&(graphArray[i].originX),floatSize);
   readViewman(&(graphArray[i].originY),floatSize);
   readViewman(&(graphArray[i].numberOfLists),intSize);
-  
+
   if (!(llPtr = (pointListStruct *)malloc(graphArray[i].numberOfLists * sizeof(pointListStruct)))) {
     fprintf(stderr,"VIEW2D: Fatal Error>> Ran out of memory trying to receive a graph.\n");
     exitWithAck(RootWindow(dsply,scrn),Window,-1);
   }
   graphArray[i].listOfListsOfPoints = llPtr;
-  
+
   xPointsNeeded = 0;
   for (j=0; j<graphArray[i].numberOfLists; j++) {
     readViewman(&(llPtr->numberOfPoints),intSize);
@@ -93,11 +92,11 @@ getGraphFromViewman(int i)
     readViewman(&(llPtr->pointColor),intSize);
     readViewman(&(llPtr->lineColor),intSize);
     readViewman(&(llPtr->pointSize),intSize);
-    
+
     xPointsNeeded += llPtr->numberOfPoints;
     llPtr++;
   }   /* for j in list of lists of points */
-  
+
   /* read in graph state for the existing graph (override default values) */
   readViewman(&(graphStateArray[i].scaleX),floatSize);
   readViewman(&(graphStateArray[i].scaleY),floatSize);
@@ -138,7 +137,7 @@ getGraphFromViewman(int i)
 
 
 
-void 
+void
 freeGraph(int i)
 {
   int j;
@@ -146,8 +145,8 @@ freeGraph(int i)
 
   if (graphArray[i].key) {
     graphArray[i].key = 0;   /* 0 means no graph */
-    for (j=0,llPtr=graphArray[i].listOfListsOfPoints; 
-         j<graphArray[i].numberOfLists; j++,llPtr++) 
+    for (j=0,llPtr=graphArray[i].listOfListsOfPoints;
+         j<graphArray[i].numberOfLists; j++,llPtr++)
       free(llPtr->listOfPoints);
     free(graphArray[i].listOfListsOfPoints);
     free(xPointsArray[i].xPoint);

@@ -237,7 +237,7 @@ skimWct(Wct *pwct)
   }
 }
 
-void 
+void
 skim1Wct(Wct *pwct)
 {
 #define NHEAD    13
@@ -389,7 +389,7 @@ sortWct(Wct *pwct)
     }
 }
 
-void 
+void
 sort1Wct(Wct *pwct)
 {
     qsort((char *) pwct->wordv, pwct->wordc,
@@ -406,7 +406,7 @@ mystrcmp(const void *s1,const void * s2)
  * Break wct struct into words.
  */
 
-void 
+void
 burstWct(Wct *pwct)
 {
     while (pwct) {
@@ -415,7 +415,7 @@ burstWct(Wct *pwct)
     }
 }
 
-void 
+void
 burst1Wct(Wct *pwct)
 {
     char *s, **wv;
@@ -461,20 +461,20 @@ intern1Wct(char *fname)
     return pwct;
 }
 
-void 
+void
 reintern1Wct(Wct *pwct)
 {
     reread1Wct(pwct);
     burst1Wct(pwct);
 }
 
-void 
+void
 sfatal(char *s)
 {
     fatal("%s", s);
 }
 
-void 
+void
 fatal(char *fmt,char * s)
 {
     static char fbuf[256];
@@ -488,7 +488,7 @@ fatal(char *fmt,char * s)
 
 
 /* load up the wct database */
-void 
+void
 load_wct_file(char *fname)
 {
     pwct = nconcWct(intern1Wct(fname), pwct);
@@ -507,7 +507,7 @@ skim_wct(void)
  */
 
 
-void 
+void
 rescan_wct(void)
 {
     int b = curr_pntr - 1;

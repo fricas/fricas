@@ -33,14 +33,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _MAKE2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "viewman.h"
 
 #include "sockio-c.H1"
 #include "make2D.H1"
 
-void 
+void
 makeView2DFromSpadData(view2DStruct *viewdata,graphStateStruct graphState[])
 {
 
@@ -62,7 +61,7 @@ makeView2DFromSpadData(view2DStruct *viewdata,graphStateStruct graphState[])
       graphState[i].scaleX     = get_float(spadSock);
       graphState[i].scaleY     = get_float(spadSock);
       graphState[i].deltaX     = get_float(spadSock);
-      graphState[i].deltaY     = get_float(spadSock);  
+      graphState[i].deltaY     = get_float(spadSock);
       graphState[i].pointsOn   = get_int(spadSock);
       graphState[i].connectOn  = get_int(spadSock);
       graphState[i].splineOn   = get_int(spadSock);

@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _CLOSEVIEW3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 #include "header.h"
@@ -50,7 +49,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This closes all of the windows created for the    *
  * control panel window and the viewport window of   *
  * the current graph being displayed.                *
- * It does not currently return a specified value.   * 
+ * It does not currently return a specified value.   *
  *                                                   *
  *****************************************************/
 
@@ -73,18 +72,18 @@ closeViewport (void)
   for (i=0; i<maxButtons3D; i++) {
     XDeleteAssoc(dsply,table,(control->buttonQueue[i]).self);
   }
-  
+
   /* Free up the control panel window */
   XDestroyWindow(dsply,control->controlWindow);
   free(control);
-  
+
   /* Free up the viewport window */
 
   XDestroyWindow(dsply,viewport->viewWindow);
   XDestroyWindow(dsply,viewport->titleWindow);
   free(viewport);
-  
+
   XFlush(dsply);
-  
+
 } /* closeViewport() */
 

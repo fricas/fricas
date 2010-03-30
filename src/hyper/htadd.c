@@ -34,9 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* HyperDoc database file manager */
 
 
-#define _HTADD_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "hyper.h"
 #include <sys/stat.h>
 #include <errno.h>
@@ -44,15 +42,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lex.h"
 
-#include "htadd.H1"
 #include "addfile.H1"
 #include "halloc.H1"
 #include "hash.H1"
 #include "hterror.H1"
 #include "lex.H1"
 
-
-
+static void add_file(char * dbname, char * name, int fresh);
+static void add_new_pages(FILE * temp_db, FILE * new_file,
+                          char * addname, char * fullname);
+static int build_db_filename(short flag, char * db_dir, char * dbfilename);
+static void copy_file(char * f1, char * f2);
+static void delete_db(FILE * db, FILE * temp_db, char * name);
+static int delete_file(char * dbname, char * name);
+static void get_filename(void);
+static void parse_args(char * * argv, char * db_dir, char * * filenames,
+                       short * fl);
+static void update_db(FILE * db, FILE * temp_db, FILE * new_file,
+                      char * addname, char * fullname, int fresh);
 
 /*
  * These are variables that htadd needs to have declared because it shares

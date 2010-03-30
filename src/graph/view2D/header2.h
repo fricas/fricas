@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <setjmp.h>
 
 /* for XDefs */
-#define view2D 
+#define view2D
 
 #include "hash.h"
 #include "noX10.h"
@@ -58,10 +58,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define colorMASK   (ButtonPressMask + ButtonReleaseMask + LeaveWindowMask)
 
 /* make mouse grab for stationery mouse on a potentiometer slower */
-#define mouseWait 50 
+#define mouseWait 50
 
 #define controlCreateMASK (CWBackPixel | CWBorderPixel | CWEventMask | CWCursor |CWColormap | CWOverrideRedirect)
-#define buttonCreateMASK    CWEventMask  
+#define buttonCreateMASK    CWEventMask
 #define messageCreateMASK   0
 #define colormapCreateMASK  CWEventMask
 
@@ -97,13 +97,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define colorWidth   8
 #define colorHeight  12
-  
+
 #define colorOffset  3
 #define colorOffsetX 24
 #define colorOffsetY 20
 #define colorPointer 18
 
-#define buttonColor monoColor(105) 
+#define buttonColor monoColor(105)
 
 #define graphBarDefaultColor    monoColor(15)
 #define graphBarShowingColor    monoColor(15)
@@ -129,7 +129,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define viewBorderWidth 0
 #define borderWidth     22
-#define borderHeight	45
+#define borderHeight    45
 
 #define initDeltaX 0.0
 #define initDeltaY 0.0
@@ -145,7 +145,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define viewCursorForeground monoColor(166)
 #define viewCursorBackground monoColor(5)
 
-#define axisLength 100.0    
+#define axisLength 100.0
 
 #define axesColorDefault  35
 #define labelColor 22
@@ -246,12 +246,12 @@ typedef struct _xPointStruct {
 } xPointStruct;
 
 #define projX(x,w,i) ((((float)x/w-0.5)/graphStateArray[i].scaleX + \
-		       graphStateArray[i].centerX + 0.5) / 	\
-		      graphArray[i].xNorm + graphArray[i].xmin)
+                       graphStateArray[i].centerX + 0.5) /      \
+                      graphArray[i].xNorm + graphArray[i].xmin)
 
 #define projY(y,h,i) (((0.5-(float)y/h*aspectR)/graphStateArray[i].scaleY + \
-		       graphStateArray[i].centerY + 0.5) / 	\
-		      graphArray[i].yNorm + graphArray[i].ymin)
+                       graphStateArray[i].centerY + 0.5) /      \
+                      graphArray[i].yNorm + graphArray[i].ymin)
 
 #define isNaN(v) (v != v)
 

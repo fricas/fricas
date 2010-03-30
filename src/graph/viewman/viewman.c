@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _VIEWMAN_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <unistd.h>
 #include <sys/time.h>
@@ -71,7 +70,7 @@ viewManager *viewports,
   *slot,
   *stepSlot;
 Sock        *spadSock;
-int         viewType, 
+int         viewType,
   viewCommand,
   acknow,
   graphKey = 1,
@@ -95,7 +94,7 @@ main (void)
 
   graphStruct *aGraph;
   int keepLooking,code;
-  
+
   bsdSignal(SIGPIPE,brokenPipe,DontRestartSystemCalls);
 #if defined(BSDplatform) || defined (MACOSXplatform)
   bsdSignal(SIGCHLD,endChild,RestartSystemCalls);
@@ -103,7 +102,7 @@ main (void)
   bsdSignal(SIGCLD,endChild,RestartSystemCalls);
 #endif
   bsdSignal(SIGTERM,goodbye,DontRestartSystemCalls);
-  
+
   /* Connect up to AXIOM server */
   spadSock = connect_to_local_server(SpadServer,ViewportServer,Forever);
   if (spadSock == NULL) {
@@ -114,11 +113,11 @@ main (void)
   else
     fprintf(stderr,"viewman: Connected to FriCAS\n");
 #endif
-  
+
   /******** initialize ********/
   viewports = 0;
   graphList = 0;
-  
+
   /******** getting stuff from spad and viewports ********
   *********   the viewports have priority over    ****
   ***   AXIOM.                              ***/
@@ -130,14 +129,14 @@ main (void)
       FD_SET(slot->viewIn,&filedes);
       slot = slot->nextViewport;
     }
-    
+
 #ifdef DEBUG
     fprintf(stderr,"Selection for filedes of %x \n",filedes);
 #endif
     code = check(superSelect(FD_SETSIZE,(void *) &filedes,0,0,0));
-    for (;code<=0;) 
+    for (;code<=0;)
       code = check(superSelect(FD_SETSIZE,(void *)&filedes,0,0,0));
-    
+
     slot = viewports;
     keepLooking = 1;
     while (keepLooking && slot) {
@@ -148,19 +147,19 @@ main (void)
 #endif
         viewCommand = viewportClosing;
         readViewport(slot,&viewCommand,intSize);
-        
+
         switch (viewCommand) {
-          
+
         case pick2D:
 #ifdef DEBUG
           fprintf(stderr,"viewman: Doing 2D pick\n");
 #endif
           picked = yes;
-          
+
           readViewport(slot,&currentGraph,intSize); /* get the graph to pick */
           readViewport(slot,&currentGraphState,sizeof(graphStateStruct));
           break;
-          
+
         case drop2D:
 #ifdef DEBUG
           fprintf(stderr,"viewman: Doing 2D drop\n");
@@ -174,7 +173,7 @@ main (void)
             fprintf(stderr,"The viewport manager cannot drop a graph because nothing has been picked yet.\n");
           }
           break;
-          
+
         case viewportClosing:
 #ifdef DEBUG
           fprintf(stderr,"viewman: closing viewport\n");
@@ -183,12 +182,12 @@ main (void)
           break;
 
         };  /* switch */
-        
+
       };  /* if reading slot->viewIn */
       stepSlot = slot;
       slot = slot->nextViewport;
     };  /* while */
-    
+
     if (keepLooking) {   /* if  1 => slots not read, read from spad */
 #ifdef DEBUG
       fprintf(stderr,"viewman: still looking\n");
@@ -196,31 +195,31 @@ main (void)
       viewType = get_int(spadSock);
       if (viewType == -1) goodbye(-1);
       viewCommand = get_int(spadSock);
-      
+
       switch (viewType) {
-        
+
       case view3DType:
 #ifdef DEBUG
         fprintf(stderr,"viewman: making 3D viewport\n");
 #endif
-        if (viewCommand == makeViewport) 
+        if (viewCommand == makeViewport)
           forkView3D(view3DType);
-        else 
+        else
           funView3D(viewCommand);
-        
+
         break;
-        
+
       case viewTubeType:
 #ifdef DEBUG
         fprintf(stderr,"viewman: viewing a tube\n");
 #endif
-        if (viewCommand == makeViewport) 
+        if (viewCommand == makeViewport)
           forkView3D(viewTubeType);
-        else 
+        else
           funView3D(viewCommand);
-        
+
         break;
-        
+
       case viewGraphType:
 #ifdef DEBUG
         fprintf(stderr,"viewman: making a graph\n");
@@ -231,7 +230,7 @@ main (void)
           graphList         = aGraph;
         }
         break;
-        
+
       case view2DType:
 #ifdef DEBUG
         fprintf(stderr,"viewman: forking 2D\n");
@@ -242,9 +241,9 @@ main (void)
           funView2D(viewCommand);
         }
         break;
-        
+
       }   /* switch on viewType */
-    }   /* if (keepLooking) */ 
+    }   /* if (keepLooking) */
   }   /* while (1) */
 }
 

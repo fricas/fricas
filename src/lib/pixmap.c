@@ -107,7 +107,7 @@ zzopen(char *file,char * mode)
 
 ********************************************************************/
 void
-write_pixmap_file(Display *dsp, int scr, char  *fn, 
+write_pixmap_file(Display *dsp, int scr, char  *fn,
                   Window wid, int x, int y, int width,int height)
 {
     XImage *xi;
@@ -288,7 +288,7 @@ read_pixmap_file(Display *display, int screen, char *filename,
   attr.alloc_close_colors = False;
   attr.valuemask |= XpmAllocCloseColors;  /* we don't allocate close colors*/
 
-  
+
   if (file_exists(filename)) {
       real_filename = filename;
   } else {
@@ -316,17 +316,17 @@ read_pixmap_file(Display *display, int screen, char *filename,
 
 
 void
-write_pixmap_file(Display *dsp, int scr, char  *fn, 
+write_pixmap_file(Display *dsp, int scr, char  *fn,
                   Window wid, int x, int y, int width,int height)
 {
   XImage *xi;
   int status;
-  
+
   /* reads image structure in ZPixmap format */
   xi = XGetImage(dsp, wid, x, y, width, height, AllPlanes, ZPixmap);
   if (xi==0) return ;
   status=XpmWriteFileFromImage(dsp,fn,xi,0,0);
-  
+
 }
 
 

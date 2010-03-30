@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #define _ITEM_C
 #include "debug.h"
 #include "extent.h"

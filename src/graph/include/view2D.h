@@ -39,7 +39,7 @@ typedef struct _viewManager {
   int viewType,          /* specifies view3D, view2D, etc... */
     PID,               /* unique integer greater than zero */
     processID,         /* processID of child (PID could be the window ID) */
-    viewIn,viewOut;    /* connection to viewport process */
+    viewIn, viewOut;    /* connection to viewport process */
   char propertyName[14]; /* string pointing to the property name */
   Window viewWindow;
   struct _viewManager *nextViewport;
@@ -52,7 +52,7 @@ typedef struct _viewsWithThisGraph {
 
 
 typedef struct _pointStruct {
-  float x,y,hue,shade;
+  float x, y, hue, shade;
 } pointStruct;
 
 
@@ -66,11 +66,11 @@ typedef struct _pointListStruct {
 
 typedef struct _graphStruct {
   int                 key;
-  float               xmin,xmax,ymin,ymax;
-  float               xNorm,yNorm;
-  float               spadUnitX,spadUnitY;
-  float               unitX,unitY;
-  float               originX,originY;
+  float               xmin, xmax, ymin, ymax;
+  float               xNorm, yNorm;
+  float               spadUnitX, spadUnitY;
+  float               unitX, unitY;
+  float               originX, originY;
   int                 numberOfLists;
   pointListStruct     *listOfListsOfPoints;
   viewsWithThisGraph   *views;
@@ -80,10 +80,10 @@ typedef struct _graphStruct {
 
 typedef struct _view2DStruct {
   char        *title;
-  int         vX,vY,vW,vH,
+  int         vX, vY, vW, vH,
     showCP,
-    axesOn,unitsOn,pointsOn,linesOn,splineOn,
-    axesColor,unitsColor;
+    axesOn, unitsOn, pointsOn, linesOn, splineOn,
+    axesColor, unitsColor;
   int         graphKeyArray[maxGraphs];
 } view2DStruct;
 
@@ -91,9 +91,9 @@ typedef struct _view2DStruct {
 typedef struct _graphStateStruct {
   float scaleX, scaleY, deltaX, deltaY, centerX, centerY;
   int   pointsOn, connectOn, splineOn, axesOn, unitsOn,
-    axesColor,unitsColor;
-  int   showing, selected;  /* these fields are not passed from Spad; 
-			       View2D initializes them */
+    axesColor, unitsColor;
+  int   showing, selected;  /* these fields are not passed from Spad;
+                               View2D initializes them */
 } graphStateStruct;
 
 

@@ -35,7 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define HTERROR
 
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include "lex.h"

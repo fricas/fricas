@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _CONTROL2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -78,7 +77,7 @@ static XPoint translateArrow[translateArrowN] = {
  * void writeControlTitle() *
  ****************************/
 
-void 
+void
 writeControlTitle(void)
 {
 
@@ -94,7 +93,7 @@ writeControlTitle(void)
 
 } /* writeControlTitle() */
 
-void 
+void
 makeMessageFromData(int whichGraph)
 {
   if (viewport->haveControl) {
@@ -133,7 +132,7 @@ makeMessageFromData(int whichGraph)
 } /* makeMessageFromData() */
 
 
-void 
+void
 writeControlMessage(void)
 {
   int                strlength;
@@ -156,7 +155,7 @@ writeControlMessage(void)
 /***  void drawControlPanel()  ***/
 /*********************************/
 
-void 
+void
 drawControlPanel(void)
 {
 
@@ -362,7 +361,7 @@ drawControlPanel(void)
 
 }    /*** drawControlPanel ***/
 
-controlXY 
+controlXY
 getControlXY(int whereDoYouWantPanel)
 {
   XWindowAttributes wAttr, wAttrib;
@@ -541,7 +540,7 @@ makeControlPanel(void)
    control panel outside of it, it placed the control panel in the bottom
    right hand corner of the viewport window. */
 
-void 
+void
 putControlPanelSomewhere(int whereDoesPanelGo)
 {
   controlPanelStruct *control;
@@ -572,12 +571,12 @@ putControlPanelSomewhere(int whereDoesPanelGo)
 /***  void clearControlMessage()  ***/
 /************************************/
 
-void 
+void
 clearControlMessage(void)
 {
 
   strcpy(viewport->controlPanel->message,"");
-  
+
   XClearArea(dsply,viewport->controlPanel->controlWindow,
              0,controlMessageY-2,controlWidth,controlMessageHeight,False);
 }

@@ -39,46 +39,46 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   */
 
 /*  The Hues */
-#define red0		0
-#define red1		1
-#define red2		2
-#define orange0		3
-#define orange1		4
-#define orange2		5
-#define tan0		6
-#define tan1		7
-#define tan2		8
-#define yellow0		9
-#define yellow1		10
-#define yellow2		11
-#define green0		12
-#define green1		13
-#define green2		14
-#define cyan0		15
-#define cyan1		16
-#define cyan2		17
-#define blue0		18
-#define blue1		19
-#define blue2		20
-#define indigo0		21
-#define indigo1		22
-#define indigo2		23
-#define violet0		24
-#define violet1		25
-#define violet2		26
+#define red0            0
+#define red1            1
+#define red2            2
+#define orange0         3
+#define orange1         4
+#define orange2         5
+#define tan0            6
+#define tan1            7
+#define tan2            8
+#define yellow0         9
+#define yellow1         10
+#define yellow2         11
+#define green0          12
+#define green1          13
+#define green2          14
+#define cyan0           15
+#define cyan1           16
+#define cyan2           17
+#define blue0           18
+#define blue1           19
+#define blue2           20
+#define indigo0         21
+#define indigo1         22
+#define indigo2         23
+#define violet0         24
+#define violet1         25
+#define violet2         26
 
 /*
   The Shades
   */
-#define dark	0
-#define dim	1
-#define normal	2
-#define bright	3
+#define dark    0
+#define dim     1
+#define normal  2
+#define bright  3
 #define pastel  3
-#define light	4
+#define light   4
 
 /*
   The macros
   */
-#define moColor(h,s) ((mono)?foregroundColor:XSolidColor(h,s))
-#define moColor_BG(h,s) ((mono)?backgroundColor:XSolidColor(h,s))
+#define moColor(h, s) ((mono)?foregroundColor:XSolidColor(h, s))
+#define moColor_BG(h, s) ((mono)?backgroundColor:XSolidColor(h, s))

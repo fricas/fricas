@@ -31,11 +31,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _EVENT_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
-
 
 #include "hyper.h"
 
@@ -63,6 +60,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 #include "sockio-c.H1"
+
+static void create_window(void);
+static void handle_button(int button, XButtonEvent * event);
+static void handle_event(XEvent * event);
+static void handle_motion_event(XMotionEvent * event);
+static void init_cursor_states(void);
+static void make_busy_cursors(void);
+static void set_error_handlers(void);
+static int set_window(Window window);
+static void clear_exposures(Window w);
 
 jmp_buf env;
 Window gActiveWindow;
@@ -119,7 +126,7 @@ mainEventLoop(void)
             }
             else {
               select(FD_SETSIZE,(void *)&rd,(void *)&dum1,(void *)&dum2,NULL);
-              if (FD_ISSET(Xcon, &rd) || 
+              if (FD_ISSET(Xcon, &rd) ||
                   XEventsQueued(gXDisplay, QueuedAfterFlush)) {
                     XNextEvent(gXDisplay, &event);
                     handle_event(&event);
@@ -142,7 +149,7 @@ mainEventLoop(void)
                  * (plus maybe more later) service_session_socket in
                  * spadint.c
                  */
-                else 
+                else
                  if (session_server && FD_ISSET(session_server->socket, &rd)) {
                     service_session_socket();
                  }
@@ -829,8 +836,8 @@ set_window(Window window)
     /*
      * fprintf(stderr, "window(%d) and it's parent(%d) aren't in
      * gSessionHashTable\n", window, parent);
-     
-     we never found that window. this happens if (not iff) we exit from 
+
+     we never found that window. this happens if (not iff) we exit from
      an unfocused non-main window under certain wm's and click-to-type. the program returns here with
      the window handle that was just destroyed. So let's set the global gWindow
      to the main window.

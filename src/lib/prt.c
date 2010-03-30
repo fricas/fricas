@@ -48,7 +48,7 @@ myputchar(char c)
     return;
 }
 
-void 
+void
 clear_buff(void)
 {
     int count;
@@ -73,7 +73,7 @@ clear_buff(void)
 }
 
 
-void 
+void
 move_end(void)
 {
 
@@ -89,7 +89,7 @@ move_end(void)
     fflush(stdout);
 }
 
-void 
+void
 move_home(void)
 {
 
@@ -107,7 +107,7 @@ move_home(void)
 
 }
 
-void 
+void
 move_fore_word(void)
 {
     /** move the cursor to the next blank space  **/
@@ -125,7 +125,7 @@ move_fore_word(void)
     return;
 }
 
-void 
+void
 move_back_word(void)
 {
     /*** moves the cursor to the last blank space ***/
@@ -144,7 +144,7 @@ move_back_word(void)
     return;
 }
 
-void 
+void
 delete_current_char(void)
 {
     /**  deletes the char currently above the current_pntr, if it can be **/
@@ -180,7 +180,7 @@ delete_current_char(void)
     num_proc = num_proc + 3;
 }
 
-void 
+void
 delete_to_end_of_line(void)
 {
     int count;
@@ -204,7 +204,7 @@ delete_to_end_of_line(void)
 
 }
 
-void 
+void
 delete_line(void)
 {
     int count;
@@ -236,7 +236,7 @@ delete_line(void)
 
 }
 
-void 
+void
 printbuff(int start,int  num)
 {
     int trace;
@@ -266,7 +266,7 @@ del_print(int start, int num)
 }
 
 
-void 
+void
 ins_print(int start,int  num)
 {
     int count;
@@ -281,7 +281,7 @@ ins_print(int start,int  num)
     fflush(stdout);
 }
 
-void 
+void
 reprint(int start)
 {
     /**  simply reprints a single character **/
@@ -294,7 +294,7 @@ reprint(int start)
     return;
 }
 
-void 
+void
 back_up(int num_chars)
 {
     int cnt;
@@ -309,7 +309,7 @@ back_up(int num_chars)
 
 }
 
-void 
+void
 back_it_up(int num_chars)
 {
     int cnt;
@@ -320,7 +320,7 @@ back_it_up(int num_chars)
 }
 
 
-void 
+void
 print_whole_buff(void)
 {
     int trace;

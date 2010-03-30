@@ -40,8 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* #define DEBUG         1 */
 
 /* Include all the needed include files  */
-#define _HYPER_C
-#include "useproto.h"
+
 #include "debug.h"
 
 
@@ -62,6 +61,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "all_hyper_proto.H1"
 #include "sockio-c.H1"
 #include "bsdsignal.H1"
+
+static void init_hash(void);
+static void make_server_connections(void);
+static void check_arguments(void);
+
 /*
  * Here is a flag used to tell me whether I made a good connection to the
  * menu server. Needed so I don't send spad commands when I should not
@@ -120,9 +124,9 @@ int gIsAxiomServer = 0;        /* true iff HyperDoc is acting as a   */
 
 int kill_spad = 0;              /* kill spad when finished with paste file */
 
-int gSwitch_to_mono=0;         /* will be set to 1 if at any time we don't have 
-                                enough colours for the images. We will know this 
-                                when read_pixmap_file returns -1. We will use this 
+int gSwitch_to_mono=0;         /* will be set to 1 if at any time we don't have
+                                enough colours for the images. We will know this
+                                when read_pixmap_file returns -1. We will use this
                                 when deciding what to do in case of \inputimage */
 
 int gTtFontIs850=0;            /* a flag that tells us if the Tt font is a IBM pagecode 850
@@ -146,7 +150,7 @@ int input_file_count;
  * command
  */
 
-void 
+void
 sigusr2_handler(int sig)
 {
   gIsEndOfOutput = 1;
@@ -157,9 +161,9 @@ void
 sigcld_handler(int sig)
 {
 
-    /* why were we waiting after the child had already died ?? 
+    /* why were we waiting after the child had already died ??
       because we don't want zombies */
-  
+
   int x;
   wait(&x);
 
@@ -245,7 +249,7 @@ main(int argc, char **argv)
 /*        fprintf(stderr,"hyper:main:returned init_top_window\n");*/
         gParentWindow = gWindow;
         if (ret_status == -1) {
-            fprintf(stderr, 
+            fprintf(stderr,
                "(HyperDoc) Could not find RootPage for top-level window.\n");
             exit(-1);
         }
@@ -312,17 +316,17 @@ main(int argc, char **argv)
 static void
 init_hash(void)
 {
-    hash_init(&gFileHashTable, 
+    hash_init(&gFileHashTable,
               FileHashSize,
-              (EqualFunction)string_equal, 
+              (EqualFunction)string_equal,
               (HashcodeFunction) string_hash);
-    hash_init(&gSessionHashTable, 
-              SessionHashSize, 
-              (EqualFunction) window_equal, 
+    hash_init(&gSessionHashTable,
+              SessionHashSize,
+              (EqualFunction) window_equal,
               (HashcodeFunction) window_code);
-    hash_init(&gImageHashTable, 
-              ImageHashSize, 
-              (EqualFunction) string_equal, 
+    hash_init(&gImageHashTable,
+              ImageHashSize,
+              (EqualFunction) string_equal,
               (HashcodeFunction) string_hash);
 }
 
@@ -347,7 +351,7 @@ static void
 check_arguments(void)
 {
   int i;
-  
+
   /*
    * Now check the command line arguments, to see if I am supposed to be a
    * server or not
@@ -380,7 +384,7 @@ check_arguments(void)
           gmake_record_file=1;
         else if (gArgv[i][2] == 'v')
           gverify_record_file=1;
-        else 
+        else
           fprintf(stderr, "(HyperDoc) v or m must follow -r\n");
         input_file_list = gArgv + i + 1;
         input_file_count = gArgc - i - 1;

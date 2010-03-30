@@ -33,19 +33,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* This file is to be included by all the viewport files */
 
-#include "useproto.h"
-
-#define check(code) checker(code,__LINE__,errorStr)
-#define saymem(a,b,c) saymemWithLine(a,b,c,__LINE__)
-#define exitWithAck(ACK,ACKsize,i) check(write(Socket,&(ACK),sizeof(ACKsize)));  exit(i);
+#define check(code) checker(code, __LINE__, errorStr)
+#define saymem(a, b, c) saymemWithLine(a, b, c, __LINE__)
+#define exitWithAck(ACK, ACKsize, i) check(write(Socket, &(ACK), sizeof(ACKsize)));  exit(i);
 #define NIL(type) ((type *)NULL)
 /* #define monoColor(x) (mono)?foregroundColor:spadColors[x] */
 
 #define oldNum 8  /* in the old system, we assumed an eight shade palette */
 #define oldOff 2
 
-#define monoColor(x) (mono)?foregroundColor:XSolidColor((int)x/oldNum,(int)(x%oldNum)/oldOff)
-#define monoDither(x,y) (mono)?foregroundColor:XSolidColor(x,y)
+#define monoColor(x) (mono)?foregroundColor:XSolidColor((int)x/oldNum, (int)(x%oldNum)/oldOff)
+#define monoDither(x, y) (mono)?foregroundColor:XSolidColor(x, y)
 #define notANumber (0.0/0.0)
 
         /* error messages */

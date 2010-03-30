@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _SMOOTHSHADE_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <string.h>
 #include <math.h>
@@ -57,45 +56,45 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-char 
+char
 get_cBuffer_axes(int ix)
 {
         if( ix >=0 && ix <ARRAY_WIDTH) return (cBuffer[ix].axes);
         return ('0');
 }
 
-void 
+void
 put_cBuffer_axes(int ix,char val)
 {
         if( ix >=0 && ix <ARRAY_WIDTH) cBuffer[ix].axes = val;
 }
 
-int 
+int
 get_cBuffer_indx(int ix)
 {
         if( ix >=0 && ix <ARRAY_WIDTH) return (cBuffer[ix].indx);
         return (-1);
 }
 
-void 
+void
 put_cBuffer_indx(int ix,int val)
 {
         if( ix >=0 && ix <ARRAY_WIDTH) cBuffer[ix].indx = val;
 }
 
-void 
+void
 put_zBuffer(int ix,float val)
 {
         if (ix >=0 && ix <ARRAY_WIDTH) zBuffer[ix] = val;
 }
 
-float 
+float
 get_zBuffer(int ix)
 {
         return (zBuffer[ix]);
 }
 
-void 
+void
 put_imageX(int ix,char val)
 {
   if (ix <=0 && ix <vwInfo.width) imageX->data[ix] = val;
@@ -113,7 +112,7 @@ put_imageX(int ix,char val)
  * intersect the current   *
  * scanline.               *
  ***************************/
-void 
+void
 drawPhongSpan(triple pt,float N[3],int dFlag)
 {
   int                xpixel,hue,shade;
@@ -203,7 +202,7 @@ drawPhongSpan(triple pt,float N[3],int dFlag)
  * according to Phong.     *
  ***************************/
 
-void 
+void
 scanPhong(int dFlag)
 {
   viewTriple *p1, *p2;
@@ -324,7 +323,7 @@ scanPhong(int dFlag)
  * the x,y  bounding box to the z-buffer.   *
  ********************************************/
 
-void 
+void
 boxTObuffer(void)
 {
   int    xpix,i,j,k,count,decision;
@@ -400,7 +399,7 @@ boxTObuffer(void)
  * z-buffer.                                *
  ********************************************/
 
-void 
+void
 clipboxTObuffer(void)
 {
   int    xpix,i,j,k,count,decision;
@@ -476,7 +475,7 @@ clipboxTObuffer(void)
  * the x,y,z axes to the z-buffer.          *
  ********************************************/
 
-void 
+void
 axesTObuffer(void)
 {
   int    xpix,i,count,decision;
@@ -545,7 +544,7 @@ axesTObuffer(void)
  * all scanlines.                           *
  ********************************************/
 
-void 
+void
 scanLines(int dFlag)
 {
   unsigned long pixColor;
@@ -739,7 +738,7 @@ freePolyList (void)
  * onto the viewmap of a graph.             *
  ********************************************/
 
-void 
+void
 showAxesLabels(int dFlag)
 {
   int  xcoord2,ycoord2;
@@ -758,10 +757,10 @@ showAxesLabels(int dFlag)
     if (axesXY[0][3] < axesXY[0][1]) ycoord2 = axesXY[0][3]-5;
     else ycoord2 = axesXY[0][3] + 5;
     if (!viewport->yzOn) {
-      if (dFlag == Xoption) 
+      if (dFlag == Xoption)
         GDrawString(globGC,viewmap,xcoord2,ycoord2,"X",1,dFlag);
-      else 
-        GDrawString(GC9991,viewport->viewWindow,xcoord2,ycoord2,"X",1,dFlag); 
+      else
+        GDrawString(GC9991,viewport->viewWindow,xcoord2,ycoord2,"X",1,dFlag);
     }
   }
 
@@ -772,9 +771,9 @@ showAxesLabels(int dFlag)
     if (axesXY[1][3] < axesXY[1][1]) ycoord2 = axesXY[1][3]-5;
     else ycoord2 = axesXY[1][3] + 5;
     if (!viewport->xzOn) {
-      if (dFlag == Xoption) 
+      if (dFlag == Xoption)
         GDrawString(globGC,viewmap,xcoord2,ycoord2,"Y",1,dFlag);
-      else 
+      else
        GDrawString(GC9991,viewport->viewWindow,xcoord2,ycoord2,"Y",1,dFlag);
     }
   }
@@ -786,9 +785,9 @@ showAxesLabels(int dFlag)
     if (axesXY[2][3] < axesXY[2][1]) ycoord2 = axesXY[2][3]-5;
     else ycoord2 = axesXY[2][3] + 5;
     if (!viewport->xyOn) {
-      if (dFlag == Xoption) 
+      if (dFlag == Xoption)
         GDrawString(globGC,viewmap,xcoord2,ycoord2,"Z",1,dFlag);
-      else 
+      else
        GDrawString(GC9991,viewport->viewWindow,xcoord2,ycoord2,"Z",1,dFlag);
     }
   }
@@ -801,7 +800,7 @@ showAxesLabels(int dFlag)
  * for moving in and out of smooth shading. *
  ********************************************/
 
-void 
+void
 changeColorMap(void)
 {
   int         okay, i, hue, *index;
@@ -832,11 +831,11 @@ changeColorMap(void)
         FreePixels(dsply,colorMap,smoothConst+1);
       }
       okay = makeNewColorMap(dsply,colorMap,smoothHue);
-      if (okay) { 
-        pixelSetFlag = yes;  
+      if (okay) {
+        pixelSetFlag = yes;
         smoothError = no; }
-      else { 
-        pixelSetFlag = no;  
+      else {
+        pixelSetFlag = no;
         smoothError = yes; }
     } /* if redoColor */
   } else {

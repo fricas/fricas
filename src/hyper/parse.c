@@ -31,8 +31,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _PARSE_C
-#include "useproto.h"
 #include "debug.h"
 
 #include "parse.h"
@@ -50,7 +48,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 
-
+static void end_a_page(void);
+static HyperDocPage * format_page(UnloadedPage * ulpage);
+static void parse_page(HyperDocPage * page);
+static void parse_replacepage(void);
+static void start_footer(void);
+static void start_scrolling(void);
 
 TextNode *curr_node;            /* current node being parsed. It is to be the
                                  * next one filled   */
@@ -286,9 +289,9 @@ init_parse_page(HyperDocPage *page)
     cur_spadcom = NULL;
     gLinkHashTable = page->fLinkHashTable;
     hash_init(
-              gLinkHashTable, 
-              LinkHashSize, 
-              (EqualFunction) window_equal, 
+              gLinkHashTable,
+              LinkHashSize,
+              (EqualFunction) window_equal,
               (HashcodeFunction) window_code);
     gPageBeingParsed = page;
 
@@ -685,9 +688,9 @@ parse_page_from_socket(void)
     cur_spadcom = NULL;
     gLinkHashTable = page->fLinkHashTable;
     hash_init(
-              gLinkHashTable, 
-              LinkHashSize, 
-              (EqualFunction) window_equal, 
+              gLinkHashTable,
+              LinkHashSize,
+              (EqualFunction) window_equal,
               (HashcodeFunction) window_code);
     gPageBeingParsed = page;
     replace_page = NULL;
@@ -728,9 +731,9 @@ parse_page_from_unixfd(void)
     cur_spadcom = NULL;
     gLinkHashTable = page->fLinkHashTable;
     hash_init(
-              gLinkHashTable, 
-              LinkHashSize, 
-              (EqualFunction) window_equal, 
+              gLinkHashTable,
+              LinkHashSize,
+              (EqualFunction) window_equal,
               (HashcodeFunction) window_code);
     gPageBeingParsed = page;
     if (setjmp(jmpbuf)) {

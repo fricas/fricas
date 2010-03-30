@@ -44,7 +44,7 @@
 (defmacro sbcl-make-u32-vector(n)
     (multiple-value-bind (typetag n-bits)
         (SB-IMPL::%VECTOR-WIDETAG-AND-N-BITS '(unsigned-byte 32))
-        `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n 
+        `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n
                        (ceiling (* ,n ,n-bits) sb-vm:n-word-bits))))
 
 (defun GETREFV32(n x)
@@ -122,7 +122,7 @@
 
 ;;; Floating point macros
 
-(defmacro DEF-DF-BINOP (name op) 
+(defmacro DEF-DF-BINOP (name op)
    `(defmacro ,name (x y) `(the double-float (,',op (the double-float ,x)
                                                     (the double-float ,y)))))
 (DEF-DF-BINOP ADD-DF +)
@@ -138,7 +138,7 @@
                                              (the double-float ,y)))
 (defmacro EXPT-DF-I (x y) `(EXPT (the double-float ,x)
                                  (the integer ,y)))
-(defmacro EXPT-DF-DF (x y) `(EXPT (the double-float ,x) 
+(defmacro EXPT-DF-DF (x y) `(EXPT (the double-float ,x)
                                   (the double-float ,y)))
 (defmacro MUL-DF-I (x y) `(* (the double-float ,x)
                                   (the integer ,y)))

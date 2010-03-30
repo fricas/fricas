@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _VOLUME3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <math.h>
 #include <string.h>

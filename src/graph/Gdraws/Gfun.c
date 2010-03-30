@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #define _GFUN_C
-#include "useproto.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -185,7 +184,7 @@ Gdraws_drawFrame(
 
 int
 Gdraws_setDimension(
-                    Window viewWindow, 
+                    Window viewWindow,
                     Window titleWindow)
 {
   FILE *fp;
@@ -235,7 +234,7 @@ Gdraws_setDimension(
   return (fclose(fp));
 }
 /*
- * GDrawImageString draws an image text string 
+ * GDrawImageString draws an image text string
  */
 
 int
@@ -315,7 +314,7 @@ GDrawArc(
   return (s);
 }
 /*
- * GDrawLine draws a line, see XDrawLine 
+ * GDrawLine draws a line, see XDrawLine
  */
 
 int
@@ -409,7 +408,7 @@ GDrawLines(
 }
 
 /*
- * GDrawPoint draws a point, see XDrawPoint 
+ * GDrawPoint draws a point, see XDrawPoint
  */
 
 int
@@ -830,16 +829,16 @@ PSCreateContext(
 {
   FILE *fp;
   GCptr newGC, curGC;
-  
+
   /* get memory for new GC cell */
-  
+
   if (!(newGC = (GCptr) malloc(sizeof(GCstruct)))) {
     fprintf(stderr, "Ran out of memory(malloc) trying to create a ps GC.\n");
     exit(-1);
   }
-  
+
   /* attach newGC to chain */
-  
+
   if (GChead == NULL)
     GChead = newGC;
   else {                      /* attach newGC to end of linked list */
@@ -848,22 +847,22 @@ PSCreateContext(
       curGC = curGC->next;
     curGC->next = newGC;
   }
-  
+
   /* fill newGC with information */
-  
+
   newGC->GCint = gc;
   sprintf(newGC->GCchar, "%s", C_gc);
   newGC->next = NULL;
-  
+
   if ((fp = fopen(psData[GCdictps].filename, "a")) == NULL) {
     fprintf(stderr, "PSCreateContext cannot open %s\n",
             psData[GCdictps].filename);
     return (psError);
   }
-  
+
   fprintf(fp, "\t%d\t%d\t%d\n\t%f\t%f\t/%s\tmakeDict\n", joinStyle,
           capStyle, lineWidth, bg, fg, C_gc);
-  
+
   return (fclose(fp));
 }
 
@@ -876,11 +875,11 @@ char *
 PSfindGC(GC gc)
 {
   GCptr curGC;
-  
+
   curGC = GChead;
   while ((curGC != NULL) && (curGC->GCint != gc))
     curGC = curGC->next;
-  
+
   if (curGC == NULL) {
     fprintf(stderr, "PSfindGC cannot find gc: %p.\n",gc);
     return (NULL);
@@ -974,7 +973,7 @@ GSetLineAttributes(
                    int dFlag)
 {
   int s = 0;
-  
+
   switch (dFlag) {
   case Xoption:
     XSetLineAttributes(dsply, gc, lineWidth, lineStyle,
@@ -1070,7 +1069,7 @@ PSClose(void)
 
 
 
-int 
+int
 centerX (GC viewGCx,char * theString,int strlength,int windowWidth)
 {
   XFontStruct *fontStruct;
@@ -1083,12 +1082,12 @@ centerX (GC viewGCx,char * theString,int strlength,int windowWidth)
   if(fontStruct == NULL) return(0);
   result = (windowWidth - XTextWidth(fontStruct,theString,strlength))/2 -
     fontStruct->min_bounds.lbearing;
-  XFreeFontInfo(NULL,fontStruct,1); 
+  XFreeFontInfo(NULL,fontStruct,1);
   return(result);
 }
 
 
-int 
+int
 centerY (GC viewGCy,int windowHeight)
 {
 
@@ -1106,7 +1105,7 @@ centerY (GC viewGCy,int windowHeight)
   return(result);
 
 }
- 
+
 
 /*
  * PSColorPolygon draws and fills a polygon given data in XPoint; see
@@ -1282,13 +1281,13 @@ PSFillwOutline(
   return (fclose(fp));
 }
 
-static int 
+static int
 TrivEqual(Window s1,Window s2)
 {
   return ( s1 == s2);
 }
 
-static int 
+static int
 TrivHash_code(Window s,int size)
 {
   return (s % size);
@@ -1304,7 +1303,7 @@ XCreateAssocTable(int size)
   return table;
 }
 
-void 
+void
 XMakeAssoc(Display * dsp, HashTable *table, Window w, int * p)
 {
   hash_insert(table,(char *) p, (char *) w);
@@ -1316,7 +1315,7 @@ XLookUpAssoc(Display * dsp, HashTable *table,Window w)
   return (int *) hash_find(table,(char *)w);
 }
 
-void 
+void
 XDeleteAssoc(Display * dsp,HashTable * table, Window w)
 {
   hash_delete(table,(char *) w);

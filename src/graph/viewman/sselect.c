@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _SSELECT_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -59,15 +58,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Expected global variables:              *
  *   int  checkClosedChild                 *
  *******************************************/
- 
-int 
+
+int
 superSelect(int n, int *rd, int *wr, int *ex, char *timeout)
 {
-  
+
   int waiting;
   viewManager *viewport;
   int ret_val;
-  
+
   ret_val = select(n, (void *)rd, (void *)wr, (void *)ex, (void *)timeout);
   while (ret_val == -1 && errno == EINTR) {
     /* checkClosedChild gets set by the SIGCHLD handler */

@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern int              scrn;
 extern Display          *dsply;
-extern XFontStruct      *globalFont, *buttonFont, *headerFont, 
+extern XFontStruct      *globalFont, *buttonFont, *headerFont,
                         *titleFont, *graphFont,
                         *lightingFont, *volumeFont, *quitFont, *saveFont,
                         *serverFont;
@@ -45,7 +45,7 @@ extern int              followMouse, gotToggle, viewportKeyNum;
 extern Window           rtWindow, quitWindow, saveWindow;
 extern GC               globalGC1, globalGC2, anotherGC, globGC, trashGC,
                         componentGC, opaqueGC, renderGC,
-                        controlMessageGC, lightingGC, volumeGC, quitGC, 
+                        controlMessageGC, lightingGC, volumeGC, quitGC,
                         saveGC, graphGC;
 extern XSizeHints       viewSizeHints;
 extern HashTable        *table;

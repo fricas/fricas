@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _PROCESS2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -57,11 +56,11 @@ static int doit=0;  /* globish variable for picking/dropping/clearing - all sort
                 2 button sequence events (command & graph #). */
 
 
-void 
+void
 doPick (int i,int bKey)
 {
   int vCommand=pick2D;
-  
+
   picking = no;
   /* reset indicator so that we're not in pick/drop/query mode anymore */
   doit = 0;
@@ -74,17 +73,17 @@ doPick (int i,int bKey)
   } else
     sprintf(control->message,"%s","This graph is empty!");
   writeControlMessage();
-  
-  
+
+
 }
 
 
-void 
+void
 doDrop (int i,int bKey)
 {
   int vCommand=drop2D;
   int viewGoAhead;
-  
+
   dropping = no;
   /* reset indicator so that we're not in pick/drop/query mode anymore */
   doit = 0;
@@ -109,11 +108,11 @@ doDrop (int i,int bKey)
   }
 }
 
-void 
+void
 clickedOnGraphSelect (int i,int bKey)
 {
   int strlength;
-  
+
   switch (doit) {
   case pick2D:
     currentGraph = i;
@@ -146,7 +145,7 @@ clickedOnGraphSelect (int i,int bKey)
       GSetForeground(graphGC,(float)foregroundColor,Xoption);
       GSetBackground(graphGC,(float)backgroundColor,Xoption);
     }
-    
+
     GDrawImageString(graphGC,control->controlWindow,
                      control->buttonQueue[bKey].buttonX +
                      centerX(graphGC,
@@ -161,7 +160,7 @@ clickedOnGraphSelect (int i,int bKey)
     GDrawLine(trashGC,control->controlWindow,0,286,controlWidth,286,Xoption);
     break;
   } /* switch doit */
-  
+
 }
 
 
@@ -183,13 +182,13 @@ drawControlPushButton(int isOn, int index)
 
 
 
-void 
+void
 buttonAction (int bKey)
 {
   int i;
-  
+
   switch (bKey) {
-    
+
   case pick2D:
     if (viewAloned) {
       sprintf(control->message,"%s","Cannot pick without FriCAS!");
@@ -203,7 +202,7 @@ buttonAction (int bKey)
       XSync(dsply,False);
     }
     break;
-    
+
   case drop2D:
     if (viewAloned) {
       sprintf(control->message,"%s","Cannot drop without FriCAS!");
@@ -216,28 +215,28 @@ buttonAction (int bKey)
       XSync(dsply,False);
     }
     break;
-    
+
   case query2D:
     doit = query2D;
     sprintf(control->message,"%s","Click on the graph to query");
     writeControlMessage();
     XSync(dsply,False);
     break;
-    
-    
+
+
   case zoom2Dx:
     if (zoomXON)
       strcpy((control->buttonQueue[zoom2Dx]).text ,
              "X Off");
     else
-      strcpy((control->buttonQueue[zoom2Dx]).text , 
+      strcpy((control->buttonQueue[zoom2Dx]).text ,
              "X On ");
     zoomXON = !zoomXON;
-    
+
     drawControlPushButton(zoomXON, zoom2Dx);
     XSync(dsply,False);
     break;
-    
+
   case zoom2Dy:
     if (zoomYON) strcpy((control->buttonQueue[zoom2Dy]).text,
                         "Y Off");
@@ -247,8 +246,8 @@ buttonAction (int bKey)
     drawControlPushButton(zoomYON, zoom2Dy);
     XSync(dsply,False);
     break;
-    
-    
+
+
   case translate2Dx:
     if (transXON) strcpy((control->buttonQueue[translate2Dx]).text,
                          "X Off");
@@ -258,7 +257,7 @@ buttonAction (int bKey)
     drawControlPushButton(transXON, translate2Dx);
     XSync(dsply,False);
     break;
-    
+
   case translate2Dy:
     if (transYON) strcpy((control->buttonQueue[translate2Dy]).text,
                          "Y Off");
@@ -268,7 +267,7 @@ buttonAction (int bKey)
     drawControlPushButton(transYON, translate2Dy);
     XSync(dsply,False);
     break;
-    
+
   case pointsOnOff:
     if (pointsON) strcpy((control->buttonQueue[pointsOnOff]).text,
                          "Pts Off");
@@ -278,11 +277,11 @@ buttonAction (int bKey)
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].pointsOn = pointsON;
-    
+
     drawControlPushButton(pointsON, pointsOnOff);
     drawViewport(Xoption);
     break;
-    
+
   case connectOnOff:
     if (connectON) strcpy((control->buttonQueue[connectOnOff]).text,
                           "Lines Off");
@@ -292,11 +291,11 @@ buttonAction (int bKey)
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].connectOn = connectON;
-    
+
     drawControlPushButton(connectON, connectOnOff);
     drawViewport(Xoption);
     break;
-    
+
   case spline2D:
     if (splineON) strcpy((control->buttonQueue[spline2D]).text,
                          "Box Off");
@@ -306,11 +305,11 @@ buttonAction (int bKey)
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].splineOn = splineON;
-    
+
     drawControlPushButton(splineON, spline2D);
     drawViewport(Xoption);
     break;
-    
+
   case axesOnOff2D:
     if (axesON)
       strcpy ((control->buttonQueue[axesOnOff2D]).text,
@@ -322,11 +321,11 @@ buttonAction (int bKey)
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].axesOn = axesON;
-    
+
     drawControlPushButton(axesON, axesOnOff2D);
     drawViewport(Xoption);
     break;
-    
+
   case unitsOnOff2D:
     if (unitsON)
       strcpy( (control->buttonQueue[unitsOnOff2D]).text,
@@ -338,16 +337,16 @@ buttonAction (int bKey)
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].unitsOn = unitsON;
-    
+
     drawControlPushButton(unitsON, unitsOnOff2D);
     drawViewport(Xoption);
     break;
-    
+
   case ps2D:
     strcpy(control->message,"Creating postscript now ...");
     writeControlMessage();
     drawControlPushButton(1, ps2D);
-    
+
     if (PSInit(viewport->viewWindow, viewport->titleWindow) == psError) {
       strcpy(control->message,"Aborted: PSInit error.");
       writeControlMessage();
@@ -355,12 +354,12 @@ buttonAction (int bKey)
       XSync(dsply,False);
       return;   /* make new temp name for new file */
     }
-    
+
     drawViewport(PSoption);     /* draw picture in PS; create ps script file */
-    
-    if (PSCreateFile(viewBorderWidth, 
+
+    if (PSCreateFile(viewBorderWidth,
                      viewport->viewWindow,
-                     viewport->titleWindow, 
+                     viewport->titleWindow,
                      viewport->title) == psError) {
       strcpy(control->message,"Aborted: PSCreateFile error.");
       writeControlMessage();
@@ -368,7 +367,7 @@ buttonAction (int bKey)
       XSync(dsply,False);
       return;
     }
-    
+
     clearControlMessage();
     strcpy(control->message,PSfilename);
     strcat(control->message," in working dir ");
@@ -376,7 +375,7 @@ buttonAction (int bKey)
     drawControlPushButton(0, ps2D);
     XSync(dsply,False);
     break;
-    
+
   case hideControl2D:
     if (viewport->haveControl) {
       viewport->haveControl = no;
@@ -384,41 +383,41 @@ buttonAction (int bKey)
       XSync(dsply,False);
     }
     break;
-    
+
   case reset2D:
     /* reset view */
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i] = graphStateBackupArray[i];
-    
+
     unitsON = no;
     strcpy( (control->buttonQueue[unitsOnOff2D]).text,s  = "Units Off");
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].unitsOn = no;
     drawControlPushButton(unitsON, unitsOnOff2D);
-    
+
     pointsON = yes;
     strcpy ((control->buttonQueue[pointsOnOff]).text ,"Pts On ");
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].pointsOn = yes;
     drawControlPushButton(pointsON, pointsOnOff);
-    
+
     axesON = yes;
     strcpy ((control->buttonQueue[axesOnOff2D]).text,"Axes On ");
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].axesOn = yes;
     drawControlPushButton(axesON, axesOnOff2D);
-    
+
     connectON = yes;
     strcpy((control->buttonQueue[connectOnOff]).text,"Lines On ");
     for (i=0; i<maxGraphs; i++)
       if (graphStateArray[i].showing && graphStateArray[i].selected)
         graphStateArray[i].connectOn = yes;
     drawControlPushButton(connectON, connectOnOff);
-    
+
     splineON = no;
     strcpy( (control->buttonQueue[connectOnOff]).text ,"Box Off");
     for (i=0; i<maxGraphs; i++)
@@ -426,9 +425,9 @@ buttonAction (int bKey)
         graphStateArray[i].splineOn = splineON;
     drawControlPushButton(splineON, spline2D);
     drawViewport(Xoption);
-    
+
     break;
-    
+
   case closeAll2D:
     strcpy(control->message,"       Click again to confirm       ");
     writeControlMessage();
@@ -436,7 +435,7 @@ buttonAction (int bKey)
     XSync(dsply,False);
     viewport->closing = yes;
     break;
-    
+
   case clear2D:
     for (i=0; i<maxGraphs; i++) graphStateArray[i].selected = 1;
     clickedOnGraphSelect(0,graphSelect1);
@@ -450,7 +449,7 @@ buttonAction (int bKey)
     clickedOnGraphSelect(8,graphSelect9);
     XSync(dsply,False);
     break;
-    
+
   case graph1:
   case graph2:
   case graph3:
@@ -463,7 +462,7 @@ buttonAction (int bKey)
     clickedOnGraph(bKey-graphStart,bKey);
     XSync(dsply,False);
     break;
-    
+
   case graphSelect1:
   case graphSelect2:
   case graphSelect3:
@@ -476,15 +475,15 @@ buttonAction (int bKey)
     clickedOnGraphSelect(bKey-graphSelectStart,bKey);
     XSync(dsply,False);
     break;
-    
+
   } /* switch (action) */
 }
 
 /*********************** X Event Processing ***************************/
-void 
+void
 processEvents(void)
 {
-  
+
   XEvent                  *event,
     tempEvent;
   Window                  whichWindow;
@@ -495,7 +494,7 @@ processEvents(void)
     someInt,
     mouseW4,
     mouseH4,
-    toggleReady, 
+    toggleReady,
     gotToggle = no,
     checkButton = no,
     firstTime = yes,
@@ -505,58 +504,58 @@ processEvents(void)
     len,
     externalControl;
   fd_set                  rd;
-  
-  
+
+
   externalControl=0;
   Xcon = ConnectionNumber(dsply);
-  
-  
+
+
   if (!(event = (XEvent *)malloc(sizeof(XEvent)))) {
     fprintf(stderr,"Ran out of memory initializing event processing.\n");
     exitWithAck(RootWindow(dsply,scrn),Window,-1);
   }
-  
+
   controlButton = control->buttonQueue;
-  
+
   while(1) {
-    
+
     len=0;
     while(len<=0) {
       FD_ZERO(&rd);
       if (externalControl==0) FD_SET(0, &rd);
       FD_SET(Xcon,&rd);
-      
+
       if (XEventsQueued(dsply, QueuedAlready)) {
         len=1;
         break;
       }
-      if (!followMouse) 
-        len=select(FD_SETSIZE,(void *) &rd,0,0,0); 
-      else 
+      if (!followMouse)
+        len=select(FD_SETSIZE,(void *) &rd,0,0,0);
+      else
         len=1;
     }
-    if (FD_ISSET(Xcon,&rd)|| 
-        XEventsQueued(dsply, QueuedAfterFlush) || 
+    if (FD_ISSET(Xcon,&rd)||
+        XEventsQueued(dsply, QueuedAfterFlush) ||
         followMouse) {
-      
+
       if (followMouse) {
-        if (XPending(dsply)) 
+        if (XPending(dsply))
           XNextEvent(dsply,event);
         gotEvent++;
       } else {
         XNextEvent(dsply,event);
         gotEvent++;
       }
-      
-      if (gotToggle || !followMouse) 
+
+      if (gotToggle || !followMouse)
         checkButton = no;
-      
+
       if (gotEvent) {
         whichWindow = ((XButtonEvent *)event)->window;
         firstTime = no;
-        
+
         switch(((XEvent *)event)->type) {
-          
+
         case ClientMessage:
           if (event->xclient.data.l[0] == wm_delete_window) {
                   goodbye(-1);
@@ -615,7 +614,7 @@ processEvents(void)
             break;
           }
           break;
-          
+
         case MotionNotify:
           if (followMouse) {
             while (XCheckMaskEvent(dsply,
@@ -631,7 +630,7 @@ processEvents(void)
             checkButton = yes;
           }
           break;
-          
+
         case ButtonRelease:
           if (followMouse==yes) {
             followMouse = no;
@@ -644,22 +643,22 @@ processEvents(void)
             checkButton = no;
           }
           break;
-          
+
         case LeaveNotify:
           /*
             We still follow the mouse when we leave the pots.
             */
-          /*      
+          /*
                   followMouse = no;
-                  toggleReady = yes; 
-                  checkButton = no; 
+                  toggleReady = yes;
+                  checkButton = no;
                   */
 
           break;
-          
+
         case ButtonPress:
           if (whichWindow == viewport->viewWindow) {
-            
+
             /* mouse clicked on viewport */
 
             switch (((XButtonEvent *)event)->button) {
@@ -669,7 +668,7 @@ processEvents(void)
 
               XGetWindowAttributes(dsply,whichWindow,&graphWindowAttrib);
               sprintf(viewport->controlPanel->message,
-                      "       >%d<: [%6.2f,%6.2f]       ", 
+                      "       >%d<: [%6.2f,%6.2f]       ",
                       queriedGraph+1,
                       projX((((XButtonEvent *)event)->x),
                             graphWindowAttrib.width,queriedGraph),
@@ -692,11 +691,11 @@ processEvents(void)
               else {
                 mouseH4 = graphWindowAttrib.height/4;
                 if (((XButtonEvent *)event)->y >
-                    (graphWindowAttrib.height - mouseH4)) 
+                    (graphWindowAttrib.height - mouseH4))
                   someInt = 2;
-                else if (((XButtonEvent *)event)->x < mouseW4) 
+                else if (((XButtonEvent *)event)->x < mouseW4)
                   someInt = 3;
-                else if (((XButtonEvent *)event)->y < mouseH4) 
+                else if (((XButtonEvent *)event)->y < mouseH4)
                   someInt = 4;
                 else someInt = 0;
               }
@@ -724,7 +723,7 @@ processEvents(void)
               buttonTablePtr = *((int *)XLookUpAssoc(dsply,table,whichWindow));
               controlButton = &(control->buttonQueue[buttonTablePtr]);
             }
-            
+
             if (controlButton->pot) {
               /* figure out [x,y] for this button in the range [-1..1,-1..1] */
               mouseXY = getPotValue(((XButtonEvent *)event)->x,
@@ -744,12 +743,12 @@ processEvents(void)
             firstTime   = yes;
           }
           break;
-          
+
         } /* switch */
         gotEvent--;
       } /* if gotEvent */
-      
-      
+
+
       /* Allow repeat polling when mouse button clicked on a potentiometer. */
 
       if (followMouse && !firstTime && (followMouse++ > mouseWait)) {
@@ -767,9 +766,9 @@ processEvents(void)
               ((controlButton->buttonKey < graphStart) &&
                (controlButton->buttonKey > (graphSelectStart + maxGraphs))))
             doit = 0;
-          
+
           switch(controlButton->buttonKey) {
-            
+
           case translate2D:
             for (i=0; i<maxGraphs; i++) {
               if (graphStateArray[i].showing && graphStateArray[i].selected) {
@@ -791,7 +790,7 @@ processEvents(void)
             }  /* for graphs */
             drawViewport(Xoption);
             break;
-            
+
           case scale2D:
             for (i=0; i<maxGraphs; i++) {
               if (graphStateArray[i].showing && graphStateArray[i].selected) {
@@ -813,7 +812,7 @@ processEvents(void)
             }  /* for graphs */
             drawViewport(Xoption);
             break;
-            
+
           default:
             buttonAction(controlButton->buttonKey);
           } /* switch on buttonKey */
@@ -832,10 +831,10 @@ processEvents(void)
 
 
 
-void 
+void
 clickedOnGraph (int i,int bKey)
 {
-  
+
   switch (doit) {
   case pick2D:
     currentGraph = queriedGraph = i;
@@ -889,7 +888,7 @@ clickedOnGraph (int i,int bKey)
     drawViewport(Xoption);
     break;
   } /* switch doit */
-  
+
 }
 
 
