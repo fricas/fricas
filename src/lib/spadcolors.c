@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "spadcolors.H1"
 #include "util.H1"
 
-#if 0 
+#if 0
 int colors[100];
 #endif
 
@@ -67,7 +67,7 @@ HSVtoRGB(HSV hsv)
     RGB rgb;
     float h, f, p, q, t;
     int i;
-    
+
     rgb.r = 0.0;
     rgb.g = 0.0;
     rgb.b = 0.0;
@@ -197,7 +197,7 @@ HLStoRGB(HLS hls)
  ******************************************************/
 
 int
-makeColors(Display *dsply, int scrn, Colormap *colorMap, 
+makeColors(Display *dsply, int scrn, Colormap *colorMap,
            unsigned long **colorIndex, int *total_Shades)
 {
 
@@ -256,7 +256,7 @@ makeColors(Display *dsply, int scrn, Colormap *colorMap,
             color.green  = rgb.g *((1<<16)-1);
             color.blue   = rgb.b *((1<<16)-1);
             color.flags = DoRed | DoGreen | DoBlue;
-            /* 
+            /*
                fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
                fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
                */
@@ -277,7 +277,7 @@ makeColors(Display *dsply, int scrn, Colormap *colorMap,
             color.green  = rgb.g *((1<<16)-1);
             color.blue   = rgb.b *((1<<16)-1);
             color.flags = DoRed | DoGreen | DoBlue;
-            /* 
+            /*
                fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
                fprintf(stderr,"%d\t%d\t%d\n",color.red,color.green,color.blue);
                */
@@ -400,7 +400,7 @@ makeNewColorMap(Display *dsply, Colormap colorMap, int smoothHue)
         xcolor.green  = rgb.g *((1<<16)-1);
         xcolor.blue   = rgb.b *((1<<16)-1);
         xcolor.flags = DoRed | DoGreen | DoBlue;
-        /* 
+        /*
            fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
            fprintf(stderr,"%d\t%d\t%d\n",xcolor.red,xcolor.green,xcolor.blue);
            */
@@ -512,7 +512,7 @@ AllocCells(Display *dsply, Colormap colorMap, int smoothHue)
           fprintf(stderr,"%f\t%f\t%f\n",rgb.r,rgb.g,rgb.b);
           fprintf(stderr,"%d\t%d\t%d\n",xcolor.red,xcolor.green,xcolor.blue);
           */
-        if (XAllocColor(dsply, colorMap, &xcolor)) { 
+        if (XAllocColor(dsply, colorMap, &xcolor)) {
             pixels[count] = xcolor.pixel;
             count++;
         }
@@ -523,7 +523,7 @@ AllocCells(Display *dsply, Colormap colorMap, int smoothHue)
       FreePixels(dsply,colorMap,count);
       return (0);
     }
-    if (XAllocColorCells(dsply, colorMap, False, 
+    if (XAllocColorCells(dsply, colorMap, False,
                           plane_masks, 0, pixels, smoothConst + 1)) {
         return (smoothConst + 1);
     }

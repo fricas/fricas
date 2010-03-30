@@ -294,14 +294,14 @@ handlePage(FILE *infile,PgInfo * pg)
 
 }
 
-void 
+void
 searchPage(char *pgname,char * pgtitle,char * pgbody)
 {
     char *bodyrest;
     regmatch_t match_pos;
     int nhits = 0;
 
-    if (!regexec(&reg_pattern, pgtitle, 1, &match_pos, 0)) 
+    if (!regexec(&reg_pattern, pgtitle, 1, &match_pos, 0))
         nhits++;
 
     bodyrest = pgbody;
@@ -322,7 +322,7 @@ searchPage(char *pgname,char * pgtitle,char * pgbody)
  * modifies s.
  */
 
-void 
+void
 squirt(char *s, int n)
 {
     register char *t, *e;
@@ -344,7 +344,7 @@ squirt(char *s, int n)
 /*
  * Any newlines and separator characters in the title are changed to blanks.
  */
-void 
+void
 splitpage(char *buf, char **ptitle, char **pbody)
 {
     int n, depth, tno;
@@ -379,7 +379,7 @@ splitpage(char *buf, char **ptitle, char **pbody)
 }
 
 
-void 
+void
 untexbuf(register char *s)
 {
     register char *d = s;
@@ -411,7 +411,7 @@ untexbuf(register char *s)
     *d = 0;
 }
 
-void 
+void
 badDB(void)
 {
     fprintf(stderr, "%s:  bad database file %s\n", progName, htdbFName);

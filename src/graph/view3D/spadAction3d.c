@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _SPADACTION3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -46,18 +45,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.H1"
 #include "all_3d.H1"
 
-int 
+int
 readViewman (void *info,int size)
 {
   int m = 0;
 
   sprintf(errorStr,"%s","read from viewport manager\n");
-  m = check(read( 0, info, size));   
+  m = check(read( 0, info, size));
 
   return(m);
 
 }
-void 
+void
 scalePoint (viewTriple *p)
 {
 
@@ -72,12 +71,12 @@ scalePoint (viewTriple *p)
 
 } /* scalePoint */
 
-  
+
 /********************
  * int spadAction() *
  ********************/
 
-int 
+int
 spadAction (void)
 {
   int code, viewCommand;
@@ -94,7 +93,7 @@ spadAction (void)
   switch (viewCommand) {
 
   case rotate:
-    readViewman(&f1, floatSize);        
+    readViewman(&f1, floatSize);
     readViewman(&f2, floatSize);
     viewport->theta = f1;
     viewport->phi   = f2;
@@ -105,28 +104,28 @@ spadAction (void)
     viewport->axestheta = viewport->theta;
     viewport->axesphi = viewport->phi;
     spadDraw=yes;
-    rotated=yes; 
+    rotated=yes;
     viewport->yzOn = viewport->xzOn = viewport->xyOn = no;
 
     break;
 
   case zoom:
-    readViewman(&f1, floatSize);        
+    readViewman(&f1, floatSize);
     viewport->scale = f1;
     if (viewport->scale > maxScale) viewport->scale = maxScale;
-    else if (viewport->scale < minScale) viewport->scale = minScale;          
+    else if (viewport->scale < minScale) viewport->scale = minScale;
 
     spadDraw=yes;
-    zoomed = yes; 
+    zoomed = yes;
     break;
 
   case zoomx:
-    readViewman(&f1, floatSize);        
-    readViewman(&f2, floatSize);        
-    readViewman(&f3, floatSize);        
+    readViewman(&f1, floatSize);
+    readViewman(&f2, floatSize);
+    readViewman(&f3, floatSize);
     viewport->scaleX = f1;  viewport->scaleY = f2;  viewport->scaleZ = f3;
-    if ((viewport->scaleX == 1.0) && 
-        (viewport->scaleY == 1.0) && 
+    if ((viewport->scaleX == 1.0) &&
+        (viewport->scaleY == 1.0) &&
         (viewport->scaleZ == 1.0)) {
       viewport->zoomXOn = viewport->zoomYOn = viewport->zoomZOn = yes;
     } else {
@@ -146,20 +145,20 @@ spadAction (void)
         else if (viewport->scaleZ < minScale) viewport->scaleZ = minScale;
       }
     }
-          
+
     spadDraw=yes;
-    zoomed = yes; 
+    zoomed = yes;
     break;
 
   case translate:
     readViewman(&(viewport->deltaX),floatSize);
     readViewman(&(viewport->deltaY),floatSize);
     if (viewport->deltaX > maxDeltaX) viewport->deltaX = maxDeltaX;
-    else if (viewport->deltaX < -maxDeltaX) viewport->deltaX = -maxDeltaX; 
+    else if (viewport->deltaX < -maxDeltaX) viewport->deltaX = -maxDeltaX;
     if (viewport->deltaY > maxDeltaY) viewport->deltaY = maxDeltaY;
     else if (viewport->deltaY < -maxDeltaY) viewport->deltaY = -maxDeltaY;
     spadDraw=yes;
-    translated = yes; 
+    translated = yes;
     break;
 
   case modifyPOINT:
@@ -172,7 +171,7 @@ spadAction (void)
     scalePoint(refPt3D(viewData,i1));
     spadDraw=yes;
     break;
-    
+
   case hideControl:
     readViewman(&i1,intSize);
     if (i1) {                         /* show control panel */
@@ -191,9 +190,9 @@ spadAction (void)
     readViewman(&i1,intSize);
     viewport->axesOn = i1;
     spadDraw=yes;
-    if (viewData.style == smooth) {    
-      if (multiColorFlag) redoDither = yes; 
-      else redoColor = yes; 
+    if (viewData.style == smooth) {
+      if (multiColorFlag) redoDither = yes;
+      else redoColor = yes;
     }
     if (viewport->haveControl) drawControlPanel();
     break;
@@ -214,7 +213,7 @@ spadAction (void)
     viewData.box = i1;
     spadDraw=yes;
     if (viewport->haveControl) drawControlPanel();
-    redoSmooth = yes; 
+    redoSmooth = yes;
     break;
 
   case clipRegionOnOff:
@@ -237,7 +236,7 @@ spadAction (void)
     else if (viewData.eyeDistance < minEyeDistance)
            viewData.eyeDistance = minEyeDistance;
     spadDraw=yes;
-    changedEyeDistance = yes; 
+    changedEyeDistance = yes;
     break;
 
   case hitherPlaneData:
@@ -251,12 +250,12 @@ spadAction (void)
     readViewman(&(viewport->hueOffset),intSize);
     readViewman(&(viewport->numberOfHues),intSize);
     /* spadcolors is indexed by 0 */
-    viewport->hueOffset --;    
+    viewport->hueOffset --;
     viewport->numberOfHues --;
     viewport->hueTop = viewport->numberOfHues;
     if (viewport->hueOffset < 0) viewport->hueOffset = 0;
     if (viewport->hueTop < 0) viewport->hueTop = 0;
-    if (viewport->hueOffset >= totalHues) 
+    if (viewport->hueOffset >= totalHues)
       viewport->hueOffset = totalHues-1;
     if (viewport->hueTop >= totalHues) viewport->hueTop = totalHues-1;
     viewport->numberOfHues = viewport->hueTop - viewport->hueOffset;
@@ -272,7 +271,7 @@ spadAction (void)
   case closeAll:
     code = check(write(Socket,&ack,intSize));
     goodbye(-1);
-    
+
 
   case moveViewport:
     readViewman(&i1,intSize);
@@ -284,10 +283,10 @@ spadAction (void)
  case resizeViewport:
     readViewman(&i1,intSize);
     readViewman(&i2,intSize);
-    XResizeWindow(dsply,viewport->titleWindow,i1,i2+titleHeight); 
+    XResizeWindow(dsply,viewport->titleWindow,i1,i2+titleHeight);
     XResizeWindow(dsply,viewport->viewWindow,i1,i2);
     spadDraw=yes;
-    redoSmooth =yes; 
+    redoSmooth =yes;
     break;
 
   case transparent:
@@ -296,7 +295,7 @@ spadAction (void)
   case smooth:
     viewData.style = viewCommand;
     spadDraw=yes;
-    redoSmooth =yes; 
+    redoSmooth =yes;
     break;
 
   case lightDef:
@@ -304,7 +303,7 @@ spadAction (void)
     readViewman(&(viewport->lightVector[1]),floatSize);
     readViewman(&(viewport->lightVector[2]),floatSize);
     normalizeVector(viewport->lightVector);
-    movingLight = yes; 
+    movingLight = yes;
     drawLightingAxes();
     XSync(dsply,0);
     break;
@@ -334,7 +333,7 @@ spadAction (void)
     case LIGHTpanel:
       writeControlTitle(lightingWindow);
       break;
-    } /* switch */      
+    } /* switch */
     XFlush(dsply);
     break;
 

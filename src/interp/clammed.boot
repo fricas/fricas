@@ -207,5 +207,5 @@ getConstantFromDomain(form,domainForm) ==
     getConstantFromDomain1(form,domainForm)
 
 interpLookup(funName, sig, dc) ==
-    dcVector:= evalDomain dc  
+    dcVector:= evalDomain dc
     NRTcompiledLookup(funName, sig, dcVector)

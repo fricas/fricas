@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _POT3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "header.h"
 #include "all_3d.H1"
@@ -42,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /***  void getPotValue()  ***/
 /****************************/
 
-mouseCoord 
+mouseCoord
 getPotValue(short eX,short eY,short xH,short yH)
 {
 
@@ -53,8 +52,8 @@ getPotValue(short eX,short eY,short xH,short yH)
   y = -((float)eY/yH -1);
 
   /* make non-linear potentiometer */
-  whereMouse.x = x*x*x; 
-  whereMouse.y = y*y*y; 
+  whereMouse.x = x*x*x;
+  whereMouse.y = y*y*y;
   if (whereMouse.x > 1.0)  whereMouse.x = 1.0;
   if (whereMouse.y > 1.0)  whereMouse.y = 1.0;
   if (whereMouse.x < -1.0) whereMouse.x = -1.0;
@@ -70,7 +69,7 @@ getPotValue(short eX,short eY,short xH,short yH)
 /***  void getLinearPotValue()  ***/
 /**********************************/
 
-mouseCoord 
+mouseCoord
 getLinearPotValue(short eX,short eY,short xH,short yH)
 {
 

@@ -33,17 +33,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* This file is to be included by all the viewport files */
 
-#define check(code)	checker(code,__LINE__,"")
-#define saymem(a,b,c)	saymemWithLine(a,b,c,__LINE__)
-#define exitWithAck(ACK,ACKsize,i) \
-		check(write(Socket,&(ACK),sizeof(ACKsize)));  exit(i);
-#define NIL(type)	((type *)NULL)
+#define check(code)     checker(code, __LINE__, "")
+#define saymem(a, b, c)   saymemWithLine(a, b, c, __LINE__)
+#define exitWithAck(ACK, ACKsize, i) \
+                check(write(Socket, &(ACK), sizeof(ACKsize)));  exit(i);
+#define NIL(type)       ((type *)NULL)
 
 #define oldNum 8  /* in the old system, we assumed an eight shade palette */
 #define oldOff 2
 
-#define monoColor(x) ((mono)?foregroundColor:XSolidColor((int)x/oldNum,(int)(x%oldNum)/oldOff))
-#define monoDither(x,y) ((mono)?foregroundColor:XSolidColor(x,y))
+#define monoColor(x) ((mono)?foregroundColor:XSolidColor((int)x/oldNum, (int)(x%oldNum)/oldOff))
+#define monoDither(x, y) ((mono)?foregroundColor:XSolidColor(x, y))
 #define notANumber (0.0/0.0)
 
 /* error messages */
@@ -51,16 +51,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* opening fonts */
 
-/* getDef(v,s,d,x): 
+/* getDef(v, s, d, x):
    v, the character pointer for the default value
    s, the .Xdefaults field
    d, the value in case the field is undefined in .Xdefaults
    x, a string specifying the prefix field (in .Xdefaults)
    */
 
-#define getDef(v,s,d,x) {v=XGetDefault(dsply,x,s); if (v==NIL(char)) v=d;}
+#define getDef(v, s, d, x) {v=XGetDefault(dsply, x, s); if (v==NIL(char)) v=d;}
 
-/* getFont(daFont,daDefault,whichView):
+/* getFont(daFont, daDefault, whichView):
    assignTo, the font variable that will hold the font (globalFont)
    daFont,   the .Xdefault field name  ("buttonFont")
    daDefault, the default font (string) ("Rom12.500")
@@ -69,22 +69,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    appropriate variables are already defined
    */
 
-#define getFont(assignTo,daFont,daDefault,whichView) \
-getDef(xDefault,daFont,daDefault,whichView); \
-if ((assignTo = XLoadQueryFont(dsply,xDefault)) == NULL) \
-if ((assignTo = XLoadQueryFont(dsply,daDefault)) == NULL) { \
-if (strcmp(xDefault,daDefault))   /* strcmp returns 0 if equal */ \
+#define getFont(assignTo, daFont, daDefault, whichView) \
+getDef(xDefault, daFont, daDefault, whichView); \
+if ((assignTo = XLoadQueryFont(dsply, xDefault)) == NULL) \
+if ((assignTo = XLoadQueryFont(dsply, daDefault)) == NULL) { \
+if (strcmp(xDefault, daDefault))   /* strcmp returns 0 if equal */ \
 if (xDefault[0] == '\0') \
 fprintf(stderr, \
 "   >>> Font error: No .Xdefault entry for %s.%s and could not get the %s font\n%s\n", \
-whichView,daFont,daDefault,fontErrMess); \
+whichView, daFont, daDefault, fontErrMess); \
 else \
 fprintf(stderr, \
-"   >>> Font error: Could get neither the %s nor the %s font\n%s\n",xDefault, \
-daDefault,fontErrMess); \
+"   >>> Font error: Could get neither the %s nor the %s font\n%s\n", xDefault, \
+daDefault, fontErrMess); \
 else \
 fprintf(stderr, \
-"   >>> Font error: Could not get the %s font.\n%s\n",xDefault,fontErrMess); \
-exitWithAck(RootWindow(dsply,scrn),Window,-1); \
-} 
+"   >>> Font error: Could not get the %s font.\n%s\n", xDefault, fontErrMess); \
+exitWithAck(RootWindow(dsply, scrn), Window, -1); \
+}
 

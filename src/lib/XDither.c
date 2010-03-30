@@ -85,8 +85,8 @@ dither_char_bitmap(void)
     return total_chars;
 }
 
-int 
-XInitDither(Display *display, int screen, GC gc, unsigned long fg, 
+int
+XInitDither(Display *display, int screen, GC gc, unsigned long fg,
             unsigned long bg)
 {
 
@@ -171,7 +171,7 @@ XDitherRectangle(Display *display, Drawable drawable, GC gc, int x,
 
 
 void
-XDitherRectangles(Display *display, Drawable drawable, GC gc, 
+XDitherRectangles(Display *display, Drawable drawable, GC gc,
                   XRectangle *rectangles, int nrectangles)
 {
 
@@ -186,8 +186,8 @@ XDitherRectangles(Display *display, Drawable drawable, GC gc,
 }
 
 
-void 
-XDitherPolygon(Display * display, Drawable drawable, GC gc, 
+void
+XDitherPolygon(Display * display, Drawable drawable, GC gc,
                XPoint *points, int npoints, int shape, int mode)
 {
     if (!DITHERINIT) {
@@ -201,7 +201,7 @@ XDitherPolygon(Display * display, Drawable drawable, GC gc,
 }
 
 void
-XDitherArc(Display *display, Drawable drawable, GC gc, int x,int  y, 
+XDitherArc(Display *display, Drawable drawable, GC gc, int x,int  y,
            unsigned int width, unsigned int height, int angle1, int angle2)
 {
 

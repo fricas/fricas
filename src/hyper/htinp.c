@@ -31,9 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _HTINP_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include <sys/stat.h>
@@ -49,6 +47,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "all_hyper_proto.H1"
 #include "sockio-c.H1"
 #include "bsdsignal.H1"
+
+static void make_input_file_list(void);
+static void make_the_input_file(UnloadedPage * page);
+static void make_input_file_from_page(HyperDocPage * page);
+static int inListAndNewer(char * inputFile, char * htFile);
+static void print_paste(FILE * pfile, char * realcom, char * command,
+                        char * pagename, int com_type);
+static void print_graph_paste(FILE * pfile, char * realcom, char * command,
+                              char * pagename, int com_type);
+static void send_command(char * command, int com_type);
 
 extern char **input_file_list;
 extern int input_file_count;
@@ -260,7 +268,7 @@ make_input_file_from_page(HyperDocPage *page)
     if (ret_val == -1) {
       fprintf(stderr, "couldn't close file %s\n", b);
       exit(-1);
-    }  
+    }
   }
 }
 

@@ -38,9 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _TITLEBAR_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include <stdlib.h>
@@ -53,6 +52,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "parse.h"
 
 #include "all_hyper_proto.H1"
+
+static void readTitleBarImages(void);
 
 extern int y_off;               /* y offset for scrolling regions */
 

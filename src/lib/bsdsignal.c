@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(MACOSXplatform)
 #include "/usr/include/signal.h"
 #else
-#include <signal.h> 
+#include <signal.h>
 #endif
 
 #include "bsdsignal.H1"
@@ -58,10 +58,10 @@ bsdSignal(int sig, SignalHandlerFunc action, int restartSystemCall)
   if (restartSystemCall) in.sa_flags = 0;
   else in.sa_flags = SA_INTERRUPT;
 #else
-  in.sa_flags = 0; 
+  in.sa_flags = 0;
 #endif
-  
-  return (sigaction(sig, &in, &out) ? (SignalHandlerFunc) -1 : 
+
+  return (sigaction(sig, &in, &out) ? (SignalHandlerFunc) -1 :
           (SignalHandlerFunc) out.sa_handler);
 #else /* !HAVE_DECL_SIGACTION */
   return (SignalHandlerFunc) -1;

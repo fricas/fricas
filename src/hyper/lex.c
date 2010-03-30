@@ -49,14 +49,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * file descriptor
  *
  *
- * New variable useAscii -- tells us if we we should translate 
- * graphics characters on the fly 
+ * New variable useAscii -- tells us if we we should translate
+ * graphics characters on the fly
  * initialised in init_scanner
  *
  */
-#define _LEX_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 int useAscii;
@@ -73,6 +72,10 @@ int useAscii;
 
 #include <ctype.h>
 #include <setjmp.h>
+
+static int get_char1(void);
+static void spad_error_handler(void);
+static int keyword_type(void);
 
 extern int gTtFontIs850;
 
@@ -123,9 +126,9 @@ parser_init(void)
     /* First I initialize the hash table for the tokens */
 
     hash_init(
-              &tokenHashTable, 
-              TokenHashSize, 
-              (EqualFunction)string_equal, 
+              &tokenHashTable,
+              TokenHashSize,
+              (EqualFunction)string_equal,
               (HashcodeFunction)string_hash);
     for (i = 2; i <= NumberUserTokens; i++) {
         toke = (Token *) halloc(sizeof(Token), "Token");

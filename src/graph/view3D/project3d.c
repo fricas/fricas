@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _PROJECT3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include <string.h>
 
 #include "header.h"
@@ -49,12 +48,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  setting the ith Xpoint as well         *
  *******************************************/
 
-void 
+void
 project(viewTriple * aViewTriple,XPoint *someXpoints,int i)
 {
   float Vtmp[4], V[4], V1[4];
 
-  V[0] = aViewTriple->x;  V[1] = aViewTriple->y;  
+  V[0] = aViewTriple->x;  V[1] = aViewTriple->y;
   V[2] = aViewTriple->z;  V[3] = 1.0;
 
   if (isNaNPoint(V[0], V[1], V[2])) {
@@ -82,7 +81,7 @@ project(viewTriple * aViewTriple,XPoint *someXpoints,int i)
   }
 
   matrixMultiply4x4(I,T,transform);
-  vectorMatrix4(V1,transform,V);    
+  vectorMatrix4(V1,transform,V);
   V[0] = V[0]*viewScale + xCenter;
   V[1] = vwInfo.height - (V[1]*viewScale + yCenter);
 
@@ -98,12 +97,12 @@ project(viewTriple * aViewTriple,XPoint *someXpoints,int i)
  *  like the above, but no Xpoint assignment       *
  ***************************************************/
 
-void 
+void
 projectAPoint(viewTriple *aViewTriple)
 {
   float Vtmp[4], V[4], V1[4];
- 
-  V[0] = aViewTriple->x;  V[1] = aViewTriple->y;  
+
+  V[0] = aViewTriple->x;  V[1] = aViewTriple->y;
   V[2] = aViewTriple->z;  V[3] = 1.0;
 
   if (isNaNPoint(V[0], V[1], V[2])) {
@@ -131,7 +130,7 @@ projectAPoint(viewTriple *aViewTriple)
   }
 
   matrixMultiply4x4(I,T,transform);
-  vectorMatrix4(V1,transform,V);    
+  vectorMatrix4(V1,transform,V);
   V[0] = V[0]*viewScale + xCenter;
   V[1] = vwInfo.height - (V[1]*viewScale + yCenter);
 
@@ -144,7 +143,7 @@ projectAPoint(viewTriple *aViewTriple)
  * void projectAllPoints() *
  ***************************/
 
-void 
+void
 projectAllPoints(void)
 {
 
@@ -181,7 +180,7 @@ projectAllPoints(void)
  * from the list.              *
  *******************************/
 
-void 
+void
 projectAllPolys (poly *pList)
 {
 
@@ -204,7 +203,7 @@ projectAllPolys (poly *pList)
     pList->totalClipPz = yes;  /* start with 1, AND all points with Pz<0 */
     pList->partialClipPz = no; /* start with 0, OR any points with Pz<0 */
     pList->totalClip = yes;  /* same idea, only wrt clip volume */
-    pList->partialClip = no; 
+    pList->partialClip = no;
     for (i=0,anIndex=pList->indexPtr; i<pList->numpts; i++,anIndex++) {
       aPt = refPt3D(viewData,*anIndex);
       clipped = outsideClippedBoundary(aPt->x, aPt->y, aPt->z);
@@ -213,7 +212,7 @@ projectAllPolys (poly *pList)
       clippedPz = behindClipPlane(aPt->pz);
       pList->totalClipPz = pList->totalClipPz && clippedPz;
       pList->partialClipPz = pList->partialClipPz || clippedPz;
-      
+
         /* stuff for figuring out normalFacingOut, after the loop */
       if (!i) {
         x0 = aPt->px; y0 = aPt->py;
@@ -241,7 +240,7 @@ projectAllPolys (poly *pList)
   }
   strcpy(control->message,viewport->title);
   writeControlMessage();
-  
+
 }   /* projectAllPolys */
 
 
@@ -256,7 +255,7 @@ projectAllPolys (poly *pList)
  *******************************/
 
 
-void 
+void
 projectAPoly (poly *p)
 {
 
@@ -276,7 +275,7 @@ projectAPoly (poly *p)
   p->totalClipPz = yes; /*  start with 1, AND all points with Pz<0 */
   p->partialClipPz = no;  /* start with 0, OR any points with Pz<0 */
   p->totalClip = yes;  /* same idea, only with respect to clip volume */
-  p->partialClip = no; 
+  p->partialClip = no;
   for (i=0,anIndex=p->indexPtr; i<p->numpts; i++,anIndex++) {
     aPt  = refPt3D(viewData,*anIndex);
     V[0] = aPt->x;  V[1] = aPt->y;  V[2] = aPt->z;  V[3] = 1.0;
@@ -299,19 +298,19 @@ projectAPoly (poly *p)
     }
 
     matrixMultiply4x4(I,T,transform);
-    vectorMatrix4(V1,transform,V);    
+    vectorMatrix4(V1,transform,V);
     V[0] = V[0]*viewScale + xCenter;
     V[1] = vwInfo.height - (V[1]*viewScale + yCenter);
 
     aPt->px = V[0];  aPt->py = V[1];
-    
+
     clipped = outsideClippedBoundary(aPt->x, aPt->y, aPt->z);
     p->totalClip = p->totalClip && clipped;
     p->partialClip = p->partialClip || clipped;
     clippedPz = behindClipPlane(aPt->pz);
     p->totalClipPz = p->totalClipPz && clippedPz;
     p->partialClipPz = p->partialClipPz || clippedPz;
-    
+
     /* stuff for figuring out normalFacingOut, after the loop */
     if (!i) {
       x0 = aPt->px; y0 = aPt->py;
@@ -326,7 +325,7 @@ projectAPoly (poly *p)
   if ((x0 = xA*yB - yA*xB) > machine0) p->normalFacingOut = 1;
   else if (x0 < machine0) p->normalFacingOut = -1;
   else p->normalFacingOut = 0;
-  
+
 }  /*  projectAPoly */
 
 
@@ -344,7 +343,7 @@ projectAPoly (poly *p)
  * structure).                    *
  **********************************/
 
-void 
+void
 projectStuff(float x,float y,float z,int *px,int *py,float *Pz)
 {
   float tempx,tempy,tempz,temps,V[4],V1[4],stuffScale=100.0;
@@ -359,15 +358,15 @@ projectStuff(float x,float y,float z,int *px,int *py,float *Pz)
   if (viewport->scaleZ > 3.0) viewport->scaleZ = 3.0;
   if (viewScale > 5.0) viewScale = 5.0;
 
-  V[0] = x;  V[1] = y;  
+  V[0] = x;  V[1] = y;
   V[2] = z;  V[3] = 1.0;
 
   V[0] -= viewport->transX*stuffScale;
   V[1] -= viewport->transY*stuffScale;
   V[2] -= viewport->transZ*stuffScale;
 
-  matrixMultiply4x4(S,R,transform); 
-  vectorMatrix4(V,transform,V1);   
+  matrixMultiply4x4(S,R,transform);
+  vectorMatrix4(V,transform,V1);
   *Pz = V1[2];
 
   if (viewData.perspective) {
@@ -376,7 +375,7 @@ projectStuff(float x,float y,float z,int *px,int *py,float *Pz)
   }
 
   matrixMultiply4x4(I,T,transform);
-  vectorMatrix4(V1,transform,V);    
+  vectorMatrix4(V1,transform,V);
 
   V[0] = V[0]*viewScale + xCenter;
   V[1] = vwInfo.height - (V[1]*viewScale + yCenter);

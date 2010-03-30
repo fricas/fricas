@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -70,7 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 
-#define Cursor_shape(x) 
+#define Cursor_shape(x)
 
 
 #ifdef siglog
@@ -112,7 +111,7 @@ char serverPath[20];      /* path name for opening the server side     */
 int contNum, serverNum;          /* file descriptors for pty's */
 int num_read;                    /* Number of chars read */
 
-#ifdef log 
+#ifdef log
 int logfd;
 char logpath[30];
 #endif
@@ -128,24 +127,24 @@ main(int argc, char *argv[])
   int code;                    /* return code from system calls */
   char out_buff[MAXLINE];       /* from child and stdin */
   int out_flag[MAXLINE] ; /* initialize the output flags */
-  char *program;          /* a string to hold the child program invocation */ 
+  char *program;          /* a string to hold the child program invocation */
   char **pargs = 0;             /* holds parts of the command line */
   int not_command = 1;          /* a flag while parsing the command line */
-  
-  
-  
+
+
+
   /* try to get a pseudoterminal to play with */
   if (ptyopen(&contNum, &serverNum, controllerPath, serverPath) == -1) {
     perror("ptyopen failed");
     exit(-1);
   }
-  
+
   /* call the routine that handles signals */
   catch_signals();
-  
-  /* parse the command line arguments - as with the aixterm  the command 
+
+  /* parse the command line arguments - as with the aixterm  the command
      argument -e should be last on the line. */
-  
+
   while(*++argv && not_command) {
     if(!strcmp(*argv, "-f"))
       load_wct_file(*++argv);
@@ -158,22 +157,22 @@ main(int argc, char *argv[])
       exit(-1);
     }
   }
-  skim_wct(); 
-  
-#ifdef log 
+  skim_wct();
+
+#ifdef log
   sprintf(logpath, "/tmp/cleflog%d", getpid());
   logfd = open(logpath, O_CREAT | O_RDWR, 0666);
 #endif
-  
+
   /* get the original termio settings, so the child has them */
-  
+
   if(tcgetattr(0,&childbuf) == -1) {
     perror("clef trying to get the initial terminal settings");
     exit(-1);
   }
-  
+
   /* start the child process */
-  
+
   child_pid = fork();
   switch(child_pid) {
   case -1 :
@@ -199,21 +198,21 @@ main(int argc, char *argv[])
       perror("clef trying to dup2");
       exit(-1);
     }
-    
+
     /* since they have been duped, close them */
     close(serverNum);
-    close(contNum); 
-    
-    
+    close(contNum);
+
+
     /* To make sure everything is nice, set off enhedit */
     /*    childbuf.c_line = 0; */
-    
+
     /* reconfigure the child's terminal get echoing */
     if(tcsetattr(0, TCSAFLUSH, &childbuf) == -1) {
       perror("clef child trying to set child's terminal");
       exit(-1);
     }
-    
+
     /* fire up the child's process */
     if(pargs){
       execvp( pargs[0], pargs);
@@ -223,8 +222,8 @@ main(int argc, char *argv[])
     else{
       program = getenv("SHELL");
       if (!program)
-        program = strdup("/bin/sh");  
-      else 
+        program = strdup("/bin/sh");
+      else
         program = strdup (program);
       execlp( program,program, 0);
       perror("clef trying to execlp the default child");
@@ -237,22 +236,22 @@ main(int argc, char *argv[])
   /* PARENT */
   /* Since I am the parent, I should start to initialize some stuff.
      I have to close the pts side for it to work properly */
-  
-  close(serverNum);  
+
+  close(serverNum);
   ppid = getppid();
-  
+
   /* Iinitialize some stuff for the reading and writing */
   init_flag(out_flag, MAXLINE);
   define_function_keys();
   init_reader();
   PTY = 1;
   init_parent();
-  
+
   /* Here is the main loop, it simply starts reading characters from
      the std input, and from the child. */
-  
+
   while(1)  {           /* loop forever */
-    
+
     /* use select to see who has stuff waiting for me to handle */
     /* set file descriptors for ptc and stdin */
     FD_ZERO(&rfds);
@@ -276,7 +275,7 @@ main(int argc, char *argv[])
       write(logfd, pbuff, strlen(pbuff));
     }
 #endif
-    
+
     code = select(FD_SETSIZE,(void *) &rfds, NULL, NULL, NULL);
     for(; code < 0 ;) {
       if(errno == EINTR) {
@@ -288,13 +287,13 @@ main(int argc, char *argv[])
         exit(-1);
       }
     }
-    
+
     /* reading from the child **/
-    if( FD_ISSET(contNum,&rfds)) {       
-      if( (num_read = read(contNum, out_buff, MAXLINE)) == -1) { 
+    if( FD_ISSET(contNum,&rfds)) {
+      if( (num_read = read(contNum, out_buff, MAXLINE)) == -1) {
         num_read = 0;
       }
-#ifdef log 
+#ifdef log
       write(logfd, "OUT<<<<<", strlen("OUT<<<<<"));
       write(logfd, out_buff, num_read);
 #endif
@@ -310,16 +309,16 @@ main(int argc, char *argv[])
     } /* done the child stuff */
     /* I should read from std input */
     else  {
-      if(FD_ISSET(0,&rfds)) {          
+      if(FD_ISSET(0,&rfds)) {
         num_read = read(0, in_buff, MAXLINE);
-#ifdef log 
+#ifdef log
         write(logfd, "IN<<<<<", strlen("IN<<<<<"));
         write(logfd, in_buff, num_read);
 #endif
         check_flip();
-        if(MODE == CLEFRAW ) 
+        if(MODE == CLEFRAW )
           write(contNum, in_buff, num_read);
-        else 
+        else
           do_reading();
       }
     }
@@ -330,26 +329,26 @@ main(int argc, char *argv[])
 void
 init_parent(void)
 {
-  
+
   /* get the original termio settings, so I never have to check again */
   if(tcgetattr(0, &oldbuf) == -1) {
     perror("clef trying to get terminal initial settings");
     exit(-1);
   }
-  
-  /* get the settings for my different modes */  
+
+  /* get the settings for my different modes */
   if ((tcgetattr(0, &canonbuf) == -1) ||
       (tcgetattr(0, &rawbuf) == -1) ) {
     perror("clef trying to get terminal settings");
     exit(-1);
   }
-  
-     
-  canonbuf.c_lflag &= ~(ICANON | ECHO | ISIG); 
+
+
+  canonbuf.c_lflag &= ~(ICANON | ECHO | ISIG);
   /* read before an eoln is typed */
 
   canonbuf.c_lflag |= ISIG;
- 
+
   /*  canonbuf.c_line = 0;       turn off enhanced edit */
 
   canonbuf.c_cc[VMIN] = 1;          /* we want every character  */
@@ -365,7 +364,7 @@ init_parent(void)
     perror("clef setting parent terminal to canonical processing");
     exit(0);
   }
-  
+
   /* initialize some flags I will be using */
   MODE = CLEFCANONICAL;
   INS_MODE = 1;
@@ -373,7 +372,7 @@ init_parent(void)
 }
 
 
-void 
+void
 hangup_handler(int sig)
 {
 #ifdef siglog
@@ -395,7 +394,7 @@ hangup_handler(int sig)
   exit(-1);
 }
 
-void 
+void
 terminate_handler(int sig)
 {
 #ifdef siglog
@@ -417,7 +416,7 @@ terminate_handler(int sig)
   exit(0);
 }
 
-void 
+void
 interrupt_handler(int sig)
 {
 #ifdef siglog
@@ -429,7 +428,7 @@ interrupt_handler(int sig)
   kill(child_pid, SIGINT);
 }
 
-void 
+void
 child_handler(int sig)
 {
 #ifdef siglog
@@ -451,7 +450,7 @@ child_handler(int sig)
   exit(0);
 }
 
-void 
+void
 alarm_handler(int sig)
 {
   int newppid = getppid();
@@ -462,7 +461,7 @@ alarm_handler(int sig)
 #endif
   /* simply gets the parent process id, if different, it terminates ,
     otherwise it resets the alarm */
-  
+
   if(ppid == newppid) {
     alarm(60);
     return;
@@ -482,7 +481,7 @@ alarm_handler(int sig)
 
 /* a procedure which tells my parent how to catch signals from its children */
 void
-catch_signals(void) 
+catch_signals(void)
 {
 #ifdef siglog
   sprintf(sigbuff, "/tmp/csig%d", getpid());
@@ -490,10 +489,10 @@ catch_signals(void)
   write(sigfile, "Started \n", strlen("Started \n"));
   close(sigfile);
 #endif
-  bsdSignal(SIGHUP, hangup_handler,RestartSystemCalls); 
-  bsdSignal(SIGCHLD,child_handler,RestartSystemCalls); 
+  bsdSignal(SIGHUP, hangup_handler,RestartSystemCalls);
+  bsdSignal(SIGCHLD,child_handler,RestartSystemCalls);
   bsdSignal(SIGTERM, terminate_handler,RestartSystemCalls);
-  bsdSignal(SIGINT, interrupt_handler,RestartSystemCalls); 
+  bsdSignal(SIGINT, interrupt_handler,RestartSystemCalls);
   bsdSignal(SIGALRM, alarm_handler,RestartSystemCalls);
   alarm(60);
 }
@@ -501,14 +500,14 @@ catch_signals(void)
 /* Here is where I check the child's termio settings, and try to copy them.
    I simply trace through the main modes (CLEFRAW,  CLEFCANONICAL) and
    try to simulate them */
-void 
+void
 check_flip(void)
 {
   return;
-  
+
 #if 0
   /*simply checks the termio structure of the child */
-  
+
   if(tcgetattr(contNum, &childbuf) == -1) {
     perror("clef parent getting child's terminal in check_termio");
   }
@@ -535,10 +534,10 @@ check_flip(void)
 void
 flip_raw(int chann)
 {
-  
-  if(MODE == CLEFCANONICAL) 
+
+  if(MODE == CLEFCANONICAL)
     send_buff_to_child(chann);
-  
+
   if(tcsetattr(0, TCSAFLUSH, &rawbuf) == -1) {
     perror("clef resetting parent to raw ");
     exit(-1);
@@ -553,9 +552,9 @@ flip_canonical(int chann)
     perror("clef resetting parent to canonical ");
     exit(-1);
   }
-  if(INS_MODE) 
+  if(INS_MODE)
     Cursor_shape(5);
-  else 
+  else
     Cursor_shape(2);
 }
 

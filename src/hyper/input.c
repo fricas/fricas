@@ -31,9 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _INPUT_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include "hyper.h"
@@ -42,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 
+static void clear_rbs(InputBox * list);
 
 void
 fill_box(Window w,ImageStruct * image)

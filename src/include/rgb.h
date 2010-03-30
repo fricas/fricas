@@ -32,15 +32,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 typedef struct _RGB {
-  float r,g,b;
+  float r, g, b;
 } RGB ;
 
 typedef struct _HSV {
-  float h,s,v;
+  float h, s, v;
 } HSV ;
 
 typedef struct _HLS {
-  float h,l,s;
+  float h, l, s;
 } HLS ;
 
 

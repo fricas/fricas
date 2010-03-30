@@ -34,12 +34,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "component.h"
 
 /* we now have two substructures (in the union, kind):
-   tubeModel (in tube.h) and fun2VarModel (below) 
+   tubeModel (in tube.h) and fun2VarModel (below)
    */
 #define maxGraphs 9
 
 typedef struct _fun2VarModel {
-  float *zArray,*cArray;
+  float *zArray, *cArray;
   viewTriple *pointList;
 } fun2VarModel;
 
@@ -51,26 +51,26 @@ union kindOf {
 
 typedef struct _view3DStruct {
   int typeOf3D;
-  float xmin,xmax,ymin,ymax,zmin,zmax;
-  float cmin,cmax;
+  float xmin, xmax, ymin, ymax, zmin, zmax;
+  float cmin, cmax;
   float scaleToView;
   union kindOf kind;
   int xnumber, ynumber, zSize;
   char *title;
-  float deltaX,deltaY,scale,theta,phi;
-  float deltaZ;			/***** not yet used *****/
-  float scaleX,scaleY,scaleZ;  
-  float transX,transY,transZ;   /* translate so that rotation can be done 
-				   about center of object volume */
-  int vX,vY,vW,vH;
-  int showCP,style,AxesOn,
-    hueOff,numOfHues,
+  float deltaX, deltaY, scale, theta, phi;
+  float deltaZ;                 /***** not yet used *****/
+  float scaleX, scaleY, scaleZ;
+  float transX, transY, transZ;   /* translate so that rotation can be done
+                                   about center of object volume */
+  int vX, vY, vW, vH;
+  int showCP, style, AxesOn,
+    hueOff, numOfHues,
     diagonals;
-  float lightVec[3],translucency;
+  float lightVec[3], translucency;
   int scaleDown;
   int perspective;
   float eyeDistance;
-  int outlineRenderOn,box,clipbox,
+  int outlineRenderOn, box, clipbox,
     clipStuff;       /* actually clip the stuff outside the clip boundaries */
   int numOfPoints;
   viewTriple *points;
@@ -78,21 +78,21 @@ typedef struct _view3DStruct {
   LLLPoint lllp;
   int numPolygons;
   int pointSize;
-  float distortX,distortY,distortZ;
-  float clipXmin,clipXmax,	/* for object space clipping */
-    clipYmin,clipYmax,
-    clipZmin,clipZmax;
-  float clipPlane;		/* for (frustrum hither plane) image space
-				   clipping note that there is already a
-				   clipOffset variable that is read in as a
-				   global variable
-				   */
+  float distortX, distortY, distortZ;
+  float clipXmin, clipXmax,      /* for object space clipping */
+    clipYmin, clipYmax,
+    clipZmin, clipZmax;
+  float clipPlane;              /* for (frustrum hither plane) image space
+                                   clipping note that there is already a
+                                   clipOffset variable that is read in as a
+                                   global variable
+                                   */
 } view3DStruct;
 
 
 /* for drawing the region box */
 typedef struct _boxSideStruct {
-  viewTriplePtr pointsPtr[4];	/* see notes for definition of box */
+  viewTriplePtr pointsPtr[4];   /* see notes for definition of box */
   int inside;
 } boxSideStruct;
 

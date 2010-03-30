@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _WRITE2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define numBits (8*sizeof(int))
 
-int 
+int
 writeViewport(int thingsToWrite)
 {
 
@@ -61,7 +60,7 @@ writeViewport(int thingsToWrite)
   XWindowAttributes vwInfo;
 
   XGetWindowAttributes(dsply,viewport->titleWindow,&vwInfo);
-  sprintf(viewDirName,"%s%s",filename,".VIEW"); 
+  sprintf(viewDirName,"%s%s",filename,".VIEW");
   sprintf(command,"%s%s%s","rm -r ",viewDirName," >  /dev/null 2>&1");
   code = system(command);
   sprintf(command,"%s%s%s","mkdir ",viewDirName," > /dev/null 2>&1");
@@ -125,11 +124,11 @@ writeViewport(int thingsToWrite)
               fprintf(viewDataFile,"%d %d %d\n",
                       aList->pointColor,aList->lineColor,aList->pointSize);
               for (k=0,aPoint=aList->listOfPoints;
-                   k<aList->numberOfPoints; 
+                   k<aList->numberOfPoints;
                    k++,aPoint++)
                 fprintf(viewDataFile,"%g %g %g %g\n",
                         aPoint->x,aPoint->y,aPoint->hue,aPoint->shade);
-            } /* for j, aList */            
+            } /* for j, aList */
             fclose(viewDataFile);
           } /* else graph i */
         } /* if */

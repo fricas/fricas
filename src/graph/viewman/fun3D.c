@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _FUN3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -43,14 +42,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "viewman.h"
 #include "mode.h"
 #include "actions.h"
-  
+
 #include "util.H1"
 #include "sockio-c.H1"
 #include "fun3D.H1"
 #include "make3D.H1"
 #include "readView.H1"
 
-void 
+void
 funView3D(int viewCommand)
 {
 
@@ -63,7 +62,7 @@ funView3D(int viewCommand)
   viewPID = get_int(spadSock);
 
   viewport = viewports;
-  while ((viewport) && (viewport->PID != viewPID)) 
+  while ((viewport) && (viewport->PID != viewPID))
     viewport = viewport->nextViewport;
 
   if (viewport) {
@@ -310,7 +309,7 @@ forkView3D(int typeOfViewport)
               "The viewport manager could not read from a 3D viewport window\ncode=%d\nack=%d\n",code,acknow);
         return;
       }
-    } 
+    }
 
     makeView3DFromSpadData(&doView3D,typeOfViewport);
 
@@ -351,9 +350,9 @@ forkView3D(int typeOfViewport)
           write(viewport->viewOut,anIndex,intSize);
       } /* for LPoints in LLPoints (j) */
     } /* for LLPoints in LLLPoints (i) */
-    
+
          /*** get acknowledge from viewport */
-    code = readViewport(viewport,&(viewport->viewWindow),sizeof(Window)); 
+    code = readViewport(viewport,&(viewport->viewWindow),sizeof(Window));
     sleep(1);  /* wait a second...*/
     send_int(spadSock,viewport->PID);  /* acknowledge to spad */
 

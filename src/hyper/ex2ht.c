@@ -36,7 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _EX2HT_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -118,7 +117,7 @@ getExTitle(FILE *inFile, char *line)
     return NULL;
 }
 
-void 
+void
 exToHt(char *filename)
 {
     char line[MaxLineLength], *line2;
@@ -172,19 +171,19 @@ exToHt(char *filename)
     stat(filename,&buf);
     tvp.tv_sec =buf.st_mtime;
     tvp.tv_usec =0;
-    if timercmp(&tvp,&latest_date[1],>){ 
+    if timercmp(&tvp,&latest_date[1],>){
         latest_date[1].tv_sec=buf.st_mtime;
         }
 }
 
-void 
+void
 emitHeader(FILE *outFile, char *pageName, char *pageTitle)
 {
     fprintf(outFile, "\\begin{page}{%s}{%s}\n", pageName, pageTitle);
     fprintf(outFile, "\\beginscroll\\beginmenu\n");
 }
 
-void 
+void
 emitFooter(FILE *outFile)
 {
     fprintf(outFile, "\\endmenu\\endscroll\\end{page}\n");

@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _SURFACE3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <string.h>
 #include <math.h>
@@ -370,9 +369,9 @@ calcEyePoint (void)
 
 /*
  void drawPolygons()
- A general routine for displaying a list of polygons 
- with the proper hidden surfaces removed. Assumes the 
- list of polygons is in viewData.polygons. Needs a 
+ A general routine for displaying a list of polygons
+ with the proper hidden surfaces removed. Assumes the
+ list of polygons is in viewData.polygons. Needs a
  routine to split intersecting polygons in object space.               *
  */
 
@@ -489,7 +488,7 @@ drawRenderedPolygon (poly *p,int dFlag)
             XShadePolygon(dsply,viewport->viewWindow,quadMesh,p->numpts+1,
                           Convex,CoordModeOrigin);
           }
-          else if (dFlag == PSoption) { /* renderGC has number 9991 
+          else if (dFlag == PSoption) { /* renderGC has number 9991
                                      (see main.c, header.h) */
             GSetForeground(GC9991,
                            1.0-(float)(maxGreyShade-shade-1)*psShadeMul,PSoption);
@@ -532,7 +531,7 @@ drawRenderedPolygon (poly *p,int dFlag)
 } /* drawRenderedPolygon */
 
 
-void 
+void
 freePointResevoir(void)
 {
 

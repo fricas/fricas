@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _MAKEGRAPH_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -46,7 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 graphStruct *
 makeGraphFromSpadData(void)
 {
-  
+
   graphStruct     *graphData;
   pointListStruct *pL;
   pointStruct     *p;
@@ -110,16 +109,16 @@ makeGraphFromSpadData(void)
 
 
   graphData->key = graphKey++;
-  
+
   send_int(spadSock,(graphKey-1));          /* acknowledge to spad */
 
 
   return(graphData);
 
 }
-  
 
-void 
+
+void
 discardGraph (graphStruct *theGraph)
 {
 

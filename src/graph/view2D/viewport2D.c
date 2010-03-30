@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _VIEWPORT2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,20 +59,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define rint(z) ((int)(z))
 
-Atom    wm_delete_window;               
+Atom    wm_delete_window;
 
 
-/*************************** 
- ***  void writeTitle()  *** 
+/***************************
+ ***  void writeTitle()  ***
  ***************************/
 
-void 
+void
 writeTitle(void)
 {
 
   int strlength;
   XWindowAttributes attribInfo;
-  
+
   XGetWindowAttributes(dsply,viewport->titleWindow,&attribInfo);
   if (mono) GSetForeground(anotherGC,(float)foregroundColor,Xoption);
   else GSetForeground(anotherGC,(float)titleColor,Xoption);
@@ -194,7 +193,7 @@ do_y_tick(Window vw, int jj, int ii, XWindowAttributes vwInfo,
 /***  void drawTheViewport()  ***/
 /********************************/
 
-void 
+void
 drawTheViewport(int dFlag) /* display flag: X, PS,... */
 {
 
@@ -222,7 +221,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
   halfheight = (ascent + descent) / 2;
 
   /* Calculate various factors for use in projection. */
-  /* Scale the plot, so that the scaling between the axes remains 
+  /* Scale the plot, so that the scaling between the axes remains
      constant and fits within the smaller of the two dimensions. */
 
   charlength = overall.width;
@@ -234,10 +233,10 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
     if ((graphArray[i].key) && (graphStateArray[i].showing)) {
 
       /* Scale y coordinate dimensions relative to viewport aspect ratio. */
-     
+
       graphArray[i].yNorm = 1.0/((graphArray[i].ymax-graphArray[i].ymin) *
                                  aspectR);
-      graphArray[i].originY = -graphArray[i].ymin*graphArray[i].yNorm 
+      graphArray[i].originY = -graphArray[i].ymin*graphArray[i].yNorm
         - 0.5/aspectR;
       graphArray[i].unitY = graphArray[i].spadUnitY*graphArray[i].yNorm;
 
@@ -245,7 +244,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
                    ((graphArray[0].originX - graphStateArray[0].centerX) *
                     graphStateArray[0].scaleX + 0.5));
       yAxis= rint(vwInfo.height * aspectR *
-                  (1 - ((graphArray[0].originY*aspectR - 
+                  (1 - ((graphArray[0].originY*aspectR -
                          graphStateArray[0].centerY) *
                         graphStateArray[0].scaleY + 0.5*aspectR )));
 
@@ -254,7 +253,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
           GSetForeground(globalGC1,
                          (float)monoColor(graphStateArray[i].axesColor),
                          dFlag);
-                         
+
         if ((yAxis >=0) && (yAxis <= vwInfo.height))
           GDrawLine(globalGC1,vw,
                     0,yAxis,
@@ -266,7 +265,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
                     xAxis,vwInfo.height,
                     dFlag);
       }
-        
+
 
       tempXpt   = anXPoint   = xPointsArray[i].xPoint;
       anX10Point = xPointsArray[i].x10Point;
@@ -277,7 +276,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
            j++, aList++) {
 
         for (k=0,aPoint=aList->listOfPoints;
-             (k<aList->numberOfPoints); 
+             (k<aList->numberOfPoints);
              k++,aPoint++) {
 
           if (graphStateArray[i].scaleX > 99.0)
@@ -314,7 +313,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
             }
             else {
               anXPoint->x = anX10Point->x = vwInfo.width *
-                ((aPoint->x - graphStateArray[i].centerX) * 
+                ((aPoint->x - graphStateArray[i].centerX) *
                  graphStateArray[i].scaleX + 0.5);
             }
             if (isNaN(aPoint->y)) {
@@ -322,12 +321,12 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
             }
             else {
               anXPoint->y = anX10Point->y = vwInfo.height * aspectR *
-                (1 - ((aPoint->y - graphStateArray[i].centerY) * 
+                (1 - ((aPoint->y - graphStateArray[i].centerY) *
                       graphStateArray[i].scaleY + 0.5*aspectR));
             }
           }
 
-          /* first or last point */ 
+          /* first or last point */
           if (k == 0 || k == (aList->numberOfPoints - 1)) {
             anX10Point->flags = 0;
           } else {
@@ -338,7 +337,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
           anX10Point++;
           anXarc++;
         }      /* for aPoint in pointList */
-          
+
         aPoint--; /* make it legal, the last one*/
         if (graphStateArray[i].connectOn || graphStateArray[i].pointsOn) {
           halfSize = aList->pointSize/2;
@@ -363,9 +362,9 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
               GFillArc(globalGC1,vw,ptX-halfSize,
                        ptY-halfSize,aList->pointSize,aList->pointSize,
                        0,360*64, dFlag);
-                      
+
           } /* if points on */
-          for (ii=0, aPoint=aList->listOfPoints; 
+          for (ii=0, aPoint=aList->listOfPoints;
                ii<aList->numberOfPoints;
                ++ii, ++tempXpt, ++aPoint) {
             ptX1 = tempXpt->x;
@@ -500,7 +499,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
     if (!followMouse) {
       /* no need to do this while autorepeating */
       makeMessageFromData(queriedGraph);
-      writeControlMessage();  
+      writeControlMessage();
     }
     XFlush(dsply);
   }
@@ -537,7 +536,7 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
   fprintf(stderr,"view2D: Made a viewport\n");
 #endif
 
-  strcpy(viewport->title,title); 
+  strcpy(viewport->title,title);
 
   viewport->closing      = no;
   viewport->allowDraw    = yes;   /* just draw axes the first time around */
@@ -556,7 +555,7 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
                                    spadMask_width,spadMask_height);
   viewAttrib.background_pixel = backgroundColor;
   viewAttrib.border_pixel = foregroundColor;
-  viewAttrib.override_redirect = overrideManager; 
+  viewAttrib.override_redirect = overrideManager;
   viewAttrib.colormap = colorMap;
 
   foreColor.pixel = foregroundColor;
@@ -587,17 +586,17 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
   wm_delete_window = XInternAtom(dsply, "WM_DELETE_WINDOW", False);
   (void) XSetWMProtocols(dsply, viewTitleWindow, &wm_delete_window, 1);
 
-  XSetNormalHints(dsply,viewTitleWindow,&titleSizeHints); 
+  XSetNormalHints(dsply,viewTitleWindow,&titleSizeHints);
   XSetStandardProperties(dsply,viewTitleWindow,"FriCAS 2D",viewport->title,
                            None,NULL,0,&titleSizeHints);
 
   viewport->titleWindow = viewTitleWindow;
-  viewAttrib.event_mask = viewportMASK; 
+  viewAttrib.event_mask = viewportMASK;
   viewSizeHints.flags   = PPosition | PSize;
   viewSizeHints.x       = -viewBorderWidth;
   viewSizeHints.y       = titleHeight;
   viewSizeHints.width   = titleSizeHints.width;
-  viewSizeHints.height  = titleSizeHints.height - 
+  viewSizeHints.height  = titleSizeHints.height -
                           (titleHeight + appendixHeight);
   viewGraphWindow = XCreateWindow(dsply,viewTitleWindow,
                                   viewSizeHints.x,viewSizeHints.y,
@@ -607,15 +606,15 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
                                   viewportCreateMASK,&viewAttrib);
   XSetNormalHints(dsply,viewGraphWindow,&viewSizeHints);
   XSetStandardProperties(dsply,viewGraphWindow,"2D Viewport","2D Viewport",
-                         None,NULL,0,&viewSizeHints); 
+                         None,NULL,0,&viewSizeHints);
 
   viewport->viewWindow = viewGraphWindow;
 
   /*Make the control panel for the viewport. */
-  viewport->controlPanel = makeControlPanel();        
+  viewport->controlPanel = makeControlPanel();
   if ((viewport->haveControl = showCP)) putControlPanelSomewhere(anywhere);
 
-  XSync(dsply,False); 
+  XSync(dsply,False);
   return(viewport);
 
 }
@@ -629,7 +628,7 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
 viewPoints *
 makeView2D(view2DStruct *viewdata)
 {
-  viewPoints *vPoints;  
+  viewPoints *vPoints;
 
   vPoints = makeViewport(viewdata->title, viewdata->vX,viewdata->vY,
                          viewdata->vW,viewdata->vH,viewdata->showCP);
@@ -638,7 +637,7 @@ makeView2D(view2DStruct *viewdata)
 
   if (viewdata->showCP) clearControlMessage();
 
-  writeTitle(); 
+  writeTitle();
 
   XMapWindow(dsply,vPoints->viewWindow);
   XMapWindow(dsply,vPoints->titleWindow);

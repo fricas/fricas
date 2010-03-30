@@ -93,13 +93,7 @@ saymemWithLine(char *str, int num, int size, int lineNum)
 
 
 void
-#ifdef _NO_PROTO
-myfree(p, size)
-    void *p;
-    int size;
-#else
 myfree(void *p, int size)
-#endif
 {
     free(p);
 }

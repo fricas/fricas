@@ -41,9 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* #define DEBUG  1 */
 
-#define _INITX_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include "initx.h"
@@ -76,6 +74,14 @@ extern int gethostname(char *, int );
 #include "mouse11.bitmap"
 #include "mouse11.mask"
 
+static void get_GCs(HDWindow * window);
+static int get_border_properties(void);
+static int get_color(char * name, char * class, int def, Colormap * map);
+static void ingItColors_and_fonts(void);
+static void mergeDatabases(void);
+static void open_window(Window w);
+static void set_name_and_icon(void);
+static void set_size_hints(Window w);
 
 static GContext server_font;
 unsigned long *spadColors;
@@ -124,7 +130,7 @@ initializeWindowSystem(void)
 {
     char *display_name = NULL;
     XColor fg, bg;
-#if 0 
+#if 0
     XColor rgbdef;
 #endif
     Colormap cmap;
@@ -155,7 +161,7 @@ initializeWindowSystem(void)
     bg.pixel = BlackPixel(gXDisplay,gXScreenNumber);
 /*    fprintf(stderr,"initx:initializeWindowSystem:XQueryColor2\n");*/
     XQueryColor(gXDisplay, cmap, &bg );
-#if 0 
+#if 0
     XAllocNamedColor(gXDisplay, cmap, "Black", &fg, &rgbdef);
     XAllocNamedColor(gXDisplay, cmap, "White", &bg, &rgbdef);
 #endif
@@ -694,7 +700,7 @@ ingItColors_and_fonts(void)
     mergeDatabases();
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.RmFont", 
+    if (XrmGetResource(rDB, "Axiom.hyperdoc.RmFont",
                             "Axiom.hyperdoc.Font", str_type, &value) == True)
         (void) strncpy(prop, value.addr, (int) value.size);
     else
@@ -707,7 +713,7 @@ ingItColors_and_fonts(void)
 
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 2\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.TtFont", 
+    if (XrmGetResource(rDB, "Axiom.hyperdoc.TtFont",
                             "Axiom.hyperdoc.Font", str_type, &value) == True)
         (void) strncpy(prop, value.addr, (int) value.size);
     else
@@ -719,7 +725,7 @@ ingItColors_and_fonts(void)
     gTtFontIs850=is_it_850(gTtFont);
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 5\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.ActiveFont", 
+    if (XrmGetResource(rDB, "Axiom.hyperdoc.ActiveFont",
                             "Axiom.hyperdoc.Font", str_type, &value) == True)
         (void) strncpy(prop, value.addr, (int) value.size);
     else
@@ -731,12 +737,12 @@ ingItColors_and_fonts(void)
     /* maintain backwards compatibility */
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 6\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.AxiomFont", 
+    if (XrmGetResource(rDB, "Axiom.hyperdoc.AxiomFont",
                             "Axiom.hyperdoc.Font", str_type, &value) == True)
         (void) strncpy(prop, value.addr, (int) value.size);
     else {
-        if (XrmGetResource(rDB, "Axiom.hyperdoc.SpadFont", 
-                           "Axiom.hyperdoc.Font", str_type, &value) == True) 
+        if (XrmGetResource(rDB, "Axiom.hyperdoc.SpadFont",
+                           "Axiom.hyperdoc.Font", str_type, &value) == True)
         {
             (void) strncpy(prop, value.addr, (int) value.size);
         }
@@ -749,8 +755,8 @@ ingItColors_and_fonts(void)
     load_font(&gAxiomFont, prop);
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 7\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.EmphasizeFont", 
-                            "Axiom.hyperdoc.Font", str_type, &value) == True) 
+    if (XrmGetResource(rDB, "Axiom.hyperdoc.EmphasizeFont",
+                            "Axiom.hyperdoc.Font", str_type, &value) == True)
     {
         (void) strncpy(prop, value.addr, (int) value.size);
     }
@@ -761,8 +767,8 @@ ingItColors_and_fonts(void)
     load_font(&gEmFont, prop);
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 8\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.BoldFont", 
-                            "Axiom.hyperdoc.Font", str_type, &value) == True) 
+    if (XrmGetResource(rDB, "Axiom.hyperdoc.BoldFont",
+                            "Axiom.hyperdoc.Font", str_type, &value) == True)
     {
         (void) strncpy(prop, value.addr, (int) value.size);
     }
@@ -803,15 +809,15 @@ ingItColors_and_fonts(void)
 
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 1\n");*/
         gRmColor =
-            get_color("RmColor", "Foreground", 
+            get_color("RmColor", "Foreground",
                       BlackPixel(gXDisplay, gXScreenNumber), &cmap);
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 2\n");*/
         gBackgroundColor =
-            get_color("Background", "Background", 
+            get_color("Background", "Background",
                       WhitePixel(gXDisplay, gXScreenNumber), &cmap);
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 3\n");*/
         gActiveColor =
-            get_color("ActiveColor", "Foreground", 
+            get_color("ActiveColor", "Foreground",
                        BlackPixel(gXDisplay, gXScreenNumber), &cmap);
 
         /*
@@ -988,7 +994,7 @@ mergeDatabases(void)
 
 
 
-int 
+int
 is_it_850(XFontStruct *fontarg)
 {
  char *s;
@@ -1001,7 +1007,7 @@ is_it_850(XFontStruct *fontarg)
  proptbl.atom = XInternAtom(gXDisplay,proptbl.name,0);
  for (i=0;i<fontarg->n_properties;i++)
   {
-    if (fontarg->properties[i].name != proptbl.atom) continue; 
+    if (fontarg->properties[i].name != proptbl.atom) continue;
 
 
 /* return 1 if it is 850 */

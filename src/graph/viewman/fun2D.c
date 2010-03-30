@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _FUN2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -53,7 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define writeEach
 
-void 
+void
 funView2D(int viewCommand)
 {
 
@@ -70,7 +69,7 @@ funView2D(int viewCommand)
   while ((viewport) && (viewport->PID != viewPID)) {
     viewport = viewport->nextViewport;
   }
-  
+
   if (viewport) {
     send_int(spadSock,1);  /* acknowledge to spad */
     code = write(viewport->viewOut,&viewCommand,intSize);
@@ -85,9 +84,9 @@ funView2D(int viewCommand)
       code = write(viewport->viewOut,&i1,intSize);
       code = write(viewport->viewOut,&i2,intSize);
       i3 = 1; /* continue*/
-      code = write(viewport->viewOut,&i3,intSize);      
+      code = write(viewport->viewOut,&i3,intSize);
       sendGraphToView2D(0,i1,viewport,&currentGraphState);
-     
+
       break;
 
     case translate2D:
@@ -163,13 +162,13 @@ funView2D(int viewCommand)
          /*** get acknowledge from viewport */
     code = readViewport(viewport,&acknow,intSize);
     send_int(spadSock,1);  /* acknowledge to spad */
-  } else {  
+  } else {
     send_int(spadSock,-1);  /* send error value in acknowledge to spad */
   }
 
 }
 
-void 
+void
 forkView2D(void)
 {
 
@@ -260,7 +259,7 @@ forkView2D(void)
          code,acknow);
         return;
       }
-    } 
+    }
 
     makeView2DFromSpadData(&doView2D,doGraphStateArray);
 
@@ -277,7 +276,7 @@ forkView2D(void)
       write(viewport->viewOut,&there,intSize);
       sendGraphToView2D(i,there,viewport,doGraphStateArray);
     };  /* for i in graphs */
-    
+
          /*** get acknowledge from viewport */
 
     code = readViewport(viewport,&(viewport->viewWindow),sizeof(Window));
@@ -308,8 +307,8 @@ sendGraphToView2D(int i,int there,viewManager *viewport,graphStateStruct *doGrap
       fprintf(stderr,
               "The viewport manager cannot find the requested graph and will quit and restart.\n");
       exit(-1);
-    } 
-    
+    }
+
 
 /*** Before sending off the data, insert a pointer to viewport from graph ***/
   if (!(oneView = (viewsWithThisGraph *)malloc(sizeof(viewsWithThisGraph)))) {
@@ -320,7 +319,7 @@ sendGraphToView2D(int i,int there,viewManager *viewport,graphStateStruct *doGrap
   oneView->nextViewthing   = gPtr->views;
   gPtr->views              = oneView;
 
-#ifdef writeEach    
+#ifdef writeEach
     write(viewport->viewOut,&(gPtr->xmin),floatSize);
     write(viewport->viewOut,&(gPtr->xmax),floatSize);
     write(viewport->viewOut,&(gPtr->ymin),floatSize);
@@ -337,7 +336,7 @@ sendGraphToView2D(int i,int there,viewManager *viewport,graphStateStruct *doGrap
 #else
     write(viewport->viewOut,gPtr,sizeof(graphStruct));
 #endif
-    
+
     llPtr = gPtr->listOfListsOfPoints;
     for (j=0; j<(gPtr->numberOfLists); j++) {
       write(viewport->viewOut,&(llPtr->numberOfPoints),intSize);
@@ -354,9 +353,9 @@ sendGraphToView2D(int i,int there,viewManager *viewport,graphStateStruct *doGrap
       write(viewport->viewOut,&(llPtr->pointSize),intSize);
       llPtr++;
     }   /* for j in list of lists of points */
-    
+
     /* a graph state is defined for a graph if graph is there */
-    write(viewport->viewOut,&(doGraphStateArray[i].scaleX),floatSize);    
+    write(viewport->viewOut,&(doGraphStateArray[i].scaleX),floatSize);
     write(viewport->viewOut,&(doGraphStateArray[i].scaleY),floatSize);
     write(viewport->viewOut,&(doGraphStateArray[i].deltaX),floatSize);
     write(viewport->viewOut,&(doGraphStateArray[i].deltaY),floatSize);

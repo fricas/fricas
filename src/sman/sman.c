@@ -31,8 +31,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _SMAN_C
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -58,7 +56,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bsdsignal.H1"
 #include "sockio-c.H1"
 #include "openpty.H1"
-#include "sman.H1"
 
 char *ws_path;                  /* location of the AXIOM executable */
 int start_clef;                 /* start clef under spad */
@@ -78,7 +75,7 @@ int tpd=0;                      /* to-print-debug information */
 char    *GraphicsProgram        = "$AXIOM/lib/viewman";
 char    *NagManagerProgram      = "$AXIOM/lib/nagman";
 char    *HypertexProgram        = "$AXIOM/bin/hypertex -s";
-char    *ClefProgram            = 
+char    *ClefProgram            =
            "$AXIOM/bin/clef -f $AXIOM/lib/command.list -e ";
 char    *SessionManagerProgram  = "$AXIOM/lib/session";
 char    *SpadClientProgram      = "$AXIOM/lib/spadclient";
@@ -174,7 +171,7 @@ process_arguments(int argc,char ** argv)
       HypertexProgram = argv[++arg];
     else if (strcmp(argv[arg], "-clefprog")    == 0) {
       strcpy(ClefCommandLine,argv[++arg]);
-      ClefProgram = 
+      ClefProgram =
         strcat(ClefCommandLine, " -f $AXIOM/lib/command.list -e ");
     }
     else if (strcmp(argv[arg], "-sessionprog") == 0)
@@ -258,7 +255,7 @@ should_I_clef(void)
   return(1);
 }
 
-static int 
+static int
 in_X(void)
 {
   if (getenv("DISPLAY")) return 1;
@@ -295,7 +292,7 @@ death_handler(int sig)
   death_signal = 1;
 }
 
-static void 
+static void
 nagman_handler(int sig)
 {
   nagman_signal=1;
@@ -304,7 +301,7 @@ nagman_handler(int sig)
 static void
 sman_catch_signals(void)
 {
-  
+
   /* Set up the signal handlers for sman */
   bsdSignal(SIGINT,  SIG_IGN,RestartSystemCalls);
   bsdSignal(SIGTERM, death_handler,RestartSystemCalls);
@@ -322,18 +319,18 @@ sman_catch_signals(void)
   bsdSignal(SIGBUS,  death_handler,RestartSystemCalls);
   bsdSignal(SIGSEGV, death_handler,RestartSystemCalls);
   /* don't restart wait call on SIGUSR1  */
-  bsdSignal(SIGUSR1, nagman_handler,DontRestartSystemCalls); 
+  bsdSignal(SIGUSR1, nagman_handler,DontRestartSystemCalls);
   /* ONLY nagman should send this.
      If an error (such as C-c) interrupts a NAGLINK call, nagman
-     gets a signal to clean up. We need to start another nagman 
+     gets a signal to clean up. We need to start another nagman
      almost immediately to process the next NAGLINK request.
      Since nagman takes a while to clean up, we treat it specially.
      nagman should send a signal (USR1) to sman.
      sman should respond by spawning a new nagman.
-     
+
      so nagman is NOT a DoItAgain but a NadaDelShitsky.
-     
-     The USR1 mechanism does not work for HPUX 9 - use DoItAgain 
+
+     The USR1 mechanism does not work for HPUX 9 - use DoItAgain
      */
 
 }
@@ -471,25 +468,25 @@ start_the_spadclient(void)
   char command[256];
   if (start_clef)
 #ifdef RIOSplatform
-    sprintf(command, 
+    sprintf(command,
             "aixterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s %s",
             ClefProgram, SpadClientProgram);
 #else
-  sprintf(command, 
+  sprintf(command,
           "xterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s %s",
           ClefProgram, SpadClientProgram);
 #endif
   else
 #ifdef RIOSplatform
-    sprintf(command, 
-            "aixterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s", 
+    sprintf(command,
+            "aixterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s",
             SpadClientProgram);
 #else
-  sprintf(command, 
-          "xterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s", 
+  sprintf(command,
+          "xterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s",
           SpadClientProgram);
 #endif
-  if (tpd == 1) 
+  if (tpd == 1)
     fprintf(stderr,"sman:start_the_spadclient: %s\n",command);
   spawn_of_hell(command, NadaDelShitsky);
 }
@@ -502,7 +499,7 @@ start_the_local_spadclient(void)
     sprintf(command, "%s  %s", ClefProgram, SpadClientProgram);
   else
     sprintf(command, "%s", SpadClientProgram);
-  if (tpd == 1) 
+  if (tpd == 1)
     fprintf(stderr,"sman:start_the_local_spadclient: %s\n",command);
   spawn_of_hell(command, NadaDelShitsky);
 }
@@ -551,7 +548,7 @@ start_the_graphics(void)
 
 /* Start the AXIOM session in a separate process, */
 /* using a pseudo-terminal to catch all input and output */
-static void 
+static void
 fork_Axiom(void)
 {
   char augmented_ws_path[256];  /* will append directory path */
@@ -606,7 +603,7 @@ fork_Axiom(void)
     childbuf.c_lflag &= ~ECHO;
     if( tcsetattr(0, TCSAFLUSH, &childbuf) == -1) {
       perror("setting the term buffer");
-      exit(-1); 
+      exit(-1);
     }
     strcpy(augmented_ws_path,ws_path);          /* write the name    */
     /* Pass '--' to make sure that argument passed to AXIOMsys
@@ -647,7 +644,7 @@ clean_hypertex_socket(void)
 {
    char name[256];
    sprintf(name, "%s%d", MenuServerName, server_num);
-   unlink(name); 
+   unlink(name);
 }
 
 static void
@@ -667,7 +664,7 @@ static void
 read_from_spad_io(int ptcNum)
 {
   int ret_code = 0, i=0;
-  static int mes_len =0; 
+  static int mes_len =0;
   ret_code = read(ptcNum, big_bad_buf, BufSize);
   if (ret_code == -1) {
     clean_up_sockets();
@@ -781,8 +778,8 @@ kill_all_children(void)
 {
   char name[256];
   SpadProcess *proc;
-  
-  
+
+
   for(proc = spad_process_list; proc != NULL; proc = proc->next) {
     kill(proc->proc_id, SIGTERM);
   }

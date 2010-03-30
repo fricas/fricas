@@ -32,8 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "axiom-c-macros.h"
-#define _PARSE_AUX_C
-#include "useproto.h"
 #include "debug.h"
 
 #include "parse.h"
@@ -44,6 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 
+static void read_ht_file(HashTable * page_hash, HashTable * macro_hash,
+                    HashTable * patch_hash, FILE * db_fp, char * db_file);
 
 extern FILE *cfile;
 extern int make_input_file;
@@ -101,26 +101,26 @@ read_ht_db(HashTable *page_hash, HashTable *macro_hash, HashTable *patch_hash)
     gDatabasePath = NULL;
 
     hash_init(
-              page_hash, 
-              PageHashSize, 
-              (EqualFunction) string_equal, 
+              page_hash,
+              PageHashSize,
+              (EqualFunction) string_equal,
               (HashcodeFunction) string_hash);
     hash_init(
-              macro_hash, 
-              MacroHashSize, 
-              (EqualFunction) string_equal, 
+              macro_hash,
+              MacroHashSize,
+              (EqualFunction) string_equal,
               (HashcodeFunction) string_hash);
     hash_init(
-              patch_hash, 
-              PatchHashSize, 
-              (EqualFunction) string_equal, 
+              patch_hash,
+              PatchHashSize,
+              (EqualFunction) string_equal,
               (HashcodeFunction) string_hash);
 
     /* Lets initialize the FileHashTable         */
     hash_init(
-              &ht_gFileHashTable, 
-              htfhSize, 
-              (EqualFunction) string_equal, 
+              &ht_gFileHashTable,
+              htfhSize,
+              (EqualFunction) string_equal,
               (HashcodeFunction) string_hash);
 
     while ((db_fp = db_file_open(db_file)) != NULL) {
@@ -130,7 +130,7 @@ read_ht_db(HashTable *page_hash, HashTable *macro_hash, HashTable *patch_hash)
     }
 
     if (!i) {
-        fprintf(stderr, 
+        fprintf(stderr,
           "(HyperDoc) read_ht_db: No %s file found\n", db_file_name);
         exit(-1);
     }
@@ -146,7 +146,7 @@ read_ht_db(HashTable *page_hash, HashTable *macro_hash, HashTable *patch_hash)
  */
 
 static void
-read_ht_file(HashTable *page_hash, HashTable *macro_hash, 
+read_ht_file(HashTable *page_hash, HashTable *macro_hash,
              HashTable *patch_hash, FILE *db_fp, char *db_file)
 {
     char filename[256];
@@ -445,9 +445,9 @@ add_dependencies(void)
         gPageBeingParsed->depend_hash =
             (HashTable *) halloc(sizeof(HashTable), "Hash Table");
         hash_init(
-                  gPageBeingParsed->depend_hash, 
+                  gPageBeingParsed->depend_hash,
                   DependHashSize,
-                  (EqualFunction) string_equal, 
+                  (EqualFunction) string_equal,
                   (HashcodeFunction) string_hash);
     }
     for (node = bound_node->data.node; node->type != Endarg; node = node->next) {

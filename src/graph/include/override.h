@@ -31,14 +31,14 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define overrideManager False   
-/* override_redirect setting for overriding the window manager's directives. 
-   the window manager tends to stick its nose into too much - to the point 
-   where you can't even say where to put a new window. overriding it allows 
+#define overrideManager False
+/* override_redirect setting for overriding the window manager's directives.
+   the window manager tends to stick its nose into too much - to the point
+   where you can't even say where to put a new window. overriding it allows
    predictable placements of things like the control panel but also loses all
-   features all the window manager (possibly things like resizing). there is 
-   no good solution to this, because certain window managers go as far as 
-   not allowing placement of windows on top of other windows while others 
+   features all the window manager (possibly things like resizing). there is
+   no good solution to this, because certain window managers go as far as
+   not allowing placement of windows on top of other windows while others
    do not allow windows to be resized unless they have window manager given
    title bars. */
 

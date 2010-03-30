@@ -157,7 +157,7 @@ XShadeRectangle(Display *display, Drawable drawable, int x,int y,
 
 
 void
-XShadeRectangles(Display *display, Drawable drawable, 
+XShadeRectangles(Display *display, Drawable drawable,
                  XRectangle *rectangles, int nrectangles)
 {
     if (!INIT) {
@@ -170,7 +170,7 @@ XShadeRectangles(Display *display, Drawable drawable,
 
 
 void
-XShadePolygon(Display *display, Drawable drawable, XPoint * points, 
+XShadePolygon(Display *display, Drawable drawable, XPoint * points,
               int npoints, int  shape, int mode)
 {
     if (!INIT) {
@@ -183,7 +183,7 @@ XShadePolygon(Display *display, Drawable drawable, XPoint * points,
 }
 
 void
-XShadeArc(Display *display, Drawable drawable, int x, int y, 
+XShadeArc(Display *display, Drawable drawable, int x, int y,
           unsigned int width, unsigned int height, int angle1, int angle2)
 {
     if (!INIT) {

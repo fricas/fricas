@@ -31,9 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _FORM_EXT_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include "extent.h"
@@ -42,7 +40,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 
-
+static int window_height(HyperDocPage * page);
+static void form_header_extent(HyperDocPage * page);
+static void form_footer_extent(HyperDocPage * page);
+static void form_scrolling_extent(HyperDocPage * page);
 
 /*
  * A few routines used to help with form extents

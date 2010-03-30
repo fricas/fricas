@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _SPADACTION2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,14 +48,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * int readViewman(info,size) *
  ******************************/
 
-int 
+int
 readViewman(void * info,int size)
 {
   int mold = 0;
 
   sprintf(errorStr,"%s %d %s","read of ",size,
           " bytes from viewport manager\n");
-  mold = check(read(0,info,size));   
+  mold = check(read(0,info,size));
   return(mold);
 
 }
@@ -65,7 +64,7 @@ readViewman(void * info,int size)
  * int spadAction() *
  ********************/
 extern int viewAloned;
-int 
+int
 spadAction(void)
 {
   int code,viewCommand;
@@ -164,7 +163,7 @@ spadAction(void)
     readViewman(&i1,intSize);
     i1--;
     readViewman(&i2,intSize);
-    graphStateArray[i1].connectOn = i2; 
+    graphStateArray[i1].connectOn = i2;
     if (graphStateArray[i1].showing) spadDraw=yes;
     break;
 
@@ -200,15 +199,15 @@ spadAction(void)
     readViewman(&f2,floatSize);
     graphStateArray[i1].scaleX = f1;
     graphStateArray[i1].scaleY = f2;
-    if (graphStateArray[i1].scaleX > maxScale) 
+    if (graphStateArray[i1].scaleX > maxScale)
       graphStateArray[i1].scaleX = maxScale;
     else
-      if (graphStateArray[i1].scaleX < minScale) 
+      if (graphStateArray[i1].scaleX < minScale)
         graphStateArray[i1].scaleX = minScale;
-    if (graphStateArray[i1].scaleY > maxScale) 
+    if (graphStateArray[i1].scaleY > maxScale)
       graphStateArray[i1].scaleY = maxScale;
     else
-      if (graphStateArray[i1].scaleY < minScale) 
+      if (graphStateArray[i1].scaleY < minScale)
         graphStateArray[i1].scaleY = minScale;
     if (graphStateArray[i1].showing) spadDraw=yes;
     break;   /* scale2D */
@@ -221,13 +220,13 @@ spadAction(void)
     readViewman(&f2,floatSize);
     graphStateArray[i1].centerX = f1;
     graphStateArray[i1].centerY = f2;
-    if (graphStateArray[i1].centerX > maxDelta) 
+    if (graphStateArray[i1].centerX > maxDelta)
       graphStateArray[i1].centerX = maxDelta;
-    else if (graphStateArray[i1].centerX < -maxDelta) 
+    else if (graphStateArray[i1].centerX < -maxDelta)
            graphStateArray[i1].centerX = maxDelta;
-    if (graphStateArray[i1].centerY > maxDelta) 
+    if (graphStateArray[i1].centerY > maxDelta)
       graphStateArray[i1].centerY = maxDelta;
-    else if (graphStateArray[i1].centerY < -maxDelta) 
+    else if (graphStateArray[i1].centerY < -maxDelta)
            graphStateArray[i1].centerY = maxDelta;
     if (graphStateArray[i1].showing) spadDraw=yes;
     break;   /* translate2D */
@@ -242,7 +241,7 @@ spadAction(void)
  case resizeViewport:
     readViewman(&i1,intSize);
     readViewman(&i2,intSize);
-    XResizeWindow(dsply,viewport->titleWindow,i1,i2+titleHeight); 
+    XResizeWindow(dsply,viewport->titleWindow,i1,i2+titleHeight);
     XResizeWindow(dsply,viewport->viewWindow,i1,i2);
     spadDraw=yes;
     break;
@@ -262,9 +261,9 @@ spadAction(void)
       getGraphFromViewman(i2);
       /* simulate a button press to turn display number on and select on */
       /* need !yes since it will be inverted */
-      graphStateArray[i2].selected = no;  
-      graphStateArray[i2].connectOn = yes;  
-      graphStateArray[i2].showing = !(graphStateArray[i2].showing); 
+      graphStateArray[i2].selected = no;
+      graphStateArray[i2].connectOn = yes;
+      graphStateArray[i2].showing = !(graphStateArray[i2].showing);
       clickedOnGraph(i2,i2+graphStart);
       clickedOnGraphSelect(i2,i2+graphSelectStart);
     }

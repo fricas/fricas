@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <X11/X.h>
 #define numOfColors 240
-#define totalHuesConst   27 
-#define totalShadesConst 5 
+#define totalHuesConst   27
+#define totalShadesConst 5
 #define hueEnd  360
 #define hueStep 12    /* hueEnd/totalHuesConst */
 
@@ -49,7 +49,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define no 0
 
 #define smoothConst  50
-#define saymem(a,b,c) saymemWithLine(a,b,c,0)
+#define saymem(a, b, c) saymemWithLine(a, b, c, 0)
 #define Colorcells 256   /* KF number of elements in permutation vector */
 #define shade 5
 #define saturation   0.8
@@ -59,6 +59,6 @@ extern Colormap  colorMap;
 extern int       num;
 extern int       scrn;
 
-#define maxColors DisplayCells(dsply,scrn)-1
+#define maxColors DisplayCells(dsply, scrn)-1
 
 #include "rgb.h"

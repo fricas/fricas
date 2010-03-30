@@ -31,10 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _READBITMAP_C
-
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 #include "hyper.h"
 
@@ -42,6 +39,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pixmap.H1"
 
 #define MAXLINE      256
+
+static int read_hot(FILE * fd, char Line[], int * x_hot, int * y_hot);
+static int read_w_and_h(FILE * fd, unsigned int * width,
+                        unsigned int * height);
 
 /*
  * This file was produced by J.M. Wiley with some help from the bitmap editor
@@ -51,7 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 XImage *
-HTReadBitmapFile(Display *display,int screen,char * filename, 
+HTReadBitmapFile(Display *display,int screen,char * filename,
                  int *width, int *height)
 {
     XImage *image;

@@ -438,7 +438,7 @@ extern int need_scroll_up_button;
 extern int scrolling;
 extern int need_scroll_down_button;
 extern int space_width;
-#endif 
+#endif
 
 /* Here are some of the functions and constants declared and needed in
       htadd.c                                                    ******/

@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _BUTTONS3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "header.h"
 #include "cpanel.h"
@@ -55,12 +54,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int
 initButtons (buttonStruct *buttons)
 {
-  
+
   int PBY = 297; /* panel button Y coordinate at which buttons appear */
   int ii, num = 0;
-  
+
   /* Rotate, Zoom, and Translate Potentiometer Buttons */
-  
+
   /* Title:  "Rotate" */
   ii = rotate;
   buttons[ii].buttonX       = XEDGE;    buttons[ii].buttonY         = 85;
@@ -72,7 +71,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf         = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf         = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Title:  "Scale" */
   ii = zoom;
   buttons[ii].buttonX         = 121;  buttons[ii].buttonY           = 85;
@@ -84,8 +83,8 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
-  
+
+
   /* Title:  "Translate" */
   ii = translate;
   buttons[ii].buttonX         = 185;  buttons[ii].buttonY      = 85;
@@ -97,12 +96,12 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* All the rest of the buttons are regular, toggle only buttons and
      have the potentiometer variable set to "no". */
-  
+
   /* First Row of Buttons */
-  /* The four rendering mode buttons:  
+  /* The four rendering mode buttons:
      wireframe, hiddenline solid, hiddenline shaded and smooth shaded **/
 
   /* Wirefram mesh */
@@ -117,7 +116,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Hidden surface mesh */
   ii = opaqueMesh;
   buttons[ii].buttonX         = 55;  buttons[ii].buttonY      = PBY;
@@ -130,7 +129,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Lambertian polygon fill with phong illumination model */
   ii = render;
   buttons[ii].buttonX       = 113;  buttons[ii].buttonY         = PBY;
@@ -142,8 +141,8 @@ initButtons (buttonStruct *buttons)
   buttons[ii].textColor     = modeColor;
   buttons[ii].xHalf         = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf         = buttons[ii].buttonHeight/2;
-  ++num;  
-  
+  ++num;
+
   /* Phong smooth shading and illumination */
   ii = smooth;
   buttons[ii].buttonX       = 171;  buttons[ii].buttonY         = PBY;
@@ -155,8 +154,8 @@ initButtons (buttonStruct *buttons)
   buttons[ii].textColor     = modeColor;
   buttons[ii].xHalf         = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf         = buttons[ii].buttonHeight/2;
-  ++num;  
-  
+  ++num;
+
   /* Reset View Position Button */
   ii = resetView;
   buttons[ii].buttonX       = 240;    buttons[ii].buttonY       = PBY;
@@ -169,13 +168,13 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf         = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf         = buttons[ii].buttonHeight/2;
   ++num;
-  
-  
+
+
   /* Second Row of Buttons */
 
   /* update y displacement of buttons row */
-  PBY=PBY+BH+3;  
-  
+  PBY=PBY+BH+3;
+
   /* Bounding Region On/Off */
   ii = region3D;
   buttons[ii].buttonX     = XEDGE;    buttons[ii].buttonY       = PBY;
@@ -188,7 +187,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf       = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf       = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Axes Turned On/Off */
   ii = axesOnOff;
   buttons[ii].buttonX     = 68;    buttons[ii].buttonY      = PBY;
@@ -201,7 +200,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf       = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf       = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Outline polygons with black lines in render mode */
   ii = outlineOnOff;
   buttons[ii].buttonX     = 122;   buttons[ii].buttonY       = PBY;
@@ -214,7 +213,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf       = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf       = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Display as if a 1-bit plane image */
   ii = bwColor;
   buttons[ii].buttonX      = 197; buttons[ii].buttonY      = PBY;
@@ -227,7 +226,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf        = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf        = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Hide Control Panel */
   ii = hideControl;
   buttons[ii].buttonX      = 240;   buttons[ii].buttonY       = PBY;
@@ -240,13 +239,13 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf        = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf        = buttons[ii].buttonHeight/2;
   ++num;
-  
-  
+
+
   /* Third Row of Buttons */
 
   /* update y displacement of buttons row */
-  PBY=PBY+BH+3;  
-  
+  PBY=PBY+BH+3;
+
   /* Shows Lighting Control Panel */
   ii = lighting;
   buttons[ii].buttonX     = XEDGE;   buttons[ii].buttonY       = PBY;
@@ -259,7 +258,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf       = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf       = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Shows View Volume Control Panel */
   ii = viewVolume;
   buttons[ii].buttonX     = 75;    buttons[ii].buttonY       = PBY;
@@ -272,7 +271,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf       = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf       = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Shows Save Panel */
   ii = saveit;
   buttons[ii].buttonX      = 180;  buttons[ii].buttonY       = PBY;
@@ -285,7 +284,7 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf        = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf        = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Exits from the viewport running */
   ii = closeAll;
   buttons[ii].buttonX     = 240;  buttons[ii].buttonY       = PBY;
@@ -298,126 +297,126 @@ initButtons (buttonStruct *buttons)
   buttons[ii].xHalf       = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf       = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Buttons to control potentiometers */
   /* These buttons appear above the potentiometer windows which they affect. */
 
   /* Rotate potentiometer buttons */
-  
+
   /* Rotate about the origin indicated by the axes */
   /* Red is off, Green is on */
   ii = originr;
   buttons[ii].buttonX         = XEDGE;  buttons[ii].buttonY           = 55;
-  buttons[ii].buttonWidth     = 53;     buttons[ii].buttonHeight    = 25; 
+  buttons[ii].buttonWidth     = 53;     buttons[ii].buttonHeight    = 25;
   buttons[ii].buttonKey       = ii;
-  buttons[ii].pot             = no;  
+  buttons[ii].pot             = no;
   buttons[ii].mask            = buttonMASK;
   buttons[ii].text            = "origin";
   buttons[ii].textColor       = onColor;
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Rotate about the objects center of volume */
   /* Red is off, Green is on */
   ii = objectr;
   buttons[ii].buttonX         = 62;  buttons[ii].buttonY           = 55;
-  buttons[ii].buttonWidth     = 53;   buttons[ii].buttonHeight      = 25; 
+  buttons[ii].buttonWidth     = 53;   buttons[ii].buttonHeight      = 25;
   buttons[ii].buttonKey       = ii;
-  buttons[ii].pot             = no;  
+  buttons[ii].pot             = no;
   buttons[ii].mask            = buttonMASK;
   buttons[ii].text            = "object";
-  buttons[ii].textColor       = offColor; 
+  buttons[ii].textColor       = offColor;
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Scale potentiometer buttons */
-  
+
   /* Scale along X axis:  Red is off, Green is on */
   ii = zoomx;
   buttons[ii].buttonX         = 121;  buttons[ii].buttonY           = 55;
-  buttons[ii].buttonWidth     = 17;   buttons[ii].buttonHeight      = 25; 
+  buttons[ii].buttonWidth     = 17;   buttons[ii].buttonHeight      = 25;
   buttons[ii].buttonKey       = ii;
-  buttons[ii].pot             = no;  
+  buttons[ii].pot             = no;
   buttons[ii].mask            = buttonMASK;
   buttons[ii].text            = "x";
   buttons[ii].textColor       = onColor;
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Scale along Y axis:  Red is off, Green is on */
   ii = zoomy;
   buttons[ii].buttonX         = 141;  buttons[ii].buttonY           = 55;
   buttons[ii].buttonWidth     = 17;   buttons[ii].buttonHeight      = 25;
   buttons[ii].buttonKey       = ii;
-  buttons[ii].pot             = no;  
+  buttons[ii].pot             = no;
   buttons[ii].mask            = buttonMASK;
   buttons[ii].text            = "y";
   buttons[ii].textColor       = onColor;
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Zoom along Z axis:  Red is off, Green is on */
   ii = zoomz;
   buttons[ii].buttonX         = 161;  buttons[ii].buttonY           = 55;
   buttons[ii].buttonWidth     = 17;   buttons[ii].buttonHeight      = 25;
   buttons[ii].buttonKey       = ii;
-  buttons[ii].pot             = no; 
+  buttons[ii].pot             = no;
   buttons[ii].mask            = buttonMASK;
   buttons[ii].text            = "z";
   buttons[ii].textColor       = onColor;
   buttons[ii].xHalf           = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf           = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Translate potentiometer buttons */
-  
+
   /* Indicates an orthographic projection of the xy-plane,
-     translation is in x and y coordinates */ 
+     translation is in x and y coordinates */
   ii = xy;
   buttons[ii].buttonX    = 185;  buttons[ii].buttonY      = 55;
   buttons[ii].buttonWidth= 34;   buttons[ii].buttonHeight = 25;
   buttons[ii].buttonKey  = ii;
-  buttons[ii].pot        = no;  
+  buttons[ii].pot        = no;
   buttons[ii].mask       = buttonMASK;
   buttons[ii].text       = "xy";
   buttons[ii].textColor  = 35;
   buttons[ii].xHalf      = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf      = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Indicates an orthographic projection of the xz-plane,
-     translation is in x and z coordinates */ 
+     translation is in x and z coordinates */
   ii = xz;
   buttons[ii].buttonX    = 223;  buttons[ii].buttonY      = 55;
   buttons[ii].buttonWidth= 34;   buttons[ii].buttonHeight = 25;
   buttons[ii].buttonKey  = ii;
-  buttons[ii].pot        = no;  
+  buttons[ii].pot        = no;
   buttons[ii].mask       = buttonMASK;
   buttons[ii].text       = "xz";
   buttons[ii].textColor  = 35;
   buttons[ii].xHalf      = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf      = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   /* Indicates an orthographic projection of the yz-plane,
-     translation is in y and z coordinates */ 
+     translation is in y and z coordinates */
   ii = yz;
   buttons[ii].buttonX    = 261;  buttons[ii].buttonY      = 55;
   buttons[ii].buttonWidth= 34;   buttons[ii].buttonHeight = 25;
   buttons[ii].buttonKey  = ii;
-  buttons[ii].pot        = no;  
+  buttons[ii].pot        = no;
   buttons[ii].mask       = buttonMASK;
   buttons[ii].text       = "yz";
   buttons[ii].textColor  = 35;
   buttons[ii].xHalf      = buttons[ii].buttonWidth/2;
   buttons[ii].yHalf      = buttons[ii].buttonHeight/2;
   ++num;
-  
+
   return(num);
-  
+
 } /* initButtons() */
 

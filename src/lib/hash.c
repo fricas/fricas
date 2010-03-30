@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* initialize a hash table */
 
 void
-hash_init(HashTable *table, int size, EqualFunction equal, 
+hash_init(HashTable *table, int size, EqualFunction equal,
           HashcodeFunction hash_code)
 {
     int i;

@@ -38,9 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _SHOW_TYPES_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 
@@ -53,7 +52,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_hyper_proto.H1"
 
-
+static void show_image(TextNode * node, GC gc);
+static void show_input(TextNode * node);
+static void show_link(TextNode * node);
+static void show_paste(TextNode * node);
+static void show_pastebutton(TextNode * node);
+static void show_simple_box(TextNode * node);
+static void show_spadcommand(TextNode * node);
 
 /*
  * Display the page whose extent has been computed, using the actual size of

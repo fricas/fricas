@@ -33,13 +33,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _POT2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include "header2.h"
 
 #include "all_2d.H1"
 
-mouseCoord 
+mouseCoord
 getPotValue(short eX,short eY,short xH,short yH)
 {
 
@@ -49,8 +48,8 @@ getPotValue(short eX,short eY,short xH,short yH)
   x = (float)eX/xH - 1;
   y = -((float)eY/yH -1);
             /* make non-linear potentiometer */
-  whereMouse.x = x*x*x; 
-  whereMouse.y = y*y*y; 
+  whereMouse.x = x*x*x;
+  whereMouse.y = y*y*y;
 
   return(whereMouse);
 

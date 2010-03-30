@@ -164,7 +164,7 @@ XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
 }
 
 
-void 
+void
 XSpadFillSetArcMode(Display *dsply, int mode)
 {
     XSetArcMode(dsply, solidGC, mode);
@@ -235,9 +235,9 @@ XSolidColor(int hue, int theshade)
     return (spadColors[hue * (totalSolid) + theshade]);
 }
 
-void 
-XSpadFillRectangle(Display *dsply, Drawable drawable, int x, int y, 
-                   unsigned int width, unsigned int height, 
+void
+XSpadFillRectangle(Display *dsply, Drawable drawable, int x, int y,
+                   unsigned int width, unsigned int height,
                    int hue, int theshade)
 {
 
@@ -249,7 +249,7 @@ XSpadFillRectangle(Display *dsply, Drawable drawable, int x, int y,
 
 
 void
-XSpadFillRectangles(Display *dsply, Drawable drawable, 
+XSpadFillRectangles(Display *dsply, Drawable drawable,
                     XRectangle * rectangles, int nrectangles,
                     int hue, int theshade)
 {
@@ -263,7 +263,7 @@ XSpadFillRectangles(Display *dsply, Drawable drawable,
 
 
 void
-XSpadFillPolygon(Display *dsply, Drawable drawable, XPoint * points, 
+XSpadFillPolygon(Display *dsply, Drawable drawable, XPoint * points,
                  int npoints, int shape, int mode, int hue, int theshade)
 {
     XFillPolygon(dsply, drawable,
@@ -273,8 +273,8 @@ XSpadFillPolygon(Display *dsply, Drawable drawable, XPoint * points,
 }
 
 void
-XSpadFillArc(Display *dsply, Drawable drawable, int x, int y, 
-             unsigned int width, unsigned int height, 
+XSpadFillArc(Display *dsply, Drawable drawable, int x, int y,
+             unsigned int width, unsigned int height,
              int angle1, int angle2, int hue, int  theshade)
 {
 

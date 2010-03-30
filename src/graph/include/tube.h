@@ -35,21 +35,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define closedTube 0
 
 typedef struct _triple {    /* used for normals */
-  float x,y,z;
+  float x, y, z;
 } triple;
 
 #include "rgb.h"
 
 typedef struct _viewTriple { /* used for points in 3 space */
-  float x,y,z,c,sc;          /* c is color component */
-  float wx,wy,wz;            /* world space coords */
-  float px,py,pz;            /* as projected on the screen */
+  float x, y, z, c, sc;          /* c is color component */
+  float wx, wy, wz;            /* world space coords */
+  float px, py, pz;            /* as projected on the screen */
   float norm[3];
-  struct _viewTriple *next;  /* for new points allocated by splits, 
-				keep in list for freeing */
+  struct _viewTriple *next;  /* for new points allocated by splits,
+                                keep in list for freeing */
 } viewTriple, *viewTriplePtr;
 
-/* the xxxPRIM's are primitiveType's as deduced from the 
+/* the xxxPRIM's are primitiveType's as deduced from the
    components received from AXIOM. the info may be
    used in the hidden surface section */
 
@@ -66,16 +66,16 @@ typedef struct _poly {
   int numpts;
   int primitiveType;
   int *indexPtr;         /* the index referring to the offset from the
-			    beginning of the points field in the view3DStruct
-			    in view3D.h */
-  float N[3],planeConst,color;    /* planeConst - for plane equ'n, N has
-				     other 3 coeffs */
-  float pxmin,pxmax,pymin,pymax,pzmin,pzmax;
-  float xmin,xmax,ymin,ymax,zmin,zmax;
+                            beginning of the points field in the view3DStruct
+                            in view3D.h */
+  float N[3], planeConst, color;    /* planeConst - for plane equ'n, N has
+                                     other 3 coeffs */
+  float pxmin, pxmax, pymin, pymax, pzmin, pzmax;
+  float xmin, xmax, ymin, ymax, zmin, zmax;
   int moved;                      /* moved - for depth sort */
   struct _poly *next;
   int doNotStopDraw;              /* for the quickDraw if depth info remains
-				     the same between draws */
+                                     the same between draws */
   float normalFacingOut;
   int partialClip, totalClip,
     partialClipPz, totalClipPz;
@@ -107,7 +107,7 @@ typedef struct _tubeModel {
 
 typedef struct _pointInfo {
   viewTriple *theVT;
-  int        onVertex,segmentNum;
-  int        indexNum;   
+  int        onVertex, segmentNum;
+  int        indexNum;
 } pointInfo;
 

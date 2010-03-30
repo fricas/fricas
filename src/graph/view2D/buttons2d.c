@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _BUTTONS2D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <string.h>
 
@@ -56,7 +55,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *                                                   *
  *****************************************************/
 
-int 
+int
 initButtons (buttonStruct *buttons)
 {
   int ii, num = 0;

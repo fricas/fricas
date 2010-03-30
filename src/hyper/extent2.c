@@ -38,9 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _EXTENT2_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 
@@ -51,6 +50,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "all_hyper_proto.H1"
 #include "pixmap.H1"
 
+static void center_nodes(TextNode * begin_node, TextNode * end_node);
+static int text_height1(TextNode * node, int Ender);
+static int x_value(TextNode * node);
 
 static int cur_height = 0;
 static int max_x_value = 0;

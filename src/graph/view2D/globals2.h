@@ -55,13 +55,13 @@ extern  XGCValues gcVals;
 extern  char *s;
 extern  int someInt;
 
-extern unsigned long foregroundColor, backgroundColor; 
+extern unsigned long foregroundColor, backgroundColor;
 
 extern int drawMore;
 extern int spadMode,spadDraw;
 extern jmp_buf jumpFlag;
 
-extern graphStruct graphArray[maxGraphs]; 
+extern graphStruct graphArray[maxGraphs];
 extern graphStateStruct graphStateArray[maxGraphs],
                         graphStateBackupArray[maxGraphs];
 extern xPointStruct xPointsArray[maxGraphs];
@@ -71,7 +71,7 @@ extern int transXON, transYON;
 
 extern char errorStr[80];
 
-extern int currentGraph; 
+extern int currentGraph;
 extern int queriedGraph;
 extern int picking,dropping;
 

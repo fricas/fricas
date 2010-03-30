@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _VIEWALONE_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <stdlib.h>
 #include "viewAlone.h"
@@ -79,7 +78,7 @@ int main (int argc,char *argv[])
 
         sprintf(filename,"%s%s",argv[1],".VIEW/data");
         if((viewFile = fopen(filename,"r")) == NULL ) {
-         
+
            sprintf(filename,"%s%s",argv[1],"/data");
            if((viewFile = fopen(filename,"r")) == NULL ){
              fprintf(stderr,"Error: Cannot find the file %s%s or %s%s\n",

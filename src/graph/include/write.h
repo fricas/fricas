@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    Note that the numbers in this list is also the order
    in which they should appear in the AXIOM file (e.g. view3D.spad) */
 
-#define Pixmap		1
-#define Bitmap		2
-#define Postscript	3
-#define Image		4
+#define Pixmap          1
+#define Bitmap          2
+#define Postscript      3
+#define Image           4

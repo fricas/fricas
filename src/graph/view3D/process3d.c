@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _PROCESS3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -847,7 +846,7 @@ buttonAction (int bKey)
 
 
 /************************** X Event Processing *****************************/
-void 
+void
 processEvents(void)
 {
 
@@ -904,37 +903,37 @@ processEvents(void)
       FD_ZERO(&rd);
       if (externalControl==0) FD_SET(0, &rd);
       FD_SET(Xcon,&rd);
-      
+
       if (XEventsQueued(dsply, QueuedAlready)) {
         len=1;
         break;
       }
-      if (!followMouse) 
-        len=select(FD_SETSIZE,(void *)&rd,0,0,0); 
-      else 
+      if (!followMouse)
+        len=select(FD_SETSIZE,(void *)&rd,0,0,0);
+      else
         len=1;
     }
-    
-    if (FD_ISSET(Xcon,&rd)|| 
-        XEventsQueued(dsply, QueuedAfterFlush) || 
+
+    if (FD_ISSET(Xcon,&rd)||
+        XEventsQueued(dsply, QueuedAfterFlush) ||
         followMouse) {
-     
+
       if (followMouse) {
-        if (XPending(dsply)) 
+        if (XPending(dsply))
           XNextEvent(dsply,event);
         gotEvent++;
       } else {
         XNextEvent(dsply,event);
         gotEvent++;
       }
-      
-      if (gotToggle || !followMouse) 
+
+      if (gotToggle || !followMouse)
         checkButton = no;
-      
+
       if (gotEvent) {
         whichWindow = ((XButtonEvent *)event)->window;
         first_time = no;
-        
+
         switch(((XEvent *)event)->type) {
         case ClientMessage:
           if (event->xclient.data.l[0] == wm_delete_window) {
@@ -1039,12 +1038,12 @@ processEvents(void)
           } else {
             fprintf(stderr,"Not a valid window.\n");
           }
-          
+
           XFlush(dsply);
           while(XCheckTypedWindowEvent(dsply, whichWindow, Expose, &tempEvent));
           break;
-          
-          
+
+
         case MotionNotify:
           exposeView = no;
           if (followMouse) {
@@ -1069,12 +1068,12 @@ processEvents(void)
             }
           }
           break;
-          
+
         case ButtonRelease:
           exposeView = followMouse = no;
           toggleReady = yes;  gotToggle = yes;
           break;
-          
+
         case LeaveNotify:
           XQueryPointer(dsply,rtWindow,&dummy,&dummy,&px,&py,&lx,&ly,&lbuttons);
           if ( (controlButton) &&
@@ -1094,7 +1093,7 @@ processEvents(void)
           toggleReady = yes;
           checkButton = exposeView = no;
           break;
-          
+
         case ButtonPress:
           exposeView = no;  changingColor = no;
           if (whichWindow == viewport->viewWindow) {
@@ -1149,16 +1148,16 @@ processEvents(void)
             first_time  = yes;
           }
           break;
-          
+
         default:
           toggleReady = gotToggle = yes;
           exposeView = changingColor = checkButton = followMouse = no;
           break;
-          
+
         } /* switch */
         gotEvent--;
       }  /* if gotEvent */
-      
+
       /* Allow a pressed mouse button on a potentiometer to poll repeatedly. */
       if (followMouse && !first_time && (followMouse++ > mouseWait)) {
         /* reset for next timing loop */
@@ -1219,10 +1218,10 @@ processEvents(void)
           clearControlMessage();
           /* reset all the things that might affect a recalculation for
              redrawing removing hidden surfaces */
-          
+
           /* determine what type of button has been pressed */
           switch(controlButton->buttonKey) {
-            
+
             /*** Potentiometers ***/
           case rotate:
             if (!((viewport->originrOn) && (viewport->objectrOn))) {
@@ -1283,7 +1282,7 @@ processEvents(void)
               drawViewport(Xoption);
             }
             break;
-            
+
           case zoom:
             /* if uniform scaling */
             if ((viewport->zoomXOn) &&
@@ -1312,13 +1311,13 @@ processEvents(void)
                 (viewport->zoomZOn))
               drawViewport(Xoption);
             break;
-            
+
           case translate:
             viewport->deltaX += mouseXY.x * translateFactor;
             viewport->deltaY += mouseXY.y * translateFactor;
             if (viewport->deltaX > maxDeltaX) viewport->deltaX = maxDeltaX;
             else if (viewport->deltaX < -maxDeltaX) viewport->deltaX = -maxDeltaX;
-            
+
             if (viewport->deltaY > maxDeltaY) viewport->deltaY = maxDeltaY;
             else if (viewport->deltaY < -maxDeltaY) viewport->deltaY = -maxDeltaY;
             translated = yes;
@@ -1327,7 +1326,7 @@ processEvents(void)
             writeControlMessage();
             drawViewport(Xoption);
             break;
-            
+
             /*** Lighting panel ***/
           case lightMoveXY:
             tempLightPointer[0] = linearMouseXY.x;
@@ -1339,7 +1338,7 @@ processEvents(void)
             movingLight = yes;
             drawLightingAxes();
             break;
-            
+
           case lightMoveZ:
             tempLightPointer[2] = linearMouseXY.y;
             /* linearMouse => no checking necessary */
@@ -1348,7 +1347,7 @@ processEvents(void)
             movingLight = yes;
             drawLightingAxes();
             break;
-            
+
             /* changes the light intensity */
           case lightTranslucent:
             tempLightIntensity = (linearMouseXY.y+1)/2;
@@ -1357,7 +1356,7 @@ processEvents(void)
             changedIntensity = yes;
             drawLightTransArrow();
             break;
-            
+
             /*** volume panel ***/
           case frustrumBut:
             screenX = ((XButtonEvent *)event)->x;
@@ -1390,7 +1389,7 @@ processEvents(void)
               doingPanel = VOLUMEpanel;
             }
             break;
-            
+
           case clipXBut:  /* this is a horizontal button */
             clipValue = linearMouseXY.x * 0.5 + 0.5;   /* normalize to 0..1 */
             if (lessThan(clipValue,0.0)) clipValue = 0.0;
@@ -1425,7 +1424,7 @@ processEvents(void)
               }
             }
             break;
-            
+
           case clipYBut:  /* this is a vertical button */
             /* normalize to 0..1, bottom up */
             clipValue = 1 - (linearMouseXY.y * 0.5 + 0.5);
@@ -1461,7 +1460,7 @@ processEvents(void)
               }
             }
             break;
-            
+
           case clipZBut:  /* this is a diagonally aligned button! */
             /* f1 is the distance from the center of the button along
                the diagonal line with a slope of -1. If f1 is negative,
@@ -1475,7 +1474,7 @@ processEvents(void)
                since we need to shorten the line at some point anyway
                (both to match the length of the diagonal side of the box
                and to allow more area for mouse input. */
-            
+
             /* cos(45), etc => 0.4 */
             f1 = (linearMouseXY.x - linearMouseXY.y) * 0.4 + 0.5;
             if (lessThan(f1,0.0)) f1 = 0.0;
@@ -1511,7 +1510,7 @@ processEvents(void)
               }
             }   /* if lessThan(x,y) */
             break;
-            
+
           case perspectiveBut:
             if ((viewData.perspective = !viewData.perspective)) {
               switchedPerspective = yes;
@@ -1533,7 +1532,7 @@ processEvents(void)
                          False);
             drawViewport(Xoption);
             break;
-            
+
           case clipRegionBut:
             if ((viewData.clipbox = !viewData.clipbox)) {
               GSetForeground(volumeGC,
@@ -1552,10 +1551,10 @@ processEvents(void)
                          controlButton->buttonWidth-2,
                          controlButton->buttonHeight-2,
                          False);
-            
+
             drawViewport(Xoption);
             break;
-            
+
           case clipSurfaceBut:
             if ((viewData.clipStuff = !viewData.clipStuff)) {
               GSetForeground(volumeGC,
@@ -1575,11 +1574,11 @@ processEvents(void)
                          controlButton->buttonHeight-2,
                          False);
             break;
-            
+
           default:
             buttonAction(controlButton->buttonKey);
           } /* switch on buttonKey */
-          
+
         }  /* else - not closing */
       }   /* if checkButton */
     } /* if FD_ISSET(Xcon,.. */

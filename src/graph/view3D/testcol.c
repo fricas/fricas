@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _MAIN3D_C
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +64,7 @@ int             maxGreyShade=0;
 GC              globalGC1, globalGC2, anotherGC, globGC, trashGC,
                 controlMessageGC, lightingGC, volumeGC, quitGC, processGC,
                 saveGC, graphGC, componentGC, opaqueGC, renderGC;
-unsigned long   foregroundColor, backgroundColor;  
+unsigned long   foregroundColor, backgroundColor;
 int             Socket=1, ack=1;
 Colormap        colorMap;
 viewTriple      *splitPoints;
@@ -73,7 +72,7 @@ Display         *dsply;
 int             scrn;
 Window          rtWindow;
 HashTable       *table;
-int             mono, totalColors, totalSolid, totalDithered, totalHues, 
+int             mono, totalColors, totalSolid, totalDithered, totalHues,
                 totalSolidShades, totalDitheredAndSolids,totalShades;
 XFontStruct     *globalFont, *buttonFont, *headerFont, *titleFont, *graphFont,
                 *lightingFont, *volumeFont, *quitFont, *saveFont,*serverFont;
@@ -97,7 +96,7 @@ GC              processGC;
 viewPoints      *viewport;
 controlPanelStruct      *control;
 char            *s;
-int             someInt;  
+int             someInt;
 
 /* check /usr/include/X11 for current implementation of
    pixels (e.g. BlackPixel()) */
@@ -105,7 +104,7 @@ int             someInt;
            /** totalShades is initially set to totalShadesConst.
                If X cannot allocate 8 shades for each hue, total-
                Shades is decremented. there is currently only a check for
-               this value to be positive. --> something to add: change over 
+               this value to be positive. --> something to add: change over
                to monochrome if totalShades=0. just modify the spadcolors.c
                file. spadcolors.c has been modified so that it returns the
                value for totalShades. since the return value had previously
@@ -118,12 +117,12 @@ int             drawMore;
 
 int             spadMode=no,            /* yes if receiving AXIOM command and
                                            calling drawViewport */
-                spadDraw=no;            /* yes if drawing viewport for 
+                spadDraw=no;            /* yes if drawing viewport for
                                            an AXIOM command */
 int             spadSignalReceived=0;  /* yes if current state is a result of
                                            a signal from AXIOM */
 int             inNextEvent=no;         /* true just before a call to
-					   XNextEvent */
+                                           XNextEvent */
 jmp_buf         jumpFlag;
 
 char            errorStr[80];
@@ -136,7 +135,7 @@ Window          quitWindow, saveWindow;
 
 Window          lightingWindow, lightingAxes;
 float           lightPointer[3], tempLightPointer[3];
-                
+
 int             axesXY[3][4];
 float           axesZ[3][2];
 
@@ -148,12 +147,12 @@ char            filename[256];
 
 
                 /** used for draw viewport routines */
-float           sinTheta, sinPhi, cosTheta, cosPhi, viewScale, 
+float           sinTheta, sinPhi, cosTheta, cosPhi, viewScale,
                 viewScaleX, viewScaleY, viewScaleZ, reScale;
 int             xCenter, yCenter;
 
 XWindowAttributes       vwInfo;
-XWindowAttributes	graphWindowAttrib;
+XWindowAttributes       graphWindowAttrib;
 
 XPoint          *quadMesh;
 XImage          *imageX;
@@ -161,7 +160,7 @@ int             *xPts;   /* pointer to projected points (x followed by y) */
 float           transform[4][4], transform1[4][4],
                 R[4][4], R1[4][4], S[4][4], T[4][4], I[4][4];
 float           A[4][4], B[4][4], D[4], E[4][4], F[4], array[4][4];
-                
+
 
 int             scanline, polyCount;
 polyList        *scanList[ARRAY_HEIGHT];
@@ -184,7 +183,7 @@ XPoint          polygonMesh[20];
 int             saveFlag=no;
 int             firstTime=yes, noTrans = yes, startup = yes;
 int             redrawView = no;   /* set to yes when returning from
-				      subpanels */
+                                      subpanels */
 int             redoColor = no, pixelSetFlag = no, redoDither = no;
 int             redoSmooth = no, multiColorFlag = no;
 
@@ -212,9 +211,9 @@ int             doingPanel=CONTROLpanel; /* rewrite titles in proper panel */
 int             doingVolume;
 
 int             screenX;  /* global floating point indicating mouse position
-			     on frustrum screen */
+                             on frustrum screen */
 float           xClipMinN, xClipMaxN,   /* normalized values for
-					   clip volume */
+                                           clip volume */
                 yClipMinN, yClipMaxN,
                 zClipMinN, zClipMaxN,
                 clipValue;              /* mouse input */
@@ -246,7 +245,7 @@ int    smoothConst = 50;
 
 
 void
-main(void) 
+main(void)
 {
 
   XGCValues     controlGCVals;
@@ -258,9 +257,9 @@ main(void)
   XrmValue value;
 
   Atom wm_delete_window;
-  XColor	       foreColor, backColor;
-  XSizeHints	       titleSizeHints;
-  Window	       viewTitleWindow, viewGraphWindow;
+  XColor               foreColor, backColor;
+  XSizeHints           titleSizeHints;
+  Window               viewTitleWindow, viewGraphWindow;
   XSetWindowAttributes viewAttrib;
   Pixmap spadbits,spadmask;
 
@@ -274,7 +273,7 @@ main(void)
   rtWindow = RootWindow(dsply,scrn);
 
   /**** link Xwindows to viewports - X10 feature ****/
-  table = XCreateAssocTable(nbuckets);  
+  table = XCreateAssocTable(nbuckets);
 
   /**** Create AXIOM color map ****/
   totalShades = 0;
@@ -300,13 +299,13 @@ main(void)
                          GCBackground ,&controlGCVals);
   carefullySetFont(globalGC1,globalFont);
   PSCreateContext(globalGC1, "globalGC1", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
                      /* controlMessageGC */
   controlGCVals.foreground  = controlMessageColor;
   controlGCVals.background  = backgroundColor;
   controlMessageGC      = XCreateGC(dsply,rtWindow,GCForeground |
-				    GCBackground ,&controlGCVals);
+                                    GCBackground ,&controlGCVals);
   carefullySetFont(controlMessageGC,globalFont);
 
                      /* globalGC2 */
@@ -314,89 +313,89 @@ main(void)
   globalGC2 = XCreateGC(dsply,rtWindow,GCForeground,&controlGCVals);
   carefullySetFont(globalGC2,buttonFont);
   PSCreateContext(globalGC2, "globalGC2", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
                      /* trashGC */
-  controlGCVals.function = GXcopy; 
+  controlGCVals.function = GXcopy;
   trashGC  = XCreateGC(dsply,rtWindow,0 ,&controlGCVals);
   carefullySetFont(trashGC,buttonFont);
   PSCreateContext(trashGC, "trashGC", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
                     /* componentGC */
   componentGC  = XCreateGC(dsply,rtWindow,0 ,&controlGCVals);
   carefullySetFont(componentGC,buttonFont);
   PSCreateContext(componentGC, "componentGC", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
                    /* opaqueGC */
   opaqueGC  = XCreateGC(dsply,rtWindow,0 ,&controlGCVals);
   carefullySetFont(opaqueGC,buttonFont);
   PSCreateContext(opaqueGC, "opaqueGC", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
                    /* renderGC */
   renderGC  = XCreateGC(dsply,rtWindow,0,&controlGCVals);
   carefullySetFont(renderGC,buttonFont);
   PSCreateContext(renderGC, "renderGC", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
                   /* globGC */
   globGC = XCreateGC(dsply,rtWindow,0,&controlGCVals);
   carefullySetFont(globGC,headerFont);
   PSCreateContext(globGC, "globGC", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
                 /* anotherGC */
   controlGCVals.line_width = colorWidth;
   anotherGC  = XCreateGC(dsply,rtWindow,GCBackground | GCLineWidth |
-                         GCFunction ,&controlGCVals);  
+                         GCFunction ,&controlGCVals);
   carefullySetFont(anotherGC,titleFont);
   PSCreateContext(anotherGC, "anotherGC", psNormalWidth, psButtCap,
-		  psMiterJoin, psWhite, psBlack);
+                  psMiterJoin, psWhite, psBlack);
 
   /* also create one for rendering (grayscale only for now) */
   /* assign arbitrary number to renderGC as 9991 - see header.h */
   PSCreateContext(GC9991, "renderGC", psNormalWidth, psButtCap,
-		  psRoundJoin, psWhite, psBlack );
+                  psRoundJoin, psWhite, psBlack );
 
 
               /* processGC */
   gcVals.background  = backgroundColor;
   processGC = XCreateGC(dsply,rtWindow,GCBackground |
-			GCFillStyle,&gcVals);
+                        GCFillStyle,&gcVals);
   carefullySetFont(processGC,buttonFont);
 
               /* lightingGC */
   controlGCVals.foreground = monoColor(axesColor);
   controlGCVals.background = backgroundColor;
   lightingGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
-			  ,&controlGCVals);
+                          ,&controlGCVals);
   carefullySetFont(lightingGC,lightingFont);
 
 
              /* volumeGC */
-  volumeGC = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
-		       ,&controlGCVals);
+  volumeGC = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
+                       ,&controlGCVals);
   carefullySetFont(volumeGC,volumeFont);
 
               /* quitGC */
-  quitGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
-		      ,&controlGCVals);
+  quitGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
+                      ,&controlGCVals);
   carefullySetFont(quitGC,buttonFont);
 
               /* saveGC */
-  saveGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
-		      ,&controlGCVals);
+  saveGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
+                      ,&controlGCVals);
   carefullySetFont(saveGC,buttonFont);
 
 
               /* graphGC */
-  graphGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground 
-		       ,&controlGCVals);
+  graphGC  = XCreateGC(dsply,rtWindow,GCForeground | GCBackground
+                       ,&controlGCVals);
   carefullySetFont(graphGC,buttonFont);
   if (!(viewport = (viewPoints *)saymem("viewport3D.c",
-					1,sizeof(viewPoints)))) {
+                                        1,sizeof(viewPoints)))) {
     fprintf(stderr,"Ran out of memory trying to create a viewport.\n");
     exitWithAck(RootWindow(dsply,scrn),Window,-1);
   }
@@ -406,57 +405,57 @@ main(void)
   I[2][0] = 0.0; I[2][1] = 0.0; I[2][2] = 1.0; I[2][3] = 0.0;
   I[3][0] = 0.0; I[3][1] = 0.0; I[3][2] = 0.0; I[3][3] = 1.0;
 
-  viewport->viewportKey	 = viewportKeyNum++;
+  viewport->viewportKey  = viewportKeyNum++;
   viewport->nextViewport = 0;
   viewport->prevViewport = 0;
-  viewport->deltaX	 = viewport->deltaX0  = viewData.deltaX;
-  viewport->deltaY	 = viewport->deltaY0  = viewData.deltaY;
-  viewport->deltaZ	 = viewport->deltaZ0  = viewData.deltaZ;
-  viewport->scale	 = viewport->scale0   = viewData.scale;
-  viewport->scaleX	 = viewData.scaleX;
-  viewport->scaleY	 = viewData.scaleY;
-  viewport->scaleZ	 = viewData.scaleZ;
-  viewport->transX	 = (viewData.xmax + viewData.xmin)/2.0;
-  viewport->transY	 = (viewData.ymax + viewData.ymin)/2.0;
-  viewport->transZ	 = (viewData.zmax + viewData.zmin)/2.0;
+  viewport->deltaX       = viewport->deltaX0  = viewData.deltaX;
+  viewport->deltaY       = viewport->deltaY0  = viewData.deltaY;
+  viewport->deltaZ       = viewport->deltaZ0  = viewData.deltaZ;
+  viewport->scale        = viewport->scale0   = viewData.scale;
+  viewport->scaleX       = viewData.scaleX;
+  viewport->scaleY       = viewData.scaleY;
+  viewport->scaleZ       = viewData.scaleZ;
+  viewport->transX       = (viewData.xmax + viewData.xmin)/2.0;
+  viewport->transY       = (viewData.ymax + viewData.ymin)/2.0;
+  viewport->transZ       = (viewData.zmax + viewData.zmin)/2.0;
 
   viewport->theta = viewport->axestheta = viewport->theta0 = viewData.theta;
-  viewport->phi	  = viewport->axesphi	= viewport->phi0   = viewData.phi;
+  viewport->phi   = viewport->axesphi   = viewport->phi0   = viewData.phi;
   viewport->thetaObj = 0.0;
   viewport->phiObj   = 0.0;
 
   viewData.title = "untitled";
   strcpy(viewport->title,viewData.title);
 
-  viewport->axesOn	 = yes;
-  viewport->regionOn	 = no;
-  viewport->monoOn	 = no;
-  viewport->zoomXOn	 = yes;
-  viewport->zoomYOn	 = yes;
-  viewport->zoomZOn	 = yes;
+  viewport->axesOn       = yes;
+  viewport->regionOn     = no;
+  viewport->monoOn       = no;
+  viewport->zoomXOn      = yes;
+  viewport->zoomYOn      = yes;
+  viewport->zoomZOn      = yes;
 
-  viewport->originrOn	 = yes;
-  viewport->objectrOn	 = no;
-  viewport->originFlag	 = no;
+  viewport->originrOn    = yes;
+  viewport->objectrOn    = no;
+  viewport->originFlag   = no;
 
-  viewport->xyOn	 = no;
-  viewport->xzOn	 = no;
-  viewport->yzOn	 = no;
+  viewport->xyOn         = no;
+  viewport->xzOn         = no;
+  viewport->yzOn         = no;
 
-  viewport->closing	 = no;
-  viewport->allowDraw	 = yes;	  /*if no, just draw axes the first time */
-  viewport->needNorm	 = yes;
+  viewport->closing      = no;
+  viewport->allowDraw    = yes;   /*if no, just draw axes the first time */
+  viewport->needNorm     = yes;
 
   viewport->lightVector[0] = -0.5;
   viewport->lightVector[1] = 0.5;
   viewport->lightVector[2] = 0.5;
   viewport->translucency   = viewData.translucency;
 
-  viewport->hueOffset	   = viewData.hueOff;
+  viewport->hueOffset      = viewData.hueOff;
   viewport->numberOfHues   = viewData.numOfHues;
-  viewport->hueTop	   = viewData.hueOff + viewData.numOfHues;
+  viewport->hueTop         = viewData.hueOff + viewData.numOfHues;
   if (viewport->hueTop > totalHues-1) viewport->hueTop = totalHues-1;
-  viewport->diagonals	   = viewData.diagonals;
+  viewport->diagonals      = viewData.diagonals;
 
   /* make theta in [0..2pi) and phi in (-pi..pi] */
   while (viewport->theta >= two_pi) {
@@ -497,20 +496,20 @@ main(void)
   cosTheta  = cos(-viewport->thetaObj);
   sinPhi    = sin(viewport->phiObj);
   cosPhi    = cos(viewport->phiObj);
-  ROTATE1(R1);	/* angles theta and phi are global  */
+  ROTATE1(R1);  /* angles theta and phi are global  */
 
 
   /* Initialize the non-uniform scaling matrix. */
   SCALE(viewport->scaleX,viewport->scaleY,viewport->scaleZ,S);
   /* Initialize the translation matrix. */
   TRANSLATE(-viewport->deltaX,-viewport->deltaY,0.0,T);
-	   /**** make the windows for the viewport ****/
+           /**** make the windows for the viewport ****/
   spadbits = XCreateBitmapFromData(dsply,rtWindow,
-				   spadBitmap_bits,
-				   spadBitmap_width,spadBitmap_height);
+                                   spadBitmap_bits,
+                                   spadBitmap_width,spadBitmap_height);
   spadmask = XCreateBitmapFromData(dsply,rtWindow,
-				   spadMask_bits,
-				   spadMask_width,spadMask_height);
+                                   spadMask_bits,
+                                   spadMask_width,spadMask_height);
   viewAttrib.background_pixel = backgroundColor;
   viewAttrib.border_pixel = foregroundColor;
 
@@ -526,12 +525,12 @@ main(void)
   XQueryColor(dsply,colorMap,&foreColor);
   XQueryColor(dsply,colorMap,&backColor);
   viewAttrib.cursor = XCreatePixmapCursor(dsply,spadbits,spadmask,
-					  &foreColor,&backColor,spadBitmap_x_hot,spadBitmap_y_hot);
+                                          &foreColor,&backColor,spadBitmap_x_hot,spadBitmap_y_hot);
   viewAttrib.event_mask = titleMASK;
   if (viewData.vW) {
     titleSizeHints.flags  = PPosition | PSize;
-    titleSizeHints.x	  = viewData.vX;
-    titleSizeHints.y	  = viewData.vY;
+    titleSizeHints.x      = viewData.vX;
+    titleSizeHints.y      = viewData.vY;
     titleSizeHints.width  = viewData.vW;
     titleSizeHints.height = viewData.vH;
   } else {    /* ain't gonna allow this for now... */
@@ -541,9 +540,9 @@ main(void)
   }
 
   viewTitleWindow = XCreateWindow(dsply,rtWindow,viewData.vX,viewData.vY,
-				  viewData.vW,viewData.vH,viewBorderWidth+3,
-				  CopyFromParent,InputOutput,CopyFromParent,
-				  viewportTitleCreateMASK,&viewAttrib);
+                                  viewData.vW,viewData.vH,viewBorderWidth+3,
+                                  CopyFromParent,InputOutput,CopyFromParent,
+                                  viewportTitleCreateMASK,&viewAttrib);
 
   wm_delete_window = XInternAtom(dsply, "WM_DELETE_WINDOW", False);
   (void) XSetWMProtocols(dsply, viewTitleWindow, &wm_delete_window, 1);
@@ -551,27 +550,27 @@ main(void)
   XSetNormalHints(dsply,viewTitleWindow,&titleSizeHints);
   if (strlen(viewport->title) < 30)
     XSetStandardProperties(dsply,viewTitleWindow,"FriCAS 3D",viewport->title,
-			   None,NULL,0,&titleSizeHints);
+                           None,NULL,0,&titleSizeHints);
   else
     XSetStandardProperties(dsply,viewTitleWindow,"FriCAS 3D","3D FriCAS Graph",
-			   None,NULL,0,&titleSizeHints);
+                           None,NULL,0,&titleSizeHints);
   viewport->titleWindow = viewTitleWindow;
 
   viewAttrib.event_mask = viewportMASK;
-  viewSizeHints.flags	= PPosition | PSize;
-  viewSizeHints.x	= -(viewBorderWidth+3);
-  viewSizeHints.y	= titleHeight;
-  viewSizeHints.width	= titleSizeHints.width;
-  viewSizeHints.height	= titleSizeHints.height-(titleHeight+appendixHeight);
+  viewSizeHints.flags   = PPosition | PSize;
+  viewSizeHints.x       = -(viewBorderWidth+3);
+  viewSizeHints.y       = titleHeight;
+  viewSizeHints.width   = titleSizeHints.width;
+  viewSizeHints.height  = titleSizeHints.height-(titleHeight+appendixHeight);
   viewGraphWindow = XCreateWindow(dsply,viewTitleWindow,
-				  viewSizeHints.x,viewSizeHints.y,
-				  viewSizeHints.width,viewSizeHints.height,
-				  viewBorderWidth+3,
-				  CopyFromParent,InputOutput,CopyFromParent,
-				  viewportCreateMASK,&viewAttrib);
+                                  viewSizeHints.x,viewSizeHints.y,
+                                  viewSizeHints.width,viewSizeHints.height,
+                                  viewBorderWidth+3,
+                                  CopyFromParent,InputOutput,CopyFromParent,
+                                  viewportCreateMASK,&viewAttrib);
   XSetNormalHints(dsply,viewGraphWindow,&viewSizeHints);
   XSetStandardProperties(dsply,viewGraphWindow,"","",None,NULL,0,
-			 &viewSizeHints);
+                         &viewSizeHints);
   viewport->viewWindow = viewGraphWindow;
   graphWindowAttrib.width = viewSizeHints.width;
   graphWindowAttrib.height = viewSizeHints.height;
@@ -584,7 +583,7 @@ main(void)
       smoothHue = viewport->hueTop*6;
     else {
       if (viewport->hueTop > 10 && viewport->hueTop < 16)
-	smoothHue = viewport->hueTop*20 - 140;
+        smoothHue = viewport->hueTop*20 - 140;
       else smoothHue = viewport->hueTop*12 - 12;
     }
     redoColor = yes;
@@ -592,5 +591,5 @@ main(void)
 
 
 }     /* main() */
-     
+
 

@@ -81,11 +81,11 @@ void
 init_reader(void)
 {
   char *termVal;
-  
+
   buff[50] = '\0';            /** initialize some stuff  ***/
   init_flag(buff_flag, MAXLINE);
   buff_pntr = curr_pntr = 0;
-  
+
   had_tab = 0;
   had_tab_last = 0;
   termVal = (char *) getenv("TERM");
@@ -98,12 +98,12 @@ init_reader(void)
 }
 
 
-void 
+void
 do_reading(void)
 {
   int ttt_read;
   int done_completely;
-  
+
   done_completely = 0;
   num_proc = 0;
   while (num_proc < num_read) {
@@ -121,7 +121,7 @@ do_reading(void)
         if (!PTY)
           myputchar('\n');
         break;
-        
+
         /*
          * Use 0x7f as delete
          */
@@ -129,7 +129,7 @@ do_reading(void)
         /* Had a delete key */
         delete_current_char();
         break;
-        
+
       case _CNTRL_W:
         move_back_word();
         num_proc++;
@@ -158,13 +158,13 @@ do_reading(void)
         break;
 
       case _ESC:
-        
+
         /*
          * get 2 characters more
          */
         while (!(num_read - num_proc > 2)) {
-          ttt_read = read(0, 
-                          in_buff + num_read, 
+          ttt_read = read(0,
+                          in_buff + num_read,
                           2 - (num_read - num_proc) + 1);
           if (ttt_read > 0)
             num_read = num_read + ttt_read;
@@ -172,12 +172,12 @@ do_reading(void)
         if ((in_buff[num_proc + 1] == _LBRACK)) {
 
           /* ESC [  */
-          
+
           switch (in_buff[num_proc + 2]) {
             /*  look for arrows */
           case _A:
             /* up arrow */
-            
+
             /*
              * The first thing I plan to do is get rid of the present
              * input **
@@ -202,7 +202,7 @@ do_reading(void)
             move_back();
             num_proc = num_proc + 3;
             break;
-            
+
             /*
              * Use ^[[P as delete
              */
@@ -231,20 +231,20 @@ do_reading(void)
           case _1:
           case _2:
           case _0:
-            
+
             /*
              * I have had a possible function key hit, look for the
              * ones I want. check for ESC ] x ~
              */
             while (!(num_read - num_proc > 3)) {
-              ttt_read = read(0, 
-                              in_buff + num_read, 
+              ttt_read = read(0,
+                              in_buff + num_read,
                               3 - (num_read - num_proc) + 1);
               if (ttt_read > 0)
                 num_read = num_read + ttt_read;
             }
             if (in_buff[num_proc + 3] == _twiddle) {
-              
+
               /*
                * treat ESC ] x ~
                */
@@ -266,26 +266,26 @@ do_reading(void)
             }
             /* check for ESC ] x y ~ */
             while (!(num_read - num_proc > 4)) {
-              ttt_read = read(0, 
-                              in_buff + num_read, 
+              ttt_read = read(0,
+                              in_buff + num_read,
                               4 - (num_read - num_proc) + 1);
               if (ttt_read > 0)
                 num_read = num_read + ttt_read;
             }
             if (in_buff[num_proc + 4] == _twiddle) {
-              
+
               /*
                * treat ESC ] x y ~
                */
               insert_buff_nonprinting(1);
               break;
             }
-            
+
             /* check for ESC ] x y z [q|z] */
-            
+
             while (!(num_read - num_proc > 5)) {
-              ttt_read = read(0, 
-                              in_buff + num_read, 
+              ttt_read = read(0,
+                              in_buff + num_read,
                               5 - (num_read - num_proc) + 1);
               if (ttt_read > 0)
                 num_read = num_read + ttt_read;
@@ -322,14 +322,14 @@ do_reading(void)
             }
             switch (in_buff[num_proc + 5]) {
             case _q:
-              
+
               /*
                * IBM function keys
                */
               {
                 char num[3];
                 int key;
-                
+
                 num[0] = in_buff[num_proc + 3];
                 num[1] = in_buff[num_proc + 4];
                 num[2] = '\0';
@@ -351,14 +351,14 @@ do_reading(void)
                 break;
               }
             case _z:
-              
+
               /*
                * Sun function keys
                */
               {
                 char num[3];
                 int key;
-                
+
                 num[0] = in_buff[num_proc + 3];
                 num[1] = in_buff[num_proc + 4];
                 num[2] = '\0';
@@ -397,10 +397,10 @@ do_reading(void)
                   insert_buff_nonprinting(6);
                   done_completely = 1;
                 }
-                
+
                 break;
               }
-              
+
             default:
               insert_buff_nonprinting(1);
               break;
@@ -415,7 +415,7 @@ do_reading(void)
           insert_buff_nonprinting(1);
         }
         break;
-        
+
       case _BKSPC:
         back_over_current_char();
         num_proc++;
@@ -437,10 +437,10 @@ do_reading(void)
               insert_buff_nonprinting(1);
               if (!PTY)
                 write(contNum, "\n", 1);
-              
+
               /*comment out this bit
                 if (!buff_pntr) {
-                write(contNum, &in_buff[num_proc], 1); 
+                write(contNum, &in_buff[num_proc], 1);
                 if (!PTY)
                 write(contNum, "\n", 1);
                 }
@@ -480,23 +480,23 @@ do_reading(void)
     }
     else
       had_tab_last = 0;
-    
+
   }                           /* while */
 }
 
 
 
-void 
+void
 send_line_to_child(void)
 {
   static char converted_buffer[MAXLINE];
   int converted_num;
-  
+
   /*  Takes care of sending a line to the child, and resetting the
       buffer for new input                                  */
-  
+
   back_it_up(curr_pntr);
-  
+
   /* start by putting the line into the command line ring ***/
   if (buff_pntr)
     insert_queue();
@@ -506,7 +506,7 @@ send_line_to_child(void)
   buff_flag[buff_pntr++] = 1;
   buff[buff_pntr] = '\0';
   buff_flag[buff_pntr] = -1;
-  
+
   /*
    * Instead of actually writing the Line, I have to  substitute in the
    * actual characters recieved
@@ -514,13 +514,13 @@ send_line_to_child(void)
   converted_num =
     convert_buffer(converted_buffer, buff, buff_flag, buff_pntr);
   write(contNum, converted_buffer, converted_num);
-  
+
   /** reinitialize the buffer  ***/
   init_flag(buff_flag, buff_pntr);
   init_buff(buff, buff_pntr);
   /**  reinitialize my buffer pointers **/
   buff_pntr = curr_pntr = 0;
-  
+
   /** reset the ring pointer **/
   current = NULL;
   num_proc++;
@@ -531,7 +531,7 @@ int
 convert_buffer(char *target, char *source,int * source_flag, int num)
 {
   int i, j;
-  
+
   /*
    * Until I get something wierd, just keep copying
    */
@@ -565,20 +565,20 @@ void
 insert_buff_printing(int amount)
 {
   int count;
-  
+
   /* This procedure takes the character at in_buff[num_proc] and adds
      it to the buffer. It first checks to see if we should be inserting
      or overwriting, and then does the appropriate thing     */
-  
+
   if ((buff_pntr + amount) > 1023) {
     putchar(_BELL);
     fflush(stdout);
     num_proc += amount;
   }
   else {
-    
+
     if (INS_MODE) {
-      
+
       forwardcopy(&buff[curr_pntr + amount],
                   &buff[curr_pntr],
                   buff_pntr - curr_pntr);
@@ -615,20 +615,20 @@ insert_buff_printing(int amount)
     fflush(stdout);
   }
   return;
-  
+
 }
 
-void 
+void
 insert_buff_nonprinting(int amount)
 {
   int count;
-  
+
   /* This procedure takes the character at in_buff[num_proc] and adds
      it to the buffer. It first checks to see if we should be inserting
      or overwriting, and then does the appropriate thing */
-  
+
   /* it takes care of the special case, when I have an esc character */
-  
+
   if ((buff_pntr + amount) > 1023) {
     myputchar(_BELL);
     fflush(stdout);
@@ -721,7 +721,7 @@ insert_buff_nonprinting(int amount)
       buff_pntr = curr_pntr;
   }
   return;
-  
+
 }
 
 void
@@ -737,7 +737,7 @@ prev_buff(void)
   clear_buff();
   init_buff(buff, buff_pntr);
   init_flag(buff_flag, buff_pntr);
-  
+
   if (current == NULL) {
     if (ring == NULL)
       return;
@@ -759,7 +759,7 @@ prev_buff(void)
 void
 next_buff(void)
 {
-  
+
   /*
    * If the current command ring is NULL, then I should NOT clear the
    * current line. Thus my business is already done
@@ -778,7 +778,7 @@ next_buff(void)
     current = current->next;
   strcpy(buff, current->buff);
   flagcpy(buff_flag, current->flags);
-  
+
   /* first  back up and blank the line **/
   fflush(stdout);
   printbuff(0, strlen(buff));
@@ -788,26 +788,26 @@ next_buff(void)
 }
 
 
-void 
+void
 forwardcopy(char *buff1,char * buff2,int num)
 {
   int count;
-  
+
   for (count = num; count >= 0; count--)
     buff1[count] = buff2[count];
 }
 
 
-void 
+void
 forwardflag_cpy(int *buff1,int * buff2,int  num)
 {
   int count;
-  
+
   for (count = num; count >= 0; count--)
     buff1[count] = buff2[count];
 }
 
-void 
+void
 flagcpy(int *s,int *t)
 {
   while (*t >= 0)
@@ -815,20 +815,20 @@ flagcpy(int *s,int *t)
   *s = *t;
 }
 
-void 
+void
 flagncpy(int *s,int *t,int n)
 {
   while (n-- > 0)
     *s++ = *t++;
 }
 
-void 
+void
 insert_queue(void)
 {
   QueStruct *trace;
   QueStruct *new;
   int c;
-  
+
   if (!ECHOIT)
     return;
   if (ring != NULL && !strcmp(buff, ring->buff))
@@ -836,7 +836,7 @@ insert_queue(void)
   for (c = 0, trace = ring; trace != NULL && c < (prev_check - 1);
        c++, trace = trace->prev) {
     if (!strcmp(buff, trace->buff)) {
-      
+
       /*
        * throw this puppy at the end of the ring
        */
@@ -850,7 +850,7 @@ insert_queue(void)
       return;
     }
   }
-  
+
   /*
    * simply places the buff command into the front of the queue
    */
@@ -875,7 +875,7 @@ insert_queue(void)
   }
   else
     ring = ring->next;
-  
+
   init_flag(ring->flags, MAXLINE);
   init_buff(ring->buff, MAXLINE);
   strcpy(ring->buff, buff);
@@ -889,16 +889,16 @@ void
 init_flag(int *flags, int num)
 {
   int i;
-  
+
   for (i = 0; i < num; i++)
     flags[i] = -1;
 }
 
-void 
+void
 init_buff(char *flags, int num)
 {
   int i;
-  
+
   for (i = 0; i < num; i++)
     flags[i] = '\0';
 }
@@ -909,34 +909,34 @@ send_function_to_child(void)
 {
   /* Takes care of sending a line to the child, and resetting the
      buffer for new input                                */
-  
+
   back_it_up(curr_pntr);
   /** start by putting the line into the command line ring ***/
   if (buff_pntr)
     insert_queue();
-  
+
   /** finish the line and send it to the child **/
   buff[buff_pntr] = _EOLN;
-  
+
   buff_flag[buff_pntr++] = 1;
   buff[buff_pntr] = '\0';
   buff_flag[buff_pntr] = 0;
   write(contNum, buff, buff_pntr);
-  
+
   /** reinitialize the buffer  ***/
   init_flag(buff_flag, buff_pntr);
   init_buff(buff, buff_pntr);
   /**  reinitialize my buffer pointers **/
   buff_pntr = curr_pntr = 0;
-  
+
   /** reset the ring pointer **/
   current = NULL;
-  
+
   num_proc++;
   return;
 }
 
-void 
+void
 send_buff_to_child(int chann)
 {
   if (buff_pntr > 0)

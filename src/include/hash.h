@@ -37,21 +37,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 typedef struct hash_entry {
-  char *key;			/* pointer to key data */
-  char *data;			/* Pointer to entry */
-  struct hash_entry *next;	/* Link to next entry */
+  char *key;                    /* pointer to key data */
+  char *data;                   /* Pointer to entry */
+  struct hash_entry *next;      /* Link to next entry */
 } HashEntry;
 
-typedef int (*EqualFunction)(void *,void *);
-typedef int (*HashcodeFunction)(void *,int);
+typedef int (*EqualFunction)(void *, void *);
+typedef int (*HashcodeFunction)(void *, int);
 typedef void (*MappableFunction) (void *);
 typedef void (*FreeFunction) (void *);
 typedef struct {
-  HashEntry **table;		/* the actual table */
-  int size;			/* size of table */
-  int num_entries;		/* number of elements in a hash table */
-  EqualFunction equal;		/* equality predicate for keys */
-  HashcodeFunction hash_code;	/* create hash code for a key */
+  HashEntry **table;            /* the actual table */
+  int size;                     /* size of table */
+  int num_entries;              /* number of elements in a hash table */
+  EqualFunction equal;          /* equality predicate for keys */
+  HashcodeFunction hash_code;   /* create hash code for a key */
 } HashTable;
 
 #endif

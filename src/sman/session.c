@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /* #define DEBUG */
-#define _SESSION_C
 
 #include "axiom-c-macros.h"
 #include <stdlib.h>
@@ -47,7 +46,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bsdsignal.h"
 #include "sockio-c.H1"
 #include "bsdsignal.H1"
-#include "session.H1"
 
 #define BufSize         4096    /* size of communication buffer */
 
@@ -68,20 +66,20 @@ int num_active_clients = 0;     /* number of InterpWindows attached */
 int reading_output = 0;
 fd_set session_socket_mask;
 
-static void 
+static void
 usr1_handler(int sig)
 {
   return;
 }
 
-static void 
+static void
 usr2_handler(int sig)
 {
   send_signal(spad_server, SIGINT);
   return;
 }
 
-static void 
+static void
 term_handler(int sig)
 {
   exit(1);
@@ -91,7 +89,7 @@ static void
 pr()
 {
   Sock_List *pSock;
-  
+
   fprintf(stderr,"The socket list:\n");
   for(pSock=plSock;pSock!=(Sock_List *)0;pSock=pSock->next){
     fprintf(stderr,"(%d,%d,%d)\t",pSock->Socket.pid,2<<(pSock->Socket.socket),pSock->Socket.frame);
@@ -104,7 +102,7 @@ close_client(int frame)
 {
   Sock_List *pSock,*locSock;
   int socket_fd;
-  
+
   /* we will check for frame equality,
      kill with send_signal,
      notify HyperTex so that it updates its list (if it's a spadbuf),
@@ -112,26 +110,26 @@ close_client(int frame)
      unset the active_session,
      update num_active_clients
      */
-  
-  
+
+
   /* first check head */
 #ifdef DEBUG
 fprintf(stderr,"close_client(%d)\n",frame);
 #endif
-  
+
   if ( (plSock) && (plSock->Socket.frame == frame) ){
     socket_fd = plSock->Socket.socket;
     send_signal((Sock *)plSock, SIGTERM);
     if ( menu_client != (Sock *) 0){
       send_int(menu_client,CloseClient);
       send_int(menu_client,(*plSock).Socket.pid);
-    } 
+    }
 #ifdef DEBUG
 fprintf(stderr,"trying to clear %u\n",socket_fd);
 #endif
     FD_CLR(socket_fd,&session_socket_mask);
     locSock = plSock;
-    if ((*plSock).next == (Sock_List *) 0) 
+    if ((*plSock).next == (Sock_List *) 0)
       {plSock = (Sock_List *) 0;}
     else
       {plSock = plSock->next;}
@@ -139,9 +137,9 @@ fprintf(stderr,"trying to clear %u\n",socket_fd);
     num_active_clients--;
     free(locSock);
   }
-  
+
   /* now check the rest */
-  
+
   else {
     for (pSock=plSock; pSock->next != (Sock_List *) 0 ; pSock=pSock->next)
       if (pSock->next->Socket.frame == frame){
@@ -171,14 +169,14 @@ pr();
 #endif
 }
 
-static void 
+static void
 read_SpadServer_command(void)
 {
   int cmd, frame, num;
   cmd  = get_int(spad_server);
   switch (cmd) {
   case EndOfOutput:
-    if (menu_client != (Sock *) 0) send_signal(menu_client, SIGUSR2); 
+    if (menu_client != (Sock *) 0) send_signal(menu_client, SIGUSR2);
     if (reading_output != 0) reading_output = 0;
     break;
   case QueryClients:
@@ -188,7 +186,7 @@ read_SpadServer_command(void)
     break;
   case CloseClient:
     frame = get_int(spad_server);
-    if (frame != -1) close_client(frame); 
+    if (frame != -1) close_client(frame);
     break;
   case SendXEventToHyperTeX:
     break;
@@ -210,13 +208,13 @@ read_menu_client_command(void)
 {
   int cmd,frame, i,socket_fd;
   Sock_List *pSock;
-  
+
   /* save it for possible clearing */
   socket_fd =  menu_client->socket;
 
   if (test_sock_for_process(menu_client) == -1) {
     FD_CLR(socket_fd,&session_socket_mask);
-    menu_client = (Sock *) 0; 
+    menu_client = (Sock *) 0;
     reading_output = 0;
     return;
   }
@@ -274,10 +272,10 @@ kill_spad(void)
 {
   int i;
   Sock_List *pSock;
-  
+
   send_signal(spad_server, SIGTERM);
   for  (pSock=plSock,i=0;
-        (i<num_active_clients) && (pSock != (Sock_List *) 0); 
+        (i<num_active_clients) && (pSock != (Sock_List *) 0);
         i++,pSock=pSock->next) {
     if ((pSock->Socket).socket != 0)
       send_signal((Sock *)pSock, SIGTERM);
@@ -291,9 +289,9 @@ accept_session_connection(Sock *server_sock)
 {
   int sock_fd, ret_code;
   Sock_List *pls;
-  
+
   /* Could be three things : KillSpad MenuServer InterpWindow  */
-  
+
   pls = (Sock_List *) malloc(sizeof (Sock_List));
   sock_fd = accept(server_sock->socket, 0, 0);
   if (sock_fd == -1) {
@@ -302,7 +300,7 @@ accept_session_connection(Sock *server_sock)
   }
   (pls->Socket).socket = sock_fd;
     get_socket_type((Sock *)pls);
-    
+
     switch((pls->Socket).purpose) {
     case KillSpad:
       kill_spad();
@@ -319,7 +317,7 @@ accept_session_connection(Sock *server_sock)
 #ifdef DEBUG
       fprintf(stderr,"session: accepted InterpWindow , fd = %d\n",sock_fd);
 #endif
-      
+
       /* new Sock is put at the head of the list */
       if (plSock == (Sock_List *)0 ) {
         plSock = pls;
@@ -329,9 +327,9 @@ accept_session_connection(Sock *server_sock)
         pls->next = plSock;
         plSock = pls;
       }
-      
+
       /* we need to maintain session_socket_mask here since we roll our own accept */
-      
+
       FD_SET(plSock->Socket.socket, &session_socket_mask);
       send_int(spad_server, CreateFrame);
       {
@@ -349,7 +347,7 @@ accept_session_connection(Sock *server_sock)
       get_string_buf(spad_server, big_bad_buf, BufSize);
       ret_code = swrite((Sock *)plSock, big_bad_buf, strlen(big_bad_buf)+1,
                         "session: writing to InterpWindow");
-      if (ret_code == -1) 
+      if (ret_code == -1)
         return -1;
       num_active_clients++;
 #ifdef DEBUG
@@ -369,7 +367,7 @@ read_from_session(Sock *sock)
     send_int(spad_server, sock->frame);
   }
   active_session = sock;
-  ret_code = sread(sock, big_bad_buf, BufSize, 
+  ret_code = sread(sock, big_bad_buf, BufSize,
                    "session: reading InterpWindow");
   if (ret_code == -1) {
     active_session = (Sock *) 0;
@@ -392,7 +390,7 @@ manage_sessions(void)
   int ret_code;
   fd_set rd, wr, ex;
   Sock_List  *pSock;
-  
+
   reading_output = 0;
   while (1) {
     FD_ZERO(&rd);
@@ -422,30 +420,30 @@ fprintf(stderr,"[rd=%u ",*((long *)rd.fds_bits));
 #ifdef DEBUG
 fprintf(stderr,"rd=%u]\n",*((long *)rd.fds_bits));
 #endif
-    
+
     if ((menu_client != (Sock *) 0)  && FD_ISSET(menu_client->socket, &rd)) {
       /* MenuServer wants to talk */
       read_menu_client_command(); }
-    
-    
+
+
     if (FD_ISSET(spad_io->socket, &rd)) {
       /* Lisp has output */
       read_from_spad_io(); }
-    
-    
+
+
     if (FD_ISSET(server[1].socket, &rd)) {
       /* Someone wants to connect to our server socket */
       accept_session_connection(server+1); }
-    
-    
+
+
     for(pSock=plSock; pSock != (Sock_List *) 0 ; pSock=pSock->next) {
       if ((active_session == (Sock *)pSock || !reading_output) &&
           (pSock->Socket).socket>0 && FD_ISSET(pSock->Socket.socket, &rd)) {
         /* An InterpWindow */
         read_from_session((Sock *)pSock); }
     }
-    
-    
+
+
     if (FD_ISSET(spad_server->socket, &rd)) {
       /* The Lisp socket */
       read_SpadServer_command(); }
@@ -461,7 +459,7 @@ main(void)
   sleep(30);
 #endif
 
- /* spad_server connects to Lisp server socket         
+ /* spad_server connects to Lisp server socket
     read_SpadServer_command handles requests */
   spad_server = connect_to_local_server(SpadServer, SessionManager, Forever);
   if (spad_server == (Sock *) 0) {
@@ -472,7 +470,7 @@ main(void)
 #ifdef DEBUG
     fprintf(stderr, "session: connected SpadServer , fd = %d\n",
             spad_server->socket);
-#endif  
+#endif
     FD_SET(spad_server->socket, &session_socket_mask);
   }
 
@@ -488,7 +486,7 @@ main(void)
 #ifdef DEBUG
     fprintf(stderr,"session: connected SessionIOName , fd = %d\n",
             spad_io->socket);
-#endif  
+#endif
     FD_SET(spad_io->socket, &session_socket_mask);
   }
   bsdSignal(SIGUSR2, usr2_handler,DontRestartSystemCalls);
@@ -497,7 +495,7 @@ main(void)
   bsdSignal(SIGTERM, term_handler,RestartSystemCalls);
 
   /* open_server opens the server socket so that we can accept connections
-    we expect connections from spadbuf/spadclient(purpose:InterpWindow) 
+    we expect connections from spadbuf/spadclient(purpose:InterpWindow)
     and hypertex (MenuServer) */
 
   if (open_server(SessionServer) == -2) {
@@ -508,7 +506,7 @@ main(void)
 #ifdef DEBUG
     fprintf(stderr, "session: opened SessionServer , fd = %d\n",
             server[1].socket);
-#endif  
+#endif
     FD_SET(server[1].socket,&session_socket_mask);
   }
   manage_sessions();

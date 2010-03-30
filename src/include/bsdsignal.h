@@ -41,4 +41,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 typedef void (* SignalHandlerFunc)(int);
 
-#endif	    /* _BSDSIGNAL */
+#endif    /* _BSDSIGNAL */

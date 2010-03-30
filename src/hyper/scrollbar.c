@@ -38,9 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
  ****************************************************************************/
-#define _SCROLLBAR_C
+
 #include "axiom-c-macros.h"
-#include "useproto.h"
 #include "debug.h"
 
 #include "extent.h"
@@ -92,13 +91,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   **************************************************************************/
 
-#ifndef _NO_PROTO
 static int  ch(int height);
 static void changeWindowBackgroundPixmap(Window window, Pixmap pixmap);
-#else
-static int  ch();
-static void changeWindowBackgroundPixmap();
-#endif
 
 static Pixmap sup = 0, sdown = 0, sup_pressed = 0, sdown_pressed = 0, scroller = 0, scrollbar_pix = 0;
 
