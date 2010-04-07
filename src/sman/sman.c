@@ -807,7 +807,7 @@ monitor_children(void)
     if (dead_baby == -1 && death_signal) {
       kill_all_children();
       clean_up_sockets();
-      sleep(2);
+      fricas_sleep(200);
       exit(0);
     }
     /* Check the value of dead_baby, since wait may have returned
@@ -833,7 +833,7 @@ monitor_children(void)
     case Die:
       kill_all_children();
       clean_up_sockets();
-      sleep(2);
+      fricas_sleep(200);
       exit(0);
     case NadaDelShitsky:
       break;
@@ -868,7 +868,7 @@ main(int argc, char *argv[],char *envp[])
   if (start_nagman)           start_the_nagman();
   if (start_ht)               start_the_hypertex();
   if (start_graphics)         start_the_graphics();
-  sleep(1);
+  fricas_sleep(100);
 
   if (fork_you(Die) != NULL) {
     sman_catch_signals();

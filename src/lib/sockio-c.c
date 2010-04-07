@@ -87,13 +87,16 @@ int still_reading  = 0;
    of magnitude of difference when compared to the Unix world.
    We abstract over that difference here.  */
 
-static inline void
-axiom_sleep(int n)
+void
+fricas_sleep(int n)
 {
 #ifdef __WIN32__
-   Sleep(n * 1000);
+   Sleep(n);
 #else
-   sleep(n);
+   struct timeval timeout;
+   timeout.tv_sec = n / 1000;
+   timeout.tv_usec = (n % 1000)*1000;
+   select(0, 0, 0, 0, &timeout);
 #endif
 }
 
@@ -760,7 +763,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
         return NULL;
       } else {
         if (i != max_con - 1)
-           axiom_sleep(1);
+           fricas_sleep(40);
         continue;
       }
     } else break;
