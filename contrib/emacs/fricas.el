@@ -57,6 +57,11 @@
 ;; this contains a list of all FriCAS operations and constructors
 (require 'fricas-cpl)
 
+;; required because of remove-if-not
+(require 'cl)
+;; required for tab-completion
+(require 'comint)
+
 ;; customizable variables
 (defface fricas-algebra '((t (:background "#ffffa0")))
   "Face used for algebra output."
