@@ -320,6 +320,23 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
             not(q = 1 or q = -1) =>
                 (u := logDependenceQ([toQ (lk)], q)) case Vector(Q) => [u::Vector(Q)]
                 [true]
+            kerF := ker :: F
+            #lz = 1 and F is Expression(R) and R has ConvertibleTo(Float) _
+                and R has IntegralDomain and R has OrderedSet =>
+              Fratio : F := kerF/log(lz.1)
+              (fratio := numericIfCan(Fratio, 20)$Numeric(R)) case Float =>
+                qratio := rationalApproximation(fratio::Float, 8)
+                nd : Integer
+                nq : Integer
+                (abs(fratio/(qratio::Float)-1.0) > 1.0e-16) _
+                  or (abs(nq := numer(qratio)) > 100) _
+                  or (abs(nd := denom(qratio)) > 100) => [true]
+                kertond := (argument(ker).1)^nd
+                lz1tonq := (lz.1)^nq
+                (kertond = lz1tonq) =>
+                    [vector([qratio])$Vector(Q)]
+                [true]
+              [true]
             [true]
         lpars0 : List K := transkers(lk)
         lpars1 : List Symbol := [new()$Symbol for k in lpars0]
