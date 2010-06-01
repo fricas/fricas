@@ -16,41 +16,63 @@
 <<*>>=
 <<license>>
 --------------------------------- lodof.input -----------------------------
- 
-)cl all
-)expose LODOF 
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "factor$LODOF"
+testcase "factor"
 P := UP(t, AN)
 Q := FRAC P
 L := LODO1 Q
+)expose LODOF 
+testFactor(l: List L): Void ==
+    free l1
+    free l2
+    l1 := reduce(*, l)
+    l2 := l
+    testEquals("factor l1", "l2")
+
+xftestFactor(l: List L): Void ==
+    free l1
+    free l2
+    l1 := reduce(*, l)
+    l2 := l
+    xftestEquals("factor l1", "l2")
+
+
 d := D()$L
 t := t::P::Q
  
 -- reducible order 2 operator (1-1)
-op := d^2 + t * d + 1
-factor op
+testFactor [d, d+t]
  
 -- irreducible order 2 operator
-op := 2*t^3 * d^2 + 3*t^2 * d - 2
-factor op
+testFactor [2*t^3 * d^2 + 3*t^2 * d - 2]
  
 -- reducible order 3 operator (1-2)
-op := 2*t^3 * d^3 - (2*t^4 - 9*t^2) * d^2 - (3*t^3 - 6*t + 2) * d + 2*t
-factor op
+xftestFactor [t-d, -2*t^3*d^2 - 3*t^2*d + 2]
+
+xftestFactor [t-d, d^2 + t^2*d + 1]
  
 -- reducible order 3 operator (1-1-1)
-op := (t^9 + t^3) * d^3 + 18 * t^8 * d^2 - 90 * t * d - 30 * (11*t^6-3)
-factor op
+testFactor [(t^9 + t^3)*d +(-sqrt 91+7)*t^8+(-sqrt 91 + 1)*t^2, _
+            d + ((sqrt 91 + 6)*t^6 + sqrt 91)/(t^7+t), _
+            d + (5*t^6 - 1)/(t^7 + t)]
  
 -- irreducible order 3 operator
-op := d^3 + 2 * d^2 + 5 / t * d + 7 / t^2
-factor op
+testFactor [d^3 + 2 * d^2 + 5 / t * d + 7 / t^2]
  
 -- reducible order 6 operator (1-1-1-1-1-1)
---op := t^6*d^6+20*t^5*d^5+122*t^4*d^4+258*t^3*d^3+156*t^2*d^2+8*t*d-8
---factor op
- 
- 
+testFactor [t^6*d + (- sqrt(-1) + 5)*t^5, _
+            d + (sqrt(-1)+4)/t, _
+            d + 5/t, _
+            d + 4/t, _
+            d + 3*t^2/(t^3-1), _
+            d + (-t^3-2)/(t^4-t)]
 
+-- reducible order 4 operator (2-2)
+xftestFactor [2*t^3 * d^2 + 3*t^2 * d - 2, 2*t^3 * d^2 + 3*t^2 * d - 2]
+
+statistics()
 
 @
 \eject
