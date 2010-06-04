@@ -51,10 +51,6 @@ compDefine1(form,m,e) ==
       -- stackAndThrow ['"Internal functions unsupported:", form]
       compInternalFunction(form, m, e)
   if signature.target=$Category then $insideCategoryIfTrue:= true
---?? following 3 lines seem bogus, BMT 6/23/93
---?  if signature.target is ['Mapping,:map] then
---?    signature:= map
---?    form:= ['DEF,lhs,signature,specialCases,rhs]
 
 -- RDJ (11/83): when argument and return types are all declared,
 --  or arguments have types declared in the environment,

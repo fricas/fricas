@@ -226,12 +226,8 @@ make_input_file_from_page(HyperDocPage *page)
             send_lisp_command("(|clearCmdAll|)");
             send_lisp_command("(|resetWorkspaceVariables|)");
             send_lisp_command("(setq $linelength 55)");
-            /* send_lisp_command("(|setOutputCharacters| '(default))"); */
             send_lisp_command("(setq |$printLoadMsgs| NIL)");
             send_lisp_command("(setq |$UserLevel| '|development|)");
-            /* send_lisp_command("(verbos 0)"); */
-          }
-          if (make_patch_files) {
             pfile = fopen(c, "a");
             if (pfile == NULL) {
               fprintf(stderr, "couldn't open output file %s\n", c);
@@ -399,7 +395,7 @@ get_spad_output(FILE *pfile,char *command,int com_type)
 
 /*
  * THEMOS says: There is a problem here in that we issue the (|close|) and
- * then go on. If this is the last command ,we will soon send a SIGTERM and
+ * then go on. If this is the last command, we will soon send a SIGTERM and
  * the whole thing will collapse maybe BEFORE the writing out has finished.
  * Fix: Call a Lisp function that checks (with \axiomOp{key} ps and grep) the
  * health of the viewport. We do this after the (|close|).
@@ -412,10 +408,10 @@ get_graph_output(char *command,char *pagename,int com_type)
 
     send_command(command, com_type);
     n = get_int(spad_socket);
+    /* FIXME: this looks crazy */
     for (i = 0; i < n; i++) {
         get_string_buf(spad_socket, buf, 1024);
     }
-    unescape_string(command);
     sprintf(buf, "(|processInteractive| '(|write| |%s| \"%s%d\" \"image\") NIL)", "%",
             pagename, example_number);
     send_lisp_command(buf);
