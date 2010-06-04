@@ -426,7 +426,7 @@
                (PUSH (LIST 'SETQ (CAR U) (LIST 'CAR G)) RSL))
         (UNTIL (SETQ G (GENSYM)) (PUSH (LIST G NIL (CAR U)) IL) (PUSH G XCL))
         (WHILE (PUSH (LIST 'NULL (CAR U)) XCL))
-        (SUCHTHAT (SETQ BD (LIST 'SUCHTHATCLAUSE BD (CAR U))))
+        (SUCHTHAT (SETQ BD (LIST 'COND (LIST (CAR U) BD))))
         (EXIT (SETQ XV (CAR U))) (FAIL)))))
 
 
@@ -434,8 +434,6 @@
   (if (AND (EQCAR U 'SEQ) (EQCAR (CADR U) 'EXIT) (EQCAR (CADADR U) 'SEQ))
       (CADADR U)
       U))
-
-(defmacro SUCHTHATCLAUSE  (&rest L) (LIST 'COND (LIST (CADR L) (CAR L))))
 
 (defvar $BOOT NIL)
 
