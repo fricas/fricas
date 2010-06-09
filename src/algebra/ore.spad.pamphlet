@@ -419,30 +419,34 @@ UnivariateSkewPolynomialCategoryOps(R, C): Exports == Implementation where
                 ++ \spad{\sigma} is the morphism to use.
 
     Implementation ==> add
-        termPoly:         (R, N, C, MOR, R -> R) -> C
+
         localLeftDivide : (C, C, MOR, R) -> QUOREM
         localRightDivide: (C, C, MOR, R) -> QUOREM
 
+        times2: (N, C, C, MOR, R -> R) -> Record(prod : C, yton : C)
+
         times(x, y, sigma, delta) ==
           zero? y => 0
-          z:C := 0
-          while x ~= 0 repeat
-            z := z + termPoly(leadingCoefficient x, degree x, y, sigma, delta)
-            x := reductum x
-          z
+          times2(degree x, x, y, sigma, delta).prod
 
-        termPoly(a, n, y, sigma, delta) ==
-          zero? y => 0
-          (u := subtractIfCan(n, 1)) case "failed" => a * y
-          n1 := u::N
-          z:C := 0
-          while y ~= 0 repeat
-            m := degree y
-            b := leadingCoefficient y
-            z := z + termPoly(a, n1, monomial(sigma b, m + 1), sigma, delta)
-                   + termPoly(a, n1, monomial(delta b, m), sigma, delta)
-            y := reductum y
-          z
+        times2(n, x, y, sigma, delta) ==
+            (u := subtractIfCan(n, 1)) case "failed" =>
+                zero? x => [0, y]
+                [leadingCoefficient(x)*y, y]
+            n1 := u::N
+            x1 :=
+                n = degree x => reductum x
+                x
+            pp := times2(n1, x1, y, sigma, delta)
+            y1 := pp.yton
+            z:C := 0
+            while y1 ~= 0 repeat
+                m := degree y1
+                b := leadingCoefficient y1
+                z := z + monomial(sigma b, m + 1) + monomial(delta b, m)
+                y1 := reductum y1
+            n = degree x => [leadingCoefficient(x)*z + pp.prod, z]
+            [pp.prod, z]
 
         apply(p, c, x, sigma, delta) ==
           w:R  := 0
