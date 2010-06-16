@@ -169,6 +169,7 @@ This variable is buffer-local."
     (modify-syntax-entry ?-  ".   " st)
     (modify-syntax-entry ?+  ".   " st)
     (modify-syntax-entry ?/  ".   " st)
+    (modify-syntax-entry ?=  ".   " st)
     (modify-syntax-entry ?!  "w   " st)
     (modify-syntax-entry ??  "w   " st)
     (modify-syntax-entry ?_  "\   " st)
@@ -1125,8 +1126,9 @@ str. Returns:
 	(when fricas-cd 
 	  (setq fricas-cd nil)
 	  (fricas-resync-directory))
-	(when (and fricas-save-history?
-		   (eq fricas-state 'waiting))
+	(when fricas-save-history?         ;; the conditions above
+					   ;; should not be met in
+					   ;; this case
 	  (message "done")
 	  (fricas-save-history-post)
 	  (setq fricas-save-history? nil)))
@@ -1428,7 +1430,8 @@ a FriCAS-buffer."
       (replace-match "" t)
       (fricas-set-properties pos (point) last-type)
       (setq last-type type)
-      (setq pos (point)))))
+      (setq pos (point)))
+    (fricas-set-properties pos (point-max) last-type)))
 
 (provide 'fricas)
 
