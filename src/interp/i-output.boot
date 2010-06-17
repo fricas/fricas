@@ -1329,6 +1329,15 @@ mathmlFormat expr ==
   FORCE_-OUTPUT $mathmlOutputStream
   NIL
 
+htmlFormat expr ==
+  htf := '(HTMLFormat)
+  htrep := '(String)
+  formatFn := getFunctionFromDomain("coerce", htf, [$OutputForm])
+  displayFn := getFunctionFromDomain("display", htf, [htrep])
+  SPADCALL(SPADCALL(expr,formatFn),displayFn)
+  TERPRI $htmlOutputStream
+  FORCE_-OUTPUT $htmlOutputStream
+  NIL
 
 output(expr,domain) ==
   if isWrapped expr then expr := unwrap expr
@@ -1337,6 +1346,7 @@ output(expr,domain) ==
     if $texFormat     then texFormat expr
     if $algebraFormat then mathprintWithNumber expr
     if $mathmlFormat  then mathmlFormat expr
+    if $htmlFormat    then htmlFormat expr
   categoryForm? domain or domain = ["Mode"] =>
     if $algebraFormat then
       mathprintWithNumber outputDomainConstructor expr
@@ -1353,6 +1363,7 @@ output(expr,domain) ==
       mathprintWithNumber x
     if $texFormat     then texFormat x
     if $mathmlFormat  then mathmlFormat x
+    if $htmlFormat    then htmlFormat x
   (FUNCTIONP(opOf domain)) and (not(SYMBOLP(opOf domain))) and
     (printfun := compiledLookup("<<",'(TextWriter TextWriter $), evalDomain domain))
        and (textwrit := compiledLookup("print", '($), TextWriter())) =>

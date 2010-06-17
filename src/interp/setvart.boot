@@ -615,6 +615,23 @@ SETANDFILEQ($setOptions,'(
         chkOutputFileName
         "console"))
       NIL)
+     (html
+      "create output in HTML style"
+      interpreter
+      FUNCTION
+      setOutputHtml
+      (("create output in HTML format"
+        LITERALS
+        $htmlFormat
+        (off on)
+        off)
+       (break $htmlFormat)
+       ("where HTML output goes (enter {\em console} or a pathname)"
+        FILENAME
+        $htmlOutputFile
+        chkOutputFileName
+        "console"))
+      NIL)
 
  ))
   (quit

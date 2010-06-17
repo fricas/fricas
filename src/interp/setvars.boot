@@ -919,6 +919,78 @@ describeSetOutputMathml() ==
   '"The current setting is: ",'%b,setOutputMathml "%display%",'%d)
 
 
+setOutputHtml arg ==
+  arg = "%initialize%" =>
+    $htmlOutputStream := mkOutputConsoleStream()
+    $htmlOutputFile := '"CONSOLE"
+    $htmlFormat := NIL
+
+  arg = "%display%" =>
+    if $htmlFormat then label := '"On:" else label := '"Off:"
+    STRCONC(label, $htmlOutputFile)
+
+  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
+    describeSetOutputHtml()
+
+  -- try to figure out what the argument is
+
+  if arg is [fn] and
+    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
+      then 'ok
+      else arg := [fn,'html]
+
+  arg is [fn] =>
+    UPCASE(fn) in '(Y N YE O OF) =>
+      sayKeyedMsg("S2IV0002",'(HTML html))
+    UPCASE(fn) in '(NO OFF)  => $htmlFormat := NIL
+    UPCASE(fn) in '(YES ON) => $htmlFormat := true
+    UPCASE(fn) = 'CONSOLE =>
+      SHUT $htmlOutputStream
+      $htmlOutputStream := mkOutputConsoleStream()
+      $htmlOutputFile := '"CONSOLE"
+
+  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
+    if (ptype := pathnameType fn) then
+      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
+      ft := ptype
+    filename := $FILEP(fn, ft)
+    null filename =>
+      sayKeyedMsg("S2IV0003",[fn,ft])
+    (testStream := MAKE_-OUTSTREAM(filename)) =>
+      SHUT $htmlOutputStream
+      $htmlOutputStream := testStream
+      $htmlOutputFile := object2String filename
+      sayKeyedMsg("S2IV0004",['"HTML",$htmlOutputFile])
+    sayKeyedMsg("S2IV0003",[fn,ft])
+
+  sayKeyedMsg("S2IV0005",NIL)
+  describeSetOutputHtml()
+
+describeSetOutputHtml() ==
+  sayBrightly LIST ('%b,'")set output html",'%d,_
+   '"is used to tell FriCAS to turn HTML-style output",'%l,_
+   '"printing on and off, and where to place the output.  By default, the",'%l,_
+   '"destination for the output is the screen but printing is turned off.",'%l,_
+   '%l,_
+   '"Syntax:   )set output html <arg>",'%l,_
+  '"    where arg can be one of",'%l,_
+  '"  on          turn HTML printing on",'%l,_
+  '"  off         turn HTML printing off (default state)",'%l,_
+  '"  console     send HTML output to screen (default state)",'%l,_
+  '"  fp<.fe>     send HTML output to file with file prefix fp and file",'%l,_
+  '"              extension .fe. If not given, .fe defaults to .shtml.",'%l,
+  '%l,_
+  '"If you wish to send the output to a file, you must issue this command",'%l,_
+  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
+  '"MathML output to the file",'%b,'"polymer.shtml,",'%d,'"issue the two commands",'%l,_
+  '%l,_
+  '"  )set output html on",'%l,_
+  '"  )set output html polymer",'%l,_
+  '%l,_
+  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
+  '"the one you set with the )cd system command.",'%l,_
+  '"The current setting is: ",'%b,setOutputHthml "%display%",'%d)
+
 setOutputOpenMath arg ==
   arg = "%initialize%" =>
     $openMathOutputStream := mkOutputConsoleStream()
