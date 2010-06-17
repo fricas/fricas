@@ -161,3 +161,112 @@
 (DEF-DF-UNOP SINH-DF SINH)
 (DEF-DF-UNOP COSH-DF COSH)
 (DEF-DF-UNOP TANH-DF TANH)
+
+;;; Double precision arrays and matrices
+
+(defmacro MAKE-DOUBLE-VECTOR (n)
+   `(make-array (list ,n) :element-type 'double-float))
+
+(defmacro MAKE-DOUBLE-VECTOR1 (n s)
+   `(make-array (list ,n) :element-type 'double-float :initial-element ,s))
+
+(defmacro DELT(v i)
+   `(aref (the (simple-array double-float (*)) ,v) ,i))
+
+(defmacro DSETELT(v i s)
+   `(setf (aref (the (simple-array double-float (*)) ,v) ,i)
+           ,s))
+
+(defmacro DLEN(v)
+    `(length (the (simple-array double-float (*)) ,v)))
+
+(defmacro MAKE-DOUBLE-MATRIX (n m)
+   `(make-array (list ,n ,m) :element-type 'double-float))
+
+(defmacro MAKE-DOUBLE-MATRIX1 (n m s)
+   `(make-array (list ,n ,m) :element-type 'double-float
+           :initial-element ,s))
+
+(defmacro DAREF2(v i j)
+   `(aref (the (simple-array double-float (* *)) ,v) ,i ,j))
+
+(defmacro DSETAREF2(v i j s)
+   `(setf (aref (the (simple-array double-float (* *)) ,v) ,i ,j)
+          ,s))
+
+(defmacro DANROWS(v)
+    `(array-dimension (the (simple-array double-float (* *)) ,v) 0))
+
+(defmacro DANCOLS(v)
+    `(array-dimension (the (simple-array double-float (* *)) ,v) 1))
+
+;;; We implement complex array as arrays of doubles -- each
+;;; complex numbere occupies two positions in the real
+;;; array.
+
+(defmacro MAKE-CDOUBLE-VECTOR (n)
+   `(make-array (list (* 2 ,n)) :element-type 'double-float))
+
+(defmacro CDELT(ov oi)
+   (let ((v (gensym))
+         (i (gensym)))
+   `(let ((,v ,ov)
+          (,i ,oi))
+      (cons
+          (aref (the (simple-array double-float (*)) ,v) (* 2 ,i))
+          (aref (the (simple-array double-float (*)) ,v) (+ (* 2 ,i) 1))))))
+
+(defmacro CDSETELT(ov oi os)
+   (let ((v (gensym))
+         (i (gensym))
+         (s (gensym)))
+   `(let ((,v ,ov)
+          (,i ,oi)
+          (,s ,os))
+        (setf (aref (the (simple-array double-float (*)) ,v) (* 2 ,i))
+           (car ,s))
+        (setf (aref (the (simple-array double-float (*)) ,v) (+ (* 2 ,i) 1))
+           (cdr ,s))
+        ,s)))
+
+(defmacro CDLEN(v)
+    `(truncate (length (the (simple-array double-float (*)) ,v)) 2))
+
+(defmacro MAKE-CDOUBLE-MATRIX (n m)
+   `(make-array (list ,n (* 2 ,m)) :element-type 'double-float))
+
+(defmacro CDAREF2(ov oi oj)
+   (let ((v (gensym))
+         (i (gensym))
+         (j (gensym)))
+   `(let ((,v ,ov)
+          (,i ,oi)
+          (,j ,oj))
+        (cons
+            (aref (the (simple-array double-float (* *)) ,v) ,i (* 2 ,j))
+            (aref (the (simple-array double-float (* *)) ,v)
+                  ,i (+ (* 2 ,j) 1))))))
+
+(defmacro CDSETAREF2(ov oi oj os)
+   (let ((v (gensym))
+         (i (gensym))
+         (j (gensym))
+         (s (gensym)))
+   `(let ((,v ,ov)
+          (,i ,oi)
+          (,j ,oj)
+          (,s ,os))
+         (setf (aref (the (simple-array double-float (* *)) ,v) ,i (* 2 ,j))
+               (car ,s))
+         (setf (aref (the (simple-array double-float (* *)) ,v)
+                     ,i (+ (* 2 ,j) 1))
+               (cdr ,s))
+         ,s)))
+
+(defmacro CDANROWS(v)
+    `(array-dimension (the (simple-array double-float (* *)) ,v) 0))
+
+(defmacro CDANCOLS(v)
+    `(truncate 
+         (array-dimension (the (simple-array double-float (* *)) ,v) 1) 2))
+

@@ -1,0 +1,177 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra muldep.spad}
+\author{Waldek Hebisch}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+
+<<domain DFVEC DoubleFloatVector>>=
+)abbrev domain DFVEC DoubleFloatVector
+
+++ Description: This is a low-level domain which implements vectors
+++ (one dimensional arrays) of double precision floating point
+++ numbers.  Indexing is 0 based, there is no bound checking (unless
+++ provided by lower level).
+
+DoubleFloatVector : VectorCategory DoubleFloat with
+    qnew : Integer -> %
+      ++ qnew(n) creates a new uninitialized vector of length n.
+  == add
+    
+    Qelt1 ==> DELT$Lisp
+    Qsetelt1 ==> DSETELT$Lisp
+
+    qelt(x, i) == Qelt1(x, i)
+    qsetelt_!(x, i, s) == Qsetelt1(x, i, s)
+    Qsize ==> DLEN$Lisp
+    Qnew ==> MAKE_-DOUBLE_-VECTOR$Lisp
+    Qnew1 ==> MAKE_-DOUBLE_-VECTOR1$Lisp
+
+    #x                          == Qsize x
+    minIndex x                  == 0
+    empty()                     == Qnew(0$Lisp)
+    qnew(n)                     == Qnew(n)
+    new(n, x)                   == Qnew1(n, x)
+    qelt(x, i)                  == Qelt1(x, i)
+    elt(x:%, i:Integer)         == Qelt1(x, i)
+    qsetelt_!(x, i, s)          == Qsetelt1(x, i, s)
+    setelt(x : %, i : Integer, s : DoubleFloat) ==
+        Qsetelt1(x, i, s)
+    fill_!(x, s)       ==
+        for i in 0..((Qsize(x)) - 1) repeat Qsetelt1(x, i, s)
+        x
+
+@
+
+<<domain DFMAT DoubleFloatMatrix>>=
+
+)abbrev domain DFMAT DoubleFloatMatrix
+
+++ Description: This is a low-level domain which implements matrices
+++ (two dimensional arrays) of double precision floating point
+++ numbers.  Indexing is 0 based, there is no bound checking (unless
+++ provided by lower level).
+
+DoubleFloatMatrix : MatrixCategory(DoubleFloat,
+                         DoubleFloatVector,
+                         DoubleFloatVector) with
+    qnew : (Integer, Integer) -> %
+      ++ qnew(n, m) creates a new uninitialized n by m matrix.
+  == add
+
+    Qelt2 ==> DAREF2$Lisp
+    Qsetelt2 ==> DSETAREF2$Lisp
+    Qnrows ==> DANROWS$Lisp
+    Qncols ==> DANCOLS$Lisp
+    Qnew ==> MAKE_-DOUBLE_-MATRIX$Lisp
+    Qnew1 ==> MAKE_-DOUBLE_-MATRIX1$Lisp
+    
+    minRowIndex x == 0
+    minColIndex x == 0
+    nrows x == Qnrows(x)
+    ncols x == Qncols(x)
+    maxRowIndex x == Qnrows(x) - 1
+    maxColIndex x == Qncols(x) - 1
+
+    qelt(m, i, j) == Qelt2(m, i, j)
+    qsetelt_!(m, i, j, r) == Qsetelt2(m, i, j, r)
+
+    empty() == Qnew(0$Integer, 0$Integer)
+    qnew(rows, cols) == Qnew(rows, cols)
+    new(rows, cols, a) == Qnew1(rows, cols, a)
+
+@
+
+<<domain CDFVEC ComplexDoubleFloatVector>>=
+
+)abbrev domain CDFVEC ComplexDoubleFloatVector
+
+++ Description: This is a low-level domain which implements vectors
+++ (one dimensional arrays) of complex double precision floating point
+++ numbers.  Indexing is 0 based, there is no bound checking (unless
+++ provided by lower level).
+
+ComplexDoubleFloatVector : VectorCategory Complex DoubleFloat with
+    qnew : Integer -> %
+      ++ qnew(n) creates a new uninitialized vector of length n.
+    vector: List Complex DoubleFloat -> %
+      ++ vector(l) converts the list l to a vector.
+  == add
+    
+    Qelt1 ==> CDELT$Lisp
+    Qsetelt1 ==> CDSETELT$Lisp
+
+    qelt(x, i) == Qelt1(x, i)
+    qsetelt_!(x, i, s) == Qsetelt1(x, i, s)
+    Qsize ==> CDLEN$Lisp
+    Qnew ==> MAKE_-CDOUBLE_-VECTOR$Lisp
+
+    #x                          == Qsize x
+    minIndex x                  == 0
+    empty()                     == Qnew(0$Lisp)
+    qnew(n)                     == Qnew(n)
+    new(n, x)                   ==
+        res := Qnew(n)
+        fill_!(res, x)
+    qelt(x, i)                  == Qelt1(x, i)
+    elt(x:%, i:Integer)         == Qelt1(x, i)
+    qsetelt_!(x, i, s)          == Qsetelt1(x, i, s)
+    setelt(x : %, i : Integer, s : Complex DoubleFloat) ==
+        Qsetelt1(x, i, s)
+    fill_!(x, s)       ==
+        for i in 0..((Qsize(x)) - 1) repeat Qsetelt1(x, i, s)
+        x
+
+@
+
+<<domain CDFMAT ComplexDoubleFloatMatrix>>=
+
+)abbrev domain CDFMAT ComplexDoubleFloatMatrix
+
+++ Description: This is a low-level domain which implements matrices
+++ (two dimensional arrays) of complex double precision floating point
+++ numbers.  Indexing is 0 based, there is no bound checking (unless
+++ provided by lower level).
+
+ComplexDoubleFloatMatrix : MatrixCategory(Complex DoubleFloat,
+                         ComplexDoubleFloatVector,
+                         ComplexDoubleFloatVector) with
+    qnew : (Integer, Integer) -> %
+      ++ qnew(n, m) creates a new uninitialized n by m matrix.
+
+  == add
+
+    NNI ==> Integer
+    Qelt2 ==> CDAREF2$Lisp
+    Qsetelt2 ==> CDSETAREF2$Lisp
+    Qnrows ==> CDANROWS$Lisp
+    Qncols ==> CDANCOLS$Lisp
+    Qnew ==> MAKE_-CDOUBLE_-MATRIX$Lisp
+    
+    minRowIndex x == 0
+    minColIndex x == 0
+    nrows x == Qnrows(x)
+    ncols x == Qncols(x)
+    maxRowIndex x == Qnrows(x) - 1
+    maxColIndex x == Qncols(x) - 1
+
+    qelt(m, i, j) == Qelt2(m, i, j)
+    qsetelt_!(m, i, j, r) == Qsetelt2(m, i, j, r)
+
+    empty() == Qnew(0$Integer, 0$Integer)
+    qnew(rows, cols) == Qnew(rows, cols)
+    new(rows, cols, a) ==
+        res := Qnew(rows, cols)
+        for i in 0..(rows - 1) repeat
+            for j in 0..(cols - 1) repeat
+                Qsetelt2(res, i, j, a)
+        res
+
+@
+
+\end{document}
