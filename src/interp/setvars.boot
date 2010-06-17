@@ -895,7 +895,7 @@ setOutputMathml arg ==
 
 describeSetOutputMathml() ==
   sayBrightly LIST ('%b,'")set output mathml",'%d,_
-   '"is used to tell AXIOM to turn MathML-style output",'%l,_
+   '"is used to tell FriCAS to turn MathML-style output",'%l,_
    '"printing on and off, and where to place the output.  By default, the",'%l,_
    '"destination for the output is the screen but printing is turned off.",'%l,_
    '%l,_
@@ -914,7 +914,7 @@ describeSetOutputMathml() ==
   '"  )set output mathml on",'%l,_
   '"  )set output mathml polymer",'%l,_
   '%l,_
-  '"The output is placed in the directory from which you invoked AXIOM or",'%l,_
+  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
   '"the one you set with the )cd system command.",'%l,_
   '"The current setting is: ",'%b,setOutputMathml "%display%",'%d)
 

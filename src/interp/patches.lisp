@@ -173,8 +173,6 @@
 
 (setq |$localVars| ())  ;checked by isType
 
-(setq |$specialCharacters| |$plainRTspecialCharacters|)
-
 ;; following code is to mimic def of MAP in NEWSPAD LISP
 ;; i.e. MAP in boot package is a self evaluating form
 (defmacro map (&rest args) `'(map ,@args))

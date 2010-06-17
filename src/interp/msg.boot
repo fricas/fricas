@@ -62,26 +62,26 @@ $ncMsgList := nil
 --%  Messages for the USERS of the compiler.
 -- The program being compiled has a minor error.
 -- Give a message and continue processing.
-ncSoftError(pos, erMsgKey, erArgL,:optAttr) ==
+ncSoftError(pos, erMsgKey, erArgL) ==
   $newcompErrorCount := $newcompErrorCount + 1
   desiredMsg erMsgKey =>
     processKeyedError _
-       msgCreate ('error, pos, erMsgKey, erArgL, $compErrorPrefix,optAttr)
+       msgCreate ('error, pos, erMsgKey, erArgL, $compErrorPrefix)
 
 -- The program being compiled is seriously incorrect.
 -- Give message and throw to a recovery point.
-ncHardError(pos, erMsgKey, erArgL,:optAttr) ==
+ncHardError(pos, erMsgKey, erArgL) ==
   $newcompErrorCount := $newcompErrorCount + 1
   desiredMsg erMsgKey =>
     erMsg := processKeyedError _
-       msgCreate('error,pos,erMsgKey, erArgL, $compErrorPrefix,optAttr)
+       msgCreate('error,pos,erMsgKey, erArgL, $compErrorPrefix)
   ncError()
 
 -- Bug in the compiler: something which shouldn't have happened did.
-ncBug (erMsgKey, erArgL,:optAttr) ==
+ncBug (erMsgKey, erArgL) ==
   $newcompErrorCount := $newcompErrorCount + 1
   erMsg := processKeyedError _
-        msgCreate('bug,$nopos, erMsgKey, erArgL,$compBugPrefix,optAttr)
+        msgCreate('bug,$nopos, erMsgKey, erArgL,$compBugPrefix)
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
   ENABLE_-BACKTRACE(nil)
@@ -101,11 +101,9 @@ ncBug (erMsgKey, erArgL,:optAttr) ==
 --        prefix -- things like "Error: "
 --          text -- the actual text
 
-msgCreate(tag,posWTag,key,argL,optPre,:optAttr) ==
+msgCreate(tag,posWTag,key,argL,optPre) ==
     if PAIRP key then tag := 'old
     msg := [tag,posWTag,key,argL,optPre,NIL]
-    if CAR optAttr then
-        setMsgForcedAttrList(msg,car optAttr)
     putDatabaseStuff msg
     initImPr    msg
     initToWhere msg
@@ -321,10 +319,10 @@ msgOutputter msg  ==
        alreadyOpened := alreadyOpened? msg
 
 toScreen? msg ==  getMsgToWhere msg ~= 'fileOnly
+
 toFile? msg   ==
      PAIRP $fn and _
      getMsgToWhere msg ~= 'screenOnly
-
 
 alreadyOpened? msg ==
        not msgImPr? msg
@@ -380,7 +378,6 @@ getPosStL msg ==
 showMsgPos? msg ==
     $erMsgToss or (not msgImPr? msg and not msgLeader? msg)
 
-
 remFile positionList ==
         IFCDR IFCDR positionList
 
@@ -388,7 +385,7 @@ remLine positionList ==
         [IFCAR positionList]
 
 decideHowMuch(pos,oldPos) ==
---when printing a msg, we wish not to show pos infor that was
+--when printing a msg, we wish not to show pos info that was
 --shown for a previous msg with identical pos info.
 --org prints out the word noposition or console
     ((poNopos? pos) and (poNopos? oldPos)) or _
@@ -459,17 +456,9 @@ getMsgToWhere msg ==
 getMsgCatAttr  (msg,cat) ==
     IFCDR ASSQ(cat, ncAlist msg)
 
-setMsgForcedAttrList (msg,aL) ==
-    for attr in aL repeat
-        setMsgForcedAttr(msg,whichCat attr,attr)
-
 setMsgUnforcedAttrList (msg,aL) ==
     for attr in aL repeat
         setMsgUnforcedAttr(msg,whichCat attr,attr)
-
-setMsgForcedAttr(msg,cat,attr) ==
-    cat = 'catless => setMsgCatlessAttr(msg,attr)
-    ncPutQ(msg,cat,attr)
 
 setMsgUnforcedAttr(msg,cat,attr) ==
     cat = 'catless => setMsgCatlessAttr(msg,attr)

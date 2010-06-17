@@ -380,8 +380,6 @@
          *vars* *decl* args
          (body (cddr lamda)))
     (declare (special *vars* *decl*))
-    (if (eq ltype 'LAM)
-        (BREAK))
     (let ((dectest (car body)))
       (if (and (eqcar dectest 'declare) (eqcar (cadr dectest) 'special))
           (setq *decl* (cdr (cadr dectest)) body (cdr body))))

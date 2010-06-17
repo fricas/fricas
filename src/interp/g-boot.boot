@@ -51,7 +51,7 @@ nakedEXIT? c ==
   IDENTP a =>
     a = 'EXIT  => true
     a = 'QUOTE => NIL
-    MEMQ(a,'(SEQ PROG LAMBDA MLAMBDA LAM)) => NIL
+    MEMQ(a,'(SEQ PROG LAMBDA MLAMBDA)) => NIL
     nakedEXIT?(d)
   nakedEXIT?(a) or nakedEXIT?(d)
 
