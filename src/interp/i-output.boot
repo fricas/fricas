@@ -86,7 +86,7 @@ SETANDFILEQ($RTspecialCharacters,[
     '_\       -- back slash
      ])
 
-SETANDFILEQ($specialCharacters,$RTspecialCharacters)
+SETANDFILEQ($specialCharacters, $plainRTspecialCharacters)
 
 SETANDFILEQ($specialCharacterAlist, '(
   (ulc  .  0)_
