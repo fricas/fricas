@@ -1,0 +1,1077 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra html.spad}
+\author{Martin J Baker}
+\maketitle
+\begin{abstract}
+HTMLFormat is a package to output HTML (HyperText Markup Language) from
+OutputForm.
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Preface}
+Here I have put some information about 'how to use' and 'the benefits of'
+this HTML formatter. Also some information for programmers if they want
+to extend this package.
+
+If you want information about creating output formatters in general then,
+rather than duplicating content here I refer you to mathml.spad.pamphlet
+containing the MathMLFormat domain by Arthur C. Ralfs. This contains useful
+information for writers of output formatters.
+
+\section{Overview}
+
+This package allows users to cut and paste output from the Axiom/FriCAS
+command line to a HTML page. This output is enabled by typing:
+
+\begin{verbatim}
+)set output html on
+\end{verbatim}
+
+After this the command line will output html (in addition to other formats
+that are enabled) and this html code can then be copied and pasted into a
+HTML document.
+
+The HTML produced is well formed XML, that is, all tags have equivalent
+closing tags.
+
+\section{Why output to HTML?}
+
+In some ways HTMLFormat is a compromise between the standard text output and
+specialised formats like MathMLFormat. The potential quality is never
+going to be as good as output to a specialised maths renderer but on
+the other hand it is a lot better than the clunky fixed width font
+text output. The quality is not the only issue though, the direct output
+in any format is unlikely to be exactly what the user wants, so possibly
+more important than quality is the ability to edit the output.
+
+HTMLFormat has advantages that the other output formats don't, for instance,
+
+* It works with any browser without the need for plugins (as far as I know
+  most computers should have the required fonts)
+* Users can easily annotate and add comments using colour, bold, underline
+  and so on.
+* Annotations can easily be done with whatever html editor or text editor
+  you are familiar with.
+* Edits to the output will cause the width of columns and so on to be
+  automatically adjusted, no need to try to insert spaces to get the
+  superscripts to line up again!
+* It is very easy to customise output so, for instance, we can fit a lot of
+  information in a compact space on the page.
+
+\section{Installing}
+
+Unless this package comes with Axiom/Fricas then it will need to be downloaded
+(I assume if you are reading this you have already downloaded it) and
+installed and compiled so that the interpreter knows about it.
+
+This all seems very complicated and I haven't tried it myself.
+
+I gather that you first need to tell FriCAS about the package as described
+by Waldek Hebisch here:
+- algbera Makefile.in:
+    and pamphlet name to SPAD_SRCS
+    add abbreviated name(s) to SPADLISTx
+- if you add category add it CATLIST, if category provides defaults
+  add it to CATDOMS
+- add compile commands to boo-cat.input, boo-dom[12].input,
+  boo-pack[12].input as appropriate.  boo-cat.input is in dependency
+  order, so new categories typically do at the end.  The other
+  are mostly in lexicographic order, but sometimes dependencies
+  force different order.
+You may be forced to add stubs to bootstrap.spad to resolve dependencies,
+but this should be rare.
+
+Then setup:
+\begin{verbatim}
+src/interp/setvars.boot.pamphlet
+src/algebra/Makefile.pamphlet
+src/algebra/exposed.lsp.pamphlet
+src/algebra/Lattice.pamphlet
+src/doc/axiom.bib.pamphlet
+interp/i-output.boot.pamphlet
+\end{verbatim}
+as described by Arthur C. Ralfs in MathMLFormat.
+
+Then compile everything and you're ready to go. If you know an easy way
+to do this please let me know as I would like to try it.
+\section{Using the formatter}
+We can cause the command line interpreter to output in html by typing
+the following:
+
+\begin{verbatim}
+)set output html on
+\end{verbatim}
+
+After this the command line will output html (in addition to other formats
+that are enabled) and this html code can then be copied and pasted into an
+existing HTML document.
+
+If you do not already have an html page to copy the output to then you can
+create one with a text editor and entering the following:
+
+\begin{verbatim}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<title>Enter Your Title Here</title>
+</head>
+<body>
+Copy and paste the output from command line here.
+</body>
+</html>
+\end{verbatim}
+
+Or using any program that will export to html such as OpenOffice.org
+writer.
+
+\section{Form of the output}
+\begin{verbatim}
+HTMLFormat does not try to interpret syntax, for instance in an example like:
+(1) -> integral(x^x,x)
+it just takes what OutputForm provides and does not try to replace
+%A with the bound variable x.
+\end{verbatim}
+
+\section{Matrix Formatting}
+A big requirement for me is to fit big matrices on ordinary web pages.
+
+At the moment the default output for a matrix is a grid, however it easy to
+modify this for a single matrix, or a whole page or whole site by using css
+(cascading style sheets). For instance we can get a more conventional looking
+matrix by adding the following style to the top of the page after the <head>
+tag:
+
+\begin{verbatim}
+<style type="text/css">
+#matl {border-left-style:solid}
+#matr {border-right-style:solid}
+#matlt {border-left-style:solid;border-top-style:solid}
+#matrt {border-right-style:solid;border-top-style:solid}
+#matlb {border-left-style:solid;border-bottom-style:solid}
+#matrb {border-right-style:solid;border-bottom-style:solid}
+</style>
+\end{verbatim}
+
+There are many other possibilities, for instance we can generate a matrix
+with bars either side to indicate a determinant. All we have to do is
+change the css for the site, page or individual element.
+
+\section{Programmers Guide}
+This package converts from OutputForm, which is a hierarchical tree structure,
+to html which uses tags arranged in a hierarchical tree structure. So the
+package converts from one tree (graph) structure to another.
+
+This conversion is done in two stages using an intermediate Tree String
+structure. This Tree String structure represents HTML where:
+\begin{verbatim}
+leafs represents unstructured text
+string in leafs contains the text
+non-leafs represents xml elements
+string in non-leafs represents xml attributes
+\end{verbatim}
+
+This is created by traversing OutputForm while building up the Tree String
+structure.
+
+The second stage is to convert the Tree Structure to text. All text output
+is done using:
+\begin{verbatim}
+sayTeX$Lisp
+\end{verbatim}
+I have not produced and output to String as I don't know a way to append
+to a long string efficiently and I don't know how to insert carriage-
+returns into a String.
+
+\subsection{Future Developments}
+There would be some benefits in creating a XMLFormat category which would
+contain common elements for all xml formatted outputs such as HTMLFormat,
+MathMLFormat, SVGFormat and X3DFormat. However programming effort might
+be better spent creating a version of OutputForm which has better syntax
+information.
+
+<<package HTMLFORM HTMLFormat>>=
+
+)abbrev domain HTMLFORM HTMLFormat
+++ Author: Martin J Baker
+++ Date: January 2010
+++ I have borrowed heavily from:
+++ MathMLFormat domain by Arthur C. Ralfs
+++ and TeXFormat domain by Robert S. Sutor
+++ Basic Operations: coerce, coerceS, coerceL, exprex, display
+++ Description:
+++    \spadtype{HtmlFormat} provides a coercion from \spadtype{OutputForm}
+++    to html.
+
+HTMLFormat(): public == private where
+  E      ==> OutputForm
+  I      ==> Integer
+  L      ==> List
+  S      ==> String
+
+  public == SetCategory with
+    coerce:    E -> S
+      ++ coerce(o) changes o in the standard output format to html
+      ++ format.
+    coerceS:   E -> S
+      ++ coerceS(o) changes o in the standard output format to html
+      ++ format and displays formatted result.
+    coerceL:   E -> S
+      ++ coerceL(o) changes o in the standard output format to html
+      ++ format and displays result as one long string.
+    exprex:    E -> S
+      ++ exprex(o) coverts \spadtype{OutputForm} to \spadtype{String}
+    display:   S -> Void
+      ++ display(o) prints the string returned by coerce.
+
+  private == add
+    import OutputForm
+    import Character
+    import Integer
+    import List OutputForm
+    import List String
+
+    expr: E
+    prec,opPrec: I
+    str:  S
+    blank         : S := " \  "
+
+    maxPrec       : I   := 1000000
+    minPrec       : I   := 0
+
+    unaryOps      : L S := ["-"]$(L S)
+    unaryPrecs    : L I := [700]$(L I)
+
+    -- the precedence of / in the following is relatively low because
+    -- the bar obviates the need for parentheses.
+    binaryOps     : L S := ["+->","|","^","/","<",">","=","OVER"]$(L S)
+    binaryPrecs   : L I := [0,0,900,700,400,400,400,700]$(L I)
+    naryOps       : L S := ["-","+","*",blank,",",";"," ","ROW","",
+       " \cr ","&","/\","\/"]$(L S)
+    naryPrecs     : L I := [700,700,800,800,110,110,0,0,0,0,0,600,600]$(L I)
+    naryNGOps     : L S := ["ROW","&"]$(L S)
+    plexOps       : L S := ["SIGMA","SIGMA2","PI","PI2","INTSIGN",_
+                            "INDEFINTEGRAL"]$(L S)
+    plexPrecs     : L I := [700,800,700,800,700,700]$(L I)
+    specialOps    : L S := ["MATRIX","BRACKET","BRACE","CONCATB","VCONCAT",_
+                            "AGGLST","CONCAT","OVERBAR","ROOT","SUB","TAG",_
+                            "SUPERSUB","ZAG","AGGSET","SC","PAREN",_
+                            "SEGMENT","QUOTE","theMap", "SLASH"]
+
+    -- the next two lists provide translations for some strings for
+    -- which HTML has some special character codes.
+    specialStrings : L S :=
+      ["cos", "cot", "csc", "log", "sec", "sin", "tan", _
+       "cosh", "coth", "csch", "sech", "sinh", "tanh", _
+       "acos","asin","atan","erf","...","$","infinity","Gamma", _
+       "%pi","%e","%i"]
+    specialStringsInHTML : L S :=
+      ["cos","cot","csc","log","sec","sin","tan", _
+       "cosh","coth","csch","sech","sinh","tanh", _
+       "arccos","arcsin","arctan","erf","&#x2026;","$","&#x221E;",_
+       "&#x0413;","&#x003C0;","&#x02147;","&#x02148;"]
+
+    debug := false
+
+    atomize:E -> L E
+
+    formatBinary:(S,L E, I) -> Tree S
+
+    formatFunction:(Tree S,L E, I) -> Tree S
+
+    formatMatrix:L E -> Tree S
+
+    formatNary:(S,L E, I) -> Tree S
+
+    formatNaryNoGroup:(S,L E, I) -> Tree S
+
+    formatNullary:S -> Tree S
+
+    formatPlex:(S,L E, I) -> Tree S
+
+    formatSpecial:(S,L E, I) -> Tree S
+
+    formatUnary:(S,  E, I) -> Tree S
+
+    formatHtml:(E,I) -> Tree S
+
+    precondition:E -> E
+      -- this function is applied to the OutputForm expression before
+      -- doing anything else.
+
+    outputTree:Tree S -> Void
+      -- This function traverses the tree and linierises it into a string.
+      -- To get the formatting we use a nested set of tables. It also checks
+      -- for +- and removes the +. it may also need to remove the outer
+      -- set of brackets.
+
+    stringify:E -> S
+
+    coerce(expr : E): S ==
+      outputTree formatHtml(precondition expr, minPrec)
+      " "
+
+    coerceS(expr : E): S ==
+      outputTree formatHtml(precondition expr, minPrec)
+      " "
+
+    coerceL(expr : E): S ==
+      outputTree formatHtml(precondition expr, minPrec)
+      " "
+
+    display(html : S): Void ==
+      sayTeX$Lisp html
+      void()$Void
+
+    newNode(tag:S,node: Tree S): (Tree S) ==
+      t := tree(S,[node])
+      setvalue!(t,tag)
+      t
+
+    newNodes(tag:S,nodes: L Tree S): (Tree S) ==
+      t := tree(S,nodes)
+      setvalue!(t,tag)
+      t
+
+    -- returns true if this can be represented without a table
+    notTable?(node: Tree S): Boolean ==
+      empty?(node) => true
+      leaf?(node) => true
+      prefix?("table",value(node))$String => false
+      c := children(node)
+      for a in c repeat
+        if not notTable?(a) then return false
+      true
+
+    -- this retuns a string representation of OutputForm arguments
+    -- it is used when debug is true to trace the calling of functions
+    -- in this package
+    argsToString(args : L E): S ==
+      sop : S := exprex first args
+      args := rest args
+      s : S := concat ["{",sop]
+      for a in args repeat
+          s1 : S := exprex a
+          s := concat [s,s1]
+      s := concat [s,"}"]
+
+    exprex(expr : E): S ==
+      -- This breaks down an expression into atoms and returns it as
+      -- a string.  It's for developmental purposes to help understand
+      -- the expressions.
+      a : E
+      expr := precondition expr
+      (ATOM(expr)$Lisp@Boolean) or (stringify expr = "NOTHING") =>
+        concat ["{",stringify expr,"}"]
+      le : L E := (expr pretend L E)
+      op := first le
+      sop : S := exprex op
+      args : L E := rest le
+      nargs : I := #args
+      s : S := concat ["{",sop]
+      if nargs > 0  then
+        for a in args repeat
+          s1 : S := exprex a
+          s := concat [s,s1]
+      s := concat [s,"}"]
+
+    atomize(expr : E): L E ==
+      -- This breaks down an expression into a flat list of atomic
+      -- expressions.
+      -- expr should be preconditioned.
+      le : L E := nil()
+      a : E
+      letmp : L E
+      (ATOM(expr)$Lisp@Boolean) or (stringify expr = "NOTHING") =>
+        le := append(le,list(expr))
+      letmp := expr pretend L E
+      for a in letmp repeat
+        le := append(le,atomize a)
+      le
+
+    -- output html test using tables and
+    -- remove unnecessary '+' at end of first string
+    -- when second string starts with '-'
+    outputTree(t: Tree S): Void ==
+      endWithPlus:Boolean := false -- if the last string ends with '+'
+      -- and the next string starts with '-' then the '+' needs to be
+      -- removed
+      if empty?(t) then
+        --if debug then sayTeX$Lisp "outputTree empty"
+        return void()$Void
+      if leaf?(t) then
+        --if debug then sayTeX$Lisp concat("outputTree leaf:",value(t))
+        sayTeX$Lisp value(t)
+        return void()$Void
+      tagName := copy value(t)
+      tagPos := position(char(" "),tagName,1)$String
+      if tagPos > 1 then
+        tagName := split(tagName,char(" ")).1
+        --sayTeX$Lisp "outputTree: tagPos="string(tagPos)" "tagName
+      if value(t) ~= "" then sayTeX$Lisp concat["<",value(t),">"]
+      c := children(t)
+      enableGrid:Boolean := (#c > 1) and not notTable?(t)
+      if enableGrid then
+        if tagName = "table" then enableGrid := false
+        if tagName = "tr" then enableGrid := false
+      b:List Boolean := [leaf?(c1) for c1 in c]
+      -- if all children are strings then no need to wrap in table
+      allString: Boolean := true
+      for c1 in c repeat if not leaf?(c1) then allString := false
+      if allString then
+        s:String := ""
+        for c1 in c repeat s := concat(s,value(c1))
+        sayTeX$Lisp s
+        if value(t) ~= "" then sayTeX$Lisp concat["</",tagName,">"]
+        return void()$Void
+      if enableGrid then
+        sayTeX$Lisp "<table border='0'>"
+        sayTeX$Lisp "<tr>"
+      for c1 in c repeat
+        if enableGrid then sayTeX$Lisp "<td>"
+        outputTree(c1)
+        if enableGrid then sayTeX$Lisp "</td>"
+      if enableGrid then
+        sayTeX$Lisp "</tr>"
+        sayTeX$Lisp "</table>"
+      if value(t) ~= "" then sayTeX$Lisp concat["</",tagName,">"]
+      void()$Void
+
+    stringify expr == (mathObject2String$Lisp expr)@S
+
+    precondition expr ==
+      outputTran$Lisp expr
+
+    -- I dont know what SC is so put it in a table for now
+    formatSC(args : L E, prec : I)  : Tree S ==
+      if debug then sayTeX$Lisp "formatSC: "concat[" args=",_
+        argsToString(args)," prec=",string(prec)$S]
+      null args => tree("")
+      cells:L Tree S := [_
+        newNode("td id='sc' style='border-bottom-style:solid'",_
+        formatHtml(a,prec)) for a in args]
+      row:Tree S := newNodes("tr id='sc'",cells)
+      newNode("table border='0' id='sc'",row)
+
+    -- to build an overbar we put it in a single column,
+    -- single row table and set the top border to solid
+    buildOverbar(content : Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildOverbar"
+      cell:Tree S := _
+        newNode("td id='overbar' style='border-top-style:solid'",content)
+      row:Tree S := newNode("tr id='overbar'",cell)
+      newNode("table border='0' id='overbar'",row)
+
+    -- to build an square root we put it in a double column,
+    -- single row table and set the top border of the second column to
+    -- solid
+    buildRoot(content : Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildRoot"
+      if leaf?(content) then
+        -- root of a single term so no need for overbar
+        return newNodes("",[tree("&radic;"),content])
+      cell1:Tree S := newNode("td id='root'",tree("&radic;"))
+      cell2:Tree S := _
+        newNode("td id='root' style='border-top-style:solid'",content)
+      row:Tree S := newNodes("tr id='root'",[cell1,cell2])
+      newNode("table border='0' id='root'",row)
+
+    -- to build an 'n'th root we put it in a double column,
+    -- single row table and set the top border of the second column to
+    -- solid
+    buildNRoot(content : Tree S,nth: Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildNRoot"
+      power:Tree S := newNode("sup",nth)
+      if leaf?(content) then
+        -- root of a single term so no need for overbar
+        return newNodes("",[power,tree("&radic;"),content])
+      cell1:Tree S := newNodes("td id='nroot'",[power,tree("&radic;")])
+      cell2:Tree S := _
+        newNode("td id='nroot' style='border-top-style:solid'",content)
+      row:Tree S := newNodes("tr id='nroot'",[cell1,cell2])
+      newNode("table border='0' id='nroot'",row)
+
+    -- formatSpecial handles "theMap","AGGLST","AGGSET","TAG","SLASH",
+    -- "VCONCAT", "CONCATB","CONCAT","QUOTE","BRACKET","BRACE","PAREN",
+    -- "OVERBAR","ROOT", "SEGMENT","SC","MATRIX","ZAG"
+    -- note "SUB" and "SUPERSUB" are handled directly by formatHtml
+    formatSpecial(op : S, args : L E, prec : I) : Tree S ==
+      if debug then sayTeX$Lisp _
+        "formatSpecial: "concat["op=",op," args=",argsToString(args),_
+          " prec=",string(prec)$S]
+      arg : E
+      prescript : Boolean := false
+      op = "theMap" => tree("theMap(...)")
+      op = "AGGLST" =>
+        formatNary(",",args,prec)
+      op = "AGGSET" =>
+        formatNary(";",args,prec)
+      op = "TAG" =>
+        newNodes("",[formatHtml(first args,prec),tree("&#x02192;"),_
+          formatHtml(second args,prec)])
+        --RightArrow
+      op = "SLASH" =>
+        newNodes("",[formatHtml(first args, prec),tree("/"),_
+          formatHtml(second args,prec)])
+      op = "VCONCAT" =>
+        newNodes("table",[newNode("td",formatHtml(u, minPrec))_
+           for u in args]::L Tree S)
+      op = "CONCATB" =>
+        formatNary(" ",args,prec)
+      op = "CONCAT" =>
+        formatNary("",args,minPrec)
+      op = "QUOTE" =>
+        newNodes("",[tree("'"),formatHtml(first args, minPrec)])
+      op = "BRACKET" =>
+        newNodes("",[tree("["),formatHtml(first args, minPrec),tree("]")])
+      op = "BRACE" =>
+        newNodes("",[tree("{"),formatHtml(first args, minPrec),tree("}")])
+      op = "PAREN" =>
+        newNodes("",[tree("("),formatHtml(first args, minPrec),tree(")")])
+      op = "OVERBAR" =>
+        null args => tree("")
+        buildOverbar(formatHtml(first args,minPrec))
+      op = "ROOT" and #args < 1 => tree("")
+      op = "ROOT" and #args = 1 => _
+        buildRoot(formatHtml(first args, minPrec))
+      op = "ROOT" and #args > 1 => _
+        buildNRoot(formatHtml(first args, minPrec),_
+          formatHtml(second args, minPrec))
+      op = "SEGMENT" =>
+        -- '..' indicates a range in a list for example
+        tmp : Tree S := newNodes("",[formatHtml(first args, minPrec),_
+          tree("..")])
+        null rest args =>  tmp
+        newNodes("",[tmp,formatHtml(first rest args, minPrec)])
+      op = "SC" => formatSC(args,minPrec)
+      op = "MATRIX" => formatMatrix rest args
+      op = "ZAG" =>
+        -- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}_
+        --      {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+        -- to format continued fraction traditionally need to intercept
+        -- it at the formatNary of the "+"
+        newNodes("",[tree(" \zag{"),formatHtml(first args, minPrec),
+          tree("}{"),
+          formatHtml(first rest args,minPrec),tree("}")])
+      tree("formatSpecial not implemented:"op)
+
+    formatSuperSub(expr : E, args : L E, opPrec : I) : Tree S ==
+      -- This one produces ordinary derivatives with differential notation,
+      -- it needs a little more work yet.
+      -- first have to divine the semantics, add cases as needed
+      if debug then sayTeX$Lisp _
+        "formatSuperSub: "concat["expr=",stringify expr," args=",_
+          argsToString(args)," prec=",string(opPrec)$S]
+      atomE : L E := atomize(expr)
+      op : S := stringify first atomE
+      op ~= "SUPERSUB" => tree("Mistake in formatSuperSub: no SUPERSUB")
+      #args ~= 1 => tree("Mistake in SuperSub: #args <> 1")
+      var : E := first args
+      -- should be looking at something like {{SUPERSUB}{var}{ }{,,...,}}
+      -- for example here's the second derivative of y w.r.t. x
+      -- {{{SUPERSUB}{y}{ }{,,}}{x}}, expr is the first {} and args is the
+      -- {x}
+      funcS : S := stringify first rest atomE
+      bvarS : S := stringify first args
+      -- count the number of commas
+      commaS : S := stringify first rest rest rest atomE
+      commaTest : S := ","
+      ndiffs : I := 0
+      while position(commaTest,commaS,1) > 0 repeat
+        ndiffs := ndiffs+1
+        commaTest := commaTest","
+      res:Tree S := newNodes("",_
+        [tree("&#x02146;"string(ndiffs)""funcS"&#x02146;"),_
+          formatHtml(first args,minPrec),tree(""string(ndiffs)"&#x02061;"),_
+            formatHtml(first args,minPrec),tree(")")])
+      res
+
+    -- build structure such as integral as a table
+    buildPlex3(main:Tree S,supsc:Tree S,op:Tree S,subsc:Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildPlex"
+      ssup:Tree S := newNode("td id='plex'",supsc)
+      sop:Tree S := newNode("td id='plex'",op)
+      ssub:Tree S := newNode("td id='plex'",subsc)
+      m:Tree S := newNode("td rowspan='3' id='plex'",main)
+      rows:(List Tree S) := [newNodes("tr id='plex'",[ssup,m]),_
+        newNode("tr id='plex'",sop),newNode("tr id='plex'",ssub)]
+      newNodes("table border='0' id='plex'",rows)
+
+    -- build structure such as integral as a table
+    buildPlex2(main : Tree S,supsc : Tree S,op : Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildPlex"
+      ssup:Tree S := newNode("td id='plex'",supsc)
+      sop:Tree S := newNode("td id='plex'",op)
+      m:Tree S := newNode("td rowspan='2' id='plex'",main)
+      rows:(List Tree S) := [newNodes("tr id='plex'",[sop,m]),_
+        newNode("tr id='plex'",ssup)]
+      newNodes("table border='0' id='plex'",rows)
+
+    -- format an integral
+    -- args.1 = "NOTHING"
+    -- args.2 = bound variable
+    -- args.3 = body, thing being integrated
+    --
+    -- axiom replaces the bound variable with somthing like
+    -- %A and puts the original variable used
+    -- in the input command as a superscript on the integral sign.
+    formatIntSign(args : L E, opPrec : I) : Tree S ==
+      -- the original OutputForm expression looks something like this:
+      -- {{INTSIGN}{NOTHING or lower limit?}
+      -- {bvar or upper limit?}{{*}{integrand}{{CONCAT}{d}{axiom var}}}}
+      -- the args list passed here consists of the rest of this list, i.e.
+      -- starting at the NOTHING or ...
+      if debug then sayTeX$Lisp "formatIntSign: "concat[" args=",_
+        argsToString(args)," prec=",string(opPrec)$S]
+      (stringify first args) = "NOTHING" =>
+        buildPlex2(formatHtml(args.3,opPrec),tree("&int;"),_
+          formatHtml(args.2,opPrec)) -- could use &#x0222B; or &int;
+      buildPlex3(formatHtml(first args,opPrec),formatHtml(args.3,opPrec),_
+        tree("&int;"),formatHtml(args.2,opPrec))
+
+    -- plex ops are "SIGMA","SIGMA2","PI","PI2","INTSIGN","INDEFINTEGRAL"
+    -- expects 2 or 3 args
+    formatPlex(op : S, args : L E, prec : I) : Tree S ==
+      if debug then sayTeX$Lisp "formatPlex: "concat["op=",op," args=",_
+        argsToString(args)," prec=",string(prec)$S]
+      checkarg:Boolean := false
+      hold : S
+      p : I := position(op,plexOps)
+      p < 1 => error "unknown plex op"
+      op = "INTSIGN" => formatIntSign(args,minPrec)
+      opPrec := plexPrecs.p
+      n : I := #args
+      (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
+      s : Tree S :=
+        op = "SIGMA"   =>
+          checkarg := true
+          tree("&#x02211;")
+        -- Sum
+        op = "SIGMA2"   =>
+          checkarg := true
+          tree("&#x02211;")
+        -- Sum
+        op = "PI"      =>
+          checkarg := true
+          tree("&#x0220F;")
+        -- Product
+        op = "PI2"     =>
+          checkarg := true
+          tree("&#x0220F;")
+        -- Product
+        op = "INTSIGN" => tree("&#x0222B;")
+        -- Integral, int
+        op = "INDEFINTEGRAL" => tree("&#x0222B;")
+        -- Integral, int
+        tree("formatPlex: unexpected op:"op)
+      -- if opPrec < prec then perhaps we should parenthesize?
+      -- but we need to be careful we don't get loads of unnecessary
+      -- brackets
+      if n=2 then return buildPlex2(formatHtml(first args,minPrec),_
+        formatHtml(args.2,minPrec),s)
+      buildPlex3(formatHtml(first args,minPrec),formatHtml(args.2,minPrec),_
+        s,formatHtml(args.3,minPrec))
+
+    -- an example is: op=ROW arg={{ROW}{1}{2}}
+    formatMatrixRow(op : S, arg : E, prec : I,y:I,h:I)  : L Tree S ==
+      if debug then sayTeX$Lisp "formatMatrixRow: "concat["op=",op,_
+        " args=",stringify arg," prec=",string(prec)$S]
+      ATOM(arg)$Lisp@Boolean => [_
+        tree("formatMatrixRow does not contain row")]
+      l : L E := (arg pretend L E)
+      op : S := stringify first l
+      args : L E := rest l
+      --sayTeX$Lisp "formatMatrixRow op="op" args="argsToString(args)
+      w:I := #args
+      cells:(List Tree S) := empty()
+      for x in 1..w repeat
+        --sayTeX$Lisp "formatMatrixRow: x="string(x)$S" width="string(w)$S
+        attrib:S := "td id='mat'"
+        if x=1 then attrib := "td id='matl'"
+        if x=w then attrib := "td id='matr'"
+        if y=1 then attrib := "td id='matt'"
+        if y=h then attrib := "td id='matb'"
+        if x=1 and y=1 then attrib := "td id='matlt'"
+        if x=1 and y=h then attrib := "td id='matlb'"
+        if x=w and y=1  then attrib := "td id='matrt'"
+        if x=w and y=h  then attrib := "td id='matrb'"
+        cells := append(cells,[newNode(attrib,formatHtml(args.(x),prec))])
+      cells
+
+    -- an example is: op=MATRIX args={{ROW}{1}{2}}{{ROW}{3}{4}}
+    formatMatrixContent(op : S, args : L E, prec : I)  : L Tree S ==
+      if debug then sayTeX$Lisp "formatMatrixContent: "concat["op=",op,_
+        " args=",argsToString(args)," prec=",string(prec)$S]
+      y:I := 0
+      rows:(List Tree S) := [newNodes("tr id='mat'",_
+        formatMatrixRow("ROW",e,prec,y:=y+1,#args)) for e in args]
+      rows
+
+    formatMatrix(args : L E) : Tree S ==
+      -- format for args is [[ROW ...],[ROW ...],[ROW ...]]
+      -- generate string for formatting columns (centered)
+      if debug then sayTeX$Lisp "formatMatrix: "concat["args=",_
+        argsToString(args)]
+      newNodes("table border='1' id='mat'",_
+        formatMatrixContent("MATRIX",args,minPrec))
+
+    -- output arguments in column table
+    buildColumnTable(elements : List Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildColumnTable"
+      cells:(List Tree S) := [newNode("td id='col'",j) for j in elements]
+      rows:(List Tree S) := [newNode("tr id='col'",i) for i in cells]
+      newNodes("table border='0' id='col'",rows)
+
+    -- build superscript structure as either sup tag or
+    -- if it contains anything that won't go into a
+    -- sup tag then build it as a table
+    buildSuperscript(main : Tree S,super : Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildSuperscript"
+      notTable?(super) => newNodes("",[main,newNode("sup",super)])
+      m:Tree S := newNode("td rowspan='2' id='sup'",main)
+      su:Tree S := newNode("td id='sup'",super)
+      e:Tree S := newNode("td id='sup'",tree("&nbsp;"))
+      rows:(List Tree S) := [newNodes("tr id='sup'",[m,su]),_
+        newNode("tr id='sup'",e)]
+      newNodes("table border='0' id='sup'",rows)
+
+    -- build subscript structure as either sub tag or
+    -- if it contains anything that won't go into a
+    -- sub tag then build it as a table
+    buildSubscript(main : Tree S,subsc : Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildSubscript"
+      notTable?(subsc) => newNodes("",[main,newNode("sub",subsc)])
+      m:Tree S := newNode("td rowspan='2' id='sub'",main)
+      su:Tree S := newNode("td id='sub'",subsc)
+      e:Tree S := newNode("td id='sub'",tree("&nbsp;"))
+      rows:(List Tree S) := [newNodes("tr id='sub'",[m,e]),_
+        newNode("tr id='sub'",su)]
+      newNodes("table border='0' id='sub'",rows)
+
+    formatSub(expr : E, args : L E, opPrec : I) : Tree S ==
+      -- format subscript
+      -- this function expects expr to start with SUB
+      -- it expects first args to be the operator or value that
+      -- the subscript is applied to
+      -- and the rest args to be the subscript
+      if debug then sayTeX$Lisp "formatSub: "concat["expr=",_
+        stringify expr," args=",argsToString(args)," prec=",_
+          string(opPrec)$S]
+      atomE : L E := atomize(expr)
+      if empty?(atomE) then
+        if debug then sayTeX$Lisp "formatSub: expr=empty"
+        return tree("formatSub: expr=empty")
+      op : S := stringify first atomE
+      op ~= "SUB" =>
+        if debug then sayTeX$Lisp "formatSub: expr~=SUB"
+        tree("formatSub: expr~=SUB")
+      -- assume args.1 is the expression and args.2 is its subscript
+      if #args < 2 then
+        if debug then sayTeX$Lisp concat("formatSub: num args=",_
+          string(#args)$String)$String
+        return tree(concat("formatSub: num args=",_
+          string(#args)$String)$String)
+      if #args > 2 then
+        if debug then sayTeX$Lisp concat("formatSub: num args=",_
+          string(#args)$String)$String
+        return buildSubscript(formatHtml(first args,opPrec),_
+          newNodes("",[formatHtml(e,opPrec) for e in rest args]))
+      buildSubscript(formatHtml(first args,opPrec),_
+        formatHtml(args.2,opPrec))
+
+    formatFunction(op : Tree S, args : L E, prec : I) : Tree S ==
+      if debug then sayTeX$Lisp "formatFunction: "concat["args=",_
+        argsToString(args)," prec=",string(prec)$S]
+      newNodes("",[op,tree("("),formatNary(",",args,minPrec),tree(")")])
+
+    formatNullary(op : S) : Tree S ==
+      if debug then sayTeX$Lisp "formatNullary: "concat["op=",op]
+      op = "NOTHING" => empty()$Tree(S)
+      tree(op"()")
+
+    -- implement operation with single argument
+    -- an example is minus '-'
+    -- prec is precidence of operator, used to force brackets where
+    -- more tightly bound operation is next to less tightly bound operation
+    formatUnary(op : S, arg : E, prec : I) : Tree S ==
+      if debug then sayTeX$Lisp "formatUnary: "concat["op=",op," arg=",_
+        stringify arg," prec=",string(prec)$S]
+      p : I := position(op,unaryOps)
+      p < 1 => error "unknown unary op"
+      opPrec := unaryPrecs.p
+      s : Tree S := newNodes("",[tree(op),formatHtml(arg,opPrec)])
+      opPrec < prec => newNodes("",[tree("("),s,tree(")")])
+      s
+
+    -- output division with numerator above the denominator
+    -- implemented as a table
+    buildOver(top : Tree S,bottom : Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildOver"
+      topCell:Tree S := newNode("td",top)
+      bottomCell:Tree S := newNode("td style='border-top-style:solid'",_
+        bottom)
+      rows:(List Tree S) := [newNode("tr id='col'",topCell),_
+        newNode("tr id='col'",bottomCell)]
+      newNodes("table border='0' id='col'",rows)
+
+    -- op may be: "|","^","/","OVER","+->"
+    -- note: "+" and "*" are n-ary ops
+    formatBinary(op : S, args : L E, prec : I) : Tree S ==
+      if debug then sayTeX$Lisp "formatBinary: "concat["op=",op,_
+        " args=",argsToString(args)," prec=",string(prec)$S]
+      p : I := position(op,binaryOps)
+      p < 1 => error "unknown binary op"
+      opPrec := binaryPrecs.p
+      -- if base op is product or sum need to add parentheses
+      if ATOM(first args)$Lisp@Boolean then
+        opa:S := stringify first args
+      else
+        la : L E := (first args pretend L E)
+        opa : S := stringify first la
+      if (opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2")_
+        and op = "^" then
+          s1 : Tree S := newNodes("",[tree("("),formatHtml(first args,_
+            opPrec),tree(")")])
+      else
+        s1 : Tree S := formatHtml(first args, opPrec)
+      s2 : Tree S := formatHtml(first rest args, opPrec)
+      op = "|" => newNodes("",[s1,tree(op),s2])
+      op = "^" => buildSuperscript(s1,s2)
+      op = "/" => newNodes("",[s1,tree(op),s2])
+      op = "OVER" => buildOver(s1,s2)
+      op = "+->" => newNodes("",[s1,tree("|&mdash;&rsaquo;"),s2])
+      newNodes("",[s1,tree(op),s2])
+
+    -- build a zag from a table with a right part and a
+    -- upper and lower left part
+    buildZag(top:Tree S,lowerLeft:Tree S,lowerRight:Tree S) : Tree S ==
+      if debug then sayTeX$Lisp "buildZag"
+      cellTop:Tree S := _
+        newNode("td colspan='2' id='zag' style='border-bottom-style:solid'",_
+         top)
+      cellLowerLeft:Tree S := newNodes("td id='zag'",[lowerLeft,tree("+")])
+      cellLowerRight:Tree S := newNode("td id='zag'",lowerRight)
+      row1:Tree S := newNodes("tr id='zag'",[cellTop])
+      row2:Tree S := newNodes("tr id='zag'",[cellLowerLeft,cellLowerRight])
+      newNodes("table border='0' id='zag'",[row1,row2])
+
+    formatZag(args : L E,nestLevel:I)  : Tree S ==
+      -- args will be a list of things like this {{ZAG}{1}{7}}, the ZAG
+      -- must be there, the '1' and '7' could conceivably be more complex
+      -- expressions
+      --
+      -- ex 1. continuedFraction(314159/100000)
+      -- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
+      -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+      -- this is the preconditioned output form
+      -- including "op", the args list would be the rest of this
+      -- i.e op = '+' and args = {{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}
+      -- {{ZAG}{1}{1}}{{ZAG}{1}{25}}{{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+      --
+      -- ex 2. continuedFraction(14159/100000)
+      -- this one doesn't have the leading integer
+      -- {{+}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
+      -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+      --
+      -- ex 3. continuedFraction(3,repeating [1], repeating [3,6])
+      -- {{+}{3}{{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
+      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
+      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{...}}
+      --
+      -- In each of these examples the args list consists of the terms
+      -- following the '+' op
+      -- so the first arg could be a "ZAG" or something
+      -- else, but the second arg looks like it has to be "ZAG", so maybe
+      -- test for #args > 1 and args.2 contains "ZAG".
+      -- Note that since the resulting tables are nested we need
+      -- to handle the whole continued fraction at once, i.e. we can't
+      -- just look for, e.g., {{ZAG}{1}{6}}
+      --
+      -- we will assume that the font starts at 16px and reduce it by 4
+      -- <span style='font-size:16px'>outer zag</span>
+      -- <span style='font-size:14px'>next zag</span>
+      -- <span style='font-size:12px'>next zag</span>
+      -- <span style='font-size:10px'>next zag</span>
+      -- <span style='font-size:9px'>lowest zag</span>
+      if debug then sayTeX$Lisp "formatZag: "concat["args=",_
+        argsToString(args)]
+      tmpZag : L E := first args pretend L E
+      fontAttrib : S :=
+        nestLevel < 2 => "span style='font-size:16px'"
+        nestLevel = 2 => "span style='font-size:14px'"
+        nestLevel = 3 => "span style='font-size:12px'"
+        nestLevel = 4 => "span style='font-size:10px'"
+        "span style='font-size:9px'"
+      -- may want to test that tmpZag contains 'ZAG'
+      #args > 1 =>
+        newNode(fontAttrib,buildZag(formatHtml(first rest tmpZag,minPrec),_
+          formatHtml(first rest rest tmpZag,minPrec),_
+            formatZag(rest args,nestLevel+1)))
+      (first args = "...":: E)@Boolean => tree("&#x2026;")
+      op:S := stringify first args
+      position("ZAG",op,1) > 0 =>
+        newNode(fontAttrib,buildOver(formatHtml(first rest tmpZag,minPrec),_
+          formatHtml(first rest rest tmpZag,minPrec)))
+      tree("formatZag: Last argument in ZAG construct unknown operator: "op)
+
+    -- returns true if this term starts with a minus '-' sign
+    -- this is used so that we can suppress any plus '+' in front
+    -- of the - so we dont get terms like +-
+    neg?(arg : E) : Boolean ==
+      if debug then sayTeX$Lisp "neg?: "concat["arg=",argsToString([arg])]
+      ATOM(arg)$Lisp@Boolean => false
+      l : L E := (arg pretend L E)
+      op : S := stringify first l
+      op = "-" => true
+      false
+
+    formatNary(op : S, args : L E, prec : I) : Tree S ==
+      if debug then sayTeX$Lisp "formatNary: "concat["op=",op," args=",_
+        argsToString(args)," prec=",string(prec)$S]
+      formatNaryNoGroup(op, args, prec)
+
+    -- possible op values are:
+    -- ",",";","*"," ","ROW","+","-"
+    -- an example is content of matrix which gives:
+    -- {{ROW}{1}{2}}{{ROW}{3}{4}}
+    -- or AGGLST which gives op=, args={{1}{2}}
+    --
+    -- need to:
+    -- format ZAG
+    -- check for +-
+    -- add brackets for sigma or pi or root ("SIGMA","SIGMA2","PI","PI2")
+    formatNaryNoGroup(op : S, args : L E, prec : I)  : Tree S ==
+      if debug then sayTeX$Lisp "formatNaryNoGroup: "concat["op=",op,_
+        " args=",argsToString(args)," prec=",string(prec)$S]
+      checkargs:Boolean := false
+      null args => empty()$Tree(S)
+      p : I := position(op,naryOps)
+      p < 1 => error "unknown nary op"
+      -- need to test for "ZAG" case and divert it here
+      (#args > 1) and (position("ZAG",stringify first rest args,1) > 0) =>
+           tmpS : S := stringify first args
+           position("ZAG",tmpS,1) > 0 => formatZag(args,1)
+           newNodes("",[formatHtml(first args,minPrec),tree("+"),_
+            formatZag(rest args,1)])
+      -- At least for the ops "*","+","-" we need to test to see if a
+      -- sigma or pi is one of their arguments because we might need
+      -- parentheses as indicated
+      -- by the problem with summation(operator(f)(i),i=1..n)+1 versus
+      -- summation(operator(f)(i)+1,i=1..n) having identical displays as of
+      -- 2007-12-21
+      l := empty()$Tree(S)
+      opPrec := naryPrecs.p
+      -- if checkargs is true check each arg except last one to see if it's
+      -- a sigma or pi and if so add parentheses. Other op's may have to be
+      -- checked for in future
+      count:I := 1
+      tags : (L Tree S)
+      if opPrec < prec then tags := [tree("("),formatHtml(args.1,opPrec)]
+      if opPrec >= prec then tags := [formatHtml(args.1,opPrec)]
+      for a in rest args repeat
+        if op ~= "+" or not neg?(a) then tags := append(tags,[tree(op)])
+        tags := append(tags,[formatHtml(a,opPrec)])
+      if opPrec < prec then tags := append(tags,[tree(")")])
+      newNodes("",tags)
+
+    -- expr is a tree structure
+    -- prec is the precision of integers
+    -- formatHtml returns a string for this node in the tree structure
+    -- and calls recursivly to evaluate sub expressions
+    formatHtml(arg : E,prec : I) : Tree S ==
+      if debug then sayTeX$Lisp "formatHtml: "concat["arg=",_
+        argsToString([arg])," prec=",string(prec)$S]
+      i,len : Integer
+      intSplitLen : Integer := 20
+      ATOM(arg)$Lisp@Boolean =>
+        if debug then sayTeX$Lisp "formatHtml atom: "concat["expr=",_
+          stringify arg," prec=",string(prec)$S]
+        str := stringify arg
+        (i := position(str,specialStrings)) > 0 =>
+          tree(specialStringsInHTML.i)
+        tree(str)
+      l : L E := (arg pretend L E)
+      null l => tree(blank)
+      op : S := stringify first l
+      args : L E := rest l
+      nargs : I := #args
+      -- need to test here in case first l is SUPERSUB case and then
+      -- pass first l and args to formatSuperSub.
+      position("SUPERSUB",op,1) > 0 =>
+        formatSuperSub(first l,args,minPrec)
+      -- now test for SUB
+      position("SUB",op,1) > 0 =>
+        formatSub(first l,args,minPrec)
+      -- special cases
+      -- specialOps are:
+      -- MATRIX, BRACKET, BRACE, CONCATB, VCONCAT
+      -- AGGLST, CONCAT, OVERBAR, ROOT, SUB, TAG
+      -- SUPERSUB, ZAG, AGGSET, SC, PAREN
+      -- SEGMENT, QUOTE, theMap, SLASH
+      member?(op, specialOps) => formatSpecial(op,args,prec)
+      -- specialOps are:
+      -- SIGMA, SIGMA2, PI, PI2, INTSIGN, INDEFINTEGRAL
+      member?(op, plexOps)    => formatPlex(op,args,prec)
+      -- nullary case: function with no aguments
+      0 = nargs => formatNullary op
+      -- unary case: function with one agument such as '-'
+      (1 = nargs) and member?(op, unaryOps) =>
+        formatUnary(op, first args, prec)
+      -- binary case
+      -- binary ops include special processing for | ^ / OVER and +->
+      (2 = nargs) and member?(op, binaryOps) =>
+        formatBinary(op, args, prec)
+      -- nary case: including '+' and '*'
+      member?(op,naryNGOps) => formatNaryNoGroup(op,args, prec)
+      member?(op,naryOps) => formatNary(op,args, prec)
+
+      op1 := formatHtml(first l,minPrec)
+      formatFunction(op1,args,prec)
+
+@
+\section{License}
+<<license>>=
+--Copyright (c) 2010, Martin J Baker.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of Martin J Baker. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+<<*>>=
+<<license>>
+<<package HTMLFORM HTMLFormat>>
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} http://www.w3schools.com/html/
+\bibitem{2} http://www.w3.org/
+\bibitem{3} http://www.euclideanspace.com/maths/standards/program/output/
+\end{thebibliography}
+\end{document}
