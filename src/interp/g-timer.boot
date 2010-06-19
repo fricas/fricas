@@ -207,17 +207,19 @@ makeLongSpaceString(listofnames,listofclasses) ==
                                'SpaceTotal, 'ClassSpaceTotal, _
                                '"bytes", $printStorageIfTrue)
 
+DEFPARAMETER($inverseTimerTicksPerSecond, 1.0/$timerTicksPerSecond)
+
 computeElapsedTime() ==
   -- in total time lists, CAR is VIRTCPU and CADR is TOTCPU
   currentTime:= elapsedUserTime()
   currentGCTime:= elapsedGcTime()
   gcDelta := currentGCTime - $oldElapsedGCTime
-  elapsedSeconds:=
-     1.0*(currentTime-$oldElapsedTime-gcDelta)/$timerTicksPerSecond
+  elapsedSeconds:= $inverseTimerTicksPerSecond *
+     (currentTime-$oldElapsedTime-gcDelta)
   PUT('gc, 'TimeTotal,GETL('gc,'TimeTotal) +
-                   1.0*gcDelta/$timerTicksPerSecond)
-  $oldElapsedTime := elapsedUserTime()
-  $oldElapsedGCTime := elapsedGcTime()
+                   $inverseTimerTicksPerSecond*gcDelta)
+  $oldElapsedTime := currentTime
+  $oldElapsedGCTime := currentGCTime
   elapsedSeconds
 
 computeElapsedSpace() ==
