@@ -60,8 +60,6 @@
     (declare (special *comp370-apply*))
     (COMP L)))
 
-(defun COMP (L) (MAPCAR #'COMP-2 (MAPCAN #'COMP-1 L)))
-
 (defun comp_quietly_using_driver (driver fn)
   (let ((*comp370-apply*
          (if |$InteractiveMode|
