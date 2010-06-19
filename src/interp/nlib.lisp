@@ -153,9 +153,6 @@
 (defun rkeyids (&rest filearg)
   (mapcar #'intern (mapcar #'car (getindextable
                                   (make-input-filename filearg NIL)))))
-;;(defun rkeyids (&rest filearg)
-;;  (mapcar #'intern (mapcar #'car (getindextable
-;;                                (make-input-filename filearg 'LISPLIB)))))
 
 ;; (RWRITE cvec item rstream)
 (defun rwrite (key item rstream)
@@ -203,17 +200,6 @@
 (defun rpackfile (filespec)
   (setq filespec (make-filename filespec))
   (if (string= (pathname-type filespec) "NRLIB")
-#|
-When we compile an algebra file we create an NRLIB directory which contains
-several files. One of the files is named [[code.lsp]].
-On certain platforms this causes linking problems for GCL.
-The problem is that the compiler produces an init code block which is
-sensitive to the name of the source file.
-Since all of the [[code.lsp]] files have the same name all of
-the init blocks have the same name. At link time this causes
-the names to collide. Here we rename the file before we compile,
-do the compile, and then rename the result back to [[code.o]].
-|#
     (let ((base (pathname-name filespec)))
          (recompile-lib-file-if-necessary
              (concatenate 'string (namestring filespec) "/" base ".lsp")))
@@ -492,20 +478,14 @@ do the compile, and then rename the result back to [[code.o]].
   (system:call-system (concat "/bin/cp " namestring1 " " namestring2)))
 
 (defvar vmlisp::$filetype-table
-  '((BOOT::LISPLIB . |LILIB|)
-    (BOOT::SPADLIB . |slib|)
-    (BOOT::HISTORY . |hist|)
+  '(
     (BOOT::HELPSPAD . |help|)
     (BOOT::INPUT . |input|)
     (BOOT::SPAD . |spad|)
     (BOOT::BOOT . |boot|)
     (BOOT::LISP . |lsp|)
-    (BOOT::META . |meta|)
     (BOOT::OUTPUT . |splog|)
     (BOOT::ERRORLIB . |erlib|)
     (BOOT::DATABASE . |DAASE|)
-    (BOOT::SPADDATA . |sdata|)
-    (BOOT::SPADFORT . |sfort|)
-    (BOOT::SPADFORM . |sform|)
-    (BOOT::SPADTEX . |stex|)
-    (BOOT::SPADOUT . |spout|)))
+   )
+)

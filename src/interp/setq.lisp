@@ -254,7 +254,7 @@
 
 (SETQ |$CommandSynonymAlist| (COPY |$InitialCommandSynonymAlist|))
 
-(SETQ |$spadLibFT| 'LISPLIB)
+(SETQ |$spadLibFT| 'NRLIB)
 
 (SETQ |$updateCatTableIfTrue| 'T)
 

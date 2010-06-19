@@ -92,10 +92,6 @@
     (|sayKeyedMsg| 'S2IZ0070 (list (get-current-directory))))
 
 (defun toplevel (&rest foo) (throw '|top_level| '|restart|))
-;;(defun toplevel (&rest foo) (lisp::unwind))
-
-(define-function 'unwind #'|spadThrow|)
-(define-function 'resume #'|spadThrow|)
 
 (DEFUN BUMPCOMPERRORCOUNT () ())
 

@@ -451,7 +451,7 @@
                      (GO BADO))
                 (SETQ INITS (LIST INITS) U-VARS (LIST (CAR VARS)) U-VALS (LIST U-VALS))
                 (setq endtest (POP L)))
-               ((prog nil
+               ((prog ()
                         (COND ((NULL VL) (GO TG5)) ((ATOM VL) (GO BADO)))
                  G180   (AND (NOT (PAIRP (SETQ V (CAR VL)))) (SETQ V (LIST V)))
                         (AND (NOT (IDENTP (CAR V))) (GO BADO))
@@ -891,7 +891,7 @@ LP  (COND ((NULL X)
 
 (DEFUN LASSOC (X Y)
   "Return the datum associated with key X in association list Y."
-  (PROG NIL
+  (PROG ()
      A  (COND ((ATOM Y) (RETURN NIL))
               ((EQUAL (CAAR Y) X) (RETURN (CDAR Y))) )
         (SETQ Y (CDR Y))
@@ -899,7 +899,7 @@ LP  (COND ((NULL X)
 
 (DEFUN |rassoc| (X Y)
   "Return the datum associated with key X in association list Y."
-  (PROG NIL
+  (PROG ()
      A  (COND ((ATOM Y) (RETURN NIL))
               ((EQUAL (CDAR Y) X) (RETURN (CAAR Y))) )
         (SETQ Y (CDR Y))

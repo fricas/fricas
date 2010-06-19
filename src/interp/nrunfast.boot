@@ -36,7 +36,6 @@
 initNewWorld() ==
   $NRTmakeCompactDirect := true
   $monitorNewWorld := false
-  $spadLibFT := 'NRLIB
   $NRTmonitorIfTrue := false
   $updateCatTableIfTrue := false
   $doNotCompressHashTableIfTrue := true

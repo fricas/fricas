@@ -291,8 +291,6 @@ clearCache x ==
 
 compileInteractive fn ==
   if $InteractiveMode then startTimingProcess 'compilation
-  --following not used for common lisp
-  --removeUnnecessaryLastArguments CADR fn
   if $reportCompilation then
     sayBrightlyI bright '"Generated LISP code for function:"
     pp fn

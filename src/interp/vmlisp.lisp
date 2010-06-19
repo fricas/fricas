@@ -397,9 +397,7 @@
 		      (BREAK))
 		  (setf nargs `(,@blargs &rest ,nargs)))))
     (cond (*decl* (setq body (cons `(declare (special ,@ *decl*)) body))))
-    (setq body
-          (cond ((eq ltype 'lambda) `(defun ,fname ,nargs . ,body))
-                ((eq ltype 'mlambda) `(defmacro ,fname ,nargs . ,body))))
+    (setq body `(defun ,fname ,nargs . ,body))
     (if *COMP370-APPLY* (funcall *COMP370-APPLY* fname body))
 
     body))
@@ -573,21 +571,21 @@
   ; ignores non-nil list terminators
   ; ignores non-pair a-list entries
   (cond ((symbolp X)
-         (PROG NIL
+         (PROG ()
                A  (COND ((ATOM Y) (RETURN NIL))
                         ((NOT (consp (CAR Y))) )
                         ((EQ (CAAR Y) X) (RETURN (CAR Y))) )
                (SETQ Y (CDR Y))
                (GO A)))
         ((or (numberp x) (characterp x))
-         (PROG NIL
+         (PROG ()
                A  (COND ((ATOM Y) (RETURN NIL))
                         ((NOT (consp (CAR Y))) )
                         ((EQL (CAAR Y) X) (RETURN (CAR Y))) )
                (SETQ Y (CDR Y))
                (GO A)))
         (t
-         (PROG NIL
+         (PROG ()
                A  (COND ((ATOM Y) (RETURN NIL))
                         ((NOT (consp (CAR Y))) )
                         ((EQUAL (CAAR Y) X) (RETURN (CAR Y))) )

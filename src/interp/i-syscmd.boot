@@ -1032,7 +1032,7 @@ editSpad2Cmd l ==
     pathnameType l => [pathnameType l]
     $UserLevel = 'interpreter => '("input" "INPUT" "spad" "SPAD")
     $UserLevel = 'compiler    => '("input" "INPUT" "spad" "SPAD")
-    '("input" "INPUT" "spad" "SPAD" "boot" "BOOT" "lisp" "LISP" "meta" "META")
+    '("input" "INPUT" "spad" "SPAD" "boot" "BOOT" "lisp" "LISP")
   ll :=
        oldDir = '"" => pathname $FINDFILE (pathnameName l, fileTypes)
        l
@@ -2735,11 +2735,11 @@ workfilesSpad2Cmd args ==
   args => throwKeyedMsg("S2IZ0047",NIL)
   deleteFlag := nil
   for [type,:.] in $options repeat
-    type1 := selectOptionLC(type,'(boot lisp meta delete),nil)
+    type1 := selectOptionLC(type,'(boot lisp delete),nil)
     null type1 => throwKeyedMsg("S2IZ0048",[type])
     type1 = 'delete => deleteFlag := true
   for [type,:flist] in $options repeat
-    type1 := selectOptionLC(type,'(boot lisp meta delete),nil)
+    type1 := selectOptionLC(type,'(boot lisp delete),nil)
     type1 = 'delete => nil
     for file in flist repeat
       fl := pathname [file,type1,'"*"]

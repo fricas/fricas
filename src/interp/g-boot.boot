@@ -488,6 +488,10 @@ COMP_-2(args) ==
       COMP370([bodyl])
     name
 
+COMP(lfun) ==
+    #lfun ~= 1 => BREAK()
+    [COMP_-2 nf for nf in COMP_-1(CAR(lfun))]
+    
 compSPADSLAM(name, argl, bodyl) ==
     al := INTERNL(name, '";AL")
     auxfn := INTERNL(name, '";")

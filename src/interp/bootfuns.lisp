@@ -101,17 +101,11 @@
 (def-boot-var |$mathTrace|                          "Interpreter>Trace.boot")
 (def-boot-var |$mathTraceList|              "Controls mathprint output for )trace.")
 
-(def-boot-val $num_of_meta_errors 0                 "Number of errors seen so far")
 (def-boot-val |$oldTime| 0                          "???")
 
 (def-boot-var |$postStack|                          "???")
 (def-boot-val |$PrettyPrint| nil "if t generated code is prettyprinted")
 (def-boot-var |$previousTime|                       "???")
-(def-boot-val |$optimizableDomainNames|
-      '(|FactoredForm| |List| |Vector|
-        |Integer| |NonNegativeInteger| |PositiveInteger|
-        |SmallInteger| |String| |Boolean| |Symbol| |BooleanFunctions|)
-   "used in optCall to decide which domains can be optimized")
 (def-boot-val |$printLoadMsgs|  '|off|          "Interpreter>SetVarT.boot")
 (def-boot-var |$PrintOnly|                          "Compiler>LispLib.boot")
 (def-boot-var |$reportBottomUpFlag|                 "Interpreter>SetVarT.boot")
