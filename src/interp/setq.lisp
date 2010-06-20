@@ -246,7 +246,7 @@
        (|type|       . "set message type")
        (|unexpose|   . "set expose drop constructor")
        (|version|    . "lisp *yearweek*")
-       (|wc|         . "what categories")
+       (|version|    . "lisp (concat *build-version* \" compiled at \" *yearweek*)")
        (|wd|         . "what domains")
        (|wp|         . "what packages")
        (|ws|         . "what synonyms")
