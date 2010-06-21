@@ -1007,6 +1007,35 @@ isTowerWithSubdomain(towerType,elem) ==
   s = elem => towerType
   isEqualOrSubDomain(s,elem) and constructM(first dt,[elem])
 
+exact?(mmS, tar, args) ==
+    ex := inex := NIL
+    for (mm := [sig, [mmC, :.], :.]) in mmS repeat
+        [c, t, :a] := sig
+        ok := true
+        for pat in a for arg in args while ok repeat
+            not CONTAINED(['isDomain, pat, arg], mmC) => ok := NIL
+        ok => ex := CONS(mm, ex)
+        inex := CONS(mm, inex)
+    [ex, inex]
+
+matchMms(mmaps, op, tar, args1, args2) ==
+    mmS := NIL
+    for [sig, mmC] in mmaps repeat
+        -- sig is [dc, result, :args]
+        $Subst :=
+            tar and not isPartialMode tar =>
+                -- throw in the target if it is not the same as one
+                -- of the arguments
+                res := CADR sig
+                member(res, CDDR sig) => NIL
+                [[res, :tar]]
+            NIL
+        [c, t, :a] := sig
+        if a then matchTypes(a, args1, args2)
+        not EQ($Subst, 'failed) =>
+            mmS := nconc(evalMm(op, tar, sig, mmC), mmS)
+    mmS
+
 selectMmsGen(op,tar,args1,args2) ==
   -- general modemap evaluation of op with argument types args1
   -- evaluates the condition and looks for the slot number
@@ -1052,39 +1081,12 @@ selectMmsGen(op,tar,args1,args2) ==
     sayMSG ['%l,:bright '"Modemaps from Associated Packages"]
 
   if haves then
-    [havesExact,havesInexact] := exact?(haves,tar,args1) where
-      exact?(mmS,tar,args) ==
-        ex := inex := NIL
-        for (mm := [sig,[mmC,:.],:.]) in mmS repeat
-          [c,t,:a] := sig
-          ok := true
-          for pat in a for arg in args while ok repeat
-            not CONTAINED(['isDomain,pat,arg],mmC) => ok := NIL
-          ok => ex := CONS(mm,ex)
-          inex := CONS(mm,inex)
-        [ex,inex]
+    [havesExact, havesInexact] := exact?(haves, tar, args1)
     if $reportBottomUpFlag then
       for mm in APPEND(havesExact,havesInexact) for i in 1.. repeat
         sayModemapWithNumber(mm,i)
     if havesExact then
-      mmS := matchMms(havesExact,op,tar,args1,args2) where
-        matchMms(mmaps,op,tar,args1,args2) ==
-          mmS := NIL
-          for [sig,mmC] in mmaps repeat
-            -- sig is [dc,result,:args]
-            $Subst :=
-              tar and not isPartialMode tar =>
-                -- throw in the target if it is not the same as one
-                -- of the arguments
-                res := CADR sig
-                member(res,CDDR sig) => NIL
-                [[res,:tar]]
-              NIL
-            [c,t,:a] := sig
-            if a then matchTypes(a,args1,args2)
-            not EQ($Subst,'failed) =>
-              mmS := nconc(evalMm(op,tar,sig,mmC),mmS)
-          mmS
+      mmS := matchMms(havesExact, op, tar, args1, args2) 
       if mmS then
         if $reportBottomUpFlag then
           sayMSG '"   found an exact match!"

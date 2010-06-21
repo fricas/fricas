@@ -164,7 +164,7 @@ evaluateType1 form ==
         GETDATABASE(opOf m,'CONSTRUCTORKIND) = 'domain and
             (tree := mkAtree x) and  putTarget(tree,m) and ((bottomUp tree) is [m1]) =>
                 [zt,:zv]:= z1:= getAndEvalConstructorArgument tree
-                (v:= coerceOrRetract(z1,m)) => objValUnwrap v
+                (v1 := coerceOrRetract(z1, m)) => objValUnwrap v1
                 throwKeyedMsgCannotCoerceWithValue(zv,zt,m)
         throwEvalTypeMsg("S2IE0006",[makeOrdinal argnum,m,form])
     [op,:NREVERSE typeList]

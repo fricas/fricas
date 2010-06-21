@@ -104,12 +104,12 @@ optCatch (x is ["CATCH",g,a]) ==
         changeThrowToExit(rest s,g)
     rplac(rest a,[:s,["EXIT",u]])
     ["CATCH",y,a]:= optimize x
-  if hasNoThrows(a,g)
-     then (rplac(first x,first a); rplac(rest x,rest a)) where
-      hasNoThrows(a,g) ==
+  if hasNoThrows(a, g) where
+      hasNoThrows(a, g) ==
         a is ["THROW", =g,:.] => false
         atom a => true
         hasNoThrows(first a,g) and hasNoThrows(rest a,g)
+     then (rplac(first x, first a); rplac(rest x, rest a))
    else
     changeThrowToGo(a,g) where
       changeThrowToGo(s,g) ==

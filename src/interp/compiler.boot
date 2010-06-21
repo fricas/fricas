@@ -143,7 +143,7 @@ compTypeOf(x:=[op,:argl],m,e) ==
 hasFormalMapVariable(x, vl) ==
   $formalMapVariables: local := vl
   null vl => false
-  ScanOrPairVec('hasone?,x) where
+  ScanOrPairVec(function hasone?, x) where
      hasone? x == MEMQ(x,$formalMapVariables)
 
 argsToSig(args) ==

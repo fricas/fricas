@@ -164,6 +164,17 @@ substInOrder(alist,x) ==
   alist is [[a, :b], :y] => substInOrder(y, substitute(b, a, x))
   x
 
+sayMms(op, mms, label) ==
+    m := # mms
+    sayMSG
+        m = 1 =>
+            ['"There is one", :bright label, '"function called",
+              :bright op, '":"]
+        ['"There are ", m, :bright label, '"functions called",
+            :bright op, '":"]
+    for mm in mms for i in 1.. repeat
+        sayModemapWithNumber(mm, i)
+
 reportOpSymbol op1 ==
   op := (STRINGP op1 => INTERN op1; op1)
   modemaps := getAllModemapsFromDatabase(op,nil)
@@ -183,17 +194,7 @@ reportOpSymbol op1 ==
     isFreeFunctionFromMm(mm) or isExposedConstructor getDomainFromMm(mm) => mmsE := [mm,:mmsE]
     mmsU := [mm,:mmsU]
   if mmsE then
-    sayMms(op,mmsE,'"exposed") where
-      sayMms(op,mms,label) ==
-        m := # mms
-        sayMSG
-          m = 1 =>
-            ['"There is one",:bright label,'"function called",
-              :bright op,'":"]
-          ['"There are ",m,:bright label,'"functions called",
-            :bright op,'":"]
-        for mm in mms for i in 1.. repeat
-          sayModemapWithNumber(mm,i)
+    sayMms(op, mmsE, '"exposed")
   if mmsU then
     if mmsE then sayNewLine()
     sayMms(op,mmsU,'"unexposed")
@@ -611,22 +612,24 @@ formIterator2String x ==
   systemErrorHere "formatIterator"
 
 tuple2String argl ==
-  null argl => nil
-  string := first argl
-  if string in '("failed" "nil" "prime" "sqfr" "irred")
-    then string := STRCONC('"_"",string,'"_"")
-    else string :=
-      ATOM string => object2String string
-      [f x for x in string] where
-        f x ==
-          ATOM x => object2String x
-          -- [f CAR x,:f CDR x]
-          [f y for y in x]
-  for x in rest argl repeat
-    if x in '("failed" "nil" "prime" "sqfr" "irred") then
-      x := STRCONC('"_"",x,'"_"")
-    string:= concat(string,concat(",",f x))
-  string
+  fn1 argl where
+    fn1 argl ==
+        null argl => nil
+        string := first argl
+        if member(string, '("failed" "nil" "prime" "sqfr" "irred"))
+            then string := STRCONC('"_"", string, '"_"")
+            else string :=
+                ATOM string => object2String string
+                [fn2 x for x in string]
+        for x in rest argl repeat
+            if member(x, '("failed" "nil" "prime" "sqfr" "irred")) then
+                x := STRCONC('"_"", x, '"_"")
+            string := concat(string, concat(",", fn2 x))
+        string
+    fn2 x ==
+      ATOM x => object2String x
+      -- [fn2 CAR x, :f CDR x]
+      [fn2 y for y in x]
 
 script2String s ==
   null s => '""   -- just to be safe

@@ -783,7 +783,7 @@ fortPre1 e ==
   imags := ['"%i","%i"]
   e in imags => ['"CMPLX",fortPre1(0),fortPre1(1)]
   -- other special objects
-  ELT(STRINGIMAGE e,0) = "%" => SUBSEQ(STRINGIMAGE e,1)
+  ELT(STRINGIMAGE e, 0) = char "%" => SUBSEQ(STRINGIMAGE e, 1)
   atom e => e
   [op, :args] := e
   op in ["**" , '"**"] =>
