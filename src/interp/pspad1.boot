@@ -257,7 +257,7 @@ format(x,:options) ==
   qualification := IFCAR options
   newCOrNil:=
     x is [op,:argl] =>
-      if op = 'return then argl := rest argl
+      if op = "return" then argl := rest argl
       n := #argl
       op is ['elt,y,"construct"] => formatDollar(y,'construct,argl)
       op is ['elt,name,p] and UPPER_-CASE_-P (STRINGIMAGE opOf name).0 =>

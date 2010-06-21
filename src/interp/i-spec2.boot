@@ -212,7 +212,7 @@ compileIF(op,cond,a,b,t) ==
   b = 'noMapVal =>
     -- if this was a return statement, we take the mode to be that
     -- of what is being returned.
-    if getUnname a = 'return then
+    if getUnname a = "return" then
       ms1 := bottomUp CADR a
       [m1] := ms1
     evalIF(op,rest t,m1)

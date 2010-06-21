@@ -973,8 +973,8 @@ mkSharpVar i ==
 
 mapPredTran pred ==
   -- transforms "x in i..j" to "x>=i and x<=j"
-  pred is ['in,var,['SEGMENT,lb]] => mkLessOrEqual(lb,var)
-  pred is ['in,var,['SEGMENT,lb,ub]] =>
+  pred is ["in", var, ['SEGMENT, lb]] => mkLessOrEqual(lb, var)
+  pred is ["in", var, ['SEGMENT, lb, ub]] =>
     null ub => mkLessOrEqual(lb,var)
     ['and,mkLessOrEqual(lb,var),mkLessOrEqual(var,ub)]
   pred

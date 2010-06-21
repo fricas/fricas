@@ -524,7 +524,7 @@ compFormWithModemap1(form,m,e,modemap,Rep2Dollar?) ==
         -- try to deal with new-style Unions where we know the conditions
         op = "elt" and f is ['XLAM,:.] and IDENTP(z:=CAR argl) and
           (c:=get(z,'condition,e)) and
-            c is [['case,=z,c1]] and
+            c is [["case", =z, c1]] and
               (c1 is ['_:,=(CADR argl),=m] or EQ(c1,CADR argl) ) =>
 -- first is a full tag, as placed by getInverseEnvironment
 -- second is what getSuccessEnvironment will place there
