@@ -31,7 +31,8 @@
 
 
 -- HyperTeX Utilities for generating basic Command pages
---)package "BOOT"
+
+)package "BOOT"
 
 $bcParseOnly := true
 

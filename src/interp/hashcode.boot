@@ -29,6 +29,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+)package "BOOT"
 
 -- Type hasher for old compiler style type names which produces a hash code
 -- compatible with the asharp compiler.  Takes a hard error if the type

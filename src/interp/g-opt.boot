@@ -29,6 +29,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+)package "BOOT"
 
 --% OPTIMIZER
 
@@ -239,11 +240,6 @@ optCond (x is ['COND,:l]) ==
       RPLAC(first first y,a)
       RPLAC(rest y,y')
   x
-
-AssocBarGensym(key,l) ==
-  for x in l repeat
-    PAIRP x =>
-      EqualBarGensym(key,CAR x) => return x
 
 EqualBarGensym(x,y) ==
   $GensymAssoc: fluid := nil
