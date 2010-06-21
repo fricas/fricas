@@ -295,7 +295,7 @@ mkNewUnionFunList(name,form is ['Union,:listOfEntries],e) ==
        ("append"/
         [[['construct,[name,type],['XLAM,["#1"],['CONS,i,"#1"]]],
           ['elt,[type,name,tag],cdownFun],
-            ['case,['(Boolean),name,tag],
+            ["case", ['(Boolean), name, tag],
                ['XLAM,["#1"],['QEQCAR,"#1",i]]]]
                  for [.,tag,type] in listOfEntries for i in 0..])] where
                    cdownFun() ==
@@ -331,7 +331,7 @@ mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
       [[['autoCoerce,[g,t],upFun],
         ['coerce,[t,g],cdownFun],
         ['autoCoerce,[t,g],downFun], --this should be removed eventually
-        ['case,['(Boolean),g,t],typeFun]]
+        ["case", ['(Boolean), g, t], typeFun]]
           for p in predList for t in listOfEntries])] where
              upFun() ==
                p is ['EQCAR,x,n] => ['XLAM,["#1"],['CONS,n,"#1"]]

@@ -242,7 +242,7 @@ formatOpSymbol(op,sig) ==
   STRINGP op or GETL(op,"Led") or GETL(op,"Nud") =>
     n = 3 =>
       if op = 'SEGMENT then op := '".."
-      op = 'in => [quad,'" ",op,'" ",quad]
+      op = "in" => [quad, '" ", op, '" ", quad]
 -- stop exquo from being displayed as infix (since it is not accepted
 -- as such by the interpreter)
       op = 'exquo => op

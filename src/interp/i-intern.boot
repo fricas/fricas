@@ -105,7 +105,7 @@ mkAtreeExpandMacros x ==
       x := body
     x is [op,:argl] =>
       op = 'QUOTE => 'doNothing
-      op = 'where and argl is [before,after] =>
+      op = "where" and argl is [before, after] =>
         -- in a where clause, what follows "where" (the "after" parm
         -- above) might be a local macro, so do not expand the "before"
         -- part yet
@@ -156,7 +156,7 @@ mkAtree2(x,op,argl) ==
       if val = '$NoValue then val := '(void)
       [mkAtreeNode op,mkAtree1 val]
     [mkAtreeNode op,mkAtree1 '(void)]
-  op= 'return =>
+  op= "return" =>
     argl is [val] =>
       if val = '$NoValue then val := '(void)
       [mkAtreeNode op,mkAtree1 val]
@@ -186,8 +186,8 @@ mkAtree2(x,op,argl) ==
     typeIsASmallInteger(t) and INTEGERP expr =>
         mkAtree1 ["::", expr, t]
     [mkAtreeNode 'TARGET,mkAtree1 expr, type]
-  (op='case) and (nargl = 2)  =>
-    [mkAtreeNode 'case,mkAtree1 first argl,unabbrev CADR argl]
+  (op = "case") and (nargl = 2)  =>
+    [mkAtreeNode "case", mkAtree1 first argl, unabbrev CADR argl]
   op='REPEAT => [mkAtreeNode op,:transformREPEAT argl]
   op='LET and argl is [['construct,:.],rhs] =>
     [mkAtreeNode 'LET,first argl,mkAtree1 rhs]
@@ -222,7 +222,7 @@ mkAtree3(x,op,argl) ==
   op='_= => [mkAtreeNode 'equation,:[mkAtree1 arg for arg in argl]]
   op='not and argl is [["=",lhs,rhs]] =>
     [mkAtreeNode 'not,[mkAtreeNode "=",mkAtree1 lhs,mkAtree1 rhs]]
-  op='in and argl is [var ,['SEGMENT,lb,ul]] =>
+  op = "in" and argl is [var, ['SEGMENT, lb, ul]] =>
     upTest:=
       null ul => NIL
       mkLessOrEqual(var,ul)
@@ -264,8 +264,8 @@ mkAtree3(x,op,argl) ==
         a or b
     r := [[first types,:at],:r']
     [mkAtreeNode 'ADEF,[v.0,:r],if v.2 then v.2 else true,false]
-  x is ['where,before,after] =>
-    [mkAtreeNode 'where,before,mkAtree1 after]
+  x is ["where", before, after] =>
+    [mkAtreeNode "where", before, mkAtree1 after]
   x is ['DEF,['macro,form],.,.,body] =>
     [mkAtreeNode 'MDEF,form,body]
   x is ['DEF,a,:r] =>

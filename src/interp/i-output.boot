@@ -238,8 +238,8 @@ outputTran x ==
   x is ['MAP,:l] => outputMapTran l
   x is ['brace, :l]    =>
     ['BRACE,  ['AGGLST,:[outputTran y for y in l]]]
-  x is ['return,l] => ['return,outputTran l]
-  x is ['return,.,:l] => ['return,:outputTran l]
+  x is ["return", l] => ["return", outputTran l]
+  x is ["return", ., :l] => ["return", :outputTran l]
   x is ['construct,:l] =>
     ['BRACKET,['AGGLST,:[outputTran y for y in l]]]
 
@@ -370,17 +370,17 @@ outputTranSEQ ['SEQ,:l,exitform] ==
 
 outputTranIf ['IF,x,y,z] ==
   y = 'noBranch =>
-    ['CONCATB,'if,['CONCATB,'not,outputTran x],'then,outputTran z]
+    ["CONCATB", "if", ["CONCATB", "not", outputTran x], "then", outputTran z]
   z = 'noBranch =>
-    ['CONCATB,'if,outputTran x,'then,outputTran y]
+    ["CONCATB", "if", outputTran x, "then", outputTran y]
   y' := outputTran y
   z' := outputTran z
 --y' is ['SC,:.] or z' is ['SC,:.] =>
--- ['CONCATB,'if,outputTran x,
---   ['SC,['CONCATB,'then,y'],['CONCATB,'else,z']]]
---['CONCATB,'if,outputTran x,'then,outputTran y,'else,outputTran z]
-  ['CONCATB,'if,outputTran x,
-    ['SC,['CONCATB,'then,y'],['CONCATB,'else,z']]]
+-- ['CONCATB, "if" ,outputTran x,
+--   ['SC,['CONCATB, "then",y'],['CONCATB, "else" ,z']]]
+--['CONCATB, "if", outputTran x, "then", outputTran y, "else", outputTran z]
+  ['CONCATB, "if", outputTran x,
+    ['SC,['CONCATB, "then", y'], ['CONCATB, "else", z']]]
 
 outputMapTran l ==
   null l => NIL         -- should not happen

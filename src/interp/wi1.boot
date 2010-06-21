@@ -209,7 +209,7 @@ markWhereTran ["where",["DEF",form,sig,clist,body],:tail] ==
       mpart :=
         m => ['SEQ,:m,['exit,1,e]]
         e
-      ['where,ndef,mpart]
+      ["where", ndef, mpart]
     ndef
   result
 
