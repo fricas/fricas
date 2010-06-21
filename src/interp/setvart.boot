@@ -29,6 +29,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+)package "BOOT"
 
 )if false
 This file contains functions to initialize the {\bf )set} command

@@ -29,6 +29,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+)package "BOOT"
 
 -- note domainObjects are now (dispatchVector hashCode . domainVector)
 -- lazy oldAxiomDomainObjects are (dispatchVector hashCode  (Call form) . backptr),

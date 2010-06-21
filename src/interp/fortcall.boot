@@ -29,6 +29,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+)package "BOOT"
 
 makeFort(name,args,decls,results,returnType,aspInfo) ==
   -- Create an executable Fortran file to call a given library function,

@@ -30,6 +30,8 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+)package "BOOT"
+
 )if false
 Algorithms for Term Reduction
 
