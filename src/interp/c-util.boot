@@ -369,7 +369,7 @@ isAlmostSimple x ==
         op="LET" =>
           IDENTP y => (setAssignment LIST x; y)
           true => (setAssignment [["LET",g:= genVariable(),:l],["LET",y,g]]; g)
-        isSideEffectFree op => [op,:mapInto(rest x,"fn")]
+        isSideEffectFree op => [op, :mapInto(rest x, function fn)]
         true => $assignmentList:= "failed"
       setAssignment x ==
         $assignmentList="failed" => nil

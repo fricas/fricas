@@ -156,7 +156,7 @@ substituteSegmentedMsg(msg,args) ==
     n := STRINGLENGTH x
 
     -- x is a special case
-    (n > 2) and (c = "%") and (x.1 = "k") =>
+    (n > 2) and (c = char "%") and (x.1 = char "k") =>
         l := NCONC(NREVERSE pkey SUBSTRING(x,2,NIL),l)
 
     -- ?name gets replaced by '"Push PF10" or '"Type >b (enter)"
@@ -661,7 +661,7 @@ brightPrint0AsTeX x ==
 blankIndicator x ==
   if IDENTP x then x := PNAME x
   null STRINGP x or MAXINDEX x < 1 => nil
-  x.0 = '% and x.1 = 'x =>
+  x.0 = char '% and x.1 = char 'x =>
     MAXINDEX x > 1 => PARSE_-INTEGER SUBSTRING(x,2,nil)
     1
   nil
@@ -826,7 +826,7 @@ sayBrightlyLength1 x ==
     NULL $highlightAllowed => 1
     1
   member(x,'("%l" %l)) => 0
-  STRINGP x and STRINGLENGTH x > 2 and x.0 = '"%" and x.1 = '"x" =>
+  STRINGP x and STRINGLENGTH x > 2 and x.0 = char "%" and x.1 = char "x" =>
     INTERN x.3
   STRINGP x => STRINGLENGTH x
   IDENTP x => STRINGLENGTH PNAME x

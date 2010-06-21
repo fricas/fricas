@@ -214,6 +214,12 @@ mkAtree2(x,op,argl) ==
       '"not qualifying an operator"])
   mkAtree3(x,op,argl)
 
+mkAtree3fn(a, b) ==
+    a and b =>
+         if a = b then a
+         else throwMessage '"   double declaration of parameter"
+    a or b
+
 mkAtree3(x,op,argl) ==
   op='REDUCE and argl is [op1,axis,body] =>
     [mkAtreeNode op,axis,mkAtree1 op1,mkAtree1 body]
@@ -256,12 +262,7 @@ mkAtree3(x,op,argl) ==
       null rest arg => collectDefTypesAndPreds first arg
       collectDefTypesAndPreds arg
     [types,:r'] := r
-    at := [fn(x,y) for x in rest types for y in v.1] where
-      fn(a,b) ==
-        a and b =>
-          if a = b then a
-          else throwMessage '"   double declaration of parameter"
-        a or b
+    at := [mkAtree3fn(x, y) for x in rest types for y in v.1]
     r := [[first types,:at],:r']
     [mkAtreeNode 'ADEF,[v.0,:r],if v.2 then v.2 else true,false]
   x is ["where", before, after] =>
@@ -278,8 +279,7 @@ mkAtree3(x,op,argl) ==
         null rest arg => collectDefTypesAndPreds first arg
         collectDefTypesAndPreds arg
       [types,:r'] := r
-      -- see case for ADEF above for defn of fn
-      at := [fn(x,y) for x in rest types for y in v.1]
+      at := [mkAtree3fn(x, y) for x in rest types for y in v.1]
       r := [[first types,:at],:r']
       [mkAtreeNode 'DEF,[[op,:v.0],:r],if v.2 then v.2 else true,false]
     [mkAtreeNode 'DEF,[a,:r],true,false]
@@ -301,6 +301,11 @@ mkAtree3(x,op,argl) ==
     mkAtree1 op
   [z,:[mkAtree1 y for y in argl]]
 
+addPred(old, new) ==
+    null new => old
+    null old => new
+    ['and, old, new]
+
 collectDefTypesAndPreds args ==
   -- given an arglist to a DEF-like form, this function returns
   -- a vector of three things:
@@ -316,11 +321,7 @@ collectDefTypesAndPreds args ==
       types := [type]
       var is ["|",var',p] =>
         vars := [var']
-        pred := addPred(pred,p) where
-          addPred(old,new) ==
-            null new => old
-            null old => new
-            ['and,old,new]
+        pred := addPred(pred, p)
       vars := [var]
     args is ["|",var,p] =>
       pred := addPred(pred,p)

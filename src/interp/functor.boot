@@ -506,6 +506,17 @@ InvestigateConditions catvecListMaker ==
                              ['delete,['QUOTE,first u],'(CAAR TrueDomain)]]]]
   [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
 
+ORreduce l ==
+    for u in l | u is ['AND, :.] or u is ['and, :.] repeat
+                                  --check that B causes (and A B) to go
+        for v in l | not (v = u) repeat
+            if member(v, u) or (and/[member(w, u) for w in v]) then
+                l := delete(u, l)
+                       --v subsumes u
+                           --Note that we are ignoring AND as a component.
+                           --Convince yourself that this code still works
+    l
+
 ICformat u ==
       atom u => u
       u is ['has,:.] => compHasFormat u
@@ -518,17 +529,7 @@ ICformat u ==
           l1:=mkAnd(u,l1)
         l1
       u is ['OR,:l] =>
-        (l:= ORreduce l) where
-          ORreduce l ==
-            for u in l | u is ['AND,:.] or u is ['and,:.] repeat
-                                  --check that B causes (and A B) to go
-              for v in l | not (v=u) repeat
-                if member(v,u) or (and/[member(w,u) for w in v]) then l:=
-                  delete(u,l)
-                       --v subsumes u
-                           --Note that we are ignoring AND as a component.
-                           --Convince yourself that this code still works
-            l
+        (l := ORreduce l)
         LENGTH l=1 => ICformat first l
         l:= ORreduce REMDUP [ICformat u for u in l]
                  --causes multiple ANDs to be squashed, etc.

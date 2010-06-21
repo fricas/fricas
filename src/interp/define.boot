@@ -855,6 +855,10 @@ putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
 compileCases(x,$e) == -- $e is referenced in compile
     compile x
 
+isLocalFunction op ==
+    null member(op, $formalArgList) and
+        getmode(op, $e) is ['Mapping, :.]
+
 compile u ==
   [op,lamExpr] := u
   if $suffix then
@@ -868,10 +872,7 @@ compile u ==
              (and/[modeEqual(x,y) for x in sig for y in $signatureOfForm])]
       isLocalFunction op =>
         if opexport then userError ['%b,op,'%d,'" is local and exported"]
-        INTERN STRCONC(encodeItem $prefix,'";",encodeItem op) where
-          isLocalFunction op ==
-            null member(op,$formalArgList) and
-              getmode(op,$e) is ['Mapping,:.]
+        INTERN STRCONC(encodeItem $prefix, '";", encodeItem op)
       encodeFunctionName(op,$functorForm,$signatureOfForm,";",$suffix)
     u:= [op',lamExpr]
   -- If just updating certain functions, check for previous existence.
@@ -1125,43 +1126,43 @@ isMacro(x,e) ==
     null get(op,'modemap,e) and null args and null get(op,'mode,e)
       and signature is [nil] => body
 
-doItIf(item is [.,p,x,y],$predl,$e) ==
-  olde:= $e
-  [p',.,$e]:= comp(p,$Boolean,$e) or userError ['"not a Boolean:",p]
-  oldFLP:=$functorLocalParameters
-  if x~="noBranch" then
-    compSingleCapsuleItem(x,$predl,getSuccessEnvironment(p,$e))
-    x':=localExtras(oldFLP)
-          where localExtras(oldFLP) ==
-            EQ(oldFLP,$functorLocalParameters) => NIL
-            flp1:=$functorLocalParameters
-            oldFLP':=oldFLP
-            n:=0
-            while oldFLP' repeat
-              oldFLP':=CDR oldFLP'
-              flp1:=CDR flp1
-              n:=n+1
-            -- Now we have to add code to compile all the elements
-            -- of functorLocalParameters that were added during the
-            -- conditional compilation
-            nils:=ans:=[]
-            for u in flp1 repeat
-              if ATOM u or (or/[v is [.,=u,:.] for v in $getDomainCode])
-                then
-                  nils:=[u,:nils]
-                else
-                  gv := GENSYM()
-                  ans:=[['LET,gv,u],:ans]
-                  nils:=[gv,:nils]
-              n:=n+1
-            $functorLocalParameters:=[:oldFLP,:NREVERSE nils]
-            NREVERSE ans
-  oldFLP:=$functorLocalParameters
-  if y~="noBranch" then
-    compSingleCapsuleItem(y,$predl,getInverseEnvironment(p,olde))
-    y':=localExtras(oldFLP)
-  RPLACA(item,"COND")
-  RPLACD(item,[[p',x,:x'],['(QUOTE T),y,:y']])
+localExtras(oldFLP) ==
+    EQ(oldFLP,$functorLocalParameters) => NIL
+    flp1 := $functorLocalParameters
+    oldFLP' := oldFLP
+    n := 0
+    while oldFLP' repeat
+        oldFLP' := CDR oldFLP'
+        flp1 := CDR flp1
+        n := n + 1
+    -- Now we have to add code to compile all the elements
+    -- of functorLocalParameters that were added during the
+    -- conditional compilation
+    nils := ans := []
+    for u in flp1 repeat
+        if ATOM u or (or/[v is [., =u, :.] for v in $getDomainCode]) then
+            nils := [u, :nils]
+        else
+            gv := GENSYM()
+            ans := [['LET, gv, u], :ans]
+            nils := [gv, :nils]
+        n := n + 1
+    $functorLocalParameters := [:oldFLP, :NREVERSE nils]
+    NREVERSE ans
+
+doItIf(item is [., p, x, y], $predl, $e) ==
+    olde := $e
+    [p', ., $e] := comp(p, $Boolean, $e) or userError ['"not a Boolean:", p]
+    oldFLP := $functorLocalParameters
+    if x ~= "noBranch" then
+        compSingleCapsuleItem(x, $predl, getSuccessEnvironment(p, $e))
+        x' := localExtras(oldFLP)
+    oldFLP := $functorLocalParameters
+    if y ~= "noBranch" then
+        compSingleCapsuleItem(y, $predl, getInverseEnvironment(p, olde))
+        y' := localExtras(oldFLP)
+    RPLACA(item, "COND")
+    RPLACD(item, [[p', x, :x'], ['(QUOTE T), y, :y']])
 
 --% CATEGORY AND DOMAIN FUNCTIONS
 

@@ -676,7 +676,9 @@ newHasCategory(domain,catform) ==
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
 lazyMatchAssocV(x,auxvec,catvec,domain) ==      --new style slot4
-  n : FIXNUM := MAXINDEX catvec
+  -- Does not work (triggers type error due to initialization by NIL)
+  -- n : FIXNUM := MAXINDEX catvec
+  n := MAXINDEX catvec
   -- following call to hashType was missing 2nd arg. 0 added on 3/31/94 by RSS
   hashCode? x =>
     percentHash :=

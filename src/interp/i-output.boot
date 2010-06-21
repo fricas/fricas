@@ -168,7 +168,7 @@ atom2String x ==
 appChar(string,x,y,d) ==
   if CHARP string then string := PNAME string
   line:= LASSOC(y,d) =>
-    if MAXINDEX string = 1 and char(string.0) = "%" then
+    if MAXINDEX string = 1 and char(string.0) = char "%" then
       string.1="b" =>
         bumpDeltaIfTrue:= true
         string.0:= EBCDIC 29
@@ -790,7 +790,7 @@ aggregateApp(u,x,y,d,s) ==
 outformWidth u ==  --WIDTH as called from OUTFORM to do a COPY
   STRINGP u =>
     u = $EmptyString => 0
-    u.0="%" and ((u.1 = char 'b) or (u.1 = char 'd)) => 1
+    u.0 = char "%" and ((u.1 = char 'b) or (u.1 = char 'd)) => 1
     #u
   atom u => # atom2String u
   WIDTH COPY u
@@ -798,7 +798,7 @@ outformWidth u ==  --WIDTH as called from OUTFORM to do a COPY
 WIDTH u ==
   STRINGP u =>
     u = $EmptyString => 0
-    u.0="%" and ((u.1 = char 'b) or (u.1 = char 'd)) => 1
+    u.0 = char "%" and ((u.1 = char 'b) or (u.1 = char 'd)) => 1
     #u
   INTEGERP u =>
     if (u < 0) then
