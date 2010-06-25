@@ -41,11 +41,11 @@ Prerequisities:
 
 - Lisp, one of:
     * GCL, 2.6.7 or prerelease 2.6.8 
-    * sbcl, 1.0.7 or later
+    * sbcl, 1.0.7 or later, versions before 1.0.35 prefferred
     * clisp, 2.41 or later
     * Clozure CL (former openmcl), starting from openmcl 1.1 prerelease
     070512
-    * ECL, 0.9j or later (we reccomend ECL 9.8.4)
+    * ECL, 0.9l or later (we reccomend latest version)
     * cmucl
   All Lisp impementations should give essentially the same
   functionality, however performance (speed) may differ quite a lot.
@@ -86,6 +86,22 @@ Known problems:
 - 1.0.29.54.rc1 has broken complex 'tanh' function -- you will get
   wrong results when applying 'tanh' to Complex DoubleFloat.
 
+- in sbcl 1.0.35 and up Control-C handling does not work.  This
+  is under investigation, currently the workaround is to use
+  older sbcl versions.
+
+- Some Linux versions, notably Suze, by default seem to have very small
+  limit on virtual memory.  This causes build failure when using sbcl
+  or Closure CL.  Also if limit on virtual memory is too small
+  sbcl-based or Closure CL-based FriCAS binary will silently fail
+  at startup.  The simplest workaround is to increase limit,
+  in the shell typing
+
+    ulimit -v unlimited
+
+  Alternatively for sbcl one can use '--dynamic-space-size' argument
+  to decrease use of virtual memory.
+
 - gcl does not work on Intel Macs, and has serious problems on
   PPC Macs and Windows.
 
@@ -104,10 +120,10 @@ Known problems:
 
   Now this a defult setting if you build FriCAS+gcl together. 
 
-- Boehm garbage collector included in ECL (version 6.8) is incompatible
+- Boehm garbage collector included in old ECL (version 6.8) is incompatible
   with Fedora strong address space randomization (setting randomize_va_space
-  to 2).  Using newer version of Boehm garbage collector (7.0 or 7.1)
-  should solve this problem.
+  to 2).  Using newer version of Boehm garbage collector (7.0 or 7.1) or
+  newer ECL should solve this problem.
 
 - Striping FriCAS binaries is likely to break them.  In particular Clisp
   based FriCAS may crash with message:
@@ -130,10 +146,6 @@ Known problems:
   is fixed in newer versions.
 
 - Unicode-enabled ECL before 9.8.4 is unable to build FriCAS.
-
-- ECL 0.9j has serious performance problems.  ECL version 0.9l is much
-  faster.  However, for best speed we advise to use newest working
-  ECL version.
 
 - ECL up to version 0.9l may segfault at exit.  This is usually harmless,
   but may cause build to hang (for example when generating ug13.pht).
