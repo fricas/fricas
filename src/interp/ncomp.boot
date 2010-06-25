@@ -111,7 +111,8 @@ walkForm(tree) ==
         ress := expandMacros(["==", replaceArgDefs(name, edefs), def])
         $MacroTable := MAKE_-HASH_-TABLE()
         ress
-    BREAK()
+    SAY("Parsing error: illegal toplevel form")
+    nil
 
 --------------------------------------------------------------------
 
