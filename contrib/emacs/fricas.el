@@ -170,6 +170,8 @@ This variable is buffer-local."
     (modify-syntax-entry ?+  ".   " st)
     (modify-syntax-entry ?/  ".   " st)
     (modify-syntax-entry ?=  ".   " st)
+    (modify-syntax-entry ?>  ".   " st)
+    (modify-syntax-entry ?<  ".   " st)
     (modify-syntax-entry ?!  "w   " st)
     (modify-syntax-entry ??  "w   " st)
     (modify-syntax-entry ?_  "\   " st)
