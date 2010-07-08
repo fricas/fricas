@@ -355,6 +355,8 @@ VectorModularReconstructor(): Export == Implementation where
                     dt := degree(tmpp2)
                     res(i) :=
                         dt > 0 => mul(tmpp2, nums(i), p)
+                        dt = 0 and tmpp2(0) ~= 1 =>
+                            error "remove__denoms expect quotient to be 1"
                         nums(i)
                 cfactor := gcd(res, li, hi, p)
                 dcf := degree(cfactor)
@@ -367,8 +369,10 @@ VectorModularReconstructor(): Export == Implementation where
                             dtmp := dresi
                             tmpp1 := new((dtmp + 1) _
                                           pretend NonNegativeInteger, 0)$PA
-                            tmpp2 := new((dcden + 1) _
+                            tmpp2 := new((dtmp + 1) _
                                           pretend NonNegativeInteger, 0)$PA
+                        else
+                            for j in 0..dtmp repeat tmpp2(j) := 0
                         copy__first(tmpp1, resi, dresi + 1)
                         divide!(tmpp1, cfactor, tmpp2, p)
                         dt := degree(tmpp2)
