@@ -34,7 +34,7 @@ testsuite "guessing"
 <<*>>=
 expected() ==
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
-    messagePrint("guessing                    0    (20)               0    (68)")$OutputForm
+    messagePrint("guessing                    0    (21)               0    (71)")$OutputForm
 
 statistics()
 expected()
@@ -198,6 +198,20 @@ testEquals("getEq first guessADE([n^n/factorial n for n in 0..6], "
            "x*D(f x, x) - f(x)^3 + f(x)^2")
 testEquals("getEq first guessADE([n^n/factorial n for n in 0..9])",
            "x*D(f x, x) - f(x)^3 + f(x)^2")
+
+testcase "guessADE ellip"
+-- guess ADE for elliptic functions
+Coeff := Fraction(UnivariatePolynomial('k,Integer))
+Uts := UnivariateTaylorSeries(Coeff, 'x, 0)
+Ets := EllipticFunctionsUnivariateTaylorSeries(Coeff, Uts)
+snk := sn(x::Uts, k::Coeff)$Ets
+ll := entries(complete(first(coefficients(snk), 25)))
+f := operator 'f
+
+testEquals("#(r1 := guessADE(ll, maxDegree==0, safety==5))", "8")
+testEquals("getEq r1(8)", "f(x)*D(f(x), x, 2) - D(f(x), x)^2 - k^2*f(x)^4 + 1")
+testEquals("#guessADE(ll, maxDegree==1, safety==4)", "2")
+
 
 testcase "guessADE$GUESSP"
 f := operator 'f;
