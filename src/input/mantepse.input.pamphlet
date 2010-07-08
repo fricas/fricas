@@ -9,11 +9,6 @@
 \eject
 \tableofcontents
 \eject
-\section{Testing mantepse.spad.pamphlet}
-We want to test whether the guessing facility work correctly.  In particular,
-we check whether the number of terms needed is correct, depending on the option
-\spadfun{safety}.  We also should test the option \spadfun{allDegrees}.
-
 <<*>>=
 )set break resume
 )expose UnittestCount UnittestAux Unittest
@@ -30,15 +25,23 @@ testsuite "guessing"
 <<TEST guessBinRat>>
 <<TEST guess>>
 <<TEST options>>
-@
-<<*>>=
+testsuite "RECOP"
+<<TEST eval>>
+
 expected() ==
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
     messagePrint("guessing                    0    (21)               0    (71)")$OutputForm
+    messagePrint("RECOP                       0     (1)               0     (1)")$OutputForm
 
 statistics()
 expected()
 @
+
+\section{Testing mantepse.spad.pamphlet}
+We want to test whether the guessing facility work correctly.  In particular,
+we check whether the number of terms needed is correct, depending on the option
+\spadfun{safety}.  We also should test the option \spadfun{allDegrees}.
+
 \subsection{rational expressions}
 
 <<TEST guessRat>>=
@@ -201,12 +204,12 @@ testEquals("getEq first guessADE([n^n/factorial n for n in 0..9])",
 
 testcase "guessADE ellip"
 -- guess ADE for elliptic functions
-Coeff := Fraction(UnivariatePolynomial('k,Integer))
-Uts := UnivariateTaylorSeries(Coeff, 'x, 0)
-Ets := EllipticFunctionsUnivariateTaylorSeries(Coeff, Uts)
-snk := sn(x::Uts, k::Coeff)$Ets
+Coeff := Fraction(UnivariatePolynomial('k,Integer));
+Uts := UnivariateTaylorSeries(Coeff, 'x, 0);
+Ets := EllipticFunctionsUnivariateTaylorSeries(Coeff, Uts);
+snk := sn(x::Uts, k::Coeff)$Ets;
 ll := entries(complete(first(coefficients(snk), 25)))
-f := operator 'f
+f := operator 'f;
 
 testEquals("#(r1 := guessADE(ll, maxDegree==0, safety==5))", "8")
 testEquals("getEq r1(8)", "f(x)*D(f(x), x, 2) - D(f(x), x)^2 - k^2*f(x)^4 + 1")
@@ -366,6 +369,15 @@ getValues(size:NNI, deg: NNI, order: NNI, extra: INT, safety: NNI)
 -- )set fu ca all f
 -- s := 100; d:=10; o:=10; ex := 10; sa := 5; r := getValues(s, d, o, ex, sa); 1;
 -- # guessPRec(r.lst, homogeneous==true, safety==sa)
+@
+
+\section{Testing rec.spad.pamphlet}
+\subsection{performance}
+<<TEST eval>>=
+testcase "eval"
+l := [0,1,0,1,1,0,0,0,0,0,0,0,0,0,0];
+res := first guessADE first(l, 10)
+xftestEquals("[eval(res, 'n=n) for n in 0..#l-1]", "l")
 @
 
 \eject
