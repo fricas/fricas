@@ -57,7 +57,13 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
   K       ==> Kernel FE
   L       ==> List
   RN      ==> Fraction Integer
-  S       ==> String
+  ATANFLAG ==> Union("complex", _
+                    "real: two sides", _
+                    "real: left side", _
+                    "real: right side", _
+                    "just do it")
+  PROBLEM ==> String
+  FUNCTIONNAME ==> String
   SY      ==> Symbol
   PCL     ==> PolynomialCategoryLifting(IndexedExponents K,K,R,SMP,FE)
   POL     ==> Polynomial R
@@ -68,7 +74,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
   SIGNEF  ==> ElementaryFunctionSign(R,FE)
 
   Exports ==> with
-    exprToUPS : (FE,B,S) -> Result
+    exprToUPS : (FE,B,ATANFLAG) -> Result
       ++ exprToUPS(fcn,posCheck?,atanFlag) converts the expression
       ++ \spad{fcn} to a power series.  If \spad{posCheck?} is true,
       ++ log's of negative numbers are not allowed nor are nth roots of
@@ -103,7 +109,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       ++ user should perform the substitution \spad{x -> x + a} before calling
       ++ this function.
 
-    exprToGenUPS : (FE,B,S) -> Result
+    exprToGenUPS : (FE,B,ATANFLAG) -> Result
       ++ exprToGenUPS(fcn,posCheck?,atanFlag) converts the expression
       ++ \spad{fcn} to a generalized power series.  If \spad{posCheck?}
       ++ is true, log's of negative numbers are not allowed nor are nth roots
@@ -146,40 +152,40 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
 
     ratIfCan            : FE -> Union(RN,"failed")
     carefulNthRootIfCan : (UPS,NNI,B,B) -> Result
-    stateProblem        : (S,S) -> Result
+    stateProblem        : (PROBLEM, PROBLEM) -> Result
     polyToUPS           : SUP -> UPS
-    listToUPS           : (L FE,(FE,B,S) -> Result,B,S,UPS,(UPS,UPS) -> UPS)_
+    listToUPS           : (L FE,(FE,B,ATANFLAG) -> Result,B,ATANFLAG,UPS,(UPS,UPS) -> UPS)_
                                             -> Result
     isNonTrivPower      : FE -> Union(Record(val:FE,exponent:I),"failed")
-    powerToUPS          : (FE,I,B,S) -> Result
-    kernelToUPS         : (K,B,S) -> Result
-    nthRootToUPS        : (FE,NNI,B,S) -> Result
-    logToUPS            : (FE,B,S) -> Result
-    atancotToUPS        : (FE,B,S,I) -> Result
-    applyIfCan          : (UPS -> Union(UPS,"failed"),FE,S,B,S) -> Result
-    tranToUPS           : (K,FE,B,S) -> Result
-    powToUPS            : (L FE,B,S) -> Result
+    powerToUPS          : (FE,I,B,ATANFLAG) -> Result
+    kernelToUPS         : (K,B,ATANFLAG) -> Result
+    nthRootToUPS        : (FE,NNI,B,ATANFLAG) -> Result
+    logToUPS            : (FE,B,ATANFLAG) -> Result
+    atancotToUPS        : (FE,B,ATANFLAG,I) -> Result
+    applyIfCan          : (UPS -> Union(UPS,"failed"),FE,FUNCTIONNAME,B,ATANFLAG) -> Result
+    tranToUPS           : (K,FE,B,ATANFLAG) -> Result
+    powToUPS            : (L FE,B,ATANFLAG) -> Result
     newElem             : FE -> FE
     smpElem             : SMP -> FE
     k2Elem              : K -> FE
-    contOnReals?        : S -> B
-    bddOnReals?         : S -> B
-    iExprToGenUPS       : (FE,B,S) -> Result
+    contOnReals?        : FUNCTIONNAME -> B
+    bddOnReals?         : FUNCTIONNAME -> B
+    iExprToGenUPS       : (FE,B,ATANFLAG) -> Result
     opsInvolvingX       : FE -> L BOP
     opInOpList?         : (SY,L BOP) -> B
     exponential?        : FE -> B
     productOfNonZeroes? : FE -> B
-    powerToGenUPS       : (FE,I,B,S) -> Result
-    kernelToGenUPS      : (K,B,S) -> Result
-    nthRootToGenUPS     : (FE,NNI,B,S) -> Result
-    logToGenUPS         : (FE,B,S) -> Result
-    expToGenUPS         : (FE,B,S) -> Result
-    expGenUPS           : (UPS,B,S) -> Result
-    atancotToGenUPS     : (FE,FE,B,S,I) -> Result
-    genUPSApplyIfCan    : (UPS -> Union(UPS,"failed"),FE,S,B,S) -> Result
-    applyBddIfCan       : (FE,UPS -> Union(UPS,"failed"),FE,S,B,S) -> Result
-    tranToGenUPS        : (K,FE,B,S) -> Result
-    powToGenUPS         : (L FE,B,S) -> Result
+    powerToGenUPS       : (FE,I,B,ATANFLAG) -> Result
+    kernelToGenUPS      : (K,B,ATANFLAG) -> Result
+    nthRootToGenUPS     : (FE,NNI,B,ATANFLAG) -> Result
+    logToGenUPS         : (FE,B,ATANFLAG) -> Result
+    expToGenUPS         : (FE,B,ATANFLAG) -> Result
+    expGenUPS           : (UPS,B,ATANFLAG) -> Result
+    atancotToGenUPS     : (FE,FE,B,ATANFLAG,I) -> Result
+    genUPSApplyIfCan    : (UPS -> Union(UPS,"failed"),FE,FUNCTIONNAME,B,ATANFLAG) -> Result
+    applyBddIfCan       : (FE,UPS -> Union(UPS,"failed"),FE,FUNCTIONNAME,B,ATANFLAG) -> Result
+    tranToGenUPS        : (K,FE,B,ATANFLAG) -> Result
+    powToGenUPS         : (L FE,B,ATANFLAG) -> Result
 
     ZEROCOUNT : I := 1000
     -- number of zeroes to be removed when taking logs or nth roots
@@ -480,10 +486,10 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       is?(k, 'csch) => 2 * inv(ez - iez)
       (operator k) args
 
-    CONTFCNS : L S := ["sin","cos","atan","acot","exp","asinh"]
+    CONTFCNS : L FUNCTIONNAME := ["sin","cos","atan","acot","exp","asinh"]
     -- functions which are defined and continuous at all real numbers
 
-    BDDFCNS : L S := ["sin","cos","atan","acot"]
+    BDDFCNS : L FUNCTIONNAME := ["sin","cos","atan","acot"]
     -- functions which are bounded on the reals
 
     contOnReals? fcn == member?(fcn,CONTFCNS)
