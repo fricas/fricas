@@ -729,9 +729,15 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
     besselK:   (F,F) -> F
       ++ besselK(x,y) returns the besselk function applied to x and y
     airyAi:    F -> F
-      ++ airyAi(x) returns the airyai function applied to x
+      ++ airyAi(x) returns the Airy Ai function applied to x
+    airyAiPrime:    F -> F
+      ++ airyAiPrime(x) returns the derivative of Airy Ai function applied to x
     airyBi:    F -> F
-      ++ airyBi(x) returns the airybi function applied to x
+      ++ airyBi(x) returns the Airy Bi function applied to x
+    airyBiPrime:    F -> F
+      ++ airyBiPrime(x) returns the derivative of Airy Bi function applied to x
+    lambertW:  F -> F
+      ++ lambertW(x) is the Lambert W function at x
 
 @
 
@@ -750,7 +756,7 @@ might not re-evaluate the operator.
     iiabs     : F -> F
       ++ iiabs(x) should be local but conditional;
     iiBeta     : List F -> F
-      ++ iiGamma(x) should be local but conditional;
+      ++ iiBeta(x) should be local but conditional;
     iidigamma  : F -> F
       ++ iidigamma(x) should be local but conditional;
     iipolygamma: List F -> F
@@ -765,8 +771,20 @@ might not re-evaluate the operator.
       ++ iiBesselK(x) should be local but conditional;
     iiAiryAi   : F -> F
       ++ iiAiryAi(x) should be local but conditional;
+    iiAiryAiPrime : F -> F
+      ++ iiAiryAiPrime(x) should be local but conditional;
     iiAiryBi   : F -> F
       ++ iiAiryBi(x) should be local but conditional;
+    iiAiryBiPrime : F -> F
+      ++ iiAiryBiPrime(x) should be local but conditional;
+    iAiryAi   : F -> F
+      ++ iAiryAi(x) should be local but conditional;
+    iAiryAiPrime : F -> F
+      ++ iAiryAiPrime(x) should be local but conditional;
+    iAiryBi   : F -> F
+      ++ iiAiryBi(x) should be local but conditional;
+    iAiryBiPrime : F -> F
+      ++ iAiryBiPrime(x) should be local but conditional;
 
   Implementation ==> add
 
@@ -781,8 +799,7 @@ might not re-evaluate the operator.
     iiiBesselY  : (F, F) -> F
     iiiBesselI  : (F, F) -> F
     iiiBesselK  : (F, F) -> F
-    iAiryAi   : F -> F
-    iAiryBi   : F -> F
+    iLambertW : F -> F
 
     opabs       := operator('abs)$CommonOperators
     opGamma     := operator('Gamma)$CommonOperators
@@ -795,7 +812,10 @@ might not re-evaluate the operator.
     opBesselI   := operator('besselI)$CommonOperators
     opBesselK   := operator('besselK)$CommonOperators
     opAiryAi    := operator('airyAi)$CommonOperators
+    opAiryAiPrime := operator('airyAiPrime)$CommonOperators
     opAiryBi    := operator('airyBi)$CommonOperators
+    opAiryBiPrime := operator('airyBiPrime)$CommonOperators
+    opLambertW := operator('lambertW)$CommonOperators
 
     abs x         == opabs x
     Gamma(x)      == opGamma(x)
@@ -808,7 +828,10 @@ might not re-evaluate the operator.
     besselI(a,x)  == opBesselI(a,x)
     besselK(a,x)  == opBesselK(a,x)
     airyAi(x)     == opAiryAi(x)
+    airyAiPrime(x) == opAiryAiPrime(x)
     airyBi(x)     == opAiryBi(x)
+    airyBiPrime(x) == opAiryBiPrime(x)
+    lambertW(x) == opLambertW(x)
 
     belong? op == has?(op, SPECIAL)
 
@@ -824,7 +847,10 @@ might not re-evaluate the operator.
       is?(op, 'besselI)  => opBesselI
       is?(op, 'besselK)  => opBesselK
       is?(op, 'airyAi)   => opAiryAi
+      is?(op, 'airyAiPrime) => opAiryAiPrime
       is?(op, 'airyBi)   => opAiryBi
+      is?(op, 'airyBiPrime) => opAiryBiPrime
+      is?(op, 'lambertW) => opLambertW
 
       error "Not a special operator"
 
@@ -847,9 +873,35 @@ might not re-evaluate the operator.
     iiiBesselY(x, y) == kernel(opBesselY, [x, y])
     iiiBesselI(x, y) == kernel(opBesselI, [x, y])
     iiiBesselK(x, y) == kernel(opBesselK, [x, y])
-    iAiryAi x == kernel(opAiryAi, x)
-    iAiryBi x == kernel(opAiryBi, x)
 
+    import Fraction(Integer)
+    ahalf: F := recip(2::F)::F
+    athird: F    := recip(3::F)::F
+    asixth: F := recip(6::F)::F
+    twothirds: F := 2*recip(3::F)::F
+
+    if F has ElementaryFunctionCategory then
+        iAiryAi x ==
+            zero?(x) => 1::F/((3::F)^twothirds*Gamma(twothirds))
+            kernel(opAiryAi, x)
+        iAiryAiPrime x ==
+            zero?(x) => -1::F/((3::F)^athird*Gamma(athird))
+            kernel(opAiryAiPrime, x)
+        iAiryBi x ==
+            zero?(x) => 1::F/((3::F)^asixth*Gamma(twothirds))
+            kernel(opAiryBi, x)
+        iAiryBiPrime x ==
+            zero?(x) => (3::F)^asixth/Gamma(athird)
+            kernel(opAiryBiPrime, x)
+    else
+        iAiryAi x == kernel(opAiryAi, x)
+        iAiryAiPrime x == kernel(opAiryAiPrime, x)
+        iAiryBi x == kernel(opAiryBi, x)
+        iAiryBiPrime x == kernel(opAiryBiPrime, x)
+
+    iLambertW(x) ==
+        zero?(x) => 0
+        kernel(opLambertW, x)
 
     -- Could put more conditional special rules for other functions here
 
@@ -913,9 +965,17 @@ might not re-evaluate the operator.
         (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryAi x
         airyAi(r::R)::F
 
+      iiAiryAiPrime x ==
+        (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryAiPrime x
+        airyAiPrime(r::R)::F
+
       iiAiryBi x ==
         (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryBi x
         airyBi(r::R)::F
+
+      iiAiryBi x ==
+        (r:=retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryBiPrime x
+        airyBiPrime(r::R)::F
 
     else
       if R has RetractableTo Integer then
@@ -934,7 +994,9 @@ might not re-evaluate the operator.
       iiBesselI l == iiiBesselI(first l, second l)
       iiBesselK l == iiiBesselK(first l, second l)
       iiAiryAi x == iAiryAi x
+      iiAiryAiPrime x == iAiryAiPrime x
       iiAiryBi x == iAiryBi x
+      iiAiryBiPrime x == iAiryBiPrime x
 
     -- Default behaviour is to build a kernel
     evaluate(opGamma, iiGamma)$BasicOperatorFunctions1(F)
@@ -948,7 +1010,10 @@ might not re-evaluate the operator.
     evaluate(opBesselI   ,iiBesselI  )$BasicOperatorFunctions1(F)
     evaluate(opBesselK   ,iiBesselK  )$BasicOperatorFunctions1(F)
     evaluate(opAiryAi    ,iiAiryAi   )$BasicOperatorFunctions1(F)
+    evaluate(opAiryAiPrime, iiAiryAiPrime)$BasicOperatorFunctions1(F)
     evaluate(opAiryBi    ,iiAiryBi   )$BasicOperatorFunctions1(F)
+    evaluate(opAiryBiPrime, iiAiryBiPrime)$BasicOperatorFunctions1(F)
+    evaluate(opLambertW, iLambertW)$BasicOperatorFunctions1(F)
 @
 
 \subsection{differentiation of special functions}
@@ -962,13 +1027,6 @@ for $K$ missed the minus sign.  (Issue~\#355)
 
 We do not attempt to provide formulas for the derivative with respect to the
 first argument currently.  Instead, we leave such derivatives unevaluated.
-
-<<package FSPECF FunctionalSpecialFunction>>=
-    import Fraction Integer
-    ahalf:  F    := recip(2::F)::F
-    athird: F    := recip(2::F)::F
-    twothirds: F := 2*recip(3::F)::F
-@
 
 We need to get hold of the differentiation operator as modified by
 [[FunctionSpace]]. Otherwise, for example, display will be ugly.  We accomplish
@@ -1057,10 +1115,20 @@ component of the gradient failed, it resulted in an infinite loop for
 [[integrate(D(besselJ(a,x),a),a)]].
 
 <<package FSPECF FunctionalSpecialFunction>>=
+
+    dLambertW(x : F) : F ==
+        lw := lambertW(x)
+        lw/(x*(1+lw))
+
     derivative(opabs,       (x : F) : F +-> abs(x)*inv(x))
     derivative(opGamma,     (x : F) : F +-> digamma(x)*Gamma(x))
     derivative(opBeta,      [iBetaGrad1, iBetaGrad2])
     derivative(opdigamma,   (x : F) : F +-> polygamma(1, x))
+    derivative(opAiryAi,    (x : F) : F +-> airyAiPrime(x))
+    derivative(opAiryAiPrime,    (x : F) : F +-> x*airyAi(x))
+    derivative(opAiryBi,    (x : F) : F +-> airyBiPrime(x))
+    derivative(opAiryBiPrime,    (x : F) : F +-> x*airyBi(x))
+    derivative(opLambertW,  dLambertW)
     setProperty(oppolygamma, SPECIALDIFF, ipolygamma@((List F, SE)->F)
                                                      pretend None)
     setProperty(opBesselJ, SPECIALDIFF, iBesselJ@((List F, SE)->F)
