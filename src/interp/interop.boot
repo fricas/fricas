@@ -329,8 +329,7 @@ compiledLookup(op, sig, dollar) ==
 
 --------------------> NEW DEFINITION (override in nrungo.boot.pamphlet)
 basicLookup(op,sig,domain,dollar) ==
-   -- following case is for old domains like Record and Union
-   -- or for getting operations out of yourself
+  -- Spad case
   VECP domain =>
      isNewWorldDomain domain => -- getting ops from yourself (or for defaults)
         oldCompLookup(op, sig, domain, dollar)

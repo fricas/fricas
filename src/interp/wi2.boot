@@ -91,7 +91,6 @@ compDefineFunctor1(df, m,$e,$prefix,$formalArgList) ==
       pp target
       return nil
     $domainShell:= COPY_-SEQ ds
-    $attributesName:local := INTERN STRCONC(PNAME $op,'";attributes")
     attributeList := ds.2 --see below under "loadTimeAlist"
 --+ 7 lines for $NRT follow
     $goGetList: local := nil

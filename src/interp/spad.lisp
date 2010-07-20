@@ -201,10 +201,6 @@
 
 (defun INITIALIZE () (init-boot/spad-reader) (initialize-preparse INPUTSTREAM))
 
-(defun GLESSEQP (X Y) (NOT (GGREATERP X Y)))
-
-(defun LEXLESSEQP (X Y) (NOT (LEXGREATERP X Y)))
-
 (defmacro |rplac| (&rest L)
   (let (a b s)
     (cond

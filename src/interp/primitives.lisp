@@ -267,6 +267,6 @@
     `(array-dimension (the (simple-array double-float (* *)) ,v) 0))
 
 (defmacro CDANCOLS(v)
-    `(truncate 
+    `(truncate
          (array-dimension (the (simple-array double-float (* *)) ,v) 1) 2))
 

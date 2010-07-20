@@ -49,7 +49,6 @@ compDefine1(form,m,e) ==
   -- here signature of lhs is determined by a previous declaration
       compDefine1(['DEF,lhs,[first sig,:rest signature],specialCases,rhs],m,e)
   $insideCapsuleFunctionIfTrue =>
-      -- stackAndThrow ['"Internal functions unsupported:", form]
       compInternalFunction(form, m, e)
   if signature.target=$Category then $insideCategoryIfTrue:= true
 
@@ -348,7 +347,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       pp target
       return nil
     $domainShell:= COPY_-SEQ ds
-    $attributesName:local := INTERN STRCONC(PNAME $op,'";attributes")
     attributeList := disallowNilAttribute ds.2 --see below under "loadTimeAlist"
 --+ 7 lines for $NRT follow
     $goGetList: local := nil
