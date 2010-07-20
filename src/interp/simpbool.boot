@@ -47,31 +47,6 @@ reduceDnf u ==
 dnfContains([a,b],[c,d]) == fn(a,c) and fn(b,d) where
   fn(x,y) == and/[member(u,x) for u in y]
 
-prove x ==
-  world := [p for y in listOfUserIds x | (p := getPredicate y)] =>
-    'false = be MKPF([['NOT,x],:world],'AND) => true
-    'false = be MKPF([x,:world],'AND) => false
-    x
-  'false = (y := be x) => 'false
-  y = 'true => true
-  dnf2pf y
-
-simpBoolGiven(x,world) ==
-  world =>
-    'false = be MKPF([['NOT,x],:world],'AND) => true
-    'false = (y := be MKPF([x,:world],'AND)) => false
-    (u := andReduce(dnf2pf y,world)) is ['AND,:v] and
-      (w := SETDIFFERENCE(v,world)) ~= v => simpBool ['AND,:w]
-    u
-  'false = (y := be x) => false
-  'true = y => true
-  dnf2pf y
-
-andReduce(x,y) ==
-  x is ['AND,:r] =>
-    y is ['AND,:s] => MKPF(S_-(r,s),'AND)
-    MKPF(S_-(r,[s]),'AND)
-  x
 dnf2pf(x) ==
   x = 'true => 'T
   x = 'false => nil

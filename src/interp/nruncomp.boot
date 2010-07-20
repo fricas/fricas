@@ -187,10 +187,6 @@ genDeltaEntry opMmPair ==
 genDeltaSig x ==
   NRTgetLocalIndex x
 
-genDeltaSpecialSig x ==
-  x is [":",y,z] => [":",y,genDeltaSig z]
-  genDeltaSig x
-
 NRTassocIndex x == --returns index of "domain" entry x in al
   NULL x => x
   x = $NRTaddForm => 5
@@ -406,8 +402,6 @@ NRTcheckVector domainShell ==
     alist:=
       [[first v,:$SetFunctions.i],:alist]
   alist
-
-mkDomainCatName id == INTERN STRCONC(id,";CAT")
 
 NRTsetVector4Part1(siglist,formlist,condlist) ==
   $uncondList: local := nil

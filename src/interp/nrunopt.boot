@@ -39,7 +39,7 @@ getInfovecCode() ==
   ['LIST,
     MKQ makeDomainTemplate $template,
       MKQ makeCompactDirect $NRTslot1Info,
-        MKQ NRTgenFinalAttributeAlist(),
+        MKQ [],
           NRTmakeCategoryAlist(),
             MKQ $lookupFunction]
 
@@ -185,9 +185,8 @@ stuffSlot(dollar,i,item) ==
     item                --new form
 
 --=======================================================================
---                Generate Slot 2 Attribute Alist
+--                Predicate utilities
 --=======================================================================
-NRTgenFinalAttributeAlist() == []
 
 predicateBitIndex x ==
   pn(x,nil) where

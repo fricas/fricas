@@ -36,7 +36,9 @@
 --=======================================================
 
 NRTevalDomain form ==
-  form is ['SETELT,:.] => eval form
+  form is ['SETELT,:.] =>
+      BREAK()
+      eval form
   evalDomain form
 
 compiledLookupCheck(op,sig,dollar) ==

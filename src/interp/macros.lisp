@@ -74,21 +74,12 @@
 
 ; 6 PREDICATES
 
-; 6.2 Data Type Predicates
+; Ordering
 
-; 6.3 Equality Predicates
-
-;; qeqcar should be used when you know the first arg is a pair
-;; the second arg should either be a literal fixnum or a symbol
-;; the car of the first arg is always of the same type as the second
-;; use eql unless we are sure fixnums are represented canonically
-
-(defmacro qeqcar (x y)
-  (if (integerp y) `(eql (the fixnum (qcar ,x)) (the fixnum ,y))
-      `(eq (qcar ,x) ,y)))
-
-
-(DEFUN ?ORDER (U V)  "Multiple-type ordering relation."
+(DEFUN ?ORDER (U V)
+  "Multiple-type ordering relation."
+;;; Result negated compared to LEXGREATERP and GGREATERP
+;;;   Order of types: nil number symbol string vector cons"
   (COND ((NULL U))
         ((NULL V) NIL)
         ((ATOM U)
@@ -113,6 +104,174 @@
            (?ORDER (CDR U) (CDR V)))
         ((?ORDER (CAR U) (CAR V)))
 ))
+
+(DEFUN LEXGREATERP (COMPERAND-1 COMPERAND-2)
+    ;;  "Order of types: pair NIL vec string symbol num fbpi other"
+    (COND
+      ((EQ COMPERAND-1 COMPERAND-2) NIL)
+      ((consp COMPERAND-1)
+        (COND
+          ( (consp COMPERAND-2)
+            (COND
+              ( (EQUAL (qcar COMPERAND-1) (qcar COMPERAND-2))
+                (LEXGREATERP (qcdr COMPERAND-1) (qcdr COMPERAND-2)) )
+              ( (LEXGREATERP (qcar COMPERAND-1) (qcar COMPERAND-2)) ) ) )
+          ('else t)))
+      ((consp COMPERAND-2) NIL)
+      ((NULL COMPERAND-1) 'T )
+      ((NULL COMPERAND-2) NIL)
+      ((VECP COMPERAND-1)
+        (COND
+          ((VECP COMPERAND-2) (LEXVGREATERP COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((VECP COMPERAND-2) NIL)
+      ((OR (IVECP COMPERAND-1) (RVECP COMPERAND-1)) (BREAK))
+      ((OR (IVECP COMPERAND-2) (RVECP COMPERAND-2)) (BREAK))
+      ((stringp COMPERAND-1)
+        (COND
+          ((stringp COMPERAND-2)
+            (STRING-GREATERP COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((stringp COMPERAND-2) NIL)
+      ((symbolp COMPERAND-1)
+        (COND
+          ((symbolp COMPERAND-2)
+            (STRING-GREATERP (symbol-name COMPERAND-1) (symbol-name COMPERAND-2)) )
+          ('else t)))
+      ((symbolp COMPERAND-2) NIL )
+      ((numberp COMPERAND-1)
+        (COND
+          ( (numberp COMPERAND-2)
+            (> COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((numberp COMPERAND-2) NIL)
+      ((CHARACTERP COMPERAND-1)
+        (COND
+          ((CHARACTERP COMPERAND-2)
+            (CHAR-GREATERP COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((CHARACTERP COMPERAND-2) NIL )
+      ((FBPIP COMPERAND-1)
+        (COND
+          ((FBPIP COMPERAND-2)
+            (LEXGREATERP (BPINAME COMPERAND-1) (BPINAME COMPERAND-2)) )
+          ('else t)))
+      ((FBPIP COMPERAND-2) NIL)
+      ((MBPIP COMPERAND-1) (BREAK))
+      ((MBPIP COMPERAND-2) (BREAK))
+      ((> (SXHASH COMPERAND-1) (SXHASH COMPERAND-2)))))
+
+(DEFUN LEXVGREATERP (VECTOR-COMPERAND-1 VECTOR-COMPERAND-2)
+  (declare (simple-vector vector-comperand-1 vector-comperand-2))
+    (PROG ((L1 (length VECTOR-COMPERAND-1))
+           (L2 (length VECTOR-COMPERAND-2))
+           (I -1)
+           T1 T2)
+     (declare (fixnum i l1 l2) )
+  LP  (setq i (1+ i))
+      (COND
+        ((EQL L1 I) (RETURN NIL))
+        ((EQL L2 I) (RETURN 'T)))
+      (COND
+        ((EQUAL
+            (SETQ T1 (svref VECTOR-COMPERAND-1 I))
+            (SETQ T2 (svref VECTOR-COMPERAND-2 I)))
+          (GO LP)))
+      (RETURN (LEXGREATERP T1 T2)) ) )
+
+
+(DEFUN GGREATERP (COMPERAND-1 COMPERAND-2)
+    ;;  "Order of types: symbol pair NIL vec string num fbpi other"
+    (COND
+      ((EQ COMPERAND-1 COMPERAND-2) NIL)
+      ((symbolp COMPERAND-1)
+        (COND
+          ((symbolp COMPERAND-2)
+            (CGREATERP (symbol-name COMPERAND-1) (symbol-name COMPERAND-2)) )
+          ('else t)))
+      ((symbolp COMPERAND-2) NIL )
+      ((consp COMPERAND-1)
+        (COND
+          ( (consp COMPERAND-2)
+            (COND
+              ( (EQUAL (qcar COMPERAND-1) (qcar COMPERAND-2))
+                (GGREATERP (qcdr COMPERAND-1) (qcdr COMPERAND-2)) )
+              ( (GGREATERP (qcar COMPERAND-1) (qcar COMPERAND-2)) ) ) )
+          ('else t)))
+      ((consp COMPERAND-2) NIL)
+      ((NULL COMPERAND-1) 'T )
+      ((NULL COMPERAND-2) NIL)
+      ((VECP COMPERAND-1)
+        (COND
+          ((VECP COMPERAND-2) (VGREATERP COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((VECP COMPERAND-2) NIL)
+      ((OR (IVECP COMPERAND-1) (RVECP COMPERAND-1)) (BREAK))
+      ((OR (IVECP COMPERAND-2) (RVECP COMPERAND-2)) (BREAK))
+      ((stringp COMPERAND-1)
+        (COND
+          ((stringp COMPERAND-2)
+            (CGREATERP COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((stringp COMPERAND-2) NIL)
+      ((numberp COMPERAND-1)
+        (COND
+          ( (numberp COMPERAND-2)
+            (> COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((numberp COMPERAND-2) NIL)
+      ((CHARACTERP COMPERAND-1)
+        (COND
+          ((CHARACTERP COMPERAND-2)
+            (CHAR> COMPERAND-1 COMPERAND-2) )
+          ('else t)))
+      ((CHARACTERP COMPERAND-2) NIL )
+      ((FBPIP COMPERAND-1)
+        (COND
+          ((FBPIP COMPERAND-2)
+            (GGREATERP (BPINAME COMPERAND-1) (BPINAME COMPERAND-2)) )
+          ('else t)))
+      ((FBPIP COMPERAND-2) NIL)
+      ((MBPIP COMPERAND-1) (BREAK))
+      ((MBPIP COMPERAND-2 (BREAK)))
+      ((> (SXHASH COMPERAND-1) (SXHASH COMPERAND-2)))))
+
+(DEFUN VGREATERP (VECTOR-COMPERAND-1 VECTOR-COMPERAND-2)
+  (declare (simple-vector vector-comperand-1 vector-comperand-2))
+    (PROG ((L1 (length VECTOR-COMPERAND-1))
+           (L2 (length VECTOR-COMPERAND-2))
+           (I -1)
+           T1 T2)
+     (declare (fixnum i l1 l2) )
+  LP  (setq i (1+ i))
+      (COND
+        ((EQL L1 I) (RETURN NIL))
+        ((EQL L2 I) (RETURN 'T)))
+      (COND
+        ((EQUAL
+            (SETQ T1 (svref VECTOR-COMPERAND-1 I))
+            (SETQ T2 (svref VECTOR-COMPERAND-2 I)))
+          (GO LP)))
+      (RETURN (GGREATERP T1 T2)) ) )
+
+(defvar SORTGREATERP #'GGREATERP "default sorting predicate")
+
+(defun GLESSEQP (X Y) (NOT (GGREATERP X Y)))
+
+(defun LEXLESSEQP (X Y) (NOT (LEXGREATERP X Y)))
+
+; 6.3 Equality Predicates
+
+;;; -----------------------
+
+;; qeqcar should be used when you know the first arg is a pair
+;; the second arg should either be a literal fixnum or a symbol
+;; the car of the first arg is always of the same type as the second
+;; use eql unless we are sure fixnums are represented canonically
+
+(defmacro qeqcar (x y)
+    (if (integerp y) `(eql (the fixnum (qcar ,x)) (the fixnum ,y))
+         `(eq (qcar ,x) ,y)))
 
 (defmacro boot-equal (a b)
    (cond ((ident-char-lit a)
@@ -915,19 +1074,12 @@ LP  (COND ((NULL X)
 ;;; Operations on Association Sets (AS)
 
 (defun AS-INSERT (A B L)
-   ;; PF(item) x PF(item) x LIST(of pairs) -> LIST(of pairs with (A . B) added)
-   ;; destructive on L; if (A . C) appears already, C is replaced by B
-   (cond ((null l) (list (cons a b)))
-         ((equal a (caar l)) (rplac (cdar l) b) l)
-         ((?order a (caar l)) (cons (cons a b) l))
-         (t (as-insert1 a b l) l)))
-
-(defun as-insert1 (a b l)
-   (cond ((null (cdr l)) (rplac (cdr l) (list (cons a b))))
-         ((equal a (caadr l)) (rplac (cdadr l) b))
-         ((?order a (caadr l)) (rplac (cdr l) (cons (cons a b) (cdr l))))
-         (t (as-insert1 a b (cdr l)))))
-
+    (let ((pp (assoc A L :test #'equal)))
+        (if pp
+            (progn
+                 (setf (cdr pp) B)
+                 L))
+         (cons (cons A B) L)))
 
 ; 17 ARRAYS
 

@@ -63,7 +63,7 @@
 (SETQ |$compileDontDefineFunctions| 'T)
 (SETQ |$compileOnlyCertainItems| NIL)
 (SETQ |$devaluateList| NIL)
-(SETQ |$doNotCompressHashTableIfTrue| NIL)
+(SETQ |$doNotCompressHashTableIfTrue| T)
 (SETQ |$mutableDomains| NIL)     ; checked in DEFINE BOOT
 (SETQ |$maxSignatureLineNumber| 0)
 (SETQ |$functionLocations| NIL)
@@ -95,7 +95,6 @@
 
 (SETQ |$ruleSetsInitialized| NIL)
 
-(SETQ |$NRTmakeCompactDirect| NIL)
 (SETQ |$returnNowhereFromGoGet| NIL)
 
 (SETQ |$insideCanCoerceFrom| NIL)
@@ -256,7 +255,7 @@
 
 (SETQ |$spadLibFT| 'NRLIB)
 
-(SETQ |$updateCatTableIfTrue| 'T)
+(SETQ |$updateCatTableIfTrue| NIL)
 
 (SETQ |$ConstructorCache| (MAKE-HASHTABLE 'ID))
 (SETQ |$instantRecord| (MAKE-HASHTABLE 'ID))

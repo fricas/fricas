@@ -35,11 +35,7 @@
 --                     Basic Functions
 --=======================================================================
 initNewWorld() ==
-  $NRTmakeCompactDirect := true
   $monitorNewWorld := false
-  $NRTmonitorIfTrue := false
-  $updateCatTableIfTrue := false
-  $doNotCompressHashTableIfTrue := true
 
 isNewWorldDomain domain == INTEGERP domain.3    --see HasCategory/Attribute
 

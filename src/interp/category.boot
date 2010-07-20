@@ -94,7 +94,7 @@ sigParams(sigList) ==
 --   domainOrPackage      - "domain" or "package" (marks kind of category
 --                           object)
 --   sigList              - list of all signatures
---   attList              - list of all attributes
+--   attList              - list of all conditional ancestors
 --   PrincipalAncestor    - principal ancestor (if any)
 mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
   NSigList:= nil
@@ -411,7 +411,8 @@ JoinInner(l,$e) ==
   if $NewCatVec.(0) then FundamentalAncestors:=
     [[$NewCatVec.(0)],:FundamentalAncestors]
                     --principal ancestor . all those already included
-  copied:= nil
+  -- Copy to avoid corrupting original vector
+  $NewCatVec:= COPY_-SEQ $NewCatVec
   for [b,condition] in FindFundAncs l' repeat
       --This loop implements Category Subsumption
           --as described in SYSTEM SCRIPT
@@ -446,9 +447,6 @@ JoinInner(l,$e) ==
                 if not member(newentry,FundamentalAncestors) then
                   FundamentalAncestors:= [newentry,:FundamentalAncestors]
              else ancindex:= nil
-          if not copied then
-            $NewCatVec:= COPY_-SEQ $NewCatVec
-            copied:= true
           if ancindex
              then ($NewCatVec.ancindex:= bname; reallynew:= nil)
       if reallynew then
@@ -456,10 +454,6 @@ JoinInner(l,$e) ==
         FundamentalAncestors:= [[b.(0),condition,n],:FundamentalAncestors]
         $NewCatVec:= LENGTHENVEC($NewCatVec,n+1)
         $NewCatVec.n:= b.(0)
-  $NewCatVec:= COPY_-SEQ $NewCatVec
-    -- It is important to copy the vector now,
-    -- in case SigListUnion alters it while
-    -- performing Operator Subsumption
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
     attl:=
