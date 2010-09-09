@@ -738,6 +738,8 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
       ++ airyBiPrime(x) returns the derivative of Airy Bi function applied to x
     lambertW:  F -> F
       ++ lambertW(x) is the Lambert W function at x
+    polylog: (F, F) -> F
+      ++ polylog(s, x) is the polylogarithm of order s at x
 
 @
 
@@ -785,6 +787,8 @@ might not re-evaluate the operator.
       ++ iiAiryBi(x) should be local but conditional;
     iAiryBiPrime : F -> F
       ++ iAiryBiPrime(x) should be local but conditional;
+    iiPolylog : (F, F) -> F
+      ++ iiPolylog(x) should be local but condition
 
   Implementation ==> add
 
@@ -800,6 +804,7 @@ might not re-evaluate the operator.
     iiiBesselI  : (F, F) -> F
     iiiBesselK  : (F, F) -> F
     iLambertW : F -> F
+    iPolylog : List F -> F
 
     opabs       := operator('abs)$CommonOperators
     opGamma     := operator('Gamma)$CommonOperators
@@ -816,6 +821,7 @@ might not re-evaluate the operator.
     opAiryBi    := operator('airyBi)$CommonOperators
     opAiryBiPrime := operator('airyBiPrime)$CommonOperators
     opLambertW := operator('lambertW)$CommonOperators
+    opPolylog := operator('polylog)$CommonOperators
 
     abs x         == opabs x
     Gamma(x)      == opGamma(x)
@@ -832,6 +838,7 @@ might not re-evaluate the operator.
     airyBi(x)     == opAiryBi(x)
     airyBiPrime(x) == opAiryBiPrime(x)
     lambertW(x) == opLambertW(x)
+    polylog(s, x) == opPolylog(s, x)
 
     belong? op == has?(op, SPECIAL)
 
@@ -851,6 +858,7 @@ might not re-evaluate the operator.
       is?(op, 'airyBi)   => opAiryBi
       is?(op, 'airyBiPrime) => opAiryBiPrime
       is?(op, 'lambertW) => opLambertW
+      is?(op, 'polylog) => opPolylog
 
       error "Not a special operator"
 
@@ -902,6 +910,21 @@ might not re-evaluate the operator.
     iLambertW(x) ==
         zero?(x) => 0
         kernel(opLambertW, x)
+
+    if F has ElementaryFunctionCategory then
+        if F has LiouvillianFunctionCategory then
+            iiPolylog(s, x) ==
+                s = 1 => -log(1 - x)
+                s = 2::F => dilog(1 - x)
+                kernel(opPolylog, [s, x])
+        else
+            iiPolylog(s, x) ==
+                s = 1 => -log(1 - x)
+                kernel(opPolylog, [s, x])
+    else
+        iiPolylog(s, x) == kernel(opPolylog, [s, x])
+
+    iPolylog(l) == iiPolylog(first l, second l)
 
     -- Could put more conditional special rules for other functions here
 
@@ -1014,6 +1037,7 @@ might not re-evaluate the operator.
     evaluate(opAiryBi    ,iiAiryBi   )$BasicOperatorFunctions1(F)
     evaluate(opAiryBiPrime, iiAiryBiPrime)$BasicOperatorFunctions1(F)
     evaluate(opLambertW, iLambertW)$BasicOperatorFunctions1(F)
+    evaluate(opPolylog, iPolylog)$BasicOperatorFunctions1(F)
 @
 
 \subsection{differentiation of special functions}
@@ -1080,6 +1104,10 @@ The operation [[symbolicGrad]] returns the first component of the gradient of
         differentiate(n, t)*kernel(opdiff, [opBesselK [dm, x], dm, n])
           - differentiate(x, t)* ahalf * (besselK (n-1,x) + besselK (n+1,x))
 
+    dPolylog(l: List F, t: SE): F ==
+        s := first l; x := second l
+        differentiate(s, t)*kernel(opdiff, [opPolylog [dm, x], dm, s])
+           + differentiate(x, t)*polylog(s-1, x)/x
 @
 
 For the moment we throw an error if we try to differentiate [[polygamma]] with
@@ -1138,6 +1166,8 @@ component of the gradient failed, it resulted in an infinite loop for
     setProperty(opBesselI, SPECIALDIFF, iBesselI@((List F, SE)->F)
                                                  pretend None)
     setProperty(opBesselK, SPECIALDIFF, iBesselK@((List F, SE)->F)
+                                                 pretend None)
+    setProperty(opPolylog, SPECIALDIFF, dPolylog@((List F, SE)->F)
                                                  pretend None)
 
 @
