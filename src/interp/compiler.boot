@@ -32,6 +32,7 @@
 )package "BOOT"
 
 DEFPARAMETER($currentFunctionLevel, 0)
+DEFPARAMETER($tryRecompileArguments, true)
 
 initEnvHashTable(l) ==
   for u in CAR(CAR(l)) repeat
@@ -396,6 +397,7 @@ compForm(form,m,e) ==
   T
 
 compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
+  not($tryRecompileArguments) => nil
   -- used in case: f(g(x)) where f is in domain introduced by
   -- comping g, e.g. for (ELT (ELT x a) b), environment can have no
   -- modemap with selector b
