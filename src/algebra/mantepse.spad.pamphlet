@@ -475,6 +475,7 @@ GuessOptionFunctions0(): Exports == Implementation where
 \section{package GUESS Guess}
 <<package GUESS Guess>>=
 )abbrev package GUESS Guess
+)boot $tryRecompileArguments := nil
 ++ Author: Martin Rubey
 ++ Description: This package implements guessing of sequences. Packages for the
 ++ most common cases are provided as \spadtype{GuessInteger},
@@ -952,7 +953,8 @@ SUPFPOLYS2FSUPPOLYS(p: SUP FPOLYS): Fraction SUP POLYS  ==
 
 -- this needs documentation. In particular, why is V appearing here?
 GF ==> GeneralizedMultivariateFactorize(SingletonAsOrderedSet,
-                                        IndexedExponents V, F, F,
+                                        -- IndexedExponents V, F, F,
+                                        NonNegativeInteger, F, F,
                                         SUP F)
 
 -- does not work:
@@ -1104,6 +1106,7 @@ still obtain a polynomial.
 <<implementation: Guess - guessExpRat - Main>>=
 guessExpRatAux(xx: Symbol, list: List F, basis: DIFFSPECN,
                xValues: List Integer, options: LGOPT): List EXPRR ==
+    import Factored(SUP F)
 
     a1: V := index(1)$V
     A: V := index(2)$V
@@ -1410,6 +1413,7 @@ binExtEXPR(i: Symbol, a1v: F, Av: F): EXPRR ==
 guessBinRatAux(xx: Symbol, list: List F,
                basis: DIFFSPECN, ext: EXT, extEXPR: EXTEXPR,
                xValues: List Integer, options: LGOPT): List EXPRR ==
+    import Factored(SUP F)
 
     a1: V := index(1)$V
     A: V := index(2)$V
@@ -2698,6 +2702,7 @@ SUPF2SUPSUPF(p: SUP F): SUP SMPF ==
 
 <<implementation: Guess - Hermite-Pade - Utilities>>=
 UFPSF2SUPF(f: UFPSF, deg: NNI): SUP F ==
+    import UnivariatePolynomial('x, F)
     makeSUP univariatePolynomial(f, deg)
 
 getListSUPF(s: List UFPSF, deg: NNI): List SUP F ==
@@ -2991,6 +2996,7 @@ precCheck(list: List F, resi: List SUP S,
                     2
     order : Integer := 0
     p2 : SUP S
+    import Fraction(S)
     F is Fraction(S) =>
         gl := gl0
         for i in 0..max__ind repeat
@@ -3139,6 +3145,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     else
         maxPow := len+2
 
+    import Symbol
     (one? maxPow and D.kind = 'shiftHP) =>
         precCheck(list, resi, options, sigma, reject__one__term)
 
@@ -3149,6 +3156,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     c: SMPF
     order: Integer := 0
     dmax := 10*#list
+    import OutputForm
     for d in 0.. repeat
         if not checkExtraValues(options)$GOPT0 and d = sigma then
             return "good"
@@ -3238,7 +3246,7 @@ recursively.  In this case, [[listDegree]] equals zero.
     listDegree := #list-1-safety(options)$GOPT0
     if listDegree < 0 then return reslist
 
-    op := operator functionName(options)$GOPT0
+    op : BasicOperator := operator functionName(options)$GOPT0
 
     degreeS := D.degreeStream
     if displayAsGF(options)$GOPT0 then
@@ -3327,6 +3335,7 @@ lists of partitions are closed under inclusion.
                 MS := rst MS
                 if empty?(exprList) then
                     exprList := entries complete first(exprS, o)
+                import Vector SUP S
                 for i in 1..ncols M repeat
                     res := wrapInterpolant(entries column(M, i),
                                            exprList,
