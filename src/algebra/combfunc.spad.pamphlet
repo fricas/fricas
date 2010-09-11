@@ -686,6 +686,7 @@ equality.
 \section{package FSPECF FunctionalSpecialFunction}
 <<package FSPECF FunctionalSpecialFunction>>=
 )abbrev package FSPECF FunctionalSpecialFunction
+)boot $tryRecompileArguments := nil
 ++ Provides the special functions
 ++ Author: Manuel Bronstein
 ++ Date Created: 18 Apr 1989
@@ -740,6 +741,14 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
       ++ lambertW(x) is the Lambert W function at x
     polylog: (F, F) -> F
       ++ polylog(s, x) is the polylogarithm of order s at x
+    weierstrassP : (F, F, F) -> F
+      ++ weierstrassP(g2, g3, x)
+    weierstrassPPrime : (F, F, F) -> F
+      ++ weierstrassPPrime(g2, g3, x)
+    weierstrassSigma : (F, F, F) -> F
+      ++ weierstrassSigma(g2, g3, x)
+    weierstrassZeta : (F, F, F) -> F
+      ++ weierstrassZeta(g2, g3, x)
 
 @
 
@@ -806,6 +815,17 @@ might not re-evaluate the operator.
     iLambertW : F -> F
     iPolylog : List F -> F
 
+    iWeierstrassP : (F, F, F) -> F
+    iWeierstrassPPrime : (F, F, F) -> F
+    iWeierstrassSigma : (F, F, F) -> F
+    iWeierstrassZeta : (F, F, F) -> F
+
+    iiWeierstrassP : List F -> F
+    iiWeierstrassPPrime : List F -> F
+    iiWeierstrassSigma : List F -> F
+    iiWeierstrassZeta : List F -> F
+
+
     opabs       := operator('abs)$CommonOperators
     opGamma     := operator('Gamma)$CommonOperators
     opGamma2    := operator('Gamma2)$CommonOperators
@@ -822,6 +842,10 @@ might not re-evaluate the operator.
     opAiryBiPrime := operator('airyBiPrime)$CommonOperators
     opLambertW := operator('lambertW)$CommonOperators
     opPolylog := operator('polylog)$CommonOperators
+    opWeierstrassP := operator('weierstrassP)$CommonOperators
+    opWeierstrassPPrime := operator('weierstrassPPrime)$CommonOperators
+    opWeierstrassSigma := operator('weierstrassSigma)$CommonOperators
+    opWeierstrassZeta := operator('weierstrassZeta)$CommonOperators
 
     abs x         == opabs x
     Gamma(x)      == opGamma(x)
@@ -839,6 +863,10 @@ might not re-evaluate the operator.
     airyBiPrime(x) == opAiryBiPrime(x)
     lambertW(x) == opLambertW(x)
     polylog(s, x) == opPolylog(s, x)
+    weierstrassP(g2, g3, x) == opWeierstrassP(g2, g3, x)
+    weierstrassPPrime(g2, g3, x) == opWeierstrassPPrime(g2, g3, x)
+    weierstrassSigma(g2, g3, x) == opWeierstrassSigma(g2, g3, x)
+    weierstrassZeta(g2, g3, x) == opWeierstrassZeta(g2, g3, x)
 
     belong? op == has?(op, SPECIAL)
 
@@ -859,6 +887,10 @@ might not re-evaluate the operator.
       is?(op, 'airyBiPrime) => opAiryBiPrime
       is?(op, 'lambertW) => opLambertW
       is?(op, 'polylog) => opPolylog
+      is?(op, 'weierstrassP)   => opWeierstrassP
+      is?(op, 'weierstrassPPrime)   => opWeierstrassPPrime
+      is?(op, 'weierstrassSigma)   => opWeierstrassSigma
+      is?(op, 'weierstrassZeta)   => opWeierstrassZeta
 
       error "Not a special operator"
 
@@ -885,8 +917,9 @@ might not re-evaluate the operator.
     import Fraction(Integer)
     ahalf: F := recip(2::F)::F
     athird: F    := recip(3::F)::F
+    afourth: F   := recip(4::F)::F
     asixth: F := recip(6::F)::F
-    twothirds: F := 2*recip(3::F)::F
+    twothirds: F := 2*athird
 
     if F has ElementaryFunctionCategory then
         iAiryAi x ==
@@ -926,9 +959,15 @@ might not re-evaluate the operator.
 
     iPolylog(l) == iiPolylog(first l, second l)
 
+    iWeierstrassP(g2, g3, x) == kernel(opWeierstrassP, [g2, g3, x])
+    iWeierstrassPPrime(g2, g3, x) == kernel(opWeierstrassPPrime, [g2, g3, x])
+    iWeierstrassSigma(g2, g3, x) == kernel(opWeierstrassSigma, [g2, g3, x])
+    iWeierstrassZeta(g2, g3, x) == kernel(opWeierstrassZeta, [g2, g3, x])
+
     -- Could put more conditional special rules for other functions here
 
     if R has abs : R -> R then
+      import Polynomial R
       iiabs x ==
         (r := retractIfCan(x)@Union(Fraction Polynomial R, "failed"))
           case "failed" => iabs x
@@ -1021,6 +1060,11 @@ might not re-evaluate the operator.
       iiAiryBi x == iAiryBi x
       iiAiryBiPrime x == iAiryBiPrime x
 
+    iiWeierstrassP l == iWeierstrassP(first l, second l, third l)
+    iiWeierstrassPPrime l == iWeierstrassPPrime(first l, second l, third l)
+    iiWeierstrassSigma l == iWeierstrassSigma(first l, second l, third l)
+    iiWeierstrassZeta l == iWeierstrassZeta(first l, second l, third l)
+
     -- Default behaviour is to build a kernel
     evaluate(opGamma, iiGamma)$BasicOperatorFunctions1(F)
     evaluate(opabs, iiabs)$BasicOperatorFunctions1(F)
@@ -1038,6 +1082,11 @@ might not re-evaluate the operator.
     evaluate(opAiryBiPrime, iiAiryBiPrime)$BasicOperatorFunctions1(F)
     evaluate(opLambertW, iLambertW)$BasicOperatorFunctions1(F)
     evaluate(opPolylog, iPolylog)$BasicOperatorFunctions1(F)
+    evaluate(opWeierstrassP, iiWeierstrassP)$BasicOperatorFunctions1(F)
+    evaluate(opWeierstrassPPrime,
+             iiWeierstrassPPrime)$BasicOperatorFunctions1(F)
+    evaluate(opWeierstrassSigma, iiWeierstrassSigma)$BasicOperatorFunctions1(F)
+    evaluate(opWeierstrassZeta, iiWeierstrassZeta)$BasicOperatorFunctions1(F)
 @
 
 \subsection{differentiation of special functions}
@@ -1059,6 +1108,7 @@ kernel only.
 
 <<package FSPECF FunctionalSpecialFunction>>=
     dummyArg: SE := new()$SE
+    import List Kernel(F)
     opdiff := operator first kernels D((operator(new()$SE)$BasicOperator)
                                             (dummyArg::F), dummyArg)
 @
@@ -1115,6 +1165,7 @@ respect to the first argument.
 
 <<package FSPECF FunctionalSpecialFunction>>=
     ipolygamma(l: List F, x: SE): F ==
+        import List(Symbol)
         member?(x, variables first l) =>
             error "cannot differentiate polygamma with respect to the first argument"
         n := first l; y := second l
@@ -1148,6 +1199,111 @@ component of the gradient failed, it resulted in an infinite loop for
         lw := lambertW(x)
         lw/(x*(1+lw))
 
+    iWeierstrassPGrad1(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        wp := weierstrassP(g2, g3, x)
+        (weierstrassPPrime(g2, g3, x)*(-9*ahalf*g3
+          *weierstrassZeta(g2, g3, x) + afourth*g2^2*x)
+            - 9*g3*wp^2 + ahalf*g2^2*wp + 3*ahalf*g2*g3)/delta
+
+    iWeierstrassPGrad2(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        wp := weierstrassP(g2, g3, x)
+        (weierstrassPPrime(g2, g3, x)*(3*g2*weierstrassZeta(g2, g3, x) 
+          - 9*ahalf*g3*x) + 6*g2*wp^2 - 9*g3*wp-g2^2)/delta
+
+    iWeierstrassPGrad3(l: List F): F ==
+        weierstrassPPrime(first l, second l, third l)
+
+    iWeierstrassPPrimeGrad1(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        wp := weierstrassP(g2, g3, x)
+        wpp := weierstrassPPrime(g2, g3, x)
+        wpp2 := 6*wp^2 - ahalf*g2
+        (wpp2*(-9*ahalf*g3*weierstrassZeta(g2, g3, x) + afourth*g2^2*x)
+           + wpp*(9*ahalf*g3*wp + afourth*g2^2) - 18*g3*wp*wpp
+             + ahalf*g2^2*wpp)/delta
+
+    iWeierstrassPPrimeGrad2(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        wp := weierstrassP(g2, g3, x)
+        wpp := weierstrassPPrime(g2, g3, x)
+        wpp2 := 6*wp^2 - ahalf*g2
+        (wpp2*(3*g2*weierstrassZeta(g2, g3, x) - 9*ahalf*g3*x)
+          + wpp*(-3*g2*wp - 9*ahalf*g3) + 12*g2*wp*wpp - 9*g3*wpp)/delta
+
+
+    iWeierstrassPPrimeGrad3(l: List F): F ==
+        g2 := first l
+        6*weierstrassP(g2, second l, third l)^2 - ahalf*g2
+
+    iWeierstrassSigmaGrad1(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        ws := weierstrassSigma(g2, g3, x)
+        wz := weierstrassZeta(g2, g3, x)
+        wsp := wz*ws
+        wsp2 := - weierstrassP(g2, g3, x)*ws + wz^2*ws
+        afourth*(-9*g3*wsp2 - g2^2*ws
+                  - 3*afourth*g2*g3*x^2*ws + g2^2*x*wsp)/delta
+
+    iWeierstrassSigmaGrad2(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        ws := weierstrassSigma(g2, g3, x)
+        wz := weierstrassZeta(g2, g3, x)
+        wsp := wz*ws
+        wsp2 := - weierstrassP(g2, g3, x)*ws + wz^2*ws
+        ahalf*(3*g2*wsp2 + 9*g3*ws
+                 + afourth*g2^2*x^2*ws - 9*g3*x*wsp)/delta
+
+    iWeierstrassSigmaGrad3(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        weierstrassZeta(g2, g3, x)*weierstrassSigma(g2, g3, x)
+
+    iWeierstrassZetaGrad1(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        wp := weierstrassP(g2, g3, x)
+        (ahalf*weierstrassZeta(g2, g3, x)*(9*g3*wp + ahalf*g2^2)
+             - ahalf*g2*x*(ahalf*g2*wp+3*afourth*g3)
+               + 9*afourth*g3*weierstrassPPrime(g2, g3, x))/delta
+
+    iWeierstrassZetaGrad2(l: List F): F ==
+        g2 := first l
+        g3 := second l
+        x := third l
+        delta := g2^3 - 27*g3^2
+        wp := weierstrassP(g2, g3, x)
+        (-3*weierstrassZeta(g2, g3, x)*(g2*wp + 3*ahalf*g3) +
+                     ahalf*x*(9*g3*wp + ahalf*g2^2) 
+                       - 3*ahalf*g2*weierstrassPPrime(g2, g3, x))/delta
+
+
+    iWeierstrassZetaGrad3(l: List F): F ==
+        -weierstrassP(first l, second l, third l)
+
+
     derivative(opabs,       (x : F) : F +-> abs(x)*inv(x))
     derivative(opGamma,     (x : F) : F +-> digamma(x)*Gamma(x))
     derivative(opBeta,      [iBetaGrad1, iBetaGrad2])
@@ -1157,6 +1313,15 @@ component of the gradient failed, it resulted in an infinite loop for
     derivative(opAiryBi,    (x : F) : F +-> airyBiPrime(x))
     derivative(opAiryBiPrime,    (x : F) : F +-> x*airyBi(x))
     derivative(opLambertW,  dLambertW)
+    derivative(opWeierstrassP, [iWeierstrassPGrad1, iWeierstrassPGrad2,
+                                iWeierstrassPGrad3])
+    derivative(opWeierstrassPPrime, [iWeierstrassPPrimeGrad1, 
+                   iWeierstrassPPrimeGrad2, iWeierstrassPPrimeGrad3])
+    derivative(opWeierstrassSigma, [iWeierstrassSigmaGrad1,
+                   iWeierstrassSigmaGrad2, iWeierstrassSigmaGrad3])
+    derivative(opWeierstrassZeta, [iWeierstrassZetaGrad1,
+                   iWeierstrassZetaGrad2, iWeierstrassZetaGrad3])
+
     setProperty(oppolygamma, SPECIALDIFF, ipolygamma@((List F, SE)->F)
                                                      pretend None)
     setProperty(opBesselJ, SPECIALDIFF, iBesselJ@((List F, SE)->F)
