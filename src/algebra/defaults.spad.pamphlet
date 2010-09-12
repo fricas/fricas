@@ -133,28 +133,37 @@ FiniteLinearAggregateSort(S, V): Exports == Implementation where
       r
 
     partition(l, r, i, j, k) ==
-      -- partition r[i..j] such that r.s <= r.k <= r.t
-      x := qelt(r, k)
-      t := qelt(r, i)
-      qsetelt_!(r, k, qelt(r, j))
-      while i < j repeat
-         if l(x,t) then
-           qsetelt_!(r, j, t)
-           j := j-1
-           t := qsetelt_!(r, i, qelt(r, j))
-         else (i := i+1; t := qelt(r, i))
-      qsetelt_!(r, j, x)
-      j
+        -- partition r[i..j] such that r.s <= r.k <= r.t
+        x := qelt(r, k)
+        while i <= j repeat
+            t := qelt(r, i)
+            while l(t, x) repeat
+                i := i + 1
+                t := qelt(r, i)
+            s := qelt(r, j)
+            while l(x, s) repeat
+                j := j - 1
+                s := qelt(r, j)
+            if i <= j then
+                qsetelt_!(r, i, s)
+                qsetelt_!(r, j, t)
+                i := i + 1
+                j := j - 1
+        j + 1
 
     QuickSort(l, r, i, j) ==
-      n := j - i
---      if one? n and l(qelt(r, j), qelt(r, i)) then swap_!(r, i, j)
-      if (n = 1) and l(qelt(r, j), qelt(r, i)) then swap_!(r, i, j)
-      n < 2 => return r
-      -- for the moment split at the middle item
-      k := partition(l, r, i, j, i + shift(n,-1))
-      QuickSort(l, r, i, k - 1)
-      QuickSort(l, r, k + 1, j)
+        repeat
+            n := j - i
+            if (n = 1) and l(qelt(r, j), qelt(r, i)) then swap_!(r, i, j)
+            n < 2 => return r
+            -- for the moment split at the middle item
+            k := partition(l, r, i, j, i + shift(n,-1))
+            if k - i < j - k then
+                QuickSort(l, r, i, k - 1)
+                i := k
+            else
+                QuickSort(l, r, k, j)
+                j := k - 1
 
     shellSort(l, r) ==
       m := minIndex r
