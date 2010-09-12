@@ -139,6 +139,10 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
         ++ physicalLength!(x,n) changes the physical length of x to be n and returns the new array.
       shrinkable: Boolean -> Boolean
         ++ shrinkable(b) sets the shrinkable attribute of flexible arrays to b and returns the previous value
+      removeRepeats_! : % -> %
+        ++ removeRepeats_!(u) destructively replaces runs of consequtive
+        ++ equal elements of u by single elements.
+
   Implementation == add
     Rep := Record(physLen:I, logLen:I, f:A)
     shrinkable? : Boolean := true
@@ -315,6 +319,23 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
             i := i+1
          nlim ~= nlim0 => delete_!(a, i..)
          a
+
+      removeRepeats_! a ==
+          ct := #a
+          ct < 2 => a
+
+          j := mn
+          nlim := mn + ct
+          t := a(j)
+          i := j + 1
+          while i < nlim repeat
+              s := a(i)
+              if s ~= t then
+                  j := j + 1
+                  a(j) := (t := s)
+              i := i + 1
+          j + 1 < nlim => delete_!(a, (j + 1)..)
+          a
 
 @
 \section{domain FARRAY FlexibleArray}
