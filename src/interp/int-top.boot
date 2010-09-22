@@ -118,6 +118,15 @@ ncTopLevel() ==
   $e:fluid := $InteractiveFrame
   ncIntLoop()
 
+++ If the interpreter is spwan by the session manager, then
+++ each successful connection also creates its own frame.  
+++ In particular, the only time we get to do anything in the `initial'
+++ frame is when we get the first connection.  In that case, we would
+++ be asked by the session manager to create a frame.  The client is
+++ not aware of that,  It is therefore confusing to display a prompt,
+++ because all this horse-threading happens behind the client's back.
+printFirstPrompt?() ==
+    $interpreterFrameName ~= "initial" or not($SpadServer)
 
 ncIntLoop() ==
   CURINSTREAM : local := _*STANDARD_-OUTPUT_*
@@ -155,10 +164,12 @@ SpadInterpretStream(str, source, interactive?) ==
     $promptMsg             : local := 'S2CTP023
 
     interactive? =>
---  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
-                princPrompt()
-                intloopReadConsole('"", str)
-                []
+        if printFirstPrompt?() then
+            ioHook("startPrompt")
+            princPrompt()
+            ioHook("endOfPrompt")
+        intloopReadConsole('"", str)
+        []
     intloopInclude (source,0)
     []
 
