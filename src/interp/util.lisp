@@ -618,6 +618,9 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                     (format t "foreign routines found~%")
                     #+:sbcl
                     (sb-alien::load-shared-object spad-lib)
+                    #+:sbcl
+                    (fricas-lisp::init-gmp 
+                        (concatenate 'string ax-dir "/lib/gmp_wrap.so"))
                     #+:openmcl
                     (ccl::open-shared-library spad-lib)
                     #+(and :clisp :ffi)

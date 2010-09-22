@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2010-03-23],
+AC_INIT([FriCAS], [2010-09-22],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -348,6 +348,20 @@ case $target in
 esac
 AC_SUBST(LIBSPAD_SO_TARGET)
 AC_SUBST(SOLIB_FLAGS)
+
+GMP_WRAP_SO_TARGET=""
+AC_ARG_WITH([gmp],
+            [AS_HELP_STRING([--with-gmp], [use gmp for sbcl bignums])],
+            [case $withval in
+               yes) if test $(uname -m)$fricas_lisp_flavor = x86_64sbcl ; then
+                       GMP_WRAP_SO_TARGET=gmp_wrap_so
+                    else
+                       AC_MSG_ERROR([--with-gmp is valid only when using sbcl on x86_64])
+                    fi ;;
+               no) ;;
+               *) AC_MSG_ERROR([--with-gmp only allows yes or no as an argument]) ;;
+             esac])
+AC_SUBST(GMP_WRAP_SO_TARGET)
 
 ## The following is a horrible to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
