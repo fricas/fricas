@@ -102,6 +102,7 @@
          (save-options-arg
              (if save-options-keyword (list save-options-keyword t) nil))
         )
+        (unistall-gmp-multiplication)
         (apply #'sb-ext::save-lisp-and-die
               (append `(,core-image :toplevel ,top-fun :executable t)
                       save-options-arg))

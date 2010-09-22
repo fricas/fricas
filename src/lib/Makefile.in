@@ -31,6 +31,7 @@ pamphlets = Makefile.pamphlet $(libspad_a_SOURCES) $(other_SOURCES)
 
 LIBSPAD_SO = $(axiom_target_libdir)/libspad.so
 
+GMP_WRAP_SO = $(axiom_target_libdir)/gmp_wrap.so
 
 subdir = src/lib/
 
@@ -41,11 +42,13 @@ subdir = src/lib/
 all: all-ax
 
 all-ax all-lib: stamp
-stamp: libspad.a $(other_objects) @LIBSPAD_SO_TARGET@
+stamp: libspad.a $(other_objects) @LIBSPAD_SO_TARGET@ @GMP_WRAP_SO_TARGET@
 	rm -f stamp
 	$(STAMP) stamp
 
 libspad_so: $(LIBSPAD_SO)
+
+gmp_wrap_so: $(GMP_WRAP_SO)
 
 libspad.a: $(libspad_a_objects)
 	$(AR) ru libspad.a $(libspad_a_objects)
@@ -66,6 +69,9 @@ $(LIBSPAD_SO): $(core_objects_32)
 else
 $(LIBSPAD_SO): $(core_objects)
 	$(CC) -g @SOLIB_FLAGS@ $(core_objects) @axiom_c_runtime_extra@ -o $@
+
+$(GMP_WRAP_SO): $(srcdir)/gmp_wrap.c
+	$(CC) -g -fPIC @SOLIB_FLAGS@ $< -o $@
 endif
 
 .PRECIOUS: %.$(OBJEXT)

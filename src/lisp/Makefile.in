@@ -15,15 +15,19 @@ lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
 		    $(build_libdir)/sockio-c.o \
 		    $(build_libdir)/libspad.a
 
+lisp_flavor=@fricas_lisp_flavor@
 LISP_CMD = $(FRICAS_LISP) @fricas_quiet_flags@
+GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
+ifeq ($(lisp_flavor),sbcl)
+NUM_SB = num_sb.lisp
+else
+NUM_SB =
+endif
 
 .PHONY: all all-lisp
 all: all-ax all-lisp
 
 all-ax all-lisp: $(OUT)/lisp$(EXEEXT)
-
-
-lisp_flavor=@fricas_lisp_flavor@
 
 ## Create a fresh image for building interpsys and AXIOMsys
 ## These objects files are the C runtime support
@@ -66,6 +70,15 @@ fricas-lisp.lisp: $(srcdir)/fricas-lisp.lisp
 fricas-package.lisp: $(srcdir)/fricas-package.lisp
 	cp $< $@
 
+num_sb.lisp: $(srcdir)/num_sb.lisp
+	if [ x$(GMP_WRAP_SO_TARGET) != x ] ; then \
+	    cp $< $@ ; \
+	else \
+	    (echo '(in-package "FRICAS-LISP")' ; \
+	     echo '(defun init-gmp(x) nil)' ; \
+	     echo '(defun unistall-gmp-multiplication() nil)') > $@ ; \
+	fi
+
 fricas-config.lisp:
 	echo '(in-package "FRICAS-LISP")' > $@
 	echo '(defparameter algebra-optimization' \
@@ -95,9 +108,10 @@ do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
 	$(STAMP) $@
 
 do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
-   fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
+   fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_SB)
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
+            '#+:sbcl (load (compile-file "num_sb.lisp"))' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
          | $(FRICAS_LISP)
