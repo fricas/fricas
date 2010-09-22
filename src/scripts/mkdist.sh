@@ -71,11 +71,7 @@ echo GCL_DIST=\"${GCL_DIST}\"
 echo HELP_DIR=\"${HELP_DIR}\"
 
 clean_svn () {
-    # The maximal depth in gcl tree is 6
-    ( cd $1 || exit 1 ; \
-    rm -rf .svn */.svn */*/.svn ; \
-    rm -rf */*/*/.svn */*/*/*/.svn */*/*/*/*/.svn */*/*/*/*/*/.svn ; \
-    )
+    find $1 -name .svn -type d -exec rm -rf {} \+
 }
 
 # copy sources
