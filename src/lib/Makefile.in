@@ -1,3 +1,10 @@
+axiom_c_runtime = @axiom_c_runtime@
+LIBSPAD_SO_TARGET = @LIBSPAD_SO_TARGET@
+GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
+lisp_flavor=@fricas_lisp_flavor@
+SOLIB_FLAGS = @SOLIB_FLAGS@
+axiom_c_runtime_extra = @axiom_c_runtime_extra@
+
 core_sources = bsdsignal.c cfuns-c.c sockio-c.c
 core_objects = $(core_sources:.c=.$(OBJEXT))
 terminal_io_sources = cursor.c edin.c fnct_key.c openpty.c prt.c wct.c
@@ -12,7 +19,7 @@ graphics_sources = \
 		XSpadFill.c
 
 libspad_a_sources = $(foreach comp, \
-			$(addsuffix _sources, @axiom_c_runtime@), \
+			$(addsuffix _sources, $(axiom_c_runtime)), \
 			$($(comp)))
 
 libspad_a_SOURCES = $(addsuffix .pamphlet,$(libspad_a_sources))
@@ -42,7 +49,7 @@ subdir = src/lib/
 all: all-ax
 
 all-ax all-lib: stamp
-stamp: libspad.a $(other_objects) @LIBSPAD_SO_TARGET@ @GMP_WRAP_SO_TARGET@
+stamp: libspad.a $(other_objects) $(LIBSPAD_SO_TARGET) $(GMP_WRAP_SO_TARGET)
 	rm -f stamp
 	$(STAMP) stamp
 
@@ -54,8 +61,6 @@ libspad.a: $(libspad_a_objects)
 	$(AR) ru libspad.a $(libspad_a_objects)
 	$(RANLIB) libspad.a
 
-lisp_flavor=@fricas_lisp_flavor@
-
 ifeq ($(shell uname -m)$(lisp_flavor),x86_64cmucl)
 core_objects_32 = $(core_sources:.c=.$(OBJEXT)32)
 
@@ -65,13 +70,13 @@ core_objects_32 = $(core_sources:.c=.$(OBJEXT)32)
 	$(CC) -g -m32 -fPIC $(CCF) -c $(axiom_includes) $(AXIOM_X11_CFLAGS) $< -o $@
 
 $(LIBSPAD_SO): $(core_objects_32)
-	$(CC) -g -m32 @SOLIB_FLAGS@ $(core_objects_32) @axiom_c_runtime_extra@ -o $@
+	$(CC) -g -m32 $(SOLIB_FLAGS) $(core_objects_32) $(axiom_c_runtime_extra) -o $@
 else
 $(LIBSPAD_SO): $(core_objects)
-	$(CC) -g @SOLIB_FLAGS@ $(core_objects) @axiom_c_runtime_extra@ -o $@
+	$(CC) -g $(SOLIB_FLAGS) $(core_objects) $(axiom_c_runtime_extra) -o $@
 
 $(GMP_WRAP_SO): $(srcdir)/gmp_wrap.c
-	$(CC) -g -fPIC @SOLIB_FLAGS@ $< -o $@
+	$(CC) -g -fPIC $(SOLIB_FLAGS) $< -o $@
 endif
 
 .PRECIOUS: %.$(OBJEXT)
