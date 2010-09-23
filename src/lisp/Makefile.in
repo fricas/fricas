@@ -3,6 +3,15 @@
 # fricas-lisp file.  This effectively creates our own dialect
 # of Lisp, which is used during the rest of build process
 
+fricas_quiet_flags = @fricas_quiet_flags@
+lisp_flavor=@fricas_lisp_flavor@
+axiom_gcl_rsym_hack = @axiom_gcl_rsym_hack@
+axiom_c_runtime_extra = @axiom_c_runtime_extra@
+fricas_algebra_optimization = @fricas_algebra_optimization@
+GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
+LISP_CMD = $(FRICAS_LISP) $(fricas_quiet_flags)
+
+## Create a fresh image for building interpsys and AXIOMsys
 OUT = $(axiom_build_bindir)
 
 subdir = src/lisp/
@@ -15,9 +24,6 @@ lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
 		    $(build_libdir)/sockio-c.o \
 		    $(build_libdir)/libspad.a
 
-lisp_flavor=@fricas_lisp_flavor@
-LISP_CMD = $(FRICAS_LISP) @fricas_quiet_flags@
-GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
 ifeq ($(lisp_flavor),sbcl)
 NUM_SB = num_sb.lisp
 else
@@ -43,7 +49,7 @@ lisp_c_objects = \
 $(OUT)/lisp$(EXEEXT): do_it.$(lisp_flavor)
 
 do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
-	@axiom_gcl_rsym_hack@
+	$(axiom_gcl_rsym_hack)
 	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
 	     '(load "fricas-lisp.lisp")' \
 	     '(setq compiler::*default-system-p* t)' \
@@ -56,7 +62,7 @@ do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
                                         ' (si::sgc-on nil))' \
                                   ' (setq compiler::*default-system-p* t))"' \
                       ' si::*system-directory* (quote (list ".lsp")))' \
-               '  "$(lisp_c_objects) @axiom_c_runtime_extra@")' \
+               '  "$(lisp_c_objects) $(axiom_c_runtime_extra)")' \
             | $(FRICAS_LISP)
 	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
 	     '(load "fricas-lisp.$(OBJEXT)")' \
@@ -82,7 +88,7 @@ num_sb.lisp: $(srcdir)/num_sb.lisp
 fricas-config.lisp:
 	echo '(in-package "FRICAS-LISP")' > $@
 	echo '(defparameter algebra-optimization' \
-	     '(quote @fricas_algebra_optimization@))' >> $@
+	     '(quote $(fricas_algebra_optimization)))' >> $@
 
 do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
 	echo "(in-package \"FRICAS-LISP\")" > fricas-ecl.lisp
