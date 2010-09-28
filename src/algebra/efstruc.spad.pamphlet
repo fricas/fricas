@@ -141,6 +141,10 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       ++ rischNormalize(f, x) returns \spad{[g, [k1,...,kn], [h1,...,hn]]}
       ++ such that \spad{g = normalize(f, x)} and each \spad{ki} was
       ++ rewritten as \spad{hi} during the normalization.
+    rischNormalize: (F, List SY) -> REC
+      ++ rischNormalize(f, lx) returns \spad{[g, [k1,...,kn], [h1,...,hn]]}
+      ++ such that \spad{g = normalize(f, lx)} and each \spad{ki} was
+      ++ rewritten as \spad{hi} during the normalization.
     realElementary: F -> F
       ++ realElementary(f) rewrites \spad{f} in terms of the 4 fundamental real
       ++ transcendental elementary functions: \spad{log, exp, tan, atan}.
@@ -400,7 +404,7 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
 
       kf := k::F
       -- FIXME: Why we need explicit target here???
-      not(empty? l) and empty? ([v for v in variables kf | member?(v, l)]@(List SY)) => kf
+      -- not(empty? l) and empty? ([v for v in variables kf | member?(v, l)]@(List SY)) => kf
       empty?(args :List F := [realElem(a, l) for a in argument k]) => kf
       z := first args
 
@@ -629,8 +633,7 @@ height(k1) to be maximal
               for i in minIndex v .. maxIndex v for x in toY lk] + log c
       [eval(f, [k], [g]), [k], [g]]
 
-    rischNormalize0 : (F, List SY) -> REC
-    rischNormalize0(f, vars) ==
+    rischNormalize(f : F, vars : List SY) : REC ==
       lk : List K := tower f
       funs := lk -- [k for k in lk | height k > 1]@(List K)
       pars := variables(f) -- [name(operator(k)) for k in lk | height k = 1]
@@ -645,15 +648,15 @@ height(k1) to be maximal
         (c := findRelation(vars, pars, klist, kk)) case vec and not empty?(c.vec) =>
 
           rec := depeval(f, klist, kk, c.vec)
-          rn  := rischNormalize0(rec.func, vars)
+          rn  := rischNormalize(rec.func, vars)
           return [rn.func,
                    concat(rec.kers, rn.kers), concat(rec.vals, rn.vals)]
         c case func =>
-          rn := rischNormalize0(eval(f, [kk], [c.func]), vars)
+          rn := rischNormalize(eval(f, [kk], [c.func]), vars)
           return [rn.func, concat(kk, rn.kers), concat(c.func, rn.vals)]
       [f, empty(), empty()]
 
-    rischNormalize(f, v) == rischNormalize0(f, [v])
+    rischNormalize(f : F, v : SY) : REC == rischNormalize(f, [v])
 
     rootNormalize(f, k) ==
       (u := rootKernelNormalize(f, toR(tower f, first argument k), k))
@@ -665,7 +668,7 @@ height(k1) to be maximal
         rooteval(f, l, k, (c.vec)(minIndex(c.vec)))
       "failed"
 
-    localnorm f == rischNormalize0(f, []).func
+    localnorm f == rischNormalize(f, []).func
 
     validExponential(twr, eta, x) ==
       (c := solveLinearlyOverQ(construct([differentiate(g, x)
@@ -773,17 +776,17 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       ++ explogs2trigs(f) rewrites all the complex logs and
       ++ exponentials appearing in \spad{f} in terms of trigonometric
       ++ functions.
-    trigs2explogs: (FG, List KG, List SY) -> FG
-      ++ trigs2explogs(f, [k1,...,kn], [x1,...,xm]) rewrites
-      ++ all the trigonometric functions appearing in \spad{f} and involving
-      ++ one of the \spad{xi's} in terms of complex logarithms and
+    trigs2explogs: (FG, List KG) -> FG
+      ++ trigs2explogs(f, [k1,...,kn]) rewrites
+      ++ all the trigonometric functions appearing in \spad{f}
+      ++ in terms of complex logarithms and
       ++ exponentials. A kernel of the form \spad{tan(u)} is expressed
       ++ using \spad{exp(u)^2} if it is one of the \spad{ki's}, in terms of
       ++ \spad{exp(2*u)} otherwise.
 
   Implementation ==> add
-    ker2explogs: (KG, List KG, List SY) -> FG
-    smp2explogs: (PG, List KG, List SY) -> FG
+    ker2explogs: (KG, List KG) -> FG
+    smp2explogs: (PG, List KG) -> FG
     supexp     : (UP, GF, GF, Z) -> GF
     GR2GF      : GR -> GF
     GR2F       : GR -> F
@@ -804,10 +807,9 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
 
 -- This expects the argument to have only tan and atans left.
 -- Does a half-angle correction if k is not in the initial kernel list.
-    ker2explogs(k, l, lx) ==
-      empty?([v for v in variables(kf := k::FG) |
-                                         member?(v, lx)]$List(SY)) => kf
-      empty?(args := [trigs2explogs(a, l, lx)
+    ker2explogs(k, l) ==
+      kf := k::FG
+      empty?(args := [trigs2explogs(a, l)
                                     for a in argument k]$List(FG)) => kf
       im := complex(0, 1)$GR :: FG
       z  := first args
@@ -818,8 +820,8 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
         im * log((1 -$FG im *$FG z)/$FG (1 +$FG im *$FG z))$FG / (2::FG)
       (operator k) args
 
-    trigs2explogs(f, l, lx) ==
-      smp2explogs(numer f, l, lx) / smp2explogs(denom f, l, lx)
+    trigs2explogs(f, l) ==
+      smp2explogs(numer f, l) / smp2explogs(denom f, l)
 
     -- return op(arg) as f + %i g
     -- op is already an operator with semantics over R, not GR
@@ -893,8 +895,8 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       map(KG2F, GR2F, p)$PolynomialCategoryLifting(IndexedExponents KG,
                                                           KG, GR, PG, F)
 
-    smp2explogs(p, l, lx) ==
-      map(x +-> ker2explogs(x, l, lx), y +-> y::FG,
+    smp2explogs(p, l) ==
+      map(x +-> ker2explogs(x, l), y +-> y::FG,
            p)$PolynomialCategoryLifting(IndexedExponents KG, KG, GR, PG, FG)
 
 @
@@ -962,7 +964,7 @@ TrigonometricManipulations(R, F): Exports == Implementation where
     K2KG          : K -> Kernel FG
     kcomplex      : K -> Union(F, "failed")
     locexplogs    : F -> FG
-    localexplogs  : (F, F, List SY) -> FG
+    localexplogs  : (F, F) -> FG
     complexKernels: F -> Record(ker: List K, val: List F)
 
     K2KG k           == retract(tan F2FG first argument k)@Kernel(FG)
@@ -1000,41 +1002,41 @@ TrigonometricManipulations(R, F): Exports == Implementation where
     locexplogs f ==
       any?(x +-> has?(x, RTRIG),
            operators(g := realElementary f))$List(BasicOperator) =>
-              localexplogs(f, g, variables g)
+              localexplogs(f, g)
       F2FG g
 
     complexNormalize(f, x) ==
       any?(y +-> has?(operator y, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                | member?(x, variables(k::F))]$List(K))$List(K) =>
-                   FG2F(rischNormalize(localexplogs(f, g, [x]), x).func)
+                   FG2F(rischNormalize(localexplogs(f, g), x).func)
       rischNormalize(g, x).func
 
     complexNormalize f ==
       l := variables(g := realElementary f)
       any?(x +-> has?(x, RTRIG), operators g)$List(BasicOperator) =>
-        h := localexplogs(f, g, l)
-        for x in l repeat h := rischNormalize(h, x).func
+        h := localexplogs(f, g)
+        h := rischNormalize(h, empty()).func
         FG2F h
-      for x in l repeat g := rischNormalize(g, x).func
+      g := rischNormalize(g, empty()).func
       g
 
     complexElementary(f, x) ==
       any?(y +-> has?(operator y, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                  | member?(x, variables(k::F))]$List(K))$List(K) =>
-                     FG2F localexplogs(f, g, [x])
+                     FG2F localexplogs(f, g)
       g
 
     complexElementary f ==
       any?(x +-> has?(x, RTRIG),
         operators(g := realElementary f))$List(BasicOperator) =>
-          FG2F localexplogs(f, g, variables g)
+          FG2F localexplogs(f, g)
       g
 
-    localexplogs(f, g, lx) ==
+    localexplogs(f, g) ==
       trigs2explogs(F2FG g, [K2KG k for k in tower f
-                          | is?(k, 'tan) or is?(k, 'cot)], lx)
+                          | is?(k, 'tan) or is?(k, 'cot)])
 
     trigs f ==
       real? f => f
@@ -1100,7 +1102,7 @@ ComplexTrigonometricManipulations(R, F): Exports == Implementation where
 
     rreal?: Complex R -> Boolean
     kreal?: Kernel F -> Boolean
-    localexplogs  : (F, F, List SY) -> F
+    localexplogs  : (F, F) -> F
 
     real f        == real complexForm f
     imag f        == imag complexForm f
@@ -1115,38 +1117,36 @@ ComplexTrigonometricManipulations(R, F): Exports == Implementation where
       every?(rreal?, coefficients numer f)
         and every?(rreal?, coefficients denom f) and every?(kreal?, kernels f)
 
-    localexplogs(f, g, lx) ==
+    localexplogs(f, g) ==
       trigs2explogs(g, [k for k in tower f
-                          | is?(k, 'tan) or is?(k, 'cot)], lx)
+                          | is?(k, 'tan) or is?(k, 'cot)])
 
     complexElementary f ==
       any?(x +-> has?(x, RTRIG),
         operators(g := realElementary f))$List(BasicOperator) =>
-          localexplogs(f, g, variables g)
+          localexplogs(f, g)
       g
 
     complexElementary(f, x) ==
       any?(y +-> has?(operator y, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                  | member?(x, variables(k::F))]$List(K))$List(K) =>
-                     localexplogs(f, g, [x])
+                     localexplogs(f, g)
       g
 
     complexNormalize(f, x) ==
       any?(y +-> has?(operator y, RTRIG),
        [k for k in tower(g := realElementary(f, x))
                | member?(x, variables(k::F))]$List(K))$List(K) =>
-                   (rischNormalize(localexplogs(f, g, [x]), x).func)
+                   (rischNormalize(localexplogs(f, g), x).func)
       rischNormalize(g, x).func
 
     complexNormalize f ==
       l := variables(g := realElementary f)
       any?(y +-> has?(y, RTRIG), operators g)$List(BasicOperator) =>
-        h := localexplogs(f, g, l)
-        for x in l repeat h := rischNormalize(h, x).func
-        h
-      for x in l repeat g := rischNormalize(g, x).func
-      g
+        h := localexplogs(f, g)
+        rischNormalize(h, empty()).func
+      rischNormalize(g, empty()).func
 
 @
 \section{License}
