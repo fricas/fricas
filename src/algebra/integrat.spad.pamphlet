@@ -178,13 +178,28 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       a := 2 * first argument k
       sin(a) / (1 + cos a)
 
+    find_int(i : K, t : List K) : K ==
+        ail := argument(i)
+        k0 := #ail
+        ii := i::F
+        for k in t repeat
+           if is?(operator(k), '%iint) then
+               akl := argument(k)
+               #akl ~= k0 => "iterate"
+               normalize(ii - k::F) = 0 => return k
+        i 
+
 -- ltan = list of tangents in the integrand after real normalization
     postSubst(f, lv, lk, comp, ltan, x) ==
       for v in lv for k in lk repeat
         if ((u := retractIfCan(v)@Union(K, "failed")) case K) then
-           if has?(operator(kk := u::K), ALGOP) then
-             f := univariate(f, kk, minPoly kk) (kk::F)
-           f := eval(f, [u::K], [k::F])
+           uk := u::K
+           if has?(operator(uk), ALGOP) then
+             f := univariate(f, uk, minPoly uk) (uk::F)
+           if is?(operator(uk), '%iint) and 
+              not(member?(uk, (tf := tower f))) then
+               uk := find_int(uk, tf)
+           f := eval(f, [uk], [k::F])
       if not(comp or empty? ltan) then
         ltemp := [tan2temp k for k in ltan]
         f := eval(f, ltan, [k::F for k in ltemp])
@@ -206,10 +221,17 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
           complexIntegrate(f, x)
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
-      tf  := [k for k in tower f | member?(x, variables(k::F)@List(SE))]$List(K)
+      tf := tower f
       ltf := select(x1+->is?(operator x1, 'tan), tf)
       ht  := any?(x1+->has?(operator x1, HTRIG), tf)
-      rec := rischNormalize(realElementary(f, x), x)
+      etf := [realLiouvillian(k::F) for k in tf]
+      ekers : List K := []
+      evals : List F := []
+      for k in tf for v in etf repeat
+          if has?(operator(k), 'prim) then
+              ekers := cons(k, ekers)
+              evals := cons(v, evals)
+      rec := rischNormalize(eval(f, tf, etf), x)
       g   := rootSimp(rec.func)
       tg  := [k for k in tower g | member?(x, variables(k::F))]$List(K)
       ltg := select(x1+->is?(operator x1, 'tan), tg)
@@ -227,9 +249,11 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
         i := map(FG2F, lfintegrate(gg, x))
       else i := lfintegrate(g, x)
       ltg := setDifference(ltg, ltf)   -- tan's added by normalization
+      okers := concat(rec.kers, ekers)
+      ovals := concat(rec.vals, evals)
       (u := rinteg(i, f, x, el and ht, comp)) case F =>
-        postSubst(u::F, rec.vals, rec.kers, comp, ltg, x)
-      [postSubst(h, rec.vals, rec.kers, comp, ltg, x) for h in u::List(F)]
+        postSubst(u::F, ovals, okers, comp, ltg, x)
+      [postSubst(h, ovals, okers, comp, ltg, x) for h in u::List(F)]
 
 @
 \section{License}

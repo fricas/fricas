@@ -76,6 +76,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
     iint       : List F -> F
     eqint      : (K,K) -> Boolean
     dvint      : (List F, SE) -> F
+    dviint      : (List F, SE) -> F
     dvdint     : (List F, SE) -> F
     ddint      : List F -> O
     integrand  : List F -> F
@@ -83,6 +84,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
     dummy := new()$SE :: F
 
     opint  := operator('integral)$CommonOperators
+    opiint := operator('%iint)$CommonOperators
     opdint := operator('%defint)$CommonOperators
     opei   := operator('Ei)$CommonOperators
     opli   := operator('li)$CommonOperators
@@ -135,6 +137,23 @@ LiouvillianFunction(R, F): Exports == Implementation where
       differentiate(third l, x) * integrand l
           + opint [differentiate(first l, x), second l, third l]
 
+    iiint(l : List F) : F ==
+        nu := #l exquo 2
+        nu case "failed" => error "impossible"
+        n := nu :: NonNegativeInteger
+        lval := rest(l, n)
+        every?(zero?, lval) => 0
+        kernel(opiint, l)
+
+    dviint(l : List F, v : SE) : F ==
+        nu := #l exquo 2
+        nu case "failed" => error "impossible"
+        n := nu :: NonNegativeInteger
+        lvf := first(l, n)
+        lv := [retract(vf)@Symbol for vf in lvf]
+        m := position(v, lv)
+        m = 0 => 0
+        l(n+m)
 
     dvdint(l, x) ==
       x = retract(y := third l)@SE => 0
@@ -159,6 +178,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
 
     operator op ==
       is?(op, 'integral)   => opint
+      is?(op, '%iint)      => opiint
       is?(op, '%defint)    => opdint
       is?(op, 'Ei)         => opei
       is?(op, 'Si)         => opsi
@@ -179,6 +199,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
     evaluate(opfis,  ifis)
     evaluate(opfic,  ific)
     evaluate(opint,  iint)
+    evaluate(opiint,  iiint)
     derivative(opsi, (z1:F):F +-> sin(z1) / z1)
     derivative(opci, (z1:F):F +-> cos(z1) / z1)
     derivative(opei, (z1:F):F +-> exp(z1) / z1)
@@ -189,6 +210,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
     derivative(opfic, (z1:F):F +-> cos(z1^2))
     setProperty(opint,SPECIALEQUAL,eqint@((K,K) -> Boolean) pretend None)
     setProperty(opint,SPECIALDIFF,dvint@((List F,SE) -> F) pretend None)
+    setProperty(opiint, SPECIALDIFF, dviint@((List F,SE) -> F) pretend None)
     setProperty(opdint,SPECIALDIFF,dvdint@((List F,SE)->F) pretend None)
     setProperty(opdint, SPECIALDISP, ddint@(List F -> O) pretend None)
 
