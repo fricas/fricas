@@ -41,6 +41,8 @@ isNewWorldDomain domain == INTEGERP domain.3    --see HasCategory/Attribute
 
 getDomainByteVector dom == CDDR dom.4
 
+getDomainView(domain,catform) == domain
+
 --=======================================================
 --                 Lookup From Compiled Code
 --=======================================================

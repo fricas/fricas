@@ -354,7 +354,8 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
          addargname := $FormalMapVariableList.(POSN1($NRTaddForm,$locals))
          argStuffCode := [[$setelt,'$,5,addargname],:argStuffCode]
       [['stuffDomainSlots,'$],:argStuffCode,
-         :predBitVectorCode2,storeOperationCode]
+         :predBitVectorCode2, ['SETF, 'pv_$, ['QREFELT, '$, 3]],
+            storeOperationCode]
 
   $CheckVectorList := NRTcheckVector domainShell
 --CODE: part 1
