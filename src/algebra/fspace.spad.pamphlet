@@ -565,7 +565,8 @@ FunctionSpace(R : Comparable): Category == Definition where
     worse?    : (K, K) -> Boolean
     diffArg   : (List %, OP, N) -> List %
     substArg  : (OP, List %, Z, %) -> %
-    dispdiff  : List % -> Record(name:O, sub:O, arg:List O, level:N)
+    dispdiff  : List % -> Record(name:O, sub:O, arg:List O,
+                                 orig_op : OP, level:N)
     ddiff     : List % -> O
     diffEval  : List % -> %
     dfeval    : (List %, K) -> %
@@ -688,18 +689,21 @@ FunctionSpace(R : Comparable): Category == Definition where
           rec.arg.i := t
           [rec.name,
              hconcat(rec.sub, hconcat(","::SY::O, (i+1-minIndex a)::O)),
-                        rec.arg, (zero?(rec.level) => 0; rec.level + 1)]
+               rec.arg, rec.orig_op, (zero?(rec.level) => 0; rec.level + 1)]
         i   := position(second l, a)
         m   := [x::O for x in a]$List(O)
         m.i := t
         [name(operator k)::O, hconcat(","::SY::O, (i+1-minIndex a)::O),
-                                             m, (empty? rest a => 1; 0)]
+            m, operator(k), (empty? rest a => 1; 0)]
 
       ddiff l ==
         rec := dispdiff l
         opname :=
           zero?(rec.level) => sub(rec.name, rec.sub)
           differentiate(rec.name, rec.level)
+        (f := property(rec.orig_op, '%diffDisp)) case None =>
+            ((f::None) pretend (List OutputForm -> OutputForm))
+               (cons(opname, rec.arg))
         prefix(opname, rec.arg)
 
       substArg(op, l, i, g) ==

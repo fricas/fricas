@@ -749,6 +749,12 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
       ++ weierstrassSigma(g2, g3, x)
     weierstrassZeta : (F, F, F) -> F
       ++ weierstrassZeta(g2, g3, x)
+    if F has RetractableTo(Integer) then
+        hypergeometricF : (List F, List F, F) -> F
+          ++ hypergeometricF(la, lb, z) is the generalized hypergeometric
+          ++ function
+        meijerG : (List F, List F, List F, List F, F) -> F
+          ++ meijerG(la, lb, lc, ld, z) is the meijerG function
 
 @
 
@@ -824,6 +830,8 @@ might not re-evaluate the operator.
     iiWeierstrassPPrime : List F -> F
     iiWeierstrassSigma : List F -> F
     iiWeierstrassZeta : List F -> F
+    iiHypergeometricF : List F -> F
+    iiMeijerG : List F -> F
 
 
     opabs       := operator('abs)$CommonOperators
@@ -846,6 +854,8 @@ might not re-evaluate the operator.
     opWeierstrassPPrime := operator('weierstrassPPrime)$CommonOperators
     opWeierstrassSigma := operator('weierstrassSigma)$CommonOperators
     opWeierstrassZeta := operator('weierstrassZeta)$CommonOperators
+    opHypergeometricF := operator('hypergometricF)$CommonOperators
+    opMeijerG := operator('meijerG)$CommonOperators
 
     abs x         == opabs x
     Gamma(x)      == opGamma(x)
@@ -867,6 +877,22 @@ might not re-evaluate the operator.
     weierstrassPPrime(g2, g3, x) == opWeierstrassPPrime(g2, g3, x)
     weierstrassSigma(g2, g3, x) == opWeierstrassSigma(g2, g3, x)
     weierstrassZeta(g2, g3, x) == opWeierstrassZeta(g2, g3, x)
+    if F has RetractableTo(Integer) then
+        hypergeometricF(a, b, z) ==
+            nai := #a
+            nbi := #b
+            z = 0 and nai <= nbi + 1 => 1
+            p := (#a)::F
+            q := (#b)::F
+            opHypergeometricF concat(concat(a, concat(b, [z])), [p, q])
+
+        meijerG(a, b, c, d, z) ==
+            n1 := (#a)::F
+            n2 := (#b)::F
+            m1 := (#c)::F
+            m2 := (#d)::F
+            opMeijerG concat(concat(a, concat(b,
+                         concat(c, concat(d, [z])))), [n1, n2, m1, m2])
 
     belong? op == has?(op, SPECIAL)
 
@@ -891,7 +917,8 @@ might not re-evaluate the operator.
       is?(op, 'weierstrassPPrime)   => opWeierstrassPPrime
       is?(op, 'weierstrassSigma)   => opWeierstrassSigma
       is?(op, 'weierstrassZeta)   => opWeierstrassZeta
-
+      is?(op, 'hypergometricF)  => opHypergeometricF
+      is?(op, 'meijerG)  => opMeijerG
       error "Not a special operator"
 
     -- Could put more unconditional special rules for other functions here
@@ -1087,6 +1114,9 @@ might not re-evaluate the operator.
              iiWeierstrassPPrime)$BasicOperatorFunctions1(F)
     evaluate(opWeierstrassSigma, iiWeierstrassSigma)$BasicOperatorFunctions1(F)
     evaluate(opWeierstrassZeta, iiWeierstrassZeta)$BasicOperatorFunctions1(F)
+    evaluate(opHypergeometricF, iiHypergeometricF)$BasicOperatorFunctions1(F)
+    evaluate(opMeijerG, iiMeijerG)$BasicOperatorFunctions1(F)
+
 @
 
 \subsection{differentiation of special functions}
@@ -1302,6 +1332,178 @@ component of the gradient failed, it resulted in an infinite loop for
 
     iWeierstrassZetaGrad3(l: List F): F ==
         -weierstrassP(first l, second l, third l)
+
+
+    OF ==> OutputForm
+    SEX ==> SExpression
+    NNI ==> NonNegativeInteger
+
+    if F has RetractableTo(Integer) then
+        get__int__listf : List F -> List Integer
+        get__int__list : (Integer, List OF) ->  List Integer
+    
+        get__int__listf(lf : List F) : List Integer ==
+            map(z +-> retract(z)@Integer, lf)$ListFunctions2(F, Integer)
+    
+        replace_i(lp : List F, v : F, i : NNI) : List F ==
+            concat(first(lp, (i - 1)::NNI), cons(v, rest(lp, i)))
+
+        iiHypergeometricF(l) ==
+            n := #l
+            z := l(n-3)
+            if z = 0 then
+                nn := (n - 2)::NNI
+                pq := rest(l, nn)
+                pqi := get__int__listf(pq)
+                p := first(pqi)
+                q := first(rest(pqi))
+                p <= q + 1 => return 1
+            kernel(opHypergeometricF, l)
+    
+        idvsum(op : BasicOperator, n : Integer, l : List F, x : Symbol) : F  ==
+            res : F := 0
+            for i in 1..n for a in l repeat
+                nl := replace_i(l, dm, i)
+                res := res + differentiate(a, x)*kernel(opdiff, [op nl, dm, a])
+            res
+    
+        dvhypergeom(l: List F, x: Symbol): F ==
+            n := #l
+            nn := (n - 2)::NNI
+            pq := rest(l, nn)
+            pqi := get__int__listf(pq)
+            ol := l
+            l := first(l, nn)
+            l1 := reverse(l)
+            z := first(l1)
+            p := first(pqi)
+            q := first(rest(pqi))
+            aprod := 1@F
+            nl := []@(List F)
+            for i in 1..p repeat
+                a := first(l)
+                nl := cons(a + 1, nl)
+                aprod := aprod * a
+                l := rest(l)
+            bprod := 1@F
+            for i in 1..q repeat
+                b := first(l)
+                nl := cons(b + 1, nl)
+                bprod := bprod * b
+                l := rest(l)
+            nl0 := reverse_!(nl)
+            nl1 := cons(z, pq)
+            nl := concat(nl0, nl1)
+            aprod := aprod/bprod
+            idvsum(opHypergeometricF, nn - 1, ol, x) +
+                 differentiate(z, x)*aprod*opHypergeometricF(nl)
+    
+        add__pairs__to__list(lp : List List F, l : List F): List F ==
+            for p in lp repeat
+                #p ~= 2 => error "not a list of pairs"
+                l := cons(p(2), cons(p(1), l))
+            l
+    
+        dvmeijer(l: List F, x: Symbol): F ==
+            n := #l
+            nn := (n - 4)::NNI
+            l0 := l
+            nl := rest(l, nn)
+            nli := get__int__listf(nl)
+            l := first(l, nn)
+            l1 := reverse(l)
+            z := first(l1)
+            n1 := first(nli)
+            n2 := nli(2)
+            a := first l
+            if n1 > 0 or n2 > 0 then
+                 na := a - 1
+                 l2 := cons(na, rest l)
+            else
+                 na := a
+                 l2 := cons(a + 1, rest l)
+            idvsum(opMeijerG, nn - 1, l0, x) +
+                 differentiate(z, x)*(
+                    opMeijerG(concat(l2, nl)) +
+                      na*opMeijerG(l0))/z
+    
+    
+        get__of__list(n : Integer, lo : List OF) : List List OF ==
+            a := []@(List OF)
+            for i in 1..n repeat
+                a := cons(first(lo), a)
+                lo := rest(lo)
+            a := reverse_!(a)
+            [a, lo]
+    
+        get__of__lists(ln : List Integer, lo : List OF) : List List OF ==
+            rl := []@(List List OF)
+            for n in ln repeat
+                al := get__of__list(n, lo)
+                rl := cons(first(al), rl)
+                lo := first(rest(al))
+            rl := reverse_!(rl)
+            cons(lo, rl)
+    
+        get__int__list(n : Integer, lo : List OF) : List Integer ==
+            n0 := (#lo - n)::NNI
+            lo := rest(lo, n0)
+            rl := []@(List Integer)
+            for i in 1..n repeat
+                p := integer(first(lo) pretend SEX)$SEX
+                rl := cons(p, rl)
+                lo := rest(lo)
+            rl := reverse_!(rl)
+            rl
+    
+        dhyper0(op : OF, lo : List OF) : OF ==
+            n0 := (#lo - 2)::NNI
+            pql := get__int__list(2, lo)
+            lo := first(lo, n0)
+            al := get__of__lists(pql, lo)
+            lo := first(al)
+            al := rest(al)
+            a := first al
+            b := first(rest(al))
+            z := first(lo)
+            prefix(op, [bracket a, bracket b, z])
+    
+        dhyper(lo : List OF) : OF ==
+            dhyper0("hypergometricF"::Symbol::OF, lo)
+    
+        ddhyper(lo : List OF) : OF ==
+            dhyper0(first lo, rest lo)
+    
+        dmeijer0(op : OF, lo : List OF) : OF ==
+            n0 := (#lo - 4)::NNI
+            nl := get__int__list(4, lo)
+            lo := first(lo, n0)
+            al := get__of__lists(nl, lo)
+            lo := first(al)
+            al := rest(al)
+            z := first(lo)
+            prefix(op, concat(
+                         map(bracket, al)$ListFunctions2(List OF, OF), [z]))
+    
+        dmeijer(lo : List OF) : OF ==
+            dmeijer0('meijerG::OF, lo)
+    
+        ddmeijer(lo : List OF) : OF ==
+            dmeijer0(first lo, rest lo)
+    
+        setProperty(opHypergeometricF, '%diffDisp,
+                     ddhyper@(List OF -> OF) pretend None)
+        setProperty(opMeijerG, '%diffDisp, ddmeijer@(List OF -> OF) pretend None)
+        display(opHypergeometricF, dhyper)
+        display(opMeijerG, dmeijer)
+        setProperty(opHypergeometricF, SPECIALDIFF,
+                 dvhypergeom@((List F, Symbol)->F) pretend None)
+        setProperty(opMeijerG, SPECIALDIFF, dvmeijer@((List F, Symbol)->F)
+                                            pretend None)
+    else
+        iiHypergeometricF(l) == kernel(opHypergeometricF, l)
+
+    iiMeijerG(l) == kernel(opMeijerG, l)
 
 
     derivative(opabs,       (x : F) : F +-> abs(x)*inv(x))
