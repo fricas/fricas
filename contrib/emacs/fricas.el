@@ -1184,14 +1184,19 @@ str. Returns:
 			  fricas-TeX-postamble) 
 		  nil fricas-TeX-file)
     ;; TeX the file
-    (call-process "latex" nil nil nil (concat "-output-directory=" dir) 
-		  fricas-TeX-file)
-    ;; png the output
-    (call-process "dvipng" nil nil nil "-bg" bg "-o" png dvi)
-    ;; create and insert the image
-    (insert-image (create-image png 'png nil) fricas-TeX-buffer)
-    (fricas-set-properties pos (point) 'fricas-TeX)
-    (fricas-insert-ascii "\n" 'fricas-undefined)
+    (if (zerop (call-process "latex" nil nil nil 
+			     (concat "-output-directory=" dir) 
+			     fricas-TeX-file))
+	(progn
+          ;; png the output
+	  (call-process "dvipng" nil nil nil "-bg" bg "-o" png dvi)
+	  ;; create and insert the image
+	  (insert-image (create-image png 'png nil) fricas-TeX-buffer)
+	  (fricas-set-properties pos (point) 'fricas-TeX)
+	  (fricas-insert-ascii "\n" 'fricas-undefined))
+
+      (message "LaTeX could not compile expression"))
+
     (setq fricas-TeX-buffer "")))
 
 
