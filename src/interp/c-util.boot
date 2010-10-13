@@ -568,16 +568,6 @@ getmodeOrMapping(x,e) ==
   (u:= get(x,"modemap",e)) is [[[.,:map],.],:.] => ["Mapping",:map]
   nil
 
-outerProduct l ==
-                --of a list of lists
-  null l => LIST nil
-  "append"/[[[x,:y] for y in outerProduct rest l] for x in first l]
-
-sublisR(al,u) ==
-  atom u => u
-  y:= rassoc(t:= [sublisR(al,x) for x in u],al) => y
-  true => t
-
 substituteOp(op',op,x) ==
   atom x => x
   [(op=(f:= first x) => op'; f),:[substituteOp(op',op,y) for y in rest x]]
