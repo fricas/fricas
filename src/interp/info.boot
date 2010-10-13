@@ -249,6 +249,9 @@ actOnInfo(u,$e) ==
         --SAY("Category extension error:
         --cat shouldn't be a join
                       --what was being asserted is an ancestor of what was known
+      -- augModemapsFromCategory asserts that domain is in scope,
+      -- so make sure it really is (and not only the extra view we add)
+      $e := addDomain(name, $e)
       if ATOM(name)
         then $e:= augModemapsFromCategory(name,name,name,cat,$e)
         else
