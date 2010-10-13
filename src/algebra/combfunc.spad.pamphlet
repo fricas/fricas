@@ -1245,7 +1245,7 @@ component of the gradient failed, it resulted in an infinite loop for
         x := third l
         delta := g2^3 - 27*g3^2
         wp := weierstrassP(g2, g3, x)
-        (weierstrassPPrime(g2, g3, x)*(3*g2*weierstrassZeta(g2, g3, x) 
+        (weierstrassPPrime(g2, g3, x)*(3*g2*weierstrassZeta(g2, g3, x)
           - 9*ahalf*g3*x) + 6*g2*wp^2 - 9*g3*wp-g2^2)/delta
 
     iWeierstrassPGrad3(l: List F): F ==
@@ -1326,7 +1326,7 @@ component of the gradient failed, it resulted in an infinite loop for
         delta := g2^3 - 27*g3^2
         wp := weierstrassP(g2, g3, x)
         (-3*weierstrassZeta(g2, g3, x)*(g2*wp + 3*ahalf*g3) +
-                     ahalf*x*(9*g3*wp + ahalf*g2^2) 
+                     ahalf*x*(9*g3*wp + ahalf*g2^2)
                        - 3*ahalf*g2*weierstrassPPrime(g2, g3, x))/delta
 
 
@@ -1341,10 +1341,10 @@ component of the gradient failed, it resulted in an infinite loop for
     if F has RetractableTo(Integer) then
         get__int__listf : List F -> List Integer
         get__int__list : (Integer, List OF) ->  List Integer
-    
+
         get__int__listf(lf : List F) : List Integer ==
             map(z +-> retract(z)@Integer, lf)$ListFunctions2(F, Integer)
-    
+
         replace_i(lp : List F, v : F, i : NNI) : List F ==
             concat(first(lp, (i - 1)::NNI), cons(v, rest(lp, i)))
 
@@ -1359,14 +1359,14 @@ component of the gradient failed, it resulted in an infinite loop for
                 q := first(rest(pqi))
                 p <= q + 1 => return 1
             kernel(opHypergeometricF, l)
-    
+
         idvsum(op : BasicOperator, n : Integer, l : List F, x : Symbol) : F  ==
             res : F := 0
             for i in 1..n for a in l repeat
                 nl := replace_i(l, dm, i)
                 res := res + differentiate(a, x)*kernel(opdiff, [op nl, dm, a])
             res
-    
+
         dvhypergeom(l: List F, x: Symbol): F ==
             n := #l
             nn := (n - 2)::NNI
@@ -1397,13 +1397,13 @@ component of the gradient failed, it resulted in an infinite loop for
             aprod := aprod/bprod
             idvsum(opHypergeometricF, nn - 1, ol, x) +
                  differentiate(z, x)*aprod*opHypergeometricF(nl)
-    
+
         add__pairs__to__list(lp : List List F, l : List F): List F ==
             for p in lp repeat
                 #p ~= 2 => error "not a list of pairs"
                 l := cons(p(2), cons(p(1), l))
             l
-    
+
         dvmeijer(l: List F, x: Symbol): F ==
             n := #l
             nn := (n - 4)::NNI
@@ -1426,8 +1426,7 @@ component of the gradient failed, it resulted in an infinite loop for
                  differentiate(z, x)*(
                     opMeijerG(concat(l2, nl)) +
                       na*opMeijerG(l0))/z
-    
-    
+
         get__of__list(n : Integer, lo : List OF) : List List OF ==
             a := []@(List OF)
             for i in 1..n repeat
@@ -1435,7 +1434,7 @@ component of the gradient failed, it resulted in an infinite loop for
                 lo := rest(lo)
             a := reverse_!(a)
             [a, lo]
-    
+
         get__of__lists(ln : List Integer, lo : List OF) : List List OF ==
             rl := []@(List List OF)
             for n in ln repeat
@@ -1444,7 +1443,7 @@ component of the gradient failed, it resulted in an infinite loop for
                 lo := first(rest(al))
             rl := reverse_!(rl)
             cons(lo, rl)
-    
+
         get__int__list(n : Integer, lo : List OF) : List Integer ==
             n0 := (#lo - n)::NNI
             lo := rest(lo, n0)
@@ -1455,7 +1454,7 @@ component of the gradient failed, it resulted in an infinite loop for
                 lo := rest(lo)
             rl := reverse_!(rl)
             rl
-    
+
         dhyper0(op : OF, lo : List OF) : OF ==
             n0 := (#lo - 2)::NNI
             pql := get__int__list(2, lo)
@@ -1467,13 +1466,13 @@ component of the gradient failed, it resulted in an infinite loop for
             b := first(rest(al))
             z := first(lo)
             prefix(op, [bracket a, bracket b, z])
-    
+
         dhyper(lo : List OF) : OF ==
             dhyper0("hypergeometricF"::Symbol::OF, lo)
-    
+
         ddhyper(lo : List OF) : OF ==
             dhyper0(first lo, rest lo)
-    
+
         dmeijer0(op : OF, lo : List OF) : OF ==
             n0 := (#lo - 4)::NNI
             nl := get__int__list(4, lo)
@@ -1484,16 +1483,17 @@ component of the gradient failed, it resulted in an infinite loop for
             z := first(lo)
             prefix(op, concat(
                          map(bracket, al)$ListFunctions2(List OF, OF), [z]))
-    
+
         dmeijer(lo : List OF) : OF ==
             dmeijer0('meijerG::OF, lo)
-    
+
         ddmeijer(lo : List OF) : OF ==
             dmeijer0(first lo, rest lo)
-    
+
         setProperty(opHypergeometricF, '%diffDisp,
                      ddhyper@(List OF -> OF) pretend None)
-        setProperty(opMeijerG, '%diffDisp, ddmeijer@(List OF -> OF) pretend None)
+        setProperty(opMeijerG, '%diffDisp,
+                     ddmeijer@(List OF -> OF) pretend None)
         display(opHypergeometricF, dhyper)
         display(opMeijerG, dmeijer)
         setProperty(opHypergeometricF, SPECIALDIFF,
@@ -1517,7 +1517,7 @@ component of the gradient failed, it resulted in an infinite loop for
     derivative(opLambertW,  dLambertW)
     derivative(opWeierstrassP, [iWeierstrassPGrad1, iWeierstrassPGrad2,
                                 iWeierstrassPGrad3])
-    derivative(opWeierstrassPPrime, [iWeierstrassPPrimeGrad1, 
+    derivative(opWeierstrassPPrime, [iWeierstrassPPrimeGrad1,
                    iWeierstrassPPrimeGrad2, iWeierstrassPPrimeGrad3])
     derivative(opWeierstrassSigma, [iWeierstrassSigmaGrad1,
                    iWeierstrassSigmaGrad2, iWeierstrassSigmaGrad3])
