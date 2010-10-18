@@ -397,51 +397,51 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
     tranToUPS(ker,arg,posCheck?,atanFlag) ==
       -- converts ker to a power series for certain functions
       -- in trig or hyperbolic trig categories
-      is?(ker,"sin" :: SY) =>
+      is?(ker, 'sin) =>
         applyIfCan(sinIfCan,arg,"sin",posCheck?,atanFlag)
-      is?(ker,"cos" :: SY) =>
+      is?(ker, 'cos) =>
         applyIfCan(cosIfCan,arg,"cos",posCheck?,atanFlag)
-      is?(ker,"tan" :: SY) =>
+      is?(ker, 'tan) =>
         applyIfCan(tanIfCan,arg,"tan",posCheck?,atanFlag)
-      is?(ker,"cot" :: SY) =>
+      is?(ker, 'cot) =>
         applyIfCan(cotIfCan,arg,"cot",posCheck?,atanFlag)
-      is?(ker,"sec" :: SY) =>
+      is?(ker, 'sec) =>
         applyIfCan(secIfCan,arg,"sec",posCheck?,atanFlag)
-      is?(ker,"csc" :: SY) =>
+      is?(ker, 'csc) =>
         applyIfCan(cscIfCan,arg,"csc",posCheck?,atanFlag)
-      is?(ker,"asin" :: SY) =>
+      is?(ker, 'asin) =>
         applyIfCan(asinIfCan,arg,"asin",posCheck?,atanFlag)
-      is?(ker,"acos" :: SY) =>
+      is?(ker, 'acos) =>
         applyIfCan(acosIfCan,arg,"acos",posCheck?,atanFlag)
-      is?(ker,"atan" :: SY) => atancotToUPS(arg,posCheck?,atanFlag,1)
-      is?(ker,"acot" :: SY) => atancotToUPS(arg,posCheck?,atanFlag,-1)
-      is?(ker,"asec" :: SY) =>
+      is?(ker, 'atan) => atancotToUPS(arg,posCheck?,atanFlag,1)
+      is?(ker, 'acot) => atancotToUPS(arg,posCheck?,atanFlag,-1)
+      is?(ker, 'asec) =>
         applyIfCan(asecIfCan,arg,"asec",posCheck?,atanFlag)
-      is?(ker,"acsc" :: SY) =>
+      is?(ker, 'acsc) =>
         applyIfCan(acscIfCan,arg,"acsc",posCheck?,atanFlag)
-      is?(ker,"sinh" :: SY) =>
+      is?(ker, 'sinh) =>
         applyIfCan(sinhIfCan,arg,"sinh",posCheck?,atanFlag)
-      is?(ker,"cosh" :: SY) =>
+      is?(ker, 'cosh) =>
         applyIfCan(coshIfCan,arg,"cosh",posCheck?,atanFlag)
-      is?(ker,"tanh" :: SY) =>
+      is?(ker, 'tanh) =>
         applyIfCan(tanhIfCan,arg,"tanh",posCheck?,atanFlag)
-      is?(ker,"coth" :: SY) =>
+      is?(ker, 'coth) =>
         applyIfCan(cothIfCan,arg,"coth",posCheck?,atanFlag)
-      is?(ker,"sech" :: SY) =>
+      is?(ker, 'sech) =>
         applyIfCan(sechIfCan,arg,"sech",posCheck?,atanFlag)
-      is?(ker,"csch" :: SY) =>
+      is?(ker, 'csch) =>
         applyIfCan(cschIfCan,arg,"csch",posCheck?,atanFlag)
-      is?(ker,"asinh" :: SY) =>
+      is?(ker, 'asinh) =>
         applyIfCan(asinhIfCan,arg,"asinh",posCheck?,atanFlag)
-      is?(ker,"acosh" :: SY) =>
+      is?(ker, 'acosh) =>
         applyIfCan(acoshIfCan,arg,"acosh",posCheck?,atanFlag)
-      is?(ker,"atanh" :: SY) =>
+      is?(ker, 'atanh) =>
         applyIfCan(atanhIfCan,arg,"atanh",posCheck?,atanFlag)
-      is?(ker,"acoth" :: SY) =>
+      is?(ker, 'acoth) =>
         applyIfCan(acothIfCan,arg,"acoth",posCheck?,atanFlag)
-      is?(ker,"asech" :: SY) =>
+      is?(ker, 'asech) =>
         applyIfCan(asechIfCan,arg,"asech",posCheck?,atanFlag)
-      is?(ker,"acsch" :: SY) =>
+      is?(ker, 'acsch) =>
         applyIfCan(acschIfCan,arg,"acsch",posCheck?,atanFlag)
       stateProblem(string name ker,"unknown kernel")
 
@@ -569,7 +569,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       xOpList := opsInvolvingX coef
       -- only function involving x is 'log'
       (null xOpList) => [ups ^ n]
-      (null rest xOpList and is?(first xOpList,"log" :: SY)) =>
+      (null rest xOpList and is?(first xOpList, 'log)) =>
         [ups ^ n]
       -- lowest order coefficient is a product of exponentials and
       -- functions not involving x
@@ -652,11 +652,11 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
         stateProblem("exp","essential singularity")
       deg > 0 => [exp ups]
       lc := coefficient(ups,0); xOpList := opsInvolvingX lc
-      not opInOpList?("log" :: SY,xOpList) => [exp ups]
+      not opInOpList?('log, xOpList) => [exp ups]
       -- try to fix exp(lc) if necessary
       expCoef :=
         normalize(exp lc,x)$ElementaryFunctionStructurePackage(R,FE)
-      opInOpList?("log" :: SY,opsInvolvingX expCoef) =>
+      opInOpList?('log, opsInvolvingX expCoef) =>
         stateProblem("exp","logs in constant coefficient")
       result := exprToGenUPS(expCoef,posCheck?,atanFlag)
       result case %problem => result
@@ -715,7 +715,7 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       deg > 0 => [fcn(ups) :: UPS]
       lc := coefficient(ups,0); xOpList := opsInvolvingX lc
       null xOpList => [fcn(ups) :: UPS]
-      opInOpList?("log" :: SY,xOpList) =>
+      opInOpList?('log, xOpList) =>
         stateProblem(fcnName,"logs in constant coefficient")
       contOnReals? fcnName => [fcn(ups) :: UPS]
       stateProblem(fcnName,"x in constant coefficient")
@@ -738,33 +738,33 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
       -- N.B. when this function is called, 'k2Elem' will have been
       -- applied, so the following functions cannot appear:
       -- tan, cot, sec, csc, sinh, cosh, tanh, coth, sech, csch
-      is?(ker,"sin" :: SY) =>
+      is?(ker, 'sin) =>
         applyBddIfCan(ker :: FE,sinIfCan,arg,"sin",posCheck?,atanFlag)
-      is?(ker,"cos" :: SY) =>
+      is?(ker, 'cos) =>
         applyBddIfCan(ker :: FE,cosIfCan,arg,"cos",posCheck?,atanFlag)
-      is?(ker,"asin" :: SY) =>
+      is?(ker, 'asin) =>
         genUPSApplyIfCan(asinIfCan,arg,"asin",posCheck?,atanFlag)
-      is?(ker,"acos" :: SY) =>
+      is?(ker, 'acos) =>
         genUPSApplyIfCan(acosIfCan,arg,"acos",posCheck?,atanFlag)
-      is?(ker,"atan" :: SY) =>
+      is?(ker, 'atan) =>
         atancotToGenUPS(ker :: FE,arg,posCheck?,atanFlag,1)
-      is?(ker,"acot" :: SY) =>
+      is?(ker, 'acot) =>
         atancotToGenUPS(ker :: FE,arg,posCheck?,atanFlag,-1)
-      is?(ker,"asec" :: SY) =>
+      is?(ker, 'asec) =>
         genUPSApplyIfCan(asecIfCan,arg,"asec",posCheck?,atanFlag)
-      is?(ker,"acsc" :: SY) =>
+      is?(ker, 'acsc) =>
         genUPSApplyIfCan(acscIfCan,arg,"acsc",posCheck?,atanFlag)
-      is?(ker,"asinh" :: SY) =>
+      is?(ker, 'asinh) =>
         genUPSApplyIfCan(asinhIfCan,arg,"asinh",posCheck?,atanFlag)
-      is?(ker,"acosh" :: SY) =>
+      is?(ker, 'acosh) =>
         genUPSApplyIfCan(acoshIfCan,arg,"acosh",posCheck?,atanFlag)
-      is?(ker,"atanh" :: SY) =>
+      is?(ker, 'atanh) =>
         genUPSApplyIfCan(atanhIfCan,arg,"atanh",posCheck?,atanFlag)
-      is?(ker,"acoth" :: SY) =>
+      is?(ker, 'acoth) =>
         genUPSApplyIfCan(acothIfCan,arg,"acoth",posCheck?,atanFlag)
-      is?(ker,"asech" :: SY) =>
+      is?(ker, 'asech) =>
         genUPSApplyIfCan(asechIfCan,arg,"asech",posCheck?,atanFlag)
-      is?(ker,"acsch" :: SY) =>
+      is?(ker, 'acsch) =>
         genUPSApplyIfCan(acschIfCan,arg,"acsch",posCheck?,atanFlag)
       stateProblem(string name ker,"unknown kernel")
 
