@@ -808,13 +808,13 @@ in input, puts point just after the prompt before the previous
 prompt."
   (interactive)
   (let ((pos (point)))
-    (when (fricas-input? pos)
-      (setq pos (1- (fricas-beginning-of-region-pos pos))))
-    (setq pos (fricas-previous-prompt-pos pos))
-    (if (= pos (point-min))
-	(goto-char (next-single-property-change pos 'type nil (point-max)))
-      (goto-char (fricas-previous-prompt-pos (1- pos)))
-      (fricas-down-input))))
+    (setq pos (fricas-beginning-of-region-pos pos))
+    (when (fricas-input? pos) ;; first position of input, want to go up
+      (setq pos (fricas-beginning-of-region-pos (1- pos)))
+      (unless (= pos (point-min))
+	(setq pos (1- pos))))
+    (goto-char (fricas-previous-prompt-pos pos))
+    (fricas-down-input)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
