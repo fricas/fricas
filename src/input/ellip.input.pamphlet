@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input ellip.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+@
+<<*>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+-- This input file checks basic properties of elliptic functions
+-- and of elliptic integrals.  In fact, assuming that derivatives
+-- with respect to z are correct it proves that we use correct
+-- formulas for derivatives with respect to g2 and g3 or m.
+
+testsuite "Elliptic functions"
+testcase "defining identities"
+
+eI := Expression(Integer)
+
+-- Weierstrass functions
+
+pp := 4*weierstrassP(g2,g3,z)^3 -g2*weierstrassP(g2,g3,z) -g3
+
+weval(e) ==
+   eval(e, [weierstrassPPrime(g2,g3,z) = sqrt(pp)])
+
+gg := weierstrassPPrime(g2,g3,z)^2 - pp
+
+-- check that gg generate differential ideal
+
+testEquals("weval(D(gg, g2))", "0")
+testEquals("weval(D(gg, g3))", "0")
+testEquals("weval(D(gg, z))", "0")
+
+-- check that derivatives commute
+
+wcross1(f : (eI, eI, eI) -> eI, v1 : Symbol, v2 : Symbol) : eI ==
+    e := f(g2::eI, g3::eI, z::eI)
+    weval(D(D(e, v1), v2) - D(D(e, v2), v1))
+
+wcross(f : (eI, eI, eI) -> eI) : List(eI) ==
+    [wcross1(f, 'g2, 'g3), wcross1(f, 'g2, 'z),
+      wcross1(f, 'g3, 'z)]
+
+testEquals("wcross(weierstrassP)", "[0, 0, 0]")
+testEquals("wcross(weierstrassPPrime)", "[0, 0, 0]")
+testEquals("wcross(weierstrassZeta)", "[0, 0, 0]")
+testEquals("wcross(weierstrassSigma)", "[0, 0, 0]")
+
+-- Jacobi functions
+
+jeval(e) ==
+   eval(e, [jacobiCn(z, m), jacobiDn(z,m)], [sqrt(1 - jacobiSn(z,m)^2),
+                sqrt(1 - m* jacobiSn(z,m)^2)])
+
+jcross(f : (eI, eI) -> eI) : eI
+   cc := D(D(f(z, m), m), z) - D(D(f(z, m), z), m)
+   jeval(cc)
+
+-- check that jacobiSn(z,m)^2 + jacobiCn(z, m)^2 - 1 and
+-- m* jacobiSn(z,m)^2 + jacobiDn(z,m)^2 - 1 generate
+-- differential ideal
+
+testEquals("jeval(D(jacobiSn(z,m)^2 + jacobiCn(z, m)^2 - 1, z))", "0")
+testEquals("jeval(D(jacobiSn(z,m)^2 + jacobiCn(z, m)^2 - 1, m))", "0")
+testEquals("jeval(D(m* jacobiSn(z,m)^2 + jacobiDn(z,m)^2 - 1, z))", "0")
+testEquals("jeval(D(m* jacobiSn(z,m)^2 + jacobiDn(z,m)^2 - 1, m))", "0")
+
+-- Check that derivatives commute
+
+testEquals("jcross(jacobiSn)", "0")
+
+testEquals("jcross(jacobiCn)", "0")
+
+testEquals("jcross(jacobiDn)", "0")
+
+-- Elliptic integrals
+
+-- Check that derivatives commute
+
+testEquals("D(D(ellipticE(z, m), m), z) - D(D(ellipticE(z, m), z), m)", "0")
+
+testEquals("D(D(ellipticF(z, m), m), z) - D(D(ellipticF(z, m), z), m)", "0")
+
+testEquals("D(D(ellipticPi(z, n, m), z), m) - D(D(ellipticPi(z, n, m), m), z)", "0")
+
+testEquals("D(D(ellipticPi(z, n, m), z), n) - D(D(ellipticPi(z, n, m), n), z)", "0")
+
+testEquals("D(D(ellipticPi(z, n, m), m), n) - D(D(ellipticPi(z, n, m), n), m)", "0")
+
+-- Check agreement
+testEquals("D(ellipticK(m), m) - eval(D(ellipticF(z, m), m), [z = 1])", "0")
+
+testEquals("D(ellipticE(m), m) - eval(D(ellipticE(z, m), m), [z = 1])", "0")
+
+-- Invers relation
+testEquals("jacobiSn(ellipticF(z, m), m) -z", "0")
+
+
+)set output algebra on
+statistics()
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}
