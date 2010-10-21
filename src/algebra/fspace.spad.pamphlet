@@ -195,7 +195,8 @@ ExpressionSpace(): Category == Defn where
 
     box(x:%)     == box [x]
     paren(x:%)   == paren [x]
-    belong? op   == op = oppren or op = opbox
+    belong? op   ==
+        has?(op, any) and (is?(op, PAREN) or is?(op, BOX))
     listk f      == parts allKernels f
     tower f      == sort_! listk f
     allk l       == reduce("union", [allKernels f for f in l], {})
@@ -593,7 +594,8 @@ FunctionSpace(R : Comparable): Category == Definition where
     applyQuote(s, x, y, z)     == applyQuote(s, [x, y, z])
     applyQuote(s, x, y, z, t)  == applyQuote(s, [x, y, z, t])
     applyQuote(s:SY, l:List %) == opquote concat(s::%, l)
-    belong? op                 == op = opdiff or op = opquote
+    belong? op                 == 
+        has?(op, 'any) and (is?(op, '%diff) or is?(op, '%quote))
     subs(fn, k) == kernel(operator k,[fn x for x in argument k]$List(%))
 
     operator op ==
