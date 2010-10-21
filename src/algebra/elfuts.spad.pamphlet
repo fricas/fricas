@@ -12,6 +12,7 @@
 \section{package ELFUTS EllipticFunctionsUnivariateTaylorSeries}
 <<package ELFUTS EllipticFunctionsUnivariateTaylorSeries>>=
 )abbrev package ELFUTS EllipticFunctionsUnivariateTaylorSeries
+)boot $tryRecompileArguments := nil
 ++ Elliptic functions expanded as Taylor series
 ++ Author: Bill Burge, Clifton J. Williamson
 ++ Date Created: 1986
@@ -34,35 +35,100 @@ EllipticFunctionsUnivariateTaylorSeries(Coef,UTS):
   YS  ==> Y$ParadoxicalCombinatorsForStreams(Coef)
 
   Exports ==> with
-    sn     : (UTS,Coef) -> UTS
-      ++\spad{sn(x,k)} expands the elliptic function sn as a Taylor
+    jacobiSn : (UTS, Coef) -> UTS
+      ++\spad{jacobiSn(z, m)} expands the elliptic function sn as a Taylor
       ++ series.
-    cn     : (UTS,Coef) -> UTS
-      ++\spad{cn(x,k)} expands the elliptic function cn as a Taylor
+    jacobiCn : (UTS, Coef) -> UTS
+      ++\spad{jacobiCn(z, m)} expands the elliptic function cn as a Taylor
       ++ series.
-    dn     : (UTS,Coef) -> UTS
-      ++\spad{dn(x,k)} expands the elliptic function dn as a Taylor
+    jacobiDn : (UTS, Coef) -> UTS
+      ++\spad{jacobiDn(z, m)} expands the elliptic function dn as a Taylor
       ++ series.
+    if Coef has Algebra(RN) then
+        ellipticE : (UTS, Coef) -> UTS
+          ++ ellipticE(z, m) expands the elliptic integral E as a Taylor
+          ++ series.
+        ellipticF : (UTS, Coef) -> UTS
+          ++ ellipticF(z, m) expands the elliptic integral F as a Taylor
+          ++ series.
+        ellipticPi : (UTS, Coef, Coef) -> UTS
+          ++ ellipticPi(z, n, m) expands the elliptic integral Pi as a Taylor
+          ++ series.
     sncndn: (ST,Coef) -> L ST
        ++\spad{sncndn(s,c)} is used internally.
 
   Implementation ==> add
     import StreamTaylorSeriesOperations Coef
     UPS==> StreamTaylorSeriesOperations Coef
-    integrate ==> lazyIntegrate
-    sncndnre:(Coef,L ST,ST,Coef) -> L ST
-    sncndnre(k,scd,dx,sign) ==
-            [integrate(0,      scd.2*$UPS scd.3*$UPS dx),  _
-             integrate(1,  sign*scd.1*$UPS scd.3*$UPS dx),  _
-             integrate(1,sign*k*$UPS scd.1*$UPS scd.2*$UPS dx)]
+    lint ==> lazyIntegrate
 
-    sncndn(z,k) ==
+    SPFCN : Boolean := Coef has SpecialFunctionCategory
+
+    sncndnre:(Coef, Coef, Coef, Coef, L ST,ST,Coef) -> L ST
+    sncndnre(m, s0, c0, d0,scd,dx,sign) ==
+            [lint(s0,      scd.2*$UPS scd.3*$UPS dx),  _
+             lint(c0, sign*scd.1*$UPS scd.3*$UPS dx),  _
+             lint(d0, sign*m*$UPS scd.1*$UPS scd.2*$UPS dx)]
+
+    sncndn(z, m) ==
       empty? z => [0 :: ST,1 :: ST,1::ST]
-      frst z = 0 => YS(x +-> sncndnre(k, x, deriv z, -1), 3)
+      (z0 := frst z) = 0 => YS(x +-> sncndnre(m, 0, 1, 1, x, deriv z, -1), 3)
+      SPFCN => 
+          scd := YS(x +-> sncndnre(m, 0, 1, 1, x, deriv z, -1), 3)
+          sn0 : Coef := jacobiSn(z0, m)
+          cn0 : Coef := jacobiCn(z0, m)
+          dn0 : Coef := jacobiDn(z0, m)
+          c1 := m*sn0^2
+          -- onelst : List Coef := [1]
+          invden := recip(1::ST - c1*$UPS scd.1 *$UPS scd.1)::ST
+          sn1 : ST := invden *$UPS (cn0*dn0*scd.1 + sn0*scd.2 *$UPS scd.3)
+          cn1 : ST := invden *$UPS (cn0*scd.2 - sn0*dn0*scd.1 *$UPS scd.3)
+          dn1 : ST := invden *$UPS (dn0*scd.3 - m*sn0*cn0*scd.1 *$UPS scd.2)
+          [sn1, cn1, dn1]
       error "ELFUTS:sncndn: constant coefficient should be 0"
-    sn(x,k)  == series sncndn.(coefficients x,k).1
-    cn(x,k)  == series sncndn.(coefficients x,k).2
-    dn(x,k)  == series sncndn.(coefficients x,k).3
+    jacobiSn(z, m)  == series sncndn.(coefficients z, m).1
+    jacobiCn(z, m)  == series sncndn.(coefficients z, m).2
+    jacobiDn(z, m)  == series sncndn.(coefficients z, m).3
+
+    if Coef has Algebra(RN) then
+
+        ellipticE(z, m) ==
+            cz : ST := coefficients z
+            empty? cz => 0
+            s1 := sqrt(1 - m*z^2)
+            s2 := (1 - z^2)^(-1/2)
+            (z0 := coefficient(z, 0)) = 0 =>
+                integrate(s1*s2)
+            SPFCN =>
+                c0 : Coef := ellipticE(z0, m)
+                c0::UTS + integrate(s1*s2)
+            error "ELFUTS:ellipticE: constant coefficient should be 0"
+
+        ellipticF(z, m) ==
+            cz : ST := coefficients z
+            empty? cz => 0
+            s1 := (1 - m*z^2)^(-1/2)
+            s2 := (1 - z^2)^(-1/2)
+            (z0 := coefficient(z, 0)) = 0 =>
+                integrate(s1*s2)
+            SPFCN =>
+                c0 : Coef := ellipticF(z0, m)
+                c0::UTS + integrate(s1*s2)
+            error "ELFUTS:ellipticF: constant coefficient should be 0"
+
+        ellipticPi(z, n, m) ==
+            cz : ST := coefficients z
+            empty? cz => 0
+            s1 := (1 - m*z^2)^(-1/2)
+            s2 := (1 - z^2)^(-1/2)
+            ss : UTS := (1 - n*z^2)^(-1@RN)*s1*s2
+            (z0 := coefficient(z, 0)) = 0 =>
+                integrate(ss)
+            SPFCN =>
+                c0 : Coef := ellipticPi(z0, n, m)
+                c0::UTS + integrate(ss)
+            error "ELFUTS:ellipticPi: constant coefficient should be 0"
+
 
 @
 \section{License}
