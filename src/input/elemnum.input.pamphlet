@@ -25,7 +25,6 @@ between functions.
 <<TEST branch cuts>>
 <<TEST singularities>>
 <<TEST specific values>>
-<<TEST simplification>>
 @
 Since the floating point calculations depend on the underlying Common Lisp
 engine, it may happen (and currently happens) that some tests fail only for
@@ -82,6 +81,14 @@ testAbsolutePrecision((1/tmax)::DoubleFloat)
 testRelativePrecision((1/tmax)::Float)
 testRelativePrecision((1/tmax)::DoubleFloat)
 
+
+-- looks silly, but DoubleFloat zero is signed and we must make
+-- sure that the zero imaginary component is positive.
+minus_two := conjugate(-2.0::Complex(DFLOAT))
+
+-- similarly, here we need negative imaginary zero
+two := conjugate(2.0::Complex(DFLOAT))
+
 testCircleCont(radius, angle, beginPolar, beginCartesian, f) ==
     free valOld
     free valNew
@@ -97,35 +104,35 @@ testCircleCont(radius, angle, beginPolar, beginCartesian, f) ==
 --    output arg
 
 testcaseNoClear "sqrt"
-testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(FLOAT),  sqrt$Complex(Float))
-testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(DFLOAT), sqrt$Complex(DFLOAT))
+testCircleCont(2.0, -2*%pi, %pi, -2.0::Complex(FLOAT),  sqrt$Complex(Float))
+testCircleCont(2.0, -2*%pi, %pi, minus_two, sqrt$Complex(DFLOAT))
 testcaseNoClear "log"
-testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(FLOAT),  log$Complex(Float))
-testCircleCont(2.0, -2*%pi, -%pi, -2.0::Complex(DFLOAT), log$Complex(DFLOAT))
+testCircleCont(2.0, -2*%pi, %pi, -2.0::Complex(FLOAT),  log$Complex(Float))
+testCircleCont(2.0, -2*%pi, %pi, minus_two, log$Complex(DFLOAT))
 
 testcaseNoClear "acos"
 -- upper circle
-testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(FLOAT),  acos$Complex(Float))
-testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(DFLOAT), acos$Complex(DFLOAT))
+testCircleCont(2.0, -%pi, %pi, -2.0::Complex(FLOAT),  acos$Complex(Float))
+testCircleCont(2.0, -%pi, %pi, minus_two, acos$Complex(DFLOAT))
 -- lower circle
 testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(FLOAT),  acos$Complex(Float))
-testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(DFLOAT), acos$Complex(DFLOAT))
+testCircleCont(2.0, -%pi, 0.0, two, acos$Complex(DFLOAT))
 
 testcaseNoClear "asin"
 -- upper circle
-testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(FLOAT),  asin$Complex(Float))
-testCircleCont(2.0, -%pi, -%pi, -2.0::Complex(DFLOAT), asin$Complex(DFLOAT))
+testCircleCont(2.0, -%pi, %pi, -2.0::Complex(FLOAT),  asin$Complex(Float))
+testCircleCont(2.0, -%pi, %pi, minus_two, asin$Complex(DFLOAT))
 -- lower circle
 testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(FLOAT),  asin$Complex(Float))
-testCircleCont(2.0, -%pi, 0.0, 2.0::Complex(DFLOAT), asin$Complex(DFLOAT))
+testCircleCont(2.0, -%pi, 0.0, two, asin$Complex(DFLOAT))
 
 testcaseNoClear "atan"
 -- right circle
-testCircleCont(2.0, %pi, -%pi/2.0, -2.0*%i::Complex(FLOAT),  atan$Complex(Float))
-testCircleCont(2.0, %pi, -%pi/2.0, -2.0*%i::Complex(DFLOAT), atan$Complex(DFLOAT))
+testCircleCont(2.0, -%pi, %pi/2.0, 2.0*%i::Complex(FLOAT),  atan$Complex(Float))
+testCircleCont(2.0, -%pi, %pi/2.0, 2.0*%i::Complex(DFLOAT), atan$Complex(DFLOAT))
 -- left circle
-testCircleCont(2.0, %pi, %pi/2.0, 2.0*%i::Complex(FLOAT),  atan$Complex(Float))
-testCircleCont(2.0, %pi, %pi/2.0, 2.0*%i::Complex(DFLOAT), atan$Complex(DFLOAT))
+testCircleCont(2.0, -%pi, -%pi/2.0, -2.0*%i::Complex(FLOAT),  atan$Complex(Float))
+testCircleCont(2.0, -%pi, -%pi/2.0, -2.0*%i::Complex(DFLOAT), atan$Complex(DFLOAT))
 
 @
 
@@ -144,8 +151,8 @@ testLibraryError("atan(%i::Complex Float)")
 testLibraryError("atan(-%i::Complex Float)")
 testLibraryError("atan(%i::Complex DFLOAT)")
 testLibraryError("atan(-%i::Complex DFLOAT)")
-testLibraryError("atan(%i)")
-testLibraryError("atan(-%i)")
+xftestLibraryError("atan(%i)")
+xftestLibraryError("atan(-%i)")
 
 @
 
@@ -177,26 +184,26 @@ atanValues := _
 testcaseNoClear "log"
 for i in 0..3 repeat
     testEquals("log(%e^" string(i) ")", string(i))
-    testEquals("log(-%e^" string(i) ")", string(i) "+ %i*%pi")
-    testEquals("log(%i*%e^" string(i) ")", string(i) "+ %i*%pi/2")
-    testEquals("log(-%i*%e^" string(i) ")", string(i) "- %i*%pi/2")
+    xftestEquals("log(-%e^" string(i) ")", string(i) "+ %i*%pi")
+    xftestEquals("log(%i*%e^" string(i) ")", string(i) "+ %i*%pi/2")
+    xftestEquals("log(-%i*%e^" string(i) ")", string(i) "- %i*%pi/2")
 
 testcaseNoClear "acos"
 for p in atanValues repeat 
-    testEquals("acos(1/sqrt(1+(" p.1 ")^2))", p.2)
+    xftestEquals("acos(1/sqrt(1+(" p.1 ")^2))", p.2)
     testRealEquals("numeric acos(1/sqrt(1+(" p.1 ")^2))", 
                    "numeric(" p.2 ")")
 
 testcaseNoClear "asin"
 for p in atanValues repeat 
-    testEquals("asin((" p.1 ")/sqrt(1+(" p.1 ")^2))", p.2)
+    xftestEquals("asin((" p.1 ")/sqrt(1+(" p.1 ")^2))", p.2)
     testRealEquals("numeric asin((" p.1 ")/sqrt(1+(" p.1 ")^2))", 
                    "numeric(" p.2 ")")
 
 testcaseNoClear "atan"
 for p in atanValues repeat 
-    testEquals("atan(" p.1 ")", p.2)
-    testEquals("atan(-(" p.1 "))", "-(" p.2 ")")
+    xftestEquals("atan(" p.1 ")", p.2)
+    xftestEquals("atan(-(" p.1 "))", "-(" p.2 ")")
     testRealEquals("numeric atan(" p.1 ")", "numeric(" p.2 ")")
     testRealEquals("numeric atan(-(" p.1 "))", "numeric(-(" p.2 "))")
 
