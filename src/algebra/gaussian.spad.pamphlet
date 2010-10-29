@@ -365,15 +365,13 @@ ComplexCategory(R:CommutativeRing): Category ==
          half := recip(2::R)::R
 
          if R has RealNumberSystem then
-           atan2loc(y: R, x: R): R ==
+           atan2loc(x : R, y : R) : R ==
                pi1 := pi()$R
                pi2 := pi1 * half
                x = 0 => if y >= 0 then pi2 else -pi2
 
                -- Atan in (-pi/2,pi/2]
                theta := atan(y * recip(x)::R)
-               while theta <= -pi2 repeat theta := theta + pi1
-               while theta >   pi2 repeat theta := theta - pi1
 
                x >= 0 => theta      -- I or IV
 
@@ -382,7 +380,7 @@ ComplexCategory(R:CommutativeRing): Category ==
                else
                    theta - pi1      -- III
 
-           argument x == atan2loc(imag x, real x)
+           argument x == atan2loc(real x, imag x)
 
          else
            if R has RadicalCategory then
@@ -440,6 +438,17 @@ ComplexCategory(R:CommutativeRing): Category ==
            sin x ==
              e := exp(imaginary() * x)
              - imaginary() * half * (e - recip(e)::%)
+
+           asin x == - imaginary()*asinh(imaginary()*x)
+
+           if R has RadicalCategory then
+
+               acos x ==
+                   - imaginary()*log(x + imaginary()*sqrt(1 - x^2))
+
+           else
+
+               acos x == (pi()$R*half)::% - asin x
 
          if R has RealNumberSystem then
            polarCoordinates x ==
