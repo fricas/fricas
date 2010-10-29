@@ -105,7 +105,16 @@ The function \spadfun{coefficient} carries three different semantics.  We can ex
 \begin{enumerate}
 \item a polynomial giving the terms of given total degree:
 <<domain SMTS SparseMultivariateTaylorSeries>>=
-    coefficient(s, n) == elt(s,n + 1)$Rep  -- 1-based indexing for streams
+
+    coefficient(x : %, n : NNI) : SMP ==
+        -- Cannot use elt!  Should return 0 if stream doesn't have it.
+        u := x::Rep
+        while not empty? u and n > 0 repeat
+            u := rst u
+            n := (n - 1) :: NNI
+        empty? u or n ~= 0 => 0
+        frst u
+
 @
 \item a Taylor series with all coefficients of a monomial:
   here we have to take into account that we reduce the degree of each term of
