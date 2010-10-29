@@ -353,11 +353,20 @@ GMP_WRAP_SO_TARGET=""
 AC_ARG_WITH([gmp],
             [AS_HELP_STRING([--with-gmp], [use gmp for sbcl bignums])],
             [case $withval in
-               yes) if test $(uname -m)$fricas_lisp_flavor = x86_64sbcl ; then
+               yes)
+                 if test $fricas_lisp_flavor = sbcl ; then
+                    case $(uname -m) in
+                      i386|i486|i586|i686|x86_64)
                        GMP_WRAP_SO_TARGET=gmp_wrap_so
-                    else
-                       AC_MSG_ERROR([--with-gmp is valid only when using sbcl on x86_64])
-                    fi ;;
+                         ;;
+                      *)
+                       AC_MSG_ERROR([--with-gmp is valid only when using sbcl on AMD/Intel processors])
+                         ;;
+                    esac
+                 else
+                    AC_MSG_ERROR([--with-gmp is valid only when using sbcl on AMD/Intel processors])
+                       
+                 fi ;;
                no) ;;
                *) AC_MSG_ERROR([--with-gmp only allows yes or no as an argument]) ;;
              esac])

@@ -4042,13 +4042,24 @@ GMP_WRAP_SO_TARGET=""
 # Check whether --with-gmp was given.
 if test "${with_gmp+set}" = set; then
   withval=$with_gmp; case $withval in
-               yes) if test $(uname -m)$fricas_lisp_flavor = x86_64sbcl ; then
+               yes)
+                 if test $fricas_lisp_flavor = sbcl ; then
+                    case $(uname -m) in
+                      i386|i486|i586|i686|x86_64)
                        GMP_WRAP_SO_TARGET=gmp_wrap_so
-                    else
-                       { { echo "$as_me:$LINENO: error: --with-gmp is valid only when using sbcl on x86_64" >&5
-echo "$as_me: error: --with-gmp is valid only when using sbcl on x86_64" >&2;}
+                         ;;
+                      *)
+                       { { echo "$as_me:$LINENO: error: --with-gmp is valid only when using sbcl on AMD/Intel processors" >&5
+echo "$as_me: error: --with-gmp is valid only when using sbcl on AMD/Intel processors" >&2;}
    { (exit 1); exit 1; }; }
-                    fi ;;
+                         ;;
+                    esac
+                 else
+                    { { echo "$as_me:$LINENO: error: --with-gmp is valid only when using sbcl on AMD/Intel processors" >&5
+echo "$as_me: error: --with-gmp is valid only when using sbcl on AMD/Intel processors" >&2;}
+   { (exit 1); exit 1; }; }
+
+                 fi ;;
                no) ;;
                *) { { echo "$as_me:$LINENO: error: --with-gmp only allows yes or no as an argument" >&5
 echo "$as_me: error: --with-gmp only allows yes or no as an argument" >&2;}
