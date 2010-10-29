@@ -46,6 +46,39 @@ testEquals("integrate(df1, x)", "f1")
 testEquals("integrate(df2, x)", "f2")
 testEquals("integrate(df3, x)", "f3")
 
+testcase "Weierstrass preparation"
+mT := TaylorSeries(Fraction(Integer))
+pFI := Polynomial(Fraction(Integer))
+cmpl(lt : List mT, lp : List pFI, n : Integer) : Integer ==
+    res := n + 1
+    for t1 in lt for p in lp repeat
+        t2 := p::mT
+        t := t1 - t2
+        for i in 0..(n::NonNegativeInteger) repeat
+            if coefficient(t, i) ~= 0 then res := min(res, i)
+    res
+
+ts0 := (x+y)::pFI::mT
+wP := WeierstrassPreparation(Fraction(Integer))
+r1 := weierstrass(y, ts0)$wP
+testEquals("cmpl(r1, [x], 5)", "6")
+ts := (x+y^3)::pFI::mT
+r2 := weierstrass(y, ts)$wP
+testEquals("cmpl(r2, [x, 0, 0], 5)", "6")
+r3 := weierstrass(x, ts)$wP
+testEquals("cmpl(r3, [y^3], 5)", "6")
+r4 := weierstrass(y, sin(ts))$wP
+testEquals("cmpl(r4, [x, 0, 0], 5)", "6")
+r5 := weierstrass(x, sin(ts))$wP
+testEquals("cmpl(r5, [y^3], 5)", "6")
+r6 := weierstrass(y, cos(ts) - 1)$wP
+testEquals("cmpl(r6, [x^2, 0, 0,2*x, 0, 0], 10)", "11")
+r7 := weierstrass(x, cos(ts) - 1)$wP
+testEquals("cmpl(r7, [y^6, 2*y^3], 10)", "11")
+r8 := weierstrass(y, ts + cos(ts0) - 1)$wP;
+testEquals("cmpl(r8, [-2*x -22*x^2/3 - 5884*x^3/45 -59719*x^4/21, _
+            -2*x -24*x^2 - 2348*x^3/5 - 10333166*x^4/945], 4)", "5")
+
 )set output algebra on
 statistics()
 @
