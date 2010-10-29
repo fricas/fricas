@@ -1,6 +1,12 @@
 #include <gmp.h>
 
-#define BIGNUM_TAG 7
+#if defined(__x86_64__)
+  #define BIGNUM_TAG 7
+  #define BIT_CNT 64
+#else
+  #define BIGNUM_TAG 3
+  #define BIT_CNT 32
+#endif
 #define WORD_PTR_TYPE unsigned long *
 #define TO_WORD_PTR(x) ((WORD_PTR_TYPE)((x) - BIGNUM_TAG))
 #define BIGNUM_LENGTH(x) ((x)[-1] >> 8)
@@ -51,10 +57,12 @@ int
 count_zeros(mp_limb_t x)
 {
     int res = 0;
+#if BIT_CNT == 64
     if (!(x & ((1l<<32) - 1))) {
         res = 32;
         x >>= 32;
     }
+#endif
     if (!(x & ((1l<<16) - 1))) {
         res += 16;
         x >>= 16;
@@ -99,7 +107,7 @@ gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
     while(k1 < s1n && s1p[k1] == 0) k1++;
     s1p += k1;
     s1n -= k1;
-    z1l = k1*64;
+    z1l = k1*BIT_CNT;
     if (s1n == 0) {
         *rp = 0;
         return 0;
@@ -111,7 +119,7 @@ gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
     while(k1 < s2n && s2p[k1] == 0) k1++;
     s2p += k1;
     s2n -= k1;
-    z2l = k1*64;
+    z2l = k1*BIT_CNT;
     if (s2n == 0) {
         *rp = 0;
         return 0;
@@ -137,8 +145,8 @@ gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
         s1p = ptmp;
     }
     zp = (z1l < z2l)? z1l : z2l;
-    k = zp / 64;
-    zp = zp % 64;
+    k = zp / BIT_CNT;
+    zp = zp % BIT_CNT;
     for(k1 = 0; k1 < k; k1++) {
         rp[k1] = 0;
     }
@@ -149,7 +157,7 @@ gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
         rp[res] = rc;
         res++;
     }
-    if (rp[res - 1] & (1ul << 63)) {
+    if (rp[res - 1] & (1ul << (BIT_CNT - 1))) {
         rp[res] = 0;
         res++;
     }
