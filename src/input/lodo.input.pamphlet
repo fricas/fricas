@@ -16,66 +16,66 @@
 <<*>>=
 <<license>>
 ---------------------------------- lodo.input -----------------------------
- 
+
 -- LODO2(M,A) is the domain of linear ordinary differential operators over
 -- an A-module M, where A is a differential ring.  This includes the
 -- cases of operators which are polynomials in D acting upon scalars or
 -- vectors depending on a single variable.  The coefficients of the
 -- operator polynomials can be integers, rational functions, matrices
 -- or elements of other domains.
- 
+
 ------------------------------------------------------------------------
 -- Differential operators with constant coefficients
 ------------------------------------------------------------------------
 )clear all
 RN:=FRAC INT
 Dx: LODO2(RN, UP(x,RN))
- 
+
 Dx := D()                  -- definition of an operator
 a  := Dx  + 1
 b  := a + 1/2*Dx^2 - 1/2
- 
+
 p: UP(x,RN) := 4*x^2 + 2/3      -- something to work on
- 
+
 a p                        -- application of an operator to a polynomial
 (a*b) p = a b p            -- multiplication is defined by this identity
 c := (1/9)*b*(a + b)^2    -- exponentiation follows from multiplication
 (a^2 - 3/4*b + c) (p + 1) -- general application of operator expressions
- 
+
 ------------------------------------------------------------------------
 -- Differential operators with rational function coefficients
 ------------------------------------------------------------------------
 )clear all
 RFZ := FRAC UP(x,INT)
 (Dx, a, b): LODO1 RFZ
- 
+
 Dx := D()
 b := 3*x^2*Dx^2 + 2*Dx + 1/x
 a := b*(5*x*Dx + 7)
 p: RFZ := x^2 + 1/x^2
- 
+
 (a*b - b*a) p  -- operator multiplication is not commutative
- 
+
 -- When the coefficients of the operator polynomials come from a field
 -- it is possible to define left and right division of the operators.
 -- This allows the computation of left and right gcd's via remainder
 -- sequences, and also the computation of left and right lcm's.
- 
+
 leftDivide(a,b)      -- result is the quotient/remainder pair
 a - (b * %.quotient + %.remainder)
 rightDivide(a,b)
 a - (%.quotient * b + %.remainder)
- 
+
 -- A GCD doesn't necessarily divide a and b on both sides.
 e := leftGcd(a,b)
 leftRemainder(a, e)    -- remainder from left division
 rightRemainder(a, e)    -- remainder from right division
- 
+
 -- An LCM is not necessarily divisible from both sides.
 f := rightLcm(a,b)
 leftRemainder(f, b)
 rightRemainder(f, b)  -- the remainder is non-zero
- 
+
 ------------------------------------------------------------------------
 --
 -- Problem: find the first few coefficients of exp(x)/x^i in
@@ -101,32 +101,32 @@ n==4
 leq
 n==7
 leq
- 
+
 ------------------------------------------------------------------------
 -- Differential operators with matrix coefficients acting on vectors.
 ------------------------------------------------------------------------
 )clear all
 PZ := UP(x,INT); Vect := DPMM(3, PZ, SQMATRIX(3,PZ), PZ);
 Modo := LODO2(SQMATRIX(3,PZ), Vect);
- 
+
 p := directProduct([3*x^2 + 1, 2*x, 7*x^3 + 2*x]::(VECTOR(PZ)))@Vect
 m := [[x^2, 1, 0], [1, x^4, 0], [0, 0, 4*x^2]]::(SQMATRIX(3,PZ))
- 
+
 -- Vect is a left SM(3,PZ)-module
 q: Vect := m * p
- 
+
 -- Operator combination and application
 Dx:  Modo := D()
 a:   Modo := 1*Dx  + m
 b:   Modo := m*Dx  + 1
- 
+
 a*b
 a p
 b p
 (a+b) (p + q)
- 
- 
- 
+
+
+
 
 
 @
