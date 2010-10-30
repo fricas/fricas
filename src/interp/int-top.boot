@@ -94,9 +94,10 @@ $ncmMacro :=            NIL
 $ncmPhase :=      NIL
 
 spad() ==
-  -- starts the interpreter but does not read in profiles, etc.
+  -- starts the interpreter, read in profiles, etc.
   $PrintCompilerMessageIfTrue: local
   setOutputAlgebra "%initialize%"
+  readSpadProfileIfThere()
   runspad()
   'EndOfSpad
 
