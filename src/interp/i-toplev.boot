@@ -104,6 +104,10 @@ start(:l) ==
 
 readSpadProfileIfThere() ==
   -- reads SPADPROF INPUT if it exists
+  file := ['_.fricas, 'input]
+  MAKE_-INPUT_-FILENAME file =>
+    SETQ(_/EDITFILE,file)
+    _/RQ ()
   file := ['_.axiom,'input]
   MAKE_-INPUT_-FILENAME file =>
     SETQ(_/EDITFILE,file)

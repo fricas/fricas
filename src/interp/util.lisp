@@ -661,7 +661,6 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 
 (defun fricas-restart ()
   (fricas-init)
-  (|readSpadProfileIfThere|)
   #+(or :GCL :poplog)
   (|spad|)
   #-(or :GCL :poplog)
