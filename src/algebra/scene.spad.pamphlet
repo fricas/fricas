@@ -1,0 +1,4054 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{Scenegraph code}
+\author{Martin J Baker}
+\maketitle
+\begin{abstract}
+Alternative geometry and graphics framework using scenegraph structure.
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Preface}
+Its easier to explain a graphics framework with diagrams and
+screenshots so you may prefer to read the documentation here:
+http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+
+This code is intended to be an alternative to the current Axiom/FriCAS
+graphics framework. It is based on a scenegraph structure which allows
+lines, surfaces and higher dimensional structures to be defined and
+modified by transforms, clipping boxes, material (line width, colour and
+so on) which control individual nodes or whole branches in the
+scenegraph. This means that, for example, transforms can be applied
+continuously to a whole branch without altering the nodes in that branch,
+this means that we can avoid a cumulative build up of floating point errors
+when many transforms are applied.
+
+This framework supports all the 2D and 3D draw and plotting that the
+existing framework supports. Use of transforms in the scenegraph means that
+many plots can be combined together, either overlayed or next to each other
+and combined with various show scales, grids text annotations and so on.
+
+The framework supports:
+\begin{list}{}
+* Different algebras: vector, matrix, complex numbers and Clifford Algebra.
+* Different geometries: Euclidean, projective, conformal (hyperbolic to be
+  added later)
+* Different coordinate systems: Cartesian coordinates, Argand Plane,
+  Spherical, Cylindrical.
+* Different number of dimensions: 2,3 (4 and more to be added)
+\end{list}
+
+The aim is not just to draw plots but also to allow experimentation with
+arbitrary shapes being transformed, for instance to transform a given shape
+by reflecting in a circle. To see the sort of thing I am trying to do here
+see first chapter of [Dorst,Fontijne & Mann 2007] except this is not just
+limited to Clifford algebra and conformal space.
+
+Currently Axiom/FriCAS has domains that represent transforms:
+(for example: dhmatrix.spad.pamphlet, moebius.spad.pamphlet and so on) but
+they are just standalone domains which don't fit into a wider graphics
+framework so it is more difficult to combine them with other things and
+to experiment. The aim of this framework is to create a way for geometry
+and graphics related entities to interwork.
+
+This scenegraph framework currently exports to file formats like: SVG,X3D,
+VRML and Wavefront(obj) but currently there is not the capability to interact
+directly in a graphical way, that is, there is no xwindow support. The
+existing graphics framework allows user interaction in a very limited way in
+that the graphics can be displayed in an xwindow and there is then the
+ability to do simple transforms like pan and zoom.
+However this is not suitable for the new framework because the existing
+framework builds a data structure to represent the graphics
+using SPAD and then passes this to 'C' code. The 'C' code then does the pan,
+zoom and so on and can then save to a file format.
+
+Apart from being very messy trying to mix different languages, this would not
+work for the new framework because:
+\begin{list}{}
+* We want to use non-linear as well as linear transforms.
+* I would like to be able to work with discontinuous (fractal) shapes.
+* I want to use different algebras such as vector, matrix, complex numbers
+  and Clifford algebras and I would not want to implement these algebras
+  using 'C'.
+\end{list}
+
+I can't see a way to implement this as I would like, possible options might
+be:
+\begin{list}{}
+* Implement an OpenGL canvas in SPAD which allows SPAD to directly output to
+  OpenGL (a thin wrapper for OpenGL calls) and also to read and process mouse
+  position.
+* Implement Axiom/FriCAS as library code that can be called from other
+  languages.
+* Implement some form of two-way API which allows other programs to use SPAD
+  algebra.
+\end{list}
+\section{The Scenegraph Concept}
+A scenegraph consists of a number of nodes in a tree structure, the types of
+nodes are:
+\begin{list}{}
+* Root Node
+* Group Node
+* Line Node
+* Indexed Face Set (IFS) Node
+* Text Node
+* Clip Node
+* Material Node
+* Transform Node
+* Arrow Node
+\end{list}
+This tree is constructed by starting with the root node and adding child
+nodes using the addChild! function as follows:
+\begin{verbatim}
+addChild!:(n:%,c:%) -> Void
+\end{verbatim}
+where 'c' is the child node and 'n' node that it is being added to. Any
+node type can be a child node or a parent (although it only makes sense
+to put the root node only at the root).
+
+In general a given node will affect only those nodes under it in the tree
+structure.
+
+The purpose and constructors of these nodes is as follows:
+(in the following definitions PT refers to an instance of SPointCategory
+such as SCartesian(2),SCartesian(3),SArgand and SConformal).
+\subsection{Root Node}
+Constructs the root node, all other nodes are contained in a tree structure
+under this node. The root node can have a bounding box which indicates the
+extent where the graphical objects exist. This allows the export code, for
+example, to have an area to draw the graphics in.
+\begin{verbatim}
+createSceneRoot:() -> %
+createSceneRoot:(bb: BOUNDS) -> %
+createSceneRoot:(minx:I,miny:I,maxx:I,maxy:I) -> %
+\end{verbatim}
+Where: BOUNDS==> Record(mins:PT,maxs:PT)
+Gives the maximum and minimum extent of the drawing area.
+\subsection{Group Node}
+Constructs a group node, this node does not do anything itself
+but contains other nodes. Any node can contain other nodes - we
+do not need to use a group node to do this, but if we just want
+to group nodes without any other effects then this is a good
+choice.
+\begin{verbatim}
+createSceneGroup:() -> %
+addSceneGroup:(n:%) -> %
+\end{verbatim}
+addSceneGroup is a convenience function which combines the constructor
+createSceneGroup with addChild! This allows a scene graph node to be
+constructed and added to the scenegraph in one operation.
+
+Most of the scenegraph constructors have this form as an option.
+\subsection{Line Node}
+Constructs a line node, this contains a (possibly curved) line,represented
+by a list of points) in n-dimensional space. The dimension of the space is
+implicit in the type of points being used.
+A Line node can hold a single line or multiple lines. The reason that a
+Line node needs to hold multiple lines is that, when a clip is applied
+to a line this might break it into several line segments.
+\begin{verbatim}
+createSceneLine:(line: List PT) -> %
+addSceneLine:(n:%,line: List PT) -> %
+createSceneLines:(line: LINES) -> %
+addSceneLines:(n:%,line: LINES) -> %
+\end{verbatim}
+Where: LINES==> List List PT
+\subsection{Indexed Face Set (IFS) Node}
+Constructs an indexed face set node, this defines a surface in n-dimensional
+space represented by a set of polygons in n-dimensional space.
+\begin{verbatim}
+createSceneIFS:(inx: List List NNI,pts: List PT) -> %
+addSceneIFS:(n:%,inx: List List NNI,pts: List PT) -> %
+createSceneIFS:(in1: SceneIFS(PT)) -> %
+addSceneIFS:(n:%,in1: SceneIFS(PT)) -> %
+\end{verbatim}
+A specialised constructor for an IFS node constructs a 3D box.
+Constructs an indexed face set node which is a 3D box of a given size
+\begin{verbatim}
+createSceneBox:(size:DF) -> %
+addSceneBox:(n:%,size:DF) -> %
+\end{verbatim}
+\subsection{Text Node}
+Constructs a text node, text can be used for labelling anything
+such as graphs, axes and so on.
+\begin{verbatim}
+createSceneText:(text: TEXT) -> %
+addSceneText:(n:%,text: TEXT) -> %
+createSceneText:(str:String,sz:NNI,pz:PT) -> %
+addSceneText:(n:%,str:String,sz:NNI,pz:PT) -> %
+\end{verbatim}
+where: TEXT==> Record(txt:String,siz:NNI,pos:PT)
+which defines the text to be printed with its size and position.
+\subsection{Clip Node}
+Constructs a clip node, clips its sub nodes in the coordinate
+ system in force at the clip node.
+\begin{verbatim}
+createSceneClip:(bb: BOUNDS) -> %
+addSceneClip:(n:%,bb: BOUNDS) -> %
+\end{verbatim}
+where: BOUNDS ==> Record(mins:SCartesian(2),maxs:SCartesian(2))
+\subsection{Material Node}
+Constructs a material node
+This sets the lineWidth,lineCol and fillCol for all nodes under
+this, unless overridden by another material node.
+That is the material parameters that apply to a given node are
+those of the closest material node above it in the hierarchy
+\begin{verbatim}
+createSceneMaterial:(mat:MATERIAL) -> %
+addSceneMaterial:(n:%,mat:MATERIAL) -> %
+createSceneMaterial:(lineW:DF,lineC:String,fillC:String) -> %
+addSceneMaterial:(n:%,lineW:DF,lineC:String,fillC:String) -> %
+\end{verbatim}
+Where: MATERIAL==> Record(lineWidth:DF,lineCol:String,fillCol:String)
+\subsection{Transform Node}
+Constructs a transform node
+This transforms the points and vectors below this node
+If a given node has more than one transform node above
+it in the hierarchy then the transforms are concatenated (combined).
+\begin{verbatim}
+createSceneTransform:(tran:TR) -> %
+addSceneTransform:(n:%,tran:TR) -> %
+\end{verbatim}
+\section{Drawing Plots and grids}
+The following constructors create 'compound' nodes in that the node
+returned has subnodes under it.
+\subsection{Grids and Patterns}
+Grids are useful as a background to plots, they consist of various
+straight, horizontal and vertical lines.
+
+The form without the step size constructs a grid with:
+\begin{list}{}
+* narrow blue lines every 20 units 
+* wide blue lines every 100 units 
+* wide red lines every 200 units 
+\end{list}{}
+The form with step uses the prevailing colour and thickness and the
+step parameter defines the spacing between lines.
+
+Since the lines in grids are defined by the endpoints of the lines, it
+does not make sense to apply a non-linear transform to them as the
+lines will remain straight and won't be transformed as they should.
+
+Patterns are used to show the effect of transforms. Although they may
+be approximated by straight lines the points are intended to be close
+enough together to transform reasonably accurately.
+
+The pattern depends on ptype parameter as follows:
+\begin{list}{}
+ptype=1: contruct a set of horizontal and vertical lines in the current
+clip boundary and current material with a spacing between
+lines given by the step parameter.
+ptype=2: constructs a Sierpinski fractel. step parameter gives the
+level of subdivision.
+ptype=3: constructs a house shape.
+\end{list}{}
+\begin{verbatim}
+createScenePattern(ptype:NNI,step:NNI,bb: BOUNDS): %
+addScenePattern(n:%,ptype:NNI,step:NNI,bb: BOUNDS):%
+\end{verbatim}
+\subsection{One Dimensional subspace in Two Dimensions}
+This represents 1 dimension (line - possibly curved) in 2 dimensions (plane)
+The line is approximated as end-to-end straight lines defined by a list of
+points. In theory a line has no width but in that case we would not see it
+so we give it a width given by the material node that is
+applicable in this part of the scene graph.
+
+The plot is defined by a function and a range of values. There are various
+ways to define this function:
+\begin{list}{}
+DF -> DF a mapping from float to float
+DF -> PT a mapping from float to point
+\end{list}{}
+Where:
+DF ==> DoubleFloat
+PT ==> SPointCategory -- an instance of SPointCategory represents a point.
+We can also create the plot using an indirect parameter. (parametric) 
+PPC is ParametricPlaneCurve(DF -> DF) which is created with curve(f1,f2)
+where f1 and f2 are functions of type ComponentFunction, in this case
+DF -> DF
+\begin{verbatim}
+createPlot1Din2D: (f:DF -> PT,tRange:SEG,numPts:NNI) -> %
+addPlot1Din2D: (n:%,f:DF -> PT,tRange:SEG,numPts:NNI) -> %
+createPlot1Din2D: (DF -> DF,SEG,numPts:NNI) -> %
+addPlot1Din2D: (n:%,DF -> DF,SEG,numPts:NNI) -> %
+createPlot1Din2Dparametric: (PPC,SEG,numPts:NNI) -> %
+addPlot1Din2Dparametric: (n:%,PPC,SEG,numPts:NNI) -> %
+\end{verbatim}
+\subsection{One Dimensional subspace in Three Dimensions}
+create a line (1D subspace) in 3D space
+This represents 1 dimension (line - possibly curved) in 3 dimensions.
+In theory a line has no width but in that case we would not see it
+so we give it a width given by the material node that is
+applicable in this part of the scene graph.
+
+Again there are various ways to define this function:
+PCFUN is a function from float to point: DF -> PT
+PSC ParametricSpaceCurve(DF -> DF) is created with curve(f1,f2,f3)
+where f1,f2 and f3 are functions of type ComponentFunction, in this case
+DF -> DF
+create a line (1D subspace) in 3D space
+\begin{verbatim}
+createPlot1Din3Dparametric: (PSC,SEG,numPts:NNI) -> %
+addPlot1Din3Dparametric: (n:%,PSC,SEG,numPts:NNI) -> %
+createPlot1Din3Dparametric: (PCFUN,SEG,numPts:NNI) -> %
+addPlot1Din3Dparametric: (n:%,PCFUN,SEG,numPts:NNI) -> %
+\end{verbatim}
+\subsection{Two Dimensional subspace in Three Dimensions}
+create a surface (2D subspace) in 3D space
+The surface is approximated by polygons which are
+represented by in indexed face set (IFS) node
+create a surface (2D subspace) in 3D space
+\begin{verbatim}
+createPlot2Din3D: (ptFun:PSFUN,uSeg:SEG,vSeg:SEG,numPts:NNI) -> %
+createPlot2Din3D: ((DF,DF) -> DF,SEG,SEG,numPts:NNI) -> %
+addPlot2Din3D: (n:%,(DF,DF) -> DF,SEG,SEG,numPts:NNI) -> %
+createPlot2Din3Dparametric: (PSFUN, SEG, SEG,numPts:NNI) -> %
+addPlot2Din3Dparametric: (n:%,PSFUN, SEG, SEG,numPts:NNI) -> %
+createPlot2Din3Dparametric: (PSF,SEG,SEG,numPts:NNI) -> %
+addPlot2Din3Dparametric: (n:%,PSF,SEG,SEG,numPts:NNI) -> %
+\end{verbatim}
+\section{Exporting the graphics}
+This scenegraph framework currently exports to the following file formats:
+\begin{list}{}
+* SVG - For 2 dimensional graphics this is the most standards based and also
+        supported by graphical editors such as Inkscape.
+* X3D - For 3 dimensional graphics I think this is the most standards
+        compliant but it is not supported on many 3D editors.
+* VRML - VRML2 and VRML97 are supported but not VRML1. This flavour of
+         VRML holds the same information as X3D but using a different
+         non-XML syntax.
+* Wavefront(obj) - This is a very simple 3D format that will hold meshes
+                   but not text or colour information. It is supported on
+                   most 3D editors but only use it as a fallback if the
+                   other 3D formats don't work.
+\end{list}
+To export a scenegraph to one of these file formats use the following
+function calls:
+
+Write an 'SVG' representation of node 'n' (usually the root node) to
+the filename supplied:
+\begin{verbatim}
+writeSvg:(n:%,filename:String) -> Void
+\end{verbatim}
+Write an 'X3D' representation of node 'n' (usually the root node)
+to the filename supplied.
+\begin{verbatim}
+writeX3d:(n:%,filename:String) -> Void
+\end{verbatim}
+Write a 'VRML' representation of node 'n' (usually the root node)
+to the filename supplied.
+\begin{verbatim}
+writeVRML:(n:%,filename:String) -> Void
+\end{verbatim}
+Write an 'OBJ' (Wavefront) representation of node 'n' (usually the
+root node) to the filename supplied.
+\begin{verbatim}
+writeObj:(n:%,filename:String) -> Void
+\end{verbatim}
+If we only want to create an XML structure without writing to a file
+we can use these functions:
+
+create an XmlElement containing a 'SVG' representation of node 'n' and
+the nodes below it:
+\begin{verbatim}
+toSVG:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
+\end{verbatim}
+Create an XmlElement containing a 'X3D' representation of node 'n' and
+the nodes below it:
+\begin{verbatim}
+toX3D:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
+\end{verbatim}
+Creates .OBJ (Wavefront) structures from scenegraph tree structure called
+recursively for each node, so when called on root node in scenegraph
+all other nodes in the scenegraph will get called. When called the
+reference values should be empty or zero and when the function returns
+they will be set.
+\begin{verbatim}
+toObj:(n:%,ptLst: Reference List PT,_
+      indexLst:Reference List List NNI,_
+      indexNxt:Reference NNI,tran:TR,bb: BOUNDS) -> Void
+\end{verbatim}
+\section{Compiling the code}
+Separate each of the categories, packages and domains from this file into
+individual files and compile them - something like this:
+\begin{verbatim}
+)co SPointCategory.spad
+)co SCartesian.spad
+)co SArgand.spad
+)co SceneIFS.spad
+)co STransform.spad
+)co XmlAttribute.spad
+)co XmlElement.spad
+)co ExportXml.spad
+)co Scene.spad
+\end{verbatim}
+\section{Using the code}
+\subsection{Example 1 - Two dimensional plots with scale.}
+First we will create a couple of functions to plot:
+\begin{verbatim}
+DF ==> DoubleFloat
+fnsin(x:DF):DF == sin(x/100::DF)*400::DF
+fntan(x:DF):DF == tan(x/100::DF)*400::DF
+\end{verbatim}
+Then we create a bounding box, this is the box within which we do the drawing.
+This contains two points representing the maximum and minimum extent of the
+drawing area or volume. That is mins contains the minimum values of x,y...
+and maxs contains the maximum values of x,y...
+\begin{verbatim}
+BOUNDS ==> Record(mins:SCartesian(2),maxs:SCartesian(2))
+view:BOUNDS := [sipnt(0,-500)$SCartesian(2),sipnt(1200,500)$SCartesian(2)]
+\end{verbatim}
+\begin{verbatim}
+sc := createSceneRoot(view)$Scene(SCartesian(2))
+\end{verbatim}
+\begin{verbatim}
+gd := addSceneGrid(sc,view)$Scene(SCartesian(2))
+\end{verbatim}
+we can now export this to a SVG file so that we can confirm that
+the scene contains a grid
+\begin{verbatim}
+writeSvg(sc,"test1.svg")
+\end{verbatim}
+Now lets add a plot to this. First we add a 'material' node to the root to
+define the colour and thickness of the plot.
+\begin{verbatim}
+mt1 := addSceneMaterial(sc,3::DF,"blue","green")$Scene(SCartesian(2))
+\end{verbatim}
+Then we add the plot to the material node using the sine function that we
+defined earlier.
+\begin{verbatim}
+ln1 := addPlot1Din2D(mt1,fnsin,0..1000::DF,49)$Scene(SCartesian(2))
+\end{verbatim}
+we can now export this to a SVG file again to see that
+the plot has been added to the grid
+\begin{verbatim}
+writeSvg(sc,"test2.svg")
+\end{verbatim}
+Lets now add second plot to the scene so that we can see how to modify
+it using material, transform and clip.
+\begin{verbatim}
+mt2 := addSceneMaterial(sc,3::DF,"green","green")$Scene(SCartesian(2))
+\end{verbatim}
+\begin{verbatim}
+tr2 := addSceneTransform(mt2,stransform([_
+             [1::DF,0::DF,0::DF],_
+             [0::DF,1::DF,0::DF],_
+             [0::DF,0::DF,1::DF]]))$Scene(SCartesian(2))
+\end{verbatim}
+\begin{verbatim}
+bb:BOUNDS := [sipnt(100,-400)$SCartesian(2),sipnt(1100,400)$SCartesian(2)]
+bb2 := addSceneClip(tr2,bb)$Scene(SCartesian(2))
+\end{verbatim}
+\begin{verbatim}
+ln2 := addPlot1Din2D(bb2,fntan,0..1000::DF,49)$Scene(SCartesian(2))
+\end{verbatim}
+\begin{verbatim}
+tx := addSceneText(sc,"sin(theta)",32::NNI,_
+          sipnt(200,400)$SCartesian(2))$Scene(SCartesian(2))
+\end{verbatim}
+\begin{verbatim}
+writeSvg(sc,"test3.svg")
+\end{verbatim}
+\section{Capabilities of this Framework}
+\begin{list}{}
+* draw plots
+* define shapes.
+* show scales and grids
+* combine many graphs/shapes in one view
+* transform graphs/shapes of groups of shapes.
+* apply properties like colour, line thickness to these nodes or groups.
+* add text annotations.
+* export to SVG, X3D, VRML and Wavefront(obj) files.
+\end{list}
+\section{Programming Issues}
+Usually, when programming using SPAD, I try to use a functional programming
+style as much as possible, for instance making objects (representations)
+immutable. However I don't think it would be practical to implement the
+scengraph in this way. A design requirement is that the scenegaph needs
+to hold a large amount of information, A 3D scene might be made from
+thousands (perhaps millions?) of polygons. For the sake of efficiency we
+need to be able to modify it without copying the whole thing into a new
+object for each change.
+
+The object oriented style of programming would seem to be ideal for a
+scenegraph. Each type of node in the scengraph could be a different object
+all inheriting from a common object. Unfortunately is is not easy to do
+this in SPAD because it does not support polymorphism.
+
+So what I have ended up with is perhaps the worst of both styles of
+programming?
+\section{Transforms in scene graph STransform}
+Existing transforms in Axiom (such as dhmatrix.spad.pamphlet and
+moebius.spad.pamphlet) are stand alone chunks of algebra which don't
+interwork with each other and it would be a lot of work to incorporate them
+into other code especially graphics and geometry.
+
+The aim of STransform is to make a completely general template for
+transforms so that specific transforms like a Moebius transform could
+be implemented so that the slot directly into the geometry/graphics
+framework.
+
+We have not achieved that aim yet. STransform does work with the various
+implementations of the SPointCategory such as SCartesian(2), SCartesian(3),
+SArgand and SConformal. What I would like to do is to have
+a transform category which could be implemented by domains like
+dhmatrix.spad.pamphlet and moebius.spad.pamphlet, then they could be
+used in the geometry/graphics framework anywhere transforms are appropriate.
+
+The most general form of transform would be represented by PT->PT where
+PT is any implementation of SPointCategory. So ideally all transforms
+should be defined in this way. The usual way to transform a vector is to
+use a matrix like this:
+transform(in:Vector,def:Matrix):Vector
+So what I need is a way to curry it into something like this:
+transform(def:Matrix):(Vector->Vector)
+I don't know how to this? that is, how do I create an anonymous function
+where a variable (in this case def:Matrix) is a constant in the function?
+\section{Future Enhancements}
+\begin{list}{}
+* define and transform shapes using Clifford algebra as well as vectors,
+  matrix and complex numbers used at present.
+* show union and intersection (join and meet)
+* slice through shapes and show sections.
+* represent 4 and higher dimensions using various methods like colour or
+  time animation.
+* Support interaction with the graphics, possibly by using a OpenGL
+  canvas which could be called directly from SPAD
+  Bill Page mentioned that there is an OpenGL binding for lisp.
+  http://common-lisp.net/project/cl-opengl/
+  http://repo.or.cz/w/cl-glfw.git
+\end{list}
+\section{SPointCategory}
+SPointCategory defines a type that can represent either a point or a vector.
+It is important to make the distinction between a point and a vector (and
+not just treat a point as an offset from the origin) because a point and a
+vector will transform differently. Pure rotations will act on points and
+vectors identically but pure translations act only on points.
+
+SPointCategory has various implementations depending on the algebra and
+type of space that we are dealing with:
+\begin{list}{}
+* SCartesian - n dimensional space defined by x,y... and 0 for vectors and 1
+            for points. Translations are defined by (n+1)x(n+1) matrix.
+* SArgand - two dimensional space defined by real and imaginary parts.
+           Translations are defined by general function of a complex
+           variable C->C.
+* SConformal - Two extra dimentions added to form a null space.
+\end{list}
+What I really want to do is define implementations of conformal space
+in various number of dimensions using Clifford algebra say 'SConformal2d'.
+This would need to join SPointCategory with a particular implementation 
+of CliffordAlgebra like:
+CliffordAlgebra(4,DF,[[1::DF,0::DF,0::DF,0::DF],_
+                      [0::DF,1::DF,0::DF,0::DF],_
+                      [0::DF,0::DF,1::DF,0::DF],_
+                      [0::DF,0::DF,0::DF,-1::DF]])
+(DF ==> DoubleFloat)
+but I don't know how to do this.
+
+This category is implicitly defined over DoubleFloat, the user is
+not given given the option of specifying any other type, I did consider
+this but decided not to because:
+\begin{list}{}
+* We require an ordered number system (that is we require '<') to support
+  features like clipping.
+* In most cases the functions and transforms would be continuous.
+\end{list}
+<<category SPTCAT SPointCategory>>=
+)abbrev category SPTCAT SPointCategory
+++ Author: Martin Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
+++ convert
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description: PointCategory is the category of points and vectors in space.
+++ Points may be used to represent shapes in a scenegraph such as: the
+++ verticies of a cube or points along a line. 
+++ Shapes such as these may be defined explicitly or may be plotted.
+++ We implement SetCategory to allow us to curry transforms from one
+++ point to another.
+
+SPointCategory() : Category == SetCategory with
+  spnt:(a:DoubleFloat,b:DoubleFloat) -> %
+    ++ spnt(a,b) constructs a 2D point defined by a and b
+    ++ of type R
+  sipnt:(a:Integer,b:Integer) -> %
+    ++ sipnt(a,b) constructs a 2D point defined by a and b
+    ++ of type Integer
+  spnt:(a:DoubleFloat,b:DoubleFloat,c:DoubleFloat) -> %
+    ++ spnt(a,b,c) constructs a 3D point defined by a,b and c
+    ++ of type R
+  sipnt:(a:Integer,b:Integer,c:Integer) -> %
+    ++ sipnt(a,b,c) constructs a 3D point defined by a,b and c
+    ++ of type Integer
+  svec:(a:DoubleFloat,b:DoubleFloat) -> %
+    ++ svec(a,b) constructs a 2D vector defined by a and b
+    ++ of type R
+  sivec:(a:Integer,b:Integer) -> %
+    ++ sivec(a,b) constructs a 2D vector defined by a and b
+    ++ of type Integer
+  svec:(a:DoubleFloat,b:DoubleFloat,c:DoubleFloat) -> %
+    ++ svec(a,b,c) constructs a 3D vector defined by a,b and c
+    ++ of type R
+  sivec:(a:Integer,b:Integer,c:Integer) -> %
+    ++ sivec(a,b,c) constructs a 3D vector defined by a,b and c
+    ++ of type Integer
+  dimension:(p:%) -> PositiveInteger
+    ++ dimension(p) returns the number of dimensions that make up the
+    ++ point category p.
+  Pnan?:(p:%) -> Boolean
+    ++ Is this a valid point? if any of its elements are not valid
+    ++ then return true
+    ++ Examples of invalid floating point numbers are when have we
+    ++ have divided a given element by zero or taken
+    ++ sqrt of negative number at some stage?
+    ++ Note: we can still represent a point at infinity and we can
+    ++ represent points using complex numbers, but we do this using
+    ++ projective or conformal space or by using the appropriate
+    ++ instance of SPointCategory, not by using invalid floating
+    ++ point numbers.
+  unitVector:(p:%) -> %
+    ++ scale until length is 1
+  distanceSquared:(p1:%,p2:%) -> DoubleFloat
+    ++ returns the distance between the points p1 and p2
+    ++ there are 2 metrics associated with any SPointCategory
+    ++ the underlying space and the space that it is embedded in
+    ++ this is the distance in the underlying space.
+  distance:(p1:%,p2:%) -> DoubleFloat
+    ++ returns the distance between the points p1 and p2
+    ++ there are 2 metrics associated with any SPointCategory
+    ++ the underlying space and the space that it is embedded in
+    ++ this is the distance in the underlying space.
+  parallel:(x:%,y:%) -> DoubleFloat
+    ++ This returns the length of the parallel component of two vectors
+    ++ in the case of Euclidean space this is the dot product of two
+    ++ vectors. We use this function to test the colinearity
+  colinearity:(x:%,y:%) -> DoubleFloat
+    ++ Measure of how parallel two vectors are independant of the length
+    ++ of the vectors:
+    ++ 1.0 is complelely parallel
+    ++ 0.0 is completely perpendicular
+    ++ returned value will be between these 
+  perpendicular:(x:%,y:%) -> %
+    ++ This returns a vector perpendicular to the two vectors
+    ++ in the case of 3D Euclidean space this is the cros product of the
+    ++ two vectors. We use this function to compute orthogonal
+  _+:(x:%,y:%) -> %
+    ++ addition
+  _-:(x:%,y:%) -> %
+    ++ subtraction
+  _*:(s:DoubleFloat,x:%) -> %
+    ++ scalar multiplication
+  inBounds?:(pt: %,mns: %,mxs: %) -> Boolean
+    ++ return true if param is inside bounding box
+    ++ where bounding box is specified by min and max
+  screenCoordX: (pt: %) -> DoubleFloat
+    ++ returns the 'x'(left to right) screen coordinate
+  screenCoordY: (pt: %) -> DoubleFloat
+    ++ returns the 'y'(bottom to top) screen coordinate
+  screenCoordZ: (pt: %) -> DoubleFloat
+    ++ returns the 'z'(out from screen) screen coordinate
+  screenCoords: (pt: %) -> List DoubleFloat
+    ++ returns screen coordinates as a list
+  extendedCoords: (pt: %) -> List DoubleFloat
+    ++ returns extended coordinates as a list
+  coerce: (pt: %) -> OutputForm
+    ++ output
+@
+\section{SCartesian domain}
+<<domain SCRT SCartesian>>=
+)abbrev domain SCRT SCartesian
+++ Author: Martin Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
+++ convert
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description: an implementation of PointCategory to represent points and
+++ vectors in three dimensional coordinate space
+
+SCartesian(n) : Exports == Implementation where
+  -- Domains for points, subspaces and properties of components in
+  -- a subspace
+  n: PositiveInteger
+  PI   ==> PositiveInteger
+  DF   ==> DoubleFloat
+
+  Exports ==> SPointCategory()
+
+  Implementation ==> Type add
+    ---- start of common code to all SPointCategory implementations ----
+    -- I would like to define these in SPointCategory but that won't work
+    -- due to lack of polymorphism in spad
+
+    -- Measure of how parallel two vectors are independant of the length
+    -- of the vectors:
+    -- 1.0 is complelely parallel
+    -- 0.0 is completely perpendicular
+    -- returned value will be these or between these 
+    colinearity(x:%,y:%):DoubleFloat == parallel(x,y)^2/_
+                 (parallel(x,x) * parallel(y,y))
+
+    -- convenience constructors which allow us to construct using
+    -- integer values
+    sipnt(a:Integer,b:Integer):% == spnt(a::DoubleFloat,b::DoubleFloat)
+    sipnt(a:Integer,b:Integer,c:Integer):% ==
+      spnt(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+    sivec(a:Integer,b:Integer):% == svec(a::DoubleFloat,b::DoubleFloat)
+    sivec(a:Integer,b:Integer,c:Integer):% ==
+      svec(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+
+    -- returns the distance between the points p1 and p2
+    -- there are 2 metrics associated with any SPointCategory
+    -- the underlying space and the space that it is embedded in
+    -- this is the distance in the underlying space.
+    distance(p1:%,p2:%):DoubleFloat ==
+      sqrt(distanceSquared(p1,p2))
+
+    ---- end of common code to all SPointCategory implementations ----
+
+    Rep := PrimitiveArray DF
+
+    -- spnt(a,b) constructs a 2D point defined by a and b
+    -- of type DF
+    spnt(a:DF,b:DF):% ==
+      --sayTeX$Lisp concat([_
+      --  "spnt(",(mathObject2String$Lisp a)@String,_
+      --  ",",(mathObject2String$Lisp b)@String,_
+      --  ")"])$String
+      pt := new(n+1,0$DF)$Rep
+      pt.0 := a
+      pt.1 := b
+      pt.n := 1@DF
+      pt
+
+    -- spnt(a,b,c) constructs a 3D point defined by a,b and c
+    -- of type DF
+    spnt(a:DF,b:DF,c:DF):% ==
+      pt := new(n+1,0$DF)$Rep
+      pt.0 := a
+      pt.1 := b
+      if n>2 then pt.2 := c
+      pt.n := 1@DF
+      pt
+
+    -- svec(a,b) constructs a 2D vector defined by a and b
+    -- of type DF
+    svec(a:DF,b:DF):% ==
+      pt := new(n+1,0$DF)$Rep
+      pt.0 := a
+      pt.1 := b
+      pt.n := 0@DF
+      pt
+
+    -- svec(a,b,c) constructs a 3D vector defined by a,b and c
+    -- of type DF
+    svec(a:DF,b:DF,c:DF):% ==
+      pt := new(n+1,0$DF)$Rep
+      pt.0 := a
+      pt.1 := b
+      if n>2 then pt.2 := c
+      pt.n := 0@DF
+      pt
+
+    dimension p == 3  -- dimension of base space
+
+    -- Test for NaN (Not a Number)
+    -- That is have we divided by zero or taken sqrt of negative number at
+    -- some stage?
+    -- Common Lisp does not support NaN ? So we need some sort of test for
+    -- invalid numbers
+    -- If not equal to itself then we assume that its not a valid number
+    -- an altenative approach is to check for complex numbers 
+    -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
+    nan?(x:DF):Boolean == x ~= x
+
+    -- Is this a valid point? if any of its elements are not valid
+    -- then return true
+    -- Examples of invalid floating point numbers are when have we
+    -- have divided a given element by zero or taken
+    -- sqrt of negative number at some stage?
+    -- Note: we can still represent a point at infinity and we can
+    -- represent points using complex numbers, but we do this using
+    -- projective or conformal space or by using the appropriate
+    -- instance of SPointCategory, not by using invalid floating
+    -- point numbers.
+    Pnan?(p:%):Boolean == 
+      nan?(p.0) => true
+      nan?(p.1) => true
+      if n>2 then nan?(p.2) => true
+      false
+
+    -- This returns the length of the parallel component of two vectors
+    -- in the case of Euclidean space this is the dot product of two
+    -- vectors. We use this function to test the colinearity
+    parallel(x:%,y:%):DF == x.0 * y.0 + x.1 * y.1 + x.2 * y.2
+
+    -- scale until length is 1
+    unitVector(p:%):% ==
+      factor := if n>2 then sqrt(p.0*p.0 + p.1*p.1+ p.2*p.2) else_
+                            sqrt(p.0*p.0 + p.1*p.1)
+      pt := new(n+1,0$DF)$Rep
+      pt.0 := p.0/factor
+      pt.1 := p.1/factor
+      if n>2 then pt.2 := p.2/factor
+      pt.n := 0@DF
+      pt
+
+    -- returns the distance between the points p1 and p2
+    -- there are 2 metrics associated with any SPointCategory
+    -- the underlying space and the space that it is embedded in
+    -- this is the distance in the underlying space.
+    distanceSquared(p1:%,p2:%):DF ==
+      if n>2 then return (p1.0 - p2.0)^2 + (p1.1 - p2.1)^2 + (p1.2 - p2.2)^2
+      (p1.0 - p2.0)^2 + (p1.1 - p2.1)^2
+
+    -- This returns a vector perpendicular to the two vectors
+    -- in the case of 3D Euclidean space this is the cross product of the
+    -- two vectors. We use this function to compute orthogonal
+    perpendicular(x:%,y:%):% ==
+      pt := new(n+1,0$DF)$Rep
+      if n<3 then return sipnt(0,0)
+      pt.0 := x.1 * y.2 - x.2 * y.1
+      pt.1 := x.2 * y.0 - x.0 * y.2
+      pt.2 := x.0 * y.1 - x.1 * y.0
+      pt.n := 0@DF
+      pt
+
+    -- scalar multiplication
+    _*(s:DF,x:%):% ==
+      pt := new(n+1,0$DF)$Rep
+      pt.0 := x.0 * s
+      pt.1 := x.1 * s
+      if n>2 then pt.2 := x.2 * s
+      pt.n := 1@DF
+      pt
+
+    -- addition
+    _+(x:%,y:%):% ==
+      pt := new(4,0$DF)$Rep
+      pt.0 := x.0 + y.0
+      pt.1 := x.1 + y.1
+      if n>2 then pt.2 := x.2 + y.2
+      pt.n := 1@DF
+      pt
+
+    -- subtraction
+    _-(x:%,y:%):% ==
+      pt := new(4,0$DF)$Rep
+      pt.0 := x.0 - y.0
+      pt.1 := x.1 - y.1
+      if n>2 then pt.2 := x.2 - y.2
+      pt.n := 1@DF
+      pt
+
+    -- return true if param is inside bounding box
+    -- where bounding box is specified by min and max
+    inBounds?(pt: %,mns: %,mxs: %):Boolean ==
+      -- left of box - check minimum x
+      qelt(pt,0) < qelt(mns,0) => false
+      -- right of box - check maximum x
+      qelt(pt,0) > qelt(mxs,0) => false
+      -- below box - check minimum y
+      qelt(pt,1) < qelt(mns,1) => false
+      -- above box - check maximum y
+      qelt(pt,1) > qelt(mxs,1) => false
+      -- inside box so return true
+      true
+
+    -- returns the 'x'(left to right) screen coordinate
+    screenCoordX(pt: %):DF == pt.0
+
+    -- returns the 'y'(bottom to top) screen coordinate
+    screenCoordY(pt: %):DF == pt.1
+
+    -- returns the 'z'(out from screen) screen coordinate
+    screenCoordZ(pt: %):DF == if n>2 then pt.2 else 0@DF
+
+    -- returns screen coordinates as a list
+    screenCoords(pt: %):List DF ==
+      if n>2 then [pt.0,pt.1,pt.2]
+      [pt.0,pt.1]
+
+    -- returns extended coordinates as a list
+    extendedCoords(pt: %):List DF == entries(pt)
+
+    -- start of SetCategory definitions --
+
+    hash(s:%): SingleInteger == 0$SingleInteger
+
+    latex(s:%): String == "\mbox{\bf Unimplemented}"
+
+    -- returns true if x equals y
+    _=(x:%,y:%):Boolean ==
+      for i in 0..n+1 repeat
+        if x.i ~= y.i then return false
+      true
+
+    -- returns true if x is not equal to y
+    _~_=(x:%,y:%) : Boolean == not(x=y)
+
+    -- output
+    coerce(pt: %):OutputForm ==
+      s:String := "proj"
+      if pt.n = 0@DF then s := "v"
+      if pt.n = 1@DF then s := "p"
+      paren([s::OutputForm,(pt.0)::OutputForm,(pt.1)::OutputForm,_
+              (pt.2)::OutputForm])$OutputForm
+@
+\section{SArgand domain}
+<<domain SARGND SArgand>>=
+)abbrev domain SARGND SArgand
+++ Author: Martin Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
+++ convert
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description: an implementation of PointCategory to represent points and
+++ vectors in an Argand plane
+
+SArgand() : Exports == Implementation where
+  ++ Domain for representing points, vectors, subspaces and properties
+  ++ of components in a subspace as complex numbers
+  DF ==> DoubleFloat
+  C ==> Complex DF
+  PI   ==> PositiveInteger
+
+  Exports ==  SPointCategory() with
+    coerce: % -> C
+    coerce: C -> %
+
+  Implementation ==> Type add
+    ---- start of common code to all SPointCategory implementations ----
+    -- I would like to define these in SPointCategory but that won't work
+    -- due to lack of polymorphism in spad
+
+    -- Measure of how parallel two vectors are independant of the length
+    -- of the vectors:
+    -- 1.0 is complelely parallel
+    -- 0.0 is completely perpendicular
+    -- returned value will be these or between these 
+    colinearity(x:%,y:%):DoubleFloat == parallel(x,y)^2/_
+                 (parallel(x,x) * parallel(y,y))
+
+    -- convenience constructors which allow us to construct using
+    -- integer values
+    sipnt(a:Integer,b:Integer):% == spnt(a::DoubleFloat,b::DoubleFloat)
+    sipnt(a:Integer,b:Integer,c:Integer):% ==
+      spnt(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+    sivec(a:Integer,b:Integer):% == svec(a::DoubleFloat,b::DoubleFloat)
+    sivec(a:Integer,b:Integer,c:Integer):% ==
+      svec(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+
+    -- returns the distance between the points p1 and p2
+    -- there are 2 metrics associated with any SPointCategory
+    -- the underlying space and the space that it is embedded in
+    -- this is the distance in the underlying space.
+    distance(p1:%,p2:%):DoubleFloat ==
+      sqrt(distanceSquared(p1,p2))
+
+    ---- end of common code to all SPointCategory implementations ----
+
+    Rep := Record(r:DF,i:DF)
+
+    -- spnt(a,b) constructs a 2D point defined by a and b
+    -- of type DF
+    spnt(a:DF,b:DF):% ==
+      --sayTeX$Lisp concat([_
+      --  "spnt(",(mathObject2String$Lisp a)@String,_
+      --  ",",(mathObject2String$Lisp b)@String,_
+      --  ")"])$String
+      [a,b]
+
+    -- spnt(a,b,c) constructs a 3D point defined by a,b and c
+    -- of type DF
+    spnt(a:DF,b:DF,c:DF):% ==
+      [a,b]
+
+    -- svec(a,b) constructs a 2D vector defined by a and b
+    -- of type DF
+    svec(a:DF,b:DF):% ==
+      [a,b]
+
+    -- svec(a,b,c) constructs a 3D vector defined by a,b and c
+    -- of type DF
+    svec(a:DF,b:DF,c:DF):% ==
+      [a,b]
+
+    dimension p == 2  -- dimension of base space
+
+    -- Test for NaN (Not a Number)
+    -- That is have we divided by zero or taken sqrt of negative number at
+    -- some stage? Common Lisp does not support NaN ? So we need some sort
+    -- of test for invalid numbers
+    -- If not equal to itself then we assume that its not a valid number
+    -- an altenative approach is to check for complex numbers 
+    -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
+    nan?(x:DF):Boolean == x ~= x
+
+    -- Is this a valid point? if any of its elements are not valid
+    -- then return true
+    -- Examples of invalid floating point numbers are when have we
+    -- have divided a given element by zero or taken
+    -- sqrt of negative number at some stage?
+    -- Note: we can still represent a point at infinity and we can
+    -- represent points using complex numbers, but we do this using
+    -- projective or conformal space or by using the appropriate
+    -- instance of SPointCategory, not by using invalid floating
+    -- point numbers.
+    Pnan?(p:%):Boolean == 
+      nan?(p.r) => true
+      nan?(p.i) => true
+      false
+
+    -- scale until length is 1
+    unitVector(p:%):% ==
+      factor := sqrt(p.r * p.r + p.i * p.i)
+      [p.r/factor,p.i/factor]
+
+    -- returns the distance between the points p1 and p2
+    -- there are 2 metrics associated with any SPointCategory
+    -- the underlying space and the space that it is embedded in
+    -- this is the distance in the underlying space.
+    distanceSquared(p1:%,p2:%):DF ==
+      (p1.r - p2.r)^2 + (p1.i - p2.i)^2
+
+    -- This returns the length of the parallel component of two vectors
+    -- in the case of Euclidean space this is the dot product of two
+    -- vectors. We use this function to test the colinearity
+    parallel(x:%,y:%):DF == x.r * y.r + x.i * y.i
+
+    -- This returns a vector perpendicular to the two vectors
+    -- in the case of 3D Euclidean space this is the cross product of the
+    -- two vectors. We use this function to compute orthogonal
+    -- In this case set to arbitary value
+    perpendicular(x:%,y:%):% ==
+      [0@DF,1@DF]
+
+    -- scalar multiplication
+    _*(s:DF,x:%):% ==
+      [x.r * s,x.i * s]
+
+    -- addition
+    _+(x:%,y:%):% ==
+      [x.r + y.r,x.i + y.i]
+
+    -- addition
+    _-(x:%,y:%):% ==
+      [x.r - y.r,x.i - y.i]
+
+    -- return true if param is inside bounding box
+    -- where bounding box is specified by min and max
+    inBounds?(pt: %,mns: %,mxs: %):Boolean ==
+      -- left of box - check minimum x
+      pt.r pretend DoubleFloat < mns.r pretend DoubleFloat => false
+      -- right of box - check maximum x
+      pt.r pretend DoubleFloat > mxs.r pretend DoubleFloat => false
+      -- below box - check minimum y
+      pt.i pretend DoubleFloat < mns.i pretend DoubleFloat => false
+      -- above box - check maximum y
+      pt.i pretend DoubleFloat > mxs.i pretend DoubleFloat => false
+      -- inside box so return true
+      true
+
+    -- returns the 'x'(left to right) screen coordinate
+    screenCoordX(pt: %):DF == pt.r
+
+    -- returns the 'y'(bottom to top) screen coordinate
+    screenCoordY(pt: %):DF == pt.i
+
+    -- returns the 'z'(out from screen) screen coordinate
+    screenCoordZ(pt: %):DF == 0@DF
+
+    -- returns screen coordinates as a list
+    screenCoords(pt: %):List DF == [pt.r,pt.i]
+
+    -- returns extended coordinates as a list
+    extendedCoords(pt: %):List DF == [pt.r,pt.i]
+
+    coerce(me: %):C ==
+      complex(me.r,me.i)
+
+    coerce(cmpx: C):% ==
+      [real(cmpx),imag(cmpx)]
+
+    -- start of SetCategory definitions --
+
+    hash(s:%): SingleInteger == 0$SingleInteger
+
+    latex(s:%): String == "\mbox{\bf Unimplemented}"
+
+    -- returns true if x equals y
+    _=(x:%,y:%):Boolean ==
+      if x.r ~= y.r then return false
+      if x.i ~= y.i then return false
+      true
+
+    -- returns true if x is not equal to y
+    _~_=(x:%,y:%) : Boolean == not(x=y)
+
+    -- output
+    coerce(pt: %):OutputForm ==
+      paren([(pt.r)::OutputForm,(pt.i)::OutputForm])$OutputForm
+@
+\section{SConformal domain}
+<<domain SCONF SConformal>>=
+)abbrev domain SCONF SConformal
+++ Author: Martin Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
+++ convert
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description: an implementation of PointCategory to represent points and
+++ vectors in n+2 dimensional conformal space based on n dimensional
+++ Euclidean space.
+
+SConformal(n) : Exports == Implementation where
+  ++ Domain for representing points, vectors, subspaces and properties
+  ++ of conformal space 
+  n: PositiveInteger
+    ++ number of base dimensions (excluding point at infinity and point
+    ++ at origin)
+  PI ==> PositiveInteger
+  DF ==> DoubleFloat
+  --
+  -- What I would like to do is be able to coerce to a CliffordAlgebra
+  -- with a specific signature representing conformal space
+  -- however Axiom does not allow a specific matrix to be
+  -- created here.
+  --bLin ==> squareMatrix([[1@DF,0@DF,0@DF,0@DF],_
+  --                     [0@DF,1@DF,0@DF,0@DF],_
+  --                     [0@DF,0@DF,1@DF,0@DF],_
+  --                     [0@DF,0@DF,0@DF,1@DF]])
+  --CA ==> CliffordAlgebra(4,DF,bLin)
+
+  Exports ==  SPointCategory() with
+    normalisePoint:(pt:%) -> %
+      ++ normalalised point has scalar value of one, if this is not the
+      ++ case then scale values
+
+    --coerce: % -> CA
+    --coerce: CA -> %
+
+  Implementation ==> Type add
+    ---- start of common code to all SPointCategory implementations ----
+    -- I would like to define these in SPointCategory but that won't work
+    -- due to lack of polymorphism in spad
+
+    -- Measure of how parallel two vectors are independant of the length
+    -- of the vectors:
+    -- 1.0 is complelely parallel
+    -- 0.0 is completely perpendicular
+    -- returned value will be these or between these 
+    colinearity(x:%,y:%):DoubleFloat == parallel(x,y)^2/_
+                 (parallel(x,x) * parallel(y,y))
+
+    -- convenience constructors which allow us to construct using
+    -- integer values
+    sipnt(a:Integer,b:Integer):% == spnt(a::DoubleFloat,b::DoubleFloat)
+    sipnt(a:Integer,b:Integer,c:Integer):% ==
+      spnt(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+    sivec(a:Integer,b:Integer):% == svec(a::DoubleFloat,b::DoubleFloat)
+    sivec(a:Integer,b:Integer,c:Integer):% ==
+      svec(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+
+    -- returns the distance between the points p1 and p2
+    -- there are 2 metrics associated with any SPointCategory
+    -- the underlying space and the space that it is embedded in
+    -- this is the distance in the underlying space.
+    distance(p1:%,p2:%):DoubleFloat ==
+      sqrt(distanceSquared(p1,p2))
+
+    ---- end of common code to all SPointCategory implementations ----
+
+    dim := 2^(n+2)
+      ++ the total dimension of all the grades from scalar up to
+      ++ pseudoscalar
+
+    z: %
+
+    Rep := PrimitiveArray DF
+
+    New ==> new(dim, 0$DF)$Rep
+
+    -- spnt(a,b) constructs a 2D point defined by a and b
+    -- of type DF
+    -- z.1 is point at zero which is set to -1
+    -- z.2 is point at infinity which is set to a^2 + b^2
+    -- z.4 is a
+    -- z.8 is b
+    spnt(a:DF,b:DF):% ==
+      inf:DF := (a*a + b*b)*0.5::DF
+      (z := New; z.1 := -1@DF; z.2 := inf; z.4 := a; z.8 := b; z)
+
+    -- spnt(a,b,c) constructs a 3D point defined by a,b and c
+    -- of type DF
+    -- z.1 is point at zero which is set to -1
+    -- z.2 is point at infinity which is set to a^2 + b^2
+    -- z.4 is a
+    -- z.8 is b
+    -- z.16 is c
+    spnt(a:DF,b:DF,c:DF):% ==
+      inf:DF := (a*a + b*b + c*c)*0.5::DF
+      z := New; z.1 := -1@DF; z.2 := inf
+      z.4 := a; z.8 := b
+      if n>2 then z.16 := c
+      z
+
+    -- svec(a,b) constructs a 2D vector defined by a and b
+    -- of type DF
+    svec(a:DF,b:DF):% ==
+      inf:DF := (a*a + b*b)*0.5::DF
+      (z := New; z.1 := -1@DF; z.2 := inf; z.4 := a; z.8 := b; z)
+
+    -- svec(a,b,c) constructs a 3D vector defined by a,b and c
+    -- of type DF
+    -- since this is a 2D space we ignore 3rd dimension
+    svec(a:DF,b:DF,c:DF):% ==
+      inf:DF := (a*a + b*b + c*c)*0.5::DF
+      z := New; z.1 := -1@DF; z.2 := inf
+      z.4 := a; z.8 := b
+      if n>2 then z.16 := c
+      z
+
+    dimension p == 2  -- dimension of base space
+
+    -- Test for NaN (Not a Number)
+    -- That is have we divided by zero or taken sqrt of negative number at
+    -- some stage?
+    -- Common Lisp does not support NaN ? So we need some sort of test for
+    -- invalid numbers
+    -- If not equal to itself then we assume that its not a valid number
+    -- an altenative approach is to check for complex numbers 
+    -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
+    nan?(x:DF):Boolean == x ~= x
+
+    -- Is this a valid point? if any of its elements are not valid
+    -- then return true
+    -- Examples of invalid floating point numbers are when have we
+    -- have divided a given element by zero or taken
+    -- sqrt of negative number at some stage?
+    -- Note: we can still represent a point at infinity and we can
+    -- represent points using complex numbers, but we do this using
+    -- projective or conformal space or by using the appropriate
+    -- instance of SPointCategory, not by using invalid floating
+    -- point numbers.
+    Pnan?(p:%):Boolean ==
+      nan?(p.4) => true
+      nan?(p.8) => true
+      false
+
+    -- scale until length is 1
+    unitVector(p:%):% ==
+      factor := sqrt(p.4*p.4 + p.8*p.8)
+      pt := New
+      pt.4 := p.4/factor
+      pt.8 := p.8/factor
+      pt.2 := (pt.4*pt.4 + pt.8*pt.8)*0.5::DF
+      pt.1 := -1@DF
+      pt
+
+    -- This returns the length of the parallel component of two vectors
+    -- in the case of Euclidean space this is the dot product of two
+    -- vectors. We use this function to test the colinearity
+    parallel(x:%,y:%):DF == x.6 * y.6 + x.10 * y.10
+
+    -- This returns a vector perpendicular to the two vectors
+    -- in the case of 3D Euclidean space this is the cross product of the
+    -- two vectors. We use this function to compute orthogonal
+    perpendicular(x:%,y:%):% ==
+      pt := New
+      pt.4 := 0@DF
+      pt.8 := 1@DF
+      pt.2 := (pt.4*pt.4 + pt.8*pt.8)*0.5::DF
+      pt.1 := -1@DF
+      pt
+
+    -- scalar multiplication
+    _*(s:DF,x:%):% ==
+      pt := New
+      pt.4 := x.4 * s
+      pt.8 := x.8 * s
+      pt.2 := (pt.4*pt.4 + pt.8*pt.8)*0.5::DF
+      pt.1 := -1@DF
+      pt
+
+    -- addition
+    _+(x:%,y:%):% ==
+      pt := New
+      pt.4 := x.4 + y.4
+      pt.8 := x.8 + y.8
+      pt.2 := (pt.4*pt.4 + pt.8*pt.8)*0.5::DF
+      pt.1 := -1@DF
+      pt
+
+    -- subtraction
+    _-(x:%,y:%):% ==
+      pt := New
+      pt.4 := x.4 - y.4
+      pt.8 := x.8 - y.8
+      pt.2 := (pt.4*pt.4 + pt.8*pt.8)*0.5::DF
+      pt.1 := -1@DF
+      pt
+
+    -- return true if param is inside bounding box
+    -- where bounding box is specified by min and max
+    inBounds?(pt: %,mns: %,mxs: %):Boolean ==
+     -- left of box - check minimum x
+      qelt(pt,4) < qelt(mns,4) => false
+      -- right of box - check maximum x
+      qelt(pt,4) > qelt(mxs,4) => false
+      -- below box - check minimum y
+      qelt(pt,8) < qelt(mns,8) => false
+      -- above box - check maximum y
+      qelt(pt,8) > qelt(mxs,8) => false
+      -- inside box so return true
+      true
+
+   -- returns the 'x'(left to right) screen coordinate
+    screenCoordX(pt: %):DF == pt.4
+
+    -- returns the 'y'(bottom to top) screen coordinate
+    screenCoordY(pt: %):DF == pt.8
+
+    -- returns the 'z'(out from screen) screen coordinate
+    screenCoordZ(pt: %):DF == if n>2 then pt.16 else 0@DF
+
+    -- returns screen coordinates as a list
+    screenCoords(pt: %):List DF ==
+      if n>2 then return [pt.4,pt.8,pt.16]
+      [pt.4,pt.8]
+
+    -- returns extended coordinates as a list
+    extendedCoords(pt: %):List DF == entries(pt)
+
+
+    -- normalalised point has scalar value of one, if this is not the
+    -- case then scale values
+    normalisePoint(pt:%):% ==
+      scaleFactor:DF := pt.1
+      if scaleFactor < 0.01::DF and scaleFactor > -0.01::DF then
+        sayTeX$Lisp "can't apply normalisePoint to a vector"
+        return pt
+      if scaleFactor < -0.99::DF and scaleFactor > -1.01::DF then
+        return pt
+      pt2 := New
+      infin := 0@DF
+      for x in 1..n repeat
+        index := 2^(x+1)
+        pt2.index := pt.index / (-scaleFactor)
+        infin := infin + ((pt2.index)*(pt2.index))*0.5::DF
+      pt2.1 := -1@DF
+      pt2.2 := infin
+      sayTeX$Lisp concat([_
+        "normalisePoint ",(mathObject2String$Lisp pt)@String,_
+        " normalised to ",(mathObject2String$Lisp pt2)@String,_
+        ")"])$String
+      pt2
+
+--    coerce(me: %):C ==
+--      multivector(extendedCoords(me))$C
+
+--    coerce(cmpx: C):% ==
+--      [real(cmpx),imag(cmpx)]
+
+    -- start of SetCategory definitions --
+
+    hash(s:%): SingleInteger == 0$SingleInteger
+
+    latex(s:%): String == "\mbox{\bf Unimplemented}"
+
+    -- returns true if x equals y
+    _=(x:%,y:%):Boolean ==
+      for i in 0..(dim-1) repeat
+        if x.i ~= y.i then return false
+      true
+
+    -- returns true if x is not equal to y
+    _~_=(x:%,y:%) : Boolean == not(x=y)
+
+    -- output
+    coerce(pt: %):OutputForm ==
+      s:String := "proj"
+      if pt.4 = 0@DF then s := "v"
+      if pt.4 = 1@DF then s := "p"
+      paren([s::OutputForm,(pt.4)::OutputForm,(pt.8)::OutputForm])$OutputForm
+@
+\section{SceneIFS domain}
+Many of the functions here are from NumericTubePlot and related
+packages. However I needed them to be defined over SPointCategory
+so I adapted them here.
+<<domain SCIFS SceneIFS>>=
+)abbrev domain SCIFS SceneIFS
+++ Author: Martin Baker (some parts adapted from NumericTubePlot by
+++         Clifton J. Williamson)
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description: Generates various surfaces (2 dimentional subsets
+++ of 3D space). When 1 Dimentional subspace (a line) needs to be
+++ represented in a 3D editor then we convert the line into a tube.
+++ Many of the functions here are from NumericTubePlot and related
+++ packages. However I needed them to be defined over SPointCategory
+++ so I adapted them here.
+SceneIFS(PT): Exports == Implementation where
+ PT:SPointCategory
+
+ NNI==> NonNegativeInteger
+ DF==> DoubleFloat
+ SEG  ==> Segment DF
+ Triad ==> Record(tang:PT,norm:PT,bin:PT)
+ Clipd ==> Record(source: DF -> PT,_
+                   ranges: List SEG,_
+                   knots: List DF,_
+                   points: List PT)
+
+ Exports== with
+  smesh: (ptin:List List PT,clos: Boolean) -> %
+    ++ constuct a ifs representation of a mesh from a 2 dimentional
+    ++ array of points
+  singleFace: (ptin:List PT) -> %
+    ++ constuct a ifs representation of a face from an array of points
+  subdivide: (me:%) -> %
+    ++ for each face calculate a new point in the centre of the face, then
+    ++ build a new set of faces which include the new point.
+  sierpinskiDivide: (me:%,level:NNI) -> %
+    ++ for each edge of each face calculate a new point in the centre of
+    ++ the edge, then build a new set of faces which include the new points.
+  displayIFS: (me:%) -> Void
+    ++ list this instance to the command line
+  stube: (functions:List Clipd,r:DF,n:Integer) -> %
+    ++ tube(c,r,n) creates a tube of radius r around the curve c.
+  curveLoops:(pts1:List PT,r:DF,nn:Integer) ->List List PT
+    ++ generates ifs from line
+  indexes: (me:%) -> List List NNI
+    ++ returns indexes
+  pointList: (me:%) -> List PT
+    ++ returns points
+  testIFS:() -> Void
+    ++ test output
+
+ Implementation == add
+  Rep := Record(inx: List List NNI,pts: List PT)
+
+  -- returns indexes
+  indexes(me:%):List List NNI == me.inx
+
+  -- returns points
+  pointList(me:%):List PT == me.pts
+
+  meshIndex(i:Integer,j:Integer,c:Integer):NNI == ((j*(c)) + i)::NNI
+
+  -- constuct a ifs representation of a mesh from a 2 dimentional
+  -- array of points
+  smesh(ptin:List List PT,clos: Boolean): % ==
+   pt2: List PT := nil()
+   in2: List List NNI := nil()
+   rowLength := #ptin
+   colLength := #(first ptin)
+   j := 0
+   for lpt in ptin repeat
+     i := 0
+     for p in lpt repeat
+       pt2 := concat(pt2,p)
+       if i > 0 and j > 0 then
+         thisLine:List NNI := [meshIndex(i-1,j-1,colLength),_
+                               meshIndex(i,j-1,colLength),_
+                               meshIndex(i,j,colLength),_
+                               meshIndex(i-1,j,colLength)]
+         in2 := concat(in2,thisLine)
+       i := i+ 1
+     if clos and j > 0 then
+       thisLine:List NNI := [meshIndex(i-1,j-1,colLength),_
+                               meshIndex(0,j-1,colLength),_
+                               meshIndex(0,j,colLength),_
+                               meshIndex(i-1,j,colLength)]
+       in2 := concat(in2,thisLine)
+     j := j+1
+   [in2,pt2]
+
+  -- constuct a ifs representation of a face from an array of points
+  singleFace(ptin:List PT):% ==
+   pt2: List PT := ptin
+   --in2: List List NNI := [concat([i for i in 0..(#ptin - 1)],0)]
+   in2: List List NNI := [[i for i in 0..(#ptin - 1)]]
+   [in2,pt2]
+
+  -- for each face calculate a new point in the centre of the face, then
+  -- build a new set of faces which include the new point.
+  subdivide(me:%):% ==
+    indexSize:NNI := #(me.pts)
+    pt2: List PT := [(me.pts).i for i in 1..indexSize]
+    in2: List List NNI := nil()
+    for faceIx in me.inx repeat
+      -- create new point as the average value of all the points in the face
+      newPt := sipnt(0,0,0)
+      for ptIx in faceIx repeat
+        newPt := newPt + pt2.(ptIx+1)
+      newPt :=  (1 / #faceIx)::DF * newPt
+      -- add new point to list of points
+      pt2 := concat(pt2,newPt)
+      indexPos := 1
+      -- build face indexes
+      for ptIx in faceIx repeat
+        newFace:List NNI := [faceIx.j for j in 1..(#(faceIx))]
+        newFace.indexPos := indexSize
+        indexPos := indexPos + 1
+        in2 := concat(in2,newFace)
+      indexSize := indexSize + 1
+    [in2,pt2]
+
+  -- for each edge of each face calculate a new point in the centre of
+  -- the edge, then build a new set of faces which include the new points.
+  sierpinskiDivide(me:%,level:NNI):% ==
+    indexSize:NNI := #(me.pts)
+    pt2: List PT := [(me.pts).i for i in 1..indexSize]
+    in2: List List NNI := nil()
+    for faceIx in me.inx repeat
+      -- create new point as the average value of edge ends
+      for offset in 1..#faceIx repeat
+        ix1:NNI := offset
+        ix2:NNI := offset+1
+        if ix2 > #faceIx then ix2 := 1
+        newPt := pt2.((faceIx.ix1) + 1) + pt2.((faceIx.ix2) + 1)
+        newPt :=  0.5::DF * newPt
+        pt2 := concat(pt2,newPt)
+      index1:NNI := ((#faceIx) - 1)::NNI
+      index2:NNI := 0
+      -- build face indexes
+      for offset in 1..#faceIx repeat
+        ix3 := indexSize+index1
+        ix4 := indexSize+index2
+        newFace:List NNI := [faceIx.offset,ix3,ix4]
+        index1 := index1 + 1
+        if index1 = #faceIx then index1 := 0
+        index2 := index2 + 1
+        if index2 = #faceIx then index2 := 0
+        in2 := concat(in2,newFace)
+      indexSize := indexSize + #faceIx
+    if level < 1 then return [in2,pt2]
+    sierpinskiDivide([in2,pt2],(level-1)::NNI)
+
+  -- list this instance to the command line
+  displayIFS(me:%):Void ==
+    ptStr:List String := nil() -- string to hold result
+    for p in me.pts repeat
+      ptStr := concat(ptStr,(mathObject2String$Lisp p)@String)
+      ptStr := concat(ptStr," ")
+    sayTeX$Lisp ptStr
+    for faceIx in me.inx repeat
+      ptStr := nil() -- string to hold result
+      for pIx in faceIx repeat
+        ptStr := concat(ptStr,(mathObject2String$Lisp pIx)@String)
+        ptStr := concat(ptStr," ")
+      sayTeX$Lisp ptStr
+    Void
+
+  -- listBranches(c) returns a list of lists of points, representing the
+  -- branches of the curve c.
+  listBranches(functions:List Clipd):List List PT ==
+    outList : List List PT := nil()
+    for curve in functions repeat
+      outList := concat(curve.points,outList)
+    outList
+
+  LINMAX  := convert(0.995)@DF
+  XHAT := sipnt(1,0,0)
+  YHAT := sipnt(0,1,0)
+  PREV0 := sipnt(1,1,0)
+  PREV := PREV0
+
+  orthog(x:PT,y:PT):PT ==
+      if colinearity(x,y) > LINMAX then y := PREV
+      if colinearity(x,y) > LINMAX then
+        y := (colinearity(x,XHAT) < LINMAX => XHAT; YHAT)
+      a:DF := -parallel(x,y)/parallel(x,x)
+      PREV := a*x + y
+
+  poTriad(pl:PT,po:PT,pr:PT):Triad ==
+      -- use divided difference for t.
+      t := unitVector(pr - pl)
+      -- compute n as orthogonal to t in plane containing po.
+      pol := pl - po
+      n   := unitVector orthog(t,pol)
+      [t,n,perpendicular(t,n)]
+
+  curveTriads(l:List PT):List Triad ==
+      (k := #l) < 2 => error "Need at least 2 points to specify a curve"
+      PREV := PREV0
+      k = 2 =>
+        t := unitVector(second l - first l)
+        n := unitVector(t - XHAT)
+        b := perpendicular(t,n)
+        triad : Triad := [t,n,b]
+        [triad,triad]
+      -- compute interior triads using divided differences
+      midtriads : List Triad :=
+        [poTriad(pl,po,pr) for pl in l for po in rest l _
+               for pr in rest rest l]
+      -- compute first triad using a forward difference
+      x := first midtriads
+      t := unitVector(second l - first l)
+      n := unitVector orthog(t,x.norm)
+      begtriad : Triad := [t,n,perpendicular(t,n)]
+      -- compute last triad using a backward difference
+      x := last midtriads
+      -- efficiency!!
+      t := unitVector(l.k - l.(k-1))
+      n := unitVector orthog(t,x.norm)
+      endtriad : Triad := [t,n,perpendicular(t,n)]
+      concat(begtriad,concat(midtriads,endtriad))
+
+  -- cosSinInfo(n) returns the list of lists of values for n, in the
+  -- form: [[cos(n - 1) a,sin(n - 1) a],...,[cos 2 a,sin 2 a],[cos a,sin a]]
+  -- where a = 2 pi/n.  Note: n should be greater than 2.
+  cosSinInfo(n:Integer):List List DF ==
+      ans : List List DF := nil()
+      theta : DF := 2 * pi()/n
+      for i in 1..(n-1) repeat             --!! make more efficient
+        angle := i * theta
+        ans := concat([cos angle,sin angle],ans)
+      ans
+
+  -- loopPoints(p,n,b,r,lls) creates and returns a list of points
+  -- which form the loop with radius r, around the center point
+  -- indicated by the point p, with the principal normal vector of
+  -- the space curve at point p given by the point(vector) n, and the
+  -- binormal vector given by the point(vector) b, and a list of lists,
+  -- lls, which is the \spadfun{cosSinInfo} of the number of points
+  -- defining the loop.
+  loopPoints(ctr:PT,pNorm:PT,bNorm:PT,rad:DF,cosSin:List List DF):List PT ==
+      ans : List PT := nil()
+      while not null cosSin repeat
+        cossin := first cosSin; cos := first cossin; sin := second cossin
+        ans := cons(ctr + rad * (cos * pNorm + sin * bNorm),ans)
+        cosSin := rest cosSin
+      pt := ctr + rad * pNorm
+      concat(pt,concat(ans,pt))
+
+  curveLoops(pts1:List PT,r:DF,nn:Integer):List List PT ==
+      triads := curveTriads pts1
+      cosSin := cosSinInfo nn
+      loops : List List PT := nil()
+      for pt in pts1 for triad in triads repeat
+        n := triad.norm; b := triad.bin
+        loops := concat(loopPoints(pt,n,b,r,cosSin),loops)
+      reverse_! loops
+
+  -- tube(c,r,n) creates a tube of radius r around the curve c.
+  stube(functions:List Clipd,r:DF,n:Integer):% ==
+    n < 3 => error "tube: n should be at least 3"
+    brans := listBranches functions
+    loops : List List PT := nil()
+    for bran in brans repeat
+      loops := concat(loops,curveLoops(bran,r,n))
+    smesh(loops,true)
+@
+\section{domain STransform}
+Existing transforms in Axiom (such as dhmatrix.spad.pamphlet and
+moebius.spad.pamphlet) are stand alone chunks of algebra which don't
+interwork with each other and it would be a lot of work to incorporate them
+into other code espesially graphics and geometry.
+
+The aim of STransform is to make a completely general template for
+transforms so that specific transforms like a Moebius transform could
+be implemented so that the slot directly into the geometry/graphics
+framework.
+
+We have not acheived that aim yet. STransform does work with the various
+implementations of the SPointCategory such as SCartesian(2), SCartesian(3),
+SArgand and SConformal. What I would like to do is to have
+a transform category which could be implemented by domains like
+dhmatrix.spad.pamphlet and moebius.spad.pamphlet, then they could be
+used in the geometry/graphics framework anywhere transforms are appropriate.
+
+The most general form of transform would be represented by PT->PT where
+PT is any implementation of SPointCategory. So ideally all transforms
+should be defined in this way. The usual way to transform a vector is to
+use a matrix like this:
+transform(in:Vector,def:Matrix):Vector
+So what I need is a way to curry it into somthing like this:
+transform(def:Matrix):(Vector->Vector)
+I don't know how to this? that is, how do I create an anonymous function
+where a variable (in this case def:Matrix) is a constant in the function?
+<<domain STR STransform>>=
+)abbrev domain STR STransform
+++ Author: Martin Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: spnt,sipnt,svec,sivec,screenCoords
+++ Related Constructors: SCartesian, SArgand, SConformal
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description:
+++ This domain implements transforms from SPoint to SPoint
+
+STransform(PT) : Exports == Implementation where
+  ++ Domains for transform from SPoint to SPoint
+  ++ STransform transform domain can by used to represent linear transforms
+  ++ for instance when working with SCartesian
+  ++ where its Representation is a matrix of DoubleFloat
+  ++ Other transform domains may not nessarily
+  ++ be linear and will have different representatons
+
+  PT:SPointCategory
+
+  PI ==> PositiveInteger
+  NNI ==> NonNegativeInteger
+  DF ==> DoubleFloat
+  TRAN ==> PT -> PT
+  C ==> Complex DF
+  FCV ==> C -> C
+  PARAMS==> Union(mtx:PrimitiveArray PrimitiveArray DF,_
+                 general:TRAN,_
+                 multiv: PrimitiveArray DF,_
+                 iden:"iden")
+
+  Exports ==> Type with
+
+    stransform: (m:List List DF) -> %
+      ++ construct with given matrix elements
+    stransform: (gen:PT -> PT) -> %
+      ++ construct transform in general form as a mapping from PT to PT
+    stransform: (cpx:C -> C) -> %
+      ++ construct transform as function of complex variable
+      ++ can only be used when PT is SArgand so this can be
+      ++ converted to PT -> PT
+    stransform: (m: List DF) -> %
+      ++ construct with a multivector
+    stranslate: (offsetx:DF,offsety:DF,offsetz:DF,scalex:DF,_
+                 scaley:DF,scalez:DF) -> %
+      ++ construct transform which represents pure translation
+      ++ we can also combine with scale which, for instance, is useful
+      ++ when writing to SVG file because the y dimension is inverted
+    identity: () -> %
+      ++ returns the identity element which is do nothing transform
+    xform:(tr:%,inpt:PT) -> PT
+      ++ apply transform to a point producing another point
+    compound: (tr:%,inpt:%) -> %
+      ++ combine two transforms
+    coerce: (tr: %) -> OutputForm
+      ++ output
+
+  Implementation ==> Type add
+
+    Rep := PARAMS
+
+    -- qelt(m,i,j) returns the element in the ith row and jth
+    -- column of the array m
+    -- NO error check to determine if indices are in proper ranges
+    qelt(m:%,i:Integer,j:Integer):DF ==
+      qelt(qelt(m.mtx,i)$(PrimitiveArray PrimitiveArray DF),j)
+
+    -- construct with given matrix elements
+    stransform(m:List List DF):% ==
+      PT has SCartesian(2) =>
+        arr : PrimitiveArray PrimitiveArray DF := new(3,empty())
+        --sayTeX$Lisp concat([_
+        --  "stransform(",(mathObject2String$Lisp m)@String,")"])$String
+        for i in 0..2 repeat
+          qsetelt_!(arr,i,new(3,0::DF))
+          for j in 0..2 repeat
+            (arr.i).j := (m.(i+1)).(j+1)
+        [arr]
+      PT has SCartesian(3) =>
+        arr : PrimitiveArray PrimitiveArray DF := new(4,empty())
+        --sayTeX$Lisp concat([_
+        --     "stransform(",(mathObject2String$Lisp m)@String,")"])$String
+        for i in 0..3 repeat
+          qsetelt_!(arr,i,new(4,0::DF))
+          for j in 0..3 repeat
+            (arr.i).j := (m.(i+1)).(j+1)
+        [arr]
+      error "invalid point type in transform constructor"
+      identity()
+
+    -- construct with a general mapping from PT to PT
+    stransform(gen:PT -> PT):% ==
+      [gen]
+
+    -- construct transform as function of complex variable
+    -- can only be used when PT is SArgand so this can be
+    -- converted to PT -> PT
+    stransform(cpx:C -> C):% ==
+      pp:(PT -> PT) := ((x:PT):PT +-> _
+         (cpx((x pretend SArgand):: C))::SArgand pretend PT)
+      [pp]
+
+    -- construct with a multivector
+    stransform(m: List DF):% ==
+      [construct m]
+
+    -- construct transform which represents pure translation
+    -- we can also combine with scale which, for instance, is useful
+    -- when writing to SVG file because the y dimension is inverted
+    stranslate(offsetx:DF,offsety:DF,offsetz:DF,_
+               scalex:DF,scaley:DF,scalez:DF):% ==
+      --sayTeX$Lisp concat([_
+      --     "stranslate(",(mathObject2String$Lisp type)@String,_
+      --     ",",(mathObject2String$Lisp offsetx)@String,_
+      --     ",",(mathObject2String$Lisp offsety)@String,")"])$String
+      if PT has SCartesian(2) then
+        return stransform([_
+             [scalex,0::DF,offsetx],_
+             [0::DF,scaley,offsety],_
+             [0::DF,0::DF,1::DF]])
+      if PT has SCartesian(3) then
+        return stransform([_
+             [scalex,0::DF,0::DF,offsetx],_
+             [0::DF,scaley,0::DF,offsety],_
+             [0::DF,0::DF,scalez,offsetz],_
+             [0::DF,0::DF,0::DF,1::DF]])
+      if PT has SConformal(2) then
+        m := matrix([[0::DF,1::DF,0::DF,0::DF],_
+                           [1::DF,0::DF,0::DF,0::DF],_
+                           [0::DF,0::DF,1::DF,0::DF],_
+                           [0::DF,0::DF,0::DF,1::DF]])$Matrix(DF)
+        CA := CliffordAlgebra(4,DF,squareMatrix(m)$SquareMatrix(4,DF))
+        trConf:CA := multivector([1::DF,0::DF,0::DF,0::DF,_
+                0::DF,0::DF,offsetx*(0.5::DF),0::DF,_
+                0::DF,0::DF,offsety*(0.5::DF),0::DF,_
+                0::DF,0::DF,0::DF,0::DF])$CA
+        --inptConf:CA := multivector([1::DF,0::DF,0::DF,0::DF,_
+        --        0::DF,0::DF,0::DF,0::DF,_
+        --        0::DF,1::DF,0::DF,0::DF,_
+        --        0::DF,0::DF,0::DF,0::DF])$CA
+        --resConf:CA := trConf*inptConf
+        --return [resConf pretend PrimitiveArray DF]
+        return [trConf pretend PrimitiveArray DF]
+      if PT has SArgand then
+        pp:(PT -> PT) := ((x:PT):PT +-> _
+          (((x pretend SArgand):: C)+ complex(offsetx,offsety))::SArgand pretend PT)
+        return [pp]
+      identity()
+
+    -- returns the identity element which is 'do-nothing' transform
+    identity():% == ["iden"]
+
+    -- apply transform to a point producing another point
+    applyTransPt2(tr:%,inpt:SCartesian(2)):SCartesian(2) ==
+      --sayTeX$Lisp concat(["applyTrans pt=",_
+      --  (mathObject2String$Lisp inpt)@String,_
+      --  " tr=",(mathObject2String$Lisp tr)@String])$String
+      if tr case iden then return inpt
+      if tr case general then
+        sayTeX$Lisp "can't transform Euclidean point using general function"
+        return inpt
+      vin:List DF := extendedCoords(inpt)$SCartesian(2)
+      a:DF := tr.mtx.0.0 * vin.1 + tr.mtx.0.1 * vin.2 + tr.mtx.0.2 * vin.3
+      b:DF := tr.mtx.1.0 * vin.1 + tr.mtx.1.1 * vin.2 + tr.mtx.1.2 * vin.3
+      --sayTeX$Lisp concat(["applyTrans pt=",_
+      -- (mathObject2String$Lisp inpt)@String,_
+      --  " tr=",(mathObject2String$Lisp tr)@String,_
+      --  " res=",(mathObject2String$Lisp_
+      --  spnt(a,b)$SCartesian(2))@String])$String
+      spnt(a,b)$SCartesian(2)
+
+    -- apply transform to a point producing another point
+    applyTransPt3(tr:%,inpt:SCartesian(3)):SCartesian(3) ==
+      --sayTeX$Lisp concat([_
+      --     "applyTransPt3(",(mathObject2String$Lisp tr.mtx)@String,")",_
+      --     "appled to",(mathObject2String$Lisp inpt)@String,")"])$String
+      if tr case iden then return inpt
+      if tr case general then
+        sayTeX$Lisp "can't transform Euclidean point using general function"
+        return inpt
+      vin:List DF := extendedCoords(inpt)$SCartesian(3)
+      a:DF := tr.mtx.0.0 * vin.1 + tr.mtx.0.1 * vin.2_
+            + tr.mtx.0.2 * vin.3 + tr.mtx.0.3 * vin.4
+      b:DF := tr.mtx.1.0 * vin.1 + tr.mtx.1.1 * vin.2_
+            + tr.mtx.1.2 * vin.3 + tr.mtx.1.3 * vin.4
+      c:DF := tr.mtx.2.0 * vin.1 + tr.mtx.2.1 * vin.2_
+            + tr.mtx.2.2 * vin.3 + tr.mtx.2.3 * vin.4
+      --sayTeX$Lisp concat([_
+      --     "result=",(mathObject2String$Lisp a)@String,_
+      --     ",",(mathObject2String$Lisp b)@String,_
+      --     ",",(mathObject2String$Lisp c)@String])$String
+      spnt(a,b,c)$SCartesian(3)
+
+    -- apply transform to a (complex number) point producing another point
+    applyTransCx(tr:%,inpt:SArgand):SArgand ==
+      if tr case iden then return inpt
+      if tr case mtx then
+        sayTeX$Lisp "can't transform complex using matrix"
+        sayTeX$Lisp concat([_
+             "applyTrans(",(mathObject2String$Lisp tr)@String,")"])$String
+        return inpt
+--      res := inpt::Complex DF
+--      for f in tr.fcv repeat
+--        --sayTeX$Lisp concat([_
+--        --     "applyTrans(",(mathObject2String$Lisp 1)@String,")"])$String
+--        res := f(res)
+--      res::SArgand
+      f := tr.general
+      res := f(inpt pretend PT)
+      res pretend SArgand
+
+    -- apply transform to a 2D conformal point producing another point
+    applyTransConf2(tr:%,inpt:SConformal(2)):SConformal(2) ==
+      if tr case iden then return inpt
+      if not (tr case multiv) then
+        sayTeX$Lisp "this transform not compatible with conformal"
+        sayTeX$Lisp concat([_
+             "applyTrans(",(mathObject2String$Lisp tr)@String,")"])$String
+        return inpt
+      m := matrix([[0::DF,1::DF,0::DF,0::DF],_
+                           [1::DF,0::DF,0::DF,0::DF],_
+                           [0::DF,0::DF,1::DF,0::DF],_
+                           [0::DF,0::DF,0::DF,1::DF]])$Matrix(DF)
+      CA := CliffordAlgebra(4,DF,squareMatrix(m)$SquareMatrix(4,DF))
+      ptConf:CA := inpt pretend CA
+      trConf:CA := (tr.multiv) pretend CA
+      conjugation := trConf * ptConf * reverse(trConf)
+      res := conjugation pretend SConformal(2)
+      --sayTeX$Lisp concat(["xform pt=",_
+      --  (mathObject2String$Lisp ptConf)@String])$String
+      --sayTeX$Lisp concat(["tr=",_
+      --  (mathObject2String$Lisp trConf)@String])$String
+      --sayTeX$Lisp concat(["res=",_
+      --   (mathObject2String$Lisp res)@String])$String
+      normalisePoint(res)
+
+    -- apply transform to a point producing another point
+    xform(tr:%,inpt:PT):PT ==
+      PT has SCartesian(2) => _
+        applyTransPt2(tr,inpt pretend SCartesian(2)) pretend PT
+      PT has SCartesian(3) => _
+        applyTransPt3(tr,inpt pretend SCartesian(3)) pretend PT
+      PT has SArgand => applyTransCx(tr,inpt pretend SArgand) pretend PT
+      PT has SConformal(2) => _
+        applyTransConf2(tr,inpt pretend SConformal(2)) pretend PT
+      error "invalid point type in transform"
+      spnt(0::DF,0::DF)$SCartesian(2) pretend PT
+
+    -- combine two 2D transforms
+    compound2(tr:%,inpt:%):% ==
+      arr : PrimitiveArray PrimitiveArray DF := new(3,empty())
+      for i in 0..2 repeat
+        qsetelt_!(arr,i,new(3,0::DF))
+        for j in 0..2 repeat
+          (arr.i).j := tr.mtx.0.j * inpt.mtx.i.0_
+                     + tr.mtx.1.j * inpt.mtx.i.1_
+                     + tr.mtx.2.j * inpt.mtx.i.2
+      --sayTeX$Lisp concat([_
+      --  "compound2(",(mathObject2String$Lisp tr)@String,_
+      --  ":",(mathObject2String$Lisp inpt)@String,_
+      --  "):=",(mathObject2String$Lisp arr)@String,_
+      --  ":"])$String
+      return [arr]
+
+    -- combine two 3D transforms
+    compound3(tr:%,inpt:%):% ==
+      arr : PrimitiveArray PrimitiveArray DF := new(4,empty())
+      for i in 0..3 repeat
+        qsetelt_!(arr,i,new(4,0::DF))
+        for j in 0..3 repeat
+          (arr.i).j := tr.mtx.0.j * inpt.mtx.i.0_
+                     + tr.mtx.1.j * inpt.mtx.i.1_
+                     + tr.mtx.2.j * inpt.mtx.i.2_
+                     + tr.mtx.3.j * inpt.mtx.i.3
+      --sayTeX$Lisp concat([_
+      --  "compound3(",(mathObject2String$Lisp tr)@String,_
+      --  ":",(mathObject2String$Lisp inpt)@String,_
+      --  "):=",(mathObject2String$Lisp arr)@String,_
+      --  ":"])$String
+      return [arr]
+
+    -- combine two 2D conformal transforms
+    compoundConf2(tr:%,inpt:%):% ==
+      m := matrix([[0::DF,1::DF,0::DF,0::DF],_
+                           [1::DF,0::DF,0::DF,0::DF],_
+                           [0::DF,0::DF,1::DF,0::DF],_
+                           [0::DF,0::DF,0::DF,1::DF]])$Matrix(DF)
+      CA := CliffordAlgebra(4,DF,squareMatrix(m)$SquareMatrix(4,DF))
+      trConf:CA := (tr.multiv) pretend CA
+      inptConf:CA := (inpt.multiv) pretend CA
+      resConf:CA := trConf*inptConf
+      --sayTeX$Lisp concat(["compound tr=",_
+      --  (mathObject2String$Lisp trConf)@String])$String
+      --sayTeX$Lisp concat(_
+      --  ["inpt=",(mathObject2String$Lisp inptConf)@String])$String
+      --sayTeX$Lisp concat(["res=",_
+      --  (mathObject2String$Lisp resConf)@String])$String
+      return [resConf pretend PrimitiveArray DF]
+
+    -- combine two transforms
+    compound(tr:%,inpt:%):% ==
+      -- first check for simple case where one of the operands is identity
+      --sayTeX$Lisp concat([_
+      --  "compound(",(mathObject2String$Lisp tr)@String,_
+      --  ":",(mathObject2String$Lisp inpt)@String,_
+      --  ")"])$String
+      if tr case iden then return inpt -- iden*inpt = inpt
+      if inpt case iden then return tr -- tr*iden = tr
+      if tr case mtx and inpt case mtx then
+        if PT has SCartesian(2) then return compound2(tr,inpt)
+        if PT has SCartesian(3) then return compound3(tr,inpt)
+        --sayTeX$Lisp concat([_
+        --  "compound(",(mathObject2String$Lisp tr)@String,_
+        --  ":",(mathObject2String$Lisp inpt)@String,_
+        --  "):=",(mathObject2String$Lisp arr)@String,_
+        --  ":"])$String
+      if tr case general and inpt case general then
+        in1 : PT -> PT := tr.general
+        in2 : PT -> PT := inpt.general
+        fn: PT -> PT := _*(in1,in2)$MappingPackage3(PT,PT,PT)
+        return [fn]
+      if tr case multiv and inpt case multiv then
+        return compoundConf2(tr,inpt)
+      identity()
+
+    -- output
+    coerce(pt: %):OutputForm ==
+      s:String := "err"
+      if PT has SCartesian(2) then s := "2Dtransform"
+      if PT has SCartesian(3) then s := "3Dtransform"
+      if PT has SArgand then s := "complex transform"
+      if PT has SConformal(2) then s := "2D Conformal"
+      s::OutputForm
+@
+\section{XML code}
+There are 2 domains and one package here to support the storage and writing
+of XML information, these are:
+\begin{list}{}
+* XmlAttribute domain - this holds an attribute
+* XmlElement domain - this holds an element, including a list of all
+           its elements and a list of all child elements.
+* ExportXml package - has code for writing out the complete XML file.
+\end{list}
+This XML code is used to write both SVG and X3D files. It was the original
+intension that this XML should not be specific to the scenegraph but be
+general enough to be used in other places (perhaps it could be used in the
+html and mathml code).
+
+However there is some scengraph specific code, that is code to write to
+VRML because VRML is a non-XML version of X3D. So by including a outputVRML
+function we can support two formats without too much duplication.
+\section{XmlAttribute domain}
+<<domain XMLAT XmlAttribute>>=
+)abbrev domain XMLAT XmlAttribute
+++ Author: Martin John Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: writeXml,writeVRML
+++ Related Constructors: xmlAttribute,xmlElement
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description:
+++ This package provides support for XML files
+
+XmlAttribute(): Exports==Implementation where
+ Exports == with
+  xmlAttribute:(name:String,value:String) -> %
+    ++ construct a xmlAttribute from its name and value
+  xmlAttribute:(name:String,values:List String) -> %
+    ++ construct a xmlAttribute from its name and list of values
+  coerce: % -> String
+  outputVRML:(rp:%,f1:TextFile) -> Void
+
+ Implementation == add
+
+  Rep := Record(n:String,v:List String)
+
+  -- construct a xmlAttribute from its name and value
+  xmlAttribute(name:String,value:String): % == [name,[value]]
+
+  -- construct a xmlAttribute from its name and list of values
+  xmlAttribute(name:String,values:List String): % == [name,values]
+
+  coerce(rp:%): String ==
+   val:String := ""
+   for vn in rp.v repeat
+     if val = "" then val := vn
+     else val := concat([val," ",vn])$String
+   concat([" ",rp.n,concat("=",quote()),concat(val,quote())])$String
+
+  outputVRML(rp:%,f1:TextFile):Void ==
+   val:String := ""
+   for vn in rp.v repeat
+     if val = "" then
+       val := vn
+     else val := concat([val,",",vn])$String
+   writeLine!(f1,concat([rp.n," ",val])$String)
+   Void
+@
+\section{XmlElement domain}
+<<domain XMLEL XmlElement>>=
+)abbrev domain XMLEL XmlElement
+++ Author: Martin John Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: writeXml,writeVRML
+++ Related Constructors: xmlAttribute,xmlElement
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description:
+++ This package provides support for XML files
+
+XmlElement(): Exports==Implementation where
+
+ NNI==> NonNegativeInteger
+
+ Exports == with
+  xmlElement:(name:String,elements:List %,attributes:List XmlAttribute) -> %
+  xmlElement:(name:String,txt: String,attributes:List XmlAttribute) -> %
+  empty?:(el:%) -> Boolean
+  coerce: % -> List String
+  outputVRML:(rp:%,f1:TextFile) -> Void
+
+ Implementation == add
+  Rep := Record(n:String,e:List %,a:List XmlAttribute,content:String)
+
+  -- constuct an element without unstructured text
+  xmlElement(name:String,elements:List %,attributes:List XmlAttribute): % ==
+   [name,elements,attributes,""]
+
+  -- constuct an element with unstructured text
+  xmlElement(name:String,txt: String,attributes:List XmlAttribute): % ==
+   [name,[],attributes,txt]
+
+  outputStructured(rp:%): List String ==
+   atts := concat([s::String for s in rp.a ])$String
+   #(rp.e) < 1 =>
+    [concat(["<",rp.n,atts," />"])$String]
+   res:List String := [concat(["<",rp.n,atts,">"])$String]
+   for el in rp.e repeat
+     --sayTeX$Lisp (mathObject2String$Lisp el)@String
+     res := concat(res,el::(List String))$(List String)
+   concat(res,concat(["</",rp.n,">"])$String)$(List String)
+
+  outputUnstructured(rp:%): List String ==
+   atts := concat([s::String for s in rp.a ])$String
+   res:List String := [concat(["<",rp.n,atts,">"])$String]
+   res := concat(res,rp.content)$(List String)
+   concat(res,concat(["</",rp.n,">"])$String)$(List String)
+
+  coerce(rp:%): List String ==
+   rp.content = "" => outputStructured(rp)
+   outputUnstructured(rp)
+
+  empty?(el:%):Boolean ==
+   if el.n = "" then true else false
+
+  outputVRML(rp:%,f1:TextFile):Void ==
+   if rp.n = "X3D" or rp.n = "Scene" then
+     for el in rp.e repeat
+       outputVRML(el,f1)
+     return Void
+   writeLine!(f1,concat(rp.n,"{"))
+   if rp.n = "Shape" then writeLine!(f1,"geometry")
+   for att in rp.a repeat
+     outputVRML(att,f1)$XmlAttribute
+   if (#(rp.e))::NNI > 0::NNI then
+     if rp.n = "Transform" then writeLine!(f1,"children[")
+     for el in rp.e repeat
+       outputVRML(el,f1)
+     if rp.n = "Transform" then writeLine!(f1,"]")
+   writeLine!(f1,"}")
+   Void
+@
+\section{ExportXml package}
+<<package XML ExportXml>>=
+)abbrev package XML ExportXml
+++ Author: Martin John Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: writeXml,writeVRML
+++ Related Constructors: xmlAttribute,xmlElement
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+++ Description:
+++ This package provides support for XML files
+
+
+ExportXml(): with
+
+  writeXml:(XmlElement,String) -> Void
+    ++ writes an xml element and all the elements below it to an xml
+    ++ file. This assumes that all elements, in a file, have a single
+    ++ root which is usually the case.
+  writeVRML:(XmlElement,String) -> Void
+    ++ VRML2 is not xml but it has the same semantics and node names as X3D
+    ++ but a different syntax so it makes sense to create an XML structure
+    ++ and then format the output differently.
+
+ == add
+
+  writeXml(content: XmlElement, filename:String):Void ==
+    f1:TextFile:=open(filename::FileName,"output")
+    s1:String := "<?xml version="
+    s1 := concat(s1,quote())
+    s1 := concat(s1,"1.0")
+    s1 := concat(s1,quote())
+    s1 := concat(s1," encoding=")
+    s1 := concat(s1,quote())
+    s1 := concat(s1,"UTF-8")
+    s1 := concat(s1,quote())
+    s1 := concat(s1," standalone=")
+    s1 := concat(s1,quote())
+    s1 := concat(s1,"no")
+    s1 := concat(s1,quote())
+    s1 := concat(s1,"?>")
+    writeLine!(f1,s1)
+    lines := content::List String
+    for line in lines repeat
+      writeLine!(f1,line)
+    close! f1
+
+  writeVRML(content: XmlElement, filename:String):Void ==
+    f1:TextFile:=open(filename::FileName,"output")
+    writeLine!(f1,"#VRML V2.0 utf8")
+    outputVRML(content,f1)
+    close! f1
+@
+
+\section{Scene domain}
+Usually, when programming using SPAD, I try to use a functional programming
+style as much as possible, for instance making objects (representations)
+immutable. However I don't think it would be practical to implement the
+scengraph in this way. A design requirement is that the scenegaph needs
+to hold a large amount of information, A 3D scene might be made from
+thousands (perhaps millions?) of polygons. For the sake of efficiency we
+need to be able to modify it without copying the whole thing into a new
+object for each change.
+
+The object oriented style of programming would seem to be ideal for a
+scenegraph. Each type of node in the scengraph could be a different object
+all inheriting from a common object. Unforunately is is not easy to do
+this in SPAD because it does not support polymorphism.
+
+So what I have ended up with is perhaps the worst of both styles of
+programming? each node type is distinguished by a different integer value
+in its rep:
+
+1 is root node
+2 is group node
+3 is line node
+4 is material node
+5 is text node
+6 is transform node
+7 is clip node
+
+I find this very messy as it leads to lots of bits of code like this:
+
+if n.type = 1 then
+...
+if n.type = 2 then
+...
+if n.type = 3 then
+...
+so if we want to change a particular node type we have to search through
+all these categories, domains and packages to find everywhere it is refered
+to and change each occerance. If we could use object oriented programming
+then the code for each node type could be grouped together as a seperate
+object.
+<<domain SCENE Scene>>=
+)abbrev domain SCENE Scene
+++ Author: Martin Baker
+++ Date Created: September 2010
+++ Date Last Updated: September 2010
+++ Basic Operations: spnt,sipnt,svec,sivec,screenCoords
+++ Related Constructors: SCarteasian, SConformal, SArgand, STransform
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+
+Scene(PT): Exports == Implementation where
+ PT:SPointCategory
+
+ TR ==> STransform PT
+ I ==> Integer
+ C ==> Complex DoubleFloat
+ NNI==> NonNegativeInteger
+ PI==> PositiveInteger
+ DF==> DoubleFloat
+ SEG  ==> Segment DF
+ PPC  ==> ParametricPlaneCurve(DF -> DF) -- created with curve(f1,f2)
+ FCV ==> C -> C -- function of a complex variable
+ PSC  ==> ParametricSpaceCurve(DF -> DF) -- created with curve(f1,f2,f3)
+ PSF  ==> ParametricSurface((DF,DF) -> DF) -- created with surface(f1,f2,f3)
+ PSFUN ==> (DF, DF) -> PT
+ PCFUN ==> DF -> PT
+
+ -- each node contains PARAMS in Rep definition, which is a union of
+ -- the following, each node type will have different content.
+ IFS==> Record(inx: List List NNI,pts: List PT)
+ TEXT==> Record(txt:String,siz:NNI,pos:PT)
+ MATERIAL==> Record(lineWidth:DF,lineCol:String,fillCol:String,matOpacity:DF)
+ LINES==> List List PT
+ ARROWS==> Record(ln:List List PT,lstart:NNI,lend:NNI)
+ TRANS==> TR
+ BOUNDS==> Record(mins:PT,maxs:PT)
+ PARAMS==> Union(points:LINES,material:MATERIAL,text:TEXT,_
+                 boundbox:BOUNDS,trans:TRANS,ifs:IFS,_
+                 arrws:ARROWS,empty:"empty")
+
+ Exports == with
+  createSceneRoot:() -> %
+    ++ Constructs the root node, all other nodes are contained in
+    ++ a tree structure under this node
+  createSceneRoot:(bb: BOUNDS) -> %
+    ++ Constructs the root node, all other nodes are contained in
+    ++ a tree structure under this node
+  createSceneRoot:(minx:I,miny:I,maxx:I,maxy:I) -> %
+    ++ Constructs the root node, all other nodes are contained in
+    ++ a tree structure under this node
+  createSceneGroup:() -> %
+    ++ Constructs a group node, this node does not do anything itself
+    ++ but contains other nodes
+  addSceneGroup:(n:%) -> %
+    ++ a convenience function which combines createSceneGroup with addChild!
+  createSceneLine:(line: List PT) -> %
+    ++ Constructs a line node, this contains a line (represented by a
+    ++ list of points) in n-dimensional space. The space is implicit
+    ++ in the PT and TR parameters supplied when this Scene was
+    ++ created.
+  addSceneLine:(n:%,line: List PT) -> %
+    ++ a convenience function which combines createSceneLine with addChild!
+  createSceneLines:(line: LINES) -> %
+    ++ Constructs a line node, this contains lines (represented by a
+    ++ list of points) in n-dimensional space. The space is implicit
+    ++ in the PT and TR parameters supplied when this Scene was
+    ++ created.
+  addSceneLines:(n:%,line: LINES) -> %
+    ++ a convenience function which combines createSceneLines with addChild!
+  createSceneArrows:(line: List List PT,ls:NNI,le:NNI) -> %
+    ++ Constructs an arrow node, this contains arrows (represented by a
+    ++ list of points) in n-dimensional space. The space is implicit
+    ++ in the PT and TR parameters supplied when this Scene was
+    ++ created.
+  addSceneArrows:(n:%,line: List List PT,ls:NNI,le:NNI) -> %
+    ++ a convenience function which combines createSceneArrows with addChild!
+  createSceneIFS:(inx: List List NNI,pts: List PT) -> %
+    ++ Constructs an indexed face set node, this defines a surface
+    ++ represented by a set of polygons in n-dimensional space.
+  addSceneIFS:(n:%,inx: List List NNI,pts: List PT) -> %
+    ++ a convenience function which combines createSceneIFS with addChild!
+  createSceneIFS:(in1: SceneIFS(PT)) -> %
+    ++ Constructs an indexed face set node, this defines a surface
+    ++ represented by a set of polygons in n-dimensional space.
+  addSceneIFS:(n:%,in1: SceneIFS(PT)) -> %
+    ++ a convenience function which combines createSceneIFS with addChild!
+  createSceneBox:(size:DF) -> %
+    ++ Constructs an indexed face set node which is a 3D box of a
+    ++ given size
+  addSceneBox:(n:%,size:DF) -> %
+    ++ a convenience function which combines createSceneBox with addChild!
+  createSceneText:(text: TEXT) -> %
+    ++ Constructs a text node, text can be used for labelling anything
+    ++ such as graphs, axes and so on.
+  addSceneText:(n:%,text: TEXT) -> %
+    ++ a convenience function which combines createSceneText with addChild!
+  createSceneText:(str:String,sz:NNI,pz:PT) -> %
+    ++ Constructs a text node, text can be used for labelling anything
+    ++ such as graphs, axes and so on.
+  addSceneText:(n:%,str:String,sz:NNI,pz:PT) -> %
+    ++ a convenience function which combines createSceneText with addChild!
+  createSceneClip:(bb: BOUNDS) -> %
+    ++ Constructs a clip node, clips its sub nodes in the coordinate
+    ++ system in force at the clip node.
+  addSceneClip:(n:%,bb: BOUNDS) -> %
+    ++ a convenience function which combines createSceneClip with addChild!
+  createSceneGrid:(stepSize:DF,bb: BOUNDS) -> %
+    ++ Constructs a grid, consists of a group, under which are vertical
+    ++ and horizontal lines. The spacing between lines is given by step.
+  addSceneGrid:(n:%,stepSize:DF,bb: BOUNDS) -> %
+    ++ a convenience function which combines createSceneGrid with addChild!
+  createSceneGrid:(bb: BOUNDS) -> %
+    ++ Constructs a grid with
+    ++ narrow blue lines every 20 units 
+    ++ wide blue lines every 100 units 
+    ++ wide red lines every 200 units 
+  addSceneGrid:(n:%,bb: BOUNDS) -> %
+    ++ a convenience function which combines createSceneGrid with addChild!
+  createScenePattern:(ptype:NNI,step:NNI,bb: BOUNDS) -> %
+    ++ creates a test pattern suitable for showing the effect of
+    ++ transforms. The pattern depends on ptype parameter as follows:
+    ++ ptype=1: contruct a set of horizontal and vertical lines in the
+    ++ current clip boundary and current material with a spacing
+    ++ between lines given by the step parameter.
+    ++ ptype=2: constructs a Sierpinski fractel. step parameter gives the
+    ++ level of subdivision.
+    ++ ptype=3: constructs a house shape.
+  addScenePattern:(n:%,ptype:NNI,step:NNI,bb: BOUNDS) -> %
+    ++ a convenience function which combines createScenePattern with
+    ++ addChild!
+  createSceneRuler:(ptype:NNI,offset:PT,bb: BOUNDS) -> %
+    ++ creates a scale that can be used to provide numeric values
+    ++ for an axis:
+    ++ ptype=1: horizontal axis.
+    ++ ptype=2: vertical axis.
+    ++ ptype=3: debth axis.
+  addSceneRuler:(n:%,ptype:NNI,offset:PT,bb: BOUNDS) -> %
+    ++ a convenience function which combines createSceneRuler with
+    ++ addChild!
+  createSceneMaterial:(mat:MATERIAL) -> %
+    ++ Constructs a material node
+    ++ This sets the lineWidth,lineCol and fillCol for all nodes under
+    ++ this, unless overridden by another material node.
+    ++ That is the material parameters that apply to a given node are
+    ++ those of the closest material node above it in the heirarchy
+    ++ line width is expressed relative to the width of current boundary
+  addSceneMaterial:(n:%,mat:MATERIAL) -> %
+    ++ a convenience function which combines createSceneMaterial with
+    ++addChild!
+  createSceneMaterial:(lineW:DF,lineC:String,fillC:String) -> %
+    ++ Constructs a material node
+    ++ This sets the lineWidth,lineCol and fillCol for all nodes under
+    ++ this, unless overridden by another material node.
+    ++ That is the material parameters that apply to a given node are
+    ++ those of the closest material node above it in the heirarchy
+  addSceneMaterial:(n:%,lineW:DF,lineC:String,fillC:String) -> %
+    ++ a convenience function which combines createSceneMaterial with
+    ++ addChild!
+  createSceneTransform:(tran:TR) -> %
+    ++ Constructs a transform node
+    ++ This transforms the points and vectors below this node
+    ++ If a given node has more than one transform node above
+    ++ it in the heirarchy then the transforms are compoundd
+  addSceneTransform:(n:%,tran:TR) -> %
+    ++ a convenience function which combines createSceneTransform with
+    ++ addChild!
+  createPlot1Din2D: (f:DF -> PT,tRange:SEG,numPts:NNI) -> %
+    ++ Two Dimensional Function Plot
+    ++ createPlot1Din2D(f,a..b) draws the graph from a mapping
+    ++ of float to point as x ranges from min(a,b) to max(a,b).
+  addPlot1Din2D: (n:%,f:DF -> PT,tRange:SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot1Din2D with addChild!
+  createPlot1Din2D: (DF -> DF,SEG,numPts:NNI) -> %
+    ++ Two Dimensional Function Plot
+    ++ createPlot1Din2D(f,a..b) draws the graph of y = f(x) as x
+    ++ ranges from min(a,b) to max(a,b).
+  addPlot1Din2D: (n:%,DF -> DF,SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot1Din2D with addChild!
+  createPlot1Din2Dparametric: (PPC,SEG,numPts:NNI) -> %
+    ++ create a node from plot using Parametric Plane Curve
+    ++ This represents 1 dimension (line - possibly curved) in 2 dimensions
+    ++ (plane)
+    ++ In theory a line has no width but in that case we would not see it
+    ++ so we give it a width given by the material node that is
+    ++ applicable in this part of the scene graph
+    ++ PPC is ParametricPlaneCurve(DF -> DF) which is created with
+    ++ curve(f1,f2)
+    ++ where f1 and f2 are functions of type ComponentFunction, in this
+    ++ case DF -> DF
+  addPlot1Din2Dparametric: (n:%,PPC,SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot1Din2Dparametric with
+    ++ addChild!
+  createPlot1Din3Dparametric: (PSC,SEG,numPts:NNI) -> %
+    ++ create a line (1D subspace) in 3D space
+    ++ This represents 1 dimension (line - possibly curved) in 3 dimensions
+    ++ In theory a line has no width but in that case we would not see it
+    ++ so we give it a width given by the material node that is
+    ++ applicable in this part of the scene graph
+    ++ PSC ParametricSpaceCurve(DF -> DF) is created with curve(f1,f2,f3)
+    ++ where f1,f2 and f3 are functions of type ComponentFunction, in this
+    ++ case DF -> DF
+  addPlot1Din3Dparametric: (n:%,PSC,SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot1Din3Dparametric with
+    ++ addChild!
+  createPlot1Din3Dparametric: (PCFUN,SEG,numPts:NNI) -> %
+    ++ create a line (1D subspace) in 3D space
+    ++ This represents 1 dimension (line - possibly curved) in 3 dimensions
+    ++ In theory a line has no width but in that case we would not see it
+    ++ so we give it a width given by the material node that is
+    ++ applicable in this part of the scene graph
+    ++ PCFUN is a function from float to point: DF -> PT
+  addPlot1Din3Dparametric: (n:%,PCFUN,SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot1Din3Dparametric with
+    ++ addChild!
+  createPlot2Din3D: (ptFun:PSFUN,uSeg:SEG,vSeg:SEG,numPts:NNI) -> %
+    ++ create a surface (2D subspace) in 3D space
+    ++ The surface is approximated by polygons which are
+    ++ represented by in indexed face set (IFS) node
+  createPlot2Din3D: ((DF,DF) -> DF,SEG,SEG,numPts:NNI) -> %
+    ++ create a surface (2D subspace) in 3D space
+    ++ The surface is approximated by polygons which are
+    ++ represented by in indexed face set (IFS) node
+    ++ createPlot2Din3D(f,a..b,c..d) returns a scene node
+    ++ which contains the graph of z = f(x,y)
+    ++ as x ranges from min(a,b) to max(a,b) and y ranges from
+    ++ min(c,d) to max(c,d).
+  addPlot2Din3D: (n:%,(DF,DF) -> DF,SEG,SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot2Din3D with addChild!
+  createPlot2Din3Dparametric: (PSFUN, SEG, SEG,numPts:NNI) -> %
+    ++ create a surface (2D subspace) in 3D space
+    ++ The surface is approximated by polygons which are
+    ++ represented by in indexed face set (IFS) node
+    ++ createPlot2Din3Dparametric(f,a..b,c..d,l) returns a
+    ++ scene node which contains the
+    ++ graph of the parametric surface f(u,v)
+    ++ as u ranges from min(a,b) to
+    ++ max(a,b) and v ranges from min(c,d) to max(c,d).
+  addPlot2Din3Dparametric: (n:%,PSFUN, SEG, SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot2Din3Dparametric with
+    ++ addChild!
+  createPlot2Din3Dparametric: (PSF,SEG,SEG,numPts:NNI) -> %
+    ++ create a surface (2D subspace) in 3D space
+    ++ The surface is approximated by polygons which are
+    ++ represented by in indexed face set (IFS) node
+    ++ createPlot2Din3Dparametric(surface(f,g,h),a..b,c..d,l) returns a
+    ++ scene node which contains the
+    ++ graph of the parametric surface x = f(u,v), y = g(u,v),
+    ++ z = h(u,v) as u ranges from min(a,b) to
+    ++ max(a,b) and v ranges from min(c,d) to max(c,d).
+  addPlot2Din3Dparametric: (n:%,PSF,SEG,SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createPlot2Din3Dparametric with
+    ++ addChild!
+  createArrows2Din2D: (ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI) -> %
+    ++ creates arrows to represent output for each input point
+  addArrows2Din2D: (n:%,ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI) -> %
+    ++ a convenience function which combines createArrows2Din2D with
+    ++ addChild!
+  addChild!:(n:%,c:%) -> Void
+    ++ add the specified child node 'c' below node 'n'
+  removeChild!:(n:%,c:%) -> Void
+    ++ remove the specified child node 'c' below node 'n'
+  setTransform!:(n:%,tran:TR) -> Void
+    ++ changes the transform without altering the scene heirachy
+  toSVG:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS,scale:DF,clipEn:Boolean,_
+         useInteger:Boolean) -> XmlElement
+    ++ create an XmlElement containing a 'SVG' repesentation of node
+    ++ 'n' and the nodes below it.
+  toX3D:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
+    ++ create an XmlElement containing a 'X3D' repesentation of node
+    ++ 'n' and the nodes below it.
+  toObj:(n:%,ptLst: Reference List PT,indexLst:Reference List List NNI,_
+         indexNxt:Reference NNI,tran:TR,bb: BOUNDS) -> Void
+    ++ creates an .OBJ (Wavefront) file from scenegraph tree
+    ++ structure
+    ++ called recursivley for each node, so when called on root node
+    ++ in scenegraph all other nodes in the scenegraph will get called.
+  writeSvg:(n:%,filename:String) -> Void
+    ++ Write an 'SVG' repesentation of node 'n' to the filename supplied.
+  writeSvgQuantised:(n:%,filename:String) -> Void
+    ++ Write an 'SVG' repesentation of node 'n' to the filename supplied.
+  writeX3d:(n:%,filename:String) -> Void
+    ++ Write an 'X3D' repesentation of node 'n' to the filename supplied.
+  writeVRML:(n:%,filename:String) -> Void
+    ++ Write an 'VRML' repesentation of node 'n' to the filename supplied.
+  writeObj:(n:%,filename:String) -> Void
+    ++ Write an 'OBJ' (Wavefront) repesentation of node 'n' to the filename
+    ++ supplied.
+  coerce: (n: %) -> OutputForm
+    ++ output
+
+ Implementation == add
+
+  Rep := Record(type : NNI,children : List %,parameters: PARAMS)
+
+  -- Constructs the root node, all other nodes are contained in
+  -- a tree structure under this node
+  createSceneRoot(bb: BOUNDS): % == [1::NNI,[],[bb]]
+
+  -- Constructs the root node, all other nodes are contained in
+  -- a tree structure under this node
+  createSceneRoot(minx:I,miny:I,maxx:I,maxy:I): % ==
+    bb:BOUNDS := [sipnt(minx,miny)$PT,sipnt(maxx,maxy)$PT]
+    [1::NNI,[],[bb]]
+
+  -- Constructs the root node, all other nodes are contained in
+  -- a tree structure under this node
+  createSceneRoot(): % ==
+    bb:BOUNDS := [sipnt(0::I,0::I)$PT,sipnt(1200::I,800::I)$PT]
+    [1::NNI,[],[bb]]
+
+  -- Constructs a group node, this node does not do anything itself
+  -- but contains other nodes
+  createSceneGroup(): % == [2::NNI,[],["empty"]]
+
+  -- a convenience function which combines createSceneGroup with addChild!
+  addSceneGroup(n:%): % ==
+    c := createSceneGroup()
+    addChild!(n,c)
+    c
+
+  -- Constructs a line node, this contains a line (represented by a
+  -- list of points) in n-dimensional space. The space is implicit
+  -- in the PT and TR parameters supplied when this Scene was
+  -- created.
+  createSceneLine(line: List PT): % == [3::NNI,[],[[line]]]
+
+  -- a convenience function which combines createSceneLine with addChild!
+  addSceneLine(n:%,line: List PT): % ==
+    c := createSceneLine(line)
+    addChild!(n,c)
+    c
+
+  -- Constructs a line node, this contains lines (represented by a
+  -- list of points) in n-dimensional space. The space is implicit
+  -- in the PT and TR parameters supplied when this Scene was
+  -- created.
+  createSceneLines(lines: LINES): % == [3::NNI,[],[lines]]
+
+  -- a convenience function which combines createSceneLines with addChild!
+  addSceneLines(n:%,lines: LINES): % ==
+    c := createSceneLines(lines)
+    addChild!(n,c)
+    c
+
+  -- Constructs an arrow node, this contains arrows (represented by a
+  -- list of points) in n-dimensional space. The space is implicit
+  -- in the PT and TR parameters supplied when this Scene was
+  -- created.
+  createSceneArrows(lines: List List PT,ls:NNI,le:NNI): % ==
+    ar:ARROWS := [lines,ls,le]
+    [9::NNI,[],[ar]]
+
+  -- a convenience function which combines createSceneArrows with addChild!
+  addSceneArrows(n:%,lines: List List PT,ls:NNI,le:NNI): % ==
+    c := createSceneArrows(lines,ls,le)
+    addChild!(n,c)
+    c
+
+  -- Constructs an indexed face set node, this defines a surface
+  -- represented by a set of polygons in n-dimensional space.
+  createSceneIFS(inx1: List List NNI,pts1: List PT):% ==
+    [8::NNI,[],[[inx1,pts1]]]
+
+  -- a convenience function which combines createSceneIFS with addChild!
+  addSceneIFS(n:%,inx1: List List NNI,pts1: List PT):% ==
+    c := createSceneIFS(inx1,pts1)
+    addChild!(n,c)
+    c
+
+  -- Constructs an indexed face set node, this defines a surface
+  -- represented by a set of polygons in n-dimensional space.
+  createSceneIFS(in1: SceneIFS(PT)):% ==
+    inx1: List List NNI := indexes(in1)
+    pts1: List PT :=pointList(in1)
+    [8::NNI,[],[[inx1,pts1]]]
+
+  -- a convenience function which combines createSceneIFS with addChild!
+  addSceneIFS(n:%,in1: SceneIFS(PT)):% ==
+    c := createSceneIFS(in1)
+    addChild!(n,c)
+    c
+
+  -- Constructs an indexed face set node which is a 3D box of a
+  -- given size
+  createSceneBox(size:DF):% ==
+    pts: List PT := [_
+      spnt(size,-size,size)$PT,_
+      spnt(size,size,size)$PT,_
+      spnt(-size,size,size)$PT,_
+      spnt(-size,-size,size)$PT,_
+      spnt(-size,-size,-size)$PT,_
+      spnt(-size,size,-size)$PT,_
+      spnt(size,size,-size)$PT,_
+      spnt(size,-size,-size)$PT_
+      ]
+    inx: List List NNI := [_
+      [0::NNI, 1::NNI, 2::NNI, 3::NNI],_ 
+      [4::NNI, 5::NNI, 6::NNI, 7::NNI],_  
+      [7::NNI, 6::NNI, 1::NNI, 0::NNI],_ 
+      [3::NNI, 2::NNI, 5::NNI, 4::NNI],_  
+      [1::NNI, 6::NNI, 5::NNI, 2::NNI],_ 
+      [3::NNI, 4::NNI, 7::NNI, 0::NNI]]   
+    createSceneIFS(inx,pts)
+
+  -- a convenience function which combines createSceneBox with addChild!
+  addSceneBox(n:%,size:DF):% ==
+    c := createSceneBox(size)
+    addChild!(n,c)
+    c
+
+  -- Constructs a text node, text can be used for labelling anything
+  -- such as graphs, axes and so on.
+  createSceneText(text: TEXT): % == [5::NNI,[],[text]]
+
+  -- a convenience function which combines createSceneText with addChild!
+  addSceneText(n:%,text: TEXT): % ==
+    c := createSceneText(text)
+    addChild!(n,c)
+    c
+
+  -- Constructs a text node, text can be used for labelling anything
+  -- such as graphs, axes and so on.
+  createSceneText(str:String,sz:NNI,pz:PT): % ==
+    text: TEXT := [str,sz,pz]
+    [5::NNI,[],[text]]
+
+  -- a convenience function which combines createSceneText with addChild!
+  addSceneText(n:%,str:String,sz:NNI,pz:PT): % ==
+    c := createSceneText(str,sz,pz)
+    addChild!(n,c)
+    c
+
+  -- Constructs a clip node, clips its sub nodes in the coordinate
+  -- system in force at the clip node.
+  createSceneClip(bb: BOUNDS):% ==
+    [7::NNI,[],[bb]]
+
+  -- a convenience function which combines createSceneClip with addChild!
+  addSceneClip(n:%,bb: BOUNDS):% ==
+    c := createSceneClip(bb)
+    addChild!(n,c)
+    c
+
+  -- contruct a grid in the current clip boundary and current material
+  -- with a spacing between lines given by the step parameter
+  createSceneGrid(stepSize:DF,bb: BOUNDS): % ==
+    minx:DF := screenCoordX(bb.mins)
+    miny:DF := screenCoordY(bb.mins)
+    maxx:DF := screenCoordX(bb.maxs)
+    maxy:DF := screenCoordY(bb.maxs)
+    stepsx:NNI := wholePart((maxx - minx)/stepSize)::NNI
+    stepsy:NNI := wholePart((maxy - miny)/stepSize)::NNI
+    gp := createSceneGroup()
+    -- vertical lines
+    for i in 1..stepsx repeat
+      ln := addSceneLine(gp,[spnt(minx+(i::DF)*stepSize,miny),_
+            spnt(minx+(i::DF)*stepSize,maxy)])
+      --addChild!(gp,ln)
+    -- horizontal lines
+    for i in 1..stepsy repeat
+      ln := addSceneLine(gp,[spnt(minx,miny+(i::DF)*stepSize),_
+            spnt(maxx,miny+(i::DF)*stepSize)])
+      --addChild!(gp,ln)
+    gp
+
+  -- a convenience function which combines createSceneGrid with addChild!
+  addSceneGrid(n:%,stepSize:DF,bb: BOUNDS): % ==
+    c := createSceneGrid(stepSize,bb)
+    addChild!(n,c)
+    c
+
+  -- contruct a grid with
+  -- narrow blue lines evey 20 units 
+  -- wide blue lines evey 100 units 
+  -- wide red lines evey 200 units 
+  createSceneGrid(bb: BOUNDS): % ==
+    minx:DF := screenCoordX(bb.mins)
+    maxx:DF := screenCoordX(bb.maxs)
+    stepSize:DF := (maxx-minx)/100
+    gp := createSceneGroup()
+    mt1 := addSceneMaterial(gp,[1::DF,"blue","blue",0.5::DF])
+    gd1 := addSceneGrid(mt1,stepSize,bb)
+    mt2 := addSceneMaterial(gp,[2::DF,"blue","blue",0.5::DF])
+    gd2 := addSceneGrid(mt2,stepSize*5::DF,bb)
+    mt3 := addSceneMaterial(gp,[2::DF,"red","red",0.5::DF])
+    gd3 := addSceneGrid(mt3,stepSize*10::DF,bb)
+    gp
+
+  -- a convenience function which combines createSceneGrid with addChild!
+  addSceneGrid(n:%,bb: BOUNDS): % ==
+    c := createSceneGrid(bb)
+    addChild!(n,c)
+    c
+
+  -- contruct a grid in the current clip boundary and current material
+  -- with a spacing between lines given by the step parameter
+  createScenePattern1(step:NNI,bb: BOUNDS): % ==
+    minx:DF := screenCoordX(bb.mins)
+    miny:DF := screenCoordY(bb.mins)
+    maxx:DF := screenCoordX(bb.maxs)
+    maxy:DF := screenCoordY(bb.maxs)
+    stepSize :DF := (maxx - minx)/1200
+    gp := createSceneGroup()
+    mt1 := addSceneMaterial(gp,[2::DF,"blue","blue",0.5::DF])
+    --addChild!(gp,mt1)
+    for i in 1..1200 by step repeat
+      pts: List PT := [spnt(minx+(i::DF)*stepSize,miny+(j::DF)*stepSize)_
+                       for j in 1..1200 by step]
+      ln := addSceneLine(mt1,pts)
+      --addChild!(mt1,ln)
+    mt2 := addSceneMaterial(gp,[2::DF,"red","red",0.5::DF])
+    --addChild!(gp,mt2)
+    for i in 1..1000 by step repeat
+      pts: List PT := [spnt(minx+(j::DF)*stepSize,miny+(i::DF)*stepSize)_
+                       for j in 1..1200 by step]
+      ln := addSceneLine(mt2,pts)
+      --addChild!(mt2,ln)
+    gp
+
+  -- Constructs a Sierpinski fractel.
+  createScenePattern2(level:NNI,bb: BOUNDS): % ==
+    minx:DF := screenCoordX(bb.mins)
+    miny:DF := screenCoordY(bb.mins)
+    maxx:DF := screenCoordX(bb.maxs)
+    maxy:DF := screenCoordY(bb.maxs)
+    midx:DF := (minx+maxx)::DF * 0.5::DF
+    face1: List PT := [spnt(midx,miny),_
+                      spnt(minx,maxy),_
+                      spnt(maxx,maxy)]
+    ifs:SceneIFS(PT) := singleFace(face1)
+    ifs2:SceneIFS(PT) := sierpinskiDivide(ifs,level)
+    createSceneIFS(indexes(ifs2),pointList(ifs2))
+
+  subdivideLine(level:NNI,inLine:List PT):List PT ==
+    level = 0 => inLine
+    res:List PT := []
+    lastPt:PT
+    for x in 1..#inLine repeat
+      if x ~= 1 then
+        midpt:PT := 0.5::DF * (lastPt+inLine.x)::PT
+        res:= concat(res,midpt)
+      lastPt:= inLine.x
+      res:= concat(res,inLine.x)
+    subdivideLine((level-1)::NNI,res)
+
+  -- Constructs a house shape.
+  createScenePattern3(level:NNI,bb: BOUNDS):% ==
+    minx:DF := screenCoordX(bb.mins)
+    miny:DF := screenCoordY(bb.mins)
+    maxx:DF := screenCoordX(bb.maxs)
+    maxy:DF := screenCoordY(bb.maxs)
+    scale:DF := (maxx - minx)/1000
+    --sayTeX$Lisp concat([_
+    --  "createScenePattern3 minx=",(mathObject2String$Lisp minx)@String,_
+    --  " miny=",(mathObject2String$Lisp miny)@String,_
+    --  " maxx=",(mathObject2String$Lisp maxx)@String,_
+    --  " maxy=",(mathObject2String$Lisp maxy)@String,_
+    --  " scale=",(mathObject2String$Lisp scale)@String])$String
+    xcoords:List List NNI := [[0,0,500,1000,1000,0],_
+                [150,350,350,150,150],_
+                [100,400,400,100,100],_
+                [600,900,900,600,600],_
+                [600,900,900,600,600]]
+    ycoords:List List NNI := [[0,800,1000,800,0,0],_
+                [0,0,300,300,0],_
+                [500,500,700,700,500],_
+                [500,500,700,700,500],_
+                [100,100,300,300,100]]
+    pts: List List PT := [[_
+      spnt(minx+((((xcoords.i).j)::DF))*scale,_
+           miny+((((ycoords.i).j)::DF))*scale)$PT_
+             for j in 1..(#(xcoords.i))] for i in 1..(#xcoords)]
+    pts2: List List PT := []
+    lev2:NNI := level
+    for l2 in pts repeat
+      pts2 := concat(pts2,subdivideLine(lev2,l2))
+      if lev2 = level then lev2 := 2
+    ln := createSceneLines(pts2)
+
+  -- creates a test pattern suitable for showing the effect of
+  -- transforms. The pattern depends on ptype parameter as follows:
+  -- ptype=1: contruct a set of horizontal and vertical lines in the current
+  -- clip boundary and current material with a spacing between
+  -- lines given by the step parameter.
+  -- ptype=2: constructs a Sierpinski fractel. step parameter gives the
+  -- level of subdivision.
+  -- ptype=3: constructs a house shape.
+  createScenePattern(ptype:NNI,step:NNI,bb: BOUNDS): % ==
+    if ptype = 1 then return createScenePattern1(step,bb)
+    if ptype = 2 then return createScenePattern2(step,bb)
+    createScenePattern3(step,bb)
+
+  -- a convenience function which combines createScenePattern with addChild!
+  addScenePattern(n:%,ptype:NNI,step:NNI,bb: BOUNDS):% ==
+    c := createScenePattern(ptype,step,bb)
+    addChild!(n,c)
+    c
+
+  -- creates a scale that can be used to provide numeric values
+  -- for an axis:
+  -- ptype=1: horizontal axis.
+  -- ptype=2: vertical axis.
+  -- ptype=3: debth axis.
+  createSceneRuler(ptype:NNI,offset:PT,bb: BOUNDS): % ==    
+    minPrimary:DF := screenCoordX(bb.mins)
+    minSecondary:DF := screenCoordY(bb.mins)
+    maxPrimary:DF := screenCoordX(bb.maxs)
+    maxSecondary:DF := screenCoordY(bb.maxs)
+    --if ptype = 1 then
+    --  sayTeX$Lisp "createSceneRuler horizontal:"
+    if ptype = 2 then
+      minPrimary := screenCoordY(bb.mins)
+      minSecondary := screenCoordX(bb.mins)
+      maxPrimary := screenCoordY(bb.maxs)
+      maxSecondary := screenCoordX(bb.maxs)
+      --sayTeX$Lisp "createSceneRuler vertical:"
+    stepSize :DF := maxPrimary - minPrimary
+    expStep:Integer := wholePart(log10(stepSize+1)) - 1
+    divn :DF := (10::DF) ^expStep
+    minPrimaryNorm:DF := minPrimary/divn
+    -- should now be scaled between 1 and 10
+    maxPrimaryNorm:DF := maxPrimary/divn
+    suffix:String := ""
+    zeroes:Integer := expStep
+    if zeroes > 2 then -- kilo
+      zeroes := zeroes - 3
+      suffix := "K"
+      if zeroes > 2 then -- mega
+        zeroes := zeroes - 3
+        suffix := "M"
+        if zeroes > 2 then -- giga
+          zeroes := zeroes - 3
+          suffix := "G"
+          if zeroes > 2 then -- tera
+            zeroes := zeroes - 3
+            suffix := "T"
+    if zeroes < 0 then -- mili
+      zeroes := zeroes + 3
+      suffix := "m"
+      if zeroes < 0 then -- micro
+        zeroes := zeroes + 3
+        suffix := "u"
+        if zeroes < 0 then -- nano
+          zeroes := zeroes + 3
+          suffix := "n"
+          if zeroes < 0 then -- pico
+            zeroes := zeroes + 3
+            suffix := "p"
+    if zeroes > 0 then
+      suffix := concat("0",suffix)
+    if zeroes > 1 then
+      suffix := concat("0",suffix)
+    --sayTeX$Lisp concat([_
+    --    "minPrimary=",(mathObject2String$Lisp minPrimary)@String,_
+    --    " minSecondary=",(mathObject2String$Lisp minSecondary)@String,_
+    --    " maxPrimary=",(mathObject2String$Lisp maxPrimary)@String,_
+    --    " maxSecondary=",(mathObject2String$Lisp maxSecondary)@String_
+    --    ])$String
+    --sayTeX$Lisp concat([_
+    --    "stepSize=",(mathObject2String$Lisp stepSize)@String,_
+    --    " expStep=",(mathObject2String$Lisp expStep)@String,_
+    --    " divn=",(mathObject2String$Lisp divn)@String,_
+    --    " minPrimaryNorm=",(mathObject2String$Lisp minPrimaryNorm)@String,_
+    --    " maxPrimaryNorm=",(mathObject2String$Lisp maxPrimaryNorm)@String_
+    --    ])$String
+    gp := createSceneGroup()
+    stepI:Integer := if ptype = 1 then 2 else 1
+    for x in wholePart(minPrimaryNorm)..wholePart(maxPrimaryNorm) by stepI repeat
+      str:String := (mathObject2String$Lisp x)@String
+      pz:PT := spnt((x::DF)*divn,0$DF)$PT + offset
+      if ptype = 2 then
+        pz := spnt(0$DF,(x::DF)*divn)$PT + offset
+      if expStep = -1 then
+        if x>0 and x<10 then str := concat("0.",str)
+        if x=10 then str := "1"
+        if x>10 then
+          d := divide(x,10) 
+          str := concat([string(d.quotient),".",string(d.remainder)])
+        if x<0 and x>-10 then str := concat(["-0.",(mathObject2String$Lisp (-x))@String])$String
+        if x=-10 then str := "-1"
+        if x< -10 then
+          d := divide(-x,10) 
+          str := concat(["-",string(d.quotient),".",string(d.remainder)])
+      else if x ~= 0 then str := concat(str,suffix)
+      addSceneText(gp,str,20,pz)
+      --sayTeX$Lisp concat([_
+      --  "x=",(mathObject2String$Lisp x)@String,_
+      --  " pz=",(mathObject2String$Lisp pz)@String_
+      --  ])$String
+    gp
+
+  -- a convenience function which combines createSceneRuler with
+  -- addChild!
+  addSceneRuler(n:%,ptype:NNI,offset:PT,bb: BOUNDS):% ==
+    c := createSceneRuler(ptype,offset,bb)
+    addChild!(n,c)
+    c
+
+  -- Constructs a material node
+  -- This sets the lineWidth,lineCol and fillCol for all nodes under
+  -- this, unless overridden by another material node.
+  -- That is the material parameters that apply to a given node are
+  -- those of the closest material node above it in the heirarchy
+  createSceneMaterial(mat:MATERIAL): % ==
+    [4::NNI,[],[mat]]
+
+  -- a convenience function which combines createSceneMaterial with
+  -- addChild!
+  addSceneMaterial(n:%,mat:MATERIAL): % ==
+    c := createSceneMaterial(mat)
+    addChild!(n,c)
+    c
+
+  -- Constructs a material node
+  -- This sets the lineWidth,lineCol and fillCol for all nodes under
+  -- this, unless overridden by another material node.
+  -- That is the material parameters that apply to a given node are
+  -- those of the closest material node above it in the heirarchy
+  createSceneMaterial(lineW:DF,lineC:String,fillC:String): % ==
+    mat:MATERIAL := [lineW,lineC,fillC,1::DF]
+    [4::NNI,[],[mat]]
+
+  -- a convenience function which combines createSceneMaterial with
+  -- addChild!
+  addSceneMaterial(n:%,lineW:DF,lineC:String,fillC:String): % ==
+    c := createSceneMaterial(lineW,lineC,fillC)
+    addChild!(n,c)
+    c
+
+  -- Constructs a transform node
+  -- This transforms the points and vectors below this node
+  -- If a given node has more than one transform node above
+  -- it in the heirarchy then the transforms are compoundd
+  createSceneTransform(tran:TR): % ==
+    [6::NNI,[],[tran]]
+
+  -- a convenience function which combines createSceneTransform with
+  -- addChild!
+  addSceneTransform(n:%,tran:TR): % ==
+    c := createSceneTransform(tran)
+    addChild!(n,c)
+    c
+
+  -- creates arrows to represent output for each input point
+  createArrows2Din2D(ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
+    arrows : List List PT := nil()
+    ustep := (lo uSeg - hi uSeg)/numPts
+    vstep := (lo vSeg - hi vSeg)/numPts
+    someV := hi vSeg
+    for iv in numPts..0 by -1 repeat
+      if zero? iv then someV := lo vSeg
+      -- hack: get last number in segment within segment
+      lp : List PT := nil()
+      someU := hi uSeg
+      for iu in numPts..0 by -1 repeat
+        if zero? iu then someU := lo uSeg
+        -- hack: get last number in segment within segment
+        inPt := spnt(someU,someV)$PT
+        outpt := ptFun(inPt)
+        --here we need to check for NaN (not a number)
+        --numberCheck pt
+        lp := [inPt,outpt]
+        someU := someU + ustep
+        arrows := concat(lp,arrows)
+      someV := someV + vstep
+    createSceneArrows(arrows,1,0)
+
+  -- a convenience function which combines createArrows2Din2D with addChild!
+  addArrows2Din2D(n:%,ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
+    c := createArrows2Din2D(ptFun,uSeg,vSeg,numPts)
+    addChild!(n,c)
+    c
+
+  -- add the specified child node 'c' below node 'n'
+  addChild!(n:%,c:%):Void ==
+    n.children := concat(n.children,c)
+
+  -- remove the specified child node 'c' below node 'n'
+  -- I can't get this to compile
+  removeChild!(n:%,c:%):Void ==
+    --n.children := remove(c,n.children)$List %
+    error "removeChild! not yet implemented"
+
+  -- changes the transform without altering the scene heirachy
+  setTransform!(n:%,tran:TR):Void ==
+    n.type ~= 6 => error "use setTransform! on transform only"
+    n.parameters := [tran]
+
+  -- the following functions: pathString, lineArrow, faceString, toSVG
+  -- and writeSvg are used to write to a SVG file.
+
+  -- this returns a string to represent a path in a SVG file
+  pathString(pts:LINES,tran:TR,bb: BOUNDS,sc:DF,clipEn:Boolean,_
+             useInteger:Boolean):String ==
+    --sayTeX$Lisp concat([_
+    --  "pathString(",(mathObject2String$Lisp tran)@String,_
+    --  ",",(mathObject2String$Lisp bb)@String,_
+    --  ")"])$String
+    ptStr:String := "" -- string to hold result
+    pntNum:NNI -- hold current position in parameters
+    lastValid:Boolean := true -- used to detect first valid entry
+    -- pts:LINES is type List List PT where PT
+    -- is SPointCategory(DoubleFloat)
+    for line in pts repeat
+      pntNum := 0::NNI
+      for param in line repeat
+        -- convert to SVG (always positive) coordinates
+        -- param is type SPointCategory(DoubleFloat)
+        -- which is what applyTrans requires
+        param2 := xform(tran,param pretend PT)$TR
+        --sayTeX$Lisp "pathString after xform"
+        -- check if original 'global' coordinates (before being converted
+        -- to svg - always positive coordinates) are in bounds.
+        valid := (not clipEn) or inBounds?(param,bb.mins,bb.maxs)
+        if valid then -- add to string
+          pntNum := pntNum + 1
+          if ptStr ~= "" then ptStr := concat(ptStr," ")
+          if lastValid then
+            if pntNum = 1 then ptStr := concat(ptStr,"M")
+            if pntNum = 2 then ptStr := concat(ptStr,"L")
+          if not lastValid then ptStr := concat(ptStr,"M")
+          -- add coordinates, seperated by comma, to string. Note that
+          -- in svg y coodinate starts from top and positive direction
+          -- is down so we need to negate that to conform with common
+          -- mathematical usage.
+          minusy:DF := -screenCoordY(param2)*sc
+          if useInteger then
+            thisStr:String := concat([_
+             string(wholePart(screenCoordX(param2)*sc)),",",_
+             string(wholePart(minusy))])$String
+          else
+            thisStr:String := concat([_
+             (mathObject2String$Lisp (screenCoordX(param2)*sc))@String,",",_
+             (mathObject2String$Lisp minusy)@String])$String
+          ptStr := concat(ptStr,thisStr)
+        lastValid := valid
+    --sayTeX$Lisp "pathString exit"
+    ptStr
+
+  -- this returns an list of elements, ecah of which represents an arrow 
+  lineArrow(pts:LINES,tran:TR,bb: BOUNDS,mat:MATERIAL,sc:DF,clipEn:Boolean):List XmlElement ==
+    --sayTeX$Lisp concat([_
+    --  "lineArrow(",(mathObject2String$Lisp tran)@String,_
+    --  ",",(mathObject2String$Lisp bb)@String,_
+    --  ")"])$String
+    nodeEles: List XmlElement := []
+    pntNum:NNI -- hold current position in parameters
+    -- pts:LINES is type List List PT where PT
+    -- is SPointCategory(DoubleFloat)
+    for line in pts repeat
+      pntNum := 0::NNI
+      ptStr:String := "" -- string to hold result
+      startPoint:PT := sipnt(0,0)
+      endPoint:PT := sipnt(0,0)
+      for param in line repeat
+        -- convert to SVG (always positive) coordinates
+        -- param is type SPointCategory(DoubleFloat)
+        -- which is what applyTrans requires
+        param2 := xform(tran,param pretend PT)$TR
+        --sayTeX$Lisp "lineArrow after xform"
+        -- check if original 'global' coordinates (before being converted
+        -- to svg - always positive coordinates) are in bounds.
+        valid := (not clipEn) or  inBounds?(param,bb.mins,bb.maxs)
+        if valid then -- add to string
+          pntNum := pntNum + 1
+          if ptStr ~= "" then ptStr := concat(ptStr," ")
+          if pntNum = 1 then
+            ptStr := concat(ptStr,"M")
+            startPoint := param2
+          else
+            endPoint := param2
+          if pntNum = 2 then ptStr := concat(ptStr,"L")
+          -- add coordinates, seperated by comma, to string. Note that
+          -- in svg y coodinate starts from top and positive direction
+          -- is down so we need to negate that to conform with common
+          -- mathematical usage.
+          minusy:DF := -screenCoordY(param2)*sc
+          thisStr:String := concat([_
+             (mathObject2String$Lisp (screenCoordX(param2)*sc))@String,",",_
+             (mathObject2String$Lisp minusy)@String])$String
+          ptStr := concat(ptStr,thisStr)
+      if ptStr ~= "" then -- add a new arrow element
+        linWidth:DF := distance(startPoint,endPoint)/(10::DF)
+        nodeAtts:List XmlAttribute := [_
+          xmlAttribute("d",ptStr),_
+          xmlAttribute("fill","none"),_
+          xmlAttribute("stroke",mat.lineCol),_
+          xmlAttribute("stroke-width",_
+          (mathObject2String$Lisp linWidth)@String),_
+          xmlAttribute("style","marker-end:url(#Arrow)")_
+            ]
+        x: XmlElement := xmlElement("path",[],nodeAtts)
+        nodeEles := concat(nodeEles,x)
+    nodeEles
+
+  -- this returns a string to represent a face in a SVG file
+  faceString(faces:IFS,tran:TR,bb: BOUNDS,sc:DF,clipEn:Boolean):String ==
+    --sayTeX$Lisp concat([_
+    --  "faceString(",(mathObject2String$Lisp faces)@String,_
+    --  ")"])$String
+    --for ln1 in pts1 repeat
+    --  sayTeX$Lisp concat([_
+    --    "faceString pts1=(",(mathObject2String$Lisp ln1)@String,_
+    --    ")"])$String
+    ptStr:String := "" -- string to hold result
+    pntNum:NNI -- hold current position in parameters
+    lastValid:Boolean := true -- used to detect first valid entry
+    for ln in faces.inx repeat
+      pntNum := 0::NNI
+      for i in ln repeat
+        param := (faces.pts).(i+1)
+        param2 := xform(tran,param pretend PT)$TR
+        -- check if original 'global' coordinates (before being converted
+        -- to svg - always positive coordinates) are in bounds.
+        valid := (not clipEn) or  inBounds?(param,bb.mins,bb.maxs)
+        --sayTeX$Lisp concat([_
+        --  "faceString(",(mathObject2String$Lisp param2)@String,_
+        --  ",",(mathObject2String$Lisp valid)@String,_
+        --  ")"])$String
+        if valid then -- add to string
+          pntNum := pntNum + 1
+          if ptStr ~= "" then ptStr := concat(ptStr," ")
+          if lastValid then
+            if pntNum = 1 then ptStr := concat(ptStr,"M")
+            if pntNum = 2 then ptStr := concat(ptStr,"L")
+          if not lastValid then ptStr := concat(ptStr,"M")
+          -- add coordinates, seperated by comma, to string. Note that
+          -- in svg y coodinate starts from top and positive direction
+          -- is down so we need to negate that to conform with common
+          -- mathematical usage.
+          minusy:DF := -screenCoordY(param2)*sc
+          thisStr:String := concat([_
+             (mathObject2String$Lisp (screenCoordX(param2)*sc))@String,",",_
+             (mathObject2String$Lisp minusy)@String])$String
+          ptStr := concat(ptStr,thisStr)
+        lastValid := valid
+      ptStr := concat(ptStr,"z") -- make closed 
+    --sayTeX$Lisp "faceString exit"
+    ptStr
+
+  -- creates an XML tree stucture (for SVG) from scenegraph tree
+  -- structure
+  -- called recursivley for each node, so when called on root node
+  -- in scenegraph all other nodes in the scenegraph will get called.
+  -- svg file
+  -- alternative ways to draw line:
+  -- polyline:
+  -- <polyline points="x1,y1 x2,y2"/>
+  -- paths:
+  -- <path d="*"/>
+  -- where *:
+  -- M0,0 = move to 0,0
+  -- L100,0z = line to 100,0
+  -- z after last point in line indicates closed shape
+  toSVG(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS,scale:DF,clipEn:Boolean,_
+        useInteger:Boolean):XmlElement ==
+    nodeName:String := ""
+    --sayTeX$Lisp concat([_
+    --  "toSVG(",(mathObject2String$Lisp n.type)@String,_
+    --  ",",(mathObject2String$Lisp nodeName)@String,_
+    --  ")"])$String
+    -- I'm not sure if it is safe to modify parameters that have been
+    -- passed to this function, so just to be sure, take copies of them:
+    bb2 := bb ; tran2 := tran ; mat2 := mat
+    clipEn2 := clipEn ; scale2 := scale
+    nodeEles: List XmlElement := []
+    nodeAtts:List XmlAttribute := []
+    if n.type = 1 then -- root node
+      nodeName := "svg" -- root node
+      -- define arrow shape
+      pthAtts := [_
+        xmlAttribute("d",_
+        "M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "),_
+        xmlAttribute("style",_
+        "fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"),_
+        xmlAttribute("transform","scale(0.4) rotate(180) translate(10,0)")_
+          ]
+      pth := xmlElement("path",[],pthAtts)
+      mkrAtts := [_
+        xmlAttribute("orient","auto"),_
+        xmlAttribute("refY","0.0"),_
+        xmlAttribute("refX","0.0"),_
+        xmlAttribute("id","Arrow"),_
+        xmlAttribute("style","overflow:visible")_
+          ]
+      mkr := xmlElement("marker",[pth],mkrAtts)
+      nodeEles := [xmlElement("defs",[mkr],[])]
+      bb2 := n.parameters.boundbox
+      -- setup default transform. This makes sure view bounds are always
+      -- positive and thy the 'y' direction is from down to up.
+      minx:DF := screenCoordX(bb2.mins)
+      miny:DF := screenCoordY(bb2.mins)
+      maxx:DF := screenCoordX(bb2.maxs)
+      maxy:DF := screenCoordY(bb2.maxs)
+      --expStep:Integer := 3 - wholePart(log10(maxx-minx))
+      --scale2:DF := (10::DF) ^expStep
+      scale2:DF := (1000::DF)/(maxx-minx)
+      offsetx:DF := -minx
+      offsety:DF := -maxy
+      --sayTeX$Lisp concat([_
+      --  "toSVG scale=",(mathObject2String$Lisp scale2)@String,_
+      --  " minx=",(mathObject2String$Lisp minx)@String,_
+      --  " miny=",(mathObject2String$Lisp miny)@String,_
+      --  " maxx=",(mathObject2String$Lisp maxx)@String,_
+      --  " maxy=",(mathObject2String$Lisp maxy)@String,_
+      --  " offsetx=",(mathObject2String$Lisp offsetx)@String,_
+      --  " offsety=",(mathObject2String$Lisp offsety)@String])$String
+      tran2 := stranslate(offsetx,offsety,0::DF,1::DF,1::DF,1::DF)$TR
+      if useInteger then
+        viewBoxStr:String := concat([_
+          "0 0 ",_
+          (mathObject2String$Lisp (wholePart((maxx-minx)*scale2)))@String,_
+          " ",_
+          (mathObject2String$Lisp (wholePart((maxy-miny)*scale2)))@String])
+      else
+        viewBoxStr:String := concat([_
+          "0.0 0.0 ",_
+          (mathObject2String$Lisp ((maxx-minx)*scale2))@String,_
+          " ",_
+          (mathObject2String$Lisp ((maxy-miny)*scale2))@String])
+      nodeAtts := [xmlAttribute("xmlns","http://www.w3.org/2000/svg"),_
+        xmlAttribute("width","12cm"),_
+        xmlAttribute("height","8cm"),_
+        xmlAttribute("viewBox",viewBoxStr)_
+         ]
+    if n.type = 2 then nodeName := "g" -- group node
+    if n.type = 3 then -- line node
+      --lineW:DF := (mat2.lineWidth) * (screenCoordX(bb2.maxs) - _
+      --                                    screenCoordX(bb2.mins))
+      nodeName := "path" -- line node
+      nodeAtts := [_
+        xmlAttribute("d",pathString(n.parameters.points,tran2,bb2,scale2,clipEn2,useInteger)),_
+        xmlAttribute("fill","none"),_
+        xmlAttribute("stroke",mat2.lineCol),_
+        xmlAttribute("stroke-width",(mathObject2String$Lisp mat2.lineWidth)@String),_
+        xmlAttribute("stroke-linecap","butt"),_
+        xmlAttribute("stroke-linejoin","miter")_
+          ]
+      if mat2.matOpacity < 0.95::DF then
+        nodeAtts := concat(nodeAtts,xmlAttribute("stroke-opacity",_
+          (mathObject2String$Lisp mat2.matOpacity)@String))
+    if n.type = 4 then -- set material
+      nodeName := "g" -- material node
+      mat2 := n.parameters.material
+    if n.type = 5 then -- text node
+      nodeName := "text" -- text node
+      param2:PT := xform(tran,n.parameters.text.pos)$TR
+      --sayTeX$Lisp concat([_
+      --  "toSVG text node param=",(mathObject2String$Lisp n.parameters.text.pos)@String,_
+      --  " param2=",(mathObject2String$Lisp param2)@String_
+      --  ])$String
+      nodeAtts := [xmlAttribute("font-size",string(n.parameters.text.siz)),_
+        xmlAttribute("x",_
+        (mathObject2String$Lisp (screenCoordX(param2)*scale2))@String),_
+        xmlAttribute("y",_
+        (mathObject2String$Lisp (-screenCoordY(param2)*scale2))@String),_
+        xmlAttribute("style",concat("fill:",mat2.fillCol))_
+          ]
+      return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
+    if n.type = 6 then -- set transform
+      nodeName := "g" -- transform node
+      tran2 := compound(n.parameters.trans,tran)
+    if n.type = 7 then -- set default clip bounding box
+      nodeName := "g" -- clip node
+      clipEn2 := true
+      mn2:PT :=  n.parameters.boundbox.mins
+      mx2:PT :=  n.parameters.boundbox.maxs
+      -- at the moment boundBox is in global coordinates
+      -- to use local coodinates at this node we would need to transform:
+      -- mn2:PT :=  applyTrans(tran,n.parameters.boundbox.mins pretend_
+      --                       SPoint DoubleFloat)$TR pretend PT
+      -- mx2:PT :=  applyTrans(tran,n.parameters.boundbox.maxs pretend_
+      --                       SPoint DoubleFloat)$TR pretend PT
+      bb2 := [mn2,mx2]
+    if n.type = 8 then -- indexed face set node
+      nodeName := "path" -- Indexed Face Set
+      nodeAtts := [_
+      xmlAttribute("d",faceString(n.parameters.ifs,tran2,bb2,scale2,clipEn2)),_
+      xmlAttribute("fill",mat2.fillCol),_
+      xmlAttribute("stroke",mat2.lineCol),_
+      xmlAttribute("stroke-width",_
+      (mathObject2String$Lisp (mat2.lineWidth))@String)_
+        ]
+      return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
+    if n.type = 9 then -- arrow node
+      nodeName := "g" -- Arrows
+      nodeEles := lineArrow(n.parameters.arrws.ln,tran2,bb2,mat2,scale2,clipEn2)
+    -- if no children return empty element
+    #(n.children) < 1 =>
+      xmlElement(nodeName,nodeEles,nodeAtts)
+    -- not empty so return group node
+    for ch in n.children repeat
+      xch := toSVG(ch,mat2,tran2,bb2,scale2,clipEn2,useInteger)
+      if not empty?(xch) then
+        nodeEles := concat(nodeEles,xch)
+    xmlElement(nodeName,nodeEles,nodeAtts)
+
+  -- Write an 'SVG' repesentation of node 'n' to the filename supplied.
+  writeSvg(n:%,filename:String):Void ==
+    defaultMaterial:MATERIAL := [2::DF,"black","black",1::DF]
+    defaultTransform:TR := identity()$TR
+    defaultBounds:BOUNDS := [spnt(-9000::DF,-9000::DF),_
+                             spnt(9000::DF,9000::DF)]
+    writeXml(toSVG(n,defaultMaterial,defaultTransform,defaultBounds,1$DF,_
+           false,false),filename)$ExportXml
+
+  -- Write an 'SVG' repesentation of node 'n' to the filename supplied.
+  writeSvgQuantised(n:%,filename:String):Void ==
+    defaultMaterial:MATERIAL := [2::DF,"black","black",1::DF]
+    defaultTransform:TR := identity()$TR
+    defaultBounds:BOUNDS := [spnt(-9000::DF,-9000::DF),_
+                             spnt(9000::DF,9000::DF)]
+    writeXml(toSVG(n,defaultMaterial,defaultTransform,defaultBounds,1$DF,_
+           false,true),filename)$ExportXml
+
+  -- this returns a string to represent a sequence of points in a X3D file
+  pointString(pts:List PT,tran:TR,bb: BOUNDS):List String ==
+    --sayTeX$Lisp concat([_
+    --  "pointString(",(mathObject2String$Lisp tran)@String,_
+    --  ",",(mathObject2String$Lisp bb)@String,_
+    --  ")"])$String
+    ptStr:List String := nil() -- list to hold result
+    pntNum:NNI -- hold current position in parameters
+    lastValid:Boolean := true -- used to detect first valid entry
+    for param in pts repeat
+      -- convert to SVG (always positive) coordinates
+      -- param is type SPointCategory(DoubleFloat)
+      -- which is what applyTrans requires
+        param2 := xform(tran,param pretend PT)$TR
+        thisStr:String := concat([_
+             (mathObject2String$Lisp screenCoordX(param2))@String," ",_
+             (mathObject2String$Lisp screenCoordY(param2))@String," ",_
+             (mathObject2String$Lisp screenCoordZ(param2))@String])$String
+        ptStr := concat(ptStr,thisStr)
+    ptStr
+
+  -- this returns a string to represent a sequence of points in a X3D file
+  pointIndexString(pts:List List NNI,tran:TR,bb: BOUNDS):List String ==
+    --sayTeX$Lisp concat([_
+    --  "pointIndexString(",(mathObject2String$Lisp tran)@String,_
+    --  ",",(mathObject2String$Lisp bb)@String,_
+    --  ")"])$String
+    ptStr:List String := nil() -- string to hold result
+    pntNum:NNI -- hold current position in parameters
+    for line in pts repeat
+      for param in line repeat
+        ptStr := concat(ptStr,(mathObject2String$Lisp param)@String)
+      -- '-1' is used as a seperator between faces
+      ptStr := concat(ptStr,"-1")
+    ptStr
+
+  -- the following functions: setX3DNodeName, toX3D
+  -- and writeX3D are used to write to a X3D file.
+
+  setX3DNodeName(typ:NNI):String ==
+    nodeName:String := ""
+    if typ = 1 then nodeName := "X3D" -- root node
+    if typ = 2 then nodeName := "Group" -- group node
+    if typ = 3 then nodeName := "IndexedFaceSet" -- line node
+    if typ = 4 then nodeName := "Group" -- material node
+    if typ = 5 then nodeName := "Text" -- text node
+    if typ = 6 then nodeName := "Transform" -- transform node
+    if typ = 7 then nodeName := "Group" -- clip node
+    if typ = 8 then nodeName := "IndexedFaceSet" -- Indexed Face Set
+    if typ = 9 then nodeName := "IndexedFaceSet" -- arrows node
+    nodeName
+
+  -- creates an XML tree stucture (for X3D) from scenegraph tree
+  -- structure
+  -- called recursivley for each node, so when called on root node
+  -- in scenegraph all other nodes in the scenegraph will get called.
+  --<Scene>
+  -- <Shape>
+  --  <Appearance>
+  --   <Material diffuseColor="0.82 0.78 0.74"/>
+  --  </Appearance>
+  --  <IndexedFaceSet coordIndex="0 1 5 4">
+  --   <Coordinate point="0.0 0.0 0.0 2.0 5 -2.7"/>
+  --  </IndexedFaceSet>
+  -- </Shape>
+  --</Scene>
+  toX3D(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS):XmlElement ==
+    nodeName:String := setX3DNodeName(n.type)
+    --sayTeX$Lisp concat([_
+    --  "toX3D(",(mathObject2String$Lisp n.type)@String,_
+    --  ",",(mathObject2String$Lisp nodeName)@String,_
+    --  ")"])$String
+    bb2 := bb
+    tran2 := tran
+    mat2 := mat
+    nodeAtts:List XmlAttribute := []
+    if n.type = 1 then -- root node - set clip bounds to back to
+                       -- local coordinates 
+      bb2 := n.parameters.boundbox
+      --sayTeX$Lisp concat([_
+      --  "toX3D(",(mathObject2String$Lisp minx)@String,_
+      --  ",",(mathObject2String$Lisp miny)@String,_
+      --  ",",(mathObject2String$Lisp offsetx)@String,_
+      --  ",",(mathObject2String$Lisp offsety)@String,_
+      --  ",",(mathObject2String$Lisp offsetRequired)@String,_
+      --  ")"])$String
+      bb2 := n.parameters.boundbox
+      nodeEles: List XmlElement := []
+      for ch in n.children repeat
+        xch := toX3D(ch,mat2,tran2,bb2)
+        if not empty?(xch) then
+          nodeEles := concat(nodeEles,xch)
+      inner := xmlElement("Scene",nodeEles,nodeAtts)
+      return xmlElement(nodeName,[inner],nodeAtts)
+    if n.type = 4 then -- set material
+      mat2 := n.parameters.material
+    if n.type = 6 then -- set transform
+      tran2 := compound(n.parameters.trans,tran)
+    if n.type = 7 then -- set default clip bounding box
+      mn2:PT :=  n.parameters.boundbox.mins
+      mx2:PT :=  n.parameters.boundbox.maxs
+      -- at the moment boundBox is in global coordinates
+      -- to use local coodinates at this node we would need to transform:
+      -- mn2:PT :=  applyTrans(tran,n.parameters.boundbox.mins pretend_
+      --                       SPoint DoubleFloat)$TR pretend PT
+      -- mx2:PT :=  applyTrans(tran,n.parameters.boundbox.maxs pretend_
+      --                       SPoint DoubleFloat)$TR pretend PT
+      bb2 := [mn2,mx2]
+    if n.type = 5 then -- text node
+      nodeAtts := [xmlAttribute("string",n.parameters.text.txt)]
+    --  return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
+    if n.type = 3 then -- line node
+      meshR:List List PT :=_
+        curveLoops(first n.parameters.points,0.25::DF,8)$SceneIFS(PT)
+      ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
+      nodeAtts := [xmlAttribute("coordIndex",_
+            pointIndexString(indexes(ifsR),tran,bb))]
+      coord := xmlElement("Coordinate",[],_
+             [xmlAttribute("point",pointString(pointList(ifsR),tran,bb))])
+      ifset := xmlElement(nodeName,[coord],nodeAtts)
+      return xmlElement("Shape",[ifset],[])
+    if n.type = 9 then -- arrows node
+      meshR:List List PT :=_
+        curveLoops(first n.parameters.arrws.ln,0.25::DF,8)$SceneIFS(PT)
+      ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
+      nodeAtts := [xmlAttribute("coordIndex",_
+        pointIndexString(indexes(ifsR),tran,bb))]
+      coord := xmlElement("Coordinate",[],_
+             [xmlAttribute("point",pointString(pointList(ifsR),tran,bb))])
+      ifset := xmlElement(nodeName,[coord],nodeAtts)
+      return xmlElement("Shape",[ifset],[])
+    if n.type = 8 then -- indexed face set node
+      nodeAtts := [xmlAttribute("coordIndex",_
+        pointIndexString(n.parameters.ifs.inx,tran,bb))]
+      --sayTeX$Lisp concat([_
+      --  "toX3D ifs1(",(mathObject2String$Lisp n.type)@String,_
+      --  ",",(mathObject2String$Lisp nodeName)@String,_
+      --  ")"])$String
+      coord := xmlElement("Coordinate",[],_
+             [xmlAttribute("point",_
+              pointString(n.parameters.ifs.pts,tran2,bb2))])
+      ifset := xmlElement(nodeName,[coord],nodeAtts)
+      return xmlElement("Shape",[ifset],[])
+    -- if no children return empty element
+    #(n.children) < 1 =>
+      xmlElement(nodeName,[],nodeAtts)
+    -- not empty so return children
+    nodeEles: List XmlElement := []
+    for ch in n.children repeat
+      xch := toX3D(ch,mat2,tran2,bb2)
+      if not empty?(xch) then
+        nodeEles := concat(nodeEles,xch)
+    xmlElement(nodeName,nodeEles,nodeAtts)
+
+  -- Write an 'X3D' repesentation of node 'n' to the filename supplied.
+  writeX3d(n:%,filename:String):Void ==
+    defaultMaterial:MATERIAL := [2::DoubleFloat,"black","black",1::DF]
+    defaultTransform:TR := identity()$TR
+    defaultBounds:BOUNDS := [spnt(-9000::DF,-9000::DF),_
+                             spnt(9000::DF,9000::DF)]
+    writeXml(toX3D(n,defaultMaterial,defaultTransform,defaultBounds),_
+                   filename)$ExportXml
+
+  -- creates an .OBJ (Wavefront) file from scenegraph tree
+  -- structure
+  -- called recursivley for each node, so when called on root node
+  -- in scenegraph all other nodes in the scenegraph will get called.
+  toObj(n:%,ptLst: Reference List PT,indexLst:Reference List List NNI,_
+                   indexNxt:Reference NNI,tran:TR,bb: BOUNDS):Void ==
+    nodeName:String := setX3DNodeName(n.type)
+    --sayTeX$Lisp concat([_
+    --  "toObj(",(mathObject2String$Lisp n.type)@String,_
+    --  ",",(mathObject2String$Lisp nodeName)@String,_
+    --  ")"])$String
+    bb2 := bb
+    tran2 := tran
+    if n.type = 1 then
+      -- root node - make sure view bounds are always positive
+      bb2 := n.parameters.boundbox
+      minx:DF := screenCoordX(bb2.mins)
+      miny:DF := screenCoordY(bb2.mins)
+      offsetx:DF := 0::DF
+      offsety:DF := 0::DF
+      offsetRequired := false
+      if minx < 0 then
+        offsetRequired := true
+        offsetx := -minx
+      if miny < 0 then
+        offsetRequired := true
+        offsety := -miny
+      --sayTeX$Lisp concat([_
+      --  "toObj(",(mathObject2String$Lisp minx)@String,_
+      --  ",",(mathObject2String$Lisp miny)@String,_
+      --  ",",(mathObject2String$Lisp offsetx)@String,_
+      --  ",",(mathObject2String$Lisp offsety)@String,_
+      --  ",",(mathObject2String$Lisp offsetRequired)@String,_
+      --  ")"])$String
+      if offsetRequired then
+        mn := spnt(screenCoordX(bb2.mins)+offsetx,screenCoordY(bb2.mins)+_
+                   offsety)$PT
+        mx := spnt(screenCoordX(bb2.maxs)+offsetx,screenCoordY(bb2.maxs)+_
+                   offsety)$PT
+        --sayTeX$Lisp concat([_
+        --  "toObj(",(mathObject2String$Lisp minx)@String,_
+        --  ",",(mathObject2String$Lisp miny)@String,_
+        --  ",",(mathObject2String$Lisp mn)@String,_
+        --  ",",(mathObject2String$Lisp mx)@String,_
+        --  ",",(mathObject2String$Lisp offsetRequired)@String,_
+        --  ")"])$String
+        bb2 := [mn,mx]
+        tran2 := stranslate(offsetx,offsety,0::DF,1::DF,1::DF,1::DF)$TR
+        --sayTeX$Lisp concat([_
+        --  "toObj( bb=",(mathObject2String$Lisp bb2)@String,_
+        --  ",tran=",(mathObject2String$Lisp tran2)@String,_
+        --  ")"])$String
+    if n.type = 1 then
+      -- root node - set clip bounds to back to local coordinates 
+      bb2 := n.parameters.boundbox
+      for ch in n.children repeat
+        toObj(ch,ptLst,indexLst,indexNxt,tran2,bb2)
+      return Void
+    if n.type = 6 then -- set transform
+      tran2 := compound(n.parameters.trans,tran)
+    if n.type = 7 then -- set default clip bounding box
+      mn2:PT :=  n.parameters.boundbox.mins
+      mx2:PT :=  n.parameters.boundbox.maxs
+      -- at the moment boundBox is in global coordinates
+      -- to use local coodinates at this node we would need to transform:
+      -- mn2:PT :=  applyTrans(tran,n.parameters.boundbox.mins pretend_
+      --                       SPoint DoubleFloat)$TR pretend PT
+      -- mx2:PT :=  applyTrans(tran,n.parameters.boundbox.maxs pretend_
+      --                       SPoint DoubleFloat)$TR pretend PT
+      bb2 := [mn2,mx2]
+      return Void
+    if n.type = 3 then -- line node
+      meshR:List List PT := _
+        curveLoops(first n.parameters.points,0.25::DF,8)$SceneIFS(PT)
+      ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
+      i1:List List NNI := indexes(ifsR)
+      p1:List PT := pointList(ifsR)
+      i2:List List NNI := [[j + elt(indexNxt) for j in k] for k in i1]
+      setelt(ptLst,concat(elt(ptLst),p1))
+      setelt(indexLst,concat(elt(indexLst),i2))
+      setelt(indexNxt,elt(indexNxt)+ #p1)
+      return Void
+    if n.type = 9 then -- arrow node
+      meshR:List List PT := _
+        curveLoops(first n.parameters.points,0.25::DF,8)$SceneIFS(PT)
+      ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
+      i1:List List NNI := indexes(ifsR)
+      p1:List PT := pointList(ifsR)
+      i2:List List NNI := [[j + elt(indexNxt) for j in k] for k in i1]
+      setelt(ptLst,concat(elt(ptLst),p1))
+      setelt(indexLst,concat(elt(indexLst),i2))
+      setelt(indexNxt,elt(indexNxt)+ #p1)
+      return Void
+    if n.type = 8 then -- indexed face set node
+      i1:List List NNI := n.parameters.ifs.inx
+      p1:List PT := n.parameters.ifs.pts
+      i2:List List NNI := [[j + elt(indexNxt) for j in k] for k in i1]
+--      sayTeX$Lisp concat([_
+--        "toObj 1(i1=",(mathObject2String$Lisp i1)@String,_
+--        ",p1=",(mathObject2String$Lisp p1)@String,_
+--        ")"])$String
+--      sayTeX$Lisp concat([_
+--        "toObj 2(indexLst=",(mathObject2String$Lisp indexLst)@String,_
+--        ",ptLst=",(mathObject2String$Lisp ptLst)@String,_
+--        ")"])$String
+      setelt(ptLst,concat(elt(ptLst),p1))
+      setelt(indexLst,concat(elt(indexLst),i2))
+--      sayTeX$Lisp concat([_
+--        "toObj 3(indexLst=",(mathObject2String$Lisp indexLst)@String,_
+--        ",ptLst=",(mathObject2String$Lisp ptLst)@String,_
+--        ")"])$String
+      setelt(indexNxt,elt(indexNxt)+ #p1)
+      return Void
+    -- if no children return empty element
+    #(n.children) < 1 =>
+      Void
+    -- not empty so return children
+    for ch in n.children repeat
+      toObj(ch,ptLst,indexLst,indexNxt,tran2,bb2)
+    Void
+
+  -- Write an 'OBJ' (Wavefront) repesentation of node 'n' to the filename
+  -- supplied.
+  writeObj(n:%,filename:String):Void ==
+    ptLst: Reference List PT := ref([])
+    indexLst:Reference List List NNI := ref(nil())
+    indexNxt:Reference NNI := ref(0::NNI)
+    defaultTransform:TR := identity()$TR
+    defaultBounds:BOUNDS := [spnt(-9000::DF,-9000::DF),_
+      spnt(9000::DF,9000::DF)]
+    toObj(n,ptLst,indexLst,indexNxt,defaultTransform,defaultBounds)
+    f1:TextFile:=open(filename::FileName,"output")
+    writeLine!(f1,"# mesh generated by axiom")
+    for v in elt(ptLst) repeat
+      writeLine!(f1,concat(["v ",_
+                (mathObject2String$Lisp screenCoordX(v))@String," ",_
+                (mathObject2String$Lisp screenCoordY(v))@String," ",_
+                (mathObject2String$Lisp screenCoordZ(v))@String])$String)
+    s:String := ""
+    for row in elt(indexLst) repeat
+      s:= "f"
+      for i in row repeat
+        s:=concat([s," ",string(i+1)])$String
+      writeLine!(f1,s)
+    close! f1
+    Void
+
+  -- Write an 'VRML' repesentation of node 'n' to the filename supplied.
+  writeVRML(n:%,filename:String):Void ==
+    defaultMaterial:MATERIAL := [2::DoubleFloat,"black","black",1::DF]
+    defaultTransform:TR := identity()$TR
+    defaultBounds:BOUNDS := [spnt(-9000::DF,-9000::DF),
+                             spnt(9000::DF,9000::DF)]
+    writeVRML(toX3D(n,defaultMaterial,defaultTransform,defaultBounds),_
+                    filename)$ExportXml
+
+  -- Test for NaN (Not a Number)
+  -- That is have we divided by zero or taken sqrt of negative number at
+  -- some stage?
+  -- Common Lisp does not support NaN ? So we need some sort of test for
+  -- invalid numbers
+  -- If not equal to itself then we assume that its not a valid number
+  -- an altenative approach is to chek for complex numbers 
+  -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
+  Fnan?(x:DF):Boolean == x ~= x
+
+  -- apply function of one variable and trap any errors
+  -- this is taken from draw.spad. I don't have any documentation for Lisp
+  -- function 'trapNumericErrors' but I assume it detects errors like
+  -- division by zero?
+  applyfxTrap(ff:DF-> DF, f:DF):DF ==
+    s := trapNumericErrors(ff(f))$Lisp :: Union(DF, "failed")
+    s case "failed" => 0
+    r:=s::DF
+    r > max()$DF => max()$DF
+    r < min()$DF => min()$DF
+    r
+
+  -- apply function of two variables and trap any errors
+  -- this is taken from draw.spad. I don't have any documentation for Lisp
+  -- function 'trapNumericErrors' but I assume it detects errors like
+  -- division by zero?
+  applyfxyTrap(ff:(DF, DF) -> DF, u:DF, v:DF):DF ==
+      s := trapNumericErrors(ff(u, v))$Lisp :: Union(DF, "failed")
+      s case "failed" =>  0
+      r:DF := s::DF
+      r >max()$DF => max()$DF
+      r < min()$DF => min()$DF
+      r
+
+  -- Make sure the Segment goes from a low number to a high number
+  -- this is taken from draw.spad
+  normalize(seg: SEG):Segment DF ==
+    -- normalize [a,b]:
+    -- error if a = b, returns [a,b] if a < b, returns [b,a] if b > a
+    a := convert(lo seg)@DF; b := convert(hi seg)@DF
+    a = b => error "The range specified is too small"
+    a < b => segment(a,b)
+    segment(b,a)
+
+  -- checks that left-hand endpoint is less than right-hand endpoint
+  checkRange(r:SEG):SEG ==
+    (lo r > hi r => error "ranges cannot be negative"; r)
+
+  -- generates a plot from a mapping 'f' of
+  -- scalar values to points
+  -- mostly from plot.spad
+  -- this is taken mostly from drawPlot in draw.spad but instead
+  -- of outputting to TwoDimensionalViewport we output to a
+  -- scenegraph node.
+  -- The input is a Plot defined in plot.spad
+  createPlot1Din2D(f:DF -> PT,tRange:SEG,numPts:NNI):% ==
+      --sayTeX$Lisp concat([_
+      --  "createPlot1Din2D(",(mathObject2String$Lisp 10)@String,_
+      --  ")"])$String
+    checkRange tRange
+    l := lo tRange
+    h := hi tRange
+    t : List DF := list l
+    p0 : List PT := list f l
+    s := (h-l)/(numPts-1)::DF
+    for i in 2..numPts-1 repeat
+      l := l+s
+      t := concat(l,t)
+      p0 := concat(f l,p0)
+    t := reverse_! concat(h,t)
+    p0 := reverse_! concat(f h,p0)
+    branches : List List PT := nil()
+    newl:List PT := nil()
+    for p in p0 repeat
+      if not Pnan? p then newl:=cons(p,newl)
+      else if not empty? newl then
+            branches := concat(newl:=reverse! newl,branches)
+            newl := nil()
+    if not empty? newl then branches := concat(newl:=reverse! newl,branches)
+    createSceneLines(branches)
+
+  -- a convenience function which combines createPlot1Din2D with addChild!
+  addPlot1Din2D(n:%,f:DF -> PT,tRange:SEG,numPts:NNI):% ==
+    c := createPlot1Din2D(f,tRange,numPts)
+    addChild!(n,c)
+    c
+
+  -- mostly from draw.spad 
+  createPlot1Din2D(f:DF -> DF,seg:SEG,numPts:NNI) ==
+    --sayTeX$Lisp concat([_
+    --    "createPlot1Din2D(",(mathObject2String$Lisp 1)@String,_
+    --    ")"])$String
+    -- create function DF -> PT
+    ff : List(DF -> PT) := [x +-> spnt(x,applyfxTrap(f, x))$PT]
+    -- create PLOT
+    createPlot1Din2D(first ff,normalize seg,numPts)
+
+  -- a convenience function which combines createPlot1Din2D with addChild!
+  addPlot1Din2D(n:%,f:DF -> DF,seg:SEG,numPts:NNI) ==
+    c := createPlot1Din2D(f,seg,numPts)
+    addChild!(n,c)
+    c
+
+  -- create a node from plot using Parametric Plane Curve
+  -- This represents 1 dimension (line - possibly curved) in 2 dimensions
+  -- (plane) In theory a line has no width but in that case we would not see
+  -- it so we give it a width given by the material node that is
+  -- applicable in this part of the scene graph
+  -- PPC is ParametricPlaneCurve(DF -> DF) which is created with curve(f1,f2)
+  -- where f1 and f2 are functions of type ComponentFunction, in this case
+  -- DF -> DF
+  createPlot1Din2Dparametric(ppc:PPC,seg:SEG,numPts:NNI) ==
+    -- create function DF -> Point DF
+    f := coordinate(ppc,1); g := coordinate(ppc,2)
+    -- create an anonymous function of type DF->PT
+    fcn : List(DF -> PT) := [x +-> spnt(applyfxTrap(f, x),_
+                             applyfxTrap(g, x))$PT]
+    -- create PLOT
+    createPlot1Din2D(first fcn,normalize seg,numPts)
+
+  -- a convenience function which combines createPlot1Din2Dparametric with
+  -- addChild!
+  addPlot1Din2Dparametric(n:%,ppc:PPC,seg:SEG,numPts:NNI) ==
+    c := createPlot1Din2Dparametric(ppc,seg,numPts)
+    addChild!(n,c)
+    c
+
+  -- create a line (1D subspace) in 3D space
+  -- This represents 1 dimension (line - possibly curved) in 3 dimensions
+  -- In theory a line has no width but in that case we would not see it
+  -- so we give it a width given by the material node that is
+  -- applicable in this part of the scene graph
+  -- PSC ParametricSpaceCurve(DF -> DF) is created with curve(f1,f2,f3)
+  -- where f1,f2 and f3 are functions of type ComponentFunction, in this case
+  -- DF -> DF
+  createPlot1Din3Dparametric(psc:PSC,seg:SEG,numPts:NNI):% ==
+      f := coordinate(psc,1); g := coordinate(psc,2); h := coordinate(psc,3)
+      -- create an anonymous function of type DF->PT
+      fcn : DF -> PT := x +-> spnt(applyfxTrap(f, x), applyfxTrap(g, x),_
+                            applyfxTrap(h, x))$PT
+      createPlot1Din3Dparametric(fcn,seg,numPts)
+
+  -- a convenience function which combines createPlot1Din3Dparametric with
+  -- addChild!
+  addPlot1Din3Dparametric(n:%,psc:PSC,seg:SEG,numPts:NNI):% ==
+    c := createPlot1Din3Dparametric(psc,seg,numPts)
+    addChild!(n,c)
+    c
+
+  -- create a line (1D subspace) in 3D space
+  -- This represents 1 dimension (line - possibly curved) in 3 dimensions
+  -- In theory a line has no width but in that case we would not see it
+  -- so we give it a width given by the material node that is
+  -- applicable in this part of the scene graph
+  -- PCFUN is a function from float to point: DF -> PT
+  createPlot1Din3Dparametric(psc:PCFUN,seg:SEG,numPts:NNI):% ==
+    f := psc
+    tRange := normalize seg
+    checkRange tRange; l := lo tRange; h := hi tRange
+    t : List DF := list l; p : List PT := list f l
+    s := (h-l)/(numPts-1)::DF
+    for i in 2..numPts-1 repeat
+      l := l+s; t := concat(l,t)
+      p := concat(f l,p)
+    t := reverse_! concat(h,t)
+    p := reverse_! concat(f h,p)
+    createSceneLine(p)
+
+  -- a convenience function which combines createPlot1Din3Dparametric with
+  -- addChild!
+  addPlot1Din3Dparametric(n:%,psc:PCFUN,seg:SEG,numPts:NNI):% ==
+    c := createPlot1Din3Dparametric(psc,seg,numPts)
+    addChild!(n,c)
+    c
+
+  -- parameterized equations of two variables
+  -- from mesh.spad
+  -- PSFUN is (DF, DF) -> PT
+  createPlot2Din3D(ptFun:PSFUN,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
+    llp : List List PT := nil()
+    ustep := (lo uSeg - hi uSeg)/numPts
+    vstep := (lo vSeg - hi vSeg)/numPts
+    someV := hi vSeg
+    for iv in numPts..0 by -1 repeat
+      if zero? iv then someV := lo vSeg
+      -- hack: get last number in segment within segment
+      lp : List PT := nil()
+      someU := hi uSeg
+      for iu in numPts..0 by -1 repeat
+        if zero? iu then someU := lo uSeg
+        -- hack: get last number in segment within segment
+        pt := ptFun(someU,someV)
+        --here we need to check for NaN (not a number)
+        --numberCheck pt
+        lp := concat(pt,lp)
+        someU := someU + ustep
+      llp := concat(lp,llp)
+      someV := someV + vstep
+    -- now llp contains a list of lists of points
+    -- for a surface that is a result of a function of 2 variables,
+    -- the main component is open and each sublist is open as well
+    createSceneIFS(smesh(llp,false))
+
+  -- createPlot2Din3D(f,a..b,c..d) returns a scene node
+  -- which contains the graph of z = f(x,y)
+  -- as x ranges from min(a,b) to max(a,b) and y ranges from
+  -- min(c,d) to max(c,d).
+  createPlot2Din3D(f:(DF,DF) -> DF,xSeg:SEG,ySeg:SEG,numPts:NNI):% ==
+    --sp := space l
+    -- process color function of two variables
+    --col2 : List((DF,DF) -> DF) := [xCoord]     -- dummy color function
+    --pointsColored? : Boolean := false
+    --if not (c2 := option(l, 'colorFunction2)) case "failed" then
+    --  pointsColored? := true
+    --  col2 := [retract(c2 :: Any)$ANY1((DF,DF) -> DF)]
+    fcn : List((DF,DF) -> PT) :=
+      [(x, y) +-> spnt(applyfxyTrap(f, x, y), x, y)$PT]
+    createPlot2Din3D(first fcn,normalize xSeg,normalize ySeg,numPts)
+
+  -- a convenience function which combines createPlot2Din3D with addChild!
+  addPlot2Din3D(n:%,f:(DF,DF) -> DF,xSeg:SEG,ySeg:SEG,numPts:NNI):% ==
+    c := createPlot2Din3D(f,xSeg,ySeg,numPts)
+    addChild!(n,c)
+    c
+
+  -- createPlot2Din3Dparametric(surface(f,g,h),a..b,c..d,l) returns a
+  -- scene node which contains the
+  -- graph of the parametric surface x = f(u,v), y = g(u,v),
+  -- z = h(u,v) as u ranges from min(a,b) to
+  -- max(a,b) and v ranges from min(c,d) to max(c,d).
+  -- PSF:ParametricSurface((DF,DF) -> DF) -- created with surface(f1,f2,f3)
+  createPlot2Din3Dparametric(s:PSF,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
+    --sp := space l
+    -- create functions from expressions
+    f : List((DF,DF) -> DF) := [coordinate(s,1)]
+    g : List((DF,DF) -> DF) := [coordinate(s,2)]
+    h : List((DF,DF) -> DF) := [coordinate(s,3)]
+    fcn : List((DF,DF) -> PT) := _
+      [(x, y) +-> spnt(applyfxyTrap((first f), x, y),_
+       applyfxyTrap((first g), x, y),_
+       applyfxyTrap((first h), x, y))$PT]
+    createPlot2Din3D(first fcn,normalize uSeg,normalize vSeg,numPts)
+
+  -- a convenience function which combines createPlot2Din3Dparametric with
+  -- addChild!
+  addPlot2Din3Dparametric(n:%,s:PSF,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
+    c := createPlot2Din3Dparametric(s,uSeg,vSeg,numPts)
+    addChild!(n,c)
+    c
+
+  -- createPlot2Din3Dparametric(f,a..b,c..d,l) returns a
+  -- scene node which contains the
+  -- graph of the parametric surface \spad{f(u,v)}
+  -- as u ranges from min(a,b) to
+  -- max(a,b) and v ranges from min(c,d) to max(c,d).
+  -- PSFUN is (DF, DF) -> PT
+  createPlot2Din3Dparametric(s:PSFUN,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
+    fcn : List((DF,DF) -> PT) := [s]
+    createPlot2Din3D(first fcn,normalize uSeg,normalize vSeg,numPts)
+
+  -- a convenience function which combines createPlot2Din3Dparametric with
+  -- addChild!
+  addPlot2Din3Dparametric(n:%,s:PSFUN,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
+    c := createPlot2Din3Dparametric(s,uSeg,vSeg,numPts)
+    addChild!(n,c)
+    c
+
+  -- output
+  coerce(n: %):OutputForm ==
+    s:String := "scene "
+    if n.type = 1 then s := concat(s,"root")
+    if n.type = 2 then s := concat(s,"group")
+    if n.type = 3 then s := concat(s,"line")
+    if n.type = 4 then s := concat(s,"material")
+    if n.type = 5 then s := concat(s,"text")
+    if n.type = 6 then s := concat(s,"transform")
+    if n.type = 7 then s := concat(s,"clip")
+    if n.type = 8 then s := concat(s,"ifs")
+    if n.type = 9 then s := concat(s,"arrow")
+    s := concat([s," #ch=",string(#(n.children))])
+    s::OutputForm
+@
+\section{License}
+<<license>>=
+--Copyright (c) 2010, Martin J Baker.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of Martin J Baker. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+<<*>>=
+<<license>>
+@
+\eject
+\begin{thebibliography}{99}
+User Tutorial:
+http://www.euclideanspace.com/maths/standards/program/mycode/graph/tutorial/
+User Reference:
+http://www.euclideanspace.com/maths/standards/program/mycode/graph/userref/
+Programmers Reference:
+http://www.euclideanspace.com/maths/standards/program/mycode/graph/progref/
+Examples of scenegraph structure:
+http://www.euclideanspace.com/maths/standards/program/mycode/graph/examples/
+
+\end{thebibliography}
+\end{document}
