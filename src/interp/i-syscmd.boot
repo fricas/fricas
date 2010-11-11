@@ -1894,6 +1894,7 @@ writifyComplain s ==
 
 spadClosure? ob ==
   fun := QCAR ob
+  not (FUNCTIONP fun) => nil
   not (name := BPINAME fun) => nil
   name = "WRAPPED" => nil
   vec := QCDR ob
