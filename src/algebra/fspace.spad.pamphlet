@@ -578,7 +578,7 @@ FunctionSpace(R : Comparable): Category == Definition where
     symsub    : (SY, Z) -> SY
     kunq      : (K, List SY, Boolean) -> %
     pushunq   : (List SY, List %) -> List %
-    notfound  : (K -> %, List K, K) -> %
+    notfound  : (K -> %, List K) -> (K -> %)
 
     equaldiff : (K,K)->Boolean
     debugA: (List % ,List %,Boolean) -> Boolean
@@ -823,21 +823,22 @@ FunctionSpace(R : Comparable): Category == Definition where
       smpsubst(p, lk, lv) ==
           map(x +-> match(lk, lv, x,
                        notfound((z : K) : % +-> subs(s +-> subst(s, lk, lv), z),
-                                lk, x))$ListToMap(K, %),
+                                lk))$ListToMap(K, %),
               y +-> y::%,
               p)$PolynomialCategoryLifting(IndexedExponents K, K, R, MP, %)
 
       smpeval(p, lk, lv) ==
           map(x +-> match(lk, lv, x,
                        notfound((z : K) : % +-> map(s +-> eval(s, lk, lv), z),
-                                lk, x))$ListToMap(K, %),
+                                lk))$ListToMap(K, %),
               y +-> y::%,
               p)$PolynomialCategoryLifting(IndexedExponents K, K, R, MP, %)
 
 -- this is called on k when k is not a member of lk
-      notfound(fn, lk, k) ==
-        empty? setIntersection(tower(f := k::%), lk) => f
-        fn k
+      notfound(fn, lk)  ==
+          k +->
+              empty? setIntersection(tower(f := k::%), lk) => f
+              fn k
 
       if R has ConvertibleTo InputForm then
         pushunq(l, arg) ==
