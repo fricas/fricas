@@ -542,7 +542,7 @@ ifneq ($(BUILD_WAY),use_lisp)
 $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST}) : stamp-bootstrap
 endif
 
-guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-bootstrap
+stamp-guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-bootstrap
 	( \
 	  { for A in ${GUESSLIST}; do \
 	        echo ')compile "'$$A'.spad"' ; \
@@ -552,9 +552,9 @@ guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-bootstrap
 	    done ; \
           } \
 	)
-	touch guess-pkg
+	touch stamp-guess-pkg
 
-test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-bootstrap
+stamp-test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-bootstrap
 	( \
 	  { for A in ${TESTLIST}; do \
 	        echo ')compile "'$$A'.spad"' ; \
@@ -564,7 +564,7 @@ test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-bootstrap
 	    done ; \
           } \
 	)
-	touch test-pkg
+	touch stamp-test-pkg
 
 stamp: stamp-src ${TESTS}
 	-rm -f stamp
@@ -577,7 +577,7 @@ stamp: stamp-src ${TESTS}
 # update-spads: \
 #          $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST} ${EXTRASPADS})
 
-do-update-spads: stamp-bootstrap guess-pkg test-pkg spad.mak
+do-update-spads: stamp-bootstrap stamp-guess-pkg stamp-test-pkg spad.mak
 	${MAKE} -f spad.mak update-spads
 
 
@@ -680,11 +680,15 @@ ${INPUT}/TEST-SSOLVE.input: $(srcdir)/ssolve.spad.pamphlet
 
 
 mostlyclean-local: 
-	-rm *.$(FASLEXT) *.lib *.fn
-	-rm -r *.NRLIB
 	-rm -f stamp*
+	-rm *.$(FASLEXT) *.lib *.fn [A-Z]*.data
+	-rm -f abbrevs.input oboo3.input boot.mak *.daase
+	-rm -r *.NRLIB
+	-rm -r axp r[1-8f] DEPENDENTS.DAASE USERS.DAASE
 
 clean-local: mostlyclean-local
+	-rm -f spad.mak boot-sum.sh gloss.text topics.data
+	-rm [A-Z]*.spad
 
 distclean-local: clean-local
 
