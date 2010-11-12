@@ -255,7 +255,12 @@ Kernel(S : Comparable): Exports == Implementation where
   Implementation ==> add
     import SortedCache(%)
 
-    Rep := Record(op:OP, arg:List S, nest:N, posit:N)
+    operator(k : %) : OP == SPAD_-KERNEL_-OP(k)$Lisp
+    argument(k : %) : List S == SPAD_-KERNEL_-ARG(k)$Lisp
+    height(k) == SPAD_-KERNEL_-NEST(k)$Lisp
+    position(k : %) : N == SPAD_-KERNEL_-POSIT(k)$Lisp
+    setPosition(k, n) == SET_-SPAD_-KERNEL_-POSIT(k, n)$Lisp
+    mkKer(o : OP, a : List S, n : N) : % == makeSpadKernel(o, a, n)$Lisp
 
     SYMBOL  := '%symbol
     PMPRED  := '%pmpredicate
@@ -271,17 +276,11 @@ Kernel(S : Comparable): Exports == Implementation where
 
     B2Z   : Boolean -> Integer
     triage: (%, %)  -> Integer
-    -- isEqual: (%, %)  -> Boolean
     preds : OP      -> List Any
 
     is?(k:%, s:Symbol) == is?(operator k, s)
     is?(k:%, o:OP)     == (operator k) = o
     name k             == name operator k
-    height k           == k.nest
-    operator k         == k.op
-    argument k         == k.arg
-    position k         == k.posit
-    setPosition(k, n)  == k.posit := n
     B2Z flag           == (flag => -1; 1)
     kernel s           == kernel(assert(operator(s,0),SYMBOL), nil(), 1)
 
@@ -294,12 +293,10 @@ Kernel(S : Comparable): Exports == Implementation where
       "failed"
 
     kerEqual(k1 : %, k2 : %, f : (%, %) -> Boolean) : Boolean ==
-        k1.nest   ~= k2.nest   => false
-        k1.op ~= k2.op => false
+        height(k1)   ~= height(k2)   => false
+        operator(k1) ~= operator(k2) => false
         (n1 := #(argument k1)) ~= (n2 := #(argument k2)) => false
         f(k1, k2)
-
-    -- kernelEnterInCache : % -> %
 
     kernelEnterInCache(k : %) : % ==
         if (f0 := property(operator k, SPECIALEQUAL)) case None then
@@ -309,28 +306,19 @@ Kernel(S : Comparable): Exports == Implementation where
         enterInCache(k, triage)
 
     k1 = k2 ==
-      if k1.posit = 0 then k1 := kernelEnterInCache(k1)
-      if k2.posit = 0 then k2 := kernelEnterInCache(k2)
-      k1.posit = k2.posit
+      if position(k1) = 0 then k1 := kernelEnterInCache(k1)
+      if position(k2) = 0 then k2 := kernelEnterInCache(k2)
+      position(k1) = position(k2)
 
     k1 < k2 ==
-      if k1.posit = 0 then k1 := kernelEnterInCache(k1)
-      if k2.posit = 0 then k2 := kernelEnterInCache(k2)
-      k1.posit < k2.posit
-
-)if false
-    smaller?(k1, k2) ==
-      if k1.posit = 0 then k1 := kernelEnterInCache(k1)
-      if k2.posit = 0 then k2 := kernelEnterInCache(k2)
-      k1.posit < k2.posit
-)endif
+      if position(k1) = 0 then k1 := kernelEnterInCache(k1)
+      if position(k2) = 0 then k2 := kernelEnterInCache(k2)
+      position(k1) < position(k2)
 
     kernel(fn, x, n) ==
       ((u := arity fn) case N) and (#x ~= u::N)
                                     => error "Wrong number of arguments"
-      kernelEnterInCache([fn, x, n, 0]$Rep)
-      -- y := [fn, x, n, 0]$Rep
-      -- enterInCache(y, isEqual(#1, y))
+      kernelEnterInCache(mkKer(fn, x, n))
 
     -- SPECIALDISP contains a map List S -> OutputForm
     -- it is used when the converting the arguments first is not good,
@@ -343,10 +331,9 @@ Kernel(S : Comparable): Exports == Implementation where
       (u := display o) case "failed" => prefix(name(o)::OutputForm, l)
       (u::(List OutputForm -> OutputForm)) l
 
-)if true
     triage(k1, k2) ==
-      k1.nest   ~= k2.nest   => B2Z(k1.nest   < k2.nest)
-      k1.op ~= k2.op => B2Z(k1.op < k2.op)
+      height(k1)   ~= height(k2)   => B2Z(height(k1)   < height(k2))
+      operator(k1) ~= operator(k2) => B2Z(operator(k1) < operator(k2))
       (n1 := #(argument k1)) ~= (n2 := #(argument k2)) => B2Z(n1 < n2)
       -- Handled by linear search earlier
       -- ((func := property(operator k1, SPECIALEQUAL)) case None) and
@@ -354,19 +341,6 @@ Kernel(S : Comparable): Exports == Implementation where
       for x1 in argument(k1) for x2 in argument(k2) repeat
         x1 ~= x2 => return B2Z(smaller?(x1, x2))
       0
-)endif
-
-)if false
-    isEqual(k1, k2) ==
-        k1.nest  ~= k2.nest => false
-        k1.op ~= k2.op => false
-        (n1 := #(argument k1)) ~= (n2 := #(argument k2)) => false
-        ((func := property(operator k1, SPECIALEQUAL)) case None) and
-            (((func::None) pretend ((%, %) -> Boolean)) (k1, k2)) => true
-        for x1 in argument(k1) for x2 in argument(k2) repeat
-            x1 ~= x2 => return false
-        true
-)endif
 
     if S has ConvertibleTo InputForm then
       convert(k:%):InputForm ==
@@ -386,7 +360,7 @@ Kernel(S : Comparable): Exports == Implementation where
                       has?(o, PMCONST), has?(o, PMOPT), has?(o, PMMULT))
           empty?(l := preds o) => s
           setPredicates(s, l)
-        o [convert x for x in k.arg]$List(Pattern Integer)
+        o [convert x for x in argument(k)]$List(Pattern Integer)
 
     if S has ConvertibleTo Pattern Float then
       convert(k:%):Pattern(Float) ==
@@ -396,7 +370,7 @@ Kernel(S : Comparable): Exports == Implementation where
                       has?(o, PMCONST), has?(o, PMOPT), has?(o, PMMULT))
           empty?(l := preds o) => s
           setPredicates(s, l)
-        o [convert x for x in k.arg]$List(Pattern Float)
+        o [convert x for x in argument(k)]$List(Pattern Float)
 
 @
 \section{package KERNEL2 KernelFunctions2}

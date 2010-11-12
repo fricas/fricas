@@ -270,3 +270,17 @@
     `(truncate
          (array-dimension (the (simple-array double-float (* *)) ,v) 1) 2))
 
+
+(defstruct (SPAD-KERNEL 
+          (:print-function
+               (lambda (p s k)
+                   (format s "#S~S" (list 
+                        'SPAD-KERNEL
+                         :OP (SPAD-KERNEL-OP p) 
+                         :ARG (SPAD-KERNEL-ARG p)
+                         :NEST (SPAD-KERNEL-NEST p))))))
+           OP ARG NEST (POSIT 0))
+
+(defmacro SET-SPAD-KERNEL-POSIT(s p) `(setf (SPAD-KERNEL-POSIT ,s) ,p))
+
+(defun |makeSpadKernel|(o a n) (MAKE-SPAD-KERNEL :OP o :ARG a :NEST n))
