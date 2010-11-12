@@ -1836,6 +1836,15 @@ writify ob ==
                 for i in 0..n repeat
                     QSETVELT(nob, i, writifyInner QVELT(ob,i))
                 nob
+            SPAD_-KERNEL_-P ob =>
+                nob := makeSpadKernel(NIL, NIL, SPAD_-KERNEL_-NEST(ob))
+                HPUT($seen, ob, nob)
+                HPUT($seen, nob, nob)
+                SETF(SPAD_-KERNEL_-OP(nob), _
+                     writifyInner SPAD_-KERNEL_-OP(ob))
+                SETF(SPAD_-KERNEL_-ARG(nob), _
+                     writifyInner SPAD_-KERNEL_-ARG(ob))
+                nob
             ob = 'WRITIFIED_!_! =>
                 ['WRITIFIED_!_!, 'SELF]
             -- In CCL constructors are also compiled functions, so we
@@ -1981,6 +1990,15 @@ dewritify ob ==
                 for i in 0..n repeat
                     QSETVELT(nob, i, dewritifyInner QVELT(ob,i))
                 nob
+            SPAD_-KERNEL_-P ob =>
+                nob := makeSpadKernel(NIL, NIL, SPAD_-KERNEL_-NEST(ob))
+                HPUT($seen, ob, nob)
+                HPUT($seen, nob, nob)
+                SETF(SPAD_-KERNEL_-OP(nob), _
+                     dewritifyInner SPAD_-KERNEL_-OP(ob))
+                SETF(SPAD_-KERNEL_-ARG(nob), _
+                     dewritifyInner SPAD_-KERNEL_-ARG(ob))
+                nob
             -- Default case: return the object itself.
             ob
 
@@ -1999,6 +2017,9 @@ ScanOrPairVec(f, ob) ==
                 HPUT($seen, ob, true)
                 for i in 0..#ob-1 repeat ScanOrInner(f, ob.i)
                 nil
+            SPAD_-KERNEL_-P ob =>
+                ScanOrInner(f, SPAD_-KERNEL_-OP ob)
+                ScanOrInner(f, SPAD_-KERNEL_-ARG ob)
             FUNCALL(f, ob) =>
                 THROW('ScanOrPairVecAnswer, true)
             nil
