@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2010-09-22],
+AC_INIT([FriCAS], [1.1.1],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
