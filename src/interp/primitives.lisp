@@ -122,9 +122,15 @@
 
 ;;; Floating point macros
 
+;; Closure CL has buggy floating point optimizer, so for it we need
+;; to omit type declarations to disable optimization
+#-:openmcl
 (defmacro DEF-DF-BINOP (name op)
    `(defmacro ,name (x y) `(the double-float (,',op (the double-float ,x)
                                                     (the double-float ,y)))))
+#+:openmcl
+(defmacro DEF-DF-BINOP (name op) `(defmacro ,name (x y) `(,',op ,x ,y)))
+
 (DEF-DF-BINOP ADD-DF +)
 (DEF-DF-BINOP MUL-DF *)
 (DEF-DF-BINOP MAX-DF MAX)
@@ -132,6 +138,8 @@
 (DEF-DF-BINOP SUB-DF -)
 (DEF-DF-BINOP DIV-DF /)
 
+#-:openmcl
+(progn
 (defmacro LESS-DF (x y) `(< (the double-float ,x)
                                              (the double-float ,y)))
 (defmacro EQL-DF (x y) `(EQL (the double-float ,x)
@@ -151,6 +159,25 @@
 
 (defmacro DEF-DF-UNOP (name op)
     `(defmacro ,name (x) `(the double-float (,',op (the double-float ,x)))))
+)
+
+#+:openmcl
+(progn
+(defmacro LESS-DF (x y) `(<  ,x ,y))
+(defmacro EQL-DF (x y) `(EQL ,x ,y))
+(defmacro EXPT-DF-I (x y) `(EXPT ,x ,y))
+(defmacro EXPT-DF-DF (x y) `(EXPT ,x ,y))
+(defmacro MUL-DF-I (x y) `(* ,x ,y))
+(defmacro DIV-DF-I (x y) `(/ ,x ,y))
+(defmacro ZEROP-DF (x) `(ZEROP ,x))
+(defmacro MINUSP-DF (x) `(MINUSP ,x))
+(defmacro SQRT-DF(x) `(SQRT ,x))
+(defmacro LOG-DF (x) `(LOG ,x))
+
+(defmacro DEF-DF-UNOP (name op)
+    `(defmacro ,name (x) `(,',op ,x)))
+)
+
 
 (DEF-DF-UNOP EXP-DF EXP)
 (DEF-DF-UNOP MINUS-DF -)
