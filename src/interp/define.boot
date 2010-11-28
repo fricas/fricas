@@ -1170,6 +1170,7 @@ compJoin(["Join",:argl],m,e) ==
   catList':=
     [extract for x in catList] where
       extract() ==
+        x is ["Join", ["mkCategory",:y]] => ["mkCategory",:y]
         isCategoryForm(x,e) =>
           parameters:=
             union("append"/[getParms(y,e) for y in rest x],parameters)
@@ -1183,7 +1184,9 @@ compJoin(["Join",:argl],m,e) ==
                 LIST y
           x
         x is ["DomainSubstitutionMacro",pl,body] =>
-          (parameters:= union(pl,parameters); body)
+            parameters := union(pl, parameters)
+            body is ["Join", ["mkCategory",:y]] => ["mkCategory",:y]
+            body
         x is ["mkCategory",:.] => x
         atom x and getmode(x,e)=$Category => x
         stackSemanticError(["invalid argument to Join: ",x],nil)
@@ -1221,8 +1224,9 @@ compCategory(x,m,e) ==
 
 mkExplicitCategoryFunction(domainOrPackage,sigList,atList) ==
   body:=
+   ["Join", 
     ["mkCategory",MKQ domainOrPackage,['LIST,:REVERSE sigList],['LIST,:
-      REVERSE atList],MKQ domList,nil] where
+      REVERSE atList],MKQ domList,nil]] where
         domList() ==
           ("union"/[fn sig for ["QUOTE",[[.,sig,:.],:.]] in sigList]) where
             fn sig == [D for D in sig | mustInstantiate D]
@@ -1261,6 +1265,7 @@ DomainSubstitutionFunction(parameters,body) ==
           =>  ['QUOTE,optimize body]
         [Subst(parameters,u) for u in body]
   not (body is ["Join",:.]) => body
+  body is ["Join", ["mkCategory", :.]] => body
   atom $definition => body
   null rest $definition => body
            --should not bother if it will only be called once
