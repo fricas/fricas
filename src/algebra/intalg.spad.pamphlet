@@ -169,6 +169,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
   FAC ==> Record(factor:UPQ, exponent:Z)
   LOG ==> Record(scalar:Q, coeff:UPR, logand:UPR)
   DIV ==> Record(num:R, den:UP, derivden:UP, gd:UP)
+  U2  ==> Union(Record(ratpart:R, coeff:F),"failed")
   FAIL0 ==> error "integrate: implementation incomplete (constant residues)"
   FAIL1==> error "integrate: implementation incomplete (non-algebraic residues)"
   FAIL2 ==> error "integrate: implementation incomplete (residue poly has multiple non-linear factors)"
@@ -185,6 +186,12 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       ++ palginfieldint(f, d) returns an algebraic function g
       ++ such that \spad{dg = f} if such a g exists, "failed" otherwise.
       ++ Argument f must be a pure algebraic function.
+    palgextintegrate : (R, UP -> UP, UPUP, Fraction UP, Fraction UP) -> U2
+      ++ palgextintegrate(f, d, g, c1, c2) returns functions \spad{[h, c]}
+      ++ such that using \spad{c1, c2} as a change of variables we have
+      ++ \spad{(d(h))(c1(x), c2(y)) = d(c1(x))f(c1(x),c2(y)) - c g(x,y)},
+      ++ where y is an algebraic function of x; returns "failed" if no
+      ++ such functions exist.
 
   Implementation ==> add
     import FD
@@ -408,6 +415,31 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       h := HermiteIntegrate(f, derivation)
       zero?(h.logpart) => h.answer
       "failed"
+
+    palgextintegrate(f, derivation, g, c1, c2) ==
+        h := HermiteIntegrate(f, derivation)
+        zero?(h.logpart) => [h.answer, 0]
+        numc := numer(c1)
+        nder := derivation(numc)
+        denc := denom(c1)
+        dder := derivation(denc)
+        dcdx := (nder*denc - numc*dder)*inv(denc:: Fraction(UP))^2
+        lp := lift(h.logpart)
+        lp1 := dcdx*eval(lp, c1, c2)$ChangeOfVariable(F, UP, UPUP)
+        -- XXXXX
+        -- Only complete if g does not have multiple poles, if
+        -- particular it is OK for logarithms.  In general we
+        -- should Hermite integrate g
+        cu0 := lp1 exquo g
+        cu0 case "failed" => "failed"
+        c := cu0::UPUP
+        degree(c) > 0 => "failed"
+        cr := leadingCoefficient(c)
+        cu2 := retractIfCan(cr)@Union(UP, "failed")
+        cu2 case "failed" => "failed"
+        cu3 := retractIfCan(cu2::UP)@Union(F, "failed")
+        cu3 case "failed" => "failed"
+        [h.answer, cu3::F]
 
 -- f dx must be locally integral at infinity
     palgintegrate(f, derivation) ==

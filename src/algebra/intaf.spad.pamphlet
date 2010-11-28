@@ -551,12 +551,15 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
               extendedint(n * chv(uf::UPUP, rec.exponent, 1, 0),
                           n * chv(ug::UPUP, rec.exponent, 1, 0)))
       cv     := chvar(ff, modulus)
+      g1 := univariate(g, x, k, p)
       r      := radPoly(cv.poly)::Record(radicand:RF, deg:N)
-      dqdx   := inv(differentiate(q := retract(r.radicand)@UP)::RF)
       curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
-      (u := palginfieldint(reduce(cv.func), differentiate$UP)$ALG)
-        case "failed" => FAIL
-      [UPUP2F1(lift(u::curve), cv.c1, cv.c2, x, k), 0]
+      (u := palgextintegrate(reduce(cv.func), differentiate$UP, g1,
+                             cv.c1, cv.c2)$ALG) case "failed" => "failed"
+      ur := u.ratpart
+      uc := u.coeff
+      [UPUP2F1(lift(ur::curve), cv.c1, cv.c2, x, k), uc]
+
 
     palgRDE1(nfp, g, x, y) ==
       palgLODE1([nfp, 1], g, x, y, symbolIfCan(x)::SY).particular
@@ -595,11 +598,14 @@ PureAlgebraicIntegration(R, F, L): Exports == Implementation where
     palgext(f, x, k, g) ==
       modulus:= lift(p := minPoly k, x)
       cv     := chvar(univariate(f, x, k, p), modulus)
+      g1 := univariate(g, x, k, p)
       curve  := AlgebraicFunctionField(F, UP, UPUP, cv.poly)
       knownInfBasis(cv.deg)
-      (u := palginfieldint(reduce(cv.func), differentiate$UP)$ALG)
-        case "failed" => FAIL
-      [UPUP2F1(lift(u::curve), cv.c1, cv.c2, x, k), 0]
+      (u := palgextintegrate(reduce(cv.func), differentiate$UP, g1,
+                             cv.c1, cv.c2)$ALG) case "failed" => "failed"
+      ur := u.ratpart
+      uc := u.coeff
+      [UPUP2F1(lift(ur::curve), cv.c1, cv.c2, x, k), uc]
 
     palgint(f, x, y) ==
       (v := linearInXIfCan(x, y)) case "failed" =>
