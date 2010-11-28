@@ -113,8 +113,10 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
         is?(k, 'log) and
          ((u := retractIfCan(univariate(f,k))@Union(UP,"failed")) case UP)
 --             and one?(degree(u::UP))
-             and (degree(u::UP) = 1)
-                and not member?(x, variables leadingCoefficient(u::UP))
+             and (degree(pol := u::UP) = 1)
+                and not member?(x, variables leadingCoefficient(pol))
+                   and ((p0 := reductum(pol)) = 0 or
+                         not member?(k, tower leadingCoefficient(p0)))
 
       mkPrim(f, x) ==
         lg := [k for k in kernels f | linearLog?(k, f, x)]
