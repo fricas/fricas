@@ -213,12 +213,12 @@ ElementaryRischDE(R, F): Exports == Implementation where
     normalise : (Z, F, F, F, SE, K, (F, LF) -> U, (F, F) -> UEX) -> PSOL
     rischDEalg: (Z, F, F, F, K, LK, SE, (F, LF) -> U, (F, F) -> UEX) -> PSOL
     rischDElog: (LK, RF, RF, SE, K, UP->UP,(F,LF)->U,(F,F)->UEX) -> URF
-    rischDEexp: (LK, RF, RF, SE, K, UP->UP,(F,LF)->U,(F,F)->UEX) -> URF
+    rischDEexp: (LK, LK, RF, RF, SE, K, UP->UP,(F,LF)->U,(F,F)->UEX) -> URF
     polyDElog : (LK, UP, UP,UP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UUP
-    polyDEexp : (LK, UP, UP,UP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UUP
-    gpolDEexp : (LK, UP, GP,GP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UGP
-    boundAt0  : (LK, F, Z,  Z,    SE, K, (F, LF) -> U) -> Z
-    boundInf  : (LK, F, Z,  Z, Z, SE, K, (F, LF) -> U) -> Z
+    polyDEexp : (LK, LK, UP, UP,UP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UUP
+    gpolDEexp : (LK, LK, UP, GP,GP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UGP
+    boundAt0  : (LK, LK, F, Z,  Z,    SE, K, (F, LF) -> U) -> Z
+    boundInf  : (LK, LK, F, Z,  Z, Z, SE, K, (F, LF) -> U) -> Z
     logdegrad : (LK, F, UP, Z, SE, K,(F,LF)->U, (F,F) -> UEX) -> UUP
     expdegrad : (LK, F, UP, Z, SE, K,(F,LF)->U, (F,F) -> UEX) -> UUP
     logdeg    : (UP, F, Z, SE, F, (F, LF) -> U, (F, F) -> UEX) -> UUP
@@ -300,6 +300,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       newf := univariate(nfp, k)
       newg := univariate(p::F * g, k)
       twr := union(logdiff(tower f, empty()), logdiff(tower g, empty()))
+      ftwr := union(tower f, tower g)
       ans1 :=
         is?(k, 'log) =>
           rischDElog(twr, newf, newg, x, k,
@@ -307,7 +308,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
                              differentiate(k::F, x)::UP),
                                             limitedint, extendedint)
         is?(k, 'exp) =>
-          rischDEexp(twr, newf, newg, x, k,
+          rischDEexp(twr, ftwr, newf, newg, x, k,
             z1 +-> differentiate(z1, (z2 : F) : F +-> differentiate(z2, x),
                       monomial(differentiate(first argument k, x), 1)),
                                                 limitedint, extendedint)
@@ -338,9 +339,9 @@ ElementaryRischDE(R, F): Exports == Implementation where
                       limint, extint)) case "failed" => "failed"
       v::UP / u.t
 
-    rischDEexp(twr, f, g, x, theta, driv, limint, extint) ==
+    rischDEexp(twr, ftwr, f, g, x, theta, driv, limint, extint) ==
       (u := monomRDE(f, g, driv)) case "failed" => "failed"
-      (v := gpolDEexp(twr, u.a, RF2GP(u.b), RF2GP(u.c), x, theta, driv,
+      (v := gpolDEexp(twr, ftwr, u.a, RF2GP(u.b), RF2GP(u.c), x, theta, driv,
                       limint, extint)) case "failed" => "failed"
       convert(v::GP)@RF / u.t::RF
 
@@ -387,28 +388,28 @@ ElementaryRischDE(R, F): Exports == Implementation where
         case "failed" => "failed"
       w.alpha * u::UP + w.beta
 
-    gpolDEexp(twr, a, b, c, x, t, driv, limint, extint) ==
+    gpolDEexp(twr, ftwr, a, b, c, x, t, driv, limint, extint) ==
       zero? c => 0
       zero? b =>
         (u := c exquo (a::GP)) case "failed" => "failed"
         expintfldpoly(u::GP, (z1, z2) +-> rischDE(z1, first argument t, z2,
                                                   x, limint, extint))
-      lb := boundAt0(twr, - coefficient(b, 0) / coefficient(a, 0),
+      lb := boundAt0(twr, ftwr, - coefficient(b, 0)/coefficient(a, 0),
                      nb := order b, nc := order c, x, t, limint)
       tm := monomial(1, (m := max(0, max(-nb, lb - nc)))::N)$UP
-      (v := polyDEexp(twr,a * tm,lb * differentiate(first argument t, x)
+      (v := polyDEexp(twr, ftwr, a*tm, lb*differentiate(first argument t, x)
            * a * tm + retract(b * tm::GP)@UP,
                retract(c * monomial(1, m - lb))@UP,
                   x, t, driv, limint, extint)) case "failed" => "failed"
       v::UP::GP * monomial(1, lb)
 
-    polyDEexp(twr, aa, bb, cc, x, t, driv, limint, extint) ==
+    polyDEexp(twr, ftwr, aa, bb, cc, x, t, driv, limint, extint) ==
       zero? cc => 0
       zero? bb =>
         (u := cc exquo aa) case "failed" => "failed"
         exppolyint(u::UP, (z1, z2) +-> rischDE(z1, first argument t, z2,
                                                x, limint, extint))
-      n := boundInf(twr,-leadingCoefficient(bb) / (leadingCoefficient aa),
+      n := boundInf(twr, ftwr, -leadingCoefficient(bb)/(leadingCoefficient aa),
                  degree(aa)::Z, degree(bb)::Z, degree(cc)::Z, x, t, limint)
       (v := polyRDE(aa, bb, cc, n, driv)) case ans =>
            v.ans.nosol => "failed"
@@ -428,13 +429,13 @@ ElementaryRischDE(R, F): Exports == Implementation where
       (u := expintfldpoly(p::GP, rischdiffeq)) case "failed" => "failed"
       retractIfCan(u::GP)@Union(UP, "failed")
 
-    boundInf(twr, f0, da, db, dc, x, t, limitedint) ==
+    boundInf(twr, ftwr, f0, da, db, dc, x, t, limitedint) ==
       da < db => dc - db
       da > db => max(0, dc - da)
       l1 := logdiff(twr, l0 := tower f0)
       (if0 := limitedint(f0, [first argument u for u in l1]))
                        case "failed" => error "Risch's theorem violated"
-      (alpha := validExponential(concat(t, l0), RRF2F(if0::RRF), x))
+      (alpha := validExponential(ftwr, RRF2F(if0::RRF), x))
        case F =>
         al := separate(univariate(alpha::F, t))$GP
         zero?(al.fracPart) and monomial?(al.polyPart) =>
@@ -442,12 +443,12 @@ ElementaryRischDE(R, F): Exports == Implementation where
         dc - db
       dc - db
 
-    boundAt0(twr, f0, nb, nc, x, t, limitedint) ==
+    boundAt0(twr, ftwr, f0, nb, nc, x, t, limitedint) ==
       nb ~= 0 => min(0, nc - min(0, nb))
       l1 := logdiff(twr, l0 := tower f0)
       (if0 := limitedint(f0, [first argument u for u in l1]))
                        case "failed" => error "Risch's theorem violated"
-      (alpha := validExponential(concat(t, l0), RRF2F(if0::RRF), x))
+      (alpha := validExponential(ftwr, RRF2F(if0::RRF), x))
        case F =>
         al := separate(univariate(alpha::F, t))$GP
         zero?(al.fracPart) and monomial?(al.polyPart) =>
