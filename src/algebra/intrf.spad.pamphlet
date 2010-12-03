@@ -395,7 +395,7 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
     primintegratepoly  : (UP, F -> UF, F) -> Union(UPF, UPUP)
     expintegratepoly   : (GP, (Z, F) -> PSOL) -> Union(GPF, GPGP)
     expextintfrac      : (RF, UP -> UP, RF) -> Union(FFR, "failed")
-    explimintfrac      : (RF, UP -> UP, List RF) -> Union(NL, "failed")
+    explimintfrac      : (RF, UP -> UP, List RF) -> Union(NLF, "failed")
     limitedLogs        : (RF, RF -> RF, List RF) -> Union(LLG, "failed")
     logprmderiv        : (RF, UP -> UP)    -> RF
     logexpderiv        : (RF, UP -> UP, F) -> RF
@@ -580,8 +580,11 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
       qr := separate(f)$GP
       (u1 := explimintfrac(qr.fracPart,derivation, lu)) case "failed" =>
                                                                 "failed"
-      (u2 := expintegratepoly(qr.polyPart, FRDE)) case GPGP => "failed"
-      [[u1.mainpart + convert(u2.answer)@RF, u1.limitedlogs], u2.a0]
+      u11 := u1.answer
+      ea := u1.a0
+      u2 := expintegratepoly(qr.polyPart - ea::GP, FRDE)
+      u2 case GPGP => "failed"
+      [[u11.mainpart + convert(u2.answer)@RF, u11.limitedlogs], u2.a0]
 
 -- returns [v, c1...cn] s.t. f = v' + +/[ci * ui'/ui]
 -- f must have no polynomial part (degree numer f < degree denom f)
@@ -594,21 +597,24 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
         case "failed" => "failed"
       [r.answer, u::LLG]
 
--- returns [v, c1...cn] s.t. f = v' + +/[ci * ui'/ui]
+-- returns [[v, c1...cn], a] s.t. f + a = v' + +/[ci * ui'/ui]
 -- f must have no polynomial part (degree numer f < degree denom f)
 -- f must be integral above t = 0
     explimintfrac(f, derivation, lu) ==
-      zero? f => [0, empty()]
-      degree numer f >= degree denom f => error "Not a proper fraction"
-      order(denom f, monomial(1,1)) > 0 => error "Not integral at t = 0"
-      r  := HermiteIntegrate(f, derivation)
-      zero?(r.logpart) => [r.answer, empty()]
-      eta' := coefficient(derivation monomial(1, 1), 1)
-      (u := limitedLogs(r.logpart, x1+->logexpderiv(x1,derivation,eta'), lu))
-        case "failed" => "failed"
-      [r.answer - eta'::UP *
-        +/[((degree numer(v.logand))::Z - (degree denom(v.logand))::Z) *
-                                            v.coeff for v in u], u::LLG]
+        zero? f => [[0, empty()], 0]
+        degree numer f >= degree denom f => error "Not a proper fraction"
+        order(denom f, monomial(1,1)) > 0 => error "Not integral at t = 0"
+        r  := HermiteIntegrate(f, derivation)
+        zero?(r.logpart) => [[r.answer, empty()], 0]
+        eta' := coefficient(derivation monomial(1, 1), 1)
+        uu := limitedLogs(r.logpart,
+                          x1+->logexpderiv(x1, derivation, eta'), lu)
+        uu case "failed" => "failed"
+        u := uu::LLG
+        ea := eta' * +/[((degree numer(v.logand))::Z 
+                          - (degree denom(v.logand))::Z) * 
+                             retract(retract(v.coeff)@UP)@F for v in u]
+        [[r.answer, u]$NL, ea]
 
     logexpderiv(f, derivation, eta') ==
       (differentiate(f, derivation) / f) -
