@@ -1,5 +1,5 @@
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2010-09-22],
+AC_INIT([FriCAS], [2010-12-08],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -349,6 +349,8 @@ esac
 AC_SUBST(LIBSPAD_SO_TARGET)
 AC_SUBST(SOLIB_FLAGS)
 
+## In case our underlying lisp is SBCL, we provide a wrapper to enable
+## GMP bignums in SBCL.
 GMP_WRAP_SO_TARGET=""
 AC_ARG_WITH([gmp],
             [AS_HELP_STRING([--with-gmp], [use gmp for sbcl bignums])],
@@ -371,6 +373,20 @@ AC_ARG_WITH([gmp],
                *) AC_MSG_ERROR([--with-gmp only allows yes or no as an argument]) ;;
              esac])
 AC_SUBST(GMP_WRAP_SO_TARGET)
+## If it is possible to enable the gmp wrapper, we have to check
+## whether gmp is actually installed.
+AS_IF([test -n "$GMP_WRAP_SO_TARGET"],[
+  # temporarily save LDFLAGS
+  fricas_save_LDFLAGS=$LDFLAGS
+  # ask for shared library in AC_CHECK_LIB
+  LDFLAGS="$LDFLAGS -fPIC $SOLIB_FLAGS"
+  AC_CHECK_LIB(gmp, __gmpz_init, [], [AC_MSG_ERROR(
+    [GNU MP not found, see http://swox.com/gmp])])
+  AC_CHECK_HEADERS([gmp.h], [], [AC_MSG_ERROR(
+    [gmp.h not found, see http://swox.com/gmp])])
+  # reset LDFLAGS
+  LDFLAGS=$fricas_save_LDFLAGS
+])
 
 ## The following is a horrible to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
