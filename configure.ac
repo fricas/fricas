@@ -352,9 +352,9 @@ AC_SUBST(SOLIB_FLAGS)
 ## In case our underlying lisp is SBCL, we provide a wrapper to enable
 ## GMP bignums in SBCL.
 GMP_WRAP_SO_TARGET=""
-AC_ARG_WITH([gmp],
-            [AS_HELP_STRING([--with-gmp], [use gmp for sbcl bignums])],
-            [case $withval in
+AC_ARG_ENABLE([gmp],
+            [AS_HELP_STRING([--enable-gmp], [use gmp for sbcl bignums])],
+            [case $enableval in
                yes)
                  if test $fricas_lisp_flavor = sbcl ; then
                     case $(uname -m) in
@@ -362,15 +362,15 @@ AC_ARG_WITH([gmp],
                        GMP_WRAP_SO_TARGET=gmp_wrap_so
                          ;;
                       *)
-                       AC_MSG_ERROR([--with-gmp is valid only when using sbcl on AMD/Intel processors])
+                       AC_MSG_ERROR([--enable-gmp is valid only when using sbcl on AMD/Intel processors])
                          ;;
                     esac
                  else
-                    AC_MSG_ERROR([--with-gmp is valid only when using sbcl on AMD/Intel processors])
+                    AC_MSG_ERROR([--enable-gmp is valid only when using sbcl on AMD/Intel processors])
                        
                  fi ;;
                no) ;;
-               *) AC_MSG_ERROR([--with-gmp only allows yes or no as an argument]) ;;
+               *) AC_MSG_ERROR([--enable-gmp only allows yes or no as an argument]) ;;
              esac])
 AC_SUBST(GMP_WRAP_SO_TARGET)
 ## If it is possible to enable the gmp wrapper, we have to check
@@ -453,11 +453,11 @@ AC_SUBST(fricas_fasl_type2)
 
 fricas_algebra_optimization=nil
 
-AC_ARG_WITH([algebra-optimization],
-            [AS_HELP_STRING([--with-algebra-optimization=S],
+AC_ARG_ENABLE([algebra-optimization],
+            [AS_HELP_STRING([--enable-algebra-optimization=S],
                             [use S as Lisp optimize declaration for compiling
                              the algebra])],
-            [fricas_algebra_optimization=$withval])
+            [fricas_algebra_optimization=$enableval])
 
 AC_SUBST(fricas_algebra_optimization)
 
