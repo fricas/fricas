@@ -1102,7 +1102,7 @@ doIt(item,$predl) ==
      RPLACA(item,'PROGN)
      RPLACD(item,NIL) -- creates a no-op
   item is ["IF",:.] => doItIf(item,$predl,$e)
-  item is ["where",b,:l] => compOrCroak(item,$EmptyMode,$e)
+  item is ["where",b,:l] => doItWhere(item, $predl, $e)
   item is ["MDEF",:.] => [.,.,$e]:= compOrCroak(item,$EmptyMode,$e)
   item is ['DEF,[op,:.],:.] =>
     body:= isMacro(item,$e) => $e:= put(op,'macro,body,$e)
@@ -1161,6 +1161,24 @@ doItIf(item is [., p, x, y], $predl, $e) ==
         y' := localExtras(oldFLP)
     RPLACA(item, "COND")
     RPLACD(item, [[p', x, :x'], ['(QUOTE T), y, :y']])
+
+doItWhere(item is [.,form,:exprList], $predl, eInit) ==
+  $insideExpressionIfTrue: local:= false
+  $insideWhereIfTrue: local:= true
+  e:= eInit
+  u:=
+    for it1 in exprList repeat
+      e := compSingleCapsuleItem(it1, $predl, e)
+  $insideWhereIfTrue:= false
+  form1 := macroExpand(form, eBefore := e)
+  eAfter := compSingleCapsuleItem(form1, $predl, e)
+  eFinal:=
+    del:= deltaContour(eAfter, eBefore) => addContour(del, eInit)
+    eInit
+  $e := eFinal
+  RPLACA(item, "PROGN")
+  RPLACD(item, [["PROGN", :exprList], form1])
+
 
 --% CATEGORY AND DOMAIN FUNCTIONS
 
