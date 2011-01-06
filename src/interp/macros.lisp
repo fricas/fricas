@@ -1124,7 +1124,13 @@ LP  (COND ((NULL X)
 
 ; 22.3.1 Output to Character Streams
 
+(defun |sayHtml| (x) (if (null x) nil (sayBrightly1 x |$htmlOutputStream|)))
+
+(defun |sayMathML| (x) (if (null x) nil (sayBrightly1 x |$mathmlOutputStream|)))
+
 (defun |sayTeX| (x) (if (null x) nil (sayBrightly1 x |$texOutputStream|)))
+
+(defun |sayTexmacs| (x) (if (null x) nil (sayBrightly1 x |$texmacsOutputStream|)))
 
 (defvar |$sayBrightlyStream| nil "if not nil, gives stream for sayBrightly output")
 

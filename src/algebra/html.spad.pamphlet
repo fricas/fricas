@@ -179,7 +179,7 @@ structure.
 The second stage is to convert the Tree Structure to text. All text output
 is done using:
 \begin{verbatim}
-sayTeX$Lisp
+sayHt
 \end{verbatim}
 I have not produced and output to String as I don't know a way to append
 to a long string efficiently and I don't know how to insert carriage-
@@ -232,6 +232,8 @@ HTMLFormat(): public == private where
     import Integer
     import List OutputForm
     import List String
+
+    sayHt ==> sayHtml$Lisp
 
     expr: E
     prec,opPrec: I
@@ -322,7 +324,7 @@ HTMLFormat(): public == private where
       " "
 
     display(html : S): Void ==
-      sayTeX$Lisp html
+      sayHt html
       void()$Void
 
     newNode(tag:S,node: Tree S): (Tree S) ==
@@ -399,18 +401,18 @@ HTMLFormat(): public == private where
       -- and the next string starts with '-' then the '+' needs to be
       -- removed
       if empty?(t) then
-        --if debug then sayTeX$Lisp "outputTree empty"
+        --if debug then sayHt "outputTree empty"
         return void()$Void
       if leaf?(t) then
-        --if debug then sayTeX$Lisp concat("outputTree leaf:",value(t))
-        sayTeX$Lisp value(t)
+        --if debug then sayHt concat("outputTree leaf:",value(t))
+        sayHt value(t)
         return void()$Void
       tagName := copy value(t)
       tagPos := position(char(" "),tagName,1)$String
       if tagPos > 1 then
         tagName := split(tagName,char(" ")).1
-        --sayTeX$Lisp "outputTree: tagPos="string(tagPos)" "tagName
-      if value(t) ~= "" then sayTeX$Lisp concat["<",value(t),">"]
+        --sayHt "outputTree: tagPos="string(tagPos)" "tagName
+      if value(t) ~= "" then sayHt concat["<",value(t),">"]
       c := children(t)
       enableGrid:Boolean := (#c > 1) and not notTable?(t)
       if enableGrid then
@@ -423,20 +425,20 @@ HTMLFormat(): public == private where
       if allString then
         s:String := ""
         for c1 in c repeat s := concat(s,value(c1))
-        sayTeX$Lisp s
-        if value(t) ~= "" then sayTeX$Lisp concat["</",tagName,">"]
+        sayHt s
+        if value(t) ~= "" then sayHt concat["</",tagName,">"]
         return void()$Void
       if enableGrid then
-        sayTeX$Lisp "<table border='0'>"
-        sayTeX$Lisp "<tr>"
+        sayHt "<table border='0'>"
+        sayHt "<tr>"
       for c1 in c repeat
-        if enableGrid then sayTeX$Lisp "<td>"
+        if enableGrid then sayHt "<td>"
         outputTree(c1)
-        if enableGrid then sayTeX$Lisp "</td>"
+        if enableGrid then sayHt "</td>"
       if enableGrid then
-        sayTeX$Lisp "</tr>"
-        sayTeX$Lisp "</table>"
-      if value(t) ~= "" then sayTeX$Lisp concat["</",tagName,">"]
+        sayHt "</tr>"
+        sayHt "</table>"
+      if value(t) ~= "" then sayHt concat["</",tagName,">"]
       void()$Void
 
     stringify expr == (mathObject2String$Lisp expr)@S
@@ -446,7 +448,7 @@ HTMLFormat(): public == private where
 
     -- I dont know what SC is so put it in a table for now
     formatSC(args : L E, prec : I)  : Tree S ==
-      if debug then sayTeX$Lisp "formatSC: "concat[" args=",_
+      if debug then sayHt "formatSC: "concat[" args=",_
         argsToString(args)," prec=",string(prec)$S]
       null args => tree("")
       cells:L Tree S := [_
@@ -458,7 +460,7 @@ HTMLFormat(): public == private where
     -- to build an overbar we put it in a single column,
     -- single row table and set the top border to solid
     buildOverbar(content : Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildOverbar"
+      if debug then sayHt "buildOverbar"
       cell:Tree S := _
         newNode("td id='overbar' style='border-top-style:solid'",content)
       row:Tree S := newNode("tr id='overbar'",cell)
@@ -468,7 +470,7 @@ HTMLFormat(): public == private where
     -- single row table and set the top border of the second column to
     -- solid
     buildRoot(content : Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildRoot"
+      if debug then sayHt "buildRoot"
       if leaf?(content) then
         -- root of a single term so no need for overbar
         return newNodes("",[tree("&radic;"),content])
@@ -482,7 +484,7 @@ HTMLFormat(): public == private where
     -- single row table and set the top border of the second column to
     -- solid
     buildNRoot(content : Tree S,nth: Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildNRoot"
+      if debug then sayHt "buildNRoot"
       power:Tree S := newNode("sup",nth)
       if leaf?(content) then
         -- root of a single term so no need for overbar
@@ -498,7 +500,7 @@ HTMLFormat(): public == private where
     -- "OVERBAR","ROOT", "SEGMENT","SC","MATRIX","ZAG"
     -- note "SUB" and "SUPERSUB" are handled directly by formatHtml
     formatSpecial(op : S, args : L E, prec : I) : Tree S ==
-      if debug then sayTeX$Lisp _
+      if debug then sayHt _
         "formatSpecial: "concat["op=",op," args=",argsToString(args),_
           " prec=",string(prec)$S]
       arg : E
@@ -561,7 +563,7 @@ HTMLFormat(): public == private where
       -- This one produces ordinary derivatives with differential notation,
       -- it needs a little more work yet.
       -- first have to divine the semantics, add cases as needed
-      if debug then sayTeX$Lisp _
+      if debug then sayHt _
         "formatSuperSub: "concat["expr=",stringify expr," args=",_
           argsToString(args)," prec=",string(opPrec)$S]
       atomE : L E := atomize(expr)
@@ -590,7 +592,7 @@ HTMLFormat(): public == private where
 
     -- build structure such as integral as a table
     buildPlex3(main:Tree S,supsc:Tree S,op:Tree S,subsc:Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildPlex"
+      if debug then sayHt "buildPlex"
       ssup:Tree S := newNode("td id='plex'",supsc)
       sop:Tree S := newNode("td id='plex'",op)
       ssub:Tree S := newNode("td id='plex'",subsc)
@@ -601,7 +603,7 @@ HTMLFormat(): public == private where
 
     -- build structure such as integral as a table
     buildPlex2(main : Tree S,supsc : Tree S,op : Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildPlex"
+      if debug then sayHt "buildPlex"
       ssup:Tree S := newNode("td id='plex'",supsc)
       sop:Tree S := newNode("td id='plex'",op)
       m:Tree S := newNode("td rowspan='2' id='plex'",main)
@@ -623,7 +625,7 @@ HTMLFormat(): public == private where
       -- {bvar or upper limit?}{{*}{integrand}{{CONCAT}{d}{axiom var}}}}
       -- the args list passed here consists of the rest of this list, i.e.
       -- starting at the NOTHING or ...
-      if debug then sayTeX$Lisp "formatIntSign: "concat[" args=",_
+      if debug then sayHt "formatIntSign: "concat[" args=",_
         argsToString(args)," prec=",string(opPrec)$S]
       (stringify first args) = "NOTHING" =>
         buildPlex2(formatHtml(args.3,opPrec),tree("&int;"),_
@@ -634,7 +636,7 @@ HTMLFormat(): public == private where
     -- plex ops are "SIGMA","SIGMA2","PI","PI2","INTSIGN","INDEFINTEGRAL"
     -- expects 2 or 3 args
     formatPlex(op : S, args : L E, prec : I) : Tree S ==
-      if debug then sayTeX$Lisp "formatPlex: "concat["op=",op," args=",_
+      if debug then sayHt "formatPlex: "concat["op=",op," args=",_
         argsToString(args)," prec=",string(prec)$S]
       checkarg:Boolean := false
       hold : S
@@ -676,18 +678,18 @@ HTMLFormat(): public == private where
 
     -- an example is: op=ROW arg={{ROW}{1}{2}}
     formatMatrixRow(op : S, arg : E, prec : I,y:I,h:I)  : L Tree S ==
-      if debug then sayTeX$Lisp "formatMatrixRow: "concat["op=",op,_
+      if debug then sayHt "formatMatrixRow: "concat["op=",op,_
         " args=",stringify arg," prec=",string(prec)$S]
       ATOM(arg)$Lisp@Boolean => [_
         tree("formatMatrixRow does not contain row")]
       l : L E := (arg pretend L E)
       op : S := stringify first l
       args : L E := rest l
-      --sayTeX$Lisp "formatMatrixRow op="op" args="argsToString(args)
+      --sayHt "formatMatrixRow op="op" args="argsToString(args)
       w:I := #args
       cells:(List Tree S) := empty()
       for x in 1..w repeat
-        --sayTeX$Lisp "formatMatrixRow: x="string(x)$S" width="string(w)$S
+        --sayHt "formatMatrixRow: x="string(x)$S" width="string(w)$S
         attrib:S := "td id='mat'"
         if x=1 then attrib := "td id='matl'"
         if x=w then attrib := "td id='matr'"
@@ -702,7 +704,7 @@ HTMLFormat(): public == private where
 
     -- an example is: op=MATRIX args={{ROW}{1}{2}}{{ROW}{3}{4}}
     formatMatrixContent(op : S, args : L E, prec : I)  : L Tree S ==
-      if debug then sayTeX$Lisp "formatMatrixContent: "concat["op=",op,_
+      if debug then sayHt "formatMatrixContent: "concat["op=",op,_
         " args=",argsToString(args)," prec=",string(prec)$S]
       y:I := 0
       rows:(List Tree S) := [newNodes("tr id='mat'",_
@@ -712,14 +714,14 @@ HTMLFormat(): public == private where
     formatMatrix(args : L E) : Tree S ==
       -- format for args is [[ROW ...],[ROW ...],[ROW ...]]
       -- generate string for formatting columns (centered)
-      if debug then sayTeX$Lisp "formatMatrix: "concat["args=",_
+      if debug then sayHt "formatMatrix: "concat["args=",_
         argsToString(args)]
       newNodes("table border='1' id='mat'",_
         formatMatrixContent("MATRIX",args,minPrec))
 
     -- output arguments in column table
     buildColumnTable(elements : List Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildColumnTable"
+      if debug then sayHt "buildColumnTable"
       cells:(List Tree S) := [newNode("td id='col'",j) for j in elements]
       rows:(List Tree S) := [newNode("tr id='col'",i) for i in cells]
       newNodes("table border='0' id='col'",rows)
@@ -728,7 +730,7 @@ HTMLFormat(): public == private where
     -- if it contains anything that won't go into a
     -- sup tag then build it as a table
     buildSuperscript(main : Tree S,super : Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildSuperscript"
+      if debug then sayHt "buildSuperscript"
       notTable?(super) => newNodes("",[main,newNode("sup",super)])
       m:Tree S := newNode("td rowspan='2' id='sup'",main)
       su:Tree S := newNode("td id='sup'",super)
@@ -741,7 +743,7 @@ HTMLFormat(): public == private where
     -- if it contains anything that won't go into a
     -- sub tag then build it as a table
     buildSubscript(main : Tree S,subsc : Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildSubscript"
+      if debug then sayHt "buildSubscript"
       notTable?(subsc) => newNodes("",[main,newNode("sub",subsc)])
       m:Tree S := newNode("td rowspan='2' id='sub'",main)
       su:Tree S := newNode("td id='sub'",subsc)
@@ -756,25 +758,25 @@ HTMLFormat(): public == private where
       -- it expects first args to be the operator or value that
       -- the subscript is applied to
       -- and the rest args to be the subscript
-      if debug then sayTeX$Lisp "formatSub: "concat["expr=",_
+      if debug then sayHt "formatSub: "concat["expr=",_
         stringify expr," args=",argsToString(args)," prec=",_
           string(opPrec)$S]
       atomE : L E := atomize(expr)
       if empty?(atomE) then
-        if debug then sayTeX$Lisp "formatSub: expr=empty"
+        if debug then sayHt "formatSub: expr=empty"
         return tree("formatSub: expr=empty")
       op : S := stringify first atomE
       op ~= "SUB" =>
-        if debug then sayTeX$Lisp "formatSub: expr~=SUB"
+        if debug then sayHt "formatSub: expr~=SUB"
         tree("formatSub: expr~=SUB")
       -- assume args.1 is the expression and args.2 is its subscript
       if #args < 2 then
-        if debug then sayTeX$Lisp concat("formatSub: num args=",_
+        if debug then sayHt concat("formatSub: num args=",_
           string(#args)$String)$String
         return tree(concat("formatSub: num args=",_
           string(#args)$String)$String)
       if #args > 2 then
-        if debug then sayTeX$Lisp concat("formatSub: num args=",_
+        if debug then sayHt concat("formatSub: num args=",_
           string(#args)$String)$String
         return buildSubscript(formatHtml(first args,opPrec),_
           newNodes("",[formatHtml(e,opPrec) for e in rest args]))
@@ -782,12 +784,12 @@ HTMLFormat(): public == private where
         formatHtml(args.2,opPrec))
 
     formatFunction(op : Tree S, args : L E, prec : I) : Tree S ==
-      if debug then sayTeX$Lisp "formatFunction: "concat["args=",_
+      if debug then sayHt "formatFunction: "concat["args=",_
         argsToString(args)," prec=",string(prec)$S]
       newNodes("",[op,tree("("),formatNary(",",args,minPrec),tree(")")])
 
     formatNullary(op : S) : Tree S ==
-      if debug then sayTeX$Lisp "formatNullary: "concat["op=",op]
+      if debug then sayHt "formatNullary: "concat["op=",op]
       op = "NOTHING" => empty()$Tree(S)
       tree(op"()")
 
@@ -796,7 +798,7 @@ HTMLFormat(): public == private where
     -- prec is precidence of operator, used to force brackets where
     -- more tightly bound operation is next to less tightly bound operation
     formatUnary(op : S, arg : E, prec : I) : Tree S ==
-      if debug then sayTeX$Lisp "formatUnary: "concat["op=",op," arg=",_
+      if debug then sayHt "formatUnary: "concat["op=",op," arg=",_
         stringify arg," prec=",string(prec)$S]
       p : I := position(op,unaryOps)
       p < 1 => error "unknown unary op"
@@ -808,7 +810,7 @@ HTMLFormat(): public == private where
     -- output division with numerator above the denominator
     -- implemented as a table
     buildOver(top : Tree S,bottom : Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildOver"
+      if debug then sayHt "buildOver"
       topCell:Tree S := newNode("td",top)
       bottomCell:Tree S := newNode("td style='border-top-style:solid'",_
         bottom)
@@ -819,7 +821,7 @@ HTMLFormat(): public == private where
     -- op may be: "|","^","/","OVER","+->"
     -- note: "+" and "*" are n-ary ops
     formatBinary(op : S, args : L E, prec : I) : Tree S ==
-      if debug then sayTeX$Lisp "formatBinary: "concat["op=",op,_
+      if debug then sayHt "formatBinary: "concat["op=",op,_
         " args=",argsToString(args)," prec=",string(prec)$S]
       p : I := position(op,binaryOps)
       p < 1 => error "unknown binary op"
@@ -847,7 +849,7 @@ HTMLFormat(): public == private where
     -- build a zag from a table with a right part and a
     -- upper and lower left part
     buildZag(top:Tree S,lowerLeft:Tree S,lowerRight:Tree S) : Tree S ==
-      if debug then sayTeX$Lisp "buildZag"
+      if debug then sayHt "buildZag"
       cellTop:Tree S := _
         newNode("td colspan='2' id='zag' style='border-bottom-style:solid'",_
          top)
@@ -895,7 +897,7 @@ HTMLFormat(): public == private where
       -- <span style='font-size:12px'>next zag</span>
       -- <span style='font-size:10px'>next zag</span>
       -- <span style='font-size:9px'>lowest zag</span>
-      if debug then sayTeX$Lisp "formatZag: "concat["args=",_
+      if debug then sayHt "formatZag: "concat["args=",_
         argsToString(args)]
       tmpZag : L E := first args pretend L E
       fontAttrib : S :=
@@ -920,7 +922,7 @@ HTMLFormat(): public == private where
     -- this is used so that we can suppress any plus '+' in front
     -- of the - so we dont get terms like +-
     neg?(arg : E) : Boolean ==
-      if debug then sayTeX$Lisp "neg?: "concat["arg=",argsToString([arg])]
+      if debug then sayHt "neg?: "concat["arg=",argsToString([arg])]
       ATOM(arg)$Lisp@Boolean => false
       l : L E := (arg pretend L E)
       op : S := stringify first l
@@ -928,7 +930,7 @@ HTMLFormat(): public == private where
       false
 
     formatNary(op : S, args : L E, prec : I) : Tree S ==
-      if debug then sayTeX$Lisp "formatNary: "concat["op=",op," args=",_
+      if debug then sayHt "formatNary: "concat["op=",op," args=",_
         argsToString(args)," prec=",string(prec)$S]
       formatNaryNoGroup(op, args, prec)
 
@@ -943,7 +945,7 @@ HTMLFormat(): public == private where
     -- check for +-
     -- add brackets for sigma or pi or root ("SIGMA","SIGMA2","PI","PI2")
     formatNaryNoGroup(op : S, args : L E, prec : I)  : Tree S ==
-      if debug then sayTeX$Lisp "formatNaryNoGroup: "concat["op=",op,_
+      if debug then sayHt "formatNaryNoGroup: "concat["op=",op,_
         " args=",argsToString(args)," prec=",string(prec)$S]
       checkargs:Boolean := false
       null args => empty()$Tree(S)
@@ -981,12 +983,12 @@ HTMLFormat(): public == private where
     -- formatHtml returns a string for this node in the tree structure
     -- and calls recursivly to evaluate sub expressions
     formatHtml(arg : E,prec : I) : Tree S ==
-      if debug then sayTeX$Lisp "formatHtml: "concat["arg=",_
+      if debug then sayHt "formatHtml: "concat["arg=",_
         argsToString([arg])," prec=",string(prec)$S]
       i,len : Integer
       intSplitLen : Integer := 20
       ATOM(arg)$Lisp@Boolean =>
-        if debug then sayTeX$Lisp "formatHtml atom: "concat["expr=",_
+        if debug then sayHt "formatHtml atom: "concat["expr=",_
           stringify arg," prec=",string(prec)$S]
         str := stringify arg
         (i := position(str,specialStrings)) > 0 =>
