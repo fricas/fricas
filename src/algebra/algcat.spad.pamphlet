@@ -30,9 +30,11 @@ FiniteRankAlgebra(R:CommutativeRing, UP:UnivariatePolynomialCategory R):
     rank                    : () -> PositiveInteger
       ++ rank() returns the rank of the algebra.
     regularRepresentation   : (% , Vector %) -> Matrix R
-      ++ regularRepresentation(a,basis) returns the matrix of the
-      ++ linear map defined by left multiplication by \spad{a} with respect
-      ++ to the basis \spad{basis}.
+      ++ regularRepresentation(a, basis) returns the matrix \spad{m}
+      ++ of the linear map defined by left multiplication by \spad{a}
+      ++ with respect to the basis \spad{basis}.  That is for all
+      ++ \spad{x} we have
+      ++ \spad{coordinates(a*x, basis) = m*coordinates(x, basis)}.
     trace                   : %  -> R
       ++ trace(a) returns the trace of the regular representation
       ++ of \spad{a} with respect to any basis.
@@ -83,7 +85,7 @@ FiniteRankAlgebra(R:CommutativeRing, UP:UnivariatePolynomialCategory R):
 
     regularRepresentation(x, b) ==
       m := minIndex b - 1
-      matrix
+      transpose matrix
        [parts coordinates(x*b(i+m),b) for i in 1..rank()]$List(List R)
 
 @
@@ -131,9 +133,11 @@ FramedAlgebra(R:CommutativeRing, UP:UnivariatePolynomialCategory R):
       discriminant          : () -> R
         ++ discriminant() = determinant(traceMatrix()).
       regularRepresentation : % -> Matrix R
-        ++ regularRepresentation(a) returns the matrix of the linear
-        ++ map defined by left multiplication by \spad{a} with respect
-        ++ to the fixed basis.
+        ++ regularRepresentation(a) returns the matrix \spad{m}
+        ++ of the linear map defined by left multiplication by \spad{a}
+        ++ with respect to the fixed basis.  That is for all
+        ++ \spad{x} we have
+        ++ \spad{coordinates(a*x) = m*coordinates(x)}.
     --attributes
       --separable <=> discriminant() ~= 0
   add
@@ -156,7 +160,7 @@ FramedAlgebra(R:CommutativeRing, UP:UnivariatePolynomialCategory R):
      b := basis()
      for i in minIndex b .. maxIndex b for j in minRowIndex m .. repeat
        setRow_!(m, j, coordinates(x * qelt(b, i)))
-     m
+     transpose m
 
    characteristicPolynomial x ==
       mat00 := (regularRepresentation x)
