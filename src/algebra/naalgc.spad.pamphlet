@@ -1021,71 +1021,49 @@ FramedNonAssociativeAlgebra(R:CommutativeRing):
     -- structuralConstants()$%)
     --y : GA := generic()
     if R has Field then
-      leftRankPolynomial() ==
-        n := rank()
-        b := basis()
-        gamma : Vector Matrix R := structuralConstants b
-        listOfNumbers : List String :=  [STRINGIMAGE(q)$Lisp for q in 1..n]
-        symbolsForCoef : Vector Symbol :=
-          [concat("%", concat("x", i))::Symbol  for i in listOfNumbers]
-        xx : M P R
-        mo : P R
-        x : M P R := new(1,n,0)
-        for i in 1..n repeat
-          mo := monomial(1, [symbolsForCoef.i], [1])$(P R)
-          qsetelt_!(x,1,i,mo)
-        y : M P R := copy x
-        k  : PositiveInteger := 1
-        cond : M P R := copy x
-        -- multiplication in the generic algebra means using
-        -- the structural matrices as bilinear forms.
-        -- left multiplication by x, we prepare for that:
-        genGamma : V M P R :=  coerceP$CVMP gamma
-        x := reduce(horizConcat,[x*genGamma(i) for i in 1..#genGamma])
-        while rank(cond) = k repeat
-          k := k+1
-          for i in 1..n repeat
-            setelt(xx,[1],[i],x*transpose y)
-          y := copy xx
-          cond := horizConcat(cond, xx)
-        vectorOfCoef : Vector P R := (nullSpace(cond)$Matrix(P R)).first
-        res : SparseUnivariatePolynomial P R := 0
-        for i in 1..k repeat
-         res := res+monomial(vectorOfCoef.i,i)$(SparseUnivariatePolynomial  P R)
-        res
 
-      rightRankPolynomial() ==
-        n := rank()
-        b := basis()
-        gamma : Vector Matrix R := structuralConstants b
-        listOfNumbers : List String :=  [STRINGIMAGE(q)$Lisp for q in 1..n]
-        symbolsForCoef : Vector Symbol :=
-          [concat("%", concat("x", i))::Symbol  for i in listOfNumbers]
-        xx : M P R
-        mo : P R
-        x : M P R := new(1,n,0)
-        for i in 1..n repeat
-          mo := monomial(1, [symbolsForCoef.i], [1])$(P R)
-          qsetelt_!(x,1,i,mo)
-        y : M P R := copy x
-        k  : PositiveInteger := 1
-        cond : M P R := copy x
-        -- multiplication in the generic algebra means using
-        -- the structural matrices as bilinear forms.
-        -- left multiplication by x, we prepare for that:
-        genGamma : V M P R :=  coerceP$CVMP gamma
-        x := reduce(horizConcat,[genGamma(i)*transpose x for i in 1..#genGamma])
-        while rank(cond) = k repeat
-          k := k+1
+      min_poly_from_matrix(mx : M P R, x : M P R) 
+                        : SparseUnivariatePolynomial Polynomial R ==
+          k  : PositiveInteger := 1
+          cond : M P R := copy x
+          while rank(cond) = k repeat
+              k := k+1
+              x := mx*x
+              cond := horizConcat(cond, x)
+          vectorOfCoef : Vector P R := (nullSpace(cond)$Matrix(P R)).first
+          res : SparseUnivariatePolynomial P R := 0
+          for i in 1..k repeat
+             res := res + monomial(vectorOfCoef(i), i)
+          res
+
+      rank_polynomial(left : Boolean)
+                  : SparseUnivariatePolynomial Polynomial R  ==
+          n := rank()
+          b := basis()
+          gamma : Vector Matrix R := structuralConstants b
+          listOfNumbers : List String :=  [STRINGIMAGE(q)$Lisp for q in 1..n]
+          symbolsForCoef : Vector Symbol :=
+             [concat("%", concat("x", i))::Symbol  for i in listOfNumbers]
+          mo : P R
+          x : M P R := new(n, 1, 0)
+          mx : M P R := new(n, n, 0)
+          -- generate matrix of multiplication by generic x from
+          -- the structural matrices
           for i in 1..n repeat
-            setelt(xx,[1],[i],y * transpose x)
-          y := copy xx
-          cond := horizConcat(cond, xx)
-        vectorOfCoef : Vector P R := (nullSpace(cond)$Matrix(P R)).first
-        res : SparseUnivariatePolynomial P R := 0
-        for i in 1..k repeat
-         res := res+monomial(vectorOfCoef.i,i)$(SparseUnivariatePolynomial  P R)
-        res
+              mo := monomial(1, [symbolsForCoef.i], [1])$(P R)
+              qsetelt_!(x, i, 1, mo)
+              for j in 1..n repeat
+                  for k in 1..n repeat
+                      mxjk := qelt(mx, j, k)
+                      cijk := 
+                          left => gamma(j)(i, k)
+                          gamma(j)(i, k)
+                      qsetelt!(mx, j, k, mxjk + mo*cijk)
+          min_poly_from_matrix(mx, x)
+
+      leftRankPolynomial() == rank_polynomial(true)
+
+      rightRankPolynomial() == rank_polynomial(false)
 
       leftUnitsInternal : () -> REC
       leftUnitsInternal() ==

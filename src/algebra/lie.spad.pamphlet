@@ -160,6 +160,9 @@ LieSquareMatrix(n,R): Exports == Implementation where
       -- local functions
     n2 : PositiveInteger := n*n
 
+    elt(x : %, k : Integer, l : Integer) ==
+        elt(x::SquareMatrix(n, R), k, l)
+
     convDM : DirectProduct(n2,R) -> %
     conv : DirectProduct(n2,R) ->  SquareMatrix(n,R)
       --++ converts n2-vector to (n,n)-matrix row by row
@@ -173,8 +176,7 @@ LieSquareMatrix(n,R): Exports == Implementation where
       squareMatrix(cond)$SquareMatrix(n, R)
 
 
-    coordinates(a:%,b:Vector(%)):Vector(R) ==
-      -- only valid for b canonicalBasis
+    canonical_coordinates(a : %) : Vector(R) ==
       res : Vector R := new(n2,0$R)
       z : Integer := 0
       for i in 1..n repeat
@@ -183,6 +185,16 @@ LieSquareMatrix(n,R): Exports == Implementation where
           res.z := elt(a,i,j)$%
       res
 
+    coordinates(a : %, b : Vector(%)) : Vector(R) ==
+        canonical := true
+        for i in 1..n2 while canonical repeat 
+            bv := canonical_coordinates(b(i))
+            canonical := canonical and bv(i) = 1
+            for j in 1..n2 while canonical repeat
+                j = i => "iterate"
+                canonical := canonical and bv(j) = 0
+        not(canonical) => error "coordinates works only in canonical basis"
+        canonical_coordinates(a)
 
     convDM v ==
       sq := conv v
