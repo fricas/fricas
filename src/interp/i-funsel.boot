@@ -605,6 +605,18 @@ getLocalMms(name,types,tar) ==
     mmS := [mm,:mmS]
   nreverse mmS
 
+-- Helper to avoid bad coercions (SF 2974970). See
+--
+-- http://groups.google.com/group/fricas-devel/browse_thread/thread/a93abc242431a6bc?hl=en#
+--
+-- for more info.
+isApproximate(t) ==
+    op := CAR(t)
+    member(op, ["Float", "DoubleFloat"]) => true
+    member(op, ["Complex", "Expression", "List", "Polynomial",
+                "Matrix", "Vector"]) => isApproximate(CAR(CDR(t)))
+    false
+
 mmCost(name, sig,cond,tar,args1,args2) ==
   cost := mmCost0(name, sig,cond,tar,args1,args2)
   res := CADR sig
@@ -628,6 +640,8 @@ mmCost0(name, sig,cond,tar,args1,args2) ==
   -- modemaps with the wrong number of arguments if we want to the one
   -- with no arguments and the name is overloaded. Thus check for this.
 
+  nargs := #args1
+
   if args1 then
     for x1 in args1 for x2 in args2 for x3 in sigArgs repeat
       n := n +
@@ -637,6 +651,8 @@ mmCost0(name, sig,cond,tar,args1,args2) ==
         topcon = topcon2 => 3
         CAR topcon2 = 'Mapping => 2
         4
+      if isApproximate(x1) ~= isApproximate(x3) then
+          n := n + 10*nargs
   else if sigArgs then n := n + 100000000000
 
   res := CADR sig
