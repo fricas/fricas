@@ -192,15 +192,16 @@ knownInfo1 pred ==
     -- or/[AncestorP(cat,LIST CAR u) and knownInfo CADR u for u in CADR catlist] => true
     false
   pred is ["SIGNATURE",name,op,sig,:.] =>
-    v:= get(op,"modemap",$e)
-    for w in v repeat
-      ww:= CDAR w
+      v:= get(op,"modemap",$e)
+      res := false
+      for w in v while(not(res)) repeat
+          w1 := CAR(w)
+          ww := CDR(w1)
           --the actual signature part
-      LENGTH ww=LENGTH sig and SourceLevelSubsume(ww,sig) =>
-        --NULL CAADR w => return false
-        CAADR w  = true => return true
-        --return false
-        --error '"knownInfo"
+          name = CAR(w1) and LENGTH ww = LENGTH(sig) and _
+            SourceLevelSubsume(ww, sig) =>
+              CAADR w = true => res := true
+      res
   false
 
 actOnInfo(u,$e) ==
