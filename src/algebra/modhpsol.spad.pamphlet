@@ -420,16 +420,16 @@ PSS ==> Record(degree__bounds : VI, pss__sigma : NonNegativeInteger, _
                eval1coeffbuf : PA, _
                eval1expbuf : SortedExponentVector)
 
-GEN ==> (U32Vector, Integer, Integer) -> Vector U32Vector
+GEN ==> (List(U32Vector), Integer, Integer) -> Vector(U32Vector)
 
 InnerModularHermitePade: with
     do__modular__solve : (VPA, Vector Integer, NonNegativeInteger, _
                           PA, Integer, Symbol) -> Union(NBR, "no__solution")
 
-    do__poly__modular : (List Symbol, PMP, PSS, GEN) _
+    do__poly__modular : (List(Symbol), List(PMP), PSS, GEN) _
                  -> Union(PBR, "failed", "no__solution")
 
-    do__poly__integer : (List Symbol, PMP, Vector Integer, _
+    do__poly__integer : (List(Symbol), List(PMP), Vector(Integer), _
                          NonNegativeInteger, PA, Symbol, Symbol, GEN) _
                  -> Union(PBRI, "no__solution")
 
@@ -440,7 +440,7 @@ InnerModularHermitePade: with
               SortedExponentVector, VI, SortedExponentVector) _
               -> Record(offsetdata : VI, expdata : SortedExponentVector)
 
-    eval__and__solve : (Integer,  List Symbol, PMP, _
+    eval__and__solve : (Integer,  List(Symbol), List(PMP), _
                      PSS, GEN) -> Union(PBR, "failed", "no__solution")
 
     modpeval : (MP, List Symbol, List Integer, Integer) -> Integer
@@ -503,20 +503,24 @@ InnerModularHermitePade: with
             res := Qmuladd(ptk, coeffs(j), res, p)
         res
 
-    eval1s(gv0 : PMP, pt : Integer, var : Symbol, _
-           pss : PSS) : Union(PA, "failed") ==
-        n := #gv0
+    eval1s(gvl : List(PMP), pt : Integer, var : Symbol, _
+           pss : PSS) : Union(List(PA), "failed") ==
         p := pss.prime
-        ress := new(n , 0)$PA
-        for j in 0..(n - 1) repeat
-            nlcq := gv0(j)
-            nm := eval1a(numer(nlcq), pt, pss)
-            dm := eval1a(denom(nlcq), pt, pss)
-            dm = 0 => return "failed"
-            dms := dm pretend K1
-            nlc := Qmul(nm, invmod(dms, p pretend K1), p)
-            ress(j) := nlc
-        ress
+        resl := empty()$List(PA)
+        for gv0 in gvl repeat
+            n := #gv0
+            ress := new(n , 0)$PA
+            for j in 0..(n - 1) repeat
+                nlcq := gv0(j)
+                nm := eval1a(numer(nlcq), pt, pss)
+                dm := eval1a(denom(nlcq), pt, pss)
+                dm = 0 => return "failed"
+                dms := dm pretend K1
+                nlc := Qmul(nm, invmod(dms, p pretend K1), p)
+                ress(j) := nlc
+            resl := cons(ress, resl)
+        reverse!(resl)
+          
 
     modpreduction(x : MP, p : Integer) : MP ==
       xr : SmpRep := x pretend SmpRep
@@ -573,34 +577,40 @@ InnerModularHermitePade: with
             res := Qmuladd(ptk, c0, res, p)
         res
 
-    eval2s(gv0 : PMP, pt : Integer, var : Symbol, _
-           p : Integer) : Union(PMP, "failed") ==
-        n := #gv0
-        ress := new(n , 0)$PMP
-        vars := [var]@List(Symbol)
-        pts := [pt]@List(Integer)
-        for j in 0..(n - 1) repeat
-            nlcq := gv0(j)
-            nmp := eval(numer(nlcq), vars, pts)
-            dmp := eval(denom(nlcq), vars, pts)
-            nm := modpreduction(nmp, p)
-            dm := modpreduction(dmp, p)
-            dm = 0 => return "failed"
-            ress(j) := nm/dm
-        ress
+    eval2s(gvl : List(PMP), pt : Integer, var : Symbol, _
+           p : Integer) : Union(List(PMP), "failed") ==
+        resl := empty()$List(PMP)
+        for gv0 in gvl repeat
+            n := #gv0
+            ress := new(n , 0)$PMP
+            vars := [var]@List(Symbol)
+            pts := [pt]@List(Integer)
+            for j in 0..(n - 1) repeat
+                nlcq := gv0(j)
+                nmp := eval(numer(nlcq), vars, pts)
+                dmp := eval(denom(nlcq), vars, pts)
+                nm := modpreduction(nmp, p)
+                dm := modpreduction(dmp, p)
+                dm = 0 => return "failed"
+                ress(j) := nm/dm
+            resl := cons(ress, resl)
+        reverse!(resl)
 
-    eval3s(gv0 : PMP, p : Integer) : Union(PMP, "failed") ==
-        n := #gv0
-        ress := new(n , 0)$PMP
-        for j in 0..(n - 1) repeat
-            nlcq := gv0(j)
-            nmp := numer(nlcq)
-            dmp := denom(nlcq)
-            nm := modpreduction(nmp, p)
-            dm := modpreduction(dmp, p)
-            dm = 0 => return "failed"
-            ress(j) := nm/dm
-        ress
+    eval3s(gvl : List(PMP), p : Integer) : Union(List(PMP), "failed") ==
+        resl := empty()$List(PMP)
+        for gv0 in gvl repeat
+            n := #gv0
+            ress := new(n , 0)$PMP
+            for j in 0..(n - 1) repeat
+                nlcq := gv0(j)
+                nmp := numer(nlcq)
+                dmp := denom(nlcq)
+                nm := modpreduction(nmp, p)
+                dm := modpreduction(dmp, p)
+                dm = 0 => return "failed"
+                ress(j) := nm/dm
+            resl := cons(ress, resl)
+        reverse!(resl)
 
     do__modular__solve0(gv : VPA, ve : Vector Integer, _
                        sigma : NonNegativeInteger, _
@@ -826,14 +836,15 @@ InnerModularHermitePade: with
         all__bad => return "all__bad"
         return "OK"
 
-    eval__and__solve(pt : Integer, vars : List Symbol, gv0 : PMP, _
-                     pss : PSS, gen: GEN) : Union(PBR, "failed", "no__solution") ==
+    eval__and__solve(pt : Integer, vars : List(Symbol), gvl : List(PMP),
+                     pss : PSS, gen: GEN) _
+                 : Union(PBR, "failed", "no__solution") ==
         p := pss.prime
         nvars := #vars
         nvars = 1 =>
-            ngv10p := eval1s(gv0, pt, first vars, pss)
+            ngv10p := eval1s(gvl, pt, first vars, pss)
             ngv10p case "failed" => return "failed"
-            ngv10 := ngv10p :: PA
+            ngv10 := ngv10p::List(PA)
             ngv2 := gen(ngv10, p, pss.pss__qval)
             ve := pss.degree__bounds
             blr := do__modular__solve(ngv2, ve, pss.pss__sigma,
@@ -871,13 +882,13 @@ InnerModularHermitePade: with
                 ncv(i) := cv(i)
                 nev(i) := ev(i)
             return [va, civ, m, ov, nev, ncv]
-        ngv0p := eval2s(gv0, pt, first vars, p)
+        ngv0p := eval2s(gvl, pt, first vars, p)
         ngv0p case "failed" => return "failed"
-        ngv0 := ngv0p::PMP
-        return do__poly__modular(rest vars, ngv0, pss, gen)
+        ngvl := ngv0p::List(PMP)
+        return do__poly__modular(rest vars, ngvl, pss, gen)
 
-    do__poly__modular(vars : List Symbol, gv0 : PMP, pss : PSS, gen: GEN) : _
-          Union(PBR, "failed", "no__solution") ==
+    do__poly__modular(vars : List(Symbol), gvl : List(PMP), pss : PSS,
+                      gen: GEN) : Union(PBR, "failed", "no__solution") ==
         lpt : List Integer := []
         bad__cnt : Integer := 0
         good__cnt : Integer := 0
@@ -917,7 +928,7 @@ InnerModularHermitePade: with
                 pss.pss__qval := pt
 
             -- eval and solve reduced system
-            pprp := eval__and__solve(pt, vars, gv0, pss, gen)
+            pprp := eval__and__solve(pt, vars, gvl, pss, gen)
             pprp case "no__solution" => return "no__solution"
             pprp case "failed" =>
                 bad__cnt := bad__cnt + 1
@@ -1021,8 +1032,8 @@ InnerModularHermitePade: with
             return [va, civ, m, rr.offsetdata, _
                     rr.expdata, rr.coeffdata]
 
-    do__poly__integer0(vars : List Symbol, gv0 : PMP, pss : PSS, gen: GEN) _
-            : Union(PBRI, "no__solution") ==
+    do__poly__integer0(vars : List(Symbol), gvl : List(PMP), pss : PSS,
+                       gen: GEN)  : Union(PBRI, "no__solution") ==
         lp : List Integer := []
         rstate : VIR
         exps := empty()$SortedExponentVector
@@ -1051,10 +1062,10 @@ InnerModularHermitePade: with
             pss.prime := p
 
             -- eval and solve reduced system
-            ngv0p := eval3s(gv0, p)
+            ngv0p := eval3s(gvl, p)
             ngv0p case "failed" => "iterate"
-            ngv0 := ngv0p::PMP
-            pprp := do__poly__modular(vars, ngv0, pss, gen)
+            ngvl := ngv0p::List(PMP)
+            pprp := do__poly__modular(vars, ngvl, pss, gen)
 
             pprp case "no__solution" => return "no__solution"
             pprp case "failed" => "iterate"
@@ -1150,14 +1161,15 @@ InnerModularHermitePade: with
             return [va, civ, m, offsets, _
                     exps, pp::PAI]
 
-    do__poly__integer(vars : List Symbol, gv0 : PMP, ve : Vector Integer, _
-                      sigma : NonNegativeInteger, pts : PA, kind : Symbol, _
+    do__poly__integer(vars : List Symbol, gvl : List(PMP),
+                      ve : Vector Integer,
+                      sigma : NonNegativeInteger, pts : PA, kind : Symbol,
                       qvar : Symbol, gen: GEN) : Union(PBRI, "no__solution") ==
         pss := [ve, sigma, pts, qvar, 0, 0, kind, empty()$VI, _
                 empty()$VI, #ve, #ve + 1, _
                 new(10, 0)$PA,
                 new(10, 0)$SortedExponentVector]@PSS
-        return do__poly__integer0(vars, gv0, pss, gen)
+        return do__poly__integer0(vars, gvl, pss, gen)
 @
 
 \section{Specialized modular solvers}
@@ -1202,34 +1214,36 @@ PBRI ==> Record(defects : VI, cinds : VI, _
 MPA ==> TwoDimensionalArray PA
 NBR ==> Record(basis : MPA, defects : VI, cinds : VI)
 
-GEN ==> (U32Vector, Integer, Integer) -> Vector U32Vector
+GEN ==> (List(U32Vector), Integer, Integer) -> Vector(U32Vector)
 CHKR ==> Union("good", "reject", "no__solution")
 SUP ==> SparseUnivariatePolynomial
 ModularHermitePade(): with
-   HP__solve__I : (List Fraction(Integer), List Integer, Symbol, NNI, _
+   HP__solve__I : (List(List(Fraction(Integer))), List Integer, Symbol, NNI, _
                    GEN, (List SUP Integer) -> CHKR) -> Union(MPI, Boolean)
      ++ implements  HP__solve over integers.
 
-   HP__solve__A : (List AlgebraicNumber, List Integer, Symbol, NNI, GEN, _
-                    (List SUP AlgebraicNumber) -> CHKR) -> Union(MPAN, Boolean)
+   HP__solve__A : (List(List(AlgebraicNumber)), List Integer, Symbol, NNI,
+                   GEN, (List SUP AlgebraicNumber) -> CHKR) _
+                       -> Union(MPAN, Boolean)
      ++ Fake solver over algebraic numbers.
 
-   HP__solve__P : (List Fraction(MP), List Integer, Symbol, Symbol, NNI, GEN,
-                    (List SUP MP) -> CHKR) -> Union(MPPI, Boolean)
+   HP__solve__P : (List(List(Fraction(MP))), List Integer, Symbol, Symbol,
+                   NNI, GEN, (List SUP MP) -> CHKR) _
+                       -> Union(MPPI, Boolean)
      ++ implements  HP__solve over integer polynomials.
 
-   HP__solve__PA : (List Fraction(Polynomial(AlgebraicNumber)), List Integer, _
-                      Symbol, Symbol, NNI, GEN,
-                     ((List SUP Polynomial(AlgebraicNumber))) -> CHKR) _
-                    -> Union(MPPA, Boolean)
+   HP__solve__PA : (List(List(Fraction(Polynomial(AlgebraicNumber)))),
+                    List Integer, Symbol, Symbol, NNI, GEN,
+                    (List SUP Polynomial(AlgebraicNumber)) -> CHKR) _
+                       -> Union(MPPA, Boolean)
      ++ Fake solver over polynomials having algebraic coefficients.
 
-   HP__solve__M : (List Integer, List Integer, Symbol, Integer, NNI, GEN, _
-                   (List SUP Integer) -> CHKR) _
-                  -> Union(MPI, Boolean)
+   HP__solve__M : (List(List(Integer)), List Integer, Symbol, Integer, NNI,
+                   GEN, (List SUP Integer) -> CHKR) _
+                       -> Union(MPI, Boolean)
      ++ implements  HP__solve over $Z_p$ with machine-sized $p$.
 
-   check__sol1a : (VPA, PA, GEN, Integer, Integer, Integer) -> PA
+   check__sol1a : (VPA, List(PA), GEN, Integer, Integer, Integer) -> PA
      ++ one round of modular Monte Carlo check for solutions.
 
    VSUPI__to__VPA : (Vector SUP(Integer), Integer) -> VPA
@@ -1239,15 +1253,15 @@ ModularHermitePade(): with
                    -> VPA
      ++ evaluation routine
 
-   LFI__to__PA : (List Fraction(Integer), Integer, Integer)
-                 -> Union(PA, "failed")
+   LLFI__to__LPA : (List(List(Fraction(Integer))), Integer, Integer)
+                 -> Union(List(PA), "failed")
      ++ evaluation routine
 
-   LFPI__to__PA : (List Fraction(MP), Integer, List Symbol, List Integer, _
-                   Integer) -> Union(PA, "failed")
+   LLFPI__to__LPA : (List(List(Fraction(MP))), Integer, List Symbol,
+                     List Integer, Integer) -> Union(List(PA), "failed")
      ++ evaluation routine
 
-   get__variables : (List Fraction(MP), Symbol, Symbol) -> List Symbol
+   get__variables : (List(List(Fraction(MP))), Symbol, Symbol) -> List Symbol
 
   == add
 
@@ -1294,30 +1308,41 @@ ModularHermitePade(): with
            vpa(i) := SUPPI__to__PA(vps(i), vars, pts, p)
        vpa
 
-   LFI__to__PA(lfi : List Fraction(Integer), n : Integer, _
-               prime : Integer) : Union(PA, "failed") ==
-       pa := new(n pretend NonNegativeInteger, 0)$PA
-       for j in 0..(n - 1) for el in lfi repeat
-           nm := positiveRemainder(numer(el), prime)
-           dm := positiveRemainder(denom(el), prime)
-           dm = 0 => return "failed"
-           dms := dm pretend K1
-           nlc := Qmul(nm, invmod(dms, prime pretend K1), prime)
-           pa(j) := nlc pretend K1
-       pa
+   LLFI__to__LPA(llfi : List(List(Fraction(Integer))), n : Integer, _
+               prime : Integer) : Union(List(PA), "failed") ==
+       resl := empty()$List(PA)
+       for lfi in llfi repeat
+           nn :=
+              n > 0 => n
+              #lfi
+           pa := new(nn pretend NonNegativeInteger, 0)$PA
+           for j in 0..(nn - 1) for el in lfi repeat
+               nm := positiveRemainder(numer(el), prime)
+               dm := positiveRemainder(denom(el), prime)
+               dm = 0 => return "failed"
+               dms := dm pretend K1
+               nlc := Qmul(nm, invmod(dms, prime pretend K1), prime)
+               pa(j) := nlc pretend K1
+           resl := cons(pa, resl)
+       reverse!(resl)
 
-   LFPI__to__PA(lfi : List Fraction(MP), n : Integer, _
+   LLFPI__to__LPA(llfi : List(List(Fraction(MP))), n : Integer, _
                vars : List Symbol, pts : List Integer, _
-               prime : Integer) : Union(PA, "failed") ==
-       pa := new(n pretend NonNegativeInteger, 0)$PA
-       for j in 0..(n - 1) for el in lfi repeat
-           nm := modpeval(numer(el), vars, pts, prime)$InnerModularHermitePade
-           dm := modpeval(denom(el), vars, pts, prime)$InnerModularHermitePade
-           dm = 0 => return "failed"
-           dms := dm pretend K1
-           nlc := Qmul(nm, invmod(dms, prime pretend K1), prime)
-           pa(j) := nlc pretend K1
-       pa
+               prime : Integer) : Union(List(PA), "failed") ==
+       resl := empty()$List(PA)
+       for lfi in llfi repeat
+           pa := new(n pretend NonNegativeInteger, 0)$PA
+           for j in 0..(n - 1) for el in lfi repeat
+               nm := modpeval(numer(el), vars, pts, prime
+                             )$InnerModularHermitePade
+               dm := modpeval(denom(el), vars, pts, prime
+                             )$InnerModularHermitePade
+               dm = 0 => return "failed"
+               dms := dm pretend K1
+               nlc := Qmul(nm, invmod(dms, prime pretend K1), prime)
+               pa(j) := nlc pretend K1
+           resl:= cons(pa, resl)
+       reverse!(resl)
 
    PPFtoPA(pfi : PPF, sigma : NNI, psi : K1) : Union(PA, "failed") ==
        pa := new(sigma, 0)$PA
@@ -1345,7 +1370,7 @@ ModularHermitePade(): with
            p)$SparseUnivariatePolynomialFunctions2(Integer, Fraction(Integer))
 
    check__sol1a(nres : VPA, _
-                gv0 : PA, gen : GEN, _
+                gv0 : List(PA), gen : GEN, _
                 sigma : Integer, qval : Integer, p : Integer) : PA ==
        m := #nres;
        gvp := gen(gv0, p, qval)
@@ -1358,7 +1383,7 @@ ModularHermitePade(): with
    RR ==> Record(numers : PrimitiveArray Integer, _
                  denoms : PrimitiveArray Integer)
 
-   HP__solve__I(list : List Fraction(Integer), degs: List Integer, kind: Symbol, _
+   HP__solve__I(list : List(List(Fraction(Integer))), degs: List Integer, kind: Symbol, _
                 sigma: NNI, gen: GEN, check : (List SUP Integer) -> CHKR) _
                : Union(MPI, Boolean) ==
        lp := []@List(Integer)
@@ -1397,9 +1422,9 @@ ModularHermitePade(): with
            not(ok) => error "Run out of primes"
            nprimes := nprimes + 1
            psi := prime::K1
-           gv0p := LFI__to__PA(list, #list, psi)
+           gv0p := LLFI__to__LPA(list, 0, psi)
            gv0p case "failed" => "iterate"
-           gv0 := gv0p::PA
+           gv0 := gv0p::List(PA)
            gv2 := gen(gv0, prime, 1)
 
            blr := do__modular__solve(gv2, ve, sigma, pts, prime, _
@@ -1491,11 +1516,12 @@ ModularHermitePade(): with
                return mress
        return true
 
-   get__variables2(lpi : List(Fraction(MP))) : List(Symbol) ==
+   get__variables2(llpi : List(List(Fraction(MP)))) : List(Symbol) ==
        res := []@List(Symbol)
-       for p in lpi repeat
-           res := setUnion(res, variables(numer(p)))
-           res := setUnion(res, variables(denom(p)))
+       for lpi in llpi repeat
+           for p in lpi repeat
+               res := setUnion(res, variables(numer(p)))
+               res := setUnion(res, variables(denom(p)))
        res
 
    unpack__poly(vars : List Symbol, exps : SortedExponentVector, _
@@ -1557,14 +1583,14 @@ ModularHermitePade(): with
    LPI__to__LPPI(lp : List SUP Integer) : List SUP MP ==
        [PI__to__PPI(p) for p in lp]
 
-   trivial__poly__solve(list : List Fraction(MP), degs : List Integer,
+   trivial__poly__solve(list : List(List(Fraction(MP))), degs : List Integer,
                         kind : Symbol, sigma : NNI, gen: GEN,
                         check : (List SUP MP) -> CHKR) : Union(MPPI, Boolean) ==
         kind = 'qshiftHP => return true
         if kind = 'qdiffHP then kind := 'diffHP
-        nlist := [retract(q)@Fraction(Integer) for q in list]
+        nlist := [[retract(q)@Fraction(Integer) for q in li] for li in list]
         pres := HP__solve__I(nlist, degs, kind, sigma, gen,
-                             (x : List SUP Integer) : CHKR
+                             (x : List(SUP(Integer))) : CHKR
                                 +-> check(LPI__to__LPPI(x)))
         pres case Boolean => return pres::Boolean
         resi := pres::MPI
@@ -1605,7 +1631,7 @@ ModularHermitePade(): with
                cons(qvar, vars)
        empty?(vars) =>
            trivial__poly__solve(list, degs, kind, sigma, gen, check)
-       gv0 := construct(list)$PrimitiveArray(Fraction MP)
+       gv0 := [construct(li)$PrimitiveArray(Fraction(MP)) for li in list]
        repeat
            pp := do__poly__integer(vars, gv0, ve, sigma, pts, _
                      kind, qvar, gen)$InnerModularHermitePade
@@ -1667,7 +1693,7 @@ ModularHermitePade(): with
                for i in 0..(sigma - 1) repeat
                    pts0(i) := i
                pts0
-       gv0 := construct(list)$PA
+       gv0 := [construct(li)$PA for li in list]
        gv := gen(gv0, prime, 1)
        blr := do__modular__solve(gv, ve, sigma, pts, prime, _
                   kind)$InnerModularHermitePade
@@ -1723,7 +1749,7 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
 
     PA ==> U32Vector
     VPA ==> Vector PA
-    GEN ==> (PA, Integer, Integer) -> VPA
+    GEN ==> (List(PA), Integer, Integer) -> VPA
     NNI ==> NonNegativeInteger
     CHKR ==> Union("good", "reject", "no__solution")
     SUP ==> SparseUnivariatePolynomial
@@ -1732,22 +1758,23 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
 
     Exports ==>
         with
-            HP__solve : (List F, List Integer, Symbol, Symbol, NNI, GEN, CHKT) _
-                         -> Union(MPS, Boolean)
+            HP__solve : (List(List(F)), List(Integer), Symbol, Symbol, NNI,
+                         GEN, CHKT) -> Union(MPS, Boolean)
               ++ HP__solve(l, degs, kind, sigma, gen check) finds a sigma
               ++ basis with degree bounds given by degs.  It returns false
               ++ if there is no interpolating vector that is correct up to
               ++ (and including) z^(sigma-1) with sigma >= |degs+[1,1,...,1]|
               ++ or if check rejects all solutions.
               ++ It returns true if it can not handle given problem.
-            gen__Monte__Carlo__check : (CHKT, List F, Symbol, Symbol, _
+            gen__Monte__Carlo__check : (CHKT, List(List(F)), Symbol, Symbol,
                                         NNI, GEN) -> CHKT
               ++ gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen)
               ++ returns Monte Carlo check for solutions to guessing problem.
               ++ If Monte Carlo check is unavailable returns check.
 
-            LF__to__PA : (List(F), Integer, List Symbol, List Integer, _
-                          Integer) -> Union(PA, "failed")
+            LLF__to__LPA : (List(List(F)), Integer, List(Symbol),
+                            List(Integer), Integer) _
+                               -> Union(List(PA), "failed")
               ++ modular reduction
             VSUPS__to__VPA : (Vector(SUP S), List Symbol, List Integer, _
                           Integer) -> VPA
@@ -1757,14 +1784,15 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
 
         import ModularHermitePade()
 
-        check__sol__mod__diff : (Vector(SUP S), List(F), Integer, _
+        check__sol__mod__diff : (Vector(SUP S), List(List(F)), Integer, _
                GEN, Symbol, List Symbol _
                ) -> Union("good", "reject", "no__solution")
 
         if F is Fraction Integer and S is Integer then
             HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
                 HP__solve__I(l, degs, kind, sigma, gen, check)
-            LF__to__PA(l, sigma, vars, points, p) == LFI__to__PA(l, sigma, p)
+            LLF__to__LPA(l, sigma, vars, points, p) ==
+                LLFI__to__LPA(l, sigma, p)
             VSUPS__to__VPA(v, vars, points, p) == VSUPI__to__VPA(v, p)
             gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen) ==
                 kind ~= 'diffHP => check
@@ -1774,8 +1802,8 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
                         S is Polynomial Integer then
             HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
                 HP__solve__P(l, degs, kind, qvar, sigma, gen, check)
-            LF__to__PA(l, sigma, vars, points, p) ==
-                LFPI__to__PA(l, sigma, vars, points, p)
+            LLF__to__LPA(l, sigma, vars, points, p) ==
+                LLFPI__to__LPA(l, sigma, vars, points, p)
             VSUPS__to__VPA(v, vars, points, p) ==
                 VSUPPI__to__VPA(v, vars, points, p)
             gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen) ==
@@ -1803,7 +1831,7 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
                 HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
                     checkPF : (List SUP Integer) -> CHKR
                     checkPF := ll +-> check(ll pretend List SUP S)
-                    pp := HP__solve__M(l pretend List Integer,
+                    pp := HP__solve__M(l pretend List(List(Integer)),
                                         degs, kind, p, sigma,
                                         gen, checkPF)
                     pp case Matrix SUP Integer =>
@@ -1818,7 +1846,9 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
 
         check__sol__mod__diff(resv, list, sigma, gen, qvar, vars) _
                : Union("good", "reject", "no__solution") ==
-            n0 := #list
+            #list ~= 1 =>
+                error "check__sol__mod__diff: #list ~= 1"
+            n0 := #(first(list))
             sigma0 := n0 + 2
             min__ord := sigma0
             delta := sigma0 - sigma
@@ -1835,11 +1865,14 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
                     lpt := cons(random(p), lpt)
                     if var = qvar then qval := first(lpt)
                 lpt := reverse!(lpt)
-                gv0p := LF__to__PA(list, n0 + delta, vars, lpt, p)
+                gv0p := LLF__to__LPA(list, n0 + delta, vars, lpt, p)
                 gv0p case "failed" => "iterate"
-                gv0 := gv0p::PA
+                gvl := gv0p::List(PA)
+                #gvl ~= 1 =>
+                   "check__sol__mod__diff: #gvl ~= 1"
+                gv0 := first(gvl)
                 nres := VSUPS__to__VPA(resv, vars, lpt, p)
-                pa := check__sol1a(nres, gv0, gen, sigma0, qval, p)
+                pa := check__sol1a(nres, gvl, gen, sigma0, qval, p)
                 ord := sigma0
                 for i in 0..(sigma0 - 1) repeat
                     if pa(i) ~= 0 then
@@ -1850,7 +1883,7 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
                     c0 := pa(ord)
                     for j in 0..(delta -1) repeat
                         gv0(n0 + j) := 1
-                        pa := check__sol1a(nres, gv0, gen, sigma0, qval, p)
+                        pa := check__sol1a(nres, [gv0], gen, sigma0, qval, p)
                         pa(ord) ~= c0 =>
                             -- print("decreasig delta"::OutputForm)
                             sigma0 := ord
