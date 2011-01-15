@@ -320,18 +320,6 @@ ProcessCond(cond) ==
   ncond := SUBLIS($pairlis,cond)
   INTEGERP POSN1(ncond,$NRTslot1PredicateList) => predicateBitRef ncond
   cond
---+
-TryGDC cond ==
-            --sees if a condition can be optimised by the use of
-            --information in $getDomainCode
-  atom cond => cond
-  cond is ['HasCategory,:l] =>
-    solved:= nil
-    for u in $getDomainCode | not solved repeat
-      if u is ['LET,name, =cond] then solved:= name
-    solved => solved
-    cond
-  cond
 
 SetFunctionSlots(sig,body,flag,mode) == --mode is either "original" or "adding"
 --+
@@ -440,7 +428,7 @@ InvestigateConditions catvecListMaker ==
   necessarySecondaries:= [first u for u in PrincipalSecondaries | rest u=true]
   and/[member(u,necessarySecondaries) for u in secondaries] =>
     [true,:[true for u in secondaries]]
-  $HackSlot4:=
+  HackSlot4:=
     MinimalPrimary=MaximalPrimary => nil
     MaximalPrimaries:=[MaximalPrimary,:CAR (CatEval MaximalPrimary).4]
     MinimalPrimaries:=[MinimalPrimary,:CAR (CatEval MinimalPrimary).4]
@@ -479,7 +467,7 @@ InvestigateConditions catvecListMaker ==
       ['AND,:u]
     for [v,:.] in newS repeat
       for v' in [v,:CAR (CatEval v).4] repeat
-        if (w:= assoc(v',$HackSlot4)) then
+        if (w:= assoc(v', HackSlot4)) then
           RPLAC(rest w,if rest w then mkOr(u,rest w) else u)
     (list:= update(list,u,secondaries,newS)) where
       update(list,cond,secondaries,newS) ==
@@ -496,14 +484,6 @@ InvestigateConditions catvecListMaker ==
               old
         list2
   list:= [[sec,:ICformat u] for u in list for sec in secondaries]
--- $HackSlot4 is used in SetVector4 to ensure that conditional
--- extensions of the principal view are handles correctly
--- here we build the code necessary to remove spurious extensions
-  ($HackSlot4:= [reshape u for u in $HackSlot4]) where
-    reshape u ==
-      ['COND,[TryGDC ICformat rest u],
-             ['(QUOTE T),['RPLACA,'(CAR TrueDomain),
-                             ['delete,['QUOTE,first u],'(CAAR TrueDomain)]]]]
   [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
 
 ORreduce l ==

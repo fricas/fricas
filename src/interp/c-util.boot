@@ -348,7 +348,7 @@ isDomainInScope(domain,e) ==
 isSymbol x == IDENTP x or x=nil
 
 isSimple x ==
-  atom x or $InteractiveMode => true
+  atom x => true
   x is [op,:argl] and
     isSideEffectFree op and (and/[isSimple y for y in argl])
 

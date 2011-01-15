@@ -42,8 +42,6 @@
 (defvar |$frameMessages| nil)
 (defvar |$displayStartMsgs| nil)
 
-(SETQ |/MAJOR-VERSION| 7)
-
 ;; For the browser, used for building local databases when a user compiles
 ;; their own code.
 (SETQ |$newConstructorList| nil)

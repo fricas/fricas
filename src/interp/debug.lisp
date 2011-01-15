@@ -41,24 +41,9 @@
 (DEFPARAMETER /TIMERLIST NIL)
 (DEFPARAMETER /TRACESIZE NIL "sets limit on size of object to be mathprinted")
 (DEFPARAMETER /DEPTH 0)
-(DEFPARAMETER /EMBEDNAMES NIL)
 (DEFVAR CURSTRM *TERMINAL-IO*)
 (DEFVAR /PRETTY () "controls pretty printing of trace output")
 (SETANDFILEQ /ECHO NIL) ;;"prevents echo of SPAD or BOOT code with /c"
-(MAKEPROP 'LISP '/TERMCHR '(#\  #\())
-(MAKEPROP 'LSP '/TERMCHR '(#\  #\())
-(MAKEPROP 'INPUT '/TERMCHR '(#\:  #\<  #\  #\())
-(MAKEPROP 'SPAD '/TERMCHR '(#\:  #\<  #\  #\())
-(MAKEPROP 'BOOT '/TERMCHR '(#\:  #\<  #\  #\())
-(MAKEPROP 'INPUT '/XCAPE #\_)
-(MAKEPROP 'BOOT '/XCAPE '#\_)
-(MAKEPROP 'SPAD '/XCAPE '#\_)
-(MAKEPROP 'INPUT '/READFUN '|New,LEXPR,Interactive|)
-(MAKEPROP 'INPUT '/TRAN '/TRANSPAD)
-(MAKEPROP 'BOOT '/READFUN '|New,LEXPR1|)
-(MAKEPROP 'BOOT '/TRAN '/TRANSNBOOT)
-(MAKEPROP 'SPAD '/READFUN '|New,LEXPR|)
-(MAKEPROP 'SPAD '/TRAN '/TRANSPAD)
 
 (defun enable-backtrace (&rest arg))
 
@@ -459,63 +444,6 @@
 (defun /TRACELET-PRINT (X Y &AUX (/PRETTY 'T))
   (PRINC (STRCONC (PNAME X) ": ") *terminal-io*)
   (MONITOR-PRINT Y *terminal-io*))
-
-(defmacro /EMBED (&rest L) `',
- (COND ((NOT L) (/EMBEDREPLY))
-       ((EQ 2 (LENGTH L)) (/EMBED-1 (CAR L) (CADR L)))
-       ((MOAN "IMPROPER USE OF /EMBED"))))
-
-
-(defun /EMBED-1 (x y)
-   (PRINC (STRCONC (PNAME x) " embedded"))
-   (TERPRI)
-   (/embed-q x y))
-
-(defun /embed-q (x y)
-   (setq /embednames (cons x /embednames))
-   (embed x
-          (cond ((eqcar y 'lambda) y)
-                ((eqcar y 'before)
-                 `(lambda ,(cadr y)
-                    (prog2 ,(caddr y) ,(cons 'funcall (cons x (cadr y))))))
-                ((eqcar y 'after)
-                 `(lambda ,(cadr y)
-                    (prog1 ,(cons 'funcall (cons x (cadr y))) ,(caddr y))))))
-   (/embedreply))
-
-(defun /embedreply ()
-  (if (atom (embedded)) '(|none| |embedded|)
-      (append (embedded) (list '|embedded|))))
-
-
-(defmacro /UNEMBED (&rest L) `',
-  (COND ((NOT L)
-         (if (ATOM (EMBEDDED)) NIL
-             (mapcar #'unembed (embedded)))
-         (SETQ /TRACENAMES NIL)
-         (SETQ /EMBEDNAMES NIL))
-        ((mapcar #'/unembed-1 L)
-         (SETQ /TRACENAMES (S- /TRACENAMES L)) ))
-  (/EMBEDREPLY))
-
-(defun /UNEMBED-Q (X)
-  (COND
-    ((NOT (MEMBER X /EMBEDNAMES))
-     (ERROR (STRCONC (PNAME X) " not embeded")))
-    ((PROGN
-       (SETQ /EMBEDNAMES (REMOVE X /EMBEDNAMES))
-       (UNEMBED X)))))
-
-(defun /UNEMBED-1 (X)
-  (COND
-    ((NOT (MEMBER X /EMBEDNAMES))
-     (|sayBrightly| (LIST '|%b| (PNAME X) '|%d| "not embeded" '|%l|)))
-    ((PROGN
-       (SETQ /EMBEDNAMES (REMOVE X /EMBEDNAMES))
-       (|sayBrightly| (LIST '|%b| (PNAME X) '|%d| "unembeded" '|%l|))
-       (UNEMBED X)))  ))
-
-
 
 (defun /MONITOR ;;(&rest G5)
   (G1 TRACECODE BEFORE AFTER CONDITION TIMERNAM COUNTNAM TRACENAME BREAK)
