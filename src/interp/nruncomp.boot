@@ -308,7 +308,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $MissingFunctionInfo: local --vector marking which functions are assigned
   $ConstantAssignments: local --code for creation of constants
   $epilogue: local := nil     --code to set slot 5, things to be done last
-  $HackSlot4: local  --Invention of JHD 13/July/86-set in InvestigateConditions
   $extraParms:local  --Set in DomainSubstitutionFunction, used in setVector12
   $devaluateList: local --Bound to ((#1 . dv$1)..) where &1 := devaluate #1 later
   $devaluateList:= [[arg,:b] for arg in args for b in $ModeVariableList]

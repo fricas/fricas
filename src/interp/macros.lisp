@@ -1153,7 +1153,7 @@ LP  (COND ((NULL X)
 (defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
 
 (defun sayBrightlyNT1 (X |$fricasOutput|)
-    (if (ATOM X) (BRIGHTPRINT-0 X) (BRIGHTPRINT X)))
+    (if (ATOM X) (|brightPrint0| X) (|brightPrint| X)))
 
 (defun sayBrightly1 (X str)
     (sayBrightlyNT1 X str)
