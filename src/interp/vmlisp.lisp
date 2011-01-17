@@ -49,8 +49,6 @@
 
 (defvar *comp370-apply* nil "function (name def) for comp370 to apply")
 
-(defvar curinstream (make-synonym-stream '*standard-input*))
-
 (defvar curoutstream (make-synonym-stream '*standard-output*))
 
 (defvar *embedded-functions* nil)

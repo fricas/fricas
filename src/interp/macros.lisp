@@ -1109,14 +1109,6 @@ LP  (COND ((NULL X)
 
 ; 22.2.1 Input from Character Streams
 
-(DEFUN STREAM-EOF (STRM)
-  "T if input stream STRM is at the end or saw a ~."
-  (not (peek-char nil STRM nil nil nil))     )
-
-(defvar $filelinenumber 0)
-(defvar $prompt "--->")
-(defvar stream-buffer nil)
-
 (defvar *EOF* NIL)
 
 
