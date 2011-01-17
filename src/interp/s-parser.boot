@@ -1,6 +1,5 @@
 )package "BOOT"
 
-DEFPARAMETER($tok, NIL)
 DEFPARAMETER($ParseMode, NIL)
 DEFPARAMETER($LABLASOC, NIL)
 
@@ -500,8 +499,8 @@ parse__Sexpr1() ==
         MUST match_symbol ")"
     nil
 
-parse__NBGliphTok($tok) ==
-   AND(match_current_token("KEYWORD", $tok),
+parse__NBGliphTok(tok) ==
+   AND(match_current_token("KEYWORD", tok),
        NONBLANK,
        ACTION(advance_token()))
 
@@ -512,8 +511,8 @@ parse__AnyId() ==
               ACTION advance_token()),
         parse__AKEYWORD()))
 
-parse__GliphTok($tok) ==
-  AND(match_current_token('KEYWORD, $tok), ACTION(advance_token()))
+parse__GliphTok(tok) ==
+  AND(match_current_token('KEYWORD, tok), ACTION(advance_token()))
 
 parse__Sequence() ==
     match_symbol "[" =>
