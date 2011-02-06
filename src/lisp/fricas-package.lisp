@@ -38,7 +38,7 @@
 
 (do-symbols (x "FRICAS-LISP") (export (list x)))
 
-(export '(quit chdir |getEnv| |load_quietly| get-current-directory
+(export '(quit chdir |getEnv| |getCLArgs| |load_quietly| get-current-directory
           fricas-probe-file trim-directory-name pad-directory-name
           file-kind makedir fricas-compile-file load-maybe-compiling
           maybe-compile DEFCONST exit-with-status
