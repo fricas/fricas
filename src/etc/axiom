@@ -20,6 +20,8 @@
 #      [-sessionprog fname] use named program for session
 #      [-clientprog fname]  use named program for spadclient
 #      [-h]		    show usage
+#      [-eval code]         evaluate specified code at start
+#      [-texmacs]           setup Fricas for communication in TeXmacs protocol
 #
 #
 
@@ -63,6 +65,7 @@ echo "     [-list]              list workspaces only"
 #echo "     [-sessionprog fname] use named program for session"
 #echo "     [-clientprog fname]  use named program for spadclient"
 echo "     [-h]                 show usage"
+echo "     [-eval code]         evaluate specified code at start"
 }
 
 # 1. Ensure the environment is set.
@@ -165,6 +168,17 @@ while [ "$*" != "" ] ; do
 		go=no
 		;;
 
+	-eval)
+                shift
+                if [ -z "$*" ] ; then
+                    echo "Parameter -eval must be provided with a value"
+                    ciao
+                else
+                    patt='s,[^A-Za-z0-9],\\&,g'
+                    npar=`echo "$1" | sed $patt`
+                    otheropts="$otheropts -eval $npar"
+                fi
+                ;;
 
 	*)	echo "Unknown option: $1"
 		echo "To use a specific workspace use, e.g.: spad -ws $1"
@@ -205,8 +219,8 @@ fi
 
 if [ $go = no ] ; then
 	echo "Would now start the processes."
-	echo exec $SPAD/bin/sman $otheropts -ws $serverws
+	echo "exec $SPAD/bin/sman $otheropts -ws $serverws"
 	exit 0
 fi
 
-exec $SPAD/bin/sman $otheropts -ws $serverws
+eval "exec $SPAD/bin/sman $otheropts -ws $serverws"

@@ -71,7 +71,15 @@ with this hack and will try to convince the GCL crowd to fix this.
         (let ((ap (make-instance 'ccl::lisp-development-system)))
             (ccl::toplevel-function ap init-file)))
 
+;;; Disable default argument processing
+(defmethod ccl::process-application-arguments
+           ((app fricas-application) error-flag opts args) nil)
+
 )
+
+;;; Disable argument processing in GCL
+#+:gcl
+(defun system::process-some-args (args) nil)
 
 ;; Save current image on disk as executable and quit.
 (defun save-core-restart (core-image restart)
@@ -308,6 +316,22 @@ with this hack and will try to convince the GCL crowd to fix this.
   #+:poplog (let ((pres (POP11::systranslate var-name)))
                 (if (stringp pres) pres))
   #+:lispworks (lispworks:environment-variable var-name)
+  )
+
+;;; Command-line arguments
+
+(defun |getCLArgs| ()
+  #+:GCL si::*command-args*
+  #+:cmu extensions:*command-line-words*
+  #+:sbcl sb-ext::*posix-argv*
+  #+:clisp ext:*args*
+  #+:openmcl ccl::*COMMAND-LINE-ARGUMENT-LIST*
+  #+:ecl
+    (let ((n (SI:ARGC)) (res nil))
+        (dotimes (i n) (push (SI:ARGV (- n (+ i 1))) res))
+        res)
+  #+:poplog '()
+  #+:lispworks system:*line-arguments-list*
   )
 
 ;;; Silent loading of files

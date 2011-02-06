@@ -35,6 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <limits.h>
 #include <pwd.h>
 #include <fcntl.h>
 #include <termios.h>
@@ -94,6 +96,9 @@ char ClefCommandLine[256];
 
 #define BufSize      4096       /* size of communication buffer */
 char big_bad_buf[BufSize];      /* big I/O buffer */
+char *eval_code;
+const char *eval_fmt = " -eval \"\"";
+size_t eval_buf_size = 1024;
 
 Sock *session_io = NULL;        /* socket connecting to session manager */
 
@@ -118,6 +123,25 @@ struct termios childbuf;         /* terminal structure for user i/o */
 
 int nagman_signal=0;
 int death_signal = 0;
+
+/* Concatenate str to buff escaping all potentially unsafe characters */
+void
+protcat(char * buff, char * str)
+{
+    int c;
+    while(*buff) buff++;
+    for(; (c = *str); str++) {
+        if (isalnum(c) || c == '\n') {
+            *buff = c;
+            buff++;
+        } else {
+            *buff = '\\';
+            buff[1] = c;
+            buff += 2;
+        }
+    }
+    *buff = 0;
+}
 
 static void
 process_arguments(int argc,char ** argv)
@@ -184,6 +208,26 @@ process_arguments(int argc,char ** argv)
       VerifyRecordFile = argv[++arg];
     else if (strcmp(argv[arg], "-paste")  == 0)
       PasteFile = argv[++arg];
+    else if (strcmp(argv[arg], "-eval") == 0) {
+      size_t elen = strlen(argv[++arg]);
+      size_t olen = strlen(eval_code);
+      size_t slen;
+      if (elen > INT_MAX/10) {
+          fprintf(stderr, "Code to eval is too big (size %ld)\n", elen);
+          exit(1);
+      }
+      slen = olen + 2*elen + strlen(eval_fmt);
+      if (slen >= INT_MAX/2) {
+          fprintf(stderr, "Code to eval is too big (size %ld)\n", elen);
+          exit(1);
+      }
+      if (slen > eval_buf_size) {
+        eval_buf_size = 2*slen ;
+        eval_code = (char *)realloc(eval_code, eval_buf_size + 1);
+      }
+      strcat(eval_code, " -eval ");
+      protcat(eval_code + olen, argv[arg]);
+    }
     else {
       fprintf(stderr, "Usage: sman <-clef|-noclef> \
 <-gr|-nogr> <-ht|-noht> <-iw|-noiw> <-nag|-nonag> <-nox> <-comp> <-ws spad_workspace> \
@@ -551,7 +595,7 @@ start_the_graphics(void)
 static void
 fork_Axiom(void)
 {
-  char augmented_ws_path[256];  /* will append directory path */
+  char *augmented_ws_path;  /* will append directory path */
   char *tmp_pointer;
   SpadProcess *proc;
 
@@ -605,10 +649,16 @@ fork_Axiom(void)
       perror("setting the term buffer");
       exit(-1);
     }
+	augmented_ws_path = (char *)malloc(2 * strlen(ws_path) + strlen(eval_code) + strlen(" -- ") + 1);
     strcpy(augmented_ws_path,ws_path);          /* write the name    */
-    /* Pass '--' to make sure that argument passed to AXIOMsys
-       is not mistaken as Lisp kernel name (needed for Closure CL). */
+    /* Pass '--' to make sure that argument(s) passed to AXIOMsys
+       do not cause trouble from host Lisp (Closure CL would
+       treat argument as Lisp kernel name, Clisp signals error
+       if it can not recognize the option. */
     strcat(augmented_ws_path," -- ");
+    /* pass eval code directly to interpreter */
+    strcat(augmented_ws_path,eval_code);
+    strcat(augmented_ws_path, " ");
     strcat(augmented_ws_path,ws_path);          /* name again        */
     tmp_pointer = (char *)
       strrchr(augmented_ws_path,'/');      /*pointer to last /  */
@@ -617,6 +667,7 @@ fork_Axiom(void)
 
     /*    fprintf(stderr, "Cannot execute the %s system.\n", ws_path); */
 
+	free(augmented_ws_path);
     exit(0);
   }
 }
@@ -852,6 +903,7 @@ main(int argc, char *argv[],char *envp[])
 {
   if (tpd == 1) fprintf(stderr,"sman:main entered\n");
   bsdSignal(SIGINT,  SIG_IGN,RestartSystemCalls);
+  *(eval_code = (char *)malloc(eval_buf_size + 1)) = '\0';
   process_options(argc, argv);
 
   init_term_io();
@@ -877,6 +929,7 @@ main(int argc, char *argv[],char *envp[])
   }
   manage_spad_io(ptcNum);
   if (tpd == 1) fprintf(stderr,"sman:main exit\n");
+  free(eval_code);
   return(0);
 }
 

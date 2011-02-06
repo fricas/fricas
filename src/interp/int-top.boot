@@ -93,11 +93,21 @@ $ncmParse :=            NIL
 $ncmMacro :=            NIL
 $ncmPhase :=      NIL
 
+evalInlineCode() ==
+  args := getCLArgs()
+  while args repeat
+    arg := CAR args
+    args := CDR args
+    if arg = '"-eval" and args then
+      CATCH('SPAD__READER,CATCH('top__level,parseAndEvalStr CAR(args)))
+      args := CDR args
+
 spad() ==
   -- starts the interpreter, read in profiles, etc.
   $PrintCompilerMessageIfTrue: local
   setOutputAlgebra "%initialize%"
   readSpadProfileIfThere()
+  evalInlineCode()
   runspad()
   'EndOfSpad
 
