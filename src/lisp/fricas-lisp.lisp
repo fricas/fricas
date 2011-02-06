@@ -43,6 +43,17 @@
     ;;; We have our own loading messages
     (setf *LOAD-VERBOSE* nil))
 
+#|
+GCL keeps noting the fact that the compiler is performing tail-recursion.
+Bill Schelter added this as a debugging tool for Axiom and it was never
+removed. Patching the lisp code in the GCL build fails as the system
+is actually built from the pre-compiled C code. Thus, we can only step
+on this message after the fact. The cmpnote function is used nowhere
+else in GCL so stepping on the function call seems best. We're unhappy
+with this hack and will try to convince the GCL crowd to fix this.
+|#
+#+:gcl (defun compiler::cmpnote (&rest x))
+
 ;;
 #+:openmcl
 (progn
