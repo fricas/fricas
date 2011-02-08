@@ -984,6 +984,36 @@ splitListSayBrightly u ==
       ans:= [u,:rest y]
   ans
 
+-- Output to Character Streams
+
+sayBrightlyNT1(x, $fricasOutput) ==
+    if x then
+        ATOM(x) => brightPrint0(x)
+        brightPrint(x)
+
+sayBrightly1(x, str) ==
+    if x then
+        sayBrightlyNT1(x, str)
+        TERPRI(str)
+        FORCE_-OUTPUT(str)
+
+sayMSGNT(x) == sayBrightlyNT1(x, $algebraOutputStream)
+
+sayHtml(x) == sayBrightly1(x, $htmlOutputStream)
+
+sayMathML(x) == sayBrightly1(x, $mathmlOutputStream)
+
+sayTeX(x) == sayBrightly1(x, $texOutputStream)
+
+sayTexmacs(x) == sayBrightly1(x, $texmacsOutputStream)
+
+saySpadMsg(x) == sayBrightly1(x, $algebraOutputStream)
+
+sayALGEBRA(x) == sayBrightly1(x, $algebraOutputStream)
+
+sayMSG(x) == sayBrightly1(x, $algebraOutputStream)
+
+sayFORMULA(x) == sayBrightly1(x, $formulaOutputStream)
 
 --=======================================================================
 --                Utility Functions
