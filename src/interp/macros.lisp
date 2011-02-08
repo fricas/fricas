@@ -1116,70 +1116,41 @@ LP  (COND ((NULL X)
 
 ; 22.3.1 Output to Character Streams
 
-(defun |sayHtml| (x) (if (null x) nil (sayBrightly1 x |$htmlOutputStream|)))
-
-(defun |sayMathML| (x) (if (null x) nil (sayBrightly1 x |$mathmlOutputStream|)))
-
-(defun |sayTeX| (x) (if (null x) nil (sayBrightly1 x |$texOutputStream|)))
-
-(defun |sayTexmacs| (x) (if (null x) nil (sayBrightly1 x |$texmacsOutputStream|)))
-
 (defvar |$sayBrightlyStream| nil "if not nil, gives stream for sayBrightly output")
 
-(defun |sayBrightly| (x &optional (out-stream *standard-output*))
-  (COND ((NULL X) NIL)
-        (|$sayBrightlyStream| (sayBrightly1 X |$sayBrightlyStream|))
-        ((IS-CONSOLE out-stream) (sayBrightly1 X out-stream))
-        ((sayBrightly1 X out-stream) (sayBrightly1 X *error-output*))))
+(defun |sayBrightly| (x) (|sayBrightly2| x *standard-output*))
 
-(defun |sayBrightlyI| (x &optional (s *error-output*))
+(defun |sayBrightly2| (x out-stream)
+  (COND ((NULL X) NIL)
+        (|$sayBrightlyStream| (|sayBrightly1| X |$sayBrightlyStream|))
+        ((IS-CONSOLE out-stream) (|sayBrightly1| X out-stream))
+        ((|sayBrightly1| X out-stream) (|sayBrightly1| X *error-output*))))
+
+(defun |sayBrightlyI| (x)
+ (let ((S *error-output*))
     "Prints at console or output stream."
-  (if (NULL X) NIL (sayBrightly1 X S)))
+  (if (NULL X) NIL (|sayBrightly1| X S))))
 
-(defun |sayBrightlyNT| (x &optional (S *standard-output*))
+(defun |sayBrightlyNT| (x) (|sayBrightlyNT2| x *standard-output*))
+
+(defun |sayBrightlyNT2| (x S)
   (COND ((NULL X) NIL)
-        (|$sayBrightlyStream| (sayBrightlyNT1 X |$sayBrightlyStream|))
-        ((IS-CONSOLE S) (sayBrightlyNT1 X S))
-        ((sayBrightly1 X S) (sayBrightlyNT1 X *error-output*))))
+        (|$sayBrightlyStream| (|sayBrightlyNT1| X |$sayBrightlyStream|))
+        ((IS-CONSOLE S) (|sayBrightlyNT1| X S))
+        ((|sayBrightly1| X S) (|sayBrightlyNT1| X *error-output*))))
 
 (defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
-
-(defun sayBrightlyNT1 (X |$fricasOutput|)
-    (if (ATOM X) (|brightPrint0| X) (|brightPrint| X)))
-
-(defun sayBrightly1 (X str)
-    (sayBrightlyNT1 X str)
-    (TERPRI str)
-    (force-output str))
-
-(defun |saySpadMsg| (X)
-  (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
-
-(defun |sayALGEBRA| (X) "Prints on Algebra output stream."
-  (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
-
-(defun |sayMSG| (X)
-  (if (NULL X) NIL (sayBrightly1 X |$algebraOutputStream|)))
-
-(defun |sayMSGNT| (X)
-  (if (NULL X) NIL (sayBrightlyNT1 X |$algebraOutputStream|)))
 
 (defun |sayMSG2File| (msg)
   (PROG (file str)
         (SETQ file (|makePathname| '|spadmsg| '|listing|))
         (SETQ str (MAKE-OUTSTREAM file))
-        (sayBrightly1 msg str)
+        (|sayBrightly1| msg str)
         (SHUT str) ) )
 
 (defvar |$fortranOutputStream|)
 
-(defun |sayFORTRAN| (x) "Prints on Fortran output stream."
-  (if (NULL X) NIL (sayBrightly1 X |$fortranOutputStream|)))
-
 (defvar |$formulaOutputStream|)
-
-(defun |sayFORMULA| (X) "Prints on formula output stream."
-  (if (NULL X) NIL (sayBrightly1 X |$formulaOutputStream|)))
 
 (defvar |$highlightAllowed| nil "Used in BRIGHTPRINT and is a )set variable.")
 

@@ -62,7 +62,7 @@ displaySemanticErrors() ==
 
 displaySemanticError(l,stream) ==
   for x in l for i in 1.. repeat
-    sayBrightly(['"      [",i,'"] ",:first x],stream)
+    sayBrightly2(['"      [", i, '"] ", :first x], stream)
 
 displayWarnings() ==
   n:= #($warningStack:= REMDUP $warningStack)
@@ -75,7 +75,7 @@ displayWarnings() ==
 
 displayWarning(l,stream) ==
   for x in l for i in 1.. repeat
-    sayBrightly(['"      [",i,'"] ",:x],stream)
+    sayBrightly2(['"      [", i, '"] ", :x], stream)
 
 displayComp level ==
   $bright:= " << "

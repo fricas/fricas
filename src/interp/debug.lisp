@@ -523,7 +523,7 @@
                   (TAB 0 CURSTRM)
                   (MONITOR-BLANKS (1- /DEPTH))
                   (PRIN0 FUNDEPTH CURSTRM)
-                  (|sayBrightlyNT| (LIST "<enter" '|%b|
+                  (|sayBrightlyNT2| (LIST "<enter" '|%b|
                                          NAME1 '|%d|) CURSTRM)
                   (COND ((EQ 0 C) NIL)
                         ((EQ TYPE 'MACRO)
@@ -558,11 +558,11 @@
                   (TAB 0 CURSTRM)
                   (MONITOR-BLANKS (1- /DEPTH))
                   (PRIN0 FUNDEPTH CURSTRM)
-                  (|sayBrightlyNT| (LIST ">exit " '|%b| NAME1 '|%d|) CURSTRM)
+                  (|sayBrightlyNT2| (LIST ">exit " '|%b| NAME1 '|%d|) CURSTRM)
                   (COND (TIMERNAM
-                         (|sayBrightlyNT| '\( CURSTRM)
-                         (|sayBrightlyNT| (/ EVAL_TIME 60.0) CURSTRM)
-                         (|sayBrightlyNT| '\ sec\) CURSTRM) ))
+                         (|sayBrightlyNT2| '\( CURSTRM)
+                         (|sayBrightlyNT2| (/ EVAL_TIME 60.0) CURSTRM)
+                         (|sayBrightlyNT2| '\ sec\) CURSTRM) ))
                   (if (EQ 1 V)
                       (MONITOR-PRINVALUE
                         (|coerceTraceFunValue2E|
