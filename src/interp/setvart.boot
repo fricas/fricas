@@ -616,6 +616,23 @@ SETANDFILEQ($setOptions,'(
         chkOutputFileName
         "console"))
       NIL)
+     (texmacs
+      "create output in Texmacs style"
+      interpreter
+      FUNCTION
+      setOutputTexmacs
+      (("create output in Texmacs format"
+        LITERALS
+        $texmacsFormat
+        (off on)
+        off)
+       (break $texmacsFormat)
+       ("where Texmacs output goes (enter {\em console} or a pathname)"
+        FILENAME
+        $texmacsOutputFile
+        chkOutputFileName
+        "console"))
+      NIL)
      (html
       "create output in HTML style"
       interpreter

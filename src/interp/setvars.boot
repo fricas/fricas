@@ -921,6 +921,79 @@ describeSetOutputMathml() ==
   '"The current setting is: ",'%b,setOutputMathml "%display%",'%d)
 
 
+setOutputTexmacs arg ==
+  arg = "%initialize%" =>
+    $texmacsOutputStream := mkOutputConsoleStream()
+    $texmacsOutputFile := '"CONSOLE"
+    $texmacsFormat := NIL
+
+  arg = "%display%" =>
+    if $texmacsFormat then label := '"On:" else label := '"Off:"
+    STRCONC(label,$texmacsOutputFile)
+
+  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
+    describeSetOutputTexmacs()
+
+  -- try to figure out what the argument is
+
+  if arg is [fn] and
+    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
+      then 'ok
+      else arg := [fn,'smml]
+
+  arg is [fn] =>
+    UPCASE(fn) in '(Y N YE O OF) =>
+      sayKeyedMsg("S2IV0002",'(Texmacs texmacs))
+    UPCASE(fn) in '(NO OFF)  => $texmacsFormat := NIL
+    UPCASE(fn) in '(YES ON) => $texmacsFormat := true
+    UPCASE(fn) = 'CONSOLE =>
+      SHUT $texmacsOutputStream
+      $texmacsOutputStream := mkOutputConsoleStream()
+      $texmacsOutputFile := '"CONSOLE"
+
+  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
+    if (ptype := pathnameType fn) then
+      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
+      ft := ptype
+    filename := $FILEP(fn, ft)
+    null filename =>
+      sayKeyedMsg("S2IV0003",[fn,ft])
+    (testStream := MAKE_-OUTSTREAM(filename)) =>
+      SHUT $texmacsOutputStream
+      $texmacsOutputStream := testStream
+      $texmacsOutputFile := object2String filename
+      sayKeyedMsg("S2IV0004",['"Texmacs",$texmacsOutputFile])
+    sayKeyedMsg("S2IV0003",[fn,ft])
+
+  sayKeyedMsg("S2IV0005",NIL)
+  describeSetOutputTexmacs()
+
+describeSetOutputTexmacs() ==
+  sayBrightly LIST ('%b,'")set output texmacs",'%d,_
+   '"is used to tell FriCAS to turn MathML-style output",'%l,_
+   '"printing on and off, and where to place the output.  By default, the",'%l,_
+   '"destination for the output is the screen but printing is turned off.",'%l,_
+   '%l,_
+   '"Syntax:   )set output texmacs <arg>",'%l,_
+  '"    where arg can be one of",'%l,_
+  '"  on          turn Texmacs printing on",'%l,_
+  '"  off         turn Texmacs printing off (default state)",'%l,_
+  '"  console     send Texmacs output to screen (default state)",'%l,_
+  '"  fp<.fe>     send Texmacs output to file with file prefix fp and file",'%l,_
+  '"              extension .fe. If not given, .fe defaults to .stex.",'%l,
+  '%l,_
+  '"If you wish to send the output to a file, you must issue this command",'%l,_
+  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
+  '"MathML output to the file",'%b,'"polymer.smml,",'%d,'"issue the two commands",'%l,_
+  '%l,_
+  '"  )set output texmacs on",'%l,_
+  '"  )set output texmacs polymer",'%l,_
+  '%l,_
+  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
+  '"the one you set with the )cd system command.",'%l,_
+  '"The current setting is: ",'%b,setOutputMathml "%display%",'%d)
+
+
 setOutputHtml arg ==
   arg = "%initialize%" =>
     $htmlOutputStream := mkOutputConsoleStream()
