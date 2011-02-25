@@ -1319,6 +1319,18 @@ mathmlFormat expr ==
   FORCE_-OUTPUT $mathmlOutputStream
   NIL
 
+texmacsFormat expr ==
+  ioHook("startTeXmacsOutput")
+  mml := '(TexmacsFormat)
+  mmlrep := '(String)
+  formatFn := getFunctionFromDomain("coerce",mml,[$OutputForm])
+  displayFn := getFunctionFromDomain("display",mml,[mmlrep])
+  SPADCALL(SPADCALL(expr,formatFn),displayFn)
+  TERPRI $texmacsOutputStream
+  FORCE_-OUTPUT $texmacsOutputStream
+  ioHook("endOfTeXmacsOutput")
+  NIL
+
 htmlFormat expr ==
   htf := '(HTMLFormat)
   htrep := '(String)
@@ -1336,6 +1348,7 @@ output(expr,domain) ==
     if $texFormat     then texFormat expr
     if $algebraFormat then mathprintWithNumber expr
     if $mathmlFormat  then mathmlFormat expr
+    if $texmacsFormat then texmacsFormat expr
     if $htmlFormat    then htmlFormat expr
   categoryForm? domain or domain = ["Mode"] =>
     if $algebraFormat then
@@ -1353,6 +1366,7 @@ output(expr,domain) ==
       mathprintWithNumber x
     if $texFormat     then texFormat x
     if $mathmlFormat  then mathmlFormat x
+    if $texmacsFormat then texmacsFormat x
     if $htmlFormat    then htmlFormat x
   (FUNCTIONP(opOf domain)) and (not(SYMBOLP(opOf domain))) and
     (printfun := compiledLookup("<<",'(TextWriter TextWriter $), evalDomain domain))
