@@ -518,10 +518,12 @@ parse__Sequence() ==
     match_symbol "[" =>
         MUST(parse__Sequence1())
         MUST(match_symbol "]")
+)if false
     match_symbol "{" =>
         MUST(parse__Sequence1())
         MUST(match_symbol "}")
         push_form1("brace", pop_stack_1())
+)endif
     nil
 
 parse__Sequence1() ==
