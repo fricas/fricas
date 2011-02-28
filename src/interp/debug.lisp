@@ -41,7 +41,7 @@
 (DEFPARAMETER /TIMERLIST NIL)
 (DEFPARAMETER /TRACESIZE NIL "sets limit on size of object to be mathprinted")
 (DEFPARAMETER /DEPTH 0)
-(DEFVAR CURSTRM *TERMINAL-IO*)
+(DEFVAR CURSTRM *standard-output*)
 (DEFVAR /PRETTY () "controls pretty printing of trace output")
 (SETANDFILEQ /ECHO NIL) ;;"prevents echo of SPAD or BOOT code with /c"
 
@@ -442,8 +442,8 @@
                      (if (ATOM A) (LIST A) A))))
 
 (defun /TRACELET-PRINT (X Y &AUX (/PRETTY 'T))
-  (PRINC (STRCONC (PNAME X) ": ") *terminal-io*)
-  (MONITOR-PRINT Y *terminal-io*))
+  (PRINC (STRCONC (PNAME X) ": ") *standard-output*)
+  (MONITOR-PRINT Y *standard-output*))
 
 (defun /MONITOR ;;(&rest G5)
   (G1 TRACECODE BEFORE AFTER CONDITION TIMERNAM COUNTNAM TRACENAME BREAK)
@@ -518,7 +518,7 @@
             (SETQ |$mathTrace| T))
         (if (AND YES |$TraceFlag|)
             (PROG (|$TraceFlag|)
-                  (SETQ CURSTRM *TERMINAL-IO*)
+                  (SETQ CURSTRM *standard-output*)
                   (if (EQUAL TRACECODE "000") (RETURN NIL))
                   (TAB 0 CURSTRM)
                   (MONITOR-BLANKS (1- /DEPTH))
