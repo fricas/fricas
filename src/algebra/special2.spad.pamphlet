@@ -187,6 +187,290 @@ FloatSpecialFunctions() : Exports == Implementation where
 
 @
 
+\section{package FELFUN FloatEllipticFunctions}
+<<package FELFUN FloatEllipticFunctions>>=
+
+)abbrev package FELFUN FloatEllipticFunctions
+++ Description:
+++   This package implements arbitrary precision numerical elliptic
+++   functions.  The method is based on descending Landen transform.
+FloatEllipticFunctions() : with
+    jacobiSn : (Float, Float) -> Float
+      ++ jacobiSn(z, m) is the Jacobi sn function
+    jacobiCn : (Float, Float) -> Float
+      ++ jacobiCn(z, m) is the Jacobi cn function
+    jacobiDn : (Float, Float) -> Float
+      ++ jacobiDn(z, m) is the Jacobi dn function
+    ellipticK : Float -> Float
+      ++ ellipticK(m) is the complete elliptic integral of the first kind
+    ellipticK : Complex Float -> Complex Float
+      ++ ellipticK(m) is the complete elliptic integral of the first kind
+    -- Functions below should be local but overloaded
+    rabs : Float -> Float
+      ++ Undocumented.
+    rabs : Complex Float -> Float
+      ++ Undocumented.
+    landen1 : Float -> List Float
+      ++ Undocumented.
+    landen1 : Complex Float -> List Complex Float
+      ++ Undocumented.
+    landen2 : (Float, List Float, Float) -> List Float
+      ++ Undocumented.
+    landen2 : (Complex Float, List Complex Float, Float) -> List Complex Float
+      ++ Undocumented.
+    landen : (Float, Float) -> List Float
+      ++ Undocumented.
+    landen : (Complex Float, Float) -> List Complex Float
+      ++ Undocumented.
+    kprod : List Float -> Float
+      ++ Undocumented.
+    kprod : List Complex Float -> Complex Float
+      ++ Undocumented.
+
+ == add
+
+    rabs(r : Float) : Float == abs(r)
+
+    rabs(r : Complex Float) : Float == real(abs(r))
+
+    Funs ==>
+      landen1(m1 : NT) : List NT ==
+        res : List NT := []
+        while rabs(m1) < 0.25 repeat
+            kp := sqrt(m1)
+            kn1 := 2*kp/(1+kp)
+            res := cons(1 - kn1, res)
+            m1 := 2*kn1 - kn1^2
+        cons(m1, res)
+
+      landen2(m : NT, res : List NT, eps : Float) : List NT ==
+        repeat
+            -- rm := real(m)
+            -- im := imag(m)
+            -- abs(rm) < eps and abs(im) < eps =>
+            am := rabs(m)
+            am < eps =>
+                kn := (1/4)*m
+                res := cons(kn, res)
+                break
+            kp := sqrt(1 - m)
+            -- if am > 0.25 then
+            if true then
+                kn := (1 - kp)/(1 + kp)
+            else
+                kn := m/(2 - m + 2*kp)
+            res := cons(kn, res)
+            m := kn^2
+        res
+
+      landen(m : NT, eps : Float) : List NT ==
+        res : List NT := []
+        if rabs(m1 := 1 - m) < 0.25 then
+            res := landen1(m1)
+            m := 1 - first(res)
+            res := rest(res)
+        landen2(m, res, eps)
+
+      kprod(ll : List NT) : NT ==
+        reduce(_*, [1 + k for k in ll])
+
+    Funs where NT ==> Float
+
+    Funs where NT ==> Complex Float
+
+    pimod(z : Float) : Float ==
+        pi2 := 2*pi()
+        nn := retract(round(z/pi2))@Integer
+        z - nn*pi2
+
+    two_to_minus_n(n : Integer) : Float ==
+        base() ~= 2 => error "Only base 2 is supported"
+        float(1, - n)
+
+    ellipticK(m : Float) : Float ==
+        m >= 1.0 => error "ellipticK : m >= 1.0"
+        obits := bits()
+        prec := obits + 20
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        res := (1/2)*pi()*kprod(ll)
+        bits(obits)
+        res
+
+    ellipticK(m : Complex Float) : Complex Float ==
+        m = 1 => error "ellipticK : m = 1.0"
+        obits := bits()
+        prec := obits + 20
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        res := (1/2)*pi()*kprod(ll)
+        bits(obits)
+        res
+
+    sn2(z : Float, ll : List Float) : Float ==
+        res := sin(z)
+        for k in ll repeat
+            res := (1 + k)*res/(1 + k*res^2)
+        res
+
+    -- Compute 1-sin(z) for z in [0,\pi] with small relative error
+    sin1(z : Float) : Float ==
+        if z < 1 or z > 2.0 then
+            1 - sin(z)
+        else
+            z1 := z - pi()/2.0
+            z1 := z1/2
+            2*sin(z1)^2
+
+    -- assumption z \in [0,\pi]
+    sn21(z : Float, ll : List Float) : Float==
+        res := sin1(z)
+        for k in ll repeat
+            res0 := 1 - res
+            -- 1 + k*res0^2 - (1 + k)*res0 =
+            -- 1 + k*(1 - res)^2 - (1 + k)*(1 - res) =
+            -- 1 + k*(1 -2*res + res^2) - 1 - k + res + k*res =
+            -- k - 2*k*res + k*res^2 - k + res + k*res =
+            -- -k*res + k*res^2 + res
+            kres := k*res
+            res := (res - kres + kres*res)/(1 + k*res0^2)
+            -- res0 := (1 + k)*res0/(1 + k*res0^2)
+        res
+
+    -- assumption: m < 1
+    sn1(z : Float, m : Float, prec : PositiveInteger) : Float ==
+        if m > 0.8 or m < -4.0 then
+            prec := prec + 20
+            bits(prec)
+        eps := two_to_minus_n(prec quo 2)
+        if m < -48.0 then
+            kp := sqrt(1 - m)
+            -- 1 + k1
+            kp1 := 2.0/(1 + kp)
+            m1 := 2*kp1 - kp1^2
+            z := z/kp1
+            if m1 < 0.25 then
+                ll := landen1(m1)
+                m := 1 - first(ll)
+                ll := landen2(m, rest(ll), eps)
+            else
+                ll := landen(1 - m1, eps)
+            kk := kprod(ll)
+            z1 := z/kk
+            z1 := pimod(z1)
+            if z1 < 0 then
+                sign := -1
+                z1 := -z1
+            else
+                sign := 1
+            z0 := z1*kk
+            if z0 < 0.5 then
+                res := sn2(z1, ll)
+                sign*kp1*res/(1 + (kp1 - 1)*res^2)
+            else
+                res1 := sn21(z1, ll)
+                -- res = 1 - res1
+                -- 1 + k1*res^2 = 1 + (kp1 - 1)*(1 - res1)^2 =
+                -- 1 + (kp1 - 1)*(1 -2*res1 + res1^2) =
+                -- 1 + (kp1 - 1) + (kp1 - 1)*(-2*res1 +res1^2) =
+                -- kp1 + (kp1 - 1)*(res1 - 2)*res1
+                sign*kp1*(1 - res1)/(kp1 + (kp1 - 1)*(res1 - 2.0)*res1)
+        else
+            ll := landen(m, eps)
+            kk := kprod(ll)
+            z1 := z/kk
+            sn2(z1, ll)
+
+    cn1(z : Float, m : Float, prec : PositiveInteger) : Float ==
+        if z < 0 then z := -z
+        prec := 2*prec
+        if m > 0.8 or m < -4.0 then
+            prec := prec + 20
+        bits(prec)
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        kk := kprod(ll)
+        z1 := z/kk
+        pih := 0.5*pi()$Float
+        nn := retract(round(z1/pih)$Float)@Integer
+        if odd?(nn) then
+            z2 := z1 - nn*pih
+            nn := nn quo 2
+            sgn := (odd?(nn) => 1 ; -1)
+            sgn := sign(z2)*sgn
+        else
+            nn := nn quo 2
+            sgn := (odd?(nn) => -1 ; 1)
+        res0 := sn2(z1, ll)
+        sgn*sqrt(1 - res0^2) 
+
+    dn1(z : Float, m : Float, prec : PositiveInteger) : Float ==
+        -- Usually overkill, but needed if m close to 1
+        prec := 2*prec
+        bits(prec)
+        res0 := sn1(z, m, prec)
+        sqrt(1 - m*res0^2)
+
+    jacobiSn(z : Float, m : Float) ==
+        obits := bits()
+        prec := obits + 20
+        m = 1.0 =>
+            bits(prec)
+            res := tanh(z)
+            bits(obits)
+            res
+        bits(prec)
+        cc := 1.0
+        if m > 1 then
+            m := 1/m
+            k := sqrt(m)
+            z := z/k
+            res := k*sn1(z, m, prec)
+        else
+            res := sn1(z, m, prec)
+        bits(obits)
+        res
+
+    jacobiCn(z : Float, m : Float) : Float ==
+        obits := bits()
+        prec := obits + 20
+        m = 1.0 =>
+            bits(prec)
+            res := 1/cosh(z)
+            bits(obits)
+            res
+        bits(prec)
+        if m > 1 then
+            m := 1/m
+            k := sqrt(m)
+            z := z/k
+            res := dn1(z, m, prec)
+        else
+            res := cn1(z, m, prec)
+        bits(obits)
+        res
+
+    jacobiDn(z : Float, m : Float) : Float ==
+        obits := bits()
+        prec := obits + 20
+        m = 1.0 =>
+            bits(prec)
+            res := 1/cosh(z)
+            bits(obits)
+            res
+        bits(prec)
+        if m > 1 then
+            m := 1/m
+            k := sqrt(m)
+            z := z/k
+            res := cn1(z, m, prec)
+        else
+            res := dn1(z, m, prec)
+        bits(obits)
+        res
+
+@
+
 \eject
 \begin{thebibliography}{99}
 \bibitem{1} nothing
