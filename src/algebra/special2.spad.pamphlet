@@ -27,6 +27,10 @@ FloatSpecialFunctions() : Exports == Implementation where
       ++ Gamma(x) is the Euler Gamma function.
     Gamma : (Complex Float) -> (Complex Float)
       ++ Gamma(x) is the Euler Gamma function.
+    Beta : (Float, Float) -> Float
+      ++ Beta(x, y) is the Euler Beta function.
+    Beta : (Complex Float, Complex Float) -> Complex Float
+      ++ Beta(x, y) is the Euler Beta function.
 
   Implementation ==> add
 
@@ -167,7 +171,22 @@ FloatSpecialFunctions() : Exports == Implementation where
             error "Argument to logGamma <= 0"
         real(logGamma(x :: (Complex Float)))
 
+    Beta(x : Complex Float, y : Complex Float) : Complex Float ==
+        (base()$Float ~= 2) =>
+            error "Beta can only handle base 2 Float-s"
+        l0 := bits()
+        l1 := max(30, l0 + 10)
+        bits(l1)
+        -- FIXME : compensate for error in Gamma(x + y)
+        res := Gamma(x)*Gamma(y)/Gamma(x + y)
+        bits(l0)
+        res
+
+    Beta(x : Float, y : Float) : Float ==
+        real(Beta(x::(Complex Float), y::(Complex Float)))
+
 @
+
 \eject
 \begin{thebibliography}{99}
 \bibitem{1} nothing
