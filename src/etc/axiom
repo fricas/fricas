@@ -66,6 +66,7 @@ echo "     [-list]              list workspaces only"
 #echo "     [-clientprog fname]  use named program for spadclient"
 echo "     [-h]                 show usage"
 echo "     [-eval code]         evaluate specified code at start"
+echo "     [-texmacs]           setup Fricas for communication in TeXmacs protocol"
 }
 
 # 1. Ensure the environment is set.
@@ -121,9 +122,18 @@ fi
 rootwsdir=$SPAD/bin
 
 # 2. Process command line arguments.
+algebra_off=')set output algebra off'
+texmacs_on=')set output texmacs on'
+markers=")lisp (setf |\$ioHook| (lambda (x &optional args) (cond ((eq x '|startPrompt|) (princ (concat (code-char 2) \"prompt\#\") ))  ((eq x '|endOfTeXmacsOutput|) (princ (concat (code-char 5) (code-char 10)))) ((eq x '|startTeXmacsOutput|) (princ (code-char 2)))  ((eq x '|startKeyedMsg|)  (princ (concat (code-char 2) \"verbatim:\")))  ((eq x '|endOfKeyedMsg|)  (princ (code-char 5)))  ((eq x '|endOfPrompt|) (princ (code-char 5) ))  )))"
+
+
+if [ "$*" = "-texmacs" ] ; then
+    exec "$SPAD/bin/AXIOMsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
+fi
+
 
 if [ "$*" = "-nosman" ] ; then
-    exec $SPAD/bin/AXIOMsys
+    exec "$SPAD/bin/AXIOMsys"
     exit 1
 fi
 
