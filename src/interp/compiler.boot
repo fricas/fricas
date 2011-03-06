@@ -1131,6 +1131,8 @@ coerceHard(T,m) ==
   $e: local:= T.env
   m':= T.mode
   STRINGP m' and modeEqual(m,$String) => [T.expr,m,$e]
+  STRINGP T.expr and modeEqual(m', $String) and modeEqual(m, $Symbol) =>
+      [["QUOTE", INTERN(T.expr, "BOOT")], m, $e]
   modeEqual(m',m) or
     (get(m',"value",$e) is [m'',:.] or getmode(m',$e) is ["Mapping",m'']) and
       modeEqual(m'',m) or
