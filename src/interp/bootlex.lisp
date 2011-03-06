@@ -49,11 +49,17 @@
 
 (defun Next-Lines-Clear () (setq Boot-Line-Stack nil))
 
+(defparameter |$MaxLineShow| 5)
+
 (defun Next-Lines-Show ()
-  (and Boot-Line-Stack (format t "Currently preparsed lines are:~%~%"))
-  (mapcar #'(lambda (line)
-              (format t "~&~5D> ~A~%" (car line) (cdr Line)))
-          Boot-Line-Stack))
+  (and Boot-Line-Stack (format t "First currently preparsed lines are:~%~%"))
+  (let ((cnt 0))
+      (mapcar #'(lambda (line)
+           (if (< cnt |$MaxLineShow|)
+               (progn
+                    (setf cnt (+ cnt 1))
+                    (format t "~&~5D> ~A~%" (car line) (cdr Line)))))
+          Boot-Line-Stack)))
 
 ; *** 1. BOOT file handling
 
@@ -203,6 +209,7 @@ if it gets a non-blank line, and NIL at end of stream."
   (if Boot-Line-Stack
       (let ((Line-Number (caar Boot-Line-Stack))
             (Line-Buffer (suffix #\Space (cdar Boot-Line-Stack))))
+        (prev-line-set Current-Line)
         (pop Boot-Line-Stack)
         (Line-New-Line Line-Buffer Current-Line Line-Number)
         (setq |$currentLine| (setq LINE Line-Buffer))

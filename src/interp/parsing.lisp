@@ -317,6 +317,24 @@ NonBlank is true if the token is not preceded by a blank."
 ; routines implicitly assume the parameter Current-Line.  We do not make
 ; Current-Line an explicit optional parameter for reasons of efficiency.
 
+(defparameter prev-line nil)
+(defparameter prev-line-number 0)
+
+(defun prev-line-show ()
+    (if prev-line
+        (format t "~&The prior line was:~%~%~5D> ~A~%~%"
+               prev-line-number prev-line)
+        (format t "~&The prior line is empty.~%")))
+
+(defun prev-line-set (l)
+    (if (> (Line-Last-Index l) 0)
+        (progn
+            (setf prev-line (Line-Buffer l))
+            (setf prev-line-number (Line-Number l)))))
+
+(defun prev-line-clear ()
+    (setf prev-line nil))
+
 (defparameter Current-Line (make-line)  "Current input line.")
 
 (defmacro current-line-print () '(Line-Print Current-Line))
@@ -370,21 +388,16 @@ NonBlank is true if the token is not preceded by a blank."
 (defun token-stack-show ()
   (if (= Valid-Tokens 0) (format t "~%There are no valid tokens.~%")
       (format t "~%The number of valid tokens is ~S.~%" Valid-Tokens))
+ (if (token-type prior-token)
+      (progn (format t "The prior token was ~S~%" prior-token)
+             ))
   (if (> Valid-Tokens 0)
-      (progn (format t "The current token is~%")
-             #+Symbolics (zl:describe-defstruct current-token)
-             #-Symbolics (describe current-token)
+      (progn (format t "The current token is ~S~%" current-token)
              ))
   (if (> Valid-Tokens 1)
-      (progn (format t "The next token is~%")
-             #+Symbolics (zl:describe-defstruct next-token)
-             #-Symbolics (describe next-token)
+      (progn (format t "The next token is ~S~%" next-token)
              ))
-  (if (token-type prior-token)
-      (progn (format t "The prior token was~%")
-             #+Symbolics (zl:describe-defstruct prior-token)
-             #-Symbolics (describe prior-token)
-             )))
+)
 
 (defmacro token-stack-clear ()
   `(progn (setq Valid-Tokens 0)
@@ -556,6 +569,7 @@ is a token separator, which blank is equivalent to."
 
 (defun IOStat ()
   "Tell me what the current state of the parsing world is."
+  (prev-line-show)
   (current-line-show)
   (if (or $BOOT $SPAD) (next-lines-show))
   (token-stack-show)
