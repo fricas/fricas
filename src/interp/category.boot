@@ -56,7 +56,7 @@ CategoryPrint(D,$e) ==
     PRETTYPRINT u
 
 -- Compute list of parameters which occur in singntures on the
--- sigList, remowing duplicates, and skipping "known"
+-- sigList, removing duplicates, and skipping "known"
 -- constuctors
 sigParams(sigList) ==
   result := nil
