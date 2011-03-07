@@ -2339,6 +2339,23 @@ binomialSuper u == height u.1 + 1
 
 binomialWidth u == 2 + MAX(WIDTH u.1, WIDTH u.2)
 
+
+primeApp(u, x, y, di) ==
+    ["PRIME", a, b] := u
+    superSubApp(["SUPERSUB", a, '" ", b], x, y, di)
+
+primeSub(u) ==
+    ["PRIME", a, b] := u
+    superSubSub(["SUPERSUB", a, '" ", b])
+
+primeSuper(u) ==
+    ["PRIME", a, b] := u
+    superSubSuper(["SUPERSUB", a, '" ", b])
+
+primeWidth(u) ==
+    ["PRIME", a, b] := u
+    superSubWidth(["SUPERSUB", a, '" ", b])
+
 mathPrint u ==
   if not $collectOutput then TERPRI $algebraOutputStream
   (u := STRINGP mathPrint1(mathPrintTran u, nil) =>
