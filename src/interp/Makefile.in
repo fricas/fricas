@@ -61,10 +61,6 @@ BROBJ_files= bc-matrix bc-misc bc-solve bc-util ht-util htsetvar \
 
 BROBJS= $(patsubst %, ${AUTO}/%.$(LISPOBJEXT), $(BROBJ_files))
 
-TRANOBJ_files= wi1 wi2 pspad1 pspad2 mark nspadaux def
-
-TRANOBJS= $(patsubst %, ${AUTO}/%.$(LISPOBJEXT), $(TRANOBJ_files))
-
 ASCOMP_files= hashcode as foam_l axext_l
 
 ASCOMP= $(patsubst %, %.$(LISPOBJEXT), $(ASCOMP_files))
@@ -141,7 +137,7 @@ ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     $(srcdir)/sys-pkg.lisp \
     ${OCOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
-    ${NAGBROBJS} ${TRANOBJS} \
+    ${NAGBROBJS} \
     ${LOADSYS} \
     $(axiom_targetdir)/algebra/exposed.$(FASLEXT) \
     $(axiom_src_datadir)/doc/msgs/s2-us.msgs \
@@ -163,7 +159,7 @@ makeint.lisp:
 	  '(quote ())' \
 	  '(quote ($(patsubst %, "$(BASE)%", ${OCOBJS})))' \
 	  '(quote ($(patsubst %, "$(BASE)%", ${BROBJS})))' \
-	  '(quote ($(patsubst %, "$(BASE)%", ${TRANOBJS})))' \
+	  '(quote ())' \
 	  '(quote ())' \
 	  '(quote ($(patsubst %, "$(BASE)%", ${ASAUTO})))' \
 	  '"${AXIOM}")' >> makeint.lisp
@@ -260,7 +256,7 @@ database.date:
 	touch database.date
 
 AUTO_from_IN=\
- bootlex def nspadaux parse parsing postpar preparse s-parser
+ bootlex def parse parsing postpar preparse s-parser
 
 $(addprefix $(AUTO)/, $(addsuffix .$(LISPOBJEXT), $(AUTO_from_IN))): \
    $(AUTO)/%.$(LISPOBJEXT) : %.$(LISPOBJEXT)
@@ -288,8 +284,7 @@ AUTO_from_MID=\
  apply ax bc-matrix bc-misc bc-solve bc-util br-con br-data br-op1 \
  br-op2 br-prof br-saturn br-search br-util category c-doc \
  compiler c-util define functor htcheck ht-root htsetvar ht-util \
- info iterator mark modemap nruncomp package profile pspad1 \
- pspad2 topics wi1 wi2
+ info iterator modemap nruncomp package profile topics 
 
 $(patsubst %, $(AUTO)/%.$(LISPOBJEXT), $(AUTO_from_MID) showimp): \
     $(AUTO)/%.$(LISPOBJEXT) : %.clisp
