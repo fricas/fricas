@@ -622,13 +622,14 @@ OutputForm(): SetCategory with
         postfix(a, b) ==
             hconcat(b, a)
 
+        add_prime(a : %, s : %) : % == convert [eform PRIME, a, s]
         string a   == convert [eform STRING,  a]
         quote  a   == convert [eform QUOTE,   a]
         overbar a  == convert [eform OVERBAR, a]
         dot a      == super(a, sform ".")
-        prime a    == super(a, sform ",")
+        prime a    == prime(a, 1)
         dot(a,nn)   == (s := new(nn, char "."); super(a, sform s))
-        prime(a,nn) == (s := new(nn, char ","); super(a, sform s))
+        prime(a, nn) == (s := new(nn, char ",");  add_prime(a, sform s))
 
         overlabel(a,b) == convert [eform OVERLABEL, a, b]
         box a      == convert [eform BOX,     a]
@@ -646,7 +647,7 @@ OutputForm(): SetCategory with
             nn < 4 => prime(a, nn)
             r := FormatRoman(nn::PositiveInteger)
             s := lowerCase(r::String)
-            super(a, paren sform s)
+            add_prime(a, paren sform s)
 
         sum(a)     == convert [eform SIGMA,  empty(), a]
         sum(a,b)   == convert [eform SIGMA,  b, a]
