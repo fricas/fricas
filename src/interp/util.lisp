@@ -142,7 +142,6 @@ at load time.
 ;;      loadcompiler
         |oldCompilerAutoloadOnceTrigger|
         |compileSpad2Cmd|
-        |convertSpadToAsFile|
         |compilerDoit|
         |compilerDoitWithScreenedLisplib|
         |mkCategory|
