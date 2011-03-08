@@ -10,41 +10,6 @@
 \tableofcontents
 \eject
 \section{domain TEX TexFormat}
-\subsection{product(product(i*j,i=a..b),j=c..d) fix}
-The expression prints properly in ascii text but the tex output
-is incorrect. Originally the input
-\begin{verbatim}
-product(product(i*j,i=a..b),j=c..d)
-\end{verbatim}
-prints as
-$$
-PI2
-\left(
-{{j=c}, \: d, \: {PI2
-\left(
-{{i=a}, \: b, \: {i \  j}}
-\right)}}
-\right)
-\leqno(1)
-$$
-but now says:
-The problem is in [[src/algebra/tex.spad.pamphlet]] in the list of
-constants.
-The code used to read
-\begin{verbatim}
-    plexOps       : L S := ["SIGMA","SIGMA2","PI","INTSIGN","INDEFINTEGRAL"]$(L S)
-    plexPrecs     : L I := [    700, 800,      700,            700]$(L I)
-\end{verbatim}
-it now reads:
-<<product(product(i*j,i=a..b),j=c..d) fix>>=
-    plexOps       : L S := ["SIGMA","SIGMA2","PI","PI2","INTSIGN","INDEFINTEGRAL"]$(L S)
-    plexPrecs     : L I := [    700, 800,     700, 800 , 700,      700]$(L I)
-@
-in addition we need to add a line defining [[PI2]] in [[formatPlex]]:
-<<define PI2>>=
-        op = "PI2"     => "\prod"
-@
-\subsection{domain TEX TexFormat}
 <<domain TEX TexFormat>>=
 )abbrev domain TEX TexFormat
 ++ Author: Robert S. Sutor
@@ -87,6 +52,7 @@ TexFormat(): public == private where
   I      ==> Integer
   L      ==> List
   S      ==> String
+  Sy     ==> Symbol
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
@@ -137,7 +103,7 @@ TexFormat(): public == private where
 
     Rep := Record(prolog : L S, TeX : L S, epilog : L S)
 
-    -- local variables declarations and definitions
+    -- local variable declarations and definitions
 
     expr: E
     prec,opPrec: I
@@ -147,35 +113,39 @@ TexFormat(): public == private where
     maxPrec       : I   := 1000000
     minPrec       : I   := 0
 
-    unaryOps      : L S := ["-"]$(L S)
+    unaryOps      : L Sy := ["-"::Sy]$(L Sy)
     unaryPrecs    : L I := [700]$(L I)
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L S := ["+->","|","^","/","<",">","=","OVER"]$(L S)
-    binaryPrecs   : L I := [0,0,900, 700,400,400,400,   700]$(L I)
+    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "<"::Sy,
+                             ">"::Sy, "="::Sy, 'OVER, 'LET]
+    binaryPrecs   : L I := [0, 0, 900, 700, 400, 400, 400, 700, 125]$(L I)
 
-    naryOps       : L S := ["-","+","*",blank,",",";"," ","ROW","",
-       " \cr ","&"," \\ ","TENSOR"]$(L S)
-    naryPrecs     : L I := [700,700,800,  800,110,110,  0,    0, 0,
-             0,  0,   0,850]$(L I)
-    naryNGOps     : L S := ["ROW","&"]$(L S)
+    naryOps       : L Sy := ["-"::Sy, "+"::Sy, "*"::Sy, ","::Sy, ";"::Sy,
+                             'ROW, 'STRSEP, 'TENSOR]
+    naryPrecs     : L I := [700, 700, 800, 110, 110,
+                            0, 0, 850]$(L I)
+    naryNGOps     : L Sy := ['ROW]
 
-<<product(product(i*j,i=a..b),j=c..d) fix>>
+    plexOps       : L Sy := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN, _
+                             'INDEFINTEGRAL]
+    plexPrecs     : L I := [ 750, 750, 750, 750, 700,   700]$(L I)
 
-    specialOps    : L S := ["MATRIX","BRACKET","BRACE","CONCATB","VCONCAT",  _
-                            "AGGLST","CONCAT","OVERBAR","ROOT","SUB","TAG", _
-                            "SUPERSUB","ZAG","AGGSET","SC","PAREN", _
-                            "SEGMENT","QUOTE","theMap", "SLASH", "PRIME"]
+    specialOps    : L Sy := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
+                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
+                             'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
+                             'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME]
 
     -- the next two lists provide translations for some strings for
     -- which TeX provides special macros.
 
-    specialStrings : L S :=
-      ["cos", "cot", "csc", "log", "sec", "sin", "tan",
-        "cosh", "coth", "csch", "sech", "sinh", "tanh",
-          "acos","asin","atan","erf","...","$","infinity",
-            "Gamma"]
+    specialStrings : L Sy :=
+      ['cos, 'cot, 'csc, 'log, 'sec, 'sin, 'tan,
+        'cosh, 'coth, 'csch, 'sech, 'sinh, 'tanh,
+          'acos, 'asin, 'atan, 'erf, "..."::Sy, "$"::Sy, 'infinity,
+            'Gamma]
+
     specialStringsInTeX : L S :=
       ["\cos","\cot","\csc","\log","\sec","\sin","\tan",
         "\cosh","\coth","\csch","\sech","\sinh","\tanh",
@@ -187,16 +157,16 @@ TexFormat(): public == private where
     addBraces:      S -> S
     addBrackets:    S -> S
     group:          S -> S
-    formatBinary:   (S,L E, I) -> S
-    formatFunction: (S,L E, I) -> S
+    formatBinary:   (Sy, L E, I) -> S
+    formatFunction: (E, L E, I) -> S
     formatMatrix:   L E -> S
-    formatNary:     (S,L E, I) -> S
-    formatNaryNoGroup: (S,L E, I) -> S
-    formatNullary:  S -> S
-    formatPlex:     (S,L E, I) -> S
-    formatSpecial:  (S,L E, I) -> S
-    formatUnary:    (S,  E, I) -> S
-    formatTex:      (E,I) -> S
+    formatNary:     (Sy, S, I, L E, I) -> S
+    formatNaryNoGroup: (Sy, S, I, L E, I) -> S
+    formatNullary:  Sy -> S
+    formatPlex:     (Sy, L E, I) -> S
+    formatSpecial:  (Sy, L E, I) -> S
+    formatUnary:    (Sy, E, I) -> S
+    formatExpr:      (E, I) -> S
     newWithNum:     I -> %
     parenthesize:   S -> S
     precondition:   E -> E
@@ -221,21 +191,24 @@ TexFormat(): public == private where
     coerce(expr : E): % ==
       f : % := new()$%
       f.TeX := [postcondition
-        formatTex(precondition expr, minPrec)]$(L S)
+          formatExpr(precondition expr, minPrec)]$(L S)
       f
 
     convert(expr : E, stepNum : I): % ==
       f : % := newWithNum(stepNum)
       f.TeX := [postcondition
-        formatTex(precondition expr, minPrec)]$(L S)
+          formatExpr(precondition expr, minPrec)]$(L S)
       f
+
+    sayExpr(s : S) : Void ==
+        sayTeX$Lisp s
 
     display(f : %, len : I) ==
       s,t : S
-      for s in f.prolog repeat sayTeX$Lisp s
+      for s in f.prolog repeat sayExpr s
       for s in f.TeX repeat
-        for t in splitLong(s, len) repeat sayTeX$Lisp t
-      for s in f.epilog repeat sayTeX$Lisp s
+        for t in splitLong(s, len) repeat sayExpr t
+      for s in f.epilog repeat sayExpr s
       void()$Void
 
     display(f : %) ==
@@ -373,134 +346,137 @@ TexFormat(): public == private where
     precondition expr ==
       outputTran$Lisp expr
 
-    formatSpecial(op : S, args : L E, prec : I) : S ==
-      arg : E
-      prescript : Boolean := false
-      op = "theMap" => "\mbox{theMap(...)}"
-      op = "AGGLST" =>
-        formatNary(",",args,prec)
-      op = "AGGSET" =>
-        formatNary(";",args,prec)
-      op = "TAG" =>
-        group concat [formatTex(first args,prec),
-                      "\rightarrow",
-                       formatTex(second args,prec)]
-      op = "SLASH" =>
-        group concat [formatTex(first args,prec),
-                      "/", formatTex(second args,prec)]
-      op = "VCONCAT" =>
-        group concat("\begin{array}{c}",
-                     concat(concat([concat(formatTex(u, minPrec),"\\")
+    formatSpecial(op : Sy, args : L E, prec : I) : S ==
+        arg : E
+        prescript : Boolean := false
+        op = 'theMap => "\mbox{theMap(...)}"
+        op = 'AGGLST =>
+            formatNary(","::Sy, "", 0, args, prec)
+        op = 'AGGSET =>
+            formatNary(";"::Sy, "", 0, args, prec)
+        op = 'TAG =>
+            group concat [formatExpr(first args, prec),
+                          "\rightarrow",
+                            formatExpr(second args, prec)]
+        op = 'SLASH =>
+            group concat [formatExpr(first args, prec),
+                          "/", formatExpr(second args, prec)]
+        op = 'VCONCAT =>
+            group concat("\begin{array}{c}",
+                         concat(concat([concat(formatExpr(u, minPrec), "\\")
                                     for u in args]::L S),
                             "\end{array}"))
-      op = "CONCATB" =>
-        formatNary(" ",args,prec)
-      op = "CONCAT" =>
-        formatNary("",args,minPrec)
-      op = "QUOTE" =>
-        group concat("{\tt '}",formatTex(first args, minPrec))
-      op = "BRACKET" =>
-        group addBrackets ungroup formatTex(first args, minPrec)
-      op = "BRACE" =>
-        group addBraces ungroup formatTex(first args, minPrec)
-      op = "PAREN" =>
-        group parenthesize ungroup formatTex(first args, minPrec)
-      op = "PRIME" =>
-          formatSpecial("SUPERSUB", [first args, " "::E, second(args)], prec)
-      op = "OVERBAR" =>
-        null args => ""
-        group concat ["\overline ",formatTex(first args, minPrec)]
-      op = "ROOT" =>
-        null args => ""
-        tmp : S := group formatTex(first args, minPrec)
-        null rest args => group concat ["\sqrt ",tmp]
-        group concat
-          ["\root ",group formatTex(first rest args, minPrec)," \of ",tmp]
-      op = "SEGMENT" =>
-        tmp : S := concat [formatTex(first args, minPrec),".."]
-        group
-          null rest args =>  tmp
-          concat [tmp,formatTex(first rest args, minPrec)]
-      op = "SUB" =>
-        group concat [formatTex(first args, minPrec)," \sb ",
-          formatSpecial("AGGLST",rest args,minPrec)]
-      op = "SUPERSUB" =>
-        -- variable name
-        form : List S := [formatTex(first args, minPrec)]
-        -- subscripts
-        args := rest args
-        null args => concat(form)$S
-        tmp : S := formatTex(first args, minPrec)
-        if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
-          form := append(form,[" \sb ",group tmp])$(List S)
-        -- superscripts
-        args := rest args
-        null args => group concat(form)$S
-        tmp : S := formatTex(first args, minPrec)
-        if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
-          form := append(form,[" \sp ",group tmp])$(List S)
-        -- presuperscripts
-        args := rest args
-        null args => group concat(form)$S
-        tmp : S := formatTex(first args, minPrec)
-        if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
-          form := append([" \sp ",group tmp],form)$(List S)
-          prescript := true
-        -- presubscripts
-        args := rest args
-        null args =>
-          group concat
-            prescript => cons("{}",form)
-            form
-        tmp : S := formatTex(first args, minPrec)
-        if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
-          form := append([" \sb ",group tmp],form)$(List S)
-          prescript := true
-        group concat
-          prescript => cons("{}",form)
-          form
-      op = "SC" =>
-        -- need to handle indentation someday
-        null args => ""
-        tmp := formatNaryNoGroup(" \\ ", args, minPrec)
-        group concat ["\begin{array}{l} ",tmp," \end{array} "]
-      op = "MATRIX" => formatMatrix rest args
-      op = "ZAG" =>
-        concat [" \zag{",formatTex(first args, minPrec),"}{",
-          formatTex(first rest args,minPrec),"}"]
-      concat ["not done yet for ",op]
+        op = 'CONCATB =>
+            formatNary('STRSEP, " \ ", 0, args, prec)
+        op = 'CONCAT =>
+            formatNary('STRSEP, "", 0, args, minPrec)
+        op = 'QUOTE =>
+            group concat("{\tt '}", formatExpr(first args, minPrec))
+        op = 'BRACKET =>
+            group addBrackets ungroup formatExpr(first args, minPrec)
+        op = 'BRACE =>
+            group addBraces ungroup formatExpr(first args, minPrec)
+        op = 'PAREN =>
+            group parenthesize ungroup formatExpr(first args, minPrec)
+        op = 'PRIME =>
+            formatSpecial('SUPERSUB, [first args, " "::E, second(args)], prec)
+        op = 'OVERBAR =>
+            null args => ""
+            group concat ["\overline ", formatExpr(first args, minPrec)]
+        op = 'ROOT =>
+            null args => ""
+            tmp : S := group formatExpr(first args, minPrec)
+            null rest args => group concat ["\sqrt ",tmp]
+            group concat
+                ["\root ", group formatExpr(first rest args, minPrec),
+                   " \of ", tmp]
+        op = 'SEGMENT =>
+            tmp : S := concat [formatExpr(first args, minPrec), ".."]
+            group
+                null rest args =>  tmp
+                concat [tmp, formatExpr(first rest args, minPrec)]
+        op = 'SUB =>
+            group concat [formatExpr(first args, minPrec), " \sb ",
+                formatSpecial('AGGLST, rest args, minPrec)]
+        op = 'SUPERSUB =>
+            -- variable name
+            form : List S := [formatExpr(first args, minPrec)]
+            -- subscripts
+            args := rest args
+            null args => concat(form)$S
+            tmp : S := formatExpr(first args, minPrec)
+            if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
+                form := append(form,[" \sb ",group tmp])$(List S)
+            -- superscripts
+            args := rest args
+            null args => group concat(form)$S
+            tmp : S := formatExpr(first args, minPrec)
+            if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
+                form := append(form,[" \sp ",group tmp])$(List S)
+            -- presuperscripts
+            args := rest args
+            null args => group concat(form)$S
+            tmp : S := formatExpr(first args, minPrec)
+            if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
+                form := append([" \sp ",group tmp],form)$(List S)
+                prescript := true
+            -- presubscripts
+            args := rest args
+            null args =>
+                group concat
+                    prescript => cons("{}",form)
+                    form
+            tmp : S := formatExpr(first args, minPrec)
+            if (tmp ~= "") and (tmp ~= "{}") and (tmp ~= " ") then
+                form := append([" \sb ",group tmp],form)$(List S)
+                prescript := true
+            group concat
+                prescript => cons("{}",form)
+                form
+        op = 'SC =>
+            -- need to handle indentation someday
+            null args => ""
+            tmp := formatNaryNoGroup('STRSEP, " \\ ", 800, args, minPrec)
+            -- error "SC unhandled"
+            group concat ["\begin{array}{l} ",tmp," \end{array} "]
+        op = 'MATRIX => formatMatrix rest args
+        op = 'ZAG =>
+            concat [" \zag{", formatExpr(first args, minPrec), "}{",
+                formatExpr(first rest args, minPrec), "}"]
+        concat ["not done yet for ", string(op)]
 
-    formatPlex(op : S, args : L E, prec : I) : S ==
-      hold : S
-      p : I := position(op,plexOps)
-      p < 1 => error "unknown Tex unary op"
-      opPrec := plexPrecs.p
-      n : I := #args
-      (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
-      s : S :=
-        op = "SIGMA"   => "\sum"
-        op = "SIGMA2"   => "\sum"
-        op = "PI"      => "\prod"
-<<define PI2>>
-        op = "INTSIGN" => "\int"
-        op = "INDEFINTEGRAL" => "\int"
-        "????"
-      hold := formatTex(first args,minPrec)
-      args := rest args
-      if op ~= "INDEFINTEGRAL" then
-        if hold ~= "" then
-          s := concat [s," \sb",group concat ["\displaystyle ",hold]]
-        if not null rest args then
-          hold := formatTex(first args,minPrec)
-          if hold ~= "" then
-            s := concat [s," \sp",group concat ["\displaystyle ",hold]]
-          args := rest args
-        s := concat [s," ",formatTex(first args,minPrec)]
-      else
-        hold := group concat [hold," ",formatTex(first args,minPrec)]
-        s := concat [s," ",hold]
-      if opPrec < prec then s := parenthesize s
-      group s
+    formatPlex(op : Sy, args : L E, prec : I) : S ==
+        hold : S
+        p : I := position(op, plexOps)
+        p < 1 => error "unknown plex op"
+        opPrec := plexPrecs.p
+        n : I := #args
+        (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
+        s : S :=
+            op = 'SIGMA   => "\sum"
+            op = 'SIGMA2   => "\sum"
+            op = 'PI      => "\prod"
+            op = 'PI2     => "\prod"
+            op = 'INTSIGN => "\int"
+            op = 'INDEFINTEGRAL => "\int"
+            "????"
+        hold := formatExpr(first args, minPrec)
+        args := rest args
+        if op ~= 'INDEFINTEGRAL then
+            if hold ~= "" then
+                s := concat [s, " \sb", group concat ["\displaystyle ", hold]]
+            if not null rest args then
+                hold := formatExpr(first args, minPrec)
+                if hold ~= "" then
+                    s := concat [s, " \sp",
+                                 group concat ["\displaystyle ", hold]]
+                args := rest args
+            s := concat [s, " ", formatExpr(first args, opPrec)]
+        else
+            hold := group concat [hold, " ", formatExpr(first args, minPrec)]
+            s := concat [s, " ", hold]
+        if opPrec < prec then s := parenthesize s
+        group s
 
     formatMatrix(args : L E) : S ==
       -- format for args is [[ROW ...],[ROW ...],[ROW ...]]
@@ -510,69 +486,79 @@ TexFormat(): public == private where
         cols := concat(cols,"c")
       cols := concat(cols,"} ")
       group addBrackets concat
-        ["\begin{array}",cols,formatNaryNoGroup(" \\ ",args,minPrec),
-          " \end{array} "]
+        ["\begin{array}", cols, 
+          formatNaryNoGroup('STRSEP, " \\ ", 0, args, minPrec),
+            " \end{array} "]
 
-    formatFunction(op : S, args : L E, prec : I) : S ==
-      group concat [op, " ", parenthesize formatNary(",",args,minPrec)]
+    formatFunction(op : E, args : L E, prec : I) : S ==
+        ops := ops := formatExpr(op, minPrec)
+        group concat [ops, " ", parenthesize
+                      formatNary(","::Sy, "", 0, args, minPrec)]
 
-    formatNullary(op : S) ==
-      op = "NOTHING" => ""
-      group concat [op,"()"]
+    formatNullary(op : Sy) ==
+        op = 'NOTHING => ""
+        group concat [string(op), "()"]
 
-    formatUnary(op : S, arg : E, prec : I) ==
-      p : I := position(op,unaryOps)
-      p < 1 => error "unknown Tex unary op"
-      opPrec := unaryPrecs.p
-      s : S := concat [op,formatTex(arg,opPrec)]
-      opPrec < prec => group parenthesize s
-      op = "-" => s
-      group s
+    formatUnary(op : Sy, arg : E, prec : I) ==
+        p : I := position(op, unaryOps)
+        p < 1 => error "unknown unary op"
+        opPrec := unaryPrecs.p
+        s : S := concat [string(op), formatExpr(arg, opPrec)]
+        opPrec < prec => group parenthesize s
+        op = "-"::Sy => s
+        group s
 
-    formatBinary(op : S, args : L E, prec : I) : S ==
-      p : I := position(op,binaryOps)
-      p < 1 => error "unknown Tex binary op"
-      op :=
-        op = "|"     => " \mid "
-        op = "^"    => " \sp "
-        op = "/"     => " \over "
-        op = "OVER"  => " \over "
-        op = "+->"   => " \mapsto "
-        op
-      opPrec := binaryPrecs.p
-      s : S := formatTex(first args, opPrec)
-      s := concat [s,op,formatTex(first rest args, opPrec)]
-      group
-        op = " \over " => s
+    formatBinary(op : Sy, args : L E, prec : I) : S ==
+        p : I := position(op, binaryOps)
+        p < 1 => error "unknown binary op"
+        opPrec := binaryPrecs.p
+        s1 := formatExpr(first args, opPrec)
+        s2 := formatExpr(first rest args, opPrec)
+        ops : S :=
+            op = "|"::Sy     => " \mid "
+            op = "^"::Sy    => " \sp "
+            op = "/"::Sy     => " \over "
+            op = 'OVER  => " \over "
+            op = "+->"::Sy   => " \mapsto "
+            -- FIXME how to do this properly ???
+            op = 'LET   => " := "
+            string(op)
+        s := concat [s1, ops, s2]
+        group
+            op = "/"::Sy or op = 'OVER => s
+            opPrec < prec => parenthesize s
+            s
+
+    formatNary(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+        group formatNaryNoGroup(op, sep, opprec, args, prec)
+
+    formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+        null args => ""
+        p : I := position(op, naryOps)
+        p < 1 => error "unknown nary op"
+        ops : S :=
+            op = 'STRSEP => sep
+            op = ","::Sy     => ", \: "
+            op = ";"::Sy     => "; \: "
+            op = "*"::Sy     => blank
+            op = '_     => " \ "
+            op = 'ROW   => " & "
+            op = 'TENSOR => " \otimes "
+            string(op)
+        l : L S := nil
+        opPrec :=
+            op = 'STRSEP => opprec
+            naryPrecs.p
+        for a in args repeat
+            l := concat(ops, concat(formatExpr(a, opPrec),l)$L(S))$L(S)
+        s : S := concat reverse rest l
         opPrec < prec => parenthesize s
         s
 
-    formatNary(op : S, args : L E, prec : I) : S ==
-      group formatNaryNoGroup(op, args, prec)
-
-    formatNaryNoGroup(op : S, args : L E, prec : I) : S ==
-      null args => ""
-      p : I := position(op,naryOps)
-      p < 1 => error "unknown Tex nary op"
-      op :=
-        op = ","     => ", \: "
-        op = ";"     => "; \: "
-        op = "*"     => blank
-        op = " "     => " \ "
-        op = "ROW"   => " & "
-        op = "TENSOR" => " \otimes "
-        op
-      l : L S := nil
-      opPrec := naryPrecs.p
-      for a in args repeat
-        l := concat(op,concat(formatTex(a,opPrec),l)$L(S))$L(S)
-      s : S := concat reverse rest l
-      opPrec < prec => parenthesize s
-      s
-
-    formatTex(expr,prec) ==
+    formatExpr(expr : E, prec : I) : S ==
       i,len : Integer
       intSplitLen : Integer := 20
+      str : S
       ATOM(expr)$Lisp pretend Boolean =>
         str := stringify expr
         len := #str
@@ -604,38 +590,42 @@ TexFormat(): public == private where
         len > 0 and str.1 = char "_"" =>
           concat(concat(" \mbox{\tt ",str),"} ")
         len = 1 and str.1 = char " " => "{\ }"
-        (i := position(str,specialStrings)) > 0 =>
-          specialStringsInTeX.i
+        if SYMBOLP(expr)$Lisp then
+            op := expr pretend Symbol
+            (i := position(op,specialStrings)) > 0 =>
+                str := specialStringsInTeX.i
         (i := position(char " ",str)) > 0 =>
           -- We want to preserve spacing, so use a roman font.
           concat(concat(" \mbox{\rm ",str),"} ")
         str
       l : L E := (expr pretend L E)
       null l => blank
-      op : S := stringify first l
+      opf : E := first l
       args : L E := rest l
       nargs : I := #args
 
-      -- special cases
-      member?(op, specialOps) => formatSpecial(op,args,prec)
-      member?(op, plexOps)    => formatPlex(op,args,prec)
-
-      -- nullary case
-      0 = nargs => formatNullary op
-
-      -- unary case
-      (1 = nargs) and member?(op, unaryOps) =>
-        formatUnary(op, first args, prec)
-
-      -- binary case
-      (2 = nargs) and member?(op, binaryOps) =>
-        formatBinary(op, args, prec)
-
-      -- nary case
-      member?(op,naryNGOps) => formatNaryNoGroup(op,args, prec)
-      member?(op,naryOps) => formatNary(op,args, prec)
-      op := formatTex(first l,minPrec)
-      formatFunction(op,args,prec)
+      SYMBOLP(opf)$Lisp =>
+          op := opf pretend Symbol
+          -- special cases
+          member?(op, specialOps) => formatSpecial(op,args,prec)
+          member?(op, plexOps)    => formatPlex(op,args,prec)
+    
+          -- nullary case
+          0 = nargs => formatNullary op
+    
+          -- unary case
+          (1 = nargs) and member?(op, unaryOps) =>
+            formatUnary(op, first args, prec)
+    
+          -- binary case
+          (2 = nargs) and member?(op, binaryOps) =>
+            formatBinary(op, args, prec)
+    
+          -- nary case
+          member?(op,naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
+          member?(op,naryOps) => formatNary(op, "", 0, args, prec)
+          formatFunction(first l, args, prec)
+      formatFunction(first l, args, prec)
 
 @
 \section{package TEX1 TexFormat1}
