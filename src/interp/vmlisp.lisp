@@ -654,6 +654,40 @@
 
 (defun CHAR2NUM (c) (char-code (character c)))
 
+#+(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
+(defun NUM2USTR (n) 
+    (make-string 1 :initial-element (NUM2CHAR n)))
+#-(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
+(defun NUM2USTR (n)
+   (let (k n1 n2 n3 n4 (l nil))
+       (cond
+           ((< n 128)
+               (setf k 1)
+               (setf l (list n)))
+           ((< n (ash 1 11))
+               (setf k 2)
+               (setf n1 (logior 128 (logand 63 n)))
+               (setf n2 (logior 192 (logand 31 (ash n -6))))
+               (setf l (list n2 n1)))
+           ((< n (ash 1 16))
+               (setf k 3)
+               (setf n1 (logior 128 (logand 63 n)))
+               (setf n2 (logior 128 (logand 63 (ash n -6))))
+               (setf n3 (logior 224 (logand 15 (ash n -12))))
+               (setf l (list n3 n2 n1)))
+           ((< n (ash 1 21))
+               (setf k 4)
+               (setf n1 (logior 128 (logand 63 n)))
+               (setf n2 (logior 128 (logand 63 (ash n -6))))
+               (setf n3 (logior 128 (logand 63 (ash n -12))))
+               (setf n4 (logior 240 (logand 7 (ash n -18))))
+               (setf l (list n4 n3 n2 n1)))
+           (t
+               (|error| "Too large character code"))
+       )
+       (make-array k :element-type 'character
+                  :initial-contents (mapcar #'code-char l))))
+
 (defun CGREATERP (s1 s2) (string> (string s1) (string s2)))
 
 (define-function 'STRGREATERP #'CGREATERP)

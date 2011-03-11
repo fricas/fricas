@@ -684,4 +684,4 @@ substringMatch (l,d,i)==
                  else false
        s1
 
-punctuation? c== scanPun.c=1
+punctuation? c== c < 256 and scanPun.c=1
