@@ -55,7 +55,7 @@ funView3D(int viewCommand)
 
   int code;
   int viewPID;
-  float f1,f2,f3,f4;
+  float f1, f2, f3, f4, f5, f6, f7, f8;
   int i1,i2;
   viewManager *viewport;
 
@@ -98,6 +98,44 @@ funView3D(int viewCommand)
       f2 = get_float(spadSock);
       code = write(viewport->viewOut,&f1,floatSize);
       code = write(viewport->viewOut,&f2,floatSize);
+      break;
+
+    case queryVIEWPOINT:
+      code = readViewport(viewport, &f1, floatSize);
+      code = readViewport(viewport, &f2, floatSize);
+      code = readViewport(viewport, &f3, floatSize);
+      code = readViewport(viewport, &f4, floatSize);
+      code = readViewport(viewport, &f5, floatSize);
+      code = readViewport(viewport, &f6, floatSize);
+      code = readViewport(viewport, &f7, floatSize);
+      code = readViewport(viewport, &f8, floatSize);
+      send_float(spadSock, f1);
+      send_float(spadSock, f2);
+      send_float(spadSock, f3);
+      send_float(spadSock, f4);
+      send_float(spadSock, f5);
+      send_float(spadSock, f6);
+      send_float(spadSock, f7);
+      send_float(spadSock, f8);
+      break;
+
+    case changeVIEWPOINT:
+      f1 = get_float(spadSock);
+      f2 = get_float(spadSock);
+      f3 = get_float(spadSock);
+      f4 = get_float(spadSock);
+      f5 = get_float(spadSock);
+      f6 = get_float(spadSock);
+      f7 = get_float(spadSock);
+      f8 = get_float(spadSock);
+      code = write(viewport->viewOut, &f1, floatSize);
+      code = write(viewport->viewOut, &f2, floatSize);
+      code = write(viewport->viewOut, &f3, floatSize);
+      code = write(viewport->viewOut, &f4, floatSize);
+      code = write(viewport->viewOut, &f5, floatSize);
+      code = write(viewport->viewOut, &f6, floatSize);
+      code = write(viewport->viewOut, &f7, floatSize);
+      code = write(viewport->viewOut, &f8, floatSize);
       break;
 
     case modifyPOINT:

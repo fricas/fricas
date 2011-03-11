@@ -150,6 +150,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define unitsColor2D       113 /* for 2D */
 #define modifyPOINT        114 /* for 3D */
 #define hitherPlaneData    116 /* for 3D */
+#define queryVIEWPOINT     117 /* for 3D */
+#define changeVIEWPOINT    118 /* for 3D */
 
 
 
