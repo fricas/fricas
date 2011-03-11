@@ -307,6 +307,7 @@
    vmlisp::|mkOutputConsoleStream|
    vmlisp::|rMkIstream|
    vmlisp::|rMkOstream|
+   vmlisp::NUM2USTR
 ))
 
 (in-package "FOAM")
