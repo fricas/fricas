@@ -246,6 +246,84 @@ spadAction (void)
     changedEyeDistance = yes;
     break;
 
+  case queryVIEWPOINT:
+    f1 = viewport->deltaX;
+    code = check(write(Socket, &f1, floatSize));
+    f1 = viewport->deltaY;
+    code = check(write(Socket, &f1, floatSize));
+    f1 = viewport->scale;
+    code = check(write(Socket, &f1, floatSize));
+    f1 = viewport->scaleX;
+    code = check(write(Socket, &f1, floatSize));
+    f1 = viewport->scaleY;
+    code = check(write(Socket, &f1, floatSize));
+    f1 = viewport->scaleZ;
+    code = check(write(Socket, &f1, floatSize));
+    f1 = viewport->theta;
+    code = check(write(Socket, &f1, floatSize));
+    f1 = viewport->phi;
+    code = check(write(Socket, &f1, floatSize));
+    break;
+
+  case changeVIEWPOINT:
+    readViewman(&f1, floatSize);
+    readViewman(&f2, floatSize);
+    viewport->deltaX = f1;
+    viewport->deltaY = f2;
+    if (viewport->deltaX > maxDeltaX) viewport->deltaX = maxDeltaX;
+    else if (viewport->deltaX < -maxDeltaX) viewport->deltaX = -maxDeltaX;
+    if (viewport->deltaY > maxDeltaY) viewport->deltaY = maxDeltaY;
+    else if (viewport->deltaY < -maxDeltaY) viewport->deltaY = -maxDeltaY;
+    translated = yes;
+
+    readViewman(&f1, floatSize);
+    viewport->scale = f1;
+    if (viewport->scale > maxScale) viewport->scale = maxScale;
+    else if (viewport->scale < minScale) viewport->scale = minScale;
+    zoomed = yes;
+
+    readViewman(&f1, floatSize);
+    readViewman(&f2, floatSize);
+    readViewman(&f3, floatSize);
+    viewport->scaleX = f1;
+    viewport->scaleY = f2;
+    viewport->scaleZ = f3;
+    if ((viewport->scaleX == 1.0) &&
+        (viewport->scaleY == 1.0) &&
+        (viewport->scaleZ == 1.0)) {
+      viewport->zoomXOn = viewport->zoomYOn = viewport->zoomZOn = yes;
+    } else {
+      if (viewport->scaleX == 1.0) viewport->zoomXOn = no;
+      else {
+        if (viewport->scaleX > maxScale) viewport->scaleX = maxScale;
+        else if (viewport->scaleX < minScale) viewport->scaleX = minScale;
+      }
+      if (viewport->scaleY == 1.0) viewport->zoomYOn = no;
+      else {
+        if (viewport->scaleY > maxScale) viewport->scaleY = maxScale;
+        else if (viewport->scaleY < minScale) viewport->scaleY = minScale;
+      }
+      if (viewport->scaleZ == 1.0) viewport->zoomZOn = no;
+      else {
+        if (viewport->scaleZ > maxScale) viewport->scaleZ = maxScale;
+        else if (viewport->scaleZ < minScale) viewport->scaleZ = minScale;
+      }
+    }
+
+    readViewman(&f1, floatSize);
+    readViewman(&f2, floatSize);
+    viewData.theta = f1;
+    viewData.phi = f2;
+    while (viewport->theta >= two_pi) viewport->theta -= two_pi;
+    while (viewport->theta < 0.0)     viewport->theta += two_pi;
+    while (viewport->phi > pi)        viewport->phi   -= two_pi;
+    while (viewport->phi <= -pi)      viewport->phi   += two_pi;
+    viewport->axestheta = viewport->theta;
+    viewport->axesphi = viewport->phi;
+    spadDraw=yes;
+    rotated=yes;
+    break;
+
   case colorDef:
     readViewman(&(viewport->hueOffset),intSize);
     readViewman(&(viewport->numberOfHues),intSize);
