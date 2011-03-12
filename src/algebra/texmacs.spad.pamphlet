@@ -156,9 +156,12 @@ TexmacsFormat(): public == private where
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "<"::Sy,
-                             ">"::Sy, "="::Sy, 'OVER, 'LET]
-    binaryPrecs   : L I := [0, 0, 900, 700, 400, 400, 400, 700, 125]$(L I)
+    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "="::Sy,
+                             "~="::Sy, "<"::Sy, "<="::Sy, ">"::Sy, ">="::Sy,
+                               'OVER, 'LET]
+    binaryPrecs   : L I := [0, 0, 900, 700, 400,
+                            400, 400, 400, 400, 400,
+                              700, 125]$(L I)
 
     naryOps       : L Sy := ["-"::Sy, "+"::Sy, "*"::Sy, ","::Sy, ";"::Sy,
                              'ROW, 'STRSEP, 'TENSOR]
@@ -219,7 +222,7 @@ TexmacsFormat(): public == private where
         ATOM(expr)$Lisp => false
         e1 := first(expr pretend L E)
         EQ(e1, op)$Lisp
- 
+
     -- public function definitions
 
     coerce(expr : E): S ==
@@ -299,11 +302,13 @@ TexmacsFormat(): public == private where
         op = 'SLASH =>
             group concat [formatExpr(first args, prec),
                           " _"/_" ", formatExpr(second args, prec)]
+)if false
         op = 'VCONCAT =>
             group concat("<mtable><mtr>",
                      concat(concat([concat("<mtd>",concat(formatExpr(u, minPrec),"</mtd>"))
                                     for u in args]::L S),
                             "</mtr></mtable>"))
+)endif
         op = 'CONCATB =>
             formatNary('STRSEP, "(space _"1quad_")", 0, args, prec)
         op = 'CONCAT =>
@@ -412,10 +417,10 @@ TexmacsFormat(): public == private where
                 n = 2 => "<sum>"
                 error "wrong number of arguments for plex"
             op = 'SIGMA2 =>
-                 -- sum(a::OutputForm,b::OutputForm,c::OutputForm) produces
-                 -- (SIGMA2 b c a)
-                 n = 3 => "<sum>"
-                 error "wrong number of arguments for plex"
+                -- sum(a::OutputForm,b::OutputForm,c::OutputForm) produces
+                -- (SIGMA2 b c a)
+                n = 3 => "<sum>"
+                error "wrong number of arguments for plex"
             op = 'PI =>
                 -- prod(a::OutputForm,b::OutputForm) produces
                 -- (PI b a)
@@ -476,13 +481,13 @@ TexmacsFormat(): public == private where
                 ")))))"]
 
     formatFunction(op : E, args : L E, prec : I) : S ==
-        ops := ops := formatExpr(op, minPrec)
+        ops := formatExpr(op, minPrec)
         group concat [ops, " ", parenthesize
                       formatNary(","::Sy, "", 0, args, minPrec)]
 
     formatNullary(op : Sy) ==
         op = 'NOTHING => "_"_""
-        group concat ["_"", string(op), "_""]
+        group concat ["_"", string(op), "()_""]
 
     formatUnary(op : Sy, arg : E, prec : I) ==
         p : I := position(op, unaryOps)
@@ -501,15 +506,19 @@ TexmacsFormat(): public == private where
         s1 := formatExpr(first args, opPrec)
         s2 := formatExpr(first rest args, opPrec)
         s : S :=
-            op = "|"::Sy     => concat ["(concat ", s1, "_"|_"", s2, ")"]
             op = "^"::Sy    => concat ["(concat " s1 "(rsup " s2 "))"]
             op = "/"::Sy     => concat ["(frac ",s1," ",s2,")"]
             op = 'OVER  => concat ["(frac ",s1," ",s2,")"]
-            op = "+->"::Sy   => concat ["(concat ", s1, "+->", s2, ")"]
-            op = "<"::Sy => concat ["(concat ", s1, " _"<less>_" ", s2,")"]
-            -- FIXME how to do this properly ???
-            op = 'LET   => concat ["(concat ", s1, " _":=_" ", s2, ")"]
-            concat ["(concat ", s1, " _"", string(op), "_" ", s2, ")"]
+            ops : S := 
+                op = "~="::Sy => "<ne>"
+                op = "<"::Sy => "<less>"
+                op = "<="::Sy => "<leq>"
+                op = ">"::Sy => "<gtr>"
+                op = ">="::Sy => "<geq>"
+                -- FIXME how to do this properly ???
+                op = 'LET   => ":="
+                string(op)
+            concat ["(concat ", s1, " _"", ops, "_" ", s2, ")"]
         group
             op = "/"::Sy or op = 'OVER => s
             opPrec < prec => parenthesize s
@@ -519,64 +528,54 @@ TexmacsFormat(): public == private where
         group formatNaryNoGroup(op, sep, opprec, args, prec)
 
     formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
-      null args => ""
-      p : I := position(op,naryOps)
-      p < 1 => error "unknown nary op"
-      -- need to test for "ZAG" case and divert it here
-      -- ex 1. continuedFraction(314159/100000)
-      -- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
-      -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
-      -- this is the preconditioned output form
-      -- including "op", the args list would be the rest of this
-      -- i.e op = '+' and args = {{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}
-      -- {{ZAG}{1}{1}}{{ZAG}{1}{25}}{{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
-      -- ex 2. continuedFraction(14159/100000)
-      -- this one doesn't have the leading integer
-      -- {{+}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
-      -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
-      --
-      -- ex 3. continuedFraction(3,repeating [1], repeating [3,6])
-      -- {{+}{3}{{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
-      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
-      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{...}}
-      -- In each of these examples the args list consists of the terms
-      -- following the '+' op
-      -- so the first arg could be a "ZAG" or something
-      -- else, but the second arg looks like it has to be "ZAG", so maybe
-      -- test for #args > 1 and args.2 contains "ZAG".
-      -- Note that since the resulting MathML <mfrac>s are nested we need
-      -- to handle the whole continued fraction at once, i.e. we can't
-      -- just look for, e.g., {{ZAG}{1}{6}}
-      (#args > 1) and has_op?(args(2), 'ZAG) =>
-           op ~= "+"::Sy => error "ZAG in unexpected place"
-           tmpS : S := stringify first args
-           has_op?(args(1), 'ZAG) => formatZag(args)
-           concat [formatExpr(first args, minPrec), " _"+_" ",
-                   formatZag(rest args)]
-      ops : S :=
-        op = 'STRSEP => sep
-        op = ","::Sy     => " _",_" " --originally , \:
-        op = ";"::Sy     => " _";_" " --originally ; \: should figure these out
-        op = "*"::Sy     => " _"*_" "
-        -- InvisibleTimes
-        op = 'ROW   => ") (cell "
-        op = "+"::Sy     =>
-            " _"+_" "
-        op = "-"::Sy     =>
-            " _"-_" "
-        op = 'TENSOR => " _"<otimes>_" "
-        string(op)
-      l : L S := nil
-      opPrec :=
-           op = 'STRSEP => opprec
-           naryPrecs.p
-      for a in args repeat
-        l := concat(ops, concat(formatExpr(a, opPrec), l)$L(S))$L(S)
-      s : S := concat reverse rest l
-      -- SAY("formatNaryNoGroup precedences")$Lisp
-      -- SAY([opPrec, prec])$Lisp
-      opPrec < prec => parenthesize s
-      s
+        null args => ""
+        p : I := position(op, naryOps)
+        p < 1 => error "unknown nary op"
+        -- need to test for "ZAG" case and divert it here
+        -- ex 1. continuedFraction(314159/100000)
+        -- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
+        -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+        -- this is the preconditioned output form
+        -- including "op", the args list would be the rest of this
+        -- i.e op = '+' and args = {{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}
+        -- {{ZAG}{1}{1}}{{ZAG}{1}{25}}{{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+        -- ex 2. continuedFraction(14159/100000)
+        -- this one doesn't have the leading integer
+        -- {{+}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
+        -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
+        --
+        -- ex 3. continuedFraction(3,repeating [1], repeating [3,6])
+        -- {{+}{3}{{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
+        -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
+        -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{...}}
+        -- In each of these examples the args list consists of the terms
+        -- following the '+' op
+        -- so the first arg could be a "ZAG" or something
+        -- else, but the second arg looks like it has to be "ZAG", so maybe
+        -- test for #args > 1 and args.2 contains "ZAG".
+        -- Note that since the resulting MathML <mfrac>s are nested we need
+        -- to handle the whole continued fraction at once, i.e. we can't
+        -- just look for, e.g., {{ZAG}{1}{6}}
+        (#args > 1) and has_op?(args(2), 'ZAG) =>
+            op ~= "+"::Sy => error "ZAG in unexpected place"
+            tmpS : S := stringify first args
+            has_op?(args(1), 'ZAG) => formatZag(args)
+            concat [formatExpr(first args, minPrec), " _"+_" ",
+                    formatZag(rest args)]
+        ops : S :=
+            op = 'STRSEP => sep
+            op = 'ROW   => ") (cell "
+            op = 'TENSOR => " _"<otimes>_" "
+            concat [" _"", string(op), "_" "]
+        l : L S := nil
+        opPrec :=
+            op = 'STRSEP => opprec
+            naryPrecs.p
+        for a in args repeat
+            l := concat(ops, concat(formatExpr(a, opPrec), l)$L(S))$L(S)
+        s : S := concat reverse rest l
+        opPrec < prec => parenthesize s
+        s
 
     formatZag(args : L E) : S ==
       -- args will be a list of things like this {{ZAG}{1}{7}}, the ZAG
@@ -592,7 +591,7 @@ TexmacsFormat(): public == private where
       error "formatZag: Last argument in ZAG construct has unknown operator: "op
 
     formatExpr(expr : E, prec : I) : S ==
-      i,len : Integer
+      i, len : Integer
       intSplitLen : Integer := 20
       ATOM(expr)$Lisp@Boolean =>
         str := stringify expr
@@ -606,37 +605,35 @@ TexmacsFormat(): public == private where
                  nstr : String := ""
                  -- insert some blanks into the string, if too long
                  while ((len := #str) > intSplitLen) repeat
-                   nstr := concat [nstr," ",
-                     elt(str,segment(1,intSplitLen)$US)]
-                   str := elt(str,segment(intSplitLen+1)$US)
-                 empty? nstr => concat[" _"",str,"_" "]
+                   nstr := concat [nstr, " ",
+                     elt(str, segment(1, intSplitLen)$US)]
+                   str := elt(str, segment(intSplitLen + 1)$US)
+                 empty? nstr => concat [" _"", str, "_" "]
                  nstr :=
                    empty? str => nstr
-                   concat [nstr," ",str]
-                 concat [elt(nstr,segment(2)$US)]
-            else concat[" _"",str,"_" "]
+                   concat [nstr, " ", str]
+                 concat [elt(nstr, segment(2)$US)]
+            else concat [" _"", str, "_" "]
         str = "%pi" => "<pi>"
         -- pi
         str = "%e"  => "e"
         -- ExponentialE
         str = "%i"  => "i"
         -- ImaginaryI
-        len > 0 and str.1 = char "%" => concat(concat(" _"",str),"_" ")
+        len > 0 and str.1 = char "%" => concat [" _"", str, "_" "]
         -- presumably this is a literal string
         len > 0 and str.1 = char "_"" =>
-          concat(concat("(concat ",str),")")
+          concat ["(concat ", str, ")"]
         len = 1 and str.1 = char " " => " "
         if SYMBOLP(expr)$Lisp then
             op := expr pretend Symbol
-            (i := position(op,specialStrings)) > 0 =>
+            (i := position(op, specialStrings)) > 0 =>
                 specialStringsInMML.i
-        (i := position(char " ",str)) > 0 =>
+        (i := position(char " ", str)) > 0 =>
           -- We want to preserve spacing, so use a roman font.
-          -- What's this for?  Leave the \rm in for now so I can see
-          -- where it arises.  Removed 2007-02-14
-          concat[" _"" str "_" "]
+          concat [" _"", str, "_" "]
         -- if we get to here does that mean it's a variable?
-        group concat[" _"",str,"_" "]
+        group concat [" _"", str, "_" "]
       l : L E := (expr pretend L E)
       null l => blank
       opf : E := first l
@@ -646,23 +643,23 @@ TexmacsFormat(): public == private where
       SYMBOLP(opf)$Lisp =>
           op := opf pretend Symbol
           -- special cases
-          member?(op, specialOps) => formatSpecial(op,args,prec)
-          member?(op, plexOps)    => formatPlex(op,args,prec)
-    
+          member?(op, specialOps) => formatSpecial(op, args, prec)
+          member?(op, plexOps)    => formatPlex(op, args, prec)
+
           -- nullary case
           0 = nargs => formatNullary op
-    
+
           -- unary case
           (1 = nargs) and member?(op, unaryOps) =>
             formatUnary(op, first args, prec)
-    
+
           -- binary case
           (2 = nargs) and member?(op, binaryOps) =>
             formatBinary(op, args, prec)
-    
+
           -- nary case
-          member?(op,naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
-          member?(op,naryOps) => formatNary(op, "", 0, args, prec)
+          member?(op, naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
+          member?(op, naryOps) => formatNary(op, "", 0, args, prec)
           formatFunction(first l, args, prec)
       formatFunction(first l, args, prec)
 

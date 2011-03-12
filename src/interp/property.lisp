@@ -71,7 +71,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
    (|+->| " +-> ")
    (SEGMENT "..")
    (in " in ")
-   (|^=|  "^=")
+   (|~=|  "~=")
    (JOIN " JOIN ")
    (EQUATNUM "  ")
    (IQUOTIENT "//")
@@ -95,7 +95,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 (REPEAT (IN X '(
   (= "=")
   (|:| ":")
-  (|not| "^ ")
+  (|not| "~ ")
   (\| " \| ")
   (SEGMENT "..")  ;" 0.. is represented by (SEGMENT 0)"
  )) (MAKEPROP (CAR X) 'PREFIXOP (CADR X)))
