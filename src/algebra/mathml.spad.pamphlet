@@ -80,16 +80,16 @@ Here's a list of test cases that currently format correctly:
 
 4. (5 + sqrt 63 + sqrt 847)^(1/3)
 
-5. set $[$1,2,3$]$
+5. set [1,2,3]
 
-6. multiset $[$x rem 5 for x in primes(2,1000)$]$
+6. multiset [x rem 5 for x in primes(2,1000)]
 
 7. series(sin(a*x),x=0)
 
-8. matrix $[$ $[$x^i + y^j for i in 1..10$]$ for j in 1..10$]$
+8. matrix [ [x^i + y^j for i in 1..10] for j in 1..10]
 
 9. y := operator 'y
-   a. D(y(x,z),$[$x,x,z,x$]$)
+   a. D(y(x,z), [x,x,z,x])
    b. D(y x,x,2)
 
 10. x := series 'x
@@ -107,7 +107,22 @@ Here's a list of test cases that currently format correctly:
     x := operator x
     y := operator y
     a := F(x z,y z,z^2) + x y(z+1)
-    D(a,z)
+    D(a, z)
+
+15. a[1,2]
+
+16. M := FreeModule(Integer, Symbol)
+    N := FreeModule(Integer, Symbol)
+    MxN ==> TensorProduct(Integer, Symbol, Symbol, M, N)
+    a := 'a::M
+    b := 'b::N
+    tensor(a, b)$MxN
+
+17. presub(F::OutputForm, 2::OutputForm)
+    presub(F,2)$OutputForm
+    scripts(F::OutputForm, [2::OutputForm, empty()$OutputForm, _
+            empty()$OutputForm, 1::OutputForm])
+    scripts(F,[2, empty(), empty(), 1])$OutputForm
 
 The \spadtype{TexFormat} domain has the capability to format an object with
 subscripts, superscripts, presubscripts and presuperscripts however
@@ -333,7 +348,42 @@ to have a humanly readable formatted output as well.  The basics do exist in
 the coerceS function however the formatting still needs some work to be
 really good.
 
-<<public declarations>>=
+\subsubsection{Formatting Functions}
+
+Still need to format \\zag in formatSpecial!
+
+In formatPlex the case op = "INTSIGN" is now passed off to
+formatIntSign which is a change from the TexFormat domain.
+This is done here for presentation mark up to replace the
+ugly bound variable that Axiom delivers.  For content mark up
+this has to be done anyway.
+
+The formatPlex function also allows for op = "INDEFINTEGRAL".
+However I don't know what Axiom command gives rise to this case.
+The INTSIGN case already allows for both definite and indefinite
+integrals.
+
+In the function formatSpecial various cases are handled including
+SUB and SUPERSUB.  These cases are now caught in formatMml and so
+the code in formatSpecial doesn't get executed.  The only cases
+I know of using these are partial derivatives for SUB and ordinary
+derivatives or SUPERSUB however in TexFormat the capability is there
+to handle multiscripts, i.e. an object with subscripts, superscripts,
+pre-subscripts and pre-superscripts but I am so far unaware of any
+Axiom command that produces such a multiscripted object.
+
+Another question is how to represent derivatives.  At present I have
+differential notation for partials and prime notation for ordinary
+derivatives,
+but it would be nice to allow for different derivative notations in
+different circumstances, maybe some options to )set output mathml on.
+
+Ordinary derivatives are formatted in formatSuperSub and there are
+2 versions, formatSuperSub and formatSuperSub1, which at this point
+have to be switched by swapping names.
+
+
+<<package MMLFORM MathMLForm>>=
 )abbrev domain MMLFORM MathMLFormat
 ++ Author: Arthur C. Ralfs
 ++ Date: January 2007
@@ -349,6 +399,7 @@ MathMLFormat(): public == private where
   I      ==> Integer
   L      ==> List
   S      ==> String
+  Sy     ==> Symbol
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
@@ -362,7 +413,7 @@ MathMLFormat(): public == private where
       ++ coerceS(o) changes o in the standard output format to MathML
       ++ format and displays result as one long string.
     exprex:    E -> S
-      ++ coverts \spadtype{OutputForm} to \spadtype{String} with the
+      ++ converts \spadtype{OutputForm} to \spadtype{String} with the
       ++ structure preserved with braces.  Actually this is not quite
       ++ accurate.  The function \spadfun{precondition} is first
       ++ applied to the
@@ -374,9 +425,6 @@ MathMLFormat(): public == private where
     display:   S -> Void
       ++ prints the string returned by coerce, adding <math ...> tags.
 
-@
-\subsection{Private Constant Declarations}
-<<private constant declarations>>=
   private == add
     import OutputForm
     import Character
@@ -394,114 +442,47 @@ MathMLFormat(): public == private where
     maxPrec       : I   := 1000000
     minPrec       : I   := 0
 
-    unaryOps      : L S := ["-"]$(L S)
-    unaryPrecs    : L I := [700]$(L I)
+    unaryOps      : L Sy := ["-"::Sy]$(L Sy)
+    unaryPrecs    : L I := [710]$(L I)
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L S := ["+->","|","^","/","<",">","=","OVER"]$(L S)
-    binaryPrecs   : L I := [0,0,900, 700,400,400,400,   700]$(L I)
+    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "="::Sy,
+                             "~="::Sy, "<"::Sy, "<="::Sy, ">"::Sy, ">="::Sy,
+                               'OVER, 'LET]
+    binaryPrecs   : L I := [0, 0, 900, 700, 400,
+                            400, 400, 400, 400, 400,
+                              700, 125]$(L I)
 
-    naryOps       : L S := ["-","+","*",blank,",",";"," ","ROW","",
-       " \cr ","&","</mtd></mtr><mtr><mtd>"]$(L S)
-    naryPrecs     : L I := [700,700,800,  800,110,110,  0,    0, 0,
-             0,  0,   0]$(L I)
-    naryNGOps     : L S := ["ROW","&"]$(L S)
+    naryOps       : L Sy := ["-"::Sy, "+"::Sy, "*"::Sy, ","::Sy, ";"::Sy,
+                             'ROW, 'STRSEP, 'TENSOR]
+    naryPrecs     : L I := [700, 700, 800, 110, 110,
+                            0, 0, 850]$(L I)
+    naryNGOps     : L Sy := ['ROW]
 
-    plexOps       : L S := ["SIGMA","SIGMA2","PI","PI2","INTSIGN","INDEFINTEGRAL"]$(L S)
-    plexPrecs     : L I := [    700, 800,     700, 800 , 700,      700]$(L I)
+    plexOps       : L Sy := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN, _
+                             'INDEFINTEGRAL]
+    plexPrecs     : L I := [ 750, 750, 750, 750, 700,   700]$(L I)
 
-    specialOps    : L S := ["MATRIX","BRACKET","BRACE","CONCATB","VCONCAT",  _
-                            "AGGLST","CONCAT","OVERBAR","ROOT","SUB","TAG", _
-                            "SUPERSUB","ZAG","AGGSET","SC","PAREN", _
-                            "SEGMENT","QUOTE","theMap", "SLASH"]
+    specialOps    : L Sy := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
+                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
+                             'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
+                             'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME, _
+                             'BOX, 'EQUATNUM, 'BINOMIAL, 'NOTHING]
 
     -- the next two lists provide translations for some strings for
     -- which MML provides special macros.
 
-    specialStrings : L S :=
-      ["cos", "cot", "csc", "log", "sec", "sin", "tan",
-        "cosh", "coth", "csch", "sech", "sinh", "tanh",
-          "acos","asin","atan","erf","...","$","infinity","Gamma"]
+    specialStrings : L Sy :=
+      ['cos, 'cot, 'csc, 'log, 'sec, 'sin, 'tan,
+        'cosh, 'coth, 'csch, 'sech, 'sinh, 'tanh,
+          'acos, 'asin, 'atan, 'erf, "..."::Sy, "$"::Sy, 'infinity,
+            'Gamma]
     specialStringsInMML : L S :=
       ["<mo>cos</mo>","<mo>cot</mo>","<mo>csc</mo>","<mo>log</mo>","<mo>sec</mo>","<mo>sin</mo>","<mo>tan</mo>",
         "<mo>cosh</mo>","<mo>coth</mo>","<mo>csch</mo>","<mo>sech</mo>","<mo>sinh</mo>","<mo>tanh</mo>",
           "<mo>arccos</mo>","<mo>arcsin</mo>","<mo>arctan</mo>","<mo>erf</mo>","<mo>&#x2026;</mo>","<mo>$</mo>","<mo>&#x221E;</mo>","<mo>&#x0413;</mo>"]
 
-@
-\subsection{Private Function Declarations}
-
-These are the local functions:
-
-    addBraces:S -$>$ S
-
-    addBrackets:S -$>$ S
-
-    atomize:E -$>$ L E
-
-    displayElt:S -$>$ Void
-      function for recursively displaying mathml nicely formatted
-
-    eltLimit:(S,I,S) -$>$ I
-      demarcates end postion of mathml element with name:S starting at
-      position i:I in mathml string s:S and returns end of end tag as
-      i:I position in mathml string, i.e. find start and end of
-      substring:  <name ...$>$...</name$>$
-
-    eltName:(I,S) -$>$ S
-      find name of mathml element starting at position i:I in string s:S
-
-    group:S -$>$ S
-
-    formatBinary:(S,L E, I) -$>$ S
-
-    formatFunction:(S,L E, I) -$>$ S
-
-    formatMatrix:L E -$>$ S
-
-    formatNary:(S,L E, I) -$>$ S
-
-    formatNaryNoGroup:(S,L E, I) -$>$ S
-
-    formatNullary:S -$>$ S
-
-    formatPlex:(S,L E, I) -$>$ S
-
-    formatSpecial:(S,L E, I) -$>$ S
-
-    formatUnary:(S,  E, I) -$>$ S
-
-    formatMml:(E,I) -$>$ S
-
-    newWithNum:I -$>$ \$
-      this is a relic from tex.spad and is not used here so far.  I'll
-      probably remove it.
-
-    parenthesize:S -$>$ S
-
-    precondition:E -$>$ E
-      this function is applied to the OutputForm expression before
-      doing anything else.
-
-    postcondition:S -$>$ S
-      this function is applied after all other OutputForm -$>$ MathML
-      transformations.  In the TexFormat domain the ungroup function
-      first peels off the outermost set of braces however I have
-      replaced braces with <mrow$>$s here and sometimes the outermost set
-      of <mrow$>$s is necessary to get proper display in Firefox.  For instance
-      with getting the correct size of brackets on a matrix the whole
-      expression needs to be enclosed in a mrow element.  It also checks
-      for +- and removes the +.
-
-    stringify:E -$>$ S
-
-    tagEnd:(S,I,S) -$>$ I
-      finds closing "$>$" of start or end tag for mathML element for formatting
-      MathML string for human readability.  No analog in TexFormat.
-
-    ungroup:S -$>$ S
-
-<<private function declarations>>=
     -- local function signatures
 
     addBraces:      S -> S
@@ -517,70 +498,77 @@ These are the local functions:
     eltName:        (I,S) -> S
       ++ find name of mathml element starting at position i:I in string s:S
     group:          S -> S
-    formatBinary:   (S,L E, I) -> S
-    formatFunction: (S,L E, I) -> S
-    formatIntSign:  (L E, I) -> S
+    formatBinary:   (Sy, L E, I) -> S
+    formatFunction: (E, L E, I) -> S
     formatMatrix:   L E -> S
-    formatNary:     (S,L E, I) -> S
-    formatNaryNoGroup: (S,L E, I) -> S
-    formatNullary:  S -> S
-    formatPlex:     (S,L E, I) -> S
-    formatSpecial:  (S,L E, I) -> S
+    formatNary:     (Sy, S, I, L E, I) -> S
+    formatNaryNoGroup: (Sy, S, I, L E, I) -> S
+    formatNullary:  Sy -> S
+    formatPlex:     (Sy, L E, I) -> S
+    formatSpecial:  (Sy, L E, I) -> S
+    formatUnary:    (Sy, E, I) -> S
+    formatExpr:      (E, I) -> S
+
+    formatPrime : (L E, I) -> S
     formatSub:      (E, L E, I) -> S
     formatSuperSub: (E, L E, I) -> S
     formatSuperSub1: (E, L E, I) -> S
-    formatUnary:    (S,  E, I) -> S
-    formatMml:      (E,I) -> S
     formatZag:      L E -> S
     formatZag1:     L E -> S
     newWithNum:     I -> %
     parenthesize:   S -> S
     precondition:   E -> E
+      -- this function is applied to the OutputForm expression before
+      -- doing anything else.
+
     postcondition:  S -> S
+      -- this function is applied after all other OutputForm -> MathML
+      -- transformations.  In the TexFormat domain the ungroup function
+      -- first peels off the outermost set of braces however I have
+      -- replaced braces with <mrow>s here and sometimes the outermost set
+      -- of <mrow>s is necessary to get proper display in Firefox.  For
+      -- instance with getting the correct size of brackets on a matrix
+      -- the whole expression needs to be enclosed in a mrow element.
+      --  It also checks for +- and removes the +.
+
     stringify:      E -> S
     tagEnd:         (S,I,S) -> I
       ++  finds closing ">" of start or end tag for mathML element
     ungroup:        S -> S
 
-@
-\subsection{Public Function Definitions}
+    has_op?(expr : E, op : Sy) : Boolean ==
+        ATOM(expr)$Lisp => false
+        e1 := first(expr pretend L E)
+        EQ(e1, op)$Lisp
 
-Note that I use the function sayTeX$Lisp much as I would printf in a
-C program.  I've noticed in grepping the code that there are other "say"
-functions, sayBrightly and sayMessage for instance, but I have no idea
-what the difference is between them at this point.  sayTeX$Lisp does the
-job so for the time being I'll use that until I learn more.
-
-The functions coerceS and coerceL should probably be changed to display
-functions, {\it i.e.}\/ \spadfun{displayS} and \spadfun{display L},
-returning Void.  I really only need the one coerce function.
-
-<<public function definitions>>=
     -- public function definitions
 
     coerce(expr : E): S ==
-      s : S := postcondition formatMml(precondition expr, minPrec)
+      s : S := postcondition formatExpr(precondition expr, minPrec)
       s
+
+    sayExpr(s : S) : Void ==
+        sayMathML$Lisp s
 
     coerceS(expr : E): S ==
-      s : S := postcondition formatMml(precondition expr, minPrec)
-      sayTeX$Lisp "<math xmlns=_"http://www.w3.org/1998/Math/MathML_" mathsize=_"big_" display=_"block_">"
-      displayElt(s)
-      sayTeX$Lisp "</math>"
-      s
+        s : S := postcondition formatExpr(precondition expr, minPrec)
+        sayExpr "<math xmlns=_"http://www.w3.org/1998/Math/MathML_" mathsize=_"big_" display=_"block_">"
+        displayElt(s)
+        sayExpr "</math>"
+        s
 
     coerceL(expr : E): S ==
-      s : S := postcondition formatMml(precondition expr, minPrec)
-      sayTeX$Lisp "<math xmlns=_"http://www.w3.org/1998/Math/MathML_" mathsize=_"big_" display=_"block_">"
-      sayTeX$Lisp s
-      sayTeX$Lisp "</math>"
-      s
+        s : S := postcondition formatExpr(precondition expr, minPrec)
+        sayExpr "<math xmlns=_"http://www.w3.org/1998/Math/MathML_" mathsize=_"big_" display=_"block_">"
+        sayExpr s
+        sayExpr "</math>"
+        s
 
     display(mathml : S): Void ==
-      sayTeX$Lisp "<math xmlns=_"http://www.w3.org/1998/Math/MathML_" mathsize=_"big_" display=_"block_">"
-      sayTeX$Lisp mathml
-      sayTeX$Lisp "</math>"
-      void()$Void
+        sayExpr "<math xmlns=_"http://www.w3.org/1998/Math/MathML_" mathsize=_"big_" display=_"block_">"
+        sayExpr mathml
+        sayExpr "</math>"
+        void()$Void
 
 
 
@@ -607,20 +595,6 @@ returning Void.  I really only need the one coerce function.
           s := concat [s,s1]
       s := concat [s,"}"]
 
-@
-\subsection{Private Function Definitions}
-
-\subsubsection{Display Functions}
-
-    displayElt(mathml:S):Void
-
-    eltName(pos:I,mathml:S):S
-
-    eltLimit(name:S,pos:I,mathml:S):I
-
-    tagEnd(name:S,pos:I,mathml:S):I
-
-<<display functions>>=
 
     displayElt(mathML:S): Void ==
       -- Takes a string of syntactically complete mathML
@@ -710,42 +684,6 @@ returning Void.  I really only need the one coerce function.
       --sayTeX$Lisp "tagEnd: "mathML.u
       pI
 
-@
-\subsubsection{Formatting Functions}
-
-Still need to format \\zag in formatSpecial!
-
-In formatPlex the case op = "INTSIGN" is now passed off to
-formatIntSign which is a change from the TexFormat domain.
-This is done here for presentation mark up to replace the
-ugly bound variable that Axiom delivers.  For content mark up
-this has to be done anyway.
-
-The formatPlex function also allows for op = "INDEFINTEGRAL".
-However I don't know what Axiom command gives rise to this case.
-The INTSIGN case already allows for both definite and indefinite
-integrals.
-
-In the function formatSpecial various cases are handled including
-SUB and SUPERSUB.  These cases are now caught in formatMml and so
-the code in formatSpecial doesn't get executed.  The only cases
-I know of using these are partial derivatives for SUB and ordinary
-derivatives or SUPERSUB however in TexFormat the capability is there
-to handle multiscripts, i.e. an object with subscripts, superscripts,
-pre-subscripts and pre-superscripts but I am so far unaware of any
-Axiom command that produces such a multiscripted object.
-
-Another question is how to represent derivatives.  At present I have
-differential notation for partials and prime notation for ordinary
-derivatives,
-but it would be nice to allow for different derivative notations in
-different circumstances, maybe some options to )set output mathml on.
-
-Ordinary derivatives are formatted in formatSuperSub and there are
-2 versions, formatSuperSub and formatSuperSub1, which at this point
-have to be switched by swapping names.
-
-<<formatting functions>>=
 
     atomize(expr : E): L E ==
       -- This breaks down an expression into a flat list of atomic expressions.
@@ -791,7 +729,10 @@ have to be switched by swapping names.
 
     stringify expr == (mathObject2String$Lisp expr)@S
 
-
+    optionalWrap(expr : E) : S ==
+        tmp : S := formatExpr(expr, minPrec)
+        tmp = "" or tmp = " " => "<none/>"
+        concat ["<mrow>", tmp, "</mrow>"]
 
     group str ==
       concat ["<mrow>",str,"</mrow>"]
@@ -808,531 +749,253 @@ have to be switched by swapping names.
     precondition expr ==
       outputTran$Lisp expr
 
-    formatSpecial(op : S, args : L E, prec : I) : S ==
-      arg : E
-      prescript : Boolean := false
-      op = "theMap" => "<mtext>theMap(...)</mtext>"
-      op = "AGGLST" =>
-        formatNary(",",args,prec)
-      op = "AGGSET" =>
-        formatNary(";",args,prec)
-      op = "TAG" =>
-        group concat [formatMml(first args,prec),
-                      "<mo>&#x02192;</mo>",
-                        formatMml(second args,prec)]
+    formatSpecial(op : Sy, args : L E, prec : I) : S ==
+        arg : E
+        prescript : Boolean := false
+        op = 'theMap => "<mtext>theMap(...)</mtext>"
+        op = 'AGGLST =>
+            formatNary(","::Sy, "", 0, args, prec)
+        op = 'AGGSET =>
+            formatNary(";"::Sy, "", 0, args, prec)
+        op = 'TAG =>
+            group concat [formatExpr(first args, prec),
+                          "<mo>&#x02192;</mo>",
+                            formatExpr(second args, prec)]
                          --RightArrow
-      op = "SLASH" =>
-        group concat [formatMml(first args, prec),
-                      "<mo>/</mo>", formatMml(second args,prec)]
-      op = "VCONCAT" =>
-        group concat("<mtable><mtr>",
-                     concat(concat([concat("<mtd>",concat(formatMml(u, minPrec),"</mtd>"))
-                                    for u in args]::L S),
-                            "</mtr></mtable>"))
-      op = "CONCATB" =>
-        formatNary(" ",args,prec)
-      op = "CONCAT" =>
-        formatNary("",args,minPrec)
-      op = "QUOTE" =>
-        group concat("<mo>'</mo>",formatMml(first args, minPrec))
-      op = "BRACKET" =>
-        group addBrackets ungroup formatMml(first args, minPrec)
-      op = "BRACE" =>
-        group addBraces ungroup formatMml(first args, minPrec)
-      op = "PAREN" =>
-        group parenthesize ungroup formatMml(first args, minPrec)
-      op = "OVERBAR" =>
-        null args => ""
-        group concat ["<mover accent='true'><mrow>",formatMml(first args,minPrec),"</mrow><mo stretchy='true'>&#x000AF;</mo></mover>"]
-         --OverBar
-      op = "ROOT" =>
-        null args => ""
-        tmp : S := group formatMml(first args, minPrec)
-        null rest args => concat ["<msqrt>",tmp,"</msqrt>"]
-        group concat
-          ["<mroot><mrow>",tmp,"</mrow>",formatMml(first rest args, minPrec),"</mroot>"]
-      op = "SEGMENT" =>
-        tmp : S := concat [formatMml(first args, minPrec),"<mo>..</mo>"]
-        group
-          null rest args =>  tmp
-          concat [tmp,formatMml(first rest args, minPrec)]
-      -- SUB should now be diverted in formatMml although I'll leave
-      -- the code here for now.
-      op = "SUB" =>
-        group concat ["<msub>",formatMml(first args, minPrec),
-          formatSpecial("AGGLST",rest args,minPrec),"</msub>"]
-      -- SUPERSUB should now be diverted in formatMml although I'll leave
-      -- the code here for now.
-      op = "SUPERSUB" =>
-        base:S := formatMml(first args, minPrec)
-        args := rest args
-        if #args = 1 then
-          "<msub><mrow>"base"</mrow><mrow>"formatMml(first args, minPrec)"</mrow></msub>"
-        else if #args = 2 then
-        -- it would be nice to substitue &#x2032; for , in the case of
-        -- an ordinary derivative, it looks a lot better.
-          "<msubsup><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args, minPrec)"</mrow></msubsup>"
-        else if #args = 3 then
-          "<mmultiscripts><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args,minPrec)"</mrow><mprescripts/><mrow>"formatMml(first rest rest args,minPrec)"</mrow><none/></mmultiscripts>"
-        else if #args = 4 then
-          "<mmultiscripts><mrow>"base"</mrow><mrow>"formatMml(first args,minPrec)"</mrow><mrow>"formatMml(first rest args,minPrec)"</mrow><mprescripts/><mrow>"formatMml(first rest rest args,minPrec)"</mrow><mrow>"formatMml(first rest rest rest args,minPrec)"</mrow></mmultiscripts>"
-        else
-          "<mtext>Problem with multiscript object</mtext>"
-      op = "SC" =>
-        -- need to handle indentation someday
-        null args => ""
-        tmp := formatNaryNoGroup("</mtd></mtr><mtr><mtd>", args, minPrec)
-        group concat ["<mtable><mtr><mtd>",tmp,"</mtd></mtr></mtable>"]
-      op = "MATRIX" => formatMatrix rest args
-      op = "ZAG" =>
--- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}{{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
--- to format continued fraction traditionally need to intercept it at the
--- formatNary of the "+"
-        concat [" \zag{",formatMml(first args, minPrec),"}{",
-          formatMml(first rest args,minPrec),"}"]
-      concat ["<mtext>not done yet for: ",op,"</mtext>"]
+        op = 'SLASH =>
+            group concat [formatExpr(first args, prec),
+                          "<mo>/</mo>", formatExpr(second args,prec)]
+        op = 'VCONCAT =>
+            group concat ["<mtable><mtr>",
+                          concat([concat ["<mtd>", formatExpr(u, minPrec),
+                                          "</mtd>"] for u in args]::L S),
+                            "</mtr></mtable>"]
+        op = 'CONCATB =>
+            formatNary('STRSEP, " ", 0, args, minPrec)
+        op = 'CONCAT =>
+            formatNary('STRSEP, "", 0, args, minPrec)
+        op = 'QUOTE =>
+            group concat("<mo>'</mo>", formatExpr(first args, minPrec))
+        op = 'BRACKET =>
+            group addBrackets ungroup formatExpr(first args, minPrec)
+        op = 'BRACE =>
+            group addBraces ungroup formatExpr(first args, minPrec)
+        op = 'PAREN =>
+            group parenthesize ungroup formatExpr(first args, minPrec)
+        op = 'PRIME =>
+            formatPrime(args, prec)
+        op = 'OVERBAR =>
+            null args => ""
+            group concat ["<mover accent='true'><mrow>",
+                          formatExpr(first args,minPrec),
+                           "</mrow><mo stretchy='true'>&#x000AF;</mo></mover>"]
+        op = 'ROOT =>
+            null args => ""
+            tmp : S := group formatExpr(first args, minPrec)
+            null rest args => concat ["<msqrt>", tmp, "</msqrt>"]
+            group concat ["<mroot><mrow>", tmp, "</mrow>",
+                          formatExpr(first rest args, minPrec), "</mroot>"]
+        op = 'SEGMENT =>
+            tmp : S := concat [formatExpr(first args, minPrec), "<mo>..</mo>"]
+            group
+                null rest args =>  tmp
+                concat [tmp, formatExpr(first rest args, minPrec)]
+        op = 'SUB =>
+            group concat ["<msub>", formatExpr(first args, minPrec),
+                formatSpecial('AGGLST, rest args, minPrec), "</msub>"]
+        op = 'SUPERSUB =>
+            base : S := concat["<mrow>", formatExpr(first args, minPrec),
+                               "</mrow>"]
+            args := rest args
+            n := #args
+            n > 4 => error "multiscript object has more than 4 scripts"
+            tmp1 := optionalWrap(args(1))
+            n = 1 => concat ["<msub>", base, tmp1, "</msub>"]
+            tmp2 := optionalWrap(args(2))
+            n = 2 => concat ["<msubsup>", base, tmp1, tmp2, "</msubsup>"]
+            tmp3 := optionalWrap(args(3))
+            base := concat ["<mmultiscripts>", base, tmp1, tmp2,
+                            "<mprescripts/>", tmp3]
+            n = 3 => concat [base, "<none/></mmultiscripts>"]
+            concat [base, optionalWrap(args(4)), "</mmultiscripts>"]
+        op = 'SC =>
+            -- need to handle indentation someday
+            null args => ""
+            tmp := formatNaryNoGroup('STRSEP, "</mtd></mtr><mtr><mtd>",
+                                     800, args, minPrec)
+            group concat ["<mtable><mtr><mtd>", tmp, "</mtd></mtr></mtable>"]
+        op = 'MATRIX => formatMatrix rest args
+        op = 'BOX => 
+            null args => ""
+            tmp := formatNaryNoGroup('STRSEP, "", 0, args, minPrec)
+            group concat ["<mtable frame=_"solid_"><mtr><mtd>", tmp,
+                          "</mtd></mtr></mtable>"]
+        op = 'EQUATNUM =>
+            concat ["<mtable><mtr><mtd>", formatExpr(args.1, minPrec),
+                    "</mtd><mtd style=_"padding-left: 50px;_">",
+                      formatExpr(args.2, minPrec), "</mtd></mtr></mtable>"]
+        op = 'BINOMIAL =>
+            -- binomial('f:OutputForm,'z:OutputForm) produces
+            -- (BINOMIAL f z)
+            concat ["<mrow><mo stretchy=_"true_">(</mo>", 
+                    "<mfrac linethickness=_"0_">",
+                      formatExpr(args.1, minPrec),
+                        formatExpr(args.2, minPrec),
+                          "</mfrac><mo>)</mo></mrow>"]
+        op = 'NOTHING => "<none/>"
+        op = 'ZAG =>
+            concat ["<mtable><mtr><mtd style=_"border-right: solid 1px black;",
+             " border-bottom: solid 1px black; padding-right: 2px;",
+              " padding-left: 2px;_">", formatExpr(first args, minPrec),
+               "</mtd></mtr><mtr><mtd style=_"border-left: solid 1px black;",
+                 " padding-left: 2px; padding-right: 2px;_">",
+                   formatExpr(first rest args, minPrec),
+                     "</mtd></mtr></mtable>"]
+        concat ["<mtext>not done yet for: ", string(op),"</mtext>"]
 
-    formatSub(expr : E, args : L E, opPrec : I) : S ==
-      -- This one produces differential notation partial derivatives.
-      -- It doesn't work in all cases and may not be workable, use
-      -- formatSub1 below for now.
-      -- At this time this is only to handle partial derivatives.
-      -- If the SUB case handles anything else I'm not aware of it.
-      -- This an example of the 4th partial of y(x,z) w.r.t. x,x,z,x
-      -- {{{SUB}{y}{{CONCAT}{{CONCAT}{{CONCAT}{{CONCAT}{,}{1}}{{CONCAT}{,}{1}}}{{CONCAT}{,}{2}}}{{CONCAT}{,}{1}}}}{x}{z}}
-      atomE : L E := atomize(expr)
-      op : S := stringify first atomE
-      op ~= "SUB" => "<mtext>Mistake in formatSub: no SUB</mtext>"
-      stringify first rest rest atomE ~= "CONCAT" => "<mtext>Mistake in formatSub: no CONCAT</mtext>"
-      -- expecting form for atomE like
-      --[{SUB}{func}{CONCAT}...{CONCAT}{,}{n}{CONCAT}{,}{n}...{CONCAT}{,}{n}],
-      --counting the first CONCATs before the comma gives the number of
-      --derivatives
-      ndiffs : I := 0
-      tmpLE : L E := rest rest atomE
-      while stringify first tmpLE = "CONCAT" repeat
-        ndiffs := ndiffs+1
-        tmpLE := rest tmpLE
-      numLS : L S := nil
-      i : I := 1
-      while i < ndiffs repeat
-        numLS := append(numLS,list(stringify first rest tmpLE))
-        tmpLE := rest rest rest tmpLE
-        i := i+1
-      numLS := append(numLS,list(stringify first rest tmpLE))
-      -- numLS contains the numbers of the bound variables as strings
-      -- for the differentiations, thus for the differentiation [x,x,z,x]
-      -- for y(x,z) numLS = ["1","1","2","1"]
-      posLS : L S := nil
-      i := 0
- --     sayTeX$Lisp "formatSub: nargs = "string(#args)
-      while i < #args repeat
-        posLS := append(posLS,list(string(i+1)))
-        i := i+1
-      -- posLS contains the positions of the bound variables in args
-      -- as a list of strings, e.g. for the above example ["1","2"]
-      tmpS: S := stringify atomE.2
-      if ndiffs = 1 then
-        s : S := "<mfrac><mo>&#x02202;</mo><mi>"tmpS"</mi><mrow>"
-      else
-        s : S := "<mfrac><mrow><msup><mo>&#x02202;</mo><mn>"string(ndiffs)"</mn></msup><mi>"tmpS"</mi></mrow><mrow>"
-      -- need to find the order of the differentiation w.r.t. the i-th
-      -- variable
-      i := 1
-      j : I
-      k : I
-      tmpS: S
-      while i < #posLS+1 repeat
-        j := 0
-        k := 1
-        while k < #numLS + 1 repeat
-          if numLS.k = string i then j := j + 1
-          k := k+1
-        if j > 0 then
-          tmpS := stringify args.i
-          if j = 1 then
-            s := s"<mo>&#x02202;</mo><mi>"tmpS"</mi>"
-          else
-            s := s"<mo>&#x02202;</mo><msup><mi>"tmpS"</mi><mn>"string(j)"</mn></msup>"
-        i := i + 1
-      s := s"</mrow></mfrac><mo>(</mo>"
-      i := 1
-      while i < #posLS+1 repeat
-        tmpS := stringify args.i
-        s := s"<mi>"tmpS"</mi>"
-        if i < #posLS then s := s"<mo>,</mo>"
-        i := i+1
-      s := s"<mo>)</mo>"
+    -- this produces prime notation ordinary derivatives.
+    formatPrime(args : L E, prec : I) : S ==
+        arg2 := second(args)
+        if STRINGP(arg2)$Lisp then
+            commaS : S := arg2 pretend String
+            commaTest : S := ","
+            if position(commaTest, commaS,1) > 0 then
+               s : S := "<mo>&#x02032;</mo>"
+               for i in 2..#commaS repeat
+                   commaTest := commaTest","
+                   s := s"<mo>&#x02032;</mo>"
+               if commaS = commaTest then
+                   arg2 := message(s)
+        formatSpecial('SUPERSUB, [first args, " "::E, arg2], prec)
 
-    formatSub1(expr : E, args : L E, opPrec : I) : S ==
-      -- This one produces partial derivatives notated by ",n" as
-      -- subscripts.
-      -- At this time this is only to handle partial derivatives.
-      -- If the SUB case handles anything else I'm not aware of it.
-      -- This an example of the 4th partial of y(x,z) w.r.t. x,x,z,x
-      -- {{{SUB}{y}{{CONCAT}{{CONCAT}{{CONCAT}{{CONCAT}{,}{1}}
-      -- {{CONCAT}{,}{1}}}{{CONCAT}{,}{2}}}{{CONCAT}{,}{1}}}}{x}{z}},
-      -- here expr is everything in the first set of braces and
-      -- args is {{x}{z}}
-      atomE : L E := atomize(expr)
-      op : S := stringify first atomE
-      op ~= "SUB" => "<mtext>Mistake in formatSub: no SUB</mtext>"
-      stringify first rest rest atomE ~= "CONCAT" => "<mtext>Mistake in formatSub: no CONCAT</mtext>"
-      -- expecting form for atomE like
-      --[{SUB}{func}{CONCAT}...{CONCAT}{,}{n}{CONCAT}{,}{n}...{CONCAT}{,}{n}],
-      --counting the first CONCATs before the comma gives the number of
-      --derivatives
-      ndiffs : I := 0
-      tmpLE : L E := rest rest atomE
-      while stringify first tmpLE = "CONCAT" repeat
-        ndiffs := ndiffs+1
-        tmpLE := rest tmpLE
-      numLS : L S := nil
-      i : I := 1
-      while i < ndiffs repeat
-        numLS := append(numLS,list(stringify first rest tmpLE))
-        tmpLE := rest rest rest tmpLE
-        i := i+1
-      numLS := append(numLS,list(stringify first rest tmpLE))
-      -- numLS contains the numbers of the bound variables as strings
-      -- for the differentiations, thus for the differentiation [x,x,z,x]
-      -- for y(x,z) numLS = ["1","1","2","1"]
-      posLS : L S := nil
-      i := 0
- --     sayTeX$Lisp "formatSub: nargs = "string(#args)
-      while i < #args repeat
-        posLS := append(posLS,list(string(i+1)))
-        i := i+1
-      -- posLS contains the positions of the bound variables in args
-      -- as a list of strings, e.g. for the above example ["1","2"]
-      funcS: S := stringify atomE.2
-      s : S := "<msub><mi>"funcS"</mi><mrow>"
-      i := 1
-      while i < #numLS+1 repeat
-        s := s"<mo>,</mo><mn>"numLS.i"</mn>"
-        i := i + 1
-      s := s"</mrow></msub><mo>(</mo>"
-      i := 1
-      while i < #posLS+1 repeat
---        tmpS := stringify args.i
-        tmpS := formatMml(first args,minPrec)
-        args := rest args
-        s := s"<mi>"tmpS"</mi>"
-        if i < #posLS then s := s"<mo>,</mo>"
-        i := i+1
-      s := s"<mo>)</mo>"
-
-    formatSuperSub(expr : E, args : L E, opPrec : I) : S ==
-      -- this produces prime notation ordinary derivatives.
-      -- first have to divine the semantics, add cases as needed
-      atomE : L E := atomize(expr)
-      op : S := stringify first atomE
-      op ~= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB1</mtext>"
-      #args ~= 1 => "<mtext>Mistake in SuperSub1: #args <> 1</mtext>"
-      var : E := first args
-      -- should be looking at something like {{SUPERSUB}{var}{ }{,,...,}} for
-      -- example here's the second derivative of y w.r.t. x
-      -- {{{SUPERSUB}{y}{ }{,,}}{x}}, expr is the first {} and args is the
-      -- {x}
-      funcS : S := stringify first rest atomE
-      bvarS : S := stringify first args
-      -- count the number of commas
-      commaS : S := stringify first rest rest rest atomE
-      commaTest : S := ","
-      i : I := 0
-      while position(commaTest,commaS,1) > 0 repeat
-        i := i+1
-        commaTest := commaTest","
-      s : S := "<msup><mi>"funcS"</mi><mrow>"
-      j : I := 0
-      while j < i repeat
-        s := s"<mo>&#x02032;</mo>"
-        j := j + 1
-      s := s"</mrow></msup><mo>&#x02061;</mo><mo>(</mo>"formatMml(first args,minPrec)"<mo>)</mo>"
-
-    formatSuperSub1(expr : E, args : L E, opPrec : I) : S ==
-      -- This one produces ordinary derivatives with differential notation,
-      -- it needs a little more work yet.
-      -- first have to divine the semantics, add cases as needed
-      atomE : L E := atomize(expr)
-      op : S := stringify first atomE
-      op ~= "SUPERSUB" => "<mtext>Mistake in formatSuperSub: no SUPERSUB</mtext>"
-      #args ~= 1 => "<mtext>Mistake in SuperSub: #args <> 1</mtext>"
-      var : E := first args
-      -- should be looking at something like {{SUPERSUB}{var}{ }{,,...,}} for
-      -- example here's the second derivative of y w.r.t. x
-      -- {{{SUPERSUB}{y}{ }{,,}}{x}}, expr is the first {} and args is the
-      -- {x}
-      funcS : S := stringify first rest atomE
-      bvarS : S := stringify first args
-      -- count the number of commas
-      commaS : S := stringify first rest rest rest atomE
-      commaTest : S := ","
-      ndiffs : I := 0
-      while position(commaTest,commaS,1) > 0 repeat
-        ndiffs := ndiffs+1
-        commaTest := commaTest","
-      s : S := "<mfrac><mrow><msup><mo>&#x02146;</mo><mn>"string(ndiffs)"</mn></msup><mi>"funcS"</mi></mrow><mrow><mo>&#x02146;</mo><msup><mi>"formatMml(first args,minPrec)"</mi><mn>"string(ndiffs)"</mn></msup></mrow></mfrac><mo>&#x02061;</mo><mo>(</mo><mi>"formatMml(first args,minPrec)"</mi><mo>)</mo>"
-
-    formatPlex(op : S, args : L E, prec : I) : S ==
-      checkarg:Boolean := false
-      hold : S
-      p : I := position(op,plexOps)
-      p < 1 => error "unknown plex op"
-      op = "INTSIGN" => formatIntSign(args,minPrec)
-      opPrec := plexPrecs.p
-      n : I := #args
-      (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
-      s : S :=
-        op = "SIGMA"   =>
-          checkarg := true
-          "<mo>&#x02211;</mo>"
-        -- Sum
-        op = "SIGMA2"   =>
-          checkarg := true
-          "<mo>&#x02211;</mo>"
-        -- Sum
-        op = "PI"      =>
-          checkarg := true
-          "<mo>&#x0220F;</mo>"
-        -- Product
-        op = "PI2"     =>
-          checkarg := true
-          "<mo>&#x0220F;</mo>"
-        -- Product
---        op = "INTSIGN" => "<mo>&#x0222B;</mo>"
-        -- Integral, int
-        op = "INDEFINTEGRAL" => "<mo>&#x0222B;</mo>"
-        -- Integral, int
-        "????"
-      hold := formatMml(first args,minPrec)
-      args := rest args
-      if op ~= "INDEFINTEGRAL" then
-        if hold ~= "" then
-          s := concat ["<munderover>",s,group hold]
-        else
-          s := concat ["<munderover>",s,group " "]
-        if not null rest args then
-          hold := formatMml(first args,minPrec)
-          if hold ~= "" then
-            s := concat [s,group hold,"</munderover>"]
-          else
-            s := concat [s,group " ","</munderover>"]
-          args := rest args
-        -- if checkarg true need to test op arg for "+" at least
-        -- and wrap parentheses if so
-        if checkarg then
-          la : L E := (first args pretend L E)
-          opa : S := stringify first la
-          if opa = "+" then
-            s := concat [s,"<mo>(</mo>",formatMml(first args,minPrec),"<mo>)</mo>"]
-          else s := concat [s,formatMml(first args,minPrec)]
-        else s := concat [s,formatMml(first args,minPrec)]
-      else
-        hold := group concat [hold,formatMml(first args,minPrec)]
-        s := concat [s,hold]
---      if opPrec < prec then s := parenthesize s
--- getting ugly parentheses on fractions
-      group s
-
-    formatIntSign(args : L E, opPrec : I) : S ==
-      -- the original OutputForm expression looks something like this:
-      -- {{INTSIGN}{NOTHING or lower limit?}
-      -- {bvar or upper limit?}{{*}{integrand}{{CONCAT}{d}{axiom var}}}}
-      -- the args list passed here consists of the rest of this list, i.e.
-      -- starting at the NOTHING or ...
-      (stringify first args) = "NOTHING" =>
-        -- the bound variable is the second one in the argument list
-        bvar : E := first rest args
-        bvarS : S := stringify bvar
-        tmpS : S
-        i : I := 0
-        u1 : US
-        u2 : US
-        -- this next one atomizes the integrand plus differential
-        atomE : L E := atomize(first rest rest args)
-        -- pick out the bound variable used by axiom
-        varRS : S := stringify last(atomE)
-        tmpLE : L E := ((first rest rest args) pretend L E)
-        integrand : S := formatMml(first rest tmpLE,minPrec)
-        -- replace the bound variable, i.e. axiom uses someting of the form
-        -- %A for the bound variable and puts the original variable used
-        -- in the input command as a superscript on the integral sign.
-        -- I'm assuming that the axiom variable is 2 characters.
-        while (i := position(varRS,integrand,i+1)) > 0 repeat
-          u1 := segment(1,i-1)$US
-          u2 := segment(i+2,#integrand)$US
-          integrand := concat [integrand.u1,bvarS,integrand.u2]
-        concat ["<mrow><mo>&#x0222B;</mo>" integrand "<mo>&#x02146;</mo><mi>" bvarS "</mi></mrow>"]
-
-      lowlim : S := stringify first args
-      highlim : S := stringify first rest args
-      bvar : E := last atomize(first rest rest args)
-      bvarS : S := stringify bvar
-      tmpLE : L E := ((first rest rest args) pretend L E)
-      integrand : S := formatMml(first rest tmpLE,minPrec)
-      concat ["<mrow><munderover><mo>&#x0222B;</mo><mi>" lowlim "</mi><mi>" highlim "</mi></munderover>" integrand "<mo>&#x02146;</mo><mi>" bvarS "</mi></mrow>"]
-
+    formatPlex(op : Sy, args : L E, prec : I) : S ==
+        p : I := position(op, plexOps)
+        p < 1 => error "unknown plex op"
+        opPrec := plexPrecs.p
+        n : I := #args
+        (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
+        ops : S :=
+            op = 'SIGMA => 
+                -- sum(a::OutputForm,b::OutputForm) produces
+                -- (SIGMA b a)
+                n = 2 => "&Sum;"
+                error "wrong number of arguments for plex"
+            op = 'SIGMA2 =>
+                 -- sum(a::OutputForm,b::OutputForm,c::OutputForm) produces
+                 -- (SIGMA2 b c a)
+                 n = 3 => "&Sum;"
+                 error "wrong number of arguments for plex"
+            op = 'PI =>
+                -- prod(a::OutputForm,b::OutputForm) produces
+                -- (PI b a)
+                n = 2 =>  "&Pi;"
+                error "wrong number of arguments for plex"
+            op = 'PI2 =>
+                -- prod(a::OutputForm,b::OutputForm,c::OutputForm) produces
+                -- (PI2 b c a)
+                n = 3 => "&Pi;"
+                error "wrong number of arguments for plex"
+            op = 'INTSIGN =>
+                -- int(a::OutputForm) produces
+                -- (INTSIGN NOTHING NOTHING a)
+                -- int(a::OutputForm,b::OutputForm) produces
+                -- (INTSIGN b NOTHING a)
+                -- int(a::OutputForm,b::OutputForm,c::OutputForm) produces
+                -- (INTSIGN b c a)
+                n = 3 => "&int;"
+                error "wrong number of arguments for plex"
+            op = 'INDEFINTEGRAL => error "INDEFINTEGRAL not handled"
+            error "Unexpected plex op:" string(op)
+        body :=
+            op = 'INTSIGN =>
+                formatExpr(args(3), minPrec)
+            formatExpr(args(n), opPrec)
+        t2 : S :=
+            n = 3 => formatExpr(args.2, minPrec)
+            "<none/>"
+        t1 := formatExpr(args(1), minPrec)
+        s := concat ["<munderover><mo>", ops, "</mo>", t1, t2, "</munderover>",
+                     body]
+        if opPrec < prec then s := parenthesize s
+        group s
 
     formatMatrix(args : L E) : S ==
-      -- format for args is [[ROW ...],[ROW ...],[ROW ...]]
-      -- generate string for formatting columns (centered)
-      group addBrackets concat
-        ["<mtable><mtr><mtd>",formatNaryNoGroup("</mtd></mtr><mtr><mtd>",args,minPrec),
-          "</mtd></mtr></mtable>"]
+        -- format for args is [[ROW ...],[ROW ...],[ROW ...]]
+        -- generate string for formatting columns (centered)
+        group addBrackets concat
+            ["<mtable><mtr><mtd>",
+             formatNaryNoGroup('STRSEP, "</mtd></mtr><mtr><mtd>",
+                               0, args, minPrec),
+               "</mtd></mtr></mtable>"]
 
-    formatFunction(op : S, args : L E, prec : I) : S ==
-      group concat ["<mo>",op,"</mo>",parenthesize formatNary(",",args,minPrec)]
+    formatFunction(op : E, args : L E, prec : I) : S ==
+        ops := formatExpr(op, minPrec)
+        group concat ["<mo>", ops, "</mo>",
+                      parenthesize formatNary(","::Sy, "", 0, args, minPrec)]
 
-    formatNullary(op : S) ==
-      op = "NOTHING" => ""
-      group concat ["<mo>",op,"</mo><mo>(</mo><mo>)</mo>"]
+    formatNullary(op : Sy) ==
+        op = 'NOTHING => ""
+        group concat ["<mo>", string(op), "</mo><mo>(</mo><mo>)</mo>"]
 
-    formatUnary(op : S, arg : E, prec : I) ==
-      p : I := position(op,unaryOps)
-      p < 1 => error "unknown unary op"
-      opPrec := unaryPrecs.p
-      s : S := concat ["<mo>",op,"</mo>",formatMml(arg,opPrec)]
-      opPrec < prec => group parenthesize s
-      op = "-" => s
-      group s
+    formatUnary(op : Sy, arg : E, prec : I) ==
+        p : I := position(op, unaryOps)
+        p < 1 => error "unknown unary op"
+        opPrec := unaryPrecs.p
+        s : S := concat ["<mo>", string(op), "</mo>", formatExpr(arg, opPrec)]
+        opPrec < prec => group parenthesize s
+        op = "-"::Sy => s
+        group s
 
-    formatBinary(op : S, args : L E, prec : I) : S ==
-      p : I := position(op,binaryOps)
-      p < 1 => error "unknown binary op"
-      opPrec := binaryPrecs.p
-      -- if base op is product or sum need to add parentheses
-      if ATOM(first args)$Lisp@Boolean then
-        opa:S := stringify first args
-      else
-        la : L E := (first args pretend L E)
-        opa : S := stringify first la
-      if (opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2") and op = "^" then
-        s1 : S := concat ["<mo>(</mo>",formatMml(first args, opPrec),"<mo>)</mo>"]
-      else
-        s1 : S := formatMml(first args, opPrec)
-      s2 : S := formatMml(first rest args, opPrec)
-      op :=
-        op = "|"     =>  s := concat ["<mrow>",s1,"</mrow><mo>",op,"</mo><mrow>",s2,"</mrow>"]
-        op = "^"    =>  s := concat ["<msup><mrow>",s1,"</mrow><mrow>",s2,"</mrow></msup>"]
-        op = "/"     =>  s := concat ["<mfrac><mrow>",s1,"</mrow><mrow>",s2,"</mrow></mfrac>"]
-        op = "OVER"  =>  s := concat ["<mfrac><mrow>",s1,"</mrow><mrow>",s2,"</mrow></mfrac>"]
-        op = "+->"   =>  s := concat ["<mrow>",s1,"</mrow><mo>",op,"</mo><mrow>",s2,"</mrow>"]
-        s := concat ["<mrow>",s1,"</mrow><mo>",op,"</mo><mrow>",s2,"</mrow>"]
-      group
-        op = "OVER" => s
---        opPrec < prec => parenthesize s
--- ugly parentheses?
+    formatBinary(op : Sy, args : L E, prec : I) : S ==
+        p : I := position(op, binaryOps)
+        p < 1 => error "unknown binary op"
+        opPrec := binaryPrecs.p
+        s1 := formatExpr(first args, opPrec)
+        s2 := formatExpr(first rest args, opPrec)
+        s : S :=
+            op = "^"::Sy => concat ["<msup><mrow>", s1, "</mrow><mrow>",
+                                    s2, "</mrow></msup>"]
+            op = "/"::Sy => concat ["<mfrac><mrow>", s1, "</mrow><mrow>",
+                                    s2, "</mrow></mfrac>"]
+            op = 'OVER => concat ["<mfrac><mrow>", s1, "</mrow><mrow>",
+                                  s2, "</mrow></mfrac>"]
+            ops : S :=
+                op = 'LET => ":="
+                op = "<"::Sy => "&lt;"
+                op = "<="::Sy => "&lt;="
+                string(op)
+            concat ["<mrow>", s1, "</mrow><mo>", ops, "</mo><mrow>",
+                    s2, "</mrow>"]
+        group
+            op = "/"::Sy or op = 'OVER => s
+            opPrec < prec => parenthesize s
+            s
+
+    formatNary(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+        group formatNaryNoGroup(op, sep, opprec, args, prec)
+
+    formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+        null args => ""
+        p : I := position(op, naryOps)
+        p < 1 => error "unknown nary op"
+        ops : S :=
+            op = 'STRSEP => sep
+            op = "*"::Sy   => "<mo>&#x02062;</mo>"
+            op = 'ROW      => "</mtd><mtd>"
+            op = 'TENSOR => "<mo>&#x02297;</mo>"
+            concat ["<mo>", string(op), "</mo>"]
+        l : L S := nil
+        opPrec :=
+            op = 'STRSEP => opprec
+            naryPrecs.p
+        for a in args repeat
+            l := concat(ops, concat(formatExpr(a, opPrec), l)$L(S))$L(S)
+        s : S := concat reverse rest l
+        opPrec < prec => parenthesize s
         s
 
-    formatNary(op : S, args : L E, prec : I) : S ==
-      group formatNaryNoGroup(op, args, prec)
-
-    formatNaryNoGroup(op : S, args : L E, prec : I) : S ==
-      checkargs:Boolean := false
-      null args => ""
-      p : I := position(op,naryOps)
-      p < 1 => error "unknown nary op"
-      -- need to test for "ZAG" case and divert it here
-      -- ex 1. continuedFraction(314159/100000)
-      -- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
-      -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
-      -- this is the preconditioned output form
-      -- including "op", the args list would be the rest of this
-      -- i.e op = '+' and args = {{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}
-      -- {{ZAG}{1}{1}}{{ZAG}{1}{25}}{{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
-      -- ex 2. continuedFraction(14159/100000)
-      -- this one doesn't have the leading integer
-      -- {{+}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}
-      -- {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
-      --
-      -- ex 3. continuedFraction(3,repeating [1], repeating [3,6])
-      -- {{+}{3}{{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
-      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{{ZAG}{1}{3}}{{ZAG}{1}{6}}
-      -- {{ZAG}{1}{3}}{{ZAG}{1}{6}}{...}}
-      -- In each of these examples the args list consists of the terms
-      -- following the '+' op
-      -- so the first arg could be a "ZAG" or something
-      -- else, but the second arg looks like it has to be "ZAG", so maybe
-      -- test for #args > 1 and args.2 contains "ZAG".
-      -- Note that since the resulting MathML <mfrac>s are nested we need
-      -- to handle the whole continued fraction at once, i.e. we can't
-      -- just look for, e.g., {{ZAG}{1}{6}}
-      (#args > 1) and (position("ZAG",stringify first rest args,1) > 0) =>
-           tmpS : S := stringify first args
-           position("ZAG",tmpS,1) > 0 => formatZag(args)
---         position("ZAG",tmpS,1) > 0 => formatZag1(args)
-           concat [formatMml(first args,minPrec) "<mo>+</mo>" formatZag(rest args)]
-      -- At least for the ops "*","+","-" we need to test to see if a sigma or pi
-      -- is one of their arguments because we might need parentheses as indicated
-      -- by the problem with summation(operator(f)(i),i=1..n)+1 versus
-      -- summation(operator(f)(i)+1,i=1..n) having identical displays as of
-      -- 2007-12-21
-      op :=
-        op = ","     => "<mo>,</mo>" --originally , \:
-        op = ";"     => "<mo>;</mo>" --originally ; \: should figure these out
-        op = "*"     =>
-            checkargs := true
-            "<mo>&#x02062;</mo>"
-        -- InvisibleTimes
-        op = " "     => "<mspace width='0.5em'/>"
-        op = "ROW"   => "</mtd><mtd>"
-        op = "+"     =>
-            checkargs := true
-            "<mo>+</mo>"
-        op = "-"     =>
-            checkargs := true
-            "<mo>-</mo>"
-        op
-      l : L S := nil
-      opPrec := naryPrecs.p
-      -- if checkargs is true check each arg except last one to see if it's
-      -- a sigma or pi and if so add parentheses. Other op's may have to be
-      -- checked for in future
-      count:I := 1
-      for a in args repeat
-        if checkargs then
-          if count < #args then
-            -- check here for sum or product
-            if ATOM(a)$Lisp@Boolean then
-              opa:S := stringify a
-            else
-              la : L E := (a pretend L E)
-              opa : S := stringify first la
-            if opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2" then
-              l := concat(op,concat(concat ["<mo>(</mo>",formatMml(a,opPrec),"<mo>)</mo>"],l)$L(S))$L(S)
-            else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
-          else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
-        else l := concat(op,concat(formatMml(a,opPrec),l)$L(S))$L(S)
-        count := count + 1
-      s : S := concat reverse rest l
-      opPrec < prec => parenthesize s
-      s
-
-    formatZag(args : L E) : S ==
-      -- args will be a list of things like this {{ZAG}{1}{7}}, the ZAG
-      -- must be there, the '1' and '7' could conceivably be more complex
-      -- expressions
-      tmpZag : L E := first args pretend L E
-      -- may want to test that tmpZag contains 'ZAG'
-      #args > 1 => "<mfrac>"formatMml(first rest tmpZag,minPrec)"<mrow><mn>"formatMml(first rest rest tmpZag,minPrec)"</mn><mo>+</mo>"formatZag(rest args)"</mrow></mfrac>"
-      (first args = "...":: E)@Boolean => "<mo>&#x2026;</mo>"
-      op:S := stringify first args
-      position("ZAG",op,1) > 0 =>
-        "<mfrac>"formatMml(first rest tmpZag,minPrec)formatMml(first rest rest tmpZag,minPrec)"</mfrac>"
-      error "formatZag: Last argument in ZAG construct has unknown operator: "op
-
-    formatZag1(args : L E) : S ==
-    -- make alternative ZAG format without diminishing fonts, maybe
-    -- use a table
-    -- {{ZAG}{1}{7}}
-      tmpZag : L E := first args pretend L E
-      #args > 1 => "<mfrac>"formatMml(first rest tmpZag,minPrec)"<mrow><mn>"formatMml(first rest rest tmpZag,minPrec)"</mn><mo>+</mo>"formatZag(rest args)"</mrow></mfrac>"
-      (first args = "...":: E)@Boolean => "<mo>&#x2026;</mo>"
-      error "formatZag1: Unexpected kind of ZAG"
-
-    formatMml(expr : E,prec : I) ==
-      i,len : Integer
+    formatExpr(expr : E, prec : I) : S ==
+      i, len : Integer
       intSplitLen : Integer := 20
       ATOM(expr)$Lisp@Boolean =>
         str := stringify expr
@@ -1346,82 +1009,68 @@ have to be switched by swapping names.
                  nstr : String := ""
                  -- insert some blanks into the string, if too long
                  while ((len := #str) > intSplitLen) repeat
-                   nstr := concat [nstr," ",
-                     elt(str,segment(1,intSplitLen)$US)]
-                   str := elt(str,segment(intSplitLen+1)$US)
-                 empty? nstr => concat ["<mn>",str,"</mn>"]
+                   nstr := concat [nstr, " ",
+                     elt(str, segment(1, intSplitLen)$US)]
+                   str := elt(str, segment(intSplitLen + 1)$US)
+                 empty? nstr => concat ["<mn>", str, "</mn>"]
                  nstr :=
                    empty? str => nstr
-                   concat [nstr," ",str]
-                 concat ["<mn>",elt(nstr,segment(2)$US),"</mn>"]
-            else str := concat ["<mn>",str,"</mn>"]
+                   concat [nstr, " ", str]
+                 concat ["<mn>", elt(nstr, segment(2)$US), "</mn>"]
+            else concat ["<mn>", str, "</mn>"]
         str = "%pi" => "<mi>&#x003C0;</mi>"
         -- pi
         str = "%e"  => "<mi>&#x02147;</mi>"
         -- ExponentialE
         str = "%i"  => "<mi>&#x02148;</mi>"
         -- ImaginaryI
-        len > 0 and str.1 = char "%" => concat(concat("<mi>",str),"</mi>")
-        len > 1 and digit? str.1 => concat ["<mn>",str,"</mn>"] -- should handle floats
+        len > 0 and str.1 = char "%" => concat ["<mi>", str, "</mi>"]
+        -- should handle floats
+        len > 1 and digit? str.1 => concat ["<mn>", str, "</mn>"]
         -- presumably this is a literal string
         len > 0 and str.1 = char "_"" =>
-          concat(concat("<mtext>",str),"</mtext>")
+          concat ["<mtext>", str, "</mtext>"]
         len = 1 and str.1 = char " " => " "
-        (i := position(str,specialStrings)) > 0 =>
-          specialStringsInMML.i
-        (i := position(char " ",str)) > 0 =>
+        if SYMBOLP(expr)$Lisp then
+            op := expr pretend Symbol
+            (i := position(op, specialStrings)) > 0 =>
+                specialStringsInMML.i
+        (i := position(char " ", str)) > 0 =>
           -- We want to preserve spacing, so use a roman font.
-          -- What's this for?  Leave the \rm in for now so I can see
-          -- where it arises.  Removed 2007-02-14
-          concat(concat("<mtext>",str),"</mtext>")
+          concat ["<mtext>", str, "</mtext>"]
         -- if we get to here does that mean it's a variable?
-        concat ["<mi>",str,"</mi>"]
+        concat ["<mi>", str, "</mi>"]
       l : L E := (expr pretend L E)
       null l => blank
-      op : S := stringify first l
+      opf : E := first l
       args : L E := rest l
       nargs : I := #args
-      -- need to test here in case first l is SUPERSUB case and then
-      -- pass first l and args to formatSuperSub.
-      position("SUPERSUB",op,1) > 0 =>
-        formatSuperSub(first l,args,minPrec)
-      -- now test for SUB
-      position("SUB",op,1) > 0 =>
-        formatSub1(first l,args,minPrec)
 
-      -- special cases
-      member?(op, specialOps) => formatSpecial(op,args,prec)
-      member?(op, plexOps)    => formatPlex(op,args,prec)
+      SYMBOLP(opf)$Lisp =>
+          op := opf pretend Symbol
+          -- special cases
+          member?(op, specialOps) => formatSpecial(op, args, prec)
+          member?(op, plexOps)    => formatPlex(op, args, prec)
 
-      -- nullary case
-      0 = nargs => formatNullary op
+          -- nullary case
+          0 = nargs => formatNullary op
 
-      -- unary case
-      (1 = nargs) and member?(op, unaryOps) =>
-        formatUnary(op, first args, prec)
+          -- unary case
+          (1 = nargs) and member?(op, unaryOps) =>
+            formatUnary(op, first args, prec)
 
-      -- binary case
-      (2 = nargs) and member?(op, binaryOps) =>
-        formatBinary(op, args, prec)
+          -- binary case
+          (2 = nargs) and member?(op, binaryOps) =>
+            formatBinary(op, args, prec)
 
-      -- nary case
-      member?(op,naryNGOps) => formatNaryNoGroup(op,args, prec)
-      member?(op,naryOps) => formatNary(op,args, prec)
-
-      op := formatMml(first l,minPrec)
-      formatFunction(op,args,prec)
+          -- nary case
+          member?(op, naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
+          member?(op, naryOps) => formatNary(op, "", 0, args, prec)
+          formatFunction(first l, args, prec)
+      formatFunction(first l, args, prec)
 
 @
-\section{Mathematical Markup Language Form}
-<<package MMLFORM MathMLForm>>=
-<<public declarations>>
-<<private constant declarations>>
-<<private function declarations>>
-<<public function definitions>>
-<<display functions>>
-<<formatting functions>>
 
-@
 \section{License}
 <<license>>=
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

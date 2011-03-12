@@ -118,9 +118,12 @@ TexFormat(): public == private where
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "<"::Sy,
-                             ">"::Sy, "="::Sy, 'OVER, 'LET]
-    binaryPrecs   : L I := [0, 0, 900, 700, 400, 400, 400, 700, 125]$(L I)
+    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "="::Sy,
+                             "~="::Sy, "<"::Sy, "<="::Sy, ">"::Sy, ">="::Sy,
+                               'OVER, 'LET]
+    binaryPrecs   : L I := [0, 0, 900, 700, 400,
+                            400, 400, 400, 400, 400,
+                              700, 125]$(L I)
 
     naryOps       : L Sy := ["-"::Sy, "+"::Sy, "*"::Sy, ","::Sy, ";"::Sy,
                              'ROW, 'STRSEP, 'TENSOR]
@@ -491,7 +494,7 @@ TexFormat(): public == private where
             " \end{array} "]
 
     formatFunction(op : E, args : L E, prec : I) : S ==
-        ops := ops := formatExpr(op, minPrec)
+        ops := formatExpr(op, minPrec)
         group concat [ops, " ", parenthesize
                       formatNary(","::Sy, "", 0, args, minPrec)]
 
@@ -520,6 +523,9 @@ TexFormat(): public == private where
             op = "/"::Sy     => " \over "
             op = 'OVER  => " \over "
             op = "+->"::Sy   => " \mapsto "
+            op = "~="::Sy => " \ne "
+            op = "<="::Sy => " \leq "
+            op = ">="::Sy => " \geq "
             -- FIXME how to do this properly ???
             op = 'LET   => " := "
             string(op)
@@ -550,16 +556,16 @@ TexFormat(): public == private where
             op = 'STRSEP => opprec
             naryPrecs.p
         for a in args repeat
-            l := concat(ops, concat(formatExpr(a, opPrec),l)$L(S))$L(S)
+            l := concat(ops, concat(formatExpr(a, opPrec), l)$L(S))$L(S)
         s : S := concat reverse rest l
         opPrec < prec => parenthesize s
         s
 
     formatExpr(expr : E, prec : I) : S ==
-      i,len : Integer
+      i, len : Integer
       intSplitLen : Integer := 20
       str : S
-      ATOM(expr)$Lisp pretend Boolean =>
+      ATOM(expr)$Lisp@Boolean =>
         str := stringify expr
         len := #str
         FIXP$Lisp expr =>
@@ -570,33 +576,33 @@ TexFormat(): public == private where
                  nstr : String := ""
                  -- insert some blanks into the string, if too long
                  while ((len := #str) > intSplitLen) repeat
-                   nstr := concat [nstr," ",
-                     elt(str,segment(1,intSplitLen)$US)]
-                   str := elt(str,segment(intSplitLen+1)$US)
+                   nstr := concat [nstr, " ",
+                     elt(str, segment(1, intSplitLen)$US)]
+                   str := elt(str, segment(intSplitLen + 1)$US)
                  empty? nstr => str
                  nstr :=
                    empty? str => nstr
-                   concat [nstr," ",str]
-                 elt(nstr,segment(2)$US)
+                   concat [nstr, " ", str]
+                 elt(nstr, segment(2)$US)
             else str
         str = "%pi" => "\pi"
         str = "%e"  => "e"
         str = "%i"  => "i"
         len > 1 and str.1 = char "%" and str.2 = char "%" =>
-          u : US := segment(3,len)$US
-          concat(" \%\%",str.u)
-        len > 0 and str.1 = char "%" => concat(" \",str)
+          u : US := segment(3, len)$US
+          concat(" \%\%", str.u)
+        len > 0 and str.1 = char "%" => concat(" \", str)
         len > 1 and digit? str.1 => group str -- should handle floats
         len > 0 and str.1 = char "_"" =>
           concat(concat(" \mbox{\tt ",str),"} ")
         len = 1 and str.1 = char " " => "{\ }"
         if SYMBOLP(expr)$Lisp then
             op := expr pretend Symbol
-            (i := position(op,specialStrings)) > 0 =>
+            (i := position(op, specialStrings)) > 0 =>
                 str := specialStringsInTeX.i
-        (i := position(char " ",str)) > 0 =>
+        (i := position(char " ", str)) > 0 =>
           -- We want to preserve spacing, so use a roman font.
-          concat(concat(" \mbox{\rm ",str),"} ")
+          concat [" \mbox{\rm ", str, "} "]
         str
       l : L E := (expr pretend L E)
       null l => blank
@@ -607,23 +613,23 @@ TexFormat(): public == private where
       SYMBOLP(opf)$Lisp =>
           op := opf pretend Symbol
           -- special cases
-          member?(op, specialOps) => formatSpecial(op,args,prec)
-          member?(op, plexOps)    => formatPlex(op,args,prec)
-    
+          member?(op, specialOps) => formatSpecial(op, args, prec)
+          member?(op, plexOps)    => formatPlex(op, args, prec)
+
           -- nullary case
           0 = nargs => formatNullary op
-    
+
           -- unary case
           (1 = nargs) and member?(op, unaryOps) =>
             formatUnary(op, first args, prec)
-    
+
           -- binary case
           (2 = nargs) and member?(op, binaryOps) =>
             formatBinary(op, args, prec)
-    
+
           -- nary case
-          member?(op,naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
-          member?(op,naryOps) => formatNary(op, "", 0, args, prec)
+          member?(op, naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
+          member?(op, naryOps) => formatNary(op, "", 0, args, prec)
           formatFunction(first l, args, prec)
       formatFunction(first l, args, prec)
 
