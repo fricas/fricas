@@ -979,7 +979,7 @@ LargeMatrixp(u,width, dist) ==
   op:=CAAR u
   op = 'MATRIX => largeMatrixAlist u
          --We already know the structure is more than 'width' wide
-  MEMQ(op,'(LET RARROW SEGMENT _- CONCAT CONCATB PAREN BRACKET BRACE)) =>
+  MEMQ(op,'(LET SEGMENT _- CONCAT CONCATB PAREN BRACKET BRACE)) =>
       --Each of these prints the arguments in a width 3 smaller
     dist:=dist-3
     width:=width-3

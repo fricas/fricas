@@ -60,10 +60,16 @@ spadpo() ==
   $PrintOnly: local:= true
   spad()
 
-start(:l) ==
+interpsysInitialization() ==
   -- The function  start  begins the interpreter process, reading in
   -- the profile and printing start-up messages.
   $PrintCompilerMessageIfTrue: local := nil
+  resetWorkspaceVariables()
+  initHist()
+  initNewWorld()
+  compressOpen()
+  interpOpen()
+  createInitializers()
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"interpreter"])
   initializeTimedNames($interpreterTimedNames,$interpreterTimedClasses)
   statisticsInitialization()
@@ -82,25 +88,8 @@ start(:l) ==
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"history"])
   initHist()
   if functionp 'addtopath then addtopath CONCAT($SPADROOT,'"bin")
-  if null(l) then
-    if $displayStartMsgs then
-      sayKeyedMsg("S2IZ0053",[namestring ['_.axiom,'input]])
-    readSpadProfileIfThere()
   if $displayStartMsgs then spadStartUpMsgs()
-  if $OLDLINE then
-    SAY fillerSpaces($LINELENGTH,'"=")
-    sayKeyedMsg("S2IZ0050",[namestring ['axiom,'input]])
-    if $OLDLINE ~= 'END__UNIT
-      then
-        centerAndHighlight($OLDLINE,$LINELENGTH,'" ")
-        sayKeyedMsg("S2IZ0051",NIL)
-      else sayKeyedMsg("S2IZ0052",NIL)
-    SAY fillerSpaces($LINELENGTH,'"=")
-    TERPRI()
-    $OLDLINE := NIL
   $superHash := MAKE_-HASHTABLE('UEQUAL)
-  if null l then runspad()
-  'EndOfSpad
 
 readSpadProfileIfThere() ==
   -- reads SPADPROF INPUT if it exists

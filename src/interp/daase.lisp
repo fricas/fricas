@@ -317,15 +317,15 @@ database.
  (setq *allconstructors* nil)
  (setq *compressvector* nil)
  (setq *compress-stream-stamp* '(0 . 0))
- (compressopen)
+ (|compressOpen|)
  (setq *interp-stream-stamp* '(0 . 0))
- (interpopen)
+ (|interpOpen|)
  (setq *operation-stream-stamp* '(0 . 0))
- (operationopen)
+ (|operationOpen|)
  (setq *browse-stream-stamp* '(0 . 0))
- (browseopen)
+ (|browseOpen|)
  (setq *category-stream-stamp* '(0 . 0))
- (categoryopen) ;note: this depends on constructorform in browse.daase
+ (|categoryOpen|) ;note: this depends on constructorform in browse.daase
  (initial-getdatabase)
  (close *interp-stream*)
  (close *operation-stream*)
@@ -438,7 +438,7 @@ database.
 ;    defaultdomain       -- a short list, for %i
 ;    ancestors           -- used to compute new category updates
 ;  )
-(defun interpOpen ()
+(defun |interpOpen| ()
  "open the interpreter database and hash the keys"
  (declare (special $spadroot))
  (let (constructors pos stamp dbstruct)
@@ -502,7 +502,7 @@ database.
 ;     predicates
 ; )
 
-(defun browseOpen ()
+(defun |browseOpen| ()
  "open the constructor database and hash the keys"
  (declare (special $spadroot))
  (let (constructors pos stamp dbstruct)
@@ -531,7 +531,7 @@ database.
     (setf (database-parents dbstruct) (sixth item))))
   (format t "~&")))
 
-(defun categoryOpen ()
+(defun |categoryOpen| ()
  "open category.daase and hash the keys"
  (declare (special $spadroot))
  (let (pos keys stamp)
@@ -549,7 +549,7 @@ database.
     (setf (gethash (first item) *hasCategory-hash*) (second item))))
   (format t "~&")))
 
-(defun operationOpen ()
+(defun |operationOpen| ()
  "read operation database and hash the keys"
  (declare (special $spadroot))
  (let (operations pos stamp)
@@ -1176,7 +1176,7 @@ database.
                                         ; does gethash calls into it rather than doing a getdatabase call.
   (write-interpdb)
 #+:GCL  (write-warmdata)
-  (create-initializers)
+  (|createInitializers|)
   (when (probe-file (final-name "compress"))
         (delete-file (final-name "compress")))
   (rename-file "compress.build" (final-name "compress"))
@@ -1226,7 +1226,7 @@ database.
 ;; into the compress database. In this way long symbol names become
 ;; short negative numbers.
 
-(defun compressOpen ()
+(defun |compressOpen| ()
  (let (lst stamp pos)
   (declare (special $spadroot))
   (setq *compress-stream*
@@ -1476,7 +1476,7 @@ database.
 ; initializer for libaxiom asharp domains.
 (defvar NOPfuncall (cons 'identity nil))
 
-(defun create-initializers ()
+(defun |createInitializers| ()
 ;; since libaxiom is now built with -name=axiom following unnecessary
 ;; (dolist (con (|allConstructors|))
 ;;   (let ((sourcefile (getdatabase con 'sourcefile)))

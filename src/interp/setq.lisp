@@ -468,9 +468,6 @@
 
 (SETQ |$testOutputLineFlag| NIL)   ;; referenced by charyTop, prnd
                                    ;; to stash lines
-(SETQ |$testOutputLineStack| NIL)  ;; saves lines to be printed
-                                   ;; (needed to convert lines for use
-                                   ;; in hypertex)
 (SETQ |$runTestFlag| NIL)          ;; referenced by maPrin to stash
                                    ;; output by recordAndPrint to not
                                    ;; print type/time
@@ -478,8 +475,6 @@
                                    ;; by maPrin to stash output
                                    ;; by recordAndPrint to write i/o
                                    ;; onto $testStream
-(SETQ |$mkTestInputStack| NIL)     ;; saves input for $testStream
-                                   ;; (see READLN)
 (SETQ |$mkTestOutputStack| NIL)    ;; saves output for $testStream
                                    ;; (see maPrin)
 
