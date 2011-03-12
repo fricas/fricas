@@ -316,12 +316,10 @@ putPvarModes(pattern,m) ==
   -- Puts the modes for the pattern variables into $env
   m isnt ['List,um] => throwKeyedMsg("S2IS0030",NIL)
   for pvar in pattern repeat
-    IDENTP pvar => (null (pvar=$quadSymbol)) and put(pvar,'mode,um,$env)
-    pvar is ['_:,var] =>
-      null (var=$quadSymbol) and put(var,'mode,m,$env)
-    pvar is ['_=,var] =>
-      null (var=$quadSymbol) and put(var,'mode,um,$env)
-    putPvarModes(pvar,um)
+      IDENTP pvar => put(pvar, 'mode, um, $env)
+      pvar is ['_:, var] => put(var, 'mode, m, $env)
+      pvar is ['_=, var] => put(var, 'mode, um, $env)
+      putPvarModes(pvar, um)
 
 evalis(op,[a,pattern],mode) ==
   -- actually handles is and isnt

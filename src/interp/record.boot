@@ -57,14 +57,11 @@
 --=======================================================================
 $backslash := char '_\
 $testOutputLineFlag := nil   -- referenced by charyTop, prnd to stash lines
-$testOutputLineStack := nil  -- saves lines to be printed (needed to convert
-                             -- lines for use in hypertex)
 $runTestFlag := nil          -- referenced by maPrin to stash output
                              -- by recordAndPrint to not print type/time
 $mkTestFlag := nil           -- referenced by READLN to stash input
                              -- by maPrin to stash output
                              -- by recordAndPrint to write i/o onto $testStream
-$mkTestInputStack := nil     -- saves input for $testStream (see READLN)
 $mkTestOutputStack := nil    -- saves output for $testStream (see maPrin)
 $mkTestOutputType := nil     -- saves the type for $testStream
 
@@ -80,7 +77,6 @@ inputFile2RecordFile(pathname,:option) ==
   _*PRINT_-ARRAY_*: local := true
   $mkTestFlag: local := true
   $runTestFlag: local := false
-  $mkTestInputStack: local := nil
   $mkTestOutputStack: local := nil
   $mkTestOutputType: local := nil
   $currentLine: local := nil
@@ -270,5 +266,4 @@ recordAndPrintTest md ==  --called by recordAndPrint
       x
   output := NREVERSE $mkTestOutputStack -- set by maPrin
   PRINT(writify [input,prefix2String md,:output],$testStream)
-  $mkTestInputStack := nil
   $mkTestOutputStack := nil

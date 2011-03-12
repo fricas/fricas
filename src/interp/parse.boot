@@ -154,62 +154,18 @@ parseLET [x,y] ==
 
 parseColon u ==
   u is [x] => [":",parseTran x]
-  u is [x,typ] =>
-    $InteractiveMode =>
-      $insideConstructIfTrue=true => ['TAG,parseTran x,parseTran typ]
-      [":",parseTran x,parseTran parseType typ]
-    [":",parseTran x,parseTran typ]
+  u is [x, typ] => [":", parseTran x, parseTran typ]
 
 parseCoerce [x,typ] ==
-  $InteractiveMode => ["::",parseTran x,parseTran parseType typ]
   ["::",parseTran x,parseTran typ]
 
 parseAtSign [x,typ] ==
-  $InteractiveMode => ["@",parseTran x,parseTran parseType typ]
   ["@",parseTran x,parseTran typ]
 
 parsePretend [x,typ] ==
-  $InteractiveMode => ['pretend,parseTran x,parseTran parseType typ]
   ['pretend,parseTran x,parseTran typ]
 
-parseType x ==
-  x := MSUBST($EmptyMode,$quadSymbol,x)
-  x is ['typeOf,val] => ['typeOf,parseTran val]
-  x
-
-parseTypeEvaluate form ==
-  form is [op,:argl] =>
-    $op: local:= op
-    op = 'Mapping =>
-      [op,:[parseTypeEvaluate a for a in argl]]
-    op = 'Union =>
-      isTaggedUnion form =>
-        [op,:[['_:,sel,parseTypeEvaluate type] for
-          ['_:,sel,type] in argl]]
-      [op,:[parseTypeEvaluate a for a in argl]]
-    op = 'Record =>
-      [op,:[['_:,sel,parseTypeEvaluate type] for ['_:,sel,type] in argl]]
-    cmm :=
-      fn := constructor? op =>
-        p := pathname [fn,$spadLibFT,'"*"] =>
-          isExistingFile p => getConstructorModemap(abbreviation? fn)
-          nil
-      nil
-    cmm is [[.,.,:argml],:.] => [op,:parseTypeEvaluateArgs(argl,argml)]
-    throwKeyedMsg("S2IL0015",[op])
-  form
-
-parseTypeEvaluateArgs(argl,argml) ==
-  [argVal for arg in argl for md in argml for i in 1..] where argVal ==
-      isCategoryForm(md,$CategoryFrame) => parseTypeEvaluate arg
-      arg
-
 parseHas [x,y] ==
-  if $InteractiveMode then
-    x:=
-      get(x,'value,$CategoryFrame) is [D,m,.]
-        and m in '((Mode) (Type) (Category)) => D
-      parseType x
   mkand [['has,x,u] for u in fn y] where
     mkand x ==
       x is [a] => a

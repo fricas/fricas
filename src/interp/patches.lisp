@@ -137,11 +137,11 @@
 
 ;; non-interactive restarts...
 (defun restart0 ()
-  (compressopen);; set up the compression tables
-  (interpopen);; open up the interpreter database
-  (operationopen);; all of the operations known to the system
-  (categoryopen);; answer hasCategory question
-  (browseopen)
+  (|compressOpen|);; set up the compression tables
+  (|interpOpen|);; open up the interpreter database
+  (|operationOpen|);; all of the operations known to the system
+  (|categoryOpen|);; answer hasCategory question
+  (|browseOpen|)
   (|makeConstructorsAutoLoad|)
   (let ((asharprootlib (strconc (|getEnv| "AXIOM") "/aldor/lib/")))
     (set-file-getter (strconc asharprootlib "runtime"))

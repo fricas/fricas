@@ -480,6 +480,7 @@ After this function is called the image is clean and can be saved.
 (defun interpsys-image-init (parse-files comp-files browse-files
              translate-files asauto-files spad)
   (push :oldboot *features*)
+  (setf *package* (find-package "BOOT"))
   (initroot spad)
   #+:GCL
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
@@ -487,14 +488,7 @@ After this function is called the image is clean and can be saved.
                       :rpages 1000 :hole 2000)
   #+:GCL
   (setq compiler::*suppress-compiler-notes* t)
-  (|resetWorkspaceVariables|)
-  (|initHist|)
-  (|initNewWorld|)
-  (in-package "BOOT")
-  (compressopen)
-  (interpopen)
-  (create-initializers)
-  (|start| :fin)
+  (|interpsysInitialization|)
   (setq *load-verbose* nil)
   (|setBootAutloadProperties| comp-functions comp-files)
   (|setBootAutloadProperties| browse-functions browse-files)

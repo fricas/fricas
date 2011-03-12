@@ -1484,7 +1484,6 @@ updateHist() ==
     $HistRecord:= NIL
   $IOindex:= $IOindex+1
   updateCurrentInterpreterFrame()
-  $mkTestInputStack := nil
   $currentLine := nil
   stopTimingProcess 'history
 
