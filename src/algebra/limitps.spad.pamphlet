@@ -47,6 +47,8 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
   EFULS   ==> ElementaryFunctionsUnivariateLaurentSeries
   EFUPXS  ==> ElementaryFunctionsUnivariatePuiseuxSeries
   FS2UPS  ==> FunctionSpaceToUnivariatePowerSeries
+  TEXPL  ==> TaylorSeriesExpansionLaurent
+  TEXPP  ==> TaylorSeriesExpansionPuiseux
   FS2EXPXP ==> FunctionSpaceToExponentialExpansion
   Problem ==> Record(func:String,prob:String)
   RESULT  ==> Union(OFE,"failed")
@@ -341,17 +343,21 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       -- if fcn is an expression involving roots, and using a Laurent
       -- expansion of fcn otherwise
       lim : FE :=
+        Uts := UTS(FE, x, zeroFE)
+        Uls := ULS(FE, x, zeroFE)
+        Efuls := EFULS(FE, Uts, Uls)
         anyRootsOrAtrigs? fcn =>
-          ppack := FS2UPS(R,FE,RN,_
-              UPXS(FE,x,zeroFE),EFUPXS(FE,ULS(FE,x,zeroFE),UPXS(FE,x,zeroFE),_
-              EFULS(FE,UTS(FE,x,zeroFE),ULS(FE,x,zeroFE))),x)
+          Upx := UPXS(FE, x, zeroFE)
+          ppack := FS2UPS(R, FE, RN,
+              Upx, EFUPXS(FE, Uls, Upx, Efuls), Uts, 
+              TEXPP(FE, Uts, Uls, Upx), x)
           pseries := exprToUPS(fcn,false,"complex")$ppack
           pseries case %problem => return "failed"
           if pole?(upxs := pseries.%series) then upxs := map(normalize,upxs)
           pole? upxs => return infinity()
           coefficient(upxs,0)
-        lpack := FS2UPS(R,FE,Z,ULS(FE,x,zeroFE),_
-                 EFULS(FE,UTS(FE,x,zeroFE),ULS(FE,x,zeroFE)),x)
+        lpack := FS2UPS(R, FE, Z, Uls, Efuls, Uts,
+                        TEXPL(FE, Uts, Uls), x)
         lseries := exprToUPS(fcn,false,"complex")$lpack
         lseries case %problem => return "failed"
         if pole?(uls := lseries.%series) then uls := map(normalize,uls)
@@ -413,10 +419,14 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       -- if fcn is an expression involving roots, and using a Laurent
       -- expansion of fcn otherwise
       lim : Union(FE,"failed") :=
+        Uts := UTS(FE, x, zeroFE)
+        Uls := ULS(FE, x, zeroFE)
+        Efuls := EFULS(FE, Uts, Uls)
         anyRootsOrAtrigs? fcn =>
-          ppack := FS2UPS(R,FE,RN,_
-               UPXS(FE,x,zeroFE),EFUPXS(FE,ULS(FE,x,zeroFE),UPXS(FE,x,zeroFE),_
-               EFULS(FE,UTS(FE,x,zeroFE),ULS(FE,x,zeroFE))),x)
+          Upx := UPXS(FE, x, zeroFE)
+          ppack := FS2UPS(R, FE, RN,
+              Upx, EFUPXS(FE, Uls, Upx, Efuls), Uts,
+              TEXPP(FE, Uts, Uls, Upx), x)
           pseries := exprToUPS(fcn,true,"real: two sides")$ppack
           pseries case %problem =>
             trouble := pseries.%problem
@@ -438,8 +448,8 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
             cp := coefficient(upxs,ordp := order upxs)
             return poleLimit(ordp,cp,x)
           coefficient(upxs,0)
-        lpack := FS2UPS(R,FE,Z,ULS(FE,x,zeroFE),_
-                 EFULS(FE,UTS(FE,x,zeroFE),ULS(FE,x,zeroFE)),x)
+        lpack := FS2UPS(R, FE, Z, Uls, Efuls, Uts,
+                        TEXPL(FE, Uts, Uls), x)
         lseries := exprToUPS(fcn,true,"real: two sides")$lpack
         lseries case %problem =>
           trouble := lseries.%problem
@@ -480,10 +490,14 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       -- of fcn, if fcn is an expression involving roots, and using a
       -- generalized Laurent expansion of fcn otherwise
       lim : Union(FE,"failed") :=
+        Uts := UTS(FE, x, zeroFE)
+        Uls := ULS(FE, x, zeroFE)
+        Efuls := EFULS(FE, Uts, Uls)
         anyRootsOrAtrigs? fcn =>
-          ppack := FS2UPS(R,FE,RN,_
-               UPXS(FE,x,zeroFE),EFUPXS(FE,ULS(FE,x,zeroFE),UPXS(FE,x,zeroFE),_
-               EFULS(FE,UTS(FE,x,zeroFE),ULS(FE,x,zeroFE))),x)
+          Upx := UPXS(FE, x, zeroFE)
+          ppack := FS2UPS(R, FE, RN,
+              Upx, EFUPXS(FE, Uls, Upx, Efuls), Uts,
+              TEXPP(FE, Uts, Uls, Upx), x)
           pseries := exprToGenUPS(fcn,true,"real: right side")$ppack
           pseries case %problem =>
             trouble := pseries.%problem
@@ -496,8 +510,8 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
             cp := coefficient(upxs,ordp := order upxs)
             return poleLimitPlus(ordp,cp,x)
           coefficient(upxs,0)
-        lpack := FS2UPS(R,FE,Z,ULS(FE,x,zeroFE),_
-                 EFULS(FE,UTS(FE,x,zeroFE),ULS(FE,x,zeroFE)),x)
+        lpack := FS2UPS(R, FE, Z, Uls, Efuls, Uts,
+                        TEXPL(FE, Uts, Uls), x)
         lseries := exprToGenUPS(fcn,true,"real: right side")$lpack
         lseries case %problem =>
           trouble := lseries.%problem

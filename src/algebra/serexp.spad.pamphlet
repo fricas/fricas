@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra serexp.spad}
+\author{Waldek Hebisch}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{TaylorSeriesExpansion}
+
+<<category TSEREXP TaylorSeriesExpansion>>=
+
+)abbrev category TSEREXP TaylorSeriesExpansion
+TaylorSeriesExpansion(Coef : Algebra(Fraction(Integer)), 
+        Expon : OrderedAbelianMonoid, Var : OrderedSet,
+        PS : PowerSeriesCategory(Coef, Expon, Var),
+        UTS : UnivariateTaylorSeriesCategory(Coef)) : Category == with
+    taylor_via_deriv : (Coef, List PS, List (Coef -> Coef)) -> PS
+      ++ taylor_via_deriv(f, [x1,...,xn], [D1,...,Dn]) returns
+      ++ expands f into Taylor series at (x1,...,xn) using
+      ++ D1,...,Dn as partial derivatives
+    taylor_via_deriv : (PS, List PS, List (Coef -> Coef)) -> PS
+      ++ taylor_via_deriv(f, [x1,...,xn], [D1,...,Dn]) returns
+      ++ expands f into Taylor series at (x1,...,xn) using
+      ++ D1,...,Dn as partial derivatives
+    taylor_via_lode : (List PS, PS, List Coef) -> PS
+      ++ taylor_via_lode([a0,...,ak], z, [c0, ..., ck]) expand into
+      ++ Taylor series solution of the linear ordinary differential
+      ++ equation
+    applyTaylor: ((UTS -> UTS), PS) -> PS
+      ++ applyTaylorIfCan(g, f) applies g to f
+  add
+    taylor_via_deriv(f : Coef, lx : List PS,
+                         ld : List (Coef -> Coef)) : PS ==
+            taylor_via_deriv(monomial(f, 0$Expon)$PS, lx, ld)
+
+@
+
+<<package TSEREXPT TaylorSeriesExpansionTaylor>>=
+
+)abbrev package TSEREXPT TaylorSeriesExpansionTaylor
+TaylorSeriesExpansionTaylor(Coef : Algebra(Fraction(Integer)),
+    UTS    : UnivariateTaylorSeriesCategory Coef) : Exports == Implementation
+  where
+    NNI ==> NonNegativeInteger
+    UTSODE ==> UnivariateTaylorSeriesODESolver(Coef, UTS)
+    ST ==> Stream
+    STTAY ==> StreamTaylorSeriesOperations(Coef)
+    Exports ==> TaylorSeriesExpansion(Coef, NNI,
+                                      SingletonAsOrderedSet, UTS, UTS)
+    Implementation ==> add
+
+        stream_taylor(f : ST Coef, x : ST Coef, xn : ST Coef,
+                      d : (ST(Coef) -> ST(Coef)),
+                     n : Integer) : ST(ST(Coef)) == delay
+            qn : Fraction(Integer) := 1/n
+            ninv : Coef := qn*1$Coef
+            fn := f *$STTAY xn
+            concat(fn, stream_taylor(d(ninv *$STTAY f), x, x *$STTAY xn, d, n + 1))
+
+        taylor_via_deriv(f : UTS, lx : List UTS,
+                         ld : List (Coef -> Coef)) : UTS ==
+            #lx ~= #ld =>
+                error "taylor_via_deriv: number of variables must equal number of derivatives"
+            #lx = 0 => f
+            x1 := first lx
+            order(x1, 1) < 1 =>
+                error "taylor_via_deriv: variable has constant term"
+            f := taylor_via_deriv(f, rest lx, rest ld)
+            fs := coefficients(f)
+            xs := coefficients(x1)
+            empty?(xs) => f
+            xs := rest(xs)
+            one := coefficients(1::UTS)
+            ds := stream_taylor(fs, xs, one,
+                                (s : ST Coef) : ST Coef +-> map(first ld, s),
+                                1)
+            series(addiag(ds)$STTAY)
+
+        taylor_via_lode(la : List UTS, z : UTS, lc : List Coef) : UTS ==
+            order(z, 1) < 1 =>
+                error "taylor_via_lode: variable has constant term"
+            #lc ~= #la =>
+                error "taylor_via_lode: number of coefficient and initial values must be equal"
+            (ode((ls : List UTS) : UTS +->
+                   reduce(_+, [s*a for s in ls for a in la]),
+                lc)$UTSODE)(z)
+
+        applyTaylor(g, f) == g(f)
+
+@
+
+<<package TSEREXPL TaylorSeriesExpansionLaurent>>=
+)abbrev package TSEREXPL TaylorSeriesExpansionLaurent
+TaylorSeriesExpansionLaurent(Coef : Algebra(Fraction(Integer)),
+    UTS : UnivariateTaylorSeriesCategory Coef,
+    ULS : UnivariateLaurentSeriesConstructorCategory(Coef,UTS)
+    ) : Exports == Implementation
+  where
+    TET ==> TaylorSeriesExpansionTaylor(Coef, UTS)
+    Exports ==> TaylorSeriesExpansion(Coef, Integer,
+                                      SingletonAsOrderedSet, ULS, UTS)
+    Implementation ==> add
+
+        taylor_via_deriv(f : ULS, lx : List ULS,
+                         ld : List (Coef -> Coef)) : ULS ==
+            ft := taylor(f)
+            lxt := [taylor(x) for x in lx]
+            (taylor_via_deriv(ft, lxt, ld)$TET) :: ULS
+
+        taylor_via_lode(la : List ULS, z : ULS, lc : List Coef) : ULS ==
+            zt := taylor(z)
+            lat := [taylor(a) for a in la]
+            (taylor_via_lode(lat, zt, lc)$TET) :: ULS
+
+        applyTaylor(g, f) ==
+            (applyTaylor(g, taylor(f))$TET) :: ULS
+
+@
+
+<<package TSEREXPP TaylorSeriesExpansionPuiseux>>=
+
+)abbrev package TSEREXPP TaylorSeriesExpansionPuiseux
+TaylorSeriesExpansionPuiseux(Coef : Algebra(Fraction(Integer)),
+    UTS : UnivariateTaylorSeriesCategory Coef,
+    ULS : UnivariateLaurentSeriesConstructorCategory(Coef,UTS),
+    UPS : UnivariatePuiseuxSeriesConstructorCategory(Coef,ULS)
+    ) : Exports == Implementation
+  where
+    TEL ==> TaylorSeriesExpansionLaurent(Coef, UTS, ULS)
+    RN ==> Fraction Integer
+    Exports ==> TaylorSeriesExpansion(Coef, RN,
+                                      SingletonAsOrderedSet, UPS, UTS)
+
+    Implementation ==> add
+
+        rescale(p : UPS, r0 : RN, rn : RN) : ULS ==
+            s := (retract(r0/rn)@Integer)::PositiveInteger
+            multiplyExponents(laurentRep(p), s)
+
+        common_rep(lp : List UPS) : Record(laus : List ULS, rpow : RN) ==
+            lr : List(RN) := [rationalPower(p) for p in lp]
+            rn := gcd([numer(r) for r in lr]@List(Integer))/
+                    lcm([denom(r) for r in lr]@List(Integer))
+            [[rescale(p, r, rn) for p in lp for r in lr], rn]
+
+        taylor_via_deriv(f : UPS, lx : List UPS,
+                         ld : List (Coef -> Coef)) : UPS ==
+            nrep := common_rep(cons(f, lx))
+            lla := nrep.laus
+            lres := (taylor_via_deriv(first lla, rest lla, ld)$TEL)
+            puiseux(nrep.rpow, lres)
+
+        taylor_via_lode(la : List UPS, z : UPS, lc : List Coef) : UPS ==
+            nrep := common_rep(cons(z, la))
+            lla := nrep.laus
+            lres := (taylor_via_lode(rest lla, first lla, lc)$TEL)
+            puiseux(nrep.rpow, lres)
+
+        applyTaylor(g, f) ==
+            nrep := common_rep([f])
+            lres := (applyTaylor(g, first(nrep.laus))$TEL)
+            puiseux(nrep.rpow, lres)
+
+@
+
+\end{document}

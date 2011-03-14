@@ -44,6 +44,8 @@ ExpressionToUnivariatePowerSeries(R,FE): Exports == Implementation where
   EFULS  ==> ElementaryFunctionsUnivariateLaurentSeries
   EFUPXS ==> ElementaryFunctionsUnivariatePuiseuxSeries
   FS2UPS ==> FunctionSpaceToUnivariatePowerSeries
+  TEXPL  ==> TaylorSeriesExpansionLaurent
+  TEXPP  ==> TaylorSeriesExpansionPuiseux
   Prob   ==> Record(func:String,prob:String)
   ANY1   ==> AnyFunctions1
 
@@ -132,8 +134,11 @@ ExpressionToUnivariatePowerSeries(R,FE): Exports == Implementation where
 
     iTaylor: (FE,SY,FE) -> Any
     iTaylor(fcn,x,a) ==
-      pack := FS2UPS(R,FE,I,ULS(FE,x,a),_
-                     EFULS(FE,UTS(FE,x,a),ULS(FE,x,a)),x)
+      Uls := ULS(FE,x,a)
+      Uts := UTS(FE,x,a)
+      pack := FS2UPS(R, FE, I, Uls,
+                     EFULS(FE, Uts, Uls), Uts,
+                     TEXPL(FE, Uts, Uls), x)
       ans := exprToUPS(fcn,false,"just do it")$pack
       ans case %problem =>
         ans.%problem.prob = "essential singularity" =>
@@ -186,8 +191,11 @@ ExpressionToUnivariatePowerSeries(R,FE): Exports == Implementation where
 
     iLaurent: (FE,SY,FE) -> Any
     iLaurent(fcn,x,a) ==
-      pack := FS2UPS(R,FE,I,ULS(FE,x,a),_
-                     EFULS(FE,UTS(FE,x,a),ULS(FE,x,a)),x)
+      Uls := ULS(FE,x,a)
+      Uts := UTS(FE,x,a)
+      pack := FS2UPS(R, FE, I, Uls,
+                     EFULS(FE, Uts, Uls), Uts,
+                     TEXPL(FE, Uts, Uls), x)
       ans := exprToUPS(fcn,false,"just do it")$pack
       ans case %problem =>
         ans.%problem.prob = "essential singularity" =>
@@ -237,9 +245,13 @@ ExpressionToUnivariatePowerSeries(R,FE): Exports == Implementation where
 
     iPuiseux: (FE,SY,FE) -> Any
     iPuiseux(fcn,x,a) ==
-      pack := FS2UPS(R,FE,RN,UPXS(FE,x,a),_
-                     EFUPXS(FE,ULS(FE,x,a),UPXS(FE,x,a),_
-                     EFULS(FE,UTS(FE,x,a),ULS(FE,x,a))),x)
+      Uts := UTS(FE, x, a)
+      Uls := ULS(FE, x, a)
+      Ups := UPXS(FE, x, a)
+      pack := FS2UPS(R, FE, RN, Ups,_
+                     EFUPXS(FE, Uls, Ups,
+                     EFULS(FE, Uts, Uls)), Uts,
+                     TEXPP(FE, Uts, Uls, Ups), x)
       ans := exprToUPS(fcn,false,"just do it")$pack
       ans case %problem =>
         ans.%problem.prob = "essential singularity" =>
@@ -285,11 +297,17 @@ ExpressionToUnivariatePowerSeries(R,FE): Exports == Implementation where
       series := retract(iPuiseux(performSubstitution(fcn,x,a),x,a))$any1
       coerce(extend(series,n))$any1
 
+    Ups ==> UPXS(FE, x, a)
+
     iSeries: (FE,SY,FE) -> Any
     iSeries(fcn,x,a) ==
-      pack := FS2UPS(R,FE,RN,UPXS(FE,x,a), _
-                     EFUPXS(FE,ULS(FE,x,a),UPXS(FE,x,a), _
-                     EFULS(FE,UTS(FE,x,a),ULS(FE,x,a))),x)
+      Uts := UTS(FE, x, a)
+      Uls := ULS(FE, x, a)
+      -- Ups := UPXS(FE, x, a)
+      pack := FS2UPS(R, FE, RN, Ups,_
+                     EFUPXS(FE, Uls, Ups,
+                     EFULS(FE, Uts, Uls)), Uts,
+                     TEXPP(FE, Uts, Uls, Ups), x)
       ans := exprToUPS(fcn,false,"just do it")$pack
       ans case %problem =>
         ansG := exprToGenUPS(fcn,false,"just do it")$pack
