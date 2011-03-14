@@ -65,25 +65,25 @@ DEFCONST(MATBORCH, '"*")
 DEFCONST($EmptyString, '"")
 DEFCONST($DoubleQuote, '"_"")
 
-makeCharacter n == INTERN(STRING(CODE_-CHAR n))
+makeCharacter n == INTERN(NUM2USTR(n))
 
 SETANDFILEQ($RTspecialCharacters,[
-    makeCharacter 218,      -- upper left corner   (+)
-    makeCharacter 191,      -- upper right corner  (+)
-    makeCharacter 192,      -- lower left corner   (+)
-    makeCharacter 217,      -- lower right corner  (+)
-    makeCharacter 179,      -- vertical bar
-    makeCharacter 196,      -- horizontal bar      (-)
+    makeCharacter 9484,     -- upper left corner   (+)
+    makeCharacter 9488,     -- upper right corner  (+)
+    makeCharacter 9492,     -- lower left corner   (+)
+    makeCharacter 9496,     -- lower right corner  (+)
+    makeCharacter 9474,     -- vertical bar
+    makeCharacter 9472,     -- horizontal bar      (-)
     $quadSymbol,      -- APL quad            (?)
     '_[,      -- left bracket
     '_],      -- right bracket
     '_{,      -- left brace
     '_},      -- right brace
-    makeCharacter 194,      -- top    box tee      (+)
-    makeCharacter 193,      -- bottom box tee      (+)
-    makeCharacter 180,      -- right  box tee      (+)
-    makeCharacter 195,      -- left   box tee      (+)
-    makeCharacter 197,      -- center box tee      (+)
+    makeCharacter 9516,     -- top    box tee      (+)
+    makeCharacter 9524,     -- bottom box tee      (+)
+    makeCharacter 9508,     -- right  box tee      (+)
+    makeCharacter 9500,     -- left   box tee      (+)
+    makeCharacter 9532,     -- center box tee      (+)
     '_\       -- back slash
      ])
 
