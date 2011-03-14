@@ -29,17 +29,18 @@
 ++   whose coefficients do not contain the variable x. The function
 ++   \spadfun{exprToGenUPS} converts functional expressions to power series
 ++   whose coefficients may involve functions of \spad{log(x)}.
-FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
+FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
  Exports == Implementation where
-  R     : Join(GcdDomain, Comparable, RetractableTo Integer,_
+  R     : Join(GcdDomain, Comparable, RetractableTo Integer,
                LinearlyExplicitRingOver Integer)
-  FE    : Join(AlgebraicallyClosedField,TranscendentalFunctionCategory,_
-               FunctionSpace R)
+  FE    : Join(AlgebraicallyClosedField, TranscendentalFunctionCategory,
+               Algebra(Fraction(Integer)), FunctionSpace R)
             with
               coerce: Expon -> %
                 ++ coerce(e) converts an 'exponent' e to an 'expression'
-  Expon : OrderedRing
-  UPS   : Join(UnivariatePowerSeriesCategory(FE,Expon),Field,_
+  Expon : Join(OrderedAbelianMonoid, OrderedRing)
+  UPS   : Join(UnivariatePowerSeriesCategory(FE,Expon),Field,
+               PowerSeriesCategory(FE, Expon, SingletonAsOrderedSet),
                TranscendentalFunctionCategory)
             with
               differentiate: % -> %
@@ -49,6 +50,8 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
                 ++ integrate(x) returns the integral of x since
                 ++ we need to be able to integrate a power series
   TRAN  : PartialTranscendentalFunctions UPS
+  UTS : UnivariateTaylorSeriesCategory(FE)
+  TEXP : TaylorSeriesExpansion(FE, Expon, SingletonAsOrderedSet, UPS, UTS)
   x     : Symbol
   B       ==> Boolean
   BOP     ==> BasicOperator
@@ -294,6 +297,210 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
           error "inverse of series with many leading zero coefficients"
       [ups ^ n]
 
+    ELITS := EllipticFunctionsUnivariateTaylorSeries(FE, UTS)
+
+    ARES ==> Record(osers : L(UPS), sers : L(UPS), sere : L(FE), sers0 : L(FE))
+    ARESU ==> Union(ARES, Result)
+
+    handle_args(args : L(FE), posCheck? : B, atanFlag : ATANFLAG) : ARESU ==
+        losers : L(UPS) := []
+        lsers :  L(UPS) := []
+        lsere : L(FE) := []
+        lcoef : L(FE) := []
+        for arg in args repeat
+            not(member?(x, variables(arg))) =>
+                losers := cons(arg::UPS, losers)
+                lsers := cons(0$UPS, lsers)
+                lsere := cons(0$FE, lsere)
+                lcoef := cons(arg, lcoef)
+            (nsu := exprToUPS(arg, posCheck?, atanFlag)) case %problem =>
+                return nsu
+            ups := nsu.%series
+            order(ups, 0) < 0 =>
+                return stateProblem("handle_args", "argument not Taylor")
+            coef := coefficient(ups, 0)
+            losers := cons(ups, losers)
+            lcoef := cons(coef, lcoef)
+            lsere := cons(1$FE, lsere)
+            lsers := cons(ups - coef::UPS, lsers)
+        [reverse!(losers), reverse!(lsers), reverse!(lsere),
+          reverse!(lcoef)]$ARES
+
+    do_taylor_via_deriv(nf : UPS, lsyms : L(Symbol), lser : L(UPS)) : Result ==
+        lders : L(FE -> FE) := ([(c : FE) : FE +->
+                   differentiate(c, sym) for sym in lsyms])
+        ups : UPS := taylor_via_deriv(nf, lser, lders)$TEXP
+        [map((c : FE) : FE +-> eval(c, [sym::FE = 0$FE for sym in lsyms]), ups)]
+
+    do_taylor_via_deriv2(nk : FE, lsyms : L(Symbol), lser : L(UPS)) : Result ==
+        lders : L(FE -> FE) := ([(c : FE) : FE +->
+                   differentiate(c, sym) for sym in lsyms])
+        ups : UPS := taylor_via_deriv(nk, lser, lders)$TEXP
+        [map((c : FE) : FE +-> eval(c, [sym::FE = 0$FE for sym in lsyms]), ups)]
+
+    NARGS ==> Record(nargs0 : L(FE), sers : L(UPS), syms : L(Symbol))
+
+    convert_args(lsers : L(UPS), lsere : L(FE), lser0 : L(FE)) : NARGS ==
+        lsyms : List(Symbol) := []
+        lser : List(UPS) := []
+        nargs : List(FE) := []
+        for s in lsers for e in lsere for c in lser0 repeat
+            e = 0 =>
+                nargs := cons(c, nargs)
+            nsym := new()$Symbol
+            nargs := cons(c + nsym::FE, nargs)
+            lsyms := cons(nsym, lsyms)
+            lser := cons(s, lser)
+        nargs := reverse!(nargs)
+        [nargs, lser, lsyms]
+
+    do_ell(losers : L(UPS), lsers : L(UPS), lsere : L(FE),
+            lser0 : L(FE), ef : (UTS, L(FE)) -> UTS) : Result ==
+        cargs := convert_args(rest lsers, rest lsere, rest lser0)
+        nres := applyTaylor(f +-> ef(f, cargs.nargs0), losers(1))
+        do_taylor_via_deriv(nres, cargs.syms, cargs.sers)
+
+    do_ell2(losers : L(UPS), lsers : L(UPS), lsere : L(FE),
+            lser0 : L(FE), ef : (UTS, FE) -> UTS) : Result ==
+        do_ell(losers, lsers, lsere, lser0, (f, l) +-> ef(f, l(1)))
+
+    do_ell3(losers : L(UPS), lsers : L(UPS), lsere : L(FE),
+            lser0 : L(FE), ef : (UTS, FE, FE) -> UTS) : Result ==
+        do_ell(losers, lsers, lsere, lser0, (f, l) +-> ef(f, l(1), l(2)))
+
+    SupF ==> SparseUnivariatePolynomial(FE)
+    -- zvar := monomial(1,1)$SupF
+    -- zvar := monomial(1, 1::Expon)$UPS
+
+    -- taylor_via_deriv is good enough for Airy functions
+    -- f'' - zf = 0
+    -- airyEq(lc : L(FE), z0 : FE) : L(UPS) ==
+    --    zvar := monomial(1, 1::Expon)$UPS + z0::UPS
+    --    [1, 0, zvar]
+
+    -- z^2f'' + zf' +(z^2 - v^2)f = 0
+    besselEq(lc : L(FE), z0 : FE) : L(UPS) ==
+        v := lc(1)::UPS
+        zvar := monomial(1, 1::Expon)$UPS + z0::UPS
+        [zvar^2, zvar, zvar^2 - v^2]
+
+    -- z^2f'' + zf' +(z^2 + v^2)f = 0
+    besselEqm(lc : L(FE), z0 : FE) : L(UPS) ==
+        v := lc(1)::UPS
+        zvar := monomial(1, 1::Expon)$UPS + z0::UPS
+        [zvar^2, zvar, zvar^2 + v^2]
+
+    -- z^4f^(4) + 2z^3f^(3) - (1 + 2v^2)z^2f'' + (1 + 2v^2)zf'
+    -- (v^2 - 4v^2 + z^4)f = 0 
+    kelvinEq(lc : L(FE), z0 : FE) : L(UPS) ==
+        v := lc(1)::UPS
+        zvar := monomial(1, 1::Expon)$UPS + z0::UPS
+        v2 := 1$UPS + 2*v^2
+        [zvar^4, 2*zvar^3, -v2*zvar^2, v2*zvar, v^2 - 4*v^2 + zvar^4]
+
+    -- zf'' + (b-z)f' - af = 0
+    kummerEq(lc : L(FE), z0 : FE) : L(UPS) ==
+        a := lc(1)::UPS
+        b := lc(2)::UPS
+        zvar := monomial(1, 1::Expon)$UPS + z0::UPS
+        [zvar, (b - zvar), -a]
+
+    -- (1 - z^2)^2f'' -2z(1-z^2)f' + (nu(nu+1)(1-z^2) - mu)f = 0 
+    legendreEq(lc : L(FE), z0 : FE) : L(UPS) ==
+        nu := lc(1)::UPS
+        mu := lc(2)::UPS
+        zvar := monomial(1, 1::Expon)$UPS + z0::UPS
+        z2 := 1 - zvar^2
+        [z2^2, -2*zvar*z2, nu*(nu + 1)*z2 - mu]
+
+    --z^2f'' + (1/4 - m^2 + kz - z^2/4)f = 0
+    whittakerEq(lc : L(FE), z0 : FE) : L(UPS) ==
+        k := lc(1)::UPS
+        m := lc(2)::UPS
+        o4 := (1/(4::R::FE))::UPS
+        zvar := monomial(1, 1::Expon)$UPS + z0::UPS
+        [zvar^2, 0, o4 - m^2 + k*zvar - zvar^2/(4::R::FE)]
+
+    do_diff_eq(ker : K, losers : L(UPS), lsers : L(UPS),
+               lsere : L(FE), lser0 : L(FE),
+               getEq : (L(FE), FE) -> L(UPS)) : Result ==
+        cargs := convert_args(lsers, lsere, lser0)
+        nargs := cargs.nargs0
+        last(lsere) = 0 =>
+            nker : FE := kernel(operator(ker), nargs)
+            do_taylor_via_deriv2(nker, cargs.syms, cargs.sers)
+        z0 := last(lser0)
+        ecl := getEq(nargs, z0)
+        cn := first(ecl)
+        cn1 := -cn^(-1)
+        ecl := [c*cn1 for c in rest(ecl)]
+        nker : FE := kernel(operator(ker), nargs)
+        lc : L(FE) := [nker]
+        lsyms := cargs.syms
+        sym := first(lsyms)
+        lsyms := rest(lsyms)
+        lsers := rest(cargs.sers)
+        for c in rest(ecl) repeat
+            nker := differentiate(nker, sym)
+            lc := cons(nker, lc)
+        lc := [eval(c, sym::FE = 0$FE) for c in reverse!(lc)]
+        ups := taylor_via_lode(reverse(ecl), first(cargs.sers), lc)
+        do_taylor_via_deriv(ups, lsyms, lsers)
+
+    spec_to_UPS(ker : K, args : L(FE), posCheck? : B,
+                atanFlag : ATANFLAG) : Result ==
+        (aresu := handle_args(args, posCheck?, atanFlag)) case Result =>
+             aresu
+        ares := aresu::ARES
+        losers := ares.osers
+        lsers := ares.sers
+        lsere := ares.sere
+        lser0 := ares.sers0
+        nm := name(ker)
+        nm = 'besselI or nm = 'besselK =>
+            lser0(2) = 0 => stateProblem(string(nm), "expansion at 0")
+            do_diff_eq(ker, losers, lsers, lsere, lser0, besselEqm)
+        nm = 'besselJ or nm = 'besselY or nm = 'hankelH1 or nm = 'hankelH2 =>
+            lser0(2) = 0 => stateProblem(string(nm), "expansion at 0")
+            do_diff_eq(ker, losers, lsers, lsere, lser0, besselEq)
+        nm = kummerM or nm = kummerU =>
+            lser0(3) = 0 => stateProblem(string(nm), "expansion at 0")
+            do_diff_eq(ker, losers, lsers, lsere, lser0, kummerEq)
+        nm = whittakerM or nm = whittakerW =>
+            lser0(3) = 0 => stateProblem(string(nm), "expansion at 0")
+            do_diff_eq(ker, losers, lsers, lsere, lser0, whittakerEq)
+        nm = kelvinBer or nm = kelvinBei or nm = kelvinKer or nm = kelvinKei =>
+            lser0(2) = 0 => stateProblem(string(nm), "expansion at 0")
+            do_diff_eq(ker, losers, lsers, lsere, lser0, kelvinEq)
+        nm = legendreP or nm = legendreQ =>
+            lser0(3) = 1 or lser0(3) = -1 =>
+                stateProblem(string(nm), "expansion at +-1")
+            do_diff_eq(ker, losers, lsers, lsere, lser0, legendreEq)
+)if false
+        nm = 'hypergeometricF =>
+        nm = 'meijerG =>
+        nm = 'struveH =>
+        nm = 'struveL =>
+        nm = 'lommelS1 =>
+        nm = 'lommelS2 =>
+)endif
+        nm = 'jacobiSn =>
+            do_ell2(losers, lsers, lsere, lser0, jacobiSn$ELITS)
+        nm = 'jacobiCn =>
+            do_ell2(losers, lsers, lsere, lser0, jacobiCn$ELITS)
+        nm = 'jacobiDn =>
+            do_ell2(losers, lsers, lsere, lser0, jacobiDn$ELITS)
+        nm = 'ellipticE2 =>
+            do_ell2(losers, lsers, lsere, lser0, ellipticE$ELITS)
+        nm = 'ellipticF =>
+            do_ell2(losers, lsers, lsere, lser0, ellipticF$ELITS)
+        nm = 'ellipticPi =>
+            do_ell3(losers, lsers, lsere, lser0, ellipticPi$ELITS)
+        cargs := convert_args(lsers, lsere, lser0)
+        nargs := cargs.nargs0
+        nker : FE := kernel(operator(ker), nargs)
+        do_taylor_via_deriv2(nker, cargs.syms, cargs.sers)
+
     kernelToUPS(ker,posCheck?,atanFlag) ==
       -- converts a kernel to a power series
       (sym := symbolIfCan(ker)) case Symbol =>
@@ -301,6 +508,9 @@ FunctionSpaceToUnivariatePowerSeries(R,FE,Expon,UPS,TRAN,x):_
         [monomial(ker :: FE,0)]
       empty?(args := argument ker) => [monomial(ker :: FE,0)]
       not member?(x, variables(ker :: FE)) => [monomial(ker :: FE,0)]
+      op := operator(ker)
+      has?(op, 'special) =>
+          spec_to_UPS(ker, args, posCheck?, atanFlag)
       empty? rest args =>
         arg := first args
         is?(ker, 'abs) =>
