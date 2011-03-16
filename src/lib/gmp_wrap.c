@@ -125,12 +125,12 @@ gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
         return 0;
     }
     z2 = count_zeros(*s2p);
-    mpn_rshift(s2p, s2p, s2n, z2);
+    if (z2 > 0) { mpn_rshift(s2p, s2p, s2n, z2); };
     if (s2p[s2n - 1] == 0) {
         s2n--;
     }
     z1 = count_zeros(*s1p);
-    mpn_rshift(s1p, s1p, s1n, z1);
+    if (z1 > 0) { mpn_rshift(s1p, s1p, s1n, z1); };
     if (s1p[s1n - 1] == 0) {
         s1n--;
     }
@@ -152,7 +152,7 @@ gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
     }
     rp += k;
     res = mpn_gcd(rp, s1p, s1n, s2p, s2n);
-    rc = mpn_lshift(rp, rp, res, zp);
+    rc = (zp > 0) ? mpn_lshift(rp, rp, res, zp) : 0;
     if (rc) {
         rp[res] = rc;
         res++;
