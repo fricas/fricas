@@ -133,15 +133,19 @@ with this hack and will try to convince the GCL crowd to fix this.
      (ext::saveinitmem core-image :executable t :NORC t :QUIET t))
 #+:openmcl
   (let* ((ccl-dir (or *ccl-default-directory*
-                 (|getEnv| "CCL_DEFAULT_DIRECTORY"))))
+                 (|getEnv| "CCL_DEFAULT_DIRECTORY")))
+         (restart-fun
+               (if restart
+                   restart
+                   #'(lambda () nil)))
+         (top-fun #'(lambda ()
+                       (setf *read-default-float-format* 'double-float)
+                       (funcall restart-fun))))
         (setf *ccl-default-directory* ccl-dir)
-        (if restart
-            (progn
-                (setf *my-toplevel-function* restart)
-                (CCL::save-application core-image
+        (setf *my-toplevel-function* top-fun)
+        (CCL::save-application core-image
                                        :PREPEND-KERNEL t
-                                       :application-class 'fricas-application))
-            (CCL::save-application core-image :PREPEND-KERNEL t))
+                                       :application-class 'fricas-application)
         (quit))
 #+:lispworks
   (progn
