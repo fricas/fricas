@@ -89,7 +89,7 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
         n := minR - 1
         -- n = smallest k such that k >= i and x(k,j) ~= 0
         for k in i..maxR repeat
-          if qelt(x,k,j) ~= 0 then leave (n := k)
+          if qelt(x, k, j) ~= 0 then (n := k; break)
         n = minR - 1 => "no non-zeroes"
         -- put nth row in ith position
         if i ~= n then swapRows_!(x,i,n)
@@ -180,7 +180,7 @@ InnerMatrixLinearAlgebraFunctions(R,Row,Col,M):_
         if qelt(x,i,j) = 0 then
           rown := minR - 1
           for k in (i+1)..maxR repeat
-            qelt(x,k,j) ~= 0 => leave (rown := k)
+            qelt(x, k, j) ~= 0 => (rown := k; break)
           if rown = minR - 1 then return 0
           swapRows_!(x,i,rown); ans := -ans
         ans := qelt(x,i,j) * ans; b := -inv qelt(x,i,j)
@@ -581,7 +581,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
             for k in (i+1)..maxR repeat
               if qelt(x,k,j) ~= 0 then
                  rown := k -- found a pivot
-                 leave
+                 break
             if rown > minR - 1 then
                swapRows_!(x,i,rown)
                ans := -ans
@@ -597,7 +597,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
                 val := c * qelt(x,k,l) - pv * qelt(x,i,l)
                 qsetelt_!(x,k,l,(val exquo b) :: R)
           b := c
-          (i := i+1)>maxR => leave
+          (i := i + 1) > maxR => break
         if ans=-1 then
           lasti := i-1
           for j in 1..maxC repeat x(lasti, j) := -x(lasti,j)
@@ -712,7 +712,7 @@ MatrixLinearAlgebraFunctions(R,Row,Col,M):Exports == Implementation where
           n := minR - 1
           i := minR
           for j in minC..maxC repeat
-            if i > maxR then leave x
+            if i > maxR then break
             n := minR - 1
             xnj: R
             for k in i..maxR repeat

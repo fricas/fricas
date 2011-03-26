@@ -151,7 +151,7 @@ PolynomialFactorizationByRecursionUnivariate(R, S): public == private where
         zero? elt(leadingCoefficient pp,substns ) => "next"
         ppR:=map(z1 +-> elt(z1,substns),pp)
         degree gcd(ppR,differentiate ppR)>0 => "next"
-        leave
+        break
      [substns,ppR]
    raise(supR) == map(z1 +-> (z1::R)::S,supR)
    lower(pp) == map(z1 +-> retract(z1)::R,pp)
@@ -242,7 +242,7 @@ PolynomialFactorizationByRecursionUnivariate(R, S): public == private where
        hen:=hensel(ppAdjust,cVS.substnsField,factors)
        hen case "failed" => "next"
        factors:=hen.fctrs
-       leave
+       break
      factors:=[ (lc:=content w;
                  lcppPow:=(lcppPow exquo lc)::S;
                   (w exquo lc)::SupS)
@@ -440,7 +440,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
         zero? eval(leadingCoefficient pp,lvpp,substns ) => "next"
         ppR:=map(z1 +-> (retract eval(z1,lvpp,substns))::R,pp)
         degree gcd(ppR,differentiate ppR)>0 => "next"
-        leave
+        break
      [substns,ppR]
    chooseSLPEViableSubstitutions(lvpolys,lpolys,pp) ==
      substns:List R
@@ -455,10 +455,10 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
                   for u in lpolys]
         uu:=lpolysR
         while not empty? uu repeat
-          "or"/[ degree(gcd(uu.first,v))>0 for v in uu.rest] => leave
+          "or"/[degree(gcd(uu.first, v)) > 0 for v in uu.rest] => break
           uu:=rest uu
         not empty? uu => "next"
-        leave
+        break
      ppR:=map(z1 +-> (retract eval(z1,lvpolys,substns))::R,pp)
      [substns,lpolysR,ppR]
    raise(supR) == map(z1 +-> (z1::R)::S,supR)
@@ -539,7 +539,7 @@ PolynomialFactorizationByRecursion(R,E, VarSet:OrderedSet, S): public ==
                OK:=false
                "leave"
            factors:=hen.fctrs
-       OK => leave
+       OK => break
      factors:=[ (lc:=content w;
                  lcppPow:=(lcppPow exquo lc)::S;
                   (w exquo lc)::SupS)
