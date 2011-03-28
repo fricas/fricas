@@ -197,14 +197,37 @@ FloatSpecialFunctions() : Exports == Implementation where
 FloatEllipticFunctions() : with
     jacobiSn : (Float, Float) -> Float
       ++ jacobiSn(z, m) is the Jacobi sn function
+    jacobiSn : (Complex Float, Complex Float) -> Complex Float
+      ++ jacobiSn(z, m) is the Jacobi sn function
     jacobiCn : (Float, Float) -> Float
+      ++ jacobiCn(z, m) is the Jacobi cn function
+    jacobiCn : (Complex Float, Complex Float) -> Complex Float
       ++ jacobiCn(z, m) is the Jacobi cn function
     jacobiDn : (Float, Float) -> Float
       ++ jacobiDn(z, m) is the Jacobi dn function
+    jacobiDn : (Complex Float, Complex Float) -> Complex Float
+      ++ jacobiDn(z, m) is the Jacobi dn function
+    weierstrassP : (Float, Float, Float) -> Float
+      ++ weierstrassP(2, g3, x) is the Weierstrass P function
+    weierstrassP : (Complex Float, Complex Float, Complex Float) ->
+                   Complex Float
+      ++ weierstrassP(2, g3, x) is the Weierstrass P function
+    weierstrassPPrime : (Float, Float, Float) -> Float
+      ++ weierstrassPPrime(2, g3, x) is the derivative of
+      ++ the Weierstrass P function
+    weierstrassPPrime : (Complex Float, Complex Float, Complex Float) ->
+                         Complex Float
+      ++ weierstrassPPrime(2, g3, x) is the derivative of
+      ++ the Weierstrass P function
+    weierstrassHalfPeriods : (Complex Float, Complex Float) ->
+                             List Complex Float
+      ++ weierstrassHalfPeriods(g2, g3) computes half periods of
+      ++ Weierstrass elliptic functions from invariants g2, g3.
     ellipticK : Float -> Float
       ++ ellipticK(m) is the complete elliptic integral of the first kind
     ellipticK : Complex Float -> Complex Float
       ++ ellipticK(m) is the complete elliptic integral of the first kind
+    ellipticF : (Float, Float) -> Float
     -- Functions below should be local but overloaded
     rabs : Float -> Float
       ++ Undocumented.
@@ -226,12 +249,18 @@ FloatEllipticFunctions() : with
       ++ Undocumented.
     kprod : List Complex Float -> Complex Float
       ++ Undocumented.
+    sn2 : (Float, List Float) -> Float
+      ++ Undocumented.
+    sn2 : (Complex Float, List Complex Float) -> Complex Float
+      ++ Undocumented.
 
  == add
 
+    CF ==> Complex Float
+
     rabs(r : Float) : Float == abs(r)
 
-    rabs(r : Complex Float) : Float == real(abs(r))
+    rabs(r : CF) : Float == real(abs(r))
 
     Funs ==>
       landen1(m1 : NT) : List NT ==
@@ -274,9 +303,15 @@ FloatEllipticFunctions() : with
       kprod(ll : List NT) : NT ==
         reduce(_*, [1 + k for k in ll])
 
+      sn2(z : NT, ll : List NT) : NT ==
+          res := sin(z)
+          for k in ll repeat
+              res := (1 + k)*res/(1 + k*res^2)
+          res
+
     Funs where NT ==> Float
 
-    Funs where NT ==> Complex Float
+    Funs where NT ==> CF
 
     pimod(z : Float) : Float ==
         pi2 := 2*pi()
@@ -291,6 +326,7 @@ FloatEllipticFunctions() : with
         m >= 1.0 => error "ellipticK : m >= 1.0"
         obits := bits()
         prec := obits + 20
+        bits(prec)
         eps := two_to_minus_n(prec quo 2)
         ll := landen(m, eps)
         res := (1/2)*pi()*kprod(ll)
@@ -301,16 +337,11 @@ FloatEllipticFunctions() : with
         m = 1 => error "ellipticK : m = 1.0"
         obits := bits()
         prec := obits + 20
+        bits(prec)
         eps := two_to_minus_n(prec quo 2)
         ll := landen(m, eps)
         res := (1/2)*pi()*kprod(ll)
         bits(obits)
-        res
-
-    sn2(z : Float, ll : List Float) : Float ==
-        res := sin(z)
-        for k in ll repeat
-            res := (1 + k)*res/(1 + k*res^2)
         res
 
     -- Compute 1-sin(z) for z in [0,\pi] with small relative error
@@ -411,6 +442,106 @@ FloatEllipticFunctions() : with
         res0 := sn1(z, m, prec)
         sqrt(1 - m*res0^2)
 
+    sn_cn_dn : (CF, CF) -> List CF
+
+    jacobi_imaginary(z : CF, m : CF
+                    ) : List CF ==
+        iu := complex(0, 1.0)
+        pl := sn_cn_dn(-iu*z, 1 - m)
+        cc := pl(3)
+        pl(1) = 1 =>
+            cc = 0 =>
+                cc := pl(2)
+                [0, 1, 1/cc, pl(4)/cc]
+            [1, iu*pl(2)/cc, 1/cc, pl(4)/cc]
+        [1, iu*pl(2)/cc, 0, pl(4)/cc]
+
+    -- returns (sn, cn, dn) as element of projective space, that is
+    -- either [1, sn, cn, dn] (if no pole)
+    -- or [0, 1, lim (cn/sn), lim(dn/ sn)] (in pole)
+    sn_cn_dn(z : CF, m : CF) : List CF ==
+        obits := bits()
+        prec := obits + 20
+        m = 1 =>
+            cc := cosh(z)
+            res :=
+               cc = 0 =>
+                   cc := 1/sinh(z)
+                   [0, 1, cc, cc]
+               cc := 1/cc
+               [1, tanh(z), cc, cc]
+            res
+        rabs(m - 1) < 0.5 =>
+            jacobi_imaginary(z, m)
+        rabs(m) > 1 =>
+            m := 1/m
+            k := sqrt(m)
+            z := z/k
+            pl := sn_cn_dn(z, m)
+            res :=
+                pl(1) = 1 => [1, k*pl(2), pl(4), pl(3)]
+                [0, 1, pl(4)/k, pl(3)/k]
+            res
+        real(m) > 0.5 =>
+            jacobi_imaginary(z, m)
+        eps := float(1, - (prec quo 2))
+        ll := landen(m, eps)
+        kk := kprod(ll)
+        z1 := z/kk
+        iz := imag(z1)
+        m1 := 1 - m
+        ll2 := landen(m1, eps)
+        iu := complex(0, 1.0)
+        kk2 := kprod(ll2)
+        ppi : Float := pi()/2
+        z1 := z/(kk*ppi)
+        tau := iu*kk2/kk
+        itau := imag(tau)
+        iz1 := imag(z1)
+        ni := retract(round(iz1/itau))@Integer
+        z1 := z1 - ni*tau
+        nr := retract(round(real(z1)))@Integer
+        z1 := z1 - nr::Float::CF
+        zz1 := ppi*z1
+        s1 := sn2(zz1, ll)
+        ctwo := 2.0::CF
+        s2 := sn2(zz1/ctwo, ll)
+        s2 := s2*s2
+        ms2 := m*s2
+        den := 1 - ms2*s2
+        c1 := (1 - s2*(ctwo - ms2))/den
+        d1 := (1 - ms2*(ctwo - s2))/den
+        ni := positiveRemainder(ni, 4)
+        nr := positiveRemainder(nr, 4)
+        ms1 := sqrt(m1)
+        iu := complex(0, 1.0)
+        if nr >= 2 then
+            (s1, c1, d1) := (-s1, -c1, d1)
+            nr := nr - 2
+        if nr = 1 then
+            (s1, c1, d1) := (c1/d1, -ms1*s1/d1, ms1/d1)
+        if ni >= 2 then
+            (s1, c1, d1) := (s1, -c1, -d1)
+            ni := ni - 2
+        ni = 0 => [1, s1, c1, d1]
+        s1 = 0 => [0, 1, -iu*d1, -iu*ms1]
+        [1, 1/(ms1*s1), -iu*d1/(ms1*s1), -iu*c1/s1]
+
+    jacobiSn(z : CF, m : CF) ==
+        pl := sn_cn_dn(z, m)
+        pl(1) = 0 => error "pole of jacobiSn"
+        pl(2)
+
+    jacobiCn(z : CF, m : CF) ==
+        pl := sn_cn_dn(z, m)
+        pl(1) = 0 => error "pole of jacobiCn"
+        pl(3)
+
+    jacobiDn(z : CF, m : CF) ==
+        pl := sn_cn_dn(z, m)
+        pl(1) = 0 => error "pole of jacobiDn"
+        pl(4)
+
     jacobiSn(z : Float, m : Float) ==
         obits := bits()
         prec := obits + 20
@@ -468,6 +599,59 @@ FloatEllipticFunctions() : with
             res := dn1(z, m, prec)
         bits(obits)
         res
+
+    mkr(rr : CF, g23 : CF, r1 : CF) : CF ==
+        pr := r1*rr
+        (pr^2 + g23)/pr
+
+    cardano(g2 : CF, g3 : CF) : List CF ==
+        dd := 27*g3^2 - g2^3
+        dd1 := dd/(3.0::CF)
+        sd := sqrt(dd1)
+        sd1 := (sd + 3*g3)/(24.0::CF)
+        rr := sd1^(1/3)
+        r1 := sqrt(3.0)
+        g23 := g2/(12.0::CF)
+        [mkr(rr, g23, 1), mkr(rr, g23, complex(-1, r1)/(2.0::CF)),
+           mkr(rr, g23, complex(-1, -r1)/(2.0::CF))]
+
+    weierstrassHalfPeriods(g2 : CF, g3 : CF) : List CF ==
+        rl := cardano(g2, g3)
+        e13 := rl(1) - rl(3)
+        m := (rl(2) - rl(3))/e13
+        zq := sqrt(e13)
+        omega1 := 2*ellipticK(m)/zq
+        omega2 := 2*complex(0, 1.0)*ellipticK(1-m)/zq
+        [omega1, omega2]
+
+    weierstrassP(g2 : CF, g3 : CF, x : CF) : CF ==
+        rl := cardano(g2, g3)
+        e13 := rl(1) - rl(3)
+        m := (rl(2) - rl(3))/e13
+        zq := sqrt(e13)
+        x1 := zq*x
+        pp := jacobiSn(x1, m)
+        rl(3) + e13/pp^2
+
+    weierstrassPPrime(g2 : CF, g3 : CF, x : CF) : CF ==
+        rl := cardano(g2, g3)
+        e13 := rl(1) - rl(3)
+        m := (rl(2) - rl(3))/e13
+        zq := sqrt(e13)
+        x1 := zq*x
+        pl := sn_cn_dn(x1, m)
+        pl(1) = 0 => 0
+        s1 := pl(2)
+        c1 := pl(3)
+        d1 := pl(4)
+        -2*zq*e13*c1*d1/s1^3
+
+    weierstrassP(g2 : Float, g3 : Float, x : Float) : Float ==
+        real(weierstrassP(g2::CF, g3::CF, x::CF))
+
+    weierstrassPPrime(g2 : Float, g3 : Float, x : Float) : Float ==
+        real(weierstrassPPrime(g2::CF, g3::CF, x::CF))
+
 
 @
 
