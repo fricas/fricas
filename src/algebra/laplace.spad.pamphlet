@@ -114,6 +114,29 @@ LaplaceTransform(R, F): Exports == Implementation where
         [c, d::PI]
       "failed"
 
+    is_root(k : K, t : SE) : Union(F, "failed") ==
+        is?(k, 'nthRoot) =>
+            args := argument k
+            args(2) ~= 2::F => "failed"
+            freeOf?(a := args(1)/(t::F), t) => a
+            "failed"
+        "failed"
+
+    -- returns [a, n] iff f = a*t^n/sqrt(t)
+    athalf(f : F, t : SE) : 
+      Union(Record(coef : F, deg : N), "failed") ==
+        vkl := sort([k for k in kernels(f) | member?(t, variables(k::F))])
+        nk := #vkl
+        nk > 2 => "failed"
+        (rru := is_root(rk := vkl(nk), t)) case "failed" => "failed"
+        nf := f*(rk::F)
+        not(member?(t, variables(nf))) => [nf/(rru::F), 0]
+        (v := atn(f*(rk::F), t)) case "failed" => "failed"
+        vv := v::Record(coef:F, deg:PI)
+        freeOf?(vv.coef, t) =>
+            [vv.coef/(rru::F), vv.deg]
+        "failed"
+        
 -- returns [a, c, b] iff f = a * exp(c * t + b)
 -- and b and c do not involve t
     aexp(f, t) ==
@@ -170,6 +193,10 @@ LaplaceTransform(R, F): Exports == Implementation where
         s := name operator (kernels(ss).1)
         ss * locallaplace(fint, t, tt, s, ss) - eval(fint, tt = 0)
       not (empty?(rest arg)) => "failed"
+      is?(op, 'erf) or is?(op, 'fresnelS) or is?(op, 'fresnelC) =>
+          member?(t, variables(a := first(arg) / sqrt(tt))) => "failed"
+          s := name operator (kernels(ss).1)
+          laplace(D(f, t), t, s)/ss
       member?(t, variables(a := first(arg) / tt)) => "failed"
       is?(op := operator k, 'Si) => atan(a / ss) / ss
       is?(op, 'Ci) => log((ss^2 + a^2) / a^2) / (2 * ss)
@@ -209,6 +236,11 @@ LaplaceTransform(R, F): Exports == Implementation where
       (w := aexp(f, t)) case Record(coef:F, coef1:F, coef0:F) =>
         ww := w::Record(coef:F, coef1:F, coef0:F)
         exp(ww.coef0) * locallaplace(ww.coef,t,tt,s,ss - ww.coef1)
+
+      (v2 := athalf(f, t)) case Record(coef : F, deg : N) =>
+          vv2 := v2::Record(coef : F, deg : N)
+          res1 := sqrt(pi())*differentiate(1/sqrt(ss), s, vv2.deg)
+          (-1$Integer)^(vv2.deg)*vv2.coef*res1
 
       -- Try base cases
       (x := lapkernel(f, t, tt, ss)) case F => x::F
