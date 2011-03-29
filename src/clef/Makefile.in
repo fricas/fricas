@@ -1,7 +1,7 @@
-axiom_c_runtime_extra = @axiom_c_runtime_extra@
+fricas_c_runtime_extra = @fricas_c_runtime_extra@
 
 # this is where the include files live
-INC=    $(axiom_src_srcdir)/include
+INC=    $(fricas_src_srcdir)/include
 
 build_libdir = $(abs_top_builddir)/src/lib
 
@@ -11,7 +11,7 @@ clef_sources = edible.c
 
 clef_objects = $(clef_sources:.c=.$(OBJEXT)) 
 
-clef_LDADD = -L$(build_libdir) -lspad $(axiom_c_runtime_extra)
+clef_LDADD = -L$(build_libdir) -lspad $(fricas_c_runtime_extra)
 clef_DEPENDENCIES = $(build_libdir)/libspad.a
 
 subdir = src/clef/
@@ -22,27 +22,27 @@ all: all-ax
 all-ax all-clef: stamp
 	@ echo finished $(builddir)
 
-stamp: $(axiom_target_bindir)/clef$(EXEEXT)
+stamp: $(fricas_target_bindir)/clef$(EXEEXT)
 	-rm -f stamp
 	$(STAMP) stamp
 
-$(axiom_target_bindir)/clef$(EXEEXT): $(clef_objects) $(clef_DEPENDENCIES)
+$(fricas_target_bindir)/clef$(EXEEXT): $(clef_objects) $(clef_DEPENDENCIES)
 	${CC} $(clef_objects) $(clef_LDADD) ${LDF} -o $@
 
 .PRECIOUS: %.$(OBJEXT)
 
 %.$(OBJEXT): ${INC}/edible.h \
-	$(axiom_configdir)/axiom-c-macros.h
+	$(fricas_configdir)/axiom-c-macros.h
 
 %.$(OBJEXT): $(srcdir)/%.c $(axiom_c_macros_h)
-	${CC} -c ${CCF} $(axiom_includes) -o $@ $<
+	${CC} -c ${CCF} $(fricas_includes) -o $@ $<
 
 mostlyclean-local:
 	-rm -f $(clef_objects)
 	-rm -f stamp
 
 clean-local: mostlyclean-local
-	-rm -f $(axiom_target_bindir)/clef$(EXEEXT)
+	-rm -f $(fricas_target_bindir)/clef$(EXEEXT)
 
 distclean-local: clean-local
 

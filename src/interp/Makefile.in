@@ -1,7 +1,7 @@
 
 subdir = src/interp/
 
-DOC=$(axiom_target_docdir)/src/interp
+DOC=$(fricas_target_docdir)/src/interp
 
 # Command to translate Boot to Common Lisp
 BOOT_TO_LISP = \
@@ -12,20 +12,20 @@ BOOT_TO_LISP = \
 COMPILE_LISP = \
 	$(axiom_build_document) --tag=lisp --mode=compile \
 		--output=$@ --use=$(DEPSYS) $<
-AUTO=$(axiom_targetdir)/autoload
+AUTO=$(fricas_targetdir)/autoload
 
-BOOTSYS= $(axiom_build_bindir)/bootsys
+BOOTSYS= $(fricas_build_bindir)/bootsys
 
-DEPSYS=	$(axiom_build_bindir)/depsys
+DEPSYS=	$(fricas_build_bindir)/depsys
 
 DEP=    vmlisp     hash       bootfuns \
         union      nlib       macros     comp \
         spaderror  debug      spad       bits \
         setq       property   foam_l     axext_l
 
-LOADSYS= $(axiom_build_bindir)/lisp$(EXEEXT)
-SAVESYS= $(axiom_build_bindir)/interpsys$(EXEEXT)
-AXIOMSYS= $(axiom_target_bindir)/AXIOMsys$(EXEEXT)
+LOADSYS= $(fricas_build_bindir)/lisp$(EXEEXT)
+SAVESYS= $(fricas_build_bindir)/interpsys$(EXEEXT)
+AXIOMSYS= $(fricas_target_bindir)/AXIOMsys$(EXEEXT)
 
 OBJ_files= vmlisp hash bootfuns macros setq astr bits \
 	alql buildom cattable cformat clam clammed \
@@ -67,7 +67,7 @@ ASCOMP= $(patsubst %, %.$(LISPOBJEXT), $(ASCOMP_files))
 
 ASAUTO= ${AUTO}/ax.$(LISPOBJEXT)
 
-TIMESTAMP=$(axiom_targetdir)/timestamp
+TIMESTAMP=$(fricas_targetdir)/timestamp
 YEARWEEK=(progn (setq timestamp "${TIMESTAMP}") (setq boot::*build-version* "${VERSION}") (yearweek))
 
 
@@ -139,16 +139,16 @@ ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
     ${NAGBROBJS} \
     ${LOADSYS} \
-    $(axiom_targetdir)/algebra/exposed.$(FASLEXT) \
-    $(axiom_src_datadir)/doc/msgs/s2-us.msgs \
+    $(fricas_targetdir)/algebra/exposed.$(FASLEXT) \
+    $(fricas_src_datadir)/doc/msgs/s2-us.msgs \
     $(srcdir)/../algebra/warm.data
 
 makeint.lisp:
 	@ echo 5 invoking make in `pwd` with parms:
-	@ echo SRC= $(axiom_src_srcdir)
+	@ echo SRC= $(fricas_src_srcdir)
 	@ echo LISP=${LISP} BYE=${BYE}
-	cp $(axiom_src_datadir)/doc/msgs/s2-us.msgs \
-		 $(axiom_target_datadir)/msgs/s2-us.msgs
+	cp $(fricas_src_datadir)/doc/msgs/s2-us.msgs \
+		 $(fricas_target_datadir)/msgs/s2-us.msgs
 	@ echo '${PROCLAIMS}' > makeint.lisp
 	echo '(load #-:ecl "util" #+:ecl "$(srcdir)/util.lisp")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
@@ -185,7 +185,7 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
                     ${DEP} $(depsys_lisp_files) sys-pkg util) \
 	        $(patsubst %, %.clisp, ${depsys_boot_sources})
 	@ echo 3 making ${DEPSYS}
-	$(mkinstalldirs) $(axiom_build_bindir)
+	$(mkinstalldirs) $(fricas_build_bindir)
 	echo '${PROCLAIMS}' > makedep.lisp
 	echo '(push :oldboot *features*)' >> makedep.lisp
 	echo '(load "$(srcdir)/util.lisp")' >> makedep.lisp
@@ -239,16 +239,16 @@ ${AXIOMSYS}:
 	   '#+:cmu (declaim (optimize (ext:inhibit-warnings 3)))' \
 	   '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
 	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' \
-             | DAASE="$(BASE)$(axiom_targetdir)" ${LOADSYS}
+             | DAASE="$(BASE)$(fricas_targetdir)" ${LOADSYS}
 	@ echo 6a ${AXIOMSYS} created
-exposed.lsp: $(axiom_src_algdir)/exposed.lsp.pamphlet
+exposed.lsp: $(fricas_src_algdir)/exposed.lsp.pamphlet
 	@ echo 615 making $@ from $<
 	$(axiom_build_document) --tangle --output=$@ $<
 
-$(axiom_targetdir)/algebra/exposed.$(FASLEXT) : exposed.lsp ${DEPSYS}
+$(fricas_targetdir)/algebra/exposed.$(FASLEXT) : exposed.lsp ${DEPSYS}
 	@ echo 616 making $@ from exposed.lsp
 	echo '(progn  (compile-file "exposed.lsp" :output-file' \
-	      ' "$(BASE)$(axiom_targetdir)/algebra/exposed.$(FASLEXT)") (${BYE}))' \
+	      ' "$(BASE)$(fricas_targetdir)/algebra/exposed.$(FASLEXT)") (${BYE}))' \
 		| ${DEPSYS}
 
 database.date:

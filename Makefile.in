@@ -14,11 +14,11 @@ SUBDIRS = src
 
 build_srcdir = $(builddir)/src
 
-AXIOM_SRC_TARGETS = all-algebra all-asq all-axiomsys all-book all-boot \
+FIRCAS_SRC_TARGETS = all-algebra all-asq all-axiomsys all-book all-boot \
 	all-clef all-doc all-graph all-hyper all-input all-interpsys \
 	all-lib all-lisp all-sman all-src
 
-.PHONY: all install $(AXIOM_SRC_TARGETS)
+.PHONY: all install $(FIRCAS_SRC_TARGETS)
 all: all-ax all-contrib
 
 # Generate the efricas script.
@@ -28,24 +28,24 @@ all-contrib: all-src
 all-ax: all-src
 	@echo finished system build on `date` | tee >lastBuildDate
 
-all-src: stamp-rootdirs @axiom_all_prerequisites@
+all-src: stamp-rootdirs @fricas_all_prerequisites@
 
 all-input: all-src
 
-$(AXIOM_SRC_TARGETS):
+$(FIRCAS_SRC_TARGETS):
 	cd $(build_srcdir) && $(MAKE) $@
 
 stamp-rootdirs: $(axiom_build_document)
-	mkdir -p $(axiom_build_bindir)
-	mkdir -p $(axiom_build_libdir)
-	mkdir -p $(axiom_target_bindir)
-	mkdir -p $(axiom_target_libdir)
-	mkdir -p $(axiom_target_docdir)/spadhelp
-	mkdir -p $(axiom_target_datadir)/msgs
-	mkdir -p $(axiom_target_texdir)
-	mkdir -p $(axiom_targetdir)/algebra/
-	mkdir -p $(axiom_targetdir)/autoload
-	mkdir -p $(axiom_target_srcdir)/algebra
+	mkdir -p $(fricas_build_bindir)
+	mkdir -p $(fricas_build_libdir)
+	mkdir -p $(fricas_target_bindir)
+	mkdir -p $(fricas_target_libdir)
+	mkdir -p $(fricas_target_docdir)/spadhelp
+	mkdir -p $(fricas_target_datadir)/msgs
+	mkdir -p $(fricas_target_texdir)
+	mkdir -p $(fricas_targetdir)/algebra/
+	mkdir -p $(fricas_targetdir)/autoload
+	mkdir -p $(fricas_target_srcdir)/algebra
 	mkdir -p ${TMP}
 	$(STAMP) stamp-rootdirs
 
@@ -60,10 +60,10 @@ stamp-noweb:
 	  $(TAR) -zxf "@noweb_tarball@" && \
 	  cd src && \
 	  cat Makefile \
-	      | sed -e "s|^BIN=.*|BIN=$(axiom_build_bindir)|" \
-                    -e "s|^LIB=.*|LIB=$(axiom_build_libdir)|" \
-		    -e "s|^MAN=.*|MAN=$(axiom_build_mandir)|" \
-                    -e "s|^TEXINPUTS=.*|TEXINPUTS=$(axiom_target_texdir)|" \
+	      | sed -e "s|^BIN=.*|BIN=$(fricas_build_bindir)|" \
+                    -e "s|^LIB=.*|LIB=$(fricas_build_libdir)|" \
+		    -e "s|^MAN=.*|MAN=$(fricas_build_mandir)|" \
+                    -e "s|^TEXINPUTS=.*|TEXINPUTS=$(fricas_target_texdir)|" \
 		    -e 's/ make / $$\(MAKE\) /' \
 		    -e "s,c/nt,c/nt$(EXEEXT)," \
 		    -e "s,c/markup,c/markup$(EXEEXT)," \
@@ -75,19 +75,19 @@ stamp-noweb:
 
 
 book:
-	@ echo 79 building the book as $(axiom_target_docdir)/book.dvi 
+	@ echo 79 building the book as $(fricas_target_docdir)/book.dvi 
 	mkdir -p ${TMP}
-	mkdir -p $(axiom_target_docdir)/ps
-	$(INSTALL) $(axiom_src_srcdir)/doc/book.pamphlet $(axiom_target_docdir)
-	cp $(axiom_src_srcdir)/doc/ps/* $(axiom_target_docdir)/ps
-	(cd $(axiom_target_docdir) ; \
+	mkdir -p $(fricas_target_docdir)/ps
+	$(INSTALL) $(fricas_src_srcdir)/doc/book.pamphlet $(fricas_target_docdir)
+	cp $(fricas_src_srcdir)/doc/ps/* $(fricas_target_docdir)/ps
+	(cd $(fricas_target_docdir) ; \
 	    latex book.pamphlet --interaction nonstopmode && \
 	      latex book.pamphlet --interaction nonstopmode ; \
 	  rm book.pamphlet ; \
 	  rm book.toc ; \
 	  rm book.log ; \
 	  rm book.aux )
-	@ echo 80 The book is at $(axiom_target_docdir)/book.dvi 
+	@ echo 80 The book is at $(fricas_target_docdir)/book.dvi 
 
 reltarget = target/$(target)
 
@@ -146,7 +146,7 @@ install-src:
 	echo export AXIOM >> '${COMMAND}'.tmp
 	echo PATH='$${AXIOM}/bin':'$${PATH}' >> '${COMMAND}'.tmp
 	echo export PATH >> '${COMMAND}'.tmp
-	cat $(axiom_src_srcdir)/etc/fricas >> '${COMMAND}'.tmp
+	cat $(fricas_src_srcdir)/etc/fricas >> '${COMMAND}'.tmp
 	$(INSTALL_SCRIPT) '${COMMAND}'.tmp '${COMMAND}'
 	-rm '${COMMAND}'.tmp
 	$(INSTALL_SCRIPT) '${COMMAND}' '${COMMAND_DIR}/axiom'
@@ -171,7 +171,7 @@ mostlyclean-local:
 clean-local: mostlyclean-local
 	-rm -f stamp-*
 	-cd contrib/emacs && ${MAKE} clean
-	-rm -rf $(axiom_targetdir)
+	-rm -rf $(fricas_targetdir)
 	-rm -rf build/$(target)
 
 distclean-local: clean-local
@@ -182,5 +182,5 @@ distclean-local: clean-local
 $(top_builddir)/config.status: $(top_srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
-$(RECURSIVE_TARGETS): stamp-rootdirs @axiom_all_prerequisites@
+$(RECURSIVE_TARGETS): stamp-rootdirs @fricas_all_prerequisites@
 

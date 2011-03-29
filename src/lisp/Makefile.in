@@ -5,14 +5,14 @@
 
 fricas_quiet_flags = @fricas_quiet_flags@
 lisp_flavor=@fricas_lisp_flavor@
-axiom_gcl_rsym_hack = @axiom_gcl_rsym_hack@
-axiom_c_runtime_extra = @axiom_c_runtime_extra@
+fricas_gcl_rsym_hack = @fricas_gcl_rsym_hack@
+fricas_c_runtime_extra = @fricas_c_runtime_extra@
 fricas_algebra_optimization = @fricas_algebra_optimization@
 GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
 LISP_CMD = $(FRICAS_LISP) $(fricas_quiet_flags)
 
 ## Create a fresh image for building interpsys and AXIOMsys
-OUT = $(axiom_build_bindir)
+OUT = $(fricas_build_bindir)
 
 subdir = src/lisp/
 
@@ -49,7 +49,7 @@ lisp_c_objects = \
 $(OUT)/lisp$(EXEEXT): do_it.$(lisp_flavor)
 
 do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
-	$(axiom_gcl_rsym_hack)
+	$(fricas_gcl_rsym_hack)
 	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
 	     '(load "fricas-lisp.lisp")' \
 	     '(setq compiler::*default-system-p* t)' \
@@ -62,7 +62,7 @@ do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
                                         ' (si::sgc-on nil))' \
                                   ' (setq compiler::*default-system-p* t))"' \
                       ' si::*system-directory* (quote (list ".lsp")))' \
-               '  "$(lisp_c_objects) $(axiom_c_runtime_extra)")' \
+               '  "$(lisp_c_objects) $(fricas_c_runtime_extra)")' \
             | $(FRICAS_LISP)
 	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
 	     '(load "fricas-lisp.$(OBJEXT)")' \
@@ -128,7 +128,7 @@ do_it.cmucl: fricas-lisp.lisp fricas-package.lisp \
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
 	    '(setf (ext:search-list "libspad:")' \
-	    '(quote ("${axiom_target_libdir}/")))' \
+	    '(quote ("${fricas_target_libdir}/")))' \
 	    '(ext:load-foreign "libspad:libspad.so")' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
 	    '(defswitch "-")' \

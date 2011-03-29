@@ -1,10 +1,10 @@
-axiom_c_runtime_extra = @axiom_c_runtime_extra@
+fricas_c_runtime_extra = @fricas_c_runtime_extra@
 
 # local include files shared by graphics
-LINC=	$(axiom_src_srcdir)/graph/include
+LINC=	$(fricas_src_srcdir)/graph/include
 
 # global include files shared by everyone 
-GINC=	$(axiom_src_srcdir)/include
+GINC=	$(fricas_src_srcdir)/include
 
 build_libdir = $(abs_top_builddir)/src/lib
 
@@ -16,19 +16,19 @@ viewman_sources = cleanup.c fun2D.c fun3D.c make2D.c make3D.c \
 viewman_objects = $(viewman_sources:.c=.$(OBJEXT))
 
 viewman_headers = $(srcdir)/viewman.h \
-		$(addprefix $(axiom_src_srcdir)/graph/include/,\
+		$(addprefix $(fricas_src_srcdir)/graph/include/,\
 			component.h view2D.h view3D.h tube.h \
 			actions.h viewCommand.h) \
-		$(axiom_src_srcdir)/include/com.h
+		$(fricas_src_srcdir)/include/com.h
 
 
 viewman_DEPENDENCIES = $(build_libdir)/libspad.a
-viewman_LDFLAGS = -L$(build_libdir) -lspad $(axiom_c_runtime_extra)
+viewman_LDFLAGS = -L$(build_libdir) -lspad $(fricas_c_runtime_extra)
 
 subdir = src/graph/viewman/
 
 AXIOM_CFLAGS = ${CCF} ${AXIOM_X11_CFLAGS} -I${LINC} -I${GINC} -I$(srcdir) \
-			$(axiom_includes)
+			$(fricas_includes)
 
 .PHONY: all all-ax all-viewman
 all: all-ax
@@ -36,7 +36,7 @@ all: all-ax
 all-ax all-viewman: stamp
 	@ echo 30 finished $(srcdir)
 
-stamp: $(axiom_target_libdir)/viewman$(EXEEXT)
+stamp: $(fricas_target_libdir)/viewman$(EXEEXT)
 	-rm -f stamp
 	$(STAMP) stamp
 
@@ -48,7 +48,7 @@ stamp: $(axiom_target_libdir)/viewman$(EXEEXT)
 %.$(OBJEXT): $(srcdir)/%.c $(axiom_c_macros_h)
 	$(CC) $(CFLAGS) $(AXIOM_CFLAGS) -c -o $@ $<
 
-$(axiom_target_libdir)/viewman$(EXEEXT): $(viewman_objects) $(viewman_DEPENDENCIES)
+$(fricas_target_libdir)/viewman$(EXEEXT): $(viewman_objects) $(viewman_DEPENDENCIES)
 	${CC} $(viewman_objects) -o $@ $(viewman_LDFLAGS) \
 		$(AXIOM_X11_LDFLAGS)
 
@@ -57,7 +57,7 @@ mostlyclean-local:
 	-rm -f stamp
 
 clean-local: mostlyclean-local
-	-rm -f $(axiom_target_libdir)/viewman$(EXEEXT)
+	-rm -f $(fricas_target_libdir)/viewman$(EXEEXT)
 
 distclean-local: clean-local
 

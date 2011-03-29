@@ -1,17 +1,17 @@
-AXIOM_LOCAL_LISP_source = initial-env.lisp
-AXIOM_LOCAL_LISP_object = $(AXIOM_LOCAL_LISP_source:.lisp=.$(LISPOBJEXT))
+FRICAS_LOCAL_LISP_source = initial-env.lisp
+FRICAS_LOCAL_LISP_object = $(FRICAS_LOCAL_LISP_source:.lisp=.$(LISPOBJEXT))
 
 lisp_flavor=@fricas_lisp_flavor@
 
-AXIOM_LOCAL_LISP = $(builddir)/local-lisp$(EXEEXT)
-BOOTSYS_FOR_TARGET = $(axiom_target_bindir)/bootsys$(EXEEXT)
+FRICAS_LOCAL_LISP = $(builddir)/local-lisp$(EXEEXT)
+BOOTSYS_FOR_TARGET = $(fricas_target_bindir)/bootsys$(EXEEXT)
 PROCLAIMS=(load "$(srcdir)/boot-proclaims.lisp")
 
 boot_objects = $(boot_sources:.boot=.$(LISPOBJEXT))
 
 boot_SOURCES = $(addsuffix .pamphlet, $(boot_sources))
 
-pamphlets = Makefile.pamphlet $(AXIOM_LOCAL_LISP_SOURCES) $(boot_SOURCES)
+pamphlets = Makefile.pamphlet $(FRICAS_LOCAL_LISP_SOURCES) $(boot_SOURCES)
 boot_sources = ptyout.boot btincl2.boot \
 	btscan2.boot typrops.boot btpile2.boot \
 	typars.boot tytree1.boot
@@ -21,7 +21,7 @@ boot_data = $(boot_sources:.boot=.data)
 boot_fn = $(boot_sources:.boot=.fn)
 boot_lib = $(boot_sources:.boot=.lib)
 
-LISPSYS= $(axiom_build_bindir)/lisp
+LISPSYS= $(fricas_build_bindir)/lisp
 
 COMPILE_LISP = \
 	$(axiom_build_document) --tag=lisp --mode=compile --output=$@
@@ -41,7 +41,7 @@ all: all-ax
 stage2_boot_objects = $(addprefix stage2/, $(boot_objects))
 
 all-ax: stage1/stamp_bootsys
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" $(axiom_build_bindir)/bootsys$(EXEEXT)
+	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" $(fricas_build_bindir)/bootsys$(EXEEXT)
 
 .PRECIOUS: stage0/%.clisp
 .PRECIOUS: stage0/%.$(LISPOBJEXT)
@@ -60,10 +60,10 @@ stage0/stamp_bootsys:
 	$(LN_S) stage0 prev-stage
 	touch $@
 
-$(stage0_boot_objects): $(AXIOM_LOCAL_LISP)
+$(stage0_boot_objects): $(FRICAS_LOCAL_LISP)
 
 stage0/%.$(LISPOBJEXT): $(srcdir)/compiled/%.clisp
-	$(COMPILE_LISP)  --use=$(AXIOM_LOCAL_LISP) $<
+	$(COMPILE_LISP)  --use=$(FRICAS_LOCAL_LISP) $<
 
 stage1/stamp_bootsys: stage0/stamp_bootsys
 	@echo Building stage 1
@@ -80,40 +80,40 @@ stage1/stamp_bootsys: stage0/stamp_bootsys
 
 ifeq ($(lisp_flavor),gcl)
 
-$(AXIOM_LOCAL_LISP): $(srcdir)/$(AXIOM_LOCAL_LISP_source)
-	echo '(load "$(srcdir)/$(AXIOM_LOCAL_LISP_source)")' \
+$(FRICAS_LOCAL_LISP): $(srcdir)/$(FRICAS_LOCAL_LISP_source)
+	echo '(load "$(srcdir)/$(FRICAS_LOCAL_LISP_source)")' \
 	     '(in-package "FRICAS-LISP")' \
 	     '(save-core "$@")' | $(LISPSYS)
 
 $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
-            $(OBJECTS) $(AXIOM_LOCAL_LISP)
+            $(OBJECTS) $(FRICAS_LOCAL_LISP)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
-	        --use=$(AXIOM_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
+	        --use=$(FRICAS_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
 
-$(axiom_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP)
+$(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$(BASE)$@ \
-	        --use=$(AXIOM_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
+	        --use=$(FRICAS_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
 
 else
 
-$(AXIOM_LOCAL_LISP_object): %.$(LISPOBJEXT): $(srcdir)/%.lisp
+$(FRICAS_LOCAL_LISP_object): %.$(LISPOBJEXT): $(srcdir)/%.lisp
 	$(COMPILE_LISP) --use=$(LISPSYS) $<
 
-$(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_object)
+$(FRICAS_LOCAL_LISP): $(FRICAS_LOCAL_LISP_object)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
                 --use=$(LISPSYS) \
-                '$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object))'
+                '$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object))'
 
 $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
-            $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
+            $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
 		--use=$(LISPSYS) \
-		'$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object) $(OBJECTS))'
+		'$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object) $(OBJECTS))'
 
-$(axiom_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(AXIOM_LOCAL_LISP_object)
+$(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
 	$(axiom_build_document) --tag=lisp --mode=link --output=$(BASE)$@ \
 	        --use=$(LISPSYS) \
-		'$(patsubst %, "%", $(AXIOM_LOCAL_LISP_object) $(OBJECTS))'
+		'$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object) $(OBJECTS))'
 
 endif
 
@@ -122,17 +122,17 @@ endif
 .PRECIOUS: %.boot
 
 $(boot_objects): %.$(LISPOBJEXT): %.clisp
-	$(COMPILE_LISP) --use=$(AXIOM_LOCAL_LISP) $<
+	$(COMPILE_LISP) --use=$(FRICAS_LOCAL_LISP) $<
 
 %.clisp: $(srcdir)/%.boot
 	$(BOOT_TO_LISP)
 
 mostlyclean-local:
-	rm -f $(AXIOM_LOCAL_LISP)
+	rm -f $(FRICAS_LOCAL_LISP)
 	rm -f $(BOOTSYS_FOR_TARGET)
 	rm -rf prev-stage
 	rm -rf stage0 stage1 stage2
-	rm -f $(boot_clisp) $(boot_objects) $(AXIOM_LOCAL_LISP_object)
+	rm -f $(boot_clisp) $(boot_objects) $(FRICAS_LOCAL_LISP_object)
 	rm -f *.data *.fn *.lib
 	rm -f stamp
 
