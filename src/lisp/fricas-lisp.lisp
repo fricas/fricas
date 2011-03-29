@@ -41,7 +41,9 @@
     ;;; We want ANSI compliance
     (setf custom:*ansi* t)
     ;;; We have our own loading messages
-    (setf *LOAD-VERBOSE* nil))
+    (setf *LOAD-VERBOSE* nil)
+    (let ((reopen-sym (find-symbol "*REOPEN-OPEN-FILE*" "CUSTOM")))
+         (if reopen-sym (setf (symbol-value reopen-sym) nil))))
 
 #|
 GCL keeps noting the fact that the compiler is performing tail-recursion.
