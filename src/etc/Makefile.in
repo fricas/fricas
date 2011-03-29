@@ -1,8 +1,8 @@
-INTERPSYS=$(axiom_build_bindir)/interpsys
+INTERPSYS=$(fricas_build_bindir)/interpsys
 DATABASES_SHORT=compress.daase interp.daase browse.daase category.daase \
                 operation.daase libdb.text comdb.text USERS.DAASE/index.KAF \
                 DEPENDENTS.DAASE/index.KAF
-DATABASES=$(addprefix $(axiom_targetdir)/algebra/, $(DATABASES_SHORT))
+DATABASES=$(addprefix $(fricas_targetdir)/algebra/, $(DATABASES_SHORT))
 
 subdir = src/etc/
 
@@ -20,28 +20,28 @@ all-ax all-asq:
 	fi
 	@echo finished $(builddir)
 
-stamp: stamp-databases $(axiom_target_bindir)/asq$(EXEEXT) \
-		$(axiom_target_libdir)/summary \
-		$(axiom_target_libdir)/copyright \
-		$(axiom_target_bindir)/axiom \
-		$(axiom_target_bindir)/fricas \
-                $(axiom_target_libdir)/SPADEDIT \
-                $(axiom_target_docdir)/spadhelp/help.help
+stamp: stamp-databases $(fricas_target_bindir)/asq$(EXEEXT) \
+		$(fricas_target_libdir)/summary \
+		$(fricas_target_libdir)/copyright \
+		$(fricas_target_bindir)/axiom \
+		$(fricas_target_bindir)/fricas \
+                $(fricas_target_libdir)/SPADEDIT \
+                $(fricas_target_docdir)/spadhelp/help.help
 	-rm -f stamp
 	$(STAMP) stamp
 
 ifeq ($(BUILD_WAY),use_lisp)
 stamp-databases:
-	cp $(axiom_src_datadir)/algebra/*.daase $(axiom_targetdir)/algebra
-	cp $(axiom_src_datadir)/algebra/libdb.text $(axiom_targetdir)/algebra
-	cp $(axiom_src_datadir)/algebra/comdb.text $(axiom_targetdir)/algebra
-	-mkdir $(axiom_targetdir)/algebra/USERS.DAASE \
-             $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
-	cp $(axiom_src_datadir)/algebra/USERS.DAASE/index.KAF \
-             $(axiom_targetdir)/algebra/USERS.DAASE
+	cp $(fricas_src_datadir)/algebra/*.daase $(fricas_targetdir)/algebra
+	cp $(fricas_src_datadir)/algebra/libdb.text $(fricas_targetdir)/algebra
+	cp $(fricas_src_datadir)/algebra/comdb.text $(fricas_targetdir)/algebra
+	-mkdir $(fricas_targetdir)/algebra/USERS.DAASE \
+             $(fricas_targetdir)/algebra/DEPENDENTS.DAASE
+	cp $(fricas_src_datadir)/algebra/USERS.DAASE/index.KAF \
+             $(fricas_targetdir)/algebra/USERS.DAASE
 	cp \
-	  $(axiom_src_datadir)/algebra/DEPENDENTS.DAASE/index.KAF \
-             $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+	  $(fricas_src_datadir)/algebra/DEPENDENTS.DAASE/index.KAF \
+             $(fricas_targetdir)/algebra/DEPENDENTS.DAASE
 	-rm -f stamp-databases
 	$(STAMP) stamp-databases
 endif
@@ -59,15 +59,15 @@ stamp-databases: ../algebra/*.NRLIB/*.$(FASLEXT)
 	@ echo 4 rebuilding databases...
 	(cd ../algebra ; \
            echo ')lisp (make-databases "" nil)' | AXIOM=$(AXIOM) ${INTERPSYS} )
-	cp ../algebra/*.daase $(axiom_targetdir)/algebra
-	cp ../algebra/libdb.text $(axiom_targetdir)/algebra
-	cp ../algebra/comdb.text $(axiom_targetdir)/algebra
-	-mkdir $(axiom_targetdir)/algebra/USERS.DAASE \
-             $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+	cp ../algebra/*.daase $(fricas_targetdir)/algebra
+	cp ../algebra/libdb.text $(fricas_targetdir)/algebra
+	cp ../algebra/comdb.text $(fricas_targetdir)/algebra
+	-mkdir $(fricas_targetdir)/algebra/USERS.DAASE \
+             $(fricas_targetdir)/algebra/DEPENDENTS.DAASE
 	cp ../algebra/USERS.DAASE/index.KAF \
-                   $(axiom_targetdir)/algebra/USERS.DAASE
+                   $(fricas_targetdir)/algebra/USERS.DAASE
 	cp ../algebra/DEPENDENTS.DAASE/index.KAF \
-                   $(axiom_targetdir)/algebra/DEPENDENTS.DAASE
+                   $(fricas_targetdir)/algebra/DEPENDENTS.DAASE
 	-rm -f stamp-databases
 	$(STAMP) stamp-databases
 endif
@@ -76,48 +76,48 @@ asq_sources = asq.c
 asq_SOURCES = $(addsuffix .pamphlet, $(asq_sources))
 asq_objects = $(asq_sources:.c=.$(OBJEXT))
 
-$(axiom_target_bindir)/asq$(EXEEXT): asq.c $(axiom_c_macros_h)
+$(fricas_target_bindir)/asq$(EXEEXT): asq.c $(axiom_c_macros_h)
 	@echo 4 making $@ from $<
-	${CC} ${CCF} $(axiom_includes) -o $@ asq.c
+	${CC} ${CCF} $(fricas_includes) -o $@ asq.c
 
 asq.c: $(srcdir)/asq.c.pamphlet
 	$(axiom_build_document) --tangle --output=$@ $<
 
-$(axiom_target_libdir)/summary: $(srcdir)/summary
+$(fricas_target_libdir)/summary: $(srcdir)/summary
 	cp $< $@ 
 
-$(axiom_target_libdir)/copyright: $(srcdir)/copyright
+$(fricas_target_libdir)/copyright: $(srcdir)/copyright
 	cp $< $@ 
 
-$(axiom_target_docdir)/spadhelp/help.help:
-	if [ -f $(axiom_src_datadir)/spadhelp/help.help ] ; then \
-	   cp $(axiom_src_datadir)/spadhelp/* \
-	      $(axiom_target_docdir)/spadhelp ; \
+$(fricas_target_docdir)/spadhelp/help.help:
+	if [ -f $(fricas_src_datadir)/spadhelp/help.help ] ; then \
+	   cp $(fricas_src_datadir)/spadhelp/* \
+	      $(fricas_target_docdir)/spadhelp ; \
 	else \
 	   echo "Help files not installed" > $@ ; \
 	fi
 
-$(axiom_target_libdir)/SPADEDIT: $(srcdir)/spadedit.pamphlet
+$(fricas_target_libdir)/SPADEDIT: $(srcdir)/spadedit.pamphlet
 	$(axiom_build_document) --tangle --output=$@ $<
 	chmod +x $@
 
-$(axiom_target_bindir)/fricas: $(srcdir)/fricas
+$(fricas_target_bindir)/fricas: $(srcdir)/fricas
 	cp $< $@
 	chmod +x $@
 
-$(axiom_target_bindir)/axiom: $(srcdir)/fricas
+$(fricas_target_bindir)/axiom: $(srcdir)/fricas
 	@echo 1 making $@ from $<
 	cp $< $@
-	chmod +x $(axiom_target_bindir)/axiom
+	chmod +x $(fricas_target_bindir)/axiom
 
 mostlyclean-local:
 	-rm -f $(asq_sources) $(asq_objects)
 	-rm -f stamp stamp-databases
 
 clean-local: mostlyclean-local
-	-rm -f $(axiom_target_libdir)/summary
-	-rm -f $(axiom_target_libdir)/copyright
-	-rm -f $(axiom_target_bindir)/axiom
-	-rm -f $(axiom_target_bindir)/asq$(EXEEXT)
+	-rm -f $(fricas_target_libdir)/summary
+	-rm -f $(fricas_target_libdir)/copyright
+	-rm -f $(fricas_target_bindir)/axiom
+	-rm -f $(fricas_target_bindir)/asq$(EXEEXT)
 
 distclean-local: clean-local

@@ -110,41 +110,37 @@ STAMP = echo timestamp >
 ## Notice, this is the src/ directory within the toplevel source
 ## directory 
 
-axiom_top_srcdir = @axiom_top_srcdir@
+fricas_top_srcdir = @fricas_top_srcdir@
 
-axiom_src_srcdir = $(axiom_top_srcdir)/src
-axiom_src_docdir = $(axiom_src_srcdir)/doc
-axiom_src_datadir = $(axiom_src_srcdir)/share
-axiom_src_algdir = $(axiom_src_srcdir)/algebra
+fricas_src_srcdir = $(fricas_top_srcdir)/src
+fricas_src_datadir = $(fricas_src_srcdir)/share
+fricas_src_algdir = $(fricas_src_srcdir)/algebra
 
 ## Where tools for the build machine are built
-axiom_top_builddir = @abs_top_builddir@/build
-axiom_builddir = @axiom_builddir@
-axiom_build_bindir = @axiom_build_bindir@
-axiom_build_libdir = $(axiom_builddir)/lib
-axiom_build_mandir = $(axiom_builddir)/man
-axiom_build_docdir = $(axiom_builddir)/doc
-axiom_build_texdir = $(axiom_builddir)/share/texmf/tex
+fricas_builddir = @fricas_builddir@
+fricas_build_bindir = @fricas_build_bindir@
+fricas_build_libdir = $(fricas_builddir)/lib
+fricas_build_mandir = $(fricas_builddir)/man
 
-axiom_configdir = $(abs_top_builddir)/config
-axiom_c_macros = $(axiom_configdir)/axiom-c-macros.h
+fricas_configdir = $(abs_top_builddir)/config
+axiom_c_macros = $(fricas_configdir)/axiom-c-macros.h
 
 LATEX = @LATEX@
 
 ## Staging directory for the target DESTDIR
-axiom_targetdir = @axiom_targetdir@
-axiom_target_bindir = $(axiom_targetdir)/bin
-axiom_target_libdir = $(axiom_targetdir)/lib
-axiom_target_srcdir = $(axiom_targetdir)/src
-axiom_target_docdir = $(axiom_targetdir)/doc
-axiom_target_datadir = $(axiom_targetdir)/share
-axiom_target_texdir = $(axiom_target_datadir)/texmf/tex
+fricas_targetdir = @fricas_targetdir@
+fricas_target_bindir = $(fricas_targetdir)/bin
+fricas_target_libdir = $(fricas_targetdir)/lib
+fricas_target_srcdir = $(fricas_targetdir)/src
+fricas_target_docdir = $(fricas_targetdir)/doc
+fricas_target_datadir = $(fricas_targetdir)/share
+fricas_target_texdir = $(fricas_target_datadir)/texmf/tex
 
 
 AXIOM_X11_CFLAGS = @X_CFLAGS@ 
 AXIOM_X11_LDFLAGS = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@
 
-axiom_includes = -I$(axiom_src_srcdir)/include -I$(axiom_configdir)
+fricas_includes = -I$(fricas_src_srcdir)/include -I$(fricas_configdir)
 
 ## Where the staging build directory is found
 AXIOM = @AXIOM@
@@ -153,15 +149,14 @@ BASE = @BASE@
 export BASE
 
 ## Where to find Axiom data bases.
-DAASE = $(axiom_src_datadir)
+DAASE = $(fricas_src_datadir)
 export DAASE
 
-TMP=$(axiom_builddir)
+TMP=$(fricas_builddir)
 
 ## Old Axiom ENV variables
 
 VERSION = @PACKAGE_STRING@
-INT=$(abs_top_builddir)/int
 INC=$(abs_top_srcdir)/src/include
 
 PLF=@PLF@

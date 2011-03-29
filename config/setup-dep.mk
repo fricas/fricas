@@ -79,23 +79,23 @@ maintainer-clean-recursive:
 .PRECIOUS: %.tex
 .PRECIOUS: %.dvi
 
-DVI_FILES = $(addprefix $(axiom_target_docdir)/$(subdir), \
+DVI_FILES = $(addprefix $(fricas_target_docdir)/$(subdir), \
 		$(pamphlets:.pamphlet=.dvi))
 
 pamphlets_SOURCES = $(addprefix $(srcdir)/, $(pamphlets))
 
 .PHONY: dvi dvi-ax
 dvi: dvi-recursive
-dvi-ax: $(axiom_build_texdir)/axiom.sty $(DVI_FILES)
+dvi-ax: $(fricas_build_texdir)/axiom.sty $(DVI_FILES)
 
-$(axiom_target_docdir)/$(subdir)%.dvi: $(builddir)/%.dvi
-	$(mkinstalldirs) $(axiom_target_docdir)/$(subdir)
+$(fricas_target_docdir)/$(subdir)%.dvi: $(builddir)/%.dvi
+	$(mkinstalldirs) $(fricas_target_docdir)/$(subdir)
 	$(INSTALL_DATA) $< $@
 
-%.dvi: %.tex $(axiom_build_texdir)/axiom.sty
-	TEXINPUTS=".:$(axiom_build_texdir):$${TEXINPUTS}"; \
+%.dvi: %.tex $(fricas_build_texdir)/axiom.sty
+	TEXINPUTS=".:$(fricas_build_texdir):$${TEXINPUTS}"; \
 	export TEXINPUTS; \
-	BIBINPUTS=".:$(axiom_build_texdir):$${TEXINPUTS}"; \
+	BIBINPUTS=".:$(fricas_build_texdir):$${TEXINPUTS}"; \
 	export BIBINPUTS; \
 	$(axiom_build_document) --latex $<
 
@@ -103,12 +103,12 @@ $(axiom_target_docdir)/$(subdir)%.dvi: $(builddir)/%.dvi
 	$(axiom_build_document) --weave --output=$@ $<
 
 
-$(axiom_build_texdir)/axiom.sty: $(axiom_src_docdir)/axiom.sty.pamphlet
-	$(mkinstalldirs) $(axiom_build_texdir)/
+$(fricas_build_texdir)/axiom.sty: $(fricas_src_docdir)/axiom.sty.pamphlet
+	$(mkinstalldirs) $(fricas_build_texdir)/
 	$(axiom_build_document) --tangle=axiom.sty --output=$@ $<
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac \
-			 $(top_srcdir)/config/axiom.m4
+			 $(top_srcdir)/config/fricas.m4
 	cd $(top_srcdir) && $(AUTOCONF)
 
 
@@ -118,7 +118,7 @@ Makefile: $(srcdir)/Makefile.in $(top_srcdir)/config/var-def.mk \
 	  $(abs_top_builddir)/config.status
 	cd $(abs_top_builddir) && $(SHELL) ./config.status $(subdir)$@
 
-$(axiom_build_document): $(axiom_src_srcdir)/scripts/document.in
+$(axiom_build_document): $(fricas_src_srcdir)/scripts/document.in
 	cd $(abs_top_builddir) && \
 	$(SHELL) ./config.status build/scripts/document
 
@@ -142,7 +142,7 @@ clean-ax: clean-generic clean-local
 
 .PHONY: distclean-generic distclean-local distclean distclean-ax
 distclean-generic: clean-generic
-	-rm -rf $(axiom_target_docdir)/$(subdir)
+	-rm -rf $(fricas_target_docdir)/$(subdir)
 
 distclean: distclean-recursive
 distclean-ax: distclean-generic distclean-local

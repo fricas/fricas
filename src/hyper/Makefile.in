@@ -1,25 +1,22 @@
-axiom_c_runtime_extra = @axiom_c_runtime_extra@
+fricas_c_runtime_extra = @fricas_c_runtime_extra@
 
 bin_PROGRAMS = htadd hypertex spadbuf hthits ex2ht
 
 # this is where to put the various commands
-OUTLIB=	$(axiom_target_libdir)
-
-# this is where the include files live
-INC=    $(axiom_src_srcdir)/include
+OUTLIB=	$(fricas_target_libdir)
 
 # this is where the hypertex documentation files are
-HYPER=$(axiom_target_datadir)/hypertex
+HYPER=$(fricas_target_datadir)/hypertex
 
-HTADD=$(axiom_target_bindir)/htadd
+HTADD=$(fricas_target_bindir)/htadd
 
 BITMAPS = mouse11.bitmap mouse11.mask sdown3d.bitmap sdown3dpr.bitmap \
 	sdown.bitmap sup3d.bitmap sup3dpr.bitmap sup.bitmap ht_icon
 
 SCRIPTS=${OUTLIB}/htsearch ${OUTLIB}/presea
 
-BINFILES= $(axiom_target_bindir)/hypertex$(EXEEXT) \
-		$(axiom_target_bindir)/htadd$(EXEEXT) \
+BINFILES= $(fricas_target_bindir)/hypertex$(EXEEXT) \
+		$(fricas_target_bindir)/htadd$(EXEEXT) \
 		${OUTLIB}/spadbuf$(EXEEXT) \
 		${OUTLIB}/hthits$(EXEEXT) ${OUTLIB}/ex2ht$(EXEEXT)
 
@@ -48,20 +45,20 @@ hypertex_sources = addfile.c cond.c dialog.c display.c event.c extent1.c \
 		show-types.c spadint.c titlebar.c
 
 hypertex_objects = $(hypertex_sources:.c=.$(OBJEXT))
-hypertex_LDADD = -L$(build_libdir) -lspad $(axiom_c_runtime_extra)
+hypertex_LDADD = -L$(build_libdir) -lspad $(fricas_c_runtime_extra)
 hypertex_DEPENDENCIES = $(build_libdir)/libspad.a
 
 htadd_sources = addfile.c halloc.c hash.c htadd.c hterror.c lex.c
 htadd_SOURCES = $(htadd_sources:.c=.pamphlet)
 htadd_objects = $(htadd_sources:.c=.$(OBJEXT))
 # FIXME: remove extra dependency
-htadd_LDADD = -L$(build_libdir) -lspad $(axiom_c_runtime_extra)
+htadd_LDADD = -L$(build_libdir) -lspad $(fricas_c_runtime_extra)
 htadd_DEPENDENCIES = $(build_libdir)/libspad.a
 
 
 spadbuf_sources = spadbuf.c
 spadbuf_objects = $(spadbuf_sources:.c=.$(OBJEXT))
-spadbuf_LDADD = -L$(build_libdir) -lspad $(axiom_c_runtime_extra)
+spadbuf_LDADD = -L$(build_libdir) -lspad $(fricas_c_runtime_extra)
 spadbuf_DEPENDENCIES = $(build_libdir)/libspad.a
 
 hthits_sources = hthits.c
@@ -115,7 +112,7 @@ distclean-local: clean-local
 .PRECIOUS: %.$(OBJEXT)
 
 %.$(OBJEXT): $(srcdir)/%.c $(HEADERS)
-	$(CC) $(CFLAGS) ${CCF} $(axiom_includes) $(AXIOM_X11_CFLAGS) \
+	$(CC) $(CFLAGS) ${CCF} $(fricas_includes) $(AXIOM_X11_CFLAGS) \
 	    -I$(srcdir) -c -o $@ $<
 
 
@@ -127,9 +124,9 @@ distclean-local: clean-local
 # '.pht' pages are generated later from 'paste/Makefiel.in'
 
 ${HYPER}/pages/ht.db: $(HTADD) $(srcdir)/pages/*.ht
-	@echo making ${HYPER}/pages from $(axiom_src_srcdir)/pages directory
+	@echo making ${HYPER}/pages from $(fricas_src_srcdir)/pages directory
 	mkdir -p ${HYPER}/pages
-	mkdir -p $(axiom_target_datadir)/viewports
+	mkdir -p $(fricas_target_datadir)/viewports
 	cp $(srcdir)/pages/*.ht ${HYPER}/pages
 	(cd ${HYPER}/pages ; \
            rm -f ht.db ; \
@@ -156,14 +153,14 @@ ${OUTLIB}/presea: $(srcdir)/presea.in
 ${OUTLIB}/ex2ht$(EXEEXT): $(ex2ht_objects) $(ex2ht_DEPENDENCIES)
 	${CC} $(ex2ht_objects) -o $@ $(ex2ht_LDADD) $(AXIOM_X11_LDFLAGS) -lm
 
-$(axiom_target_bindir)/htadd$(EXEEXT): $(htadd_objects) $(htadd_DEPENDENCIES)
+$(fricas_target_bindir)/htadd$(EXEEXT): $(htadd_objects) $(htadd_DEPENDENCIES)
 	${CC} $(htadd_objects) -o $@ $(htadd_LDADD) $(AXIOM_X11_LDFLAGS) -lm
 
 ${OUTLIB}/hthits$(EXEEXT): $(hthits_objects) $(hthits_DEPENDENCIES)
 	${CC} $(hthits_objects) -o $@ $(hthits_LDADD) $(AXIOM_X11_LDFLAGS) -lm
 
 
-$(axiom_target_bindir)/hypertex$(EXEEXT): $(hypertex_objects) $(hypertex_DEPENDENCIES)
+$(fricas_target_bindir)/hypertex$(EXEEXT): $(hypertex_objects) $(hypertex_DEPENDENCIES)
 	 ${CC} -g $(hypertex_objects) -o $@ $(hypertex_LDADD) \
 		$(AXIOM_X11_LDFLAGS) -lm
 
