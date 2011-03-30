@@ -35,13 +35,10 @@ lefts u ==
    [x for x in HKEYS  _*HASCATEGORY_-HASH_* | CDR x = u]
 
 
-
---====================> WAS b-data.boot <================================
-
 --============================================================================
 --              Build Library Database (libdb.text,...)
 --============================================================================
---Formal for libdb.text:
+--Format for libdb.text:
 --  constructors    Cname\#\I\sig \args   \abb \comments (C is C, D, P, X)
 --  operations      Op  \#\E\sig \conname\pred\comments (E is one of U/E)
 --  attributes      Aname\#\E\args\conname\pred\comments
