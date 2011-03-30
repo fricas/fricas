@@ -558,6 +558,71 @@
       (remove item list :count count :test #'equalp)
       (remove item list :test #'equalp)))
 
+;;; moved from union.lisp
+
+(DEFUN |intersection|  (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
+    (PROG (I H V)
+      (SETQ V (SETQ H (CONS NIL NIL)))
+      (COND
+        ( (NOT (LISTP LIST-OF-ITEMS-1))
+          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
+      (COND
+        ( (NOT (LISTP LIST-OF-ITEMS-2))
+          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
+  LP  (COND
+        ( (NOT (PAIRP LIST-OF-ITEMS-1))
+          (RETURN (QCDR H)) )
+        ( (|member|
+            (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
+            (QCDR H)) )
+        ( (|member| I LIST-OF-ITEMS-2)
+          (QRPLACD V (SETQ V (CONS I NIL))) ) )
+      (GO LP) ) )
+
+(DEFUN |union| (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
+    (PROG (I H V)
+      (SETQ H (SETQ V (CONS NIL NIL)))
+      (COND
+        ( (NOT (LISTP LIST-OF-ITEMS-1))
+          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
+      (COND
+        ( (NOT (LISTP LIST-OF-ITEMS-2))
+          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
+  LP1 (COND
+        ( (NOT (PAIRP LIST-OF-ITEMS-1))
+          (COND
+            ( (PAIRP LIST-OF-ITEMS-2)
+              (SETQ LIST-OF-ITEMS-1 (RESETQ LIST-OF-ITEMS-2 NIL)) )
+            ( 'T
+              (RETURN (QCDR H)) ) ) )
+        ( (NOT
+            (|member|
+              (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
+              (QCDR H)))
+          (QRPLACD V (SETQ V (CONS I NIL))) ) )
+      (GO LP1) ) )
+
+(DEFUN SETDIFFERENCE (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
+    (PROG (I H V)
+      (SETQ H (SETQ V (CONS NIL NIL)))
+      (COND
+        ( (NOT (LISTP LIST-OF-ITEMS-1))
+          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
+      (COND
+        ( (NOT (LISTP LIST-OF-ITEMS-2))
+          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
+  LP1 (COND
+        ( (NOT (PAIRP LIST-OF-ITEMS-1))
+          (RETURN (QCDR H)) )
+        ( (|member|
+            (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
+            (QCDR H)) )
+        ( (NOT (|member| I LIST-OF-ITEMS-2))
+          (QRPLACD V (SETQ V (CONS I NIL))) ) )
+      (GO LP1) ) )
+
+;;; end of moved fragment
+
 ; 14.2 Accessing
 
 (defun |last| (x) (car (LASTNODE x)))
@@ -1210,6 +1275,73 @@
 (defun MAKE-BVEC (n)
  (make-array (list n) :element-type 'bit :initial-element 0))
 
+;;; moved from bits.lisp
+
+;17.0 Operations on Hashtables
+
+(export '(MAKE-HASHTABLE HGET HKEYS HCOUNT HPUT HREM HCLEAR HREMPROP
+          HASHEQ HASHUEQUAL HASHCVEC HASHID HASHTABLEP CVEC UEQUAL ID HPUTPROP
+          HASHTABLE-CLASS))
+
+;17.1 Creation
+
+(defun MAKE-HASHTABLE (id1 &optional (id2 nil))
+ (declare (ignore id2))
+   (let ((test (case id1
+                     ((EQ ID) #'eq)
+                     (CVEC #'equal)
+                     (EQL #'eql)
+                     #+Lucid ((UEQUAL EQUALP) #'EQUALP)
+                     #-Lucid ((UEQUAL EQUAL) #'equal)
+                     (otherwise (error "bad arg to make-hashtable")))))
+      (make-hash-table :test test)))
+
+;17.2 Accessing
+
+(defmacro HGET (table key &rest default)
+   `(gethash ,key ,table ,@default))
+
+(defun HKEYS (table)
+   (let (keys)
+      (maphash
+        #'(lambda (key val) (declare (ignore val)) (push key keys)) table)
+        keys))
+
+(define-function 'HASHTABLE-CLASS #'hash-table-test)
+
+(define-function 'HCOUNT #'hash-table-count)
+
+;17.4 Searching and Updating
+
+(defun HPUT (table key value) (setf (gethash key table) value))
+
+(defmacro HREM (table key) `(remhash ,key ,table))
+
+(defun HREMPROP (table key property)
+  (let ((plist (gethash key table)))
+    (if plist (setf (gethash key table)
+                    (delete property plist :test #'equal :key #'car)))))
+
+;17.5 Updating
+
+(define-function 'HCLEAR #'clrhash)
+
+;17.6 Miscellaneous
+
+(define-function 'HASHTABLEP #'hash-table-p)
+
+(define-function 'HASHEQ #'sxhash)
+
+(define-function 'HASHUEQUAL #'sxhash)
+
+(define-function 'HASHCVEC #'sxhash)
+
+(define-function 'HASHID #'sxhash)
+
+;;; end of moved fragment
+
+;;; ---------------------------------------------
+
 (in-package "BOOT")
 
 ;; Contributed by Juergen Weiss from a suggestion by Arthur Norman.
@@ -1280,5 +1412,47 @@
 (defun |ncloopInclude| (name n)
     (with-open-file (st name)
                     (|ncloopInclude0| st name n)))
+
+;;; end of moved fragment
+
+;;; moved from bits.lisp
+
+;;; The types "bit" and "bit vector" are implemented differently
+;;; in different variants of lisp.
+;;; These lisp macros/functions will have different implementations
+;;; on different lisp systems.
+
+;;; The operations which traverse entire vectors are given as functions
+;;; since the function calling overhead will be relatively small.
+;;; The operations which extract or set a single part of the vector are
+;;; provided as macros.
+
+;;; SMW Nov 88: Created
+
+(defmacro truth-to-bit (x) `(cond (,x 1) ('else 0)))
+(defmacro bit-to-truth (b) `(eq ,b 1))
+
+(defun    bvec-make-full (n x)
+    (make-array (list n) :element-type 'bit :initial-element x))
+
+(defmacro bvec-elt       (bv i)    `(sbit ,bv ,i))
+(defmacro bvec-setelt    (bv i x)  `(setf (sbit ,bv ,i) ,x))
+(defmacro bvec-size      (bv)      `(size ,bv))
+
+(defun    bvec-copy      (bv)      (copy-seq bv))
+(defun    bvec-concat    (bv1 bv2) (concatenate '(vector bit) bv1 bv2))
+(defun    bvec-equal     (bv1 bv2) (equal    bv1 bv2))
+(defun    bvec-greater   (bv1 bv2)
+  (let ((pos (mismatch bv1 bv2)))
+    (cond ((or (null pos) (>= pos (length bv1))) nil)
+          ((< pos (length bv2)) (> (bit bv1 pos) (bit bv2 pos)))
+          ((find 1 bv1 :start pos) t)
+          (t nil))))
+(defun    bvec-and       (bv1 bv2) (bit-and  bv1 bv2))
+(defun    bvec-or        (bv1 bv2) (bit-ior  bv1 bv2))
+(defun    bvec-xor       (bv1 bv2) (bit-xor  bv1 bv2))
+(defun    bvec-nand      (bv1 bv2) (bit-nand bv1 bv2))
+(defun    bvec-nor       (bv1 bv2) (bit-nor  bv1 bv2))
+(defun    bvec-not       (bv)      (bit-not  bv))
 
 ;;; end of moved fragment

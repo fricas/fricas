@@ -139,7 +139,6 @@ printFirstPrompt?() ==
     $interpreterFrameName ~= "initial" or not($SpadServer)
 
 ncIntLoop() ==
-  CUROUTSTREAM : local := _*STANDARD_-INPUT_*
   intloop()
 
 

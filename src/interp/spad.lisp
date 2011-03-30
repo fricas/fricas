@@ -68,9 +68,6 @@
 (defvar |$mapReturnTypes| nil)
 (defvar /TRACENAMES NIL)
 
-(defvar INPUTSTREAM t "bogus initialization for now")
-
-(setq /WSNAME 'NOBOOT)
 (DEFVAR _ '&)
 (defvar ind)
 (defvar JUNKTOKLIST '(FOR IN AS INTO OF TO))
@@ -197,9 +194,6 @@
 (defun |evalSharpOne| (x |#1|)
    (declare (special |#1|))
       (EVAL `(let () (declare (special |#1|)) ,x)))
-
-
-(defun INITIALIZE () (init-boot/spad-reader) (initialize-preparse INPUTSTREAM))
 
 (defmacro |rplac| (&rest L)
   (let (a b s)

@@ -72,19 +72,19 @@ horner(l,x) ==
                 result := result *x + el
         return result
 
-rgamma (x) ==
+r__gamma (x) ==
         if COMPLEXP(x) then FloatError('"Gamma not implemented for complex value ~D",x)
         ZEROP (x-1.0) => 1.0
         if x>20 then gammaStirling(x) else gammaRatapprox(x)
 
-lnrgamma (x) ==
+r__lngamma (x) ==
         if x>20 then lnrgammaRatapprox(x) else LOG(gammaRatapprox(x))
 
 cbeta(z,w) ==
         cgamma(z)*cgamma(w)/(cgamma(z+w))
 
 gammaStirling(x) ==
-       EXP(lnrgamma(x))
+       EXP(r__lngamma(x))
 
 lnrgammaRatapprox(x) ==
        (x-.5)*LOG(x) - x + LOG(SQRT(2.0*dfPi)) + phiRatapprox(x)
@@ -171,7 +171,7 @@ cgamma (z) ==
         z2 := IMAGPART(z)
         z1 := REALPART(z)       --- call real valued gamma if z is real
         if ZEROP z2
-        then    result := rgamma(z1)
+        then    result := r__gamma(z1)
         else
                 result := clngamma(z1,z2,z)
                 result := EXP(result)
@@ -277,7 +277,7 @@ PsiAsymptotic(n,x) ==
         xnp1 := xn*x
         xsq := x*x
         xterm := xsq
-        factterm := rgamma(n+2)/2.0/rgamma(float(n+1))
+        factterm := r__gamma(n+2)/2.0/r__gamma(float(n+1))
         --- initialize to 1/n!
         sum := AREF($PsiAsymptoticBern,1)*factterm/xterm
         for k in 2..22 repeat
@@ -307,7 +307,7 @@ PsiAsymptoticOrder(n,x,nterms) ==
         sum
 
 
-rPsi(n,x) ==
+r__psi(n,x) ==
         if x<=0.0
         then
                 if ZEROP fracpart(x)
@@ -320,12 +320,13 @@ rPsi(n,x) ==
                                 skipit := 1
                         else
                                 skipit := 0
-                        sign*((dfPi^(n+1))*cotdiffeval(n,dfPi*(-x),skipit) + rPsi(n,1.0-x))
+                        sign*((dfPi^(n + 1))*cotdiffeval(n, dfPi*(-x), skipit)
+                            + r_psi(n, 1.0 - x))
         else if n=0
         then
                 - rPsiW(n,x)
         else
-                rgamma(float(n+1))*rPsiW(n,x)*(-1)^MOD(n+1,2)
+                r__gamma(float(n+1))*rPsiW(n,x)*(-1)^MOD(n+1,2)
 
 ---Amos' w function, with w(0,x) picked to be -psi(x) for x>0
 rPsiW(n,x) ==
@@ -436,7 +437,7 @@ cPsi(n,z) ==
         y := IMAGPART(z)
         if ZEROP y
         then    --- call real function if real
-                return rPsi(n,x)
+                return r__psi(n, x)
         if y<0.0
         then    -- if imagpart(z) negative, take conjugate of conjugate
                 conjresult := cPsi(n,COMPLEX(x,-y))
@@ -458,7 +459,7 @@ cPsi(n,z) ==
                 return PsiXotic(n,result+PsiAsymptotic(n,z+m))
 
 PsiXotic(n,result) ==
-        rgamma(float(n+1))*(-1)^MOD(n+1,2)*result
+        r__gamma(float(n+1))*(-1)^MOD(n+1,2)*result
 
 cpsireflect(n,z) ==
         m := MOD(n,2)
@@ -971,3 +972,32 @@ BesselKAsymptOrder (v,vz) ==
         u5p := ((59535.0/262144.0+(-67608983.0/9175040.0+(250881631.0/5898240.0+(-108313205.0/1179648.0+(5391411025.0/63700992.0-5391411025.0/191102976.0*p2)*p2)*p2)*p2)*p2)*p4*p)*(-1.0)
         hornerresult := horner([u5p,u4p,u3p,u2p,u1p,u0p],vinv)
         SQRT(dfPi/(2.0*v))*EXP(-v*eta)/(SQRT(opzsqroh))*hornerresult
+
+
+-- Conversion between spad and lisp complex representations
+s__to__c(c) == COMPLEX(CAR c, CDR c)
+c__to__s(c) == CONS(REALPART c, IMAGPART c)
+c__to__r(c) ==
+    r := REALPART c
+    i := IMAGPART c
+    if ZEROP(i) or (ABS(i) <  1.0E-10*(ABS r)) then
+        r
+    else
+        error "Result is not real."
+
+c__to__rf(c) == COERCE(c__to__r(c), 'DOUBLE_-FLOAT)
+
+-- Wrappers for functions in the special function package
+c__lngamma(z) ==  c__to__s(lncgamma(s__to__c z))
+
+c__gamma(z) ==  c__to__s(cgamma (s__to__c z))
+
+c__psi(n, z) == c__to__s(cPsi(n, s__to__c(z)))
+
+r__besselj(n, x) == c__to__r(BesselJ(n, x))
+c__besselj(v, z) == c__to__s(BesselJ(s__to__c(v), s__to__c(z)))
+
+r__besseli(n, x) == c__to__r(BesselI(n, x))
+c__besseli(v, z) == c__to__s(BesselI(s__to__c(v), s__to__c(z)))
+
+c__hyper0f1(a, z) == c__to__s(chebf01(s__to__c(a), s-to-c(z)))

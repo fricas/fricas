@@ -455,7 +455,7 @@ rightTrim s ==  -- assumed a non-empty string
 
 pp x ==
   PRETTYPRINT x
-  x
+  nil
 
 pr x ==
   F_,PRINT_-ONE x

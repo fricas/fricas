@@ -37,11 +37,6 @@
 
 (in-package "BOOT")
 
-(defmacro def-boot-fun (f args where)
-   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (defun ,f ,args ,where (print (list ',f . ,args)))
-     (export '(,f) "BOOT")))
-
 (defmacro def-boot-var (p where)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (defparameter ,p nil ,where)
@@ -64,9 +59,6 @@
   "switch into bold font")
 (def-boot-val |$normalString| (concatenate 'string $escapeString "[0;10m")
   "switch back into normal font")
-(def-boot-val $COMPILE t  "checked in COMP-2 to skip compilation")
-(def-boot-fun |break| (msg)                         "Interpreter>Trace.boot")
-(def-boot-fun |breaklet| (fn vars)                  "Interpreter>Trace.boot")
 (def-boot-val |$BreakMode| '|query|                 "error.boot")
 
 
@@ -82,7 +74,6 @@
 
 (def-boot-var |$insideCapsuleFunctionIfTrue|        "???")
 (def-boot-var |$insideCategoryIfTrue|               "???")
-(def-boot-val |$insideCompTypeOf| NIL  "checked in comp3")
 (def-boot-var |$insideExpressionIfTrue|             "???")
 (def-boot-var |$insideFunctorIfTrue|                "???")
 (def-boot-var |$insideWhereIfTrue|                  "???")
@@ -104,7 +95,6 @@
 (def-boot-val |$oldTime| 0                          "???")
 
 (def-boot-var |$postStack|                          "???")
-(def-boot-val |$PrettyPrint| nil "if t generated code is prettyprinted")
 (def-boot-var |$previousTime|                       "???")
 (def-boot-val |$printLoadMsgs|  '|off|          "Interpreter>SetVarT.boot")
 (def-boot-var |$PrintOnly|                          "Compiler>LispLib.boot")
@@ -125,7 +115,6 @@
 (def-boot-var |$traceNoisely|                       "Interpreter>Trace.boot")
 (def-boot-var |$TranslateOnly|                      "???")
 
-(def-boot-fun BUMPCOMPERRORCOUNT ()                 "errorSupervisor1")
 (def-boot-var |$warningStack|                       "???")
 (def-boot-val |$whereList| () "referenced in format boot formDecl2String")
 

@@ -42,6 +42,8 @@
 
 DEFPARAMETER($fluidVars, nil)
 DEFPARAMETER($locVars, nil)
+DEFPARAMETER($PrettyPrint, false)
+DEFPARAMETER($COMPILE, true)
 
 $LET := 'SPADLET    -- LET is a standard macro in Common Lisp
 
