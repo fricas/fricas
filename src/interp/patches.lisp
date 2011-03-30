@@ -42,7 +42,6 @@
 
 (define-function '|construct| #'list) ;; NEEDED , SPAD-COMPILER generated Lisp code
 
-(defvar |Undef| (function |Undef|)) ;needed in NewbFVectorCopy
 (define-function '|spadHash| #'sxhash)
 
 (defun |mkAutoLoad| (fn cname)

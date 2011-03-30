@@ -33,6 +33,7 @@
 
 DEFPARAMETER($currentFunctionLevel, 0)
 DEFPARAMETER($tryRecompileArguments, true)
+DEFPARAMETER($insideCompTypeOf, false)
 
 initEnvHashTable(l) ==
   for u in CAR(CAR(l)) repeat

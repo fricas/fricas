@@ -112,8 +112,8 @@ at load time.
 
 #+:oldboot
 (defun boottran::boottocl (file &optional ofile) ;; translates a single boot file
-  (in-package "BOOT")
-  (let (*print-level* *print-length* (fn (pathname-name file)))
+  (let ((*package* (find-package "BOOT"))
+        *print-level* *print-length* (fn (pathname-name file)))
     (boot::boot
       file
       (if ofile ofile
