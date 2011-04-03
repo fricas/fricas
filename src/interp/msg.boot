@@ -182,6 +182,9 @@ insertPos(newPos,posList) ==
     while not done repeat
         top  := [CAR bot,:top]
         bot  := CDR bot
+        NULL(bot) =>
+           top := [newPos,:top]
+           done := true
         pos  := CAR bot
         done :=
           pos < newPos => false
@@ -189,7 +192,9 @@ insertPos(newPos,posList) ==
           pos > newPos =>
             top := [newPos,:top]
             true
-    [CDR reverse top,:bot]
+    for pp in top repeat
+        bot := [pp, :bot]
+    CDR bot
 
 putFTText (msg,chPosList) ==
     tag := getMsgFTTag? msg
