@@ -93,6 +93,8 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
     -- Rep:= Union("zero", IntegerMod(size()$GF ^ degree(defpol) -1)),
     -- why doesn't the compiler like this ?
 
+    qzero ==> (-1)@SI pretend Rep
+
     extdeg:NNI  :=degree(defpol)$(SUP GF)::NNI
     -- the extension degree
 
@@ -166,11 +168,11 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 
     x:% + y:% ==
       if initzech? then initializeZech()
-      zero? x => y
-      zero? y => x
-      d:Rep:=positiveRemainder(y -$Rep x,sizeCG)$Rep
+      x =$Rep qzero => y
+      y =$Rep qzero => x
+      d:Rep := submod(y, x, sizeCG)$Rep
       (d pretend SI) <= shift(sizeCG,-$SI (1$SI)) =>
-        zechlog.(d pretend SI) =$SI -1::SI => 0
+        zechlog.(d pretend SI) =$SI -1::SI => qzero
         addmod(x,zechlog.(d pretend SI) pretend Rep,sizeCG)$Rep
       --d:Rep:=positiveRemainder(x -$Rep y,sizeCG)$Rep
       d:Rep:=(sizeCG -$SI d)::Rep
@@ -261,7 +263,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
       positiveRemainder(e1.coef1,sizeCG)$Rep pretend NNI
 
     - x:% ==
-        zero? x => 0
+        x =$Rep qzero => qzero
         characteristic() =$I 2 => x
         addmod(x,shift(sizeCG,-1)$SI pretend Rep,sizeCG)
 
@@ -308,8 +310,8 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
     x:% = y:% ==  x =$Rep y
 
     x:% * y:% ==
-      x = 0 => 0
-      y = 0 => 0
+      x =$Rep qzero => qzero
+      y =$Rep qzero => qzero
       addmod(x,y,sizeCG)$Rep
 
     a:GF * x:% == coerce(a)@% * x
