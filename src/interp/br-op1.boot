@@ -76,7 +76,7 @@ dbShowOps(htPage,which,key,:options) ==
     if which = '"operation"
       then htpSetProperty(htPage,'opAlist,opAlist)
       else htpSetProperty(htPage,'attrAlist,opAlist)
-    if not htpProperty(htPage,'condition?) = 'no then
+    if not (htpProperty(htPage, 'condition?) = 'no) then
       dbResetOpAlistCondition(htPage,which,opAlist)
     dbShowOps(htPage,which,htpProperty(htPage,'exclusion))
   htpSetProperty(htPage,'key,key)
@@ -112,7 +112,7 @@ dbShowOp1(htPage,opAlist,which,key) ==
     if which = '"operation"
       then htpSetProperty(htPage,'opAlist,opAlist)
       else htpSetProperty(htPage,'attrAlist,opAlist)
-    if not htpProperty(htPage,'condition?) = 'no then
+    if not (htpProperty(htPage, 'condition?) = 'no) then
       dbResetOpAlistCondition(htPage,which,opAlist)
   dbExpandOpAlistIfNecessary(htPage,opAlist,which,true,false)
   if $exposedOnlyIfTrue and not dbFromConstructor?(htPage) then
@@ -679,7 +679,7 @@ dbChooseDomainOp(htPage,which,index) ==
   if which = '"operation"
     then htpSetProperty(htPage,'opAlist,[[op,entry]])
     else htpSetProperty(htPage,'attrAlist,[[op,entry]])
-  if not htpProperty(htPage,'condition?) = 'no then
+  if not (htpProperty(htPage, 'condition?) = 'no) then
     dbResetOpAlistCondition(htPage,which,opAlist)
   dbShowOps(htPage,which,'documentation)
 

@@ -184,7 +184,7 @@ mkCategoryPackage(form is [op,:argl],cat,def) ==
     cat is ['Join,:u] => gn last u
     nil
   catvec := eval mkEvalableCategoryForm form
-  fullCatOpList:=JoinInner([catvec],$e).1
+  fullCatOpList := (JoinInner([catvec], $e)).1
   catOpList :=
     --note: this gets too many modemaps in general
     --   this is cut down in NRTmakeSlot1

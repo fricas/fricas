@@ -769,7 +769,7 @@ brightPrintCenterAsTeX x ==
   lst := x
   while lst repeat
     words := nil
-    while lst and not CAR(lst) = "%l" repeat
+    while lst and not (CAR(lst) = "%l") repeat
       words := [CAR lst,: words]
       lst := CDR lst
     if lst then lst := cdr lst
@@ -849,7 +849,7 @@ sayAsManyPerLineAsPossible l ==
   if str ~= '"" then sayMSG str
   NIL
 
-say2PerLine l == say2PerLineWidth(l,$LINELENGTH / 2)
+say2PerLine l == say2PerLineWidth(l, QUOTIENT($LINELENGTH, 2))
 
 say2PerLineWidth(l,n) ==
   [short,long] := say2Split(l,nil,nil,n)
@@ -882,7 +882,7 @@ say2PerLineThatFit l ==
   while l repeat
     sayBrightlyNT first l
     sayBrightlyNT
-      fillerSpaces((($LINELENGTH/2)-sayDisplayWidth first l),'" ")
+      fillerSpaces((QUOTIENT($LINELENGTH, 2) - sayDisplayWidth first l), '" ")
     (l:= rest l) =>
       sayBrightlyNT first l
       l:= rest l
@@ -913,7 +913,7 @@ pp2Cols(al) ==
     ppPair(abb,name)
     if canFit2ndEntry(name,al) then
       [[abb,:name],:al]:= al
-      TAB ($LINELENGTH / 2)
+      TAB (QUOTIENT($LINELENGTH, 2))
       ppPair(abb,name)
     sayNewLine()
   nil
@@ -922,7 +922,7 @@ ppPair(abb,name) ==
     sayBrightlyNT [:bright abb,fillerSpaces(8-entryWidth abb," "),name]
 
 canFit2ndEntry(name,al) ==
-  wid := ($LINELENGTH/2) - 10
+  wid := QUOTIENT($LINELENGTH, 2) - 10
   null al => nil
   entryWidth name > wid => nil
   entryWidth CDAR al > wid => nil

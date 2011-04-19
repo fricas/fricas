@@ -313,10 +313,12 @@ FindFundAncs l ==
   l=nil => nil
   [l1, cond1] := CAR l
   f1:= CatEval l1
-  f1.(0)=nil => FindFundAncs rest l
-  ans:= FindFundAncs rest l
-  for u in FindFundAncs [[CatEval xf, mkAnd(cond1, xc)]
-     for [xf, xc] in CADR f1.4] repeat
+  ans := FindFundAncs rest l
+  f1.(0) = nil => ans
+  -- Does not work with Shoe (garbage items ???)
+  --  ll := [[CatEval xf, mkAnd(cond1, xc)] for [xf, xc] in CADR f1.4]
+  ll := [[CatEval CAR x, mkAnd(cond1, CADR x)] for x in CADR f1.4]
+  for u in FindFundAncs ll repeat
         [u1, uc] := u
         x:= ASSQ(u1, ans) =>
             ans:= [[u1, mkOr(CADR x, uc)],:delete(x,ans)]

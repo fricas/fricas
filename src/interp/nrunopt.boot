@@ -312,7 +312,7 @@ testBitVector(vec,i) ==
 
 bitsOf n ==
   n = 0 => 0
-  1 + bitsOf (n/2)
+  1 + bitsOf(QUOTIENT(n, 2))
 
 --=======================================================================
 --               Generate Slot 4 Constructor Vectors
@@ -774,7 +774,7 @@ extendsCategory(dom,u,v) ==
 extendsCategoryBasic0(dom,u,v) ==
   v is ['IF,p,['ATTRIBUTE,c],.] =>
     -- BREAK()
-    uVec := compMakeCategoryObject(u,$EmptyEnvironment).expr
+    uVec := (compMakeCategoryObject(u, $EmptyEnvironment)).expr
     null atom c and isCategoryForm(c,nil) =>
       slot4 := uVec.4
       LASSOC(c,CADR slot4) is [=p,:.]
@@ -785,7 +785,7 @@ extendsCategoryBasic0(dom,u,v) ==
 extendsCategoryBasic(dom,u,v) ==
   u is ["Join",:l] => or/[extendsCategoryBasic(dom,x,v) for x in l]
   u = v => true
-  uVec := compMakeCategoryObject(u,$EmptyEnvironment).expr
+  uVec := (compMakeCategoryObject(u, $EmptyEnvironment)).expr
   isCategoryForm(v,nil) => catExtendsCat?(u,v,uVec)
   v is ['SIGNATURE,op,sig] =>
     or/[uVec.i is [[=op,=sig],:.] for i in 6..MAXINDEX uVec]
@@ -796,7 +796,7 @@ extendsCategoryBasic(dom,u,v) ==
 
 catExtendsCat?(u,v,uvec) ==
   u = v => true
-  uvec := uvec or compMakeCategoryObject(u,$EmptyEnvironment).expr
+  uvec := uvec or (compMakeCategoryObject(u, $EmptyEnvironment)).expr
   slot4 := uvec.4
   prinAncestorList := CAR slot4
   member(v,prinAncestorList) => true

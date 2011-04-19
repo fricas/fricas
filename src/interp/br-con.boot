@@ -983,7 +983,7 @@ getConstructorDocumentation conname ==
     is [[nil,line,:.],:.] and line or '""
 
 dbSelectCon(htPage,which,index) ==
-  conPage opOf first htpProperty(htPage,'cAlist) . index
+  conPage opOf first (htpProperty(htPage, 'cAlist)) . index
 
 dbShowConditions(htPage,cAlist,kind) ==
   conform := htpProperty(htPage,'conform)
