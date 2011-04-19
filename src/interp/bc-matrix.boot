@@ -139,8 +139,8 @@ bcMatrixGen htPage ==
   mat := htpProperty(htPage,'matrix)
   formula := LASSOC('formula,mat) =>
     formula := formula.0
-    rowVar := LASSOC('rowVar,mat).0
-    colVar := LASSOC('colVar,mat).0
+    rowVar := (LASSOC('rowVar, mat)).0
+    colVar := (LASSOC('colVar, mat)).0
     STRCONC('"matrix([[",formula,'" for ",colVar,'" in 1..",
       STRINGIMAGE ncols,'"] for ",rowVar,'" in 1..",STRINGIMAGE nrows,'"])")
   mat := htpProperty(htPage,'matrix) =>

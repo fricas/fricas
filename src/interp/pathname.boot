@@ -58,7 +58,8 @@ pathnameType p == PATHNAME_-TYPE pathname p
 pathnameTypeId p == UPCASE object2Identifier pathnameType p
 
 pathnameDirectory p ==
-   NAMESTRING MAKE_-PATHNAME(KEYWORD'DIRECTORY,PATHNAME_-DIRECTORY pathname p)
+    NAMESTRING MAKE_-PATHNAME(INTERN('"DIRECTORY", '"KEYWORD"),_
+                               PATHNAME_-DIRECTORY pathname p)
 
 deleteFile f == DELETE_-FILE f
 

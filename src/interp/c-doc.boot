@@ -730,7 +730,7 @@ checkDecorate u ==
       null spadflag and
         (CHARP x and ALPHA_-CHAR_-P x and not MEMQ(x,$charExclusions) or
           member(x,$argl)) => [$charRbrace,x,$charLbrace,'"\spad",:acc]
-      null spadflag and ((STRINGP x and not x.0 = $charBack and DIGITP(x.(MAXINDEX x))) or member(x,'("true" "false"))) =>
+      null spadflag and ((STRINGP x and not (x.0 = $charBack) and DIGITP(x.(MAXINDEX x))) or member(x, '("true" "false"))) =>
         [$charRbrace,x,$charLbrace,'"\spad",:acc]  --wrap x1, alpha3, etc
       CHARP x => [checkAddBackSlashes x,:acc]
       xcount := #x

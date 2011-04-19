@@ -103,7 +103,7 @@ isValidType form ==
     and/[isValid for x in argl for c in cl] where isValid ==
       categoryForm?(c) =>
         evalCategory(x,MSUBSTQ(x,'_$,c)) and isValidType x
-      not GETDATABASE(opOf x,'CONSTRUCTORKIND) = 'domain
+      not (GETDATABASE(opOf x, 'CONSTRUCTORKIND) = 'domain)
 
 selectMms1(op,tar,args1,args2,$Coerce) ==
     -- for new compiler/old world compatibility, sometimes have to look

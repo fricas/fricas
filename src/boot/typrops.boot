@@ -180,7 +180,7 @@ for i in [ _
   ["first",        "CAR"]  , _
   ["function","FUNCTION"] , _
   ["genvar",    "GENVAR"]  , _
-  ["IN",        "MEMBER"]  , _
+  ["IN",        "member"]  , _
   ["is",            "IS"]  , _
   ["isnt",        "ISNT"]  , _
   ["lastNode",    "LAST"]  , _

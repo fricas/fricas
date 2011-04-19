@@ -96,10 +96,10 @@ pluralize k ==
   STRCONC(k,'"s")
 
 capitalize s ==
-  LASSOC(s,'(
-      ("domain"   . "Domain")
-      ("category" . "Category")
-      ("package"  . "Package")
+  LASSOC(s,'( _
+      ("domain"   . "Domain") _
+      ("category" . "Category") _
+      ("package"  . "Package") _
       ("default package" . "Default Package"))) or
     res := COPY_-SEQ s
     SETELT(res,0,UPCASE res.0)

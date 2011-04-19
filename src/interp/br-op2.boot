@@ -499,7 +499,7 @@ dbHeading(items,which,heading,:options) ==
   [:prefix,'" for ",:heading]
 
 koaPageFilterByCategory1(htPage,i) ==
-  ancestor := htpProperty(htPage,'ancestors) . i
+  ancestor := (htpProperty(htPage, 'ancestors)) . i
   ancestorList := [ancestor,:ASSOCLEFT ancestorsOf(ancestor,nil)]
   newOpAlist := nil
   which    := htpProperty(htPage,'which)

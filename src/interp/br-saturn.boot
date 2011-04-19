@@ -763,7 +763,7 @@ dbPresentCons(htPage,kind,:exclusions) ==
     then htSay '"{\em Names}"
     else htMakePage [['bcLispLinks,['"Names",'"",'dbShowCons,'names]]]
   htSay '"}{"
-  if one? or member('parameters,exclusions) or not or/[CDAR x for x in cAlist]
+  if one? or member('parameters, exclusions) or not(or/[CDAR x for x in cAlist])
     then htSay '"{\em Parameters}"
     else htMakePage [['bcLispLinks,['"Parameters",'"",'dbShowCons,'parameters]]]
   htSay '"}{"
@@ -808,7 +808,7 @@ dbPresentConsSaturn(htPage,kind,exclusions) ==
   if one? or member('names,exclusions)
     then htSayCold '"\&Names"
     else htMakePage [['bcLispLinks,['"\&Names",'"",'dbShowCons,'names]]]
-  if one? or member('parameters,exclusions) or not or/[CDAR x for x in cAlist]
+  if one? or member('parameters, exclusions) or not(or/[CDAR x for x in cAlist])
     then htSayCold '"\&Parameters"
     else htMakePage [['bcLispLinks,['"\&Parameters",'"",'dbShowCons,'parameters]]]
   htSaySaturn '"\hrule"

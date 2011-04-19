@@ -172,7 +172,7 @@ genDeltaEntry opMmPair ==
       $NRTdeltaList:= [['domain,NRTaddInner dc,:dc],:$NRTdeltaList]
       saveNRTdeltaListComp:= $NRTdeltaListComp:=[nil,:$NRTdeltaListComp]
       $NRTdeltaLength := $NRTdeltaLength+1
-      compEntry:= compOrCroak(odc,$EmptyMode,$e).expr
+      compEntry := (compOrCroak(odc, $EmptyMode, $e)).expr
       RPLACA(saveNRTdeltaListComp,compEntry)
   u :=
     [eltOrConst,'$,$NRTbase+$NRTdeltaLength-index] where index ==
@@ -213,7 +213,7 @@ NRTgetLocalIndex(item) ==
   saveNRTdeltaListComp:= $NRTdeltaListComp:=[nil,:$NRTdeltaListComp]
   saveIndex := $NRTbase + $NRTdeltaLength
   $NRTdeltaLength := $NRTdeltaLength+1
-  compEntry:= compOrCroak(item,$EmptyMode,$e).expr
+  compEntry := (compOrCroak(item, $EmptyMode, $e)).expr
   RPLACA(saveNRTdeltaListComp,compEntry)
   saveIndex
 

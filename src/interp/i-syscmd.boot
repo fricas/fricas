@@ -1549,7 +1549,7 @@ undoInCore(n) ==
 
 undoChanges(li) ==
   -- undoes all changes of list 'li'
-  if not CDR li = $HistList then undoChanges CDR li
+  if not (CDR li = $HistList) then undoChanges CDR li
   for p1 in CAR li repeat
     x:= CAR p1
     for p2 in CDR p1 repeat

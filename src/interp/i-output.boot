@@ -1097,15 +1097,15 @@ bigopAppAux(bot,top,arg,x,y,d,kind) ==
     kind = 'pi => 5
     3
   maxWidth := MAX(opWidth,botWidth,topWidth)
-  xCenter := (maxWidth-1)/ 2 + x
+  xCenter := QUOTIENT(maxWidth - 1, 2) + x
   d:=APP(arg,x+2+maxWidth,y,d)
   d:=
       atom bot and SIZE atom2String bot = 1 => APP(bot,xCenter,y-2,d)
-      APP(bot,x + (maxWidth - botWidth)/2,y-2-superspan bot,d)
+      APP(bot, x + QUOTIENT(maxWidth - botWidth, 2), y-2-superspan bot, d)
   if top then
     d:=
       atom top and SIZE atom2String top = 1 => APP(top,xCenter,y+2,d)
-      APP(top,x + (maxWidth - topWidth)/2,y+2+subspan top,d)
+      APP(top, x + QUOTIENT(maxWidth - topWidth, 2), y+2+subspan top, d)
   delta := (kind = 'pi => 2; 1)
   opCode :=
     kind = 'sigma =>
@@ -1479,7 +1479,7 @@ charyTop(u,start,linelength) ==
   u is ['CENTER,a] =>
     b := charyTopWidth a
     (w := WIDTH(b)) > linelength-start => charyTop(a,start,linelength)
-    charyTop(b,(linelength-start-w)/2,linelength)
+    charyTop(b, QUOTIENT(linelength-start-w, 2), linelength)
   v := charyTopWidth u
   EQ(keyp u,'ELSE) => charyElse(u,v,start,linelength)
   WIDTH(v) > linelength => charyTrouble(u,v,start,linelength)
@@ -2214,8 +2214,8 @@ binomApp(u,x,y,d) ==
   wden := WIDTH den
   wnum := WIDTH num
   w := MAX(wden,wnum)
-  d := APP(den,x+1+(w - wden)/2,ysub,d)
-  d := APP(num,x+1+(w - wnum)/2,ysup,d)
+  d := APP(den, x + 1 + QUOTIENT(w - wden, 2), ysub, d)
+  d := APP(num, x + 1 + QUOTIENT(w - wnum, 2), ysup, d)
   hnum := height num
   hden := height den
   w := 1 + w
