@@ -49,7 +49,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 
 ;; following was in OUTINIT LISP
 
-(REPEAT (IN X '(
+(DOLIST (X '(
    (LET " := ")
    (|/| "/")
    (* "*")
@@ -92,7 +92,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
    (MIN " MIN ")
        )) (MAKEPROP (CAR X) 'INFIXOP (CADR X)))
 
-(REPEAT (IN X '(
+(DOLIST (X '(
   (= "=")
   (|:| ":")
   (|not| "~ ")
@@ -100,7 +100,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (SEGMENT "..")  ;" 0.. is represented by (SEGMENT 0)"
  )) (MAKEPROP (CAR X) 'PREFIXOP (CADR X)))
 
-(REPEAT (IN X '(
+(DOLIST (X '(
   (- APP |appneg|)
   (- WIDTH |minusWidth|)
   (/ APP |appfrac|)
@@ -195,7 +195,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 )) (PROGN (MAKEPROP (CAR X) (CADR X) (CADDR X)))
 )
 
-(REPEAT (IN X '(
+(DOLIST (X '(
   (+ APP |plusApp|)
   (+ WIDTH |sumWidth|)
   (* APP |timesApp|)
@@ -289,14 +289,14 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 
 (FLAG '(TENSOR * + AND OR PROGN) 'NARY)
 
-(REPEAT (IN X '(
+(DOLIST (X '(
   (|Record| |mkRecordFunList|)
   (|Union| |mkUnionFunList|)
   (|Mapping| |mkMappingFunList|)
   (|Enumeration| |mkEnumerationFunList|)
 )) (MAKEPROP (CAR X) '|makeFunctionList| (CADR X)))
 
-(REPEAT (IN X '(
+(DOLIST (X '(
   (|<=| |parseLessEqual|)
   (|>| |parseGreaterThan|)
   (|>=| |parseGreaterEqual|)
@@ -329,7 +329,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|where| |parseWhere|)
 )) (MAKEPROP (CAR X) '|parseTran| (CADR X)))
 
-(REPEAT (IN X '(
+(DOLIST (X '(
   (|with| |postWith|)
   (/ |postSlash|)
   (|construct| |postConstruct|)
@@ -361,7 +361,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 )) (MAKEPROP (CAR X) '|postTran| (CADR X)))
 
 ;; Many of the following are now in COMPAT LISP
-(REPEAT (IN X '(
+(DOLIST (X '(
   (+ PLUS)
   (|and| AND)
   (|append| APPEND)
@@ -410,7 +410,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (T T$)
 )) (MAKEPROP (CAR X) 'RENAME (CDR X)))
 
-(REPEAT (IN X '(
+(DOLIST (X '(
   (\| |compSuchthat|)
   (\@ |compAtSign|)
   (|:| |compColon|)
