@@ -121,7 +121,6 @@
 (defun |makeSF| (mantissa exponent)
   (|float| (/ mantissa (expt 2 (- exponent)))))
 
-(define-function 'list1 #'list)
 (define-function '|not| #'NOT)
 
 (defun |random| () (random (expt 2 26)))
