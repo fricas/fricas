@@ -55,8 +55,6 @@
 
 (defvar *fileactq-apply* nil "function to apply in fileactq")
 
-(defvar macerrorcount 0  "Put some documentation in here someday")
-
 (defvar *read-place-holder* (make-symbol "%.EOF")
    "default value returned by read and read-line at end-of-file")
 
@@ -540,12 +538,7 @@
 (defun VEC2LIST (vec) (coerce vec 'list))
 
 ; note default test for union, intersection and set-difference is eql
-;; following are defined so as to preserve ordering in union.lisp
-;; (defun SETDIFFERENCE (l1 l2) (set-difference l1 l2 :test #'equalp))
-;; (defun SETDIFFERENCEQ (l1 l2) (set-difference l1 l2 :test #'eq))
-;; (defun |union| (l1 l2) (union l1 l2 :test #'equalp))
 (defun UNIONQ (l1 l2) (union l1 l2 :test #'eq))
-;; (defun |intersection| (l1 l2) (intersection l1 l2 :test #'equalp))
 (defun INTERSECTIONQ (l1 l2) (intersection l1 l2 :test #'eq))
 (defun |member| (item sequence)
    (cond ((symbolp item) (member item sequence :test #'eq))
@@ -929,11 +922,6 @@
 (defun eqsubstlist (new old list) (sublis (mapcar #'cons old new) list))
 
 
-; 23.0 Reading
-
-
-(define-function 'next #'read-char)
-
 ; 24.0 Printing
 
 ;(define-function 'prin2cvec #'write-to-string)
@@ -1099,31 +1087,6 @@
 ; 97.0 Stuff In The Manual But Wierdly Documented
 
 (defun EBCDIC (x) (int-char x))
-
-
-(defun MACRO-INVALIDARGS (NAME FORM MESSAGE)
-    (setq MACERRORCOUNT  (+ 1 (eval 'MACERRORCOUNT)))
-    (error (format nil
-                   "invalid arguments to macro ~S with invalid argument ~S, ~S"
-                   name form message)))
-
-(defun MACRO-MISSINGARGS (NAME ignore N)
-  (declare (ignore ignore))
-  (setq MACERRORCOUNT (+ 1 (eval 'MACERRORCOUNT)))
-  (let ((nargs (abs N)))
-      (error (concatenate 'string (symbol-name NAME) " requires "
-                       (if (minusp N) "at least " "exactly ")
-                       (case nargs (0 "no") (1 "one") (2 "two") (3 "three")
-                             (4 "four") (5 "five") (6 "six")
-                             (t (princ-to-string N)))
-                       (if (= nargs 1) " argument," " arguments,")))))
-
-(defun MACERR (MESSAGE &rest ignore)
-  (declare (ignore ignore))
-      (setq MACERRORCOUNT (+ 1 (eval 'MACERRORCOUNT)))
-      (error
-        (LIST "in the expression:" MESSAGE))
-      ())
 
 ; 98.0 Stuff Not In The VMLisp Manual That We Like
 
