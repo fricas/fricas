@@ -1296,9 +1296,11 @@ LP  (COND ((NULL X)
 
 (defun compile-defun (name body) (eval body) (compile name))
 
-(defmacro |Record| (&rest x)
-  `(|Record0| (LIST ,@(COLLECT (IN Y X)
-                         (list 'CONS (MKQ (CADR Y)) (CADDR Y))))))
+(defmacro |Record| (&rest args)
+    (list '|Record0|
+          (cons 'LIST
+                (mapcar #'(lambda (x) (list 'CONS (MKQ (CADR x)) (CADDR x)))
+                        args))))
 
 (defmacro |Enumeration| (&rest args)
       (cons '|Enumeration0|

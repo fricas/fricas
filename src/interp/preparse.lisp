@@ -331,7 +331,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
 ;;                    LINE)))))
 
 (defun PREPARSE-ECHO (linelist)
-  (if Echo-Meta (REPEAT (IN X (REVERSE $EchoLineStack))
+  (if Echo-Meta (DOLIST (X (REVERSE $EchoLineStack))
                         (format out-stream "~&;~A~%" X)))
   (setq $EchoLineStack ()))
 
