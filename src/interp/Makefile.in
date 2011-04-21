@@ -263,7 +263,7 @@ $(addprefix $(AUTO)/, $(addsuffix .$(LISPOBJEXT), $(AUTO_from_IN))): \
 	cp $< $@
 
 IN_from_MID=\
- as buildom cattable clammed compat compress \
+ as buildom cattable compat compress \
  database format fortcall g-cndata g-error g-opt \
  g-timer hashcode hypertex \
  i-analy i-code i-coerce i-coerfn i-eval i-funsel \
@@ -273,7 +273,7 @@ IN_from_MID=\
  record rulesets server setvars setvart simpbool \
  template termrw trace
 
-$(addsuffix .$(LISPOBJEXT), $(IN_from_MID)): \
+$(addsuffix .$(LISPOBJEXT), $(IN_from_MID) clammed): \
     %.$(LISPOBJEXT) : %.clisp
 	@ echo 10 making $@ from $<
 	echo '(in-package "FRICAS-LISP")' \
@@ -298,5 +298,8 @@ MID_from_IN= $(IN_from_MID) $(AUTO_from_MID)
 $(addsuffix .clisp, $(MID_from_IN)): \
     %.clisp : $(srcdir)/%.boot
 	@ echo 11 making $@ from $<
-	echo '(progn (boottran::boottocl "$<" "$@") (${BYE}))' | ${DEPSYS}
+	echo '(progn (boottran::boottocl "$<" "$@") (${BYE}))' | ${BOOTSYS}
+
+clammed.clisp: $(srcdir)/clammed.boot
+	echo '(progn (boottran::bootclam "$<" "$@") (${BYE}))' | ${BOOTSYS}
 
