@@ -1269,6 +1269,8 @@ database.
   (push '|Record| compresslist)
   (push '|Mapping| compresslist)
   (push '|Enumeration| compresslist)
+  ;;; dummy zero element
+  (push 0 compresslist)
   (setq *compressVectorLength* (length compresslist))
   (setq *compressvector*
     (make-array *compressVectorLength* :initial-contents compresslist))
@@ -1403,7 +1405,7 @@ database.
 
 (defun unsqueeze (expr)
   (cond ((atom expr)
-         (cond ((and (numberp expr) (<= expr 0))
+         (cond ((and (numberp expr) (< expr 0))
                 (svref *compressVector* (- expr)))
                (t expr)))
         (t (rplaca expr (unsqueeze (car expr)))
