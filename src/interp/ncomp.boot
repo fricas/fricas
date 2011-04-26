@@ -150,6 +150,7 @@ processGlobals () ==
         -- PRETTYPRINT([CAR form, sig])
         cosig := CONS(nil, [categoryForm? ty for ty in CDR(sig)])
         if not(GETDATABASE(CAR form, 'COSIG) = cosig) then
+            PRETTYPRINT("bad COSIG")
             PRETTYPRINT([CAR form, sig])
         if null CAR(sig) then
             untypedDefs := [def, :untypedDefs]
@@ -187,10 +188,12 @@ handleKind(df is ['DEF,form,sig,sc,body]) ==
     constructorModemap := removeZeroOne [[parForm,:parSignature],[true,op]]
     constructorCategory := constructorCategory or constructorModemap.mmTarget
     if not(GETDATABASE(op, 'CONSTRUCTORMODEMAP) = constructorModemap) then
+        PRETTYPRINT("bad CONSTRUCTORMODEMAP")
         PRETTYPRINT([CAR form])
         PRETTYPRINT(constructorModemap)
         PRETTYPRINT(GETDATABASE(op, 'CONSTRUCTORMODEMAP))
     if not(GETDATABASE(op, 'CONSTRUCTORCATEGORY) = constructorCategory) then
+        PRETTYPRINT("bad CONSTRUCTORCATEGORY")
         PRETTYPRINT([CAR form])
         PRETTYPRINT(constructorCategory)
         PRETTYPRINT(GETDATABASE(op, 'CONSTRUCTORCATEGORY))
@@ -202,6 +205,7 @@ handleKind(df is ['DEF,form,sig,sc,body]) ==
 --   $lisplibCategory:= formalBody
 
 computeTargetMode(lhs, rhs) ==
+    PRETTYPRINT(["computeTargetMode", lhs])
     rhs is ['CAPSULE,:.] => MOAN(['"target category of ", lhs,_
           '" cannot be determined from definition"],nil)
     rhs is ['SubDomain,D,:.] => computeTargetMode(lhs,D)
@@ -213,10 +217,12 @@ computeTargetMode(lhs, rhs) ==
 
     rhs is [op, :argl] =>
         modemap := GETDATABASE(op, 'CONSTRUCTORMODEMAP)
-        modemap is [[form, sig], [=true,.]] =>
+        modemap is [[form, sig, :.], [=true,.]] =>
             pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
             -- substitue
-            SUBLIS(pailis, CAR(sig))
+            SUBLIS(pairlis, sig)
+        PRETTYPRINT("strange untyped def")
+        PRETTYPRINT([lhs, rhs, modemap])
         nil
     BREAK()
 
