@@ -104,6 +104,9 @@ getTargetFromRhs(lhs,rhs,e) ==
   rhs is ['Record,:l] => ['RecordCategory,:l]
   rhs is ['Union,:l] => ['UnionCategory,:l]
   [.,target,.]:= compOrCroak(rhs,$EmptyMode,e)
+  target is ["Category"] =>
+      stackAndThrow(['"Only domains and packages can get mode form target",
+                     lhs])
   target
 
 giveFormalParametersValues(argl,e) ==
