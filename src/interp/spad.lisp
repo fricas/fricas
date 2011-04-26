@@ -148,6 +148,7 @@
         (|$exitModeStack| ())
         (|$returnMode| |$EmptyMode|)
         (|$leaveLevelStack| ())
+        (|$CategoryFrame| '((NIL)))
         |$insideFunctorIfTrue| |$insideExpressionIfTrue|
         |$insideWhereIfTrue|
         |$insideCategoryIfTrue| |$insideCapsuleFunctionIfTrue| |$form|

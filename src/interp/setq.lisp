@@ -438,17 +438,8 @@
 
 ;"  modemap:==  ( <map> (p e) (p e) ... (p e) )  "
 ;"  modemaplist:= ( modemap ... )  "
-(SETQ |$CategoryFrame| '(((
-  (|Category| .
-    ((|modemap|
-      ( ((|Category|) (|Category|)) (T *) )
-        )))
-  (|Join| .
-    ((|modemap|
-      ( ((|Category|) (|Category|) (|Category|) (|Category|)) (|T| *) )
-      ( ((|Category|) (|Category|) (|List| (|Category|)) (|Category|)) (T *) )
-        )))
-    ))))
+
+(SETQ |$CategoryFrame| '((NIL)))
 
 (SETQ |$InitialDomainsInScope|
   '(|$EmptyMode| |$NoValueMode|))
