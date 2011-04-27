@@ -51,9 +51,9 @@
 ;; must require that appropriate symbols be present.
 #+:ecl (require 'cmp)
 
-;## need the conditional here so it appears in boottran
-#+:ieee-floating-point (setq $ieee t)
-#-:ieee-floating-point (setq $ieee nil)
+;;; ;## need the conditional here so it appears in boottran
+;;; #+:ieee-floating-point (setq $ieee t)
+;;; #-:ieee-floating-point (setq $ieee nil)
 
 ;; The following comes from file previously known as npextras.lisp
 (defun double (x) (float x 1.D0))
@@ -94,6 +94,13 @@
      (stream fn prog)
     `(with-open-file (,stream ,fn :direction :input
        :if-does-not-exist nil) ,prog))
+
+(defmacro |doInBoottranPackage| (expr)
+    `(let ((*PACKAGE* (find-package "BOOTTRAN")))
+         ,expr))
+
+(defmacro |shoeOpenInputBoottranFile| (stream fn prog)
+     `(|doInBoottranPackage| (|shoeOpenInputFile| ,stream ,fn ,prog)))
 
 (defmacro |shoeOpenOutputFile|
      (stream fn prog)

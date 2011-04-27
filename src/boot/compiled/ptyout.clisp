@@ -3,12 +3,6 @@
  
 (IN-PACKAGE "BOOTTRAN")
  
-; setCurrentPackage x ==
-;   SETQ(_*PACKAGE_*,x)
- 
-(DEFUN |setCurrentPackage| (|x|)
-  (PROG () (RETURN (SETQ *PACKAGE* |x|))))
- 
 ; BOOTTOCL (fn, outfn) ==
 ;          $bfClamming:local:=false
 ;          BOOTTOCLLINES(nil,fn, outfn)
@@ -16,10 +10,7 @@
 (DEFUN BOOTTOCL (|fn| |outfn|)
   (PROG (|$bfClamming|)
     (DECLARE (SPECIAL |$bfClamming|))
-    (RETURN
-      (PROGN
-        (SETQ |$bfClamming| NIL)
-        (BOOTTOCLLINES NIL |fn| |outfn|)))))
+    (RETURN (PROGN (SETQ |$bfClamming| NIL) (BOOTTOCLLINES NIL |fn| |outfn|)))))
  
 ; BOOTCLAM (fn, outfn) == BOOTCLAMLINES(nil, fn, outfn)
  
@@ -34,38 +25,24 @@
   (PROG (|$bfClamming|)
     (DECLARE (SPECIAL |$bfClamming|))
     (RETURN
-      (PROGN
-        (SETQ |$bfClamming| T)
-        (BOOTTOCLLINES |lines| |fn| |outfn|)))))
+     (PROGN (SETQ |$bfClamming| T) (BOOTTOCLLINES |lines| |fn| |outfn|)))))
  
 ; BOOTTOCLLINES(lines, fn, outfn)==
-;    -- _*READ_-DEFAULT_-FLOAT_-FORMAT_* := 'DOUBLE_-FLOAT
-;    callingPackage := _*PACKAGE_*
-;    IN_-PACKAGE '"BOOTTRAN"
-;    infn:=shoeAddbootIfNec fn
-;    if NULL(outfn) then
-;        outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
-;    result := shoeOpenInputFile(a,infn,
-;                 shoeClLines(a,fn,lines,outfn))
-;    setCurrentPackage callingPackage
-;    result
+;     infn := shoeAddbootIfNec fn
+;     if NULL(outfn) then
+;         outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
+;     shoeOpenInputBoottranFile(a, infn, shoeClLines(a, fn, lines, outfn))
  
 (DEFUN BOOTTOCLLINES (|lines| |fn| |outfn|)
-  (PROG (|result| |infn| |callingPackage|)
+  (PROG (|infn|)
     (RETURN
-      (PROGN
-        (SETQ |callingPackage| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (COND
-          ((NULL |outfn|)
-           (SETQ |outfn|
-                 (CONCAT (|shoeRemovebootIfNec| |fn|) ".clisp"))))
-        (SETQ |result|
-              (|shoeOpenInputFile| |a| |infn|
-                  (|shoeClLines| |a| |fn| |lines| |outfn|)))
-        (|setCurrentPackage| |callingPackage|)
-        |result|))))
+     (PROGN
+      (SETQ |infn| (|shoeAddbootIfNec| |fn|))
+      (COND
+       ((NULL |outfn|)
+        (SETQ |outfn| (CONCAT (|shoeRemovebootIfNec| |fn|) ".clisp"))))
+      (|shoeOpenInputBoottranFile| |a| |infn|
+                                   (|shoeClLines| |a| |fn| |lines| |outfn|))))))
  
 ; shoeClLines(a,fn,lines,outfn)==
 ;       if null a
@@ -81,22 +58,24 @@
   (PROG (|$GenVarCounter|)
     (DECLARE (SPECIAL |$GenVarCounter|))
     (RETURN
-      (COND
-        ((NULL |a|) (|shoeNotFound| |fn|))
-        ('T (SETQ |$GenVarCounter| 0)
-         (|shoeOpenOutputFile| |stream| |outfn|
-             (PROGN
-               ((LAMBDA (|bfVar#1| |line|)
-                  (LOOP
-                    (COND
-                      ((OR (ATOM |bfVar#1|)
-                           (PROGN (SETQ |line| (CAR |bfVar#1|)) NIL))
-                       (RETURN NIL))
-                      ('T (|shoeFileLine| |line| |stream|)))
-                    (SETQ |bfVar#1| (CDR |bfVar#1|))))
-                |lines| NIL)
-               (|shoeFileTrees| (|shoeTransformStream| |a|) |stream|)))
-         (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
+     (COND ((NULL |a|) (|shoeNotFound| |fn|))
+           (#1='T (SETQ |$GenVarCounter| 0)
+            (|shoeOpenOutputFile| |stream| |outfn|
+                                  (PROGN
+                                   ((LAMBDA (|bfVar#1| |line|)
+                                      (LOOP
+                                       (COND
+                                        ((OR (ATOM |bfVar#1|)
+                                             (PROGN
+                                              (SETQ |line| (CAR |bfVar#1|))
+                                              NIL))
+                                         (RETURN NIL))
+                                        (#1# (|shoeFileLine| |line| |stream|)))
+                                       (SETQ |bfVar#1| (CDR |bfVar#1|))))
+                                    |lines| NIL)
+                                   (|shoeFileTrees| (|shoeTransformStream| |a|)
+                                                    |stream|)))
+            (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
  
 ; BOOTTOCLC(fn, outfn) ==BOOTTOCLCLINES(nil, fn, outfn)
  
@@ -104,35 +83,25 @@
   (PROG () (RETURN (BOOTTOCLCLINES NIL |fn| |outfn|))))
  
 ; BOOTTOCLCLINES(lines, fn, outfn)==
-;   callingPackage := _*PACKAGE_*
-;   IN_-PACKAGE '"BOOTTRAN"
 ;   $bfClamming:local:=false
 ;   infn:=shoeAddbootIfNec fn
 ;   if NULL(outfn) then
 ;       outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
-;   result := shoeOpenInputFile(a, infn,
-;                shoeClCLines(a, fn, lines, outfn))
-;   setCurrentPackage callingPackage
-;   result
+;   shoeOpenInputBoottranFile(a, infn, shoeClCLines(a, fn, lines, outfn))
  
 (DEFUN BOOTTOCLCLINES (|lines| |fn| |outfn|)
-  (PROG (|$bfClamming| |result| |infn| |callingPackage|)
+  (PROG (|$bfClamming| |infn|)
     (DECLARE (SPECIAL |$bfClamming|))
     (RETURN
-      (PROGN
-        (SETQ |callingPackage| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$bfClamming| NIL)
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (COND
-          ((NULL |outfn|)
-           (SETQ |outfn|
-                 (CONCAT (|shoeRemovebootIfNec| |fn|) ".clisp"))))
-        (SETQ |result|
-              (|shoeOpenInputFile| |a| |infn|
-                  (|shoeClCLines| |a| |fn| |lines| |outfn|)))
-        (|setCurrentPackage| |callingPackage|)
-        |result|))))
+     (PROGN
+      (SETQ |$bfClamming| NIL)
+      (SETQ |infn| (|shoeAddbootIfNec| |fn|))
+      (COND
+       ((NULL |outfn|)
+        (SETQ |outfn| (CONCAT (|shoeRemovebootIfNec| |fn|) ".clisp"))))
+      (|shoeOpenInputBoottranFile| |a| |infn|
+                                   (|shoeClCLines| |a| |fn| |lines|
+                                                   |outfn|))))))
  
 ; shoeClCLines(a,fn,lines,outfn)==
 ;       if null a
@@ -149,52 +118,45 @@
   (PROG (|$GenVarCounter|)
     (DECLARE (SPECIAL |$GenVarCounter|))
     (RETURN
-      (COND
-        ((NULL |a|) (|shoeNotFound| |fn|))
-        ('T (SETQ |$GenVarCounter| 0)
-         (|shoeOpenOutputFile| |stream| |outfn|
-             (PROGN
-               ((LAMBDA (|bfVar#2| |line|)
-                  (LOOP
-                    (COND
-                      ((OR (ATOM |bfVar#2|)
-                           (PROGN (SETQ |line| (CAR |bfVar#2|)) NIL))
-                       (RETURN NIL))
-                      ('T (|shoeFileLine| |line| |stream|)))
-                    (SETQ |bfVar#2| (CDR |bfVar#2|))))
-                |lines| NIL)
-               (|shoeFileTrees|
-                   (|shoeTransformToFile| |stream|
-                       (|shoeInclude|
-                           (|bAddLineNumber| (|bRgen| |a|) (|bIgen| 0))))
-                   |stream|)))
-         (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
+     (COND ((NULL |a|) (|shoeNotFound| |fn|))
+           (#1='T (SETQ |$GenVarCounter| 0)
+            (|shoeOpenOutputFile| |stream| |outfn|
+                                  (PROGN
+                                   ((LAMBDA (|bfVar#2| |line|)
+                                      (LOOP
+                                       (COND
+                                        ((OR (ATOM |bfVar#2|)
+                                             (PROGN
+                                              (SETQ |line| (CAR |bfVar#2|))
+                                              NIL))
+                                         (RETURN NIL))
+                                        (#1# (|shoeFileLine| |line| |stream|)))
+                                       (SETQ |bfVar#2| (CDR |bfVar#2|))))
+                                    |lines| NIL)
+                                   (|shoeFileTrees|
+                                    (|shoeTransformToFile| |stream|
+                                                           (|shoeInclude|
+                                                            (|bAddLineNumber|
+                                                             (|bRgen| |a|)
+                                                             (|bIgen| 0))))
+                                    |stream|)))
+            (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
  
 ; BOOTTOMC fn==
-;    callingPackage := _*PACKAGE_*
-;    IN_-PACKAGE '"BOOTTRAN"
-;    $bfClamming:local:=false
-;    $GenVarCounter:local := 0
-;    infn:=shoeAddbootIfNec fn
-;    result := shoeOpenInputFile(a,infn,shoeMc(a,fn))
-;    setCurrentPackage callingPackage
-;    result
+;     $bfClamming : local := false
+;     $GenVarCounter : local := 0
+;     infn := shoeAddbootIfNec fn
+;     shoeOpenInputBoottranFile(a, infn, shoeMc(a, fn))
  
 (DEFUN BOOTTOMC (|fn|)
-  (PROG (|$GenVarCounter| |$bfClamming| |result| |infn|
-            |callingPackage|)
-    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
+  (PROG (|$GenVarCounter| |$bfClamming| |infn|)
+    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
     (RETURN
-      (PROGN
-        (SETQ |callingPackage| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$bfClamming| NIL)
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (SETQ |result|
-              (|shoeOpenInputFile| |a| |infn| (|shoeMc| |a| |fn|)))
-        (|setCurrentPackage| |callingPackage|)
-        |result|))))
+     (PROGN
+      (SETQ |$bfClamming| NIL)
+      (SETQ |$GenVarCounter| 0)
+      (SETQ |infn| (|shoeAddbootIfNec| |fn|))
+      (|shoeOpenInputBoottranFile| |a| |infn| (|shoeMc| |a| |fn|))))))
  
 ; shoeMc(a,fn)==
 ;    if null a
@@ -206,10 +168,9 @@
 (DEFUN |shoeMc| (|a| |fn|)
   (PROG ()
     (RETURN
-      (COND
-        ((NULL |a|) (|shoeNotFound| |fn|))
-        ('T (|shoePCompileTrees| (|shoeTransformStream| |a|))
-         (|shoeConsole| (CONCAT |fn| " COMPILED AND LOADED")))))))
+     (COND ((NULL |a|) (|shoeNotFound| |fn|))
+           ('T (|shoePCompileTrees| (|shoeTransformStream| |a|))
+            (|shoeConsole| (CONCAT |fn| " COMPILED AND LOADED")))))))
  
 ; COMPILE_-BOOT_-FILE fn == BOOT fn
  
@@ -217,107 +178,74 @@
  
 ; BOOT fn ==
 ;      $bfClamming:local:=false
-;      a:=BOOTTOCL (fn, nil)
-;      null a => nil
 ;      outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
+;      a:=BOOTTOCL (fn, outfn)
+;      null a => nil
 ;      shoeCOMPILE_-FILE outfn
 ;      outbin:=CONCAT(shoeRemovebootIfNec fn,'".",_*LISP_-BIN_-FILETYPE_*)
 ;      LOAD outbin
  
 (DEFUN BOOT (|fn|)
-  (PROG (|$bfClamming| |outbin| |outfn| |a|)
+  (PROG (|$bfClamming| |outbin| |a| |outfn|)
     (DECLARE (SPECIAL |$bfClamming|))
     (RETURN
-      (PROGN
-        (SETQ |$bfClamming| NIL)
-        (SETQ |a| (BOOTTOCL |fn| NIL))
-        (COND
-          ((NULL |a|) NIL)
-          ('T
-           (PROGN
-             (SETQ |outfn|
-                   (CONCAT (|shoeRemovebootIfNec| |fn|) ".clisp"))
-             (|shoeCOMPILE-FILE| |outfn|)
-             (SETQ |outbin|
-                   (CONCAT (|shoeRemovebootIfNec| |fn|) "."
-                           *LISP-BIN-FILETYPE*))
-             (LOAD |outbin|))))))))
+     (PROGN
+      (SETQ |$bfClamming| NIL)
+      (SETQ |outfn| (CONCAT (|shoeRemovebootIfNec| |fn|) ".clisp"))
+      (SETQ |a| (BOOTTOCL |fn| |outfn|))
+      (COND ((NULL |a|) NIL)
+            ('T
+             (PROGN
+              (|shoeCOMPILE-FILE| |outfn|)
+              (SETQ |outbin|
+                      (CONCAT (|shoeRemovebootIfNec| |fn|) "."
+                              *LISP-BIN-FILETYPE*))
+              (LOAD |outbin|))))))))
  
 ; EVAL_-BOOT_-FILE fn ==
-;    b:= _*PACKAGE_*
-;    IN_-PACKAGE '"BOOTTRAN"
-;    $bfClamming:local:=false
-;    infn:=shoeAddbootIfNec fn
-;    outfn:=CONCAT(shoeRemovebootIfNec fn,'".",_*LISP_-SOURCE_-FILETYPE_*)
-;    shoeOpenInputFile(a,infn,shoeClLines(a,infn,[],outfn))
-;    setCurrentPackage b
-;    LOAD outfn
+;     outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
+;     BOOTTOCL(fn, outfn)
+;     LOAD outfn
  
 (DEFUN EVAL-BOOT-FILE (|fn|)
-  (PROG (|$bfClamming| |outfn| |infn| |b|)
-    (DECLARE (SPECIAL |$bfClamming|))
+  (PROG (|outfn|)
     (RETURN
-      (PROGN
-        (SETQ |b| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$bfClamming| NIL)
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (SETQ |outfn|
-              (CONCAT (|shoeRemovebootIfNec| |fn|) "."
-                      *LISP-SOURCE-FILETYPE*))
-        (|shoeOpenInputFile| |a| |infn|
-            (|shoeClLines| |a| |infn| NIL |outfn|))
-        (|setCurrentPackage| |b|)
-        (LOAD |outfn|)))))
+     (PROGN
+      (SETQ |outfn| (CONCAT (|shoeRemovebootIfNec| |fn|) ".clisp"))
+      (BOOTTOCL |fn| |outfn|)
+      (LOAD |outfn|)))))
  
-; BO fn==
-;      b:= _*PACKAGE_*
-;      IN_-PACKAGE '"BOOTTRAN"
-;      $GenVarCounter:local := 0
-;      $bfClamming:local := false
-;      infn:=shoeAddbootIfNec fn
-;      shoeOpenInputFile(a,infn,shoeToConsole(a,fn))
-;      setCurrentPackage b
+; doBO fn ==
+;     $GenVarCounter : local := 0
+;     infn := shoeAddbootIfNec fn
+;     shoeOpenInputBoottranFile(a, infn, shoeToConsole(a, fn))
+ 
+(DEFUN |doBO| (|fn|)
+  (PROG (|$GenVarCounter| |infn|)
+    (DECLARE (SPECIAL |$GenVarCounter|))
+    (RETURN
+     (PROGN
+      (SETQ |$GenVarCounter| 0)
+      (SETQ |infn| (|shoeAddbootIfNec| |fn|))
+      (|shoeOpenInputBoottranFile| |a| |infn| (|shoeToConsole| |a| |fn|))))))
+ 
+; BO fn ==
+;     $bfClamming : local := false
+;     doBO(fn)
  
 (DEFUN BO (|fn|)
-  (PROG (|$bfClamming| |$GenVarCounter| |infn| |b|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
-    (RETURN
-      (PROGN
-        (SETQ |b| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |$bfClamming| NIL)
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (|shoeOpenInputFile| |a| |infn| (|shoeToConsole| |a| |fn|))
-        (|setCurrentPackage| |b|)))))
+  (PROG (|$bfClamming|)
+    (DECLARE (SPECIAL |$bfClamming|))
+    (RETURN (PROGN (SETQ |$bfClamming| NIL) (|doBO| |fn|)))))
  
-; BOCLAM fn==
-;      callingPackage := _*PACKAGE_*
-;      IN_-PACKAGE '"BOOTTRAN"
-;      $GenVarCounter:local := 0
-;      $bfClamming:local := true
-;      infn:=shoeAddbootIfNec fn
-;      result := shoeOpenInputFile(a,infn,shoeToConsole(a,fn))
-;      setCurrentPackage callingPackage
-;      result
+; BOCLAM fn ==
+;     $bfClamming : local := true
+;     doBO(fn)
  
 (DEFUN BOCLAM (|fn|)
-  (PROG (|$bfClamming| |$GenVarCounter| |result| |infn|
-            |callingPackage|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
-    (RETURN
-      (PROGN
-        (SETQ |callingPackage| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |$bfClamming| T)
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (SETQ |result|
-              (|shoeOpenInputFile| |a| |infn|
-                  (|shoeToConsole| |a| |fn|)))
-        (|setCurrentPackage| |callingPackage|)
-        |result|))))
+  (PROG (|$bfClamming|)
+    (DECLARE (SPECIAL |$bfClamming|))
+    (RETURN (PROGN (SETQ |$bfClamming| T) (|doBO| |fn|)))))
  
 ; shoeToConsole(a,fn)==
 ;      if null a
@@ -329,82 +257,73 @@
 (DEFUN |shoeToConsole| (|a| |fn|)
   (PROG ()
     (RETURN
-      (COND
-        ((NULL |a|) (|shoeNotFound| |fn|))
-        ('T
-         (|shoeConsoleTrees|
+     (COND ((NULL |a|) (|shoeNotFound| |fn|))
+           ('T
+            (|shoeConsoleTrees|
              (|shoeTransformToConsole|
-                 (|shoeInclude|
-                     (|bAddLineNumber| (|bRgen| |a|) (|bIgen| 0))))))))))
+              (|shoeInclude|
+               (|bAddLineNumber| (|bRgen| |a|) (|bIgen| 0))))))))))
  
 ; STOUT string==   PSTOUT [string]
  
 (DEFUN STOUT (|string|) (PROG () (RETURN (PSTOUT (LIST |string|)))))
  
-; STEVAL string==
-;    callingPackage := _*PACKAGE_*
-;    IN_-PACKAGE '"BOOTTRAN"
-;    $GenVarCounter:local := 0
-;    $bfClamming:local:=false
-;    a:=  shoeTransformString [string]
-;    result := 
-;       bStreamPackageNull a => nil
-;       fn:=stripm(CAR a,_*PACKAGE_*,FIND_-PACKAGE '"BOOTTRAN")
-;       EVAL fn
-;    setCurrentPackage callingPackage
-;    result
+; STTOSEX0 string ==
+;     $GenVarCounter:local := 0
+;     $bfClamming:local:=false
+;     shoeTransformString [string]
+ 
+(DEFUN STTOSEX0 (|string|)
+  (PROG (|$bfClamming| |$GenVarCounter|)
+    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
+    (RETURN
+     (PROGN
+      (SETQ |$GenVarCounter| 0)
+      (SETQ |$bfClamming| NIL)
+      (|shoeTransformString| (LIST |string|))))))
+ 
+; STTOSEX1 string ==
+;     doInBoottranPackage(STTOSEX0 string)
+ 
+(DEFUN STTOSEX1 (|string|)
+  (PROG () (RETURN (|doInBoottranPackage| (STTOSEX0 |string|)))))
+ 
+; STTOSEX string ==
+;     a := STTOSEX1 string
+;     bStreamPackageNull a => nil
+;     stripm(CAR a, _*PACKAGE_*, FIND_-PACKAGE '"BOOTTRAN")
+ 
+(DEFUN STTOSEX (|string|)
+  (PROG (|a|)
+    (RETURN
+     (PROGN
+      (SETQ |a| (STTOSEX1 |string|))
+      (COND ((|bStreamPackageNull| |a|) NIL)
+            ('T (|stripm| (CAR |a|) *PACKAGE* (FIND-PACKAGE "BOOTTRAN"))))))))
+ 
+; STEVAL string ==
+;     fn := STTOSEX string
+;     EVAL fn
  
 (DEFUN STEVAL (|string|)
-  (PROG (|$bfClamming| |$GenVarCounter| |result| |fn| |a|
-            |callingPackage|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
-    (RETURN
-      (PROGN
-        (SETQ |callingPackage| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |$bfClamming| NIL)
-        (SETQ |a| (|shoeTransformString| (LIST |string|)))
-        (SETQ |result|
-              (COND
-                ((|bStreamPackageNull| |a|) NIL)
-                ('T
-                 (PROGN
-                   (SETQ |fn|
-                         (|stripm| (CAR |a|) *PACKAGE*
-                             (FIND-PACKAGE "BOOTTRAN")))
-                   (EVAL |fn|)))))
-        (|setCurrentPackage| |callingPackage|)
-        |result|))))
+  (PROG (|fn|) (RETURN (PROGN (SETQ |fn| (STTOSEX |string|)) (EVAL |fn|)))))
  
 ; STTOMC string==
-;    callingPackage := _*PACKAGE_*
-;    IN_-PACKAGE '"BOOTTRAN"
-;    $GenVarCounter:local := 0
-;    $bfClamming:local:=false
-;    a:=  shoeTransformString [string]
-;    result := 
-;       bStreamPackageNull a => nil
-;       shoePCompile car a
-;    setCurrentPackage callingPackage
-;    result
+;     a := STTOSEX1 string
+;     result := 
+;         bStreamPackageNull a => nil
+;         shoePCompile car a
+;     result
  
 (DEFUN STTOMC (|string|)
-  (PROG (|$bfClamming| |$GenVarCounter| |result| |a| |callingPackage|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
+  (PROG (|a| |result|)
     (RETURN
-      (PROGN
-        (SETQ |callingPackage| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |$bfClamming| NIL)
-        (SETQ |a| (|shoeTransformString| (LIST |string|)))
-        (SETQ |result|
-              (COND
-                ((|bStreamPackageNull| |a|) NIL)
-                ('T (|shoePCompile| (CAR |a|)))))
-        (|setCurrentPackage| |callingPackage|)
-        |result|))))
+     (PROGN
+      (SETQ |a| (STTOSEX1 |string|))
+      (SETQ |result|
+              (COND ((|bStreamPackageNull| |a|) NIL)
+                    ('T (|shoePCompile| (CAR |a|)))))
+      |result|))))
  
 ; shoeCompileTrees s==
 ;     while not bStreamNull s repeat
@@ -412,14 +331,13 @@
 ;          s:=cdr s
  
 (DEFUN |shoeCompileTrees| (|s|)
-  (PROG ()
+  (PROG #1=()
     (RETURN
-      ((LAMBDA ()
-         (LOOP
-           (COND
-             ((|bStreamNull| |s|) (RETURN NIL))
-             ('T
-              (PROGN (|shoeCompile| (CAR |s|)) (SETQ |s| (CDR |s|)))))))))))
+     ((LAMBDA #1#
+        (LOOP
+         (COND ((|bStreamNull| |s|) (RETURN NIL))
+               ('T
+                (PROGN (|shoeCompile| (CAR |s|)) (SETQ |s| (CDR |s|)))))))))))
  
 ; shoeCompile fn==
 ;     fn is ['DEFUN,name,bv,:body]=>
@@ -427,31 +345,30 @@
 ;     EVAL fn
  
 (DEFUN |shoeCompile| (|fn|)
-  (PROG (|body| |bv| |ISTMP#2| |name| |ISTMP#1|)
+  (PROG (|ISTMP#1| |name| |ISTMP#2| |bv| |body|)
     (RETURN
-      (COND
-        ((AND (CONSP |fn|) (EQ (CAR |fn|) 'DEFUN)
-              (PROGN
-                (SETQ |ISTMP#1| (CDR |fn|))
-                (AND (CONSP |ISTMP#1|)
-                     (PROGN
-                       (SETQ |name| (CAR |ISTMP#1|))
-                       (SETQ |ISTMP#2| (CDR |ISTMP#1|))
-                       (AND (CONSP |ISTMP#2|)
-                            (PROGN
-                              (SETQ |bv| (CAR |ISTMP#2|))
-                              (SETQ |body| (CDR |ISTMP#2|))
-                              'T))))))
-         (COMPILE |name| (CONS 'LAMBDA (CONS |bv| |body|))))
-        ('T (EVAL |fn|))))))
+     (COND
+      ((AND (CONSP |fn|) (EQ (CAR |fn|) 'DEFUN)
+            (PROGN
+             (SETQ |ISTMP#1| (CDR |fn|))
+             (AND (CONSP |ISTMP#1|)
+                  (PROGN
+                   (SETQ |name| (CAR |ISTMP#1|))
+                   (SETQ |ISTMP#2| (CDR |ISTMP#1|))
+                   (AND (CONSP |ISTMP#2|)
+                        (PROGN
+                         (SETQ |bv| (CAR |ISTMP#2|))
+                         (SETQ |body| (CDR |ISTMP#2|))
+                         #1='T))))))
+       (COMPILE |name| (CONS 'LAMBDA (CONS |bv| |body|))))
+      (#1# (EVAL |fn|))))))
  
 ; shoeNotFound fn ==  
 ;    shoeConsole CONCAT(fn ,'" NOT FOUND")
 ;    nil
  
 (DEFUN |shoeNotFound| (|fn|)
-  (PROG ()
-    (RETURN (PROGN (|shoeConsole| (CONCAT |fn| " NOT FOUND")) NIL))))
+  (PROG () (RETURN (PROGN (|shoeConsole| (CONCAT |fn| " NOT FOUND")) NIL))))
  
 ; shoeTransform str==
 ;     bNext(function shoeTreeConstruct,
@@ -461,9 +378,8 @@
 (DEFUN |shoeTransform| (|str|)
   (PROG ()
     (RETURN
-      (|bNext| #'|shoeTreeConstruct|
-               (|bNext| #'|shoePileInsert|
-                        (|bNext| #'|shoeLineToks| |str|))))))
+     (|bNext| #'|shoeTreeConstruct|
+              (|bNext| #'|shoePileInsert| (|bNext| #'|shoeLineToks| |str|))))))
  
 ; shoeTransformString s==
 ;     shoeTransform shoeInclude bAddLineNumber(s,bIgen 0)
@@ -471,8 +387,7 @@
 (DEFUN |shoeTransformString| (|s|)
   (PROG ()
     (RETURN
-      (|shoeTransform|
-          (|shoeInclude| (|bAddLineNumber| |s| (|bIgen| 0)))))))
+     (|shoeTransform| (|shoeInclude| (|bAddLineNumber| |s| (|bIgen| 0)))))))
  
 ; shoeTransformStream s==shoeTransformString bRgen s
  
@@ -487,9 +402,8 @@
 (DEFUN |shoeTransformToConsole| (|str|)
   (PROG ()
     (RETURN
-      (|bNext| #'|shoeConsoleItem|
-               (|bNext| #'|shoePileInsert|
-                        (|bNext| #'|shoeLineToks| |str|))))))
+     (|bNext| #'|shoeConsoleItem|
+              (|bNext| #'|shoePileInsert| (|bNext| #'|shoeLineToks| |str|))))))
  
 ; shoeTransformToFile(fn,str)==
 ;     bFileNext(fn,
@@ -499,8 +413,9 @@
 (DEFUN |shoeTransformToFile| (|fn| |str|)
   (PROG ()
     (RETURN
-      (|bFileNext| |fn|
-          (|bNext| #'|shoePileInsert| (|bNext| #'|shoeLineToks| |str|))))))
+     (|bFileNext| |fn|
+                  (|bNext| #'|shoePileInsert|
+                           (|bNext| #'|shoeLineToks| |str|))))))
  
 ; shoeConsoleItem (str)==
 ;         dq:=CAR str
@@ -510,10 +425,10 @@
 (DEFUN |shoeConsoleItem| (|str|)
   (PROG (|dq|)
     (RETURN
-      (PROGN
-        (SETQ |dq| (CAR |str|))
-        (|shoeConsoleLines| (|shoeDQlines| |dq|))
-        (CONS (|shoeParseTrees| |dq|) (CDR |str|))))))
+     (PROGN
+      (SETQ |dq| (CAR |str|))
+      (|shoeConsoleLines| (|shoeDQlines| |dq|))
+      (CONS (|shoeParseTrees| |dq|) (CDR |str|))))))
  
 ; bFileNext(fn,s)==bDelay(function bFileNext1,[fn,s])
  
@@ -529,14 +444,13 @@
 (DEFUN |bFileNext1| (|fn| |s|)
   (PROG (|dq|)
     (RETURN
-      (COND
-        ((|bStreamNull| |s|) (LIST '|nullstream|))
-        ('T
-         (PROGN
-           (SETQ |dq| (CAR |s|))
-           (|shoeFileLines| (|shoeDQlines| |dq|) |fn|)
-           (|bAppend| (|shoeParseTrees| |dq|)
-               (|bFileNext| |fn| (CDR |s|)))))))))
+     (COND ((|bStreamNull| |s|) (LIST '|nullstream|))
+           ('T
+            (PROGN
+             (SETQ |dq| (CAR |s|))
+             (|shoeFileLines| (|shoeDQlines| |dq|) |fn|)
+             (|bAppend| (|shoeParseTrees| |dq|)
+                        (|bFileNext| |fn| (CDR |s|)))))))))
  
 ; shoeParseTrees dq==
 ;         toklist := dqToList dq
@@ -546,9 +460,9 @@
 (DEFUN |shoeParseTrees| (|dq|)
   (PROG (|toklist|)
     (RETURN
-      (PROGN
-        (SETQ |toklist| (|dqToList| |dq|))
-        (COND ((NULL |toklist|) NIL) ('T (|shoeOutParse| |toklist|)))))))
+     (PROGN
+      (SETQ |toklist| (|dqToList| |dq|))
+      (COND ((NULL |toklist|) NIL) ('T (|shoeOutParse| |toklist|)))))))
  
 ; shoeTreeConstruct (str)==
 ;         cons(shoeParseTrees CAR str,CDR str)
@@ -562,13 +476,12 @@
 ;         streamTake (a-b+1,CAR shoeFirstTokPosn dq)
  
 (DEFUN |shoeDQlines| (|dq|)
-  (PROG (|b| |a|)
+  (PROG (|a| |b|)
     (RETURN
-      (PROGN
-        (SETQ |a| (CDAAR (|shoeLastTokPosn| |dq|)))
-        (SETQ |b| (CDAAR (|shoeFirstTokPosn| |dq|)))
-        (|streamTake| (+ (- |a| |b|) 1)
-            (CAR (|shoeFirstTokPosn| |dq|)))))))
+     (PROGN
+      (SETQ |a| (CDAAR (|shoeLastTokPosn| |dq|)))
+      (SETQ |b| (CDAAR (|shoeFirstTokPosn| |dq|)))
+      (|streamTake| (+ (- |a| |b|) 1) (CAR (|shoeFirstTokPosn| |dq|)))))))
  
 ; streamTake(n,s)==
 ;     if bStreamNull s
@@ -580,10 +493,8 @@
 (DEFUN |streamTake| (|n| |s|)
   (PROG ()
     (RETURN
-      (COND
-        ((|bStreamNull| |s|) NIL)
-        ((EQL |n| 0) NIL)
-        ('T (CONS (CAR |s|) (|streamTake| (- |n| 1) (CDR |s|))))))))
+     (COND ((|bStreamNull| |s|) NIL) ((EQL |n| 0) NIL)
+           ('T (CONS (CAR |s|) (|streamTake| (- |n| 1) (CDR |s|))))))))
  
 ; shoeFileLines (lines,fn) ==
 ;         shoeFileLine( '" ",fn)
@@ -593,18 +504,17 @@
 (DEFUN |shoeFileLines| (|lines| |fn|)
   (PROG ()
     (RETURN
-      (PROGN
-        (|shoeFileLine| " " |fn|)
-        ((LAMBDA (|bfVar#3| |line|)
-           (LOOP
-             (COND
-               ((OR (ATOM |bfVar#3|)
-                    (PROGN (SETQ |line| (CAR |bfVar#3|)) NIL))
-                (RETURN NIL))
-               ('T (|shoeFileLine| (|shoeAddComment| |line|) |fn|)))
-             (SETQ |bfVar#3| (CDR |bfVar#3|))))
-         |lines| NIL)
-        (|shoeFileLine| " " |fn|)))))
+     (PROGN
+      (|shoeFileLine| " " |fn|)
+      ((LAMBDA (|bfVar#3| |line|)
+         (LOOP
+          (COND
+           ((OR (ATOM |bfVar#3|) (PROGN (SETQ |line| (CAR |bfVar#3|)) NIL))
+            (RETURN NIL))
+           ('T (|shoeFileLine| (|shoeAddComment| |line|) |fn|)))
+          (SETQ |bfVar#3| (CDR |bfVar#3|))))
+       |lines| NIL)
+      (|shoeFileLine| " " |fn|)))))
  
 ; shoeConsoleLines lines ==
 ;         shoeConsole '" "
@@ -614,18 +524,17 @@
 (DEFUN |shoeConsoleLines| (|lines|)
   (PROG ()
     (RETURN
-      (PROGN
-        (|shoeConsole| " ")
-        ((LAMBDA (|bfVar#4| |line|)
-           (LOOP
-             (COND
-               ((OR (ATOM |bfVar#4|)
-                    (PROGN (SETQ |line| (CAR |bfVar#4|)) NIL))
-                (RETURN NIL))
-               ('T (|shoeConsole| (|shoeAddComment| |line|))))
-             (SETQ |bfVar#4| (CDR |bfVar#4|))))
-         |lines| NIL)
-        (|shoeConsole| " ")))))
+     (PROGN
+      (|shoeConsole| " ")
+      ((LAMBDA (|bfVar#4| |line|)
+         (LOOP
+          (COND
+           ((OR (ATOM |bfVar#4|) (PROGN (SETQ |line| (CAR |bfVar#4|)) NIL))
+            (RETURN NIL))
+           ('T (|shoeConsole| (|shoeAddComment| |line|))))
+          (SETQ |bfVar#4| (CDR |bfVar#4|))))
+       |lines| NIL)
+      (|shoeConsole| " ")))))
  
 ; shoeFileLine(x, stream) ==
 ;     WRITE_-LINE(x, stream)
@@ -645,17 +554,15 @@
 (DEFUN |shoeFileTrees| (|s| |st|)
   (PROG (|a|)
     (RETURN
-      ((LAMBDA ()
-         (LOOP
-           (COND
-             ((|bStreamNull| |s|) (RETURN NIL))
-             ('T
-              (PROGN
-                (SETQ |a| (CAR |s|))
-                (COND
-                  ((EQCAR |a| '+LINE) (|shoeFileLine| (CADR |a|) |st|))
-                  ('T (REALLYPRETTYPRINT |a| |st|)))
-                (SETQ |s| (CDR |s|)))))))))))
+     ((LAMBDA ()
+        (LOOP
+         (COND ((|bStreamNull| |s|) (RETURN NIL))
+               (#1='T
+                (PROGN
+                 (SETQ |a| (CAR |s|))
+                 (COND ((EQCAR |a| '+LINE) (|shoeFileLine| (CADR |a|) |st|))
+                       (#1# (REALLYPRETTYPRINT |a| |st|)))
+                 (SETQ |s| (CDR |s|)))))))))))
  
 ; shoePPtoFile(x, stream) ==
 ;     SHOENOTPRETTYPRINT(x, stream)
@@ -674,22 +581,20 @@
 (DEFUN |shoeConsoleTrees| (|s|)
   (PROG (|fn|)
     (RETURN
-      ((LAMBDA ()
-         (LOOP
-           (COND
-             ((|bStreamPackageNull| |s|) (RETURN NIL))
-             ('T
-              (PROGN
-                (SETQ |fn|
-                      (|stripm| (CAR |s|) *PACKAGE*
-                          (FIND-PACKAGE "BOOTTRAN")))
-                (REALLYPRETTYPRINT |fn|)
-                (SETQ |s| (CDR |s|)))))))))))
+     ((LAMBDA ()
+        (LOOP
+         (COND ((|bStreamPackageNull| |s|) (RETURN NIL))
+               ('T
+                (PROGN
+                 (SETQ |fn|
+                         (|stripm| (CAR |s|) *PACKAGE*
+                                   (FIND-PACKAGE "BOOTTRAN")))
+                 (REALLYPRETTYPRINT |fn|)
+                 (SETQ |s| (CDR |s|)))))))))))
  
 ; shoeAddComment l==  CONCAT('"; ",CAR l)
  
-(DEFUN |shoeAddComment| (|l|)
-  (PROG () (RETURN (CONCAT "; " (CAR |l|)))))
+(DEFUN |shoeAddComment| (|l|) (PROG () (RETURN (CONCAT "; " (CAR |l|)))))
  
 ; shoeOutParse stream ==
 ;     $inputStream :local:= stream
@@ -717,68 +622,69 @@
 ;               else CAR $stack
  
 (DEFUN |shoeOutParse| (|stream|)
-  (PROG (|$bpParenCount| |$bpCount| |$returns| |$typings| |$wheredefs|
-            |$op| |$ttok| |$stok| |$stack| |$inputStream| |found|)
-    (DECLARE (SPECIAL |$bpParenCount| |$bpCount| |$returns| |$typings|
-                      |$wheredefs| |$op| |$ttok| |$stok| |$stack|
-                      |$inputStream|))
+  (PROG (|$bpParenCount| |$bpCount| |$returns| |$typings| |$wheredefs| |$op|
+         |$ttok| |$stok| |$stack| |$inputStream| |found|)
+    (DECLARE
+     (SPECIAL |$stok| |$ttok| |$op| |$wheredefs| |$typings| |$returns|
+      |$bpCount| |$bpParenCount| |$stack| |$inputStream|))
     (RETURN
-      (PROGN
-        (SETQ |$inputStream| |stream|)
-        (SETQ |$stack| NIL)
-        (SETQ |$stok| NIL)
-        (SETQ |$ttok| NIL)
-        (SETQ |$op| NIL)
-        (SETQ |$wheredefs| NIL)
-        (SETQ |$typings| NIL)
-        (SETQ |$returns| NIL)
-        (SETQ |$bpCount| 0)
-        (SETQ |$bpParenCount| 0)
-        (|bpFirstTok|)
-        (SETQ |found| (CATCH 'TRAPPOINT (|bpOutItem|)))
-        (COND
-          ((EQ |found| 'TRAPPED) NIL)
-          ((NULL (|bStreamNull| |$inputStream|)) (|bpGeneralErrorHere|)
-           NIL)
-          ((NULL |$stack|) (|bpGeneralErrorHere|) NIL)
-          ('T (CAR |$stack|)))))))
+     (PROGN
+      (SETQ |$inputStream| |stream|)
+      (SETQ |$stack| NIL)
+      (SETQ |$stok| NIL)
+      (SETQ |$ttok| NIL)
+      (SETQ |$op| NIL)
+      (SETQ |$wheredefs| NIL)
+      (SETQ |$typings| NIL)
+      (SETQ |$returns| NIL)
+      (SETQ |$bpCount| 0)
+      (SETQ |$bpParenCount| 0)
+      (|bpFirstTok|)
+      (SETQ |found| (CATCH 'TRAPPOINT (|bpOutItem|)))
+      (COND ((EQ |found| 'TRAPPED) NIL)
+            ((NULL (|bStreamNull| |$inputStream|)) (|bpGeneralErrorHere|) NIL)
+            ((NULL |$stack|) (|bpGeneralErrorHere|) NIL)
+            ('T (CAR |$stack|)))))))
  
 ; bpOutItem()==
 ;     bpComma() or bpTrap()
 ;     b:=bpPop1()
+;     ATOM(b) => bpPush [ b ]
 ;     EQCAR(b,"TUPLE")=> bpPush cdr b
 ;     EQCAR(b,"+LINE")=> bpPush [ b ]
 ;     b is ["L%T",l,r] and IDENTP l =>
 ;                  bpPush [shoeEVALANDFILEACTQ ["SETQ",l,r]]
+;     MEMQ(CAR(b), '(SETANDFILEQ SETQ DEFPARAMETER DEFCONSTANT)) =>
+;        bpPush [ b ]
 ;     b:=shoeCompTran ["LAMBDA",["x"],b]
 ;     bpPush [shoeEVALANDFILEACTQ CADDR b]
  
 (DEFUN |bpOutItem| ()
   (PROG (|r| |ISTMP#2| |l| |ISTMP#1| |b|)
     (RETURN
-      (PROGN
-        (OR (|bpComma|) (|bpTrap|))
-        (SETQ |b| (|bpPop1|))
-        (COND
-          ((EQCAR |b| 'TUPLE) (|bpPush| (CDR |b|)))
-          ((EQCAR |b| '+LINE) (|bpPush| (LIST |b|)))
-          ((AND (CONSP |b|) (EQ (CAR |b|) 'L%T)
-                (PROGN
-                  (SETQ |ISTMP#1| (CDR |b|))
-                  (AND (CONSP |ISTMP#1|)
-                       (PROGN
+     (PROGN
+      (OR (|bpComma|) (|bpTrap|))
+      (SETQ |b| (|bpPop1|))
+      (COND ((ATOM |b|) (|bpPush| (LIST |b|)))
+            ((EQCAR |b| 'TUPLE) (|bpPush| (CDR |b|)))
+            ((EQCAR |b| '+LINE) (|bpPush| (LIST |b|)))
+            ((AND (CONSP |b|) (EQ (CAR |b|) 'L%T)
+                  (PROGN
+                   (SETQ |ISTMP#1| (CDR |b|))
+                   (AND (CONSP |ISTMP#1|)
+                        (PROGN
                          (SETQ |l| (CAR |ISTMP#1|))
                          (SETQ |ISTMP#2| (CDR |ISTMP#1|))
-                         (AND (CONSP |ISTMP#2|)
-                              (EQ (CDR |ISTMP#2|) NIL)
-                              (PROGN (SETQ |r| (CAR |ISTMP#2|)) 'T)))))
-                (IDENTP |l|))
-           (|bpPush|
-               (LIST (|shoeEVALANDFILEACTQ| (LIST 'SETQ |l| |r|)))))
-          ('T
-           (PROGN
-             (SETQ |b| (|shoeCompTran| (LIST 'LAMBDA (LIST '|x|) |b|)))
-             (|bpPush| (LIST (|shoeEVALANDFILEACTQ| (CADDR |b|)))))))))))
+                         (AND (CONSP |ISTMP#2|) (EQ (CDR |ISTMP#2|) NIL)
+                              (PROGN (SETQ |r| (CAR |ISTMP#2|)) #1='T)))))
+                  (IDENTP |l|))
+             (|bpPush| (LIST (|shoeEVALANDFILEACTQ| (LIST 'SETQ |l| |r|)))))
+            ((MEMQ (CAR |b|) '(SETANDFILEQ SETQ DEFPARAMETER DEFCONSTANT))
+             (|bpPush| (LIST |b|)))
+            (#1#
+             (PROGN
+              (SETQ |b| (|shoeCompTran| (LIST 'LAMBDA (LIST '|x|) |b|)))
+              (|bpPush| (LIST (|shoeEVALANDFILEACTQ| (CADDR |b|)))))))))))
  
 ; shoeEVALANDFILEACTQ x==  ["EVAL-WHEN", ["EVAL","LOAD"], x]
  
@@ -794,13 +700,11 @@
 (DEFUN |SoftShoeError| (|posn| |key|)
   (PROG ()
     (RETURN
-      (PROGN
-        (|shoeConsole|
-            (CONCAT "ERROR IN LINE " (STRINGIMAGE (|lineNo| |posn|))))
-        (|shoeConsole| (|lineString| |posn|))
-        (|shoeConsole|
-            (CONCAT (|shoeSpaces| (|lineCharacter| |posn|)) "|"))
-        (|shoeConsole| |key|)))))
+     (PROGN
+      (|shoeConsole| (CONCAT "ERROR IN LINE " (STRINGIMAGE (|lineNo| |posn|))))
+      (|shoeConsole| (|lineString| |posn|))
+      (|shoeConsole| (CONCAT (|shoeSpaces| (|lineCharacter| |posn|)) "|"))
+      (|shoeConsole| |key|)))))
  
 ; shoeSpaces n  ==  MAKE_-FULL_-CVEC(n, '".")
  
@@ -817,19 +721,15 @@
 (DEFUN |bpIgnoredFromTo| (|pos1| |pos2|)
   (PROG ()
     (RETURN
-      (PROGN
-        (|shoeConsole|
-            (CONCAT "ignored from line "
-                    (STRINGIMAGE (|lineNo| |pos1|))))
-        (|shoeConsole| (|lineString| |pos1|))
-        (|shoeConsole|
-            (CONCAT (|shoeSpaces| (|lineCharacter| |pos1|)) "|"))
-        (|shoeConsole|
-            (CONCAT "ignored through line "
-                    (STRINGIMAGE (|lineNo| |pos2|))))
-        (|shoeConsole| (|lineString| |pos2|))
-        (|shoeConsole|
-            (CONCAT (|shoeSpaces| (|lineCharacter| |pos2|)) "|"))))))
+     (PROGN
+      (|shoeConsole|
+       (CONCAT "ignored from line " (STRINGIMAGE (|lineNo| |pos1|))))
+      (|shoeConsole| (|lineString| |pos1|))
+      (|shoeConsole| (CONCAT (|shoeSpaces| (|lineCharacter| |pos1|)) "|"))
+      (|shoeConsole|
+       (CONCAT "ignored through line " (STRINGIMAGE (|lineNo| |pos2|))))
+      (|shoeConsole| (|lineString| |pos2|))
+      (|shoeConsole| (CONCAT (|shoeSpaces| (|lineCharacter| |pos2|)) "|"))))))
  
 ; lineNo p==CDAAR p
  
@@ -854,20 +754,18 @@
 (DEFUN |bStreamNull| (|x|)
   (PROG (|st|)
     (RETURN
-      (COND
-        ((OR (NULL |x|) (EQCAR |x| '|nullstream|)) T)
-        ('T
-         (PROGN
-           ((LAMBDA ()
-              (LOOP
-                (COND
-                  ((NOT (EQCAR |x| '|nonnullstream|)) (RETURN NIL))
-                  ('T
-                   (PROGN
-                     (SETQ |st| (APPLY (CADR |x|) (CDDR |x|)))
-                     (RPLACA |x| (CAR |st|))
-                     (RPLACD |x| (CDR |st|))))))))
-           (EQCAR |x| '|nullstream|)))))))
+     (COND ((OR (NULL |x|) (EQCAR |x| '|nullstream|)) T)
+           (#1='T
+            (PROGN
+             ((LAMBDA ()
+                (LOOP
+                 (COND ((NOT (EQCAR |x| '|nonnullstream|)) (RETURN NIL))
+                       (#1#
+                        (PROGN
+                         (SETQ |st| (APPLY (CADR |x|) (CDDR |x|)))
+                         (RPLACA |x| (CAR |st|))
+                         (RPLACD |x| (CDR |st|))))))))
+             (EQCAR |x| '|nullstream|)))))))
  
 ; bDelay(f,x)==cons("nonnullstream",[f,:x])
  
@@ -889,17 +787,15 @@
 (DEFUN |bAppend1| (&REST |z|)
   (PROG ()
     (RETURN
-      (COND
-        ((|bStreamNull| (CAR |z|))
-         (COND
-           ((|bStreamNull| (CADR |z|)) (LIST '|nullstream|))
-           (#0='T (CADR |z|))))
-        (#0# (CONS (CAAR |z|) (|bAppend| (CDAR |z|) (CADR |z|))))))))
+     (COND
+      ((|bStreamNull| (CAR |z|))
+       (COND ((|bStreamNull| (CADR |z|)) (LIST '|nullstream|))
+             (#1='T (CADR |z|))))
+      (#1# (CONS (CAAR |z|) (|bAppend| (CDAR |z|) (CADR |z|))))))))
  
 ; bMap(f,x)==bDelay(function bMap1, [f,x])
  
-(DEFUN |bMap| (|f| |x|)
-  (PROG () (RETURN (|bDelay| #'|bMap1| (LIST |f| |x|)))))
+(DEFUN |bMap| (|f| |x|) (PROG () (RETURN (|bDelay| #'|bMap1| (LIST |f| |x|)))))
  
 ; bMap1(:z)==
 ;      [f,x]:=z
@@ -908,14 +804,13 @@
 ;      else cons(FUNCALL(f,car x),bMap(f,cdr x))
  
 (DEFUN |bMap1| (&REST |z|)
-  (PROG (|x| |f|)
+  (PROG (|f| |x|)
     (RETURN
-      (PROGN
-        (SETQ |f| (CAR |z|))
-        (SETQ |x| (CADR |z|))
-        (COND
-          ((|bStreamNull| |x|) |bStreamNil|)
-          ('T (CONS (FUNCALL |f| (CAR |x|)) (|bMap| |f| (CDR |x|)))))))))
+     (PROGN
+      (SETQ |f| (CAR |z|))
+      (SETQ |x| (CADR |z|))
+      (COND ((|bStreamNull| |x|) |bStreamNil|)
+            ('T (CONS (FUNCALL |f| (CAR |x|)) (|bMap| |f| (CDR |x|)))))))))
  
 ; bNext(f,s)==bDelay(function bNext1,[f,s])
  
@@ -930,17 +825,15 @@
 (DEFUN |bNext1| (|f| |s|)
   (PROG (|h|)
     (RETURN
-      (COND
-        ((|bStreamNull| |s|) (LIST '|nullstream|))
-        ('T
-         (PROGN
-           (SETQ |h| (APPLY |f| (LIST |s|)))
-           (|bAppend| (CAR |h|) (|bNext| |f| (CDR |h|)))))))))
+     (COND ((|bStreamNull| |s|) (LIST '|nullstream|))
+           ('T
+            (PROGN
+             (SETQ |h| (APPLY |f| (LIST |s|)))
+             (|bAppend| (CAR |h|) (|bNext| |f| (CDR |h|)))))))))
  
 ; bRgen s==bDelay(function bRgen1,[s])
  
-(DEFUN |bRgen| (|s|)
-  (PROG () (RETURN (|bDelay| #'|bRgen1| (LIST |s|)))))
+(DEFUN |bRgen| (|s|) (PROG () (RETURN (|bDelay| #'|bRgen1| (LIST |s|)))))
  
 ; bRgen1(:s) ==
 ;         a:=shoeread_-line car s
@@ -953,16 +846,14 @@
 (DEFUN |bRgen1| (&REST |s|)
   (PROG (|a|)
     (RETURN
-      (PROGN
-        (SETQ |a| (|shoeread-line| (CAR |s|)))
-        (COND
-          ((|shoePLACEP| |a|) (LIST '|nullstream|))
-          ('T (CONS |a| (|bRgen| (CAR |s|)))))))))
+     (PROGN
+      (SETQ |a| (|shoeread-line| (CAR |s|)))
+      (COND ((|shoePLACEP| |a|) (LIST '|nullstream|))
+            ('T (CONS |a| (|bRgen| (CAR |s|)))))))))
  
 ; bIgen n==bDelay(function bIgen1,[n])
  
-(DEFUN |bIgen| (|n|)
-  (PROG () (RETURN (|bDelay| #'|bIgen1| (LIST |n|)))))
+(DEFUN |bIgen| (|n|) (PROG () (RETURN (|bDelay| #'|bIgen1| (LIST |n|)))))
  
 ; bIgen1(:n)==
 ;         n:=car n+1
@@ -970,8 +861,7 @@
  
 (DEFUN |bIgen1| (&REST |n|)
   (PROG ()
-    (RETURN
-      (PROGN (SETQ |n| (+ (CAR |n|) 1)) (CONS |n| (|bIgen| |n|))))))
+    (RETURN (PROGN (SETQ |n| (+ (CAR |n|) 1)) (CONS |n| (|bIgen| |n|))))))
  
 ; bAddLineNumber(f1,f2)==bDelay(function bAddLineNumber1,[f1,f2])
  
@@ -985,17 +875,16 @@
 ;      cons(cons(CAR f1,CAR f2),bAddLineNumber(CDR f1,CDR f2))
  
 (DEFUN |bAddLineNumber1| (&REST |f|)
-  (PROG (|f2| |f1|)
+  (PROG (|f1| |f2|)
     (RETURN
-      (PROGN
-        (SETQ |f1| (CAR |f|))
-        (SETQ |f2| (CADR |f|))
-        (COND
-          ((|bStreamNull| |f1|) (LIST '|nullstream|))
-          ((|bStreamNull| |f2|) (LIST '|nullstream|))
-          ('T
-           (CONS (CONS (CAR |f1|) (CAR |f2|))
-                 (|bAddLineNumber| (CDR |f1|) (CDR |f2|)))))))))
+     (PROGN
+      (SETQ |f1| (CAR |f|))
+      (SETQ |f2| (CADR |f|))
+      (COND ((|bStreamNull| |f1|) (LIST '|nullstream|))
+            ((|bStreamNull| |f2|) (LIST '|nullstream|))
+            ('T
+             (CONS (CONS (CAR |f1|) (CAR |f2|))
+                   (|bAddLineNumber| (CDR |f1|) (CDR |f2|)))))))))
  
 ; shoeAddbootIfNec s==shoeAddStringIfNec('".boot",s)
  
@@ -1016,9 +905,9 @@
 (DEFUN |shoeAddStringIfNec| (|str| |s|)
   (PROG (|a|)
     (RETURN
-      (PROGN
-        (SETQ |a| (STRPOS |str| |s| 0 NIL))
-        (COND ((NULL |a|) (CONCAT |s| |str|)) ('T |s|))))))
+     (PROGN
+      (SETQ |a| (STRPOS |str| |s| 0 NIL))
+      (COND ((NULL |a|) (CONCAT |s| |str|)) ('T |s|))))))
  
 ; shoeRemoveStringIfNec(str,s)==
 ;        a:=STRPOS(str,s,0,nil)
@@ -1029,9 +918,9 @@
 (DEFUN |shoeRemoveStringIfNec| (|str| |s|)
   (PROG (|a|)
     (RETURN
-      (PROGN
-        (SETQ |a| (STRPOS |str| |s| 0 NIL))
-        (COND ((NULL |a|) |s|) ('T (SUBSTRING |s| 0 |a|)))))))
+     (PROGN
+      (SETQ |a| (STRPOS |str| |s| 0 NIL))
+      (COND ((NULL |a|) |s|) ('T (SUBSTRING |s| 0 |a|)))))))
  
 ; DEFUSE fn==
 ;   infn:=CONCAT(fn,'".boot")
@@ -1040,9 +929,9 @@
 (DEFUN DEFUSE (|fn|)
   (PROG (|infn|)
     (RETURN
-      (PROGN
-        (SETQ |infn| (CONCAT |fn| ".boot"))
-        (|shoeOpenInputFile| |a| |infn| (|shoeDfu| |a| |fn|))))))
+     (PROGN
+      (SETQ |infn| (CONCAT |fn| ".boot"))
+      (|shoeOpenInputFile| |a| |infn| (|shoeDfu| |a| |fn|))))))
  
 ; shoeDfu(a,fn)==
 ;   if null a
@@ -1062,24 +951,22 @@
  
 (DEFUN |shoeDfu| (|a| |fn|)
   (PROG (|$bfClamming| |$GenVarCounter| |$bootDefinedTwice| |$bootUsed|
-            |$bootDefined| |$lispWordTable| |out|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|
-                      |$bootDefinedTwice| |$bootUsed| |$bootDefined|
-                      |$lispWordTable|))
+         |$bootDefined| |$lispWordTable| |out|)
+    (DECLARE
+     (SPECIAL |$bootDefined| |$bootUsed| |$bootDefinedTwice| |$GenVarCounter|
+      |$bfClamming| |$lispWordTable|))
     (RETURN
-      (COND
-        ((NULL |a|) (|shoeNotFound| |fn|))
-        ('T (SETQ |$lispWordTable| (MAKE-HASHTABLE 'EQ))
-         (DO-SYMBOLS (|i| (FIND-PACKAGE 'LISP))
-           (HPUT |$lispWordTable| |i| T))
-         (SETQ |$bootDefined| (MAKE-HASHTABLE 'EQ))
-         (SETQ |$bootUsed| (MAKE-HASHTABLE 'EQ))
-         (SETQ |$bootDefinedTwice| NIL) (SETQ |$GenVarCounter| 0)
-         (SETQ |$bfClamming| NIL)
-         (|shoeDefUse| (|shoeTransformStream| |a|))
-         (SETQ |out| (CONCAT |fn| ".defuse"))
-         (|shoeOpenOutputFile| |stream| |out| (|shoeReport| |stream|))
-         (|shoeConsole| (CONCAT |out| " PRODUCED")))))))
+     (COND ((NULL |a|) (|shoeNotFound| |fn|))
+           ('T (SETQ |$lispWordTable| (MAKE-HASHTABLE 'EQ))
+            (DO-SYMBOLS (|i| (FIND-PACKAGE 'LISP))
+              (HPUT |$lispWordTable| |i| T))
+            (SETQ |$bootDefined| (MAKE-HASHTABLE 'EQ))
+            (SETQ |$bootUsed| (MAKE-HASHTABLE 'EQ))
+            (SETQ |$bootDefinedTwice| NIL) (SETQ |$GenVarCounter| 0)
+            (SETQ |$bfClamming| NIL) (|shoeDefUse| (|shoeTransformStream| |a|))
+            (SETQ |out| (CONCAT |fn| ".defuse"))
+            (|shoeOpenOutputFile| |stream| |out| (|shoeReport| |stream|))
+            (|shoeConsole| (CONCAT |out| " PRODUCED")))))))
  
 ; shoeReport stream==
 ;           shoeFileLine('"DEFINED and not USED",stream)
@@ -1097,54 +984,52 @@
 ;              bootOutLines( SSORT GETHASH(i,$bootUsed),stream,b)
  
 (DEFUN |shoeReport| (|stream|)
-  (PROG (|b| |a|)
-    (DECLARE (SPECIAL |$bootDefinedTwice| |$bootDefined| |$bootUsed|))
+  (PROG (|a| |b|)
+    (DECLARE (SPECIAL |$bootUsed| |$bootDefined| |$bootDefinedTwice|))
     (RETURN
-      (PROGN
-        (|shoeFileLine| "DEFINED and not USED" |stream|)
-        (SETQ |a|
+     (PROGN
+      (|shoeFileLine| "DEFINED and not USED" |stream|)
+      (SETQ |a|
               ((LAMBDA (|bfVar#6| |bfVar#5| |i|)
                  (LOOP
-                   (COND
-                     ((OR (ATOM |bfVar#5|)
-                          (PROGN (SETQ |i| (CAR |bfVar#5|)) NIL))
-                      (RETURN (NREVERSE |bfVar#6|)))
-                     (#0='T
-                      (AND (NULL (GETHASH |i| |$bootUsed|))
-                           (SETQ |bfVar#6| (CONS |i| |bfVar#6|)))))
-                   (SETQ |bfVar#5| (CDR |bfVar#5|))))
+                  (COND
+                   ((OR (ATOM |bfVar#5|)
+                        (PROGN (SETQ |i| (CAR |bfVar#5|)) NIL))
+                    (RETURN (NREVERSE |bfVar#6|)))
+                   (#1='T
+                    (AND (NULL (GETHASH |i| |$bootUsed|))
+                         (SETQ |bfVar#6| (CONS |i| |bfVar#6|)))))
+                  (SETQ |bfVar#5| (CDR |bfVar#5|))))
                NIL (HKEYS |$bootDefined|) NIL))
-        (|bootOut| (SSORT |a|) |stream|)
-        (|shoeFileLine| "             " |stream|)
-        (|shoeFileLine| "DEFINED TWICE" |stream|)
-        (|bootOut| (SSORT |$bootDefinedTwice|) |stream|)
-        (|shoeFileLine| "             " |stream|)
-        (|shoeFileLine| "USED and not DEFINED" |stream|)
-        (SETQ |a|
+      (|bootOut| (SSORT |a|) |stream|)
+      (|shoeFileLine| "             " |stream|)
+      (|shoeFileLine| "DEFINED TWICE" |stream|)
+      (|bootOut| (SSORT |$bootDefinedTwice|) |stream|)
+      (|shoeFileLine| "             " |stream|)
+      (|shoeFileLine| "USED and not DEFINED" |stream|)
+      (SETQ |a|
               ((LAMBDA (|bfVar#8| |bfVar#7| |i|)
                  (LOOP
-                   (COND
-                     ((OR (ATOM |bfVar#7|)
-                          (PROGN (SETQ |i| (CAR |bfVar#7|)) NIL))
-                      (RETURN (NREVERSE |bfVar#8|)))
-                     (#0#
-                      (AND (NULL (GETHASH |i| |$bootDefined|))
-                           (SETQ |bfVar#8| (CONS |i| |bfVar#8|)))))
-                   (SETQ |bfVar#7| (CDR |bfVar#7|))))
+                  (COND
+                   ((OR (ATOM |bfVar#7|)
+                        (PROGN (SETQ |i| (CAR |bfVar#7|)) NIL))
+                    (RETURN (NREVERSE |bfVar#8|)))
+                   (#1#
+                    (AND (NULL (GETHASH |i| |$bootDefined|))
+                         (SETQ |bfVar#8| (CONS |i| |bfVar#8|)))))
+                  (SETQ |bfVar#7| (CDR |bfVar#7|))))
                NIL (HKEYS |$bootUsed|) NIL))
-        ((LAMBDA (|bfVar#9| |i|)
-           (LOOP
-             (COND
-               ((OR (ATOM |bfVar#9|)
-                    (PROGN (SETQ |i| (CAR |bfVar#9|)) NIL))
-                (RETURN NIL))
-               (#0#
-                (PROGN
-                  (SETQ |b| (CONCAT (PNAME |i|) " is used in "))
-                  (|bootOutLines| (SSORT (GETHASH |i| |$bootUsed|))
-                      |stream| |b|))))
-             (SETQ |bfVar#9| (CDR |bfVar#9|))))
-         (SSORT |a|) NIL)))))
+      ((LAMBDA (|bfVar#9| |i|)
+         (LOOP
+          (COND
+           ((OR (ATOM |bfVar#9|) (PROGN (SETQ |i| (CAR |bfVar#9|)) NIL))
+            (RETURN NIL))
+           (#1#
+            (PROGN
+             (SETQ |b| (CONCAT (PNAME |i|) " is used in "))
+             (|bootOutLines| (SSORT (GETHASH |i| |$bootUsed|)) |stream| |b|))))
+          (SETQ |bfVar#9| (CDR |bfVar#9|))))
+       (SSORT |a|) NIL)))))
  
 ; shoeDefUse(s)==
 ;         while not bStreamPackageNull s repeat
@@ -1152,13 +1037,12 @@
 ;             s:=CDR s
  
 (DEFUN |shoeDefUse| (|s|)
-  (PROG ()
+  (PROG #1=()
     (RETURN
-      ((LAMBDA ()
-         (LOOP
-           (COND
-             ((|bStreamPackageNull| |s|) (RETURN NIL))
-             ('T (PROGN (|defuse| NIL (CAR |s|)) (SETQ |s| (CDR |s|)))))))))))
+     ((LAMBDA #1#
+        (LOOP
+         (COND ((|bStreamPackageNull| |s|) (RETURN NIL))
+               ('T (PROGN (|defuse| NIL (CAR |s|)) (SETQ |s| (CDR |s|)))))))))))
  
 ; defuse(e,x)==
 ;      x:=stripm(x,_*PACKAGE_*,FIND_-PACKAGE '"BOOTTRAN")
@@ -1180,105 +1064,93 @@
 ;         HPUT($bootUsed,i,cons(nee,GETHASH(i,$bootUsed)))
  
 (DEFUN |defuse| (|e| |x|)
-  (PROG (|$used| |niens| |nee| |LETTMP#1| |exp| |ISTMP#5| |id|
-                 |ISTMP#4| |ISTMP#3| |body| |bv| |ISTMP#2| |name|
-                 |ISTMP#1|)
-    (DECLARE (SPECIAL |$used| |$bootUsed| |$bootDefinedTwice|
-                      |$bootDefined|))
+  (PROG (|$used| |niens| |nee| |LETTMP#1| |exp| |ISTMP#5| |id| |ISTMP#4|
+         |ISTMP#3| |body| |bv| |ISTMP#2| |name| |ISTMP#1|)
+    (DECLARE (SPECIAL |$bootDefined| |$bootDefinedTwice| |$bootUsed| |$used|))
     (RETURN
-      (PROGN
-        (SETQ |x| (|stripm| |x| *PACKAGE* (FIND-PACKAGE "BOOTTRAN")))
-        (SETQ |$used| NIL)
-        (SETQ |LETTMP#1|
+     (PROGN
+      (SETQ |x| (|stripm| |x| *PACKAGE* (FIND-PACKAGE "BOOTTRAN")))
+      (SETQ |$used| NIL)
+      (SETQ |LETTMP#1|
               (COND
-                ((AND (CONSP |x|) (EQ (CAR |x|) 'DEFUN)
-                      (PROGN
-                        (SETQ |ISTMP#1| (CDR |x|))
-                        (AND (CONSP |ISTMP#1|)
-                             (PROGN
-                               (SETQ |name| (CAR |ISTMP#1|))
-                               (SETQ |ISTMP#2| (CDR |ISTMP#1|))
-                               (AND (CONSP |ISTMP#2|)
-                                    (PROGN
-                                      (SETQ |bv| (CAR |ISTMP#2|))
-                                      (SETQ |body| (CDR |ISTMP#2|))
-                                      #0='T))))))
-                 (LIST |name| (CONS 'LAMBDA (CONS |bv| |body|))))
-                ((AND (CONSP |x|) (EQ (CAR |x|) 'DEFMACRO)
-                      (PROGN
-                        (SETQ |ISTMP#1| (CDR |x|))
-                        (AND (CONSP |ISTMP#1|)
-                             (PROGN
-                               (SETQ |name| (CAR |ISTMP#1|))
-                               (SETQ |ISTMP#2| (CDR |ISTMP#1|))
-                               (AND (CONSP |ISTMP#2|)
-                                    (PROGN
-                                      (SETQ |bv| (CAR |ISTMP#2|))
-                                      (SETQ |body| (CDR |ISTMP#2|))
-                                      #0#))))))
-                 (LIST |name| (CONS 'LAMBDA (CONS |bv| |body|))))
-                ((AND (CONSP |x|) (EQ (CAR |x|) 'EVAL-WHEN)
-                      (PROGN
-                        (SETQ |ISTMP#1| (CDR |x|))
-                        (AND (CONSP |ISTMP#1|)
-                             (PROGN
-                               (SETQ |ISTMP#2| (CDR |ISTMP#1|))
-                               (AND (CONSP |ISTMP#2|)
-                                    (EQ (CDR |ISTMP#2|) NIL)
-                                    (PROGN
-                                      (SETQ |ISTMP#3| (CAR |ISTMP#2|))
-                                      (AND (CONSP |ISTMP#3|)
+               ((AND (CONSP |x|) (EQ (CAR |x|) 'DEFUN)
+                     (PROGN
+                      (SETQ |ISTMP#1| (CDR |x|))
+                      (AND (CONSP |ISTMP#1|)
+                           (PROGN
+                            (SETQ |name| (CAR |ISTMP#1|))
+                            (SETQ |ISTMP#2| (CDR |ISTMP#1|))
+                            (AND (CONSP |ISTMP#2|)
+                                 (PROGN
+                                  (SETQ |bv| (CAR |ISTMP#2|))
+                                  (SETQ |body| (CDR |ISTMP#2|))
+                                  #1='T))))))
+                (LIST |name| (CONS 'LAMBDA (CONS |bv| |body|))))
+               ((AND (CONSP |x|) (EQ (CAR |x|) 'DEFMACRO)
+                     (PROGN
+                      (SETQ |ISTMP#1| (CDR |x|))
+                      (AND (CONSP |ISTMP#1|)
+                           (PROGN
+                            (SETQ |name| (CAR |ISTMP#1|))
+                            (SETQ |ISTMP#2| (CDR |ISTMP#1|))
+                            (AND (CONSP |ISTMP#2|)
+                                 (PROGN
+                                  (SETQ |bv| (CAR |ISTMP#2|))
+                                  (SETQ |body| (CDR |ISTMP#2|))
+                                  #1#))))))
+                (LIST |name| (CONS 'LAMBDA (CONS |bv| |body|))))
+               ((AND (CONSP |x|) (EQ (CAR |x|) 'EVAL-WHEN)
+                     (PROGN
+                      (SETQ |ISTMP#1| (CDR |x|))
+                      (AND (CONSP |ISTMP#1|)
+                           (PROGN
+                            (SETQ |ISTMP#2| (CDR |ISTMP#1|))
+                            (AND (CONSP |ISTMP#2|) (EQ (CDR |ISTMP#2|) NIL)
+                                 (PROGN
+                                  (SETQ |ISTMP#3| (CAR |ISTMP#2|))
+                                  (AND (CONSP |ISTMP#3|)
                                        (EQ (CAR |ISTMP#3|) 'SETQ)
                                        (PROGN
-                                         (SETQ |ISTMP#4|
-                                          (CDR |ISTMP#3|))
-                                         (AND (CONSP |ISTMP#4|)
-                                          (PROGN
-                                            (SETQ |id| (CAR |ISTMP#4|))
-                                            (SETQ |ISTMP#5|
-                                             (CDR |ISTMP#4|))
-                                            (AND (CONSP |ISTMP#5|)
-                                             (EQ (CDR |ISTMP#5|) NIL)
+                                        (SETQ |ISTMP#4| (CDR |ISTMP#3|))
+                                        (AND (CONSP |ISTMP#4|)
                                              (PROGN
-                                               (SETQ |exp|
-                                                (CAR |ISTMP#5|))
-                                               #0#))))))))))))
-                 (LIST |id| |exp|))
-                ((AND (CONSP |x|) (EQ (CAR |x|) 'SETQ)
-                      (PROGN
-                        (SETQ |ISTMP#1| (CDR |x|))
-                        (AND (CONSP |ISTMP#1|)
-                             (PROGN
-                               (SETQ |id| (CAR |ISTMP#1|))
-                               (SETQ |ISTMP#2| (CDR |ISTMP#1|))
-                               (AND (CONSP |ISTMP#2|)
-                                    (EQ (CDR |ISTMP#2|) NIL)
-                                    (PROGN
-                                      (SETQ |exp| (CAR |ISTMP#2|))
-                                      #0#))))))
-                 (LIST |id| |exp|))
-                (#1='T (LIST 'TOP-LEVEL |x|))))
-        (SETQ |nee| (CAR |LETTMP#1|))
-        (SETQ |niens| (CADR |LETTMP#1|))
-        (COND
-          ((GETHASH |nee| |$bootDefined|)
-           (SETQ |$bootDefinedTwice|
-                 (COND
-                   ((EQ |nee| 'TOP-LEVEL) |$bootDefinedTwice|)
-                   (#1# (CONS |nee| |$bootDefinedTwice|)))))
-          ('T (HPUT |$bootDefined| |nee| T)))
-        (|defuse1| |e| |niens|)
-        ((LAMBDA (|bfVar#10| |i|)
-           (LOOP
-             (COND
-               ((OR (ATOM |bfVar#10|)
-                    (PROGN (SETQ |i| (CAR |bfVar#10|)) NIL))
-                (RETURN NIL))
-               ('T
-                (HPUT |$bootUsed| |i|
-                      (CONS |nee| (GETHASH |i| |$bootUsed|)))))
-             (SETQ |bfVar#10| (CDR |bfVar#10|))))
-         |$used| NIL)))))
+                                              (SETQ |id| (CAR |ISTMP#4|))
+                                              (SETQ |ISTMP#5| (CDR |ISTMP#4|))
+                                              (AND (CONSP |ISTMP#5|)
+                                                   (EQ (CDR |ISTMP#5|) NIL)
+                                                   (PROGN
+                                                    (SETQ |exp|
+                                                            (CAR |ISTMP#5|))
+                                                    #1#))))))))))))
+                (LIST |id| |exp|))
+               ((AND (CONSP |x|) (EQ (CAR |x|) 'SETQ)
+                     (PROGN
+                      (SETQ |ISTMP#1| (CDR |x|))
+                      (AND (CONSP |ISTMP#1|)
+                           (PROGN
+                            (SETQ |id| (CAR |ISTMP#1|))
+                            (SETQ |ISTMP#2| (CDR |ISTMP#1|))
+                            (AND (CONSP |ISTMP#2|) (EQ (CDR |ISTMP#2|) NIL)
+                                 (PROGN (SETQ |exp| (CAR |ISTMP#2|)) #1#))))))
+                (LIST |id| |exp|))
+               (#1# (LIST 'TOP-LEVEL |x|))))
+      (SETQ |nee| (CAR |LETTMP#1|))
+      (SETQ |niens| (CADR |LETTMP#1|))
+      (COND
+       ((GETHASH |nee| |$bootDefined|)
+        (SETQ |$bootDefinedTwice|
+                (COND ((EQ |nee| 'TOP-LEVEL) |$bootDefinedTwice|)
+                      (#1# (CONS |nee| |$bootDefinedTwice|)))))
+       (#1# (HPUT |$bootDefined| |nee| T)))
+      (|defuse1| |e| |niens|)
+      ((LAMBDA (|bfVar#10| |i|)
+         (LOOP
+          (COND
+           ((OR (ATOM |bfVar#10|) (PROGN (SETQ |i| (CAR |bfVar#10|)) NIL))
+            (RETURN NIL))
+           (#1# (HPUT |$bootUsed| |i| (CONS |nee| (GETHASH |i| |$bootUsed|)))))
+          (SETQ |bfVar#10| (CDR |bfVar#10|))))
+       |$used| NIL)))))
  
 ; defuse1(e,y)==
 ;      ATOM y =>
@@ -1300,67 +1172,61 @@
 ;      for i in y repeat defuse1(e,i)
  
 (DEFUN |defuse1| (|e| |y|)
-  (PROG (|ndol| |dol| |LETTMP#1| |b| |a| |ISTMP#1|)
-    (DECLARE (SPECIAL |$bootDefined| |$used|))
+  (PROG (|ISTMP#1| |a| |b| |LETTMP#1| |dol| |ndol|)
+    (DECLARE (SPECIAL |$used| |$bootDefined|))
     (RETURN
-      (COND
-        ((ATOM |y|)
-         (COND
-           ((IDENTP |y|)
-            (SETQ |$used|
-                  (COND
-                    ((MEMQ |y| |e|) |$used|)
-                    ((MEMQ |y| |$used|) |$used|)
-                    ((|defusebuiltin| |y|) |$used|)
-                    (#0='T (UNION (LIST |y|) |$used|)))))
-           (#0# NIL)))
-        ((AND (CONSP |y|) (EQ (CAR |y|) 'LAMBDA)
-              (PROGN
-                (SETQ |ISTMP#1| (CDR |y|))
-                (AND (CONSP |ISTMP#1|)
-                     (PROGN
-                       (SETQ |a| (CAR |ISTMP#1|))
-                       (SETQ |b| (CDR |ISTMP#1|))
-                       #1='T))))
-         (|defuse1| (APPEND (|unfluidlist| |a|) |e|) |b|))
-        ((AND (CONSP |y|) (EQ (CAR |y|) 'PROG)
-              (PROGN
-                (SETQ |ISTMP#1| (CDR |y|))
-                (AND (CONSP |ISTMP#1|)
-                     (PROGN
-                       (SETQ |a| (CAR |ISTMP#1|))
-                       (SETQ |b| (CDR |ISTMP#1|))
-                       #1#))))
-         (PROGN
-           (SETQ |LETTMP#1| (|defSeparate| |a|))
-           (SETQ |dol| (CAR |LETTMP#1|))
-           (SETQ |ndol| (CADR |LETTMP#1|))
-           ((LAMBDA (|bfVar#11| |i|)
-              (LOOP
-                (COND
-                  ((OR (ATOM |bfVar#11|)
-                       (PROGN (SETQ |i| (CAR |bfVar#11|)) NIL))
-                   (RETURN NIL))
-                  (#2='T (HPUT |$bootDefined| |i| T)))
-                (SETQ |bfVar#11| (CDR |bfVar#11|))))
-            |dol| NIL)
-           (|defuse1| (APPEND |ndol| |e|) |b|)))
-        ((AND (CONSP |y|) (EQ (CAR |y|) 'QUOTE)
-              (PROGN (SETQ |a| (CDR |y|)) #1#))
-         NIL)
-        ((AND (CONSP |y|) (EQ (CAR |y|) '+LINE)
-              (PROGN (SETQ |a| (CDR |y|)) #1#))
-         NIL)
-        (#0#
-         ((LAMBDA (|bfVar#12| |i|)
-            (LOOP
-              (COND
-                ((OR (ATOM |bfVar#12|)
-                     (PROGN (SETQ |i| (CAR |bfVar#12|)) NIL))
-                 (RETURN NIL))
-                (#2# (|defuse1| |e| |i|)))
-              (SETQ |bfVar#12| (CDR |bfVar#12|))))
-          |y| NIL))))))
+     (COND
+      ((ATOM |y|)
+       (COND
+        ((IDENTP |y|)
+         (SETQ |$used|
+                 (COND ((MEMQ |y| |e|) |$used|) ((MEMQ |y| |$used|) |$used|)
+                       ((|defusebuiltin| |y|) |$used|)
+                       (#1='T (UNION (LIST |y|) |$used|)))))
+        (#1# NIL)))
+      ((AND (CONSP |y|) (EQ (CAR |y|) 'LAMBDA)
+            (PROGN
+             (SETQ |ISTMP#1| (CDR |y|))
+             (AND (CONSP |ISTMP#1|)
+                  (PROGN
+                   (SETQ |a| (CAR |ISTMP#1|))
+                   (SETQ |b| (CDR |ISTMP#1|))
+                   #1#))))
+       (|defuse1| (APPEND (|unfluidlist| |a|) |e|) |b|))
+      ((AND (CONSP |y|) (EQ (CAR |y|) 'PROG)
+            (PROGN
+             (SETQ |ISTMP#1| (CDR |y|))
+             (AND (CONSP |ISTMP#1|)
+                  (PROGN
+                   (SETQ |a| (CAR |ISTMP#1|))
+                   (SETQ |b| (CDR |ISTMP#1|))
+                   #1#))))
+       (PROGN
+        (SETQ |LETTMP#1| (|defSeparate| |a|))
+        (SETQ |dol| (CAR |LETTMP#1|))
+        (SETQ |ndol| (CADR |LETTMP#1|))
+        ((LAMBDA (|bfVar#11| |i|)
+           (LOOP
+            (COND
+             ((OR (ATOM |bfVar#11|) (PROGN (SETQ |i| (CAR |bfVar#11|)) NIL))
+              (RETURN NIL))
+             (#1# (HPUT |$bootDefined| |i| T)))
+            (SETQ |bfVar#11| (CDR |bfVar#11|))))
+         |dol| NIL)
+        (|defuse1| (APPEND |ndol| |e|) |b|)))
+      ((AND (CONSP |y|) (EQ (CAR |y|) 'QUOTE) (PROGN (SETQ |a| (CDR |y|)) #1#))
+       NIL)
+      ((AND (CONSP |y|) (EQ (CAR |y|) '+LINE) (PROGN (SETQ |a| (CDR |y|)) #1#))
+       NIL)
+      (#1#
+       ((LAMBDA (|bfVar#12| |i|)
+          (LOOP
+           (COND
+            ((OR (ATOM |bfVar#12|) (PROGN (SETQ |i| (CAR |bfVar#12|)) NIL))
+             (RETURN NIL))
+            (#1# (|defuse1| |e| |i|)))
+           (SETQ |bfVar#12| (CDR |bfVar#12|))))
+        |y| NIL))))))
  
 ; defSeparate x==
 ;       if null x
@@ -1373,16 +1239,14 @@
 ;          else [x1,cons(f,x2)]
  
 (DEFUN |defSeparate| (|x|)
-  (PROG (|x2| |x1| |LETTMP#1| |f|)
+  (PROG (|f| |LETTMP#1| |x1| |x2|)
     (RETURN
-      (COND
-        ((NULL |x|) (LIST NIL NIL))
-        (#0='T (SETQ |f| (CAR |x|))
-         (SETQ |LETTMP#1| (|defSeparate| (CDR |x|)))
-         (SETQ |x1| (CAR |LETTMP#1|)) (SETQ |x2| (CADR |LETTMP#1|))
-         (COND
-           ((|bfBeginsDollar| |f|) (LIST (CONS |f| |x1|) |x2|))
-           (#0# (LIST |x1| (CONS |f| |x2|)))))))))
+     (COND ((NULL |x|) (LIST NIL NIL))
+           (#1='T (SETQ |f| (CAR |x|))
+            (SETQ |LETTMP#1| (|defSeparate| (CDR |x|)))
+            (SETQ |x1| (CAR |LETTMP#1|)) (SETQ |x2| (CADR |LETTMP#1|))
+            (COND ((|bfBeginsDollar| |f|) (LIST (CONS |f| |x1|) |x2|))
+                  (#1# (LIST |x1| (CONS |f| |x2|)))))))))
  
 ; unfluidlist x==
 ;     NULL x => []
@@ -1391,18 +1255,16 @@
 ;     cons(car x,unfluidlist cdr x)
  
 (DEFUN |unfluidlist| (|x|)
-  (PROG (|y| |ISTMP#1|)
+  (PROG (|ISTMP#1| |y|)
     (RETURN
-      (COND
-        ((NULL |x|) NIL)
-        ((ATOM |x|) (LIST |x|))
-        ((AND (CONSP |x|) (EQ (CAR |x|) '&REST)
-              (PROGN
-                (SETQ |ISTMP#1| (CDR |x|))
-                (AND (CONSP |ISTMP#1|) (EQ (CDR |ISTMP#1|) NIL)
-                     (PROGN (SETQ |y| (CAR |ISTMP#1|)) 'T))))
-         (LIST |y|))
-        ('T (CONS (CAR |x|) (|unfluidlist| (CDR |x|))))))))
+     (COND ((NULL |x|) NIL) ((ATOM |x|) (LIST |x|))
+           ((AND (CONSP |x|) (EQ (CAR |x|) '&REST)
+                 (PROGN
+                  (SETQ |ISTMP#1| (CDR |x|))
+                  (AND (CONSP |ISTMP#1|) (EQ (CDR |ISTMP#1|) NIL)
+                       (PROGN (SETQ |y| (CAR |ISTMP#1|)) #1='T))))
+            (LIST |y|))
+           (#1# (CONS (CAR |x|) (|unfluidlist| (CDR |x|))))))))
  
 ; defusebuiltin x==  GETHASH(x,$lispWordTable)
  
@@ -1417,20 +1279,18 @@
 (DEFUN |bootOut| (|l| |outfn|)
   (PROG ()
     (RETURN
-      ((LAMBDA (|bfVar#13| |i|)
-         (LOOP
-           (COND
-             ((OR (ATOM |bfVar#13|)
-                  (PROGN (SETQ |i| (CAR |bfVar#13|)) NIL))
-              (RETURN NIL))
-             ('T (|shoeFileLine| (CONCAT "   " (PNAME |i|)) |outfn|)))
-           (SETQ |bfVar#13| (CDR |bfVar#13|))))
-       |l| NIL))))
+     ((LAMBDA (|bfVar#13| |i|)
+        (LOOP
+         (COND
+          ((OR (ATOM |bfVar#13|) (PROGN (SETQ |i| (CAR |bfVar#13|)) NIL))
+           (RETURN NIL))
+          ('T (|shoeFileLine| (CONCAT "   " (PNAME |i|)) |outfn|)))
+         (SETQ |bfVar#13| (CDR |bfVar#13|))))
+      |l| NIL))))
  
 ; CLESSP(s1,s2)==not(SHOEGREATERP(s1,s2))
  
-(DEFUN CLESSP (|s1| |s2|)
-  (PROG () (RETURN (NULL (SHOEGREATERP |s1| |s2|)))))
+(DEFUN CLESSP (|s1| |s2|) (PROG () (RETURN (NULL (SHOEGREATERP |s1| |s2|)))))
  
 ; SSORT l == SORT(l,function CLESSP)
  
@@ -1450,15 +1310,12 @@
 (DEFUN |bootOutLines| (|l| |outfn| |s|)
   (PROG (|a|)
     (RETURN
-      (COND
-        ((NULL |l|) (|shoeFileLine| |s| |outfn|))
-        (#0='T (SETQ |a| (PNAME (CAR |l|)))
-         (COND
-           ((< 70 (+ (LENGTH |s|) (LENGTH |a|)))
-            (|shoeFileLine| |s| |outfn|)
-            (|bootOutLines| |l| |outfn| " "))
-           (#0#
-            (|bootOutLines| (CDR |l|) |outfn| (CONCAT |s| " " |a|)))))))))
+     (COND ((NULL |l|) (|shoeFileLine| |s| |outfn|))
+           (#1='T (SETQ |a| (PNAME (CAR |l|)))
+            (COND
+             ((< 70 (+ (LENGTH |s|) (LENGTH |a|))) (|shoeFileLine| |s| |outfn|)
+              (|bootOutLines| |l| |outfn| " "))
+             (#1# (|bootOutLines| (CDR |l|) |outfn| (CONCAT |s| " " |a|)))))))))
  
 ; XREF fn==
 ;   infn:=CONCAT(fn,'".boot")
@@ -1467,9 +1324,9 @@
 (DEFUN XREF (|fn|)
   (PROG (|infn|)
     (RETURN
-      (PROGN
-        (SETQ |infn| (CONCAT |fn| ".boot"))
-        (|shoeOpenInputFile| |a| |infn| (|shoeXref| |a| |fn|))))))
+     (PROGN
+      (SETQ |infn| (CONCAT |fn| ".boot"))
+      (|shoeOpenInputFile| |a| |infn| (|shoeXref| |a| |fn|))))))
  
 ; shoeXref(a,fn)==
 ;   if null a
@@ -1488,22 +1345,21 @@
  
 (DEFUN |shoeXref| (|a| |fn|)
   (PROG (|$bfClamming| |$GenVarCounter| |$bootUsed| |$bootDefined|
-            |$lispWordTable| |out|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter| |$bootUsed|
-                      |$bootDefined| |$lispWordTable|))
+         |$lispWordTable| |out|)
+    (DECLARE
+     (SPECIAL |$bootDefined| |$bootUsed| |$GenVarCounter| |$bfClamming|
+      |$lispWordTable|))
     (RETURN
-      (COND
-        ((NULL |a|) (|shoeNotFound| |fn|))
-        ('T (SETQ |$lispWordTable| (MAKE-HASHTABLE 'EQ))
-         (DO-SYMBOLS (|i| (FIND-PACKAGE 'LISP))
-           (HPUT |$lispWordTable| |i| T))
-         (SETQ |$bootDefined| (MAKE-HASHTABLE 'EQ))
-         (SETQ |$bootUsed| (MAKE-HASHTABLE 'EQ))
-         (SETQ |$GenVarCounter| 0) (SETQ |$bfClamming| NIL)
-         (|shoeDefUse| (|shoeTransformStream| |a|))
-         (SETQ |out| (CONCAT |fn| ".xref"))
-         (|shoeOpenOutputFile| |stream| |out| (|shoeXReport| |stream|))
-         (|shoeConsole| (CONCAT |out| " PRODUCED")))))))
+     (COND ((NULL |a|) (|shoeNotFound| |fn|))
+           ('T (SETQ |$lispWordTable| (MAKE-HASHTABLE 'EQ))
+            (DO-SYMBOLS (|i| (FIND-PACKAGE 'LISP))
+              (HPUT |$lispWordTable| |i| T))
+            (SETQ |$bootDefined| (MAKE-HASHTABLE 'EQ))
+            (SETQ |$bootUsed| (MAKE-HASHTABLE 'EQ)) (SETQ |$GenVarCounter| 0)
+            (SETQ |$bfClamming| NIL) (|shoeDefUse| (|shoeTransformStream| |a|))
+            (SETQ |out| (CONCAT |fn| ".xref"))
+            (|shoeOpenOutputFile| |stream| |out| (|shoeXReport| |stream|))
+            (|shoeConsole| (CONCAT |out| " PRODUCED")))))))
  
 ; shoeXReport stream==
 ;           shoeFileLine('"USED and where DEFINED",stream)
@@ -1513,102 +1369,23 @@
 ;              bootOutLines( SSORT GETHASH(i,$bootUsed),stream,a)
  
 (DEFUN |shoeXReport| (|stream|)
-  (PROG (|a| |c|)
+  (PROG (|c| |a|)
     (DECLARE (SPECIAL |$bootUsed|))
     (RETURN
-      (PROGN
-        (|shoeFileLine| "USED and where DEFINED" |stream|)
-        (SETQ |c| (SSORT (HKEYS |$bootUsed|)))
-        ((LAMBDA (|bfVar#14| |i|)
-           (LOOP
-             (COND
-               ((OR (ATOM |bfVar#14|)
-                    (PROGN (SETQ |i| (CAR |bfVar#14|)) NIL))
-                (RETURN NIL))
-               ('T
-                (PROGN
-                  (SETQ |a| (CONCAT (PNAME |i|) " is used in "))
-                  (|bootOutLines| (SSORT (GETHASH |i| |$bootUsed|))
-                      |stream| |a|))))
-             (SETQ |bfVar#14| (CDR |bfVar#14|))))
-         |c| NIL)))))
- 
-; FBO (name,fn)== shoeGeneralFC(function BO,name,fn)
- 
-(DEFUN FBO (|name| |fn|)
-  (PROG () (RETURN (|shoeGeneralFC| #'BO |name| |fn|))))
- 
-; FEV(name,fn)== shoeGeneralFC(function EVAL_-BOOT_-FILE,name,fn)
- 
-(DEFUN FEV (|name| |fn|)
-  (PROG () (RETURN (|shoeGeneralFC| #'EVAL-BOOT-FILE |name| |fn|))))
- 
-; shoeGeneralFC(f,name,fn)==
-;    $bfClamming:local:=false
-;    $GenVarCounter:local := 0
-;    infn:=shoeAddbootIfNec fn
-;    a:= shoeOpenInputFile(a,infn,shoeFindName2(fn,name, a))
-;    filename:= if # name > 8 then SUBSTRING(name,0,8) else name
-;    a =>  FUNCALL(f, CONCAT('"/tmp/",filename))
-;    nil
- 
-(DEFUN |shoeGeneralFC| (|f| |name| |fn|)
-  (PROG (|$GenVarCounter| |$bfClamming| |filename| |a| |infn|)
-    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
-    (RETURN
-      (PROGN
-        (SETQ |$bfClamming| NIL)
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (SETQ |a|
-              (|shoeOpenInputFile| |a| |infn|
-                  (|shoeFindName2| |fn| |name| |a|)))
-        (SETQ |filename|
-              (COND
-                ((< 8 (LENGTH |name|)) (SUBSTRING |name| 0 8))
-                ('T |name|)))
-        (COND
-          (|a| (FUNCALL |f| (CONCAT "/tmp/" |filename|)))
-          ('T NIL))))))
- 
-; shoeFindName2(fn,name,a)==
-;      lines:=shoeFindLines(fn,name,a)
-;      lines =>
-;           filename:= if # name > 8 then SUBSTRING(name,0,8) else name
-;           filename := CONCAT ('"/tmp/",filename,'".boot")
-;           shoeOpenOutputFile(stream, filename,
-;                for line in lines repeat shoeFileLine (line,stream))
-;           true
-;      false
- 
-(DEFUN |shoeFindName2| (|fn| |name| |a|)
-  (PROG (|filename| |lines|)
-    (RETURN
-      (PROGN
-        (SETQ |lines| (|shoeFindLines| |fn| |name| |a|))
-        (COND
-          (|lines| (PROGN
-                     (SETQ |filename|
-                           (COND
-                             ((< 8 (LENGTH |name|))
-                              (SUBSTRING |name| 0 8))
-                             ('T |name|)))
-                     (SETQ |filename|
-                           (CONCAT "/tmp/" |filename| ".boot"))
-                     (|shoeOpenOutputFile| |stream| |filename|
-                         ((LAMBDA (|bfVar#15| |line|)
-                            (LOOP
-                              (COND
-                                ((OR (ATOM |bfVar#15|)
-                                     (PROGN
-                                       (SETQ |line| (CAR |bfVar#15|))
-                                       NIL))
-                                 (RETURN NIL))
-                                ('T (|shoeFileLine| |line| |stream|)))
-                              (SETQ |bfVar#15| (CDR |bfVar#15|))))
-                          |lines| NIL))
-                     T))
-          ('T NIL))))))
+     (PROGN
+      (|shoeFileLine| "USED and where DEFINED" |stream|)
+      (SETQ |c| (SSORT (HKEYS |$bootUsed|)))
+      ((LAMBDA (|bfVar#14| |i|)
+         (LOOP
+          (COND
+           ((OR (ATOM |bfVar#14|) (PROGN (SETQ |i| (CAR |bfVar#14|)) NIL))
+            (RETURN NIL))
+           ('T
+            (PROGN
+             (SETQ |a| (CONCAT (PNAME |i|) " is used in "))
+             (|bootOutLines| (SSORT (GETHASH |i| |$bootUsed|)) |stream| |a|))))
+          (SETQ |bfVar#14| (CDR |bfVar#14|))))
+       |c| NIL)))))
  
 ; shoeTransform2 str==
 ;     bNext(function shoeItem,
@@ -1618,10 +1395,10 @@
 (DEFUN |shoeTransform2| (|str|)
   (PROG ()
     (RETURN
-      (|bNext| #'|shoeItem|
-               (|streamTake| 1
-                   (|bNext| #'|shoePileInsert|
-                            (|bNext| #'|shoeLineToks| |str|)))))))
+     (|bNext| #'|shoeItem|
+              (|streamTake| 1
+                            (|bNext| #'|shoePileInsert|
+                                     (|bNext| #'|shoeLineToks| |str|)))))))
  
 ; shoeItem (str)==
 ;         dq:=CAR str
@@ -1630,22 +1407,19 @@
 (DEFUN |shoeItem| (|str|)
   (PROG (|dq|)
     (RETURN
-      (PROGN
-        (SETQ |dq| (CAR |str|))
-        (CONS (LIST ((LAMBDA (|bfVar#17| |bfVar#16| |line|)
-                       (LOOP
-                         (COND
-                           ((OR (ATOM |bfVar#16|)
-                                (PROGN
-                                  (SETQ |line| (CAR |bfVar#16|))
-                                  NIL))
-                            (RETURN (NREVERSE |bfVar#17|)))
-                           ('T
-                            (SETQ |bfVar#17|
-                                  (CONS (CAR |line|) |bfVar#17|))))
-                         (SETQ |bfVar#16| (CDR |bfVar#16|))))
-                     NIL (|shoeDQlines| |dq|) NIL))
-              (CDR |str|))))))
+     (PROGN
+      (SETQ |dq| (CAR |str|))
+      (CONS
+       (LIST
+        ((LAMBDA (|bfVar#16| |bfVar#15| |line|)
+           (LOOP
+            (COND
+             ((OR (ATOM |bfVar#15|) (PROGN (SETQ |line| (CAR |bfVar#15|)) NIL))
+              (RETURN (NREVERSE |bfVar#16|)))
+             ('T (SETQ |bfVar#16| (CONS (CAR |line|) |bfVar#16|))))
+            (SETQ |bfVar#15| (CDR |bfVar#15|))))
+         NIL (|shoeDQlines| |dq|) NIL))
+       (CDR |str|))))))
  
 ; shoeFindLines(fn,name,a)==
 ;    if null a
@@ -1666,24 +1440,22 @@
 ;          append(reverse lines,car b)
  
 (DEFUN |shoeFindLines| (|fn| |name| |a|)
-  (PROG (|b| |lines| |LETTMP#1|)
+  (PROG (|LETTMP#1| |lines| |b|)
     (RETURN
-      (COND
-        ((NULL |a|) (|shoeNotFound| |fn|) NIL)
-        (#0='T
-         (SETQ |LETTMP#1|
-               (|shoePackageStartsAt| NIL (LENGTH |name|) |name|
-                   (|shoeInclude|
-                       (|bAddLineNumber| (|bRgen| |a|) (|bIgen| 0)))))
-         (SETQ |lines| (CAR |LETTMP#1|)) (SETQ |b| (CADR |LETTMP#1|))
-         (SETQ |b| (|shoeTransform2| |b|))
-         (COND
-           ((|bStreamNull| |b|)
-            (|shoeConsole| (CONCAT |name| " not found in " |fn|)) NIL)
-           (#0#
+     (COND ((NULL |a|) (|shoeNotFound| |fn|) NIL)
+           (#1='T
+            (SETQ |LETTMP#1|
+                    (|shoePackageStartsAt| NIL (LENGTH |name|) |name|
+                                           (|shoeInclude|
+                                            (|bAddLineNumber| (|bRgen| |a|)
+                                                              (|bIgen| 0)))))
+            (SETQ |lines| (CAR |LETTMP#1|)) (SETQ |b| (CADR |LETTMP#1|))
+            (SETQ |b| (|shoeTransform2| |b|))
             (COND
-              ((NULL |lines|) (|shoeConsole| ")package not found")))
-            (APPEND (REVERSE |lines|) (CAR |b|)))))))))
+             ((|bStreamNull| |b|)
+              (|shoeConsole| (CONCAT |name| " not found in " |fn|)) NIL)
+             (#1# (COND ((NULL |lines|) (|shoeConsole| ")package not found")))
+              (APPEND (REVERSE |lines|) (CAR |b|)))))))))
  
 ; shoePackageStartsAt (lines,sz,name,stream)==
 ;    bStreamNull stream => [[],['nullstream]]
@@ -1700,26 +1472,23 @@
 (DEFUN |shoePackageStartsAt| (|lines| |sz| |name| |stream|)
   (PROG (|a|)
     (RETURN
-      (COND
-        ((|bStreamNull| |stream|) (LIST NIL (LIST '|nullstream|)))
-        ('T
-         (PROGN
-           (SETQ |a| (CAAR |stream|))
-           (COND
-             ((AND (NOT (< (LENGTH |a|) 8))
-                   (EQUAL (SUBSTRING |a| 0 8) ")package"))
-              (|shoePackageStartsAt| (CONS (CAAR |stream|) |lines|)
-                  |sz| |name| (CDR |stream|)))
-             ((< (LENGTH |a|) |sz|)
-              (|shoePackageStartsAt| |lines| |sz| |name|
-                  (CDR |stream|)))
-             ((AND (EQUAL (SUBSTRING |a| 0 |sz|) |name|)
-                   (< |sz| (LENGTH |a|))
-                   (NULL (|shoeIdChar| (ELT |a| |sz|))))
-              (LIST |lines| |stream|))
-             ('T
-              (|shoePackageStartsAt| |lines| |sz| |name|
-                  (CDR |stream|))))))))))
+     (COND ((|bStreamNull| |stream|) (LIST NIL (LIST '|nullstream|)))
+           (#1='T
+            (PROGN
+             (SETQ |a| (CAAR |stream|))
+             (COND
+              ((AND (NOT (< (LENGTH |a|) 8))
+                    (EQUAL (SUBSTRING |a| 0 8) ")package"))
+               (|shoePackageStartsAt| (CONS (CAAR |stream|) |lines|) |sz|
+                                      |name| (CDR |stream|)))
+              ((< (LENGTH |a|) |sz|)
+               (|shoePackageStartsAt| |lines| |sz| |name| (CDR |stream|)))
+              ((AND (EQUAL (SUBSTRING |a| 0 |sz|) |name|) (< |sz| (LENGTH |a|))
+                    (NULL (|shoeIdChar| (ELT |a| |sz|))))
+               (LIST |lines| |stream|))
+              (#1#
+               (|shoePackageStartsAt| |lines| |sz| |name|
+                                      (CDR |stream|))))))))))
  
 ; stripm (x,pk,bt)==
 ;    ATOM x =>
@@ -1732,18 +1501,15 @@
 (DEFUN |stripm| (|x| |pk| |bt|)
   (PROG ()
     (RETURN
-      (COND
-        ((ATOM |x|)
-         (COND
-           ((IDENTP |x|)
-            (COND
-              ((EQUAL (SYMBOL-PACKAGE |x|) |bt|)
-               (INTERN (PNAME |x|) |pk|))
-              (#0='T |x|)))
-           (#0# |x|)))
-        (#0#
-         (CONS (|stripm| (CAR |x|) |pk| |bt|)
-               (|stripm| (CDR |x|) |pk| |bt|)))))))
+     (COND
+      ((ATOM |x|)
+       (COND
+        ((IDENTP |x|)
+         (COND ((EQUAL (SYMBOL-PACKAGE |x|) |bt|) (INTERN (PNAME |x|) |pk|))
+               (#1='T |x|)))
+        (#1# |x|)))
+      (#1#
+       (CONS (|stripm| (CAR |x|) |pk| |bt|) (|stripm| (CDR |x|) |pk| |bt|)))))))
  
 ; shoePCompile  fn==
 ;     fn:=stripm(fn,_*PACKAGE_*,FIND_-PACKAGE '"BOOTTRAN")
@@ -1752,25 +1518,25 @@
 ;     EVAL fn
  
 (DEFUN |shoePCompile| (|fn|)
-  (PROG (|body| |bv| |ISTMP#2| |name| |ISTMP#1|)
+  (PROG (|ISTMP#1| |name| |ISTMP#2| |bv| |body|)
     (RETURN
-      (PROGN
-        (SETQ |fn| (|stripm| |fn| *PACKAGE* (FIND-PACKAGE "BOOTTRAN")))
-        (COND
-          ((AND (CONSP |fn|) (EQ (CAR |fn|) 'DEFUN)
-                (PROGN
-                  (SETQ |ISTMP#1| (CDR |fn|))
-                  (AND (CONSP |ISTMP#1|)
-                       (PROGN
-                         (SETQ |name| (CAR |ISTMP#1|))
-                         (SETQ |ISTMP#2| (CDR |ISTMP#1|))
-                         (AND (CONSP |ISTMP#2|)
-                              (PROGN
-                                (SETQ |bv| (CAR |ISTMP#2|))
-                                (SETQ |body| (CDR |ISTMP#2|))
-                                'T))))))
-           (COMPILE |name| (CONS 'LAMBDA (CONS |bv| |body|))))
-          ('T (EVAL |fn|)))))))
+     (PROGN
+      (SETQ |fn| (|stripm| |fn| *PACKAGE* (FIND-PACKAGE "BOOTTRAN")))
+      (COND
+       ((AND (CONSP |fn|) (EQ (CAR |fn|) 'DEFUN)
+             (PROGN
+              (SETQ |ISTMP#1| (CDR |fn|))
+              (AND (CONSP |ISTMP#1|)
+                   (PROGN
+                    (SETQ |name| (CAR |ISTMP#1|))
+                    (SETQ |ISTMP#2| (CDR |ISTMP#1|))
+                    (AND (CONSP |ISTMP#2|)
+                         (PROGN
+                          (SETQ |bv| (CAR |ISTMP#2|))
+                          (SETQ |body| (CDR |ISTMP#2|))
+                          #1='T))))))
+        (COMPILE |name| (CONS 'LAMBDA (CONS |bv| |body|))))
+       (#1# (EVAL |fn|)))))))
  
 ; FC(name,fn)==
 ;    $bfClamming:local:=false
@@ -1780,14 +1546,13 @@
  
 (DEFUN FC (|name| |fn|)
   (PROG (|$GenVarCounter| |$bfClamming| |infn|)
-    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
+    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
     (RETURN
-      (PROGN
-        (SETQ |$bfClamming| NIL)
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-        (|shoeOpenInputFile| |a| |infn|
-            (|shoeFindName| |fn| |name| |a|))))))
+     (PROGN
+      (SETQ |$bfClamming| NIL)
+      (SETQ |$GenVarCounter| 0)
+      (SETQ |infn| (|shoeAddbootIfNec| |fn|))
+      (|shoeOpenInputFile| |a| |infn| (|shoeFindName| |fn| |name| |a|))))))
  
 ; shoeFindName(fn,name,a)==
 ;      lines:=shoeFindLines(fn,name,a)
@@ -1796,9 +1561,9 @@
 (DEFUN |shoeFindName| (|fn| |name| |a|)
   (PROG (|lines|)
     (RETURN
-      (PROGN
-        (SETQ |lines| (|shoeFindLines| |fn| |name| |a|))
-        (|shoePCompileTrees| (|shoeTransformString| |lines|))))))
+     (PROGN
+      (SETQ |lines| (|shoeFindLines| |fn| |name| |a|))
+      (|shoePCompileTrees| (|shoeTransformString| |lines|))))))
  
 ; shoePCompileTrees s==
 ;     while not bStreamPackageNull s repeat
@@ -1806,33 +1571,20 @@
 ;          s:=cdr s
  
 (DEFUN |shoePCompileTrees| (|s|)
-  (PROG ()
+  (PROG #1=()
     (RETURN
-      ((LAMBDA ()
-         (LOOP
-           (COND
-             ((|bStreamPackageNull| |s|) (RETURN NIL))
-             ('T
-              (PROGN
-                (REALLYPRETTYPRINT (|shoePCompile| (CAR |s|)))
-                (SETQ |s| (CDR |s|)))))))))))
+     ((LAMBDA #1#
+        (LOOP
+         (COND ((|bStreamPackageNull| |s|) (RETURN NIL))
+               ('T
+                (PROGN
+                 (REALLYPRETTYPRINT (|shoePCompile| (CAR |s|)))
+                 (SETQ |s| (CDR |s|)))))))))))
  
-; bStreamPackageNull s==
-;          a:= _*PACKAGE_*
-;          IN_-PACKAGE '"BOOTTRAN"
-;          b:=bStreamNull s
-;          setCurrentPackage a
-;          b
+; bStreamPackageNull s == doInBoottranPackage(bStreamNull s)
  
 (DEFUN |bStreamPackageNull| (|s|)
-  (PROG (|b| |a|)
-    (RETURN
-      (PROGN
-        (SETQ |a| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |b| (|bStreamNull| |s|))
-        (|setCurrentPackage| |a|)
-        |b|))))
+  (PROG () (RETURN (|doInBoottranPackage| (|bStreamNull| |s|)))))
  
 ; PSTTOMC string==
 ;    $GenVarCounter:local := 0
@@ -1841,12 +1593,12 @@
  
 (DEFUN PSTTOMC (|string|)
   (PROG (|$bfClamming| |$GenVarCounter|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
+    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
     (RETURN
-      (PROGN
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |$bfClamming| NIL)
-        (|shoePCompileTrees| (|shoeTransformString| |string|))))))
+     (PROGN
+      (SETQ |$GenVarCounter| 0)
+      (SETQ |$bfClamming| NIL)
+      (|shoePCompileTrees| (|shoeTransformString| |string|))))))
  
 ; BOOTLOOP ()==
 ;     a:=READ_-LINE()
@@ -1865,23 +1617,22 @@
 (DEFUN BOOTLOOP ()
   (PROG (|stream| |b| |a|)
     (RETURN
-      (PROGN
-        (SETQ |a| (READ-LINE))
-        (COND
-          ((EQL (LENGTH |a|) 0)
+     (PROGN
+      (SETQ |a| (READ-LINE))
+      (COND
+       ((EQL (LENGTH |a|) 0)
+        (PROGN (WRITE-LINE "Boot Loop; to exit type ] ") (BOOTLOOP)))
+       (#1='T
+        (PROGN
+         (SETQ |b| (|shoePrefix?| ")console" |a|))
+         (COND
+          (|b|
            (PROGN
-             (WRITE-LINE "Boot Loop; to exit type ] ")
-             (BOOTLOOP)))
-          (#0='T
-           (PROGN
-             (SETQ |b| (|shoePrefix?| ")console" |a|))
-             (COND
-               (|b| (PROGN
-                      (SETQ |stream| *TERMINAL-IO*)
-                      (PSTTOMC (|bRgen| |stream|))
-                      (BOOTLOOP)))
-               ((EQUAL (ELT |a| 0) (ELT "]" 0)) NIL)
-               (#0# (PROGN (PSTTOMC (LIST |a|)) (BOOTLOOP)))))))))))
+            (SETQ |stream| *TERMINAL-IO*)
+            (PSTTOMC (|bRgen| |stream|))
+            (BOOTLOOP)))
+          ((EQUAL (ELT |a| 0) (ELT "]" 0)) NIL)
+          (#1# (PROGN (PSTTOMC (LIST |a|)) (BOOTLOOP)))))))))))
  
 ; BOOTPO ()==
 ;     a:=READ_-LINE()
@@ -1900,41 +1651,38 @@
 (DEFUN BOOTPO ()
   (PROG (|stream| |b| |a|)
     (RETURN
-      (PROGN
-        (SETQ |a| (READ-LINE))
-        (COND
-          ((EQL (LENGTH |a|) 0)
-           (PROGN (WRITE-LINE "Boot Loop; to exit type ] ") (BOOTPO)))
-          (#0='T
+     (PROGN
+      (SETQ |a| (READ-LINE))
+      (COND
+       ((EQL (LENGTH |a|) 0)
+        (PROGN (WRITE-LINE "Boot Loop; to exit type ] ") (BOOTPO)))
+       (#1='T
+        (PROGN
+         (SETQ |b| (|shoePrefix?| ")console" |a|))
+         (COND
+          (|b|
            (PROGN
-             (SETQ |b| (|shoePrefix?| ")console" |a|))
-             (COND
-               (|b| (PROGN
-                      (SETQ |stream| *TERMINAL-IO*)
-                      (PSTOUT (|bRgen| |stream|))
-                      (BOOTPO)))
-               ((EQUAL (ELT |a| 0) (ELT "]" 0)) NIL)
-               (#0# (PROGN (PSTOUT (LIST |a|)) (BOOTPO)))))))))))
+            (SETQ |stream| *TERMINAL-IO*)
+            (PSTOUT (|bRgen| |stream|))
+            (BOOTPO)))
+          ((EQUAL (ELT |a| 0) (ELT "]" 0)) NIL)
+          (#1# (PROGN (PSTOUT (LIST |a|)) (BOOTPO)))))))))))
  
-; PSTOUT string==
-;    callingPackage := _*PACKAGE_*
-;    IN_-PACKAGE '"BOOTTRAN"
+; PSTOUT0 string ==
 ;    $GenVarCounter:local := 0
 ;    $bfClamming:local:=false
-;    result := shoeConsoleTrees shoeTransformString string
-;    setCurrentPackage callingPackage
-;    result
+;    shoeConsoleTrees shoeTransformString string
+ 
+(DEFUN PSTOUT0 (|string|)
+  (PROG (|$bfClamming| |$GenVarCounter|)
+    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
+    (RETURN
+     (PROGN
+      (SETQ |$GenVarCounter| 0)
+      (SETQ |$bfClamming| NIL)
+      (|shoeConsoleTrees| (|shoeTransformString| |string|))))))
+ 
+; PSTOUT string == doInBoottranPackage(PSTOUT0 string)
  
 (DEFUN PSTOUT (|string|)
-  (PROG (|$bfClamming| |$GenVarCounter| |result| |callingPackage|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
-    (RETURN
-      (PROGN
-        (SETQ |callingPackage| *PACKAGE*)
-        (IN-PACKAGE "BOOTTRAN")
-        (SETQ |$GenVarCounter| 0)
-        (SETQ |$bfClamming| NIL)
-        (SETQ |result|
-              (|shoeConsoleTrees| (|shoeTransformString| |string|)))
-        (|setCurrentPackage| |callingPackage|)
-        |result|))))
+  (PROG () (RETURN (|doInBoottranPackage| (PSTOUT0 |string|)))))
