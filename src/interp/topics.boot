@@ -32,7 +32,7 @@
 )package "BOOT"
 
 $topicsDefaults := '(
-  (basic elt setelt qelt qsetelt eval xRange yRange zRange map map! qsetelt!)
+  (basic elt setelt qelt qsetelt eval xRange yRange zRange map map_! qsetelt_!)
   (conversion coerce convert retract)
   (hidden retractIfCan Zero One)
   (predicate _< _=)
@@ -41,7 +41,7 @@ $topicsDefaults := '(
   (hyperbolic acosh acoth acsch asech asinh atanh cosh coth csch sech sinh tanh)
   (destructive setelt qsetelt)
   (extraction xRange yRange zRange elt qelt)
-  (transformation map map!))
+  (transformation map map_!))
 
 $topicSynonyms := '(
   (b . basic)
