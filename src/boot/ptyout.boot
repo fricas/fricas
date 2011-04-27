@@ -32,10 +32,6 @@
 
 )package "BOOTTRAN"
 
--- Make x, the current package
-setCurrentPackage x ==
-  SETQ(_*PACKAGE_*,x)
-
 -- (boottocl "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp"
  
@@ -55,16 +51,10 @@ BOOTCLAMLINES(lines, fn, outfn) ==
          BOOTTOCLLINES(lines,fn, outfn)
 
 BOOTTOCLLINES(lines, fn, outfn)==
-   -- _*READ_-DEFAULT_-FLOAT_-FORMAT_* := 'DOUBLE_-FLOAT
-   callingPackage := _*PACKAGE_*
-   IN_-PACKAGE '"BOOTTRAN"
-   infn:=shoeAddbootIfNec fn
-   if NULL(outfn) then
-       outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
-   result := shoeOpenInputFile(a,infn,
-                shoeClLines(a,fn,lines,outfn))
-   setCurrentPackage callingPackage
-   result
+    infn := shoeAddbootIfNec fn
+    if NULL(outfn) then
+        outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
+    shoeOpenInputBoottranFile(a, infn, shoeClLines(a, fn, lines, outfn))
  
 shoeClLines(a,fn,lines,outfn)==
       if null a
@@ -83,16 +73,11 @@ shoeClLines(a,fn,lines,outfn)==
 BOOTTOCLC(fn, outfn) ==BOOTTOCLCLINES(nil, fn, outfn)
  
 BOOTTOCLCLINES(lines, fn, outfn)==
-  callingPackage := _*PACKAGE_*
-  IN_-PACKAGE '"BOOTTRAN"
   $bfClamming:local:=false
   infn:=shoeAddbootIfNec fn
   if NULL(outfn) then
       outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
-  result := shoeOpenInputFile(a, infn,
-               shoeClCLines(a, fn, lines, outfn))
-  setCurrentPackage callingPackage
-  result
+  shoeOpenInputBoottranFile(a, infn, shoeClCLines(a, fn, lines, outfn))
   
  
 shoeClCLines(a,fn,lines,outfn)==
@@ -110,14 +95,10 @@ shoeClCLines(a,fn,lines,outfn)==
 -- to machine code and loads it one item at a time
  
 BOOTTOMC fn==
-   callingPackage := _*PACKAGE_*
-   IN_-PACKAGE '"BOOTTRAN"
-   $bfClamming:local:=false
-   $GenVarCounter:local := 0
-   infn:=shoeAddbootIfNec fn
-   result := shoeOpenInputFile(a,infn,shoeMc(a,fn))
-   setCurrentPackage callingPackage
-   result
+    $bfClamming : local := false
+    $GenVarCounter : local := 0
+    infn := shoeAddbootIfNec fn
+    shoeOpenInputBoottranFile(a, infn, shoeMc(a, fn))
  
 shoeMc(a,fn)==
    if null a
@@ -134,44 +115,34 @@ COMPILE_-BOOT_-FILE fn == BOOT fn
  
 BOOT fn ==
      $bfClamming:local:=false
-     a:=BOOTTOCL (fn, nil)
-     null a => nil
      outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
+     a:=BOOTTOCL (fn, outfn)
+     null a => nil
      shoeCOMPILE_-FILE outfn
      outbin:=CONCAT(shoeRemovebootIfNec fn,'".",_*LISP_-BIN_-FILETYPE_*)
      LOAD outbin
  
 EVAL_-BOOT_-FILE fn ==
-   b:= _*PACKAGE_*
-   IN_-PACKAGE '"BOOTTRAN"
-   $bfClamming:local:=false
-   infn:=shoeAddbootIfNec fn
-   outfn:=CONCAT(shoeRemovebootIfNec fn,'".",_*LISP_-SOURCE_-FILETYPE_*)
-   shoeOpenInputFile(a,infn,shoeClLines(a,infn,[],outfn))
-   setCurrentPackage b
-   LOAD outfn
+    outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
+    BOOTTOCL(fn, outfn)
+    LOAD outfn
+    
  
 -- (boot "filename") translates the file "filename.boot"
 -- and prints the result at the console
  
-BO fn==
-     b:= _*PACKAGE_*
-     IN_-PACKAGE '"BOOTTRAN"
-     $GenVarCounter:local := 0
-     $bfClamming:local := false
-     infn:=shoeAddbootIfNec fn
-     shoeOpenInputFile(a,infn,shoeToConsole(a,fn))
-     setCurrentPackage b
+doBO fn ==
+    $GenVarCounter : local := 0
+    infn := shoeAddbootIfNec fn
+    shoeOpenInputBoottranFile(a, infn, shoeToConsole(a, fn))
+
+BO fn ==
+    $bfClamming : local := false
+    doBO(fn)
  
-BOCLAM fn==
-     callingPackage := _*PACKAGE_*
-     IN_-PACKAGE '"BOOTTRAN"
-     $GenVarCounter:local := 0
-     $bfClamming:local := true
-     infn:=shoeAddbootIfNec fn
-     result := shoeOpenInputFile(a,infn,shoeToConsole(a,fn))
-     setCurrentPackage callingPackage
-     result
+BOCLAM fn ==
+    $bfClamming : local := true
+    doBO(fn)
  
 shoeToConsole(a,fn)==
      if null a
@@ -188,33 +159,32 @@ STOUT string==   PSTOUT [string]
 --   $bfClamming:local:=false
 --   shoeConsoleTrees shoeTransformString [string]
  
-STEVAL string==
-   callingPackage := _*PACKAGE_*
-   IN_-PACKAGE '"BOOTTRAN"
-   $GenVarCounter:local := 0
-   $bfClamming:local:=false
-   a:=  shoeTransformString [string]
-   result := 
-      bStreamPackageNull a => nil
-      fn:=stripm(CAR a,_*PACKAGE_*,FIND_-PACKAGE '"BOOTTRAN")
-      EVAL fn
-   setCurrentPackage callingPackage
-   result
- 
+STTOSEX0 string ==
+    $GenVarCounter:local := 0
+    $bfClamming:local:=false
+    shoeTransformString [string]
+
+STTOSEX1 string ==
+    doInBoottranPackage(STTOSEX0 string)
+
+STTOSEX string ==
+    a := STTOSEX1 string
+    bStreamPackageNull a => nil
+    stripm(CAR a, _*PACKAGE_*, FIND_-PACKAGE '"BOOTTRAN")
+
+STEVAL string ==
+    fn := STTOSEX string
+    EVAL fn
+
 -- (sttomc "string") translates the string "string"
 -- to common lisp, and compiles it.
  
 STTOMC string==
-   callingPackage := _*PACKAGE_*
-   IN_-PACKAGE '"BOOTTRAN"
-   $GenVarCounter:local := 0
-   $bfClamming:local:=false
-   a:=  shoeTransformString [string]
-   result := 
-      bStreamPackageNull a => nil
-      shoePCompile car a
-   setCurrentPackage callingPackage
-   result
+    a := STTOSEX1 string
+    result := 
+        bStreamPackageNull a => nil
+        shoePCompile car a
+    result
  
  
 shoeCompileTrees s==
@@ -348,6 +318,7 @@ shoeOutParse stream ==
 bpOutItem()==
     bpComma() or bpTrap()
     b:=bpPop1()
+    ATOM(b) => bpPush [ b ]
     EQCAR(b,"TUPLE")=> bpPush cdr b
     EQCAR(b,"+LINE")=> bpPush [ b ]
     b is ["L%T",l,r] and IDENTP l =>
@@ -455,6 +426,7 @@ shoeRemoveStringIfNec(str,s)==
  
 -- DEFUSE prints the definitions not used and the words used and
 -- not defined in the input file and common lisp.
+-- FIXME: seem to mishandle packages
  
 DEFUSE fn==
   infn:=CONCAT(fn,'".boot")
@@ -572,6 +544,7 @@ bootOutLines(l,outfn,s)==
 -- (xref "fn") produces a cross reference listing in "fn.xref"
 -- It contains each name
 -- used in "fn.boot", together with a list of functions that use it.
+-- FIXME: seem to mishandle packages
  
 XREF fn==
   infn:=CONCAT(fn,'".boot")
@@ -601,29 +574,6 @@ shoeXReport stream==
              bootOutLines( SSORT GETHASH(i,$bootUsed),stream,a)
 
 -------------------------------------------------------------------
- 
-FBO (name,fn)== shoeGeneralFC(function BO,name,fn)
- 
-FEV(name,fn)== shoeGeneralFC(function EVAL_-BOOT_-FILE,name,fn)
- 
-shoeGeneralFC(f,name,fn)==
-   $bfClamming:local:=false
-   $GenVarCounter:local := 0
-   infn:=shoeAddbootIfNec fn
-   a:= shoeOpenInputFile(a,infn,shoeFindName2(fn,name, a))
-   filename:= if # name > 8 then SUBSTRING(name,0,8) else name
-   a =>  FUNCALL(f, CONCAT('"/tmp/",filename))
-   nil
- 
-shoeFindName2(fn,name,a)==
-     lines:=shoeFindLines(fn,name,a)
-     lines =>
-          filename:= if # name > 8 then SUBSTRING(name,0,8) else name
-          filename := CONCAT ('"/tmp/",filename,'".boot")
-          shoeOpenOutputFile(stream, filename,
-               for line in lines repeat shoeFileLine (line,stream))
-          true
-     false
  
 shoeTransform2 str==
     bNext(function shoeItem,
@@ -694,12 +644,7 @@ shoePCompileTrees s==
          REALLYPRETTYPRINT shoePCompile car s
          s:=cdr s
  
-bStreamPackageNull s==
-         a:= _*PACKAGE_*
-         IN_-PACKAGE '"BOOTTRAN"
-         b:=bStreamNull s
-         setCurrentPackage a
-         b
+bStreamPackageNull s == doInBoottranPackage(bStreamNull s)
  
 PSTTOMC string==
    $GenVarCounter:local := 0
@@ -734,12 +679,9 @@ BOOTPO ()==
     PSTOUT [a]
     BOOTPO()
  
-PSTOUT string==
-   callingPackage := _*PACKAGE_*
-   IN_-PACKAGE '"BOOTTRAN"
+PSTOUT0 string ==
    $GenVarCounter:local := 0
    $bfClamming:local:=false
-   result := shoeConsoleTrees shoeTransformString string
-   setCurrentPackage callingPackage
-   result
- 
+   shoeConsoleTrees shoeTransformString string
+
+PSTOUT string == doInBoottranPackage(PSTOUT0 string)
