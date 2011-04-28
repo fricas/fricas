@@ -1000,4 +1000,4 @@ c__besselj(v, z) == c__to__s(BesselJ(s__to__c(v), s__to__c(z)))
 r__besseli(n, x) == c__to__r(BesselI(n, x))
 c__besseli(v, z) == c__to__s(BesselI(s__to__c(v), s__to__c(z)))
 
-c__hyper0f1(a, z) == c__to__s(chebf01(s__to__c(a), s-to-c(z)))
+c__hyper0f1(a, z) == c__to__s(chebf01(s__to__c(a), s__to__c(z)))
