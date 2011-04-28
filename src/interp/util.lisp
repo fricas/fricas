@@ -104,24 +104,6 @@ at load time.
    (load (concatenate 'string build-interp-dir "/proclaims.lisp")))
   )
 
-;;; The {\bf boottocl} function is the workhorse function that translates
-;;; {\bf .boot} files to {\bf Common Lisp}. It basically wraps the actual
-;;; {\bf boot} function call to ensure that we don't truncate lines
-;;; because of {\bf *print-level*} or {\bf *print-length*}.
-(in-package "BOOTTRAN")
-
-#+:oldboot
-(defun boottran::boottocl (file &optional ofile) ;; translates a single boot file
-  (let ((*package* (find-package "BOOT"))
-        *print-level* *print-length* (fn (pathname-name file)))
-    (boot::boot
-      file
-      (if ofile ofile
-         (merge-pathnames (make-pathname :type "clisp") file)))))
-
-
-(in-package "BOOT")
-
 ;;; This is the {\bf boot parser} subsystem. It is only needed by
 ;;; algebra developers and developers who translate boot code to
 ;;; Common Lisp.
@@ -519,17 +501,7 @@ After this function is called the image is clean and can be saved.
 ;;                    :array 400 :string 500 :cfun 100 :cpages 1000
 ;;                    :rpages 1000 :hole 2000) )
 
-
-(DEFUN |string2BootTree| (S)
-  (init-boot/spad-reader)
-  (LET* ((BOOT-LINE-STACK (LIST (CONS 1 S)))
-     ($BOOT T)
-     ($SPAD NIL)
-     (XTOKENREADER 'GET-BOOT-TOKEN)
-     (LINE-HANDLER 'NEXT-BOOT-LINE)
-     (PARSEOUT (PROGN (|parse_Expression|) (POP-STACK-1))))
-    (DECLARE (SPECIAL BOOT-LINE-STACK $BOOT $SPAD XTOKENREADER LINE-HANDLER))
-    (DEF-RENAME (|new2OldLisp| PARSEOUT))))
+(DEFUN |string2BootTree| (S) (boottran::STTOSEX S))
 
 (defun |processSynonyms| () nil) ;;dummy def for depsys, redefined later
 
