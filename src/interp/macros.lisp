@@ -1370,11 +1370,11 @@ LP  (COND ((NULL X)
 
 ;; Temporary parser macros
 
-(defmacro |symbolis?| (x)
+(defmacro |symbol_is?| (x)
    `(eq (current-symbol) ,x))
 
-(defmacro |matchsymbol| (x)
-   `(if (|symbolis?| ,x)
+(defmacro |match_symbol| (x)
+   `(if (|symbol_is?| ,x)
           (progn
              (advance-token)
              t)))

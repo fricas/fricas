@@ -136,7 +136,7 @@ push_form2(tag, arg1, arg2) ==
 push_form3(tag, arg1, arg2, arg3) ==
     push_reduction("dummy", [tag, arg1, arg2, arg3])
 
-parse__new__expr() == parse__Expr 0
+parse_new_expr() == parse__Expr 0
 
 parse__InfixWith() ==
     not(parse__With()) => nil
@@ -428,7 +428,7 @@ parse__Primary1() ==
                  push_form1("QUOTE", pop_stack_1())))),
        parse__Sequence(), parse__Enclosure())
 
-parse__Float() == parse__SPADFLOAT()
+parse__Float() == parse_SPADFLOAT()
 
 parse__Enclosure() ==
     match_symbol "(" =>
@@ -445,21 +445,19 @@ parse__Enclosure() ==
                   push_form0("brace")))
     nil
 
-parse__IntegerTok() == parse__NUMBER()
+parse__IntegerTok() == parse_NUMBER()
 
-parse__FormalParameter() == parse__FormalParameterTok()
-
-parse__FormalParameterTok() == parse__ARGUMENT_-DESIGNATOR()
+parse__FormalParameter() == parse_ARGUMENT_-DESIGNATOR()
 
 parse__Quad() ==
     OR(AND($BOOT, match_symbol "$", push_lform0("$")),
        AND($BOOT, parse__GliphTok("."), push_lform0(".")))
 
-parse__String() == parse__SPADSTRING()
+parse__String() == parse_SPADSTRING()
 
-parse__VarForm() == parse__IDENTIFIER()
+parse__VarForm() == parse_IDENTIFIER()
 
-parse__Name() == parse__IDENTIFIER()
+parse__Name() == parse_IDENTIFIER()
 
 parse__Data() ==
     AND(ACTION ($LABLASOC := NIL), parse__Sexpr(),
@@ -505,11 +503,11 @@ parse__NBGliphTok(tok) ==
        ACTION(advance_token()))
 
 parse__AnyId() ==
-    OR(parse__IDENTIFIER(),
+    OR(parse_IDENTIFIER(),
        OR(AND(symbol_is? "$",
               push_reduction("parse__AnyId", current_symbol()),
               ACTION advance_token()),
-        parse__AKEYWORD()))
+        parse_AKEYWORD()))
 
 parse__GliphTok(tok) ==
   AND(match_current_token('KEYWORD, tok), ACTION(advance_token()))

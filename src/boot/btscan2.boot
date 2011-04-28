@@ -298,12 +298,17 @@ shoeSpace()==
               shoeLeafSpaces 0
               $n:= # $ln
            else shoeLeafSpaces ($n-n)
- 
+
+shoe_e_concat(s1, s2) ==
+    #s2 = 0 => s1
+    shoeIdChar(s2.0) => CONCAT(s1, "__", s2)
+    CONCAT(s1, s2) 
+
 shoeString()==
             $n:=$n+1
             $floatok:=false
             shoeLeafString shoeS ()
- 
+
 shoeS()==
    if $n>=$sz
    then
@@ -330,22 +335,18 @@ shoeS()==
                   a:=shoeEsc()
                   b:=if a
                      then
-                       str:=CONCAT(str,$ln.$n)
+                       ec := $ln.$n
                        $n:=$n+1
-                       shoeS()
+                       CONCAT(ec, shoeS())
                      else shoeS()
-                  CONCAT(str,b)
- 
- 
- 
- 
+                  shoe_e_concat(str, b)
+
 shoeIdEnd(line,n)==
      while n<#line and shoeIdChar line.n repeat n:=n+1
      n
- 
- 
+
 shoeDigit x== DIGIT_-CHAR_-P x
- 
+
 shoeW(b)==
        n1:=$n
        $n:=$n+1
@@ -362,8 +363,9 @@ shoeW(b)==
            bb:=if a
                then shoeW(true)
                else [b,'""]   --  escape finds space or newline
-           [bb.0 or b,CONCAT(str,bb.1)]
- 
+           -- [bb.0 or b,CONCAT(str,bb.1)]
+           [bb.0 or b, shoe_e_concat(str, bb.1)]
+
 shoeWord(esp) ==
           aaa:=shoeW(false)
           w:=aaa.1
@@ -375,9 +377,9 @@ shoeWord(esp) ==
                   $floatok:=true
                   shoeLeafKey w
                else shoeLeafId  w
- 
+
 shoeInteger()==shoeInteger1(false)
- 
+
 shoeInteger1(zro) ==
        n:=$n
        l:= $sz
