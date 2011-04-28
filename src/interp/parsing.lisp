@@ -277,14 +277,14 @@ NonBlank is true if the token is not preceded by a blank."
 (defmacro nth-stack (x)
   `(reduction-value (nth (1- ,x) (stack-store Reduce-Stack))))
 
-(defun |pushreduction|(x y) (PUSH-REDUCTION x y))
-(defun |popstack1|() (POP-STACK-1))
-(defun |popstack2|() (POP-STACK-2))
-(defun |popstack3|() (POP-STACK-3))
-(defun |currentsymbol|() (CURRENT-SYMBOL))
-(defun |nextsymbol|() (NEXT-SYMBOL))
-(defun |advancetoken|() (ADVANCE-TOKEN))
-(defun |matchcurrenttoken|(x y) (MATCH-CURRENT-TOKEN x y))
+(defun |push_reduction|(x y) (PUSH-REDUCTION x y))
+(defun |pop_stack_1|() (POP-STACK-1))
+(defun |pop_stack_2|() (POP-STACK-2))
+(defun |pop_stack_3|() (POP-STACK-3))
+(defun |current_symbol|() (CURRENT-SYMBOL))
+(defun |next_symbol|() (NEXT-SYMBOL))
+(defun |advance_token|() (ADVANCE-TOKEN))
+(defun |match_current_token|(x y) (MATCH-CURRENT-TOKEN x y))
 
 ; 2B. Routines for applying certain metagrammatical elements
 ;     of a production (e.g., Star).
