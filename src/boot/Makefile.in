@@ -40,8 +40,12 @@ all: all-ax
 
 stage2_boot_objects = $(addprefix stage2/, $(boot_objects))
 
-all-ax: stage1/stamp_bootsys
+all-ax: stage1/stamp_bootsys lobj_lst
 	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" $(fricas_build_bindir)/bootsys$(EXEEXT)
+
+lobj_lst:
+	echo '$(patsubst %, "../boot/%", $(FRICAS_LOCAL_LISP_object) \
+              $(boot_objects))' > $@
 
 .PRECIOUS: stage0/%.clisp
 .PRECIOUS: stage0/%.$(LISPOBJEXT)

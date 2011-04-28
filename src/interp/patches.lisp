@@ -118,11 +118,11 @@
      (type (pathname-type input-file)))
     (cond
      ((string= type "boot")
-      (boot input-file
-         (setq lfile (make-pathname :type "lisp"
-                           :defaults input-file)))
-      (load lfile))
-     ((string= type "lisp") (load input-file))
+      (boottran::boottoclc input-file
+         (setq lfile (namestring (make-pathname :type "clisp"
+                           :defaults input-file))))
+      (load (compile-file lfile)))
+     ((string= type "lisp") (load (compile-file input-file)))
      ((string= type "bbin") (load input-file))
      ((string= type "input")
       (|ncINTERPFILE| input-file Echo-Meta))

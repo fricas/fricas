@@ -143,7 +143,7 @@ ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     $(fricas_src_datadir)/doc/msgs/s2-us.msgs \
     $(srcdir)/../algebra/warm.data
 
-makeint.lisp:
+makeint.lisp: ../boot/lobj_lst
 	@ echo 5 invoking make in `pwd` with parms:
 	@ echo SRC= $(fricas_src_srcdir)
 	@ echo LISP=${LISP} BYE=${BYE}
@@ -154,6 +154,11 @@ makeint.lisp:
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ touch ${TIMESTAMP}
 	@ echo '${YEARWEEK}' >> makeint.lisp
+	echo '#+:ecl(setf fricas-lisp::*fricas-initial-lisp-objects*' \
+             '(append fricas-lisp::*fricas-initial-lisp-objects*' \
+             ' (quote (' >> makeint.lisp
+	cat ../boot/lobj_lst >> makeint.lisp
+	echo '))))' >> makeint.lisp
 	echo '(build-interpsys' \
 	  '(quote ($(patsubst %, "%", ${OBJS} ${ASCOMP} ${INOBJS} )))' \
 	  '(quote ())' \
@@ -172,7 +177,7 @@ makeint.lisp:
 ${SAVESYS}:
 	echo '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
              '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
-             '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' | ${LOADSYS}
+             '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' | ${BOOTSYS}
 
 	@ echo 6 ${SAVESYS} created
 
@@ -239,7 +244,7 @@ ${AXIOMSYS}:
 	   '#+:cmu (declaim (optimize (ext:inhibit-warnings 3)))' \
 	   '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
 	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' \
-             | DAASE="$(BASE)$(fricas_targetdir)" ${LOADSYS}
+             | DAASE="$(BASE)$(fricas_targetdir)" ${BOOTSYS}
 	@ echo 6a ${AXIOMSYS} created
 exposed.lsp: $(fricas_src_algdir)/exposed.lsp.pamphlet
 	@ echo 615 making $@ from $<

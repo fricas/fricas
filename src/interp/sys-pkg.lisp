@@ -38,7 +38,7 @@
 
 ;;; This is the boot to lisp compiler package which contains the
 ;;; src/boot files. Tt is the boot translator package.
-(make-package "BOOTTRAN" :use '("FRICAS-LISP"))
+(or (find-package "BOOTTRAN") (make-package "BOOTTRAN" :use '("FRICAS-LISP")))
 
 ;;; Everything in axiom that the user references eventually shows
 ;;; up here. The interpreter and the algebra are run after switching
