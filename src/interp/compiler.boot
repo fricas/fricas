@@ -636,6 +636,8 @@ assignError(val,m',form,m) ==
     ["CANNOT ASSIGN: ",val,"%l","   TO: ",form,"%l","   OF MODE: ",m]
   stackMessage message
 
+MKPROGN(l) == MKPF(l, "PROGN")
+
 setqMultiple(nameList,val,m,e) ==
   val is ["CONS",:.] and m=$NoValueMode =>
     setqMultipleExplicit(nameList,uncons val,m,e)
