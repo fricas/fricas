@@ -36,7 +36,9 @@ $profileAlist := nil
 
 profileWrite() ==  --called from finalizeLisplib
   outStream := MAKE_-OUTSTREAM CONCAT(LIBSTREAM_-DIRNAME $libFile,'"/info")
-  _*PRINT_-PRETTY_* :local := 'T
+  -- logically _*PRINT_-PRETTY_* should be local, but Common Lisp
+  -- forces us to omit it.
+  _*PRINT_-PRETTY_* := 'T
   PRINT_-FULL(profileTran $profileAlist,outStream)
   SHUT outStream
 

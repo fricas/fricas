@@ -120,9 +120,9 @@ insertWOC(x,y) ==
 
 --% Miscellaneous Functions for Working with Strings
 
-fillerSpaces(n,:charPart) ==
+fillerSpaces(n, charPart) ==
   n <= 0 => '""
-  MAKE_-FULL_-CVEC(n,IFCAR charPart or '" ")
+  MAKE_-FULL_-CVEC(n, charPart)
 
 centerString(text,width,fillchar) ==
   wid := entryWidth text
@@ -553,41 +553,9 @@ $beginEndList := '(
 
 isDefaultPackageName x == (s := PNAME x).(MAXINDEX s) = char '_&
 
--- gensym utils
-
-charDigitVal c ==
-  digits := '"0123456789"
-  n := -1
-  for i in 0..#digits-1 while n < 0 repeat
-      if c = digits.i then n := i
-  n < 0 => error '"Character is not a digit"
-  n
-
-gensymInt g ==
-  not GENSYMP g => error '"Need a GENSYM"
-  p := PNAME g
-  n := 0
-  for i in 2..#p-1 repeat n := 10 * n + charDigitVal p.i
-  n
-
-
 -- from packtran
 
-rePackageTran(sex, package) ==
-  _*PACKAGE_* : fluid := FIND_-PACKAGE STRING package
-  packageTran sex
-
-packageTran sex ==
--- destructively translate all the symbols in the given s-expression to the
--- current package
-  SYMBOLP sex =>
-    EQ(_*PACKAGE_*, SYMBOL_-PACKAGE sex) => sex
-    INTERN STRING sex
-  CONSP sex =>
-    RPLACA(sex, packageTran CAR sex)
-    RPLACD(sex, packageTran CDR sex)
-    sex
-  sex
+packageTran sex == sex
 
 zeroOneTran sex ==
 -- destructively translate the symbols |0| and |1| to their

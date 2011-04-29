@@ -112,8 +112,6 @@ at load time.
 ;;      loadparser
         |oldParserAutoloadOnceTrigger|
         |parse_Expression|
-        boot-parse-1
-        BOOT
         |spadCompile|
         init-boot/spad-reader))
 
@@ -190,14 +188,6 @@ at load time.
         |spadType|
         |syscomPage|
         |unescapeStringsInForm|))
-
-;;; This is a little used subsystem to generate {\bf ALDOR} code
-;;; from {\bf Spad} code.
-(setq translate-functions '(
-;; .spad to .as translator, in particular
-;;      loadtranslate
-        |spad2AsTranslatorAutoloadOnceTrigger|
-        ))
 
 ;;; This is part of the {\bf ALDOR subsystem}. These will be loaded
 ;;; if you compile a {\bf .as} file rather than a {\bf .spad} file.
@@ -391,13 +381,13 @@ loads the databases, sets up autoload triggers and clears out hash tables.
 After this function is called the image is clean and can be saved.
 |#
 (defun build-interpsys (load-files parse-files comp-files browse-files
-             translate-files nagbr-files asauto-files spad)
+             asauto-files spad)
   (declare (ignore nagbr-files))
   #-:ecl
   (progn
       (mapcar #'load load-files)
       (interpsys-image-init parse-files comp-files browse-files
-             translate-files asauto-files spad))
+             asauto-files spad))
   (if (and (boundp 'FRICAS-LISP::*building-axiomsys*)
                 FRICAS-LISP::*building-axiomsys*)
        (progn
@@ -417,7 +407,6 @@ After this function is called the image is clean and can be saved.
       (dolist (el `(
                     ("comp-files" ,comp-files)
                     ("browse-files" ,browse-files)
-                    ("translate-files" ,translate-files)
                     ("asauto-files" ,asauto-files)))
           (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
                         :lisp-files (nth 1 el)))
@@ -449,10 +438,9 @@ After this function is called the image is clean and can be saved.
      (force-output  *standard-output*)
      ;;; (load (concatenate 'string spad "/autoload/"  "parini.lsp"))
      (interpsys-image-init
-           (list (concatenate 'string spad "/autoload/"  "parse-files"))
+           (list (concatenate 'string spad "/autoload/" "parse-files"))
            (list (concatenate 'string spad "/autoload/" "comp-files"))
            (list (concatenate 'string spad "/autoload/" "browse-files"))
-           (list (concatenate 'string spad "/autoload/" "translate-files"))
            (list (concatenate 'string spad "/autoload/" "asauto-files"))
            spad)
       (format *standard-output* "before fricas-restart~%")
@@ -460,7 +448,7 @@ After this function is called the image is clean and can be saved.
       (fricas-restart))
 
 (defun interpsys-image-init (parse-files comp-files browse-files
-             translate-files asauto-files spad)
+             asauto-files spad)
   (push :oldboot *features*)
   (setf *package* (find-package "BOOT"))
   (initroot spad)
@@ -474,7 +462,6 @@ After this function is called the image is clean and can be saved.
   (setq *load-verbose* nil)
   (|setBootAutloadProperties| comp-functions comp-files)
   (|setBootAutloadProperties| browse-functions browse-files)
-  (|setBootAutloadProperties| translate-functions translate-files)
   (|setBootAutloadProperties| asauto-functions asauto-files)
   (resethashtables) ; the databases into core, then close the streams
  )

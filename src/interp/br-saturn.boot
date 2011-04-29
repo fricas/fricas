@@ -42,7 +42,7 @@ $kPageSaturnArguments := nil  --bound by $kPageSaturn
 $atLeastOneUnexposed := false
 $saturnContextMenuLines := nil
 $saturnContextMenuIndex := 0
-$saturnMacros := '(
+$saturnMacros := '(_
   "\def\unixcommand#1#2{{\em #1}}"_
   "\def\lispFunctionLink#1#2{\lispLink[d]{#1}{{\bf #2}}}"_
   "\def\lispTypeLink#1#2{\lispLink[d]{#1}{{\sf #2}}}"_
@@ -51,15 +51,7 @@ $saturnMacros := '(
   "\def\ttrarrow{$\rightarrow$}"_
   "\def\spadtype#1{\lispLink[d]{\verb!(|spadtype| '|#1|)!}{\sf #1}}"_
   "\def\spad#1{{\em #1}}"_
-  "\def\spadfun#1{{\em #1}}"_
-)
-
-on() ==
-  $saturn := true
-  $standard := false
-off()==
-  $saturn := false
-  $standard := true
+  "\def\spadfun#1{{\em #1}}")
 
 page() ==
   $standard => $curPage

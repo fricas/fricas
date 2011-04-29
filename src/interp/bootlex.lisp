@@ -78,9 +78,10 @@
 
 (defun |oldParserAutoloadOnceTrigger| () nil)
 
+(defvar |$compiler_output_stream|)
+
 (defun print-defun (name body)
-   (let* ((sp (assoc 'vmlisp::compiler-output-stream vmlisp::optionlist))
-          (st (if sp (cdr sp) *standard-output*)))
+    (let ((st |$compiler_output_stream|))
         (print-full body st) (force-output st)))
 
 (defun print-package (package)
@@ -146,7 +147,6 @@
            ($SPAD T)
            ($BOOT nil)
            (XCape #\_)
-           (OPTIONLIST nil)
            (*EOF* NIL)
            (File-Closed NIL)
            (/editfile spad-input-file)
