@@ -167,24 +167,20 @@
       (if |$RawParseOnly| (RETURN (PRETTYPRINT X)))
       (if |$FlatParseOnly| (RETURN (PRETTYPRINT (|flattenSemi| X))))
       (if |$PostTranOnly| (RETURN (PRETTYPRINT (|postTransform| X))))
-      (if $BOOT
-          (setq X (DEF-RENAME (|new2OldLisp| X)))
-          (let ((nform (if |$noEarlyMacroexpand| X (|walkForm| X))))
-               (if nform
-                   (setq X (|parseTransform| (|postTransform| nform)))
-                   (RETURN NIL))))
+      (let ((nform (if |$noEarlyMacroexpand| X (|walkForm| X))))
+          (if nform
+              (setq X (|parseTransform| (|postTransform| nform)))
+              (RETURN NIL)))
       (if |$TranslateOnly| (RETURN (SETQ |$Translation| X)))
       (when |$postStack| (|displayPreCompilationErrors|) (RETURN NIL))
       (COND (|$PrintOnly|
              (format t "~S   =====>~%" |$currentLine|)
              (RETURN (PRETTYPRINT X))))
-      (if (NOT $BOOT)
-          (if |$InteractiveMode|
-              (|processInteractive| X NIL)
-            (if (setq U (|compTopLevel|  X |$EmptyMode|
+      (if |$InteractiveMode|
+          (|processInteractive| X NIL)
+          (if (setq U (|compTopLevel|  X |$EmptyMode|
                                          |$InteractiveFrame|))
-                (SETQ |$InteractiveFrame| (third U))))
-        (DEF-PROCESS X))
+              (SETQ |$InteractiveFrame| (third U))))
       (if |$semanticErrorStack| (|displaySemanticErrors|))
       (TERPRI))))
 
