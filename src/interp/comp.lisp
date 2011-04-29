@@ -51,7 +51,7 @@
 
 (in-package "BOOT")
 
-(export '(Comp OptionList SLAM SPADSLAM FLUID))
+(export '(Comp SLAM SPADSLAM FLUID))
 
 ;;; Common Block section
 

@@ -37,17 +37,9 @@
 ;indextable is a list of entries (key class <location or filename>)
 ;filename is of the form filenumber.lsp or filenumber.o
 
-(defvar optionlist nil "alist which controls compiler output")
-
-(defun addoptions (key value basename) "adds pairs to optionlist"
-  (push (cons key value) optionlist)
-  (if (equal key 'FILE)
-      (push
-       (cons 'COMPILER-OUTPUT-STREAM
-                   (open (concat (libstream-dirname value) "/" basename ".lsp")
-                         :direction :output :if-exists :supersede))
-             optionlist)))
-
+(defun |make_compiler_output_stream|(lib basename)
+   (open (concat (libstream-dirname lib) "/" basename ".lsp")
+         :direction :output :if-exists :supersede))
 
 (defun |rMkIstream| (file)
   (let ((stream nil)
@@ -61,18 +53,19 @@
                                :indexstream stream)))
 
 (defun |rMkOstream| (file)
-  (let ((stream nil)
-        (indextable nil)
-        (fullname (make-full-namestring file NIL)))
-               (case (file-kind fullname)
-                     (-1 (makedir fullname))
-                     (0 (error (format nil "~s is an existing file, not a library" fullname)))
-                     (1 nil)
-                     (otherwise (error "Bad value from directory?")))
-               (multiple-value-setq (stream indextable) (get-io-index-stream fullname))
-               (make-libstream :mode 'output  :dirname fullname
-                               :indextable indextable
-                               :indexstream stream )))
+    (let ((stream nil)
+          (indextable nil)
+          (fullname (make-full-namestring file NIL)))
+        (case (file-kind fullname)
+            (-1 (makedir fullname))
+            (0 (error (format nil "~s is an existing file, not a library"
+                              fullname)))
+            (1 nil)
+            (otherwise (error "Bad value from directory?")))
+        (multiple-value-setq (stream indextable) (get-io-index-stream fullname))
+        (make-libstream :mode 'output  :dirname fullname
+                        :indextable indextable
+                        :indexstream stream )))
 
 (defvar *index-filename* "index.KAF")
 
@@ -147,8 +140,6 @@
             (stream (concat (libstream-dirname rstream) "/" file-or-pos))
             (read  stream))) )))
 
-(defvar *lib-var*)
-
 ;; (RKEYIDS filearg) -- interned version of keys
 (defun rkeyids (&rest filearg)
   (mapcar #'intern (mapcar #'car (getindextable
@@ -177,19 +168,7 @@
      entry))
 
 
-;;(defun rshut (rstream)
-;;  (when (and (equal rstream (cdr (assoc 'FILE OPTIONLIST)))
-;;             (assoc 'compiler-output-stream optionlist))
-;;        (close (cdr (assoc 'compiler-output-stream optionlist)))
-;;        (setq optionlist nil))
-;;  (if (eq (libstream-mode rstream) 'output)
-;;      (write-indextable (libstream-indextable rstream) (libstream-indexstream rstream)))
-;;  (close (libstream-indexstream rstream)))
 (defun rshut (rstream)
-  (when (and (equal rstream (cdr (assoc 'FILE OPTIONLIST)))
-             (assoc 'compiler-output-stream optionlist))
-        (close (cdr (assoc 'compiler-output-stream optionlist)))
-        (setq optionlist (cddr optionlist)))
   (if (eq (libstream-mode rstream) 'output)
       (write-indextable (libstream-indextable rstream) (libstream-indexstream rstream)))
   (close (libstream-indexstream rstream)))
@@ -203,26 +182,7 @@
     (let ((base (pathname-name filespec)))
          (recompile-lib-file-if-necessary
              (concatenate 'string (namestring filespec) "/" base ".lsp")))
-  ;; only pack non libraries to avoid lucid file handling problems
-    (let* ((rstream (rdefiostream (list (cons 'file filespec) (cons 'mode 'input))))
-           (nstream nil)
-           (nindextable nil)
-           (nrstream nil)
-           (index-file-name (concat (truename filespec) "/" *index-filename*))
-           (temp-index-file-name (make-pathname :name "oldindex"
-                                                :defaults index-file-name)))
-      (rename-file index-file-name temp-index-file-name ) ;; stays until closed
-      (multiple-value-setq (nstream nindextable) (get-io-index-stream filespec))
-      (setq nrstream (make-libstream :mode 'output  :dirname filespec
-                                     :indextable nindextable
-                                     :indexstream nstream ))
-      (dolist (entry (libstream-indextable rstream))
-              (rwrite (car entry) (rread (car entry) rstream) nrstream)
-              (if (stringp (caddr entry))
-                  (delete-file (concat filespec "/" (caddr entry)))))
-      (close (libstream-indexstream rstream))
-      (delete-file temp-index-file-name)
-      (rshut nrstream)))
+    (error "RPACKFILE only works on .NRLIB-s"))
   filespec)
 
 (defun recompile-lib-file-if-necessary (lfile)
@@ -399,10 +359,6 @@
     (obey (concat "mv " (make-full-namestring filespec2) " " filespec1))
  )
 
-
-
-;;(defun move-file (namestring1 namestring2)
-;;  (rename-file namestring1 namestring2))
 
 (defun $FCOPY (filespec1 filespec2)
     (let ((name1 (make-full-namestring filespec1))

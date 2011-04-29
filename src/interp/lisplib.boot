@@ -313,7 +313,7 @@ initializeLisplib libName ==
   _$ERASE(libName,'ERRORLIB)
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib(libName,'ERRORLIB)
-  ADDOPTIONS('FILE, $libFile, libName)
+  $compiler_output_stream := make_compiler_output_stream($libFile, libName)
   $lisplibOpAlist := nil  --operations alist for new runtime system
   $lisplibSignatureAlist := nil
   if pathnameTypeId(_/EDITFILE) = 'SPAD

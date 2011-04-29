@@ -248,6 +248,7 @@
    vmlisp::|rMkIstream|
    vmlisp::|rMkOstream|
    vmlisp::NUM2USTR
+   vmlisp::|make_compiler_output_stream|
 ))
 
 (in-package "FOAM")

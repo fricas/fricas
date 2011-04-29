@@ -74,7 +74,9 @@ inputFile2RecordFile(pathname,:option) ==
   opath := KAR option or pathname
   odirect := pathnameDirectory opath
   opathname := htMkPath(odirect,ifn,'"rec")
-  _*PRINT_-ARRAY_*: local := true
+  -- logically _*PRINT_-ARRAY_* should be local, but Common Lisp
+  -- forces us to omit it.
+  _*PRINT_-ARRAY_* := true
   $mkTestFlag: local := true
   $runTestFlag: local := false
   $mkTestOutputStack: local := nil

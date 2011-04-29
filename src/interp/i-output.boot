@@ -2133,13 +2133,13 @@ bracketagglist(u, start, linelength, tchr, open, close) ==
     null u => return(nil)
 
 prnd(start, op) ==
--->
+  spcs := fillerSpaces(MAX(0,start - 1), '" ")
   $testOutputLineFlag =>
-    string := STRCONC(fillerSpaces MAX(0,start - 1),op)
+    string := STRCONC(spcs, op)
     $testOutputLineList := [string,:$testOutputLineList]
-  PRINTEXP(fillerSpaces MAX(0,start - 1),$algebraOutputStream)
+  PRINTEXP(spcs, $algebraOutputStream)
   $collectOutput =>
-    string := STRCONC(fillerSpaces MAX(0,start - 1),op)
+    string := STRCONC(spcs, op)
     $outputLines := [string, :$outputLines]
   PRINTEXP(op,$algebraOutputStream)
   TERPRI $algebraOutputStream
