@@ -171,7 +171,7 @@
         (SETQ DEPTH_CONDITION
               (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'DEPTH))
                   (if (AND (CDR U) (integerp (CADR U)))
-                      (LIST 'LE 'FUNDEPTH (CADR U))
+                      (LIST '|<=| 'FUNDEPTH (CADR U))
                     (TRACE_OPTION_ERROR 'DEPTH))
                   T))
         (SETQ CONDITION
@@ -313,9 +313,9 @@
 
 (DEFUN MONITOR-BLANKS (N) (PRINC (MAKE-FULL-CVEC N " ") CURSTRM))
 
-(DEFUN MONITOR-EVALBEFORE (X) (EVALFUN (MONITOR-EVALTRAN X NIL)) X)
+(DEFUN MONITOR-EVALBEFORE (X) (EVAL (MONITOR-EVALTRAN X NIL)) X)
 
-(DEFUN MONITOR-EVALAFTER (X) (EVALFUN (MONITOR-EVALTRAN X 'T)))
+(DEFUN MONITOR-EVALAFTER (X) (EVAL (MONITOR-EVALTRAN X 'T)))
 
 (DEFUN MONITOR-EVALTRAN (X FG)
   (if (HAS_SHARP_VAR X) (MONITOR-EVALTRAN1 X FG) X))
@@ -513,7 +513,7 @@
             (RPLACD NOT_TOP_LEVEL (1+ (CDR NOT_TOP_LEVEL))))
         (SETQ FUNDEPTH (CDR (ASSOC NAMEID |depthAlist| :test #'eq)))
         (SETQ CONDITION (MONITOR-EVALTRAN CONDITION NIL))
-        (SETQ YES (EVALFUN CONDITION))
+        (SETQ YES (EVAL CONDITION))
         (if (member NAMEID |$mathTraceList| :test #'eq)
             (SETQ |$mathTrace| T))
         (if (AND YES |$TraceFlag|)

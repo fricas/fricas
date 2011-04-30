@@ -87,54 +87,6 @@
 (defun print-package (package)
     (format out-stream "~&~%(IN-PACKAGE ~S )~%~%" package))
 
-
-(defun boot (&optional
-              (boot-input-file nil)
-              (boot-output-file nil)
-             &aux
-             (Echo-Meta t)
-             ($BOOT T)
-             (|$InteractiveMode| NIL)
-             (XCape #\_)
-             (File-Closed NIL)
-             (*EOF* NIL)
-             (OPTIONLIST NIL)
-             (*fileactq-apply* (function print-defun))
-             (*comp370-apply* (function print-defun)))
-  (declare (special echo-meta *comp370-apply* *EOF* File-Closed XCape))
-  (init-boot/spad-reader)
-  (with-open-stream
-    (in-stream (if boot-input-file (open boot-input-file :direction :input)
-                    *standard-input*))
-    (initialize-preparse in-stream)
-    (with-open-stream
-      (out-stream (if boot-output-file
-                      (open boot-output-file :direction :output
-                         :if-exists :supersede)
-                      #-(or :cmu :sbcl) (make-broadcast-stream *standard-output*)
-                      #+(or :cmu :sbcl) *standard-output*
-                      ))
-      (when boot-output-file
-         (format out-stream "~&;;; -*- Mode:Lisp; Package:Boot  -*-~%~%")
-         (print-package "BOOT"))
-      (loop (if (and (not File-Closed)
-                     (setq Boot-Line-Stack (PREPARSE in-stream)))
-                (progn
-                       (|parse_Expression|)
-                       (let ((parseout (pop-stack-1)) )
-                         (setq parseout (|new2OldLisp| parseout))
-                         (setq parseout (DEF-RENAME parseout))
-                         (let ((*standard-output* out-stream))
-                           (DEF-PROCESS parseout))
-                         (format out-stream "~&")
-                         (if (null parseout) (ioclear)) ))
-                (return nil)))
-      (if boot-input-file
-          (format out-stream ";;;Boot translation finished for ~a~%"
-                  (namestring boot-input-file)))
-      (IOClear in-stream out-stream)))
-  T)
-
 (defvar |$MacroTable|)
 
 (defun |spadCompile| (&optional
