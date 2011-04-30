@@ -93,7 +93,7 @@
                    ((AND (VECP U) (VECP V))
                     (AND (> (SIZE V) (SIZE U))
                          (DO ((I 0 (1+ I)))
-                             ((GT I (MAXINDEX U)) 'T)
+                             ((> I (MAXINDEX U)) 'T)
                            (COND ((NOT (EQUAL (ELT U I) (ELT V I)))
                                   (RETURN (?ORDER (ELT U I) (ELT V I))))))))
                    ((croak "Do not understand")))
@@ -272,26 +272,6 @@
 (defmacro qeqcar (x y)
     (if (integerp y) `(eql (the fixnum (qcar ,x)) (the fixnum ,y))
          `(eq (qcar ,x) ,y)))
-
-(defmacro boot-equal (a b)
-   (cond ((ident-char-lit a)
-           `(or (eql ,a ,b) (eql (character ,a) ,b)))
-         ((ident-char-lit b)
-           `(or (eql ,a ,b) (eql ,a (character ,b))))
-         (t `(eqqual ,a ,b))))
-
-(defun ident-char-lit (x)
-   (and (eqcar x 'quote) (identp (cadr x)) (= (length (pname (cadr x))) 1)))
-
-(defmacro EQQUAL (a b)
-  (cond ((OR (EQUABLE a) (EQUABLE b)) `(eq ,a ,b))
-        ((OR (numberp a) (numberp b)) `(eql ,a ,b))
-        (t  `(equal ,a ,b))))
-
-(defmacro NEQUAL (a b) `(not (BOOT-EQUAL ,a ,b)))
-
-(defun EQUABLE (X)
-  (OR (NULL X) (AND (EQCAR X 'QUOTE) (symbolp (CADR X)))))
 
 ; 7 CONTROL STRUCTURE
 

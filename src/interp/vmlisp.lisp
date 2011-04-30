@@ -1110,8 +1110,6 @@
 
 ; 99.0 Ancient Stuff We Decided To Keep
 
-(define-function 'EVALFUN #'eval) ;EVALFUN drops lexicals before evaluating
-
 (defun PLACEP (item) (eq item *read-place-holder*))
 (defun VMREAD (st &optional (eofval *read-place-holder*))
   (read st nil eofval))

@@ -694,7 +694,7 @@ absolutelyCannotCoerce(t1,t2) ==
   n2   := CAR t2
   QFI  := [$QuotientField, $Integer]
   int2 := isEqualOrSubDomain(t2,$Integer)
-  scalars := '(BigFloat NewFloat Float DoubleFloat RationalNumber)
+  scalars := '(Float DoubleFloat RationalNumber)
 
   MEMQ(n1,scalars) and int2 => true
   (t1 = QFI) and int2       => true
@@ -917,7 +917,7 @@ coerceInt1(triple,t2) ==
   EQ(CAR(t1),'Variable) and PAIRP(t2) and
     (isEqualOrSubDomain(t2,$Integer) or
       (t2 = [$QuotientField, $Integer]) or MEMQ(CAR(t2),
-        '(RationalNumber BigFloat NewFloat Float DoubleFloat))) => NIL
+        '(RationalNumber Float DoubleFloat))) => NIL
 
   ans := coerceRetract(triple,t2) or coerceIntTower(triple,t2) or
     [.,:arg]:= deconstructT t2
