@@ -44,11 +44,9 @@ BOOTTOCL (fn, outfn) ==
 -- a hash table to store previously computed values indexed by argument
 -- list.
  
-BOOTCLAM (fn, outfn) == BOOTCLAMLINES(nil, fn, outfn)
- 
-BOOTCLAMLINES(lines, fn, outfn) ==
-         $bfClamming:local:=true
-         BOOTTOCLLINES(lines,fn, outfn)
+BOOTCLAM (fn, outfn) ==
+    $bfClamming : local := true
+    BOOTTOCLCLINES(nil, fn, outfn)
 
 BOOTTOCLLINES(lines, fn, outfn)==
     infn := shoeAddbootIfNec fn
@@ -70,10 +68,11 @@ shoeClLines(a,fn,lines,outfn)==
 -- the common lisp file "filename.clisp" with the original boot
 -- code as comments
  
-BOOTTOCLC(fn, outfn) ==BOOTTOCLCLINES(nil, fn, outfn)
+BOOTTOCLC(fn, outfn) ==
+    $bfClamming : local := false
+    BOOTTOCLCLINES(nil, fn, outfn)
  
 BOOTTOCLCLINES(lines, fn, outfn)==
-  $bfClamming:local:=false
   infn:=shoeAddbootIfNec fn
   if NULL(outfn) then
       outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
