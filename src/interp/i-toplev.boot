@@ -265,7 +265,7 @@ msgText(key, args) ==
 justifyMyType(t) ==
   len := #t
   len > $LINELENGTH => t
-  CONCAT(fillerSpaces($LINELENGTH-len), t)
+  CONCAT(fillerSpaces($LINELENGTH-len, '" "), t)
 
 typeTimePrin x ==
   $highlightDelta: local:= 0

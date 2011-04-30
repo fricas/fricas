@@ -978,7 +978,7 @@ grepFile(pattern, key, option) ==
       casepart :=
         MEMQ('iv,options)=> '"-vi"
         '"-i"
-      command := STRCONC('"grep ",casepart,'" _'",pattern,'"_' ",source)
+      command := STRCONC('"grep ", casepart, '" '", pattern, '"' ", source)
       obey STRCONC(command, '" > ",target)
       dbReadLines target
     ----Windows Version------
