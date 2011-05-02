@@ -710,7 +710,7 @@ shoeCompTran x==
        if $fluidVars or $locVars or $dollarVars or $typings
        then
          lvars:=append($fluidVars,$locVars)
-         $fluidVars:=UNION($fluidVars,$dollarVars)
+         -- $fluidVars:=UNION($fluidVars,$dollarVars)
          if null $fluidVars
          then
             null $typings=> shoePROG(lvars,body)
