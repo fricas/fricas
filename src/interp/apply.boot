@@ -35,7 +35,7 @@ oldCompilerAutoloadOnceTrigger() == nil
 
 compAtomWithModemap(x,m,e,v) ==
   Tl :=
-    [[transImplementation(x,map,fn),target,e]
+    [[transImplementation(x, map), target, e]
       for map in v | map is [[.,target],[.,fn]]] =>
                                          --accept only monadic operators
         T:= or/[t for (t:= [.,target,.]) in Tl | modeEqual(m,target)] => T
@@ -43,7 +43,7 @@ compAtomWithModemap(x,m,e,v) ==
         0<#Tl and m=$NoValueMode => first Tl
         nil
 
-transImplementation(op,map,fn) ==
+transImplementation(op, map) ==
 --+
   fn := genDeltaEntry [op,:map]
   fn is ["XLAM",:.] => [fn]

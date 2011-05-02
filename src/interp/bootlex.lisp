@@ -82,7 +82,7 @@
 
 (defun print-defun (name body)
     (let ((st |$compiler_output_stream|))
-        (print-full body st) (force-output st)))
+        (print-full body st) ))
 
 (defun print-package (package)
     (format out-stream "~&~%(IN-PACKAGE ~S )~%~%" package))

@@ -53,9 +53,6 @@ encodeFunctionName(fun,package is [packageName,:arglist],signature,sep,count)
           STRCONC(STRINGIMAGE n,encodeItem x)
     encodedName:= INTERNL(getAbbreviation(packageName,#arglist),";",
         encodeItem fun,";",encodedSig, sep,STRINGIMAGE count)
-    if $LISPLIB then
-      $lisplibSignatureAlist:=
-        [[encodedName,:signature'],:$lisplibSignatureAlist]
     encodedName
 
 splitEncodedFunctionName(encodedName, sep) ==
