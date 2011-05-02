@@ -418,7 +418,6 @@ outputComp(x,e) ==
   [x, $OutputForm, e]
 
 compForm1(form is [op,:argl],m,e) ==
-  $NumberOfArgsIfInteger: local:= #argl --see compElt
   op="error" =>
     [[op,:[([.,.,e]:=outputComp(x,e)).expr
       for x in argl]],m,e]

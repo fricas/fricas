@@ -303,7 +303,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $catvecList: local    --list of vectors v1..vn for each view
   $hasCategoryAlist: local  --list of GENSYMs bound to (HasCategory ..) items
   $catNames: local      --list of names n1..nn for each view
-  $catsig: local        --target category (used in ProcessCond)
   $SetFunctions: local  --copy of p view with preds telling when fnct defined
   $MissingFunctionInfo: local --vector marking which functions are assigned
   $ConstantAssignments: local --code for creation of constants
@@ -313,11 +312,11 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $devaluateList:= [[arg,:b] for arg in args for b in $ModeVariableList]
 ------------------------
   oldtime:= TEMPUS_-FUGIT()
-  [$catsig,:argsig]:= sig
+  [catsig, :argsig] := sig
   catvecListMaker:=REMDUP
-    [(comp($catsig,$EmptyMode,$e)).expr,
+    [(comp(catsig, $EmptyMode, $e)).expr,
       :[compCategories first u for u in CADR $domainShell.4]]
-  condCats:= InvestigateConditions [$catsig,:rest catvecListMaker]
+  condCats:= InvestigateConditions [catsig, :rest catvecListMaker]
   -- a list, one for each element of catvecListMaker
   -- indicating under what conditions this
   -- category should be present.  true => always
@@ -328,7 +327,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
     --we will clobber elements; copy since $domainShell may be a cached vector
   $template := GETREFV (6 + $NRTdeltaLength)
   $catvecList:= [domainShell,:[emptyVector for u in CADR domainShell.4]]
-  $catNames := ['$] -- for DescendCode -- to be changed below for slot 4
   $SetFunctions:= GETREFV SIZE domainShell
   $MissingFunctionInfo:= GETREFV SIZE domainShell
   $catNames:= ['$,:[GENVAR() for u in rest catvecListMaker]]
@@ -447,10 +445,10 @@ NRTmakeSlot1Info() ==
       [:argl,dollarName] := rest $form
       [[dollarName,:'_$],:mkSlot1sublis argl]
     mkSlot1sublis rest $form
-  $lisplibOpAlist := transformOperationAlist SUBLIS(pairlis,$domainShell.1)
+  lisplibOpAlist := transformOperationAlist SUBLIS(pairlis, $domainShell.1)
   opList :=
-    $insideCategoryPackageIfTrue = true => slot1Filter $lisplibOpAlist
-    $lisplibOpAlist
+    $insideCategoryPackageIfTrue = true => slot1Filter lisplibOpAlist
+    lisplibOpAlist
   addList := SUBLIS(pairlis,$NRTaddForm)
   [first $form,[addList,:opList]]
 

@@ -226,12 +226,12 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
 
     mbody :=
       preset := [initialSetCode,:initialResetCode,['LET,max,['ELT,stateVar,0]]]
-      phrase1:= [['AND,['LET,max,['ELT,stateVar,0]],['GE,sharpArg,max]],
-                  [auxfn,:argl,stateVar]]
-      phrase2:= [['GT,sharpArg,['SETQ,max,['DIFFERENCE,max,k]]],
+      phrase1:= [['AND, ['LET, max, ['ELT, stateVar, 0]],
+                      [">=", sharpArg, max]], [auxfn,:argl,stateVar]]
+      phrase2:= [[">", sharpArg, ['SETQ, max, ['DIFFERENCE, max, k]]],
                   ['ELT,stateVar,['QSADD1,['QSDIFFERENCE,k,['DIFFERENCE,sharpArg,max]]]]]
-      phrase3:= [['GT,sharpArg,n],[auxfn,:argl,['LIST,n,:initCode]]]
-      phrase4:= [['GT,sharpArg,n-k],
+      phrase3:= [[">", sharpArg, n], [auxfn, :argl, ['LIST, n, :initCode]]]
+      phrase4:= [[">", sharpArg, n - k],
         ['ELT,['LIST,:initCode],['QSDIFFERENCE,n,sharpArg]]]
       phrase5:= ['(QUOTE T),['recurrenceError,MKQ op,sharpArg]]
       ['PROGN,:preset,['COND,phrase1,phrase2,phrase3,phrase4,phrase5]]

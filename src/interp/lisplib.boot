@@ -272,7 +272,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $lisplibAncestors: local := NIL
   $lisplibModemap: local := NIL
   $lisplibModemapAlist: local := NIL
-  $lisplibSlot1 : local := NIL   -- used by NRT mechanisms
   $lisplibOperationAlist: local := NIL
   $lisplibSuperDomain: local := NIL
   $libFile: local := NIL
@@ -314,8 +313,6 @@ initializeLisplib libName ==
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib(libName,'ERRORLIB)
   $compiler_output_stream := make_compiler_output_stream($libFile, libName)
-  $lisplibOpAlist := nil  --operations alist for new runtime system
-  $lisplibSignatureAlist := nil
   if pathnameTypeId(_/EDITFILE) = 'SPAD
     then outputLispForm('VERSION,['_/VERSIONCHECK,_/MAJOR_-VERSION])
 
@@ -331,19 +328,12 @@ finalizeLisplib libName ==
   lisplibWrite('"modemaps",removeZeroOne $lisplibModemapAlist,$libFile)
   opsAndAtts:= getConstructorOpsAndAtts($lisplibForm, kind)
   lisplibWrite('"operationAlist",removeZeroOne CAR opsAndAtts,$libFile)
-  if kind='category then
-     $pairlis : local := [[a,:v] for a in rest $lisplibForm
-                                 for v in $FormalMapVariableList]
-     $NRTslot1PredicateList : local := []
   lisplibWrite('"superDomain",removeZeroOne $lisplibSuperDomain,$libFile)
-  lisplibWrite('"signaturesAndLocals",
-    removeZeroOne $lisplibSignatureAlist, $libFile)
   lisplibWrite('"predicates",removeZeroOne  $lisplibPredicates,$libFile)
   lisplibWrite('"abbreviation",$lisplibAbbreviation,$libFile)
   lisplibWrite('"parents",removeZeroOne $lisplibParents,$libFile)
   lisplibWrite('"ancestors",removeZeroOne $lisplibAncestors,$libFile)
   lisplibWrite('"documentation",finalizeDocumentation(),$libFile)
-  lisplibWrite('"slot1Info",removeZeroOne $lisplibSlot1,$libFile)
   if $profileCompiler then profileWrite()
   if $lisplibForm and null CDR $lisplibForm then
     MAKEPROP(CAR $lisplibForm,'NILADIC,'T)

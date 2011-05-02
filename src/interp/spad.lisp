@@ -156,6 +156,7 @@
         (|$genSDVar| 0)
         (|$previousTime| (TEMPUS-FUGIT))
         )
+  (declare (special |$CategoryFrame|))
   (prog ((CURSTRM CUROUTSTREAM) |$s| |$x| |$m| u)
      (declare (special CURSTRM |$s| |$x| |$m| CUROUTSTREAM))
       (if (NOT X) (RETURN NIL))
