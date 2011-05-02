@@ -140,6 +140,7 @@ AlgebraicHermiteIntegration(F,UP,UPUP,R):Exports == Implementation where
 \section{package INTALG AlgebraicIntegrate}
 <<package INTALG AlgebraicIntegrate>>=
 )abbrev package INTALG AlgebraicIntegrate
+)boot $tryRecompileArguments := nil
 ++ Integration of an algebraic function
 ++ Author: Manuel Bronstein
 ++ Date Created: 1987
@@ -269,13 +270,13 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
 -- where the ri's are rational numbers, and fc(z) is arbitrary
 -- (fc can be linear too)
 -- la = [b1....,bk]  (all rational residues)
-      la := [- coefficient(q.factor, 0) for q in remove_!(fc::FAC, lf)]
+      la := [-$Q coefficient(q.factor, 0)$UPQ for q in remove_!(fc::FAC, lf)]
 -- ld = [D1,...,Dk] where Di is the sum of places where f has residue bi
       ld  := [divisor(rec.num, rec.den, rec.derivden, rec.gd, b::F) for b in la]
       pp  := UPQ2F(fc.factor)
 -- bb = - sum of all the roots of fc (i.e. the other residues)
       zero?(bb := coefficient(fc.factor,
-           (degree(fc.factor) - 1)::NonNegativeInteger)) =>
+           (degree(fc.factor) - 1)::NonNegativeInteger)$UPQ) =>
               -- cd = [[a1,...,ak], d]  such that bi = ai/d
               cd  := splitDenominator la
               -- g = gcd(a1,...,ak), so bi = (g/d) ci  with ci = bi / g
@@ -303,6 +304,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       false
 
     pLogDeriv(log, derivation) ==
+      import UPR
       map(derivation, log.coeff) ~= 0 =>
                  error "can only handle logs with constant coefficients"
 --      one?(n := degree(log.coeff)) =>
@@ -334,11 +336,14 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       (SUP2UP numer g) / (SUP2UP denom g)
 
     rlift(f, kx, ky) ==
-      reduce map(x1+->univ(x1, kx), retract(univariate(f,
-         ky))@SUP)$UnivariatePolynomialCategoryFunctions2(F,SUP,QF,UPUP)
+      uf := univariate(f, ky)
+      reduce map(x1+->univ(x1, kx), retract(uf)@SUP
+                )$UnivariatePolynomialCategoryFunctions2(F,SUP,QF,UPUP)
 
     nonQ(rec, p) ==
-      empty? rest(lf := factors ffactor primitivePart p) =>
+      u := ffactor primitivePart p
+      lf := factors(u)
+      empty? rest(lf) =>
                        trace00(rec, first(lf).factor, empty()$List(LOG))
       FAIL1
 
@@ -392,7 +397,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       mkLog(q, inv((- rc.order * cd.den)::Q), rc.function, alpha)
 
     mkLog(q, scalr, lgd, alpha) ==
-      degree(q) <= 1 =>
+      degree(q) <=$Integer 1 =>
         [[scalr, monomial(1, 1)$UPR - F2UPR alpha, lgd::UPR]]
       [[scalr,
          map(F2R, q)$UnivariatePolynomialCategoryFunctions2(F,UP,R,UPR),
@@ -404,7 +409,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       found:Boolean := false
       ans := first l
       for q in l repeat
-        if degree(q.factor) > 1 then
+        if degree(q.factor)$UPQ >$Integer 1 then
           found => return "failed"
           found := true
           ans   := q
@@ -455,7 +460,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
 
 -- for mixed functions. f dx not assumed locally integral at infinity
     algintegrate(f, derivation) ==
-      zero? degree(x' := derivation(x := monomial(1, 1)$UP)) =>
+      x' := derivation(x := monomial(1, 1)$UP)
+      zero? degree(x') =>
          algintprim(f, derivation)
       ((xx := x' exquo x) case UP) and
         (retractIfCan(xx::UP)@Union(F, "failed") case F) =>
