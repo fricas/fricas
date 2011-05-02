@@ -12,6 +12,7 @@
 \section{category FFCAT FunctionFieldCategory}
 <<category FFCAT FunctionFieldCategory>>=
 )abbrev category FFCAT FunctionFieldCategory
+)boot $tryRecompileArguments := nil
 ++ Function field of a curve
 ++ Author: Manuel Bronstein
 ++ Date Created: 1987
@@ -153,6 +154,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
    add
     import InnerCommonDenominator(UP, RF, Vector UP, Vector RF)
     import UnivariatePolynomialCommonDenominator(UP, RF, UPUP)
+    import NonNegativeInteger
 
     repOrder: (Matrix RF, Z) -> Z
     Q2RF    : Q  -> RF
@@ -189,6 +191,8 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       degree(p := u::UP) = 3 => p
       "failed"
 
+    import RF
+
     rationalPoint?(x, y)   ==
       zero?((definingPolynomial() (y::UP::RF)) (x::UP::RF))
 
@@ -210,6 +214,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
                                      P, SparseUnivariatePolynomial P)) y
 
       nonSingularModel u ==
+        import String
         d    := commonDenominator(coordinates(w := integralBasis()))::RF
         vars := [concat(string u, string i)::SY for i in 1..(n := #w)]
         x    := '%%dummy1
@@ -258,6 +263,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       (n exquo d)::F
 
     primitivePart f ==
+      import Vector(UP)
       cd := yCoordinates f
       d  := gcd([content qelt(cd.num, i)
                  for i in minIndex(cd.num) .. maxIndex(cd.num)]$List(F))
@@ -274,6 +280,8 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     complementaryBasis b ==
       m := inverse(traceMatrix b)::Matrix(RF)
       [represents row(m, i) for i in minRowIndex m .. maxRowIndex m]
+
+    import Matrix(RF)
 
     integralAtInfinity? f ==
       not any?(s +-> infOrder(s) < 0,
@@ -329,6 +337,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
       [i0, k]
 
     normalizeAtInfinity w ==
+      import Matrix(Q)
       ans   := copy w
       infm  := inverseIntegralMatrixAtInfinity()
       mhat  := zero(rank(), rank())$Matrix(RF)
@@ -357,6 +366,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
     differentiate(f:%, d:UP -> UP) ==
       differentiate(f, x +-> differentiate(x, d)$RF)
 
+)boot $tryRecompileArguments := true
 @
 \section{package MMAP MultipleMap}
 <<package MMAP MultipleMap>>=

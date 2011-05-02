@@ -766,6 +766,7 @@ height(k1) to be maximal
 \section{package ITRIGMNP InnerTrigonometricManipulations}
 <<package ITRIGMNP InnerTrigonometricManipulations>>=
 )abbrev package ITRIGMNP InnerTrigonometricManipulations
+)boot $tryRecompileArguments := nil
 ++ Trigs to/from exps and logs
 ++ Author: Manuel Bronstein
 ++ Date Created: 4 April 1988
@@ -833,13 +834,14 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
     GF2FG f       == (F2FG real f) + complex(0, 1)$GR ::FG * F2FG imag f
     GR2GF gr      == complex(real(gr)::F, imag(gr)::F)
 
+    im := complex(0, 1)$GR :: FG
+
 -- This expects the argument to have only tan and atans left.
 -- Does a half-angle correction if k is not in the initial kernel list.
     ker2explogs(k, l) ==
       kf := k::FG
       empty?(args := [trigs2explogs(a, l)
                                     for a in argument k]$List(FG)) => kf
-      im := complex(0, 1)$GR :: FG
       z  := first args
       is?(k, 'tan)  =>
         e := (member?(k, l) => exp(im * z) ^ 2;  exp(2 * im * z))
@@ -888,8 +890,8 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
       is?(op, '%iint) =>
           complex(op [real x for x in arg]$List(F),
                   op [imag x for x in arg]$List(F))
-      print(op::OutputForm)
-      print(arg::OutputForm)
+      print(op::OutputForm)$OutputForm
+      print(arg::OutputForm)$OutputForm
       error "ker2trigs: cannot convert kernel to gaussian function"
 
     sup2trigs(p, f) ==
@@ -900,12 +902,14 @@ InnerTrigonometricManipulations(R,F,FG): Exports == Implementation where
                                     IndexedExponents KG, KG, GR, PG, GF)
 
     explogs2trigs f ==
+      nf := numer f
+      df := denom f
       (m := mainKernel f) case "failed" =>
-        GR2GF(retract(numer f)@GR) / GR2GF(retract(denom f)@GR)
+        GR2GF(retract(nf)@GR) / GR2GF(retract(df)@GR)
       op  := operator(operator(k := m::KG))$F
       arg := [explogs2trigs x for x in argument k]
-      num := univariate(numer f, k)
-      den := univariate(denom f, k)
+      num := univariate(nf, k)
+      den := univariate(df, k)
       is?(op, 'exp) =>
         e  := exp real first arg
         y  := imag first arg
