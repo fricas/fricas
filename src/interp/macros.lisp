@@ -354,15 +354,7 @@
 
 ; 7.8.2 General Iteration
 
-(defmacro REPEAT (&rest L)
-  (let ((U (REPEAT-TRAN L NIL))) (-REPEAT (CDR U) (CAR U))))
-
-(defun REPEAT-TRAN (L LP)
-  (COND ((ATOM L) (ERROR "REPEAT FORMAT ERROR"))
-        ((MEMBER (KAR (KAR L))
-                 '(EXIT RESET IN ON GSTEP ISTEP STEP GENERAL UNTIL WHILE SUCHTHAT EXIT))
-         (REPEAT-TRAN (CDR L) (CONS (CAR L) LP)))
-        ((CONS (NREVERSE LP) (MKPF L 'PROGN)))))
+(defmacro REPEAT (&rest L) (|expandREPEAT| L))
 
 (DEFUN MKPF (L OP)
   (if (FLAGP OP 'NARY) (SETQ L (MKPFFLATTEN-1 L OP NIL)))
@@ -455,185 +447,7 @@
  (declare (ignore l))
  "Needed by spadCompileOrSetq" 1)
 
-(defun -REPEAT (BD SPL)
-  (let (u g g1 inc final xcl xv il rsl tll funPLUS funGT fun? funIdent
-        funPLUSform funGTform)
-    (DO ((X SPL (CDR X)))
-        ((ATOM X)
-         (|expandDO| (LIST (NREVERSE IL) (LIST (MKPF (NREVERSE XCL) 'OR) XV)
-               (SEQOPT (CONS 'SEQ (NCONC (NREVERSE RSL) (LIST (LIST 'EXIT BD))))))))
-      (COND ((ATOM (CAR X)) (FAIL)))
-      (COND ((AND (EQ (CAAR X) 'STEP)
-                  (|member| (CADDAR X) '(2 1 0 (|One|) (|Zero|)))
-                  (|member| (CADR (CDDAR X)) '(1 (|One|))))
-             (SETQ X (CONS (CONS 'ISTEP (CDAR X)) (CDR X))) ))
-                        ; A hack to increase the likelihood of small integers
-      (SETQ U (CDAR X))
-      (case (CAAR X)
-        (GENERAL (AND (CDDDR U) (PUSH (CADDDR U) XCL))
-                 (PUSH (LIST (CAR U) (CADR U) (CADDR U)) IL) )
-        (GSTEP
-          (SETQ tll (CDDDDR U))  ;tll is (+fun >fun type? ident)
-          (SETQ funPLUSform (CAR tll))
-          (SETQ funGTform   (CAR (SETQ tll (QCDR tll))))
-          (PUSH (LIST (SETQ funPLUS (GENSYM)) funPLUSform) IL)
-          (PUSH (LIST (SETQ funGT   (GENSYM)) funGTform) IL)
-          (COND ((SETQ tll (CDR tll))
-            (SETQ fun?     (CAR tll))
-            (SETQ funIdent (CAR (SETQ tll (QCDR tll))))))
-          (IF (NOT (ATOM (SETQ inc (CADDR U)) ))
-              (PUSH (LIST (SETQ inc (GENSYM)) (CADDR U)) IL))
-          (SETQ final (CADDDR U))
-          (COND (final
-             (COND ((ATOM final))
-                   ((PUSH (LIST (SETQ final (GENSYM)) (CADDDR U)) IL)))
-                 ; If CADDDR U is not an atom, only compute the value once
-             (PUSH
-                (if fun?
-                      (if (FUNCALL fun? INC)
-                          (if  (FUNCALL (EVAL funGTform) INC funIdent)
-                               (LIST 'FUNCALL funGT (CAR U) FINAL)
-                               (LIST 'FUNCALL funGT FINAL (CAR U)))
-                           (LIST 'IF (LIST 'FUNCALL funGT INC funIdent)
-                                     (LIST 'FUNCALL funGT (CAR U) FINAL)
-                                     (LIST 'FUNCALL funGT FINAL  (CAR U))))
-                       (LIST 'FUNCALL funGT (CAR U) final))
-                     XCL)))
-          (PUSH (LIST (CAR U) (CADR U) (LIST 'FUNCALL funPLUS (CAR U) INC)) IL))
-        (STEP
-          (IF (NOT (ATOM (SETQ inc (CADDR U)) ))
-              (PUSH (LIST (SETQ inc (GENSYM)) (CADDR U)) IL))
-          (COND ((CDDDR U)
-                 (COND ((ATOM (SETQ final (CADDDR U)) ))
-                       ((PUSH (LIST (SETQ final (GENSYM)) (CADDDR U)) IL)))
-                 ; If CADDDR U is not an atom, only compute the value once
-                 (PUSH
-                   (if (INTEGERP INC)
-                       (LIST (if  (MINUSP INC) '< '>) (CAR U) FINAL)
-                     `(if (MINUSP ,INC)
-                          (< ,(CAR U) ,FINAL)
-                        (> ,(CAR U) ,FINAL)))
-                       XCL)))
-          (PUSH (LIST (CAR U) (CADR U) (LIST '+ (CAR U) INC)) IL))
-        (ISTEP
-          (IF (NOT (ATOM (SETQ inc (CADDR U)) ))
-              (PUSH (LIST (SETQ inc (GENSYM)) (CADDR U)) IL))
-          (COND ((CDDDR U)
-                 (COND ((ATOM (SETQ final (CADDDR U)) ))
-                       ((PUSH (LIST (SETQ final (GENSYM)) (CADDDR U)) IL)))
-                     ; If CADDDR U is not an atom, only compute the value once
-                 (PUSH
-                   (if (INTEGERP INC)
-                       (LIST (if  (QSMINUSP INC) 'QSLESSP 'QSGREATERP)
-                             (CAR U) FINAL)
-                     `(if (QSMINUSP ,INC)
-                          (QSLESSP ,(CAR U) ,FINAL)
-                        (QSGREATERP ,(CAR U) ,FINAL)))
-                       XCL)))
-          (PUSH (LIST (CAR U) (CADR U)
-                      (COND ((|member| INC '(1 (|One|)))
-                             (MKQSADD1 (CAR U)))
-                            ((LIST 'QSPLUS (CAR U) INC)) ))
-                IL))
-        (ON (PUSH (LIST 'ATOM (CAR U)) XCL)
-            (PUSH (LIST (CAR U) (CADR U) (LIST 'CDR (CAR U))) IL))
-        (RESET (PUSH (LIST 'PROGN (CAR U) NIL) XCL))
-        (IN
-          (PUSH (LIST 'OR
-                      (LIST 'ATOM (SETQ G (GENSYM)))
-                      (CONS 'PROGN
-                            (CONS
-                              (LIST 'SETQ (CAR U) (LIST 'CAR G))
-                              (APPEND
-                                (COND ((AND (symbolp (car U))
-                                            (symbol-package (car U))
-                                             $TRACELETFLAG)
-                                       (LIST (LIST '/TRACELET-PRINT (CAR U)
-                                                   (CAR U))))
-                                      (NIL))
-                                (LIST NIL))))  ) XCL)
-          (PUSH (LIST G (CADR U) (LIST 'CDR G)) IL)
-          (PUSH (LIST (CAR U) NIL) IL))
-        (INDOM (SETQ G (GENSYM))
-               (SETQ G1 (GENSYM))
-               (PUSH (LIST 'ATOM G) XCL)
-               (PUSH (LIST G (LIST 'INDOM-FIRST (CADR U))
-                           (LIST 'INDOM-NEXT G1)) IL)
-               (PUSH (LIST (CAR U) NIL) IL)
-               (PUSH (LIST G1 NIL) IL)
-               (PUSH (LIST 'SETQ G1 (LIST 'CDR G)) RSL)
-               (PUSH (LIST 'SETQ (CAR U) (LIST 'CAR G)) RSL))
-        (UNTIL (SETQ G (GENSYM)) (PUSH (LIST G NIL (CAR U)) IL) (PUSH G XCL))
-        (WHILE (PUSH (LIST 'NULL (CAR U)) XCL))
-        (SUCHTHAT (SETQ BD (LIST 'COND (LIST (CAR U) BD))))
-        (EXIT (SETQ XV (CAR U))) (FAIL)))))
-
-
-(defun SEQOPT (U)
-  (if (AND (EQCAR U 'SEQ) (EQCAR (CADR U) 'EXIT) (EQCAR (CADADR U) 'SEQ))
-      (CADADR U)
-      U))
-
 (defvar $BOOT NIL)
-
-(defun |expandDO| (OL)
-    (PROG (VARS L VL V U INITS U-VARS U-VALS ENDTEST EXITFORMS BODYFORMS)
-         (if $BOOT (return (CONS 'DO OL)))
-         (SETQ L  (copy-list OL))
-         (if (OR (ATOM L) (ATOM (CDR L))) (GO BADO))
-         (setq vl (POP L))
-         (COND ((IDENTP VL)
-                (SETQ VARS (LIST VL))
-                (AND (OR (ATOM L)
-                         (ATOM (progn (setq inits (POP L)) L))
-                         (ATOM (progn (setq u-vals (pop L)) L)))
-                     (GO BADO))
-                (SETQ INITS (LIST INITS) U-VARS (LIST (CAR VARS)) U-VALS (LIST U-VALS))
-                (setq endtest (POP L)))
-               ((prog ()
-                        (COND ((NULL VL) (GO TG5)) ((ATOM VL) (GO BADO)))
-                 G180   (AND (NOT (PAIRP (SETQ V (CAR VL)))) (SETQ V (LIST V)))
-                        (AND (NOT (IDENTP (CAR V))) (GO BADO))
-                        (PUSH (CAR V) VARS)
-                        (PUSH (COND ((PAIRP (CDR V)) (CADR V))) INITS)
-                        (AND (PAIRP (CDR V))
-                             (PAIRP (CDDR V))
-                             (SEQ (PUSH (CAR V) U-VARS)
-                                  (PUSH (CADDR V) U-VALS)))
-                        (AND (PAIRP (progn (POP VL) VL)) (GO G180))
-                    TG5 (setq exitforms (POP L))
-                        (and (PAIRP EXITFORMS)
-                             (progn (setq endtest (POP EXITFORMS)) exitforms)))))
-         (AND L
-           (COND ((CDR L) (SETQ BODYFORMS (CONS 'SEQ L)))
-                 ((NULL (EQCAR (CAR L) 'SEQ)) (SETQ BODYFORMS (CONS 'SEQ L)))
-                 ((SETQ BODYFORMS (CAR L)))))
-         (SETQ EXITFORMS `(EXIT ,(MKPF EXITFORMS 'PROGN)))
-         (AND ENDTEST (SETQ ENDTEST (LIST 'COND (LIST ENDTEST '(GO G191)))))
-         (COND ((NULL U-VARS) (GO XT) )
-               ((NULL (CDR U-VARS))
-                (SEQ (SETQ U-VARS (LIST 'SETQ (CAR U-VARS) (CAR U-VALS)))
-                     (GO XT)) ))
-         (SETQ VL (LIST 'SETQ (CAR U-VARS) (CAR U-VALS)))
-         (SEQ (SETQ V (CDR U-VARS)) (SETQ U (CDR U-VALS)))
-     TG  (SETQ VL (LIST 'SETQ (CAR V) (LIST 'PROG1 (CAR U) VL)))
-         (POP U)
-         (AND (progn (POP V) V)  (GO TG))
-         (SETQ U-VARS VL)
-     XT  (RETURN (COND
-           ((NULL $BOOT)
-             (CONS 'SEQ (NCONC (DO_LET VARS INITS)
-               (LIST 'G190 ENDTEST BODYFORMS U-VARS '(GO G190)
-                'G191 EXITFORMS))))
-           ((CONS `(LAMBDA ,(NRECONC VARS NIL)
-                     (SEQ G190 ,ENDTEST ,BODYFORMS ,U-VARS (GO G190) G191 ,EXITFORMS))
-                  (NRECONC INITS NIL)))))
-   BADO  (ERROR (FORMAT NIL "BAD DO FORMAT~%~A" OL))))
-
-(defun DO_LET (VARS INITS)
-  (if (OR (NULL VARS) (NULL INITS)) NIL
-      (CONS (LIST 'SPADLET (CAR VARS) (CAR INITS))
-           (DO_LET (CDR VARS) (CDR INITS)))))
 
 (defun NREVERSE0 (X)
   "Returns LST, reversed. The argument is modified.
@@ -642,65 +456,11 @@ This version is needed so that (COLLECT (IN X Y) ... (RETURN 'JUNK))=>JUNK."
 
 ; 7.8.4 Mapping
 
-(defmacro COLLECT (&rest L)
-    (let ((U (REPEAT-TRAN L NIL)))
-        (-REDUCE 'CONS NIL (CDR U) (CAR U))))
-
-(defmacro COLLECTVEC (&rest L)
-   `(COLLECTV ,@L))
-
-(defmacro COLLECTV (&rest L)
-  (PROG (CONDS BODY ANS COUNTER X Y)
-         ;If we can work out how often we will go round
-         ;allocate a vector first
-    (SETQ CONDS NIL)
-    (SETQ BODY (REVERSE L))
-    (SETQ ANS (GENSYM))
-    (SETQ COUNTER NIL)
-    (SETQ X (CDR BODY))
-    (SETQ BODY (CAR BODY))
-LP  (COND ((NULL X)
-            (COND ((NULL COUNTER)
-                    (SETQ COUNTER (GENSYM))
-                    (SETQ L (CONS (LIST 'ISTEP COUNTER 0 1) L)) ))
-            (RETURN (LIST 'PROGN
-                          (LIST 'SPADLET ANS
-                                     (LIST 'GETREFV
-                                           (COND ((NULL CONDS) (fail))
-                                                 ((NULL (CDR CONDS))
-                                                   (CAR CONDS))
-                                                   ((CONS 'MIN CONDS)) ) ))
-                          (CONS 'REPEAT (NCONC (CDR (REVERSE L))
-                                        (LIST (LIST 'SETELT ANS COUNTER BODY))))
-                          ANS)) ))
-    (SETQ Y (CAR X))
-    (SETQ X (CDR X))
-    (COND ((MEMQ (CAR Y) '(SUCHTHAT WHILE UNTIL))
-                (RETURN (LIST 'LIST2VEC (CONS 'COLLECT L)) ))
-          ((member (CAR Y) '(IN ON) :test #'eq)
-            (SETQ CONDS (CONS (LIST 'SIZE (CADDR Y)) CONDS))
-            (GO LP))
-          ((member (CAR Y) '(STEP ISTEP) :test #'eq)
-            (if (AND (EQL (CADDR Y) 0) (EQL (CADDDR Y) 1))
-                (SETQ COUNTER (CADR Y)) )
-            (COND ((CDDDDR Y)    ; there may not be a limit
-                   (SETQ CONDS (CONS
-                                 (COND ((EQL 1 (CADDDR Y))
-                                        (COND ((EQL 1 (CADDR Y)) (CAR (CDDDDR Y)))
-                                              ((EQL 0 (CADDR Y)) (MKQSADD1 (CAR (CDDDDR Y))))
-                                              ((MKQSADD1 `(- ,(CAR (CDDDDR Y)) ,(CADDR Y))))))
-                                       ((EQL 1 (CADDR Y)) `(/ ,(CAR (CDDDDR Y)) ,(CADDR Y)))
-                                       ((EQL 0 (CADDR Y))
-                                        `(/ ,(MKQSADD1 (CAR (CDDDDR Y))) ,(CADDR Y)))
-                                       (`(/ (- ,(MKQSADD1 (CAR (CDDDDR Y))) ,(CADDR Y))
-                                            ,(CADDR Y))))
-                                 CONDS))))
-            (GO LP)))
-  (ERROR "Cannot handle macro expansion")))
+(defmacro COLLECT (&rest L) (|expandCOLLECT| L))
 
 (defun MKQSADD1 (X)
   (COND ((ATOM X) `(QSADD1 ,X))
-        ((AND (member (CAR X) '(-DIFFERENCE QSDIFFERENCE -) :test #'eq)
+        ((AND (member (CAR X) '(DIFFERENCE QSDIFFERENCE -) :test #'eq)
               (EQL 1 (CADDR X)))
          (CADR X))
         (`(QSADD1 ,X))))
@@ -736,14 +496,6 @@ LP  (COND ((NULL X)
 
 ; 12 NUMBERS
 
-; 12.3 Comparisons on Numbers
-
-(defmacro IEQUAL (&rest L) `(eql . ,L))
-(defmacro GE (&rest L) `(>= . ,L))
-(defmacro GT (&rest L) `(> . ,L))
-(defmacro LE (&rest L) `(<= . ,L))
-(defmacro LT (&rest L) `(< . ,L))
-
 ; 12.4 Arithmetic Operations
 
 (defmacro SPADDIFFERENCE (&rest x) `(- . ,x))
@@ -772,10 +524,6 @@ LP  (COND ((NULL X)
 
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
 
-(defun |expandSPADREDUCE| (op bod)
-    (if (not $BOOT) (BREAK))
-    (REDUCE-1 op bod))
-
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
       '((PLUS 0) (+ (|Zero|)) (|lcm| (|One|)) (STRCONC "") (|strconc| "")
         (MAX -999999) (MIN 999999) (TIMES 1) (* (|One|)) (CONS NIL)
@@ -789,67 +537,6 @@ LP  (COND ((NULL X)
    (cond ((symbolp item) (remove item sequence :test #'eq))
          ((and (atom item) (not (arrayp item))) (remove item sequence))
          (T (remove item sequence :test #'equalp))))
-
-(MAKEPROP 'CONS 'RIGHT-ASSOCIATIVE T)
-
-(defun REDUCE-1 (OP BOD)
-  (let (u op1 tran iden)
-    (SEQ (SETQ OP1 (cond ((EQ OP '\,) (BREAK) 'CONS)
-                         ((EQCAR OP 'QUOTE) (CADR OP))
-                         (OP)))
-         (SETQ IDEN (if (SETQ U (GET OP1 'THETA)) (CAR U) 'NO_THETA_PROPERTY))
-         (SETQ TRAN (if (EQCAR BOD 'COLLECT)
-                        (PROG (L BOD1 ITL)
-                              (SETQ L (REVERSE (CDR BOD)))
-                              (SETQ BOD1 (CAR L))
-                              (SETQ ITL (NREVERSE (CDR L)))
-                              (RETURN (-REDUCE OP1 IDEN BOD1 ITL)) )
-                        (BREAK)
-                               ))
-         TRAN)))
-
-(defun -REDUCE (OP Y BODY SPL)
-  (PROG (X G AUX EXIT VALUE PRESET CONSCODE RESETCODE)
-   (SETQ G (GENSYM))
-   ; create preset of accumulate
-   (SETQ PRESET (COND
-      ((EQ Y 'NO_THETA_PROPERTY) (LIST 'SPADLET G (MKQ G)))
-      ((LIST 'SPADLET G Y)) ))
-   (SETQ EXIT (COND
-      ((SETQ X (ASSOC 'EXIT SPL))(SETQ SPL (DELASC 'EXIT SPL)) (COND
-         ((MEMBER OP '(AND OR)) (LIST 'AND G (CADR X))) ((CADR X)) ))
-      ((EQ Y 'NO_THETA_PROPERTY) (LIST 'THETACHECK G (MKQ G)(MKQ OP)))
-      (G) ))
-   (COND ((EQ OP 'CONS) (SETQ EXIT (LIST 'NREVERSE0 EXIT))))
-   ; CONSCODE= code which conses a member onto the list
-   (SETQ VALUE (COND ((EQ Y 'NO_THETA_PROPERTY) (GENSYM))
-                     (BODY)))
-   (SETQ CONSCODE (CONS OP (COND
-      ((FLAGP OP 'RIGHT-ASSOCIATIVE) (LIST VALUE G))
-      ((LIST G VALUE) ) ) ) )
-   ; next reset code which varies if THETA property is|/is not given
-   (SETQ RESETCODE (LIST 'SETQ G (COND
-      ((EQ Y 'NO_THETA_PROPERTY)
-         (LIST 'COND (LIST (LIST 'EQ G (MKQ G)) VALUE)
-                     (LIST ''T CONSCODE)) )
-      (CONSCODE) )))
-   ; create body
-   (SETQ BODY (COND ((EQ VALUE BODY) RESETCODE)
-                    ((LIST 'PROGN (LIST 'SPADLET VALUE BODY) RESETCODE)) ))
-   (SETQ AUX (CONS (LIST 'EXIT EXIT) (COND
-      ((EQ OP 'AND) (LIST (LIST 'UNTIL (LIST 'NULL G))))
-      ((EQ OP 'OR) (LIST (LIST 'UNTIL G)))
-      (NIL) )))
-   (RETURN
-      (LIST 'PROGN PRESET
-         (CONS 'REPEAT (APPEND AUX (APPEND SPL (LIST BODY))) ))
-      )))
-
-(defun THETACHECK (VAL VAR OP) (if (EQL VAL VAR) (THETA_ERROR OP) val))
-
-(defun THETA_ERROR (OP)
-  (Boot::|userError|
-        (LIST "Sorry, do not know the identity element for " OP)))
 
 ; 15 LISTS
 
