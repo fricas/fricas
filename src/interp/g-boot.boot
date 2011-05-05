@@ -168,7 +168,7 @@ compTran1(x) ==
 compTran(x) ==
     $fluidVars : local := nil
     $locVars : local := nil
-    [x1, x2, :xl3] := compExpand(x)
+    [x1, x2, :xl3] := comp_expand(x)
     compTran1 (xl3)
     [x3, :xlt3] := xl3
     x3 :=
@@ -229,14 +229,194 @@ PUSHLOCVAR(x) ==
       and not(DIGITP (SCHAR(PNAME(x), 1))) => nil
     PUSH(x, $locVars)
 
-compExpand(x) ==
+comp_expand(x) ==
     ATOM(x) => x
     x is ["QUOTE",:.] => x
-    x is ["SPADREDUCE", op, axis, body] =>
-       axis ~= 0 => BREAK()
-       compExpand(expandSPADREDUCE(op, body))
-    MEMQ(CAR x, $COMP_-MACROLIST) => compExpand (MACROEXPAND_-1 (x))
-    a := compExpand (car x)
-    b := compExpand (cdr x)
+    x is ["SPADREDUCE", op, axis, body] => BREAK()
+    x is ["REPEAT", :body] => comp_expand(expandREPEAT(body))
+    x is ["COLLECT", :body] => comp_expand(expandCOLLECT(body))
+    x is ["COLLECTV", :body] => comp_expand(expandCOLLECTV(body))
+    x is ["COLLECTVEC", :body] => comp_expand(expandCOLLECTV(body))
+    a := comp_expand (car x)
+    b := comp_expand (cdr x)
     a = CAR x and b = CDR x => x
     CONS(a, b)
+
+repeat_tran(l, lp) ==
+    ATOM(l) => ERROR('"REPEAT FORMAT ERROR")
+    KAR(KAR(l)) in '(EXIT RESET IN ON GSTEP ISTEP STEP
+                     UNTIL WHILE SUCHTHAT) =>
+        repeat_tran(CDR(l), [CAR(l), :lp])
+    [NREVERSE(lp), :MKPF(l, "PROGN")]
+
+expandCOLLECT(l) ==
+    [conds, :body] := repeat_tran(l, [])
+    -- create init of accumulate
+    init := ["SPADLET", G := GENSYM(), []]
+    ASSOC("EXIT", conds) => BREAK()
+    -- res := ["NREVERSE", G]
+    res := ["NREVERSE0", G]
+    -- next code to accumulate result
+    acc := ["SETQ", G, ["CONS", body, G]]
+    ["PROGN", init, ["REPEAT", ["EXIT", res], :conds, acc]]
+
+BADDO(OL) == ERROR(FORMAT(nil, '"BAD DO FORMAT~%~A", OL))
+
+expandDO(vl, endtest, exitforms, body_forms) ==
+    vars := []
+    u_vars := []
+    u_vals := []
+    inits := []
+    for vi in vl repeat
+        [v, init] := vi
+        not(IDENTP(v)) => BADDO(OL)
+        vars := [v, :vars]
+        inits := [init, :inits]
+        if vi is [., ., u_val] then
+            u_vars := [v, :u_vars]
+            u_vals := [u_val, :u_vals]
+    if endtest then endtest := ["COND", [endtest, ["GO", "G191"]]]
+    exitforms := ["EXIT", exitforms]
+    u_vars3 := nil
+    for vv in u_vars for uu in u_vals repeat
+        u_vars3 :=
+            NULL(u_vars3) => ["SETQ", vv, uu]
+            ["SETQ", vv, ["PROG1", uu, u_vars3]]
+    lets := [["SPADLET", var, init] for var in vars for init in inits]
+    ["SEQ", :lets, :["G190", endtest, body_forms,
+          u_vars3, ["GO", "G190"], "G191", exitforms]]
+
+seq_opt(seq) ==
+   seq is ["SEQ", ["EXIT", body]] and body is ["SEQ",:.] => body
+   seq
+
+expandREPEAT(l) ==
+    [conds, :body] := repeat_tran(l, [])
+    tests := []
+    vl := []
+    result_expr := nil
+    for X in conds repeat
+        ATOM(X) => BREAK()
+        U := CDR(X)
+        -- A hack to increase the likelihood of small integers
+        if X is ["STEP", ., i1, i2, :.] and member(i1, '(2 1 0 (One) (Zero)))
+           and member(i2, '(1 (One))) then X := ["ISTEP", :U]
+        op := CAR(X)
+        op = "GSTEP" =>
+            [var, empty_form, step_form, init_form] := U
+            tests := [["OR", ["SPADCALL", empty_form],
+                             ["PROGN", ["SETQ", var, ["SPADCALL", step_form]],
+                                  nil]], :tests]
+            vl := [[var, init_form], :vl]
+        op = "STEP" =>
+            [var, start, inc, :op_limit] := U
+            -- If not atom compute only once
+            if not(ATOM(inc)) then
+                vl := [[(tmp := GENSYM()), inc], :vl]
+                inc := tmp
+            if op_limit then
+                -- If not atom compute only once
+                if not(ATOM(final := CAR(op_limit))) then
+                    vl := [[(tmp := GENSYM()), final], :vl]
+                    final := tmp
+                tests := 
+                  [(INTEGERP(inc) =>
+                     [(MINUSP(inc) => "<" ; ">"), var, final];
+                        ["IF", ["MINUSP", inc],
+                          ["<", var, final],
+                            [">", var, final]]),
+                              :tests]
+            vl := [[var, start, ["+", var, inc]], :vl]
+        op = "ISTEP" =>
+            [var, start, inc, :op_limit] := U
+            -- If not atom compute only once
+            if not(ATOM(inc)) then
+                vl := [[(tmp := GENSYM()), inc], :vl]
+                inc := tmp
+            if op_limit then
+                if not(ATOM(final := CAR(op_limit))) then
+                    -- If not atom compute only once
+                    vl := [[(tmp := GENSYM()), final], :vl]
+                    final := tmp
+                tests :=
+                  [(INTEGERP(inc) =>
+                     [(QSMINUSP(inc) => "QSLESSP" ; "QSGREATERP"),
+                       var, final];
+                        ["IF", ["QSMINUSP", inc],
+                          ["QSLESSP", var, final],
+                            ["QSGREATERP", var, final]]),
+                              :tests]
+            vl := [[var, start,
+                 (member(inc, '(1 (One))) => MKQSADD1(CAR(U));
+                   ["QSPLUS", var, inc])], :vl]
+        op = "ON" =>
+            tests := [["ATOM", CAR(U)], :tests]
+            vl := [[CAR(U), CADR(U), ["CDR", CAR(U)]], :vl]
+        op = "RESET" => tests := [["PROGN", CAR(U), nil], :tests]
+        op = "IN" =>
+            tt :=
+                SYMBOLP(CAR(U)) and SYMBOL_-PACKAGE(CAR(U))
+                  and $TRACELETFLAG =>
+                    [["/TRACELET-PRINT", CAR(U), (CAR U)]]
+                nil
+            tests := [["OR", ["ATOM", (G := GENSYM())],
+                             ["PROGN", ["SETQ", CAR(U), ["CAR", G]],
+                               :APPEND(tt, [nil])]], :tests]
+            vl := [[G, CADR(U), ["CDR", G]], :vl]
+            vl := [[CAR(U), nil], :vl]
+        op = "UNTIL" =>
+            G := GENSYM()
+            tests := [G, :tests]
+            vl := [[G, nil, CAR(U)], :vl]
+        op = "WHILE" => tests := [["NULL", CAR(U)], :tests]
+        op = "SUCHTHAT" => body := ["COND", [CAR(U), body]]
+        op = "EXIT" =>
+            result_expr => BREAK()
+            result_expr := CAR(U)
+        FAIL()
+    expandDO(NREVERSE(vl), MKPF(NREVERSE(tests), "OR"), result_expr,
+             seq_opt(["SEQ", ["EXIT", body]]))
+
+expandCOLLECTV(l) ==
+    -- If we can work out how often we will go round allocate a vector first
+    conds :=  []
+    [body, :iters] := REVERSE(l)
+    counter_var := nil
+    ret_val := nil
+    for iter in iters repeat
+        op := CAR(iter)
+        op in '(SUCHTHAT WHILE UNTIL GSTEP) =>
+            ret_val := ["LIST2VEC", ["COLLECT", :l]]
+            return nil -- break loop
+        op in '(IN ON) =>
+            conds := [["SIZE", CADDR(iter)], :conds]
+        op in '(STEP ISTEP) =>
+            [., var, start, step, :opt_limit] := iter
+            if start = 0 and step = 1 then
+                counter_var := var
+            -- there may not be a limit
+            if opt_limit then
+                limit := CAR(opt_limit)
+                cond := 
+                    step = 1 =>
+                        start = 1 => limit
+                        start = 0 => MKQSADD1(limit)
+                        MKQSADD1(["-", limit, start])
+                    start = 1 => ["/", limit, step]
+                    start = 0 => ["/", MKQSADD1(limit), step]
+                    ["/", ["-", MKQSADD1(limit), start],
+                                            step]
+                conds := [cond, :conds]
+        ERROR('"Cannot handle COLLECTV expansion")
+    ret_val => ret_val
+    if NULL(counter_var) then
+        counter_var := GENSYM()
+        iters := [["ISTEP", counter_var, 0, 1], :iters]
+    lv := 
+        NULL(conds) => FAIL()
+        NULL(CDR(conds)) => CAR(conds)
+        ["MIN", :conds]
+    res := GENSYM()
+    ["PROGN", ["SPADLET", res, ["GETREFV", lv]],
+              ["REPEAT", :iters, ["SETELT", res, counter_var, body]],
+                 res]

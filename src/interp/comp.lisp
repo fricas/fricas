@@ -90,9 +90,3 @@
 
 ;; used to be called POSN - but that interfered with a CCL function
 (DEFUN POSN1 (X L) (position x l :test #'equal))
-
-; NOTE: It is potentially dangerous to assume every occurrence of element of
-; $COMP-MACROLIST is actually a macro call
-
-(defparameter $COMP-MACROLIST
-  '(COLLECT REPEAT COLLECTV COLLECTVEC))
