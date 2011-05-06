@@ -254,8 +254,7 @@ expandCOLLECT(l) ==
     -- create init of accumulate
     init := ["SPADLET", G := GENSYM(), []]
     ASSOC("EXIT", conds) => BREAK()
-    -- res := ["NREVERSE", G]
-    res := ["NREVERSE0", G]
+    res := ["NREVERSE", G]
     -- next code to accumulate result
     acc := ["SETQ", G, ["CONS", body, G]]
     ["PROGN", init, ["REPEAT", ["EXIT", res], :conds, acc]]

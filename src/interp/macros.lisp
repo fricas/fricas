@@ -449,11 +449,6 @@
 
 (defvar $BOOT NIL)
 
-(defun NREVERSE0 (X)
-  "Returns LST, reversed. The argument is modified.
-This version is needed so that (COLLECT (IN X Y) ... (RETURN 'JUNK))=>JUNK."
- (if (ATOM X) X (NREVERSE X)))
-
 ; 7.8.4 Mapping
 
 (defmacro COLLECT (&rest L) (|expandCOLLECT| L))
