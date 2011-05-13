@@ -89,7 +89,6 @@ optimize x ==
 
 subrname u ==
   IDENTP u => u
-  COMPILED_-FUNCTION_-P u or MBPIP u => BREAK()
   nil
 
 optCatch (x is ["CATCH",g,a]) ==

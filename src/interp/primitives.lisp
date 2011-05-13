@@ -228,7 +228,7 @@
     `(array-dimension (the (simple-array double-float (* *)) ,v) 1))
 
 ;;; We implement complex array as arrays of doubles -- each
-;;; complex numbere occupies two positions in the real
+;;; complex number occupies two positions in the real
 ;;; array.
 
 (defmacro MAKE-CDOUBLE-VECTOR (n)
