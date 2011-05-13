@@ -80,7 +80,7 @@ COMP_-2(args) ==
     if NULL($COMPILE) then
       SAY '"No Compilation"
     else
-      COMP370([bodyl])
+      COMP370(bodyl)
     name
 
 COMP(lfun) ==
@@ -114,10 +114,10 @@ compSPADSLAM(name, argl, bodyl) ==
     SETANDFILE(al, nil)
     u := [name,lamex]
     if $PrettyPrint then PRETTYPRINT(u)
-    COMP370([u])
+    COMP370(u)
     u := [auxfn, ["LAMBDA", argl, :bodyl]]
     if $PrettyPrint then PRETTYPRINT(u)
-    COMP370([u])
+    COMP370(u)
     name
 
 makeClosedfnName() ==
@@ -419,3 +419,17 @@ expandCOLLECTV(l) ==
     ["PROGN", ["SPADLET", res, ["GETREFV", lv]],
               ["REPEAT", :iters, ["SETELT", res, counter_var, body]],
                  res]
+
+DEFPARAMETER($comp370_apply, nil)
+
+COMP370(fn) ==
+    not(fn is [fname, [ltype, args, :body]]) => BREAK()
+    args :=
+        NULL(args) => args
+        SYMBOLP(args) => ["&REST", args]
+        ATOM(args) => BREAK()
+        [(STRINGP(arg) => GENTEMP(); not(SYMBOLP(arg)) => BREAK(); arg)
+            for arg in args]
+    nbody := ["DEFUN", fname, args, :body]
+    if $comp370_apply then
+        FUNCALL($comp370_apply, fname, nbody) 

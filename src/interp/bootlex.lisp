@@ -93,7 +93,7 @@
               (spad-input-file nil)
               (spad-output-file nil)
              &aux
-           (*comp370-apply* (function print-defun))
+           (|$comp370_apply| (function print-defun))
            (*fileactq-apply* (function print-defun))
          ;;  (|$InteractiveMode| nil)
            ($SPAD T)
@@ -103,7 +103,7 @@
            (File-Closed NIL)
            (/editfile spad-input-file)
            in-stream out-stream)
-  (declare (special echo-meta /editfile *comp370-apply* *EOF*
+  (declare (special echo-meta /editfile |$comp370_apply| *EOF*
                     File-Closed Xcape))
   ;; only rebind |$InteractiveFrame| if compiling
   (progv (if (not |$InteractiveMode|) '(|$InteractiveFrame|))

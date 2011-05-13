@@ -47,8 +47,6 @@
 
 ;; DEFVARS
 
-(defvar *comp370-apply* nil "function (name def) for comp370 to apply")
-
 (defvar curoutstream (make-synonym-stream '*standard-output*))
 
 (defvar *embedded-functions* nil)
@@ -357,69 +355,6 @@
 (defun $TOTAL-GC-TIME ()
  (declare (special ext::*gc-runtime* ext::*gc-walltime*))
  (list ext::*gc-runtime* ext::*gc-walltime*))
-
-
-; 8.0 Operator Definition and Transformation
-
-; 8.1 Definition and Transformation Operations
-
-(defun COMP370 (fnlist)
-  (cond ((atom (car fnlist)) (BREAK) (list (COMPILE1 fnlist)))
-        ((cdr fnlist) (BREAK))
-        (t (MAPCAR #'(lambda (x) (COMPILE1 x)) fnlist)) ))
-
-(defun COMPILE1 (fn)
-  (let* (nargs
-         (fname (car fn))
-         (lamda (cadr fn))
-         (ltype (car lamda))
-         *vars* *decl* args
-         (body (cddr lamda)))
-    (declare (special *vars* *decl*))
-    (let ((dectest (car body)))
-      (if (and (eqcar dectest 'declare) (eqcar (cadr dectest) 'special))
-          (setq *decl* (cdr (cadr dectest)) body (cdr body))))
-    (setq args (remove-fluids (cadr lamda)))
-    (cond ((not (eq ltype 'lambda)) (BREAK))
-          ((simple-arglist args) (setq nargs args))
-	  ((symbolp args)
-	       (setq nargs `(&rest ,args)))
-          (t
-	     (let ((blargs (butlast args)))
-	          (setf nargs (last args))
-		  (setf blargs (append blargs (cons (car nargs) nil)))
-		  (setf nargs (cdr nargs))
-	          (if (not (and (every #'symbolp blargs) (symbolp nargs)))
-		      (BREAK))
-		  (setf nargs `(,@blargs &rest ,nargs)))))
-    (cond (*decl* (setq body (cons `(declare (special ,@ *decl*)) body))))
-    (setq body `(defun ,fname ,nargs . ,body))
-    (if *COMP370-APPLY* (funcall *COMP370-APPLY* fname body))
-
-    body))
-
-(defun simple-arglist (arglist)
-  (or (null arglist)
-      (and (consp arglist) (null (cdr (last arglist)))
-           (every #'symbolp arglist))))
-
-(defun remove-fluids (arglist &aux f v) ;updates specials *decl* and *vars*
-  (declare (special *decl* *vars*))
-   (cond ((null arglist) arglist)
-         ((symbolp arglist) (push arglist *vars*) arglist)
-                ;if atom but not symbol, ignore value
-         ((atom arglist) (push (setq arglist (gentemp)) *vars*) arglist)
-         ((and (setq f (car arglist))
-               (eq f 'fluid)
-               (listp (cdr arglist))
-               (setq v (cadr arglist))
-               (identp v)
-               (null (cddr arglist)))
-          (push v *decl*)
-          (push v *vars*)
-          v)
-         (t (cons (remove-fluids (car arglist))
-                  (remove-fluids (cdr arglist))))))
 
 ; 9.4 Vectors and Bpis
 
