@@ -146,7 +146,7 @@ compClam(op,argl,body,$clamList) ==
   if $reportCompilation then
     sayBrightlyI bright '"Generated LISP code for function:"
     pp computeFunction
-  compileQuietly [computeFunction]
+  compileQuietly computeFunction
 
   cacheType:= 'function
   cacheResetCode:= ['SETQ,cacheName,['initCache,cacheCount]]
@@ -246,7 +246,7 @@ compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
   if $reportCompilation then
     sayBrightlyI bright '"Generated LISP code for function:"
     pp computeFunction
-  compileQuietly [computeFunction]
+  compileQuietly computeFunction
 
   if null cacheNameOrNil then
     cacheType:=

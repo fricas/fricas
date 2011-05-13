@@ -56,12 +56,12 @@
 ;;; Common Block section
 
 (defun |compAndDefine| (L)
-  (let ((*comp370-apply* (function print-and-eval-defun)))
-    (declare (special *comp370-apply*))
+  (let ((|$comp370_apply| (function print-and-eval-defun)))
+    (declare (special |$comp370_apply|))
     (COMP L)))
 
 (defun comp_quietly_using_driver (driver fn)
-  (let ((*comp370-apply*
+  (let ((|$comp370_apply|
          (if |$InteractiveMode|
              (if |$compileDontDefineFunctions| #'compile-defun #'eval-defun)
            #'print-defun))
@@ -70,6 +70,7 @@
          (if |$InteractiveMode| (make-broadcast-stream)
            *standard-output*))
         (*compile-verbose* nil))
+    (declare (special |$comp370_apply|))
     #-:GCL
     (handler-bind ((warning #'muffle-warning)
                    #+:sbcl (sb-ext::compiler-note #'muffle-warning))
