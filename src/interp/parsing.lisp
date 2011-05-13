@@ -356,14 +356,6 @@ NonBlank is true if the token is not preceded by a blank."
 ;       (3) Line handling:      Next Line, Print Next Line
 ;       (X) Random Stuff
 
-; A good test for lexing is:
-
-(defmacro test-lexing ()
-  '(with-open-file (in-stream "lisp>meta.meta" :direction :input)
-    (with-open-file (out-stream "lisp>foo.pars" :direction :output :if-exists :supersede)
-      (loop (let ((z (advance-token)))
-              (if z (Token-Print z out-stream) (return nil)))))))
-
 
 ; 3A (1) Token Handling.
 
@@ -534,8 +526,6 @@ is a token separator, which blank is equivalent to."
                        :adjustable t :initial-contents s))))
 
 (defun get-a-line (stream)
-;;  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
-  (if (IS-CONSOLE stream) (princPrompt))
   (let ((ll (read-a-line stream)))
     (if (stringp ll) (make-string-adjustable ll) ll)))
 
@@ -586,10 +576,6 @@ is a token separator, which blank is equivalent to."
 ;; auxiliary functions needed by the parser
 
 (defun char-eq (x y) (char= (character x) (character y)))
-
-(defun char-ne (x y) (char/= (character x) (character y)))
-
-(defun |getToken| (x) (if (EQCAR x '|elt|) (third x) x))
 
 (defun |dollarTran| (dom rand)
        (let ((eltWord (if |$InteractiveMode| '|$elt| '|elt|)))

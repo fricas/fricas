@@ -292,9 +292,6 @@
 (defmacro resetq (a b)
  `(prog1 ,a (setq ,a ,b)))
 
-(defmacro rvecp (v)
- `(typep ,v '(vector float)))
-
 (defmacro setandfileq (id item)
  `(eval-when (:execute :load-toplevel)
    (defparameter ,id ,item)))
@@ -338,30 +335,7 @@
 
 (define-function 'tempus-fugit #'get-internal-run-time)
 
-(defun $TOTAL-ELAPSED-TIME ()
-   (list (get-internal-run-time) (get-internal-real-time)))
-
-#-(OR :GCL :CMU)
-(defun $TOTAL-GC-TIME () (list 0 0))
-
-#+:GCL
-(defun $TOTAL-GC-TIME (&aux (gcruntime (system:gbc-time)))
-  (if (minusp gcruntime)
-      (setq gcruntime (system:gbc-time 0)))
-  (list gcruntime gcruntime))
-
-;;; note: this requires the 11/9/89 gc patch in code/lisp/daly/misc.lisp
-#+:cmu
-(defun $TOTAL-GC-TIME ()
- (declare (special ext::*gc-runtime* ext::*gc-walltime*))
- (list ext::*gc-runtime* ext::*gc-walltime*))
-
 ; 9.4 Vectors and Bpis
-
-(defun IVECP (x) (and (vectorp x) (subtypep (array-element-type x) 'integer)))
-
-(defun mbpip (item) (and (symbolp item) ;cannot know a compiled macro in CLISP
-                         (compiled-function-p (macro-function item))))
 
 (defun FBPIP (item) (or (compiled-function-p item)
                         (and (symbolp item) (fboundp item)
@@ -1171,7 +1145,7 @@
 (defun MAKE-BVEC (n)
  (make-array (list n) :element-type 'bit :initial-element 0))
 
-;;; moved from bits.lisp
+;;; moved from hash.lisp
 
 ;17.0 Operations on Hashtables
 
