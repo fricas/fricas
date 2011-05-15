@@ -54,6 +54,13 @@ Expression(R : Comparable): Exports == Implementation where
         squareFreePolynomial : SUP % -> Factored SUP %
            ++ squareFreePolynomial(p) \undocumented{}
       if R has RetractableTo Integer then RetractableTo AN
+      setSimplifyDenomsFlag : Boolean -> Boolean
+        ++ setSimplifyDenomsFlag(x) sets flag affecting simplification
+        ++ of denomiantors.  If true irrational algebraics are removed from
+        ++ denominators.  If false they are kept.
+      getSimplifyDenomsFlag : () -> Boolean
+        ++ getSimplifyDenomsFlag() gets values of flag affecting
+        ++ simplification of denomiantors.  See setSimplifyDenomsFlag.
 
   Implementation ==> add
     import KernelFunctions2(R, %)
@@ -94,6 +101,7 @@ Expression(R : Comparable): Exports == Implementation where
 
         if R has IntegralDomain then
             reduc  : (%, List Kernel %) -> %
+            algreduc : (%, List Kernel %) -> %
             commonk   : (%, %) -> List K
             commonk0  : (List K, List K) -> List K
             toprat    : % -> %
@@ -110,10 +118,10 @@ Expression(R : Comparable): Exports == Implementation where
             - x:%            == -$Rep x
             n:Integer * x:%  == n *$Rep x
             coerce(n : Integer) ==  coerce(n)$Rep@Rep::%
-            x:% * y:%        == reduc(x *$Rep y, commonk(x, y))
-            x:% + y:%        == reduc(x +$Rep y, commonk(x, y))
-            (x:% - y:%):%    == reduc(x -$Rep y, commonk(x, y))
-            x:% / y:%        == reduc(x /$Rep y, commonk(x, y))
+            x:% * y:%        == algreduc(x *$Rep y, commonk(x, y))
+            x:% + y:%        == algreduc(x +$Rep y, commonk(x, y))
+            (x:% - y:%):%    == algreduc(x -$Rep y, commonk(x, y))
+            x:% / y:%        == algreduc(x /$Rep y, commonk(x, y))
 
             number?(x : %) : Boolean ==
                 if R has RetractableTo(Integer) then
@@ -175,6 +183,71 @@ Expression(R : Comparable): Exports == Implementation where
             algkernels l     == select_!(x +-> has?(operator x, ALGOP), l)
             toprat f == ratDenom(f, algkernels kernels f
                                 )$AlgebraicManipulations(R, %)
+
+            alg_ker_set(x : %) : Set K ==
+                ak := algkernels kernels x
+                res := brace(ak)
+                for k in ak repeat
+                    arg := argument(k)
+                    ka :=
+                        is?(k, 'nthRoot) =>
+                            alg_ker_set arg.1
+                        is?(k, 'rootOf) =>
+                            -- print(arg::OutputForm)
+                            alg_ker_set arg.1
+                        error "alg_ker_set: Unknown algebraic kernel"
+                    res := union(res, ka)
+                res
+
+            algtower(x : %) : List K == sort! parts alg_ker_set(x)
+
+            simple_root(r : K) : Boolean ==
+                is?(r, 'nthRoot) =>
+                    al := argument(r)
+                    al.2 ~= 2::% => false
+                    a := al.1
+                    #algkernels(kernels(a)) > 0 => false
+                    true
+                false
+
+            root_reduce(x : %, r : K) : % ==
+                 a := argument(r).1
+                 an := numer(a)
+                 dn := denom(a)
+                 dp := univariate(denom x, r)
+                 n0 := numer x
+                 c1 := leadingCoefficient(dp)
+                 c0 := leadingCoefficient(reductum(dp))
+                 n1 := dn*(c0*n0 - monomial(1, r, 1)$MP*c1*n0)
+                 d1 := c0*c0*dn - an*c1*c1
+                 reduc(n1 /$Rep d1, algkernels kernels x)
+
+            DEFVAR(algreduc_flag$Lisp, false$Boolean)$Lisp
+
+            getSimplifyDenomsFlag() ==
+                algreduc_flag$Lisp
+
+            setSimplifyDenomsFlag(x) ==
+                res := getSimplifyDenomsFlag()
+                SETF(algreduc_flag$Lisp, x)$Lisp
+                res
+
+            algreduc(x, ckl) ==
+                x1 := reduc(x, ckl)
+                not(getSimplifyDenomsFlag()) => x1
+                akl := reverse(algtower (1$MP /$Rep denom x1))
+                #akl = 0 => x1
+                if #akl = 1 then
+                    r := akl.1
+                    simple_root(r) =>
+                        return root_reduce(x, r)
+                sas := create()$SingletonAsOrderedSet
+                for k in akl repeat
+                   q := univariate(x1, k, minPoly k
+                      )$PolynomialCategoryQuotientFunctions(IndexedExponents K,
+                          K, R, MP, %)
+                   x1 := retract(eval(q, sas, k::%))@%
+                reduc(x1, akl)
 
             x:MP / y:MP ==
                 reduc(x /$Rep y, commonk0(algkernels variables x,
