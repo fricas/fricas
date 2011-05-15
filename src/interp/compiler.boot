@@ -199,7 +199,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
           vl is ["@Tuple", :vl1] => vl1
           vl
       vl :=
-         SYMBOLP(vl) => [vl]
+         IDENTP(vl) => [vl]
          LISTP(vl) and (and/[SYMBOLP(v) for v in vl])=> vl
          stackAndThrow ["bad +-> arguments:", vl]
       $formalArgList := [:vl, :$formalArgList]
