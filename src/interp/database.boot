@@ -502,6 +502,18 @@ dropPrefix(fn) ==
   member(fn.0,[char "?",char "-",char "+"]) => SUBSTRING(fn,1,nil)
   fn
 
+DEFPARAMETER($globalExposureHash, nil)
+
+initExposureHash() ==
+    $globalExposureHash := MAKE_-HASH_-TABLE()
+    for grdata in $globalExposureGroupAlist repeat
+        group := CAR(grdata)
+        alist := CDR(grdata)
+        for pair in alist repeat
+            name := CAR(pair)
+            ogr := HGET($globalExposureHash, name)
+            HPUT($globalExposureHash, name, [group, :ogr])
+
 isExposedConstructor name ==
   -- this function checks the local exposure data in the frame to
   -- see if the given constructor is exposed. The format of
@@ -516,9 +528,12 @@ isExposedConstructor name ==
   MEMQ(name,$localExposureData.1) => true
   -- check if it is in an exposed group
   found := NIL
+  if null($globalExposureHash) then
+      initExposureHash()
+  exd := HGET($globalExposureHash, name)
   for g in $localExposureData.0 while not found repeat
-    null (x := GETALIST($globalExposureGroupAlist,g)) => 'iterate
-    if GETALIST(x,name) then found := true
+      null(g in exd) => 'iterate
+      found := true
   found
 
 displayExposedGroups() ==
