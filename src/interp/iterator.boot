@@ -139,13 +139,39 @@ compRepeatOrCollect(form,m,e) ==
 listOrVectorElementMode x ==
   x is [a,b,:.] and member(a,'(PrimitiveArray Vector List)) => b
 
+genLetHelper(op, arg, d, var) ==
+    form0 := [["elt", d, op], arg]
+    ["LET", var, form0]
+
+compInitGstep(y, ef, sf, mOver, e) ==
+    gvar := genSomeVariable()
+    [., ., e] := compMakeDeclaration([":", gvar, mOver], $EmptyMode, e)
+    form := ["SEQ", ["LET", gvar, y],
+                    genLetHelper("emptyFun", gvar, mOver, ef),
+                       genLetHelper("stepFun", gvar, mOver, sf),
+                         ["exit", 1, 1]]
+    res := compSeq(form, $Integer, e)
+    res => res
+    nil
+
 compIterator(it,e) ==
   it is ["IN",x,y] =>
     --these two lines must be in this order, to get "for f in list f"
     --to give  an error message if f is undefined
     [y',m,e]:= comp(y,$EmptyMode,e) or return nil
     $formalArgList:= [x,:$formalArgList]
-    [mOver,mUnder]:=
+    ([mOver, mUnder] := modeIsAggregateOf("Generator", m, e)) =>
+        if null get(x,"mode",e) then
+            [.,.,e] := compMakeDeclaration([":",x,mUnder],$EmptyMode,e)
+                           or return nil
+        e:= put(x, "value", [genSomeVariable(), mUnder, e], e)
+        ef := genSomeVariable()
+        sf := genSomeVariable()
+        [y'', ., .] := compInitGstep(y, ef, sf, mOver, e) or return nil
+        res := ["GSTEP", x, ef, sf, y'']
+        SAY([res, mUnder])
+        [res, e]
+    [mOver, mUnder] :=
       modeIsAggregateOf("List",m,e) or return
          stackMessage ["mode: ",m," must be a list of some mode"]
     if null get(x,"mode",e) then [.,.,e]:=
