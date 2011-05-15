@@ -654,8 +654,6 @@ compInternalFunction(df is ['DEF,form,signature,specialCases,body], m, e) ==
     [op, :argl] := form
     not(IDENTP(op)) =>
         stackAndThrow ['"Bad name for internal function:", op]
-    #argl = 0 =>
-        stackAndThrow ['"Argumentless internal functions unsupported:", op]
     nbody := ["+->", argl, body]
     nf := ["LET",  [":", op, ["Mapping", :signature]], nbody]
     ress := comp(nf, m, e)
