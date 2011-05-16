@@ -224,10 +224,16 @@ FloatEllipticFunctions() : with
       ++ weierstrassHalfPeriods(g2, g3) computes half periods of
       ++ Weierstrass elliptic functions from invariants g2, g3.
     ellipticK : Float -> Float
-      ++ ellipticK(m) is the complete elliptic integral of the first kind
+      ++ ellipticK(m) is the complete elliptic integral of the first kind.
     ellipticK : Complex Float -> Complex Float
-      ++ ellipticK(m) is the complete elliptic integral of the first kind
+      ++ ellipticK(m) is the complete elliptic integral of the first kind.
+    ellipticE : Float -> Float
+      ++ ellipticE(m) is the complete elliptic integral of the second kind.
+    ellipticE : (Float, Float) -> Float
+      ++ ellipticE(z, m) is the incomplete elliptic integral of the second
+      ++ kind.
     ellipticF : (Float, Float) -> Float
+      ++ ellipticF(z, m) is the incomplete elliptic integral of first kind.
     -- Functions below should be local but overloaded
     rabs : Float -> Float
       ++ Undocumented.
@@ -599,6 +605,94 @@ FloatEllipticFunctions() : with
             res := dn1(z, m, prec)
         bits(obits)
         res
+
+    ellipticF(z : Float, m : Float) : Float ==
+        m = 1 => atanh(z)
+        obits := bits()
+        m > 1 =>
+            bits(obits + 20)
+            m2 := sqrt(m)
+            (z2 := m2*z) > 1 =>
+                bits(obits)
+                error "ellipticF: abs(z) > 1/sqrt(m)"
+            res := ellipticF(z2, 1/m)/m2
+            bits(obits)
+            res
+        m = 0 => asin(z)
+        abs(z) > 1 => error "ellipticF: abs(z) > 1"
+        z = 1 => ellipticK(m)
+        z = -1 => -ellipticK(m)
+        prec := obits + 20
+        bits(prec)
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        res := kprod(ll)
+        ll := reverse!(ll)
+        for k in ll repeat
+            delta := (1 + k)^2 - 4*k*z^2
+            z := 2*z/(1 + k + sqrt(delta))
+        res := res*asin(z)
+        bits(obits)
+        res
+
+    ellipticE(m : Float) : Float ==
+        m >= 1 => error "ellipticE: m >=1"
+        m = 0 => pi()/2
+        obits := bits()
+        prec := obits + 20
+        bits(prec)
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        llr := reverse(ll)
+        f_val := e_val := pi()/2
+        for k in ll repeat
+            k1 := 1 + k
+            f_val := k1*f_val
+            k1inv := 1/k1
+            p := (1 - k)*k1inv
+            e_val := 2*k1inv*e_val - p*f_val
+        bits(obits)
+        e_val
+
+    ellipticE(z : Float, m : Float) : Float ==
+        m = 1 => atanh(z)
+        obits := bits()
+        m > 1 =>
+            bits(obits + 20)
+            m2 := sqrt(m)
+            (z2 := m2*z) > 1 =>
+                bits(obits)
+                error "ellipticE: abs(z) > 1/sqrt(m)"
+            res := m2*ellipticE(z2, 1/m) - (m - 1)*z
+            bits(obits)
+            res
+        m = 0 => asin(z)
+        abs(z) > 1 => error "ellipticE: abs(z) > 1"
+        z = 1 => ellipticE(m)
+        z = -1 => -ellipticE(m)
+        prec := obits + 20
+        bits(prec)
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        llr := reverse(ll)
+        lz : List Float := []
+        for k in llr repeat
+            delta := (1 + k)^2 - 4*k*z^2
+            z := 2*z/(1 + k + sqrt(delta))
+            lz := cons(z, lz)
+        f_val := e_val := asin(z)
+        for k in ll for z in lz repeat
+            k1 := 1 + k
+            f_val := k1*f_val
+            k1inv := 1/k1
+            p := (1 - k)*k1inv
+            z2 := z*z
+            k_z2 := k*z2
+            r := sqrt((1 - z2)*(1 - k*k_z2))
+            r := (1 - p)*z*r/(1 + k_z2)
+            e_val := 2*k1inv*e_val - p*f_val + r
+        bits(obits)
+        e_val
 
     mkr(rr : CF, g23 : CF, r1 : CF) : CF ==
         pr := r1*rr
