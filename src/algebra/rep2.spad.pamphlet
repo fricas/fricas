@@ -28,6 +28,8 @@
 ++   H. Gollan, J. Grabmeier: Algorithms in Representation Theory and
 ++    their Realization in the Computer Algebra System Scratchpad,
 ++    Bayreuther Mathematische Schriften, Heft 33, 1990, 1-23.
+++   D. F. Holt, S. Rees: Testing modules for irreducibility,
+++    J. Austral. Math. Soc. Ser. A, 57:1-16, 1994.
 ++ Description:
 ++   RepresentationPackage2 provides functions for working with
 ++   modular representations of finite groups and algebra.
@@ -648,14 +650,67 @@ RepresentationPackage2(R): public == private where
         cons(reverse submoduleRepresentation, list( reverse _
           factormoduleRepresentation)::(L L M R))
 
+      if R has FiniteFieldCategory then
 
-    -- the following is "under"  "if R has Field", as there are compiler
-    -- problems with conditinally defined local functions, i.e. it
-    -- doesn't know, that "FiniteField" has "Field".
+        Smp := SparseUnivariatePolynomial(R)
 
+        -- minimal polynomial of a random vector
+        my_min(m : M(R), n : I) : Smp ==
+            zz := zero(n::NonNegativeInteger)$Vector(R)
+            v := zz
+            while v = zz repeat
+                v := vector([random()$R for i in 1..n]$List(R))
+            depl : L(V(R)) := [v]
+            for i in 1..n repeat
+                v := m*v
+                depl := cons(v, depl)
+            depl := reverse(depl)
+            depm := matrix([parts(v) for v in depl]@L(L(R)))
+            depe := rowEchelon(transpose(depm))
+            j : I := 1
+            while j <= n and qelt(depe, j, j) ~= 0 repeat j := j + 1
+            res := 0$Smp
+            x := monomial(1, 1)$Smp
+            xi := 1$Smp
+            for i in 1..(j - 1) repeat
+                res := res - depe(i, j)*xi
+                xi:= x*xi
+            xi + res
 
-      -- we are scanning through the vectorspaces
-      if (R has Finite) and (R has Field) then
+        m_eval(p : Smp, m : M(R), n : I) : M(R) ==
+            nn := n::NonNegativeInteger
+            res := zero(nn, nn)$Matrix(R)
+            id := diagonalMatrix([1$R for i in 1..n])
+            old_deg := degree(p)
+            while p ~= 0 repeat
+                c0 := leadingCoefficient(p)
+                res := res + c0*id
+                p := reductum(p)
+                ndeg := degree(p)
+                for i in 1..(old_deg - ndeg) repeat
+                    res := m*res
+                old_deg := ndeg
+            res
+
+        meatAxe1(algebraGenerators : L M R, x: M R, n : I, m : I)
+               : Union(L L M R, "failed") ==
+            mp := my_min(x, n)
+            fl := factors(factor(mp)$DistinctDegreeFactorize(R, Smp))
+            for fac in fl repeat
+                 fpol := fac.factor
+                 (mm := degree(fpol)) > m => "iterate"
+                 xx := m_eval(fpol, x, n)
+                 kernel := nullSpace(xx)
+                 good := #kernel = mm
+                 v := first(kernel)
+                 pres := split(algebraGenerators, v)
+                 if not null rest pres then return pres
+                 if good then
+                     messagePrint "Found good factor"
+                     return irreducibilityTestInternal(algebraGenerators,
+                                                       xx, true)
+            messagePrint "All factors were bad"
+            "failed"    
 
         meatAxe(algebraGenerators, randomelements, numberOfTries, _
            maxTests) ==
@@ -687,14 +742,17 @@ RepresentationPackage2(R): public == private where
             else
                x := fingerPrint (i, algebraGenerators.1,_
                  algebraGenerators.2 , x)
-            -- test singularity of x
             n : NNI := #row(x, 1)  -- degree  of representation
-            if (rank x) ~= n then  -- x singular
+            q > 2 or even?(i) or i > 15 =>
+                pp := meatAxe1(algebraGenerators, x, n, 2^i)
+                pp case L(L(M(R))) => return pp::L(L(M(R)))
+            -- test singularity of x
+            kernel : L V R := nullSpace x
+            if not(empty?(kernel)) then  -- x singular
               if randomelements then
                  messagePrint "Random element in generated algebra is singular"
               else
                  messagePrint "Fingerprint element in generated algebra is singular"
-              kernel : L V R := nullSpace x
               -- the first number is the maximal number of one dimensional
               -- subspaces of the kernel, the second is a user given
               -- constant
