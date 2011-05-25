@@ -76,12 +76,28 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
   Rep := Record(Inf:R, Sup:R)
 
   roundDown(u:R):R ==
-    if zero?(u) then float(-1,-(bits() pretend Integer))
-                else float(mantissa(u) - 1,exponent(u))
+      zero?(u) => u
+      prec := bits()
+      m := mantissa u
+      l := length(m)
+      eu := exponent(u)
+      l = prec => float(m - 1, eu)
+      dig : Integer := base()
+      l < prec =>
+	  float(m*dig^((prec - l) pretend PositiveInteger) - 1, eu - prec + l)
+      float(m - dig^((l - prec) pretend PositiveInteger), eu)
 
   roundUp(u:R):R   ==
-    if zero?(u) then float(1, -(bits()) pretend Integer)
-                else float(mantissa(u) + 1,exponent(u))
+      zero?(u) => u
+      prec := bits()
+      m := mantissa u
+      l := length(m)
+      eu := exponent(u)
+      l = prec => float(m + 1, eu)
+      dig : Integer := base()
+      l < prec =>
+          float(m*dig^((prec - l) pretend PositiveInteger) + 1, eu - prec + l)
+      float(m + dig^((l - prec) pretend PositiveInteger), eu)
 
   -- Sometimes the float representation does not use all the bits (e.g. when
   -- representing an integer in software using arbitrary-length Integers as
@@ -100,22 +116,21 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
       u
 
   interval(i:R,s:R):% ==
-    i > s =>  [roundDown normaliseFloat s,roundUp normaliseFloat i]
-    [roundDown normaliseFloat i,roundUp normaliseFloat s]
+    i > s =>  [roundDown s,roundUp i]
+    [roundDown i,roundUp s]
 
   interval(f:R):% ==
     zero?(f) => 0
     one?(f)  => 1
     -- This next part is necessary to allow e.g. mapping between Expressions:
-    -- AXIOM assumes that Integers stay as Integers!
+    -- AXIOM assumes that Integers stay as Integers! FIXME
 --    import from Union(value1:Integer,failed:"failed")
-    fnew : R := normaliseFloat f
     retractIfCan(f)@Union(Integer,"failed") case "failed" =>
-      [roundDown fnew, roundUp fnew]
-    [fnew,fnew]
+        [roundDown f, roundUp f]
+    [f, f]
 
   qinterval(i:R,s:R):% ==
-    [roundDown normaliseFloat i,roundUp normaliseFloat s]
+    [roundDown i,roundUp s]
 
   exactInterval(i:R,s:R):% == [i,s]
   exactSupInterval(i:R,s:R):% == [roundDown i,s]
@@ -196,6 +211,7 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
   _exquo(u:%,v:%):Union(%,"failed") ==
    contains?(v,0) => "failed"
    one?(v) => u
+   zero?(u) => u
    u=v => 1
    u=-v => -1
    vals:List R := sort [inf(u)/inf(v),inf(u)/sup(v),sup(u)/inf(v),sup(u)/sup(v)]$List(R)
