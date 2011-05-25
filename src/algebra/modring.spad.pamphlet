@@ -154,8 +154,7 @@ EuclideanModularRing(S,R,Mod,reduction:(R,Mod) -> R,
         r:=monicDivide(x.val,yv)
         [reduce(invlcy*r.quotient,xm),reduce(r.remainder,xm)]
 
-)if false
-      if R has fmecg:(R,NonNegativeInteger,S,R)->R
+      if R has fmecg:(R, NonNegativeInteger, S, R) -> R
          then x rem y  ==
            t:=merge(x.modulo,y.modulo)
            t case "failed" => error "incompatible moduli"
@@ -168,14 +167,15 @@ EuclideanModularRing(S,R,Mod,reduction:(R,Mod) -> R,
              yv:=reduction(invlcy*yv,xm)
            dy:=degree yv
            xv:=x.val
-           while (d:=degree xv - dy)>=0 repeat
-                 xv:=reduction(fmecg(xv,d::NonNegativeInteger,
-                                     leadingCoefficient xv,yv),xm)
-                 xv = 0 => return [xv,xm]$Rep
-           [xv,xm]$Rep
-         else
-)endif
-      x rem y  ==
+           while (d := degree xv - dy) >= 0 repeat
+                 xvl := reduction(leadingMonomial(xv), xm)
+                 xvl = 0 => xv := reductum(xv)
+                 xv := xvl + reductum(xv)
+                 xv := fmecg(xv, d::NonNegativeInteger,
+                                     leadingCoefficient xv, yv)
+                 xv = 0 => return [xv, xm]$Rep
+           [reduction(xv, xm), xm]$Rep
+         else x rem y  ==
            t:=merge(x.modulo,y.modulo)
            t case "failed" => error "incompatible moduli"
            xm:=t::Mod
