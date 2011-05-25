@@ -292,8 +292,9 @@ ComplexRootFindingPackage(R, UP): public == private where
        eps : R := weakEps   -- 10 per cent errors allowed
        r1 : R := rootRadius(p, eps)
        rd : R := 1/rootRadius(reciprocalPolynomial p, eps)
-       (r1 > (2::R)) and (rd < 1/(2::R)) => [startPoly,fp] -- unit circle splitting!
-       -- otherwise the norms of the roots are too closed so we
+       -- (r1 > (2::R)) and (rd < 1/(2::R)) => [startPoly,fp] -- unit circle splitting!
+       r1/rd > (3::R/2::R) => [startPoly,fp]
+       -- otherwise the norms of the roots are too close so we
        -- take the center of gravity as new origin:
        u  : C := schwerpunkt p
        startPoly := startPoly-monomial(u,0)
@@ -322,6 +323,7 @@ ComplexRootFindingPackage(R, UP): public == private where
          [sP.start,fp]
        -- choose the best one w.r.t. maximal quotient of norm of largest
        -- root and norm of smallest root
+)if false
        lpr1 : L R := [rootRadius(q,eps) for  q in lp]
        lprd : L R := [1/rootRadius(reciprocalPolynomial q,eps) for  q in lp]
        -- later we should check here of an rd is smaller than globalEps
@@ -335,6 +337,20 @@ ComplexRootFindingPackage(R, UP): public == private where
        --lrr : L R := [rootRadius(p,i,1+eps) for i in 2..(degree(p)-1)]
        --lrr := concat(concat(lpr1.po,lrr),lprd.po)
        --lu : L R := [(lrr.i + lrr.(i+1))/2 for i in 1..(maxIndex(lrr)-1)]
+)else
+       po : Integer := 1
+       maxq : R := 1
+       for q in lp for j in 1.. repeat
+           r1 := rootRadius(q, eps)
+           rd := 1/rootRadius(reciprocalPolynomial q, eps)
+           (qq := r1/rd) > (3::R/2::R) =>
+               po := j
+               break
+           if j = 1 then maxq := qq
+           if qq > maxq then
+               maxq := qq
+               po := j
+)endif
        [startPoly - monomial(listOfCenters.po,0),fp]
 
      norm p ==
@@ -391,11 +407,12 @@ ComplexRootFindingPackage(R, UP): public == private where
        d    : NNI := degree p
        currentError:  R   := nthRoot(2::R, 2)
        currentError     := d*20*currentError
-       while nthRoot(currentError, expo) >= errorQuotient repeat
+       while currentError >= errorQuotient repeat
          -- if info then print (expo :: OF)
          pp := graeffe pp
          rho := calculateScale pp
          expo := 2 * expo
+         errorQuotient := errorQuotient*errorQuotient
          rR := nthRoot(rho, expo) * rR
          pp :=  makeMonic scale(pp,complex(rho,0$R))
        rR
@@ -509,7 +526,9 @@ ComplexRootFindingPackage(R, UP): public == private where
      calculateScale p ==
        d  := degree p
        maxi :R := 0
-       for j in 1..d for cof in rest coefficients p repeat
+       for mon in rest(monomials(p)) repeat
+         j := (d - degree(mon)) pretend NonNegativeInteger
+         cof := leadingCoefficient(mon)
          -- here we need abs: R -> R
          rc :  R := absR real cof
          ic :  R := absR imag cof
@@ -552,9 +571,9 @@ ComplexRootFindingPackage(R, UP): public == private where
        --  den : I := approxNthRoot(globalDigits * denom q ,n)$IntegerRoots(I)
        --  num : I := approxNthRoot(globalDigits * numer q ,n)$IntegerRoots(I)
        --  num/den
-       r -- this is nonsense, perhaps a Newton iteration for x^n-r here
+       error "unimplemented"
 
-)fin
+)if false
      -- for late use:
 
      graeffe2 p ==
@@ -597,6 +616,7 @@ ComplexRootFindingPackage(R, UP): public == private where
      graeffe2 : UP -> UP
        ++ graeffe2 p determines q such that \spad{q(-z^2) = p(z)*p(-z)}.
        ++ Note that the roots of q are the squares of the roots of p.
+)endif
 
 @
 \section{License}
