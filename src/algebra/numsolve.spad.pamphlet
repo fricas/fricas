@@ -113,24 +113,108 @@ InnerNumericFloatSolvePackage(K,F,Par): Cat == Cap where
          K is I =>
            F is Float =>
              z:= realZeros(upol,myConvert eps)$RealZeroPackage(SUP I)
-             [convert((1/2)*(x.left+x.right))@Float for x in z] pretend L(F)
+             [convert((1/2)*(x.left + x.right))@Float for x in z]
 
            F is RN =>
              z:= realZeros(upol,myConvert eps)$RealZeroPackage(SUP I)
-             [(1/2)*(x.left + x.right) for x in z] pretend L(F)
+             [(1/2)*(x.left + x.right) for x in z]
            error "improper arguments to INFSP"
          error "improper arguments to INFSP"
 
+       iF ==> Interval(Float)
+       CI ==> Complex(iF)
+       UCI ==> Union(CI, "failed")
+
+       K_to_CI(x : K) : CI ==
+           K is I => complex(interval(x::I::RN), 0$iF)
+           K is GI => complex(interval(real(x::GI)::RN),
+                              interval(imag(x::GI)::RN))
+           error "improper arguments to INFSP"
+
+       F_to_CI(x : F) : CI ==
+           F is Float => complex(interval(x), 0$iF)
+           F is RN => complex(interval(x), 0$iF)
+           F is CF => complex(interval(real(x::CF)), interval(imag(x::CF)))
+           F is GRN => complex(interval(real(x::GRN)), interval(imag(x::GRN)))
+           error "improper arguments to INFSP"
+
+       F_to_CI1(x : F, eps : Float) : CI ==
+           fuzz1 := interval(-eps, eps)$iF
+           fuzz :=
+               F is Float or F is RN => complex(fuzz1, 0$iF)
+               F is CF or F is GRN => complex(fuzz1, fuzz1)
+               error "improper arguments to INFSP"
+           F_to_CI(x) + fuzz
+
+       iF_to_Float(x : iF) : Float == (sup(x) + inf(x))/2
+
+       iF_to_RN(x : iF) : RN ==
+           fx := iF_to_Float(x)
+           mx := mantissa(fx)
+           ex := exponent(fx)
+           bx := base()$Float
+           mx*(bx::RN)^ex
+
+       CI_to_F(x : CI) : F ==
+           rx := real(x)
+           ix := imag(x)
+           F is Float => iF_to_Float(rx)
+           F is CF => complex(iF_to_Float(rx), iF_to_Float(ix))
+           F is RN => iF_to_RN(rx)
+           F is GRN => complex(iF_to_RN(rx), iF_to_RN(ix))
+           error "improper arguments to INFSP"
+
+       ieval0(pol : P K, xvar : SE, zvar : SE, z : CI) : UCI ==
+           rpp := map(K_to_CI, pol)$PolynomialFunctions2(K, CI)
+           rpp := eval(rpp, zvar, z)
+           upol := univariate(rpp, xvar)
+           iden := recip(retract(leadingCoefficient upol)@CI)
+           iden case "failed" => "failed"
+           retract(-coefficient(upol,0))@CI*(iden::CI)
+
+       ieval(pol : P K, xvar : SE, zvar : SE, z : F, eps : Float) : UCI ==
+           nz := F_to_CI1(z, eps)
+           ieval0(pol, xvar, zvar, nz)
 
        -- find the zeros of components in "generic" position --
-       findGenZeros(lp:L P K,rlvar:L SE,eps:Par) : L L F ==
-         rlp:=reverse lp
-         f:=rlp.first
-         zvar:= rlvar.first
-         rlp:=rlp.rest
-         lz:=innerSolve1(f,eps)
-         [reverse cons(z,[evaluate(pol,xvar,zvar,z) for pol in rlp
-                         for xvar in rlvar.rest]) for z in lz]
+       findGenZeros(lp : L P K, rlvar : L SE, eps : Par) : L L F ==
+           rlp := reverse lp
+           f := first(rlp)
+           zvar := first(rlvar)
+           rlp := rest(rlp)
+           etol : I := 10000
+           feps : Float :=
+               Par is Float => eps::Float
+               Par is RN => (eps::RN)::Float
+           neps := (1/4)*eps
+           nfeps := feps := (1/4)*feps
+           obits := bits()
+           ebits := 100
+           repeat
+               bits(obits + ebits)
+               neps := (1/etol)*neps
+               nfeps := (1/etol)*nfeps
+               lz := innerSolve1(f, neps)
+               ok := true
+               sol : L L F := []
+               for z in lz while ok repeat
+                   sol1 : L F := [CI_to_F(F_to_CI1(z, feps))]
+                   for pol in rlp for xvar in rest(rlvar) repeat
+                       pp := ieval(pol, xvar, zvar, z, nfeps)
+                       pp case "failed" =>
+                           ok := false
+                           break
+                       ppi := pp::CI
+                       width(real(ppi)) > feps or width(imag(ppi)) > feps =>
+                           ok := false
+                           break
+                       sol1 := cons(CI_to_F(ppi), sol1)
+                   sol := cons(sol1, sol)
+               ok =>
+                   bits(obits)
+                   return reverse(sol)
+               etol := etol^2
+               ebits := 2*ebits
 
        -- convert to the old coordinates --
        oldCoord(numres:L F,lval:L I) : L F ==
@@ -162,15 +246,14 @@ InnerNumericFloatSolvePackage(K,F,Par): Cat == Cap where
            dmp:=DistributedMultivariatePolynomial(lv,K)
            lq:L dmp:=[]
            if ld ~= [] then
-             lq:= [(pToDmp(q1)$PolToPol(lv,K)) pretend dmp for q1 in ld]
-           partRes:=groebSolve(lnp,lvv)$GroebnerSolve(lv,K,K) pretend (L L dmp)
+               lq := [(pToDmp(q1)$PolToPol(lv, K)) for q1 in ld]
+           partRes := groebSolve(lnp, lvv)$GroebnerSolve(lv, K, K)
            partRes=list [] => []
            -- remove components where denominators vanish
            if lq ~= [] then
              gb:=GroebnerInternalPackage(K,DirectProduct(#lv,NNI),OV,dmp)
              partRes:=[pr for pr in partRes|
-                       and/[(redPol(fq,pr pretend List(dmp))$gb) ~= 0
-                         for fq in lq]]
+                       and/[(redPol(fq, pr)$gb) ~= 0 for fq in lq]]
 
            -- select the components in "generic" form
            rlv:=reverse lv
@@ -180,7 +263,7 @@ InnerNumericFloatSolvePackage(K,F,Par): Cat == Cap where
            for res in partRes repeat
              res1:=rest reverse res
              "and"/[("max"/degree(f,rrlvv))=1  for f in res1] =>
-                      listGen:=concat(res pretend (L dmp),listGen)
+                      listGen := concat(res, listGen)
            result:L L F := []
            if listGen ~= [] then
              listG :L L P K:=
@@ -193,9 +276,12 @@ InnerNumericFloatSolvePackage(K,F,Par): Cat == Cap where
            for gres in partRes repeat
                genRecord := genericPosition(gres,lvv)$GroebnerSolve(lv,K,K)
                lgen := genRecord.dpolys
-               lval := genRecord.coords
+               lval : L I := genRecord.coords
+               laval : L I := [abs(i)$Integer for i in lval]
+               lnorm : Integer := reduce("+", laval)
+               neps := (1/(1 + lnorm))*eps
                lgen1:=[dmpToP(pf)$PolToPol(lv,K) for pf in lgen]
-               lris:=findGenZeros(lgen1,rlv,eps)
+               lris := findGenZeros(lgen1, rlv, neps)
                result:= append([oldCoord(r,lval) for r in lris],result)
            result
 
