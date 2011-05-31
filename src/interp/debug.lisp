@@ -217,6 +217,12 @@
         (/MONITOR FN TRACECODE BEFORE AFTER CONDITION TIMERNAM
                   COUNTNAM TRACENAME BREAK )))
 
+(defun |goGetTracerHelper| (dn f oname alias options modemap)
+    (lambda(&rest l)
+         (|goGetTracer| l dn f oname alias options modemap)))
+
+(defun |setSf| (sym fn) (SETF (SYMBOL-FUNCTION sym) fn))
+
 (DEFUN OPTIONS2UC (L)
   (COND ((NOT L) NIL)
         ((ATOM (CAR L))
@@ -471,6 +477,8 @@
                   CONDITION BREAK |$tracedModemap| ''T)))))
         (RETURN G1)))
 
+(DEFPARAMETER |$TraceFlag| t)
+
 (defun /MONITORX (/ARGS FUNCT OPTS &AUX NAME TYPE TRACECODE COUNTNAM TIMERNAM
                         BEFORE AFTER CONDITION BREAK TRACEDMODEMAP
                         BREAKCONDITION)
@@ -518,6 +526,7 @@
             (SETQ |$mathTrace| T))
         (if (AND YES |$TraceFlag|)
             (PROG (|$TraceFlag|)
+                  (declare (special |$TraceFlag|))
                   (SETQ CURSTRM *standard-output*)
                   (if (EQUAL TRACECODE "000") (RETURN NIL))
                   (TAB 0 CURSTRM)
@@ -554,6 +563,7 @@
         (if AFTER (MONITOR-EVALAFTER AFTER))
         (if (AND YES |$TraceFlag|)
             (PROG (|$TraceFlag|)
+                  (declare (special |$TraceFlag|))
                   (if (EQUAL TRACECODE "000") (GO SKIP))
                   (TAB 0 CURSTRM)
                   (MONITOR-BLANKS (1- /DEPTH))
@@ -594,9 +604,6 @@
 ; Functions to trace/untrace a BPI; use as follows:
 ; To trace a BPI-value <bpi>, evaluate (SETQ <name> (BPITRACE <bpi>))
 ; To later untrace <bpi>, evaluate (BPITRACE <name>)
-
-(defun PAIRTRACE (PAIR ALIAS)
-   (RPLACA PAIR (BPITRACE (CAR PAIR) ALIAS )) NIL)
 
 (defun BPITRACE (BPI ALIAS &optional OPTIONS)
   (SETQ NEWNAME (GENSYM))
