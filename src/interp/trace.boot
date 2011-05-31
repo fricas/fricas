@@ -469,9 +469,20 @@ spadTrace(domain,options) ==
   for (pair:= [op,mm,n]) in sigSlotNumberAlist repeat
     alias:= spadTraceAlias(domainId,op,n)
     $tracedModemap:= subTypes(mm,constructSubst(domain.0))
-    traceName:= BPITRACE(first domain.n,alias, options)
+    dn1 := first domain.n
+    fgg := FUNCTION newGoGet
+    if dn1 = fgg then
+        -- SAY(["newGoGet in slot", n])
+        traceName := GENSYM()
+        SET(traceName, dn1)
+        tf := goGetTracerHelper(domain.n, fgg, pair, alias,
+                                options, $tracedModemap)
+        setSf(traceName, tf)
+    else
+        traceName:= BPITRACE(dn1, alias, options)
+        tf := SYMBOL_-FUNCTION traceName
     NCONC(pair,[listOfVariables,first domain.n,traceName,alias])
-    RPLAC(first domain.n,SYMBOL_-FUNCTION traceName)
+    RPLAC(first domain.n, tf)
   sigSlotNumberAlist:= [x for x in sigSlotNumberAlist | CDDDR x]
   if $reportSpadTrace then
     if $traceNoisely then printDashedLine()
@@ -481,6 +492,23 @@ spadTrace(domain,options) ==
     RPLAC(rest currentEntry,[:sigSlotNumberAlist,:currentAlist])
   SETQ(_/TRACENAMES,[[domain,:sigSlotNumberAlist],:_/TRACENAMES])
   spadReply()
+
+goGetTracer0(fn, alias, options, modemap) ==
+    $tracedModemap : local := modemap
+    BPITRACE(fn, alias, options)
+
+goGetTracer(l, dn, f, tlst, alias, options, modemap) ==
+    oname := tlst.5
+    RPLAC(first dn, f)
+    [:arglist, env] := l
+    slot := replaceGoGetSlot env
+    tlst.4 := first slot
+    traceName := goGetTracer0(first slot, alias, options, modemap)
+    nf := SYMBOL_-FUNCTION traceName
+    setSf(oname, nf)
+    RPLAC(first slot, nf)
+    APPLY(first slot, [:arglist, rest slot])  --SPADCALL it!
+ 
 
 traceDomainLocalOps(dom,lops,options) ==
  sayMSG ['"  ",'"The )local option has been withdrawn"]
