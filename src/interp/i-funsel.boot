@@ -220,7 +220,6 @@ selectMms2(op,tar,args1,args2,$Coerce) ==
     a := nreverse REMDUP a
     for x in a repeat
       null x => 'iterate
-      x = '(RationalRadicals) => a' := cons($RationalNumber,a')
       x is ['Union,:l] =>
         -- check if we have a tagged union
         l and first l is [":",:.] =>
@@ -460,7 +459,7 @@ mkRationalFunction D ==  ['Fraction, ['Polynomial, D]]
 
 defaultTargetFE(a,:options) ==
   a is ['Variable,.] or a = $RationalNumber or MEMQ(QCAR a,
-    [QCAR $Symbol, 'RationalRadicals,
+    [QCAR $Symbol,
      'Pi]) or typeIsASmallInteger(a) or isEqualOrSubDomain(a, $Integer) or
        a = '(AlgebraicNumber) =>
           IFCAR options => [$FunctionalExpression, ['Complex, $Integer]]

@@ -135,21 +135,20 @@ trace1 l ==
   for x in traceList repeat $optionAlist:=
     ADDASSOC(x,$options,$optionAlist)
   optionList:= getTraceOptions $options
-  argument:=
-    domainList:= LASSOC("of",optionList) =>
-      LASSOC("ops",optionList) =>
-        throwKeyedMsg("S2IT0004",NIL)
+  if (domainList := LASSOC("of", optionList)) then 
+      LASSOC("ops", optionList) =>
+        throwKeyedMsg("S2IT0004", NIL)
       opList:=
-        traceList => LIST ["ops",:traceList]
+        traceList => [["ops", :traceList]]
         nil
       varList:=
-        y:= LASSOC("vars",optionList) => LIST ["vars",:y]
+        y:= LASSOC("vars", optionList) => [["vars", :y]]
         nil
-      [:domainList,:opList,:varList]
-    optionList => [:traceList,:optionList]
-    traceList
-  _/TRACE_-0 [funName for funName in argument]
-  saveMapSig [funName for funName in argument]
+      optionList := [:opList, :varList]
+      traceList := domainList
+  for funName in traceList repeat
+      _/TRACE_-2(funName, optionList)
+  saveMapSig(traceList)
 
 getTraceOptions options ==
   $traceErrorStack: local := nil
@@ -291,8 +290,8 @@ untrace l ==
     null l => COPY _/TRACENAMES
     l
   untraceList:= [transTraceItem x for x in l]
-  _/UNTRACE_-0 [lassocSub(funName,$mapSubNameAlist) for
-      funName in untraceList]
+  for funName in untraceList repeat
+      _/UNTRACE_-2(lassocSub(funName,$mapSubNameAlist), [])
   removeTracedMapSigs untraceList
 
 transTraceItem x ==
@@ -585,7 +584,7 @@ untraceDomainConstructor domainConstructor ==
       keepTraced?(df, domainConstructor) ==
         (df is [dc,:.]) and (isDomainOrPackage dc) and
            ((KAR devaluate dc) = domainConstructor) =>
-               _/UNTRACE_-0 [dc]
+               _/UNTRACE_-2(dc, [])
                false
         true
   untraceAllDomainLocalOps domainConstructor
