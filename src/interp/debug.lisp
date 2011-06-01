@@ -49,26 +49,6 @@
 
 (defun heapelapsed () 0)
 
-(DEFUN DEFSTREAM (file MODE)
-       (if (member mode '(i input))
-           (MAKE-INSTREAM file)
-         (MAKE-OUTSTREAM file)))
-
-(defmacro /TRACE (&rest L) `',(/TRACE-0 L))
-
-(DEFUN /TRACE-0 (L)
-    (let* ((options (/OPTIONS L)) (FNL (TRUNCLIST L OPTIONS)))
-        (/TRACE-1 FNL OPTIONS)))
-
-(defmacro /TRACEANDCOUNT (&rest L) `',
-  (let* ((OPTIONS (/OPTIONS L))
-         (FNL (TRUNCLIST L OPTIONS)))
-    (/TRACE-1 FNL (CONS '(DEPTH) OPTIONS))))
-
-(DEFUN /TRACE-1 (FNLIST OPTIONS)
-   (mapcar #'(lambda (X) (/TRACE-2 X OPTIONS)) FNLIST)
-   (/TRACEREPLY))
-
 (DEFUN /TRACE-2 (FN OPTIONS)
   (PROG (U FNVAL COUNTNAM TRACECODE BEFORE AFTER CONDITION
          TRACENAME CALLER VARS BREAK FROM_CONDITION VARBREAK TIMERNAM
@@ -147,8 +127,8 @@
         (COND ((SETQ U (/GETTRACEOPTIONS OPTIONS 'WITHIN))
                (SETQ G (INTERN (STRCONC (PNAME FN) "/" (PNAME (CADR U)))))
                (SET G 0)
-               (/TRACE-1
-                 (LIST (CADR U))
+               (/TRACE-2
+                 (CADR U)
                  `((WHEN NIL)
                    (BEFORE (SETQ ,G (1+ ,G)))
                    (AFTER (SETQ ,G (1- ,G)))))
@@ -231,34 +211,6 @@
         ((CONS (CONS (UPCASE (CAAR L)) (CDAR L)) (OPTIONS2UC (CDR L))))))
 
 (DEFUN COND-UCASE (X) (COND ((INTEGERP X) X) ((UPCASE X))))
-
-(DEFUN TRACEOPTIONS (X)
-  (COND ((NOT X) NIL)
-        ((EQ (CAR X) '/) X)
-        ((TRACEOPTIONS (CDR X)))))
-
-(defmacro |/untrace| (&rest L) `', (/UNTRACE-0 L))
-
-(defmacro /UNTRACE (&rest L) `', (/UNTRACE-0 L))
-
-(DEFUN /UNTRACE-0 (L)
-    (PROG (OPTIONL OPTIONS FNL)
-      (SETQ OPTIONL (/OPTIONS L))
-      (SETQ FNL (TRUNCLIST L OPTIONL))
-      (SETQ OPTIONS (if OPTIONL (CAR OPTIONL)))
-      (RETURN (/UNTRACE-1 FNL OPTIONS))))
-
-(defun /UNTRACE-1 (L OPTIONS)
-  (cond
-    ((NOT L)
-     (if (ATOM /TRACENAMES)
-         NIL
-         (mapcar #'(lambda (u) (/UNTRACE-2 (/UNTRACE-REDUCE U) OPTIONS))
-                 (APPEND /TRACENAMES NIL))))
-    ((mapcar #'(lambda (x) (/UNTRACE-2 X OPTIONS)) L)))
-  (/TRACEREPLY))
-
-(DEFUN /UNTRACE-REDUCE (X) (if (ATOM X) X (first X))) ; (CAR X) is now a domain
 
 (DEFUN /UNTRACE-2 (X OPTIONS)
  (let (u y)
@@ -429,11 +381,6 @@
         ((ATOM X) N)
         ((AND (SETQ N (SMALL-ENOUGH-COUNT (CAR X) (1+ N) M))
               (SMALL-ENOUGH-COUNT (CDR X) N M)))))
-
-(DEFUN /OPTIONS (X)
-  (COND ((ATOM X) NIL)
-        ((OR (ATOM (CAR X)) (|isFunctor| (CAAR X))) (/OPTIONS (CDR X)))
-        (X)))
 
 (DEFUN /GETOPTION (L OPT) (KDR (/GETTRACEOPTIONS L OPT)))
 
@@ -610,10 +557,10 @@
   (IF (identp bpi) (setq bpi (symbol-function bpi)))
   (SET NEWNAME BPI)
   (SETF (symbol-function NEWNAME) BPI)
-  (/TRACE-0 (APPEND (LIST NEWNAME (LIST 'ALIAS ALIAS)) OPTIONS))
+  (/TRACE-2 NEWNAME (CONS (LIST 'ALIAS ALIAS) OPTIONS))
   NEWNAME)
 
-(defun BPIUNTRACE (X ALIAS) (/UNTRACE-0 (LIST X (LIST 'ALIAS ALIAS))))
+(defun BPIUNTRACE (X ALIAS) (/UNTRACE-2 X (LIST 'ALIAS ALIAS)))
 
 (defun SPADSYSNAMEP (STR)
   (let (n i j)
