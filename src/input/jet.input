@@ -1,0 +1,109 @@
+-- Janet system, using linear functions
+jb := JBUNDLE(['x, 'y, 'z], ['u])
+jbx := JBX jb
+jb1 := JBLF(jb, jbx)
+de := JDE(jb, jb1)
+ck := CKP(jb, jb1)
+
+eq1 := D('u, ['z, 'z])$jb::jb1 + 'y::jb::jb1*D('u, ['x, 'x])$jb::jb1
+eq2 := D('u, ['y, 'y])$jb::jb1
+janet : de := makeSystem [eq1, eq2]
+
+setOutMode(14)$ck
+setRedMode(1)$ck
+complete(janet)$ck
+
+)clear all
+-- The same as above, but using general expressions
+jb := JBUNDLE(['x, 'y, 'z], ['u])
+jb1 := JBE(jb)
+de := JDE(jb, jb1)
+ck := CKP(jb, jb1)
+
+eq1 := D('u, ['z, 'z])$jb::jb1 + 'y::jb::jb1*D('u, ['x, 'x])$jb::jb1
+eq2 := D('u, ['y, 'y])$jb::jb1
+janet : de := makeSystem [eq1, eq2]
+
+setOutMode(4)$ck
+setRedMode(1)$ck
+complete(janet)$ck
+
+)clear all
+-- The same as above, but using polynomials
+jb := JBUNDLE(['x, 'y, 'z], ['u])
+jb1 := JBP(Fraction(Integer), jb)
+de := JDE(jb, jb1)
+ck := CKP(jb, jb1)
+
+eq1 := D('u, ['z, 'z])$jb::jb1 + 'y::jb::jb1*D('u, ['x, 'x])$jb::jb1
+eq2 := D('u, ['y, 'y])$jb::jb1
+janet : de := makeSystem [eq1, eq2]
+
+setOutMode(4)$ck
+setRedMode(1)$ck
+complete(janet)$ck
+
+)clear all
+-- Euler system
+jb := IJB('x, 'u, 'p, 4, 3)
+jbe := JBE jb
+de := JDE(jb, jbe)
+ck := CKP(jb, jbe)
+
+eq1 : jbe := P(1, [4]) + U(1)*P(1, [1]) + U(2)*P(1, [2]) + U(3)*P(1, [3])
+eq2 : jbe := P(2, [4]) + U(1)*P(2, [1]) + U(2)*P(2, [2]) + U(3)*P(2, [3])
+eq3 : jbe := P(3, [4]) + U(1)*P(3, [1]) + U(2)*P(3, [2]) + U(3)*P(3, [3])
+eq4 : jbe := P(1, [1]) + P(2, [2]) + P(3, [3])
+euler : de := makeSystem [eq1, eq2, eq3, eq4]
+
+setOutMode(4)$ck
+setRedMode(1)$ck
+-- setSimpMode(1)$ck
+complete(euler)$ck
+
+)clear all
+-- Modified Janet system
+jb := JBUNDLE(['x, 'y, 'z], ['u, 'v])
+jb1 := JBE(jb)
+de := JDE(jb, jb1)
+ck := CKP(jb, jb1)
+
+eq1 := D('u, ['z, 'z])$jb::jb1 + 'v::jb::jb1*D('u, ['x, 'x])$jb::jb1
+eq2 := D('u, ['y, 'y])$jb::jb1
+eq3 := D('v, ['z])$jb::jb1
+eq4 := D('v, ['y])$jb::jb1 - D('v, ['x])$jb::jb1
+janet2 : de := makeSystem [eq1, eq2, eq3, eq4]
+
+setOutMode(4)$ck
+-- setRedMode(1)$ck
+setSimpMode(1)$ck
+complete(janet2)$ck
+
+)clear all
+-- transforming Burgers equation into heat equation
+jb1 := JBUNDLE(['x, 't], ['u])
+jbe1 := JBE(jb1)
+jb2 := JBUNDLE(['y, 's], ['v])
+jbe2 := JBE(jb2)
+jct := JCT(jb1, jb2, [X(1)$jbe2, X(2)$jbe2], [log(U(1)$jbe2)])
+
+burgers : jbe1 := P[2] - P[1, 1] - P([1])^2
+transform(burgers)$jct
+
+)clear all
+-- Symmetries of heat equation
+jb := JBUNDLE(['t, 'x], ['u])
+sym := SYMANA(jb, ['tau, 'xi], ['eta])
+jbe := JBE(jb)
+jb2 := JBSA(jb, ['tau, 'xi], ['eta])
+jbx := JBX jb2
+jbl2 := JBLF(jb2, jbx)
+v := ansatz()$sym
+eq : jbe := -P[1] + P[2, 2]
+ds := detSys([eq])$sym
+lds : List jbl2 := [retract(eq) for eq in ds]
+r2 := makeSystem(lds)
+ck := CKP(jb2, jbl2)
+setOutMode(4)$ck
+setRedMode(1)$ck
+complete r2
