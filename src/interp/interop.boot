@@ -775,7 +775,7 @@ domainEqual(a,b) ==
 
 
 --------------------> NEW DEFINITION (see i-funsel.boot.pamphlet)
-getFunctionFromDomain(op,dc,args) ==
+getFunctionFromDomain1(op, dc, target, args) ==
   -- finds the function op with argument types args in dc
   -- complains, if no function or ambiguous
   $reportBottomUpFlag:local:= NIL
@@ -783,7 +783,7 @@ getFunctionFromDomain(op,dc,args) ==
     throwKeyedMsg("S2IF0002",[CAR dc])
   not constructor? CAR dc =>
     throwKeyedMsg("S2IF0003",[CAR dc])
-  p:= findFunctionInDomain(op,dc,NIL,args,args,NIL,NIL) =>
+  p:= findFunctionInDomain(op, dc, target, args, args, NIL, NIL) =>
 --+
     --sig := [NIL,:args]
     domain := evalDomain dc
@@ -792,6 +792,9 @@ getFunctionFromDomain(op,dc,args) ==
       b := compiledLookup(op,nsig,domain)
     b or  throwKeyedMsg("S2IS0023",[op,dc])
   throwKeyedMsg("S2IF0004",[op,dc])
+
+getFunctionFromDomain(op, dc, args) ==
+    getFunctionFromDomain1(op, dc, NIL, args)
 
 devaluateDeeply x ==
     VECP x => devaluate x
