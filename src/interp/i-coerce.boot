@@ -882,7 +882,7 @@ coerceInt1(triple,t2) ==
     [dc,targ,:argl] := CAAR mms
     targ ~= target => NIL
     $genValue =>
-      fun := getFunctionFromDomain(unwrap val,dc,argl)
+      fun := getFunctionFromDomain1(unwrap val, dc, targ, argl)
       objNewWrap(fun,t2)
     val := NRTcompileEvalForm(unwrap val, CDR CAAR mms, evalDomain dc)
     objNew(val, t2)
@@ -892,7 +892,7 @@ coerceInt1(triple,t2) ==
     [dc,targ,:argl] := CAAR mms
     targ ~= target => NIL
     dc is ["__FreeFunction__",:freeFun] => objNew( freeFun, t2 )
-    $genValue => objNewWrap( getFunctionFromDomain(sym,dc,argl), t2 )
+    $genValue => objNewWrap(getFunctionFromDomain1(sym, dc, targ, argl), t2)
     val := NRTcompileEvalForm(sym, CDR CAAR mms, evalDomain dc)
     objNew(val, t2)
   (t1 is ['FunctionCalled,sym]) and (t2 is ['Mapping,target,:margl]) =>
