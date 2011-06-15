@@ -139,9 +139,9 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     ALGOP := '%alg
 
     K2KG      : K -> Kernel FG
-    postSubst : (F, List F, List K, B, List K, SE) -> F
-    rinteg    : (IR, F, SE, B, B) -> Union(F, List F)
-    mkPrimh   : (F, SE, B, B) -> F
+    postSubst : (F, List F, List K, List K, SE) -> F
+    rinteg    : (IR, F, SE, B) -> Union(F, List F)
+    mkPrimh   : (F, SE, B) -> F
     trans?    : F -> B
     goComplex?: (B, List K, List K) -> B
     halfangle : F -> F
@@ -157,16 +157,14 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       any?(x1+->is?(x1,'log) or is?(x1,'exp) or is?(x1,'atan),
            operators f)$List(BasicOperator)
 
-    mkPrimh(f, x, h, comp) ==
-      f := real f
-      if comp then f := removeSinSq f
+    mkPrimh(f, x, h) ==
       g := mkPrim(f, x)
       h and trans? g => htrigs g
       g
 
-    rinteg(i, f, x, h, comp) ==
+    rinteg(i, f, x, h) ==
       not elem? i => integral(f, x)$F
-      empty? rest(l := [mkPrimh(f, x, h, comp) for f in expand i]) => first l
+      empty? rest(l := [mkPrimh(f, x, h) for f in expand i]) => first l
       l
 
 -- replace tan(a/2)^2 by (1-cos a)/(1+cos a) if tan(a/2) is in ltan
@@ -190,7 +188,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
         i
 
 -- ltan = list of tangents in the integrand after real normalization
-    postSubst(f, lv, lk, comp, ltan, x) ==
+    postSubst(f, lv, lk, ltan, x) ==
       for v in lv for k in lk repeat
         if ((u := retractIfCan(v)@Union(K, "failed")) case K) then
            uk := u::K
@@ -200,12 +198,36 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
               not(member?(uk, (tf := tower f))) then
                uk := find_int(uk, tf)
            f := eval(f, [uk], [k::F])
-      if not(comp or empty? ltan) then
+      ltf := [k for k in tower(f) | is?(k, 'tan)]
+      if not(empty? ltan) then
         ltemp := [tan2temp k for k in ltan]
         f := eval(f, ltan, [k::F for k in ltemp])
         f := eval(f, TANTEMP, 2, halfangle)
         f := eval(f, ltemp, [Khalf k for k in ltemp])
+      f := real f
+      f := removeSinSq f
       removeConstantTerm(f, x)
+
+    inv_lst(lt : List Kernel(FG), le : List(FG)) : 
+          Record(ker : List Kernel(FG), val : List(FG)) ==
+        resk : List Kernel(FG) := []
+        rese :  List(FG) := []
+        im := complex(0, 1)$G
+        for k in lt for e in le repeat
+            ik : Kernel(FG)
+            ie : FG
+            not(is?(k, 'atan) or is?(k, 'tan)) => "iterate"
+            if is?(k, 'atan) then
+                ik := retract(-2*im*e)@Kernel(FG)
+                ie := -2*im*(k::FG)
+            if is?(k, 'tan) then
+                e1 := im*e
+                k1 := im*(k::FG)
+                ik := retract(-(e1 + 1)/(e1 - 1))@Kernel(FG)
+                ie := -(k1 + 1)/(k1 - 1)
+            resk := cons(ik, resk)
+            rese := cons(ie, rese)
+        [reverse(resk), reverse(rese)]
 
 -- can handle a single unnested tangent directly, otherwise go complex for now
 -- l is the list of all the kernels containing x
@@ -238,22 +260,25 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       rtg := any?(x1+->has?(operator x1, RTRIG), tg)
       el  := any?(x1+->has?(operator x1, ELEM), tg)
       i:IR
-      if (comp := goComplex?(rtg, tg, ltg)) then
-        gg : FG := trigs2explogs(F2FG g,
-                    [K2KG k for k in tf | is?(k, 'tan) or
-                       is?(k, 'cot)])
-        -- FIXME: we should really rerun algebraic normalization
-        -- but currently we do nothing
-        -- rootSimp caused regression on arc trigonometric functions
-        -- gg := rootSimp(gg)$AlgebraicManipulations(G, FG)
-        i := map(FG2F, lfintegrate(gg, x))
+      if (goComplex?(rtg, tg, ltg)) then
+          gg0 := F2FG g
+          tgg0 := tower(gg0)
+          tgg1 := [trigs2explogs(k::FG, []) for k in tgg0]
+          rtg1 := inv_lst(tgg0, tgg1)
+          gg := eval(gg0, tgg0, tgg1)
+          -- FIXME: we should really rerun algebraic normalization
+          -- but currently we do nothing
+          -- rootSimp caused regression on arc trigonometric functions
+          -- gg := rootSimp(gg)$AlgebraicManipulations(G, FG)
+          i := map((fg : FG) : F +-> FG2F eval(fg, rtg1.ker, rtg1.val),
+                 lfintegrate(gg, x))
       else i := lfintegrate(g, x)
       ltg := setDifference(ltg, ltf)   -- tan's added by normalization
       okers := concat(rec.kers, ekers)
       ovals := concat(rec.vals, evals)
-      (u := rinteg(i, f, x, el and ht, comp)) case F =>
-        postSubst(u::F, ovals, okers, comp, ltg, x)
-      [postSubst(h, ovals, okers, comp, ltg, x) for h in u::List(F)]
+      (u := rinteg(i, f, x, el and ht)) case F =>
+          postSubst(u::F, ovals, okers, ltg, x)
+      [postSubst(h, ovals, okers, ltg, x) for h in u::List(F)]
 
 @
 \section{License}
