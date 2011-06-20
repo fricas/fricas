@@ -822,6 +822,14 @@ mkIterFun([index,:s],funBody,$localVars) ==
   putValue(vec,objNew(['CONS,val,["VECTOR",:reverse $freeVariables]],mapMode))
   vec
 
+checkIterationForFreeVariables(op, itl, locals) ==
+    boundVars := getIteratorIds itl
+    $boundVariables := APPEND(boundVars, $boundVariables)
+    r := [op, :[checkForFreeVariables(a, locals) for a in itl]]
+    for var in boundVars repeat
+        $boundVariables := delete(var, $boundVariables)
+    r
+
 checkForFreeVariables(v,locals) ==
   -- v is the body of a lambda expression.  The list $boundVariables is all the
   -- bound variables, the parameter locals contains local variables which might
@@ -848,19 +856,9 @@ checkForFreeVariables(v,locals) ==
     op = "LETT" => -- Expands to a SETQ.
       ["SETF",:[checkForFreeVariables(a,locals) for a in args]]
     op = "COLLECT" => -- Introduces a new bound variable?
-      first(args) is ["STEP",var,:.] =>
-       $boundVariables := [var,:$boundVariables]
-       r := ["COLLECT",:[checkForFreeVariables(a,locals) for a in args]]
-       $boundVariables := delete(var,$boundVariables)
-       r
-      ["COLLECT",:[checkForFreeVariables(a,locals) for a in args]]
+        checkIterationForFreeVariables(op, args, locals)
     op = "REPEAT" => -- Introduces a new bound variable?
-      first(args) is ["STEP",var,:.] =>
-       $boundVariables := [var,:$boundVariables]
-       r := ["REPEAT",:[checkForFreeVariables(a,locals) for a in args]]
-       $boundVariables := delete(var,$boundVariables)
-       r
-      ["REPEAT",:[checkForFreeVariables(a,locals) for a in args]]
+        checkIterationForFreeVariables(op, args, locals)
     op = "LET" =>
       args is [var,form,name] =>
         -- This is some bizarre LET, not what one would expect in Common Lisp!
