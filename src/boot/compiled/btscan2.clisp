@@ -89,7 +89,6 @@
  
 (DEFUN |shoeNextLine| (|s|)
   (PROG (|a| |s1|)
-    (DECLARE (SPECIAL |$linepos| |$f| |$r| |$ln| |$n| |$sz|))
     (RETURN
      (COND ((|bStreamNull| |s|) NIL)
            (#1='T (SETQ |$linepos| |s|) (SETQ |$f| (CAR |s|))
@@ -137,7 +136,7 @@
 (DEFUN |shoeLineToks| (|s|)
   (PROG (|$linepos| |$floatok| |$sz| |$n| |$ln| |$r| |$f| |toks| |a| |dq|
          |command| |fst|)
-    (DECLARE (SPECIAL |$f| |$floatok| |$sz| |$linepos| |$ln| |$r| |$n|))
+    (DECLARE (SPECIAL |$linepos| |$floatok| |$sz| |$n| |$ln| |$r| |$f|))
     (RETURN
      (PROGN
       (SETQ |$f| NIL)
@@ -198,7 +197,6 @@
  
 (DEFUN |shoeLispToken| (|s| |string|)
   (PROG (|ln| |linepos| |LETTMP#1| |r| |st| |dq|)
-    (DECLARE (SPECIAL |$ln| |$linepos|))
     (RETURN
      (PROGN
       (SETQ |string|
@@ -237,7 +235,6 @@
  
 (DEFUN |shoeAccumulateLines| (|s| |string|)
   (PROG (|fst| |command| |a|)
-    (DECLARE (SPECIAL |$n| |$r| |$ln|))
     (RETURN
      (COND ((NULL (|shoeNextLine| |s|)) (CONS |s| |string|))
            ((NULL |$n|) (|shoeAccumulateLines| |$r| |string|))
@@ -302,7 +299,6 @@
  
 (DEFUN |shoeToken| ()
   (PROG (|b| |ch| |n| |linepos| |c| |ln|)
-    (DECLARE (SPECIAL |$ln| |$n| |$linepos|))
     (RETURN
      (PROGN
       (SETQ |ln| |$ln|)
@@ -403,7 +399,6 @@
  
 (DEFUN |shoeLispEscape| ()
   (PROG (|n| |exp| |a|)
-    (DECLARE (SPECIAL |$n| |$sz| |$linepos| |$ln|))
     (RETURN
      (PROGN
       (SETQ |$n| (+ |$n| 1))
@@ -432,7 +427,6 @@
  
 (DEFUN |shoeEscape| ()
   (PROG (|a|)
-    (DECLARE (SPECIAL |$n|))
     (RETURN
      (PROGN
       (SETQ |$n| (+ |$n| 1))
@@ -459,7 +453,6 @@
  
 (DEFUN |shoeEsc| #1=()
   (PROG (|n1|)
-    (DECLARE (SPECIAL |$n| |$sz| |$r| |$ln|))
     (RETURN
      (COND
       ((NOT (< |$n| |$sz|))
@@ -491,7 +484,6 @@
  
 (DEFUN |shoeStartsComment| ()
   (PROG (|www|)
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (COND
       ((< |$n| |$sz|)
@@ -516,7 +508,6 @@
  
 (DEFUN |shoeStartsNegComment| ()
   (PROG (|www|)
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (COND
       ((< |$n| |$sz|)
@@ -534,7 +525,6 @@
  
 (DEFUN |shoeNegComment| ()
   (PROG (|n|)
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (PROGN
       (SETQ |n| |$n|)
@@ -548,7 +538,6 @@
  
 (DEFUN |shoeComment| ()
   (PROG (|n|)
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (PROGN
       (SETQ |n| |$n|)
@@ -562,7 +551,6 @@
  
 (DEFUN |shoePunct| ()
   (PROG (|sss|)
-    (DECLARE (SPECIAL |$ln| |$n|))
     (RETURN
      (PROGN
       (SETQ |sss| (|shoeMatch| |$ln| |$n|))
@@ -580,7 +568,6 @@
  
 (DEFUN |shoeKeyTr| (|w|)
   (PROG ()
-    (DECLARE (SPECIAL |$floatok|))
     (RETURN
      (COND
       ((EQ (|shoeKeyWord| |w|) 'DOT)
@@ -596,7 +583,6 @@
  
 (DEFUN |shoePossFloat| (|w|)
   (PROG ()
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (COND
       ((OR (NOT (< |$n| |$sz|)) (NULL (|shoeDigit| (ELT |$ln| |$n|))))
@@ -615,7 +601,6 @@
  
 (DEFUN |shoeSpace| ()
   (PROG (|n|)
-    (DECLARE (SPECIAL |$n| |$ln| |$floatok|))
     (RETURN
      (PROGN
       (SETQ |n| |$n|)
@@ -643,7 +628,6 @@
  
 (DEFUN |shoeString| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$n| |$floatok|))
     (RETURN
      (PROGN
       (SETQ |$n| (+ |$n| 1))
@@ -684,7 +668,6 @@
  
 (DEFUN |shoeS| ()
   (PROG (|b| |ec| |a| |str| |mn| |escsym| |strsym| |n|)
-    (DECLARE (SPECIAL |$n| |$sz| |$linepos| |$ln|))
     (RETURN
      (COND
       ((NOT (< |$n| |$sz|))
@@ -749,7 +732,6 @@
  
 (DEFUN |shoeW| (|b|)
   (PROG (|n1| |l| |endid| |str| |a| |bb|)
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (PROGN
       (SETQ |n1| |$n|)
@@ -779,7 +761,6 @@
  
 (DEFUN |shoeWord| (|esp|)
   (PROG (|aaa| |w|)
-    (DECLARE (SPECIAL |$floatok|))
     (RETURN
      (PROGN
       (SETQ |aaa| (|shoeW| NIL))
@@ -810,7 +791,6 @@
  
 (DEFUN |shoeInteger1| (|zro|)
   (PROG (|n| |l| |str| |a| |bb|)
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (PROGN
       (SETQ |n| |$n|)
@@ -874,7 +854,6 @@
  
 (DEFUN |shoeNumber| ()
   (PROG (|w| |n| |a|)
-    (DECLARE (SPECIAL |$n| |$sz| |$floatok| |$ln|))
     (RETURN
      (PROGN
       (SETQ |a| (|shoeInteger|))
@@ -928,7 +907,6 @@
  
 (DEFUN |shoeExponent| (|a| |w|)
   (PROG (|n| |c| |e| |c1|)
-    (DECLARE (SPECIAL |$n| |$sz| |$ln|))
     (RETURN
      (COND ((NOT (< |$n| |$sz|)) (|shoeLeafFloat| |a| |w| 0))
            (#1='T (SETQ |n| |$n|) (SETQ |c| (QENUM |$ln| |$n|))
@@ -967,7 +945,6 @@
  
 (DEFUN |shoeError| ()
   (PROG (|n|)
-    (DECLARE (SPECIAL |$n| |$linepos| |$ln|))
     (RETURN
      (PROGN
       (SETQ |n| |$n|)
