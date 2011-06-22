@@ -890,8 +890,9 @@ bfMain(auxfn,op)==
   computeValue := ['APPLY,["FUNCTION",auxfn],g1]
   cacheName:= INTERN CONCAT (PNAME op,'";AL")
   g2:= bfGenSymbol()
-  getCode:=   ['GETHASH,g1,cacheName]
-  secondPredPair:= [['SETQ,g2,getCode],g2]
+  marker := ["QUOTE", GENSYM()]
+  getCode:=   ['GETHASH, g1, cacheName, marker]
+  secondPredPair:= [["NOT", ["EQ", ['SETF, g2, getCode], marker]], g2]
   putCode:=   ['SETF ,getCode,computeValue]
   thirdPredPair:= ['(QUOTE T),putCode]
   codeBody:= ['PROG,[g2],
