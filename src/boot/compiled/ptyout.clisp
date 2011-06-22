@@ -12,20 +12,14 @@
     (DECLARE (SPECIAL |$bfClamming|))
     (RETURN (PROGN (SETQ |$bfClamming| NIL) (BOOTTOCLLINES NIL |fn| |outfn|)))))
  
-; BOOTCLAM (fn, outfn) == BOOTCLAMLINES(nil, fn, outfn)
+; BOOTCLAM (fn, outfn) ==
+;     $bfClamming : local := true
+;     BOOTTOCLCLINES(nil, fn, outfn)
  
 (DEFUN BOOTCLAM (|fn| |outfn|)
-  (PROG () (RETURN (BOOTCLAMLINES NIL |fn| |outfn|))))
- 
-; BOOTCLAMLINES(lines, fn, outfn) ==
-;          $bfClamming:local:=true
-;          BOOTTOCLLINES(lines,fn, outfn)
- 
-(DEFUN BOOTCLAMLINES (|lines| |fn| |outfn|)
   (PROG (|$bfClamming|)
     (DECLARE (SPECIAL |$bfClamming|))
-    (RETURN
-     (PROGN (SETQ |$bfClamming| T) (BOOTTOCLLINES |lines| |fn| |outfn|)))))
+    (RETURN (PROGN (SETQ |$bfClamming| T) (BOOTTOCLCLINES NIL |fn| |outfn|)))))
  
 ; BOOTTOCLLINES(lines, fn, outfn)==
 ;     infn := shoeAddbootIfNec fn
@@ -77,24 +71,26 @@
                                                     |stream|)))
             (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
  
-; BOOTTOCLC(fn, outfn) ==BOOTTOCLCLINES(nil, fn, outfn)
+; BOOTTOCLC(fn, outfn) ==
+;     $bfClamming : local := false
+;     BOOTTOCLCLINES(nil, fn, outfn)
  
 (DEFUN BOOTTOCLC (|fn| |outfn|)
-  (PROG () (RETURN (BOOTTOCLCLINES NIL |fn| |outfn|))))
+  (PROG (|$bfClamming|)
+    (DECLARE (SPECIAL |$bfClamming|))
+    (RETURN
+     (PROGN (SETQ |$bfClamming| NIL) (BOOTTOCLCLINES NIL |fn| |outfn|)))))
  
 ; BOOTTOCLCLINES(lines, fn, outfn)==
-;   $bfClamming:local:=false
 ;   infn:=shoeAddbootIfNec fn
 ;   if NULL(outfn) then
 ;       outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
 ;   shoeOpenInputBoottranFile(a, infn, shoeClCLines(a, fn, lines, outfn))
  
 (DEFUN BOOTTOCLCLINES (|lines| |fn| |outfn|)
-  (PROG (|$bfClamming| |infn|)
-    (DECLARE (SPECIAL |$bfClamming|))
+  (PROG (|infn|)
     (RETURN
      (PROGN
-      (SETQ |$bfClamming| NIL)
       (SETQ |infn| (|shoeAddbootIfNec| |fn|))
       (COND
        ((NULL |outfn|)
@@ -150,7 +146,7 @@
  
 (DEFUN BOOTTOMC (|fn|)
   (PROG (|$GenVarCounter| |$bfClamming| |infn|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
+    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
     (RETURN
      (PROGN
       (SETQ |$bfClamming| NIL)
@@ -275,7 +271,7 @@
  
 (DEFUN STTOSEX0 (|string|)
   (PROG (|$bfClamming| |$GenVarCounter|)
-    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
+    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
     (RETURN
      (PROGN
       (SETQ |$GenVarCounter| 0)
@@ -625,8 +621,8 @@
   (PROG (|$bpParenCount| |$bpCount| |$returns| |$typings| |$wheredefs| |$op|
          |$ttok| |$stok| |$stack| |$inputStream| |found|)
     (DECLARE
-     (SPECIAL |$stok| |$ttok| |$op| |$wheredefs| |$typings| |$returns|
-      |$bpCount| |$bpParenCount| |$stack| |$inputStream|))
+     (SPECIAL |$bpParenCount| |$bpCount| |$returns| |$typings| |$wheredefs|
+      |$op| |$ttok| |$stok| |$stack| |$inputStream|))
     (RETURN
      (PROGN
       (SETQ |$inputStream| |stream|)
@@ -953,8 +949,8 @@
   (PROG (|$bfClamming| |$GenVarCounter| |$bootDefinedTwice| |$bootUsed|
          |$bootDefined| |$lispWordTable| |out|)
     (DECLARE
-     (SPECIAL |$bootDefined| |$bootUsed| |$bootDefinedTwice| |$GenVarCounter|
-      |$bfClamming| |$lispWordTable|))
+     (SPECIAL |$bfClamming| |$GenVarCounter| |$bootDefinedTwice| |$bootUsed|
+      |$bootDefined| |$lispWordTable|))
     (RETURN
      (COND ((NULL |a|) (|shoeNotFound| |fn|))
            ('T (SETQ |$lispWordTable| (MAKE-HASHTABLE 'EQ))
@@ -985,7 +981,6 @@
  
 (DEFUN |shoeReport| (|stream|)
   (PROG (|a| |b|)
-    (DECLARE (SPECIAL |$bootUsed| |$bootDefined| |$bootDefinedTwice|))
     (RETURN
      (PROGN
       (|shoeFileLine| "DEFINED and not USED" |stream|)
@@ -1066,7 +1061,7 @@
 (DEFUN |defuse| (|e| |x|)
   (PROG (|$used| |niens| |nee| |LETTMP#1| |exp| |ISTMP#5| |id| |ISTMP#4|
          |ISTMP#3| |body| |bv| |ISTMP#2| |name| |ISTMP#1|)
-    (DECLARE (SPECIAL |$bootDefined| |$bootDefinedTwice| |$bootUsed| |$used|))
+    (DECLARE (SPECIAL |$used|))
     (RETURN
      (PROGN
       (SETQ |x| (|stripm| |x| *PACKAGE* (FIND-PACKAGE "BOOTTRAN")))
@@ -1173,7 +1168,6 @@
  
 (DEFUN |defuse1| (|e| |y|)
   (PROG (|ISTMP#1| |a| |b| |LETTMP#1| |dol| |ndol|)
-    (DECLARE (SPECIAL |$used| |$bootDefined|))
     (RETURN
      (COND
       ((ATOM |y|)
@@ -1268,10 +1262,7 @@
  
 ; defusebuiltin x==  GETHASH(x,$lispWordTable)
  
-(DEFUN |defusebuiltin| (|x|)
-  (PROG ()
-    (DECLARE (SPECIAL |$lispWordTable|))
-    (RETURN (GETHASH |x| |$lispWordTable|))))
+(DEFUN |defusebuiltin| (|x|) (PROG () (RETURN (GETHASH |x| |$lispWordTable|))))
  
 ; bootOut (l,outfn)==
 ;       for i in l repeat shoeFileLine (CONCAT ('"   ",PNAME i),outfn)
@@ -1347,7 +1338,7 @@
   (PROG (|$bfClamming| |$GenVarCounter| |$bootUsed| |$bootDefined|
          |$lispWordTable| |out|)
     (DECLARE
-     (SPECIAL |$bootDefined| |$bootUsed| |$GenVarCounter| |$bfClamming|
+     (SPECIAL |$bfClamming| |$GenVarCounter| |$bootUsed| |$bootDefined|
       |$lispWordTable|))
     (RETURN
      (COND ((NULL |a|) (|shoeNotFound| |fn|))
@@ -1370,7 +1361,6 @@
  
 (DEFUN |shoeXReport| (|stream|)
   (PROG (|c| |a|)
-    (DECLARE (SPECIAL |$bootUsed|))
     (RETURN
      (PROGN
       (|shoeFileLine| "USED and where DEFINED" |stream|)
@@ -1546,7 +1536,7 @@
  
 (DEFUN FC (|name| |fn|)
   (PROG (|$GenVarCounter| |$bfClamming| |infn|)
-    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
+    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
     (RETURN
      (PROGN
       (SETQ |$bfClamming| NIL)
@@ -1593,7 +1583,7 @@
  
 (DEFUN PSTTOMC (|string|)
   (PROG (|$bfClamming| |$GenVarCounter|)
-    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
+    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
     (RETURN
      (PROGN
       (SETQ |$GenVarCounter| 0)
@@ -1675,7 +1665,7 @@
  
 (DEFUN PSTOUT0 (|string|)
   (PROG (|$bfClamming| |$GenVarCounter|)
-    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
+    (DECLARE (SPECIAL |$bfClamming| |$GenVarCounter|))
     (RETURN
      (PROGN
       (SETQ |$GenVarCounter| 0)

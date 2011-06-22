@@ -13,7 +13,6 @@
  
 (DEFUN |bpFirstToken| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$inputStream| |$stok| |$ttok|))
     (RETURN
      (PROGN
       (SETQ |$stok|
@@ -44,8 +43,6 @@
  
 (DEFUN |bpFirstTok| #1=()
   (PROG #1#
-    (DECLARE
-     (SPECIAL |$inputStream| |$stok| |$ttok| |$bpParenCount| |$bpCount|))
     (RETURN
      (PROGN
       (SETQ |$stok|
@@ -70,7 +67,6 @@
  
 (DEFUN |bpNext| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$inputStream|))
     (RETURN (PROGN (SETQ |$inputStream| (CDR |$inputStream|)) (|bpFirstTok|)))))
  
 ; bpNextToken() ==
@@ -79,16 +75,13 @@
  
 (DEFUN |bpNextToken| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$inputStream|))
     (RETURN
      (PROGN (SETQ |$inputStream| (CDR |$inputStream|)) (|bpFirstToken|)))))
  
 ; bpState()== [$inputStream,$stack,$bpParenCount,$bpCount]
  
 (DEFUN |bpState| #1=()
-  (PROG #1#
-    (DECLARE (SPECIAL |$inputStream| |$stack| |$bpParenCount| |$bpCount|))
-    (RETURN (LIST |$inputStream| |$stack| |$bpParenCount| |$bpCount|))))
+  (PROG #1# (RETURN (LIST |$inputStream| |$stack| |$bpParenCount| |$bpCount|))))
  
 ; bpRestore(x)==
 ;       $inputStream:=CAR x
@@ -100,7 +93,6 @@
  
 (DEFUN |bpRestore| (|x|)
   (PROG ()
-    (DECLARE (SPECIAL |$inputStream| |$stack| |$bpParenCount| |$bpCount|))
     (RETURN
      (PROGN
       (SETQ |$inputStream| (CAR |x|))
@@ -112,18 +104,13 @@
  
 ; bpPush x==$stack:=CONS(x,$stack)
  
-(DEFUN |bpPush| (|x|)
-  (PROG ()
-    (DECLARE (SPECIAL |$stack|))
-    (RETURN (SETQ |$stack| (CONS |x| |$stack|)))))
+(DEFUN |bpPush| (|x|) (PROG () (RETURN (SETQ |$stack| (CONS |x| |$stack|)))))
  
 ; bpPushId()==
 ;    $stack:=CONS(bfReName $ttok,$stack)
  
 (DEFUN |bpPushId| #1=()
-  (PROG #1#
-    (DECLARE (SPECIAL |$ttok| |$stack|))
-    (RETURN (SETQ |$stack| (CONS (|bfReName| |$ttok|) |$stack|)))))
+  (PROG #1# (RETURN (SETQ |$stack| (CONS (|bfReName| |$ttok|) |$stack|)))))
  
 ; bpPop1()==
 ;        a:=CAR $stack
@@ -132,7 +119,6 @@
  
 (DEFUN |bpPop1| ()
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stack|))
     (RETURN
      (PROGN (SETQ |a| (CAR |$stack|)) (SETQ |$stack| (CDR |$stack|)) |a|))))
  
@@ -143,7 +129,6 @@
  
 (DEFUN |bpPop2| ()
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stack|))
     (RETURN
      (PROGN (SETQ |a| (CADR |$stack|)) (RPLACD |$stack| (CDDR |$stack|)) |a|))))
  
@@ -154,7 +139,6 @@
  
 (DEFUN |bpPop3| ()
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stack|))
     (RETURN
      (PROGN
       (SETQ |a| (CADDR |$stack|))
@@ -191,7 +175,7 @@
  
 (DEFUN |bpIndentParenthesized| (|f|)
   (PROG (|$bpCount| |a|)
-    (DECLARE (SPECIAL |$stok| |$bpParenCount| |$inputStream| |$bpCount|))
+    (DECLARE (SPECIAL |$bpCount|))
     (RETURN
      (PROGN
       (SETQ |$bpCount| 0)
@@ -231,7 +215,6 @@
  
 (DEFUN |bpParenthesized| (|f|)
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stok|))
     (RETURN
      (PROGN
       (SETQ |a| |$stok|)
@@ -256,7 +239,6 @@
  
 (DEFUN |bpBracket| (|f|)
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stok|))
     (RETURN
      (PROGN
       (SETQ |a| |$stok|)
@@ -305,7 +287,6 @@
  
 (DEFUN |bpListof| (|f| |str1| |g|)
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stack|))
     (RETURN
      (COND
       ((APPLY |f| NIL)
@@ -340,7 +321,6 @@
  
 (DEFUN |bpListofFun| (|f| |h| |g|)
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stack|))
     (RETURN
      (COND
       ((APPLY |f| NIL)
@@ -377,7 +357,6 @@
  
 (DEFUN |bpList| (|f| |str1| |g|)
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stack|))
     (RETURN
      (COND
       ((APPLY |f| NIL)
@@ -407,7 +386,6 @@
  
 (DEFUN |bpOneOrMore| (|f|)
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stack|))
     (RETURN
      (COND
       ((APPLY |f| NIL)
@@ -506,23 +484,18 @@
 ; bpEqPeek s ==  EQCAR($stok,"KEY") and EQ(s,$ttok)
  
 (DEFUN |bpEqPeek| (|s|)
-  (PROG ()
-    (DECLARE (SPECIAL |$stok| |$ttok|))
-    (RETURN (AND (EQCAR |$stok| 'KEY) (EQ |s| |$ttok|)))))
+  (PROG () (RETURN (AND (EQCAR |$stok| 'KEY) (EQ |s| |$ttok|)))))
  
 ; bpEqKey s ==   EQCAR($stok,"KEY") and EQ(s,$ttok) and bpNext()
  
 (DEFUN |bpEqKey| (|s|)
-  (PROG ()
-    (DECLARE (SPECIAL |$stok| |$ttok|))
-    (RETURN (AND (EQCAR |$stok| 'KEY) (EQ |s| |$ttok|) (|bpNext|)))))
+  (PROG () (RETURN (AND (EQCAR |$stok| 'KEY) (EQ |s| |$ttok|) (|bpNext|)))))
  
 ; bpEqKeyNextTok s ==   EQCAR($stok,"KEY") and EQ(s,$ttok) and
 ;                   bpNextToken()
  
 (DEFUN |bpEqKeyNextTok| (|s|)
   (PROG ()
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN (AND (EQCAR |$stok| 'KEY) (EQ |s| |$ttok|) (|bpNextToken|)))))
  
 ; bpPileTrap()   == bpMissing  "BACKTAB"
@@ -582,7 +555,6 @@
  
 (DEFUN |bpRecoverTrap| ()
   (PROG (|pos2| |pos1|)
-    (DECLARE (SPECIAL |$stok|))
     (RETURN
      (PROGN
       (|bpFirstToken|)
@@ -631,7 +603,6 @@
  
 (DEFUN |bpListAndRecover| (|f|)
   (PROG (|a| |b| |done| |c| |found|)
-    (DECLARE (SPECIAL |$stack| |$inputStream|))
     (RETURN
      (PROGN
       (SETQ |a| |$stack|)
@@ -690,7 +661,6 @@
  
 (DEFUN |bpMoveTo| (|n|)
   (PROG ()
-    (DECLARE (SPECIAL |$inputStream| |$bpCount| |$bpParenCount|))
     (RETURN
      (COND ((NULL |$inputStream|) T)
            ((|bpEqPeek| 'BACKTAB)
@@ -734,9 +704,7 @@
 ; bpSpecificErrorHere(key) ==  bpSpecificErrorAtToken($stok, key)
  
 (DEFUN |bpSpecificErrorHere| (|key|)
-  (PROG ()
-    (DECLARE (SPECIAL |$stok|))
-    (RETURN (|bpSpecificErrorAtToken| |$stok| |key|))))
+  (PROG () (RETURN (|bpSpecificErrorAtToken| |$stok| |key|))))
  
 ; bpName() ==
 ;         if EQCAR( $stok,"ID")
@@ -747,7 +715,6 @@
  
 (DEFUN |bpName| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok|))
     (RETURN (COND ((EQCAR |$stok| 'ID) (|bpPushId|) (|bpNext|)) ('T NIL)))))
  
 ; bpConstTok() ==
@@ -765,7 +732,6 @@
  
 (DEFUN |bpConstTok| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (COND
       ((MEMQ (|shoeTokType| |$stok|) '(INTEGER FLOAT))
@@ -817,7 +783,6 @@
  
 (DEFUN |bpAddTokens| (|n|)
   (PROG ()
-    (DECLARE (SPECIAL |$stok|))
     (RETURN
      (COND ((EQL |n| 0) NIL)
            ((< 0 |n|)
@@ -849,7 +814,6 @@
  
 (DEFUN |bpSexpKey| ()
   (PROG (|a|)
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (COND
       ((AND (EQCAR |$stok| 'KEY) (NULL (|bpExceptions|)))
@@ -868,7 +832,6 @@
  
 (DEFUN |bpAnyId| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (OR
       (AND (|bpEqKey| 'MINUS) (OR (EQCAR |$stok| 'INTEGER) (|bpTrap|))
@@ -941,7 +904,6 @@
  
 (DEFUN |bpPrefixOperator| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (AND (EQCAR |$stok| 'KEY) (GET |$ttok| 'SHOEPRE) (|bpPushId|)
           (|bpNext|)))))
@@ -952,7 +914,6 @@
  
 (DEFUN |bpInfixOperator| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (AND (EQCAR |$stok| 'KEY) (GET |$ttok| 'SHOEINF) (|bpPushId|)
           (|bpNext|)))))
@@ -1013,7 +974,6 @@
  
 (DEFUN |bpInfKey| (|s|)
   (PROG ()
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (AND (EQCAR |$stok| 'KEY) (MEMBER |$ttok| |s|) (|bpPushId|) (|bpNext|)))))
  
@@ -1087,7 +1047,6 @@
  
 (DEFUN |bpString| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (AND (EQ (|shoeTokType| |$stok|) 'STRING)
           (|bpPush| (LIST 'QUOTE (INTERN |$ttok|))) (|bpNext|)))))
@@ -1101,7 +1060,6 @@
  
 (DEFUN |bpThetaName| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (COND
       ((AND (EQCAR |$stok| 'ID) (GET |$ttok| 'SHOETHETA)) (|bpPushId|)
@@ -1432,7 +1390,6 @@
  
 (DEFUN |bpStoreName| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stack| |$op| |$wheredefs| |$typings|))
     (RETURN
      (PROGN
       (SETQ |$op| (CAR |$stack|))
@@ -1795,7 +1752,6 @@
  
 (DEFUN |bpBVString| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$stok| |$ttok|))
     (RETURN
      (AND (EQ (|shoeTokType| |$stok|) 'STRING)
           (|bpPush| (LIST 'BVQUOTE (INTERN |$ttok|))) (|bpNext|)))))

@@ -13,7 +13,6 @@
  
 (DEFUN |bfGenSymbol| #1=()
   (PROG #1#
-    (DECLARE (SPECIAL |$GenVarCounter|))
     (RETURN
      (PROGN
       (SETQ |$GenVarCounter| (+ |$GenVarCounter| 1))
@@ -802,7 +801,6 @@
  
 (DEFUN |defSheepAndGoats| (|x|)
   (PROG (|def| |op| |args| |body| |argl| |opassoc| |op1| |defstack|)
-    (DECLARE (SPECIAL |$op|))
     (RETURN
      (COND
       ((EQCAR |x| 'DEF)
@@ -878,7 +876,6 @@
  
 (DEFUN |bfLET1| (|lhs| |rhs|)
   (PROG (|ISTMP#1| |rhs1| |name| |l1| |l2| |g| |let1|)
-    (DECLARE (SPECIAL |$letGenVarCounter|))
     (RETURN
      (COND ((IDENTP |lhs|) (|bfLetForm| |lhs| |rhs|))
            ((AND (CONSP |lhs|) (EQ (CAR |lhs|) 'FLUID)
@@ -986,7 +983,6 @@
 (DEFUN |bfLET2| (|lhs| |rhs|)
   (PROG (|ISTMP#1| |a| |ISTMP#2| |b| |var1| |var2| |l1| |l2| |patrev| |rev| |g|
          |ISTMP#3| |val1| |isPred|)
-    (DECLARE (SPECIAL |$letGenVarCounter| |$inDefIS|))
     (RETURN
      (COND ((IDENTP |lhs|) (|bfLetForm| |lhs| |rhs|)) ((NULL |lhs|) NIL)
            ((AND (CONSP |lhs|) (EQ (CAR |lhs|) 'FLUID)
@@ -1188,7 +1184,7 @@
  
 (DEFUN |bfIS| (|left| |right|)
   (PROG (|$inDefIS| |$isGenVarCounter|)
-    (DECLARE (SPECIAL |$isGenVarCounter| |$inDefIS|))
+    (DECLARE (SPECIAL |$inDefIS| |$isGenVarCounter|))
     (RETURN
      (PROGN
       (SETQ |$isGenVarCounter| 1)
@@ -1275,7 +1271,6 @@
 (DEFUN |bfIS1| (|lhs| |rhs|)
   (PROG (|ISTMP#1| |a| |c| |ISTMP#2| |d| |l| |g| |b| |a1| |b1| |cls| |patrev|
          |rev| |l2|)
-    (DECLARE (SPECIAL |$isGenVarCounter|))
     (RETURN
      (COND ((NULL |rhs|) (LIST 'NULL |lhs|))
            ((STRINGP |rhs|) (LIST 'EQUAL |lhs| (LIST 'QUOTE |rhs|)))
@@ -1580,7 +1575,6 @@
 (DEFUN |bfMDef| (|defOp| |op| |args| |body|)
   (PROG (|argl| |LETTMP#1| |gargl| |sgargl| |nargl| |largl| |sb| |sb2| |lamex|
          |def|)
-    (DECLARE (SPECIAL |$wheredefs|))
     (RETURN
      (PROGN
       (SETQ |argl|
@@ -1700,7 +1694,6 @@
  
 (DEFUN |bfDef| (|defOp| |op| |args| |body|)
   (PROG (|LETTMP#1| |op1| |arg1| |body1|)
-    (DECLARE (SPECIAL |$bfClamming| |$wheredefs|))
     (RETURN
      (COND
       (|$bfClamming|
@@ -1852,7 +1845,7 @@
 ;        if $fluidVars or $locVars or $dollarVars or $typings
 ;        then
 ;          lvars:=append($fluidVars,$locVars)
-;          $fluidVars:=UNION($fluidVars,$dollarVars)
+;          -- $fluidVars:=UNION($fluidVars,$dollarVars)
 ;          if null $fluidVars
 ;          then
 ;             null $typings=> shoePROG(lvars,body)
@@ -1873,7 +1866,7 @@
 (DEFUN |shoeCompTran| (|x|)
   (PROG (|$dollarVars| |$locVars| |$fluidVars| |fvs| |fl| |fvars| |lvars|
          |body| |args| |lamtype|)
-    (DECLARE (SPECIAL |$typings| |$dollarVars| |$locVars| |$fluidVars|))
+    (DECLARE (SPECIAL |$dollarVars| |$locVars| |$fluidVars|))
     (RETURN
      (PROGN
       (SETQ |lamtype| (CAR |x|))
@@ -1890,7 +1883,6 @@
               (COND
                ((OR |$fluidVars| |$locVars| |$dollarVars| |$typings|)
                 (SETQ |lvars| (APPEND |$fluidVars| |$locVars|))
-                (SETQ |$fluidVars| (UNION |$fluidVars| |$dollarVars|))
                 (COND
                  ((NULL |$fluidVars|)
                   (COND ((NULL |$typings|) (|shoePROG| |lvars| |body|))
@@ -2009,7 +2001,6 @@
  
 (DEFUN |shoeCompTran1| (|x|)
   (PROG (U |ISTMP#1| |l| |ISTMP#2| |r| |newbindings| |res|)
-    (DECLARE (SPECIAL |$dollarVars| |$locVars| |$fluidVars|))
     (RETURN
      (COND
       ((ATOM |x|)
@@ -2099,7 +2090,6 @@
  
 (DEFUN |bfTagged| (|a| |b|)
   (PROG ()
-    (DECLARE (SPECIAL |$typings|))
     (RETURN
      (COND
       ((IDENTP |a|)
@@ -2363,7 +2353,6 @@
 (DEFUN |bfWhere| (|context| |expr|)
   (PROG (|LETTMP#1| |opassoc| |defs| |nondefs| |op| |repl| |def| |ISTMP#1|
          |ISTMP#2| |args| |ISTMP#3| |body| |a|)
-    (DECLARE (SPECIAL |$wheredefs|))
     (RETURN
      (PROGN
       (SETQ |LETTMP#1| (|defSheepAndGoats| |context|))
@@ -2464,8 +2453,9 @@
 ;   computeValue := ['APPLY,["FUNCTION",auxfn],g1]
 ;   cacheName:= INTERN CONCAT (PNAME op,'";AL")
 ;   g2:= bfGenSymbol()
-;   getCode:=   ['GETHASH,g1,cacheName]
-;   secondPredPair:= [['SETQ,g2,getCode],g2]
+;   marker := ["QUOTE", GENSYM()]
+;   getCode:=   ['GETHASH, g1, cacheName, marker]
+;   secondPredPair:= [["NOT", ["EQ", ['SETF, g2, getCode], marker]], g2]
 ;   putCode:=   ['SETF ,getCode,computeValue]
 ;   thirdPredPair:= ['(QUOTE T),putCode]
 ;   codeBody:= ['PROG,[g2],
@@ -2485,9 +2475,9 @@
 ;             shoeEVALANDFILEACTQ  cacheResetCode ]
  
 (DEFUN |bfMain| (|auxfn| |op|)
-  (PROG (|g1| |arg| |computeValue| |cacheName| |g2| |getCode| |secondPredPair|
-         |putCode| |thirdPredPair| |codeBody| |mainFunction| |cacheType|
-         |cacheResetCode| |cacheCountCode| |cacheVector|)
+  (PROG (|g1| |arg| |computeValue| |cacheName| |g2| |marker| |getCode|
+         |secondPredPair| |putCode| |thirdPredPair| |codeBody| |mainFunction|
+         |cacheType| |cacheResetCode| |cacheCountCode| |cacheVector|)
     (RETURN
      (PROGN
       (SETQ |g1| (|bfGenSymbol|))
@@ -2495,8 +2485,11 @@
       (SETQ |computeValue| (LIST 'APPLY (LIST 'FUNCTION |auxfn|) |g1|))
       (SETQ |cacheName| (INTERN (CONCAT (PNAME |op|) ";AL")))
       (SETQ |g2| (|bfGenSymbol|))
-      (SETQ |getCode| (LIST 'GETHASH |g1| |cacheName|))
-      (SETQ |secondPredPair| (LIST (LIST 'SETQ |g2| |getCode|) |g2|))
+      (SETQ |marker| (LIST 'QUOTE (GENSYM)))
+      (SETQ |getCode| (LIST 'GETHASH |g1| |cacheName| |marker|))
+      (SETQ |secondPredPair|
+              (LIST (LIST 'NOT (LIST 'EQ (LIST 'SETF |g2| |getCode|) |marker|))
+                    |g2|))
       (SETQ |putCode| (LIST 'SETF |getCode| |computeValue|))
       (SETQ |thirdPredPair| (LIST ''T |putCode|))
       (SETQ |codeBody|
