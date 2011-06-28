@@ -87,13 +87,19 @@ FreeModuleCategory(R, S):Category == Exports where
         if R has Comparable then Comparable
       add
         if R has Comparable then
-          smaller?(p:%,q:%):Boolean ==
-            if leadingMonomial(p)=leadingMonomial(q) then
-              if leadingCoefficient(p)=leadingCoefficient(q) then
-                smaller?(reductum p, reductum q)
-              else
-                smaller?(leadingCoefficient(p),leadingCoefficient(q))
-            leadingMonomial(p)<leadingMonomial(q)
+          smaller?(p : %, q : %) : Boolean ==
+              repeat
+                  zero?(q) => return false
+                  zero?(p) => return true
+                  if leadingMonomial(p) = leadingMonomial(q) then
+                      if leadingCoefficient(p) = leadingCoefficient(q) then
+                          p := reductum p
+                          q := reductum q
+                      else
+                          return smaller?(leadingCoefficient(p),
+                                          leadingCoefficient(q))
+                  else
+                      return leadingMonomial(p) < leadingMonomial(q)
 
 @
 \section{domain FM FreeModule}
