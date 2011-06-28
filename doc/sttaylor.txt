@@ -3,21 +3,21 @@ the best explanation is to give short reconstruction how the routine was
 written.
 
 1) Let us look first at general pattern of stream routines.  Good
-example is the simpified version of 'map':
+example is the simplified version of 'map':
 
     map(f,x)== delay
       empty? x => empty()
       concat(f frst x, map(f,rst x))
 
 Note that the result is produced by the 'delay' function.  'delay(f)'
-takes function 'f' as argument and produces from is a stream, such
-that evaluation of the strem causes f to be called.  The name 'delay'
-is releated to the fact that 'delay' effectively delayes evaluation
+takes function 'f' as argument and produces from it a stream, such
+that evaluation of the stream causes f to be called.  The name 'delay'
+is related to the fact that 'delay' effectively delays evaluation
 of its argument to the moment when first value from the stream
-is requested.  When strean is evaluated: evaluation triggered
+is requested.  When stream is evaluated: evaluation triggered
 by call to 'empty?'.  In other words, before trying to access
 first element of the stream we need to call 'empty?' to cause
-evaluaton, after the call we know if the element is there (and
+evaluation, after the call we know if the element is there (and
 if it is present we can use it).  So above the first line calls
 'empty?' which either give us true, in which case we simply return
 empty stream or we may use the first element of input stream to
@@ -31,7 +31,7 @@ Important remark: stream are produced and should be consumed
 in lazy way.  'delay' makes sure that no computation takes
 place before first element of the result is requested.  However
 for single request map should produce only one element and to
-produce it should consume only one elemet form input stream.
+produce it should consume only one element form input stream.
 Using 'concat' makes sure that caller will get the computed
 element and that request for further elements will go to 'map'
 applied to the rest of stream.
@@ -41,11 +41,11 @@ recursion, but in fact there is _no_ recursion at runtime:
 what looks like recursive call to 'map' is done _after_
 call to outer map has finished.
 
-2) Having pattern for general operation, how we apply it in a
+2) Having pattern for general operation, we now apply it in a
 concrete situation.  For example, we would like to multiply
 element 'n' of the stream by 'n+1'.  To do this we need
 to know what 'n' is, so we need to pass 'n' between invocations
-of function.  So we need an auxilary function and a wrapper:
+of function.  So we need an auxiliary function and a wrapper:
 
    stmuln_aux(n0, x) == delay
        empty? x => empty()
@@ -64,7 +64,7 @@ Note: due to stupidity of Spad compiler I can not simply increment
 
 This is more complicated then previous case because I need terms
 f(0),...,f(n) and g(0),...,g(n) to produce the result.
-Naive implementation (assuming infinte streams) may look like:
+Naive implementation (assuming infinite streams) may look like:
 
    stmult(n, x, y) == delay
        valn := sum(coefficient(x, i)*coefficient(y, n - i), i=0..n)
@@ -117,16 +117,16 @@ series -- after finite number of nonzero terms we will get infinite
 stream of zeros.  There is also unneeded eagerness: if first element
 if 'y' is zero we do not need element 'n' of 'x' to produce first element
 of the result.  Also, if 'y' is finite there is no need to append
-zeros.  First, let us handle leading zeros of 'y'.  I first
-element of 'y' is zero we get zero as fist element of the result and
-rest of resulst is 'x' times rest of 'y':
+zeros.  First, let us handle leading zeros of 'y'.  If first
+element of 'y' is zero we get zero as first element of the result and
+rest of result is 'x' times rest of 'y':
 
      ...
      yval := frst y
      n = 0 and yval = 0 => concat(0, stmult(n, x, rst y, ll))
 
 Note: we need to test if 'n' is 0 to know that we really have first
-elememt and not some zero in the middle.
+element and not some zero in the middle.
 
 Next, if we get to the end of 'y' instead of extending 'll' by zero
 we may drop first element of 'x'.  We need to be a little
@@ -179,15 +179,15 @@ if tail is empty causes evaluation and printing routines are not
 allow to evaluate extra terms.  But 'explicitlyEmpty?' does not
 cause evaluation, even if 'explicitlyEmpty?' return false
 'empty?' may return 'true'.  So, to make printing routines
-happy we need to make sure that the tail is explicitely empty.
+happy we need to make sure that the tail is explicitly empty.
 This is done adding after loop test:
   
          ....
       explicitlyEmpty? rst x and
         explicitlyEmpty? y => concat(res, empty())
 
-Note that we if 'x' is empty we call return inside loop, so after
-loop 'x' is always nonempy and calling 'rst' is safe.  Note that
+Note that if 'x' is empty we call return inside loop, so after
+loop 'x' is always nonempty and calling 'rst' is safe.  Note that
 if 'x' has only one element and 'y' is empty then in the next iteration
 we will throw out the only element of 'x' and get empty result.
 So the test allows us to produce earlier the empty result.
@@ -204,12 +204,12 @@ functions are created.  Each function takes fixed amount
 of space for variables (the space is actually taken by "frozen"
 values of variables from outside which the function uses).
 The variables may reference large data structure (for
-example x and y may be big), but fortunatly such large
+example x and y may be big), but fortunately such large
 structures may be shared.  In particular parts of 'x' and 'y' are
 shared so that at each step we add (compute) only one extra element
 of 'x' and of 'y'.  The list 'll' has in general 'n + 1' elements, but
 we share 'n' elements with previous iteration.  So at each step we
-allocate fixed amount of memory.  More precisely, due to callse to 
+allocate fixed amount of memory.  More precisely, due to calls to 
 'empty?' element 'n' of 'x' and element 'n' of 'y' are computed
 and stored.  'stmult' stores element 'n' of 'x*y' plus fixed storage
 (of order 10-15 machine words).  In other words, except for
@@ -226,10 +226,10 @@ It is easy to see that this version allocates stream node for
 each term in the product, that is of order n^2 nodes.  Theoretically
 most of those nodes may be garbage collected.  I did not check
 if the FriCAS code for some reason (for example due to keeping
-unnecessery extra reference to the data) did not allow collection,
+unnecessary extra reference to the data) did not allow collection,
 or if this was problem with SBCL garbage collector, but the fact
 was that the space usage grow quadratically...
 
 The new version allocates much less memory, so there is no
-chance for garbage collector (or FriCAS programmers) to scrow up.
+chance for garbage collector (or FriCAS programmers) to screw up.
 
