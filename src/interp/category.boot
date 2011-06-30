@@ -331,7 +331,7 @@ FindFundAncs l ==
       [first l,:ans]
   for x in first f1.4 repeat
     if y:= ASSQ(CatEval x,ans) then ans:=
-      [[first y,mkOr(CADAR l,CADR y)],:delete(y,ans)]
+      [[first y, mkOr(cond1, CADR y)], :delete(y, ans)]
   [first l,:ans]
   -- Our new thing may have, as an alternate view, a principal
   -- descendant of something previously added which is therefore
@@ -383,13 +383,10 @@ JoinInner(l,$e) ==
   for u in l repeat
     for at in u.2 repeat
       at2:= first at
-      if atom at2 then at2:=[at2]
-        -- the variable $Attributes is built globally, so that true
-        -- attributes can be detected without calling isCategoryForm
-      MEMQ(QCAR at2,$Attributes) => nil
-      null isCategoryForm(at2,$e) =>
-        $Attributes:=[QCAR at2,:$Attributes]
-        nil
+      if atom at2 then BREAK()
+      MEMQ(QCAR at2,$Attributes) => BREAK()
+      null isCategoryForm(at2,$e) => BREAK()
+
       pred:= first rest at
         -- The predicate under which this category is conditional
       member(pred,get("$Information","special",$e)) => l:= [:l,CatEval at2]
@@ -458,11 +455,7 @@ JoinInner(l,$e) ==
         $NewCatVec.n:= b.(0)
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
-    attl:=
--- next two lines are merely performance improvements
-      MEMQ(attl,b.2) => b.2
-      MEMQ(b.2,attl) => attl
-      S_+(b.2,attl)
+    attl := S_+(b.2, attl)
     globalDomains:= [:globalDomains,:S_-(b.5,globalDomains)]
   for b in CondList repeat
     newpred:= first rest b
