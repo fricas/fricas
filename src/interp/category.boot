@@ -140,12 +140,12 @@ DropImplementations (a is [sig,pred,:implem]) ==
      else a
 
 SigListUnion(extra,original) ==
-  --augments original %with everything in extra that is not in original
+  --augments original with everything in extra that is not in original
   for (o:=[[ofn,osig,:.],opred,:.]) in original repeat
     -- The purpose of this loop is to detect cases when the
     -- original list contains, e.g. ** with NonNegativeIntegers, and
     -- the extra list would like to add ** with PositiveIntegers.
-    -- The PI map is therefore gives an implementation of "Subsumed"
+    -- The PI map is therefore given an implementation of "Subsumed"
     for x in SigListOpSubsume(o,extra) repeat
       [[xfn,xsig,:.],xpred,:.]:=x
       xfn=ofn and xsig=osig =>
