@@ -9,6 +9,20 @@
 \eject
 \tableofcontents
 \eject
+
+<<category APRODC AbelianProductCategory>>=
+)abbrev category APRODC AbelianProductCategory
+++ Author: Waldek Hebisch
+++ Description:
+++  This category represents products with coordinatewise additive
+++  operations.
+AbelianProductCategory(A : Type) : Category == with
+    if A has AbelianMonoid then AbelianMonoid
+    if A has CancellationAbelianMonoid then CancellationAbelianMonoid
+    if A has AbelianGroup then AbelianGroup
+
+@
+
 \section{category IDPC IndexedDirectProductCategory}
 This category contains the exports of [[IndexedDirectProductObject]].
 The meaning of ``leading term'' is rather vague,
@@ -18,6 +32,7 @@ and ``leading term'' is the term corresponding to
 the maximal base element.
 [[constructOrdered]] constructs an element directly from its
 representation without checking the order.
+
 <<category IDPC IndexedDirectProductCategory>>=
 )abbrev category IDPC IndexedDirectProductCategory
 ++ Author: James Davenport
@@ -33,10 +48,16 @@ representation without checking the order.
 ++ This category represents the direct product of some set with
 ++ respect to an ordered indexing set.
 
-IndexedDirectProductCategory(A:SetCategory,S:OrderedSet): Category == Export where
+IndexedDirectProductCategory(A : SetCategory, S : OrderedSet
+                            ) : Category == Export where
   Term ==> Record(k:S,c:A)
 
-  Export ==  SetCategory with
+  Export ==  AbelianProductCategory(A) with
+
+      if A has Comparable then Comparable
+      if A has OrderedAbelianMonoid then OrderedAbelianMonoid
+      if A has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
+
       map:           (A -> A, %) -> %
          ++ map(f,z) returns the new element created by applying the
          ++ function f to each component of the direct product element z.
@@ -76,6 +97,7 @@ IndexedDirectProductCategory(A:SetCategory,S:OrderedSet): Category == Export whe
           ++ \spad{constructOrdered lt}.
 
 @
+
 \section{domain IDPO IndexedDirectProductObject}
 This basic domain implements
 indexed direct products of objects over a set \spad{A}
@@ -95,7 +117,12 @@ and thus the first entry in the list representing the object.
 )abbrev domain IDPO IndexedDirectProductObject
 ++ Indexed direct products of objects over a set \spad{A}
 ++ of generators indexed by an ordered set S. All items have finite support.
-IndexedDirectProductObject(A:SetCategory,S:OrderedSet): IndexedDirectProductCategory(A,S)
+++ If A is a monoid, then only non-zero terms are stored.
+++ If A has additive structure, it is propagated coordinatewise to the
+++ product.  Similarely, comparisons are propagated using
+++ lexicographic ordering.
+IndexedDirectProductObject(A : SetCategory, S : OrderedSet
+                          ) : IndexedDirectProductCategory(A, S) 
  == add
     --representations
        Term ==>  Record(k:S,c:A)
@@ -119,14 +146,48 @@ IndexedDirectProductObject(A:SetCategory,S:OrderedSet): IndexedDirectProductCate
 
        -- sample():% == [[sample()$S,sample()$A]$Term]$Rep
 
-       monomial(r,s) == [[s,r]]
-       map(f,x) == [[tm.k,f(tm.c)] for tm in x]
+       SMALLER_DEF ==>
+           smaller?(x : %, y : %) : Boolean ==
+               repeat
+                   null(y) =>
+                       null(x) => return false
+                       return cmp_x_0
+                   null(x) => return cmp_0_y
+                   if x.first.k = y.first.k then
+                       if x.first.c = y.first.c then
+                           x := rest(x)
+                           y := rest(y)
+                       else
+                           return smaller?(x.first.c, y.first.c)
+                   else
+                       x.first.k < y.first.k => return cmp_0_y
+                       return cmp_x_0
 
-       reductum x     ==
-          rest x
-       leadingCoefficient x  ==
-          null x => error "Can't take leadingCoefficient of empty product element"
-          x.first.c
+       if A has AbelianMonoid then
+
+           monomial(r,s) == (r = 0 => 0; [[s,r]])
+           map(f,x) == [[tm.k,a] for tm in x | (a:=f(tm.c)) ~= 0$A]
+
+           reductum x     == (null x => 0; rest x)
+           leadingCoefficient x  == (null x => 0; x.first.c)
+           if A has Comparable then
+               SMALLER_DEF where
+                   cmp_x_0 ==> smaller?(x.first.c, 0$A)
+                   cmp_0_y ==> smaller?(0$A, y.first.c)
+                   
+       else
+           monomial(r,s) == [[s,r]]
+           map(f,x) == [[tm.k,f(tm.c)] for tm in x]
+
+           reductum x     == rest x
+           leadingCoefficient x  ==
+               null x =>
+                   error "Can't take leadingCoefficient of empty product element"
+               x.first.c
+           if A has Comparable then
+               SMALLER_DEF where
+                   cmp_x_0 ==> false
+                   cmp_0_y ==> true
 
        leadingSupport x  ==
           null x => error "Can't take leadingCoefficient of empty product element"
@@ -151,41 +212,6 @@ IndexedDirectProductObject(A:SetCategory,S:OrderedSet): IndexedDirectProductCate
        listOfTerms x ==
           (x::Rep)
 
-@
-\section{domain IDPAM IndexedDirectProductAbelianMonoid}
-<<domain IDPAM IndexedDirectProductAbelianMonoid>>=
-)abbrev domain IDPAM IndexedDirectProductAbelianMonoid
-++ Indexed direct products of abelian monoids over an abelian monoid \spad{A} of
-++ generators indexed by the ordered set S. All items have finite support.
-++ Only non-zero terms are stored.
-IndexedDirectProductAbelianMonoid(A:AbelianMonoid,S:OrderedSet):
-    Join(AbelianMonoid,IndexedDirectProductCategory(A,S))
- ==  IndexedDirectProductObject(A,S) add
-    --representations
-       Term ==>  Record(k:S,c:A)
-       Rep:=  List Term
-       x,y: %
-       r: A
-       n: NonNegativeInteger
-       f: A -> A
-       s: S
-       0  == []
-       zero? x ==  null x
-
-        -- PERFORMANCE CRITICAL; Should build list up
-        --  by merging 2 sorted lists.   Doing this will
-        -- avoid the recursive calls (very useful if there is a
-        -- large number of vars in a polynomial.
---       x + y  ==
---          null x => y
---          null y => x
---          y.first.k > x.first.k => cons(y.first,(x + y.rest))
---          x.first.k > y.first.k => cons(x.first,(x.rest + y))
---          r:= x.first.c + y.first.c
---          r = 0 => x.rest + y.rest
---          cons([x.first.k,r],(x.rest + y.rest))
-       -- qsetrest!: (Rep, Rep) -> Rep
-       -- qsetrest!(l: Rep, e: Rep): Rep == RPLACD(l, e)$Lisp
        qsetrest! ==> RPLACD$Lisp
 
        TermS ==>  Record(k : SingleInteger, c : A)
@@ -221,176 +247,146 @@ IndexedDirectProductAbelianMonoid(A:AbelianMonoid,S:OrderedSet):
                 else qsetrest!(endcell, end)
                 res
 
-       add_gen(x : Rep, y : Rep) : Rep ==
-           null x => y
-           null y => x
-           endcell: Rep
-           res:  Rep
-           newcell : Rep
-           PLUS_BODY
+       if A has AbelianMonoid then
 
-       if S is NonNegativeInteger then
-           add_si(x : RepS, y : RepS) : RepS ==
-                endcell: RepS
-                res:  RepS
-                newcell : RepS
-                PLUS_BODY
+           0  == []
+           zero? x ==  null x
 
-           x + y ==
+           add_gen(x : Rep, y : Rep) : Rep ==
                null x => y
                null y => x
-               degx := (x.first.k) pretend Integer
-               degy := (y.first.k) pretend Integer
-               msi := max()$SingleInteger
-               degx < msi and degy < msi =>
-                   return add_si(x pretend RepS, y pretend RepS) pretend %
-               add_gen(x, y)
+               endcell : Rep
+               res :  Rep
+               newcell : Rep
+               PLUS_BODY
 
-       else
-           x + y == add_gen(x, y)
+           if S is NonNegativeInteger then
+               add_si(x : RepS, y : RepS) : RepS ==
+                   endcell : RepS
+                   res :  RepS
+                   newcell : RepS
+                   PLUS_BODY
 
-       n * x  ==
-             n = 0 => 0
-             n = 1 => x
-             [[u.k,a] for u in x | (a:=n*u.c) ~= 0$A]
+               x + y ==
+                   null x => y
+                   null y => x
+                   degx := (x.first.k) pretend Integer
+                   degy := (y.first.k) pretend Integer
+                   msi := max()$SingleInteger
+                   degx < msi and degy < msi =>
+                       return add_si(x pretend RepS, y pretend RepS) pretend %
+                   add_gen(x, y)
 
-       monomial(r,s) == (r = 0 => 0; [[s,r]])
-       map(f,x) == [[tm.k,a] for tm in x | (a:=f(tm.c)) ~= 0$A]
+           else
+               x + y == add_gen(x, y)
 
-       reductum x     == (null x => 0; rest x)
-       leadingCoefficient x  == (null x => 0; x.first.c)
+           n * x  ==
+               n = 0 => 0
+               n = 1 => x
+               [[u.k,a] for u in x | (a:=n*u.c) ~= 0$A]
 
-@
-\section{domain IDPOAM IndexedDirectProductOrderedAbelianMonoid}
-<<domain IDPOAM IndexedDirectProductOrderedAbelianMonoid>>=
-)abbrev domain IDPOAM IndexedDirectProductOrderedAbelianMonoid
-++ Indexed direct products of ordered abelian monoids \spad{A} of
-++ generators indexed by the ordered set S.
-++ The inherited order is lexicographical.
-++ All items have finite support: only non-zero terms are stored.
-IndexedDirectProductOrderedAbelianMonoid(A:OrderedAbelianMonoid,S:OrderedSet):
-    Join(OrderedAbelianMonoid,IndexedDirectProductCategory(A,S))
- ==  IndexedDirectProductAbelianMonoid(A,S) add
-    --representations
-       Term ==>  Record(k:S,c:A)
-       Rep:=  List Term
-       x,y: %
-       x<y ==
-         empty? y => false
-         empty? x => true   -- note careful order of these two lines
-         y.first.k > x.first.k => true
-         y.first.k < x.first.k => false
-         y.first.c > x.first.c => true
-         y.first.c < x.first.c => false
-         x.rest < y.rest
+       if A has AbelianGroup then
+           -x == [[u.k,-u.c] for u in x]
+           (n : Integer) * (x : %)  ==
+                 n = 0 => 0
+                 n = 1 => x
+                 [[u.k,a] for u in x | (a:=n*u.c) ~= 0$A]
 
-@
-\section{domain IDPOAMS IndexedDirectProductOrderedAbelianMonoidSup}
-<<domain IDPOAMS IndexedDirectProductOrderedAbelianMonoidSup>>=
-)abbrev domain IDPOAMS IndexedDirectProductOrderedAbelianMonoidSup
-++ Indexed direct products of ordered abelian monoid sups \spad{A},
-++ generators indexed by the ordered set S.
-++ All items have finite support: only non-zero terms are stored.
-IndexedDirectProductOrderedAbelianMonoidSup(A:OrderedAbelianMonoidSup,S:OrderedSet):
-    Join(OrderedAbelianMonoidSup,IndexedDirectProductCategory(A,S))
- ==  IndexedDirectProductOrderedAbelianMonoid(A,S) add
-    --representations
-       Term ==>  Record(k:S,c:A)
-       Rep:=  List Term
-       x,y: %
-       r: A
-       s: S
 
-       subtractIfCan(x,y) ==
-         empty? y => x
-         empty? x => "failed"
-         x.first.k < y.first.k => "failed"
-         x.first.k > y.first.k =>
-             t:= subtractIfCan(x.rest, y)
-             t case "failed" => "failed"
-             cons( x.first, t)
-         u:=subtractIfCan(x.first.c, y.first.c)
-         u case "failed" => "failed"
-         zero? u => subtractIfCan(x.rest, y.rest)
-         t:= subtractIfCan(x.rest, y.rest)
-         t case "failed" => "failed"
-         cons([x.first.k,u],t)
+           x - y ==
+               null x => -y
+               null y => x
+               endcell: Rep := empty()
+               res:  Rep := empty()
+               while not empty? x and not empty? y repeat
+                   newcell := empty()
+                   if x.first.k = y.first.k then
+                       r := x.first.c - y.first.c
+                       if not zero? r then
+                           newcell := cons([x.first.k, r], empty())
+                       x := rest x
+                       y := rest y
+                   else if x.first.k > y.first.k then
+                       newcell := cons(x.first, empty())
+                       x := rest x
+                   else
+                       newcell := cons([y.first.k, -y.first.c], empty())
+                       y := rest y
+                   if not empty? newcell then
+                       if not empty? endcell then
+                           qsetrest!(endcell, newcell)
+                           endcell := newcell
+                       else
+                           res := newcell;
+                           endcell := res
+               if empty? x then end := - y
+               else end := x
+               if empty? res then res := end
+               else qsetrest!(endcell, end)
+               res
 
-       sup(x,y) ==
-         empty? y => x
-         empty? x => y
-         x.first.k < y.first.k => cons(y.first,sup(x,y.rest))
-         x.first.k > y.first.k => cons(x.first,sup(x.rest,y))
-         u:=sup(x.first.c, y.first.c)
-         cons([x.first.k,u],sup(x.rest,y.rest))
+       if A has CancellationAbelianMonoid then
+           subtractIfCan(x, y) ==
+               null y => x
+               endcell: Rep := empty()
+               res:  Rep := empty()
+               while not empty? x and not empty? y repeat
+                   newcell := empty()
+                   if x.first.k = y.first.k then
+                       ru := subtractIfCan(x.first.c, y.first.c)
+                       ru case "failed" => return "failed"
+                       r := ru::A
+                       if not zero? r then
+                           newcell := cons([x.first.k, r], empty())
+                       x := rest x
+                       y := rest y
+                   else if x.first.k > y.first.k then
+                       newcell := cons(x.first, empty())
+                       x := rest x
+                   else
+                       ru := subtractIfCan(0$A, y.first.c)
+                       ru case "failed" => return "failed"
+                       r := ru::A
+                       newcell := cons([y.first.k, r], empty())
+                       y := rest y
+                   if not empty? newcell then
+                       if not empty? endcell then
+                           qsetrest!(endcell, newcell)
+                           endcell := newcell
+                       else
+                           res := newcell;
+                           endcell := res
+               empty? x =>
+                   while not empty? y repeat
+                       ru := subtractIfCan(0$A, y.first.c)
+                       ru case "failed" => return "failed"
+                       r := ru::A
+                       newcell := cons([y.first.k, r], empty())
+                       y := rest y
+                       if not empty? endcell then
+                           qsetrest!(endcell, newcell)
+                           endcell := newcell
+                       else
+                           res     := newcell;
+                           endcell := res
+                   res::%
+               if empty? res then res := x
+               else qsetrest!(endcell, x)
+               res::%
 
-@
-\section{domain IDPAG IndexedDirectProductAbelianGroup}
-<<domain IDPAG IndexedDirectProductAbelianGroup>>=
-)abbrev domain IDPAG IndexedDirectProductAbelianGroup
-++ Indexed direct products of abelian groups over an abelian group \spad{A} of
-++ generators indexed by the ordered set S.
-++ All items have finite support: only non-zero terms are stored.
-IndexedDirectProductAbelianGroup(A:AbelianGroup,S:OrderedSet):
-    Join(AbelianGroup,IndexedDirectProductCategory(A,S))
- ==  IndexedDirectProductAbelianMonoid(A,S) add
-    --representations
-       Term ==>  Record(k:S,c:A)
-       Rep:=  List Term
-       x,y: %
-       r: A
-       n: Integer
-       f: A -> A
-       s: S
-       -x == [[u.k,-u.c] for u in x]
-       n * x  ==
-             n = 0 => 0
-             n = 1 => x
-             [[u.k,a] for u in x | (a:=n*u.c) ~= 0$A]
+       if A has OrderedAbelianMonoid then
 
-       qsetrest!: (Rep, Rep) -> Rep
-       qsetrest!(l: Rep, e: Rep): Rep == RPLACD(l, e)$Lisp
+           x < y == smaller?(x, y)
 
-       x - y ==
-                null x => -y
-                null y => x
-                endcell: Rep := empty()
-                res:  Rep := empty()
-                while not empty? x and not empty? y repeat
-                        newcell := empty()
-                        if x.first.k = y.first.k then
-                                r:= x.first.c - y.first.c
-                                if not zero? r then
-                                        newcell := cons([x.first.k, r], empty())
-                                x := rest x
-                                y := rest y
-                        else if x.first.k > y.first.k then
-                                newcell := cons(x.first, empty())
-                                x := rest x
-                        else
-                                newcell := cons([y.first.k,-y.first.c], empty())
-                                y := rest y
-                        if not empty? newcell then
-                                if not empty? endcell then
-                                        qsetrest!(endcell, newcell)
-                                        endcell := newcell
-                                else
-                                        res     := newcell;
-                                        endcell := res
-                if empty? x then end := - y
-                else end := x
-                if empty? res then res := end
-                else qsetrest!(endcell, end)
-                res
+       if A has OrderedAbelianMonoidSup then
 
---       x - y  ==
---          empty? x => - y
---          empty? y => x
---          y.first.k > x.first.k => cons([y.first.k,-y.first.c],(x - y.rest))
---          x.first.k > y.first.k => cons(x.first,(x.rest - y))
---          r:= x.first.c - y.first.c
---          r = 0 => x.rest - y.rest
---          cons([x.first.k,r],(x.rest - y.rest))
+           sup(x, y) ==
+               empty? y => x
+               empty? x => y
+               x.first.k < y.first.k => cons(y.first, sup(x, y.rest))
+               x.first.k > y.first.k => cons(x.first, sup(x.rest, y))
+               u := sup(x.first.c, y.first.c)
+               cons([x.first.k, u], sup(x.rest, y.rest))
 
 @
 \section{License}
@@ -431,10 +427,6 @@ IndexedDirectProductAbelianGroup(A:AbelianGroup,S:OrderedSet):
 
 <<category IDPC IndexedDirectProductCategory>>
 <<domain IDPO IndexedDirectProductObject>>
-<<domain IDPAM IndexedDirectProductAbelianMonoid>>
-<<domain IDPOAM IndexedDirectProductOrderedAbelianMonoid>>
-<<domain IDPOAMS IndexedDirectProductOrderedAbelianMonoidSup>>
-<<domain IDPAG IndexedDirectProductAbelianGroup>>
 @
 \eject
 \begin{thebibliography}{99}
