@@ -345,15 +345,13 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       pp target
       return nil
     $domainShell:= COPY_-SEQ ds
-    attributeList := disallowNilAttribute ds.2 --see below under "loadTimeAlist"
 --+ 7 lines for $NRT follow
     $goGetList: local := nil
 -->--these globals used by NRTmakeCategoryAlist, set by NRTsetVector4Part1
     $condAlist: local := nil
     $uncondAlist: local := nil
 -->>-- next global initialized here, reset by NRTbuildFunctor
-    $NRTslot1PredicateList: local :=
-      REMDUP [CADR x for x in attributeList]
+    $NRTslot1PredicateList: local := nil
 -->>-- next global initialized here, used by NRTgenAttributeAlist (NRUNOPT)
     $NRTslot1Info: local  --set in NRTmakeSlot1 called by NRTbuildFunctor
        --this is used below to set $lisplibSlot1 global
@@ -451,10 +449,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       evalAndRwriteLispForm('NILADIC,
             ['MAKEPROP, ['QUOTE,op'], ['QUOTE,'NILADIC], true])
     [fun,['Mapping,:signature'],originale]
-
-disallowNilAttribute x ==
-  res := [y for y in x | car y and car y ~= "nil"]
---HACK to get rid of nil attibutes ---NOTE: nil is RENAMED to NIL
 
 compFunctorBody(body,m,e,parForm) ==
   $bootStrapMode = true =>
