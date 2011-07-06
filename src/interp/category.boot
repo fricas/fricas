@@ -419,40 +419,21 @@ JoinInner(l,$e) ==
                    --It's a named category
       bname:= b.(0)
       CondAncestorP(bname,FundamentalAncestors,condition) => nil
-      (f:=AncestorP(bname,[first u for u in FundamentalAncestors])) =>
-        [.,.,index] := assoc(f,FundamentalAncestors)
-        FundamentalAncestors:=[[bname,condition,index],:FundamentalAncestors]
-      PrinAncb:= first (CatEval bname).(4)
+      if (uu := ASSQ(bname, FundamentalAncestors)) then
+          FundamentalAncestors := delete(uu, FundamentalAncestors)
+          condition := mkOr(condition, CADR(uu))
+      PrinAncb:= first(b).(4)
                --Principal Ancestors of b
-      reallynew:= true
       for anc in FundamentalAncestors repeat
         if member(first anc,PrinAncb) then
                   --This is the check for "Category Subsumption"
-          if rest anc
-             then (anccond:= CADR anc; ancindex:= CADDR anc)
-             else (anccond:= true; ancindex:= nil)
-          if PredImplies(condition,anccond)
-             then FundamentalAncestors:=
-
-               -- the new 'b' is more often true than the old one 'anc'
-              [[bname,condition,ancindex],:delete(anc,FundamentalAncestors)]
-           else
-            if ancindex and (PredImplies(anccond,condition); true)
--- I have no idea who effectively commented out the predImplies
--- JHD 25/8/86
-               then
-                     --the new 'b' is less often true
-                newentry:=[bname,condition,ancindex]
-                if not member(newentry,FundamentalAncestors) then
-                  FundamentalAncestors:= [newentry,:FundamentalAncestors]
-             else ancindex:= nil
-          if ancindex
-             then ($NewCatVec.ancindex:= bname; reallynew:= nil)
-      if reallynew then
-        n:= SIZE $NewCatVec
-        FundamentalAncestors:= [[b.(0),condition,n],:FundamentalAncestors]
-        $NewCatVec:= LENGTHENVEC($NewCatVec,n+1)
-        $NewCatVec.n:= b.(0)
+          anccond :=
+              rest anc => CADR anc
+              true
+          if PredImplies(condition, anccond) then
+              -- the new 'b' is more often true than the old one 'anc'
+              FundamentalAncestors := delete(anc, FundamentalAncestors)
+      FundamentalAncestors := [[b.(0), condition], :FundamentalAncestors]
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
     attl := S_+(b.2, attl)
