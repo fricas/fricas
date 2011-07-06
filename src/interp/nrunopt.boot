@@ -158,9 +158,7 @@ stuffDomainSlots dollar ==
   dollar.2 := infovec.2
   proto4 := infovec.3
   dollar.4 :=
-    VECP CDDR proto4 =>
-         BREAK()
-         [COPY_-SEQ CAR proto4,:CDR proto4]   --old style
+    VECP CDDR proto4 => BREAK()
     bitVector := dollar.3
     predvec := CAR proto4
     packagevec := CADR proto4
@@ -361,7 +359,7 @@ hasDefaultPackage catname ==
 --=======================================================================
 
 depthAssocList u ==
-  u := delete('DomainSubstitutionMacro,u)  --hack by RDJ 8/90
+  MEMQ('DomainSubstitutionMacro,u) => BREAK()
   REMDUP ("append"/[depthAssoc(y) for y in u])
 
 depthAssoc x ==
@@ -384,11 +382,11 @@ dc(:r) ==
   null ok =>
     sayBrightly '"Format is: dc(<constructor name or abbreviation>,option)"
     sayBrightly
-      '"options are: all (default), slots, atts, cats, data, ops, optable"
+      '"options are: all (default), slots, preds, cats, data, ops, optable"
   option := KAR options
   option = 'all or null option => dcAll con
   option = 'slots   =>  dcSlots con
-  option = 'atts    =>  dcAtts  con
+  option = 'preds   =>  dcPreds  con
   option = 'cats    =>  dcCats  con
   option = 'data    =>  dcData  con
   option = 'ops     =>  dcOps   con
@@ -433,9 +431,7 @@ getOpSegment index ==
 getCodeVector() ==
   proto4 := $infovec.3
   u := CDDR proto4
-  VECP u =>
-      BREAK()
-      u           --old style
+  VECP u => BREAK()
   CDR u                 --new style
 
 formatSlotDomain x ==
@@ -502,25 +498,11 @@ dcPreds con ==
     sayBrightlyNT bright (i + 1)
     sayBrightly pred2English $predvec.i
 
-dcAtts con ==
-  name := abbreviation? con or con
-  $infovec: local := getInfovec name
-  $predvec:= GETDATABASE(con,'PREDICATES)
-  attList := $infovec.2
-  for [a,:predNumber] in attList for i in 0.. repeat
-    sayBrightlyNT bright i
-    suffix :=
-      predNumber = 0 => nil
-      [:bright '"if",:pred2English $predvec.(predNumber - 1)]
-    sayBrightly [a,:suffix]
-
 dcCats con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
   u := $infovec.3
-  VECP CDDR u =>
-     BREAK()
-     dcCats1 con    --old style slot4
+  VECP CDDR u => BREAK()
   $predvec:= GETDATABASE(con,'PREDICATES)
   catpredvec := CAR u
   catinfo := CADR u
@@ -603,13 +585,13 @@ dcSize(:options) ==
   aSize := numberOfNodes infovec.2
   slot4 := infovec.3
   catvec :=
-    VECP CDDR slot4 => CADR slot4
+    VECP CDDR slot4 => BREAK()
     CADDR slot4
   n := MAXINDEX catvec
   cSize := sum(nodeSize(2),vectorSize(SIZE CAR slot4),vectorSize(n + 1),
                nodeSize(+/[numberOfNodes catvec.i for i in 0..n]))
   codeVector :=
-    VECP CDDR slot4 => CDDR slot4
+    VECP CDDR slot4 => BREAK()
     CDDDR slot4
   vSize := halfWordSize(SIZE codeVector)
   itotal := sum(tSize,oSize,aSize,cSize,vSize)
@@ -701,8 +683,6 @@ dcAll con ==
     complete? => '"----------Complete Ops----------------"
     '"----------Incomplete Ops---------------"
   dcOpTable con
-  sayBrightly '"----------------Atts-----------------"
-  dcAtts con
   sayBrightly '"----------------Preds-----------------"
   dcPreds con
   sayBrightly '"----------------Cats-----------------"

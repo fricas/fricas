@@ -1297,9 +1297,7 @@ compCategoryItem(x,predl) ==
   pred:= (predl => MKPF(predl,"AND"); true)
 
   --2. if attribute, push it and return
-  x is ["ATTRIBUTE", 'nil] =>
-       BREAK()
-       'iterate
+  x is ["ATTRIBUTE", 'nil] => BREAK()
   x is ["ATTRIBUTE",y] =>
        -- should generate something else for conditional categories
        -- BREAK()
