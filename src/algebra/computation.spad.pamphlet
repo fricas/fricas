@@ -1,20 +1,36 @@
 \documentclass{article}
 \usepackage{axiom}
+\usepackage{url}
 \begin{document}
 \title{computation related mathematical structures}
 \author{Martin J Baker}
 \maketitle
 \begin{abstract}
 In this pamphlet are implementations of various mathematical
-structures related to computation. These are:
-* lambda.spad
-* ski.spad
-* ILogic.spad
+structures related to computation and type theory. These are:
+\begin{itemize}
+\item lambda.spad
+\item ski.spad
+\item ILogic.spad
+\end{itemize}
 
-The aim here is to model and study lambda-calculus, Combinators and
-Intuitionistic logic as abstract mathematical structures which were
-discovered before modern computers and are worthy of study in their
-own right.
+The aim here is to model and study abstract models of computing such
+as lambda-calculus, combinators and intuitionistic logic. These abstract
+mathematical structures, which were discovered before modern computers,
+are worthy of study in their own right.
+
+We a less interested in using these domains to do actual computing
+than to study the structures and their relationships to each
+other. If we only wanted to evaluate a lambda function then there are
+many other programs that could you that. So, in these domains such as
+lambda, we do not attempt to reduce as soon as it is constructed
+(although redux can be called if explicitly required). Instead we
+leave it as a structure to be combined, transformed, compared and
+studied.
+
+We are also interested in the reationship to logic, this approach
+is based on the ideas of Philip Wadler [1] and others.
+A program that uses this approach is Djinn [2]
 
 The arguments of these 'computation' domains are functions and
 combinators and the operation is function composition. For
@@ -24,24 +40,35 @@ tree structure. For Lambda calculus we have bound and unbound
 variables so again non-associative and represented by binary
 tree structure.
 
+I am also working on a framework for function composition.
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/homset/}
+Conventional function composition is associative and so can be
+represented by a list structure. It therefore has different
+mathematical properties to the structures studied here but there
+appears to be links between these various types of function
+composition which I would like to investigate.
+
 These domains all represent systems of logic and are constructed from
 tree structures and act on tree structures. These 'tree logics' seem
 to 'generate' other algebras, for instance, below, we see that
 this lambda structure:
-
+\begin{verbatim}
 \x.\y.y x
+\end{verbatim}
 
 can be converted to this SKI structure:
-
+\begin{verbatim}
 S(K(SI))(S(KK)I)
+\end{verbatim}
 
 This allows us to 'abstract' the definition, in that it takes a
 definition in terms of arbitrary variables and it converts to a
 definition without arbitrary variables. So these structures are
 equivalent and they both reverse two operands. That is they generate
-an n-ary to n-ary function, in this case:
-
+an $n$-ary to $n$-ary function, in this case:
+\begin{verbatim}
 (x,y) -> (y,x)
+\end{verbatim}
 
 This seems to be a 'monad' and it would be interesting to see if
 these domains could be implemented as instances of a monad (a
@@ -49,15 +76,19 @@ monad in category theory terms, not the current FriCAS monad
 category).
 
 For more details see:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/
-Tutorial for lambda calculus:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/lambda/
-Tutorial for SKI calculus:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/
-Tutorial for Intuitionistic Logic
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/intuitionistic/
-Tutorial for utilities to coerce between computation domains
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/utility/
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/}
+\begin{itemize}
+\item Tutorial for lambda calculus:
+  \url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/lambda/}
+\item Tutorial for SKI calculus:
+  \url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/}
+\item Tutorial for Intuitionistic Logic
+  \url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/intuitionistic/}
+\item Tutorial for utilities to coerce between computation domains
+  \url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/utility/}
+\item Tutorial for FriCAS source code generation
+  \url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/codeGen/}
+\end{itemize}
 \end{abstract}
 \eject
 \tableofcontents
@@ -67,39 +98,50 @@ http://www.euclideanspace.com/maths/standards/program/mycode/computation/utility
 There are improvements and corrections required for later versions
 of this software.
 
-1) Overall architecture:
-   - Investigate possibility of basing implementation on Kernel or
+\begin{enumerate}
+
+\item Overall architecture:
+     Investigate possibility of basing implementation on Kernel or
      SExpression domains. Or we could extend some non-associative or
      binary tree structure class?
 
-2)  Possible generalisations:
-   - If I could find a way to do it, it would be good to have a
-     function composition (hom-set) domain and to implement these
+\item Possible generalisations:
+  \begin{itemize}
+  \item I am working on a function composition (hom-set) domain
+     \url{http://www.euclideanspace.com/maths/standards/program/mycode/homset/}
+     and it would be interesting to implement these
      as a special (non-associative) version of that.
-   - It would be interesting to see if these domains could be implemented
+  \item It would be interesting to see if these domains could be implemented
      as instances of a monad.
-   - I would also like to extend this to investigate abstract structures
+  \item I would also like to extend this to investigate abstract structures
      such as 'tree automata'.
+  \end{itemize}
 
-3) Need to improve and correct intuitionistic logic domain.
-   - investigate change of meaning of '=' for intuitionistic logic to
+\item Need to improve and correct intuitionistic logic domain.
+   \begin{itemize}
+   \item investigate change of meaning of '=' for intuitionistic logic to
      represent equivalence rather than equality.
-   - implement more complete algorithm to decide if two (quantifier-free)
+   \item implement more complete algorithm to decide if two (quantifier-free)
      intuitionistic formulas are equivalent.
-   - add remaining simplifications.
+   \item make sure we have all simplifications for implies,/\, \/ and ~.
+   \end{itemize}
 
-4) Representation by symbols. Make code more maintainable by changing
+\item Representation by symbols. Make code more maintainable by changing
    encoding of distinct literal elements to use symbols rather than
    specific strings or integers.
 
-5) Notation. At the moment, for compatibility reasons, Unicode cannot be
+\item Notation. At the moment, for compatibility reasons, Unicode cannot be
    used to show:
-   - lambda symbol
-   - alpha (as in alpha-substitution)
-   - beta (as in beta-equivalence)
+   \begin{itemize}
+   \item lambda symbol
+   \item alpha (as in alpha-substitution)
+   \item beta (as in beta-equivalence)
+   \item bottom symbol for _|_
+   \end{itemize}
    When the restrictions on using Unicode are lifted then use of the
    Unicode lambda symbol and other Unicode characters would improve
    readability.
+\end{enumerate}
 
 \section{Variables}
 
@@ -110,11 +152,13 @@ function (possibly a constant function).
 
 There is a category to represent these function variables and there are
 two implementations of this category so far:
-* Untyped - Untyped represents an untyped variable in Lambda and Ski
+\begin{description}
+\item[Untyped] Untyped represents an untyped variable in Lambda and Ski
             domains, a variable has a name represented by a String.
-* Typed - Typed represents an typed variable in Lambda and Ski
+\item[Typed] Typed represents an typed variable in Lambda and Ski
           domains, a variable has a name represented by a String
           and a type represented by a tree of strings.
+\end{description}
 
 There may be possibly be other implementations in the future. For instance
 we could introduce a typed variable which could have FriCAS types instead
@@ -123,9 +167,37 @@ with other domains, although as already stated, the main aim is to
 implement these as abstract structures like any other mathematical
 structure.
 
+\begin{enumerate}
+\item How do we handle (and should we handle) subtypes and the various
+flavors of polymorphism? I was thinking of an additional type domain
+within this category whose representation is a list of sub-types,
+which in turn may have sub-sub-types. In other words a tree structure.
+Most of the structures in this computation framework are already tree
+structures so this fits the pattern.
+
+\item How do we handle (and should we handle) compounded types such as
+'List over String'?
+
+\item It would be interesting to have a type domain in this category where
+the types were FriCAS types. This would be an exception, usualy I
+would prefer an abstract type model, but it may be possible to do
+interesing things by mapping FriCAS to an abstract type model.
+
+\item Could these type models be used outside of the computation
+framework? For instance a set whose elements may be assigned different
+types.
+\end{enumerate}
+
+I am trying to develop an abstract model of general mathematical
+structures here, not a sub-language within FriCAS, so I don't want to
+over specify this. However I think it would be good to specify a model
+which is as general as possible and can be expanded to model these
+things.
+\section{Variables Tutorial}
 The two implementations: Untyped and Typed which can be constructed as
 follows:
 
+\begin{verbatim}
 (1) -> var("x")$Untyped
 
    (1)  "x"
@@ -140,14 +212,15 @@ follows:
 
    (3)  [rft= "x:a->b",pout= 7]
                         Type: Record(rft: Typed,pout: NonNegativeInteger)
+\end{verbatim}
 
 In (3) we are entering a variable with a more complicated type (in
-this case 'a->b') so it is easier to use parseVar to construct from
+this case \verb'a->b') so it is easier to use parseVar to construct from
 a string although this could have been built from raw types.
 
 parseVar also requires '1' which means: start parsing at position 1
-in the string. It returns x:a->b which means variable 'x' from type
-'a' to type 'b' and 7 which is the position of the pointer after
+in the string. It returns \verb'x:a->b' which means variable \verb'x' from type
+\verb'a' to type \verb'b' and 7 which is the position of the pointer after
 this term has been parsed.
 
 Variables are not usually constructed directly by the user but instead
@@ -162,7 +235,7 @@ the following domain:
 )abbrev domain VTYP VarTyp
 ++ Author: Martin Baker
 ++ Date Created: April 2011
-++ Date Last Updated: April 2011
+++ Date Last Updated: June 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Also See:
@@ -177,7 +250,7 @@ VarTyp(): Exports == Implementation where
  PR ==> Record(rft:%,pout:NNI)
    ++ parse result includes term returned and new index
 
- Exports == with
+ Exports == CoercibleTo(OutputForm) with
   varTyp:(x:%,y:%) -> %
     ++ Constructs a compound type
   varTyp:(t1:String) -> %
@@ -392,7 +465,7 @@ VarCat() : Category == Type with
     ++ output
 @
 
-Next an implenetation of the above category which is intended to work with
+Next an implementation of the above category which is intended to work with
 untyped variables:
 
 \section{domain UNTYPED Untyped}
@@ -417,7 +490,7 @@ Untyped() : Exports == Implementation where
   PR ==> Record(res:%,pout:NNI)
     ++ parse result includes string returned and new index
 
-  Exports ==> VarCat()
+  Exports ==> Join(VarCat(), CoercibleTo(OutputForm))
 
   Implementation ==> Type add
 
@@ -487,7 +560,7 @@ typed variables:
 )abbrev domain TYPED Typed
 ++ Author: Martin Baker
 ++ Date Created: April 2011
-++ Date Last Updated: April 2011
+++ Date Last Updated: June 2011
 ++ Basic Operations:
 ++ Related Constructors: lambda, ski
 ++ Also See:
@@ -505,7 +578,7 @@ Typed() : Exports == Implementation where
   PR ==> Record(res:%,pout:NNI)
     ++ parse result includes string returned and new index
 
-  Exports ==> VarCat()
+  Exports ==> Join(VarCat(), CoercibleTo(OutputForm))
 
   Implementation ==> Type add
 
@@ -579,17 +652,60 @@ by intuitionistic logic similar to boolean algebra.
 Intuitionistic or constructive logic is similar to classical logic
 but where the law of excluded middle is not used.
 
+The implementation starts with a 'free logic algebra' that is an
+algebra where each combination of inputs to /\ , \/ and ¬ generates
+a new element. So an expression like T /\ T is just T /\ T and does
+not simplify.
+
+Then by adding "simplification rules" (should I have called them
+relators?) then other logic algebras can be implemented (intuitional,
+ternary, many-valued, boolean) just by adding the "rules".
+
+These "rules" are hardcoded into the /\ , \/ and ¬ implementations
+(rather than implementing a true rule based system).
+
+Simplification rules :
+
+    ~T -> _|_
+    ~(~T) -> T
+    ~x /\ x -> _|_
+    x /\ ~x -> _|_
+    x /\ x -> x
+    _|_ /\ x -> _|_
+    x /\ _|_ -> _|_
+    T \/ x -> T
+    x \/ T -> T
+    x \/ x -> x
+    x /\ T -> x
+    T /\ x -> x
+    x \/ _|_ -> x
+    _|_ \/ x -> x
+
+where:
+
+    T = true
+    _|_ = false
+    x = arbitrary proposition
+
+An opton to generalise this code might be to implement the 'free
+logic algebra' as a category, then intuitional, ternary, many-valued,
+boolean could be domains which overload /\ , \/ and ¬ with their own
+sets of rules.
+
 Note: Please be aware that changes may be made in the future to improve
       and correct intuitionistic logic domain, such as:
-   - investigate change of meaning of '=' for intuitionistic logic to
+\begin{itemize}
+\item investigate change of meaning of $=$ for intuitionistic logic to
      represent equivalence rather than equality.
-   - implement more complete algorithm to decide if two (quantifier-free)
+\item implement more complete algorithm to decide if two (quantifier-free)
      intuitionistic formulas are equivalent.
+\end{itemize}
 \section{Intuitionistic Logic Tutorial}
-Intuitionistic logic has mant possible values: true "T", false "_|_" and
+Intuitionistic logic has many possible values: true $T$, false $_|_$ and
 infinitely many other values generated by constructs such as inverse.
 These can be constructed as follows:
 
+\begin{verbatim}
 (1) -> logicF()
 
    (1)  "_|_"
@@ -602,55 +718,65 @@ These can be constructed as follows:
 
    (3)  "_|_"
                                                              Type: ILogic
+\end{verbatim}
 
 This logic has different rules from boolean algebra and all constructions
 do not reduce to true or false. To test out our constructs we will use
 the following list:
 
+\begin{verbatim}
 (4) -> l:List ILogic := [logicF(),logicT(),proposition("a"),~proposition("a"),proposition("b"),~proposition("b")]
 
  LISP output:
 ((0 0) (0 1) (1 a) (3 0 1 a) (1 b) (3 0 1 b))
                                                        Type: List(ILogic)
+\end{verbatim}
 
 First we will try 'not':
-
+\begin{verbatim}
 (5) -> [(~j)::OutputForm for j in l]
 
    (5)  ["~(_|_)","_|_","~(a)","~(~(a))","~(b)","~(~(b))"]
                                                    Type: List(OutputForm)
+\end{verbatim}
 
 We can print a truth table for 'and' and 'or'. This is the same as
 boolean logic for true/false values and extended for the unproven case.
-
+\begin{verbatim}
 (6) -> matrix[ [(k /\ j)::OutputForm for j in l] for k in l]
 
      (6)
     SUB
        matrix
        ["_|_","_|_","_|_","_|_","_|_","_|_"]
-       ["_|_","T","(T/\a)","(T/\~(a))","(T/\b)","(T/\~(b))"]
-       ["_|_","(a/\T)","a","_|_","(a/\b)","(a/\~(b))"]
-       ["_|_","(~(a)/\T)","_|_","~(a)","(~(a)/\b)","(~(a)/\~(b))"]
-       ["_|_","(b/\T)","(b/\a)","(b/\~(a))","b","_|_"]
-       ["_|_","(~(b)/\T)","(~(b)/\a)","(~(b)/\~(a))","_|_","~(b)"]
+      ["_|_","T","a","~(a)","b","~(b)"]
+      ["_|_","a","a","_|_","(a/\b)","(a/\~(b))"]
+      ["_|_","~(a)","_|_","~(a)","(~(a)/\b)","(~(a)/\~(b))"]
+      ["_|_","b","(b/\a)","(b/\~(a))","b","_|_"]
+      ["_|_","~(b)","(~(b)/\a)","(~(b)/\~(a))","_|_","~(b)"]
                                                                Type: Symbol
+
+Note: Its hard to read this table in text, it displays better as
+html on this page:
+http://www.euclideanspace.com/maths/standards/program/mycode/computation/intuitionistic/
 
 (7) -> matrix[ [(k \/ j)::OutputForm for j in l] for k in l]
 
      (7)
     SUB
        matrix
-       ["(_|_\/_|_)","T","(_|_\/a)","(_|_\/~(a))","(_|_\/b)","(_|_\/~(b))"]
-       ["T","T","T","T","T","T"]
-       ["(a\/_|_)","T","(a\/a)","(a\/~(a))","(a\/b)","(a\/~(b))"]
-       ["(~(a)\/_|_)","T","(~(a)\/a)","(~(a)\/~(a))","(~(a)\/b)","(~(a)\/~(b))"]
-       ["(b\/_|_)","T","(b\/a)","(b\/~(a))","(b\/b)","(b\/~(b))"]
-       ["(~(b)\/_|_)","T","(~(b)\/a)","(~(b)\/~(a))","(~(b)\/b)","(~(b)\/~(b))"]
+      ["_|_","T","a","~(a)","b","~(b)"]
+      ["T","T","T","T","T","T"]
+      ["a","T","a","(a\/~(a))","(a\/b)","(a\/~(b))"]
+      ["~(a)","T","(~(a)\/a)","~(a)","(~(a)\/b)","(~(a)\/~(b))"]
+      ["b","T","(b\/a)","(b\/~(a))","b","(b\/~(b))"]
+      ["~(b)","T","(~(b)\/a)","(~(b)\/~(a))","(~(b)\/b)","~(b)"]
+
                                                                Type: Symbol
+\end{verbatim}
 
 'implies' produces the following truth table.
-
+\begin{verbatim}
 (8) -> matrix[ [implies(k,j)::OutputForm for j in l] for k in l]
 
 
@@ -666,22 +792,22 @@ boolean logic for true/false values and extended for the unproven case.
        ["(~(b)->_|_)", "(~(b)->T)", "(~(b)->a)", "(~(b)->~(a))", "(~(b)->b)",
         "(~(b)->~(b))"]
                                                                Type: Symbol
-
+\end{verbatim}
 
 Now that we can do intuitionistic logic with constant values we can
 go on to represent theories. We can enter a symbolic value as follows:
-
-
+\begin{verbatim}
 (9) -> proposition("p1")
 
    (9)  "p1"
                                                              Type: ILogic
+\end{verbatim}
 
 When applying a symbolic value, then it may not possible to compress
 as a single node, so the result remains as a tree. So (13) can be
-reduced to a single value _|_ because the result does not depend
-on 'a', however in (12) we cannot reduce to a single value.
-
+reduced to a single value $_|_$, because the result does not depend
+on \verb'a', however in (12) we cannot reduce to a single value.
+\begin{verbatim}
 (10) -> proposition("a") /\ proposition("b")
 
    (10)  "(a/\b)"
@@ -698,13 +824,43 @@ on 'a', however in (12) we cannot reduce to a single value.
 
    (13)  "_|_"
                                                              Type: ILogic
+\end{verbatim}
+\section{applying modus ponens}
+modus ponens tells us that given: 'a' and 'a->b' then we can imply 'b'.
+So we first assert 'a' and 'a->b' as follows:
+\begin{verbatim}
+(14) -> givens := proposition("a") /\ implies(proposition("a"),proposition("b"))
+
+   (14)  "(a/\(a->b))"
+                                                             Type: ILogic
+\end{verbatim}
+We then factor into seperate terms:
+\begin{verbatim}
+(15) -> fgivens := factor(givens)
+
+ LISP output:
+((1 a) (2 . UNPRINTABLE))
+                                                       Type: List(ILogic)
+\end{verbatim}
+note: List -> OutputForm only works when List is defined over SETCAT
+so lists don't display properly here. If it did we would see
+[a,a->b]
+We now apply the deductions function to this list.
+\begin{verbatim}
+(16) -> deduct := deductions(fgivens)
+
+ LISP output:
+((1 b))
+                                                       Type: List(ILogic)
+\end{verbatim}
+so we get the required deduction 'b'
 
 \section{domain ILOGIC ILogic}
 <<domain ILOGIC ILogic>>=
 )abbrev domain ILOGIC ILogic
 ++ Author: Martin Baker
 ++ Date Created: March 2011
-++ Date Last Updated: June 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: intuitionisticLogic
@@ -717,7 +873,7 @@ ILogic(): Exports == Implementation where
 
  NNI==> NonNegativeInteger
 
- Exports == with
+ Exports == Join(Logic, CoercibleTo(OutputForm)) with
   logicT:() -> %
     ++ true is a logical constant.
   logicF:() -> %
@@ -730,21 +886,38 @@ ILogic(): Exports == Implementation where
     ++ a is premise, b is conclusion, result is false (contradiction)
     ++ if premise=true and conclusion=false
     ++ does not mean there is a causal connection
-  _~: % -> %
-    ++ ~(x) returns the logical complement of x.
-  _/_\: (a:%, b:%) -> %
-    ++ /\ returns the logical 'meet', e.g. 'and'.
-  _\_/: (a:%, b:%) -> %
-    ++  \/ returns the logical 'join', e.g. 'or'.
   redux:(n: %) -> %
     ++ attempt to simplify theory
     ++ apply recursively to subnodes
     ++ normally this should not be necessary since logic values are
     ++ interpreted when constructed
+  factor:(n: %) -> List %
+    ++ splits n into a list of factors which must be true for the
+    ++ whole to be true.
+    ++ This assumes that the top level is already a set of factors
+    ++ seperated by /\ otherwise the result will just be a list with
+    ++ one entry: 'n'.
+    ++ This is used when converting ILogic to types by using the
+    ++ Curry-Howard isomorphism.
+  deductions:(ln: List %) -> List %
+    ++ assumes ln contains a list of factors which must be true for
+    ++ the whole to be true (such as the list produced by factor).
+    ++ From this deductions attemps to produce a list of other
+    ++ proposition that must also be true by using modus ponens.
+    ++ This is used to determine the returned type when converting
+    ++ ILogic to types by using the Curry-Howard isomorphism.
   "=": (a:%, b:%) -> Boolean
     ++ returns true (boolean true) if intuitionisticLogic values
     ++ are the same.
     ++ Translates from Intuitionistic Logic to Boolean Logic
+  opType:(n: %) -> NNI
+    ++ if this is a compound op then opType returns the type of
+    ++ that op:
+    ++ 0=implies
+    ++ 1=/\
+    ++ 2=\/
+    ++ 3=~
+    ++ 4=not compound op
   children:(n: %) -> List %
     ++ returns child nodes if this is a compound term
     ++ otherwise returns []
@@ -758,7 +931,10 @@ ILogic(): Exports == Implementation where
     ++ 3=proposition
     ++ 4=compound
   toString: (n: %) -> String
-    ++ output
+    ++ creates a string representaion of this term and its sub-terms
+  toStringUnwrapped: (n: %) -> String
+    ++ similar to 'toString' but does not put outer compound terms
+    ++ in brackets
   coerce: (n: %) -> OutputForm
     ++ output
 
@@ -770,6 +946,28 @@ ILogic(): Exports == Implementation where
          binaryOp:Record(typ:NNI,c1:%, c2:%),_
          unaryOp:Record(typ:NNI,c1:%)_
          )
+    ++ this allows us to represent an intuitionistic
+    ++ expression as a tree structure where the nodes are
+    ++ one of:
+    ++ 1) const:Record(val:NNI)
+    ++   holds the true and false values:
+    ++   T = 1::NNI
+    ++   _|_ = 0::NNI
+    ++     I may change this as some stage to use symbols instead
+    ++     of integer literals.
+    ++ 
+    ++ 2) var:Record(str:String)
+    ++   holds a proposition name
+    ++
+    ++ 3) binaryOp:Record(typ:NNI,c1:%, c2:%)
+    ++   holds binary operations:
+    ++     implies =0::NNI
+    ++     /\ =1::NNI
+    ++     \/ =2::NNI
+    ++     I may change this as some stage to use symbols instead
+    ++     of integer literals.
+    ++ 4) unaryOp:Record(typ:NNI,c1:%)
+    ++   holds unary operations the only one is ~
 
   -- Constructs a proposition
   proposition(s:String): % == [[s]]
@@ -792,7 +990,8 @@ ILogic(): Exports == Implementation where
       c:% := b.unaryOp.c1
       if (c case unaryOp) then
         d:% := c.unaryOp.c1
-        if (d.const.val = 1::NNI) then return [[0::NNI]]
+        if (d case const) then
+          if (d.const.val = 1::NNI) then return [[0::NNI]]
     [[0::NNI,b]]
 
   -- /\ returns the logical 'meet', e.g. 'and'.
@@ -803,6 +1002,8 @@ ILogic(): Exports == Implementation where
   -- x /\ x -> x
   -- F /\ x -> F
   -- x /\ F -> F
+  -- x /\ T -> x
+  -- T /\ x -> x
   --
   _/_\(a:%, b:%) ==
     -- apply rule: F /\ x -> F
@@ -820,6 +1021,12 @@ ILogic(): Exports == Implementation where
     -- apply rule: ~x /\ x -> F
     if (~a)=b then
       return [[0::NNI]]
+    -- apply rule: x /\ T -> x
+    if (b case const) then
+      if (b.const.val = 1::NNI) then return a
+    -- apply rule: T /\ x -> x
+    if (a case const) then
+      if (a.const.val = 1::NNI) then return b
     [[1::NNI,a,b]]
 
 
@@ -828,12 +1035,26 @@ ILogic(): Exports == Implementation where
   -- simplification rules:
   -- T \/ x -> T
   -- x \/ T -> T
+  -- x \/ x -> x
+  -- x \/ _|_ -> x
+  -- _|_ \/ x -> x
   --
   _\_/(a:%, b:%) ==
+    -- apply rule: T \/ x -> T
     if (a case const) then
       if (a.const.val = 1::NNI) then return [[1::NNI]]
+    -- apply rule: x \/ T -> T
     if (b case const) then
       if (b.const.val = 1::NNI) then return [[1::NNI]]
+    -- apply rule: x \/ x -> x
+    if a=b then
+      return a
+    -- apply rule: x \/ _|_ -> x
+    if (b case const) then
+      if (b.const.val = 0::NNI) then return a
+    -- apply rule: _|_ \/ x -> x
+    if (a case const) then
+      if (a.const.val = 0::NNI) then return b
     [[2::NNI,a,b]]
 
   -- implies(a,b) returns the logical implication
@@ -861,8 +1082,13 @@ ILogic(): Exports == Implementation where
   -- x /\ x -> x
   -- F /\ x -> F
   -- x /\ F -> F
+  -- x /\ T -> x
+  -- T /\ x -> x
   -- T \/ x -> T
   -- x \/ T -> T
+  -- x \/ x -> x
+  -- x \/ _|_ -> x
+  -- _|_ \/ x -> x
   --
   redux(n: %):% ==
     if n case const then
@@ -870,12 +1096,89 @@ ILogic(): Exports == Implementation where
     if n case var then
       return n
     if n case binaryOp then
-      if n.binaryOp.typ=0::NNI then return implies(n.binaryOp.c1,n.binaryOp.c2)
-      if n.binaryOp.typ=1::NNI then return _/_\(n.binaryOp.c1,n.binaryOp.c2)
-      if n.binaryOp.typ=2::NNI then return _\_/(n.binaryOp.c1,n.binaryOp.c2)
+      if n.binaryOp.typ=0::NNI then
+        return implies(redux(n.binaryOp.c1),redux(n.binaryOp.c2))
+      if n.binaryOp.typ=1::NNI then
+        return _/_\(redux(n.binaryOp.c1),redux(n.binaryOp.c2))
+      if n.binaryOp.typ=2::NNI then
+        return _\_/(redux(n.binaryOp.c1),redux(n.binaryOp.c2))
     if n case unaryOp then
-      return ~(n.unaryOp.c1)
+      return ~(redux(n.unaryOp.c1))
     n
+
+  -- splits n into a list of factors which must be true for the
+  -- whole to be true.
+  -- This assumes that the top level is already a set of factors
+  -- seperated by /\ otherwise the result will just be a list with
+  -- one entry: 'n'.
+  -- This is used when converting ILogic to types by using the
+  -- Curry-Howard isomorphism.
+  factor(n: %):List % ==
+    if ~(n case binaryOp) then return [n]
+    if ~(n.binaryOp.typ=1::NNI) then return [n]
+    ch:List % := children(n)
+    concat(factor(first ch),factor(second ch)) 
+
+  -- remove duplicates. Return elements of 'b' except those that are
+  -- in 'a'
+  -- I would use duplicate removal built into List but that only
+  -- works when the list is defined over SETCAT
+  removeDup(a: List %,b: List %):List % ==
+    res: List % := []
+    for b1 in b repeat
+      fnd:Boolean := false()
+      for a1 in a repeat
+        if a1=b1 then fnd := true()
+      if not fnd then res := concat(res,b1)
+    res
+
+  -- a single iteration for deductions below.
+  deductions1(ln: List %):List % ==
+    res: List % := []
+    for n in ln repeat
+      if n case binaryOp then
+        if n.binaryOp.typ=0::NNI then
+          ch:List % := children(n)
+          for n2 in ln repeat
+            if (first ch)=n2 then res:=concat(res,second ch)
+    res
+
+  -- assumes ln contains a list of factors which must be true for
+  -- the whole to be true (such as the list produced by factor).
+  -- From this deductions attemps to produce a list of other
+  -- proposition that must also be true by using modus ponens.
+  -- This is used to determine the returned type when converting
+  -- ILogic to types by using the Curry-Howard isomorphism.
+  deductions(ln: List %):List % ==
+    res: List % := []
+    thisres : List % := deductions1(ln)
+    res := concat(res,thisres)$(List %)
+    -- these deductions may lead to further deductions so we
+    -- need to apply again until there are no more deductions
+    emptyres :Boolean := empty?(thisres)$(List %)
+    loopbreaker := 1::NNI
+    while not emptyres and (loopbreaker<20)repeat
+      allres: List % := concat(ln,res)
+      thisres := deductions1(allres)
+      thisres := removeDup(res,thisres)
+      thisres := removeDup(allres,thisres)
+      res := concat(res,thisres)$(List %)
+      emptyres := empty?(thisres)$(List %)
+      loopbreaker := loopbreaker + 1
+    res
+
+  -- if this is a compound op then opType returns the type of that op:
+  -- 0=implies
+  -- 1=/\
+  -- 2=\/
+  -- 3=~
+  -- 4=not compound op
+  --     I may change this as some stage to use symbols instead
+  --     of integer literals.
+  opType(n: %):NNI ==
+    if n case binaryOp then return n.binaryOp.typ
+    if n case unaryOp then return 3::NNI
+    4::NNI
 
   -- returns true if this is an atom, that is a leaf node
   -- otherwise return false if this is a compound term
@@ -886,6 +1189,8 @@ ILogic(): Exports == Implementation where
   -- 1=true
   -- 3=proposition
   -- 4=compound
+  --     I may change this as some stage to use symbols instead
+  --     of integer literals.
   value(n: %):NNI ==
     if n case const then
       if (n.const.val = 0::NNI) then return 0::NNI
@@ -951,6 +1256,29 @@ ILogic(): Exports == Implementation where
      return concat(["~(",toString(n.unaryOp.c1),")"])
     "error"
 
+
+  -- similar to 'toString' but does not put outer compound terms
+  -- in brackets
+  toStringUnwrapped(n: %):String ==
+    if n case const then
+      if (n.const.val = 0::NNI) then return "__|__"
+      if (n.const.val = 1::NNI) then return "T"
+      return "?"
+    if n case var then
+      return n.var.str
+      --sayTeX$Lisp concat(["toString case i1=",s])
+      --sayTeX$Lisp n
+    if n case binaryOp then
+      -- binary node which has two subnodes c1 and c2
+      s1:String := "->"
+      if n.binaryOp.typ = 1::NNI then s1:="/\"
+      if n.binaryOp.typ = 2::NNI then s1:="\/"
+      return concat([toString(n.binaryOp.c1),s1,toString(n.binaryOp.c2)])
+    if n case unaryOp then
+      -- unary node which has a subnode c1
+     return concat(["~(",toString(n.unaryOp.c1),")"])
+    "error"
+
   -- output
   coerce(n: %):OutputForm ==
     toString(n)::OutputForm
@@ -959,13 +1287,13 @@ ILogic(): Exports == Implementation where
 
 \section{lambda-Calculus}
 for more details see:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/lambda/
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/lambda/}
 
 \section{Notation}
 
 Externally a fairly standard notation is used, as may be familiar to
 someone using a textbook to study lambda-calculus, or as close as we can get
-without using unicode. I have used the '\' symbol to stand for lambda. At
+without using unicode. I have used the \verb'\' symbol to stand for lambda. At
 some stage in the future it may be possible to use unicode lambda symbol
 but not yet due to compatibility issues.
 
@@ -977,17 +1305,18 @@ lambda terms, without ambiguity and without the need for
 alpha-substitution.
 
 De Bruijn index which is a integer where
-
+\begin{verbatim}
     0=inside current (inner) lambda term
     1= next outer lambda term
     2= next outer and so on
     ...
+\end{verbatim}
 
 We will see how this works in the tutorial below.
 
 So internally the lambda-calculus is stored as a binary tree structure
 using the following syntax:
-
+\begin{verbatim}
 <term> ::= "\" var "."<term> | n | <term><term> | "("<term>")"
 
 where:
@@ -1000,22 +1329,24 @@ where:
     var = a string representation of variable (this form is used for
           unbound variables)
     brackets can be used around whole terms.
+\end{verbatim}
 
 \section{Tutorial}
 
 On this page we will be working with 'untyped' variables so we create
 an instance called UNTYP to simplify notation:
-
+\begin{verbatim}
 (1) -> UNTYP := Lambda Untyped
 
    (1)  Lambda(Untyped)
                                                            Type: Type
+\end{verbatim}
 
 \section{Constructors}
 
 First we can enter some variables, at the moment they are not inside
 a lambda-term so they can't yet be bound, but later we can put them into
-a lambda-term..
+a lambda-term.
 
 A numeric name is interpreted as a De Bruijn index when put inside
 a lambda-term, although we don't need this notation for I/O unless we are
@@ -1028,7 +1359,7 @@ variable rather than "0".
 Internally a string name will be converted to a De Bruijn index when
 put inside a matching lambda-term, otherwise it will be interpreted as a
 free variable.
-
+\begin{verbatim}
 (2) -> v1 := lambda(var("x")$Untyped)$UNTYP
 
    (2)  "x"
@@ -1043,6 +1374,7 @@ free variable.
 
    (4)  "0"
                                                     Type: Lambda(Untyped)
+\end{verbatim}
 
 This can be built up into more complex lambda terms by using compound
 terms (as in (5)) and the lambda-term itself (as in (6)).
@@ -1050,7 +1382,7 @@ terms (as in (5)) and the lambda-term itself (as in (6)).
 Each lambda-term can only have one bound variable, if more than one bound
 variable is required then lambda-terms can be nested. lambda-term requires that
 the bound variable be given a name.
-
+\begin{verbatim}
 (5) -> n1 := lambda(v1,v2)$UNTYP
 
    (5)  "(x y)"
@@ -1060,20 +1392,21 @@ the bound variable be given a name.
 
    (6)  "(\x.(x y))"
                                                     Type: Lambda(Untyped)
+\end{verbatim}
 
-In (7) 'x' is a the bound variable and so, when the lambda-term was created,
+In (7) \verb'x' is a the bound variable and so, when the lambda-term was created,
 this will be converted to De Bruijn index, in (7) we call toString to
 see the internal representation:
 
 In (8) we see that when entered as a numeric index the bound variable
 will still be displayed as a string.
 
-In (9) and (10) we can see that the 'unbind' function can be used to
-unbind the bound variable 'x' that is, although 'x' has the same string
+In (9) and (10) we can see that the \verb'unbind' function can be used to
+unbind the bound variable \verb'x' that is, although \verb'x' has the same string
 value as the lambda term, it is treated as though it were different.
 We can see this because the toString output does not have a index value.
-In (11) we call 'bind' to re-bind it.
-
+In (11) we call \verb'bind' to re-bind it.
+\begin{verbatim}
 (7) -> toString(n2)$UNTYP
 
    (7)  "(\x.(0 y))"
@@ -1094,17 +1427,18 @@ In (11) we call 'bind' to re-bind it.
 
    (11)  "(\x.(0 y))"
                                                              Type: String
+\end{verbatim}
 
 So we can already construct any type of lambda term, however its a bit
 tedious to construct complex lambda terms in this way, an easier way is
-to use 'parseLambda' to construct the lambda term from a string. Again
+to use \verb'parseLambda' to construct the lambda term from a string. Again
 we can enter variables as either alpha or numeric characters depending
 on whether we want to specify the index value directly or allow the
 code to generate it.
 
 In (14) we can see the use of numeric terms to avoid the ambiguity
 caused by nested lambda-terms with the same name.
-
+\begin{verbatim}
 (12) -> n4 := parseLambda("\x.\y. y x")$UNTYP
 
    (12)  "(\x.(\y.(x y)))"
@@ -1125,11 +1459,12 @@ caused by nested lambda-terms with the same name.
 
    (16)  "(\x.(\x'.(x x)))"
                                                     Type: Lambda(Untyped)
+\end{verbatim}
 
 \section{beta-substitution}
 
-The command: subst:(n,a,b) substitutes 'a' for 'b' in 'n' as follows:
-
+The command: \verb'subst:(n,a,b)' substitutes \verb'a' for \verb'b' in \verb'n' as follows:
+\begin{verbatim}
 (17) -> subst(n2,v2,v1)$UNTYP
 
    (17)  "(\x.(x y))"
@@ -1138,11 +1473,12 @@ The command: subst:(n,a,b) substitutes 'a' for 'b' in 'n' as follows:
 
    (18)  "(\x.(x x))"
                                                     Type: Lambda(Untyped)
+\end{verbatim}
 
 \section{Issues}
 
 I realise that Axiom/FriCAS already has a way to create anonymous
-functions using +-> in a lambda-calculus sort of way. But the aim here
+functions using \verb'+->' in a lambda-calculus sort of way. But the aim here
 is to represent lambda-calculus as a pure mathematical structure so that
 we can experiment with the properties of this structure without the
 messy features that are required for a practical computer language.
@@ -1166,7 +1502,7 @@ about how to coerce to/from this algebra see below.
 )abbrev domain LAMBDA Lambda
 ++ Author: Martin Baker
 ++ Date Created: March 2011
-++ Date Last Updated: April 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Also See:
@@ -1183,7 +1519,7 @@ Lambda(UT): Exports == Implementation where
  PR ==> Record(rft:%,pout:NNI)
    ++ parse result includes term returned and new index
 
- Exports == with
+ Exports == CoercibleTo(OutputForm) with
   lambda:(deBruijn:NNI) -> %
     ++ Constructs a reference to a bound variable from its deBruijn
     ++ index
@@ -1205,8 +1541,6 @@ Lambda(UT): Exports == Implementation where
     ++             lambda term, 2= next outer lambda term, 3= next
     ++             outer and so on.
     ++ brackets can be used around whole terms.
-    ++ This requires the user to work out the De Bruijn index values
-    ++ perhaps this could be improved later.
   parseTerm:(t1: String,pin:NNI) -> PR
     ++ parseTerm is used by parseLambda. It would rarely be called
     ++ externally but it is here to allow it to call parseLambda
@@ -1215,9 +1549,20 @@ Lambda(UT): Exports == Implementation where
     ++ returns true if this is an atom, that is free or bound variable
     ++ otherwise return false if this is a compound or lambda definition
   isCompound?:(n: %) -> Boolean
-    ++ returns true if this is a compound term containing two nodes
+    ++ introspection: returns true if this is a compound term containing
+    ++ two nodes
   isLambda?:(n: %) -> Boolean
-    ++ returns true if this is a lambda definition
+    ++ introspection: returns true if this is a lambda definition
+  isBoundNode?:(n: %) -> Boolean
+    ++ introspection: returns true if this is a bound leaf node
+  isFreeNode?:(n: %) -> Boolean
+    ++ introspection: returns true if this is a unbound leaf node
+  getBoundValue:(n: %) -> NNI
+    ++ introspection: returns deBruijn index of bound variable in bound
+    ++ leaf node
+  getVariable:(n: %) -> UT
+    ++ introspection: returns value of unbound variable in unbound leaf
+    ++ node or bound variable in lambda term
   free?:(n: %) -> Boolean
     ++ if this is a lambda term then is it free, that is does
     ++ its variable appear in its expression
@@ -1225,8 +1570,6 @@ Lambda(UT): Exports == Implementation where
     ++ returns 2 child nodes if this is a compound term
     ++ returns 1 child node if this is a lamda term
     ++ otherwise returns []
-  variable:(n: %) -> UT
-    ++ if this is a lambda term then return the bound variable
   subst:(n: %,a: %,b: %) -> %
     ++ substitution of 'a' for 'b' in 'n'
   bind:(n: %) -> %
@@ -1266,6 +1609,30 @@ Lambda(UT): Exports == Implementation where
          compoundTerm:Record(c1:%, c2:%),_
          lambdaTerm:Record(c3:%, nm:UT)_
          )
+    ++ this allows us to represent potentially nested lambda
+    ++ expressions as a tree structure where the nodes are
+    ++ one of:
+    ++ 1) boundTerm:Record(varBound:NNI)
+    ++    This represents a bound variable using De Bruijn index.
+    ++       varBound = De Bruijn index which is a integer where,
+    ++             1=inside inner lambda term
+    ++             2= next outer lambda term, 
+    ++             3= next outer and so on.
+    ++ 
+    ++ 2) freeTerm:UT
+    ++    This represents an unbound variable so De Bruijn index
+    ++    is not used.
+    ++ 
+    ++ 3) compoundTerm:Record(c1:%, c2:%)
+    ++   Adjacent nodes represent function composition
+    ++ 
+    ++ 4) lambdaTerm:Record(c3:%, nm:UT)
+    ++    when used the outer term should be a lambdaTerm athough
+    ++    lambda terms may also be nested within the tree structure
+    ++    c3 holds the subnodes
+    ++    nm is the bound term for this lambda node
+    ++   There is only one bound term for each lambda node, if more
+    ++   are required then lambda nodes can be nested.
 
   -- Constructs a reference to a bound variable from its deBruijn
   -- index
@@ -1295,11 +1662,71 @@ Lambda(UT): Exports == Implementation where
       return [n.lambdaTerm.c3]
     []
 
-  -- if this is a lambda term then return the name of the bound variable
-  variable(n: %):UT ==
+  -- returns true if this is an atom, that is free or bound variable
+  -- otherwise return false if this is a compound or lambda definition
+  atom?(n: %):Boolean == (n case boundTerm) or (n case freeTerm)
+
+  -- introspection:  returns true if this is a compound term containing
+  -- two nodes
+  isCompound?(n: %):Boolean == (n case compoundTerm)
+
+  -- introspection:  returns true if this is a lambda definition
+  isLambda?(n: %):Boolean == (n case lambdaTerm)
+
+  -- introspection: returns true if this is a bound leaf node
+  isBoundNode?(n: %):Boolean == (n case boundTerm)
+
+  -- introspection: returns true if this is a unbound leaf node
+  isFreeNode?(n: %):Boolean == (n case freeTerm)
+
+  -- introspection: returns deBruijn index of bound variable in bound
+  -- leaf node
+  getBoundValue(n: %):NNI ==
+    if n case boundTerm then
+      return n.boundTerm.varBound
+    0::NNI
+
+  -- introspection: returns value of unbound variable in unbound leaf
+  -- node or bound variable in lambda term
+  getVariable(n: %):UT ==
+    if n case freeTerm then
+      return n.freeTerm
     if n case lambdaTerm then
       return n.lambdaTerm.nm
     var("error")$UT
+
+  -- does s not appear in n
+  freeVariable?(n: %,s:UT):Boolean ==
+    if n case freeTerm then
+      if n.freeTerm=s then return false
+    if n case lambdaTerm then
+      if not freeVariable?(n.lambdaTerm.c3,s) then return false
+    if n case compoundTerm then
+      if not freeVariable?(n.compoundTerm.c1,s) or _
+         not freeVariable?(n.compoundTerm.c2,s) then return false
+    true
+
+  -- return false if any bound terms
+  freeVariable?(n: %,i:NNI):Boolean ==
+    if n case boundTerm then
+      if n.boundTerm.varBound=i then return false
+    if n case lambdaTerm then
+      if not freeVariable?(n.lambdaTerm.c3,(i+1)::NNI) then return false
+    if n case compoundTerm then
+      if (not freeVariable?(n.compoundTerm.c1,i)) or _
+         (not freeVariable?(n.compoundTerm.c2,i)) then return false
+    true
+
+  -- if this is a lambda term then is it free, that is does
+  -- its variable appear in its expression
+  free?(n: %):Boolean ==
+    if n case lambdaTerm then
+      --s1:String := name(n.lambdaTerm.nm)$UT
+      return freeVariable?(n.lambdaTerm.c3,0::NNI)
+    sayTeX$Lisp concat("warning free called on non-lambda term",toString(n))
+    false
+
+
 
   parseLambdaTerm(t1: String,pin:NNI):PR ==
     --sayTeX$Lisp concat(["parseLambdaTerm(",t1,",",string(pin),")"])$String
@@ -1420,53 +1847,10 @@ Lambda(UT): Exports == Implementation where
   --             lambda term, 2= next outer lambda term, 3= next
   --             outer and so on.
   -- brackets can be used around whole terms.
-  -- This requires the user to work out the De Bruijn index values
-  -- perhaps this could be improved later.
   parseLambda(t1: String): % ==
     r := parseTerm(t1,minIndex(t1)::NNI)
     --sayTeX$Lisp concat(["parseLambda(",t1,") giving:",toString(tm)])
     r.rft
-
-  -- returns true if this is an atom, that is free or bound variable
-  -- otherwise return false if this is a compound or lambda definition
-  atom?(n: %):Boolean == (n case boundTerm) or (n case freeTerm)
-
-  -- returns true if this is a compound term containing two nodes
-  isCompound?(n: %):Boolean == (n case compoundTerm)
-
-  -- returns true if this is a lambda definition
-  isLambda?(n: %):Boolean == (n case lambdaTerm)
-
-  -- does s not appear in n
-  freeVariable?(n: %,s:UT):Boolean ==
-    if n case freeTerm then
-      if n.freeTerm=s then return false
-    if n case lambdaTerm then
-      if not freeVariable?(n.lambdaTerm.c3,s) then return false
-    if n case compoundTerm then
-      if not freeVariable?(n.compoundTerm.c1,s) or _
-         not freeVariable?(n.compoundTerm.c2,s) then return false
-    true
-
-  -- return false if any bound terms
-  freeVariable?(n: %,i:NNI):Boolean ==
-    if n case boundTerm then
-      if n.boundTerm.varBound=i then return false
-    if n case lambdaTerm then
-      if not freeVariable?(n.lambdaTerm.c3,(i+1)::NNI) then return false
-    if n case compoundTerm then
-      if (not freeVariable?(n.compoundTerm.c1,i)) or _
-         (not freeVariable?(n.compoundTerm.c2,i)) then return false
-    true
-
-  -- if this is a lambda term then is it free, that is does
-  -- its variable appear in its expression
-  free?(n: %):Boolean ==
-    if n case lambdaTerm then
-      --s1:String := name(n.lambdaTerm.nm)$UT
-      return freeVariable?(n.lambdaTerm.c3,0::NNI)
-    sayTeX$Lisp concat("warning free called on non-lambda term",toString(n))
-    false
 
   -- return string representation using conventional notation, that is
   -- deBruijn index is replaced by name using String value for bound variables.
@@ -1481,7 +1865,6 @@ Lambda(UT): Exports == Implementation where
       --sayTeX$Lisp concat(["toStringConven(",toString(n),") i=",string(i)," #boundL=",string(#boundL)])
       if i > 0 and i <= #boundL then return boundL.i
       s := string(n.boundTerm.varBound)
-      --sayTeX$Lisp s
     if n case freeTerm then
       s := name(n.freeTerm)$UT
     if n case compoundTerm then
@@ -1500,15 +1883,10 @@ Lambda(UT): Exports == Implementation where
   -- notation assumes association to the left, in the absence of
   -- brackets, the term to the left binds more tightly than the
   -- one on the right.
-  -- boundTerm:Record(varBound:NNI, ck:NNI),
-  -- freeTerm:Record(varUnbound:String),_
-  -- compoundTerm:Record(c1:%, c2:%),
-  -- lambdaTerm:Record(c3:%, nm:String)
   toString(n:%):String ==
     s:String := ""
     if n case boundTerm then
       s := string(n.boundTerm.varBound)
-      --sayTeX$Lisp s
     if n case freeTerm then
       s := toString(n.freeTerm)$UT
     if n case compoundTerm then
@@ -1630,7 +2008,7 @@ Lambda(UT): Exports == Implementation where
 
 \section{SKI Combinators}
 for more details see:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/}
 
 Ski combinators were introduced by Moses Schoenfinkel and Haskell
 Curry with the aim of eliminating the need for variables in
@@ -1644,89 +2022,90 @@ The structure is a self-modifying binary tree.
 On this page we will be working with 'untyped' SKI combinators
 so we create an instance called UNTYP to simplify notation:
 
-(1) -> UNTYP := Ski Untyped
+(1) -> UNTYP := SKICombinators Untyped
 
-   (1)  Ski(Untyped)
+   (1)  SKICombinators(Untyped)
                                                            Type: Type
+\end{verbatim}
 
 \section{Constructing SKI combinators}
 
 SKI combinators consist of a binary tree structure where the leaves
-of the tree are either I, K or S combinators or variables.
+of the tree are either $I$, $K$ or $S$ combinators or variables.
 
-The I, K and S combinators can be constructed by using the I(),
-K() and S() functions.
+The $I$, $K$ and $S$ combinators can be constructed by using the $I()$,
+$K()$ and $S()$ functions.
 
 Variables (representing functions) can be constructed by
-var("x")$Untyped, where x is the name of the variable, we can then
+\verb'var("x")$Untyped', where \verb'x' is the name of the variable, we can then
 pass this variable to a ski constructor to create a SKI term:
-
+\begin{verbatim}
 (2) -> m1 := I()$UNTYP
 
    (2)  "I"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
 (3) -> m2 := K()$UNTYP
 
    (3)  "K"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
 (4) -> m3 := S()$UNTYP
 
    (4)  "S"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
 (5) -> v1 := ski(var("x")$Untyped)$UNTYP
 
    (5)  "x"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
-Compound combinator terms can be constructed by ski(node1,node2) where
-node1 and node2 are other combinator terms. Internally combinators are
+Compound combinator terms can be constructed by \verb'ski(node1,node2)' where
+\verb'node1' and \verb'node2' are other combinator terms. Internally combinators are
 stored as a binary tree. The notation assumes association to the left,
 in the absence of brackets, the term to the left binds more tightly
 than the one on the right. So, in the following, we can see that:
 
     In n2 the second term is an atom so brackets are not required.
     In n3 the second term is compound so brackets are required.
-
+\begin{verbatim}
 (6) -> n1 := ski(m1,m2)$UNTYP
 
    (6)  "IK"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
 (7) -> n2 := ski(n1,m3)$UNTYP
 
    (7)  "IKS"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (8) -> n3 := ski(m3,n1)$UNTYP
 
    (8)  "S(IK)"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
 In addition, to avoid having to build up this node by node, there is a
 quicker way to construct SKI combinators. We can construct the whole
-binary tree from a single string using the parseSki constructor as
+binary tree from a single string using the \verb'parseSki' constructor as
 follows. Again the notation assumes association to the left, in the
 absence of brackets, the term to the left binds more tightly than the
 one on the right.
 
 When we are using parseSki and we have two variables next to each other
-(such as 'x y') then we must put a space between the variables, this is
+(such as \verb'x y') then we must put a space between the variables, this is
 so that we can gave a variable a name consisting of multiple characters.
-So 'xy' is a single variable but 'x y' is a two variables. All variables
-must start with a lower case letter. The combinators I,K and S do not
+So \verb'xy' is a single variable but \verb'x y' is two variables. All variables
+must start with a lower case letter. The combinators $I$, $K$, and $S$ do not
 need to be separated with a space since they always consist of 1
 character.
-
+\begin{verbatim}
 (9) -> n4 := parseSki("IKS")$UNTYP
 
    (9)  "IKS"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (10) -> n5 := parseSki("S(IK)")$UNTYP
 
    (10)  "S(IK)"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
 \section{redux}
 
@@ -1734,85 +2113,86 @@ Now that we have constructed our SKI combinator we can apply the
 combinators using the redux function. This allows us to apply the
 self-modifing binary tree.
 
-The first combinator to investigate is 'I'. This is a do nothing
+The first combinator to investigate is $I$. This is a do nothing
 combinator:
-
+\begin{verbatim}
 (11) -> s1 := parseSki("Ix")$UNTYP
 
    (11)  "I x"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (12) -> redux(s1)$UNTYP
 
 x
 
    (12)  "x"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
-The next combinator to investigate is 'K'. This removes the final
+The next combinator to investigate is $K$. This removes the final
 variable:
-
+\begin{verbatim}
 (13) -> s2 := parseSki("Kx y")$UNTYP
 
    (13)  "K x y"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (14) -> redux(s2)$UNTYP
 
 x
 
    (14)  "x"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
-The next combinator to investigate is 'S' This applies the first two
+The next combinator to investigate is $S$ This applies the first two
 functions to the third:
-
+\begin{verbatim}
 (15) -> s3 := parseSki("Sx y z")$UNTYP
 
    (15)  "S x y z"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (16) -> redux(s3)$UNTYP
 
 x z(y z)
 
    (16)  "x z(y z)"
-                                                       Type: Ski(Untyped)
-
+                                              Type: SKICombinators(Untyped)
+\end{verbatim}
 \section{Secondary Combinators}
 
-Any calculation can be done by some combination of K and S. However
+Any calculation can be done by some combination of $K$ and $S$. However
 some sequences occur frequently so it is worth assigning them special
 letters:
 
-Operator        What it does    SKI equivalent
-(normal form)
-I       Identity (leave unchanged)      I or SKK or SKS
-B       Function composition            S(KS)K
-B'      Reverse function composition
-C       Swap functions                  S(K(SI))K
-K       Form constant function          K
-S       Generalized composition         S
-W       Doubling or diagonalizing
+\begin{tabular}{lll}
+Operator&        What it does&    SKI equivalent (normal form)\\
+$I$ &      Identity (leave unchanged)  &     $I$ or $SKK$ or $SKS$\\
+$B$ &      Function composition        &    $S(KS)K$\\
+$B'$&      Reverse function composition&\\
+$C$ &      Swap functions              &    $S(K(SI))K$\\
+$K$ &      Form constant function      &    $K$\\
+$S$ &      Generalized composition     &    $S$\\
+$W$ &      Doubling or diagonalizing   &\\
+\end{tabular}
 
 So we can see in the 3 examples below :
 
-    In 17 that "SKKxy" is equivalent to "xy", that is SKK is identity,
+    In 17 that $SKKxy$ is equivalent to $xy$, that is $SKK$ is identity,
 equivalent to I
-    In 19 that "S(K(SI))Kxy" is equivalent to "yx", so "S(K(SI))K"
+    In 19 that $S(K(SI))Kxy$ is equivalent to $yx$, so "S(K(SI))K"
 reverses its operands.
-
+\begin{verbatim}
 (17) -> redux(parseSki("SKKx y")$UNTYP)$UNTYP
 
 K x(K x)y
 x y
 
    (17)  "x y"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (18) -> redux(parseSki("S(KS)x y")$UNTYP)$UNTYP
 
 KS y(x y)
 S(x y)
 
    (18)  "S(x y)"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (19) -> redux(parseSki("S(K(SI))Kx y")$UNTYP)$UNTYP
 
 K(SI)x(K x)y
@@ -1820,39 +2200,42 @@ Iy(Kx y)
 y x
 
    (19)  "y x"
-                                                       Type: Ski(Untyped)
-
+                                              Type: SKICombinators(Untyped)
+\end{verbatim}
 SKI combinators can be coerced to and from lambda-calculus and
 intuitionistic logic. For a tutorial about how to coerce to/from these
 algebras see this page.
 \section{To Do}
 
 These are issues to think about for longer term development of this domain.
-Issue 1
+\begin{itemize}
+\item Issue 1
 
 Currently this only works with variables, this means that:
-
+\begin{verbatim}
     redux applied to 'SKKx y' gives 'x y'
     but redux applied to 'SKK' does not give 'I'
+\end{verbatim}
 
 That is, I am looking for a way to 'lift' from working in terms operators
 acting on variables to working in terms of operators only.
-Issue 2
+\item Issue 2
 
 It would be good to be able to use these combinators to operate on
 Axiom/FriCAS functions.
-See also
+
+\item See also
 
 I also have Axiom/FriCAS coding for lambda-caculus, as explained on this
 page, where there is explanation and tutorial.
-
+\end{itemize}
 
 \section{domain SKICOMB SKICombinators}
 <<domain SKICOMB SKICombinators>>=
 )abbrev domain SKICOMB SKICombinators
 ++ Author: Martin Baker
 ++ Date Created: March 2011
-++ Date Last Updated: March 2011
+++ Date Last Updated: June 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Also See:
@@ -1868,7 +2251,7 @@ SKICombinators(UT): Exports == Implementation where
  PR ==> Record(rft:%,pout:NNI)
    ++ parse result includes term returned and new index
 
- Exports == with
+ Exports == CoercibleTo(OutputForm) with
   ski:(x:%,y:%) -> %
     ++ Constructs a node combinator over combinators
   ski:(t1:UT) -> %
@@ -1899,7 +2282,7 @@ SKICombinators(UT): Exports == Implementation where
     ++ returns true if this is a K combinator node
   isS?:(n: %) -> Boolean
     ++ returns true if this is a S combinator node
-  variable:(n: %) -> UT
+  getVariable:(n: %) -> UT
     ++ returns the variable, if this is not a
     ++ variable then return I
   freeVariable?:(n: %,s:UT) -> Boolean
@@ -1926,6 +2309,25 @@ SKICombinators(UT): Exports == Implementation where
          nd:Record(c1:%, c2:%),_
          vr:UT_
          )
+    ++ this allows us to represent a combinator expression
+    ++ as a tree structure where the nodes are one of:
+    ++ 
+    ++ 1) lf:NNI
+    ++     This node contains the combinator terms themselves currently
+    ++     coded as:
+    ++     I combinator = 1::NNI
+    ++     K combinator = 2::NNI
+    ++     S combinator = 3::NNI
+    ++     I may change this as some stage to use symbols instead
+    ++     of integer literals.
+    ++     
+    ++ 2) Record(c1:%, c2:%)
+    ++     This represents a branch in the tree.  Adjacent nodes
+    ++     represent function composition.
+    ++ 
+    ++ 3) UT
+    ++     this represents a variable (function)
+    ++ 
 
   -- Constructs a node combinator over another combinators
   ski(x:%,y:%): % == [[x,y]]
@@ -2070,9 +2472,9 @@ SKICombinators(UT): Exports == Implementation where
     if n.lf = 3 then return true
     false
 
-  -- returns the name of this variable, if this is not a
-  -- variable then return " "
-  variable(n: %):UT ==
+  -- introspection: returns the variable, if this is not a
+  -- variable node then return " "
+  getVariable(n: %):UT ==
     if n case vr then
       return n.vr
     var(" ")$UT
@@ -2184,39 +2586,45 @@ computational domains: Lambda, Ski and ILogic.
 
 Both Lambda are Ski are Turing complete and can be coerced to
 each other. Lambda and Ski are not equal and they are only
-equivalent upto beta-equivalence and beta-equivalence is
+equivalent up to beta-equivalence and beta-equivalence is
 undecidable so there is not a direct correspondance between
 the nodes in their trees. Also the names of bound variables
 and other such constructions may be lost in
-Lambda -> Ski -> Lambda round trip.
+\verb'Lambda -> Ski -> Lambda' round trip.
 
 An element of ILogic cannot be coerced to the other types.
 However ILogic can be used to produce a theory which can be
 concerted to/from the other domains using Curry-Howard
 isomorphism.
 \section{Tutorial}
+First make sure this package is exposed.
+
+(1) -> )expose COMPUTIL
+
+   compUtil is now explicitly exposed in frame frame1
 
 On this page we will be working with 'untyped' variables
 in lambda and SKI terms so we create instances called LU and
 SU to simplify notation:
-
+\begin{verbatim}
 (1) -> LU := Lambda Untyped
 
    (1)  Lambda(Untyped)
                                                                Type: Type
-(2) -> SU := Ski Untyped
+(2) -> SU := SKICombinators Untyped
 
    (2)  Ski(Untyped)
                                                                Type: Type
-
+\end{verbatim}
 \section{SKI combinators to lambda functions}
 
 We can then create SKI combinators and convert them to lambda functions.
 
     For a tutorial about working with SKI combinators see:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/}
+
     For a tutorial about working with lambda functions see:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/lambda/
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/lambda/}
 
 If the combinators don't have the required parameters then you
 will get a warning as follows. The code will attempt to add parameters
@@ -2225,7 +2633,7 @@ as required but this will not work in complicated situations.
 Ideally when working with 'abstract' combinatiors we need to add the
 required number of parameters, do the convertion then remove the
 parameters just added.
-
+\begin{verbatim}
 (3) -> I()$SU::LU
 
 util coerce rule SL1: Ski[I] = \v0.0
@@ -2234,28 +2642,30 @@ util coerce rule SL1: Ski[I] = \v0.0
                                                     Type: Lambda(Untyped)
 
 (4) -> K()$SU::LU
-
-util coerce rule SL2: Ski[K] = \v0.\v1.1
-
+\end{verbatim}
+util coerce rule \verb'SL2: Ski[K] = \v0.\v1.1'
+\begin{verbatim}
    (4)  "(\v0.(\v1.v1))"
                                                     Type: Lambda(Untyped)
 (5) -> S()$SU::LU
-
-util coerce rule SL3: Ski[S] = \v0.\v1.\v2.(2 0 (1 0))
-
+\end{verbatim}
+util coerce rule \verb'SL3: Ski[S] = \v0.\v1.\v2.(2 0 (1 0))'
+\begin{verbatim}
    (5)  "(\v0.(\v1.(\v2.(v2 (v0 (v1 v0))))))"
                                                     Type: Lambda(Untyped)
+\end{verbatim}
 
 In the following examples the combinators are provided with the required
 parameters. This conversion works by applying the following rules:
-
+\begin{verbatim}
     rule SL1: Ski[I] = \x.0
     rule SL2: Ski[K] = \x.\y.1
     rule SL3: Ski[S] = \x.\y.\z.(2 0 (1 0))
     rule SL4: Ski[(E1 E2)] = (Ski[E1] Ski[E2])
+\end{verbatim}
 
 So here are some examples:
-
+\begin{verbatim}
 parseSki("Ia")$SU::LU
 
 util coerce apply rule SL1 in:I a
@@ -2312,6 +2722,7 @@ util coerce rule SL1: Ski[I] = \v16.0
   5 (v6 v5)))))) (\v8.v8)))) (((\v9.(\v10.(\v11.(v11 (v9 (v10 v9)))))) ((\v12.(
   \v13.v13)) (\v14.(\v15.v15)))) (\v16.v16)))"
                                                     Type: Lambda(Untyped)
+\end{verbatim}
 
 \section{lambda functions to SKI combinators}
 
@@ -2320,25 +2731,26 @@ We can then create lambda functions and convert them to SKI combinators.
     For a tutorial about working with SKI combinators see this page.
     For a tutorial about working with lambda functions see this page.
 
-This process is known as abstraction elimination. it is done by
+This process is known as abstraction elimination. It is done by
 applying the following rules until all lambda terms have been
 eliminated.
-
+\begin{verbatim}
     rule LS1: Lam[x] => x
     rule LS2: Lam[(E1 E2)] => (Lam[E1] Lam[E2])
     rule LS3: Lam[\x.E] => (K Lam[E]) (if x does not occur free in E)
     rule LS4: Lam[\x.x] => I
     rule LS5: Lam[\x.\y.E] => Lam[\x.Lam[\y.E]] (if x occurs free in E)
     rule LS6: Lam[\x.(E1 E2)] => (S Lam[\x.E1] Lam[\x.E2])
+\end{verbatim}
 
 Here are some examples:
-
+\begin{verbatim}
 (11) -> parseLambda("x")$LU::SU
 
 util coerce rule LS1 applied to:x giving x
 
    (11)  "x"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (12) -> parseLambda("x y")$LU::SU
 
 util coerce rule LS2 applied to:(x y) giving (x y)
@@ -2346,20 +2758,20 @@ util coerce rule LS1 applied to:x giving x
 util coerce rule LS1 applied to:y giving y
 
    (12)  "x y"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (13) -> parseLambda("\x.1")$LU::SU
 
 util coerce rule LS3 applied to:(\x.1) giving K 1
 util coerce rule LS1 applied to:1 giving 1
 
    (13)  "K 1"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (14) -> parseLambda("\x.0")$LU::SU
 
 util coerce warning could not match any rule to:(\x.0)
 
    (14)  "I"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 (15) -> parseLambda("\x.\y.0 1")$LU::SU
 
 util coerce rule LS5 applied to:(\x.(\y.(0 1))) giving \x.(\y.(0 x))
@@ -2375,7 +2787,7 @@ util coerce rule LS3' applied to: \x.K giving K K
 util coerce rule LS4' applied to: \x.x giving I
 
    (15)  "S(K(SI))(S(KK)I)"
-                                                       Type: Ski(Untyped)
+                                              Type: SKICombinators(Untyped)
 
 \section{SKI combinators to Intuitionistic Logic}
 
@@ -2385,18 +2797,19 @@ logic.
     For a tutorial about working with SKI combinators see:
 http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/
     For a tutorial about working with intuitionistic logic see:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/intuitionistic/
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/intuitionistic/}
 
 
 This is known as the Curry-Howard isomorphism it uses the following rules:
-
+\begin{verbatim}
     rule SI1: Ski[Kab] => a -> (b -> a)
     rule SI2: Ski[Sabc] => (a -> (b -> c)) -> ((a -> b) -> (a -> c))
     rule SI3: Ski[a a->b] => b
+\end{verbatim}
 
 The last rule is function application (modus ponens). Here are some
 examples:
-
+\begin{verbatim}
 (16) -> parseSki("Ia")$SU::ILogic
 
 util coerce apply rule SI1 in:Ia
@@ -2423,6 +2836,7 @@ util coerce apply rule SI3 in:S a b c
 
    (19)  "((c->(b->a))->((c->b)->(c->a)))"
                                                              Type: ILogic
+\end{verbatim}
 
 \section{package COMPUTIL compUtil}
 <<package COMPUTIL compUtil>>=
@@ -2522,8 +2936,8 @@ compUtil(UT): Exports == Implementation where
         sayTeX$Lisp concat["util coerce rule SL3: Ski[S] = \",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"]
         varNum := varNum +3
         return parseLambda(concat["\",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"])$LU
-      sayTeX$Lisp ["util coerce pass unbound variable ",name(variable(s)$SU)$UT," unchanged"]
-      return lambda(variable(s)$SU)$LU
+      sayTeX$Lisp ["util coerce pass unbound variable ",name(getVariable(s)$SU)$UT," unchanged"]
+      return lambda(getVariable(s)$SU)$LU
     subnodes:List SU := children(s)$SU
     c1:SU := first subnodes
     c2:SU := second subnodes
@@ -2543,7 +2957,7 @@ compUtil(UT): Exports == Implementation where
     c12:SU := second subsubnodes
     --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)$SU," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
     if isK?(c11)$SU then
-      s12:String := name(variable(c12)$SU)$UT
+      s12:String := name(getVariable(c12)$SU)$UT
       sayTeX$Lisp concat(["util coerce apply rule SL2 in:",toString(s)$SU])$String
       return Ski2Lambda(c12)
     if atom?(c11)$SU then
@@ -2556,9 +2970,9 @@ compUtil(UT): Exports == Implementation where
     --sayTeX$Lisp concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
     -- look for K x y, if found translate x
     if isS?(c111)$SU then
-      s2:String := name(variable(c2)$SU)$UT
-      s12:String := name(variable(c12)$SU)$UT
-      s112:String := name(variable(c112)$SU)$UT
+      s2:String := name(getVariable(c2)$SU)$UT
+      s12:String := name(getVariable(c12)$SU)$UT
+      s112:String := name(getVariable(c112)$SU)$UT
       sayTeX$Lisp concat(["util coerce apply rule SL3 in:",toString(s)$SU])$String
       return lambda(lambda(Ski2Lambda(c112),Ski2Lambda(c2))$LU,lambda(Ski2Lambda(c12),Ski2Lambda(c2))$LU)$LU
     sayTeX$Lisp concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
@@ -2621,7 +3035,7 @@ compUtil(UT): Exports == Implementation where
     if isLambda?(lam)$LU then
       lamUn:LU := unbind(lam)$LU
       c3:LU := first children(lamUn)$LU
-      s3:UT := variable(lam)$LU
+      s3:UT := getVariable(lam)$LU
       if atom?(c3)$LU then
         if toString(c3)$LU="0" then
           sayTeX$Lisp concat(["util coerce rule LS4 applied to:",toString(lam)$LU," giving I"])$String
@@ -2631,7 +3045,7 @@ compUtil(UT): Exports == Implementation where
         return ski(K(),c3::SU)$SU
       if isLambda?(c3)$LU then
         c33:LU := first children(c3)$LU
-        cxx:LU := lambda(c33,variable(c3)$LU)$LU
+        cxx:LU := lambda(c33,getVariable(c3)$LU)$LU
         sayTeX$Lisp concat(["util coerce rule LS5 applied to:",toString(lam)$LU," giving \",toString(s3)$UT,".",toString(cxx)])$String
         return lambdaOverSki(s3,cxx::SU)
       if isCompound?(c3) then
@@ -2683,7 +3097,7 @@ compUtil(UT): Exports == Implementation where
         ac :ILogic  := implies(a,c)
         bc :ILogic  := implies(b,c)
         return implies(implies(a,bc),implies(ab,ac))
-      return proposition(name(variable(s)$SU)$UT)
+      return proposition(name(getVariable(s)$SU)$UT)
     subnodes:List SU := children(s)$SU
     c1:SU := first subnodes
     c2:SU := second subnodes
@@ -2722,6 +3136,365 @@ compUtil(UT): Exports == Implementation where
       return implies(implies(a,bc),implies(ab,ac))
     _\_/(c1::ILogic,c2::ILogic)
 
+@
+
+\section{Code Generation Package}
+For more information about this package see:
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/computation/codeGen/}
+
+Maps abstract computational structures to real-world FriCAS code.
+
+compCode is a package in the computation framework that allows FriCAS
+source code to be created from the abstract structures in the framework.
+This is done by the following functions:
+
+\section{writePackage}
+
+'writePackage' creates source code for a FriCAS package from a list of
+lambda structures over typed variables. This is reasonably easy to do
+since functions in a FriCAS package have a similar structure to lambda
+functions.
+
+Parameters are:
+\begin{itemize}
+  \item list of lambda structures
+  \item filename
+  \item short name
+  \item long name
+  \item category name
+\end{itemize}
+
+\section{writeCategory}
+
+'writeCategory' creates source code for a FriCAS package from a list of
+ILogic structures. This relies on the Curry-Howard isomorphism between
+intuitionistic logic and types in a computation.
+
+Parameters are:
+\begin{itemize}
+  \item list of intuitionistic logic structures
+  \item filename
+  \item short name
+  \item long name
+\end{itemize}
+
+Example
+
+In intuitionistic logic if we know 'a' and we know 'a->b' then we can
+deduce b (by modus ponens) that is:
+
+\begin{verbatim}
+(a /\ (a -> b) ) -> b
+\end{verbatim}
+
+Curry-Howard isomorphism relates this intuitionistic logic to types
+in a computation so given types 'a' and 'a->b' then we can create
+any of these function types without using additional information
+(other functions or constants):
+
+\begin{verbatim}
+    func1:(a,a->b) -> a
+    func2:(a,a->b) -> (a->b)
+    func3:(a,a->b) -> b
+\end{verbatim}
+
+func3 is more interesting since func1 and func2 can be created by
+passing on one of its parameters and throwing away the other.
+
+So how can we implement this? From the original (a /\ (a -> b) )
+we need to expand out to (a /\ (a -> b) /\ b) containing all factors.
+
+By the Curry-Howard isomorphism we can coerce to the
+intuitionisticLogic from Lambda. This gives an isomorphism where
+theorems in intuitionistic logic correspond to type signatures in
+combinatory logic and programs in intuitionistic logic correspond
+to the proofs of those theorems in combinatory logic.
+
+As an example of this in Haskell see "Djinn, a theorem prover in
+Haskell" [2]
+
+see also: Philip Wadler - Theorems for free! [1]
+\section{Code Generation Package - Tutorial}
+First we may need to expose the reqired code such as ILOGIC and COMPCODE
+\begin{verbatim}
+(1) -> )expose COMPCODE
+(1) -> )expose ILOGIC
+\end{verbatim}
+We can generate the source code for a FriCAS package from lambda
+expressions. To start we will create some typed variables and lambda
+terms to work with:
+\begin{verbatim}
+(1) -> vx := var("x",varTyp("String"))$Typed
+
+   (1)  "x:String"
+                                                              Type: Typed
+(2) -> vy := var("y",varTyp("String"))$Typed
+
+   (2)  "y:String"
+                                                              Type: Typed
+(3) -> nx := lambda(vx)
+
+   (3)  "x"
+                                                      Type: Lambda(Typed)
+(4) -> ny := lambda(vy)
+
+   (4)  "y"
+                                                      Type: Lambda(Typed)
+\end{verbatim}
+Now we create some lambda expressions to be convered to source code:
+\begin{verbatim}
+(5) -> pacEx1:Lambda Typed := lambda(nx,vx)$Lambda Typed
+
+   (5)  "(\x.x)"
+                                                      Type: Lambda(Typed)
+(6) -> pacEx2:Lambda Typed := lambda(pacEx1,vy)$Lambda Typed
+
+   (6)  "(\y.(\x.y))"
+                                                      Type: Lambda(Typed)
+(7) -> pacEx3:Lambda Typed := lambda(lambda(nx,ny),vy)$Lambda Typed
+
+   (7)  "(\y.(x y))"
+                                                      Type: Lambda(Typed)
+\end{verbatim}
+Now we generate the source code using the writePackage function where:
+\begin{itemize}
+  \item testComp1.spad is the filename
+  \item TESTCCP is the short name
+  \item TestCCP is the long name
+  \item Type is the category name
+\end{itemize}
+\begin{verbatim}
+(8) -> writePackage([pacEx1,pacEx2,pacEx3],"testComp1.spad","TESTCCP","TestCCP","Type")
+                                                               Type: Void
+\end{verbatim}
+When we look at the testComp1.spad file we can see the code that has
+been generated:
+\begin{verbatim}
+)abbrev package TESTCCP TestCCP
+
+TestCCP(): Exports == Implementation where
+
+ Exports ==> Type with
+
+ Implementation ==> add
+
+  fn1(x:String):String == x
+  fn2(y:String):String ==  x+->(y)
+  fn3(y:String):String ==  x(y)
+
+@
+\end{verbatim}
+This code may have to be tweeked by hand before it can be used.
+
+Now we can move on to generate the source code for a FriCAS category
+from intuitionistic logic expressions. To start we will create some
+intuitionistic logic terms as examples:
+\begin{verbatim}
+(9) -> catEx1:ILogic := implies(proposition("a"),proposition("b"))/\proposition("a")
+
+   (9)  "((a->b)/\a)"
+                                                             Type: ILogic
+(10) -> catEx2:ILogic := proposition("a")/\proposition("b")
+
+   (10)  "(a/\b)"
+                                                                 Type: ILogic
+\end{verbatim}
+Now we generate the source code using the writeCategory function where:
+\begin{itemize}
+  \item testComp2.spad is the filename
+  \item TESTCC is the short name
+  \item TestCC is the long name
+\end{itemize}
+\begin{verbatim}
+(11) -> writeCategory([catEx1,catEx2],"testComp2.spad","TESTCC","TestCC")
+
+                                                                   Type: Void
+\end{verbatim}
+When we look at the testComp2.spad file we can see the code that has
+been generated:
+\begin{verbatim}
+)abbrev category TESTCC TestCC
+
+TestCC() : Category == Type with
+
+
+  fn1:(a->b,a) -> b
+  fn2:(a,b) -> a
+
+@
+\end{verbatim}
+In fn1 type 'b' was generated from 'a->b' and 'a' (by modus ponens). If
+two or more deductions were made then only the first would be used.
+In fn2 no additional deductions could be made, in this case the first
+parameter is used as the deduction.
+\section{package COMPCODE compCode}
+<<package COMPCODE compCode>>=
+)abbrev package COMPCODE compCode
+++ Author: Martin Baker
+++ Date Created: June 2011
+++ Date Last Updated: June 2011
+++ Basic Operations:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/codeGen/
+++ Description:
+++ Maps abstract computational structures to real-world FriCAS code
+++
+++ This allows FriCAS domains to be created from an instance of
+++ Lambda it also allows FriCAS categories to be created from an
+++ instance of intuitionisticLogic.
+++ 
+++ So by the Curry-Howard isomorphism we can coerce to the
+++ intuitionisticLogic from Lambda. This gives an isomorphism where
+++ theorems in intuitionistic logic correspond to type signatures in
+++ combinatory logic and programs in intuitionistic logic correspond
+++ to the proofs of those theorems in combinatory logic.
+++ 
+++ As an example of this in Haskell
+++ see "Djinn, a theorem prover in Haskell, for Haskell" here:
+++ http://lambda-the-ultimate.org/node/1178
+++ http://www.augustsson.net/Darcs/Djinn/
+++
+++ see also: Philip Wadler - Theorems for free!
+++ http://homepages.inf.ed.ac.uk/wadler/topics/parametricity.html
+
+compCode(): Exports == Implementation where
+
+ NNI==> NonNegativeInteger
+ LC ==> Lambda Typed
+
+ Exports ==> with
+  writeCategory:(content: List ILogic,filename:String,shortName:String,longName:String) -> Void
+    ++ writes a category to a file.
+  writePackage:(content: List LC,_
+                filename:String,_
+                shortName:String,_
+                longName:String,_
+                catName:String) -> Void
+    ++ writes a package to a file.
+
+ Implementation ==> add
+
+  -- used by writeCategory to generate the start of the file
+  genCatHeader(shortName:String,longName:String):List String ==
+    [concat([")abbrev category ",shortName," ",longName]),_
+     "",_
+     concat([longName,"() : Category == Type with"]),_
+     "",_
+     ""]
+
+  -- used by writeCategory to generate the function declarations
+  genFuncDeclar(content: ILogic,numb:NNI):List String ==
+    fac: List ILogic := factor(content)
+    if empty?(fac) then return [concat(["  -- error",_
+             toString(content)])]
+    deduct: List ILogic := deductions(fac)
+    if empty?(deduct) then deduct:=fac
+    resType: ILogic := first deduct
+    resStr: String := concat(["  fn",string(numb),":("])
+    notfst:Boolean := false()
+    for thisTerm in fac repeat
+      if notfst then resStr := concat(resStr,",")
+      resStr := concat(resStr,toStringUnwrapped(thisTerm))
+      notfst := true()
+    resStr := concat([resStr,") -> ",toStringUnwrapped(resType)])
+    [resStr]
+
+  -- used by writeCategory to generate the end of the file
+  genCatFooter():List String ==
+    ["","@"]
+
+  -- used by writePackage to generate the start of the file
+  genPackageHeader(shortName:String,longName:String,catName:String):List String ==
+    [concat([")abbrev package ",shortName," ",longName]),_
+     "",_
+     concat([longName,"(): Exports == Implementation where"]),_
+     "",_
+     concat([" Exports ==> ",catName," with"]),_
+     "",_
+     " Implementation ==> add",_
+     ""]
+
+  -- return string representation using conventional notation, that is
+  -- deBruijn index is replaced by name using String value for bound variables.
+  -- notation assumes association to the left, in the absence of
+  -- brackets, the term to the left binds more tightly than the
+  -- one on the right.
+  genLambdaTerm(n:LC,boundL: List String):String ==
+    s:String := ""
+    --sayTeX$Lisp concat(["genLambdaTerm(",toString(n),")"])
+    if isBoundNode?(n) then
+      i:NNI := getBoundValue(n) + 1
+      if i > 0 and i <= #boundL then return boundL.i
+      s := string(i-1)
+    if isFreeNode?(n) then
+      s := name(getVariable(n))$Typed
+    if isCompound?(n) then
+      ch := children(n)
+      s := concat([" ",genLambdaTerm(first ch,boundL),"(",genLambdaTerm(second ch,boundL),")"])
+    if isLambda?(n) then
+      -- nested lambda term so use +->
+      varName:String := name(getVariable(n))$Typed
+      while member?(varName,boundL) repeat
+        varName := concat(varName,"'")
+      boundL2: List String := concat(boundL,varName)
+      ch := children(n)
+      s := concat([" ",varName,"+->(",genLambdaTerm(first ch,boundL2),")"])
+    s
+
+  -- used by writePackage to generate the function definitions
+  genFuncDefn(content: LC,numb:NNI):List String ==
+    sl := [""]
+    if isLambda?(content) then
+      var := getVariable(content)
+      lhs:String := toString(var)
+      lhsn:String := name(var)
+      lhst:String := name(type(var))
+      return [concat(["  fn",string(numb),"(",lhs,"):",lhst," == ",_
+        genLambdaTerm(first children(content),[lhsn])_
+        ])$String]
+    sl
+
+  -- used by writePackage to generate the end of the file
+  genPackageFooter():List String ==
+    ["","@"]
+
+  -- writes a category to a file.
+  writeCategory(content: List ILogic,_
+                filename:String,_
+                shortName:String,_
+                longName:String):Void ==
+    f1:TextFile:=open(filename::FileName,"output")
+    lines := genCatHeader(shortName,longName)
+    fnNum:NNI := 1::NNI
+    for thisEq in content repeat
+      lines := concat(lines,genFuncDeclar(thisEq,fnNum))
+      fnNum := fnNum + 1
+    lines := concat(lines,genCatFooter())
+    for line in lines repeat
+      writeLine!(f1,line)
+    close! f1
+
+  -- writes a domain to a file.
+  writePackage(content: List LC,_
+                filename:String,_
+                shortName:String,_
+                longName:String,_
+                catName:String):Void ==
+    f1:TextFile:=open(filename::FileName,"output")
+    lines := genPackageHeader(shortName,longName,catName)
+    fnNum:NNI := 1::NNI
+    for thisEq in content repeat
+      --sayTeX$Lisp concat(["writePackage(",toString(thisEq),")"])
+      lines := concat(lines,genFuncDefn(thisEq,fnNum))
+      fnNum := fnNum + 1
+    lines := concat(lines,genPackageFooter())
+    for line in lines repeat
+      writeLine!(f1,line)
+    close! f1
 @
 
 \section{License}
@@ -2763,14 +3536,24 @@ compUtil(UT): Exports == Implementation where
 \eject
 \begin{thebibliography}{99}
 For more details see:
-http://www.euclideanspace.com/maths/standards/program/mycode/computation/
-Tutorial for lambda calculus:
+[1] Philip Wadler 1989 - Theorems for free!
+http://homepages.inf.ed.ac.uk/wadler/topics/parametricity.html
+[2] "Djinn, a theorem prover in Haskell, for Haskell" here:
+http://lambda-the-ultimate.org/node/1178
+http://www.augustsson.net/Darcs/Djinn/
+[3] Roy Dyckhoff 1992 - Contraction-free sequent calculi for intuitionistic logic
+http://www.philfree.org/IMG/pdf/dyckhoff-ljt.pdf
+[4] http://www.euclideanspace.com/maths/standards/program/mycode/computation/
+[5] Tutorial for lambda calculus:
 http://www.euclideanspace.com/maths/standards/program/mycode/computation/lambda/
-Tutorial for SKI calculus:
+[6] Tutorial for SKI calculus:
 http://www.euclideanspace.com/maths/standards/program/mycode/computation/ski/
-Tutorial for Intuitionistic Logic
+[7] Tutorial for Intuitionistic Logic
 http://www.euclideanspace.com/maths/standards/program/mycode/computation/intuitionistic/
-Tutorial for utilities to coerce between computation domains
+[8] Tutorial for utilities to coerce between computation domains
 http://www.euclideanspace.com/maths/standards/program/mycode/computation/utility/
+[9] Tutorial for FriCAS source code generation
+http://www.euclideanspace.com/maths/standards/program/mycode/computation/codeGen/
+
 \end{thebibliography}
 \end{document}
