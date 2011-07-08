@@ -108,6 +108,7 @@ a lot of things cleaner.
 
 <<category HOAGG HomogeneousAggregate>>=
 HomogeneousAggregate(S:Type): Category == Aggregate with
+   if S has CoercibleTo(OutputForm) then CoercibleTo(OutputForm)
    if S has SetCategory then SetCategory
    if S has SetCategory then
       if S has Evalable S then Evalable S
@@ -2093,16 +2094,17 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       copyInto_!(z, y, i + #x)
       z
 
+    if S has CoercibleTo(OutputForm) then
+        coerce(r:%):OutputForm ==
+            bracket commaSeparate(
+              [qelt(r, k)::OutputForm for k in minIndex r .. maxIndex r])
+
     if S has SetCategory then
       x = y ==
         #x ~= #y => false
         for i in minIndex x .. maxIndex x repeat
           not(qelt(x, i) = qelt(y, i)) => return false
         true
-
-      coerce(r:%):OutputForm ==
-        bracket commaSeparate
-              [qelt(r, k)::OutputForm for k in minIndex r .. maxIndex r]
 
       position(x:S, t:%, s:Integer) ==
         n := maxIndex t
