@@ -483,8 +483,12 @@ InvestigateConditions catvecListMaker ==
                   mkOr(cond2,old)
               old
         list2
-  list:= [[sec,:ICformat u] for u in list for sec in secondaries]
+  list:= ICformat_loop(list, secondaries)
   [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
+
+ICformat_loop(list, secondaries) ==
+  $ICformat_hash : local := MAKE_-HASHTABLE 'EQUAL
+  [[sec,:ICformat u] for u in list for sec in secondaries]
 
 ORreduce l ==
     for u in l | u is ['AND, :.] or u is ['and, :.] repeat
@@ -499,7 +503,11 @@ ORreduce l ==
 
 ICformat u ==
       atom u => u
-      u is ['has,:.] => compHasFormat u
+      u is ['has,:.] =>
+          (res := HGET($ICformat_hash, u)) => res
+          res := compHasFormat u
+          HPUT($ICformat_hash, u, res)
+          res
       u is ['AND,:l] or u is ['and,:l] =>
         l:= REMDUP [ICformat v for [v,:l'] in tails l | not member(v,l')]
              -- we could have duplicates after, even if not before
