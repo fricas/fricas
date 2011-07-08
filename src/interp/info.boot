@@ -150,14 +150,25 @@ infoToHas a ==
   a is ["ATTRIBUTE",b,c] => BREAK()
   a
 
+DEFPARAMETER($cycleMarker, GENSYM())
+
+hashed_known_info(pred) ==
+    $infoHash : local := MAKE_-HASHTABLE 'EQUAL
+    knownInfo pred
+
 knownInfo pred ==
                --true %if the information is already known
   pred=true => true
   --pred = "true" => true
   member(pred,get("$Information","special",$e)) => true
-  $infoHash and (ress := HGET($infoHash, pred)) => ress
+  not($infoHash) => hashed_known_info(pred)
+  ress := HGET($infoHash, pred) =>
+      ress = $cycleMarker => ress
+      ress
+  -- avoid cycles
+  HPUT($infoHash, pred, $cycleMarker)
   ress := knownInfo1 pred
-  if $infoHash then HPUT($infoHash, pred, ress)
+  HPUT($infoHash, pred, ress)
   ress
 
 knownInfo1 pred ==
