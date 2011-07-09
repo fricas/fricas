@@ -195,7 +195,7 @@ BasicType(): Category == with
 ++
 ++ Axiom:
 ++   \spad{ r*(x*s) = (r*x)*s }
-BiModule(R:Ring,S:Ring):Category ==
+BiModule(R : SemiRng, S : SemiRng) : Category ==
   Join(LeftModule(R), RightModule(S))
 
 @
@@ -1021,8 +1021,10 @@ IntegralDomain(): Category ==
 ++   \spad{ (a*b)*x = a*(b*x) }
 ++   \spad{ (a+b)*x = (a*x)+(b*x) }
 ++   \spad{ a*(x+y) = (a*x)+(a*y) }
-LeftModule(R:Rng):Category == AbelianGroup with
-    --operations
+LeftModule(R : SemiRng) : Category == AbelianSemiGroup with
+      if R has AbelianMonoid then AbelianMonoid
+      if R has AbelianGroup then AbelianGroup
+      --operations
       "*": (R,%) -> %     ++ r*x returns the left multiplication of the module element x
                           ++ by the ring element r.
 
@@ -1619,8 +1621,10 @@ PrincipalIdealDomain(): Category == GcdDomain with
 ++   \spad{ x*(a*b) = (x*a)*b }
 ++   \spad{ x*(a+b) = (x*a)+(x*b) }
 ++   \spad{ (x+y)*x = (x*a)+(y*a) }
-RightModule(R:Rng):Category == AbelianGroup with
-    --operations
+RightModule(R : SemiRng) : Category == AbelianSemiGroup with
+      if R has AbelianMonoid then AbelianMonoid
+      if R has AbelianGroup then AbelianGroup
+      --operations
       "*": (%,R) -> %  ++ x*r returns the right multiplication of the module element x
                        ++ by the ring element r.
 
@@ -1666,7 +1670,7 @@ Ring(): Category == Join(Rng,SemiRing,LeftModule(%), unitsKnown) with
 ++ The category of associative semirings, not necessarily commutative, and not
 ++ necessarily with a 1.
 
-SemiRng(): Category == Join(AbelianSemiGroup, SemiGroup)
+SemiRng() : Category == Join(AbelianSemiGroup, SemiGroup)
 
 @
 
@@ -1676,9 +1680,9 @@ SemiRng(): Category == Join(AbelianSemiGroup, SemiGroup)
 ++ Author: Waldek Hebisch
 ++ Description:
 ++ The category of associative semirings, not necessarily commutative,
-++ with a 1.
+++ with 0 and 1.
 
-SemiRing(): Category == Join(SemiRng, Monoid)
+SemiRing() : Category == Join(SemiRng, AbelianMonoid, Monoid)
 
 @
 

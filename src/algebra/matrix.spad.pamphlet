@@ -33,7 +33,7 @@
 ++   the first element of a 'Row' is the same as the index of the
 ++   first column in a matrix and vice versa.
 IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
-  R : Ring
+  R : Join(SemiRng, AbelianMonoid)
   mnRow, mnCol : Integer
   Row ==> IndexedVector(R,mnCol)
   Col ==> IndexedVector(R,mnRow)
@@ -94,7 +94,7 @@ IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
 ++   \spadtype{Matrix} is a matrix domain where 1-based indexing is used
 ++   for both rows and columns.
 Matrix(R): Exports == Implementation where
-  R : Ring
+  R : Join(SemiRng, AbelianMonoid)
   Row ==> Vector R
   Col ==> Vector R
   mnRow ==> 1
@@ -158,26 +158,6 @@ Matrix(R): Exports == Implementation where
         qsetelt_!(xx,n2,row1)
         xx pretend %
 
-    positivePower:(%,Integer,NonNegativeInteger) -> %
-    positivePower(x,n,nn) ==
---      one? n => x
-      (n = 1) => x
-      -- no need to allocate space for 3 additional matrices
-      n = 2 => x * x
-      n = 3 => x * x * x
-      n = 4 => (y := x * x; y * y)
-      a := new(nn,nn,0) pretend Matrix(R)
-      b := new(nn,nn,0) pretend Matrix(R)
-      c := new(nn,nn,0) pretend Matrix(R)
-      xx := x pretend Matrix(R)
-      power_!(a,b,c,xx,n :: NonNegativeInteger)$MATSTOR pretend %
-
-    x:% ^ n:NonNegativeInteger ==
-      not((nn := nrows x) = ncols x) =>
-        error "^: matrix must be square"
-      zero? n => scalarMatrix(nn,1)
-      positivePower(x,n,nn)
-
     if R has CommutativeRing then
 
         determinant x == determinant(x)$MATLIN
@@ -196,16 +176,6 @@ Matrix(R): Exports == Implementation where
     if R has Field then
 
         inverse     x == inverse(x)$MATLIN
-
-        x:% ^ n:Integer ==
-          nn := nrows x
-          not(nn = ncols x) =>
-            error "^: matrix must be square"
-          zero? n => scalarMatrix(nn,1)
-          positive? n => positivePower(x,n,nn)
-          (xInv := inverse x) case "failed" =>
-            error "^: matrix must be invertible"
-          positivePower(xInv :: %,-n,nn)
 
 --     matrix(v: Vector Vector R) ==
 --       (rows := # v) = 0 => new(0,0,0)
@@ -278,7 +248,7 @@ Matrix(R): Exports == Implementation where
 ++   and the number of columns are parameters of the domain.
 RectangularMatrix(m,n,R): Exports == Implementation where
   m,n : NonNegativeInteger
-  R   : Ring
+  R   : Join(SemiRng, AbelianMonoid)
   Row ==> DirectProduct(n,R)
   Col ==> DirectProduct(m,R)
   Exports ==> Join(RectangularMatrixCategory(m,n,R,Row,Col),_
@@ -371,7 +341,7 @@ RectangularMatrix(m,n,R): Exports == Implementation where
 ++   number of rows (= number of columns) is a parameter of the type.
 SquareMatrix(ndim,R): Exports == Implementation where
   ndim : NonNegativeInteger
-  R    : Ring
+  R    : Join(SemiRng, AbelianMonoid)
   Row ==> DirectProduct(ndim,R)
   Col ==> DirectProduct(ndim,R)
   MATLIN ==> MatrixLinearAlgebraFunctions(R,Row,Col,%)
@@ -409,10 +379,15 @@ SquareMatrix(ndim,R): Exports == Implementation where
 
     ZERO := scalarMatrix 0
     0    == ZERO
-    ONE  := scalarMatrix 1
-    1    == ONE
 
-    characteristic() == characteristic()$R
+    if R has Monoid then
+
+        ONE  := scalarMatrix 1
+        1    == ONE
+
+    if R has Ring then
+
+        characteristic() == characteristic()$R
 
     matrix(l: List List R) ==
       -- error check: this is a top level function
@@ -448,9 +423,6 @@ SquareMatrix(ndim,R): Exports == Implementation where
 
     v:Row * x:% ==
       directProduct((v :: Vector(R)) * (x pretend Matrix(R)))
-
-    x:% ^ n:NonNegativeInteger ==
-      ((x pretend Matrix(R)) ^ n) pretend %
 
     if R has CommutativeRing then
 
