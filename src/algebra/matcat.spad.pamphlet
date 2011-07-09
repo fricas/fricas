@@ -87,7 +87,7 @@ testsuite "MATCAT"
 ++   the first element of a Row is the same as the index of the
 ++   first column in a matrix and vice versa.
 MatrixCategory(R,Row,Col): Category == Definition where
-  R   : Ring
+  R   : Join(SemiRng, AbelianMonoid)
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
 
@@ -107,10 +107,11 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ++ \spad{symmetric?(m)} returns true if the matrix m is square and
        ++ symmetric (i.e. \spad{m[i,j] = m[j,i]} for all i and j) and false
        ++ otherwise.
-     antisymmetric?: % -> Boolean
-       ++ \spad{antisymmetric?(m)} returns true if the matrix m is square and
-       ++ antisymmetric (i.e. \spad{m[i,j] = -m[j,i]} for all i and j) and false
-       ++ otherwise.
+     if R has AbelianGroup then
+         antisymmetric? : % -> Boolean
+           ++ \spad{antisymmetric?(m)} returns true if the matrix m is
+           ++ square and antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for
+           ++ all i and j) and false otherwise.
 
 --% Creation
 
@@ -195,11 +196,14 @@ MatrixCategory(R,Row,Col): Category == Definition where
      "+": (%,%) -> %
        ++ \spad{x + y} is the sum of the matrices x and y.
        ++ Error: if the dimensions are incompatible.
-     "-": (%,%) -> %
-       ++ \spad{x - y} is the difference of the matrices x and y.
-       ++ Error: if the dimensions are incompatible.
-     "-":  %    -> %
-       ++ \spad{-x} returns the negative of the matrix x.
+     if R has AbelianGroup then
+         "-" : (%,%) -> %
+           ++ \spad{x - y} is the difference of the matrices x and y.
+           ++ Error: if the dimensions are incompatible.
+         "-" :  %    -> %
+           ++ \spad{-x} returns the negative of the matrix x.
+         "*" : (Integer, %) -> %
+           ++ \spad{n * x} is an integer multiple.
      "*": (%,%) -> %
        ++ \spad{x * y} is the product of the matrices x and y.
        ++ Error: if the dimensions are incompatible.
@@ -209,17 +213,20 @@ MatrixCategory(R,Row,Col): Category == Definition where
      "*": (%,R) -> %
        ++ \spad{x * r} is the right scalar multiple of the scalar r and the
        ++ matrix x.
-     "*": (Integer,%) -> %
-       ++ \spad{n * x} is an integer multiple.
      "*": (%,Col) -> Col
        ++ \spad{x * c} is the product of the matrix x and the column vector c.
        ++ Error: if the dimensions are incompatible.
      "*": (Row,%) -> Row
        ++ \spad{r * x} is the product of the row vector r and the matrix x.
        ++ Error: if the dimensions are incompatible.
-     "^": (%,NonNegativeInteger) -> %
-       ++ \spad{x ^ n} computes a non-negative integral power of the matrix x.
-       ++ Error: if the matrix is not square.
+     -- "^" : (%, PositveInteger) -> %
+     positivePower : (%, Integer) -> %
+       ++ \spad{positivePower(x, n)} computes a positive integral power of the
+       ++ matrix x.  Error: if the matrix is not square.
+     if R has Monoid then
+         "^": (%, NonNegativeInteger) -> %
+           ++ \spad{x ^ n} computes a non-negative integral power of the
+           ++ matrix x.  Error: if the matrix is not square.
      if R has IntegralDomain then
        "exquo": (%,R) -> Union(%,"failed")
          ++ \spad{exquo(m,r)} computes the exact quotient of the elements
@@ -292,14 +299,15 @@ MatrixCategory(R,Row,Col): Category == Definition where
            qelt(x,mr + i,mc + j) ~= qelt(x,mr + j,mc + i) => return false
        true
 
-     antisymmetric? x ==
-       (nRows := nrows x) ~= ncols x => false
-       mr := minRowIndex x; mc := minColIndex x
-       for i in 0..(nRows - 1) repeat
-         for j in i..(nRows - 1) repeat
-           qelt(x,mr + i,mc + j) ~= -qelt(x,mr + j,mc + i) =>
-             return false
-       true
+     if R has AbelianGroup then
+         antisymmetric? x ==
+             (nRows := nrows x) ~= ncols x => false
+             mr := minRowIndex x; mc := minColIndex x
+             for i in 0..(nRows - 1) repeat
+                 for j in i..(nRows - 1) repeat
+                     qelt(x, mr + i, mc + j) ~= -qelt(x, mr + j, mc + i) =>
+                         return false
+             true
 
 --% Creation of matrices
 
@@ -497,20 +505,21 @@ MatrixCategory(R,Row,Col): Category == Definition where
            qsetelt_!(ans,i,j,qelt(x,i,j) + qelt(y,i,j))
        ans
 
-     x - y ==
-       ((r := nrows x) ~= nrows y) or ((c := ncols x) ~= ncols y) =>
-         error "can't subtract matrices of different dimensions"
-       ans := new(r,c,0)
-       for i in minr(x)..maxr(x) repeat
-         for j in minc(x)..maxc(x) repeat
-           qsetelt_!(ans,i,j,qelt(x,i,j) - qelt(y,i,j))
-       ans
+     if R has AbelianGroup then
+         x - y ==
+             ((r := nrows x) ~= nrows y) or ((c := ncols x) ~= ncols y) =>
+                 error "can't subtract matrices of different dimensions"
+             ans := new(r, c, 0)
+             for i in minr(x)..maxr(x) repeat
+                 for j in minc(x)..maxc(x) repeat
+                     qsetelt_!(ans, i, j, qelt(x, i, j) - qelt(y, i, j))
+             ans
 
-     - x == map((r1: R): R +-> - r1, x)
+         - x == map((r1 : R) : R +-> - r1, x)
+         m:Integer * x:% == map((r1 : R) : R +-> m * r1, x)
 
      a:R * x:% == map((r1: R): R +-> a * r1,x)
      x:% * a:R == map((r1: R): R +-> r1 * a,x)
-     m:Integer * x:% == map((r1: R): R +-> m * r1,x)
 
      x:% * y:% ==
        (ncols x ~= nrows y) =>
@@ -526,7 +535,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
            qsetelt_!(ans,i,j,entry)
        ans
 
-     positivePower:(%,Integer) -> %
+     -- positivePower:(%,Integer) -> %
      positivePower(x,n) ==
 --       one? n => x
        (n = 1) => x
@@ -534,10 +543,11 @@ MatrixCategory(R,Row,Col): Category == Definition where
        y := positivePower(x,n quo 2)
        y * y
 
-     x:% ^ n:NonNegativeInteger ==
-       not((nn:= nrows x) = ncols x) => error "^: matrix must be square"
-       zero? n => scalarMatrix(nn,1)
-       positivePower(x,n)
+     if R has Monoid then
+         x:% ^ n:NonNegativeInteger ==
+             not((nn := nrows x) = ncols x) => error "^: matrix must be square"
+             zero? n => scalarMatrix(nn, 1)
+             positivePower(x, n)
 
      --if R has ConvertibleTo InputForm then
        --convert(x:%):InputForm ==
@@ -773,7 +783,7 @@ testLibraryError "Pfaffian [[1,2,3],[0,0,0]]"
 ++   non-mutable.
 RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
   m,n : NonNegativeInteger
-  R   : Ring
+  R   : Join(SemiRng, AbelianMonoid)
   Row : DirectProductCategory(n,R)
   Col : DirectProductCategory(m,R)
 
@@ -803,6 +813,12 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
       ++ \spad{symmetric?(m)} returns true if the matrix m is square and
       ++ symmetric (i.e. \spad{m[i,j] = m[j,i]} for all \spad{i} and j) and
       ++ false otherwise.
+    if R has AbelianGroup then
+        antisymmetric? : % -> Boolean
+          ++ \spad{antisymmetric?(m)} returns true if the matrix m is
+          ++ square and antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for
+          ++ all i and j) and false otherwise.
+
     antisymmetric?: % -> Boolean
       ++ \spad{antisymmetric?(m)} returns true if the matrix m is square and
       ++ antisymmetric (i.e. \spad{m[i,j] = -m[j,i]} for all \spad{i} and j)
@@ -941,16 +957,18 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
            qelt(x,mr + i,mc + j) ~= qelt(x,mr + j,mc + i) => return false
        true
 
-     antisymmetric? x ==
-       m ~= n => false
-       mr := minRowIndex x; mc := minColIndex x
-       for i in 0..(n - 1) repeat
-         for j in i..(n - 1) repeat
-           qelt(x,mr + i,mc + j) ~= -qelt(x,mr + j,mc + i) =>
-             return false
-       true
+     if R has AbelianGroup then
+         antisymmetric? x ==
+             (nRows := nrows x) ~= ncols x => false
+             mr := minRowIndex x; mc := minColIndex x
+             for i in 0..(nRows - 1) repeat
+                 for j in i..(nRows - 1) repeat
+                     qelt(x, mr + i, mc + j) ~= -qelt(x, mr + j, mc + i) =>
+                         return false
+             true
 
 @
+
 \section{category SMATCAT SquareMatrixCategory}
 <<category SMATCAT SquareMatrixCategory>>=
 )abbrev category SMATCAT SquareMatrixCategory
@@ -971,15 +989,18 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
 ++   type Row and colums returned as objects of type Col.
 SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
   ndim : NonNegativeInteger
-  R    : Ring
+  R    : Join(SemiRng, AbelianMonoid)
   Row  : DirectProductCategory(ndim,R)
   Col  : DirectProductCategory(ndim,R)
   I ==> Integer
 
-  Definition ==> Join(DifferentialExtension R, BiModule(R, R),_
+  Definition ==> Join(SemiRng, AbelianMonoid, BiModule(R, R),_
                       RectangularMatrixCategory(ndim,ndim,R,Row,Col),_
-                      FullyRetractableTo R,_
-                      FullyLinearlyExplicitRingOver R) with
+                      FullyRetractableTo R) with
+    if R has SemiRing then SemiRing
+    if R has Ring then
+        DifferentialExtension R
+        FullyLinearlyExplicitRingOver R
     if R has CommutativeRing then Module(R)
     scalarMatrix: R -> %
       ++ \spad{scalarMatrix(r)} returns an n-by-n matrix with r's on the
@@ -1040,13 +1061,12 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
       y := positivePower(x,n quo 2)
       y * y
 
-    x:% ^ n:NonNegativeInteger ==
-      zero? n => scalarMatrix 1
-      positivePower(x,n)
+    if R has Monoid then
+        x:% ^ n:NonNegativeInteger ==
+            zero? n => scalarMatrix 1
+            positivePower(x, n)
 
     coerce(r:R) == scalarMatrix r
-
-    equation2R: Vector % -> Matrix R
 
     differentiate(x:%,d:R -> R) == map(d,x)
 
@@ -1066,25 +1086,29 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
       diagonal? x => retractIfCan diagonal x
       "failed"
 
-    equation2R v ==
-      ans:Matrix(Col) := new(ndim,#v,0)
-      for i in minr ans .. maxr ans repeat
-        for j in minc ans .. maxc ans repeat
-          qsetelt_!(ans, i, j, column(qelt(v, j), i))
-      reducedSystem ans
+    if R has Ring then
 
-    reducedSystem(x:Matrix %):Matrix(R) ==
-      empty? x => new(0,0,0)
-      reduce(vertConcat, [equation2R row(x, i)
+        equation2R: Vector % -> Matrix R
+
+        equation2R v ==
+            ans : Matrix(Col) := new(ndim, #v, 0)
+            for i in minr ans .. maxr ans repeat
+                for j in minc ans .. maxc ans repeat
+                    qsetelt_!(ans, i, j, column(qelt(v, j), i))
+            reducedSystem ans
+
+        reducedSystem(x : Matrix %) : Matrix(R) ==
+            empty? x => new(0, 0, 0)
+            reduce(vertConcat, [equation2R row(x, i)
                                for i in minr x .. maxr x])$List(Matrix R)
 
-    reducedSystem(m:Matrix %, v:Vector %):
-     Record(mat:Matrix R, vec:Vector R) ==
-      vh:Vector(R) :=
-        empty? v => new(0,0)
-        rh := reducedSystem(v::Matrix %)@Matrix(R)
-        column(rh, minColIndex rh)
-      [reducedSystem(m)@Matrix(R), vh]
+        reducedSystem(m:Matrix %, v:Vector %
+                     ) : Record(mat : Matrix R, vec : Vector R) ==
+            vh:Vector(R) :=
+                empty? v => new(0, 0)
+                rh := reducedSystem(v::Matrix %)@Matrix(R)
+                column(rh, minColIndex rh)
+            [reducedSystem(m)@Matrix(R), vh]
 
     trace x ==
       tr : R := 0
@@ -1093,8 +1117,8 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
       tr
 
     diagonalProduct x ==
-      pr : R := 1
-      for i in minr(x)..maxr(x) for j in minc(x)..maxc(x) repeat
+      pr : R := x(minr(x), minc(x))
+      for i in (minr(x) + 1)..maxr(x) for j in (minc(x) + 1)..maxc(x) repeat
         pr := pr * x(i,j)
       pr
 
