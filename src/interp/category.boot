@@ -258,7 +258,7 @@ mkAnd2(a,b) ==
 PredImplies(a,b) ==
     --true if a => b in the sense of logical implication
 --a = "true" => true
-  a=true => true
+  b = true => true
   a=b => true
   false         -- added by RDJ: 12/21/82
 --error()       -- for the time being
@@ -362,7 +362,7 @@ CondAncestorP(xname,leaves,condition) ==
       null rest u => true
       first rest u
     xname = u' or member(xname,first (CatEval u').4) =>
-      PredImplies(ucond,condition) => return u'
+      PredImplies(condition, ucond) => return u'
 
 DescendantP(a,b) ==
   -- checks to see if a is any kind of Descendant of b
@@ -430,7 +430,7 @@ JoinInner(l,$e) ==
           anccond :=
               rest anc => CADR anc
               true
-          if PredImplies(condition, anccond) then
+          if PredImplies(anccond, condition) then
               -- the new 'b' is more often true than the old one 'anc'
               FundamentalAncestors := delete(anc, FundamentalAncestors)
       FundamentalAncestors := [[b.(0), condition], :FundamentalAncestors]
