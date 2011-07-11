@@ -1045,7 +1045,7 @@ compColon([":",f,t],m,e) ==
   f is ["LISTOF",:l] =>
     (for x in l repeat T:= [.,.,e]:= compColon([":",x,t],m,e); T)
   e:=
-    f is [op,:argl] and not (t is ["Mapping",:.]) =>
+    f is [op,:argl] =>
       --for MPOLY--replace parameters by formal arguments: RDJ 3/83
       newTarget:= EQSUBSTLIST(take(#argl,$FormalMapVariableList),
         [(x is [":",a,m] => a; x) for x in argl],t)
