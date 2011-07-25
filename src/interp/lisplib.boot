@@ -294,7 +294,8 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
             sayMSG ['"   finalizing ",$spadLibFT,:bright libName],
             finalizeLisplib libName,
             ok := true),
-      RSHUT $libFile)
+      PROGN(CLOSE($compiler_output_stream),
+            RSHUT $libFile))
   if ok then lisplibDoRename(libName)
   filearg := $FILEP(libName, $spadLibFT)
   RPACKFILE filearg
