@@ -196,7 +196,7 @@ LazyStreamAggregate(S:Type): Category == StreamAggregate(S) with
     y := x
     l : L S := empty()
     for i in 0.. repeat
-      explicitlyEmpty? y  => return reverse_! l
+      explicitlyEmpty? y  => return reverse! l
       lazy? y => error "infinite stream"
       l := concat(frst y,l)
       y := rst y
@@ -257,7 +257,7 @@ LazyStreamAggregate(S:Type): Category == StreamAggregate(S) with
     y := x
     l : L I := empty()
     for i in MIN.. repeat
-      explicitlyEmpty? y  => return reverse_! l
+      explicitlyEmpty? y  => return reverse! l
       lazy? y => error "indices: infinite stream"
       l := concat(i,l)
       y := rst y
@@ -365,7 +365,7 @@ LazyStreamAggregate(S:Type): Category == StreamAggregate(S) with
     y := x
     l : L % := []
     for i in 0.. repeat
-      explicitlyEmpty? y => return reverse_! l
+      explicitlyEmpty? y => return reverse! l
       lazy? y => error "nodes: infinite stream"
       l := concat(y,l)
       y := rst y
@@ -596,7 +596,7 @@ Stream(S): Exports == Implementation where
         ++ showAll?() returns true if all computed entries of streams
         ++ will be displayed.
         --!! this should be a function of one argument
-    setrest_!: (%,I,%) -> %
+    setrest!: (%,I,%) -> %
       ++ setrest!(x,n,y) sets rest(x,n) to y. The function will expand
       ++ cycles if necessary.
     generate: (() -> S) -> %
@@ -653,24 +653,24 @@ Stream(S): Exports == Implementation where
 
 --% signatures of local functions
 
-    setfrst_!     : (%,S) -> S
-    setrst_!      : (%,%) -> %
-    setToNil_!    : % -> %
-    setrestt_!    : (%,I,%) -> %
+    setfrst!     : (%,S) -> S
+    setrst!      : (%,%) -> %
+    setToNil!    : % -> %
+    setrestt!    : (%,I,%) -> %
     lazyEval      : % -> %
-    expand_!      : (%,I) -> %
+    expand!      : (%,I) -> %
 
 --% functions to access or change record fields without lazy evaluation
 
     frst x == x.firstElt
     rst  x == x.restOfStream
 
-    setfrst_!(x,s) == x.firstElt := s
-    setrst_!(x,y)  == x.restOfStream := y
+    setfrst!(x,s) == x.firstElt := s
+    setrst!(x,y)  == x.restOfStream := y
 
-    setToNil_! x ==
+    setToNil! x ==
     -- destructively changes x to a null stream
-      setfrst_!(x,NullStream); setrst_!(x,NIL$Lisp)
+      setfrst!(x,NullStream); setrst!(x,NIL$Lisp)
       x
 
 --% SETCAT functions
@@ -700,7 +700,7 @@ Stream(S): Exports == Implementation where
         y := x
         for i in 1..count while not empty? y repeat y := rst y
         fc := findCycle(count,x)
-        not fc.cycle? => bracket reverse_! getm(x,empty(),count)
+        not fc.cycle? => bracket reverse! getm(x,empty(),count)
         le : L OUT := empty()
         for i in 1..fc.prefix repeat
           le := concat(first(x) :: OUT,le)
@@ -711,8 +711,8 @@ Stream(S): Exports == Implementation where
           for i in 1..fc.period repeat
             pl := concat(frst(x) :: OUT,pl)
             x  := rest x
-          overbar commaSeparate reverse_! pl
-        bracket reverse_! concat(pp,le)
+          overbar commaSeparate reverse! pl
+        bracket reverse! concat(pp,le)
 
       listm(x,le,n) ==
         explicitlyEmpty? x => le
@@ -730,7 +730,7 @@ Stream(S): Exports == Implementation where
         cycElt := cycleElt x
         cycElt case "failed" =>
           le := listm(x,empty(),_$streamCount$Lisp)
-          bracket reverse_! le
+          bracket reverse! le
         cycEnt := computeCycleEntry(x,cycElt :: %)
         le : L OUT := empty()
         while not eq?(x,cycEnt) repeat
@@ -743,8 +743,8 @@ Stream(S): Exports == Implementation where
           for i in 1..len repeat
             pl := concat(frst(x) :: OUT,pl)
             x := rst x
-          overbar commaSeparate reverse_! pl
-        bracket reverse_! concat(pp,le)
+          overbar commaSeparate reverse! pl
+        bracket reverse! concat(pp,le)
 
       showAll?() ==
         NULL(_$streamsShowAll$Lisp)$Lisp => false
@@ -769,10 +769,10 @@ Stream(S): Exports == Implementation where
       e := computeCycleEntry(x,ce)
       d := distance(x,e)
       cycle := complete first(e,len)
-      setrst_!(tail cycle,cycle)
+      setrst!(tail cycle,cycle)
       d = 0 => cycle
       head := complete first(x,d::NNI)
-      setrst_!(tail head,cycle)
+      setrst!(tail head,cycle)
       head
 
 --% CNAGG functions
@@ -792,12 +792,12 @@ Stream(S): Exports == Implementation where
 
     seteltt:(%,I,S) -> S
     seteltt(x,n,s) ==
-      n = MIN => setfrst_!(x,s)
+      n = MIN => setfrst!(x,s)
       seteltt(rst x,n - 1,s)
 
     setelt(x,n:I,s:S) ==
       n < MIN or empty? x => error "setelt: no such element"
-      x := expand_!(x,n - MIN + 1)
+      x := expand!(x,n - MIN + 1)
       seteltt(x,n,s)
 
 --% IXAGG functions
@@ -835,31 +835,31 @@ Stream(S): Exports == Implementation where
       xs := x pretend Stream(S); ys := y pretend Stream(S)
       map(g,xs,ys)$StreamFunctions3(S,S,S) pretend %
 
-    fill_!(x,s) ==
-      setfrst_!(x,s)
-      setrst_!(x,x)
+    fill!(x,s) ==
+      setfrst!(x,s)
+      setrst!(x,x)
 
-    map_!(f,x) ==
-    -- too many problems with map_! on a lazy stream, so
+    map!(f,x) ==
+    -- too many problems with map! on a lazy stream, so
     -- in this case, an error message is returned
       cyclic? x =>
         tail := cycleTail x ; y := x
         until y = tail repeat
-          setfrst_!(y,f frst y)
+          setfrst!(y,f frst y)
           y := rst y
         x
       explicitlyFinite? x =>
         y := x
         while not empty? y repeat
-          setfrst_!(y,f frst y)
+          setfrst!(y,f frst y)
           y := rst y
         x
       error "map!: stream with lazy evaluation"
 
-    swap_!(x,m,n) ==
+    swap!(x,m,n) ==
       (not index?(m,x)) or (not index?(n,x)) =>
         error "swap!: no such elements"
-      x := expand_!(x,max(m,n) - MIN + 1)
+      x := expand!(x,max(m,n) - MIN + 1)
       xm := elt(x,m); xn := elt(x,n)
       setelt(x,m,xn); setelt(x,n,xm)
       x
@@ -886,16 +886,16 @@ Stream(S): Exports == Implementation where
         high < low => s
         (not index?(low,x)) or (not index?(high,x)) =>
           error "setelt: index out of range"
-        x := expand_!(x,high - MIN + 1)
+        x := expand!(x,high - MIN + 1)
         y := rest(x,(low - MIN) :: NNI)
         for i in 0..(high-low) repeat
-          setfrst_!(y,s)
+          setfrst!(y,s)
           y := rst y
         s
       not index?(low,x) => error "setelt: index out of range"
       x := rest(x,(low - MIN) :: NNI)
-      setrst_!(x,x)
-      setfrst_!(x,s)
+      setrst!(x,x)
+      setfrst!(x,s)
 
 --% RCAGG functions
 
@@ -906,8 +906,8 @@ Stream(S): Exports == Implementation where
 
     lazyEvaluate x ==
       st := lazyEval x
-      setfrst_!(x, frst st)
-      setrst_!(x,if EQ(rst st,st)$Lisp then x else rst st)
+      setfrst!(x, frst st)
+      setrst!(x,if EQ(rst st,st)$Lisp then x else rst st)
       x
 
     -- empty? is the only function that explicitly causes evaluation
@@ -915,17 +915,17 @@ Stream(S): Exports == Implementation where
     empty? x ==
       while lazy? x repeat
         st := lazyEval x
-        setfrst_!(x, frst st)
-        setrst_!(x,if EQ(rst st,st)$Lisp then x else rst st)
+        setfrst!(x, frst st)
+        setrst!(x,if EQ(rst st,st)$Lisp then x else rst st)
       uninitialized? x => error "Trying to use uninitialized stream"
       explicitlyEmpty? x
 
-    --setvalue(x,s) == setfirst_!(x,s)
+    --setvalue(x,s) == setfirst!(x,s)
 
     --setchildren(x,l) ==
       --empty? l => error "setchildren: empty list of children"
       --not(empty? rest l) => error "setchildren: wrong number of children"
-      --setrest_!(x,first l)
+      --setrest!(x,first l)
 
 --% URAGG functions
 
@@ -937,18 +937,18 @@ Stream(S): Exports == Implementation where
     concat(s:S,x:%) == [s,x]
     cons(s,x) == concat(s,x)
 
-    cycleSplit_! x ==
+    cycleSplit! x ==
       cycElt := cycleElt x
       cycElt case "failed" =>
-        error "cycleSplit_!: non-cyclic stream"
+        error "cycleSplit!: non-cyclic stream"
       y := computeCycleEntry(x,cycElt :: %)
-      eq?(x,y) => (setToNil_! x; return y)
+      eq?(x,y) => (setToNil! x; return y)
       z := rst x
       repeat
-        eq?(y,z) => (setrest_!(x,empty()); return y)
+        eq?(y,z) => (setrest!(x,empty()); return y)
         x := z ; z := rst z
 
-    expand_!(x,n) ==
+    expand!(x,n) ==
     -- expands cycles (if necessary) so that the first n
     -- elements of x will not be part of a cycle
       n < 1 => x
@@ -965,53 +965,53 @@ Stream(S): Exports == Implementation where
         t := cycleTail e
         if eq?(t,e) then
           t := concat(frst t,empty())
-          e := setrst_!(t,t)
-          setrst_!(x,e)
+          e := setrst!(t,t)
+          setrst!(x,e)
         else
-          setrst_!(t,concat(frst e,rst e))
+          setrst!(t,concat(frst e,rst e))
           e := rst e
       nLessD := (n-d) :: NNI
       y := complete first(e,nLessD)
       e := rest(e,nLessD)
-      setrst_!(tail y,e)
-      setrst_!(rest(x,(d-1) :: NNI),y)
+      setrst!(tail y,e)
+      setrst!(rest(x,(d-1) :: NNI),y)
       x
 
     first x ==
       empty? x => error "Can't take the first of an empty stream."
       frst x
 
-    concat_!(x:%,y:%) ==
+    concat!(x:%,y:%) ==
       empty? x => y
-      setrst_!(tail x,y)
+      setrst!(tail x,y)
 
-    concat_!(x:%,s:S) ==
-      concat_!(x,concat(s,empty()))
+    concat!(x:%,s:S) ==
+      concat!(x,concat(s,empty()))
 
-    setfirst_!(x,s) == setelt(x,0,s)
-    setelt(x,"first",s) == setfirst_!(x,s)
-    setrest_!(x,y) ==
+    setfirst!(x,s) == setelt(x,0,s)
+    setelt(x,"first",s) == setfirst!(x,s)
+    setrest!(x,y) ==
       empty? x => error "setrest!: empty stream"
-      setrst_!(x,y)
-    setelt(x,"rest",y) == setrest_!(x,y)
+      setrst!(x,y)
+    setelt(x,"rest",y) == setrest!(x,y)
 
-    setlast_!(x,s) ==
+    setlast!(x,s) ==
       empty? x => error "setlast!: empty stream"
-      setfrst_!(tail x, s)
-    setelt(x,"last",s) == setlast_!(x,s)
+      setfrst!(tail x, s)
+    setelt(x,"last",s) == setlast!(x,s)
 
-    split_!(x,n) ==
+    split!(x,n) ==
       n < MIN => error "split!: index out of range"
       n = MIN =>
         y : % := empty()
-        setfrst_!(y,frst x)
-        setrst_!(y,rst x)
-        setToNil_! x
+        setfrst!(y,frst x)
+        setrst!(y,rst x)
+        setToNil! x
         y
-      x := expand_!(x,n - MIN)
+      x := expand!(x,n - MIN)
       x := rest(x,(n - MIN - 1) :: NNI)
       y := rest x
-      setrst_!(x,empty())
+      setrst!(x,empty())
       y
 
 --% STREAM functions
@@ -1023,7 +1023,7 @@ Stream(S): Exports == Implementation where
         error "Need a non-null list to make a repeating stream."
       x0 : % := x := construct l
       while not empty? rst x repeat x := rst x
-      setrst_!(x,x0)
+      setrst!(x,x0)
 
     if S has SetCategory then
 
@@ -1071,14 +1071,14 @@ Stream(S): Exports == Implementation where
         mathPrint(frst(x)::OUT)$Lisp
         output(n-1, rst x)
 
-    setrestt_!(x,n,y) ==
-      n = 0 => setrst_!(x,y)
-      setrestt_!(rst x,n-1,y)
+    setrestt!(x,n,y) ==
+      n = 0 => setrst!(x,y)
+      setrestt!(rst x,n-1,y)
 
-    setrest_!(x,n,y) ==
+    setrest!(x,n,y) ==
       n < 0 or empty? x => error "setrest!: no such rest"
-      x := expand_!(x,n+1)
-      setrestt_!(x,n,y)
+      x := expand!(x,n+1)
+      setrestt!(x,n,y)
 
     generate f    == delay concat(f(), generate f)
     gen:(S -> S,S) -> %

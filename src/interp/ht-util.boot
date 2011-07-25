@@ -453,7 +453,7 @@ executeInterpreterCommand command ==
   PRINC command
   TERPRI()
   setCurrentLine(command)
-  CATCH('SPAD__READER, parseAndInterpret command)
+  CATCH('SPAD_READER, parseAndInterpret command)
 --  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
   princPrompt()
   FINISH_-OUTPUT()
@@ -493,7 +493,7 @@ checkCondition(s1, string, condList) ==
     val = '"Syntax Error " => '"Error: Syntax Error "
     condErrorMsg pattern
   [type, : data] := val
-  newType := CATCH('SPAD__READER, resolveTM(type, pattern))
+  newType := CATCH('SPAD_READER, resolveTM(type, pattern))
   null newType =>
     condErrorMsg pattern
   coerceInt(val, newType)

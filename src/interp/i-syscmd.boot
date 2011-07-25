@@ -3027,7 +3027,7 @@ npProcessSynonym(str) ==
 
 InterpExecuteSpadSystemCommand string ==
   CATCH("coerceFailure",
-    CATCH("SPAD__READER", ExecuteInterpSystemCommand string) )
+    CATCH("SPAD_READER", ExecuteInterpSystemCommand string) )
 
 intProcessSynonyms str ==
    LINE:local := str
@@ -3048,4 +3048,4 @@ parseFromString(s) ==
    pf2Sex macroExpanded first rest first s
 
 ncParseFromString(s) ==
-   zeroOneTran(packageTran(CATCH('SPAD__READER, parseFromString(s))))
+   zeroOneTran(packageTran(CATCH('SPAD_READER, parseFromString(s))))

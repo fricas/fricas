@@ -387,25 +387,25 @@ ModularHermitianRowReduction(R): Exports == Implementation where
                     rown := k
                     pivord := npivord
           rown = minr - 1 => "enuf"
-          x := swapRows_!(x, i, rown)
+          x := swapRows!(x, i, rown)
           (a, b, d) := extendedEuclidean(qelt(x,i,j), m)
-          qsetelt_!(x,i,j,d)
+          qsetelt!(x,i,j,d)
           pivot := d
           for k in j+1 .. ncols repeat
-            qsetelt_!(x,i,k, a * qelt(x,i,k) rem m)
+            qsetelt!(x,i,k, a * qelt(x,i,k) rem m)
           for k in i+1 .. nrows repeat
             zero? qelt(x,k,j) => "next k"
             q := (qelt(x,k,j) exquo pivot) :: R
             for k1 in j+1 .. ncols repeat
               v2 := (qelt(x,k,k1) - q * qelt(x,i,k1)) rem m
-              qsetelt_!(x, k, k1, v2)
-            qsetelt_!(x, k, j, 0)
+              qsetelt!(x, k, k1, v2)
+            qsetelt!(x, k, j, 0)
           for k in minr .. i-1 repeat
             zero? qelt(x,k,j) => "enuf"
             qr    := normalizedDivide(qelt(x,k,j), pivot)
-            qsetelt_!(x,k,j, qr.remainder)
+            qsetelt!(x,k,j, qr.remainder)
             for k1 in j+1 .. ncols x repeat
-              qsetelt_!(x,k,k1,
+              qsetelt!(x,k,k1,
                      (qelt(x,k,k1) - qr.quotient * qelt(x,i,k1)) rem m)
           i := i+1
         x
@@ -427,7 +427,7 @@ ModularHermitianRowReduction(R): Exports == Implementation where
             if (qelt(x,k,j) ~= 0) and ((rown = minr - 1) or
                   sizeLess?(qelt(x,k,j), qelt(x,rown,j))) then rown := k
           rown = minr - 1 => "next j"
-          x := swapRows_!(x, i, rown)
+          x := swapRows!(x, i, rown)
           for k in i+1 .. nrows repeat
             zero? qelt(x,k,j) => "next k"
             (a, b, d) := extendedEuclidean(qelt(x,i,j), qelt(x,k,j))
@@ -437,22 +437,22 @@ ModularHermitianRowReduction(R): Exports == Implementation where
             for k1 in j+1 .. ncols repeat
               v1 := (a  * qelt(x,i,k1) +  b * qelt(x,k,k1)) rem m
               v2 := (b1 * qelt(x,k,k1) - a1 * qelt(x,i,k1)) rem m
-              qsetelt_!(x, i, k1, v1)
-              qsetelt_!(x, k, k1, v2)
-            qsetelt_!(x, i, j, d)
-            qsetelt_!(x, k, j, 0)
+              qsetelt!(x, i, k1, v1)
+              qsetelt!(x, k, k1, v2)
+            qsetelt!(x, i, j, d)
+            qsetelt!(x, k, j, 0)
           un := unitNormal qelt(x,i,j)
-          qsetelt_!(x,i,j,un.canonical)
+          qsetelt!(x,i,j,un.canonical)
           if un.associate ~= 1 then for jj in (j+1)..ncols repeat
-              qsetelt_!(x,i,jj,un.associate * qelt(x,i,jj))
+              qsetelt!(x,i,jj,un.associate * qelt(x,i,jj))
 
           xij := qelt(x,i,j)
           for k in minr .. i-1 repeat
             zero? qelt(x,k,j) => "next k"
             qr    := normalizedDivide(qelt(x,k,j), xij)
-            qsetelt_!(x,k,j, qr.remainder)
+            qsetelt!(x,k,j, qr.remainder)
             for k1 in j+1 .. ncols x repeat
-              qsetelt_!(x,k,k1,
+              qsetelt!(x,k,k1,
                      (qelt(x,k,k1) - qr.quotient * qelt(x,i,k1)) rem m)
           i := i+1
         x
@@ -545,7 +545,7 @@ FramedModule(R, F, UP, A, ibasis): Exports == Implementation where
       k := minIndex(v := new(#v1 * #v2, 0)$VA)
       for i in minIndex v1 .. maxIndex v1 repeat
         for j in minIndex v2 .. maxIndex v2 repeat
-          qsetelt_!(v, k, qelt(v1, i) * qelt(v2, j))
+          qsetelt!(v, k, qelt(v1, i) * qelt(v2, j))
           k := k + 1
       v pretend VA
 
@@ -910,7 +910,7 @@ FiniteDivisor(F, UP, UPUP, R): Exports == Implementation where
         "failed"
 
       lSpaceBasis d ==
-        map_!(primitivePart, reduceBasisAtInfinity finiteBasis(-d))
+        map!(primitivePart, reduceBasisAtInfinity finiteBasis(-d))
 
 -- b = center, hh = integral function, g = gcd(b, discriminant)
       makeDivisor(b, hh, g) ==

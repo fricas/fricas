@@ -65,13 +65,13 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
    empty? x            == NULL(x)$Lisp
    rest x              == CDR(x)$Lisp
    elt(x,"rest")       == CDR(x)$Lisp
-   setfirst_!(x,s)     ==
+   setfirst!(x,s)     ==
       empty? x => error "Cannot update an empty list"
       Qfirst RPLACA(x,s)$Lisp
    setelt(x,"first",s) ==
       empty? x => error "Cannot update an empty list"
       Qfirst RPLACA(x,s)$Lisp
-   setrest_!(x,y)      ==
+   setrest!(x,y)      ==
       empty? x => error "Cannot update an empty list"
       Qrest RPLACD(x,y)$Lisp
    setelt(x,"rest",y)  ==
@@ -79,7 +79,7 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
       Qrest RPLACD(x,y)$Lisp
    construct l         == l pretend %
    parts s             == s pretend List S
-   reverse_! x         == NREVERSE(x)$Lisp
+   reverse! x         == NREVERSE(x)$Lisp
    reverse x           == REVERSE(x)$Lisp
    minIndex x          == mn
 
@@ -106,14 +106,14 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
         while Qneq(x, s) repeat
           y := concat((first x)::OutputForm, y)
           x := rest x
-        y := reverse_! y
+        y := reverse! y
         empty? s => bracket y
         -- cyclic case: z is cyclic part
         z := list((first x)::OutputForm)
         while Qneq(s, rest x) repeat
            x := rest x
            z := concat((first x)::OutputForm, z)
-        bracket concat_!(y, overbar commaSeparate reverse_! z)
+        bracket concat!(y, overbar commaSeparate reverse! z)
 
    if S has SetCategory then
 
@@ -140,7 +140,7 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
 
    -- Lots of code from parts of AGGCAT, repeated here to
    -- get faster compilation
-   concat_!(x:%,y:%) ==
+   concat!(x:%,y:%) ==
       Qnull x =>
         Qnull y => x
         Qpush(first y,x)
@@ -154,10 +154,10 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
 
    -- Then a quicky:
    if S has SetCategory then
-     removeDuplicates_! l ==
+     removeDuplicates! l ==
        p := l
        while not Qnull p repeat
---       p := setrest_!(p, remove_!(#1 = Qfirst p, Qrest p))
+--       p := setrest!(p, remove!(#1 = Qfirst p, Qrest p))
 -- far too expensive - builds closures etc.
          pp:=p
          f:S:=Qfirst p
@@ -170,9 +170,9 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
    -- then sorting
    mergeSort: ((S, S) -> Boolean, %, Integer) -> %
 
-   sort_!(f, l)       == mergeSort(f, l, #l)
+   sort!(f, l)       == mergeSort(f, l, #l)
 
-   merge_!(f, p, q) ==
+   merge!(f, p, q) ==
      Qnull p => q
      Qnull q => p
      Qeq(p, q) => error "cannot merge a list into itself"
@@ -186,7 +186,7 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
      QRPLACD(t, if Qnull p then q else p)$Lisp
      r
 
-   split_!(p, n) ==
+   split!(p, n) ==
       n < 1 => error "index out of range"
       p := rest(p, (n - 1)::NonNegativeInteger)
       q := Qrest p
@@ -194,13 +194,13 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
       q
 
    mergeSort(f, p, n) ==
-     if n = 2 and f(first rest p, first p) then p := reverse_! p
+     if n = 2 and f(first rest p, first p) then p := reverse! p
      n < 3 => p
      l := (n quo 2)::NonNegativeInteger
-     q := split_!(p, l)
+     q := split!(p, l)
      p := mergeSort(f, p, l)
      q := mergeSort(f, q, n - l)
-     merge_!(f, p, q)
+     merge!(f, p, q)
 
 @
 
@@ -549,8 +549,8 @@ AssociationList(Key:SetCategory, Entry:SetCategory):
         first(t:%):Pair         == first deref t
         rest t                  == ref rest deref t
         concat(p:Pair, t:%)     == ref concat(p, deref t)
-        setrest_!(a:%, b:%)     == ref setrest_!(deref a, deref b)
-        setfirst_!(a:%, p:Pair) == setfirst_!(deref a,p)
+        setrest!(a:%, b:%)     == ref setrest!(deref a, deref b)
+        setfirst!(a:%, p:Pair) == setfirst!(deref a,p)
         minIndex(a:%):Integer   == minIndex(deref a)
         maxIndex(a:%):Integer   == maxIndex(deref a)
 
@@ -583,7 +583,7 @@ AssociationList(Key:SetCategory, Entry:SetCategory):
           setref(t, concat([k, e], deref t))
           e
 
-        remove_!(k:Key, t:%) ==
+        remove!(k:Key, t:%) ==
           empty?(l := deref t) => "failed"
           k = first(l).key =>
             setref(t, rest l)
@@ -594,7 +594,7 @@ AssociationList(Key:SetCategory, Entry:SetCategory):
             prev := curr
             curr := rest curr
           empty? curr => "failed"
-          setrest_!(prev, rest curr)
+          setrest!(prev, rest curr)
           first(curr).entry
 
 @

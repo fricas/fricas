@@ -99,7 +99,7 @@ evalInlineCode() ==
     arg := CAR args
     args := CDR args
     if arg = '"-eval" and args then
-      CATCH('SPAD__READER,CATCH('top__level,parseAndEvalStr CAR(args)))
+      CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr CAR(args)))
       args := CDR args
 
 spad() ==
@@ -116,7 +116,7 @@ runspad() ==
   while mode='restart repeat
     resetStackLimits()
     CATCH($quitTag, CATCH('coerceFailure,
-                  mode:=CATCH('top__level, ncTopLevel())))
+                  mode:=CATCH('top_level, ncTopLevel())))
 
 ncTopLevel() ==
 -- Top-level read-parse-eval-print loop for the interpreter.  Uses
@@ -146,7 +146,7 @@ intloop () ==
     mode := "restart"
     while mode = "restart" repeat
       resetStackLimits()
-      mode := CATCH("top__level",
+      mode := CATCH("top_level",
                     SpadInterpretStream(1, ["TIM", "DALY", "?"], true))
 
 
@@ -302,7 +302,7 @@ intloopSpadProcess(stepNo,lines,ptree,interactive?)==
     ncPutQ(cc, 'lines, lines)
     $ncMsgList := nil
     result := CATCH("SpadCompileItem",
-     CATCH("coerceFailure", CATCH("SPAD__READER",
+     CATCH("coerceFailure", CATCH("SPAD_READER",
        interp(cc, ptree, interactive?)))) where
 
         interp(cc, ptree, interactive?) ==

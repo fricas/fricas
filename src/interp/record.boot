@@ -84,7 +84,7 @@ inputFile2RecordFile(pathname,:option) ==
   $currentLine: local := nil
   if isExistingFile opathname then DELETE_-FILE opathname
   $testStream := MAKE_-OUTSTREAM opathname
-  CATCH('SPAD__READER,_/READ(pathname,nil))
+  CATCH('SPAD_READER, _/READ(pathname, nil))
   --for trailing system commands
   if not null $currentLine then recordAndPrintTest '(ForSystemCommands)
   SHUT $testStream

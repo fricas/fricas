@@ -116,7 +116,7 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
      ++ map(f,u) returns a copy of u with each element x replaced by f(x).
      ++ For collections, \axiom{map(f,u) = [f(x) for x in u]}.
    if % has shallowlyMutable then
-     map_!: (S->S,%) -> %
+     map!: (S->S,%) -> %
         ++ map!(f,u) destructively replaces each element x of u by \axiom{f(x)}.
    if % has finiteAggregate then
       any?: (S->Boolean,%) -> Boolean
@@ -280,16 +280,16 @@ BagAggregate(S:Type): Category == Join(HomogeneousAggregate S,_
      shallowlyMutable) with
    bag: List S -> %
      ++ bag([x,y,...,z]) creates a bag with elements x,y,...,z.
-   extract_!: % -> S
+   extract!: % -> S
      ++ extract!(u) destructively removes a (random) item from bag u.
-   insert_!: (S,%) -> %
+   insert!: (S,%) -> %
      ++ insert!(x,u) inserts item x into bag u.
    inspect: % -> S
      ++ inspect(u) returns an (random) element from a bag.
  add
    bag(l) ==
      x:=empty()
-     for s in l repeat x:=insert_!(s,x)
+     for s in l repeat x:=insert!(s,x)
      x
 
 @
@@ -308,11 +308,11 @@ BagAggregate(S:Type): Category == Join(HomogeneousAggregate S,_
 ++ Description:
 ++ A stack is a bag where the last item inserted is the first item extracted.
 StackAggregate(S:Type): Category == Join(BagAggregate S, finiteAggregate) with
-   push_!: (S,%) -> S
+   push!: (S,%) -> S
      ++ push!(x,s) pushes x onto stack s, i.e. destructively changing s
      ++ so as to have a new first (top) element x.
      ++ Afterwards, pop!(s) produces x and pop!(s) produces the original s.
-   pop_!: % -> S
+   pop!: % -> S
      ++ pop!(s) returns the top element x, destructively removing x from s.
      ++ Note: Use \axiom{top(s)} to obtain x without removing it from s.
      ++ Error: if s is empty.
@@ -340,13 +340,13 @@ StackAggregate(S:Type): Category == Join(BagAggregate S, finiteAggregate) with
 ++ Description:
 ++ A queue is a bag where the first item inserted is the first item extracted.
 QueueAggregate(S:Type): Category == Join(BagAggregate S, finiteAggregate) with
-   enqueue_!: (S, %) -> S
+   enqueue!: (S, %) -> S
      ++ enqueue!(x,q) inserts x into the queue q at the back end.
-   dequeue_!: % -> S
+   dequeue!: % -> S
      ++ dequeue! s destructively extracts the first (top) element from queue q.
      ++ The element previously second in the queue becomes the first element.
      ++ Error: if q is empty.
-   rotate_!: % -> %
+   rotate!: % -> %
      ++ rotate! q rotates queue q so that the element at the front of
      ++ the queue goes to the back of the queue.
      ++ Note: rotate! q is equivalent to enqueue!(dequeue!(q)).
@@ -389,27 +389,27 @@ DequeueAggregate(S:Type):
    height: % -> NonNegativeInteger
      ++ height(d) returns the number of elements in dequeue d.
      ++ Note: \axiom{height(d) = # d}.
-   top_!: % -> S
+   top!: % -> S
      ++ top!(d) returns the element at the top (front) of the dequeue.
-   bottom_!: % -> S
+   bottom!: % -> S
      ++ bottom!(d) returns the element at the bottom (back) of the dequeue.
-   insertTop_!: (S,%) -> S
+   insertTop!: (S,%) -> S
      ++ insertTop!(x,d) destructively inserts x into the dequeue d, that is,
      ++ at the top (front) of the dequeue.
      ++ The element previously at the top of the dequeue becomes the
      ++ second in the dequeue, and so on.
-   insertBottom_!: (S,%) -> S
+   insertBottom!: (S,%) -> S
      ++ insertBottom!(x,d) destructively inserts x into the dequeue d
      ++ at the bottom (back) of the dequeue.
-   extractTop_!: % -> S
+   extractTop!: % -> S
      ++ extractTop!(d) destructively extracts the top (front) element
      ++ from the dequeue d.
      ++ Error: if d is empty.
-   extractBottom_!: % -> S
+   extractBottom!: % -> S
      ++ extractBottom!(d) destructively extracts the bottom (back) element
      ++ from the dequeue d.
      ++ Error: if d is empty.
-   reverse_!: % -> %
+   reverse!: % -> %
      ++ reverse!(d) destructively replaces d by its reverse dequeue, i.e.
      ++ the top (front) element is now the bottom (back) element, and so on.
 
@@ -436,7 +436,7 @@ PriorityQueueAggregate(S:OrderedSet): Category == Join(BagAggregate S,_
    merge: (%,%) -> %
      ++ merge(q1,q2) returns combines priority queues q1 and q2 to return
      ++ a single priority queue q.
-   merge_!: (%,%) -> %
+   merge!: (%,%) -> %
      ++ merge!(q,q1) destructively changes priority queue q to include the
      ++ values from priority queue q1.
 
@@ -465,20 +465,20 @@ DictionaryOperations(S:SetCategory): Category ==
      ++ entries \axiom{x,y,...,z}.
 -- insert: (S,%) -> S                 ++ insert an entry
 -- member?: (S,%) -> Boolean                  ++ search for an entry
--- remove_!: (S,%,NonNegativeInteger) -> %
+-- remove!: (S,%,NonNegativeInteger) -> %
 --   ++ remove!(x,d,n) destructively changes dictionary d by removing
 --   ++ up to n entries y such that \axiom{y = x}.
--- remove_!: (S->Boolean,%,NonNegativeInteger) -> %
+-- remove!: (S->Boolean,%,NonNegativeInteger) -> %
 --   ++ remove!(p,d,n) destructively changes dictionary d by removing
 --   ++ up to n entries x such that \axiom{p(x)} is true.
    if % has finiteAggregate then
-     remove_!: (S,%) -> %
+     remove!: (S,%) -> %
        ++ remove!(x,d) destructively changes dictionary d by removing
        ++ all entries y such that \axiom{y = x}.
-     remove_!: (S->Boolean,%) -> %
+     remove!: (S->Boolean,%) -> %
        ++ remove!(p,d) destructively changes dictionary d by removeing
        ++ all entries x such that \axiom{p(x)} is true.
-     select_!: (S->Boolean,%) -> %
+     select!: (S->Boolean,%) -> %
        ++ select!(p,d) destructively changes dictionary d by removing
        ++ all entries x such that \axiom{p(x)} is not true.
  add
@@ -513,17 +513,17 @@ Dictionary(S:SetCategory): Category ==
  DictionaryOperations S add
    dictionary l ==
      d := dictionary()
-     for x in l repeat insert_!(x, d)
+     for x in l repeat insert!(x, d)
      d
 
    if % has finiteAggregate then
-    -- remove(f:S->Boolean,t:%)  == remove_!(f, copy t)
-    -- select(f, t)        == select_!(f, copy t)
-     select_!(f, t)      == remove_!((x : S) : Boolean +-> not f(x), t)
+    -- remove(f:S->Boolean,t:%)  == remove!(f, copy t)
+    -- select(f, t)        == select!(f, copy t)
+     select!(f, t)      == remove!((x : S) : Boolean +-> not f(x), t)
 
-     --extract_! d ==
+     --extract! d ==
      --  empty? d => error "empty dictionary"
-     --  remove_!(x := first parts d, d, 1)
+     --  remove!(x := first parts d, d, 1)
      --  x
 
      s = t ==
@@ -531,8 +531,8 @@ Dictionary(S:SetCategory): Category ==
        #s ~= #t => false
        every?((x: S): Boolean +-> member?(x, t), parts s)
 
-     remove_!(f:S->Boolean, t:%) ==
-       for m in parts t repeat if f m then remove_!(m, t)
+     remove!(f:S->Boolean, t:%) ==
+       for m in parts t repeat if f m then remove!(m, t)
        t
 
 @
@@ -554,12 +554,12 @@ Dictionary(S:SetCategory): Category ==
 ++ copying (non-destructive) operations are generally to be avoided.
 MultiDictionary(S:SetCategory): Category == DictionaryOperations S with
 -- count: (S,%) -> NonNegativeInteger                  ++ multiplicity count
-   insert_!: (S,%,NonNegativeInteger) -> %
+   insert!: (S,%,NonNegativeInteger) -> %
      ++ insert!(x,d,n) destructively inserts n copies of x into dictionary d.
--- remove_!: (S,%,NonNegativeInteger) -> %
+-- remove!: (S,%,NonNegativeInteger) -> %
 --   ++ remove!(x,d,n) destructively removes (up to) n copies of x from
 --   ++ dictionary d.
-   removeDuplicates_!: % -> %
+   removeDuplicates!: % -> %
      ++ removeDuplicates!(d) destructively removes any duplicate values
      ++ in dictionary d.
    duplicates: % -> List Record(entry:S,count:NonNegativeInteger)
@@ -688,7 +688,7 @@ FiniteSetAggregate(S:SetCategory): Category ==
    brace l         == construct l
    set   l         == construct l
    cardinality s   == #s
-   construct l     == (s := set(); for x in l repeat insert_!(x,s); s)
+   construct l     == (s := set(); for x in l repeat insert!(x,s); s)
    count(x:S, s:%) == (member?(x, s) => 1; 0)
    subset?(s, t)   ==
        #s < #t and every?((x : S) : Boolean +-> member?(x, t), parts s)
@@ -698,23 +698,23 @@ FiniteSetAggregate(S:SetCategory): Category ==
 
    intersect(s, t) ==
      i := set()
-     for x in parts s | member?(x, t) repeat insert_!(x, i)
+     for x in parts s | member?(x, t) repeat insert!(x, i)
      i
 
    difference(s:%, t:%) ==
      m := copy s
-     for x in parts t repeat remove_!(x, m)
+     for x in parts t repeat remove!(x, m)
      m
 
    symmetricDifference(s, t) ==
      d := copy s
      for x in parts t repeat
-       if member?(x, s) then remove_!(x, d) else insert_!(x, d)
+       if member?(x, s) then remove!(x, d) else insert!(x, d)
      d
 
    union(s:%, t:%) ==
       u := copy s
-      for x in parts t repeat insert_!(x, u)
+      for x in parts t repeat insert!(x, u)
       u
 
    if S has Finite then
@@ -807,7 +807,7 @@ KeyedDictionary(Key:SetCategory, Entry:SetCategory): Category ==
    keys: % -> List Key
      ++ keys(t) returns the list the keys in table t.
    -- to become keys: % -> Key* and keys: % -> Iterator(Entry,Entry)
-   remove_!: (Key, %) -> Union(Entry,"failed")
+   remove!: (Key, %) -> Union(Entry,"failed")
      ++ remove!(k,t) searches the table t for the key k removing
      ++ (and return) the entry if there.
      ++ If t has no such key, \axiom{remove!(k,t)} returns "failed".
@@ -889,7 +889,7 @@ EltableAggregate(Dom:SetCategory, Im:Type): Category ==
            ++ assuming x is in the domain of u.
            ++ Error: if x is not in the domain of u.
            -- this function will soon be renamed as setelt!.
-       qsetelt_!: (%, Dom, Im) -> Im
+       qsetelt!: (%, Dom, Im) -> Im
            ++ qsetelt!(u,x,y) sets the image of \axiom{x} to be \axiom{y} under
            ++ \axiom{u}, without checking that \axiom{x} is in the domain of
            ++ \axiom{u}.
@@ -897,7 +897,7 @@ EltableAggregate(Dom:SetCategory, Im:Type): Category ==
  add
   qelt(a, x) == elt(a, x)
   if % has shallowlyMutable then
-    qsetelt_!(a, x, y) == (a.x := y)
+    qsetelt!(a, x, y) == (a.x := y)
 
 @
 \section{category IXAGG IndexedAggregate}
@@ -952,10 +952,10 @@ IndexedAggregate(Index: SetCategory, Entry: Type): Category ==
         ++ Error: if u is empty.
 
    if % has shallowlyMutable then
-      fill_!: (%,Entry) -> %
+      fill!: (%,Entry) -> %
         ++ fill!(u,x) replaces each entry in aggregate u by x.
         ++ The modified u is returned as value.
-      swap_!: (%,Index,Index) -> Void
+      swap!: (%,Index,Index) -> Void
         ++ swap!(u,i,j) interchanges elements i and j of aggregate u.
         ++ No meaningful value is returned.
  add
@@ -972,20 +972,20 @@ IndexedAggregate(Index: SetCategory, Entry: Type): Category ==
     first a    == a minIndex a
 
   if % has shallowlyMutable then
-    map(f, a) == map_!(f, copy a)
+    map(f, a) == map!(f, copy a)
 
-    map_!(f, a) ==
-      for i in indices a repeat qsetelt_!(a, i, f qelt(a, i))
+    map!(f, a) ==
+      for i in indices a repeat qsetelt!(a, i, f qelt(a, i))
       a
 
-    fill_!(a, x) ==
-      for i in indices a repeat qsetelt_!(a, i, x)
+    fill!(a, x) ==
+      for i in indices a repeat qsetelt!(a, i, x)
       a
 
-    swap_!(a, i, j) ==
+    swap!(a, i, j) ==
       t := a.i
-      qsetelt_!(a, i, a.j)
-      qsetelt_!(a, j, t)
+      qsetelt!(a, i, a.j)
+      qsetelt!(a, j, t)
       void
 
 @
@@ -1006,7 +1006,7 @@ IndexedAggregate(Index: SetCategory, Entry: Type): Category ==
 ++ mapping from keys to entries.
 TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
   Join(KeyedDictionary(Key,Entry),IndexedAggregate(Key,Entry)) with
-   setelt: (%,Key,Entry) -> Entry          -- setelt_! later
+   setelt: (%,Key,Entry) -> Entry          -- setelt! later
      ++ setelt(t,k,e) (also written \axiom{t.k := e}) is equivalent
      ++ to \axiom{(insert([k,e],t); e)}.
    table: () -> %
@@ -1024,7 +1024,7 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
    table l             == dictionary l
 -- empty()             == dictionary()
 
-   insert_!(p, t)      == (t(p.key) := p.entry; t)
+   insert!(p, t)      == (t(p.key) := p.entry; t)
    indices t           == keys t
 
    coerce(t:%):OutputForm ==
@@ -1039,7 +1039,7 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
       (r := search(k, t)) case Entry => r::Entry
       e
 
-   map_!(f, t) ==
+   map!(f, t) ==
       for k in keys t repeat t.k := f t.k
       t
 
@@ -1072,10 +1072,10 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
          ke: Record(key:Key,entry:Entry) := f [k, t.k]
          z ke.key := ke.entry
        z
-     map_!(f: Record(key:Key,entry:Entry)->Record(key:Key,entry:Entry), t: %): % ==
+     map!(f: Record(key:Key,entry:Entry)->Record(key:Key,entry:Entry), t: %): % ==
        lke: List Record(key:Key,entry:Entry) := nil()
        for k in keys t repeat
-         lke := cons(f [k, remove_!(k,t)::Entry], lke)
+         lke := cons(f [k, remove!(k,t)::Entry], lke)
        for ke in lke repeat
          t ke.key := ke.entry
        t
@@ -1092,12 +1092,12 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
      index?(k: Key, t: %): Boolean ==
        search(k,t) case Entry
 
-     remove_!(x:Record(key:Key,entry:Entry), t:%) ==
-       if member?(x, t) then remove_!(x.key, t)
+     remove!(x:Record(key:Key,entry:Entry), t:%) ==
+       if member?(x, t) then remove!(x.key, t)
        t
-     extract_!(t: %): Record(key:Key,entry:Entry) ==
+     extract!(t: %): Record(key:Key,entry:Entry) ==
        k: Record(key:Key,entry:Entry) := inspect t
-       remove_!(k.key, t)
+       remove!(k.key, t)
        k
 
      any?(f: Entry->Boolean, t: %): Boolean ==
@@ -1161,18 +1161,18 @@ RecursiveAggregate(S:Type): Category == HomogeneousAggregate(S) with
         ++ node?(u,v) tests if node u is contained in node v
         ++ (either as a child, a child of a child, etc.).
    if % has shallowlyMutable then
-      setchildren_!: (%,List %)->%
+      setchildren!: (%,List %)->%
         ++ setchildren!(u,v) replaces the current children of node u
         ++ with the members of v in left-to-right order.
       setelt: (%,"value",S) -> S
         ++ setelt(a,"value",x) (also written \axiom{a . value := x})
         ++ is equivalent to \axiom{setvalue!(a,x)}
-      setvalue_!: (%,S) -> S
+      setvalue!: (%,S) -> S
         ++ setvalue!(u,x) sets the value of node u to x.
  add
    elt(x,"value") == value x
    if % has shallowlyMutable then
-     setelt(x,"value",y) == setvalue_!(x,y)
+     setelt(x,"value",y) == setvalue!(x,y)
    if S has SetCategory then
 
 @
@@ -1217,12 +1217,12 @@ BinaryRecursiveAggregate(S:Type):Category == RecursiveAggregate S with
       setelt: (%,"left",%) -> %
         ++ setelt(a,"left",b) (also written \axiom{a . left := b}) is equivalent
         ++ to \axiom{setleft!(a,b)}.
-      setleft_!: (%,%) -> %
+      setleft!: (%,%) -> %
          ++ setleft!(a,b) sets the left child of \axiom{a} to be b.
       setelt: (%,"right",%) -> %
          ++ setelt(a,"right",b) (also written \axiom{b . right := b})
          ++ is equivalent to \axiom{setright!(a,b)}.
-      setright_!: (%,%) -> %
+      setright!: (%,%) -> %
          ++ setright!(a,x) sets the right child of t to be x.
  add
    cycleMax ==> 1000
@@ -1297,8 +1297,8 @@ BinaryRecursiveAggregate(S:Type):Category == RecursiveAggregate S with
      for x in l repeat eq?(x,y) => return true
      false
    if % has shallowlyMutable then
-     setelt(x,"left",b)  == setleft_!(x,b)
-     setelt(x,"right",b) == setright_!(x,b)
+     setelt(x,"left",b)  == setleft!(x,b)
+     setelt(x,"right",b) == setright!(x,b)
 
 @
 \section{category DLAGG DoublyLinkedAggregate}
@@ -1339,11 +1339,11 @@ DoublyLinkedAggregate(S:Type): Category == RecursiveAggregate S with
      ++ Error: if l has no next element.
      ++ Note: \axiom{next(l) = rest(l)} and \axiom{previous(next(l)) = l}.
    if % has shallowlyMutable then
-      concat_!: (%,%) -> %
+      concat!: (%,%) -> %
         ++ concat!(u,v) destructively concatenates doubly-linked aggregate v to the end of doubly-linked aggregate u.
-      setprevious_!: (%,%) -> %
+      setprevious!: (%,%) -> %
         ++ setprevious!(u,v) destructively sets the previous node of doubly-linked aggregate u to v, returning v.
-      setnext_!: (%,%) -> %
+      setnext!: (%,%) -> %
         ++ setnext!(u,v) destructively sets the next node of doubly-linked aggregate u to v, returning v.
 
 @
@@ -1424,34 +1424,34 @@ UnaryRecursiveAggregate(S:Type): Category == RecursiveAggregate S with
       ++ cycleTail(u) returns the last node in the cycle, or
       ++ empty if none exists.
    if % has shallowlyMutable then
-      concat_!: (%,%) -> %
+      concat!: (%,%) -> %
         ++ concat!(u,v) destructively concatenates v to the end of u.
-        ++ Note: \axiom{concat!(u,v) = setlast_!(u,v)}.
-      concat_!: (%,S) -> %
+        ++ Note: \axiom{concat!(u,v) = setlast!(u,v)}.
+      concat!: (%,S) -> %
         ++ concat!(u,x) destructively adds element x to the end of u.
         ++ Note: \axiom{concat!(a,x) = setlast!(a,[x])}.
-      cycleSplit_!: % -> %
+      cycleSplit!: % -> %
         ++ cycleSplit!(u) splits the aggregate by dropping off the cycle.
         ++ The value returned is the cycle entry, or nil if none exists.
         ++ For example, if \axiom{w = concat(u,v)} is the cyclic list where v is
         ++ the head of the cycle, \axiom{cycleSplit!(w)} will drop v off w thus
         ++ destructively changing w to u, and returning v.
-      setfirst_!: (%,S) -> S
+      setfirst!: (%,S) -> S
         ++ setfirst!(u,x) destructively changes the first element of a to x.
       setelt: (%,"first",S) -> S
         ++ setelt(u,"first",x) (also written: \axiom{u.first := x}) is
         ++ equivalent to \axiom{setfirst!(u,x)}.
-      setrest_!: (%,%) -> %
+      setrest!: (%,%) -> %
         ++ setrest!(u,v) destructively changes the rest of u to v.
       setelt: (%,"rest",%) -> %
         ++ setelt(u,"rest",v) (also written: \axiom{u.rest := v}) is equivalent to
         ++ \axiom{setrest!(u,v)}.
-      setlast_!: (%,S) -> S
+      setlast!: (%,S) -> S
         ++ setlast!(u,x) destructively changes the last element of u to x.
       setelt: (%,"last",S) -> S
         ++ setelt(u,"last",x) (also written: \axiom{u.last := b})
         ++ is equivalent to \axiom{setlast!(u,v)}.
-      split_!: (%,Integer) -> %
+      split!: (%,Integer) -> %
          ++ split!(u,n) splits u into two aggregates: \axiom{v = rest(u,n)}
          ++ and \axiom{w = first(u,n)}, returning \axiom{v}.
          ++ Note: afterwards \axiom{rest(u,n)} returns \axiom{empty()}.
@@ -1473,7 +1473,7 @@ UnaryRecursiveAggregate(S:Type): Category == RecursiveAggregate S with
     while not empty? x repeat
       l := concat(x, l)
       x := rest x
-    reverse_! l
+    reverse! l
 
   children x ==
     l := empty()$List(%)
@@ -1578,34 +1578,34 @@ UnaryRecursiveAggregate(S:Type): Category == RecursiveAggregate S with
       u=v
 
   if % has shallowlyMutable then
-    setelt(x, "first", a) == setfirst_!(x, a)
-    setelt(x,  "last", a) == setlast_!(x, a)
-    setelt(x,  "rest", a) == setrest_!(x, a)
-    concat(x:%, y:%)      == concat_!(copy x, y)
+    setelt(x, "first", a) == setfirst!(x, a)
+    setelt(x,  "last", a) == setlast!(x, a)
+    setelt(x,  "rest", a) == setrest!(x, a)
+    concat(x:%, y:%)      == concat!(copy x, y)
 
-    setlast_!(x, s) ==
+    setlast!(x, s) ==
       empty? x => error "setlast: empty list"
-      setfirst_!(tail x, s)
+      setfirst!(tail x, s)
       s
 
-    setchildren_!(u,lv) ==
-      #lv=1 => setrest_!(u, first lv)
+    setchildren!(u,lv) ==
+      #lv=1 => setrest!(u, first lv)
       error "wrong number of children specified"
 
-    setvalue_!(u,s) == setfirst_!(u,s)
+    setvalue!(u,s) == setfirst!(u,s)
 
-    split_!(p, n) ==
+    split!(p, n) ==
       n < 1 => error "index out of range"
       p := rest(p, (n - 1)::NonNegativeInteger)
       q := rest p
-      setrest_!(p, empty())
+      setrest!(p, empty())
       q
 
-    cycleSplit_! x ==
+    cycleSplit! x ==
       empty?(y := cycleEntry x) or eq?(x, y) => y
       z := rest x
       while not eq?(z, y) repeat (x := z; z := rest z)
-      setrest_!(x, empty())
+      setrest!(x, empty())
       y
 
 @
@@ -1661,7 +1661,7 @@ StreamAggregate(S:Type): Category ==
      first(rest(x, l::NonNegativeInteger), (h - l + 1)::NonNegativeInteger)
 
    if % has shallowlyMutable then
-     concat(x:%, y:%) == concat_!(copy x, y)
+     concat(x:%, y:%) == concat!(copy x, y)
 
      concat l ==
        empty? l => empty()
@@ -1671,22 +1671,22 @@ StreamAggregate(S:Type): Category ==
            res := concat!(copy x, res)
        res
 
-     map_!(f, l) ==
+     map!(f, l) ==
        y := l
        while not empty? l repeat
-         setfirst_!(l, f first l)
+         setfirst!(l, f first l)
          l := rest l
        y
 
-     fill_!(x, s) ==
+     fill!(x, s) ==
        y := x
-       while not empty? y repeat (setfirst_!(y, s); y := rest y)
+       while not empty? y repeat (setfirst!(y, s); y := rest y)
        x
 
      setelt(x:%, i:Integer, s:S) ==
       i := i - minIndex x
       (i < 0) or empty?(x := rest(x,i::NonNegativeInteger)) => error "index out of range"
-      setfirst_!(x, s)
+      setfirst!(x, s)
 
      setelt(x:%, i:UniversalSegment(Integer), s:S) ==
       (l := lo(i) - minIndex x) < 0 => error "index out of range"
@@ -1694,12 +1694,12 @@ StreamAggregate(S:Type): Category ==
       h < l => s
       y := rest(x, l::NonNegativeInteger)
       z := rest(y, (h - l + 1)::NonNegativeInteger)
-      while not eq?(y, z) repeat (setfirst_!(y, s); y := rest y)
+      while not eq?(y, z) repeat (setfirst!(y, s); y := rest y)
       s
 
-     concat_!(x:%, y:%) ==
+     concat!(x:%, y:%) ==
        empty? x => y
-       setrest_!(tail x, y)
+       setrest!(tail x, y)
        x
 
 @
@@ -1786,7 +1786,7 @@ LinearAggregate(S:Type): Category ==
   if % has finiteAggregate then
     maxIndex l == #l - 1 + minIndex l
 
---if % has shallowlyMutable then new(n, s)  == fill_!(new n, s)
+--if % has shallowlyMutable then new(n, s)  == fill!(new n, s)
 
 @
 
@@ -1845,14 +1845,14 @@ FiniteLinearAggregate(S:Type): Category == Join(LinearAggregate S,_
       sorted?: % -> Boolean
         ++ sorted?(u) tests if the elements of u are in ascending order.
    if % has shallowlyMutable then
-      copyInto_!: (%,%,Integer) -> %
+      copyInto!: (%,%,Integer) -> %
         ++ copyInto!(u,v,i) returns aggregate u containing a copy of
         ++ v inserted at element i.
-      reverse_!: % -> %
+      reverse!: % -> %
         ++ reverse!(u) returns u with its elements in reverse order.
-      sort_!: ((S,S)->Boolean,%) -> %
+      sort!: ((S,S)->Boolean,%) -> %
         ++ sort!(p,u) returns u with its elements ordered by p.
-      if S has OrderedSet then sort_!: % -> %
+      if S has OrderedSet then sort!: % -> %
         ++ sort!(u) returns u with its elements in ascending order.
  add
     if S has SetCategory then
@@ -1865,12 +1865,12 @@ FiniteLinearAggregate(S:Type): Category == Join(LinearAggregate S,_
       sort l      == sort(_<$S, l)
 
     if % has shallowlyMutable then
-      reverse x  == reverse_! copy x
-      sort(f, l) == sort_!(f, copy l)
-      reverse x  == reverse_! copy x
+      reverse x  == reverse! copy x
+      sort(f, l) == sort!(f, copy l)
+      reverse x  == reverse! copy x
 
       if S has OrderedSet then
-        sort_! l == sort_!(_<$S, l)
+        sort! l == sort!(_<$S, l)
 
 @
 \section{category A1AGG OneDimensionalArrayAggregate}
@@ -1903,7 +1903,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
     Join(FiniteLinearAggregate S, shallowlyMutable)
   add
     parts x         == [qelt(x, i) for i in minIndex x .. maxIndex x]
-    sort_!(f, a) == quickSort(f, a)$FiniteLinearAggregateSort(S, %)
+    sort!(f, a) == quickSort(f, a)$FiniteLinearAggregateSort(S, %)
 
     any?(f, a) ==
       for i in minIndex a .. maxIndex a repeat
@@ -1931,15 +1931,15 @@ OneDimensionalArrayAggregate(S:Type): Category ==
         if f(qelt(a, i)) then n := n+1
       n
 
-    map_!(f, a) ==
+    map!(f, a) ==
       for i in minIndex a .. maxIndex a repeat
-        qsetelt_!(a, i, f qelt(a, i))
+        qsetelt!(a, i, f qelt(a, i))
       a
 
     setelt(a:%, s:UniversalSegment(Integer), x:S) ==
       l := lo s; h := if hasHi s then hi s else maxIndex a
       l < minIndex a or h > maxIndex a => error "index out of range"
-      for k in l..h repeat qsetelt_!(a, k, x)
+      for k in l..h repeat qsetelt!(a, k, x)
       x
 
     reduce(f, a) ==
@@ -1978,7 +1978,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       l := max(0, n - m + 1)::NonNegativeInteger
       c := stupidnew(l, a, b)
       for i in minIndex(c).. for j in m..n repeat
-        qsetelt_!(c, i, f(qelt(a, j), qelt(b, j)))
+        qsetelt!(c, i, f(qelt(a, j), qelt(b, j)))
       c
 
 --  map(f, a, b, x) ==
@@ -1987,7 +1987,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
 --    l := (n - m + 1)::NonNegativeInteger
 --    c := new l
 --    for i in minIndex(c).. for j in m..n repeat
---      qsetelt_!(c, i, f(a(j, x), b(j, x)))
+--      qsetelt!(c, i, f(a(j, x), b(j, x)))
 --    c
 
     merge(f, a, b) ==
@@ -1998,13 +1998,13 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       n := maxIndex b
       for k in minIndex(r).. while i <= m and j <= n repeat
         if f(qelt(a, i), qelt(b, j)) then
-          qsetelt_!(r, k, qelt(a, i))
+          qsetelt!(r, k, qelt(a, i))
           i := i+1
         else
-          qsetelt_!(r, k, qelt(b, j))
+          qsetelt!(r, k, qelt(b, j))
           j := j+1
-      for k in k.. for i in i..m repeat qsetelt_!(r, k, elt(a, i))
-      for k in k.. for j in j..n repeat qsetelt_!(r, k, elt(b, j))
+      for k in k.. for i in i..m repeat qsetelt!(r, k, elt(a, i))
+      for k in k.. for j in j..n repeat qsetelt!(r, k, elt(b, j))
       r
 
     elt(a:%, s:UniversalSegment(Integer)) ==
@@ -2013,7 +2013,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       l < minIndex a or h > maxIndex a => error "index out of range"
       r := stupidnew(max(0, h - l + 1)::NonNegativeInteger, a, a)
       for k in minIndex r.. for i in l..h repeat
-        qsetelt_!(r, k, qelt(a, i))
+        qsetelt!(r, k, qelt(a, i))
       r
 
     insert(a:%, b:%, i:Integer) ==
@@ -2022,30 +2022,30 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       i < m or i > n => error "index out of range"
       y := stupidnew(#a + #b, a, b)
       for k in minIndex y.. for j in m..i-1 repeat
-        qsetelt_!(y, k, qelt(b, j))
+        qsetelt!(y, k, qelt(b, j))
       for k in k.. for j in minIndex a .. maxIndex a repeat
-        qsetelt_!(y, k, qelt(a, j))
-      for k in k.. for j in i..n repeat qsetelt_!(y, k, qelt(b, j))
+        qsetelt!(y, k, qelt(a, j))
+      for k in k.. for j in i..n repeat qsetelt!(y, k, qelt(b, j))
       y
 
     copy x ==
       y := stupidnew(#x, x, x)
       for i in minIndex x .. maxIndex x for j in minIndex y .. repeat
-        qsetelt_!(y, j, qelt(x, i))
+        qsetelt!(y, j, qelt(x, i))
       y
 
-    copyInto_!(y, x, s) ==
+    copyInto!(y, x, s) ==
       s < minIndex y or s + #x > maxIndex y + 1 =>
                                               error "index out of range"
       for i in minIndex x .. maxIndex x for j in s.. repeat
-        qsetelt_!(y, j, qelt(x, i))
+        qsetelt!(y, j, qelt(x, i))
       y
 
     construct l ==
 --    a := new(#l)
       empty? l => empty()
       a := new(#l, first l)
-      for i in minIndex(a).. for x in l repeat qsetelt_!(a, i, x)
+      for i in minIndex(a).. for x in l repeat qsetelt!(a, i, x)
       a
 
     delete(a:%, s:UniversalSegment(Integer)) ==
@@ -2054,24 +2054,24 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       h < l => copy a
       r := stupidnew((#a - h + l - 1)::NonNegativeInteger, a, a)
       for k in minIndex(r).. for i in minIndex a..l-1 repeat
-        qsetelt_!(r, k, qelt(a, i))
+        qsetelt!(r, k, qelt(a, i))
       for k in k.. for i in h+1 .. maxIndex a repeat
-        qsetelt_!(r, k, qelt(a, i))
+        qsetelt!(r, k, qelt(a, i))
       r
 
     delete(x:%, i:Integer) ==
       i < minIndex x or i > maxIndex x => error "index out of range"
       y := stupidnew((#x - 1)::NonNegativeInteger, x, x)
       for i in minIndex(y).. for j in minIndex x..i-1 repeat
-        qsetelt_!(y, i, qelt(x, j))
+        qsetelt!(y, i, qelt(x, j))
       for i in i .. for j in i+1 .. maxIndex x repeat
-        qsetelt_!(y, i, qelt(x, j))
+        qsetelt!(y, i, qelt(x, j))
       y
 
-    reverse_! x ==
+    reverse! x ==
       m := minIndex x
       n := maxIndex x
-      for i in 0..((n-m) quo 2) repeat swap_!(x, m+i, n-i)
+      for i in 0..((n-m) quo 2) repeat swap!(x, m+i, n-i)
       x
 
     concat l ==
@@ -2079,7 +2079,7 @@ OneDimensionalArrayAggregate(S:Type): Category ==
       n := _+/[#a for a in l]
       i := minIndex(r := new(n, stupidget l))
       for a in l repeat
-        copyInto_!(r, a, i)
+        copyInto!(r, a, i)
         i := i + #a
       r
 
@@ -2090,8 +2090,8 @@ OneDimensionalArrayAggregate(S:Type): Category ==
 
     concat(x:%, y:%) ==
       z := stupidnew(#x + #y, x, y)
-      copyInto_!(z, x, i := minIndex z)
-      copyInto_!(z, y, i + #x)
+      copyInto!(z, x, i := minIndex z)
+      copyInto!(z, y, i + #x)
       z
 
     if S has CoercibleTo(OutputForm) then
@@ -2143,51 +2143,51 @@ OneDimensionalArrayAggregate(S:Type): Category ==
 ++ See \spadtype{FlexibleArray} for an exception.
 ExtensibleLinearAggregate(S:Type):Category == Join(LinearAggregate S,_
      shallowlyMutable) with
-   concat_!: (%,S) -> %
+   concat!: (%,S) -> %
      ++ concat!(u,x) destructively adds element x to the end of u.
-   concat_!: (%,%) -> %
+   concat!: (%,%) -> %
      ++ concat!(u,v) destructively appends v to the end of u.
      ++ v is unchanged
-   delete_!: (%,Integer) -> %
+   delete!: (%,Integer) -> %
      ++ delete!(u,i) destructively deletes the \axiom{i}th element of u.
-   delete_!: (%,UniversalSegment(Integer)) -> %
+   delete!: (%,UniversalSegment(Integer)) -> %
      ++ delete!(u,i..j) destructively deletes elements u.i through u.j.
-   remove_!: (S->Boolean,%) -> %
+   remove!: (S->Boolean,%) -> %
      ++ remove!(p,u) destructively removes all elements x of
      ++ u such that \axiom{p(x)} is true.
-   insert_!: (S,%,Integer) -> %
+   insert!: (S,%,Integer) -> %
      ++ insert!(x,u,i) destructively inserts x into u at position i.
-   insert_!: (%,%,Integer) -> %
+   insert!: (%,%,Integer) -> %
      ++ insert!(v,u,i) destructively inserts aggregate v into u at position i.
-   merge_!: ((S,S)->Boolean,%,%) -> %
+   merge!: ((S,S)->Boolean,%,%) -> %
      ++ merge!(p,u,v) destructively merges u and v using predicate p.
-   select_!: (S->Boolean,%) -> %
+   select!: (S->Boolean,%) -> %
      ++ select!(p,u) destructively changes u by keeping only values x such that
      ++ \axiom{p(x)}.
    if S has SetCategory then
-     remove_!: (S,%) -> %
+     remove!: (S,%) -> %
        ++ remove!(x,u) destructively removes all values x from u.
-     removeDuplicates_!: % -> %
+     removeDuplicates!: % -> %
        ++ removeDuplicates!(u) destructively removes duplicates from u.
-   if S has OrderedSet then merge_!: (%,%) -> %
+   if S has OrderedSet then merge!: (%,%) -> %
        ++ merge!(u,v) destructively merges u and v in ascending order.
  add
-   delete(x:%, i:Integer)          == delete_!(copy x, i)
-   delete(x:%, i:UniversalSegment(Integer))        == delete_!(copy x, i)
-   remove(f:S -> Boolean, x:%)   == remove_!(f, copy x)
-   insert(s:S, x:%, i:Integer)   == insert_!(s, copy x, i)
-   insert(w:%, x:%, i:Integer)   == insert_!(copy w, copy x, i)
-   select(f, x)            == select_!(f, copy x)
-   concat(x:%, y:%)        == concat_!(copy x, y)
-   concat(x:%, y:S)        == concat_!(copy x, new(1, y))
-   concat_!(x:%, y:S)      == concat_!(x, new(1, y))
+   delete(x:%, i:Integer)          == delete!(copy x, i)
+   delete(x:%, i:UniversalSegment(Integer))        == delete!(copy x, i)
+   remove(f:S -> Boolean, x:%)   == remove!(f, copy x)
+   insert(s:S, x:%, i:Integer)   == insert!(s, copy x, i)
+   insert(w:%, x:%, i:Integer)   == insert!(copy w, copy x, i)
+   select(f, x)            == select!(f, copy x)
+   concat(x:%, y:%)        == concat!(copy x, y)
+   concat(x:%, y:S)        == concat!(copy x, new(1, y))
+   concat!(x:%, y:S)      == concat!(x, new(1, y))
    if S has SetCategory then
-     remove(s:S, x:%)        == remove_!(s, copy x)
-     remove_!(s : S, x : %)  == remove_!(y +-> y = s, x)
-     removeDuplicates(x:%)   == removeDuplicates_!(copy x)
+     remove(s:S, x:%)        == remove!(s, copy x)
+     remove!(s : S, x : %)  == remove!(y +-> y = s, x)
+     removeDuplicates(x:%)   == removeDuplicates!(copy x)
 
    if S has OrderedSet then
-     merge_!(x, y) == merge_!(_<$S, x, y)
+     merge!(x, y) == merge!(_<$S, x, y)
 
 @
 \section{category LSAGG ListAggregate}
@@ -2216,24 +2216,24 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
 
    mergeSort: ((S, S) -> Boolean, %, Integer) -> %
 
-   sort_!(f, l)       == mergeSort(f, l, #l)
+   sort!(f, l)       == mergeSort(f, l, #l)
    list x                  == concat(x, empty())
    reduce(f, x)            ==
      empty? x => error "reducing over an empty list needs the 3 argument form"
      reduce(f, rest x, first x)
-   merge(f, p, q)          == merge_!(f, copy p, copy q)
+   merge(f, p, q)          == merge!(f, copy p, copy q)
 
-   select_!(f, x) ==
+   select!(f, x) ==
      while not empty? x and not f first x repeat x := rest x
      empty? x => x
      y := x
      z := rest y
      while not empty? z repeat
        if f first z then (y := z; z := rest z)
-                    else (z := rest z; setrest_!(y, z))
+                    else (z := rest z; setrest!(y, z))
      x
 
-   merge_!(f, p, q) ==
+   merge!(f, p, q) ==
      empty? p => q
      empty? q => p
      eq?(p, q) => error "cannot merge a list into itself"
@@ -2242,52 +2242,52 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
        else (r := t := q; q := rest q)
      while not empty? p and not empty? q repeat
        if f(first p, first q)
-         then (setrest_!(t, p); t := p; p := rest p)
-         else (setrest_!(t, q); t := q; q := rest q)
-     setrest_!(t, if empty? p then q else p)
+         then (setrest!(t, p); t := p; p := rest p)
+         else (setrest!(t, q); t := q; q := rest q)
+     setrest!(t, if empty? p then q else p)
      r
 
-   insert_!(s:S, x:%, i:Integer) ==
+   insert!(s:S, x:%, i:Integer) ==
      i < (m := minIndex x) => error "index out of range"
      i = m => concat(s, x)
      y := rest(x, (i - 1 - m)::NonNegativeInteger)
      z := rest y
-     setrest_!(y, concat(s, z))
+     setrest!(y, concat(s, z))
      x
 
-   insert_!(w:%, x:%, i:Integer) ==
+   insert!(w:%, x:%, i:Integer) ==
      i < (m := minIndex x) => error "index out of range"
-     i = m => concat_!(w, x)
+     i = m => concat!(w, x)
      y := rest(x, (i - 1 - m)::NonNegativeInteger)
      z := rest y
-     setrest_!(y, w)
-     concat_!(y, z)
+     setrest!(y, w)
+     concat!(y, z)
      x
 
-   remove_!(f:S -> Boolean, x:%) ==
+   remove!(f:S -> Boolean, x:%) ==
      while not empty? x and f first x repeat x := rest x
      empty? x => x
      p := x
      q := rest x
      while not empty? q repeat
-       if f first q then q := setrest_!(p, rest q)
+       if f first q then q := setrest!(p, rest q)
                     else (p := q; q := rest q)
      x
 
-   delete_!(x:%, i:Integer) ==
+   delete!(x:%, i:Integer) ==
      i < (m := minIndex x) => error "index out of range"
      i = m => rest x
      y := rest(x, (i - 1 - m)::NonNegativeInteger)
-     setrest_!(y, rest(y, 2))
+     setrest!(y, rest(y, 2))
      x
 
-   delete_!(x:%, i:UniversalSegment(Integer)) ==
+   delete!(x:%, i:UniversalSegment(Integer)) ==
      (l := lo i) < (m := minIndex x) => error "index out of range"
      h := if hasHi i then hi i else maxIndex x
      h < l => x
      l = m => rest(x, (h + 1 - m)::NonNegativeInteger)
      t := rest(x, (l - 1 - m)::NonNegativeInteger)
-     setrest_!(t, rest(t, (h - l + 2)::NonNegativeInteger))
+     setrest!(t, rest(t, (h - l + 2)::NonNegativeInteger))
      x
 
    find(f, x) ==
@@ -2302,13 +2302,13 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
      k
 
    mergeSort(f, p, n) ==
-     if n = 2 and f(first rest p, first p) then p := reverse_! p
+     if n = 2 and f(first rest p, first p) then p := reverse! p
      n < 3 => p
      l := (n quo 2)::NonNegativeInteger
-     q := split_!(p, l)
+     q := split!(p, l)
      p := mergeSort(f, p, l)
      q := mergeSort(f, q, n - l)
-     merge_!(f, p, q)
+     merge!(f, p, q)
 
    sorted?(f, l) ==
      empty? l => true
@@ -2342,7 +2342,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
        z := concat(f(first x, first y), z)
        x := rest x
        y := rest y
-     reverse_! z
+     reverse! z
 
 -- map(f, x, y, d) ==
 --   z := empty()
@@ -2352,18 +2352,18 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
 --     y := rest y
 --   z := reverseInPlace z
 --   if not empty? x then
---      z := concat_!(z, map(f(#1, d), x))
+--      z := concat!(z, map(f(#1, d), x))
 --   if not empty? y then
---      z := concat_!(z, map(f(d, #1), y))
+--      z := concat!(z, map(f(d, #1), y))
 --   z
 
-   reverse_! x ==
+   reverse! x ==
      empty? x => x
      empty?(y := rest x) => x
-     setrest_!(x, empty())
+     setrest!(x, empty())
      while not empty? y repeat
        z := rest y
-       setrest_!(y, x)
+       setrest!(y, x)
        x := y
        y := z
      x
@@ -2374,13 +2374,13 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
        k = cycleMax and cyclic? x => error "cyclic list"
        y := concat(first x, y)
        x := rest x
-     reverse_! y
+     reverse! y
 
-   copyInto_!(y, x, s) ==
+   copyInto!(y, x, s) ==
      s < (m := minIndex y) => error "index out of range"
      z := rest(y, (s - m)::NonNegativeInteger)
      while not empty? z and not empty? x repeat
-       setfirst_!(z, first x)
+       setfirst!(z, first x)
        x := rest x
        z := rest z
      y
@@ -2394,10 +2394,10 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
        empty? x => minIndex x - 1
        k
 
-     removeDuplicates_! l ==
+     removeDuplicates! l ==
        p := l
        while not empty? p repeat
-         p := setrest_!(p, remove_!((x : S) : Boolean +-> x = first p, rest p))
+         p := setrest!(p, remove!((x : S) : Boolean +-> x = first p, rest p))
        l
 
    if S has OrderedSet then
@@ -2453,12 +2453,12 @@ AssociationListAggregate(Key:SetCategory,Entry:SetCategory): Category ==
 StringAggregate: Category == OneDimensionalArrayAggregate Character with
     lowerCase       : % -> %
       ++ lowerCase(s) returns the string with all characters in lower case.
-    lowerCase_!: % -> %
+    lowerCase!: % -> %
       ++ lowerCase!(s) destructively replaces the alphabetic characters
       ++ in s by lower case.
     upperCase       : % -> %
       ++ upperCase(s) returns the string with all characters in upper case.
-    upperCase_!: % -> %
+    upperCase!: % -> %
       ++ upperCase!(s) destructively replaces the alphabetic characters
       ++ in s by upper case characters.
     prefix?         : (%, %) -> Boolean
@@ -2530,8 +2530,8 @@ StringAggregate: Category == OneDimensionalArrayAggregate Character with
    trim(s: %, c:  Character)      == leftTrim(rightTrim(s, c),  c)
    trim(s: %, cc: CharacterClass) == leftTrim(rightTrim(s, cc), cc)
 
-   lowerCase s           == lowerCase_! copy s
-   upperCase s           == upperCase_! copy s
+   lowerCase s           == lowerCase! copy s
+   upperCase s           == upperCase! copy s
    prefix?(s, t)         == substring?(s, t, minIndex t)
    coerce(c:Character):% == new(1, c)
    elt(s:%, t:%): %      == concat(s,t)$%

@@ -498,7 +498,7 @@ RationalLODE(F, UP): Exports == Implementation where
         sol.particular case "failed" => "failed"
         makeDot(sol.particular::V, lb) + first(rec.particular)
       [part,
-       concat_!(lsol, [makeDot(v, lb) for v in sol.basis | nzero? v])]
+       concat!(lsol, [makeDot(v, lb) for v in sol.basis | nzero? v])]
 
     indicialEquationAtInfinity(op:LODO2) ==
       rec := infMuLambda op
@@ -651,14 +651,14 @@ ODETools(F, LODO): Exports == Implementation where
       v:V := vector l
       m:M := zero(q, #v)
       for i in minRowIndex m .. maxRowIndex m repeat
-        setRow_!(m, i, v)
-        v := map_!((f1: F): F +-> diff f1, v)
+        setRow!(m, i, v)
+        v := map!((f1: F): F +-> diff f1, v)
       m
 
     variationOfParameters(op, g, b) ==
       empty? b => "failed"
       v:V := new(n := degree op, 0)
-      qsetelt_!(v, maxIndex v, g / leadingCoefficient op)
+      qsetelt!(v, maxIndex v, g / leadingCoefficient op)
       particularSolution(wronskianMatrix(b, n), v)
 
     particularSolution(op, g, b, integration) ==
@@ -756,7 +756,7 @@ ODEIntegration(R, F): Exports == Implementation where
       is?(f, 'log) => [1, first argument(retract(f)@K)]
       -- fixme FIXME
       (v := isTimes f) case List(F) and (#(l := v::List(F)) <= 3) =>
-          l := reverse_! sort_!(smaller?, l)
+          l := reverse! sort!(smaller?, l)
           is?(first l, 'log) and ((u := isQ rest l) case Q) =>
               [u::Q, first argument(retract(first(l))@K)]
           "failed"
@@ -814,7 +814,7 @@ ConstantLODE(R, F, L): Exports == Implementation where
           op := reductum op
       b:List(F) := empty()
       for ff in factors ffactor p repeat
-        b := concat_!(b, basisSol(ff.factor, dec(ff.exponent), x))
+        b := concat!(b, basisSol(ff.factor, dec(ff.exponent), x))
       b
 
     basisSol(p, n, x) ==
@@ -823,7 +823,7 @@ ConstantLODE(R, F, L): Exports == Implementation where
       ll := copy l
       xn := x::F
       for i in 1..n repeat
-        l := concat_!(l, [xn * f for f in ll])
+        l := concat!(l, [xn * f for f in ll])
         xn := x * xn
       l
 

@@ -44,7 +44,7 @@ IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
   Implementation ==>
     InnerIndexedTwoDimensionalArray(R,mnRow,mnCol,Row,Col) add
 
-      swapRows_!(x,i1,i2) ==
+      swapRows!(x,i1,i2) ==
         (i1 < minRowIndex(x)) or (i1 > maxRowIndex(x)) or _
            (i2 < minRowIndex(x)) or (i2 > maxRowIndex(x)) =>
              error "swapRows!: index out of range"
@@ -53,8 +53,8 @@ IndexedMatrix(R,mnRow,mnCol): Exports == Implementation where
         xx := x pretend PrimitiveArray(PrimitiveArray(R))
         n1 := i1 - minRow; n2 := i2 - minRow
         row1 := qelt(xx,n1)
-        qsetelt_!(xx,n1,qelt(xx,n2))
-        qsetelt_!(xx,n2,row1)
+        qsetelt!(xx,n1,qelt(xx,n2))
+        qsetelt!(xx,n2,row1)
         xx pretend %
 
       if R has CommutativeRing then
@@ -140,12 +140,12 @@ Matrix(R): Exports == Implementation where
     minRowIndex x == mnRow
     minColIndex x == mnCol
 
-    -- qelt and qsetelt_! are logically unnecessary, but good for
+    -- qelt and qsetelt! are logically unnecessary, but good for
     -- performance
     qelt(m, i, j) == Qelt2(m, i, j, mnRow@Integer, mnCol@Integer)
-    qsetelt_!(m,i,j,r) == Qsetelt2(m, i, j, r, mnRow@Integer, mnCol@Integer)
+    qsetelt!(m,i,j,r) == Qsetelt2(m, i, j, r, mnRow@Integer, mnCol@Integer)
 
-    swapRows_!(x,i1,i2) ==
+    swapRows!(x,i1,i2) ==
         (i1 < minRowIndex(x)) or (i1 > maxRowIndex(x)) or _
            (i2 < minRowIndex(x)) or (i2 > maxRowIndex(x)) =>
              error "swapRows!: index out of range"
@@ -154,8 +154,8 @@ Matrix(R): Exports == Implementation where
         xx := x pretend PrimitiveArray(PrimitiveArray(R))
         n1 := i1 - minRow; n2 := i2 - minRow
         row1 := qelt(xx,n1)
-        qsetelt_!(xx,n1,qelt(xx,n2))
-        qsetelt_!(xx,n2,row1)
+        qsetelt!(xx,n1,qelt(xx,n2))
+        qsetelt!(xx,n2,row1)
         xx pretend %
 
     if R has CommutativeRing then
@@ -193,7 +193,7 @@ Matrix(R): Exports == Implementation where
     diagonalMatrix(v: Vector R) ==
       n := #v; ans := zero(n,n)
       for i in minr(ans)..maxr(ans) for j in minc(ans)..maxc(ans) _
-          for k in mini(v)..maxi(v) repeat qsetelt_!(ans,i,j,qelt(v,k))
+          for k in mini(v)..maxi(v) repeat qsetelt!(ans,i,j,qelt(v,k))
       ans
 
 --     diagonalMatrix(vec: Vector %) ==
@@ -286,7 +286,7 @@ RectangularMatrix(m,n,R): Exports == Implementation where
       ans : Matrix R := new(m,n,0)
       for i in minr(ans)..maxr(ans) for ll in l repeat
         for j in minc(ans)..maxc(ans) for r in ll repeat
-          qsetelt_!(ans,i,j,r)
+          qsetelt!(ans,i,j,r)
       ans pretend %
 
     row(x,i)    == directProduct row(x pretend Matrix(R),i)
@@ -397,7 +397,7 @@ SquareMatrix(ndim,R): Exports == Implementation where
       ans : Matrix R := new(ndim,ndim,0)
       for i in minr(ans)..maxr(ans) for ll in l repeat
         for j in minc(ans)..maxc(ans) for r in ll repeat
-          qsetelt_!(ans,i,j,r)
+          qsetelt!(ans,i,j,r)
       ans pretend %
 
     row(x,i)    == directProduct row(x pretend Matrix(R),i)

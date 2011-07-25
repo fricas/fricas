@@ -555,7 +555,7 @@ kDomainName(htPage,kind,name,nargs) ==
     argTailPart :=
       "STRCONC"/["STRCONC"/ ['",",:x] for x in KDR args]
     "STRCONC"/['"(",:first args,argTailPart,'")"]
-  typeForm := CATCH('SPAD__READER, unabbrev mkConform(kind,name,argString)) or
+  typeForm := CATCH('SPAD_READER, unabbrev mkConform(kind, name, argString)) or
     ['error,'invalidType,STRCONC(name,argString)]
   null (evaluatedTypeForm := kisValidType typeForm) =>
     ['error,'invalidType,STRCONC(name,argString)]
@@ -584,7 +584,7 @@ topLevelInterpEval x ==
 kisValidType typeForm ==
   $ProcessInteractiveValue: fluid := true
   $noEvalTypeMsg: fluid := true
-  CATCH('SPAD__READER, processInteractive(typeForm,nil))
+  CATCH('SPAD_READER, processInteractive(typeForm, nil))
     is [[h,:.],:t] and member(h,'(Type Category)) =>
       kCheckArgumentNumbers t and t
   false

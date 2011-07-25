@@ -45,12 +45,12 @@ Multiset(S: SetCategory): Join(MultisetAggregate S, finiteAggregate,_
           ++ if \spad{number} is positive, all of them if
           ++ \spad{number} equals zero, and all but at most \spad{-number} if
           ++ \spad{number} is negative.
-        remove_!: (S,%,Integer) -> %
+        remove!: (S,%,Integer) -> %
           ++ remove!(x,ms,number) removes destructively at most \spad{number}
           ++ copies of element x if \spad{number} is positive, all
           ++ of them if \spad{number} equals zero, and all but at most
           ++ \spad{-number} if \spad{number} is negative.
-        remove_!: ( S -> Boolean ,%,Integer) -> %
+        remove!: ( S -> Boolean ,%,Integer) -> %
           ++ remove!(p,ms,number) removes destructively at most \spad{number}
           ++ copies of elements x such that \spad{p(x)} is
           ++ \spadfun{true} if \spad{number} is positive, all of them if
@@ -122,18 +122,18 @@ Multiset(S: SetCategory): Join(MultisetAggregate S, finiteAggregate,_
             ld := cons([e,n::NonNegativeInteger],ld)
           ld
 
-        extract_!(ms:%):S ==                            -- BagAggregate
+        extract!(ms:%):S ==                            -- BagAggregate
           empty? ms => error "extract: Empty multiset"
           ms.count := dec ms.count
           t := ms.table
           e := inspect(t).key
           if (n := t.e) > 1 then t.e := dec n
-           else remove_!(e,t)
+           else remove!(e,t)
           e
 
         inspect(ms:%):S == inspect(ms.table).key        -- BagAggregate
 
-        insert_!(e:S,ms:%):% ==                         -- BagAggregate
+        insert!(e:S,ms:%):% ==                         -- BagAggregate
             ms.count   := inc ms.count
             ms.table.e := inc ms.table.e
             ms
@@ -146,12 +146,12 @@ Multiset(S: SetCategory): Join(MultisetAggregate S, finiteAggregate,_
 
         count(e:S, ms:%):NonNegativeInteger == ms.table.e::NonNegativeInteger
 
-        remove_!(e:S, ms:%, max:Integer):% ==
-          zero? max => remove_!(e,ms)
+        remove!(e:S, ms:%, max:Integer):% ==
+          zero? max => remove!(e,ms)
           t := ms.table
           if member?(e, keys t) then
             ((n := t.e) <= max) =>
-              remove_!(e,t)
+              remove!(e,t)
               ms.count := ms.count-n
             max > 0 =>
               t.e := n-max
@@ -161,12 +161,12 @@ Multiset(S: SetCategory): Join(MultisetAggregate S, finiteAggregate,_
               ms.count := ms.count-n
           ms
 
-        remove_!(p: S -> Boolean, ms:%, max:Integer):% ==
-          zero? max => remove_!(p,ms)
+        remove!(p: S -> Boolean, ms:%, max:Integer):% ==
+          zero? max => remove!(p,ms)
           t := ms.table
           for e in keys t | p(e) repeat
             ((n := t.e) <= max) =>
-              remove_!(e,t)
+              remove!(e,t)
               ms.count := ms.count-n
             max > 0 =>
               t.e := n-max
@@ -176,49 +176,49 @@ Multiset(S: SetCategory): Join(MultisetAggregate S, finiteAggregate,_
               ms.count := ms.count-n
           ms
 
-        remove(e:S, ms:%, max:Integer):% == remove_!(e, copy ms, max)
+        remove(e:S, ms:%, max:Integer):% == remove!(e, copy ms, max)
 
-        remove(p: S -> Boolean,ms:%,max:Integer):% == remove_!(p, copy ms, max)
+        remove(p: S -> Boolean,ms:%,max:Integer):% == remove!(p, copy ms, max)
 
-        remove_!(e:S, ms:%):% ==                        -- DictionaryOperations
+        remove!(e:S, ms:%):% ==                        -- DictionaryOperations
           t := ms.table
           if member?(e, keys t) then
             ms.count := ms.count-t.e
-            remove_!(e, t)
+            remove!(e, t)
           ms
 
-        remove_!(p:S ->Boolean, ms:%):% ==              -- DictionaryOperations
+        remove!(p:S ->Boolean, ms:%):% ==              -- DictionaryOperations
           t := ms.table
           for e in keys t | p(e) repeat
             ms.count := ms.count-t.e
-            remove_!(e, t)
+            remove!(e, t)
           ms
 
-        select_!(p: S -> Boolean, ms:%):% ==            -- DictionaryOperations
-          remove_!((s1: S): Boolean +-> not p(s1), ms)
+        select!(p: S -> Boolean, ms:%):% ==            -- DictionaryOperations
+          remove!((s1: S): Boolean +-> not p(s1), ms)
 
-        removeDuplicates_!(ms:%):% ==                   -- MultiDictionary
+        removeDuplicates!(ms:%):% ==                   -- MultiDictionary
           t := ms.table
           l := keys t
           for e in l repeat t.e := 1
           ms.count := #l
           ms
 
-        insert_!(e:S,ms:%,more:NonNegativeInteger):% == -- MultiDictionary
+        insert!(e:S,ms:%,more:NonNegativeInteger):% == -- MultiDictionary
             ms.count   := ms.count+more
             ms.table.e := ms.table.e+more
             ms
 
-        map_!(f: S->S, ms:%):% ==                       -- HomogeneousAggregate
+        map!(f: S->S, ms:%):% ==                       -- HomogeneousAggregate
           t := ms.table
           t1 := tbl()
           for e in keys t repeat
             t1.f(e) := t.e
-            remove_!(e, t)
+            remove!(e, t)
           ms.table := t1
           ms
 
-        map(f: S -> S, ms:%):% == map_!(f, copy ms)     -- HomogeneousAggregate
+        map(f: S -> S, ms:%):% == map!(f, copy ms)     -- HomogeneousAggregate
 
         parts(m:%):List S ==
           l := empty()$List(S)

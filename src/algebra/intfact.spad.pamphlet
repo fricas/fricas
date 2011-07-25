@@ -102,7 +102,7 @@ IntegerPrimesPackage(I:IntegerNumberSystem): with
       if even? m then m := m + 1
       ll:List(I) := [k::I for k in
              convert(m)@Integer..convert(n)@Integer by 2 | prime?(k::I)]
-      reverse_! concat_!(ll, l)
+      reverse! concat!(ll, l)
 
    rabinProvesComposite : (I,I,I,I,NonNegativeInteger) -> Boolean
    rabinProvesCompositeSmall : (I,I,I,I,NonNegativeInteger) -> Boolean
@@ -389,8 +389,8 @@ IntegerFactorizationPackage(I): Exports == Implementation where
 --         one?(m:= unit x) => factorList x
          ((m:= unit x) = 1) => factorList x
          (v := perfectSqrt m) case I =>
-            concat_!(factorList x, ["sqfr",v,2]$FFE)
-         concat_!(factorList x, ["sqfr",m,1]$FFE)
+            concat!(factorList x, ["sqfr",v,2]$FFE)
+         concat!(factorList x, ["sqfr",m,1]$FFE)
        makeFR(u, y)
 
     -- Pfun(y: I,n: I): I == (y^2 + 5) rem n
@@ -451,17 +451,17 @@ IntegerFactorizationPackage(I): Exports == Implementation where
     BasicSieve(r, lim) ==
        l:List(I) :=
           [1::I,2::I,2::I,4::I,2::I,4::I,2::I,4::I,6::I,2::I,6::I]
-       concat_!(l, rest(l, 3))
+       concat!(l, rest(l, 3))
        d := 2::I
        n := r
        ls := empty()$List(FFE)
        for s in l repeat
           d > lim => return makeFR(n, ls)
           if n<d*d then
-             if n>1 then ls := concat_!(ls, ["prime",n,1]$FFE)
+             if n>1 then ls := concat!(ls, ["prime",n,1]$FFE)
              return makeFR(1, ls)
           for m in 0.. while zero?(n rem d) repeat n := n quo d
-          if m>0 then ls := concat_!(ls, ["prime",d,convert m]$FFE)
+          if m>0 then ls := concat!(ls, ["prime",d,convert m]$FFE)
           d := d+s
 
     BasicMethod n ==
@@ -483,33 +483,33 @@ IntegerFactorizationPackage(I): Exports == Implementation where
        a:LMI := dictionary() -- numbers yet to be factored
        b:LMI := dictionary() -- prime factors found
        f:LMI := dictionary() -- number which could not be factored
-       insert_!(n, a)
+       insert!(n, a)
        while not empty? a repeat
-          n := inspect a; c := count(n, a); remove_!(n, a)
-          prime?(n)$IntegerPrimesPackage(I) => insert_!(n, b, c)
+          n := inspect a; c := count(n, a); remove!(n, a)
+          prime?(n)$IntegerPrimesPackage(I) => insert!(n, b, c)
           -- test for a perfect power
           (s := perfectNthRoot n).exponent > 1 =>
-            insert_!(s.base, a, c * s.exponent)
+            insert!(s.base, a, c * s.exponent)
           -- test for a difference of square
           x:=approxSqrt n;
           if (x^2<n) then x:=x+1
           (y:=perfectSqrt (x^2-n)) case I =>
-                insert_!(x+y,a,c)
-                insert_!(x-y,a,c)
+                insert!(x+y,a,c)
+                insert!(x-y,a,c)
           (d := PollardSmallFactor20 n) case I =>
              for m in 0.. while zero?(n rem d) repeat n := n quo d
-             insert_!(d, a, m * c)
-             if n > 1 then insert_!(n, a, c)
+             insert!(d, a, m * c)
+             if n > 1 then insert!(n, a, c)
           -- an elliptic curve factorization attempt should be made here
-          insert_!(n, f, c)
+          insert!(n, f, c)
        -- insert prime factors found
        while not empty? b repeat
-          n := inspect b; c := count(n, b); remove_!(n, b)
-          flb := concat_!(flb, ["prime",n,convert c]$FFE)
+          n := inspect b; c := count(n, b); remove!(n, b)
+          flb := concat!(flb, ["prime",n,convert c]$FFE)
        -- insert non-prime factors found
        while not empty? f repeat
-          n := inspect f; c := count(n, f); remove_!(n, f)
-          flb := concat_!(flb, ["nil",n,convert c]$FFE)
+          n := inspect f; c := count(n, f); remove!(n, f)
+          flb := concat!(flb, ["nil",n,convert c]$FFE)
        makeFR(u, flb)
 
 @

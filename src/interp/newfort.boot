@@ -291,9 +291,9 @@ fortran2Lines f ==
 fortran2Lines1 f ==
   -- f is a list of strings making up 1 FORTRAN statement
   -- return: a reverse list of FORTRAN lines
-  normPref := make__spaces($fortIndent)
+  normPref := make_spaces($fortIndent)
   --contPref := STRCONC(MAKE_-STRING($fortIndent-1),"&")
-  contPref := STRCONC("     &",make__spaces($fortIndent-6))
+  contPref := STRCONC("     &", make_spaces($fortIndent - 6))
   lines := NIL
   ll := $fortIndent
   while f repeat

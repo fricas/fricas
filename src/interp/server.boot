@@ -86,7 +86,7 @@ serverReadLine(stream) ==
     action = $SpadCommand =>
       $NeedToSignalSessionManager := true
       stringBuf := sockGetStringFrom($MenuServer)
-      CATCH('coerceFailure,CATCH('top__level, CATCH('SPAD__READER,
+      CATCH('coerceFailure, CATCH('top_level, CATCH('SPAD_READER,
         parseAndInterpret stringBuf)))
 --  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
       princPrompt()
@@ -109,7 +109,7 @@ parseAndInterpret str ==
 executeQuietCommand() ==
   $QuietCommand: fluid := true
   sockGetStringFrom($MenuServer)
-  CATCH('coerceFailure,CATCH('top__level, CATCH('SPAD__READER,
+  CATCH('coerceFailure, CATCH('top_level, CATCH('SPAD_READER,
     parseAndInterpret stringBuf)))
 
 parseAndEvalToHypertex str ==
@@ -123,21 +123,21 @@ parseAndEvalToString str ==
   $collectOutput:local := true
   $outputLines: local := nil
   $IOindex: local := nil
-  v := CATCH('SPAD__READER, CATCH('top__level, parseAndEvalStr str))
+  v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
   v = 'restart => ['"error"]
   NREVERSE $outputLines
 
 parseAndEvalToStringForHypertex str ==
   $collectOutput:local := true
   $outputLines: local := nil
-  v := CATCH('SPAD__READER, CATCH('top__level, parseAndEvalStr str))
+  v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
   v = 'restart => ['"error"]
   NREVERSE $outputLines
 
 parseAndEvalToStringEqNum str ==
   $collectOutput:local := true
   $outputLines: local := nil
-  v := CATCH('SPAD__READER, CATCH('top__level, parseAndEvalStr str))
+  v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
   v = 'restart => ['"error"]
   NREVERSE $outputLines
 

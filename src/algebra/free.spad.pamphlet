@@ -55,7 +55,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
       ++ reverse(l) reverses the list of monomials forming l. This
       ++ has some effect if the monoid is non-abelian, i.e.
       ++ \spad{reverse(a1\^e1 ... an\^en) = an\^en ... a1\^e1} which is different.
-    reverse_!     : % -> %
+    reverse!     : % -> %
       ++ reverse!(l) reverses the list of monomials forming l, destroying
       ++ the element l.
     size          : % -> NonNegativeInteger
@@ -102,14 +102,14 @@ ListMonoidOps(S, E, un): Exports == Implementation where
     nthExpon(f, i)   == f.(i-1+minIndex f).exp
     nthFactor(f, i)  == f.(i-1+minIndex f).gen
     reverse l        == reverse(l)$Rep
-    reverse_! l      == reverse_!(l)$Rep
+    reverse! l      == reverse!(l)$Rep
     mapGen(f, l)     == [[f(x.gen), x.exp] for x in l]
 
     mapExpon(f, l) ==
       ans:List(REC) := empty()
       for x in l repeat
         if (a := f(x.exp)) ~= 0 then ans := concat([x.gen, a], ans)
-      reverse_! ans
+      reverse! ans
 
     outputForm(l, op, opexp, id) ==
       empty? l => id::OutputForm
@@ -123,7 +123,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
 
     rightMult(f, s) ==
       empty? f => s::%
-      s = f.last.gen => (setlast_!(h := copy f, [s, f.last.exp + un]); h)
+      s = f.last.gen => (setlast!(h := copy f, [s, f.last.exp + un]); h)
       concat(f, [s, un])
 
     leftMult(s, f) ==
@@ -137,7 +137,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
           if not member?(t1,s2) then return false
       true
 
-    plus_!(s:S, n:E, f:%):% ==
+    plus!(s:S, n:E, f:%):% ==
       h := g := concat([s, n], f)
       h1 := rest h
       while not empty? h1 repeat
@@ -145,13 +145,13 @@ ListMonoidOps(S, E, un): Exports == Implementation where
           l :=
             zero?(m := n + h1.first.exp) => rest h1
             concat([s, m], rest h1)
-          setrest_!(h, l)
+          setrest!(h, l)
           return rest g
         h := h1
         h1 := rest h1
       g
 
-    plus(s, n, f) == plus_!(s,n,copy f)
+    plus(s, n, f) == plus!(s,n,copy f)
 
     plus(f, g) ==
       #f < #g => localplus(f, g)
@@ -229,7 +229,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
         1               == makeUnit()
         one? f          == empty? listOfMonoms f
         coerce(f:%): Ex == outputForm(f, "*", "^", 1)
-        hcrf(f, g)      == reverse_! hclf(reverse f, reverse g)
+        hcrf(f, g)      == reverse! hclf(reverse f, reverse g)
         f:% * s:S       == rightMult(f, s)
         s:S * f:%       == leftMult(s, f)
         factors f       == copy listOfMonoms f
@@ -245,7 +245,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
             lg := listOfMonoms g
             ls := last(lf := listOfMonoms f)
             ls.gen = lg.first.gen =>
-                setlast_!(h := copy lf,[lg.first.gen,lg.first.exp+ls.exp])
+                setlast!(h := copy lf,[lg.first.gen,lg.first.exp+ls.exp])
                 makeMulti concat(h, rest lg)
             makeMulti concat(lf, lg)
 
@@ -267,13 +267,13 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
                   if (ru:= lquo(makeMulti rest lar,
                     makeMulti rest lla)) case % then
                       if lla.first.exp > lar.first.exp then
-                        l := concat_!(l, [lla.first.gen,
+                        l := concat!(l, [lla.first.gen,
                                   (lla.first.exp - lar.first.exp)::NNI])
                         m := concat([lla.first.gen, lar.first.exp],
                                                                rest lla)
                       else m := lla
                       return [makeMulti l, makeMulti m, ru::%]
-              l  := concat_!(l, lla.first)
+              l  := concat!(l, lla.first)
               lla := rest lla
             [makeMulti la0, 1, makeMulti lar]
 
@@ -290,10 +290,10 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
                 -- Now match tail.
                 (q:=lquo(makeMulti rest llar,makeMulti rest la))case % =>
                    if llar.first.exp > la.first.exp then
-                       l := concat_!(l, [la.first.gen,
+                       l := concat!(l, [la.first.gen,
                                   (llar.first.exp - la.first.exp)::NNI])
                    return [makeMulti l, q::%]
-              l    := concat_!(l, first llar)
+              l    := concat!(l, first llar)
               llar  := rest llar
               Nlar := Nlar - 1
             "failed"
@@ -302,7 +302,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
             h:List(REC) := empty()
             for f0 in listOfMonoms f for g0 in listOfMonoms g repeat
                 f0.gen ~= g0.gen => return makeMulti h
-                h := concat_!(h, [f0.gen, min(f0.exp, g0.exp)])
+                h := concat!(h, [f0.gen, min(f0.exp, g0.exp)])
                 f0.exp ~= g0.exp => return makeMulti h
             makeMulti h
 
@@ -312,13 +312,13 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
                 a0.gen ~= laq.first.gen or a0.exp > laq.first.exp =>
                                                           return "failed"
                 if a0.exp = laq.first.exp then laq := rest laq
-                else setfirst_!(laq, [laq.first.gen,
+                else setfirst!(laq, [laq.first.gen,
                                          (laq.first.exp - a0.exp)::NNI])
             makeMulti laq
 
         rquo(qa, a) ==
             (u := lquo(reverse qa, reverse a)) case "failed" => "failed"
-            reverse_!(u::%)
+            reverse!(u::%)
 
         if S has OrderedSet then
           a < b ==
@@ -385,7 +385,7 @@ FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
         s:S ^ n:Integer        == makeTerm(s, n)
         f:% * s:S               == rightMult(f, s)
         s:S * f:%               == leftMult(s, f)
-        inv f                   == reverse_! mapExpon("-", f)
+        inv f                   == reverse! mapExpon("-", f)
         factors f               == copy listOfMonoms f
         mapExpon(f, x)          == mapExpon(f, x)$Rep
         mapGen(f, x)            == mapGen(f, x)$Rep
@@ -401,12 +401,12 @@ FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
                      r := rest r
                      q := rest q
             empty? r => makeMulti q
-            empty? q => makeMulti reverse_! r
+            empty? q => makeMulti reverse! r
             r.first.gen = q.first.gen =>
-              setlast_!(h := reverse_! r,
+              setlast!(h := reverse! r,
                                 [q.first.gen, q.first.exp + r.first.exp])
-              makeMulti concat_!(h, rest q)
-            makeMulti concat_!(reverse_! r, q)
+              makeMulti concat!(h, rest q)
+            makeMulti concat!(reverse! r, q)
 
 @
 \section{category FAMONC FreeAbelianMonoidCategory}

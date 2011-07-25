@@ -113,7 +113,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
     dmax(rec, c, l)     == innermax(rec, l, z +-> - order(z, c)::Z)
     tau0(p, q)          == ((q exquo (p ^ order(q, p)))::UP) rem p
     poly1(c, cp, i)     == */[monomial(1,1)$UP2 - (j * cp)::UP2 for j in 0..i-1]
-    getIndices(n, l)    == removeDuplicates_! concat [r.ij for r in l | r.deg=n]
+    getIndices(n, l)    == removeDuplicates! concat [r.ij for r in l | r.deg=n]
     denomRicDE l        == */[c ^ bound(c, l) for c in factoredDenomRicDE l]
     polyRicDE(l, zeros) == concat([0, l], polysol(l, 0, false, zeros))
 
@@ -126,7 +126,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       ans:List(FRC) := empty()
       finite? and zero? b => ans
       lc := leadingDenomRicDE(c, op)
-      if finite? then lc := select_!(z +-> z.deg <= b, lc)
+      if finite? then lc := select!(z +-> z.deg <= b, lc)
       for rec in lc repeat
         for r in zeros(c, rec.eq) | r ~= 0 repeat
           rcn := r /$RF (c ^ rec.deg)
@@ -134,7 +134,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
           sols := padicsol(c, neweq, (rec.deg-1)::N, true, zeros)
           ans :=
             empty? sols => concat([rcn, neweq], ans)
-            concat_!([[rcn + sol.frac, sol.eq] for sol in sols], ans)
+            concat!([[rcn + sol.frac, sol.eq] for sol in sols], ans)
       ans
 
     leadingDenomRicDE(c, l) ==
@@ -146,7 +146,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
         not(empty?(ind := dmax(rec, c, l))) repeat
           ans := concat([rec.deg, getPol(rec, c, l, ind)], ans)
           done := concat(rec.deg, done)
-      sort_!((z1, z2) +-> z1.deg > z2.deg, ans)
+      sort!((z1, z2) +-> z1.deg > z2.deg, ans)
 
     getPol(rec, c, l, ind) ==
 --      one?(rec.deg) => getPol1(ind, c, l)
@@ -193,7 +193,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
         not(empty?(ind := infmax(rec, l))) repeat
           ans := concat([rec.deg, getPoly(rec, l, ind)], ans)
           done := concat(rec.deg, done)
-      sort_!((z1, z2) +-> z1.deg > z2.deg, ans)
+      sort!((z1, z2) +-> z1.deg > z2.deg, ans)
 
     factoredDenomRicDE l ==
       bd := factors balancedFactorisation(leadingCoefficient l, coefficients l)
@@ -247,7 +247,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
         sols := fracsol(neweq, zeros, rest lc)
         ans :=
           empty? sols => concat(rec, ans)
-          concat_!([[rec.frac + sol.frac, sol.eq] for sol in sols], ans)
+          concat!([[rec.frac + sol.frac, sol.eq] for sol in sols], ans)
       ans
 
 -- returns [] if the solutions of l have no polynomial component
@@ -255,7 +255,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
       ans:List(POL) := empty()
       finite? and zero? b => ans
       lc := leadingCoefficientRicDE l
-      if finite? then lc := select_!(z +-> z.deg <= b, lc)
+      if finite? then lc := select!(z +-> z.deg <= b, lc)
       for rec in lc repeat
         for a in zeros(rec.eq) | a ~= 0 repeat
           atn:UP := monomial(a, rec.deg)
@@ -263,7 +263,7 @@ PrimitiveRatRicDE(F, UP, L, LQ): Exports == Implementation where
           sols := polysol(neweq, (rec.deg - 1)::N, true, zeros)
           ans :=
             empty? sols => concat([atn, neweq], ans)
-            concat_!([[atn + sol.poly, sol.eq] for sol in sols], ans)
+            concat!([[atn + sol.poly, sol.eq] for sol in sols], ans)
       ans
 
 @
@@ -406,7 +406,7 @@ RationalRicDE(F, UP): Exports == Implementation where
       for i in 0..n repeat
         ans := ans + monomial((sy := new s)::P, i::N)
         l := concat(sy, l)
-      [ans, reverse_! l]
+      [ans, reverse! l]
 
     ratsln l ==
       ls:List(SY) := empty()
@@ -491,7 +491,7 @@ RationalRicDE(F, UP): Exports == Implementation where
       n := degree l
       ans:List(QF) := empty()
       for rec in singRicDE(l, ezfactor) repeat
-        ans := removeDuplicates_! concat_!(ans,
+        ans := removeDuplicates! concat!(ans,
                          [rec.frac + f for f in nonSingSolve(n, rec.eq, zeros)])
         #ans = n => return ans
       ans
@@ -501,7 +501,7 @@ RationalRicDE(F, UP): Exports == Implementation where
     nonSingSolve(n, l, zeros) ==
       ans:List(QF) := empty()
       for rec in polyRicDE(l, zeros) repeat
-        ans := removeDuplicates_! concat_!(ans, nopoly(n,rec.poly,rec.eq,zeros))
+        ans := removeDuplicates! concat!(ans, nopoly(n,rec.poly,rec.eq,zeros))
         #ans = n => return ans
       ans
 
@@ -515,7 +515,7 @@ RationalRicDE(F, UP): Exports == Implementation where
       ans:List(QF) := empty()
       for rec in constantCoefficientRicDE(l, z +-> constantRic(z, zeros)) _
       repeat
-        ans := removeDuplicates_! concat_!(ans,
+        ans := removeDuplicates! concat!(ans,
                   [(rec.constant::UP + p)::QF + f for f in logDerOnly(rec.eq)])
         #ans = n => return ans
       ans

@@ -216,11 +216,11 @@ CharacterClass: Join(SetCategory, ConvertibleTo String,
         empty():%       == charClass []
         brace():%       == charClass []
 
-        insert_!(c, a)  ==
+        insert!(c, a)  ==
             (i := ord c) < N => (a(i) := true; a)
             error "character code too large"
 
-        remove_!(c, a)  ==
+        remove!(c, a)  ==
             if(i := ord c) < N then a(i) := false
             a
 
@@ -229,7 +229,7 @@ CharacterClass: Join(SetCategory, ConvertibleTo String,
                  return char i
             error "Cannot take a character from an empty class."
 
-        extract_!(a) ==
+        extract!(a) ==
             for i in 0..N-1 | a.i repeat
                  a.i := false
                  return char i
@@ -241,10 +241,10 @@ CharacterClass: Join(SetCategory, ConvertibleTo String,
             b
 
         temp: % := new(N, false)$Rep
-        map_!(f, a) ==
-            fill_!(temp, false)
+        map!(f, a) ==
+            fill!(temp, false)
             for i in 0..N-1 | a.i repeat temp(ord f char i) := true
-            copyInto_!(a, temp, 0)
+            copyInto!(a, temp, 0)
 
         parts a ==
             [char i for i in 0..N-1 | a.i]
@@ -298,8 +298,8 @@ IndexedString(mn:Integer): Export == Implementation where
     insert(s:%, t:%, i:I)  == concat(concat(s(mn..i-1), t), s(i..))
     coerce(s:%):OutputForm == outputForm(s pretend String)
     minIndex s             == mn
-    upperCase_! s          == map_!(upperCase, s)
-    lowerCase_! s          == map_!(lowerCase, s)
+    upperCase! s          == map!(upperCase, s)
+    lowerCase! s          == map!(lowerCase, s)
 
     latex s                == concat("\mbox{``", concat(s pretend String, "''}"))
 
@@ -361,7 +361,7 @@ IndexedString(mn:Integer): Export == Implementation where
             l := concat(s(i..j-1), l)
             for i in j..n while s.i = c repeat 0
         if i <= n then l := concat(s(i..n), l)
-        reverse_! l
+        reverse! l
     split(s, cc) ==
         n := maxIndex s
         for i in mn..n while member?(s.i,cc) repeat 0
@@ -371,7 +371,7 @@ IndexedString(mn:Integer): Export == Implementation where
             l := concat(s(i..j-1), l)
             for i in j..n while member?(s.i,cc) repeat 0
         if i <= n then l := concat(s(i..n), l)
-        reverse_! l
+        reverse! l
 
     leftTrim(s, c) ==
         n := maxIndex s
@@ -393,11 +393,11 @@ IndexedString(mn:Integer): Export == Implementation where
         t := new(+/[#s for s in l], space$C)
         i := mn
         for s in l repeat
-            copyInto_!(t, s, i)
+            copyInto!(t, s, i)
             i := i + #s
         t
 
-    copyInto_!(y, x, s) ==
+    copyInto!(y, x, s) ==
         m := #x
         n := #y
         s := s - mn

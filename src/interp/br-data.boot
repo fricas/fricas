@@ -652,7 +652,7 @@ transKCatAlist(conform,domname,s) == main where
           for (ap := [args,:pred]) in CDR pair repeat
             match? :=
               domargs = args => true
-              HAS__SHARP__VAR args => domargs = sublisFormal(KDR domname,args)
+              HAS_SHARP_VAR args => domargs = sublisFormal(KDR domname, args)
               nil
             null match? => 'skip
             npred := sublisFormal(KDR leftForm,pred)

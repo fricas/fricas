@@ -179,13 +179,13 @@ Vector(R:Type): Exports == Implementation where
  Implementation ==>
   IndexedVector(R, VECTORMININDEX) add
 
-     -- qelt and qsetelt_! are logically unnecessary, but good for
+     -- qelt and qsetelt! are logically unnecessary, but good for
      -- performance
      Qelt1 ==> QAREF1O$Lisp
      Qsetelt1 ==> QSETAREF1O$Lisp
 
      qelt(x, i) == Qelt1(x, i, VECTORMININDEX@Integer)
-     qsetelt_!(x, i, s) == Qsetelt1(x, i, s, VECTORMININDEX@Integer)
+     qsetelt!(x, i, s) == Qsetelt1(x, i, s, VECTORMININDEX@Integer)
 
      vector l == construct l
      if R has ConvertibleTo InputForm then
@@ -317,7 +317,7 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
           ans:Matrix(R) := new(dim, #v, 0)
           for i in minRowIndex ans .. maxRowIndex ans repeat
             for j in minColIndex ans .. maxColIndex ans repeat
-              qsetelt_!(ans, i, j, qelt(qelt(v, j), i))
+              qsetelt!(ans, i, j, qelt(qelt(v, j), i))
           ans
 
         reducedSystem(m:Matrix %):Matrix(R) ==
@@ -470,7 +470,7 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
           for i in 1..dim repeat
             (c := subtractIfCan(qelt(u, i)$Rep, qelt(v,i)$Rep)) case "failed" =>
                     return "failed"
-            qsetelt_!(w, i, c::R)$Rep
+            qsetelt!(w, i, c::R)$Rep
           w pretend %
 
       if R has Ring then
@@ -481,7 +481,7 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
           w := new(dim,0)$Vector(R)
           for i in minIndex w .. maxIndex w repeat
             (u := recip qelt(z, i)) case "failed" => return "failed"
-            qsetelt_!(w, i, u::R)
+            qsetelt!(w, i, u::R)
           w pretend %
 
         unitVector i ==

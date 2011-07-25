@@ -60,7 +60,7 @@ extractCONDClauses clauses ==
 COMP_-1(x) ==
   [fname, lamex, :.] := x
   $FUNNAME : local := fname
-  $FUNNAME__TAIL : local := [fname]
+  $FUNNAME_TAIL : local := [fname]
   $CLOSEDFNS : local := nil
   lamex := compTran lamex
   compNewnam lamex
@@ -141,7 +141,7 @@ compTran1(x) ==
         BREAK()
     MEMQ(u, '(SPADLET SETQ LET)) =>
         if NOT($BOOT) or MEMQ($FUNNAME, $traceletFunctions) then
-            NCONC(x, $FUNNAME__TAIL)
+            NCONC(x, $FUNNAME_TAIL)
             RPLACA(x, "LETT")
         else if $TRACELETFLAG then
             -- this devious trick (due to RDJ) is needed since the compile
