@@ -255,9 +255,27 @@ mkAnd2(a,b) ==
 
 PredImplies(a,b) ==
     --true if a => b in the sense of logical implication
---a = "true" => true
+  a = false => true
   b = true => true
   a=b => true
+  a is ["OR", :al] =>
+      res := true
+      for a1 in al while res repeat
+          res := PredImplies(a1, b)
+      res
+  b is ["OR", :bl] =>
+      for b1 in bl while not(res) repeat
+          res := PredImplies(a, b1)
+      res
+  b is ["AND", :bl] =>
+      res := true
+      for b1 in bl while res repeat
+          res := PredImplies(a, b1)
+      res
+  a is ["AND", :al] =>
+      for a1 in al while not(res) repeat
+          res := PredImplies(a1, b)
+      res
   false         -- added by RDJ: 12/21/82
 --error()       -- for the time being
 
@@ -304,6 +322,10 @@ MachineLevelSubset(a,b) ==
 
 --% Ancestor chasing code
 
+get_cond(x) ==
+    rest(x) => CADR x
+    true
+
 FindFundAncs l ==
   --l is a list of categories and associated conditions (a list of 2-lists
   --returns a list of them and all their fundamental ancestors
@@ -312,15 +334,15 @@ FindFundAncs l ==
   [l1, cond1] := CAR l
   f1:= CatEval l1
   ans := FindFundAncs rest l
-  f1.(0) = nil => ans
   -- Does not work with Shoe (garbage items ???)
   --  ll := [[CatEval xf, mkAnd(cond1, xc)] for [xf, xc] in CADR f1.4]
-  ll := [[CatEval CAR x, mkAnd(cond1, CADR x)] for x in CADR f1.4]
-  for u in FindFundAncs ll repeat
+  ll := [[CatEval CAR x, mkAnd(cond1, get_cond(x))] for x in CADR f1.4]
+  for u in ll repeat
         [u1, uc] := u
         x:= ASSQ(u1, ans) =>
             ans:= [[u1, mkOr(CADR x, uc)],:delete(x,ans)]
         ans:= [u,:ans]
+  f1.(0) = nil => ans
   --testing to see if l1 is already there
   x := ASSQ(l1, ans) => [[l1, mkOr(cond1, CADR x)],:delete(x,ans)]
   cond1 = true =>
@@ -339,12 +361,6 @@ CatEval x ==
   REFVECP x => x
   $InteractiveMode => CAR compMakeCategoryObject(x,$CategoryFrame)
   CAR compMakeCategoryObject(x,$e)
-
---RemovePrinAncs(l,leaves) ==
---  l=nil => nil
---  leaves:= [first y for y in leaves]
---               --remove the slot pointers
---  [x for x in l | not AncestorP(x.(0),leaves)]
 
 AncestorP(xname,leaves) ==
   -- checks for being a principal ancestor of one of the leaves
@@ -375,42 +391,14 @@ DescendantP(a,b) ==
 
 --% The implementation of Join
 
-JoinInner(l,$e) ==
-  $NewCatVec: local := nil
-  CondList:= nil
-  for u in l repeat
-    for at in u.2 repeat
-      at2:= first at
-      if atom at2 then BREAK()
-      MEMQ(QCAR at2,$Attributes) => BREAK()
-      null isCategoryForm(at2,$e) => BREAK()
-
-      pred:= first rest at
-        -- The predicate under which this category is conditional
-      member(pred,get("$Information","special",$e)) => l:= [:l,CatEval at2]
-          --It's true, so we add this as unconditional
-      not (pred is ["and",:.]) => CondList:= [[CatEval at2,pred],:CondList]
-      pred':=
-        [u
-          for u in rest pred | not member(u,get("$Information","special",$e))
-            and not (u=true)]
-      null pred' => l:= [:l,CatEval at2]
-      LENGTH pred'=1 => CondList:= [[CatEval at2,pred'],:CondList]
-      CondList:= [[CatEval at2,["and",:pred']],:CondList]
-  [$NewCatVec,:l]:= l
-  l':= [:CondList,:[[u,true] for u in l]]
-    -- This is a list of all the categories that this extends
-    -- conditionally or unconditionally
-  sigl:= $NewCatVec.(1)
-  attl:= $NewCatVec.2
-  globalDomains:= $NewCatVec.5
-  FundamentalAncestors:= CADR $NewCatVec.4
-  if $NewCatVec.(0) then FundamentalAncestors:=
-    [[$NewCatVec.(0)],:FundamentalAncestors]
+find_ffl(vec0, l) ==
+  FundamentalAncestors := [[first x, get_cond(x)] for x in CADR vec0.4]
+  if vec0.(0) then FundamentalAncestors:=
+    [[vec0.(0)],:FundamentalAncestors]
                     --principal ancestor . all those already included
   -- Copy to avoid corrupting original vector
-  $NewCatVec:= COPY_-SEQ $NewCatVec
-  for [b,condition] in FindFundAncs l' repeat
+
+  for [b, condition] in FindFundAncs l repeat
       --This loop implements Category Subsumption
           --as described in SYSTEM SCRIPT
     if not (b.(0)=nil) then
@@ -432,23 +420,39 @@ JoinInner(l,$e) ==
               -- the new 'b' is more often true than the old one 'anc'
               FundamentalAncestors := delete(anc, FundamentalAncestors)
       FundamentalAncestors := [[b.(0), condition], :FundamentalAncestors]
+  FundamentalAncestors
+
+JoinInner(l,$e) ==
+  $NewCatVec: local := nil
+  CondList := nil
+  CondList2 := nil
+  for u in l repeat
+    for at in u.2 repeat
+      at2:= first at
+      if atom at2 then BREAK()
+      MEMQ(QCAR at2,$Attributes) => BREAK()
+      null isCategoryForm(at2,$e) => BREAK()
+
+      pred:= first rest at
+        -- The predicate under which this category is conditional
+      -- member(pred,get("$Information","special",$e)) => l:= [:l,CatEval at2]
+          --It's true, so we add this as unconditional
+      -- not (pred is ["and",:.]) => CondList:= [[CatEval at2,pred],:CondList]
+      CondList:= [[CatEval at2,pred],:CondList]
+  [$NewCatVec,:l]:= l
+  l':= [:CondList,:[[u,true] for u in l]]
+    -- This is a list of all the categories that this extends
+    -- conditionally or unconditionally
+  sigl:= $NewCatVec.(1)
+  globalDomains:= $NewCatVec.5
+  $NewCatVec:= COPY_-SEQ $NewCatVec
+  FundamentalAncestors := find_ffl($NewCatVec, l')
+
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
-    attl := S_+(b.2, attl)
     globalDomains:= [:globalDomains,:S_-(b.5,globalDomains)]
   for b in CondList repeat
     newpred:= first rest b
-    for u in (first b).2 repeat
-      v:= assoc(first u,attl)
-      null v =>
-        attl:=
-          CADR u=true => [[first u,newpred],:attl]
-          [[first u,["and",newpred,CADR u]],:attl]
-      CADR v=true => nil
-      attl:= delete(v,attl)
-      attl:=
-        CADR u=true => [[first u,mkOr(CADR v,newpred)],:attl]
-        [[first u,mkOr(CADR v,mkAnd(newpred,CADR u))],:attl]
     sigl:=
       SigListUnion(
         [AddPredicate(DropImplementations u,newpred) for u in (first b).(1)],sigl) where
@@ -456,13 +460,15 @@ JoinInner(l,$e) ==
             newpred=true => op
             oldpred=true => [sig,newpred,:implem]
             [sig,MKPF([oldpred,newpred],"and"),:implem]
-  FundamentalAncestors:= [x for x in FundamentalAncestors | rest x]
-               --strip out the pointer to Principal Ancestor
   c:= first $NewCatVec.4
   pName:= $NewCatVec.(0)
   if pName and not member(pName,c) then c:= [pName,:c]
+  -- strip out the pointer to Principal Ancestor
+  if pName then
+      FundamentalAncestors :=
+          [x for x in FundamentalAncestors | first(x) ~= pName]
   $NewCatVec.4:= [c,FundamentalAncestors,CADDR $NewCatVec.4]
-  mkCategory(sigl, attl, globalDomains, $NewCatVec)
+  mkCategory(sigl, nil, globalDomains, $NewCatVec)
 
 Join(:L) ==
   env :=
