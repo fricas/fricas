@@ -42,6 +42,98 @@
 
 (in-package "BOOT")
 
+; moved from bootfuns.lisp
+
+;          Provide forward references to Boot Code for functions to be at
+;          defined at the boot level, but which must be accessible
+;          not defined at lower levels.
+
+(defmacro def-boot-var (p where)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (defparameter ,p nil ,where)
+     (export '(,p) "BOOT")))
+
+(defmacro def-boot-val (p val where)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (defparameter ,p ,val ,where)
+     (export '(,p) "BOOT")))
+
+(def-boot-val |$timerTicksPerSecond| INTERNAL-TIME-UNITS-PER-SECOND
+    "for TEMPUS-FUGIT and $TOTAL-ELAPSED-TIME")
+(def-boot-val $boxString
+  (concatenate 'string (list (code-char #x1d) (code-char #xe2)))
+  "this string of 2 chars displays as a box")
+(def-boot-val |$quadSymbol| $boxString "displays an APL quad")
+(def-boot-val $escapeString  (string (code-char 27))
+   "string for single escape character")
+(def-boot-val |$boldString| (concatenate 'string $escapeString "[12m")
+  "switch into bold font")
+(def-boot-val |$normalString| (concatenate 'string $escapeString "[0;10m")
+  "switch back into normal font")
+(def-boot-val |$BreakMode| '|query|                 "error.boot")
+
+
+(def-boot-var |$compUniquelyIfTrue|                 "Compiler>Compiler.boot")
+(def-boot-val |$currentLine|    ""          "current input line for history")
+
+(def-boot-var |$exitMode|                           "???")
+(def-boot-var |$exitModeStack|                      "???")
+
+(def-boot-var |$fromSpadTrace|                      "Interpreter>Trace.boot")
+
+(def-boot-val |$genSDVar| 0         "counter for genSomeVariable" )
+
+(def-boot-var |$insideCapsuleFunctionIfTrue|        "???")
+(def-boot-var |$insideCategoryIfTrue|               "???")
+(def-boot-var |$insideExpressionIfTrue|             "???")
+(def-boot-var |$insideFunctorIfTrue|                "???")
+(def-boot-var |$insideWhereIfTrue|                  "???")
+
+(def-boot-var |$leaveLevelStack|                    "???")
+(def-boot-var |$libFile|                            "Compiler>LispLib.boot")
+(def-boot-val $LISPLIB nil                  "whether to produce a lisplib or not")
+(def-boot-var |$lisplibForm|                        "Compiler>LispLib.boot")
+(def-boot-var |$lisplibKind|                        "Compiler>LispLib.boot")
+(def-boot-var |$lisplibModemapAlist|                "Compiler>LispLib.boot")
+(def-boot-var |$lisplibModemap|                     "Compiler>LispLib.boot")
+(def-boot-var |$lisplibOperationAlist|              "Compiler>LispLib.boot")
+
+(def-boot-var |$mapSubNameAlist|                    "Interpreter>Trace.boot")
+(def-boot-var |$mathTrace|                          "Interpreter>Trace.boot")
+(def-boot-var |$mathTraceList|              "Controls mathprint output for )trace.")
+
+(def-boot-val |$oldTime| 0                          "???")
+
+(def-boot-var |$postStack|                          "???")
+(def-boot-var |$previousTime|                       "???")
+(def-boot-val |$printLoadMsgs|  '|off|          "Interpreter>SetVarT.boot")
+(def-boot-var |$PrintOnly|                          "Compiler>LispLib.boot")
+(def-boot-var |$reportBottomUpFlag|                 "Interpreter>SetVarT.boot")
+(def-boot-var |$reportFlag|                         "Interpreter>SetVars.boot")
+(def-boot-var |$returnMode|                         "???")
+(def-boot-var |$semanticErrorStack|                 "???")
+(def-boot-val |$SetFunctions| nil  "checked in SetFunctionSlots")
+
+(def-boot-val $SPAD nil                             "Is this Spad code?")
+
+(def-boot-val |$timerOn| t                          "???")
+(def-boot-var |$topOp|                             "See displayPreCompilationErrors")
+(def-boot-val |$traceDomains| t                      "enables domain tracing")
+(def-boot-val |$TraceFlag| t                        "???")
+(def-boot-var |$tracedSpadModemap|                  "Interpreter>Trace.boot")
+(def-boot-var |$traceletFunctions|                  "???")
+(def-boot-var |$traceNoisely|                       "Interpreter>Trace.boot")
+(def-boot-var |$TranslateOnly|                      "???")
+
+(def-boot-var |$warningStack|                       "???")
+(def-boot-val |$whereList| () "referenced in format boot formDecl2String")
+
+(def-boot-val |$inputPromptType| '|step|  "checked in MKPROMPT")
+(def-boot-val |$IOindex| 0                 "step counter")
+
+; End of moved fragment
+
+
 (defvar |$compilingMap| ())
 (defvar |$definingMap| nil)
 
@@ -1059,3 +1151,48 @@
          (setq line-list (cons (subseq str bol eol) line-list)))
      (setq bol (+ eol 1)))
     (nreverse line-list)))
+
+; moved from comp.lisp
+
+(export '(Comp SLAM SPADSLAM FLUID))
+
+;;; Common Block section
+
+(defun |compAndDefine| (L)
+  (let ((|$comp370_apply| (function print-and-eval-defun)))
+    (declare (special |$comp370_apply|))
+    (COMP L)))
+
+(defun comp_quietly_using_driver (driver fn)
+  (let ((|$comp370_apply|
+         (if |$InteractiveMode|
+             (if |$compileDontDefineFunctions| #'compile-defun #'eval-defun)
+           #'print-defun))
+     ;; following creates a null outputstream if $InteractiveMode
+        (*standard-output*
+         (if |$InteractiveMode| (make-broadcast-stream)
+           *standard-output*))
+        (*compile-verbose* nil))
+    (declare (special |$comp370_apply|))
+    #-:GCL
+    (handler-bind ((warning #'muffle-warning)
+                   #+:sbcl (sb-ext::compiler-note #'muffle-warning))
+      (funcall driver fn)
+      )
+    #+:GCL
+      (funcall driver fn)
+))
+
+(defun |compQuietly| (fn)
+    (comp_quietly_using_driver #'COMP fn))
+
+(defun |compileFileQuietly| (fn)
+    (comp_quietly_using_driver #'COMPILE-FILE fn))
+
+(defun |compileQuietly| (fn)
+    (comp_quietly_using_driver #'COMP370 fn))
+
+;; used to be called POSN - but that interfered with a CCL function
+(DEFUN POSN1 (X L) (position x l :test #'equal))
+
+; end of moved fragment

@@ -57,6 +57,27 @@ extractCONDClauses clauses ==
 
 -- from comp.lisp
 
+)if false
+
+PURPOSE: Comp is a modified version of Compile which is a preprocessor for
+         calls to Lisp Compile.  It searches for variable assignments of
+         form (SPADLET a b). It allows you to create local variables without
+         declaring them local by moving them into a PROG variable list.
+
+         Comp recognizes as new lambda types the forms SPADSLAM, SLAM,
+         and entries on $clamList.  These cache results.  ("Saving LAMbda".)
+         If the function is called with EQUAL arguments, returns the previous
+         result computed.
+
+         Comp expands iteration constructs (REPEAT, COLLECT, ...).
+
+         The package also causes traced things which are recompiled to
+         become untraced.
+
+         This code was used for Boot, but now is only used on output
+         of Spad and interpreter compilers.
+)endif
+
 COMP_-1(x) ==
   [fname, lamex, :.] := x
   $FUNNAME : local := fname
