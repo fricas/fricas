@@ -46,11 +46,12 @@
 ++   \spad{IndexedDirectProductCategory}
 ++   but at the moment there is no need for this.
 FreeModuleCategory(R, S):Category == Exports where
-   R: Ring
+   R : Join(SemiRng, AbelianMonoid)
    S: OrderedSet
    Term ==> Record(k: S, c: R)
 
-   Exports == Join(BiModule(R,R), RetractableTo S, IndexedDirectProductCategory(R,S)) with
+   Exports == Join(BiModule(R,R), IndexedDirectProductCategory(R,S)) with
+        if R has SemiRing then RetractableTo S
         "*"                : (R, S) -> %
           ++ \spad{r*b} returns the product of \spad{r} by \spad{b}.
         "*":(S,R) -> %
@@ -132,7 +133,7 @@ FreeModuleCategory(R, S):Category == Exports where
 ++   Author: Michel Petitot (petitot@lifl.fr)
 
 
-FreeModule(R:Ring,S:OrderedSet):
+FreeModule(R : Join(SemiRng, AbelianMonoid), S : OrderedSet) :
         Join(BiModule(R,R),FreeModuleCategory(R,S)) with
     if R has CommutativeRing then Module(R)
  == IndexedDirectProductObject(R, S) add
@@ -154,12 +155,16 @@ FreeModule(R:Ring,S:OrderedSet):
              (r = 1) => x
            --map(x+->r*x1,x)
              [[u.k,r*u.c] for u in x ]
-       else
+       else if R has Monoid then
          r * x  ==
              zero? r => 0
 --             one? r => x
              (r = 1) => x
            --map(x1+->r*x1,x)
+             [[u.k,a] for u in x | (a:=r*u.c) ~= 0$R]
+       else
+         r * x  ==
+             zero? r => 0
              [[u.k,a] for u in x | (a:=r*u.c) ~= 0$R]
        if R has EntireRing then
          x * r  ==
@@ -168,14 +173,17 @@ FreeModule(R:Ring,S:OrderedSet):
              (r = 1) => x
            --map(x1+->r*x1,x)
              [[u.k,u.c*r] for u in x ]
-       else
+       else if R has Monoid then
          x * r  ==
              zero? r => 0
 --             one? r => x
              (r = 1) => x
            --map(x1+->r*x1,x)
              [[u.k,a] for u in x | (a:=u.c*r) ~= 0$R]
-
+       else
+         x * r  ==
+             zero? r => 0
+             [[u.k,a] for u in x | (a:=u.c*r) ~= 0$R]
        r * s ==
          r = 0 => 0
          [[s,r]$Term]
@@ -184,13 +192,18 @@ FreeModule(R:Ring,S:OrderedSet):
          r = 0 => 0
          [[s,r]$Term]
 
-       coerce(x) : OutputForm ==
-         null x => (0$R) :: OutputForm
-         le : List OutputForm := nil
-         for rec in reverse x repeat
-           rec.c = 1 => le := cons(rec.k :: OutputForm, le)
-           le := cons(rec.c :: OutputForm *  rec.k :: OutputForm, le)
-         reduce("+",le)
+       if R has Monoid then
+           coerce(x) : OutputForm ==
+               null x => (0$R) :: OutputForm
+               le : List OutputForm := nil
+               for rec in reverse x repeat
+                   rec.c = 1 => le := cons(rec.k :: OutputForm, le)
+                   le := cons(rec.c :: OutputForm *  rec.k :: OutputForm, le)
+               reduce("+", le)
+       else
+           coerce(x) : OutputForm ==
+               reduce("+", [rec.c :: OutputForm *  rec.k :: OutputForm
+                             for rec in x])
 
        leadingMonomial x == x.first.k
 
@@ -200,16 +213,18 @@ FreeModule(R:Ring,S:OrderedSet):
 
        monomials x == [ monom (t.k, t.c) for t in x]
 
-       retractIfCan x ==
-         numberOfMonomials(x) ~= 1 => "failed"
-         x.first.c = 1 => x.first.k
-         "failed"
+       if R has SemiRing then
+           retractIfCan x ==
+               numberOfMonomials(x) ~= 1 => "failed"
+               x.first.c = 1 => x.first.k
+               "failed"
 
-       retract x ==
-         (rr := retractIfCan x) case "failed" => error "FM1.retract impossible"
-         rr :: S
+           retract x ==
+               (rr := retractIfCan x) case "failed" =>
+                   error "FM1.retract impossible"
+               rr :: S
 
-       coerce(s:S):% == [[s,1$R]]
+           coerce(s : S):% == [[s, 1$R]]
 
 -- the following is to be replaced by monomial(r,b) everywhere
        monom(b,r):% == [[b,r]$Term]
@@ -300,7 +315,8 @@ FreeModuleFunctions2(R:CommutativeRing, S:OrderedSet,M1:FreeModuleCategory(R,S),
 ++ by the \spadtype{DistributedMultivariatePolynomial} domain where
 ++ the exponent domain is a direct product of non negative integers.
 
-PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
+PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
+              ) : T == C
  where
   T == FiniteAbelianMonoidRing(R,E) with
     --assertions
@@ -311,6 +327,7 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
           ++ canonicalUnitNormal guarantees that the function
           ++ unitCanonical returns the same representative for all
           ++ associates of any particular element.
+       if R has Comparable then Comparable
 
   C == FreeModule(R,E) add
     --representations
@@ -331,8 +348,10 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
        commutative := R has CommutativeRing
 
     --local operations
-       1  == [[0$E,1$R]]
-       characteristic  == characteristic$R
+       if R has AbelianMonoid then
+           1  == [[0$E,1$R]]
+       if R has Ring then
+           characteristic  == characteristic$R
        numberOfMonomials x  == (# x)$Rep
        degree p == if null p then 0 else p.first.k
        minimumDegree p == if null p then 0 else (last p).k
@@ -376,7 +395,8 @@ PolynomialRing(R:Ring,E:OrderedAbelianMonoid): T == C
            (u::R)::%
 
        coerce(r) == if zero? r then 0$% else [[0$E,r]]
-       coerce(n) == (n::R)::%
+       if R has Ring then
+           coerce(n) == (n::R)::%
 
        ground?(p): Boolean == empty? p or (empty? rest p and zero? degree p)
 
