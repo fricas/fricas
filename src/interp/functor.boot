@@ -429,6 +429,7 @@ InvestigateConditions catvecListMaker ==
   and/[member(u,necessarySecondaries) for u in secondaries] =>
     [true,:[true for u in secondaries]]
   HackSlot4:=
+    MaximalPrimary = nil => nil
     MinimalPrimary=MaximalPrimary => nil
     MaximalPrimaries:=[MaximalPrimary,:CAR (CatEval MaximalPrimary).4]
     MinimalPrimaries:=[MinimalPrimary,:CAR (CatEval MinimalPrimary).4]
