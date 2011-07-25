@@ -163,7 +163,7 @@ knownInfo pred ==
   member(pred,get("$Information","special",$e)) => true
   not($infoHash) => hashed_known_info(pred)
   ress := HGET($infoHash, pred) =>
-      ress = $cycleMarker => ress
+      ress = $cycleMarker => nil
       ress
   -- avoid cycles
   HPUT($infoHash, pred, $cycleMarker)
