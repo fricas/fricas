@@ -330,7 +330,7 @@ getDefaultingOps catname ==
 
 axFormatDefaultOpSig(op, sig, catops) ==
   #sig > 1 => axFormatOpSig(op,sig)
-  nsig := MSUBST('$,'($), sig) -- dcSig listifies '$ ??
+  nsig := substitute('$, '($), sig) -- dcSig listifies '$ ??
   (catsigs := LASSOC(op, catops)) and
     (catsig := assoc(nsig, catsigs)) and last(catsig) = 'CONST =>
        axFormatConstantOp(op, sig)

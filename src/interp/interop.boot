@@ -578,7 +578,7 @@ hashNewLookupInCategories(op,sig,dom,dollar) ==
   varList := ['$,:$FormalMapVariableList]
   valueList := [dom,:[dom.(5+i) for i in 1..(# rest dom.0)]]
   valueList := [MKQ val for val in valueList]
-  nsig := MSUBST(dom.0,dollar.0,sig)
+  nsig := substitute(dom.0, dollar.0, sig)
   for i in 0..MAXINDEX packageVec |
        (entry := packageVec.i) and entry ~= 'T repeat
     package :=

@@ -170,11 +170,7 @@ newLookupInCategories(op,sig,dom,dollar) ==
     form2String devaluate dom,'"-----> searching default packages for ",op)
   predvec := dom.3
   packageVec := QCAR slot4
---the next three lines can go away with new category world
-  varList := ['$,:$FormalMapVariableList]
-  valueList := [dom,:[dom.(5+i) for i in 1..(# rest dom.0)]]
-  valueList := [MKQ val for val in valueList]
-  nsig := MSUBST(dom.0,dollar.0,sig)
+  nsig := substitute(dom.0, dollar.0, sig)
   for i in 0..MAXINDEX packageVec |
        (entry := packageVec.i) and entry ~= 'T repeat
     package :=
@@ -237,11 +233,7 @@ newLookupInCategories1(op,sig,dom,dollar) ==
   slot4 := dom.4
   packageVec := CAR slot4
   catVec := CAR QCDR slot4
---the next three lines can go away with new category world
-  varList := ['$,:$FormalMapVariableList]
-  valueList := [dom,:[dom.(5+i) for i in 1..(# rest dom.0)]]
-  valueList := [MKQ val for val in valueList]
-  nsig := MSUBST(dom.0,dollar.0,sig)
+  nsig := substitute(dom.0, dollar.0, sig)
   for i in 0..MAXINDEX packageVec | (entry := ELT(packageVec,i))
       and (VECP entry or (predIndex := CDR (node := ELT(catVec,i))) and
           (EQ(predIndex,0) or testBitVector(predvec,predIndex))) repeat

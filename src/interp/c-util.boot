@@ -543,10 +543,7 @@ extendsCategoryForm(domain,form,form') ==
         assoc([op,args],formVec.(1)) or
             assoc(SUBSTQ(domain,"$",[op,args]),
                   SUBSTQ(domain,"$",formVec.(1)))
-    form' is ["ATTRIBUTE",at] =>
-         BREAK()
-         assoc(at,formVec.2) or
-            assoc(SUBSTQ(domain,"$",at),SUBSTQ(domain,"$",formVec.2))
+    form' is ["ATTRIBUTE",at] => BREAK()
     form' is ["IF",:.] => true --temporary hack so comp won't fail
     -- Are we dealing with an Aldor category?  If so use the "has" function ...
     # formVec = 1 => newHasTest(form,form')
