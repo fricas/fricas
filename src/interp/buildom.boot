@@ -248,7 +248,7 @@ constructorCategory (title is [op,:.]) ==
   [funlist,.]:= FUNCALL(constructorFunction,"$",title,$CategoryFrame)
   oplist:= [[[a,b],true,c] for [a,b,c] in funlist]
   cat:=
-    JoinInner([SetCategory(),mkCategory('domain,oplist,nil,nil,nil)],
+    JoinInner([SetCategory(), mkCategory(oplist, nil, nil, nil)],
       $EmptyEnvironment)
   cat.(0):= title
   cat

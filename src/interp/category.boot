@@ -91,12 +91,10 @@ sigParams(sigList) ==
 
 -- create a new category vector
 -- Arguments:
---   domainOrPackage      - "domain" or "package" (marks kind of category
---                           object)
 --   sigList              - list of all signatures
 --   attList              - list of all conditional ancestors
 --   PrincipalAncestor    - principal ancestor (if any)
-mkCategory(domainOrPackage,sigList,attList,domList,PrincipalAncestor) ==
+mkCategory(sigList, attList, domList, PrincipalAncestor) ==
   NSigList:= nil
   if PrincipalAncestor=nil then count:= 6 else count:= SIZE PrincipalAncestor
   sigList:=
@@ -464,7 +462,7 @@ JoinInner(l,$e) ==
   pName:= $NewCatVec.(0)
   if pName and not member(pName,c) then c:= [pName,:c]
   $NewCatVec.4:= [c,FundamentalAncestors,CADDR $NewCatVec.4]
-  mkCategory("domain",sigl,attl,globalDomains,$NewCatVec)
+  mkCategory(sigl, attl, globalDomains, $NewCatVec)
 
 Join(:L) ==
   env :=

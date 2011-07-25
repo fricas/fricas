@@ -1215,15 +1215,15 @@ compCategory(x,m,e) ==
       $atList: local := nil
       for x in l repeat compCategoryItem(x,nil)
       -- $atList ~= nil => BREAK()
-      rep:= mkExplicitCategoryFunction(domainOrPackage,$sigList,$atList)
+      rep := mkExplicitCategoryFunction($sigList, $atList)
     --if inside compDefineCategory, provide for category argument substitution
       [rep,m,e]
   systemErrorHere '"compCategory"
 
-mkExplicitCategoryFunction(domainOrPackage,sigList,atList) ==
+mkExplicitCategoryFunction(sigList, atList) ==
   body:=
    ["Join", 
-    ["mkCategory",MKQ domainOrPackage,['LIST,:REVERSE sigList],['LIST,:
+    ["mkCategory", ['LIST, :REVERSE sigList], ['LIST, :
       REVERSE atList],MKQ domList,nil]] where
         domList() ==
           ("union"/[fn sig for ["QUOTE",[[.,sig,:.],:.]] in sigList]) where
