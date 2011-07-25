@@ -198,7 +198,7 @@ ExpressionSpace(): Category == Defn where
     belong? op   ==
         has?(op, any) and (is?(op, PAREN) or is?(op, BOX))
     listk f      == parts allKernels f
-    tower f      == sort_! listk f
+    tower f      == sort! listk f
     allk l       == reduce("union", [allKernels f for f in l], set())
     operators f  == [operator k for k in listk f]
     height f     == reduce("max", [height k for k in kernels f], 0)
@@ -266,7 +266,7 @@ ExpressionSpace(): Category == Defn where
           t :=
               (u := property(operator k, DUMMYVAR)) case None =>
                   arg := argument k
-                  s0  := remove_!(retract(second arg)@K, allKernels first arg)
+                  s0  := remove!(retract(second arg)@K, allKernels first arg)
                   arg := rest rest arg
                   n   := (u::None) pretend N
                   if n > 1 then arg := rest arg
@@ -308,7 +308,7 @@ ExpressionSpace(): Category == Defn where
       is?(k::K, op)
 
     unwrap(l, x) ==
-      for k in reverse_! l repeat
+      for k in reverse! l repeat
         x := eval(x, k, first argument k)
       x
 
@@ -627,7 +627,7 @@ FunctionSpace(R : Comparable): Category == Definition where
       l := empty()$List(SY)
       for k in tower x repeat
         if ((s := symbolIfCan k) case SY) then l := concat(s::SY, l)
-      reverse_! l
+      reverse! l
 
     retractIfCan(x:%):Union(SY, "failed") ==
       (k := retractIfCan(x)@Union(K,"failed")) case "failed" => "failed"

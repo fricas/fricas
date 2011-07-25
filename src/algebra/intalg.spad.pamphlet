@@ -121,7 +121,7 @@ AlgebraicHermiteIntegration(F,UP,UPUP,R):Exports == Implementation where
             for k in minColIndex mat .. maxColIndex mat repeat
               (bc := extendedEuclidean(qelt(mat, j, k), modulus,
                 qelt(vec, i))) case "failed" => return new(0, 0)
-              qsetelt_!(ans, i, bc.coef1)
+              qsetelt!(ans, i, bc.coef1)
         ans
       sol := particularSolution(map(x+->x::RF, mat)$MatrixCategoryFunctions2(UP,
                          Vector UP, Vector UP, Matrix UP, RF,
@@ -133,7 +133,7 @@ AlgebraicHermiteIntegration(F,UP,UPUP,R):Exports == Implementation where
       for i in minIndex ans .. maxIndex ans repeat
         (bc := extendedEuclidean(denom qelt(sol, i), modulus, 1))
           case "failed" => return new(0, 0)
-        qsetelt_!(ans, i, (numer qelt(sol, i) * bc.coef1) rem modulus)
+        qsetelt!(ans, i, (numer qelt(sol, i) * bc.coef1) rem modulus)
       ans
 
 @
@@ -240,8 +240,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       vf:Vector(QF) := new(n, 0)
       for i in minIndex v .. maxIndex v repeat
         r := separate(qelt(v, i) / d)$GP
-        qsetelt_!(vf, i, r.fracPart)
-        qsetelt_!(vp, i, r.polyPart)
+        qsetelt!(vf, i, r.fracPart)
+        qsetelt!(vp, i, r.polyPart)
       ff := represents(vf, w := integralBasis())
       h := HermiteIntegrate(ff, derivation)
       p := represents(map((x1:GP):QF+->convert(x1)@QF, vp)$VectorFunctions2(GP, QF), w)
@@ -270,7 +270,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
 -- where the ri's are rational numbers, and fc(z) is arbitrary
 -- (fc can be linear too)
 -- la = [b1....,bk]  (all rational residues)
-      la := [-$Q coefficient(q.factor, 0)$UPQ for q in remove_!(fc::FAC, lf)]
+      la := [-$Q coefficient(q.factor, 0)$UPQ for q in remove!(fc::FAC, lf)]
 -- ld = [D1,...,Dk] where Di is the sum of places where f has residue bi
       ld  := [divisor(rec.num, rec.den, rec.derivden, rec.gd, b::F) for b in la]
       pp  := UPQ2F(fc.factor)

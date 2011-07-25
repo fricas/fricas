@@ -40,7 +40,7 @@ TwoDimensionalArrayCategory(R,Row,Col): Category == Definition where
 
     new: (NonNegativeInteger,NonNegativeInteger,R) -> %
       ++ new(m,n,r) is an m-by-n array all of whose entries are r
-    fill_!: (%,R) -> %
+    fill!: (%,R) -> %
       ++ fill!(m,r) fills m with r's
 
 --% Size inquiries
@@ -84,24 +84,24 @@ TwoDimensionalArrayCategory(R,Row,Col): Category == Definition where
 --% Part assignments
 
     setelt: (%,Integer,Integer,R) -> R
-      -- will become setelt_!
+      -- will become setelt!
       ++ setelt(m,i,j,r) sets the element in the ith row and jth
       ++ column of m to r
       ++ error check to determine if indices are in proper ranges
-    qsetelt_!: (%,Integer,Integer,R) -> R
+    qsetelt!: (%,Integer,Integer,R) -> R
       ++ qsetelt!(m,i,j,r) sets the element in the ith row and jth
       ++ column of m to r
       ++ NO error check to determine if indices are in proper ranges
-    setRow_!: (%,Integer,Row) -> %
+    setRow!: (%,Integer,Row) -> %
       ++ setRow!(m,i,v) sets to ith row of m to v
-    setColumn_!: (%,Integer,Col) -> %
+    setColumn!: (%,Integer,Col) -> %
       ++ setColumn!(m,j,v) sets to jth column of m to v
 
 --% Map and Zip
 
     map: (R -> R,%) -> %
       ++ map(f,a) returns \spad{b}, where \spad{b(i,j) = f(a(i,j))} for all \spad{i, j}
-    map_!: (R -> R,%) -> %
+    map!: (R -> R,%) -> %
       ++ map!(f,a)  assign \spad{a(i,j)} to \spad{f(a(i,j))} for all \spad{i, j}
     map:((R,R) -> R,%,%) -> %
       ++ map(f,a,b) returns \spad{c}, where \spad{c(i,j) = f(a(i,j),b(i,j))}
@@ -164,26 +164,26 @@ TwoDimensionalArrayCategory(R,Row,Col): Category == Definition where
       ans := new(nrows m,ncols m,NIL$Lisp)
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
-          qsetelt_!(ans,i,j,qelt(m,i,j))
+          qsetelt!(ans,i,j,qelt(m,i,j))
       ans
 
-    fill_!(m,r) ==
+    fill!(m,r) ==
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
-          qsetelt_!(m,i,j,r)
+          qsetelt!(m,i,j,r)
       m
 
     map(f,m) ==
       ans := new(nrows m,ncols m,NIL$Lisp)
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
-          qsetelt_!(ans,i,j,f(qelt(m,i,j)))
+          qsetelt!(ans,i,j,f(qelt(m,i,j)))
       ans
 
-    map_!(f,m) ==
+    map!(f,m) ==
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
-          qsetelt_!(m,i,j,f(qelt(m,i,j)))
+          qsetelt!(m,i,j,f(qelt(m,i,j)))
       m
 
     map(f,m,n) ==
@@ -192,7 +192,7 @@ TwoDimensionalArrayCategory(R,Row,Col): Category == Definition where
       ans := new(nrows m,ncols m,NIL$Lisp)
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
-          qsetelt_!(ans,i,j,f(qelt(m,i,j),qelt(n,i,j)))
+          qsetelt!(ans,i,j,f(qelt(m,i,j),qelt(n,i,j)))
       ans
 
     map(f,m,n,r) ==
@@ -201,23 +201,23 @@ TwoDimensionalArrayCategory(R,Row,Col): Category == Definition where
       ans := new(max(nrows m,nrows n),max(ncols m,ncols n),NIL$Lisp)
       for i in minRowIndex(m)..maxRow repeat
         for j in minColIndex(m)..maxCol repeat
-          qsetelt_!(ans,i,j,f(elt(m,i,j,r),elt(n,i,j,r)))
+          qsetelt!(ans,i,j,f(elt(m,i,j,r),elt(n,i,j,r)))
       ans
 
-    setRow_!(m,i,v) ==
+    setRow!(m,i,v) ==
       i < minRowIndex(m) or i > maxRowIndex(m) =>
         error "setRow!: index out of range"
       for j in minColIndex(m)..maxColIndex(m) _
         for k in minIndex(v)..maxIndex(v) repeat
-          qsetelt_!(m,i,j,v.k)
+          qsetelt!(m,i,j,v.k)
       m
 
-    setColumn_!(m,j,v) ==
+    setColumn!(m,j,v) ==
       j < minColIndex(m) or j > maxColIndex(m) =>
         error "setColumn!: index out of range"
       for i in minRowIndex(m)..maxRowIndex(m) _
         for k in minIndex(v)..maxIndex(v) repeat
-          qsetelt_!(m,i,j,v.k)
+          qsetelt!(m,i,j,v.k)
       m
 
     if R has _= : (R,R) -> Boolean then
@@ -246,7 +246,7 @@ TwoDimensionalArrayCategory(R,Row,Col): Category == Definition where
         v : Row := new(ncols m,NIL$Lisp)
         for j in minColIndex(m)..maxColIndex(m) _
           for k in minIndex(v)..maxIndex(v) repeat
-            qsetelt_!(v,k,qelt(m,i,j))
+            qsetelt!(v,k,qelt(m,i,j))
         v
 
     if Col has shallowlyMutable then
@@ -257,7 +257,7 @@ TwoDimensionalArrayCategory(R,Row,Col): Category == Definition where
         v : Col := new(nrows m,NIL$Lisp)
         for i in minRowIndex(m)..maxRowIndex(m) _
           for k in minIndex(v)..maxIndex(v) repeat
-            qsetelt_!(v,k,qelt(m,i,j))
+            qsetelt!(v,k,qelt(m,i,j))
         v
 
     if R has CoercibleTo(OutputForm) then
@@ -303,7 +303,7 @@ InnerIndexedTwoDimensionalArray(R,mnRow,mnCol,Row,Col):_
 --        error "new: arrays with zero columns are not supported"
       arr : PrimitiveArray PrimitiveArray R := new(rows,empty())
       for i in minIndex(arr)..maxIndex(arr) repeat
-        qsetelt_!(arr,i,new(cols,a))
+        qsetelt!(arr,i,new(cols,a))
       arr
 
 --% Size inquiries
@@ -331,7 +331,7 @@ InnerIndexedTwoDimensionalArray(R,mnRow,mnCol,Row,Col):_
         error "elt: index out of range"
       qelt(m,i,j)
 
-    qsetelt_!(m,i,j,r) ==
+    qsetelt!(m,i,j,r) ==
       setelt(qelt(m,i - minRowIndex m)$Rep,j - minColIndex m,r)
 
     setelt(m:%,i:Integer,j:Integer,r:R) ==
@@ -339,7 +339,7 @@ InnerIndexedTwoDimensionalArray(R,mnRow,mnCol,Row,Col):_
         error "setelt: index out of range"
       j < minColIndex(m) or j > maxColIndex(m) =>
         error "setelt: index out of range"
-      qsetelt_!(m,i,j,r)
+      qsetelt!(m,i,j,r)
 
     if R has SetCategory then
         latex(m : %) : String ==
@@ -397,10 +397,10 @@ TwoDimensionalArray(R):Exports == Implementation where
      InnerIndexedTwoDimensionalArray(R,1,1,Row,Col) add
          Qelt2 ==> QAREF2O$Lisp
          Qsetelt2 ==> QSETAREF2O$Lisp
-         -- qelt and qsetelt_! are logically unnecessary, but good for
+         -- qelt and qsetelt! are logically unnecessary, but good for
          -- performance
          qelt(m, i, j) == Qelt2(m, i, j, 1@Integer, 1@Integer)
-         qsetelt_!(m,i,j,r) == Qsetelt2(m, i, j, r, 1@Integer, 1@Integer)
+         qsetelt!(m,i,j,r) == Qsetelt2(m, i, j, r, 1@Integer, 1@Integer)
 
 @
 \section{License}

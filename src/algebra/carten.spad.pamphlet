@@ -245,7 +245,7 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
 
 
         get   ==> elt$Rep
-        set_! ==> setelt$Rep
+        set! ==> setelt$Rep
 
         -- Use row-major order:
         --   x[h,i,j] <-> x[(h-minix)*dim^2+(i-minix)*dim+(j-minix)]
@@ -310,13 +310,13 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             p
 
         -- permute s according to p into result t.
-        permute_!(t: INDEX, s: INDEX, p: PERM): INDEX ==
+        permute!(t: INDEX, s: INDEX, p: PERM): INDEX ==
             for i in 1..#p repeat t.i := s.(p.i)
             t
 
         -- permsign!(v) = 1, 0, or -1  according as
         -- v is an even, is not, or is an odd permutation of minix..minix+#v-1.
-        permsign_!(v: INDEX): Integer ==
+        permsign!(v: INDEX): Integer ==
             -- sum minix..minix+#v-1.
             maxix := minix+#v-1
             psum  := (((maxix+1)*maxix - minix*(minix-1)) exquo 2)::Integer
@@ -349,19 +349,19 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             nz: NNI := # l
             lengthRankOrElse nz
             z := new(nz, 0)
-            for i in 0..nz-1 for r in l repeat set_!(z, i, r)
+            for i in 0..nz-1 for r in l repeat set!(z, i, r)
             z
 
         kroneckerDelta() ==
             z := new(dim2, 0)
-            for i in 1..dim for zi in 0.. by (dim+1) repeat set_!(z, zi, 1)
+            for i in 1..dim for zi in 0.. by (dim+1) repeat set!(z, zi, 1)
             z
         leviCivitaSymbol() ==
             nz := dim^dim
             z  := new(nz, 0)
             indv: INDEX := new(dim, 0)
             for i in 0..nz-1 repeat
-                set_!(z, i, permsign_!(int2index(i, indv))::R)
+                set!(z, i, permsign!(int2index(i, indv))::R)
             z
 
         -- from GradedModule
@@ -400,7 +400,7 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
         coerce(lr: List R): % ==
             #lr ~= dim => error "Incorrect number of components"
             z := new(dim, 0)
-            for r in lr for i in 0..dim-1 repeat set_!(z, i, r)
+            for r in lr for i in 0..dim-1 repeat set!(z, i, r)
             z
         coerce(lx: List %): % ==
             #lx ~= dim => error "Incorrect number of slices"
@@ -410,7 +410,7 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             nx := # first lx
             z  := new(dim * nx, 0)
             for x in lx for offz in 0.. by nx repeat
-                for i in 0..nx-1 repeat set_!(z, offz + i, get(x,i))
+                for i in 0..nx-1 repeat set!(z, offz + i, get(x,i))
             z
 
         retractIfCan(x:%):Union(R,"failed") ==
@@ -441,14 +441,14 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
         coerce(v: DP(dim,R)): % ==
             z := new(dim, 0)
             for i in 0..dim-1 for j in minIndex v .. maxIndex v repeat
-                set_!(z, i, v.j)
+                set!(z, i, v.j)
             z
         coerce(m: SM(dim,R)): % ==
             z := new(dim^2, 0)
             offz := 0
             for i in 0..dim-1 repeat
                 for j in 0..dim-1 repeat
-                    set_!(z, offz + j, m(i+1,j+1))
+                    set!(z, offz + j, m(i+1,j+1))
                 offz := offz + dim
             z
 
@@ -461,45 +461,45 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
             #x ~= #y => error "Rank mismatch"
             -- z := [xi + yi for xi in x for yi in y]
             z := new(#x, 0)
-            for i in 0..#x-1 repeat set_!(z, i, get(x,i) + get(y,i))
+            for i in 0..#x-1 repeat set!(z, i, get(x,i) + get(y,i))
             z
         x - y ==
             #x ~= #y => error "Rank mismatch"
             -- [xi - yi for xi in x for yi in y]
             z := new(#x, 0)
-            for i in 0..#x-1 repeat set_!(z, i, get(x,i) - get(y,i))
+            for i in 0..#x-1 repeat set!(z, i, get(x,i) - get(y,i))
             z
         - x ==
             -- [-xi for xi in x]
             z := new(#x, 0)
-            for i in 0..#x-1 repeat set_!(z, i, -get(x,i))
+            for i in 0..#x-1 repeat set!(z, i, -get(x,i))
             z
         n * x ==
             -- [n * xi for xi in x]
             z := new(#x, 0)
-            for i in 0..#x-1 repeat set_!(z, i, n * get(x,i))
+            for i in 0..#x-1 repeat set!(z, i, n * get(x,i))
             z
         x * n ==
             -- [n * xi for xi in x]
             z := new(#x, 0)
-            for i in 0..#x-1 repeat set_!(z, i, n* get(x,i))  -- Commutative!!
+            for i in 0..#x-1 repeat set!(z, i, n* get(x,i))  -- Commutative!!
             z
         r * x ==
             -- [r * xi for xi in x]
             z := new(#x, 0)
-            for i in 0..#x-1 repeat set_!(z, i, r * get(x,i))
+            for i in 0..#x-1 repeat set!(z, i, r * get(x,i))
             z
         x * r ==
             -- [xi*r for xi in x]
             z := new(#x, 0)
-            for i in 0..#x-1 repeat set_!(z, i, r* get(x,i))  -- Commutative!!
+            for i in 0..#x-1 repeat set!(z, i, r* get(x,i))  -- Commutative!!
             z
         product(x, y) ==
             nx := #x; ny := #y
             z  := new(nx * ny, 0)
             for i in 0..nx-1 for ioff in 0.. by ny repeat
                 for j in 0..ny-1 repeat
-                    set_!(z, ioff + j, get(x,i) * get(y,j))
+                    set!(z, ioff + j, get(x,i) * get(y,j))
             z
         x * y ==
             rx := rank x
@@ -526,9 +526,9 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
                 for xm in xh.. by xom for zm in zh.. by zom repeat
                     for l in 1..nl _
                     for xl in xm.. by xol for zl in zm.. by zol repeat
-                        set_!(z, zl, 0)
+                        set!(z, zl, 0)
                         for k in 1..dim for xk in xl.. by xok repeat
-                            set_!(z, zl, get(z,zl) + get(x,xk))
+                            set!(z, zl, get(z,zl) + get(x,xk))
             z
 
         contract(x, i, y, j) ==
@@ -556,10 +556,10 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
                     for yh in 0.. by ohy for zhy in zlx.. by zohy repeat
                         for dyl in 1..nly _
                         for yl in yh.. by oly for zly in zhy.. by zoly repeat
-                            set_!(z, zly, 0)
+                            set!(z, zly, 0)
                             for k in 1..dim _
                             for xk in xl.. by nlx for yk in yl.. by nly repeat
-                                set_!(z, zly, get(z,zly)+get(x,xk)*get(y,yk))
+                                set!(z, zly, get(z,zly)+get(x,xk)*get(y,yk))
             z
 
         transpose x ==
@@ -581,7 +581,7 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
                 for zp in zl.. by zoi for xp in zl.. by zoj repeat
                     for q in 1..dim _
                     for zq in zp.. by zoj for xq in xp.. by zoi repeat
-                        set_!(z, zq, get(x,xq))
+                        set!(z, zq, get(x,xq))
             z
 
         reindex(x, l) ==
@@ -595,8 +595,8 @@ CartesianTensor(minix, dim, R): Exports == Implementation where
 
             -- Use permutation
             for i in 0..#x-1 repeat
-                pi := index2int(permute_!(ziv, int2index(i,xiv),p))
-                set_!(z, pi, get(x,i))
+                pi := index2int(permute!(ziv, int2index(i,xiv),p))
+                set!(z, pi, get(x,i))
             z
 
 @

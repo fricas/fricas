@@ -611,7 +611,7 @@ letPrint(x,val,currentFunction) ==
   if $letAssoc and
     ((y:= LASSOC(currentFunction,$letAssoc)) or (y:= LASSOC("all",$letAssoc))) then
       if (y="all" or MEMQ(x,y)) and
-        not (IS__GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
+        not (IS_GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
          sayBrightlyNT [:bright x,": "]
          PRIN0 shortenForPrinting val
          TERPRI()
@@ -629,7 +629,7 @@ letPrint2(x,printform,currentFunction) ==
   if $letAssoc and
     ((y:= LASSOC(currentFunction,$letAssoc)) or (y:= LASSOC("all",$letAssoc))) then
       if (y="all" or MEMQ(x,y)) and
-        not (IS__GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
+        not (IS_GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
          $BreakMode:='letPrint2
          flag:=nil
          CATCH('letPrint2,mathprint ["=",x,printform],flag)
@@ -649,7 +649,7 @@ letPrint3(x,xval,printfn,currentFunction) ==
   if $letAssoc and
     ((y:= LASSOC(currentFunction,$letAssoc)) or (y:= LASSOC("all",$letAssoc))) then
       if (y="all" or MEMQ(x,y)) and
-        not (IS__GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
+        not (IS_GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
          $BreakMode:='letPrint2
          flag:=nil
          CATCH('letPrint2,mathprint ["=",x,SPADCALL(xval,printfn)],flag)
@@ -752,7 +752,7 @@ traceReply() ==
     x is [d,:.] and (isDomainOrPackage d) => addTraceItem d
     atom x =>
       isFunctor x => addTraceItem x
-      (IS__GENVAR x =>
+      (IS_GENVAR x =>
         addTraceItem EVAL x; functionList:= [x,:functionList])
     userError '"bad argument to trace"
   functionList:= "append"/[[rassocSub(x,$mapSubNameAlist),'" "]
@@ -790,7 +790,7 @@ addTraceItem d ==
 
 _?t() ==
   null _/TRACENAMES => sayMSG bright '"nothing is traced"
-  for x in _/TRACENAMES | atom x and not IS__GENVAR x repeat
+  for x in _/TRACENAMES | atom x and not IS_GENVAR x repeat
     if llm:= get(x,'localModemap,$InteractiveFrame) then
       x:= (LIST (CADAR llm))
     sayMSG ['"Function",:bright rassocSub(x,$mapSubNameAlist),'"traced"]
@@ -814,7 +814,7 @@ tracelet(fn,vars) ==
   $letAssoc:= [[fn,:vars],:$letAssoc]
   $TRACELETFLAG : local := true
   $QuickLet : local := false
-  not MEMQ(fn,$traceletFunctions) and not IS__GENVAR fn and COMPILED_-FUNCTION_-P SYMBOL_-FUNCTION fn
+  not MEMQ(fn, $traceletFunctions) and not IS_GENVAR fn and COMPILED_-FUNCTION_-P SYMBOL_-FUNCTION fn
     and not stupidIsSpadFunction fn and not GENSYMP fn =>
       ($traceletFunctions:= [fn,:$traceletFunctions]; compileBoot fn ;
        $traceletFunctions:= delete(fn,$traceletFunctions) )

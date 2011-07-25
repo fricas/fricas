@@ -43,18 +43,18 @@ Stack(S:SetCategory): StackAggregate S with
     copy s == ref copy deref s
     depth s == # deref s
     # s == depth s
-    pop_! (s:%):S ==
+    pop! (s:%):S ==
         empty? s => error "empty stack"
         e := first deref s
         setref(s,rest deref s)
         e
-    extract_! (s:%):S == pop_! s
+    extract! (s:%):S == pop! s
     top (s:%):S ==
         empty? s => error "empty stack"
         first deref s
     inspect s == top s
-    push_!(e,s) == (setref(s,cons(e,deref s));e)
-    insert_!(e:S,s:%):% == (push_!(e,s);s)
+    push!(e,s) == (setref(s,cons(e,deref s));e)
+    insert!(e:S,s:%):% == (push!(e,s);s)
     empty() == ref nil()$List(S)
     empty? s == null deref s
     stack s == ref copy s
@@ -96,14 +96,14 @@ ArrayStack(S:SetCategory): StackAggregate(S) with
     -- stack operations
     depth s == # s
     empty? s == empty?(s)$Rep
-    extract_! s == pop_! s
-    insert_!(e,s) == (push_!(e,s);s)
-    push_!(e,s) == (concat(e,s); e)
-    pop_! s ==
+    extract! s == pop! s
+    insert!(e,s) == (push!(e,s);s)
+    push!(e,s) == (concat(e,s); e)
+    pop! s ==
         if empty? s then error "empty stack"
         m := maxIndex s
         r := s.m
-        delete_!(s,m)
+        delete!(s,m)
         r
     top s == if empty? s then error "empty stack" else s.maxIndex(s)
     arrayStack l == construct(l)$Rep
@@ -135,18 +135,18 @@ Queue(S:SetCategory): QueueAggregate S with
   == Stack S add
     Rep := Reference List S
     lastTail==> LAST$Lisp
-    enqueue_!(e,q) ==
+    enqueue!(e,q) ==
         if null deref q then setref(q, list e)
         else lastTail.(deref q).rest := list e
         e
-    insert_!(e,q) == (enqueue_!(e,q);q)
-    dequeue_! q ==
+    insert!(e,q) == (enqueue!(e,q);q)
+    dequeue! q ==
         empty? q => error "empty queue"
         e := first deref q
         setref(q,rest deref q)
         e
-    extract_! q == dequeue_! q
-    rotate_! q == if empty? q then q else (enqueue_!(dequeue_! q,q); q)
+    extract! q == dequeue! q
+    rotate! q == if empty? q then q else (enqueue!(dequeue! q,q); q)
     length q == # deref q
     front q == if empty? q then error "empty queue" else first deref q
     inspect q == front q
@@ -178,10 +178,10 @@ Dequeue(S:SetCategory): DequeueAggregate S with
        ++ element x, second element y,...,and last (bottom or back) element z.
   == Queue S add
     Rep := Reference List S
-    bottom_! d ==
+    bottom! d ==
          if empty? d then error "empty dequeue" else last deref d
     dequeue d == ref copy d
-    extractBottom_! d ==
+    extractBottom! d ==
         if empty? d then error "empty dequeue"
         p := deref d
         n := maxIndex p
@@ -193,19 +193,19 @@ Dequeue(S:SetCategory): DequeueAggregate S with
         r := first rest q
         q.rest := []
         r
-    extractTop_! d ==
+    extractTop! d ==
         e := top d
         setref(d,rest deref d)
         e
     height d == # deref d
-    insertTop_!(e,d) == (setref(d,cons(e,deref d)); e)
+    insertTop!(e,d) == (setref(d,cons(e,deref d)); e)
     lastTail==> LAST$Lisp
-    insertBottom_!(e,d) ==
+    insertBottom!(e,d) ==
         if empty? d then setref(d, list e)
         else lastTail.(deref d).rest := list e
         e
     top d == if empty? d then error "empty dequeue" else first deref d
-    reverse_! d == (setref(d,reverse deref d); d)
+    reverse! d == (setref(d,reverse deref d); d)
 
 @
 \section{domain HEAP Heap}
@@ -239,7 +239,7 @@ Heap(S:OrderedSet): Exports == Implementation where
       n := #l
       h := empty()
       n = 0 => h
-      for x in l repeat insert_!(x,h)
+      for x in l repeat insert!(x,h)
       h
     siftUp: (%,Integer,Integer) -> Void
     siftUp(r,i,n) ==
@@ -249,21 +249,21 @@ Heap(S:OrderedSet): Exports == Implementation where
           if (k := j+1) < n and r.j < r.k then j := k
           if t < r.j then (r.i := r.j; r.j := t; i := j) else break
 
-    extract_! r ==
+    extract! r ==
        -- extract the maximum from the heap O(log n)
        n := #r :: Integer
        n = 0 => error "empty heap"
        t := r(0)
        r(0) := r(n-1)
-       delete_!(r,n-1)
+       delete!(r,n-1)
        n = 1 => t
        siftUp(r,0,n-1)
        t
 
-    insert_!(x,r) ==
+    insert!(x,r) ==
        -- Williams' insertion algorithm O(log n)
        j := (#r) :: Integer
-       r:=concat_!(r,concat(x,empty()$Rep))
+       r:=concat!(r,concat(x,empty()$Rep))
        while j > 0 repeat
           i := (j-1) quo 2
           if r(i) >= x then break
@@ -282,7 +282,7 @@ Heap(S:OrderedSet): Exports == Implementation where
        r
     bag l == makeHeap construct(l)$Rep
     merge(a,b) == makeHeap concat(a,b)
-    merge_!(a,b) == makeHeap concat_!(a,b)
+    merge!(a,b) == makeHeap concat!(a,b)
 
 @
 \section{License}

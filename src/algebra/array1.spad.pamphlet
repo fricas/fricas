@@ -28,9 +28,9 @@ PrimitiveArray(S:Type): OneDimensionalArrayAggregate S == add
    new(n, x)                   == Qnew1(n, x)
    qelt(x, i)                  == Qelt(x, i)
    elt(x:%, i:Integer)         == Qelt(x, i)
-   qsetelt_!(x, i, s)          == Qsetelt(x, i, s)
+   qsetelt!(x, i, s)          == Qsetelt(x, i, s)
    setelt(x:%, i:Integer, s:S) == Qsetelt(x, i, s)
-   fill_!(x, s)       == (for i in 0..Qmax x repeat Qsetelt(x, i, s); x)
+   fill!(x, s)       == (for i in 0..Qmax x repeat Qsetelt(x, i, s); x)
 
 @
 
@@ -157,13 +157,13 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
     newa  : (N, A) -> A
 
     physicalLength(r) == (r.physLen) pretend NonNegativeInteger
-    physicalLength_!(r, n) ==
+    physicalLength!(r, n) ==
        r.physLen = 0  => error "flexible array must be non-empty"
        growWith(r, n, r.f.0)
 
     empty()      == [0, 0, empty()]
     #r           == (r.logLen)::N
-    fill_!(r, x) == (fill_!(r.f, x); r)
+    fill!(r, x) == (fill!(r.f, x); r)
     maxIndex r   == r.logLen - 1 + mn
     minIndex r   == mn
     new(n, a)    == [n, n, new(n, a)]
@@ -239,40 +239,40 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        r.f.(i-mn) := x
 
     -- operations inherited from extensible aggregate
-    merge(g, a, b)   == merge_!(g, copy a, b)
-    concat(x:S, r:%) == insert_!(x, r, mn)
+    merge(g, a, b)   == merge!(g, copy a, b)
+    concat(x:S, r:%) == insert!(x, r, mn)
 
-    concat_!(r:%, x:S) ==
+    concat!(r:%, x:S) ==
        growAndFill(r, 1, x)
        r.f.(r.logLen-1) := x
        r
 
-    concat_!(a:%, b:%) ==
+    concat!(a:%, b:%) ==
        if eq?(a, b) then b := copy b
        n := #a
        growAdding(a, #b, b)
-       copyInto_!(a, b, n + mn)
+       copyInto!(a, b, n + mn)
 
-    remove_!(g:(S->Boolean), a:%) ==
+    remove!(g:(S->Boolean), a:%) ==
        k:I := 0
        for i in 0..maxIndex a - mn repeat
           if not g(a.i) then (a.k := a.i; k := k+1)
        shrink(a, #a - k)
 
-    delete_!(r:%, i1:I) ==
+    delete!(r:%, i1:I) ==
        i := i1 - mn
        i < 0 or i > r.logLen => error "index out of range"
        for k in i..r.logLen-2 repeat r.f.k := r.f.(k+1)
        shrink(r, 1)
 
-    delete_!(r:%, i:U) ==
+    delete!(r:%, i:U) ==
        l := lo i - mn; m := maxIndex r - mn
        h := (hasHi i => hi i - mn; m)
        l < 0 or h > m => error "index out of range"
        for j in l.. for k in h+1..m repeat r.f.j := r.f.k
        shrink(r, max(0,h-l+1))
 
-    insert_!(x:S, r:%, i1:I):% ==
+    insert!(x:S, r:%, i1:I):% ==
        i := i1 - mn
        n := r.logLen
        i < 0 or i > n => error "index out of range"
@@ -281,7 +281,7 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        r.f.i := x
        r
 
-    insert_!(a:%, b:%, i1:I):% ==
+    insert!(a:%, b:%, i1:I):% ==
        i := i1 - mn
        if eq?(a, b) then b := copy b
        m := #a; n := #b
@@ -291,7 +291,7 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        for k in m-1 .. 0 by -1 repeat b.f.(i+k) := a.f.k
        b
 
-    merge_!(g, a, b) ==
+    merge!(g, a, b) ==
        m := #a; n := #b; growAdding(a, n, b)
        for i in m-1..0 by -1 for j in m+n-1.. by -1 repeat a.f.j := a.f.i
        i := n; j := 0
@@ -301,13 +301,13 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        for k in k.. for j in j..n-1 repeat a.f.k := b.f.j
        a
 
-    select_!(g:(S->Boolean), a:%) ==
+    select!(g:(S->Boolean), a:%) ==
        k:I := 0
        for i in 0..maxIndex a - mn repeat if g(a.f.i) then (a.f.k := a.f.i;k := k+1)
        shrink(a, #a - k)
 
     if S has SetCategory then
-      removeDuplicates_! a ==
+      removeDuplicates! a ==
          ct := #a
          ct < 2 => a
 
@@ -321,10 +321,10 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
                 j := j+1
             nlim := j
             i := i+1
-         nlim ~= nlim0 => delete_!(a, i..)
+         nlim ~= nlim0 => delete!(a, i..)
          a
 
-      removeRepeats_! a ==
+      removeRepeats! a ==
           ct := #a
           ct < 2 => a
 
@@ -338,7 +338,7 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
                   j := j + 1
                   a(j) := (t := s)
               i := i + 1
-          j + 1 < nlim => delete_!(a, (j + 1)..)
+          j + 1 < nlim => delete!(a, (j + 1)..)
           a
 
 @
@@ -387,13 +387,13 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
    I ==> Integer
 
    #x               == Qsize x
-   fill_!(x, s)     == (for i in 0..Qmax x repeat Qsetelt(x, i, s); x)
+   fill!(x, s)     == (for i in 0..Qmax x repeat Qsetelt(x, i, s); x)
    minIndex x       == mn
 
    empty()          == Qnew(0$Lisp)
    new(n, s)        == Qnew1(n,s)
 
-   map_!(f, s1)  ==
+   map!(f, s1)  ==
       n:Integer := Qmax(s1)
       n < 0 => s1
       for i in 0..n repeat Qsetelt(s1, i, f(Qelt(s1,i)))
@@ -416,7 +416,7 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
 
    if zero? mn then
      qelt(x, i)       == Qelt(x, i)
-     qsetelt_!(x, i, s) == Qsetelt(x, i, s)
+     qsetelt!(x, i, s) == Qsetelt(x, i, s)
 
      elt(x:%, i:I) ==
        negative? i or i > maxIndex(x) => error "index out of range"
@@ -424,13 +424,13 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
 
      setelt(x:%, i:I, s:S) ==
        negative? i or i > maxIndex(x) => error "index out of range"
-       qsetelt_!(x, i, s)
+       qsetelt!(x, i, s)
 
 --   else if one? mn then
    else if (mn = 1) then
      maxIndex x       == Qsize x
      qelt(x, i)       == Qelt(x, i-1)
-     qsetelt_!(x, i, s) == Qsetelt(x, i-1, s)
+     qsetelt!(x, i, s) == Qsetelt(x, i-1, s)
 
      elt(x:%, i:I) ==
        QSLESSP(i,1$Lisp)$Lisp or QSLESSP(Qsize x,i)$Lisp =>
@@ -444,7 +444,7 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
 
     else
        qelt(x, i)       == Qelt(x, i - mn)
-       qsetelt_!(x, i, s) == Qsetelt(x, i - mn, s)
+       qsetelt!(x, i, s) == Qsetelt(x, i - mn, s)
 
        elt(x:%, i:I) ==
          i < mn or i > maxIndex(x) => error "index out of range"
@@ -452,7 +452,7 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
 
        setelt(x:%, i:I, s:S) ==
          i < mn or i > maxIndex(x) => error "index out of range"
-         qsetelt_!(x, i, s)
+         qsetelt!(x, i, s)
 
 @
 \section{domain ARRAY1 OneDimensionalArray}
@@ -469,13 +469,13 @@ OneDimensionalArray(S:Type): Exports == Implementation where
         ++ oneDimensionalArray(n,s) creates an array from n copies of element s
   Implementation == IndexedOneDimensionalArray(S, ARRAYMININDEX) add
 
-    -- qelt and qsetelt_! are logically unnecessary, but good for
+    -- qelt and qsetelt! are logically unnecessary, but good for
     -- performance
     Qelt1 ==> QAREF1O$Lisp
     Qsetelt1 ==> QSETAREF1O$Lisp
 
     qelt(x, i) == Qelt1(x, i, ARRAYMININDEX)
-    qsetelt_!(x, i, s) == Qsetelt1(x, i, s, ARRAYMININDEX)
+    qsetelt!(x, i, s) == Qsetelt1(x, i, s, ARRAYMININDEX)
 
     oneDimensionalArray(u) ==
       n := #u

@@ -119,7 +119,7 @@ handleLispBreakLoop($BreakMode) ==
         BREAK()
       sayBrightly
         '"   Processing will continue where it was interrupted."
-      THROW('SPAD__READER, nil)
+      THROW('SPAD_READER, nil)
   $BreakMode = 'resume =>
     returnToReader()
   $BreakMode = 'quit =>
@@ -130,13 +130,13 @@ TOP() == returnToTopLevel()
 
 returnToTopLevel() ==
   SETQ(CHR, "ENDOFLINECHR")
-  SETQ(TOK, 'END__UNIT)
+  SETQ(TOK, 'END_UNIT)
   TOPLEVEL()
 
 returnToReader() ==
   not $ReadingFile => returnToTopLevel()
   sayBrightly ['"   Continuing to read the file...", '%l]
-  THROW('SPAD__READER, nil)
+  THROW('SPAD_READER, nil)
 
 sayErrorly(errorLabel, msg) ==
   $saturn => saturnSayErrorly(errorLabel, msg)

@@ -53,10 +53,10 @@ TriangularMatrixOperations(R,Row,Col,M): Exports == Implementation where
       offset := minColIndex AI - minRowIndex AI
       for i in minRowIndex AI .. maxRowIndex AI
         for j in minColIndex AI .. maxColIndex AI repeat
-          qsetelt_!(AI,i,j,(denom exquo qelt(A,i,j))::R)
+          qsetelt!(AI,i,j,(denom exquo qelt(A,i,j))::R)
       for i in minRowIndex AI .. maxRowIndex AI repeat
         for j in offset + i + 1 .. maxColIndex AI repeat
-          qsetelt_!(AI,i,j, - (((+/[qelt(AI,i,k) * qelt(A,k-offset,j)
+          qsetelt!(AI,i,j, - (((+/[qelt(AI,i,k) * qelt(A,k-offset,j)
                                    for k in i+offset..(j-1)])
                                      exquo qelt(A, j-offset, j))::R))
       AI
@@ -66,10 +66,10 @@ TriangularMatrixOperations(R,Row,Col,M): Exports == Implementation where
       offset := minColIndex AI - minRowIndex AI
       for i in minRowIndex AI .. maxRowIndex AI
         for j in minColIndex AI .. maxColIndex AI repeat
-          qsetelt_!(AI,i,j,(denom exquo qelt(A,i,j))::R)
+          qsetelt!(AI,i,j,(denom exquo qelt(A,i,j))::R)
       for i in minColIndex AI .. maxColIndex AI repeat
         for j in i - offset + 1 .. maxRowIndex AI repeat
-          qsetelt_!(AI,j,i, - (((+/[qelt(A,j,k+offset) * qelt(AI,k,i)
+          qsetelt!(AI,j,i, - (((+/[qelt(A,j,k+offset) * qelt(AI,k,i)
                                     for k in i-offset..(j-1)])
                                       exquo qelt(A, j, j+offset))::R))
       AI
@@ -108,7 +108,7 @@ IntegralBasisTools(R,UP,F): Exports == Implementation where
       ++ matrixGcd(mat,sing,n) is \spad{gcd(sing,g)} where \spad{g} is the
       ++ gcd of the entries of the \spad{n}-by-\spad{n} upper-triangular
       ++ matrix \spad{mat}.
-    divideIfCan_!: (Matrix R,Matrix R,R,Integer) -> R
+    divideIfCan!: (Matrix R,Matrix R,R,Integer) -> R
       ++ divideIfCan!(matrix,matrixOut,prime,n) attempts to divide the
       ++ entries of \spad{matrix} by \spad{prime} and store the result in
       ++ \spad{matrixOut}.  If it is successful, 1 is returned and if not,
@@ -162,13 +162,13 @@ IntegralBasisTools(R,UP,F): Exports == Implementation where
           (d = 1) => return d
       d
 
-    divideIfCan_!(matrix,matrixOut,prime,n) ==
+    divideIfCan!(matrix,matrixOut,prime,n) ==
     -- note: both 'matrix' and 'matrixOut' will be upper triangular;
     -- no need to do anything below the diagonal
       for i in 1..n repeat
         for j in i..n repeat
           (a := (qelt(matrix,i,j) exquo prime)) case "failed" => return prime
-          qsetelt_!(matrixOut,i,j,a :: R)
+          qsetelt!(matrixOut,i,j,a :: R)
       1
 
     leastPower(p,n) ==
@@ -445,8 +445,8 @@ WildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
           bi : F := 0
           for j in 1..n repeat
             bi := bi + qelt(rb,i,j) * qelt(standardBasis,j)
-          qsetelt_!(bas,i,bi)
-          qsetelt_!(pows,i,bi ^ p)
+          qsetelt!(bas,i,bi)
+          qsetelt!(pows,i,bi ^ p)
         coor0 := transpose coordinates(pows,bas)
         denPow := rbden ^ ((p - 1) :: NNI)
         (coMat0 := coor0 exquo denPow) case "failed" =>
@@ -464,15 +464,15 @@ WildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
         frob := copy pPows; tmpMat : Matrix sae := new(n,n,0)
         for r in 2..leastPower(p,q) repeat
           for i in 1..n repeat for j in 1..n repeat
-            qsetelt_!(tmpMat,i,j,qelt(frob,i,j) ^ p)
-          times_!(frob,pPows,tmpMat)$MATSTOR(sae)
+            qsetelt!(tmpMat,i,j,qelt(frob,i,j) ^ p)
+          times!(frob,pPows,tmpMat)$MATSTOR(sae)
         frobPow := frob ^ lp
         -- compute the p-radical
         ns := nullSpace frobPow
-        for i in 1..n repeat for j in 1..n repeat qsetelt_!(tfm,i,j,0)
+        for i in 1..n repeat for j in 1..n repeat qsetelt!(tfm,i,j,0)
         for vec in ns for i in 1.. repeat
           for j in 1..n repeat
-            qsetelt_!(tfm,i,j,lift qelt(vec,j))
+            qsetelt!(tfm,i,j,lift qelt(vec,j))
         id := squareTop rowEchelon(tfm,prime)
         -- id = basis matrix of the p-radical
         idinv := UpTriBddDenomInv(id, prime)
@@ -481,7 +481,7 @@ WildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
         rbinv := idealiser(id * rb, rbinv * idinv, prime * rbden)
         index := diagonalProduct rbinv
         rb := rowEchelon LowTriBddDenomInv(rbinv,rbden * prime)
-        if divideIfCan_!(rb,matrixOut,prime,n) = 1
+        if divideIfCan!(rb,matrixOut,prime,n) = 1
           then rb := matrixOut
           else rbden := rbden * prime
         rbinv := UpTriBddDenomInv(rb,rbden)
@@ -621,7 +621,7 @@ NumberFieldIntegralBasis(UP,F): Exports == Implementation where
           for j in minIndex(b)..maxIndex(b)
             for jj in minColIndex(rb)..maxColIndex(rb) repeat
               a := a + qelt(rb,ii,jj) * qelt(b,j)
-          qsetelt_!(v,i,a^p)
+          qsetelt!(v,i,a^p)
       mat := transpose coordinates v
       ((transpose(rbinv) * mat) exquo (rbden ^ p)) :: Mat
 
@@ -749,7 +749,7 @@ NumberFieldIntegralBasis(UP,F): Exports == Implementation where
         rbinv := idealiser(id * rb, rbinv * idinv, p * rbden)
         index := diagonalProduct rbinv
         rb := rowEchelon LowTriBddDenomInv(rbinv, p * rbden)
-        if divideIfCan_!(rb,matrixOut,p,n) = 1
+        if divideIfCan!(rb,matrixOut,p,n) = 1
           then rb := matrixOut
           else rbden := p * rbden
         rbinv := UpTriBddDenomInv(rb, rbden)

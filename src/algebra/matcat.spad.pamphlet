@@ -176,17 +176,17 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ++ If y is \spad{m}-by-\spad{n}, \spad{rowList = [i<1>,i<2>,...,i<m>]}
        ++ and \spad{colList = [j<1>,j<2>,...,j<n>]}, then \spad{x(i<k>,j<l>)}
        ++ is set to \spad{y(k,l)} for \spad{k = 1,...,m} and \spad{l = 1,...,n}.
-     swapRows_!: (%,Integer,Integer) -> %
+     swapRows!: (%,Integer,Integer) -> %
        ++ \spad{swapRows!(m,i,j)} interchanges the \spad{i}th and \spad{j}th
        ++ rows of m. This destructively alters the matrix.
-     swapColumns_!: (%,Integer,Integer) -> %
+     swapColumns!: (%,Integer,Integer) -> %
        ++ \spad{swapColumns!(m,i,j)} interchanges the \spad{i}th and \spad{j}th
        ++ columns of m. This destructively alters the matrix.
      subMatrix: (%,Integer,Integer,Integer,Integer) -> %
        ++ \spad{subMatrix(x,i1,i2,j1,j2)} extracts the submatrix
        ++ \spad{[x(i,j)]} where the index i ranges from \spad{i1} to \spad{i2}
        ++ and the index j ranges from \spad{j1} to \spad{j2}.
-     setsubMatrix_!: (%,Integer,Integer,%) -> %
+     setsubMatrix!: (%,Integer,Integer,%) -> %
        ++ \spad{setsubMatrix(x,i1,j1,y)} destructively alters the
        ++ matrix x. Here \spad{x(i,j)} is set to \spad{y(i-i1+1,j-j1+1)} for
        ++ \spad{i = i1,...,i1-1+nrows y} and \spad{j = j1,...,j1-1+ncols y}.
@@ -324,19 +324,19 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans := new(rows,cols,0)
        for i in minr(ans)..maxr(ans) for ll in l repeat
          for j in minc(ans)..maxc(ans) for r in ll repeat
-           qsetelt_!(ans,i,j,r)
+           qsetelt!(ans,i,j,r)
        ans
 
      scalarMatrix(n,r) ==
        ans := zero(n,n)
        for i in minr(ans)..maxr(ans) for j in minc(ans)..maxc(ans) repeat
-         qsetelt_!(ans,i,j,r)
+         qsetelt!(ans,i,j,r)
        ans
 
      diagonalMatrix(l: List R) ==
        n := #l; ans := zero(n,n)
        for i in minr(ans)..maxr(ans) for j in minc(ans)..maxc(ans) _
-           for r in l repeat qsetelt_!(ans,i,j,r)
+           for r in l repeat qsetelt!(ans,i,j,r)
        ans
 
      diagonalMatrix(list: List %) ==
@@ -351,7 +351,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
          hiR := loR + nrows(mat) - 1; hiC := loC + nrows(mat) - 1
          for i in loR..hiR for k in minr(mat)..maxr(mat) repeat
            for j in loC..hiC for l in minc(mat)..maxc(mat) repeat
-             qsetelt_!(ans,i,j,qelt(mat,k,l))
+             qsetelt!(ans,i,j,qelt(mat,k,l))
          loR := hiR + 1; loC := hiC + 1
        ans
 
@@ -359,21 +359,21 @@ MatrixCategory(R,Row,Col): Category == Definition where
        x := new(#v,1,0)
        one := minc(x)
        for i in minr(x)..maxr(x) for k in mini(v)..maxi(v) repeat
-         qsetelt_!(x,i,one,qelt(v,k))
+         qsetelt!(x,i,one,qelt(v,k))
        x
 
      transpose(v:Row) ==
        x := new(1,#v,0)
        one := minr(x)
        for j in minc(x)..maxc(x) for k in mini(v)..maxi(v) repeat
-         qsetelt_!(x,one,j,qelt(v,k))
+         qsetelt!(x,one,j,qelt(v,k))
        x
 
      transpose(x:%) ==
        ans := new(ncols x,nrows x,0)
        for i in minr(ans)..maxr(ans) repeat
          for j in minc(ans)..maxc(ans) repeat
-           qsetelt_!(ans,i,j,qelt(x,j,i))
+           qsetelt!(ans,i,j,qelt(x,j,i))
        ans
 
      squareTop x ==
@@ -382,7 +382,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans := new(cols,cols,0)
        for i in minr(x)..(minr(x) + cols - 1) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt_!(ans,i,j,qelt(x,i,j))
+           qsetelt!(ans,i,j,qelt(x,i,j))
        ans
 
      horizConcat(x,y) ==
@@ -391,10 +391,10 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans := new(rows,(cols := ncols x) + ncols y,0)
        for i in minr(x)..maxr(x) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt_!(ans,i,j,qelt(x,i,j))
+           qsetelt!(ans,i,j,qelt(x,i,j))
        for i in minr(y)..maxr(y) repeat
          for j in minc(y)..maxc(y) repeat
-           qsetelt_!(ans,i,j + cols,qelt(y,i,j))
+           qsetelt!(ans,i,j + cols,qelt(y,i,j))
        ans
 
      vertConcat(x,y) ==
@@ -403,10 +403,10 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans := new((rows := nrows x) + nrows y,cols,0)
        for i in minr(x)..maxr(x) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt_!(ans,i,j,qelt(x,i,j))
+           qsetelt!(ans,i,j,qelt(x,i,j))
        for i in minr(y)..maxr(y) repeat
          for j in minc(y)..maxc(y) repeat
-           qsetelt_!(ans,i + rows,j,qelt(y,i,j))
+           qsetelt!(ans,i + rows,j,qelt(y,i,j))
        ans
 
 --% Part extraction/assignment
@@ -420,24 +420,24 @@ MatrixCategory(R,Row,Col): Category == Definition where
          ll := cons(l,ll)
        ll
 
-     swapRows_!(x,i1,i2) ==
+     swapRows!(x,i1,i2) ==
        (i1 < minr(x)) or (i1 > maxr(x)) or (i2 < minr(x)) or _
            (i2 > maxr(x)) => error "swapRows!: index out of range"
        i1 = i2 => x
        for j in minc(x)..maxc(x) repeat
          r := qelt(x,i1,j)
-         qsetelt_!(x,i1,j,qelt(x,i2,j))
-         qsetelt_!(x,i2,j,r)
+         qsetelt!(x,i1,j,qelt(x,i2,j))
+         qsetelt!(x,i2,j,r)
        x
 
-     swapColumns_!(x,j1,j2) ==
+     swapColumns!(x,j1,j2) ==
        (j1 < minc(x)) or (j1 > maxc(x)) or (j2 < minc(x)) or _
            (j2 > maxc(x)) => error "swapColumns!: index out of range"
        j1 = j2 => x
        for i in minr(x)..maxr(x) repeat
          r := qelt(x,i,j1)
-         qsetelt_!(x,i,j1,qelt(x,i,j2))
-         qsetelt_!(x,i,j2,r)
+         qsetelt!(x,i,j1,qelt(x,i,j2))
+         qsetelt!(x,i,j2,r)
        x
 
      elt(x:%,rowList:List Integer,colList:List Integer) ==
@@ -450,7 +450,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        y := new(# rowList,# colList,0)
        for ei in rowList for i in minr(y)..maxr(y) repeat
          for ej in colList for j in minc(y)..maxc(y) repeat
-           qsetelt_!(y,i,j,qelt(x,ei,ej))
+           qsetelt!(y,i,j,qelt(x,ei,ej))
        y
 
      setelt(x:%,rowList:List Integer,colList:List Integer,y:%) ==
@@ -464,7 +464,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
          error "setelt: matrix has bad dimensions"
        for ei in rowList for i in minr(y)..maxr(y) repeat
          for ej in colList for j in minc(y)..maxc(y) repeat
-           qsetelt_!(x,ei,ej,qelt(y,i,j))
+           qsetelt!(x,ei,ej,qelt(y,i,j))
        y
 
      subMatrix(x,i1,i2,j1,j2) ==
@@ -479,10 +479,10 @@ MatrixCategory(R,Row,Col): Category == Definition where
        y := new(rows,cols,0)
        for i in minr(y)..maxr(y) for k in i1..i2 repeat
          for j in minc(y)..maxc(y) for l in j1..j2 repeat
-           qsetelt_!(y,i,j,qelt(x,k,l))
+           qsetelt!(y,i,j,qelt(x,k,l))
        y
 
-     setsubMatrix_!(x,i1,j1,y) ==
+     setsubMatrix!(x,i1,j1,y) ==
        i2 := i1 + nrows(y) -1
        j2 := j1 + ncols(y) -1
        (i1 < minr(x)) or (i2 > maxr(x)) =>
@@ -491,7 +491,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
          error "setsubMatrix!: inserted matrix too big, use subMatrix to restrict it"
        for i in minr(y)..maxr(y) for k in i1..i2 repeat
          for j in minc(y)..maxc(y) for l in j1..j2 repeat
-           qsetelt_!(x,k,l,qelt(y,i,j))
+           qsetelt!(x,k,l,qelt(y,i,j))
        x
 
 --% Arithmetic
@@ -502,7 +502,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ans := new(r,c,0)
        for i in minr(x)..maxr(x) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt_!(ans,i,j,qelt(x,i,j) + qelt(y,i,j))
+           qsetelt!(ans,i,j,qelt(x,i,j) + qelt(y,i,j))
        ans
 
      if R has AbelianGroup then
@@ -512,7 +512,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
              ans := new(r, c, 0)
              for i in minr(x)..maxr(x) repeat
                  for j in minc(x)..maxc(x) repeat
-                     qsetelt_!(ans, i, j, qelt(x, i, j) - qelt(y, i, j))
+                     qsetelt!(ans, i, j, qelt(x, i, j) - qelt(y, i, j))
              ans
 
          - x == map((r1 : R) : R +-> - r1, x)
@@ -532,7 +532,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
              for k in minr(y)..maxr(y) for l in minc(x)..maxc(x) repeat
                sum := sum + qelt(x,i,l) * qelt(y,k,j)
              sum
-           qsetelt_!(ans,i,j,entry)
+           qsetelt!(ans,i,j,entry)
        ans
 
      -- positivePower:(%,Integer) -> %
@@ -748,7 +748,7 @@ testLibraryError "Pfaffian [[1,2,3],[0,0,0]]"
                (r := (qelt(x,i,j) exquo a)) case "failed" =>
                  return "failed"
                r :: R
-             qsetelt_!(ans,i,j,entry)
+             qsetelt!(ans,i,j,entry)
          ans
 
      if R has Field then
@@ -1075,7 +1075,7 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
       for i in minr x .. maxr x
         for j in minc x .. maxc x
           for k in minIndex v .. maxIndex v repeat
-            qsetelt_!(v, k, qelt(x, i, j))
+            qsetelt!(v, k, qelt(x, i, j))
       directProduct v
 
     retract(x:%):R ==
@@ -1094,7 +1094,7 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
             ans : Matrix(Col) := new(ndim, #v, 0)
             for i in minr ans .. maxr ans repeat
                 for j in minc ans .. maxc ans repeat
-                    qsetelt_!(ans, i, j, column(qelt(v, j), i))
+                    qsetelt!(ans, i, j, column(qelt(v, j), i))
             reducedSystem ans
 
         reducedSystem(x : Matrix %) : Matrix(R) ==

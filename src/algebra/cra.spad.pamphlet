@@ -39,31 +39,31 @@ CRApackage(R:EuclideanDomain): Exports == Implementation where
     -- Definition for modular reduction mapping with several moduli
     modTree(a,lm) ==
       t := balancedBinaryTree(#lm, 0$R)
-      setleaves_!(t,lm)
-      mapUp_!(t,"*")
-      leaves mapDown_!(t, a, "rem")
+      setleaves!(t,lm)
+      mapUp!(t,"*")
+      leaves mapDown!(t, a, "rem")
 
     chineseRemainder(lv:List(R), lm:List(R)):R ==
       #lm ~= #lv => error "lists of moduli and values not of same length"
       x := balancedBinaryTree(#lm, 0$R)
-      x := setleaves_!(x, lm)
-      mapUp_!(x,"*")
+      x := setleaves!(x, lm)
+      mapUp!(x,"*")
       y := balancedBinaryTree(#lm, 1$R)
-      y := mapUp_!(copy y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)
+      y := mapUp!(copy y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)
       (u := extendedEuclidean(value y, value x,1)) case "failed" =>
         error "moduli not relatively prime"
       inv := u . coef1
       linv := modTree(inv, lm)
       l := [(u*v) rem m for v in lv for u in linv for m in lm]
-      y := setleaves_!(y,l)
-      value(mapUp_!(y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)) rem value(x)
+      y := setleaves!(y,l)
+      value(mapUp!(y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)) rem value(x)
 
     chineseRemainder(llv:List List(R), lm:List(R)):List(R) ==
       x := balancedBinaryTree(#lm, 0$R)
-      x := setleaves_!(x, lm)
-      mapUp_!(x,"*")
+      x := setleaves!(x, lm)
+      mapUp!(x,"*")
       y := balancedBinaryTree(#lm, 1$R)
-      y := mapUp_!(copy y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)
+      y := mapUp!(copy y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)
       (u := extendedEuclidean(value y, value x,1)) case "failed" =>
         error "moduli not relatively prime"
       inv := u . coef1
@@ -84,9 +84,9 @@ CRApackage(R:EuclideanDomain): Exports == Implementation where
 
     multiEuclideanTree(fl, rhs) ==
       x := balancedBinaryTree(#fl, rhs)
-      x := setleaves_!(x, fl)
-      mapUp_!(x,"*")
-      leaves mapDown_!(x, rhs, extEuclidean)
+      x := setleaves!(x, fl)
+      mapUp!(x,"*")
+      leaves mapDown!(x, rhs, extEuclidean)
 
 @
 \section{License}

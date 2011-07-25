@@ -188,9 +188,9 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
         ) and extendsCategoryForm("$",target,m') then return [x,m,e]
   if STRINGP x then x:= INTERN x
   ress := nil
-  old__style := true
+  old_style := true
   if x is ["+->", vl, nx] then
-      old__style := false
+      old_style := false
       vl is [":", :.] =>
          ress := compLambda(x,m,oldE)
          -- In case Boot gets fixed
@@ -212,7 +212,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   ress => ress
   $returnMode : local := m'
   $currentFunctionLevel : local := #$exitModeStack
-  old__style and not null vl and not hasFormalMapVariable(x, vl) =>
+  old_style and not null vl and not hasFormalMapVariable(x, vl) =>
       vln := [GENSYM() for v in vl]
       $formalArgList := [:vln, :$formalArgList]
       for m in sl for v in vln repeat
@@ -235,7 +235,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   --  itself.  So we build a mini-vector that contains them all, and
   --  pass this as the environment to our inner function.
   $FUNNAME :local := nil
-  $FUNNAME__TAIL :local := [nil]
+  $FUNNAME_TAIL : local := [nil]
   expandedFunction := compTran CADR uu
   frees:=FreeList(expandedFunction,vl,nil,e)
     where FreeList(u,bound,free,e) ==

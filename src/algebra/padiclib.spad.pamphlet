@@ -88,7 +88,7 @@ IntegralBasisPolynomialTools(K,R,UP,L): Exports == Implementation where
       for i in 1..m repeat for j in 1..n repeat
         (poly := mapUnivariateIfCan(f,qelt(mat,i,j))) case "failed" =>
           return "failed"
-        qsetelt_!(matOut,i,j,poly :: R)
+        qsetelt!(matOut,i,j,poly :: R)
       matOut
 
     mapBivariate(f,poly) ==
@@ -157,7 +157,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       m := nrows mat; n := ncols mat
       ans : Matrix R := new(m,n,0)
       for i in 1..m repeat for j in 1..n repeat
-        qsetelt_!(ans,i,j,map((k1: K): K +-> k1 ^ q,qelt(mat,i,j)))
+        qsetelt!(ans,i,j,map((k1: K): K +-> k1 ^ q,qelt(mat,i,j)))
       ans
 
     listConjugateBases(bas,q,n) ==
@@ -169,7 +169,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
         bDen := map((k1: K): K +-> k1 ^ q,bDen)
         newBasis : Result := [b,bDen,bInv]
         outList := concat(newBasis,outList)
-      reverse_! outList
+      reverse! outList
 
     factorList(a,q,n,k) ==
       coef : SUP K := monomial(a,0); xx : SUP K := monomial(1,1)
@@ -177,7 +177,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       for i in 1..(n-1) repeat
         coef := coef ^ q
         outList := concat((xx - coef)^k,outList)
-      reverse_! outList
+      reverse! outList
 
     basisInfoToPolys: (Mat,R,R) -> L UP
     basisInfoToPolys(mat,lcm,den) ==
@@ -188,7 +188,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
         for j in 0..n1 repeat
           pp := pp + monomial((lcm quo den) * qelt(mat,i,j+1),j)
         outList := concat(pp,outList)
-      reverse_! outList
+      reverse! outList
 
     basesToPolyLists: (L Result,R) -> L L UP
     basesToPolyLists(basisList,lcm) ==
@@ -272,7 +272,7 @@ ChineseRemainderToolsForIntegralBases(K,R,UP): Exports == Implementation where
       for i in 1.. for pList in factorBasisPolyLists repeat
         polyList := mapChineseToList(pList,factors,i,denLCM)
         basisPolyLists := concat(polyList,basisPolyLists)
-      basisPolys := concat reverse_! basisPolyLists
+      basisPolys := concat reverse! basisPolyLists
       mat := squareTop rowEchelon(polyListToMatrix(basisPolys,n),denLCM)
       matInv := UpTriBddDenomInv(mat,denLCM)
       [mat,denLCM,matInv]
@@ -478,7 +478,7 @@ PAdicWildFunctionFieldIntegralBasis(K,R,UP,F): Exports == Implementation where
             compLocalBasisOverExt(qq,prime,pp,k)
           compLocalBasis(qq,prime)
         factorBases := concat(base,factorBases)
-      factorBases := reverse_! factorBases
+      factorBases := reverse! factorBases
       ib := chineseRemainder(henselFactors,factorBases,rank()$F)$IBACHIN(K,R,UP)
       index := diagonalProduct(ib.basisInv)
       [ib.basis,ib.basisDen,ib.basisInv,disc quo (index * index)]

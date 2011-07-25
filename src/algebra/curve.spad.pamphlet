@@ -219,7 +219,7 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
         vars := [concat(string u, string i)::SY for i in 1..(n := #w)]
         x    := '%%dummy1
         y    := '%%dummy2
-        select_!(s +-> zero?(degree(s, x)) and zero?(degree(s, y)),
+        select!(s +-> zero?(degree(s, x)) and zero?(degree(s, y)),
                  lexGroebner([v::P - UPUP2P(lift(d * w.i), x::P, y::P)
                     for v in vars for i in 1..n], concat([x, y], vars)))
 
@@ -348,14 +348,14 @@ FunctionFieldCategory(F, UP, UPUP): Category == Definition where
                      for i in minRowIndex m .. maxRowIndex m]$Vector(RF)
         for i in minRowIndex m .. maxRowIndex m repeat
           for j in minColIndex m .. maxColIndex m repeat
-            qsetelt_!(mhat, i, j, qelt(r, i + ii) * qelt(m, i, j))
+            qsetelt!(mhat, i, j, qelt(r, i + ii) * qelt(m, i, j))
         solList := nullSpace transpose map(infValue,
                 mhat)$MatrixCategoryFunctions2(RF, Vector RF, Vector RF,
                              Matrix RF, Q, Vector Q, Vector Q, Matrix Q)
         empty?(solList) => return ans
         sol := first solList
         pr := kmin(m, sol)
-        qsetelt_!(ans, pr.pos,
+        qsetelt!(ans, pr.pos,
          +/[Q2RF(qelt(sol, i)) * rfmonom(repOrder(m, i - ii) - pr.km)
                   * qelt(ans, i) for i in minIndex sol .. maxIndex sol])
 
@@ -684,7 +684,7 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
       v    := iBasis(rt.radicand, m)
       w:Vector(RF) := new(m, 0)
       for i in mini..maxIndex v repeat
-        qsetelt_!(w, i, b / ((qelt(v, i)::RF) x))
+        qsetelt!(w, i, b / ((qelt(v, i)::RF) x))
         b := b * a
       w
 
@@ -698,8 +698,8 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
       for i in minRowIndex(ib.basis) .. maxRowIndex(ib.basis)
         for j in minColIndex(ib.basis) .. maxColIndex(ib.basis)
           for k in mini .. maxIndex v repeat
-            qsetelt_!(v, k, (qelt(ib.basis, i, j) / ib.basisDen) * a)
-            qsetelt_!(w, k, qelt(ib.basisInv, i, j) * inv a)
+            qsetelt!(v, k, (qelt(ib.basis, i, j) / ib.basisDen) * a)
+            qsetelt!(w, k, qelt(ib.basisInv, i, j) * inv a)
             a := a * c
       void
 
@@ -729,11 +729,11 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n): Exports == Impl where
       infb        := inftyBasis(radicnd, n)
       invden:RF   := 1
       for i in mini..maxIndex ib repeat
-        qsetelt_!(invibasis, i, a := qelt(ib, i) * invden)
-        qsetelt_!(ibasis, i, inv a)
+        qsetelt!(invibasis, i, a := qelt(ib, i) * invden)
+        qsetelt!(ibasis, i, inv a)
         invden := invden / rp.coef        -- always equals 1/rp.coef^(i-mini)
-        qsetelt_!(infbasis, i, a := qelt(infb, i))
-        qsetelt_!(invinfbasis, i, inv a)
+        qsetelt!(infbasis, i, a := qelt(infb, i))
+        qsetelt!(invinfbasis, i, inv a)
       void
 
     ramified?(p:UP) ==
@@ -868,7 +868,7 @@ AlgebraicFunctionField(F, UP, UPUP, modulus): Exports == Impl where
                                 SimpleAlgebraicExtension(UP, UP2, nmod))
       for i in minRowIndex ibasis .. maxRowIndex ibasis repeat
         for j in minColIndex ibasis .. maxColIndex ibasis repeat
-          qsetelt_!(ibasis, i, j, (ib.basis)(i, j) / ib.basisDen)
+          qsetelt!(ibasis, i, j, (ib.basis)(i, j) / ib.basisDen)
           invibasis(i, j) := ((ib.basisInv) (i, j))::RF
       if zero?(infbasis(minRowIndex infbasis, minColIndex infbasis))
         then getInfBasis()

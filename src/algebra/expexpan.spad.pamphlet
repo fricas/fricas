@@ -151,8 +151,8 @@ UnivariatePuiseuxSeriesWithExponentialSingularity(R,FE,var,cen):_
     coeff : Term -> UPXS
     exponent : Term -> EXPUPXS
     exponentTerms : Term -> List PxRec
-    setExponentTerms_! : (Term,List PxRec) -> List PxRec
-    computeExponentTerms_! : Term -> List PxRec
+    setExponentTerms! : (Term,List PxRec) -> List PxRec
+    computeExponentTerms! : Term -> List PxRec
     terms : % -> List Term
     sortAndDiscardTerms: List Term -> TRec
     termsWithExtremeLeadingCoef : (L Term,RN,I) -> Union(L Term,"failed")
@@ -173,9 +173,9 @@ UnivariatePuiseuxSeriesWithExponentialSingularity(R,FE,var,cen):_
     coeff term == term.%coef
     exponent term == term.%expon
     exponentTerms term == term.%expTerms
-    setExponentTerms_!(term,list) == term.%expTerms := list
-    computeExponentTerms_! term ==
-      setExponentTerms_!(term,entries complete terms exponent term)
+    setExponentTerms!(term,list) == term.%expTerms := list
+    computeExponentTerms! term ==
+      setExponentTerms!(term,entries complete terms exponent term)
 
     terms f ==
       -- terms with a higher order singularity will appear closer to the
@@ -251,7 +251,7 @@ UnivariatePuiseuxSeriesWithExponentialSingularity(R,FE,var,cen):_
         termList := rest termList
       -- reverse "failed terms" so that higher order singularities
       -- appear at the beginning of the list
-      [zeroTerms,infiniteTerms,reverse_! failedTerms,pSeries]
+      [zeroTerms,infiniteTerms,reverse! failedTerms,pSeries]
 
     termsWithExtremeLeadingCoef(termList,ord,signum) ==
       -- 'termList' consists of terms of the form [g(x),exp(f(x)),...];
@@ -291,7 +291,7 @@ UnivariatePuiseuxSeriesWithExponentialSingularity(R,FE,var,cen):_
             outList := list term
       -- advance pointers on "exponent terms" on terms on 'outList'
       for term in outList repeat
-        setExponentTerms_!(term,rest exponentTerms term)
+        setExponentTerms!(term,rest exponentTerms term)
       [outList,ordExtreme]
 
     dominantTermOnList(termList,ord0,signum) ==
@@ -321,13 +321,13 @@ UnivariatePuiseuxSeriesWithExponentialSingularity(R,FE,var,cen):_
       not zero? pSeries => [makeTerm(pSeries,0),"series"]
       not empty? infiniteTerms =>
         empty? rest infiniteTerms => [first infiniteTerms,"infinity"]
-        for term in infiniteTerms repeat computeExponentTerms_! term
+        for term in infiniteTerms repeat computeExponentTerms! term
         ord0 := order exponent first infiniteTerms
         (dTerm := dominantTermOnList(infiniteTerms,ord0,1)) case "failed" =>
           return "failed"
         [dTerm :: Term,"infinity"]
       empty? rest zeroTerms => [first zeroTerms,"zero"]
-      for term in zeroTerms repeat computeExponentTerms_! term
+      for term in zeroTerms repeat computeExponentTerms! term
       ord0 := order exponent first zeroTerms
       (dTerm := dominantTermOnList(zeroTerms,ord0,-1)) case "failed" =>
         return "failed"

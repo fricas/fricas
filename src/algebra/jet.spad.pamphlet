@@ -1335,15 +1335,15 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
       ++ \axiom{allIndices(A)} returns all indices used for enumerating the
       ++ columns of the matrix \axiom{A}.
 
-    elimZeroCols_! : % -> Void
+    elimZeroCols! : % -> Void
       ++ \axiom{elimZeroCols!(A)} removes columns which contain only zeros.
       ++ This effects basically only the value of \axiom{allIndices(A)}.
 
-    purge_! : (%, C-> B) -> Void
+    purge! : (%, C-> B) -> Void
       ++ \axiom{purge!(A, crit)} eliminates all columns belonging to an index
       ++ \axiom{c} such that \axiom{crit(c)} yields \axiom{true}.
 
-    sortedPurge_! : (%, C-> B) -> Void
+    sortedPurge! : (%, C-> B) -> Void
       ++ \axiom{sortedPurge!(A, crit)} is like \axiom{purge}, however, with the
       ++ additional assumption that \axiom{crit} respects the ordering of the
       ++ indices.
@@ -1357,7 +1357,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
       ++ \axiom{elt(A, i, c)} returns the entry of the matrix \axiom{A} in row
       ++ \axiom{i} and in the column with index \axiom{c}.
 
-    setelt_! : (%, I, C, D) -> Void
+    setelt! : (%, I, C, D) -> Void
       ++ \axiom{setelt!(A, i, c, d)} sets the entry of the matrix \axiom{A} in
       ++ row \axiom{i} and in the column with index \axiom{c} to the value
       ++ \axiom{d}.
@@ -1365,23 +1365,23 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     row : (%, I) -> ROWREC
       ++ \axiom{row(A, i)} returns the \axiom{i}-th row of the matrix \axiom{A}.
 
-    setRow_! : (%, I, ROWREC) -> Void
+    setRow! : (%, I, ROWREC) -> Void
       ++ \axiom{setRow!(A, i, ind, ent)} sets the \axiom{i}-th row of the matrix
       ++ \axiom{A} to the value \axiom{r}.
 
-    setRow_! : (%, I, L C, L D) -> Void
+    setRow! : (%, I, L C, L D) -> Void
       ++ \axiom{setRow!(A, i, ind, ent)} sets the \axiom{i}-th row of the matrix
       ++ \axiom{A}. Its indices are \axiom{ind}; the entries \axiom{ent}.
 
-    deleteRow_! : (%, I) -> Void
+    deleteRow! : (%, I) -> Void
       ++ \axiom{deleteRow(A, i)} deletes the \axiom{i}-th row of the matrix
       ++ \axiom{A}.
 
-    consRow_! : (%, ROWREC) -> Void
+    consRow! : (%, ROWREC) -> Void
       ++ \axiom{consRow!(A, r)} inserts the row \axiom{r} at the top of the
       ++ matrix \axiom{A}.
 
-    appendRow_! : (%, ROWREC) -> Void
+    appendRow! : (%, ROWREC) -> Void
       ++ \axiom{appendRow!(A, r)} appends the row \axiom{r} at the end of the
       ++ matrix \axiom{A}.
 
@@ -1474,12 +1474,12 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         -- i < 0 or i > A.NRows => error "index out of range"
         qelt(A.Rows, i)
 
-    setRow_!(A : %, i : I, r : ROWREC) : Void ==
+    setRow!(A : %, i : I, r : ROWREC) : Void ==
         -- i < 0 or i > A.NRows => error "index out of range"
         qsetelt!(A.Rows, i, r)
         void
 
-    setRow_!(A : %, i : I, inds : L C, ents : L D) : Void ==
+    setRow!(A : %, i : I, inds : L C, ents : L D) : Void ==
         -- i < 0 or i > A.NRows => error "index out of range"
         -- #inds  ~=  #ents => error "improper row"
         qsetelt!(A.Rows, i, [inds, ents])
@@ -1494,7 +1494,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         pos < minInd => 0$D
         qelt(r.Entries, pos)
 
-    setelt_!(A : %, i : I, c : C, d : D) : Void ==
+    setelt!(A : %, i : I, c : C, d : D) : Void ==
         r := row(A, i)
         pos := position(c, r.Indices)
         if pos >= minInd then
@@ -1537,14 +1537,14 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     -- Basic Matrix Operations --
     -- ----------------------- --
 
-    elimZeroCols_!(A : %) : Void ==
+    elimZeroCols!(A : %) : Void ==
         newInds : L C := empty
         for r in entries(A.Rows) repeat
             newInds := removeDuplicates! merge!(#2 <#1, newInds, r.Indices)
         A.AllInds := newInds
         void
 
-    purge_!(A : %, crit : C-> B) : Void ==
+    purge!(A : %, crit : C-> B) : Void ==
         newInds : L C := empty
         for c in A.AllInds repeat
             if not crit c then
@@ -1563,7 +1563,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                 qsetelt!(A.Rows, l, [reverse! newInds, reverse! newEnts])
         void
 
-    sortedPurge_!(A : %, crit : C-> B) : Void ==
+    sortedPurge!(A : %, crit : C-> B) : Void ==
         if crit first A.AllInds then
             while not(empty? A.AllInds) and crit first A.AllInds repeat
                 A.AllInds := rest A.AllInds
@@ -1575,7 +1575,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                 qsetelt!(A.Rows, l, r)
         void
 
-    deleteRow_!(A : %, i : I) : Void ==
+    deleteRow!(A : %, i : I) : Void ==
         i > A.NRows => A
         nr := (A.NRows-1)::NNI
         resRows : V ROWREC := new(nr, emptyRec)
@@ -1587,7 +1587,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         A.Rows := resRows
         void
 
-    consRow_!(A : %, r : ROWREC) : Void ==
+    consRow!(A : %, r : ROWREC) : Void ==
         A.NRows := A.NRows + 1
         newRows : L ROWREC := cons(r, entries A.Rows)
         A.Rows := construct newRows
@@ -1596,7 +1596,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             A.AllInds := merge(#2 <#1, A.AllInds, sort!(#2 <#1, newInds))
         void
 
-    appendRow_!(A : %, r : ROWREC) : Void ==
+    appendRow!(A : %, r : ROWREC) : Void ==
         A.NRows := A.NRows + 1
         newRows : L ROWREC := concat(entries A.Rows, r)
         A.Rows := construct newRows

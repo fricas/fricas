@@ -52,7 +52,7 @@ ReductionOfOrder(F, L): Exports == Impl where
       empty? sols => [l, empty()]
       neweq := ReduceOrder(l, sol := first sols)
       rec := ReduceOrder(neweq, [diff(s / sol) for s in rest sols])
-      [rec.eq, concat_!(rec.op, sol)]
+      [rec.eq, concat!(rec.op, sol)]
 
     ithcoef(eq, i, s) ==
       ans:F := 0
@@ -65,9 +65,9 @@ ReductionOfOrder(F, L): Exports == Impl where
     ReduceOrder(eq:L, sol:F) ==
       s:A := new(n := degree eq, 0)         -- will contain derivatives of sol
       si := sol                             -- will run through the derivatives
-      qsetelt_!(s, 0, si)
+      qsetelt!(s, 0, si)
       for i in 1..(n-1)::NonNegativeInteger repeat
-          qsetelt_!(s, i, si := diff si)
+          qsetelt!(s, i, si := diff si)
       ans:L := 0
       for i in 0..(n-1)::NonNegativeInteger repeat
           ans := ans + monomial(ithcoef(eq, i, s), i)
@@ -205,7 +205,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
 
 -- xpart(f,x) removes any constant not involving x from f
     xpart(f, x) ==
-      l  := reverse_! varselect(tower f, x)
+      l  := reverse! varselect(tower f, x)
       lp := [k::P for k in l]
       smpxpart(numer f, x, l, lp) / smpxpart(denom f, x, l, lp)
 
@@ -238,14 +238,14 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
       rec := ReduceOrder(oper, sols)
       le := expsols(rec.eq, k, x)
       int:List(F) := [xpart(multivariate(h, k), x) for h in rec.op]
-      concat_!([xpart(multivariate(h, k), x) for h in sols],
+      concat!([xpart(multivariate(h, k), x) for h in sols],
                [multint(e, int, x) for e in le])
 
     homosolve1(oper, sols, k, x) ==
       zero?(n := (degree(oper) - #sols)::N) => sols   -- all solutions found
       rec := ReduceOrder(oper, sols)
       int:List(F) := [xpart(h, x) for h in rec.op]
-      concat_!(sols, [multint(e, int, x) for e in norf1(rec.eq, k, x, n::N)])
+      concat!(sols, [multint(e, int, x) for e in norf1(rec.eq, k, x, n::N)])
 
 -- if the coefficients are rational functions, then the equation does not
 -- not have a proper 1st-order right factor over the rational functions
@@ -293,7 +293,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
 -- left hand side has rational coefficients
     rfSolve(eq, g, k, x) ==
       op := ulodo(eq, k)
-      empty? remove_!(k, varselect(kernels g, x)) =>  -- i.e. rhs is rational
+      empty? remove!(k, varselect(kernels g, x)) =>  -- i.e. rhs is rational
         rc := ratDsolve(op, univariate(g, k))
         rc.particular case "failed" =>                -- this implies g ~= 0
           doVarParams(eq, g, homosolve(eq, op, rc.basis, k, x), x)
@@ -309,7 +309,7 @@ ElementaryFunctionLODESolver(R, F, L): Exports == Implementation where
       for i in minIndex v .. maxIndex v for yy in y0 repeat
         v.i := yy - eval(h, kx, a)
         h := diff h
-      (sol := particularSolution(map_!((f1: F): F +-> eval(f1,kx,a),wronskianMatrix(b,n)), v))
+      (sol := particularSolution(map!((f1: F): F +-> eval(f1,kx,a),wronskianMatrix(b,n)), v))
          case "failed" => "failed"
       for f in b for i in minIndex(s := sol::V) .. repeat
         hp := hp + s.i * f
@@ -515,7 +515,7 @@ ElementaryFunctionODESolver(R, F): Exports == Implementation where
       for eq in eqs repeat
           (u := parseSYSeq(eq,lk0,lk1,lf,x)) case "failed" => return "failed"
           rec := u::ROW
-          setRow_!(m, rec.index, rec.row)
+          setRow!(m, rec.index, rec.row)
           v(rec.index) := rec.rh
       [m, v]
 
