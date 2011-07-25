@@ -32,8 +32,8 @@
 ++ A useful common model for polynomials and power series.
 ++ Conceptually at least, only the non-zero terms are ever operated on.
 
-AbelianMonoidRing(R:Ring, E:OrderedAbelianMonoid): Category ==
-        Join(Ring,BiModule(R,R)) with
+AbelianMonoidRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
+                 ) : Category == Join(SemiRng, BiModule(R, R)) with
     leadingCoefficient: % -> R
       ++ leadingCoefficient(p) returns the coefficient highest degree term of p.
     leadingMonomial: % -> %
@@ -53,6 +53,9 @@ AbelianMonoidRing(R:Ring, E:OrderedAbelianMonoid): Category ==
     coefficient: (%,E) -> R
          ++ coefficient(p,e) extracts the coefficient of the monomial with
          ++ exponent e from polynomial p, or returns zero if exponent is not present.
+    if R has CancellationAbelianMonoid then CancellationAbelianMonoid
+    if R has SemiRing then SemiRing
+    if R has Ring then Ring
     if R has Field then "/": (%,R) -> %
          ++ p/c divides p by the coefficient c.
     if R has CommutativeRing then
@@ -93,7 +96,8 @@ AbelianMonoidRing(R:Ring, E:OrderedAbelianMonoid): Category ==
 ++ It is a useful model for polynomials,
 ++ but is somewhat more general.
 
-FiniteAbelianMonoidRing(R:Ring, E:OrderedAbelianMonoid): Category ==
+FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
+                        E : OrderedAbelianMonoid) : Category ==
    Join(AbelianMonoidRing(R,E),FullyRetractableTo R) with
     ground?: % -> Boolean
       ++ ground?(p) tests if polynomial p is a member of the coefficient ring.
