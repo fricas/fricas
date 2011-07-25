@@ -77,7 +77,7 @@ SETANDFILEQ($generalTTRules, '( _
   ((Resolve (SM x t1) (RM y y t2)) . _
     (SM (VarEqual x y) (Resolve t1 t2))) _
   ((Resolve (V t1) (L t2)) . (V (Resolve t1 t2))) _
-  ((Resolve (FF t1) (FR t2)) . (FR (Resolve t1 t2))) _
+  ((Resolve (FR t1) (FR t2)) . (FR (Resolve t1 t2))) _
   ((Resolve (F) (RN)) . (F) ) _
  _
   ((Resolve (OV x) (OV y)) . (OV (SetUnion x y))) _
@@ -98,7 +98,6 @@ SETANDFILEQ($generalTTRules, '( _
   ((Resolve (RN) (P t1)) . (P (Resolve (RN) t1))) _
   ((Resolve (RN) (UP x t1)) . (UP x (Resolve (RN) t1))) _
   ((Resolve (RN) (UPS x t1)) . (UPS x (Resolve (RN) t1))) _
-  ((Resolve (RN) (CFPS x t1)) . (CFPS x (Resolve (RN) t1))) _
  _
   ((Resolve (P t1) (AF t2)) . (AF (Resolve t1 t2 ))) _
   ((Resolve (P t1) (EF t2)) . (EF (Resolve t1 t2 ))) _
@@ -137,12 +136,12 @@ SETANDFILEQ($generalTTRules, '( _
 
 -- The following creates the ruleset
 
-createResolveTTRules() ==
+createResolveTTRules(nameList, abList) ==
   -- expand multivariate polynomial rules
   mps := '(MP DMP NDMP)
   mpRules := "append"/[SUBST(mp,'mpoly1,$mpolyTTRules) for mp in mps]
   $Res := CONS('(t1 t2 x y),
-    EQSUBSTLIST($nameList,$abList,append($generalTTRules,mpRules)))
+    EQSUBSTLIST(nameList, abList, append($generalTTRules, mpRules)))
   true
 
 --% resolveTM Rules
@@ -178,10 +177,6 @@ SETANDFILEQ($generalTMRules,'( _
     (UP (VarEqual x y) (Resolve (I) t1))) _
   ((Resolve (VARIABLE x) (UPS y t1)) . _
     (UPS (VarEqual x y) (Resolve (I) t1))) _
-  ((Resolve (VARIABLE x) (CFPS y t1)) . _
-    (CFPS (VarEqual x y) (Resolve (RN) t1))) _
-  ((Resolve (VARIABLE x) (ELFPS y t1)) . _
-    (ELFPS (VarEqual x y) (Resolve (RN) t1))) _
   ((Resolve (VARIABLE x) (EF t1)) . (EF t1)) _
   ((Resolve (L (L (SY))) (M _*_*)) . (M (P (I)))) _
   ((Resolve (L (L (SY))) (SM x _*_*)) . (SM x (P (I)))) _
@@ -209,39 +204,11 @@ SETANDFILEQ($generalTMRules,'( _
  _
   ((Resolve (L t1) (V t2)) . (V (Resolve t1 t2))) _
   ((Resolve (V t1) (L t2)) . (L (Resolve t1 t2))) _
-  ((Resolve (FF t1) (FR t2)) . (FR (Resolve t1 t2))) _
+  ((Resolve (FR t1) (FR t2)) . (FR (Resolve t1 t2))) _
   ((Resolve (UP x t1) (P t2)) . (Resolve t1 (P t2))) _
  ))
 
 -- Private abbreviation table for resolve rules
-SETANDFILEQ($resolveAbbreviations, '( _
-    (P .  Polynomial) _
-    (L .  List) _
-    (M .  Matrix) _
-    (EQ . Equation) _
-    (B .  Boolean) _
-    (SY . Symbol) _
-    (I .  Integer) _
-    (SM . SquareMatrix) _
-    (RM . RectangularMatrix) _
-    (V .  Vector) _
-    (FF . FactoredForm) _
-    (FR . FactoredRing) _
-    (RN . RationalNumber) _
-    (F .  Float) _
-    (OV . OrderedVariableList) _
-    (UP . UnivariatePoly) _
-    (DMP . DistributedMultivariatePolynomial) _
-    (MP . MultivariatePolynomial) _
-    (HDMP . HomogeneousDistributedMultivariatePolynomial) _
-    (QF . QuotientField) _
-    (RF . RationalFunction) _
-    (UPS . UnivariatePowerSeries) _
-    (CFPS . ContinuedFractionPowerSeries) _
-    (ELFPS . EllipticFunctionPowerSeries) _
-    (EF . ElementaryFunction) _
-    (VARIABLE . Variable) _
- ))
 
 SETANDFILEQ($newResolveAbbreviations, '( _
     (P .  Polynomial) _
@@ -255,7 +222,6 @@ SETANDFILEQ($newResolveAbbreviations, '( _
     (SM . SquareMatrix) _
     (RM . RectangularMatrix) _
     (V .  Vector) _
-    (FF . Factored) _
     (FR . Factored) _
     (F .  Float) _
     (OV . OrderedVariableList) _
@@ -270,21 +236,19 @@ SETANDFILEQ($newResolveAbbreviations, '( _
 
 -- The following creates the ruleset
 
-createResolveTMRules() ==
+createResolveTMRules(nameList, abList) ==
   -- expand multivariate polynomial rules
   mps := '(MP DMP NDMP)
   mpRules0 := "append"/[SUBST(mp,'mpoly1,$mpolyTMRules) for mp in mps]
   mpRules := "append"/[SUBST(mp,'mpoly2,mpRules0) for mp in mps]
   $ResMode := CONS('(t1 t2 x y),
-    EQSUBSTLIST($nameList,$abList,append(mpRules,$generalTMRules)))
+    EQSUBSTLIST(nameList, abList, append(mpRules, $generalTMRules)))
   true
 
 initializeRuleSets() ==
-  $abList: local :=
-    ASSOCLEFT $newResolveAbbreviations
-  $nameList: local :=
-    ASSOCRIGHT $newResolveAbbreviations
-  createResolveTTRules()
-  createResolveTMRules()
+  abList := ASSOCLEFT $newResolveAbbreviations
+  nameList := ASSOCRIGHT $newResolveAbbreviations
+  createResolveTTRules(nameList, abList)
+  createResolveTMRules(nameList, abList)
   $ruleSetsInitialized := true
   true

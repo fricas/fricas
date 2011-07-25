@@ -883,7 +883,7 @@ expandRecursiveBody(alreadyExpanded, body) ==
       (obj := get(op,'value,$e)) and objVal obj is ['MAP,:mapDef] =>
         newBody:= getMapBody(op,mapDef)
         for arg in argl for var in $FormalMapVariableList repeat
-          newBody:=MSUBST(arg,var,newBody)
+            newBody := substitute(arg, var, newBody)
         expandRecursiveBody([op,:alreadyExpanded],newBody)
       [op,:[expandRecursiveBody(alreadyExpanded,arg) for arg in argl]]
     [op,:[expandRecursiveBody(alreadyExpanded,arg) for arg in argl]]

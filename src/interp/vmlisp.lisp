@@ -657,8 +657,6 @@
 
 (defun CGREATERP (s1 s2) (string> (string s1) (string s2)))
 
-(define-function 'STRGREATERP #'CGREATERP)
-
 ; 17.1 Creation
 
 
@@ -819,11 +817,8 @@
 
 ; 19.1 Creating
 
-(defun MSUBST (new old tree) (subst new old tree :test #'equal))
-(define-function '|substitute| #'MSUBST)
+(defun |substitute| (new old tree) (subst new old tree :test #'equal))
 
-; note subst isn't guaranteed to copy
-(defun |nsubst| (new old tree) (nsubst new old tree :test #'equal))
 (define-function 'MSUBSTQ #'subst) ;default test is eql
 
 (defun copy (x) (copy-tree x)) ; not right since should descend vectors

@@ -153,14 +153,12 @@ intloop () ==
 SpadInterpretStream(str, source, interactive?) ==
     $fn              : local := source
     pile?                    := not interactive?
-    $libQuiet        : local := not interactive?
 --  following seems useless and causes ccl package problems
 --    $InteractiveMode : local := false
 
     $newcompErrorCount: local := 0 -- SMW Feb 2/90.
                                    -- Used in highComplete, ncHardError etc.
 
-    $okToExecuteMachineCode: local := true -- set false on error
     $inclAssertions: local := ["AIX", "CommonLisp"] -- Jan 28/90
 
 

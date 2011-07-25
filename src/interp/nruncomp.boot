@@ -123,11 +123,11 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
   sig := substitute(ndc, dc, sig)
   not MEMQ(KAR ndc,$optimizableConstructorNames) => nil
   dcval := optCallEval ndc
-  -- MSUBST guarantees to use EQUAL testing
-  sig := MSUBST(devaluate dcval, ndc, sig)
+  -- substitute guarantees to use EQUAL testing
+  sig := substitute(devaluate dcval, ndc, sig)
   if rest ndc then
      for new in rest devaluate dcval for old in rest ndc repeat
-       sig := MSUBST(new,old,sig)
+       sig := substitute(new, old, sig)
      -- optCallEval sends (List X) to (LIst (Integer)) etc,
      -- so we should make the same transformation
   fn := compiledLookup(op,sig,dcval)

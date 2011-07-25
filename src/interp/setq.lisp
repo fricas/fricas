@@ -477,13 +477,6 @@
 ; "Determines whether to use BF as default floating point type."
 (SETQ |$useBFasDefault| 'T)
 
-;; Next are initial values for fluid variables in G-BOOT BOOT
-
-(SETQ |$inDefLET| NIL)
-(SETQ |$inDefIS|  NIL)
-(SETQ |$letGenVarCounter| 1)
-(SETQ |$isGenVarCounter|  1)
-
 ;; By default, don't generate info files with old compiler.
 (setq |$profileCompiler| nil)
 

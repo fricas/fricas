@@ -39,7 +39,7 @@ reportFunctionCompilation(op,nam,argl,body,isRecursive) ==
   $compiledOpNameList := [nam]
   minivectorName := makeInternalMapMinivectorName(nam)
   $minivectorNames := [[op,:minivectorName],:$minivectorNames]
-  body := MSUBST(minivectorName,"$$$",body)
+  body := substitute(minivectorName, "$$$", body)
   if $compilingInputFile then
     $minivectorCode := [:$minivectorCode,minivectorName]
   SET(minivectorName,LIST2REFVEC $minivector)
@@ -189,7 +189,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
     cbody:=
       endTest:=
         ['COND, [['EQL,sharpArg,gIndex],['RETURN,returnValue]]]
-      newValueCode:= ['LET,g,MSUBST(gIndex,sharpArg,
+      newValueCode := ['LET, g, substitute(gIndex, sharpArg,
         EQSUBSTLIST(gsList,rest $TriangleVariableList,body))]
       ['PROGN,:decomposeCode,
         ['REPEAT,['WHILE,'T],['PROGN,endTest,advanceCode,
