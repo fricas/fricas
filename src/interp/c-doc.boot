@@ -74,6 +74,8 @@ collectAndDeleteAssoc x ==
   res
 
 finalizeDocumentation() ==
+  -- skip during bootstrap to save time
+  $bootStrapMode => []
   unusedCommentLineNumbers := [x for (x := [n,:r]) in $COMBLOCKLIST | r]
   docList := SUBST("$","%",transDocList($op,$docList))
   if u := [sig for [sig,:doc] in docList | null doc] then
