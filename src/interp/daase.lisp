@@ -643,6 +643,12 @@ database.
       (setf (get value 'abbreviationfor) constructor)))
     (niladic
      (setf (database-niladic struct) value))
+    (cosig
+     (setf (database-cosig struct) value))
+    (constructormodemap
+     (setf (database-constructormodemap struct) value))
+    (constructorcategory
+     (setf (database-constructorcategory struct) value))
     (constructorkind
      (setf (database-constructorkind struct) value))))))
 
