@@ -375,6 +375,8 @@ constructorName con ==
   $abbreviateTypes => abbreviate con
   con
 
+DEFPARAMETER($justUnparseType, false)
+
 form2String1 u ==
   ATOM u =>
     u=$EmptyMode or u=$quadSymbol => formWrapId specialChar 'quad
@@ -393,7 +395,7 @@ form2String1 u ==
     op = "NTuple"  => [ form2String1 first argl, "*"]
     op = "Map"     => ["(",:formatSignature0 [argl.1,argl.0],")"]
     op = 'Record => record2String(argl)
-    null (conSig := getConstructorSignature op) =>
+    $justUnparseType or null(conSig := getConstructorSignature op) =>
       application2String(constructorName op,[form2String1(a) for a in argl], u1)
     ml := rest conSig
     if not freeOfSharpVars ml then
