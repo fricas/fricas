@@ -221,15 +221,6 @@ parseCategory x ==
     'package
   ['CATEGORY,key,:l]
 
-parseGreaterThan [x,y] ==
-  [SUBST("<", ">", $op), parseTran y, parseTran x]
-
-parseGreaterEqual u == parseTran ['not, [SUBST("<", ">=", $op), :u]]
-
-parseLessEqual u == parseTran ['not, [SUBST(">", "<=", $op), :u]]
-
-parseNotEqual u == parseTran ['not, [SUBST("=", "~=", $op), :u]]
-
 parseAnd u ==
   $InteractiveMode => ["and",:parseTranList u]
   null u => 'true
