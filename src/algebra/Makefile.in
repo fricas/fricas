@@ -346,17 +346,6 @@ CATDOMS= A1AGG ABELGRP ABELMON ABELSG ACF ACFS AGG ALGEBRA AMR ARR2CAT \
 EXTRASPADS=BPADIC BPADICRT COMMONOP GALUTIL MKFLCFN PADIC PADICRAT \
        SET WFFINTBS XPBWPOLY
 
-BADSPADS=\
-ALGFF BRAGG CHAR CMPLXRT COMPCAT COMPLEX COORDSYS \
-DEGRED DFLOAT \
-EF EXPR FAXF FC FFCGP FFF FFHOM FFIELDC \
-FFNBP FFPOLY2 FFPOLY FPC FRIDEAL FRNAALG FR FSCINT FS GALFACT GCDBAS GENUPS \
-GRIMAGE IARRAY1 ILIST INTEF INTPAF INTTOOLS IPF IRURPK ISUMP \
-LODOF LZSTAGG MCMPLX MLIFT MULTSQFR NORMPK NUMODE ODERTRIC ODESYS \
-OREPCTO PATRES PF PFO PMTOOLS PSEUDLIN RCAGG RDEEF RESRING RFDIST \
-RPOLCAT RURPK SHP SOLVETRA SUPFRACF SYMFUNC TBCMPPK TEMUTL URAGG \
-UTS WEIER WP ZDSOLVE ZMOD
-
 GUESSLIST= SMPEXPR FAMR2 NEWTON UFPS GOPT GUESSF1 GUESSP1\
            UTSSOL FFFG UFPS1 GOPT0 EXPRSOL FFFGF \
            RECOP STNSR GUESS GUESSINT GUESSF GUESSP GUESSPI GUESSAN
@@ -466,12 +455,17 @@ stamp-fasls:
 
 endif
 
-stamp-db: $(patsubst %, %.spad, ${SPADLIST} ${EXTRASPADS})
+NSPADLIST = ${SPADLIST} ${EXTRASPADS} ${GUESSLIST} ${TESTLIST}
+
+stamp-db: $(patsubst %, %.spad, ${NSPADLIST})
 	if [ ! -f stamp-db ] ; then \
-          grep -h '^)abbrev ' *.spad > abbrevs.input ; \
-          cp ${srcdir}/boo* . ; \
-          sed 's,@BBLD@,$(fricas_build_bindir),;s,@FASLEXT@,${FASLEXT},;s,@GOOD_SHELL@,${GOOD_SHELL},' ${srcdir}/boot-sum.in > boot-sum.sh ; \
-          chmod 755 boot-sum.sh ; \
+          cp ${srcdir}/boo_db.input . ; \
+          for A in ${NSPADLIST} ; do \
+              echo ")compile $$A.spad" >> komp_all.input ; \
+          done ; \
+          for A in ${CATLIST} ${DOMLIST} ; do \
+              echo ")compile $$A.spad" >> boot_doms.input ; \
+          done ; \
           mkdir -p r1/algebra ; \
           cp $(fricas_src_datadir)/algebra/*.daase r1/algebra ; \
           mkdir axp ; \
@@ -480,7 +474,13 @@ stamp-db: $(patsubst %, %.spad, ${SPADLIST} ${EXTRASPADS})
           cp -r ${AXIOM}/share axp ; \
           cp $(fricas_src_datadir)/algebra/gloss.text . ; \
           cp $(fricas_src_datadir)/algebra/topics.data  . ; \
-          ./boot-sum.sh && touch stamp-db ; \
+          ( echo ')read "boo_db.input"' | \
+              AXIOM=./axp DAASE=./r1 $(fricas_build_bindir)/interpsys ) || \
+              exit 1 ; \
+          mkdir -p r7/algebra && \
+          mv browse.daase  category.daase  compress.daase  interp.daase \
+              operation.daase r7/algebra || exit 1 ; \
+          touch stamp-db ; \
         fi
 
 stamp-oboo3: stamp-db
@@ -495,17 +495,14 @@ stamp-oboo3: stamp-db
            rm -rf *.NRLIB \
            echo "Stage 3 object bootstrap (normal mode)" ; \
            echo > oboo3.input ; \
-           for A in ${CATLIST} ${DOMLIST} ; do \
+           for A in ${DOMLIST} ; do \
               echo ')compile "'$$A'.spad"' >> oboo3.input ; \
            done; \
            ( echo ')read "oboo3.input"' | \
               DAASE=./r7 ${INTERPSYS} ) || exit 1 ; \
 	   echo "Stage 3 object copy" ; \
-	   for A in ${CATLIST} ${DOMLIST} ; do \
+	   for A in ${DOMLIST} ; do \
 	      cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
-	   done ; \
-	   for A in ${CATDOMS} ; do \
-	      cp $${A}-.NRLIB/$${A}-.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
 	   done ; \
 	   touch stamp-oboo3 ; \
 	fi
@@ -513,11 +510,11 @@ stamp-oboo3: stamp-db
 stamp-bootstrap: stamp-oboo3
 	if [ ! -f stamp-bootstrap ] ; then \
            echo -n 'main-bootstrap: ' > boot.mak ; \
-           for A in ${SPADLIST} ; do \
+           for A in ${NSPADLIST} ; do \
                echo -n $${A}.NRLIB/$${A}.lsp "" >> boot.mak ; \
            done ; \
            echo >> boot.mak ; \
-           for A in ${SPADLIST} ; do \
+           for A in ${NSPADLIST} ; do \
               echo $${A}.NRLIB/$${A}.lsp: $${A}.spad >> boot.mak ; \
               echo -e '\techo ")compile" $$< | DAASE=./r7 ${INTERPSYS}' \
                       >> boot.mak ; \
@@ -525,52 +522,15 @@ stamp-bootstrap: stamp-oboo3
            done ; \
            ${MAKE} -f boot.mak main-bootstrap && \
 	   echo ')lisp (make-databases "" nil)' | DAASE=./r7 ${INTERPSYS} && \
-	   mkdir -p r8/algebra && \
+	   mkdir -p rf/algebra && \
 	   mv browse.daase  category.daase  compress.daase  interp.daase \
-	      operation.daase r8/algebra || exit 1 ; \
-           for A in ${EXTRASPADS} ; do \
-              echo ')compile "'$$A'.spad"' ; \
-           done | DAASE=./r8 ${INTERPSYS} ; \
-           echo ')lisp (make-databases "" nil)' | DAASE=./r8 ${INTERPSYS} && \
-           mkdir -p rf/algebra && \
-           mv browse.daase  category.daase  compress.daase  interp.daase \
-             operation.daase rf/algebra || exit 1 ; \
-	   for A in ${BADSPADS} ; do \
-	     echo ')compile "'$$A'.spad"' | DAASE=./rf ${INTERPSYS} ; \
-           done ; \
-	   for A in ${SPADLIST} ${EXTRASPADS} ; do \
-	     cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
-	   done ; \
+	      operation.daase rf/algebra || exit 1 ; \
 	   touch stamp-bootstrap ; \
 	fi     
 
 ifneq ($(BUILD_WAY),use_lisp)
 $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST}) : stamp-bootstrap
 endif
-
-stamp-guess-pkg: $(patsubst %, %.spad, ${GUESSLIST}) stamp-bootstrap
-	( \
-	  { for A in ${GUESSLIST}; do \
-	        echo ')compile "'$$A'.spad"' ; \
-	    done | DAASE=./rf ${INTERPSYS} ; \
-	    for A in ${GUESSLIST}; do \
-	        cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
-	    done ; \
-          } \
-	)
-	touch stamp-guess-pkg
-
-stamp-test-pkg: $(patsubst %, %.spad, ${TESTLIST}) stamp-bootstrap
-	( \
-	  { for A in ${TESTLIST}; do \
-	        echo ')compile "'$$A'.spad"' ; \
-	    done | DAASE=./rf ${INTERPSYS} ; \
-	    for A in ${TESTLIST}; do \
-	        cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
-	    done ; \
-          } \
-	)
-	touch stamp-test-pkg
 
 stamp: stamp-src ${TESTS}
 	-rm -f stamp
@@ -583,21 +543,19 @@ stamp: stamp-src ${TESTS}
 # update-spads: \
 #          $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST} ${EXTRASPADS})
 
-do-update-spads: stamp-bootstrap stamp-guess-pkg stamp-test-pkg spad.mak
+do-update-spads: stamp-bootstrap spad.mak
 	${MAKE} -f spad.mak update-spads
 
 
 spad.mak : Makefile
 	echo 'update-spads: \' > spad.mak
-	for A in \
-	     $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST} ${EXTRASPADS}) ; \
-	do \
+	for A in $(patsubst %, ${OUT}/%.$(FASLEXT), ${NSPADLIST}) ; do \
 	    echo $${A}' \' >> spad.mak ; \
 	done
 	for A in $(patsubst %, ${OUT}/%-.$(FASLEXT), ${CATDOMS}) ; do \
 	    echo $${A}' \' >> spad.mak ; \
 	done
-	for A in ${SPADLIST} ${EXTRASPADS} ; do \
+	for A in ${NSPADLIST} ; do \
 	    echo >> spad.mak ; \
 	    echo '${OUT}/'$${A}'.$(FASLEXT): ' \
 	         $${A}.NRLIB/$${A}.$(FASLEXT) >> spad.mak ; \
