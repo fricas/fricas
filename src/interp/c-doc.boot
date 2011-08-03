@@ -546,16 +546,15 @@ newString2Words l ==
 newWordFrom(l,i,m) ==
   while i <= m and l.i = $charBlank repeat i := i + 1
   i > m => NIL
-  buf := '""
+  i0 := i
   ch := l.i
   ch = $charFauxNewline => [$stringFauxNewline, i+ 1]
   done := false
   while i <= m and not done repeat
     ch := l.i
     ch = $charBlank or ch = $charFauxNewline => done := true
-    buf := STRCONC(buf,ch)
     i := i + 1
-  [buf,i]
+  [SUBSTRING(l, i0, i - i0), i]
 
 checkAddPeriod s ==  --No, just leave blank at the end (rdj: 10/18/91)
   m := MAXINDEX s
