@@ -28,7 +28,7 @@ lambda, we do not attempt to reduce as soon as it is constructed
 leave it as a structure to be combined, transformed, compared and
 studied.
 
-We are also interested in the reationship to logic, this approach
+We are also interested in the relationship to logic, this approach
 is based on the ideas of Philip Wadler [1] and others.
 A program that uses this approach is Djinn [2]
 
@@ -52,11 +52,13 @@ These domains all represent systems of logic and are constructed from
 tree structures and act on tree structures. These 'tree logics' seem
 to 'generate' other algebras, for instance, below, we see that
 this lambda structure:
+
 \begin{verbatim}
 \x.\y.y x
 \end{verbatim}
 
 can be converted to this SKI structure:
+
 \begin{verbatim}
 S(K(SI))(S(KK)I)
 \end{verbatim}
@@ -126,22 +128,83 @@ of this software.
    \item make sure we have all simplifications for implies,/\, \/ and ~.
    \end{itemize}
 
-\item Representation by symbols. Make code more maintainable by changing
-   encoding of distinct literal elements to use symbols rather than
-   specific strings or integers.
-
-\item Notation. At the moment, for compatibility reasons, Unicode cannot be
-   used to show:
-   \begin{itemize}
-   \item lambda symbol
-   \item alpha (as in alpha-substitution)
-   \item beta (as in beta-equivalence)
-   \item bottom symbol for _|_
-   \end{itemize}
-   When the restrictions on using Unicode are lifted then use of the
-   Unicode lambda symbol and other Unicode characters would improve
-   readability.
 \end{enumerate}
+\section{Notation}
+
+It would be useful to be able to use unicode, at the moment we can't
+for compatibility reasons. When the restrictions on using unicode are
+lifted then the following would be useful:
+
+\begin{itemize}
+\item lambda symbol
+\item alpha (as in alpha-substitution)
+\item beta (as in beta-equivalence)
+\item bottom symbol for \verb'_|_'
+\end{itemize}
+
+Currently for logic symbols we use notation:
+
+\verb'T, _|_, /\, \/, ~'
+
+as opposed to other posibilities such as:
+\begin{itemize}
+\item \verb'true, false, and or'
+\item \verb'0, 1, &, |'
+\item \verb'join, meet, ¬'
+\end{itemize}
+This is because \verb'/\, \/, ~' are built-in
+operators in FriCAS and are already used by Logic category.
+
+Also this emphasises the lattice-like structure of the intuitionistic
+logic domain.  Also some systems of logic seem to treat
+\verb'_|_' as a logical contradiction rather than
+false. The aim is to use symbols that are compatible with both logic and
+lattice terminology.
+
+Implication is notated by -> to suggest its link to 'function'
+although perhaps this should be changed to more standard =>.
+
+\section{Related Structures}
+
+If we want to cover the full range of mathematical structures related
+to computing then we should really include Finite State Machines and
+Automata. These are coalgebra-like structures which are related to the
+algebra structures already included.
+
+I was thinking about how to convert a finite state machine into a
+instance of Lambda, then I realised this is just about implementing
+stateful code in a pure functional language and Haskell has already
+solved that problem - use monads (from my limited knowledge of
+Haskell I get the impression, whatever the problem, the answer is to
+use monads).
+
+Perhaps FriCAS should have a lattice structure which could then be
+extended into intuitionistic logic domain. I don't think partially
+ordered set (setorder.spad.pamphlet) would be in the right form to
+extend logic domains.
+
+Also graph structures, for instance:
+\begin{itemize}
+\item A deductive system is a graph where the nodes are formulas and
+the arrows are deductions or proofs.
+\item The category of small graphs is a concrete category. 
+\end{itemize}
+Many of the domains in this document are also tree structures.
+
+\section{Category Theory}
+
+Lambek and Scott 1988 [10] show that typed lambda-calculi and
+cartesian closed categories are essentially the same and
+intuitionistic logic is closely related to topos theory.
+
+Also the discussion of monads above tends to indicate that they
+need to be used here.
+
+Also the common use of function composition.
+
+All of this suggests to me that all the code in this document would
+benifit from being put into a wider framework based on category
+theory.
 
 \section{Variables}
 
@@ -235,7 +298,7 @@ the following domain:
 )abbrev domain VTYP VarTyp
 ++ Author: Martin Baker
 ++ Date Created: April 2011
-++ Date Last Updated: June 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Also See:
@@ -260,13 +323,13 @@ VarTyp(): Exports == Implementation where
   parseTyp:(t1: String,pin:NNI) -> PR
     ++ construct a type by parsing a string t1
     ++ pin is index to string at start of parse
-  children:(n: %) -> List %
+  getChildren:(n: %) -> List %
     ++ returns child nodes if this is a compound term
     ++ otherwise returns []
   atom?:(n: %) -> Boolean
     ++ returns true if this is an atom, that is a leaf node
     ++ otherwise return false if this is a compound term
-  name:(n: %) -> String
+  getName:(n: %) -> String
     ++ returns the name if this is a simple type otherwise
     ++ return ""
   "=":(x:%, y:%) -> Boolean
@@ -372,7 +435,7 @@ VarTyp(): Exports == Implementation where
 
   -- returns child nodes if this is a compound term
   -- otherwise returns []
-  children(n: %):List % ==
+  getChildren(n: %):List % ==
     if atom?(n) then return []
     [n.nd.c1,n.nd.c2]
 
@@ -382,7 +445,7 @@ VarTyp(): Exports == Implementation where
 
   -- returns the name if this is a simple type otherwise
   -- return ""
-  name(n: %):String ==
+  getName(n: %):String ==
     if n case nm then
       return n.nm
     ""
@@ -427,7 +490,7 @@ First a common category for the various variable types:
 )abbrev category VARCAT VarCat
 ++ Author: Martin Baker
 ++ Date Created: April 2011
-++ Date Last Updated: April 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors: lambda, ski
 ++ Also See:
@@ -446,9 +509,9 @@ VarCat() : Category == Type with
     ++ constructs variable with a name but no type.
   var:(n:String,t:VarTyp) -> %
     ++ constructs variable with a name and also a type.
-  name:(v:%) -> String
+  getName:(v:%) -> String
     ++ returns the name of the variable.
-  type:(v:%) -> VarTyp
+  getType:(v:%) -> VarTyp
     ++ returns the type of the variable. This may be a compund type, for
     ++ instance ["a","b"] represents a->b a function from type a to type b
     ++ untyped implementations return []
@@ -473,7 +536,7 @@ untyped variables:
 )abbrev domain UNTYPED Untyped
 ++ Author: Martin Baker
 ++ Date Created: April 2011
-++ Date Last Updated: April 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors: lambda, ski
 ++ Also See:
@@ -495,6 +558,16 @@ Untyped() : Exports == Implementation where
   Implementation ==> Type add
 
     Rep := Record(nme:String)
+      ++ At the moment an untyped variable is represented by a string
+      ++ representing the name of the variable.
+      ++ So why wrap it in a Record structue.
+      ++ The main reason is because I am planning to expand this as
+      ++ explained in the text part of this pamphlet.
+      ++ Also it seems like a good idea to keep a similar structure to
+      ++ typed variables.
+      ++ Also I could not get it to work unwrapped. I vaguely recall that
+      ++ I couldn't get the constructor to return an unwrapped value, but
+      ++ it may have been some other issue and that's not the main reason.
 
     -- constructs variable with a name but no type
     var(n:String):% ==
@@ -506,13 +579,13 @@ Untyped() : Exports == Implementation where
       [n]
 
     -- returns the name of the variable.
-    name(v:%):String ==
+    getName(v:%):String ==
       v.nme
 
-    -- returns the type of the variable. This may be a compund type, for
-    -- instance ["a","b"] represents a->b a function from type a to type b
-    -- untyped implementations return []
-    type(v:%):VarTyp ==
+    -- returns the type of the variable.
+    -- Since this is an untyped variable it will always return an
+    -- empty string.
+    getType(v:%):VarTyp ==
       varTyp("")
 
     -- returns the name and the type in string form.
@@ -560,7 +633,7 @@ typed variables:
 )abbrev domain TYPED Typed
 ++ Author: Martin Baker
 ++ Date Created: April 2011
-++ Date Last Updated: June 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors: lambda, ski
 ++ Also See:
@@ -583,6 +656,8 @@ Typed() : Exports == Implementation where
   Implementation ==> Type add
 
     Rep := Record(nme:String,typ:VarTyp)
+      ++ name of variable
+      ++ and type of variable
 
     -- constructs variable with a name but no type
     var(n:String):% ==
@@ -594,12 +669,12 @@ Typed() : Exports == Implementation where
       [n,t]
 
     -- returns the name of the variable.
-    name(v:%):String ==
+    getName(v:%):String ==
       v.nme
 
     -- returns the type of the variable. This may be a compound type, for
     -- instance ["a","b"] represents a->b a function from type a to type b
-    type(v:%):VarTyp ==
+    getType(v:%):VarTyp ==
       v.typ
 
     -- returns the name and the type in string form. This may be a compound
@@ -728,7 +803,7 @@ the following list:
 (4) -> l:List ILogic := [logicF(),logicT(),proposition("a"),~proposition("a"),proposition("b"),~proposition("b")]
 
  LISP output:
-((0 0) (0 1) (1 a) (3 0 1 a) (1 b) (3 0 1 b))
+((0 F) (0 T) (1 a) (3 NOT 1 a) (1 b) (3 NOT 1 b))
                                                        Type: List(ILogic)
 \end{verbatim}
 
@@ -818,7 +893,7 @@ on \verb'a', however in (12) we cannot reduce to a single value.
                                                              Type: ILogic
 (12) -> proposition("a") /\ logicT()
 
-   (12)  "(a/\T)"
+   (12)  "a"
                                                              Type: ILogic
 (13) -> proposition("a") /\ logicF()
 
@@ -842,9 +917,9 @@ We then factor into seperate terms:
 ((1 a) (2 . UNPRINTABLE))
                                                        Type: List(ILogic)
 \end{verbatim}
-note: List -> OutputForm only works when List is defined over SETCAT
-so lists don't display properly here. If it did we would see
-[a,a->b]
+note: List ILOGIC to OutputForm is fixed in latest FriCAS so it will
+now display: [a,a->b]
+
 We now apply the deductions function to this list.
 \begin{verbatim}
 (16) -> deduct := deductions(fgivens)
@@ -910,26 +985,27 @@ ILogic(): Exports == Implementation where
     ++ returns true (boolean true) if intuitionisticLogic values
     ++ are the same.
     ++ Translates from Intuitionistic Logic to Boolean Logic
-  opType:(n: %) -> NNI
+  opType:(n: %) -> Symbol
     ++ if this is a compound op then opType returns the type of
     ++ that op:
-    ++ 0=implies
-    ++ 1=/\
-    ++ 2=\/
-    ++ 3=~
-    ++ 4=not compound op
-  children:(n: %) -> List %
+    ++ "IMPLY"::Symbol =implies
+    ++ "AND"::Symbol=/\
+    ++ "OR"::Symbol=\/
+    ++ "NOT"::Symbol=~
+    ++ "OTHER"::Symbol=not compound op
+  getChildren:(n: %) -> List %
     ++ returns child nodes if this is a compound term
     ++ otherwise returns []
   atom?:(n: %) -> Boolean
     ++ returns true if this is an atom, that is a leaf node
     ++ otherwise return false if this is a compound term
-  value:(n: %) -> NNI
+  value:(n: %) -> Symbol
     ++ returns:
-    ++ 0=false
-    ++ 1=true
-    ++ 3=proposition
-    ++ 4=compound
+    ++   "T"::Symbol = T
+    ++   "F"::Symbol = _|_
+    ++   "E"::Symbol = error
+    ++   "P"::Symbol = proposition
+    ++   "C"::Symbol = compound
   toString: (n: %) -> String
     ++ creates a string representaion of this term and its sub-terms
   toStringUnwrapped: (n: %) -> String
@@ -941,40 +1017,37 @@ ILogic(): Exports == Implementation where
  Implementation == add
 
   Rep := Union(_
-         const:Record(val:NNI),_
+         const:Record(val:Symbol),_
          var:Record(str:String),_
-         binaryOp:Record(typ:NNI,c1:%, c2:%),_
-         unaryOp:Record(typ:NNI,c1:%)_
+         binaryOp:Record(typ:Symbol,c1:%, c2:%),_
+         unaryOp:Record(typ:Symbol,c1:%)_
          )
     ++ this allows us to represent an intuitionistic
     ++ expression as a tree structure where the nodes are
     ++ one of:
-    ++ 1) const:Record(val:NNI)
+    ++ 1) const:Record(val:Symbol)
     ++   holds the true and false values:
-    ++   T = 1::NNI
-    ++   _|_ = 0::NNI
-    ++     I may change this as some stage to use symbols instead
-    ++     of integer literals.
+    ++   "T"::Symbol = T
+    ++   "F"::Symbol = _|_
     ++ 
     ++ 2) var:Record(str:String)
     ++   holds a proposition name
     ++
-    ++ 3) binaryOp:Record(typ:NNI,c1:%, c2:%)
+    ++ 3) binaryOp:Record(typ:Symbol,c1:%, c2:%)
     ++   holds binary operations:
-    ++     implies =0::NNI
-    ++     /\ =1::NNI
-    ++     \/ =2::NNI
-    ++     I may change this as some stage to use symbols instead
-    ++     of integer literals.
-    ++ 4) unaryOp:Record(typ:NNI,c1:%)
-    ++   holds unary operations the only one is ~
+    ++   "IMPLY"::Symbol =implies
+    ++   "AND"::Symbol=/\
+    ++   "OR"::Symbol=\/
+    ++ 4) unaryOp:Record(typ:Symbol,c1:%)
+    ++   holds unary operations the only one is
+    ++   "NOT"::Symbol = ~
 
   -- Constructs a proposition
   proposition(s:String): % == [[s]]
 
   -- literal constructors
-  logicT() == [[1::NNI]]
-  logicF() == [[0::NNI]]
+  logicT() == [["T"::Symbol]]
+  logicF() == [["F"::Symbol]]
 
   -- not operator: returns the logical complement
   -- in general case 'x' this will generate a new element '~x'
@@ -984,15 +1057,15 @@ ILogic(): Exports == Implementation where
   ~ b ==
     -- apply rule: ~T -> F
     if (b case const) then
-      if (b.const.val = 1::NNI) then return [[0::NNI]]
+      if (b.const.val = "T"::Symbol) then return [["F"::Symbol]]
     -- apply rule: ~(~T) -> T
     if (b case unaryOp) then
       c:% := b.unaryOp.c1
       if (c case unaryOp) then
         d:% := c.unaryOp.c1
         if (d case const) then
-          if (d.const.val = 1::NNI) then return [[0::NNI]]
-    [[0::NNI,b]]
+          if (d.const.val = "T"::Symbol) then return [["F"::Symbol]]
+    [["NOT"::Symbol,b]]
 
   -- /\ returns the logical 'meet', e.g. 'and'.
   --
@@ -1008,26 +1081,26 @@ ILogic(): Exports == Implementation where
   _/_\(a:%, b:%) ==
     -- apply rule: F /\ x -> F
     if (a case const) then
-      if (a.const.val = 0::NNI) then return [[0::NNI]]
+      if (a.const.val = "F"::Symbol) then return [["F"::Symbol]]
     -- apply rule: x /\ F -> F
     if (b case const) then
-      if (b.const.val = 0::NNI) then return [[0::NNI]]
+      if (b.const.val = "F"::Symbol) then return [["F"::Symbol]]
     -- apply rule: x /\ x -> x
     if a=b then
       return a
     -- apply rule: x /\ ~x -> F
     if a=(~b) then
-      return [[0::NNI]]
+      return [["F"::Symbol]]
     -- apply rule: ~x /\ x -> F
     if (~a)=b then
-      return [[0::NNI]]
+      return [["F"::Symbol]]
     -- apply rule: x /\ T -> x
     if (b case const) then
-      if (b.const.val = 1::NNI) then return a
+      if (b.const.val = "T"::Symbol) then return a
     -- apply rule: T /\ x -> x
     if (a case const) then
-      if (a.const.val = 1::NNI) then return b
-    [[1::NNI,a,b]]
+      if (a.const.val = "T"::Symbol) then return b
+    [["AND"::Symbol,a,b]]
 
 
   -- \/ returns the logical 'join', e.g. 'or'.
@@ -1042,20 +1115,20 @@ ILogic(): Exports == Implementation where
   _\_/(a:%, b:%) ==
     -- apply rule: T \/ x -> T
     if (a case const) then
-      if (a.const.val = 1::NNI) then return [[1::NNI]]
+      if (a.const.val = "T"::Symbol) then return [["T"::Symbol]]
     -- apply rule: x \/ T -> T
     if (b case const) then
-      if (b.const.val = 1::NNI) then return [[1::NNI]]
+      if (b.const.val = "T"::Symbol) then return [["T"::Symbol]]
     -- apply rule: x \/ x -> x
     if a=b then
       return a
     -- apply rule: x \/ _|_ -> x
     if (b case const) then
-      if (b.const.val = 0::NNI) then return a
+      if (b.const.val = "F"::Symbol) then return a
     -- apply rule: _|_ \/ x -> x
     if (a case const) then
-      if (a.const.val = 0::NNI) then return b
-    [[2::NNI,a,b]]
+      if (a.const.val = "F"::Symbol) then return b
+    [["OR"::Symbol,a,b]]
 
   -- implies(a,b) returns the logical implication
   -- of ILogic a and b.
@@ -1064,10 +1137,9 @@ ILogic(): Exports == Implementation where
   -- does not mean there is a causal connection
   implies(a:%, b:%) ==
     if (a case const) and (b case const) then
-      --if (a.const.val = 1::NNI) and (b.const.val = 2::NNI) then return [[2::NNI]]
-      if (a.const.val ~= 0::NNI) and (b.const.val = 0::NNI) then return [[0::NNI]]
-      return [[1::NNI]]
-    [[0::NNI,a,b]]
+      if (a.const.val ~= "F"::Symbol) and (b.const.val = "F"::Symbol) then return [["F"::Symbol]]
+      return [["T"::Symbol]]
+    [["IMPLY"::Symbol,a,b]]
 
   -- attempt to simplify theory
   -- apply recursively to subnodes
@@ -1096,11 +1168,11 @@ ILogic(): Exports == Implementation where
     if n case var then
       return n
     if n case binaryOp then
-      if n.binaryOp.typ=0::NNI then
+      if n.binaryOp.typ="IMPLY"::Symbol then
         return implies(redux(n.binaryOp.c1),redux(n.binaryOp.c2))
-      if n.binaryOp.typ=1::NNI then
+      if n.binaryOp.typ="AND"::Symbol then
         return _/_\(redux(n.binaryOp.c1),redux(n.binaryOp.c2))
-      if n.binaryOp.typ=2::NNI then
+      if n.binaryOp.typ="OR"::Symbol then
         return _\_/(redux(n.binaryOp.c1),redux(n.binaryOp.c2))
     if n case unaryOp then
       return ~(redux(n.unaryOp.c1))
@@ -1115,8 +1187,8 @@ ILogic(): Exports == Implementation where
   -- Curry-Howard isomorphism.
   factor(n: %):List % ==
     if ~(n case binaryOp) then return [n]
-    if ~(n.binaryOp.typ=1::NNI) then return [n]
-    ch:List % := children(n)
+    if ~(n.binaryOp.typ="AND"::Symbol) then return [n]
+    ch:List % := getChildren(n)
     concat(factor(first ch),factor(second ch)) 
 
   -- remove duplicates. Return elements of 'b' except those that are
@@ -1137,8 +1209,8 @@ ILogic(): Exports == Implementation where
     res: List % := []
     for n in ln repeat
       if n case binaryOp then
-        if n.binaryOp.typ=0::NNI then
-          ch:List % := children(n)
+        if n.binaryOp.typ="IMPLY"::Symbol then
+          ch:List % := getChildren(n)
           for n2 in ln repeat
             if (first ch)=n2 then res:=concat(res,second ch)
     res
@@ -1168,41 +1240,38 @@ ILogic(): Exports == Implementation where
     res
 
   -- if this is a compound op then opType returns the type of that op:
-  -- 0=implies
-  -- 1=/\
-  -- 2=\/
-  -- 3=~
-  -- 4=not compound op
-  --     I may change this as some stage to use symbols instead
-  --     of integer literals.
-  opType(n: %):NNI ==
+  -- "IMPLY"::Symbol =implies
+  -- "AND"::Symbol=/\
+  -- "OR"::Symbol=\/
+  -- "NOT"::Symbol=~
+  -- "OTHER"::Symbol=not compound op
+  opType(n: %):Symbol ==
     if n case binaryOp then return n.binaryOp.typ
-    if n case unaryOp then return 3::NNI
-    4::NNI
+    if n case unaryOp then return "NOT"::Symbol
+    "OTHER"::Symbol
 
   -- returns true if this is an atom, that is a leaf node
   -- otherwise return false if this is a compound term
   atom?(n: %):Boolean == (n case var) or (n case const)
 
   -- returns:
-  -- 0=false
-  -- 1=true
-  -- 3=proposition
-  -- 4=compound
-  --     I may change this as some stage to use symbols instead
-  --     of integer literals.
-  value(n: %):NNI ==
+  --   "F"::Symbol = _|_
+  --   "T"::Symbol = T
+  --   "E"::Symbol = error
+  --   "P"::Symbol = proposition
+  --   "C"::Symbol = compound
+  value(n: %):Symbol ==
     if n case const then
-      if (n.const.val = 0::NNI) then return 0::NNI
-      if (n.const.val = 1::NNI) then return 1::NNI
-      return 2::NNI
+      if (n.const.val = "F"::Symbol) then return "F"::Symbol
+      if (n.const.val = "T"::Symbol) then return "T"::Symbol
+      return "E"::Symbol
     if n case var then
-      return 3::NNI
-    4::NNI
+      return "P"::Symbol
+    "C"::Symbol
 
   -- returns child nodes if this is a compound term
   -- otherwise returns []
-  children(n: %):List % ==
+  getChildren(n: %):List % ==
     if atom?(n) then return []
     if n case binaryOp then
       return [n.binaryOp.c1,n.binaryOp.c2]
@@ -1215,9 +1284,8 @@ ILogic(): Exports == Implementation where
   -- Translates from Intuitionistic Logic to Boolean Logic
   a = b ==
     if (a case const) and (b case const) then
-      if (a.const.val = 0::NNI) and (b.const.val = 0::NNI) then return true
-      if (a.const.val = 1::NNI) and (b.const.val = 1::NNI) then return true
-      --if (a.const.val = 2::NNI) and (b.const.val = 2::NNI) then return true
+      if (a.const.val = "F"::Symbol) and (b.const.val = "F"::Symbol) then return true
+      if (a.const.val = "T"::Symbol) and (b.const.val = "T"::Symbol) then return true
       return false
     if (a case var) and (b case var) then
       -- variable node so compare names
@@ -1238,8 +1306,8 @@ ILogic(): Exports == Implementation where
   -- return string representation
   toString(n: %):String ==
     if n case const then
-      if (n.const.val = 0::NNI) then return "__|__"
-      if (n.const.val = 1::NNI) then return "T"
+      if (n.const.val = "F"::Symbol) then return "__|__"
+      if (n.const.val = "T"::Symbol) then return "T"
       return "?"
     if n case var then
       return n.var.str
@@ -1248,21 +1316,20 @@ ILogic(): Exports == Implementation where
     if n case binaryOp then
       -- binary node which has two subnodes c1 and c2
       s1:String := "->"
-      if n.binaryOp.typ = 1::NNI then s1:="/\"
-      if n.binaryOp.typ = 2::NNI then s1:="\/"
+      if n.binaryOp.typ = "AND"::Symbol then s1:="/\"
+      if n.binaryOp.typ = "OR"::Symbol then s1:="\/"
       return concat(["(",toString(n.binaryOp.c1),s1,toString(n.binaryOp.c2),")"])
     if n case unaryOp then
       -- unary node which has a subnode c1
      return concat(["~(",toString(n.unaryOp.c1),")"])
     "error"
 
-
   -- similar to 'toString' but does not put outer compound terms
   -- in brackets
   toStringUnwrapped(n: %):String ==
     if n case const then
-      if (n.const.val = 0::NNI) then return "__|__"
-      if (n.const.val = 1::NNI) then return "T"
+      if (n.const.val = "F"::Symbol) then return "__|__"
+      if (n.const.val = "T"::Symbol) then return "T"
       return "?"
     if n case var then
       return n.var.str
@@ -1271,8 +1338,8 @@ ILogic(): Exports == Implementation where
     if n case binaryOp then
       -- binary node which has two subnodes c1 and c2
       s1:String := "->"
-      if n.binaryOp.typ = 1::NNI then s1:="/\"
-      if n.binaryOp.typ = 2::NNI then s1:="\/"
+      if n.binaryOp.typ = "AND"::Symbol then s1:="/\"
+      if n.binaryOp.typ = "OR"::Symbol then s1:="\/"
       return concat([toString(n.binaryOp.c1),s1,toString(n.binaryOp.c2)])
     if n case unaryOp then
       -- unary node which has a subnode c1
@@ -1566,7 +1633,7 @@ Lambda(UT): Exports == Implementation where
   free?:(n: %) -> Boolean
     ++ if this is a lambda term then is it free, that is does
     ++ its variable appear in its expression
-  children:(n: %) -> List %
+  getChildren:(n: %) -> List %
     ++ returns 2 child nodes if this is a compound term
     ++ returns 1 child node if this is a lamda term
     ++ otherwise returns []
@@ -1654,7 +1721,7 @@ Lambda(UT): Exports == Implementation where
   -- returns 2 child nodes if this is a compound term
   -- returns 1 child node if this is a lamda term
   -- otherwise returns []
-  children(n: %):List % ==
+  getChildren(n: %):List % ==
     if atom?(n) then return []
     if n case compoundTerm then
       return [n.compoundTerm.c1,n.compoundTerm.c2]
@@ -1725,8 +1792,6 @@ Lambda(UT): Exports == Implementation where
       return freeVariable?(n.lambdaTerm.c3,0::NNI)
     sayTeX$Lisp concat("warning free called on non-lambda term",toString(n))
     false
-
-
 
   parseLambdaTerm(t1: String,pin:NNI):PR ==
     --sayTeX$Lisp concat(["parseLambdaTerm(",t1,",",string(pin),")"])$String
@@ -1866,12 +1931,12 @@ Lambda(UT): Exports == Implementation where
       if i > 0 and i <= #boundL then return boundL.i
       s := string(n.boundTerm.varBound)
     if n case freeTerm then
-      s := name(n.freeTerm)$UT
+      s := getName(n.freeTerm)$UT
     if n case compoundTerm then
       s := concat(["(",toStringConven(n.compoundTerm.c1,boundL)," ",toStringConven(n.compoundTerm.c2,boundL),")"])
     if n case lambdaTerm then
       -- variable node so print name
-      varName:String := name(n.lambdaTerm.nm)$UT
+      varName:String := getName(n.lambdaTerm.nm)$UT
       while member?(varName,boundL) repeat
         varName := concat(varName,"'")
       boundL2: List String := concat(boundL,varName)
@@ -1969,7 +2034,7 @@ Lambda(UT): Exports == Implementation where
       term2:% := n.compoundTerm.c2
       if isLambda?(term1) then
         -- apply term1 to term2
-        boundVarName:String := name(term1.lambdaTerm.nm)$UT
+        boundVarName:String := getName(term1.lambdaTerm.nm)$UT
         return subst(term1,term2,lambda(0::NNI))
       return lambda(redux(term1),redux(term2))
     if n case lambdaTerm then
@@ -2003,7 +2068,7 @@ Lambda(UT): Exports == Implementation where
   -- output
   coerce(n: %):OutputForm ==
     toStringConven(n,[])::OutputForm
-    --toString(n)::OutputForm
+
 @
 
 \section{SKI Combinators}
@@ -2022,6 +2087,7 @@ The structure is a self-modifying binary tree.
 On this page we will be working with 'untyped' SKI combinators
 so we create an instance called UNTYP to simplify notation:
 
+\begin{verbatim}
 (1) -> UNTYP := SKICombinators Untyped
 
    (1)  SKICombinators(Untyped)
@@ -2082,7 +2148,7 @@ than the one on the right. So, in the following, we can see that:
 
    (8)  "S(IK)"
                                               Type: SKICombinators(Untyped)
-
+\end{verbatim}
 In addition, to avoid having to build up this node by node, there is a
 quicker way to construct SKI combinators. We can construct the whole
 binary tree from a single string using the \verb'parseSki' constructor as
@@ -2106,7 +2172,7 @@ character.
 
    (10)  "S(IK)"
                                               Type: SKICombinators(Untyped)
-
+\end{verbatim}
 \section{redux}
 
 Now that we have constructed our SKI combinator we can apply the
@@ -2126,7 +2192,7 @@ x
 
    (12)  "x"
                                               Type: SKICombinators(Untyped)
-
+\end{verbatim}
 The next combinator to investigate is $K$. This removes the final
 variable:
 \begin{verbatim}
@@ -2140,7 +2206,7 @@ x
 
    (14)  "x"
                                               Type: SKICombinators(Untyped)
-
+\end{verbatim}
 The next combinator to investigate is $S$ This applies the first two
 functions to the third:
 \begin{verbatim}
@@ -2235,7 +2301,7 @@ page, where there is explanation and tutorial.
 )abbrev domain SKICOMB SKICombinators
 ++ Author: Martin Baker
 ++ Date Created: March 2011
-++ Date Last Updated: June 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Also See:
@@ -2268,7 +2334,7 @@ SKICombinators(UT): Exports == Implementation where
     ++ parseTerm is used by parseSki. It would rarely be called
     ++ externally but it is here to allow it to call parseSki
     ++ that is to allow circular calls
-  children:(n: %) -> List %
+  getChildren:(n: %) -> List %
     ++ returns child nodes if this is a compound term
     ++ otherwise returns []
   atom?:(n: %) -> Boolean
@@ -2305,21 +2371,19 @@ SKICombinators(UT): Exports == Implementation where
  Implementation == add
 
   Rep := Union(_
-         lf:NNI,_
+         lf:Symbol,_
          nd:Record(c1:%, c2:%),_
          vr:UT_
          )
     ++ this allows us to represent a combinator expression
     ++ as a tree structure where the nodes are one of:
     ++ 
-    ++ 1) lf:NNI
+    ++ 1) lf:Symbol
     ++     This node contains the combinator terms themselves currently
     ++     coded as:
-    ++     I combinator = 1::NNI
-    ++     K combinator = 2::NNI
-    ++     S combinator = 3::NNI
-    ++     I may change this as some stage to use symbols instead
-    ++     of integer literals.
+    ++     I combinator = "I"::Symbol
+    ++     K combinator = "K"::Symbol
+    ++     S combinator = "S"::Symbol
     ++     
     ++ 2) Record(c1:%, c2:%)
     ++     This represents a branch in the tree.  Adjacent nodes
@@ -2337,49 +2401,55 @@ SKICombinators(UT): Exports == Implementation where
     [t1]
 
   -- Constructs a I combinator
-  I(): % == [1::NNI]
+  I(): % == ["I"::Symbol]
 
   -- Constructs a K combinator
-  K(): % == [2::NNI]
+  K(): % == ["K"::Symbol]
 
   -- Constructs a S combinator
-  S(): % == [3::NNI]
+  S(): % == ["S"::Symbol]
 
   parseBracketTerm(t1: String,pin:NNI):PR ==
     p1 := pin
     ch := qelt(t1,p1)
     if not (ch = char("(")) then
       error "bracket term must start with ("
-      return [[1::NNI],p1]
+      return [["I"::Symbol],p1]
     p1 := p1 + (1::NNI)
     if p1 > maxIndex(t1) then
       error "opening but no closing bracket"
-      return [[1::NNI],p1]
+      return [["I"::Symbol],p1]
     r2 := parseTerm(t1,p1)
     trm := r2.rft
     p1 := r2.pout
     ch := qelt(t1,p1)
     if not (ch = char(")")) then
       error "can't find closing bracket"
-      return [[1::NNI],p1]
+      return [["I"::Symbol],p1]
     p1 := p1 + (1::NNI)
     [trm,p1]
 
+  -- t1 is string term to be parsed
+  -- pin is an integer pointer to the first character in t1 to be
+  -- parsed
   parseCombinatorTerm(t1: String,pin:NNI):PR ==
     p1 := pin
     ch := qelt(t1,p1)
     if ch = char("I") then
-      return [[1::NNI],p1 + (1::NNI)]
+      return [["I"::Symbol],p1 + (1::NNI)]
     if ch = char("K") then
-      return [[2::NNI],p1 + (1::NNI)]
+      return [["K"::Symbol],p1 + (1::NNI)]
     if ch = char("S") then
-      return [[3::NNI],p1 + (1::NNI)]
+      return [["S"::Symbol],p1 + (1::NNI)]
     error "invalid combinator"
-    [[1::NNI],p1 + (1::NNI)]
+    [["I"::Symbol],p1 + (1::NNI)]
 
+  -- t1 is string term to be parsed
+  -- pin is an integer pointer to the first character in t1 to be
+  -- parsed
   parseOneTerm(t1: String,pin:NNI):PR ==
     p1 := pin
-    res:% := [1::NNI]
+    res:% := ["I"::Symbol]
     ch := qelt(t1,p1)
     --sayTeX$Lisp concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
     -- first remove leading spaces
@@ -2443,7 +2513,7 @@ SKICombinators(UT): Exports == Implementation where
 
   -- returns child nodes if this is a compound term
   -- otherwise returns []
-  children(n: %):List % ==
+  getChildren(n: %):List % ==
     if atom?(n) then return []
     [n.nd.c1,n.nd.c2]
 
@@ -2457,19 +2527,19 @@ SKICombinators(UT): Exports == Implementation where
   -- returns true if this is an I combinator node
   isI?(n: %):Boolean ==
     if not (n case lf) then return false
-    if n.lf = 1 then return true
+    if n.lf = "I"::Symbol then return true
     false
 
   -- returns true if this is a K combinator node
   isK?(n: %):Boolean ==
     if not (n case lf) then return false
-    if n.lf = 2 then return true
+    if n.lf = "K"::Symbol then return true
     false
 
   -- returns true if this is a S combinator node
   isS?(n: %):Boolean ==
     if not (n case lf) then return false
-    if n.lf = 3 then return true
+    if n.lf = "S"::Symbol then return true
     false
 
   -- introspection: returns the variable, if this is not a
@@ -2497,9 +2567,9 @@ SKICombinators(UT): Exports == Implementation where
     s:String := ""
     if n case lf then
       -- leaf node so print I,K or S
-      if n.lf = 1 then s := "I"
-      if n.lf = 2 then s := "K"
-      if n.lf = 3 then s := "S"
+      if n.lf = "I"::Symbol then s := "I"
+      if n.lf = "K"::Symbol then s := "K"
+      if n.lf = "S"::Symbol then s := "S"
     if n case nd then
       -- binary node which has two subnodes c1 and c2
       if atom?(n.nd.c2) then
@@ -2544,7 +2614,7 @@ SKICombinators(UT): Exports == Implementation where
   -- weak reduction - apply this combinator to rearrange its
   -- subnodes then apply recursively to its subnodes
   redux(n: %):% ==
-    lastResult := [1::NNI]
+    lastResult := ["I"::Symbol]
     thisResult := redux1(n)
     triesLeft:NNI := 20::NNI -- limit tries in case of loop
     while (lastResult ~= thisResult) and (triesLeft > (1::NNI)) repeat
@@ -2613,7 +2683,7 @@ SU to simplify notation:
                                                                Type: Type
 (2) -> SU := SKICombinators Untyped
 
-   (2)  Ski(Untyped)
+   (2)  SKICombinators(Untyped)
                                                                Type: Type
 \end{verbatim}
 \section{SKI combinators to lambda functions}
@@ -2666,21 +2736,21 @@ parameters. This conversion works by applying the following rules:
 
 So here are some examples:
 \begin{verbatim}
-parseSki("Ia")$SU::LU
+(6) -> parseSki("Ia")$SU::LU
 
 util coerce apply rule SL1 in:I a
 util coerce pass unbound variable a unchanged
 
    (6)  "a"
                                                     Type: Lambda(Untyped)
-parseSki("Ka b")$SU::LU
+(7) -> parseSki("Ka b")$SU::LU
 
 util coerce apply rule SL2 in:K a b
 util coerce pass unbound variable a unchanged
 
    (7)  "a"
                                                     Type: Lambda(Untyped)
-parseSki("K(a b)c")$SU::LU
+(8) -> parseSki("K(a b)c")$SU::LU
 
 util coerce apply rule SL2 in:K(a b) c
 util coerce rule SL4: Ski[(a b)] = (Ski[a] Ski[b])
@@ -2689,7 +2759,7 @@ util coerce pass unbound variable b unchanged
 
    (8)  "(a b)"
                                                     Type: Lambda(Untyped)
-parseSki("Sa b c")$SU::LU
+(9) -> parseSki("Sa b c")$SU::LU
 
 util coerce apply rule SL3 in:S a b c
 util coerce pass unbound variable a unchanged
@@ -2699,7 +2769,7 @@ util coerce pass unbound variable c unchanged
 
    (9)  "((a c) (b c))"
                                                     Type: Lambda(Untyped)
-parseSki("S(K(SI))(S(KK)I)")$SU::LU
+(10) -> parseSki("S(K(SI))(S(KK)I)")$SU::LU
 
 util coerce rule SL4: Ski[(S(K(SI)) S(KK)I)] = (Ski[S(K(SI))] Ski[S(KK)I])
 util coerce rule SL4: Ski[(S K(SI))] = (Ski[S] Ski[K(SI)])
@@ -2843,7 +2913,7 @@ util coerce apply rule SI3 in:S a b c
 )abbrev package COMPUTIL compUtil
 ++ Author: Martin Baker
 ++ Date Created: April 2011
-++ Date Last Updated: April 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Also See:
@@ -2856,7 +2926,7 @@ util coerce apply rule SI3 in:S a b c
 ++ computational domains: Lambda, Ski and ILogic.
 ++ Both Lambda are Ski are Turing complete and can be coerced
 ++ to each other. Lambda and Ski are not equal and they are only
-++ isomorphic upto beta-equivalence and beta-equivalence is
+++ isomorphic up to beta-equivalence and beta-equivalence is
 ++ undecidable so there is not a direct correspondence
 ++ between the nodes in their trees.
 ++ Also the names of bound variables and other such constructions
@@ -2936,9 +3006,9 @@ compUtil(UT): Exports == Implementation where
         sayTeX$Lisp concat["util coerce rule SL3: Ski[S] = \",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"]
         varNum := varNum +3
         return parseLambda(concat["\",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"])$LU
-      sayTeX$Lisp ["util coerce pass unbound variable ",name(getVariable(s)$SU)$UT," unchanged"]
+      sayTeX$Lisp concat(["util coerce pass unbound variable ",getName(getVariable(s)$SU)$UT," unchanged"])$String
       return lambda(getVariable(s)$SU)$LU
-    subnodes:List SU := children(s)$SU
+    subnodes:List SU := getChildren(s)$SU
     c1:SU := first subnodes
     c2:SU := second subnodes
     s1:String := toString(c1)$SU
@@ -2952,27 +3022,27 @@ compUtil(UT): Exports == Implementation where
       sayTeX$Lisp concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
       return lambda(Ski2Lambda(c1),Ski2Lambda(c2))$LU
     -- look for K x y, if found translate x
-    subsubnodes:List SU := children(c1)$SU
+    subsubnodes:List SU := getChildren(c1)$SU
     c11:SU := first subsubnodes
     c12:SU := second subsubnodes
     --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)$SU," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
     if isK?(c11)$SU then
-      s12:String := name(getVariable(c12)$SU)$UT
+      s12:String := getName(getVariable(c12)$SU)$UT
       sayTeX$Lisp concat(["util coerce apply rule SL2 in:",toString(s)$SU])$String
       return Ski2Lambda(c12)
     if atom?(c11)$SU then
       sayTeX$Lisp concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
       return lambda(Ski2Lambda(c1),Ski2Lambda(c2))$LU
     -- look for S x y z, if found translate (x z)(y z)
-    subsubnodes2:List SU := children(c11)$SU
+    subsubnodes2:List SU := getChildren(c11)$SU
     c111:SU := first subsubnodes2
     c112:SU := second subsubnodes2
     --sayTeX$Lisp concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
     -- look for K x y, if found translate x
     if isS?(c111)$SU then
-      s2:String := name(getVariable(c2)$SU)$UT
-      s12:String := name(getVariable(c12)$SU)$UT
-      s112:String := name(getVariable(c112)$SU)$UT
+      s2:String := getName(getVariable(c2)$SU)$UT
+      s12:String := getName(getVariable(c12)$SU)$UT
+      s112:String := getName(getVariable(c112)$SU)$UT
       sayTeX$Lisp concat(["util coerce apply rule SL3 in:",toString(s)$SU])$String
       return lambda(lambda(Ski2Lambda(c112),Ski2Lambda(c2))$LU,lambda(Ski2Lambda(c12),Ski2Lambda(c2))$LU)$LU
     sayTeX$Lisp concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
@@ -2999,7 +3069,7 @@ compUtil(UT): Exports == Implementation where
         return ski(K(),sk)
       sayTeX$Lisp concat(["util coerce rule LS4' applied to: \",toString(var)$UT,".",toString(sk)," giving I"])$String
       return I()$SU
-    ch: List SU := children(sk)$SU
+    ch: List SU := getChildren(sk)$SU
     left:SU := first ch
     right:SU := second ch
     --sayTeX$Lisp concat(["left=",toString(left),_
@@ -3027,14 +3097,14 @@ compUtil(UT): Exports == Implementation where
       sayTeX$Lisp concat(["util coerce rule LS1 applied to:",toString(lam)$LU," giving ",toString(lam)$LU])$String
       return ski(var(toString(lam)$LU)$UT)$SU
     if isCompound?(lam)$LU then
-      ch:List LU := children(lam)$LU
+      ch:List LU := getChildren(lam)$LU
       c1:LU := first ch
       c2:LU := second ch
       sayTeX$Lisp concat(["util coerce rule LS2 applied to:",toString(lam)$LU," giving (",toString(c1)$LU," ",toString(c2)$LU,")"])$String
       return ski(c1::SU,c2::SU)$SU
     if isLambda?(lam)$LU then
       lamUn:LU := unbind(lam)$LU
-      c3:LU := first children(lamUn)$LU
+      c3:LU := first getChildren(lamUn)$LU
       s3:UT := getVariable(lam)$LU
       if atom?(c3)$LU then
         if toString(c3)$LU="0" then
@@ -3044,12 +3114,12 @@ compUtil(UT): Exports == Implementation where
         sayTeX$Lisp concat(["util coerce rule LS3 applied to:",toString(lam)$LU," giving K ",toString(c3)])$String
         return ski(K(),c3::SU)$SU
       if isLambda?(c3)$LU then
-        c33:LU := first children(c3)$LU
+        c33:LU := first getChildren(c3)$LU
         cxx:LU := lambda(c33,getVariable(c3)$LU)$LU
         sayTeX$Lisp concat(["util coerce rule LS5 applied to:",toString(lam)$LU," giving \",toString(s3)$UT,".",toString(cxx)])$String
         return lambdaOverSki(s3,cxx::SU)
       if isCompound?(c3) then
-        ch3:List LU := children(c3)$LU
+        ch3:List LU := getChildren(c3)$LU
         c31:LU := first ch3
         c32:LU := second ch3
         sayTeX$Lisp concat(["util coerce rule LS6 applied to:",toString(lam)$LU," giving S \",toString(s3)$UT,".",toString(c31)$LU," \",toString(s3)$UT,".",toString(c32)$LU])$String
@@ -3097,8 +3167,8 @@ compUtil(UT): Exports == Implementation where
         ac :ILogic  := implies(a,c)
         bc :ILogic  := implies(b,c)
         return implies(implies(a,bc),implies(ab,ac))
-      return proposition(name(getVariable(s)$SU)$UT)
-    subnodes:List SU := children(s)$SU
+      return proposition(getName(getVariable(s)$SU)$UT)
+    subnodes:List SU := getChildren(s)$SU
     c1:SU := first subnodes
     c2:SU := second subnodes
     --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)])$String
@@ -3109,7 +3179,7 @@ compUtil(UT): Exports == Implementation where
       return implies(a,a)
     if atom?(c1) then return _\_/(c1::ILogic,c2::ILogic)
     -- look for K x y, if found translate x
-    subsubnodes:List SU := children(c1)
+    subsubnodes:List SU := getChildren(c1)
     c11:SU := first subsubnodes
     c12:SU := second subsubnodes
     --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
@@ -3120,7 +3190,7 @@ compUtil(UT): Exports == Implementation where
       return implies(a,implies(b,a))
     if atom?(c11) then return _\_/(c1::ILogic,c2::ILogic)
     -- look for S x y z, if found translate (x z)(y z)
-    subsubnodes2:List SU := children(c11)
+    subsubnodes2:List SU := getChildren(c11)
     c111:SU := first subsubnodes2
     c112:SU := second subsubnodes2
     --sayTeX$Lisp concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
@@ -3241,7 +3311,7 @@ terms to work with:
    (4)  "y"
                                                       Type: Lambda(Typed)
 \end{verbatim}
-Now we create some lambda expressions to be convered to source code:
+Now we create some lambda expressions to be converted to source code:
 \begin{verbatim}
 (5) -> pacEx1:Lambda Typed := lambda(nx,vx)$Lambda Typed
 
@@ -3332,7 +3402,7 @@ parameter is used as the deduction.
 )abbrev package COMPCODE compCode
 ++ Author: Martin Baker
 ++ Date Created: June 2011
-++ Date Last Updated: June 2011
+++ Date Last Updated: July 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Also See:
@@ -3386,7 +3456,12 @@ compCode(): Exports == Implementation where
      "",_
      ""]
 
-  -- used by writeCategory to generate the function declarations
+  -- used by writeCategory to generate an individual function
+  -- declaration
+  -- content is the intuitionistic logic expression to be used to
+  --      create the function declaration
+  -- numb is an integer value that will be used to generate a
+  --      unique function name
   genFuncDeclar(content: ILogic,numb:NNI):List String ==
     fac: List ILogic := factor(content)
     if empty?(fac) then return [concat(["  -- error",_
@@ -3427,34 +3502,39 @@ compCode(): Exports == Implementation where
     s:String := ""
     --sayTeX$Lisp concat(["genLambdaTerm(",toString(n),")"])
     if isBoundNode?(n) then
+      -- convert deBruijn index
       i:NNI := getBoundValue(n) + 1
       if i > 0 and i <= #boundL then return boundL.i
       s := string(i-1)
     if isFreeNode?(n) then
-      s := name(getVariable(n))$Typed
+      s := getName(getVariable(n))$Typed
     if isCompound?(n) then
-      ch := children(n)
+      ch := getChildren(n)
       s := concat([" ",genLambdaTerm(first ch,boundL),"(",genLambdaTerm(second ch,boundL),")"])
     if isLambda?(n) then
       -- nested lambda term so use +->
-      varName:String := name(getVariable(n))$Typed
+      varName:String := getName(getVariable(n))$Typed
       while member?(varName,boundL) repeat
         varName := concat(varName,"'")
       boundL2: List String := concat(boundL,varName)
-      ch := children(n)
+      ch := getChildren(n)
       s := concat([" ",varName,"+->(",genLambdaTerm(first ch,boundL2),")"])
     s
 
   -- used by writePackage to generate the function definitions
+  -- content is the lambda expression to be used to
+  --      create the function definition
+  -- numb is an integer value that will be used to generate a
+  --      unique function name
   genFuncDefn(content: LC,numb:NNI):List String ==
     sl := [""]
     if isLambda?(content) then
       var := getVariable(content)
       lhs:String := toString(var)
-      lhsn:String := name(var)
-      lhst:String := name(type(var))
+      lhsn:String := getName(var)
+      lhst:String := getName(getType(var))
       return [concat(["  fn",string(numb),"(",lhs,"):",lhst," == ",_
-        genLambdaTerm(first children(content),[lhsn])_
+        genLambdaTerm(first getChildren(content),[lhsn])_
         ])$String]
     sl
 
@@ -3469,6 +3549,7 @@ compCode(): Exports == Implementation where
                 longName:String):Void ==
     f1:TextFile:=open(filename::FileName,"output")
     lines := genCatHeader(shortName,longName)
+    -- fnNum is integer used to generate a unique function name
     fnNum:NNI := 1::NNI
     for thisEq in content repeat
       lines := concat(lines,genFuncDeclar(thisEq,fnNum))
@@ -3486,6 +3567,7 @@ compCode(): Exports == Implementation where
                 catName:String):Void ==
     f1:TextFile:=open(filename::FileName,"output")
     lines := genPackageHeader(shortName,longName,catName)
+    -- fnNum is integer used to generate a unique function name
     fnNum:NNI := 1::NNI
     for thisEq in content repeat
       --sayTeX$Lisp concat(["writePackage(",toString(thisEq),")"])
@@ -3554,6 +3636,10 @@ http://www.euclideanspace.com/maths/standards/program/mycode/computation/intuiti
 http://www.euclideanspace.com/maths/standards/program/mycode/computation/utility/
 [9] Tutorial for FriCAS source code generation
 http://www.euclideanspace.com/maths/standards/program/mycode/computation/codeGen/
-
+[10] J. Lambek, P. J. Scott 1988
+     Introduction to Higher-Order Categorical Logic ISBN: 0521356539
+     This book shows the relationship between mathematical logic and category
+     theory. Although this is not used in the current code, it suggests
+     a promising generalisation.
 \end{thebibliography}
 \end{document}
