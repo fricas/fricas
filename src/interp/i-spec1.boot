@@ -1194,11 +1194,16 @@ declareMap(var,mode) ==
   isPartialMode mode => throwKeyedMsg("S2IM0004",NIL)
   putHist(var,'mode,mode,$e)
 
+containsLocalVar(tree) ==
+    or/[CONTAINED(var, tree) for var in $localVars] or
+       CONTAINED("$$$", tree)
+
 getAndEvalConstructorArgument tree ==
   triple := getValue tree
   objMode triple = '(Type) => triple
   isWrapped objVal(triple) => triple
-  isLocalVar objVal triple => compFailure('"   Local variable or parameter used in type")
+  containsLocalVar objVal triple =>
+      compFailure('"   Local variable or parameter used in type")
   objNewWrap(timedEVALFUN objVal(triple), objMode(triple))
 
 replaceSharps(x,d) ==
