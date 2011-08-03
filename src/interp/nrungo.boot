@@ -174,7 +174,10 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
       CONTAINED('throwKeyedMsg,mess)))]
   integer := EVAL $Integer
   iequalSlot:=compiledLookupCheck("=",'((Boolean) $ $),integer)
-  lesspSlot:=compiledLookupCheck("<",'((Boolean) $ $),integer)
+  lt_slot:=compiledLookupCheck("<",'((Boolean) $ $),integer)
+  le_slot := compiledLookupCheck("<=", '((Boolean) $ $), integer)
+  gt_slot := compiledLookupCheck(">", '((Boolean) $ $), integer)
+  ge_slot := compiledLookupCheck(">=", '((Boolean) $ $), integer)
   bf := '(Boolean)
   notpSlot := compiledLookupCheck("not", '((Boolean)(Boolean)), EVAL bf)
   for [p,c] in pcl repeat
@@ -204,14 +207,17 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
   --Check general predicate
   predOk :=
     generalPred is '(QUOTE T) => true
-    generalPred is ['SPADCALL,m,=sharpArg,['ELT,=minivectorName,slot]]
-      and EQ(lesspSlot,$minivector.slot)=> m+1
-    generalPred is ['SPADCALL,['SPADCALL,=sharpArg,m,
-      ['ELT,=minivectorName,slot]], ['ELT,=minivectorName,notSlot]]
-        and EQ(lesspSlot,$minivector.slot)
+    generalPred is ['SPADCALL, m1, m2,['ELT, =minivectorName, slot]] =>
+        m2 = sharpArg and EQ(lt_slot, $minivector.slot) => m1 + 1
+        m2 = sharpArg and EQ(le_slot, $minivector.slot) => m1
+        m1 = sharpArg and EQ(gt_slot, $minivector.slot) => m2 + 1
+        m1 = sharpArg and EQ(ge_slot, $minivector.slot) => m2
+    generalPred is ['SPADCALL, ['SPADCALL, =sharpArg, m,
+      ['ELT, =minivectorName, slot]], ['ELT, =minivectorName, notSlot]]
+        and EQ(lt_slot, $minivector.slot)
           and EQ(notpSlot,$minivector.notSlot) => m
-    generalPred is ['NOT,['SPADCALL,=sharpArg,m,['ELT,=minivectorName, =lesspSlot]]]
-      and EQ(lesspSlot,$minivector.slot) => m
+    generalPred is ['NOT, ['SPADCALL, =sharpArg, m,
+       ['ELT, =minivectorName, slot]]] and EQ(lt_slot, $minivector.slot) => m
     return nil
   INTEGERP predOk and predOk ~= n =>
     sayKeyedMsg("S2IX0006",[n,m])

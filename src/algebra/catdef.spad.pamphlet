@@ -1365,6 +1365,33 @@ Comparable(): Category == SetCategory with
       ++ smaller?(x, y) is a strict total ordering on the elements of the set.
 @
 
+<<category PORDER PartialOrder>>=
+)abbrev category PORDER PartialOrder
+++ Author: Waldek Hebisch
+++ Description:
+++ The class of partially ordered sets, that is sets equipped with
+++ transitive and reflexive relation \spad{<=}.
+
+PartialOrder(): Category == with
+    "<": (%,%) -> Boolean
+      ++ x < y is a less than test.
+    ">":         (%, %) -> Boolean
+      ++ x > y is a greater than test.
+    ">=":        (%, %) -> Boolean
+      ++ x >= y is a greater than or equal test.
+    "<=":        (%, %) -> Boolean
+      ++ x <= y is a less than or equal test.
+
+  add
+
+     x >= y == y <= x
+
+     x > y == y < x
+
+     x < y == x <= y and not(y <= x)
+
+@
+     
 \section{category ORDSET OrderedSet}
 <<category ORDSET OrderedSet>>=
 )abbrev category ORDSET OrderedSet
@@ -1383,16 +1410,8 @@ Comparable(): Category == SetCategory with
 ++ and the relation is transitive, i.e.  \spad{a<b and b<c => a<c}.
 ++ This order should be the natural order on given structure.
 
-OrderedSet(): Category == Comparable with
+OrderedSet(): Category == Join(Comparable, PartialOrder) with
   --operations
-    "<": (%,%) -> Boolean
-      ++ x < y is a strict total ordering on the elements of the set.
-    ">":         (%, %) -> Boolean
-      ++ x > y is a greater than test.
-    ">=":        (%, %) -> Boolean
-      ++ x >= y is a greater than or equal test.
-    "<=":        (%, %) -> Boolean
-      ++ x <= y is a less than or equal test.
 
     max: (%,%) -> %
       ++ max(x,y) returns the maximum of x and y relative to "<".
