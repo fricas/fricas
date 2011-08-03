@@ -847,7 +847,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:sbcl
 (defun makedir (fname)
-    (sb-ext::run-program "mkdir" (list fname) :search t))
+    (sb-unix:unix-mkdir fname #o777))
 
 #+:openmcl
 (defun makedir (fname)
