@@ -47,12 +47,13 @@ SETANDFILEQ($nonLisplibDomains,
 isRecord type == type is ['Record,:.]
 
 Record0 args ==
-    dom := GETREFV 10
+    dom := GETREFV 11
     -- JHD added an extra slot to cache EQUAL methods
     dom.0 := ['Record, :[['_:, CAR a, devaluate CDR a] for a in args]]
     dom.1 :=
            [function lookupInTable,dom,
                [['_=,[[['Boolean],'_$,'_$],:6]],
+                ['_~_=,[[['Boolean],'_$,'_$],:10]],
                  ['coerce, [[$OutputForm, '_$], :7]]]]
     dom.2 := NIL
     dom.3 := ['RecordCategory,:QCDR dom.0]
@@ -66,6 +67,7 @@ Record0 args ==
     dom.9 := if (n:= LENGTH args) <= 2
               then [NIL,:NIL]
               else GETREFV n
+    dom.10 := [function RecordUnEqual, :dom]
     dom
 
 RecordEqual(x,y,dom) ==
@@ -82,6 +84,8 @@ RecordEqual(x,y,dom) ==
     and/[SPADCALL(x.i,y.i,equalfuns.i or (equalfuns.i:=findEqualFun(fdom)))
          for i in 0.. for fdom in dom.5]
   error '"Bug: Silly record representation"
+
+RecordUnEqual(x,y,dom) == not(RecordEqual(x,y,dom))
 
 RecordPrint(x,dom) == coerceRe2E(x,dom.3)
 
@@ -111,12 +115,13 @@ coerceRe2E(x,source) ==
 --  Want to eventually have the coerce to and from branch types.
 
 Union(:args) ==
-    dom := GETREFV 9
+    dom := GETREFV 10
     dom.0 := ['Union, :[(if a is ['_:,tag,domval] then ['_:,tag,devaluate domval]
                           else devaluate a) for a in args]]
     dom.1 :=
             [function lookupInTable,dom,
                [['_=,[[['Boolean],'_$,'_$],:6]],
+                ['_~_=, [[['Boolean],'_$,'_$],:9]],
                  ['coerce,[[$OutputForm, '_$],:7]]]]
     dom.2 := NIL
     dom.3 :=
@@ -127,6 +132,7 @@ Union(:args) ==
     dom.6 := [function UnionEqual, :dom]
     dom.7 := [function UnionPrint, :dom]
     dom.8 := [function Undef, :dom]
+    dom.9 := [function UnionUnEqual, :dom]
     dom
 
 UnionEqual(x, y, dom) ==
@@ -148,6 +154,8 @@ UnionEqual(x, y, dom) ==
         STRINGP b => res := (x = y)
         res := SPADCALL(x, y, findEqualFun(evalDomain b))
   res
+
+UnionUnEqual(x, y, dom) == not(UnionEqual(x, y, dom))
 
 UnionPrint(x, dom) == coerceUn2E(x, dom.0)
 
@@ -172,7 +180,7 @@ coerceUn2E(x,source) ==
 --  Want to eventually have elt: ($, args) -> target
 
 Mapping(:args) ==
-    dom := GETREFV 9
+    dom := GETREFV 10
     dom.0 := ['Mapping, :[devaluate a for a in args]]
     dom.1 :=
             [function lookupInTable,dom,
@@ -187,9 +195,13 @@ Mapping(:args) ==
     dom.6 := [function MappingEqual, :dom]
     dom.7 := [function MappingPrint, :dom]
     dom.8 := [function Undef, :dom]
+    dom.9 := [function MappingUnEqual, :dom]
     dom
 
 MappingEqual(x, y, dom) == EQ(x,y)
+
+MappingUnEqual(x, y, dom) == not(EQ(x,y))
+
 MappingPrint(x, dom) == coerceMap2E(x)
 
 coerceMap2E(x) ==
@@ -205,7 +217,7 @@ coerceMap2E(x) ==
 -- arguments
 
 Enumeration0(:args) ==
-    dom := GETREFV 9
+    dom := GETREFV 10
     -- JHD added an extra slot to cache EQUAL methods
     dom.0 := ['Enumeration, :args]
     dom.1 :=
@@ -221,9 +233,11 @@ Enumeration0(:args) ==
     dom.6 := [function EnumEqual, :dom]
     dom.7 := [function EnumPrint, :dom]
     dom.8 := [function createEnum, :dom]
+    dom.9 := [function EnumUnEqual, :dom]
     dom
 
 EnumEqual(e1,e2,dom) == e1=e2
+EnumUnEqual(e1,e2,dom) == not(EnumEqual(e1,e2,dom))
 EnumPrint(enum, dom) == dom.5.enum
 createEnum(sym, dom) ==
   args := dom.5
@@ -258,6 +272,7 @@ mkMappingFunList(nam,mapForm,e) ==
   dc := GENSYM()
   sigFunAlist:=
     [['_=,[['Boolean],nam ,nam],['ELT,dc,6]],
+     ['_~_=, [['Boolean], nam, nam], ['ELT, dc, 9]],
        ['coerce, [$OutputForm, nam], ['ELT, dc, 7]]]
   [substitute(nam,dc,substitute("$",'Rep,sigFunAlist)),e]
 
@@ -274,7 +289,8 @@ mkRecordFunList(nam,['Record,:Alist],e) ==
      --       for i in 0..,(.,a,A) in Alist),
 
     [['construct,[nam,:[A for [.,a,A] in Alist]],'mkRecord],
-      ['_=, [['Boolean], nam, nam], ['ELT, dc, 6]],
+     ['_=, [['Boolean], nam, nam], ['ELT, dc, 6]],
+      ['_~_=, [['Boolean], nam, nam], ['ELT, dc, 10]],
        ['coerce, [$OutputForm, nam], ['ELT, dc, 7]],:
         [['elt,[A,nam,PNAME a],['XLAM,["$1","$2"],['RECORDELT,"$1",i,len]]]
             for i in 0.. for [.,a,A] in Alist],:
@@ -291,6 +307,7 @@ mkNewUnionFunList(name,form is ['Union,:listOfEntries],e) ==
   --2. create coercions from subtypes to subUnion
   cList:=
     [['_=,[['Boolean],name ,name],['ELT,dc,6]],
+     ['_~_=, [['Boolean], name, name], ['ELT, dc, 9]],
      ['coerce, [$OutputForm, name], ['ELT, dc, 7]],:
        ("append"/
         [[['construct,[name,type],['XLAM,["#1"],['CONS,i,"#1"]]],
@@ -313,6 +330,7 @@ mkEnumerationFunList(nam,['Enumeration,:SL],e) ==
   cList :=
     [nil,
       ['_=,[['Boolean],nam ,nam],['ELT,dc,6]],
+       ['_~_=, [['Boolean], nam, nam], ['ELT, dc, 9]],
         ['_^_=,[['Boolean],nam ,nam],['ELT,dc,7]],
           ['coerce,[nam, ['Symbol]], ['ELT, dc, 8]],
             ['coerce,[['OutputForm],nam],['ELT,dc, 9]]]
@@ -326,6 +344,7 @@ mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
   --2. create coercions from subtypes to subUnion
   cList:=
    [['_=,[['Boolean],g ,g],['ELT,op,6]],
+    ['_~_=, [['Boolean], g, g], ['ELT,op,9]],
     ['coerce, [$OutputForm, g], ['ELT, op, 7]],:
      ("append"/
       [[['autoCoerce,[g,t],upFun],
