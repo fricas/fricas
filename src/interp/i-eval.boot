@@ -171,6 +171,7 @@ evaluateType1 form ==
   throwEvalTypeMsg("S2IE0007",[op])
 
 throwEvalTypeMsg(msg, args) ==
+  $justUnparseType : local := true
   $noEvalTypeMsg => spadThrow()
   throwKeyedMsg(msg, args)
 
