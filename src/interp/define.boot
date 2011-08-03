@@ -267,7 +267,8 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
             ['MAKEPROP,['QUOTE,op'],'(QUOTE NILADIC),true])
 
 --   6. put modemaps into InteractiveModemapFrame
-    $domainShell := eval [op',:MAPCAR('MKQ,sargl)]
+    if not($bootStrapMode) or $LISPLIB then
+        $domainShell := eval [op',:MAPCAR('MKQ,sargl)]
     $lisplibCategory:= formalBody
     if $LISPLIB then
       $lisplibForm:= form
@@ -452,6 +453,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 
 compFunctorBody(body,m,e,parForm) ==
   $bootStrapMode = true =>
+    genOperationAlist()
     [bootStrapError($functorForm, _/EDITFILE),m,e]
   T:= compOrCroak(body,m,e)
   body is [op,:.] and MEMQ(op,'(add CAPSULE)) => T

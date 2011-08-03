@@ -480,7 +480,7 @@ NRTaddToSlam([name,:argnames],shell) ==
   args:= ['LIST,:ASSOCRIGHT $devaluateList]
   addToConstructorCache(name,args,shell)
 
-changeDirectoryInSlot1() ==  --called by buildFunctor
+genOperationAlist() ==
   $lisplibOperationAlist := [sigloc entry for entry in $domainShell.1] where
     sigloc [opsig,pred,fnsel] ==
         if pred ~= 'T then
@@ -491,6 +491,9 @@ changeDirectoryInSlot1() ==  --called by buildFunctor
               opsig := substitute('$,CADR($functorForm),opsig)
           [opsig,pred,[op,a,vectorLocation(first opsig,CADR opsig)]]
         [opsig,pred,fnsel]
+
+changeDirectoryInSlot1() ==  --called by buildFunctor
+  genOperationAlist()
   sortedOplist := listSort(function GLESSEQP,
                            COPY_-LIST $lisplibOperationAlist,function CADR)
   $lastPred :local := nil

@@ -147,11 +147,8 @@ processGlobals () ==
     untypedDefs := []
     for def in $globalDefs repeat
         ["DEF", form, sig, sc, body] := def
-        -- PRETTYPRINT([CAR form, sig])
         cosig := CONS(nil, [categoryForm? ty for ty in CDR(sig)])
-        if not(GETDATABASE(CAR form, 'COSIG) = cosig) then
-            PRETTYPRINT("bad COSIG")
-            PRETTYPRINT([CAR form, sig])
+        SETDATABASE(CAR form, 'COSIG, cosig)
         if null CAR(sig) then
             untypedDefs := [def, :untypedDefs]
         else
@@ -162,6 +159,9 @@ processGlobals () ==
         nt := computeTargetMode(form, body)
         if nt then
             handleKind(["DEF", form, [nt, :rest sig], sc, body])
+        else
+            SAY(["unhandled target", form])
+    boo_comp_cats()
 
 
 handleKind(df is ['DEF,form,sig,sc,body]) ==
@@ -186,18 +186,47 @@ handleKind(df is ['DEF,form,sig,sc,body]) ==
     parSignature:= SUBLIS(pairlis,signature')
     parForm:= SUBLIS(pairlis,form)
     constructorModemap := removeZeroOne [[parForm,:parSignature],[true,op]]
-    constructorCategory := constructorCategory or constructorModemap.mmTarget
-    if not(GETDATABASE(op, 'CONSTRUCTORMODEMAP) = constructorModemap) then
-        PRETTYPRINT("bad CONSTRUCTORMODEMAP")
-        PRETTYPRINT([CAR form])
-        PRETTYPRINT(constructorModemap)
-        PRETTYPRINT(GETDATABASE(op, 'CONSTRUCTORMODEMAP))
-    if not(GETDATABASE(op, 'CONSTRUCTORCATEGORY) = constructorCategory) then
-        PRETTYPRINT("bad CONSTRUCTORCATEGORY")
-        PRETTYPRINT([CAR form])
-        PRETTYPRINT(constructorCategory)
-        PRETTYPRINT(GETDATABASE(op, 'CONSTRUCTORCATEGORY))
+    SETDATABASE(op, 'CONSTRUCTORMODEMAP, constructorModemap)
+    SETDATABASE(op, 'CONSTRUCTORCATEGORY, constructorCategory)
 
+boo_comp_cats() ==
+    $compiler_output_stream := MAKE_-BROADCAST_-STREAM()
+    $bootStrapMode : local := true
+    SAY(["boo_comp_cats"])
+    hcats := []
+    for def in $globalDefs repeat
+        ["DEF", form, sig, sc, body] := def
+        if sig is [["Category"], :.] then
+            SAY(["doing", form, sig])
+            not("and"/[categoryForm? ty for ty in CDR(sig)]) =>
+                hcats := cons(def, hcats)
+            boo_comp1(def)
+    for def in hcats repeat boo_comp1(def)
+
+boo_comp1(x) ==
+    $Index : local := 0
+    $MACROASSOC : local := []
+    $compUniquelyIfTrue : local := nil
+    $postStack : local := nil
+    $topOp : local := nil
+    $semanticErrorStack : local := []
+    $warningStack : local := []
+    $exitMode : local := $EmptyMode
+    $exitModeStack : local := []
+    $returnMode : local := $EmptyMode
+    $leaveLevelStack : local := []
+    $CategoryFrame : local := [[[]]]
+    $insideFunctorIfTrue : local := nil
+    $insideExpressionIfTrue : local := nil
+    $insideWhereIfTrue : local := nil
+    $insideCategoryIfTrue : local := nil
+    $insideCapsuleFunctionIfTrue : local := nil
+    $form : local := nil
+    $e : local := $EmptyEnvironment
+    $genSDVar : local :=  0
+    $previousTime : local :=  TEMPUS_-FUGIT()
+    compTopLevel(x, $EmptyMode,  [[[]]])
+    if $semanticErrorStack then displaySemanticErrors()
 
 -- for domains
 --   $lisplibCategory := modemap.mmTarget
