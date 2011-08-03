@@ -582,6 +582,11 @@
 ; 12.6 Small Finite Field ops with vector trimming
 
 ;; following macros assume 0 <= x,y < z
+;; qsaddmod additionally assumes that rsum has correct value even
+;; when (x + y) exceeds range of a fixnum.  This is true if
+;; fixnums use modular arithmetic with no overflow checking,
+;; but according to ANSI Lisp the result is undefined in
+;; such case.
 
 (defmacro qsaddmod (x y z)
   `(let* ((sum (qsplus ,x ,y))
