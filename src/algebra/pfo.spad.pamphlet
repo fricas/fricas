@@ -327,6 +327,10 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R): Exports == Implementation where
         ++ torsionIfCan(f)\ undocumented
     cmult        : List SMP -> SMP
         ++ cmult(x) should be local but conditional
+    possibleOrder : FD -> N
+    if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
+        simplifyCoeffs : (FD, List K) -> N
+          ++ simplifyCoeffs(d, la) should be local but conditional
 
   Implementation ==> add
     import IntegerPrimesPackage(Z)
@@ -346,7 +350,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R): Exports == Implementation where
     kpmod         : (UPUP, K) -> UP3
     selectIntegers: K   -> REC
     selIntegers:    ()  -> RC0
-    possibleOrder : FD -> N
     ratcurve      : (FD, RC0)    -> N
     algcurve      : (FD, REC, K) -> N
     kbad3Num      : (UP3, UPQ) -> Z
@@ -476,7 +479,7 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R): Exports == Implementation where
       s   := separate(rmod(retract(norm hh)@UP), b).primePart
       bd  := badNum rmod denom i
       r   := resultant(s, b)
-      bad := lcm [rc.disc, numer r, denom r, bd.den*bd.gcdnum, badNum h]$List(Z)
+      bad := lcm [factorial(rank()$R), rc.disc, numer r, denom r, bd.den*bd.gcdnum, badNum h]$List(Z)
       pp  := Q2UPUP(rc.ncurve)
       n   := rat(pp, d, p := getGoodPrime bad)
 -- if n > 1 then it is cheaper to compute the order modulo a second prime,
@@ -493,13 +496,43 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R): Exports == Implementation where
       order(d, pp, (q1: F): gf +-> (qq := qmod q1;numer(qq)::gf / denom(qq)::gf)
                                     )$ReducedDivisor(F, UP, UPUP, R, gf)
 
+    evalup(upup : UPUP, la : List K, lrhs : List F) : UPUP ==
+        map((a : QF) : QF +->
+            map((b : UP) : UP +->
+                map((c : F) : F +-> eval(c, la, lrhs), b), a), upup)
+
+    evala(f : R, la : List K, lrhs : List F) : R ==
+        reduce(evalup(lift f, la, lrhs))
+
+    if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
+      simplifyCoeffs(d : FD, la : List K) : N ==
+        rec := primitiveElement([k::F for k in la]
+                               )$FunctionSpacePrimitiveElement(R0, F)
+        y := rootOf(rec.prim)
+        lrhs := [pol(y) for pol in rec.poly]$List(F)
+        nf := evalup(definingPolynomial()$R, la, lrhs)
+        nR := AlgebraicFunctionField(F, UP, UPUP, nf)
+        nFD := FiniteDivisor(F, UP, UPUP, nR)
+        nFR := FractionalIdeal(UP, Fraction(UP), UPUP, nR)
+        nPFO := PointsOfFiniteOrder(R0, F, UP, UPUP, nR)
+
+        id := ideal(d)$FD
+        nd := reduce(evalup(lift(denom(id)::QF::R)$R, la, lrhs))$nR
+        v := numer(id)
+        va := [reduce(evalup(lift(v.i)$R, la, lrhs))$nR/nd
+                  for i in minIndex v..maxIndex v]$Vector(nR)
+        ndiv := divisor(ideal(va)$nFR)$nFD
+        possibleOrder(ndiv)$nPFO
+
 -- returns the potential order of d, 0 if d is of infinite order
     possibleOrder d ==
 --      zero?(genus()) or one?(#(numer ideal d)) => 1
       zero?(genus()) or (#(numer ideal d) = 1) => 1
       empty?(la := alglist d) => ratcurve(d, selIntegers())
       not(empty? rest la) =>
-           error "PFO::possibleOrder: more than 1 algebraic constant"
+          if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
+               return simplifyCoeffs(d, la)
+          error "PFO::possibleOrder: more than 1 algebraic constant"
       algcurve(d, selectIntegers first la, first la)
 
     selIntegers():RC0 ==
