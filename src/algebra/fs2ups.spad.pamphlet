@@ -501,6 +501,39 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         nker : FE := kernel(operator(ker), nargs)
         do_taylor_via_deriv2(nker, cargs.syms, cargs.sers)
 
+    do_prim(ker : K, arg0 : FE, posCheck? : B,
+            atanFlag : ATANFLAG) : Result ==
+        c0 := operator(ker)(arg0)
+        nf := differentiate(ker::FE, x)
+        ns := exprToUPS(nf, posCheck?, atanFlag)
+        ns case %problem => return ns
+        [(c0::UPS) + integrate(ns.%series)]
+        
+        
+    prim_to_UPS(ker : K, args : L(FE), posCheck? : B,
+                atanFlag : ATANFLAG) : Result ==
+        nm := name(ker)
+        #args ~= 1 =>
+            stateProblem(string nm, "multivariate primitive")
+        arg := first(args)
+        (nsu := exprToUPS(arg, posCheck?, atanFlag)) case %problem =>
+            return nsu
+        ups := nsu.%series
+        order(ups, 0) < 0 =>
+            -- FIXME: handle expansions at infinity
+            return stateProblem("handle_args", "argument not Taylor")
+        coef := coefficient(ups, 0)
+        nm = 'Ei or nm = 'Ci =>
+            coef = 0 => stateProblem(string(nm), "expansion at 0")
+            do_prim(ker, coef, posCheck?, atanFlag)
+        nm = 'dilog or nm = 'li =>
+            coef = 0 => stateProblem(string(nm), "expansion at 0")
+            coef = 1 => stateProblem(string(nm), "expansion at 1")
+            do_prim(ker, coef, posCheck?, atanFlag)
+        nm = 'Si or nm = 'erf or nm = 'fresnelS or nm = 'fresnelC =>
+            do_prim(ker, coef, posCheck?, atanFlag)
+        stateProblem(string name ker,"unimplemented")
+
     kernelToUPS(ker,posCheck?,atanFlag) ==
       -- converts a kernel to a power series
       (sym := symbolIfCan(ker)) case Symbol =>
@@ -511,6 +544,8 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       op := operator(ker)
       has?(op, 'special) =>
           spec_to_UPS(ker, args, posCheck?, atanFlag)
+      has?(op, 'prim) =>
+          prim_to_UPS(ker, args, posCheck?, atanFlag)
       empty? rest args =>
         arg := first args
         is?(ker, 'abs) =>
