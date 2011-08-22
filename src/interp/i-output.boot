@@ -330,7 +330,7 @@ outputTran x ==
 
 -- The next two functions are designed to replace successive instances of
 -- binary functions with the n-ary equivalent, cutting down on recursion
--- in outputTran and in partciular allowing big polynomials to be printed
+-- in outputTran and in particular allowing big polynomials to be printed
 -- without stack overflow.  MCD.
 flattenOps l ==
   [op, :args ] := l
