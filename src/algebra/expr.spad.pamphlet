@@ -478,8 +478,29 @@ Expression(R : Comparable): Exports == Implementation where
                              u::Q::AN
                         "failed"
 
-                    k2an k ==
+                    k2an k == 
                         not(belong?(op := operator k)$AN) => "failed"
+                        is?(op, 'rootOf) =>
+                            args := argument(k)
+                            a2 := args.2
+                            k1u := retractIfCan(a2)@Union(K, "failed")
+                            k1u case "failed" => "failed"
+                            k1 := k1u::K
+                            s1u := retractIfCan(a2)@Union(Symbol, "failed")
+                            s1u case "failed" => "failed"
+                            s1 := s1u::Symbol
+                            a1 := args.1
+                            denom(a1) ~= 1 =>
+                                error "Bad argument to rootOf"
+                            eq := univariate(numer(a1), k1)
+                            eqa : SUP(AN) := 0
+                            while eq ~= 0 repeat
+                                cc := leadingCoefficient(eq)::%
+                                ccu := retractIfCan(cc)@Union(AN, "failed")
+                                ccu case "failed" => return "failed"
+                                eqa := eqa + monomial(ccu::AN, degree eq)
+                                eq := reductum eq
+                            rootOf(eqa, s1)$AN
                         arg : List(AN) := empty()
                         for x in argument k repeat
                             if (a := retractIfCan(x)@Union(AN, "failed"))
