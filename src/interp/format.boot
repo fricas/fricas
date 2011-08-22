@@ -554,7 +554,7 @@ formDecl2String(left,right) ==
 formJoin1(op,u) ==
   if op = 'Join then [:argl,last] := u else (argl := nil; last := [op,:u])
   last is [id, :r] and id in '(mkCategory CATEGORY) =>
-    if id = CATEGORY then r := rest(r)
+    if id = "CATEGORY" then r := rest(r)
     $abbreviateJoin = true => concat(formJoin2 argl,'%b,'"with",'%d,'"...")
     $permitWhere = true =>
       opList:= formatJoinKey(r,id)
