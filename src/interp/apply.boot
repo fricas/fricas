@@ -146,6 +146,7 @@ applyMapping([op,:argl],m,e,ml) ==
 --% APPLY MODEMAPS
 
 compApplyModemap(form,modemap,$e,sl) ==
+  $generatingCall : local := true
   [op,:argl] := form                   --form to be compiled
   [[mc,mr,:margl],:fnsel] := modemap   --modemap we are testing
 

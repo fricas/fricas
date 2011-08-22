@@ -213,9 +213,29 @@ NRTgetLocalIndex(item) ==
   saveNRTdeltaListComp:= $NRTdeltaListComp:=[nil,:$NRTdeltaListComp]
   saveIndex := $NRTbase + $NRTdeltaLength
   $NRTdeltaLength := $NRTdeltaLength+1
-  compEntry := (compOrCroak(item, $EmptyMode, $e)).expr
+  compEntry := comp_delta_entry(item)
   RPLACA(saveNRTdeltaListComp,compEntry)
   saveIndex
+
+DEFVAR($generatingCall, nil)
+
+comp_delta_entry(item) ==
+    $generatingCall and cheap_comp_delta_entry(item) => item
+    (compOrCroak(item, $EmptyMode, $e)).expr
+
+cheap_comp_delta_entry(item) ==
+    item is [op, :args] =>
+        not(ATOM(op)) => false
+        null(cosig := GETDATABASE(op, 'COSIG)) => false
+        ok := true
+        for arg in args for tp in rest(cosig) while ok repeat
+            ok :=
+                not(tp) => false
+                arg = '$ => true
+                MEMBER(arg, $functorLocalParameters) => true
+                cheap_comp_delta_entry(arg)
+        ok
+    false
 
 NRTassignCapsuleFunctionSlot(op,sig) ==
 --called from compDefineCapsuleFunction
