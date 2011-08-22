@@ -341,10 +341,10 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     target:= first signature'
     $e:= giveFormalParametersValues(argl,$e)
     [ds,.,$e]:= compMakeCategoryObject(target,$e) or
---+ copy needed since slot1 is reset; compMake.. can return a cached vector
       sayBrightly '"   cannot produce category object:"
       pp target
       return nil
+--+ copy needed since slot1 is reset; compMake.. can return a cached vector
     $domainShell:= COPY_-SEQ ds
 --+ 7 lines for $NRT follow
     $goGetList: local := nil
