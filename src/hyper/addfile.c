@@ -77,7 +77,7 @@ extend_ht(char *name)
 static int
 build_ht_filename(char *fname, char *aname, char *name)
 {
-    char cdir[256];
+    char cdir[2048];
     char *c_dir;
     char *HTPATH;
     char *trace;
@@ -86,7 +86,7 @@ build_ht_filename(char *fname, char *aname, char *name)
 
     if (cwd(name)) {
         /* user wants to use the current working directory */
-        c_dir = (char *) getcwd(cdir, 254);
+        c_dir = (char *) getcwd(cdir, 2046);
         strcpy(fname, c_dir);
 
         /* Now add the rest of the filename */

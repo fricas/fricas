@@ -68,7 +68,7 @@ jump(void)
 void
 print_page_and_filename(void)
 {
-    char obuff[128];
+    char obuff[4096];
 
     if (gPageBeingParsed->type == Normal) {
 
@@ -202,7 +202,7 @@ token_name(int type)
 void
 htperror(char *msg, int errno)
 {
-    char obuff[256];
+    char obuff[4096];
 
     /* The first thing I do is create the error message */
 

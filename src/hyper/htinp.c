@@ -170,7 +170,7 @@ make_paste_file_name(char *buf, char *filename)
 static void
 make_the_input_file(UnloadedPage *page)
 {
-    char buf[1024], *b;
+    char buf[2048], *b;
 
     if (!page->fpos.name)
         return;
@@ -336,7 +336,7 @@ static void
 make_input_file_list(void)
 {
     int i;
-    char buf[256], *name;
+    char buf[2048], *name;
 
     for (i = 0; i < input_file_count; i++) {
         name = make_input_file_name(buf, input_file_list[i]);

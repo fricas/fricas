@@ -569,8 +569,6 @@ void
 parse_env(TextNode *node)
 {
     char *env;
-    char buff[256];
-    char *buff_pntr = &buff[1];
     int  noEnv = 0;
 
     get_expected_token(Lbrace);
@@ -588,15 +586,12 @@ parse_env(TextNode *node)
         noEnv = 1;
     }
 
-    buff[0] = token.id[-1];
-    strcpy(buff_pntr, env);
-
-    if (noEnv)
-        free(env);
-
-    node->data.text = alloc_string(buff_pntr);
+    node->data.text = alloc_string(env);
     node->type = Word;
 
+    if (noEnv) {
+        free(env);
+    }
     get_expected_token(Rbrace);
 }
 
