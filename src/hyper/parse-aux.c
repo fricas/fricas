@@ -95,7 +95,7 @@ void
 read_ht_db(HashTable *page_hash, HashTable *macro_hash, HashTable *patch_hash)
 {
     FILE *db_fp;
-    char db_file[256];
+    char db_file[2048];
     int i = 0;
 
     gDatabasePath = NULL;
@@ -149,7 +149,7 @@ static void
 read_ht_file(HashTable *page_hash, HashTable *macro_hash,
              HashTable *patch_hash, FILE *db_fp, char *db_file)
 {
-    char filename[256];
+    char filename[2048];
     char *fullname = filename;
     UnloadedPage *page;
     MacroStore *macro;
@@ -205,7 +205,7 @@ read_ht_file(HashTable *page_hash, HashTable *macro_hash,
 
             ret_val = stat(fullname, &fstats);
             if (ret_val == -1) {
-                char buffer[300];
+                char buffer[3000];
 
                 sprintf(buffer, "(HyperDoc) read_ht_db: Unable To Open %s :", fullname);
                 perror(buffer);
@@ -507,7 +507,7 @@ get_filename(void)
 {
     int c, ws;
     static int seen_white = 0; /*UNUSED */
-    static char buffer[256];
+    static char buffer[2048];
     char *buf = buffer;
 
     if (last_token) {
@@ -605,7 +605,7 @@ FILE *
 find_fp(FilePosition fp)
 {
     FILE *lfile;
-    char fullname[256], addname[256];
+    char fullname[2048], addname[2048];
     int ret_val;
 
     /* find the source file in the file hash table, if not there, open it */

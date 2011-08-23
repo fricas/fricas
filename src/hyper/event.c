@@ -394,7 +394,7 @@ memolink(void)
 static void
 killAxiomPage(HyperDocPage * page)
 {
-    char command[512];
+    char command[2048];
 
     sprintf(command, "(|htpDestroyPage| '%s)", page->name);
     send_lisp_command(command);

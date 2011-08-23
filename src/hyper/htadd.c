@@ -92,8 +92,8 @@ int
 main(int argc, char **argv)
 {
     /*int i;*/
-    char db_dir[256];           /* the directory where the db file is */
-    char dbfilename[256];       /* the database filename */
+    char db_dir[2048];           /* the directory where the db file is */
+    char dbfilename[2048];       /* the database filename */
     char *filenames[1000];      /* the files to be added */
     char **fnames = filenames;
     short flag;                 /* flag for deleting or adding */
@@ -205,7 +205,7 @@ build_db_filename(short flag, char *db_dir, char *dbfilename)
     int ret_status;
     struct stat buff;
     char *SPAD;
-    char path[256];
+    char path[2048];
 
 
     if (flag & System) {
@@ -269,8 +269,8 @@ build_db_filename(short flag, char *db_dir, char *dbfilename)
 static void
 add_file(char *dbname, char *name, int fresh)
 {
-    char fullname[256];
-    char temp_db_file[256];
+    char fullname[2048];
+    char temp_db_file[2048];
     FILE *db_fp = NULL;
     FILE *temp_db_fp = NULL;
     FILE *ht_fp = NULL;
@@ -445,7 +445,7 @@ static void
 get_filename(void)
 {
     int c, ws;
-    static char buffer[256];
+    static char buffer[2048];
     char *buf = buffer;
 
     do {
@@ -478,9 +478,9 @@ get_filename(void)
 static int
 delete_file(char *dbname, char *name)
 {
-    char temp_db_file[256];
+    char temp_db_file[2048];
     FILE *db_fp, *temp_db_fp;
-    char dname[256];
+    char dname[2048];
 
 
     strcpy(dname, name);
