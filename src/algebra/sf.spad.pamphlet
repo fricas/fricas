@@ -140,7 +140,9 @@ FloatingPointSystem(): Category == Join(RealNumberSystem(), Approximate) with
       ++ mantissa(x) returns the mantissa part of x.
   -- round?: () -> B
   --    ++ round?() returns the rounding or chopping.
-
+   toString: (%, NonNegativeInteger) -> String
+      ++ \spad{toString(x,n)} returns a string representation of x
+      ++ truncated to n decimal digits.
    bits: () -> PositiveInteger
       ++ bits() returns ceiling's precision in bits.
    digits: () -> PositiveInteger
@@ -177,6 +179,13 @@ FloatingPointSystem(): Category == Join(RealNumberSystem(), Approximate) with
    float(ma, ex) == float(ma, ex, base())
    digits() == max(1,4004 * (bits()-1) quo 13301)::PositiveInteger
 
+   toString(x:%, n:NonNegativeInteger):String == 
+       x1:=round x
+       x0:=abs(x-x1)
+       tenn:=float(1,n::Integer,10)
+       x2:= round(tenn*x0)
+       res:List String:= [convert(retract(x1))@String,".",convert(retract(x2))@String]
+       reduce(concat,res)
 @
 
 \section{domain DFLOAT DoubleFloat}
