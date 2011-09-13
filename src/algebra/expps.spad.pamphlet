@@ -1,0 +1,235 @@
+\documentclass{article}
+\usepackage{axiom,amsthm,amsmath,url}
+\newtheorem{ToDo}{ToDo}[section]
+
+\newcommand{\Axiom}{{\tt Axiom}}
+\newcommand{\Rate}{{\tt Rate}}
+\newcommand{\GFUN}{{\tt GFUN}}
+\begin{document}
+\title{expps.spad}
+\author{Franz Lehner}
+\maketitle
+\begin{abstract}
+  The packages defined in this file provide operations
+  to manipulate streams of coefficients of exponential power series.
+\end{abstract}
+\tableofcontents
+
+\section{package STEXPS StreamExponentialSeriesOperations}
+
+<<package STEXPS StreamExponentialSeriesOperations>>=
+)abbrev package STEXPS StreamExponentialSeriesOperations
+++ Author: Franz Lehner
+++ Date Created: 17.06.2010
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors: StreamTaylorSeriesOperations
+++ Also See:
+++ AMS Classifications:
+++ Keywords: stream, exponential power series
+++ References:
+++ Description:
+++   StreamExponentialSeriesOperations implements  arithmetic 
+++   of exponential power series, where a power series is represented by
+++   a stream of its coefficients.
+StreamExponentialSeriesOperations(Coef): Exports == Implementation
+  where
+    Coef : CommutativeRing  
+    STSO ==> StreamTaylorSeriesOperations Coef
+    YS  ==> Y$ParadoxicalCombinatorsForStreams(Coef)
+
+    Exports ==> with
+      "*"          : (Stream Coef,Stream Coef) -> Stream Coef
+        ++ a * b returns the power series (Cauchy) product of \spad{a} and b:
+        ++ \spad{[a0,a1,...] * [b0,b1,...] = [c0,c1,...]} where
+        ++ \spad{ck = sum(i + j = k,binomial(k,i) * ai * bj)}.
+--      "/"          : (Stream Coef,Stream Coef) -> Stream Coef
+--        ++ a / b returns the power series quotient of \spad{a} by b.
+--        ++ An error message is returned if \spad{b} is not invertible.
+--        ++ This function is used in fixed point computations.
+      deriv:Stream Coef->Stream Coef
+        ++ \spad{deriv(f)} is the derivative,
+        ++ which simply coincides with left shift
+      integrate:(Coef,Stream Coef)->Stream Coef
+        ++ \spad{integrate(c,f)} integrates with constant term c,
+        ++ this is simply the right shift
+      lazyIntegrate:(Coef,()->Stream Coef)->Stream Coef
+        ++ \spad{lazyIntegrate(c,f)} integrates with constant term c,
+        ++ this is simply the right shift
+      exp0:Stream Coef -> Stream Coef
+        ++ \spad{exp0(f)} returns the exponential of the power series
+        ++ represented by cons(0,f), i.e.,
+        ++ assuming zero constant term
+        ++ and therefore transcendentality is not involved.
+      log1:Stream Coef -> Stream Coef
+        ++ \spad{log1(f)} returns the logarithm of the power series
+        ++ represented by cons(1, f), i.e.,
+        ++ assuming that the constant term is 1
+        ++ and therefore transcendentality is not involved.
+
+    Implementation ==> add
+
+      zro: () -> Stream Coef
+      -- returns a zero power series
+      zro() == empty()$(Stream Coef)
+
+-- adapted from sttaylor.spad: multiplication of exponential series
+      stmult(n0 : Integer, x0 : Stream Coef, y0 : Stream Coef, _
+             ll0 : List Coef) : Stream Coef == delay
+          x := x0
+          y := y0
+          n := n0
+          ll := ll0
+          if empty? y then
+               n < 0 => return empty()
+               empty? x => return empty()
+               x := rst x
+          else
+               c := frst y
+               y := rst y
+               ll := cons(c, ll)
+               n := n + 1
+          res : Coef := 0
+          xp := x
+          llp := ll
+          for i in 0..n repeat
+              empty? xp =>
+                  i = 0 => return empty()
+                  break
+              res := res + binomial(n,i) * frst xp * first(llp)
+              llp := rest(llp)
+              xp := rst xp
+          -- make sure that when we multiply finite streams
+          -- tail is explicitly empty
+          explicitlyEmpty? rst x and
+            explicitlyEmpty? y => concat(res, empty())
+          concat(res, stmult(n, x, y, ll))
+  
+      _*(x : Stream Coef, y : Stream Coef):Stream Coef == delay
+          empty? y => zro()
+          empty? x => zro()
+          stmult(-1, x, y, [])
+
+      deriv f == 
+          empty? f => zro()
+          rst f   
+
+      integrate(a:Coef, x:Stream Coef) == concat(a, x)
+      
+      lazyIntegrate(s, xf) == concat(s, delay xf)
+@ %
+For the exponential we use the following integral equation:
+$y(x) = \exp z(x)$ $\iff$ $y'(x)=z'(x)y(x)$,
+thus $y(x)  = 1 + \int z'(x)y(x)\,dx$.
+<<package STEXPS StreamExponentialSeriesOperations>>=
+-- copied from sttf.spad
+      exp00:Stream Coef->Stream Coef
+
+      exp00 z ==
+          empty? z => cons(1,empty())
+          YS(y +-> lazyIntegrate(1, y*deriv z))
+
+      exp0 z == exp00 cons(0,z)
+@ %
+For the logarithm we use the following integral equation:
+$z(x)=\log y(x)$ $\iff$ $\exp z(x) = y(x)$, thus
+$$
+z'(x)e^{z(x)}=y'(x)
+$$
+and
+$$
+z(x) = z(0) + \int y'(x)e^{-z(x)}\,dx
+$$
+<<package STEXPS StreamExponentialSeriesOperations>>=
+      log1 z ==
+          empty? z => zro()
+          YS(y +-> lazyIntegrate(0, exp00((- y)$STSO)*  z))
+@ %
+
+\section{package STEXPST StreamExponentialSeriesTranscendentalFunctions}
+
+<<package STEXPST StreamExponentialSeriesTranscendentalFunctions>>=
+)abbrev package STEXPST StreamExponentialSeriesTranscendentalFunctions
+++ Author: Franz Lehner
+++ Date Created: 17.06.2010
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors: StreamTaylorSeriesOperations
+++ Also See:
+++ AMS Classifications:
+++ Keywords: stream, exponential power series
+++ References:
+++ Description:
+++   StreamExponentialSeriesTranscendentalFunctions implements
+++   exp and log of exponential power series,
+++  where a power series is represented by a stream of its coefficients.
+StreamExponentialSeriesTranscendentalFunctions(Coef): Exports == Implementation
+  where
+    Coef : Join(Algebra Fraction Integer, TranscendentalFunctionCategory, CommutativeRing)
+    STSO ==> StreamTaylorSeriesOperations Coef
+    STE ==> StreamExponentialSeriesOperations Coef
+    YS  ==> Y$ParadoxicalCombinatorsForStreams(Coef)
+    Exports ==> with
+      exp:Stream Coef -> Stream Coef
+      log:Stream Coef -> Stream Coef
+    Implementation ==> add
+      expre:(Coef,Stream Coef,Stream Coef) -> Stream Coef
+      expre(r,e,dx) == lazyIntegrate(r,(e * dx)$STE)$STE
+
+      exp z ==
+        empty? z => cons(1,empty())
+        (coef := frst z) = 0 => YS(y +-> expre(1, y, (deriv z)$STE))
+        YS(y +-> expre(exp coef, y, deriv z))
+@ %
+For the logarithm we use the following integral equation:
+$z(x)=\log y(x)$ $\iff$ $\exp z(x) = y(x)$, thus
+$$
+z'(x)e^{z(x)}=y'(x)
+$$
+and
+$$
+z(x) = z(0) + \int y'(x)e^{-z(x)}\,dx
+$$
+<<package STEXPST StreamExponentialSeriesTranscendentalFunctions>>=
+      log z ==
+          empty? z => error "log: constant coefficient should not be 0"
+          (c := frst z) = 0 => error "log: constant coefficient should not be 0"
+          YS(y +-> lazyIntegrate(log c, exp((-y)$STSO)*deriv z)$STE)
+@ %
+
+\section{License}
+<<license>>=
+--Copyright (c) 2011, Franz Lehner <lehner@math.tugraz.at>
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@ 
+
+<<*>>=
+<<license>>
+
+<<package STEXPS StreamExponentialSeriesOperations>>
+<<package STEXPST StreamExponentialSeriesTranscendentalFunctions>>
+@ 
+\end{document}
