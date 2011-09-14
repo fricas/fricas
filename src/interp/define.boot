@@ -347,7 +347,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
     $domainShell:= COPY_-SEQ ds
 --+ 7 lines for $NRT follow
-    $goGetList: local := nil
 -->--these globals used by NRTmakeCategoryAlist, set by NRTsetVector4Part1
     $condAlist: local := nil
     $uncondAlist: local := nil
