@@ -138,7 +138,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
                p : Integer) : Integer ==
             i : SingleInteger := deg::SingleInteger
             res : Integer := 0
-            while i >= 0 repeat
+            while not(i < 0) repeat
                 res := Qmuladdmod(pt, res, v(i), p)
                 i := i - 1
             res
@@ -182,7 +182,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
         degree(v : PA) : Integer ==
             n := #v
             for i in (n - 1)..0 by -1 repeat
-                v(i) ~= 0 => return i
+                not(v(i) = 0) => return i
             -1
 
         vector__combination(v1 : PA, c1 : Integer, _
@@ -191,7 +191,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
                             p : Integer) : Void ==
             ns := n pretend SingleInteger
             ds := delta pretend SingleInteger
-            if c1 ~= 1 then
+            if not(c1 = 1) then
                 for i in 0..(ds - 1) repeat
                     v1(i) := Qmul(v1(i), c1, p)
                 for i in ds..ns repeat
@@ -201,11 +201,11 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     v1(i) := Qmuladdmod(c2, v2(i - ds), v1(i), p)
 
         divide!(r0 : PA, r1 : PA, res : PA, p: Integer) : Void ==
-            dr0 := degree(r0)
-            dr1 := degree(r1)
+            dr0 := degree(r0) pretend SingleInteger
+            dr1 := degree(r1) pretend SingleInteger
             c0 := r1(dr1)
             c0 := modInverse(c0, p)
-            while dr0 >= dr1 repeat
+            while not(dr0 < dr1) repeat
                 delta := dr0 - dr1
                 c1 := Qmul(c0, r0(dr0), p)
                 res(delta) := c1
@@ -219,11 +219,11 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     if dr0 < 0 then break
 
         remainder!(r0 : PA, r1 : PA, p: Integer) : Void ==
-            dr0 := degree(r0)
-            dr1 := degree(r1)
+            dr0 := degree(r0) pretend SingleInteger
+            dr1 := degree(r1) pretend SingleInteger
             c0 := r1(dr1)
             c0 := modInverse(c0, p)
-            while dr0 >= dr1 repeat
+            while not(dr0 < dr1) repeat
                 delta := dr0 - dr1
                 c1 := Qmul(c0, r0(dr0), p)
                 c1 := p - c1
@@ -246,21 +246,18 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 dr0 := degree(y) pretend SingleInteger
             else
                 dr1 := degree(x) pretend SingleInteger
-            dr0 < 0 =>
-                dr1 < 0 =>
-                    return new(1, 0)$PA
-                r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
-                copy__first(r1, x, dr1 + 1)
-                c := r1(dr1)
-                c := modInverse(c, p)
-                mul__by__scalar(r1, dr1, c, p)
-                return r1
+            dr0 < 0 => return new(1, 0)$PA
             r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
             copy__first(r0, y, dr0 + 1)
+            dr1 < 0 =>
+                c := r0(dr0)
+                c := modInverse(c, p)
+                mul__by__scalar(r0, dr0, c, p)
+                return r0
             r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
             copy__first(r1, x, dr1 + 1)
-            while dr1 > 0 repeat
-                while dr0 >= dr1 repeat
+            while 0 < dr1 repeat
+                while not(dr0 < dr1) repeat
                     delta := dr0 - dr1
                     c1 := QSDIFFERENCE(p, r0(dr0))$Lisp
                     c0 := r1(dr1)
@@ -280,7 +277,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 dr0 := dr1
                 r1 := tmpp
                 dr1 := tmp
-            dr1 >= 0 =>
+            not(dr1 < 0) =>
                 r1(0) := 1
                 return r1
             c := r0(dr0)
@@ -333,13 +330,13 @@ U32VectorPolynomialOperations() : Export == Implementation where
             xdeg < 0 => x
             xdeg = 0 and xcoeffs(0) = 1 => copy(y)
             zdeg : SingleInteger := xdeg + ydeg
-            zdeg0 := (zdeg::Integer) pretend NonNegativeInteger
-            zcoeffs := new(zdeg0 + 1, 0)$PA
+            zdeg0 := ((zdeg + 1)::Integer) pretend NonNegativeInteger
+            zcoeffs := new(zdeg0, 0)$PA
             inner__mul(xcoeffs, ycoeffs, zcoeffs, xdeg, ydeg, zdeg, p)
             zcoeffs
 
         inner__mul(x, y, z, xdeg, ydeg, zdeg, p) ==
-            if xdeg > ydeg then
+            if ydeg < xdeg then
                 tmpp := x
                 tmp := xdeg
                 x := y
@@ -347,10 +344,10 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 y := tmpp
                 ydeg := tmp
             xdeg :=
-                xdeg > zdeg => zdeg
+                zdeg < xdeg => zdeg
                 xdeg
             ydeg :=
-                ydeg > zdeg => zdeg
+                zdeg < ydeg => zdeg
                 ydeg
             ss : Integer
             i : SingleInteger
