@@ -64,6 +64,25 @@ InnerAlgebraicNumber(): Exports == Implementation where
 
     ALGOP := '%alg
 
+    reducedSystem(m : Matrix(%)) : Matrix(Fraction(Z)) ==
+        mz : Matrix(Z) := reducedSystem(m)$Rep
+        map((c : Z) : Fraction(Z) +-> c::Fraction(Z), mz
+           )$MatrixCategoryFunctions2(Z, Vector(Z), Vector(Z), Matrix(Z),
+               Fraction(Z), Vector(Fraction(Z)), Vector(Fraction(Z)),
+                   Matrix(Fraction(Z)))
+
+    reducedSystem(m : Matrix(%), v : Vector(%)
+      ) : Record(mat : Matrix(Fraction(Z)), vec : Vector(Fraction(Z))) ==
+        mzr : Record(mat : Matrix(Z), vec : Vector(Z)) :=
+          reducedSystem(m, v)$Rep
+        mq := map((c : Z) : Fraction(Z) +-> c::Fraction(Z), mzr.mat
+                 )$MatrixCategoryFunctions2(Z, Vector(Z), Vector(Z), Matrix(Z),
+                     Fraction(Z), Vector(Fraction(Z)), Vector(Fraction(Z)),
+                       Matrix(Fraction(Z)))
+        vq := map((c : Z) : Fraction(Z) +-> c::Fraction(Z), mzr.vec
+                 )$VectorFunctions2(Z, Fraction(Z))
+        [mq, vq]
+
     -- private
     mainRatDenom(f:%):% ==
        ratDenom(f::Rep::FE)$AlgebraicManipulations(Integer, FE)::Rep::%
