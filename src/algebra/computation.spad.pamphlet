@@ -28,25 +28,66 @@ lambda, we do not attempt to reduce as soon as it is constructed
 leave it as a structure to be combined, transformed, compared and
 studied.
 
+Computing is often defined in terms of physical quantities such as
+'information' and 'entropy' but here we are discussing computing in
+mathematical terms [see 11]. In the 1930s, Kurt Godel, Alonzo Church,
+Emil Post, and Alan Turing independently gave formal notions of
+computation in terms of specific mathematical structures.
+\begin{itemize}
+\item Godel defined computation in terms of the evaluations of
+recursive functions.
+\item Church defined computation in terms of the evaluations of
+lambda expressions,
+\item Post defined computation as series of strings successively
+rewritten according to a given rule set.
+\item Turing defined computation in terms of the Turing machine,
+the sequence of states of an abstract machine (usually explained
+in terms of a physical machine with a control unit and a tape).
+\end{itemize}
+Can we abstract away from these specific structures to get a
+more general definition?
+A possible computational model is representation-transformation.
+Provided that we can transform a given representation in a
+sufficiently rich way (that is: Turing complete) then it can
+represent any computation that is possible. There are limits to
+what computations are possible as shown by applying Godel's
+incompleteness theorems to computation. This gives rise to the
+concept of undecidable problems.
+
+So a 'representation' may for example be a string, but since
+the string may contain brackets we can represent tree structures
+and many other structures. Tree structues do seem to be a very
+good represention for modelling many computations in an efficient
+way.
+
+Our 'transformation' may be a sequence of steps, or an algorithm,
+or a function.
+
 We are also interested in the relationship to logic, this approach
 is based on the ideas of Philip Wadler [1] and others.
 A program that uses this approach is Djinn [2]
 
 The arguments of these 'computation' domains are functions and
-combinators and the operation is function composition. For
-combinators the number of arguments is variable and so function
-composition is non-associative hence it is represented by binary
-tree structure. For Lambda calculus we have bound and unbound
-variables so again non-associative and represented by binary
+combinators and the operation is usually function application,
+although other operations such as function composition and
+cartesian product may also be supported.
+
+For combinators the number of arguments is variable and so function
+application is non-associative hence it is represented by binary
 tree structure.
+
+For Lambda calculus function application is the opposite process
+to the lambda function, that is lambda creates a function with
+a bound variable and function application removes the bound variable.
+Since we have bound and unbound variables so again non-associative
+and represented by binary tree structure.
 
 I am also working on a framework for function composition.
 \url{http://www.euclideanspace.com/maths/standards/program/mycode/homset/}
-Conventional function composition is associative and so can be
+Function composition is associative and so can be
 represented by a list structure. It therefore has different
-mathematical properties to the structures studied here but there
-appears to be links between these various types of function
-composition which I would like to investigate.
+mathematical properties to the structures studied here but they
+can be related to closed cartesian categories.
 
 These domains all represent systems of logic and are constructed from
 tree structures and act on tree structures. These 'tree logics' seem
@@ -164,6 +205,19 @@ lattice terminology.
 Implication is notated by -> to suggest its link to 'function'
 although perhaps this should be changed to more standard =>.
 
+In lambda calculus the elements are functions. Function application
+and composition is notated by space, that is
+
+f g represents f(g)
+
+In lisp notation this would be (f g). Although we can use brackets
+they are only used to indicate precidence and not to specify a function
+since all variables are assumed functions.
+
+I have used the term 'function application' for the following form:
+f:A->B g:A = f g:B
+and the term 'function composition' for the following form:
+f:B->C g:A->B = f g:A->C
 \section{Related Structures}
 
 If we want to cover the full range of mathematical structures related
@@ -200,525 +254,9 @@ intuitionistic logic is closely related to topos theory.
 Also the discussion of monads above tends to indicate that they
 need to be used here.
 
-Also the common use of function composition.
-
 All of this suggests to me that all the code in this document would
 benifit from being put into a wider framework based on category
 theory.
-
-\section{Variables}
-
-Before we get on to the main domains we have some code to represent
-variables in Lambda and Ski domains.
-Since we are working in terms of functions then a variable will be a
-function (possibly a constant function).
-
-There is a category to represent these function variables and there are
-two implementations of this category so far:
-\begin{description}
-\item[Untyped] Untyped represents an untyped variable in Lambda and Ski
-            domains, a variable has a name represented by a String.
-\item[Typed] Typed represents an typed variable in Lambda and Ski
-          domains, a variable has a name represented by a String
-          and a type represented by a tree of strings.
-\end{description}
-
-There may be possibly be other implementations in the future. For instance
-we could introduce a typed variable which could have FriCAS types instead
-of abstract types represented by strings. This might allow more interaction
-with other domains, although as already stated, the main aim is to
-implement these as abstract structures like any other mathematical
-structure.
-
-\begin{enumerate}
-\item How do we handle (and should we handle) subtypes and the various
-flavors of polymorphism? I was thinking of an additional type domain
-within this category whose representation is a list of sub-types,
-which in turn may have sub-sub-types. In other words a tree structure.
-Most of the structures in this computation framework are already tree
-structures so this fits the pattern.
-
-\item How do we handle (and should we handle) compounded types such as
-'List over String'?
-
-\item It would be interesting to have a type domain in this category where
-the types were FriCAS types. This would be an exception, usualy I
-would prefer an abstract type model, but it may be possible to do
-interesing things by mapping FriCAS to an abstract type model.
-
-\item Could these type models be used outside of the computation
-framework? For instance a set whose elements may be assigned different
-types.
-\end{enumerate}
-
-I am trying to develop an abstract model of general mathematical
-structures here, not a sub-language within FriCAS, so I don't want to
-over specify this. However I think it would be good to specify a model
-which is as general as possible and can be expanded to model these
-things.
-\section{Variables Tutorial}
-The two implementations: Untyped and Typed which can be constructed as
-follows:
-
-\begin{verbatim}
-(1) -> var("x")$Untyped
-
-   (1)  "x"
-                                                            Type: Untyped
-
-(2) -> var("x",varTyp("a"))$Typed
-
-   (2)  "x:a"
-                                                              Type: Typed
-
-(3) -> parseVar("x:a->b",1)$Typed
-
-   (3)  [rft= "x:a->b",pout= 7]
-                        Type: Record(rft: Typed,pout: NonNegativeInteger)
-\end{verbatim}
-
-In (3) we are entering a variable with a more complicated type (in
-this case \verb'a->b') so it is easier to use parseVar to construct from
-a string although this could have been built from raw types.
-
-parseVar also requires '1' which means: start parsing at position 1
-in the string. It returns \verb'x:a->b' which means variable \verb'x' from type
-\verb'a' to type \verb'b' and 7 which is the position of the pointer after
-this term has been parsed.
-
-Variables are not usually constructed directly by the user but instead
-are used by lambda and ski domains.
-\section{Types}
-
-If we are using Typed variables then the type will be represented by
-the following domain:
-
-\section{domain VTYP VarTyp}
-<<domain VTYP VarTyp>>=
-)abbrev domain VTYP VarTyp
-++ Author: Martin Baker
-++ Date Created: April 2011
-++ Date Last Updated: July 2011
-++ Basic Operations:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/
-
-VarTyp(): Exports == Implementation where
-
- NNI==> NonNegativeInteger
- PR ==> Record(rft:%,pout:NNI)
-   ++ parse result includes term returned and new index
-
- Exports == CoercibleTo(OutputForm) with
-  varTyp:(x:%,y:%) -> %
-    ++ Constructs a compound type
-  varTyp:(t1:String) -> %
-    ++ Constructs an individual type
-  parseVarTyp:(t1: String) -> %
-    ++ Constructs a type from a string
-  parseTyp:(t1: String,pin:NNI) -> PR
-    ++ construct a type by parsing a string t1
-    ++ pin is index to string at start of parse
-  getChildren:(n: %) -> List %
-    ++ returns child nodes if this is a compound term
-    ++ otherwise returns []
-  atom?:(n: %) -> Boolean
-    ++ returns true if this is an atom, that is a leaf node
-    ++ otherwise return false if this is a compound term
-  getName:(n: %) -> String
-    ++ returns the name if this is a simple type otherwise
-    ++ return ""
-  "=":(x:%, y:%) -> Boolean
-    ++ return true if equal (deep search) that is: all terms
-    ++ at all levels in tree must be equal to return true
-  toString: (n: %) -> String
-    ++ output
-  coerce: (n: %) -> OutputForm
-    ++ output
-
- Implementation == add
-
-  Rep := Union(_
-         nm:String,_
-         nd:Record(c1:%, c2:%)_
-         )
-
-  -- Constructs a compound type
-  varTyp(x:%,y:%): % == [[x,y]]
-
-  -- Constructs an individual type
-  varTyp(t1:String):% ==
-    [t1]
-
-  -- construct a type by parsing a string t1
-  -- pin is index to string at start of parse
-  parseTypName(t1: String,pin:NNI):PR ==
-    vnm:String := ""
-    pt:NNI := pin
-    ch := qelt(t1,pt)
-    --sayTeX$Lisp concat("st ch=",ch::String)
-    while alphanumeric?(ch) repeat
-      vnm := concat(vnm,ch)
-      pt := pt + (1::NNI)
-      if pt > maxIndex(t1) then
-        return [varTyp(vnm),pt]
-      ch := qelt(t1,pt)
-    [varTyp(vnm),pt]
-
-  parseBracketTerm(t1: String,pin:NNI):PR ==
-    p1 := pin
-    ch := qelt(t1,p1)
-    if not (ch = char("(")) then
-      error "bracket term must start with ("
-      return [[""],p1]
-    p1 := p1 + (1::NNI)
-    if p1 > maxIndex(t1) then
-      error "opening but no closing bracket"
-      return [[""],p1]
-    r2 := parseTyp(t1,p1)
-    trm := r2.rft
-    p1 := r2.pout
-    ch := qelt(t1,p1)
-    if not (ch = char(")")) then
-      error "can't find closing bracket"
-      return [[""],p1]
-    p1 := p1 + (1::NNI)
-    [trm,p1]
-
-  parseTyp(t1: String,pin:NNI):PR ==
-    p1 := pin
-    res:% := [""]
-    ch := qelt(t1,p1)
-    -- first remove leading spaces
-    while ch = char(" ") repeat
-      p1 := p1 + (1::NNI)
-      if p1 > maxIndex(t1) then
-        return [res,p1]
-      ch := qelt(t1,p1)
-    r:PR:= [res,p1]
-    if ch = char("(") then r := parseBracketTerm(t1,p1)
-    if alphabetic?(ch) then r := parseTypName(t1,p1)
-    res := r.rft
-    p1 := r.pout
-    -- now check for compound term
-    if p1 > maxIndex(t1) then
-      return [res,p1]
-    ch := qelt(t1,p1)
-    if ch = char(" ") then
-      p1 := p1 + (1::NNI)
-      if p1 > maxIndex(t1) then
-        return [res,p1]
-    if ch = char("-") then
-      p1 := p1 + (1::NNI)
-      if p1 > maxIndex(t1) then
-        return [res,p1]
-      ch := qelt(t1,p1)
-      if not ch = char(">") then
-        error "unexpected - found"
-        return [res,p1]
-      p1 := p1 + (1::NNI)
-      if p1 > maxIndex(t1) then
-        return [res,p1]
-      r := parseTyp(t1,p1)
-      p1 := r.pout
-      res := varTyp(res,r.rft)
-    [res,p1]
-
-  parseVarTyp(t1: String): % ==
-    r := parseTyp(t1,minIndex(t1)::NNI)
-    --sayTeX$Lisp concat(["parseLambda(",t1,") giving:",toString(tm)])
-    r.rft
-
-  -- returns child nodes if this is a compound term
-  -- otherwise returns []
-  getChildren(n: %):List % ==
-    if atom?(n) then return []
-    [n.nd.c1,n.nd.c2]
-
-  -- returns true if this is an atom, that is a leaf node
-  -- otherwise return false if this is a compound term
-  atom?(n: %):Boolean == (n case nm)
-
-  -- returns the name if this is a simple type otherwise
-  -- return ""
-  getName(n: %):String ==
-    if n case nm then
-      return n.nm
-    ""
-
-  -- return string representation
-  -- notation assumes association to the left, in the absence of
-  -- brackets, the term to the left binds more tightly than the
-  -- one on the right.
-  toString(n: %):String ==
-    s:String := ""
-    if n case nm then
-      return n.nm
-    if n case nd then
-      if atom?(n.nd.c2) then
-        s := concat([s,toString(n.nd.c1),"->",toString(n.nd.c2)])
-      else
-        s := concat([s,toString(n.nd.c1),"->","(",toString(n.nd.c2),")"])
-    s
-
-  -- return true if equal (deep search) that is: all terms
-  -- at all levels in tree must be equal to return true
-  x = y ==
-    if (x case nm) and (y case nm) then
-      if x.nm = y.nm then return true
-      return false
-    if (x case nd) and (y case nd) then
-      -- binary node which has two subnodes c1 and c2
-      if (x.nd.c1 = y.nd.c1) and (x.nd.c2 = y.nd.c2) then return true
-      return false
-    false
-
-  -- output
-  coerce(n: %):OutputForm ==
-    toString(n)::OutputForm
-@
-
-Now we will implement variables:
-
-First a common category for the various variable types:
-\section{category VARCAT VarCat}
-<<domain VARCAT VarCat>>=
-)abbrev category VARCAT VarCat
-++ Author: Martin Baker
-++ Date Created: April 2011
-++ Date Last Updated: July 2011
-++ Basic Operations:
-++ Related Constructors: lambda, ski
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/
-++ Description: VarCat represents a variable in Lambda and Ski domains.
-++ Since we are working in terms of functions then a variable will be a
-++ function (possibly a constant function)
-++ a variable has a name represented by a String. If the Lambda or Ski
-++ calculas is typed then the variable will also have a type.
-
-VarCat() : Category == Type with
-  var:(n:String) -> %
-    ++ constructs variable with a name but no type.
-  var:(n:String,t:VarTyp) -> %
-    ++ constructs variable with a name and also a type.
-  getName:(v:%) -> String
-    ++ returns the name of the variable.
-  getType:(v:%) -> VarTyp
-    ++ returns the type of the variable. This may be a compund type, for
-    ++ instance ["a","b"] represents a->b a function from type a to type b
-    ++ untyped implementations return []
-  toString:(v:%) -> String
-    ++ returns the name and the type in string form.
-  parseVar:(t1: String,pin:NonNegativeInteger)-> Record(rft:%,pout:NonNegativeInteger)
-    ++ construct a variable by parsing a string
-    ++ pin is index to string at start of parse
-    ++ pout is index to string at end of parse
-  "=":(x:%, y:%) -> Boolean
-    ++ return true if equal, that is names are equal and if there is
-    ++ a type then tey mast also be equal
-  coerce: (n: %) -> OutputForm
-    ++ output
-@
-
-Next an implementation of the above category which is intended to work with
-untyped variables:
-
-\section{domain UNTYPED Untyped}
-<<domain UNTYPED Untyped>>=
-)abbrev domain UNTYPED Untyped
-++ Author: Martin Baker
-++ Date Created: April 2011
-++ Date Last Updated: July 2011
-++ Basic Operations:
-++ Related Constructors: lambda, ski
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/
-++ Description: Untyped represents an untyped variable in Lambda and Ski
-++ domains, a variable has a name represented by a String.
-
-Untyped() : Exports == Implementation where
-
-  NNI==> NonNegativeInteger
-  PR ==> Record(res:%,pout:NNI)
-    ++ parse result includes string returned and new index
-
-  Exports ==> Join(VarCat(), CoercibleTo(OutputForm))
-
-  Implementation ==> Type add
-
-    Rep := Record(nme:String)
-      ++ At the moment an untyped variable is represented by a string
-      ++ representing the name of the variable.
-      ++ So why wrap it in a Record structue.
-      ++ The main reason is because I am planning to expand this as
-      ++ explained in the text part of this pamphlet.
-      ++ Also it seems like a good idea to keep a similar structure to
-      ++ typed variables.
-      ++ Also I could not get it to work unwrapped. I vaguely recall that
-      ++ I couldn't get the constructor to return an unwrapped value, but
-      ++ it may have been some other issue and that's not the main reason.
-
-    -- constructs variable with a name but no type
-    var(n:String):% ==
-      [n]
-
-    -- since this is an untyped implementation the type value
-    -- is ignored
-    var(n:String,t:VarTyp):% ==
-      [n]
-
-    -- returns the name of the variable.
-    getName(v:%):String ==
-      v.nme
-
-    -- returns the type of the variable.
-    -- Since this is an untyped variable it will always return an
-    -- empty string.
-    getType(v:%):VarTyp ==
-      varTyp("")
-
-    -- returns the name and the type in string form.
-    toString(v:%):String ==
-      v.nme
-
-    -- construct a variable by parsing a string
-    -- pin is index to string at start of parse
-    -- pout is index to string at end of parse
-    parseVar(t1: String,pin:NNI):Record(rft:%,pout:NNI) ==
-      vnm:String := ""
-      pt:NNI := pin
-      ch := qelt(t1,pt)
-      --sayTeX$Lisp concat("st ch=",ch::String)
-      while alphanumeric?(ch) repeat
-        vnm := concat(vnm,ch)
-        pt := pt + (1::NNI)
-        if pt > maxIndex(t1) then
-          return [var(vnm),pt]
-        ch := qelt(t1,pt)
-      if ch = char(":") then
-        -- read type
-        --sayTeX$Lisp concat("st ch=",ch::String)
-        r := parseTyp(t1,pt)$VarTyp
-        pt:= r.pout
-        -- since this instance is untyped we ignore result
-      [var(vnm),pt]
-
-    -- return true if equal, that is names are equal (since there are
-    -- no types that is all that is required) in the case of typed
-    -- implementations then they would also have to be equal.
-    x = y ==
-      x.nme = y.nme
-
-    -- output
-    coerce(n: %):OutputForm ==
-      toString(n)::OutputForm
-@
-
-Next an implementation of the VarCat category which is intended to work with
-typed variables:
-
-\section{domain TYPED Typed}
-<<domain TYPED Typed>>=
-)abbrev domain TYPED Typed
-++ Author: Martin Baker
-++ Date Created: April 2011
-++ Date Last Updated: July 2011
-++ Basic Operations:
-++ Related Constructors: lambda, ski
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/
-++ Description: Typed represents an typed variable in Lambda and Ski
-++ domains, a variable has a name represented by a String and a type
-++ represented by a list of strings.
-
-Typed() : Exports == Implementation where
-
-  NNI==> NonNegativeInteger
-  PR ==> Record(res:%,pout:NNI)
-    ++ parse result includes string returned and new index
-
-  Exports ==> Join(VarCat(), CoercibleTo(OutputForm))
-
-  Implementation ==> Type add
-
-    Rep := Record(nme:String,typ:VarTyp)
-      ++ name of variable
-      ++ and type of variable
-
-    -- constructs variable with a name but no type
-    var(n:String):% ==
-      [n,varTyp("")]
-
-    -- since this is an untyped implementation the type value
-    -- is ignored
-    var(n:String,t:VarTyp):% ==
-      [n,t]
-
-    -- returns the name of the variable.
-    getName(v:%):String ==
-      v.nme
-
-    -- returns the type of the variable. This may be a compound type, for
-    -- instance ["a","b"] represents a->b a function from type a to type b
-    getType(v:%):VarTyp ==
-      v.typ
-
-    -- returns the name and the type in string form. This may be a compound
-    -- type, for instance ["a","b"] represents a->b a function from type a
-    -- to type b
-    toString(v:%):String ==
-      s:String := concat([v.nme,":",toString(v.typ)])
-      s
-
-    -- construct a variable by parsing a string
-    -- pin is index to string at start of parse
-    -- pout is index to string at end of parse
-    parseVar(t1: String,pin:NNI):Record(rft:%,pout:NNI) ==
-      vnm:String := ""
-      pt:NNI := pin
-      ch := qelt(t1,pt)
-      --sayTeX$Lisp concat("st ch=",ch::String)
-      while alphanumeric?(ch) repeat
-        vnm := concat(vnm,ch)
-        pt := pt + (1::NNI)
-        if pt > maxIndex(t1) then
-          return [var(vnm),pt]
-        ch := qelt(t1,pt)
-      if ch = char(":") then
-        -- read type
-        --sayTeX$Lisp concat("st ch=",ch::String)
-        pt := pt + (1::NNI)
-        if pt > maxIndex(t1) then
-          return [var(vnm),pt]
-        r := parseTyp(t1,pt)$VarTyp
-        pt:= r.pout
-        return [var(vnm,r.rft),pt]
-      [var(vnm),pt]
-
-    -- return true if equal, that is names are equal (since there are
-    -- no types that is all that is required) in the case of typed
-    -- implementations then they would also have to be equal.
-    x = y ==
-      (x.nme = y.nme) and (x.typ = y.typ)
-
-    -- output
-    coerce(n: %):OutputForm ==
-      toString(n)::OutputForm
-@
 
 \section{Intuitionistic Logic}
 The intuitionisticLogic domain implements a Heyting algebra implied
@@ -935,7 +473,7 @@ so we get the required deduction 'b'
 )abbrev domain ILOGIC ILogic
 ++ Author: Martin Baker
 ++ Date Created: March 2011
-++ Date Last Updated: July 2011
+++ Date Last Updated: September 2011
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: intuitionisticLogic
@@ -947,6 +485,8 @@ so we get the required deduction 'b'
 ILogic(): Exports == Implementation where
 
  NNI==> NonNegativeInteger
+ PR ==> Record(rft:%,pout:NNI)
+   ++ parse result includes term returned and new index
 
  Exports == Join(Logic, CoercibleTo(OutputForm)) with
   logicT:() -> %
@@ -1006,6 +546,22 @@ ILogic(): Exports == Implementation where
     ++   "E"::Symbol = error
     ++   "P"::Symbol = proposition
     ++   "C"::Symbol = compound
+    ++ Constructs lambda term and bind any variables with the name provided
+  parseIL:(t1: String) -> %
+    ++ Constructs intuitionistic logic terms from a string
+    ++ notation assumes format like this:
+    ++ <term> ::= var | <term>/\<term> | <term>\/<term> |
+    ++            <term>-><term> | "("<term>")"
+  parseIL2:(t1: String,pin:NNI) -> PR
+    ++ Constructs intuitionistic logic terms from a string
+    ++ notation assumes format like this:
+    ++ <term2> ::= var | "("<term>")"
+    ++ <term> ::= var | <term>/\<term> | <term>\/<term> |
+    ++            <term>-><term> | "("<term>")"
+  parseILTerm:(t1: String,pin:NNI)->PR
+    ++ parseTerm is used by parseIL. It would rarely be called
+    ++ externally but it is here to allow it to call parseIL
+    ++ that is to allow circular calls
   toString: (n: %) -> String
     ++ creates a string representaion of this term and its sub-terms
   toStringUnwrapped: (n: %) -> String
@@ -1303,6 +859,185 @@ ILogic(): Exports == Implementation where
       return false
     false
 
+  parseBracketTerm(t1: String,pin:NNI):PR ==
+    p1 := pin
+    trm:% := logicT()
+    ch := qelt(t1,p1)
+    if not (ch = char("(")) then
+      error "bracket term must start with ("
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    if p1 > maxIndex(t1) then
+      error "opening but no closing bracket"
+      return [trm,p1]
+    r2 := parseILTerm(t1,p1)
+    trm := r2.rft
+    p1 := r2.pout
+    ch := qelt(t1,p1)
+    if not (ch = char(")")) then
+      error "can't find closing bracket"
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    [trm,p1]
+
+  -- parse /\ term
+  -- expects first term to be read already
+  -- should now be pointing to /\ characters
+  parseILand(t1: String,pin:NNI,firstTerm:%):PR ==
+    p1 := pin
+    pt:NNI := pin
+    trm:% := logicT()
+    ch := qelt(t1,p1)
+    if not (ch = char("/")) then
+      error "expecting /\"
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    ch := qelt(t1,p1)
+    if not (ch = char("\")) then
+      error "expecting /\"
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    --sayTeX$Lisp concat("st ch=",ch::String)
+    r:PR:= parseILTerm(t1,p1)
+    secondTerm := r.rft
+    p1 := r.pout
+    [_/_\(firstTerm,secondTerm),p1]
+
+  -- parse \/ term
+  -- expects first term to be read already
+  -- should now be pointing to \/ characters
+  parseILor(t1: String,pin:NNI,firstTerm:%):PR ==
+    p1 := pin
+    pt:NNI := pin
+    trm:% := logicT()
+    ch := qelt(t1,p1)
+    if not (ch = char("\")) then
+      error "expecting \/"
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    ch := qelt(t1,p1)
+    if not (ch = char("/")) then
+      error "expecting \/"
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    --sayTeX$Lisp concat("st ch=",ch::String)
+    r:PR:= parseILTerm(t1,p1)
+    secondTerm := r.rft
+    p1 := r.pout
+    [_\_/(firstTerm,secondTerm),p1]
+
+  -- parse -> term
+  -- expects first term to be read already
+  -- should now be pointing to -> characters
+  parseILfn(t1: String,pin:NNI,firstTerm:%):PR ==
+    p1 := pin
+    pt:NNI := pin
+    trm:% := logicT()
+    ch := qelt(t1,p1)
+    if not (ch = char("-")) then
+      error "expecting ->"
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    ch := qelt(t1,p1)
+    if not (ch = char(">")) then
+      error "expecting ->"
+      return [trm,p1]
+    p1 := p1 + (1::NNI)
+    --sayTeX$Lisp concat("st ch=",ch::String)
+    r:PR:= parseILTerm(t1,p1)
+    secondTerm := r.rft
+    p1 := r.pout
+    [implies(firstTerm,secondTerm),p1]
+
+  -- construct a type by parsing a string t1
+  -- pin is index to string at start of parse
+  parseILName(t1: String,pin:NNI):PR ==
+    vnm:String := ""
+    pt:NNI := pin
+    ch := qelt(t1,pt)
+    --sayTeX$Lisp concat("st ch=",ch::String)
+    while alphanumeric?(ch) repeat
+      vnm := concat(vnm,ch)
+      pt := pt + (1::NNI)
+      if pt > maxIndex(t1) then
+        return [proposition(vnm),pt]
+      ch := qelt(t1,pt)
+    [proposition(vnm),pt]
+
+  parseILTerm(t1: String,pin:NNI):PR ==
+    p1 := pin
+    res:% := logicT()
+    ch := qelt(t1,p1)
+    --sayTeX$Lisp concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
+    -- first remove leading spaces
+    while ch = char(" ") repeat
+      p1 := p1 + (1::NNI)
+      if p1 > maxIndex(t1) then
+        --sayTeX$Lisp concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        return [res,p1]
+      ch := qelt(t1,p1)
+    r:PR:= [res,p1]
+    if alphabetic?(ch) then r := parseILName(t1,p1)
+    if ch = char("(") then r := parseBracketTerm(t1,p1)
+    res := r.rft
+    p1 := r.pout
+    -- now check for compound term
+    if p1 > maxIndex(t1) then
+      --sayTeX$Lisp concat(["parseTerm(",t1,") 2 giving:",toString(res)])
+      return [res,p1]
+    ch := qelt(t1,p1)
+    if ch = char(" ") then
+      p1 := p1 + (1::NNI)
+      if p1 > maxIndex(t1) then
+        --sayTeX$Lisp concat(["parseTerm(",t1,") 3 giving:",toString(res)])
+        return [res,p1]
+    ch := qelt(t1,p1)
+    if ch = char("/") then
+      r := parseILand(t1,p1,res)
+      res := r.rft
+      p1 := r.pout
+    if ch = char("\") then
+      r := parseILor(t1,p1,res)
+      res := r.rft
+      p1 := r.pout
+    if ch = char("-") then
+      r := parseILfn(t1,p1,res)
+      res := r.rft
+      p1 := r.pout
+    [res,p1]
+
+  -- Constructs intuitionistic logic terms from a string
+  -- notation assumes format like this:
+  -- <term> ::= var | <term>/\<term> | <term>\/<term> |
+  --            <term>-><term> | "("<term>")"
+  parseIL2(t1: String,pin:NNI): PR ==
+    p1 := pin
+    res:% := logicT()
+    ch := qelt(t1,p1)
+    --sayTeX$Lisp concat(["parseIL ch=",ch::String," p1=",string(p1)])$String
+    -- first remove leading spaces
+    while ch = char(" ") repeat
+      p1 := p1 + (1::NNI)
+      if p1 > maxIndex(t1) then
+        --sayTeX$Lisp concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        return [res,p1]
+      ch := qelt(t1,p1)
+    r:PR:= [res,p1]
+    if alphabetic?(ch) then r := parseILName(t1,p1)
+    if ch = char("(") then r := parseBracketTerm(t1,p1)
+    res := r.rft
+    p1 := r.pout
+    [res,p1]
+
+  -- Constructs intuitionistic logic terms from a string
+  -- notation assumes format like this:
+  -- <term> ::= var | <term>/\<term> | <term>\/<term> |
+  --            <term>-><term> | "("<term>")"
+  parseIL(t1: String): % ==
+    r := parseILTerm(t1,minIndex(t1)::NNI)
+    --sayTeX$Lisp concat(["parseIL(",t1,") giving:",toString(tm)])
+    r.rft
+
   -- return string representation
   toString(n: %):String ==
     if n case const then
@@ -1350,6 +1085,404 @@ ILogic(): Exports == Implementation where
   coerce(n: %):OutputForm ==
     toString(n)::OutputForm
 
+@
+
+\section{Variables}
+Before we get on to the main domains we have some code to represent
+variables in Lambda and Ski domains.
+Since we are working in terms of functions then a variable will be a
+function (possibly a constant function).
+
+There is a category to represent these function variables and there are
+two implementations of this category so far:
+\begin{description}
+\item[Untyped] Untyped represents an untyped variable in Lambda and Ski
+            domains, a variable has a name represented by a String.
+\item[Typed] Typed represents an typed variable in Lambda and Ski
+          domains, a variable has a name represented by a String
+          and a type represented by intuitionistic logic.
+\end{description}
+\section{Variables Tutorial}
+The two implementations: Untyped and Typed which can be constructed as
+follows:
+
+\begin{verbatim}
+(1) -> var("x")$Untyped
+   (1)  "x"
+                                                            Type: Untyped
+(2) -> var("x",proposition("a"))$Typed
+   (2)  "x:a"
+                                                              Type: Typed
+(3) -> parseVar("x:(a->b)")$Typed
+   (3)  "x:(a->b)"
+                                                              Type: Typed
+(4) -> parseVar("x:(a/\b)")$Typed
+   (4)  "x:(a/\b)"
+                                                              Type: Typed
+(5) -> parseVar("x:(a\/b)")$Typed
+   (5)  "x:(a\/b)"
+                                                              Type: Typed
+\end{verbatim}
+(1) shows an untyped variable.
+
+(2) shows a typed variable with a simple type "a"
+
+In (3 to 5) we are entering a variable with a more complicated compound
+types so it is easier to use parseVar to construct from
+a string although this could have been built from raw types.
+
+Note that the \verb':' binds more tightly than \verb'->' so we need to put
+brackets around \verb'a->b' so that its read as a type.
+
+There are 3 ways to build up compound types:
+\begin{itemize}
+\item (3) shows \verb'a->b' which represents a function from a to b
+\item (4) shows \verb'a/\b' which represents a type like Record(a,b)
+\item (5) shows \verb'a\/b' which represents a type like Union(a,b)
+\end{itemize}
+We can nest these compound types to build up more complex types.
+
+Variables are not usually constructed directly by the user but instead
+are used by lambda and ski domains.
+\section{Types}
+There are various ways to interpret the concept of 'type' in the study
+of both computation and in pure mathematical terms, for example:
+\begin{itemize}
+\item types as sets
+\item types as abstractions (Reynolds)
+\item types as relations (Wadler)
+\item propositions as types (Curry-Howard)
+\end{itemize}
+We need to be able to model type theory and to do this in a flexable way
+we must build our own type domains rather than use the types used by
+SPAD (although a possible future enhancement would be to support SPAD
+types as a special case but not the general concept of type). 
+
+I am trying to develop an abstract model of general mathematical
+structures here, not a sub-language within FriCAS, so I don't want to
+over specify this. However I think it would be good to specify a model
+which is as general as possible and can be expanded to model these
+things.
+
+So we need various levels of support for types depending on the
+situation:
+\begin{itemize}
+\item untyped
+\item simply typed - types are fixed and don't depend on anything else,
+all we can do is check that types match up correctly.
+\item extended types - we can refine simple types by using some or all
+of the following extensions (level of support for these can be shown
+graphically by a diagram known as the lambda cube)
+\begin{itemize}
+\item Type Operator (types depend on types) - For example: function types
+or cartesian products.
+\item Polymorphism (terms depend on types) - For example: we can define
+functions which can be applied to parameters with different types.
+\item Dependant Types (types depend on terms)
+\end{itemize}
+\end{itemize}
+Initially, not all of these options are supported by this framework and
+there are other issues, still to be resolved:
+\begin{enumerate}
+\item How do we handle (and should we handle) subtypes and the various
+flavors of polymorphism? I was thinking of an additional type domain
+within this category whose representation is a list of sub-types,
+which in turn may have sub-sub-types. In other words a tree structure.
+Most of the structures in this computation framework are already tree
+structures so this fits the pattern.
+\item How do we handle (and should we handle) compounded types such as
+'List over String'?
+\item It would be interesting to have a type domain in this category where
+the types were SPAD types. This would be an exception, usualy I
+would prefer an abstract type model, but it may be possible to do
+interesing things by mapping FriCAS to an abstract type model.
+\item Could these type models be used outside of the computation
+framework? For instance a set whose elements may be assigned different
+types.
+\end{enumerate}
+
+One of the most important flavors to support is simply typed with
+function types. This is because:
+\begin{itemize}
+\item It has enough power to represent most computations (although it
+is not Turing complete - we would need fixpoint operator for that)
+\item At this level there is an equivelence between Lambda calculus,
+intuitionistic logic and closed cartesian categories which makes this
+interesting.
+\item We can infer types by using the Hindley–Milner type inference
+algorithm.
+\end{itemize}
+\section{simply typed with type operator for function types
+and cartesian products}
+We can write formation rules for well typed terms (WTT) using the
+following notation:
+\begin{itemize}
+\item x,y... (lower case) = variables
+\item A,B ... (upper case, beginning alphabet) = types
+\item M,N ... (upper case, middle alphabet) = metavariables for terms
+\end{itemize}
+Using this terminology the rules are:
+\begin{itemize}
+\item every variable x:A is a WTT.
+\item Function creation:
+if x:A is a variable and M:B is a WTT then \lambda x:A.M: A->B is a WTT
+\item Function application (distruction)
+if M:A -> B is a WTT and N:A is a WTT then M N: B is a WTT
+\item Product creation:
+if M:A is a WTT and N:B is a WTT then <M,N>: A \times B is a WTT
+\item Product removal (first component):
+if M:A \times B is a WTT then fst(M): A is a WTT
+\item Product removal (second component):
+if M:A \times B is a WTT then snd(M): B is a WTT
+\end{itemize}
+
+Now we will implement variables:
+
+First a common category for the various variable types:
+\section{category VARCAT VarCat}
+<<domain VARCAT VarCat>>=
+)abbrev category VARCAT VarCat
+++ Author: Martin Baker
+++ Date Created: April 2011
+++ Date Last Updated: September 2011
+++ Basic Operations:
+++ Related Constructors: lambda, ski
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/
+++ Description: VarCat represents a variable in Lambda and Ski domains.
+++ Since we are working in terms of functions then a variable will be a
+++ function (possibly a constant function)
+++ a variable has a name represented by a String. If the Lambda or Ski
+++ calculas is typed then the variable will also have a type.
+
+VarCat() : Category == Type with
+  var:(n:String) -> %
+    ++ constructs variable with a name but no type.
+  var:(n:String,t:ILogic) -> %
+    ++ constructs variable with a name and also a type.
+  getName:(v:%) -> String
+    ++ returns the name of the variable.
+  getType:(v:%) -> ILogic
+    ++ returns the type of the variable. This may be a compund type, for
+    ++ instance ["a","b"] represents a->b a function from type a to type b
+    ++ untyped implementations return []
+  toString:(v:%) -> String
+    ++ returns the name and the type in string form.
+  parseVar:(t1: String)-> %
+    ++ construct a variable by parsing a string
+  parseVarTerm:(t1: String,pin:NonNegativeInteger)-> Record(rft:%,pout:NonNegativeInteger)
+    ++ construct a variable by parsing a string
+    ++ pin is index to string at start of parse
+    ++ pout is index to string at end of parse
+  "=":(x:%, y:%) -> Boolean
+    ++ return true if equal, that is names are equal and if there is
+    ++ a type then tey mast also be equal
+  coerce: (n: %) -> OutputForm
+    ++ output
+@
+
+Next an implementation of the above category which is intended to work with
+untyped variables:
+
+\section{domain UNTYPED Untyped}
+<<domain UNTYPED Untyped>>=
+)abbrev domain UNTYPED Untyped
+++ Author: Martin Baker
+++ Date Created: April 2011
+++ Date Last Updated: September 2011
+++ Basic Operations:
+++ Related Constructors: lambda, ski
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/
+++ Description: Untyped represents an untyped variable in Lambda and Ski
+++ domains, a variable has a name represented by a String.
+
+Untyped() : Exports == Implementation where
+
+  NNI==> NonNegativeInteger
+  PR ==> Record(rft:%,pout:NNI)
+    ++ parse result includes string returned and new index
+
+  Exports ==> Join(VarCat(), CoercibleTo(OutputForm))
+
+  Implementation ==> Type add
+
+    Rep := Record(nme:String)
+      ++ At the moment an untyped variable is represented by a string
+      ++ representing the name of the variable.
+      ++ So why wrap it in a Record structue.
+      ++ The main reason is because I am planning to expand this as
+      ++ explained in the text part of this pamphlet.
+      ++ Also it seems like a good idea to keep a similar structure to
+      ++ typed variables.
+      ++ Also I could not get it to work unwrapped. I vaguely recall that
+      ++ I couldn't get the constructor to return an unwrapped value, but
+      ++ it may have been some other issue and that's not the main reason.
+
+    -- constructs variable with a name but no type
+    var(n:String):% ==
+      [n]
+
+    -- since this is an untyped implementation the type value
+    -- is ignored
+    var(n:String,t:ILogic):% ==
+      [n]
+
+    -- returns the name of the variable.
+    getName(v:%):String ==
+      v.nme
+
+    -- returns the type of the variable.
+    -- Since this is an untyped variable it will always return an
+    -- empty string.
+    getType(v:%):ILogic ==
+      logicT()
+
+    -- returns the name and the type in string form.
+    toString(v:%):String ==
+      v.nme
+
+    -- construct a variable by parsing a string
+    -- pin is index to string at start of parse
+    -- pout is index to string at end of parse
+    parseVarTerm(t1: String,pin:NNI):PR ==
+      vnm:String := ""
+      pt:NNI := pin
+      ch := qelt(t1,pt)
+      --sayTeX$Lisp concat("st ch=",ch::String)
+      while alphanumeric?(ch) repeat
+        vnm := concat(vnm,ch)
+        pt := pt + (1::NNI)
+        if pt > maxIndex(t1) then
+          return [var(vnm),pt]
+        ch := qelt(t1,pt)
+      if ch = char(":") then
+        -- read type
+        --sayTeX$Lisp concat("st ch=",ch::String)
+        r:Record(rft:ILogic,pout:NNI) := parseIL2(t1,pt)$ILogic
+        pt:= r.pout
+        -- since this instance is untyped we ignore result
+      [var(vnm),pt]
+
+    -- construct a variable by parsing a string
+    parseVar(t1: String):% ==
+      r:PR := parseVarTerm(t1,1::NNI)
+      r.rft
+
+    -- return true if equal, that is names are equal (since there are
+    -- no types that is all that is required) in the case of typed
+    -- implementations then they would also have to be equal.
+    x = y ==
+      x.nme = y.nme
+
+    -- output
+    coerce(n: %):OutputForm ==
+      toString(n)::OutputForm
+@
+
+Next an implementation of the VarCat category which is intended to work with
+typed variables:
+
+\section{domain TYPED Typed}
+<<domain TYPED Typed>>=
+)abbrev domain TYPED Typed
+++ Author: Martin Baker
+++ Date Created: April 2011
+++ Date Last Updated: September 2011
+++ Basic Operations:
+++ Related Constructors: lambda, ski
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/computation/
+++ Description: Typed represents an typed variable in Lambda and Ski
+++ domains, a variable has a name represented by a String and a type
+++ represented by intutionistic logic.
+
+Typed() : Exports == Implementation where
+
+  NNI==> NonNegativeInteger
+  PR ==> Record(rft:%,pout:NNI)
+    ++ parse result includes string returned and new index
+
+  Exports ==> Join(VarCat(), CoercibleTo(OutputForm))
+
+  Implementation ==> Type add
+
+    Rep := Record(nme:String,typ:ILogic)
+      ++ name of variable
+      ++ and type of variable
+
+    -- constructs variable with a name but no type
+    var(n:String):% ==
+      [n,logicT()]
+
+    -- in this constructor both name and type are supplied
+    var(n:String,t:ILogic):% ==
+      [n,t]
+
+    -- returns the name of the variable.
+    getName(v:%):String ==
+      v.nme
+
+    -- returns the type of the variable. This may be a compound type, for
+    -- instance ["a","b"] represents a->b a function from type a to type b
+    getType(v:%):ILogic ==
+      v.typ
+
+    -- returns the name and the type in string form. This may be a compound
+    -- type, for instance ["a","b"] represents a->b a function from type a
+    -- to type b
+    toString(v:%):String ==
+      s:String := concat([v.nme,":",toString(v.typ)])
+      s
+
+    -- construct a variable by parsing a string
+    -- pin is index to string at start of parse
+    -- pout is index to string at end of parse
+    parseVarTerm(t1: String,pin:NNI):PR ==
+      vnm:String := ""
+      pt:NNI := pin
+      ch := qelt(t1,pt)
+      --sayTeX$Lisp concat("st ch=",ch::String)
+      while alphanumeric?(ch) repeat
+        vnm := concat(vnm,ch)
+        pt := pt + (1::NNI)
+        if pt > maxIndex(t1) then
+          return [var(vnm),pt]
+        ch := qelt(t1,pt)
+      if ch = char(":") then
+        -- read type
+        --sayTeX$Lisp concat("st ch=",ch::String)
+        pt := pt + (1::NNI)
+        if pt > maxIndex(t1) then
+          return [var(vnm),pt]
+        r:Record(rft:ILogic,pout:NNI) := parseIL2(t1,pt)$ILogic
+        pt:= r.pout
+        return [var(vnm,r.rft),pt]
+      [var(vnm),pt]
+
+    -- construct a variable by parsing a string
+    parseVar(t1: String):% ==
+      r:PR := parseVarTerm(t1,1::NNI)
+      r.rft
+
+    -- return true if equal, that is names are equal (since there are
+    -- no types that is all that is required) in the case of typed
+    -- implementations then they would also have to be equal.
+    x = y ==
+      (x.nme = y.nme) and (x.typ = y.typ)
+
+    -- output
+    coerce(n: %):OutputForm ==
+      toString(n)::OutputForm
 @
 
 \section{lambda-Calculus}
@@ -1563,7 +1696,6 @@ Relationship to Other Domains
 lambda-calculus can be coerced to and from SKI combinators. For a tutorial
 about how to coerce to/from this algebra see below.
 
-
 \section{domain LAMBDA Lambda}
 <<domain LAMBDA Lambda>>=
 )abbrev domain LAMBDA Lambda
@@ -1691,7 +1823,7 @@ Lambda(UT): Exports == Implementation where
     ++    is not used.
     ++ 
     ++ 3) compoundTerm:Record(c1:%, c2:%)
-    ++   Adjacent nodes represent function composition
+    ++   Adjacent nodes represent function application
     ++ 
     ++ 4) lambdaTerm:Record(c3:%, nm:UT)
     ++    when used the outer term should be a lambdaTerm athough
@@ -1804,7 +1936,7 @@ Lambda(UT): Exports == Implementation where
     if p1 > maxIndex(t1) then
       error "lambda term not complete"
       return [[[0::NNI]],p1]
-    r := parseVar(t1,p1)$UT
+    r := parseVarTerm(t1,p1)$UT
     p1 := r.pout
     ch := qelt(t1,p1)
     --sayTeX$Lisp concat(["parseLambdaTerm'(",t1,",",string(p1),")"])$String
@@ -1882,7 +2014,7 @@ Lambda(UT): Exports == Implementation where
     res := r.rft
     p1 := r.pout
     if alphabetic?(ch) then
-      r2 := parseVar(t1,p1)$UT
+      r2 := parseVarTerm(t1,p1)$UT
       res := lambda(r2.rft)
       p1 := r2.pout
     -- now check for compound term
@@ -2387,7 +2519,7 @@ SKICombinators(UT): Exports == Implementation where
     ++     
     ++ 2) Record(c1:%, c2:%)
     ++     This represents a branch in the tree.  Adjacent nodes
-    ++     represent function composition.
+    ++     represent function application.
     ++ 
     ++ 3) UT
     ++     this represents a variable (function)
@@ -2467,7 +2599,7 @@ SKICombinators(UT): Exports == Implementation where
         --sayTeX$Lisp concat(["parseTerm(",t1,") 4 giving:",toString(res)])
       if lowerCase?(ch) then
         --sayTeX$Lisp concat(["parseTerm(",t1,") 4 giving:",toString(res)])
-        r2 := parseVar(t1,p1)$UT
+        r2 := parseVarTerm(t1,p1)$UT
         res := ski(r2.rft)
         p1 := r2.pout
     if ch = char("(") then
@@ -2858,7 +2990,7 @@ util coerce rule LS4' applied to: \x.x giving I
 
    (15)  "S(K(SI))(S(KK)I)"
                                               Type: SKICombinators(Untyped)
-
+\end{verbatim}
 \section{SKI combinators to Intuitionistic Logic}
 
 We can then create SKI combinators and convert them to intuitionistic
@@ -3294,11 +3426,11 @@ We can generate the source code for a FriCAS package from lambda
 expressions. To start we will create some typed variables and lambda
 terms to work with:
 \begin{verbatim}
-(1) -> vx := var("x",varTyp("String"))$Typed
+(1) -> vx := var("x",proposition("String"))$Typed
 
    (1)  "x:String"
                                                               Type: Typed
-(2) -> vy := var("y",varTyp("String"))$Typed
+(2) -> vy := var("y",proposition("String"))$Typed
 
    (2)  "y:String"
                                                               Type: Typed
@@ -3532,7 +3664,7 @@ compCode(): Exports == Implementation where
       var := getVariable(content)
       lhs:String := toString(var)
       lhsn:String := getName(var)
-      lhst:String := getName(getType(var))
+      lhst:String := toStringUnwrapped(getType(var))
       return [concat(["  fn",string(numb),"(",lhs,"):",lhst," == ",_
         genLambdaTerm(first getChildren(content),[lhsn])_
         ])$String]
@@ -3641,5 +3773,8 @@ http://www.euclideanspace.com/maths/standards/program/mycode/computation/codeGen
      This book shows the relationship between mathematical logic and category
      theory. Although this is not used in the current code, it suggests
      a promising generalisation.
+[11] Peter J. Denning, 2010
+http://dl.acm.org/citation.cfm?id=1880067&coll=portal&dl=ACM
+Discussion of "What is computing?"
 \end{thebibliography}
 \end{document}
