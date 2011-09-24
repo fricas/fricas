@@ -172,7 +172,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
   DIV ==> Record(num:R, den:UP, derivden:UP, gd:UP)
   U2  ==> Union(Record(ratpart:R, coeff:F),"failed")
   FAIL0 ==> error "integrate: implementation incomplete (constant residues)"
-  FAIL1==> error "integrate: implementation incomplete (non-algebraic residues)"
+  FAIL1==> error "integrate: implementation incomplete (irrational residues)"
   FAIL2 ==> error "integrate: implementation incomplete (residue poly has multiple non-linear factors)"
   FAIL3 ==> error "integrate: implementation incomplete (has polynomial part)"
   NOTI  ==> error "Not integrable (provided residues have no relations)"
@@ -216,9 +216,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
     R2UP       : (R, K) -> UPR
     alglogint  : (R, UP -> UP) -> Union(List LOG, "failed")
     palglogint : (R, UP -> UP) -> Union(List LOG, "failed")
-    trace00    : (DIV, UP, List LOG) -> Union(List LOG,"failed")
-    trace0     : (DIV, UP, Q, FD)    -> Union(List LOG, "failed")
-    trace1     : (DIV, UP, List Q, List FD, Q) -> Union(List LOG, "failed")
+    trace1     : (UP, List F, List FD, FD, F, F) -> Union(List LOG, "failed")
     nonQ       : (DIV, UP)           -> Union(List LOG, "failed")
     rlift      : (F, K, K) -> R
     varRoot?   : (UP, F -> F) -> Boolean
@@ -258,36 +256,200 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
                        mkAnswer(h.answer, empty(), [[h.logpart, dummy]])
       mkAnswer(h.answer, u::List(LOG), empty())
 
+    FAC2 ==> Record(factor : UP, exponent : Z)
+    PC ==> Record(factor : UP, exponent : Z, coeff : Q)
+    RR ==> Record(result1 : List(PC), result2 : List(FAC2))
+
+    find_multiples(f1 : FAC2, lp : List(FAC2)) : RR ==
+        p1 := f1.factor
+        res : List(PC) := [[p1, f1.exponent, 1]$PC]
+        rr : List(FAC2) := []
+        k := degree(p1)
+        cp1 : F
+        l : NonNegativeInteger
+        rp1 := reductum(p1)
+        while rp1 ~= 0 repeat
+            cp1 := leadingCoefficient(rp1)
+            l := degree(rp1) pretend NonNegativeInteger
+            if odd?(k - l) then break
+            rp1 := reductum(rp1)
+        n := (k - l) pretend NonNegativeInteger
+        for f in lp repeat
+            rr := cons(f, rr)
+            p := f.factor
+            degree(p) ~= k => "iterate"
+            cp := coefficient(p, l)
+            cp = 0 => "iterate"
+            fac := cp/cp1
+            facu := retractIfCan(fac)@Union(Fraction(Integer), "failed")
+            facu case "failed" => "iterate"
+            nfac := facu::Fraction(Integer)
+            nfac_ok := true
+            if n > 1 then
+                nnu := perfectNthRoot(numer(nfac), n)$IntegerRoots(Z)
+                nnu case "failed" => nfac_ok := false
+                ndu := perfectNthRoot(denom(nfac), n)$IntegerRoots(Z)
+                nnu case "failed" => nfac_ok := false
+                nfac := (nnu::Z)/(ndu::Z)
+            not(nfac_ok) => "iterate"
+            p1 ~= (nfac::F)^(-k)*elt(p, monomial(nfac::F, 1)$UP) => "iterate"
+            res := cons([p, f.exponent, nfac]$PC, res)
+            rr := rest(rr)
+        res := reverse!(res)
+        [res, rr]$RR
+
+    PC2 ==> Record(factor : UP, exponent : Z, coeff : Q,
+                   scalar : F, divisor : FD)
+    RR2 ==> Record(result1 : List(LOG), result2 : List(PC2),
+                   result3 : List(PC))
+
+    handle_multiples1(rec : DIV, lp : List(PC), cc : Z) : RR2 ==
+        nlp : List(PC2) := []
+        llg : List(LOG) := []
+        pc1 := first(lp)
+        p := pc1.factor
+        alpha := rootOf(UP2SUP p)
+        for peq in lp repeat
+            nfac := peq.coeff
+            na := nfac::F * alpha
+            di1 := divisor(rec.num, rec.den, rec.derivden, rec.gd, na)
+            di2 := divisor(rec.num, rec.den, rec.derivden, rec.gd, -na)
+            di := di1 - di2
+            (rc := torsionIfCan di) case "failed" =>
+                pc2 := [peq.factor, peq.exponent, peq.coeff,
+                        na/(cc::F), di]$PC2
+                nlp := cons(pc2, nlp)
+            nlog := mkLog(p, inv(cc*(rc.order::Q)), rc.function, na)
+            llg := concat(nlog, llg)
+        [llg, nlp, []]
+
+
+    handle_multiples(rec : DIV, lp : List(PC)) : RR2 ==
+        pc1 := first(lp)
+        p := pc1.factor
+        nlp : List(PC2) := []
+        llg : List(LOG) := []
+        p = elt(p, monomial(-1::F, 1)$UP) =>
+            -- even case
+            handle_multiples1(rec, lp, 2)
+        lp1 := [peq for peq in lp | peq.coeff >$Q 0$Q ]
+        #lp ~= 2*#lp1 => [[], [], lp]
+        for peq in lp1 repeat
+            nfac := peq.coeff
+            fu := find((x : PC) : Boolean +-> x.coeff = -nfac, lp)
+            fu case "failed" => return [[], [], lp]
+            ff := fu::PC
+            if ff.exponent ~= peq.exponent then return [[], [], lp]
+        handle_multiples1(rec, lp1, 1)
+
+    RR3 ==> Record(result1 : List(LOG), result2 : List(List(PC2)),
+                   result3 : List(List(PC)))
+
+    classify_divisors(rec : DIV, r : UP) : RR3 ==
+        u := ffactor primitivePart r
+        lf := factors(u)
+        lf2 := rest(lf)
+        lm : List(List(PC)) := []
+        while not(empty?(lf)) repeat
+            rp := find_multiples(first(lf), rest(lf))
+            lf := rp.result2
+            lm := cons(rp.result1, lm)
+        llg : List(LOG) := []
+        nlm1 : List(List(PC2)) := []
+        nlm2 : List(List(PC)) := []
+        for lp in lm repeat
+            rr2 := handle_multiples(rec, lp)
+            llg := concat(rr2.result1, llg)
+            if not(empty?(nlp1 := rr2.result2)) then 
+                nlm1 := cons(nlp1, nlm1)
+            if not(empty?(nlp2 := rr2.result3)) then
+                nlm2 := cons(nlp2, nlm2)
+        [llg, nlm1, nlm2]
+
+    get_lf(ll1 : List(List(PC2)), ll2 : List(List(PC))) : List(UP) ==
+        empty?(ll1) and empty?(ll2) => []
+        #ll1 +$Z #ll2 >$Z 1$Z => FAIL1
+        empty?(ll1) => [peq.factor for peq in first(ll2)]
+        [peq.factor for peq in first(ll1)]
+
+    get_la(ll1 : List(List(PC2)), ll2 : List(List(PC))) : List(F) ==
+        [-coefficient(lfac, 0) for lfac in get_lf(ll1, ll2)]
+
+    get_ld(rec : DIV, ll1 : List(List(PC2)), ll2 : List(List(PC))
+          ) : List(FD) ==
+        empty?(ll1) and empty?(ll2) => []
+        #ll1 +$Z #ll2 >$Z 1$Z => FAIL1
+        empty?(ll1) => [divisor(rec.num, rec.den, rec.derivden, rec.gd, a) for
+                         a in get_la(ll1, ll2)]
+        [peq.divisor for peq in first(ll1)]
+        
     -- checks whether f = +/[ci (ui)'/(ui)]
     -- f dx must have no pole at infinity
     palglogint(f, derivation) ==
-      rec := algSplitSimple(f, derivation)
-      ground?(r := doubleResultant(f, derivation)) => "failed"
--- r(z) has roots which are the residues of f at all its poles
-      (u  := qfactor r) case "failed" => nonQ(rec, r)
-      (fc := nonLinear(lf := factors(u::FRQ))) case "failed" => FAIL2
--- at this point r(z) = fc(z) (z - b1)^e1 .. (z - bk)^ek
--- where the ri's are rational numbers, and fc(z) is arbitrary
--- (fc can be linear too)
--- la = [b1....,bk]  (all rational residues)
-      la := [-$Q coefficient(q.factor, 0)$UPQ for q in remove!(fc::FAC, lf)]
--- ld = [D1,...,Dk] where Di is the sum of places where f has residue bi
-      ld  := [divisor(rec.num, rec.den, rec.derivden, rec.gd, b::F) for b in la]
-      pp  := UPQ2F(fc.factor)
--- bb = - sum of all the roots of fc (i.e. the other residues)
-      zero?(bb := coefficient(fc.factor,
-           (degree(fc.factor) - 1)::NonNegativeInteger)$UPQ) =>
-              -- cd = [[a1,...,ak], d]  such that bi = ai/d
-              cd  := splitDenominator la
-              -- g = gcd(a1,...,ak), so bi = (g/d) ci  with ci = bi / g
-              -- so [g/d] is a basis for [a1,...,ak] over the integers
-              g   := gcd(cd.num)
-              -- dv0 is the divisor +/[ci Di] corresponding to all the residues
-              -- of f except the ones which are root of fc(z)
-              dv0 := +/[(a quo g) * dv for a in cd.num for dv in ld]
-              trace0(rec, pp, g / cd.den, dv0)
-      trace1(rec, pp, la, ld, bb)
-
+        rec := algSplitSimple(f, derivation)
+        -- r(z) has roots which are the residues of f at all its poles
+        ground?(r := doubleResultant(f, derivation)) => "failed"
+        ppr := classify_divisors(rec, r)
+        nfacs1 := ppr.result2
+        nfacs2 := ppr.result3
+        empty?(nfacs1) and empty?(nfacs2) => ppr.result1
+        -- We have to look at Q-linear relations between residues.
+        -- Below we handle a few easy cases.
+        nlins1 := [nfl for nfl in nfacs1 | degree(first(nfl).factor) >$Z 1]
+        nlins2 := [nfl for nfl in nfacs2 | degree(first(nfl).factor) > 1]
+        #nlins1 + #nlins2 > 1 => FAIL2
+        lins1 := [nfl for nfl in nfacs1 | degree(first(nfl).factor) = 1]
+        lins2 := [nfl for nfl in nfacs2 | degree(first(nfl).factor) = 1]
+        fcf : UP
+        #nfacs1 > 0 and #nlins2 = 0 =>
+            fc1 : PC2
+            if #nlins1 = 1 then
+                nfl1 := first(nlins1)
+                not(empty?(rest(nfl1))) => FAIL2
+                fc1 := first(nfl1)
+                fcf := fc1.factor
+            else
+                #lins1 > 1 => FAIL1
+                nfl1 := first(lins1)
+                empty?(rest(nfl1)) => FAIL1
+                fc1 := first(nfl1)
+                fcf := fc1.factor
+                lins1 := [rest(nfl1)]
+            zero?(bb := coefficient(fcf,
+              (degree(fcf) - 1)::NonNegativeInteger)) =>
+                fcf = elt(fcf, monomial(-1::F, 1)$UP) =>
+                    degree(fcf) = 2 => "failed"
+                    empty?(nfacs2) and #nfacs1 = 1 and degree(fcf) = 4 =>
+                        "failed"
+                    NOTI
+                NOTI
+            la := get_la(lins1, lins2)
+            ld := get_ld(rec, lins1, lins2)
+            tr1u := trace1(fcf, la, ld, fc1.divisor, fc1.scalar, bb)
+            tr1u case "failed" => "failed"
+            concat(ppr.result1, tr1u::List(LOG))
+        #lins1 + #lins2 > 1 => FAIL1
+        fc2 : PC
+        if #nlins2 = 1 then
+            nfl2 := first(nlins2)
+            not(empty?(rest(nfl2))) => FAIL2
+            fc2 := first(nfl2)
+        else
+            #lins2 > 1 => FAIL1
+            nfl2 := first(lins2)
+            fc2 := first(nfl2)
+            lins2 := [rest(nfl2)]
+        fcf := fc2.factor
+        zero?(bb := coefficient(fcf,
+            (degree(fcf) - 1)::NonNegativeInteger)) => error "impossible"
+        la := get_la(lins1, lins2)
+        ld := get_ld(rec, lins1, lins2)
+        alpha := rootOf UP2SUP fcf
+        -- v is the divisor corresponding to all the residues
+        v1 := divisor(rec.num, rec.den, rec.derivden, rec.gd, alpha)
+        tr1u := trace1(fcf, la, ld, v1, alpha, bb)
+        tr1u case "failed" => "failed"
+        concat(ppr.result1, tr1u::List(LOG))
 
     UPQ2F p ==
       map((x:Q):F+->x::F, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,F,UP)
@@ -340,61 +502,36 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       reduce map(x1+->univ(x1, kx), retract(uf)@SUP
                 )$UnivariatePolynomialCategoryFunctions2(F,SUP,QF,UPUP)
 
-    nonQ(rec, p) ==
-      u := ffactor primitivePart p
-      lf := factors(u)
-      empty? rest(lf) =>
-                       trace00(rec, first(lf).factor, empty()$List(LOG))
-      FAIL1
 
--- case when the irreducible factor p has roots which sum to 0
--- p is assumed doubly transitive for now
-    trace0(rec, q, r, dv0) ==
-      lg:List(LOG) :=
-        zero? dv0 => empty()
-        (rc0 := torsionIfCan dv0) case "failed" => NOTI
-        mkLog(1, r / (rc0.order::Q), rc0.function, 1)
-      trace00(rec, q, lg)
+    -- case when the irreducible factor p has roots which sum <> 0
+    -- the residues of f are of the form [a1,...,ak]
+    -- plus all the roots of q(z), which is squarefree
+    -- la is the list of residues la := [a1,...,ak]
+    -- ld is the list of divisors [D1,...Dk] where Di is the sum of all the
+    -- places where f has residue ai
+    -- q(z) is assumed doubly transitive for now.
+    -- let [alpha_1,...,alpha_m] be the roots of q(z)
+    -- in this function, b = - alpha_1 - ... - alpha_m is <> 0
+    -- which implies only one generic log term
+    -- we assume that [a1,...,ak] are b times rational numbers
 
-    trace00(rec, pp, lg) ==
-      p0 := divisor(rec.num, rec.den, rec.derivden, rec.gd,
-                    alpha0 := zeroOf UP2SUP pp)
-      q  := (pp exquo (monomial(1, 1)$UP - alpha0::UP))::UP
-      alpha := rootOf UP2SUP q
-      dvr := divisor(rec.num, rec.den, rec.derivden, rec.gd, alpha) - p0
-      (rc := torsionIfCan dvr) case "failed" =>
-        degree(pp) <= 2 => "failed"
-        NOTI
-      concat(lg, mkLog(q, inv(rc.order::Q), rc.function, alpha))
-
--- case when the irreducible factor p has roots which sum <> 0
--- the residues of f are of the form [a1,...,ak] rational numbers
--- plus all the roots of q(z), which is squarefree
--- la is the list of residues la := [a1,...,ak]
--- ld is the list of divisors [D1,...Dk] where Di is the sum of all the
--- places where f has residue ai
--- q(z) is assumed doubly transitive for now.
--- let [alpha_1,...,alpha_m] be the roots of q(z)
--- in this function, b = - alpha_1 - ... - alpha_m is <> 0
--- which implies only one generic log term
-    trace1(rec, q, la, ld, b) ==
--- cd = [[b1,...,bk], d]  such that ai / b = bi / d
-      cd  := splitDenominator [a / b for a in la]
--- then, a basis for all the residues of f over the integers is
--- [beta_1 = - alpha_1 / d,..., beta_m = - alpha_m / d], since:
---      alpha_i = - d beta_i
---      ai = (ai / b) * b = (bi / d) * b = b1 * beta_1 + ... + bm * beta_m
--- linear independence is a consequence of the doubly transitive assumption
--- v0 is the divisor +/[bi Di] corresponding to the residues [a1,...,ak]
-      v0 := +/[a * dv for a in cd.num for dv in ld]
--- alpha is a generic root of q(z)
-      alpha := rootOf UP2SUP q
--- v is the divisor corresponding to all the residues
-      v := v0 - cd.den * divisor(rec.num, rec.den, rec.derivden, rec.gd, alpha)
-      (rc := torsionIfCan v) case "failed" =>   -- non-torsion case
-        degree(q) <= 2 => "failed"       -- guaranteed doubly-transitive
-        NOTI                             -- maybe doubly-transitive
-      mkLog(q, inv((- rc.order * cd.den)::Q), rc.function, alpha)
+    trace1(q, la, ld, v1, alpha, b) ==
+        -- cd = [[b1,...,bk], d]  such that ai / b = bi / d
+        cd  := splitDenominator [retract(a/b)@Q for a in la]
+        -- then, a basis for all the residues of f over the integers is
+        -- [beta_1 = - alpha_1 / d,..., beta_m = - alpha_m / d], since:
+        --     alpha_i = - d beta_i
+        --     ai = (ai / b)*b = (bi / d)*b = b1*beta_1 + ... + bm*beta_m
+        -- linear independence is a consequence of the doubly transitive
+        -- assumption
+        -- v0 is the divisor +/[bi Di] corresponding to the residues
+        -- [a1,...,ak]
+        v0 := +/[a * dv for a in cd.num for dv in ld]
+        v2 := v0 - cd.den * v1
+        (rc := torsionIfCan v2) case "failed" =>   -- non-torsion case
+            degree(q) <= 2 => "failed"       -- guaranteed doubly-transitive
+            NOTI                             -- maybe doubly-transitive
+        mkLog(q, inv((- rc.order * cd.den)::Q), rc.function, alpha)
 
     mkLog(q, scalr, lgd, alpha) ==
       degree(q) <=$Integer 1 =>
