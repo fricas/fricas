@@ -21,7 +21,7 @@ testsuite "distro"
 
 expected() ==
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
-    messagePrint("distro                      0     (5)               0    (31)")$OutputForm
+    messagePrint("distro                      0     (5)               0    (34)")$OutputForm
     
 statistics()
 expected()
@@ -38,6 +38,9 @@ ss3:=2*ss
 ss4:=ss*2
 testEquals("firstn(ss2,10)", "firstn(ss3,10)")
 testEquals("firstn(ss3,10)", "firstn(ss4,10)")
+ss2a:=map(x+-> 1/x, ss2)$SequenceFunctions2(Integer, Fraction Integer) --$
+ss2b:Sequence Fraction Integer := sequence repeating [1/2]
+testEquals("firstn(ss2a,10)", "firstn(ss2b,10)")
 @ %
 
 \subsection{PathArrayPackage}
@@ -108,6 +111,11 @@ testEquals("firstn(freecumulant2moment sfc, 10)", "smm")
 shd:=[hankelDeterminant(freecumulant2moment sfc, k) for k in 1..10]
 testEquals("removeDuplicates shd", "[1]")
 
+-- coercion
+w1:Distribution Integer:= wignerDistribution 1
+w2:Distribution Expression Integer:= wignerDistribution 1
+w2a:= w1::Distribution Expression Integer
+testEquals("firstn(moments w2, 10)","firstn(moments w2a, 10)")
 -- jacobi parameters of semicircle
 sfc1:Sequence Fraction Integer:= sequence concat([0,1], repeating [0])
 smm1:=freecumulant2moment sfc1
@@ -224,7 +232,7 @@ testEquals("firstn(moments fp1, 10)", "firstn(moments fp2a, 10)")
 -- J continued fraction
 R:= Fraction Integer
 macro jcf1(x,z) ==
-    JContinuedFraction(x,z)$DistributionPolynomialPackage(R, R, z)
+    JContinuedFraction(x,z)$DistributionContinuedFractionPackage(R, z)
 
 sem1:Distribution R:= wignerDistribution 1
 j1:=jcf1(sem1, z)
@@ -233,13 +241,20 @@ j1c5a:Fraction UP(z,Fraction Integer):= (z^3-2*z)/(z^4-3*z^2+1)
 testEquals("j1c5", "j1c5a")
 
 macro jcf2(x,z) ==
-    JContinuedFraction(x,z)$DistributionPolynomialPackage(Integer, Fraction Integer, z)
+    JContinuedFraction(x,z)$DistributionContinuedFractionPackage(Integer, z)
 
 sem2:Distribution Integer:= wignerDistribution 1
 j2:=jcf2(sem2, z)
 j2c5:=(convergents j2) 5
 j2c5a:Fraction UP(z,Fraction Integer):= (z^3-2*z)/(z^4-3*z^2+1)
 testEquals("j2c5", "j2c5a")
+
+-- Orthogonal polynomials
+mm:= [m[k] for k in 1..];
+mu:= distributionByMoments mm;
+op:= orthogonalPolynomials mu;
+intp34:= integrate(op 2*op 3, mu)
+testTrue("zero? intp34")
 @ %
 
 
