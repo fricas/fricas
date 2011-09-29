@@ -1352,30 +1352,22 @@ DistributionFunctions2(R1:CommutativeRing, R2:CommutativeRing):Exports == Implem
   SR2 ==> Sequence R2
   SFR1R2 ==> SequenceFunctions2(R1, R2)
   Exports ==> with
-@ %
-<<DistributionFunctions2 notworking>>=
     mapall:(R1 -> R2, Distribution R1) -> Distribution R2
       ++ \spad{map(f,x)} maps the moments and cumulants
       ++ from the ring R1 to R2.
     coerce:Distribution R1 -> Distribution R2
       ++ \spad{coerce(x)} coerces the moments and cumulants
       ++ from the ring R1 to R2.
-@ %
-<<package DISTRO2 DistributionFunctions2>>=
-    map:(R1 -> R2, Distribution R1) -> Distribution R2
-      ++ \spad{map(f,x)} maps the moments and cumulants
-      ++ from the ring R1 to R2.
+    R1_to_R2_coercion : R1 -> R2
+      ++ R1_to_R2_coercion should be local but conditional
   Implementation ==> add
-@ %
-<<DistributionFunctions2 notworking>>=
+
     mapall(f:R1 -> R2, x:DR1):DR2 == 
         mom2:SR2:= map(f, moments x)$SFR1R2
         cum2:SR2:= map(f, classicalCumulants(x))$SFR1R2
         fcum2:SR2:= map(f, freeCumulants x)$SFR1R2
         bcum2:SR2:= map(f, booleanCumulants x)$SFR1R2
         construct(mom2, cum2, fcum2, bcum2)$DR2
-
-    R1_to_R2_coercion : R1 -> R2
 
     if R2 has coerce : R1 -> R2 then
         R1_to_R2_coercion(x : R1) : R2 == coerce(x)$R2
@@ -1387,15 +1379,6 @@ DistributionFunctions2(R1:CommutativeRing, R2:CommutativeRing):Exports == Implem
     coerce(x:Distribution R1):Distribution R2 ==
         mapall(R1_to_R2_coercion, x)
 @ 
-<<package DISTRO2 DistributionFunctions2>>=
-    map(f:R1 -> R2, x:DR1):DR2 == 
-        mom2:SR2:= map(f, moments x)$SFR1R2
-        cum2:SR2:= map(f, classicalCumulants(x))$SFR1R2
-        fcum2:SR2:= map(f, freeCumulants x)$SFR1R2
-        bcum2:SR2:= map(f, booleanCumulants x)$SFR1R2
-        construct(mom2, cum2, fcum2, bcum2)$DR2
-	
-@ %
 
 \section{package DISTEX DistributionPackage}
 <<package DISTEX DistributionPackage>>=
