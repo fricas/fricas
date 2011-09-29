@@ -358,6 +358,8 @@ MomentPackage(R:CommutativeRing):Exports == Implementation where
   STRREC ==> Record(puiseux:Fraction Integer, laurent:Fraction Integer, coef:Sequence R)
   SUPR ==> SparseUnivariatePolynomial R  
   SUPRpq ==> Record(first:SUPR, second:SUPR)
+  RECSRM ==> Record(momt:List SUPR, cum:List R, mom:Stream R)
+  
   Exports ==> with
     <<MomentPackage declarations>>
   Implementation ==> add
@@ -387,10 +389,6 @@ freecumulant2moment:Sequence R -> Sequence R
 moment2freecumulant:Sequence R -> Sequence R
   ++ \spad{moment2freecumulant(mm)} computes the sequence of free cumulants 
   ++ the sequence of moments mm
-if R has Algebra Fraction Integer then     
-  moment2Stransform:Sequence R -> STRREC
-    ++ \spad{moment2Stransform(x)} returns the Puiseux and Laurent order
-    ++ and coefficients of the S transform of x
 booleancumulant2moment:Sequence R -> Sequence R
   ++ \spad{booleancumulant2moment(cc)} computes the sequence of moments 
   ++ from the sequence of boolean cumulants cc
@@ -407,6 +405,15 @@ jacobi2poly:(Stream R, Stream R) -> Stream SUPR
   ++ \spad{jacobi2poly(aa, bb)} returns the stream
   ++ of orthogonal polynomials corresponding to the
   ++ Jacobi parameters \spad{a_n} and \spad{b_n}.
+
+if R has Algebra Fraction Integer then
+
+  moment2Stransform:Sequence R -> STRREC
+    ++ \spad{moment2Stransform(x)} returns the Puiseux and Laurent order
+    ++ and coefficients of the S transform of x
+  moment2monotonecumulant:Sequence R -> Sequence R
+    ++ \spad{moment2monotonecumulant(x)} returns the sequence
+    ++ of monotone cumulants of the moment sequence x
 @
 \subsection{MomentPackage Classical cumulants}
 Moments and cumulants are related via their exponential generating functions
@@ -637,10 +644,11 @@ then $\tilde{\psi}$ has a compositional inverse $\tilde{\chi}(z)$, i.e.,
 $\tilde{\psi}(\tilde{\chi}(z))=z$ and this means that
 $\psi(\tilde{\chi}(z)) = z^2$, therefore $\tilde{\chi}(z) = \chi(z^2)$.
 
-For the S-transform we need Puiseux series and therefore
+For the S-transform and monotone cumulants we need Puiseux series and therefore
 the ring underlies restrictions.
 <<MomentPackage implementation>>=
-if R has Algebra Fraction Integer then     
+if R has Algebra Fraction Integer then
+
   moment2Stransform(x:Sequence R):STRREC ==
       mom:= stream x
       if zero? first mom then
@@ -661,6 +669,61 @@ if R has Algebra Fraction Integer then
           S:Sequence R:= sequence chi + sequence rest chi
           [1, 0, S]$STRREC
 
+@ 
+\subsection{Monotone cumulants}
+The monotone cumulants were defined by Hasebe
+and are determined by the infinite system of differential equations
+\begin{align*}
+  m_n(0) &=0\\
+  \frac{d m_n(t)}{dt} 
+  &= \sum_{k=1}^n kr_{n-k+1} m_{k-1}(t)\\
+  &= r_n + \sum_{k=2}^n kr_{n-k+1} m_{k-1}(t)
+\end{align*}
+for $n\geq 1$, where $m_0(t) = 1$.
+They can be computed inductively as follows.
+Given $r_k$ and the polynomials $m_k(t)$ for $k\leq n-1$,
+we integrate the equation on the interval $[0,1]$ and obtain
+$$
+r_n = m_n-1 - \int_0^1 \sum_{k=2}^n kr_{n-k+1} m_{k-1}(t)
+$$
+and then
+$$
+m_n(t) = t r_n + \int_0^1 \sum_{k=2}^n kr_{n-k+1} m_{k-1}(t)
+.
+$$
+To do this, we keep the information in a record
+storing the moment polynomials, cumulants, and remaining
+moments. The function \spad{moment2monotonecumulantgenerator}
+then implements the two steps above.
+
+<<MomentPackage implementation>>=
+-- monotone cumulants
+  t:= monomial(1,1)$SUPR
+  moment2monotonecumulantgenerator(srm:RECSRM):RECSRM == 
+      -- mt = all m_k(t) computed so far in reverse order
+      mt:List SUPR:= srm.momt
+      -- rr = all cumulants computed so far in reverse order
+      rr:List R:= srm.cum
+      -- mm = remaining moments
+      mm:Stream R:= srm.mom
+      n:Integer:= #rr + 1
+      tmp:SUPR:= 0
+      for k in 2..n for r in rr for m in reverse mt repeat
+          tmp:= tmp + k*m*r
+      mnt:SUPR := integrate tmp
+      rn:R := first mm - mnt 1
+      mnt:= mnt + t*rn
+      rrnew:List R:= cons(rn, rr)
+      mtnew:List SUPR:= cons(mnt, mt)
+      return [mtnew, rrnew, rest mm]
+
+  moment2monotonecumulant(mm:Sequence R):Sequence R ==
+      m1t:SUPR := monomial(first mm, 1)$SUPR
+      r1:=first mm
+      mtr1:RECSRM := [[m1t], [r1], rest stream mm]$RECSRM
+      res:Stream RECSRM := generate(moment2monotonecumulantgenerator, mtr1)
+      res1: Stream R:= map( (s:RECSRM):R +-> first (s.cum), res)$StreamFunctions2(RECSRM, R)
+      sequence res1
 @ %
 
 \section{category DISTCAT DistributionCategory}
@@ -820,6 +883,9 @@ Distribution(R:CommutativeRing):Exports == Implementation where
       ++ The user must make sure that these are consistent,
       ++ otherwise the results are unpredictable!
     if R has Algebra Fraction Integer then
+      monotoneCumulants:% -> Sequence R
+        ++ \spad{monotoneCumulants(x)} returns the sequence of
+        ++ monotone cumulants of the distribution \spad{x}.
       distributionBySTransform:STRREC -> %
         ++ \spad{distributionBySTransform(series)} initiates a distribution with
         ++ given S-transform \spad{series}.
@@ -898,6 +964,9 @@ Distribution(R:CommutativeRing):Exports == Implementation where
         per([mom, ccum, fcum, bcum]$Rep)
         
     if R has Algebra Fraction Integer then
+      monotoneCumulants(x:%):Sequence R ==
+          moment2monotonecumulant(moments x)$(MomentPackage R)
+      
       distributionBySTransform(puiseux:Fraction Integer, _
         laurent:Fraction Integer, coef:Sequence R):% ==
           psi:Stream R
@@ -1356,12 +1425,11 @@ DistributionFunctions2(R1:CommutativeRing, R2:CommutativeRing):Exports == Implem
       ++ \spad{map(f,x)} maps the moments and cumulants
       ++ from the ring R1 to R2.
     coerce:Distribution R1 -> Distribution R2
-      ++ \spad{coerce(x)} coerces the moments and cumulants
+      ++ \spad{coerce(x)} coerces a distribution
       ++ from the ring R1 to R2.
     R1_to_R2_coercion : R1 -> R2
       ++ R1_to_R2_coercion should be local but conditional
   Implementation ==> add
-
     mapall(f:R1 -> R2, x:DR1):DR2 == 
         mom2:SR2:= map(f, moments x)$SFR1R2
         cum2:SR2:= map(f, classicalCumulants(x))$SFR1R2
@@ -1378,7 +1446,7 @@ DistributionFunctions2(R1:CommutativeRing, R2:CommutativeRing):Exports == Implem
 
     coerce(x:Distribution R1):Distribution R2 ==
         mapall(R1_to_R2_coercion, x)
-@ 
+@ %
 
 \section{package DISTEX DistributionPackage}
 <<package DISTEX DistributionPackage>>=
@@ -1414,6 +1482,10 @@ DistributionPackage(R:CommutativeRing):Exports == Implementation where
     bernoulliDistribution01:R -> DR
       ++ \spad{bernoulliDistribution01(a)} produces
       ++ the distribution of a projection of trace a
+    if R has Algebra Fraction Integer then
+      arcsineDistribution:R -> DR
+        ++ \spad{arcsineDistribution(a)} produces
+        ++ the arcsine distribution of variance \spad{a}.
 
   Implementation ==> add
     gaussianDistribution(a:R):DR ==
@@ -1435,6 +1507,18 @@ DistributionPackage(R:CommutativeRing):Exports == Implementation where
     bernoulliDistribution01(a:R):DR ==
         mom:Stream R:= repeating [a]
         distributionByMoments sequence mom
+
+    if R has Algebra Fraction Integer then        
+      STTR ==> StreamTaylorSeriesOperations R
+
+      arcsineDistribution(a:R):DR ==
+          -- mgf is 1/sqrt(1-2x^2)
+          mgf:Stream R:= cons(-2::R*a^2,repeating [0])
+          mgf:= cons(0, mgf)
+          half:Fraction Integer:= 1/ (2::Integer)
+          mgf:= powern(half, cons(1,mgf))$STTR
+          mgf:= (recip(mgf)$STTR)::Stream R
+          distributionByMoments sequence rest mgf
 @ %
 
 
@@ -1453,8 +1537,4 @@ DistributionPackage(R:CommutativeRing):Exports == Implementation where
 <<package DISTRO2 DistributionFunctions2>>
 <<package DISTEX DistributionPackage>>
 @ %
-<<todo>>=
-@ %
 \end{document}
-
-
