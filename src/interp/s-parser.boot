@@ -436,13 +436,6 @@ parse_Enclosure() ==
                AND(parse_Expr 6, MUST match_symbol ")"), -- (
                AND(match_symbol ")",
                    push_form0("@Tuple")))
-    match_symbol "{" =>
-           BREAK()
-           MUST OR(
-              AND(parse_Expr 6, MUST match_symbol "}",
-                  push_form1("brace", ["construct", pop_stack_1()])),
-              AND(match_symbol "}",
-                  push_form0("brace")))
     nil
 
 parse_IntegerTok() == parse_NUMBER()
