@@ -34,6 +34,14 @@
 recordSignatureDocumentation(opSig,lineno) ==
   recordDocumentation(rest postTransform opSig,lineno)
 
+getSignatureDocumentation(lineno) ==
+    $docList : local := nil
+    recordDocumentation("Signature", lineno)
+    rest first $docList
+
+record_on_docList(key, item) ==
+    $docList := [[key, :item], :$docList]
+
 recordAttributeDocumentation(['Attribute,att],lineno) ==
   name := opOf att
   UPPER_-CASE_-P (PNAME name).0 => nil

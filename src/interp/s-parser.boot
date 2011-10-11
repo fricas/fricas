@@ -189,8 +189,8 @@ parse_Category() ==
     MUST
         OR(
               AND(match_symbol ":", MUST parse_Expression(),
-                  push_form2("Signature", pop_stack_2(), pop_stack_1()),
-                  ACTION recordSignatureDocumentation(NTH_-STACK 1, G1)),
+                  push_form3("Signature", pop_stack_2(), pop_stack_1(),
+                             getSignatureDocumentation(G1))),
               AND(push_form1("Attribute", pop_stack_1()),
                   ACTION recordAttributeDocumentation(NTH_-STACK 1, G1)))
 
