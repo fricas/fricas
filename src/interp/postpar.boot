@@ -362,11 +362,16 @@ postSemiColon u == postBlock ['Block,:postFlattenLeft(u,";")]
 
 postSequence ['Sequence,:l] == ['(elt $ makeRecord),:postTranList l]
 
-postSignature ['Signature,op,sig] ==
+postSignature1(op, sig) ==
   sig is ["->",:.] =>
     sig1:= postType sig
     op:= postAtom (STRINGP op => INTERN op; op)
     ["SIGNATURE",op,:removeSuperfluousMapping killColons postDoubleSharp sig1]
+
+postSignature ['Signature, op, sig, doc] ==
+    res1 := postSignature1(op, sig)
+    if res1 then record_on_docList(rest res1, doc)
+    res1
 
 postDoubleSharp sig ==
   sig is [['Mapping,target,:r]] =>

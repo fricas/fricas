@@ -562,9 +562,9 @@ modemap2Sig(op,mm) ==
   subcondlist := SUBLISLIS(flist, vlist, condlist)
   [predList,vlist, flist] := getSigSubst(subcondlist, nil, vlist, flist)
   if partial? then
-    target := dcSig . 1
-    ntarget := ['Union, target, '"failed"]
-    dcSig := substitute(ntarget, target, dcSig)
+      target := sig.0
+      ntarget := ['Union, target, '"failed"]
+      sig := substitute(ntarget, target, sig)
   alist := findSubstitutionOrder? pairlis(vlist, flist) or systemError()
   predList := substInOrder(alist, predList)
   nsig := substInOrder(alist, sig)
