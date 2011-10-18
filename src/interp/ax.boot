@@ -60,7 +60,7 @@ makeAxExportForm(filename, constructors) ==
   axForms :=
      [modemapToAx(modemap) for cname in constructors |
             (modemap:=GETDATABASE(cname,'CONSTRUCTORMODEMAP)) and
-              (not cname in '(Tuple Exit Type)) and
+              (not (cname in '(Tuple Exit Type))) and
                 not isDefaultPackageName cname]
   if $baseForms then
      axForms := [:$baseForms, :axForms]
