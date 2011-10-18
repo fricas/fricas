@@ -61,6 +61,28 @@
 (defmacro QV32LEN(v)
     `(length (the (simple-array (unsigned-byte 32) (*)) ,v)))
 
+;;; Matrix operations
+
+(defmacro MAKE-U32-MATRIX (n m)
+   `(make-array (list ,n ,m) :element-type '(unsigned-byte 32)))
+
+(defmacro MAKE-U32-MATRIX1 (n m s)
+   `(make-array (list ,n ,m) :element-type '(unsigned-byte 32)
+           :initial-element ,s))
+
+(defmacro U32AREF2(v i j)
+   `(aref (the (simple-array (unsigned-byte 32) (* *)) ,v) ,i ,j))
+
+(defmacro U32SETAREF2(v i j s)
+   `(setf (aref (the (simple-array (unsigned-byte 32) (* *)) ,v) ,i ,j)
+          ,s))
+
+(defmacro U32ANROWS(v)
+    `(array-dimension (the (simple-array (unsigned-byte 32) (* *)) ,v) 0))
+
+(defmacro U32ANCOLS(v)
+    `(array-dimension (the (simple-array (unsigned-byte 32) (* *)) ,v) 1))
+
 ;;; Modular arithmetic
 
 (deftype machine-int () '(unsigned-byte 64))
