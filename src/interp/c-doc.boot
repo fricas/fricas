@@ -750,7 +750,7 @@ checkDecorate u ==
       xcount = 2 and x.1 = char 'i or              --wrap ei, xi, hi
         null spadflag and xcount > 0 and xcount < 4 and not member(x,'("th" "rd" "st")) and
           hasNoVowels x =>                         --wrap words with no vowels
-            [$charRbrace,x,$charLbrace,'"\spad",:acc]
+            [$charRbrace, checkAddBackSlashes x, $charLbrace, '"\spad", :acc]
       [checkAddBackSlashes x,:acc]
     u := rest u
   NREVERSE acc
@@ -767,7 +767,7 @@ isVowel c ==
 
 checkAddBackSlashes s ==
   (CHARP s and (c := s)) or (#s = 1 and (c := s.0)) =>
-    MEMQ(s,$charEscapeList) => STRCONC($charBack,c)
+    MEMQ(c, $charEscapeList) => STRCONC($charBack, c)
     s
   k := 0
   m := MAXINDEX s
