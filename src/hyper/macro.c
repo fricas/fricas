@@ -344,9 +344,20 @@ get_parameter_strings(int number,char * macro_name)
                         c = get_char();
                     }
                     unget_char(c);
+                    if (pc == 0) {
+                        fprintf(stderr, "No number after parameter marker\n");
+                        jump();
+                    }
                     pnum_chars[pc] = '\0';
                     pnum = atoi(pnum_chars);
                     pc = 0;
+                    if (pnum > parameters->number || pnum == 0) {
+                        /** had a bad parameter number **/
+                        fprintf(stderr,
+                            "Parse_parameter: Had a bad parameter number %d\n",
+                            pnum);
+                        jump();
+                    }
                     /* Now copy the paramter */
                     while ((parameters->list)[pnum - 1][pc] != '\0')
                         *buffer_pntr++ = (parameters->list)[pnum - 1][pc++];
