@@ -167,16 +167,16 @@ PolynomialIdeal(F,Expon,VarSet,DPoly) : C == T
 
      npoly(f:DPoly) : newPoly ==
        f=0$DPoly => 0$newPoly
-       monomial(leadingCoefficient f,makeprod(0,degree f))$newPoly +
+       monomial(leadingCoefficient f, [0, degree f])$newPoly +
              npoly(reductum f)
 
      oldpoly(q:newPoly) : Union(DPoly,"failed") ==
        q=0$newPoly => 0$DPoly
        dq:newExpon:=degree q
-       n:NNI:=selectfirst (dq)
+       n : NNI := first(dq)
        n ~= 0 => "failed"
        ((g:=oldpoly reductum q) case "failed") => "failed"
-       monomial(leadingCoefficient q,selectsecond dq)$DPoly + (g::DPoly)
+       monomial(leadingCoefficient q, second(dq))$DPoly + (g::DPoly)
 
      leadterm(f:DPoly,lvar:List VarSet) : DPoly ==
        empty?(lf:=variables f)  or lf=lvar => f
@@ -252,7 +252,7 @@ PolynomialIdeal(F,Expon,VarSet,DPoly) : C == T
      intersect(I:Ideal,J:Ideal) : Ideal ==
        empty?(Id:=I.idl) => I
        empty?(Jd:=J.idl) => J
-       tp:newPoly := monomial(1,makeprod(1,0$Expon))$newPoly
+       tp:newPoly := monomial(1, [1, 0$Expon])$newPoly
        tp1:newPoly:= tp-1
        contractGrob(concat([tp*npoly f for f in Id],
                      [tp1*npoly f for f in Jd]))
@@ -291,7 +291,7 @@ PolynomialIdeal(F,Expon,VarSet,DPoly) : C == T
        ----  saturation with respect to the multiplicative set f^n ----
      saturate(I:Ideal,f:DPoly) : Ideal ==
        f=0 => error "f is zero"
-       tp:newPoly := (monomial(1,makeprod(1,0$Expon))$newPoly * npoly f)-1
+       tp : newPoly := (monomial(1, [1, 0$Expon])$newPoly * npoly f) - 1
        contractGrob(concat(tp,[npoly g for g in I.idl ]))
 
      ----  saturation with respect to a prime principal ideal in lvar ---
@@ -325,7 +325,7 @@ PolynomialIdeal(F,Expon,VarSet,DPoly) : C == T
                ----  test if f is in the radical of I  ----
      inRadical?(f:DPoly,I:Ideal) : Boolean ==
        f=0$DPoly => true
-       tp:newPoly :=(monomial(1,makeprod(1,0$Expon))$newPoly * npoly f)-1
+       tp : newPoly := (monomial(1, [1,0$Expon])$newPoly * npoly f) - 1
        Id:=I.idl
        normalForm(1$newPoly,groebner concat(tp,[npoly g for g in Id])) = 0
 
@@ -383,10 +383,10 @@ PolynomialIdeal(F,Expon,VarSet,DPoly) : C == T
              df:=degree(f-reductum f,lvint)
              lcf:=leadingCoefficient f
              pol:=pol+monompol(df,lcf,lvint)
-             g:=g+monomial(lcf,makeprod(degree f,0))$nPoly
+             g := g + monomial(lcf, [degree f, 0])$nPoly
              f:=reductum f
            lp:=concat(pol,lp)
-           lf:=concat(monomial(1,makeprod(0,directProduct vec2))-g,lf)
+           lf := concat(monomial(1, [0, directProduct vec2]) - g, lf)
          npol:List P :=[v::P for v in nvar]
          leq : List Equation P :=
                [p = pol for p in npol for pol in reverse lp ]
@@ -394,7 +394,7 @@ PolynomialIdeal(F,Expon,VarSet,DPoly) : C == T
          while lf ~= [] repeat
            q:=lf.first
            dq:nExponent:=degree q
-           n:=selectfirst (dq)
+           n := first(dq)
            if n = 0 then break
            lf:=lf.rest
          solsn:List P:=[]
@@ -404,7 +404,7 @@ PolynomialIdeal(F,Expon,VarSet,DPoly) : C == T
              dq:=degree q
              lcq:=leadingCoefficient q
              q:=reductum q
-             vdq:=(selectsecond dq) pretend Vector NNI
+             vdq := (second dq) pretend Vector NNI
              g:=g+ lcq*
                 _*/[p^vdq.j for p in npol for j in 1..]
            solsn:=concat(g,solsn)

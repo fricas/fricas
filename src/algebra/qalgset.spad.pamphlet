@@ -144,16 +144,16 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
 
      npoly(f:Dpoly) : newPoly ==
        zero? f => 0
-       monomial(leadingCoefficient f,makeprod(0,degree f))$newPoly +
+       monomial(leadingCoefficient f, [0, degree f])$newPoly +
              npoly(reductum f)
 
      oldpoly(q:newPoly) : Union(Dpoly,"failed") ==
        q=0$newPoly => 0$Dpoly
        dq:newExpon:=degree q
-       n:NNI:=selectfirst (dq)
+       n : NNI := first(dq)
        n ~= 0 => "failed"
        ((g:=oldpoly reductum q) case "failed") => "failed"
-       monomial(leadingCoefficient q,selectsecond dq)$Dpoly + (g::Dpoly)
+       monomial(leadingCoefficient q, second(dq))$Dpoly + (g::Dpoly)
 
      coerce x ==
        x.status = true => "Empty"::Ex
@@ -177,7 +177,7 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
        n0:= x.nzero
        empty? z0 => [false, z0, n0]
        member? (1$Dpoly, z0) => empty()
-       tp:newPoly:=(monomial(1,makeprod(1,0$Expon))$newPoly * npoly n0)-1
+       tp : newPoly := (monomial(1, [1, 0$Expon])$newPoly * npoly n0) - 1
        ngb:=groebner concat(tp, [npoly g for g in z0])
        member? (1$newPoly, ngb) => empty()
        gb:List Dpoly:=nil
