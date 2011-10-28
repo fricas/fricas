@@ -124,7 +124,8 @@ coerce(x:%):OutputForm ==
     le: List OutputForm := nil
     rec: TERM
     for rec in reverse listOfTerms x repeat
-      ko:OutputForm := tensor((selectfirst rec k)::OutputForm,(selectsecond rec k)::OutputForm)
+      ko:OutputForm := tensor((first rec k)::OutputForm,
+                              (second rec k)::OutputForm)
       rec.c = 1 => le := cons(ko, le)
       le := cons(rec.c :: OutputForm * ko, le)
     reduce("+", le)
@@ -176,7 +177,7 @@ We compare the following methods.
 res : % := 0
 for s1 in ltx1 repeat
     for s2 in ltx2 repeat
-        res := res + monom(makeprod(s1.k, s2.k), s1.c*s2.c)
+        res := res + monom([s1.k, s2.k], s1.c*s2.c)
 res
 @
 \item concat!: append elementary tensors at the end
@@ -184,7 +185,7 @@ res
 res : List TERM := []
 for s1 in ltx1 repeat
     for s2 in ltx2 repeat
-        res := concat!(res,[makeprod(s1.k, s2.k), s1.c*s2.c]$TERM)
+        res := concat!(res,[[s1.k, s2.k], s1.c*s2.c]$TERM)
 res pretend %
 @
 
@@ -194,7 +195,7 @@ if the list of terms is ordered
 res : List TERM := []
 for s1 in reverse ltx1 repeat
     for s2 in reverse ltx2 repeat
-        res := cons([makeprod(s1.k, s2.k), s1.c*s2.c]$TERM,res)
+        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM,res)
 constructOrdered res
 @
 \item reverse+sort!: sort the list of terms before committing
@@ -202,7 +203,7 @@ constructOrdered res
 res : List TERM := []
 for s1 in reverse ltx1 repeat
     for s2 in reverse ltx2 repeat
-        res := cons([makeprod(s1.k, s2.k), s1.c*s2.c]$TERM,res)
+        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM,res)
 res:=sort!(termgreater?,res)
 constructOrdered res
 @
@@ -212,7 +213,7 @@ constructOrdered res
 res : List TERM := []
 for s1 in reverse ltx1 repeat
     for s2 in reverse ltx2 repeat
-        res := cons([makeprod(s1.k, s2.k), s1.c*s2.c]$TERM,res)
+        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM,res)
 if not sorted?(termgreater?,res) then
     res:=sort!(termgreater?,res)
 constructOrdered res
@@ -250,10 +251,10 @@ the sorting of the result to the very end.
             -- the basis elements
             t1k:B1xB2 := t1.k
             t2k:B1xB2 := t2.k
-            t1a: M1 := monomial(t1.c,selectfirst t1k)
-            t1b: M2 := monomial(1,selectsecond t1k)
-            t2a: M1 := monomial(t2.c,selectfirst t2k)
-            t2b: M2 := monomial(1,selectsecond t2k)
+            t1a : M1 := monomial(t1.c, first t1k)
+            t1b : M2 := monomial(1, second t1k)
+            t2a : M1 := monomial(t2.c, first t2k)
+            t2b : M2 := monomial(1, second t2k)
             for t in listOfTerms tensor(t1a*t2a,t1b*t2b) repeat
                 res:=cons(t,res)
     construct res
