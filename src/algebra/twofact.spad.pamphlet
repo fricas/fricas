@@ -103,6 +103,11 @@ TwoFactorize(F) : C == T
       ++ Also, p is assumed primitive and square-free and n is the
       ++ degree of the inner variable of p (maximum of the degrees
       ++ of the coefficients of p).
+    doFactor : (P, Integer, Boolean) -> Factored P
+      ++ doFactor(p, n, ext?) returns the factorisation of polynomial p,
+      ++ p is assumed to be primitive and squarefree,
+      ++ n is degree in auxilary variable, ext? if false inhibits
+      ++ use of extension field.
 
   T == add
     PI ==> PositiveInteger
@@ -110,21 +115,9 @@ TwoFactorize(F) : C == T
     import CommuteUnivariatePolynomialCategory(F,R,P)
 
                    ----  Local Functions  ----
-    computeDegree  :  (P,Integer,Integer) -> PI
     exchangeVars   :           P          -> P
     exchangeVarTerm:        (R, NNI)      -> P
     pthRoot        :     (R, NNI, NNI)    -> R
-
-    -- compute the degree of the extension to reduce the polynomial to a
-    -- univariate one
-    computeDegree(m : P,mx:Integer,q:Integer): PI ==
-      my:=degree m
-      n1:Integer:=length(10*mx*my)
-      n2:Integer:=length(q)-1
-      n:=(n1 quo n2)+1
-      n::PI
---      n=1 => 1$PositiveInteger
---      (nextPrime(max(n,min(mx,my)))$IntegerPrimesPackage(Integer))::PI
 
     exchangeVars(p : P) : P ==
        p = 0 => 0
@@ -171,7 +164,6 @@ TwoFactorize(F) : C == T
        makeFR(unitPart,pfaclist)
 
     doTwoFactor : (P, Boolean) -> Factored P
-    doFactor : (P, Integer, Boolean) -> Factored P
 
     tryTwoFactor(m : P) : Factored P ==
        doTwoFactor(m, false)
@@ -232,80 +224,90 @@ TwoFactorize(F) : C == T
     twoFactor(m : P, dx : Integer) : Factored P ==
         doFactor(m, dx, true)
 
-    doFactor(m : P, dx : Integer, do_ext : Boolean) : Factored P ==
-       -- choose the degree for the extension
-       n:PI:=computeDegree(m,dx,size()$F)
-       -- extend the field
-       -- find the substitution for x
-       look:Boolean:=true
-       dm:=degree m
-       try : Integer := min(dx + 5, size()$F)
-       i:Integer:=0
-       lcm := leadingCoefficient m
-       umv : R
-       use_random := 2*try < size()$F
-       while look and i < try repeat
-          i := i + 1
-          if use_random then
-              vval := random()$F
-          else
-              vval := index(i pretend PositiveInteger)$F
-          zero? elt(lcm, vval) => "next value"
-          umv := map(x +-> elt(x, vval), m)$UPCF2(R, P, F, R)
-          degree(gcd(umv,differentiate umv)) ~= 0 => "next val"
-          n := 1
-          look := false
-       look and not do_ext => return makeFR(1, [["nil", m, 1]])
-       extField:=FiniteFieldExtension(F,n)
-       SUEx:=SUP extField
-       TP:=SparseUnivariatePolynomial SUEx
-       mm:TP:=0
-       m1:=m
-       while m1 ~= 0 repeat
-         mm:=mm+monomial(map(coerce,leadingCoefficient m1)$UPCF2(F,R,
-                extField,SUEx),degree m1)
-         m1:=reductum m1
-       lcmm := leadingCoefficient mm
-       val : extField
-       umex : SUEx
-       if not look then
-          val := vval :: extField
-          umex := map(coerce, umv)$UPCF2(F, R, extField, SUEx)
-       while look repeat
-         val:=random()$extField
-         i:=i+1
-         elt(lcmm,val)=0 => "next value"
-         umex := map(x +-> elt(x, val), mm)$UPCF2(SUEx, TP, extField, SUEx)
-         degree(gcd(umex,differentiate umex)) ~= 0 => "next val"
-         look:=false
-       prime:SUEx:=monomial(1,1)-monomial(val,0)
-       fumex:=factor(umex)$DistinctDegreeFactorize(extField,SUEx)
-       lfact1:=factors fumex
-
-       #lfact1=1 => primeFactor(m,1)
-       lfact : List TP :=
-          [map(coerce,lf.factor)$UPCF2(extField,SUEx,SUEx,TP)
-           for lf in lfact1]
-       lfact:=cons(map(coerce,unit fumex)$UPCF2(extField,SUEx,SUEx,TP),
-                   lfact)
-       import GeneralHenselPackage(SUEx,TP)
-       dx1:PI:=(dx+1)::PI
-       lfacth:=completeHensel(mm,lfact,prime,dx1)
-       lfactk: List P :=[]
-       Normp := NormRetractPackage(F, extField, SUEx, TP, n)
-
-       while not empty? lfacth repeat
-         ff := first lfacth
-         lfacth := rest lfacth
-         if (c:=leadingCoefficient leadingCoefficient ff) ~= 1 then
-           ff:=((inv c)::SUEx)* ff
-         not ((ffu:= retractIfCan(ff)$Normp) case "failed") =>
+    doExtension1(m : P, n : PI, dx : Integer,
+      extField : FiniteAlgebraicExtensionField(F)) : Factored P ==
+        SUEx := SUP extField
+        TP := SparseUnivariatePolynomial SUEx
+        mm : TP := 0
+        m1 := m
+        while m1 ~= 0 repeat
+            mm := mm + monomial(map(coerce, leadingCoefficient m1)$UPCF2(
+                         F, R, extField, SUEx), degree m1)
+            m1 := reductum m1
+        res1 := doFactor(mm, dx, false)$TwoFactorize(extField)
+        flist := factors(res1)
+        #flist = 1 =>
+            nthFlag(res1, 1) = "prime" => primeFactor(m, 1)
+            nilFactor(m, 1)
+        Normp := NormRetractPackage(F, extField, SUEx, TP, n)
+        lfacth := [fac.factor for fac in factors(res1)]
+        lfactk : List P := []
+        while not empty? lfacth repeat
+            ff := first lfacth
+            lfacth := rest lfacth
+            if (c := leadingCoefficient leadingCoefficient ff) ~= 1 then
+                ff := ((inv c)::SUEx)*ff
+            not ((ffu:= retractIfCan(ff)$Normp) case "failed") =>
                     lfactk := cons(ffu::P, lfactk)
-         normfacs := normFactors(ff)$Normp
-         lfacth := [g for g in lfacth | not member?(g, normfacs)]
-         ffn := */normfacs
-         lfactk:=cons(retractIfCan(ffn)$Normp :: P, lfactk)
-       */[primeFactor(ff1,1) for ff1 in lfactk]
+            normfacs := normFactors(ff)$Normp
+            lfacth := [g for g in lfacth | not member?(g, normfacs)]
+            ffn := */normfacs
+            lfactk := cons(retractIfCan(ffn)$Normp::P, lfactk)
+        */[primeFactor(ff1,1) for ff1 in lfactk]
+
+    doExtension(m : P, dx : Integer) : Factored P ==
+        ln : List(PI) := [2, 3, 5, 7, 9, 11, 13, 17, 19, 23, 29]
+        for n in ln repeat
+            nsize := size()$F ^ n
+            res1 :=
+                nsize < 1000 => doExtension1(m, n, dx,
+                      FiniteFieldCyclicGroupExtension(F,n))
+                doExtension1(m, n, dx, FiniteFieldExtension(F,n))
+            nthFlag(res1, 1) = "prime" => return res1
+        error "doExtension : Impossible"
+
+    doFactor(m : P, dx : Integer, do_ext : Boolean) : Factored P ==
+        look : Boolean := true
+        dm := degree m
+        try : Integer := min(dx + 5, size()$F)
+        i : Integer := 0
+        lcm := leadingCoefficient m
+        umv : R
+        val : F
+        use_random := 2*try < size()$F
+        while look and i < try repeat
+            i := i + 1
+            if use_random then
+                val := random()$F
+            else
+                val := index(i pretend PositiveInteger)$F
+            zero? elt(lcm, val) => "next value"
+            umv := map(x +-> elt(x, val), m)$UPCF2(R, P, F, R)
+            degree(gcd(umv, differentiate umv)) ~= 0 => "next val"
+            look := false
+        look and not do_ext => return nilFactor(m, 1)
+        look => doExtension(m, dx)
+
+        prime : R := monomial(1, 1) - monomial(val, 0)
+        fumv := factor(umv)$DistinctDegreeFactorize(F, R)
+        lfact1 := factors fumv
+
+        #lfact1 = 1 => primeFactor(m, 1)
+        lfact : List P := [map(coerce, lf.factor)$UPCF2(F, R, R, P)
+                             for lf in lfact1]
+        lfact := cons(map(coerce, unit fumv)$UPCF2(F, R, R, P),
+                      lfact)
+        import GeneralHenselPackage(R, P)
+        dx1 : PI := (dx + 1)::PI
+        lfacth := completeHensel(m, lfact, prime, dx1)
+        lfactk : List P := []
+        while not empty? lfacth repeat
+            ff := first lfacth
+            lfacth := rest lfacth
+            if (c := leadingCoefficient leadingCoefficient ff) ~= 1 then
+                ff := ((inv c)::R)* ff
+            lfactk := cons(ff, lfactk)
+        */[primeFactor(ff1, 1) for ff1 in lfactk]
 
 @
 \section{License}
