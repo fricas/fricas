@@ -449,7 +449,6 @@ After this function is called the image is clean and can be saved.
 
 (defun interpsys-image-init (parse-files comp-files browse-files
              asauto-files spad)
-  (push :oldboot *features*)
   (setf *package* (find-package "BOOT"))
   (initroot spad)
   #+:GCL
@@ -476,7 +475,6 @@ After this function is called the image is clean and can be saved.
 (defun build-depsys (load-files spad build-interp-dir)
 #+:GCL
   (in-package "BOOT")
-  (push :oldboot *features*)
   (mapcar #'load load-files)
   (make-depsys build-interp-dir)
   (initroot spad)

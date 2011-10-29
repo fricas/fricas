@@ -18,10 +18,7 @@ BOOTSYS= $(fricas_build_bindir)/bootsys
 
 DEPSYS=	$(fricas_build_bindir)/depsys
 
-DEP=    vmlisp     \
-        nlib       macros     \
-        spaderror  debug      spad       \
-        setq       property   foam_l     axext_l
+DEP=  vmlisp macros parsing primitives foam_l axext_l
 
 LOADSYS= $(fricas_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(fricas_build_bindir)/interpsys$(EXEEXT)
@@ -176,38 +173,19 @@ ${SAVESYS}:
 	echo '(load "makeint.lisp") #-:ecl(VMLISP::reclaim)' \
              '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
              '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' | ${BOOTSYS}
-
+	ls $@
 	@ echo 6 ${SAVESYS} created
 
-depsys_boot_sources = clam g-boot g-util parse postpar s-parser slam
-
-# Lisp files beyond DEP needed for DEPSYS
-depsys_lisp_files = parsing bootlex preparse
-
-${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
-                    ${DEP} $(depsys_lisp_files) sys-pkg util) \
-	        $(patsubst %, %.clisp, ${depsys_boot_sources})
+${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, ${DEP} sys-pkg util)
 	@ echo 3 making ${DEPSYS}
 	$(mkinstalldirs) $(fricas_build_bindir)
 	echo '${PROCLAIMS}' > makedep.lisp
-	echo '(push :oldboot *features*)' >> makedep.lisp
 	echo '(load "$(srcdir)/util.lisp")' >> makedep.lisp
 	echo '(in-package "BOOT")' >> makedep.lisp
 	echo '(build-depsys (quote (' \
 	          '$(patsubst %, "$(srcdir)/%.lisp", ${DEP})' \
 		  ')) "${AXIOM}" "$(builddir)")' >> makedep.lisp
-	echo > makedep2.lst
-	for A in postpar.clisp parse.clisp \
-	         $(patsubst %, $(srcdir)/%.lisp, $(depsys_lisp_files)) \
-	         clam.clisp s-parser.clisp slam.clisp \
-	         g-boot.clisp g-util.clisp; do \
-	   B=$${A##*/} ; \
-	   C=$${B%.*} ; \
-	   echo '(load-maybe-compiling "'$$A'" "'$$C'.$(LISPOBJEXT)")' \
-	          >> makedep.lisp ; \
-	   echo $$C >> makedep2.lst ; \
-	done
-	for A in ${DEP} util primitives ; do \
+	for A in ${DEP} util ; do \
 	    echo '(maybe-compile "$(srcdir)/'$$A'.lisp"' \
 	         '"'$$A'.$(LISPOBJEXT)")' >> makedep.lisp ; \
 	done
@@ -220,12 +198,12 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, \
 	echo '#+(OR :GCL :CMU)"$(srcdir)/sys-pkg.lisp"' \
 	     '#-(OR :GCL :CMU)"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
 	echo '#+:GCL"$(srcdir)/interp-proclaims.lisp"' >> makedep2.lisp
-	for A in util ${DEP} primitives \
-                 `cat makedep2.lst` ; do \
+	for A in util ${DEP} ; do \
               echo '"'$$A'.$(LISPOBJEXT)"' >> makedep2.lisp ; \
         done
 	echo ')))' >>  makedep2.lisp
 	cat makedep2.lisp | ${LOADSYS}
+	ls $@
 	@ echo 4 ${DEPSYS} created
 .PHONY: all-axiomsys
 
