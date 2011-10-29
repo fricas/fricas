@@ -229,7 +229,9 @@ postMDef(t) ==
 
 postElt (u is [.,a,b]) ==
   a:= postTran a
-  b is ['Sequence,:.] => [['elt,a,'makeRecord],:postTranList rest b]
+  b is ['Sequence,:.] =>
+      BREAK()
+      [['elt,a,'makeRecord],:postTranList rest b]
   ['elt,a,postTran b]
 
 postExit ["=>",a,b] == ['IF,postTran a,['exit,postTran b],'noBranch]
@@ -359,8 +361,6 @@ postFlattenLeft(x,op) ==--
   [x]
 
 postSemiColon u == postBlock ['Block,:postFlattenLeft(u,";")]
-
-postSequence ['Sequence,:l] == ['(elt $ makeRecord),:postTranList l]
 
 postSignature1(op, sig) ==
   sig is ["->",:.] =>

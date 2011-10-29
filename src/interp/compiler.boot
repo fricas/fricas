@@ -1121,9 +1121,6 @@ coerceEasy(T,m) ==
 coerceSubset([x,m,e],m') ==
   isSubset(m,m',e) or m="Rep" and m'="$" => [x,m',e]
   m is ['SubDomain,=m',:.] => [x,m',e]
-  INTEGERP x and (pred:= LASSOC(opOf m',get(opOf m,'SubDomain,e))) and
-     -- obviously this is temporary
-    eval substitute(x,"#1",pred) => [x,m',e]
   INTEGERP x and (pred:= isSubset(m',maxSuperType(m,e),e)) -- again temporary
     and eval substitute(x,"*",pred) =>
       [x,m',e]

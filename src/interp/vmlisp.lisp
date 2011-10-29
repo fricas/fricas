@@ -1145,13 +1145,12 @@
 ;17.0 Operations on Hashtables
 
 (export '(MAKE-HASHTABLE HGET HKEYS HCOUNT HPUT HREM HCLEAR HREMPROP
-          HASHEQ HASHUEQUAL HASHCVEC HASHID HASHTABLEP CVEC UEQUAL ID HPUTPROP
+          HASHEQ HASHID HASHTABLEP CVEC UEQUAL ID HPUTPROP
           HASHTABLE-CLASS))
 
 ;17.1 Creation
 
-(defun MAKE-HASHTABLE (id1 &optional (id2 nil))
- (declare (ignore id2))
+(defun MAKE-HASHTABLE (id1)
    (let ((test (case id1
                      ((EQ ID) #'eq)
                      (CVEC #'equal)
@@ -1196,10 +1195,6 @@
 (define-function 'HASHTABLEP #'hash-table-p)
 
 (define-function 'HASHEQ #'sxhash)
-
-(define-function 'HASHUEQUAL #'sxhash)
-
-(define-function 'HASHCVEC #'sxhash)
 
 (define-function 'HASHID #'sxhash)
 

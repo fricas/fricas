@@ -517,6 +517,8 @@ dbShowOpItems(which,data,exposedOnly?) ==
   htEndTable()
 
 dbShowOpAllDomains(htPage,opAlist,which) ==
+  SAY("dbShowOpAllDomains")
+  BREAK()
   dbExpandOpAlistIfNecessary(htPage,opAlist,which,true,false)
   catOriginAlist := nil --list of category origins
   domOriginAlist := nil --list of domain origins
