@@ -116,8 +116,6 @@
 
 (defmacro APPEND2 (x y) `(append ,x ,y))
 
-(defmacro |float| (x &optional (y 0.0d0)) `(float ,x ,y))
-
 (defun |makeSF| (mantissa exponent)
   (|float| (/ mantissa (expt 2 (- exponent)))))
 
@@ -191,24 +189,6 @@
 (defun |evalSharpOne| (x |#1|)
    (declare (special |#1|))
       (EVAL `(let () (declare (special |#1|)) ,x)))
-
-(defmacro |rplac| (&rest L)
-  (let (a b s)
-    (cond
-      ((EQCAR (SETQ A (CAR L)) 'ELT)
-       (COND ((AND (INTEGERP (SETQ B (CADDR A))) (>= B 0))
-              (SETQ S "CA")
-              (do ((i 1 (1+ i))) ((> i b)) (SETQ S (STRCONC S "D")))
-              (LIST 'RPLAC (LIST (INTERN (STRCONC S "R")) (CADR A)) (CADR L)))
-             ((ERROR "rplac"))))
-      ((PROGN
-         (SETQ A (CARCDREXPAND (CAR L) NIL))
-         (SETQ B (CADR L))
-         (COND
-           ((CDDR L) (ERROR 'RPLAC))
-           ((EQCAR A 'CAR) (LIST 'RPLACA (CADR A) B))
-           ((EQCAR A 'CDR) (LIST 'RPLACD (CADR A) B))
-           ((ERROR 'RPLAC))))))))
 
 (DEFUN ASSOCIATER (FN LST)
   (COND ((NULL LST) NIL)
