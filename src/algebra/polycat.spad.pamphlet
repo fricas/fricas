@@ -165,16 +165,15 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
     if R has Field then
        x/r == map(x1+->x1/r,x)
     if R has IntegralDomain then
-       x exquo r ==
+       x : % exquo r : R ==
           zero? r => error "Division by 0"
           zero? x => 0
-          ans:% :=0
-          t:=leadingCoefficient x exquo r
-          while not (t case "failed") and not zero? x repeat
-            ans:=ans+monomial(t::R,degree x)
-            x:=reductum x
-            if not zero? x then t:=leadingCoefficient x exquo r
-          t case "failed" => "failed"
+          ans : % := 0
+          while not zero? x repeat
+              t := leadingCoefficient x exquo r
+              t case "failed" => return "failed"
+              ans := ans + monomial(t::R, degree x)
+              x := reductum x
           ans
     if R has GcdDomain then
        content x ==       -- this assumes  reductum is cheap
