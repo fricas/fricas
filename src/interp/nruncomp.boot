@@ -294,6 +294,107 @@ consDomainForm(x,dc) ==
   get(x,'value,$e) or get(x,'mode,$e) => x
   MKQ x
 
+-- First cut at resolving self-referential conditions.  FIXME: should
+-- handle cyclic dependencies and conditions requiring matching at
+-- runtime.
+
+get_self_preds2(p, acc) ==
+    p is [op, :l] =>
+        MEMQ(op, '(AND and OR or NOT not)) => get_self_preds1(l, acc)
+        op is "HasCategory" =>
+            first(l) = "$" => CONS(CADR(l), acc)
+            acc
+        acc
+    acc
+
+get_self_preds1(pl, acc) ==
+    for p in pl repeat
+        acc := get_self_preds2(p, acc)
+    acc
+
+get_self_preds(pl) == REMDUP get_self_preds1(pl, nil)
+
+boolean_subst_and(l, good_preds) ==
+    res := []
+    for cond in l repeat
+        nc := boolean_subst1(cond, good_preds)
+        nc = true => "iterate"
+        not(nc) => nc
+        res := cons(nc, res)
+    res = [] => true
+    #res = 1 => first(res)
+    ["AND", :nreverse(res)]
+
+boolean_subst_or(l, good_preds) ==
+    res := []
+    for cond in l repeat
+        nc := boolean_subst1(cond, good_preds)
+        nc = true => nc
+        not(nc) => "iterate"
+        res := cons(nc, res)
+    res = [] => false
+    #res = 1 => first(res)
+    ["OR", :nreverse(res)]
+
+boolean_subst_not(cond, good_preds) ==
+   nc := boolean_subst1(cond, good_preds)
+   nc = true => false
+   not(nc) => true
+   ["NOT", nc]
+
+boolean_subst1(cond, good_preds) ==
+    cond = true => cond
+    cond is [op, :l] =>
+        MEMQ(op, '(AND and)) => boolean_subst_and(l, good_preds)
+        MEMQ(op, '(OR or)) => boolean_subst_or(l, good_preds)
+        MEMQ(op, '(NOT not)) => boolean_subst_not(first(l), good_preds)
+        nc := LASSOC(cond, good_preds)
+        nc => first(nc)
+        cond
+    cond
+
+boolean_subst(condCats, good_preds) ==
+    [boolean_subst1(cond, good_preds) for cond in condCats]
+
+mk_has_dollar_quote(cat) ==
+    ["HasCategory", "$", ["QUOTE", cat]]
+
+simplify_self_preds1(catvecListMaker, condCats) ==
+    self_preds := get_self_preds(condCats)
+    self_preds := [cat for p in self_preds | p is ["QUOTE", cat]]
+    self_preds = [] => [condCats, false]
+    hairy_preds := []
+    found_preds := []
+    false_preds := []
+    for c1 in self_preds repeat
+        op1 := opOf(c1)
+        hl := []
+        found := false
+        for c2 in catvecListMaker for cond in condCats while(not(found)) repeat
+            c1 = c2 =>
+                found_preds := CONS([c1, cond], found_preds)
+                found := true
+            if op1 = opOf(c2) then
+                hl := CONS([c2, cond], hl)
+        if hl and not(found) then
+            hairy_preds := CONS([c1, hl], hairy_preds)
+        if not(found) then
+            false_preds := CONS(c1, false_preds)
+    good_preds := [cc for cc in found_preds |
+                     cc is [cat, cond] and not(isHasDollarPred(cond))]
+    good_preds := [:[[mk_has_dollar_quote(cat), false] for cat in false_preds],
+                   :[[mk_has_dollar_quote(cat), cond] for cc in good_preds
+                      | cc is [cat, cond]]]
+    good_preds = [] => [condCats, false]
+    condCats := boolean_subst(condCats, good_preds)
+    [condCats, true]
+
+simplify_self_preds(catvecListMaker, condCats) ==
+    progress := true
+    while progress repeat
+        [condCats, progress] := simplify_self_preds1(catvecListMaker, condCats)
+    condCats
+
 buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
 --PARAMETERS
 --  $definition: constructor form, e.g. (SquareMatrix 10 (RationalNumber))
@@ -352,6 +453,7 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $catNames:= ['$,:[GENVAR() for u in rest catvecListMaker]]
   domname:='dv_$
 
+  condCats := simplify_self_preds(catvecListMaker, condCats)
 -->  Do this now to create predicate vector; then DescendCode can refer
 -->  to predicate vector if it can
   [$uncondAlist,:$condAlist] :=    --bound in compDefineFunctor1
