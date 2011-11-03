@@ -117,8 +117,7 @@ BOOT fn ==
      outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
      a:=BOOTTOCL (fn, outfn)
      null a => nil
-     shoeCOMPILE_-FILE outfn
-     outbin:=CONCAT(shoeRemovebootIfNec fn,'".",_*LISP_-BIN_-FILETYPE_*)
+     outbin := shoeCOMPILE_-FILE outfn
      LOAD outbin
  
 EVAL_-BOOT_-FILE fn ==
