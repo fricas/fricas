@@ -44,15 +44,6 @@ NRTevalDomain form ==
 compiledLookupCheck(op,sig,dollar) ==
   fn := compiledLookup(op,sig,dollar)
 
-  -- NEW COMPILER COMPATIBILITY ON
-
-  if      (fn = nil)  and (op = "^") then
-    fn := compiledLookup("**",sig,dollar)
-  else if (fn = nil)  and (op = "**") then
-    fn := compiledLookup("^",sig,dollar)
-
-  -- NEW COMPILER COMPATIBILITY OFF
-
   fn = nil =>
     keyedSystemError("S2NR0001",[op,formatSignature sig,dollar.0])
   fn

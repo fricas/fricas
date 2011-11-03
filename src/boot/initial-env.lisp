@@ -47,14 +47,6 @@
           steval
           sttomc))
 
-;; ECL does not load the compiler module by default.  Therefore, we
-;; must require that appropriate symbols be present.
-#+:ecl (require 'cmp)
-
-;;; ;## need the conditional here so it appears in boottran
-;;; #+:ieee-floating-point (setq $ieee t)
-;;; #-:ieee-floating-point (setq $ieee nil)
-
 ;; The following comes from file previously known as npextras.lisp
 (defun double (x) (float x 1.D0))
 
@@ -66,11 +58,6 @@
 (defun |char| (x) (CHAR (PNAME x) 0))
 
 (defmacro memq (a b) `(member ,a ,b :test #'eq))
-(defvar |$lispType| '|Common|)
-(defvar |$lispName| '|Common|)
-(defvar |$machineType| 'RTPC)
-(defvar *lisp-bin-filetype* "o")
-(defvar *lisp-source-filetype* "lisp")
 (defun |shoeCOMPILE-FILE| (fn) (compile-file fn ))
 (defun setdifference (x y) (set-difference x y))
 (defun make-cvec (sint) (make-string sint))
