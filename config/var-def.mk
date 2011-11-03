@@ -142,6 +142,8 @@ AXIOM_X11_LDFLAGS = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@
 
 fricas_includes = -I$(fricas_src_srcdir)/include -I$(fricas_configdir)
 
+fricas_build_helper = $(abs_top_srcdir)/src/scripts/build_helper
+
 ## Where the staging build directory is found
 AXIOM = @AXIOM@
 export AXIOM
@@ -157,13 +159,9 @@ TMP=$(fricas_builddir)
 ## Old Axiom ENV variables
 
 VERSION = @PACKAGE_STRING@
-INC=$(abs_top_srcdir)/src/include
 
-PLF=@PLF@
 CCF=@CCF@
 LDF=-g
-LISP=@LISP@
-
 
 DOCUMENT=${axiom_build_document}
 

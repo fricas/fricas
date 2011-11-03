@@ -1,0 +1,73 @@
+#!/bin/sh
+
+translate_boot() {
+    echo "(in-package \"BOOTTRAN\") (progn (boottoclc \"$1\" \"$output\"))" \
+                 "(quit)" | "$image"
+}
+
+compile_lisp() {
+    echo "(in-package \"FRICAS-LISP\")" \
+         "(progn (fricas-compile-file \"$1\" :output-file" \
+                    "\"$output\") (quit))" | "$image"
+}
+
+make_program () {
+    echo "(in-package \"FRICAS-LISP\") \
+          (make-program \"$output\" (quote ($*)))" | "$image"
+}
+
+action=
+image=
+output=
+
+while test $# -gt 0 ; do
+    arg=$1
+
+    case $arg in
+    --)
+        break
+        ;;
+    --output=*)
+        output=`echo $arg | sed -e 's/^--output=//'`
+        shift;
+        ;;
+    --use=*)
+        image=`echo $arg | sed -e 's/^--use=//'`
+        shift;
+        ;;
+    --make_program|--translate_boot|--compile_lisp)
+        action=$1
+        shift;
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
+
+if [ x$action = x ] ; then
+    echo "$0: no operation specified"
+    exit 1
+fi
+
+if [ x"$image" = x ] ; then
+    echo "$0: no lisp command specified"
+    exit 1
+fi
+
+if [ x"output" = x ] ; then
+    echo "$0: no output specified"
+    exit 1
+fi
+
+case $action in
+--make_program)
+    make_program "$1"
+    ;;
+--translate_boot)
+    translate_boot "$1"
+    ;;
+--compile_lisp)
+    compile_lisp "$@"
+    ;;
+esac
