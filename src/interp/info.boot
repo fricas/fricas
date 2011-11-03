@@ -194,13 +194,11 @@ knownInfo1 pred ==
     (u:= assoc(cat,CADR catlist)) and knownInfo(CADR u) => true
     -- previous line checks fundamental anscestors, we should check their
     --   principal anscestors but this requires instantiating categories
-
-    -- This line caused recursion on predicates which are no use in deciding
-    -- whether a category was present.
--- this is correct TPD feb, 19, 2003
-    or/[AncestorP(cat,LIST CAR u) for u in CADR catlist | knownInfo CADR u] => true
--- this is wrong TPD feb, 19, 2003
-    -- or/[AncestorP(cat,LIST CAR u) and knownInfo CADR u for u in CADR catlist] => true
+    -- Order of tests below is tricky performencewise.  We
+    -- put AncestorP test first because knownInfo in worst case
+    -- may lead to large number of recursive calls.
+    or/[AncestorP(cat, LIST CAR u) and knownInfo CADR u
+          for u in CADR catlist] => true
     false
   pred is ["SIGNATURE",name,op,sig,:.] =>
       v:= get(op,"modemap",$e)
