@@ -1,0 +1,166 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra ordinal.spad}
+\author{Waldek Hebisch}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{domain SORD SmallOrdinal}
+<<domain SORD SmallOrdinal>>=
+
+)abbrev domain SORD SmallOrdinal
+++ Author: Waldek Hebisch
+++ Description:
+++  SmallOrdinal implements ordinal numbers up to epsilon_0.  \spad{+}
+++  and \spad{*} are "natural" addition and multiplication of ordinals.
+++  Avaliable separately are "ordered" operataions.
+SmallOrdinal: Join(OrderedAbelianMonoid, SemiRing, CancellationAbelianMonoid,
+                   RetractableTo(NonNegativeInteger)) with
+    omega : () -> %
+      ++ omega() is the first infinite ordinal
+    omegapower : % -> %
+      ++ omegapower(p) returns omega^p
+    ordinalAdd : (%, %) -> %
+      ++ ordinalAdd(o1, o2) returns sum of o1 and o2 as ordered sets
+    ordinalMul : (%, %) -> %
+      ++ ordinalMul(o1, o2) returns product of o1 and o2 as ordered sets
+    ordinalPower : (%, %) -> %
+      ++ ordinalPower(o1, o2) returns o1 to power o2, where power
+      ++ is inductively defined using succesive ordinal multiplication
+      ++ from the left
+    integerPart : % -> NonNegativeInteger
+      ++ integerPart(o) = n when o = l + n and l is a limit ordinal
+    limitPart : % -> %
+      ++ limitPart(o) = l when o = l + n and l is a limit ordinal
+      ++ and n is a nonnegative integer
+    "^" : (%, %) -> %
+      ++ o1^o2 returns o1 to power o2, where power is inductively
+      ++ defined using succesive natural multiplication from the left
+
+  == add
+    N ==> NonNegativeInteger
+    PR ==> PolynomialRing(N, %)
+    Rep := PR
+
+    0 == 0$Rep
+
+    1 == 1$Rep
+
+    omega() == monomial(1$N, 1$%)$Rep
+
+    omegapower(p) == monomial(1$N, p)$Rep
+
+    zero? p == zero?(p::Rep)$Rep
+
+    one? p == p::Rep =$Rep 1
+
+    p1 = p2  == p1::Rep =$Rep p2::Rep
+
+    coerce(n : N) : % == monomial(n, 0$%)$Rep
+
+    retractIfCan(x : %) : Union(N, "failed") == retractIfCan(x::Rep)$Rep
+
+    o1 < o2 ==
+        p1 := o1::Rep
+        p2 := o2::Rep
+        ground?(p1) =>
+            ground?(p2) =>
+                ground(p1) <$N ground(p2)
+            true
+        if ground?(p2) then
+            false
+        else
+            smaller?(p1, p2)$Rep
+
+    p1 + p2  == p1::Rep +$Rep p2::Rep
+
+    p1 * p2  == p1::Rep *$Rep p2::Rep
+
+    subtractIfCan(o1, o2) == subtractIfCan(o1::Rep, o2::Rep)$Rep
+
+    ordinalAdd(o1, o2) ==
+        p1 := o1::Rep
+        p2 := o2::Rep
+        e := degree(p2)
+        e = 0 => p1 + p2
+        lt : List(Rep) := []
+        while (degree(p1) >= e) repeat
+            lt := cons(leadingMonomial(p1), lt)
+            p1 := reductum(p1)
+        for t in lt repeat
+            p2 := t + p2
+        p2
+
+    integerPart(o : %) : N ==
+        p := o::Rep
+        while ~ground?(p) repeat p := reductum(p)
+        ground(p)
+
+    limitPart(o : %) : % ==
+        subtractIfCan(o, integerPart(o)::%)::%
+
+    ordinalMul(o1 : %, o2 : %) : % ==
+        e := degree(o1::Rep)
+        hi :=
+            e > 0 => mapExponents((x : %) : % +-> ordinalAdd(e, x),
+                                  limitPart(o2)::Rep)$Rep
+            limitPart(o2)::Rep
+        lo := o1*integerPart(o2)
+        hi + lo::Rep
+
+    sub_one(o : %) : % ==
+        ground?(o) =>
+            n := ground(o)
+            n = 0 => error "sub_one applied to zero ordinal"
+            ((n - 1) pretend N)::%
+        o
+
+    infinite_power(o1 : %, o2 : %) : % ==
+        o1 = 0 => 0
+        o1 = 1 => 1
+        e1 := degree(o1::Rep)
+        e1 > 0 => omegapower(ordinalMul(e1, o2))
+        omegapower(mapExponents(sub_one, o2::Rep)$Rep)
+
+    finite_ordinal_power(o : %, n : N) : % ==
+        n = 0 => 1
+        n = 1 => o
+        e := degree(o::Rep)
+        e = 0 => ((retract(o)@N)^n)::%
+        n1 := (n - 1) pretend N
+        ordinalMul(omegapower(e*n1), o)
+        
+    ordinalPower(o1 : %, o2 : %) : % ==
+        ordinalMul(infinite_power(o1, limitPart(o2)),
+                   finite_ordinal_power(o1, integerPart(o2)))
+
+    (o1 : %)^(o2 : %) ==
+        infinite_power(o1, limitPart(o2))*o1^integerPart(o2)
+
+    coerce(o : %) : OutputForm ==
+        p := o::Rep
+        ground?(p) => (ground(p))::OutputForm
+        l : List OutputForm := []
+        v := "omega"::OutputForm
+        while p ~= 0$Rep repeat
+            c := leadingCoefficient(p)$Rep
+            e : % := degree(p)$Rep
+            p := reductum(p)
+            co := c::OutputForm
+            l1 :=
+                e = 0 => co
+                if e = 1 then
+                    mon:= v
+                else mon := v ^ e::OutputForm
+                c = 1 => mon
+                co*mon
+            l := cons(l1, l)
+        l := reverse!(l)
+        reduce("+", l)
+
+@
+\end{document}
