@@ -148,42 +148,35 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : OrderedSet) :
        s: S
        lt: List Term
    --define
-       if R has EntireRing then
+       r_one : R :=
+           R has Monoid => 1
+           0
+       if R has noZeroDivisors then
          r * x  ==
              zero? r => 0
---             one? r => x
-             (r = 1) => x
+             (r = r_one) => x
            --map(x+->r*x1,x)
              [[u.k,r*u.c] for u in x ]
-       else if R has Monoid then
-         r * x  ==
-             zero? r => 0
---             one? r => x
-             (r = 1) => x
-           --map(x1+->r*x1,x)
-             [[u.k,a] for u in x | (a:=r*u.c) ~= 0$R]
        else
          r * x  ==
              zero? r => 0
+             (r = r_one) => x
+           --map(x1+->r*x1,x)
              [[u.k,a] for u in x | (a:=r*u.c) ~= 0$R]
-       if R has EntireRing then
+
+       if R has noZeroDivisors then
          x * r  ==
              zero? r => 0
---             one? r => x
-             (r = 1) => x
+             (r = r_one) => x
            --map(x1+->r*x1,x)
              [[u.k,u.c*r] for u in x ]
-       else if R has Monoid then
-         x * r  ==
-             zero? r => 0
---             one? r => x
-             (r = 1) => x
-           --map(x1+->r*x1,x)
-             [[u.k,a] for u in x | (a:=u.c*r) ~= 0$R]
        else
          x * r  ==
              zero? r => 0
+             (r = r_one) => x
+           --map(x1+->r*x1,x)
              [[u.k,a] for u in x | (a:=u.c*r) ~= 0$R]
+
        r * s ==
          r = 0 => 0
          [[s,r]$Term]
@@ -407,7 +400,7 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
        times!: (R,    %) -> %
        times:  (R, E, %) -> %
 
-       entireRing? := R has EntireRing
+       entireRing? := R has noZeroDivisors
 
        times!(r: R, x: %): % ==
          res, endcell, newend, xx: Rep
@@ -566,7 +559,7 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
                 for tx in xx repeat res:=addm!(res,tx.c,tx.k,yy)
                 res
 
---     if R has EntireRing then
+--     if R has noZeroDivisors then
 --         p1 * p2  ==
 --            null p1 => 0
 --            null p2 => 0
