@@ -5,7 +5,6 @@ lisp_flavor=@fricas_lisp_flavor@
 
 FRICAS_LOCAL_LISP = $(builddir)/local-lisp$(EXEEXT)
 BOOTSYS_FOR_TARGET = $(fricas_target_bindir)/bootsys$(EXEEXT)
-PROCLAIMS=(load "$(srcdir)/boot-proclaims.lisp")
 
 boot_objects = $(boot_sources:.boot=.$(LISPOBJEXT))
 
@@ -24,10 +23,10 @@ boot_lib = $(boot_sources:.boot=.lib)
 LISPSYS= $(fricas_build_bindir)/lisp
 
 COMPILE_LISP = \
-	$(axiom_build_document) --tag=lisp --mode=compile --output=$@
+	$(fricas_build_helper) --compile_lisp --output=$@
 
 BOOT_TO_LISP = \
-	$(axiom_build_document) --tag=boot --mode=translate \
+	$(fricas_build_helper) --translate_boot \
 	--use=./prev-stage/bootsys --output=$@ $<
 
 BOOTSYS_EXE_TARGETS = stage0/bootsys$(EXEEXT) stage1/bootsys$(EXEEXT) \
@@ -91,11 +90,11 @@ $(FRICAS_LOCAL_LISP): $(srcdir)/$(FRICAS_LOCAL_LISP_source)
 
 $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
             $(OBJECTS) $(FRICAS_LOCAL_LISP)
-	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
+	$(fricas_build_helper) --make_program --output=$@ \
 	        --use=$(FRICAS_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
 
 $(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP)
-	$(axiom_build_document) --tag=lisp --mode=link --output=$(BASE)$@ \
+	$(fricas_build_helper) --make_program --output=$(BASE)$@ \
 	        --use=$(FRICAS_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
 
 else
@@ -104,18 +103,18 @@ $(FRICAS_LOCAL_LISP_object): %.$(LISPOBJEXT): $(srcdir)/%.lisp
 	$(COMPILE_LISP) --use=$(LISPSYS) $<
 
 $(FRICAS_LOCAL_LISP): $(FRICAS_LOCAL_LISP_object)
-	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
+	$(fricas_build_helper) --make_program --output=$@ \
                 --use=$(LISPSYS) \
                 '$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object))'
 
 $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
             $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
-	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
+	$(fricas_build_helper) --make_program --output=$@ \
 		--use=$(LISPSYS) \
 		'$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object) $(OBJECTS))'
 
 $(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
-	$(axiom_build_document) --tag=lisp --mode=link --output=$(BASE)$@ \
+	$(fricas_build_helper) --make_program --output=$(BASE)$@ \
 	        --use=$(LISPSYS) \
 		'$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object) $(OBJECTS))'
 

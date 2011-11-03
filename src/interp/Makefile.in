@@ -5,13 +5,14 @@ DOC=$(fricas_target_docdir)/src/interp
 
 # Command to translate Boot to Common Lisp
 BOOT_TO_LISP = \
-	$(axiom_build_document) --tag=boot --mode=translate \
+	$(fricas_build_helper) --translate_boot \
 		--use=$(BOOTSYS) --output=$@ $<
 
 # Command to translate Common Lisp to native object code
 COMPILE_LISP = \
-	$(axiom_build_document) --tag=lisp --mode=compile \
+	$(fricas_build_helper) --compile_lisp \
 		--output=$@ --use=$(DEPSYS) $<
+
 AUTO=$(fricas_targetdir)/autoload
 
 BOOTSYS= $(fricas_build_bindir)/bootsys
@@ -143,7 +144,7 @@ ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
 makeint.lisp: ../boot/lobj_lst
 	@ echo 5 invoking make in `pwd` with parms:
 	@ echo SRC= $(fricas_src_srcdir)
-	@ echo LISP=${LISP} BYE=${BYE}
+	@ echo BYE=${BYE}
 	cp $(fricas_src_datadir)/doc/msgs/s2-us.msgs \
 		 $(fricas_target_datadir)/msgs/s2-us.msgs
 	@ echo '${PROCLAIMS}' > makeint.lisp
@@ -257,9 +258,7 @@ IN_from_MID=\
 $(addsuffix .$(LISPOBJEXT), $(IN_from_MID) clammed): \
     %.$(LISPOBJEXT) : %.clisp
 	@ echo 10 making $@ from $<
-	echo '(in-package "FRICAS-LISP")' \
-	     '(progn  (fricas-compile-file "$<" :output-file "$@") (${BYE}))' \
-	     | ${DEPSYS}
+	$(COMPILE_LISP)
 
 AUTO_from_MID=\
  apply ax bc-matrix bc-misc bc-solve bc-util br-con br-data br-op1 \
@@ -273,13 +272,6 @@ $(patsubst %, $(AUTO)/%.$(LISPOBJEXT), $(AUTO_from_MID) showimp): \
 	echo '(in-package "FRICAS-LISP")' \
 	     '(progn (fricas-compile-file "$<" :output-file "$(BASE)$@")' \
 	     ' (${BYE}))' | ${DEPSYS}
-
-MID_from_IN= $(IN_from_MID) $(AUTO_from_MID)
-
-$(addsuffix .clisp, $(MID_from_IN)): \
-    %.clisp : $(srcdir)/%.boot
-	@ echo 11 making $@ from $<
-	echo '(progn (boottran::boottoclc "$<" "$@") (${BYE}))' | ${BOOTSYS}
 
 clammed.clisp: $(srcdir)/clammed.boot
 	echo '(progn (boottran::bootclam "$<" "$@") (${BYE}))' | ${BOOTSYS}
