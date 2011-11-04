@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2010-12-08],
+AC_INIT([FriCAS], [2011-11-04],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -655,10 +655,8 @@ AC_SUBST(BASE)
 AXIOM=${BASE}${fricas_targetdir}
 AC_SUBST(AXIOM)
 
-PFL=
 CCF="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE"
 LDF=
-LISP=lsp
 
 case $target in
     *bsd*|*dragonfly*)
@@ -686,10 +684,8 @@ case $target in
         ;;
 esac
 
-AC_SUBST(PLF)
 AC_SUBST(CCF)
 AC_SUBST(LDF)
-AC_SUBST(LISP)
 
 FRICAS_MAKEFILE([Makefile])
 FRICAS_MAKEFILE([src/Makefile])
