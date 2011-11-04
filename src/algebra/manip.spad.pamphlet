@@ -234,6 +234,13 @@ AlgebraicManipulations(R, F): Exports == Implementation where
       ++ algebraic coefficients, and \spad{p(f) = 0}.
     if R has Join(Comparable, GcdDomain, RetractableTo Integer)
       and F has FunctionSpace(R) then
+        if R has UniqueFactorizationDomain then
+            rootFactor : F -> F
+              ++ rootFactor(f) transforms every radical of the form
+              ++ \spad{(a1*...*am)^(1/n)} appearing in f into
+              ++ \spad{a^(1/n)*...*am^(1/n)}.
+              ++ This transformation is not in general valid for all
+              ++ complex numbers \spad{a} and b.
         rootPower  : F -> F
           ++ rootPower(f) transforms every radical power of the form
           ++ \spad{(a^(1/n))^m} into a simpler form if \spad{m} and
@@ -306,6 +313,46 @@ AlgebraicManipulations(R, F): Exports == Implementation where
       inroot : (OP, F, N) -> F
       radeval: (P, K) -> F
       breakup: List K -> List REC
+
+      if R has UniqueFactorizationDomain then
+
+          MPfact := GeneralizedMultivariateFactorize(K, IndexedExponents K,
+                       R, R, P)
+
+          fp_root(fp : Factored(P), op : OP, n : N) : F ==
+              res : F := 1
+              if (u := unit(fp)) ~= 1 then
+                  res := kernel(op, [u::F, n::F])::F
+              for fr in factors(fp) repeat
+                  ne : N := (fr.exponent rem n)::N
+                  ng := gcd(ne, n)
+                  nn := (n exquo ng)::Z
+                  ne := (ne exquo ng)::Z::N
+                  ce := (fr.exponent quo n)::N
+                  rr :=
+                      nn > 1 => kernel(op, [(fr.factor^ne)::F, nn::F])::F
+                      1$F
+                  res := res*((fr.factor)^ce)::F*rr
+              res
+
+          pol_root(p : P, op : OP, n : N) : F ==
+              cp : R := content(p)$P
+              cp::F
+              pp := (p exquo cp::P)::P
+              fp_root(factor(pp)$MPfact, op, n)
+                *fp_root(map(x +-> x::P, factor(cp)
+                            )$FactoredFunctions2(R, P), op, n)
+
+          root_factor_k(k : K) : F ==
+              x  := first argument k
+              nf  := second argument k
+              n := (retract(nf)@Z)::N
+              op := operator k
+              pol_root(numer(x), op, n)/pol_root(denom(x), op, n)
+
+          rootFactor x ==
+              lk := rootkernels tower x
+              eval(x, lk, [root_factor_k k for k in lk])
 
       if R has RadicalCategory then
         rootKerSimp(op, x, n) ==
