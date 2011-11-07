@@ -23,11 +23,11 @@
 ++ References:
 ++ Description: ThreeDimensionalViewport creates viewports to display graphs
 VIEW    ==> _$ViewportServer$Lisp
-sendI   ==> sockSendInt
-sendSF  ==> sockSendFloat
-sendSTR ==> sockSendString
-getI    ==> sockGetInt
-getSF   ==> sockGetFloat
+sendI   ==> sockSendInt$Lisp
+sendSF  ==> sockSendFloat$Lisp
+sendSTR ==> sockSendString$Lisp
+getI    ==> sockGetInt$Lisp
+getSF   ==> sockGetFloat$Lisp
 
 typeVIEW3D   ==> 1$I
 typeVIEWTube ==> 4
@@ -423,8 +423,8 @@ ThreeDimensionalViewport(): Exports == Implementation where
         -- the viewports in its list. a -1 means it doesn't
         -- exist.  As side effect selects the viewport for
         -- current operation.
-      sendI(VIEW,viewport.key)$Lisp
-      i := getI(VIEW)$Lisp
+      sendI(VIEW, viewport.key)
+      i := getI(VIEW)
       (i < 0$I) =>
         viewport.key := 0$I
         error "This viewport has already been closed!"
@@ -514,64 +514,64 @@ ThreeDimensionalViewport(): Exports == Implementation where
         insert!(dimension pt,s)
       #s > 1 => error "All points should have the same dimension"
       (n := first parts s) < 3 => error "Dimension of points should be greater than 2"
-      sendI(VIEW,viewport.fun)$Lisp
-      sendI(VIEW,makeVIEW3D)$Lisp
-      sendSTR(VIEW,viewport.title)$Lisp
-      sendSF(VIEW,viewport.viewpoint.deltaX)$Lisp
-      sendSF(VIEW,viewport.viewpoint.deltaY)$Lisp
-      sendSF(VIEW,viewport.viewpoint.scale)$Lisp
-      sendSF(VIEW,viewport.viewpoint.scaleX)$Lisp
-      sendSF(VIEW,viewport.viewpoint.scaleY)$Lisp
-      sendSF(VIEW,viewport.viewpoint.scaleZ)$Lisp
-      sendSF(VIEW,viewport.viewpoint.theta)$Lisp
-      sendSF(VIEW,viewport.viewpoint.phi)$Lisp
-      sendI(VIEW,viewport.moveTo.X)$Lisp
-      sendI(VIEW,viewport.moveTo.Y)$Lisp
-      sendI(VIEW,viewport.size.X)$Lisp
-      sendI(VIEW,viewport.size.Y)$Lisp
-      sendI(VIEW,viewport.flags.showCP)$Lisp
-      sendI(VIEW,viewport.flags.style)$Lisp
-      sendI(VIEW,viewport.flags.axesOn)$Lisp
-      sendI(VIEW,viewport.flags.diagonalsOn)$Lisp
-      sendI(VIEW,viewport.flags.outlineRenderOn)$Lisp
-      sendI(VIEW,viewport.flags.showRegionField)$Lisp  -- add to make3D.c
-      sendI(VIEW,viewport.volume.clipRegionField)$Lisp  -- add to make3D.c
-      sendI(VIEW,viewport.volume.clipSurfaceField)$Lisp  -- add to make3D.c
-      sendI(VIEW,viewport.colors.hueOffset)$Lisp
-      sendI(VIEW,viewport.colors.hueNumber)$Lisp
-      sendSF(VIEW,viewport.lighting.lightX)$Lisp
-      sendSF(VIEW,viewport.lighting.lightY)$Lisp
-      sendSF(VIEW,viewport.lighting.lightZ)$Lisp
-      sendSF(VIEW,viewport.lighting.translucence)$Lisp
-      sendI(VIEW,viewport.perspective.perspectiveField)$Lisp
-      sendSF(VIEW,viewport.perspective.eyeDistance)$Lisp
+      sendI(VIEW, viewport.fun)
+      sendI(VIEW, makeVIEW3D)
+      sendSTR(VIEW, viewport.title)
+      sendSF(VIEW, viewport.viewpoint.deltaX)
+      sendSF(VIEW, viewport.viewpoint.deltaY)
+      sendSF(VIEW, viewport.viewpoint.scale)
+      sendSF(VIEW, viewport.viewpoint.scaleX)
+      sendSF(VIEW, viewport.viewpoint.scaleY)
+      sendSF(VIEW, viewport.viewpoint.scaleZ)
+      sendSF(VIEW, viewport.viewpoint.theta)
+      sendSF(VIEW, viewport.viewpoint.phi)
+      sendI(VIEW, viewport.moveTo.X)
+      sendI(VIEW, viewport.moveTo.Y)
+      sendI(VIEW, viewport.size.X)
+      sendI(VIEW, viewport.size.Y)
+      sendI(VIEW, viewport.flags.showCP)
+      sendI(VIEW, viewport.flags.style)
+      sendI(VIEW, viewport.flags.axesOn)
+      sendI(VIEW, viewport.flags.diagonalsOn)
+      sendI(VIEW, viewport.flags.outlineRenderOn)
+      sendI(VIEW, viewport.flags.showRegionField)  -- add to make3D.c
+      sendI(VIEW, viewport.volume.clipRegionField)  -- add to make3D.c
+      sendI(VIEW, viewport.volume.clipSurfaceField)  -- add to make3D.c
+      sendI(VIEW, viewport.colors.hueOffset)
+      sendI(VIEW, viewport.colors.hueNumber)
+      sendSF(VIEW, viewport.lighting.lightX)
+      sendSF(VIEW, viewport.lighting.lightY)
+      sendSF(VIEW, viewport.lighting.lightZ)
+      sendSF(VIEW, viewport.lighting.translucence)
+      sendI(VIEW, viewport.perspective.perspectiveField)
+      sendSF(VIEW, viewport.perspective.eyeDistance)
         -- new, crazy points domain stuff
           -- first, send the point data list
-      sendI(VIEW,#lpts)$Lisp
+      sendI(VIEW, #lpts)
       for pt in lpts repeat
         aPoint := transform pt
-        sendSF(VIEW,xCoord aPoint)$Lisp
-        sendSF(VIEW,yCoord aPoint)$Lisp
-        sendSF(VIEW,zCoord aPoint)$Lisp
-        n = 3 => sendSF(VIEW,zCoord aPoint)$Lisp
-        sendSF(VIEW,color aPoint)$Lisp  -- change to c
+        sendSF(VIEW, xCoord aPoint)
+        sendSF(VIEW, yCoord aPoint)
+        sendSF(VIEW, zCoord aPoint)
+        n = 3 => sendSF(VIEW, zCoord aPoint)
+        sendSF(VIEW, color aPoint)  -- change to c
           -- now, send the 3d subspace structure
-      sendI(VIEW,#lllipts)$Lisp
+      sendI(VIEW, #lllipts)
       for allipts in lllipts for oneprop in lprops for onelprops in llprops repeat
            -- the following is false for f(x,y) and user-defined for [x(t),y(t),z(t)]
            -- this is temporary - until the generalized points stuff gets put in
-        sendI(VIEW,(closed? oneprop => yes; no))$Lisp
-        sendI(VIEW,(solid? oneprop => yes; no))$Lisp
-        sendI(VIEW,#allipts)$Lisp
+        sendI(VIEW, (closed? oneprop => yes; no))
+        sendI(VIEW, (solid? oneprop => yes; no))
+        sendI(VIEW, #allipts)
         for alipts in allipts for tinyprop in onelprops repeat
            -- the following is false for f(x,y) and true for [x(t),y(t),z(t)]
            -- this is temporary -- until the generalized points stuff gets put in
-          sendI(VIEW,(closed? tinyprop => yes;no))$Lisp
-          sendI(VIEW,(solid? tinyprop => yes;no))$Lisp
-          sendI(VIEW,#alipts)$Lisp
+          sendI(VIEW, (closed? tinyprop => yes;no))
+          sendI(VIEW, (solid? tinyprop => yes;no))
+          sendI(VIEW, #alipts)
           for oneIndexedPoint in alipts repeat
-            sendI(VIEW,oneIndexedPoint)$Lisp
-      viewport.key := getI(VIEW)$Lisp
+            sendI(VIEW, oneIndexedPoint)
+      viewport.key := getI(VIEW)
       viewport
          -- the key (now set to 0) should be what the viewport returns
 
@@ -602,53 +602,53 @@ ThreeDimensionalViewport(): Exports == Implementation where
       viewport.lighting.lightY := convert(Ylight)@SF
       viewport.lighting.lightZ := convert(Zlight)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,lightDef)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, lightDef)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.lighting.lightX)$Lisp
-          sendSF(VIEW,viewport.lighting.lightY)$Lisp
-          sendSF(VIEW,viewport.lighting.lightZ)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.lighting.lightX)
+          sendSF(VIEW, viewport.lighting.lightY)
+          sendSF(VIEW, viewport.lighting.lightZ)
+          getI(VIEW)          -- acknowledge
 
     axes (viewport,onOff) ==
       if onOff = "on" then viewport.flags.axesOn := yes
       else viewport.flags.axesOn := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,axesOnOff)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, axesOnOff)
         checkViewport viewport =>
-          sendI(VIEW,viewport.flags.axesOn)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.flags.axesOn)
+          getI(VIEW)          -- acknowledge
 
     diagonals (viewport,onOff) ==
       if onOff = "on" then viewport.flags.diagonalsOn := yes
       else viewport.flags.diagonalsOn := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,diagOnOff)$Lisp
+        sendI(VIEW,typeVIEW3D)
+        sendI(VIEW,diagOnOff)
         checkViewport viewport =>
-          sendI(VIEW,viewport.flags.diagonalsOn)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.flags.diagonalsOn)
+          getI(VIEW)          -- acknowledge
 
     outlineRender (viewport,onOff) ==
       if onOff = "on" then viewport.flags.outlineRenderOn := yes
       else viewport.flags.outlineRenderOn := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,outlineOnOff)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, outlineOnOff)
         checkViewport viewport =>
-          sendI(VIEW,viewport.flags.outlineRenderOn)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.flags.outlineRenderOn)
+          getI(VIEW)          -- acknowledge
 
     controlPanel (viewport,onOff) ==
       if onOff = "on" then viewport.flags.showCP := yes
       else viewport.flags.showCP := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,hideControl)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, hideControl)
         checkViewport viewport =>
-          sendI(VIEW,viewport.flags.showCP)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.flags.showCP)
+          getI(VIEW)          -- acknowledge
 
     drawStyle (viewport,how) ==
       if (how = "shade") then                    -- render
@@ -661,42 +661,42 @@ ThreeDimensionalViewport(): Exports == Implementation where
         viewport.flags.style := smooth
       else viewport.flags.style := wireMesh
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,viewport.flags.style)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, viewport.flags.style)
         checkViewport viewport =>
-          getI(VIEW)$Lisp          -- acknowledge
+          getI(VIEW)          -- acknowledge
 
     reset viewport ==
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,SPADBUTTONPRESS)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, SPADBUTTONPRESS)
         checkViewport viewport =>
-          sendI(VIEW,RESET)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, RESET)
+          getI(VIEW)          -- acknowledge
       void()
 
     close viewport ==
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,closeAll)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, closeAll)
         checkViewport viewport =>
-          getI(VIEW)$Lisp          -- acknowledge
+          getI(VIEW)          -- acknowledge
           viewport.key := 0$I
       void()
 
     viewpoint (viewport:%):V ==
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,queryVIEWPOINT)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, queryVIEWPOINT)
         checkViewport viewport =>
-          deltaX_sf : SF := getSF(VIEW)$Lisp
-          deltaY_sf : SF := getSF(VIEW)$Lisp
-          scale_sf  : SF := getSF(VIEW)$Lisp
-          scaleX_sf : SF := getSF(VIEW)$Lisp
-          scaleY_sf : SF := getSF(VIEW)$Lisp
-          scaleZ_sf : SF := getSF(VIEW)$Lisp
-          theta_sf  : SF := getSF(VIEW)$Lisp
-          phi_sf    : SF := getSF(VIEW)$Lisp
+          deltaX_sf : SF := getSF(VIEW)
+          deltaY_sf : SF := getSF(VIEW)
+          scale_sf  : SF := getSF(VIEW)
+          scaleX_sf : SF := getSF(VIEW)
+          scaleY_sf : SF := getSF(VIEW)
+          scaleZ_sf : SF := getSF(VIEW)
+          theta_sf  : SF := getSF(VIEW)
+          phi_sf    : SF := getSF(VIEW)
           getI(VIEW)$Lisp          -- acknowledge
           viewport.viewpoint :=
             [ theta_sf, phi_sf, scale_sf, scaleX_sf, scaleY_sf, scaleZ_sf,
@@ -707,18 +707,18 @@ ThreeDimensionalViewport(): Exports == Implementation where
     viewpoint (viewport:%, viewpt:V):Void ==
       viewport.viewpoint := viewpt
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,changeVIEWPOINT)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, changeVIEWPOINT)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.viewpoint.deltaX)$Lisp
-          sendSF(VIEW,viewport.viewpoint.deltaY)$Lisp
-          sendSF(VIEW,viewport.viewpoint.scale)$Lisp
-          sendSF(VIEW,viewport.viewpoint.scaleX)$Lisp
-          sendSF(VIEW,viewport.viewpoint.scaleY)$Lisp
-          sendSF(VIEW,viewport.viewpoint.scaleZ)$Lisp
-          sendSF(VIEW,viewport.viewpoint.theta)$Lisp
-          sendSF(VIEW,viewport.viewpoint.phi)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.viewpoint.deltaX)
+          sendSF(VIEW, viewport.viewpoint.deltaY)
+          sendSF(VIEW, viewport.viewpoint.scale)
+          sendSF(VIEW, viewport.viewpoint.scaleX)
+          sendSF(VIEW, viewport.viewpoint.scaleY)
+          sendSF(VIEW, viewport.viewpoint.scaleZ)
+          sendSF(VIEW, viewport.viewpoint.theta)
+          sendSF(VIEW, viewport.viewpoint.phi)
+          getI(VIEW)          -- acknowledge
 
 
     viewpoint (viewport:%,Theta:F,Phi:F,Scale:F,DeltaX:F,DeltaY:F):Void ==
@@ -753,21 +753,21 @@ ThreeDimensionalViewport(): Exports == Implementation where
     title (viewport,Title) ==
       viewport.title := Title
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,TITLE)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, TITLE)
         checkViewport viewport =>
-          sendSTR(VIEW,Title)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSTR(VIEW, Title)
+          getI(VIEW)          -- acknowledge
 
     colorDef (viewport,HueOffset,HueNumber) ==
       viewport.colors := [h := (hue HueOffset),(hue HueNumber) - h]
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,COLORDEF)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, COLORDEF)
         checkViewport viewport =>
-          sendI(VIEW,hue HueOffset)$Lisp
-          sendI(VIEW,hue HueNumber)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, hue HueOffset)
+          sendI(VIEW, hue HueNumber)
+          getI(VIEW)          -- acknowledge
 
     dimensions (viewport,ViewX,ViewY,ViewWidth,ViewHeight) ==
       viewport.moveTo := [ViewX,ViewY]
@@ -776,22 +776,22 @@ ThreeDimensionalViewport(): Exports == Implementation where
     move(viewport,xLoc,yLoc) ==
       viewport.moveTo := [xLoc,yLoc]
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,MOVE)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, MOVE)
         checkViewport viewport =>
-          sendI(VIEW,xLoc)$Lisp
-          sendI(VIEW,yLoc)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, xLoc)
+          sendI(VIEW, yLoc)
+          getI(VIEW)          -- acknowledge
 
     resize(viewport,xSize,ySize) ==
       viewport.size := [xSize,ySize]
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,RESIZE)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, RESIZE)
         checkViewport viewport =>
-          sendI(VIEW,xSize)$Lisp
-          sendI(VIEW,ySize)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, xSize)
+          sendI(VIEW, ySize)
+          getI(VIEW)          -- acknowledge
 
     coerce viewport ==
       (key(viewport) = 0$I) =>
@@ -809,56 +809,56 @@ ThreeDimensionalViewport(): Exports == Implementation where
       viewport.viewpoint.theta := convert(Theta)@SF
       viewport.viewpoint.phi   := convert(Phi)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,ROTATE)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, ROTATE)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.viewpoint.theta)$Lisp
-          sendSF(VIEW,viewport.viewpoint.phi)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.viewpoint.theta)
+          sendSF(VIEW, viewport.viewpoint.phi)
+          getI(VIEW)          -- acknowledge
 
     zoom(viewport:%,Scale:F) ==
       viewport.viewpoint.scale := convert(Scale)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,ZOOM)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, ZOOM)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.viewpoint.scale)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.viewpoint.scale)
+          getI(VIEW)          -- acknowledge
 
     zoom(viewport:%,ScaleX:F,ScaleY:F,ScaleZ:F) ==
       viewport.viewpoint.scaleX := convert(ScaleX)@SF
       viewport.viewpoint.scaleY := convert(ScaleY)@SF
       viewport.viewpoint.scaleZ := convert(ScaleZ)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,zoomx)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, zoomx)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.viewpoint.scaleX)$Lisp
-          sendSF(VIEW,viewport.viewpoint.scaleY)$Lisp
-          sendSF(VIEW,viewport.viewpoint.scaleZ)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.viewpoint.scaleX)
+          sendSF(VIEW, viewport.viewpoint.scaleY)
+          sendSF(VIEW, viewport.viewpoint.scaleZ)
+          getI(VIEW)          -- acknowledge
 
     translate(viewport,DeltaX,DeltaY) ==
       viewport.viewpoint.deltaX := convert(DeltaX)@SF
       viewport.viewpoint.deltaY := convert(DeltaY)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,TRANSLATE)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, TRANSLATE)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.viewpoint.deltaX)$Lisp
-          sendSF(VIEW,viewport.viewpoint.deltaY)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.viewpoint.deltaX)
+          sendSF(VIEW, viewport.viewpoint.deltaY)
+          getI(VIEW)          -- acknowledge
 
     intensity(viewport,Amount) ==
       if (Amount < 0$F) or (Amount > 1$F) then
         error "The intensity must be a value between 0 and 1, inclusively."
       viewport.lighting.translucence := convert(Amount)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,translucenceDef)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, translucenceDef)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.lighting.translucence)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.lighting.translucence)
+          getI(VIEW)          -- acknowledge
 
     write(viewport:%,Filename:S,aThingToWrite:S) ==
       write(viewport,Filename,[aThingToWrite])
@@ -869,100 +869,100 @@ ThreeDimensionalViewport(): Exports == Implementation where
     write(viewport:%,Filename:S,thingsToWrite:L S) ==
       stringToSend : S := ""
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,writeView)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, writeView)
         checkViewport viewport =>
-          sendSTR(VIEW,Filename)$Lisp
+          sendSTR(VIEW, Filename)
           m := minIndex(avail := viewWriteAvailable())
           for aTypeOfFile in thingsToWrite repeat
             if (writeTypeInt:= position(upperCase aTypeOfFile,avail)-m) < 0 then
               sayBrightly(["  > "::E,(concat(aTypeOfFile, _
                 " is not a valid file type for writing a 3D viewport"))::E]$List(E))$Lisp
             else
-              sendI(VIEW,writeTypeInt+(1$I))$Lisp
-          sendI(VIEW,0$I)$Lisp     -- no more types of things to write
-          getI(VIEW)$Lisp          -- acknowledge
+              sendI(VIEW, writeTypeInt + 1$I)
+          sendI(VIEW, 0$I)     -- no more types of things to write
+          getI(VIEW)          -- acknowledge
           Filename
 
     perspective (viewport,onOff) ==
       if onOff = "on" then viewport.perspective.perspectiveField := yes
       else viewport.perspective.perspectiveField := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,perspectiveOnOff)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, perspectiveOnOff)
         checkViewport viewport =>
-          sendI(VIEW,viewport.perspective.perspectiveField)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.perspective.perspectiveField)
+          getI(VIEW)          -- acknowledge
 
     showRegion (viewport,onOff) ==
       if onOff = "on" then viewport.flags.showRegionField := yes
       else viewport.flags.showRegionField := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,region3D)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, region3D)
         checkViewport viewport =>
-          sendI(VIEW,viewport.flags.showRegionField)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.flags.showRegionField)
+          getI(VIEW)          -- acknowledge
 
     showClipRegion (viewport,onOff) ==
       if onOff = "on" then viewport.volume.clipRegionField := yes
       else viewport.volume.clipRegionField := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,clipRegionOnOff)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, clipRegionOnOff)
         checkViewport viewport =>
-          sendI(VIEW,viewport.volume.clipRegionField)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.volume.clipRegionField)
+          getI(VIEW)          -- acknowledge
 
     clipSurface (viewport,onOff) ==
       if onOff = "on" then viewport.volume.clipSurfaceField := yes
       else viewport.volume.clipSurfaceField := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,clipSurfaceOnOff)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, clipSurfaceOnOff)
         checkViewport viewport =>
-          sendI(VIEW,viewport.volume.clipSurfaceField)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.volume.clipSurfaceField)
+          getI(VIEW)          -- acknowledge
 
     eyeDistance(viewport:%,EyeDistance:F) ==
       viewport.perspective.eyeDistance := convert(EyeDistance)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,eyeDistanceData)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, eyeDistanceData)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.perspective.eyeDistance)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.perspective.eyeDistance)
+          getI(VIEW)          -- acknowledge
 
     hitherPlane(viewport:%,HitherPlane:F) ==
       viewport.perspective.hitherPlane := convert(HitherPlane)@SF
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,hitherPlaneData)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, hitherPlaneData)
         checkViewport viewport =>
-          sendSF(VIEW,viewport.perspective.hitherPlane)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSF(VIEW, viewport.perspective.hitherPlane)
+          getI(VIEW)          -- acknowledge
 
     modifyPointData(viewport,anIndex,aPoint) ==
       (n := dimension aPoint) < 3 => error "The point should have dimension of at least 3"
       viewport.space3D := modifyPointData(viewport.space3D,anIndex,aPoint)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW3D)$Lisp
-        sendI(VIEW,modifyPOINT)$Lisp
+        sendI(VIEW, typeVIEW3D)
+        sendI(VIEW, modifyPOINT)
         checkViewport viewport =>
-          sendI(VIEW,anIndex)$Lisp
-          sendSF(VIEW,xCoord aPoint)$Lisp
-          sendSF(VIEW,yCoord aPoint)$Lisp
-          sendSF(VIEW,zCoord aPoint)$Lisp
-          if (n = 3) then sendSF(VIEW,convert(0.5)@SF)$Lisp
-          else sendSF(VIEW,color aPoint)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, anIndex)
+          sendSF(VIEW, xCoord aPoint)
+          sendSF(VIEW, yCoord aPoint)
+          sendSF(VIEW, zCoord aPoint)
+          if (n = 3) then sendSF(VIEW, convert(0.5)@SF)
+          else sendSF(VIEW, color aPoint)
+          getI(VIEW)          -- acknowledge
 
 --    print viewport ==
 --      (key(viewport) ~= 0$I) =>
---        sendI(VIEW,typeVIEW3D)$Lisp
---        sendI(VIEW,printViewport)$Lisp
+--        sendI(VIEW, typeVIEW3D)
+--        sendI(VIEW, printViewport)
 --        checkViewport viewport =>
---          getI(VIEW)$Lisp          -- acknowledge
+--          getI(VIEW)          -- acknowledge
 
 @
 \section{License}

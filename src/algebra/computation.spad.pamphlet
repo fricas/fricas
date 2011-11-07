@@ -897,7 +897,7 @@ ILogic(): Exports == Implementation where
       error "expecting /\"
       return [trm,p1]
     p1 := p1 + (1::NNI)
-    --sayTeX$Lisp concat("st ch=",ch::String)
+    --sayMsg concat("st ch=",ch::String)
     r:PR:= parseILTerm(t1,p1)
     secondTerm := r.rft
     p1 := r.pout
@@ -920,7 +920,7 @@ ILogic(): Exports == Implementation where
       error "expecting \/"
       return [trm,p1]
     p1 := p1 + (1::NNI)
-    --sayTeX$Lisp concat("st ch=",ch::String)
+    --sayMsg concat("st ch=",ch::String)
     r:PR:= parseILTerm(t1,p1)
     secondTerm := r.rft
     p1 := r.pout
@@ -943,7 +943,7 @@ ILogic(): Exports == Implementation where
       error "expecting ->"
       return [trm,p1]
     p1 := p1 + (1::NNI)
-    --sayTeX$Lisp concat("st ch=",ch::String)
+    --sayMsg concat("st ch=",ch::String)
     r:PR:= parseILTerm(t1,p1)
     secondTerm := r.rft
     p1 := r.pout
@@ -955,7 +955,7 @@ ILogic(): Exports == Implementation where
     vnm:String := ""
     pt:NNI := pin
     ch := qelt(t1,pt)
-    --sayTeX$Lisp concat("st ch=",ch::String)
+    --sayMsg concat("st ch=",ch::String)
     while alphanumeric?(ch) repeat
       vnm := concat(vnm,ch)
       pt := pt + (1::NNI)
@@ -968,12 +968,12 @@ ILogic(): Exports == Implementation where
     p1 := pin
     res:% := logicT()
     ch := qelt(t1,p1)
-    --sayTeX$Lisp concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
+    --sayMsg concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
     -- first remove leading spaces
     while ch = char(" ") repeat
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 1 giving:",toString(res)])
         return [res,p1]
       ch := qelt(t1,p1)
     r:PR:= [res,p1]
@@ -983,13 +983,13 @@ ILogic(): Exports == Implementation where
     p1 := r.pout
     -- now check for compound term
     if p1 > maxIndex(t1) then
-      --sayTeX$Lisp concat(["parseTerm(",t1,") 2 giving:",toString(res)])
+      --sayMsg concat(["parseTerm(",t1,") 2 giving:",toString(res)])
       return [res,p1]
     ch := qelt(t1,p1)
     if ch = char(" ") then
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 3 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 3 giving:",toString(res)])
         return [res,p1]
     ch := qelt(t1,p1)
     if ch = char("/") then
@@ -1014,12 +1014,12 @@ ILogic(): Exports == Implementation where
     p1 := pin
     res:% := logicT()
     ch := qelt(t1,p1)
-    --sayTeX$Lisp concat(["parseIL ch=",ch::String," p1=",string(p1)])$String
+    --sayMsg concat(["parseIL ch=",ch::String," p1=",string(p1)])$String
     -- first remove leading spaces
     while ch = char(" ") repeat
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 1 giving:",toString(res)])
         return [res,p1]
       ch := qelt(t1,p1)
     r:PR:= [res,p1]
@@ -1035,7 +1035,7 @@ ILogic(): Exports == Implementation where
   --            <term>-><term> | "("<term>")"
   parseIL(t1: String): % ==
     r := parseILTerm(t1,minIndex(t1)::NNI)
-    --sayTeX$Lisp concat(["parseIL(",t1,") giving:",toString(tm)])
+    --sayMsg concat(["parseIL(",t1,") giving:",toString(tm)])
     r.rft
 
   -- return string representation
@@ -1046,8 +1046,8 @@ ILogic(): Exports == Implementation where
       return "?"
     if n case var then
       return n.var.str
-      --sayTeX$Lisp concat(["toString case i1=",s])
-      --sayTeX$Lisp n
+      --sayMsg concat(["toString case i1=",s])
+      --sayMsg n
     if n case binaryOp then
       -- binary node which has two subnodes c1 and c2
       s1:String := "->"
@@ -1068,8 +1068,8 @@ ILogic(): Exports == Implementation where
       return "?"
     if n case var then
       return n.var.str
-      --sayTeX$Lisp concat(["toString case i1=",s])
-      --sayTeX$Lisp n
+      --sayMsg concat(["toString case i1=",s])
+      --sayMsg n
     if n case binaryOp then
       -- binary node which has two subnodes c1 and c2
       s1:String := "->"
@@ -1355,7 +1355,7 @@ Untyped() : Exports == Implementation where
       vnm:String := ""
       pt:NNI := pin
       ch := qelt(t1,pt)
-      --sayTeX$Lisp concat("st ch=",ch::String)
+      --sayMsg concat("st ch=",ch::String)
       while alphanumeric?(ch) repeat
         vnm := concat(vnm,ch)
         pt := pt + (1::NNI)
@@ -1364,7 +1364,7 @@ Untyped() : Exports == Implementation where
         ch := qelt(t1,pt)
       if ch = char(":") then
         -- read type
-        --sayTeX$Lisp concat("st ch=",ch::String)
+        --sayMsg concat("st ch=",ch::String)
         r:Record(rft:ILogic,pout:NNI) := parseIL2(t1,pt)$ILogic
         pt:= r.pout
         -- since this instance is untyped we ignore result
@@ -1451,7 +1451,7 @@ Typed() : Exports == Implementation where
       vnm:String := ""
       pt:NNI := pin
       ch := qelt(t1,pt)
-      --sayTeX$Lisp concat("st ch=",ch::String)
+      --sayMsg concat("st ch=",ch::String)
       while alphanumeric?(ch) repeat
         vnm := concat(vnm,ch)
         pt := pt + (1::NNI)
@@ -1460,7 +1460,7 @@ Typed() : Exports == Implementation where
         ch := qelt(t1,pt)
       if ch = char(":") then
         -- read type
-        --sayTeX$Lisp concat("st ch=",ch::String)
+        --sayMsg concat("st ch=",ch::String)
         pt := pt + (1::NNI)
         if pt > maxIndex(t1) then
           return [var(vnm),pt]
@@ -1802,6 +1802,8 @@ Lambda(UT): Exports == Implementation where
 
  Implementation == add
 
+  sayMsg ==> sayBrightly$Lisp
+
   Rep := Union(_
          boundTerm:Record(varBound:NNI),_
          freeTerm:UT,_
@@ -1846,8 +1848,8 @@ Lambda(UT): Exports == Implementation where
   -- Constructs lambda term and bind any variables with the name provided
   lambda(x:%,t1: UT): % ==
     lt:% := [[x,t1]]
-    --sayTeX$Lisp concat(["creating lambda(",toString(x),",",t1") giving:",toString(lt)])
-    --sayTeX$Lisp concat(["bound ver=",toString(bind(lt))])
+    --sayMsg concat(["creating lambda(",toString(x),",",t1") giving:",toString(lt)])
+    --sayMsg concat(["bound ver=",toString(bind(lt))])
     bind(lt)
 
   -- returns 2 child nodes if this is a compound term
@@ -1922,11 +1924,11 @@ Lambda(UT): Exports == Implementation where
     if n case lambdaTerm then
       --s1:String := name(n.lambdaTerm.nm)$UT
       return freeVariable?(n.lambdaTerm.c3,0::NNI)
-    sayTeX$Lisp concat("warning free called on non-lambda term",toString(n))
+    sayMsg concat("warning free called on non-lambda term",toString(n))
     false
 
   parseLambdaTerm(t1: String,pin:NNI):PR ==
-    --sayTeX$Lisp concat(["parseLambdaTerm(",t1,",",string(pin),")"])$String
+    --sayMsg concat(["parseLambdaTerm(",t1,",",string(pin),")"])$String
     p1 := pin
     ch := qelt(t1,p1)
     if not (ch = char("\")) then
@@ -1939,16 +1941,16 @@ Lambda(UT): Exports == Implementation where
     r := parseVarTerm(t1,p1)$UT
     p1 := r.pout
     ch := qelt(t1,p1)
-    --sayTeX$Lisp concat(["parseLambdaTerm'(",t1,",",string(p1),")"])$String
+    --sayMsg concat(["parseLambdaTerm'(",t1,",",string(p1),")"])$String
     if not (ch = char(".")) then
       error "lambda term must have ."
       return [[[0::NNI]],p1]
     p1 := p1 + (1::NNI)
-    --sayTeX$Lisp concat(["parseLambdaTerm''(",t1,",",string(p1),")"])$String
+    --sayMsg concat(["parseLambdaTerm''(",t1,",",string(p1),")"])$String
     if p1 > maxIndex(t1) then
       error "lambda term must contain something"
       return [[[0::NNI]],p1]
-    --sayTeX$Lisp concat(["parseLambdaTerm'''(",t1,",",string(p1),")"])$String
+    --sayMsg concat(["parseLambdaTerm'''(",t1,",",string(p1),")"])$String
     r2 := parseTerm(t1,p1)
     ex:% := r2.rft
     p1 := r2.pout
@@ -1978,7 +1980,7 @@ Lambda(UT): Exports == Implementation where
     p1 := pin
     inx:NNI := 0 -- holds De Bruijn index while its being read
     ch := qelt(t1,p1)
-    --sayTeX$Lisp concat("pv ch=",ch::String)
+    --sayMsg concat("pv ch=",ch::String)
     while digit?(ch) repeat
       if ch = char("0") then inx := inx*10
       if ch = char("1") then inx := inx*10 + 1
@@ -1999,12 +2001,12 @@ Lambda(UT): Exports == Implementation where
     p1 := pin
     res:% := [[0::NNI]]
     ch := qelt(t1,p1)
-    --sayTeX$Lisp concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
+    --sayMsg concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
     -- first remove leading spaces
     while ch = char(" ") repeat
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 1 giving:",toString(res)])
         return [res,p1]
       ch := qelt(t1,p1)
     r:PR:= [res,p1]
@@ -2019,18 +2021,18 @@ Lambda(UT): Exports == Implementation where
       p1 := r2.pout
     -- now check for compound term
     if p1 > maxIndex(t1) then
-      --sayTeX$Lisp concat(["parseTerm(",t1,") 2 giving:",toString(res)])
+      --sayMsg concat(["parseTerm(",t1,") 2 giving:",toString(res)])
       return [res,p1]
     ch := qelt(t1,p1)
     if ch = char(" ") then
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 3 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 3 giving:",toString(res)])
         return [res,p1]
       r := parseTerm(t1,p1)
       p1 := r.pout
       res := lambda(res,r.rft)
-    --sayTeX$Lisp concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+    --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
     [res,p1]
 
   -- Constructs nested lambda terms from a string
@@ -2046,7 +2048,7 @@ Lambda(UT): Exports == Implementation where
   -- brackets can be used around whole terms.
   parseLambda(t1: String): % ==
     r := parseTerm(t1,minIndex(t1)::NNI)
-    --sayTeX$Lisp concat(["parseLambda(",t1,") giving:",toString(tm)])
+    --sayMsg concat(["parseLambda(",t1,") giving:",toString(tm)])
     r.rft
 
   -- return string representation using conventional notation, that is
@@ -2056,10 +2058,10 @@ Lambda(UT): Exports == Implementation where
   -- one on the right.
   toStringConven(n:%,boundL: List String):String ==
     s:String := ""
-    --sayTeX$Lisp concat(["toStringConven(",toString(n),")"])
+    --sayMsg concat(["toStringConven(",toString(n),")"])
     if n case boundTerm then
       i:NNI := n.boundTerm.varBound + 1
-      --sayTeX$Lisp concat(["toStringConven(",toString(n),") i=",string(i)," #boundL=",string(#boundL)])
+      --sayMsg concat(["toStringConven(",toString(n),") i=",string(i)," #boundL=",string(#boundL)])
       if i > 0 and i <= #boundL then return boundL.i
       s := string(n.boundTerm.varBound)
     if n case freeTerm then
@@ -2105,16 +2107,16 @@ Lambda(UT): Exports == Implementation where
   -- used by bind to replace a given string name in sub-nodes
   -- with De Bruijn index
   bindTerm(n:%,i:NNI,s:UT):% ==
-    --sayTeX$Lisp concat(["bindTerm(",toString(n)," map:",string(i)," to ",name(s)$UT,")"])
+    --sayMsg concat(["bindTerm(",toString(n)," map:",string(i)," to ",name(s)$UT,")"])
     if n case boundTerm then
       return lambda(n.boundTerm.varBound)
     if n case freeTerm then
       if n.freeTerm=s then
-        --sayTeX$Lisp concat(["convert:",name(s)$UT," to ",string(i)])
+        --sayMsg concat(["convert:",name(s)$UT," to ",string(i)])
         return lambda(i)
       return lambda(n.freeTerm)
     if n case lambdaTerm then
-      --sayTeX$Lisp concat(["bindTerm generating lambda(",toString(bindTerm(n.lambdaTerm.c3,i+1,s)),",",name(n.lambdaTerm.nm)$UT,")"])
+      --sayMsg concat(["bindTerm generating lambda(",toString(bindTerm(n.lambdaTerm.c3,i+1,s)),",",name(n.lambdaTerm.nm)$UT,")"])
       return [[bindTerm(n.lambdaTerm.c3,i+1,s),n.lambdaTerm.nm]]
     if n case compoundTerm then
       return lambda(bindTerm(n.compoundTerm.c1,i,s),_
@@ -2124,7 +2126,7 @@ Lambda(UT): Exports == Implementation where
   -- if this is a lambda term then replace string name in sub-nodes
   -- with De Bruijn index
   bind(n: %):% ==
-    --sayTeX$Lisp concat(["bind(",toString(n),")"])
+    --sayMsg concat(["bind(",toString(n),")"])
     if (n case lambdaTerm) then
       return [[bindTerm(n.lambdaTerm.c3,0,n.lambdaTerm.nm),n.lambdaTerm.nm]]
     n
@@ -2132,16 +2134,16 @@ Lambda(UT): Exports == Implementation where
   -- used by unbind to replace a given De Bruijn index in sub-nodes
   -- with string name
   unbindTerm(n:%,i:NNI,s:UT):% ==
-    --sayTeX$Lisp concat(["unbindTerm(",toString(n)," map:",string(i)," to ",name(s)$UT,")"])
+    --sayMsg concat(["unbindTerm(",toString(n)," map:",string(i)," to ",name(s)$UT,")"])
     if n case boundTerm then
       if n.boundTerm.varBound=i then
-        --sayTeX$Lisp concat(["convert:",string(i)," to ",name(s)$UT])
+        --sayMsg concat(["convert:",string(i)," to ",name(s)$UT])
         return lambda(s)
       return lambda(n.boundTerm.varBound)
     if n case freeTerm then
       return lambda(n.freeTerm)
     if n case lambdaTerm then
-      --sayTeX$Lisp concat(["unbindTerm generating lambda(",toString(unbindTerm(n.lambdaTerm.c3,i+1,s)),",",name(n.lambdaTerm.nm),")"])
+      --sayMsg concat(["unbindTerm generating lambda(",toString(unbindTerm(n.lambdaTerm.c3,i+1,s)),",",name(n.lambdaTerm.nm),")"])
       return [[unbindTerm(n.lambdaTerm.c3,i+1,s),n.lambdaTerm.nm]]
     if n case compoundTerm then
       return lambda(unbindTerm(n.compoundTerm.c1,i,s),_
@@ -2151,7 +2153,7 @@ Lambda(UT): Exports == Implementation where
   -- if this is a lambda term then replace De Bruijn index in sub-nodes
   -- with string name
   unbind(n: %):% ==
-    --sayTeX$Lisp concat(["unbind(",toString(n),")"])
+    --sayMsg concat(["unbind(",toString(n),")"])
     if (n case lambdaTerm) then
       return [[unbindTerm(n.lambdaTerm.c3,0,n.lambdaTerm.nm),n.lambdaTerm.nm]]
     n
@@ -2502,6 +2504,8 @@ SKICombinators(UT): Exports == Implementation where
 
  Implementation == add
 
+  sayMsg ==> sayBrightly$Lisp
+
   Rep := Union(_
          lf:Symbol,_
          nd:Record(c1:%, c2:%),_
@@ -2583,12 +2587,12 @@ SKICombinators(UT): Exports == Implementation where
     p1 := pin
     res:% := ["I"::Symbol]
     ch := qelt(t1,p1)
-    --sayTeX$Lisp concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
+    --sayMsg concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
     -- first remove leading spaces
     while ch = char(" ") repeat
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 1 giving:",toString(res)])
         return [res,p1]
       ch := qelt(t1,p1)
     if alphabetic?(ch) then
@@ -2596,9 +2600,9 @@ SKICombinators(UT): Exports == Implementation where
         r := parseCombinatorTerm(t1,p1)
         res := r.rft
         p1 := r.pout
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
       if lowerCase?(ch) then
-        --sayTeX$Lisp concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+        --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
         r2 := parseVarTerm(t1,p1)$UT
         res := ski(r2.rft)
         p1 := r2.pout
@@ -2615,7 +2619,7 @@ SKICombinators(UT): Exports == Implementation where
     p1 := r.pout
     -- now check for compound term
     if p1 > maxIndex(t1) then
-      --sayTeX$Lisp concat(["parseTerm(",t1,") 2 giving:",toString(res)])
+      --sayMsg concat(["parseTerm(",t1,") 2 giving:",toString(res)])
       return [res,p1]
     ch := qelt(t1,p1)
     stck:List % := []
@@ -2625,7 +2629,7 @@ SKICombinators(UT): Exports == Implementation where
       r := parseOneTerm(t1,p1)
       p1 := r.pout
       stck := concat(stck,r.rft)
-      --sayTeX$Lisp concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+      --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
       if p1 > maxIndex(t1)
         then ch := char("*")
         else ch := qelt(t1,p1)
@@ -2640,7 +2644,7 @@ SKICombinators(UT): Exports == Implementation where
   -- one on the right.
   parseSki(t1: String): % ==
     r := parseTerm(t1,minIndex(t1)::NNI)
-    --sayTeX$Lisp concat(["parseSki(",t1,") giving:",toString(tm)])
+    --sayMsg concat(["parseSki(",t1,") giving:",toString(tm)])
     r.rft
 
   -- returns child nodes if this is a compound term
@@ -2724,19 +2728,19 @@ SKICombinators(UT): Exports == Implementation where
       -- binary node which has two subnodes c1 and c2
       left := redux1(n.nd.c1)
       right := redux1(n.nd.c2)
-      --sayTeX$Lisp concat(["left=",toString(left),_
+      --sayMsg concat(["left=",toString(left),_
       --                    " right=",toString(right)])$String
       if isI?(left) then return right
       if not (left case nd) then return ski(left,right)
       leftleft := left.nd.c1
       leftright := left.nd.c2
-      --sayTeX$Lisp concat(["leftleft=",toString(leftleft),_
+      --sayMsg concat(["leftleft=",toString(leftleft),_
       --                    " leftright=",toString(leftright)])$String
       if isK?(leftleft) then return leftright
       if not (leftleft case nd) then return ski(left,right)
       leftleftleft := leftleft.nd.c1
       leftleftright := leftleft.nd.c2
-      --sayTeX$Lisp concat(["leftleftleft=",toString(leftleftleft),_
+      --sayMsg concat(["leftleftleft=",toString(leftleftleft),_
       --                    " leftleftright=",toString(leftleftright)])$String
       if isS?(leftleftleft) then
         return ski(ski(leftleftright,right),ski(leftright,right))
@@ -2753,7 +2757,7 @@ SKICombinators(UT): Exports == Implementation where
       lastResult := thisResult
       thisResult := redux1(lastResult)
       triesLeft := (triesLeft - 1)::NNI
-      sayTeX$Lisp toString(lastResult)
+      sayMsg toString(lastResult)
     thisResult
 
   -- return true if equal (deep search) that is: all terms
@@ -3105,6 +3109,8 @@ compUtil(UT): Exports == Implementation where
 
  Implementation ==> add
 
+  sayMsg ==> sayBrightly$Lisp
+
   -- Keeps count of index number of variables created in Ski2Lambda.
   -- I am wary of defining a variable outside of a function but
   -- can't find another non-messy way to update it from several
@@ -3117,67 +3123,67 @@ compUtil(UT): Exports == Implementation where
     -- parameters for this combinator. If there had been
     -- they would have been found when this was called on
     -- the nodes above it.
-    -- sayTeX$Lisp concat(["util coerce called for:",toString(s)$SU])$String
+    -- sayMsg concat(["util coerce called for:",toString(s)$SU])$String
     if atom?(s)$SU then
-      --sayTeX$Lisp concat(["util coerce atom:",toString(s)$SU])$String
+      --sayMsg concat(["util coerce atom:",toString(s)$SU])$String
       if isI?(s)$SU then
         strVar:String := concat("v",string(varNum))
-        sayTeX$Lisp concat["util coerce rule SL1: Ski[I] = \",strVar,".0"]
+        sayMsg concat["util coerce rule SL1: Ski[I] = \",strVar,".0"]
         varNum := varNum +1
         return parseLambda(concat["\",strVar,".0"])$LU
       if isK?(s)$SU then
         strVar1:String := concat("v",string(varNum))
         strVar2:String := concat("v",string(varNum+1))
-        sayTeX$Lisp concat["util coerce rule SL2: Ski[K] = \",strVar1,".\",strVar2,".1"]
+        sayMsg concat["util coerce rule SL2: Ski[K] = \",strVar1,".\",strVar2,".1"]
         varNum := varNum +2
         return parseLambda(concat["\",strVar1,".\",strVar2,".1"])$LU
       if isS?(s)$SU then
         strVar1:String := concat("v",string(varNum))
         strVar2:String := concat("v",string(varNum+1))
         strVar3:String := concat("v",string(varNum+2))
-        sayTeX$Lisp concat["util coerce rule SL3: Ski[S] = \",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"]
+        sayMsg concat["util coerce rule SL3: Ski[S] = \",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"]
         varNum := varNum +3
         return parseLambda(concat["\",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"])$LU
-      sayTeX$Lisp concat(["util coerce pass unbound variable ",getName(getVariable(s)$SU)$UT," unchanged"])$String
+      sayMsg concat(["util coerce pass unbound variable ",getName(getVariable(s)$SU)$UT," unchanged"])$String
       return lambda(getVariable(s)$SU)$LU
     subnodes:List SU := getChildren(s)$SU
     c1:SU := first subnodes
     c2:SU := second subnodes
     s1:String := toString(c1)$SU
     s2:String := toString(c2)$SU
-    --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)])$String
+    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)])$String
     -- look for I x, if found translate x
     if isI?(c1)$SU then
-      sayTeX$Lisp concat(["util coerce apply rule SL1 in:",toString(s)$SU])$String
+      sayMsg concat(["util coerce apply rule SL1 in:",toString(s)$SU])$String
       return Ski2Lambda(c2)
     if atom?(c1)$SU then
-      sayTeX$Lisp concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
+      sayMsg concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
       return lambda(Ski2Lambda(c1),Ski2Lambda(c2))$LU
     -- look for K x y, if found translate x
     subsubnodes:List SU := getChildren(c1)$SU
     c11:SU := first subsubnodes
     c12:SU := second subsubnodes
-    --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)$SU," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
+    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)$SU," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
     if isK?(c11)$SU then
       s12:String := getName(getVariable(c12)$SU)$UT
-      sayTeX$Lisp concat(["util coerce apply rule SL2 in:",toString(s)$SU])$String
+      sayMsg concat(["util coerce apply rule SL2 in:",toString(s)$SU])$String
       return Ski2Lambda(c12)
     if atom?(c11)$SU then
-      sayTeX$Lisp concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
+      sayMsg concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
       return lambda(Ski2Lambda(c1),Ski2Lambda(c2))$LU
     -- look for S x y z, if found translate (x z)(y z)
     subsubnodes2:List SU := getChildren(c11)$SU
     c111:SU := first subsubnodes2
     c112:SU := second subsubnodes2
-    --sayTeX$Lisp concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
+    --sayMsg concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
     -- look for K x y, if found translate x
     if isS?(c111)$SU then
       s2:String := getName(getVariable(c2)$SU)$UT
       s12:String := getName(getVariable(c12)$SU)$UT
       s112:String := getName(getVariable(c112)$SU)$UT
-      sayTeX$Lisp concat(["util coerce apply rule SL3 in:",toString(s)$SU])$String
+      sayMsg concat(["util coerce apply rule SL3 in:",toString(s)$SU])$String
       return lambda(lambda(Ski2Lambda(c112),Ski2Lambda(c2))$LU,lambda(Ski2Lambda(c12),Ski2Lambda(c2))$LU)$LU
-    sayTeX$Lisp concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
+    sayMsg concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
     lambda(Ski2Lambda(c1),Ski2Lambda(c2))$LU
 
   -- coerce SKI combinators to Lambda term.
@@ -3194,23 +3200,23 @@ compUtil(UT): Exports == Implementation where
   -- when we are coercing Lambda to Ski and we apply rule LS5
   -- we call this
   lambdaOverSki(var:UT,sk:SU):SU ==
-    --sayTeX$Lisp concat(["gives \",toString(var)$UT,".",toString(sk)])$String
+    --sayMsg concat(["gives \",toString(var)$UT,".",toString(sk)])$String
     if atom?(sk) then
       if freeVariable?(sk,var)$SU then
-        sayTeX$Lisp concat(["util coerce rule LS3' applied to: \",toString(var)$UT,".",toString(sk)," giving K ",toString(sk)])$String
+        sayMsg concat(["util coerce rule LS3' applied to: \",toString(var)$UT,".",toString(sk)," giving K ",toString(sk)])$String
         return ski(K(),sk)
-      sayTeX$Lisp concat(["util coerce rule LS4' applied to: \",toString(var)$UT,".",toString(sk)," giving I"])$String
+      sayMsg concat(["util coerce rule LS4' applied to: \",toString(var)$UT,".",toString(sk)," giving I"])$String
       return I()$SU
     ch: List SU := getChildren(sk)$SU
     left:SU := first ch
     right:SU := second ch
-    --sayTeX$Lisp concat(["left=",toString(left),_
+    --sayMsg concat(["left=",toString(left),_
     --                    " right=",toString(right)])$String
     if freeVariable?(sk,var)$SU then
-      sayTeX$Lisp concat(["util coerce rule LS3' applied to: \",toString(var)$UT,".",toString(sk)," giving K \",toString(var)$UT,".",toString(left)," \",toString(var)$UT,".",toString(right)])$String
+      sayMsg concat(["util coerce rule LS3' applied to: \",toString(var)$UT,".",toString(sk)," giving K \",toString(var)$UT,".",toString(left)," \",toString(var)$UT,".",toString(right)])$String
       --return ski(ski(K(),left),right)
       return ski(K(),ski(left,right))
-    sayTeX$Lisp concat(["util coerce rule LS5' applied to: \",toString(var)$UT,".",toString(sk)," giving S \",toString(var)$UT,".",toString(left)," \",toString(var)$UT,".",toString(right)])$String
+    sayMsg concat(["util coerce rule LS5' applied to: \",toString(var)$UT,".",toString(sk)," giving S \",toString(var)$UT,".",toString(left)," \",toString(var)$UT,".",toString(right)])$String
     return ski(ski(S()$SU,lambdaOverSki(var,left)),lambdaOverSki(var,right))
 
   -- coerce Lambda term to SKI combinators.
@@ -3226,13 +3232,13 @@ compUtil(UT): Exports == Implementation where
   coerce(lam: LU):SU ==
     -- test for rule 1
     if atom?(lam)$LU then
-      sayTeX$Lisp concat(["util coerce rule LS1 applied to:",toString(lam)$LU," giving ",toString(lam)$LU])$String
+      sayMsg concat(["util coerce rule LS1 applied to:",toString(lam)$LU," giving ",toString(lam)$LU])$String
       return ski(var(toString(lam)$LU)$UT)$SU
     if isCompound?(lam)$LU then
       ch:List LU := getChildren(lam)$LU
       c1:LU := first ch
       c2:LU := second ch
-      sayTeX$Lisp concat(["util coerce rule LS2 applied to:",toString(lam)$LU," giving (",toString(c1)$LU," ",toString(c2)$LU,")"])$String
+      sayMsg concat(["util coerce rule LS2 applied to:",toString(lam)$LU," giving (",toString(c1)$LU," ",toString(c2)$LU,")"])$String
       return ski(c1::SU,c2::SU)$SU
     if isLambda?(lam)$LU then
       lamUn:LU := unbind(lam)$LU
@@ -3240,23 +3246,23 @@ compUtil(UT): Exports == Implementation where
       s3:UT := getVariable(lam)$LU
       if atom?(c3)$LU then
         if toString(c3)$LU="0" then
-          sayTeX$Lisp concat(["util coerce rule LS4 applied to:",toString(lam)$LU," giving I"])$String
+          sayMsg concat(["util coerce rule LS4 applied to:",toString(lam)$LU," giving I"])$String
           return I()$SU
       if free?(lam)$LU then
-        sayTeX$Lisp concat(["util coerce rule LS3 applied to:",toString(lam)$LU," giving K ",toString(c3)])$String
+        sayMsg concat(["util coerce rule LS3 applied to:",toString(lam)$LU," giving K ",toString(c3)])$String
         return ski(K(),c3::SU)$SU
       if isLambda?(c3)$LU then
         c33:LU := first getChildren(c3)$LU
         cxx:LU := lambda(c33,getVariable(c3)$LU)$LU
-        sayTeX$Lisp concat(["util coerce rule LS5 applied to:",toString(lam)$LU," giving \",toString(s3)$UT,".",toString(cxx)])$String
+        sayMsg concat(["util coerce rule LS5 applied to:",toString(lam)$LU," giving \",toString(s3)$UT,".",toString(cxx)])$String
         return lambdaOverSki(s3,cxx::SU)
       if isCompound?(c3) then
         ch3:List LU := getChildren(c3)$LU
         c31:LU := first ch3
         c32:LU := second ch3
-        sayTeX$Lisp concat(["util coerce rule LS6 applied to:",toString(lam)$LU," giving S \",toString(s3)$UT,".",toString(c31)$LU," \",toString(s3)$UT,".",toString(c32)$LU])$String
+        sayMsg concat(["util coerce rule LS6 applied to:",toString(lam)$LU," giving S \",toString(s3)$UT,".",toString(c31)$LU," \",toString(s3)$UT,".",toString(c32)$LU])$String
         return ski(ski(S()$SU,lambdaOverSki(s3,c31::SU)),lambdaOverSki(s3,c32::SU))$SU
-    sayTeX$Lisp concat(["util coerce warning could not match any rule to:",toString(lam)$LU])$String
+    sayMsg concat(["util coerce warning could not match any rule to:",toString(lam)$LU])$String
     I()$SU
 
   -- coerce combinators to intuitionistic logic
@@ -3275,23 +3281,23 @@ compUtil(UT): Exports == Implementation where
     -- I don't know the best way to hanle this, really we
     -- need to add the required number of parameters, do
     -- the convertion then remove the parameters just added.
-    -- sayTeX$Lisp concat(["util coerce called for:",toString(s)$SU])$String
+    -- sayMsg concat(["util coerce called for:",toString(s)$SU])$String
     if atom?(s) then
-      --sayTeX$Lisp concat(["util coerce atom:",toString(s)$SU])$String
+      --sayMsg concat(["util coerce atom:",toString(s)$SU])$String
       if isI?(s) then
-        sayTeX$Lisp "warning I does not have a parameter to act on"
-        sayTeX$Lisp "creating x"
+        sayMsg "warning I does not have a parameter to act on"
+        sayMsg "creating x"
         a :ILogic  := proposition("x")
         return implies(a,a)
       if isK?(s) then
-        sayTeX$Lisp "warning K does not enough parameters to act on"
-        sayTeX$Lisp "creating x and y"
+        sayMsg "warning K does not enough parameters to act on"
+        sayMsg "creating x and y"
         a :ILogic  := proposition("x")
         b :ILogic  := proposition("y")
         return implies(a,implies(b,a))
       if isS?(s) then
-        sayTeX$Lisp "warning S does not enough parameters to act on"
-        sayTeX$Lisp "creating x,y an z"
+        sayMsg "warning S does not enough parameters to act on"
+        sayMsg "creating x,y an z"
         a :ILogic  := proposition("x")
         b :ILogic  := proposition("y")
         c :ILogic  := proposition("z")
@@ -3303,10 +3309,10 @@ compUtil(UT): Exports == Implementation where
     subnodes:List SU := getChildren(s)$SU
     c1:SU := first subnodes
     c2:SU := second subnodes
-    --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)])$String
+    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)])$String
     -- look for I x, if found translate x
     if isI?(c1) then
-      sayTeX$Lisp concat(["util coerce apply rule SI1 in:",toString(s)$SU])$String
+      sayMsg concat(["util coerce apply rule SI1 in:",toString(s)$SU])$String
       a :ILogic  := c1::ILogic
       return implies(a,a)
     if atom?(c1) then return _\_/(c1::ILogic,c2::ILogic)
@@ -3314,9 +3320,9 @@ compUtil(UT): Exports == Implementation where
     subsubnodes:List SU := getChildren(c1)
     c11:SU := first subsubnodes
     c12:SU := second subsubnodes
-    --sayTeX$Lisp concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
+    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
     if isK?(c11) then
-      sayTeX$Lisp concat(["util coerce apply rule SI2 in:",toString(s)$SU])$String
+      sayMsg concat(["util coerce apply rule SI2 in:",toString(s)$SU])$String
       a :ILogic  := c2::ILogic
       b :ILogic  := c12::ILogic
       return implies(a,implies(b,a))
@@ -3325,10 +3331,10 @@ compUtil(UT): Exports == Implementation where
     subsubnodes2:List SU := getChildren(c11)
     c111:SU := first subsubnodes2
     c112:SU := second subsubnodes2
-    --sayTeX$Lisp concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
+    --sayMsg concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
     -- look for K x y, if found translate x
     if isS?(c111) then
-      sayTeX$Lisp concat(["util coerce apply rule SI3 in:",toString(s)$SU])$String
+      sayMsg concat(["util coerce apply rule SI3 in:",toString(s)$SU])$String
       a :ILogic  := c2::ILogic
       b :ILogic  := c12::ILogic
       c :ILogic  := c112::ILogic
@@ -3632,7 +3638,7 @@ compCode(): Exports == Implementation where
   -- one on the right.
   genLambdaTerm(n:LC,boundL: List String):String ==
     s:String := ""
-    --sayTeX$Lisp concat(["genLambdaTerm(",toString(n),")"])
+    --sayMsg concat(["genLambdaTerm(",toString(n),")"])
     if isBoundNode?(n) then
       -- convert deBruijn index
       i:NNI := getBoundValue(n) + 1
@@ -3702,7 +3708,7 @@ compCode(): Exports == Implementation where
     -- fnNum is integer used to generate a unique function name
     fnNum:NNI := 1::NNI
     for thisEq in content repeat
-      --sayTeX$Lisp concat(["writePackage(",toString(thisEq),")"])
+      --sayMsg concat(["writePackage(",toString(thisEq),")"])
       lines := concat(lines,genFuncDefn(thisEq,fnNum))
       fnNum := fnNum + 1
     lines := concat(lines,genPackageFooter())
