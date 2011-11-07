@@ -725,9 +725,9 @@ SCartesian(n) : Exports == Implementation where
     -- spnt(a,b) constructs a 2D point defined by a and b
     -- of type DF
     spnt(a:DF,b:DF):% ==
-      --sayTeX$Lisp concat([_
-      --  "spnt(",(mathObject2String$Lisp a)@String,_
-      --  ",",(mathObject2String$Lisp b)@String,_
+      --sayMsg concat([_
+      --  "spnt(",(math_to_string a)@String,_
+      --  ",",(math_to_string b)@String,_
       --  ")"])$String
       pt := new(n+1,0$DF)$Rep
       pt.0 := a
@@ -973,9 +973,9 @@ SArgand() : Exports == Implementation where
     -- spnt(a,b) constructs a 2D point defined by a and b
     -- of type DF
     spnt(a:DF,b:DF):% ==
-      --sayTeX$Lisp concat([_
-      --  "spnt(",(mathObject2String$Lisp a)@String,_
-      --  ",",(mathObject2String$Lisp b)@String,_
+      --sayMsg concat([_
+      --  "spnt(",(math_to_string a)@String,_
+      --  ",",(math_to_string b)@String,_
       --  ")"])$String
       [a,b]
 
@@ -1156,6 +1156,10 @@ SConformal(n) : Exports == Implementation where
     --coerce: CA -> %
 
   Implementation ==> Type add
+
+    sayMsg ==> sayBrightly$Lisp
+    math_to_string ==> mathObject2String$Lisp
+
     ---- start of common code to all SPointCategory implementations ----
     -- I would like to define these in SPointCategory but that won't work
     -- due to lack of polymorphism in spad
@@ -1353,7 +1357,7 @@ SConformal(n) : Exports == Implementation where
     normalisePoint(pt:%):% ==
       scaleFactor:DF := pt.1
       if scaleFactor < 0.01::DF and scaleFactor > -0.01::DF then
-        sayTeX$Lisp "can't apply normalisePoint to a vector"
+        sayMsg "can't apply normalisePoint to a vector"
         return pt
       if scaleFactor < -0.99::DF and scaleFactor > -1.01::DF then
         return pt
@@ -1365,9 +1369,9 @@ SConformal(n) : Exports == Implementation where
         infin := infin + ((pt2.index)*(pt2.index))*0.5::DF
       pt2.1 := -1@DF
       pt2.2 := infin
-      sayTeX$Lisp concat([_
-        "normalisePoint ",(mathObject2String$Lisp pt)@String,_
-        " normalised to ",(mathObject2String$Lisp pt2)@String,_
+      sayMsg concat([_
+        "normalisePoint ",(math_to_string pt)@String,_
+        " normalised to ",(math_to_string pt2)@String,_
         ")"])$String
       pt2
 
@@ -1460,6 +1464,9 @@ SceneIFS(PT): Exports == Implementation where
 
  Implementation == add
   Rep := Record(inx: List List NNI,pts: List PT)
+
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
 
   -- returns indexes
   indexes(me:%):List List NNI == me.inx
@@ -1563,15 +1570,15 @@ SceneIFS(PT): Exports == Implementation where
   displayIFS(me:%):Void ==
     ptStr:List String := nil() -- string to hold result
     for p in me.pts repeat
-      ptStr := concat(ptStr,(mathObject2String$Lisp p)@String)
+      ptStr := concat(ptStr,(math_to_string p)@String)
       ptStr := concat(ptStr," ")
-    sayTeX$Lisp ptStr
+    sayMsg ptStr
     for faceIx in me.inx repeat
       ptStr := nil() -- string to hold result
       for pIx in faceIx repeat
-        ptStr := concat(ptStr,(mathObject2String$Lisp pIx)@String)
+        ptStr := concat(ptStr,(math_to_string pIx)@String)
         ptStr := concat(ptStr," ")
-      sayTeX$Lisp ptStr
+      sayMsg ptStr
     Void
 
   -- listBranches(c) returns a list of lists of points, representing the
@@ -1767,6 +1774,9 @@ STransform(PT) : Exports == Implementation where
 
     Rep := PARAMS
 
+    sayMsg ==> sayBrightly$Lisp
+    math_to_string ==> mathObject2String$Lisp
+
     -- qelt(m,i,j) returns the element in the ith row and jth
     -- column of the array m
     -- NO error check to determine if indices are in proper ranges
@@ -1777,8 +1787,8 @@ STransform(PT) : Exports == Implementation where
     stransform(m:List List DF):% ==
       PT has SCartesian(2) =>
         arr : PrimitiveArray PrimitiveArray DF := new(3,empty())
-        --sayTeX$Lisp concat([_
-        --  "stransform(",(mathObject2String$Lisp m)@String,")"])$String
+        --sayMsg concat([_
+        --  "stransform(",(math_to_string m)@String,")"])$String
         for i in 0..2 repeat
           qsetelt!(arr,i,new(3,0::DF))
           for j in 0..2 repeat
@@ -1786,8 +1796,8 @@ STransform(PT) : Exports == Implementation where
         [arr]
       PT has SCartesian(3) =>
         arr : PrimitiveArray PrimitiveArray DF := new(4,empty())
-        --sayTeX$Lisp concat([_
-        --     "stransform(",(mathObject2String$Lisp m)@String,")"])$String
+        --sayMsg concat([_
+        --     "stransform(",(math_to_string m)@String,")"])$String
         for i in 0..3 repeat
           qsetelt!(arr,i,new(4,0::DF))
           for j in 0..3 repeat
@@ -1817,10 +1827,10 @@ STransform(PT) : Exports == Implementation where
     -- when writing to SVG file because the y dimension is inverted
     stranslate(offsetx:DF,offsety:DF,offsetz:DF,_
                scalex:DF,scaley:DF,scalez:DF):% ==
-      --sayTeX$Lisp concat([_
-      --     "stranslate(",(mathObject2String$Lisp type)@String,_
-      --     ",",(mathObject2String$Lisp offsetx)@String,_
-      --     ",",(mathObject2String$Lisp offsety)@String,")"])$String
+      --sayMsg concat([_
+      --     "stranslate(",(math_to_string type)@String,_
+      --     ",",(math_to_string offsetx)@String,_
+      --     ",",(math_to_string offsety)@String,")"])$String
       if PT has SCartesian(2) then
         return stransform([_
              [scalex,0::DF,offsetx],_
@@ -1860,31 +1870,31 @@ STransform(PT) : Exports == Implementation where
 
     -- apply transform to a point producing another point
     applyTransPt2(tr:%,inpt:SCartesian(2)):SCartesian(2) ==
-      --sayTeX$Lisp concat(["applyTrans pt=",_
-      --  (mathObject2String$Lisp inpt)@String,_
-      --  " tr=",(mathObject2String$Lisp tr)@String])$String
+      --sayMsg concat(["applyTrans pt=",_
+      --  (math_to_string inpt)@String,_
+      --  " tr=",(math_to_string tr)@String])$String
       if tr case iden then return inpt
       if tr case general then
-        sayTeX$Lisp "can't transform Euclidean point using general function"
+        sayMsg "can't transform Euclidean point using general function"
         return inpt
       vin:List DF := extendedCoords(inpt)$SCartesian(2)
       a:DF := tr.mtx.0.0 * vin.1 + tr.mtx.0.1 * vin.2 + tr.mtx.0.2 * vin.3
       b:DF := tr.mtx.1.0 * vin.1 + tr.mtx.1.1 * vin.2 + tr.mtx.1.2 * vin.3
-      --sayTeX$Lisp concat(["applyTrans pt=",_
-      -- (mathObject2String$Lisp inpt)@String,_
-      --  " tr=",(mathObject2String$Lisp tr)@String,_
-      --  " res=",(mathObject2String$Lisp_
+      --sayMsg concat(["applyTrans pt=",_
+      -- (math_to_string inpt)@String,_
+      --  " tr=",(math_to_string tr)@String,_
+      --  " res=",(math_to_string_
       --  spnt(a,b)$SCartesian(2))@String])$String
       spnt(a,b)$SCartesian(2)
 
     -- apply transform to a point producing another point
     applyTransPt3(tr:%,inpt:SCartesian(3)):SCartesian(3) ==
-      --sayTeX$Lisp concat([_
-      --     "applyTransPt3(",(mathObject2String$Lisp tr.mtx)@String,")",_
-      --     "appled to",(mathObject2String$Lisp inpt)@String,")"])$String
+      --sayMsg concat([_
+      --     "applyTransPt3(",(math_to_string tr.mtx)@String,")",_
+      --     "appled to",(math_to_string inpt)@String,")"])$String
       if tr case iden then return inpt
       if tr case general then
-        sayTeX$Lisp "can't transform Euclidean point using general function"
+        sayMsg "can't transform Euclidean point using general function"
         return inpt
       vin:List DF := extendedCoords(inpt)$SCartesian(3)
       a:DF := tr.mtx.0.0 * vin.1 + tr.mtx.0.1 * vin.2_
@@ -1893,24 +1903,24 @@ STransform(PT) : Exports == Implementation where
             + tr.mtx.1.2 * vin.3 + tr.mtx.1.3 * vin.4
       c:DF := tr.mtx.2.0 * vin.1 + tr.mtx.2.1 * vin.2_
             + tr.mtx.2.2 * vin.3 + tr.mtx.2.3 * vin.4
-      --sayTeX$Lisp concat([_
-      --     "result=",(mathObject2String$Lisp a)@String,_
-      --     ",",(mathObject2String$Lisp b)@String,_
-      --     ",",(mathObject2String$Lisp c)@String])$String
+      --sayMsg concat([_
+      --     "result=",(math_to_string a)@String,_
+      --     ",",(math_to_string b)@String,_
+      --     ",",(math_to_string c)@String])$String
       spnt(a,b,c)$SCartesian(3)
 
     -- apply transform to a (complex number) point producing another point
     applyTransCx(tr:%,inpt:SArgand):SArgand ==
       if tr case iden then return inpt
       if tr case mtx then
-        sayTeX$Lisp "can't transform complex using matrix"
-        sayTeX$Lisp concat([_
-             "applyTrans(",(mathObject2String$Lisp tr)@String,")"])$String
+        sayMsg "can't transform complex using matrix"
+        sayMsg concat([_
+             "applyTrans(",(math_to_string tr)@String,")"])$String
         return inpt
 --      res := inpt::Complex DF
 --      for f in tr.fcv repeat
---        --sayTeX$Lisp concat([_
---        --     "applyTrans(",(mathObject2String$Lisp 1)@String,")"])$String
+--        --sayMsg concat([_
+--        --     "applyTrans(",(math_to_string 1)@String,")"])$String
 --        res := f(res)
 --      res::SArgand
       f := tr.general
@@ -1921,9 +1931,9 @@ STransform(PT) : Exports == Implementation where
     applyTransConf2(tr:%,inpt:SConformal(2)):SConformal(2) ==
       if tr case iden then return inpt
       if not (tr case multiv) then
-        sayTeX$Lisp "this transform not compatible with conformal"
-        sayTeX$Lisp concat([_
-             "applyTrans(",(mathObject2String$Lisp tr)@String,")"])$String
+        sayMsg "this transform not compatible with conformal"
+        sayMsg concat([_
+             "applyTrans(",(math_to_string tr)@String,")"])$String
         return inpt
       m := matrix([[0::DF,1::DF,0::DF,0::DF],_
                            [1::DF,0::DF,0::DF,0::DF],_
@@ -1934,12 +1944,12 @@ STransform(PT) : Exports == Implementation where
       trConf:CA := (tr.multiv) pretend CA
       conjugation := trConf * ptConf * reverse(trConf)
       res := conjugation pretend SConformal(2)
-      --sayTeX$Lisp concat(["xform pt=",_
-      --  (mathObject2String$Lisp ptConf)@String])$String
-      --sayTeX$Lisp concat(["tr=",_
-      --  (mathObject2String$Lisp trConf)@String])$String
-      --sayTeX$Lisp concat(["res=",_
-      --   (mathObject2String$Lisp res)@String])$String
+      --sayMsg concat(["xform pt=",_
+      --  (math_to_string ptConf)@String])$String
+      --sayMsg concat(["tr=",_
+      --  (math_to_string trConf)@String])$String
+      --sayMsg concat(["res=",_
+      --   (math_to_string res)@String])$String
       normalisePoint(res)
 
     -- apply transform to a point producing another point
@@ -1963,10 +1973,10 @@ STransform(PT) : Exports == Implementation where
           (arr.i).j := tr.mtx.0.j * inpt.mtx.i.0_
                      + tr.mtx.1.j * inpt.mtx.i.1_
                      + tr.mtx.2.j * inpt.mtx.i.2
-      --sayTeX$Lisp concat([_
-      --  "compound2(",(mathObject2String$Lisp tr)@String,_
-      --  ":",(mathObject2String$Lisp inpt)@String,_
-      --  "):=",(mathObject2String$Lisp arr)@String,_
+      --sayMsg concat([_
+      --  "compound2(",(math_to_string tr)@String,_
+      --  ":",(math_to_string inpt)@String,_
+      --  "):=",(math_to_string arr)@String,_
       --  ":"])$String
       return [arr]
 
@@ -1980,10 +1990,10 @@ STransform(PT) : Exports == Implementation where
                      + tr.mtx.1.j * inpt.mtx.i.1_
                      + tr.mtx.2.j * inpt.mtx.i.2_
                      + tr.mtx.3.j * inpt.mtx.i.3
-      --sayTeX$Lisp concat([_
-      --  "compound3(",(mathObject2String$Lisp tr)@String,_
-      --  ":",(mathObject2String$Lisp inpt)@String,_
-      --  "):=",(mathObject2String$Lisp arr)@String,_
+      --sayMsg concat([_
+      --  "compound3(",(math_to_string tr)@String,_
+      --  ":",(math_to_string inpt)@String,_
+      --  "):=",(math_to_string arr)@String,_
       --  ":"])$String
       return [arr]
 
@@ -1997,30 +2007,30 @@ STransform(PT) : Exports == Implementation where
       trConf:CA := (tr.multiv) pretend CA
       inptConf:CA := (inpt.multiv) pretend CA
       resConf:CA := trConf*inptConf
-      --sayTeX$Lisp concat(["compound tr=",_
-      --  (mathObject2String$Lisp trConf)@String])$String
-      --sayTeX$Lisp concat(_
-      --  ["inpt=",(mathObject2String$Lisp inptConf)@String])$String
-      --sayTeX$Lisp concat(["res=",_
-      --  (mathObject2String$Lisp resConf)@String])$String
+      --sayMsg concat(["compound tr=",_
+      --  (math_to_string trConf)@String])$String
+      --sayMsg concat(_
+      --  ["inpt=",(math_to_string inptConf)@String])$String
+      --sayMsg concat(["res=",_
+      --  (math_to_string resConf)@String])$String
       return [resConf pretend PrimitiveArray DF]
 
     -- combine two transforms
     compound(tr:%,inpt:%):% ==
       -- first check for simple case where one of the operands is identity
-      --sayTeX$Lisp concat([_
-      --  "compound(",(mathObject2String$Lisp tr)@String,_
-      --  ":",(mathObject2String$Lisp inpt)@String,_
+      --sayMsg concat([_
+      --  "compound(",(math_to_string tr)@String,_
+      --  ":",(math_to_string inpt)@String,_
       --  ")"])$String
       if tr case iden then return inpt -- iden*inpt = inpt
       if inpt case iden then return tr -- tr*iden = tr
       if tr case mtx and inpt case mtx then
         if PT has SCartesian(2) then return compound2(tr,inpt)
         if PT has SCartesian(3) then return compound3(tr,inpt)
-        --sayTeX$Lisp concat([_
-        --  "compound(",(mathObject2String$Lisp tr)@String,_
-        --  ":",(mathObject2String$Lisp inpt)@String,_
-        --  "):=",(mathObject2String$Lisp arr)@String,_
+        --sayMsg concat([_
+        --  "compound(",(math_to_string tr)@String,_
+        --  ":",(math_to_string inpt)@String,_
+        --  "):=",(math_to_string arr)@String,_
         --  ":"])$String
       if tr case general and inpt case general then
         in1 : PT -> PT := tr.general
@@ -2152,7 +2162,7 @@ XmlElement(): Exports==Implementation where
     [concat(["<",rp.n,atts," />"])$String]
    res:List String := [concat(["<",rp.n,atts,">"])$String]
    for el in rp.e repeat
-     --sayTeX$Lisp (mathObject2String$Lisp el)@String
+     --sayMsg (math_to_string el)@String
      res := concat(res,el::(List String))$(List String)
    concat(res,concat(["</",rp.n,">"])$String)$(List String)
 
@@ -2581,6 +2591,8 @@ Scene(PT): Exports == Implementation where
 
   Rep := Record(type : NNI,children : List %,parameters: PARAMS)
 
+  math_to_string ==> mathObject2String$Lisp
+
   -- Constructs the root node, all other nodes are contained in
   -- a tree structure under this node
   createSceneRoot(bb: BOUNDS): % == [1::NNI,[],[bb]]
@@ -2839,12 +2851,12 @@ Scene(PT): Exports == Implementation where
     maxx:DF := screenCoordX(bb.maxs)
     maxy:DF := screenCoordY(bb.maxs)
     scale:DF := (maxx - minx)/1000
-    --sayTeX$Lisp concat([_
-    --  "createScenePattern3 minx=",(mathObject2String$Lisp minx)@String,_
-    --  " miny=",(mathObject2String$Lisp miny)@String,_
-    --  " maxx=",(mathObject2String$Lisp maxx)@String,_
-    --  " maxy=",(mathObject2String$Lisp maxy)@String,_
-    --  " scale=",(mathObject2String$Lisp scale)@String])$String
+    --sayMsg concat([_
+    --  "createScenePattern3 minx=",(math_to_string minx)@String,_
+    --  " miny=",(math_to_string miny)@String,_
+    --  " maxx=",(math_to_string maxx)@String,_
+    --  " maxy=",(math_to_string maxy)@String,_
+    --  " scale=",(math_to_string scale)@String])$String
     xcoords:List List NNI := [[0,0,500,1000,1000,0],_
                 [150,350,350,150,150],_
                 [100,400,400,100,100],_
@@ -2896,13 +2908,13 @@ Scene(PT): Exports == Implementation where
     maxPrimary:DF := screenCoordX(bb.maxs)
     maxSecondary:DF := screenCoordY(bb.maxs)
     --if ptype = 1 then
-    --  sayTeX$Lisp "createSceneRuler horizontal:"
+    --  sayMsg "createSceneRuler horizontal:"
     if ptype = 2 then
       minPrimary := screenCoordY(bb.mins)
       minSecondary := screenCoordX(bb.mins)
       maxPrimary := screenCoordY(bb.maxs)
       maxSecondary := screenCoordX(bb.maxs)
-      --sayTeX$Lisp "createSceneRuler vertical:"
+      --sayMsg "createSceneRuler vertical:"
     stepSize :DF := maxPrimary - minPrimary
     expStep:Integer := wholePart(log10(stepSize+1)) - 1
     divn :DF := (10::DF) ^expStep
@@ -2939,23 +2951,23 @@ Scene(PT): Exports == Implementation where
       suffix := concat("0",suffix)
     if zeroes > 1 then
       suffix := concat("0",suffix)
-    --sayTeX$Lisp concat([_
-    --    "minPrimary=",(mathObject2String$Lisp minPrimary)@String,_
-    --    " minSecondary=",(mathObject2String$Lisp minSecondary)@String,_
-    --    " maxPrimary=",(mathObject2String$Lisp maxPrimary)@String,_
-    --    " maxSecondary=",(mathObject2String$Lisp maxSecondary)@String_
+    --sayMsg concat([_
+    --    "minPrimary=",(math_to_string minPrimary)@String,_
+    --    " minSecondary=",(math_to_string minSecondary)@String,_
+    --    " maxPrimary=",(math_to_string maxPrimary)@String,_
+    --    " maxSecondary=",(math_to_string maxSecondary)@String_
     --    ])$String
-    --sayTeX$Lisp concat([_
-    --    "stepSize=",(mathObject2String$Lisp stepSize)@String,_
-    --    " expStep=",(mathObject2String$Lisp expStep)@String,_
-    --    " divn=",(mathObject2String$Lisp divn)@String,_
-    --    " minPrimaryNorm=",(mathObject2String$Lisp minPrimaryNorm)@String,_
-    --    " maxPrimaryNorm=",(mathObject2String$Lisp maxPrimaryNorm)@String_
+    --sayMsg concat([_
+    --    "stepSize=",(math_to_string stepSize)@String,_
+    --    " expStep=",(math_to_string expStep)@String,_
+    --    " divn=",(math_to_string divn)@String,_
+    --    " minPrimaryNorm=",(math_to_string minPrimaryNorm)@String,_
+    --    " maxPrimaryNorm=",(math_to_string maxPrimaryNorm)@String_
     --    ])$String
     gp := createSceneGroup()
     stepI:Integer := if ptype = 1 then 2 else 1
     for x in wholePart(minPrimaryNorm)..wholePart(maxPrimaryNorm) by stepI repeat
-      str:String := (mathObject2String$Lisp x)@String
+      str:String := (math_to_string x)@String
       pz:PT := spnt((x::DF)*divn,0$DF)$PT + offset
       if ptype = 2 then
         pz := spnt(0$DF,(x::DF)*divn)$PT + offset
@@ -2965,16 +2977,16 @@ Scene(PT): Exports == Implementation where
         if x>10 then
           d := divide(x,10)
           str := concat([string(d.quotient),".",string(d.remainder)])
-        if x<0 and x>-10 then str := concat(["-0.",(mathObject2String$Lisp (-x))@String])$String
+        if x<0 and x>-10 then str := concat(["-0.",(math_to_string (-x))@String])$String
         if x=-10 then str := "-1"
         if x< -10 then
           d := divide(-x,10)
           str := concat(["-",string(d.quotient),".",string(d.remainder)])
       else if x ~= 0 then str := concat(str,suffix)
       addSceneText(gp,str,20,pz)
-      --sayTeX$Lisp concat([_
-      --  "x=",(mathObject2String$Lisp x)@String,_
-      --  " pz=",(mathObject2String$Lisp pz)@String_
+      --sayMsg concat([_
+      --  "x=",(math_to_string x)@String,_
+      --  " pz=",(math_to_string pz)@String_
       --  ])$String
     gp
 
@@ -3081,9 +3093,9 @@ Scene(PT): Exports == Implementation where
   -- this returns a string to represent a path in a SVG file
   pathString(pts:LINES,tran:TR,bb: BOUNDS,sc:DF,clipEn:Boolean,_
              useInteger:Boolean):String ==
-    --sayTeX$Lisp concat([_
-    --  "pathString(",(mathObject2String$Lisp tran)@String,_
-    --  ",",(mathObject2String$Lisp bb)@String,_
+    --sayMsg concat([_
+    --  "pathString(",(math_to_string tran)@String,_
+    --  ",",(math_to_string bb)@String,_
     --  ")"])$String
     ptStr:String := "" -- string to hold result
     pntNum:NNI -- hold current position in parameters
@@ -3097,7 +3109,7 @@ Scene(PT): Exports == Implementation where
         -- param is type SPointCategory(DoubleFloat)
         -- which is what applyTrans requires
         param2 := xform(tran,param pretend PT)$TR
-        --sayTeX$Lisp "pathString after xform"
+        --sayMsg "pathString after xform"
         -- check if original 'global' coordinates (before being converted
         -- to svg - always positive coordinates) are in bounds.
         valid := (not clipEn) or inBounds?(param,bb.mins,bb.maxs)
@@ -3119,18 +3131,18 @@ Scene(PT): Exports == Implementation where
              string(wholePart(minusy))])$String
           else
             thisStr:String := concat([_
-             (mathObject2String$Lisp (screenCoordX(param2)*sc))@String,",",_
-             (mathObject2String$Lisp minusy)@String])$String
+             (math_to_string (screenCoordX(param2)*sc))@String,",",_
+             (math_to_string minusy)@String])$String
           ptStr := concat(ptStr,thisStr)
         lastValid := valid
-    --sayTeX$Lisp "pathString exit"
+    --sayMsg "pathString exit"
     ptStr
 
   -- this returns an list of elements, ecah of which represents an arrow
   lineArrow(pts:LINES,tran:TR,bb: BOUNDS,mat:MATERIAL,sc:DF,clipEn:Boolean):List XmlElement ==
-    --sayTeX$Lisp concat([_
-    --  "lineArrow(",(mathObject2String$Lisp tran)@String,_
-    --  ",",(mathObject2String$Lisp bb)@String,_
+    --sayMsg concat([_
+    --  "lineArrow(",(math_to_string tran)@String,_
+    --  ",",(math_to_string bb)@String,_
     --  ")"])$String
     nodeEles: List XmlElement := []
     pntNum:NNI -- hold current position in parameters
@@ -3146,7 +3158,7 @@ Scene(PT): Exports == Implementation where
         -- param is type SPointCategory(DoubleFloat)
         -- which is what applyTrans requires
         param2 := xform(tran,param pretend PT)$TR
-        --sayTeX$Lisp "lineArrow after xform"
+        --sayMsg "lineArrow after xform"
         -- check if original 'global' coordinates (before being converted
         -- to svg - always positive coordinates) are in bounds.
         valid := (not clipEn) or  inBounds?(param,bb.mins,bb.maxs)
@@ -3165,8 +3177,8 @@ Scene(PT): Exports == Implementation where
           -- mathematical usage.
           minusy:DF := -screenCoordY(param2)*sc
           thisStr:String := concat([_
-             (mathObject2String$Lisp (screenCoordX(param2)*sc))@String,",",_
-             (mathObject2String$Lisp minusy)@String])$String
+             (math_to_string (screenCoordX(param2)*sc))@String,",",_
+             (math_to_string minusy)@String])$String
           ptStr := concat(ptStr,thisStr)
       if ptStr ~= "" then -- add a new arrow element
         linWidth:DF := distance(startPoint,endPoint)/(10::DF)
@@ -3175,7 +3187,7 @@ Scene(PT): Exports == Implementation where
           xmlAttribute("fill","none"),_
           xmlAttribute("stroke",mat.lineCol),_
           xmlAttribute("stroke-width",_
-          (mathObject2String$Lisp linWidth)@String),_
+          (math_to_string linWidth)@String),_
           xmlAttribute("style","marker-end:url(#Arrow)")_
             ]
         x: XmlElement := xmlElement("path",[],nodeAtts)
@@ -3184,12 +3196,12 @@ Scene(PT): Exports == Implementation where
 
   -- this returns a string to represent a face in a SVG file
   faceString(faces:IFS,tran:TR,bb: BOUNDS,sc:DF,clipEn:Boolean):String ==
-    --sayTeX$Lisp concat([_
-    --  "faceString(",(mathObject2String$Lisp faces)@String,_
+    --sayMsg concat([_
+    --  "faceString(",(math_to_string faces)@String,_
     --  ")"])$String
     --for ln1 in pts1 repeat
-    --  sayTeX$Lisp concat([_
-    --    "faceString pts1=(",(mathObject2String$Lisp ln1)@String,_
+    --  sayMsg concat([_
+    --    "faceString pts1=(",(math_to_string ln1)@String,_
     --    ")"])$String
     ptStr:String := "" -- string to hold result
     pntNum:NNI -- hold current position in parameters
@@ -3202,9 +3214,9 @@ Scene(PT): Exports == Implementation where
         -- check if original 'global' coordinates (before being converted
         -- to svg - always positive coordinates) are in bounds.
         valid := (not clipEn) or  inBounds?(param,bb.mins,bb.maxs)
-        --sayTeX$Lisp concat([_
-        --  "faceString(",(mathObject2String$Lisp param2)@String,_
-        --  ",",(mathObject2String$Lisp valid)@String,_
+        --sayMsg concat([_
+        --  "faceString(",(math_to_string param2)@String,_
+        --  ",",(math_to_string valid)@String,_
         --  ")"])$String
         if valid then -- add to string
           pntNum := pntNum + 1
@@ -3219,12 +3231,12 @@ Scene(PT): Exports == Implementation where
           -- mathematical usage.
           minusy:DF := -screenCoordY(param2)*sc
           thisStr:String := concat([_
-             (mathObject2String$Lisp (screenCoordX(param2)*sc))@String,",",_
-             (mathObject2String$Lisp minusy)@String])$String
+             (math_to_string (screenCoordX(param2)*sc))@String,",",_
+             (math_to_string minusy)@String])$String
           ptStr := concat(ptStr,thisStr)
         lastValid := valid
       ptStr := concat(ptStr,"z") -- make closed
-    --sayTeX$Lisp "faceString exit"
+    --sayMsg "faceString exit"
     ptStr
 
   -- creates an XML tree stucture (for SVG) from scenegraph tree
@@ -3244,9 +3256,9 @@ Scene(PT): Exports == Implementation where
   toSVG(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS,scale:DF,clipEn:Boolean,_
         useInteger:Boolean):XmlElement ==
     nodeName:String := ""
-    --sayTeX$Lisp concat([_
-    --  "toSVG(",(mathObject2String$Lisp n.type)@String,_
-    --  ",",(mathObject2String$Lisp nodeName)@String,_
+    --sayMsg concat([_
+    --  "toSVG(",(math_to_string n.type)@String,_
+    --  ",",(math_to_string nodeName)@String,_
     --  ")"])$String
     -- I'm not sure if it is safe to modify parameters that have been
     -- passed to this function, so just to be sure, take copies of them:
@@ -3286,27 +3298,27 @@ Scene(PT): Exports == Implementation where
       scale2:DF := (1000::DF)/(maxx-minx)
       offsetx:DF := -minx
       offsety:DF := -maxy
-      --sayTeX$Lisp concat([_
-      --  "toSVG scale=",(mathObject2String$Lisp scale2)@String,_
-      --  " minx=",(mathObject2String$Lisp minx)@String,_
-      --  " miny=",(mathObject2String$Lisp miny)@String,_
-      --  " maxx=",(mathObject2String$Lisp maxx)@String,_
-      --  " maxy=",(mathObject2String$Lisp maxy)@String,_
-      --  " offsetx=",(mathObject2String$Lisp offsetx)@String,_
-      --  " offsety=",(mathObject2String$Lisp offsety)@String])$String
+      --sayMsg concat([_
+      --  "toSVG scale=",(math_to_string scale2)@String,_
+      --  " minx=",(math_to_string minx)@String,_
+      --  " miny=",(math_to_string miny)@String,_
+      --  " maxx=",(math_to_string maxx)@String,_
+      --  " maxy=",(math_to_string maxy)@String,_
+      --  " offsetx=",(math_to_string offsetx)@String,_
+      --  " offsety=",(math_to_string offsety)@String])$String
       tran2 := stranslate(offsetx,offsety,0::DF,1::DF,1::DF,1::DF)$TR
       if useInteger then
         viewBoxStr:String := concat([_
           "0 0 ",_
-          (mathObject2String$Lisp (wholePart((maxx-minx)*scale2)))@String,_
+          (math_to_string (wholePart((maxx-minx)*scale2)))@String,_
           " ",_
-          (mathObject2String$Lisp (wholePart((maxy-miny)*scale2)))@String])
+          (math_to_string (wholePart((maxy-miny)*scale2)))@String])
       else
         viewBoxStr:String := concat([_
           "0.0 0.0 ",_
-          (mathObject2String$Lisp ((maxx-minx)*scale2))@String,_
+          (math_to_string ((maxx-minx)*scale2))@String,_
           " ",_
-          (mathObject2String$Lisp ((maxy-miny)*scale2))@String])
+          (math_to_string ((maxy-miny)*scale2))@String])
       nodeAtts := [xmlAttribute("xmlns","http://www.w3.org/2000/svg"),_
         xmlAttribute("width","12cm"),_
         xmlAttribute("height","8cm"),_
@@ -3321,28 +3333,28 @@ Scene(PT): Exports == Implementation where
         xmlAttribute("d",pathString(n.parameters.points,tran2,bb2,scale2,clipEn2,useInteger)),_
         xmlAttribute("fill","none"),_
         xmlAttribute("stroke",mat2.lineCol),_
-        xmlAttribute("stroke-width",(mathObject2String$Lisp mat2.lineWidth)@String),_
+        xmlAttribute("stroke-width",(math_to_string mat2.lineWidth)@String),_
         xmlAttribute("stroke-linecap","butt"),_
         xmlAttribute("stroke-linejoin","miter")_
           ]
       if mat2.matOpacity < 0.95::DF then
         nodeAtts := concat(nodeAtts,xmlAttribute("stroke-opacity",_
-          (mathObject2String$Lisp mat2.matOpacity)@String))
+          (math_to_string mat2.matOpacity)@String))
     if n.type = 4 then -- set material
       nodeName := "g" -- material node
       mat2 := n.parameters.material
     if n.type = 5 then -- text node
       nodeName := "text" -- text node
       param2:PT := xform(tran,n.parameters.text.pos)$TR
-      --sayTeX$Lisp concat([_
-      --  "toSVG text node param=",(mathObject2String$Lisp n.parameters.text.pos)@String,_
-      --  " param2=",(mathObject2String$Lisp param2)@String_
+      --sayMsg concat([_
+      --  "toSVG text node param=",(math_to_string n.parameters.text.pos)@String,_
+      --  " param2=",(math_to_string param2)@String_
       --  ])$String
       nodeAtts := [xmlAttribute("font-size",string(n.parameters.text.siz)),_
         xmlAttribute("x",_
-        (mathObject2String$Lisp (screenCoordX(param2)*scale2))@String),_
+        (math_to_string (screenCoordX(param2)*scale2))@String),_
         xmlAttribute("y",_
-        (mathObject2String$Lisp (-screenCoordY(param2)*scale2))@String),_
+        (math_to_string (-screenCoordY(param2)*scale2))@String),_
         xmlAttribute("style",concat("fill:",mat2.fillCol))_
           ]
       return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
@@ -3368,7 +3380,7 @@ Scene(PT): Exports == Implementation where
       xmlAttribute("fill",mat2.fillCol),_
       xmlAttribute("stroke",mat2.lineCol),_
       xmlAttribute("stroke-width",_
-      (mathObject2String$Lisp (mat2.lineWidth))@String)_
+      (math_to_string (mat2.lineWidth))@String)_
         ]
       return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
     if n.type = 9 then -- arrow node
@@ -3404,9 +3416,9 @@ Scene(PT): Exports == Implementation where
 
   -- this returns a string to represent a sequence of points in a X3D file
   pointString(pts:List PT,tran:TR,bb: BOUNDS):List String ==
-    --sayTeX$Lisp concat([_
-    --  "pointString(",(mathObject2String$Lisp tran)@String,_
-    --  ",",(mathObject2String$Lisp bb)@String,_
+    --sayMsg concat([_
+    --  "pointString(",(math_to_string tran)@String,_
+    --  ",",(math_to_string bb)@String,_
     --  ")"])$String
     ptStr:List String := nil() -- list to hold result
     pntNum:NNI -- hold current position in parameters
@@ -3417,23 +3429,23 @@ Scene(PT): Exports == Implementation where
       -- which is what applyTrans requires
         param2 := xform(tran,param pretend PT)$TR
         thisStr:String := concat([_
-             (mathObject2String$Lisp screenCoordX(param2))@String," ",_
-             (mathObject2String$Lisp screenCoordY(param2))@String," ",_
-             (mathObject2String$Lisp screenCoordZ(param2))@String])$String
+             (math_to_string screenCoordX(param2))@String," ",_
+             (math_to_string screenCoordY(param2))@String," ",_
+             (math_to_string screenCoordZ(param2))@String])$String
         ptStr := concat(ptStr,thisStr)
     ptStr
 
   -- this returns a string to represent a sequence of points in a X3D file
   pointIndexString(pts:List List NNI,tran:TR,bb: BOUNDS):List String ==
-    --sayTeX$Lisp concat([_
-    --  "pointIndexString(",(mathObject2String$Lisp tran)@String,_
-    --  ",",(mathObject2String$Lisp bb)@String,_
+    --sayMsg concat([_
+    --  "pointIndexString(",(math_to_string tran)@String,_
+    --  ",",(math_to_string bb)@String,_
     --  ")"])$String
     ptStr:List String := nil() -- string to hold result
     pntNum:NNI -- hold current position in parameters
     for line in pts repeat
       for param in line repeat
-        ptStr := concat(ptStr,(mathObject2String$Lisp param)@String)
+        ptStr := concat(ptStr,(math_to_string param)@String)
       -- '-1' is used as a seperator between faces
       ptStr := concat(ptStr,"-1")
     ptStr
@@ -3470,9 +3482,9 @@ Scene(PT): Exports == Implementation where
   --</Scene>
   toX3D(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS):XmlElement ==
     nodeName:String := setX3DNodeName(n.type)
-    --sayTeX$Lisp concat([_
-    --  "toX3D(",(mathObject2String$Lisp n.type)@String,_
-    --  ",",(mathObject2String$Lisp nodeName)@String,_
+    --sayMsg concat([_
+    --  "toX3D(",(math_to_string n.type)@String,_
+    --  ",",(math_to_string nodeName)@String,_
     --  ")"])$String
     bb2 := bb
     tran2 := tran
@@ -3481,12 +3493,12 @@ Scene(PT): Exports == Implementation where
     if n.type = 1 then -- root node - set clip bounds to back to
                        -- local coordinates
       bb2 := n.parameters.boundbox
-      --sayTeX$Lisp concat([_
-      --  "toX3D(",(mathObject2String$Lisp minx)@String,_
-      --  ",",(mathObject2String$Lisp miny)@String,_
-      --  ",",(mathObject2String$Lisp offsetx)@String,_
-      --  ",",(mathObject2String$Lisp offsety)@String,_
-      --  ",",(mathObject2String$Lisp offsetRequired)@String,_
+      --sayMsg concat([_
+      --  "toX3D(",(math_to_string minx)@String,_
+      --  ",",(math_to_string miny)@String,_
+      --  ",",(math_to_string offsetx)@String,_
+      --  ",",(math_to_string offsety)@String,_
+      --  ",",(math_to_string offsetRequired)@String,_
       --  ")"])$String
       bb2 := n.parameters.boundbox
       nodeEles: List XmlElement := []
@@ -3536,9 +3548,9 @@ Scene(PT): Exports == Implementation where
     if n.type = 8 then -- indexed face set node
       nodeAtts := [xmlAttribute("coordIndex",_
         pointIndexString(n.parameters.ifs.inx,tran,bb))]
-      --sayTeX$Lisp concat([_
-      --  "toX3D ifs1(",(mathObject2String$Lisp n.type)@String,_
-      --  ",",(mathObject2String$Lisp nodeName)@String,_
+      --sayMsg concat([_
+      --  "toX3D ifs1(",(math_to_string n.type)@String,_
+      --  ",",(math_to_string nodeName)@String,_
       --  ")"])$String
       coord := xmlElement("Coordinate",[],_
              [xmlAttribute("point",_
@@ -3572,9 +3584,9 @@ Scene(PT): Exports == Implementation where
   toObj(n:%,ptLst: Reference List PT,indexLst:Reference List List NNI,_
                    indexNxt:Reference NNI,tran:TR,bb: BOUNDS):Void ==
     nodeName:String := setX3DNodeName(n.type)
-    --sayTeX$Lisp concat([_
-    --  "toObj(",(mathObject2String$Lisp n.type)@String,_
-    --  ",",(mathObject2String$Lisp nodeName)@String,_
+    --sayMsg concat([_
+    --  "toObj(",(math_to_string n.type)@String,_
+    --  ",",(math_to_string nodeName)@String,_
     --  ")"])$String
     bb2 := bb
     tran2 := tran
@@ -3592,30 +3604,30 @@ Scene(PT): Exports == Implementation where
       if miny < 0 then
         offsetRequired := true
         offsety := -miny
-      --sayTeX$Lisp concat([_
-      --  "toObj(",(mathObject2String$Lisp minx)@String,_
-      --  ",",(mathObject2String$Lisp miny)@String,_
-      --  ",",(mathObject2String$Lisp offsetx)@String,_
-      --  ",",(mathObject2String$Lisp offsety)@String,_
-      --  ",",(mathObject2String$Lisp offsetRequired)@String,_
+      --sayMsg concat([_
+      --  "toObj(",(math_to_string minx)@String,_
+      --  ",",(math_to_string miny)@String,_
+      --  ",",(math_to_string offsetx)@String,_
+      --  ",",(math_to_string offsety)@String,_
+      --  ",",(math_to_string offsetRequired)@String,_
       --  ")"])$String
       if offsetRequired then
         mn := spnt(screenCoordX(bb2.mins)+offsetx,screenCoordY(bb2.mins)+_
                    offsety)$PT
         mx := spnt(screenCoordX(bb2.maxs)+offsetx,screenCoordY(bb2.maxs)+_
                    offsety)$PT
-        --sayTeX$Lisp concat([_
-        --  "toObj(",(mathObject2String$Lisp minx)@String,_
-        --  ",",(mathObject2String$Lisp miny)@String,_
-        --  ",",(mathObject2String$Lisp mn)@String,_
-        --  ",",(mathObject2String$Lisp mx)@String,_
-        --  ",",(mathObject2String$Lisp offsetRequired)@String,_
+        --sayMsg concat([_
+        --  "toObj(",(math_to_string minx)@String,_
+        --  ",",(math_to_string miny)@String,_
+        --  ",",(math_to_string mn)@String,_
+        --  ",",(math_to_string mx)@String,_
+        --  ",",(math_to_string offsetRequired)@String,_
         --  ")"])$String
         bb2 := [mn,mx]
         tran2 := stranslate(offsetx,offsety,0::DF,1::DF,1::DF,1::DF)$TR
-        --sayTeX$Lisp concat([_
-        --  "toObj( bb=",(mathObject2String$Lisp bb2)@String,_
-        --  ",tran=",(mathObject2String$Lisp tran2)@String,_
+        --sayMsg concat([_
+        --  "toObj( bb=",(math_to_string bb2)@String,_
+        --  ",tran=",(math_to_string tran2)@String,_
         --  ")"])$String
     if n.type = 1 then
       -- root node - set clip bounds to back to local coordinates
@@ -3662,19 +3674,19 @@ Scene(PT): Exports == Implementation where
       i1:List List NNI := n.parameters.ifs.inx
       p1:List PT := n.parameters.ifs.pts
       i2:List List NNI := [[j + elt(indexNxt) for j in k] for k in i1]
---      sayTeX$Lisp concat([_
---        "toObj 1(i1=",(mathObject2String$Lisp i1)@String,_
---        ",p1=",(mathObject2String$Lisp p1)@String,_
+--      sayMsg concat([_
+--        "toObj 1(i1=",(math_to_string i1)@String,_
+--        ",p1=",(math_to_string p1)@String,_
 --        ")"])$String
---      sayTeX$Lisp concat([_
---        "toObj 2(indexLst=",(mathObject2String$Lisp indexLst)@String,_
---        ",ptLst=",(mathObject2String$Lisp ptLst)@String,_
+--      sayMsg concat([_
+--        "toObj 2(indexLst=",(math_to_string indexLst)@String,_
+--        ",ptLst=",(math_to_string ptLst)@String,_
 --        ")"])$String
       setelt(ptLst,concat(elt(ptLst),p1))
       setelt(indexLst,concat(elt(indexLst),i2))
---      sayTeX$Lisp concat([_
---        "toObj 3(indexLst=",(mathObject2String$Lisp indexLst)@String,_
---        ",ptLst=",(mathObject2String$Lisp ptLst)@String,_
+--      sayMsg concat([_
+--        "toObj 3(indexLst=",(math_to_string indexLst)@String,_
+--        ",ptLst=",(math_to_string ptLst)@String,_
 --        ")"])$String
       setelt(indexNxt,elt(indexNxt)+ #p1)
       return Void
@@ -3700,9 +3712,9 @@ Scene(PT): Exports == Implementation where
     writeLine!(f1,"# mesh generated by axiom")
     for v in elt(ptLst) repeat
       writeLine!(f1,concat(["v ",_
-                (mathObject2String$Lisp screenCoordX(v))@String," ",_
-                (mathObject2String$Lisp screenCoordY(v))@String," ",_
-                (mathObject2String$Lisp screenCoordZ(v))@String])$String)
+                (math_to_string screenCoordX(v))@String," ",_
+                (math_to_string screenCoordY(v))@String," ",_
+                (math_to_string screenCoordZ(v))@String])$String)
     s:String := ""
     for row in elt(indexLst) repeat
       s:= "f"
@@ -3777,8 +3789,8 @@ Scene(PT): Exports == Implementation where
   -- scenegraph node.
   -- The input is a Plot defined in plot.spad
   createPlot1Din2D(f:DF -> PT,tRange:SEG,numPts:NNI):% ==
-      --sayTeX$Lisp concat([_
-      --  "createPlot1Din2D(",(mathObject2String$Lisp 10)@String,_
+      --sayMsg concat([_
+      --  "createPlot1Din2D(",(math_to_string 10)@String,_
       --  ")"])$String
     checkRange tRange
     l := lo tRange
@@ -3810,8 +3822,8 @@ Scene(PT): Exports == Implementation where
 
   -- mostly from draw.spad
   createPlot1Din2D(f:DF -> DF,seg:SEG,numPts:NNI) ==
-    --sayTeX$Lisp concat([_
-    --    "createPlot1Din2D(",(mathObject2String$Lisp 1)@String,_
+    --sayMsg concat([_
+    --    "createPlot1Din2D(",(math_to_string 1)@String,_
     --    ")"])$String
     -- create function DF -> PT
     ff : List(DF -> PT) := [x +-> spnt(x,applyfxTrap(f, x))$PT]

@@ -26,11 +26,11 @@
 GraphImage (): Exports == Implementation where
 
   VIEW    ==> _$ViewportServer$Lisp
-  sendI   ==> sockSendInt
-  sendSF  ==> sockSendFloat
-  sendSTR ==> sockSendString
-  getI    ==> sockGetInt
-  getSF   ==> sockGetFloat
+  sendI   ==> sockSendInt$Lisp
+  sendSF  ==> sockSendFloat$Lisp
+  sendSTR ==> sockSendString$Lisp
+  getI    ==> sockGetInt$Lisp
+  getSF   ==> sockGetFloat$Lisp
 
   typeGRAPH  ==> 2
   typeVIEW2D ==> 3
@@ -312,30 +312,30 @@ GraphImage (): Exports == Implementation where
       if null(units graf) then  -- figure out best ranges for points
         graf.unitsField := figureUnits(graf.rangesField)  --::V SEG SF
       sayBrightly(["   Graph data being transmitted to the viewport manager..."::E]$List(E))$Lisp
-      sendI(VIEW,typeGRAPH)$Lisp
-      sendI(VIEW,makeGRAPH)$Lisp
+      sendI(VIEW, typeGRAPH)
+      sendI(VIEW, makeGRAPH)
       tonto := (graf.rangesField)::RANGESF
-      sendSF(VIEW,lo(first tonto))$Lisp
-      sendSF(VIEW,hi(first tonto))$Lisp
-      sendSF(VIEW,lo(second tonto))$Lisp
-      sendSF(VIEW,hi(second tonto))$Lisp
-      sendSF(VIEW,first (graf.unitsField))$Lisp
-      sendSF(VIEW,second (graf.unitsField))$Lisp
-      sendI(VIEW,s)$Lisp     -- how many lists of points are being sent
+      sendSF(VIEW, lo(first tonto))
+      sendSF(VIEW, hi(first tonto))
+      sendSF(VIEW, lo(second tonto))
+      sendSF(VIEW, hi(second tonto))
+      sendSF(VIEW, first (graf.unitsField))
+      sendSF(VIEW, second (graf.unitsField))
+      sendI(VIEW, s)    -- how many lists of points are being sent
       for aList in graf.llPoints for pColor in graf.pointColors for lColor in graf.lineColors for s in graf.pointSizes repeat
-        sendI(VIEW,#aList)$Lisp  -- how many points in this list
+        sendI(VIEW, #aList)   -- how many points in this list
         for p in aList repeat
           aPoint := transform p
-          sendSF(VIEW,xCoord aPoint)$Lisp
-          sendSF(VIEW,yCoord aPoint)$Lisp
-          sendSF(VIEW,hue(p)$PP)$Lisp  -- ?use aPoint as well...?
-          sendSF(VIEW,shade(p)$PP)$Lisp
+          sendSF(VIEW, xCoord aPoint)
+          sendSF(VIEW, yCoord aPoint)
+          sendSF(VIEW, hue(p)$PP)  -- ?use aPoint as well...?
+          sendSF(VIEW, shade(p)$PP)
         hueShade := hue hue pColor + shade pColor * numberOfHues()
-        sendI(VIEW,hueShade)$Lisp
+        sendI(VIEW, hueShade)
         hueShade := (hue hue lColor -1)*5 + shade lColor
-        sendI(VIEW,hueShade)$Lisp
-        sendI(VIEW,s)$Lisp
-      graf.key := getI(VIEW)$Lisp
+        sendI(VIEW, hueShade)
+        sendI(VIEW, s)
+      graf.key := getI(VIEW)
       graf
 
 
@@ -486,11 +486,11 @@ vp:=makeViewport2D(y1)
 TwoDimensionalViewport ():Exports == Implementation where
 
   VIEW    ==> _$ViewportServer$Lisp
-  sendI   ==> sockSendInt
-  sendSF  ==> sockSendFloat
-  sendSTR ==> sockSendString
-  getI    ==> sockGetInt
-  getSF   ==> sockGetFloat
+  sendI   ==> sockSendInt$Lisp
+  sendSF  ==> sockSendFloat$Lisp
+  sendSTR ==> sockSendString$Lisp
+  getI    ==> sockGetInt$Lisp
+  getSF   ==> sockGetFloat$Lisp
 
   typeGRAPH  ==> 2
   typeVIEW2D ==> 3
@@ -770,8 +770,8 @@ TwoDimensionalViewport ():Exports == Implementation where
         -- waiting for its reply after it checks it against
         -- the viewports in its list. a -1 means it doesn't
         -- exist.
-      sendI(VIEW,viewport.key)$Lisp
-      i := getI(VIEW)$Lisp
+      sendI(VIEW, viewport.key)
+      i := getI(VIEW)
       (i < 0$I) =>
         viewport.key := 0$I
         error "This viewport has already been closed!"
@@ -814,32 +814,32 @@ TwoDimensionalViewport ():Exports == Implementation where
     move(viewport,xLoc,yLoc) ==
       viewport.moveTo := [xLoc,yLoc]
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,MOVE)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, MOVE)
         checkViewport viewport =>
-          sendI(VIEW,xLoc)$Lisp
-          sendI(VIEW,yLoc)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, xLoc)
+          sendI(VIEW, yLoc)
+          getI(VIEW)          -- acknowledge
 
     update(viewport,graph,slot) ==
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,putGraph2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, putGraph2D)
         checkViewport viewport =>
-          sendI(VIEW,key graph)$Lisp
-          sendI(VIEW,slot)$Lisp
-          getI(VIEW)$Lisp -- acknowledge
+          sendI(VIEW, key graph)
+          sendI(VIEW, slot)
+          getI(VIEW) -- acknowledge
       void()
 
     resize(viewport,xSize,ySize) ==
       viewport.size := [xSize,ySize]
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,RESIZE)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, RESIZE)
         checkViewport viewport =>
-          sendI(VIEW,xSize)$Lisp
-          sendI(VIEW,ySize)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, xSize)
+          sendI(VIEW, ySize)
+          getI(VIEW)          -- acknowledge
 
     translate(viewport,graphIndex,xTranslateF,yTranslateF) ==
       xTranslate := convert(xTranslateF)@SF
@@ -849,13 +849,13 @@ TwoDimensionalViewport ():Exports == Implementation where
       viewport.graphStatesField.graphIndex.deltaX := xTranslate
       viewport.graphStatesField.graphIndex.deltaY := yTranslate
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,TRANSLATE2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, TRANSLATE2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendSF(VIEW,xTranslate)$Lisp
-          sendSF(VIEW,yTranslate)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendSF(VIEW, xTranslate)
+          sendSF(VIEW, yTranslate)
+          getI(VIEW)          -- acknowledge
 
     scale(viewport,graphIndex,xScaleF,yScaleF) ==
       xScale := convert(xScaleF)@SF
@@ -865,13 +865,13 @@ TwoDimensionalViewport ():Exports == Implementation where
       viewport.graphStatesField.graphIndex.scaleX := xScale  -- check union (undefined?)
       viewport.graphStatesField.graphIndex.scaleY := yScale  -- check union (undefined?)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,SCALE2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, SCALE2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendSF(VIEW,xScale)$Lisp
-          sendSF(VIEW,yScale)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendSF(VIEW, xScale)
+          sendSF(VIEW, yScale)
+          getI(VIEW)          -- acknowledge
 
     viewport2D ==
       [0,new(maxGRAPHS,"undefined"), _
@@ -893,36 +893,36 @@ TwoDimensionalViewport ():Exports == Implementation where
       viewport := viewportDollar::Rep
       doOptions viewport --local function to extract and assign optional arguments for 2D viewports
       sayBrightly(["   FriCAS2D data being transmitted to the viewport manager..."::E]$List(E))$Lisp
-      sendI(VIEW,typeVIEW2D)$Lisp
-      sendI(VIEW,makeVIEW2D)$Lisp
-      sendSTR(VIEW,viewport.title)$Lisp
-      sendI(VIEW,viewport.moveTo.X)$Lisp
-      sendI(VIEW,viewport.moveTo.Y)$Lisp
-      sendI(VIEW,viewport.size.X)$Lisp
-      sendI(VIEW,viewport.size.Y)$Lisp
-      sendI(VIEW,viewport.flags.showCP)$Lisp
+      sendI(VIEW, typeVIEW2D)
+      sendI(VIEW, makeVIEW2D)
+      sendSTR(VIEW, viewport.title)
+      sendI(VIEW, viewport.moveTo.X)
+      sendI(VIEW, viewport.moveTo.Y)
+      sendI(VIEW, viewport.size.X)
+      sendI(VIEW, viewport.size.Y)
+      sendI(VIEW, viewport.flags.showCP)
       for i in 1..maxGRAPHS repeat
         g := (graphs viewport).i
         if g case "undefined" then
-          sendI(VIEW,0$I)$Lisp
+          sendI(VIEW, 0$I)
         else
-          sendI(VIEW,key(g::G))$Lisp
+          sendI(VIEW, key(g::G))
           gs := (graphStates viewport).i
-          sendSF(VIEW,gs.scaleX)$Lisp
-          sendSF(VIEW,gs.scaleY)$Lisp
-          sendSF(VIEW,gs.deltaX)$Lisp
-          sendSF(VIEW,gs.deltaY)$Lisp
-          sendI(VIEW,gs.points)$Lisp
-          sendI(VIEW,gs.connect)$Lisp
-          sendI(VIEW,gs.spline)$Lisp
-          sendI(VIEW,gs.axes)$Lisp
+          sendSF(VIEW, gs.scaleX)
+          sendSF(VIEW, gs.scaleY)
+          sendSF(VIEW, gs.deltaX)
+          sendSF(VIEW, gs.deltaY)
+          sendI(VIEW, gs.points)
+          sendI(VIEW, gs.connect)
+          sendI(VIEW, gs.spline)
+          sendI(VIEW, gs.axes)
           hueShade := hue hue gs.axesColor + shade gs.axesColor * numberOfHues()
-          sendI(VIEW,hueShade)$Lisp
-          sendI(VIEW,gs.units)$Lisp
+          sendI(VIEW, hueShade)
+          sendI(VIEW, gs.units)
           hueShade := hue hue gs.unitsColor + shade gs.unitsColor * numberOfHues()
-          sendI(VIEW,hueShade)$Lisp
-          sendI(VIEW,gs.showing)$Lisp
-      viewport.key := getI(VIEW)$Lisp
+          sendI(VIEW, hueShade)
+          sendI(VIEW, gs.showing)
+      viewport.key := getI(VIEW)
       viewport
 
     graphState(viewport,num,sX,sY,dX,dY,Points,Lines,Spline, _
@@ -933,19 +933,19 @@ TwoDimensionalViewport ():Exports == Implementation where
     title(viewport,Title) ==
       viewport.title := Title
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,TITLE)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, TITLE)
         checkViewport viewport =>
-          sendSTR(VIEW,Title)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendSTR(VIEW, Title)
+          getI(VIEW)          -- acknowledge
 
     reset viewport ==
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,SPADBUTTONPRESS)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, SPADBUTTONPRESS)
         checkViewport viewport =>
-          sendI(VIEW,reset2D)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, reset2D)
+          getI(VIEW)          -- acknowledge
       void()
 
     axes (viewport:%,graphIndex:PI,onOff:STR) : Void ==
@@ -957,25 +957,25 @@ TwoDimensionalViewport ():Exports == Implementation where
         status := no
       viewport.graphStatesField.graphIndex.axes := status  -- check union (undefined?)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,axesOnOff2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, axesOnOff2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendI(VIEW,status)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendI(VIEW, status)
+          getI(VIEW)          -- acknowledge
 
     axes (viewport:%,graphIndex:PI,color:PAL) : Void ==
       if (graphIndex > maxGRAPHS) then
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.axesColor := color
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,axesColor2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, axesColor2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
+          sendI(VIEW, graphIndex)
           hueShade := hue hue color + shade color * numberOfHues()
-          sendI(VIEW,hueShade)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, hueShade)
+          getI(VIEW)          -- acknowledge
 
     units (viewport:%,graphIndex:PI,onOff:STR) : Void ==
       if (graphIndex > maxGRAPHS) then
@@ -986,25 +986,25 @@ TwoDimensionalViewport ():Exports == Implementation where
         status := no
       viewport.graphStatesField.graphIndex.units := status  -- check union (undefined?)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,unitsOnOff2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, unitsOnOff2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendI(VIEW,status)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendI(VIEW, status)
+          getI(VIEW)          -- acknowledge
 
     units (viewport:%,graphIndex:PI,color:PAL) : Void ==
       if (graphIndex > maxGRAPHS) then
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.unitsColor := color
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,unitsColor2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, unitsColor2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
+          sendI(VIEW, graphIndex)
           hueShade := hue hue color + shade color * numberOfHues()
-          sendI(VIEW,hueShade)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, hueShade)
+          getI(VIEW)          -- acknowledge
 
     connect (viewport:%,graphIndex:PI,onOff:STR) : Void ==
       if (graphIndex > maxGRAPHS) then
@@ -1015,12 +1015,12 @@ TwoDimensionalViewport ():Exports == Implementation where
         status := 0$I
       viewport.graphStatesField.graphIndex.connect := status  -- check union (undefined?)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,connectOnOff)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, connectOnOff)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendI(VIEW,status)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendI(VIEW, status)
+          getI(VIEW)          -- acknowledge
 
     points (viewport:%,graphIndex:PI,onOff:STR) : Void ==
       if (graphIndex > maxGRAPHS) then
@@ -1031,12 +1031,12 @@ TwoDimensionalViewport ():Exports == Implementation where
         status := 0$I
       viewport.graphStatesField.graphIndex.points := status  -- check union (undefined?)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,pointsOnOff)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, pointsOnOff)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendI(VIEW,status)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendI(VIEW, status)
+          getI(VIEW)          -- acknowledge
 
     region (viewport:%,graphIndex:PI,onOff:STR) : Void ==
       if (graphIndex > maxGRAPHS) then
@@ -1047,12 +1047,12 @@ TwoDimensionalViewport ():Exports == Implementation where
         status := 0$I
       viewport.graphStatesField.graphIndex.spline := status  -- check union (undefined?)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,spline2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, spline2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendI(VIEW,status)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendI(VIEW, status)
+          getI(VIEW)          -- acknowledge
 
     show (viewport,graphIndex,onOff) ==
       if (graphIndex > maxGRAPHS) then
@@ -1063,29 +1063,29 @@ TwoDimensionalViewport ():Exports == Implementation where
         status := 0$I
       viewport.graphStatesField.graphIndex.showing := status  -- check union (undefined?)
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,showing2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, showing2D)
         checkViewport viewport =>
-          sendI(VIEW,graphIndex)$Lisp
-          sendI(VIEW,status)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, graphIndex)
+          sendI(VIEW, status)
+          getI(VIEW)          -- acknowledge
 
     controlPanel (viewport,onOff) ==
       if onOff = "on" then viewport.flags.showCP := yes
       else viewport.flags.showCP := no
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,hideControl2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, hideControl2D)
         checkViewport viewport =>
-          sendI(VIEW,viewport.flags.showCP)$Lisp
-          getI(VIEW)$Lisp          -- acknowledge
+          sendI(VIEW, viewport.flags.showCP)
+          getI(VIEW)          -- acknowledge
 
     close viewport ==
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,closeAll2D)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, closeAll2D)
         checkViewport viewport =>
-          getI(VIEW)$Lisp          -- acknowledge
+          getI(VIEW)          -- acknowledge
           viewport.key := 0$I
       void()
 
@@ -1104,21 +1104,21 @@ TwoDimensionalViewport ():Exports == Implementation where
     write(viewport:%,Filename:STR,thingsToWrite:L STR) ==
       stringToSend : STR := ""
       (key(viewport) ~= 0$I) =>
-        sendI(VIEW,typeVIEW2D)$Lisp
-        sendI(VIEW,writeView)$Lisp
+        sendI(VIEW, typeVIEW2D)
+        sendI(VIEW, writeView)
         checkViewport viewport =>
-          sendSTR(VIEW,Filename)$Lisp
+          sendSTR(VIEW, Filename)
           m := minIndex(avail := viewWriteAvailable())
           for aTypeOfFile in thingsToWrite repeat
             if (writeTypeInt:= position(upperCase aTypeOfFile,avail)-m) < 0 then
               sayBrightly(["  > "::E,(concat(aTypeOfFile, _
                 " is not a valid file type for writing a 2D viewport"))::E]$List(E))$Lisp
             else
-              sendI(VIEW,writeTypeInt+(1$I))$Lisp
+              sendI(VIEW, writeTypeInt + 1$I)
                   --              stringToSend := concat [stringToSend,"%",aTypeOfFile]
-                  --              sendSTR(VIEW,stringToSend)$Lisp
-          sendI(VIEW,0$I)$Lisp     -- no more types of things to write
-          getI(VIEW)$Lisp          -- acknowledge
+                  --              sendSTR(VIEW, stringToSend)
+          sendI(VIEW, 0$I)     -- no more types of things to write
+          getI(VIEW)          -- acknowledge
           Filename
 
 @
