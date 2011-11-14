@@ -198,7 +198,10 @@ postDef [defOp,lhs,rhs] ==
   typeList:= [targetType,:argTypeList]
   if atom form then form := [form]
   specialCaseForm := [nil for x in form]
-  ['DEF,newLhs,typeList,specialCaseForm,postTran rhs]
+  trhs :=
+      rhs is ["=>", a, b] => ['IF,postTran a, postTran b, 'noBranch]
+      postTran rhs
+  ['DEF, newLhs, typeList, specialCaseForm, trhs]
 
 postDefArgs argl ==
   null argl => argl
