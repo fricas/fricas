@@ -952,21 +952,25 @@ compAdd(['add,$addForm,capsule],m,e) ==
        [''T, ['systemError,['LIST,''%b,MKQ CAR $functorForm,''%d,'"from", _
          ''%b,MKQ namestring _/EDITFILE,''%d,'"needs to be compiled"]]]],m,e]
   $addFormLhs: local:= $addForm
+  addForm := $addForm
   if $addForm is ["SubDomain",domainForm,predicate] then
 --+
     $NRTaddForm := domainForm
     NRTgetLocalIndex domainForm
     --need to generate slot for add form since all $ go-get
     --  slots will need to access it
-    [$addForm,.,e]:= compSubDomain1(domainForm,predicate,m,e)
+    [$addForm, m1, e] := compSubDomain1(domainForm, predicate, m, e)
   else
 --+
     $NRTaddForm := $addForm
-    [$addForm,.,e]:=
+    [$addForm, m1, e]:=
       $addForm is ["@Tuple", :.] =>
         $NRTaddForm := ["@Tuple", :[NRTgetLocalIndex x for x in rest $addForm]]
         compOrCroak(compTuple2Record $addForm,$EmptyMode,e)
       compOrCroak($addForm,$EmptyMode,e)
+  not(isCategoryForm(m1, e)) or m1 = '(Category) =>
+      userError(concat('"need domain before 'add', got", addForm,
+                       '"of type", m1))
   compCapsule(capsule,m,e)
 
 compTuple2Record u == ['Record,:[[":",i,x] for i in 1.. for x in rest u]]
