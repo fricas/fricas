@@ -185,7 +185,7 @@ uphas t ==
     isLocalVar(type) => ['unabbrev, type]
     MKQ unabbrev type
   catCode :=
-    prop := unabbrev prop
+    prop := unabbrev SUBST('$, '%, prop)
     prop is [":", :.] => MKQ prop
     ['evaluateType, MKQ prop]
   code:=['newHasTest,['evaluateType, type], catCode]
