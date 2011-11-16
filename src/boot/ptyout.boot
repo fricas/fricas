@@ -159,13 +159,13 @@ STOUT string==   PSTOUT [string]
  
 STTOSEX0 string ==
     $GenVarCounter:local := 0
-    $bfClamming:local:=false
     shoeTransformString [string]
 
 STTOSEX1 string ==
     doInBoottranPackage(STTOSEX0 string)
 
 STTOSEX string ==
+    $bfClamming : local := false
     a := STTOSEX1 string
     bStreamPackageNull a => nil
     stripm(CAR a, _*PACKAGE_*, FIND_-PACKAGE '"BOOTTRAN")
@@ -178,6 +178,7 @@ STEVAL string ==
 -- to common lisp, and compiles it.
  
 STTOMC string==
+    $bfClamming : local := false
     a := STTOSEX1 string
     result := 
         bStreamPackageNull a => nil
