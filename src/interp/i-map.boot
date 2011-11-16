@@ -548,9 +548,10 @@ rewriteMap(op,opName,argl) ==
       compFailure  ['"   Cannot compile map:",:bright opName]
     arglCode := ['LIST,:[argCode for arg in argl for argName in
       $FormalMapVariableList]] where argCode ==
+        atype := OR(getMode arg, KAR(getModeSet arg))
         ['putValueValue,['mkAtreeNode,MKQ argName],
           objNewCode(['wrap,wrapped2Quote(objVal getValue arg)],
-            getMode arg)]
+                      atype)]
     putValue(op,objNew(['rewriteMap1,MKQ opName,arglCode,MKQ sig],
       CAR sig))
     putModeSet(op,[CAR sig])
