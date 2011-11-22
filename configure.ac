@@ -384,8 +384,9 @@ AS_IF([test -n "$GMP_WRAP_SO_TARGET"],[
     [gmp.h not found, see http://swox.com/gmp])])
   # reset LDFLAGS
   LDFLAGS=$fricas_save_LDFLAGS
+  GMP_LIB=-lgmp
 ])
-
+AC_SUBST(GMP_LIB)
 ## The following is a horrible to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
