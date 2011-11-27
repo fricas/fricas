@@ -59,6 +59,17 @@ arb := ar case "failed"
 testTrue("not(arb)")
 testEquals("ar::AlgebraicNumber", "a")
 
+testcase "series of elliptic integrals"
+su := series(ellipticF(jacobiSn(u, m), m), u=0)
+dsu := su - series(u, u=0)
+res1 := reduce(_and, [(coefficient(dsu, i) = 0)@Boolean for i in 1..20])
+testTrue("res1")
+se1 := series(ellipticE(jacobiSn(u, m), m), u=0)
+se2 := integrate(series(jacobiDn(u, m)^2, u=0), u)
+ds2 := se1 - se2
+res2 := reduce(_and, [(coefficient(ds2, i) = 0)@Boolean for i in 1..20])
+testTrue("res2")
+
 )set output algebra on
 statistics()
 @
