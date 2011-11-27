@@ -31,6 +31,55 @@ FloatSpecialFunctions() : Exports == Implementation where
       ++ Beta(x, y) is the Euler Beta function.
     Beta : (Complex Float, Complex Float) -> Complex Float
       ++ Beta(x, y) is the Euler Beta function.
+    lambertW : Float -> Float
+      ++ lambertW(x) is the Lambert W function.
+    lambertW : DoubleFloat -> DoubleFloat
+      ++ lambertW(x) is the Lambert W function.
+    lambertW : Complex(Float) -> Complex(Float)
+      ++ lambertW(x) is the Lambert W function.
+    lambertW : Complex(DoubleFloat) -> Complex(DoubleFloat)
+      ++ lambertW(x) is the Lambert W function.
+    -- Functions below should be local, but conditional
+    rabs :  Float -> Float
+      ++ Undocumented
+    rabs : Complex(Float) -> Float
+      ++ Undocumented
+    rabs : DoubleFloat -> DoubleFloat
+      ++ Undocumented
+    rabs : Complex(DoubleFloat) -> DoubleFloat
+      ++ Undocumented
+    lambert_via_newton1 : (Float, Float, Float) -> Float
+      ++ Undocumented
+    lambert_via_newton1 : (DoubleFloat, DoubleFloat, DoubleFloat
+                          ) -> DoubleFloat
+      ++ Undocumented
+    lambert_via_newton1 : (Complex(Float), Complex(Float), Float
+                          ) -> Complex(Float)
+      ++ Undocumented
+    lambert_via_newton1 : (Complex(DoubleFloat), Complex(DoubleFloat),
+                           DoubleFloat) -> Complex(DoubleFloat)
+      ++ Undocumented
+    lambert_via_newton2 : (Float, Float, Float) -> Float
+      ++ Undocumented
+    lambert_via_newton2 : (DoubleFloat, DoubleFloat, DoubleFloat
+                          ) -> DoubleFloat
+      ++ Undocumented
+    lambert_via_newton2 : (Complex(Float), Complex(Float), Float
+                          ) -> Complex(Float)
+      ++ Undocumented
+    lambert_via_newton2 : (Complex(DoubleFloat), Complex(DoubleFloat),
+                           DoubleFloat) -> Complex(DoubleFloat)
+      ++ Undocumented
+    lambert_inverse_series : (Float, Float) -> Float
+      ++ Undocumented
+    lambert_inverse_series : (DoubleFloat, DoubleFloat) -> DoubleFloat
+      ++ Undocumented
+    lambert_inverse_series : (Complex(Float), Complex(Float)
+                             ) -> Complex(Float)
+      ++ Undocumented
+    lambert_inverse_series : (Complex(DoubleFloat), Complex(DoubleFloat)
+                             ) -> Complex(DoubleFloat)
+      ++ Undocumented
 
   Implementation ==> add
 
@@ -64,7 +113,7 @@ FloatSpecialFunctions() : Exports == Implementation where
        s*(exp(-l)::(Complex Float))
 
     Gamma(z : Complex Float) : Complex Float ==
-        (base()$Float ~= 2) =>
+        not(base()$Float =$Integer 2) =>
             error "Gamma can only handle base 2 Float-s"
         l0 := bits()
         l := max(l0 + 5, 20)
@@ -120,7 +169,7 @@ FloatSpecialFunctions() : Exports == Implementation where
 
 
     logGamma(z : Complex Float) : Complex Float ==
-        (base()$Float ~= 2) =>
+        not(base()$Float =$Integer 2) =>
             error "Gamma can only handle base 2 Float-s"
         l0 := bits()
         l := max(l0 + 5, 20)
@@ -172,7 +221,7 @@ FloatSpecialFunctions() : Exports == Implementation where
         real(logGamma(x :: (Complex Float)))
 
     Beta(x : Complex Float, y : Complex Float) : Complex Float ==
-        (base()$Float ~= 2) =>
+        not(base()$Float =$Integer 2) =>
             error "Beta can only handle base 2 Float-s"
         l0 := bits()
         l1 := max(30, l0 + 10)
@@ -184,6 +233,164 @@ FloatSpecialFunctions() : Exports == Implementation where
 
     Beta(x : Float, y : Float) : Float ==
         real(Beta(x::(Complex Float), y::(Complex Float)))
+
+    rabs(r : Float) : Float == abs(r)
+
+    rabs(r : Complex(Float)) : Float == real(abs(r))
+
+    rabs(r : DoubleFloat) : DoubleFloat == abs(r)
+
+    rabs(r : Complex(DoubleFloat)) : DoubleFloat == real(abs(r))
+
+    RN ==> Fraction(Integer)
+
+    Funs ==>
+        lambert_via_newton1(x : NT, w : NT, eps : RNT) : NT ==
+            odw := 1$RNT
+            repeat
+                ew := exp(w)
+                dw := (w - x/ew)/(w + 1)
+                w := w - dw
+                odw < eps => return w
+                odw := rabs(dw)
+
+        lambert_via_newton2(lz : NT, w : NT, eps : RNT) : NT == 
+            odw := 1$RNT
+            repeat
+                lw := log(w)
+                dw := (w + lw - lz)/(1 + 1/w)
+                w := w - dw
+                odw < eps => return w
+                odw := rabs(dw)
+
+        lambert_inverse_series(h : NT, h2 : NT) : NT ==
+            res := h - (1/$RN 3)::NT *h2
+            h3 := h*h2
+            res := res + (11/$RN 72)::NT*h3
+            h4 := h2*h2
+            res := res - (43/$RN 540)::NT*h4
+            res := res + (769/$RN 17280)::NT*h3*h2
+            res - (221/$RN 8505)::NT*h4*h2
+
+    Funs where
+        NT ==> Float
+        RNT ==> Float
+
+    Funs where
+        NT ==> Complex(Float)
+        RNT ==> Float
+
+    Funs where
+        NT ==> DoubleFloat
+        RNT ==> DoubleFloat
+
+    Funs where
+        NT ==> Complex(DoubleFloat)
+        RNT ==> DoubleFloat
+
+    lambertW(x : DoubleFloat) : DoubleFloat ==
+        eps := float(1, -35)$DoubleFloat
+        order(x) > 200 and x > 0 =>
+            lx := log(x)
+            lambert_via_newton2(lx, lx, eps)
+        w : DoubleFloat :=
+            x > 2::DoubleFloat =>
+                y := log(x)
+                y - log(y)
+            (1/2)::DoubleFloat*x
+        x < (-190436/$RN 517656)::DoubleFloat => error "x < -exp(-1)"
+        x < (-231087/$RN 628160)::DoubleFloat =>
+            e1 := exp(-1::DoubleFloat)
+            h2 := x + e1
+            h2 < 0 => error "x < -exp(-1)"
+            h2 := 2*h2/e1
+            h := sqrt(h2)
+            lambert_inverse_series(h, h2) - 1
+        if (ax := abs(x)) < (1/2)::DoubleFloat then
+            eps := ax*eps
+        lambert_via_newton1(x, w, eps)
+
+    lambertW(x :  Complex(DoubleFloat)) : Complex(DoubleFloat) ==
+        rx := real(x)
+        ix := imag(x)
+        ax : DoubleFloat := abs(rx) + abs(ix)
+        eps := float(1, -35)$DoubleFloat
+        order(ax) > 200 =>
+            -- sbcl log has trouble when |z| > 2^997
+            -- Clozure CL and gcl log has trouble when |z| > 2^511
+            -- so we scale x to avoid troubles
+            lz := complex(log(ax), 0) + log(complex(rx/ax, ix/ax))
+            lambert_via_newton2(lz, lz, eps)
+        abs(ix) < (1/$RN 4194304)::DoubleFloat 
+           and rx < (-231087/$RN 628160)::DoubleFloat
+              and (-56258/$RN 152925)::DoubleFloat < rx =>
+            e1 := exp(-1::DoubleFloat)
+            h2 := 2*(1/e1)*(x + complex(e1, 0))
+            h := sqrt(h2)
+            lambert_inverse_series(h, h2) - 1
+        w := 
+            ax > 2::DoubleFloat =>
+                y := log(x)
+                y - log(y)
+            (1/2)::DoubleFloat*x
+        if ax < (1/2)::DoubleFloat then
+            eps := ax*eps
+        lambert_via_newton1(x, w, eps)
+        
+    lambertW(x : Float) : Float ==
+        cbit := bits()
+        eps := float(1, -2*cbit quo 3)
+        ax := abs(x)
+        order(ax) > 200 and x > 0 =>
+            lx := log(x)
+            lambert_via_newton2(lx, lx, eps)
+        x < (-190436/$RN 517656)::Float => error "x < -exp(-1)"
+        x < (-190434/$RN 517656)::Float =>
+            cbit2 := cbit quo 2
+            bits((cbit + cbit2) pretend PositiveInteger)$Float
+            e1 := exp(-1::Float)
+            h2 := x + e1
+            h := sqrt(h2)
+            bits(cbit)
+            h2 < 0 => error "x < -exp(-1)"
+            w1 := lambert_inverse_series(h, h2)
+            order(w1) < -cbit2 => w1 - 1
+            lambert_via_newton1(x, w1 - 1, eps)
+        w : Float :=
+             x > 2::Float =>
+                 y := log(x)
+                 y - log(y)
+             0.5*x
+        if abs(x) < (1/$RN 2)::Float then
+            eps := ax*eps
+        lambert_via_newton1(x, w, eps)
+
+    lambertW(z : Complex(Float)) : Complex(Float) ==
+        cbit := bits()$Float
+        eps := float(1, -2*cbit quo 3)
+        abs_z := rabs(z)
+        order(abs_z) > 200 =>
+            lz := log(z)
+            lambert_via_newton2(lz, lz, eps)
+        rzd := real(z)::DoubleFloat
+        imag(z) > (1/1000000) or (rzd < (-190436 /$RN 517656)::DoubleFloat)
+          or (rzd > (-190434 /$RN 517656)::DoubleFloat) =>
+            izd := imag(z)::DoubleFloat
+            wd : Complex(DoubleFloat) := lambertW(complex(rzd, izd))
+            w : Complex(Float) := complex(convert(real(wd))@Float,
+                                          convert(imag(wd))@Float)
+            if abs_z < (1/2)::Float then
+                eps := abs_z*eps
+            lambert_via_newton1(z, w, eps)
+        cbit2 := cbit quo 2
+        bits((cbit + cbit2) pretend PositiveInteger)
+        e1 := exp(-1$Float)
+        h2 := z + complex(e1, 0)
+        h := sqrt(h2)
+        bits(cbit)
+        w1 := lambert_inverse_series(h, h2)
+        order(rabs(h2)) < -cbit2 => w1 - 1
+        lambert_via_newton1(z, w1 - 1, eps)
 
 @
 
