@@ -13,37 +13,83 @@ Alternative geometry and graphics framework using scenegraph structure.
 \section{Preface}
 Its easier to explain a graphics framework with diagrams and
 screenshots so you may prefer to read the documentation here:
-http://www.euclideanspace.com/maths/standards/program/mycode/graph/
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/graph/}
+
+This is a graphics framework to support many types of drawing,
+plotting, diagrams and various types of output that can't be
+represented as text only.
+
+I have called this a 'graphics framework' although there are elements
+here of both a 'geometry framework' and a 'drawing framework'. There
+is also some XML domains which could be separated out and used with
+other XML related stuff.
+
+In some ways it would be good to separate out pure geometry
+functions such as:
+\begin{itemize}
+\item Representing Points, Lines, Oriented Planes, Volumes and higher
+dimensional elements.
+\item Interactions between these such as intersection, projection,
+meet, join and so on.
+\item Transformations of these such as translation, rotation,
+reflection and so on.
+\item Normals to surfaces.
+\end{itemize}
+I think there is a distinction between the way we represent these
+infinite elements such a line that extends infinitely in both
+directions and a finite line that only extents between two points.
+It seems quite difficult to represent both of these in a common
+structure that is completely general. For infinite objects then
+Clifford/Grassmann algebra seems to provide a very efficient
+representation but for finite objects it is simpler to specify
+everything in terms of points.
+
+Most drawing functions tend to be on finite objects so it seems
+to make sense to represent shapes in terms of points, for instance,
+a curved line would be approximated by a list of points linked by
+straight lines.
+
+So why do we need a graphics and drawing framework in a CAS? It
+would be good if we could use other software to provide this
+capability for us. However we need to express these graphics
+funcions in terms of various types of algebras such as Clifford
+algebra and general purpose graphics packages can't do that. It
+would be good if FriCAS could be extended at some stage in the
+future to allow the user much better graphical interaction with
+the program. This would require even tighter interaction between
+the algebra, geometry and graphics aspects of the program.
 
 This code is intended to be an alternative to the current Axiom/FriCAS
 graphics framework. It is based on a scenegraph structure which allows
 lines, surfaces and higher dimensional structures to be defined and
-modified by transforms, clipping boxes, material (line width, colour and
-so on) which control individual nodes or whole branches in the
+modified by transforms, clipping boxes, material (line width, colour
+and so on) which control individual nodes or whole branches in the
 scenegraph. This means that, for example, transforms can be applied
-continuously to a whole branch without altering the nodes in that branch,
-this means that we can avoid a cumulative build up of floating point errors
-when many transforms are applied.
+continuously to a whole branch without altering the nodes in that
+branch, this means that we can avoid a cumulative build up of floating
+point errors when many transforms are applied.
 
 This framework supports all the 2D and 3D draw and plotting that the
-existing framework supports. Use of transforms in the scenegraph means that
-many plots can be combined together, either overlayed or next to each other
-and combined with various show scales, grids text annotations and so on.
+existing framework supports. Use of transforms in the scenegraph
+means that many plots can be combined together, either overlayed or
+next to each other and combined with various show scales, grids text
+annotations and so on.
 
 The framework supports:
-\begin{list}{}
-* Different algebras: vector, matrix, complex numbers and Clifford Algebra.
-* Different geometries: Euclidean, projective, conformal (hyperbolic to be
-  added later)
-* Different coordinate systems: Cartesian coordinates, Argand Plane,
-  Spherical, Cylindrical.
-* Different number of dimensions: 2,3 (4 and more to be added)
-\end{list}
+\begin{itemize}
+\item Different algebras: vector, matrix, complex numbers and
+Clifford Algebra.
+\item Different geometries: Euclidean, projective, conformal (hyperbolic
+to be added later)
+\item Different coordinate systems: Cartesian coordinates, Argand Plane,
+Spherical, Cylindrical.
+\item Different number of dimensions: 2,3 (4 and more to be added)
+\end{itemize}
 
-The aim is not just to draw plots but also to allow experimentation with
-arbitrary shapes being transformed, for instance to transform a given shape
-by reflecting in a circle. To see the sort of thing I am trying to do here
-see first chapter of [Dorst,Fontijne & Mann 2007] except this is not just
+The aim is not just to draw plots but also to allow experimentation
+with arbitrary shapes being transformed, for instance to transform a
+given shape by reflecting in a circle. To see the sort of thing I am
+trying to do here see first chapter of [1] except this is not just
 limited to Clifford algebra and conformal space.
 
 Currently Axiom/FriCAS has domains that represent transforms:
@@ -53,52 +99,53 @@ framework so it is more difficult to combine them with other things and
 to experiment. The aim of this framework is to create a way for geometry
 and graphics related entities to interwork.
 
-This scenegraph framework currently exports to file formats like: SVG,X3D,
-VRML and Wavefront(obj) but currently there is not the capability to interact
-directly in a graphical way, that is, there is no xwindow support. The
-existing graphics framework allows user interaction in a very limited way in
-that the graphics can be displayed in an xwindow and there is then the
-ability to do simple transforms like pan and zoom.
+This scenegraph framework currently exports to file formats like: SVG,
+X3D, VRML and Wavefront(obj) but currently there is not the capability
+to interact directly in a graphical way, that is, there is no xwindow
+support. The existing graphics framework allows user interaction in a
+very limited way in that the graphics can be displayed in an xwindow
+and there is then the ability to do simple transforms like pan and zoom.
 However this is not suitable for the new framework because the existing
 framework builds a data structure to represent the graphics
-using SPAD and then passes this to 'C' code. The 'C' code then does the pan,
-zoom and so on and can then save to a file format.
+using SPAD and then passes this to 'C' code. The 'C' code then does the
+pan, zoom and so on and can then save to a file format.
 
-Apart from being very messy trying to mix different languages, this would not
-work for the new framework because:
-\begin{list}{}
-* We want to use non-linear as well as linear transforms.
-* I would like to be able to work with discontinuous (fractal) shapes.
-* I want to use different algebras such as vector, matrix, complex numbers
-  and Clifford algebras and I would not want to implement these algebras
-  using 'C'.
-\end{list}
+Apart from being very messy trying to mix different languages, this
+would not work for the new framework because:
+\begin{itemize}
+\item We want to use non-linear as well as linear transforms.
+\item I would like to be able to work with discontinuous (fractal)
+shapes.
+\item I want to use different algebras such as vector, matrix,
+complex numbers and Clifford algebras and I would not want to implement
+these algebras using 'C'.
+\end{itemize}
 
 I can't see a way to implement this as I would like, possible options might
 be:
-\begin{list}{}
-* Implement an OpenGL canvas in SPAD which allows SPAD to directly output to
-  OpenGL (a thin wrapper for OpenGL calls) and also to read and process mouse
-  position.
-* Implement Axiom/FriCAS as library code that can be called from other
-  languages.
-* Implement some form of two-way API which allows other programs to use SPAD
-  algebra.
-\end{list}
+\begin{itemize}
+\item Implement an OpenGL canvas in SPAD which allows SPAD to directly
+output to OpenGL (a thin wrapper for OpenGL calls) and also to read and
+process mouse position.
+\item Implement Axiom/FriCAS as library code that can be called from
+other languages.
+\item Implement some form of two-way API which allows other programs
+to use SPAD algebra.
+\end{itemize}
 \section{The Scenegraph Concept}
 A scenegraph consists of a number of nodes in a tree structure, the types of
 nodes are:
-\begin{list}{}
-* Root Node
-* Group Node
-* Line Node
-* Indexed Face Set (IFS) Node
-* Text Node
-* Clip Node
-* Material Node
-* Transform Node
-* Arrow Node
-\end{list}
+\begin{itemize}
+\item Root Node
+\item Group Node
+\item Line Node
+\item Indexed Face Set (IFS) Node
+\item Text Node
+\item Clip Node
+\item Material Node
+\item Transform Node
+\item Arrow Node
+\end{itemize}
 This tree is constructed by starting with the root node and adding child
 nodes using the addChild! function as follows:
 \begin{verbatim}
@@ -219,11 +266,11 @@ Grids are useful as a background to plots, they consist of various
 straight, horizontal and vertical lines.
 
 The form without the step size constructs a grid with:
-\begin{list}{}
-* narrow blue lines every 20 units
-* wide blue lines every 100 units
-* wide red lines every 200 units
-\end{list}{}
+\begin{itemize}
+\item  narrow blue lines every 20 units
+\item  wide blue lines every 100 units
+\item  wide red lines every 200 units
+\end{itemize}{}
 The form with step uses the prevailing colour and thickness and the
 step parameter defines the spacing between lines.
 
@@ -236,17 +283,17 @@ be approximated by straight lines the points are intended to be close
 enough together to transform reasonably accurately.
 
 The pattern depends on ptype parameter as follows:
-\begin{list}{}
-ptype=1: contruct a set of horizontal and vertical lines in the current
+\begin{itemize}
+\item "GRID"::Symbol: construct a set of horizontal and vertical lines in the current
 clip boundary and current material with a spacing between
 lines given by the step parameter.
-ptype=2: constructs a Sierpinski fractel. step parameter gives the
+\item "SIERPINSKI"::Symbol: constructs a Sierpinski fractel. step parameter gives the
 level of subdivision.
-ptype=3: constructs a house shape.
-\end{list}{}
+\item "HOUSE"::Symbol: constructs a house shape.
+\end{itemize}{}
 \begin{verbatim}
-createScenePattern(ptype:NNI,step:NNI,bb: BOUNDS): %
-addScenePattern(n:%,ptype:NNI,step:NNI,bb: BOUNDS):%
+createScenePattern(ptype:Symbol,step:NNI,bb: BOUNDS): %
+addScenePattern(n:%,ptype:Symbol,step:NNI,bb: BOUNDS):%
 \end{verbatim}
 \subsection{One Dimensional subspace in Two Dimensions}
 This represents 1 dimension (line - possibly curved) in 2 dimensions (plane)
@@ -257,10 +304,10 @@ applicable in this part of the scene graph.
 
 The plot is defined by a function and a range of values. There are various
 ways to define this function:
-\begin{list}{}
-DF -> DF a mapping from float to float
-DF -> PT a mapping from float to point
-\end{list}{}
+\begin{itemize}
+\item DF -> DF a mapping from float to float
+\item DF -> PT a mapping from float to point
+\end{itemize}{}
 Where:
 DF ==> DoubleFloat
 PT ==> SPointCategory -- an instance of SPointCategory represents a point.
@@ -311,19 +358,19 @@ addPlot2Din3Dparametric: (n:%,PSF,SEG,SEG,numPts:NNI) -> %
 \end{verbatim}
 \section{Exporting the graphics}
 This scenegraph framework currently exports to the following file formats:
-\begin{list}{}
-* SVG - For 2 dimensional graphics this is the most standards based and also
+\begin{itemize}
+\item  SVG - For 2 dimensional graphics this is the most standards based and also
         supported by graphical editors such as Inkscape.
-* X3D - For 3 dimensional graphics I think this is the most standards
+\item  X3D - For 3 dimensional graphics I think this is the most standards
         compliant but it is not supported on many 3D editors.
-* VRML - VRML2 and VRML97 are supported but not VRML1. This flavour of
+\item  VRML - VRML2 and VRML97 are supported but not VRML1. This flavour of
          VRML holds the same information as X3D but using a different
          non-XML syntax.
-* Wavefront(obj) - This is a very simple 3D format that will hold meshes
+\item  Wavefront(obj) - This is a very simple 3D format that will hold meshes
                    but not text or colour information. It is supported on
                    most 3D editors but only use it as a fallback if the
                    other 3D formats don't work.
-\end{list}
+\end{itemize}
 To export a scenegraph to one of these file formats use the following
 function calls:
 
@@ -369,20 +416,6 @@ they will be set.
 toObj:(n:%,ptLst: Reference List PT,_
       indexLst:Reference List List NNI,_
       indexNxt:Reference NNI,tran:TR,bb: BOUNDS) -> Void
-\end{verbatim}
-\section{Compiling the code}
-Separate each of the categories, packages and domains from this file into
-individual files and compile them - something like this:
-\begin{verbatim}
-)co SPointCategory.spad
-)co SCartesian.spad
-)co SArgand.spad
-)co SceneIFS.spad
-)co STransform.spad
-)co XmlAttribute.spad
-)co XmlElement.spad
-)co ExportXml.spad
-)co Scene.spad
 \end{verbatim}
 \section{Using the code}
 \subsection{Example 1 - Two dimensional plots with scale.}
@@ -452,28 +485,28 @@ tx := addSceneText(sc,"sin(theta)",32::NNI,_
 writeSvg(sc,"test3.svg")
 \end{verbatim}
 \section{Capabilities of this Framework}
-\begin{list}{}
-* draw plots
-* define shapes.
-* show scales and grids
-* combine many graphs/shapes in one view
-* transform graphs/shapes of groups of shapes.
-* apply properties like colour, line thickness to these nodes or groups.
-* add text annotations.
-* export to SVG, X3D, VRML and Wavefront(obj) files.
-\end{list}
+\begin{itemize}
+\item  draw plots
+\item  define shapes.
+\item  show scales and grids
+\item  combine many graphs/shapes in one view
+\item  transform graphs/shapes of groups of shapes.
+\item  apply properties like colour, line thickness to these nodes or groups.
+\item  add text annotations.
+\item  export to SVG, X3D, VRML and Wavefront(obj) files.
+\end{itemize}
 \section{Programming Issues}
 Usually, when programming using SPAD, I try to use a functional programming
 style as much as possible, for instance making objects (representations)
 immutable. However I don't think it would be practical to implement the
-scengraph in this way. A design requirement is that the scenegaph needs
+scenegraph in this way. A design requirement is that the scenegraph needs
 to hold a large amount of information, A 3D scene might be made from
 thousands (perhaps millions?) of polygons. For the sake of efficiency we
 need to be able to modify it without copying the whole thing into a new
 object for each change.
 
 The object oriented style of programming would seem to be ideal for a
-scenegraph. Each type of node in the scengraph could be a different object
+scenegraph. Each type of node in the scenegraph could be a different object
 all inheriting from a common object. Unfortunately is is not easy to do
 this in SPAD because it does not support polymorphism.
 
@@ -507,19 +540,19 @@ transform(def:Matrix):(Vector->Vector)
 I don't know how to this? that is, how do I create an anonymous function
 where a variable (in this case def:Matrix) is a constant in the function?
 \section{Future Enhancements}
-\begin{list}{}
-* define and transform shapes using Clifford algebra as well as vectors,
+\begin{itemize}
+\item  define and transform shapes using Clifford algebra as well as vectors,
   matrix and complex numbers used at present.
-* show union and intersection (join and meet)
-* slice through shapes and show sections.
-* represent 4 and higher dimensions using various methods like colour or
+\item  show union and intersection (join and meet)
+\item  slice through shapes and show sections.
+\item  represent 4 and higher dimensions using various methods like colour or
   time animation.
-* Support interaction with the graphics, possibly by using a OpenGL
+\item  Support interaction with the graphics, possibly by using a OpenGL
   canvas which could be called directly from SPAD
   Bill Page mentioned that there is an OpenGL binding for lisp.
-  http://common-lisp.net/project/cl-opengl/
-  http://repo.or.cz/w/cl-glfw.git
-\end{list}
+  \url{http://common-lisp.net/project/cl-opengl/}
+  \url{http://repo.or.cz/w/cl-glfw.git}
+\end{itemize}
 \section{SPointCategory}
 SPointCategory defines a type that can represent either a point or a vector.
 It is important to make the distinction between a point and a vector (and
@@ -529,14 +562,14 @@ vectors identically but pure translations act only on points.
 
 SPointCategory has various implementations depending on the algebra and
 type of space that we are dealing with:
-\begin{list}{}
-* SCartesian - n dimensional space defined by x,y... and 0 for vectors and 1
+\begin{itemize}
+\item  SCartesian - n dimensional space defined by x,y... and 0 for vectors and 1
             for points. Translations are defined by (n+1)x(n+1) matrix.
-* SArgand - two dimensional space defined by real and imaginary parts.
+\item  SArgand - two dimensional space defined by real and imaginary parts.
            Translations are defined by general function of a complex
            variable C->C.
-* SConformal - Two extra dimentions added to form a null space.
-\end{list}
+\item  SConformal - Two extra dimensions added to form a null space.
+\end{itemize}
 What I really want to do is define implementations of conformal space
 in various number of dimensions using Clifford algebra say 'SConformal2d'.
 This would need to join SPointCategory with a particular implementation
@@ -551,16 +584,16 @@ but I don't know how to do this.
 This category is implicitly defined over DoubleFloat, the user is
 not given given the option of specifying any other type, I did consider
 this but decided not to because:
-\begin{list}{}
-* We require an ordered number system (that is we require '<') to support
+\begin{itemize}
+\item  We require an ordered number system (that is we require '<') to support
   features like clipping.
-* In most cases the functions and transforms would be continuous.
-\end{list}
+\item  In most cases the functions and transforms would be continuous.
+\end{itemize}
 <<category SPTCAT SPointCategory>>=
 )abbrev category SPTCAT SPointCategory
 ++ Author: Martin Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
 ++ convert
 ++ Related Constructors:
@@ -571,7 +604,7 @@ this but decided not to because:
 ++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
 ++ Description: PointCategory is the category of points and vectors in space.
 ++ Points may be used to represent shapes in a scenegraph such as: the
-++ verticies of a cube or points along a line.
+++ vertices of a cube or points along a line.
 ++ Shapes such as these may be defined explicitly or may be plotted.
 ++ We implement SetCategory to allow us to curry transforms from one
 ++ point to another.
@@ -607,7 +640,7 @@ SPointCategory() : Category == SetCategory with
   Pnan?:(p:%) -> Boolean
     ++ Is this a valid point? if any of its elements are not valid
     ++ then return true
-    ++ Examples of invalid floating point numbers are when have we
+    ++ Examples of invalid floating point numbers are when we
     ++ have divided a given element by zero or taken
     ++ sqrt of negative number at some stage?
     ++ Note: we can still represent a point at infinity and we can
@@ -632,14 +665,14 @@ SPointCategory() : Category == SetCategory with
     ++ in the case of Euclidean space this is the dot product of two
     ++ vectors. We use this function to test the colinearity
   colinearity:(x:%,y:%) -> DoubleFloat
-    ++ Measure of how parallel two vectors are independant of the length
+    ++ Measure of how parallel two vectors are independent of the length
     ++ of the vectors:
-    ++ 1.0 is complelely parallel
+    ++ 1.0 is completely parallel
     ++ 0.0 is completely perpendicular
     ++ returned value will be between these
   perpendicular:(x:%,y:%) -> %
     ++ This returns a vector perpendicular to the two vectors
-    ++ in the case of 3D Euclidean space this is the cros product of the
+    ++ in the case of 3D Euclidean space this is the cross product of the
     ++ two vectors. We use this function to compute orthogonal
   _+:(x:%,y:%) -> %
     ++ addition
@@ -662,13 +695,45 @@ SPointCategory() : Category == SetCategory with
     ++ returns extended coordinates as a list
   coerce: (pt: %) -> OutputForm
     ++ output
+
+ add
+
+  -- Measure of how parallel two vectors are independent of the length
+  -- of the vectors:
+  -- 1.0 is completely parallel
+  -- 0.0 is completely perpendicular
+  -- returned value will be these or between these
+  colinearity(x:%,y:%):DoubleFloat == parallel(x,y)^2/_
+            (parallel(x,x) * parallel(y,y))
+
+
+  -- convenience constructors which allow us to construct using
+  -- integer values
+  sipnt(a:Integer,b:Integer):% == spnt(a::DoubleFloat,b::DoubleFloat)
+  sipnt(a:Integer,b:Integer,c:Integer):% ==
+      spnt(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+  sivec(a:Integer,b:Integer):% == svec(a::DoubleFloat,b::DoubleFloat)
+  sivec(a:Integer,b:Integer,c:Integer):% ==
+      svec(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
+
+  -- returns the distance between the points p1 and p2
+  -- there are 2 metrics associated with any SPointCategory
+  -- the underlying space and the space that it is embedded in
+  -- this is the distance in the underlying space.
+  distance(p1:%,p2:%):DoubleFloat ==
+      sqrt(distanceSquared(p1,p2))
 @
+
+The first coding of points and vectors is Cartesian, that is n dimensions
+are represented by n floating point numbers. Each number represents the
+projection onto mutually perpendicular lines. An additional number is added
+distinguish between points and vectors.
 \section{SCartesian domain}
 <<domain SCRT SCartesian>>=
 )abbrev domain SCRT SCartesian
 ++ Author: Martin Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
 ++ convert
 ++ Related Constructors:
@@ -690,36 +755,12 @@ SCartesian(n) : Exports == Implementation where
   Exports ==> SPointCategory()
 
   Implementation ==> add
-    ---- start of common code to all SPointCategory implementations ----
-    -- I would like to define these in SPointCategory but that won't work
-    -- due to lack of polymorphism in spad
 
-    -- Measure of how parallel two vectors are independant of the length
-    -- of the vectors:
-    -- 1.0 is complelely parallel
-    -- 0.0 is completely perpendicular
-    -- returned value will be these or between these
-    colinearity(x:%,y:%):DoubleFloat == parallel(x,y)^2/_
-                 (parallel(x,x) * parallel(y,y))
-
-    -- convenience constructors which allow us to construct using
-    -- integer values
-    sipnt(a:Integer,b:Integer):% == spnt(a::DoubleFloat,b::DoubleFloat)
-    sipnt(a:Integer,b:Integer,c:Integer):% ==
-      spnt(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
-    sivec(a:Integer,b:Integer):% == svec(a::DoubleFloat,b::DoubleFloat)
-    sivec(a:Integer,b:Integer,c:Integer):% ==
-      svec(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
-
-    -- returns the distance between the points p1 and p2
-    -- there are 2 metrics associated with any SPointCategory
-    -- the underlying space and the space that it is embedded in
-    -- this is the distance in the underlying space.
-    distance(p1:%,p2:%):DoubleFloat ==
-      sqrt(distanceSquared(p1,p2))
-
-    ---- end of common code to all SPointCategory implementations ----
-
+    -- a 2D point contains 2 floating point numbers, a 3D point
+    -- contains 3 and so on.
+    -- then an additional number is added
+    -- 1@DF if % represents a point
+    -- 0@DF if % represents a vector
     Rep := PrimitiveArray DF
 
     -- spnt(a,b) constructs a 2D point defined by a and b
@@ -764,7 +805,7 @@ SCartesian(n) : Exports == Implementation where
       pt.n := 0@DF
       pt
 
-    dimension p == 3  -- dimension of base space
+    dimension(p) == n+1  -- dimension of base space
 
     -- Test for NaN (Not a Number)
     -- That is have we divided by zero or taken sqrt of negative number at
@@ -772,7 +813,7 @@ SCartesian(n) : Exports == Implementation where
     -- Common Lisp does not support NaN ? So we need some sort of test for
     -- invalid numbers
     -- If not equal to itself then we assume that its not a valid number
-    -- an altenative approach is to check for complex numbers
+    -- an alternative approach is to check for complex numbers
     -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
     nan?(x:DF):Boolean == x ~= x
 
@@ -909,12 +950,15 @@ SCartesian(n) : Exports == Implementation where
       paren([s::OutputForm,(pt.0)::OutputForm,(pt.1)::OutputForm,_
               (pt.2)::OutputForm])$OutputForm
 @
+
+Another coding of points and vectors is Argand. This represents two
+dimensional points and vectors on Argand plane.
 \section{SArgand domain}
 <<domain SARGND SArgand>>=
 )abbrev domain SARGND SArgand
 ++ Author: Martin Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
 ++ convert
 ++ Related Constructors:
@@ -931,43 +975,15 @@ SArgand() : Exports == Implementation where
   ++ of components in a subspace as complex numbers
   DF ==> DoubleFloat
   C ==> Complex DF
-  PI   ==> PositiveInteger
+  PI ==> PositiveInteger
 
   Exports ==  SPointCategory() with
     coerce: % -> C
     coerce: C -> %
 
   Implementation ==> add
-    ---- start of common code to all SPointCategory implementations ----
-    -- I would like to define these in SPointCategory but that won't work
-    -- due to lack of polymorphism in spad
 
-    -- Measure of how parallel two vectors are independant of the length
-    -- of the vectors:
-    -- 1.0 is complelely parallel
-    -- 0.0 is completely perpendicular
-    -- returned value will be these or between these
-    colinearity(x:%,y:%):DoubleFloat == parallel(x,y)^2/_
-                 (parallel(x,x) * parallel(y,y))
-
-    -- convenience constructors which allow us to construct using
-    -- integer values
-    sipnt(a:Integer,b:Integer):% == spnt(a::DoubleFloat,b::DoubleFloat)
-    sipnt(a:Integer,b:Integer,c:Integer):% ==
-      spnt(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
-    sivec(a:Integer,b:Integer):% == svec(a::DoubleFloat,b::DoubleFloat)
-    sivec(a:Integer,b:Integer,c:Integer):% ==
-      svec(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
-
-    -- returns the distance between the points p1 and p2
-    -- there are 2 metrics associated with any SPointCategory
-    -- the underlying space and the space that it is embedded in
-    -- this is the distance in the underlying space.
-    distance(p1:%,p2:%):DoubleFloat ==
-      sqrt(distanceSquared(p1,p2))
-
-    ---- end of common code to all SPointCategory implementations ----
-
+    -- represented by real and imaginary parts of complex number
     Rep := Record(r:DF,i:DF)
 
     -- spnt(a,b) constructs a 2D point defined by a and b
@@ -1001,7 +1017,7 @@ SArgand() : Exports == Implementation where
     -- some stage? Common Lisp does not support NaN ? So we need some sort
     -- of test for invalid numbers
     -- If not equal to itself then we assume that its not a valid number
-    -- an altenative approach is to check for complex numbers
+    -- an alternative approach is to check for complex numbers
     -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
     nan?(x:DF):Boolean == x ~= x
 
@@ -1040,7 +1056,7 @@ SArgand() : Exports == Implementation where
     -- This returns a vector perpendicular to the two vectors
     -- in the case of 3D Euclidean space this is the cross product of the
     -- two vectors. We use this function to compute orthogonal
-    -- In this case set to arbitary value
+    -- In this case set to arbitrary value
     perpendicular(x:%,y:%):% ==
       [0@DF,1@DF]
 
@@ -1110,12 +1126,14 @@ SArgand() : Exports == Implementation where
     coerce(pt: %):OutputForm ==
       paren([(pt.r)::OutputForm,(pt.i)::OutputForm])$OutputForm
 @
+
+A coding of points and vectors in conformal space.
 \section{SConformal domain}
 <<domain SCONF SConformal>>=
 )abbrev domain SCONF SConformal
 ++ Author: Martin Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: point, elt, setelt, copy, dimension, minIndex, maxIndex,
 ++ convert
 ++ Related Constructors:
@@ -1160,42 +1178,14 @@ SConformal(n) : Exports == Implementation where
     sayMsg ==> sayBrightly$Lisp
     math_to_string ==> mathObject2String$Lisp
 
-    ---- start of common code to all SPointCategory implementations ----
-    -- I would like to define these in SPointCategory but that won't work
-    -- due to lack of polymorphism in spad
-
-    -- Measure of how parallel two vectors are independant of the length
-    -- of the vectors:
-    -- 1.0 is complelely parallel
-    -- 0.0 is completely perpendicular
-    -- returned value will be these or between these
-    colinearity(x:%,y:%):DoubleFloat == parallel(x,y)^2/_
-                 (parallel(x,x) * parallel(y,y))
-
-    -- convenience constructors which allow us to construct using
-    -- integer values
-    sipnt(a:Integer,b:Integer):% == spnt(a::DoubleFloat,b::DoubleFloat)
-    sipnt(a:Integer,b:Integer,c:Integer):% ==
-      spnt(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
-    sivec(a:Integer,b:Integer):% == svec(a::DoubleFloat,b::DoubleFloat)
-    sivec(a:Integer,b:Integer,c:Integer):% ==
-      svec(a::DoubleFloat,b::DoubleFloat,c::DoubleFloat)
-
-    -- returns the distance between the points p1 and p2
-    -- there are 2 metrics associated with any SPointCategory
-    -- the underlying space and the space that it is embedded in
-    -- this is the distance in the underlying space.
-    distance(p1:%,p2:%):DoubleFloat ==
-      sqrt(distanceSquared(p1,p2))
-
-    ---- end of common code to all SPointCategory implementations ----
-
     dim := 2^(n+2)
       ++ the total dimension of all the grades from scalar up to
       ++ pseudoscalar
 
     z: %
 
+    -- count of floating point numbers to represent a Clifford algebra
+    -- number given by dim
     Rep := PrimitiveArray DF
 
     New ==> new(dim, 0$DF)$Rep
@@ -1240,7 +1230,7 @@ SConformal(n) : Exports == Implementation where
       if n>2 then z.16 := c
       z
 
-    dimension p == 2  -- dimension of base space
+    dimension(p)== 2  -- dimension of base space
 
     -- Test for NaN (Not a Number)
     -- That is have we divided by zero or taken sqrt of negative number at
@@ -1248,7 +1238,7 @@ SConformal(n) : Exports == Implementation where
     -- Common Lisp does not support NaN ? So we need some sort of test for
     -- invalid numbers
     -- If not equal to itself then we assume that its not a valid number
-    -- an altenative approach is to check for complex numbers
+    -- an alternative approach is to check for complex numbers
     -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
     nan?(x:DF):Boolean == x ~= x
 
@@ -1276,6 +1266,13 @@ SConformal(n) : Exports == Implementation where
       pt.2 := (pt.4*pt.4 + pt.8*pt.8)*0.5::DF
       pt.1 := -1@DF
       pt
+
+    -- returns the distance between the points p1 and p2
+    -- there are 2 metrics associated with any SPointCategory
+    -- the underlying space and the space that it is embedded in
+    -- this is the distance in the underlying space.
+    distanceSquared(p1:%,p2:%):DF ==
+      1@DF
 
     -- This returns the length of the parallel component of two vectors
     -- in the case of Euclidean space this is the dot product of two
@@ -1351,7 +1348,6 @@ SConformal(n) : Exports == Implementation where
     -- returns extended coordinates as a list
     extendedCoords(pt: %):List DF == entries(pt)
 
-
     -- normalalised point has scalar value of one, if this is not the
     -- case then scale values
     normalisePoint(pt:%):% ==
@@ -1403,6 +1399,8 @@ SConformal(n) : Exports == Implementation where
       if pt.4 = 1@DF then s := "p"
       paren([s::OutputForm,(pt.4)::OutputForm,(pt.8)::OutputForm])$OutputForm
 @
+
+
 \section{SceneIFS domain}
 Many of the functions here are from NumericTubePlot and related
 packages. However I needed them to be defined over SPointCategory
@@ -1419,8 +1417,8 @@ so I adapted them here.
 ++ AMS Classifications:
 ++ Keywords:
 ++ References:
-++ Description: Generates various surfaces (2 dimentional subsets
-++ of 3D space). When 1 Dimentional subspace (a line) needs to be
+++ Description: Generates various surfaces (2 dimensional subsets
+++ of 3D space). When 1 dimensional subspace (a line) needs to be
 ++ represented in a 3D editor then we convert the line into a tube.
 ++ Many of the functions here are from NumericTubePlot and related
 ++ packages. However I needed them to be defined over SPointCategory
@@ -1439,10 +1437,10 @@ SceneIFS(PT): Exports == Implementation where
 
  Exports== with
   smesh: (ptin:List List PT,clos: Boolean) -> %
-    ++ constuct a ifs representation of a mesh from a 2 dimentional
+    ++ construct a ifs representation of a mesh from a 2 dimensional
     ++ array of points
   singleFace: (ptin:List PT) -> %
-    ++ constuct a ifs representation of a face from an array of points
+    ++ construct a ifs representation of a face from an array of points
   subdivide: (me:%) -> %
     ++ for each face calculate a new point in the centre of the face, then
     ++ build a new set of faces which include the new point.
@@ -1476,7 +1474,7 @@ SceneIFS(PT): Exports == Implementation where
 
   meshIndex(i:Integer,j:Integer,c:Integer):NNI == ((j*(c)) + i)::NNI
 
-  -- constuct a ifs representation of a mesh from a 2 dimentional
+  -- construct a ifs representation of a mesh from a 2 dimensional
   -- array of points
   smesh(ptin:List List PT,clos: Boolean): % ==
    pt2: List PT := nil()
@@ -1504,7 +1502,7 @@ SceneIFS(PT): Exports == Implementation where
      j := j+1
    [in2,pt2]
 
-  -- constuct a ifs representation of a face from an array of points
+  -- construct a ifs representation of a face from an array of points
   singleFace(ptin:List PT):% ==
    pt2: List PT := ptin
    --in2: List List NNI := [concat([i for i in 0..(#ptin - 1)],0)]
@@ -1681,11 +1679,203 @@ SceneIFS(PT): Exports == Implementation where
       loops := concat(loops,curveLoops(bran,r,n))
     smesh(loops,true)
 @
+
+\section{SceneNamedPoints}
+The aim of the 'named points' node and associated domain is to provide
+better support for drawing graphs (that is 'graphs' as in graph theory)
+and diagrams of trees, latices and category theory arrow diagrams.
+In other words, diagrams with named nodes and arrows or lines between
+these nodes.
+
+These diagrams can already be drawn, using this graphics framework
+without this feature, however this requires that the coordinates
+are supplied for each end of each line or arrow. If we want to stop
+the arrow short of the nodes, to avoid overwriting the node name, then
+the new coordinates would have to be recalculated using boilerplate
+code.
+
+So the aim is to separate the mathematical structure of the diagram
+from the actual coordinates and issues of making the diagram more human
+readable. Eventually we might also have some intelligent code that
+places the node positions to minimise crossing the arrows and so on.
+
+For example, imagine we wanted to add support for graph theory in
+FriCAS (seems like it would be an interesting project) then we
+could implement a GraphTheory domain and it might contain a
+'draw' function to draw the graph to a SVG file. This code will have
+a set of node names, say "a","b"... and the 'draw' function will
+draw the appropriate arrows between them, however we don't want the
+code to be cluttered up with specific coordinates so we put all that
+in a 'named points' node (here called np). We can then then draw the
+arrows thus:
+\begin{verbatim}
+addSceneArrow(np,"a","b"....
+\end{verbatim}
+\section{SceneNamedPoints Tutorial}
+We can create a 'named points' domain to hold a list of names and
+the points they map to:
+\begin{verbatim}
+(1) -> PT ==> SCartesian(2)
+                                                         Type: Void
+(2) -> ptin:List PT := [sipnt(100,100)$PT,sipnt(100,200)$PT,_
+                        sipnt(200,200)$PT]
+
+   (2)  [("p",100.0,100.0,1.0),("p",100.0,200.0,1.0),("p",200.0,200.0,1.0)]
+                                          Type: List(SCartesian(2))
+(3) -> nmin: List String := ["a","b","c"]
+
+   (3)  ["a","b","c"]
+                                                 Type: List(String)
+(4) -> namedPts: SceneNamedPoints PT := namedPoints(ptin,nmin)
+
+   (4)  "a:#(100.0 100.0 1.0),b:#(100.0 200.0 1.0),c:#(200.0 200.0 1.0)"
+                               Type: SceneNamedPoints(SCartesian(2))
+\end{verbatim}
+We can then use this 'named points' domain in the scene like this:
+\begin{verbatim}
+(5) -> BOUNDS ==> Record(mins:PT,maxs:PT)
+                                                          Type: Void
+(6) -> view:BOUNDS := [sipnt(0,0)$PT,sipnt(1000,1000)$PT]
+
+   (6)  [mins= ("p",0.0,0.0,1.0),maxs= ("p",1000.0,1000.0,1.0)]
+               Type: Record(mins: SCartesian(2),maxs: SCartesian(2))
+(7) -> sc := createSceneRoot(view)$Scene(PT)
+
+   (7)  "scene root #ch=0"
+                                           Type: Scene(SCartesian(2))
+(8) -> np := addSceneNamedPoints(sc,namedPts)$Scene(PT)
+
+   (8)  "scene  #ch=0"
+                                         Type: Scene(SCartesian(2))
+(9) -> nt := addSceneText(np,["a","b","c"],12::NNI,sipnt(50,50)$PT)
+
+   (9)  "scene text #ch=0"
+                                          Type: Scene(SCartesian(2))
+(10) -> a1 := addSceneArrow(np,"a","b",sipnt(50,50)$PT,_
+                           "medium"::Symbol,"medium"::Symbol)
+
+   (10)  "scene  #ch=0"
+                                          Type: Scene(SCartesian(2))
+(11) -> a2 := addSceneArrow(np,"b","c",sipnt(50,50)$PT,_
+                           "medium"::Symbol,"medium"::Symbol)
+
+   (11)  "scene  #ch=0"
+                                          Type: Scene(SCartesian(2))
+(12) -> writeSvg(sc,"testGraph/exampleGraph.svg")
+                                                         Type: Void
+\end{verbatim}
+Further information here:
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/graph/tutorial/named/index.htm}
+\section{domain SceneNamedPoints}
+<<domain SCNP SceneNamedPoints>>=
+)abbrev domain SCNP SceneNamedPoints
+++ Author: Martin Baker
+++ Date Created: July 2011
+++ Date Last Updated: November 2011
+++ Basic Operations:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description: Associates points with names or a hierarchy of names
+++   The aim is, where a point is used in several different constructions
+++   it only needs to be specified once.
+SceneNamedPoints(PT): Exports == Implementation where
+ PT:SPointCategory
+
+ NNI==> NonNegativeInteger
+
+ Exports== with
+  namedPoints:(ptin:List PT,nmin: List String) -> %
+    ++ construct a list of named points
+  namedPoints:(chin:List %,nmin: List String) -> %
+    ++ construct a branch in the tree stucture
+  isLeaf?:(n: %) -> Boolean
+    ++ return true if this is a leaf node, that is,
+    ++ if this node contains points
+  getNames:(n: %) -> List String
+    ++ return list of names for this node
+  findPoint:(n: %,ptName:String) -> PT
+    ++ find the point associated with a given string
+  toString: (n: %) -> String
+    ++ return string representation for debug purposes.
+  coerce: (n: %) -> OutputForm
+    ++ output
+
+ Implementation == add
+
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
+
+  Rep := Union(_
+         leaf:Record(listPT: List PT,listNM: List String),_
+         br: Record(ch: List %,listHNM: List String)_
+         )
+    ++ this is a tree structure where the leaves are lists of named
+    ++ points. The branches are also named so a point can be determined
+    ++ from a hierarchy of names.
+
+  -- construct a list of named points
+  namedPoints(ptin:List PT,nmin: List String): % ==
+   [[ptin,nmin]]
+
+  -- construct a branch in the tree stucture
+  namedPoints(chin:List %,nmin: List String): % ==
+   [[chin,nmin]]
+
+  -- return true if this is a leaf node, that is,
+  -- if this node contains points
+  isLeaf?(n: %):Boolean ==
+    if n case leaf then return true()
+    false()
+
+  -- return list of names for this node
+  getNames(n: %):List String ==
+    if n case leaf then return n.leaf.listNM
+    n.br.listHNM
+
+  -- find the point associated with a given string
+  findPoint(n: %,ptName:String):PT ==
+    if n case br then return sipnt(0,0)
+    for sNum in 1..#(n.leaf.listNM) repeat
+      s:String := n.leaf.listNM.sNum
+      if s = ptName then return n.leaf.listPT.sNum
+    sipnt(0,0)
+
+  -- return string representation for debug purposes.
+  toString(n:%):String ==
+    s:String := ""
+    if n case leaf then
+      lenNM:NNI := #(n.leaf.listNM)
+      lenPT:NNI := #(n.leaf.listPT)
+      if lenNM ~= lenPT then
+        return concat(["string number:",string(lenNM),_
+                       " ~= point number:",string(lenPT)])$String
+      for ptr in 1..#(n.leaf.listNM) repeat
+        if ptr = 1
+          then
+            s := concat([n.leaf.listNM.ptr,":",_
+                 math_to_string n.leaf.listPT.ptr])
+          else
+            s := concat([s,",",n.leaf.listNM.ptr,":",_
+                 math_to_string n.leaf.listPT.ptr])
+    if n case br then
+      for l1 in n.br.listHNM repeat
+        s := concat([s,",",l1])
+    s
+
+  -- output
+  coerce(n: %):OutputForm ==
+    toString(n)::OutputForm
+
+@
+
 \section{domain STransform}
 Existing transforms in Axiom (such as dhmatrix.spad.pamphlet and
 moebius.spad.pamphlet) are stand alone chunks of algebra which don't
 interwork with each other and it would be a lot of work to incorporate them
-into other code espesially graphics and geometry.
+into other code especially graphics and geometry.
 
 The aim of STransform is to make a completely general template for
 transforms so that specific transforms like a Moebius transform could
@@ -1704,7 +1894,7 @@ PT is any implementation of SPointCategory. So ideally all transforms
 should be defined in this way. The usual way to transform a vector is to
 use a matrix like this:
 transform(in:Vector,def:Matrix):Vector
-So what I need is a way to curry it into somthing like this:
+So what I need is a way to curry it into something like this:
 transform(def:Matrix):(Vector->Vector)
 I don't know how to this? that is, how do I create an anonymous function
 where a variable (in this case def:Matrix) is a constant in the function?
@@ -1712,7 +1902,7 @@ where a variable (in this case def:Matrix) is a constant in the function?
 )abbrev domain STR STransform
 ++ Author: Martin Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: spnt,sipnt,svec,sivec,screenCoords
 ++ Related Constructors: SCartesian, SArgand, SConformal
 ++ Also See:
@@ -1728,8 +1918,8 @@ STransform(PT) : Exports == Implementation where
   ++ STransform transform domain can by used to represent linear transforms
   ++ for instance when working with SCartesian
   ++ where its Representation is a matrix of DoubleFloat
-  ++ Other transform domains may not nessarily
-  ++ be linear and will have different representatons
+  ++ Other transform domains may not necessarily
+  ++ be linear and will have different representations
 
   PT:SPointCategory
 
@@ -1744,7 +1934,7 @@ STransform(PT) : Exports == Implementation where
                  multiv: PrimitiveArray DF,_
                  iden:"iden")
 
-  Exports ==> Type with
+  Exports ==> with
 
     stransform: (m:List List DF) -> %
       ++ construct with given matrix elements
@@ -2050,15 +2240,16 @@ STransform(PT) : Exports == Implementation where
       if PT has SConformal(2) then s := "2D Conformal"
       s::OutputForm
 @
+
 \section{XML code}
 There are 2 domains and one package here to support the storage and writing
 of XML information, these are:
-\begin{list}{}
-* XmlAttribute domain - this holds an attribute
-* XmlElement domain - this holds an element, including a list of all
+\begin{itemize}
+\item  XmlAttribute domain - this holds an attribute
+\item  XmlElement domain - this holds an element, including a list of all
            its elements and a list of all child elements.
-* ExportXml package - has code for writing out the complete XML file.
-\end{list}
+\item  ExportXml package - has code for writing out the complete XML file.
+\end{itemize}
 This XML code is used to write both SVG and X3D files. It was the original
 intension that this XML should not be specific to the scenegraph but be
 general enough to be used in other places (perhaps it could be used in the
@@ -2072,7 +2263,7 @@ function we can support two formats without too much duplication.
 )abbrev domain XMLAT XmlAttribute
 ++ Author: Martin John Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: writeXml,writeVRML
 ++ Related Constructors: xmlAttribute,xmlElement
 ++ Also See:
@@ -2082,6 +2273,9 @@ function we can support two formats without too much duplication.
 ++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
 ++ Description:
 ++ This package provides support for XML files
+++ XML attributes are inside the opening tag:
+++ <tagname attributes>
+++ and usually have the form: name=value
 
 XmlAttribute(): Exports==Implementation where
  Exports == with
@@ -2118,12 +2312,13 @@ XmlAttribute(): Exports==Implementation where
    writeLine!(f1,concat([rp.n," ",val])$String)
    Void
 @
+
 \section{XmlElement domain}
 <<domain XMLEL XmlElement>>=
 )abbrev domain XMLEL XmlElement
 ++ Author: Martin John Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: writeXml,writeVRML
 ++ Related Constructors: xmlAttribute,xmlElement
 ++ Also See:
@@ -2133,6 +2328,11 @@ XmlAttribute(): Exports==Implementation where
 ++ http://www.euclideanspace.com/maths/standards/program/mycode/graph/
 ++ Description:
 ++ This package provides support for XML files
+++ an XML element is something which either has the form:
+++ <tagname attributes> content </tagname>
+++ or
+++ <tagname attributes/>
+++ where content may be a sequence of sub-elements or unstructured text
 
 XmlElement(): Exports==Implementation where
 
@@ -2140,7 +2340,9 @@ XmlElement(): Exports==Implementation where
 
  Exports == with
   xmlElement:(name:String,elements:List %,attributes:List XmlAttribute) -> %
+    ++ construct an element with structured elements
   xmlElement:(name:String,txt: String,attributes:List XmlAttribute) -> %
+    ++ construct an element with unstructured text
   empty?:(el:%) -> Boolean
   coerce: % -> List String
   outputVRML:(rp:%,f1:TextFile) -> Void
@@ -2148,12 +2350,17 @@ XmlElement(): Exports==Implementation where
  Implementation == add
   Rep := Record(n:String,e:List %,a:List XmlAttribute,content:String)
 
-  -- constuct an element without unstructured text
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
+
+  -- construct an element with structured elements
   xmlElement(name:String,elements:List %,attributes:List XmlAttribute): % ==
+   --sayMsg "xmlElement construct unstructured"
    [name,elements,attributes,""]
 
-  -- constuct an element with unstructured text
+  -- construct an element with unstructured text
   xmlElement(name:String,txt: String,attributes:List XmlAttribute): % ==
+   --sayMsg "xmlElement construct structured"
    [name,[],attributes,txt]
 
   outputStructured(rp:%): List String ==
@@ -2196,6 +2403,7 @@ XmlElement(): Exports==Implementation where
    writeLine!(f1,"}")
    Void
 @
+
 \section{ExportXml package}
 <<package XML ExportXml>>=
 )abbrev package XML ExportXml
@@ -2258,21 +2466,21 @@ ExportXml(): with
 Usually, when programming using SPAD, I try to use a functional programming
 style as much as possible, for instance making objects (representations)
 immutable. However I don't think it would be practical to implement the
-scengraph in this way. A design requirement is that the scenegaph needs
+scenegraph in this way. A design requirement is that the scenegraph needs
 to hold a large amount of information, A 3D scene might be made from
 thousands (perhaps millions?) of polygons. For the sake of efficiency we
 need to be able to modify it without copying the whole thing into a new
 object for each change.
 
 The object oriented style of programming would seem to be ideal for a
-scenegraph. Each type of node in the scengraph could be a different object
-all inheriting from a common object. Unforunately is is not easy to do
+scenegraph. Each type of node in the scenegraph could be a different object
+all inheriting from a common object. Unfortunately is is not easy to do
 this in SPAD because it does not support polymorphism.
 
 So what I have ended up with is perhaps the worst of both styles of
 programming? each node type is distinguished by a different integer value
 in its rep:
-
+\begin{verbatim}
 1 is root node
 2 is group node
 3 is line node
@@ -2280,25 +2488,27 @@ in its rep:
 5 is text node
 6 is transform node
 7 is clip node
-
+\end{verbatim}
 I find this very messy as it leads to lots of bits of code like this:
-
+\begin{verbatim}
 if n.type = 1 then
 ...
 if n.type = 2 then
 ...
 if n.type = 3 then
 ...
+\end{verbatim}
+
 so if we want to change a particular node type we have to search through
-all these categories, domains and packages to find everywhere it is refered
-to and change each occerance. If we could use object oriented programming
-then the code for each node type could be grouped together as a seperate
+all these categories, domains and packages to find everywhere it is referred
+to and change each occurrence. If we could use object oriented programming
+then the code for each node type could be grouped together as a separate
 object.
 <<domain SCENE Scene>>=
 )abbrev domain SCENE Scene
 ++ Author: Martin Baker
 ++ Date Created: September 2010
-++ Date Last Updated: September 2010
+++ Date Last Updated: November 2011
 ++ Basic Operations: spnt,sipnt,svec,sivec,screenCoords
 ++ Related Constructors: SCarteasian, SConformal, SArgand, STransform
 ++ Also See:
@@ -2327,15 +2537,47 @@ Scene(PT): Exports == Implementation where
  -- each node contains PARAMS in Rep definition, which is a union of
  -- the following, each node type will have different content.
  IFS==> Record(inx: List List NNI,pts: List PT)
- TEXT==> Record(txt:String,siz:NNI,pos:PT)
+   ++ indexed face set
+ TEXT==> Record(txt:String,siz:NNI,pos:PT,np:List String)
+   ++ information for text node
+   ++ txt = text to be displayed
+   ++ siz = font size
+   ++ pos = absolute position
+   ++ np = named points
  MATERIAL==> Record(lineWidth:DF,lineCol:String,fillCol:String,matOpacity:DF)
+   ++ a set of attributes which governs the appearance of nodes
+   ++ lineWidth: width of line or border
+   ++ lineCol: colour of line or border
+   ++ fillCol: colour of inside fill
+   ++ matOpacity: 1.0 = fully opaque, 0.0 = fully transparant
  LINES==> List List PT
- ARROWS==> Record(ln:List List PT,lstart:NNI,lend:NNI)
+   ++ holds multiple lines, each line is a list of points.
+ ARROWS==> Record(ln:List List PT,lstart:Symbol,lend:Symbol)
+   ++ holds multiple arrows, each arrow is defined by a list
+   ++ of points, in the case of
+   ++ lstart determines the style of the flat end of the arrow
+   ++ lend determines the style of the arrow itself
+   ++ lstart and lend are not currently used, suggest using
+   ++ "medium"::Symbol for now
+ ARROW==> Record(st:String,en:String,offset:PT,lstart:Symbol,lend:Symbol)
+   ++ holds an arrow, represented by a start points and end point from
+   ++ named points together with an offset.
+   ++ lstart determines the style of the flat end of the arrow
+   ++ lend determines the style of the arrow itself
+   ++ lstart and lend are not currently used, suggest using
+   ++ "medium"::Symbol for now
  TRANS==> TR
+   ++ holds transform parameters
  BOUNDS==> Record(mins:PT,maxs:PT)
+   ++ holds a boundary, in 2D this is a rectangle in higher
+   ++ dimensions it is a cuboid
+   ++ the two points define oppsite corners of boundary.
  PARAMS==> Union(points:LINES,material:MATERIAL,text:TEXT,_
                  boundbox:BOUNDS,trans:TRANS,ifs:IFS,_
-                 arrws:ARROWS,empty:"empty")
+                 arrws:ARROWS,arrw:ARROW,_
+                 np:SceneNamedPoints PT,empty:"empty")
+   ++ these are the parameters that can be set for nodes of
+   ++ various types
 
  Exports == with
   createSceneRoot:() -> %
@@ -2366,13 +2608,33 @@ Scene(PT): Exports == Implementation where
     ++ created.
   addSceneLines:(n:%,line: LINES) -> %
     ++ a convenience function which combines createSceneLines with addChild!
-  createSceneArrows:(line: List List PT,ls:NNI,le:NNI) -> %
+  createSceneArrows:(line: List List PT,ls:Symbol,le:Symbol) -> %
     ++ Constructs an arrow node, this contains arrows (represented by a
     ++ list of points) in n-dimensional space. The space is implicit
     ++ in the PT and TR parameters supplied when this Scene was
     ++ created.
-  addSceneArrows:(n:%,line: List List PT,ls:NNI,le:NNI) -> %
+    ++ ls determines the style of the flat end of the arrow
+    ++ le determines the style of the arrow itself
+    ++ ls and le are not currently used, suggest using
+    ++ "medium"::Symbol
+  addSceneArrows:(n:%,line: List List PT,ls:Symbol,le:Symbol) -> %
     ++ a convenience function which combines createSceneArrows with addChild!
+  createSceneArrow:(st:String,en:String,offset:PT,ls:Symbol,le:Symbol) -> %
+    ++ Constructs an arrow node, this contains arrows (represented by a
+    ++ list of points from named points node) in n-dimensional space.
+    ++ ls determines the style of the flat end of the arrow
+    ++ le determines the style of the arrow itself
+    ++ ls and le are not currently used, suggest using
+    ++ "medium"::Symbol
+  addSceneArrow:(n:%,st:String,en:String,offset:PT,ls:Symbol,le:Symbol) -> %
+    ++ a convenience function which combines createSceneArrow with addChild!
+  createSceneNamedPoints:(np:SceneNamedPoints PT) -> %
+    ++ Constructs a named points node, this allows us to define a
+    ++ set of points which can be used multiple times in the
+    ++ scenegraph.
+  addSceneNamedPoints:(n:%,np:SceneNamedPoints PT) -> %
+    ++ a convenience function which combines createSceneNamedPoints
+    ++ with addChild!
   createSceneIFS:(inx: List List NNI,pts: List PT) -> %
     ++ Constructs an indexed face set node, this defines a surface
     ++ represented by a set of polygons in n-dimensional space.
@@ -2398,6 +2660,11 @@ Scene(PT): Exports == Implementation where
     ++ such as graphs, axes and so on.
   addSceneText:(n:%,str:String,sz:NNI,pz:PT) -> %
     ++ a convenience function which combines createSceneText with addChild!
+  createSceneText:(str:List String,sz:NNI,pz:PT) -> %
+    ++ Constructs a text node using information from named
+    ++ points node.
+  addSceneText:(n:%,str:List String,sz:NNI,pz:PT) -> %
+    ++ a convenience function which combines createSceneText with addChild!
   createSceneClip:(bb: BOUNDS) -> %
     ++ Constructs a clip node, clips its sub nodes in the coordinate
     ++ system in force at the clip node.
@@ -2415,25 +2682,26 @@ Scene(PT): Exports == Implementation where
     ++ wide red lines every 200 units
   addSceneGrid:(n:%,bb: BOUNDS) -> %
     ++ a convenience function which combines createSceneGrid with addChild!
-  createScenePattern:(ptype:NNI,step:NNI,bb: BOUNDS) -> %
+  createScenePattern:(ptype:Symbol,step:NNI,bb: BOUNDS) -> %
     ++ creates a test pattern suitable for showing the effect of
     ++ transforms. The pattern depends on ptype parameter as follows:
-    ++ ptype=1: contruct a set of horizontal and vertical lines in the
-    ++ current clip boundary and current material with a spacing
-    ++ between lines given by the step parameter.
-    ++ ptype=2: constructs a Sierpinski fractel. step parameter gives the
-    ++ level of subdivision.
-    ++ ptype=3: constructs a house shape.
-  addScenePattern:(n:%,ptype:NNI,step:NNI,bb: BOUNDS) -> %
+    ++ ptype="GRID"::Symbol : contruct a set of horizontal and vertical
+    ++ lines in the current
+    ++ clip boundary and current material with a spacing between
+    ++ lines given by the step parameter.
+    ++ ptype="SIERPINSKI"::Symbol: constructs a Sierpinski fractel.
+    ++ step parameter gives the level of subdivision.
+    ++ ptype="HOUSE"::Symbol: constructs a house shape.
+  addScenePattern:(n:%,ptype:Symbol,step:NNI,bb: BOUNDS) -> %
     ++ a convenience function which combines createScenePattern with
     ++ addChild!
-  createSceneRuler:(ptype:NNI,offset:PT,bb: BOUNDS) -> %
+  createSceneRuler:(ptype:Symbol,offset:PT,bb: BOUNDS) -> %
     ++ creates a scale that can be used to provide numeric values
     ++ for an axis:
-    ++ ptype=1: horizontal axis.
-    ++ ptype=2: vertical axis.
-    ++ ptype=3: debth axis.
-  addSceneRuler:(n:%,ptype:NNI,offset:PT,bb: BOUNDS) -> %
+    ++ ptype= "HORIZONTAL"::Symbol : horizontal axis.
+    ++ ptype= "VERTICAL"::Symbol: vertical axis.
+    ++ ptype= "DEBTH"::Symbol: debth axis.
+  addSceneRuler:(n:%,ptype:Symbol,offset:PT,bb: BOUNDS) -> %
     ++ a convenience function which combines createSceneRuler with
     ++ addChild!
   createSceneMaterial:(mat:MATERIAL) -> %
@@ -2459,7 +2727,7 @@ Scene(PT): Exports == Implementation where
     ++ Constructs a transform node
     ++ This transforms the points and vectors below this node
     ++ If a given node has more than one transform node above
-    ++ it in the heirarchy then the transforms are compoundd
+    ++ it in the heirarchy then the transforms are compound
   addSceneTransform:(n:%,tran:TR) -> %
     ++ a convenience function which combines createSceneTransform with
     ++ addChild!
@@ -2551,6 +2819,8 @@ Scene(PT): Exports == Implementation where
     ++ addChild!
   createArrows2Din2D: (ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI) -> %
     ++ creates arrows to represent output for each input point
+    ++ in other words this represents a two dimensional force
+    ++ field with the arrows showing the direction of the field
   addArrows2Din2D: (n:%,ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI) -> %
     ++ a convenience function which combines createArrows2Din2D with
     ++ addChild!
@@ -2561,7 +2831,7 @@ Scene(PT): Exports == Implementation where
   setTransform!:(n:%,tran:TR) -> Void
     ++ changes the transform without altering the scene heirachy
   toSVG:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS,scale:DF,clipEn:Boolean,_
-         useInteger:Boolean) -> XmlElement
+         useInteger:Boolean,npt:SceneNamedPoints PT) -> XmlElement
     ++ create an XmlElement containing a 'SVG' repesentation of node
     ++ 'n' and the nodes below it.
   toX3D:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
@@ -2589,29 +2859,47 @@ Scene(PT): Exports == Implementation where
 
  Implementation == add
 
-  Rep := Record(type : NNI,children : List %,parameters: PARAMS)
+  Rep := Record(type : Symbol,children : List %,parameters: PARAMS)
+    ++ this represents a tree structure where each node in the
+    ++ tree can have:
+    ++ * a type
+    ++ * children
+    ++ * some parameters
+    ++ valid types are:
+    ++ type = "ROOT"::Symbol -- root node
+    ++ type = "GROUP"::Symbol -- group node
+    ++ type = "LINE"::Symbol -- line node
+    ++ type = "MATERIAL"::Symbol -- material node
+    ++ type = "TEXT"::Symbol -- text node
+    ++ type = "TRANSFORM"::Symbol -- transform node
+    ++ type = "CLIP"::Symbol -- clip node
+    ++ type = "IFS"::Symbol -- Indexed Face Set
+    ++ type = "ARROWS"::Symbol -- arrows node
+    ++ type = "ARROW"::Symbol -- single arrow node
+    ++ type = "NAMEDPOINTS"::Symbol -- named points node
 
+  sayMsg ==> sayBrightly$Lisp
   math_to_string ==> mathObject2String$Lisp
 
   -- Constructs the root node, all other nodes are contained in
   -- a tree structure under this node
-  createSceneRoot(bb: BOUNDS): % == [1::NNI,[],[bb]]
+  createSceneRoot(bb: BOUNDS): % == ["ROOT"::Symbol,[],[bb]]
 
   -- Constructs the root node, all other nodes are contained in
   -- a tree structure under this node
   createSceneRoot(minx:I,miny:I,maxx:I,maxy:I): % ==
     bb:BOUNDS := [sipnt(minx,miny)$PT,sipnt(maxx,maxy)$PT]
-    [1::NNI,[],[bb]]
+    ["ROOT"::Symbol,[],[bb]]
 
   -- Constructs the root node, all other nodes are contained in
   -- a tree structure under this node
   createSceneRoot(): % ==
     bb:BOUNDS := [sipnt(0::I,0::I)$PT,sipnt(1200::I,800::I)$PT]
-    [1::NNI,[],[bb]]
+    ["ROOT"::Symbol,[],[bb]]
 
   -- Constructs a group node, this node does not do anything itself
   -- but contains other nodes
-  createSceneGroup(): % == [2::NNI,[],["empty"]]
+  createSceneGroup(): % == ["GROUP"::Symbol,[],["empty"]]
 
   -- a convenience function which combines createSceneGroup with addChild!
   addSceneGroup(n:%): % ==
@@ -2623,7 +2911,7 @@ Scene(PT): Exports == Implementation where
   -- list of points) in n-dimensional space. The space is implicit
   -- in the PT and TR parameters supplied when this Scene was
   -- created.
-  createSceneLine(line: List PT): % == [3::NNI,[],[[line]]]
+  createSceneLine(line: List PT): % == ["LINE"::Symbol,[],[[line]]]
 
   -- a convenience function which combines createSceneLine with addChild!
   addSceneLine(n:%,line: List PT): % ==
@@ -2635,7 +2923,7 @@ Scene(PT): Exports == Implementation where
   -- list of points) in n-dimensional space. The space is implicit
   -- in the PT and TR parameters supplied when this Scene was
   -- created.
-  createSceneLines(lines: LINES): % == [3::NNI,[],[lines]]
+  createSceneLines(lines: LINES): % == ["LINE"::Symbol,[],[lines]]
 
   -- a convenience function which combines createSceneLines with addChild!
   addSceneLines(n:%,lines: LINES): % ==
@@ -2647,20 +2935,53 @@ Scene(PT): Exports == Implementation where
   -- list of points) in n-dimensional space. The space is implicit
   -- in the PT and TR parameters supplied when this Scene was
   -- created.
-  createSceneArrows(lines: List List PT,ls:NNI,le:NNI): % ==
+  -- ls determines the style of the flat end of the arrow
+  -- le determines the style of the arrow itself
+  -- ls and le are not currently used, suggest using
+  -- "medium"::Symbol
+  createSceneArrows(lines: List List PT,ls:Symbol,le:Symbol): % ==
     ar:ARROWS := [lines,ls,le]
-    [9::NNI,[],[ar]]
+    ["ARROWS"::Symbol,[],[ar]]
 
   -- a convenience function which combines createSceneArrows with addChild!
-  addSceneArrows(n:%,lines: List List PT,ls:NNI,le:NNI): % ==
+  addSceneArrows(n:%,lines: List List PT,ls:Symbol,le:Symbol): % ==
     c := createSceneArrows(lines,ls,le)
+    addChild!(n,c)
+    c
+
+  -- Constructs an arrow node, this contains arrows (represented by a
+  -- list of points from named points node.) in n-dimensional space.
+  -- ls determines the style of the flat end of the arrow
+  -- le determines the style of the arrow itself
+  -- ls and le are not currently used, suggest using
+  -- "medium"::Symbol
+  createSceneArrow(st:String,en:String,offset:PT,ls:Symbol,le:Symbol): % ==
+    ar:ARROW := [st,en,offset,ls,le]
+    ["ARROW"::Symbol,[],[ar]]
+
+  -- a convenience function which combines createSceneArrows with addChild!
+  addSceneArrow(n:%,st:String,en:String,offset:PT,ls:Symbol,le:Symbol): % ==
+    c := createSceneArrow(st,en,offset,ls,le)
+    addChild!(n,c)
+    c
+
+  -- Constructs a named points node, this allows us to define a
+  -- set of points which can be used multiple times in the
+  -- scenegraph.
+  createSceneNamedPoints(np:SceneNamedPoints PT): % ==
+    ["NAMEDPOINTS"::Symbol,[],[np]]
+
+  -- a convenience function which combines createSceneNamedPoints
+  -- with addChild!
+  addSceneNamedPoints(n:%,np:SceneNamedPoints PT): % ==
+    c := createSceneNamedPoints(np)
     addChild!(n,c)
     c
 
   -- Constructs an indexed face set node, this defines a surface
   -- represented by a set of polygons in n-dimensional space.
   createSceneIFS(inx1: List List NNI,pts1: List PT):% ==
-    [8::NNI,[],[[inx1,pts1]]]
+    ["IFS"::Symbol,[],[[inx1,pts1]]]
 
   -- a convenience function which combines createSceneIFS with addChild!
   addSceneIFS(n:%,inx1: List List NNI,pts1: List PT):% ==
@@ -2673,7 +2994,7 @@ Scene(PT): Exports == Implementation where
   createSceneIFS(in1: SceneIFS(PT)):% ==
     inx1: List List NNI := indexes(in1)
     pts1: List PT :=pointList(in1)
-    [8::NNI,[],[[inx1,pts1]]]
+    ["IFS"::Symbol,[],[[inx1,pts1]]]
 
   -- a convenience function which combines createSceneIFS with addChild!
   addSceneIFS(n:%,in1: SceneIFS(PT)):% ==
@@ -2711,7 +3032,7 @@ Scene(PT): Exports == Implementation where
 
   -- Constructs a text node, text can be used for labelling anything
   -- such as graphs, axes and so on.
-  createSceneText(text: TEXT): % == [5::NNI,[],[text]]
+  createSceneText(text: TEXT): % == ["TEXT"::Symbol,[],[text]]
 
   -- a convenience function which combines createSceneText with addChild!
   addSceneText(n:%,text: TEXT): % ==
@@ -2722,8 +3043,8 @@ Scene(PT): Exports == Implementation where
   -- Constructs a text node, text can be used for labelling anything
   -- such as graphs, axes and so on.
   createSceneText(str:String,sz:NNI,pz:PT): % ==
-    text: TEXT := [str,sz,pz]
-    [5::NNI,[],[text]]
+    text: TEXT := [str,sz,pz,[]]
+    ["TEXT"::Symbol,[],[text]]
 
   -- a convenience function which combines createSceneText with addChild!
   addSceneText(n:%,str:String,sz:NNI,pz:PT): % ==
@@ -2731,10 +3052,22 @@ Scene(PT): Exports == Implementation where
     addChild!(n,c)
     c
 
+  -- Constructs a text node using information from named
+  -- points node.
+  createSceneText(str:List String,sz:NNI,pz:PT): % ==
+    text: TEXT := [first str,sz,pz,str]
+    ["TEXT"::Symbol,[],[text]]
+
+  -- a convenience function which combines createSceneText with addChild!
+  addSceneText(n:%,str:List String,sz:NNI,pz:PT): % ==
+    c := createSceneText(str,sz,pz)
+    addChild!(n,c)
+    c
+
   -- Constructs a clip node, clips its sub nodes in the coordinate
   -- system in force at the clip node.
   createSceneClip(bb: BOUNDS):% ==
-    [7::NNI,[],[bb]]
+    ["CLIP"::Symbol,[],[bb]]
 
   -- a convenience function which combines createSceneClip with addChild!
   addSceneClip(n:%,bb: BOUNDS):% ==
@@ -2880,36 +3213,37 @@ Scene(PT): Exports == Implementation where
 
   -- creates a test pattern suitable for showing the effect of
   -- transforms. The pattern depends on ptype parameter as follows:
-  -- ptype=1: contruct a set of horizontal and vertical lines in the current
+  -- ptype="GRID"::Symbol : contruct a set of horizontal and vertical
+  -- lines in the current
   -- clip boundary and current material with a spacing between
   -- lines given by the step parameter.
-  -- ptype=2: constructs a Sierpinski fractel. step parameter gives the
-  -- level of subdivision.
-  -- ptype=3: constructs a house shape.
-  createScenePattern(ptype:NNI,step:NNI,bb: BOUNDS): % ==
-    if ptype = 1 then return createScenePattern1(step,bb)
-    if ptype = 2 then return createScenePattern2(step,bb)
+  -- ptype="SIERPINSKI"::Symbol: constructs a Sierpinski fractel.
+  -- step parameter gives the level of subdivision.
+  -- ptype="HOUSE"::Symbol: constructs a house shape.
+  createScenePattern(ptype:Symbol,step:NNI,bb: BOUNDS): % ==
+    if ptype = "GRID"::Symbol then return createScenePattern1(step,bb)
+    if ptype = "SIERPINSKI"::Symbol then return createScenePattern2(step,bb)
     createScenePattern3(step,bb)
 
   -- a convenience function which combines createScenePattern with addChild!
-  addScenePattern(n:%,ptype:NNI,step:NNI,bb: BOUNDS):% ==
+  addScenePattern(n:%,ptype:Symbol,step:NNI,bb: BOUNDS):% ==
     c := createScenePattern(ptype,step,bb)
     addChild!(n,c)
     c
 
   -- creates a scale that can be used to provide numeric values
   -- for an axis:
-  -- ptype=1: horizontal axis.
-  -- ptype=2: vertical axis.
-  -- ptype=3: debth axis.
-  createSceneRuler(ptype:NNI,offset:PT,bb: BOUNDS): % ==
+  -- ptype= "HORIZONTAL"::Symbol : horizontal axis.
+  -- ptype= "VERTICAL"::Symbol: vertical axis.
+  -- ptype= "DEBTH"::Symbol: debth axis.
+  createSceneRuler(ptype:Symbol,offset:PT,bb: BOUNDS): % ==
     minPrimary:DF := screenCoordX(bb.mins)
     minSecondary:DF := screenCoordY(bb.mins)
     maxPrimary:DF := screenCoordX(bb.maxs)
     maxSecondary:DF := screenCoordY(bb.maxs)
-    --if ptype = 1 then
+    --if ptype = "HORIZONTAL"::Symbol then
     --  sayMsg "createSceneRuler horizontal:"
-    if ptype = 2 then
+    if ptype = "VERTICAL"::Symbol then
       minPrimary := screenCoordY(bb.mins)
       minSecondary := screenCoordX(bb.mins)
       maxPrimary := screenCoordY(bb.maxs)
@@ -2965,11 +3299,11 @@ Scene(PT): Exports == Implementation where
     --    " maxPrimaryNorm=",(math_to_string maxPrimaryNorm)@String_
     --    ])$String
     gp := createSceneGroup()
-    stepI:Integer := if ptype = 1 then 2 else 1
+    stepI:Integer := if ptype = "HORIZONTAL"::Symbol then 2 else 1
     for x in wholePart(minPrimaryNorm)..wholePart(maxPrimaryNorm) by stepI repeat
       str:String := (math_to_string x)@String
       pz:PT := spnt((x::DF)*divn,0$DF)$PT + offset
-      if ptype = 2 then
+      if ptype = "VERTICAL"::Symbol then
         pz := spnt(0$DF,(x::DF)*divn)$PT + offset
       if expStep = -1 then
         if x>0 and x<10 then str := concat("0.",str)
@@ -2992,7 +3326,7 @@ Scene(PT): Exports == Implementation where
 
   -- a convenience function which combines createSceneRuler with
   -- addChild!
-  addSceneRuler(n:%,ptype:NNI,offset:PT,bb: BOUNDS):% ==
+  addSceneRuler(n:%,ptype:Symbol,offset:PT,bb: BOUNDS):% ==
     c := createSceneRuler(ptype,offset,bb)
     addChild!(n,c)
     c
@@ -3003,7 +3337,7 @@ Scene(PT): Exports == Implementation where
   -- That is the material parameters that apply to a given node are
   -- those of the closest material node above it in the heirarchy
   createSceneMaterial(mat:MATERIAL): % ==
-    [4::NNI,[],[mat]]
+    ["MATERIAL"::Symbol,[],[mat]]
 
   -- a convenience function which combines createSceneMaterial with
   -- addChild!
@@ -3019,7 +3353,7 @@ Scene(PT): Exports == Implementation where
   -- those of the closest material node above it in the heirarchy
   createSceneMaterial(lineW:DF,lineC:String,fillC:String): % ==
     mat:MATERIAL := [lineW,lineC,fillC,1::DF]
-    [4::NNI,[],[mat]]
+    ["MATERIAL"::Symbol,[],[mat]]
 
   -- a convenience function which combines createSceneMaterial with
   -- addChild!
@@ -3033,7 +3367,7 @@ Scene(PT): Exports == Implementation where
   -- If a given node has more than one transform node above
   -- it in the heirarchy then the transforms are compoundd
   createSceneTransform(tran:TR): % ==
-    [6::NNI,[],[tran]]
+    ["TRANSFORM"::Symbol,[],[tran]]
 
   -- a convenience function which combines createSceneTransform with
   -- addChild!
@@ -3043,6 +3377,8 @@ Scene(PT): Exports == Implementation where
     c
 
   -- creates arrows to represent output for each input point
+  -- in other words this represents a two dimensional force
+  -- field with the arrows showing the direction of the field
   createArrows2Din2D(ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
     arrows : List List PT := nil()
     ustep := (lo uSeg - hi uSeg)/numPts
@@ -3064,7 +3400,7 @@ Scene(PT): Exports == Implementation where
         someU := someU + ustep
         arrows := concat(lp,arrows)
       someV := someV + vstep
-    createSceneArrows(arrows,1,0)
+    createSceneArrows(arrows,"medium"::Symbol,"medium"::Symbol)
 
   -- a convenience function which combines createArrows2Din2D with addChild!
   addArrows2Din2D(n:%,ptFun:PT -> PT,uSeg:SEG,vSeg:SEG,numPts:NNI):% ==
@@ -3084,7 +3420,7 @@ Scene(PT): Exports == Implementation where
 
   -- changes the transform without altering the scene heirachy
   setTransform!(n:%,tran:TR):Void ==
-    n.type ~= 6 => error "use setTransform! on transform only"
+    n.type ~= "TRANSFORM"::Symbol => error "use setTransform! on transform only"
     n.parameters := [tran]
 
   -- the following functions: pathString, lineArrow, faceString, toSVG
@@ -3138,7 +3474,7 @@ Scene(PT): Exports == Implementation where
     --sayMsg "pathString exit"
     ptStr
 
-  -- this returns an list of elements, ecah of which represents an arrow
+  -- this returns an list of elements, each of which represents an arrow
   lineArrow(pts:LINES,tran:TR,bb: BOUNDS,mat:MATERIAL,sc:DF,clipEn:Boolean):List XmlElement ==
     --sayMsg concat([_
     --  "lineArrow(",(math_to_string tran)@String,_
@@ -3199,10 +3535,6 @@ Scene(PT): Exports == Implementation where
     --sayMsg concat([_
     --  "faceString(",(math_to_string faces)@String,_
     --  ")"])$String
-    --for ln1 in pts1 repeat
-    --  sayMsg concat([_
-    --    "faceString pts1=(",(math_to_string ln1)@String,_
-    --    ")"])$String
     ptStr:String := "" -- string to hold result
     pntNum:NNI -- hold current position in parameters
     lastValid:Boolean := true -- used to detect first valid entry
@@ -3254,7 +3586,7 @@ Scene(PT): Exports == Implementation where
   -- L100,0z = line to 100,0
   -- z after last point in line indicates closed shape
   toSVG(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS,scale:DF,clipEn:Boolean,_
-        useInteger:Boolean):XmlElement ==
+        useInteger:Boolean,npt:SceneNamedPoints PT):XmlElement ==
     nodeName:String := ""
     --sayMsg concat([_
     --  "toSVG(",(math_to_string n.type)@String,_
@@ -3262,11 +3594,11 @@ Scene(PT): Exports == Implementation where
     --  ")"])$String
     -- I'm not sure if it is safe to modify parameters that have been
     -- passed to this function, so just to be sure, take copies of them:
-    bb2 := bb ; tran2 := tran ; mat2 := mat
+    bb2 := bb ; tran2 := tran ; mat2 := mat ; np2 := npt
     clipEn2 := clipEn ; scale2 := scale
     nodeEles: List XmlElement := []
     nodeAtts:List XmlAttribute := []
-    if n.type = 1 then -- root node
+    if n.type = "ROOT"::Symbol then -- root node
       nodeName := "svg" -- root node
       -- define arrow shape
       pthAtts := [_
@@ -3286,6 +3618,8 @@ Scene(PT): Exports == Implementation where
           ]
       mkr := xmlElement("marker",[pth],mkrAtts)
       nodeEles := [xmlElement("defs",[mkr],[])]
+      if not (n.parameters case boundbox) then
+        error "toSVG parameter type not valid for root node"
       bb2 := n.parameters.boundbox
       -- setup default transform. This makes sure view bounds are always
       -- positive and thy the 'y' direction is from down to up.
@@ -3324,8 +3658,10 @@ Scene(PT): Exports == Implementation where
         xmlAttribute("height","8cm"),_
         xmlAttribute("viewBox",viewBoxStr)_
          ]
-    if n.type = 2 then nodeName := "g" -- group node
-    if n.type = 3 then -- line node
+    if n.type = "GROUP"::Symbol then nodeName := "g" -- group node
+    if n.type = "LINE"::Symbol then -- line node
+      if not (n.parameters case points) then
+        error "toSVG parameter type not valid for line node"
       --lineW:DF := (mat2.lineWidth) * (screenCoordX(bb2.maxs) - _
       --                                    screenCoordX(bb2.mins))
       nodeName := "path" -- line node
@@ -3340,16 +3676,36 @@ Scene(PT): Exports == Implementation where
       if mat2.matOpacity < 0.95::DF then
         nodeAtts := concat(nodeAtts,xmlAttribute("stroke-opacity",_
           (math_to_string mat2.matOpacity)@String))
-    if n.type = 4 then -- set material
+    if n.type = "MATERIAL"::Symbol then -- set material
       nodeName := "g" -- material node
+      if not (n.parameters case material) then
+        error "toSVG parameter type not valid for material node"
       mat2 := n.parameters.material
-    if n.type = 5 then -- text node
+    if n.type = "TEXT"::Symbol then -- text node
       nodeName := "text" -- text node
-      param2:PT := xform(tran,n.parameters.text.pos)$TR
+      if not (n.parameters case text) then
+        error "toSVG parameter type not valid for text node"
+      if n.parameters.text.np ~= [] then
+        -- use named points
+        for nam in n.parameters.text.np repeat
+          --sayMsg concat(["toSVG text(np)=",nam])$String
+          param2 := xform(tran,findPoint(np2,nam)+n.parameters.text.pos)$TR
+          nodeAttsTxt := [xmlAttribute("font-size",string(n.parameters.text.siz)),_
+            xmlAttribute("x",_
+            (math_to_string (screenCoordX(param2)*scale2))@String),_
+            xmlAttribute("y",_
+            (math_to_string (-screenCoordY(param2)*scale2))@String),_
+            xmlAttribute("style",concat("fill:",mat2.fillCol))_
+              ]
+          xch:XmlElement := xmlElement(nodeName,nam,nodeAttsTxt)
+          if not empty?(xch) then
+            nodeEles := concat(nodeEles,xch)
+        return xmlElement("g",nodeEles,nodeAtts)
       --sayMsg concat([_
       --  "toSVG text node param=",(math_to_string n.parameters.text.pos)@String,_
       --  " param2=",(math_to_string param2)@String_
       --  ])$String
+      param2:PT := xform(tran,n.parameters.text.pos)$TR
       nodeAtts := [xmlAttribute("font-size",string(n.parameters.text.siz)),_
         xmlAttribute("x",_
         (math_to_string (screenCoordX(param2)*scale2))@String),_
@@ -3358,14 +3714,18 @@ Scene(PT): Exports == Implementation where
         xmlAttribute("style",concat("fill:",mat2.fillCol))_
           ]
       return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
-    if n.type = 6 then -- set transform
+    if n.type = "TRANSFORM"::Symbol then -- set transform
       nodeName := "g" -- transform node
+      if not (n.parameters case trans) then
+        error "toSVG parameter type not valid for trans node"
       tran2 := compound(n.parameters.trans,tran)
-    if n.type = 7 then -- set default clip bounding box
+    if n.type = "CLIP"::Symbol then -- set default clip bounding box
       nodeName := "g" -- clip node
       clipEn2 := true
-      mn2:PT :=  n.parameters.boundbox.mins
-      mx2:PT :=  n.parameters.boundbox.maxs
+      if not (n.parameters case boundbox) then
+        error "toSVG parameter type not valid for clip node"
+      mn2:PT := n.parameters.boundbox.mins
+      mx2:PT := n.parameters.boundbox.maxs
       -- at the moment boundBox is in global coordinates
       -- to use local coodinates at this node we would need to transform:
       -- mn2:PT :=  applyTrans(tran,n.parameters.boundbox.mins pretend_
@@ -3373,25 +3733,64 @@ Scene(PT): Exports == Implementation where
       -- mx2:PT :=  applyTrans(tran,n.parameters.boundbox.maxs pretend_
       --                       SPoint DoubleFloat)$TR pretend PT
       bb2 := [mn2,mx2]
-    if n.type = 8 then -- indexed face set node
+    if n.type = "IFS"::Symbol then -- indexed face set node
+      -- indexed face set is normally associated with 3 (or more)
+      -- dimensions so to output to SVG which displays in 2D then we need to
+      -- flatten
       nodeName := "path" -- Indexed Face Set
+      if not (n.parameters case ifs) then
+        error "toSVG parameter type not valid for ifs node"
       nodeAtts := [_
-      xmlAttribute("d",faceString(n.parameters.ifs,tran2,bb2,scale2,clipEn2)),_
-      xmlAttribute("fill",mat2.fillCol),_
-      xmlAttribute("stroke",mat2.lineCol),_
-      xmlAttribute("stroke-width",_
-      (math_to_string (mat2.lineWidth))@String)_
-        ]
-      return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
-    if n.type = 9 then -- arrow node
+        xmlAttribute("d",faceString(n.parameters.ifs,tran2,bb2,scale2,clipEn2)),_
+        xmlAttribute("fill",mat2.fillCol),_
+        xmlAttribute("stroke",mat2.lineCol),_
+        xmlAttribute("stroke-width",_
+        (math_to_string (mat2.lineWidth))@String)_
+          ]
+      return xmlElement(nodeName,[],nodeAtts)
+    if n.type = "ARROWS"::Symbol then -- arrow node
       nodeName := "g" -- Arrows
+      if not (n.parameters case arrws) then
+        error "toSVG parameter type not valid for arrws node"
       nodeEles := lineArrow(n.parameters.arrws.ln,tran2,bb2,mat2,scale2,clipEn2)
+    if n.type = "ARROW"::Symbol then -- arrow from named points node
+      if not (n.parameters case arrw) then
+        error "toSVG parameter type not valid for arrw node"
+      startPoint:PT := xform(tran,findPoint(np2,n.parameters.arrw.st)+n.parameters.arrw.offset)$TR
+      endPoint:PT := xform(tran,findPoint(np2,n.parameters.arrw.en)+n.parameters.arrw.offset)$TR
+      startPointM:DF := -(screenCoordY(startPoint)*scale)
+      endPointM:DF := -(screenCoordY(endPoint)*scale)
+      ptStr:String := concat([_
+        "M",_
+        (math_to_string (screenCoordX(startPoint)*scale))@String,",",_
+        (math_to_string startPointM)@String,_
+        "L",_
+        (math_to_string (screenCoordX(endPoint)*scale))@String,",",_
+        (math_to_string endPointM)@String])$String
+      --linWidth:DF := distance(startPoint,endPoint)/(10::DF)
+      linWidth:DF := 2::DF
+      nodeAtts:List XmlAttribute := [_
+          xmlAttribute("d",ptStr),_
+          xmlAttribute("fill","none"),_
+          xmlAttribute("stroke",mat.lineCol),_
+          xmlAttribute("stroke-width",_
+          (math_to_string linWidth)@String),_
+          xmlAttribute("style","marker-end:url(#Arrow)")_
+            ]
+      nodeEles := [xmlElement("path",[],nodeAtts)]
+      nodeName := "g" -- Arrows
+    if n.type = "NAMEDPOINTS"::Symbol then -- named points node
+      if not (n.parameters case np) then
+        error "toSVG parameter type not valid for np node"
+      np2 := n.parameters.np
+      nodeName := "g"
+      --sayMsg "named points node"
     -- if no children return empty element
     #(n.children) < 1 =>
       xmlElement(nodeName,nodeEles,nodeAtts)
     -- not empty so return group node
     for ch in n.children repeat
-      xch := toSVG(ch,mat2,tran2,bb2,scale2,clipEn2,useInteger)
+      xch := toSVG(ch,mat2,tran2,bb2,scale2,clipEn2,useInteger,np2)
       if not empty?(xch) then
         nodeEles := concat(nodeEles,xch)
     xmlElement(nodeName,nodeEles,nodeAtts)
@@ -3403,7 +3802,7 @@ Scene(PT): Exports == Implementation where
     defaultBounds:BOUNDS := [spnt(-9000::DF,-9000::DF),_
                              spnt(9000::DF,9000::DF)]
     writeXml(toSVG(n,defaultMaterial,defaultTransform,defaultBounds,1$DF,_
-           false,false),filename)$ExportXml
+           false,false,namedPoints([],[])),filename)$ExportXml
 
   -- Write an 'SVG' repesentation of node 'n' to the filename supplied.
   writeSvgQuantised(n:%,filename:String):Void ==
@@ -3412,7 +3811,7 @@ Scene(PT): Exports == Implementation where
     defaultBounds:BOUNDS := [spnt(-9000::DF,-9000::DF),_
                              spnt(9000::DF,9000::DF)]
     writeXml(toSVG(n,defaultMaterial,defaultTransform,defaultBounds,1$DF,_
-           false,true),filename)$ExportXml
+           false,true,namedPoints([],[])),filename)$ExportXml
 
   -- this returns a string to represent a sequence of points in a X3D file
   pointString(pts:List PT,tran:TR,bb: BOUNDS):List String ==
@@ -3453,17 +3852,17 @@ Scene(PT): Exports == Implementation where
   -- the following functions: setX3DNodeName, toX3D
   -- and writeX3D are used to write to a X3D file.
 
-  setX3DNodeName(typ:NNI):String ==
+  setX3DNodeName(typ:Symbol):String ==
     nodeName:String := ""
-    if typ = 1 then nodeName := "X3D" -- root node
-    if typ = 2 then nodeName := "Group" -- group node
-    if typ = 3 then nodeName := "IndexedFaceSet" -- line node
-    if typ = 4 then nodeName := "Group" -- material node
-    if typ = 5 then nodeName := "Text" -- text node
-    if typ = 6 then nodeName := "Transform" -- transform node
-    if typ = 7 then nodeName := "Group" -- clip node
-    if typ = 8 then nodeName := "IndexedFaceSet" -- Indexed Face Set
-    if typ = 9 then nodeName := "IndexedFaceSet" -- arrows node
+    if typ = "ROOT"::Symbol then nodeName := "X3D" -- root node
+    if typ = "GROUP"::Symbol then nodeName := "Group" -- group node
+    if typ = "LINE"::Symbol then nodeName := "IndexedFaceSet" -- line node
+    if typ = "MATERIAL"::Symbol then nodeName := "Group" -- material node
+    if typ = "TEXT"::Symbol then nodeName := "Text" -- text node
+    if typ = "TRANSFORM"::Symbol then nodeName := "Transform" -- transform node
+    if typ = "CLIP"::Symbol then nodeName := "Group" -- clip node
+    if typ = "IFS"::Symbol then nodeName := "IndexedFaceSet" -- Indexed Face Set
+    if typ = "ARROWS"::Symbol then nodeName := "IndexedFaceSet" -- arrows node
     nodeName
 
   -- creates an XML tree stucture (for X3D) from scenegraph tree
@@ -3490,8 +3889,10 @@ Scene(PT): Exports == Implementation where
     tran2 := tran
     mat2 := mat
     nodeAtts:List XmlAttribute := []
-    if n.type = 1 then -- root node - set clip bounds to back to
+    if n.type = "ROOT"::Symbol then -- root node - set clip bounds to back to
                        -- local coordinates
+      if not (n.parameters case boundbox) then
+        error "toX3D parameter type not valid for root node"
       bb2 := n.parameters.boundbox
       --sayMsg concat([_
       --  "toX3D(",(math_to_string minx)@String,_
@@ -3508,11 +3909,15 @@ Scene(PT): Exports == Implementation where
           nodeEles := concat(nodeEles,xch)
       inner := xmlElement("Scene",nodeEles,nodeAtts)
       return xmlElement(nodeName,[inner],nodeAtts)
-    if n.type = 4 then -- set material
+    if n.type = "MATERIAL"::Symbol then -- set material
       mat2 := n.parameters.material
-    if n.type = 6 then -- set transform
+    if n.type = "TRANSFORM"::Symbol then -- set transform
+      if not (n.parameters case trans) then
+        error "toX3D parameter type not valid for trans node"
       tran2 := compound(n.parameters.trans,tran)
-    if n.type = 7 then -- set default clip bounding box
+    if n.type = "CLIP"::Symbol then -- set default clip bounding box
+      if not (n.parameters case boundbox) then
+        error "toX3D parameter type not valid for clip node"
       mn2:PT :=  n.parameters.boundbox.mins
       mx2:PT :=  n.parameters.boundbox.maxs
       -- at the moment boundBox is in global coordinates
@@ -3522,10 +3927,16 @@ Scene(PT): Exports == Implementation where
       -- mx2:PT :=  applyTrans(tran,n.parameters.boundbox.maxs pretend_
       --                       SPoint DoubleFloat)$TR pretend PT
       bb2 := [mn2,mx2]
-    if n.type = 5 then -- text node
+    if n.type = "TEXT"::Symbol then -- text node
+      if not (n.parameters case text) then
+        error "toX3D parameter type not valid for text node"
       nodeAtts := [xmlAttribute("string",n.parameters.text.txt)]
-    --  return xmlElement(nodeName,n.parameters.text.txt,nodeAtts)
-    if n.type = 3 then -- line node
+    if n.type = "LINE"::Symbol then -- line node
+      -- its difficult to draw a line in 3D. it needs to have
+      -- some finite width so that we can see it.
+      -- We therefore draw it as a thin tube.
+      if not (n.parameters case points) then
+        error "toX3D parameter type not valid for line node"
       meshR:List List PT :=_
         curveLoops(first n.parameters.points,0.25::DF,8)$SceneIFS(PT)
       ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
@@ -3535,7 +3946,12 @@ Scene(PT): Exports == Implementation where
              [xmlAttribute("point",pointString(pointList(ifsR),tran,bb))])
       ifset := xmlElement(nodeName,[coord],nodeAtts)
       return xmlElement("Shape",[ifset],[])
-    if n.type = 9 then -- arrows node
+    if n.type = "ARROWS"::Symbol then -- arrows node
+      -- its difficult to draw an arrow in 3D. it needs to have
+      -- some finite width so that we can see it.
+      -- We therefore draw it as a thin tube.
+      if not (n.parameters case arrws) then
+        error "toX3D parameter type not valid for arrws node"
       meshR:List List PT :=_
         curveLoops(first n.parameters.arrws.ln,0.25::DF,8)$SceneIFS(PT)
       ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
@@ -3545,7 +3961,9 @@ Scene(PT): Exports == Implementation where
              [xmlAttribute("point",pointString(pointList(ifsR),tran,bb))])
       ifset := xmlElement(nodeName,[coord],nodeAtts)
       return xmlElement("Shape",[ifset],[])
-    if n.type = 8 then -- indexed face set node
+    if n.type = "IFS"::Symbol then -- indexed face set node
+      if not (n.parameters case ifs) then
+        error "toX3D parameter type not valid for ifs node"
       nodeAtts := [xmlAttribute("coordIndex",_
         pointIndexString(n.parameters.ifs.inx,tran,bb))]
       --sayMsg concat([_
@@ -3579,7 +3997,7 @@ Scene(PT): Exports == Implementation where
 
   -- creates an .OBJ (Wavefront) file from scenegraph tree
   -- structure
-  -- called recursivley for each node, so when called on root node
+  -- called recursively for each node, so when called on root node
   -- in scenegraph all other nodes in the scenegraph will get called.
   toObj(n:%,ptLst: Reference List PT,indexLst:Reference List List NNI,_
                    indexNxt:Reference NNI,tran:TR,bb: BOUNDS):Void ==
@@ -3590,8 +4008,10 @@ Scene(PT): Exports == Implementation where
     --  ")"])$String
     bb2 := bb
     tran2 := tran
-    if n.type = 1 then
+    if n.type = "ROOT"::Symbol then
       -- root node - make sure view bounds are always positive
+      if not (n.parameters case boundbox) then
+        error "toObj parameter type not valid for root node"
       bb2 := n.parameters.boundbox
       minx:DF := screenCoordX(bb2.mins)
       miny:DF := screenCoordY(bb2.mins)
@@ -3629,15 +4049,16 @@ Scene(PT): Exports == Implementation where
         --  "toObj( bb=",(math_to_string bb2)@String,_
         --  ",tran=",(math_to_string tran2)@String,_
         --  ")"])$String
-    if n.type = 1 then
-      -- root node - set clip bounds to back to local coordinates
-      bb2 := n.parameters.boundbox
       for ch in n.children repeat
         toObj(ch,ptLst,indexLst,indexNxt,tran2,bb2)
       return Void
-    if n.type = 6 then -- set transform
+    if n.type = "TRANSFORM"::Symbol then -- set transform
+      if not (n.parameters case trans) then
+        error "toObj parameter type not valid for trans node"
       tran2 := compound(n.parameters.trans,tran)
-    if n.type = 7 then -- set default clip bounding box
+    if n.type = "CLIP"::Symbol then -- set default clip bounding box
+      if not (n.parameters case boundbox) then
+        error "toObj parameter type not valid for clip node"
       mn2:PT :=  n.parameters.boundbox.mins
       mx2:PT :=  n.parameters.boundbox.maxs
       -- at the moment boundBox is in global coordinates
@@ -3648,7 +4069,9 @@ Scene(PT): Exports == Implementation where
       --                       SPoint DoubleFloat)$TR pretend PT
       bb2 := [mn2,mx2]
       return Void
-    if n.type = 3 then -- line node
+    if n.type = "LINE"::Symbol then -- line node
+      if not (n.parameters case points) then
+        error "toObj parameter type not valid for line node"
       meshR:List List PT := _
         curveLoops(first n.parameters.points,0.25::DF,8)$SceneIFS(PT)
       ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
@@ -3659,7 +4082,9 @@ Scene(PT): Exports == Implementation where
       setelt(indexLst,concat(elt(indexLst),i2))
       setelt(indexNxt,elt(indexNxt)+ #p1)
       return Void
-    if n.type = 9 then -- arrow node
+    if n.type = "ARROWS"::Symbol then -- arrow node
+      if not (n.parameters case points) then
+        error "toObj parameter type not valid for arrows node"
       meshR:List List PT := _
         curveLoops(first n.parameters.points,0.25::DF,8)$SceneIFS(PT)
       ifsR:SceneIFS(PT) := smesh(meshR,false)$SceneIFS(PT)
@@ -3670,7 +4095,9 @@ Scene(PT): Exports == Implementation where
       setelt(indexLst,concat(elt(indexLst),i2))
       setelt(indexNxt,elt(indexNxt)+ #p1)
       return Void
-    if n.type = 8 then -- indexed face set node
+    if n.type = "IFS"::Symbol then -- indexed face set node
+      if not (n.parameters case ifs) then
+        error "toObj parameter type not valid for ifs node"
       i1:List List NNI := n.parameters.ifs.inx
       p1:List PT := n.parameters.ifs.pts
       i2:List List NNI := [[j + elt(indexNxt) for j in k] for k in i1]
@@ -3684,10 +4111,6 @@ Scene(PT): Exports == Implementation where
 --        ")"])$String
       setelt(ptLst,concat(elt(ptLst),p1))
       setelt(indexLst,concat(elt(indexLst),i2))
---      sayMsg concat([_
---        "toObj 3(indexLst=",(math_to_string indexLst)@String,_
---        ",ptLst=",(math_to_string ptLst)@String,_
---        ")"])$String
       setelt(indexNxt,elt(indexNxt)+ #p1)
       return Void
     -- if no children return empty element
@@ -3739,7 +4162,7 @@ Scene(PT): Exports == Implementation where
   -- Common Lisp does not support NaN ? So we need some sort of test for
   -- invalid numbers
   -- If not equal to itself then we assume that its not a valid number
-  -- an altenative approach is to chek for complex numbers
+  -- an alternative approach is to check for complex numbers
   -- COMPLEXP(x)$Lisp since lisp supports complex numbers?
   Fnan?(x:DF):Boolean == x ~= x
 
@@ -4003,18 +4426,19 @@ Scene(PT): Exports == Implementation where
   -- output
   coerce(n: %):OutputForm ==
     s:String := "scene "
-    if n.type = 1 then s := concat(s,"root")
-    if n.type = 2 then s := concat(s,"group")
-    if n.type = 3 then s := concat(s,"line")
-    if n.type = 4 then s := concat(s,"material")
-    if n.type = 5 then s := concat(s,"text")
-    if n.type = 6 then s := concat(s,"transform")
-    if n.type = 7 then s := concat(s,"clip")
-    if n.type = 8 then s := concat(s,"ifs")
-    if n.type = 9 then s := concat(s,"arrow")
+    if n.type = "ROOT"::Symbol then s := concat(s,"root")
+    if n.type = "GROUP"::Symbol then s := concat(s,"group")
+    if n.type = "LINE"::Symbol then s := concat(s,"line")
+    if n.type = "MATERIAL"::Symbol then s := concat(s,"material")
+    if n.type = "TEXT"::Symbol then s := concat(s,"text")
+    if n.type = "TRANSFORM"::Symbol then s := concat(s,"transform")
+    if n.type = "CLIP"::Symbol then s := concat(s,"clip")
+    if n.type = "IFS"::Symbol then s := concat(s,"ifs")
+    if n.type = "ARROWS"::Symbol then s := concat(s,"arrow")
     s := concat([s," #ch=",string(#(n.children))])
     s::OutputForm
 @
+
 \section{License}
 <<license>>=
 --Copyright (c) 2010, Martin J Baker.
@@ -4053,14 +4477,19 @@ Scene(PT): Exports == Implementation where
 @
 \eject
 \begin{thebibliography}{99}
-User Tutorial:
+[1] Dorst,Fontijne & Mann, 2007 , Geometric Algebra for Computer Science
+ISBN 0123694655
+This book gives practical information about using Clifford/Grassmann
+algebra to represent graphical information.
+[2] Doran & Lasenby, 2003 , Geometric Algebra for Physicists,
+ISBN 0521480221
+[3] User Tutorial:
 http://www.euclideanspace.com/maths/standards/program/mycode/graph/tutorial/
-User Reference:
+[4] User Reference:
 http://www.euclideanspace.com/maths/standards/program/mycode/graph/userref/
-Programmers Reference:
+[5] Programmers Reference:
 http://www.euclideanspace.com/maths/standards/program/mycode/graph/progref/
-Examples of scenegraph structure:
+[6] Examples of scenegraph structure:
 http://www.euclideanspace.com/maths/standards/program/mycode/graph/examples/
-
 \end{thebibliography}
 \end{document}
