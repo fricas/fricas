@@ -953,6 +953,33 @@ FloatEllipticFunctions() : with
     weierstrassPPrime(g2 : Float, g3 : Float, x : Float) : Float ==
         real(weierstrassPPrime(g2::CF, g3::CF, x::CF))
 
+@
+
+<<package SPFUTS SpecialFunctionUnivariateTaylorSeries>>=
+
+)abbrev package SPFUTS SpecialFunctionUnivariateTaylorSeries
+SpecialFunctionUnivariateTaylorSeries(Coef, UTS) :
+  Exports == Implementation where
+    Coef : Field
+    UTS  : UnivariateTaylorSeriesCategory Coef
+    ST  ==> Stream Coef
+    STT ==> StreamTaylorSeriesOperations Coef
+    YS  ==> Y$ParadoxicalCombinatorsForStreams(Coef)
+
+    Exports ==> with
+        lambertW0 : UTS -> UTS
+          ++ lambertW0(x) applies labertW to x.  x must have
+          ++ no term of order 0.
+
+    Implementation ==> add
+
+        lambertW0(x) ==
+            -- Dx = DW(W + 1)exp(W) czyli
+            -- DW = Dx*exp(-W)/(W + 1)
+            dx := differentiate(x)
+            series(YS((s : ST) : ST +-> lazyIntegrate(0,
+                      coefficients(dx*exp(-series(s)$UTS)
+                               *(1$UTS +$UTS series(s))^(-1)))$STT))
 
 @
 
