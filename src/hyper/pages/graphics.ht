@@ -11,7 +11,30 @@
 \begin{page}{GraphicsPage}{Graphics}
 \Language{} can plot curves and surfaces of
 various types, as well as lists of points in the plane.
-% sequences, and complex functions.
+\beginscroll
+There are two graphics frameworks which you can choose depending on
+what type of output you want:
+\beginmenu
+\menulink{Old Framework}{GraphicsOld} \newline
+This framework creates a graphics X window (on platforms that support
+this). It can export images to Postscript and XPM bitmap file
+formats.
+\menulink{New Framework}{GraphicsNew} \newline
+Scenegraph based graphics framework, this has a much more regular
+structure which has more independence from the number of dimensions
+used and the algebra used to represent the geometry.
+\newline
+There is no capability to create a graphics window, however the
+graphics are exported to modern formats (such as SVG and X3D) which
+allow the output to be modified and enhanced by specialist graphics
+programs such as Inkscape and Blender.
+\endmenu
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{GraphicsOld}{Old Graphics Framework}
+\Language{} can plot curves and surfaces of
+various types, as well as lists of points in the plane.
 \beginscroll
 \beginmenu
 \menulink{Examples}{GraphicsExamplePage} \tab{13}
@@ -23,6 +46,473 @@ Plot surfaces, curves, or tubes around curves
 \menulink{Viewports}{ViewportPage} \tab{13}
 Customize graphics using Viewports
 \endmenu
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{GraphicsNew}{New Graphics Framework}
+\beginscroll
+The Scenegraph Concept
+\newline
+\beginmenu
+\menulink{Scenegraph Overveiw}{ScengraphOverveiwPage}
+Explanation of scenegraph concept
+\menulink{Additional Constructs}{GridPage}
+Various things can be added to the graphics such as grids and rulers.
+\menulink{1 dimension in 2 dimensions}{OneDInTwoDPage}
+One Dimensional subspace in Two Dimensions such as a line in a plane.
+\menulink{1 dimension in 3 dimensions}{OneDInThreeDPage}
+One Dimensional subspace in Three Dimensions such as a line in a 3D space.
+\menulink{2 dimensions in 3 dimensions}{TwoDInThreeDPage}
+Two Dimensional subspace in Three Dimensions such as a surface in a 3D space.
+\menulink{Exporting the graphics}{ExportingPage}
+Exporting to SVG, X3D and Obj formats.
+\menulink{Example 1}{Example1Page}
+Example of how to use the code
+\endmenu
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{ScengraphOverveiwPage}{Scenegraph Concept}
+\beginscroll
+The Scenegraph Concept
+\newline
+A scenegraph consists of a number of nodes in a tree structure, the types of
+nodes are:
+\beginmenu
+\menulink{Scenegraph}{ScenegraphPage}
+Mode information about scenegraph concept
+\menulink{Root Node}{RootNodePage}
+Root Node
+\menulink{Group Node}{GroupNodePage}
+Group Node
+\menulink{Line Node}{LineNodePage}
+Line Node
+\menulink{IFS Node}{IFSNodePage}
+Indexed Face Set (IFS) Node
+\menulink{Text Node}{TextNodePage}
+Text Node
+\menulink{Clip Node}{ClipNodePage}
+Clip Node
+\menulink{Material Node}{MaterialNodePage}
+Material Node
+\menulink{Transform Node}{TransformNodePage}
+Transform Node
+%\menulink{ArrowNode}{ArrowNode}
+%Arrow Node
+\endmenu
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{ScenegraphPage}{Scenegraph}
+\beginscroll
+This tree is constructed by starting with the root node and adding child
+nodes using the addChild! function as follows:
+\begin{verbatim}
+addChild!:(n:%,c:%) -> Void
+\end{verbatim}
+where 'c' is the child node and 'n' node that it is being added to. Any
+node type can be a child node or a parent (although it only makes sense
+to put the root node only at the root).
+\newline
+In general a given node will affect only those nodes under it in the tree
+structure.
+\newline
+The purpose and constructors of these nodes is as follows:
+(in the following definitions PT refers to an instance of SPointCategory
+such as SCartesian(2),SCartesian(3),SArgand and SConformal).
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{RootNodePage}{Root Node}
+\beginscroll
+Root Node
+\newline
+Constructs the root node, all other nodes are contained in a tree structure
+under this node. The root node can have a bounding box which indicates the
+extent where the graphical objects exist. This allows the export code, for
+example, to have an area to draw the graphics in.
+\begin{verbatim}
+createSceneRoot:() -> %
+createSceneRoot:(bb: BOUNDS) -> %
+createSceneRoot:(minx:I,miny:I,maxx:I,maxy:I) -> %
+\end{verbatim}
+Where: BOUNDS==> Record(mins:PT,maxs:PT)
+Gives the maximum and minimum extent of the drawing area.
+\endscroll
+\autobuttons \end{page}
+
+
+\begin{page}{GroupNodePage}{Group Node}
+\beginscroll
+Group Node
+\newline
+Constructs a group node, this node does not do anything itself
+but contains other nodes. Any node can contain other nodes - we
+do not need to use a group node to do this, but if we just want
+to group nodes without any other effects then this is a good
+choice.
+\begin{verbatim}
+createSceneGroup:() -> %
+addSceneGroup:(n:%) -> %
+\end{verbatim}
+addSceneGroup is a convenience function which combines the constructor
+createSceneGroup with addChild! This allows a scene graph node to be
+constructed and added to the scenegraph in one operation.
+
+Most of the scenegraph constructors have this form as an option.
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{LineNodePage}{Line Node}
+\beginscroll
+Line Node
+\newline
+Constructs a line node, this contains a (possibly curved) line,represented
+by a list of points) in n-dimensional space. The dimension of the space is
+implicit in the type of points being used.
+A Line node can hold a single line or multiple lines. The reason that a
+Line node needs to hold multiple lines is that, when a clip is applied
+to a line this might break it into several line segments.
+\begin{verbatim}
+createSceneLine:(line: List PT) -> %
+addSceneLine:(n:%,line: List PT) -> %
+createSceneLines:(line: LINES) -> %
+addSceneLines:(n:%,line: LINES) -> %
+\end{verbatim}
+Where: LINES==> List List PT
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{IFSNodePage}{IFS Node}
+\beginscroll
+Indexed Face Set (IFS) Node
+\newline
+Constructs an indexed face set node, this defines a surface in n-dimensional
+space represented by a set of polygons in n-dimensional space.
+\begin{verbatim}
+createSceneIFS:(inx: List List NNI,pts: List PT) -> %
+addSceneIFS:(n:%,inx: List List NNI,pts: List PT) -> %
+createSceneIFS:(in1: SceneIFS(PT)) -> %
+addSceneIFS:(n:%,in1: SceneIFS(PT)) -> %
+\end{verbatim}
+A specialised constructor for an IFS node constructs a 3D box.
+Constructs an indexed face set node which is a 3D box of a given size
+\begin{verbatim}
+createSceneBox:(size:DF) -> %
+addSceneBox:(n:%,size:DF) -> %
+\end{verbatim}
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{TextNodePage}{Text Node}
+\beginscroll
+Text Node
+\newline
+Constructs a text node, text can be used for labelling anything
+such as graphs, axes and so on.
+\begin{verbatim}
+createSceneText:(text: TEXT) -> %
+addSceneText:(n:%,text: TEXT) -> %
+createSceneText:(str:String,sz:NNI,pz:PT) -> %
+addSceneText:(n:%,str:String,sz:NNI,pz:PT) -> %
+\end{verbatim}
+where: TEXT==> Record(txt:String,siz:NNI,pos:PT)
+which defines the text to be printed with its size and position.
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{ClipNodePage}{Clip Node}
+\beginscroll
+Clip Node
+\newline
+Constructs a clip node, clips its sub nodes in the coordinate
+ system in force at the clip node.
+\begin{verbatim}
+createSceneClip:(bb: BOUNDS) -> %
+addSceneClip:(n:%,bb: BOUNDS) -> %
+\end{verbatim}
+where: BOUNDS ==> Record(mins:SCartesian(2),maxs:SCartesian(2))
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{MaterialNodePage}{Material Node}
+\beginscroll
+Material Node
+\newline
+Constructs a material node
+This sets the lineWidth,lineCol and fillCol for all nodes under
+this, unless overridden by another material node.
+That is the material parameters that apply to a given node are
+those of the closest material node above it in the hierarchy
+\begin{verbatim}
+createSceneMaterial:(mat:MATERIAL) -> %
+addSceneMaterial:(n:%,mat:MATERIAL) -> %
+createSceneMaterial:(lineW:DF,lineC:String,fillC:String) -> %
+addSceneMaterial:(n:%,lineW:DF,lineC:String,fillC:String) -> %
+\end{verbatim}
+Where: MATERIAL==> Record(lineWidth:DF,lineCol:String,fillCol:String)
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{TransformNodePage}{Transform Node}
+\beginscroll
+Transform Node
+\newline
+Constructs a transform node
+This transforms the points and vectors below this node
+If a given node has more than one transform node above
+it in the hierarchy then the transforms are concatenated (combined).
+\begin{verbatim}
+createSceneTransform:(tran:TR) -> %
+addSceneTransform:(n:%,tran:TR) -> %
+\end{verbatim}
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{GridPage}{Grid}
+\beginscroll
+Drawing Plots and grids
+\newline
+The following constructors create 'compound' nodes in that the node
+returned has subnodes under it.
+\newline
+Grids and Patterns
+\newline
+Grids are useful as a background to plots, they consist of various
+straight, horizontal and vertical lines.
+\newline
+The form without the step size constructs a grid with:
+\newline
+narrow blue lines every 20 units \newline
+wide blue lines every 100 units \newline
+wide red lines every 200 units \newline
+The form with step uses the prevailing colour and thickness and the
+step parameter defines the spacing between lines.
+\newline
+Since the lines in grids are defined by the endpoints of the lines, it
+does not make sense to apply a non-linear transform to them as the
+lines will remain straight and won't be transformed as they should.
+\newline
+Patterns are used to show the effect of transforms. Although they may
+be approximated by straight lines the points are intended to be close
+enough together to transform reasonably accurately.
+\newline
+The pattern depends on ptype parameter as follows:
+\newline
+"GRID"::Symbol: construct a set of horizontal and vertical lines in the current
+clip boundary and current material with a spacing between
+lines given by the step parameter.\newline
+"SIERPINSKI"::Symbol: constructs a Sierpinski fractel. step parameter gives the
+level of subdivision.\newline
+"HOUSE"::Symbol: constructs a house shape.\newline
+\begin{verbatim}
+createScenePattern(ptype:Symbol,step:NNI,bb: BOUNDS): %
+addScenePattern(n:%,ptype:Symbol,step:NNI,bb: BOUNDS):%
+\end{verbatim}
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{OneDInTwoDPage}{1 dimension in 2 dimensions}
+\beginscroll
+One Dimensional subspace in Two Dimensions
+\newline
+This represents 1 dimension (line - possibly curved) in 2 dimensions (plane)
+The line is approximated as end-to-end straight lines defined by a list of
+points. In theory a line has no width but in that case we would not see it
+so we give it a width given by the material node that is
+applicable in this part of the scene graph.
+\newline
+The plot is defined by a function and a range of values. There are various
+ways to define this function:
+\newline
+DF -> DF a mapping from float to float\newline
+DF -> PT a mapping from float to point\newline
+\newline
+Where:\newline
+DF ==> DoubleFloat\newline
+PT ==> SPointCategory -- an instance of SPointCategory represents a point.
+We can also create the plot using an indirect parameter. (parametric)\newline
+PPC is ParametricPlaneCurve(DF -> DF) which is created with curve(f1,f2)\newline
+where f1 and f2 are functions of type ComponentFunction, in this case
+DF -> DF
+\begin{verbatim}
+createPlot1Din2D: (f:DF -> PT,tRange:SEG,numPts:NNI) -> %
+addPlot1Din2D: (n:%,f:DF -> PT,tRange:SEG,numPts:NNI) -> %
+createPlot1Din2D: (DF -> DF,SEG,numPts:NNI) -> %
+addPlot1Din2D: (n:%,DF -> DF,SEG,numPts:NNI) -> %
+createPlot1Din2Dparametric: (PPC,SEG,numPts:NNI) -> %
+addPlot1Din2Dparametric: (n:%,PPC,SEG,numPts:NNI) -> %
+\end{verbatim}
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{OneDInThreeDPage}{1 dimension in 3 dimensions}
+\beginscroll
+One Dimensional subspace in Three Dimensions
+\newline
+create a line (1D subspace) in 3D space
+This represents 1 dimension (line - possibly curved) in 3 dimensions.
+In theory a line has no width but in that case we would not see it
+so we give it a width given by the material node that is
+applicable in this part of the scene graph.
+\newline
+Again there are various ways to define this function:
+PCFUN is a function from float to point: DF -> PT
+PSC ParametricSpaceCurve(DF -> DF) is created with curve(f1,f2,f3)
+where f1,f2 and f3 are functions of type ComponentFunction, in this case
+DF -> DF
+create a line (1D subspace) in 3D space
+\begin{verbatim}
+createPlot1Din3Dparametric: (PSC,SEG,numPts:NNI) -> %
+addPlot1Din3Dparametric: (n:%,PSC,SEG,numPts:NNI) -> %
+createPlot1Din3Dparametric: (PCFUN,SEG,numPts:NNI) -> %
+addPlot1Din3Dparametric: (n:%,PCFUN,SEG,numPts:NNI) -> %
+\end{verbatim}
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{TwoDInThreeDPage}{2 dimension in 3 dimensions}
+\beginscroll
+Two Dimensional subspace in Three Dimensions (surface)
+\newline
+create a surface (2D subspace) in 3D space
+The surface is approximated by polygons which are
+represented by in indexed face set (IFS) node
+create a surface (2D subspace) in 3D space
+\begin{verbatim}
+createPlot2Din3D: (ptFun:PSFUN,uSeg:SEG,vSeg:SEG,numPts:NNI) -> %
+createPlot2Din3D: ((DF,DF) -> DF,SEG,SEG,numPts:NNI) -> %
+addPlot2Din3D: (n:%,(DF,DF) -> DF,SEG,SEG,numPts:NNI) -> %
+createPlot2Din3Dparametric: (PSFUN, SEG, SEG,numPts:NNI) -> %
+addPlot2Din3Dparametric: (n:%,PSFUN, SEG, SEG,numPts:NNI) -> %
+createPlot2Din3Dparametric: (PSF,SEG,SEG,numPts:NNI) -> %
+addPlot2Din3Dparametric: (n:%,PSF,SEG,SEG,numPts:NNI) -> %
+\end{verbatim}
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{ExportingPage}{Exporting}
+\beginscroll
+Exporting the graphics
+\newline
+This scenegraph framework currently exports to the following file formats:
+\newline
+SVG - For 2 dimensional graphics this is the most standards based and also
+        supported by graphical editors such as Inkscape.\newline
+X3D - For 3 dimensional graphics I think this is the most standards
+        compliant but it is not supported on many 3D editors.\newline
+VRML - VRML2 and VRML97 are supported but not VRML1. This flavour of
+         VRML holds the same information as X3D but using a different
+         non-XML syntax.\newline
+Wavefront(obj) - This is a very simple 3D format that will hold meshes
+                   but not text or colour information. It is supported on
+                   most 3D editors but only use it as a fallback if the
+                   other 3D formats don't work.\newline
+To export a scenegraph to one of these file formats use the following
+function calls:
+\newline
+Write an 'SVG' representation of node 'n' (usually the root node) to
+the filename supplied:
+\begin{verbatim}
+writeSvg:(n:%,filename:String) -> Void
+\end{verbatim}
+Write an 'X3D' representation of node 'n' (usually the root node)
+to the filename supplied.
+\begin{verbatim}
+writeX3d:(n:%,filename:String) -> Void
+\end{verbatim}
+Write a 'VRML' representation of node 'n' (usually the root node)
+to the filename supplied.
+\begin{verbatim}
+writeVRML:(n:%,filename:String) -> Void
+\end{verbatim}
+Write an 'OBJ' (Wavefront) representation of node 'n' (usually the
+root node) to the filename supplied.
+\begin{verbatim}
+writeObj:(n:%,filename:String) -> Void
+\end{verbatim}
+If we only want to create an XML structure without writing to a file
+we can use these functions:
+\newline
+create an XmlElement containing a 'SVG' representation of node 'n' and
+the nodes below it:
+\begin{verbatim}
+toSVG:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
+\end{verbatim}
+Create an XmlElement containing a 'X3D' representation of node 'n' and
+the nodes below it:
+\begin{verbatim}
+toX3D:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
+\end{verbatim}
+Creates .OBJ (Wavefront) structures from scenegraph tree structure called
+recursively for each node, so when called on root node in scenegraph
+all other nodes in the scenegraph will get called. When called the
+reference values should be empty or zero and when the function returns
+they will be set.
+\begin{verbatim}
+toObj:(n:%,ptLst: Reference List PT,_
+      indexLst:Reference List List NNI,_
+      indexNxt:Reference NNI,tran:TR,bb: BOUNDS) -> Void
+\end{verbatim}
+\endscroll
+\autobuttons \end{page}
+
+\begin{page}{Example1Page}{Example1}
+\beginscroll
+Using the code
+\newline
+Example 1 - Two dimensional plots with scale.
+First we will create a couple of functions to plot:
+\newline
+\spadpaste{DF ==> DoubleFloat}
+\spadpaste{fnsin(x:DF):DF == sin(x/100::DF)*400::DF}
+\spadpaste{fntan(x:DF):DF == tan(x/100::DF)*400::DF}
+\newline
+Then we create a bounding box, this is the box within which we do the drawing.
+This contains two points representing the maximum and minimum extent of the
+drawing area or volume. That is mins contains the minimum values of x,y...
+and maxs contains the maximum values of x,y...
+\newline
+\spadpaste{BOUNDS ==> Record(mins:SCartesian(2),maxs:SCartesian(2)) \bound{BOUNDS}}
+\spadpaste{view:BOUNDS := [sipnt(0,-500)$SCartesian(2),sipnt(1200,500)$SCartesian(2)] \bound{view} \free{BOUNDS}}
+\spadpaste{sc := createSceneRoot(view)$Scene(SCartesian(2)) \bound{sc} \free{view}}
+\spadpaste{gd := addSceneGrid(sc,view)$Scene(SCartesian(2)) \bound{gd} \free{sc view}}
+\newline
+we can now export this to a SVG file so that we can confirm that
+the scene contains a grid
+\newline
+\spadpaste{writeSvg(sc,"test1.svg") \free{sc gd}}
+\newline
+Now lets add a plot to this. First we add a 'material' node to the root to
+define the colour and thickness of the plot.
+\newline
+\spadpaste{mt1 := addSceneMaterial(sc,3::DF,"blue","green")$Scene(SCartesian(2)) \bound{mt1} \free{sc gd}}
+\newline
+Then we add the plot to the material node using the sine function that we
+defined earlier.
+\newline
+\spadpaste{ln1 := addPlot1Din2D(mt1,fnsin,0..1000::DF,49)$Scene(SCartesian(2))
+ \bound{ln1} \free{mt1}}
+\newline
+we can now export this to a SVG file again to see that
+the plot has been added to the grid
+\newline
+ \spadpaste{writeSvg(sc,"test2.svg") \free{sc ln1}}
+\newline
+Lets now add second plot to the scene so that we can see how to modify
+it using material, transform and clip.
+\newline
+\spadpaste{mt2 := addSceneMaterial(sc,3::DF,"green","green")$Scene(SCartesian(2))}
+\spadpaste{tr2 := addSceneTransform(mt2,stransform([_
+             [1::DF,0::DF,0::DF],_
+             [0::DF,1::DF,0::DF],_
+             [0::DF,0::DF,1::DF]]))$Scene(SCartesian(2))}
+\spadpaste{bb:BOUNDS := [sipnt(100,-400)$SCartesian(2),sipnt(1100,400)$SCartesian(2)]}
+\spadpaste{bb2 := addSceneClip(tr2,bb)$Scene(SCartesian(2))}
+\spadpaste{ln2 := addPlot1Din2D(bb2,fntan,0..1000::DF,49)$Scene(SCartesian(2))}
+\spadpaste{tx := addSceneText(sc,"sin(theta)",32::NNI,_
+          sipnt(200,400)$SCartesian(2))$Scene(SCartesian(2))}
+\spadpaste{writeSvg(sc,"test3.svg")}
 \endscroll
 \autobuttons \end{page}
 
