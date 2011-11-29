@@ -615,19 +615,6 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       minimumDegree(p,Lvar) ==
         [minimumDegree(p,mvar) for mvar in Lvar]
 
-      totalDegree(p, Lvar) ==
-        ground? p => 0
-        null setIntersection(Lvar, variables p) => 0
-        u := univariate(p, mv := mainVariable(p)::VarSet)
-        weight:NonNegativeInteger := (member?(mv,Lvar) => 1; 0)
-        tdeg:NonNegativeInteger := 0
-        while u ~= 0 repeat
-            termdeg:NonNegativeInteger := weight*degree u +
-                           totalDegree(leadingCoefficient u, Lvar)
-            tdeg := max(tdeg, termdeg)
-            u := reductum u
-        tdeg
-
       if R has CommutativeRing then
         differentiate(p,mvar) ==
           p case R => 0

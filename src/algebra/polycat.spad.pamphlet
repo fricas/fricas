@@ -283,6 +283,10 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
     totalDegree : (%,List VarSet) -> NonNegativeInteger
         ++ totalDegree(p, lv) returns the maximum sum (over all monomials of polynomial p)
         ++ of the variables in the list lv.
+    totalDegreeSorted : (%, List VarSet) -> NonNegativeInteger
+        ++ totalDegreeSorted(p, lv) returns the maximum sum (over all
+        ++ monomials of polynomial p) of the degree in variables in the
+        ++ list lv.  lv is assumed to be sorted in decreasing order.
     variables : % -> List(VarSet)
         ++ variables(p) returns the list of those variables actually
         ++ appearing in the polynomial p.
@@ -415,16 +419,28 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
           d := max(d, degree u + totalDegree leadingCoefficient u)
           u := reductum u
         d
-    totalDegree(p,lv) ==
+
+    totalDegreeSorted(p : %, lv : List VarSet) : NonNegativeInteger ==
         ground? p => 0
+        empty?(lv) => 0
         u := univariate(p, v:=(mainVariable(p)::VarSet))
         d: NonNegativeInteger := 0
         w: NonNegativeInteger := 0
-        if member?(v, lv) then w:=1
+        v0 := first(lv)
+        lv := rest(lv)
+        while not(empty?(lv)) and v < v0 repeat
+            v0 := first(lv)
+            lv := rest(lv)
+        if v0 = v then w := 1
         while u ~= 0 repeat
-          d := max(d, w*(degree u) + totalDegree(leadingCoefficient u,lv))
+          d := max(d, w*(degree u) +
+                 totalDegreeSorted(leadingCoefficient u, lv))
           u := reductum u
         d
+
+    totalDegree(p,lv) ==
+        lv1 := sort((v1 : VarSet, v2 : VarSet) : Boolean +-> v2 < v1, lv)
+        totalDegreeSorted(p, lv1)
 
     if R has CommutativeRing then
         resultant(p1,p2,mvar) ==
