@@ -25,9 +25,9 @@ lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
 		    $(build_libdir)/libspad.a
 
 ifeq ($(lisp_flavor),sbcl)
-NUM_SB = num_sb.lisp
+NUM_GMP = num_gmp.lisp
 else
-NUM_SB =
+NUM_GMP =
 endif
 
 .PHONY: all all-lisp
@@ -76,7 +76,7 @@ fricas-lisp.lisp: $(srcdir)/fricas-lisp.lisp
 fricas-package.lisp: $(srcdir)/fricas-package.lisp
 	cp $< $@
 
-num_sb.lisp: $(srcdir)/num_sb.lisp
+num_gmp.lisp: $(srcdir)/num_gmp.lisp
 	if [ x$(GMP_WRAP_SO_TARGET) != x ] ; then \
 	    cp $< $@ ; \
 	else \
@@ -114,10 +114,10 @@ do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
 	$(STAMP) $@
 
 do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
-   fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_SB)
+   fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_GMP)
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
-            '#+:sbcl (load (compile-file "num_sb.lisp"))' \
+            '#+:sbcl (load (compile-file "num_gmp.lisp"))' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
          | $(FRICAS_LISP)
