@@ -27,7 +27,11 @@ lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
 ifeq ($(lisp_flavor),sbcl)
 NUM_GMP = num_gmp.lisp
 else
+ifeq ($(lisp_flavor),openmcl)
+NUM_GMP = num_gmp.lisp
+else
 NUM_GMP =
+endif
 endif
 
 .PHONY: all all-lisp
@@ -117,7 +121,7 @@ do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
    fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_GMP)
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
-            '#+:sbcl (load (compile-file "num_gmp.lisp"))' \
+            '#+(or :sbcl :openmcl) (load (compile-file "num_gmp.lisp"))' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
          | $(FRICAS_LISP)
