@@ -363,9 +363,16 @@ AC_ARG_ENABLE([gmp],
                        AC_MSG_ERROR([--enable-gmp is valid only when using sbcl on AMD/Intel processors])
                          ;;
                     esac
+                 elif test $fricas_lisp_flavor = openmcl ; then
+                    case $(uname -m) in x86_64)
+                      GMP_WRAP_SO_TARGET=gmp_wrap_so
+                        ;;
+                      *)
+                       AC_MSG_ERROR([--enable-gmp is valid only when using Closure CL in 64-bit AMD/Intel processors])
+                    esac
                  else
                     AC_MSG_ERROR([--enable-gmp is valid only when using sbcl on AMD/Intel processors])
-                       
+
                  fi ;;
                no) ;;
                *) AC_MSG_ERROR([--enable-gmp only allows yes or no as an argument]) ;;

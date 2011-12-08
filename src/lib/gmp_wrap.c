@@ -12,7 +12,7 @@
 #define BIGNUM_LENGTH(x) ((x)[-1] >> 8)
 
 void
-gmp_sb_mul(char * n1l, char * n2l, char * resl)
+gmp_wrap_sb_mul(char * n1l, char * n2l, char * resl)
 {
     WORD_PTR_TYPE n1 = TO_WORD_PTR(n1l);
     mp_size_t l1 = BIGNUM_LENGTH(n1);
@@ -23,7 +23,7 @@ gmp_sb_mul(char * n1l, char * n2l, char * resl)
 }
 
 void
-gmp_sb_div_rem(char * n1l, char * n2l, char * quol, char * reml)
+gmp_wrap_sb_div_rem(char * n1l, char * n2l, char * quol, char * reml)
 {
     WORD_PTR_TYPE n1 = TO_WORD_PTR(n1l);
     mp_size_t l1 = BIGNUM_LENGTH(n1);
@@ -40,12 +40,8 @@ gmp_sb_div_rem(char * n1l, char * n2l, char * quol, char * reml)
 }
 
 void
-gmp_sb_isqrt(char * n1l, char * resl)
+gmp_wrap_isqrt(mp_limb_t *res, mp_size_t l2, mp_limb_t *n1, mp_size_t l1)
 {
-    WORD_PTR_TYPE n1 = TO_WORD_PTR(n1l);
-    mp_size_t l1 = BIGNUM_LENGTH(n1);
-    WORD_PTR_TYPE res = TO_WORD_PTR(resl);
-    unsigned long l2 = BIGNUM_LENGTH(res);
     if (n1[l1 - 1] == 0) {
         l1--;
         res[l2 - 1] = 0;
@@ -53,7 +49,18 @@ gmp_sb_isqrt(char * n1l, char * resl)
     mpn_sqrtrem(res, 0, n1, l1);
 }
 
-int
+
+void
+gmp_wrap_sb_isqrt(char * n1l, char * resl)
+{
+    WORD_PTR_TYPE n1 = TO_WORD_PTR(n1l);
+    mp_size_t l1 = BIGNUM_LENGTH(n1);
+    WORD_PTR_TYPE res = TO_WORD_PTR(resl);
+    unsigned long l2 = BIGNUM_LENGTH(res);
+    gmp_wrap_isqrt(res, l2, n1, l1);
+}
+
+static int
 count_zeros(mp_limb_t x)
 {
     int res = 0;
@@ -88,7 +95,7 @@ count_zeros(mp_limb_t x)
 /* More sane version of gmp gcd: arguments are arbitrary positive
    numbers, fills rp with the result and returns the length */
 mp_size_t
-gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
+gmp_wrap_gcd(mp_limb_t * rp, mp_limb_t *s1p,
        mp_size_t s1n, mp_limb_t *s2p, mp_size_t s2n)
 {
     mp_limb_t rc;
@@ -165,7 +172,7 @@ gmp_gcd0(mp_limb_t * rp, mp_limb_t *s1p,
 }
 
 void
-gmp_sb_gcd(char * n1l, char * n2l, char * resl)
+gmp_wrap_sb_gcd(char * n1l, char * n2l, char * resl)
 {
     WORD_PTR_TYPE n1 = TO_WORD_PTR(n1l);
     mp_size_t l1 = BIGNUM_LENGTH(n1);
@@ -173,7 +180,7 @@ gmp_sb_gcd(char * n1l, char * n2l, char * resl)
     mp_size_t l2 = BIGNUM_LENGTH(n2);
     WORD_PTR_TYPE res = TO_WORD_PTR(resl);
     mp_size_t rl0 = BIGNUM_LENGTH(res);
-    mp_size_t rl1 = gmp_gcd0(res, n1, l1, n2, l2);
+    mp_size_t rl1 = gmp_wrap_gcd(res, n1, l1, n2, l2);
     mp_size_t i;
     for(i=rl1; i<rl0; i++) {
         res[i] = 0;
