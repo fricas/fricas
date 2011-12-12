@@ -289,8 +289,11 @@ FloatSpecialFunctions() : Exports == Implementation where
         RNT ==> DoubleFloat
 
     lambertW(x : DoubleFloat) : DoubleFloat ==
+        x = 0 => x
         eps := float(1, -35)$DoubleFloat
-        order(x) > 200 and x > 0 =>
+        ox := order(x)
+        ox < -70 => x
+        ox > 200 and x > 0 =>
             lx := log(x)
             lambert_via_newton2(lx, lx, eps)
         w : DoubleFloat :=
@@ -311,11 +314,14 @@ FloatSpecialFunctions() : Exports == Implementation where
         lambert_via_newton1(x, w, eps)
 
     lambertW(x :  Complex(DoubleFloat)) : Complex(DoubleFloat) ==
+        x = 0 => x
         rx := real(x)
         ix := imag(x)
         ax : DoubleFloat := abs(rx) + abs(ix)
         eps := float(1, -35)$DoubleFloat
-        order(ax) > 200 =>
+        ox := order(ax)
+        ox < -70 => x
+        ox > 200 =>
             -- sbcl log has trouble when |z| > 2^997
             -- Clozure CL and gcl log has trouble when |z| > 2^511
             -- so we scale x to avoid troubles
@@ -338,10 +344,13 @@ FloatSpecialFunctions() : Exports == Implementation where
         lambert_via_newton1(x, w, eps)
         
     lambertW(x : Float) : Float ==
+        x = 0 => x
         cbit := bits()
         eps := float(1, -2*cbit quo 3)
         ax := abs(x)
-        order(ax) > 200 and x > 0 =>
+        ox := order(ax)
+        ox < -cbit - 10 => x
+        ox > 200 and x > 0 =>
             lx := log(x)
             lambert_via_newton2(lx, lx, eps)
         x < (-190436/$RN 517656)::Float => error "x < -exp(-1)"
@@ -366,10 +375,13 @@ FloatSpecialFunctions() : Exports == Implementation where
         lambert_via_newton1(x, w, eps)
 
     lambertW(z : Complex(Float)) : Complex(Float) ==
+        z = 0 => z
         cbit := bits()$Float
         eps := float(1, -2*cbit quo 3)
         abs_z := rabs(z)
-        order(abs_z) > 200 =>
+        oz := order(abs_z)
+        oz < -cbit - 10 => z
+        oz > 200 =>
             lz := log(z)
             lambert_via_newton2(lz, lz, eps)
         rzd := real(z)::DoubleFloat
