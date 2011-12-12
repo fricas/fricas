@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2011-11-04],
+AC_INIT([FriCAS], [2011-12-12],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -502,6 +502,23 @@ case $host in
                          [])
         ;;
 esac
+
+AC_TRY_COMPILE([
+#include <sys/socket.h>
+   ], [
+int flag = MSG_NOSIGNAL;
+   ], 
+   [AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Host has MSG_NOSIGNAL])],[])
+
+AC_TRY_COMPILE([
+#include <errno.h>
+#include <sys/socket.h>
+   ], [
+int code = EPIPE;
+   ],
+   [AC_DEFINE([HAVE_EPIPE], [1], [Host has EPIPE])],[])
+
+
 if test x$fricas_host_has_socket != xyes; then \
     AC_MSG_ERROR([FriCAS needs suport for sockets.])
 fi

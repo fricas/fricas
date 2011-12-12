@@ -64,7 +64,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #  error needs one of AF_LOCAL or AF_UNIX
 #endif
 
-
+#ifndef HAVE_MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
 
 Sock clients[MaxClients];       /* socket description of spad clients */
 Sock server[2];                 /* AF_LOCAL and AF_INET sockets for server */
@@ -270,12 +272,17 @@ sread(Sock *sock, char *buf, int buf_size, char *msg)
 int
 swrite(Sock *sock,char *buf,int buf_size,char *msg)
 {
-  int ret_val;
+  ssize_t ret_val;
   char err_msg[256];
   errno = 0;
   socket_closed = 0;
-  ret_val = axiom_write(sock, buf, buf_size);
+  ret_val = send(sock->socket, buf, buf_size, MSG_NOSIGNAL);
   if (ret_val == -1) {
+#ifdef HAVE_EPIPE
+    if (errno == EPIPE) {
+        socket_closed = 1;
+    }
+#endif
     if (socket_closed) {
       FD_CLR(sock->socket, &socket_mask);
       purpose_table[sock->purpose] = NULL;
@@ -875,8 +882,10 @@ open_server(char *server_name)
   char *s, name[256];
 
   init_socks();
+#ifndef HAVE_MSG_NOSIGNAL
 #ifdef SIGPIPE
   bsdSignal(SIGPIPE, sigpipe_handler,RestartSystemCalls);
+#endif
 #endif
   if (make_server_name(name, server_name) == -1)
     return -2;
