@@ -1495,7 +1495,10 @@ database.
 ;; (set (foam::axiomxl-file-init-name "axclique") NOPfuncall)
  (set (foam::axiomxl-file-init-name "filecliq") NOPfuncall)
  (set (foam::axiomxl-file-init-name "attrib") NOPfuncall)
+ (|createInitializers2|))
+
 ;; following needs to happen inside restart since $AXIOM may change
+(defun |createInitializers2| ()
  (let ((asharprootlib (strconc (|getEnv| "AXIOM") "/aldor/lib/")))
    (set-file-getter (strconc asharprootlib "runtime"))
    (set-file-getter (strconc asharprootlib "lang"))

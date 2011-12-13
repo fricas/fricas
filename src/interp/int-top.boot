@@ -150,7 +150,7 @@ intloop () ==
                     SpadInterpretStream(1, ["TIM", "DALY", "?"], true))
 
 
-SpadInterpretStream(str, source, interactive?) ==
+SpadInterpretStream(step_num, source, interactive?) ==
     $fn              : local := source
     pile?                    := not interactive?
 --  following seems useless and causes ccl package problems
@@ -166,13 +166,12 @@ SpadInterpretStream(str, source, interactive?) ==
     $erMsgToss             : local := false --------------->!!!
     $ncMsgList             : local := nil
 
-    $systemCommandFunction : local := function InterpExecuteSpadSystemCommand
     $promptMsg             : local := 'S2CTP023
 
     interactive? =>
         if printFirstPrompt?() then
             princPrompt()
-        intloopReadConsole('"", str)
+        intloopReadConsole('"", step_num)
         []
     intloopInclude (source,0)
     []
@@ -248,7 +247,7 @@ intloopProcess(n,interactive,s)==
      [lines,ptree]:=CAR s
      pfAbSynOp?(ptree,"command")=>
             if interactive then setCurrentLine tokPart ptree
-            FUNCALL($systemCommandFunction, tokPart ptree)
+            InterpExecuteSpadSystemCommand(tokPart ptree)
             intloopProcess(n ,interactive ,CDR s)
      intloopProcess(intloopSpadProcess(n,lines,ptree,interactive)
                  ,interactive ,CDR s)
@@ -359,7 +358,7 @@ nonBlank str ==
 ncloopCommand (line,n) ==
          a:=ncloopPrefix?('")include",line)=>
                   ncloopInclude1( a,n)
-         FUNCALL($systemCommandFunction,line)
+         InterpExecuteSpadSystemCommand(line)
          n
 
 ncloopEscaped x==

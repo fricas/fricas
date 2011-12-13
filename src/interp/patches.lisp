@@ -134,23 +134,6 @@
           (setq |$formulaOutputStream|
               (make-synonym-stream '*standard-output*)))))
 
-;; non-interactive restarts...
-(defun restart0 ()
-  (|compressOpen|);; set up the compression tables
-  (|interpOpen|);; open up the interpreter database
-  (|operationOpen|);; all of the operations known to the system
-  (|categoryOpen|);; answer hasCategory question
-  (|browseOpen|)
-  (|makeConstructorsAutoLoad|)
-  (let ((asharprootlib (strconc (|getEnv| "AXIOM") "/aldor/lib/")))
-    (set-file-getter (strconc asharprootlib "runtime"))
-    (set-file-getter (strconc asharprootlib "lang"))
-    (set-file-getter (strconc asharprootlib "attrib"))
-    (set-file-getter (strconc asharprootlib "axlit"))
-    (set-file-getter (strconc asharprootlib "minimach"))
-    (set-file-getter (strconc asharprootlib "axextend")))
-)
-
 (defun whocalled (n) nil) ;; no way to look n frames up the stack
 
 (defun |eval|(x)

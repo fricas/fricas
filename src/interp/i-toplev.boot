@@ -55,11 +55,6 @@ intUnsetQuiet() ==
 
 --% Starting the interpreter from LISP
 
-spadpo() ==
-  -- starts the interpreter but only displays parsed input
-  $PrintOnly: local:= true
-  spad()
-
 interpsysInitialization() ==
   -- The function  start  begins the interpreter process, reading in
   -- the profile and printing start-up messages.
@@ -87,9 +82,27 @@ interpsysInitialization() ==
   SETQ($IOindex,1)
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"history"])
   initHist()
-  if functionp 'addtopath then addtopath CONCAT($SPADROOT,'"bin")
   if $displayStartMsgs then spadStartUpMsgs()
   $superHash := MAKE_-HASHTABLE('UEQUAL)
+
+interpsys_restart() ==
+  $IOindex := 1
+  $InteractiveFrame := makeInitialModemapFrame()
+  $printLoadMsgs := 'off
+  loadExposureGroupData()
+  statisticsInitialization()
+  initHist()
+  initializeInterpreterFrameRing()
+
+  if $displayStartMsgs then spadStartUpMsgs()
+  $currentLine := nil
+  compressOpen() -- set up the compression tables
+  interpOpen() -- open up the interpreter database
+  operationOpen() -- all of the operations known to the system
+  categoryOpen() -- answer hasCategory question
+  browseOpen()
+  makeConstructorsAutoLoad()
+  createInitializers2()
 
 readSpadProfileIfThere() ==
   -- reads SPADPROF INPUT if it exists

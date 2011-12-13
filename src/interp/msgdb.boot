@@ -560,18 +560,6 @@ spadStartUpMsgs() ==
   sayKeyedMsg("S2GL0018D",NIL)
   sayKeyedMsg("S2GL0003B",[$opSysName])
   sayMSG bar
---  sayMSG bar
---  sayMSG '"                                    *"
---  sayMSG '"               *****    **     **  ***     ******    ** *     *"
---  sayMSG '"              *     *     *   *     *     *      *    ** ** ** **"
---  sayMSG '"                    *      * *      *    *        *   **  ***  **"
---  sayMSG '"               ******       *       *   *          *  *    *    *"
---  sayMSG '"              *     *      * *      *    *        *   *    *    *"
---  sayMSG '"              *     *     *   *     *     *      *    *    *    *"
---  sayMSG '"              *     *    *     *    *      *    *     *    *    *"
---  sayMSG '"               ***** * **       ** ***      ****     **   ***  ***"
---  sayMSG '"                                    *"
---  sayMSG '"   Issue )copyright for copyright notices."
 --  sayKeyedMsg("S2GL0018A",NIL)
 --  sayKeyedMsg("S2GL0018B",NIL)
 --  sayKeyedMsg("S2GL0003C",NIL)
@@ -580,13 +568,10 @@ spadStartUpMsgs() ==
 --  if not $printTypeIfTrue then sayKeyedMsg("S2GL0005",NIL)
   --  if not $displaySetValue then sayKeyedMsg("S2GL0007",NIL)
 --  if not $HiFiAccess then sayKeyedMsg("S2GL0008",NIL)
---  sayMSG bar
 --  version()
   sayMSG " "
 
 HELP() == sayKeyedMsg("S2GL0019",NIL)
-
-version() == _*YEARWEEK_*
 
 --% Some Advanced Formatting Functions
 
