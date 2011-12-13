@@ -147,7 +147,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
           ++ to__mod__pa(s, p) reduces coefficients of polynomial
           ++ s modulo prime p and converts the result to vector
         gcd : (PA, PA, Integer) -> PA
-          ++ Polynomial gcd.
+          ++ gcd(v1, v2, p) computes monic gcd of v1 and v2 modulo p.
         gcd : (PrimitiveArray PA, Integer, Integer, Integer) -> PA
           ++ gcd(a, lo, hi, p) computes gcd of elements
           ++ a(lo), a(lo+1), ..., a(hi).
@@ -156,6 +156,14 @@ U32VectorPolynomialOperations() : Export == Implementation where
           ++ a(lo), a(lo+1), ..., a(hi).
         degree : PA -> Integer
           ++ degree(v) is degree of v treated as polynomial
+        extended__gcd : (PA, PA, Integer) -> List(PA)
+          ++ extended__gcd(v1, v2, p) gives [g, c1, c2] such
+          ++ that g is \spad{gcd(v1, v2, p)}, \spad{g = c1*v1 + c2*v2}
+          ++ and degree(c1) < max(degree(v2) - degree(g), 0) and
+          ++ degree(c2) < max(degree(v1) - degree(g), 1)
+        resultant : (PA, PA, Integer) -> Integer
+          ++ resultant(v1, v2, p) computes resultant of v1 and v2
+	  ++ modulo p.
 
     Implementation ==> add
 
@@ -466,6 +474,115 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     for k in j+2..i repeat f := Qmul(f, k, p)
                     r.(j pretend NonNegativeInteger) := Qmul(f, x.i, p)
                 r
+
+        extended__gcd(x : PA, y : PA, p : Integer) : List(PA) ==
+            dr0 := degree(x) pretend SingleInteger
+            dr1 : SingleInteger
+            swapped : Boolean := false
+            t0 : PA
+            if dr0 < 0 then
+                (x, y) := (y, x)
+                dr1 := dr0
+                dr0 := degree(x) pretend SingleInteger
+                swapped := true
+            else
+                dr1 := degree(y) pretend SingleInteger
+            dr1 < 0 =>
+                dr0 < 0 =>
+                    return [new(1, 0)$PA, new(1, 0)$PA, new(1, 1)$PA]
+                r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
+                copy__first(r0, x, dr0 + 1)
+                c := r0(dr0)
+                c := modInverse(c, p)
+                mul__by__scalar(r0, dr0, c, p)
+                t0 := new(1, c)$PA
+                if swapped then
+                    return [r0, new(1, 0)$PA, t0]
+                else
+                    return [r0, t0, new(1, 0)$PA]
+            swapped => error "impossible"
+            dt := (dr0 > 0 => dr0 - 1 ; 0)
+            ds := (dr1 > 0 => dr1 - 1 ; 0)
+            -- invariant: r0 = s0*x + t0*y, r1 = s1*x + t1*y
+            r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
+            t0 := new((dt + 1) pretend NonNegativeInteger, 0)$PA
+            s0 := new((ds + 1) pretend NonNegativeInteger, 0)$PA
+            copy__first(r0, x, dr0 + 1)
+            s0(0) := 1
+            r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
+            t1 := new((dt + 1) pretend NonNegativeInteger, 0)$PA
+            s1 := new((ds + 1) pretend NonNegativeInteger, 0)$PA
+            copy__first(r1, y, dr1 + 1)
+            t1(0) := 1
+            while dr1 > 0 repeat
+                while dr0 >= dr1 repeat
+                    delta := dr0 - dr1
+                    c1 := QSDIFFERENCE(p, r0(dr0))$Lisp
+                    c0 := r1(dr1)
+                    if c0 ~= 1 and delta > 30 then
+                        c0 :=  modInverse(c0, p)
+                        mul__by__scalar(r1, dr1, c0, p)
+                        mul__by__scalar(t1, dt, c0, p)
+                        mul__by__scalar(s1, ds, c0, p)
+                        c0 := 1
+                    r0(dr0) := 0
+                    dr0 := dr0 - 1
+                    vector__combination(r0, c0, r1, c1, dr0, delta, p)
+                    vector__combination(t0, c0, t1, c1, dt, delta, p)
+                    vector__combination(s0, c0, s1, c1, ds, delta, p)
+                    while r0(dr0) = 0 repeat
+                        dr0 := dr0 - 1
+                        if dr0 < 0 then break
+                (r0, r1) := (r1, r0)
+                (dr0, dr1) := (dr1, dr0)
+                (s0, s1) := (s1, s0)
+                (t0, t1) := (t1, t0)
+            dr1 >= 0 =>
+                c := r1(0)
+                c := modInverse(c, p)
+                r1(0) := 1
+                mul__by__scalar(s1, ds, c, p)
+                mul__by__scalar(t1, dt, c, p)
+                return [r1, s1, t1]
+            c := r0(dr0)
+            c := modInverse(c, p)
+            mul__by__scalar(r0, dr0, c, p)
+            mul__by__scalar(s0, ds, c, p)
+            mul__by__scalar(t0, dt, c, p)
+            [r0, s0, t0]
+
+        resultant(x : PA, y : PA, p : Integer) : Integer ==
+            dr0 := degree(x) pretend SingleInteger
+            dr0 < 0 => 0
+            dr1 := degree(y) pretend  SingleInteger
+            dr1 < 0 => 0
+            r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
+            copy__first(r0, x, dr0 + 1)
+            r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
+            copy__first(r1, y, dr1 + 1)
+            res : SingleInteger := 1
+            repeat
+                dr0 < dr1 =>
+                    (r0, r1) := (r1, r0)
+                    (dr0, dr1) := (dr1, dr0)
+                c0 := r1(dr1)
+                dr1 = 0 =>
+                    while 0 < dr0 repeat
+                        res := Qmul(res, c0, p)
+                        dr0 := dr0 - 1
+                    return res
+                delta := dr0 - dr1
+                c1 := QSDIFFERENCE(p, r0(dr0))$Lisp
+                if c0 ~= 1 then
+                    c1 :=  Qmul(c1, modInverse(c0, p), p)
+                r0(dr0) := 0
+                dr0 := dr0 - 1
+                vector__combination(r0, 1, r1, c1, dr0, delta, p)
+                res := Qmul(res, c0, p)
+                while r0(dr0) = 0 repeat
+                    dr0 := dr0 - 1
+                    dr0 < 0 => return 0
+                    res := Qmul(res, c0, p)
 
 @
 \end{document}
