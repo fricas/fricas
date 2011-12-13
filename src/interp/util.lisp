@@ -595,18 +595,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                       (if (fboundp 'si::readline-off)
                           (si::readline-off))
                       (setq |$SpadServer| t)))))
-  (setq |$IOindex| 1)
-  (setq |$InteractiveFrame| (|makeInitialModemapFrame|))
-  (setq |$printLoadMsgs| '|off|)
-  (|loadExposureGroupData|)
-  (|statisticsInitialization|)
-  (|initHist|)
-  (|initializeInterpreterFrameRing|)
-
-  (when |$displayStartMsgs|
-   (|spadStartUpMsgs|))
-  (setq |$currentLine| nil)
-  (restart0)
+  (|interpsys_restart|)
 )
 
 (defun fricas-restart ()
