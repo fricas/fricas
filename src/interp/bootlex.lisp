@@ -256,7 +256,8 @@ Otherwise, get a .. identifier."
                   |has| |with| |add| |case| |in| |by| |pretend| |mod|
                   |exquo| |div| |quo| |else| |rem| |then| |suchthat|
                   |if| |yield| |iterate| |from| |exit| |leave| |return|
-                  |not| |unless| |repeat| |until| |while| |for| |import|)
+                  |not| |unless| |repeat| |until| |while| |for| |import|
+                  |try| |catch| |finally|)
 
 
 
