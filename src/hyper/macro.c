@@ -388,6 +388,12 @@ parse_parameters(void)
         longjmp(jmpbuf, 1);
     }
 
+    if (!parameters) {
+        fprintf(stderr,
+                "Parse_parameter: no parameters\n");
+        longjmp(jmpbuf, 1);
+    }
+
     if ((value = atoi(token.id)) > parameters->number) {
         /** had a bad parameter number **/
         fprintf(stderr,
