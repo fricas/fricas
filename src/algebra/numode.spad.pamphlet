@@ -78,10 +78,10 @@
 ++ found in the book "Numerical Recipies" by W.Press, B.P. Flannery,
 ++ S.A. Teukolsky, W.T. Vetterling published by Cambridge University Press.
 ++ Argument \spad{step} is a record of 3 floating point
-++ numbers \spad{(try , did , next)},
+++ numbers \spad{(to_try , did , next)},
 ++ \spad{eps} is the required accuracy,
 ++ \spad{yscal} is the scaling vector for the difference in solutions.
-++ On input, \spad{step.try} should be the guess at a step
+++ On input, \spad{step.to_try} should be the guess at a step
 ++ size to achieve the accuracy.
 ++ On output, \spad{step.did} contains the step size which achieved the
 ++ accuracy and \spad{step.next} is the next step size to use.
@@ -116,7 +116,7 @@ NumericalOrdinaryDifferentialEquations(): Exports == Implementation where
   NNI   ==> NonNegativeInteger
   VOID  ==> Void
   OFORM ==> OutputForm
-  RK4STEP ==> Record(try:NF, did:NF, next:NF)
+  RK4STEP ==> Record(to_try:NF, did:NF, next:NF)
 
   Exports ==> with
 --header definitions here
@@ -203,11 +203,11 @@ NumericalOrdinaryDifferentialEquations(): Exports == Implementation where
 --compute the derivative
          derivs(dydx,y,x)
 --if overshoot, the set h accordingly
-         if (x + step.try - x2) > 0.0 then
-            step.try := x2 - x
+         if (x + step.to_try - x2) > 0.0 then
+            step.to_try := x2 - x
 --find the correct scaling
          for i in 1..m repeat
-            yscal(i) := abs(y(i)) + abs(step.try * dydx(i)) + tiny
+            yscal(i) := abs(y(i)) + abs(step.to_try * dydx(i)) + tiny
 --take a quality controlled runge-kutta step
          rk4qclocal(y,dydx,nvar,x,step,eps,yscal,derivs
                    ,t1,t2,t3,t4,t5,t6)
@@ -220,7 +220,7 @@ NumericalOrdinaryDifferentialEquations(): Exports == Implementation where
          if (x-x2) >= 0.0 then
             break
 --next stepsize to use
-         step.try := step.next
+         step.to_try := step.next
 --end nstep repeat
       if iter = (nstep+1) then
          output("ode: ERROR ")
@@ -258,7 +258,7 @@ NumericalOrdinaryDifferentialEquations(): Exports == Implementation where
    rk4qclocal(y,dydx,n,x,step,eps,yscal,derivs
              ,t1,t2,t3,ysav,dysav,ytemp) ==
       xsav   : NF := x
-      h      : NF := step.try
+      h      : NF := step.to_try
       fcor   : NF := 1.0/15.0
       safety : NF := 0.9
       grow   : NF := -0.20
