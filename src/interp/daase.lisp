@@ -228,7 +228,7 @@ database.
  spare                      ; superstition
  ) ; database structure
 
-; there are only a small number of domains that have default domains.
+; there are only a small number of categories that have default domains.
 ; rather than keep this slot in every domain we maintain a list here.
 
 (defvar *defaultdomain-list* '(

@@ -1057,6 +1057,7 @@
       (cons '|Enumeration0|
 	            (mapcar #'(lambda (x) (list 'QUOTE x)) args)))
 
+;;; Used for Record arguments
 (defmacro |:| (tag expr) `(LIST '|:| ,(MKQ tag) ,expr))
 
 (DEFUN |leftBindingPowerOf| (X IND &AUX (Y (GETL X IND)))
