@@ -426,7 +426,8 @@ After this function is called the image is clean and can be saved.
 
 (defun interpsys-ecl-image-init (spad)
      (format *standard-output* "Starting interpsys~%")
-     #+:ecl (let ((sym (find-symbol "TRAP-FPE" "EXT")))
+     #+:ecl (let ((sym (or (find-symbol "TRAP-FPE" "EXT")
+                           (find-symbol "TRAP-FPE" "SI"))))
                  (if (and sym (fboundp sym))
                      (funcall sym T T)))
      #+:ecl (let ((sym (find-symbol "*BREAK-ENABLE*" "SI")))
