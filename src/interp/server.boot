@@ -31,6 +31,35 @@
 
 )package "BOOT"
 
+-- Socket types.  This list must be consistent with the one in com.h
+DEFCONSTANT($SessionManager, 1)
+DEFCONSTANT($ViewportServer, 2)
+DEFCONSTANT($MenuServer, 3)
+DEFCONSTANT($SessionIO, 4)
+DEFCONSTANT($MessageServer, 5)
+DEFCONSTANT($InterpWindow, 6)
+DEFCONSTANT($KillSpad, 7)
+DEFCONSTANT($DebugWindow, 8)
+DEFCONSTANT($Forker, 9)
+
+-- Session Manager action requests
+DEFCONSTANT($CreateFrame, 1)
+DEFCONSTANT($SwitchFrames, 2)
+DEFCONSTANT($EndOfOutput, 3)
+DEFCONSTANT($CallInterp, 4)
+DEFCONSTANT($EndSession, 5)
+DEFCONSTANT($LispCommand, 6)
+DEFCONSTANT($SpadCommand, 7)
+DEFCONSTANT($SendXEventToHyperTeX, 8)
+DEFCONSTANT($QuietSpadCommand, 9)
+DEFCONSTANT($CloseClient, 10)
+DEFCONSTANT($QueryClients, 11)
+DEFCONSTANT($QuerySpad, 12)
+DEFCONSTANT($NonSmanSession, 13)
+DEFCONSTANT($KillLispSystem, 14)
+
+DEFCONSTANT($CreateFrameAnswer, 50)
+
 -- Scratchpad-II server
 
 -- Assoc list of interpreter frame names and unique integer identifiers
@@ -40,7 +69,6 @@ SETANDFILEQ($frameNumber, 0)
 SETANDFILEQ($currentFrameNum, 0)
 SETANDFILEQ($EndServerSession, false)
 SETANDFILEQ($NeedToSignalSessionManager, false)
-SETANDFILEQ($sockBufferLength, 9217)
 
 serverReadLine(stream) ==
 -- used in place of read_-line in a scratchpad server system.

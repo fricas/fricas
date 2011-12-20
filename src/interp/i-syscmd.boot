@@ -149,7 +149,11 @@ selectOption(x,l,errorFunction) ==
   errorFunction => FUNCALL(errorFunction,x,u)
   nil
 
-terminateSystemCommand() == TERSYSCOMMAND()
+terminateSystemCommand() ==
+    FRESH_-LINE()
+    TOK := 'END_UNIT
+    spadThrow()
+
 
 commandUserLevelError(x,u) == userLevelErrorMessage("command",x,u)
 
@@ -825,7 +829,6 @@ displayMacros names ==
 getParserMacroNames() ==
   REMDUP [CAR mac for mac in getParserMacros()]
 
---------------------> NEW DEFINITION (override in patches.lisp.pamphlet)
 clearParserMacro(macro) ==
   -- first see if it is one
   not IFCDR assoc(macro, ($pfMacros)) => NIL
@@ -2119,7 +2122,7 @@ quitSpad2Cmd() ==
   x := UPCASE queryUserKeyedMsg("S2IZ0031",NIL)
   MEMQ(STRING2ID_-N(x,1),'(Y YES)) => leaveScratchpad()
   sayKeyedMsg("S2IZ0032",NIL)
-  TERSYSCOMMAND ()
+  terminateSystemCommand()
 
 leaveScratchpad () == QUIT()
 
@@ -2168,7 +2171,13 @@ readSpad2Cmd l ==
     throwKeyedMsg("S2IZ0034",[fs])
   SETQ(_/EDITFILE,ll)
   if upft = '"BOOT" then $InteractiveMode := nil
-  _/READ(ll,quiet)
+  do_read(ll, quiet)
+
+do_read(ll, quiet) ==
+    _/EDITFILE := ll
+    read_or_compile(quiet, false)
+    terminateSystemCommand()
+    spadPrompt()
 
 --% )savesystem
 savesystem l ==

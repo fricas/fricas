@@ -89,9 +89,7 @@
 
 (defvar |$MacroTable|)
 
-(defun |spadCompile| (&optional
-              (spad-input-file nil)
-              (spad-output-file nil)
+(defun |spadCompile| (spad-input-file
              &aux
            (|$comp370_apply| (function print-defun))
            (*fileactq-apply* (function print-defun))
@@ -116,16 +114,9 @@
   (init-boot/spad-reader)
   (unwind-protect
     (progn
-      (setq in-stream (if spad-input-file
-                         (open spad-input-file :direction :input)
-                         *standard-input*))
+      (setf in-stream (open spad-input-file :direction :input))
       (initialize-preparse in-stream)
-      (setq out-stream (if spad-output-file
-                           (open spad-output-file :direction :output)
-                         *standard-output*))
-      (when spad-output-file
-         (format out-stream "~&;;; -*- Mode:Lisp; Package:Boot  -*-~%~%")
-         (print-package "BOOT"))
+      (setf out-stream *standard-output*)
       (setq curoutstream out-stream)
       (setf |$MacroTable| (make-hash-table))
       (loop
@@ -143,8 +134,8 @@
                ;(IOClear in-stream out-stream)
                )))
       (IOClear in-stream out-stream)))
-    (if spad-input-file (shut in-stream))
-    (if spad-output-file (shut out-stream)))
+    (shut in-stream)
+    )
   T))
 
 ;  *** 2. BOOT Line Handling ***

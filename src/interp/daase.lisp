@@ -823,7 +823,7 @@ database.
 
  (|extendLocalLibdb| |$newConlist|)
  (chdir original-directory)
- (tersyscommand))
+ (|terminateSystemCommand|))
 
 ; localdatabase tries to find files in the order of:
 ;  NRLIB/index.KAF

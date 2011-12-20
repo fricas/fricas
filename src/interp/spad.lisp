@@ -76,19 +76,6 @@
 ;         SYSTEM COMMANDS
 ;************************************************************************
 
-(defun TERSYSCOMMAND ()
-  (FRESH-LINE)
-  (SETQ TOK 'END_UNIT)
-  (|spadThrow|))
-
-(defun /READ (L Q)
-  (SETQ /EDITFILE L)
-  (COND
-    (Q  (/RQ))
-    ('T (/RF)) )
-  (|terminateSystemCommand|)
-  (|spadPrompt|))
-
 (defun |fin| ()
   (SETQ *EOF* 'T)
   (THROW 'SPAD_READER NIL))

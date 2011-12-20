@@ -47,6 +47,8 @@ SETANDFILEQ($SystemError,'SystemError)
 SETANDFILEQ($UserError,'UserError)
 SETANDFILEQ($AlgebraError,'AlgebraError)
 
+BUMPCOMPERRORCOUNT() == nil
+
 argumentDataError(argnum, condit, funname) ==
   msg := ['"The test",:bright pred2English condit,'"evaluates to",
     :bright '"false",'%l,'"   for argument",:bright argnum,_

@@ -109,11 +109,11 @@ readSpadProfileIfThere() ==
   file := ['_.fricas, 'input]
   MAKE_-INPUT_-FILENAME file =>
     SETQ(_/EDITFILE,file)
-    _/RQ ()
+    read_or_compile(true, false)
   file := ['_.axiom,'input]
   MAKE_-INPUT_-FILENAME file =>
     SETQ(_/EDITFILE,file)
-    _/RQ ()
+    read_or_compile(true, false)
   NIL
 
 --% Parser Output --> Interpreter

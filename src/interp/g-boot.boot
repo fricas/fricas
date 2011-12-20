@@ -157,9 +157,6 @@ compTran1(x) ==
     u = "QUOTE" => nil
     if u = "MAKEPROP" and $TRACELETFLAG then
         RPLAC(CAR x, "MAKEPROP-SAY")
-    u = "DCQ" =>
-        SAY(["DCQ found in", x])
-        BREAK()
     MEMQ(u, '(SPADLET SETQ LET)) =>
         if NOT($BOOT) or MEMQ($FUNNAME, $traceletFunctions) then
             NCONC(x, $FUNNAME_TAIL)

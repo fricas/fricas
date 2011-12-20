@@ -37,12 +37,7 @@
 (defvar |$standard| 't)
 (defvar |$saturn| nil)
 
-(defun CATCHALL (a &rest b) a) ;; not correct but ok for now
-(defvar |$demoFlag| nil)
-
 (define-function '|construct| #'list) ;; NEEDED , SPAD-COMPILER generated Lisp code
-
-(define-function '|spadHash| #'sxhash)
 
 (defun |mkAutoLoad| (fn cname)
    (function (lambda (&rest args)
@@ -92,8 +87,6 @@
 
 (defun toplevel (&rest foo) (throw '|top_level| '|restart|))
 
-(DEFUN BUMPCOMPERRORCOUNT () ())
-
 (setq |nullstream| '|nullstream|)
 (setq |nonnullstream| '|nonnullstream|)
 (setq *print-escape* nil) ;; so stringimage doesn't escape idents?
@@ -102,20 +95,14 @@
 #+(and :GCL :IEEE-FLOATING-POINT)
  (setq system:*print-nans* T)
 
-(defun /RF (&aux (Echo-Meta 'T))
-  (declare (special Echo-Meta))
-  (/RF-1))
-(defun /RQ (&aux (Echo-Meta nil))
-  (declare (special Echo-Meta))
-  (/RF-1))
-(defun |/RQ,LIB| (&aux (Echo-Meta nil) ($LISPLIB T))
-  (declare (special Echo-Meta $LISPLIB))
-  (/RF-1))
-
-(defun /RF-1 ()
-  (let* ((input-file (vmlisp::make-input-filename /EDITFILE))
+(defun |read_or_compile|(quiet lib)
+  (let* (
+     (Echo-Meta (not quiet))
+     ($LISPLIB lib)
+     (input-file (vmlisp::make-input-filename /EDITFILE))
      (lfile ())
      (type (pathname-type input-file)))
+    (declare (special Echo-Meta $LISPLIB))
     (cond
      ((string= type "boot")
       (boottran::boottoclc input-file
@@ -134,8 +121,6 @@
           (setq |$formulaOutputStream|
               (make-synonym-stream '*standard-output*)))))
 
-(defun whocalled (n) nil) ;; no way to look n frames up the stack
-
 (defun |eval|(x)
     #-:GCL
     (handler-bind ((warning #'muffle-warning)
@@ -145,8 +130,6 @@
     (eval  x)
 )
 
-;;--------------------> NEW DEFINITION (see cattable.boot.pamphlet)
-(defun |compressHashTable| (ht) ht)
 (defun GETZEROVEC (n) (MAKE-ARRAY n :initial-element 0))
 
 (setq |$localVars| ())  ;checked by isType
@@ -158,7 +141,6 @@
 
 ;; following 3 are replacements for g-util.boot
 (define-function '|isLowerCaseLetter| #'LOWER-CASE-P)
-
 
 (defvar *msghash* nil "hash table keyed by msg number")
 
@@ -260,9 +242,6 @@
 ;; (|xdrRead| xfoo 0.0)
 ;; (|xdrRead| xfoo (make-array 10 :element-type 'double-float ))
 ;; (setq *print-array* NIL)
-
-;; clearParserMacro has problems as boot code (package notation)
-;; defined here in Lisp
 
 (setq /MAJOR-VERSION 2)
 (setq echo-meta nil)

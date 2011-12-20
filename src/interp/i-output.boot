@@ -64,6 +64,7 @@ DEFPARAMETER($tallPar, false)
 DEFCONST(MATBORCH, '"*")
 DEFCONST($EmptyString, '"")
 DEFCONST($DoubleQuote, '"_"")
+DEFPARAMETER($demoFlag, false)
 
 makeCharacter n == INTERN(NUM2USTR(n))
 
