@@ -1356,13 +1356,13 @@ compileSpad2Cmd args ==
 compilerDoit(constructor, fun) ==
     $byConstructors : local := []
     $constructorsSeen : local := []
-    fun = ['rf, 'lib]   => _/RQ_,LIB()    -- Ignore "noquiet".
-    fun = ['rf, 'nolib] => _/RF()
-    fun = ['rq, 'lib]   => _/RQ_,LIB()
-    fun = ['rq, 'nolib] => _/RQ()
+    fun = ['rf, 'lib]   => read_or_compile(true, true)    -- Ignore "noquiet".
+    fun = ['rf, 'nolib] => read_or_compile(false, false)
+    fun = ['rq, 'lib]   => read_or_compile(true, true)
+    fun = ['rq, 'nolib] => read_or_compile(true, false)
     fun = ['c,  'lib]   =>
       $byConstructors := [opOf x for x in constructor]
-      _/RQ_,LIB()
+      read_or_compile(true, true)
       for ii in $byConstructors repeat
         null member(ii,$constructorsSeen) =>
           sayBrightly ['">>> Warning ",'%b,ii,'%d,'" was not found"]

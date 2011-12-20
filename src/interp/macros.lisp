@@ -834,25 +834,8 @@
 
 ; 17 ARRAYS
 
-; 17.6 Changing the Dimensions of an Array
-
 (defmacro |replaceString| (result part start)
     `(replace ,result ,part :start1 ,start))
-
-;;; The function below continually adds one element to a vector.
-;;; We use vectors with fill pointers to limit numbers of
-;;; copies made (otherwise this function would use too much time).
-(defun lengthenvec (v n)
-  (if
-    (and (array-has-fill-pointer-p v) (adjustable-array-p v))
-    (if
-      (>= n (array-total-size v))
-        (adjust-array v (* n 2) :fill-pointer n)
-        (progn
-          (setf (fill-pointer v) n)
-          v))
-    (replace (make-array n :fill-pointer t) v)))
-
 
 ; 22 INPUT/OUTPUT
 

@@ -31,6 +31,8 @@
 
 )package "BOOT"
 
+compressHashTable(ht) == ht
+
 hasCat(domainOrCatName,catName) ==
   catName='Type  -- every domain is a Type
    or GETDATABASE([domainOrCatName,:catName],'HASCATEGORY)

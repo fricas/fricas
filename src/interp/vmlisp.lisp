@@ -1196,8 +1196,6 @@
 
 (define-function 'HASHEQ #'sxhash)
 
-(define-function 'HASHID #'sxhash)
-
 ;;; end of moved fragment
 
 ;;; ---------------------------------------------

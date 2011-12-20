@@ -47,6 +47,8 @@
 
 (defun enable-backtrace (&rest arg))
 
+(defun WHOCALLED(n) nil) ;; no way to look n frames up the stack
+
 (defun heapelapsed () 0)
 
 (DEFUN /TRACE-2 (FN OPTIONS)

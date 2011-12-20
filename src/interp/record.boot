@@ -84,7 +84,7 @@ inputFile2RecordFile(pathname,:option) ==
   $currentLine: local := nil
   if isExistingFile opathname then DELETE_-FILE opathname
   $testStream := MAKE_-OUTSTREAM opathname
-  CATCH('SPAD_READER, _/READ(pathname, nil))
+  CATCH('SPAD_READER, do_read(pathname, nil))
   --for trailing system commands
   if not null $currentLine then recordAndPrintTest '(ForSystemCommands)
   SHUT $testStream
@@ -183,7 +183,7 @@ evaluateLines lines ==
     TERPRI file
   SHUT file
   _/EDITFILE: fluid := '"/tmp/temp.input"
-  _/RF()
+  read_or_compile(false, false)
     -- can't use _/EDITFILE since it might be reset
   DELETE_-FILE '"/tmp/temp.input"
 
