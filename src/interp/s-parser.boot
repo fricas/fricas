@@ -184,6 +184,15 @@ parse_Category() ==
                 nil
             MUST match_symbol ")"
             push_lform2("CATEGORY", pop_stack_1(), tail_val)
+    match_symbol "{" =>
+        MUST
+            match_symbol "}" => push_form0("CATEGORY")
+            MUST(parse_Category())
+            tail_val :=
+                repetition(";", FUNCTION parse_Category) => pop_stack_1()
+                nil
+            MUST match_symbol "}"
+            push_lform2("CATEGORY", pop_stack_1(), tail_val)
     G1 := LINE_-NUMBER CURRENT_-LINE
     not(parse_Application()) => nil
     MUST
@@ -436,6 +445,11 @@ parse_Enclosure() ==
                AND(parse_Expr 6, MUST match_symbol ")"), -- (
                AND(match_symbol ")",
                    push_form0("@Tuple")))
+    match_symbol "{" =>
+        MUST OR(  -- {
+               AND(parse_Expr 6, MUST match_symbol "}"),
+               AND(match_symbol "}",
+                   push_form0("@Tuple")))
     nil
 
 parse_IntegerTok() == parse_NUMBER()
@@ -509,12 +523,6 @@ parse_Sequence() ==
     match_symbol "[" =>
         MUST(parse_Sequence1())
         MUST(match_symbol "]")
-)if false
-    match_symbol "{" =>
-        MUST(parse_Sequence1())
-        MUST(match_symbol "}")
-        push_form1("brace", pop_stack_1())
-)endif
     nil
 
 parse_Sequence1() ==
