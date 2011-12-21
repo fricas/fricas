@@ -72,7 +72,8 @@
                        (#1#
                         (SETQ |good|
                                 (EQUAL (ELT |prefix| |i|) (ELT |whole| |j|)))))
-                 (SETQ |i| (+ |i| 1)) (SETQ |j| (+ |j| 1))))
+                 (SETQ |i| (+ |i| 1))
+                 (SETQ |j| (+ |j| 1))))
               (- (LENGTH |prefix|) 1) 0 0)
              (COND (|good| (SUBSTRING |whole| (LENGTH |prefix|) NIL))
                    (#1# |good|))))))))
@@ -205,9 +206,17 @@
               (COND ((NULL |c|) (LIST (CAR |a|) ""))
                     (#1# (LIST (CAR |a|) |c|))))))))))
  
+; shoeFunctionFileInput1(a, fn, fun) ==
+;     shoeInclude bAddLineNumber(shoeFindLines(fn, fun, a), bIgen 0)
+ 
+(DEFUN |shoeFunctionFileInput1| (|a| |fn| |fun|)
+  (PROG ()
+    (RETURN
+     (|shoeInclude|
+      (|bAddLineNumber| (|shoeFindLines| |fn| |fun| |a|) (|bIgen| 0))))))
+ 
 ; shoeFunctionFileInput [fun,fn]==
-;     shoeOpenInputFile (a,fn,
-;      shoeInclude bAddLineNumber( shoeFindLines(fn,fun,a),bIgen 0))
+;     shoeOpenInputFile(fn, FUNCTION shoeFunctionFileInput1, [fn, fun])
  
 (DEFUN |shoeFunctionFileInput| (|bfVar#2|)
   (PROG (|fun| |fn|)
@@ -215,10 +224,8 @@
      (PROGN
       (SETQ |fun| (CAR |bfVar#2|))
       (SETQ |fn| (CADR |bfVar#2|))
-      (|shoeOpenInputFile| |a| |fn|
-                           (|shoeInclude|
-                            (|bAddLineNumber| (|shoeFindLines| |fn| |fun| |a|)
-                                              (|bIgen| 0))))))))
+      (|shoeOpenInputFile| |fn| #'|shoeFunctionFileInput1|
+                           (LIST |fn| |fun|))))))
  
 ; shoeInclude s== bDelay(function shoeInclude1,[s])
  

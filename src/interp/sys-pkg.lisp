@@ -151,7 +151,6 @@
    vmlisp::make-cvec
    vmlisp::make-full-cvec
    vmlisp::make-vec
-   vmlisp::memq
    vmlisp::movevec
    vmlisp::pname
    vmlisp::prettyprin0

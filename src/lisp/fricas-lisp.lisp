@@ -1084,3 +1084,11 @@ with this hack and will try to convince the GCL crowd to fix this.
                              (push v union)))
                       table)
               union))))))
+
+(defmacro MEMQ (a b) `(member ,a ,b :test #'eq))
+
+(in-package "BOOTTRAN")
+(defmacro |doInBoottranPackage| (expr)
+    `(let ((*PACKAGE* (find-package "BOOTTRAN")))
+         ,expr))
+

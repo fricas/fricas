@@ -42,7 +42,7 @@
 (export '(quit chdir |getEnv| |getCLArgs| |load_quietly| get-current-directory
           fricas-probe-file trim-directory-name pad-directory-name
           file-kind makedir fricas-compile-file load-maybe-compiling
-          maybe-compile DEFCONST exit-with-status
+          maybe-compile DEFCONST exit-with-status MEMQ
           |writeablep| |openServer| |sockGetInt|
           |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
           |serverSwitch| |sockSendSignal| |sockGetStringFrom|))
@@ -61,3 +61,8 @@
 #+:openmcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
       (setf *features* (delete :CCL *features*)))
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
+    (or (find-package "BOOTTRAN")
+        (make-package "BOOTTRAN" :use '("FRICAS-LISP"))))
+

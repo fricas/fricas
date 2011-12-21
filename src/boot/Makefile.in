@@ -3,7 +3,6 @@ FRICAS_LOCAL_LISP_object = $(FRICAS_LOCAL_LISP_source:.lisp=.$(LISPOBJEXT))
 
 lisp_flavor=@fricas_lisp_flavor@
 
-FRICAS_LOCAL_LISP = $(builddir)/local-lisp$(EXEEXT)
 BOOTSYS_FOR_TARGET = $(fricas_target_bindir)/bootsys$(EXEEXT)
 
 boot_objects = $(boot_sources:.boot=.$(LISPOBJEXT))
@@ -63,10 +62,8 @@ stage0/stamp_bootsys:
 	$(LN_S) stage0 prev-stage
 	touch $@
 
-$(stage0_boot_objects): $(FRICAS_LOCAL_LISP)
-
 stage0/%.$(LISPOBJEXT): $(srcdir)/compiled/%.clisp
-	$(COMPILE_LISP)  --use=$(FRICAS_LOCAL_LISP) $<
+	$(COMPILE_LISP) --use=$(LISPSYS) $<
 
 stage1/stamp_bootsys: stage0/stamp_bootsys
 	@echo Building stage 1
@@ -81,31 +78,8 @@ stage1/stamp_bootsys: stage0/stamp_bootsys
 	$(LN_S) stage1 prev-stage
 	touch $@
 
-ifeq ($(lisp_flavor),gcl)
-
-$(FRICAS_LOCAL_LISP): $(srcdir)/$(FRICAS_LOCAL_LISP_source)
-	echo '(load "$(srcdir)/$(FRICAS_LOCAL_LISP_source)")' \
-	     '(in-package "FRICAS-LISP")' \
-	     '(save-core "$@")' | $(LISPSYS)
-
-$(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
-            $(OBJECTS) $(FRICAS_LOCAL_LISP)
-	$(fricas_build_helper) --make_program --output=$@ \
-	        --use=$(FRICAS_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
-
-$(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP)
-	$(fricas_build_helper) --make_program --output=$(BASE)$@ \
-	        --use=$(FRICAS_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
-
-else
-
 $(FRICAS_LOCAL_LISP_object): %.$(LISPOBJEXT): $(srcdir)/%.lisp
 	$(COMPILE_LISP) --use=$(LISPSYS) $<
-
-$(FRICAS_LOCAL_LISP): $(FRICAS_LOCAL_LISP_object)
-	$(fricas_build_helper) --make_program --output=$@ \
-                --use=$(LISPSYS) \
-                '$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object))'
 
 $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
             $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
@@ -118,20 +92,17 @@ $(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
 	        --use=$(LISPSYS) \
 		'$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object) $(OBJECTS))'
 
-endif
-
 .PRECIOUS: %.$(LISPOBJEXT)
 .PRECIOUS: %.clisp
 .PRECIOUS: %.boot
 
 $(boot_objects): %.$(LISPOBJEXT): %.clisp
-	$(COMPILE_LISP) --use=$(FRICAS_LOCAL_LISP) $<
+	$(COMPILE_LISP) --use=$(LISPSYS) $<
 
 %.clisp: $(srcdir)/%.boot
 	$(BOOT_TO_LISP)
 
 mostlyclean-local:
-	rm -f $(FRICAS_LOCAL_LISP)
 	rm -f $(BOOTSYS_FOR_TARGET)
 	rm -rf prev-stage
 	rm -rf stage0 stage1 stage2

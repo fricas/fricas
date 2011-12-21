@@ -118,10 +118,12 @@ shoeFnFileName x==
          c:=shoeFileName CADR a
          null c =>  [CAR a,'""]
          [CAR a, c]
+
+shoeFunctionFileInput1(a, fn, fun) ==
+    shoeInclude bAddLineNumber(shoeFindLines(fn, fun, a), bIgen 0)
  
 shoeFunctionFileInput [fun,fn]==
-    shoeOpenInputFile (a,fn,
-     shoeInclude bAddLineNumber( shoeFindLines(fn,fun,a),bIgen 0))
+    shoeOpenInputFile(fn, FUNCTION shoeFunctionFileInput1, [fn, fun])
  
 shoeInclude s== bDelay(function shoeInclude1,[s])
 shoeInclude1 s==
