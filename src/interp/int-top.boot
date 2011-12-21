@@ -129,7 +129,7 @@ ncTopLevel() ==
   ncIntLoop()
 
 ++ If the interpreter is spwan by the session manager, then
-++ each successful connection also creates its own frame.  
+++ each successful connection also creates its own frame.
 ++ In particular, the only time we get to do anything in the `initial'
 ++ frame is when we get the first connection.  In that case, we would
 ++ be asked by the session manager to create a frame.  The client is

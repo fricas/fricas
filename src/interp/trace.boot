@@ -135,7 +135,7 @@ trace1 l ==
   for x in traceList repeat $optionAlist:=
     ADDASSOC(x,$options,$optionAlist)
   optionList:= getTraceOptions $options
-  if (domainList := LASSOC("of", optionList)) then 
+  if (domainList := LASSOC("of", optionList)) then
       LASSOC("ops", optionList) =>
         throwKeyedMsg("S2IT0004", NIL)
       opList:=
@@ -507,7 +507,7 @@ goGetTracer(l, dn, f, tlst, alias, options, modemap) ==
     setSf(oname, nf)
     RPLAC(first slot, nf)
     APPLY(first slot, [:arglist, rest slot])  --SPADCALL it!
- 
+
 
 traceDomainLocalOps(dom,lops,options) ==
  sayMSG ['"  ",'"The )local option has been withdrawn"]

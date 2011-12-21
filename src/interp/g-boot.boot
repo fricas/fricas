@@ -107,7 +107,7 @@ COMP_-2(args) ==
 COMP(lfun) ==
     #lfun ~= 1 => BREAK()
     [COMP_-2 nf for nf in COMP_-1(CAR(lfun))]
-    
+
 compSPADSLAM(name, argl, bodyl) ==
     al := INTERNL(name, '";AL")
     auxfn := INTERNL(name, '";")
@@ -336,7 +336,7 @@ expandREPEAT(l) ==
                 if not(ATOM(final := CAR(op_limit))) then
                     vl := [[(tmp := GENSYM()), final], :vl]
                     final := tmp
-                tests := 
+                tests :=
                   [(INTEGERP(inc) =>
                      [(MINUSP(inc) => "<" ; ">"), var, final];
                         ["IF", ["MINUSP", inc],
@@ -414,7 +414,7 @@ expandCOLLECTV(l) ==
             -- there may not be a limit
             if opt_limit then
                 limit := CAR(opt_limit)
-                cond := 
+                cond :=
                     step = 1 =>
                         start = 1 => limit
                         start = 0 => MKQSADD1(limit)
@@ -429,7 +429,7 @@ expandCOLLECTV(l) ==
     if NULL(counter_var) then
         counter_var := GENSYM()
         iters := [["ISTEP", counter_var, 0, 1], :iters]
-    lv := 
+    lv :=
         NULL(conds) => FAIL()
         NULL(CDR(conds)) => CAR(conds)
         ["MIN", :conds]
@@ -450,4 +450,4 @@ COMP370(fn) ==
             for arg in args]
     nbody := ["DEFUN", fname, args, :body]
     if $comp370_apply then
-        FUNCALL($comp370_apply, fname, nbody) 
+        FUNCALL($comp370_apply, fname, nbody)

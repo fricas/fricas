@@ -1227,7 +1227,7 @@ compCategory(x,m,e) ==
 
 mkExplicitCategoryFunction(sigList, atList) ==
   body:=
-   ["Join", 
+   ["Join",
     ["mkCategory", ['LIST, :REVERSE sigList], ['LIST, :
       REVERSE atList],MKQ domList,nil]] where
         domList() ==
