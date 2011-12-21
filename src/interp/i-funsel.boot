@@ -1101,7 +1101,7 @@ selectMmsGen(op,tar,args1,args2) ==
       for mm in APPEND(havesExact,havesInexact) for i in 1.. repeat
         sayModemapWithNumber(mm,i)
     if havesExact then
-      mmS := matchMms(havesExact, op, tar, args1, args2) 
+      mmS := matchMms(havesExact, op, tar, args1, args2)
       if mmS then
         if $reportBottomUpFlag then
           sayMSG '"   found an exact match!"
