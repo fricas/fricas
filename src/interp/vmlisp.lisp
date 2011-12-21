@@ -146,9 +146,6 @@
 (defmacro maxindex (x)
  `(the fixnum (1- (the fixnum (length ,x)))))
 
-(defmacro memq (a b)
- `(member ,a ,b :test #'eq))
-
 (defmacro minus (x)
  `(- ,x))
 

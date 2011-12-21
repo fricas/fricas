@@ -30,10 +30,6 @@
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-(eval-when (:execute :compile-toplevel :load-toplevel)
-    (or (find-package "BOOTTRAN")
-        (make-package "BOOTTRAN" :use '("FRICAS-LISP"))))
-
 (in-package "BOOTTRAN")
 (export  '(boottocl
           bootclam
@@ -57,7 +53,6 @@
 
 (defun |char| (x) (CHAR (PNAME x) 0))
 
-(defmacro memq (a b) `(member ,a ,b :test #'eq))
 (defun |shoeCOMPILE-FILE| (fn) (compile-file fn ))
 (defun setdifference (x y) (set-difference x y))
 (defun make-cvec (sint) (make-string sint))
@@ -77,22 +72,18 @@
 ;;; as Lisp macros and must therefore be available in each
 ;;; source file that uses them.
 
-(defmacro |shoeOpenInputFile|
-     (stream fn prog)
-    `(with-open-file (,stream ,fn :direction :input
-       :if-does-not-exist nil) ,prog))
+(defun |shoeOpenInputFile|(fn fun args)
+    (with-open-file (stream fn :direction :input
+       :if-does-not-exist nil)
+       (APPLY fun (cons stream args))))
 
-(defmacro |doInBoottranPackage| (expr)
-    `(let ((*PACKAGE* (find-package "BOOTTRAN")))
-         ,expr))
+(defun |shoeOpenInputBoottranFile| (fn fun args)
+     (|doInBoottranPackage| (|shoeOpenInputFile| fn fun args)))
 
-(defmacro |shoeOpenInputBoottranFile| (stream fn prog)
-     `(|doInBoottranPackage| (|shoeOpenInputFile| ,stream ,fn ,prog)))
-
-(defmacro |shoeOpenOutputFile|
-     (stream fn prog)
-    `(with-open-file (,stream ,fn :direction :output
-       :if-exists :supersede) ,prog))
+(defun |shoeOpenOutputFile|(fn fun args)
+    (with-open-file (stream fn :direction :output
+       :if-exists :supersede)
+       (APPLY fun (cons stream args))))
 
 ;;; ------------------------------------------------
 
