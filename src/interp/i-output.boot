@@ -66,6 +66,14 @@ DEFCONST($EmptyString, '"")
 DEFCONST($DoubleQuote, '"_"")
 DEFPARAMETER($demoFlag, false)
 
+DEFVAR($algebraFormat, true) -- produce 2-d algebra output
+DEFVAR($formulaFormat, false) -- if true produce script formula output
+DEFVAR($fortranFormat, false) -- if true produce fortran output
+DEFVAR($htmlFormat, false) -- if true produce HTML output
+DEFVAR($mathmlFormat, false) -- if true produce Math ML output
+DEFVAR($texFormat, false) -- if true produce tex output
+DEFVAR($texmacsFormat, false) -- if true produce Texmacs output
+
 makeCharacter n == INTERN(NUM2USTR(n))
 
 SETANDFILEQ($RTspecialCharacters,[
@@ -237,7 +245,7 @@ outputTran x ==
     c is ['COLLECT,:m,d] and d is ['construct,e] and e is ['COLLECT,:.] =>
       outputTran ['COLLECT,:m,e]
   x is ['LIST,:l] => outputTran ['BRACKET,['AGGLST,:l]]
-  x is ['MAP,:l] => outputMapTran l
+  x is ['SPADMAP, :l] => outputMapTran l
   x is ['brace, :l]    =>
     ['BRACE,  ['AGGLST,:[outputTran y for y in l]]]
   x is ["return", l] => ["return", outputTran l]

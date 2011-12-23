@@ -1207,3 +1207,5 @@
 (DEFUN POSN1 (X L) (position x l :test #'equal))
 
 ; end of moved fragment
+
+(defmacro SPADMAP(&rest args) `'(SPADMAP ,@args))

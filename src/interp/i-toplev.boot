@@ -340,7 +340,7 @@ interpret2(object,m1,posnForm) ==
   x := objVal object
   m := objMode object
   m=$EmptyMode =>
-    x is [op,:.]  and op in '(MAP STREAM) => objNew(x,m1)
+    x is [op, :.]  and op in '(SPADMAP STREAM) => objNew(x, m1)
     m1 = $EmptyMode => objNew(x,m)
     systemErrorHere '"interpret2"
   m1 =>

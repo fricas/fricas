@@ -134,11 +134,6 @@
 
 (setq |$localVars| ())  ;checked by isType
 
-;; following code is to mimic def of MAP in NEWSPAD LISP
-;; i.e. MAP in boot package is a self evaluating form
-(defmacro map (&rest args) `'(map ,@args))
-
-
 ;; following 3 are replacements for g-util.boot
 (define-function '|isLowerCaseLetter| #'LOWER-CASE-P)
 

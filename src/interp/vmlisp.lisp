@@ -184,26 +184,6 @@
 (defmacro qcddr (x)
  `(cdr (the cons (cdr (the cons ,x)))))
 
-(defmacro qcaaar (x)
- `(car (the cons (car (the cons (car (the cons ,x)))))))
-(defmacro qcaadr (x)
- `(car (the cons (car (the cons (cdr (the cons ,x)))))))
-(defmacro qcadar (x)
- `(car (the cons (cdr (the cons (car (the cons ,x)))))))
-(defmacro qcaddr (x)
- `(car (the cons (cdr (the cons (cdr (the cons ,x)))))))
-(defmacro qcdaar (x)
- `(cdr (the cons (car (the cons (car (the cons ,x)))))))
-(defmacro qcdadr (x)
- `(cdr (the cons (car (the cons (cdr (the cons ,x)))))))
-(defmacro qcddar (x)
- `(cdr (the cons (cdr (the cons (car (the cons ,x)))))))
-(defmacro qcdddr (x)
- `(cdr (the cons (cdr (the cons (cdr (the cons ,x)))))))
-
-(defmacro qcddddr (x)
- `(cdr (the cons (cdr (the cons (cdr (the cons (cdr (the cons ,x)))))))))
-
 (defmacro qcsize (x)
  `(the fixnum (length (the simple-string ,x))))
 
@@ -409,18 +389,18 @@
 
 
 (defun QUOTIENT (x y)
-  (cond ((or (floatp x) (floatp y)) (/ x y))
+  (cond ((or (floatp x) (floatp y)) (BREAK))
         (t (truncate x y))))
 
 (defun REMAINDER (x y)
   (if (and (integerp x) (integerp y))
       (rem x y)
-      (- x (* y (QUOTIENT x y)))))
+      (BREAK)))
 
 (defun DIVIDE (x y)
   (if (and (integerp x) (integerp y))
       (multiple-value-list (truncate x y))
-      (list (QUOTIENT x y) (REMAINDER x y))))
+      (BREAK)))
 
 (defun QSQUOTIENT (a b) (the fixnum (truncate (the fixnum a) (the fixnum b))))
 
@@ -1183,10 +1163,6 @@
     (if plist (setf (gethash key table)
                     (delete property plist :test #'equal :key #'car)))))
 
-;17.5 Updating
-
-(define-function 'HCLEAR #'clrhash)
-
 ;17.6 Miscellaneous
 
 (define-function 'HASHTABLEP #'hash-table-p)
@@ -1238,12 +1214,6 @@
 ;;; moved from unlisp.lisp.pamphlet
 (defun |AlistAssocQ| (key l)
   (assoc key l :test #'eq) )
-
-(defun |ListMemberQ?| (ob l)
-  (member ob l :test #'eq) )
-
-(defun |ListMember?| (ob l)
-  (member ob l :test #'equal) )
 
 (defun |AlistRemoveQ| (key l)
    (let ((pr (assoc key l :test #'eq)))

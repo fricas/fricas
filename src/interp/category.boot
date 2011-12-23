@@ -430,7 +430,6 @@ JoinInner(l,$e) ==
     for at in u.2 repeat
       at2:= first at
       if atom at2 then BREAK()
-      MEMQ(QCAR at2,$Attributes) => BREAK()
       null isCategoryForm(at2,$e) => BREAK()
 
       pred:= first rest at

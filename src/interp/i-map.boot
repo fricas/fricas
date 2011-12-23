@@ -74,11 +74,11 @@ mkAuxiliaryName(name) == INTERNL(STRINGIMAGE name,'";AUX")
 
 --% Adding a function definition
 
-isMapExpr x == x is ['MAP,:.]
+isMapExpr x == x is ['SPADMAP, :.]
 
 isMap x ==
   y := get(x,'value,$InteractiveFrame) =>
-    objVal y is ['MAP,:.] => x
+    objVal y is ['SPADMAP, :.] => x
 
 addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
   -- Create a new map, add to an existing one, or define a variable
@@ -197,13 +197,13 @@ augmentMap(op,args,pred,body,oldMap) ==
     newMap  --just delete rule if body is 
   entry:= [pattern,:body]
   resultMap:=
-    newMap is ["MAP",:tail] => ["MAP",:tail,entry]
-    ["MAP",entry]
+    newMap is ["SPADMAP", :tail] => ["SPADMAP", :tail, entry]
+    ["SPADMAP", entry]
   resultMap
 
 deleteMap(op,pattern,map) ==
-  map is ["MAP",:tail] =>
-    newMap:= ['MAP,:[x for x in tail | w]] where w ==
+  map is ["SPADMAP", :tail] =>
+    newMap := ['SPADMAP, :[x for x in tail | w]] where w ==
       x is [=pattern,:replacement] => sayDroppingFunctions(op,[x])
       true
     null rest newMap => nil
@@ -390,7 +390,7 @@ outputFormat(x,m) ==
   objValUnwrap T
 
 displaySingleRule($op,pattern,replacement) ==
-  mathprint ['MAP,[pattern,:replacement]]
+  mathprint ['SPADMAP, [pattern, :replacement]]
 
 displayMap(headingIfTrue,$op,map) ==
   mathprint
@@ -559,7 +559,7 @@ rewriteMap(op,opName,argl) ==
 
 putBodyInEnv(opName, numArgs) ==
   val := get(opName, 'value, $e)
-  val is [.,'MAP, :bod] =>
+  val is [., 'SPADMAP, :bod] =>
     $e := putHist(opName, 'mapBody, combineMapParts
       mapDefsWithCorrectArgCount(numArgs, bod), $e)
   'failed
@@ -773,7 +773,7 @@ mapRecurDepth(opName,opList,body) ==
       0
     op in opList => argc
     op=opName => 1 + argc
-    (obj := get(op,'value,$e)) and objVal obj is ['MAP,:mapDef] =>
+    (obj := get(op, 'value, $e)) and objVal obj is ['SPADMAP, :mapDef] =>
       mapRecurDepth(opName,[op,:opList],getMapBody(op,mapDef))
         + argc
     argc
@@ -876,12 +876,12 @@ nonRecursivePart(opName, funBody) ==
 expandRecursiveBody(alreadyExpanded, body) ==
   -- replaces calls to other maps with their bodies
   atom body =>
-    (obj := get(body,'value,$e)) and objVal obj is ['MAP,:mapDef] and
+    (obj := get(body, 'value, $e)) and objVal obj is ['SPADMAP, :mapDef] and
       ((numMapArgs mapDef) = 0) => getMapBody(body,mapDef)
     body
   body is [op,:argl] =>
     not (op in alreadyExpanded) =>
-      (obj := get(op,'value,$e)) and objVal obj is ['MAP,:mapDef] =>
+      (obj := get(op, 'value, $e)) and objVal obj is ['SPADMAP, :mapDef] =>
         newBody:= getMapBody(op,mapDef)
         for arg in argl for var in $FormalMapVariableList repeat
             newBody := substitute(arg, var, newBody)
@@ -1124,7 +1124,7 @@ getLocalVars(op,body) ==
 --  are "maps".
 --
 --  The structure of maps:
---   (MAP (pattern . rewrite) ...)   where
+--   (SPADMAP (pattern . rewrite) ...)   where
 --     pattern has forms:  arg-pattern
 --                         (Tuple arg-pattern ...)
 --     rewrite has forms:  (WRAPPED . value)      --don't re-evaluate
@@ -1134,8 +1134,8 @@ getLocalVars(op,body) ==
 --
 --  When assigning values to a map, each new value must have a type
 --  which is consistent with those already assigned.  Initially, type
---  of MAP is $EmptyMode.  When the map is first assigned a value, the
---  type of the MAP is RPLACDed to be (Mapping target source ..).
+--  of SPADMAP is $EmptyMode.  When the map is first assigned a value, the
+--  type of the SPADMAP is RPLACDed to be (Mapping target source ..).
 --  When the map is next assigned, the type of both source and target
 --  is upgraded to be consistent with those values already computed.
 --  Of course, if new and old source and target are identical, nothing

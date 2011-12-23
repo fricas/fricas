@@ -845,7 +845,7 @@ displayMacro name ==
     null args => nil
     null rest args => first args
     ['Tuple,:args]
-  mathprint ['MAP,[args,:body]]
+  mathprint ['SPADMAP, [args, :body]]
 
 displayWorkspaceNames() ==
   imacs := getInterpMacroNames()
@@ -1006,7 +1006,7 @@ displayType($op,u,omitVariableNameIfTrue) ==
 displayValue($op,u,omitVariableNameIfTrue) ==
   null u => sayMSG ["   Value of ",fixObjectForPrinting PNAME $op,'":  (none)"]
   expr := objValUnwrap(u)
-  expr is [op,:.] and (op = 'MAP) or objMode(u) = $EmptyMode =>
+  expr is [op, :.] and (op = 'SPADMAP) or objMode(u) = $EmptyMode =>
     displayRule($op,expr)
   label:=
     omitVariableNameIfTrue =>

@@ -138,7 +138,7 @@ worthlessCode x ==
 cons5(p,l) ==
   l and (CAAR l = CAR p) => [p,: rest l]
   LENGTH l < 5 => [p,:l]
-  RPLACD(QCDDDDR l,nil)
+  RPLACD(QCDDR(QCDDR l), nil)
   [p,:l]
 
 --presence of GENSYM in arg-list differentiates mutable-domains
