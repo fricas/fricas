@@ -267,7 +267,7 @@ getArgValue1(a,t) ==
   -- creates a value for a, coercing to t
   t' := getValue(a) =>
     (m := getMode a) and (m is ['Mapping,:ml]) and (m = t) and
-      objValUnwrap(t') is ['MAP,:.] =>
+      objValUnwrap(t') is ['SPADMAP, :.] =>
         getMappingArgValue(a,t,m)
     t' := coerceOrRetract(t',t)
     t' and wrapped2Quote objVal t'

@@ -691,6 +691,7 @@ NRTputInHead bod ==
   bod is ["QUOTE",:.] => bod
   bod is ["CLOSEDFN",:.] => bod
   bod is ["SPADCONST",dom,ind] =>
+    BREAK()
     RPLACA(bod,$elt)
     dom = '_$ => nil
     k:= NRTassocIndex dom =>

@@ -561,7 +561,7 @@ selectLocalMms(op,name,types,tar) ==
   -- partial rewrite, looks now for exact local modemap
   mmS:= getLocalMms(name,types,tar) => mmS
   obj := getValue op
-  obj and (objVal obj is ['MAP,:mapDef]) and
+  obj and (objVal obj is ['SPADMAP, :mapDef]) and
     analyzeMap(op,types,mapDef,tar) and getLocalMms(name,types,tar)
 
 -- next defn may be better, test when more time. RSS 3/11/94
@@ -577,7 +577,7 @@ selectLocalMms(op,name,types,tar) ==
 --  matchingMms => nreverse matchingMms
 --
 --  obj := getValue op
---  obj and (objVal obj is ['MAP,:mapDef]) and
+--  obj and (objVal obj is ['SPADMAP, :mapDef]) and
 --    analyzeMap(op,types,mapDef,tar) and getLocalMms(name,types,tar)
 
 getLocalMms(name,types,tar) ==

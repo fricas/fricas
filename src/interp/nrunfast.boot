@@ -318,7 +318,7 @@ newCompareSig(sig, numvec, index, dollar, domain) ==
   null (target := first sig)
    or lazyMatchArg(target,numvec.k,dollar,domain) =>
      and/[lazyMatchArg(s,numvec.(k := i),dollar,domain)
-              for s in rest sig for i in (index+1)..] => numvec.(QSINC1 k)
+              for s in rest sig for i in (index+1)..] => numvec.(QSADD1 k)
      nil
   nil
 

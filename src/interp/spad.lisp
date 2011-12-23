@@ -41,7 +41,6 @@
 (defvar |$reportInstantiations| nil)
 (defvar |$reportEachInstantiation| nil)
 (defvar |$reportCounts| nil)
-(defvar |$CategoryDefaults| nil)
 (defvar |$compForModeIfTrue| nil "checked in compSymbol")
 (defvar |$functorForm| nil "checked in addModemap0")
 (defvar |$formalArgList| nil "checked in compSymbol")
@@ -57,20 +56,14 @@
 (defvar |$scanIfTrue| nil "if t continue compiling after errors")
 (defvar |$Representation| nil "checked in compNoStacking")
 (defvar |$definition| nil "checked in DomainSubstitutionFunction")
-(defvar |$Attributes| nil "global attribute list used in JoinInner")
 (defvar |$env| nil "checked in isDomainValuedVariable")
 (defvar |$e| nil "checked in isDomainValuedVariable")
 (defvar |$getPutTrace| nil)
-(defvar |$formulaFormat| nil "if true produce script formula output")
-(defvar |$texFormat| nil "if true produce tex output")
-(defvar |$fortranFormat| nil "if true produce fortran output")
-(defvar |$algebraFormat| t "produce 2-d algebra output")
 (defvar |$mapReturnTypes| nil)
 (defvar /TRACENAMES NIL)
 
 (DEFVAR _ '&)
 (defvar ind)
-(defvar JUNKTOKLIST '(FOR IN AS INTO OF TO))
 
 ;************************************************************************
 ;         SYSTEM COMMANDS
@@ -79,14 +72,6 @@
 (defun |fin| ()
   (SETQ *EOF* 'T)
   (THROW 'SPAD_READER NIL))
-
-
-
-(FLAG JUNKTOKLIST 'KEY)
-
-(defmacro |report| (L)
-  (SUBST (SECOND L) 'x
-         '(COND ($reportFlag (sayBrightly x)) ((QUOTE T) NIL))))
 
 (defun |sort| (seq spadfn)
     (sort (copy-seq seq) (function (lambda (x y) (SPADCALL X Y SPADFN)))))

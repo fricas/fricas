@@ -127,11 +127,11 @@ fileNameStrings fn==[PNAME(fn.0),PNAME(fn.1),PNAME(fn.2)]
 
 ifCond(s, info) ==
     word := INTERN DROPTRAILINGBLANKS(incCommandTail(s, info))
-    ListMemberQ?(word, $inclAssertions)
+    member(word, $inclAssertions)
 
 assertCond(s, info) ==
     word := INTERN DROPTRAILINGBLANKS(incCommandTail(s, info))
-    if not ListMemberQ?(word, $inclAssertions) then
+    if not member(word, $inclAssertions) then
         $inclAssertions := [word, :$inclAssertions]
 
 

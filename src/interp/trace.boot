@@ -385,7 +385,7 @@ rassocSub(x,subs) ==
 
 isUncompiledMap(x) ==
   y:= get(x,'value,$InteractiveFrame) =>
-    (CAAR y) = 'MAP and null get(x,'localModemap,$InteractiveFrame)
+    (CAAR y) = 'SPADMAP and null get(x,'localModemap,$InteractiveFrame)
 
 isInterpOnlyMap(map) ==
   x:= get(map,'localModemap,$InteractiveFrame) =>
