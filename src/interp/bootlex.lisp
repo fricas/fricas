@@ -126,7 +126,7 @@
              (let ((LINE (cdar Boot-Line-Stack)))
                (declare (special LINE))
                (|parse_new_expr|)
-               (let ((parseout (pop-stack-1)) )
+               (let ((parseout (|pop_stack_1|)) )
                  (when parseout
                        (let ((*standard-output* out-stream))
                          (|S_process| parseout))
@@ -404,6 +404,8 @@ special character be the atom whose print name is the character itself."
          (return buf))
 )
 
+(defun char-eq (x y) (char= (character x) (character y)))
+
 (defun get-spadnum-token (token)
   "Take a number off the input stream."
   (prog (buf cur-char
@@ -464,13 +466,6 @@ special character be the atom whose print name is the character itself."
 
 ; Parsing of operator tokens depends on tables initialized by BOTTOMUP.LISP
 
-(defun-parse-token SPADSTRING)
-(defun-parse-token KEYWORD)
-(defun-parse-token ARGUMENT-DESIGNATOR)
-(defun-parse-token SPADFLOAT)
-(defun-parse-token IDENTIFIER)
-(defun-parse-token NUMBER)
-
 (defun |parse_AKEYWORD|()
     (AND (MEMBER (CURRENT-SYMBOL) KEYWORDS)
          (|parse_KEYWORD|)))
@@ -501,6 +496,7 @@ special character be the atom whose print name is the character itself."
            (SPAD_LONG_ERROR))
         ((SPAD_SHORT_ERROR)))
   (IOClear)
+  (setf |$reduction_stack| nil)
   (throw 'spad_reader nil))
 
 (defun SPAD_LONG_ERROR ()

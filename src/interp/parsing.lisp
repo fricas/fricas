@@ -149,40 +149,6 @@
   "Tests if line is empty or positioned past the last character."
   (>= (line-current-index line) (line-last-index line)))
 
-; 1B. A Stack (of lines, tokens, or whatever)
-
-; FUNCTIONS DEFINED IN THIS SECTION:
-;
-;       Make-Stack, Stack-Store, Stack-Size, Stack-Top, Stack-Load, Stack-Clear,
-;       Stack-/-Empty, Stack-Push, Stack-Pop
-
-(defstruct Stack                "A stack"
-           (Store nil)          ; contents of the stack
-           (Size 0)             ; number of elements in Store
-           (Top nil)            ; first element of Store
-
-           (Updated nil)        ; whether something has been pushed on the stack
-                                ; since this flag was last set to NIL
-)
-
-(defun stack-clear (stack)
-  (setf (stack-store stack) nil (stack-size stack) 0 (stack-top stack) nil
-        (stack-updated stack) nil))
-
-(defmacro stack-/-empty (stack) `(> (stack-size ,stack) 0))
-
-(defun stack-push (x stack)
-  (push x (stack-store stack))
-  (setf (stack-top stack) x (stack-updated stack) t)
-  (incf (stack-size stack))
-  x)
-
-(defun stack-pop (stack)
-  (let ((y (pop (stack-store stack))))
-    (decf (stack-size stack))
-    (setf (stack-top stack) (if (stack-/-empty stack) (car (stack-store stack))))
-    y))
-
 ; 1C. Token
 
 ; FUNCTIONS DEFINED IN THIS SECTION:
@@ -217,11 +183,6 @@ NonBlank is true if the token is not preceded by a blank."
 ; 1D. A Reduction
 ;
 
-(defstruct (Reduction (:type list))
-"A reduction of a rule is any S-Expression the rule chooses to stack."
-  (Rule nil)            ; Name of rule
-  (Value nil))
-
 ; 2. Recursive descent parsing support routines (semantically related to MetaLanguage)
 ;
 ; This section of the code contains:
@@ -237,50 +198,6 @@ NonBlank is true if the token is not preceded by a blank."
 ;
 ;       Push-Reduction Pop-Reduction
 
-(defparameter Reduce-Stack (make-stack) "Stack of results of reduced productions.")
-
-(defun Push-Reduction (rule redn)
-  (stack-push (make-reduction :rule rule :value redn) Reduce-Stack))
-
-(defun reduce-stack-show ()
-  (let ((store (stack-store reduce-stack))
-        (*print-pretty* t))
-    (if store
-        (progn (format t "~%Reduction stack contains:~%")
-               (mapcar #'(lambda (x) (if (eq (type-of x) 'token)
-                               #+Symbolics (zl:describe-defstruct x)
-                               #-Symbolics (describe x)
-                                         (print x)))
-                       (stack-store reduce-stack)))
-        (format t "~%There is nothing on the reduction stack.~%"))))
-
-(defmacro reduce-stack-clear () `(stack-clear reduce-stack))
-
-(defun Pop-Reduction () (stack-pop Reduce-Stack))
-
-#-:openmcl
-(defmacro pop-stack-1 () '(reduction-value (Pop-Reduction)))
-#+:openmcl
-(defun pop-stack-1 () (reduction-value (Pop-Reduction)))
-
-(defmacro pop-stack-2 ()
-  `(let* ((top (Pop-Reduction)) (next (Pop-Reduction)))
-     (stack-push top Reduce-Stack)
-     (reduction-value next)))
-
-(defmacro pop-stack-3 ()
-  `(let* ((top (Pop-Reduction)) (next (Pop-Reduction)) (nnext (Pop-Reduction)))
-     (stack-push next Reduce-Stack)
-     (stack-push top Reduce-Stack)
-     (reduction-value nnext)))
-
-(defmacro nth-stack (x)
-  `(reduction-value (nth (1- ,x) (stack-store Reduce-Stack))))
-
-(defun |push_reduction|(x y) (PUSH-REDUCTION x y))
-(defun |pop_stack_1|() (POP-STACK-1))
-(defun |pop_stack_2|() (POP-STACK-2))
-(defun |pop_stack_3|() (POP-STACK-3))
 (defun |current_symbol|() (CURRENT-SYMBOL))
 (defun |next_symbol|() (NEXT-SYMBOL))
 (defun |advance_token|() (ADVANCE-TOKEN))
@@ -365,17 +282,6 @@ NonBlank is true if the token is not preceded by a blank."
 ; Advance Token.  The functions Match Current Token and Match Next Token recognize
 ; classes of tokens, by type, or by type and symbol.  The current and next tokens
 ; can be shoved back on the input stream (to the current line) with Unget-Tokens.
-
-(defmacro Defun-Parse-Token (token)
-  `(defun ,(intern (concatenate 'string "parse_" (string token))) ()
-     (let* ((tok (match-current-token ',token))
-            (symbol (if tok (token-symbol tok))))
-       (if tok (progn (Push-Reduction
-                        ',(intern (concatenate 'string (string token)
-                                               "-TOKEN"))
-                        (copy-tree symbol))
-                      (advance-token)
-                      t)))))
 
 (defun token-stack-show ()
   (if (= Valid-Tokens 0) (format t "~%There are no valid tokens.~%")
@@ -554,16 +460,6 @@ is a token separator, which blank is equivalent to."
 (defun IOClear (&optional (in t) (out t))
   (current-line-clear)
   (token-stack-clear)
-  (reduce-stack-clear)
   (if (or $BOOT $SPAD) (next-lines-clear))
   nil)
 
-;; auxiliary functions needed by the parser
-
-(defun char-eq (x y) (char= (character x) (character y)))
-
-(defun |dollarTran| (dom rand)
-       (let ((eltWord (if |$InteractiveMode| '|$elt| '|elt|)))
-         (if (and (not (atom rand)) (cdr rand))
-             (cons (list eltWord dom (car rand)) (cdr rand))
-             (list eltWord dom rand))))

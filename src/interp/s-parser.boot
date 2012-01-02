@@ -115,6 +115,45 @@ init_parser_properties() ==
 
 init_parser_properties()
 
+DEFPARAMETER($reduction_stack, nil)
+
+push_reduction(x, y) ==
+    PUSH(y, $reduction_stack)
+    true
+
+pop_stack_1() == POP($reduction_stack)
+
+pop_stack_2() ==
+    el1 := POP($reduction_stack)
+    el2 := POP($reduction_stack)
+    PUSH(el1, $reduction_stack)
+    el2
+
+pop_stack_3() ==
+    el1 := POP($reduction_stack)
+    el2 := POP($reduction_stack)
+    el3 := POP($reduction_stack)
+    PUSH(el2, $reduction_stack)
+    PUSH(el1, $reduction_stack)
+    el3
+
+top_of_stack() == CAR($reduction_stack)
+
+parse_token(token) ==
+    tok := match_current_token(token, nil)
+    not(tok) => nil
+    symbol := TOKEN_-SYMBOL(tok)
+    push_reduction(token, COPY_-TREE(symbol))
+    advance_token()
+    true
+
+parse_SPADSTRING() == parse_token("SPADSTRING")
+parse_KEYWORD() == parse_token("KEYWORD")
+parse_ARGUMENT_-DESIGNATOR() == parse_token("ARGUMENT-DESIGNATOR")
+parse_SPADFLOAT() == parse_token("SPADFLOAT")
+parse_IDENTIFIER() == parse_token("IDENTIFIER")
+parse_NUMBER() == parse_token("NUMBER")
+
 push_lform0(tag) ==
     push_reduction("dummy", tag)
 
@@ -136,7 +175,14 @@ push_form2(tag, arg1, arg2) ==
 push_form3(tag, arg1, arg2, arg3) ==
     push_reduction("dummy", [tag, arg1, arg2, arg3])
 
-parse_new_expr() == parse_Expr 0
+dollarTran(dom, expr) ==
+    expr is [fun, :args] and not(NULL(args)) =>
+        [["elt", dom, fun], :args]
+    ["elt", dom, expr]
+
+parse_new_expr() ==
+    $reduction_stack := nil
+    parse_Expr 0
 
 parse_InfixWith() ==
     not(parse_With()) => nil
@@ -183,7 +229,9 @@ parse_Category() ==
                 repetition(";", FUNCTION parse_Category) => pop_stack_1()
                 nil
             MUST match_symbol ")"
-            push_lform2("CATEGORY", pop_stack_1(), tail_val)
+            val1 := pop_stack_1()
+            KAR(val1) = "if" and tail_val = nil => push_lform0(val1)
+            push_lform2("CATEGORY", val1, tail_val)
     match_symbol "{" =>
         MUST
             match_symbol "}" => push_form0("CATEGORY")
@@ -201,7 +249,7 @@ parse_Category() ==
                   push_form3("Signature", pop_stack_2(), pop_stack_1(),
                              getSignatureDocumentation(G1))),
               AND(push_form1("Attribute", pop_stack_1()),
-                  ACTION recordAttributeDocumentation(NTH_-STACK 1, G1)))
+                  ACTION recordAttributeDocumentation(top_of_stack(), G1)))
 
 parse_Expression() ==
     parse_Expr
@@ -476,7 +524,7 @@ parse_Sexpr1() ==
     parse_AnyId() =>
         if parse_NBGliphTok "=" then
             MUST parse_Sexpr1()
-            $LABLASOC := [[pop_stack_2(), :NTH_-STACK 1], :$LABLASOC]
+            $LABLASOC := [[pop_stack_2(), :top_of_stack()], :$LABLASOC]
         true
     match_symbol "'" =>
         MUST parse_Sexpr1()
