@@ -59,7 +59,15 @@ shoeTokType x== CAR x
 shoeTokPart x== CADR x
 shoeTokPosn x== CDDR x
 shoeTokConstruct(x,y,z)==[x,y,:z]
- 
+
+DEFVAR($f)
+DEFVAR($floatok)
+DEFVAR($linepos)
+DEFVAR($ln)
+DEFVAR($n)
+DEFVAR($r)
+DEFVAR($sz)
+
 shoeNextLine(s)==
      if bStreamNull s
      then false

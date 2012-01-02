@@ -31,6 +31,15 @@
 
  
 )package "BOOTTRAN"
+
+DEFVAR($bpCount)
+DEFVAR($bpParenCount)
+DEFVAR($inputStream)
+DEFVAR($op)
+DEFVAR($stack)
+DEFVAR($stok)
+DEFVAR($ttok)
+
 bpFirstToken()==
       $stok:=
           if null $inputStream

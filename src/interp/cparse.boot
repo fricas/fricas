@@ -35,6 +35,11 @@
 -- npTerm introduced between npRemainder and npSum
 -- rhs of assignment changed from npStatement to npGives
 
+DEFVAR($inputStream)
+DEFVAR($stack)
+DEFVAR($stok)
+DEFVAR($ttok)
+
 npParse stream ==
     $inputStream:local := stream
     $stack:local       :=nil
