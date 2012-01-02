@@ -1,9 +1,7 @@
 ;;; We put this in separate file to avoid problems with compilation.
-(eval-when (:execute :compile-toplevel :load-toplevel)
-(if (not (find-package "FRICAS-LISP"))
-   (make-package "FRICAS-LISP" 
+(make-package "FRICAS-LISP" 
      :use (list (or (find-package "COMMON-LISP")
-                    "LISP"))))) 
+                    "LISP")))
 #+:sbcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
     (setf SB-IMPL::*DEFAULT-EXTERNAL-FORMAT* :LATIN-1)
@@ -62,7 +60,5 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
       (setf *features* (delete :CCL *features*)))
 
-(eval-when (:execute :compile-toplevel :load-toplevel)
-    (or (find-package "BOOTTRAN")
-        (make-package "BOOTTRAN" :use '("FRICAS-LISP"))))
+(make-package "BOOTTRAN" :use '("FRICAS-LISP"))
 

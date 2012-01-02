@@ -17,6 +17,8 @@
 <<license>>
 --fixed.input
 
+)set break resume
+
 -------------------------------------------------------------------
 -- daly/10/06/92
 -------------------------------------------------------------------
@@ -34,7 +36,7 @@ integrate(%)
 -------------------------------------------------------------------
 )clear all
 2*sin(t)*sqrt(1+cos(t))
---correct answer is 2*sin(t)/sqrt(1+cos(t))
+--correct answer is 4*(1+cos(t))^(3/2)/3
 integrate(%,t)
 
 -------------------------------------------------------------------
@@ -279,7 +281,7 @@ modularGcd([p,q])$InnerModularGcd(INT,UP(x,INT),67108859,myNextPrime)
 -------------------------------------------------------------------
 numeric(%e ^ %pi)
 --gives
-   (61)
+ 
 --  23.1406926327 7926900563 5493084578 4861294789 0532254433 2912200665
 -- 6744971913 2534837468 7163222983 2730035
 
@@ -341,14 +343,14 @@ factor(p)^2
 --   >> System error:
 --   Unexpected end of #<input stream "/home/mcd/work/work">.
 --   You are being returned to the top level of the interpreter.
-fout:TextFile:=open("/tmp/foo","output")
+fout:TextFile:=open("./foo","output")
 write!(fout,"foo")
 close!(fout)
-fin:TextFile:=open("/tmp/foo","input")
+fin:TextFile:=open("./foo","input")
 readLineIfCan!(fin)
 readLineIfCan!(fin)
 close!(fin)
-)lis (system "rm /tmp/foo")
+)system rm ./foo
 
 -------------------------------------------------------------------
 -- bmt/10/08/92 factoring over SAEs
@@ -384,9 +386,9 @@ A: SquareMatrix(m, S2) := diagonalMatrix(l)
 -- did you get an error of deleteAssoc not defined ??
 
 -- load definition of deleteAssoc
-)li (load "/spad/obj/rios/interp/c-util")
+-- )li (load "/spad/obj/rios/interp/c-util")
 
-A: SquareMatrix(m, S2) := diagonalMatrix(l)
+-- A: SquareMatrix(m, S2) := diagonalMatrix(l)
 --now , can print.
 
 -------------------------------------------------------------------
@@ -455,8 +457,9 @@ L n ==
   n = 0 => 1
   n = 1 => x
   (2*n-1)/n * x * L(n-1) - (n-1)/n * L(n-2)
-dx:=operator("D")::OP(POLY FRAC INT)
-evaluate(dx,p+-> differentiate(p,'x))
+R := POLY FRAC INT
+dx := operator("D")::OP(R)
+evaluate(dx, (p+-> differentiate(p,'x))@(R -> R))
 E n == (1-x^2)*dx^2-2*x*dx+n*(n+1)
 L 15
 -- used to fail on this line
@@ -606,11 +609,11 @@ list % -- works
 -- grabm/03/04/93
 -- parser bug? not for system commands
 -------------------------------------------------------------------
-)clear all
+-- )clear all
 -- gives error: Sorry, but no option begins with upd;
-)load /spad/mnt/rios/algebra/EQ )upd; a:=1
+-- )load /spad/mnt/rios/algebra/EQ )upd; a:=1
 -- works
-)load /spad/mnt/rios/algebra/EQ )upd ; a:=1
+-- )load /spad/mnt/rios/algebra/EQ )upd ; a:=1
 
 -------------------------------------------------------------------
 -- bronstein/03/08/93
@@ -638,11 +641,11 @@ solve(eq,I,x)
 --then you will get a file of literal strings with no string delimiters and
 --no escape characters.
 -------------------------------------------------------------------
-)clear all
-ofile: File String := open("/tmp/test","output")
--- this writes "\\\\test" but should write "\\test"
-write!(ofile,"\\test"::String)
-close! ofile
+-- )clear all
+-- ofile: File String := open("/tmp/test","output")
+-- -- this writes "\\\\test" but should write "\\test"
+-- write!(ofile,"\\test"::String)
+-- close! ofile
 
 -------------------------------------------------------------------
 -- themos/04/07/93
@@ -884,6 +887,7 @@ harm(1024) -- takes forever?
 --We've discussed this before with regard to the function 'differentiate'.
 --The technical problem is that "generalized" power series may have
 --"coefficients" involving the series variable:
+)clear all
 series(x^x,x=0)
 --In this case, as currently implemented, 'differentiate' returns incorrect
 --answers:
@@ -1000,7 +1004,7 @@ integrate(1/(x*(log(x)^2+a^2-1)),x)
 -------------------------------------------------------------------
 )clear all
 --Here is efstruc.spad with a change to normalize so that
-normalize(2^(1/2) + 2^(1/4)) now returns  2^(1/4) ^ 2 + 2^(1/4).
+normalize(2^(1/2) + 2^(1/4)) -- now returns  2^(1/4) ^ 2 + 2^(1/4).
 
 
 -------------------------------------------------------------------
@@ -1008,9 +1012,9 @@ normalize(2^(1/2) + 2^(1/4)) now returns  2^(1/4) ^ 2 + 2^(1/4).
 -------------------------------------------------------------------
 )clear all
 -- In axiom, both
-  integrate(%e^x,x=0..1)
+integrate(%e^x,x=0..1)
 --and
-  integrate(log(x),x=1..2)
+integrate(log(x),x=1..2)
 --yield a warning  potentialPole    .
 --If I use "noPole", they give right answers. Isn't this a bug?
 --... Satoshi
@@ -1109,7 +1113,7 @@ normalize(0^a) -- now returns 0  (was crashing before)
 -- bronstei@inf.ethz.ch/6/11/93 (manuel bronstein)
 -------------------------------------------------------------------
 )clear all
--  new export  complexForm(f)  which returns the rectangular complex form of f:
+-- new export  complexForm(f)  which returns the rectangular complex form of f:
 log(a+%i * b)
 complexForm %
 complexIntegrate(1/(x-%i),x)
@@ -1209,7 +1213,7 @@ srimes := complete rrimes
 --> I suspect that this is an example of the same thing - but it looks
 --> worse:
 -->
---> (145) ->X := log(0.7*%i*x)
+X := log(0.7*%i*x)
 -->
 -->    >> Error detected within library code:
 -->    negative root

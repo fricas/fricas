@@ -432,27 +432,12 @@ NonBlank is true if the token is not preceded by a blank."
       Current-Token
       (try-get-token Current-Token)))
 
-(defvar *current-scanner-char*)
-(defvar *next-scanner-char*)
-
-(defun current-scanner-char ()
-  (if (> Valid-Tokens 1)
-      *current-scanner-char*
-      (current-char)))
-
-(defun next-scanner-char ()
-  (if (> Valid-Tokens 1)
-      *next-scanner-char*
-      (next-char)))
-
 (defun next-token ()
   "Returns the token after the current token, or NIL if there is none after."
   (current-token)
   (if (> Valid-Tokens 1)
       Next-Token
       (progn
-          (setf *current-scanner-char* (current-char))
-          (setf *next-scanner-char* (next-char))
           (try-get-token Next-Token))))
 
 (defun advance-token ()
