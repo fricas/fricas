@@ -225,6 +225,14 @@ for i in   [ _
 
 -- Scanner
 
+DEFVAR($f)
+DEFVAR($floatok)
+DEFVAR($linepos)
+DEFVAR($ln)
+DEFVAR($n)
+DEFVAR($r)
+DEFVAR($sz)
+
 --  lineoftoks  bites off a token-dq from a line-stream
 --  returning the token-dq and the rest of the line-stream
 

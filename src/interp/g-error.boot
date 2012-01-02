@@ -47,6 +47,8 @@ SETANDFILEQ($SystemError,'SystemError)
 SETANDFILEQ($UserError,'UserError)
 SETANDFILEQ($AlgebraError,'AlgebraError)
 
+DEFVAR($timedNameStack)
+
 BUMPCOMPERRORCOUNT() == nil
 
 argumentDataError(argnum, condit, funname) ==
