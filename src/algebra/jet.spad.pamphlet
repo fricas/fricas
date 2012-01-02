@@ -1540,7 +1540,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     elimZeroCols!(A : %) : Void ==
         newInds : L C := empty
         for r in entries(A.Rows) repeat
-            newInds := removeDuplicates! merge!(#2 <#1, newInds, r.Indices)
+            newInds := removeDuplicates! merge!((x, y) +-> y < x,
+                                                newInds, r.Indices)
         A.AllInds := newInds
         void
 
@@ -1593,7 +1594,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         A.Rows := construct newRows
         newInds := setDifference(r.Indices, A.AllInds)
         if not empty? newInds then
-            A.AllInds := merge(#2 <#1, A.AllInds, sort!(#2 <#1, newInds))
+            A.AllInds := merge((x, y) +-> y < x, A.AllInds,
+                               sort!((x, y) +-> y < x, newInds))
         void
 
     appendRow!(A : %, r : ROWREC) : Void ==
@@ -1602,7 +1604,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         A.Rows := construct newRows
         newInds := setDifference(r.Indices, A.AllInds)
         if not empty? newInds then
-            A.AllInds := merge(#2 <#1, A.AllInds, sort!(#2 <#1, newInds))
+            A.AllInds := merge((x, y) +-> y < x, A.AllInds,
+                               sort!((x, y) +-> y < x, newInds))
         void
 
     extract(A : %, i1 : I, i2 : I) : % ==
@@ -1611,11 +1614,13 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         newInds : L C := empty
         for i in i1..i2 repeat
             qsetelt!(resRows, i-i1+1, row(A, i))
-            newInds := removeDuplicates! merge(#2 <#1, newInds, row(A, i).Indices)
+            newInds := removeDuplicates! merge((x, y) +-> y < x,
+                                               newInds, row(A, i).Indices)
         [A.NCols, nr, newInds, resRows]
 
     join(A1 : %, A2 : %) : % ==
-        newInds := removeDuplicates! merge(#2 <#1, A1.AllInds, A2.AllInds)
+        newInds := removeDuplicates! merge((x : C, y : C) : Boolean +-> y < x,
+                                           A1.AllInds, A2.AllInds)
         newNRows := A1.NRows + A2.NRows
         newRows : V ROWREC := new(newNRows, emptyRec)
         for l in 1..A1.NRows repeat
@@ -4469,7 +4474,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         for jv in reverse oldInds repeat
             for i in 1..nn repeat
                 newInds := cons(differentiate(jv, i::PI)::JB, newInds)
-        newInds := sort!(#2 <#1, removeDuplicates! newInds)
+        newInds := sort!((x, y) +-> y < x, removeDuplicates! newInds)
         res : SEM := new(newInds, nn*nrows Symb)
         for j in 1..nrows(Symb) repeat
             r := row(Symb, j)
