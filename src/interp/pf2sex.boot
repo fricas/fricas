@@ -331,21 +331,13 @@ pfSequence2Sex0 seqList ==
 
 intNewFloat() == ["Float"]
 
-float2Sex num ==
-  eIndex := SEARCH('"e", num)
-  mantPart :=
-    eIndex => SUBSEQ(num, 0, eIndex)
-    num
-  expPart := (eIndex => READ_-FROM_-STRING SUBSEQ(num, eIndex+1); 0)
-  dotIndex := SEARCH('".", mantPart)
-  intPart :=
-    dotIndex => READ_-FROM_-STRING SUBSEQ(mantPart, 0, dotIndex)
-    READ_-FROM_-STRING mantPart
-  fracPartString :=
-    dotIndex => SUBSEQ(mantPart, dotIndex+1)
-    '"0"
-  bfForm := MAKE_-FLOAT(intPart, READ_-FROM_-STRING fracPartString,
-    LENGTH fracPartString, expPart)
+string_to_int(s) ==  READ_-FROM_-STRING(s)
+
+float2Sex [i_str, fr_str, e_str] ==
+  int_part := string_to_int(i_str)
+  exp_part := string_to_int(e_str)
+  bfForm := MAKE_-FLOAT(int_part, string_to_int(fr_str),
+    LENGTH fr_str, exp_part)
   $useBFasDefault =>
     [., frac, exp] := bfForm
     [["$elt", intNewFloat(), 'float], frac, exp, 10]
