@@ -154,7 +154,6 @@
    (|trace|                          . |interpreter|)
    (|undo|                           . |interpreter|)
    (|what|                           . |interpreter|)
-   (|workfiles|                      . |development|)
  ))
 
 (SETQ |$noParseCommands| '(
@@ -196,7 +195,6 @@
     |undo|
     |what|
     |with|
-    |workfiles|
     ))
 
 ;; following 2 variables are referenced by PREPARSE1

@@ -86,10 +86,3 @@ mergePathnames(a,b) ==
   a
 
 isSystemDirectory dir == EVERY(function CHAR_=,$SPADROOT,dir)
-
-updateSourceFiles p ==
-  p := pathname p
-  p := pathname [pathnameName p, pathnameType p, '"*"]
-  if MAKE_-INPUT_-FILENAME p and pathnameTypeId p in '(BOOT LISP) then
-    $sourceFiles := insert(p, $sourceFiles)
-  p

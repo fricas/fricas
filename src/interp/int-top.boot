@@ -151,7 +151,6 @@ intloop () ==
 
 
 SpadInterpretStream(step_num, source, interactive?) ==
-    $fn              : local := source
     pile?                    := not interactive?
 --  following seems useless and causes ccl package problems
 --    $InteractiveMode : local := false
