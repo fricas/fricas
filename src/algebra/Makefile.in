@@ -1,4 +1,6 @@
 
+ECHO_B=printf '%s\\\n'
+ECHO_T=printf '\t%s\n'
 
 OUT=$(fricas_targetdir)/algebra
 DOC=$(fricas_target_docdir)/src/algebra
@@ -510,14 +512,14 @@ stamp-oboo3: stamp-db
 
 stamp-bootstrap: stamp-oboo3
 	if [ ! -f stamp-bootstrap ] ; then \
-           echo -n 'main-bootstrap: ' > boot.mak ; \
+           $(ECHO_B) 'main-bootstrap: ' > boot.mak ; \
            for A in ${NSPADLIST} ; do \
-               echo -n $${A}.NRLIB/$${A}.lsp "" >> boot.mak ; \
+               $(ECHO_B) $${A}.NRLIB/$${A}.lsp" " >> boot.mak ; \
            done ; \
            echo >> boot.mak ; \
            for A in ${NSPADLIST} ; do \
               echo $${A}.NRLIB/$${A}.lsp: $${A}.spad >> boot.mak ; \
-              echo -e '\techo ")compile" $$< | DAASE=./r7 ${INTERPSYS}' \
+              $(ECHO_T) 'echo ")compile" $$< | DAASE=./r7 ${INTERPSYS}' \
                       >> boot.mak ; \
               echo >> boot.mak ; \
            done ; \
@@ -549,30 +551,30 @@ do-update-spads: stamp-bootstrap spad.mak
 
 
 spad.mak : Makefile
-	echo 'update-spads: \' > spad.mak
+	$(ECHO_B) 'update-spads: ' > spad.mak
 	for A in ${NSPADLIST} ; do \
-	    echo "${OUT}"/$${A}.$(FASLEXT)' \' >> spad.mak ; \
+	    $(ECHO_B) "${OUT}"/$${A}."$(FASLEXT) " >> spad.mak ; \
 	done
 	for A in $(patsubst %, ${OUT}/%-.$(FASLEXT), ${CATDOMS}) ; do \
-	    echo $${A}' \' >> spad.mak ; \
+	    $(ECHO_B) $${A}" " >> spad.mak ; \
 	done
 	for A in ${NSPADLIST} ; do \
 	    echo >> spad.mak ; \
 	    echo '${OUT}/'$${A}'.$(FASLEXT): ' \
 	         $${A}.NRLIB/$${A}.$(FASLEXT) >> spad.mak ; \
-	    echo -e '\tcp $$< $$@ ' >> spad.mak ; \
+	    $(ECHO_T) 'cp $$< $$@ ' >> spad.mak ; \
 	    echo >> spad.mak ; \
 	    echo $${A}.NRLIB/$${A}'.$(FASLEXT) : '$${A}.spad >> spad.mak ; \
-	    echo -e '\t@ echo compiling '$${A}.spad >> spad.mak ; \
-	    echo -e '\trm -rf '$${A}.NRLIB >> spad.mak ; \
-	    echo -e '\techo ")co" '$${A}'.spad | DAASE=./rf ${INTERPSYS}' \
+	    $(ECHO_T) '@ echo compiling '$${A}.spad >> spad.mak ; \
+	    $(ECHO_T) 'rm -rf '$${A}.NRLIB >> spad.mak ; \
+	    $(ECHO_T) 'echo ")co" '$${A}'.spad | DAASE=./rf ${INTERPSYS}' \
 	        >> spad.mak ; \
 	done
 	for A in ${CATDOMS} ; do \
 	    echo >> spad.mak ; \
 	    echo '${OUT}/'$${A}'-.$(FASLEXT): ' \
 	         $${A}-.NRLIB/$${A}-.$(FASLEXT) >> spad.mak ; \
-	    echo -e '\tcp $$< $$@ ' >> spad.mak ; \
+	    $(ECHO_T) 'cp $$< $$@ ' >> spad.mak ; \
 	    echo >> spad.mak ; \
 	    echo $${A}-.NRLIB/$${A}'-.$(FASLEXT) : ' \
 	         $${A}.NRLIB/$${A}.$(FASLEXT) >> spad.mak ; \
