@@ -330,7 +330,7 @@ lfinteger x==
 
 lfrinteger (r,x)==["integer",CONCAT (r,CONCAT('"r",x))]
 --lfrfloat(a,w,v)==["rfloat",CONCAT(a,'"r.",v)]
-lffloat(a,w,e)==["float",CONCAT(a,'".",w,'"e",e)]
+lffloat(a, w, e) == ["float", [a, w, e]]
 lfstring x==if #x=1 then ["char",x] else ["string",x]
 lfcomment x== ["comment", x]
 lfnegcomment x== ["negcomment", x]
