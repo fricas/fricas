@@ -1280,7 +1280,6 @@ compileSpad2Cmd args ==
     not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     SETQ(_/EDITFILE, path)
-    updateSourceFiles path
     sayKeyedMsg("S2IZ0038",[namestring args])
 
     optList :=  '( _

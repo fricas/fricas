@@ -494,7 +494,6 @@ compileAsharpCmd1 args ==
     not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     SETQ(_/EDITFILE, path)
-    updateSourceFiles path
 
     optList :=  '( _
       new _
@@ -1043,7 +1042,6 @@ editSpad2Cmd l ==
   l := pathname ll
   SETQ(_/EDITFILE,l)
   rc := editFile l
-  updateSourceFiles l
   rc
 
 --% )help
@@ -2757,32 +2755,6 @@ satisfiesRegularExpressions(name,patterns) ==
     -- use @ as a wildcard
     STRPOS(pattern,dname,0,'"@") => nf := nil
   null nf
-
---% )workfiles
-
-workfiles l == workfilesSpad2Cmd l
-
-workfilesSpad2Cmd args ==
-  args => throwKeyedMsg("S2IZ0047",NIL)
-  deleteFlag := nil
-  for [type,:.] in $options repeat
-    type1 := selectOptionLC(type,'(boot lisp delete),nil)
-    null type1 => throwKeyedMsg("S2IZ0048",[type])
-    type1 = 'delete => deleteFlag := true
-  for [type,:flist] in $options repeat
-    type1 := selectOptionLC(type,'(boot lisp delete),nil)
-    type1 = 'delete => nil
-    for file in flist repeat
-      fl := pathname [file,type1,'"*"]
-      deleteFlag => SETQ($sourceFiles,delete(fl,$sourceFiles))
-      null (MAKE_-INPUT_-FILENAME fl) => sayKeyedMsg("S2IZ0035",[namestring fl])
-      updateSourceFiles fl
-  SAY " "
-  centerAndHighlight(" User-specified work files ",$LINELENGTH,specialChar 'hbar)
-  SAY " "
-  null $sourceFiles => SAY '"   no files specified"
-  SETQ($sourceFiles,SORTBY('pathnameType,$sourceFiles))
-  for fl in $sourceFiles repeat sayBrightly ["   " ,namestring fl]
 
 --% Synonym File Reader
 
