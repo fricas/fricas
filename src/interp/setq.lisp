@@ -56,7 +56,7 @@
 (SETQ |$testingSystem| NIL)
 (SETQ |$newCompCompare| NIL)
 (SETQ |$permitWhere| NIL)
-(SETQ |$bootStrapMode| NIL) ;; if true skip functor bodies
+(DEFPARAMETER |$bootStrapMode| NIL) ;; if true skip functor bodies
 (SETQ |$bootstrapDomains| NIL)
 (SETQ |$compileDontDefineFunctions| 'T)
 (SETQ |$compileOnlyCertainItems| NIL)
@@ -253,7 +253,7 @@
 
 (SETQ |$updateCatTableIfTrue| NIL)
 
-(SETQ |$ConstructorCache| (MAKE-HASHTABLE 'ID))
+(DEFPARAMETER |$ConstructorCache| (MAKE-HASHTABLE 'ID))
 (SETQ |$instantRecord| (MAKE-HASHTABLE 'ID))
 (SETQ |$immediateDataSymbol| '|--immediateData--|)
 
