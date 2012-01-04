@@ -97,12 +97,11 @@
 
 (defun |read_or_compile|(quiet lib)
   (let* (
-     (Echo-Meta (not quiet))
      ($LISPLIB lib)
      (input-file (vmlisp::make-input-filename /EDITFILE))
      (lfile ())
      (type (pathname-type input-file)))
-    (declare (special Echo-Meta $LISPLIB))
+    (declare (special $LISPLIB))
     (cond
      ((string= type "boot")
       (boottran::boottoclc input-file
@@ -112,7 +111,7 @@
      ((string= type "lisp") (load (compile-file input-file)))
      ((string= type "bbin") (load input-file))
      ((string= type "input")
-      (|ncINTERPFILE| input-file Echo-Meta))
+      (|ncINTERPFILE| input-file (not quiet)))
      (t (|spadCompile| input-file)))))
 
 (setq |$algebraOutputStream|
@@ -239,5 +238,4 @@
 ;; (setq *print-array* NIL)
 
 (setq /MAJOR-VERSION 2)
-(setq echo-meta nil)
 (defun /versioncheck (n) (unless (= n /MAJOR-VERSION) (throw 'versioncheck -1)))
