@@ -81,38 +81,38 @@ shoeKeyWords := [  _
             ['"]", "CBRACK"], _
             ['"'", "QUOTE"], _
             ['"|", "BAR"]                          ]
- 
- 
+
+
 shoeKeyTable:=shoeKeyTableCons()
- 
+
 shoeSPACE       := QENUM('"    ", 0)
- 
+
 shoeESCAPE      := QENUM('"__  ", 0)
 shoeLispESCAPE      := QENUM('"!  ", 0)
- 
+
 shoeSTRING_CHAR := QENUM('"_"  ", 0)
- 
+
 shoePLUSCOMMENT := QENUM('"+   ", 0)
- 
+
 shoeMINUSCOMMENT:= QENUM('"-   ", 0)
- 
+
 shoeDOT         := QENUM('".   ", 0)
- 
+
 shoeEXPONENT1   := QENUM('"E   ", 0)
- 
+
 shoeEXPONENT2   := QENUM('"e   ", 0)
- 
+
 shoeCLOSEPAREN  := QENUM('")   ", 0)
- 
+
 --shoeCLOSEANGLE  := QENUM('">   ", 0)
 shoeTAB := 9
- 
- 
+
+
 shoeDict:=shoeDictCons()
- 
- 
+
+
 shoePun:=shoePunCons()
- 
+
 for i in [ _
              "NOT", _
 --           "COLON", _
@@ -120,7 +120,7 @@ for i in [ _
              "LENGTH"  _
                      ] _
        repeat SETF (GET(i,'SHOEPRE),'T)
- 
+
 for i in [      _
         ["SHOEEQ"    ,"="], _
         ["TIMES"    ,"*"], _
@@ -139,8 +139,8 @@ for i in [      _
         ["SHOENE"  ,"~="] _
                    ]_
        repeat SETF (GET(CAR i,'SHOEINF),CADR i)
- 
- 
+
+
 for i in [ _
       ["+",         0] , _
       ["gcd",       0] , _
@@ -163,7 +163,7 @@ for i in [ _
       ["AND",      'T] , _
       ["OR",      NIL]   _
                          ]
- 
+
        repeat SETF (GET(CAR i,'SHOETHETA),CDR i)
 for i in [ _
   ["and",          "AND"]  , _
@@ -221,7 +221,7 @@ for i in [ _
   ["T",               "T$"]   _
                                 ]
        repeat SETF (GET(CAR i,'SHOERENAME),CDR i)
- 
+
 for i in [ _
   ["setName",               0] , _
   ["setLabel",              1] , _

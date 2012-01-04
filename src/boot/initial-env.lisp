@@ -96,10 +96,10 @@
         (*print-level* nil)
         (*print-length* nil))
     (prin1 x stream)))
- 
+
 (defun reallyprettyprint (x &optional (stream *terminal-io*))
   (shoeprettyprin1 x stream) (terpri stream))
- 
+
 (defun shoeprettyprin0 (x &optional (stream *standard-output*))
   (let ((*print-pretty* nil)
         (*print-array* t)
@@ -107,7 +107,7 @@
         (*print-level* nil)
         (*print-length* nil))
     (prin1 x stream)))
- 
+
 (defun shoenotprettyprint (x &optional (stream *terminal-io*))
   (shoeprettyprin0 x stream) (terpri stream))
 
@@ -117,7 +117,7 @@
 (defun |shoeread-line| (st &optional (eofval nil))
   (read-line st nil eofval))
 
-(defun |shoePLACEP| (item) 
+(defun |shoePLACEP| (item)
   (eq item nil))
 
 (defun substring (cvec start length)
@@ -134,7 +134,7 @@
 
 (defun HKEYS (table)
   (let (keys)
-    (maphash #'(lambda (key val) 
+    (maphash #'(lambda (key val)
                  (declare (ignore val))
                  (push key keys)) table)
     keys))
@@ -143,16 +143,16 @@
 (defun HPUT (table key value)
   (setf (gethash key table) value))
 
- 
+
 (defun stringimage (x)
   (write-to-string x))
- 
+
 (defun QENUM (cvec ind)
   (char-code (char cvec ind)))
- 
+
 (defun charmem (a b)
   (member  a  b :test #'eql))
- 
+
 (defun |shoeCloser| (w)
   (MEMQ (|shoeKeyWord| w) '(CPAREN CBRACK)))
 
@@ -163,7 +163,7 @@
 (defun |shoeStartsId| (x)
   (or (alpha-char-p x)
       (charmem x '(#\$ #\? #\%))))
- 
+
 (defun strpos (what in start dontcare)
   (setq what (string what) in (string in))
   (if dontcare (progn (setq dontcare (character dontcare))
@@ -171,7 +171,7 @@
                               :test #'(lambda (x y) (or (eql x dontcare)
                                                         (eql x y)))))
     (search what in :start2 start)))
- 
+
 
 (defun strposl (table cvec sint item)
   (setq cvec (string cvec))
@@ -180,7 +180,7 @@
     (position table cvec :test-not #'(lambda (x y) (position y x))
               :start sint  )))
 
-(defun VEC-SETELT (vec ind val) 
+(defun VEC-SETELT (vec ind val)
   (setf (elt vec ind) val))
 
 (defun  bvec-make-full (n x)
@@ -188,7 +188,7 @@
 
 (defun make-bvec (n)
   (bvec-make-full n 0))
- 
+
 (defun bvec-setelt (bv i x)
   (setf (sbit bv i) x))
 
@@ -197,9 +197,9 @@
         ((consp l) (list-length l))
         (t 0)))
 
-(defun identp (a) 
+(defun identp (a)
   (and (symbolp a) a))
- 
+
 (defun shoeGREATERP (s1 s2)
   (string> (string s1) (string s2)))
 

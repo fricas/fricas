@@ -29,7 +29,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- 
+
 )package "BOOTTRAN"
 
 DEFVAR($bpCount)
@@ -47,7 +47,7 @@ bpFirstToken()==
           else CAR $inputStream
       $ttok:=shoeTokPart $stok
       true
- 
+
 bpFirstTok()==
       $stok:=
           if null $inputStream
@@ -65,18 +65,18 @@ bpFirstTok()==
                 bpNext()
              true
       true
- 
+
 bpNext() ==
      $inputStream := CDR($inputStream)
      bpFirstTok()
- 
+
 bpNextToken() ==
      $inputStream := CDR($inputStream)
      bpFirstToken()
- 
+
 bpState()== [$inputStream,$stack,$bpParenCount,$bpCount]
 --cons($inputStream,$stack)
- 
+
 bpRestore(x)==
       $inputStream:=CAR x
       bpFirstToken()
@@ -84,27 +84,27 @@ bpRestore(x)==
       $bpParenCount:=CADDR x
       $bpCount:=CADDDR x
       true
- 
+
 bpPush x==$stack:=CONS(x,$stack)
- 
+
 bpPushId()==
    $stack:=CONS(bfReName $ttok,$stack)
- 
+
 bpPop1()==
        a:=CAR $stack
        $stack:=CDR $stack
        a
- 
+
 bpPop2()==
        a:=CADR $stack
        RPLACD($stack,CDDR $stack)
        a
- 
+
 bpPop3()==
        a:=CADDR $stack
        RPLACD(CDR $stack,CDDDR $stack)
        a
- 
+
 bpIndentParenthesized f==
     $bpCount:local:=0
     a:=$stok
@@ -132,7 +132,7 @@ bpIndentParenthesized f==
               true
            else bpParenTrap(a)
     else false
- 
+
 bpParenthesized f==
     a:=$stok
     if bpEqKey "OPAREN"
@@ -145,7 +145,7 @@ bpParenthesized f==
               true
            else bpParenTrap(a)
     else false
- 
+
 bpBracket f==
     a:=$stok
     if bpEqKey "OBRACK"
@@ -156,7 +156,7 @@ bpBracket f==
            then bpPush  []
            else bpBrackTrap(a)
     else false
- 
+
 bpPileBracketed f==
               if bpEqKey "SETTAB"
               then if bpEqKey "BACKTAB"
@@ -166,7 +166,7 @@ bpPileBracketed f==
                         then bpPush bfPile bpPop1()
                         else false
               else false
- 
+
 bpListof(f,str1,g)==
     if APPLY(f,nil)
     then
@@ -180,8 +180,8 @@ bpListof(f,str1,g)==
         else
           true
     else false
- 
- 
+
+
 -- to do ,<backset>
 bpListofFun(f,h,g)==
     if APPLY(f,nil)
@@ -196,7 +196,7 @@ bpListofFun(f,h,g)==
         else
           true
     else false
- 
+
 bpList(f,str1,g)==
     if APPLY(f,nil)
     then
@@ -210,7 +210,7 @@ bpList(f,str1,g)==
         else
           bpPush FUNCALL(g, [bpPop1()])
     else bpPush FUNCALL(g, [])
- 
+
 bpOneOrMore f==
        APPLY(f,nil)=>
          a:=$stack
@@ -219,19 +219,19 @@ bpOneOrMore f==
          $stack:=cons(NREVERSE $stack,a)
          bpPush cons(bpPop2(),bpPop1())
        false
- 
- 
+
+
 -- s must transform the head of the stack
 bpAnyNo s==
      while APPLY(s,nil) repeat 0
      true
- 
- 
+
+
 -- AndOr(k,p,f)= k p
 bpAndOr(keyword,p,f)==
    bpEqKey keyword and (APPLY(p,nil) or bpTrap())
           and bpPush FUNCALL(f, bpPop1())
- 
+
 bpConditional f==
   if  bpEqKey "IF" and (bpWhere() or bpTrap()) and
                    (bpEqKey "BACKSET" or true)
@@ -244,7 +244,7 @@ bpConditional f==
                 then (APPLY(f,nil) or bpTrap()) and bpElse(f)
                 else bpMissing "then"
   else false
- 
+
 bpElse(f)==
            a:=bpState()
            if bpBacksetElse()
@@ -253,36 +253,36 @@ bpElse(f)==
            else
               bpRestore a
               bpPush bfIfThenOnly(bpPop2(),bpPop1())
- 
+
 bpBacksetElse()==
     if bpEqKey "BACKSET"
     then bpEqKey "ELSE"
     else bpEqKey "ELSE"
- 
+
 bpEqPeek s ==  EQCAR($stok,"KEY") and EQ(s,$ttok)
- 
+
 bpEqKey s ==   EQCAR($stok,"KEY") and EQ(s,$ttok) and bpNext()
 bpEqKeyNextTok s ==   EQCAR($stok,"KEY") and EQ(s,$ttok) and
                   bpNextToken()
- 
+
 bpPileTrap()   == bpMissing  "BACKTAB"
 bpBrackTrap(x) == bpMissingMate("]",x)
 bpParenTrap(x) == bpMissingMate(")",x)
- 
+
 bpMissingMate(close,open)==
    bpSpecificErrorAtToken(open, '"possibly missing mate")
    bpMissing close
- 
+
 bpMissing s==
    bpSpecificErrorHere(CONCAT(PNAME s,'" possibly missing"))
    THROW("TRAPPOINT","TRAPPED")
- 
+
 bpCompMissing s == bpEqKey s or bpMissing s
- 
+
 bpTrap()==
    bpGeneralErrorHere()
    THROW("TRAPPOINT","TRAPPED")
- 
+
 bpRecoverTrap()==
   bpFirstToken()
   pos1 := shoeTokPosn $stok
@@ -290,7 +290,7 @@ bpRecoverTrap()==
   pos2 := shoeTokPosn $stok
   bpIgnoredFromTo(pos1, pos2)
   bpPush  [['"pile syntax error"]]
- 
+
 bpListAndRecover(f)==
    a:=$stack
    b:=nil
@@ -327,7 +327,7 @@ bpListAndRecover(f)==
      b:=cons(bpPop1(),b)
    $stack:=a
    bpPush NREVERSE b
- 
+
 bpMoveTo n==
      null $inputStream  => true
      bpEqPeek "BACKTAB" =>
@@ -352,15 +352,15 @@ bpMoveTo n==
                 bpMoveTo n
      bpNextToken()
      bpMoveTo n
- 
+
 bpSpecificErrorAtToken(tok, key) ==
      a:=shoeTokPosn tok
      SoftShoeError(a,key)
- 
+
 bpGeneralErrorHere() ==  bpSpecificErrorHere('"syntax error")
- 
+
 bpSpecificErrorHere(key) ==  bpSpecificErrorAtToken($stok, key)
- 
+
 -- Name: ID
 bpName() ==
         if EQCAR( $stok,"ID")
@@ -383,7 +383,7 @@ bpConstTok() ==
           (bpSexp() or bpTrap()) and
                bpPush bfSymbol bpPop1()
      bpString()
- 
+
 bpCancel()==
     a:=bpState()
     if bpEqKeyNextTok  "SETTAB"
@@ -404,40 +404,40 @@ bpAddTokens n==
          n=0 => nil
          n>0=> cons(shoeTokConstruct("KEY","SETTAB",shoeTokPosn $stok),bpAddTokens(n-1))
          cons(shoeTokConstruct("KEY","BACKTAB",shoeTokPosn $stok),bpAddTokens(n+1))
- 
+
 bpExceptions()==
      bpEqPeek "DOT" or bpEqPeek "QUOTE" or
           bpEqPeek "OPAREN" or bpEqPeek "CPAREN" or
              bpEqPeek "SETTAB" or bpEqPeek "BACKTAB"
                 or bpEqPeek "BACKSET"
- 
- 
+
+
 bpSexpKey()==
       EQCAR( $stok,"KEY") and not bpExceptions()=>
                a:=GET($ttok,"SHOEINF")
                null a=>  bpPush $ttok and bpNext()
                bpPush a and bpNext()
       false
- 
+
 bpAnyId()==
   bpEqKey "MINUS"  and (EQCAR($stok,"INTEGER") or bpTrap()) and
           bpPush MINUS $ttok and bpNext() or
              bpSexpKey() or
                    MEMQ(shoeTokType $stok, '(ID INTEGER STRING FLOAT))
                       and  bpPush $ttok and  bpNext()
- 
+
 bpSexp()==
     bpAnyId() or
         bpEqKey "QUOTE"  and  (bpSexp() or bpTrap())
            and bpPush bfSymbol bpPop1() or
                bpIndentParenthesized function bpSexp1
- 
+
 bpSexp1()== bpFirstTok() and
     bpSexp() and
      (bpEqKey "DOT" and bpSexp() and bpPush CONS (bpPop2(),bpPop1())or
            bpSexp1() and bpPush CONS (bpPop2(),bpPop1())) or
                bpPush nil
- 
+
 bpPrimary1() ==
    bpName() or
     bpDot() or
@@ -447,13 +447,13 @@ bpPrimary1() ==
          bpStruct() or
           bpPDefinition() or
            bpBPileDefinition()
- 
+
 bpPrimary()==  bpFirstTok() and (bpPrimary1() or bpPrefixOperator())
 
 
 -- Dot: DOT ;
 bpDot()== bpEqKey "DOT" and bpPush bfDot ()
- 
+
 -- PrefixOperator: ^ | # ;
 bpPrefixOperator()==
    EQCAR( $stok,"KEY") and
@@ -464,32 +464,32 @@ bpPrefixOperator()==
 bpInfixOperator()==
   EQCAR( $stok,"KEY") and
     GET($ttok,"SHOEINF") and bpPushId() and  bpNext()
- 
+
 bpSelector()==
             bpEqKey "DOT" and (bpPrimary()
                and bpPush(bfElt(bpPop2(),bpPop1()))
                   or bpPush bfSuffixDot bpPop1() )
- 
+
 bpOperator()==   bpPrimary() and bpAnyNo function bpSelector
- 
+
 bpApplication()==
    bpPrimary() and bpAnyNo function bpSelector and
       (bpApplication() and
             bpPush(bfApplication(bpPop2(),bpPop1())) or true)
- 
+
 bpTagged()==
       bpApplication() and
          (bpEqKey "COLON" and (bpApplication() or bpTrap()) and
            bpPush bfTagged(bpPop2(),bpPop1()) or true)
- 
+
 bpExpt()== bpRightAssoc('(POWER),function bpTagged)
- 
+
 bpInfKey s==
  EQCAR( $stok,"KEY") and
    MEMBER($ttok,s) and bpPushId() and bpNext()
- 
+
 bpInfGeneric s== bpInfKey s and  (bpEqKey "BACKSET" or true)
- 
+
 bpRightAssoc(o,p)==
     a:=bpState()
     if APPLY(p,nil)
@@ -500,7 +500,7 @@ bpRightAssoc(o,p)==
     else
        bpRestore a
        false
- 
+
 bpLeftAssoc(operations,parser)==
     if APPLY(parser,nil)
     then
@@ -510,22 +510,22 @@ bpLeftAssoc(operations,parser)==
              bpPush bfInfApplication(bpPop2(),bpPop2(),bpPop1())
        true
     else false
- 
+
 bpString()==
      EQ(shoeTokType $stok,"STRING") and
          bpPush(["QUOTE",INTERN $ttok]) and bpNext()
- 
+
 bpThetaName() ==
         if EQCAR( $stok,"ID") and GET($ttok,"SHOETHETA")
         then
            bpPushId()
            bpNext()
         else false
- 
+
 bpReduceOperator()==
          bpInfixOperator() or bpString()
                 or bpThetaName()
- 
+
 bpReduce()==
      a:=bpState()
      if bpReduceOperator() and bpEqKey "SLASH"
@@ -537,49 +537,49 @@ bpReduce()==
      else
         bpRestore a
         false
- 
+
 bpTimes()==
     bpReduce() or bpLeftAssoc('(TIMES  SLASH),function bpExpt)
- 
+
 bpMinus()==
    bpInfGeneric '(MINUS) and (bpTimes() or bpTrap())
         and bpPush(bfApplication(bpPop2(),bpPop1()))
           or bpTimes()
- 
+
 bpArith()==bpLeftAssoc('(PLUS MINUS),function bpMinus)
- 
+
 bpIs()==
      bpArith() and (bpInfKey '(IS ISNT) and (bpPattern() or bpTrap())
         and bpPush bfISApplication(bpPop2(),bpPop2(),bpPop1())
            or true)
- 
+
 bpBracketConstruct(f)==
         bpBracket f and bpPush bfConstruct bpPop1 ()
- 
+
 bpCompare()==
      bpIs() and (bpInfKey  '(SHOEEQ SHOENE LT LE GT GE IN)
         and (bpIs() or bpTrap())
            and bpPush bfInfApplication(bpPop2(),bpPop2(),bpPop1())
                or true)
- 
+
 bpAnd()== bpLeftAssoc('(AND),function bpCompare)
- 
+
 bpReturn()==
          (bpEqKey "RETURN" and
            (bpAnd() or bpTrap()) and
                 bpPush bfReturnNoName bpPop1()) or bpAnd()
- 
- 
+
+
 bpLogical()== bpLeftAssoc('(OR),function bpReturn)
- 
+
 bpExpression()==
      bpEqKey "COLON" and (bpLogical() and
               bpPush bfApplication ("COLON",bpPop1())
                     or bpTrap()) or bpLogical()
- 
+
 bpStatement()==
   bpConditional function bpWhere or bpLoop()  or bpExpression()
- 
+
 bpLoop()==
      bpIterators() and
       (bpCompMissing "REPEAT" and
@@ -588,38 +588,38 @@ bpLoop()==
                 or
                   bpEqKey "REPEAT" and (bpLogical() or bpTrap()) and
                        bpPush bfLoop1 bpPop1 ()
- 
+
 bpSuchThat()==bpAndOr("BAR",function bpWhere,function bfSuchthat)
- 
+
 bpWhile()==bpAndOr ("WHILE",function bpLogical,function bfWhile)
- 
+
 bpUntil()==bpAndOr ("UNTIL",function bpLogical,function bfUntil)
- 
+
 bpForIn()==
   bpEqKey "FOR" and (bpVariable() or bpTrap()) and (bpCompMissing "IN")
       and ((bpSeg()  or bpTrap()) and
        (bpEqKey "BY" and (bpArith() or bpTrap()) and
         bpPush bfForInBy(bpPop3(),bpPop2(),bpPop1())) or
          bpPush bfForin(bpPop2(),bpPop1()))
- 
+
 bpSeg()==
    bpArith() and
       (bpEqKey "SEG" and
        (bpArith() and bpPush(bfSegment2(bpPop2(),bpPop1()))
          or bpPush(bfSegment1(bpPop1()))) or true)
- 
+
 bpIterator()==
   bpForIn() or bpSuchThat() or bpWhile() or bpUntil()
- 
+
 bpIteratorList()==bpOneOrMore function bpIterator
        and bpPush bfIterators bpPop1 ()
- 
+
 bpCrossBackSet()== bpEqKey "CROSS" and (bpEqKey "BACKSET" or true)
- 
+
 bpIterators()==
          bpListofFun(function bpIteratorList,
               function bpCrossBackSet,function bfCross)
- 
+
 bpAssign()==
             a:=bpState()
             if bpStatement()
@@ -632,20 +632,20 @@ bpAssign()==
             else
                  bpRestore a
                  false
- 
+
 bpAssignment()==
        bpAssignVariable() and
          bpEqKey "BEC" and
            (bpAssign() or bpTrap()) and
               bpPush bfAssign (bpPop2(),bpPop1())
- 
+
 -- should only be allowed in sequences
 bpExit()==
      bpAssign() and (bpEqKey "EXIT" and
          ((bpWhere() or bpTrap()) and
             bpPush bfExit (bpPop2(),bpPop1()))
               or true)
- 
+
 bpDefinition()==
         a:=bpState()
         bpExit() =>
@@ -658,18 +658,18 @@ bpDefinition()==
              true
         bpRestore a
         false
- 
+
 bpStoreName()==
          $op:=car $stack
          $wheredefs:=nil
          $typings:=nil
          true
- 
+
 bpDef() ==  bpName() and bpStoreName()  and
                bpDefTail() and bpPush bfCompDef bpPop1 ()
- 
+
 bpDDef() ==  bpName() and bpDefTail()
- 
+
 bpDefTail()==
       bpEqKey "DEF" and
         (bpWhere() or bpTrap())
@@ -678,8 +678,8 @@ bpDefTail()==
              bpVariable()  and
                bpEqKey "DEF" and (bpWhere() or bpTrap())
                  and bpPush bfDefinition2(bpPop3(),bpPop2(),bpPop1())
- 
- 
+
+
 bpMDefTail()==
  --   bpEqKey "MDEF" and
  --   (bpWhere() or bpTrap())
@@ -688,14 +688,14 @@ bpMDefTail()==
            (bpVariable() or bpTrap()) and
              bpEqKey "MDEF" and (bpWhere() or bpTrap())
                  and bpPush bfMDefinition2(bpPop3(),bpPop2(),bpPop1())
- 
+
 bpMdef()== bpName() and bpStoreName() and bpMDefTail()
- 
+
 bpWhere()==
     bpDefinition() and
        (bpEqKey "WHERE" and (bpDefinitionItem() or bpTrap())
            and bpPush bfWhere(bpPop1(),bpPop1()) or true)
- 
+
 bpDefinitionItem()==
           a:=bpState()
           if bpDDef()
@@ -711,71 +711,71 @@ bpDefinitionItem()==
                else
                    bpRestore a
                    bpWhere()
- 
+
 bpDefinitionPileItems()==
     bpListAndRecover function bpDefinitionItem
            and bpPush bfDefSequence bpPop1()
- 
+
 bpBDefinitionPileItems()== bpPileBracketed function bpDefinitionPileItems
- 
+
 bpSemiColonDefinition()==bpSemiListing
     (function bpDefinitionItem,function bfDefSequence)
- 
+
 bpPDefinitionItems()==bpParenthesized function bpSemiColonDefinition
- 
+
 bpComma()== bpTuple function bpWhere
- 
+
 bpTuple(p)==bpListofFun(p,function bpCommaBackSet,function bfTuple)
- 
+
 bpCommaBackSet()== bpEqKey "COMMA" and (bpEqKey "BACKSET" or true)
- 
+
 bpSemiColon()==bpSemiListing (function bpComma,function bfSequence)
- 
+
 bpSemiListing(p,f)==bpListofFun(p,function bpSemiBackSet,f)
- 
+
 bpSemiBackSet()== bpEqKey "SEMICOLON" and (bpEqKey "BACKSET" or true)
- 
+
 bpPDefinition()==  bpIndentParenthesized function bpSemiColon
- 
+
 bpPileItems()==
     bpListAndRecover function bpSemiColon and bpPush bfSequence bpPop1()
- 
+
 bpBPileDefinition()==  bpPileBracketed function bpPileItems
- 
+
 bpIteratorTail()==
      (bpEqKey "REPEAT" or true) and bpIterators()
- 
+
 --bpExpression()==  bpLogical()
- 
+
 bpConstruct()==bpBracket function bpConstruction
- 
+
 bpConstruction()==
      bpComma() and
         (bpIteratorTail() and
              bpPush bfCollect (bpPop2(),bpPop1()) or
                 bpPush bfTupleConstruct bpPop1())
- 
+
 bpDConstruct()==bpBracket function bpDConstruction
- 
+
 bpDConstruction()==
      bpComma() and
         (bpIteratorTail() and
              bpPush bfDCollect (bpPop2(),bpPop1()) or
                 bpPush bfDTuple bpPop1())
- 
- 
- 
+
+
+
 --PATTERN
- 
+
 --bpNameOrDot() == bpName() or bpDot() or bpEqual()
- 
+
 bpPattern()== bpBracketConstruct function bpPatternL
                 or bpName() or bpConstTok()
- 
+
 bpEqual()==
    bpEqKey "SHOEEQ" and (bpApplication() or bpConstTok() or
                 bpTrap()) and bpPush bfEqual bpPop1()
- 
+
 bpRegularPatternItem() ==
    bpEqual() or
      bpConstTok() or bpDot() or
@@ -783,21 +783,21 @@ bpRegularPatternItem() ==
          ((bpEqKey "BEC" and (bpPattern() or bpTrap())
               and bpPush bfAssign(bpPop2(),bpPop1())) or true)
                     or bpBracketConstruct function bpPatternL
- 
+
 bpRegularPatternItemL()==
       bpRegularPatternItem() and bpPush [bpPop1()]
- 
+
 bpRegularList()==
        bpListof(function bpRegularPatternItemL,"COMMA",function bfAppend)
- 
+
 bpPatternColon()==
      bpEqKey "COLON" and (bpRegularPatternItem() or bpTrap())
               and bpPush [bfColon bpPop1()]
- 
- 
+
+
 -- only one colon
 bpPatternL() == bpPatternList() and bpPush bfTuple bpPop1()
- 
+
 bpPatternList()==
      if bpRegularPatternItemL()
      then
@@ -808,12 +808,12 @@ bpPatternList()==
                   bpPush append(bpPop2(),bpPop1())
         true
      else bpPatternTail()
- 
+
 bpPatternTail()==
      bpPatternColon() and
          (bpEqKey "COMMA" and (bpRegularList() or bpTrap())
               and bpPush append (bpPop2(),bpPop1()) or true)
- 
+
 -- BOUND VARIABLE
 bpRegularBVItem() ==
   bpBVString() or
@@ -824,18 +824,18 @@ bpRegularBVItem() ==
                (bpEqKey "IS" and (bpPattern() or bpTrap())
                   and bpPush bfAssign(bpPop2(),bpPop1())) or true))
                     or bpBracketConstruct function bpPatternL
- 
+
 bpBVString()==
      EQ(shoeTokType $stok,"STRING") and
          bpPush(["BVQUOTE",INTERN $ttok]) and bpNext()
- 
+
 bpRegularBVItemL() ==
       bpRegularBVItem() and bpPush [bpPop1()]
- 
+
 bpColonName()==
      bpEqKey "COLON" and (bpName() or bpBVString() or bpTrap())
- 
- 
+
+
 -- at most one colon at end
 bpBoundVariablelist()==
      if bpRegularBVItemL()
@@ -847,16 +847,16 @@ bpBoundVariablelist()==
                    bpPush append(bpPop2(),bpPop1())
         true
      else bpColonName() and bpPush bfColonAppend(nil,bpPop1())
- 
+
 bpVariable()==
     bpParenthesized function bpBoundVariablelist
        and bpPush bfTupleIf bpPop1()
          or bpBracketConstruct function bpPatternL
                 or bpName() or bpConstTok()
- 
+
 bpAssignVariable()==
       bpBracketConstruct function bpPatternL or bpAssignLHS()
- 
+
 bpAssignLHS()==
    bpName() and (bpEqKey "COLON" and (bpApplication() or bpTrap())
      and bpPush bfLocal(bpPop2(),bpPop1())
@@ -876,33 +876,33 @@ bpStruct()==
       (bpName() or bpTrap()) and
         (bpEqKey "DEF" or bpTrap()) and
            bpTypeList() and bpPush bfStruct(bpPop2(),bpPop1())
- 
+
 bpTypeList() == bpPileBracketed function bpTypeItemList
        or bpTerm() and bpPush [bpPop1()]
- 
+
 bpTypeItemList() ==  bpListAndRecover function bpTerm
- 
+
 bpTerm() ==
           (bpName() or bpTrap()) and
             ((bpParenthesized function bpIdList and
               bpPush bfNameArgs (bpPop2(),bpPop1()))
                 or bpName() and bpPush bfNameArgs(bpPop2(),bpPop1()))
                  or bpPush(bfNameOnly bpPop1())
- 
+
 bpIdList()== bpTuple function bpName
- 
+
 bpCase()==
       bpEqKey "CASE" and
         (bpWhere() or bpTrap()) and
            (bpEqKey "OF" or bpMissing "OF") and
                  bpPiledCaseItems()
- 
+
 bpPiledCaseItems()==
    bpPileBracketed function bpCaseItemList and
        bpPush bfCase(bpPop2(),bpPop1())
 bpCaseItemList()==
    bpListAndRecover function bpCaseItem
- 
+
 bpCaseItem()==
     (bpTerm() or bpTrap()) and
        (bpEqKey "EXIT" or bpTrap()) and
