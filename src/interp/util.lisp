@@ -571,10 +571,8 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                 (progn
                     (setf *fricas-load-libspad* nil)
                     (format t "foreign routines found~%")
-                    #+:sbcl
-                    (sb-alien::load-shared-object spad-lib)
-                    #+:openmcl
-                    (ccl::open-shared-library spad-lib)
+                    #+(or :sbcl :openmcl :lispworks)
+                    (|quiet_load_alien| spad-lib)
                     #+(or :sbcl :openmcl)
                     (fricas-lisp::init-gmp 
                         (concatenate 'string ax-dir "/lib/gmp_wrap.so"))
@@ -582,8 +580,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
                     (progn
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
                         (FRICAS-LISP::clisp-init-foreign-calls))
-                    #+:lispworks
-                    (fli:register-module spad-lib))
+                )
                 (setf $openServerIfTrue nil))))
     #+(or :GCL (and :clisp :ffi) :sbcl :cmu :openmcl :ecl :lispworks)
     (if $openServerIfTrue
