@@ -66,11 +66,10 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
 (defparameter $preparse-last-line ()            "Most recently read line.")
 (defparameter $preparseReportIfTrue NIL         "Should we print listings?")
 (defparameter $LineList nil                     "Stack of preparsed lines.")
-(defparameter $EchoLineStack nil                "Stack of lines to list.")
 (defparameter $IOIndex 0                        "Number of latest terminal input line.")
 
 (defun Initialize-Preparse (strm)
-  (setq $INDEX 0 $LineList nil $EchoLineStack nil)
+  (setq $INDEX 0 $LineList nil)
   (setq $preparse-last-line (get-a-line strm)))
 
 (defun PREPARSE (Strm &aux (stack ()))
@@ -96,21 +95,19 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
 	    (setf ,(cdr x) (cdr ,sym)))))
 
 (defun PREPARSE1 (LineList)
- (PROG (($LINELIST LineList) $EchoLineStack NUM A I L PSLOC
+ (PROG (($LINELIST LineList) NUM A I L PSLOC
         INSTRING PCOUNT COMSYM STRSYM OPARSYM CPARSYM N NCOMSYM
         (SLOC -1) (CONTINUE NIL)  (PARENLEV 0) (NCOMBLOCK ())
         (LINES ()) (LOCS ()) (NUMS ()) functor  )
- READLOOP (DCQPAIR (NUM . A) (preparseReadLine LineList))
+ READLOOP (DCQPAIR (NUM . A) (preparseReadLine))
          (cond ((atEndOfUnit A)
-                (PREPARSE-ECHO LineList)
                 (COND ((NULL LINES) (RETURN NIL))
                       (NCOMBLOCK
-                       (FINCOMBLOCK NIL NUMS LOCS NCOMBLOCK NIL)))
+                       (FINCOMBLOCK NIL NUMS LOCS NCOMBLOCK)))
                 (RETURN (PAIR (NREVERSE NUMS)
                               (PARSEPILES (NREVERSE LOCS) (NREVERSE LINES))))))
          (cond ((and (NULL LINES) (> (LENGTH A) 0) (EQ (CHAR A 0) #\) ))
                 ; this is a command line, don't parse it
-                (PREPARSE-ECHO LineList)
                 (setq $preparse-last-line nil) ;don't reread this line
                 (SETQ LINE a)
                 (CATCH 'SPAD_READER (|doSystemCommand| (subseq LINE 1)))
@@ -135,7 +132,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
                 (COND
                   ((= SLOC N)
                    (COND ((AND NCOMBLOCK (NOT (= N (CAR NCOMBLOCK))))
-                          (FINCOMBLOCK NUM NUMS LOCS NCOMBLOCK linelist)
+                          (FINCOMBLOCK NUM NUMS LOCS NCOMBLOCK)
                           (SETQ NCOMBLOCK NIL)))
                    (SETQ NCOMBLOCK (CONS N (CONS A (IFCDR NCOMBLOCK))))
                    (SETQ A ""))
@@ -143,7 +140,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
                                   (SUBSTRING A N ())) $LINELIST)
                       (SETQ $INDEX (SUB1 $INDEX))
                       (SETQ A (SUBSEQ A 0 N))))
-         (GO NOCOMS))
+                (GO NOCOMS))
                ((= N OPARSYM) (setq PCOUNT (1+ PCOUNT)))
                ((= N CPARSYM) (setq PCOUNT (1- PCOUNT))))
          (setq I (1+ N))
@@ -160,22 +157,19 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
                       (not (member (setq functor (intern
                                     (substring a 0 (STRPOSL ": (=" A 0 NIL))))
                                    |$byConstructors|)))
-                 (setq $skipme 't)
+               (setq $skipme 't)
                (progn (push functor |$constructorsSeen|) (setq $skipme nil))))
          (when (and LINES (EQL SLOC 0))
              (IF (AND NCOMBLOCK (NOT (ZEROP (CAR NCOMBLOCK))))
-               (FINCOMBLOCK NUM NUMS LOCS NCOMBLOCK linelist))
-             (IF (NOT (IS-CONSOLE in-stream))
-                 (setq $preparse-last-line
-                       (nreverse $echolinestack)))
+               (FINCOMBLOCK NUM NUMS LOCS NCOMBLOCK))
              (RETURN (PAIR (NREVERSE NUMS)
                         (PARSEPILES (NREVERSE LOCS) (NREVERSE LINES)))))
          (cond ((> PARENLEV 0) (PUSH NIL LOCS) (setq SLOC PSLOC) (GO REREAD)))
          (COND (NCOMBLOCK
-                (FINCOMBLOCK NUM NUMS LOCS NCOMBLOCK linelist)
+                (FINCOMBLOCK NUM NUMS LOCS NCOMBLOCK)
                 (setq NCOMBLOCK ())))
          (PUSH SLOC LOCS)
- REREAD  (PREPARSE-ECHO LineList)
+ REREAD
          (PUSH A LINES)
          (PUSH NUM NUMS)
          (setq PARENLEV (+ PARENLEV PCOUNT))
@@ -190,15 +184,11 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
 ;; OLDNUMS is the list of line numbers of previous lines
 ;; OLDLOCS is the list of previous indentation locations
 ;; NCBLOCK is the current comment block
-(DEFUN FINCOMBLOCK (NUM OLDNUMS OLDLOCS NCBLOCK linelist)
+(DEFUN FINCOMBLOCK (NUM OLDNUMS OLDLOCS NCBLOCK)
   (PUSH
     (COND ((EQL (CAR NCBLOCK) 0) (CONS (1- NUM) (REVERSE (CDR NCBLOCK))))
               ;; comment for constructor itself paired with 1st line -1
           ('T
-           (COND ($EchoLineStack
-                  (setq NUM (POP $EchoLineStack))
-                  (PREPARSE-ECHO linelist)
-                  (SETQ $EchoLineStack (LIST NUM))))
            (cons
             ;; scan backwards for line to left of current
             (DO ((onums oldnums (cdr onums))
@@ -224,41 +214,41 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
    (let ((ind (mismatch PATTERN LINE)))
      (OR (NULL IND) (EQL IND (SIZE PATTERN)))))
 
-(DEFUN SKIP-IFBLOCK (X)
+(DEFUN SKIP-IFBLOCK ()
    (PROG (LINE IND)
-     (DCQPAIR (IND . LINE) (preparseReadLine1 X))
+     (DCQPAIR (IND . LINE) (preparseReadLine1))
       (IF (NOT (STRINGP LINE))  (RETURN (CONS IND LINE)))
-      (IF (ZEROP (SIZE LINE)) (RETURN (SKIP-IFBLOCK X)))
+      (IF (ZEROP (SIZE LINE)) (RETURN (SKIP-IFBLOCK)))
       (COND ((CHAR= (ELT LINE 0) #\) )
           (COND
             ((INITIAL-SUBSTRING ")if" LINE)
                 (COND ((EVAL (|string2BootTree| (STOREBLANKS LINE 3)))
-                       (RETURN (preparseReadLine X)))
-                      ('T (RETURN (SKIP-IFBLOCK X)))))
+                       (RETURN (preparseReadLine)))
+                      ('T (RETURN (SKIP-IFBLOCK)))))
             ((INITIAL-SUBSTRING ")elseif" LINE)
                 (COND ((EVAL (|string2BootTree| (STOREBLANKS LINE 7)))
-                       (RETURN (preparseReadLine X)))
-                      ('T (RETURN (SKIP-IFBLOCK X)))))
+                       (RETURN (preparseReadLine)))
+                      ('T (RETURN (SKIP-IFBLOCK)))))
             ((INITIAL-SUBSTRING ")else" LINE)
-             (RETURN (preparseReadLine X)))
+             (RETURN (preparseReadLine)))
             ((INITIAL-SUBSTRING ")endif" LINE)
-             (RETURN (preparseReadLine X)))
+             (RETURN (preparseReadLine)))
             ((INITIAL-SUBSTRING ")fin" LINE)
              (RETURN (CONS IND NIL))))))
-      (RETURN (SKIP-IFBLOCK X)) ) )
+      (RETURN (SKIP-IFBLOCK)) ) )
 
-(DEFUN SKIP-TO-ENDIF (X)
+(DEFUN SKIP-TO-ENDIF ()
    (PROG (LINE IND)
-     (DCQPAIR (IND . LINE) (preparseReadLine1 X))
+     (DCQPAIR (IND . LINE) (preparseReadLine1))
       (COND ((NOT (STRINGP LINE)) (RETURN (CONS IND LINE)))
             ((INITIAL-SUBSTRING LINE ")endif")
-             (RETURN (preparseReadLine X)))
+             (RETURN (preparseReadLine)))
             ((INITIAL-SUBSTRING LINE ")fin") (RETURN (CONS IND NIL)))
-            ('T (RETURN (SKIP-TO-ENDIF X))))))
+            ('T (RETURN (SKIP-TO-ENDIF))))))
 
-(DEFUN preparseReadLine (X)
+(DEFUN preparseReadLine ()
     (PROG (LINE IND)
-      (DCQPAIR (IND . LINE) (preparseReadLine1 X))
+      (DCQPAIR (IND . LINE) (preparseReadLine1))
       (COND ((NOT (STRINGP LINE)) (RETURN (CONS IND LINE))))
       (COND ((ZEROP (SIZE LINE))
              (RETURN (CONS IND LINE))))
@@ -266,26 +256,26 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
           (COND
             ((INITIAL-SUBSTRING ")if" LINE)
                 (COND ((EVAL (|string2BootTree| (STOREBLANKS LINE 3)))
-                       (RETURN (preparseReadLine X)))
-                      ('T (RETURN (SKIP-IFBLOCK X)))))
+                       (RETURN (preparseReadLine)))
+                      ('T (RETURN (SKIP-IFBLOCK)))))
             ((INITIAL-SUBSTRING ")elseif" LINE)
-             (RETURN (SKIP-TO-ENDIF X)))
+             (RETURN (SKIP-TO-ENDIF)))
             ((INITIAL-SUBSTRING ")else" LINE)
-             (RETURN (SKIP-TO-ENDIF X)))
+             (RETURN (SKIP-TO-ENDIF)))
             ((INITIAL-SUBSTRING ")endif" LINE)
-             (RETURN (preparseReadLine X)))
+             (RETURN (preparseReadLine)))
             ((and $BOOT
                   (INITIAL-SUBSTRING #|(|# ")package" LINE)
                   (equal
                           (string-trim '(#\Space) (SUBSEQ LINE 9))
                           "\"BOOT\""))
-                  (RETURN (preparseReadLine X)))
+                  (RETURN (preparseReadLine)))
             ((INITIAL-SUBSTRING ")fin" LINE)
              (SETQ *EOF* T)
              (RETURN (CONS IND NIL)) ) )))
       (RETURN (CONS IND LINE)) ))
 
-(DEFUN preparseReadLine1 (X)
+(DEFUN preparseReadLine1 ()
     (PROG (LINE IND)
       (SETQ LINE (if $LINELIST
                      (pop $LINELIST)
@@ -296,7 +286,6 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
         ( (NOT (STRINGP LINE))
           (RETURN (CONS $INDEX LINE)) ) )
       (SETQ LINE (DROPTRAILINGBLANKS LINE))
-      (PUSH (COPY-SEQ LINE) $EchoLineStack)
     ;; next line must evaluate $INDEX before recursive call
       (RETURN
         (CONS
@@ -304,36 +293,9 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
           (COND
             ( (AND (> (SETQ IND (MAXINDEX LINE)) -1) (char= (ELT LINE IND) #\_))
               (setq $preparse-last-line
-                    (STRCONC (SUBSTRING LINE 0 IND) (CDR (preparseReadLine1 X))) ))
+                    (STRCONC (SUBSTRING LINE 0 IND) (CDR (preparseReadLine1))) ))
             ( 'T
               LINE ) ))) ) )
-
-;;(defun preparseReadLine (X)
-;;  (declare (special $LINELIST $echoLineStack))
-;;  (PROG (LINE IND)
-;;        (setq LINE
-;;              (if $LINELIST
-;;                  (pop $LINELIST)
-;;                  (get-a-line in-stream)))
-;;        (setq $preparse-last-line LINE)
-;;        (and (stringp line) (incf $INDEX))
-;;        (if (NOT (STRINGP LINE)) (RETURN (CONS $INDEX LINE)))
-;;        (setq LINE (DROPTRAILINGBLANKS LINE))
-;;        (if Echo-Meta (PUSH (COPY-SEQ LINE) $EchoLineStack))
-;;        ; next line must evaluate $INDEX before recursive call
-;;        (RETURN
-;;          (CONS $INDEX
-;;                (if (and (> (setq IND (MAXINDEX LINE)) -1)
-;;                       (EQ (ELT LINE IND) #\_))
-;;                    (setq $preparse-last-line
-;;                        (STRCONC (SUBSEQ LINE 0 IND)
-;;                                 (CDR (preparseReadLine X))))
-;;                    LINE)))))
-
-(defun PREPARSE-ECHO (linelist)
-  (if Echo-Meta (DOLIST (X (REVERSE $EchoLineStack))
-                        (format out-stream "~&;~A~%" X)))
-  (setq $EchoLineStack ()))
 
 (defun ESCAPED (STR N) (and (> N 0) (EQ (CHAR STR (1- N)) XCAPE)))
 

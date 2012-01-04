@@ -402,11 +402,9 @@ is a token separator, which blank is equivalent to."
 
 ; PARAMETERS DEFINED IN THIS SECTION:
 ;
-;       Echo-Meta
 
 ; *** Next Line
 
-(defparameter Echo-Meta nil                 "T if you want a listing of what has been read.")
 (defparameter Line-Handler 'next-BOOT-line "Who grabs lines for us.")
 
 (defun next-line (&optional (in-stream t)) (funcall Line-Handler in-stream))
