@@ -376,13 +376,6 @@
     (setf *PACKAGE* package))
 )
 
-(defun init-gmp(wrapper-lib)
-    (if (not *gmp-multiplication-initialized*)
-        (if (ignore-errors (ccl::open-shared-library "libgmp.so") t)
-            (if (ignore-errors
-                    (ccl::open-shared-library wrapper-lib) t)
-                 (install-gmp-multiplication)
-                 (setf *gmp-multiplication-initialized* t)))))
 )
 
 #+:sbcl
@@ -553,14 +546,6 @@
 ;;;   (truncate 1666974137583209287393566720 -2023369608)
 |#
 
-(defun init-gmp(wrapper-lib)
-    (if (not *gmp-multiplication-initialized*)
-        (if (ignore-errors (sb-alien::load-shared-object "libgmp.so") t)
-            (if (ignore-errors
-                    (sb-alien::load-shared-object wrapper-lib) t)
-                 (install-gmp-multiplication)
-                 (setf *gmp-multiplication-initialized* t)))))
-
 (defun install-gmp-multiplication()
     (sb-ext:unlock-package "SB-BIGNUM")
     (setf (symbol-function 'sb-bignum::multiply-bignums)
@@ -591,4 +576,13 @@
     (sb-ext:lock-package "COMMON-LISP")
 
 )
+
+(defun init-gmp(wrapper-lib)
+    (if (not *gmp-multiplication-initialized*)
+        (if (ignore-errors (|quiet_load_alien| "libgmp.so") t)
+            (if (ignore-errors
+                    (|quiet_load_alien| wrapper-lib) t)
+                 (install-gmp-multiplication)
+                 (setf *gmp-multiplication-initialized* t)))))
+
 )

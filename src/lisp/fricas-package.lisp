@@ -40,7 +40,7 @@
 (export '(quit chdir |getEnv| |getCLArgs| |load_quietly| get-current-directory
           fricas-probe-file trim-directory-name pad-directory-name
           file-kind makedir fricas-compile-file load-maybe-compiling
-          maybe-compile DEFCONST exit-with-status MEMQ
+          maybe-compile DEFCONST exit-with-status MEMQ |quiet_load_alien|
           |writeablep| |openServer| |sockGetInt|
           |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
           |serverSwitch| |sockSendSignal| |sockGetStringFrom|))

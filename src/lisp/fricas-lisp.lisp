@@ -352,6 +352,16 @@ with this hack and will try to convince the GCL crowd to fix this.
     ;;; (format *error-output* "finished load_quietly ~&") 
 )
 
+(defun |quiet_load_alien|(s)
+    #+:sbcl
+    (handler-bind ((style-warning #'muffle-warning))
+          (sb-alien::load-shared-object s))
+    #+:openmcl
+    (ccl::open-shared-library s)
+    #+:lispworks
+    (fli:register-module s)
+)
+
 ;;; -------------------------------------------------------
 ;;;
 ;;; FriCAS FFI macros
