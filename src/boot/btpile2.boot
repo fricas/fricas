@@ -30,14 +30,14 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
- 
+
 )package "BOOTTRAN"
 shoeFirstTokPosn t== shoeTokPosn CAAR t
 shoeLastTokPosn  t== shoeTokPosn CADR t
 shoePileColumn t==CDR shoeTokPosn CAAR t
- 
+
 -- s is a token-dq-stream
- 
+
 shoePileInsert (s)==
      if bStreamNull s
      then cons([],s)
@@ -48,7 +48,7 @@ shoePileInsert (s)==
          else
             a:=shoePileTree(-1,s)
             cons([a.2],a.3)
- 
+
 shoePileTree(n,s)==
     if bStreamNull s
     then [false,n,[],s]
@@ -58,7 +58,7 @@ shoePileTree(n,s)==
         if hh > n
         then shoePileForests(h,hh,t)
         else [false,n,[],s]
- 
+
 eqshoePileTree(n,s)==
     if bStreamNull s
     then [false,n,[],s]
@@ -68,7 +68,7 @@ eqshoePileTree(n,s)==
         if hh = n
         then shoePileForests(h,hh,t)
         else [false,n,[],s]
- 
+
 shoePileForest(n,s)==
      [b,hh,h,t]:= shoePileTree(n,s)
      if b
@@ -76,7 +76,7 @@ shoePileForest(n,s)==
        [h1,t1]:=shoePileForest1(hh,t)
        [cons(h,h1),t1]
      else [[],s]
- 
+
 shoePileForest1(n,s)==
      [b,n1,h,t]:= eqshoePileTree(n,s)
      if b
@@ -84,17 +84,17 @@ shoePileForest1(n,s)==
        [h1,t1]:=shoePileForest1(n,t)
        [cons(h,h1),t1]
      else [[],s]
- 
+
 shoePileForests(h,n,s)==
       [h1,t1]:=shoePileForest(n,s)
       if bStreamNull h1
       then [true,n,h,s]
       else shoePileForests(shoePileCtree(h,h1),n,t1)
- 
+
 shoePileCtree(x,y)==dqAppend(x,shoePileCforest y)
- 
+
 -- only enshoePiles forests with >=2 trees
- 
+
 shoePileCforest x==
    if null x
    then []
@@ -106,7 +106,7 @@ shoePileCforest x==
            if null cdr b
            then car b
            else shoeEnPile shoeSeparatePiles b
- 
+
 shoePileCoagulate(a,b)==
     if null b
     then [a]
@@ -121,7 +121,7 @@ shoePileCoagulate(a,b)==
                (GET(e,"SHOEINF") or EQ(e,"COMMA") or EQ(e,"SEMICOLON"))
          then shoePileCoagulate(dqAppend(a,c),cdr b)
          else cons(a,shoePileCoagulate(c,rest b))
- 
+
 shoeSeparatePiles x==
   if null x
   then []
@@ -132,9 +132,9 @@ shoeSeparatePiles x==
          semicolon:=dqUnit
                 shoeTokConstruct("KEY", "BACKSET",shoeLastTokPosn a)
          dqConcat [a,semicolon,shoeSeparatePiles cdr x]
- 
+
 shoeEnPile x==
    dqConcat [dqUnit shoeTokConstruct("KEY","SETTAB",shoeFirstTokPosn x),
              x, _
              dqUnit shoeTokConstruct("KEY","BACKTAB",shoeLastTokPosn  x)]
- 
+

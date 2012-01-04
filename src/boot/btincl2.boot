@@ -31,7 +31,7 @@
 
 )package "BOOTTRAN"
 -- BOOT INCLUDER
- 
+
 -- Line syntax is
 --
 --  Include ::= (SimpleLine | If )*  | ( )fin | empty)
@@ -55,7 +55,7 @@
 --
 -- ElseLines ::= )else SimpleLine* | )elseif SimpleLine* ElseLines | empty
 bStreamNil:=["nullstream"]
- 
+
 shoeFileMap(f, fn)==
      a:=shoeInputFile fn
      null a =>
@@ -63,26 +63,26 @@ shoeFileMap(f, fn)==
         bStreamNil
      shoeConsole CONCAT('"READING ",fn)
      shoeInclude  bAddLineNumber(bMap(f,bRgen a),bIgen 0)
- 
+
 shoeFileInput fn==shoeFileMap(function IDENTITY,fn)
- 
+
 shoePrefixLisp x== CONCAT('")lisp",x)
 shoeLispFileInput fn== shoeFileMap(function shoePrefixLisp,fn)
- 
+
 shoePrefixLine x== CONCAT('")line",x)
 shoeLineFileInput fn== shoeFileMap(function shoePrefixLine,fn)
- 
+
 shoePrefix?(prefix,whole) ==
      #prefix > #whole => false
      good:=true
      for i in 0..#prefix-1 for j in 0.. while good repeat
                 good:= prefix.i = whole.j
      if good then SUBSTRING(whole,#prefix,nil) else good
- 
+
 shoePlainLine?(s) ==
          #s = 0 =>  true
          not(s.0 = char ")")
- 
+
 shoeSay?          s  == shoePrefix?('")say",         s)
 shoeEval?         s  == shoePrefix?('")eval",        s)
 shoeInclude?      s  == shoePrefix?('")include",     s)
@@ -97,21 +97,21 @@ shoeIncludeLisp?  s  == shoePrefix?('")includelisp" ,s)
 shoeLine?         s  == shoePrefix?('")line",        s)
 shoeIncludeLines? s  == shoePrefix?('")includelines",s)
 shoeIncludeFunction? s  == shoePrefix?('")includefunction",s)
- 
+
 shoeBiteOff x==
          n:=STRPOSL('" ",x,0,true)
          null n =>  false
          n1:=STRPOSL ('" ",x,n,nil)
          null n1 =>  [SUBSTRING(x,n,nil),'""]
          [SUBSTRING(x,n,n1-n),SUBSTRING(x,n1,nil)]
- 
+
 shoeFileName x==
          a:=shoeBiteOff x
          null a =>  '""
          c:=shoeBiteOff CADR a
          null c =>  CAR a
          CONCAT(CAR a,'".",CAR c)
- 
+
 shoeFnFileName x==
          a:=shoeBiteOff x
          null a =>  ['"",'""]
@@ -121,10 +121,10 @@ shoeFnFileName x==
 
 shoeFunctionFileInput1(a, fn, fun) ==
     shoeInclude bAddLineNumber(shoeFindLines(fn, fun, a), bIgen 0)
- 
+
 shoeFunctionFileInput [fun,fn]==
     shoeOpenInputFile(fn, FUNCTION shoeFunctionFileInput1, [fn, fun])
- 
+
 shoeInclude s== bDelay(function shoeInclude1,[s])
 shoeInclude1 s==
       bStreamNull s=> s
@@ -133,7 +133,7 @@ shoeInclude1 s==
       command :=shoeFin? string  => bStreamNil
       command :=shoeIf? string   => shoeThen([true],[STTOMC command],t)
       bAppend(shoeSimpleLine h,shoeInclude t)
- 
+
 shoeSimpleLine(h) ==
       string  :=CAR h
       shoePlainLine? string=> [h]
@@ -155,7 +155,7 @@ shoeSimpleLine(h) ==
                 nil
       shoeLineSyntaxError(h)
       nil
- 
+
 shoeThen(keep,b,s)== bDelay(function shoeThen1,[keep,b,s])
 shoeThen1(keep,b,s)==
     bPremStreamNull s=> s
@@ -179,7 +179,7 @@ shoeThen1(keep,b,s)==
          shoeThen(rest keep,rest b,t)
     keep1 and b1 => bAppend(shoeSimpleLine h,shoeThen(keep,b,t))
     shoeThen(keep,b,t)
- 
+
 shoeElse(keep,b,s)== bDelay(function shoeElse1,[keep,b,s])
 shoeElse1(keep,b,s)==
     bPremStreamNull s=> s
@@ -196,19 +196,19 @@ shoeElse1(keep,b,s)==
          shoeThen(rest keep,rest b,t)
     keep1 and b1 => bAppend(shoeSimpleLine h,shoeElse(keep,b,t))
     shoeElse(keep,b,t)
- 
+
 shoeLineSyntaxError(h)==
      shoeConsole CONCAT('"INCLUSION SYNTAX ERROR IN LINE ",
                                 STRINGIMAGE CDR h)
      shoeConsole car h
      shoeConsole '"LINE IGNORED"
- 
+
 bPremStreamNil(h)==
        shoeConsole CONCAT('"UNEXPECTED )fin IN LINE ",STRINGIMAGE CDR h)
        shoeConsole car h
        shoeConsole '"REST OF FILE IGNORED"
        bStreamNil
- 
+
 bPremStreamNull(s)==
      if bStreamNull s
      then

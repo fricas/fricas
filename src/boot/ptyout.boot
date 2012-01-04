@@ -34,7 +34,7 @@
 
 -- (boottocl "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp"
- 
+
 BOOTTOCL (fn, outfn) ==
          $bfClamming:local:=false
          BOOTTOCLLINES(fn, outfn)
@@ -43,7 +43,7 @@ BOOTTOCL (fn, outfn) ==
 -- the common lisp file "filename.clisp" , producing, for each function
 -- a hash table to store previously computed values indexed by argument
 -- list.
- 
+
 BOOTCLAM (fn, outfn) ==
     $bfClamming : local := true
     BOOTTOCLCLINES(fn, outfn)
@@ -64,11 +64,11 @@ shoeClLines(a, fn, outfn)==
           $GenVarCounter : local := 0
           shoeOpenOutputFile(outfn, FUNCTION shoeClLines1, [a])
           shoeConsole CONCAT(outfn, '" PRODUCED")
- 
+
 -- (boottoclc "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp" with the original boot
 -- code as comments
- 
+
 BOOTTOCLC(fn, outfn) ==
     $bfClamming : local := false
     BOOTTOCLCLINES(fn, outfn)
@@ -90,29 +90,29 @@ shoeClCLines(a, fn, outfn)==
           $GenVarCounter : local := 0
           shoeOpenOutputFile(outfn, FUNCTION shoeClCLines1, [a])
           shoeConsole CONCAT(outfn,'" PRODUCED")
- 
+
 -- (boottomc "filename") translates the file "filename.boot"
 -- to machine code and loads it one item at a time
- 
+
 BOOTTOMC fn==
     $bfClamming : local := false
     $GenVarCounter : local := 0
     infn := shoeAddbootIfNec fn
     shoeOpenInputBoottranFile(infn, FUNCTION shoeMc, [fn])
- 
+
 shoeMc(a,fn)==
    if null a
    then shoeNotFound fn
    else
      shoePCompileTrees shoeTransformStream a
      shoeConsole CONCAT(fn,'" COMPILED AND LOADED")
- 
+
 -- (boot "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp", compiles it and loads
 -- the bbin/o file.
- 
+
 COMPILE_-BOOT_-FILE fn == BOOT fn
- 
+
 BOOT fn ==
      $bfClamming:local:=false
      outfn:=CONCAT(shoeRemovebootIfNec fn,'".clisp")
@@ -120,16 +120,16 @@ BOOT fn ==
      null a => nil
      outbin := shoeCOMPILE_-FILE outfn
      LOAD outbin
- 
+
 EVAL_-BOOT_-FILE fn ==
     outfn := CONCAT(shoeRemovebootIfNec fn, '".clisp")
     BOOTTOCL(fn, outfn)
     LOAD outfn
-    
- 
+
+
 -- (boot "filename") translates the file "filename.boot"
 -- and prints the result at the console
- 
+
 doBO fn ==
     $GenVarCounter : local := 0
     infn := shoeAddbootIfNec fn
@@ -138,26 +138,26 @@ doBO fn ==
 BO fn ==
     $bfClamming : local := false
     doBO(fn)
- 
+
 BOCLAM fn ==
     $bfClamming : local := true
     doBO(fn)
- 
+
 shoeToConsole(a,fn)==
      if null a
      then shoeNotFound fn
      else
         shoeConsoleTrees shoeTransformToConsole
           shoeInclude bAddLineNumber(bRgen a,bIgen 0)
- 
+
 -- (stout "string") translates the string "string"
 -- and prints the result at the console
- 
+
 STOUT string==   PSTOUT [string]
 --   $GenVarCounter:local := 0
 --   $bfClamming:local:=false
 --   shoeConsoleTrees shoeTransformString [string]
- 
+
 STTOSEX0 string ==
     $GenVarCounter:local := 0
     shoeTransformString [string]
@@ -177,97 +177,97 @@ STEVAL string ==
 
 -- (sttomc "string") translates the string "string"
 -- to common lisp, and compiles it.
- 
+
 STTOMC string==
     $bfClamming : local := false
     a := STTOSEX1 string
-    result := 
+    result :=
         bStreamPackageNull a => nil
         shoePCompile car a
     result
- 
- 
+
+
 shoeCompileTrees s==
     while not bStreamNull s repeat
          shoeCompile car s
          s:=cdr s
- 
+
 shoeCompile fn==
     fn is ['DEFUN,name,bv,:body]=>
           COMPILE (name,['LAMBDA,bv,:body])
     EVAL fn
- 
-shoeNotFound fn ==  
+
+shoeNotFound fn ==
    shoeConsole CONCAT(fn ,'" NOT FOUND")
    nil
- 
+
 shoeTransform str==
     bNext(function shoeTreeConstruct,
       bNext(function shoePileInsert,
         bNext(function shoeLineToks, str)))
- 
+
 shoeTransformString s==
     shoeTransform shoeInclude bAddLineNumber(s,bIgen 0)
 shoeTransformStream s==shoeTransformString bRgen s
 --  shoeTransform shoeInclude bAddLineNumber(bRgen s,bIgen 0)
- 
+
 shoeTransformToConsole str==
     bNext(function shoeConsoleItem,
       bNext(function shoePileInsert,
         bNext(function shoeLineToks, str)))
- 
+
 shoeTransformToFile(fn,str)==
     bFileNext(fn,
       bNext(function shoePileInsert,
         bNext(function shoeLineToks, str)))
- 
+
 shoeConsoleItem (str)==
         dq:=CAR str
         shoeConsoleLines shoeDQlines dq
         cons(shoeParseTrees dq,CDR str)
- 
+
 bFileNext(fn,s)==bDelay(function bFileNext1,[fn,s])
- 
+
 bFileNext1(fn,s)==
       bStreamNull s=> ["nullstream"]
       dq:=CAR s
       shoeFileLines(shoeDQlines dq,fn)
       bAppend(shoeParseTrees dq,bFileNext(fn,cdr s))
- 
+
 shoeParseTrees dq==
         toklist := dqToList dq
         null toklist => []
         shoeOutParse toklist
- 
+
 shoeTreeConstruct (str)==
         cons(shoeParseTrees CAR str,CDR str)
- 
+
 shoeDQlines dq==
         a:= CDAAR shoeLastTokPosn dq
         b:= CDAAR shoeFirstTokPosn dq
         streamTake (a-b+1,CAR shoeFirstTokPosn dq)
- 
+
 streamTake(n,s)==
     if bStreamNull s
     then nil
     else if EQL(n,0)
          then nil
          else cons(car s,streamTake(n-1,cdr s))
- 
+
 shoeFileLines (lines,fn) ==
         shoeFileLine( '" ",fn)
         for line in lines repeat shoeFileLine (shoeAddComment line,fn)
         shoeFileLine ('" ",fn)
- 
+
 shoeConsoleLines lines ==
         shoeConsole '" "
         for line in lines repeat shoeConsole shoeAddComment line
         shoeConsole '" "
- 
+
 shoeFileLine(x, stream) ==
     WRITE_-LINE(x, stream)
     x
- 
+
 shoeFileTrees(s,st)==
         while not bStreamNull s repeat
             a:=CAR s
@@ -275,21 +275,21 @@ shoeFileTrees(s,st)==
             then shoeFileLine(CADR a,st)
             else REALLYPRETTYPRINT(a,st)
             s:=CDR s
- 
- 
+
+
 shoePPtoFile(x, stream) ==
     SHOENOTPRETTYPRINT(x, stream)
     x
- 
+
 shoeConsoleTrees s ==
     while not bStreamPackageNull s repeat
 --      while not bStreamNull s repeat
           fn:=stripm(CAR s,_*PACKAGE_*,FIND_-PACKAGE '"BOOTTRAN")
           REALLYPRETTYPRINT fn
           s:=CDR s
- 
+
 shoeAddComment l==  CONCAT('"; ",CAR l)
- 
+
 shoeOutParse stream ==
     $inputStream :local:= stream
     $stack:local       :=nil
@@ -314,7 +314,7 @@ shoeOutParse stream ==
                 bpGeneralErrorHere()
                 nil
               else CAR $stack
- 
+
 bpOutItem()==
     bpComma() or bpTrap()
     b:=bpPop1()
@@ -327,17 +327,17 @@ bpOutItem()==
        bpPush [ b ]
     b:=shoeCompTran ["LAMBDA",["x"],b]
     bpPush [shoeEVALANDFILEACTQ CADDR b]
- 
+
 shoeEVALANDFILEACTQ x==  ["EVAL-WHEN", ["EVAL","LOAD"], x]
- 
+
 SoftShoeError(posn,key)==
     shoeConsole CONCAT('"ERROR IN LINE ",STRINGIMAGE lineNo posn)
     shoeConsole lineString posn
     shoeConsole CONCAT(shoeSpaces lineCharacter posn,'"|")
     shoeConsole key
- 
+
 shoeSpaces n  ==  MAKE_-FULL_-CVEC(n, '".")
- 
+
 bpIgnoredFromTo(pos1, pos2) ==
     shoeConsole CONCAT('"ignored from line ", STRINGIMAGE lineNo pos1)
     shoeConsole lineString pos1
@@ -345,11 +345,11 @@ bpIgnoredFromTo(pos1, pos2) ==
     shoeConsole CONCAT('"ignored through line ", STRINGIMAGE lineNo pos2)
     shoeConsole lineString pos2
     shoeConsole CONCAT(shoeSpaces lineCharacter pos2,'"|")
- 
+
 lineNo p==CDAAR p
 lineString p==CAAAR p
 lineCharacter p==CDR p
- 
+
 bStreamNull x==
   null x or EQCAR (x,"nullstream") => true
   while EQCAR(x,"nonnullstream") repeat
@@ -357,35 +357,35 @@ bStreamNull x==
           RPLACA(x,CAR st)
           RPLACD(x,CDR st)
   EQCAR(x,"nullstream")
- 
+
 bDelay(f,x)==cons("nonnullstream",[f,:x])
- 
+
 bAppend(x,y)==bDelay(function bAppend1,[x,y])
- 
+
 bAppend1(:z)==
      if bStreamNull car z
      then if bStreamNull CADR z
           then ["nullstream"]
           else CADR z
      else cons(CAAR z,bAppend(CDAR z,CADR z))
- 
+
 bMap(f,x)==bDelay(function bMap1, [f,x])
- 
+
 bMap1(:z)==
      [f,x]:=z
      if bStreamNull x
      then bStreamNil
      else cons(FUNCALL(f,car x),bMap(f,cdr x))
- 
+
 bNext(f,s)==bDelay(function bNext1,[f,s])
- 
+
 bNext1(f,s)==
       bStreamNull s=> ["nullstream"]
       h:= APPLY(f, [s])
       bAppend(car h,bNext(f,cdr h))
- 
+
 bRgen s==bDelay(function bRgen1,[s])
- 
+
 bRgen1(:s) ==
         a:=shoeread_-line car s
         if shoePLACEP a
@@ -393,23 +393,23 @@ bRgen1(:s) ==
 --          shoeCLOSE car s
             ["nullstream"]
         else cons(a,bRgen car s)
- 
+
 bIgen n==bDelay(function bIgen1,[n])
- 
+
 bIgen1(:n)==
         n:=car n+1
         cons(n,bIgen n)
- 
+
 bAddLineNumber(f1,f2)==bDelay(function bAddLineNumber1,[f1,f2])
- 
+
 bAddLineNumber1(:f)==
      [f1,f2] := f
      bStreamNull f1 =>  ["nullstream"]
      bStreamNull f2 =>  ["nullstream"]
      cons(cons(CAR f1,CAR f2),bAddLineNumber(CDR f1,CDR f2))
- 
+
 shoeAddbootIfNec s==shoeAddStringIfNec('".boot",s)
- 
+
 shoeRemovebootIfNec s==shoeRemoveStringIfNec('".boot",s)
 
 shoeAddStringIfNec(str,s)==
@@ -417,21 +417,21 @@ shoeAddStringIfNec(str,s)==
        if null a
        then CONCAT(s,str)
        else s
- 
+
 shoeRemoveStringIfNec(str,s)==
        a:=STRPOS(str,s,0,nil)
        if null a
        then s
        else SUBSTRING(s,0,a)
- 
+
 -- DEFUSE prints the definitions not used and the words used and
 -- not defined in the input file and common lisp.
 -- FIXME: seem to mishandle packages
- 
+
 DEFUSE fn==
   infn:=CONCAT(fn,'".boot")
   shoeOpenInputFile(infn, FUNCTION shoeDfu, [fn])
- 
+
 shoeDfu(a,fn)==
   if null a
   then shoeNotFound fn
@@ -447,7 +447,7 @@ shoeDfu(a,fn)==
      out:=CONCAT(fn,'".defuse")
      shoeOpenOutputFile(out, FUNCTION shoeReport, [])
      shoeConsole CONCAT(out,'" PRODUCED")
- 
+
 shoeReport stream==
           shoeFileLine('"DEFINED and not USED",stream)
           a:=[i for i in HKEYS $bootDefined | not GETHASH(i,$bootUsed)]
@@ -462,12 +462,12 @@ shoeReport stream==
           for i in SSORT a repeat
              b:=CONCAT(PNAME i,'" is used in ")
              bootOutLines( SSORT GETHASH(i,$bootUsed),stream,b)
- 
+
 shoeDefUse(s)==
         while not bStreamPackageNull s repeat
             defuse([],CAR s)
             s:=CDR s
- 
+
 defuse(e,x)==
      x:=stripm(x,_*PACKAGE_*,FIND_-PACKAGE '"BOOTTRAN")
      $used:local:=nil
@@ -486,7 +486,7 @@ defuse(e,x)==
      defuse1 (e,niens)
      for i in $used repeat
         HPUT($bootUsed,i,cons(nee,GETHASH(i,$bootUsed)))
- 
+
 defuse1(e,y)==
      ATOM y =>
          IDENTP y =>
@@ -505,7 +505,7 @@ defuse1(e,y)==
      y is ["QUOTE",:a] => []
      y is ["+LINE",:a] => []
      for i in y repeat defuse1(e,i)
- 
+
 defSeparate x==
       if null x
       then [[],[]]
@@ -520,15 +520,15 @@ unfluidlist x==
     ATOM x=> [x]
     x is ["&REST",y]=> [y]
     cons(car x,unfluidlist cdr x)
- 
+
 defusebuiltin x==  GETHASH(x,$lispWordTable)
- 
+
 bootOut (l,outfn)==
       for i in l repeat shoeFileLine (CONCAT ('"   ",PNAME i),outfn)
- 
+
 CLESSP(s1,s2)==not(SHOEGREATERP(s1,s2))
 SSORT l == SORT(l,function CLESSP)
- 
+
 bootOutLines(l,outfn,s)==
   if null l
   then shoeFileLine(s,outfn)
@@ -539,17 +539,17 @@ bootOutLines(l,outfn,s)==
           shoeFileLine(s,outfn)
           bootOutLines(l,outfn,'" ")
      else bootOutLines(cdr l,outfn,CONCAT(s,'" ",a))
- 
- 
+
+
 -- (xref "fn") produces a cross reference listing in "fn.xref"
 -- It contains each name
 -- used in "fn.boot", together with a list of functions that use it.
 -- FIXME: seem to mishandle packages
- 
+
 XREF fn==
   infn:=CONCAT(fn,'".boot")
   shoeOpenInputFile(infn, FUNCTION shoeXref, [fn])
- 
+
 shoeXref(a,fn)==
   if null a
   then shoeNotFound fn
@@ -564,8 +564,8 @@ shoeXref(a,fn)==
      out:=CONCAT(fn,'".xref")
      shoeOpenOutputFile(out, FUNCTION shoeXReport, [])
      shoeConsole CONCAT(out,'" PRODUCED")
- 
- 
+
+
 shoeXReport stream==
           shoeFileLine('"USED and where DEFINED",stream)
           c:=SSORT HKEYS $bootUsed
@@ -574,17 +574,17 @@ shoeXReport stream==
              bootOutLines( SSORT GETHASH(i,$bootUsed),stream,a)
 
 -------------------------------------------------------------------
- 
+
 shoeTransform2 str==
     bNext(function shoeItem,
       streamTake(1, bNext(function shoePileInsert,
            bNext(function shoeLineToks, str))))
- 
+
 shoeItem (str)==
         dq:=CAR str
         cons([[CAR line for line in  shoeDQlines dq]],CDR str)
- 
- 
+
+
 shoeFindLines(fn,name,a)==
    if null a
    then
@@ -602,7 +602,7 @@ shoeFindLines(fn,name,a)==
          if null lines
          then shoeConsole '")package not found"
          append(reverse lines,car b)
- 
+
 shoePackageStartsAt (lines,sz,name,stream)==
    bStreamNull stream => [[],['nullstream]]
    a:=CAAR stream
@@ -614,7 +614,7 @@ shoePackageStartsAt (lines,sz,name,stream)==
      else if SUBSTRING(a,0,sz)=name and (#a>sz and not shoeIdChar(a.sz))
           then [lines,stream]
           else shoePackageStartsAt(lines,sz,name,CDR stream)
- 
+
 stripm (x,pk,bt)==
    ATOM x =>
              IDENTP x =>
@@ -622,35 +622,35 @@ stripm (x,pk,bt)==
                  x
              x
    CONS(stripm(CAR x,pk,bt),stripm(CDR x,pk,bt))
- 
+
 shoePCompile  fn==
     fn:=stripm(fn,_*PACKAGE_*,FIND_-PACKAGE '"BOOTTRAN")
     fn is ['DEFUN,name,bv,:body]=>
           COMPILE (name,['LAMBDA,bv,:body])
     EVAL fn
- 
+
 FC(name,fn)==
    $bfClamming:local:=false
    $GenVarCounter:local := 0
    infn:=shoeAddbootIfNec fn
    shoeOpenInputFile(infn, FUNCTION shoeFindName, [fn, name])
- 
+
 shoeFindName(a, fn, name)==
      lines:=shoeFindLines(fn,name,a)
      shoePCompileTrees shoeTransformString lines
- 
+
 shoePCompileTrees s==
     while not bStreamPackageNull s repeat
          REALLYPRETTYPRINT shoePCompile car s
          s:=cdr s
- 
+
 bStreamPackageNull s == doInBoottranPackage(bStreamNull s)
- 
+
 PSTTOMC string==
    $GenVarCounter:local := 0
    $bfClamming:local:=false
    shoePCompileTrees shoeTransformString string
- 
+
 BOOTLOOP ()==
     a:=READ_-LINE()
     #a=0=>
@@ -664,7 +664,7 @@ BOOTLOOP ()==
     a.0='"]".0 => nil
     PSTTOMC [a]
     BOOTLOOP()
- 
+
 BOOTPO ()==
     a:=READ_-LINE()
     #a=0=>
@@ -678,7 +678,7 @@ BOOTPO ()==
     a.0='"]".0 => nil
     PSTOUT [a]
     BOOTPO()
- 
+
 PSTOUT0 string ==
    $GenVarCounter:local := 0
    $bfClamming:local:=false
