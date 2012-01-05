@@ -49,12 +49,7 @@
 
 (defvar curoutstream (make-synonym-stream '*standard-output*))
 
-(defvar *embedded-functions* nil)
-
 (defvar *fileactq-apply* nil "function to apply in fileactq")
-
-(defvar *read-place-holder* (make-symbol "%.EOF")
-   "default value returned by read and read-line at end-of-file")
 
 ;; DEFMACROS
 
@@ -65,28 +60,15 @@
 (defmacro assq (a b)
  `(assoc ,a ,b :test #'eq))
 
-(defmacro |char| (x)
-  (if (and (consp x) (eq (car x) 'quote)) (character (cadr x))
-    `(character ,x)))
-
 (defmacro difference (&rest args)
  `(- ,@args))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun equable (x) ;;def needed to prevent recursion in def of eqcar
-    (or (null x) (and (consp x) (eq (car x) 'quote) (symbolp (cadr x))))))
-
 (defmacro eqcar (x y)
- (let ((test
-        (cond
-         ((equable y) 'eq)
-         ((integerp y) 'i=)
-         ('eql))))
   (if (atom x)
-   `(and (consp ,x) (,test (qcar ,x) ,y))
+    `(and (consp ,x) (eql (qcar ,x) ,y))
     (let ((xx (gensym)))
      `(let ((,xx ,x))
-       (and (consp ,xx) (,test (qcar ,xx) ,y)))))))
+       (and (consp ,xx) (eql (qcar ,xx) ,y))))))
 
 (defmacro exit (&rest value)
  `(return-from seq ,@value))
@@ -99,17 +81,6 @@
 
 (defmacro greaterp (&rest args)
  `(> ,@args))
-
-(defmacro i= (x y) ;; integer equality
-  (if (typep y 'fixnum)
-      (let ((gx (gensym)))
-        `(let ((,gx ,x))
-           (and (typep ,gx 'fixnum) (eql (the fixnum ,gx) ,y))))
-    (let ((gx (gensym)) (gy (gensym)))
-      `(let ((,gx ,x) (,gy ,y))
-         (cond ((and (typep ,gx 'fixnum) (typep ,gy 'fixnum))
-                (eql (the fixnum ,gx) (the fixnum ,gy)))
-               ((eql (the integer ,gx) (the integer,gy))))))))
 
 (defmacro |idChar?| (x)
  `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
@@ -152,13 +123,6 @@
 (defmacro ne (a b) `(not (equal ,a ,b)))
 
 (defmacro neq (a b) `(not (eq ,a ,b)))
-
-(defmacro |opOf| (x) ;(if (atom x) x (qcar x))
-  (if (atom x)
-      `(if (consp ,x) (qcar ,x) ,x)
-    (let ((xx (gensym)))
-      `(let ((,xx ,x))
-         (if (consp ,xx) (qcar ,xx) ,xx)))))
 
 (defmacro pairp (x)
  `(consp ,x))
@@ -439,6 +403,9 @@
 
 ;;; moved from union.lisp
 
+(defmacro RESETQ(a b)
+ `(prog1 ,a (setq ,a ,b)))
+
 (DEFUN |intersection|  (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
     (PROG (I H V)
       (SETQ V (SETQ H (CONS NIL NIL)))
@@ -471,7 +438,8 @@
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (COND
             ( (PAIRP LIST-OF-ITEMS-2)
-              (SETQ LIST-OF-ITEMS-1 (RESETQ LIST-OF-ITEMS-2 NIL)) )
+              (SETF LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
+              (SETF LIST-OF-ITEMS-2 NIL) )
             ( 'T
               (RETURN (QCDR H)) ) ) )
         ( (NOT
@@ -868,6 +836,7 @@
 
 ; 46.0 Call tracing
 
+(defvar *embedded-functions* nil)
 
 (defun EMBEDDED () (mapcar #'car *embedded-functions*))
 
@@ -990,6 +959,9 @@
         ((symbolp sym) (get sym key))))
 
 ; 99.0 Ancient Stuff We Decided To Keep
+
+(defvar *read-place-holder* (make-symbol "%.EOF")
+   "default value returned by read and read-line at end-of-file")
 
 (defun PLACEP (item) (eq item *read-place-holder*))
 (defun VMREAD (st &optional (eofval *read-place-holder*))

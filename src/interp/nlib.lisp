@@ -292,7 +292,7 @@
 
 (defun $FILEP (&rest filearg) (make-full-namestring filearg))
 
-(defun $findfile (filespec filetypelist)
+(defun $FINDFILE(filespec filetypelist)
   (let ((file-name (if (consp filespec) (car filespec) filespec))
         (file-type (if (consp filespec) (cadr filespec) nil)))
     (if file-type (push file-type filetypelist))
@@ -300,18 +300,11 @@
           filetypelist)))
 
 ;; ($ERASE filearg) -> 0 if succeeds else 1
-(defun $erase (&rest filearg)
+(defun $ERASE(&rest filearg)
   (setq filearg (make-full-namestring filearg))
   (if (fricas-probe-file filearg)
-      (if (library-file filearg)
-          (delete-directory filearg)
-          (delete-file filearg))
+      (delete-directory filearg)
       1))
-
-(defun library-file (filename)
-; (format t "library-file: ~a~%" filename)
- t)
-
 
 #+:GCL
 (defun delete-directory (dirname)
@@ -363,9 +356,8 @@
 (defun $FCOPY (filespec1 filespec2)
     (let ((name1 (make-full-namestring filespec1))
           (name2 (make-full-namestring filespec2)))
-      (if (library-file name1)
         (copy-lib-directory name1 name2)
-        (copy-file name1 name2))))
+))
 
 
 #+:GCL
@@ -404,34 +396,6 @@
 (defun copy-lib-directory (name1 name2)
    (makedir name2)
    (system:call-system (concat "cp " (concat name1 "/*") " " name2)))
-
-#+:GCL
-(defun copy-file (namestring1 namestring2)
-  (LISP::system (concat "cp " namestring1 " " namestring2)))
-
-#+:sbcl
-(defun copy-file (namestring1 namestring2)
-  (sb-ext::run-program "/bin/cp" (list namestring1 namestring2)))
-
-#+:cmu
-(defun copy-file (namestring1 namestring2)
-  (ext::run-program "cp" (list namestring1 namestring2)))
-
-#+:openmcl
-(defun copy-file (namestring1 namestring2)
-  (ccl::run-program "cp" (list namestring1 namestring2)))
-
-#+(or :clisp :ecl)
-(defun copy-file (namestring1 namestring2)
-  (OBEY (concat "cp " namestring1 " " namestring2)))
-
-#+:poplog
-(defun copy-file (namestring1 namestring2)
-   (POP11:sysobey (concat "cp " namestring1 " " namestring2)))
-
-#+:lispworks
-(defun copy-file (namestring1 namestring2)
-  (system:call-system (concat "/bin/cp " namestring1 " " namestring2)))
 
 (defvar vmlisp::$filetype-table
   '(

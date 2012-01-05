@@ -602,10 +602,6 @@
 
 ; 14 SEQUENCES
 
-; 14.1 Simple Sequence Functions
-
-(define-function 'getchar #'elt)
-
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
 
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
@@ -643,8 +639,6 @@
   (COND ((NULL X) DEFAULT)
         ((EQL N 1) (CAR X))
         ((ELEMN (CDR X) (SUB1 N) DEFAULT))))
-
-(defmacro SPADCONST (&rest L) (cons 'qrefelt L))
 
 (defmacro SPADCALL (&rest L)
   (let ((args (butlast l))
