@@ -141,7 +141,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                    restart
                    #'(lambda () nil)))
          (top-fun #'(lambda ()
-                       (setf *read-default-float-format* 'double-float)
+                       (set-initial-parameters)
                        (funcall restart-fun))))
         (setf *ccl-default-directory* ccl-dir)
         (setf *my-toplevel-function* top-fun)
