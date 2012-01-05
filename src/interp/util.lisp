@@ -311,7 +311,7 @@ where the [[${AXIOM}]] variable points to installed tree.
 ;;; and default to the {\bf \$spadroot} variable (which was the value
 ;;; of the {\bf AXIOM} shell variable at build time) if we can't.
 (defun initroot (&optional (newroot nil))
-  (reroot (or (BOOT::|getEnv| "AXIOM") newroot $spadroot
+  (reroot (or (|getEnv| "AXIOM") newroot $spadroot
               (error "setenv AXIOM or (setq $spadroot)"))))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
@@ -542,7 +542,7 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
  (cond
   ((load "./exposed" :verbose nil :if-does-not-exist nil)
     '|done|)
-  ((load (concat (BOOT::|getEnv| "AXIOM") "/algebra/exposed")
+  ((load (concat (|getEnv| "AXIOM") "/algebra/exposed")
      :verbose nil :if-does-not-exist nil)
    '|done|)
   (t '|failed|) ))

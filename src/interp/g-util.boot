@@ -457,10 +457,6 @@ pp x ==
   PRETTYPRINT x
   nil
 
-pr x ==
-  F_,PRINT_-ONE x
-  nil
-
 quickAnd(a,b) ==
   a = true => b
   b = true => a
