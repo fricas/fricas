@@ -306,7 +306,7 @@ database.
 (defun asharp (file &optional (flags *asharpflags*))
  "call the asharp compiler"
  (#| system::system |#
-   vmlisp::obey
+   obey
    (concatenate 'string (|getEnv| "AXIOM") "/compiler/bin/axiomxl "
     flags " " file)))
 
@@ -902,7 +902,7 @@ database.
     (cond
      ((setq file (probe-file
        (concatenate 'string namedir filename ".NRLIB/"
-                    vmlisp::*index-filename*)))
+                    *index-filename*)))
       (push (namestring file) nrlibs))
      ((setq file (probe-file
        (concatenate 'string namedir filename ".asy")))

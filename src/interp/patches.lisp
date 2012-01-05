@@ -98,7 +98,7 @@
 (defun |read_or_compile|(quiet lib)
   (let* (
      ($LISPLIB lib)
-     (input-file (vmlisp::make-input-filename /EDITFILE))
+     (input-file (make-input-filename /EDITFILE))
      (lfile ())
      (type (pathname-type input-file)))
     (declare (special $LISPLIB))

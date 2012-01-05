@@ -78,7 +78,7 @@
     (if s s "") ))
 
 (defun |fnameExists?| (f)
-  (if (vmlisp::fricas-probe-file (namestring f)) 't nil))
+  (if (fricas-probe-file (namestring f)) 't nil))
 
 (defun |fnameReadable?| (f)
   (let ((s
@@ -99,5 +99,5 @@
     (do ((fn))
         (nil)
         (setq fn (|fnameMake| d (string (gensym n)) e))
-        (if (not (vmlisp::fricas-probe-file (namestring fn)))
+        (if (not (fricas-probe-file (namestring fn)))
            (return-from |fnameNew| fn)) )))

@@ -29,8 +29,7 @@
 ;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-(in-package "VMLISP")
+(in-package "BOOT")
 
 ;; definition of our stream structure
 (defstruct libstream  mode dirname (indextable nil)  (indexstream nil))
@@ -397,7 +396,7 @@
    (makedir name2)
    (system:call-system (concat "cp " (concat name1 "/*") " " name2)))
 
-(defvar vmlisp::$filetype-table
+(defvar $filetype-table
   '(
     (BOOT::HELPSPAD . |help|)
     (BOOT::INPUT . |input|)
