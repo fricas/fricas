@@ -43,7 +43,7 @@
 
 ; If you are using this, you are probably in Common Lisp, yes?
 
-(in-package "VMLISP")
+(in-package "BOOT")
 
 ;; DEFVARS
 
@@ -1093,10 +1093,6 @@
 
 ;17.0 Operations on Hashtables
 
-(export '(MAKE-HASHTABLE HGET HKEYS HCOUNT HPUT HREM HCLEAR HREMPROP
-          HASHEQ HASHID HASHTABLEP CVEC UEQUAL ID HPUTPROP
-          HASHTABLE-CLASS))
-
 ;17.1 Creation
 
 (defun MAKE-HASHTABLE (id1)
@@ -1144,8 +1140,6 @@
 ;;; end of moved fragment
 
 ;;; ---------------------------------------------
-
-(in-package "BOOT")
 
 ;; Contributed by Juergen Weiss from a suggestion by Arthur Norman.
 ;; This is a Mantissa and Exponent function.

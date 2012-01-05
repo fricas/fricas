@@ -60,5 +60,17 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
       (setf *features* (delete :CCL *features*)))
 
+;;; Package containing Shoe to Lisp translator
 (make-package "BOOTTRAN" :use '("FRICAS-LISP"))
 
+;;; Main FriCAS package.  The interpreter and the algebra are run
+;;; after switching to the boot package (in-package "BOOT") so any
+;;; symbol that the interpreter or algebra uses has to appear here.
+(make-package "BOOT" :use '("FRICAS-LISP"))
+
+;;; Package containing support routines for code generated
+;;; by Aldor compiler.
+(make-package "FOAM" :use '("FRICAS-LISP"))
+
+;;; Package for code output by Aldor.
+(make-package "FOAM-USER" :use '("FRICAS-LISP" "FOAM"))
