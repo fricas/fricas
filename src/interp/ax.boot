@@ -1,4 +1,5 @@
 -- Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+-- Copyright (c) 2011-2012, Ralf Hemmecke <ralf@hemmecke.de>
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,69 @@
 )package "BOOT"
 
 $stripTypes := false
+
+-- Although default operations might be implemented conditionally, the
+-- internal data structure does not store the condition. The only
+-- reasonable assumption one can make about the types of the |#i| arguments
+-- is to pretend that they are such as required by the respective
+-- constructor.
+-- $pretendFlag will be set to true, if default operations are detected.
+-- TODO: This is a reasonable assumption, but wrong in general.
 $pretendFlag := false
+
+-- The variables $modemapArgs and $augmentedArgs and the code surrounding it
+-- are due to a weakness in the Aldor compiler. This code can be removed
+-- if this "bug" is fixed in the Aldor compiler.
+-- See the aldor-l mailinglist for a bug demonstrating a weakness
+-- of the Aldor 1.1.0 compiler.
+-- http://aldor.org/pipermail/aldor-l_aldor.org/2011-December/001328.html
+-- http://groups.google.com/group/fricas-devel/browse_thread/thread/c7d1c908a07758d2
+
+-- The main idea of the algorithm is as follows. Whenever a "if A has T ..."
+-- is detected, the type T is added for the argument A in $augmentedArgs.
+-- Inside the "then" block the type of A is augmented to whatever is stored
+-- in $augmentedArgs. However, in a block like
+---- if S has SetCategory then
+----    if S has Evalable S then Evalable S
+-- when S is a parameter in the original modemap and has type T, then
+-- we must output something like:
+---- if S has SetCategory then
+----    if S has Evalable(S pretend Join(SetCategory, T)) then
+----        Evalable(S pretend Join(
+----                                Evalable(S pretend Join(SetCategory, T)),
+----                                Join(SetCategory, T)))
+-- Note in particular that inside "S pretend ..." we must remove one
+-- layer from $augmentedArgs since otherwise we get infinite recursion.
+
+-- Store the constructor modemap.
+-- $modemapArgs will be an assoc list of the form
+-- ((|#1| . T1) (|#2| . T2) ...)
+-- where Ti is the actual (untranslated) type of the i-th argument
+-- as extracted from modemap in the function modemapToAx.
+$modemapArgs := nil
+
+-- Whenever we enter something like
+---- if |#i| has C then ...
+-- we try to extract the type T of |#i| from $augmentedArgs or $modemapArgs.
+-- (in this order).
+-- Then augment T with C, i.e. form Join(C, T) and store that type in
+-- the association list $augmentedArgs.
+-- A special case is the situation "if % has C then ...". Then C will be
+-- ignored (which is actually wrong) and in the "then" block we
+-- pretend % to whatever is required for an argument of a type constructor.
+-- This is somewhat like in the code used for $pretendFlag=true.
+
+-- $augmentedArgs is a list with entries of the form
+-- (|#i| . v)
+-- where v is of the form
+-- (pred_n pred_n-1 ... pred1 cat)
+-- cat -- is the type of |#i| as given in the argument list of the constructor
+-- in question.
+-- pred_k -- is something of the form ('has name type) which comes from the
+-- surrounding "if A has type then ..." and A corresponds to |#i|.
+-- With each "if" condition, $augmentedArgs grows for this particular argument.
+$augmentedArgs := nil
+
 $defaultFlag := false
 $baseForms := nil
 $literals  := nil
@@ -85,7 +148,16 @@ stripType type ==
 modemapToAx(modemap) ==
   modemap is [[consform, target,:argtypes],.]
   consform is [constructor,:args]
-  argdecls:=['Comma, : [axFormatDecl(a,stripType t) for a in args for t in argtypes]]
+
+  -- Category forms show |t#i| instead of |#i|. In atypes |t#i| is replaced
+  -- by |#i|.
+  atypes := if categoryForm? consform then
+      SUBLISLIS($FormalMapVariableList, $TriangleVariableList, argtypes)
+    else
+      argtypes
+  $modemapArgs : local := [cons(a,t) for a in args for t in atypes]
+
+  argdecls:=['Comma, : [axFormatDecl(a, stripType t) for a in args for t in argtypes]]
   resultType :=  axFormatType stripType target
   categoryForm? constructor =>
       categoryInfo := GETDATABASE(constructor,'CONSTRUCTORCATEGORY)
@@ -209,9 +281,13 @@ axFormatType(typeform) ==
   typeform is [op,:args] =>
       $pretendFlag and constructor? op and
         GETDATABASE(op,'CONSTRUCTORMODEMAP) is [[.,target,:argtypes],.] =>
-          ['Apply, op,
-               :[['PretendTo, axFormatType a, axFormatType t]
-                     for a in args for t in argtypes]]
+          ['Apply, op, :[pretendTo(a, t) for a in args for t in argtypes]]
+      -- $augmentedArgs is non-empty if we are inside a "if A has T then ..."
+      -- block. In this case we must augment the type of A by T.
+      -- In nearly all cases t is ignored, but is needed for %.
+      not(null $augmentedArgs) and constructor? op and
+        GETDATABASE(op,'CONSTRUCTORMODEMAP) is [[.,target,:argtypes],.] =>
+          ['Apply, op, :[augmentTo(a, t) for a in args for t in argtypes]]
       MEMQ(op, '(SquareMatrix SquareMatrixCategory DirectProduct
          DirectProductCategory RadixExpansion)) and
             GETDATABASE(op,'CONSTRUCTORMODEMAP) is [[.,target,arg1type,:restargs],.] =>
@@ -220,6 +296,38 @@ axFormatType(typeform) ==
                      :[axFormatType a for a in rest args]]
       ['Apply, op, :[axFormatType a for a in args]]
   error "unknown entry type"
+
+pretendTo(a, t) == ['PretendTo, axFormatType a, axFormatType t]
+
+-- Whenever "a" appears as a key in $augmentedArgs, issue code that
+-- consists of a |PretendTo| with the augmented type for the argument "a".
+-- We cannot augment $ (= %) so we treat this case by the old method.
+-- We could do a bit better, because we actually store some augmented type
+-- information for % in $augmentedArgs. But not yet.
+augmentTo(a, t) ==
+  a = '$ => pretendTo(a, t)
+  ax := axFormatType a -- a looks like |#i|
+  not(null(kv:=ASSOC(a,$augmentedArgs))) =>
+      ['PretendTo, ax, formatAugmentedType(CDR kv, a, $augmentedArgs)]
+  not(null(kv:=ASSOC(a,$modemapArgs))) => ['PretendTo,ax,axFormatType CDR kv]
+  ax
+
+-- v the type to format (the form of v is as in $augmentedArgs, see above)
+-- a the argument of form |#i| to which v corresponds (for recursion)
+-- augargs temporary value of $augmentedArgs (it shrinks while doing
+--   recursive calls)
+-- The function is similar to axFormatType, but makes sure that arguments
+-- of the form |#i| are pretended to be of an respective augmented type.
+formatAugmentedType(v, a, augargs) ==
+  $augmentedArgs:local := deleteFirstPred(a, augargs)
+  axFormattedPred := axFormatPred first v
+  axFormattedPred is ['Test, ['Has, arg, augtype]]
+  c := cdr v
+  null cdr c => -- the last argument is 'ignore or a type from $modemapArgs
+    first c = 'ignore => augtype
+    ['With, ['Apply, 'Join, augtype, axFormatType first c], []]
+  ['With, ['Apply, 'Join, augtype, formatAugmentedType(c, a, $augmentedArgs)], []]
+
 
 axFormatOpList ops == ['Sequence,:[axFormatOp o for o in ops]]
 
@@ -262,21 +370,65 @@ axFormatPred pred ==
    error "unknown predicate"
 
 
-axFormatCondOp op ==
-  $pretendFlag:local := true
+-- This function is where we grow $augmentedType.
+-- If for some arg of the form |#i| the test axFormattedPred is a 'Has test,
+-- then we add pred to the type to the type value for |#i|.
+axFormatAugmentOp(op, axFormattedPred, pred, augargs) ==
+  if axFormattedPred is ['Test, ['Has, arg, augtype]] then
+      -- Find arg in augargs or in $modemapArgs.
+      -- If found we build up $augmentedArgs.
+      -- To each key a list of pred(s) is stored together with the
+      -- last type being a type from $modemapArgs or 'ignore.
+      kv := ASSOC(arg, augargs)
+      v := if null kv then
+               if arg = '% then
+                   ['ignore] -- want "categoryOf(%)" (will be ignored)
+                 else
+                   kv := ASSOC(arg, $modemapArgs)
+	           -- $modemapArgs stuff must be unformatted
+                   if null kv then
+                       nil
+                     else
+                       -- We don't want Join with category Type.
+                       if CDR kv = ['Type] then ['ignore] else [CDR kv]
+             else
+               CDR kv
+      -- note that v is a list of the form [pred_n, pred_n-1, ..., pred1, cat]
+      -- cat is only *one* item!!!
+      if not(null v) then
+          $augmentedArgs:local := [[arg, pred, :v], :delete(kv, augargs)]
+  -- Now $augmentedArgs is set correctly and we pass it to axFormatOp.
   axFormatOp op
+
+-- Delete the first predicate corresponding to key in the association
+-- list assoclist.
+-- This corresponds to deleting one 'Has level corresponding to key.
+-- This function is mainly here to prevent infinite recursion.
+deleteFirstPred(key, assoclist) ==
+  null assoclist => assoclist
+  assoclist is [kv, :t]
+  kv is [k, pred, :v]
+  k = key =>
+      null v => t
+      null cdr v => t
+      [[k, :v], :t]
+  [kv, :deleteFirstPred(key, t)]
 
 
 axFormatOp op ==
    op is ['IF, pred, trueops, falseops] =>
+      -- ops are either single op or ['PROGN, ops]
+      -- In case we meet "if A has T then X else Y", we augment the type of
+      -- A by T inside X. Inside Y nothing is augmented.
+      -- We only care about such A that are parameters in a sourrounding
+      -- constructor, i.e. something looking like |#i|.
+      -- The form "if not(A has T) then ..." is not supported.
+      axFormattedPred := axFormatPred pred
       NULL(trueops) or trueops='noBranch =>
-         ['If, ['Test,['Not, axFormatPred pred]],
-              axFormatCondOp falseops,
-                axFormatCondOp trueops]
-      ['If, axFormatPred pred,
-             axFormatCondOp trueops,
-              axFormatCondOp falseops]
-       -- ops are either single op or ['PROGN, ops]
+         ['If, ['Test,['Not, axFormattedPred]], axFormatOp falseops, []]
+      ['If, axFormattedPred,
+            axFormatAugmentOp(trueops, axFormattedPred, pred, $augmentedArgs),
+              axFormatOp falseops]
    op is ['SIGNATURE, name, type] => axFormatOpSig(name,type)
    op is ['SIGNATURE, name, type, 'constant] =>
             axFormatConstantOp(name,type)
