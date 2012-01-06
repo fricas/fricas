@@ -167,37 +167,49 @@ domaindepfiles: $(domain_dep_files)
 # The files in aldor_srcs are not yet under a license
 # that is appropriate for inclusion in an Axiom repository.
 # These files are available from aldor.org
-# ALDORSVN=https://aquarium.aldor.csd.uwo.ca/svn/
-# or from a parallel development site
-ALDORSVN=https://svn.origo.ethz.ch/algebraist
-ALDORBASICS=$(ALDORSVN)/trunk/aldor/lib/libax0
-ALDORLANG=$(ALDORSVN)/trunk/aldor/lib/axllib/src
+# ALDORSOURCE=https://aquarium.aldor.csd.uwo.ca/svn/trunk
+# or from a parallel development site.
+# If you have a local copy of the aldor sources (revision 23) in a
+# local directory, let ALDORSOURCE point to the trunk checkout.
+# Calling "make ALDORSOURCE=/point/to/trunk" with a value not starting
+# with https:// will automatically assume that the string denotes a
+# directory name and get the files from the local file system.
+ALDORSOURCE=https://svn.origo.ethz.ch/algebraist/trunk
+ALDORBASICS=$(ALDORSOURCE)/aldor/lib/libax0
+ALDORLANG=$(ALDORSOURCE)/aldor/lib/axllib/src
 SVN:=@SVN@
 CURL:=@CURL@
 WGET:=@WGET@
+ifneq "$(findstring https://,$(ALDORSOURCE))" "https://"
+  # Assume local directory if $(ALDORSOURCE) does not start with "https://".
+  XCAT:=cat
+else
+  # Try getting the files from the web.
+  # Choose one of the available access methods.
 ifdef SVN
-  SVNCAT=$(SVN) cat
+  XCAT:=$(SVN) cat
 else
 ifdef CURL
-  SVNCAT:=$(CURL)
+  XCAT:=$(CURL)
 else
 ifdef WGET
-  SVNCAT:=$(WGET) -O -
+  XCAT:=$(WGET) -O -
 else
-  SVNCAT:=echo Get the file manually from
+  XCAT:=echo Get the file manually from
+endif
 endif
 endif
 endif
 
 axiom.as axextend.as axlit.as stub.as:
-	$(SVNCAT) $(ALDORBASICS)/$@ > $@
+	$(XCAT) $(ALDORBASICS)/$@ > $@
 
 minimach.as:
-	$(SVNCAT) $(ALDORBASICS)/$@ | \
+	$(XCAT) $(ALDORBASICS)/$@ | \
 	sed -e 's/^#.*//;s/Language;/AxiomLib;inline from AxiomLib;/' > $@
 
 lang.as:
-	$(SVNCAT) $(ALDORLANG)/$@ > $@
+	$(XCAT) $(ALDORLANG)/$@ > $@
 
 subsetc.as: stub.as
 	grep AxiomLib $< > $@
