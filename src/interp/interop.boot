@@ -132,13 +132,13 @@ closeOldAxiomFunctor(name) ==
 
 lazyOldAxiomDomainLookupExport(domenv, self, op, sig, box, skipdefaults, env) ==
   dom := instantiate domenv
-  SPADCALL(CDR dom, self, op, sig, box, skipdefaults, CAR(dom).3)
+  SPADCALL(CDR dom, self, op, sig, box, skipdefaults, (CAR dom).3)
 
 lazyOldAxiomDomainHashCode(domenv, env) == CAR domenv
 
 lazyOldAxiomDomainDevaluate(domenv, env) ==
   dom := instantiate domenv
-  SPADCALL(CDR dom, CAR(dom).1)
+  SPADCALL(CDR dom, (CAR dom).1)
 
 lazyOldAxiomAddChild(domenv, kid, env) ==
   CONS($lazyOldAxiomDomainDispatch,domenv)
@@ -251,7 +251,7 @@ devaluate(d) ==
       -- ?need a shortcut for old domains
       -- ELT(CAR d, 0) = 'oldAxiomDomain => ...
       -- FIXP(ELT(CAR d,0)) => d
-      DNameToSExpr(SPADCALL(CDR d,CAR(d).1))
+      DNameToSExpr(SPADCALL(CDR d,(CAR d).1))
   not REFVECP d => d
   QSGREATERP(QVSIZE d,5) and QREFELT(d,3) is ['Category] => QREFELT(d,0)
   QSGREATERP(QVSIZE d,0) =>
@@ -292,7 +292,7 @@ oldAxiomDomainLookupExport _
 oldAxiomDomainHashCode(domenv, env) == CAR domenv
 
 oldAxiomDomainDevaluate(domenv, env) ==
-   SExprToDName(CDR(domenv).0, 'T)
+   SExprToDName((CDR domenv).0, 'T)
 
 oldAxiomAddChild(domenv, child, env) == CONS($oldAxiomDomainDispatch, domenv)
 
@@ -307,7 +307,7 @@ $oldAxiomDomainDispatch :=
 --------------------> NEW DEFINITION (see g-util.boot.pamphlet)
 isDomain a ==
   PAIRP a and VECP(CAR a) and
-    member(CAR(a).0, $domainTypeTokens)
+    member((CAR a).0, $domainTypeTokens)
 
 -- following is interpreter interface to function lookup
 -- perhaps it should always work with hashcodes for signature?
