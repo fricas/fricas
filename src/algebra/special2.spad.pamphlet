@@ -406,7 +406,218 @@ FloatSpecialFunctions() : Exports == Implementation where
 
 @
 
-\section{package FELFUN FloatEllipticFunctions}
+<<package ELIPIDF DoubleFloatEllipticIntegrals>>=
+
+)abbrev package ELIPIDF DoubleFloatEllipticIntegrals
+)boot $tryRecompileArguments := nil
+DoubleFloatEllipticIntegrals : Exports == Implementation where
+  RF ==> DoubleFloat
+  CF ==> Complex(DoubleFloat)
+
+  Exports ==> with
+      ellipticRC : (RF, RF) -> RF
+        ++ ellipticRC(x, y) computes integral from 0 to infinity of
+        ++ \spad{(1/2)*(t+x)^(-1/2)*(t+y)^(-1)dt}.
+      ellipticRD : (RF, RF, RF) -> RF
+        ++ ellipticRD(x, y, z) computes integral from 0 to infinity of
+        ++ \spad{(3/2)*(t+x)^(-1/2)*(t+y)^(-1/2)*(t+Z)^(-3/2)dt}.
+      ellipticRF : (RF, RF, RF) -> RF
+        ++ ellipticRF(x, y, z) computes integral from 0 to infinity of
+        ++ \spad{(1/2)*(t+x)^(-1/2)*(t+y)^(-1/2)*(t+Z)^(-1/2)dt}.
+      ellipticRJ : (RF, RF, RF, RF) -> RF
+        ++ ellipticRF(x, y, z, p) computes integral from 0 to infinity of
+        ++ \spad{(3/2)*(t+x)^(-1/2)*(t+y)^(-1/2)*(t+Z)^(-1/2)*(t+p)^(-1)dt}.
+      ellipticF : (RF, RF) -> RF
+        ++ ellipticF(z, m) is the incomplete elliptic integral of the
+        ++ first kind.
+      ellipticE : (RF, RF) -> RF
+        ++ ellipticE(z, m) is the incomplete elliptic integral of the
+        ++ second kind.
+      ellipticPi : (RF, RF, RF) -> RF
+        ++ ellipticPi(z, n, m) is the incomplete elliptic integral of the
+        ++ third kind.
+      ellipticRC : (CF, CF) -> CF
+        ++ ellipticRC(x, y) computes integral from 0 to infinity of
+        ++ \spad{(1/2)*(t+x)^(-1/2)*(t+y)^(-1)dt}.
+      ellipticRD : (CF, CF, CF) -> CF
+        ++ ellipticRD(x, y, z) computes integral from 0 to infinity of
+        ++ \spad{(3/2)*(t+x)^(-1/2)*(t+y)^(-1/2)*(t+Z)^(-3/2)dt}.
+      ellipticRF : (CF, CF, CF) -> CF
+        ++ ellipticRF(x, y, z) computes integral from 0 to infinity of
+        ++ \spad{(1/2)*(t+x)^(-1/2)*(t+y)^(-1/2)*(t+Z)^(-1/2)dt}.
+      ellipticRJ : (CF, CF, CF, CF) -> CF
+        ++ ellipticRF(x, y, z, p) computes integral from 0 to infinity of
+        ++ \spad{(3/2)*(t+x)^(-1/2)*(t+y)^(-1/2)*(t+Z)^(-1/2)*(t+p)^(-1)dt}.
+      ellipticF : (CF, CF) -> CF
+        ++ ellipticF(z, m) is the incomplete elliptic integral of the
+        ++ first kind.
+      ellipticE : (CF, CF) -> CF
+        ++ ellipticE(z, m) is the incomplete elliptic integral of the
+        ++ second kind.
+      ellipticPi : (CF, CF, CF) -> CF
+        ++ ellipticPi(z, n, m) is the incomplete elliptic integral of the
+        ++ third kind.
+
+  Implementation ==> add
+
+      errtol : RF := 0.0001::RF
+      uplim : RF := max()$RF/5::RF
+      lolim : RF := 10::RF/max()$RF
+
+      half : RF := 1/2::RF
+      one_third : RF := 1/3::RF
+      one_fourth : RF := 1/4::RF
+      one_fifth : RF := 1/5::RF
+
+      c0_RC : RF := 3::RF/10::RF
+      c1_RC : RF := 1/7::RF
+      c2_RC : RF := 3750::RF/10000::RF
+      c3_RC : RF := 9::RF/22::RF
+
+      c1_RF : RF := 1/24::RF
+      c2_RF : RF := 1/10::RF
+      c3_RF : RF := 3::RF/44::RF
+      c4_RF : RF := 1/14::RF
+
+      c1_RD := -3::RF/14::RF
+      c2_RD := 1/6::RF
+      c3_RD := 9::RF/22::RF
+      c4_RD := 3::RF/26::RF
+      c5_RD := 3::RF/2::RF
+
+      c1_RJ : RF := 3::RF/14::RF
+      c3_RJ : RF := 3::RF/22::RF
+      c4_RJ : RF := 3::RF/26::RF
+      c5_RJ : RF := 9::RF/88::RF
+      c6_RJ : RF := 9::RF/52::RF
+
+      Funs ==>
+          ellipticRC(x : DF, y : DF) : DF ==
+              repeat
+                  -- mu := one_third*(x + y + y)
+                  -- sn := (y + mu)/mu - 2::DF
+                  mm := (x + y + y)
+                  sn := (y - x)/mm
+                  rabs(sn) < errtol =>
+                      mu := one_third*mm
+                      s := sn*sn*(c0_RC::DF + sn*(c1_RC::DF
+                                    + sn*(c2_RC::DF + sn*c3_RC)))
+                      return (1 + s)/qsqrt(mu)
+                  lambda := (2::DF)*qsqrt(x)*qsqrt(y) + y
+                  x := one_fourth*(x + lambda)
+                  y := one_fourth*(y + lambda)
+
+          ellipticRF(x : DF, y : DF, z : DF) : DF ==
+              repeat
+                  mu := one_third*(x + y + z)
+                  mu_inv := 1/mu
+                  xndev := (mu - x)*mu_inv
+                  yndev := (mu - y)*mu_inv
+                  zndev := (mu - z)*mu_inv
+                  epsilon := max(rabs(xndev), max(rabs(yndev), rabs(zndev)))
+                  epsilon < errtol =>
+                      e2 := xndev*yndev - zndev*zndev
+                      e3 := xndev*yndev*zndev
+                      s := 1 + (c1_RF*e2 - c2_RF::DF - c3_RC*e2)*e2 + c4_RF*e3
+                      return s/qsqrt(mu)
+                  xnroot := qsqrt(x)
+                  ynroot := qsqrt(y)
+                  znroot := qsqrt(z)
+                  lambda := xnroot*(ynroot + znroot) + ynroot*znroot
+                  x := one_fourth*(x + lambda)
+                  y := one_fourth*(y + lambda)
+                  z := one_fourth*(z + lambda)
+
+          ellipticRD(x : DF, y : DF, z : DF) : DF ==
+              sigma : DF := 0
+              power4 : DF := 1
+              repeat
+                  mu := one_fifth*(x + y + 3::DF*z)
+                  xndev := (mu - x)/mu
+                  yndev := (mu - y)/mu
+                  zndev := (mu - z)/mu
+                  epsilon := max(rabs(xndev), max(rabs(yndev), rabs(zndev)))
+                  epsilon < errtol =>
+                      ea := xndev*yndev
+                      eb := zndev*zndev
+                      ec := ea - eb
+                      ed := ea - 6::RF*eb
+                      ef := ed + ec + ec
+                      s1 := ed*(c1_RD::DF + one_fourth*c3_RD*ed
+                                - c5_RD*c4_RD*zndev*ef)
+                      s2 := zndev*(c2_RD*ef + zndev*(-c3_RD*ec
+                               + zndev*c4_RD*ea))
+                      return 3::RF*sigma + power4*(1 + s1 + s2)/(mu*qsqrt(mu))
+                  xnroot := qsqrt(x)
+                  ynroot := qsqrt(y)
+                  znroot := qsqrt(z)
+                  lambda := xnroot*(ynroot + znroot) + ynroot*znroot
+                  sigma := sigma + power4/(znroot*(z + lambda))
+                  power4 := one_fourth*power4
+                  x := one_fourth*(x + lambda)
+                  y := one_fourth*(y + lambda)
+                  z := one_fourth*(z + lambda)
+
+          ellipticRJ(x : DF, y : DF, z : DF, p : DF) : DF ==
+              sigma : DF := 0
+              power4 : DF := 1
+              repeat
+                  mu := one_fifth*(x + y + z + p + p)
+                  xndev := (mu - x)/mu
+                  yndev := (mu - y)/mu
+                  zndev := (mu - z)/mu
+                  pndev := (mu - p)/mu
+                  epsilon := max(rabs(xndev), max(rabs(yndev),
+                                                max(rabs(zndev), rabs(pndev))))
+                  epsilon < errtol =>
+                      ea := xndev*(yndev + zndev) + yndev*zndev
+                      eb := xndev*yndev*zndev
+                      ec := pndev*pndev
+                      e2 := ea - 3::RF*ec
+                      e3 := eb + 2::RF*pndev*(ea - ec)
+                      s1 := 1 + e2*(-c1_RJ::DF + c5_RJ*e2 - c6_RJ*e3)
+                      s2 := eb*(half*one_third::DF +
+                                pndev*(-(c3_RJ + c3_RJ)::DF + pndev*c4_RJ))
+                      s3 := pndev*ea*(one_third::DF - pndev*c3_RJ)
+                            - one_third*pndev*ec
+                      return 3::RF*sigma + power4*(s1 + s2 + s3)/(mu*qsqrt(mu))
+                  xnroot := qsqrt(x)
+                  ynroot := qsqrt(y)
+                  znroot := qsqrt(z)
+                  lambda := xnroot*(ynroot + znroot) + ynroot*znroot
+                  alfa := p*(xnroot + ynroot + znroot) + xnroot*ynroot*znroot
+                  alfa := alfa*alfa
+                  beta := p*(p + lambda)*(p + lambda)
+                  sigma := sigma + power4*ellipticRC(alfa, beta)
+                  power4 := one_fourth*power4
+                  x := one_fourth*(x + lambda)
+                  y := one_fourth*(y + lambda)
+                  z := one_fourth*(z + lambda)
+                  p := one_fourth*(p + lambda)
+
+          ellipticF(z : DF, m : DF) : DF ==
+              z*ellipticRF(1 - z*z, 1 - m*z*z, 1)
+
+          ellipticE(z : DF, m : DF) : DF ==
+              z*ellipticRF(1 - z*z, 1 - m*z*z, 1) - (m/3::DF)*
+                 z*z*z*ellipticRD(1 - z*z, 1 - m*z*z, 1)
+
+          ellipticPi(z : DF, n : DF, m : DF) : DF ==
+              z*ellipticRF(1 - z*z, 1 - m*z*z, 1) + (n/3::DF)*
+                z*z*z*ellipticRJ(1 - z*z, 1 - m*z*z, 1, 1 - n*z*z)
+
+      rabs(x : Complex(DoubleFloat)) : DoubleFloat == real(abs(x))
+
+      Funs where
+          DF ==> RF
+          rabs ==> abs
+
+      Funs where
+          DF ==> CF
+          qsqrt ==> sqrt
+
+@
+
 <<package FELFUN FloatEllipticFunctions>>=
 
 )abbrev package FELFUN FloatEllipticFunctions
