@@ -33,27 +33,12 @@
 
 --% Standard Library Creation Functions
 
-readLib(fn,ft) == readLib1(fn,ft,"*")
-
-readLib1(fn,ft,fm) ==
+readLib(fn, ft) ==
   -- see if it exists first
-  p := pathname [fn,ft,fm]
-  readLibPathFast p
-
-readLibPathFast p ==
-  -- DO NOT assume 1) p is a valid pathname
-  --               2) file has already been checked for existence
+  p := pathname [fn, ft]
   rMkIstream(p)
 
-writeLib(fn,ft) == writeLib1(fn,ft,"*")
-
-writeLib1(fn,ft,fm) == rMkOstream([fn,ft,fm])
-
-putFileProperty(fn,ft,id,val) ==
-  fnStream:= writeLib1(fn,ft,"*")
-  val:= rwrite( id,val,fnStream)
-  RSHUT fnStream
-  val
+writeLib(fn, ft) == rMkOstream([fn, ft])
 
 lisplibWrite(prop,val,filename) ==
   -- this may someday not write NIL keys, but it will now
@@ -69,31 +54,6 @@ rwriteLispForm(key,form) ==
   if $LISPLIB then
     rwrite( key,form,$libFile)
     outputLispForm(key,form)
-
-getLisplib(name,id) ==
-  -- this version does cache the returned value
-  getFileProperty(name,$spadLibFT,id,true)
-
-getLisplibNoCache(name,id) ==
-  -- this version does not cache the returned value
-  getFileProperty(name,$spadLibFT,id,false)
-
-getFileProperty(fn,ft,id,cache) ==
-  fn in '(DOMAIN SUBDOM MODE) => nil
-  p := pathname [fn,ft,'"*"]
-  cache => hasFileProperty(p,id,fn)
-  hasFilePropertyNoCache(p,id,fn)
-
-hasFilePropertyNoCache(p,id,abbrev) ==
-  -- it is assumed that the file exists and is a proper pathname
-  -- startTimingProcess 'diskread
-  fnStream:= readLibPathFast p
-  NULL fnStream => NIL
-  -- str:= object2String id
-  val:= rread(id,fnStream, nil)
-  RSHUT fnStream
-  -- stopTimingProcess 'diskread
-  val
 
 --% Uninstantiating
 

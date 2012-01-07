@@ -136,35 +136,6 @@
 ;; following 3 are replacements for g-util.boot
 (define-function '|isLowerCaseLetter| #'LOWER-CASE-P)
 
-(defvar *msghash* nil "hash table keyed by msg number")
-
-(defun cacheKeyedMsg (file)
-  (let ((line "") (msg "") key)
-   (with-open-file (in file)
-    (catch 'done
-     (loop
-      (setq line (read-line in nil nil))
-      (cond
-       ((null line)
-         (when key
-          (setf (gethash key *msghash*) msg))
-          (throw 'done nil))
-       ((= (length line) 0))
-       ((char= (schar line 0) #\S)
-         (when key
-          (setf (gethash key *msghash*) msg))
-         (setq key (intern line "BOOT"))
-         (setq msg ""))
-       ('else
-        (setq msg (concatenate 'string msg line)))))))))
-
-(defun |fetchKeyedMsg| (key)
- (setq key (|object2Identifier| key))
- (unless *msghash*
-  (setq *msghash* (make-hash-table))
-  (cacheKeyedMsg |$defaultMsgDatabaseName|))
- (gethash key *msghash*))
-
 (setq identity #'identity) ;to make LispVM code for handling constants to work
 
 (|initializeTimedNames| |$interpreterTimedNames| |$interpreterTimedClasses|)

@@ -104,13 +104,13 @@ saveDependentsHashTable() ==
   RSHUT stream
 
 getUsersOfConstructor(con) ==
-  stream := readLib1('USERS, 'DATABASE, 'a)
+  stream := readLib('USERS, 'DATABASE)
   val := rread(con, stream, nil)
   RSHUT stream
   val
 
 getDependentsOfConstructor(con) ==
-  stream := readLib1('DEPENDENTS, 'DATABASE, 'a)
+  stream := readLib('DEPENDENTS, 'DATABASE)
   val := rread(con, stream, nil)
   RSHUT stream
   val

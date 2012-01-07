@@ -276,15 +276,3 @@ findString(char *file, char *string)
 
 }
 
-int
-copyEnvValue(char *varName, char *buffer)
-{
-    char *s;
-
-    s = getenv(varName);
-    if (s == NULL)
-        return 0;
-    strcpy(buffer, s);
-    return strlen(s);
-}
-

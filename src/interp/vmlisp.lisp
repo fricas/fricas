@@ -964,6 +964,7 @@
    "default value returned by read and read-line at end-of-file")
 
 (defun PLACEP (item) (eq item *read-place-holder*))
+(defun get_read_placeholder() *read-place-holder*)
 (defun VMREAD (st &optional (eofval *read-place-holder*))
   (read st nil eofval))
 (defun |read-line| (st &optional (eofval *read-place-holder*))
