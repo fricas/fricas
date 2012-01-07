@@ -352,34 +352,11 @@ scanEsc()==
      if $n>=$sz
      then if nextline($r)
           then
-             while null $n repeat nextline($r)
-             scanEsc()
+             $n := 0
              false
           else false
      else
-           n1:=STRPOSL('" ",$ln,$n,true)
-           if null n1
-           then if nextline($r)
-                then
-                  while null $n repeat nextline($r)
-                  scanEsc()
-                  false
-                else false
-           else
-                if $n=n1
-                then true
-                else if QENUM($ln,n1)=ESCAPE
-                     then
-                       $n:=n1+1
-                       scanEsc()
-                       false
-                     else
-                       $n:=n1
-                       startsNegComment?() or startsComment?() =>
-                                 nextline($r)
-                                 scanEsc()
-                                 false
-                       false
+         true
 
 startsComment?()==
     if $n<$sz
