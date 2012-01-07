@@ -1194,18 +1194,6 @@
 
 ;;; end of moved fragment
 
-;;; moved from nci.lisp.pamphlet
-
-(defun |intloopInclude| (name n)
-    (with-open-file (st name)
-                    (|intloopInclude0| st name n)))
-
-(defun |ncloopInclude| (name n)
-    (with-open-file (st name)
-                    (|ncloopInclude0| st name n)))
-
-;;; end of moved fragment
-
 ;;; moved from bits.lisp
 
 ;;; The types "bit" and "bit vector" are implemented differently

@@ -12,6 +12,13 @@
     (DECLARE (SPECIAL |$bfClamming|))
     (RETURN (PROGN (SETQ |$bfClamming| NIL) (BOOTTOCLLINES |fn| |outfn|)))))
  
+; shoeOpenInputBoottranFile(fn, fun, args) ==
+;     doInBoottranPackage(handle_input_file(fn, fun, args))
+ 
+(DEFUN |shoeOpenInputBoottranFile| (|fn| |fun| |args|)
+  (PROG ()
+    (RETURN (|doInBoottranPackage| (|handle_input_file| |fn| |fun| |args|)))))
+ 
 ; BOOTCLAM (fn, outfn) ==
 ;     $bfClamming : local := true
 ;     BOOTTOCLCLINES(fn, outfn)
@@ -49,7 +56,7 @@
 ;       then shoeNotFound fn
 ;       else
 ;           $GenVarCounter : local := 0
-;           shoeOpenOutputFile(outfn, FUNCTION shoeClLines1, [a])
+;           handle_output_file(outfn, FUNCTION shoeClLines1, [a])
 ;           shoeConsole CONCAT(outfn, '" PRODUCED")
  
 (DEFUN |shoeClLines| (|a| |fn| |outfn|)
@@ -58,7 +65,7 @@
     (RETURN
      (COND ((NULL |a|) (|shoeNotFound| |fn|))
            ('T (SETQ |$GenVarCounter| 0)
-            (|shoeOpenOutputFile| |outfn| #'|shoeClLines1| (LIST |a|))
+            (|handle_output_file| |outfn| #'|shoeClLines1| (LIST |a|))
             (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
  
 ; BOOTTOCLC(fn, outfn) ==
@@ -105,7 +112,7 @@
 ;       then shoeNotFound fn
 ;       else
 ;           $GenVarCounter : local := 0
-;           shoeOpenOutputFile(outfn, FUNCTION shoeClCLines1, [a])
+;           handle_output_file(outfn, FUNCTION shoeClCLines1, [a])
 ;           shoeConsole CONCAT(outfn,'" PRODUCED")
  
 (DEFUN |shoeClCLines| (|a| |fn| |outfn|)
@@ -114,7 +121,7 @@
     (RETURN
      (COND ((NULL |a|) (|shoeNotFound| |fn|))
            ('T (SETQ |$GenVarCounter| 0)
-            (|shoeOpenOutputFile| |outfn| #'|shoeClCLines1| (LIST |a|))
+            (|handle_output_file| |outfn| #'|shoeClCLines1| (LIST |a|))
             (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
  
 ; BOOTTOMC fn==
@@ -283,7 +290,7 @@
 ; STTOMC string==
 ;     $bfClamming : local := false
 ;     a := STTOSEX1 string
-;     result := 
+;     result :=
 ;         bStreamPackageNull a => nil
 ;         shoePCompile car a
 ;     result
@@ -338,7 +345,7 @@
        (COMPILE |name| (CONS 'LAMBDA (CONS |bv| |body|))))
       (#1# (EVAL |fn|))))))
  
-; shoeNotFound fn ==  
+; shoeNotFound fn ==
 ;    shoeConsole CONCAT(fn ,'" NOT FOUND")
 ;    nil
  
@@ -899,14 +906,14 @@
  
 ; DEFUSE fn==
 ;   infn:=CONCAT(fn,'".boot")
-;   shoeOpenInputFile(infn, FUNCTION shoeDfu, [fn])
+;   handle_input_file(infn, FUNCTION shoeDfu, [fn])
  
 (DEFUN DEFUSE (|fn|)
   (PROG (|infn|)
     (RETURN
      (PROGN
       (SETQ |infn| (CONCAT |fn| ".boot"))
-      (|shoeOpenInputFile| |infn| #'|shoeDfu| (LIST |fn|))))))
+      (|handle_input_file| |infn| #'|shoeDfu| (LIST |fn|))))))
  
 ; shoeDfu(a,fn)==
 ;   if null a
@@ -921,7 +928,7 @@
 ;      $bfClamming:local:=false
 ;      shoeDefUse shoeTransformStream a
 ;      out:=CONCAT(fn,'".defuse")
-;      shoeOpenOutputFile(out, FUNCTION shoeReport, [])
+;      handle_output_file(out, FUNCTION shoeReport, [])
 ;      shoeConsole CONCAT(out,'" PRODUCED")
  
 (DEFUN |shoeDfu| (|a| |fn|)
@@ -940,7 +947,7 @@
             (SETQ |$bootDefinedTwice| NIL) (SETQ |$GenVarCounter| 0)
             (SETQ |$bfClamming| NIL) (|shoeDefUse| (|shoeTransformStream| |a|))
             (SETQ |out| (CONCAT |fn| ".defuse"))
-            (|shoeOpenOutputFile| |out| #'|shoeReport| NIL)
+            (|handle_output_file| |out| #'|shoeReport| NIL)
             (|shoeConsole| (CONCAT |out| " PRODUCED")))))))
  
 ; shoeReport stream==
@@ -1289,14 +1296,14 @@
  
 ; XREF fn==
 ;   infn:=CONCAT(fn,'".boot")
-;   shoeOpenInputFile(infn, FUNCTION shoeXref, [fn])
+;   handle_input_file(infn, FUNCTION shoeXref, [fn])
  
 (DEFUN XREF (|fn|)
   (PROG (|infn|)
     (RETURN
      (PROGN
       (SETQ |infn| (CONCAT |fn| ".boot"))
-      (|shoeOpenInputFile| |infn| #'|shoeXref| (LIST |fn|))))))
+      (|handle_input_file| |infn| #'|shoeXref| (LIST |fn|))))))
  
 ; shoeXref(a,fn)==
 ;   if null a
@@ -1310,7 +1317,7 @@
 ;      $bfClamming:local:=false
 ;      shoeDefUse shoeTransformStream a
 ;      out:=CONCAT(fn,'".xref")
-;      shoeOpenOutputFile(out, FUNCTION shoeXReport, [])
+;      handle_output_file(out, FUNCTION shoeXReport, [])
 ;      shoeConsole CONCAT(out,'" PRODUCED")
  
 (DEFUN |shoeXref| (|a| |fn|)
@@ -1328,7 +1335,7 @@
             (SETQ |$bootUsed| (MAKE-HASHTABLE 'EQ)) (SETQ |$GenVarCounter| 0)
             (SETQ |$bfClamming| NIL) (|shoeDefUse| (|shoeTransformStream| |a|))
             (SETQ |out| (CONCAT |fn| ".xref"))
-            (|shoeOpenOutputFile| |out| #'|shoeXReport| NIL)
+            (|handle_output_file| |out| #'|shoeXReport| NIL)
             (|shoeConsole| (CONCAT |out| " PRODUCED")))))))
  
 ; shoeXReport stream==
@@ -1511,7 +1518,7 @@
 ;    $bfClamming:local:=false
 ;    $GenVarCounter:local := 0
 ;    infn:=shoeAddbootIfNec fn
-;    shoeOpenInputFile(infn, FUNCTION shoeFindName, [fn, name])
+;    handle_input_file(infn, FUNCTION shoeFindName, [fn, name])
  
 (DEFUN FC (|name| |fn|)
   (PROG (|$GenVarCounter| |$bfClamming| |infn|)
@@ -1521,7 +1528,7 @@
       (SETQ |$bfClamming| NIL)
       (SETQ |$GenVarCounter| 0)
       (SETQ |infn| (|shoeAddbootIfNec| |fn|))
-      (|shoeOpenInputFile| |infn| #'|shoeFindName| (LIST |fn| |name|))))))
+      (|handle_input_file| |infn| #'|shoeFindName| (LIST |fn| |name|))))))
  
 ; shoeFindName(a, fn, name)==
 ;      lines:=shoeFindLines(fn,name,a)

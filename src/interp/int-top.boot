@@ -266,6 +266,10 @@ intloopInclude0(st, name, n) ==
         next(function insertpile,
           next(function lineoftoks,$lines))))
 
+intloopInclude(name, n) ==
+    handle_input_file(name, function intloopInclude0, [name, n])
+      or error('"File not found")
+
 intloopInclude1(name,n) ==
           a:=ncloopIncFileName name
           a => intloopInclude(a,n)
@@ -412,6 +416,10 @@ ncloopInclude0(st, name, n) ==
          next(function ncloopEchoParse,
            next(function insertpile,
             next(function lineoftoks,$lines))))
+
+ncloopInclude(name, n) ==
+    handle_input_file(name, function ncloopInclude0, [name, n])
+      or error('"File not found")
 
 ncloopInclude1(name,n) ==
           a:=ncloopIncFileName name

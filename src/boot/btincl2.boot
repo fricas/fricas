@@ -123,7 +123,7 @@ shoeFunctionFileInput1(a, fn, fun) ==
     shoeInclude bAddLineNumber(shoeFindLines(fn, fun, a), bIgen 0)
 
 shoeFunctionFileInput [fun,fn]==
-    shoeOpenInputFile(fn, FUNCTION shoeFunctionFileInput1, [fn, fun])
+    handle_input_file(fn, FUNCTION shoeFunctionFileInput1, [fn, fun])
 
 shoeInclude s== bDelay(function shoeInclude1,[s])
 shoeInclude1 s==
