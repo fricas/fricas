@@ -39,6 +39,9 @@ BOOTTOCL (fn, outfn) ==
          $bfClamming:local:=false
          BOOTTOCLLINES(fn, outfn)
 
+shoeOpenInputBoottranFile(fn, fun, args) ==
+    doInBoottranPackage(handle_input_file(fn, fun, args))
+
 -- (bootclam "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp" , producing, for each function
 -- a hash table to store previously computed values indexed by argument
@@ -62,7 +65,7 @@ shoeClLines(a, fn, outfn)==
       then shoeNotFound fn
       else
           $GenVarCounter : local := 0
-          shoeOpenOutputFile(outfn, FUNCTION shoeClLines1, [a])
+          handle_output_file(outfn, FUNCTION shoeClLines1, [a])
           shoeConsole CONCAT(outfn, '" PRODUCED")
 
 -- (boottoclc "filename") translates the file "filename.boot" to
@@ -88,7 +91,7 @@ shoeClCLines(a, fn, outfn)==
       then shoeNotFound fn
       else
           $GenVarCounter : local := 0
-          shoeOpenOutputFile(outfn, FUNCTION shoeClCLines1, [a])
+          handle_output_file(outfn, FUNCTION shoeClCLines1, [a])
           shoeConsole CONCAT(outfn,'" PRODUCED")
 
 -- (boottomc "filename") translates the file "filename.boot"
@@ -430,7 +433,7 @@ shoeRemoveStringIfNec(str,s)==
 
 DEFUSE fn==
   infn:=CONCAT(fn,'".boot")
-  shoeOpenInputFile(infn, FUNCTION shoeDfu, [fn])
+  handle_input_file(infn, FUNCTION shoeDfu, [fn])
 
 shoeDfu(a,fn)==
   if null a
@@ -445,7 +448,7 @@ shoeDfu(a,fn)==
      $bfClamming:local:=false
      shoeDefUse shoeTransformStream a
      out:=CONCAT(fn,'".defuse")
-     shoeOpenOutputFile(out, FUNCTION shoeReport, [])
+     handle_output_file(out, FUNCTION shoeReport, [])
      shoeConsole CONCAT(out,'" PRODUCED")
 
 shoeReport stream==
@@ -548,7 +551,7 @@ bootOutLines(l,outfn,s)==
 
 XREF fn==
   infn:=CONCAT(fn,'".boot")
-  shoeOpenInputFile(infn, FUNCTION shoeXref, [fn])
+  handle_input_file(infn, FUNCTION shoeXref, [fn])
 
 shoeXref(a,fn)==
   if null a
@@ -562,7 +565,7 @@ shoeXref(a,fn)==
      $bfClamming:local:=false
      shoeDefUse shoeTransformStream a
      out:=CONCAT(fn,'".xref")
-     shoeOpenOutputFile(out, FUNCTION shoeXReport, [])
+     handle_output_file(out, FUNCTION shoeXReport, [])
      shoeConsole CONCAT(out,'" PRODUCED")
 
 
@@ -633,7 +636,7 @@ FC(name,fn)==
    $bfClamming:local:=false
    $GenVarCounter:local := 0
    infn:=shoeAddbootIfNec fn
-   shoeOpenInputFile(infn, FUNCTION shoeFindName, [fn, name])
+   handle_input_file(infn, FUNCTION shoeFindName, [fn, name])
 
 shoeFindName(a, fn, name)==
      lines:=shoeFindLines(fn,name,a)

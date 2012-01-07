@@ -1097,6 +1097,16 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defmacro MEMQ (a b) `(member ,a ,b :test #'eq))
 
+(defun |handle_input_file|(fn fun args)
+    (with-open-file (stream fn :direction :input
+       :if-does-not-exist nil)
+       (APPLY fun (cons stream args))))
+
+(defun |handle_output_file|(fn fun args)
+    (with-open-file (stream fn :direction :output
+       :if-exists :supersede)
+       (APPLY fun (cons stream args))))
+
 (in-package "BOOTTRAN")
 (defmacro |doInBoottranPackage| (expr)
     `(let ((*PACKAGE* (find-package "BOOTTRAN")))

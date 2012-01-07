@@ -67,24 +67,6 @@
 
 (defun |shoeCLOSE| (s) (close s))
 
-;;; The Boot translator source codes make uses of some
-;;; higher order functions.  For various reasons they are defined
-;;; as Lisp macros and must therefore be available in each
-;;; source file that uses them.
-
-(defun |shoeOpenInputFile|(fn fun args)
-    (with-open-file (stream fn :direction :input
-       :if-does-not-exist nil)
-       (APPLY fun (cons stream args))))
-
-(defun |shoeOpenInputBoottranFile| (fn fun args)
-     (|doInBoottranPackage| (|shoeOpenInputFile| fn fun args)))
-
-(defun |shoeOpenOutputFile|(fn fun args)
-    (with-open-file (stream fn :direction :output
-       :if-exists :supersede)
-       (APPLY fun (cons stream args))))
-
 ;;; ------------------------------------------------
 
 (defun |shoeConsole| (line)  (write-line line *terminal-io*))
