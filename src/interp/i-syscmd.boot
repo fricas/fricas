@@ -1958,7 +1958,7 @@ dewritify ob ==
                     HPUT($seen, nob, nob)
                     nob
                 type = 'PLACE =>
-                    nob := VMREAD MAKE_-INSTREAM NIL
+                    nob := get_read_placeholder()
                     HPUT($seen, ob, nob)
                     HPUT($seen, nob, nob)
                     nob

@@ -50,8 +50,6 @@ canCoerce(t1, t2) ==
     canCoerce1(t1, newMode) and canCoerce1(newMode, t2)
   nil
 
-hasFileProperty(p,id,abbrev) == hasFilePropertyNoCache(p,id,abbrev)
-
 isValidType form ==
   -- returns true IFF form is a type whose arguments satisfy the
   --  predicate of the type constructor

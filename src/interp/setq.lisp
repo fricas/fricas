@@ -266,7 +266,6 @@
   (|coerceConvertMmSelection| |hash| UEQUAL |count|)
 ; (|getModemapsFromDatabase| |hash| UEQUAL |count|)
 ; (|getOperationAlistFromLisplib| |hash| UEQUAL |count|)
-  (|hasFileProperty| |hash| UEQUAL |count|)
   (|isLegitimateMode| |hash| UEQUAL |count|)
   (|isValidType| |hash| UEQUAL |count|)
   (|resolveTT|   |hash| UEQUAL |count|)

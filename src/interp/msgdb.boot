@@ -102,7 +102,34 @@ wordFrom(l,i) ==
   if k = maxIndex and (c := l.k) ~= char ('_ ) then buf := STRCONC(buf,c)
   [buf,k+1]
 
-getKeyedMsg key == fetchKeyedMsg(key)
+DEFPARAMETER($msg_hash, nil)
+
+cacheKeyedMsg1(in_file) ==
+    key := nil
+    line := '""
+    msg := '""
+    repeat
+        line := READ_-LINE(in_file, nil, nil)
+        null(line) =>
+            if key then HPUT($msg_hash, key, msg)
+            -- THROW('DONE, nil)
+            return nil
+        #line = 0 => "iterate"
+        line.0 = char('"S") =>
+            if key then HPUT($msg_hash, key, msg)
+            key := INTERN(line, "BOOT")
+            msg := '""
+        msg := CONCAT(msg, line)
+
+cacheKeyedMsg(db_name) ==
+    CATCH('DONE, handle_input_file(db_name, function cacheKeyedMsg1, []))
+
+getKeyedMsg(key) ==
+    key := object2Identifier(key)
+    if not($msg_hash) then
+        $msg_hash := MAKE_-HASHTABLE('ID)
+        cacheKeyedMsg($defaultMsgDatabaseName)
+    HGET($msg_hash, key)
 
 --% Formatting and Printing Keyed Messages
 
