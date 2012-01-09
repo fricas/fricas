@@ -287,10 +287,6 @@ UnittestCount(): with
                       "functions as Strings!")$O
          messagePrint("  Otherwise, the test will fail and statistics() will "_
                       "not notice!")$O
-         messagePrint("* when a function to test takes a string as an " _
-                      "argument, put it in a variable")$O
-         messagePrint("  instead. Otherwise, the test will fail and " _
-                      "statistics() will not notice!")$O
          messagePrint("* testLibraryError does not prevent FriCAS from " _
                       "aborting the current block.")$O
          messagePrint("  Thus, if a block contains other test functions, they " _
@@ -721,77 +717,89 @@ Unittest: with
 
   == add
 
-     T ==> TemplateUtilities
+     interpretFunction1(f : Symbol, info : String, arg : String) : Any ==
+         if1 := parse(arg)$InputForm
+         ff := convert(f)@InputForm
+         info_f := convert(info)@InputForm
+         interpret(convert([ff, info_f, if1])@InputForm)$InputForm
 
+     interpretFunction2(f : Symbol, info : String, arg1 : String,
+                       arg2 : String) : Any ==
+         if1 := parse(arg1)$InputForm
+         if2 := parse(arg2)$InputForm
+         ff := convert(f)@InputForm
+         info_f := convert(info)@InputForm
+         interpret(convert([ff, info_f, if1, if2])@InputForm)$InputForm
+         
      testEquals(s1, s2) ==
          inp := "EQUL: (" s1 ", " s2 ")"
          incFatal(inp)$UnittestCount
-         interpretString("testEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('testEqualsAux, inp, s1, s2)
          decFatal()$UnittestCount
 
      xftestEquals(s1, s2) ==
          inp := "EQUL: (" s1 ", " s2 ")"
          incXfFatal(inp)$UnittestCount
-         interpretString("xftestEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('xftestEqualsAux, inp, s1, s2)
          decXfFatal()$UnittestCount
 
      testRealEquals(s1, s2) ==
          inp := "EQLR: (" s1 ", " s2 ")"
          incFatal(inp)$UnittestCount
-         interpretString("testRealEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('testRealEqualsAux, inp, s1, s2)
          decFatal()$UnittestCount
 
      xftestRealEquals(s1, s2) ==
          inp := "EQLR: (" s1 ", " s2 ")"
          incXfFatal(inp)$UnittestCount
-         interpretString("xftestRealEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('xftestRealEqualsAux, inp, s1, s2)
          decXfFatal()$UnittestCount
 
      testComplexEquals(s1, s2) ==
          inp := "EQLC: (" s1 ", " s2 ")"
          incFatal(inp)$UnittestCount
-         interpretString("testComplexEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('testComplexEqualsAux, inp, s1, s2)
          decFatal()$UnittestCount
 
      xftestComplexEquals(s1, s2) ==
          inp := "EQLC: (" s1 ", " s2 ")"
          incXfFatal(inp)$UnittestCount
-         interpretString("xftestComplexEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('xftestComplexEqualsAux, inp, s1, s2)
          decXfFatal()$UnittestCount
 
      testNotEquals(s1, s2) ==
          inp := "DIFF: (" s1 ", " s2 ")"
          incFatal(inp)$UnittestCount
-         interpretString("testNotEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('testNotEqualsAux, inp, s1, s2)
          decFatal()$UnittestCount
 
      xftestNotEquals(s1, s2) ==
          inp := "DIFF: (" s1 ", " s2 ")"
          incXfFatal(inp)$UnittestCount
-         interpretString("xftestNotEqualsAux(_"" inp "_", " s1 ", " s2 ")")$T
+         interpretFunction2('xftestNotEqualsAux, inp, s1, s2)
          decXfFatal()$UnittestCount
 
      testTrue(s) ==
          inp := "TRUE: (" s ")"
          incFatal(inp)$UnittestCount
-         interpretString("testTrueAux(_"" inp "_", " s ")")$T
+         interpretFunction1('testTrueAux, inp, s)
          decFatal()$UnittestCount
 
      xftestTrue(s) ==
          inp := "TRUE: (" s ")"
          incXfFatal(inp)$UnittestCount
-         interpretString("xftestTrueAux(_"" inp "_", " s ")")$T
+         interpretFunction1('xftestTrueAux, inp, s)
          decXfFatal()$UnittestCount
 
      testLibraryError(s) ==
          chkLibraryError()$UnittestCount
          inp := "ERROR: (" s ")"
-         interpretString("testLibraryErrorAux(_"" inp "_", " s ")")$T
+         interpretFunction1('testLibraryErrorAux, inp, s)
 
      xftestLibraryError(s) ==
          inp := "ERROR: (" s ")"
          incXfPass(inp, empty()$List(OutputForm))$UnittestCount
-         interpretString("xftestLibraryErrorAux(_"" inp "_", " s ")")$T
+         interpretFunction1('xftestLibraryErrorAux, inp, s)
          decXfPass()$UnittestCount
 -- when there was as expected no fatal error, we need only step the
 -- counter for the number of tests
