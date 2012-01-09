@@ -107,11 +107,11 @@ interpsys_restart() ==
 readSpadProfileIfThere() ==
   -- reads SPADPROF INPUT if it exists
   file := ['_.fricas, 'input]
-  MAKE_-INPUT_-FILENAME file =>
+  make_input_filename(file) =>
     $edit_file := file
     read_or_compile(true, false)
   file := ['_.axiom,'input]
-  MAKE_-INPUT_-FILENAME file =>
+  make_input_filename(file) =>
     $edit_file := file
     read_or_compile(true, false)
   NIL

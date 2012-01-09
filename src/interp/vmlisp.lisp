@@ -816,13 +816,13 @@
 (defun MAKE-INSTREAM (filespec)
    (cond ((numberp filespec) (make-synonym-stream '*standard-input*))
          ((null filespec) (error "not handled yet"))
-         (t (open (make-input-filename filespec)
+         (t (open (|make_input_filename| filespec)
                   :direction :input :if-does-not-exist nil))))
 
 (defun MAKE-OUTSTREAM (filespec)
    (cond ((numberp filespec) (make-synonym-stream '*standard-output*))
          ((null filespec) (error "not handled yet"))
-         (t (open (make-filename filespec) :direction :output
+         (t (open (|make_filename| filespec) :direction :output
                :if-exists :supersede))))
 
 (defun MAKE-APPENDSTREAM (filespec)
@@ -830,7 +830,7 @@
  (cond
   ((numberp filespec) (make-synonym-stream '*standard-output*))
   ((null filespec) (error "make-appendstream: not handled yet"))
-  ('else (open (make-filename filespec) :direction :output
+  ('else (open (|make_filename| filespec) :direction :output
           :if-exists :append :if-does-not-exist :create))))
 
 (defun |mkOutputConsoleStream| ()

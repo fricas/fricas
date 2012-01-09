@@ -902,7 +902,7 @@ database.
     (cond
      ((setq file (probe-file
        (concatenate 'string namedir filename ".NRLIB/"
-                    *index-filename*)))
+                    |$index_filename|)))
       (push (namestring file) nrlibs))
      ((setq file (probe-file
        (concatenate 'string namedir filename ".asy")))

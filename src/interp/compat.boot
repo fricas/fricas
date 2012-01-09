@@ -52,11 +52,11 @@ isSharpVarWithNum x ==
 -- RREAD which takes erroval to return if key is missing
 rread(key,rstream,errorval) ==
   if IDENTP key then key := PNAME key
-  RREAD(key,rstream,errorval)
+  rread0(key,rstream,errorval)
 
 rwrite(key,val,stream) ==
   if IDENTP key then key := PNAME key
-  RWRITE(key,val,stream)
+  rwrite0(key,val,stream)
 
 
 editFile file ==

@@ -705,7 +705,7 @@ compileSpadLispCmd args ==
     if fnameReadable?(lsp) then
         if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
         --compileFileQuietly(lsp)
-        RECOMPILE_-LIB_-FILE_-IF_-NECESSARY lsp
+        recompile_lib_file_if_necessary lsp
     else
         sayKeyedMsg("S2IL0003", [namestring lsp])
 
@@ -1056,7 +1056,7 @@ newHelpSpad2Cmd args ==
   -- see if new help file exists
 
   narg := PNAME arg
-  null (helpFile := MAKE_-INPUT_-FILENAME [narg,'HELPSPAD,'_*]) => NIL
+  null(helpFile := make_input_filename([narg, 'HELPSPAD])) => nil
 
   $useFullScreenHelp =>
     OBEY STRCONC('"$AXIOM/lib/SPADEDIT ",namestring helpFile)
@@ -1319,7 +1319,7 @@ initHist() ==
   newFile := histFileName()
   -- see if history directory is writable
   histFileErase oldFile
-  if MAKE_-INPUT_-FILENAME newFile then $REPLACE(oldFile,newFile)
+  if make_input_filename(newFile) then $REPLACE(oldFile, newFile)
   $HiFiAccess:= 'T
   initHistList()
 
@@ -1564,7 +1564,8 @@ saveHistory(fn) ==
   $seen: local := MAKE_-HASHTABLE 'EQ
   not $HiFiAccess => sayKeyedMsg("S2IH0016",NIL)
   not $useInternalHistoryTable and
-    null MAKE_-INPUT_-FILENAME histFileName() => sayKeyedMsg("S2IH0022",NIL)
+      null(make_input_filename(histFileName())) =>
+          sayKeyedMsg("S2IH0022", nil)
   null fn =>
     throwKeyedMsg("S2IH0037", nil)
   savefile := makeHistFileName(fn)
@@ -1590,7 +1591,7 @@ restoreHistory(fn) ==
   else if fn is [fn'] and IDENTP(fn') then fn' := fn'
        else throwKeyedMsg("S2IH0023",[fn'])
   restfile := makeHistFileName(fn')
-  null MAKE_-INPUT_-FILENAME restfile =>
+  null(make_input_filename(restfile)) =>
     sayKeyedMsg("S2IH0024",[namestring(restfile)]) -- no history file
 
   -- if clear is changed to be undoable, this should be a reset-clear
@@ -2156,7 +2157,7 @@ do_read(ll, quiet) ==
 
 read_or_compile(quiet, lib) ==
     $LISPLIB : local := lib
-    input_file := MAKE_-INPUT_-FILENAME($edit_file)
+    input_file := make_input_filename($edit_file)
     type := PATHNAME_-TYPE(input_file)
     type = '"boot" =>
         lfile := CONCAT(shoeRemovebootIfNec(input_file), '".clisp")
