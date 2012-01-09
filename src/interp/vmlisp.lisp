@@ -385,7 +385,12 @@
 
 ; 14.1 Creation
 
+;;; needed for SPAD compiler output
+(define-function '|construct| #'list) 
+
 (defun VEC2LIST (vec) (coerce vec 'list))
+
+(defun |makeList| (size el) (make-list size :initial-element el) )
 
 ; note default test for union, intersection and set-difference is eql
 (defun UNIONQ (l1 l2) (union l1 l2 :test #'eq))
@@ -530,6 +535,11 @@
 
 (defun GETREFV (n) (make-array n :initial-element nil))
 
+(defun |makeVector| (els type)
+ (make-array (length els) :element-type (or type t) :initial-contents els))
+
+(defun GETZEROVEC (n) (MAKE-ARRAY n :initial-element 0))
+
 #-:GCL
 (defun LIST2VEC (list) (coerce list 'vector))
 
@@ -565,6 +575,8 @@
 (defun NUM2CHAR (n) (code-char n))
 
 (defun CHAR2NUM (c) (char-code (character c)))
+
+(define-function '|isLowerCaseLetter| #'LOWER-CASE-P)
 
 #+(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
 (defun NUM2USTR (n) 

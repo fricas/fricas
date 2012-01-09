@@ -616,3 +616,85 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
  "initialize the garbage collection timer"
  #+:GCL (system:gbc-time 0)
  nil)
+
+(defun |mkAutoLoad| (fn cname)
+   (function (lambda (&rest args)
+                 #+:sbcl
+                 (handler-bind ((style-warning #'muffle-warning))
+                     (|autoLoad| fn cname))
+                 #-:sbcl
+                 (|autoLoad| fn cname)
+                 (apply cname args))))
+
+(defun |eval|(x)
+    #-:GCL
+    (handler-bind ((warning #'muffle-warning)
+                   #+:sbcl (sb-ext::compiler-note #'muffle-warning))
+            (eval  x))
+    #+:GCL
+    (eval  x)
+)
+
+;;; Accesed from HyperDoc
+(defun |setViewportProcess| ()
+  (setq |$ViewportProcessToWatch|
+     (stringimage (CDR
+         (|processInteractive|  '(|key| (|%%| -2)) NIL) ))))
+
+;;; Accesed from HyperDoc
+(defun |waitForViewport| ()
+  (progn
+   (do ()
+       ((not (zerop (obey
+        (concat
+         "ps "
+         |$ViewportProcessToWatch|
+         " > /dev/null")))))
+       ())
+   (|sockSendInt| |$MenuServer| 1)
+   (|setIOindex| (- |$IOindex| 3))
+  )
+)
+
+#+:GCL
+(defun print-xdr-stream (x y z) (format y "XDR:~A" (xdr-stream-name x)))
+#+:GCL
+(defstruct (xdr-stream
+                (:print-function  print-xdr-stream))
+           "A structure to hold XDR streams. The stream is printed out."
+           (handle ) ;; this is what is used for xdr-open xdr-read xdr-write
+           (name ))  ;; this is used for printing
+#+(and :GCL (not (or :dos :win32)))
+(defun |xdrOpen| (str dir) (make-xdr-stream :handle (system:xdr-open str) :name str))
+#+(and :GCL (or :dos :win32))
+(defun |xdrOpen| (str dir) (format t "xdrOpen called"))
+
+#+(and :GCL (not (or :dos :win32)))
+(defun |xdrRead| (xstr r) (system:xdr-read (xdr-stream-handle xstr) r) )
+#+(and :GCL (or :dos :win32))
+(defun |xdrRead| (str) (format t "xdrRead called"))
+
+#+(and :GCL (not (or :dos :win32)))
+(defun |xdrWrite| (xstr d) (system:xdr-write (xdr-stream-handle xstr) d) )
+#+(and :GCL (or :dos :win32))
+(defun |xdrWrite| (str) (format t "xdrWrite called"))
+
+;; here is a test for XDR
+;; (setq *print-array* T)
+;; (setq foo (open "xdrtest" :direction :output))
+;; (setq xfoo (|xdrOpen| foo))
+;; (|xdrWrite| xfoo "hello: This contains an integer, a float and a float array")
+;; (|xdrWrite| xfoo 42)
+;; (|xdrWrite| xfoo 3.14159)
+;; (|xdrWrite| xfoo (make-array 10 :element-type 'double-float :initial-element 2.78111D12))
+;; (close foo)
+;; (setq foo (open "xdrtest" :direction :input))
+;; (setq xfoo (|xdrOpen| foo))
+;; (|xdrRead| xfoo "")
+;; (|xdrRead| xfoo 0)
+;; (|xdrRead| xfoo 0.0)
+;; (|xdrRead| xfoo (make-array 10 :element-type 'double-float ))
+;; (setq *print-array* NIL)
+
+(setq /MAJOR-VERSION 2)
+(defun /versioncheck (n) (unless (= n /MAJOR-VERSION) (throw 'versioncheck -1)))

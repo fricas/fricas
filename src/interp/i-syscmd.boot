@@ -241,6 +241,17 @@ listConstructorAbbreviations() ==
     whatSpad2Cmd '(packages)
   sayKeyedMsg("S2IZ0057",NIL)
 
+--% )cd
+
+cd(args) ==
+    dname :=
+        null(args) =>
+            TRIM_-DIRECTORY_-NAME(NAMESTRING(USER_-HOMEDIR_-PATHNAME()))
+        first(args)
+    if SYMBOLP(dname) then dname := SYMBOL_-NAME(dname)
+    CHDIR(dname)
+    sayKeyedMsg("S2IZ0070", [GET_-CURRENT_-DIRECTORY()])
+
 --% )clear
 
 clear l == clearSpad2Cmd l
@@ -393,8 +404,9 @@ constructor args ==
 
 compiler args ==
     $newConlist: local := nil    --reset by compDefineLisplib and astran
-    null args and null $options and null _/EDITFILE => helpSpad2Cmd '(compiler)
-    if null args then args := [_/EDITFILE]
+    null args and null $options and null($edit_file) =>
+        helpSpad2Cmd '(compiler)
+    if null args then args := [$edit_file]
 
     -- first see if the user has explicitly specified the compiler
     -- to use.
@@ -466,7 +478,7 @@ compileAsharpCmd1 args ==
     (pathType ~= '"as") and (pathType ~= '"ao") => throwKeyedMsg("S2IZ0083", nil)
     not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
-    SETQ(_/EDITFILE, path)
+    $edit_file := path
 
     optList :=  '( _
       new _
@@ -1000,7 +1012,7 @@ edit l == editSpad2Cmd l
 
 editSpad2Cmd l ==
   l:=
-    null l => _/EDITFILE
+    null l => $edit_file
     CAR l
   l := pathname l
   oldDir := pathnameDirectory l
@@ -1013,7 +1025,7 @@ editSpad2Cmd l ==
        oldDir = '"" => pathname $FINDFILE (pathnameName l, fileTypes)
        l
   l := pathname ll
-  SETQ(_/EDITFILE,l)
+  $edit_file := l
   rc := editFile l
   rc
 
@@ -2114,7 +2126,7 @@ readSpad2Cmd l ==
     fullopt = 'ifthere => ifthere  := true
     fullopt = 'quiet   => quiet := true
 
-  if null(l) and (ef := _/EDITFILE) and pathnameTypeId(ef) ~= 'SPAD then
+  if null(l) and (ef := $edit_file) and pathnameTypeId(ef) ~= 'SPAD then
       l := pathname(ef)
   else
       l := pathname l
@@ -2134,15 +2146,26 @@ readSpad2Cmd l ==
     fs := namestring l
     member(upft,devFTs) => throwKeyedMsg("S2IZ0033",[fs])
     throwKeyedMsg("S2IZ0034",[fs])
-  SETQ(_/EDITFILE,ll)
-  if upft = '"BOOT" then $InteractiveMode := nil
   do_read(ll, quiet)
 
 do_read(ll, quiet) ==
-    _/EDITFILE := ll
+    $edit_file := ll
     read_or_compile(quiet, false)
     terminateSystemCommand()
     spadPrompt()
+
+read_or_compile(quiet, lib) ==
+    $LISPLIB : local := lib
+    input_file := MAKE_-INPUT_-FILENAME($edit_file)
+    type := PATHNAME_-TYPE(input_file)
+    type = '"boot" =>
+        lfile := CONCAT(shoeRemovebootIfNec(input_file), '".clisp")
+        BOOTTOCLC(input_file, lfile)
+        LOAD(COMPILE_-FILE(lfile))
+    type = '"lisp" => LOAD(COMPILE_-FILE(input_file))
+    type = '"bbin" => LOAD(input_file)
+    type = '"input" => ncINTERPFILE(input_file, not(quiet))
+    spadCompile(input_file)
 
 --% )savesystem
 savesystem l ==
@@ -2337,6 +2360,21 @@ displayOperationsFromLisplib form ==
     ops := [:ops,:formatOperationAlistEntry(x)]
   say2PerLine ops
   nil
+
+--% )spool
+
+spool(filename) ==
+    null(filename) =>
+        DRIBBLE()
+        TERPRI()
+        reset_highlight()
+    filename := first(filename)
+    if SYMBOLP(filename) then filename := SYMBOL_-NAME(filename)
+    PROBE_-FILE(filename) =>
+        ERROR(FORMAT(nil, '"file ~a already exists", filename))
+    DRIBBLE(filename)
+    TERPRI()
+    clear_highlight()
 
 --% )synonym
 

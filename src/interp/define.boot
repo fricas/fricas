@@ -453,7 +453,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 compFunctorBody(body,m,e,parForm) ==
   $bootStrapMode = true =>
     genOperationAlist()
-    [bootStrapError($functorForm, _/EDITFILE),m,e]
+    [bootStrapError($functorForm, $edit_file), m, e]
   T:= compOrCroak(body,m,e)
   body is [op,:.] and MEMQ(op,'(add CAPSULE)) => T
   $NRTaddForm :=
@@ -950,7 +950,8 @@ compAdd(['add,$addForm,capsule],m,e) ==
        ['$bootStrapMode, _
            code],_
        [''T, ['systemError,['LIST,''%b,MKQ CAR $functorForm,''%d,'"from", _
-         ''%b,MKQ namestring _/EDITFILE,''%d,'"needs to be compiled"]]]],m,e]
+         ''%b, MKQ namestring($edit_file), ''%d, '"needs to be compiled"]]]],
+     m, e]
   $addFormLhs: local:= $addForm
   addForm := $addForm
   if $addForm is ["SubDomain",domainForm,predicate] then
@@ -977,7 +978,7 @@ compTuple2Record u == ['Record,:[[":",i,x] for i in 1.. for x in rest u]]
 
 compCapsule(['CAPSULE,:itemList],m,e) ==
   $bootStrapMode = true =>
-    [bootStrapError($functorForm, _/EDITFILE),m,e]
+      [bootStrapError($functorForm, $edit_file), m, e]
   $insideExpressionIfTrue: local:= false
   compCapsuleInner(itemList,m,addDomain('_$,e))
 

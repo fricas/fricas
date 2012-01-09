@@ -1279,7 +1279,7 @@ compileSpad2Cmd args ==
     pathnameType path ~= '"spad" => throwKeyedMsg("S2IZ0082", nil)
     not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
-    SETQ(_/EDITFILE, path)
+    $edit_file := path
     sayKeyedMsg("S2IZ0038",[namestring args])
 
     optList :=  '( _

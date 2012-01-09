@@ -274,7 +274,7 @@ initializeLisplib libName ==
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib(libName,'ERRORLIB)
   $compiler_output_stream := make_compiler_output_stream($libFile, libName)
-  if pathnameTypeId(_/EDITFILE) = 'SPAD
+  if pathnameTypeId($edit_file) = 'SPAD
     then outputLispForm('VERSION,['_/VERSIONCHECK,_/MAJOR_-VERSION])
 
 finalizeLisplib libName ==
@@ -285,7 +285,7 @@ finalizeLisplib libName ==
   -- set to target of modemap for package/domain constructors;
   -- to the right-hand sides (the definition) for category constructors
   lisplibWrite('"constructorCategory",$lisplibCategory,$libFile)
-  lisplibWrite('"sourceFile",namestring _/EDITFILE,$libFile)
+  lisplibWrite('"sourceFile", namestring($edit_file), $libFile)
   lisplibWrite('"modemaps",removeZeroOne $lisplibModemapAlist,$libFile)
   opsAndAtts:= getConstructorOpsAndAtts($lisplibForm, kind)
   lisplibWrite('"operationAlist",removeZeroOne CAR opsAndAtts,$libFile)
