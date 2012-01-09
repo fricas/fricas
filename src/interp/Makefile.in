@@ -19,7 +19,7 @@ BOOTSYS= $(fricas_build_bindir)/bootsys
 
 DEPSYS=	$(fricas_build_bindir)/depsys
 
-DEP=  vmlisp macros parsing primitives foam_l axext_l
+DEP=  vmlisp macros parsing primitives
 
 LOADSYS= $(fricas_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(fricas_build_bindir)/interpsys$(EXEEXT)
@@ -59,7 +59,7 @@ BROBJ_files= bc-matrix bc-misc bc-solve bc-util ht-util htsetvar \
 
 BROBJS= $(patsubst %, ${AUTO}/%.$(LISPOBJEXT), $(BROBJ_files))
 
-ASCOMP_files= hashcode as foam_l axext_l
+ASCOMP_files= hashcode as foam_l
 
 ASCOMP= $(patsubst %, %.$(LISPOBJEXT), $(ASCOMP_files))
 
@@ -73,8 +73,7 @@ YEARWEEK=(progn (setq timestamp "${TIMESTAMP}") (setq boot::*build-version* "${V
 .PRECIOUS:	${SAVESYS}
 .PRECIOUS:	${AXIOMSYS}
 
-PROCLAIMS=(progn (load "$(srcdir)/sys-pkg.lisp") \
-                 (load "$(srcdir)/interp-proclaims.lisp"))
+PROCLAIMS=(progn (load "$(srcdir)/interp-proclaims.lisp"))
 
 .SUFFIXES:
 .SUFFIXES: .boot .clisp .lisp .pamphlet
@@ -132,7 +131,6 @@ distclean-local: clean-local
 
 ${SAVESYS} ${AXIOMSYS}: makeint.lisp \
     ${DEPSYS} ${OBJS}  util.$(LISPOBJEXT) \
-    $(srcdir)/sys-pkg.lisp \
     ${OCOBJS} ${BROBJS} \
     database.date ${INOBJS} ${ASCOMP} ${ASAUTO} \
     ${NAGBROBJS} \
@@ -177,7 +175,7 @@ ${SAVESYS}:
 	ls $@
 	@ echo 6 ${SAVESYS} created
 
-${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, ${DEP} sys-pkg util)
+${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, ${DEP} util)
 	@ echo 3 making ${DEPSYS}
 	$(mkinstalldirs) $(fricas_build_bindir)
 	echo '${PROCLAIMS}' > makedep.lisp
@@ -190,14 +188,10 @@ ${DEPSYS}:	$(patsubst %, $(srcdir)/%.lisp, ${DEP} sys-pkg util)
 	    echo '(maybe-compile "$(srcdir)/'$$A'.lisp"' \
 	         '"'$$A'.$(LISPOBJEXT)")' >> makedep.lisp ; \
 	done
-	echo '#-(OR :GCL :CMU)(maybe-compile "$(srcdir)/sys-pkg.lisp"' \
-	             '"sys-pkg.$(LISPOBJEXT)")' >> makedep.lisp
 	echo '(quit)' >> makedep.lisp
 	echo '(load "makedep.lisp")' | ${LOADSYS}
 	echo '(in-package "FRICAS-LISP")' > makedep2.lisp
 	echo '(make-program "$(BASE)$@" (quote (' >> makedep2.lisp
-	echo '#+(OR :GCL :CMU)"$(srcdir)/sys-pkg.lisp"' \
-	     '#-(OR :GCL :CMU)"sys-pkg.$(LISPOBJEXT)"' >> makedep2.lisp
 	echo '#+:GCL"$(srcdir)/interp-proclaims.lisp"' >> makedep2.lisp
 	for A in util ${DEP} ; do \
               echo '"'$$A'.$(LISPOBJEXT)"' >> makedep2.lisp ; \
