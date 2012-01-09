@@ -39,8 +39,31 @@
 
 (in-package "BOOT")
 
+(defvar |$standard| 't)
+(defvar |$saturn| nil)
+
+(setq |$printTimeIfTrue| nil)
+
+(setq |nullstream| '|nullstream|)
+(setq |nonnullstream| '|nonnullstream|)
+(setq *print-escape* nil) ;; so stringimage doesn't escape idents?
+
+;;; FIXME: do we need this?
+#+(and :GCL :IEEE-FLOATING-POINT)
+  (setq system:*print-nans* T)
+
+(setq |$algebraOutputStream|
+      (setq |$fortranOutputStream|
+            (setq |$texOutputStream|
+                  (setq |$formulaOutputStream|
+                        (make-synonym-stream '*standard-output*)))))
+
 (defvar |$frameMessages| nil)
 (defvar |$displayStartMsgs| nil)
+
+(setq |$localVars| ())  ;checked by isType
+
+(setq identity #'identity) ;to make LispVM code for handling constants to work
 
 ;; For the browser, used for building local databases when a user compiles
 ;; their own code.
@@ -88,7 +111,7 @@
 (DEFPARAMETER $FUNNAME_TAIL '(()))
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
 (SETQ $OLDLINE NIL)  ;"used to output command lines"
-(SETQ /EDITFILE NIL)
+(SETQ |$edit_file| NIL)
 (DEFPARAMETER |$InteractiveMode| T)
 
 (SETQ |$ruleSetsInitialized| NIL)

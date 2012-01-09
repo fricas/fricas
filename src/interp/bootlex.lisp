@@ -99,9 +99,8 @@
            (XCape #\_)
            (*EOF* NIL)
            (File-Closed NIL)
-           (/editfile spad-input-file)
            in-stream out-stream)
-  (declare (special /editfile |$comp370_apply| *EOF*
+  (declare (special |$comp370_apply| *EOF*
                     in-stream File-Closed Xcape))
   ;; only rebind |$InteractiveFrame| if compiling
   (progv (if (not |$InteractiveMode|) '(|$InteractiveFrame|))

@@ -137,6 +137,9 @@ returnToTopLevel() ==
   SETQ(TOK, 'END_UNIT)
   TOPLEVEL()
 
+TOPLEVEL() ==
+    THROW('top_level, 'restart)
+
 returnToReader() ==
   not $ReadingFile => returnToTopLevel()
   sayBrightly ['"   Continuing to read the file...", '%l]

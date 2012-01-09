@@ -74,7 +74,7 @@ resetWorkspaceVariables () ==
   -- this function resets many workspace variables to their default
   -- values. Some things are reset by start and not reset by restart.
   SETQ(_/COUNTLIST                  , NIL)
-  SETQ(_/EDITFILE                   , NIL)
+  $edit_file := nil
   SETQ(_/SOURCEFILES                , NIL)
   SETQ($sourceFiles                 , NIL)
   SETQ(_/PRETTY                     , NIL)

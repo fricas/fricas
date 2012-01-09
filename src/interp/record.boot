@@ -182,9 +182,9 @@ evaluateLines lines ==
     PRINTEXP(line, file)
     TERPRI file
   SHUT file
-  _/EDITFILE: fluid := '"/tmp/temp.input"
+  $edit_file : fluid := '"/tmp/temp.input"
   read_or_compile(false, false)
-    -- can't use _/EDITFILE since it might be reset
+    -- can't use $edit_file since it might be reset
   DELETE_-FILE '"/tmp/temp.input"
 
 

@@ -2398,3 +2398,14 @@ maPrin u ==
     form
   if not $collectOutput then PRETTYPRINT(u,$algebraOutputStream)
   nil
+
+clear_highlight() ==
+    $displaySetValue : local := nil
+    $saveHighlight := $highlightAllowed
+    $highlightAllowed := false
+    $saveSpecialchars := $specialCharacters
+    setOutputCharacters(["plain"])
+
+reset_highlight() ==
+    $highlightAllowed := $saveHighlight
+    $specialCharacters := $saveSpecialchars
