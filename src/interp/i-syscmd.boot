@@ -414,13 +414,6 @@ compiler args ==
 
     af  := pathname args
     aft := pathnameType af
--- Whats this for? MCD/PAB 21-9-95
---    if haveNew and (null(aft) or (aft = '"")) then
---        af := pathname [af, '"as"]
---        aft = '"as"
---    if haveOld and (null(aft) or (aft = '"")) then
---        af := pathname [af, '"spad"]
---        aft = '"spad"
 
     haveNew or (aft = '"as")   =>
         not (af1 := $FINDFILE (af, '(as))) =>
@@ -450,26 +443,6 @@ compiler args ==
     -- see if we something with the appropriate file extension
     -- lying around
 
-    af1 := $FINDFILE (af, '(as spad ao asy))
-
-    af1 and pathnameType(af1) = '"as"   => compileAsharpCmd [af1]
-    af1 and pathnameType(af1) = '"ao"  => compileAsharpCmd [af1]
-    af1 and pathnameType(af1) = '"spad" => compileSpad2Cmd  [af1]
-    af1 and pathnameType(af1) = '"asy"  => compileAsharpArchiveCmd [af1]
-
-    -- maybe /EDITFILE has some stuff that can help us
-    ef := pathname _/EDITFILE
-    ef := mergePathnames(af,ef)
-
-    ef = af => throwKeyedMsg("S2IZ0039", nil)
-    af := ef
-
-    pathnameType(af) = '"as"   => compileAsharpCmd args
-    pathnameType(af) = '"ao"  => compileAsharpCmd args
-    pathnameType(af) = '"spad" => compileSpad2Cmd  args
-
-    -- see if we something with the appropriate file extension
-    -- lying around
     af1 := $FINDFILE (af, '(as spad ao asy))
 
     af1 and pathnameType(af1) = '"as"   => compileAsharpCmd [af1]
@@ -2141,14 +2114,8 @@ readSpad2Cmd l ==
     fullopt = 'ifthere => ifthere  := true
     fullopt = 'quiet   => quiet := true
 
-  if _/EDITFILE then
-      ef := pathname _/EDITFILE
-      if pathnameTypeId(ef) = 'SPAD then
-          ef := makePathname(pathnameName ef,'"*")
-      if l then
-          l := mergePathnames(pathname l,ef)
-      else
-          l := ef
+  if null(l) and (ef := _/EDITFILE) and pathnameTypeId(ef) ~= 'SPAD then
+      l := pathname(ef)
   else
       l := pathname l
   devFTs := '("input" "INPUT" "boot" "BOOT" "lisp" "LISP")
@@ -2866,6 +2833,7 @@ handleNoParseCommands(unab, string) ==
   funName := INTERN CONCAT('"np",STRING unab)
   FUNCALL(funName, SUBSEQ(string, spaceIndex+1))
 
+string2BootTree(str) == STTOSEX(str)
 
 npboot str ==
   sex := string2BootTree str

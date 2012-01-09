@@ -487,11 +487,6 @@ After this function is called the image is clean and can be saved.
 ;;                    :array 400 :string 500 :cfun 100 :cpages 1000
 ;;                    :rpages 1000 :hole 2000) )
 
-(DEFUN |string2BootTree| (S) (boottran::STTOSEX S))
-
-(defun |processSynonyms| () nil) ;;dummy def for depsys, redefined later
-
-
 ;; the following are for conditional reading
 (setq |$opSysName| '"shell")
 
