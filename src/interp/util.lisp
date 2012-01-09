@@ -402,7 +402,7 @@ After this function is called the image is clean and can be saved.
   (progn
       (setf FRICAS-LISP::*fricas-initial-lisp-objects*
            (append FRICAS-LISP::*fricas-initial-lisp-objects*
-                   '("sys-pkg.o" "util.o")
+                   '("util.o")
                    load-files))
       (dolist (el `(
                     ("comp-files" ,comp-files)
