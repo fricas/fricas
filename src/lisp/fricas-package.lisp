@@ -69,6 +69,11 @@
 ;;; symbol that the interpreter or algebra uses has to appear here.
 (make-package "BOOT" :use '("FRICAS-LISP"))
 
+(in-package "BOOT")
+
+(import '(BOOTTRAN::BOOTTOCLC BOOTTRAN::STTOSEX
+          BOOTTRAN::|shoeRemovebootIfNec|))
+
 ;;; Package containing support routines for code generated
 ;;; by Aldor compiler.
 (make-package "FOAM" :use '("FRICAS-LISP"))

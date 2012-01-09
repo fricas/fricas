@@ -391,7 +391,10 @@ DescendantP(a,b) ==
 
 --% The implementation of Join
 
-find_ffl(vec0, l) ==
+-- given uncoditinal category vec0 and list of categories
+-- with associated conditions l produce fundamental ancestors
+-- of the join of vec0 and l
+join_fundamental_ancestors(vec0, l) ==
   FundamentalAncestors := [[first x, get_cond(x)] for x in CADR vec0.4]
   if vec0.(0) then FundamentalAncestors:=
     [[vec0.(0)],:FundamentalAncestors]
@@ -408,7 +411,7 @@ find_ffl(vec0, l) ==
       if (uu := ASSQ(bname, FundamentalAncestors)) then
           FundamentalAncestors := delete(uu, FundamentalAncestors)
           condition := mkOr(condition, CADR(uu))
-      PrinAncb:= first(b).(4)
+      PrinAncb:= first(b.4)
                --Principal Ancestors of b
       for anc in FundamentalAncestors repeat
         if member(first anc,PrinAncb) then
@@ -445,7 +448,7 @@ JoinInner(l,$e) ==
   sigl:= $NewCatVec.(1)
   globalDomains:= $NewCatVec.5
   $NewCatVec:= COPY_-SEQ $NewCatVec
-  FundamentalAncestors := find_ffl($NewCatVec, l')
+  FundamentalAncestors := join_fundamental_ancestors($NewCatVec, l')
 
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)

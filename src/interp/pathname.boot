@@ -77,12 +77,4 @@ makePathname(name,type) ==
   -- using MAKE-PATHNAME and the optional args.
   pathname [object2String name,object2String type]
 
-mergePathnames(a,b) ==
-  (fn := pathnameName(a)) = '"*" => b
-  fn ~= pathnameName(b) => a
-  (ft := pathnameType(a)) = '"*" => b
-  ft ~= pathnameType(b) => a
-  (fm := pathnameDirectory(a)) = ['"*"] => b
-  a
-
 isSystemDirectory dir == EVERY(function CHAR_=,$SPADROOT,dir)
