@@ -432,7 +432,7 @@ After this function is called the image is clean and can be saved.
                      (funcall sym T T)))
      #+:ecl (let ((sym (find-symbol "*BREAK-ENABLE*" "SI")))
                 (if (and sym (boundp sym)) 
-                    (setf (symbol-values sym) t)))
+                    (setf (symbol-value sym) t)))
      (initroot spad)
      (setf spad $spadroot)
      (format *standard-output* "spad = ~s~%" spad)
