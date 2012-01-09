@@ -42,54 +42,56 @@
 
 (defun |rMkIstream| (file)
   (let ((stream nil)
-        (fullname (make-input-filename file NIL)))
-               (setq stream (get-input-index-stream fullname))
+        (fullname (|make_input_filename| file)))
+               (setq stream (|get_input_index_stream| fullname))
                (if (null stream)
                    (ERROR (format nil "Library ~s doesn't exist"
-                              (make-filename file NIL))))
+                              (|make_filename| file))))
                (make-libstream :mode 'input  :dirname fullname
-                               :indextable (get-index-table-from-stream stream)
+                      :indextable (|get_index_table_from_stream| stream)
                                :indexstream stream)))
 
 (defun |rMkOstream| (file)
     (let ((stream nil)
           (indextable nil)
-          (fullname (make-full-namestring file NIL)))
+          (fullname (|make_full_namestring| file)))
         (case (file-kind fullname)
             (-1 (makedir fullname))
             (0 (error (format nil "~s is an existing file, not a library"
                               fullname)))
             (1 nil)
             (otherwise (error "Bad value from directory?")))
-        (multiple-value-setq (stream indextable) (get-io-index-stream fullname))
+        (multiple-value-setq (stream indextable)
+            (|get_io_index_stream| fullname))
         (make-libstream :mode 'output  :dirname fullname
                         :indextable indextable
                         :indexstream stream )))
 
-(defvar *index-filename* "index.KAF")
+(defvar |$index_filename| "index.KAF")
 
 ;get the index table of the lisplib in dirname
 (defun getindextable (dirname)
-  (let ((index-file (concat dirname "/" *index-filename*)))
+  (let ((index-file (concat dirname "/" |$index_filename|)))
      (if (probe-file index-file)
-         (with-open-file (stream index-file) (get-index-table-from-stream stream))
+         (with-open-file (stream index-file)
+             (|get_index_table_from_stream| stream))
             ;; create empty index file to mark directory as lisplib
          (with-open-file (stream index-file :direction :output) nil))))
 
 ;get the index stream of the lisplib in dirname
-(defun get-input-index-stream (dirname)
-  (let ((index-file (concat dirname "/" *index-filename*)))
+(defun |get_input_index_stream| (dirname)
+  (let ((index-file (concat dirname "/" |$index_filename|)))
     (open index-file :direction :input :if-does-not-exist nil)))
 
-(defun get-index-table-from-stream (stream)
+(defun |get_index_table_from_stream| (stream)
   (let ((pos (read  stream)))
     (cond ((numberp pos)
            (file-position stream pos)
            (read stream))
           (t pos))))
 
-(defun get-io-index-stream (dirname)
-  (let* ((index-file (concat dirname "/" *index-filename*))
+(defun |get_io_index_stream| (dirname)
+  (let* ((index-file (concat dirname "/" |$index_filename|))
          (stream (open index-file :direction :io :if-exists :overwrite
                        :if-does-not-exist :create))
          (indextable ())
@@ -105,7 +107,7 @@
 
 ;substitute indextable in dirname
 
-(defun write-indextable (indextable stream)
+(defun |write_indextable| (indextable stream)
   (let ((pos (file-position stream)))
     (write indextable :stream stream :level nil :length nil :escape t)
     (finish-output stream)
@@ -115,14 +117,14 @@
 
 (defun putindextable (indextable dirname)
   (with-open-file
-    (stream (concat dirname "/" *index-filename*)
+    (stream (concat dirname "/" |$index_filename|)
              :direction :io :if-exists :overwrite
              :if-does-not-exist :create)
     (file-position stream :end)
-    (write-indextable indextable stream)))
+    (|write_indextable| indextable stream)))
 
 ;; (RREAD key rstream)
-(defun rread (key rstream &optional (error-val nil error-val-p))
+(defun |rread0| (key rstream &optional (error-val nil error-val-p))
   (if (equal (libstream-mode rstream) 'output) (error "not input stream"))
   (let* ((entry
          (and (stringp key)
@@ -140,57 +142,58 @@
             (read  stream))) )))
 
 ;; (RKEYIDS filearg) -- interned version of keys
-(defun rkeyids (&rest filearg)
+(defun RKEYIDS (&rest filearg)
   (mapcar #'intern (mapcar #'car (getindextable
-                                  (make-input-filename filearg NIL)))))
+                                  (|make_input_filename| filearg)))))
 
 ;; (RWRITE cvec item rstream)
-(defun rwrite (key item rstream)
+(defun |rwrite0| (key item rstream)
   (if (equal (libstream-mode rstream) 'input) (error "not output stream"))
   (let ((stream (libstream-indexstream rstream))
         (pos (if item (cons (file-position (libstream-indexstream rstream)) nil)
                (cons nil item))))   ;; for small items
-    (make-entry (string key) rstream pos)
+    (|make_entry| (string key) rstream pos)
     (when (numberp (car pos))
           (write item :stream stream :level nil :length nil
                  :circle t :array t :escape t)
           (terpri stream))))
 
-(defun make-entry (key rstream value-or-pos)
+(defun |make_entry| (key rstream value-or-pos)
    (let ((entry (assoc key (libstream-indextable rstream) :test #'equal)))
      (if (null entry)
          (push (setq entry (cons key (cons 0 value-or-pos)))
                (libstream-indextable rstream))
        (progn
-         (if (stringp (caddr entry)) ($erase (caddr entry)))
+         (if (stringp (caddr entry)) ($ERASE (caddr entry)))
          (setf (cddr entry) value-or-pos)))
      entry))
 
 
 (defun rshut (rstream)
   (if (eq (libstream-mode rstream) 'output)
-      (write-indextable (libstream-indextable rstream) (libstream-indexstream rstream)))
+      (|write_indextable| (libstream-indextable rstream)
+                          (libstream-indexstream rstream)))
   (close (libstream-indexstream rstream)))
 
 ;; filespec is id or list of 1, 2 or 3 ids
 ;; filearg is filespec or 1, 2 or 3 ids
 ;; (RPACKFILE filearg)  -- compiles code files and converts to compressed format
 (defun rpackfile (filespec)
-  (setq filespec (make-filename filespec))
+  (setq filespec (|make_filename| filespec))
   (if (string= (pathname-type filespec) "NRLIB")
     (let ((base (pathname-name filespec)))
-         (recompile-lib-file-if-necessary
+         (|recompile_lib_file_if_necessary|
              (concatenate 'string (namestring filespec) "/" base ".lsp")))
     (error "RPACKFILE only works on .NRLIB-s"))
   filespec)
 
-(defun recompile-lib-file-if-necessary (lfile)
+(defun |recompile_lib_file_if_necessary| (lfile)
    (let* ((bfile (make-pathname :type *lisp-bin-filetype* :defaults lfile))
           (bdate (and (probe-file bfile) (file-write-date bfile)))
           (ldate (and (probe-file lfile) (file-write-date lfile))))
      (if ldate
          (if (and bdate (> bdate ldate)) nil
-           (progn (compile-lib-file lfile) (list bfile))))))
+           (progn (|compile_lib_file| lfile) (list bfile))))))
 
 #+:GCL
 (defun spad-fixed-arg (fname )
@@ -202,7 +205,7 @@
    nil)
 
 #+:GCL
-(defun compile-lib-file (fn &rest opts)
+(defun |compile_lib_file|(fn)
   (unwind-protect
       (progn
         (trace (compiler::fast-link-proclaimed-type-p
@@ -210,16 +213,13 @@
                 :entrycond (spad-fixed-arg (car system::arglist))))
         (trace (compiler::t1defun :exitcond nil
                 :entrycond (spad-fixed-arg (caar system::arglist))))
-        (apply #'compile-file fn opts))
+        (apply #'compile-file fn))
     (untrace compiler::fast-link-proclaimed-type-p compiler::t1defun)))
 #-:GCL
-(define-function 'compile-lib-file
+(defun |compile_lib_file|(fn)
   (if FRICAS-LISP::algebra-optimization
-      #'(lambda (f)
-	  (locally (proclaim (cons 'optimize
-				   FRICAS-LISP::algebra-optimization)))
-	  (compile-file f))
-    #'compile-file))
+      (proclaim (cons 'optimize FRICAS-LISP::algebra-optimization)))
+  (compile-file fn))
 
 
 ;; (RDROPITEMS filearg keys) don't delete, used in files.spad
@@ -230,7 +230,7 @@
   (putindextable ctable filearg))
 
 ;; cms file operations
-(defun make-filename (filearg &optional (filetype nil))
+(defun |make_filename0|(filearg filetype)
   (let ((filetype (if (symbolp filetype)
                       (symbol-name filetype)
                       filetype)))
@@ -242,7 +242,9 @@
                                           :type filetype)))))
      ;; Previously, given a filename containing "." and
      ;; an extension this function would return filearg. MCD 23-8-95.
-     ((and (stringp filearg) (pathname-type filearg) (null filetype)) filearg)
+     ((and (stringp filearg) (pathname-type filearg) (null filetype))
+          (BREAK)
+          filearg)
      ;;  ((and (stringp filearg)
      ;;    (or (pathname-type filearg) (null filetype)))
      ;;     filearg)
@@ -250,20 +252,25 @@
            (pathname-type filearg)
            (string-equal (pathname-type filearg) filetype))
       filearg)
-     ((consp filearg)
-      (make-filename (car filearg) (or (cadr filearg) filetype)))
+     ((consp filearg) (BREAK))
      (t (if (stringp filetype) (setq filetype (intern filetype "BOOT")))
-        (let ((ft (or (cdr (assoc filetype $filetype-table)) filetype)))
+        (let ((ft (or (cdr (assoc filetype |$filetype_table|)) filetype)))
           (if ft
               (concatenate 'string (string filearg) "." (string ft))
               (string filearg)))))))
 
-(defun make-full-namestring (filearg &optional (filetype nil))
-  (namestring (merge-pathnames (make-filename filearg filetype))))
+(defun |make_filename| (filearg)
+    (cond
+        ((consp filearg)
+            (|make_filename0| (car filearg) (cadr filearg)))
+        (t (|make_filename0| filearg nil))))
 
-(defun get-directory-list (ft &aux (cd (get-current-directory)))
+(defun |make_full_namestring| (filearg)
+  (namestring (merge-pathnames (|make_filename| filearg))))
+
+(defun |get_directory_list| (ft &aux (cd (get-current-directory)))
   (cond ((member ft '("NRLIB" "DAASE" "EXPOSED") :test #'string=)
-           (if (eq BOOT::|$UserLevel| 'BOOT::|development|)
+           (if (eq |$UserLevel| '|development|)
                (cons cd $library-directory-list)
                $library-directory-list))
         (t (adjoin cd
@@ -271,36 +278,42 @@
                       :test #'string=)
               :test #'string=))))
 
-(defun probe-name (file)
+(defun |probe_name| (file)
   (if (fricas-probe-file file) (namestring file) nil))
 
-(defun make-input-filename (filearg &optional (filetype nil))
+(defun |make_input_filename0|(filearg filetype)
    (let*
-     ((filename  (make-filename filearg filetype))
+     ((filename  (|make_filename0| filearg filetype))
       (dirname (pathname-directory filename))
       (ft (pathname-type filename))
-      (dirs (get-directory-list ft))
+      (dirs (|get_directory_list| ft))
       (newfn nil))
     (if (or (null dirname) (eqcar dirname :relative))
-        (dolist (dir dirs (probe-name filename))
+        (dolist (dir dirs (|probe_name| filename))
                 (when
                  (fricas-probe-file
                   (setq newfn (concatenate 'string dir "/" filename)))
                  (return newfn)))
-        (probe-name filename))))
+        (|probe_name| filename))))
 
-(defun $FILEP (&rest filearg) (make-full-namestring filearg))
+(defun |make_input_filename|(filearg)
+    (cond
+        ((consp filearg)
+            (|make_input_filename0| (car filearg) (cadr filearg)))
+        (t (|make_input_filename0| filearg nil))))
+
+(defun $FILEP (&rest filearg) (|make_full_namestring| filearg))
 
 (defun $FINDFILE(filespec filetypelist)
   (let ((file-name (if (consp filespec) (car filespec) filespec))
         (file-type (if (consp filespec) (cadr filespec) nil)))
     (if file-type (push file-type filetypelist))
-    (some #'(lambda (ft) (make-input-filename file-name ft))
+    (some #'(lambda (ft) (|make_input_filename0| file-name ft))
           filetypelist)))
 
 ;; ($ERASE filearg) -> 0 if succeeds else 1
 (defun $ERASE(&rest filearg)
-  (setq filearg (make-full-namestring filearg))
+  (setq filearg (|make_full_namestring| filearg))
   (if (fricas-probe-file filearg)
       (delete-directory filearg)
       1))
@@ -344,17 +357,17 @@
   (system:call-system (concatenate 'string "rm -r " dirname)))
 
 (defun $REPLACE (filespec1 filespec2)
-    ($erase (setq filespec1 (make-full-namestring filespec1)))
+    ($ERASE (setq filespec1 (|make_full_namestring| filespec1)))
     #-(or :clisp :openmcl :ecl)
-    (rename-file (make-full-namestring filespec2) filespec1)
+    (rename-file (|make_full_namestring| filespec2) filespec1)
     #+(or :clisp :openmcl :ecl)
-    (obey (concat "mv " (make-full-namestring filespec2) " " filespec1))
+    (obey (concat "mv " (|make_full_namestring| filespec2) " " filespec1))
  )
 
 
 (defun $FCOPY (filespec1 filespec2)
-    (let ((name1 (make-full-namestring filespec1))
-          (name2 (make-full-namestring filespec2)))
+    (let ((name1 (|make_full_namestring| filespec1))
+          (name2 (|make_full_namestring| filespec2)))
         (copy-lib-directory name1 name2)
 ))
 
@@ -396,15 +409,15 @@
    (makedir name2)
    (system:call-system (concat "cp " (concat name1 "/*") " " name2)))
 
-(defvar $filetype-table
+(defvar |$filetype_table|
   '(
-    (BOOT::HELPSPAD . |help|)
-    (BOOT::INPUT . |input|)
-    (BOOT::SPAD . |spad|)
-    (BOOT::BOOT . |boot|)
-    (BOOT::LISP . |lsp|)
-    (BOOT::OUTPUT . |splog|)
-    (BOOT::ERRORLIB . |erlib|)
-    (BOOT::DATABASE . |DAASE|)
+    (HELPSPAD . |help|)
+    (INPUT . |input|)
+    (SPAD . |spad|)
+    (BOOT . |boot|)
+    (LISP . |lsp|)
+    (OUTPUT . |splog|)
+    (ERRORLIB . |erlib|)
+    (DATABASE . |DAASE|)
    )
 )

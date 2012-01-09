@@ -46,9 +46,9 @@ pathname p ==
   if SYMBOLP(p) then p := SYMBOL_-NAME(p)
   PATHNAMEP p => p
   not PAIRP p => PATHNAME p
-  if #p>2 then p:=[p.0,p.1]
-  PATHNAME APPLY(FUNCTION MAKE_-FILENAME, p)
-
+  p is [fn] => PATHNAME make_filename(fn)
+  p is [fn, ft] => PATHNAME make_filename0(fn, ft)
+  error '"Strange argument to pathname"
 namestring p == NAMESTRING pathname p
 
 pathnameName p == PATHNAME_-NAME pathname p
@@ -65,7 +65,7 @@ deleteFile f == DELETE_-FILE f
 
 isExistingFile f ==
 --  p := pathname f
-  if MAKE_-INPUT_-FILENAME f
+  if make_input_filename(f)
     then
       true
     else false
