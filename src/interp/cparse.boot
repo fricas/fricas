@@ -487,7 +487,7 @@ npProduct()==
                        ,function npPower)
 
 npRemainder()==
-    npLeftAssoc('(REM QUO )  ,function npProduct)
+    npLeftAssoc('(REM QUO EXQUO)  ,function npProduct)
 
 npTerm()==
    npInfGeneric '(MINUS PLUS) and (npRemainder()

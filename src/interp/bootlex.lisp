@@ -243,14 +243,14 @@ Otherwise, get a .. identifier."
                                          (read-from-string (get-intval)))))
                  'argument-designator token nonblank))
 
-(defvar Keywords '(|or| |and| |isnt| |is| |otherwise| |when| |where|
-                  |has| |with| |add| |case| |in| |by| |pretend| |mod|
-                  |exquo| |div| |quo| |else| |rem| |then| |suchthat|
-                  |if| |yield| |iterate| |from| |exit| |leave| |return|
-                  |not| |unless| |repeat| |until| |while| |for| |import|
-                  |try| |catch| |finally|)
-
-
+(defvar Keywords 
+   '(|add| |and| |by| |catch| |case| |else| |exit|
+     |export| |exquo| |finally| |for| |fluid| |from|
+     |has| |if| |import| |in| |is| |isnt| |iterate|
+     |leave| |local| |mod| |not| |or| |pretend| |quo|
+     |rem| |repeat| |return| |then| |try| |until|
+     |where| |while| |with| |yield|
+    )
 
 "Alphabetic literal strings occurring in the New Meta code constitute
 keywords.   These are recognized specifically by the AnyId production,

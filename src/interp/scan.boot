@@ -57,6 +57,7 @@ scanKeyWords := [ _
            ['"do",        "DO"],_
            ['"else",    "ELSE" ],_
            ['"exit",    "EXIT" ],_
+           ['"exquo",   "EXQUO"], _
            ['"export","EXPORT" ],_
            ['"for",      "FOR" ],_
            ['"free",    "FREE" ],_
@@ -69,6 +70,7 @@ scanKeyWords := [ _
            ['"is", "IS" ],_
            ['"isnt", "ISNT" ],_
            ['"iterate", "ITERATE"],_
+           ['"leave",  "LEAVE"],_
            ['"local", "local" ],_
            ['"macro", "MACRO" ],_
            ['"mod", "MOD" ],_
@@ -80,9 +82,11 @@ scanKeyWords := [ _
            ['"return","RETURN" ],_
            ['"rule","RULE" ],_
            ['"then","THEN" ],_
+           ['"until", "UNTIL" ],_
            ['"where","WHERE" ],_
            ['"while","WHILE" ],_
            ['"with","WITH" ],_
+           ['"yield", "YIELD" ],_
            ['"|","BAR"],_
            ['".","DOT" ],_
            ['"::","COERCE" ],_
@@ -196,6 +200,7 @@ for i in   [ _
    ["TIMES"    ,"*"], _
    ["HAS"      ,"has"], _
    ["CASE"     ,"case"], _
+   ["EXQUO",    "exquo"], _
    ["REM"      ,"rem"], _
    ["MOD"      ,"mod"], _
    ["QUO"      ,"quo"], _
