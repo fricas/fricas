@@ -676,7 +676,9 @@ compileSpadLispCmd args ==
     -- Assume we entered from the "compiler" function, so args ~= nil
     -- and is a file with file extension .NRLIB
 
-    path := pathname fnameMake(first args, '"code", '"lsp")
+    libname := first args
+    basename := PATHNAME_-NAME(libname)
+    path := pathname fnameMake(libname, basename, '"lsp")
     not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
 
     optList :=  '( _
@@ -712,7 +714,7 @@ compileSpadLispCmd args ==
     if doLibrary then
         -- do we need to worry about where the compilation output went?
         if not beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
-        LOCALDATABASE([ pathnameName first args ],[])
+        LOCALDATABASE([pathnameName(libname)], [])
     else if not beQuiet then
         sayKeyedMsg("S2IZ0084", nil)
     terminateSystemCommand()
