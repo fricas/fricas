@@ -230,9 +230,6 @@
 
 (defmacro refvecp (v) `(simple-vector-p ,v))
 
-(defmacro resetq (a b)
- `(prog1 ,a (setq ,a ,b)))
-
 (defmacro setandfileq (id item)
  `(eval-when (:execute :load-toplevel)
    (defparameter ,id ,item)))

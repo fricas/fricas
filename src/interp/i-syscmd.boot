@@ -1914,6 +1914,7 @@ dewritify ob ==
                 type = 'BPI =>
                     oname := ob.2
                     f :=
+                        -- FIXME: GENSYMMER is nowhere defined
                         INTEGERP oname => EVAL GENSYMMER oname
                         SYMBOL_-FUNCTION oname
                     not COMPILED_-FUNCTION_-P f =>

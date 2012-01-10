@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2011-12-12],
+AC_INIT([FriCAS], [2012-01-10],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -87,7 +87,7 @@ AC_PROG_CC
 if test x$GCC != xyes; then
     AC_MSG_ERROR([We need a C compiler from GCC])
 fi
-# fricas_cflags="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE"
+# fricas_cflags="-O2 -Wall -D_GNU_SOURCE"
 # AC_SUBST(fricas_cflags)
 
 ## What is the extension of object files on this platform?
@@ -680,13 +680,13 @@ AC_SUBST(BASE)
 AXIOM=${BASE}${fricas_targetdir}
 AC_SUBST(AXIOM)
 
-CCF="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE"
+CCF="-O2 -Wall -D_GNU_SOURCE"
 LDF=
 
 case $target in
     *bsd*|*dragonfly*)
         AC_DEFINE([BSDplatform], [], [BSD flavour])
-        CCF="-O2 -pipe -fno-strength-reduce -Wall -D_GNU_SOURCE -I/usr/local/include"
+        CCF="-O2 -pipe -Wall -D_GNU_SOURCE -I/usr/local/include"
         LDF="-L/usr/local/lib"
         ;;
     windows)
@@ -704,7 +704,7 @@ case $target in
         ;;
     *darwin*)
         AC_DEFINE([MACOSXplatform], [], [MACOX flavour])
-        CCF="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE \
+        CCF="-O2 -Wall -D_GNU_SOURCE \
             -I/usr/include -I/usr/include/sys"
         ;;
 esac
