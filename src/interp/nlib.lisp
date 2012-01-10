@@ -213,7 +213,7 @@
                 :entrycond (spad-fixed-arg (car system::arglist))))
         (trace (compiler::t1defun :exitcond nil
                 :entrycond (spad-fixed-arg (caar system::arglist))))
-        (apply #'compile-file fn))
+        (compile-file fn))
     (untrace compiler::fast-link-proclaimed-type-p compiler::t1defun)))
 #-:GCL
 (defun |compile_lib_file|(fn)
