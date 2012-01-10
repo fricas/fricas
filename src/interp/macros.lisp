@@ -48,15 +48,9 @@
 ;          defined at the boot level, but which must be accessible
 ;          not defined at lower levels.
 
-(defmacro def-boot-var (p where)
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (defparameter ,p nil ,where)
-     (export '(,p) "BOOT")))
+(defmacro def-boot-var (p where) `(defparameter ,p nil ,where))
 
-(defmacro def-boot-val (p val where)
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (defparameter ,p ,val ,where)
-     (export '(,p) "BOOT")))
+(defmacro def-boot-val (p val where) `(defparameter ,p ,val ,where))
 
 (def-boot-val |$timerTicksPerSecond| INTERNAL-TIME-UNITS-PER-SECOND
     "for TEMPUS-FUGIT and $TOTAL-ELAPSED-TIME")
@@ -1158,8 +1152,6 @@
     (nreverse line-list)))
 
 ; moved from comp.lisp
-
-(export '(Comp SLAM SPADSLAM FLUID))
 
 ;;; Common Block section
 
