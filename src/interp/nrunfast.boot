@@ -75,10 +75,10 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   maxIndex := MAXINDEX numvec
   start := ELT(opvec,k)
   finish :=
-    QSGREATERP(max,k) => opvec.(QSPLUS(k,2))
+    greater_SI(max, k) => opvec.(add_SI(k, 2))
     maxIndex
-  if QSGREATERP(finish,maxIndex) then systemError '"limit too large"
-  numArgs := QSDIFFERENCE(#sig,1)
+  if greater_SI(finish, maxIndex) then systemError '"limit too large"
+  numArgs := sub_SI(#sig, 1)
   success := nil
   $isDefaultingPackage: local :=
     -- use special defaulting handler when dollar non-trivial
@@ -87,17 +87,17 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
     PROGN
       i := start
       numArgs ~= (numTableArgs :=numvec.i) => nil
-      predIndex := numvec.(i := QSADD1 i)
+      predIndex := numvec.(i := inc_SI i)
       NE(predIndex,0) and null testBitVector(predvec,predIndex) => nil
-      loc := newCompareSig(sig,numvec,(i := QSADD1 i),dollar,domain)
+      loc := newCompareSig(sig, numvec, (i := inc_SI i), dollar, domain)
       null loc => nil  --signifies no match
       loc = 1 => (someMatch := true)
       loc = 0 =>
-        start := QSPLUS(start,QSPLUS(numTableArgs,4))
+        start := add_SI(start, add_SI(numTableArgs, 4))
         i := start + 2
         someMatch := true --mark so that if subsumption fails, look for original
         subsumptionSig :=
-          [newExpandTypeSlot(numvec.(QSPLUS(i,j)),
+          [newExpandTypeSlot(numvec.(add_SI(i, j)),
             dollar,domain) for j in 0..numTableArgs]
         if $monitorNewWorld then
           sayBrightly [formatOpSignature(op,sig),'"--?-->",
@@ -115,7 +115,7 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
       slot = 'skip =>       --recursive call from above 'replaceGoGetSlot
         return (success := newLookupInAddChain(op,sig,domain,dollar))
       systemError '"unexpected format"
-    start := QSPLUS(start,QSPLUS(numTableArgs,4))
+    start := add_SI(start, add_SI(numTableArgs, 4))
   NE(success,'failed) and success =>
     if $monitorNewWorld then
       sayLooking1('"<----",uu) where uu ==
@@ -295,18 +295,18 @@ getNewDefaultPackage(op,sig,infovec,dom,dollar) ==
   maxIndex := MAXINDEX numvec
   start := ELT(opvec,k)
   finish :=
-    QSGREATERP(max,k) => opvec.(QSPLUS(k,2))
+    greater_SI(max, k) => opvec.(add_SI(k, 2))
     maxIndex
-  if QSGREATERP(finish,maxIndex) then systemError '"limit too large"
-  numArgs := QSDIFFERENCE(#sig,1)
+  if greater_SI(finish, maxIndex) then systemError '"limit too large"
+  numArgs := sub_SI(#sig, 1)
   success := nil
   while finish > start repeat
     PROGN
       i := start
       numArgs ~= (numTableArgs :=numvec.i) => nil
-      newCompareSigCheaply(sig,numvec,(i := QSPLUS(i,2))) =>
+      newCompareSigCheaply(sig, numvec, (i := add_SI(i, 2))) =>
         return (success := true)
-    start := QSPLUS(start,QSPLUS(numTableArgs,4))
+    start := add_SI(start, add_SI(numTableArgs, 4))
   null success => nil
   defaultPackage := cacheCategoryPackage(packageVec,catVec,i)
 
@@ -318,7 +318,7 @@ newCompareSig(sig, numvec, index, dollar, domain) ==
   null (target := first sig)
    or lazyMatchArg(target,numvec.k,dollar,domain) =>
      and/[lazyMatchArg(s,numvec.(k := i),dollar,domain)
-              for s in rest sig for i in (index+1)..] => numvec.(QSADD1 k)
+              for s in rest sig for i in (index+1)..] => numvec.(inc_SI k)
      nil
   nil
 
@@ -376,20 +376,20 @@ lookupInDomainByName(op,domain,arg) ==
   maxIndex := MAXINDEX numvec
   start := ELT(opvec,k)
   finish :=
-    QSGREATERP(max,k) => opvec.(QSPLUS(k,2))
+    greater_SI(max, k) => opvec.(add_SI(k, 2))
     maxIndex
-  if QSGREATERP(finish,maxIndex) then systemError '"limit too large"
+  if greater_SI(finish, maxIndex) then systemError '"limit too large"
   success := false
   while finish > start repeat
     i := start
     numberOfArgs :=numvec.i
-    predIndex := numvec.(i := QSADD1 i)
+    predIndex := numvec.(i := inc_SI i)
     NE(predIndex,0) and null testBitVector(predvec,predIndex) => nil
     slotIndex := numvec.(i + 2 + numberOfArgs)
-    newStart := QSPLUS(start,QSPLUS(numberOfArgs,4))
+    newStart := add_SI(start, add_SI(numberOfArgs, 4))
     slot := domain.slotIndex
     null atom slot and EQ(CAR slot,CAR arg) and EQ(CDR slot,CDR arg) => return (success := true)
-    start := QSPLUS(start,QSPLUS(numberOfArgs,4))
+    start := add_SI(start, add_SI(numberOfArgs, 4))
   success
 
 --=======================================================

@@ -261,20 +261,21 @@ mergeInPlace(f,g,p,q) ==
    r
 
 mergeSort(f,g,p,n) ==
-   if EQ(n,2) and FUNCALL(f,FUNCALL(g,QCADR p),FUNCALL(g,QCAR p)) then
+   if eql_SI(n, 2) and
+        FUNCALL(f, FUNCALL(g, QCADR p), FUNCALL(g, QCAR p)) then
       t := p
       p := QCDR p
       QRPLACD(p,t)
       QRPLACD(t,NIL)
-   if QSLESSP(n,3) then return p
+   if less_SI(n, 3) then return p
    -- split the list p into p and q of equal length
-   l := QSQUOTIENT(n,2)
+   l := quo_SI(n, 2)
    t := p
    for i in 1..l-1 repeat t := QCDR t
    q := rest t
    QRPLACD(t,NIL)
    p := mergeSort(f,g,p,l)
-   q := mergeSort(f,g,q,QSDIFFERENCE(n,l))
+   q := mergeSort(f, g, q, sub_SI(n, l))
    mergeInPlace(f,g,p,q)
 
 --% Throwing with glorious highlighting (maybe)

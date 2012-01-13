@@ -307,6 +307,11 @@ seq_opt(seq) ==
    seq is ["SEQ", ["EXIT", body]] and body is ["SEQ",:.] => body
    seq
 
+MK_inc_SI(x) ==
+    ATOM(x) => ['inc_SI, x]
+    x is [op, xx, 1] and (op = 'sub_SI or op = "-") => xx
+    ['inc_SI, x]
+
 expandREPEAT(l) ==
     [conds, :body] := repeat_tran(l, [])
     tests := []
@@ -357,15 +362,15 @@ expandREPEAT(l) ==
                     final := tmp
                 tests :=
                   [(INTEGERP(inc) =>
-                     [(QSMINUSP(inc) => "QSLESSP" ; "QSGREATERP"),
+                     [(negative?_SI(inc) => "less_SI" ; "greater_SI"),
                        var, final];
-                        ["IF", ["QSMINUSP", inc],
-                          ["QSLESSP", var, final],
-                            ["QSGREATERP", var, final]]),
+                        ["IF", ["negative?_SI", inc],
+                          ["less_SI", var, final],
+                            ["greater_SI", var, final]]),
                               :tests]
             vl := [[var, start,
-                 (member(inc, '(1 (One))) => MKQSADD1(CAR(U));
-                   ["QSPLUS", var, inc])], :vl]
+                 (member(inc, '(1 (One))) => MK_inc_SI(CAR(U));
+                   ["add_SI", var, inc])], :vl]
         op = "ON" =>
             tests := [["ATOM", CAR(U)], :tests]
             vl := [[CAR(U), CADR(U), ["CDR", CAR(U)]], :vl]
@@ -417,11 +422,11 @@ expandCOLLECTV(l) ==
                 cond :=
                     step = 1 =>
                         start = 1 => limit
-                        start = 0 => MKQSADD1(limit)
-                        MKQSADD1(["-", limit, start])
+                        start = 0 => MK_inc_SI(limit)
+                        MK_inc_SI(["-", limit, start])
                     start = 1 => ["/", limit, step]
-                    start = 0 => ["/", MKQSADD1(limit), step]
-                    ["/", ["-", MKQSADD1(limit), start],
+                    start = 0 => ["/", MK_inc_SI(limit), step]
+                    ["/", ["-", MK_inc_SI(limit), start],
                                             step]
                 conds := [cond, :conds]
         ERROR('"Cannot handle COLLECTV expansion")

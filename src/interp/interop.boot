@@ -253,8 +253,8 @@ devaluate(d) ==
       -- FIXP(ELT(CAR d,0)) => d
       DNameToSExpr(SPADCALL(CDR d,(CAR d).1))
   not REFVECP d => d
-  QSGREATERP(QVSIZE d,5) and QREFELT(d,3) is ['Category] => QREFELT(d,0)
-  QSGREATERP(QVSIZE d,0) =>
+  greater_SI(QVSIZE d, 5) and QREFELT(d, 3) is ['Category] => QREFELT(d, 0)
+  greater_SI(QVSIZE d, 0) =>
     d':=QREFELT(d,0)
     isFunctor d' => d'
     d
@@ -464,10 +464,10 @@ getOpCode(op,vec,max) ==
   res := nil
   hashCode? op =>
     for i in 0..max by 2 repeat
-      EQL(hashString PNAME QVELT(vec,i),op) => return (res := QSADD1 i)
+      EQL(hashString PNAME QVELT(vec, i), op) => return (res := inc_SI i)
     res
   for i in 0..max by 2 repeat
-    EQ(QVELT(vec,i),op) => return (res := QSADD1 i)
+    EQ(QVELT(vec, i), op) => return (res := inc_SI i)
   res
 
 hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
@@ -499,9 +499,9 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   maxIndex := MAXINDEX numvec
   start := ELT(opvec,k)
   finish :=
-    QSGREATERP(max,k) => opvec.(QSPLUS(k,2))
+    greater_SI(max, k) => opvec.(add_SI(k, 2))
     maxIndex
-  if QSGREATERP(finish,maxIndex) then systemError '"limit too large"
+  if greater_SI(finish, maxIndex) then systemError '"limit too large"
   numArgs := if hashCode? sig then -1 else (#sig)-1
   success := nil
   $isDefaultingPackage: local :=
@@ -511,7 +511,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
     PROGN
       i := start
       numTableArgs :=numvec.i
-      predIndex := numvec.(i := QSADD1 i)
+      predIndex := numvec.(i := inc_SI i)
       NE(predIndex,0) and null testBitVector(predvec,predIndex) => nil
       exportSig :=
           [newExpandTypeSlot(numvec.(i + j + 1),
@@ -520,11 +520,11 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
       loc := numvec.(i + numTableArgs + 2)
       loc = 1 => (someMatch := true)
       loc = 0 =>
-        start := QSPLUS(start,QSPLUS(numTableArgs,4))
+        start := add_SI(start, add_SI(numTableArgs, 4))
         i := start + 2
         someMatch := true --mark so that if subsumption fails, look for original
         subsumptionSig :=
-          [newExpandTypeSlot(numvec.(QSPLUS(i,j)),
+          [newExpandTypeSlot(numvec.(add_SI(i, j)),
             dollar,domain) for j in 0..numTableArgs]
         if $monitorNewWorld then
           sayBrightly [formatOpSignature(op,sig),'"--?-->",
@@ -542,7 +542,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
       slot = 'skip =>       --recursive call from above 'replaceGoGetSlot
         return (success := newLookupInAddChain(op,sig,domain,dollar))
       systemError '"unexpected format"
-    start := QSPLUS(start,QSPLUS(numTableArgs,4))
+    start := add_SI(start, add_SI(numTableArgs, 4))
   NE(success,'failed) and success =>
     if $monitorNewWorld then
       sayLooking1('"<----",uu) where uu ==
@@ -636,16 +636,16 @@ replaceGoGetSlot env ==
   thisDomainForm := devaluate thisDomain
   bytevec := getDomainByteVector thisDomain
   numOfArgs := bytevec.index
-  goGetDomainSlotIndex := bytevec.(index := QSADD1 index)
+  goGetDomainSlotIndex := bytevec.(index := inc_SI index)
   goGetDomain :=
      goGetDomainSlotIndex = 0 => thisDomain
      thisDomain.goGetDomainSlotIndex
   if PAIRP goGetDomain and SYMBOLP CAR goGetDomain then
      goGetDomain := lazyDomainSet(goGetDomain,thisDomain,goGetDomainSlotIndex)
   sig :=
-    [newExpandTypeSlot(bytevec.(index := QSADD1 index),thisDomain,thisDomain)
+    [newExpandTypeSlot(bytevec.(index := inc_SI index), thisDomain, thisDomain)
       for i in 0..numOfArgs]
-  thisSlot := bytevec.(QSADD1 index)
+  thisSlot := bytevec.(inc_SI index)
   if $monitorNewWorld then
     sayLooking(concat('"%l","..",form2String thisDomainForm,
       '" wants",'"%l",'"  "),op,sig,goGetDomain)

@@ -11,11 +11,11 @@
 ;;; arrays of arbitrary offset
 
 (defmacro QAREF1O(v i o)
-    `(aref (the (simple-array T (*)) ,v) (qsdifference ,i ,o)))
+    `(aref (the (simple-array T (*)) ,v) (|sub_SI| ,i ,o)))
 
 (defmacro QSETAREF1O (v i s o)
     `(setf (aref (the (simple-array T (*)) ,v)
-                 (qsdifference ,i ,o))
+                 (|sub_SI| ,i ,o))
            ,s))
 
 (defmacro QAREF2O(m i j oi oj)
@@ -133,10 +133,10 @@
           (prog ()
              l1
               (if (>= k k0) (return (QSMOD64-32 s ,p)))
-              (setf s (QSMULADD64-32 (,eltfun v1 (QSPLUS i1 k))
-                                     (,eltfun v2 (QSPLUS i2 k))
+              (setf s (QSMULADD64-32 (,eltfun v1 (|add_SI| i1 k))
+                                     (,eltfun v2 (|add_SI| i2 k))
                                      s))
-              (setf k (QSPLUS k 1))
+              (setf k (|inc_SI| k))
               (go l1))))
 
 (defmacro QMODDOT32 (v1 v2 ind1 ind2 kk s0 p)
@@ -147,71 +147,133 @@
 ;; Closure CL has buggy floating point optimizer, so for it we need
 ;; to omit type declarations to disable optimization
 #-:openmcl
-(defmacro DEF-DF-BINOP (name op)
+(defmacro DEF_DF_BINOP (name op)
    `(defmacro ,name (x y) `(the double-float (,',op (the double-float ,x)
                                                     (the double-float ,y)))))
 #+:openmcl
-(defmacro DEF-DF-BINOP (name op) `(defmacro ,name (x y) `(,',op ,x ,y)))
+(defmacro DEF_DF_BINOP (name op) `(defmacro ,name (x y) `(,',op ,x ,y)))
 
-(DEF-DF-BINOP ADD-DF +)
-(DEF-DF-BINOP MUL-DF *)
-(DEF-DF-BINOP MAX-DF MAX)
-(DEF-DF-BINOP MIN-DF MIN)
-(DEF-DF-BINOP SUB-DF -)
-(DEF-DF-BINOP DIV-DF /)
+(DEF_DF_BINOP |add_DF| +)
+(DEF_DF_BINOP |mul_DF| *)
+(DEF_DF_BINOP |max_DF| MAX)
+(DEF_DF_BINOP |min_DF| MIN)
+(DEF_DF_BINOP |sub_DF| -)
+(DEF_DF_BINOP |div_DF| /)
 
 #-:openmcl
 (progn
-(defmacro LESS-DF (x y) `(< (the double-float ,x)
+(defmacro |less_DF| (x y) `(< (the double-float ,x)
                                              (the double-float ,y)))
-(defmacro EQL-DF (x y) `(EQL (the double-float ,x)
+(defmacro |eql_DF| (x y) `(EQL (the double-float ,x)
                                              (the double-float ,y)))
-(defmacro EXPT-DF-I (x y) `(EXPT (the double-float ,x)
+(defmacro |expt_DF_I| (x y) `(EXPT (the double-float ,x)
                                  (the integer ,y)))
-(defmacro EXPT-DF-DF (x y) `(EXPT (the double-float ,x)
+(defmacro |expt_DF| (x y) `(EXPT (the double-float ,x)
                                   (the double-float ,y)))
-(defmacro MUL-DF-I (x y) `(* (the double-float ,x)
+(defmacro |mul_DF_I| (x y) `(* (the double-float ,x)
                                   (the integer ,y)))
-(defmacro DIV-DF-I (x y) `(/ (the double-float ,x)
+(defmacro |div_DF_I| (x y) `(/ (the double-float ,x)
                                   (the integer ,y)))
-(defmacro ZEROP-DF (x) `(ZEROP (the double-float ,x)))
-(defmacro MINUSP-DF (x) `(MINUSP (the double-float ,x)))
-(defmacro SQRT-DF(x) `(SQRT (the double-float ,x)))
-(defmacro LOG-DF (x) `(LOG (the double-float ,x)))
+(defmacro |zero?_DF| (x) `(ZEROP (the double-float ,x)))
+(defmacro |negative?_DF| (x) `(MINUSP (the double-float ,x)))
+(defmacro |sqrt_DF| (x) `(SQRT (the double-float ,x)))
+(defmacro |log_DF| (x) `(LOG (the double-float ,x)))
 
-(defmacro DEF-DF-UNOP (name op)
+(defmacro DEF_DF_UNOP (name op)
     `(defmacro ,name (x) `(the double-float (,',op (the double-float ,x)))))
 )
 
 #+:openmcl
 (progn
-(defmacro LESS-DF (x y) `(<  ,x ,y))
-(defmacro EQL-DF (x y) `(EQL ,x ,y))
-(defmacro EXPT-DF-I (x y) `(EXPT ,x ,y))
-(defmacro EXPT-DF-DF (x y) `(EXPT ,x ,y))
-(defmacro MUL-DF-I (x y) `(* ,x ,y))
-(defmacro DIV-DF-I (x y) `(/ ,x ,y))
-(defmacro ZEROP-DF (x) `(ZEROP ,x))
-(defmacro MINUSP-DF (x) `(MINUSP ,x))
-(defmacro SQRT-DF(x) `(SQRT ,x))
-(defmacro LOG-DF (x) `(LOG ,x))
+(defmacro |less_DF| (x y) `(<  ,x ,y))
+(defmacro |eql_DF| (x y) `(EQL ,x ,y))
+(defmacro |expt_DF_I| (x y) `(EXPT ,x ,y))
+(defmacro |expt_DF| (x y) `(EXPT ,x ,y))
+(defmacro |mul_DF_I| (x y) `(* ,x ,y))
+(defmacro |div_DF_I| (x y) `(/ ,x ,y))
+(defmacro |zero?_DF| (x) `(ZEROP ,x))
+(defmacro |negative?_DF| (x) `(MINUSP ,x))
+(defmacro |sqrt_DF|(x) `(SQRT ,x))
+(defmacro |log_DF| (x) `(LOG ,x))
 
-(defmacro DEF-DF-UNOP (name op)
+(defmacro DEF_DF_UNOP (name op)
     `(defmacro ,name (x) `(,',op ,x)))
 )
 
 
-(DEF-DF-UNOP EXP-DF EXP)
-(DEF-DF-UNOP MINUS-DF -)
-(DEF-DF-UNOP SIN-DF SIN)
-(DEF-DF-UNOP COS-DF COS)
-(DEF-DF-UNOP TAN-DF TAN)
-(DEF-DF-UNOP ATAN-DF ATAN)
-(DEF-DF-UNOP SINH-DF SINH)
-(DEF-DF-UNOP COSH-DF COSH)
-(DEF-DF-UNOP TANH-DF TANH)
-(DEF-DF-UNOP QSQRT-DF SQRT)
-(DEF-DF-UNOP QLOG-DF LOG)
+(DEF_DF_UNOP |exp_DF| EXP)
+(DEF_DF_UNOP |minus_DF| -)
+(DEF_DF_UNOP |sin_DF| SIN)
+(DEF_DF_UNOP |cos_DF| COS)
+(DEF_DF_UNOP |tan_DF| TAN)
+(DEF_DF_UNOP |atan_DF| ATAN)
+(DEF_DF_UNOP |sinh_DF| SINH)
+(DEF_DF_UNOP |cosh_DF| COSH)
+(DEF_DF_UNOP |tanh_DF| TANH)
+(DEF_DF_UNOP |qsqrt_DF| SQRT)
+(DEF_DF_UNOP |qlog_DF| LOG)
+
+;;; Machine integer operations
+
+(defmacro DEF_SI_BINOP (name op)
+   `(defmacro ,name (x y) `(the fixnum (,',op (the fixnum ,x)
+                                                    (the fixnum ,y)))))
+(DEF_SI_BINOP |add_SI| +)
+(DEF_SI_BINOP |sub_SI| -)
+(DEF_SI_BINOP |mul_SI| *)
+(DEF_SI_BINOP |min_SI| min)
+(DEF_SI_BINOP |max_SI| max)
+(DEF_SI_BINOP |rem_SI| rem)
+(DEF_SI_BINOP |quo_SI_aux| truncate)
+(DEF_SI_BINOP |lshift_SI| ash)
+(DEF_SI_BINOP |and_SI| logand)
+(DEF_SI_BINOP |or_SI| logior)
+(DEF_SI_BINOP |xor_SI| logxor)
+(defmacro |quo_SI|(a b) `(values (|quo_SI_aux| ,a ,b)))
+
+(defmacro DEF_SI_UNOP (name op)
+    `(defmacro ,name (x) `(the fixnum (,',op (the fixnum ,x)))))
+
+(DEF_SI_UNOP |minus_SI| -)
+(DEF_SI_UNOP |abs_SI| abs)
+(DEF_SI_UNOP |inc_SI| 1+)
+(DEF_SI_UNOP |dec_SI| 1-)
+(DEF_SI_UNOP |not_SI| lognot)
+
+(defmacro DEF_SI_ARG_BINOP (name op)
+   `(defmacro ,name (x y) `(,',op (the fixnum ,x) (the fixnum ,y))))
+
+(DEF_SI_ARG_BINOP |eql_SI| eql)
+(DEF_SI_ARG_BINOP |less_SI| <)
+(DEF_SI_ARG_BINOP |greater_SI| >)
+
+(defmacro DEF_SI_ARG_UNOP (name op)
+   `(defmacro ,name (x) `(,',op (the fixnum ,x))))
+
+(DEF_SI_ARG_UNOP |zero?_SI| zerop)
+(DEF_SI_ARG_UNOP |negative?_SI| minusp)
+(DEF_SI_ARG_UNOP |odd?_SI| oddp)
+
+; Small finite field operations
+;
+;; following macros assume 0 <= x,y < z
+;; qsaddmod additionally assumes that rsum has correct value even
+;; when (x + y) exceeds range of a fixnum.  This is true if
+;; fixnums use modular arithmetic with no overflow checking,
+;; but according to ANSI Lisp the result is undefined in
+;; such case.
+
+(defmacro |addmod_SI| (x y z)
+   `(let* ((sum (|add_SI| ,x ,y))
+           (rsum (|sub_SI| sum ,z)))
+         (if (|negative?_SI| rsum) sum rsum)))
+
+(defmacro |submod_SI| (x y z)
+    `(let ((dif (|sub_SI| ,x ,y)))
+         (if (|negative?_SI| dif) (|add_SI| dif ,z) dif)))
+
+(defmacro |mulmod_SI| (x y z) `(rem (* (the fixnum ,x) (the fixnum ,y))
+                                     ,z))
 
 ;;; Double precision arrays and matrices
 
@@ -335,3 +397,118 @@
 (defmacro SET-SPAD-KERNEL-POSIT(s p) `(setf (SPAD-KERNEL-POSIT ,s) ,p))
 
 (defun |makeSpadKernel|(o a n) (MAKE-SPAD-KERNEL :OP o :ARG a :NEST n))
+
+; Hashtable accessors
+
+(defmacro HGET (table key)
+   `(gethash ,key ,table))
+
+(defmacro HGET2 (table key default)
+   `(gethash ,key ,table ,default))
+
+(defmacro HPUT(table key value) `(setf (gethash ,key ,table) ,value))
+
+(defmacro HREM (table key) `(remhash ,key ,table))
+
+; Misc operations
+
+(defmacro setelt (vec ind val) `(setf (elt ,vec ,ind) ,val))
+
+(defmacro pairp (x) `(consp ,x))
+
+(defmacro qcar (x) `(car (the cons ,x)))
+
+(defmacro qcdr (x) `(cdr (the cons ,x)))
+
+(defmacro qcaar (x)
+ `(car (the cons (car (the cons ,x)))))
+
+(defmacro qcadr (x)
+ `(car (the cons (cdr (the cons ,x)))))
+
+(defmacro qcdar (x)
+ `(cdr (the cons (car (the cons ,x)))))
+
+(defmacro qcddr (x)
+ `(cdr (the cons (cdr (the cons ,x)))))
+
+(defmacro qcsize (x)
+ `(the fixnum (length (the simple-string ,x))))
+
+(defmacro qrefelt (vec ind) `(svref ,vec ,ind))
+
+(defmacro qrplaca (a b) `(rplaca (the cons ,a) ,b))
+
+(defmacro qrplacd (a b) `(rplacd (the cons ,a) ,b))
+
+(defmacro qsetrefv (vec ind val)
+ `(setf (svref ,vec (the fixnum ,ind)) ,val))
+
+(defmacro qsetvelt (vec ind val)
+ `(setf (svref ,vec (the fixnum ,ind)) ,val))
+
+(defmacro qvelt (vec ind) `(svref ,vec (the fixnum ,ind)))
+
+(defmacro qvmaxindex (x)
+ `(the fixnum (1- (the fixnum (length (the simple-vector ,x))))))
+
+(defmacro qvsize (x)
+ `(the fixnum (length (the simple-vector ,x))))
+
+(defmacro qlessp(x y) `(< ,x ,y))
+
+; macros needed for Spad:
+
+(defmacro EXIT (&rest value) `(return-from SEQ ,@value))
+
+(defmacro SEQ (&rest form)
+  (let* ((body (reverse form))
+         (val `(return-from seq ,(pop body))))
+    (nsubstitute '(progn) nil body) ;don't treat NIL as a label
+    `(block seq (tagbody ,@(nreverse body) ,val))))
+
+(defmacro LETT (var val &rest L)
+  (COND
+    (|$QuickLet| `(SETQ ,var ,val))
+    (|$compilingMap|
+   ;; map tracing
+     `(PROGN
+        (SETQ ,var ,val)
+        (COND (|$letAssoc|
+               (|mapLetPrint| ,(MKQ var)
+                              ,var
+                              (QUOTE ,(KAR L))))
+              ('T ,var))))
+     ;; used for LETs in SPAD code --- see devious trick in COMP-TRAN-1
+     ((ATOM var)
+      `(PROGN
+         (SETQ ,var ,val)
+         (IF |$letAssoc|
+             ,(cond ((null (cdr l))
+                     `(|letPrint| ,(MKQ var) ,var (QUOTE ,(KAR L))))
+                    ((and (eqcar (car l) 'SPADCALL) (= (length (car l)) 3))
+                     `(|letPrint3| ,(MKQ var) ,var ,(third (car l)) (QUOTE ,(KADR L))))
+                    (t `(|letPrint2| ,(MKQ var) ,(car l) (QUOTE ,(KADR L))))))
+         ,var))
+     ('T (ERROR "Cannot compileLET construct"))))
+
+(defmacro SPADLET (A B)
+  (if (ATOM A) `(SETQ ,A ,B)
+      (BREAK)))
+
+(defmacro SPADCALL (&rest L)
+  (let ((args (butlast l))
+	(fn (car (last l)))
+	(gi (gensym)))
+     ;; (values t) indicates a single return value
+    `(let ((,gi ,fn))
+       (the (values t)
+	 (funcall
+          (the #-(or :genera :lispworks)
+                   (function ,(make-list (length l) :initial-element t) t)
+               #+(or :genera :lispworks)function
+	    (car ,gi))
+	  ,@args
+	  (cdr ,gi))))))
+
+(defmacro SPADMAP(&rest args) `'(SPADMAP ,@args))

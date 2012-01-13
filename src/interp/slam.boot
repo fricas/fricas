@@ -144,7 +144,7 @@ countCircularAlist(cal,n) ==
   +/[nodeCount x for x in cal for i in 1..n]
 
 predCircular(al,n) ==
-  for i in 1..QSSUB1 n repeat al:= QCDR al
+  for i in 1..dec_SI n repeat al := QCDR al
   al
 
 assocCircular(x,al) ==  --like ASSOC except that al is circular
@@ -170,7 +170,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   stateNam:= GENVAR()
   stateVar:= GENSYM()
   stateVal:= GENSYM()
-  lastArg := INTERNL STRCONC('"#",STRINGIMAGE QSADD1 LENGTH argl)
+  lastArg := INTERNL STRCONC('"#", STRINGIMAGE inc_SI LENGTH argl)
   decomposeCode:=
     [['LET,gIndex,['ELT,lastArg,0]],:[['LET,g,['ELT,lastArg,i]]
       for g in gsList for i in 1..]]
@@ -228,11 +228,12 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
       preset := [initialSetCode,:initialResetCode,['LET,max,['ELT,stateVar,0]]]
       phrase1:= [['AND, ['LET, max, ['ELT, stateVar, 0]],
                       [">=", sharpArg, max]], [auxfn,:argl,stateVar]]
-      phrase2:= [[">", sharpArg, ['SETQ, max, ['DIFFERENCE, max, k]]],
-                  ['ELT,stateVar,['QSADD1,['QSDIFFERENCE,k,['DIFFERENCE,sharpArg,max]]]]]
+      phrase2:= [[">", sharpArg, ['SETQ, max, ["-", max, k]]],
+                  ['ELT, stateVar, ['inc_SI,
+                    ['sub_SI, k, ["-", sharpArg, max]]]]]
       phrase3:= [[">", sharpArg, n], [auxfn, :argl, ['LIST, n, :initCode]]]
       phrase4:= [[">", sharpArg, n - k],
-        ['ELT,['LIST,:initCode],['QSDIFFERENCE,n,sharpArg]]]
+        ['ELT, ['LIST, :initCode], ['sub_SI, n, sharpArg]]]
       phrase5:= ['(QUOTE T),['recurrenceError,MKQ op,sharpArg]]
       ['PROGN,:preset,['COND,phrase1,phrase2,phrase3,phrase4,phrase5]]
   sayKeyedMsg("S2IX0001",[op])

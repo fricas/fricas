@@ -363,34 +363,6 @@
 
 ; 7.2 Generalized Variables
 
-(defmacro LETT (var val &rest L)
-  (COND
-    (|$QuickLet| `(SETQ ,var ,val))
-    (|$compilingMap|
-   ;; map tracing
-     `(PROGN
-        (SETQ ,var ,val)
-        (COND (|$letAssoc|
-               (|mapLetPrint| ,(MKQ var)
-                              ,var
-                              (QUOTE ,(KAR L))))
-              ('T ,var))))
-     ;; used for LETs in SPAD code --- see devious trick in COMP-TRAN-1
-     ((ATOM var)
-      `(PROGN
-         (SETQ ,var ,val)
-         (IF |$letAssoc|
-             ,(cond ((null (cdr l))
-                     `(|letPrint| ,(MKQ var) ,var (QUOTE ,(KAR L))))
-                    ((and (eqcar (car l) 'SPADCALL) (= (length (car l)) 3))
-                     `(|letPrint3| ,(MKQ var) ,var ,(third (car l)) (QUOTE ,(KADR L))))
-                    (t `(|letPrint2| ,(MKQ var) ,(car l) (QUOTE ,(KADR L))))))
-         ,var))
-     ('T (ERROR "Cannot compileLET construct"))))
-
-(defmacro SPADLET (A B)
-  (if (ATOM A) `(SETQ ,A ,B)
-      (BREAK)))
 
 (defmacro RPLAC (&rest L)
   (if (EQCAR (CAR L) 'ELT)
@@ -462,7 +434,7 @@
                                                (SETQ L (S- L '(1 (ONE))))))) 1)
                               ((EQL 1 X) (CAR L))
                               ((CONS 'TIMES L)) ))
-                 (QUOTIENT (COND ((GREATERP (LENGTH L) 2) (fail))
+                 (QUOTIENT (COND ((> (LENGTH L)) (fail))
                                  ((EQL 0 (CAR L)) 0)
                                  ((EQL (CADR L) 1) (CAR L))
                                  ((CONS 'QUOTIENT L)) ))
@@ -470,14 +442,8 @@
                               ((NUMBERP (SETQ X (CAR L))) (MINUS X))
                               ((EQCAR X 'MINUS) (CADR X))
                               ((CONS 'MINUS L))  ))
-                 (DIFFERENCE (COND ((GREATERP (LENGTH L) 2) (FAIL))
-                                   ((EQUAL (CAR L) (CADR L)) '(ZERO))
-                                   ((|member| (CAR L) '(0 (ZERO))) (MKPF (CDR L) 'MINUS))
-                                   ((|member| (CADR L) '(0 (ZERO))) (CAR L))
-                                   ((EQCAR (CADR L) 'MINUS)
-                                    (MKPF (LIST (CAR L) (CADADR L)) 'PLUS))
-                                   ((CONS 'DIFFERENCE L)) ))
-                 (EXPT (COND ((GREATERP (LENGTH L) 2) (FAIL))
+                 (DIFFERENCE (BREAK))
+                 (EXPT (COND ((> (LENGTH L) 2) (FAIL))
                              ((EQL 0 (CADR L)) 1)
                              ((EQL 1 (CADR L)) (CAR L))
                              ((|member| (CAR L) '(0 1 (ZERO) (ONE))) (CAR L))
@@ -531,13 +497,6 @@
 
 (defmacro COLLECT (&rest L) (|expandCOLLECT| L))
 
-(defun MKQSADD1 (X)
-  (COND ((ATOM X) `(QSADD1 ,X))
-        ((AND (member (CAR X) '(DIFFERENCE QSDIFFERENCE -) :test #'eq)
-              (EQL 1 (CADDR X)))
-         (CADR X))
-        (`(QSADD1 ,X))))
-
 ; 10.1 The Property List
 
 (DEFUN FLAG (L KEY)
@@ -566,33 +525,6 @@
   (AND (IDENTP X)
        (let ((y (symbol-name x)))
          (and (char= #\$ (elt y 0)) (> (size y) 1) (digitp (elt y 1))))))
-
-; 12 NUMBERS
-
-; 12.4 Arithmetic Operations
-
-(defmacro SPADDIFFERENCE (&rest x) `(- . ,x))
-
-; 12.6 Small Finite Field ops with vector trimming
-
-;; following macros assume 0 <= x,y < z
-;; qsaddmod additionally assumes that rsum has correct value even
-;; when (x + y) exceeds range of a fixnum.  This is true if
-;; fixnums use modular arithmetic with no overflow checking,
-;; but according to ANSI Lisp the result is undefined in
-;; such case.
-
-(defmacro qsaddmod (x y z)
-  `(let* ((sum (qsplus ,x ,y))
-          (rsum (qsdifference sum ,z)))
-     (if (qsminusp rsum) sum rsum)))
-
-(defmacro qsdifmod (x y z)
-  `(let ((dif (qsdifference ,x ,y)))
-     (if (qsminusp dif) (qsplus dif ,z) dif)))
-
-(defmacro qsmultmod (x y z)
- `(rem (* ,x ,y) ,z))
 
 ; 14 SEQUENCES
 
@@ -632,22 +564,7 @@
 (defun ELEMN (X N DEFAULT)
   (COND ((NULL X) DEFAULT)
         ((EQL N 1) (CAR X))
-        ((ELEMN (CDR X) (SUB1 N) DEFAULT))))
-
-(defmacro SPADCALL (&rest L)
-  (let ((args (butlast l))
-	(fn (car (last l)))
-	(gi (gensym)))
-     ;; (values t) indicates a single return value
-    `(let ((,gi ,fn))
-       (the (values t)
-	 (funcall
-          (the #-(or :genera :lispworks)
-                   (function ,(make-list (length l) :initial-element t) t)
-               #+(or :genera :lispworks)function
-	    (car ,gi))
-	  ,@args
-	  (cdr ,gi))))))
+        ((ELEMN (CDR X) (- N 1) DEFAULT))))
 
 (defun LISTOFATOMS (X)
   (COND ((NULL X) NIL)
@@ -1037,13 +954,13 @@
 (DEFUN |rightBindingPowerOf| (X IND &AUX (Y (GETL X IND)))
    (IF Y (ELEMN Y 4 105) 105))
 
-(defmacro MAKE-BF (MT EP) `(LIST |$BFtag| ,MT ,EP))
+(defun |make_BF| (MT EP) (LIST |$BFtag| MT EP))
 
-(defun MAKE-FLOAT (int frac fraclen exp)
+(defun |make_float| (int frac fraclen exp)
     (if (AND $SPAD |$useBFasDefault|)
         (if (= frac 0)
-          (MAKE-BF int exp)
-          (MAKE-BF (+ (* int (expt 10 fraclen)) frac) (- exp fraclen)) )
+          (|make_BF| int exp)
+          (|make_BF| (+ (* int (expt 10 fraclen)) frac) (- exp fraclen)) )
         (read-from-string
           (format nil "~D.~v,'0De~D" int fraclen frac exp))) )
 
@@ -1194,4 +1111,3 @@
 
 ; end of moved fragment
 
-(defmacro SPADMAP(&rest args) `'(SPADMAP ,@args))

@@ -1059,7 +1059,7 @@ selectMmsGen(op,tar,args1,args2) ==
   $Subst: local := NIL
   $SymbolType: local := NIL
 
-  null (S := getModemapsFromDatabase(op,QLENGTH args1)) => NIL
+  null (S := getModemapsFromDatabase(op, LENGTH args1)) => NIL
 
   if (op = 'map) and (2 = #args1) and
     (CAR(args1) is ['Mapping,., elem]) and

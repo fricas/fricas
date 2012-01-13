@@ -100,8 +100,8 @@ compClam(op,argl,body,$clamList) ==
     callCounter:= INTERNL(op,'";calls")
     SET(hitCounter,0)
     SET(callCounter,0)
-    callCountCode:= [['SETQ,callCounter,['QSADD1,callCounter]]]
-    hitCountCode:=  [['SETQ,hitCounter,['QSADD1,hitCounter]]]
+    callCountCode := [['SETQ, callCounter, ['inc_SI, callCounter]]]
+    hitCountCode := [['SETQ, hitCounter, ['inc_SI, hitCounter]]]
   g2:= GENSYM()  --length of cache or arg-value pair
   g3:= GENSYM()  --value computed by calling function
   lookUpFunction:=
@@ -194,8 +194,8 @@ compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
     callCounter:= INTERNL(op,'";calls")
     SET(hitCounter,0)
     SET(callCounter,0)
-    callCountCode:= [['SETQ,callCounter,['QSADD1,callCounter]]]
-    hitCountCode:=  [['SETQ,hitCounter,['QSADD1,hitCounter]]]
+    callCountCode := [['SETQ, callCounter, ['inc_SI, callCounter]]]
+    hitCountCode := [['SETQ, hitCounter, ['inc_SI, hitCounter]]]
   g2:= GENSYM()  --value computed by calling function
   returnFoundValue:=
     null argl =>
@@ -264,7 +264,7 @@ compHash(op,argl,body,cacheNameOrNil,eqEtc,countFl) ==
   op
 
 CDRwithIncrement x ==
-  RPLACA(x,QSADD1 CAR x)
+  RPLACA(x, inc_SI CAR x)
   CDR x
 
 clearClams() ==
@@ -420,9 +420,9 @@ assocCacheShiftCount(x,al,fn) ==
   until EQ(forwardPointer,al) repeat
     FUNCALL(fn, CAR (y:=CAR forwardPointer),x) =>
       newFrontPointer := forwardPointer
-      RPLAC(CADR y,QSADD1 CADR y)         --increment use count
+      RPLAC(CADR y, inc_SI CADR y)         --increment use count
       return (val:= y)
-    if QSLESSP(c := CADR y,minCount) then --initial c is 1 so is true 1st time
+    if less_SI(c := CADR y, minCount) then --initial c is 1 so is true 1st time
       minCount := c
       newFrontPointer := forwardPointer   --CAR is slot replaced on failure
     forwardPointer:= CDR forwardPointer
@@ -541,10 +541,10 @@ reportInstantiations() ==
 
 listTruncate(l,n) ==
   u:= l
-  n:= QSSUB1 n
+  n := dec_SI n
   while NEQ(n,0) and null atom u repeat
-    n:= QSSUB1 n
-    u:= QCDR u
+      n := dec_SI n
+      u := QCDR u
   if null atom u then
     if null atom rest u and $reportInstantiations = true then
       recordInstantiation($op,CAADR u,true)
