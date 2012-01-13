@@ -336,7 +336,7 @@ string_to_int(s) ==  READ_-FROM_-STRING(s)
 float2Sex [i_str, fr_str, e_str] ==
   int_part := string_to_int(i_str)
   exp_part := string_to_int(e_str)
-  bfForm := MAKE_-FLOAT(int_part, string_to_int(fr_str),
+  bfForm := make_float(int_part, string_to_int(fr_str),
     LENGTH fr_str, exp_part)
   $useBFasDefault =>
     [., frac, exp] := bfForm

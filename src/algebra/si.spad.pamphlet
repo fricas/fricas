@@ -284,51 +284,51 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
    base()    == 2$Lisp
    max()     == MAXINT
    min()     == MININT
-   x = y     == EQL(x,y)$Lisp
-   _~ x      == LOGNOT(x)$Lisp
-   not(x)    == LOGNOT(x)$Lisp
-   _/_\(x,y) == LOGAND(x,y)$Lisp
-   _\_/(x,y) == LOGIOR(x,y)$Lisp
-   Not(x)    == LOGNOT(x)$Lisp
-   And(x,y)  == LOGAND(x,y)$Lisp
-   Or(x,y)   == LOGIOR(x,y)$Lisp
-   xor(x,y)  == LOGXOR(x,y)$Lisp
-   x < y     == QSLESSP(x,y)$Lisp
-   inc x     == QSADD1(x)$Lisp
-   dec x     == QSSUB1(x)$Lisp
-   - x       == QSMINUS(x)$Lisp
-   x + y     == QSPLUS(x,y)$Lisp
-   x:% - y:% == QSDIFFERENCE(x,y)$Lisp
-   x:% * y:% == QSTIMES(x,y)$Lisp
+   x = y     == eql__SI(x, y)$Lisp
+   _~ x      == not__SI(x)$Lisp
+   not(x)    == not__SI(x)$Lisp
+   _/_\(x,y) == and__SI(x, y)$Lisp
+   _\_/(x,y) == or__SI(x, y)$Lisp
+   Not(x)    == not__SI(x)$Lisp
+   And(x,y)  == and__SI(x, y)$Lisp
+   Or(x,y)   == or__SI(x, y)$Lisp
+   xor(x,y)  == xor__SI(x, y)$Lisp
+   x < y     == less__SI(x, y)$Lisp
+   inc x     == inc__SI(x)$Lisp
+   dec x     == dec__SI(x)$Lisp
+   - x       == minus__SI(x)$Lisp
+   x + y     == add__SI(x, y)$Lisp
+   x:% - y:% == sub__SI(x, y)$Lisp
+   x:% * y:% == mul__SI(x, y)$Lisp
    x:% ^ n:NonNegativeInteger == ((EXPT(x, n)$Lisp) pretend Integer)::%
-   x quo y   == QSQUOTIENT(x,y)$Lisp
-   x rem y   == QSREMAINDER(x,y)$Lisp
-   divide(x, y)   == CONS(QSQUOTIENT(x,y)$Lisp,QSREMAINDER(x,y)$Lisp)$Lisp
+   x quo y   == quo__SI(x, y)$Lisp
+   x rem y   == rem__SI(x, y)$Lisp
+   divide(x, y)   == CONS(quo__SI(x, y)$Lisp, rem__SI(x, y)$Lisp)$Lisp
    gcd(x,y)  == GCD(x,y)$Lisp
-   abs(x)    == QSABSVAL(x)$Lisp
-   odd?(x)   == QSODDP(x)$Lisp
-   zero?(x)  == QSZEROP(x)$Lisp
+   abs(x)    == abs__SI(x)$Lisp
+   odd?(x)   == odd?__SI(x)$Lisp
+   zero?(x)  == zero?__SI(x)$Lisp
 --   one?(x)   == ONEP(x)$Lisp
    one?(x)   == x = 1
-   max(x,y)  == QSMAX(x,y)$Lisp
-   min(x,y)  == QSMIN(x,y)$Lisp
+   max(x,y)  == max__SI(x, y)$Lisp
+   min(x,y)  == min__SI(x, y)$Lisp
    hash(x)   == HASHEQ(x)$Lisp
    length(x) == INTEGER_-LENGTH(x)$Lisp
-   shift(x,n)    == QSLEFTSHIFT(x,n)$Lisp
-   mulmod(a,b,p) == QSMULTMOD(a,b,p)$Lisp
-   addmod(a,b,p) == QSADDMOD(a,b,p)$Lisp
-   submod(a,b,p) == QSDIFMOD(a,b,p)$Lisp
-   negative?(x)  == QSMINUSP$Lisp x
+   shift(x,n)    == lshift__SI(x, n)$Lisp
+   mulmod(a,b,p) == mulmod__SI(a, b, p)$Lisp
+   addmod(a,b,p) == addmod__SI(a, b, p)$Lisp
+   submod(a,b,p) == submod__SI(a, b, p)$Lisp
+   negative?(x)  == negative?__SI$Lisp x
 
 
    reducedSystem(m, v) ==
         [m pretend Matrix(Integer), v pretend Vector(Integer)]
 
    positiveRemainder(x,n) ==
-      r := QSREMAINDER(x,n)$Lisp
-      QSMINUSP(r)$Lisp =>
-          QSMINUSP(n)$Lisp => QSDIFFERENCE(x, n)$Lisp
-          QSPLUS(r, n)$Lisp
+      r := rem__SI(x, n)$Lisp
+      negative?__SI(r)$Lisp =>
+          negative?__SI(n)$Lisp => sub__SI(x, n)$Lisp
+          add__SI(r, n)$Lisp
       r
 
    coerce(x:Integer):% ==

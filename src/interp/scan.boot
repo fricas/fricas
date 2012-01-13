@@ -162,10 +162,10 @@ scanInsert(s,d) ==
       while l <= #(ELT(u,k)) repeat
           k:=k+1
       v := MAKE_-VEC(n+1)
-      for i in 0..k-1 repeat VEC_-SETELT(v,i,ELT(u,i))
-      VEC_-SETELT(v,k,s)
-      for i in k..n-1 repeat VEC_-SETELT(v,i+1,ELT(u,i))
-      VEC_-SETELT(d,h,v)
+      for i in 0..k-1 repeat QSETVELT(v, i, ELT(u, i))
+      QSETVELT(v, k, s)
+      for i in k..n-1 repeat QSETVELT(v, i + 1, ELT(u, i))
+      QSETVELT(d, h, v)
       s
 
 scanDictCons()==
@@ -173,15 +173,15 @@ scanDictCons()==
       d :=
           a:=MAKE_-VEC(256)
           b:=MAKE_-VEC(1)
-          VEC_-SETELT(b,0,MAKE_-CVEC 0)
-          for i in 0..255 repeat VEC_-SETELT(a,i,b)
+          QSETVELT(b, 0, make_CVEC 0)
+          for i in 0..255 repeat QSETVELT(a, i, b)
           a
       for s in l repeat scanInsert(s,d)
       d
 
 scanPunCons()==
     listing := HKEYS scanKeyTable
-    a:=MAKE_-BVEC 256
+    a := BVEC_-MAKE_-FULL(256, 0)
 --  SETSIZE(a,256)
     for i in 0..255 repeat BVEC_-SETELT(a,i,0)
     for k in listing repeat
@@ -494,13 +494,13 @@ digit? x== DIGITP x
 
 scanW(b)==             -- starts pointing to first char
        n1:=$n         -- store starting character position
-       $n:=$n+1          -- the first character is not tested
+       $n := inc_SI($n)          -- the first character is not tested
        l:=$sz
        endid:=posend($ln,$n)
        if endid=l or QENUM($ln,endid)~=ESCAPE
        then -- not escaped
            $n:=endid
-           [b,SUBSTRING($ln,n1,endid-n1)]   -- l overflows
+           [b, SUBSTRING($ln, n1, sub_SI(endid, n1))] -- l overflows
        else -- escape and endid~=l
            str:=SUBSTRING($ln,n1,endid-n1)
            $n:=endid+1

@@ -190,11 +190,11 @@
                         (if (NOT (OR A V C NL))
                             (if Caller (return "119") (return "019")))
                         (SETQ NL (APPEND NL '(\0)))
-                        (SETQ BUF (GETSTR 12))
+                        (SETQ BUF (|make_CVEC| 12))
                         (SUFFIX (if (or C Caller) #\1 #\0) BUF)
                         (SUFFIX (if V #\1 #\0) BUF)
-                        (if A (suffix #\9 BUF)
-                            (mapcar #'(lambda (x) (suffix x BUF)) NL))
+                        (if A (SUFFIX #\9 BUF)
+                            (mapcar #'(lambda (x) (SUFFIX x BUF)) NL))
                         (RETURN BUF))))
         (/MONITOR FN TRACECODE BEFORE AFTER CONDITION TIMERNAM
                   COUNTNAM TRACENAME BREAK )))
@@ -357,7 +357,7 @@
                       ((PRINMATHOR0 X CURSTRM)))))))
 
 (DEFUN MONITOR-PRINARGS-1 (L N)
-  (COND ((OR (ATOM L) (LESSP N 1)) NIL)
+  (COND ((OR (ATOM L) (< N 1)) NIL)
         ((EQ N 1) (MONITOR-PRINT (CAR L) CURSTRM))
         ((MONITOR-PRINARGS-1 (CDR L) (1- N)))))
 
@@ -541,7 +541,7 @@
 (defparameter $delay 0)
 
 (defun |startTimer| ()
-    (SETQ $delay (PLUS $delay (DIFFERENCE (TEMPUS-FUGIT) |$oldTime|)))
+    (SETQ $delay (+ $delay (- (TEMPUS-FUGIT) |$oldTime|)))
     (SETQ |$timerOn| 'T)
     (|clock|))
 

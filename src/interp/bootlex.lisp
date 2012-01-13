@@ -450,7 +450,7 @@ special character be the atom whose print name is the character itself."
     formfloat
         (setf *after_dot* nil)
         (return (token-install
-                (MAKE-FLOAT intval fracval fraclen expval)
+                (|make_float| intval fracval fraclen expval)
                 'spadfloat token
                  t))
  formint

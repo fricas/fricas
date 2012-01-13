@@ -336,8 +336,8 @@ optMINUS u ==
     u
   u
 
-optQSMINUS u ==
-  u is ['QSMINUS,v] =>
+opt_minus_SI u ==
+  u is ['minus_SI, v] =>
     NUMBERP v => -v
     u
   u
@@ -346,12 +346,6 @@ opt_- u ==
   u is ['_-,v] =>
     NUMBERP v => -v
     u
-  u
-
-optLESSP u ==
-  u is ['LESSP,a,b] =>
-    b = 0 => ['MINUSP,a]
-    ['GREATERP,b,a]
   u
 
 optEQ u ==
@@ -366,9 +360,8 @@ for x in '( (call         optCall) _
               (SEQ          optSEQ)_
               (EQ           optEQ)_
               (MINUS        optMINUS)_
-              (QSMINUS      optQSMINUS)_
+              (minus_SI     opt_minus_SI)_
               (_-           opt_-)_
-              (LESSP        optLESSP)_
               (SPADCALL     optSPADCALL)_
               (_|           optSuchthat)_
               (CATCH        optCatch)_

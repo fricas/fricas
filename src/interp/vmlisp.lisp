@@ -60,9 +60,6 @@
 (defmacro assq (a b)
  `(assoc ,a ,b :test #'eq))
 
-(defmacro difference (&rest args)
- `(- ,@args))
-
 (defmacro eqcar (x y)
   (if (atom x)
     `(and (consp ,x) (eql (qcar ,x) ,y))
@@ -70,17 +67,11 @@
      `(let ((,xx ,x))
        (and (consp ,xx) (eql (qcar ,xx) ,y))))))
 
-(defmacro exit (&rest value)
- `(return-from seq ,@value))
-
 (defmacro fetchchar (x i)
  `(char ,x ,i))
 
 (defmacro fixp (x)
  `(integerp ,x))
-
-(defmacro greaterp (&rest args)
- `(> ,@args))
 
 (defmacro |idChar?| (x)
  `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
@@ -109,9 +100,6 @@
 (defmacro LASTNODE (l)
  `(last ,l))
 
-(defmacro lessp (&rest args)
- `(< ,@args))
-
 (defmacro makestring (a) a)
 
 (defmacro maxindex (x)
@@ -124,124 +112,10 @@
 
 (defmacro neq (a b) `(not (eq ,a ,b)))
 
-(defmacro pairp (x)
- `(consp ,x))
-
-(defmacro plus (&rest args)
- `(+ ,@ args))
-
-(defmacro qcar (x)
- `(car (the cons ,x)))
-
-(defmacro qcdr (x)
- `(cdr (the cons ,x)))
-
-(defmacro qcaar (x)
- `(car (the cons (car (the cons ,x)))))
-
-(defmacro qcadr (x)
- `(car (the cons (cdr (the cons ,x)))))
-
-(defmacro qcdar (x)
- `(cdr (the cons (car (the cons ,x)))))
-
-(defmacro qcddr (x)
- `(cdr (the cons (cdr (the cons ,x)))))
-
-(defmacro qcsize (x)
- `(the fixnum (length (the simple-string ,x))))
-
-(defmacro qlength (a)
- `(length ,a))
-
-(defmacro qrefelt (vec ind)
- `(svref ,vec ,ind))
-
-(defmacro qrplaca (a b)
- `(rplaca (the cons ,a) ,b))
-
-(defmacro qrplacd (a b)
- `(rplacd (the cons ,a) ,b))
-
-(defmacro qsadd1 (x)
- `(the fixnum (1+ (the fixnum ,x))))
-
-(defmacro qsdifference (x y)
- `(the fixnum (- (the fixnum ,x) (the fixnum ,y))))
-
-(defmacro qsetrefv (vec ind val)
- `(setf (svref ,vec (the fixnum ,ind)) ,val))
-
-(defmacro qsetvelt (vec ind val)
- `(setf (svref ,vec (the fixnum ,ind)) ,val))
-
-(defmacro qsgreaterp (a b)
- `(> (the fixnum ,a) (the fixnum ,b)))
-
-(defmacro qsinc1 (x)
- `(the fixnum (1+ (the fixnum ,x))))
-
-(defmacro qsleftshift (a b)
- `(the fixnum (ash (the fixnum ,a) (the fixnum ,b))))
-
-(defmacro qslessp (a b)
- `(< (the fixnum ,a) (the fixnum ,b)))
-
-(defmacro qsmax (x y)
- `(the fixnum (max (the fixnum ,x) (the fixnum ,y))))
-
-(defmacro qsmin (x y)
- `(the fixnum (min (the fixnum ,x) (the fixnum ,y))))
-
-(defmacro qsminus (x)
- `(the fixnum (minus (the fixnum ,x))))
-
-(defmacro qsminusp (x)
- `(minusp (the fixnum ,x)))
-
-(defmacro qsoddp (x)
- `(oddp (the fixnum ,x)))
-
-(defmacro qsabsval (x)
-  `(the fixnum (abs (the fixnum ,x))))
-
-(defmacro qsplus (x y)
- `(the fixnum (+ (the fixnum ,x) (the fixnum ,y))))
-
-(defmacro qssub1 (x)
- `(the fixnum (1- (the fixnum ,x))))
-
-(defmacro qstimes (x y)
- `(the fixnum (* (the fixnum ,x) (the fixnum ,y))))
-
-(defmacro qszerop (x)
- `(zerop (the fixnum ,x)))
-
-(defmacro qvelt (vec ind)
- `(svref ,vec (the fixnum ,ind)))
-
-(defmacro qvmaxindex (x)
- `(the fixnum (1- (the fixnum (length (the simple-vector ,x))))))
-
-(defmacro qvsize (x)
- `(the fixnum (length (the simple-vector ,x))))
-
-(defmacro qlessp(x y) `(< ,x ,y))
-
 (defmacro refvecp (v) `(simple-vector-p ,v))
 
-(defmacro setandfileq (id item)
- `(eval-when (:execute :load-toplevel)
-   (defparameter ,id ,item)))
-
-(defmacro setelt (vec ind val)
- `(setf (elt ,vec ,ind) ,val))
-
-(defmacro seq (&rest form)
-  (let* ((body (reverse form))
-         (val `(return-from seq ,(pop body))))
-    (nsubstitute '(progn) nil body) ;don't treat NIL as a label
-    `(block seq (tagbody ,@(nreverse body) ,val))))
+(defmacro SETANDFILEQ (id item)
+   `(defparameter ,id ,item))
 
 (defmacro sintp (n)
  `(typep ,n 'fixnum))
@@ -254,15 +128,6 @@
 
 (defmacro subrp (x)
  `(compiled-function-p ,x))
-
-(defmacro sub1 (x)
- `(1- ,x))
-
-(defmacro times (&rest args)
- `(* ,@args))
-
-(defmacro vec-setelt (vec ind val)
- `(setf (svref ,vec ,ind) ,val))
 
 (defmacro vecp (v) `(simple-vector-p ,v))
 
@@ -331,7 +196,7 @@
 ; 11.2 Accessing
 
 ;; note it is important that PNAME returns nil not an error for non-symbols
-(defun pname (x)
+(defun PNAME (x)
   (cond ((symbolp x) (symbol-name x))
         ((characterp x) (string x))
         (t nil)))
@@ -362,10 +227,6 @@
   (if (and (integerp x) (integerp y))
       (multiple-value-list (truncate x y))
       (BREAK)))
-
-(defun QSQUOTIENT (a b) (the fixnum (truncate (the fixnum a) (the fixnum b))))
-
-(defun QSREMAINDER (a b) (the fixnum (rem (the fixnum a) (the fixnum b))))
 
 ; 13.3 Updating
 
@@ -632,9 +493,8 @@
 
 (define-function 'strconc #'concat)
 
-(defun make-cvec (sint) (make-array sint :fill-pointer 0 :element-type 'character))
-
-(define-function 'getstr #'make-cvec)
+(defun |make_CVEC| (sint)
+    (make-array sint :fill-pointer 0 :element-type 'character))
 
 (defun make-full-cvec (sint &optional (char #\space))
   (make-string sint :initial-element (if (integerp char)
@@ -696,7 +556,7 @@
 
 ; 17.4 Updating operators
 
-(defun suffix (id cvec)
+(defun SUFFIX(id cvec)
   "Suffixes the first char of the symbol or char ID to the string CVEC,
     changing CVEC."
   (unless (characterp id) (setq id (elt (string id) 0)))
@@ -833,7 +693,7 @@
 (defun |mkOutputConsoleStream| ()
      (make-synonym-stream '*standard-output*))
 
-(defun shut (st) (if #+:GCL(is-console st)
+(defun SHUT (st) (if #+:GCL(is-console st)
                      #-:GCL(typep st 'synonym-stream)
                      st
                    (if (streamp st) (close st) -1)))
@@ -1096,9 +956,6 @@
 (defun OBEY (S)
    (system:call-system S))
 
-(defun MAKE-BVEC (n)
- (make-array (list n) :element-type 'bit :initial-element 0))
-
 ;;; moved from hash.lisp
 
 ;17.0 Operations on Hashtables
@@ -1117,9 +974,6 @@
 
 ;17.2 Accessing
 
-(defmacro HGET (table key &rest default)
-   `(gethash ,key ,table ,@default))
-
 (defun HKEYS (table)
    (let (keys)
       (maphash
@@ -1131,10 +985,6 @@
 (define-function 'HCOUNT #'hash-table-count)
 
 ;17.4 Searching and Updating
-
-(defun HPUT (table key value) (setf (gethash key table) value))
-
-(defmacro HREM (table key) `(remhash ,key ,table))
 
 (defun HREMPROP (table key property)
   (let ((plist (gethash key table)))

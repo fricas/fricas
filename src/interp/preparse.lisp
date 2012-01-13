@@ -138,7 +138,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
                    (SETQ A ""))
                   ('T (PUSH (STRCONC (GETFULLSTR N " ")
                                   (SUBSTRING A N ())) $LINELIST)
-                      (SETQ $INDEX (SUB1 $INDEX))
+                      (SETQ $INDEX (- $INDEX 1))
                       (SETQ A (SUBSEQ A 0 N))))
                 (GO NOCOMS))
                ((= N OPARSYM) (setq PCOUNT (1+ PCOUNT)))
