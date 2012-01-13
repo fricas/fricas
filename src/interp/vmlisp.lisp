@@ -680,7 +680,9 @@
    (cond ((numberp filespec) (make-synonym-stream '*standard-output*))
          ((null filespec) (error "not handled yet"))
          (t (open (|make_filename| filespec) :direction :output
-               :if-exists :supersede))))
+               #+(or :cmucl :openmcl :sbcl) :if-exists
+               #+(or :cmucl :sbcl) :supersede
+               #+:openmcl :ignored))))
 
 (defun MAKE-APPENDSTREAM (filespec)
  "fortran support"
