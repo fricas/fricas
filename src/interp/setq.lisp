@@ -237,7 +237,7 @@
 
 (SETQ $LISPLIB NIL)
 (SETQ |$forceDatabaseUpdate| NIL)  ;; see "load" function
-(SETQ |$functorForm| NIL)
+(DEFPARAMETER |$functorForm| NIL)
 
 (SETQ |$InitialCommandSynonymAlist| '(
        (|?|          . "what commands")
@@ -413,7 +413,7 @@
 (SETQ |$cacheCount| 0)
 (SETQ |$reportExitModeStack| NIL)
 (DEFPARAMETER |$prefix| NIL)
-(SETQ |$formalArgList| ())
+(DEFPARAMETER |$formalArgList| ())
 (SETQ |$FormalMapVariableList|
   '(|#1| |#2| |#3| |#4| |#5| |#6| |#7| |#8| |#9| |#10|
     |#11| |#12| |#13| |#14| |#15| |#16| |#17| |#18| |#19| |#20|

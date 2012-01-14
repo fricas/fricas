@@ -512,3 +512,7 @@
 	  (cdr ,gi))))))
 
 (defmacro SPADMAP(&rest args) `'(SPADMAP ,@args))
+
+(defmacro |spadConstant| (dollar n)
+ `(SPADCALL (svref ,dollar (the fixnum ,n))))
+
