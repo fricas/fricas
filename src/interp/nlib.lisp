@@ -231,23 +231,18 @@
 
 ;; cms file operations
 (defun |make_filename0|(filearg filetype)
-  (let ((filetype (if (symbolp filetype)
+  (let ((filetype (if (and filetype (symbolp filetype))
                       (symbol-name filetype)
                       filetype)))
     (cond
      ((pathnamep filearg)
-      (cond ((pathname-type filearg) (namestring filearg))
+      (cond ((or (null filetype)
+                 (pathname-type filearg))
+               (namestring filearg))
             (t (namestring (make-pathname :directory (pathname-directory filearg)
                                           :name (pathname-name filearg)
                                           :type filetype)))))
-     ;; Previously, given a filename containing "." and
-     ;; an extension this function would return filearg. MCD 23-8-95.
-     ((and (stringp filearg) (pathname-type filearg) (null filetype))
-          (BREAK)
-          filearg)
-     ;;  ((and (stringp filearg)
-     ;;    (or (pathname-type filearg) (null filetype)))
-     ;;     filearg)
+     ((and (stringp filearg) (null filetype)) filearg)
      ((and (stringp filearg) (stringp filetype)
            (pathname-type filearg)
            (string-equal (pathname-type filearg) filetype))
