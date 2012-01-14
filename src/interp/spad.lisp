@@ -98,63 +98,6 @@
 ;; This is used in the domain Boolean (BOOLEAN.NRLIB/code.lsp)
 (defun |BooleanEquality| (x y) (if x y (null y)))
 
-(defvar |$RawParseOnly| nil)
-(defvar |$PostTranOnly| nil)
-(defvar |$FlatParseOnly| nil)
-(defvar |$noEarlyMacroexpand| nil)
-(defvar |$SaveParseOnly| nil)
-(defvar |$globalDefs| nil)
-(defvar |$MacroTable|)
-
-(defun |S_process| (X)
-  (let ((|$Index| 0)
-        ($MACROASSOC ())
-        (|$compUniquelyIfTrue| nil)
-        (|$postStack| nil)
-        |$topOp|
-        (|$semanticErrorStack| ())
-        (|$warningStack| ())
-        (|$exitMode| |$EmptyMode|)
-        (|$exitModeStack| ())
-        (|$returnMode| |$EmptyMode|)
-        (|$leaveLevelStack| ())
-        (|$CategoryFrame| '((NIL)))
-        |$insideFunctorIfTrue| |$insideExpressionIfTrue|
-        |$insideWhereIfTrue|
-        |$insideCategoryIfTrue| |$insideCapsuleFunctionIfTrue| |$form|
-        (|$e| |$EmptyEnvironment|)
-        (|$genSDVar| 0)
-        (|$previousTime| (TEMPUS-FUGIT))
-        )
-  (declare (special |$CategoryFrame|))
-  (prog ((CURSTRM CUROUTSTREAM) |$s| |$x| |$m| u)
-     (declare (special CURSTRM |$s| |$x| |$m| CUROUTSTREAM))
-      (if (NOT X) (RETURN NIL))
-      (if |$SaveParseOnly|
-          (progn
-               (setf X (|walkForm| X))
-               (if X (push X |$globalDefs|))
-               (RETURN NIL)))
-      (if |$RawParseOnly| (RETURN (PRETTYPRINT X)))
-      (if |$FlatParseOnly| (RETURN (PRETTYPRINT (|flattenSemi| X))))
-      (if |$PostTranOnly| (RETURN (PRETTYPRINT (|postTransform| X))))
-      (let ((nform (if |$noEarlyMacroexpand| X (|walkForm| X))))
-          (if nform
-              (setq X (|parseTransform| (|postTransform| nform)))
-              (RETURN NIL)))
-      (if |$TranslateOnly| (RETURN (SETQ |$Translation| X)))
-      (when |$postStack| (|displayPreCompilationErrors|) (RETURN NIL))
-      (COND (|$PrintOnly|
-             (format t "~S   =====>~%" |$currentLine|)
-             (RETURN (PRETTYPRINT X))))
-      (if |$InteractiveMode|
-          (|processInteractive| X NIL)
-          (if (setq U (|compTopLevel|  X |$EmptyMode|
-                                         |$InteractiveFrame|))
-              (SETQ |$InteractiveFrame| (third U))))
-      (if |$semanticErrorStack| (|displaySemanticErrors|))
-      (TERPRI))))
-
 (MAKEPROP 'END_UNIT 'KEY T)
 
 ;;; (defun |evalSharpOne| (x \#1) (declare (special \#1)) (EVAL x))
