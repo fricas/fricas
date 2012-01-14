@@ -276,3 +276,61 @@ computeTargetMode(lhs, rhs) ==
  operationalist             ; interp.
 
 )endif
+
+DEFVAR($RawParseOnly, false)
+DEFVAR($PostTranOnly, false)
+DEFVAR($FlatParseOnly, false)
+DEFVAR($noEarlyMacroexpand, false)
+DEFVAR($SaveParseOnly, false)
+DEFVAR($globalDefs, nil)
+DEFVAR($MacroTable)
+
+S_process(x) ==
+    $Index : local := 0
+    $MACROASSOC : local := nil
+    $compUniquelyIfTrue : local := false
+    $postStack : local := nil
+    $topOp : local := nil
+    $semanticErrorStack : local := nil
+    $warningStack : local := nil
+    $exitMode : local := $EmptyMode
+    $exitModeStack : local := nil
+    $returnMode : local := $EmptyMode
+    $leaveLevelStack : local := nil
+    $CategoryFrame : local := [[[]]]
+    $insideFunctorIfTrue : local := false
+    $insideExpressionIfTrue : local := false
+    $insideWhereIfTrue : local := false
+    $insideCategoryIfTrue : local := false
+    $insideCapsuleFunctionIfTrue : local := false
+    $form : local := nil
+    $e : local := $EmptyEnvironment
+    $genSDVar : local := 0
+    $previousTime : local := TEMPUS_-FUGIT()
+    $s : local := nil
+    $x : local := nil
+    $m : local := nil
+    null(x) => nil
+    $SaveParseOnly =>
+        x := walkForm(x)
+        if x then PUSH(x, $globalDefs)
+    $RawParseOnly => PRETTYPRINT(x)
+    $FlatParseOnly => PRETTYPRINT(flattenSemi x)
+    $PostTranOnly => PRETTYPRINT(postTransform x)
+    nform :=
+        $noEarlyMacroexpand => x
+        walkForm x
+    null(nform) => nil
+    x := parseTransform(postTransform(nform))
+    $TranslateOnly => $Translation := x
+    $postStack => displayPreCompilationErrors()
+    $PrintOnly =>
+        FORMAT(true, '"~S   =====>~%", $currentLine)
+        PRETTYPRINT(x)
+    if $InteractiveMode then
+        processInteractive(x, false)
+    else
+        u := compTopLevel(x, $EmptyMode, $InteractiveFrame)
+        if u then $InteractiveFrame := THIRD(u)
+    if $semanticErrorStack then displaySemanticErrors()
+    TERPRI()
