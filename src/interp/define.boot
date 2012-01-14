@@ -31,6 +31,8 @@
 
 )package "BOOT"
 
+DEFPARAMETER($newCompCompare, false)
+
 --% FUNCTIONS WHICH MUNCH ON == STATEMENTS
 
 compDefine(form,m,e) ==

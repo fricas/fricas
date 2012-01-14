@@ -846,7 +846,7 @@ stupidIsSpadFunction fn ==
   STRPOS('"_;",PNAME fn,0,NIL)
 
 break msg ==
-  condition:= MONITOR_,EVALTRAN(_/BREAKCONDITION,nil)
+  condition:= MONITOR_-EVALTRAN(_/BREAKCONDITION, nil)
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
   ENABLE_-BACKTRACE(nil)

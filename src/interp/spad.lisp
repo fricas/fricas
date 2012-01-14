@@ -42,9 +42,6 @@
 (defvar |$reportEachInstantiation| nil)
 (defvar |$reportCounts| nil)
 (defvar |$compForModeIfTrue| nil "checked in compSymbol")
-(defvar |$functorForm| nil "checked in addModemap0")
-(defvar |$formalArgList| nil "checked in compSymbol")
-(defvar |$newCompCompare| nil "compare new compiler with old")
 (defvar |$compileOnlyCertainItems| nil "list of functions to compile")
 (defvar |$newCompAtTopLevel| nil "if t uses new compiler")
 (defvar |$doNotCompileJustPrint| nil "switch for compile")
@@ -59,10 +56,8 @@
 (defvar |$env| nil "checked in isDomainValuedVariable")
 (defvar |$e| nil "checked in isDomainValuedVariable")
 (defvar |$getPutTrace| nil)
-(defvar |$mapReturnTypes| nil)
 (defvar /TRACENAMES NIL)
 
-(DEFVAR _ '&)
 (defvar ind)
 
 ;************************************************************************
@@ -82,15 +77,12 @@
     (multiple-value-bind (quo remv) (TRUNCATE X Y)
          (if (= 0 remv) quo nil)))
 
-(define-function 'REMAINDER2 #'REM)
-
 (defun DIVIDE2 (X Y) (multiple-value-call #'cons (TRUNCATE X Y)))
-
-(defmacro APPEND2 (x y) `(append ,x ,y))
 
 (defun |makeSF| (mantissa exponent)
   (|float| (/ mantissa (expt 2 (- exponent)))))
 
+;;; Used in constructors for evaluating conditions
 (define-function '|not| #'NOT)
 
 (defun |random| () (random (expt 2 26)))
@@ -146,17 +138,3 @@
         #-Lucid '(EQ EQL EQUAL)
         #+Lucid '(EQ EQL EQUAL EQUALP)
         ))
-
-;; simpler interpface to RDEFIOSTREAM
-(defun RDEFINSTREAM (&rest fn)
-  ;; following line prevents rdefiostream from adding a default filetype
-  (if (null (rest fn)) (setq fn (list (pathname (car fn)))))
-  (|rMkIstream| fn))
-
-(defun RDEFOUTSTREAM (&rest fn)
-  ;; following line prevents rdefiostream from adding a default filetype
-  (if (null (rest fn)) (setq fn (list (pathname (car fn)))))
-  (|rMkOstream|  fn))
-
-(defmacro |spadConstant| (dollar n)
- `(spadcall (svref ,dollar (the fixnum ,n))))

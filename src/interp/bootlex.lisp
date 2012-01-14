@@ -127,8 +127,7 @@
                (|parse_new_expr|)
                (let ((parseout (|pop_stack_1|)) )
                  (when parseout
-                       (let ((*standard-output* out-stream))
-                         (|S_process| parseout))
+                       (|S_process| parseout)
                        (format out-stream "~&")))
                ;(IOClear in-stream out-stream)
                )))
