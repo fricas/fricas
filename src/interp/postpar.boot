@@ -366,23 +366,16 @@ postFlattenLeft(x,op) ==--
 postSemiColon u == postBlock ['Block,:postFlattenLeft(u,";")]
 
 postSignature1(op, sig) ==
-  sig is ["->",:.] =>
-    sig1:= postType sig
-    op:= postAtom (STRINGP op => INTERN op; op)
-    ["SIGNATURE",op,:removeSuperfluousMapping killColons postDoubleSharp sig1]
+    sig1 := postType sig
+    op := postAtom (STRINGP op => INTERN op; op)
+    sig is ["->",:.] =>
+        ["SIGNATURE",op,:removeSuperfluousMapping killColons sig1]
+    ["SIGNATURE", op, killColons sig1, "constant"]
 
 postSignature ['Signature, op, sig, doc] ==
     res1 := postSignature1(op, sig)
     if res1 then record_on_docList(rest res1, doc)
     res1
-
-postDoubleSharp sig ==
-  sig is [['Mapping,target,:r]] =>
-    -- replace #1,... by ##1,...
-    [['Mapping, SUBLISLIS($FormalFunctionParameterList, _
-                   $FormalMapVariableList, target), _
-         :r]]
-  sig
 
 killColons x ==
   atom x => x
