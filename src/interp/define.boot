@@ -124,10 +124,27 @@ macroExpandInPlace(x,e) ==
   x
 
 macroExpand(x,e) ==   --not worked out yet
-  atom x => (u:= get(x,'macro,e) => macroExpand(u,e); x)
+  atom x =>
+      u := get(x, 'macro, e) =>
+          null(rest(u)) =>
+              macroExpand(first u, e)
+          SAY(["u =", u])
+          userError("macro call needs arguments")
+      x
   x is ['DEF,lhs,sig,spCases,rhs] =>
     ['DEF,macroExpand(lhs,e),macroExpandList(sig,e),macroExpandList(spCases,e),
       macroExpand(rhs,e)]
+  x is [op, :args] =>
+      ATOM(op) =>
+          u := get(op, 'macro, e) =>
+              margs := rest(u)
+              u := first(u)
+              null(margs) => [macroExpand(u, e), :macroExpandList(args, e)]
+              #args = #margs =>
+                  macroExpand(SUBLISLIS(args, margs, u), e)
+              userError("invalid macro call, #args ~= #margs")
+          [op, :macroExpandList(args, e)]
+      macroExpandList(x,e)
   macroExpandList(x,e)
 
 macroExpandList(l,e) ==
@@ -1093,7 +1110,9 @@ doIt(item,$predl) ==
   item is ["where",b,:l] => doItWhere(item, $predl, $e)
   item is ["MDEF",:.] => [.,.,$e]:= compOrCroak(item,$EmptyMode,$e)
   item is ['DEF,[op,:.],:.] =>
-    body:= isMacro(item,$e) => $e:= put(op,'macro,body,$e)
+    body := isMacro(item, $e) =>
+        SAY(["converted function", op, "to macro"])
+        $e:= put(op, 'macro, [body], $e)
     [.,.,$e]:= t:= compOrCroak(item,$EmptyMode,$e)
     RPLACA(item,"CodeDefine")
         --Note that DescendCode, in CodeDefine, is looking for this

@@ -748,8 +748,12 @@ compMacro(form,m,e) ==
     formatUnabbreviated rhs
   sayBrightly ['"   processing macro definition",'%b,
     :formatUnabbreviated lhs,'" ==> ",:prhs,'%d]
+  ATOM(lhs) => userError("Malformed macro definition")
+  nrhs :=
+      (margs := rest(lhs)) => [rhs, :margs]
+      [rhs]
   m=$EmptyMode or m=$NoValueMode =>
-    ["/throwAway",$NoValueMode,put(first lhs,"macro",macroExpand(rhs,e),e)]
+    ["/throwAway", $NoValueMode, put(first lhs, "macro", nrhs, e)]
 
 --% SEQ
 

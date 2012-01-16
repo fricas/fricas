@@ -21,11 +21,29 @@ flattenSemi(tree) ==
 
 expandMacros(tree) ==
     ATOM tree =>
-        repval := HGET($MacroTable, tree)
-        repval => expandMacros(repval)
+        mdef := HGET($MacroTable, tree)
+        mdef =>
+            repval := first(mdef)
+            null(rest(mdef)) => expandMacros(repval)
+            userError("macro call needs arguments")
         tree
     -- floating point numbers
-    EQ(CAR(tree), ":BF") => tree
+    [op, :args] := tree
+    EQ(op, ":BF") => tree
+    ATOM(op) =>
+        mdef := HGET($MacroTable, op)
+        mdef =>
+            repval := first(mdef)
+            margs := rest(mdef)
+            null(margs) =>
+                [expandMacros(repval), :[expandMacros(x) for x in args]]
+            args :=
+                args is [",", :args1] => postFlatten(args, ",")
+                args
+            #args = #margs =>
+                expandMacros(SUBLISLIS(args, margs, repval))
+            userError("invalid macro call, #args ~= #margs")
+        [op, :[expandMacros(x) for x in args]]
     [expandMacros(x) for x in tree]
 
 --
@@ -60,6 +78,17 @@ replaceArgDefs(header, edefs) ==
 -- which can not be converted to macros
 --
 
+define_macro(name, def) ==
+    SYMBOLP(name) => HPUT($MacroTable, name, [def])
+    name is [op, :args] =>
+        args :=
+            args is [",", args1] => rest(postFlatten(args, ","))
+            args
+        HPUT($MacroTable, op, [def, :args])
+    SAY([name, def])
+    userError("Invalid macro definition")
+
+
 walkWhereList(tree) ==
     lastIteration := false
     ress := nil
@@ -69,10 +98,9 @@ walkWhereList(tree) ==
         else
             el := tree
             lastIteration := true
-        el is ["==>", name, def] =>
-            HPUT($MacroTable, name, def)
+        el is ["==>", name, def] => define_macro(name, def)
         el is ["==", name, def] =>
-            HPUT($MacroTable, name, def)
+            HPUT($MacroTable, name, [def])
         el is [":", ., .] =>
             ress := [el, :ress]
         el is [",", pel, item] =>
@@ -100,7 +128,7 @@ walkWhereList(tree) ==
 
 walkForm(tree) ==
     tree is ["==>", name, def] =>
-        HPUT($MacroTable, name, def)
+        define_macro(name, def)
         nil
     tree is ["==", head, def] =>
         ress := expandMacros(tree)
