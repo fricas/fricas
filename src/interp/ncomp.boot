@@ -130,16 +130,11 @@ walkForm(tree) ==
     tree is ["==>", name, def] =>
         define_macro(name, def)
         nil
-    tree is ["==", head, def] =>
-        ress := expandMacros(tree)
-        $MacroTable := MAKE_-HASH_-TABLE()
-        ress
+    tree is ["==", head, def] => expandMacros(tree)
     tree is ["where", ["==", name, def], env] =>
         edefs := walkWhereList env
-        ress := expandMacros(["==", replaceArgDefs(name, edefs), def])
-        $MacroTable := MAKE_-HASH_-TABLE()
-        ress
-    SAY("Parsing error: illegal toplevel form")
+        expandMacros(["==", replaceArgDefs(name, edefs), def])
+    userError("Parsing error: illegal toplevel form")
     nil
 
 --------------------------------------------------------------------
