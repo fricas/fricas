@@ -336,6 +336,10 @@ makeCatPred(zz, cats, thePred) ==
 getConstructorExports(conform,:options) == categoryParts(conform,
   GETDATABASE(opOf conform,'CONSTRUCTORCATEGORY),IFCAR options)
 
+DEFVAR($attrlist)
+DEFVAR($oplist)
+DEFVAR($conslist)
+
 categoryParts(conform,category,:options) == main where
   main ==
     cons? := IFCAR options  --means to include constructors as well
