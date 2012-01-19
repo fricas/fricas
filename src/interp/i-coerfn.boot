@@ -1202,21 +1202,6 @@ Qf2PF(u,source is [.,D],target) ==
   equalZero(den', target) => throwKeyedMsg("S2IA0001",NIL)
   SPADCALL(num',den', getFunctionFromDomain("/",target,[target,target]))
 
-Qf2F(u,source is [.,D,:.],target) ==
-  D = $Integer =>
-    u = '_$fromCoerceable_$ => true
-    Rn2F(u,source,target)
-  u = '_$fromCoerceable_$ => canCoerce(D,target)
-  [num,:den] := u
-  [.,:num']:= coerceInt(objNewWrap(num,D),target) or
-    coercionFailure()
-  [.,:den']:= coerceInt(objNewWrap(den,D),target) or
-    coercionFailure()
-  (unwrap num') * 1.0 / (unwrap den')
-
-Rn2F(rnum, source, target) ==
-  float(CAR(rnum)/CDR(rnum))
-
 Qf2domain(u,source is [.,D],target) ==
   -- tests whether it is an element of the underlying domain
   useUnder := (ut := underDomainOf target) and canCoerce(source,ut)

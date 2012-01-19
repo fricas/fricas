@@ -454,7 +454,7 @@ updateDatabase(fname,cname,systemdir?) ==
   clearClams()
   clearAllSlams []
   if constructor? cname then
-    if GETL(cname, 'LOADED) then
+    if GET(cname, 'LOADED) then
       clearConstructorCaches()
 
 REMOVER(lst,item) ==

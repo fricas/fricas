@@ -82,7 +82,7 @@ optimize x ==
         y="true" => RPLAC(first x,'(QUOTE (QUOTE T)))
         y="false" => RPLAC(first x,nil)
       if first y="IF" then (RPLAC(first x,optIF2COND y); y:= first x)
-      op:= GETL(subrname first y,"OPTIMIZE") =>
+      op := GET(subrname first y, "OPTIMIZE") =>
         (optimize rest x; RPLAC(first x,FUNCALL(op,optimize first x)))
       RPLAC(first x,optimize first x)
       optimize rest x

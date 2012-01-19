@@ -509,7 +509,7 @@ dbInfovec name ==
   'category = GETDATABASE(name,'CONSTRUCTORKIND) => nil
   GETDATABASE(name, 'ASHARP?) => nil
   loadLibIfNotLoaded(name)
-  u := GETL(name,'infovec) => u
+  u := GET(name, 'infovec) => u
 
 emptySearchPage(kind,filter,:options) ==
   skipNamePart := IFCAR options

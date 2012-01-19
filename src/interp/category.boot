@@ -315,8 +315,9 @@ MachineLevelSubset(a,b) ==
   b is ["Union",:blist] and member(a,blist) and
     (and/[STRINGP x for x in blist | x~=a]) => true
            --all other branches must be distinct objects
-  atom b and assoc(a,GETL(b,"Subsets")) => true
-  a is [a1] and b is [b1] and assoc(a1,GETL(b1,"Subsets")) => true
+  SYMBOLP(b) and assoc(a, GET(b, "Subsets")) => true
+  a is [a1] and b is [b1] and SYMBOLP(b1) and
+    assoc(a1, GET(b1, "Subsets")) => true
              --we assume all subsets are true at the machine level
   nil
 

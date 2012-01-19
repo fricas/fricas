@@ -66,7 +66,7 @@ postTran x ==
   atom x =>
     postAtom x
   op := first x
-  atom op and (f:= GETL(op,'postTran)) => FUNCALL(f,x)
+  IDENTP(op) and (f := GET(op, 'postTran)) => FUNCALL(f, x)
   op is ['elt,a,b] =>
     u:= postTran [b,:rest x]
     [postTran op,:rest u]

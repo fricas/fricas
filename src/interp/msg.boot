@@ -149,7 +149,7 @@ processChPosesForOneLine msgList ==
         posLetter := CDR ASSOC(poCharPosn getMsgPos msg,chPosList)
         oldPre := getMsgPrefix msg
         setMsgPrefix (msg,STRCONC(oldPre,_
-                     MAKE_-FULL_-CVEC ($preLength - 4 - SIZE oldPre),posLetter) )
+                     make_full_CVEC($preLength - 4 - SIZE oldPre), posLetter))
     leaderMsg := makeLeaderMsg chPosList
     NCONC(msgList,LIST leaderMsg)  --a back cons
 
@@ -215,7 +215,7 @@ putFTText (msg,chPosList) ==
 
 rep (c,n)  ==
     n > 0 =>
-      MAKE_-FULL_-CVEC(n, c)
+      make_full_CVEC(n, c)
     '""
 
 --called from parameter list of nc message functions
@@ -412,10 +412,10 @@ listDecideHowMuch(pos,oldPos) ==
     'NONE
 
 getPreStL optPre ==
-    null optPre => [MAKE_-FULL_-CVEC 2]
+    null optPre => [make_full_CVEC 2]
     spses :=
       (extraPlaces := ($preLength - (SIZE optPre) - 3)) > 0 =>
-        MAKE_-FULL_-CVEC extraPlaces
+        make_full_CVEC extraPlaces
       '""
     ['%b, optPre,spses,'":", '%d]
 
@@ -483,7 +483,7 @@ whichCat attr ==
 --% these functions directly interact with the message object
 
 makeLeaderMsg chPosList ==
-    st := MAKE_-FULL_-CVEC ($preLength- 3)
+    st := make_full_CVEC($preLength - 3)
     oldPos := -1
     for [posNum,:posLetter] in reverse chPosList repeat
         st := STRCONC(st, _

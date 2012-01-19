@@ -192,7 +192,8 @@ appChar(string,x,y,d) ==
     RPLACSTR(line,shiftedX,n:=#string,string,0,n)
     if bumpDeltaIfTrue=true then $highlightDelta:= $highlightDelta+1
     d
-  appChar(string,x,y,nconc(d,[[y,:GETFULLSTR(10+$LINELENGTH+$MARGIN," ")]]))
+  appChar(string, x, y, nconc(d,
+            [[y, :make_full_CVEC(10 + $LINELENGTH + $MARGIN, " ")]]))
 
 print(x,domain) ==
   dom:= devaluate domain
@@ -740,6 +741,7 @@ getBindingPowerOf(key,x) ==
 
 getOpBindingPower(op,LedOrNud,leftOrRight) ==
   if op in '(SLASH OVER) then op := "/"
+  not(SYMBOLP(op)) => 1000
   exception:=
     leftOrRight="left" => 0
     105

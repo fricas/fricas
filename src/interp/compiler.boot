@@ -318,7 +318,7 @@ extractCodeAndConstructTriple(u, m, oldE) ==
 
 compExpression(x,m,e) ==
   $insideExpressionIfTrue: local:= true
-  atom first x and (fn:= GETL(first x,"SPECIAL")) =>
+  SYMBOLP(first x) and (fn := GET(first x, "SPECIAL")) =>
     FUNCALL(fn,x,m,e)
   compForm(x,m,e)
 

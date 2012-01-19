@@ -99,7 +99,7 @@ parseTran x ==
     r:= parseConstruct argl
     $op is ['elt,:.] => [parseTran $op,:rest r]
     r
-  atom u and (fn:= GETL(u,'parseTran)) => FUNCALL(fn,argl)
+  SYMBOLP(u) and (fn := GET(u, 'parseTran)) => FUNCALL(fn, argl)
   [parseTran $op,:parseTranList argl]
 
 
@@ -177,13 +177,9 @@ parseHas [x,y] ==
          [['SIGNATURE,op,map]]
       y is ['Join,:u] => "append"/[fn z for z in u]
       y is ['CATEGORY,:u] => "append"/[fn z for z in u]
-      kk:= GETDATABASE(opOf y,'CONSTRUCTORKIND)
-      kk = 'domain or kk = 'category => [makeNonAtomic y]
-      y is ['ATTRIBUTE,:.] => BREAK()
       y is ['SIGNATURE,:.] => [y]
       $InteractiveMode => parseHasRhs y
-      MOAN '"Attribute support is removed"
-      [y]
+      [makeNonAtomic y]
 
 parseHasRhs u ==   --$InteractiveMode = true
   get(u,'value,$CategoryFrame) is [D,m,.]

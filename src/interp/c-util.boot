@@ -345,7 +345,7 @@ isDomainInScope(domain,e) ==
   isFunctor name => false
   true --is not a functor
 
-isSymbol x == IDENTP x or x=nil
+isSymbol x == IDENTP x
 
 isSimple x ==
   atom x => true
@@ -417,13 +417,13 @@ flatten(l,key) ==
 
 genDomainVar() ==
   $Index:= $Index+1
-  INTERNL STRCONC("#D",STRINGIMAGE $Index)
+  INTERNL('"#D", STRINGIMAGE $Index)
 
 genVariable() ==
-  INTERNL STRCONC("#G",STRINGIMAGE ($genSDVar:= $genSDVar+1))
+  INTERNL('"#G", STRINGIMAGE ($genSDVar:= $genSDVar+1))
 
 genSomeVariable() ==
-  INTERNL STRCONC("##",STRINGIMAGE ($genSDVar:= $genSDVar+1))
+  INTERNL('"##", STRINGIMAGE ($genSDVar:= $genSDVar+1))
 
 listOfIdentifiersIn x ==
   IDENTP x => [x]

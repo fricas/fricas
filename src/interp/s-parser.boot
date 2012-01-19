@@ -115,6 +115,12 @@ init_parser_properties() ==
 
 init_parser_properties()
 
+symbol_is?(x) == EQ(current_symbol(), x)
+
+match_symbol(x) ==
+    symbol_is?(x) => (advance_token(); true)
+    false
+
 DEFPARAMETER($reduction_stack, nil)
 
 push_reduction(x, y) ==
@@ -149,7 +155,7 @@ parse_token(token) ==
 
 parse_SPADSTRING() == parse_token("SPADSTRING")
 parse_KEYWORD() == parse_token("KEYWORD")
-parse_ARGUMENT_-DESIGNATOR() == parse_token("ARGUMENT-DESIGNATOR")
+parse_ARGUMENT_DESIGNATOR() == parse_token("ARGUMENT-DESIGNATOR")
 parse_SPADFLOAT() == parse_token("SPADFLOAT")
 parse_IDENTIFIER() == parse_token("IDENTIFIER")
 parse_NUMBER() == parse_token("NUMBER")
@@ -252,8 +258,12 @@ parse_Category() ==
                   ACTION recordAttributeDocumentation(top_of_stack(), G1)))
 
 parse_Expression() ==
+    prior_sym := MAKE_-SYMBOL_-OF PRIOR_-TOKEN
+    prior_sym :=
+        SYMBOLP(prior_sym) => prior_sym
+        nil
     parse_Expr
-     parse_rightBindingPowerOf(MAKE_-SYMBOL_-OF PRIOR_-TOKEN, $ParseMode)
+     parse_rightBindingPowerOf(prior_sym, $ParseMode)
 
 parse_Expr1000() == parse_Expr 1000
 
@@ -289,7 +299,7 @@ parse_Suffix() ==
 
 parse_TokTail() ==
     $BOOT or current_symbol() ~= "$" => nil
-    not(OR(MATCH_-NEXT_-TOKEN("IDENTIFIER", NIL), next_symbol() = "%",
+    not(OR(match_next_token("IDENTIFIER", NIL), next_symbol() = "%",
            next_symbol() = "(")) => nil                     -- )
     G1 := COPY_-TOKEN PRIOR_-TOKEN
     not(parse_Qualification()) => nil
@@ -406,18 +416,19 @@ parse_NudPart($RBP) ==
 
 parse_Operation($ParseMode, $RBP) ==
     match_current_token("IDENTIFIER", NIL) => nil
-    GETL(tmptok := current_symbol(), $ParseMode) and
+    tmptok := current_symbol()
+    SYMBOLP(tmptok) and GET(tmptok, $ParseMode) and
       $RBP < parse_leftBindingPowerOf(tmptok, $ParseMode) =>
         $RBP := parse_rightBindingPowerOf(tmptok, $ParseMode)
         parse_getSemanticForm($ParseMode,
-                               ELEMN(GETL(tmptok, $ParseMode), 5, NIL))
+                               ELEMN(GET(tmptok, $ParseMode), 5, NIL))
 
 parse_leftBindingPowerOf(x, ind) ==
-    (y := GETL(x, ind)) => ELEMN(y, 3, 0)
+    (y := GET(x, ind)) => ELEMN(y, 3, 0)
     0
 
 parse_rightBindingPowerOf(x, ind) ==
-    (y := GETL(x, ind)) => ELEMN(y, 4, 105)
+    (y := GET(x, ind)) => ELEMN(y, 4, 105)
     105
 
 parse_getSemanticForm(ind, y) ==
@@ -433,8 +444,10 @@ parse_Reduction() ==
     nil
 
 parse_ReductionOp() ==
-    AND(GETL(current_symbol(), "Led"), MATCH_-NEXT_-TOKEN("KEYWORD", "/"),
-        push_reduction("parse_ReductionOp", current_symbol()),
+    cur_sym := current_symbol()
+    AND(SYMBOLP(cur_sym), GET(cur_sym, "Led"),
+        match_next_token("KEYWORD", "/"),
+        push_reduction("parse_ReductionOp", cur_sym),
         ACTION advance_token(), ACTION advance_token())
 
 parse_Form() ==
@@ -502,7 +515,7 @@ parse_Enclosure() ==
 
 parse_IntegerTok() == parse_NUMBER()
 
-parse_FormalParameter() == parse_ARGUMENT_-DESIGNATOR()
+parse_FormalParameter() == parse_ARGUMENT_DESIGNATOR()
 
 parse_Quad() ==
     OR(AND($BOOT, match_symbol "$", push_lform0("$")),

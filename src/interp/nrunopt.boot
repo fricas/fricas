@@ -145,7 +145,7 @@ makeCompactSigCode(sig) == [fn for x in sig] where
 --=======================================================================
 stuffDomainSlots dollar ==
   domname := devaluate dollar
-  infovec := GETL(opOf domname,'infovec)
+  infovec := GET(opOf domname, 'infovec)
   lookupFunction := getLookupFun infovec
   lookupFunction :=
     lookupFunction = 'lookupIncomplete => function lookupIncomplete
@@ -417,12 +417,12 @@ dcOpLatchPrint(op,index) ==
   sayBrightly ['"latch",:formatOpSignature(op,signumList),:namePart]
 
 getInfovec name ==
-  u := GETL(name,'infovec) => u
-  GETL(name,'LOADED) => nil
+  u := GET(name, 'infovec) => u
+  GET(name, 'LOADED) => nil
   fullLibName := GETDATABASE(name,'OBJECT) or return nil
   startTimingProcess 'load
   loadLibNoUpdate(name, name, fullLibName)
-  GETL(name,'infovec)
+  GET(name, 'infovec)
 
 getOpSegment index ==
   numOfArgs := (vec := getCodeVector()).index
@@ -620,7 +620,7 @@ dcSize(:options) ==
 dcSizeAll() ==
   count := 0
   total := 0
-  for x in allConstructors() | null atom GETL(x,'infovec) repeat
+  for x in allConstructors() | null atom GET(x, 'infovec) repeat
     count := count + 1
     s := dcSize(x,'quiet)
     sayBrightly [s,'" : ",x]
