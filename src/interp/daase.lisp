@@ -1097,7 +1097,7 @@ database.
 ; critical. interp.daase depends on prior computations and has
 ; to be written out last.
 
-(defun make-databases (ext dirlist)
+(defun make-databases (dirlist br_data)
  (labels (
     ;; these are types which have no library object associated with them.
     ;; we store some constructed data to make them perform like library
@@ -1126,7 +1126,7 @@ database.
    (push '|Enumeration| *allconstructors*)
    )
   (final-name (root)
-    (format nil "~a.daase~a" root ext))
+    (format nil "~a.daase" root))
   )
  (let (d)
   (do-symbols (symbol)
@@ -1152,15 +1152,18 @@ database.
   (|oldCompilerAutoloadOnceTrigger|)
   (|browserAutoloadOnceTrigger|)
 #+:GCL    (|mkTopicHashTable|)
-  (|buildLibdb|)
-  (|dbSplitLibdb|)
-  (|mkUsersHashTable|)
-  (|saveUsersHashTable|)
-  (|mkDependentsHashTable|)
-  (|saveDependentsHashTable|)
+  (if br_data
+      (progn
+          (|buildLibdb|)
+          (|dbSplitLibdb|)
+          (|mkUsersHashTable|)
+          (|saveUsersHashTable|)
+          (|mkDependentsHashTable|)
+          (|saveDependentsHashTable|)))
 ; (|buildGloss|)
   (write-compress)
-  (write-browsedb)
+  (if br_data
+      (write-browsedb))
   (write-operationdb)
  ; note: genCategoryTable creates a new *hascategory-hash* table
  ; this smashes the existing table and regenerates it.
@@ -1194,8 +1197,8 @@ database.
   (rename-file "operation.build" (final-name "operation"))
   (when (probe-file (final-name "browse"))
         (delete-file (final-name "browse")))
-  (rename-file "browse.build"
-               (final-name "browse"))
+  (if br_data
+        (rename-file "browse.build" (final-name "browse")))
   (when (probe-file (final-name "category"))
         (delete-file (final-name "category")))
   (rename-file "category.build"
@@ -1442,7 +1445,7 @@ database.
      expr))))
 
 (defun write-operationdb ()
- (let (pos master out)
+ (let (pos master out (*print-pretty* t))
   (print "building operation.daase")
   (setq out (open "operation.build" :direction :output :if-exists :supersede))
   (princ "                              " out)
