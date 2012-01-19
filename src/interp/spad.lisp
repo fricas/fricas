@@ -80,7 +80,7 @@
 (defun DIVIDE2 (X Y) (multiple-value-call #'cons (TRUNCATE X Y)))
 
 (defun |makeSF| (mantissa exponent)
-  (|float| (/ mantissa (expt 2 (- exponent)))))
+  (FLOAT (/ mantissa (expt 2 (- exponent))) 0.0d0))
 
 ;;; Used in constructors for evaluating conditions
 (define-function '|not| #'NOT)

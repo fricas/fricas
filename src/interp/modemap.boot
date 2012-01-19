@@ -270,7 +270,7 @@ substNames(domainName,viewName,functorForm,opalist) ==
 
 
 compCat(form is [functorName,:argl],m,e) ==
-  fn:= GETL(functorName,"makeFunctionList") or return nil
+  fn := GET(functorName, "makeFunctionList") or return nil
   [funList,e]:= FUNCALL(fn,form,form,e)
   catForm:=
     ["Join",'(SetCategory),["CATEGORY","domain",:
@@ -282,7 +282,7 @@ compCat(form is [functorName,:argl],m,e) ==
 addConstructorModemaps(name,form is [functorName,:.],e) ==
   $InteractiveMode: local:= nil
   e:= putDomainsInScope(name,e) --frame
-  fn := GETL(functorName,"makeFunctionList")
+  fn := GET(functorName, "makeFunctionList")
   [funList,e]:= FUNCALL(fn,name,form,e)
   for [op,sig,opcode] in funList repeat
     if opcode is [sel,dc,n] and sel='ELT then

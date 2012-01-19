@@ -40,7 +40,7 @@ FloatError(formatstring,arg) ==
 nangenericcomplex () ==
         1.0/COMPLEX(0.0)
 
-
+float(x) == FLOAT(x, 0.0)
 
 fracpart(x) ==
         CADR(MULTIPLE_-VALUE_-LIST(FLOOR(x)))

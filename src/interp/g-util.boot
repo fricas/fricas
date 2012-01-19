@@ -53,6 +53,8 @@ concatenateStringList(l) ==
         ll := ll + LENGTH(s)
     result
 
+GETL(op, prop) == op and SYMBOLP(op) and GET(op, prop)
+
 GETALIST(alist,prop) == CDR assoc(prop,alist)
 
 PUTALIST(alist,prop,val) ==
@@ -122,7 +124,7 @@ insertWOC(x,y) ==
 
 fillerSpaces(n, charPart) ==
   n <= 0 => '""
-  MAKE_-FULL_-CVEC(n, charPart)
+  make_full_CVEC(n, charPart)
 
 centerString(text,width,fillchar) ==
   wid := entryWidth text

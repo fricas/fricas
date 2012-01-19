@@ -516,3 +516,23 @@
 (defmacro |spadConstant| (dollar n)
  `(SPADCALL (svref ,dollar (the fixnum ,n))))
 
+(defmacro |Record| (&rest args)
+    (list '|Record0|
+          (cons 'LIST
+                (mapcar #'(lambda (x) (list 'CONS (MKQ (CADR x)) (CADDR x)))
+                        args))))
+
+(defmacro |Enumeration| (&rest args)
+      (cons '|Enumeration0|
+                    (mapcar #'(lambda (x) (list 'QUOTE x)) args)))
+
+;;; Used for Record arguments
+(defmacro |:| (tag expr) `(LIST '|:| ,(MKQ tag) ,expr))
+
+(defmacro |Zero|() 0)
+(defmacro |One|() 1)
+
+;;; Needed by interpreter
+(defmacro REPEAT (&rest L) (|expandREPEAT| L))
+(defmacro COLLECT (&rest L) (|expandCOLLECT| L))
+

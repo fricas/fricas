@@ -170,7 +170,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   stateNam:= GENVAR()
   stateVar:= GENSYM()
   stateVal:= GENSYM()
-  lastArg := INTERNL STRCONC('"#", STRINGIMAGE inc_SI LENGTH argl)
+  lastArg := INTERNL('"#", STRINGIMAGE inc_SI LENGTH argl)
   decomposeCode:=
     [['LET,gIndex,['ELT,lastArg,0]],:[['LET,g,['ELT,lastArg,i]]
       for g in gsList for i in 1..]]
@@ -244,6 +244,10 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   cacheVector:= mkCacheVec(op,stateNam,cacheType,cacheResetCode,cacheCountCode)
   $e:= put(nam,'cacheInfo, cacheVector,$e)
   nam
+
+NUMOFNODES(x) ==
+    ATOM(x) => 0
+    NUMOFNODES(CAR(x)) + NUMOFNODES(CDR(x)) + 1
 
 nodeCount x == NUMOFNODES x
 

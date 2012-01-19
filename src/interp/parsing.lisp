@@ -118,8 +118,8 @@
   (format out-stream "~&~5D> ~A~%" (Line-Number line) (Line-Buffer Line))
   (format out-stream "~v@T^~%" (+ 7 (Line-Current-Index line))))
 
-(defmacro Line-Clear (line)
-  `(let ((l ,line))
+(defun Line-Clear (line)
+  (let ((l line))
      (setf (Line-Buffer l) (make-string 0)
            (Line-Current-Char l) #\Return
            (Line-Current-Index l) 1
@@ -198,9 +198,7 @@ NonBlank is true if the token is not preceded by a blank."
 ;
 ;       Push-Reduction Pop-Reduction
 
-(defun |current_symbol|() (CURRENT-SYMBOL))
 (defun |next_symbol|() (NEXT-SYMBOL))
-(defun |advance_token|() (ADVANCE-TOKEN))
 (defun |match_current_token|(x y) (MATCH-CURRENT-TOKEN x y))
 
 ; 2B. Routines for applying certain metagrammatical elements
@@ -212,8 +210,7 @@ NonBlank is true if the token is not preceded by a blank."
 ;
 ;       MUST, OPTIONAL, ACTION
 
-(defmacro MUST (dothis &optional (this-is nil) (in-rule nil))
-  `(or ,dothis (meta-syntax-error ,this-is ,in-rule)))
+(defun MUST(dothis) (or dothis (meta-syntax-error nil nil)))
 
 ; Optional means that if it is present in the token stream, that is a good thing,
 ; otherwise don't worry (like [ foo ] in BNF notation).
@@ -309,11 +306,11 @@ NonBlank is true if the token is not preceded by a blank."
   (if (and token (eq (token-type token) type))
       (if symbol (if (eq symbol (token-symbol token)) token) token)))
 
-(defun match-current-token (type &optional (symbol nil))
+(defun |match_current_token|(type symbol)
   "Returns the current token if it has EQ type and (optionally) equal symbol."
   (match-token (current-token) type symbol))
 
-(defun match-next-token (type &optional (symbol nil))
+(defun |match_next_token|(type symbol)
   "Returns the next token if it has equal type and (optionally) equal symbol."
   (match-token (next-token) type symbol))
 
@@ -323,7 +320,7 @@ NonBlank is true if the token is not preceded by a blank."
   (let ((tok (get-token token)))
     (if tok (progn (incf Valid-Tokens) token))))
 
-(defun current-symbol () (make-symbol-of (current-token)))
+(defun |current_symbol|() (make-symbol-of (current-token)))
 
 (defun next-symbol () (make-symbol-of (next-token)))
 
@@ -346,7 +343,7 @@ NonBlank is true if the token is not preceded by a blank."
       (progn
           (try-get-token Next-Token))))
 
-(defun advance-token ()
+(defun |advance_token|()
   (current-token)                       ;don't know why this is needed
   "Makes the next token be the current token."
   (case Valid-Tokens

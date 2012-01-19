@@ -81,7 +81,7 @@ loadLibIfNotLoaded libName ==
   -- replaces old SpadCondLoad
   -- loads is library is not already loaded
   $PrintOnly = 'T => NIL
-  GETL(libName,'LOADED) => NIL
+  GET(libName, 'LOADED) => NIL
   loadLib libName
 
 loadLib cname ==
@@ -143,7 +143,7 @@ loadLibIfNecessary(u,mustExist) ==
   null atom u => loadLibIfNecessary(first u,mustExist)
   value:=
     functionp(u) or macrop(u) => u
-    GETL(u,'LOADED) => u
+    GET(u, 'LOADED) => u
     loadLib u => u
   null $InteractiveMode and ((null (y:= getProplist(u,$CategoryFrame)))
     or (null LASSOC('isFunctor,y)) and (null LASSOC('isCategory,y))) =>
@@ -204,7 +204,7 @@ systemDependentMkAutoload(fn,cnam) ==
     SETF(SYMBOL_-FUNCTION cnam,mkAutoLoad(fn, cnam))
 
 autoLoad(abb,cname) ==
-  if not GETL(cname,'LOADED) then
+  if not GET(cname, 'LOADED) then
       FMAKUNBOUND cname
       loadLib cname
   SYMBOL_-FUNCTION cname
@@ -371,7 +371,7 @@ getConstructorSignature form ==
 --% from MODEMAP BOOT
 
 augModemapsFromDomain1(name,functorForm,e) ==
-  GETL(KAR functorForm,"makeFunctionList") =>
+  GET(KAR functorForm, "makeFunctionList") =>
     addConstructorModemaps(name,functorForm,e)
   atom functorForm and (catform:= getmode(functorForm,e)) =>
     augModemapsFromCategory(name,name,functorForm,catform,e)

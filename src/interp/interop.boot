@@ -589,8 +589,8 @@ hashNewLookupInCategories(op,sig,dom,dollar) ==
       IDENTP entry =>
         cat := catVec.i
         packageForm := nil
-        if not GETL(entry,'LOADED) then loadLib entry
-        infovec := GETL(entry,'infovec)
+        if not GET(entry, 'LOADED) then loadLib entry
+        infovec := GET(entry, 'infovec)
         success :=
           --VECP infovec =>  ----new world
           true =>  ----new world

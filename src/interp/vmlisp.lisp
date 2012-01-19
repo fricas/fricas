@@ -496,12 +496,10 @@
 (defun |make_CVEC| (sint)
     (make-array sint :fill-pointer 0 :element-type 'character))
 
-(defun make-full-cvec (sint &optional (char #\space))
+(defun |make_full_CVEC|(sint &optional (char #\space))
   (make-string sint :initial-element (if (integerp char)
                                        (code-char char)
                                        (character char))))
-
-(define-function 'getfullstr #'make-full-cvec)
 
 ; 17.2 Accessing
 
@@ -702,8 +700,6 @@
 
 (defun EOFP (stream) (null (peek-char nil stream nil nil)))
 
-; 28.0 Key addressed I/O
-
 
 ; 46.0 Call tracing
 
@@ -808,26 +804,6 @@
 ; 97.0 Stuff In The Manual But Wierdly Documented
 
 (defun EBCDIC (x) (int-char x))
-
-; 98.0 Stuff Not In The VMLisp Manual That We Like
-
-; A version of GET that works with lists
-
-; (defun getl (sym key )
-;   (cond ((consp sym) (cdr (assoc key sym :test #'eq)))
-;         ((symbolp sym) (get sym key))))
-;
-;; assq fails if list sym contains symbols
-;; and not only conses
-
-(defun getl (sym key )
-  (cond ((consp sym)
-         (do ((sym sym (cdr sym)))
-             ((null sym) nil)
-             (cond ((and (consp (car sym))
-                          (eq (caar sym) key))
-                     (return (cdar sym))))))
-        ((symbolp sym) (get sym key))))
 
 ; 99.0 Ancient Stuff We Decided To Keep
 

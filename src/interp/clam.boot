@@ -272,7 +272,7 @@ clearClams() ==
     clearClam fn
 
 clearClam fn ==
-  infovec:= GETL(fn,'cacheInfo) or keyedSystemError("S2GE0003",[fn])
+  infovec := GET(fn, 'cacheInfo) or keyedSystemError("S2GE0003", [fn])
   -- eval infovec.cacheReset
   ir := infovec.cacheReset
   ir is ["SETQ", var , ['MAKE_-HASHTABLE, ["QUOTE", mode]]] =>
@@ -301,13 +301,13 @@ clearConstructorAndLisplibCaches() ==
 clearCategoryCaches() ==
   for name in allConstructors() repeat
     if GETDATABASE(name,'CONSTRUCTORKIND) = 'category then
-      if BOUNDP(cacheName:= INTERNL STRCONC(PNAME name,'";AL"))
+      if BOUNDP(cacheName := INTERNL(PNAME name, '";AL"))
             then SET(cacheName,nil)
-    if BOUNDP(cacheName:= INTERNL STRCONC(PNAME name,'";CAT"))
+    if BOUNDP(cacheName := INTERNL(PNAME name, '";CAT"))
           then SET(cacheName,nil)
 
 clearCategoryCache catName ==
-  cacheName:= INTERNL STRCONC(PNAME catName,'";AL")
+  cacheName := INTERNL(PNAME catName, '";AL")
   SET(cacheName,nil)
 
 displayHashtable x ==
@@ -325,7 +325,7 @@ cacheStats() ==
     sayBrightly ["Unknown cache type for","%b",fn,"%d"]
 
 reportCircularCacheStats(fn,n) ==
-  infovec:= GETL(fn,'cacheInfo)
+  infovec := GET(fn, 'cacheInfo)
   circList:= eval infovec.cacheName
   numberUsed :=
     +/[1 for i in 1..n for x in circList while x isnt [='_$failed,:.]]
@@ -349,7 +349,7 @@ mkCircularCountAlist(cl,len) ==
   al
 
 reportHashCacheStats fn ==
-  infovec:= GETL(fn,'cacheInfo)
+  infovec := GET(fn, 'cacheInfo)
   hashTable:= eval infovec.cacheName
   hashValues:= [HGET(hashTable,key) for key in HKEYS hashTable]
   sayBrightly [:bright fn,'"has",:bright(# hashValues),'"values cached."]
@@ -434,7 +434,7 @@ assocCacheShiftCount(x,al,fn) ==
 
 clamStats() ==
   for [op,kind,:.] in $clamList repeat
-    cacheVec:= GETL(op,'cacheInfo) or systemErrorHere "clamStats"
+    cacheVec := GET(op, 'cacheInfo) or systemErrorHere "clamStats"
     prefix:=
       $reportCounts~= true => nil
       hitCounter:= INTERNL(op,'";hit")

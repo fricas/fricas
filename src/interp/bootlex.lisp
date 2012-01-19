@@ -465,7 +465,7 @@ special character be the atom whose print name is the character itself."
 ; Parsing of operator tokens depends on tables initialized by BOTTOMUP.LISP
 
 (defun |parse_AKEYWORD|()
-    (AND (MEMBER (CURRENT-SYMBOL) KEYWORDS)
+    (AND (MEMBER (|current_symbol|) KEYWORDS)
          (|parse_KEYWORD|)))
 
 (defun TRANSLABEL (X AL) (TRANSLABEL1 X AL) X)

@@ -37,9 +37,9 @@
 --  and with measurement types (property, classproperty).
 
 printNamedStatsByProperty(listofnames, property) ==
-  total := +/[GETL(name,property) for [name,:.] in listofnames]
+  total := +/[GET(name, property) for [name, :.] in listofnames]
   for [name,:.] in listofnames repeat
-    n := GETL(name, property)
+    n := GET(name, property)
     strname := STRINGIMAGE name
     strval  := STRINGIMAGE n
     sayBrightly concat(bright strname,
@@ -52,12 +52,12 @@ makeLongStatStringByProperty _
  (listofnames, listofclasses, property, classproperty, units, flag) ==
   total := 0
   str := '""
-  otherStatTotal := GETL('other, property)
+  otherStatTotal := GET('other, property)
   for [name,class,:ab] in listofnames repeat
     name = 'other => 'iterate
     cl := CAR LASSOC(class,listofclasses)
-    n := GETL( name, property)
-    PUT(cl,classproperty, n + GETL(cl,classproperty))
+    n := GET(name, property)
+    PUT(cl, classproperty, n + GET(cl, classproperty))
     total := total + n
     if n >= 0.01
       then timestr := normalizeStatAndStringify n
@@ -72,12 +72,12 @@ makeLongStatStringByProperty _
     total := total + otherStatTotal
     cl := CAR LASSOC('other,listofnames)
     cl := CAR LASSOC(cl,listofclasses)
-    PUT(cl,classproperty, otherStatTotal + GETL(cl,classproperty))
+    PUT(cl, classproperty, otherStatTotal + GET(cl, classproperty))
   if flag ~= 'long then
     total := 0
     str := '""
     for [class,name,:ab] in listofclasses repeat
-      n := GETL(name, classproperty)
+      n := GET(name, classproperty)
       n = 0.0 => 'iterate
       total := total + n
       timestr := normalizeStatAndStringify n
@@ -189,8 +189,8 @@ initializeTimedNames(listofnames,listofclasses) ==
   NIL
 
 updateTimedName name ==
-  count := (GETL(name,'TimeTotal) or 0) + computeElapsedTime()
-  PUT(name,'TimeTotal, count)
+  count := (GET(name, 'TimeTotal) or 0) + computeElapsedTime()
+  PUT(name, 'TimeTotal, count)
 
 printNamedStats listofnames ==
   printNamedStatsByProperty(listofnames, 'TimeTotal)
@@ -217,7 +217,7 @@ computeElapsedTime() ==
   gcDelta := currentGCTime - $oldElapsedGCTime
   elapsedSeconds:= $inverseTimerTicksPerSecond *
      (currentTime-$oldElapsedTime-gcDelta)
-  PUT('gc, 'TimeTotal,GETL('gc,'TimeTotal) +
+  PUT('gc, 'TimeTotal, GET('gc, 'TimeTotal) +
                    $inverseTimerTicksPerSecond*gcDelta)
   $oldElapsedTime := currentTime
   $oldElapsedGCTime := currentGCTime

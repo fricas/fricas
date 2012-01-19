@@ -709,7 +709,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
 
     --replace ##1,.. in signature by arguments
 --    pp signature'
-    signature':= SUBLISLIS(argl,$FormalFunctionParameterList,signature')
 --  pp '"------after----"
 --  pp signature'
     e:= giveFormalParametersValues(argl,e)
@@ -1266,7 +1265,8 @@ wrapDomainSub(parameters,x) ==
    ["DomainSubstitutionMacro",parameters,x]
 
 mustInstantiate D ==
-  D is [fn,:.] and not (MEMQ(fn,$DummyFunctorNames) or GETL(fn,"makeFunctionList"))
+    D is [fn,:.] and not (MEMQ(fn,$DummyFunctorNames) or
+      GET(fn, "makeFunctionList"))
 
 DomainSubstitutionFunction(parameters,body) ==
   --see optFunctorBody

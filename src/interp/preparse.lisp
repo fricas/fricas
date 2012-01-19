@@ -136,7 +136,7 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
                           (SETQ NCOMBLOCK NIL)))
                    (SETQ NCOMBLOCK (CONS N (CONS A (IFCDR NCOMBLOCK))))
                    (SETQ A ""))
-                  ('T (PUSH (STRCONC (GETFULLSTR N " ")
+                  ('T (PUSH (STRCONC (|make_full_CVEC| N " ")
                                   (SUBSTRING A N ())) $LINELIST)
                       (SETQ $INDEX (- $INDEX 1))
                       (SETQ A (SUBSEQ A 0 N))))

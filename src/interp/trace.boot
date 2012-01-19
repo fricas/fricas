@@ -242,7 +242,8 @@ ptimers() ==
   null _/TIMERLIST => sayBrightly '"   no functions are timed"
   for timer in _/TIMERLIST repeat
     sayBrightly ["  ",:bright timer,'_:,'" ",
-      EVAL(INTERN STRCONC(timer,'"_,TIMER")) / float $timerTicksPerSecond,'" sec."]
+      EVAL(INTERN STRCONC(timer,'"_,TIMER")) / 
+        FLOAT($timerTicksPerSecond, 0.0d0), '" sec."]
 
 pspacers() ==
   null _/SPACELIST => sayBrightly '"   no functions have space monitored"

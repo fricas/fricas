@@ -404,8 +404,6 @@
 
 ; 7.8.2 General Iteration
 
-(defmacro REPEAT (&rest L) (|expandREPEAT| L))
-
 (DEFUN MKPF (L OP)
   (if (FLAGP OP 'NARY) (SETQ L (MKPFFLATTEN-1 L OP NIL)))
   (MKPF1 L OP))
@@ -483,19 +481,7 @@
 
 (defvar $TRACELETFLAG NIL "Also referred to in Comp.Lisp")
 
-(defmacro |Zero| (&rest L)
- (declare (ignore l))
- "Needed by spadCompileOrSetq" 0)
-
-(defmacro |One| (&rest L)
- (declare (ignore l))
- "Needed by spadCompileOrSetq" 1)
-
 (defvar $BOOT NIL)
-
-; 7.8.4 Mapping
-
-(defmacro COLLECT (&rest L) (|expandCOLLECT| L))
 
 ; 10.1 The Property List
 
@@ -515,7 +501,8 @@
 
 ; 10.3 Creating Symbols
 
-(defmacro INTERNL (a &rest b) (if (not b) `(intern ,a) `(intern (strconc ,a . ,b))))
+(defun INTERNL(a &rest b)
+    (INTERN (APPLY #'concat (CONS a b))))
 
 (defvar $GENNO 0)
 
@@ -588,8 +575,6 @@
         ((> N 0) (CONS (CAR X) (TAKE (1- N) (CDR X))))
         ((>= (setq m (+ (length x) N)) 0) (DROP m x))
         ((CROAK (list "Bad args to DROP" N X)))))
-
-(DEFUN NUMOFNODES (X) (if (ATOM X) 0 (+ 1 (NUMOFNODES (CAR X)) (NUMOFNODES (CDR X)))))
 
 (DEFUN TRUNCLIST (L TL) "Truncate list L at the point marked by TL."
   (let ((U L)) (TRUNCLIST-1 L TL) U))
@@ -935,23 +920,10 @@
 
 (defun compile-defun (name body) (eval body) (compile name))
 
-(defmacro |Record| (&rest args)
-    (list '|Record0|
-          (cons 'LIST
-                (mapcar #'(lambda (x) (list 'CONS (MKQ (CADR x)) (CADDR x)))
-                        args))))
-
-(defmacro |Enumeration| (&rest args)
-      (cons '|Enumeration0|
-	            (mapcar #'(lambda (x) (list 'QUOTE x)) args)))
-
-;;; Used for Record arguments
-(defmacro |:| (tag expr) `(LIST '|:| ,(MKQ tag) ,expr))
-
-(DEFUN |leftBindingPowerOf| (X IND &AUX (Y (GETL X IND)))
+(DEFUN |leftBindingPowerOf| (X IND &AUX (Y (GET X IND)))
    (IF Y (ELEMN Y 3 0) 0))
 
-(DEFUN |rightBindingPowerOf| (X IND &AUX (Y (GETL X IND)))
+(DEFUN |rightBindingPowerOf| (X IND &AUX (Y (GET X IND)))
    (IF Y (ELEMN Y 4 105) 105))
 
 (defun |make_BF| (MT EP) (LIST |$BFtag| MT EP))
@@ -969,8 +941,6 @@
      (print expr stream)
      (terpri stream)
      (finish-output stream)))
-
-(defmacro |float| (x &optional (y 0.0d0)) `(float ,x ,y))
 
 ;; moved here from spad.lisp
 
@@ -1029,17 +999,6 @@
 (defun blankp (char) (or (eq char #\Space) (eq char #\tab)))
 
 (defun nonblankloc (str) (position-if-not #'blankp str))
-
-;; Temporary parser macros
-
-(defmacro |symbol_is?| (x)
-   `(eq (current-symbol) ,x))
-
-(defmacro |match_symbol| (x)
-   `(if (|symbol_is?| ,x)
-          (progn
-             (advance-token)
-             t)))
 
 ;; stream handling for paste-in generation
 
