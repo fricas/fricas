@@ -513,6 +513,8 @@
 
 (defmacro SPADMAP(&rest args) `'(SPADMAP ,@args))
 
+(defmacro |finally|(x y) `(unwind-protect ,x ,y))
+
 (defmacro |spadConstant| (dollar n)
  `(SPADCALL (svref ,dollar (the fixnum ,n))))
 

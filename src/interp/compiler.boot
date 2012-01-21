@@ -799,6 +799,18 @@ replaceExitEtc(x,tag,opFlag,opMode) ==
       replaceExitEtc(first x,tag,opFlag,opMode)
       replaceExitEtc(rest x,tag,opFlag,opMode)
 
+
+--% try
+
+comp_try(["try", expr, catcher, finallizer], m, e) ==
+    $exitModeStack : local := [m, :$exitModeStack]
+    $insideExpressionIfTrue : local := false
+    if catcher then
+        stackAndThrow ["comp_try: catch unimplemented"]
+    ([c1, m1, .] := comp(expr, m, e)) or return nil
+    ([c2, ., .] := comp(finallizer, $EmptyMode, e)) or return nil
+    [["finally", c1, c2], m1, e]
+
 --% SUCHTHAT
 compSuchthat([.,x,p],m,e) ==
   [x',m',e]:= comp(x,m,e) or return nil
