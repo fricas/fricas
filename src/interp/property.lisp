@@ -389,6 +389,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|return| |compReturn|)
   (SEQ |compSeq|)
   (|SubDomain| |compSubDomain|)
+  (|try| |comp_try|)
   (|Union| |compCat|)
   (|Mapping| |compCat|)
   (VECTOR |compVector|)

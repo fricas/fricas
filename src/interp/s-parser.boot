@@ -107,6 +107,9 @@ init_parser_properties() ==
           ["iterate"], _
           ["yield"], _
           ["if", 130, 0, ["parse_Conditional"]], _
+          ["try", 130, 0, ["parse_Try"]], _
+          ["catch", 0, 114], _
+          ["finally", 0, 114], _
           ["|", 0, 190], _
           ["suchthat"], _
           ["then", 0, 114], _
@@ -357,6 +360,25 @@ parse_Conditional() ==
 parse_ElseClause() ==
     current_symbol() = "if" => parse_Conditional()
     parse_Expression()
+
+parse_Try() ==
+    not(match_symbol "try") => nil
+    MUST parse_Expression()
+    expr := pop_stack_1()
+    expr :=
+        expr is [";", expr1, "/throwAway"] => expr1
+        expr
+    catcher := nil
+    if match_symbol "catch" then
+        MUST parse_Expression()
+        catcher := pop_stack_1()
+        MUST(catcher is ["in", var, expr])
+    finalizer := nil
+    if match_symbol "finally" then
+        MUST parse_Expression()
+        finalizer := pop_stack_1()
+    MUST(catcher or finalizer)
+    push_form3("try", expr, catcher, finalizer)
 
 parse_Loop() ==
     OR(AND(repetition(nil, FUNCTION parse_Iterator),
