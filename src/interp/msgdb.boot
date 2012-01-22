@@ -632,12 +632,10 @@ brightPrint0 x ==
   x = '"%%" =>
     sayString  '"%"
   x = '"%b" =>
-    NULL IS_-CONSOLE CUROUTSTREAM => sayString '" "
     NULL $highlightAllowed        => sayString '" "
     sayString $highlightFontOn
   k := blankIndicator x => BLANKS (k, $fricasOutput)
   x = '"%d" =>
-    NULL IS_-CONSOLE CUROUTSTREAM => sayString '" "
     NULL $highlightAllowed        => sayString '" "
     sayString $highlightFontOff
   STRINGP x => sayString x

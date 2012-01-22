@@ -47,7 +47,7 @@
 
 ;; DEFVARS
 
-(defvar curoutstream (make-synonym-stream '*standard-output*))
+(defvar CUROUTSTREAM *standard-output*)
 
 (defvar *fileactq-apply* nil "function to apply in fileactq")
 
@@ -168,12 +168,6 @@
   (and (streamp stream) (output-stream-p stream)
        (eq (system:fp-output-stream stream)
            (system:fp-output-stream *terminal-io*))))
-
-#-:GCL
-(defun IS-CONSOLE (stream)
-     (or (eq stream *standard-output*)
-         (and (typep stream 'synonym-stream)
-              (eq (SYNONYM-STREAM-SYMBOL stream) '*standard-output*))))
 
 ; 11.0 Operations on Identifiers
 

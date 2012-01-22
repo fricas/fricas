@@ -212,9 +212,9 @@ kePage(htPage,junk) ==
                        getConstructorExports((domname or conform),true))
   [conlist,attrlist,:oplist] := data
   if domname then
-    for x in conlist repeat  RPLAC(CDR x,simpHasPred CDR x)
-    for x in attrlist repeat RPLAC(CDDR x,simpHasPred CDDR x)
-    for x in oplist   repeat RPLAC(CDDR x,simpHasPred CDDR x)
+    for x in conlist repeat  rplac(CDR x, simpHasPred CDR x)
+    for x in attrlist repeat rplac(CDDR x, simpHasPred CDDR x)
+    for x in oplist   repeat rplac(CDDR x, simpHasPred CDDR x)
   prefix := pluralSay(#conlist + #attrlist + #oplist,'"Export",'"Exports")
   page := htInitPage([:prefix,'" of ",:heading],htCopyProplist htPage)
   htSayStandard '"\beginmenu "

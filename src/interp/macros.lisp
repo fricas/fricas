@@ -361,45 +361,6 @@
   "Evaluates an object and returns it with QUOTE wrapped around it."
   (if (NUMBERP X) X (LIST 'QUOTE X)))
 
-; 7.2 Generalized Variables
-
-
-(defmacro RPLAC (&rest L)
-  (if (EQCAR (CAR L) 'ELT)
-      (LIST 'SETELT (CADAR L) (CADDR (CAR L)) (CADR L))
-      (let ((A (CARCDREXPAND (CAR L) NIL)) (B (CADR L)))
-        (COND ((CDDR L) (ERROR 'RPLAC))
-              ((EQCAR A 'CAR) (LIST 'RPLACA (CADR A) B))
-              ((EQCAR A 'CDR) (LIST 'RPLACD (CADR A) B))
-              ((ERROR 'RPLAC))))))
-
-(MAPC #'(LAMBDA (J) (MAKEPROP (CAR J) 'SELCODE (CADR J)))
-      '((CAR 2) (CDR 3) (CAAR 4) (CADR 5) (CDAR 6) (CDDR 7)
-        (CAAAR 8) (CAADR 9) (CADAR 10) (CADDR 11) (CDAAR 12)
-        (CDADR 13) (CDDAR 14) (CDDDR 15) (CAAAAR 16) (CAAADR 17)
-        (CAADAR 18) (CAADDR 19) (CADAAR 20) (CADADR 21) (CADDAR 22)
-        (CADDDR 23) (CDAAAR 24) (CDAADR 25) (CDADAR 26) (CDADDR 27)
-        (CDDAAR 28) (CDDADR 29) (CDDDAR 30) (CDDDDR 31)))
-
-(eval-when (compile eval load)
-(defun CARCDREXPAND (X FG)    ; FG = TRUE FOR CAR AND CDR
-    (let (n hx)
-      (COND ((ATOM X) X)
-            ((SETQ N (GET (SETQ HX (CARCDREXPAND (CAR X) FG)) 'SELCODE))
-             (CARCDRX1 (CARCDREXPAND (CADR X) FG) N FG))
-            ((CONS HX (MAPCAR #'(LAMBDA (Y) (CARCDREXPAND Y FG)) (CDR X)))))))
-
-(defun CARCDRX1 (X N FG)      ; FG = TRUE FOR CAR AND CDR
-    (COND ((< N 1) (fail))
-          ((EQL N 1) X)
-          ((let ((D (DIVIDE N 2)))
-             (CARCDRX1 (LIST (if (EQL (CADR D) 0) (if FG 'CAR 'CAR) (if FG 'CDR 'CDR)) X)
-                       (CAR D)
-                       FG))))))
-
-
-; 7.3 Function Invocation
-
 ; 7.8 Iteration
 
 ; 7.8.2 General Iteration
@@ -747,8 +708,7 @@
 (defun |sayBrightly2| (x out-stream)
   (COND ((NULL X) NIL)
         (|$sayBrightlyStream| (|sayBrightly1| X |$sayBrightlyStream|))
-        ((IS-CONSOLE out-stream) (|sayBrightly1| X out-stream))
-        ((|sayBrightly1| X out-stream) (|sayBrightly1| X *error-output*))))
+        (t (|sayBrightly1| X out-stream))))
 
 (defun |sayBrightlyI| (x)
  (let ((S *error-output*))
@@ -760,8 +720,7 @@
 (defun |sayBrightlyNT2| (x S)
   (COND ((NULL X) NIL)
         (|$sayBrightlyStream| (|sayBrightlyNT1| X |$sayBrightlyStream|))
-        ((IS-CONSOLE S) (|sayBrightlyNT1| X S))
-        ((|sayBrightly1| X S) (|sayBrightlyNT1| X *error-output*))))
+        (t (|sayBrightlyNT1| X S))))
 
 (defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
 
@@ -941,26 +900,6 @@
      (print expr stream)
      (terpri stream)
      (finish-output stream)))
-
-;; moved here from spad.lisp
-
-(defmacro |rplac| (&rest L)
-  (let (a b s)
-    (cond
-      ((EQCAR (SETQ A (CAR L)) 'ELT)
-       (COND ((AND (INTEGERP (SETQ B (CADDR A))) (>= B 0))
-              (SETQ S "CA")
-              (do ((i 1 (1+ i))) ((> i b)) (SETQ S (STRCONC S "D")))
-              (LIST 'RPLAC (LIST (INTERN (STRCONC S "R")) (CADR A)) (CADR L)))
-             ((ERROR "rplac"))))
-      ((PROGN
-         (SETQ A (CARCDREXPAND (CAR L) NIL))
-         (SETQ B (CADR L))
-         (COND
-           ((CDDR L) (ERROR 'RPLAC))
-           ((EQCAR A 'CAR) (LIST 'RPLACA (CADR A) B))
-           ((EQCAR A 'CDR) (LIST 'RPLACD (CADR A) B))
-           ((ERROR 'RPLAC))))))))
 
 ;; moved here from preparse.lisp
 

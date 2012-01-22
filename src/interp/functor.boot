@@ -469,7 +469,7 @@ InvestigateConditions catvecListMaker ==
     for [v,:.] in newS repeat
       for v' in [v,:CAR (CatEval v).4] repeat
         if (w:= assoc(v', HackSlot4)) then
-          RPLAC(rest w,if rest w then mkOr(u,rest w) else u)
+          rplac(rest w, if rest w then mkOr(u, rest w) else u)
     (list:= update(list,u,secondaries,newS)) where
       update(list,cond,secondaries,newS) ==
         (list2:=

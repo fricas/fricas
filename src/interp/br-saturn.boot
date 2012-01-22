@@ -624,8 +624,6 @@ kPageContextMenu page ==
   htBeginTable()
   htSay '"{"
   htMakePage [['bcLinks,['Ancestors,'"",'kcaPage,nil]]]
-  htSay '"}{"
-  htMakePage [['bcLinks,['Attributes,'"",'koPage,'"attribute"]]]
   if kind = '"category" then
     htSay '"}{"
     htMakePage [['bcLinks,['Children,'"",'kccPage,nil]]]
@@ -670,7 +668,6 @@ kPageContextMenuSaturn page ==
   conform := htpProperty(page,'conform)
   conname := opOf conform
   htMakePage [['bcLinks,['"\&Ancestors",'"",'kcaPage,nil]]]
-  htMakePage [['bcLinks,['"Attri\&butes",'"",'koPage,'"attribute"]]]
   if kind = '"category" then
     htMakePage [['bcLinks,['"\&Children",'"",'kccPage,nil]]]
   if not asharpConstructorName? conname then
