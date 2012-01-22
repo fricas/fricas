@@ -750,8 +750,8 @@ bottomUpElt (form:=[op,:argl]) ==
 
     ms := bottomUp op
     ms and (ms is [['Union,:.]] or ms is [['Record,:.]]) =>
-        RPLAC(CDR form, [op,:argl])
-        RPLAC(CAR form, mkAtreeNode "elt")
+        rplac(CDR form, [op, :argl])
+        rplac(CAR form, mkAtreeNode "elt")
         bottomUp form
 
     target  := getTarget form
@@ -762,16 +762,16 @@ bottomUpElt (form:=[op,:argl]) ==
     while not u for newOp in newOps repeat
         newArgs := [op,:argl]
         if selectMms(newOp, newArgs, target) then
-            RPLAC(CDR form, newArgs)
-            RPLAC(CAR form, newOp)
+            rplac(CDR form, newArgs)
+            rplac(CAR form, newOp)
             u := bottomUp form
 
     while not u and ( "and"/[retractAtree(a) for a in newArgs] ) repeat
         while not u for newOp in newOps repeat
             newArgs := [op,:argl]
             if selectMms(newOp, newArgs, target) then
-                RPLAC(CDR form, newArgs)
-                RPLAC(CAR form, newOp)
+                rplac(CDR form, newArgs)
+                rplac(CAR form, newOp)
                 u := bottomUp form
     u
 

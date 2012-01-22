@@ -538,3 +538,5 @@
 (defmacro REPEAT (&rest L) (|expandREPEAT| L))
 (defmacro COLLECT (&rest L) (|expandCOLLECT| L))
 
+;;;
+(defmacro |rplac| (x y) `(setf ,x ,y))

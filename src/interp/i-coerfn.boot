@@ -1553,13 +1553,13 @@ Up2Up(u,source is [.,v1,S], target is [.,v2,T]) ==
 
 insertAlist(a,b,l) ==
   null l => [[a,:b]]
-  a = l.0.0 => (RPLAC(CDAR l,b);l)
+  a = l.0.0 => (rplac(CDAR l, b); l)
   _?ORDER(l.0.0,a) => [[a,:b],:l]
   (fn(a,b,l);l) where fn(a,b,l) ==
-    null rest l => RPLAC(rest l,[[a,:b]])
-    a = l.1.0 => RPLAC(rest l.1,b)
-    _?ORDER(l.1.0,a) => RPLAC(rest l,[[a,:b],:rest l])
-    fn(a,b,rest l)
+    null rest l => rplac(rest l, [[a, :b]])
+    a = l.1.0 => rplac(rest(l.1), b)
+    _?ORDER(l.1.0, a) => rplac(rest l, [[a, :b], :rest l])
+    fn(a, b, rest l)
 
 --% Union
 

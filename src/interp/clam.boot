@@ -66,12 +66,9 @@
 
 -- see SETQ LISP for initial def of $hashNode
 
-compClam(op,argl,body,$clamList) ==
+compClam(op, argl, body, kind, eqEtc, options) ==
   --similar to reportFunctionCompilation in SLAM BOOT
   if $InteractiveMode then startTimingProcess 'compilation
-  if (u:= LASSQ(op,$clamList)) isnt [kind,eqEtc,:options]
-    then keyedSystemError("S2GE0004",[op])
-  $clamList:= nil            --clear to avoid looping
   if u:= S_-(options,'(shift count)) then
     keyedSystemError("S2GE0006",[op,:u])
   shiftFl := MEMQ('shift,options)
@@ -420,7 +417,7 @@ assocCacheShiftCount(x,al,fn) ==
   until EQ(forwardPointer,al) repeat
     FUNCALL(fn, CAR (y:=CAR forwardPointer),x) =>
       newFrontPointer := forwardPointer
-      RPLAC(CADR y, inc_SI CADR y)         --increment use count
+      rplac(CADR y, inc_SI CADR y)         --increment use count
       return (val:= y)
     if less_SI(c := CADR y, minCount) then --initial c is 1 so is true 1st time
       minCount := c
@@ -506,8 +503,9 @@ recordInstantiation1(op,prop,dropIfTrue) ==
   null $reportInstantiations => nil
   u:= HGET($instantRecord,op) =>     --hope that one exists most of the time
     v := LASSOC(prop,u) =>
-      dropIfTrue => RPLAC(CDR v,1+CDR v)
-      RPLAC(CAR v,1+CAR v)
+      dropIfTrue => (rplac(CDR v, 1 + CDR v); v)
+      rplac(CAR v, 1 + CAR v)
+      v
     RPLACD(u,[CAR u,:CDR u])
     val :=
       dropIfTrue => [0,:1]

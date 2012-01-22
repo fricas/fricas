@@ -928,13 +928,10 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
 -- fn is the name of some category/domain/package constructor;
 -- we will cache all of its values on $ConstructorCache with reference
 -- counts
-  $clamList: local := nil
   lambdaOrSlam :=
     GETDATABASE(fn,'CONSTRUCTORKIND) = 'category => 'SPADSLAM
     $mutableDomain => 'LAMBDA
-    $clamList:=
-      [[fn,"$ConstructorCache",'domainEqualList,'count],:$clamList]
-    'LAMBDA
+    'spad_CLAM
   compForm:= LIST [fn,[lambdaOrSlam,vl,:bodyl]]
   if GETDATABASE(fn,'CONSTRUCTORKIND) = 'category
       then u:= compAndDefine compForm

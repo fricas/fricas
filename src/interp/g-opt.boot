@@ -72,19 +72,19 @@ optimize x ==
       y='CLOSEDFN => nil
       y is [["XLAM",argl,body],:a] =>
         optimize rest x
-        argl = "ignore" => RPLAC(first x,body)
+        argl = "ignore" => rplac(first x, body)
         if not (LENGTH argl<=LENGTH a) then
           SAY '"length mismatch in XLAM expression"
           PRETTYPRINT y
-        RPLAC(first x,optimize optXLAMCond SUBLIS(pairList(argl,a),body))
+        rplac(first x, optimize optXLAMCond SUBLIS(pairList(argl, a), body))
       atom y =>
         optimize rest x
-        y="true" => RPLAC(first x,'(QUOTE (QUOTE T)))
-        y="false" => RPLAC(first x,nil)
-      if first y="IF" then (RPLAC(first x,optIF2COND y); y:= first x)
+        y = "true" => rplac(first x, '(QUOTE (QUOTE T)))
+        y = "false" => rplac(first x, nil)
+      if first y = "IF" then (rplac(first x, optIF2COND y); y := first x)
       op := GET(subrname first y, "OPTIMIZE") =>
-        (optimize rest x; RPLAC(first x,FUNCALL(op,optimize first x)))
-      RPLAC(first x,optimize first x)
+        (optimize rest x; rplac(first x, FUNCALL(op, optimize first x)))
+      rplac(first x, optimize first x)
       optimize rest x
 
 subrname u ==
@@ -138,18 +138,18 @@ optCall (x is ["call",:u]) ==
   -- next should happen only as result of macro expansion
   atom first x => first x
   [fn,:a]:= first x
-  atom fn => (RPLAC(rest x,a); RPLAC(first x,fn))
+  atom fn => (rplac(rest x, a); rplac(first x, fn); x)
   fn is ["applyFun",name] =>
-    (RPLAC(first x,"SPADCALL"); RPLAC(rest x,[:a,name]); x)
+    (rplac(first x, "SPADCALL"); rplac(rest x, [:a, name]); x)
   fn is [q,R,n] and MEMQ(q,'(ELT QREFELT CONST)) =>
     not $bootStrapMode and (w:= optCallSpecially(q,x,n,R)) => w
     q="CONST" =>
 --+
       ["spadConstant",R,n]
     --putInLocalDomainReferences will change this to ELT or QREFELT
-    RPLAC(first x,"SPADCALL")
+    rplac(first x, "SPADCALL")
     if $QuickCode then RPLACA(fn,"QREFELT")
-    RPLAC(rest x,[:a,fn])
+    rplac(rest x, [:a, fn])
     x
   systemErrorHere '"optCall"
 
@@ -203,9 +203,9 @@ optSpecialCall(x,y,n) ==
                 x
     x
   [fn,:a]:= first x
-  RPLAC(first x,"SPADCALL")
+  rplac(first x, "SPADCALL")
   if $QuickCode then RPLACA(fn,"QREFELT")
-  RPLAC(rest x,[:a,fn])
+  rplac(rest x, [:a, fn])
   x
 
 compileTimeBindingOf u ==
@@ -236,8 +236,8 @@ optCond (x is ['COND,:l]) ==
   for y in tails l repeat
     while y is [[a1,c1],[a2,c2],:y'] and EqualBarGensym(c1,c2) repeat
       a:=['OR,a1,a2]
-      RPLAC(first first y,a)
-      RPLAC(rest y,y')
+      rplac(first first y, a)
+      rplac(rest y, y')
   x
 
 EqualBarGensym(x,y) ==
@@ -267,8 +267,8 @@ optXLAMCond x ==
   x is ["COND",u:= [p,c],:l] =>
     (optPredicateIfTrue p => c; ["COND",u,:optCONDtail l])
   atom x => x
-  RPLAC(first x,optXLAMCond first x)
-  RPLAC(rest x,optXLAMCond rest x)
+  rplac(first x, optXLAMCond first x)
+  rplac(rest x, optXLAMCond rest x)
   x
 
 optPredicateIfTrue p ==

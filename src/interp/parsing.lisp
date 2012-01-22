@@ -452,7 +452,7 @@ is a token separator, which blank is equivalent to."
   ;(reduce-stack-show)
   nil)
 
-(defun IOClear (&optional (in t) (out t))
+(defun IOClear ()
   (current-line-clear)
   (token-stack-clear)
   (if (or $BOOT $SPAD) (next-lines-clear))

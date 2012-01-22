@@ -173,11 +173,6 @@ PURPOSE: BOOT lines are massaged by PREPARSE to make them easier to parse:
          (PUSH A LINES)
          (PUSH NUM NUMS)
          (setq PARENLEV (+ PARENLEV PCOUNT))
-         (when (and (is-console in-stream) (not continue))
-            (setq $preparse-last-line nil)
-             (RETURN (PAIR (NREVERSE NUMS)
-                           (PARSEPILES (NREVERSE LOCS) (NREVERSE LINES)))))
-
          (GO READLOOP)))
 
 ;; NUM is the line number of the current line
