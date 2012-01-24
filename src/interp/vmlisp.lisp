@@ -981,16 +981,6 @@
     (cons (* s f) e)))
 
 ;;; Contributed by Juergen Weiss from Arthur Norman's CCL.
-(defun acot (a)
-  (if (> a 0.0)
-    (if (> a 1.0)
-       (atan (/ 1.0 a))
-       (- (/ pi 2.0) (atan a)))
-    (if (< a -1.0)
-       (- pi (atan (/ -1.0 a)))
-       (+ (/ pi 2.0) (atan (- a))))))
-
-;;; Contributed by Juergen Weiss from Arthur Norman's CCL.
 (defun cot (a)
   (if (or (> a 1000.0) (< a -1000.0))
     (/ (cos a) (sin a))
