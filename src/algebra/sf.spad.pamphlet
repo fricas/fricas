@@ -504,7 +504,16 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
    acos x           == checkComplex ACOS(x)$Lisp -- can be complex
    atan x           == atan__DF(x)$Lisp
    acsc x           == checkComplex ACSC(x)$Lisp
-   acot x           == ACOT(x)$Lisp
+
+   pi_half : % := pi()/(2::%)
+
+   acot x           ==
+       0 < x =>
+           not(x < 1) => atan(1/x)
+           pi_half - atan(x)
+       not(-1 < x) => pi() - atan(-1/x)
+       pi_half + atan(-x)
+
    asec x           == checkComplex ASEC(x)$Lisp
    sinh x           == sinh__DF(x)$Lisp
    cosh x           == cosh__DF(x)$Lisp
