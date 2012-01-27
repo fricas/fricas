@@ -178,6 +178,10 @@
 (defmacro |negative?_DF| (x) `(MINUSP (the double-float ,x)))
 (defmacro |sqrt_DF| (x) `(SQRT (the double-float ,x)))
 (defmacro |log_DF| (x) `(LOG (the double-float ,x)))
+(defmacro |qsqrt_DF| (x) `(the double-float (SQRT
+                              (the (double-float 0.0 *) ,x))))
+(defmacro |qlog_DF| (x) `(the double-float (LOG
+                              (the (double-float 0.0 *) ,x))))
 
 (defmacro DEF_DF_UNOP (name op)
     `(defmacro ,name (x) `(the double-float (,',op (the double-float ,x)))))
@@ -195,6 +199,9 @@
 (defmacro |negative?_DF| (x) `(MINUSP ,x))
 (defmacro |sqrt_DF|(x) `(SQRT ,x))
 (defmacro |log_DF| (x) `(LOG ,x))
+(defmacro |qsqrt_DF|(x) `(SQRT ,x))
+(defmacro |qlog_DF| (x) `(LOG ,x))
+
 
 (defmacro DEF_DF_UNOP (name op)
     `(defmacro ,name (x) `(,',op ,x)))
@@ -210,8 +217,6 @@
 (DEF_DF_UNOP |sinh_DF| SINH)
 (DEF_DF_UNOP |cosh_DF| COSH)
 (DEF_DF_UNOP |tanh_DF| TANH)
-(DEF_DF_UNOP |qsqrt_DF| SQRT)
-(DEF_DF_UNOP |qlog_DF| LOG)
 
 ;;; Machine integer operations
 
