@@ -635,12 +635,20 @@ Complex(R:CommutativeRing): ComplexCategory(R) with
        complex(r, i)   == [r, i]
        real x           == x.real
        imag x           == x.imag
-       x + y            == [x.real + y.real, x.imag + y.imag]
+       Ops ==>
+           x + y == [x.real + y.real, x.imag + y.imag]
                            -- by re-defining this here, we save 5 fn calls
-       x:% * y:% ==
-         [x.real * y.real - x.imag * y.imag,
-          x.imag * y.real + y.imag * x.real] -- here we save nine!
+           x - y == [x.real - y.real, x.imag - y.imag]
+           x:% * y:% ==
+               [x.real * y.real - x.imag * y.imag,
+                x.imag * y.real + y.imag * x.real] -- here we save nine!
 
+       if R is DoubleFloat then
+           -- we inline from DoubleFloat here
+           Ops
+       else
+           -- general case
+           Ops
 
        if R has IntegralDomain then
          _exquo(x:%, y:%) == -- to correct bad defaulting problem
