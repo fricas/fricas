@@ -85,6 +85,7 @@
         (print-full body st) ))
 
 (defvar |$MacroTable|)
+(defvar |$restore_list|)
 
 (defun |spadCompile| (spad-input-file
              &aux
@@ -114,6 +115,7 @@
       (initialize-preparse in-stream)
       (setq CUROUTSTREAM *standard-output*)
       (setf |$MacroTable| (make-hash-table))
+      (setf |$restore_list| nil)
       (loop
        (if (or *eof* file-closed) (return nil))
        (catch 'SPAD_READER

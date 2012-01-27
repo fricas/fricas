@@ -78,18 +78,25 @@ replaceArgDefs(header, edefs) ==
 -- which can not be converted to macros
 --
 
+DEFPARAMETER($restore_list, nil)
+
 define_macro(name, def) ==
-    SYMBOLP(name) => HPUT($MacroTable, name, [def])
-    name is [op, :args] =>
+    if SYMBOLP(name) then
+        def := [def]
+    else if name is [op, :args] and SYMBOLP(op) then
         args :=
             args is [",", args1] => rest(postFlatten(args, ","))
             args
-        HPUT($MacroTable, op, [def, :args])
-    SAY([name, def])
-    userError("Invalid macro definition")
+        name := op
+        def := [def, :args]
+    else
+        SAY([name, def])
+        userError("Invalid macro definition")
+    prev_def := HGET($MacroTable, name)
+    PUSH([name, :prev_def], $restore_list)
+    HPUT($MacroTable, name, def)
 
-
-walkWhereList(tree) ==
+do_walk_where_list(tree) ==
     lastIteration := false
     ress := nil
     while not(lastIteration) repeat
@@ -100,7 +107,7 @@ walkWhereList(tree) ==
             lastIteration := true
         el is ["==>", name, def] => define_macro(name, def)
         el is ["==", name, def] =>
-            HPUT($MacroTable, name, [def])
+            define_macro(name, def)
         el is [":", ., .] =>
             ress := [el, :ress]
         el is [",", pel, item] =>
@@ -126,14 +133,22 @@ walkWhereList(tree) ==
 -- Remove macros and where parts from global definitions
 --
 
+walkWhereList(name, def, env) ==
+    $restore_list : local := nil
+    edefs := do_walk_where_list env
+    ress := expandMacros(["==", replaceArgDefs(name, edefs), def])
+    for it in $restore_list repeat
+        [op, :def] := it
+        HPUT($MacroTable, op, def)
+    ress
+
 walkForm(tree) ==
     tree is ["==>", name, def] =>
         define_macro(name, def)
         nil
     tree is ["==", head, def] => expandMacros(tree)
     tree is ["where", ["==", name, def], env] =>
-        edefs := walkWhereList env
-        expandMacros(["==", replaceArgDefs(name, edefs), def])
+        walkWhereList(name, def, env)
     userError("Parsing error: illegal toplevel form")
     nil
 
