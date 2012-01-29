@@ -263,6 +263,10 @@ as keywords.")
                (if (and normal (char= c XCape))
                    (setf normal nil)
                    (progn
+                        (if (and (not normal) (|idChar?| c))
+                            (progn
+                                 (setf (aref s2 i2) XCape)
+                                 (incf i2)))
                         (setf normal t)
                         (setf (aref s2 i2) c)
                         (incf i2)))))
@@ -277,33 +281,18 @@ or the chracters ?, !, ' or %"
          (start-pos (Current-Char-Index))
          (num-escaped 0)
          (nbuf nil)
-         (default-package NIL)
+         (nc NIL)
         )
       (advance-char)
    id (let ((cur-char (current-char)))
          (cond ((char= cur-char XCape)
-                (if (not (advance-char)) (go bye))
+                (if (not (setf nc (advance-char))) (go bye))
                 (setq escaped? t)
-                (incf num-escaped)
+                (if (not (|idChar?| nc))
+                    (incf num-escaped))
                 (if (not (advance-char)) (go bye))
                 (go id))
-               ((and (null default-package)
-                     (char= cur-char #\'))
-                (if (> num-escaped 0)
-                    (setf nbuf (remove-escapes
-                                     (Line-subseq-from start-pos)
-                                     num-escaped))
-                    (setf nbuf (Line-subseq-from start-pos)))
-                (setq default-package nbuf)
-                (setq start-pos (Current-Char-Index))
-                (setq num-escaped 0)
-                (if (not (advance-char)) (go bye))
-                (setq start-pos (Current-Char-Index))
-                (go id))
-               ((or (alpha-char-p cur-char)
-                    (digitp cur-char)
-                    (member cur-char '(#\% #\' #\? #\!) :test #'char=))
-                #| (suffix (current-char) buf) |#
+               ((|idChar?| cur-char)
                 (if (not (advance-char)) (go bye))
                 (go id))))
   bye
@@ -311,18 +300,13 @@ or the chracters ?, !, ' or %"
           (setf nbuf (remove-escapes (Line-subseq-from start-pos)
                                       num-escaped))
           (setf nbuf (Line-subseq-from start-pos)))
-      (if (and (stringp default-package)
-               (or (not (find-package default-package))  ;; not a package name
-                  (every #'(lambda (x) (eql x #\')) nbuf))) ;;token ends with ''
-         (setq nbuf (concatenate 'string default-package "'" nbuf)
-               default-package nil))
 #|
       (if (not (string= buf nbuf))
           (progn
               (format t "buf is ->~S<-~%" buf)
               (format t "nbuf is ->~S<-~%" nbuf)))
 |#
-      (setq sbuf (intern nbuf (or default-package "BOOT")))
+      (setq sbuf (intern nbuf "BOOT"))
       (return (token-install
                 sbuf
                 (if (and (not escaped?)
@@ -359,15 +343,22 @@ or the chracters ?, !, ' or %"
 (defun get-SPADSTRING-token (token)
    "With TOK=\" and ABC\" on IN-STREAM, extracts and stacks string ABC"
   (PROG ((BUF (make-adjustable-string 0)))
-        (if (char/= (current-char) #\") (RETURN NIL) (advance-char)) ;"
+        (if (char/= (current-char) #\") (RETURN NIL)) ;"
         (loop
-         (if (char= (current-char) #\") (return nil)) ;"
-         (SUFFIX (if (char= (current-char) XCape)
-                     (advance-char)
-                   (current-char))
-                 BUF)
-         (if (null  (advance-char)) ;;end of line
-             (PROGN (|sayBrightly| "Close quote inserted") (RETURN nil)))
+            (let ((cc (advance-char)))
+                (if (null cc) ;;end of line
+                    (PROGN (|sayBrightly| "Close quote inserted")
+                                   (RETURN nil)))
+                (if (char= cc #\") (return nil)) ;"
+                (if (char= cc XCape)
+                    (prog ((nc (advance-char)))
+                        (if (null nc)
+                            (PROGN (|sayBrightly| "Close quote inserted")
+                                   (RETURN nil)))
+                        (if (|idChar?| nc)
+                            (SUFFIX cc BUF))
+                        (SUFFIX nc BUF))
+                    (SUFFIX cc BUF)))
          )
         (advance-char)
         (return (token-install (copy-seq buf) ;should make a simple string
