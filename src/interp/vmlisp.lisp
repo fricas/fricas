@@ -986,19 +986,6 @@
     (/ (cos a) (sin a))
     (/ 1.0 (tan a))))
 
-;;; These functions should be defined for DoubleFloat inputs but are not.
-;;; These are cheap and easy definitions that work but should be rewritten.
-(defun sec (x) (/ 1 (cos x)))
-(defun csc (x) (/ 1 (sin x)))
-(defun acsc (x) (asin (/ 1 x)))
-(defun asec (x) (acos (/ 1 x)))
-(defun csch (x) (/ 1 (sinh x)))
-(defun coth (x) (* (cosh x) (csch x)))
-(defun sech (x) (/ 1 (cosh x)))
-(defun acsch (x) (asinh (/ 1 x)))
-(defun acoth (x) (atanh (/ 1 x)))
-(defun asech (x) (acosh (/ 1 x)))
-
 ;;; moved from unlisp.lisp.pamphlet
 (defun |AlistAssocQ| (key l)
   (assoc key l :test #'eq) )
