@@ -435,6 +435,11 @@ scanSpace()==
            $floatok:=true
            lfspaces ($n-n)
 
+e_concat(s1, s2) ==
+    #s2 = 0 => s1
+    idChar?(s2.0) => CONCAT(s1, "__", s2)
+    CONCAT(s1, s2)
+
 scanString()==
             $n:=$n+1
             $floatok:=false
@@ -467,12 +472,11 @@ scanS()==
                   a:=scanEsc() -- case of end of line when false
                   b:=if a
                      then
-                       str:=CONCAT(str,scanTransform($ln.$n))
+                       ec := $ln.$n
                        $n:=$n+1
-                       scanS()
+                       CONCAT(ec, scanS())
                       else scanS()
-                  CONCAT(str,b)
-scanTransform x==x
+                  e_concat(str, b)
 
 --idChar? x== scanLetter x or DIGITP x or MEMQ(x,'(_? _%))
 
@@ -514,7 +518,7 @@ scanW(b)==             -- starts pointing to first char
                     if idChar?($ln.$n)
                     then scanW(b)
                     else [b,'""]
-           [bb.0 or b,CONCAT(str,bb.1)]
+           [bb.0 or b, e_concat(str, bb.1)]
 
 scanWord(esp) ==
           aaa:=scanW(false)
