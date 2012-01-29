@@ -567,6 +567,24 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
    ellipticE(x) == ellipticE(sfx)$ELIPIDF pretend %
    ellipticPi(x, y, z) == ellipticPi(sfx, sfy, sfz)$ELIPIDF pretend %
 
+   FELFUN ==> FloatEllipticFunctions
+   bfx ==> convert(x pretend DoubleFloat)@Float
+   bfy ==> convert(y pretend DoubleFloat)@Float
+   bfz ==> convert(z pretend DoubleFloat)@Float
+   to_sf(x) ==>
+       obits := bits()$Float
+       try
+           bits(68)
+           convert(x)@DoubleFloat pretend %
+       finally
+           bits(obits)
+   jacobiSn(x, y) == to_sf(jacobiSn(bfx, bfy)$FELFUN)
+   jacobiCn(x, y) == to_sf(jacobiCn(bfx, bfy)$FELFUN)
+   jacobiDn(x, y) == to_sf(jacobiDn(bfx, bfy)$FELFUN)
+   weierstrassP(x, y, z) == to_sf(weierstrassP(bfx, bfy, bfz)$FELFUN)
+   weierstrassPPrime(x, y, z) ==
+       to_sf(weierstrassPPrime(bfx, bfy, bfz)$FELFUN)
+
    wholePart x            == TRUNCATE(x)$Lisp
    float(ma,ex,b)   == ma*(b::%)^ex
    convert(x:%):DoubleFloat == x pretend DoubleFloat
