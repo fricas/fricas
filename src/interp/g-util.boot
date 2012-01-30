@@ -99,16 +99,6 @@ deleteAssoc(x,y) ==
    [first y,:deleteAssoc(x,y')]
   y
 
-deleteAssocWOC(x,y) ==
-  null y => y
-  [[a,:.],:t]:= y
-  x=a => t
-  (fn(x,y);y) where fn(x,y is [h,:t]) ==
-    t is [[a,:.],:t1] =>
-      x=a => RPLACD(y,t1)
-      fn(x,t)
-    nil
-
 insertWOC(x,y) ==
   null y => [x]
   (fn(x,y); y) where fn(x,y is [h,:t]) ==
@@ -117,8 +107,6 @@ insertWOC(x,y) ==
       RPLACD(y,[h,:t])
       RPLACA(y,x)
     fn(x,t)
-
-
 
 --% Miscellaneous Functions for Working with Strings
 

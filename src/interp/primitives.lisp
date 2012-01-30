@@ -471,6 +471,14 @@
 
 (defmacro qlessp(x y) `(< ,x ,y))
 
+(defmacro |bool_to_bit| (b) `(if ,b 1 0))
+
+(defmacro |bit_to_bool| (b) `(eql ,b 1))
+
+(defmacro ELT_BVEC (bv i)    `(sbit ,bv ,i))
+(defmacro SETELT_BVEC (bv i x)  `(setf (sbit ,bv ,i) ,x))
+(defmacro |size_BVEC| (bv)  `(size ,bv))
+
 ; macros needed for Spad:
 
 (defmacro EXIT (&rest value) `(return-from SEQ ,@value))

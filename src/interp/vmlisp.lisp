@@ -1007,30 +1007,23 @@
 
 ;;; SMW Nov 88: Created
 
-(defmacro truth-to-bit (x) `(cond (,x 1) ('else 0)))
-(defmacro bit-to-truth (b) `(eq ,b 1))
-
-(defun    bvec-make-full (n x)
+(defun    |make_BVEC| (n x)
     (make-array (list n) :element-type 'bit :initial-element x))
 
-(defmacro bvec-elt       (bv i)    `(sbit ,bv ,i))
-(defmacro bvec-setelt    (bv i x)  `(setf (sbit ,bv ,i) ,x))
-(defmacro bvec-size      (bv)      `(size ,bv))
-
-(defun    bvec-copy      (bv)      (copy-seq bv))
-(defun    bvec-concat    (bv1 bv2) (concatenate '(vector bit) bv1 bv2))
-(defun    bvec-equal     (bv1 bv2) (equal    bv1 bv2))
-(defun    bvec-greater   (bv1 bv2)
+(defun    |copy_BVEC|      (bv)      (copy-seq bv))
+(defun    |concat_BVEC|    (bv1 bv2) (concatenate '(vector bit) bv1 bv2))
+(defun    |equal_BVEC|     (bv1 bv2) (equal    bv1 bv2))
+(defun    |greater_BVEC|   (bv1 bv2)
   (let ((pos (mismatch bv1 bv2)))
     (cond ((or (null pos) (>= pos (length bv1))) nil)
           ((< pos (length bv2)) (> (bit bv1 pos) (bit bv2 pos)))
           ((find 1 bv1 :start pos) t)
           (t nil))))
-(defun    bvec-and       (bv1 bv2) (bit-and  bv1 bv2))
-(defun    bvec-or        (bv1 bv2) (bit-ior  bv1 bv2))
-(defun    bvec-xor       (bv1 bv2) (bit-xor  bv1 bv2))
-(defun    bvec-nand      (bv1 bv2) (bit-nand bv1 bv2))
-(defun    bvec-nor       (bv1 bv2) (bit-nor  bv1 bv2))
-(defun    bvec-not       (bv)      (bit-not  bv))
+(defun    |and_BVEC|       (bv1 bv2) (bit-and  bv1 bv2))
+(defun    |or_BVEC|        (bv1 bv2) (bit-ior  bv1 bv2))
+(defun    |xor_BVEC|       (bv1 bv2) (bit-xor  bv1 bv2))
+(defun    |nand_BVEC|      (bv1 bv2) (bit-nand bv1 bv2))
+(defun    |nor_BVEC|       (bv1 bv2) (bit-nor  bv1 bv2))
+(defun    |not_BVEC|       (bv)      (bit-not  bv))
 
 ;;; end of moved fragment

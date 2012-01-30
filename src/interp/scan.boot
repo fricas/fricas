@@ -181,12 +181,12 @@ scanDictCons()==
 
 scanPunCons()==
     listing := HKEYS scanKeyTable
-    a := BVEC_-MAKE_-FULL(256, 0)
+    a := make_BVEC(256, 0)
 --  SETSIZE(a,256)
-    for i in 0..255 repeat BVEC_-SETELT(a,i,0)
+    for i in 0..255 repeat SETELT_BVEC(a, i, 0)
     for k in listing repeat
        if not startsId? k.0
-       then BVEC_-SETELT(a,QENUM(k,0),1)
+       then SETELT_BVEC(a, QENUM(k, 0), 1)
     a
 
 scanKeyTable:=scanKeyTableCons()
@@ -678,4 +678,4 @@ substringMatch (l,d,i)==
                  else false
        s1
 
-punctuation? c== c < 256 and scanPun.c=1
+punctuation? c == c < 256 and ELT_BVEC(scanPun, c) = 1
