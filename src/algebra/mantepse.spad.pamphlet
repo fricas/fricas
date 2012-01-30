@@ -1906,7 +1906,7 @@ termAsU32VectorDiff(f, partition, prime, degreeLoss) ==
                    d,
                    prime)$U32VectorPolynomialOperations for part in ll]
 
-        reduce((f1,f2) +-> truncated__multiplication(f1, f2, d, prime)$U32VectorPolynomialOperations, fl)
+        reduce((f1,f2) +-> truncated_multiplication(f1, f2, d, prime)$U32VectorPolynomialOperations, fl)
 
 termAsU32VectorShift: (U32Vector, List Integer, Integer, NonNegativeInteger) -> U32Vector
 termAsU32VectorShift(f, partition, prime, degreeLoss) ==
@@ -1922,7 +1922,7 @@ termAsU32VectorShift(f, partition, prime, degreeLoss) ==
                for part in ll]
 
         r := new(d+1, 0)$U32Vector
-        copy__first(r, first fl, d+1)$U32VectorPolynomialOperations
+        copy_first(r, first fl, d+1)$U32VectorPolynomialOperations
         for i in 0..d repeat
             for e in rest fl repeat
                 r(i) := QSMULMOD32(r(i), e(i), prime)$Lisp
@@ -2001,7 +2001,7 @@ guessModGenCached(cache : PrimitiveArray U32Vector,
                   terml : List Integer,
                   prime : Integer) : Vector U32Vector ==
     for i in maxD+1..maxD+np for pp in prodl repeat
-        cache(i) := truncated__multiplication(cache first pp,
+        cache(i) := truncated_multiplication(cache first pp,
                           cache second pp, sigma-1, prime
                           )$U32VectorPolynomialOperations
     nt := # terml
@@ -2477,7 +2477,7 @@ if F has RetractableTo Symbol and S has RetractableTo Symbol then
                        prime)$U32VectorPolynomialOperations for part in ll]
 
             reduce((f1,f2) +->
-                truncated__multiplication(f1, f2, d, prime)
+                truncated_multiplication(f1, f2, d, prime)
                                          $U32VectorPolynomialOperations, fl)
 
     ADEguessModGenq: (List List Integer, NonNegativeInteger) -> SEQGEN
@@ -2946,10 +2946,10 @@ guessInterpolateModular(lists : List List F, degs : List Integer, _
             degs := [(if i <= deg.remainder   _
                       then deg.quotient + 1   _
                       else deg.quotient) for i in 1..o]
-    check: ((List SUP S) -> Union("good", "reject", "no__solution"))
+    check: ((List SUP S) -> Union("good", "reject", "no_solution"))
     if check(options)$GOPT0 case "MonteCarlo" then
         check := x +-> checkInterpolant(list, o, x, D, options, sigma)
-        check := gen__Monte__Carlo__check(check, lists, _
+        check := gen_Monte_Carlo_check(check, lists, _
                    D.kind, D.qvar, sigma, (D.guessModGen)(o))
     else
         if check(options)$GOPT0 case "skip" then
@@ -2960,7 +2960,7 @@ guessInterpolateModular(lists : List List F, degs : List Integer, _
             -- XXX stupid compiler ...
             check := x +-> checkInterpolant(list, o, x, D, options, sigma)
 
-    HP__solve(lists, degs, D.kind, D.qvar, sigma, _
+    HP_solve(lists, degs, D.kind, D.qvar, sigma, _
               (D.guessModGen)(o), check)
 
 @
@@ -3090,7 +3090,7 @@ guessInterpolate2(lists : List List F, o : NNI, degreeLoss : Integer, _
 of the most time consuming parts of the whole procedure.  For efficiency, we
 special case the linear recurrences:
 
-In both routines, [["no__solution"]] means that modular solver produced
+In both routines, [["no_solution"]] means that modular solver produced
 something which is not a solution to Hermite-Pade problem, so (at least in
 principle) modular solver should work harder to find correct solution to the
 Hermite-Pade problem, which [[checkInterpolant]] or [[precCheck]] then will
@@ -3102,7 +3102,7 @@ we discard the solution.
 <<implementation: Guess - testInterpolant>>=
 precCheck(list: List F, resi: List SUP S,
           options: LGOPT, sigma: Integer, bad: Boolean) _
-         : Union("good", "reject", "no__solution") ==
+         : Union("good", "reject", "no_solution") ==
     homp := homogeneous(options)$GOPT0
     homo : Boolean :=
                       homp case Boolean => homp
@@ -3110,13 +3110,13 @@ precCheck(list: List F, resi: List SUP S,
     resv := vector(resi)$Vector(SUP S)
     m := #resv
     gl0 := vector(list)$Vector(F)
-    degree__loss : Integer :=
+    degree_loss : Integer :=
         homo => m - 1
         m - 2
     if checkExtraValues(options)$GOPT0 then
-        max__ind := #gl0 - degree__loss - 1
+        max_ind := #gl0 - degree_loss - 1
     else
-        max__ind := sigma - 1
+        max_ind := sigma - 1
 
     svar := create()$SingletonAsOrderedSet
     j0 : Integer :=
@@ -3127,7 +3127,7 @@ precCheck(list: List F, resi: List SUP S,
     import Fraction(S)
     F is Fraction(S) =>
         gl := gl0
-        for i in 0..max__ind repeat
+        for i in 0..max_ind repeat
             res1 : S := 0
             cden : S := 1
             si := i::S
@@ -3145,12 +3145,12 @@ precCheck(list: List F, resi: List SUP S,
                 cden := cden*c2
             res1 ~= 0 =>
                 i < sigma =>
-                    return "no__solution"
+                    return "no_solution"
                 return "reject"
         if not checkExtraValues(options)$GOPT0 then return "good"
         bad => return "reject"
-        for i in 1..degree__loss repeat
-            si := (i + max__ind)::S
+        for i in 1..degree_loss repeat
+            si := (i + max_ind)::S
             for j in (m - i)..m repeat
                 p2 := resv(j)
                 p2val := retract(eval(p2, svar, si))@S
@@ -3161,12 +3161,12 @@ precCheck(list: List F, resi: List SUP S,
             for j in j0..(m - i) repeat
                 p2 := resv(j)
                 p2val := retract(eval(p2, svar, si))@S
-                res2 := res2 + p2val*gl(i + max__ind + j - j0 + 1)
+                res2 := res2 + p2val*gl(i + max_ind + j - j0 + 1)
             res2 ~= 0 => return "reject"
         return "good"
     F is S =>
         gl := gl0 pretend Vector(S)
-        for i in 0..max__ind repeat
+        for i in 0..max_ind repeat
             res1 : S := 0
             si := i::S
             if not(homo) then
@@ -3177,12 +3177,12 @@ precCheck(list: List F, resi: List SUP S,
                 res1 := res1 + p2val*gl(i + j - j0 + 1)
             res1 ~= 0 =>
                 i < sigma =>
-                    return "no__solution"
+                    return "no_solution"
                 return "reject"
         if not checkExtraValues(options)$GOPT0 then return "good"
         bad => return "reject"
-        for i in 1..degree__loss repeat
-            si := (i + max__ind)::S
+        for i in 1..degree_loss repeat
+            si := (i + max_ind)::S
             for j in (m - i)..m repeat
                 p2 := resv(j)
                 p2val := retract(eval(p2, svar, si))@S
@@ -3193,7 +3193,7 @@ precCheck(list: List F, resi: List SUP S,
             for j in j0..(m - i) repeat
                 p2 := resv(j)
                 p2val := retract(eval(p2, svar, si))@S
-                res2 := res2 + p2val*gl(i + max__ind + j - j0 + 1)
+                res2 := res2 + p2val*gl(i + max_ind + j - j0 + 1)
             res2 ~= 0 => return "reject"
         return "good"
     error "F must be S or Fraction(S)"
@@ -3234,7 +3234,7 @@ is not a solution to Hermite-Pade problem.
 
 <<implementation: Guess - testInterpolant>>=
 checkInterpolant: (List F, NNI, List SUP S, HPSPEC, LGOPT, Integer)
-                  -> Union("good", "reject", "no__solution")
+                  -> Union("good", "reject", "no_solution")
 checkInterpolant(list, o, resi, D, options, sigma) ==
     if debug(options)$GOPT0 then
         output("Guess: checking solution")$OutputPackage
@@ -3244,7 +3244,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
 --        function
 
     nonZeroCoefficients: Union("one", "several", "none") := "none"
-    reject__one__term := false
+    reject_one_term := false
 
     for i in 1..#resi repeat
         if not zero? resi.i then
@@ -3255,7 +3255,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
                 break
 
     if not((nonZeroCoefficients case "several") or every?(zero?, list)) then
-        reject__one__term := true
+        reject_one_term := true
         if debug(options)$GOPT0 then
             output("Guess: encountered single-term solution")
                   $OutputPackage
@@ -3275,7 +3275,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
 
     import Symbol
     (one? maxPow and D.kind = 'shiftHP) =>
-        precCheck(list, resi, options, sigma, reject__one__term)
+        precCheck(list, resi, options, sigma, reject_one_term)
 
     flist: List PositiveInteger := [i::PositiveInteger for i in 1..o | not zero? resi.i]
     testList := ((D.testGen)(flist))(list2UFPSSUPF list)
@@ -3288,7 +3288,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     for d in 0.. repeat
         if not checkExtraValues(options)$GOPT0 and d = sigma then
             return "good"
-        if reject__one__term and d = sigma then
+        if reject_one_term and d = sigma then
             return "reject"
 
         c := generalCoefficient(D.AF, testList,
@@ -3307,7 +3307,7 @@ checkInterpolant(list, o, resi, D, options, sigma) ==
     order < sigma =>
         print(hconcat("Order too low: ", order::OutputForm))
         print(hconcat("sigma: ", sigma::OutputForm))
-        return "no__solution"
+        return "no_solution"
 
     ground? c =>
         if debug(options)$GOPT0 then

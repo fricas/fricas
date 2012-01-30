@@ -83,7 +83,7 @@ FloatSpecialFunctions() : Exports == Implementation where
 
   Implementation ==> add
 
-    bernoulli__gamma__series(z : Complex Float, n : Integer): Complex Float ==
+    bernoulli_gamma_series(z : Complex Float, n : Integer): Complex Float ==
        zinv := 1/z
        zk := zinv
        z2inv := zinv*zinv
@@ -95,16 +95,16 @@ FloatSpecialFunctions() : Exports == Implementation where
            s := s + ((bk*kinv)::(Complex Float))*zk
        s
 
-    logGamma__a1(z : Complex Float) : Complex Float ==
+    logGamma_a1(z : Complex Float) : Complex Float ==
        (z - ((1/2)::(Complex Float)))*log(z) - z _
            + ((1/2)::(Complex Float))_
              *((log((2 :: Float)*pi()))::(Complex Float))
 
-    logGamma__asymptotic(z : Complex Float, n : Integer): Complex Float ==
-       lg1 := logGamma__a1(z)
-       lg1 + bernoulli__gamma__series(z, n)
+    logGamma_asymptotic(z : Complex Float, n : Integer): Complex Float ==
+       lg1 := logGamma_a1(z)
+       lg1 + bernoulli_gamma_series(z, n)
 
-    gamma__series(z : Complex Float, l : Float, n : Integer) : Complex Float ==
+    gamma_series(z : Complex Float, l : Float, n : Integer) : Complex Float ==
        tk := exp(z*(log(l)::(Complex Float)))/z
        s := tk
        for k in 1..n repeat
@@ -117,10 +117,10 @@ FloatSpecialFunctions() : Exports == Implementation where
             error "Gamma can only handle base 2 Float-s"
         l0 := bits()
         l := max(l0 + 5, 20)
-        re__z := real(z)
-        re__z < (1/2)::Float =>
+        re_z := real(z)
+        re_z < (1/2)::Float =>
             bits (l + 5)
-            re_zint := round(re__z)
+            re_zint := round(re_z)
             z1 := z - re_zint::Complex Float
             sign : Float :=
                 odd?(retract(re_zint)@Integer) => -1
@@ -128,27 +128,27 @@ FloatSpecialFunctions() : Exports == Implementation where
             z1 = 0 =>
                 bits(l0)
                 error "Pole of Gamma"
-            c__pi := (pi())::(Complex Float)
+            c_pi := (pi())::(Complex Float)
             one := 1::(Complex Float)
-            result := (sign::Float)*c__pi/(Gamma(one - z)*sin(c__pi * z1))
+            result := (sign::Float)*c_pi/(Gamma(one - z)*sin(c_pi * z1))
             bits(l0)
             result
-        abs__z := real(abs(z))
-        l :: Float > 6*abs__z =>
-            oz := max(order(abs__z), 5) :: PositiveInteger
+        abs_z := real(abs(z))
+        l :: Float > 6*abs_z =>
+            oz := max(order(abs_z), 5) :: PositiveInteger
             lz := length(oz) :: PositiveInteger
             bits(oz+lz+30)
-            loss := real(logGamma__a1(real(z)::(Complex Float))) - _
-                    real(logGamma__a1(z))
+            loss := real(logGamma_a1(real(z)::(Complex Float))) - _
+                    real(logGamma_a1(z))
             len : Float := 2*real(z) + 2*(loss + log2() * (l :: Float)) + 3::Float
             l1a := (l + order(len) + wholePart(loss/log2()) + 12)
-            l1 := max(l1a, wholePart(abs__z*log(len)/log2()) +
+            l1 := max(l1a, wholePart(abs_z*log(len)/log2()) +
                            10)::PositiveInteger
             bits(l1)
-            result := gamma__series(z, len, 3*wholePart(len) + 6)
+            result := gamma_series(z, len, 3*wholePart(len) + 6)
             bits(l0)
             result
-        llog := max(order(real(abs(logGamma__a1(z)))), 5) :: PositiveInteger
+        llog := max(order(real(abs(logGamma_a1(z)))), 5) :: PositiveInteger
         -- we sum l term, so need length(l) extra bits to
         -- compensate roundoff error
         -- we need llog extra bits in logGamma to avoid loss of
@@ -157,14 +157,14 @@ FloatSpecialFunctions() : Exports == Implementation where
         -- and inaccuracy in computing number of bits
         l1 := l + llog + (length(l)::PositiveInteger) + 12
         bits(l1)
-        result := exp(logGamma__asymptotic(z, l quo 6 + 1 ))
+        result := exp(logGamma_asymptotic(z, l quo 6 + 1 ))
         bits(l0)
         result
 
-    -- in exact arithmetic |imag(logGamma__a1(z) - logGamma(z))| < pi/2
-    logGamma__lift(z : Complex Float, lg2 : Complex Float) : Complex Float ==
+    -- in exact arithmetic |imag(logGamma_a1(z) - logGamma(z))| < pi/2
+    logGamma_lift(z : Complex Float, lg2 : Complex Float) : Complex Float ==
         lg2i := imag(lg2)
-        k := round((imag(logGamma__a1(z)) - lg2i)/(2*pi()))
+        k := round((imag(logGamma_a1(z)) - lg2i)/(2*pi()))
         lg2 + (imaginary()$(Complex Float))*((k*(2::Float)*pi())::(Complex Float))
 
 
@@ -173,11 +173,11 @@ FloatSpecialFunctions() : Exports == Implementation where
             error "Gamma can only handle base 2 Float-s"
         l0 := bits()
         l := max(l0 + 5, 20)
-        re__z := real(z)
+        re_z := real(z)
         one := 1::(Complex Float)
-        re__z < (1/2)::Float =>
+        re_z < (1/2)::Float =>
             bits (l + 5)
-            re_zint := round(re__z)
+            re_zint := round(re_z)
             z1 := z - re_zint::Complex Float
             lsign : Float :=
                 odd?(retract(re_zint)@Integer) => 1
@@ -186,20 +186,20 @@ FloatSpecialFunctions() : Exports == Implementation where
                 bits(l0)
                 error "Pole of Gamma"
             bits (l + 5)
-            c__pi := (pi())::(Complex Float)
-            result := log(c__pi) + complex(0, lsign)*c__pi
-                       - logGamma(one - z) - log(sin(c__pi * z1))
-            result := logGamma__lift(z, result)
+            c_pi := (pi())::(Complex Float)
+            result := log(c_pi) + complex(0, lsign)*c_pi
+                       - logGamma(one - z) - log(sin(c_pi * z1))
+            result := logGamma_lift(z, result)
             bits(l0)
             result
-        abs__z := real(abs(z))
-        l :: Float > 6*abs__z =>
+        abs_z := real(abs(z))
+        l :: Float > 6*abs_z =>
             l := l + 5
             if real(abs(z - one)) < ((1/4)::Float) or _
                real(abs(z - one - one)) < ((1/4)::Float) then
                 l := 2*l
             bits(l)
-            result := logGamma__lift(z, log(Gamma(z)))
+            result := logGamma_lift(z, log(Gamma(z)))
             bits(l0)
             result
         -- we sum l term, so need length(l) extra bits to
@@ -208,7 +208,7 @@ FloatSpecialFunctions() : Exports == Implementation where
         -- number of bits and constant factor
         l1 := l + length(l)::PositiveInteger + 12
         bits(l1)
-        result := logGamma__asymptotic(z, l quo 6 + 1 )
+        result := logGamma_asymptotic(z, l quo 6 + 1 )
         bits(l0)
         result
 

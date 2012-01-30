@@ -298,11 +298,11 @@ BinaryFile: Cat == Def where
         defstream(fn: FileName, mode: String): FileState ==
             mode = "input"  =>
               not readable? fn => error ["File is not readable", fn]
-              BINARY__OPEN__INPUT(fn::String)$Lisp
+              BINARY_OPEN_INPUT(fn::String)$Lisp
 --            OPEN(fn::String, direc, input, eltype, bytesize)$Lisp
             mode = "output" =>
               not writable? fn => error ["File is not writable", fn]
-              BINARY__OPEN__OUTPUT(fn::String)$Lisp
+              BINARY_OPEN_OUTPUT(fn::String)$Lisp
 --            OPEN(fn::String, direc, output, eltype, bytesize)$Lisp
             error ["IO mode must be input or output", mode]
 
@@ -318,22 +318,22 @@ BinaryFile: Cat == Def where
 
         close! f ==
             f.fileIOmode = "output" =>
-                 BINARY__CLOSE__OUTPUT()$Lisp
+                 BINARY_CLOSE_OUTPUT()$Lisp
                  f
             f.fileIOmode = "input" =>
-                  BINARY__CLOSE__INPUT()$Lisp
+                  BINARY_CLOSE_INPUT()$Lisp
                   f
             error "file must be in read or write state"
 
         read! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            BINARY__SELECT__INPUT(f.fileState)$Lisp
-            BINARY__READBYTE()$Lisp
+            BINARY_SELECT_INPUT(f.fileState)$Lisp
+            BINARY_READBYTE()$Lisp
 --          READ_-BYTE(f.fileState)$Lisp
         readIfCan! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            BINARY__SELECT__INPUT(f.fileState)$Lisp
-            n:SingleInteger:=BINARY__READBYTE()$Lisp
+            BINARY_SELECT_INPUT(f.fileState)$Lisp
+            n:SingleInteger:=BINARY_READBYTE()$Lisp
             n = -1 => "failed"
             n::Union(SingleInteger,"failed")
 --          READ_-BYTE(f.fileState,NIL$Lisp,
@@ -341,7 +341,7 @@ BinaryFile: Cat == Def where
         write!(f, x) ==
             f.fileIOmode ~= "output" => error "File not in write state"
             x < 0 or x>255 => error "integer cannot be represented as a byte"
-            BINARY__PRINBYTE(x)$Lisp
+            BINARY_PRINBYTE(x)$Lisp
 --          WRITE_-BYTE(x, f.fileState)$Lisp
             x
 
