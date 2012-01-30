@@ -1113,6 +1113,8 @@ PUT('Record,'documentation,SUBST(MESSAGE,'MESSAGE,'(
    "\spad{coerce(r)} returns an representation of \spad{r} as an output form")
          ((_$ (List (Any)))
    "\spad{coerce(u)}, where \spad{u} is the list \spad{[x,y]} for \spad{x} of type \spad{A} and \spad{y} of type \spad{B}, returns the record \spad{[a:x,b:y]}"))
+ (construct ((_$ A B)
+   "\spad{construct(x, y)} returns the record \spad{[a:x,b:y]}"))
  (elt ((A $ "a")
    "\spad{r . a} returns the value stored in record \spad{r} under selector \spad{a}.")
       ((B $ "b")
