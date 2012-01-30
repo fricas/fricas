@@ -153,20 +153,20 @@ ElementaryIntegration(R, F): Exports == Implementation where
       (r := symbolIfCan(k::K)) case "failed" => false
       r::SE = x
 
-    Alg__Rec ==> Record(fun : F, nroot : F, npow1 : Integer, npow2 : Integer)
+    Alg_Rec ==> Record(fun : F, nroot : F, npow1 : Integer, npow2 : Integer)
 
-    alg__split__root0(f : F, r : K, n : Integer) : List F ==
+    alg_split_root0(f : F, r : K, n : Integer) : List F ==
         n = 2 =>
             ef := eval(f, r, -(r::F))
             f0 := (f + ef)/(2::F)
             f1 := (f - ef)/(2::F)
             member?(r, kernels(f0)) =>
                 print(f0::OutputForm)
-                error "alg__split__root0: roots did not cancel 1"
+                error "alg_split_root0: roots did not cancel 1"
             f1 := f1/(r::F)
             member?(r, kernels(f1)) =>
                 print(f1::OutputForm)
-                error "alg__split__root0: roots did not cancel 2"
+                error "alg_split_root0: roots did not cancel 2"
             [f0, f1]
 
         q := univariate(f, r, minPoly r
@@ -174,20 +174,20 @@ ElementaryIntegration(R, F): Exports == Implementation where
                           K, R, P, F)
         [coefficient(q, i) for i in 0..(n-1)]
 
-    alg__split__roots(f : F, r1 : K, r2 : K) : List(Alg__Rec) ==
+    alg_split_roots(f : F, r1 : K, r2 : K) : List(Alg_Rec) ==
         a1 := argument(r1)
         a2 := argument(r2)
         n1 : Integer := retract(a1(2))@Integer
         b1 := a1(1)
         n2 : Integer := retract(a2(2))@Integer
         b2 := a2(1)
-        l1 : List F := alg__split__root0(f, r1, n1)
-        res := empty()$List(Alg__Rec)
+        l1 : List F := alg_split_root0(f, r1, n1)
+        res := empty()$List(Alg_Rec)
         pow1 : Integer
         rop := operator(r1)
         for f1 in l1 for pow1 in (0$Integer)..(n1 - 1) repeat
             f1 = 0 => "iterate"
-            l2 := alg__split__root0(f1, r2, n2)
+            l2 := alg_split_root0(f1, r2, n2)
             g1 := gcd(n1, pow1)$Integer
             nn1 := (n1 exquo g1)::Integer
             np1 := (pow1 exquo g1)::Integer
@@ -203,7 +203,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
                 nrr :=
                     pow1 + pow2 > 0 => nr::F
                     1$F
-                res := cons([f2*nrr, nrr, pow1, pow2]$Alg__Rec, res)
+                res := cons([f2*nrr, nrr, pow1, pow2]$Alg_Rec, res)
         res
 
     alglfint(f, k, l, x) ==
@@ -214,7 +214,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
       has?(operator kx, ALGOP) =>
         is?(operator k, 'nthRoot) and is?(operator kx, 'nthRoot) and
            not(member?(kx, tower(k::F))) =>
-              al :=  alg__split__roots(f, k, kx)
+              al :=  alg_split_roots(f, k, kx)
               -- print(al::OutputForm)
               res := 0$IR
               for rec in al repeat

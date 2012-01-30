@@ -103,49 +103,49 @@ NaiveBeckermannLabahnModular: with
   muladdmod ==> QSMULADDMOD64_-32$Lisp
   mulmod ==> QSMULMOD32$Lisp
 
-  vector__shift: PA -> Void
+  vector_shift: PA -> Void
 
-  mul__by__binomial__pointwise : (PA, K, PA, Integer) -> Void
+  mul_by_binomial_pointwise : (PA, K, PA, Integer) -> Void
 
   naiveBeckermannLabahn(vp : VUP, vn : Vector Integer, _
                         sigma : NonNegativeInteger, prime : Integer) ==
       naiveBeckermannLabahn1(vp, vn, sigma, prime, _
                              x +-> 0,
-                             (x, pt, p) +-> vector__shift(x),
-                             (x, pt, p) +-> vector__shift(x))
+                             (x, pt, p) +-> vector_shift(x),
+                             (x, pt, p) +-> vector_shift(x))
 
   naiveBeckermannLabahn(vp : VPA, vn : Vector Integer, _
                         sigma : NonNegativeInteger, prime : Integer) ==
       naiveBeckermannLabahn1(vp, vn, sigma, prime, _
                              x +-> 0,
-                             (x, pt, p) +-> vector__shift(x),
-                             (x, pt, p) +-> vector__shift(x))
+                             (x, pt, p) +-> vector_shift(x),
+                             (x, pt, p) +-> vector_shift(x))
 
   naiveBeckermannLabahnMultipoint(vp : VUP, vn : Vector Integer, pts : PA, _
                                   prime : Integer) ==
       #pts > prime =>
           error "naiveBeckermannLabahnMultipoint: number of points > prime"
       naiveBeckermannLabahn1(vp, vn, #pts, prime, _
-                             x +-> sub__SI(prime, pts(x))$Lisp,
+                             x +-> sub_SI(prime, pts(x))$Lisp,
                              (x, pt, p) +-> _
-                                mul__by__binomial__pointwise(x, pt, pts, p), _
-                             mul__by__binomial)
+                                mul_by_binomial_pointwise(x, pt, pts, p), _
+                             mul_by_binomial)
 
   naiveBeckermannLabahnMultipoint(vp : VPA, vn : Vector Integer, pts : PA, _
                                   prime : Integer) ==
       #pts > prime =>
           error "naiveBeckermannLabahnMultipoint: number of points > prime"
       naiveBeckermannLabahn1(vp, vn, #pts, prime, _
-                             x +-> sub__SI(prime, pts(x))$Lisp,
+                             x +-> sub_SI(prime, pts(x))$Lisp,
                              (x, pt, p) +-> _
-                                mul__by__binomial__pointwise(x, pt, pts, p), _
-                             mul__by__binomial)
+                                mul_by_binomial_pointwise(x, pt, pts, p), _
+                             mul_by_binomial)
 
   naiveBeckermannLabahn1(vp : VUP, vn : Vector Integer, _
                          sigma : NonNegativeInteger, prime : Integer, _
                          pts : Integer-> K, _
-                         up__residual : (PA, K, Integer) -> Void, _
-                         up__poly : (PA, K, Integer) -> Void) : List Any ==
+                         up_residual : (PA, K, Integer) -> Void, _
+                         up_poly : (PA, K, Integer) -> Void) : List Any ==
     import PA
     k : NonNegativeInteger
     m : NonNegativeInteger
@@ -160,14 +160,14 @@ NaiveBeckermannLabahnModular: with
             if l < sigma then
                 vk(l) := leadingCoefficient(p)
             p := reductum p
-    naiveBeckermannLabahn1(vpa, vn, sigma, prime, pts, up__residual, _
-                           up__poly)
+    naiveBeckermannLabahn1(vpa, vn, sigma, prime, pts, up_residual, _
+                           up_poly)
 
   naiveBeckermannLabahn1(vpa : VPA, vn : Vector Integer, _
                          sigma : NonNegativeInteger, prime : Integer, _
                          pts : Integer-> K, _
-                         up__residual : (PA, K, Integer) -> Void, _
-                         up__poly : (PA, K, Integer) -> Void) : List Any ==
+                         up_residual : (PA, K, Integer) -> Void, _
+                         up_poly : (PA, K, Integer) -> Void) : List Any ==
     k : NonNegativeInteger
     m : NonNegativeInteger
     (m := #vpa) ~= #vn =>
@@ -184,13 +184,13 @@ NaiveBeckermannLabahnModular: with
         vk(m2) := 1
         m2 := m2 + vn(k) + 1
     vd : Vector Integer := vector([vn(k) for k in 1..m])
-    naiveBeckermannLabahn0(mp, vpa, vd, sigma, prime, pts, up__residual, _
-                           up__poly)
+    naiveBeckermannLabahn0(mp, vpa, vd, sigma, prime, pts, up_residual, _
+                           up_poly)
     [coerce(mp)$AnyFunctions1(VPA), _
      coerce(vpa)$AnyFunctions1(VPA), _
      coerce(vd)$AnyFunctions1(Vector Integer)]
 
-  vector__shift(v : PA): Void ==
+  vector_shift(v : PA): Void ==
     n := #v
     i : SingleInteger := (n - 1)::SingleInteger
     while i > 0 repeat
@@ -198,18 +198,18 @@ NaiveBeckermannLabahnModular: with
         i := i - 1
     v(0) := 0
 
-  mul__by__binomial__pointwise(v : PA, pt : K, pts : PA,_
+  mul_by_binomial_pointwise(v : PA, pt : K, pts : PA,_
        p : Integer) : Void ==
     n := #v
     for i in 0..(n - 1) repeat
-        pp := addmod__SI(pts(i), pt, p)$Lisp
+        pp := addmod_SI(pts(i), pt, p)$Lisp
         v(i) := mulmod(v(i), pp, p)
 
   naiveBeckermannLabahn0(mp : VPA, vp : VPA, vd : Vector Integer,_
                        sigma : NonNegativeInteger, p : Integer,
                        pts : Integer-> K, _
-                       up__residual : (PA, K, Integer) -> Void, _
-                       up__poly : (PA, K, Integer) -> Void):Void ==
+                       up_residual : (PA, K, Integer) -> Void, _
+                       up_poly : (PA, K, Integer) -> Void):Void ==
     m := #vd
     vc := new(m, 0)$(Vector K)
     maxd : Integer
@@ -233,14 +233,14 @@ NaiveBeckermannLabahnModular: with
         for k in 1..m repeat
             if vc(k) ~= 0 and vd(k) >= 0 and k ~= pi then
                 vckinv : Integer := mulmod(vcinv, vc(k), p)
-                vector__add__mul(vp(k), vp(pi), l, s1, vckinv, p)
-                vector__add__mul(qelt(mp, k), qelt(mp, pi), 0, m1, vckinv, p)
+                vector_add_mul(vp(k), vp(pi), l, s1, vckinv, p)
+                vector_add_mul(qelt(mp, k), qelt(mp, pi), 0, m1, vckinv, p)
         vd(pi) := vd(pi) - 1
         if vd(pi) >= 0 then
-            up__residual(vp(pi), pt, p)
-            up__poly(qelt(mp, pi), pt, p)
+            up_residual(vp(pi), pt, p)
+            up_poly(qelt(mp, pi), pt, p)
 
-  critical__index(m : MPA, i : Integer, d : Integer, _
+  critical_index(m : MPA, i : Integer, d : Integer, _
                   vn : Vector Integer) : Integer ==
       nc := #vn
       for j in 1..nc repeat
@@ -250,44 +250,44 @@ NaiveBeckermannLabahnModular: with
           pa(nj) ~= 0 => return j
       error "Incorrect defect"
 
-  swap__rows(m : MPA, i : Integer, j : Integer) : Void ==
+  swap_rows(m : MPA, i : Integer, j : Integer) : Void ==
       i = j => "nothing"::Void
       mp := m pretend PrimitiveArray PrimitiveArray PA
       tmp := mp(i - 1)
       mp(i - 1) := mp(j - 1)
       mp(j - 1) := tmp
 
-  mult__vector(v : PA, c : K, p : Integer) : Void ==
+  mult_vector(v : PA, c : K, p : Integer) : Void ==
       n := #v
       for i in 0..(n - 1) repeat
           v(i) := mulmod(c, v(i), p)
 
-  mult__row(r : PrimitiveArray PA, c : K, p : Integer) : Void ==
+  mult_row(r : PrimitiveArray PA, c : K, p : Integer) : Void ==
       m := #r
-      for i in 0..(m - 1) repeat mult__vector(r(i), c, p)
+      for i in 0..(m - 1) repeat mult_vector(r(i), c, p)
 
-  add__vector(v1 : PA, v2 : PA, c : K, k : Integer, p : Integer) : Void ==
+  add_vector(v1 : PA, v2 : PA, c : K, k : Integer, p : Integer) : Void ==
       n := #v1
       for i in k..(n - 1) repeat
           v1(i) := muladdmod(c, v2(i - k), v1(i), p)
 
-  add__row(r1 : PrimitiveArray PA, r2 : PrimitiveArray PA, _
+  add_row(r1 : PrimitiveArray PA, r2 : PrimitiveArray PA, _
            c : K, k : Integer, p : Integer) : Void ==
       m := #r1
-      for i in 0..(m - 1) repeat add__vector(r1(i), r2(i), c, k, p)
+      for i in 0..(m - 1) repeat add_vector(r1(i), r2(i), c, k, p)
 
-  reduce__row__by__row1(rj : PrimitiveArray PA, ri : PrimitiveArray PA, _
+  reduce_row_by_row1(rj : PrimitiveArray PA, ri : PrimitiveArray PA, _
                         ci : Integer, cdeg : Integer, vdiff : Integer, _
                         p : Integer) : Void ==
       rj0 := rj(ci - 1)
       vdiff < 0 =>
-          error "Internal error : vdiff < 0 in reduce__row__by__row1"
+          error "Internal error : vdiff < 0 in reduce_row_by_row1"
       k := vdiff + cdeg
       c := rj0(k)
       c ~= 0 =>
-          add__row(rj, ri, (p - c)::K, vdiff, p)
+          add_row(rj, ri, (p - c)::K, vdiff, p)
 
-  top__reduce__by__row(m : MPA, i : Integer, ci : Integer, _
+  top_reduce_by_row(m : MPA, i : Integer, ci : Integer, _
                   vn : Vector Integer, vd : Vector Integer, _
                   p : Integer) : Void ==
       nr := #vd
@@ -297,11 +297,11 @@ NaiveBeckermannLabahnModular: with
       cdeg := mdeg - vd(i)
       mcoeff := ri(ci - 1)(cdeg)
       minv := invmod(mcoeff, p)::K
-      mult__row(ri, minv, p)
+      mult_row(ri, minv, p)
       for j in (i + 1)..nr repeat
-          reduce__row__by__row1(mp(j - 1), ri, ci, cdeg, vd(i) - vd(j), p)
+          reduce_row_by_row1(mp(j - 1), ri, ci, cdeg, vd(i) - vd(j), p)
 
-  final__reduce(m : MPA, civ : VI, vn : VI, vd : VI, p : Integer) : Void ==
+  final_reduce(m : MPA, civ : VI, vn : VI, vd : VI, p : Integer) : Void ==
       ns := #vd
       mvd := vd(1)
       mp := m pretend PrimitiveArray PrimitiveArray PA
@@ -315,7 +315,7 @@ NaiveBeckermannLabahnModular: with
                   vdi < vdj + d => break
                   ri := mp(i - 1)
                   ci := civ(i)
-                  reduce__row__by__row1(rj, ri, ci, vn(ci) - vdi, d, p)
+                  reduce_row_by_row1(rj, ri, ci, vn(ci) - vdi, d, p)
 
   reduceBasis0(m : MPA, vn : Vector Integer, vd : Vector Integer, _
               p : Integer) : NBR ==
@@ -330,20 +330,20 @@ NaiveBeckermannLabahnModular: with
               cd := vd(j)
               cd > maxd =>
                   maxd := cd
-                  ci := critical__index(m, j, maxd, vn)
+                  ci := critical_index(m, j, maxd, vn)
                   maxj := j
               cd = maxd =>
-                  nci := critical__index(m, j, maxd, vn)
+                  nci := critical_index(m, j, maxd, vn)
                   nci < ci =>
                       ci := nci
                       maxj := j
-          swap__rows(m, i, maxj)
+          swap_rows(m, i, maxj)
           tmp := vd(i)
           vd(i) := vd(maxj)
           vd(maxj) := tmp
           civ(i) := ci
-          top__reduce__by__row(m, i, ci, vn, vd, p)
-      final__reduce(m, civ, vn, vd, p)
+          top_reduce_by_row(m, i, ci, vn, vd, p)
+      final_reduce(m, civ, vn, vd, p)
       [m, vd, civ]
 
   reduceBasis(m : VPA, vn : Vector Integer, vd : Vector Integer, _
@@ -413,35 +413,35 @@ PDR ==> Record(nvars : Integer, offsetdata : VI, _
                coeffdata : PA)
 
 -- part of solver state shared between recursion levels
-PSS ==> Record(degree__bounds : VI, pss__sigma : NonNegativeInteger, _
-               points : PA, pss__qvar : Symbol, pss__qval : Integer, _
-               prime : Integer, pss__kind : Symbol, _
-               oldva : VI, oldciv : VI, pss__m : Integer, sol__cnt : Integer,
+PSS ==> Record(degree_bounds : VI, pss_sigma : NonNegativeInteger, _
+               points : PA, pss_qvar : Symbol, pss_qval : Integer, _
+               prime : Integer, pss_kind : Symbol, _
+               oldva : VI, oldciv : VI, pss_m : Integer, sol_cnt : Integer,
                eval1coeffbuf : PA, _
                eval1expbuf : SortedExponentVector)
 
 GEN ==> (List(U32Vector), Integer, Integer) -> Vector(U32Vector)
 
 InnerModularHermitePade: with
-    do__modular__solve : (VPA, Vector Integer, NonNegativeInteger, _
-                          PA, Integer, Symbol) -> Union(NBR, "no__solution")
+    do_modular_solve : (VPA, Vector Integer, NonNegativeInteger, _
+                          PA, Integer, Symbol) -> Union(NBR, "no_solution")
 
-    do__poly__modular : (List(Symbol), List(PMP), PSS, GEN) _
-                 -> Union(PBR, "failed", "no__solution")
+    do_poly_modular : (List(Symbol), List(PMP), PSS, GEN) _
+                 -> Union(PBR, "failed", "no_solution")
 
-    do__poly__integer : (List(Symbol), List(PMP), Vector(Integer), _
+    do_poly_integer : (List(Symbol), List(PMP), Vector(Integer), _
                          NonNegativeInteger, PA, Symbol, Symbol, GEN) _
-                 -> Union(PBRI, "no__solution")
+                 -> Union(PBRI, "no_solution")
 
-    merge__exponents : (Integer, VI, SortedExponentVector, VI, _
+    merge_exponents : (Integer, VI, SortedExponentVector, VI, _
                         SortedExponentVector) -> List List Integer
 
     merge2 : (Integer, List Integer, List Integer, VI, _
               SortedExponentVector, VI, SortedExponentVector) _
               -> Record(offsetdata : VI, expdata : SortedExponentVector)
 
-    eval__and__solve : (Integer,  List(Symbol), List(PMP), _
-                     PSS, GEN) -> Union(PBR, "failed", "no__solution")
+    eval_and_solve : (Integer,  List(Symbol), List(PMP), _
+                     PSS, GEN) -> Union(PBR, "failed", "no_solution")
 
     modpeval : (MP, List Symbol, List Integer, Integer) -> Integer
 
@@ -477,11 +477,11 @@ InnerModularHermitePade: with
             if i >= n then
                 nn := 2*n
                 ncoeffs := new(nn, 0)$PA
-                copy__first(ncoeffs, coeffs, n)
+                copy_first(ncoeffs, coeffs, n)
                 coeffs := ncoeffs
                 pss.eval1coeffbuf := coeffs
                 nexps := new(nn, 0)$SortedExponentVector
-                copy__first(nexps pretend PA, exps pretend PA, n)
+                copy_first(nexps pretend PA, exps pretend PA, n)
                 exps := nexps
                 pss.eval1expbuf := exps
                 n := nn
@@ -611,7 +611,7 @@ InnerModularHermitePade: with
             resl := cons(ress, resl)
         reverse!(resl)
 
-    do__modular__solve0(gv : VPA, ve : Vector Integer, _
+    do_modular_solve0(gv : VPA, ve : Vector Integer, _
                        sigma : NonNegativeInteger, _
                        pts : PA, _
                        prime : Integer, kind : Symbol) : List Any ==
@@ -621,11 +621,11 @@ InnerModularHermitePade: with
             naiveBeckermannLabahnMultipoint(gv, ve, pts, prime)$MS
         error "kind must be diffHP, qdiffHP, shiftHP, qshiftHP or qmixed"
 
-    do__modular__solve(gv : VPA, ve : Vector Integer, _
+    do_modular_solve(gv : VPA, ve : Vector Integer, _
                        sigma : NonNegativeInteger, _
                        pts : PA, _
                        prime : Integer, kind : Symbol) _
-                      : Union(NBR, "no__solution") ==
+                      : Union(NBR, "no_solution") ==
         m0 := #ve
         m1 := 0
         for i in 1..m0 repeat
@@ -643,14 +643,14 @@ InnerModularHermitePade: with
         else
             ngv := gv
             nve := ve
-        blr := do__modular__solve0(ngv, nve, sigma, pts, prime, kind)
+        blr := do_modular_solve0(ngv, nve, sigma, pts, prime, kind)
         dva := blr(3)
         va := retract(dva)$AnyFunctions1(Vector Integer)
         ok := false
         m2 := #va
         for i in 1..m2 repeat
             ok := ok or va(i) >= 0
-        not(ok) => return "no__solution"
+        not(ok) => return "no_solution"
         dbm := blr(1)
         bm := retract(dbm)$AnyFunctions1(Vector PA)
         res := reduceBasis(bm, nve, va, prime)$MS
@@ -676,13 +676,13 @@ InnerModularHermitePade: with
                         j := j + 1
         res
 
-    compute__blocks(offsets : VI, rowlen : Integer, nsols : Integer) : VI ==
-        block__offsets := new(nsols pretend NonNegativeInteger, 0)$VI
+    compute_blocks(offsets : VI, rowlen : Integer, nsols : Integer) : VI ==
+        block_offsets := new(nsols pretend NonNegativeInteger, 0)$VI
         for i in 1..nsols repeat
-            block__offsets(i) := offsets((i - 1)*rowlen + 1)
-        block__offsets
+            block_offsets(i) := offsets((i - 1)*rowlen + 1)
+        block_offsets
 
-    merge__exponents(nvars : Integer, offsets : VI, _
+    merge_exponents(nvars : Integer, offsets : VI, _
                      exps : SortedExponentVector, noffsets : VI, _
                      nexps : SortedExponentVector) : _
               List List Integer ==
@@ -809,57 +809,57 @@ InnerModularHermitePade: with
             noffsets(i) := n1
         [noffsets, nexps]
 
-    check__defects(va : VI, civ : VI, pss : PSS) : _
-         Union("OK", "failed", "all__bad") ==
+    check_defects(va : VI, civ : VI, pss : PSS) : _
+         Union("OK", "failed", "all_bad") ==
         -- Check for bad reduction
-        nsols := pss.sol__cnt
-        is__bad : Boolean := #va > nsols
-        all__bad : Boolean := #va < nsols
+        nsols := pss.sol_cnt
+        is_bad : Boolean := #va > nsols
+        all_bad : Boolean := #va < nsols
         if #va = nsols then
             ova  := pss.oldva
             ociv := pss.oldciv
             for i in 1..nsols repeat
                 va(i) < ova(i) =>
-                    all__bad := true
+                    all_bad := true
                     break
                 va(i) > ova(i) =>
-                    is__bad := true
+                    is_bad := true
                     break
                 civ(i) < ociv(i) =>
-                    all__bad := true
+                    all_bad := true
                     break
                 civ(i) > ociv(i) =>
-                    is__bad := true
+                    is_bad := true
                     break
-        is__bad => return "failed"
-        all__bad => return "all__bad"
+        is_bad => return "failed"
+        all_bad => return "all_bad"
         return "OK"
 
-    eval__and__solve(pt : Integer, vars : List(Symbol), gvl : List(PMP),
+    eval_and_solve(pt : Integer, vars : List(Symbol), gvl : List(PMP),
                      pss : PSS, gen: GEN) _
-                 : Union(PBR, "failed", "no__solution") ==
+                 : Union(PBR, "failed", "no_solution") ==
         p := pss.prime
         nvars := #vars
         nvars = 1 =>
             ngv10p := eval1s(gvl, pt, first vars, pss)
             ngv10p case "failed" => return "failed"
             ngv10 := ngv10p::List(PA)
-            ngv2 := gen(ngv10, p, pss.pss__qval)
-            ve := pss.degree__bounds
-            blr := do__modular__solve(ngv2, ve, pss.pss__sigma,
-                                      pss.points, p, pss.pss__kind)
-            blr case "no__solution" => return "no__solution"
+            ngv2 := gen(ngv10, p, pss.pss_qval)
+            ve := pss.degree_bounds
+            blr := do_modular_solve(ngv2, ve, pss.pss_sigma,
+                                      pss.points, p, pss.pss_kind)
+            blr case "no_solution" => return "no_solution"
             rblr := blr::NBR
             bm := rblr.basis
             va := rblr.defects
             civ := rblr.cinds
             nsols := #va
-            r__cnt : Integer := 0
+            r_cnt : Integer := 0
             m := #ve
-            for j in 1..m repeat r__cnt := r__cnt + ve(j) + 1
-            r__cnt := r__cnt*nsols
-            cv := new(r__cnt :: NonNegativeInteger, 0)$PA
-            ev := new(r__cnt :: NonNegativeInteger, 0)$SortedExponentVector
+            for j in 1..m repeat r_cnt := r_cnt + ve(j) + 1
+            r_cnt := r_cnt*nsols
+            cv := new(r_cnt :: NonNegativeInteger, 0)$PA
+            ev := new(r_cnt :: NonNegativeInteger, 0)$SortedExponentVector
             ov := new(nsols*m, 0)$VI
             k : Integer := 0
             k1 : Integer := 1
@@ -884,24 +884,24 @@ InnerModularHermitePade: with
         ngv0p := eval2s(gvl, pt, first vars, p)
         ngv0p case "failed" => return "failed"
         ngvl := ngv0p::List(PMP)
-        return do__poly__modular(rest vars, ngvl, pss, gen)
+        return do_poly_modular(rest vars, ngvl, pss, gen)
 
-    do__poly__modular(vars : List(Symbol), gvl : List(PMP), pss : PSS,
-                      gen: GEN) : Union(PBR, "failed", "no__solution") ==
+    do_poly_modular(vars : List(Symbol), gvl : List(PMP), pss : PSS,
+                      gen: GEN) : Union(PBR, "failed", "no_solution") ==
         lpt : List Integer := []
-        bad__cnt : Integer := 0
-        good__cnt : Integer := 0
+        bad_cnt : Integer := 0
+        good_cnt : Integer := 0
         rstate : VMR
         exps := empty()$SortedExponentVector
         offsets := empty()$VI
-        all__bad := true
-        update__points :=
-             pss.pss__kind = 'qshiftHP and pss.pss__qvar = first vars
-        update__qval :=
-             (pss.pss__kind = 'qshiftHP or pss.pss__kind = 'qdiffHP or _
-              pss.pss__kind = 'qmixed) and pss.pss__qvar = first vars
+        all_bad := true
+        update_points :=
+             pss.pss_kind = 'qshiftHP and pss.pss_qvar = first vars
+        update_qval :=
+             (pss.pss_kind = 'qshiftHP or pss.pss_kind = 'qdiffHP or _
+              pss.pss_kind = 'qmixed) and pss.pss_qvar = first vars
         p := pss.prime
-        m := pss.pss__m
+        m := pss.pss_m
         nvars := #vars
         nsols : Integer := m + 1
         repeat
@@ -917,21 +917,21 @@ InnerModularHermitePade: with
                 print(npt::OutputForm)
             not(ok) => error "Run out of evaluation points"
 
-            if update__points then
+            if update_points then
                 pts := pss.points
                 qn : Integer := 1
-                for k in 0..(pss.pss__sigma - 1) repeat
+                for k in 0..(pss.pss_sigma - 1) repeat
                     pts(k) := qn
                     qn := positiveRemainder(pt*qn, p)
-            if update__qval then
-                pss.pss__qval := pt
+            if update_qval then
+                pss.pss_qval := pt
 
             -- eval and solve reduced system
-            pprp := eval__and__solve(pt, vars, gvl, pss, gen)
-            pprp case "no__solution" => return "no__solution"
+            pprp := eval_and_solve(pt, vars, gvl, pss, gen)
+            pprp case "no_solution" => return "no_solution"
             pprp case "failed" =>
-                bad__cnt := bad__cnt + 1
-                bad__cnt > good__cnt + 2 => return "failed"
+                bad_cnt := bad_cnt + 1
+                bad_cnt > good_cnt + 2 => return "failed"
                 "iterate"
             ppr := pprp::PBR
 
@@ -941,27 +941,27 @@ InnerModularHermitePade: with
             nexps := ppr.expdata
             noffsets := ppr.offsetdata
             coeffs := ppr.coeffdata
-            chk__ress := check__defects(va, civ, pss)
-            chk__ress case "failed" =>
-                bad__cnt := bad__cnt + 1
-                bad__cnt > good__cnt + 2 => return "failed"
+            chk_ress := check_defects(va, civ, pss)
+            chk_ress case "failed" =>
+                bad_cnt := bad_cnt + 1
+                bad_cnt > good_cnt + 2 => return "failed"
                 "iterate"
-            if chk__ress case "all__bad" then
-                all__bad := true
-            if all__bad then
+            if chk_ress case "all_bad" then
+                all_bad := true
+            if all_bad then
                 nsols := #va
-                pss.sol__cnt := nsols
+                pss.sol_cnt := nsols
                 pss.oldva := va
                 pss.oldciv := civ
                 exps := nexps
                 offsets := noffsets
                 rstate := empty(#coeffs, p)$VMR
-            all__bad := false
+            all_bad := false
 
-            good__cnt := good__cnt + 1
+            good_cnt := good_cnt + 1
 
             -- merge exponents
-            dl := merge__exponents(nvars, offsets, exps, noffsets, nexps)
+            dl := merge_exponents(nvars, offsets, exps, noffsets, nexps)
             odl := dl(1)
             ndl := dl(2)
             if odl ~= [] then
@@ -969,8 +969,8 @@ InnerModularHermitePade: with
                               noffsets, nexps)
                 offsets := oer.offsetdata
                 exps := oer.expdata
-                -- add__slots is wrong in case of change of leading exponent
-                -- add__slots(odl, rstate)
+                -- add_slots is wrong in case of change of leading exponent
+                -- add_slots(odl, rstate)
                 ncc := #exps quo nvars
                 rstate := empty(ncc::NonNegativeInteger, p)$VMR
 
@@ -994,7 +994,7 @@ InnerModularHermitePade: with
                 coeffs := ncoeffs
 
             -- normalize
-            block__offsets := compute__blocks(offsets, m, nsols)
+            block_offsets := compute_blocks(offsets, m, nsols)
             n1 := #coeffs
             ok := true
             for i in 1..nsols repeat
@@ -1013,17 +1013,17 @@ InnerModularHermitePade: with
                     ok := false
                     break
                 invc := invmod(coeffs(nofi), p)
-                lo := block__offsets(i)
+                lo := block_offsets(i)
                 hi :=
-                    i < nsols => block__offsets(i + 1)
+                    i < nsols => block_offsets(i + 1)
                     n1
                 for j in lo..(hi - 1) repeat
                     coeffs(j) := Qmul(coeffs(j), invc, p)
             not(ok) => "iterate"
-            chinese__update(coeffs, pt, rstate)$VMR
+            chinese_update(coeffs, pt, rstate)$VMR
 
             -- try reconstruction
-            pp := reconstruct(rstate, nvars, block__offsets, _
+            pp := reconstruct(rstate, nvars, block_offsets, _
                               offsets, exps)$VMR
             pp case "failed" => "iterate"
             -- if succesful return
@@ -1031,15 +1031,15 @@ InnerModularHermitePade: with
             return [va, civ, m, rr.offsetdata, _
                     rr.expdata, rr.coeffdata]
 
-    do__poly__integer0(vars : List(Symbol), gvl : List(PMP), pss : PSS,
-                       gen: GEN)  : Union(PBRI, "no__solution") ==
+    do_poly_integer0(vars : List(Symbol), gvl : List(PMP), pss : PSS,
+                       gen: GEN)  : Union(PBRI, "no_solution") ==
         lp : List Integer := []
         rstate : VIR
         exps := empty()$SortedExponentVector
         offsets := empty()$VI
-        all__bad := true
+        all_bad := true
         p : Integer := 16
-        m := pss.pss__m
+        m := pss.pss_m
         nvars := #vars
         nsols : Integer := m + 1
         repeat
@@ -1060,9 +1060,9 @@ InnerModularHermitePade: with
             ngv0p := eval3s(gvl, p)
             ngv0p case "failed" => "iterate"
             ngvl := ngv0p::List(PMP)
-            pprp := do__poly__modular(vars, ngvl, pss, gen)
+            pprp := do_poly_modular(vars, ngvl, pss, gen)
 
-            pprp case "no__solution" => return "no__solution"
+            pprp case "no_solution" => return "no_solution"
             pprp case "failed" => "iterate"
             ppr := pprp::PBR
 
@@ -1072,22 +1072,22 @@ InnerModularHermitePade: with
             nexps := ppr.expdata
             noffsets := ppr.offsetdata
             coeffs := ppr.coeffdata
-            chk__ress := check__defects(va, civ, pss)
-            chk__ress case "failed" => "iterate"
-            if chk__ress case "all__bad" then
-                all__bad := true
-            if all__bad then
+            chk_ress := check_defects(va, civ, pss)
+            chk_ress case "failed" => "iterate"
+            if chk_ress case "all_bad" then
+                all_bad := true
+            if all_bad then
                 nsols := #va
-                pss.sol__cnt := nsols
+                pss.sol_cnt := nsols
                 pss.oldva := va
                 pss.oldciv := civ
                 exps := nexps
                 offsets := noffsets
                 rstate := empty(#coeffs)$VIR
-            all__bad := false
+            all_bad := false
 
             -- merge exponents
-            dl := merge__exponents(nvars + 1, offsets, exps, noffsets, nexps)
+            dl := merge_exponents(nvars + 1, offsets, exps, noffsets, nexps)
             odl := dl(1)
             ndl := dl(2)
             if odl ~= [] then
@@ -1095,8 +1095,8 @@ InnerModularHermitePade: with
                               noffsets, nexps)
                 offsets := oer.offsetdata
                 exps := oer.expdata
-                -- add__slots is wrong in case of change of leading exponent
-                -- add__slots(odl, rstate)
+                -- add_slots is wrong in case of change of leading exponent
+                -- add_slots(odl, rstate)
                 ncc := #exps quo (nvars + 1)
                 -- print("resetting rstate"::OutputForm)
                 rstate := empty(ncc::NonNegativeInteger)$VIR
@@ -1121,7 +1121,7 @@ InnerModularHermitePade: with
                 coeffs := ncoeffs
 
             -- normalize
-            block__offsets := compute__blocks(offsets, m, nsols)
+            block_offsets := compute_blocks(offsets, m, nsols)
             n1 := #coeffs
             ok := true
             for i in 1..nsols repeat
@@ -1140,31 +1140,31 @@ InnerModularHermitePade: with
                     ok := false
                     break
                 invc := invmod(coeffs(nofi), p)
-                lo := block__offsets(i)
+                lo := block_offsets(i)
                 hi :=
-                    i < nsols => block__offsets(i + 1)
+                    i < nsols => block_offsets(i + 1)
                     n1
                 for j in lo..(hi - 1) repeat
                     coeffs(j) := Qmul(coeffs(j), invc, p)
             not(ok) => "iterate"
-            chinese__update(coeffs, p, rstate)$VIR
+            chinese_update(coeffs, p, rstate)$VIR
 
             -- try reconstruction
-            pp := reconstruct(rstate, block__offsets)$VIR
+            pp := reconstruct(rstate, block_offsets)$VIR
             pp case "failed" => "iterate"
             -- if succesful return
             return [va, civ, m, offsets, _
                     exps, pp::PAI]
 
-    do__poly__integer(vars : List Symbol, gvl : List(PMP),
+    do_poly_integer(vars : List Symbol, gvl : List(PMP),
                       ve : Vector Integer,
                       sigma : NonNegativeInteger, pts : PA, kind : Symbol,
-                      qvar : Symbol, gen: GEN) : Union(PBRI, "no__solution") ==
+                      qvar : Symbol, gen: GEN) : Union(PBRI, "no_solution") ==
         pss := [ve, sigma, pts, qvar, 0, 0, kind, empty()$VI, _
                 empty()$VI, #ve, #ve + 1, _
                 new(10, 0)$PA,
                 new(10, 0)$SortedExponentVector]@PSS
-        return do__poly__integer0(vars, gvl, pss, gen)
+        return do_poly_integer0(vars, gvl, pss, gen)
 @
 
 \section{Specialized modular solvers}
@@ -1210,57 +1210,57 @@ MPA ==> TwoDimensionalArray PA
 NBR ==> Record(basis : MPA, defects : VI, cinds : VI)
 
 GEN ==> (List(U32Vector), Integer, Integer) -> Vector(U32Vector)
-CHKR ==> Union("good", "reject", "no__solution")
+CHKR ==> Union("good", "reject", "no_solution")
 SUP ==> SparseUnivariatePolynomial
 ModularHermitePade(): with
-   HP__solve__I : (List(List(Fraction(Integer))), List Integer, Symbol, NNI, _
+   HP_solve_I : (List(List(Fraction(Integer))), List Integer, Symbol, NNI, _
                    GEN, (List SUP Integer) -> CHKR) -> Union(MPI, Boolean)
-     ++ implements  HP__solve over integers.
+     ++ implements  HP_solve over integers.
 
-   HP__solve__A : (List(List(AlgebraicNumber)), List Integer, Symbol, NNI,
+   HP_solve_A : (List(List(AlgebraicNumber)), List Integer, Symbol, NNI,
                    GEN, (List SUP AlgebraicNumber) -> CHKR) _
                        -> Union(MPAN, Boolean)
      ++ Fake solver over algebraic numbers.
 
-   HP__solve__P : (List(List(Fraction(MP))), List Integer, Symbol, Symbol,
+   HP_solve_P : (List(List(Fraction(MP))), List Integer, Symbol, Symbol,
                    NNI, GEN, (List SUP MP) -> CHKR) _
                        -> Union(MPPI, Boolean)
-     ++ implements  HP__solve over integer polynomials.
+     ++ implements  HP_solve over integer polynomials.
 
-   HP__solve__PA : (List(List(Fraction(Polynomial(AlgebraicNumber)))),
+   HP_solve_PA : (List(List(Fraction(Polynomial(AlgebraicNumber)))),
                     List Integer, Symbol, Symbol, NNI, GEN,
                     (List SUP Polynomial(AlgebraicNumber)) -> CHKR) _
                        -> Union(MPPA, Boolean)
      ++ Fake solver over polynomials having algebraic coefficients.
 
-   HP__solve__M : (List(List(Integer)), List Integer, Symbol, Integer, NNI,
+   HP_solve_M : (List(List(Integer)), List Integer, Symbol, Integer, NNI,
                    GEN, (List SUP Integer) -> CHKR) _
                        -> Union(MPI, Boolean)
-     ++ implements  HP__solve over $Z_p$ with machine-sized $p$.
+     ++ implements  HP_solve over $Z_p$ with machine-sized $p$.
 
-   check__sol1a : (VPA, List(PA), GEN, Integer, Integer, Integer) -> PA
+   check_sol1a : (VPA, List(PA), GEN, Integer, Integer, Integer) -> PA
      ++ one round of modular Monte Carlo check for solutions.
 
-   VSUPI__to__VPA : (Vector SUP(Integer), Integer) -> VPA
+   VSUPI_to_VPA : (Vector SUP(Integer), Integer) -> VPA
      ++ evaluation routine
 
-   VSUPPI__to__VPA : (Vector SUP(MP), List Symbol, List Integer, Integer) _
+   VSUPPI_to_VPA : (Vector SUP(MP), List Symbol, List Integer, Integer) _
                    -> VPA
      ++ evaluation routine
 
-   LLFI__to__LPA : (List(List(Fraction(Integer))), Integer, Integer)
+   LLFI_to_LPA : (List(List(Fraction(Integer))), Integer, Integer)
                  -> Union(List(PA), "failed")
      ++ evaluation routine
 
-   LLFPI__to__LPA : (List(List(Fraction(MP))), Integer, List Symbol,
+   LLFPI_to_LPA : (List(List(Fraction(MP))), Integer, List Symbol,
                      List Integer, Integer) -> Union(List(PA), "failed")
      ++ evaluation routine
 
-   get__variables : (List(List(Fraction(MP))), Symbol, Symbol) -> List Symbol
+   get_variables : (List(List(Fraction(MP))), Symbol, Symbol) -> List Symbol
 
-   unpack__poly : (List Symbol, SortedExponentVector, PAI, Integer, _
+   unpack_poly : (List Symbol, SortedExponentVector, PAI, Integer, _
                    Integer) -> SparseUnivariatePolynomial(MP)
-     ++ unpack__poly(vars, exps, coeffs, lo, hi) converts polynomial
+     ++ unpack_poly(vars, exps, coeffs, lo, hi) converts polynomial
      ++ from packed to sparse representation.  Coefficients of
      ++ packed polynomial are stored in coeffs(l0) up to coeffs(hi)
      ++ Exponents are stored in corresponding elements of exps.
@@ -1271,7 +1271,7 @@ ModularHermitePade(): with
    import OutputForm
    Qmul ==> QSMULMOD32$Lisp
 
-   SUPI__to__PA(poli : SparseUnivariatePolynomial(Integer), _
+   SUPI_to_PA(poli : SparseUnivariatePolynomial(Integer), _
                 p : Integer) : PA ==
        n := degree(poli)
        pa := new(n + 1, 0)$PA
@@ -1282,15 +1282,15 @@ ModularHermitePade(): with
            poli := reductum poli
        pa
 
-   VSUPI__to__VPA(vps : Vector SparseUnivariatePolynomial(Integer), _
+   VSUPI_to_VPA(vps : Vector SparseUnivariatePolynomial(Integer), _
                   p : Integer) : VPA ==
        m := #vps
        vpa := new(m, empty()$PA)$VPA
        for i in 1..m repeat
-           vpa(i) := SUPI__to__PA(vps(i), p)
+           vpa(i) := SUPI_to_PA(vps(i), p)
        vpa
 
-   SUPPI__to__PA(poli : SUP(MP), vars : List Symbol, _
+   SUPPI_to_PA(poli : SUP(MP), vars : List Symbol, _
                  pts : List Integer, p : Integer) : PA ==
        n := degree(poli)
        pa := new(n + 1, 0)$PA
@@ -1302,15 +1302,15 @@ ModularHermitePade(): with
            poli := reductum poli
        pa
 
-   VSUPPI__to__VPA(vps : Vector SUP(MP), vars : List Symbol, _
+   VSUPPI_to_VPA(vps : Vector SUP(MP), vars : List Symbol, _
                    pts : List Integer, p : Integer) : VPA ==
        m := #vps
        vpa := new(m, empty()$PA)$VPA
        for i in 1..m repeat
-           vpa(i) := SUPPI__to__PA(vps(i), vars, pts, p)
+           vpa(i) := SUPPI_to_PA(vps(i), vars, pts, p)
        vpa
 
-   LLFI__to__LPA(llfi : List(List(Fraction(Integer))), n : Integer, _
+   LLFI_to_LPA(llfi : List(List(Fraction(Integer))), n : Integer, _
                prime : Integer) : Union(List(PA), "failed") ==
        resl := empty()$List(PA)
        for lfi in llfi repeat
@@ -1328,7 +1328,7 @@ ModularHermitePade(): with
            resl := cons(pa, resl)
        reverse!(resl)
 
-   LLFPI__to__LPA(llfi : List(List(Fraction(MP))), n : Integer, _
+   LLFPI_to_LPA(llfi : List(List(Fraction(MP))), n : Integer, _
                vars : List Symbol, pts : List Integer, _
                prime : Integer) : Union(List(PA), "failed") ==
        resl := empty()$List(PA)
@@ -1367,31 +1367,31 @@ ModularHermitePade(): with
            vpa(i) := vpp::PA
        vpa
 
-   intpoly__to__PFI(p : SparseUnivariatePolynomial(Integer)) : PFI ==
+   intpoly_to_PFI(p : SparseUnivariatePolynomial(Integer)) : PFI ==
        map((x : Integer) : Fraction(Integer) +-> x::Fraction(Integer), _
            p)$SparseUnivariatePolynomialFunctions2(Integer, Fraction(Integer))
 
-   check__sol1a(nres : VPA, _
+   check_sol1a(nres : VPA, _
                 gv0 : List(PA), gen : GEN, _
                 sigma : Integer, qval : Integer, p : Integer) : PA ==
        m := #nres
        gvp := gen(gv0, p, qval)
        res := new(sigma pretend NonNegativeInteger, 0)$PA
        for i in 1..m repeat
-           truncated__mul__add(gvp(i), nres(i), res, sigma - 1, _
+           truncated_mul_add(gvp(i), nres(i), res, sigma - 1, _
                            p)$U32VectorPolynomialOperations
        res
 
    RR ==> Record(numers : PrimitiveArray Integer, _
                  denoms : PrimitiveArray Integer)
 
-   HP__solve__I(list : List(List(Fraction(Integer))), degs: List Integer, kind: Symbol, _
+   HP_solve_I(list : List(List(Fraction(Integer))), degs: List Integer, kind: Symbol, _
                 sigma: NNI, gen: GEN, check : (List SUP Integer) -> CHKR) _
                : Union(MPI, Boolean) ==
        lp := []@List(Integer)
        kind = 'qdiffHP or kind = 'qshiftHP => true
        m := #degs
-       degs__sum := (reduce(_+, degs) + m) pretend NNI
+       degs_sum := (reduce(_+, degs) + m) pretend NNI
        ve: Vector Integer := vector [d::Integer for d in degs]
        pts :=
            kind = 'diffHP => empty()$PA
@@ -1411,7 +1411,7 @@ ModularHermitePade(): with
        nsols : Integer := m + 1
        oldva : Vector(Integer)
        oldciv : Vector(Integer)
-       empty__offsets : Boolean := true
+       empty_offsets : Boolean := true
        offsets : VI
        repeat
            ok := false
@@ -1424,45 +1424,45 @@ ModularHermitePade(): with
            not(ok) => error "Run out of primes"
            nprimes := nprimes + 1
            psi := prime::K1
-           gv0p := LLFI__to__LPA(list, 0, psi)
+           gv0p := LLFI_to_LPA(list, 0, psi)
            gv0p case "failed" => "iterate"
            gv0 := gv0p::List(PA)
            gv2 := gen(gv0, prime, 1)
 
-           blr := do__modular__solve(gv2, ve, sigma, pts, prime, _
+           blr := do_modular_solve(gv2, ve, sigma, pts, prime, _
                      kind)$InnerModularHermitePade
-           blr case "no__solution" => return false
+           blr case "no_solution" => return false
            rblr := blr::NBR
            bm := rblr.basis
            va := rblr.defects
            civ := rblr.cinds
            -- Check for bad reduction
            #va > nsols => "iterate"
-           is__bad : Boolean := false
-           all__bad : Boolean := #va < nsols
+           is_bad : Boolean := false
+           all_bad : Boolean := #va < nsols
            if #va = nsols then
                for i in 1..nsols repeat
                    va(i) < oldva(i) =>
-                       all__bad := true
+                       all_bad := true
                        break
                    va(i) > oldva(i) =>
-                       is__bad := true
+                       is_bad := true
                        break
                    civ(i) < oldciv(i) =>
-                       all__bad := true
+                       all_bad := true
                        break
                    civ(i) > oldciv(i) =>
-                       is__bad := true
+                       is_bad := true
                        break
-           is__bad => "iterate"
-           if all__bad then
+           is_bad => "iterate"
+           if all_bad then
                -- (Re-)initialize
                nsols := #va
                oldva := va
                oldciv := civ
-               rstate := empty(nsols*degs__sum)
-               rv := new((nsols::PositiveInteger)*degs__sum, 0)$U32Vector
-               empty__offsets := true
+               rstate := empty(nsols*degs_sum)
+               rv := new((nsols::PositiveInteger)*degs_sum, 0)$U32Vector
+               empty_offsets := true
            k : Integer := 0
            if positiveRemainder(nprimes, 100) = 0 then
                print("number of primes"::OutputForm)
@@ -1474,15 +1474,15 @@ ModularHermitePade(): with
                    for l in 0..mm repeat
                        rv(k) := cp(l)
                        k := k + 1
-           chinese__update(rv, prime, rstate)
+           chinese_update(rv, prime, rstate)
            j : Integer
-           if empty__offsets then
+           if empty_offsets then
                offsets := new(nsols::NNI, 0)$VI
                j := 0
                for i in 1..nsols repeat
                    offsets(i) := j
-                   j := j + degs__sum
-               empty__offsets := false
+                   j := j + degs_sum
+               empty_offsets := false
            pp := reconstruct(rstate, offsets)
            pp case "failed" =>
                "iterate"
@@ -1492,7 +1492,7 @@ ModularHermitePade(): with
                         empty()$Vector(SparseUnivariatePolynomial Integer) _
                        )$Vector(Vector(SparseUnivariatePolynomial Integer))
            ii : Integer := 1
-           sol__ok := true
+           sol_ok := true
            for i in 1..nsols repeat
                resvi := new(m, 0)$Vector(SparseUnivariatePolynomial Integer)
                for j in 1..m repeat
@@ -1503,14 +1503,14 @@ ModularHermitePade(): with
                             )$SparseUnivariatePolynomial(Integer)
                        k := k + 1
                    resvi(j) := s
-               sol__okp := check(entries resvi)
-               sol__okp case "reject" => "iterate"
-               sol__okp case "no__solution" =>
-                   sol__ok := false
+               sol_okp := check(entries resvi)
+               sol_okp case "reject" => "iterate"
+               sol_okp case "no_solution" =>
+                   sol_ok := false
                    break
                resv(ii) := resvi
                ii := ii + 1
-           sol__ok =>
+           sol_ok =>
                mress := new(m, (ii - 1)::NonNegativeInteger, 0)$MPI
                for i in 1..(ii - 1) repeat
                    for l in 1..m repeat
@@ -1518,7 +1518,7 @@ ModularHermitePade(): with
                return mress
        return true
 
-   get__variables2(llpi : List(List(Fraction(MP)))) : List(Symbol) ==
+   get_variables2(llpi : List(List(Fraction(MP)))) : List(Symbol) ==
        res := []@List(Symbol)
        for lpi in llpi repeat
            for p in lpi repeat
@@ -1526,7 +1526,7 @@ ModularHermitePade(): with
                res := setUnion(res, variables(denom(p)))
        res
 
-   unpack__poly(vars : List Symbol, exps : SortedExponentVector, _
+   unpack_poly(vars : List Symbol, exps : SortedExponentVector, _
                 coeffs : PAI, lo : Integer, hi : Integer) _
                : SparseUnivariatePolynomial(MP) ==
        res : SparseUnivariatePolynomial(MP) := 0
@@ -1556,12 +1556,12 @@ ModularHermitePade(): with
            res := res + monomial(term, j::NNI)$SparseUnivariatePolynomial(MP)
        res
 
-   intpoly__to__PFPI(p : SparseUnivariatePolynomial(MP)) : PFPI ==
+   intpoly_to_PFPI(p : SparseUnivariatePolynomial(MP)) : PFPI ==
        map((x : MP) : Fraction(MP) +-> x::Fraction(MP), _
            p)$SparseUnivariatePolynomialFunctions2(MP, Fraction(MP))
 
 
-   PFPI__to__PFI(p : PFPI) : PFI ==
+   PFPI_to_PFI(p : PFPI) : PFI ==
        res : PFI := 0
        while not(zero? p) repeat
            m := degree p
@@ -1571,7 +1571,7 @@ ModularHermitePade(): with
            res := monomial(iq, m)$PFI + res
        res
 
-   PI__to__PPI(p : SparseUnivariatePolynomial Integer) _
+   PI_to_PPI(p : SparseUnivariatePolynomial Integer) _
               : SparseUnivariatePolynomial(MP) ==
        res : SparseUnivariatePolynomial(MP) := 0
        while not(zero? p) repeat
@@ -1582,18 +1582,18 @@ ModularHermitePade(): with
            res := monomial(mq, m)$SparseUnivariatePolynomial(MP) + res
        res
 
-   LPI__to__LPPI(lp : List SUP Integer) : List SUP MP ==
-       [PI__to__PPI(p) for p in lp]
+   LPI_to_LPPI(lp : List SUP Integer) : List SUP MP ==
+       [PI_to_PPI(p) for p in lp]
 
-   trivial__poly__solve(list : List(List(Fraction(MP))), degs : List Integer,
+   trivial_poly_solve(list : List(List(Fraction(MP))), degs : List Integer,
                         kind : Symbol, sigma : NNI, gen: GEN,
                         check : (List SUP MP) -> CHKR) : Union(MPPI, Boolean) ==
         kind = 'qshiftHP => return true
         if kind = 'qdiffHP then kind := 'diffHP
         nlist := [[retract(q)@Fraction(Integer) for q in li] for li in list]
-        pres := HP__solve__I(nlist, degs, kind, sigma, gen,
+        pres := HP_solve_I(nlist, degs, kind, sigma, gen,
                              (x : List(SUP(Integer))) : CHKR
-                                +-> check(LPI__to__LPPI(x)))
+                                +-> check(LPI_to_LPPI(x)))
         pres case Boolean => return pres::Boolean
         resi := pres::MPI
         nr := nrows(resi)
@@ -1601,18 +1601,18 @@ ModularHermitePade(): with
         res := new(nr, nc, 0)$MPPI
         for i in 1..nr repeat
             for j in 1..nc repeat
-                res(i, j) := PI__to__PPI(resi(i, j))
+                res(i, j) := PI_to_PPI(resi(i, j))
         res
 
-   get__variables(list, kind, qvar) ==
-       vars := get__variables2(list)
+   get_variables(list, kind, qvar) ==
+       vars := get_variables2(list)
        if kind = 'qdiffHP or kind = 'qshiftHP or kind = 'qmixed then
            vars :=
                member?(qvar, vars) => vars
                cons(qvar, vars)
        reverse sort(vars)
 
-   HP__solve__P(list, degs, kind, qvar, sigma, gen, check) ==
+   HP_solve_P(list, degs, kind, qvar, sigma, gen, check) ==
        lp := []@List(Integer)
        -- print(sigma::OutputForm)
        m := #degs
@@ -1625,19 +1625,19 @@ ModularHermitePade(): with
                    pts0(i) := i
                pts0
            kind = 'qshiftHP =>  new(sigma, 0)$PA
-       vars := get__variables2(list)
+       vars := get_variables2(list)
        -- print(vars::OutputForm)
        if kind = 'qdiffHP or kind = 'qshiftHP or kind = 'qmixed then
            vars :=
                member?(qvar, vars) => vars
                cons(qvar, vars)
        empty?(vars) =>
-           trivial__poly__solve(list, degs, kind, sigma, gen, check)
+           trivial_poly_solve(list, degs, kind, sigma, gen, check)
        gv0 := [construct(li)$PrimitiveArray(Fraction(MP)) for li in list]
        repeat
-           pp := do__poly__integer(vars, gv0, ve, sigma, pts, _
+           pp := do_poly_integer(vars, gv0, ve, sigma, pts, _
                      kind, qvar, gen)$InnerModularHermitePade
-           pp case "no__solution" => return false
+           pp case "no_solution" => return false
            ppr := pp :: PBRI
            offsets := ppr.offsetdata
            oc := #offsets
@@ -1662,10 +1662,10 @@ ModularHermitePade(): with
                        kk <= oc => offsets(kk)
                        cc
                    hi := ohi - 1
-                   resvi(j) := unpack__poly(vars, exps, coeffs, lo, hi)
-               sol__okp  := check(entries resvi)
-               sol__okp case "reject" => "iterate"
-               sol__okp case "no__solution" =>
+                   resvi(j) := unpack_poly(vars, exps, coeffs, lo, hi)
+               sol_okp  := check(entries resvi)
+               sol_okp case "reject" => "iterate"
+               sol_okp case "no_solution" =>
                    ok := false
                    break
                resv(ii) := resvi
@@ -1678,11 +1678,11 @@ ModularHermitePade(): with
                        mress(l, i) := resv(i)(l)
                -- print("found solution"::OutputForm)
                return mress
-           print("check__sol__poly rejected solution"::OutputForm)
+           print("check_sol_poly rejected solution"::OutputForm)
            print(resvi::OutputForm)
            error "giving up"
 
-   HP__solve__M(list, degs, kind, prime, sigma, gen, check) ==
+   HP_solve_M(list, degs, kind, prime, sigma, gen, check) ==
        lp := []@List(Integer)
        kind = 'qdiffHP or kind = 'qshiftHP => true
        -- print(sigma::OutputForm)
@@ -1697,9 +1697,9 @@ ModularHermitePade(): with
                pts0
        gv0 := [construct(li)$PA for li in list]
        gv := gen(gv0, prime, 1)
-       blr := do__modular__solve(gv, ve, sigma, pts, prime, _
+       blr := do_modular_solve(gv, ve, sigma, pts, prime, _
                   kind)$InnerModularHermitePade
-       blr case "no__solution" => return false
+       blr case "no_solution" => return false
        rblr := blr::NBR
        bm := rblr.basis
        va := rblr.defects
@@ -1718,9 +1718,9 @@ ModularHermitePade(): with
                     s := s + monomial(bmij(l), l _
                             )$SparseUnivariatePolynomial(Integer)
                 resvi(j) := s
-           sol__okp  := check(entries resvi)
-           sol__okp case "reject" => "iterate"
-           sol__okp case "no__solution" =>
+           sol_okp  := check(entries resvi)
+           sol_okp case "reject" => "iterate"
+           sol_okp case "no_solution" =>
                error "HP_solve_M: check should never return no_solution for finite fields"
            resv(ii) := resvi
            ii := ii + 1
@@ -1730,11 +1730,11 @@ ModularHermitePade(): with
                  mress(l, i) := resv(i)(l)
        return mress
 
-   HP__solve__A(list, degs, kind, sigma, gen, check) ==
+   HP_solve_A(list, degs, kind, sigma, gen, check) ==
        -- print("modularCheckA"::OutputForm)
        true
 
-   HP__solve__PA(list, degs, kind, qvar, sigma, gen, check) ==
+   HP_solve_PA(list, degs, kind, qvar, sigma, gen, check) ==
        -- print("modularCheckPA"::OutputForm)
        true
 @
@@ -1753,32 +1753,32 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
     VPA ==> Vector PA
     GEN ==> (List(PA), Integer, Integer) -> VPA
     NNI ==> NonNegativeInteger
-    CHKR ==> Union("good", "reject", "no__solution")
+    CHKR ==> Union("good", "reject", "no_solution")
     SUP ==> SparseUnivariatePolynomial
     CHKT ==> (List SUP S) -> CHKR
     MPS ==> Matrix SparseUnivariatePolynomial S
 
     Exports ==>
         with
-            HP__solve : (List(List(F)), List(Integer), Symbol, Symbol, NNI,
+            HP_solve : (List(List(F)), List(Integer), Symbol, Symbol, NNI,
                          GEN, CHKT) -> Union(MPS, Boolean)
-              ++ HP__solve(l, degs, kind, sigma, gen check) finds a sigma
+              ++ HP_solve(l, degs, kind, sigma, gen check) finds a sigma
               ++ basis with degree bounds given by degs.  It returns false
               ++ if there is no interpolating vector that is correct up to
               ++ (and including) z^(sigma-1) with sigma >= |degs+[1,1,...,1]|
               ++ or if check rejects all solutions.
               ++ It returns true if it can not handle given problem.
-            gen__Monte__Carlo__check : (CHKT, List(List(F)), Symbol, Symbol,
+            gen_Monte_Carlo_check : (CHKT, List(List(F)), Symbol, Symbol,
                                         NNI, GEN) -> CHKT
-              ++ gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen)
+              ++ gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen)
               ++ returns Monte Carlo check for solutions to guessing problem.
               ++ If Monte Carlo check is unavailable returns check.
 
-            LLF__to__LPA : (List(List(F)), Integer, List(Symbol),
+            LLF_to_LPA : (List(List(F)), Integer, List(Symbol),
                             List(Integer), Integer) _
                                -> Union(List(PA), "failed")
               ++ modular reduction
-            VSUPS__to__VPA : (Vector(SUP S), List Symbol, List Integer, _
+            VSUPS_to_VPA : (Vector(SUP S), List Symbol, List Integer, _
                           Integer) -> VPA
               ++ modular reduction
 
@@ -1786,75 +1786,75 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
 
         import ModularHermitePade()
 
-        check__sol__mod__diff : (Vector(SUP S), List(List(F)), Integer, _
+        check_sol_mod_diff : (Vector(SUP S), List(List(F)), Integer, _
                GEN, Symbol, List Symbol _
-               ) -> Union("good", "reject", "no__solution")
+               ) -> Union("good", "reject", "no_solution")
 
         if F is Fraction Integer and S is Integer then
-            HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
-                HP__solve__I(l, degs, kind, sigma, gen, check)
-            LLF__to__LPA(l, sigma, vars, points, p) ==
-                LLFI__to__LPA(l, sigma, p)
-            VSUPS__to__VPA(v, vars, points, p) == VSUPI__to__VPA(v, p)
-            gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen) ==
+            HP_solve(l, degs, kind, qvar, sigma, gen, check) ==
+                HP_solve_I(l, degs, kind, sigma, gen, check)
+            LLF_to_LPA(l, sigma, vars, points, p) ==
+                LLFI_to_LPA(l, sigma, p)
+            VSUPS_to_VPA(v, vars, points, p) == VSUPI_to_VPA(v, p)
+            gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen) ==
                 kind ~= 'diffHP => check
-                x +-> check__sol__mod__diff(vector x, l, sigma, gen, _
+                x +-> check_sol_mod_diff(vector x, l, sigma, gen, _
                                   'dummy, [])
         else if F is Fraction Polynomial Integer and _
                         S is Polynomial Integer then
-            HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
-                HP__solve__P(l, degs, kind, qvar, sigma, gen, check)
-            LLF__to__LPA(l, sigma, vars, points, p) ==
-                LLFPI__to__LPA(l, sigma, vars, points, p)
-            VSUPS__to__VPA(v, vars, points, p) ==
-                VSUPPI__to__VPA(v, vars, points, p)
-            gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen) ==
+            HP_solve(l, degs, kind, qvar, sigma, gen, check) ==
+                HP_solve_P(l, degs, kind, qvar, sigma, gen, check)
+            LLF_to_LPA(l, sigma, vars, points, p) ==
+                LLFPI_to_LPA(l, sigma, vars, points, p)
+            VSUPS_to_VPA(v, vars, points, p) ==
+                VSUPPI_to_VPA(v, vars, points, p)
+            gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen) ==
                 not(kind = 'diffHP or kind = 'qdiffHP or kind = 'qmixed) =>
                     check
-                vars :=  get__variables(l, kind, qvar)
-                x +-> check__sol__mod__diff(vector x, l, sigma, gen, _
+                vars :=  get_variables(l, kind, qvar)
+                x +-> check_sol_mod_diff(vector x, l, sigma, gen, _
                            qvar, vars)
         else if F is AlgebraicNumber and S is AlgebraicNumber then
-            HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
-                HP__solve__A(l, degs, kind, sigma, gen, check)
-            gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen) ==
+            HP_solve(l, degs, kind, qvar, sigma, gen, check) ==
+                HP_solve_A(l, degs, kind, sigma, gen, check)
+            gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen) ==
                 check
         else if F is Fraction Polynomial AlgebraicNumber and _
                         S is Polynomial AlgebraicNumber then
-            HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
-                HP__solve__PA(l, degs, kind, qvar, sigma, gen, check)
-            gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen) ==
+            HP_solve(l, degs, kind, qvar, sigma, gen, check) ==
+                HP_solve_PA(l, degs, kind, qvar, sigma, gen, check)
+            gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen) ==
                 check
         else
             p := characteristic()$F
             if p > 0 and p < 32000000 and _
                F is PrimeField(p::PositiveInteger) and _
                S is PrimeField(p::PositiveInteger) then
-                HP__solve(l, degs, kind, qvar, sigma, gen, check) ==
+                HP_solve(l, degs, kind, qvar, sigma, gen, check) ==
                     checkPF : (List SUP Integer) -> CHKR
                     checkPF := ll +-> check(ll pretend List SUP S)
-                    pp := HP__solve__M(l pretend List(List(Integer)),
+                    pp := HP_solve_M(l pretend List(List(Integer)),
                                         degs, kind, p, sigma,
                                         gen, checkPF)
                     pp case Matrix SUP Integer =>
                         return (pp::Matrix(SUP Integer) pretend Matrix(SUP S))
                     return (pp::Boolean)
             else
-                HP__solve(l, degs, kind, qvar, sigma, gen, check) == true
-            gen__Monte__Carlo__check(check, l, kind, qvar, sigma, gen) ==
+                HP_solve(l, degs, kind, qvar, sigma, gen, check) == true
+            gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen) ==
                 check
 
         -- chhh
 
-        check__sol__mod__diff(resv, list, sigma, gen, qvar, vars) _
-               : Union("good", "reject", "no__solution") ==
+        check_sol_mod_diff(resv, list, sigma, gen, qvar, vars) _
+               : Union("good", "reject", "no_solution") ==
             #list ~= 1 =>
-                error "check__sol__mod__diff: #list ~= 1"
+                error "check_sol_mod_diff: #list ~= 1"
             n0 := #(first(list))
             sigma0 := n0 + 2
-            min__ord := sigma0
+            min_ord := sigma0
             delta := sigma0 - sigma
-            -- print("check__sol__mod__diff, delta is"::OutputForm)
+            -- print("check_sol_mod_diff, delta is"::OutputForm)
             -- print(delta::OutputForm)
             delta >= sigma =>
                 error "delta too big"
@@ -1867,34 +1867,34 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
                     lpt := cons(random(p), lpt)
                     if var = qvar then qval := first(lpt)
                 lpt := reverse!(lpt)
-                gv0p := LLF__to__LPA(list, n0 + delta, vars, lpt, p)
+                gv0p := LLF_to_LPA(list, n0 + delta, vars, lpt, p)
                 gv0p case "failed" => "iterate"
                 gvl := gv0p::List(PA)
                 #gvl ~= 1 =>
-                   "check__sol__mod__diff: #gvl ~= 1"
+                   "check_sol_mod_diff: #gvl ~= 1"
                 gv0 := first(gvl)
-                nres := VSUPS__to__VPA(resv, vars, lpt, p)
-                pa := check__sol1a(nres, gvl, gen, sigma0, qval, p)
+                nres := VSUPS_to_VPA(resv, vars, lpt, p)
+                pa := check_sol1a(nres, gvl, gen, sigma0, qval, p)
                 ord := sigma0
                 for i in 0..(sigma0 - 1) repeat
                     if pa(i) ~= 0 then
                         ord := i
                         break
-                ord < sigma => return "no__solution"
+                ord < sigma => return "no_solution"
                 ord < sigma0 =>
                     c0 := pa(ord)
                     for j in 0..(delta -1) repeat
                         gv0(n0 + j) := 1
-                        pa := check__sol1a(nres, [gv0], gen, sigma0, qval, p)
+                        pa := check_sol1a(nres, [gv0], gen, sigma0, qval, p)
                         pa(ord) ~= c0 =>
                             -- print("decreasig delta"::OutputForm)
                             sigma0 := ord
                             delta := sigma0 - sigma
                             break
                         gv0(n0 + j) := 0
-                    if ord < min__ord then min__ord := ord
+                    if ord < min_ord then min_ord := ord
                 -- print(p::OutputForm)
-            min__ord < sigma0 => return "reject"
+            min_ord < sigma0 => return "reject"
             return "good"
 @
 

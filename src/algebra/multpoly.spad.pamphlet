@@ -729,13 +729,13 @@ SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
     LV1 ==> List VarSet1
     LV2 ==> List VarSet2
 
-    convert__sorted(p1 : SmpRep1, lv1 : LV1, lv2 : LV2) : SmpRep2 ==
+    convert_sorted(p1 : SmpRep1, lv1 : LV1, lv2 : LV2) : SmpRep2 ==
         p1 case R => (p1 :: R)
         empty?(lv1) => error "p has variable not in lv1"
         v1 : VarSet1 := p1.v
         v2 := first(lv2)
         lv2 := rest(lv2)
-        v1 ~= first(lv1) => return convert__sorted(p1, rest(lv1), lv2)
+        v1 ~= first(lv1) => return convert_sorted(p1, rest(lv1), lv2)
         lv1 := rest(lv1)
         pu1 : List SmpTerm1 := p1.ts
         pu2 : List SmpTerm2 := []
@@ -744,7 +744,7 @@ SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
             t1 := t0.c pretend SmpRep1
             p2 :=
                 t1 case R => t1
-                convert__sorted(t1, lv1, lv2)
+                convert_sorted(t1, lv1, lv2)
             pu2 := cons([t0.k, p2 pretend MP2], pu2)
         [v2, reverse!(pu2)]
 
@@ -779,7 +779,7 @@ SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
             map(z +-> find_var(z, pl2), x +-> x::MP2, p)$LIFT
         lv1 := reverse(lv1)
         lv2 := reverse(lv2)
-        convert__sorted(p pretend SmpRep1, lv1, lv2) pretend MP2
+        convert_sorted(p pretend SmpRep1, lv1, lv2) pretend MP2
 
 @
 

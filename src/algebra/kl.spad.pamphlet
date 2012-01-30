@@ -66,15 +66,15 @@ SortedCache(S:CachableSet): Exports == Implementation where
     insertBefore : (N, S) -> Void
 
     cache : PrimitiveArray S := empty()$(PrimitiveArray S)
-    cache__size : N := 0
-    cache__use : N := 0
+    cache_size : N := 0
+    cache_use : N := 0
 
     expandCache(x) ==
-        if cache__size = cache__use then
+        if cache_size = cache_use then
             ocache := cache
-            cache__size := 2*cache__size + 10
-            cache := new(cache__size, x)$(PrimitiveArray S)
-            for k in 0..(cache__use - 1) repeat
+            cache_size := 2*cache_size + 10
+            cache := new(cache_size, x)$(PrimitiveArray S)
+            for k in 0..(cache_use - 1) repeat
                 cache(k) := ocache(k)
         void
 
@@ -82,16 +82,16 @@ SortedCache(S:CachableSet): Exports == Implementation where
         k : Integer
         expandCache(x)
         vscan := cache
-        for k in 0..(cache__use - l - 1) repeat
-            vscan(cache__use - k) := vscan(cache__use - k - 1)
+        for k in 0..(cache_use - l - 1) repeat
+            vscan(cache_use - k) := vscan(cache_use - k - 1)
         vscan(l) := x
-        cache__use := cache__use + 1
+        cache_use := cache_use + 1
         void
 
     shiftCache(l, n) ==
         k : Integer
         vscan := cache
-        for k in l..(cache__use - 1) repeat
+        for k in l..(cache_use - 1) repeat
             x := vscan(k)
             setPosition(x, n + position x)
         void
@@ -99,25 +99,25 @@ SortedCache(S:CachableSet): Exports == Implementation where
     clearCache() ==
         k : Integer
         vscan := cache
-        for k in 0..(cache__use - 1) repeat
+        for k in 0..(cache_use - 1) repeat
             x := vscan(k)
             setPosition(x, 0)
         cache := empty()$(PrimitiveArray S)
-        cache__size := 0
-        cache__use := 0
+        cache_size := 0
+        cache_use := 0
         void
 
     insertAtEnd(x:S):Void ==
         expandCache(x)
-        cache(cache__use) := x
-        cache__use := cache__use + 1
+        cache(cache_use) := x
+        cache_use := cache_use + 1
         void
 
     linearSearch(x:S, equal?:S -> Boolean) ==
         k : Integer := 0
         -- Can not use for loop because equal? can insert new elements
-        -- and change cache__use
-        while k < cache__use repeat
+        -- and change cache_use
+        while k < cache_use repeat
             vscan := cache
             y := vscan(k)
             equal?(y) =>
@@ -132,16 +132,16 @@ SortedCache(S:CachableSet): Exports == Implementation where
     enterInCache(x:S, equal?:S -> Boolean) ==
         (res := linearSearch(x, equal?)) case S =>
             res::S
-        setPosition(x, 1 + cache__use)
+        setPosition(x, 1 + cache_use)
         insertAtEnd(x)
         x
 
     enterInCache(x:S, triage:(S, S) -> Integer) ==
         vscan := cache
         l : Integer := -1
-        m : Integer := cache__use
+        m : Integer := cache_use
         m0 := m
-        zero?(cache__use) =>
+        zero?(cache_use) =>
             setPosition(x, DIFF)
             insertAtEnd(x)
             return x
