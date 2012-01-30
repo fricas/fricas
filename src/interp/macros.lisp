@@ -450,10 +450,6 @@
   "If X has a KEY property, then FLAGP is true."
   (GET X KEY))
 
-(defun PROPERTY (X IND N)
-  "Returns the Nth element of X's IND property, if it exists."
-  (let (Y) (if (AND (INTEGERP N) (SETQ Y (GET X IND)) (>= (LENGTH Y) N)) (ELEM Y N))))
-
 ; 10.3 Creating Symbols
 
 (defun INTERNL(a &rest b)
@@ -498,10 +494,6 @@
 (defun first-error () (error "Cannot take first of an empty list"))
 
 ; 15.2 Lists
-
-
-(defmacro ELEM (val &rest indices)
-   (if (null indices) val `(ELEM (nth (1- ,(car indices)) ,val) ,@(cdr indices))))
 
 (defun ELEMN (X N DEFAULT)
   (COND ((NULL X) DEFAULT)
