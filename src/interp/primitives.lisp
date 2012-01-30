@@ -30,58 +30,66 @@
 (defun MAKEARR1 (size init)
     (make-array size :initial-element init))
 
-;;; Vectors of 32-bit numbers
+;;; Vectors and matrices of of small integer 32-bit numbers
 
-(defmacro ELT32(v i)
-    `(aref (the (simple-array (unsigned-byte 32) (*)) ,v) ,i))
-
-(defmacro SETELT32(v i s)
-    `(setf (aref (the (simple-array (unsigned-byte 32) (*)) ,v) ,i)
-           ,s))
+(defmacro suffixed_name(name s)
+    `(intern (concatenate 'string (symbol-name ',name)
+                                  (format nil "~A" ,s))))
 #+:sbcl
-(progn
-
-(defmacro sbcl-make-u32-vector(n)
+(defmacro sbcl_make_sized_vector(nb n)
     (multiple-value-bind (typetag n-bits)
-        (SB-IMPL::%VECTOR-WIDETAG-AND-N-BITS '(unsigned-byte 32))
+        (SB-IMPL::%VECTOR-WIDETAG-AND-N-BITS `(unsigned-byte ,nb))
         `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n
                        (ceiling (* ,n ,n-bits) sb-vm:n-word-bits))))
 
-(defun GETREFV32(n x)
-    (let ((vec (sbcl-make-u32-vector n)))
+(defmacro DEF_SIZED_UOPS(nb)
+
+`(progn
+(defmacro ,(suffixed_name ELT_U nb) (v i)
+    `(aref (the (simple-array (unsigned-byte ,',nb) (*)) ,v) ,i))
+
+(defmacro ,(suffixed_name SETELT_U nb)(v i s)
+    `(setf (aref (the (simple-array (unsigned-byte ,',nb) (*)) ,v) ,i)
+           ,s))
+#+:sbcl
+(defun ,(suffixed_name GETREFV_U nb) (n x)
+    (let ((vec (sbcl_make_sized_vector ,nb n)))
         (fill vec x)
         vec))
 
-)
-
 #-:sbcl
-(defun GETREFV32(n x) (make-array n :initial-element x
-                                     :element-type '(unsigned-byte 32)))
+(defun ,(suffixed_name GETREFV_U nb)(n x)
+    (make-array n :initial-element x
+               :element-type '(unsigned-byte ,nb)))
 
-(defmacro QV32LEN(v)
-    `(length (the (simple-array (unsigned-byte 32) (*)) ,v)))
+(defmacro ,(suffixed_name QV_LEN_U nb)(v)
+    `(length (the (simple-array (unsigned-byte ,',nb) (*)) ,v)))
 
-;;; Matrix operations
+(defmacro ,(suffixed_name MAKE_MATRIX_U nb) (n m)
+   `(make-array (list ,n ,m) :element-type '(unsigned-byte ,',nb)))
 
-(defmacro MAKE-U32-MATRIX (n m)
-   `(make-array (list ,n ,m) :element-type '(unsigned-byte 32)))
-
-(defmacro MAKE-U32-MATRIX1 (n m s)
-   `(make-array (list ,n ,m) :element-type '(unsigned-byte 32)
+(defmacro ,(suffixed_name MAKE_MATRIX1_U nb) (n m s)
+   `(make-array (list ,n ,m) :element-type '(unsigned-byte ,',nb)
            :initial-element ,s))
 
-(defmacro U32AREF2(v i j)
-   `(aref (the (simple-array (unsigned-byte 32) (* *)) ,v) ,i ,j))
+(defmacro ,(suffixed_name AREF2_U nb) (v i j)
+   `(aref (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) ,i ,j))
 
-(defmacro U32SETAREF2(v i j s)
-   `(setf (aref (the (simple-array (unsigned-byte 32) (* *)) ,v) ,i ,j)
+(defmacro ,(suffixed_name SETAREF2_U nb) (v i j s)
+   `(setf (aref (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) ,i ,j)
           ,s))
 
-(defmacro U32ANROWS(v)
-    `(array-dimension (the (simple-array (unsigned-byte 32) (* *)) ,v) 0))
+(defmacro ,(suffixed_name ANROWS_U nb) (v)
+    `(array-dimension (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) 0))
 
-(defmacro U32ANCOLS(v)
-    `(array-dimension (the (simple-array (unsigned-byte 32) (* *)) ,v) 1))
+(defmacro ,(suffixed_name ANCOLS_U nb) (v)
+    `(array-dimension (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) 1))
+
+))
+
+(DEF_SIZED_UOPS 32)
+(DEF_SIZED_UOPS 16)
+(DEF_SIZED_UOPS 8)
 
 ;;; Modular arithmetic
 
