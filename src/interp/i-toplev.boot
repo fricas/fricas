@@ -41,11 +41,11 @@
 
 -- When $QuiteCommand is true Spad will not produce any output from
 --  a top level command
-SETANDFILEQ($QuietCommand, NIL)
+DEFPARAMETER($QuietCommand, NIL)
 -- When $ProcessInteractiveValue is true, we don't want the value printed
 -- or recorded.
-SETANDFILEQ($ProcessInteractiveValue, NIL)
-SETANDFILEQ($HTCompanionWindowID, NIL)
+DEFPARAMETER($ProcessInteractiveValue, NIL)
+DEFPARAMETER($HTCompanionWindowID, NIL)
 
 intSetQuiet() ==
   $QuietCommand := true

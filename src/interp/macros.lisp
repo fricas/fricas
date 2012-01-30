@@ -127,14 +127,8 @@
 
 ; End of moved fragment
 
-
 (defvar |$compilingMap| ())
 (defvar |$definingMap| nil)
-
-(defmacro KAR (ARG) `(ifcar ,arg))
-(defmacro KDR (ARG) `(ifcdr ,arg))
-(defmacro KADR (ARG) `(ifcar (ifcdr ,arg)))
-(defmacro KADDR (ARG) `(ifcar (ifcdr (ifcdr ,arg))))
 
 ; 5 PROGRAM STRUCTURE
 
@@ -398,7 +392,7 @@
                                  ((EQL (CADR L) 1) (CAR L))
                                  ((CONS 'QUOTIENT L)) ))
                  (MINUS (COND ((CDR L) (FAIL))
-                              ((NUMBERP (SETQ X (CAR L))) (MINUS X))
+                              ((NUMBERP (SETQ X (CAR L))) (- X))
                               ((EQCAR X 'MINUS) (CADR X))
                               ((CONS 'MINUS L))  ))
                  (DIFFERENCE (BREAK))

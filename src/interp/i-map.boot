@@ -33,16 +33,16 @@
 
 --% User Function Creation and Analysis Code
 
-SETANDFILEQ($mapTarget,nil)
-SETANDFILEQ($mapReturnTypes,nil)
-SETANDFILEQ($mapName,'noMapName)
-SETANDFILEQ($mapThrowCount, 0) -- times a "return" occurs in map
-SETANDFILEQ($compilingMap, NIL)
-SETANDFILEQ($definingMap, NIL)
+DEFPARAMETER($mapTarget, nil)
+DEFPARAMETER($mapReturnTypes, nil)
+DEFPARAMETER($mapName, 'noMapName)
+DEFPARAMETER($mapThrowCount, 0) -- times a "return" occurs in map
+DEFPARAMETER($compilingMap, NIL)
+DEFPARAMETER($definingMap, NIL)
 
 --% Generating internal names for functions
 
-SETANDFILEQ($specialMapNameSuffix, NIL)
+DEFPARAMETER($specialMapNameSuffix, NIL)
 
 makeInternalMapName(userName,numArgs,numMms,extraPart) ==
   name := CONCAT('"*",STRINGIMAGE numArgs,'";",
@@ -548,7 +548,7 @@ rewriteMap(op,opName,argl) ==
       compFailure  ['"   Cannot compile map:",:bright opName]
     arglCode := ['LIST,:[argCode for arg in argl for argName in
       $FormalMapVariableList]] where argCode ==
-        atype := OR(getMode arg, KAR(getModeSet arg))
+        atype := OR(getMode arg, IFCAR(getModeSet arg))
         ['putValueValue,['mkAtreeNode,MKQ argName],
           objNewCode(['wrap,wrapped2Quote(objVal getValue arg)],
                       atype)]

@@ -680,7 +680,7 @@ conSpecialString?(filter,:options) ==
     false
   null parse => nil
   form := conLowerCaseConTran parse
-  MEMQ(KAR form,'(and or not)) or CONTAINED("*",form) => nil
+  MEMQ(IFCAR form, '(and or not)) or CONTAINED("*", form) => nil
   filter = '"Mapping" =>nil
   u := kisValidType form => u
   secondTime => false

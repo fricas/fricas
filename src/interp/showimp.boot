@@ -45,7 +45,7 @@ showSummary dom ==
 --=======================================================================
 showImp(dom,:options) ==
   sayBrightly '"-------------Operation summary-----------------"
-  missingOnlyFlag := KAR options
+  missingOnlyFlag := IFCAR options
   domainForm := devaluate dom
   [nam,:$domainArgs] := domainForm
   $predicateList: local := GETDATABASE(nam,'PREDICATES)
@@ -92,7 +92,7 @@ showImp(dom,:options) ==
 --          Show Information Directly From Domains
 --=======================================================================
 showFrom(D,:option) ==
-  ops := KAR option
+  ops := IFCAR option
   alist := nil
   domainForm := devaluate D
   [nam,:.] := domainForm
@@ -127,13 +127,13 @@ getDomainDocs(D,:option) ==
   domname := D.0
   conname := CAR domname
   $predicateList: local := GETDATABASE(conname,'PREDICATES)
-  ops := KAR option
+  ops := IFCAR option
   [[op,sig,:getInheritanceByDoc(D,op,sig)] for [op,sig] in getDomainSigs1(D,ops)]
 
 --=======================================================================
 --          Getting Inheritance Info from Documentation in Lisplib
 --=======================================================================
-from?(D,op,sig) == KAR KDR getInheritanceByDoc(D,op,sig)
+from?(D, op, sig) == IFCAR IFCDR getInheritanceByDoc(D, op, sig)
 
 getExtensionsOfDomain domain ==
   u := getDomainExtensionsOfDomain domain
@@ -171,7 +171,7 @@ getCategoriesOfDomain domain ==
 getInheritanceByDoc(D,op,sig,:options) ==
 --gets inheritance and documentation information by looking in the LISPLIB
 --for each ancestor of the domain
-  catList := KAR options or getExtensionsOfDomain D
+  catList := IFCAR options or getExtensionsOfDomain D
   getDocDomainForOpSig(op,sig,devaluate D,D) or
     or/[fn for x in catList] or '(NIL NIL)
       where fn == getDocDomainForOpSig(op,sig,substDomainArgs(D,x),D)

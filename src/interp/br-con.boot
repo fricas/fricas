@@ -40,7 +40,7 @@ conPage(a,:b) ==
   form :=
     atom a => [a,:b]
     a
-  $conArgstrings: local := [form2HtString x for x in KDR a]
+  $conArgstrings : local := [form2HtString x for x in IFCDR a]
   if not atom a then a := first a
   da := DOWNCASE a
   pageName := LASSQ(da,'((type . CategoryType)(union . DomainUnion)(record . DomainRecord)(mapping . DomainMapping)(enumeration . DomainEnumeration))) =>
@@ -473,11 +473,11 @@ kccPage(htPage,junk) ==
 
 augmentHasArgs(alist,conform) ==
   conname := opOf conform
-  args    := KDR conform or return alist
+  args    := IFCDR conform or return alist
   n       := #args
   [[name,:pred] for [name,:p] in alist] where pred ==
      extractHasArgs p is [a,:b] => p
-     quickAnd(p,['hasArgs,:TAKE(n,KDR getConstructorForm opOf name)])
+     quickAnd(p, ['hasArgs, :TAKE(n, IFCDR getConstructorForm opOf name)])
 
 kcdePage(htPage,junk) ==
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
@@ -553,7 +553,7 @@ kDomainName(htPage,kind,name,nargs) ==
   argString :=
     null args => '"()"
     argTailPart :=
-      "STRCONC"/["STRCONC"/ ['",",:x] for x in KDR args]
+      "STRCONC"/["STRCONC"/ ['",", :x] for x in IFCDR args]
     "STRCONC"/['"(",:first args,argTailPart,'")"]
   typeForm := CATCH('SPAD_READER, unabbrev mkConform(kind, name, argString)) or
     ['error,'invalidType,STRCONC(name,argString)]
@@ -564,7 +564,7 @@ kDomainName(htPage,kind,name,nargs) ==
 kArgumentCheck(domain?,s) ==
   s = '"" => nil
   domain? and (form := conSpecialString? s) =>
-    null KDR form => [STRINGIMAGE opOf form]
+    null IFCDR form => [STRINGIMAGE opOf form]
     form2String form
   [s]
 
@@ -591,7 +591,7 @@ kisValidType typeForm ==
 
 kCheckArgumentNumbers t ==
   [conname,:args] := t
-  cosig := KDR GETDATABASE(conname,'COSIG)
+  cosig := IFCDR GETDATABASE(conname, 'COSIG)
   #cosig ~= #args => false
   and/[foo for domain? in cosig for x in args] where foo ==
     domain? => kCheckArgumentNumbers x
@@ -637,7 +637,7 @@ dbCompositeWithMap htPage ==
   dbExtractUnderlyingDomain htpProperty(htPage,'domname) => '"DOWN"
   false
 
-dbExtractUnderlyingDomain domain == or/[x for x in KDR domain | isValidType x]
+dbExtractUnderlyingDomain domain == or/[x for x in IFCDR domain | isValidType x]
 
 --conform is atomic if no parameters, otherwise must be valid domain form
 conOpPage1(conform,:options) ==
@@ -798,7 +798,7 @@ dbGetDocTable(op,$sig,docTable,$which,aux) == main where
   hn [sig,:doc] ==
     $which = '"attribute" => sig is ['attribute,: =$sig] and doc
     pred := #$sig = #sig and
-      alteredSig := SUBLISLIS(KDR $conform,$FormalMapVariableList,sig)
+      alteredSig := SUBLISLIS(IFCDR $conform, $FormalMapVariableList, sig)
       alteredSig = $sig
     pred =>
       doc =>

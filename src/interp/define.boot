@@ -46,7 +46,7 @@ compDefine1(form,m,e) ==
   ['DEF,lhs,signature,specialCases,rhs]:= form:= macroExpand(form,e)
   $insideWhereIfTrue and isMacro(form,e) and (m=$EmptyMode or m=$NoValueMode)
      => [lhs,m,put(first lhs,'macro,rhs,e)]
-  null signature.target and not MEMQ(KAR rhs,$ConstructorNames) and
+  null signature.target and not MEMQ(IFCAR rhs, $ConstructorNames) and
     (sig:= getSignatureFromMode(lhs,e)) =>
   -- here signature of lhs is determined by a previous declaration
       compDefine1(['DEF,lhs,[first sig,:rest signature],specialCases,rhs],m,e)
@@ -93,7 +93,7 @@ hasFullSignature(argl,[target,:ml],e) ==
     u~='failed => [target,:u]
 
 addEmptyCapsuleIfNecessary(target,rhs) ==
-  MEMQ(KAR rhs,$SpecialDomainNames) => rhs
+  MEMQ(IFCAR rhs, $SpecialDomainNames) => rhs
   ['add,rhs,['CAPSULE]]
 
 getTargetFromRhs(lhs,rhs,e) ==
@@ -1078,7 +1078,7 @@ doIt(item,$predl) ==
       RPLACA(item,first code)
       RPLACD(item,rest code)
     lhs:= lhs'
-    if not member(KAR rhs,$NonMentionableDomainNames) and
+    if not member(IFCAR rhs, $NonMentionableDomainNames) and
       not MEMQ(lhs, $functorLocalParameters) then
          $functorLocalParameters:= [:$functorLocalParameters,lhs]
     if code is ['LET,.,rhs',:.] and isDomainForm(rhs',$e) then
@@ -1291,7 +1291,7 @@ DomainSubstitutionFunction(parameters,body) ==
   atom $definition => body
   null rest $definition => body
            --should not bother if it will only be called once
-  name:= INTERN STRCONC(KAR $definition,";CAT")
+  name := INTERN STRCONC(IFCAR $definition, ";CAT")
   SETANDFILE(name,nil)
   body:= ["COND",[name],['(QUOTE T),['SETQ,name,body]]]
   body

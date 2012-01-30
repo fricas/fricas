@@ -120,7 +120,7 @@ set1(l,setTree) ==
     setfunarg :=
       l.1 = 'DEFAULT => "%initialize%"
 --    (arg2 := selectOption(l.1,['default],nil)) => "%initialize%"
-      KDR l
+      IFCDR l
     if functionp(setData.setVar)
       then FUNCALL( setData.setVar,setfunarg)
       else sayMSG '"   Function not implemented."
@@ -171,7 +171,7 @@ set1(l,setTree) ==
 
   -- for a sub-tree, we must recurse
   st = 'TREE =>
-    set1(KDR l,setData.setLeaf)
+    set1(IFCDR l, setData.setLeaf)
     NIL
   sayMessage ['"Cannot handle set tree node type",:bright st,"yet"]
   NIL

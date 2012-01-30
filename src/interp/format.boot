@@ -217,7 +217,7 @@ formatOperationAlistEntry (entry:= [op,:modemaps]) ==
 
 formatOperation([[op,sig],.,[fn,.,n]],domain) ==
   opSigString := formatOpSignature(op,sig)
-  INTEGERP n and function Undef = KAR domain.n =>
+  INTEGERP n and function Undef = IFCAR(domain.n) =>
     if INTEGERP $commentedOps then $commentedOps := $commentedOps + 1
     concat(" --",opSigString)
   opSigString
@@ -548,7 +548,7 @@ formDecl2String(left,right) ==
   whereBefore := $whereList
   ls:= form2StringLocal left
   rs:= form2StringLocal right
-  NE($whereList,whereBefore) and $permitWhere => ls
+  $whereList ~= whereBefore and $permitWhere => ls
   concat(form2StringLocal ls,'": ",rs)
 
 formJoin1(op,u) ==

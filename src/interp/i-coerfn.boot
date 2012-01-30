@@ -94,7 +94,7 @@ all these coercion functions have the following result:
      coerceByTable
 )endif
 
-SETANDFILEQ($coerceFailure,GENSYM())
+DEFPARAMETER($coerceFailure, GENSYM())
 
 position1(x,y) ==
   -- this is used where we want to assume a 1-based index
@@ -539,7 +539,7 @@ Factored2Factored(u,oldmode,newmode) ==
   u' := unwrap u
   unit' := coerceInt(objNewWrap(first u',oldargmode),newargmode)
   null unit' => coercionFailure()
-  factors := KDR u'
+  factors := IFCDR u'
   factors' := [(coerceFFE(x,oldargmode,newargmode)) for x in factors]
   member('failed,factors') => coercionFailure()
   [objValUnwrap(unit'),:factors']
@@ -1954,7 +1954,7 @@ commuteMPolyCat(u,source,S,target,T) ==
 -- a function like deconstructTower.  RSS 8-1-85
 ------------------------------------------------------------------------
 
-SETANDFILEQ($CoerceTable, '(                                          _
+DEFPARAMETER($CoerceTable, '(                                          _
   (Complex . ( _
     (Expression                       indeterm   Complex2Expr) _
     (Factored                         indeterm   Complex2FR) _
@@ -2036,7 +2036,7 @@ SETANDFILEQ($CoerceTable, '(                                          _
     ))_
   ))
 
-SETANDFILEQ($CoerceTable,NCONC($CoerceTable,'( _
+DEFPARAMETER($CoerceTable, NCONC($CoerceTable, '( _
   (Matrix . ( _
     (List                                 indeterm   M2L) _
     (RectangularMatrix                    partial    M2Rm) _
@@ -2162,7 +2162,7 @@ SETANDFILEQ($CoerceTable,NCONC($CoerceTable,'( _
 -- this list is too long for the parser, so it has to be split into parts
 -- specifies the commute functions
 -- commute stands for partial commute function
---SETANDFILEQ($CommuteTable, '(                                           _
+--DEFPARAMETER($CommuteTable, '(                                           _
 --  (DistributedMultivariatePolynomial . (                                _
 --    (DistributedMultivariatePolynomial    commute    commuteMultPol)    _
 --    (Complex                              commute    commuteMultPol)    _
@@ -2237,7 +2237,7 @@ SETANDFILEQ($CoerceTable,NCONC($CoerceTable,'( _
 --    ))                                                                  _
 --  ))
 
-SETANDFILEQ($CommuteTable, '(                                           _
+DEFPARAMETER($CommuteTable, '(                                           _
   (Complex . (                                                         _
     (DistributedMultivariatePolynomial    commute    commuteG2)         _
     (MultivariatePolynomial               commute    commuteG2)         _

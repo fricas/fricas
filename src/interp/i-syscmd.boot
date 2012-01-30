@@ -38,12 +38,12 @@
 
 --% Utility Variable Initializations
 
-SETANDFILEQ($compileRecurrence,true)
+DEFPARAMETER($compileRecurrence, true)
 
-SETANDFILEQ($SYSCOMMANDS,[CAR x for x in $systemCommands])
+DEFPARAMETER($SYSCOMMANDS, [CAR x for x in $systemCommands])
 
 
-SETANDFILEQ($whatOptions, '( _
+DEFPARAMETER($whatOptions, '( _
     operations _
     categories _
     domains _
@@ -53,7 +53,7 @@ SETANDFILEQ($whatOptions, '( _
     things _
     ))
 
-SETANDFILEQ($clearOptions, '( _
+DEFPARAMETER($clearOptions, '( _
   modes _
   operations _
   properties _
@@ -61,7 +61,7 @@ SETANDFILEQ($clearOptions, '( _
   values  _
   ))
 
-SETANDFILEQ($displayOptions, '( _
+DEFPARAMETER($displayOptions, '( _
   abbreviations _
   all _
   macros _
@@ -73,7 +73,7 @@ SETANDFILEQ($displayOptions, '( _
   values _
   ))
 
-SETANDFILEQ($countAssoc,'( (cache countCache) ))
+DEFPARAMETER($countAssoc, '( (cache countCache) ))
 
 --% Top level system command
 
@@ -1282,14 +1282,14 @@ importFromFrame args ==
 --% )history
 
 ++ vm/370 filename type component
-SETANDFILEQ($historyFileType,'axh)
+DEFPARAMETER($historyFileType, 'axh)
 
 ++ vm/370 filename name component
-SETANDFILEQ($oldHistoryFileName,'last)
-SETANDFILEQ($internalHistoryTable,NIL)
+DEFPARAMETER($oldHistoryFileName, 'last)
+DEFPARAMETER($internalHistoryTable, NIL)
 
 ++ t means keep history in core
-SETANDFILEQ($useInternalHistoryTable, true)
+DEFPARAMETER($useInternalHistoryTable, true)
 
 history l ==
   l or null $options => sayKeyedMsg("S2IH0006",NIL)
@@ -1662,7 +1662,7 @@ showHistory(arg) ==
     if INTEGERP arg1 then
       n := arg1
       nset := true
-      KDR arg => arg1 := CADR arg
+      IFCDR arg => arg1 := CADR arg
       arg1 := NIL
     arg1 =>
       arg2 := selectOptionLC(arg1,'(input both),nil)
@@ -2321,11 +2321,11 @@ reportOpsFromUnitDirectly unitForm ==
 reportOpsFromLisplib(op,u) ==
   null(fn:= constructor? op) => sayKeyedMsg("S2IZ0054",[u])
   argml :=
-    (s := getConstructorSignature op) => KDR s
+    (s := getConstructorSignature op) => IFCDR s
     NIL
   typ:= GETDATABASE(op,'CONSTRUCTORKIND)
   nArgs:= #argml
-  argList:= KDR GETDATABASE(op,'CONSTRUCTORFORM)
+  argList := IFCDR GETDATABASE(op, 'CONSTRUCTORFORM)
   functorForm:= [op,:argList]
   argml:= EQSUBSTLIST(argList,$FormalMapVariableList,argml)
   functorFormWithDecl:= [op,:[[":",a,m] for a in argList for m in argml]]
@@ -2436,7 +2436,7 @@ undo(l) ==
 
 recordFrame(systemNormal) ==
   null $undoFlag => nil        --do nothing if facility is turned off
-  currentAlist := KAR $frameRecord
+  currentAlist := IFCAR $frameRecord
   delta := diffAlist(CAAR $InteractiveFrame,$previousBindings)
   if systemNormal = 'system then
     null delta => return nil     --do not record

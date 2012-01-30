@@ -77,9 +77,9 @@ There are several special modes used in these functions:
 
 -- Functions which require special handlers (also see end of file)
 
-SETANDFILEQ($repeatLabel, NIL)
-SETANDFILEQ($breakCount, 0)
-SETANDFILEQ($anonymousMapCounter, 0)
+DEFPARAMETER($repeatLabel, NIL)
+DEFPARAMETER($breakCount, 0)
+DEFPARAMETER($anonymousMapCounter, 0)
 
 --% Void stuff
 

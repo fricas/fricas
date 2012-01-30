@@ -78,10 +78,10 @@ above for examples.
 
 --% Message Database Code and Message Utility Functions
 
-SETANDFILEQ($cacheMessages,'T)  -- for debugging purposes
-SETANDFILEQ($testingErrorPrefix, '"Daly Bug")
+DEFPARAMETER($cacheMessages, 'T)  -- for debugging purposes
+DEFPARAMETER($testingErrorPrefix, '"Daly Bug")
 
-SETANDFILEQ($texFormatting, false)
+DEFPARAMETER($texFormatting, false)
 
 --% Accessing the Database
 
@@ -263,11 +263,11 @@ addBlanks msg ==
   NREVERSE msg1
 
 
-SETANDFILEQ($msgdbPrims,'( %b %d %l %i %u %U %n %x %ce %rj "%U" "%b" "%d" "%l" "%i" "%u" "%U" "%n" "%x" "%ce" "%rj"))
-SETANDFILEQ($msgdbPunct,'(_. _, _! _: _; _? _] _)  "." "," "!" ":" ";" "?" "]" ")"  ))
-SETANDFILEQ($msgdbNoBlanksBeforeGroup,['" ", " ", '"%", "%",_
+DEFPARAMETER($msgdbPrims, '( %b %d %l %i %u %U %n %x %ce %rj "%U" "%b" "%d" "%l" "%i" "%u" "%U" "%n" "%x" "%ce" "%rj"))
+DEFPARAMETER($msgdbPunct, '(_. _, _! _: _; _? _] _)  "." "," "!" ":" ";" "?" "]" ")"  ))
+DEFPARAMETER($msgdbNoBlanksBeforeGroup, ['" ", " ", '"%", "%",_
                             :$msgdbPrims, :$msgdbPunct])
-SETANDFILEQ($msgdbListPrims,'(%m %s %ce %rj "%m" "%s" "%ce" "%rj"))
+DEFPARAMETER($msgdbListPrims, '(%m %s %ce %rj "%m" "%s" "%ce" "%rj"))
 
 noBlankBeforeP word==
     INTEGERP word => false
@@ -279,7 +279,7 @@ noBlankBeforeP word==
     false
 
 $msgdbPunct := '(_[ _(  "[" "(" )
-SETANDFILEQ($msgdbNoBlanksAfterGroup,['" ", " ",'"%" ,"%",_
+DEFPARAMETER($msgdbNoBlanksAfterGroup, ['" ", " ",'"%" ,"%",_
                           :$msgdbPrims,:$msgdbPunct])
 
 noBlankAfterP word==

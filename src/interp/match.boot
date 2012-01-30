@@ -31,7 +31,7 @@
 
 )package "BOOT"
 
-SETANDFILEQ($wildCard,char "*")
+DEFPARAMETER($wildCard, char "*")
 
 maskMatch?(mask,subject) ==
   null mask => true

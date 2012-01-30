@@ -43,9 +43,9 @@
 --   query    -- ask the user if break mode should be entered
 --   quit     -- quit on error with exit status 1
 
-SETANDFILEQ($SystemError,'SystemError)
-SETANDFILEQ($UserError,'UserError)
-SETANDFILEQ($AlgebraError,'AlgebraError)
+DEFPARAMETER($SystemError, 'SystemError)
+DEFPARAMETER($UserError, 'UserError)
+DEFPARAMETER($AlgebraError, 'AlgebraError)
 
 DEFVAR($timedNameStack)
 

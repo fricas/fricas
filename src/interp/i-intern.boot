@@ -55,8 +55,8 @@ slot         description
  4           prop list for extra things
 )endif
 
-SETANDFILEQ($useParserSrcPos, NIL)
-SETANDFILEQ($transferParserSrcPos, NIL)
+DEFPARAMETER($useParserSrcPos, NIL)
+DEFPARAMETER($transferParserSrcPos, NIL)
 
 DEFCONST($failure, GENSYM())
 
@@ -148,7 +148,7 @@ mkAtree1 x ==
 mkAtree2(x,op,argl) ==
   nargl := #argl
   (op= '_-) and (nargl = 1) and (INTEGERP CAR argl) =>
-    mkAtree1(MINUS CAR argl)
+    mkAtree1(- CAR argl)
   op='_: and argl is [y,z] => [mkAtreeNode 'Declare,:argl]
   op='COLLECT => [mkAtreeNode op,:transformCollect argl]
   op= 'break =>

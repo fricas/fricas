@@ -105,17 +105,7 @@
 (defmacro maxindex (x)
  `(the fixnum (1- (the fixnum (length ,x)))))
 
-(defmacro minus (x)
- `(- ,x))
-
-(defmacro ne (a b) `(not (equal ,a ,b)))
-
-(defmacro neq (a b) `(not (eq ,a ,b)))
-
 (defmacro refvecp (v) `(simple-vector-p ,v))
-
-(defmacro SETANDFILEQ (id item)
-   `(defparameter ,id ,item))
 
 (defmacro sintp (n)
  `(typep ,n 'fixnum))

@@ -491,7 +491,7 @@
         (COND (|$letAssoc|
                (|mapLetPrint| ,(MKQ var)
                               ,var
-                              (QUOTE ,(KAR L))))
+                              (QUOTE ,(IFCAR L))))
               ('T ,var))))
      ;; used for LETs in SPAD code --- see devious trick in COMP-TRAN-1
      ((ATOM var)
@@ -499,10 +499,12 @@
          (SETQ ,var ,val)
          (IF |$letAssoc|
              ,(cond ((null (cdr l))
-                     `(|letPrint| ,(MKQ var) ,var (QUOTE ,(KAR L))))
+                     `(|letPrint| ,(MKQ var) ,var (QUOTE ,(IFCAR L))))
                     ((and (eqcar (car l) 'SPADCALL) (= (length (car l)) 3))
-                     `(|letPrint3| ,(MKQ var) ,var ,(third (car l)) (QUOTE ,(KADR L))))
-                    (t `(|letPrint2| ,(MKQ var) ,(car l) (QUOTE ,(KADR L))))))
+                     `(|letPrint3| ,(MKQ var) ,var ,(third (car l))
+                          (QUOTE ,(IFCAR (IFCDR L)))))
+                    (t `(|letPrint2| ,(MKQ var) ,(car l)
+                          (QUOTE ,(IFCAR (IFCDR L)))))))
          ,var))
      ('T (ERROR "Cannot compileLET construct"))))
 

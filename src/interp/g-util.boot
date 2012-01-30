@@ -384,7 +384,7 @@ search(x,e is [curEnv,:tailEnv]) ==
 searchCurrentEnv(x,currentEnv) ==
   for contour in currentEnv repeat
     if u:= ASSQ(x,contour) then return (signal:= u)
-  KDR signal
+  IFCDR signal
 
 augProplist(proplist,prop,val) ==
   $InteractiveMode => augProplistInteractive(proplist,prop,val)

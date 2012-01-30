@@ -204,7 +204,7 @@ oldAxiomCategoryLookupExport(catenv, self, op, sig, box, env) ==
 oldAxiomCategoryParentCount([.,.,.,parents,.], env) == LENGTH parents
 oldAxiomCategoryNthParent([.,.,.,parvec,dom], n, env) ==
   catform := ELT(parvec, n-1)
-  VECTORP KAR catform => catform
+  VECTORP IFCAR catform => catform
   newcat := oldAxiomPreCategoryBuild(catform,dom,nil)
   SETELT(parvec, n-1, newcat)
   newcat
@@ -438,7 +438,7 @@ lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
     VECP (d := domainVal(dollar,domain,a)) =>
       s = d.0 => true
       domainArg := ($isDefaultingPackage => domain.6.0; domain.0)
-      KAR s = QCAR d.0 and lazyMatchArgDollarCheck(s,d.0,dollar.0,domainArg)
+      IFCAR s = QCAR(d.0) and lazyMatchArgDollarCheck(s, d.0, dollar.0, domainArg)
     isDomain d =>
         dhash:=getDomainHash d
         dhash =
@@ -512,7 +512,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
       i := start
       numTableArgs :=numvec.i
       predIndex := numvec.(i := inc_SI i)
-      NE(predIndex,0) and null testBitVector(predvec,predIndex) => nil
+      predIndex ~= 0 and null testBitVector(predvec, predIndex) => nil
       exportSig :=
           [newExpandTypeSlot(numvec.(i + j + 1),
             dollar,domain) for j in 0..numTableArgs]
@@ -543,7 +543,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
         return (success := newLookupInAddChain(op,sig,domain,dollar))
       systemError '"unexpected format"
     start := add_SI(start, add_SI(numTableArgs, 4))
-  NE(success,'failed) and success =>
+  success ~= 'failed and success =>
     if $monitorNewWorld then
       sayLooking1('"<----",uu) where uu ==
         PAIRP success => [first success,:devaluate rest success]
@@ -567,7 +567,7 @@ hashNewLookupInCategories(op,sig,dom,dollar) ==
   slot4 := dom.4
   catVec := CADR slot4
   SIZE catVec = 0 => nil                      --early exit if no categories
-  INTEGERP KDR catVec.0 =>
+  INTEGERP IFCDR catVec.0 =>
     newLookupInCategories1(op,sig,dom,dollar) --old style
   $lookupDefaults : local := nil
   if $monitorNewWorld = true then sayBrightly concat('"----->",
@@ -669,7 +669,7 @@ newHasCategory(domain,catform) ==
   auxvec := CAR slot4
   catvec := CADR slot4
   $isDefaultingPackage: local := isDefaultPackageForm? devaluate domain
-  #catvec > 0 and INTEGERP KDR catvec.0 =>              --old style
+  #catvec > 0 and INTEGERP IFCDR catvec.0 =>              --old style
     BREAK()
   lazyMatchAssocV(catform,auxvec,catvec,domain)         --new style
 

@@ -652,29 +652,29 @@ transKCatAlist(conform,domname,s) == main where
           for (ap := [args,:pred]) in CDR pair repeat
             match? :=
               domargs = args => true
-              HAS_SHARP_VAR args => domargs = sublisFormal(KDR domname, args)
+              HAS_SHARP_VAR args => domargs = sublisFormal(IFCDR domname, args)
               nil
             null match? => 'skip
-            npred := sublisFormal(KDR leftForm,pred)
+            npred := sublisFormal(IFCDR leftForm, pred)
             acc := [[leftForm,:npred],:acc]
         NREVERSE acc
       --conform has no arguments so each pair has form [con,:pred]
       for pair in s repeat
         leftForm := getConstructorForm CAR pair or systemError nil
         RPLACA(pair,leftForm)
-        RPLACD(pair,sublisFormal(KDR leftForm,CDR pair))
+        RPLACD(pair, sublisFormal(IFCDR leftForm, CDR pair))
       s
     --no domname, so look for special argument combinations
     acc := nil
-    KDR conform =>
+    IFCDR conform =>
       farglist := TAKE(#rest conform,$FormalMapVariableList)
       for pair in s repeat --pair has form [con,[conargs,:pred],...]]
         leftForm := getConstructorForm CAR pair
         for (ap := [args,:pred]) in CDR pair repeat
           hasArgsForm? := args ~= farglist
-          npred := sublisFormal(KDR leftForm,pred)
+          npred := sublisFormal(IFCDR leftForm, pred)
           if hasArgsForm? then
-            subargs := sublisFormal(KDR leftForm,args)
+            subargs := sublisFormal(IFCDR leftForm, args)
             hpred :=
 --            $hasArgsList => mkHasArgsPred subargs
               ['hasArgs,:subargs]
@@ -684,7 +684,7 @@ transKCatAlist(conform,domname,s) == main where
     for pair in s repeat --pair has form [con,:pred]
       leftForm := getConstructorForm CAR pair
       RPLACA(pair,leftForm)
-      RPLACD(pair,sublisFormal(KDR leftForm,CDR pair))
+      RPLACD(pair, sublisFormal(IFCDR leftForm, CDR pair))
     s
 
 mkHasArgsPred subargs ==

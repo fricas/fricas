@@ -64,11 +64,11 @@ DEFCONSTANT($CreateFrameAnswer, 50)
 
 -- Assoc list of interpreter frame names and unique integer identifiers
 
-SETANDFILEQ($frameAlist, nil)
-SETANDFILEQ($frameNumber, 0)
-SETANDFILEQ($currentFrameNum, 0)
-SETANDFILEQ($EndServerSession, false)
-SETANDFILEQ($NeedToSignalSessionManager, false)
+DEFPARAMETER($frameAlist, nil)
+DEFPARAMETER($frameNumber, 0)
+DEFPARAMETER($currentFrameNum, 0)
+DEFPARAMETER($EndServerSession, false)
+DEFPARAMETER($NeedToSignalSessionManager, false)
 
 serverReadLine(stream) ==
 -- used in place of read_-line in a scratchpad server system.

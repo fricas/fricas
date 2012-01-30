@@ -36,8 +36,8 @@
 -- are very cheap to instantiate.
 -- SMW and SCM July 86
 
-SETANDFILEQ($noCategoryDomains, '(Mode))
-SETANDFILEQ($nonLisplibDomains,
+DEFPARAMETER($noCategoryDomains, '(Mode))
+DEFPARAMETER($nonLisplibDomains,
   APPEND($Primitives,$noCategoryDomains))
 
 --% Record

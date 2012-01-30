@@ -376,14 +376,14 @@ getCatAncestors x ==  [CAAR y for y in parentsOf opOf x]
 --                     Display Template
 --=======================================================================
 dc(:r) ==
-  con := KAR r
-  options := KDR r
+  con := IFCAR r
+  options := IFCDR r
   ok := MEMQ(con,allConstructors()) or (con := abbreviation? con)
   null ok =>
     sayBrightly '"Format is: dc(<constructor name or abbreviation>,option)"
     sayBrightly
       '"options are: all (default), slots, preds, cats, data, ops, optable"
-  option := KAR options
+  option := IFCAR options
   option = 'all or null option => dcAll con
   option = 'slots   =>  dcSlots con
   option = 'preds   =>  dcPreds  con
@@ -560,7 +560,7 @@ dcData1 vec ==
   vec
 
 dcSize(:options) ==
-  con := KAR options
+  con := IFCAR options
   options := rest options
   null con => dcSizeAll()
   quiet := MEMQ('quiet,options)
@@ -780,7 +780,7 @@ catExtendsCat?(u,v,uvec) ==
   slot4 := uvec.4
   prinAncestorList := CAR slot4
   member(v,prinAncestorList) => true
-  vOp := KAR v
+  vOp := IFCAR v
   if similarForm := assoc(vOp,prinAncestorList) then
     PRINT u
     sayBrightlyNT '"   extends "

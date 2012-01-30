@@ -154,7 +154,7 @@ optCall (x is ["call",:u]) ==
   systemErrorHere '"optCall"
 
 optCallSpecially(q,x,n,R) ==
-    MEMQ(KAR R,$optimizableConstructorNames) => optSpecialCall(x,R,n)
+    MEMQ(IFCAR R, $optimizableConstructorNames) => optSpecialCall(x, R, n)
     (y:= get(R,"value",$e)) and
       MEMQ(opOf y.expr,$optimizableConstructorNames) =>
         optSpecialCall(x,y.expr,n)
@@ -186,7 +186,7 @@ optCons (x is ["CONS",a,b]) ==
 optSpecialCall(x,y,n) ==
   yval := optCallEval y
   CAAAR x="CONST" =>
-    KAR yval.n = function Undef =>
+    IFCAR yval.n = function Undef =>
       keyedSystemError("S2GE0016",['"optSpecialCall",
         '"invalid constant"])
     MKQ yval.n

@@ -32,7 +32,7 @@
 )package "BOOT"
 
 -- Functions which require special handlers (also see end of file)
-SETANDFILEQ($specialOps, [ _
+DEFPARAMETER($specialOps, [ _
   "ADEF", "AlgExtension", "and", "case", "COERCE", "COLLECT", "construct", "Declare", "DEF", "Dollar", _
      "equation", "error", "free", "has", "IF", "is", "isnt", "iterate", "break", "LET", "local", "MDEF", "or", _
        "pretend", "QUOTE", "REDUCE", "REPEAT", "return", "SEQ", "TARGET", "Tuple", "typeOf", "where" ])
