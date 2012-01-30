@@ -106,31 +106,31 @@ asMakeAlist con ==
 --if ATOM(form) and kind='category then form:=[form]
   if ATOM(form) then form:=[form]
   kind = 'function => asMakeAlistForFunction con
-  abb := asyAbbreviation(con,#(KDR sig))
-  if null KDR form then PUT(opOf form,'NILADIC,'T)
+  abb := asyAbbreviation(con, #(IFCDR sig))
+  if null IFCDR form then PUT(opOf form, 'NILADIC, 'T)
   modemap := asySubstMapping LASSOC(con,$mmAlist)
   $constructorCategory :local := CADAR modemap
   parents := mySort HGET($parentsHash,con)
 --children:= mySort HGET($childrenHash,con)
   alists  := HGET($opHash,con)
-  opAlist := SUBLISLIS($FormalMapVariableList,KDR form,CDDR alists)
-  ancestorAlist:= SUBLISLIS($FormalMapVariableList,KDR form,CAR alists)
+  opAlist := SUBLISLIS($FormalMapVariableList, IFCDR form, CDDR alists)
+  ancestorAlist:= SUBLISLIS($FormalMapVariableList, IFCDR form, CAR alists)
   catAttrs := [[x,:true] for x in getAttributesFromCATEGORY $constructorCategory]
   attributeAlist := REMDUP [:CADR alists,:catAttrs]
   documentation :=
-    SUBLISLIS($FormalMapVariableList,KDR form,LASSOC(con,$docAlist))
+      SUBLISLIS($FormalMapVariableList, IFCDR form, LASSOC(con, $docAlist))
   filestring := STRCONC(PATHNAME_-NAME STRINGIMAGE filename,'".as")
   constantPart := HGET($constantHash,con) and [['constant,:true]]
   niladicPart := MEMQ(con,$niladics) and [['NILADIC,:true]]
-  falist :=  TAKE(#KDR form,$FormalMapVariableList)
+  falist := TAKE(#IFCDR form, $FormalMapVariableList)
   constructorCategory :=
     kind = 'category =>
-      talist := TAKE(#KDR form, $TriangleVariableList)
+      talist := TAKE(#IFCDR form, $TriangleVariableList)
       SUBLISLIS(talist, falist, $constructorCategory)
-    SUBLISLIS(falist,KDR form,$constructorCategory)
+    SUBLISLIS(falist, IFCDR form, $constructorCategory)
   if constructorCategory='Category then kind := 'category
   exportAlist := asGetExports(kind, form, constructorCategory)
-  constructorModemap  := SUBLISLIS(falist,KDR form,modemap)
+  constructorModemap  := SUBLISLIS(falist, IFCDR form, modemap)
 --TTT fix a niladic category constructormodemap (remove the joins)
   if kind = 'category then
      SETF(CADAR(constructorModemap),['Category])
@@ -226,7 +226,7 @@ asGetModemaps(opAlist,oform,kind,modemap) ==
   rpvl:=
     MEMQ(kind, '(category function)) => rest $PatternVariableList -- *1 is special for $
     $PatternVariableList
-  form := [opOf oform,:[y for x in KDR oform for y in rpvl]]
+  form := [opOf oform, :[y for x in IFCDR oform for y in rpvl]]
   dc :=
     MEMQ(kind, '(category function)) => "*1"
     form
@@ -247,8 +247,8 @@ asGetModemaps(opAlist,oform,kind,modemap) ==
     for [sig0, pred] in itemlist repeat
       sig := SUBST(dc,"$",sig0)
       pred:= SUBST(dc,"$",pred)
-      sig := SUBLISLIS(rpvl,KDR oform,sig)
-      pred:= SUBLISLIS(rpvl,KDR oform,pred)
+      sig := SUBLISLIS(rpvl, IFCDR oform, sig)
+      pred:= SUBLISLIS(rpvl, IFCDR oform, pred)
       pred := pred or 'T
   ----------> Constants change <--------------
       if IDENTP sig0 then
@@ -396,7 +396,7 @@ mkNiladics u ==
 asytranDeclaration(dform,levels,predlist,local?) ==
   ['Declare,id,form,r] := dform
   id = 'failed => id
-  KAR dform ~= 'Declare => systemError '"asytranDeclaration"
+  IFCAR dform ~= 'Declare => systemError '"asytranDeclaration"
   if levels = '(top) then
     if form isnt ['Apply,"->",:.] then HPUT($constantHash,id,true)
   comments := LASSOC('documentation,r) or '""
@@ -564,7 +564,7 @@ asytranCategoryItem(x,levels,predlist,local?) ==
       predicate is ['Test,r] => r
       predicate
     asytranCategory(item,levels,[pred,:predlist],local?)
-  MEMQ(KAR x,'(Default Foreign)) => nil
+  MEMQ(IFCAR x, '(Default Foreign)) => nil
   x is ['Declare,:.] => asytranDeclaration(x,levels,predlist,local?)
   x
 
@@ -702,7 +702,7 @@ asyConstructorModemap con ==
   [form,sig,predlist,kind,exposure,comments,typeCode,:filename] := record
   $kind: local := kind
   --NOTE: sig has the form (-> source target) or simply (target)
-  $constructorArgs: local := KDR form
+  $constructorArgs : local := IFCDR form
   signature := asySignature(sig,false)
   formals := ['_$,:TAKE(#$constructorArgs,$FormalMapVariableList)]
   mm := [[[con,:$constructorArgs],:signature],['T,con]]

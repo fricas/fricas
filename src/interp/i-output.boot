@@ -40,7 +40,7 @@
 
 --% Output display routines
 
-SETANDFILEQ($plainRTspecialCharacters,[
+DEFPARAMETER($plainRTspecialCharacters, [
     '_+,      -- upper left corner   (+)
     '_+,      -- upper right corner  (+)
     '_+,      -- lower left corner   (+)
@@ -76,7 +76,7 @@ DEFVAR($texmacsFormat, false) -- if true produce Texmacs output
 
 makeCharacter n == INTERN(NUM2USTR(n))
 
-SETANDFILEQ($RTspecialCharacters,[
+DEFPARAMETER($RTspecialCharacters, [
     makeCharacter 9484,     -- upper left corner   (+)
     makeCharacter 9488,     -- upper right corner  (+)
     makeCharacter 9492,     -- lower left corner   (+)
@@ -97,9 +97,9 @@ SETANDFILEQ($RTspecialCharacters,[
     '_\       -- back slash
      ])
 
-SETANDFILEQ($specialCharacters, $plainRTspecialCharacters)
+DEFPARAMETER($specialCharacters, $plainRTspecialCharacters)
 
-SETANDFILEQ($specialCharacterAlist, '(
+DEFPARAMETER($specialCharacterAlist, '(
   (ulc  .  0)_
   (urc  .  1)_
   (llc  .  2)_
@@ -2190,9 +2190,9 @@ sumWidthA u ==
 superSubApp(u, x, y, di) ==
   a := first (u := rest u)
   b := first (u := rest u)
-  c := first (u := KDR u) or '((NOTHING . 0))
-  d := KAR   (u := KDR u) or '((NOTHING . 0))
-  e := KADR  u            or '((NOTHING . 0))
+  c := first (u := IFCDR u) or '((NOTHING . 0))
+  d := IFCAR   (u := IFCDR u) or '((NOTHING . 0))
+  e := IFCAR(IFCDR(u)) or '((NOTHING . 0))
   aox := MAX(wd := WIDTH d, we := WIDTH e)
   ar := superspan a
   ab := subspan a
@@ -2212,8 +2212,8 @@ stringer x ==
 
 superSubSub u ==
   a:= first (u:= rest u)
-  b:= KAR (u := KDR u)
-  e:= KAR KDR KDR KDR u
+  b := IFCAR (u := IFCDR u)
+  e := IFCAR IFCDR IFCDR IFCDR u
   return subspan a + MAX(height b, height e)
 
 binomApp(u,x,y,d) ==
@@ -2297,15 +2297,15 @@ altSuperSubWidth u ==
 superSubWidth u ==
   a := first (u := rest u)
   b := first (u := rest u)
-  c := first (u := KDR u) or '((NOTHING . 0))
-  d := KAR   (u := KDR u) or '((NOTHING . 0))
-  e := KADR  u            or '((NOTHING . 0))
+  c := first (u := IFCDR u) or '((NOTHING . 0))
+  d := IFCAR   (u := IFCDR u) or '((NOTHING . 0))
+  e := IFCAR(IFCDR(u)) or '((NOTHING . 0))
   return MAX(WIDTH d, WIDTH e) + MAX(WIDTH b, WIDTH c) + WIDTH a
 
 superSubSuper u ==
   a:= first (u := rest u)
-  c:= KAR (u := KDR KDR u)
-  d:= KADR u
+  c := IFCAR (u := IFCDR IFCDR u)
+  d := IFCAR(IFCDR(u))
   return superspan a + MAX(height c, height d)
 
 suScWidth u ==

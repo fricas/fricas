@@ -51,7 +51,7 @@ the following flags are used:
  if $SubDom is true, then runtime checks have to be compiled
 )endif
 
-SETANDFILEQ($constructorExposureList, '(Boolean Integer String))
+DEFPARAMETER($constructorExposureList, '(Boolean Integer String))
 
 sayFunctionSelection(op,args,target,dc,func) ==
   $abbreviateTypes : local := true
@@ -1493,7 +1493,7 @@ hasCaty(d,cat,SL) ==
     hasSig(d,foo,subCopy(sig,constructSubst d),SL)
   cat is ['ATTRIBUTE,a] => BREAK()
   x:= hasCat(opOf d,opOf cat) =>
-    y:= KDR cat =>
+    y:= IFCDR cat =>
       S  := constructSubst d
       for [z,:cond] in x until not (S1='failed) repeat
         S' := [[p, :mkDomPvar(p, d, z, y)] for [p,:d] in S]

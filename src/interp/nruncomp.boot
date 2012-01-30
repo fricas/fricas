@@ -104,7 +104,7 @@ listOfBoundVars form ==
   form = '$ => []
   IDENTP form and (u:=get(form,'value,$e)) =>
     u:=u.expr
-    MEMQ(KAR u,'(Union Record)) => listOfBoundVars u
+    MEMQ(IFCAR u, '(Union Record)) => listOfBoundVars u
     [form]
   atom form => []
   CAR form = 'QUOTE => []
@@ -121,7 +121,7 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
     atom dc and (dcval := get(dc,'value,$e)) => dcval.expr
     dc
   sig := substitute(ndc, dc, sig)
-  not MEMQ(KAR ndc,$optimizableConstructorNames) => nil
+  not MEMQ(IFCAR ndc, $optimizableConstructorNames) => nil
   dcval := optCallEval ndc
   -- substitute guarantees to use EQUAL testing
   sig := substitute(devaluate dcval, ndc, sig)
@@ -549,7 +549,8 @@ reverseCondlist cl ==
 NRTsetVector4a(sig,form,cond) ==
   sig = '$ =>
      domainList :=
-       [optimize COPY KAR comp(d,$EmptyMode,$e) or d for d in $domainShell.4.0]
+         [optimize COPY IFCAR comp(d, $EmptyMode, $e) or
+             d for d in $domainShell.4.0]
      $uncondList := APPEND(domainList,$uncondList)
      if isCategoryForm(form,$e) then $uncondList := [form,:$uncondList]
      $uncondList

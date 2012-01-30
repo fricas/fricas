@@ -43,7 +43,7 @@
 (DEFPARAMETER /DEPTH 0)
 (DEFVAR CURSTRM *standard-output*)
 (DEFVAR /PRETTY () "controls pretty printing of trace output")
-(SETANDFILEQ /ECHO NIL) ;;"prevents echo of SPAD or BOOT code with /c"
+(DEFPARAMETER /ECHO NIL) ;;"prevents echo of SPAD or BOOT code with /c"
 
 (defun enable-backtrace (&rest arg))
 
@@ -382,11 +382,11 @@
         ((AND (SETQ N (SMALL-ENOUGH-COUNT (CAR X) (1+ N) M))
               (SMALL-ENOUGH-COUNT (CDR X) N M)))))
 
-(DEFUN /GETOPTION (L OPT) (KDR (/GETTRACEOPTIONS L OPT)))
+(DEFUN /GETOPTION (L OPT) (IFCDR (/GETTRACEOPTIONS L OPT)))
 
 (DEFUN /GETTRACEOPTIONS (L OPT)
   (COND ((ATOM L) NIL)
-        ((EQ (KAR (CAR L)) OPT) (CAR L))
+        ((EQ (IFCAR (CAR L)) OPT) (CAR L))
         ((/GETTRACEOPTIONS (CDR L) OPT))))
 
 (defmacro /TRACE-LET (A B)

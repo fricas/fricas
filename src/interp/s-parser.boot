@@ -239,7 +239,7 @@ parse_Category() ==
                 nil
             MUST match_symbol ")"
             val1 := pop_stack_1()
-            KAR(val1) = "if" and tail_val = nil => push_lform0(val1)
+            IFCAR(val1) = "if" and tail_val = nil => push_lform0(val1)
             push_lform2("CATEGORY", val1, tail_val)
     match_symbol "{" =>
         MUST
@@ -567,7 +567,7 @@ parse_Sexpr1() ==
     parse_IntegerTok() => true
     match_symbol "-" =>
         MUST parse_IntegerTok()
-        push_reduction("parse_Sexpr1", MINUS pop_stack_1())
+        push_reduction("parse_Sexpr1", - pop_stack_1())
     parse_String() => true
     match_symbol "<" =>
         seq_val :=

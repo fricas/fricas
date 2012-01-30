@@ -46,7 +46,7 @@ profileTran alist ==
   $profileHash := MAKE_-HASH_-TABLE()
   for [opSig,:info] in alist repeat
     op := opOf opSig
-    sig := KAR KDR opSig
+    sig := IFCAR IFCDR opSig
     HPUT($profileHash,op,[[sig,:info],:HGET($profileHash,op)])
   [[key,:HGET($profileHash,key)] for key in mySort HKEYS $profileHash]
 

@@ -31,7 +31,7 @@
 
 )package "BOOT"
 
-SETANDFILEQ($getUnexposedOperations,true)
+DEFPARAMETER($getUnexposedOperations, true)
 
 --% Functions for manipulating MODEMAP DATABASE
 

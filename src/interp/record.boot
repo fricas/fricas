@@ -71,7 +71,7 @@ $mkTestOutputType := nil     -- saves the type for $testStream
 inputFile2RecordFile(pathname,:option) ==
   ifn := PATHNAME_-NAME pathname
   not isExistingFile pathname => throwKeyedMsg("S2IL0003",[namestring ifn])
-  opath := KAR option or pathname
+  opath := IFCAR option or pathname
   odirect := pathnameDirectory opath
   opathname := htMkPath(odirect,ifn,'"rec")
   -- logically _*PRINT_-ARRAY_* should be local, but Common Lisp
@@ -93,7 +93,7 @@ inputFile2RecordFile(pathname,:option) ==
 --                Function for Displaying a `record' file
 --=======================================================================
 printRecordFile(pathname,:option) ==
-  $LINELENGTH : local := KAR option or 76
+  $LINELENGTH : local := IFCAR option or 76
   $printTimeIfTrue: local := nil
   $printTypeIfTrue: local := true
   stream := MAKE_-INSTREAM (pathname)
@@ -207,7 +207,7 @@ wasIs(old,new,:typePart) ==
 htFile2InputFile(pathname,:option) ==
   ifn := pathnameName pathname
   not isExistingFile pathname => throwKeyedMsg("S2IL0003",[namestring ifn])
-  opath := KAR option or pathname
+  opath := IFCAR option or pathname
   odirect := pathnameDirectory opath
   opathname := htMkPath(odirect,ifn,'"input")
   if isExistingFile opathname then DELETE_-FILE opathname
@@ -251,7 +251,7 @@ htMkPath(directory,name,typ) ==
 --              Creating Record File from HT Files
 --=======================================================================
 htFile2RecordFile(pathname,:option) ==
-  inputFile2RecordFile htFile2InputFile(pathname,KAR option)
+  inputFile2RecordFile htFile2InputFile(pathname, IFCAR option)
 
 --=======================================================================
 --           Function to record and print values into $testStream

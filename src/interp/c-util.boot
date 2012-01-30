@@ -85,7 +85,7 @@ displayComp level ==
   --mathprint removeZeroOne mkErrorExpr level
   pp removeZeroOne mkErrorExpr level
   sayBrightly ['"****** level",'%b,level,'%d,'" ******"]
-  [$x,$m,$f,$exitModeStack]:= ELEM($s,level)
+  [$x, $m, $f, $exitModeStack] := $s.(level - 1)
   ($X:=$x;$M:=$m;$F:=$f)
   SAY("$x:= ",$x)
   SAY("$m:= ",$m)
@@ -169,7 +169,7 @@ intersectionContour(c,c') ==
       pair=(pair':= assoc(prop,p')) => pair
       --2. if property="value" and modes are unifiable, give intersection
       --       property="value" but value=genSomeVariable)()
-      (val':= KDR pair') and prop="value" and
+      (val':= IFCDR pair') and prop = "value" and
         (m:= unifiable(val.mode,val'.mode)) => ["value",genSomeVariable(),m,nil]
             --this tells us that an undeclared variable received
             --two different values but with identical modes

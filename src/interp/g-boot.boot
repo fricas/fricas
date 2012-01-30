@@ -264,7 +264,7 @@ comp_expand(x) ==
 
 repeat_tran(l, lp) ==
     ATOM(l) => ERROR('"REPEAT FORMAT ERROR")
-    KAR(KAR(l)) in '(EXIT RESET IN ON GSTEP ISTEP STEP
+    IFCAR(IFCAR(l)) in '(EXIT RESET IN ON GSTEP ISTEP STEP
                      UNTIL WHILE SUCHTHAT) =>
         repeat_tran(CDR(l), [CAR(l), :lp])
     [NREVERSE(lp), :MKPF(l, "PROGN")]

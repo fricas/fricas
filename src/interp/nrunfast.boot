@@ -88,7 +88,7 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
       i := start
       numArgs ~= (numTableArgs :=numvec.i) => nil
       predIndex := numvec.(i := inc_SI i)
-      NE(predIndex,0) and null testBitVector(predvec,predIndex) => nil
+      predIndex ~= 0 and null testBitVector(predvec, predIndex) => nil
       loc := newCompareSig(sig, numvec, (i := inc_SI i), dollar, domain)
       null loc => nil  --signifies no match
       loc = 1 => (someMatch := true)
@@ -116,7 +116,7 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
         return (success := newLookupInAddChain(op,sig,domain,dollar))
       systemError '"unexpected format"
     start := add_SI(start, add_SI(numTableArgs, 4))
-  NE(success,'failed) and success =>
+  success ~= 'failed and success =>
     if $monitorNewWorld then
       sayLooking1('"<----",uu) where uu ==
         PAIRP success => [first success,:devaluate rest success]
@@ -149,7 +149,7 @@ newLookupInAddChain(op,sig,addFormDomain,dollar) ==
 --=======================================================
 newLookupInDomain(op,sig,addFormDomain,dollar,index) ==
   addFormCell := addFormDomain.index =>
-    INTEGERP KAR addFormCell =>
+    INTEGERP IFCAR addFormCell =>
       or/[newLookupInDomain(op,sig,addFormDomain,dollar,i) for i in addFormCell]
     if null VECP addFormCell then lazyDomainSet(addFormCell,addFormDomain,index)
     lookupInDomainVector(op,sig,addFormDomain.index,dollar)
@@ -162,7 +162,7 @@ newLookupInCategories(op,sig,dom,dollar) ==
   slot4 := dom.4
   catVec := CADR slot4
   SIZE catVec = 0 => nil                      --early exit if no categories
-  INTEGERP KDR catVec.0 =>
+  INTEGERP IFCDR catVec.0 =>
     BREAK()
     newLookupInCategories1(op,sig,dom,dollar) --old style
   $lookupDefaults : local := nil
@@ -384,7 +384,7 @@ lookupInDomainByName(op,domain,arg) ==
     i := start
     numberOfArgs :=numvec.i
     predIndex := numvec.(i := inc_SI i)
-    NE(predIndex,0) and null testBitVector(predvec,predIndex) => nil
+    predIndex ~= 0 and null testBitVector(predvec, predIndex) => nil
     slotIndex := numvec.(i + 2 + numberOfArgs)
     newStart := add_SI(start, add_SI(numberOfArgs, 4))
     slot := domain.slotIndex

@@ -36,15 +36,15 @@
 -- This code supports the )trace system command and allows the
 -- tracing of LISP, BOOT and SPAD functions and interpreter maps.
 
-SETANDFILEQ($traceNoisely,NIL)  -- give trace and untrace messages
+DEFPARAMETER($traceNoisely, NIL)  -- give trace and untrace messages
 
-SETANDFILEQ($reportSpadTrace,NIL)  -- reports traced funs
+DEFPARAMETER($reportSpadTrace, NIL)  -- reports traced funs
 
-SETANDFILEQ($optionAlist,NIL)
+DEFPARAMETER($optionAlist, NIL)
 
-SETANDFILEQ($tracedMapSignatures, NIL)
+DEFPARAMETER($tracedMapSignatures, NIL)
 
-SETANDFILEQ($traceOptionList,'(
+DEFPARAMETER($traceOptionList, '(
     after _
     before _
     break_
@@ -439,7 +439,7 @@ spadTrace(domain,options) ==
   anyifTrue:= null listOfOperations
   domainId:= opOf domain.(0)
   currentEntry:= assoc(domain,_/TRACENAMES)
-  currentAlist:= KDR currentEntry
+  currentAlist:= IFCDR currentEntry
   opStructureList:= flattenOperationAlist getOperationAlistFromLisplib domainId
   sigSlotNumberAlist:=
     [triple
@@ -584,7 +584,7 @@ untraceDomainConstructor domainConstructor ==
     [df for df in _/TRACENAMES | keepTraced?(df, domainConstructor)]) where
       keepTraced?(df, domainConstructor) ==
         (df is [dc,:.]) and (isDomainOrPackage dc) and
-           ((KAR devaluate dc) = domainConstructor) =>
+           ((IFCAR devaluate dc) = domainConstructor) =>
                _/UNTRACE_-2(dc, [])
                false
         true

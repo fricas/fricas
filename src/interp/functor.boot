@@ -365,7 +365,7 @@ LookUpSigSlots(sig,siglist) ==
            sig := substitute('$,CADR($functorForm),sig)
   siglist := $lisplibOperationAlist
   REMDUP [implem for u in siglist | SigSlotsMatch(sig,first u,implem:=CADDR u)
-              and KADDR implem]
+              and IFCAR(IFCDR(IFCDR(implem)))]
 
 SigSlotsMatch(sig,pattern,implem) ==
   sig=pattern => true

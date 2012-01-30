@@ -589,7 +589,7 @@ kPage(line,:options) == --any cat, dom, package, default package
   signature       := ncParseFromString sig
   sourceFileName  := dbSourceFile INTERN name
   constrings      :=
-    KDR form => dbConformGenUnder form
+    IFCDR form => dbConformGenUnder form
     [STRCONC(name,args)]
   emString        := ['"{\sf ",:constrings,'"}"]
   heading := [capitalKind,'" ",:emString]
@@ -774,7 +774,7 @@ dbPresentConsSaturn(htPage,kind,exclusions) ==
   htpSetProperty(htPage,'exclusion,first exclusions)
   cAlist := htpProperty(htPage,'cAlist)
   empty? := null cAlist
-  one?   := null KDR cAlist
+  one?   := null IFCDR cAlist
   one? := empty? or one?
   exposedUnexposedFlag := $includeUnexposed? --used to be star?       4/92
   star?  := true     --always include information on exposed/unexposed   4/92
@@ -1013,7 +1013,7 @@ dbPresentOps(htPage,which,:exclusions) ==
     then htSay '"{\em Filter}"
     else htMakePage [['bcLinks,['"Filter ",'"",'htFilterPage,['dbShowOps,which,'filter]]]]
   htSay '"}{"
-  if one? or member('names,exclusions) or null KDR opAlist
+  if one? or member('names,exclusions) or null IFCDR opAlist
     then htSay '"{\em Names}"
     else htMakePage [['bcLispLinks,['"Names",'"",'dbShowOps,which,'names]]]
   if not star? then
@@ -1085,7 +1085,7 @@ dbPresentOpsSaturn(htPage,which,exclusions) ==
     then htSayCold '"\&Implementations"
     else htMakePage
       [['bcLispLinks,['"\&Implementations",'"",'dbShowOps,which,'implementation]]]
-  if one? or member('names,exclusions) or null KDR opAlist
+  if one? or member('names, exclusions) or null IFCDR opAlist
     then htSayCold '"\&Names"
     else htMakePage [['bcLispLinks,['"\&Names",'"",'dbShowOps,which,'names]]]
   if one? or member('origins,exclusions)
@@ -1169,8 +1169,8 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
   ops := escapeSpecialChars STRINGIMAGE op
   n := #sig
   do
-    n = 2 and GETL(op, 'Nud) => htSay(ops,'" {\em ",quickForm2HtString KAR args,'"}")
-    n = 3 and GETL(op, 'Led) => htSay('"{\em ",quickForm2HtString KAR args,'"} ",ops,'" {\em ",quickForm2HtString KAR KDR args,'"}")
+    n = 2 and GETL(op, 'Nud) => htSay(ops,'" {\em ", quickForm2HtString IFCAR args, '"}")
+    n = 3 and GETL(op, 'Led) => htSay('"{\em ", quickForm2HtString IFCAR args, '"} ", ops, '" {\em ", quickForm2HtString IFCAR IFCDR args, '"}")
     if unexposed? and $includeUnexposed? then
       htSayUnexposed()
     htSay(ops)
@@ -1214,20 +1214,20 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSaySaturn '"{\em Arguments:}"
       htSaySaturnAmpersand()
       firstTime := true
-      coSig := KDR GETDATABASE(op,'COSIG)  --check if op is constructor
+      coSig := IFCDR GETDATABASE(op, 'COSIG)  --check if op is constructor
       for a in args for t in rest $sig repeat
             if not firstTime then
               htSaySaturn '"\\ "
               htSaySaturnAmpersand()
             firstTime := false
             htSayIndentRel(15, true)
-            position := KAR relatives
-            relatives := KDR relatives
-            if KAR coSig and t ~= '(Type)
+            position := IFCAR relatives
+            relatives := IFCDR relatives
+            if IFCAR coSig and t ~= '(Type)
               then htMakePage [['bcLinks,[a,'"",'kArgPage,a]]]
               else htSay('"{\em ",form2HtString(a),'"}")
             htSay ", "
-            coSig := KDR coSig
+            coSig := IFCDR coSig
             htSayValue t
             htSayIndentRel(-15,true)
             htSayStandard('"\newline ")
@@ -1254,7 +1254,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     htSaySaturn '"\\"
   -----------------------------------------------------------
   if not MEMQ(predicate,'(T ASCONST)) then
-    pred := sublisFormal(KDR conform,predicate)
+    pred := sublisFormal(IFCDR conform, predicate)
     count := #pred
     htSaySaturn '"{\em Conditions:}"
     htSayStandard('"\newline\tab{2}{\em Conditions:}")
@@ -1291,7 +1291,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSaySaturnAmpersand()
       firstTime := false
       htSay("{\em ",d,"} is ")
-      htSayConstructor(key,sublisFormal(KDR conform,t))
+      htSayConstructor(key, sublisFormal(IFCDR conform, t))
       htSayIndentRel(-15,count > 1)
     htSaySaturn '"\\"
   -----------------------------------------------------------

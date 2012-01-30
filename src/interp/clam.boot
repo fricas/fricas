@@ -451,7 +451,7 @@ clamStats() ==
 
 numberOfEmptySlots cache==
   count:= (CAAR cache ='$failed => 1; 0)
-  for x in tails rest cache while NEQ(x,cache) repeat
+  for x in tails rest cache while not(EQ(x, cache)) repeat
     if CAAR x='$failed then count:= count+1
   count
 
@@ -540,7 +540,7 @@ reportInstantiations() ==
 listTruncate(l,n) ==
   u:= l
   n := dec_SI n
-  while NEQ(n,0) and null atom u repeat
+  while n ~= 0 and null atom u repeat
       n := dec_SI n
       u := QCDR u
   if null atom u then
@@ -555,7 +555,7 @@ lassocShift(x,l) ==
     EQUAL(x,CAR QCAR y) => return (result := QCAR y)
     y:= QCDR y
   result =>
-    if NEQ(y,l) then
+    if not(EQ(y, l)) then
       QRPLACA(y,CAR l)
       QRPLACA(l,result)
     QCDR result
@@ -567,7 +567,7 @@ lassocShiftWithFunction(x,l,fn) ==
     FUNCALL(fn,x,CAR QCAR y) => return (result := QCAR y)
     y:= QCDR y
   result =>
-    if NEQ(y,l) then
+    if not(EQ(y, l)) then
       QRPLACA(y,CAR l)
       QRPLACA(l,result)
     QCDR result

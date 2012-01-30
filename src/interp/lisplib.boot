@@ -371,11 +371,11 @@ getConstructorSignature form ==
 --% from MODEMAP BOOT
 
 augModemapsFromDomain1(name,functorForm,e) ==
-  GET(KAR functorForm, "makeFunctionList") =>
+  GET(IFCAR functorForm, "makeFunctionList") =>
     addConstructorModemaps(name,functorForm,e)
   atom functorForm and (catform:= getmode(functorForm,e)) =>
     augModemapsFromCategory(name,name,functorForm,catform,e)
-  mappingForm:= getmodeOrMapping(KAR functorForm,e) =>
+  mappingForm := getmodeOrMapping(IFCAR functorForm, e) =>
     ["Mapping",categoryForm,:functArgTypes]:= mappingForm
     catform:= substituteCategoryArguments(rest functorForm,categoryForm)
     augModemapsFromCategory(name,name,functorForm,catform,e)
@@ -415,7 +415,7 @@ mkEvalableCategoryForm c ==       --from DEFINE
 
 isDomainForm(D,e) ==
   --added for MPOLY 3/83 by RDJ
-  MEMQ(KAR D,$SpecialDomainNames) or isFunctor D or
+  MEMQ(IFCAR D, $SpecialDomainNames) or isFunctor D or
     -- ((D is ['Mapping,target,:.]) and isCategoryForm(target,e)) or
      ((getmode(D,e) is ['Mapping,target,:.]) and isCategoryForm(target,e)) or
        isCategoryForm(getmode(D,e),e) or isDomainConstructorForm(D,e)

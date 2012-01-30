@@ -68,7 +68,7 @@ that expose this command.
 )endif
 
 --% Table of )set options
-SETANDFILEQ($setOptions,'(
+DEFPARAMETER($setOptions, '(
   (breakmode
    "execute break processing on error"
    interpreter
@@ -723,6 +723,6 @@ SETANDFILEQ($setOptions,'(
 
 -- The following creates a list of option names in the above table.
 
-SETANDFILEQ($setOptionNames, [x.0 for x in $setOptions])
+DEFPARAMETER($setOptionNames, [x.0 for x in $setOptions])
 
 initializeSetVariables $setOptions

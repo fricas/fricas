@@ -44,7 +44,7 @@ dbFromConstructor?(htPage) == htpProperty(htPage,'conform)
 dbDoesOneOpHaveParameters? opAlist ==
   or/[(or/[fn for x in items]) for [op,:items] in opAlist] where fn ==
     STRINGP x => dbPart(x,2,1) ~= '"0"
-    KAR x
+    IFCAR x
 --============================================================================
 --               Master Switch Functions for Operation Views
 --============================================================================
@@ -141,7 +141,7 @@ dbShowOp1(htPage,opAlist,which,key) ==
       ops := escapeSpecialChars STRINGIMAGE CAAR opAlist
       ['" {\em ",ops,'"}"]
     nil
-  if what = '"Condition" and null KAR KAR data then dataCount := dataCount - 1
+  if what = '"Condition" and null IFCAR IFCAR data then dataCount := dataCount - 1
   exposurePart :=
     $exposedOnlyIfTrue => '(" Exposed ")
     nil
@@ -198,16 +198,16 @@ fromHeading htPage ==
   domname  := htpProperty(htPage,'domname)
   numberOfUnderlyingDomains := #[x for x in rest GETDATABASE(opOf domname,'COSIG) | x]
 --  numberOfUnderlyingDomains = 1 and
---    KDR domname and (dn := dbExtractUnderlyingDomain domname) =>
+--    IFCDR domname and (dn := dbExtractUnderlyingDomain domname) =>
 --      ['" {\em from} ",:pickitForm(domname,dn)]
-  KDR domname => ['" {\em from} ",:dbConformGen domname]
+  IFCDR domname => ['" {\em from} ", :dbConformGen domname]
   htpProperty(htPage,'fromHeading)
 
 pickitForm(form,uarg) ==
   conform2StringList(form,FUNCTION dbConform,FUNCTION conformString,uarg)
 
 conformString(form) ==
-  KDR form =>
+  IFCDR form =>
     conform2StringList(form,FUNCTION conname2StringList,FUNCTION conformString,nil)
   form2StringList form
 
@@ -611,11 +611,11 @@ dbShowOpParameters(htPage,opAlist,which,data) ==
     do
       n = 2 and GETL(op, 'Nud) =>
         dbShowOpParameterJump(ops,which,count,single?)
-        htSay('" {\em ",KAR args,'"}")
+        htSay('" {\em ", IFCAR args, '"}")
       n = 3 and GETL(op, 'Led) =>
-        htSay('"{\em ",KAR args,'"} ")
+        htSay('"{\em ", IFCAR args, '"} ")
         dbShowOpParameterJump(ops,which,count,single?)
-        htSay('" {\em ",KAR KDR args,'"}")
+        htSay('" {\em ", IFCAR IFCDR args, '"}")
       dbShowOpParameterJump(ops,which,count,single?)
       tail = 'ASCONST or member(op,'(0 1)) or which = '"attribute" and null IFCAR args => 'skip
       htSay('"(")
@@ -930,7 +930,7 @@ niladicHack form ==
 --============================================================================
 
 getDomainOpTable(dom,fromIfTrue,:options) ==
-  ops := KAR options
+  ops := IFCAR options
   $predEvalAlist : local := nil
   $returnNowhereFromGoGet: local := true
   domname := dom.0

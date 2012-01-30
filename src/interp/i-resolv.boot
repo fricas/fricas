@@ -772,7 +772,7 @@ getUnderModeOf d ==
 deconstructT(t) ==
   -- M is a type, which may contain type variables
   -- results in a pair (type constructor . mode arguments)
-  KDR t and constructor? CAR t =>
+  IFCDR t and constructor? CAR t =>
     dt := destructT CAR t
     args := [ x for d in dt for y in t | ( x := d and y ) ]
     c := [ x for d in dt for y in t | ( x := not d and y ) ]

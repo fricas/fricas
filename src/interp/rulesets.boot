@@ -47,7 +47,7 @@
 
 -- These first rules will be expanded for each of MP, DMP and NDMP
 
-SETANDFILEQ($mpolyTTRules,'( _
+DEFPARAMETER($mpolyTTRules, '( _
   ((Resolve (RN) (mpoly1 x t1)) . (mpoly1 x (Resolve (RN) t1))) _
   ((Resolve (UP x t1) (mpoly1 y t2)) . _
     (Resolve t1 (mpoly1 (Incl x y) t2))) _
@@ -68,7 +68,7 @@ SETANDFILEQ($mpolyTTRules,'( _
 
 -- These are the general rules, excluding those above.
 
-SETANDFILEQ($generalTTRules, '( _
+DEFPARAMETER($generalTTRules, '( _
   ((Resolve (L (L t1)) (M t2)) . (M (Resolve t1 t2))) _
   ((Resolve (EQ t1) (B)) . (B)) _
   ((Resolve (SY) t1) . (Resolve (P (I)) t1)) _
@@ -152,7 +152,7 @@ createResolveTTRules(nameList, abList) ==
 
 -- These first rules will be expanded for each of MP, DMP and NDMP
 
-SETANDFILEQ($mpolyTMRules,'( _
+DEFPARAMETER($mpolyTMRules, '( _
   ((Resolve (mpoly1 x t1) (P t2)) . (Resolve t1 (P t2))) _
   ((Resolve (mpoly1 (x) t1) (UP x t2)) . (UP x (Resolve t1 t2))) _
   ((Resolve (mpoly1 x t1) (UP y t2)) . _
@@ -171,7 +171,7 @@ SETANDFILEQ($mpolyTMRules,'( _
 
 -- These are the general rules, excluding those above.
 
-SETANDFILEQ($generalTMRules,'( _
+DEFPARAMETER($generalTMRules, '( _
   ((Resolve (VARIABLE x) (P t1)) . (P (Resolve (I) t1))) _
   ((Resolve (VARIABLE x) (UP y t1)) . _
     (UP (VarEqual x y) (Resolve (I) t1))) _
@@ -210,7 +210,7 @@ SETANDFILEQ($generalTMRules,'( _
 
 -- Private abbreviation table for resolve rules
 
-SETANDFILEQ($newResolveAbbreviations, '( _
+DEFPARAMETER($newResolveAbbreviations, '( _
     (P .  Polynomial) _
     (G .  Complex) _
     (L .  List) _

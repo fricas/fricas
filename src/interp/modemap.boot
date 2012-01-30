@@ -173,7 +173,7 @@ addNewDomain(domain,e) ==
   augModemapsFromDomain(domain,domain,e)
 
 augModemapsFromDomain(name,functorForm,e) ==
-  member(KAR name or name,$DummyFunctorNames) => e
+  member(IFCAR name or name, $DummyFunctorNames) => e
   name=$Category or isCategoryForm(name,e) => e
   member(name,curDomainsInScope:= getDomainsInScope e) => e
   if u:= GETDATABASE(opOf functorForm,'SUPERDOMAIN) then
@@ -266,7 +266,7 @@ substNames(domainName,viewName,functorForm,opalist) ==
        [sel, viewName,if domainName = "$" then pos else
                                          CADAR modemapform]]
      for [:modemapform,[sel,"$",pos]] in
-          EQSUBSTLIST(KDR functorForm,$FormalMapVariableList, opalist)]
+          EQSUBSTLIST(IFCDR functorForm, $FormalMapVariableList, opalist)]
 
 
 compCat(form is [functorName,:argl],m,e) ==
