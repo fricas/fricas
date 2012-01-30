@@ -19,10 +19,10 @@
 ++ is 0 based, there is no bound checking (unless provided by
 ++ lower level).
 U32Vector() : OneDimensionalArrayAggregate Integer == add
-   Qsize ==> QV32LEN$Lisp
-   Qelt ==> ELT32$Lisp
-   Qsetelt ==> SETELT32$Lisp
-   Qnew ==> GETREFV32$Lisp
+   Qsize ==> QV_LEN_U32$Lisp
+   Qelt ==> ELT_U32$Lisp
+   Qsetelt ==> SETELT_U32$Lisp
+   Qnew ==> GETREFV_U32$Lisp
 
    #x                          == Qsize x
    minIndex x                  == 0
@@ -54,12 +54,150 @@ U32Matrix : MatrixCategory(Integer,
 
     R ==> Integer
 
-    Qelt2 ==> U32AREF2$Lisp
-    Qsetelt2 ==> U32SETAREF2$Lisp
-    Qnrows ==> U32ANROWS$Lisp
-    Qncols ==> U32ANCOLS$Lisp
-    Qnew ==> MAKE_-U32_-MATRIX$Lisp
-    Qnew1 ==> MAKE_-U32_-MATRIX1$Lisp
+    Qelt2 ==> AREF2_U32$Lisp
+    Qsetelt2 ==> SETAREF2_U32$Lisp
+    Qnrows ==> ANROWS_U32$Lisp
+    Qncols ==> ANCOLS_U32$Lisp
+    Qnew ==> MAKE_MATRIX_U32$Lisp
+    Qnew1 ==> MAKE_MATRIX1_U32$Lisp
+
+    minRowIndex x == 0
+    minColIndex x == 0
+    nrows x == Qnrows(x)
+    ncols x == Qncols(x)
+    maxRowIndex x == Qnrows(x) - 1
+    maxColIndex x == Qncols(x) - 1
+
+    qelt(m, i, j) == Qelt2(m, i, j)
+    elt(m : %, i : Integer, j : Integer) : R == Qelt2(m, i, j)
+    qsetelt!(m, i, j, r) == Qsetelt2(m, i, j, r)
+    setelt(m : %, i : Integer, j : Integer, r : R) == Qsetelt2(m, i, j, r)
+
+    empty() == Qnew(0$Integer, 0$Integer)
+    qnew(rows, cols) == Qnew(rows, cols)
+    new(rows, cols, a) == Qnew1(rows, cols, a)
+
+@
+
+
+<<domain U16VEC U16Vector>>=
+
+)abbrev domain U16VEC U16Vector
+++ Description: This is a low-level domain which implements vectors
+++ (one dimensional arrays) of unsigned 16-bit numbers.  Indexing
+++ is 0 based, there is no bound checking (unless provided by
+++ lower level).
+U16Vector() : OneDimensionalArrayAggregate Integer == add
+   Qsize ==> QV_LEN_U16$Lisp
+   Qelt ==> ELT_U16$Lisp
+   Qsetelt ==> SETELT_U16$Lisp
+   Qnew ==> GETREFV_U16$Lisp
+
+   #x                          == Qsize x
+   minIndex x                  == 0
+   empty()                     == Qnew(0$Lisp, 0$Lisp)
+   new(n, x)                   == Qnew (n, x)
+   qelt(x, i)                  == Qelt(x, i)
+   elt(x:%, i:Integer)         == Qelt(x, i)
+   qsetelt!(x, i, s)          == Qsetelt(x, i, s)
+   setelt(x:%, i:Integer, s:Integer) == Qsetelt(x, i, s)
+   fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
+
+@
+
+<<domain U16MAT U16Matrix>>=
+
+)abbrev domain U16MAT U16Matrix
+
+++ Description: This is a low-level domain which implements matrices
+++ (two dimensional arrays) of 16-bit integers.
+++ Indexing is 0 based, there is no bound checking (unless
+++ provided by lower level).
+
+U16Matrix : MatrixCategory(Integer,
+                         U16Vector,
+                         U16Vector) with
+    qnew : (Integer, Integer) -> %
+      ++ qnew(n, m) creates a new uninitialized n by m matrix.
+  == add
+
+    R ==> Integer
+
+    Qelt2 ==> AREF2_U16$Lisp
+    Qsetelt2 ==> SETAREF2_U16$Lisp
+    Qnrows ==> ANROWS_U16$Lisp
+    Qncols ==> ANCOLS_U16$Lisp
+    Qnew ==> MAKE_MATRIX_U16$Lisp
+    Qnew1 ==> MAKE_MATRIX1_U16$Lisp
+
+    minRowIndex x == 0
+    minColIndex x == 0
+    nrows x == Qnrows(x)
+    ncols x == Qncols(x)
+    maxRowIndex x == Qnrows(x) - 1
+    maxColIndex x == Qncols(x) - 1
+
+    qelt(m, i, j) == Qelt2(m, i, j)
+    elt(m : %, i : Integer, j : Integer) : R == Qelt2(m, i, j)
+    qsetelt!(m, i, j, r) == Qsetelt2(m, i, j, r)
+    setelt(m : %, i : Integer, j : Integer, r : R) == Qsetelt2(m, i, j, r)
+
+    empty() == Qnew(0$Integer, 0$Integer)
+    qnew(rows, cols) == Qnew(rows, cols)
+    new(rows, cols, a) == Qnew1(rows, cols, a)
+
+@
+
+
+<<domain U8VEC U8Vector>>=
+
+)abbrev domain U8VEC U8Vector
+++ Description: This is a low-level domain which implements vectors
+++ (one dimensional arrays) of unsigned 8-bit numbers.  Indexing
+++ is 0 based, there is no bound checking (unless provided by
+++ lower level).
+U8Vector() : OneDimensionalArrayAggregate Integer == add
+   Qsize ==> QV_LEN_U8$Lisp
+   Qelt ==> ELT_U8$Lisp
+   Qsetelt ==> SETELT_U8$Lisp
+   Qnew ==> GETREFV_U8$Lisp
+
+   #x                          == Qsize x
+   minIndex x                  == 0
+   empty()                     == Qnew(0$Lisp, 0$Lisp)
+   new(n, x)                   == Qnew (n, x)
+   qelt(x, i)                  == Qelt(x, i)
+   elt(x:%, i:Integer)         == Qelt(x, i)
+   qsetelt!(x, i, s)          == Qsetelt(x, i, s)
+   setelt(x:%, i:Integer, s:Integer) == Qsetelt(x, i, s)
+   fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
+
+@
+
+<<domain U8MAT U8Matrix>>=
+
+)abbrev domain U8MAT U8Matrix
+
+++ Description: This is a low-level domain which implements matrices
+++ (two dimensional arrays) of 8-bit integers.
+++ Indexing is 0 based, there is no bound checking (unless
+++ provided by lower level).
+
+U8Matrix : MatrixCategory(Integer,
+                         U8Vector,
+                         U8Vector) with
+    qnew : (Integer, Integer) -> %
+      ++ qnew(n, m) creates a new uninitialized n by m matrix.
+  == add
+
+    R ==> Integer
+
+    Qelt2 ==> AREF2_U8$Lisp
+    Qsetelt2 ==> SETAREF2_U8$Lisp
+    Qnrows ==> ANROWS_U8$Lisp
+    Qncols ==> ANCOLS_U8$Lisp
+    Qnew ==> MAKE_MATRIX_U8$Lisp
+    Qnew1 ==> MAKE_MATRIX1_U8$Lisp
 
     minRowIndex x == 0
     minColIndex x == 0
