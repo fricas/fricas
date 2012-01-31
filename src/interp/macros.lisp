@@ -103,7 +103,6 @@
 (def-boot-val |$printLoadMsgs|  '|off|          "Interpreter>SetVarT.boot")
 (def-boot-var |$PrintOnly|                          "Compiler>LispLib.boot")
 (def-boot-var |$reportBottomUpFlag|                 "Interpreter>SetVarT.boot")
-(def-boot-var |$reportFlag|                         "Interpreter>SetVars.boot")
 (def-boot-var |$returnMode|                         "???")
 (def-boot-var |$semanticErrorStack|                 "???")
 (def-boot-val |$SetFunctions| nil  "checked in SetFunctionSlots")
@@ -112,12 +111,8 @@
 
 (def-boot-val |$timerOn| t                          "???")
 (def-boot-var |$topOp|                             "See displayPreCompilationErrors")
-(def-boot-val |$traceDomains| t                      "enables domain tracing")
-(def-boot-val |$TraceFlag| t                        "???")
 (def-boot-var |$tracedSpadModemap|                  "Interpreter>Trace.boot")
 (def-boot-var |$traceletFunctions|                  "???")
-(def-boot-var |$traceNoisely|                       "Interpreter>Trace.boot")
-(def-boot-var |$TranslateOnly|                      "???")
 
 (def-boot-var |$warningStack|                       "???")
 (def-boot-val |$whereList| () "referenced in format boot formDecl2String")
@@ -533,7 +528,8 @@
 
 ; 15.4 Substitution of Expressions
 
-(DEFUN SUBSTEQ (NEW OLD FORM)
+;; needed for substNames (always copy)
+(DEFUN SUBSTQ (NEW OLD FORM)
   "Version of SUBST that uses EQ rather than EQUAL on the world."
   (PROG (NFORM HNFORM ITEM)
         (SETQ HNFORM (SETQ NFORM (CONS () ())))
@@ -541,16 +537,12 @@
                    (COND ((EQ FORM OLD) (SETQ FORM ()) NEW )
                          ((NOT (PAIRP FORM)) FORM )
                          ((EQ (SETQ ITEM (CAR FORM)) OLD) (CONS NEW ()) )
-                         ((PAIRP ITEM) (CONS (SUBSTEQ NEW OLD ITEM) ()) )
+                         ((PAIRP ITEM) (CONS (SUBSTQ NEW OLD ITEM) ()) )
                          ((CONS ITEM ()))))
         (if (NOT (PAIRP FORM)) (RETURN (CDR HNFORM)))
         (SETQ NFORM (CDR NFORM))
         (SETQ FORM (CDR FORM))
         (GO LP)))
-
-;; needed for substNames (always copy)
-(define-function 'SUBSTQ #'SUBSTEQ)
-
 
 (DEFUN SUBLISNQ (KEY E) (declare (special KEY)) (if (NULL KEY) E (SUBANQ E)))
 
@@ -801,12 +793,6 @@
                   (char= (char LINE (1- l)) #\ ))
              (string-right-trim " " LINE)
              LINE)))
-
-; # Gives the number of elements of a list, 0 for atoms.
-; If we quote it, then an interpreter trip is necessary every time
-; we call #, and this costs us - 4% in the RATINT DEMO."
-
-(define-function '\# #'SIZE)
 
 (defun print-and-eval-defun (name body)
    (eval body)

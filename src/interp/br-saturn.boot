@@ -1169,8 +1169,11 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
   ops := escapeSpecialChars STRINGIMAGE op
   n := #sig
   do
-    n = 2 and GETL(op, 'Nud) => htSay(ops,'" {\em ", quickForm2HtString IFCAR args, '"}")
-    n = 3 and GETL(op, 'Led) => htSay('"{\em ", quickForm2HtString IFCAR args, '"} ", ops, '" {\em ", quickForm2HtString IFCAR IFCDR args, '"}")
+    n = 2 and GETL(op, 'Nud) =>
+        htSay(ops,'" {\em ", quickForm2HtString IFCAR args, '"}")
+    n = 3 and GETL(op, 'Led) =>
+        htSay('"{\em ", quickForm2HtString IFCAR args, '"} ", ops,
+              '" {\em ", quickForm2HtString IFCAR IFCDR args, '"}")
     if unexposed? and $includeUnexposed? then
       htSayUnexposed()
     htSay(ops)

@@ -44,6 +44,8 @@
 (DEFVAR CURSTRM *standard-output*)
 (DEFVAR /PRETTY () "controls pretty printing of trace output")
 (DEFPARAMETER /ECHO NIL) ;;"prevents echo of SPAD or BOOT code with /c"
+(DEFVAR |$traceNoisely| nil)
+(DEFPARAMETER |$traceDomains| t)
 
 (defun enable-backtrace (&rest arg))
 

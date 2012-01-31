@@ -199,7 +199,6 @@ NonBlank is true if the token is not preceded by a blank."
 ;       Push-Reduction Pop-Reduction
 
 (defun |next_symbol|() (NEXT-SYMBOL))
-(defun |match_current_token|(x y) (MATCH-CURRENT-TOKEN x y))
 
 ; 2B. Routines for applying certain metagrammatical elements
 ;     of a production (e.g., Star).

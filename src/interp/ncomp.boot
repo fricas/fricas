@@ -318,6 +318,7 @@ computeTargetMode(lhs, rhs) ==
 DEFVAR($RawParseOnly, false)
 DEFVAR($PostTranOnly, false)
 DEFVAR($FlatParseOnly, false)
+DEFVAR($TranslateOnly, false)
 DEFVAR($noEarlyMacroexpand, false)
 DEFVAR($SaveParseOnly, false)
 DEFVAR($globalDefs, nil)

@@ -438,7 +438,8 @@ lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
     VECP (d := domainVal(dollar,domain,a)) =>
       s = d.0 => true
       domainArg := ($isDefaultingPackage => domain.6.0; domain.0)
-      IFCAR s = QCAR(d.0) and lazyMatchArgDollarCheck(s, d.0, dollar.0, domainArg)
+      IFCAR s = QCAR(d.0) and
+                    lazyMatchArgDollarCheck(s, d.0, dollar.0, domainArg)
     isDomain d =>
         dhash:=getDomainHash d
         dhash =
