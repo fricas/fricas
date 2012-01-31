@@ -52,12 +52,14 @@ lisp_c_objects = \
 
 $(OUT)/lisp$(EXEEXT): do_it.$(lisp_flavor)
 
-do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
+do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
+           primitives.lisp
 	$(fricas_gcl_rsym_hack)
 	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
 	     '(load "fricas-lisp.lisp")' \
 	     '(setq compiler::*default-system-p* t)' \
-	     '(compile-file "fricas-lisp.lisp")' | $(FRICAS_LISP)
+	     '(compile-file "fricas-lisp.lisp")' \
+             '(compile-file "primitives.lisp")' | $(FRICAS_LISP)
 	echo '(compiler::link nil "prelisp" ' \
               ' (format nil "(progn (let ((*load-path* (cons ~S *load-path*))'\
                                         ' (si::*load-types* ~S))' \
@@ -69,7 +71,7 @@ do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
                '  "$(lisp_c_objects) $(fricas_c_runtime_extra)")' \
             | $(FRICAS_LISP)
 	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
-	     '(load "fricas-lisp.$(OBJEXT)")' \
+	     '(load "fricas-lisp.$(OBJEXT)")' '(load "primitives.$(OBJEXT)")' \
 	     '(in-package "FRICAS-LISP") (save-core "$(OUT)/lisp$(EXEEXT)")' \
 	    | ./prelisp$(EXEEXT)
 	$(STAMP) $@
@@ -78,6 +80,9 @@ fricas-lisp.lisp: $(srcdir)/fricas-lisp.lisp
 	cp $< $@
 
 fricas-package.lisp: $(srcdir)/fricas-package.lisp
+	cp $< $@
+
+primitives.lisp : $(srcdir)/primitives.lisp
 	cp $< $@
 
 num_gmp.lisp: $(srcdir)/num_gmp.lisp
@@ -94,7 +99,8 @@ fricas-config.lisp:
 	echo '(defparameter algebra-optimization' \
 	     '(quote $(fricas_algebra_optimization)))' >> $@
 
-do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
+do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
+           primitives.lisp
 	echo "(in-package \"FRICAS-LISP\")" > fricas-ecl.lisp
 	echo "(defvar *fricas-extra-c-files* (quote (" \
 	     $(patsubst %, "\"%\"", $(lisp_c_objects)) \
@@ -102,7 +108,7 @@ do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
 	echo "(defvar *fricas-initial-lisp-objects* (quote (" \
 	      $(patsubst %, "\"$(BASE)$(abs_builddir)/%\"", \
 	          fricas-package.o fricas-config.o fricas-ecl.o \
-		  fricas-lisp.o) ")))" \
+		  fricas-lisp.o primitives.o) ")))" \
 	            >> fricas-ecl.lisp
 	echo "(defvar *fricas-initial-lisp-forms* nil)" >> fricas-ecl.lisp
 	echo '(load "fricas-package.lisp")' \
@@ -114,27 +120,31 @@ do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp
 	     '(fricas-compile-file "fricas-config.lisp")' \
 	     '(fricas-compile-file "fricas-ecl.lisp")' \
 	     '(fricas-compile-file "fricas-lisp.lisp")' \
+	     '(fricas-compile-file "primitives.lisp")' \
 	     '(make-program "${OUT}/lisp$(EXEEXT)" nil)' | $(FRICAS_LISP)
 	$(STAMP) $@
 
 do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
-   fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_GMP)
+   fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_GMP) \
+   primitives.lisp
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
             '#+(or :sbcl :openmcl) (load (compile-file "num_gmp.lisp"))' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
+	    '(load (compile-file "primitives.lisp"))' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
          | $(FRICAS_LISP)
 	 $(STAMP) $@
 
 do_it.cmucl: fricas-lisp.lisp fricas-package.lisp \
-           fricas-config.lisp
+           fricas-config.lisp primitives.lisp
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
 	    '(setf (ext:search-list "libspad:")' \
 	    '(quote ("${fricas_target_libdir}/")))' \
 	    '(ext:load-foreign "libspad:libspad.so")' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
+	    '(load (compile-file "primitives.lisp"))' \
 	    '(defswitch "-")' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
          | $(FRICAS_LISP)

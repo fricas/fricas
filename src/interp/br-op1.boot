@@ -526,20 +526,20 @@ dbShowOpAllDomains(htPage,opAlist,which) ==
     for [.,predicate,origin,:.] in items repeat
       conname := CAR origin
       GETDATABASE(conname,'CONSTRUCTORKIND) = 'category =>
-        pred := simpOrDumb(predicate,LASSQ(conname,catOriginAlist) or true)
+        pred := simpOrDumb(predicate, QLASSQ(conname, catOriginAlist) or true)
         catOriginAlist := insertAlist(conname,pred,catOriginAlist)
-      pred := simpOrDumb(predicate,LASSQ(conname,domOriginAlist) or true)
+      pred := simpOrDumb(predicate, QLASSQ(conname, domOriginAlist) or true)
       domOriginAlist := insertAlist(conname,pred,domOriginAlist)
   --the following is similar to "domainsOf" but do not sort immediately
   u := [COPY key for key in HKEYS _*HASCATEGORY_-HASH_*
-          | LASSQ(CDR key,catOriginAlist)]
+          | QLASSQ(CDR key, catOriginAlist)]
   for pair in u repeat
     [dom,:cat] := pair
-    LASSQ(cat,catOriginAlist) = 'etc => RPLACD(pair,'etc)
+    QLASSQ(cat, catOriginAlist) = 'etc => RPLACD(pair, 'etc)
     RPLACD(pair,simpOrDumb(GETDATABASE(pair,'HASCATEGORY),true))
   --now add all of the domains
   for [dom,:pred] in domOriginAlist repeat
-    u := insertAlist(dom,simpOrDumb(pred,LASSQ(dom,u) or true),u)
+    u := insertAlist(dom, simpOrDumb(pred, QLASSQ(dom, u) or true), u)
   cAlist := listSort(function GLESSEQP,u)
   for pair in cAlist repeat RPLACA(pair,getConstructorForm first pair)
   htpSetProperty(htPage,'cAlist,cAlist)

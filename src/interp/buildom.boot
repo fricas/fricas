@@ -319,9 +319,9 @@ mkNewUnionFunList(name,form is ['Union,:listOfEntries],e) ==
                     gg:=GENSYM()
                     $InteractiveMode =>
                       ['XLAM,["#1"],['PROG1,['QCDR,"#1"],
-                        ['check_-union,['QEQCAR,"#1",i],type,"#1"]]]
+                        ['check_union, ['QEQCAR, "#1", i], type, "#1"]]]
                     ['XLAM,["#1"],['PROG2,['LET,gg,"#1"],['QCDR,gg],
-                      ['check_-union,['QEQCAR,gg,i],type,gg]]]
+                      ['check_union, ['QEQCAR, gg, i], type, gg]]]
   [cList,e]
 
 mkEnumerationFunList(nam,['Enumeration,:SL],e) ==
@@ -364,7 +364,7 @@ mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
                   ref:=gg
                   q:= substitute(gg,"#1",p)
                ['XLAM,["#1"],['PROG2,['LET,gg,"#1"],ref,
-                    ['check_-union,q,t,gg]]]
+                    ['check_union, q, t, gg]]]
              downFun() ==
                 p is ['EQCAR,x,.] =>
                   ['XLAM,["#1"],['QCDR,"#1"]]

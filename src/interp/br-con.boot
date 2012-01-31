@@ -43,8 +43,10 @@ conPage(a,:b) ==
   $conArgstrings : local := [form2HtString x for x in IFCDR a]
   if not atom a then a := first a
   da := DOWNCASE a
-  pageName := LASSQ(da,'((type . CategoryType)(union . DomainUnion)(record . DomainRecord)(mapping . DomainMapping)(enumeration . DomainEnumeration))) =>
-    downlink pageName                --special jump out for primitive domains
+  pageName := QLASSQ(da, '((type . CategoryType) (union . DomainUnion) _
+                           (record . DomainRecord) (mapping . DomainMapping) _
+                           (enumeration . DomainEnumeration))) =>
+      downlink pageName       --special jump out for primitive domains
   line := conPageFastPath da  => kPage(line,form) --lower case name of cons?
   line := conPageFastPath UPCASE a => kPage(line,form) --upper case an abbr?
   ySearch a       --slow search (include default packages)

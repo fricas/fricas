@@ -557,8 +557,8 @@ extendsCategoryForm(domain,form,form') ==
 
 getmode(x,e) ==
   prop:=getProplist(x,e)
-  u:= LASSQ("value",prop) => u.mode
-  LASSQ("mode",prop)
+  u := QLASSQ("value", prop) => u.mode
+  QLASSQ("mode", prop)
 
 getmodeOrMapping(x,e) ==
   u:= getmode(x,e) => u

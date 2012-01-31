@@ -1107,7 +1107,91 @@ with this hack and will try to convince the GCL crowd to fix this.
        :if-exists :supersede)
        (APPLY fun (cons stream args))))
 
+(in-package "BOOT")
+
+;;; Macros used in Boot code
+
+(defmacro IFCAR (x)
+  (if (atom x)
+      `(and (consp ,x) (qcar ,x))
+    (let ((xx (gensym)))
+      `(let ((,xx ,x))
+         (and (consp ,xx) (qcar ,xx))))))
+
+(defmacro IFCDR (x)
+  (if (atom x)
+      `(and (consp ,x) (qcdr ,x))
+    (let ((xx (gensym)))
+      `(let ((,xx ,x))
+         (and (consp ,xx) (qcdr ,xx))))))
+
+(defmacro |function| (name) `(FUNCTION ,name))
+
+(defmacro |replaceString| (result part start)
+    `(replace ,result ,part :start1 ,start))
+
+(defmacro |elapsedUserTime| () '(get-internal-run-time))
+
+#+:GCL
+(defmacro |elapsedGcTime| () '(system:gbc-time))
+#-:GCL
+(defmacro |elapsedGcTime| () '0)
+
+(defmacro |char| (arg)
+  (cond ((stringp arg) (character arg))
+        ((integerp arg) (code-char arg))
+        ((and (consp arg) (eq (car arg) 'quote)) (character (cadr arg)))
+        (t `(character ,arg))))
+
+(defmacro add1 (x) `(1+ ,x))
+
+(defmacro assq (a b)
+ `(assoc ,a ,b :test #'eq))
+
+(defmacro fetchchar (x i)
+ `(char ,x ,i))
+
+(defmacro fixp (x)
+ `(integerp ,x))
+
+(defmacro identp (x)
+ (if (atom x)
+  `(and ,x (symbolp ,x))
+   (let ((xx (gensym)))
+    `(let ((,xx ,x))
+      (and ,xx (symbolp ,xx))))))
+
+(defmacro LASTNODE (l)
+ `(last ,l))
+
+(defmacro makestring (a) a)
+
+(defmacro maxindex (x)
+ `(the fixnum (1- (the fixnum (length ,x)))))
+
+(defmacro refvecp (v) `(simple-vector-p ,v))
+
+(defmacro sintp (n)
+ `(typep ,n 'fixnum))
+
+(defmacro stringlength (x)
+ `(length (the string ,x)))
+
+(defmacro subrp (x)
+ `(compiled-function-p ,x))
+
+(defmacro vecp (v) `(simple-vector-p ,v))
+
+;;; The following defines syntax of Spad identifiers
+
+(defmacro |startsId?| (x)
+    `(or (alpha-char-p ,x) (member ,x '(#\? #\% #\!) :test #'char=)))
+
+(defmacro |idChar?| (x)
+    `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
+
 (in-package "BOOTTRAN")
+
 (defmacro |doInBoottranPackage| (expr)
     `(let ((*PACKAGE* (find-package "BOOTTRAN")))
          ,expr))

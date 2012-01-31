@@ -445,6 +445,15 @@
 (defmacro qcddr (x)
  `(cdr (the cons (cdr (the cons ,x)))))
 
+;; qeqcar should be used when you know the first arg is a pair
+;; the second arg should either be a literal fixnum or a symbol
+;; the car of the first arg is always of the same type as the second
+
+(defmacro qeqcar (x y)
+    (cond ((typep y 'fixnum) `(eql (the fixnum (qcar ,x)) (the fixnum ,y)))
+          ((symbolp y) `(eq (qcar ,x) ,y))
+          (t (BREAK))))
+
 (defmacro qcsize (x)
  `(the fixnum (length (the #-(or :ecl :gcl)simple-string
                            #+(or :ecl :gcl)string ,x))))
@@ -470,6 +479,13 @@
  `(the fixnum (length (the simple-vector ,x))))
 
 (defmacro qlessp(x y) `(< ,x ,y))
+
+(defmacro eqcar (x y)
+  (if (atom x)
+    `(and (consp ,x) (eql (qcar ,x) ,y))
+    (let ((xx (gensym)))
+     `(let ((,xx ,x))
+       (and (consp ,xx) (eql (qcar ,xx) ,y))))))
 
 (defmacro |bool_to_bit| (b) `(if ,b 1 0))
 
@@ -542,6 +558,14 @@
 (defmacro |spadConstant| (dollar n)
  `(SPADCALL (svref ,dollar (the fixnum ,n))))
 
+(defmacro |SPADfirst| (l)
+  (let ((tem (gensym)))
+    `(let ((,tem ,l)) (if ,tem (car ,tem) (first-error)))))
+
+(defun first-error () (error "Cannot take first of an empty list"))
+
+(defmacro |dispatchFunction| (name) `(FUNCTION ,name))
+
 (defmacro |Record| (&rest args)
     (list '|Record0|
           (cons 'LIST
@@ -558,9 +582,28 @@
 (defmacro |Zero|() 0)
 (defmacro |One|() 1)
 
+;;; range tests and assertions
+
+(defmacro |assert| (x y) `(IF (NULL ,x) (|error| ,y)))
+
+(defun coerce-failure-msg (val mode)
+   (STRCONC (MAKE-REASONABLE (STRINGIMAGE val))
+            " cannot be coerced to mode "
+            (STRINGIMAGE (|devaluate| mode))))
+
+(defmacro |check_subtype| (pred submode val)
+   `(|assert| ,pred (coerce-failure-msg ,val ,submode)))
+
+(defmacro |check_union| (pred branch val)
+   `(|assert| ,pred (coerce-failure-msg ,val ,branch )))
+
+
 ;;; Needed by interpreter
 (defmacro REPEAT (&rest L) (|expandREPEAT| L))
 (defmacro COLLECT (&rest L) (|expandCOLLECT| L))
 
-;;;
+;;; Misc
+
 (defmacro |rplac| (x y) `(setf ,x ,y))
+
+(defmacro |do| (&rest args) (CONS 'PROGN args))
