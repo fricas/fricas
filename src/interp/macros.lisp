@@ -140,9 +140,6 @@
 
 ; 5.3.2 Declaring Global Variables and Named Constants
 
-(defmacro |function| (name) `(FUNCTION ,name))
-(defmacro |dispatchFunction| (name) `(FUNCTION ,name))
-
 (defun |functionp| (fn)
    (if (identp fn) (and (fboundp fn) (not (macro-function fn))) (functionp fn)))
 (defun |macrop| (fn) (and (identp fn) (macro-function fn)))
@@ -327,19 +324,6 @@
 
 (defun LEXLESSEQP (X Y) (NOT (LEXGREATERP X Y)))
 
-; 6.3 Equality Predicates
-
-;;; -----------------------
-
-;; qeqcar should be used when you know the first arg is a pair
-;; the second arg should either be a literal fixnum or a symbol
-;; the car of the first arg is always of the same type as the second
-;; use eql unless we are sure fixnums are represented canonically
-
-(defmacro qeqcar (x y)
-    (if (integerp y) `(eql (the fixnum (qcar ,x)) (the fixnum ,y))
-         `(eq (qcar ,x) ,y)))
-
 ; 7 CONTROL STRUCTURE
 
 ; 7.1 Constants and Variables
@@ -470,23 +454,12 @@
         (|union| NIL) (NCONC NIL) (|and| |true|) (|or| |false|) (AND 'T)
         (OR NIL)))
 
-(define-function '|append| #'APPEND)
-
 (defun |delete| (item sequence)
    (cond ((symbolp item) (remove item sequence :test #'eq))
          ((and (atom item) (not (arrayp item))) (remove item sequence))
          (T (remove item sequence :test #'equalp))))
 
 ; 15 LISTS
-
-; 15.1 Conses
-
-
-(defmacro |SPADfirst| (l)
-  (let ((tem (gensym)))
-    `(let ((,tem ,l)) (if ,tem (car ,tem) (first-error)))))
-
-(defun first-error () (error "Cannot take first of an empty list"))
 
 ; 15.2 Lists
 
@@ -501,8 +474,6 @@
         ((NCONC (LISTOFATOMS (CAR X)) (LISTOFATOMS (CDR X))))))
 
 (DEFUN LASTATOM (L) (if (ATOM L) L (LASTATOM (CDR L))))
-
-(define-function 'LASTTAIL #'last)
 
 (defun DROP (N X &aux m)
   "Return a pointer to the Nth cons of X, counting 0 as the first cons."
@@ -647,8 +618,6 @@
 ; (defun QLASSQ (p a-list) (let ((y (assoc p a-list :test #'eq))) (if y (cdr y))))
 (defun QLASSQ (p a-list) (cdr (assq p a-list)))
 
-(define-function 'LASSQ #'QLASSQ)
-
 (defun pair (x y) (mapcar #'cons x y))
 
 ;;; Operations on Association Sets (AS)
@@ -660,11 +629,6 @@
                  (setf (cdr pp) B)
                  L))
          (cons (cons A B) L)))
-
-; 17 ARRAYS
-
-(defmacro |replaceString| (result part start)
-    `(replace ,result ,part :start1 ,start))
 
 ; 22 INPUT/OUTPUT
 
@@ -753,39 +717,8 @@
 
 ; 25 MISCELLANEOUS FEATURES
 
-;; range tests and assertions
-
-(defmacro |assert| (x y) `(IF (NULL ,x) (|error| ,y)))
-
-(defun coerce-failure-msg (val mode)
-   (STRCONC (MAKE-REASONABLE (STRINGIMAGE val))
-            " cannot be coerced to mode "
-            (STRINGIMAGE (|devaluate| mode))))
-
-(defmacro |check-subtype| (pred submode val)
-   `(|assert| ,pred (coerce-failure-msg ,val ,submode)))
-
-(defmacro |check-union| (pred branch val)
-   `(|assert| ,pred (coerce-failure-msg ,val ,branch )))
-
 (defun MAKE-REASONABLE (Z)
    (if (> (length Z) 30) (CONCAT "expression beginning " (subseq Z 0 20)) Z))
-
-
-(defmacro |elapsedUserTime| () '(get-internal-run-time))
-
-#+:GCL
-(defmacro |elapsedGcTime| () '(system:gbc-time))
-#-:GCL
-(defmacro |elapsedGcTime| () '0)
-
-(defmacro |do| (&rest args) (CONS 'PROGN args))
-
-(defmacro |char| (arg)
-  (cond ((stringp arg) (character arg))
-        ((integerp arg) (code-char arg))
-        ((and (consp arg) (eq (car arg) 'quote)) (character (cadr arg)))
-        (t `(character ,arg))))
 
 (defun DROPTRAILINGBLANKS  (LINE)
      (let ((l (length LINE)))

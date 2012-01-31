@@ -31,8 +31,8 @@
 
 #|
 This file is a collection of utility functions that are useful
-for system level work. A couple of the functions, {\bf build-depsys}
-and {\bf build-interpsys} interface to the src/interp/Makefile.
+for system level work.  {\bf build-interpsys} interfaces to the
+src/interp/Makefile.
 
 A third group of related functions are used to set up the
 {\bf autoload} mechanism. These enable whole subsystems to
@@ -82,27 +82,6 @@ at load time.
 ;;; This is the system-wide search path for library files.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
-
-;;; When we are building a {\bf depsys} image for GCL we need
-;;; need to initialize some optimization routines. Each time a file is
-;;; compiled in GCL we collect some function information and write it
-;;; out to a {\bf .fn} file. If this {\bf .fn} file exists at compile
-;;; time then GCL will perform function call optimizations. These can
-;;; be significant in terms of performance.
-(defun make-depsys (build-interp-dir)
-  ;; perform system initializations for building a starter system
-  (init-memory-config)
-  #+:GCL
-  (let ()
-   (mapcar
-     #'load
-     (directory (concatenate 'string build-interp-dir "/*.fn")))
-   (with-open-file
-    (out (concatenate 'string build-interp-dir "/proclaims.lisp" )
-      :direction :output)
-     (compiler::make-proclaims out))
-   (load (concatenate 'string build-interp-dir "/proclaims.lisp")))
-  )
 
 ;;; This is the {\bf boot parser} subsystem. It is only needed by
 ;;; algebra developers and developers who translate boot code to
@@ -465,27 +444,6 @@ After this function is called the image is clean and can be saved.
   (|setBootAutloadProperties| asauto-functions asauto-files)
   (resethashtables) ; the databases into core, then close the streams
  )
-
-;;; The {\bf depsys} image is one of the two images we build from
-;;; the src/interp subdirectory (the other is {\bf interpsys}). We
-;;; use {\bf depsys} as a compile-time image as it contains all of
-;;; the necessary functions and macros to compile any file. The
-;;; {\bf depsys} image is almost the same as an {\bf interpsys}
-;;; image but it does not have any autoload triggers or databases
-;;; loaded.
-(defun build-depsys (load-files spad build-interp-dir)
-#+:GCL
-  (in-package "BOOT")
-  (mapcar #'load load-files)
-  (make-depsys build-interp-dir)
-  (initroot spad)
-  #+:GCL
-  (init-memory-config :cons 1000 :fixnum 400 :symbol 1000 :package 16
-                      :array 800 :string 1000 :cfun 200 :cpages 2000
-                      :rpages 2000 :hole 4000) )
-;;  (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
-;;                    :array 400 :string 500 :cfun 100 :cpages 1000
-;;                    :rpages 1000 :hole 2000) )
 
 ;; the following are for conditional reading
 (setq |$opSysName| '"shell")

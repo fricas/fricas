@@ -72,7 +72,7 @@ substDomainArgs(domain,object) ==
 lookupInTable(op,sig,dollar,[domain,table]) ==
   success := false
   someMatch := false
-  while not success for [sig1,:code] in LASSQ(op,table) repeat
+  while not success for [sig1, :code] in QLASSQ(op, table) repeat
     success :=
       null compareSig(sig,sig1,dollar.0,domain) => false
       loc := code

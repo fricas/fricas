@@ -51,80 +51,17 @@
 
 (defvar *fileactq-apply* nil "function to apply in fileactq")
 
-;; DEFMACROS
-
-
-(defmacro add1 (x)
- `(1+ ,x))
-
-(defmacro assq (a b)
- `(assoc ,a ,b :test #'eq))
-
-(defmacro eqcar (x y)
-  (if (atom x)
-    `(and (consp ,x) (eql (qcar ,x) ,y))
-    (let ((xx (gensym)))
-     `(let ((,xx ,x))
-       (and (consp ,xx) (eql (qcar ,xx) ,y))))))
-
-(defmacro fetchchar (x i)
- `(char ,x ,i))
-
-(defmacro fixp (x)
- `(integerp ,x))
-
-(defmacro |idChar?| (x)
- `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
-
-(defmacro identp (x)
- (if (atom x)
-  `(and ,x (symbolp ,x))
-   (let ((xx (gensym)))
-    `(let ((,xx ,x))
-      (and ,xx (symbolp ,xx))))))
-
-(defmacro ifcar (x)
-  (if (atom x)
-      `(and (consp ,x) (qcar ,x))
-    (let ((xx (gensym)))
-      `(let ((,xx ,x))
-         (and (consp ,xx) (qcar ,xx))))))
-
-(defmacro ifcdr (x)
-  (if (atom x)
-      `(and (consp ,x) (qcdr ,x))
-    (let ((xx (gensym)))
-      `(let ((,xx ,x))
-         (and (consp ,xx) (qcdr ,xx))))))
-
-(defmacro LASTNODE (l)
- `(last ,l))
-
-(defmacro makestring (a) a)
-
-(defmacro maxindex (x)
- `(the fixnum (1- (the fixnum (length ,x)))))
-
-(defmacro refvecp (v) `(simple-vector-p ,v))
-
-(defmacro sintp (n)
- `(typep ,n 'fixnum))
-
-(defmacro |startsId?| (x)
- `(or (alpha-char-p ,x) (member ,x '(#\? #\% #\!) :test #'char=)))
-
-(defmacro stringlength (x)
- `(length (the string ,x)))
-
-(defmacro subrp (x)
- `(compiled-function-p ,x))
-
-(defmacro vecp (v) `(simple-vector-p ,v))
-
 ;; defuns
 
 (defun define-function (f v)
  (setf (symbol-function f) v))
+
+(define-function '|append| #'APPEND)
+(define-function 'LASTTAIL #'last)
+
+;;; Used in constructors for evaluating conditions
+(define-function '|not| #'NOT)
+
 
 (define-function 'tempus-fugit #'get-internal-run-time)
 

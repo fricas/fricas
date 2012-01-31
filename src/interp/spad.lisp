@@ -82,9 +82,6 @@
 (defun |makeSF| (mantissa exponent)
   (FLOAT (/ mantissa (expt 2 (- exponent))) 0.0d0))
 
-;;; Used in constructors for evaluating conditions
-(define-function '|not| #'NOT)
-
 (defun |random| () (random (expt 2 26)))
 
 ;; This is used in the domain Boolean (BOOLEAN.NRLIB/code.lsp)

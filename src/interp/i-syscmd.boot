@@ -2469,7 +2469,7 @@ diffAlist(new,old) ==
     acc := [[name,:[[prop] for [prop,:.] in proplist]],:acc]
 --record properties absent on new list (say, from a )cl all)
   for (oldPair := [name,:r]) in old repeat
-    r and null LASSQ(name,new) =>
+    r and null QLASSQ(name, new) =>
       acc := [oldPair,:acc]
     -- name has an entry both in new and old world
     -- (1) if the new world has no proplist for that variable

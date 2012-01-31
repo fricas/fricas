@@ -98,7 +98,7 @@
            (*EOF* NIL)
            (File-Closed NIL)
            in-stream)
-  (declare (special |$comp370_apply| *EOF*
+  (declare (special |$comp370_apply| *fileactq-apply* *EOF*
                     in-stream File-Closed Xcape))
   ;; only rebind |$InteractiveFrame| if compiling
   (progv (if (not |$InteractiveMode|) '(|$InteractiveFrame|))
