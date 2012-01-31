@@ -235,7 +235,6 @@
 
 ;; These were originally in INIT LISP
 
-(SETQ $LISPLIB NIL)
 (SETQ |$forceDatabaseUpdate| NIL)  ;; see "load" function
 (DEFPARAMETER |$functorForm| NIL)
 
@@ -329,8 +328,6 @@
          ;" controls generation of QREFELT etc."
 (SETQ |$QuickLet| T)
          ;" controls generation of LET tracing."
-(SETQ |$mathTraceList| NIL)
-         ;" controls mathprint output for )trace."
 (SETQ |$domainTraceNameAssoc| NIL)
         ;"alist of traced domains"
 (SETQ |$tracedMapSignatures| ())
