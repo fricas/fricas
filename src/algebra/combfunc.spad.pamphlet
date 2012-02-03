@@ -833,6 +833,11 @@ FunctionalSpecialFunction(R, F): Exports == Implementation where
         ++ jacobiDn(z, m) is the Jacobi elliptic dn function, defined
         ++ by \spad{jacobiDn(z, m)^2 + m*jacobiSn(z, m)^2 = 1} and
         ++ \spad{jacobiDn(0, m) = 1}
+    jacobiZeta : (F, F) -> F
+        ++ jacobiZeta(z, m) is the Jacobi elliptic zets function, defined
+        ++ by \spad{D(jacobiZeta(z, m), z) =
+        ++ jacobiDn(z, m)^2 - ellipticE(m)/ellipticK(m)} and
+        ++ \spad{jacobiZeta(0, m) = 0}.
     jacobiTheta : (F, F) -> F
         ++ jacobiTheta(q, z) is the third Jacobi Theta function
     lerchPhi : (F, F, F) -> F
@@ -1696,6 +1701,40 @@ might not re-evaluate the operator.
            jacobiSn(z, m)^2*jacobiDn(z, m)/(1 - m))
 
     derivative(opJacobiDn, [eJacobiDnGrad_z, eJacobiDnGrad_m])
+
+    -- handle JacobiZeta
+
+    opJacobiZeta := operator('jacobiZeta)$CommonOperators
+
+    jacobiZeta(z, m) == opJacobiZeta(z, m)
+
+    eJacobiZeta(z : F, m : F) : F ==
+        z = 0 => 0
+        kernel(opJacobiZeta, [z, m])
+
+    elJacobiZeta(l : List F) : F == eJacobiZeta(l(1), l(2))
+    evaluate(opJacobiZeta, elJacobiZeta)$BasicOperatorFunctions1(F)
+
+    eJacobiZetaGrad_z(l : List F) : F ==
+        z := l(1)
+        m := l(2)
+        dn := jacobiDn(z, m)
+        dn*dn - ellipticE(m)/ellipticK(m)
+
+    eJacobiZetaGrad_m(l : List F) : F ==
+        z := l(1)
+        m := l(2)
+        ek := ellipticK(m)
+        ee := ellipticE(m)
+        er := ee/ek
+        dn := jacobiDn(z, m)
+        res1 := (dn*dn + m - 1)*jacobiZeta(z, m)
+        res2 := res1 + (m - 1)*z*dn*dn
+        res3 := res2 - m*jacobiCn(z, m)*jacobiDn(z, m)*jacobiSn(z, m)
+        res4 := res3 + z*(1 - m + dn*dn)*er
+        ahalf*(res4 - z*er*er)/(m*m - m)
+
+    derivative(opJacobiZeta, [eJacobiZetaGrad_z, eJacobiZetaGrad_m])
 
     -- handle JacobiTheta
 
