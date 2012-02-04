@@ -128,7 +128,7 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
   if rest ndc then
      for new in rest devaluate dcval for old in rest ndc repeat
        sig := substitute(new, old, sig)
-     -- optCallEval sends (List X) to (LIst (Integer)) etc,
+     -- optCallEval sends (List X) to (List (Integer)) etc,
      -- so we should make the same transformation
   fn := compiledLookup(op,sig,dcval)
   if null fn then
