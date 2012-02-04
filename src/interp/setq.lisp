@@ -446,7 +446,10 @@
 (SETQ |$optimizableConstructorNames|
    '(|List| |Integer| |PositiveInteger| |NonNegativeInteger| |SingleInteger|
      |String| |Boolean| |Symbol| |DoubleFloat| |PrimitiveArray| |Vector|
-     |Matrix| |OneDimensionalArray| |TwoDimensionalArray| |U32Vector|))
+     |Matrix| |OneDimensionalArray| |TwoDimensionalArray| |U32Vector|
+     |U32Matrix| |U16Vector| |U16Matrix| |U8Vector| |U8Matrix|
+     |DoubleFloatVector| |DoubleFloatMatrix| |ComplexDoubleFloatVector|
+     |ComplexDoubleFloatMatrix| |Character| ))
             ;" used by optCallSpecially"
 (SETQ |$Zero| '(|Zero|))
 (SETQ |$One| '(|One|))
