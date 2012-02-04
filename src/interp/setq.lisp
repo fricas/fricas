@@ -77,7 +77,6 @@
 (SETQ $BOOT NIL)
 (setq |$interpOnly| nil)
 (SETQ |$testingSystem| NIL)
-(SETQ |$newCompCompare| NIL)
 (SETQ |$permitWhere| NIL)
 (DEFPARAMETER |$bootStrapMode| NIL) ;; if true skip functor bodies
 (SETQ |$bootstrapDomains| NIL)
