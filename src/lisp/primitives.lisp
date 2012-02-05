@@ -30,6 +30,38 @@
 (defun MAKEARR1 (size init)
     (make-array size :initial-element init))
 
+;;; string accessors
+
+(defmacro STR_ELT(s i)
+    `(char-code (char (the string ,s) (the fixnum ,i))))
+
+(defmacro STR_ELT1(s i)
+    `(char-code (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))))
+
+(defmacro STR_SETELT1(s i c)
+    (if (integerp c)
+        `(progn 
+             (setf (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))
+                   (code-char (the fixnum ,c)))
+             ,c)
+        (let ((sc (gensym)))
+         `(let ((,sc ,c))
+             (setf (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))
+                   (code-char (the fixnum ,sc)))
+             ,sc))))
+
+;;; Creating characters
+
+(defun |STR_to_CHAR_fun| (s)
+    (if (eql (length s) 1)
+        (STR_ELT s 0)
+        (|error| "String is not a single character")))
+
+(defmacro |STR_to_CHAR| (s)
+    (if (and (stringp s) (eql (length s) 1))
+        (STR_ELT s 0)
+        `(|STR_to_CHAR_fun| ,s)))
+
 ;;; Vectors and matrices of of small integer 32-bit numbers
 
 (defmacro suffixed_name(name s)

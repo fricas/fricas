@@ -427,7 +427,8 @@
 (defun QENUM (cvec ind) (char-code (char cvec ind)))
 
 (defun QESET (cvec ind charnum)
-  (setf (char cvec ind) (code-char charnum)))
+  (setf (char cvec ind) (code-char charnum))
+  charnum)
 
 (defun string2id-n (cvec sint)
   (if (< sint 1)
