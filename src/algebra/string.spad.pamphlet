@@ -92,9 +92,9 @@ Character: OrderedFinite() with
         -- random()               == char(random(size())$Integer)
         -- FIXME: limit to ASCII for now
         random()               == char(random(128)$Integer)
-        space                  == QENUM("   ", 0$Lisp)$Lisp
-        quote                  == QENUM("_" ", 0$Lisp)$Lisp
-        escape                 == QENUM("__ ", 0$Lisp)$Lisp
+        space                  == STR_ELT("   ", 0$Lisp)$Lisp
+        quote                  == STR_ELT("_" ", 0$Lisp)$Lisp
+        escape                 == STR_ELT("__ ", 0$Lisp)$Lisp
         newline                == char(10)
         coerce(c:%):OutputForm == NUM2USTR(ord c)$Lisp
         digit? c               == member?(c pretend Character, digit())
@@ -107,10 +107,9 @@ Character: OrderedFinite() with
         latex c ==
             concat("\mbox{`", concat(new(1,c pretend Character)$String, "'}")$String)$String
 
-        char(s:String) ==
---        one?(#s) => s(minIndex s) pretend %
-          (#s) = 1 => s(minIndex s) pretend %
-          error "String is not a single character"
+        char(s:String) == STR_to_CHAR(s)$Lisp
+        --  (#s) = 1 => s(minIndex s) pretend %
+        --  error "String is not a single character"
 
         upperCase c ==
           QENUM(PNAME(UPCASE(NUM2CHAR(ord c)$Lisp)$Lisp)$Lisp,
@@ -317,10 +316,11 @@ IndexedString(mn:Integer): Export == Implementation where
         for k in k.. for i in h+1..m-1 repeat Qsetelt(r, k, Qelt(s, i))
         r
 
+    qsetelt!(s:%, i:I, c:C) == Qsetelt(s, i - mn, c)
+
     setelt(s:%, i:I, c:C) ==
         i < mn or i > maxIndex(s) => error "index out of range"
         Qsetelt(s, i - mn, c)
-        c
 
     substring?(part, whole, startpos) ==
         np:I := Qsize part
@@ -406,6 +406,8 @@ IndexedString(mn:Integer): Export == Implementation where
         s < 0 or s+m > n => error "index out of range"
         RPLACSTR(y, s, m, x, 0, m)$Lisp
         y
+
+    qelt(s : %, i : I) == Qelt(s, i - mn)
 
     elt(s:%, i:I) ==
         i < mn or i > maxIndex(s) => error "index out of range"
@@ -515,6 +517,11 @@ String(): StringCategory with
         OMputEndObject(dev)
 
     convert(x : %) : InputForm == x pretend InputForm
+
+    qelt(s : %, i : Integer) == STR_ELT1(s, i)$Lisp
+
+    qsetelt!(s : %, i : Integer, c : Character) == STR_SETELT1(s, i, c)$Lisp
+
 @
 \section{category STRICAT StringCategory}
 <<category STRICAT StringCategory>>=
