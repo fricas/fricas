@@ -719,9 +719,9 @@ FloatEllipticFunctions() : with
       ++ Undocumented.
     rabs : Complex Float -> Float
       ++ Undocumented.
-    landen1 : Float -> List Float
+    landen1 : (Float, List Float) -> List Float
       ++ Undocumented.
-    landen1 : Complex Float -> List Complex Float
+    landen1 : (Complex Float, List Complex Float) -> List Complex Float
       ++ Undocumented.
     landen2 : (Float, List Float, Float) -> List Float
       ++ Undocumented.
@@ -749,8 +749,7 @@ FloatEllipticFunctions() : with
     rabs(r : CF) : Float == real(abs(r))
 
     Funs ==>
-      landen1(m1 : NT) : List NT ==
-        res : List NT := []
+      landen1(m1 : NT, res : List NT) : List NT ==
         while rabs(m1) < 0.25 repeat
             kp := sqrt(m1)
             kn1 := 2*kp/(1+kp)
@@ -781,7 +780,7 @@ FloatEllipticFunctions() : with
       landen(m : NT, eps : Float) : List NT ==
         res : List NT := []
         if rabs(m1 := 1 - m) < 0.25 then
-            res := landen1(m1)
+            res := landen1(m1, res)
             m := 1 - first(res)
             res := rest(res)
         landen2(m, res, eps)
@@ -866,8 +865,9 @@ FloatEllipticFunctions() : with
             kp1 := 2.0/(1 + kp)
             m1 := 2*kp1 - kp1^2
             z := z/kp1
+            ll : List(Float) := []
             if m1 < 0.25 then
-                ll := landen1(m1)
+                ll := landen1(m1, ll)
                 m := 1 - first(ll)
                 ll := landen2(m, rest(ll), eps)
             else
@@ -946,6 +946,7 @@ FloatEllipticFunctions() : with
     -- either [1, sn, cn, dn] (if no pole)
     -- or [0, 1, lim (cn/sn), lim(dn/ sn)] (in pole)
     sn_cn_dn(z : CF, m : CF) : List CF ==
+        m = 0 => [1, sin(z), cos(z), 1]
         obits := bits()
         prec := obits + 20
         m = 1 =>
@@ -976,7 +977,16 @@ FloatEllipticFunctions() : with
         z1 := z/kk
         iz := imag(z1)
         m1 := 1 - m
-        ll2 := landen(m1, eps)
+        ms0 := sqrt(m)
+        ll2 : List(Complex(Float))
+        if rabs(ms0) < 0.25 then
+            kn := 2*ms0/(1+ms0)
+            ll2 := landen1(2*kn - kn^2, [1 - kn])
+            mp := 1 - first(ll2)
+            ll2 := landen2(mp, rest(ll2), eps)
+        else
+            kn := (1 - ms0)/(1 + ms0)
+            ll2 := landen2(kn^2, [kn], eps)
         iu := complex(0, 1.0)
         kk2 := kprod(ll2)
         ppi : Float := pi()/2
@@ -999,19 +1009,19 @@ FloatEllipticFunctions() : with
         d1 := (1 - ms2*(ctwo - s2))/den
         ni := positiveRemainder(ni, 4)
         nr := positiveRemainder(nr, 4)
-        ms1 := sqrt(m1)
         iu := complex(0, 1.0)
         if nr >= 2 then
             (s1, c1, d1) := (-s1, -c1, d1)
             nr := nr - 2
         if nr = 1 then
+            ms1 := sqrt(m1)
             (s1, c1, d1) := (c1/d1, -ms1*s1/d1, ms1/d1)
         if ni >= 2 then
             (s1, c1, d1) := (s1, -c1, -d1)
             ni := ni - 2
         ni = 0 => [1, s1, c1, d1]
-        s1 = 0 => [0, 1, -iu*d1, -iu*ms1]
-        [1, 1/(ms1*s1), -iu*d1/(ms1*s1), -iu*c1/s1]
+        s1 = 0 => [0, 1, -iu*d1, -iu*ms0]
+        [1, 1/(ms0*s1), -iu*d1/(ms0*s1), -iu*c1/s1]
 
     jacobiSn(z : CF, m : CF) ==
         pl := sn_cn_dn(z, m)
@@ -1135,7 +1145,7 @@ FloatEllipticFunctions() : with
         e_val
 
     ellipticE(z : Float, m : Float) : Float ==
-        m = 1 => atanh(z)
+        m = 1 => z
         obits := bits()
         m > 1 =>
             bits(obits + 20)
