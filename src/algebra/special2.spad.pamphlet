@@ -703,6 +703,15 @@ FloatEllipticFunctions() : with
                              List Complex Float
       ++ weierstrassHalfPeriods(g2, g3) computes half periods of
       ++ Weierstrass elliptic functions from invariants g2, g3.
+    weierstrassInvariants : (Complex Float, Complex Float) ->
+                             List Complex Float
+      ++ weierstrassInvariants(w1, w2) computes invariants g2, g3 of
+      ++ Weierstrass elliptic functions from half periods w1, w2.
+    modularInvariantJ : (Complex Float) -> Complex Float
+      ++ modularInvariantJ(tau) computes modular invariant j,
+      ++ that is \spad{1728*g2^3/(g2^3 - 27*g3^2)} where g2, g3
+      ++ are invariants corresponding to half periods w1, w2
+      ++ such that \spad{tau = w1/w2}.
     ellipticK : Float -> Float
       ++ ellipticK(m) is the complete elliptic integral of the first kind.
     ellipticK : Complex Float -> Complex Float
@@ -1095,6 +1104,108 @@ FloatEllipticFunctions() : with
             res := dn1(z, m, prec)
         bits(obits)
         res
+
+    -- This routine expects argument which is reduced to the
+    -- fundamental region,
+    -- returns [theta2(0, tau)^2, theta3(0, tau)^2]
+    theta0(tau : Complex(Float)) : List(Complex(Float)) ==
+        prec := bits()
+        tresh := ((38/100)*prec)::Float
+        k : Integer := 0
+        not((1/2)::Float < imag(tau)) =>
+            error "imag(tau) must be bigger than 1/2"
+        otau := tau
+        while imag(tau) < tresh repeat
+            tau := (2::Float)*tau
+            k := k + 1
+        q2 := exp((1/2)::Float*pi()$Float*imaginary()*tau)
+        q := q2*q2
+        t2 := (2::Float)*(1 + q*q)
+        t3 := 1 + (2::Float)*q
+        -- Now we work with squares
+        t2 := q2*t2*t2
+        t3 := t3*t3
+        k = 0 => [t2, t3]
+        rtd := (1/2)::Float*pi()*real(otau)
+        iq2 := exp(-imaginary()*rtd)
+        liq2 : List(Complex(Float)) := []
+        for i in 1..k repeat
+            liq2 := cons(iq2, liq2)
+            iq2 := iq2*iq2
+        for i in 1..k for iq2 in liq2 repeat
+            nt3 := t3 + t2
+            t2 := (2::Float)*sqrt(t2*t3)
+            pp := t2*iq2
+            if real(pp) < 0 then
+                t2 := -t2
+            t3 := nt3
+        [t2, t3]
+
+    modularInvariants(tau : Complex Float) : List(Complex Float) ==
+        td := theta0(tau)
+        t2 := first(td)
+        t3 := first(rest(td))
+        k := t2/t3
+        m := k*k
+        m2:=m*m
+        g2 := (4/3)::Float*(m2 - m + 1)
+        g3 := (4/27)::Float*(2::Float*m*m2 - (3::Float)*m2 - (3::Float)*m +
+              2::Complex(Float))
+        [g2, g3, t3]
+
+    reduce_periods(w1 : Complex Float, w2 : Complex Float
+                  ) : List(Complex Float) ==
+        aw1 := rabs(w1)
+        aw2 := rabs(w2)
+        repeat
+            if aw2 > aw1 then
+                (w1, w2) := (w2, w1)
+                (aw1, aw2) := (aw2, aw1)
+            tau := w1/w2
+            if imag(tau) < 0 then
+                tau := -tau
+                w1 := -w1
+            rit := round(real(tau))
+            rit = 0 => return [w1, w2]
+            w1 := w1 - rit*w2
+            (2/$Fraction(Integer) 3)::Float < imag(tau) => return [w1, w2]
+            aw1 := rabs(w1)
+
+    modularInvariantJ(tau : Complex Float) : Complex Float ==
+        not(0 < imag(tau)) => error "need imag(tau) > 0"
+        obits := bits()
+        try
+            bits(3*obits + 20)
+            nw := reduce_periods(tau, 1)
+            bits(obits + 20)
+            tau := nw(1)/nw(2)
+            md := modularInvariants(tau)
+            g2 := md(1)
+            g3 := md(2)
+            g2_3 := g2*g2*g2
+            1728*g2_3/(g2_3 - 27*g3*g3)
+        finally
+            bits(obits)
+
+    weierstrassInvariants(w1, w2) ==
+        obits := bits()
+        try
+            bits(3*obits + 20)
+            nw := reduce_periods(w1, w2)
+            bits(obits + 20)
+            w1 := nw(1)
+            w2 := nw(2)
+            tau := w1/w2
+            md := modularInvariants(tau)
+            g2 := md(1)
+            g3 := md(2)
+            tf := md(3)
+            s := pi()$Float*tf/w2
+            s2 :=s*s
+            s4 := s2*s2
+            [s4*g2, s2*s4*g3]
+        finally
+            bits(obits)
 
     ellipticF(z : Float, m : Float) : Float ==
         m = 1 => atanh(z)
