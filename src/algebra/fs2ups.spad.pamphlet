@@ -452,6 +452,28 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
     lambertW0(arg : UPS) : UPS ==
         applyTaylor(lambertW0$SPFUTS, arg)
 
+    do_weierstrass(losers : L(UPS), lsers : L(UPS), lsere : L(FE),
+          lser0 : L(FE), ef : (FE, FE, UTS) -> UTS, k : I, cz : I) : Result ==
+        lsere(3) = 0 => error "expansion at 0"
+        z_ser := losers(3)
+        z_inv : UPS
+        if cz ~= 0 then
+            deg := order(z_ser, ZEROCOUNT :: Expon)
+            (coef := coefficient(z_ser, deg)) = 0 =>
+                error "inverse of series with many leading zero coefficients"
+            z_inv := cz*z_ser^k
+        else
+            z_inv := 0
+        cargs := convert_args(lsers, lsere, lser0)
+        nargs := cargs.nargs0
+        nres := applyTaylor((f : UTS) : UTS +-> ef(nargs(1), nargs(2), f),
+                            z_ser)
+        lsyms := rest(cargs.syms)
+        lsers := rest(cargs.sers)
+        nres2 := do_taylor_via_deriv(nres, lsyms, lsers)
+        nres2 case %problem => return nres2
+        [z_inv + nres2.%series]
+
     spec_to_UPS(ker : K, args : L(FE), posCheck? : B,
                 atanFlag : ATANFLAG) : Result ==
         (aresu := handle_args(args, posCheck?, atanFlag)) case Result =>
@@ -503,6 +525,18 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
             do_ell2(losers, lsers, lsere, lser0, ellipticF$ELITS)
         nm = 'ellipticPi =>
             do_ell3(losers, lsers, lsere, lser0, ellipticPi$ELITS)
+        nm = 'weierstrassP and lser0(3) = 0 =>
+            do_weierstrass(losers, lsers, lsere, lser0,
+                           weierstrassP0$SPFUTS, -2, 1)
+        nm = 'weierstrassPPrime and lser0(3) = 0 =>
+            do_weierstrass(losers, lsers, lsere, lser0,
+                           weierstrassPPrime0$SPFUTS, -3, -2)
+        nm = 'weierstrassZeta and lser0(3) = 0 =>
+            do_weierstrass(losers, lsers, lsere, lser0,
+                           weierstrassZeta0$SPFUTS, -1, 1)
+        nm = 'weierstrassSigma and lser0(3) = 0 =>
+            do_weierstrass(losers, lsers, lsere, lser0,
+                           weierstrassSigma0$SPFUTS, 0, 0)
         cargs := convert_args(lsers, lsere, lser0)
         nargs := cargs.nargs0
         nker : FE := kernel(operator(ker), nargs)
