@@ -219,9 +219,9 @@
 (defmacro |sqrt_DF| (x) `(SQRT (the double-float ,x)))
 (defmacro |log_DF| (x) `(LOG (the double-float ,x)))
 (defmacro |qsqrt_DF| (x) `(the double-float (SQRT
-                              (the (double-float 0.0 *) ,x))))
+                              (the (double-float 0.0d0 *) ,x))))
 (defmacro |qlog_DF| (x) `(the double-float (LOG
-                              (the (double-float 0.0 *) ,x))))
+                              (the (double-float 0.0d0 *) ,x))))
 
 (defmacro DEF_DF_UNOP (name op)
     `(defmacro ,name (x) `(the double-float (,',op (the double-float ,x)))))
