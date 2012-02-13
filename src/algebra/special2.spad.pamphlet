@@ -1362,8 +1362,20 @@ SpecialFunctionUnivariateTaylorSeries(Coef, UTS) :
 
     Exports ==> with
         lambertW0 : UTS -> UTS
-          ++ lambertW0(x) applies labertW to x.  x must have
+          ++ lambertW0(x) applies lambertW to x.  x must have
           ++ no term of order 0.
+        weierstrassP0 : (Coef, Coef, UTS) -> UTS
+          ++ weierstrassP0(g2, g3, x) computes finite part of
+          ++ weierstrassP(g2, g3, x). x must have no term of order 0.
+        weierstrassPPrime0 : (Coef, Coef, UTS) -> UTS
+          ++ weierstrassPPrime0(g2, g3, x) computes finite part of
+          ++ weierstrassPPrime(g2, g3, x). x must have no term of order 0.
+        weierstrassZeta0 : (Coef, Coef, UTS) -> UTS
+          ++ weierstrassZeta0(g2, g3, x) computes finite part of
+          ++ weierstrassZeta(g2, g3, x). x must have no term of order 0.
+        weierstrassSigma0 : (Coef, Coef, UTS) -> UTS
+          ++ weierstrassSigma0(g2, g3, x) computes
+          ++ weierstrassSigma(g2, g3, x). x must have no term of order 0.
 
     Implementation ==> add
 
@@ -1374,6 +1386,47 @@ SpecialFunctionUnivariateTaylorSeries(Coef, UTS) :
             series(YS((s : ST) : ST +-> lazyIntegrate(0,
                       coefficients(dx*exp(-series(s)$UTS)
                                *(1$UTS +$UTS series(s))^(-1)))$STT))
+
+        compose(s : ST, x : UTS) : UTS ==
+            series(compose(s, coefficients(x))$STT)
+
+        -- p_re computes series of weierstrassP starting from term k
+        -- lcr is list c_{k-1},...,c3,c2
+        p_re(k : Integer, lcr : List Coef) : ST == delay 
+            lm := reverse lcr
+            ss : Coef := 0
+            -- ck = (3/(2*k+1)*(k-3))\sum_{m=2}^{k-2}c_m*c_{k-m}
+            for m in 2..(k-2) for cm in lm for ck_m in rest(lcr) repeat
+                ss := ss + cm*ck_m
+            two : Coef := 1 + 1
+            three := two + 1
+            ck := three*ss/((k*two + 1)*(k*1 - three))
+            concat(ck, p_re(k + 1, cons(ck, lcr)))
+
+        p_stream(g2 : Coef, g3 : Coef) : ST ==
+            c2 : Coef := 1 + 1
+            c4 := c2 + c2
+            c5 := c4 + 1
+            c20 := c4*c5
+            c28 := c4*(c5 + c2)
+            concat(0, concat(g2/c20, concat(g3/c28,
+                   p_re(4, [g3/c28, g2/c20]))))
+
+        weierstrassP0(g2 : Coef, g3 : Coef, x : UTS) : UTS ==
+            compose(p_stream(g2, g3), x*x)
+
+        weierstrassPPrime0(g2 : Coef, g3 : Coef, x : UTS) : UTS ==
+            (1 + 1)*x*compose(deriv(p_stream(g2, g3))$STT, x*x)
+
+        weierstrassZeta0(g2 : Coef, g3 : Coef, x : UTS) : UTS ==
+            ps2 := compose(p_stream(g2, g3), coefficients(x*x))$STT
+            -series(integrate(0, ps2)$STT)
+
+        weierstrassSigma0(g2 : Coef, g3 : Coef, x : UTS) : UTS ==
+            ps2 := compose(p_stream(g2, g3), coefficients(x*x))$STT
+            zs := integrate(0, ps2)$STT
+            lsigma := integrate(0, -$STT zs)
+            x*series(exp(lsigma)$StreamTranscendentalFunctions(Coef))
 
 @
 
