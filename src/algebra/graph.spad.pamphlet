@@ -1,0 +1,4729 @@
+\documentclass{article}
+\usepackage{axiom}
+\usepackage{url}
+\newcommand{\File}[1]{\url{#1}}
+
+\begin{document}
+\title{graph theory related mathematical structures}
+\author{Martin J Baker}
+\maketitle
+\begin{abstract}
+Graphs, in addition to being interesting structures in their own
+right, have importance in representing data structures, finite
+automata, communication networks and so on.
+
+A graph is a example of a mathematical entity which can be thought
+of as a set together with a structure on that set. It can be drawn
+in a way that is visually easy to understand and so is very
+helpful in understanding such structures.
+
+For more information and diagrams see:
+\url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{Notation}
+This is an implementation mostly of finite directed graphs (finite
+undirected graphs are possible by having arrows in both directions
+and by using UndirectedGraph domain).
+
+A graph has two parts:
+\begin{itemize}
+\item A set of 'vertices', 'objects' or 'nodes'.
+\item A set of 'arrows' or 'edges'
+\end{itemize}
+I will treat all these alternative terms equivalently and may switch
+between them in this document.
+
+We need definitions for other graph-related terminology such as
+trees and forest and so on. There tend to be widely accepted
+definitions for undirected graphs but there seem to be more
+options and variations for these definitions as applied to
+directed graphs.
+
+I have therefore drawn up two sets of definitions in order to
+make these issues clearer:
+\subsection{Definitions for undirected graph}
+\begin{itemize}
+\item vertex
+\item edge
+\item graph
+\item path or route - a sequence of alternating vertex and edges,
+starting and ending with a vertex, where every edge connects the
+nodes it is between. In certain circumstances we will specify a
+path by its nodes only, or by its edges only, where this can be
+done unambiguously.
+\item connected graph - A graph where there is a path from every
+vertex to every other vertex.
+\item loop - a path from a vertex back to itself which does not
+use other nodes or edges more than once.
+\item tree - A graph which is connected and has no loops (adding
+any edge to a tree will create a loop). Note: this is different
+from Tree domain in pan-Axiom because no vertex is designated
+as the root.
+\item forest - A graph which has no loops (and in not necessarily
+connected)(a disjoint union of trees).
+\item spanning tree of G - A subgraph of G which is a tree and
+contains all the vertices of G.
+\item spanning forest of G - A subgraph of G which is a forest
+and contains all the vertices of G.
+\end{itemize}
+\subsection{Definitions for directed graph}
+\begin{itemize}
+\item arrow - an edge with a specified direction
+\item directed acyclic graph (DAG) - A graph without any cycles,
+in a directed graph this is not necessarily a tree. A DAG defines
+a partial order.
+\item tree - This is where the definition starts to get more fuzzy
+for the directed case. There are lots of sub-definitions:
+\begin{itemize}
+\item polytree - a directed graph with at most one undirected path
+between any two vertices.
+\item oriented tree - same as polytree
+\item directed tree - a directed graph which would be a tree if
+the directions on the arrows were ignored.
+\item arborescence - arrows are all directed towards a particular
+vertex, or all directed away from a particular vertex.
+\item rooted tree - one vertex has been designated the root and
+the arrows are all towards or all away from the root.
+\item free tree - tree without any designated root.
+\item tree-order - partial ordering on the vertices of a tree.
+\end{itemize}
+\end{itemize}
+\section{Design Issues}
+So far, only finite graphs are implemented, these all extend the
+category FiniteGraph (FGRPH). I would like this to extend a more
+general Graph (GRPH) category which would include functions such
+as 'neighbours' and 'distance' which are common to both finite and
+infinite graphs. However, at this stage, I don't know how infinite
+graphs would be represented (presumably some inductively defined
+data structure). Therefore I don't know how vertices of the graph
+would be referred too, in the most general case (can they still be
+indexed), so I don't know if the same signature can be used for
+'distance' in the finite and infinite cases. I have therefore left
+this Graph (GRPH) category as a possible future enhancement.
+
+For finite graphs, probably the most efficient general representation
+coding of a graph is as a set of external 'objects' (graph is defined
+over a set) together with pairs of indices to represent the arrows.
+
+Because the arrows are defined in terms of indices this means that the
+order of the objects becomes important and therefore must be held in a
+list/array rather than a set. The issue of list verses array is a
+performance issue, more of that later.
+
+It seems to me that there is a complimentary coding of graph where
+the arrows are a set of external objects and each node would be
+defined as two lists of indices: a list of incoming nodes and a list
+of outgoing nodes. I have not implemented this complimentary coding
+because its more complicated and I can't think of a use for it.
+However I have implemented two special related cases:
+\begin{itemize}
+\item FunctionGraph
+\item MultifunctionGraph
+\end{itemize}
+In 'FunctionGraph' each vertex has one outgoing arrow and In
+'MultifunctionGraph' each vertex has exactly 'n' outgoing arrows
+where 'n' is the same for every vertex. These limitations mean that
+they can be coded more efficiently by having the arrow information
+directly associated with each vertex. As its name suggests
+'FunctionGraph' can represent a function, a mapping where the 
+domain and codomain are the same finite set of objects over which
+it is defined. 'MultifunctionGraph' can represent multiple function
+graphs such as Cayley graphs. Although these are special cases
+of the general graph, and could have used the general coding it
+is more efficient coding them in this way. They have a number of
+functions which are not applicable to the general case.
+
+The graph structures are concerned with finite graphs, that is
+finite numbers of vertices. It would be interesting to find ways
+to encode repetitive or repeating structures in an efficient way.
+
+Now I come to an issue which gives me a lot of concern: the
+representation so far includes only the information required to
+define the pure mathematical structures but there is other
+information associated with graphs which helps to make it more
+human understandable such as names for arrows and diagram
+coordinates. I think this information is very important because
+there are great benefits to human users in being able to 'see'
+the structure in an accessible way. As a general rule I think it
+is important to separate out these issues and as far as I can I
+put the graphics stuff into the graphics framework:
+'scene.spad.pamphlet'. However, in this case, I have not managed
+to separate out these issues.
+
+I did consider creating a wrapper domain, which would be external
+to the graph code, that would allow annotation and coordinate
+information to be associated with a vertex.
+\begin{verbatim}
+objectWrapper(S)
+....
+Rep := Record(value:S,name:String,posX:NNI,posY:NNI)
+\end{verbatim}
+However, if we want to do this with arrow information (which we
+do), then we would have to have a separate external arrow domain.
+There might be some benefits to this but its also quite messy, if
+we continue to use indexes then they have no meaning outside the
+graph and if we specify to objects directly then there are
+efficiency issues. If we do all that then, the Rep will be free of
+annotation and coordinate information, but the graph code still
+needs to know about coordinate information. For example, if we
+are taking the product of two graphs, then we can combine the
+coordinate of the two operands to generate useful coordinate
+information for the product graph as a whole.
+
+So, in the end, I could not separate out the graphical/annotation
+information. It was just easier and more efficient to leave this
+information in Rep even though it goes against certain principles.
+
+There is another issue about what goes into Rep, at the moment only
+certain combinations of graph type types are possible, for instance,
+we can't have a function 'FunctionGraph' with weighted arrows, it
+would be more general to allow all combinations of graph? If we do
+then the memory usage goes up a bit but if we don't then we need
+lots of combinations of domains:
+\begin{itemize}
+\item Weighted nodes + directed graph
+\item Weighted arrows + directed graph
+\item Weighted nodes + weighted arrows + directed graph
+\item Weighted nodes + undirected graph
+\item Weighted arrows + undirected graph
+\item Weighted nodes + weighted arrows + undirected graph
+\item Weighted nodes + function graph
+\item ... and so on
+\end{itemize}
+There are other types of graph that I would like to experiment with,
+for instance, what I think of as a multilevel graph which perhaps
+could be implemented in equivalent ways:
+\begin{itemize}
+\item As a graph whose elements are themselves graphs, where the outer
+graph can see inside (has arrows between the nodes of) the inner
+graph.
+\item As a set of graphs with mappings between them, where the whole
+system is treated as a graph.
+\item As a graph which also has arrows between the arrows.
+\end{itemize}
+How should these graph structures fit in and relate to the rest of
+the Axiom code library? It seems to me that structures like Tree,
+POSET/lattice are special cases of graph? Also there may be more
+general structures like Closed Cartesian Category (CCC) that should
+be categories in the code library?
+\section{Performance Issues}
+There is plenty of scope to improve the code. I have not tested how
+well it scales up (in terms of memory usage and runtime) but I suspect
+not very well at the moment. I think there is a lot of scope to
+improve the algorithms used.
+
+There is the issue (pointed out by Waldek) of using lists verses
+arrays in Rep. If we are thinking about how well this would scale up
+then I guess:
+\begin{itemize}
+\item mutable (using List) would be more efficient for constructing
+very large graphs.
+\item immutable (using array) would be more efficient for
+deconstructing/using the graphs once they have been constructed.
+\end{itemize}
+I guess it would be nice to have both mutable and immutable graphs but
+that would add even more permutations of domain types.
+\section{To Do}
+\begin{itemize}
+\item Check out definitions of 'spanningForestNode' and
+'spanningTreeArrow' to make sure there is no source of confusion.
+\item At the moment the loop detection uses 'spanningForestNode'
+as it is. I realise this is very inefficient (in terms of memory and
+runtime), I want to improve the loop detection and routing algorithms
+(perhaps use Floyd's algorithm or something line that) and not use
+spanningForestNode for this purpose. Although I think
+spanningForestNode should still be provided as it represents an
+important concept.
+\item Need to improve SVG output. While this is useful, at the moment
+we need to tweak the SVG files produced using a program such as
+Inkscape, It would be possible to produce SVG output that is more
+readable but this first requires improvements to the graphics
+framework: scene.spad.pamphlet
+\item I would like two-way graphical interaction by the user, so
+for instance, a user could drag a vertex and its arrows would
+move with it. This type of interaction is not possible by
+writing code in SPAD.
+\item Add domain parameter of type OrderedAbelianMonoid to weights
+to be other than NNI, in particular doubleFloat.
+\item Allow nodes to have weights in addition to arrows.
+\item I would also like to experiment with the connection between
+(duality?) this code and the computing framework. That is use graphs
+to implement finite-state machine, Turing machine, etc.
+\end{itemize}
+\section{Installation}
+To install this code goto github
+(\url{https://github.com/martinbaker/fricas/blob/master/src/algebra/graph.spad.pamphlet})
+
+and download the file: \File{graph.spad.pamphlet}
+
+Then, from that file, copy the code for the FiniteGraph category into a
+file called 'ffgraph.spad' and the code for the directedGraph domain
+into a file called 'directedGraph.spad'.
+
+\begin{verbatim}
+document --tangle="domain LOOP Loop" --output=loop.spad graph.spad.pamphlet
+document --tangle="category FGRPH Graph" --output=fgraph.spad graph.spad.pamphlet
+document --tangle="domain DGRPH DirectedGraph" --output=dgraph.spad graph.spad.pamphlet
+document --tangle="domain FNGRPH FunctionGraph" --output=fngraph.spad graph.spad.pamphlet
+document --tangle="domain UDGRPH UndirectedGraph" --output=udgraph.spad graph.spad.pamphlet
+document --tangle="domain MFGRPH MultifunctionGraph" --output=mfgraph.spad graph.spad.pamphlet
+document --tangle="domain WGRPH WeightedGraph" --output=wgraph.spad graph.spad.pamphlet
+\end{verbatim}
+
+where \File{document} is the script that you find in the build
+directory of your fricas compilation.
+\File{build/scripts/document}.
+
+Then compile them
+\begin{verbatim}
+(1) -> )co loop.spad
+(1) -> )co fgraph.spad
+(1) -> )boot $bootStrapMode := true
+(1) -> )co dgraph.spad
+(1) -> )co fngraph.spad
+(1) -> )co udgraph.spad
+(1) -> )co mfgraph.spad
+(1) -> )co wgraph.spad
+(1) -> )boot $bootStrapMode := false
+(1) -> )co dgraph.spad
+(1) -> )co fngraph.spad
+(1) -> )co udgraph.spad
+(1) -> )co mfgraph.spad
+(1) -> )co wgraph.spad
+\end{verbatim}
+\section{Tutorial}
+
+If Graph and directedGraph are not already loaded then load them
+as follows:
+
+\begin{verbatim}
+(1) -> )library LOOP
+(1) -> )library FGRPH
+(1) -> )library FGRPH-
+(1) -> )library DGRPH
+(1) -> )library FNGRPH
+(1) -> )library UDGRPH
+(1) -> )library MFGRPH
+(1) -> )library WGRPH
+\end{verbatim}
+
+We will construct a graph over 'String'. If you don't care what
+the graph is constructed over, then 'String' is a good choice,
+as it allows us to use the string to name the nodes.
+
+In (2) we create a minimal graph with 2 vertices "a" and "b" and
+no arrows between them.
+
+We can add additional vertices using 'addObject!' as in (3)
+
+And we can add arrows as in (4) and (5)
+
+\begin{verbatim}
+(1) ->GS := DirectedGraph(String)
+
+   (1)  DirectedGraph(String)
+                                                             Type: Type
+(2) ->hs := directedGraph(["a","b"])$GS
+
+   (2)  "a,b"
+                                            Type: DirectedGraph(String)
+(3) ->addObject!(hs,"c")$GS
+
+   (3)  "a,b,c"
+                                            Type: DirectedGraph(String)
+(4) ->addArrow!(hs,"alpha",1,2)
+
+   (4)  "a,b,c|alpha:a->b"
+                                            Type: DirectedGraph(String)
+(5) ->addArrow!(hs,"alpha",2,3)
+
+   (5)  "a,b,c|alpha:a->b,alpha:b->c"
+                                            Type: DirectedGraph(String)
+\end{verbatim}
+
+We now have a graph and we can check out various things about
+it. When we refer to a vertex we do so by its index number so,
+say we want to check if there is an arrow from "a" to "b", then
+"a" is index 1 and "b" is index 2. So we do this in (6) which
+confirms there is an arrow from "a" to "b". Note that, since
+this is a directed graph, the result in the other direction
+may be different as in (7).
+
+\begin{verbatim}
+(6) ->isDirectSuccessor?(hs,1::NNI,2::NNI)
+
+   (6)  true
+                                                          Type: Boolean
+(7) ->isDirectSuccessor?(hs,2::NNI,1::NNI)
+
+   (7)  false
+                                                          Type: Boolean
+\end{verbatim}
+
+The graph generated so far does not have any information to help
+us draw it out. If we want to tell it the position of the vertices
+we have to construct it in a slightly different way. Now create
+graph suitable for diagram:
+
+\begin{verbatim}
+(8) ->OBJT ==> Record(value:String,posX:NNI,posY:NNI)
+                                                             Type: Void
+(9) ->oba:OBJT := ["a",10,10]
+
+   (9)  [value= "a",posX= 10,posY= 10]
+Type: Record(value: String,posX: NonNegativeInteger,posY: NonNegativeInteger)
+(10) ->obb:OBJT := ["b",10,60]
+
+   (10)  [value= "b",posX= 10,posY= 60]
+Type: Record(value: String,posX: NonNegativeInteger,posY: NonNegativeInteger)
+(11) ->obc:OBJT := ["c",60,10]
+
+   (11)  [value= "c",posX= 60,posY= 10]
+                     Type: Record(value: String,
+                     posX: NonNegativeInteger,posY: NonNegativeInteger)
+(12) ->hs2 := directedGraph([oba,obb,obc])$GS
+
+   (12)  "a,b,c"
+                                            Type: DirectedGraph(String)
+(13) ->addArrow!(hs2,"alpha",1,2)$GS
+
+   (13)  "a,b,c|alpha:a->b"
+                                            Type: DirectedGraph(String)
+(14) ->addArrow!(hs2,"beta",2,3)$GS
+
+   (14)  "a,b,c|alpha:a->b,beta:b->c"
+                                            Type: DirectedGraph(String)
+(15) ->diagramSvg("testGraph1s1.svg",hs2,true)
+                                                             Type: Void
+\end{verbatim}
+
+In the same way that other algebras have special elements like
+"0" and "1" there are special elements in Graph which we can
+construct as follows:
+\begin{verbatim}
+(16) ->T := terminal("a")$GS
+
+   (16)  "a|loop:a->a"
+                                            Type: DirectedGraph(String)
+(17) ->I := initial()$GS
+
+   (17)  ""
+                                            Type: DirectedGraph(String)
+\end{verbatim}
+Now lets explore the methods for combining the graphs, these include:
+\begin{verbatim}
+    "+":(%,%) -> % Sum : disjoint union of nodes with arrows from appropriate input
+    merge:(%,%) -> % Sum : union (not necessarily disjoint) of nodes with arrows merged in from appropriate input, if arrow exists from both inputs then it will be duplicated.
+    "*":(%,%) -> GRPHPROD Tensor product : the tensor product G*H of graphs G and H is a graph such that the vertex set of G*H is the Cartesian product V(G) × V(H); and any two vertices (u,u') and (v,v') are adjacent in G × H if and only if u' is adjacent with v' and u is adjacent with v.
+    cartesian:(%,%) -> GRPHPROD Cartesian product: the vertex set of G o H is the Cartesian product V(G) × V(H) and any two vertices (u,u') and (v,v') are adjacent in G o H if and only if either u = v and u' is adjacent with v' in H, or u' = v' and u is adjacent with v in G.
+\end{verbatim}
+First lets construct a new graph to work with:
+
+\begin{verbatim}
+(18) ->hs3 := directedGraph(["x","y"])$GS
+
+   (18)  "x,y"
+                                            Type: DirectedGraph(String)
+(19) ->addArrow!(hs3,"beta",1,2)
+
+   (19)  "x,y|beta:x->y"
+                                            Type: DirectedGraph(String)
+\end{verbatim}
+
+We can construct the (tensor) product of this with our original graph
+
+\begin{verbatim}
+(20) ->hs4 := hs*hs3
+
+   (20)  "ax,ay,bx,by,cx,cy|alpha*beta:ax->by,alpha*beta:bx->cy"
+                            Type: DirectedGraph(Product(String,String))
+\end{verbatim}
+
+Or the Cartesian product:
+
+\begin{verbatim}
+(21) -> hs5 := cartesian(hs,hs3)
+
+   (21)
+  "ax,ay,bx,by,cx,cy|beta#1:ax->ay,alpha#1:ax->bx,alpha#2:ay->by,
+   beta#2:bx->by,beta#1:bx->cx,beta#2:by->cy,beta#3:cx->cy"
+                            Type: DirectedGraph(Product(String,String))
+
+(22) -> diagramSvg("testGraph1s2.svg",hs5,true)
+                                                             Type: Void
+\end{verbatim}
+
+In addition to outputing to a diagram we can also output other
+information about the graph in matrix form:
+
+The incidence matrix represents the graph by a matrix of size
+|V| by |E|
+where:
+\begin{itemize}
+\item V=number of vertices
+\item E=number of edges
+\item entry [vertex, arrow] = arrow endpoint
+\item data (simplest case: 1 - incident, 0 - not incident).
+\end{itemize}
+\begin{verbatim}
+(23) ->incidenceMatrix(hs5)
+
+         +1  0  0  0  0  0+
+         |1  0  0  0  0  0|
+         |0  1  0  0  0  0|
+   (23)  |0  0  1  0  0  0|
+         |0  0  1  0  0  0|
+         |0  0  0  1  0  0|
+         +0  0  0  0  1  0+
+                                       Type: Matrix(NonNegativeInteger)
+\end{verbatim}
+
+The adjacency matrix is an n by n matrix A, where n is the number
+of vertices in the graph. If there is an arrow from a vertex x to
+a vertex y, then the element ax,y is 1 (or in general the number
+of xy edges), otherwise it is 0. In computing, this matrix makes
+it easy to find subgraphs, and to reverse a directed graph.
+
+\begin{verbatim}
+(24) ->adjacencyMatrix(hs5)
+
+         +0  0  0  0  0  0+
+         |1  0  0  0  0  0|
+         |1  0  0  0  0  0|
+   (24)  |0  1  1  0  0  0|
+         |0  0  1  0  0  0|
+         +0  0  0  1  1  0+
+                                      Type: Matrix(NonNegativeInteger)
+\end{verbatim}
+
+The laplacian matrix also known as "Kirchhoff matrix" or "Admittance
+matrix" where:
+
+entry [i,j] =
+\begin{itemize}
+\item inDegree(vi) if i = j (number of incoming links)
+\item -1 if i not = j and vi is adjacent to vj
+\item 0 otherwise
+\end{itemize}
+Alternatively this is defined as D − A, where D is the diagonal
+degree matrix. It contains both adjacency information and degree
+information. There are other, similar matrices, that are also
+called "Laplacian matrices" of a graph.
+
+\begin{verbatim}
+(25) ->laplacianMatrix(hs5)
+
+         + 0    0    0    0    0   0+
+         |- 1   1    0    0    0   0|
+         |- 1   0    1    0    0   0|
+   (25)  | 0   - 1  - 1   2    0   0|
+         | 0    0   - 1   0    1   0|
+         + 0    0    0   - 1  - 1  2+
+                                                  Type: Matrix(Integer)
+\end{verbatim}
+
+Distance matrices are related to adjacency matrices, with the
+differences that:
+\begin{itemize}
+\item  a) the latter only provides the information which vertices
+are connected but does not tell about costs or distances between
+the vertices and
+\item  b) an entry of a distance matrix is smaller if two elements
+are closer, while "close" (connected) vertices yield larger entries
+in an adjacency matrix.
+\end{itemize}
+\begin{verbatim}
+(26) ->distanceMatrix(hs5)
+
+         +0  - 1  - 1  - 1  - 1  - 1+
+         |1   0   - 1  - 1  - 1  - 1|
+   (26)  |1  - 1   0   - 1  - 1  - 1|
+         |2   1    1    0   - 1  - 1|
+         |2  - 1   1   - 1   0   - 1|
+         +3   2    2    1    1    0 +
+                                                  Type: Matrix(Integer)
+\end{verbatim}
+\section{Tutorial}
+If Graph and directedGraph are not already loaded then load them as follows: 
+
+\begin{verbatim}
+(1) -> )library LOOP
+   Loop is now explicitly exposed in frame frame1
+   Loop will be automatically loaded when needed from
+      /home/martin/LOOP.NRLIB/LOOP
+(1) -> )library FGRPH
+   FiniteGraph is now explicitly exposed in frame frame1
+   FiniteGraph will be automatically loaded when needed from
+      /home/martin/FGRPH.NRLIB/FGRPH
+(1) -> )library FGRPH-
+   FiniteGraph& is now explicitly exposed in frame frame1
+   FiniteGraph& will be automatically loaded when needed from
+      /home/martin/FGRPH-.NRLIB/FGRPH-
+(1) -> )library DGRPH
+   DirectedGraph is now explicitly exposed in frame frame1
+   DirectedGraph will be automatically loaded when needed from
+      /home/martin/DGRPH.NRLIB/DGRPH
+(1) -> )library FNGRPH
+   FunctionGraph is now explicitly exposed in frame frame1
+   FunctionGraph will be automatically loaded when needed from
+      /home/martin/FNGRPH.NRLIB/FNGRPH
+(1) -> )library UDGRPH
+   UndirectedGraph is now explicitly exposed in frame frame1
+   UndirectedGraph will be automatically loaded when needed from
+      /home/martin/UDGRPH.NRLIB/UDGRPH
+(1) -> )library MFGRPH
+   MultifunctionGraph is now explicitly exposed in frame frame1
+   MultifunctionGraph will be automatically loaded when needed from
+      /home/martin/MFGRPH.NRLIB/MFGRPH
+(1) -> )library WGRPH
+   WeightedGraph is now explicitly exposed in frame frame1
+   WeightedGraph will be automatically loaded when needed from
+      /home/martin/WGRPH.NRLIB/WGRPH
+\end{verbatim}
+This graph framework has many methods to create graph instances, click on the following links for details:
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/construct/index.htm#individual}
+Constructing graphs by building up individual objects and arrows.
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/construct/index.htm#adjacency}
+Constructing from adjacency matrix.
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/construct/index.htm#standard}
+Constructing standard types.
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/product/index.htm}
+Combining existing graphs using sum and product.
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/map/index.htm}
+Mapping from an existing graph.
+\end{itemize}
+We now have a graph and we can check out various things about it by calling functions such as those listed below. Click on these function names for more information: 
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#matrix}
+Matrix representations:
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#incidence}
+incidenceMatrix
+\item  \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#adjacency}
+adjacencyMatrix
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#laplacian}
+laplacianMatrix
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#distance}
+distanceMatrix
+\end{itemize}
+  
+\item about whole graph:
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#acyclic}
+isAcyclic?
+\item  \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#acyclic}
+isFunctional?
+\end{itemize}
+\item about specific nodes
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#isDirectSuccessor}
+isDirectSuccessor?
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#isDirectSuccessor}isGreaterThan?
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#isDirectSuccessor}
+isFixPoint?
+\end{itemize}
+\item  \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#arrowName}
+arrowName -- the name of arrow a->b
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#inDegree}
+inDegree -- the number of arrows leading in to node 'a' in graph 's'
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#outDegree}
+outDegree -- the number of arrows leading out of node 'a' in graph 's'
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#nodeFromNode}
+nodeFromNode -- index of all nodes with a direct arrow leading in to node 'a' in graph 's'
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#nodeToNode}
+nodeToNode -- index of all nodes with a direct arrow leading out of node 'a' in graph 's'
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#arrowsFromNode}
+arrowsFromNode -- index of all arrows leading to a given node
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#arrowsToNode}
+arrowsToNode -- index of all arrows leading from a given node
+\item  \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#nodeFromArrow}
+nodeFromArrow -- index of all nodes with a direct arrow leading in to arrow 'a' in graph 's'
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#nodeToArrow}
+nodeToArrow -- index of all nodes with a direct arrow leading out of arrow 'a' in graph 's'
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#arrowsFromArrow}
+arrowsFromArrow -- index of all arrows leading to a given arrow
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#arrowsToArrow}
+arrowsToArrow -- index of all arrows leading from a given arrow
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#max}
+min and max can be over whole graph or over a subset of nodes
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#max}
+min -- there is an arrow or a sequence of arrows from this node to every other node 
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/viewing/index.htm#max}
+max -- there is an arrow or a sequence of arrows to this node from every other node
+\end{itemize}
+\end{itemize}
+Now lets explore the methods for combining the graphs, these include:
+\begin{itemize}
+\item  "\url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/product/index.htm}
++" (Sum) : disjoint union of nodes with arrows from appropriate input
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/product/index.htm}
+merge:(Sum) : union (not necessarily disjoint) of nodes with arrows merged in from appropriate input, if arrow exists from both inputs then it will be duplicated.
+\item "\url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/product/index.htm}
+*" : Tensor product : the tensor product G*H of graphs G and H is a graph such that the vertex set of G*H is the Cartesian product V(G) × V(H); and any two vertices (u,u') and (v,v') are adjacent in G × H if and only if u' is adjacent with v' and u is adjacent with v.
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/product/index.htm}
+cartesian: Cartesian product: the vertex set of G o H is the Cartesian product V(G) × V(H) and any two vertices (u,u') and (v,v')  are adjacent in G o H if and only if either u = v and u' is adjacent with v' in H, or u' = v' and u is adjacent with v in G.
+\end{itemize}
+There is a much more detailed tutorial for these operations \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/product/index.htm}
+here. 
+Maps:
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/map/index.htm#function}
+Maps in FunctionGraph
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/map/index.htm#mapContra}
+mapContra
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/map/index.htm#adjoint}
+coAdjoint and contraAdjoint
+\end{itemize}
+Loops and Routes:
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/loops/index.htm#tree}
+Spanning Tree
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/loops/index.htm#loops}
+Loops
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/loops/index.htm#routes}
+Routes
+\end{itemize}
+ Specialised variants of graph:
+\begin{itemize}
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/special/index.htm#function}
+Function Graphs
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/special/index.htm#undirected}
+Undirected Graphs
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/special/index.htm#multifunction}
+Multifunction Graphs 
+\item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/special/index.htm#weighted}
+Weighted Graphs
+\end{itemize}
+To follow the whole tutorial start on \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/construct/index.htm}
+this page with constructing graphs. 
+\section{Loop Tutorial}
+The aim of this domain is to hold a loop as a sequence of node or arrow
+indexes. We consider two loops equal if they go through the same
+nodes/arrows in the same order, regardless of where we happen to
+start in the sequence.
+
+So I took an arbitrary decision to store the loop with the smallest
+index first (I can't think of a more canonical form) This is done
+in the loop constructor.
+
+So in the following [5,6,2,8] is = to [2,8,5,6] (they are both stored
+as [2,8,5,6]) but different to [5,2,6,8] (which is stored as
+[2,6,8,5])
+\begin{verbatim}
+(9) -> l1 := loop([5::NNI,6::NNI,2::NNI,8::NNI])
+   (9)  "[->2->8->5->6]"
+
+                                                           Type: Loop
+(10) -> l2 := loop([2::NNI,8::NNI,5::NNI,6::NNI])
+   (10)  "[->2->8->5->6]"
+
+                                                           Type: Loop
+(11) -> l3 := loop([5::NNI,2::NNI,6::NNI,8::NNI])
+   (11)  "[->2->6->8->5]"
+
+                                                           Type: Loop
+(12) -> (l1 = l2)::Boolean
+   (12)  true
+
+                                                        Type: Boolean
+(13) -> (l1 = l3)::Boolean
+   (13)  false
+                                                        Type: Boolean
+\end{verbatim}
+\section{domain LOOP Loop}
+<<domain LOOP Loop>>=
+)abbrev domain LOOP Loop
+++ Author: Martin Baker
+++ Date Created: January 2012
+++ Date Last Updated: February 2012
+++ Basic Operations:
+++ Related Domains: FiniteGraph, DirectedGraph. FunctionGraph
+++ Also See: Graph
+++ Keywords: graph theory
+++ Examples: see
+++ http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/
+++ References:
+++
+++ Description: This is used with graph theory code (FiniteGraph,
+++ DirectedGraph. FunctionGraph, and so on) to represent a
+++ loop as either a sequence of vertex or arrow indexes 
+++ depending on context. The main benefit is that the loop
+++ is stored in a canonical way so that loops can be quickly
+++ compared using '='.
+
+Loop(): Exports == Implementation where
+  NNI==> NonNegativeInteger
+
+  Exports ==> SetCategory with
+    loop: List NNI -> %
+      ++ construct loop with list of indexes
+    entries:(lp:%) -> List NNI
+
+  Implementation ==> add
+    sayMsg ==> sayBrightly$Lisp
+    math_to_string ==> mathObject2String$Lisp
+
+    -- array of vertex indices which form loop
+    Rep := PrimitiveArray NNI
+
+    -- construct loop with list of indexes
+    -- rotate so that smallest index is always at the beginning
+    -- (thanks to Ralf for patch to this constructor)
+    loop(li:List NNI):% ==
+      empty? li => error "cannot form empty loop"
+      minValue:NNI := first li
+      lx:List(NNI) := []
+      l1 := li -- initialize part that comes first
+      l2 := lx -- initialize part that comes after l1
+      while not empty? li repeat
+        if first li < minValue then
+          l1 := li
+          l2 := lx
+        lx := cons(first li, lx)
+        li := rest li
+      construct(concat(l1, reverse! l2))
+
+    entries(lp:%):List NNI ==
+      entries(lp pretend PrimitiveArray(NNI))$PrimitiveArray(NNI)
+
+    -- output loop to string
+    toString(lp:%): String ==
+      res:String := ""
+      for i in 1..#lp repeat
+        x:NNI := lp.(i-1)
+        res := concat([res,"->",math_to_string x])$String
+      concat(["[",res,"]"])$String
+
+    -- start of SetCategory definitions --
+
+    hash(s:%): SingleInteger == 0$SingleInteger
+
+    latex(s:%): String == "\mbox{\bf Unimplemented}"
+
+    -- returns true if x equals y
+    -- Since the constructor always makes sure that the Rep is
+    -- rotated so that the smallest index is at the beginning,
+    -- this test is not sensitive to where we start in the loop.
+    _=(x:%,y:%):Boolean ==
+      if #x ~= #y then return false
+      for i in 1..#x repeat
+        if x.(i-1) ~= y.(i-1) then return false
+      true
+
+    -- returns true if x is not equal to y
+    _~_=(x:%,y:%) : Boolean == not(x=y)
+
+    -- output
+    coerce(n: %):OutputForm ==
+      toString(n)::OutputForm
+
+@
+
+\section{category FGRPH FiniteGraph}
+<<category FGRPH FiniteGraph>>=
+)abbrev category FGRPH FiniteGraph
+++ Author: Martin Baker
+++ Date Created: December 2011
+++ Date Last Updated: February 2012
+++ Basic Operations: 
+++ Related Constructors:
+++ Keywords: graph theory
+++ Description:
+++  Category of finite graphs, allows us to model graph theory
+++ 
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/
+
+FiniteGraph(S): Category == Definition where
+ S: SetCategory
+ NNI==> NonNegativeInteger
+ OBJT ==> Record(value:S,posX:NNI,posY:NNI)
+ ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
+           toOb:NNI,xOffset:Integer,yOffset:Integer)
+ SPROD ==> Product(S,S)
+ GRPHPROD ==> FiniteGraph SPROD
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI)
+ DF ==> DoubleFloat
+ PT ==> SCartesian(2)
+ BOUNDS ==> Record(mins:PT,maxs:PT)
+
+ Definition ==> Join(CoercibleTo(OutputForm),SetCategory) with
+   addObject!:(s:%,n:S) -> %
+    ++ addObject!(s, n) adds object n to the graph s.
+    ++ Use this version
+    ++ if you don't intend to create diagrams and therefore don't
+    ++ care about x,y coordinates.
+   addObject!:(s:%,n:OBJT) -> %
+    ++ addObject!(s, n) adds object with coordinates n to the
+    ++ graph s.
+   addArrow!:(s:%,name:String,n1:NNI,n2:NNI) -> %
+    ++ addArrow!(s, nm, n1, n2) adds an arrow to this graph s, where:
+    ++ nm is the name of the arrow
+    ++ n1 is the index of the start object
+    ++ n2 is the index of the end object
+   addArrow! : (%, String, S, S) -> %
+    ++ addArrow!(s, nm, o1, o2) adds an arrow to the graph s, where:
+    ++ nm is the name of the arrow
+    ++ o1 is the start object
+    ++ o2 is the end object
+   getVertices:(s:%) -> List OBJT
+    ++ a list of all the vertices (or objects).
+   getVertexIndex :  (%, S) -> NNI
+    ++ getVertexIndex(s, o) gives index of object o.
+   getArrows:(s:%) -> List ARROW
+    ++ a list of all the arrows (or edges)
+   initial:() -> %
+    ++ constructs a graph without vertices or edges
+   terminal:(a:S) -> %
+    ++ constructs a graph with a single vertex and a single loop
+   cycleOpen:(objs:List S,arrowName:String) -> %
+    ++ constructs a graph with vertices (from objs) connected in a
+    ++ cycle but with one gap. The last vertex in the sequence
+    ++ loops back to itself so all vertices have one outgoing
+    ++ arrow.
+    ++ arrowName is a prefix for all arrow names, this will be
+    ++ followed by a number starting at 1 and incremented for each
+    ++ arrow
+   cycleClosed:(objs:List S,arrowName:String) -> %
+    ++ constructs a graph with vertices (from objs) connected in a
+    ++ cycle.
+    ++ arrowName is a prefix for all arrow names, this will be
+    ++ followed by a number starting at 1 and incremented for each
+    ++ arrow
+   unit:(objs:List S,arrowName:String) -> %
+    ++ unit(objs, arrowName)
+    ++ constructs a graph with vertices (from objs) and arrows from
+    ++ each object to itself.
+    ++ arrowName is a prefix for all arrow names, this will be
+    ++ followed by a number starting at 1 and incremented for each
+    ++ arrow
+   kgraph:(objs:List S,arrowName:String) -> %
+    ++ kgraph(objs, arrowName)
+    ++ constructs a graph with vertices (from objs) and fully
+    ++ connected arrows, that is, each object has an arrow to
+    ++ every other object except itself.
+    ++ arrowName is a prefix for all arrow names, this will be
+    ++ followed by a number starting at 1 and incremented for each
+    ++ arrow
+   isDirectSuccessor?:(s:%,a:NNI,b:NNI) -> Boolean
+    ++ isDirectSuccessor?(s, a, b) is
+    ++ true if 'b' is a direct successor of 'a'
+    ++ that is, if there is a direct arrow from 'a' to 'b'
+   isGreaterThan?:(s:%,a:NNI,b:NNI) -> Boolean
+    ++ isGreaterThan?((s, a, b) is
+    ++ true if we can get from vertex 'a' to 'b' through a
+    ++ sequence of arrows but we can't go in the opposite
+    ++ direction from 'b' to 'a'
+   max:(s:%) -> NNI
+    ++ index of the vertex which can be reached from all other
+    ++ vertices. Gives 0 if no such node exists or if it is not
+    ++ unique, if there is a loop for instance.
+   max:(s:%,sub:List NNI) -> NNI
+    ++ index of the vertex which can be reached from a given
+    ++ subset of the vertices. Gives 0 if no such node exists
+    ++ or if it is not unique, if there is a loop for instance.
+   min:(s:%) -> NNI
+    ++ index of the vertex which can reach to all other
+    ++ vertices. Gives 0 if no such node exists or if it is not
+    ++ unique, if there is a loop for instance.
+   min:(s:%,sub:List NNI) -> NNI
+    ++ index of the vertex which can reach to a given
+    ++ subset of the vertices. Gives 0 if no such node exists
+    ++ or if it is not unique, if there is a loop for instance.
+   isFixPoint?:(s:%,a:NNI) -> Boolean
+    ++ isFixPoint?(s, a) is
+    ++ true if 'a' has an arrow to itself
+   arrowName:(s:%,a:NNI,b:NNI) -> String
+    ++ arrowName(s, a, b) retrives
+    ++ the name of arrow a->b
+    ++ if it does not exist then return "?"
+   getArrowIndex:(s:%,a:NNI,b:NNI) -> NNI
+    ++ getArrowIndex(s, a, b) retrives
+    ++ arrow index of the arrow form a to b
+   inDegree:(s:%,a:NNI) -> NNI
+    ++ inDegree(s, a) gives the number of arrows leading in to node
+    ++ 'a' in graph 's'
+   outDegree:(s:%,a:NNI) -> NNI
+    ++ outDegree(s, a) gives
+    ++ the number of arrows leading out of node 'a' in graph 's'
+   nodeFromNode:(s:%,a:NNI) -> List NNI
+    ++ nodeFromNode(s, a) gives list
+    ++ of all nodes with a direct arrow leading
+    ++ in to node 'a' in graph 's'
+   nodeToNode:(s:%,a:NNI) -> List NNI
+    ++ nodeToNode(s, a) gives list of all nodes with a direct arrow leading
+    ++ out of node 'a' in graph 's'
+   arrowsFromNode:(s:%,a:NNI) -> List NNI
+    ++ arrowsFromNode(s, a) gives list of all arrows leading to a given node
+   arrowsToNode:(s:%,a:NNI) -> List NNI
+    ++ arrowsToNode(s, a) gives list of all arrows leading from a given node
+   nodeFromArrow:(s:%,a:NNI) -> List NNI
+    ++ index of all nodes with a direct arrow leading
+    ++ in to arrow 'a' in graph 's'
+   nodeToArrow:(s:%,a:NNI) -> List NNI
+    ++ index of all nodes with a direct arrow leading
+    ++ out of arrow 'a' in graph 's'
+   arrowsFromArrow:(s:%,a:NNI) -> List NNI
+    ++ index of all arrows leading to a given arrow
+   arrowsToArrow:(s:%,a:NNI) -> List NNI
+    ++ index of all arrows leading from a given arrow
+   routeNodes:(s:%,a:NNI,b:NNI) -> List NNI
+    ++ routeNodes(s, a, b) gives the shortest route between
+    ++ nodes 'a' and 'b' as a sequence of node indexes.
+    ++ [a] if  'a' = 'b'
+    ++ [] if it is not possible to go from 'a' to 'b'
+   routeArrows:(s:%,a:NNI,b:NNI) -> List NNI
+    ++ routeArrows(s, a, b) gives
+    ++ the shortest route between nodes 'a' and 'b' as a
+    ++ sequence of arrow indexes.
+    ++ [] if  'a' = 'b'
+    ++ [0] if it is not possible to go from 'a' to 'b'
+   distance:(s:%,a:NNI,b:NNI) -> Integer
+    ++ distance(s, a, b) gives the shortest distance between
+    ++ nodes 'a' and 'b' as a
+    ++ number of hops.
+    ++ 0 if  'a' = 'b'
+    ++ -1 if it is not possible to go from 'a' to 'b'
+   "+":(%,%) -> %
+    ++ sum : disjoint union of nodes with arrows from appropriate
+    ++ input
+   merge:(%,%) -> %
+    ++ sum : union (not necessarily disjoint) of nodes with arrows
+    ++ merged in from appropriate input, if arrow exists from both
+    ++ inputs then it will be duplicated.
+   spanningTreeArrow:(s:%,i:NNI) -> Tree Integer
+    ++ constructs a spanning tree for graph 's' rooted at the
+    ++ arrow indexed by 'i'.
+    ++ The tree will expand out from 'i' only stopping when reaching
+    ++ a arrow that has already been visited (that is: loop detected).
+    ++ Elements in the tree are Integer, a positive Integer represents
+    ++ a arrow and a negative Integer represents a repeated arrow.
+    ++ note: it is possible that nodes may be visited many times, only
+    ++ arrows must not be re-visited.
+   spanningForestArrow:(s:%) -> List Tree Integer
+    ++ constructs a spanning tree for every arrow.
+   spanningTreeNode:(s:%,i:NNI) -> Tree Integer
+    ++ spanningTreeNode(s, i) constructs a spanning tree for graph 's'
+    ++ rooted at the node indexed by 'i'.
+    ++ The tree will expand out from 'i' only stopping when reaching
+    ++ a vertex that has already been visited (that is: loop detected).
+    ++ Elements in the tree are Integer, a positive Integer represents
+    ++ a vertex and a negative Integer represents a repeated vertex.
+   spanningForestNode:(s:%) -> List Tree Integer
+    ++ constructs a spanning tree for every vertex.
+   loopsNodes:(s:%) -> List Loop
+    ++ a list of loops for this graph
+    ++ in this case the loop is represented by the indexes of the
+    ++ sequence of nodes passed through.
+    -- to-do: it would be better to use a more efficient algorithm,
+    -- currently the code calls spanningForestNode and traverses the result
+    -- for loops, it might be more efficient to use Floyds algorithm.
+   loopsAtNode:(s:%,a:NNI) -> List Loop
+    ++ a list of loops for this graph that pass through vertex index 'a'
+   loopsArrows:(s:%) -> List Loop
+    ++ a list of loops for this graph
+    ++ in this case the loop is represented by the indexes of the
+    ++ sequence of nodes passed through.
+    ++ to-do: it would be better to use a more efficient algorithm,
+    ++ currently the code calls spanningForestArrow and traverses the result
+    ++ for loops, it might be more efficient to use Floyds algorithm.
+   isAcyclic?:(s:%) -> Boolean
+    ++ returns true if there are no loops
+   incidenceMatrix:(%) -> Matrix Integer
+    ++ The graph is represented by a matrix of size |V| by |E|
+    ++ where:
+    ++ V=number of vertices
+    ++ E=number of edges
+    ++ entry [vertex, arrow] = arrow endpoint
+    ++ data (undirected case case: 1 - incident, 0 - not incident,
+    ++ directed case: -1 - start, 1 - end, 0 - not incident).
+   adjacencyMatrix:(%) -> Matrix NNI
+    ++ This is an n by n matrix A, where n is the number of vertices
+    ++ in the graph. If there is an edge from a vertex x to a vertex y,
+    ++ then the element ax,y is 1 (or in general the number of xy edges),
+    ++ otherwise it is 0. In computing, this matrix makes it easy to find
+    ++ subgraphs, and to reverse a directed graph.
+   laplacianMatrix:(%) -> Matrix Integer
+    ++ Also known as "Kirchhoff matrix" or "Admittance matrix" where:
+    ++ entry [i,j] = 
+    ++ inDegree(vi) if i = j (number of incoming links)
+    ++ -1 if i not = j and vi is adjacent to vj
+    ++ 0 otherwise
+    ++ Alternatively this is defined as D - A, where D is the diagonal
+    ++ degree matrix.
+    ++ It contains both adjacency information and degree information.
+    ++ There are other, similar matrices, that are also called "Laplacian
+    ++ matrices" of a graph.
+   distanceMatrix:(%) -> Matrix Integer
+    ++ gives matrix of distances between vertices.  Element a_{i, j}
+    ++ is the distance from i to j.
+    ++ Distance matrices are related to adjacency matrices, with the
+    ++ differences that:
+    ++ a) the latter only provides the information which vertices are connected
+    ++    but does not tell about costs or distances between the vertices
+    ++ b) adjacency matrix only tells us about directly connected
+    ++    vertices while distance matrix also considers indirect connections.
+   isFunctional?:(%) -> Boolean
+    ++ a functional graph is a directed graph in which each vertex has
+    ++ a single outgoing arrow
+   isDirected? : () -> Boolean
+    ++ isDirected? is true iff % is domain consisting of directed
+    ++ graphs, false for undirected graphs.
+   diagramSvg:(fileName:String,n:%,dispArrowName:Boolean) -> Void
+    ++ diagramSvg(fileName, n, dispArrowName) creates an SVG diagram
+    ++ fileName:String is the name of the SVG file that will be created
+    ++ n:% is the graph that will be written
+    ++ dispArrowName:Boolean is true to include the name of each arrow
+   diagramWidth:(s:%) -> NNI
+    ++ the width of the diagram that will be generated by
+    ++ diagramSvg. This is the maximum posX of all vertices in
+    ++ graph s
+   diagramHeight:(s:%) -> NNI
+    ++ the height of the diagram that will be generated by
+    ++ diagramSvg. This is the maximum posY of all vertices in
+    ++ graph s
+   createWidth:(x:NNI) -> NNI
+    ++ can be used by domains which extend graph
+    ++ to help in creating coordinates for objects in a graph
+   createX:(x:NNI,n:NNI) -> NNI
+    ++ can be used by domains which extend graph to
+    ++ help in creating the x coordinate for objects in a graph
+   createY:(x:NNI,n:NNI) -> NNI
+    ++ can be used by domains which extend graph to
+    ++ help in creating the y coordinate for objects in a graph
+   toString: (n: %) -> String
+    ++ output
+   looseEquals: (x:%,y:%) -> Boolean
+    ++ true if x 'equals' y
+    ++ this is a looser version of equality test but is not as
+    ++ general as isomorphism.
+    ++ it only requires the same number of vertices but does not
+    ++ require the objects themselves being equal.
+    ++ the arrows must be the same, that is it may return false
+    ++ if the order of vertices is changed so this is not
+    ++ isomorphism test.
+    -- I would like to enhance this code into a true isomorphism test
+   map:(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer) -> %
+    ++ map(s, m, newOb, offsetX, offsetY) creates a new graph by
+    ++ mapping from this one
+    ++ newOb should contain the new list of vertices.
+    ++ m should contain a NNI value for each vertex, this is the
+    ++ new index into newOb. It is allowed that newOb may contain
+    ++ less objects than s (for surjective mapping) or
+    ++ more objects than s (for injective mapping)
+   mapContra:(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer) -> %
+    ++ similar to map function but reverses the directions of
+    ++ the arrows
+ 
+  add
+
+   sayMsg ==> sayBrightly$Lisp
+   math_to_string ==> mathObject2String$Lisp
+
+   getVertexIndex(s : %, o : S) : NNI ==
+       for i in 1.. for v in getVertices(s) repeat
+           if v.value = o then return i
+
+   addArrow!(s : %, name : String, o1 : S, o2 : S) : % ==
+       addArrow!(s, name, getVertexIndex(s, o1), getVertexIndex(s, o2))
+
+   isDirected?() == true
+
+   -- The graph is represented by a matrix of size |V| by |E|
+   -- where:
+   -- V=number of vertices
+   -- E=number of edges
+   -- entry [vertex, arrow] = arrow endpoint
+   -- data (simplest case: 1 - incident, 0 - not incident).
+   incidenceMatrix(s:%): Matrix Integer ==
+       vl := getVertices s
+       al := getArrows s
+       res := zero(#vl, #al)$Matrix(Integer)
+       ss : Integer :=
+           isDirected?() => -1
+           1
+       for ar in al for j in 1.. repeat
+           res(ar.fromOb, j) := ss
+           res(ar.toOb, j) := 1
+       res
+
+   -- This is an n by n matrix A, where n is the number of vertices
+   -- in the graph. If there is an arrow from a vertex x to a vertex y,
+   -- then the element ax,y is 1 (or in general the number of xy edges),
+   -- otherwise it is 0. In computing, this matrix makes it easy to find
+   -- subgraphs, and to reverse a directed graph.
+   adjacencyMatrix(s:%): Matrix NNI ==
+    m:List List NNI := [[if isDirectSuccessor?(s,u,v) then 1::NNI else 0::NNI_
+                        for u in 1..#(getVertices s)]for v in 1..#(getVertices s)]
+    matrix(m)
+
+   -- a local function used by laplacianMatrix to calculate the value for
+   -- a given entry.
+   -- inDegree(vi) if i = j (number of incoming links)
+   -- -1 if i not = j and vi is adjacent to vj
+   -- 0 otherwise
+   laplacianEntry(s:%,i:NNI,j:NNI):Integer ==
+    if i = j then return inDegree(s,i)
+    if isDirectSuccessor?(s,i,j) then return -1::Integer
+    0::Integer
+
+   -- Also known as "Kirchhoff matrix" or "Admittance matrix" where:
+   -- entry [i,j] = 
+   -- inDegree(vi) if i = j (number of incoming links)
+   -- -1 if i not = j and vi is adjacent to vj
+   -- 0 otherwise
+   -- Alternatively this is defined as D - A, where D is the diagonal
+   -- degree matrix.
+   -- It contains both adjacency information and degree information.
+   -- There are other, similar matrices, that are also called "Laplacian
+   -- matrices" of a graph.
+   laplacianMatrix(s:%): Matrix Integer ==
+    m:List List Integer := [[laplacianEntry(s,u,v)_
+                        for u in 1..#(getVertices s)]for v in 1..#(getVertices s)]
+    matrix(m)
+
+   -- Distance matrices are related to adjacency matrices, with the
+   -- differences that:
+   -- a) the latter only provides the information which vertices are connected
+   --    but does not tell about costs or distances between the vertices and
+   -- b) an entry of a distance matrix is smaller
+   --    if two elements are closer, while "close" (connected) vertices yield
+   --    larger entries in an adjacency matrix.
+   distanceMatrix(s:%): Matrix Integer ==
+    m:List List Integer := [[distance(s,u,v)_
+                        for u in 1..#(getVertices s)]for v in 1..#(getVertices s)]
+    matrix(m)
+
+   -- a local function, called recursively by spanningTreeArrow
+   -- i = index of current arrow
+   -- visited = list of arrow indexes already visited
+   spanningTreeArrowRecursive(s:%,i:NNI,visited:List NNI):Tree Integer ==
+    aa: List NNI := arrowsToArrow(s,i)
+    ch:List Tree Integer := []
+    for x in aa repeat
+      if entry?(x,visited)
+        then ch := concat(ch,tree((-x)::Integer))
+        else ch := concat(ch,spanningTreeArrowRecursive(s,x,concat(visited,x)))
+    tree(i::Integer,ch)
+
+   -- constructs a spanning tree for graph 's' rooted at the
+   -- arrow indexed by 'i'.
+   -- The tree will expand out from 'i' only stopping when reaching
+   -- a arrow that has already been visited (that is: loop detected).
+   -- Elements in the tree are Integer, a positive Integer represents
+   -- a arrow and a negative Integer represents a repeated arrow.
+   -- note: it is possible that nodes may be visited many times, only
+   -- arrows must not be re-visited.
+   spanningTreeArrow(s:%,i:NNI):Tree Integer ==
+    spanningTreeArrowRecursive(s,i,[i])
+
+   -- constructs a spanning tree for every arrow.
+   spanningForestArrow(s:%):List Tree Integer ==
+    [spanningTreeArrow(s,i) for i in 1..#getArrows(s)]
+
+   -- a local function, called recursively by spanningTreeNode
+   -- i = index of current node
+   -- visited = list of node indexes already visited
+   spanningTreeNodeRecursive(s:%,i:NNI,visited:List NNI):Tree Integer ==
+    oa: List NNI:=nodeToNode(s,i)
+    ch:List Tree Integer := []
+    for x in oa repeat
+      if entry?(x,visited)
+        then ch := concat(ch,tree((-x)::Integer))
+        else ch := concat(ch,spanningTreeNodeRecursive(s,x,concat(visited,x)))
+    tree(i::Integer,ch)
+
+   -- constructs a spanning tree for graph 's' rooted at the
+   -- node indexed by 'i'.
+   -- The tree will expand out from 'i' only stopping when reaching
+   -- a vertex that has already been visited (that is: loop detected).
+   -- Elements in the tree are Integer, a positive Integer represents
+   -- a vertex and a negative Integer represents a repeated vertex.
+   spanningTreeNode(s:%,i:NNI):Tree Integer ==
+    spanningTreeNodeRecursive(s,i,[i])
+
+   -- constructs a spanning tree for every vertex.
+   spanningForestNode(s:%):List Tree Integer ==
+    [spanningTreeNode(s,i) for i in 1..#getVertices(s)]
+
+   -- a local function, called recursively by loopsNodes
+   loopsNodesRecursive(t:Tree Integer,visited:List NNI):List Loop ==
+     c:List Tree Integer := children(t)
+     v:Integer := value(t)
+     --sayMsg concat(["loopsNodesRecursive v=",math_to_string v,_
+     --  " c=",math_to_string c,_
+     --  " v=",math_to_string v_
+     --  ])$String
+     if v<0 then
+       v2 := (-v)::NNI
+       i := position(v2,visited)$List(NNI)
+       if i < 1 then return [loop(visited)]
+       afterIndex := (#visited+1)-i
+       if afterIndex < 1 then return [loop(visited)]
+       return [loop(last(visited,afterIndex::NNI)$List(NNI))]
+     res:List Loop := []
+     for x in c repeat
+       ll := loopsNodesRecursive(x,concat(visited,v::NNI))
+       res := concat(res,ll)$List(Loop)
+     res
+
+   -- returns a list of loops for this graph
+   -- in this case the loop is represented by the indexes of the
+   -- sequence of nodes passed through.
+   -- to-do: it would be better to use a more efficient algorithm,
+   -- currently the code calls spanningForestNode and traverses the result
+   -- for loops, it might be more efficient to use Floyds algorithm.
+   loopsNodes(s:%):List Loop ==
+    res:List Loop := []
+    sf := spanningForestNode(s)
+    for x in sf repeat
+      res := concat(res,loopsNodesRecursive(x,[]))$List(Loop)
+    removeDuplicates(res)
+
+   -- a list of loops for this graph that pass through vertex index 'a'
+   loopsAtNode(s:%,a:NNI):List Loop ==
+    st:Tree Integer := spanningTreeNode(s,a)
+    removeDuplicates(loopsNodesRecursive(st,[]))
+
+   -- a local function, called recursively by loopsNodes
+   loopsArrowsRecursive(t:Tree Integer,visited:List NNI):List Loop ==
+     c:List Tree Integer := children(t)
+     v:Integer := value(t)
+     --sayMsg concat(["loopsArrowsRecursive v=",math_to_string v,_
+     --  " c=",math_to_string c,_
+     --  " v=",math_to_string v_
+     --  ])$String
+     if v<0 then
+       v2 := (-v)::NNI
+       i := position(v2,visited)$List(NNI)
+       if i < 1 then return [loop(visited)]
+       afterIndex := (#visited+1)-i
+       if afterIndex < 1 then return [loop(visited)]
+       return [loop(last(visited,afterIndex::NNI)$List(NNI))]
+     res:List Loop := []
+     for x in c repeat
+       ll := loopsArrowsRecursive(x,concat(visited,v::NNI))
+       res := concat(res,ll)$List(Loop)
+     res
+
+   -- returns a list of loops for this graph
+   -- in this case the loop is represented by the indexes of the
+   -- sequence of nodes passed through.
+   -- to-do: it would be better to use a more efficient algorithm,
+   -- currently the code calls spanningForestArrow and traverses the result
+   -- for loops, it might be more efficient to use Floyds algorithm.
+   loopsArrows(s:%):List Loop ==
+    res:List Loop := []
+    sf := spanningForestArrow(s)
+    for x in sf repeat
+      res := concat(res,loopsArrowsRecursive(x,[]))$List(Loop)
+    removeDuplicates(res)
+
+   -- returns true if there are no loops
+   isAcyclic?(s:%):Boolean == loopsNodes(s) = []
+
+   -- returns true if 'b' is a direct successor of 'a'
+   -- that is, if there is a direct arrow from 'a' to 'b'
+   isDirectSuccessor?(s:%,a:NNI,b:NNI): Boolean ==
+    for arr in getArrows(s) repeat
+      if arr.fromOb = a and arr.toOb = b then return true
+    false
+
+   -- true if 'a' has an arrow to itself
+   isFixPoint?(s:%,a:NNI):Boolean ==
+    for arr in getArrows(s) repeat
+      if arr.fromOb = a and arr.toOb = a then return true
+    false
+
+   -- arrow index from two vertex indices
+   getArrowIndex(s:%,a:NNI,b:NNI):NNI ==
+    arrs := getArrows(s)
+    for arrn in 1..#arrs repeat
+      if (arrs.arrn).fromOb = a and (arrs.arrn).toOb = b then
+        --sayMsg concat(["returns [",string(arrn),"]"])$String
+        return arrn
+    0::NNI
+
+ 
+   -- returns the name of arrow a->b
+   -- if it does not exist then return "?"
+   arrowName(s:%,a:NNI,b:NNI):String ==
+    for arr in getArrows(s) repeat
+      if arr.fromOb = a and arr.toOb = b then return arr.name
+    "?"
+
+   -- the number of arrows leading in to vertex 'a' in graph 's'
+   inDegree(s:%,a:NNI): NNI ==
+    count := 0::NNI
+    for arr in getArrows(s) repeat
+      if arr.toOb = a then count := count + 1::NNI
+    count
+
+   -- the number of arrows leading out of vertex 'a' in graph 's'
+   outDegree(s:%,a:NNI): NNI ==
+    count := 0::NNI
+    for arr in getArrows(s) repeat
+      if arr.fromOb = a then count := count + 1::NNI
+    count
+
+   -- returns index of all nodes with a direct arrow leading
+   -- in to node 'v' in graph 's'
+   nodeFromNode(s:%,v:NNI):List NNI ==
+    i:List NNI := []
+    for arr in getArrows(s) repeat
+      if arr.toOb = v then i:=concat(i,arr.fromOb)
+    i
+
+   -- returns index of all nodes with a direct arrow leading
+   -- out of node 'v' in graph 's'
+   nodeToNode(s:%,v:NNI):List NNI ==
+    i:List NNI := []
+    for arr in getArrows(s) repeat
+      if arr.fromOb = v then i:=concat(i,arr.toOb)
+    i
+
+   -- returns index of all arrows leading to a given node
+   arrowsFromNode(s:%,v:NNI):List NNI ==
+    i:List NNI := []
+    arrs := getArrows(s)
+    for arrn in 1..#arrs repeat
+      if (arrs.arrn).toOb = v then i:=concat(i,arrn)
+    i
+
+   -- returns index of all arrows leading from a given node
+   arrowsToNode(s:%,v:NNI):List NNI ==
+    i:List NNI := []
+    arrs := getArrows(s)
+    for arrn in 1..#arrs repeat
+      if (arrs.arrn).fromOb = v then i:=concat(i,arrn)
+    i
+
+   -- returns index of all nodes with a direct arrow leading
+   -- in to arrow 'a' in graph 's'
+   nodeFromArrow(s:%,a:NNI):List NNI ==
+    arrs := getArrows(s)
+    [(arrs.a).toOb]
+
+   -- returns index of all nodes with a direct arrow leading
+   -- out of arrow 'a' in graph 's'
+   nodeToArrow(s:%,a:NNI):List NNI ==
+    arrs := getArrows(s)
+    [(arrs.a).fromOb]
+
+   -- returns index of all arrows leading to a given arrow
+   arrowsFromArrow(s:%,a:NNI):List NNI ==
+    i:List NNI := []
+    arrs := getArrows(s)
+    for arrn in 1..#arrs repeat
+      if (arrs.arrn).toOb = (arrs.a).fromOb then i:=concat(i,arrn)
+    i
+
+   -- returns index of all arrows leading from a given arrow
+   arrowsToArrow(s:%,a:NNI):List NNI ==
+    i:List NNI := []
+    arrs := getArrows(s)
+    for arrn in 1..#arrs repeat
+      if (arrs.arrn).fromOb = (arrs.a).toOb then i:=concat(i,arrn)
+    i
+
+   -- local function used by route to give a route between a
+   -- and b, track visited nodes to avoid infinite loop.
+   routeNodeRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
+    if #visited > #getVertices(s) then return []
+    --sayMsg concat(["routeNodeRecursive ",math_to_string a,_
+    -- "->",math_to_string b," visited=",math_to_string visited])$String
+    shortest:List NNI := []
+    if a=b then return [a]
+    if isDirectSuccessor?(s,a,b) then return [a,b]
+    for arr in getArrows(s) repeat
+      if isDirectSuccessor?(s,a,arr.fromOb) then
+        --sayMsg concat(["checking ",math_to_string a,_
+        -- "->",math_to_string arr.fromOb," visited=",math_to_string visited])$String
+        --sayMsg concat(["with ",math_to_string arr.fromOb,_
+        -- "->",math_to_string b," visited=",math_to_string visited])$String
+        d := routeNodeRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
+        --sayMsg concat(["gives ",math_to_string arr.fromOb,_
+        -- "->",math_to_string b," d=",math_to_string d])$String
+        if shortest = []
+          then shortest := d
+          else if (d ~= []) and #d < #shortest then shortest := d
+    --sayMsg concat(["returns shortest=",math_to_string shortest])$String
+    if shortest = [] then return []
+    concat(a,shortest)
+
+   -- the shortest route between 'a' and 'b' as a
+   -- sequence of node indexes.
+   -- [a] if  'a' = 'b'
+   -- [] if it is not possible to go from 'a' to 'b'
+   routeNodes(s:%,a:NNI,b:NNI):List NNI == routeNodeRecursive(s,a,b,[])
+
+   -- local function used by route to give a route between a
+   -- and b, track visited nodes to avoid infinite loop.
+   routeArrowRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
+    if #visited > #getVertices(s) then return [0]
+    --sayMsg concat(["routeArrowRecursive ",math_to_string a,_
+    -- "->",math_to_string b," visited=",math_to_string visited])$String
+    shortest:List NNI := [0]
+    if a=b then return []
+    arrn := getArrowIndex(s,a,b)
+    if arrn ~= 0 then
+       --sayMsg concat(["returns [",string(arrn),"]"])$String
+       return [arrn]
+    aa:NNI := 0
+    shortestFullPath:List NNI := [0]
+    arrs := getArrows(s)
+    for arr in arrs repeat
+      if isDirectSuccessor?(s,a,arr.fromOb) then
+        aa := getArrowIndex(s,a,arr.fromOb)
+        --sayMsg concat(["checking ",math_to_string a,_
+        -- "->",math_to_string arr.fromOb," visited=",math_to_string visited])$String
+        --sayMsg concat(["with ",math_to_string arr.fromOb,_
+        -- "->",math_to_string b," visited=",math_to_string visited])$String
+        d := routeArrowRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
+        --sayMsg concat(["gives ",math_to_string arr.fromOb,_
+        -- "->",math_to_string b," d=",math_to_string d])$String
+        fullPath:=concat(aa,d)
+        if shortest = [0]
+          then
+            shortest := d
+            shortestFullPath := fullPath
+          else if (d ~= [0]) and #fullPath < #shortestFullPath then
+            shortest := d
+            shortestFullPath := fullPath
+    --sayMsg concat(["returns shortest=",math_to_string shortest])$String
+    if shortest = [0] then return [0]
+    shortestFullPath
+
+   -- the shortest route between 'a' and 'b' as a
+   -- sequence of arrow indexes.
+   -- [] if  'a' = 'b'
+   -- [0] if it is not possible to go from 'a' to 'b'
+   routeArrows(s:%,a:NNI,b:NNI):List NNI == routeArrowRecursive(s,a,b,[])
+
+   -- true if we can get from vertex 'a' to 'b' through a
+   -- sequence of arrows but we can't go in the opposite
+   -- direction from 'b' to 'a'
+   isGreaterThan?(s:%,a:NNI,b:NNI):Boolean ==
+     if routeNodeRecursive(s,a,b,[]) = [] then return false
+     if routeNodeRecursive(s,b,a,[]) ~= [] then return false
+     true
+
+   -- index of the vertex which can be reached from all other
+   -- vertices. Gives 0 if no such node exists or if it is not
+   -- unique, if there is a loop for instance.
+   max(s:%):NNI ==
+    ls: List OBJT := getVertices(s)
+    for i in 1..#ls repeat
+      fail:Boolean := false
+      for j in 1..#ls repeat
+        if i ~= j then
+          if not isGreaterThan?(s,j,i) then fail := true
+      if not fail then return i
+    0::NNI
+
+   -- index of the vertex which can be reached from a given
+   -- subset of the vertices. Gives 0 if no such node exists
+   -- or if it is not unique, if there is a loop for instance.
+   max(s:%,sub:List NNI):NNI ==
+    for i in sub repeat
+      fail:Boolean := false
+      for j in sub repeat
+        if i ~= j then
+          if not isGreaterThan?(s,j,i) then fail := true
+      if not fail then return i
+    0::NNI
+
+   -- index of the vertex which can reach to all other
+   -- vertices. Gives 0 if no such node exists or if it is not
+   -- unique, if there is a loop for instance.
+   min(s:%):NNI ==
+    ls: List OBJT := getVertices(s)
+    for i in 1..#ls repeat
+      fail:Boolean := false
+      for j in 1..#ls repeat
+        if i ~= j then
+          if not isGreaterThan?(s,i,j) then fail := true
+      if not fail then return i
+    0::NNI
+
+   -- index of the vertex which can reach to a given
+   -- subset of the vertices. Gives 0 if no such node exists
+   -- or if it is not unique, if there is a loop for instance.
+   min(s:%,sub:List NNI):NNI ==
+    for i in sub repeat
+      fail:Boolean := false
+      for j in sub repeat
+        if i ~= j then
+          if not isGreaterThan?(s,i,j) then fail := true
+      if not fail then return i
+    0::NNI
+
+   -- the shortest route between 'a' and 'b' as a
+   -- number of hops.
+   -- 0 if  'a' = 'b'
+   -- -1 if it is not possible to go from 'a' to 'b'
+   distance(s:%,a:NNI,b:NNI):Integer == #routeNodeRecursive(s,a,b,[])-1
+
+   -- a functional graph is a directed graph in which each vertex has
+   -- a single outgoing arrow.
+   isFunctional?(s:%):Boolean ==
+    counts:List NNI := [0::NNI for x in getVertices(s)]
+    for arr in getArrows(s) repeat
+      fromI:NNI := arr.fromOb
+      counts.fromI := counts.fromI + 1::NNI
+    for x in counts repeat
+      if not x=1::NNI then return false
+    true
+
+   -- this function can be used by domains which extend graph
+   -- to help in creating coordinates for objects in a graph
+   createWidth(x:NNI):NNI ==
+    for w in 1..100 repeat
+      if w*w >= x then return w
+    100::NNI
+
+   -- this function can be used by domains which extend graph to
+   -- help in creating the x coordinate for objects in a graph
+   createX(x:NNI,n:NNI):NNI ==
+    w:NNI := createWidth(x)
+    r := subtractIfCan(n,1)
+    d : Record(quotient: NNI,remainder: NNI) :=divide(r::NNI,w)$NNI
+    --sayMsg concat(["createX x=",math_to_string x,_
+    --   " n=",math_to_string n,_
+    --   " w=",math_to_string w,_
+    --   " r=",math_to_string r_
+    --   ])$String
+    if odd?((d.quotient)::Integer) then return (subtractIfCan(w,d.remainder)::NNI)*2
+    (d.remainder + 1)*2
+
+   -- this function can be used by domains which extend graph to
+   -- help in creating the y coordinate for objects in a graph
+   createY(x:NNI,n:NNI):NNI ==
+    w:NNI := createWidth(x)
+    r := subtractIfCan(n,1)
+    d : Record(quotient: NNI,remainder: NNI) :=divide(r::NNI,w)$NNI
+    (d.quotient + 1)*2
+
+   -- creates an SVG diagram
+   -- fileName:String is the name of the SVG file that will be created
+   -- n:% is the graph that will be written
+   -- dispArrowName:Boolean is true to include the name of each arrow
+   diagramSvg(fileName:String,n:%,dispArrowName:Boolean):Void ==
+    view:BOUNDS := [sipnt(0,0)$PT,sipnt(diagramWidth(n)+10::NNI,_
+                                        diagramHeight(n)+10::NNI)$PT]
+    sc := createSceneRoot(view)$Scene(PT)
+    mt1 := addSceneMaterial(sc,3::DF,"black","black")$Scene(PT)
+    mt2 := addSceneMaterial(sc,3::DF,"blue","blue")$Scene(PT)
+    mt3 := addSceneMaterial(sc,3::DF,"orange","orange")$Scene(PT)
+    mt4 := addSceneMaterial(sc,3::DF,"green","green")$Scene(PT)
+    mt5 := addSceneMaterial(sc,3::DF,"brown","brown")$Scene(PT)
+    mt6 := addSceneMaterial(sc,3::DF,"grey","grey")$Scene(PT)
+    mt7 := addSceneMaterial(sc,3::DF,"red","red")$Scene(PT)
+    mt8 := addSceneMaterial(sc,3::DF,"purple","purple")$Scene(PT)
+    ls: List OBJT := getVertices(n)
+    lastPointx:List NNI := []
+    lastPointy:List NNI := []
+    for i in ls repeat
+      s:String := math_to_string i.value
+      x:NNI :=i.posX
+      y:NNI :=i.posY
+      lastPointx:= concat(lastPointx,x)
+      lastPointy:= concat(lastPointy,y)
+      addSceneText(sc,s,32::NNI,sipnt(x,y)$PT)$Scene(PT)
+    arrs:List ARROW := getArrows(n)
+    if arrs=nil() then
+      writeSvg(sc,fileName)
+      return void
+    -- now draw arrows in diagram
+    if arrs=nil() then
+      writeSvg(sc,fileName)
+      return void
+    for arrow in arrs for arrn in 1..#arrs repeat
+      --sayMsg concat(["FiniteGraph diagramSvg fromOb x=",_
+      -- (math_to_string ls.(arrow.fromOb).posX)@String,_
+      -- " fromOb y=",(math_to_string ls.(arrow.fromOb).posY)@String,_
+      -- " toOb x=",(math_to_string ls.(arrow.toOb).posX)@String,_
+      -- " toOb y=",(math_to_string ls.(arrow.toOb).posY)@String_
+      -- ])$String
+      fromX:NNI := lastPointx.(arrow.fromOb)
+      toX:NNI := lastPointx.(arrow.toOb)
+      fromX := (fromX+arrow.xOffset)::NNI
+      toX := (toX+arrow.xOffset)::NNI
+      fromY:NNI := lastPointy.(arrow.fromOb)
+      toY:NNI := lastPointy.(arrow.toOb)
+      fromY := (fromY+arrow.yOffset)::NNI
+      toY := (toY+arrow.yOffset)::NNI
+      midX:NNI := shift(toX + fromX,-1) -- position of text
+      midY:NNI := shift(toY + fromY,-1)
+      -- get information to set line colour
+      arrIndex:List NNI :=arrowsToNode(n,arrow.fromOb)
+      arrNumber:Integer := position(arrn,arrIndex)
+      rema:Integer:= divide(arrNumber,8).remainder
+      mt := mt1
+      if rema = 0 then mt := mt1
+      if rema = 1 then mt := mt2
+      if rema = 2 then mt := mt3
+      if rema = 3 then mt := mt4
+      if rema = 4 then mt := mt5
+      if rema = 5 then mt := mt6
+      if rema = 6 then mt := mt7
+      if rema = 7 then mt := mt8
+      --sayMsg concat(["FiniteGraph diagramSvg arrNumber=",string(arrNumber),_
+      -- " arrIndex=", math_to_string arrIndex,_
+      -- " arrn=", math_to_string arrn,_
+      -- " rema=", math_to_string rema])$String
+      --nextPointx:= concat(nextPointx,midX)
+      --nextPointy:= concat(nextPointy,midY)
+      -- next we add the arrows, the parameter "proportional"::Symbol
+      -- tells the scenegraph code to reduce the length of the arrow
+      -- slightly to avoid overlapping the vertex label
+      addSceneArrows(mt,[[_
+         sipnt(fromX,fromY)$PT_
+         ,sipnt(toX,toY)$PT_
+          ]],"proportional"::Symbol,0.1::DF)
+      -- add the name of the arrow
+      if dispArrowName then
+        s:String :=arrow.name
+        addSceneText(mt,s,32::NNI,sipnt(midX,midY)$PT)$Scene(PT)
+    writeSvg(sc,fileName)
+
+   -- returns the width of the diagram that will be generated by
+   -- diagramSvg. This is the maximum posX of all vertices in
+   -- graph s
+   diagramWidth(s:%):NNI ==
+    maxx:NNI := 0::NNI
+    ls: List OBJT := getVertices(s)
+    for i in ls repeat
+      if (i.posX) > maxx then maxx:=i.posX
+    maxx
+
+   -- returns the height of the diagram that will be generated by
+   -- diagramSvg. This is the maximum posY of all vertices in
+   -- graph s
+   diagramHeight(s:%):NNI ==
+    maxy:NNI := 0::NNI
+    ls: List OBJT := getVertices(s)
+    for i in ls repeat
+      if (i.posY) > maxy then maxy:=i.posY
+    maxy
+
+   -- return string representation
+   toString(n: %):String ==
+    -- s holds result that we are constructing
+    s:String := ""
+    -- first represent objects in s
+    ls: List OBJT := getVertices(n)
+    for i in ls repeat
+      if s=""
+        then s:=math_to_string i.value
+        else s := concat([s,",",math_to_string i.value])
+    arrs:List ARROW := getArrows(n)
+    if arrs=nil() then return s
+    -- now represent arrows in s
+    -- arrs is List ARROW
+    if arrs=nil() then return s
+    s:=concat([s,"|"])$String
+    fst:Boolean := true()
+    arrStr:String := "->"
+    for arrow in arrs repeat
+      if not fst then s:=concat(s,",")
+      s:=concat([s,arrow.name,":",math_to_string ls.(arrow.fromOb).value,arrStr,_
+             math_to_string ls.(arrow.toOb).value])$String
+      fst := false()
+    s
+
+   -- returns true if x 'equals' y
+   -- this is a looser version of equality test but is not as
+   -- general as isomorphism.
+   -- it only requires the same number of vertices but does not
+   -- require the objects themselves being equal.
+   -- the arrows must be the same, that is if the order of
+   -- vertices is changed then false is changed so this is not
+   -- isomorphism test.
+   -- I would like to enhance this code into a true isomorphism test
+   looseEquals(x:%,y:%):Boolean ==
+    if #getVertices(x) ~= #getVertices(y) then return false
+    arx:List ARROW := getArrows(x)
+    ary:List ARROW := getArrows(y)
+    if #arx ~= #ary then return false
+    for i in 1..#arx repeat
+      if arx.i.fromOb ~= ary.i.fromOb then
+        --sayMsg concat(["looseEquals i=",(math_to_string i)@String,_
+        -- " x fromOb=",(math_to_string arx.i.fromOb)@String,_
+        -- " y fromOb=",(math_to_string ary.i.fromOb)@String_
+        -- ])$String
+        return false
+      if arx.i.toOb ~= ary.i.toOb then
+        --sayMsg concat(["looseEquals i=",(math_to_string i)@String,_
+        -- " x toOb=",(math_to_string arx.i.toOb)@String,_
+        -- " y toOb=",(math_to_string ary.i.toOb)@String_
+        -- ])$String
+        return false
+    true
+
+   -- start of SetCategory definitions --
+
+   hash(s:%): SingleInteger == 0$SingleInteger
+
+   latex(s:%): String == "\mbox{\bf Unimplemented}"
+
+   -- returns true if x equals y
+   -- this is equality and not isomorphism
+   -- that is it returns true only if exact index values and names are used
+   -- in addition to the structure(arrows) being the same.
+   _=(x:%,y:%):Boolean ==
+    if getVertices(x) ~= getVertices(y) then return false
+    if getArrows(x) ~= getArrows(y) then return false
+    true
+
+   -- returns true if x is not equal to y
+   _~_=(x:%,y:%) : Boolean == not(x=y)
+
+   -- output
+   coerce(n: %):OutputForm ==
+    toString(n)::OutputForm
+@
+
+\section{domain DGRPH DirectedGraph}
+<<domain DGRPH DirectedGraph>>=
+)abbrev domain DGRPH DirectedGraph
+++ Author: Martin Baker
+++ Date Created: December 2011
+++ Date Last Updated: February 2012
+++ Basic Operations: 
+++ Related Constructors:
+++ Keywords: graph theory
+++ Description: 
+++  Category of directed graphs, allows us to model graph theory
+++ 
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/
+
+DirectedGraph(S): Exports == Implementation where
+
+ S: SetCategory
+ NNI==> NonNegativeInteger
+ OBJT ==> Record(value:S,posX:NNI,posY:NNI)
+ ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
+           toOb:NNI,xOffset:Integer,yOffset:Integer)
+ SPROD ==> Product(S,S)
+ GRPHPROD ==> DirectedGraph SPROD
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI)
+ DF ==> DoubleFloat
+ PT ==> SCartesian(2)
+ BOUNDS ==> Record(mins:PT,maxs:PT)
+
+ Exports ==> FiniteGraph(S) with
+
+  directedGraph:(ob:List S) -> %
+    ++ constructor for graph with given list of
+    ++ object names. Use this version of the constructor
+    ++ if you don't intend to create diagrams and therefore don't
+    ++ care about x,y coordinates.
+    ++ more objects and arrows can be added later if required.
+  directedGraph:(ob:List OBJT) -> %
+    ++ constructor for graph with given objects
+    ++ more objects and arrows can be added later if required.
+  directedGraph:(ob:List OBJT,ar:List ARROW) -> %
+    ++ directedGraph(ob, ar) construcs graph with objects ob
+    ++ and arrows ar, more objects and arrows can be added
+    ++ later if required.
+  directedGraph:(ob:List S,am:List List NNI) -> %
+    ++ directedGraph(ob, am) construcs graph with objects ob
+    ++ and adjacency matrix am.
+  directedGraph:(perms:List Permutation S) -> %
+    ++ construct graph from a list of permutations.
+  "*":(%,%) -> GRPHPROD
+    ++ tensor product : the tensor product G*H of graphs G and H is
+    ++ a graph such that the vertex set of G*H is the Cartesian
+    ++ product V(G) \times V(H); and any two vertices (u,u') and (v,v')
+    ++ are adjacent in G \times H if and only if u' is adjacent with
+    ++ v' and u is adjacent with v.
+  cartesian:(%,%) -> GRPHPROD
+    ++ Cartesian product: the vertex set of G o H is the Cartesian
+    ++ product V(G) \times V(H) and any two vertices (u,u') and (v,v')
+    ++  are adjacent in G o H if and only if either
+    ++ u = v and u' is adjacent with v' in H, or
+    ++ u' = v' and u is adjacent with v in G.
+  closedTensor:(a:%,b:%,f:(S,S)->S) -> %
+    ++ closedTensor(a, b, f) builds tensor product of a and b and then
+    ++ maps it back to % using f.
+  closedCartesian:(a:%,b:%,f:(S,S)->S) -> %
+    ++ closedCartesian(a, b, f) builds Cartesian product of a and b
+    ++ and then maps it back to % using f.
+  _~: % -> %
+    ++ The complement or inverse of a graph is a graph on the same
+    ++ vertices such that there is an arrow if and only if there
+    ++ is not an arrow in its compliment. That is, it is the
+    ++ compliment of the arrows but is not the set complement.
+    ++ for more information see:
+    ++ http://en.wikipedia.org/wiki/Complement_graph
+  coerce:(pg:PermutationGroup S) -> %
+    ++ coerce PermutationGroup to graph
+
+ Implementation ==> add
+
+  -- The representation consists of 2 Lists:
+  --
+  -- Vertices (or objects or nodes)
+  -- ------------------------------
+  -- This table has an entry for each vertex:
+  -- Record(value:S,posX:NNI,posY:NNI)
+  -- posX and posY are not part of the mathematical structure but
+  -- are useful so that it can be drawn in a useful way.
+  -- Although this is thought of as a set (no duplication or ordering)
+  -- it is implemented as a list because entries in this table are
+  -- indexed by the following part so the order of the objects can't
+  -- be changed unless the index numbers in the following tables are
+  -- changed.
+  --
+  -- Arrows (or edges)
+  -- -----------------
+  -- This table has an entry for each arrow:
+  -- Record(name:String,arrType:NNI,fromOb:NNI,
+  --     toOb:NNI,xOffset:Integer,yOffset:Integer)
+  -- fromOb and toOb are the endpoints of the arrow which are
+  -- indexes into the vertex list.
+  -- arrType is used for multigraphs
+  -- name,xOffset and yOffset are used to draw the graph.
+  Rep := Record(_
+        objects: List OBJT,_
+        arrows:List ARROW_
+        )
+
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
+
+  -- constructor for graph with given list of
+  -- object names. Use this version of the constructor
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  -- more objects and arrows can be added later if required.
+  directedGraph(ob:List S): % ==
+    objs: List OBJT := [[x,0::NNI,0::NNI] for x in ob]
+    [objs,[]]
+
+  -- constructor for graph with given objects
+  -- more objects and arrows can be added later if required.
+  directedGraph(ob:List OBJT): % ==
+    [ob,[]]
+
+  -- constructor for graph with given objects and arrows
+  -- more objects and arrows can be added later if required.
+  directedGraph(ob:List OBJT,ar:List ARROW): % ==
+    [ob,ar]
+
+  -- constructor for graph with given objects and adjacency
+  -- matrix.
+  directedGraph(objs:List S,am:List List NNI):% ==
+    obs:List OBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+    ar:List ARROW := []
+    for i in 1..#am repeat
+      for j in 1..#(am.i) repeat
+        if (am.i).j = 1 then
+          a: ARROW := ["a",0::NNI,i,j,0::Integer,0::Integer]
+          ar := concat(ar,a)
+    [obs,ar]
+
+  -- construct graph from a list of permutations.
+  directedGraph(perms:List Permutation S):% ==
+    -- first create list of objects
+    obs: List S := []
+    for perm in perms for px in 1..#perms repeat
+      lr := listRepresentation(perm) -- get list of image-preimage pairs
+      im:List S := lr.image
+      --preim:List S := lr.preimage
+      -- make sure every object in every image list is included in obs
+      -- once only. preim should contain the same objects so there
+      -- is no need to check that.
+      if px=1
+        then
+          obs := im
+        else
+          for v in im repeat
+            if position(v,obs)<1 then obs :=concat(obs,v)
+    --sayMsg concat(["directedGraph obs=",math_to_string obs,
+    --  " #perms=",string(#perms),
+    --  " #obs=",string(#obs)])$String
+    -- then create table for arrows
+    tab: List List NNI := [[b for a in 1..#perms] for b in 1..#obs]
+    --sayMsg concat(["directedGraph empty tab=",math_to_string tab])$String
+    for perm in perms for pi in 1..#perms repeat
+      lr := listRepresentation(perm) -- get list of image-preimage pairs
+      im:List S := lr.image
+      preim:List S := lr.preimage
+      for pt in 1..#im repeat
+        pin:Integer := position(im.pt,obs)$List(S)
+        pout:Integer := position(preim.pt,obs)$List(S)
+        --sayMsg concat(["directedGraph pin=",math_to_string pin,_
+        --  " pout=",math_to_string pout,_
+        --  " pi=",math_to_string pi])$String
+        (tab.(pin::NNI)).pi := pout::NNI
+    --sayMsg concat(["directedGraph tab=",math_to_string tab])$String
+    -- then create vertex and arrow lists
+    verts:List OBJT := []
+    ars:List ARROW := []
+    for vert in obs for i in 1..#obs repeat
+      --x := tab.i
+      --sayMsg concat(["directedGraph i=",math_to_string i,_
+      --  " tab.i=",math_to_string x])$String
+      o: OBJT := [vert,createX(#obs,i),createY(#obs,i)]
+      verts := concat(verts,o)
+      for arrNum in tab.i repeat
+        a: ARROW := ["a",0::NNI,i,arrNum,0::Integer,0::Integer]
+        ars := concat(ars,a)
+    [verts,ars]
+
+  -- adds an object to this graph
+  -- Use this version
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  addObject!(s:%,n:S):% ==
+    obs:List OBJT := s.objects
+    obj:OBJT := [n,0::NNI,0::NNI]
+    if obs=nil()
+      then s.objects := [obj]
+      else s.objects := concat(obs,obj)
+    s
+
+  -- adds an object to this graph
+  addObject!(s:%,n:OBJT):% ==
+    obs:List OBJT := s.objects
+    if obs=nil()
+      then s.objects := [n]
+      else s.objects := concat(obs,n)
+    s
+
+  -- adds an arrow to this graph,where:
+  -- s is the graph where the arrow is to be added
+  -- nm is the name of the arrow
+  -- n1 is the index of the start object
+  -- n2 is the index of the end object
+  addArrow!(s:%,nm:String,n1:NNI,n2:NNI):% ==
+    arrss:List ARROW := s.arrows
+    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer]
+    if arrss=nil()
+      then
+        s.arrows := [a]
+        return s
+      else
+        arrs:List ARROW := concat(arrss,a)
+        s.arrows := arrs
+        return s
+
+  -- returns a list of all the vertices (or objects)
+  getVertices(s:%):List OBJT ==
+    s.objects
+
+  -- returns a list of all the arrows (or edges)
+  getArrows(s:%):List ARROW ==
+    s.arrows
+
+  -- constructs a graph without vertices or edges
+  initial(): % ==
+    [[],[]]
+
+  -- constructs a graph with a single vertex and a single loop
+  terminal(a:S):% ==
+    o: OBJT := [a,0::NNI,0::NNI]
+    ar: ARROW := ["loop",0::NNI,1::NNI,1::NNI,0::Integer,0::Integer]
+    [[o],[ar]]
+
+  -- constructs a graph with vertices (from objs) connected in a
+  -- cycle but with one gap. The last vertex in the sequence
+  -- loops back to itself so all vertices have one outgoing
+  -- arrow.
+  -- arrowName is a prefix for all arrow names, this will be
+  -- followed by a number starting at 1 and incremented for each
+  -- arrow
+  cycleOpen(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for ob in objs for obn in 1..#(objs) repeat
+      -- build objects
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      next:NNI := obn+1
+      if next-1 = #(objs) then next := obn
+      if next <= #(objs) then
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given connected in a
+  -- cycle.
+  -- arrowName is a prefix for all arrow names, this will be
+  -- followed by a number starting at 1 and incremented for each
+  -- arrow
+  cycleClosed(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for ob in objs for obn in 1..#(objs) repeat
+      -- build objects
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      next:NNI := obn+1
+      if next-1 = #(objs) then next := 1::NNI
+      if next <= #(objs) then
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given and arrows from
+  -- each object only to itself.
+  -- arrowName is a prefix for all arrow names, this will be
+  -- followed by a number starting at 1 and incremented for each
+  -- arrow
+  unit(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for ob in objs for obn in 1..#(objs) repeat
+      -- build objects
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obn,0::Integer,0::Integer]
+      ars := concat(ars,a)
+      arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given and fully connected
+  -- arrows, that is, each object has an arrow to every other
+  -- object except itself.
+  -- arrowName is a prefix for all arrow names, this will be
+  -- followed by a number starting at 1 and incremented for each
+  -- arrow
+  kgraph(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for ob in objs for obn in 1..#(objs) repeat
+      -- build objects
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      for obm in 1..#(objs) repeat
+       if obn ~= obm then
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obm,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- sum : disjoint union of vertices with arrows from appropriate
+  -- input
+  _+(a,b): % ==
+    lo:List OBJT := concat(a.objects,b.objects)
+    bStart: NNI := #(a.objects)
+    lb:List ARROW := []
+    for ba in b.arrows repeat
+      arr: ARROW := [ba.name,ba.arrType,_
+         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset]
+      lb := concat(lb,arr)$(List ARROW)
+    la:List ARROW := concat(a.arrows,lb)
+    [lo,la]
+
+  -- sum : union (not necessarily disjoint) of vertices with arrows
+  -- merged in from appropriate input, if arrow exists from both
+  -- inputs then it will be duplicated.
+  merge(a:%,b:%): % ==
+    -- bmap is a map into merged vertices
+    bmap:List NNI := [x for x in 1..#a.objects] -- map does not change in a
+    -- for each object in 'b' check if it exists in 'a' and if not add it
+    newIndex:NNI := #a.objects
+    mergedObjects := a.objects
+    for bob in b.objects repeat
+      i:Integer := position(bob,a.objects)
+      if i<1
+        then -- returns 0 if not found
+          mergedObjects := concat(mergedObjects,bob)
+          newIndex := newIndex + 1
+          bmap := concat(bmap,newIndex)
+        else
+          bmap := concat(bmap,i::NNI)
+    -- now merge arrows
+    bStart: NNI := #(a.objects)
+    lb:List ARROW := []
+    for ba in b.arrows repeat
+      -- map to and from indexes
+      toI:NNI := bmap.(ba.toOb + bStart)
+      fromI:NNI := bmap.(ba.fromOb + bStart)
+      arr: ARROW := [ba.name,ba.arrType,_
+         fromI,toI,ba.xOffset,ba.yOffset]
+      lb := concat(lb,arr)$(List ARROW)
+    la:List ARROW := concat(a.arrows,lb)
+    [mergedObjects,la]
+
+  -- this is a local function used by both tensor and Cartesian
+  -- product to calculate the new vertices.
+  objProd(a:%,b:%):List OBJTPROD ==
+    newObjs:List OBJTPROD := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        widtha:NNI := diagramWidth(a)
+        heighta:NNI := diagramHeight(a)
+        --sayMsg concat(["objProd axi=",math_to_string axi,_
+        -- " ayi=",math_to_string ayi,_
+        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
+        -- " widtha=",math_to_string widtha," heighta=",math_to_string heighta,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+        sp:SPROD := construct(ai,bi)$SPROD
+        ob:OBJTPROD := [sp,x,y]
+        newObjs := concat(newObjs,ob)
+    newObjs
+
+  -- this is a local function used by both tensor and Cartesian
+  -- product to calculate the new index.
+  indexProd(aObj:%,a:NNI,b:NNI):NNI ==
+    a + ((b::Integer-1)::NNI * #aObj.objects)
+
+  -- tensor product : the tensor product A*B of graphs A and B is
+  -- a graph such that the vertex set of A*B is the Cartesian
+  -- product V(A) \times V(B)
+  -- any two vertices <au,bu> and <av,bv> are adjacent in A \times B
+  -- if and only if bu is adjacent with bv
+  -- and au is adjacent with av.
+  --
+  -- So this is defined over S^2 (that is Product(S,S))
+  _*(a:%,b:%):GRPHPROD ==
+    -- new objects are calculated by local objProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            --sayMsg concat(["* graph au=",math_to_string au,_
+            -- " av=",math_to_string av,_
+            -- " bu=",math_to_string bu,_
+            -- " bv=",math_to_string bv_
+            -- ])$String
+            if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
+              --sayMsg "add arrow"
+              an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    directedGraph(objProd(a,b),newArrs)$GRPHPROD
+
+  -- Cartesian product: the vertex set of A o B is the Cartesian
+  -- product V(A) \times V(B) and any two vertices <au,bu> and <av,bv>
+  --  are adjacent in A o B if and only if either
+  -- au = av and bu is adjacent with bv or
+  -- bu = bv and au is adjacent with av.
+  cartesian(a:%,b:%):GRPHPROD ==
+    -- new objects are calculated by local objProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            --sayMsg concat(["* graph au=", math_to_string au,_
+            -- " av=",math_to_string av,_
+            -- " bu=",math_to_string bu,_
+            -- " bv=",math_to_string bv_
+            -- ])$String
+            if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
+               ((au = av) and isDirectSuccessor?(b,bu,bv)) then
+              an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
+                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
+                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+              --pu := indexProd(b,au,bu)
+              --pv := indexProd(b,av,bv)
+              --sayMsg concat(["add arrow:",an," ",math_to_string pu,"->",math_to_string pv])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    directedGraph(objProd(a,b),newArrs)$GRPHPROD
+
+  -- this is a local function used by both closed tensor and closed
+  -- Cartesian product to calculate the new vertices.
+  closedObjProd(a:%,b:%,f:(S,S)->S):List OBJT ==
+    newObjs:List OBJT := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        widtha:NNI := diagramWidth(a)
+        heighta:NNI := diagramHeight(a)
+        sp:S := f(ai,bi)
+        ob:OBJT := [sp,x,y]
+        newObjs := concat(newObjs,ob)
+    newObjs
+
+
+  -- as tensor product but returns %.
+  closedTensor(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
+              --sayMsg "add arrow"
+              an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    directedGraph(closedObjProd(a,b,f),newArrs)
+
+  -- as Cartesian product but returns %.
+  closedCartesian(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
+               ((au = av) and isDirectSuccessor?(b,bu,bv)) then
+              an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
+                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
+                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    directedGraph(closedObjProd(a,b,f),newArrs)
+
+  -- The complement or inverse of a graph is a graph on the same
+  -- vertices such that there is an arrow if and only if there
+  -- is not an arrow in its compliment. That is, it is the
+  -- compliment of the arrows but is not the set complement.
+  -- for more information see:
+  -- http://en.wikipedia.org/wiki/Complement_graph
+  ~ s ==
+    obs:List OBJT := s.objects
+    ars:List ARROW := s.arrows
+    newArrs:List ARROW := []
+    for i in 1..#obs repeat
+      for j in 1..#obs repeat
+        if not isDirectSuccessor?(s,i,j) then
+          newArr: ARROW := [concat(string(i),string(j)),0::NNI,_
+                       i,j,0,0]
+          newArrs := concat(newArrs,newArr)
+    [obs,newArrs]
+
+  -- create a new graph by mapping from this one
+  -- newOb should contain the new list of vertices.
+  -- m should contain a NNI value for each vertex, this is the
+  -- new index into newOb. It is allowed that newOb may contain
+  -- less objects than s (for surjective mapping) or
+  -- more objects than s (for injective mapping)
+  map(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List OBJT := [[o,0::NNI,0::NNI] for o in newOb]
+    for oi in 1..#(s.objects) repeat
+      i := m.oi
+      newObjs.i :OBJT := [(newObjs.i).value,_
+          ((((s.objects).oi).posX)+offsetX)::NNI,_
+          ((((s.objects).oi).posY)+offsetY)::NNI]
+    newArrs:List ARROW := []
+    for oldArrow in s.arrows repeat
+      newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
+                       m.(oldArrow.fromOb),m.(oldArrow.toOb),_
+                       oldArrow.xOffset,oldArrow.yOffset]
+      newArrs := concat(newArrs,newArr)
+    [newObjs,newArrs]
+
+  -- similar to map function but reverses the directions of
+  -- the arrows
+  mapContra(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List OBJT := [[o,0::NNI,0::NNI] for o in newOb]
+    for oi in 1..#(s.objects) repeat
+      i := m.oi
+      newObjs.i :OBJT := [(newObjs.i).value,_
+          ((((s.objects).oi).posX)+offsetX)::NNI,_
+          ((((s.objects).oi).posY)+offsetY)::NNI]
+    newArrs:List ARROW := []
+    for oldArrow in s.arrows repeat
+      newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
+                       m.(oldArrow.toOb),m.(oldArrow.fromOb),_
+                       oldArrow.xOffset,oldArrow.yOffset]
+      newArrs := concat(newArrs,newArr)
+    [newObjs,newArrs]
+
+  -- coerce PermutationGroup to graph
+  coerce(pg:PermutationGroup S):% ==
+    directedGraph(pg::(List Permutation S))
+@
+
+\section{domain FNGRPH FunctionGraph}
+<<domain FNGRPH FunctionGraph>>=
+)abbrev domain FNGRPH FunctionGraph
+++ Author: Martin Baker
+++ Date Created: January 2011
+++ Date Last Updated: February 2012
+++ Basic Operations: 
+++ Related Constructors:
+++ Keywords: graph theory
+++ Description: allows us to model graph theory
+++ 
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/
+
+FunctionGraph(S): Exports == Implementation where
+
+ S: SetCategory
+ NNI==> NonNegativeInteger
+ -- the following represent the graph in FiniteGraph
+ OBJT ==> Record(value:S,posX:NNI,posY:NNI)
+ ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
+           toOb:NNI,xOffset:Integer,yOffset:Integer)
+ -- represent the graph in this domain
+ FOBJT ==> Record(value:S,posX:NNI,posY:NNI,next:NNI)
+
+ SPROD ==> Product(S,S)
+ GRPHPROD ==> FunctionGraph SPROD
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,next:NNI)
+ AJMAP ==> Union(List NNI,"failed")
+ DF ==> DoubleFloat
+ PT ==> SCartesian(2)
+ BOUNDS ==> Record(mins:PT,maxs:PT)
+
+ Exports ==> FiniteGraph(S) with
+
+  functionGraph:(ob:List S) -> %
+    ++ constructor for graph with given list of
+    ++ object names. Use this version of the constructor
+    ++ if you don't intend to create diagrams and therefore don't
+    ++ care about x,y coordinates.
+    ++ more objects and arrows can be added later if required.
+  functionGraph:(ob:List FOBJT) -> %
+    ++ constructor for graph with given objects
+    ++ more objects and arrows can be added later if required.
+  functionGraph:(ob:List OBJT,ar:List ARROW) -> %
+    ++ constructor for graph with given objects and arrows
+    ++ more objects and arrows can be added later if required.
+  functionGraph:(perms:List Permutation S) -> %
+    ++ construct graph from a list of permutations.
+  "*":(%,%) -> GRPHPROD
+    ++ tensor product : the tensor product G*H of graphs G and H is
+    ++ a graph such that the vertex set of G*H is the Cartesian
+    ++ product V(G) \times V(H); and any two vertices (u,u') and (v,v')
+    ++ are adjacent in G \times H if and only if u' is adjacent with
+    ++ v' and u is adjacent with v.
+  --cartesian:(%,%) -> GRPHPROD
+    ++ Cartesian product does apply to function graph
+    ++ produces two arrows out of every node
+  closedTensor:(a:%,b:%,f:(S,S)->S) -> %
+    ++ as tensor product but returns %.
+  --closedCartesian:(a:%,b:%,f:(S,S)->S) -> %
+    ++ Cartesian product does apply to function graph
+    ++ produces two arrows out of every node
+  coAdjoint:(s:%,m: List NNI) -> AJMAP
+    ++ given a mapping from this graph this function tries to
+    ++ calculate a unique reverse mapping back to this graph
+  contraAdjoint:(s:%,m: List NNI) -> AJMAP
+    ++ given a mapping from this graph this function tries to
+    ++ calculate a unique reverse mapping back to this graph
+  apply:(s:%,a: NNI) -> NNI
+    ++ apply 'function' represented by this graph to vertex
+    ++ index 'a'
+  limit:(s:%,a: NNI) -> Loop
+    ++ apply 'function' represented by this graph to 'a'
+    ++ repeatedly until we reach a loop which is returned
+    ++ as a sequence of vertex indexes.
+
+ Implementation ==> add
+
+  -- The representation consists of 2 Lists:
+  --
+  -- Vertices (or objects or nodes)
+  -- ------------------------------
+  -- This table has an entry for each vertex:
+  -- Record(value:S,posX:NNI,posY:NNI,next:NNI)
+  -- posX and posY are not part of the mathematical structure but
+  -- are useful so that it can be drawn in a useful way.
+  -- Although this is thought of as a set (no duplication or ordering)
+  -- it is implemented as a list because entries in this table are
+  -- indexed by the following part so the order of the objects can't
+  -- be changed unless the index numbers in the following tables are
+  -- changed. The arrows are encoded here in the 'next' entry, each
+  -- vertex can only have 1 outgoing arrow which is enforced by this
+  -- coding.
+  Rep := Record(objects: List FOBJT)
+
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
+
+  -- constructor for graph with given list of
+  -- object names. Use this version of the constructor
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  -- more objects and arrows can be added later if required.
+  functionGraph(ob:List S): % ==
+    objs: List FOBJT := [[x,0::NNI,0::NNI,0::NNI] for x in ob]
+    [objs]
+
+  -- constructor for graph with given objects
+  -- more objects and arrows can be added later if required.
+  functionGraph(ob:List FOBJT): % ==
+    [ob]
+
+  -- constructor for graph with given objects and arrows
+  -- more objects and arrows can be added later if required.
+  functionGraph(ob:List OBJT,ar:List ARROW): % ==
+    arrs:List NNI := [x::NNI for x in 1..#ob]
+    for a in ar repeat
+      fromo:NNI := a.fromOb
+      too:NNI := a.toOb
+      arrs.fromo := too
+    fobs:List FOBJT := []
+    for fn in 1..#ob repeat
+      f := ob.fn
+      fo: FOBJT := [f.value,f.posX,f.posY,arrs.fn] 
+      fobs := concat(fobs,fo)    
+    [fobs]
+
+  -- construct graph from a list of permutations.
+  functionGraph(perms:List Permutation S):% ==
+    if #perms ~= 1 then error "functionGraph only needs one permutation"
+    obs:List FOBJT := []
+    perm := first perms
+    lr := listRepresentation(perm)
+    im:List S := lr.image
+    preim:List S := lr.preimage
+    for vert in im for i in 1..#im repeat
+      n: NNI := 1
+      for j in 1..#preim repeat
+        if im.i = preim.j then n := j
+      o: FOBJT := [vert,createX(#im,i),createY(#im,i),n]
+      obs := concat(obs,o)
+    [obs]
+
+  -- adds an object to this graph
+  -- The added object loops back to itself
+  addObject!(s:%,n:S):% ==
+    obs:List FOBJT := s.objects
+    obj:FOBJT := [n,0::NNI,0::NNI,#obs]
+    if obs=nil()
+      then s.objects := [obj]
+      else s.objects := concat(obs,obj)
+    s
+
+  -- this form of addObject! not supported in functionGraph but
+  -- it is in FiniteGraph category and it is included here to trap errors
+  addObject!(s:%,n:OBJT):% ==
+    error "this form of addObject! not supported in functionGraph"
+    [[]]
+
+  -- This should really be replaceArrow! in functionGraph but
+  -- we use the name addArrow! for compatibility with directedGraph
+  -- and any other implementations of FiniteGraph
+  -- where:
+  -- s is the graph where the arrow is to be replaced
+  -- nm is the name of the arrow (not used)
+  -- n1 is the index of the start object
+  -- n2 is the index of the end object
+  addArrow!(s:%,nm:String,n1:NNI,n2:NNI):% ==
+    ((s.objects).n1).next := n2
+    s
+
+  -- returns a list of all the vertices (or objects)
+  getVertices(s:%):List OBJT ==
+    res:List OBJT := []
+    for soj in s.objects repeat
+      o: OBJT := [soj.value,soj.posX,soj.posY]
+      res := concat(res,o)
+    res
+
+  -- returns a list of all the arrows (or edges)
+  getArrows(s:%):List ARROW ==
+    res:List ARROW := []
+    for sojn in 1..#(s.objects) repeat
+      soj:FOBJT := (s.objects).sojn
+      a: ARROW := [string(sojn),0::NNI,sojn,soj.next,0,0]
+      res := concat(res,a)
+    res
+
+  -- constructs a graph without vertices or edges
+  initial(): % ==
+    [[]]
+
+  -- constructs a graph with a single vertex and a single loop
+  terminal(a:S):% ==
+    o: FOBJT := [a,0::NNI,0::NNI,1::NNI]
+    [[o]]
+
+  -- constructs a graph with objects given connected in a
+  -- sequence with the last one looping to itself.
+  cycleOpen(objs:List S,arrowName:String):% ==
+    obs:List FOBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      n:NNI := obn+1
+      if obn = #(objs) then n := #(objs)
+      o: FOBJT := [ob,createX(#objs,obn),createY(#objs,obn),n]
+      obs := concat(obs,o)
+    [obs]
+
+  -- constructs a graph with objects given connected in a
+  -- cycle.
+  cycleClosed(objs:List S,arrowName:String):% ==
+    obs:List FOBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      n:NNI := obn+1
+      if obn = #(objs) then n := 1::NNI
+      o: FOBJT := [ob,createX(#objs,obn),createY(#objs,obn),n]
+      obs := concat(obs,o)
+    [obs]
+
+  -- constructs a graph with objects given and arrows from
+  -- each object only to itself.
+  unit(objs:List S,arrowName:String):% ==
+    objs: List FOBJT := [[objs.x,0::NNI,0::NNI,x::NNI] for x in 1..#objs]
+    [objs]
+
+  -- constructs a graph with objects given and fully connected
+  -- arrows, that is, each object has an arrow to every other
+  -- object except itself.
+  kgraph(objs:List S,arrowName:String):% ==
+    error "kgraph not valid in function graph"
+    [[]]
+
+  -- sum : disjoint union of vertices with arrows from appropriate
+  -- input
+  _+(a,b): % ==
+    objs: List FOBJT := b.objects
+    c: List FOBJT := [[(objs.x).value,_
+         (objs.x).posX,(objs.x).posY,_
+         (x::NNI)+#(a.objects)] for x in 1..#objs]
+    [concat(a.objects,c)]
+
+  -- sum : union (not necessarily disjoint) of vertices with arrows
+  -- merged in from appropriate input, if arrow exists from both
+  -- inputs then it will be duplicated.
+  merge(a:%,b:%): % ==
+    error "merge not valid in function graph"
+    [[]]
+
+  -- this is a local function used by both tensor and Cartesian
+  -- product to calculate the new index.
+  indexProd(aObj:%,a:NNI,b:NNI):NNI ==
+    x:NNI := a + ((b::Integer-1)::NNI * #aObj.objects)
+    --sayMsg concat(["indexProd a=",string(a),_
+    --               " b=",string(b),_
+    --               " a*b=",string(x)])$String
+    x
+
+  -- tensor product : the tensor product A*B of graphs A and B is
+  -- a graph such that the vertex set of A*B is the Cartesian
+  -- product V(A) \times V(B)
+  -- any two vertices <au,bu> and <av,bv> are adjacent in A \times B
+  -- if and only if bu is adjacent with bv
+  -- and au is adjacent with av.
+  --
+  -- So this is defined over S^2 (that is Product(S,S))
+  _*(a:%,b:%):GRPHPROD ==
+    newObjs:List OBJTPROD := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      ani:NNI := aoi.next
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        bni:NNI := boi.next
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        nextA := indexProd(b,bni,ani)
+        --sayMsg concat(["objProd axi=",math_to_string axi,_
+        -- " ayi=",math_to_string ayi,_
+        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
+        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+        sp:SPROD := construct(ai,bi)$SPROD
+        ob:OBJTPROD := [sp,x,y,nextA]
+        newObjs := concat(newObjs,ob)
+    functionGraph(newObjs)$GRPHPROD
+
+  -- as tensor product but returns %.
+  closedTensor(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newObjs:List FOBJT := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      ani:NNI := aoi.next
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        bni:NNI := boi.next
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        nextA := indexProd(b,bni,ani)
+        sp:S := f(ai,bi)
+        ob:FOBJT := [sp,x,y,nextA]
+        newObjs := concat(newObjs,ob)
+        --sayMsg concat(["objProd ai=",math_to_string ai,_
+        -- " bi=",math_to_string bi,_
+        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+    functionGraph(newObjs)
+
+  -- create a new graph by mapping from this one
+  -- newOb should contain the new list of vertices.
+  -- m should contain a NNI value for each vertex, this is the
+  -- new index into newOb. It is allowed that newOb may contain
+  -- less objects than s (for surjective mapping) or
+  -- more objects than s (for injective mapping)
+  map(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List FOBJT := [[o,0::NNI,0::NNI,0::NNI] for o in newOb]
+    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
+    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    oldObjs:List FOBJT := s.objects
+    for oi in 1..#oldObjs repeat
+      oldObj := oldObjs.oi
+      i:NNI := m.oi
+      inext:NNI := m.(oldObj.next)
+      newObj := newOb.i
+      newX := ((oldObj.posX)+offsetX)::NNI
+      newY := ((oldObj.posY)+offsetY)::NNI
+      newNext := m.(oldObj.next)
+      nv:FOBJT :=[newObj,newX,newY,newNext] -- assemble new vertex
+      if i ~= inext then newObjs.i:= nv -- add it if it does not
+                                        -- point to itself
+      --sayMsg concat(["map oi=",string(oi),_
+      -- " i=",string(i),_
+      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
+      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
+      -- " newNext=",math_to_string newNext_
+      -- ])$String
+    -- make sure all newObjs have 'next' set to valid index
+    for p in 1..#newObjs repeat
+      nwob := newObjs.p
+      -- make unassigned 'next' values loop to themselves
+      if nwob.next < 1 then nwob.next := p
+    [newObjs]
+
+  -- similar to map function but reverses the directions of
+  -- the arrows
+  mapContra(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List FOBJT := [[o,0::NNI,0::NNI,0::NNI] for o in newOb]
+    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
+    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    oldObjs:List FOBJT := s.objects
+    for oi in 1..#oldObjs repeat
+      oldObj := oldObjs.oi
+      i:NNI := m.oi
+      inext:NNI := m.(oldObj.next)
+      newObj := newOb.i
+      newX := ((oldObj.posX)+offsetX)::NNI
+      newY := ((oldObj.posY)+offsetY)::NNI
+      incoming:List NNI := nodeToNode(s,oi)
+      if #incoming ~= 1 then error "not a FunctionGraph"
+      newNext := m.(first incoming)
+      n:FOBJT :=[newObj,newX,newY,newNext]
+      if i ~= inext then newObjs.i:= n
+      --sayMsg concat(["map oi=",string(oi),_
+      -- " i=",string(i),_
+      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
+      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
+      -- " newNext=",math_to_string newNext_
+      -- ])$String
+    -- make sure all newObjs have 'next' set to valid index
+    for p in 1..#newObjs repeat
+      nwob := newObjs.p
+      -- make unassigned 'next' values loop to themselves
+      if nwob.next < 1 then nwob.next := p
+    [newObjs]
+
+  -- given a mapping from this graph this function tries to
+  -- calculate a unique reverse mapping back to this graph
+  coAdjoint(s:%,m: List NNI):AJMAP ==
+    domainSize:NNI := #(s.objects)
+    codomainSize:NNI := 0
+    for mi in m repeat if mi > codomainSize then codomainSize := mi
+    ret:List NNI := [0::NNI for x in 1..codomainSize]
+    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
+    -- " codomainSize=",string(codomainSize)])$String
+    retOpt:List List NNI := [[] for x in 1..codomainSize]
+    for mi in 1..#m repeat
+      --sayMsg concat(["coAdjoint mi=",string(mi),_
+      -- " m.mi=",string(m.mi)])$String
+      retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
+    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
+    entry:NNI := 1
+    for ri in retOpt repeat
+      x := max(s,ri)
+      if x = 0 then return "failed"
+      ret.entry := x
+      entry := entry + 1
+      --sayMsg concat(["coAdjoint ret.",string(entry),_
+      -- "=",string(x)])$String
+    ret
+
+  -- given a mapping from this graph this function tries to
+  -- calculate a unique reverse mapping back to this graph
+  contraAdjoint(s:%,m: List NNI):AJMAP ==
+    domainSize:NNI := #(s.objects)
+    codomainSize:NNI := 0
+    for mi in m repeat if mi > codomainSize then codomainSize := mi
+    ret:List NNI := [0::NNI for x in 1..codomainSize]
+    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
+    -- " codomainSize=",string(codomainSize)])$String
+    retOpt:List List NNI := [[] for x in 1..codomainSize]
+    for mi in 1..#m repeat
+      --sayMsg concat(["coAdjoint mi=",string(mi),_
+      -- " m.mi=",string(m.mi)])$String
+      retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
+    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
+    entry:NNI := 1
+    for ri in retOpt repeat
+      x := min(s,ri)
+      if x = 0 then return "failed"
+      ret.entry := x
+      entry := entry + 1
+      --sayMsg concat(["coAdjoint ret.",string(entry),_
+      -- "=",string(x)])$String
+    ret
+
+  -- apply 'function' represented by this graph to vertex
+  -- index 'a'
+  apply(s:%,a: NNI):NNI ==
+    s.objects.a.next
+
+  -- apply 'function' represented by this graph to 'a'
+  -- repeatedly until we reach a loop which is returned
+  -- as a sequence of vertex indexes.
+  limit(s:%,a: NNI):Loop ==
+    ptr := a
+    for s1 in s.objects repeat
+      lp:List Loop := loopsAtNode(s,ptr)
+      if #lp > 1 then error "limit: cant have >1 loop through node"
+      if #lp = 1 then return first lp
+      -- no loop so step to next node
+      ptr := apply(s,ptr)
+    -- should never get here as we should reach a loop by
+    -- a number of steps equal to the degree of the graph
+    loop([])
+
+@
+
+\section{domain UDGRPH UndirectedGraph}
+<<domain UDGRPH UndirectedGraph>>=
+)abbrev domain UDGRPH UndirectedGraph
+++ Author: Martin Baker
+++ Date Created: January 2012
+++ Date Last Updated: January 2012
+++ Basic Operations: 
+++ Related Constructors:
+++ Keywords: graph theory
+++ Description: allows us to model graph theory
+++ 
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/
+
+UndirectedGraph(S): Exports == Implementation where
+
+ S: SetCategory
+ NNI==> NonNegativeInteger
+ OBJT ==> Record(value:S,posX:NNI,posY:NNI)
+ ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
+           toOb:NNI,xOffset:Integer,yOffset:Integer)
+ SPROD ==> Product(S,S)
+ GRPHPROD ==> UndirectedGraph SPROD
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI)
+ DF ==> DoubleFloat
+ PT ==> SCartesian(2)
+ BOUNDS ==> Record(mins:PT,maxs:PT)
+
+ Exports ==> FiniteGraph(S) with
+
+  undirectedGraph:(ob:List S) -> %
+    ++ constructor for graph with given list of
+    ++ object names. Use this version of the constructor
+    ++ if you don't intend to create diagrams and therefore don't
+    ++ care about x,y coordinates.
+    ++ more objects and arrows can be added later if required.
+  undirectedGraph:(ob:List OBJT) -> %
+    ++ constructor for graph with given objects
+    ++ more objects and arrows can be added later if required.
+  undirectedGraph:(ob:List OBJT,ar:List ARROW) -> %
+    ++ constructor for graph with given objects and arrows
+    ++ more objects and arrows can be added later if required.
+  undirectedGraph:(ob:List S,am:List List NNI) -> %
+    ++ constructor for graph with given objects and adjacency
+    ++ matrix.
+  "*":(%,%) -> GRPHPROD
+    ++ tensor product : the tensor product G*H of graphs G and H is
+    ++ a graph such that the vertex set of G*H is the Cartesian
+    ++ product V(G) \times V(H); and any two vertices (u,u') and (v,v')
+    ++ are adjacent in G \times H if and only if u' is adjacent with
+    ++ v' and u is adjacent with v.
+  cartesian:(%,%) -> GRPHPROD
+    ++ Cartesian product: the vertex set of G o H is the Cartesian
+    ++ product V(G) \times V(H) and any two vertices (u,u') and (v,v')
+    ++  are adjacent in G o H if and only if either
+    ++ u = v and u' is adjacent with v' in H, or
+    ++ u' = v' and u is adjacent with v in G.
+  closedTensor:(a:%,b:%,f:(S,S)->S) -> %
+    ++ as tensor product but returns %.
+  closedCartesian:(a:%,b:%,f:(S,S)->S) -> %
+    ++ as Cartesian product but returns %.
+
+ Implementation ==> add
+
+  -- The representation consists of 2 Lists:
+  --
+  -- Vertices (or objects or nodes)
+  -- ------------------------------
+  -- This table has an entry for each vertex:
+  -- Record(value:S,posX:NNI,posY:NNI)
+  -- posX and posY are not part of the mathematical structure but
+  -- are useful so that it can be drawn in a useful way.
+  -- Although this is thought of as a set (no duplication or ordering)
+  -- it is implemented as a list because entries in this table are
+  -- indexed by the following part so the order of the objects can't
+  -- be changed unless the index numbers in the following tables are
+  -- changed.
+  --
+  -- Arrows (or edges)
+  -- -----------------
+  -- This table has an entry for each arrow:
+  -- Record(name:String,arrType:NNI,fromOb:NNI,
+  --     toOb:NNI,xOffset:Integer,yOffset:Integer)
+  -- fromOb and toOb are the endpoints of the arrow which are
+  -- indexes into the vertex list.
+  -- arrType is used for multigraphs
+  -- name,xOffset and yOffset are used to draw the graph.
+  Rep := Record(_
+        objects: List OBJT,_
+        arrows:List ARROW_
+        )
+
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
+
+  isDirected?() == false
+
+  -- constructor for graph with given list of
+  -- object names. Use this version of the constructor
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  -- more objects and arrows can be added later if required.
+  undirectedGraph(ob:List S): % ==
+    objs: List OBJT := [[x,0::NNI,0::NNI] for x in ob]
+    [objs,[]]
+
+  -- constructor for graph with given objects
+  -- more objects and arrows can be added later if required.
+  undirectedGraph(ob:List OBJT): % ==
+    [ob,[]]
+
+  -- constructor for graph with given objects and arrows
+  -- more objects and arrows can be added later if required.
+  undirectedGraph(ob:List OBJT,ar:List ARROW): % ==
+    [ob,ar]
+
+  -- constructor for graph with given objects and adjacency
+  -- matrix.
+  undirectedGraph(objs:List S,am:List List NNI):% ==
+    obs:List OBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+    ar:List ARROW := []
+    for i in 1..#am repeat
+      for j in 1..#(am.i) repeat
+        if (am.i).j = 1 then
+          a: ARROW := ["a",0::NNI,i,j,0::Integer,0::Integer]
+          ar := concat(ar,a)
+    [obs,ar]
+
+  -- adds an object to this graph
+  -- Use this version
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  addObject!(s:%,n:S):% ==
+    obs:List OBJT := s.objects
+    obj:OBJT := [n,0::NNI,0::NNI]
+    if obs=nil()
+      then s.objects := [obj]
+      else s.objects := concat(obs,obj)
+    s
+
+  -- adds an object to this graph
+  addObject!(s:%,n:OBJT):% ==
+    obs:List OBJT := s.objects
+    if obs=nil()
+      then s.objects := [n]
+      else s.objects := concat(obs,n)
+    s
+
+  -- adds an arrow to this graph,where:
+  -- s is the graph where the arrow is to be added
+  -- nm is the name of the arrow
+  -- n1 is the index of the start object
+  -- n2 is the index of the end object
+  addArrow!(s:%,nm:String,n1:NNI,n2:NNI):% ==
+    arrss:List ARROW := s.arrows
+    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer]
+    if arrss=nil()
+      then
+        s.arrows := [a]
+        return s
+      else
+        arrs:List ARROW := concat(arrss,a)
+        s.arrows := arrs
+        return s
+
+  -- returns a list of all the vertices (or objects)
+  getVertices(s:%):List OBJT ==
+    s.objects
+
+  -- returns a list of all the arrows (or edges)
+  getArrows(s:%):List ARROW ==
+    as:List ARROW := []
+    for a in s.arrows repeat
+      forwAr:ARROW := [a.name,a.arrType,a.fromOb,a.toOb,a.xOffset,a.yOffset]
+      as := concat(as,forwAr)$(List ARROW)
+    for a in s.arrows repeat
+      revAr:ARROW := [a.name,a.arrType,a.toOb,a.fromOb,a.xOffset,a.yOffset]
+      as := concat(as,revAr)$(List ARROW)
+    as
+
+  -- constructs a graph without vertices or edges
+  initial(): % ==
+    [[],[]]
+
+  -- constructs a graph with a single vertex and a single loop
+  terminal(a:S):% ==
+    o: OBJT := [a,0::NNI,0::NNI]
+    ar: ARROW := ["loop",0::NNI,1::NNI,1::NNI,0::Integer,0::Integer]
+    [[o],[ar]]
+
+  -- constructs a graph with objects given connected in a
+  -- cycle but with one gap.
+  cycleOpen(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      next:NNI := obn+1
+      if next <= #(objs) then
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given connected in a
+  -- cycle.
+  cycleClosed(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      next:NNI := obn+1
+      if next-1 = #(objs) then next := 1::NNI
+      if next <= #(objs) then
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given and arrows from
+  -- each object only to itself.
+  unit(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obn,0::Integer,0::Integer]
+      ars := concat(ars,a)
+      arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given and fully connected
+  -- arrows, that is, each object has an arrow to every other
+  -- object except itself.
+  kgraph(objs:List S,arrowName:String):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      for obm in 1..#(objs) repeat
+       if obn ~= obm then
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obm,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- sum : disjoint union of vertices with arrows from appropriate
+  -- input
+  _+(a,b): % ==
+    lo:List OBJT := concat(a.objects,b.objects)
+    bStart: NNI := #(a.objects)
+    lb:List ARROW := []
+    for ba in b.arrows repeat
+      arr: ARROW := [ba.name,ba.arrType,_
+         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset]
+      lb := concat(lb,arr)$(List ARROW)
+    la:List ARROW := concat(a.arrows,lb)
+    [lo,la]
+
+  -- sum : union (not necessarily disjoint) of vertices with arrows
+  -- merged in from appropriate input, if arrow exists from both
+  -- inputs then it will be duplicated.
+  merge(a:%,b:%): % ==
+    -- bmap is a map into merged vertices
+    bmap:List NNI := [x for x in 1..#a.objects] -- map does not change in a
+    -- for each object in 'b' check if it exists in 'a' and if not add it
+    newIndex:NNI := #a.objects
+    mergedObjects := a.objects
+    for bob in b.objects repeat
+      i:Integer := position(bob,a.objects)
+      if i<1
+        then -- returns 0 if not found
+          mergedObjects := concat(mergedObjects,bob)
+          newIndex := newIndex + 1
+          bmap := concat(bmap,newIndex)
+        else
+          bmap := concat(bmap,i::NNI)
+    -- now merge arrows
+    bStart: NNI := #(a.objects)
+    lb:List ARROW := []
+    for ba in b.arrows repeat
+      -- map to and from indexes
+      toI:NNI := bmap.(ba.toOb + bStart)
+      fromI:NNI := bmap.(ba.fromOb + bStart)
+      arr: ARROW := [ba.name,ba.arrType,_
+         fromI,toI,ba.xOffset,ba.yOffset]
+      lb := concat(lb,arr)$(List ARROW)
+    la:List ARROW := concat(a.arrows,lb)
+    [mergedObjects,la]
+
+  -- this is a local function used by both tensor and Cartesian
+  -- product to calculate the new vertices.
+  objProd(a:%,b:%):List OBJTPROD ==
+    newObjs:List OBJTPROD := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        widtha:NNI := diagramWidth(a)
+        heighta:NNI := diagramHeight(a)
+        --sayMsg concat(["objProd axi=",math_to_string axi,_
+        -- " ayi=",math_to_string ayi,_
+        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
+        -- " widtha=",math_to_string widtha," heighta=",math_to_string heighta,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+        sp:SPROD := construct(ai,bi)$SPROD
+        ob:OBJTPROD := [sp,x,y]
+        newObjs := concat(newObjs,ob)
+    newObjs
+
+  -- this is a local function used by both tensor and Cartesian
+  -- product to calculate the new index.
+  indexProd(aObj:%,a:NNI,b:NNI):NNI ==
+    a + ((b::Integer-1)::NNI * #aObj.objects)
+
+  -- tensor product : the tensor product A*B of graphs A and B is
+  -- a graph such that the vertex set of A*B is the Cartesian
+  -- product V(A) \times V(B)
+  -- any two vertices <au,bu> and <av,bv> are adjacent in A \times B
+  -- if and only if bu is adjacent with bv
+  -- and au is adjacent with av.
+  --
+  -- So this is defined over S^2 (that is Product(S,S))
+  _*(a:%,b:%):GRPHPROD ==
+    -- new objects are calculated by local objProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            --sayMsg concat(["* graph au=",math_to_string au,_
+            -- " av=",math_to_string av,_
+            -- " bu=",math_to_string bu,_
+            -- " bv=",math_to_string bv_
+            -- ])$String
+            if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
+              --sayMsg "add arrow"
+              an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    undirectedGraph(objProd(a,b),newArrs)$GRPHPROD
+
+  -- Cartesian product: the vertex set of A o B is the Cartesian
+  -- product V(A) \times V(B) and any two vertices <au,bu> and <av,bv>
+  --  are adjacent in A o B if and only if either
+  -- au = av and bu is adjacent with bv or
+  -- bu = bv and au is adjacent with av.
+  cartesian(a:%,b:%):GRPHPROD ==
+    -- new objects are calculated by local objProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            --sayMsg concat(["* graph au=", math_to_string au,_
+            -- " av=",math_to_string av,_
+            -- " bu=",math_to_string bu,_
+            -- " bv=",math_to_string bv_
+            -- ])$String
+            if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
+               ((au = av) and isDirectSuccessor?(b,bu,bv)) then
+              an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
+                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
+                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+              --pu := indexProd(b,au,bu)
+              --pv := indexProd(b,av,bv)
+              --sayMsg concat(["add arrow:",an," ",math_to_string pu,"->",math_to_string pv])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    undirectedGraph(objProd(a,b),newArrs)$GRPHPROD
+
+  -- this is a local function used by both closed tensor and closed
+  -- Cartesian product to calculate the new vertices.
+  closedObjProd(a:%,b:%,f:(S,S)->S):List OBJT ==
+    newObjs:List OBJT := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        widtha:NNI := diagramWidth(a)
+        heighta:NNI := diagramHeight(a)
+        sp:S := f(ai,bi)
+        ob:OBJT := [sp,x,y]
+        newObjs := concat(newObjs,ob)
+    newObjs
+
+
+  -- as tensor product but returns %.
+  closedTensor(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
+              --sayMsg "add arrow"
+              an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    undirectedGraph(closedObjProd(a,b,f),newArrs)
+
+  -- as Cartesian product but returns %.
+  closedCartesian(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newArrs:List ARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
+               ((au = av) and isDirectSuccessor?(b,bu,bv)) then
+              an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
+                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
+                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+              arr: ARROW := [an,0::NNI,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List ARROW)
+    undirectedGraph(closedObjProd(a,b,f),newArrs)
+
+  -- create a new graph by mapping from this one
+  -- newOb should contain the new list of vertices.
+  -- m should contain a NNI value for each vertex, this is the
+  -- new index into newOb. It is allowed that newOb may contain
+  -- less objects than s (for surjective mapping) or
+  -- more objects than s (for injective mapping)
+  map(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List OBJT := [[o,0::NNI,0::NNI] for o in newOb]
+    for oi in 1..#(s.objects) repeat
+      i := m.oi
+      newObjs.i :OBJT := [(newObjs.i).value,_
+          ((((s.objects).oi).posX)+offsetX)::NNI,_
+          ((((s.objects).oi).posY)+offsetY)::NNI]
+    newArrs:List ARROW := []
+    for oldArrow in s.arrows repeat
+      newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
+                       m.(oldArrow.fromOb),m.(oldArrow.toOb),_
+                       oldArrow.xOffset,oldArrow.yOffset]
+      newArrs := concat(newArrs,newArr)
+    [newObjs,newArrs]
+
+  -- similar to map function but reverses the directions of
+  -- the arrows
+  mapContra(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List OBJT := [[o,0::NNI,0::NNI] for o in newOb]
+    for oi in 1..#(s.objects) repeat
+      i := m.oi
+      newObjs.i :OBJT := [(newObjs.i).value,_
+          ((((s.objects).oi).posX)+offsetX)::NNI,_
+          ((((s.objects).oi).posY)+offsetY)::NNI]
+    newArrs:List ARROW := []
+    for oldArrow in s.arrows repeat
+      newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
+                       m.(oldArrow.toOb),m.(oldArrow.fromOb),_
+                       oldArrow.xOffset,oldArrow.yOffset]
+      newArrs := concat(newArrs,newArr)
+    [newObjs,newArrs]
+@
+
+\section{domain MFGRPH MultifunctionGraph}
+<<domain MFGRPH MultifunctionGraph>>=
+)abbrev domain MFGRPH MultifunctionGraph
+++ Author: Martin Baker
+++ Date Created: January 2012
+++ Date Last Updated: February 2012
+++ Basic Operations: 
+++ Related Constructors:
+++ Keywords: graph theory
+++ Description: allows us to model graph theory
+++ 
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/
+
+MultifunctionGraph(S): Exports == Implementation where
+
+ S: SetCategory
+ NNI==> NonNegativeInteger
+ -- the following represent the graph in FiniteGraph
+ OBJT ==> Record(value:S,posX:NNI,posY:NNI)
+ ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
+           toOb:NNI,xOffset:Integer,yOffset:Integer)
+ -- represent the graph in this domain
+ MFOBJT ==> Record(value:S,posX:NNI,posY:NNI,next:List NNI)
+
+ SPROD ==> Product(S,S)
+ GRPHPROD ==> MultifunctionGraph SPROD
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,next:List NNI)
+ AJMAP ==> Union(List NNI,"failed")
+ DF ==> DoubleFloat
+ PT ==> SCartesian(2)
+ BOUNDS ==> Record(mins:PT,maxs:PT)
+
+ Exports ==> FiniteGraph(S) with
+
+  multifunctionGraph:(ob:List S) -> %
+    ++ constructor for graph with given list of
+    ++ object names. Use this version of the constructor
+    ++ if you don't intend to create diagrams and therefore don't
+    ++ care about x,y coordinates.
+    ++ more objects and arrows can be added later if required.
+  multifunctionGraph:(ob:List MFOBJT) -> %
+    ++ constructor for graph with given objects
+    ++ more objects and arrows can be added later if required.
+  multifunctionGraph:(ob:List OBJT,ar:List ARROW) -> %
+    ++ constructor for graph with given objects and arrows
+    ++ more objects and arrows can be added later if required.
+  multifunctionGraph:(perms:List Permutation S) -> %
+    ++ construct graph from a list of permutations.
+  "*":(%,%) -> GRPHPROD
+    ++ tensor product : the tensor product G*H of graphs G and H is
+    ++ a graph such that the vertex set of G*H is the Cartesian
+    ++ product V(G) \times V(H); and any two vertices (u,u') and (v,v')
+    ++ are adjacent in G \times H if and only if u' is adjacent with
+    ++ v' and u is adjacent with v.
+  cartesian:(%,%) -> GRPHPROD
+    ++ Cartesian product doubles the size of next list in each
+    ++ object, that is it produces two arrows out of every node
+  closedTensor:(a:%,b:%,f:(S,S)->S) -> %
+    ++ as tensor product but returns %.
+  closedCartesian:(a:%,b:%,f:(S,S)->S) -> %
+    ++ Cartesian product doubles the size of next list in each
+    ++ object, that is it produces two arrows out of every node
+  coAdjoint:(s:%,m: List NNI) -> AJMAP
+    ++ given a mapping from this graph this function tries to
+    ++ calculate a unique reverse mapping back to this graph
+  contraAdjoint:(s:%,m: List NNI) -> AJMAP
+    ++ given a mapping from this graph this function tries to
+    ++ calculate a unique reverse mapping back to this graph
+  apply:(s:%,a: NNI,m:NNI) -> NNI
+    ++ apply 'function' represented by this graph to vertex
+    ++ index 'a'
+  limit:(s:%,a: NNI,m:NNI) -> Loop
+    ++ apply 'function' represented by this graph to 'a'
+    ++ repeatedly until we reach a loop which is returned
+    ++ as a sequence of vertex indexes.
+  _~: % -> %
+    ++ The complement or inverse of a graph is a graph on the same
+    ++ vertices such that there is an arrow if and only if there
+    ++ is not an arrow in its compliment. That is, it is the
+    ++ compliment of the arrows but is not the set complement.
+    ++ for more information see:
+    ++ http://en.wikipedia.org/wiki/Complement_graph
+  coerce:(pg:PermutationGroup S) -> %
+    ++ coerce PermutationGroup to graph which
+    ++ represents the generators of the group
+
+ Implementation ==> add
+
+  -- This representation has an entry for each vertex:
+  -- Record(value:S,posX:NNI,posY:NNI,next:List NNI)
+  -- posX and posY are not part of the mathematical structure but
+  -- are useful so that it can be drawn in a useful way.
+  -- Although this is thought of as a set (no duplication or ordering)
+  -- it is implemented as a list because entries in this table are
+  -- indexed by the following part so the order of the objects can't
+  -- be changed unless the index numbers in the following tables are
+  -- changed. The arrows are encoded here in the 'next' entry, each
+  -- NNI in this list is an outgoing arrow, this helps to enforce the
+  -- rule that there can only be 'n' outgoing arrows for each vertex.
+  Rep := Record(objects: List MFOBJT)
+
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
+
+  -- constructor for graph with given list of
+  -- object names. Use this version of the constructor
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  -- more objects and arrows can be added later if required.
+  multifunctionGraph(ob:List S): % ==
+    objs: List MFOBJT := [[x,0::NNI,0::NNI,[1::NNI]] for x in ob]
+    [objs]
+
+  -- constructor for graph with given objects
+  -- more objects and arrows can be added later if required.
+  multifunctionGraph(ob:List MFOBJT): % ==
+    [ob]
+
+  -- constructor for graph with given objects and arrows
+  -- more objects and arrows can be added later if required.
+  multifunctionGraph(ob:List OBJT,ar:List ARROW): % ==
+    arrs:List NNI := [x::NNI for x in 1..#ob]
+    for a in ar repeat
+      fromo:NNI := a.fromOb
+      too:NNI := a.toOb
+      arrs.fromo := too
+    fobs:List MFOBJT := []
+    for fn in 1..#ob repeat
+      f := ob.fn
+      fo: MFOBJT := [f.value,f.posX,f.posY,[arrs.fn]] 
+      fobs := concat(fobs,fo)    
+    [fobs]
+
+  -- construct graph from a list of permutations.
+  multifunctionGraph(perms:List Permutation S):% ==
+    -- first create list of objects
+    obs: List S := []
+    for perm in perms for px in 1..#perms repeat
+      lr := listRepresentation(perm) -- get list of image-preimage pairs
+      im:List S := lr.image
+      preim:List S := lr.preimage
+      -- make sure every object in every image list is included in obs
+      -- once only. preim should contain the same objects so there
+      -- is no need to check that.
+      if px=1
+        then
+          obs := im
+        else
+          for v in im repeat
+            if position(v,obs)<1 then obs :=concat(obs,v)
+    --sayMsg concat(["multifunctionGraph obs=",math_to_string obs,
+    --  " #perms=",string(#perms),
+    --  " #obs=",string(#obs)])$String
+    -- then create table for arrows
+    tab: List List NNI := [[b for a in 1..#perms] for b in 1..#obs]
+    --sayMsg concat(["multifunctionGraph empty tab=",math_to_string tab])$String
+    for perm in perms for pi in 1..#perms repeat
+      lr := listRepresentation(perm) -- get list of image-preimage pairs
+      im:List S := lr.image
+      preim:List S := lr.preimage
+      for pt in 1..#im repeat
+        pin:Integer := position(im.pt,obs)$List(S)
+        pout:Integer := position(preim.pt,obs)$List(S)
+        --sayMsg concat(["multifunctionGraph pin=",math_to_string pin,_
+        --  " pout=",math_to_string pout,_
+        --  " pi=",math_to_string pi])$String
+        (tab.(pin::NNI)).pi := pout::NNI
+    --sayMsg concat(["multifunctionGraph tab=",math_to_string tab])$String
+    -- then create vertex list
+    verts:List MFOBJT := []
+    for vert in obs for i in 1..#obs repeat
+      --x := tab.i
+      --sayMsg concat(["multifunctionGraph i=",math_to_string i,_
+      --  " tab.i=",math_to_string x])$String
+      o: MFOBJT := [vert,createX(#obs,i),createY(#obs,i),tab.i]
+      verts := concat(verts,o)
+    [verts]
+
+  -- adds an object to this graph
+  -- The added object loops back to itself
+  addObject!(s:%,n:S):% ==
+    obs:List MFOBJT := s.objects
+    obj:MFOBJT := [n,0::NNI,0::NNI,[#obs]]
+    if obs=nil()
+      then s.objects := [obj]
+      else s.objects := concat(obs,obj)
+    s
+
+  -- this form of addObject! not supported in multifunctionGraph but
+  -- it is in FiniteGraph category and it is included here to trap errors
+  addObject!(s:%,n:OBJT):% ==
+    error "this form of addObject! not supported in multifunctionGraph"
+    [[]]
+
+  -- Don't use.
+  -- This should really be replaceFirst Arrow! in multifunctionGraph
+  -- we put hare for compatibility with directedGraph only
+  -- where:
+  -- s is the graph where the arrow is to be replaced
+  -- nm is the name of the arrow (not used)
+  -- n1 is the index of the start object
+  -- n2 is the index of the end object
+  addArrow!(s:%,nm:String,n1:NNI,n2:NNI):% ==
+    ((s.objects).n1).next.1 := n2
+    s
+
+  -- returns a list of all the vertices (or objects)
+  getVertices(s:%):List OBJT ==
+    --sayMsg concat(["getVertices ="])$String
+    res:List OBJT := []
+    for soj in s.objects repeat
+      o: OBJT := [soj.value,soj.posX,soj.posY]
+      res := concat(res,o)
+    res
+
+  -- returns a list of all the arrows (or edges)
+  getArrows(s:%):List ARROW ==
+    --sayMsg concat(["getArrows ="])$String
+    res:List ARROW := []
+    for sojn in 1..#(s.objects) repeat
+      soj:MFOBJT := (s.objects).sojn
+      for ar in soj.next for ai in 1..#(soj.next) repeat
+        a: ARROW := [concat(string(sojn),string(ai)),0::NNI,sojn,ar,0,0]
+        res := concat(res,a)
+    res
+
+  -- constructs a graph without vertices or edges
+  initial(): % ==
+    [[]]
+
+  -- constructs a graph with a single vertex and a single loop
+  terminal(a:S):% ==
+    o: MFOBJT := [a,0::NNI,0::NNI,[1::NNI]]
+    [[o]]
+
+  -- constructs a graph with objects given connected in a
+  -- sequence with the last one looping to itself.
+  cycleOpen(objs:List S,arrowName:String):% ==
+    obs:List MFOBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      n:NNI := obn+1
+      if obn = #(objs) then n := #(objs)
+      o: MFOBJT := [ob,createX(#objs,obn),createY(#objs,obn),[n]]
+      obs := concat(obs,o)
+    [obs]
+
+  -- constructs a graph with objects given connected in a
+  -- cycle.
+  cycleClosed(objs:List S,arrowName:String):% ==
+    obs:List MFOBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      n:NNI := obn+1
+      if obn = #(objs) then n := 1::NNI
+      o: MFOBJT := [ob,createX(#objs,obn),createY(#objs,obn),[n]]
+      obs := concat(obs,o)
+    [obs]
+
+  -- constructs a graph with objects given and arrows from
+  -- each object only to itself.
+  unit(objs:List S,arrowName:String):% ==
+    objs: List MFOBJT := [[objs.x,0::NNI,0::NNI,[x::NNI]] for x in 1..#objs]
+    [objs]
+
+  -- constructs a graph with objects given and fully connected
+  -- arrows, that is, each object has an arrow to every other
+  -- object except itself.
+  kgraph(objs:List S,arrowName:String):% ==
+    error "kgraph not valid in function graph"
+    [[]]
+
+  -- sum : disjoint union of vertices with arrows from appropriate
+  -- input
+  _+(a,b): % ==
+    objs: List MFOBJT := b.objects
+    c: List MFOBJT := [[(objs.x).value,_
+         (objs.x).posX,(objs.x).posY,_
+         [(x::NNI)+#(a.objects)]] for x in 1..#objs]
+    [concat(a.objects,c)]
+
+  -- sum : union (not necessarily disjoint) of vertices with arrows
+  -- merged in from appropriate input, if arrow exists from both
+  -- inputs then it will be duplicated.
+  merge(a:%,b:%): % ==
+    error "merge not valid in function graph"
+    [[]]
+
+  -- this is a local function used by both tensorNext and
+  -- cartesianNext and so ultimately by tensor and Cartesian
+  -- product to calculate the new index.
+  indexProd(aObj:%,a:NNI,b:NNI):NNI ==
+    a + ((b::Integer-1)::NNI * #aObj.objects)
+
+  -- this is a local function used by tensor product to calculate
+  -- the new next index list.
+  tensorNext(aObj:%,a:List NNI,b:List NNI):List NNI ==
+    if #a ~= #b then error concat([_
+      "tensor product with different degree a=",math_to_string  a,_
+      " b=",math_to_string  b])$String
+    res:List NNI := []
+    for i in 1..#a repeat
+      for j in 1..#b repeat
+        x := indexProd(aObj,a.i,b.j)
+        res := concat(res,x)$List(NNI)
+    res
+
+  -- this is a local function used by Cartesian product to calculate
+  -- the new next index list.
+  -- a is list of outgoing adjacent nodes in first operand
+  -- b is list of outgoing adjacent nodes in second operand
+  cartesianNext(aObj:%,a:List NNI,b:List NNI,an:NNI,bn:NNI):List NNI ==
+    if #a ~= #b then error concat([_
+      "Cartesian product with different degree a=",math_to_string  a,_
+      " b=",math_to_string  b])$String
+    res:List NNI := []
+    for i in 1..#a repeat
+      x := indexProd(aObj,a.i,bn)
+      res := concat(res,x)$List(NNI)
+      y := indexProd(aObj,an,b.i)
+      res := concat(res,y)$List(NNI)
+    res
+
+  -- tensor product : the tensor product A*B of graphs A and B is
+  -- a graph such that the vertex set of A*B is the Cartesian
+  -- product V(A) \times V(B)
+  -- any two vertices <au,bu> and <av,bv> are adjacent in A \times B
+  -- if and only if bu is adjacent with bv
+  -- and au is adjacent with av.
+  --
+  -- So this is defined over S^2 (that is Product(S,S))
+  _*(a:%,b:%):GRPHPROD ==
+    newObjs:List OBJTPROD := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      ani:List NNI := aoi.next
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        bni:List NNI := boi.next
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        nextA := tensorNext(b,bni,ani)
+        --sayMsg concat(["objProd axi=",math_to_string axi,_
+        -- " ayi=",math_to_string ayi,_
+        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
+        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+        sp:SPROD := construct(ai,bi)$SPROD
+        ob:OBJTPROD := [sp,x,y,nextA]
+        newObjs := concat(newObjs,ob)
+    multifunctionGraph(newObjs)$GRPHPROD
+
+  -- Cartesian product: the vertex set of A o B is the Cartesian
+  -- product V(A) \times V(B) and any two vertices <au,bu> and <av,bv>
+  --  are adjacent in A o B if and only if either
+  -- au = av and bu is adjacent with bv or
+  -- bu = bv and au is adjacent with av.
+  -- Cartesian product doubles the size of next list in each
+  -- object, that is it produces two arrows out of every node
+  cartesian(a:%,b:%):GRPHPROD ==
+    newObjs:List OBJTPROD := []
+    for aptr in 1..#a.objects for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      ani:List NNI := aoi.next
+      for bptr in 1..#a.objects for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        bni:List NNI := boi.next
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        nextA := cartesianNext(b,bni,ani,bptr,aptr)
+        --sayMsg concat(["objProd axi=",math_to_string axi,_
+        -- " ayi=",math_to_string ayi,_
+        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
+        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+        sp:SPROD := construct(ai,bi)$SPROD
+        ob:OBJTPROD := [sp,x,y,nextA]
+        newObjs := concat(newObjs,ob)
+    multifunctionGraph(newObjs)$GRPHPROD
+
+  -- as tensor product but returns %.
+  closedTensor(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newObjs:List MFOBJT := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      ani:List NNI := aoi.next
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        bni:List NNI := boi.next
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        nextA := tensorNext(b,bni,ani)
+        sp:S := f(ai,bi)
+        ob:MFOBJT := [sp,x,y,nextA]
+        newObjs := concat(newObjs,ob)
+        --sayMsg concat(["objProd ai=",math_to_string ai,_
+        -- " bi=",math_to_string bi,_
+        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+    multifunctionGraph(newObjs)
+
+  -- as tensor product but returns %.
+  closedCartesian(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newObjs:List MFOBJT := []
+    for aptr in 1..#a.objects for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      ani:List NNI := aoi.next
+      for bptr in 1..#a.objects for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        bni:List NNI := boi.next
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        nextA := cartesianNext(b,bni,ani,bptr,aptr)
+        sp:S := f(ai,bi)
+        ob:MFOBJT := [sp,x,y,nextA]
+        newObjs := concat(newObjs,ob)
+        --sayMsg concat(["objProd ai=",math_to_string ai,_
+        -- " bi=",math_to_string bi,_
+        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+    multifunctionGraph(newObjs)
+
+  -- The complement or inverse of a graph is a graph on the same
+  -- vertices such that there is an arrow if and only if there
+  -- is not an arrow in its compliment. That is, it is the
+  -- compliment of the arrows but is not the set complement.
+  -- for more information see:
+  -- http://en.wikipedia.org/wiki/Complement_graph
+  ~ s ==
+    newObjs:List MFOBJT := []
+    for aoi in s.objects repeat
+      nextA:List NNI := []
+      for x in 1..#(s.objects) repeat
+        if position(x,aoi.next) = 0 then nextA:=concat(nextA,x)
+      ob:MFOBJT := [aoi.value,aoi.posX,aoi.posY,nextA]
+      newObjs := concat(newObjs,ob)
+    [newObjs]
+
+  -- create a new graph by mapping from this one
+  -- newOb should contain the new list of vertices.
+  -- m should contain a NNI value for each vertex, this is the
+  -- new index into newOb. It is allowed that newOb may contain
+  -- less objects than s (for surjective mapping) or
+  -- more objects than s (for injective mapping)
+  map(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List MFOBJT := [[o,0::NNI,0::NNI,[]] for o in newOb]
+    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
+    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    oldObjs:List MFOBJT := s.objects
+    for oi in 1..#oldObjs repeat
+      oldObj := oldObjs.oi
+      i:NNI := m.oi
+      newObj := newOb.i
+      newX := ((oldObj.posX)+offsetX)::NNI
+      newY := ((oldObj.posY)+offsetY)::NNI
+      newNext:List NNI := []
+      for n in oldObj.next repeat
+        newNext := concat(newNext,m.n)
+      nv:MFOBJT :=[newObj,newX,newY,newNext] -- assemble new vertex
+      newObjs.i:= nv -- replace holding value
+      --sayMsg concat(["map oi=",string(oi),_
+      -- " i=",string(i),_
+      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
+      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
+      -- " newNext=",math_to_string newNext_
+      -- ])$String
+    [newObjs]
+
+  -- similar to map function but reverses the directions of
+  -- the arrows
+  mapContra(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List MFOBJT := [[o,0::NNI,0::NNI,[]] for o in newOb]
+    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
+    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    oldObjs:List MFOBJT := s.objects
+    for oi in 1..#oldObjs repeat
+      oldObj := oldObjs.oi
+      i:NNI := m.oi
+      newObj := newOb.i
+      newX := ((oldObj.posX)+offsetX)::NNI
+      newY := ((oldObj.posY)+offsetY)::NNI
+      newNext:List NNI := []
+      for n in oldObj.next repeat
+        incoming:List NNI := nodeToNode(s,m.n)
+        newNext := concat(newNext,incoming)
+      nv:MFOBJT :=[newObj,newX,newY,newNext] -- assemble new vertex
+      newObjs.i:= nv -- replace holding value
+      --sayMsg concat(["map oi=",string(oi),_
+      -- " i=",string(i),_
+      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
+      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
+      -- " newNext=",math_to_string newNext_
+      -- ])$String
+    [newObjs]
+
+  -- given a mapping from this graph this function tries to
+  -- calculate a unique reverse mapping back to this graph
+  coAdjoint(s:%,m: List NNI):AJMAP ==
+    domainSize:NNI := #(s.objects)
+    codomainSize:NNI := 0
+    for mi in m repeat if mi > codomainSize then codomainSize := mi
+    ret:List NNI := [0::NNI for x in 1..codomainSize]
+    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
+    -- " codomainSize=",string(codomainSize)])$String
+    retOpt:List List NNI := [[] for x in 1..codomainSize]
+    for mi in 1..#m repeat
+      --sayMsg concat(["coAdjoint mi=",string(mi),_
+      -- " m.mi=",string(m.mi)])$String
+      retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
+    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
+    entry:NNI := 1
+    for ri in retOpt repeat
+      x := max(s,ri)
+      if x = 0 then return "failed"
+      ret.entry := x
+      entry := entry + 1
+      --sayMsg concat(["coAdjoint ret.",string(entry),_
+      -- "=",string(x)])$String
+    ret
+
+  -- given a mapping from this graph this function tries to
+  -- calculate a unique reverse mapping back to this graph
+  contraAdjoint(s:%,m: List NNI):AJMAP ==
+    domainSize:NNI := #(s.objects)
+    codomainSize:NNI := 0
+    for mi in m repeat if mi > codomainSize then codomainSize := mi
+    ret:List NNI := [0::NNI for x in 1..codomainSize]
+    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
+    -- " codomainSize=",string(codomainSize)])$String
+    retOpt:List List NNI := [[] for x in 1..codomainSize]
+    for mi in 1..#m repeat
+      --sayMsg concat(["coAdjoint mi=",string(mi),_
+      -- " m.mi=",string(m.mi)])$String
+      retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
+    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
+    entry:NNI := 1
+    for ri in retOpt repeat
+      x := min(s,ri)
+      if x = 0 then return "failed"
+      ret.entry := x
+      entry := entry + 1
+      --sayMsg concat(["coAdjoint ret.",string(entry),_
+      -- "=",string(x)])$String
+    ret
+
+  -- apply 'function' represented by this graph to vertex
+  -- index 'a'
+  apply(s:%,a:NNI,m:NNI):NNI ==
+    --sayMsg concat(["apply a=",string(a)," m=",string(m)])$String
+    (((s.objects).a).next).m
+
+  -- apply 'function' represented by this graph to 'a'
+  -- repeatedly until we reach a loop which is returned
+  -- as a sequence of vertex indexes.
+  limit(s:%,a: NNI,m:NNI):Loop ==
+    ptr := a
+    for s1 in s.objects repeat
+      lp:List Loop := loopsAtNode(s,ptr)
+      if #lp > 1 then error "limit: cant have >1 loop through node"
+      if #lp = 1 then return first lp
+      -- no loop so step to next node
+      ptr := apply(s,ptr,m)
+    -- should never get here as we should reach a loop by
+    -- a number of steps equal to the degree of the graph
+    loop([])
+
+  -- coerce PermutationGroup to graph which
+  -- represents the generators of the group
+  coerce(pg:PermutationGroup S):% ==
+    multifunctionGraph(pg::(List Permutation S))
+
+@
+
+\section{domain WGRPH WeightedGraph}
+<<domain WGRPH WeightedGraph>>=
+)abbrev domain WGRPH WeightedGraph
+++ Author: Martin Baker
+++ Date Created: January 2012
+++ Date Last Updated: February 2012
+++ Basic Operations: 
+++ Related Constructors:
+++ Keywords: graph theory
+++ Description: allows us to model weighted graphs
+++ This graph assigns a weight to each arrow. This is used when
+++ calculating say, lowest 'cost' routes.
+++ An arrow with a higher weight is more 'costly'
+++ in some way and therefore we try to choose the minimum weight.
+++ For arrows in series the overall weight is the sum of the individual
+++ weights.
+++ For arrows in parallel the overall weight is the minimum of the
+++ individual weights.
+++ I may change this in future to allow different cost metrics to
+++ be plugged in.
+++ 
+++ References:
+++ http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/
+
+WeightedGraph(S,W): Exports == Implementation where
+
+ S: SetCategory
+ W: OrderedAbelianMonoid
+ WEIGHT ==> Union(W,"disjoint")
+ NNI==> NonNegativeInteger
+ OBJT ==> Record(value:S,posX:NNI,posY:NNI)
+ ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
+           toOb:NNI,xOffset:Integer,yOffset:Integer)
+ -- represent the graph in this domain
+ WOBJT ==> Record(value:S,posX:NNI,posY:NNI,weight:W)
+ WARROW ==> Record(name:String,weight:W,fromOb:NNI,_
+           toOb:NNI,xOffset:Integer,yOffset:Integer)
+ SPROD ==> Product(S,S)
+ GRPHPROD ==> WeightedGraph(SPROD,W)
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,weight:W)
+ DF ==> DoubleFloat
+ PT ==> SCartesian(2)
+ BOUNDS ==> Record(mins:PT,maxs:PT)
+
+ Exports ==> FiniteGraph(S) with
+
+  weightedGraph:(ob:List S) -> %
+    ++ constructor for graph with given list of
+    ++ object names. Use this version of the constructor
+    ++ if you don't intend to create diagrams and therefore don't
+    ++ care about x,y coordinates.
+    ++ more objects and arrows can be added later if required.
+  weightedGraph:(ob:List WOBJT) -> %
+    ++ constructor for graph with given objects
+    ++ more objects and arrows can be added later if required.
+  weightedGraph:(ob:List WOBJT,ar:List WARROW) -> %
+    ++ weightedGraph(ob, ar) constructs graph with objects on and arrows ar.
+    ++ More objects and arrows can be added later if required.
+  weightedGraph:(ob:List OBJT,ar:List ARROW) -> %
+    ++ constructor for graph with given objects and arrows
+    ++ more objects and arrows can be added later if required.
+  weightedGraph:(ob:List S,am:List List NNI) -> %
+    ++ constructor for graph with given objects and adjacency
+    ++ matrix.
+  addWArrow!:(s:%,name:String,n1:NNI,n2:NNI,w:W) -> %
+    ++ addWArrow!(s, name, n1, n2, w) adds a weighted arrow to the graph s,
+    ++ where name is name of the arrow, w is weight of the arrow,
+    ++ n1 is starting point of the arrow, n2 is endpoint of the arrow.
+  distanceWeighted:(s:%,a:NNI,b:NNI) -> WEIGHT
+    ++ the shortest distance between 'a' and 'b' in terms of
+    ++ weight.
+  routeNodeWeight:(s:%,r: List NNI) -> W
+    ++ the cumulative weight of a given route. The route is given
+    ++ in terms of a sequence of node indexes.
+  routeArrowWeight:(s:%,r: List NNI) -> W
+    ++ the cumulative weight of a given route. The route is given
+    ++ in terms of a sequence of arrow indexes.
+  "*":(%,%) -> GRPHPROD
+    ++ tensor product : the tensor product G*H of graphs G and H is
+    ++ a graph such that the vertex set of G*H is the Cartesian
+    ++ product V(G) \times V(H); and any two vertices (u,u') and (v,v')
+    ++ are adjacent in G \times H if and only if u' is adjacent with
+    ++ v' and u is adjacent with v.
+  cartesian:(%,%) -> GRPHPROD
+    ++ Cartesian product: the vertex set of G o H is the Cartesian
+    ++ product V(G) \times V(H) and any two vertices (u,u') and (v,v')
+    ++  are adjacent in G o H if and only if either
+    ++ u = v and u' is adjacent with v' in H, or
+    ++ u' = v' and u is adjacent with v in G.
+  closedTensor:(a:%,b:%,f:(S,S)->S) -> %
+    ++ as tensor product but returns %.
+  closedCartesian:(a:%,b:%,f:(S,S)->S) -> %
+    ++ as Cartesian product but returns %.
+  weightedDistanceMatrix:(%) -> Matrix WEIGHT
+    ++ Distance weights between nodes.
+
+ Implementation ==> add
+
+  -- The representation consists of 2 Lists:
+  --
+  -- Vertices (or objects or nodes)
+  -- ------------------------------
+  -- This table has an entry for each vertex:
+  -- Record(value:S,posX:NNI,posY:NNI)
+  -- posX and posY are not part of the mathematical structure but
+  -- are useful so that it can be drawn in a useful way.
+  -- Although this is thought of as a set (no duplication or ordering)
+  -- it is implemented as a list because entries in this table are
+  -- indexed by the following part so the order of the objects can't
+  -- be changed unless the index numbers in the following tables are
+  -- changed.
+  --
+  -- Arrows (or edges)
+  -- -----------------
+  -- This table has an entry for each arrow:
+  -- Record(name:String,weight:OrderedAbelianMonoid,fromOb:NNI,
+  --     toOb:NNI,xOffset:Integer,yOffset:Integer)
+  -- fromOb and toOb are the endpoints of the arrow which are
+  -- indexes into the vertex list.
+  -- weight is used for routing
+  -- name,xOffset and yOffset are used to draw the graph.
+  Rep := Record(_
+        objects: List WOBJT,_
+        arrows:List WARROW_
+        )
+
+  sayMsg ==> sayBrightly$Lisp
+  math_to_string ==> mathObject2String$Lisp
+
+  -- constructor for graph with given list of
+  -- object names. Use this version of the constructor
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  -- more objects and arrows can be added later if required.
+  weightedGraph(ob:List S): % ==
+    objs: List WOBJT := [[x,0::NNI,0::NNI,0$W] for x in ob]
+    [objs,[]]
+
+  -- constructor for graph with given objects
+  -- more objects and arrows can be added later if required.
+  weightedGraph(ob:List WOBJT): % ==
+    [ob,[]]
+
+  -- constructor for graph with given objects and arrows
+  -- more objects and arrows can be added later if required.
+  weightedGraph(ob:List WOBJT,ar:List WARROW): % ==
+    [ob,ar]
+
+  -- constructor for graph with given objects and arrows
+  -- more objects and arrows can be added later if required.
+  weightedGraph(ob:List OBJT,ar:List ARROW): % ==
+    arrs:List WARROW := []
+    for a in ar repeat
+      arro:WARROW := [a.name,0$W,a.fromOb,a.toOb,a.xOffset,a.yOffset]
+      arrs := concat(arrs,arro)    
+    fobs:List WOBJT := []
+    for f in ob for fn in 1..#ob repeat
+      fo: WOBJT := [f.value,f.posX,f.posY,0$W] 
+      fobs := concat(fobs,fo)    
+    [fobs,arrs]
+
+  -- constructor for graph with given objects and adjacency
+  -- matrix.
+  weightedGraph(objs:List S,am:List List NNI):% ==
+    obs:List WOBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: WOBJT := [ob,createX(#objs,obn),createY(#objs,obn),0$W]
+      obs := concat(obs,o)
+    ar:List WARROW := []
+    for i in 1..#am repeat
+      for j in 1..#(am.i) repeat
+        if (am.i).j = 1 then
+          a: WARROW := ["a",0$W,i,j,0::Integer,0::Integer]
+          ar := concat(ar,a)
+    [obs,ar]
+
+  -- adds an object to this graph
+  -- Use this version
+  -- if you don't intend to create diagrams and therefore don't
+  -- care about x,y coordinates.
+  addObject!(s:%,n:S):% ==
+    obs:List WOBJT := s.objects
+    obj:WOBJT := [n,0::NNI,0::NNI,0$W]
+    if obs=nil()
+      then s.objects := [obj]
+      else s.objects := concat(obs,obj)
+    s
+
+  -- adds an object to this graph
+  addObject!(s:%,n:OBJT):% ==
+    error "this form of addObject! not supported in multifunctionGraph"
+    [[],[]]
+
+  -- included only for compatibility with FiniteGraph
+  -- adds an arrow with zero weight
+  addArrow!(s:%,nm:String,n1:NNI,n2:NNI):% ==
+    addWArrow!(s,nm,n1,n2,0$W)
+
+  -- adds an arrow to this graph,where:
+  -- s is the graph where the arrow is to be added
+  -- nm is the name of the arrow
+  -- n1 is the index of the start object
+  -- n2 is the index of the end object
+  -- w is the weight of the arrow
+  addWArrow!(s:%,nm:String,n1:NNI,n2:NNI,w:W):% ==
+    arrss:List WARROW := s.arrows
+    a: WARROW := [nm,w,n1,n2,0::Integer,0::Integer]
+    if arrss=nil()
+      then
+        s.arrows := [a]
+        return s
+      else
+        arrs:List WARROW := concat(arrss,a)
+        s.arrows := arrs
+        return s
+
+  -- returns a list of all the vertices (or objects)
+  getVertices(s:%):List OBJT ==
+    --sayMsg concat(["getVertices ="])$String
+    res:List OBJT := []
+    for soj in s.objects repeat
+      o: OBJT := [soj.value,soj.posX,soj.posY]
+      res := concat(res,o)
+    res
+
+  -- returns a list of all the arrows (or edges)
+  -- does not contain weight information
+  getArrows(s:%):List ARROW ==
+    arrs:List ARROW := []
+    for a in s.arrows repeat
+      aw: ARROW := [a.name,0::NNI,a.fromOb,a.toOb,_
+                     a.xOffset,a.yOffset]
+      arrs := concat(arrs,aw)
+    arrs
+
+  -- constructs a graph without vertices or edges
+  initial(): % ==
+    [[],[]]
+
+  -- constructs a graph with a single vertex and a single loop
+  terminal(a:S):% ==
+    o: WOBJT := [a,0::NNI,0::NNI,0$W]
+    ar: WARROW := ["loop",0$W,1::NNI,1::NNI,0::Integer,0::Integer]
+    [[o],[ar]]
+
+  -- constructs a graph with objects given connected in a
+  -- cycle but with one gap.
+  cycleOpen(objs:List S,arrowName:String):% ==
+    obs:List WOBJT := []
+    ars:List WARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: WOBJT := [ob,createX(#objs,obn),createY(#objs,obn),0$W]
+      obs := concat(obs,o)
+      -- build arrows
+      next:NNI := obn+1
+      if next <= #(objs) then
+        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,next,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given connected in a
+  -- cycle.
+  cycleClosed(objs:List S,arrowName:String):% ==
+    obs:List WOBJT := []
+    ars:List WARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: WOBJT := [ob,createX(#objs,obn),createY(#objs,obn),0$W]
+      obs := concat(obs,o)
+      -- build arrows
+      next:NNI := obn+1
+      if next-1 = #(objs) then next := 1::NNI
+      if next <= #(objs) then
+        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,next,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given and arrows from
+  -- each object only to itself.
+  unit(objs:List S,arrowName:String):% ==
+    obs:List WOBJT := []
+    ars:List WARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: WOBJT := [ob,createX(#objs,obn),createY(#objs,obn),0$W]
+      obs := concat(obs,o)
+      -- build arrows
+      a: WARROW := [concat(arrowName,string(arn)),0$W,obn,obn,0::Integer,0::Integer]
+      ars := concat(ars,a)
+      arn := arn + 1
+    [obs,ars]
+
+  -- constructs a graph with objects given and fully connected
+  -- arrows, that is, each object has an arrow to every other
+  -- object except itself.
+  kgraph(objs:List S,arrowName:String):% ==
+    obs:List WOBJT := []
+    ars:List WARROW := []
+    arn:Integer := 1::NNI
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: WOBJT := [ob,createX(#objs,obn),createY(#objs,obn),0$W]
+      obs := concat(obs,o)
+      -- build arrows
+      for obm in 1..#(objs) repeat
+       if obn ~= obm then
+        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,obm,0::Integer,0::Integer]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
+  -- sum : disjoint union of vertices with arrows from appropriate
+  -- input
+  _+(a,b): % ==
+    lo:List WOBJT := concat(a.objects,b.objects)
+    bStart: NNI := #(a.objects)
+    lb:List WARROW := []
+    for ba in b.arrows repeat
+      arr: WARROW := [ba.name,ba.weight,_
+         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset]
+      lb := concat(lb,arr)$(List WARROW)
+    la:List WARROW := concat(a.arrows,lb)
+    [lo,la]
+
+  -- sum : union (not necessarily disjoint) of vertices with arrows
+  -- merged in from appropriate input, if arrow exists from both
+  -- inputs then it will be duplicated.
+  merge(a:%,b:%): % ==
+    -- bmap is a map into merged vertices
+    bmap:List NNI := [x for x in 1..#a.objects] -- map does not change in a
+    -- for each object in 'b' check if it exists in 'a' and if not add it
+    newIndex:NNI := #a.objects
+    mergedObjects := a.objects
+    for bob in b.objects repeat
+      i:Integer := position(bob,a.objects)
+      if i<1
+        then -- returns 0 if not found
+          mergedObjects := concat(mergedObjects,bob)
+          newIndex := newIndex + 1
+          bmap := concat(bmap,newIndex)
+        else
+          bmap := concat(bmap,i::NNI)
+    -- now merge arrows
+    bStart: NNI := #(a.objects)
+    lb:List WARROW := []
+    for ba in b.arrows repeat
+      -- map to and from indexes
+      toI:NNI := bmap.(ba.toOb + bStart)
+      fromI:NNI := bmap.(ba.fromOb + bStart)
+      arr: WARROW := [ba.name,ba.weight,_
+         fromI,toI,ba.xOffset,ba.yOffset]
+      lb := concat(lb,arr)$(List WARROW)
+    la:List WARROW := concat(a.arrows,lb)
+    [mergedObjects,la]
+
+  -- this is a local function used by both tensor and Cartesian
+  -- product to calculate the new vertices.
+  objProd(a:%,b:%):List OBJTPROD ==
+    newObjs:List OBJTPROD := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        widtha:NNI := diagramWidth(a)
+        heighta:NNI := diagramHeight(a)
+        --sayMsg concat(["objProd axi=",math_to_string axi,_
+        -- " ayi=",math_to_string ayi,_
+        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
+        -- " widtha=",math_to_string widtha," heighta=",math_to_string heighta,_
+        -- " x=",math_to_string x," y=",math_to_string y_
+        -- ])$String
+        sp:SPROD := construct(ai,bi)$SPROD
+        ob:OBJTPROD := [sp,x,y,0$W]
+        newObjs := concat(newObjs,ob)
+    newObjs
+
+  -- this is a local function used by both tensor and Cartesian
+  -- product to calculate the new index.
+  indexProd(aObj:%,a:NNI,b:NNI):NNI ==
+    a + ((b::Integer-1)::NNI * #aObj.objects)
+
+  -- tensor product : the tensor product A*B of graphs A and B is
+  -- a graph such that the vertex set of A*B is the Cartesian
+  -- product V(A) \times V(B)
+  -- any two vertices <au,bu> and <av,bv> are adjacent in A \times B
+  -- if and only if bu is adjacent with bv
+  -- and au is adjacent with av.
+  --
+  -- So this is defined over S^2 (that is Product(S,S))
+  _*(a:%,b:%):GRPHPROD ==
+    -- new objects are calculated by local objProd function
+    -- calculate new arrows:
+    newArrs:List WARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            --sayMsg concat(["* graph au=",math_to_string au,_
+            -- " av=",math_to_string av,_
+            -- " bu=",math_to_string bu,_
+            -- " bv=",math_to_string bv_
+            -- ])$String
+            if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
+              --sayMsg "add arrow"
+              an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
+              arr: WARROW := [an,0$W,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List WARROW)
+    weightedGraph(objProd(a,b),newArrs)$GRPHPROD
+
+  -- Cartesian product: the vertex set of A o B is the Cartesian
+  -- product V(A) \times V(B) and any two vertices <au,bu> and <av,bv>
+  -- are adjacent in A o B if and only if either
+  -- au = av and bu is adjacent with bv or
+  -- bu = bv and au is adjacent with av.
+  cartesian(a:%,b:%):GRPHPROD ==
+    -- new objects are calculated by local objProd function
+    -- calculate new arrows:
+    newArrs:List WARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            --sayMsg concat(["* graph au=", math_to_string au,_
+            -- " av=",math_to_string av,_
+            -- " bu=",math_to_string bu,_
+            -- " bv=",math_to_string bv_
+            -- ])$String
+            if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
+               ((au = av) and isDirectSuccessor?(b,bu,bv)) then
+              an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
+                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
+                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+              --pu := indexProd(b,au,bu)
+              --pv := indexProd(b,av,bv)
+              --sayMsg concat(["add arrow:",an," ",math_to_string pu,"->",math_to_string pv])
+              arr: WARROW := [an,0$W,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List WARROW)
+    weightedGraph(objProd(a,b),newArrs)$GRPHPROD
+
+  -- this is a local function used by both closed tensor and closed
+  -- Cartesian product to calculate the new vertices.
+  closedObjProd(a:%,b:%,f:(S,S)->S):List WOBJT ==
+    newObjs:List WOBJT := []
+    for aoi in a.objects repeat
+      ai:S := aoi.value
+      axi:NNI := aoi.posX
+      ayi:NNI := aoi.posY
+      for boi in b.objects repeat
+        bi:S := boi.value
+        bxi:NNI := boi.posX
+        byi:NNI := boi.posY
+        x:NNI := bxi*diagramWidth(a)+axi
+        y:NNI := byi*diagramHeight(a)+ayi
+        widtha:NNI := diagramWidth(a)
+        heighta:NNI := diagramHeight(a)
+        sp:S := f(ai,bi)
+        ob:WOBJT := [sp,x,y,0$W]
+        newObjs := concat(newObjs,ob)
+    newObjs
+
+
+  -- as tensor product but returns %.
+  closedTensor(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newArrs:List WARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
+              --sayMsg "add arrow"
+              an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
+              arr: WARROW := [an,0$W,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List WARROW)
+    weightedGraph(closedObjProd(a,b,f),newArrs)
+
+  -- as Cartesian product but returns %.
+  closedCartesian(a:%,b:%,f:(S,S)->S):% ==
+    -- new objects are calculated by local closedObjProd function
+    -- calculate new arrows:
+    newArrs:List WARROW := []
+    for au in 1..#a.objects repeat
+      for av in 1..#a.objects repeat
+        for bu in 1..#b.objects repeat
+          for bv in 1..#b.objects repeat
+            if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
+               ((au = av) and isDirectSuccessor?(b,bu,bv)) then
+              an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
+                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
+                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+              arr: WARROW := [an,0$W,_
+                 indexProd(b,bu,au),_
+                 indexProd(b,bv,av),0::NNI,0::NNI]
+              newArrs := concat(newArrs,arr)$(List WARROW)
+    weightedGraph(closedObjProd(a,b,f),newArrs)
+
+  -- create a new graph by mapping from this one
+  -- newOb should contain the new list of vertices.
+  -- m should contain a NNI value for each vertex, this is the
+  -- new index into newOb. It is allowed that newOb may contain
+  -- less objects than s (for surjective mapping) or
+  -- more objects than s (for injective mapping)
+  map(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List WOBJT := [[o,0::NNI,0::NNI,0$W] for o in newOb]
+    for oi in 1..#(s.objects) repeat
+      i := m.oi
+      newObjs.i :WOBJT := [(newObjs.i).value,_
+          ((((s.objects).oi).posX)+offsetX)::NNI,_
+          ((((s.objects).oi).posY)+offsetY)::NNI,_
+          0$W]
+    newArrs:List WARROW := []
+    for oldArrow in s.arrows repeat
+      newArr: WARROW := [oldArrow.name,oldArrow.weight,_
+                       m.(oldArrow.fromOb),m.(oldArrow.toOb),_
+                       oldArrow.xOffset,oldArrow.yOffset]
+      newArrs := concat(newArrs,newArr)
+    [newObjs,newArrs]
+
+  -- similar to map function but reverses the directions of
+  -- the arrows
+  mapContra(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
+    newObjs:List WOBJT := [[o,0::NNI,0::NNI,0$W] for o in newOb]
+    for oi in 1..#(s.objects) repeat
+      i := m.oi
+      newObjs.i :WOBJT := [(newObjs.i).value,_
+          ((((s.objects).oi).posX)+offsetX)::NNI,_
+          ((((s.objects).oi).posY)+offsetY)::NNI,_
+          0$W]
+    newArrs:List WARROW := []
+    for oldArrow in s.arrows repeat
+      newArr: WARROW := [oldArrow.name,oldArrow.weight,_
+                       m.(oldArrow.toOb),m.(oldArrow.fromOb),_
+                       oldArrow.xOffset,oldArrow.yOffset]
+      newArrs := concat(newArrs,newArr)
+    [newObjs,newArrs]
+
+  -- local function used by route to give a route between a
+  -- and b, track visited nodes to avoid infinite loop.
+  routeNodeRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
+   if #visited > #getVertices(s) then return []
+   --sayMsg concat(["routeNodeRecursive ",math_to_string a,_
+   -- "->",math_to_string b," visited=",math_to_string visited])$String
+   shortest:List NNI := []
+   if a=b then
+     --sayMsg concat(["returns [",string(a),"]"])$String
+     return [a]
+   if isDirectSuccessor?(s,a,b) then
+     --sayMsg concat(["returns [",string(a),",",string(b),"]"])$String
+     return [a,b]
+   for arr in getArrows(s) repeat
+     if isDirectSuccessor?(s,a,arr.fromOb) then
+       --sayMsg concat(["checking ",math_to_string a,_
+       -- "->",math_to_string arr.fromOb,_
+       -- " with ",math_to_string arr.fromOb,_
+       -- "->",math_to_string b," visited=",math_to_string visited])$String
+       d := routeNodeRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
+       --sayMsg concat(["gives ",math_to_string arr.fromOb,_
+       -- "->",math_to_string b," d=",math_to_string d])$String
+       if shortest = []
+         then
+           --sayMsg concat(["shortest:=",math_to_string d])$String
+           shortest := d
+         else if (d ~= []) and_
+           routeNodeWeight(s,concat(a,d)) < routeNodeWeight(s,concat(a,shortest)) then
+             --sayMsg concat(["shortest:=",math_to_string d,_
+             --     "<",math_to_string shortest,_
+             --      "(",string(routeNodeWeight(s,concat(a,d))),"<"string(routeNodeWeight(s,concat(a,shortest))),")"])$String
+             shortest := d
+   if shortest = [] then
+     --sayMsg "returns []"
+     return []
+   --sayMsg concat(["returns shortest=",string(a),",",math_to_string shortest])$String
+   concat(a,shortest)
+
+  -- the shortest route between 'a' and 'b' as a
+  -- sequence of node indexes.
+  -- overrides version in FiniteGraph as this version takes into account
+  -- weightings
+  -- [a] if  'a' = 'b'
+  -- [] if it is not possible to go from 'a' to 'b'
+  routeNodes(s:%,a:NNI,b:NNI):List NNI == routeNodeRecursive(s,a,b,[])
+
+  -- local function used by route to give a route between nodes 'a'
+  -- and 'b', returns arrow indexes.
+  -- track visited arrows to avoid infinite loop.
+  routeArrowRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
+   -- test for infinite loop
+   if #visited > #getVertices(s) then return [0]
+   --sayMsg concat(["routeArrowRecursive ",math_to_string a,_
+   -- "->",math_to_string b," visited=",math_to_string visited])$String
+   shortest:List NNI := [0]
+   if a=b then
+     --sayMsg "returns []"
+     return []
+   arrn := getArrowIndex(s,a,b)
+   if arrn ~= 0 then
+       --sayMsg concat(["returns [",string(arrn),"]"])$String
+       return [arrn]
+   aa:NNI := 0
+   shortestFullPath:List NNI := [0]
+   arrs := getArrows(s)
+   for arr in arrs repeat
+     if isDirectSuccessor?(s,a,arr.fromOb) then
+       aa := getArrowIndex(s,a,arr.fromOb)
+       --sayMsg concat(["checking ",math_to_string a,_
+       -- "->",math_to_string arr.fromOb,_
+       -- " (",string(aa),")",_
+       -- " with ",math_to_string arr.fromOb,_
+       -- "->",math_to_string b," visited=",math_to_string visited])$String
+       d := routeArrowRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
+       fullPath:=concat(aa,d)
+       --sayMsg concat(["gives ",math_to_string arr.fromOb,_
+       -- "->",math_to_string b," d=",math_to_string d])$String
+       if shortest = [0]
+         then
+           --sayMsg concat(["shortest:=",math_to_string d])$String
+           shortest := d
+           shortestFullPath := fullPath
+         else if (d ~= [0]) and_
+           routeArrowWeight(s,fullPath) < routeArrowWeight(s,shortestFullPath) then
+             --sayMsg concat(["shortest:=",string(aa),",",math_to_string d,_
+             --     "<",string(aa),",",math_to_string shortest,_
+             --      "(",string(routeArrowWeight(s,fullPath)),"<"string(routeArrowWeight(s,shortestFullPath)),")"])$String
+             shortest := d
+             shortestFullPath := fullPath
+   if shortest = [0] then
+     --sayMsg "returns [0]"
+     return [0]
+   --sayMsg concat(["returns shortest=",math_to_string aa,",",math_to_string shortest])$String
+   shortestFullPath
+
+  -- the shortest route between 'a' and 'b' as a
+  -- sequence of arrow indexes.
+  -- overrides version in FiniteGraph as this version takes into account
+  -- weightings
+  -- [] if  'a' = 'b'
+  -- [0] if it is not possible to go from 'a' to 'b'
+  routeArrows(s:%,a:NNI,b:NNI):List NNI == routeArrowRecursive(s,a,b,[])
+
+  -- the shortest distance between 'a' and 'b' in terms of
+  -- weight.
+  distanceWeighted(s:%,a:NNI,b:NNI):WEIGHT ==
+    r:List NNI := routeNodeRecursive(s,a,b,[])
+    if #r = 0 then return "disjoint"
+    routeNodeWeight(s,r)
+
+  -- this is a local function used by routeNodeWeight. It returns
+  -- the minimum weight between two adjacent node indexes.
+  getWeightBetween(s:%,i1:NNI,i2:NNI):W ==
+    --sayMsg concat(["getWeightBetween i1=",string(i1),_
+    -- " i2=",string(i2)])$String
+    isDisjoint:Boolean := true
+    res:W := 0$W
+    arrs := s.arrows
+    for arr in arrs repeat
+      --sayMsg concat(["getWeightBetween arr.fromOb=",string(arr.fromOb),_
+      -- " arr.toOb=",string(arr.toOb)," arr.weight=",string(arr.weight)])$String
+      if isDisjoint
+        then
+          if (arr.fromOb = i1) and (arr.toOb = i2)
+            then
+              res := arr.weight
+              isDisjoint := false
+        else
+          if (arr.fromOb = i1) and (arr.toOb = i2) and (arr.weight < res)
+            then res := arr.weight
+    res
+
+  -- the cumulative weight of a given route. The route is given
+  -- in terms of a sequence of node indexes.
+  routeNodeWeight(s:%,r: List NNI):W ==
+    res:W := 0$W
+    fst:Boolean := true
+    lasti:NNI := 0
+    for i in r repeat
+      if not fst then
+        w:=getWeightBetween(s,lasti,i)
+        res := res + w
+      fst := false
+      lasti := i
+    --sayMsg concat(["routeNodeWeight route=",math_to_string r,_
+    -- " res=",string(res)])$String
+    res
+
+  -- the cumulative weight of a given route. The route is given
+  -- in terms of a sequence of arrow indexes.
+  routeArrowWeight(s:%,r: List NNI):W ==
+    res:W := 0$W
+    for i in r repeat
+      a:WARROW := (s.arrows).i
+      res := res + a.weight
+    --sayMsg concat(["routeArrowWeight route=",math_to_string r,_
+    -- " res=",string(res)])$String
+    res
+
+  -- Distance weights between nodes.
+  weightedDistanceMatrix(s:%):Matrix WEIGHT ==
+    m:List List WEIGHT := [[distanceWeighted(s,u,v)_
+          for u in 1..#(getVertices s)]for v in 1..#(getVertices s)]
+    matrix(m)
+
+@
+
+\section{License}
+<<license>>=
+--Copyright (c) 2012, Martin J Baker.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of Martin J Baker. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@
+<<*>>=
+<<license>>
+@
+\eject
+\begin{thebibliography}{99}
+For more details see:
+[1] Floyd's algorithm
+\url{http://en.wikipedia.org/wiki/Floyd–Warshall_algorithm}
+\end{thebibliography}
+\end{document}
