@@ -1,0 +1,89 @@
+<<package SCANUTIL ScanningUtilities>>=
+)abbrev package SCANUTIL ScanningUtilities
+ScanningUtilities() : with
+    parse_integer : String -> Integer
+    -- parse_integer2 : (String, SingleInteger, SingleInteger,
+    --                  List(SingleInteger), List(Integer)) -> Integer
+ == add
+
+    SI ==> SingleInteger
+
+    import Character
+
+    -- zero := ord(char("0")) pretend SI
+    -- to avoid using runtime
+    zero ==> qconvert(48)@SI
+
+    parse_integer2(str : String, i0 : SI, l : SI,
+                   l2l : List(SI), tpl : List(Integer)) : Integer ==
+        b := zero
+        ten := qconvert(10)@SI
+        s1 : SI
+        ten7 : Integer := 10000000
+        res : Integer
+        l = 2 =>
+            s1 := 0
+            for i in i0..(i0 + 6) repeat
+                dig_val := qconvert(ord(qelt(str, i)))@SI - b
+                s1 := ten*s1 + dig_val
+            res := s1
+            s1 := 0
+            for i in (i0 + 7)..(i0 + 13) repeat
+                dig_val := qconvert(ord(qelt(str, i)))@SI - b
+                s1 := ten*s1 + dig_val
+            ten7*res + s1
+        l = 1 =>
+            s1 := 0
+            for i in i0..(i0 + 6) repeat
+                dig_val := qconvert(ord(qelt(str, i)))@SI - b
+                s1 := ten*s1 + dig_val
+            s1
+        l1 := first(l2l)
+        l2l := rest(l2l)
+        tp := first(tpl)
+        tpl := rest(tpl)
+        l2 := l - l1
+        res := parse_integer2(str, i0 + qconvert(7)@SI*l2, l1, l2l, tpl)
+        while not(first(l2l) < l2) repeat
+            l2l := rest(l2l)
+            tpl := rest(tpl)
+        res + tp*parse_integer2(str, i0, l2, l2l, tpl)
+
+    parse_integer(str : String) : Integer ==
+        b := zero
+        l := qconvert(#str)@SI
+        l1 := l rem 7
+        s1 : SI := 0
+        ten := qconvert(10)@SI
+        for i in 1..l1 repeat
+            dig_val := qconvert(ord(qelt(str, i)))@SI - b
+            s1 := ten*s1 + dig_val
+        l20 := l2 := l - l1
+        res : Integer := s1
+        l2 = 0 => res
+        l2 := l2 quo 7
+        j := l1 + 1
+        ten7 : Integer := 10000000
+        not(3 < l2) =>
+            for k in 1..l2 repeat
+                s1 := 0
+                for i in j..(j + 6) repeat
+                    dig_val := qconvert(ord(qelt(str, i)))@SI - b
+                    s1 := ten*s1 + dig_val
+                j := j + 7
+                res := ten7*res + s1
+            res
+        l2l : List(SI) := [1, 0]
+        tpl : List(Integer) := [ten7, 1]
+        tp := ten7
+        ll : SI := 2
+        while ll < l2 repeat
+            tp := tp*tp
+            l2l := cons(ll, l2l)
+            tpl := cons(tp, tpl)
+            ll := ll + ll
+        res*10^$Integer (l20 pretend NonNegativeInteger) +
+          parse_integer2(str, j, l2, l2l, tpl)
+
+@
+
