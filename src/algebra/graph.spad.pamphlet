@@ -4049,7 +4049,7 @@ WeightedGraph(S,W): Exports == Implementation where
     ++ as tensor product but returns %.
   closedCartesian:(a:%,b:%,f:(S,S)->S) -> %
     ++ as Cartesian product but returns %.
-  weightedDistanceMatrix:(%) -> Matrix WEIGHT
+  weightedDistanceMatrix:(%) -> TwoDimensionalArray WEIGHT
     ++ Distance weights between nodes.
 
  Implementation ==> add
@@ -4677,11 +4677,13 @@ WeightedGraph(S,W): Exports == Implementation where
     res
 
   -- Distance weights between nodes.
-  weightedDistanceMatrix(s:%):Matrix WEIGHT ==
-    m:List List WEIGHT := [[distanceWeighted(s,u,v)_
-          for u in 1..#(getVertices s)]for v in 1..#(getVertices s)]
-    matrix(m)
-
+  weightedDistanceMatrix(s:%):TwoDimensionalArray WEIGHT ==
+    n := # getVertices s
+    m: TwoDimensionalArray := new(n, n, 0)
+    for u in 1..n repeat
+        for v in 1..n repeat
+            qsetelt!(m,u,v, distanceWeighted(s,u,v))
+    m
 @
 
 \section{License}
