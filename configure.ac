@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2012-01-10],
+AC_INIT([FriCAS], [2012-02-22],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -469,9 +469,7 @@ AC_SUBST(fricas_algebra_optimization)
 
 AC_SUBST(fricas_all_prerequisites)
 
-# FIXME: Move this out of here.
-# The core runtime is always built.
-fricas_c_runtime=core
+fricas_c_runtime=
 AC_SUBST(fricas_c_runtime)
 
 AC_CHECK_HEADERS([signal.h],
