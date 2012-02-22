@@ -669,9 +669,12 @@ compInternalFunction(df is ['DEF,form,signature,specialCases,body], m, e) ==
     not(IDENTP(op)) =>
         stackAndThrow ['"Bad name for internal function:", op]
     nbody := ["+->", argl, body]
-    nf := ["LET",  [":", op, ["Mapping", :signature]], nbody]
-    ress := comp(nf, m, e)
-    ress
+    fmode := ["Mapping", :signature]
+    [., ., e'] := compMakeDeclaration([":", op, fmode], $EmptyMode, e)
+    T := compWithMappingMode(nbody, fmode, e')
+    T or return nil
+    currentProplist := getProplist(op, e)
+    finish_setq_single(T, fmode, op, nbody, currentProplist)
 
 compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
   m,oldE,$prefix,$formalArgList) ==

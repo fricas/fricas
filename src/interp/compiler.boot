@@ -602,7 +602,10 @@ setqSingle(id,val,m,E) ==
            (T:=comp(val,maxm'',E)) => T
         (T:= comp(val,$EmptyMode,E)) and getmode(T.mode,E) =>
           assignError(val,T.mode,id,m'')
-  T':= [x,m',e']:= convert(T,m) or return nil
+  finish_setq_single(T, m, id, val, currentProplist)
+
+finish_setq_single(T, m, id, val, currentProplist) ==
+  T' := [x, m', e'] := convert(T, m) or return nil
   if $profileCompiler = true then
     null IDENTP id => nil
     key :=
