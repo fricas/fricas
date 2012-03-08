@@ -8,6 +8,7 @@ lisp_flavor=@fricas_lisp_flavor@
 fricas_gcl_rsym_hack = @fricas_gcl_rsym_hack@
 fricas_c_runtime_extra = @fricas_c_runtime_extra@
 fricas_algebra_optimization = @fricas_algebra_optimization@
+fricas_has_directory_operations = @fricas_has_directory_operations@
 GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
 LISP_CMD = $(FRICAS_LISP) $(fricas_quiet_flags)
 
@@ -98,6 +99,12 @@ fricas-config.lisp:
 	echo '(in-package "FRICAS-LISP")' > $@
 	echo '(defparameter algebra-optimization' \
 	     '(quote $(fricas_algebra_optimization)))' >> $@
+	if [ x$(fricas_has_directory_operations) = xyes ] ; then \
+	    echo '(if (not (member :fricas_has_remove_directory' \
+                          ' *features*)) ' \
+	             '(push :fricas_has_remove_directory *features*))' \
+	       >> $@ ; \
+	fi
 
 do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
            primitives.lisp

@@ -606,6 +606,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 (fricas-foreign-call |writeablep| "writeablep" int
         (filename c-string))
 
+#+:fricas_has_remove_directory
+(fricas-foreign-call |remove_directory| "remove_directory" int
+        (dir_name c-string))
+
 (fricas-foreign-call |openServer| "open_server" int
         (server_name c-string))
 

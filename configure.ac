@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2012-02-22],
+AC_INIT([FriCAS], [2012-03-08],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -468,6 +468,31 @@ AC_ARG_ENABLE([algebra-optimization],
 AC_SUBST(fricas_algebra_optimization)
 
 AC_SUBST(fricas_all_prerequisites)
+
+fricas_has_directory_operations=no
+
+AC_CHECK_HEADERS([dirent.h],[
+  fricas_has_directory_operations=yes
+  AC_CHECK_DECLS([closedir, dirfd, opendir, readdir], [],
+  [fricas_has_directory_operations=no],
+  [#define _GNU_SOURCE
+   #include <dirent.h>]
+  )
+  AC_CHECK_DECLS([fchdir], [],
+  [fricas_has_directory_operations=no],
+  [#define _GNU_SOURCE
+   #include <unistd.h>]
+  )
+], [])
+
+if test x$fricas_has_directory_operations = xyes ; then
+    AC_DEFINE([HOST_HAS_DIRECTORY_OPERATIONS], [1],
+              [Host has POSIX directory operations])
+else
+  AC_MSG_WARN([Can not find directory operations])
+fi
+
+AC_SUBST(fricas_has_directory_operations)
 
 fricas_c_runtime=
 AC_SUBST(fricas_c_runtime)

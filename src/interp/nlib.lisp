@@ -310,7 +310,10 @@
 (defun $ERASE(&rest filearg)
   (setq filearg (|make_full_namestring| filearg))
   (if (fricas-probe-file filearg)
-      (delete-directory filearg)
+      #+:fricas_has_remove_directory
+          (|remove_directory| filearg)
+      #-:fricas_has_remove_directory
+          (delete-directory filearg)
       1))
 
 #+:GCL
