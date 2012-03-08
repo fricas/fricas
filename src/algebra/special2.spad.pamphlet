@@ -27,6 +27,10 @@ FloatSpecialFunctions() : Exports == Implementation where
       ++ Gamma(x) is the Euler Gamma function.
     Gamma : (Complex Float) -> (Complex Float)
       ++ Gamma(x) is the Euler Gamma function.
+    digamma : Float -> Float
+      ++ digamma(z) is the logarithmic derivative of \spad{Gamma(x)}.
+    digamma : (Complex Float) -> (Complex Float)
+      ++ digamma(z) is the logarithmic derivative of \spad{Gamma(x)}.
     Beta : (Float, Float) -> Float
       ++ Beta(x, y) is the Euler Beta function.
     Beta : (Complex Float, Complex Float) -> Complex Float
@@ -39,6 +43,10 @@ FloatSpecialFunctions() : Exports == Implementation where
       ++ lambertW(x) is the Lambert W function.
     lambertW : Complex(DoubleFloat) -> Complex(DoubleFloat)
       ++ lambertW(x) is the Lambert W function.
+    dilog : Complex(Float) -> Complex(Float)
+      ++ dilog(z) is the dilogaritm
+    li2 : Complex(Float) -> Complex(Float)
+      ++ li2(z) is polylog(2, z)
     -- Functions below should be local, but conditional
     rabs :  Float -> Float
       ++ Undocumented
@@ -242,7 +250,138 @@ FloatSpecialFunctions() : Exports == Implementation where
 
     rabs(r : Complex(DoubleFloat)) : DoubleFloat == real(abs(r))
 
+    I ==> Integer
+    PI ==> PositiveInteger
+    RF ==> Float
+    CF ==> Complex(Float)
+    DF ==> DoubleFloat
     RN ==> Fraction(Integer)
+
+    digamma_euler_maclaurin(a : CF, n : I, m : I) : CF ==
+        res : CF := 0
+        for k in 0..n repeat
+            ck := 1/(k::CF + a)
+            res := res + ck
+        n1 := n + 1
+        na := n1::CF + a
+        ns := 1/na
+        ns1 : CF := 1
+        res := res + (1/2)::RF*ns - log(na)
+        n2_inv := 1/(na*na)
+        for k in 1..m repeat
+            kfac := (2*k)::RF
+            ns1 := n2_inv*ns1
+            bk := (bernoulli(2*k)$IntegerNumberTheoryFunctions)::RF
+            res := res + (bk/kfac)*ns1
+        -res
+
+    digamma_aux(a : CF, l : I) : CF ==
+        abs_a := sqrt(norm(a))
+        l::Float > 6*abs_a =>
+            digamma_euler_maclaurin(a, l quo 6 + 1, l quo 6 + 1)
+        digamma_euler_maclaurin(a, -1, l quo 6 + 1)
+
+    digamma(a : CF) : CF ==
+        l0 := bits()$RF
+        l := max(l0 + 10, 61)
+        try
+            re_a := real(a)
+            re_a < (1/2)::Float =>
+                l := l + 5
+                bits((l + 3*length(l)$I + 10) pretend PI)$RF
+                re_aint := round(re_a)
+                a1 := a - complex(re_aint, 0)
+                a1 = 0 => error "Pole of Gamma"
+                r_pi := pi()$Float
+                ap := r_pi*a1
+                -r_pi*cos(ap)/sin(ap) + digamma_aux(1 - a, l)
+            bits((l + 3*length(l)$I + 10) pretend PI)$RF
+            digamma_aux(a, l)
+        finally
+            bits(l0)$RF
+
+    digamma(z : RF) : RF == real(digamma(complex(z, 0)))
+
+    li2_series(z : CF, prec : I) : CF ==
+        nz := norm(z)
+        oz := order(nz)
+        n : I :=
+            oz < -200 => (2*prec quo (-oz - 1)) + 1
+            retract(round((2*prec)::DF*(-log(2::DF)/log(convert(nz)@DF))))@I + 1
+        res : CF := 0
+        for i in 1..n repeat
+            k : I := n + 2 - i
+            k2 := k*k
+            ck := 1/(k2::RF)
+            res := z*(res + complex(ck, 0))
+        z*(1 + res)
+
+    li2_aux(z : CF, prec : I) : CF ==
+        rz := real(z)
+        iz := imag(z)
+        siz : RF :=
+            iz > 0 => 1
+            -1
+        -- Transformations do not work when z is a qubic root of -1
+        -- We check for this and use formula:
+        --   Li(2, z^2) = 2*(Li(2, z) + Li(2, -z))
+        w := complex((1/2)::RF, siz*(1/2)::RF*sqrt(3::RF))
+        dd := norm(z - w)
+        dd < (1/8)::RF =>
+            (1/2)::RF*li2_aux(z*z, prec+2) - li2_aux(-z, prec+2)
+        nz := norm(z)
+        z1 := 1 - z
+        rpi := pi()$RF
+        pi_fac := (1/6)::RF*rpi*rpi
+        rz > (1/2)::RF =>
+            nz1 := norm(z1)
+            nz1 >= 1 =>
+                lmz := log(-z)
+                -pi_fac::CF -(1/2)::RF*lmz*lmz - li2_series(1/z, prec)
+            lz := log(z)
+            z1 = 0 => pi_fac::CF
+            lz1 := log(z1)
+            nz >= 1 =>
+                pi_fac::CF + lz*((1/2)::RF*lz - lz1) +
+                  li2_series(-z1/z, prec)
+            pi_fac::CF - lz*lz1 - li2_series(z1, prec)
+        nz >= 1 =>
+            -pi_fac::CF + (1/2)::RF*log(z1)*log(z1/(z*z)) + li2_series(1/z1, prec)
+        nz1 := norm(z1)
+        nz1 >=1 =>
+            lz1 := log(z1)
+            -(1/2)::RF*lz1*lz1 - li2_series(-z/z1, prec)
+        li2_series(z, prec)
+
+    li2(z : CF) : CF ==
+        obits := bits()$RF
+        prec := obits + 5
+        try
+            bits(obits+20)
+            li2_aux(z, prec)
+        finally
+            bits(obits)
+
+    dilog_aux(z : CF, prec : I) : CF ==
+        nz := norm(z)
+        res : CF
+        nz < (1/4)::RF =>
+            rpi := pi()$RF
+            pi_fac := (1/6)::RF*rpi*rpi
+            z = 0 => pi_fac::CF
+            lz := log(z)
+            lz1 := log(1 - z)
+            res := pi_fac::CF - lz*lz1 - li2_series(z, prec)
+        li2_aux(1 - z, prec)
+
+    dilog(z : CF) : CF ==
+        obits := bits()$RF
+        prec := obits + 5
+        try
+            bits(obits+20)
+            dilog_aux(z, prec)
+        finally
+            bits(obits)
 
     Funs ==>
         lambert_via_newton1(x : NT, w : NT, eps : RNT) : NT ==
