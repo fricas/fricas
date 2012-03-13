@@ -133,10 +133,23 @@ intersectionEnvironment(e,e') ==
   e'':= (ic => addContour(ic,ce); ce)
   --$ie:= e''   this line is for debugging purposes only
 
-deltaContour([[c,:cl],:el],[[c',:cl'],:el']) ==
+deltaContour([il1, :el],[il2, :el']) ==
   not el=el' => systemError '"deltaContour" --a cop out for now
-  eliminateDuplicatePropertyLists contourDifference(c,c') where
-    contourDifference(c,c') == [first x for x in tails c while (x~=c')]
+  n1 := #il1
+  n2 := #il2
+  dl := []
+  for i in 1..(n1 - n2) repeat
+      dl := cons(first(il1), dl)
+      il1 := rest(il1)
+  c1 := first(il1)
+  c2 := first(il2)
+  rest(il1) ~= rest(il2) => systemError '"deltaContour 2" --a cop out for now
+  cd := [first x for x in tails c1 while (x~=c2)]
+  dl := cons(cd, dl)
+  res0 := []
+  for l in dl repeat
+      res0 := APPEND(l, res0)
+  res := eliminateDuplicatePropertyLists res0 where
     eliminateDuplicatePropertyLists contour ==
       contour is [[x,:.],:contour'] =>
         LASSOC(x,contour') =>
@@ -144,6 +157,7 @@ deltaContour([[c,:cl],:el],[[c',:cl'],:el']) ==
           [first contour,:DELLASOS(x,eliminateDuplicatePropertyLists contour')]
         [first contour,:eliminateDuplicatePropertyLists contour']
       nil
+  res
 
 intersectionContour(c,c') ==
   $var: local := nil
