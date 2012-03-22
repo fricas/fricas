@@ -857,10 +857,17 @@ FloatEllipticFunctions() : with
       ++ ellipticK(m) is the complete elliptic integral of the first kind.
     ellipticE : Float -> Float
       ++ ellipticE(m) is the complete elliptic integral of the second kind.
+    ellipticE : Complex Float -> Complex Float
+      ++ ellipticE(m) is the complete elliptic integral of the second kind.
     ellipticE : (Float, Float) -> Float
       ++ ellipticE(z, m) is the incomplete elliptic integral of the second
       ++ kind.
+    ellipticE : (Complex Float, Complex Float) -> Complex Float
+      ++ ellipticE(z, m) is the incomplete elliptic integral of the second
+      ++ kind.
     ellipticF : (Float, Float) -> Float
+      ++ ellipticF(z, m) is the incomplete elliptic integral of first kind.
+    ellipticF : (Complex Float, Complex Float) -> Complex Float
       ++ ellipticF(z, m) is the incomplete elliptic integral of first kind.
     -- Functions below should be local but overloaded
     rabs : Float -> Float
@@ -1375,6 +1382,51 @@ FloatEllipticFunctions() : with
         bits(obits)
         res
 
+    ellipticF_aux(z : CF, m : CF) : CF ==
+        m = 1 => atanh(z)
+        obits := bits()
+        rabs(m) > 1 =>
+            bits(obits + 20)
+            m2 := sqrt(m)
+            z2 := m2*z
+            ellipticF_aux(z2, 1/m)/m2
+        m = 0 => asin(z)
+        z = 1 => ellipticK(m)
+        z = -1 => -ellipticK(m)
+        prec := obits + 20
+        bits(prec)
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        res := kprod(ll)
+        ll := reverse!(ll)
+        sf : Float := 1
+        nz := norm(z)
+        if 1$Float < nz then
+            z0 := z
+            z2 := z*z
+            z2 := (1 - sqrt(1 - z2))/(1 + sqrt(1 - m*z2))
+            nz := norm(z2)
+            sf := 2::Float
+            cnz := sqrt(1 - z2)
+            dnz := sqrt(1 - m*z2)
+            snf := cnz*dnz/(1 - m*z2*z2)
+            z := sqrt(z2)
+            zz := z*snf
+            if real(conjugate(z0)*zz) < 0 then
+                z := -z
+        for k in ll repeat
+            delta := (1 + k)^2 - 4*k*z^2
+            z := 2*z/(1 + k + sqrt(delta))
+        sf*res*asin(z)
+
+    ellipticF(z : CF, m : CF) : CF ==
+        m = 1 => atanh(z)
+        obits := bits()
+        try
+            ellipticF_aux(z, m)
+        finally
+            bits(obits)
+
     ellipticE(m : Float) : Float ==
         m >= 1 => error "ellipticE: m >=1"
         m = 0 => pi()/2
@@ -1393,6 +1445,28 @@ FloatEllipticFunctions() : with
             e_val := 2*k1inv*e_val - p*f_val
         bits(obits)
         e_val
+
+    ellipticE(m : CF) : CF ==
+        m = 1 => error "ellipticE: m = 1"
+        e_val := (pi()/(2::Float))::CF
+        m = 0 => e_val
+        obits := bits()
+        try
+            prec := obits + 20
+            bits(prec)
+            eps := two_to_minus_n(prec quo 2)
+            ll := landen(m, eps)
+            llr := reverse(ll)
+            f_val := e_val
+            for k in ll repeat
+                k1 := 1 + k
+                f_val := k1*f_val
+                k1inv := 1/k1
+                p := (1 - k)*k1inv
+                e_val := 2*k1inv*e_val - p*f_val
+            e_val
+        finally
+            bits(obits)
 
     ellipticE(z : Float, m : Float) : Float ==
         m = 1 => z
@@ -1433,6 +1507,64 @@ FloatEllipticFunctions() : with
             e_val := 2*k1inv*e_val - p*f_val + r
         bits(obits)
         e_val
+
+    ellipticE_aux(z : CF, m : CF) : CF ==
+        obits := bits()
+        rabs(m) > 1 =>
+            bits(obits + 20)
+            m2 := sqrt(m)
+            z2 := m2*z
+            m2*ellipticE_aux(z2, 1/m) - (m - 1)*z
+        m = 0 => asin(z)
+        z = 1 => ellipticE(m)
+        z = -1 => -ellipticE(m)
+        prec := obits + 20
+        bits(prec)
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        llr := reverse(ll)
+        lz : List CF := []
+        sf : Float := 1
+        nz := norm(z)
+        res0 : CF := 0
+        if 1$Float < nz then
+            z2 := z*z
+            z2 := (1 - sqrt(1 - z2))/(1 + sqrt(1 - m*z2))
+            res0 := z2*z
+            nz := norm(z2)
+            sf := 2::Float
+            z0 := z
+            z := sqrt(z2)
+            cnz := sqrt(1 - z2)
+            dnz := sqrt(1 - m*z2)
+            snf := cnz*dnz/(1 - m*z2*z2)
+            zz := z*snf
+            if real(conjugate(z0)*zz) < 0 then
+                z := -z
+        for k in llr repeat
+            delta := (1 + k)^2 - 4*k*z^2
+            z := 2*z/(1 + k + sqrt(delta))
+            lz := cons(z, lz)
+        f_val := e_val := asin(z)
+        for k in ll for z in lz repeat
+            k1 := 1 + k
+            f_val := k1*f_val
+            k1inv := 1/k1
+            p := (1 - k)*k1inv
+            z2 := z*z
+            k_z2 := k*z2
+            r := sqrt((1 - z2)*(1 - k*k_z2))
+            r := (1 - p)*z*r/(1 + k_z2)
+            e_val := 2*k1inv*e_val - p*f_val + r
+        sf*e_val - m*res0
+
+    ellipticE(z : CF, m : CF) : CF ==
+        m = 1 => z
+        obits := bits()
+        try
+            ellipticE_aux(z, m)
+        finally
+            bits(obits)
 
     mkr(rr : CF, g23 : CF, r1 : CF) : CF ==
         pr := r1*rr
