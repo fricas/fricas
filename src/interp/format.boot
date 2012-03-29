@@ -352,9 +352,12 @@ formString u ==
   atom x => STRINGIMAGE x
   "STRCONC"/[STRINGIMAGE y for y in x]
 
+DEFPARAMETER($from_unparse, false)
+
 unparseInputForm u ==
   $formatSigAsTeX: local := 1
   $InteractiveMode: local := false
+  $from_unparse : local := true
   form2StringLocal u
 
 form2String u ==
@@ -711,8 +714,11 @@ application2String(op,argl, linkInfo) ==
       concat(application2String(f, argl, linkInfo), '"$", _
              form2String1 t)
   null argl =>
-    (op' := isInternalFunctionName(op)) => op'
-    app2StringWrap(formWrapId op, linkInfo)
+    res1 := 
+       (op' := isInternalFunctionName(op)) => op'
+       app2StringWrap(formWrapId op, linkInfo)
+    $from_unparse => concat(res1,'"()")
+    res1
   1=#argl =>
     first argl is ["<",:.] => concat(op,first argl)
     concat(app2StringWrap(formWrapId op, linkInfo), '"(", first argl, '")")
