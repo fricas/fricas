@@ -545,6 +545,473 @@ FloatSpecialFunctions() : Exports == Implementation where
 
 @
 
+<<package FLIOUFUN FloatLiouvilianFunctions>>=
+
+)abbrev package FLIOUFUN FloatLiouvilianFunctions
+FloatLiouvilianFunctions() : Exports == Implementation where
+
+  FF ==> Complex(Float)
+  I ==> Integer
+  RF ==> Float
+  RN ==> Fraction(Integer)
+  DF ==> DoubleFloat
+
+  Exports ==> with
+    gamma : () -> FF
+      ++ gamma() is the Euler constant
+    erf : RF -> RF
+      ++ erf(f) denotes the error function
+    erf : FF -> FF
+      ++ erf(f) denotes the error function
+    fresnelC : RF -> RF
+      ++ fresnelC(f) denotes the Fresnel integral \spad{C}
+    fresnelC : FF -> FF
+      ++ fresnelC(f) denotes the Fresnel integral \spad{C}
+    fresnelS : RF -> RF
+      ++ fresnelS(f) denotes the Fresnel integral \spad{S}
+    fresnelS : FF -> FF
+      ++ fresnelS(f) denotes the Fresnel integral \spad{S}
+    Ei : RF -> RF
+      ++ Ei(f) denotes the exponential integral
+    Ei : FF -> FF
+      ++ Ei(f) denotes the exponential integral
+    li : RF -> RF
+      ++ li(f) denotes the logarithmic integral
+    li : FF -> FF
+      ++ li(f) denotes the logarithmic integral
+    Ci : RF -> RF
+      ++ Ci(f) denotes the cosine integral
+    Ci : FF -> FF
+      ++ Ci(f) denotes the cosine integral
+    Si : RF -> RF
+      ++ Si(f) denotes the sine integral
+    Si : FF -> FF
+      ++ Si(f) denotes the sine integral
+
+  Implementation ==> add
+
+    StoredConstant ==> Record(precision : Integer, value : RF)
+
+    G : StoredConstant := [-1, 0$RF]
+
+    gamma() : FF ==
+        (obits := bits()$RF) <= G.precision => complex(G.value, 0)
+        nbits := max(obits, 2*G.precision) pretend PositiveInteger
+        try
+            bits(nbits)$RF
+            G.value := -digamma(1$RF)$FloatSpecialFunctions
+            G.precision := nbits
+            complex(G.value, 0)
+        finally
+            bits(obits pretend PositiveInteger)$RF
+
+    erf_series(z : FF, n : Integer) : FF ==
+        z2 := z*z
+        tk := z
+        res : FF := 0
+        for i in 0..n repeat
+            k1 := 2*i + 1
+            term := (1/(k1::RF))*tk
+            res := res + term
+            k2 := i + 1
+            tk := (-1/(k2::RF))*z2*tk
+        (2::RF/sqrt(pi()$RF))*res
+
+    erfc_asymptotic(z : FF, prec : Integer) : FF ==
+        eps := float(1, -2*prec, 2)
+        term : FF := 1
+        z2 := z*z
+        z2_inv := 1/(2::RF*z2)
+        res : FF := 0
+        while norm(term) > eps for k in 0.. repeat
+            res := res + term
+            term := -(2*k + 1)::RF*z2_inv*term
+        exp(-z2)*res/(z*sqrt(pi()))
+
+    erf_z(z : FF) : FF ==
+        obits := bits()$RF
+        nz := norm(z)
+        prec := obits + 20
+        oz := order(nz)
+        length(prec) > 500 =>
+            error "reqested too high precision"
+        if oz < 500 then
+           dnz := nz::DoubleFloat
+           (sp := prec*(694@I/1000)::DF) > dnz =>
+               npf := (2000@I/693)::DF*dnz + prec::DF
+               np := retract(round(npf))@I pretend PositiveInteger
+               nf := exp(1)$DoubleFloat*dnz + sp
+               n := retract(round(nf))@I
+               bits(np)
+               res := erf_series(z, n)
+               bits(obits)
+               return res
+        bits(prec)
+        real(z) > 0 => 1 - erfc_asymptotic(z, obits + 5)
+        erfc_asymptotic(-z, obits + 5) - 1
+
+    erf(z : FF) : FF ==
+        obits := bits()$RF
+        try
+            erf_z(z)
+        finally
+            bits(obits)
+
+    erf(z : RF) : RF == real(erf(complex(z, 0)))
+
+    fresnel_c_series(z : FF, n : Integer) : FF ==
+        z2 := z*z
+        tk := z
+        z4 := z2*z2
+        res : FF := 0
+        for i in 0..n repeat
+            k1 := 4*i + 1
+            term := (1/k1::RF)*tk
+            res := res + term
+            k2 := (2*i + 1)*(2*i+2)
+            tk := (-1/k2::RF)*z4*tk
+        res
+
+    fresnel_c_asymptotic(z : FF, prec : Integer) : FF ==
+        eps := float(1, -2*prec, 2)
+        z_inv := 1/z
+        term : FF := 1
+        z2 := z*z
+        z2_inv := 1/(2::RF*z2)
+        res_c : FF := 0
+        res_s : FF := 0
+        while norm(term) > eps for k in 0.. repeat
+            res_s := res_s - term
+            term := (4*k + 1)::Float*z2_inv*term
+            res_c := res_c + term
+            term := -(4*k + 3)::Float*z2_inv*term
+        (1@I/2)::RF*z_inv*(cos(z2)*res_c + sin(z2)*res_s)
+
+    fresnel_c_z(z : FF) : FF ==
+        obits := bits()$RF
+        nz := norm(z)
+        prec := obits + 10
+        oz := order(nz)
+        length(prec) > 500 =>
+            error "reqested too high precision"
+        if oz < 500 then
+           dnz := nz::DoubleFloat
+           (sp := prec*(694@I/1000)::DF) > dnz =>
+               npf := (2000@I/693)::DF*dnz + prec::DF
+               np := retract(round(npf))@I pretend PositiveInteger
+               nf := exp(1)$DF*dnz + sp
+               n := retract(round(nf/(2::DF)))@I
+               bits(np)
+               res := fresnel_c_series(z, n)
+               bits(obits)
+               return res
+        bits(prec)
+        pi_fac := sqrt(pi()$RF/(8::RF))
+        re_z := real(z)
+        im_z := imag(z)
+        re_z > 0 =>
+            im_z > 0 =>
+                re_z > im_z =>
+                    complex(pi_fac, 0) - fresnel_c_asymptotic(z, obits)
+                complex(0, pi_fac) - fresnel_c_asymptotic(z, obits)
+            re_z > - im_z =>
+                complex(pi_fac, 0) - fresnel_c_asymptotic(z, obits)
+            complex(0, -pi_fac) - fresnel_c_asymptotic(z, obits)
+        im_z > 0 =>
+            -re_z > im_z =>
+                complex(-pi_fac, 0) - fresnel_c_asymptotic(z, obits)
+            complex(0, pi_fac) - fresnel_c_asymptotic(z, obits)
+        -re_z > -im_z =>
+            complex(-pi_fac, 0) - fresnel_c_asymptotic(z, obits)
+        complex(0, -pi_fac) - fresnel_c_asymptotic(z, obits)
+
+    fresnelC(z : FF) : FF ==
+        obits := bits()$RF
+        try
+            bits(obits + 10)
+            pi_fac := sqrt(pi()$RF/2::RF)
+            z := pi_fac*z
+            res := fresnel_c_z(z)
+            bits(obits + 10)
+            (1/pi_fac)*res
+        finally
+            bits(obits)
+
+    fresnelC(z : RF) : RF == real(fresnelC(complex(z, 0)))
+
+    fresnel_s_series(z : FF, n : I) : FF ==
+        z2 := z*z
+        tk := z2*z
+        z4 := z2*z2
+        res : FF := 0
+        for i in 0..n repeat
+            k1 := 4*i + 3
+            term := (1/k1::RF)*tk
+            res := res + term
+            k2 := (2*i + 2)*(2*i+3)
+            tk := (-1/k2::RF)*z4*tk
+        res
+
+    fresnel_s_asymptotic(z : FF, prec : I) : FF ==
+        eps := float(1, -2*prec, 2)
+        z_inv := 1/z
+        term : FF := 1
+        z2 := z*z
+        z2_inv := 1/(2::RF*z2)
+        res_c : FF := 0
+        res_s : FF := 0
+        while norm(term) > eps for k in 0.. repeat
+            res_c := res_c + term
+            term := (4*k + 1)::RF*z2_inv*term
+            res_s := res_s + term
+            term := -(4*k + 3)::RF*z2_inv*term
+        (1@I/2)::RF*z_inv*(cos(z2)*res_c + sin(z2)*res_s)
+
+    fresnel_s_z(z : FF) : FF ==
+        obits := bits()$RF
+        nz := norm(z)
+        prec := obits + 10
+        oz := order(nz)
+        length(prec) > 500 =>
+            error "reqested too high precision"
+        if oz < 500 then
+           dnz := nz::DoubleFloat
+           (sp := prec*(694@I/1000)::DF) > dnz =>
+               npf := (2000@I/693)::DF*dnz + prec::DF
+               np := retract(round(npf))@I pretend PositiveInteger
+               nf := exp(1)$DF*dnz + sp
+               n := retract(round(nf/(2::DF)))@I
+               bits(np)
+               res := fresnel_s_series(z, n)
+               bits(obits)
+               return res
+        bits(prec)
+        pi_fac := sqrt(pi()$RF/(8::RF))
+        re_z := real(z)
+        im_z := imag(z)
+        re_z > 0 =>
+            im_z > 0 =>
+                re_z > im_z =>
+                    complex(pi_fac, 0) - fresnel_s_asymptotic(z, obits)
+                complex(0, -pi_fac) - fresnel_s_asymptotic(z, obits)
+            re_z > - im_z =>
+                complex(pi_fac, 0) - fresnel_s_asymptotic(z, obits)
+            complex(0, pi_fac) - fresnel_s_asymptotic(z, obits)
+        im_z > 0 =>
+            -re_z > im_z =>
+                complex(-pi_fac, 0) - fresnel_s_asymptotic(z, obits)
+            complex(0, -pi_fac) - fresnel_s_asymptotic(z, obits)
+        -re_z > -im_z =>
+            complex(-pi_fac, 0) - fresnel_s_asymptotic(z, obits)
+        complex(0, pi_fac) - fresnel_s_asymptotic(z, obits)
+
+    fresnelS(z : FF) : FF ==
+        obits := bits()$RF
+        try
+            bits(obits + 10)
+            pi_fac := sqrt(pi()$RF/2::RF)
+            z := pi_fac*z
+            res := fresnel_s_z(z)
+            bits(obits + 10)
+            (1/pi_fac)*res
+        finally
+            bits(obits)
+
+    fresnelS(z : RF) : RF == real(fresnelS(complex(z, 0)))
+
+    ei_series(z : FF, n : I) : FF ==
+        tk := z
+        res : FF := 0
+        for i in 0..n repeat
+            k1 := i + 1
+            term := (1/k1::RF)*tk
+            res := res + term
+            k2 := (i + 2)
+            tk := (1/k2::RF)*z*tk
+        res
+
+    ei_asymptotic(z : FF, prec : I) : FF ==
+        eps := float(1, -2*prec, 2)
+        z_inv := 1/z
+        term := z_inv
+        res : FF := 0
+        while norm(term) > eps for k in 0.. repeat
+            res := res + term
+            term := (k + 1)::RF*z_inv*term
+        exp(z)*res
+
+    ei_z(z : FF) : FF ==
+        obits := bits()$RF
+        nz := norm(z)
+        prec := obits + 20
+        oz := order(nz)
+        length(prec) > 500 =>
+            error "reqested too high precision"
+        if oz < 1000 then
+           dnz := sqrt(nz::DF)
+           (sp := prec*(694@I/1000)::DF) > dnz =>
+               npf := (2000@I/693)::DF*dnz + prec::DF
+               np := retract(round(npf))@I pretend PositiveInteger
+               nf := exp(1)$DF*dnz + sp
+               n := retract(round(nf))@I
+               bits(np)
+               res := ei_series(z, n)
+               bits(obits)
+               return gamma() + log(z) + res
+        bits(prec)
+        pii := pi()$RF
+        (im_z := imag(z)) < 0 =>
+            real(z) > - im_z => ei_asymptotic(z, obits + 5)
+            complex(0, -pii) + ei_asymptotic(z, obits + 5)
+        real(z) > im_z  => ei_asymptotic(z, obits + 5)
+        complex(0, pii) + ei_asymptotic(z, obits + 5)
+
+    Ei(z : FF) : FF ==
+        obits := bits()$RF
+        try
+            ei_z(z)
+        finally
+            bits(obits)
+
+    Ei(x : RF) : RF ==
+        x <= 0 => error "Ei: x <= 0"
+        real(Ei(complex(x, 0)))
+
+    li(z : FF) : FF ==
+        obits := bits()$RF
+        try
+            bits(obits + 5)
+            z1 := log(z)
+            Ei(z1)
+        finally
+            bits(obits)
+
+    li(x : RF) : RF ==
+        x <= 1 => error "li: x <= 1"
+        real(li(complex(x, 0)))
+
+    ci_series(z : FF, n : I) : FF ==
+        z2 := z*z
+        tk := (-1/2::RF)*z2
+        res : FF := 0
+        for i in 1..n repeat
+            k1 := 2*i
+            term := (1/k1::RF)*tk
+            res := res + term
+            k2 := (2*i + 1)*(2*i+2)
+            tk := (-1/k2::RF)*z2*tk
+        res
+
+    ci_asymptotic(z : FF, prec : I) : FF ==
+        eps := float(1, -2*prec, 2)
+        z_inv := 1/z
+        term : FF := 1
+        res_c : FF := 0
+        res_s : FF := 0
+        while norm(term) > eps for k in 0.. repeat
+            res_s := res_s + term
+            term := -(2*k + 1)::RF*z_inv*term
+            res_c := res_c + term
+            term := (2*k + 2)::RF*z_inv*term
+        z_inv*(cos(z)*res_c + sin(z)*res_s)
+
+    ci_z(z : FF) : FF ==
+        obits := bits()$RF
+        nz := norm(z)
+        prec := obits + 20
+        oz := order(nz)
+        length(prec) > 500 =>
+            error "reqested too high precision"
+        if oz < 1000 then
+           dnz := sqrt(nz::DF)
+           (sp := prec*(694@I/1000)::DF) > dnz =>
+               npf := (2000@I/693)::DF*dnz + prec::DF
+               np := retract(round(npf))@I pretend PositiveInteger
+               nf := exp(1)$DF*dnz + sp
+               n := retract(round(nf/(2::DF)))@I
+               bits(np)
+               res := ci_series(z, n)
+               bits(obits)
+               return res + gamma() + log(z)
+        bits(prec)
+        real(z) > 0 =>
+            ci_asymptotic(z, obits + 5)
+        pi_fac := pi()$RF
+        imag(z) < 0 =>
+            complex(0, -pi_fac) + ci_asymptotic(z, obits + 5)
+        complex(0, pi_fac) + ci_asymptotic(z, obits + 5)
+
+    Ci(z : FF) : FF ==
+        obits := bits()$RF
+        try
+            ci_z(z)
+        finally
+            bits(obits)
+
+    Ci(x : RF) : RF ==
+        x <= 0 => error "Ci: x <= 0"
+        real(Ci(complex(x, 0)))
+
+    si_series(z : FF, n : I) : FF ==
+        z2 := z*z
+        tk := z
+        res : FF := 0
+        for i in 0..n repeat
+            k1 := 2*i + 1
+            term := (1/k1::RF)*tk
+            res := res + term
+            k2 := (2*i + 2)*(2*i+3)
+            tk := (-1/k2::RF)*z2*tk
+        res
+
+    si_asymptotic(z : FF, prec : I) : FF ==
+        eps := float(1, -2*prec, 2)
+        z_inv := 1/z
+        term : FF := 1
+        res_c : FF := 0
+        res_s : FF := 0
+        while norm(term) > eps for k in 0.. repeat
+            res_c := res_c + term
+            term := (2*k + 1)::RF*z_inv*term
+            res_s := res_s + term
+            term := -(2*k + 2)::RF*z_inv*term
+        z_inv*(cos(z)*res_c + sin(z)*res_s)
+
+    si_z(z : FF) : FF ==
+        obits := bits()$RF
+        nz := norm(z)
+        prec := obits + 20
+        oz := order(nz)
+        length(prec) > 500 =>
+            error "reqested too high precision"
+        if oz < 1000 then
+           dnz := sqrt(nz::DF)
+           (sp := prec*(694@I/1000)::DF) > dnz =>
+               npf := (2000@I/693)::DF*dnz + prec::DF
+               np := retract(round(npf))@I pretend PositiveInteger
+               nf := exp(1)$DF*dnz + sp
+               n := retract(round(nf/(2::DF)))@I
+               bits(np)
+               res := si_series(z, n)
+               bits(obits)
+               return res
+        bits(prec)
+        pi_fac := pi()$RF/(2::RF)
+        real(z) > 0 =>
+            complex(pi_fac, 0) - si_asymptotic(z, obits + 5)
+        -(complex(pi_fac, 0) - si_asymptotic(-z, obits + 5))
+
+    Si(z : FF) : FF ==
+        obits := bits()$RF
+        try
+            si_z(z)
+        finally
+            bits(obits)
+
+    Si(z : RF) : RF == real(Si(complex(z, 0)))
+
+@
+
 <<package ELIPIDF DoubleFloatEllipticIntegrals>>=
 
 )abbrev package ELIPIDF DoubleFloatEllipticIntegrals
