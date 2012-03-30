@@ -448,7 +448,7 @@
      |Matrix| |OneDimensionalArray| |TwoDimensionalArray| |U32Vector|
      |U32Matrix| |U16Vector| |U16Matrix| |U8Vector| |U8Matrix|
      |DoubleFloatVector| |DoubleFloatMatrix| |ComplexDoubleFloatVector|
-     |ComplexDoubleFloatMatrix| |Character| ))
+     |ComplexDoubleFloatMatrix| |Character| |SortedExponentVector| ))
             ;" used by optCallSpecially"
 (SETQ |$Zero| '(|Zero|))
 (SETQ |$One| '(|One|))
