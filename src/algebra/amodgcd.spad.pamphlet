@@ -1,0 +1,950 @@
+This package computes gcd of polynomials over algebraic extensions
+of fields of algebraic functions.  That, is computation is done
+in K[x_1, ..., x_m] where K = F[p_1, ..., p_l] with F=Q(a_1, ..., a_k).
+So, a_1, ..., a_k are algebraically independent (we call them
+transcendental parameters), p_1, ..., p_l are algebraic over F and
+x_1, ..., x_m are polynomial variables.  To avoid working with
+fractions we actually work with R[x_1, ..., x_m] where
+R = R0[p_1, ..., p_l] and R0 = Z[a_1, ..., a_k], that is
+all work is done on polynomials and we use pseudodivison
+instead of division.  Several functions assume specific
+order on variables: transcendental parameters a_1, ..., a_k are
+smaller than algebraic parameters p_1, ..., p_l which in turn are
+smaller than polynomial variables x_1, ..., x_m (algebraicGcd
+allows arbitrary variable order, but substitutes variables
+so that other routines see expected order).
+
+<<category MAGCDOC ModularAlgebraicGcdOperations>>=
+
+)abbrev category MAGCDOC ModularAlgebraicGcdOperations
+++ Description: This category specifies operations needed by
+++  ModularAlgebraicGcd package.  Since we have multiple
+++  implementations we specify interface here and put
+++  implementations in separate packages.  Most operations
+++  are done using special purpose abstract representation.
+++  Apropriate types are passesd as parametes: MPT is type
+++  of modular polynomials in one variable with coefficients
+++  in some algebraic extension.  MD is type of modulus.
+++  Final results are converted to packed representation,
+++  with coefficients (from prime field) stored in one
+++  array and exponents (in main variable and in auxilary
+++  variables representing generators of algebrac extension)
+++  stored in parallel array.
+ModularAlgebraicGcdOperations(MPT : Type, MD : Type) : Category ==
+  Exports where
+    MP ==> Polynomial Integer
+    PA ==> U32Vector
+    Exports ==> with
+        pseudoRem : (MPT, MPT, MD) -> MPT
+          ++ pseudoRem(x, y, m) computes pseudoremainder of x by y
+          ++ modulo m.
+        canonicalIfCan : (MPT, MD) -> Union(MPT, "failed")
+          ++ canonicalIfCan(x, m) tries to divide x by its leading
+          ++ coefficient modulo m.
+        pack_modulus : (List MP, List(Symbol), Integer) -> Union(MD, "failed")
+          ++ pack_modulus(lp, ls, p) converts lp, ls and prime p which
+          ++ together describe algebraic extension to packed
+          ++ representation.
+        MPtoMPT : (MP, Symbol, List(Symbol), MD) -> MPT
+          ++ MPtoMPT(p, s, ls, m) coverts p to packed represntation.
+        zero? : MPT -> Boolean
+          ++ zero?(x) checks if x is zero.
+        degree : MPT -> Integer
+          ++ degree(x) gives degree of x.
+        pack_exps : (Integer, Integer, MD) -> SortedExponentVector
+          ++ pack_exps(d, s, m) produces vector of exponents up
+          ++ to degree d.  s is size (degree) of algebraic extension.
+          ++ Use together with repack1.
+        repack1 : (MPT, PA, Integer, MD) -> Void 
+          ++ repack1(x, a, d, m) stores coefficients of x in a.
+          ++ d is degree of x.  Corresponding exponents are given
+          ++ by pack_exps.
+
+@
+
+<<package PRIGCD3 PrimGCD>>=
+)abbrev package PRIGCD3 PrimGCD
+++ Description: This is unfinished package for computing primitive
+++  gcd over algebraic extensions.  Algebraic extension is defined
+++  by list of polynomial forming triangular system.
+++  Currently implemented is only trial division.
+PrimGCD() : Exports == Implementation where
+    OV ==> Symbol
+    MP ==> SparseMultivariatePolynomial(Integer, OV)
+
+    LMP ==> List MP
+
+    SmpTerm ==> Record(k : NonNegativeInteger, c : MP)
+    VPoly ==>  Record(v: OV, ts: List SmpTerm)
+    SmpRep ==>  Union(Integer, VPoly)
+
+    Lcx0Res ==> Record(lcx0lc : MP, lcx0m : MP)
+    LczRes ==> Record(lczlc : MP, k : Integer)
+
+    Exports ==> with
+        lcx0 : (MP, List OV) -> Lcx0Res
+          ++ lcx0(x, lv) computes leading coefficient of x and
+          ++ corresponding product of variables (monomial with
+          ++ coefficient 1) with respect to variables in lv
+          ++ Variables in lv must be decreasing and bigger than
+          ++ all other variables of x.
+        lcz : (MP, OV) -> LczRes
+          ++ lcz(x, z) computes leading coefficient and degree
+          ++ of x with respect to variable z.
+        coeffs0 : (MP, List OV, LMP) -> LMP
+          ++ coeffs0(x, lv, lp) is used by coeffs1
+        coeffs1 : (MP, List OV) -> LMP
+          ++ coeffs1(x, lv) computes list of coefficients of
+          ++ x with respect to variables in lv. Variables in
+          ++ lv must be decreasing and bigger than all other
+          ++ variables of x.
+        alg_reduce0 : (MP, MP, List OV, OV) -> MP
+          ++ alg_reduce0(x, m, lv, z) performs single reduction
+          ++ step.
+        alg_reduce : (MP, LMP, List OV, List OV) -> MP
+          ++ alg_reduce(x, lm, lv, lz) reduces x modulo elements
+          ++ of lm.
+        alg_trial_division : (MP, MP, LMP, List OV, List OV) -> _
+             Boolean
+          ++ alg_trial_division(x, y, lm, lv, lz) checks if
+          ++ x is divisible by y in algebraic extension defined by lm.
+          ++ lz is list of algebraic variables, lv is list of
+          ++ independent (polynomial) variables.  Other variables
+          ++ serve as parameters.
+
+    Implementation ==> add
+
+        lcx0(p : MP, xvars : List OV) : Lcx0Res ==
+            empty?(xvars) => [p, 1]@Lcx0Res
+            xr : SmpRep := p pretend SmpRep
+            xr case Integer =>
+                [p, 1]@Lcx0Res
+            vx : OV := xr.v
+            while not empty?(xvars) repeat
+                vx = first xvars =>
+                    t0 := first (xr.ts)
+                    pr := lcx0(t0.c, rest xvars)
+                    return [pr.lcx0lc, monomial(1, vx, t0.k)$MP*pr.lcx0m]
+                xvars := rest xvars 
+            [p, 1]@Lcx0Res
+
+        lcz(p : MP, z : OV) : LczRes ==
+            xr : SmpRep := p pretend SmpRep
+            xr case Integer =>
+                [p, 0]@LczRes
+            vx : OV := xr.v
+            xu : List SmpTerm := xr.ts
+            vx = z =>
+                t0 := first (xu)
+                [t0.c, t0.k]
+            zdeg : Integer := 0
+            yu : List SmpTerm := []
+            for t0 in xu repeat
+                pr := lcz(t0.c, z)
+                zdeg > pr.k => "iterate"
+                if zdeg < pr.k then
+                    yu := []
+                    zdeg := pr.k
+                yu := cons([t0.k, pr.lczlc], yu)
+            xr := [vx, reverse yu]
+            [xr pretend MP, zdeg]
+                
+        coeffs0(p : MP, xvars : List OV, acc : LMP) : LMP ==
+            xr : SmpRep := p pretend SmpRep
+            xr case Integer =>
+                cons(p, acc)
+            vx : OV := xr.v
+            while not empty?(xvars) repeat
+                vx = first xvars =>
+                    lp := xr.ts
+                    for t0 in lp repeat
+                        acc := coeffs0(t0.c, rest xvars, acc)
+                    return acc
+                xvars := rest xvars
+            cons(p, acc)
+
+        coeffs1(p : MP, xvars : List OV) : LMP == coeffs0(p, xvars, [])
+
+        alg_reduce0(p: MP, m : MP, xvars : List OV, z : OV) : MP ==
+            mlcr := lcz(m, z)
+            degm := mlcr.k
+            mlc := mlcr.lczlc
+            repeat
+                plcr := lcz(p, z)
+                degp := plcr.k
+                degp < degm => return p
+                alc := plcr.lczlc
+                g := gcd(cons(mlc, coeffs1(alc, xvars)))
+                alc := (alc exquo g)::MP
+                mlc1 := (mlc exquo g)::MP
+                p := mlc1*p - (alc*monomial(1, z,
+                                    (degp - degm)::NonNegativeInteger))*m
+                
+
+        alg_reduce(p: MP, lm : LMP, xvars : List OV, zvars : List OV) : MP ==
+            for m in lm for z in zvars repeat
+                p := alg_reduce0(p, m, xvars, z)
+            p
+
+        alg_trial_division(a : MP, b: MP, lm : LMP, xvars : List OV, _
+            zvars : List OV) : Boolean ==
+            blcr := lcx0(b, xvars)
+            blc := blcr.lcx0lc
+            blm := blcr.lcx0m
+            repeat
+                a = 0 => return true
+                alcr := lcx0(a, xvars)
+                alc := alcr.lcx0lc
+                alm := alcr.lcx0m
+                mquo := alm exquo blm
+                (mquo case "failed") => return false
+                g := gcd(cons(blc, coeffs1(alc, zvars)))
+                alc := (alc exquo g) :: MP
+                s := (blc exquo g) :: MP
+                a := alg_reduce(s*a - alc*mquo*b, lm, xvars, zvars)
+@
+
+<<package MAGCD ModularAlgebraicGcd>>=
+)abbrev package MAGCD ModularAlgebraicGcd
+++ Description: This package computes gcd over field of algebraic
+++  functions over Q using modular method based on M. Monagan and
+++  van Hoej paper.
+++  Core modular operations are passed as parameter (MO) to this
+++  package.
+ModularAlgebraicGcd(MPT : Type, MD : Type, MO
+   : ModularAlgebraicGcdOperations(MPT, MD)) : Exports == Implementation where
+  SY ==> Symbol
+  MP ==> Polynomial Integer
+  UPI ==> SparseUnivariatePolynomial Integer
+  MPU ==> Polynomial UPI
+  VI ==> Vector Integer
+  PA ==> U32Vector
+  PAI ==> PrimitiveArray Integer
+  PSS ==> Record(degx : Integer, degy : Integer, degg : Integer, _
+                 sizem : Integer, sldeg : List(Integer), _
+                 expdata : SortedExponentVector, coeffdata : PA, _
+                 eval1coeffbuf : PA, eval1expbuf : SortedExponentVector, _
+                 svx : SY, svz: List(SY), offsetdata : VI, prime : Integer)
+  PDR ==> Record(nvars : Integer, offsetdata : VI, _
+               expdata : SortedExponentVector, _
+               coeffdata : PA)
+
+  Exports ==> with
+    algebraicGcd : (MP, MP, List(MP), List SY, SY, List(SY)) -> MP
+      ++ algebraicGcd(x, y, lm, lp, v, la) computes gcd of x and y
+      ++ modulo polynomials in lm.  la is list of algebraic parameters,
+      ++ lp is a list of transcendental parameters, v is main variable.
+
+  Implementation ==> add
+
+    algebraicGcd3a : (MP, MP, List(MP), List SY, PSS) -> MP
+    algebraicGcd2 : (MP, MP, List(MP), List SY, PSS) -> Union(PDR, "failed")
+    algebraicGcd1a : (MP, MP, MD, SY, List(SY)) -> Union(MPT, "failed")
+    algebraicGcd1 : (MP, MP, List(MP), PSS) -> Union(PDR, "failed")
+    
+    algebraicGcd1a(x, y, mu, vx, lvz) ==
+        xu := MPtoMPT(x, vx, lvz, mu)
+        yu := MPtoMPT(y, vx, lvz, mu)
+        repeat
+            w1 := pseudoRem(xu, yu, mu)
+            zero?(w1) =>
+                return canonicalIfCan(yu, mu)
+            xu := yu
+            yu := w1
+
+    SmpTerm ==> Record(k : NonNegativeInteger, c : MP)
+    VPoly ==>  Record(v: Symbol, ts: List SmpTerm)
+    SmpRep ==>  Union(Integer, VPoly)
+
+    Qmul ==> QSMULMOD32$Lisp
+    Qmuladd ==> QSMULADDMOD64_-32$Lisp
+
+    import U32VectorPolynomialOperations
+
+    eval1a(pol : MP, pt : Integer, pss : PSS) : Integer ==
+        p := pss.prime
+        polr := pol pretend SmpRep
+        polr case Integer =>
+            return polr
+        polu : List SmpTerm := polr.ts
+        i : SingleInteger := 0
+        coeffs := pss.eval1coeffbuf
+        exps := pss.eval1expbuf
+        n := #coeffs
+        ns := n pretend SingleInteger
+        for t0 in polu repeat
+            if not(i < ns) then
+                nn := 2*n
+                ncoeffs := new(nn, 0)$PA
+                copy_first(ncoeffs, coeffs, n)
+                coeffs := ncoeffs
+                pss.eval1coeffbuf := coeffs
+                nexps := new(nn, 0)$SortedExponentVector
+                copy_first(nexps pretend PA, exps pretend PA, n)
+                exps := nexps
+                pss.eval1expbuf := exps
+                n := nn
+                ns := n pretend SingleInteger
+            t1 := t0.c pretend SmpRep
+            exps(i) := t0.k
+            if t1 case Integer then
+                coeffs(i) := t1
+            else
+                error "More than one variable in eval1a"
+            i := i + 1
+        res : Integer := 0
+        ptk : Integer := 1
+        pk : SingleInteger := 0
+        for j in (i - 1)..0 by -1 repeat
+            ki := exps(j) pretend SingleInteger
+            while pk < ki repeat
+                ptk := Qmul(ptk, pt, p)
+                pk := pk + 1
+            res := Qmuladd(ptk, coeffs(j), res, p)
+        res
+
+    eval1(pol : MP, vv : Symbol, pt : Integer, pss : PSS) : MP ==
+        polr := pol pretend SmpRep
+        polr case Integer => return pol
+        vx : Symbol := polr.v
+        vx = vv => return eval1a(pol, pt, pss)::MP
+        xu : List SmpTerm := polr.ts
+        yu : List SmpTerm := []
+        c1 : MP
+        for t0 in xu repeat
+            t1 := t0.c pretend SmpRep
+            t1 case Integer => yu := cons([t0.k, t0.c], yu)
+            c1 := eval1(t0.c, vv, pt, pss)
+            c1 = 0 => 0
+            yu := cons([t0.k, c1], yu)
+        xr : SmpRep := 
+            yu = [] => 0
+            [vx, reverse! yu]
+        (SETF$Lisp)(xr, xr) pretend MP
+
+
+    VMR ==> VectorModularReconstructor
+    IMODHP ==> InnerModularHermitePade
+
+    compare_coeff1(nv : Integer, exps : SortedExponentVector, _
+                   nexps : SortedExponentVector) : Integer ==
+        ne := #exps quo nv - 1
+        nn := #nexps quo nv - 1
+        for i in 0..(nv - 1) repeat
+            nexps(nn + i) < exps(ne + i) => return -1
+            nexps(nn + i) > exps(ne + i) => return 1
+        0
+
+    algebraicGcd1(x : MP, y : MP, lm : List(MP), pss : PSS
+                 ) : Union(PDR, "failed") ==
+        p := pss.prime
+        vx := pss.svx
+        lvz := pss.svz
+        mdp := pack_modulus(lm, lvz, p)
+        mdp case "failed" => "failed"
+        mu := mdp::MD 
+        pres := algebraicGcd1a(x, y, mu, vx, lvz)
+        pres case "failed" => "failed"
+        res1 := pres::MPT
+        dg := degree(res1)
+        dg > pss.degg => "failed"
+        msize := pss.sizem
+        if dg < pss.degg then
+            pss.degg := dg
+            nsize := ((dg + 1)*msize) pretend NonNegativeInteger
+            pss.expdata := pack_exps(dg, msize, mu)
+            pss.coeffdata := new(nsize, 0)$PA
+        repack1(res1, pss.coeffdata, dg, mu)
+        offsets := pss.offsetdata
+        [1, offsets, pss.expdata, pss.coeffdata]$PDR
+
+    algebraicGcd2(x : MP, y : MP, lm : List(MP), lv : List SY, pss : PSS
+                 ) : Union(PDR, "failed") ==
+        nv := #lv
+        nv = 0 => algebraicGcd1(x, y, lm, pss)
+        p := pss.prime
+        vx := pss.svx
+        offsets := pss.offsetdata
+        lt : List Integer := []
+        rstate : VMR
+        exps := empty()$SortedExponentVector
+        prev_coeff1 : MP := 0
+        dx := pss.degx
+        dy := pss.degy
+        dg := pss.degg
+        vt := first(lv)
+        nlv := rest(lv)
+        nbv := #pss.svz
+        good_cnt : Integer := 0
+        bad_cnt : Integer := 0
+        repeat
+            t : Integer := random(p)
+            member?(t, lt) => 0
+            lt := cons(t, lt)
+            xt := eval1(x, vt, t, pss)
+            yt := eval1(y, vt, t, pss)
+            lmt := [eval1(m, vt, t, pss) for m in lm]
+            lcbad : Boolean := false
+            for m in lmt for deg in pss.sldeg for z in pss.svz repeat
+                if degree(m, z) < deg then lcbad := true
+            lcbad or (degree(xt, vx) < dx or degree(yt, vx) < dy) =>
+                bad_cnt := bad_cnt + 1
+                bad_cnt > good_cnt + 2 => return "failed"
+            gtfp := algebraicGcd2(xt, yt, lmt, nlv, pss)
+            gtfp case "failed" =>
+                bad_cnt := bad_cnt + 1
+                bad_cnt > good_cnt + 2 => return "failed"
+            gtf := gtfp::PDR
+            nexps := gtf.expdata
+            coeffs := gtf.coeffdata
+            if pss.degg < dg or empty?(exps) then
+                exps := nexps
+                rstate := empty(#coeffs, pss.prime)$VMR
+            if pss.degg < dg then
+                dg := pss.degg
+                bad_cnt := 0
+                good_cnt := 1
+            (cc := compare_coeff1(nv + nbv, exps, nexps)) < 0 =>
+                "iterate"
+            dl := merge_exponents(nv + nbv, offsets, exps, offsets,
+                                   nexps)$IMODHP
+            odl := dl(1)
+            ndl := dl(2)
+            if odl ~= [] then
+                oer := merge2(nv + nbv, odl, ndl, offsets, exps, _
+                              offsets, nexps)$IMODHP
+                exps := oer.expdata
+                -- need reset in case of change of leading exponent
+                ncc := #exps quo (nv + nbv)
+                rstate := empty(ncc::NonNegativeInteger, p)$VMR
+            if ndl ~= [] then
+                -- expand coeffs
+                n0 := #coeffs
+                nn := #ndl
+                n1 := n0 + nn
+                ncoeffs := new(n1, 0)$PA
+                i : Integer := 0
+                jl := first ndl
+                for j in 0..(n1 - 1) repeat
+                    j = jl =>
+                        ncoeffs(j) := 0
+                        ndl := rest ndl
+                        jl :=
+                            empty?(ndl) => n1
+                            first ndl
+                    ncoeffs(j) := coeffs(i)
+                    i := i + 1
+                coeffs := ncoeffs
+
+            chinese_update(coeffs, t, rstate)$VMR
+
+            -- try reconstruction
+            pp := reconstruct(rstate, nv + nbv, offsets, _
+                              offsets, exps)$VMR
+            pp case "failed" => "iterate"
+            -- if succesful return
+            return pp::PDR
+
+
+    base_vars : List Symbol := ['u0, 'u1, 'u2, 'u3, 'u4, 'u5, 'u6, _
+              'u7, 'u8, 'u9, 'v0, 'v1, 'v2, 'v3, 'v4, 'v5, 'v6, 'v7, _
+              'v8, 'v9, 'w0, 'w1, 'w2, 'w3, 'w4, 'w5, 'w6, 'w7, 'w8, 'w9]
+
+    alg_vars : List Symbol := ['p0, 'p1, 'p2, 'p3, 'p4, 'p5, 'p6, _
+              'p7, 'p8, 'p9, 'q0, 'q1, 'q2, 'q3, 'q4, 'q5, 'q6, 'q7, _
+              'q8, 'q9, 'r0, 'r1, 'r2, 'r3, 'r4, 'r5, 'r6, 'r7, 'r8, 'r9]
+
+    param_vars : List Symbol := ['a0, 'a1, 'a2, 'a3, 'a4, 'a5, 'a6, _
+              'a7, 'a8, 'a9, 'b0, 'b1, 'b2, 'b3, 'b4, 'b5, 'b6, 'b7, _
+              'b8, 'b9, 'c0, 'c1, 'c2, 'c3, 'c4, 'c5, 'c6, 'c7, 'c8, 'c9]
+
+    import PrimGCD
+    SMPI ==> SparseMultivariatePolynomial(Integer, Symbol)
+
+    trialDivision2(x : MP, g: MP, lm : List(MP), vx : SY,
+                   lvz : List(SY)) : Boolean ==
+        alg_trial_division(x pretend SMPI, g pretend SMPI,
+                  [m pretend SMPI for m in lm], [vx], lvz)
+
+    VIR ==> VectorIntegerReconstructor
+
+    reconstruct3(lv : List SY, vx : SY, lvz : List(SY),
+                 exps : SortedExponentVector, pp : PAI) : MP ==
+        nlv := concat(lv, reverse(lvz))
+        pres := unpack_poly(nlv, exps, pp, 0, #pp - 1)$ModularHermitePade()
+        multivariate(pres, vx) pretend MP
+
+    algebraicGcd3a(x : MP, y : MP, lm : List(MP), lv : List SY, pss : PSS
+                  ) : MP ==
+        lp : List Integer := []
+        rstate : VIR
+        dx := pss.degx
+        dy := pss.degy
+        dg := pss.degg
+        vx := pss.svx
+        lvz := pss.svz
+        nbv := #lvz + 1
+        nv := #lv
+        offsets := pss.offsetdata
+        exps : SortedExponentVector
+        repeat
+            p := (nextPrime$IntegerPrimesPackage(Integer))(random(1000000)
+                    +500000)
+            member?(p, lp) => 0
+            lp := cons(p, lp)
+            pss.prime := p
+            xp := modpreduction(x, p)$IMODHP
+            yp := modpreduction(y, p)$IMODHP
+            (degree(xp, vx) < dx) and (degree(yp, vx) < dy) => "iterate"
+            lmp := [modpreduction(m, p)$IMODHP for m in lm]
+            lcbad : Boolean := false
+            for m in lm for deg in pss.sldeg for z in lvz repeat
+                if degree(m, z) < deg then lcbad := true
+            lcbad => "iterate"
+            gtpp := algebraicGcd2(xp, yp, lmp, lv, pss)
+            gtpp case "failed" => "iterate"
+            gtp := gtpp::PDR
+            nexps := gtp.expdata
+            coeffs := gtp.coeffdata
+            if pss.degg < dg or empty?(exps) then
+                exps := nexps
+                rstate := empty(#coeffs)
+            if pss.degg < dg then
+                dg := pss.degg
+            dl := merge_exponents(nv + nbv, offsets, exps, offsets,
+                                   nexps)$IMODHP
+            odl := dl(1)
+            ndl := dl(2)
+            if odl ~= [] then
+                oer := merge2(nv + nbv, odl, ndl, offsets, exps, _
+                              offsets, nexps)$IMODHP
+                offsets := oer.offsetdata
+                exps := oer.expdata
+                -- need reset in case of change of leading exponent
+                ncc := #exps quo (nv + nbv)
+                rstate := empty(ncc::NonNegativeInteger)$VIR
+            if ndl ~= [] then
+                -- expand coeffs
+                n0 := #coeffs
+                nn := #ndl
+                n1 := n0 + nn
+                ncoeffs := new(n1, 0)$PA
+                i : Integer := 0
+                jl := first ndl
+                for j in 0..(n1 - 1) repeat
+                    j = jl =>
+                        ncoeffs(j) := 0
+                        ndl := rest ndl
+                        jl :=
+                            empty?(ndl) => n1
+                            first ndl
+                    ncoeffs(j) := coeffs(i)
+                    i := i + 1
+                coeffs := ncoeffs
+
+            chinese_update(coeffs, p, rstate)$VIR
+
+            pp := reconstruct(rstate, offsets)$VIR
+            pp case "failed" => "iterate"
+            res := reconstruct3(lv, vx, lvz, exps, pp::PAI)
+            if trialDivision2(x, res, lm, vx, lvz) and 
+               trialDivision2(y, res, lm, vx, lvz) then
+                return res
+
+    algebraicGcd(x, y, lm, lv, vx, lvz) ==
+        n := #lv
+        na := #lvz
+        n > 30 => error "Too many variables"
+        tv0 := first(param_vars, n)
+        tvx := first base_vars
+        tvz := reverse(first(alg_vars, na))
+        tv := concat(tvz, tv0)
+        tv := cons(tvx, tv)
+        sv := cons(vx, concat(lvz, lv))
+        tval := [monomial(1, v, 1) for v in tv]@List(MP)
+        nx := eval(x, sv, tval)
+        ny := eval(y, sv, tval)
+        nlm := [eval(m, sv, tval) for m in lm]
+        ldeg : List(Integer) := [degree(m, vz) for m in lm for vz in lvz]
+        msize := reduce(_*, ldeg, 1)
+        pss : PSS := [degree(nx, tvx), degree(ny, tvx), 0, msize, ldeg, _
+                    empty(), empty(), new(10, 0)$PA, _
+                    new(10, 0)$SortedExponentVector, tvx, tvz, [0]$VI, 0]
+        -- Overestimate
+        pss.degg := min(pss.degx, pss.degy) + 1
+        ress := algebraicGcd3a(nx, ny, nlm, tv0, pss)
+        sval := [monomial(1, v, 1) for v in sv]@List(MP)
+        eval(ress, tv, sval)
+
+@
+
+<<package MAGCDT2 ModularAlgebraicGcdTools2>>=
+)abbrev package MAGCDT2 ModularAlgebraicGcdTools2
+-- Support for modular algebraic GCD, case of single extension
+-- using U32VectorPolynomialOperations
+ModularAlgebraicGcdTools2: Exports == Implementation where
+  MP ==> Polynomial Integer
+  PA ==> U32Vector
+  MD ==> Record(svz : Symbol, sm : PA, sp : Integer)
+  PPA ==> PrimitiveArray(PA)
+  Exports ==> ModularAlgebraicGcdOperations(PPA, MD)
+  Implementation ==> add
+
+    import U32VectorPolynomialOperations
+
+    modInverse ==> invmod
+
+    pack_modulus(lm : List(MP), lvz : List(Symbol), p : Integer
+                ) : Union(MD, "failed") ==
+        #lvz ~= 1 => error("unsupported")
+        #lvz ~= #lm => error("pack_modulus: #lvz ~= #lm")
+        vz := first(lvz)
+        m := to_mod_pa(univariate(first(lm)), p)
+        [vz, m, p]
+
+    pack_exps(dg : Integer, msize : Integer, mu : MD
+             ) : SortedExponentVector ==
+        nsize := ((dg + 1)*msize) pretend NonNegativeInteger
+        exps := new(2*nsize, 0)$SortedExponentVector
+        for i in 0..dg repeat
+            for j in 0..(msize - 1) repeat
+                ii := i*msize + j
+                exps(2*ii) := i
+                exps(2*ii + 1) := j
+        exps
+
+    repack1(res0 : PPA, coeffs : PA, dg : Integer, mu : MD) : Void ==
+        vz := mu.svz
+        msize := degree(mu.sm)
+        for i in 0..dg repeat
+            ci := res0(i)
+            di := degree(ci)
+            for j in 0..(msize - 1) repeat
+                ii := i*msize + j
+                j <= di => coeffs(ii) := ci(j)
+                coeffs(ii) := 0
+
+    MPtoMPT(x : MP, ivx : Symbol, ivz : List(Symbol), mu : MD) : PPA ==
+        vz : Symbol := mu.svz
+        p := mu.sp
+        xu : SparseUnivariatePolynomial(MP) := univariate(x, ivx)$MP
+        zz := new(1, 0)$PA
+        res : PPA := new(degree(xu) + 1, zz)
+        while xu ~= 0 repeat
+            cl := leadingCoefficient(xu)
+            k := degree(xu)
+            res(k) := to_mod_pa(univariate(cl), p)
+            xu := reductum xu
+        res
+
+    is_zero?(v : PA) : Boolean ==
+        n := #v
+        for i in (n - 1)..0 by -1 repeat
+            v(i) ~= 0 => return false
+        true
+
+    zero?(v : PPA) : Boolean == degree(v) = -1
+
+    degree(v : PPA) : Integer ==
+        n := #v
+        for i in (n - 1)..0 by -1 repeat
+            not(is_zero?(v(i))) => return i
+        -1
+
+    leadingCoefficient(v : PPA) : PA ==
+        n := #v
+        for i in (n - 1)..0 by -1 repeat
+            not(is_zero?(pp := v(i))) => return(pp)
+        new(1, 0)$PA
+
+    Qmul ==> QSMULMOD32$Lisp
+
+    canonicalIfCan(x : PPA, mu : MD) : Union(PPA, "failed") ==
+        m := mu.sm
+        p := mu.sp
+        cl := leadingCoefficient(x)
+        rr := extended_gcd(cl, m, p)
+        rr1 := first(rr)
+        degree(rr1) ~= 0 => "failed"
+        rr1(0) ~= 1 => "failed"
+        icl := rr(2)
+        dx := degree(x)
+        res := new((dx + 1) pretend NonNegativeInteger, x(0))$PPA
+        for l in 0..(dx - 1) repeat
+            pp := mul(icl, x(l), p)
+            remainder!(pp, m, p)
+            dpp := degree(pp)
+            dnpp : Integer := (dpp < 0 => 0; dpp)
+            npp := new((dnpp + 1) pretend NonNegativeInteger, 0)$PA
+            copy_first(npp, pp, dpp + 1)
+            res(l) := npp
+        res(dx) := new(1, 1)$PA
+        res
+
+    pseudoRem(x : PPA, y : PPA, mu : MD) : PPA ==
+      i : Integer := degree(x)
+      j : Integer := degree(y)
+      j = 0 => new(1, new(1, 0)$PA)$PPA
+      i < j => x
+      cy := leadingCoefficient(y)
+      c := leadingCoefficient(x)
+      i1 := (i - 1) pretend NonNegativeInteger
+      res := new(i1 + 1, qelt(x, 0))$PPA
+      m := mu.sm
+      p := mu.sp
+      del := (i - j) pretend NonNegativeInteger
+      for l in 0..(del - 1) repeat
+          pp1 := mul(cy, x(l), p)
+          remainder!(pp1, m, p)
+          degpp1 := degree(pp1)
+          degnpp1 : Integer := (degpp1 < 0 => 0; degpp1)
+          npp1 := new((degnpp1 + 1) pretend NonNegativeInteger, 0)$PA
+          copy_first(npp1, pp1, degpp1 + 1)
+          res(l) := npp1
+      for l in 0..(j - 1) repeat
+          l1 := l + del
+          pp1 := mul(cy, x(l1), p)
+          pp2 := mul(c, y(l), p)
+          dp1 := degree(pp1)
+          dp2 := degree(pp2)
+          if dp1 >= dp2 then
+              vector_add_mul(pp1, pp2, 0, dp2, p - 1, p)
+          else
+              vector_add_mul(pp2, pp1, 0, dp1, p - 1, p)
+              mul_by_scalar(pp2, dp2, p - 1, p)
+              pp1 := pp2
+          remainder!(pp1, m, p)
+          degpp1 := degree(pp1)
+          degnpp1 : Integer := (degpp1 < 0 => 0; degpp1)
+          npp1 := new((degnpp1 + 1) pretend NonNegativeInteger, 0)$PA
+          copy_first(npp1, pp1, degpp1 + 1)
+          res(l1) := npp1
+      res
+
+@
+
+<<package MAGCDT3 ModularAlgebraicGcdTools3>>=
+)abbrev package MAGCDT3 ModularAlgebraicGcdTools3
+-- Support for modular algebraic GCD, case of multiple extensions.
+ModularAlgebraicGcdTools3: Exports == Implementation where
+  MP ==> Polynomial Integer
+  MD ==> Record(svz : List(Symbol), sm : List(MP), msizes : List(Integer),
+                sp : Integer)
+  MPU ==> SparseUnivariatePolynomial(MP)
+  PA ==> U32Vector
+  Exports ==> ModularAlgebraicGcdOperations(MPU, MD) with
+      m_inverse : (MP, List(MP), List(Symbol), Integer) -> Union(MP, "failed")
+        ++ m_inverse(x, lm, lv, p) computes inverse of x in algeraic
+        ++ extension defined by lm.
+      pack_exps0 : (SortedExponentVector, List(Integer), Integer,
+                    Integer) -> Void
+        ++ pack_exps0(exps, sizes, ns, start) is used by
+        ++ pack_exps.
+
+  Implementation ==> add
+
+    modInverse ==> invmod
+
+    mreduction1 : (MP, List(MP), List(Symbol), Integer) -> MP
+
+    pack_modulus1(lm : List(MP), lvz : List(Symbol), p : Integer
+                 ) : Union(List(MP), "failed") ==
+        v1 := first(lvz)
+        m1 := first(lm)
+        #lm = 1 =>
+            mm := univariate(m1)
+            cc := leadingCoefficient(mm)
+            cc = 0 => "failed"
+            icc := modInverse(cc, p)
+            resu := map((c : Integer) : Integer +-> positiveRemainder(c, p),
+                        icc*mm)
+            [multivariate(resu, v1)]
+        lv1 := rest(lvz)
+        lm1u := pack_modulus1(rest(lm), lv1, p)
+        lm1u case "failed" => "failed"
+        lm1 := lm1u::List(MP)
+        m1u := univariate(first(lm), v1)
+        c0 := leadingCoefficient(m1u)
+        ic0u := m_inverse(c0, lm1, lv1, p)
+        ic0u case "failed" => "failed"
+        ic0 := ic0u::MP
+        res1u := map((c : MP) : MP +-> mreduction1(c, lm1, lv1, p), ic0*m1u)
+        cons(multivariate(res1u, v1), lm1)
+
+    pack_modulus(lm : List(MP), lvz : List(Symbol), p : Integer
+                ) : Union(MD, "failed") ==
+        #lvz ~= #lm => error("pack_modulus: #lvz ~= #lm")
+        nlmu := pack_modulus1(lm, lvz, p)
+        nlmu case "failed" => "failed"
+        ldeg := [degree(m, v) for m in lm for v in lvz]
+        sizes : List(Integer) := []
+        msize := 1$Integer
+        for deg in reverse(ldeg) repeat
+            msize := deg*msize
+            sizes := cons(msize, sizes)
+        [lvz, nlmu::List(MP), sizes, p]
+
+    pack_exps0(exps : SortedExponentVector, sizes : List(Integer),
+               ns : Integer, start : Integer) : Void ==
+        rsiz := rest(sizes)
+        do_rec := not(empty?(rsiz))
+        size1 := first(sizes)
+        msize :=
+            do_rec => first(rsiz)
+            1
+        deg := size1 quo msize
+        for i in 0..(deg - 1) repeat
+            nstart := start + ns*i*msize
+            for j in 0..(msize - 1) repeat
+                exps(nstart+j*ns) := i
+            if do_rec then
+                pack_exps0(exps, rsiz, ns, nstart + 1)
+
+    pack_exps(dg : Integer, msize : Integer, mu : MD
+             ) : SortedExponentVector ==
+        sizes := mu.msizes
+        msize := first(sizes)
+        size0 := (dg + 1)*msize
+        ns := #sizes+1
+        nsize := (ns*size0) pretend NonNegativeInteger
+        exps := new(nsize, 0)$SortedExponentVector
+        pack_exps0(exps, cons(size0, sizes), ns, 0) 
+        exps
+
+
+    repack0(res0 : MPU, coeffs : PA, start : Integer, lv : List(Symbol),
+            sizes : List(Integer)) : Void ==
+        empty?(lv) =>
+            while not(res0 = 0) repeat
+                j := degree(res0)
+                cc := ground(leadingCoefficient(res0))
+                coeffs(start + j) := cc
+                res0 := reductum(res0)
+            void()
+        v1 := first(lv)
+        nlv := rest(lv)
+        msize := first(sizes)
+        nsizes := rest(sizes)
+        while not(res0 = 0) repeat
+            j := degree(res0)
+            repack0(univariate(leadingCoefficient(res0), v1), coeffs,
+                    start + j*msize, nlv, nsizes)
+            res0 := reductum(res0)
+
+    repack1(res00 : MPU, coeffs : PA, dg : Integer, mu : MD) : Void ==
+        lv := mu.svz
+        sizes := mu.msizes
+        msize := first(sizes)
+        for i in 0..((dg+1)*msize - 1) repeat
+            coeffs(i) := 0
+        repack0(res00, coeffs, 0, lv, sizes)
+
+    MPtoMPT(x : MP, ivx : Symbol, ivz : List(Symbol), mu : MD) : MPU ==
+        univariate(x, ivx)
+
+    zero?(x : MPU) : Boolean == x = 0
+
+    degree(x : MPU) : Integer == degree(x)$MPU
+
+    -- reduce x with respect to the triangular system lm
+    mreduction1(x : MP, lm : List(MP), lv : List(Symbol), p : Integer) : MP ==
+        empty?(lm) =>
+            cc := ground(x)
+            positiveRemainder(cc, p)::MP
+        m1 := first(lm)
+        v1 := first(lv)
+        um1 := univariate(m1, v1)
+        rm := reductum(um1)
+        dm1 := degree(um1)
+        ux := univariate(x, v1)
+        dx : Integer
+        while not((dx := degree(ux)) < dm1) repeat
+            c := leadingCoefficient(ux)
+            c := mreduction1(c, rest(lm), rest(lv), p)
+            ux := reductum(ux) - monomial(c, (dx - dm1) pretend NonNegativeInteger)*rm
+        ux := map((c : MP) : MP +-> mreduction1(c, rest(lm), rest(lv), p), ux)
+        multivariate(ux, v1)
+
+    mreduction(x : MPU, mu : MD) : MPU ==
+        lm := mu.sm
+        lv := mu.svz
+        p := mu.sp
+        map((c : MP) : MP +-> mreduction1(c, lm, lv, p), x)
+
+    extended_gcd(x : MPU, y : MPU, lm : List(MP), lv : List(Symbol),
+                 p : Integer) : List(MPU) ==
+        -- invariant r0 = s0*x + t0*y, r1 = s1*x + t1*y
+        r0 := map((c : MP) : MP +-> mreduction1(c, lm, lv, p), x)
+        s0 := 1$MPU
+        t0 := 0$MPU
+        r1 := map((c : MP) : MP +-> mreduction1(c, lm, lv, p), y)
+        s1 := 0$MPU
+        t1 := 1$MPU
+        while (dr1 := degree(r1)) > 0 repeat
+            c1 := leadingCoefficient(r1)
+            while (dr0 := degree(r0)) >= dr1 repeat
+                c0 := leadingCoefficient(r0)
+                c0 := mreduction1(c0, lm, lv, p)
+                cm := monomial(c0, (dr0 - dr1) pretend NonNegativeInteger)$MPU
+                r0 := c1*reductum(r0) - cm*reductum(r1)
+                s0 := c1*s0 - cm*s1
+                t0 := c1*t0 - cm*t1
+            r0 := map((c : MP) : MP +-> mreduction1(c, lm, lv, p), r0)
+            s0 := map((c : MP) : MP +-> mreduction1(c, lm, lv, p), s0)
+            t0 := map((c : MP) : MP +-> mreduction1(c, lm, lv, p), r0)
+            (r0, r1) := (r1, r0)
+            (s0, s1) := (s1, s0)
+            (t0, t1) := (t1, t0)
+        r1 = 0 => return [r0, s0, t0]
+        return [r1, s1, t1]
+
+    m_inverse(x : MP, lm : List(MP), lv : List(Symbol), p : Integer
+             ) : Union(MP, "failed") ==
+        empty?(lm) =>
+            cc : Integer := ground(x)
+            cc = 0 => "failed"
+            modInverse(cc, p)::MP
+        m1 := first(lm)
+        v1 := first(lv)
+        lm1 := rest(lm)
+        lv1 := rest(lv)
+        um1 := univariate(m1, v1)
+        ux := univariate(x, v1)
+        ee := extended_gcd(ux, um1, lm1, lv1, p)
+        c0 := ee(1)
+        degree(c0) > 0 => "failed"
+        ic0u := m_inverse(ground(c0), lm1, lv1, p)
+        ic0u case "failed" => "failed"
+        ic0 := ic0u::MP
+        res1 := multivariate(ic0*ee(2), v1)
+        mreduction1(res1, lm, lv, p)
+
+    canonicalIfCan(x : MPU, mu : MD) : Union(MPU, "failed") ==
+        lm := mu.sm
+        lv := mu.svz
+        p := mu.sp
+        cl : MP := leadingCoefficient(x)
+        rr := m_inverse(cl, lm, lv, p)
+        rr case "failed" => "failed"
+        mreduction((rr::MP)*x, mu)
+
+    pseudoRem(x : MPU, y : MPU, mu : MD) : MPU ==
+        i : Integer := degree(x)
+        j : Integer := degree(y)
+        j = 0 => 0
+        i < j => x
+        cy : MP := leadingCoefficient(y)
+        c := leadingCoefficient(x)
+        cm := c*monomial(1, (i - j) pretend NonNegativeInteger)
+        if i > j then
+            ccx := leadingCoefficient(reductum(x))
+            cmm := monomial(1, (i - j - 1) pretend NonNegativeInteger)
+            ccy := leadingCoefficient(reductum(y))
+            c2 := cy*ccx - c*ccy
+            cm := mreduction(cy*cm + c2*cmm, mu)
+            cy := mreduction1(cy*cy, mu.sm, mu.svz, mu.sp)
+        x := cy*x - cm*y 
+        mreduction(x, mu)
+
+@
+
