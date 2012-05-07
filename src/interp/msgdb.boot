@@ -93,13 +93,9 @@ wordFrom(l,i) ==
   maxIndex := MAXINDEX l
   k := or/[j for j in i..maxIndex | l.j ~= char ('_ ) ] or return nil
   buf := '""
-  while k < maxIndex and (c := l.k) ~= char ('_ ) repeat
-    ch :=
-      c = char '__   => l.(k := 1+k)  --this may exceed bounds
-      c
-    buf := STRCONC(buf,ch)
+  while k <= maxIndex and (c := l.k) ~= char ('_ ) repeat
+    buf := STRCONC(buf,c)
     k := k + 1
-  if k = maxIndex and (c := l.k) ~= char ('_ ) then buf := STRCONC(buf,c)
   [buf,k+1]
 
 DEFPARAMETER($msg_hash, nil)
