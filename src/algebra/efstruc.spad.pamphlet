@@ -334,22 +334,32 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
                 (u := logDependenceQ([toQ (lk)], q)) case Vector(Q) => [u::Vector(Q)]
                 [true]
             kerF := ker :: F
-            #lz = 1 and F is Expression(R) and R has ConvertibleTo(Float) _
-                and R has IntegralDomain and R has OrderedSet =>
-              Fratio : F := kerF/log(lz.1)
-              (fratio := numericIfCan(Fratio, 20)$Numeric(R)) case Float =>
-                qratio := rationalApproximation(fratio::Float, 8)
-                nd : Integer
-                nq : Integer
-                (abs(fratio/(qratio::Float)-1.0) > 1.0e-16) _
-                  or (abs(nq := numer(qratio)) > 100) _
-                  or (abs(nd := denom(qratio)) > 100) => [true]
-                kertond := (argument(ker).1)^nd
-                lz1tonq := (lz.1)^nq
-                (kertond = lz1tonq) =>
-                    [vector([qratio])$Vector(Q)]
+            F is Expression(R) and R has ConvertibleTo(Float) _
+              and R has IntegralDomain and R has OrderedSet =>
+                m := #lz
+                for z1 in lz for i in 1..m repeat
+                    Fratio : F := kerF/log(z1)
+                    (fratio := numericIfCan(Fratio, 20)$Numeric(R) _
+                         ) case Float =>
+                        qratio := rationalApproximation(fratio::Float, 8)
+                        nd : Integer
+                        nq : Integer
+                        (abs(fratio/(qratio::Float)-1.0) > 1.0e-16) _
+                          or (abs(nq := numer(qratio)) > 100) _
+                          or (abs(nd := denom(qratio)) > 100) => "iterate"
+                        kertond := (argument(ker).1)^nd
+                        nq > 0 =>
+                            lz1tonq := z1^nq
+                            (kertond = lz1tonq) =>
+                                vv := zero(m)$Vector(Q)
+                                qsetelt!(vv, i, qratio)
+                                return [vv]
+                        lz1tonq := (z1)^(-nq)
+                        kertond*lz1tonq = 1 =>
+                            vv := zero(m)$Vector(Q)
+                            qsetelt!(vv, i, qratio)
+                            return [vv]
                 [true]
-              [true]
             [true]
         lpars0 : List K := transkers(lk)
         lpars1 : List Symbol := [new()$Symbol for k in lpars0]
@@ -654,11 +664,14 @@ height(k1) to be maximal
 
     logeval(f, lk, k, v) ==
       z := first argument k
-      c := z / (*/[x^qelt(v, i)
+      dd := lcm([denom(qelt(v, i))$Q for i in minIndex v .. maxIndex v
+                ]$List(Z))
+      c := z^dd / (*/[x^(dd*qelt(v, i))
                    for x in toZ lk for i in minIndex v .. maxIndex v])
 -- CHANGED log ktoZ x TO ktoY x SINCE WE WANT log exp f TO BE REPLACED BY f.
       g := +/[qelt(v, i) * x
-              for i in minIndex v .. maxIndex v for x in toY lk] + log c
+              for i in minIndex v .. maxIndex v for x in toY lk]
+                + log(c)/(dd::R::F)
       [eval(f, [k], [g]), [k], [g]]
 
     rischNormalize(f : F, vars : List SY) : REC ==
