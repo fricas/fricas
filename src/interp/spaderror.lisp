@@ -77,6 +77,14 @@
     `(handler-case (cons 0 ,form)
          (arithmetic-error () |$numericFailure|)))
 
+(defmacro |trappedSpadEval| (form)
+  `(let ((|$BreakMode| '|trapSpadErrors|))
+       (catch '|trapSpadErrors| (cons 0 ,form))))
+
+(defmacro |trappedSpadEvalUnion| (form)
+  `(let ((|$BreakMode| '|trapSpadErrors|))
+       (catch '|trapSpadErrors| ,form)))
+
 ;;;;;; considering this version for kcl
 ;;(defmacro |trapNumericErrors| (form)
 ;;   `(let ((val))

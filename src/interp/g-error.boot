@@ -66,6 +66,7 @@ queryUser msg ==
 -- errorSupervisor is the old style error message trapper
 
 errorSupervisor(errorType,errorMsg) ==
+  $BreakMode = 'trapSpadErrors => THROW('trapSpadErrors, $numericFailure)
   errorSupervisor1(errorType,errorMsg,$BreakMode)
 
 errorSupervisor1(errorType,errorMsg,$BreakMode) ==

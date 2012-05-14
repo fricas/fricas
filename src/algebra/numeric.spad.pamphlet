@@ -230,7 +230,9 @@ Numeric(S:ConvertibleTo Float): with
 
     if S has OrderedSet then
       numericIfCan(x:Expression S) ==
-        retractIfCan(map(convert, x)$ExpressionFunctions2(S, Float))
+          trappedSpadEvalUnion(
+            retractIfCan(map(convert, x)$ExpressionFunctions2(S, Float))
+              )$Lisp
 
       --s2cs(u:S):Complex(S) == complex(u,0)
 
@@ -238,11 +240,12 @@ Numeric(S:ConvertibleTo Float): with
          complexNumericIfCan map(coerce, x)$ExpressionFunctions2(S,Complex S)
 
       numericIfCan(x:Expression S, n:PositiveInteger) ==
-        old := digits(n)$Float
-        x' : Expression Float := map(convert, x)$ExpressionFunctions2(S, Float)
-        ans : Union(Float,"failed") := retractIfCan x'
-        digits(old)$Float
-        ans
+        old := bits()$Float
+        try
+            digits(n)$Float
+            numericIfCan(x)
+        finally
+            bits(old)$Float
 
       complexNumericIfCan(x:Expression S, n:PositiveInteger) ==
         old := digits(n)$Float
