@@ -900,7 +900,9 @@ might not re-evaluate the operator.
     iiHypergeometricF : List F -> F
       ++ iiHypergeometricF(l) should be local but conditional;
     iiPolylog : (F, F) -> F
-      ++ iiPolylog(x) should be local but conditional;
+      ++ iiPolylog(x, s) should be local but conditional;
+    iLambertW : F -> F
+      ++ iLambertW(x) should be local but conditional;
 
   Implementation ==> add
 
@@ -919,7 +921,6 @@ might not re-evaluate the operator.
     iiiBesselY  : (F, F) -> F
     iiiBesselI  : (F, F) -> F
     iiiBesselK  : (F, F) -> F
-    iLambertW : F -> F
     iPolylog : List F -> F
 
     iWeierstrassP : (F, F, F) -> F
@@ -1886,9 +1887,15 @@ might not re-evaluate the operator.
         iAiryBi x == kernel(opAiryBi, x)
         iAiryBiPrime x == kernel(opAiryBiPrime, x)
 
-    iLambertW(x) ==
-        zero?(x) => 0
-        kernel(opLambertW, x)
+    if F has ElementaryFunctionCategory then
+        iLambertW(x) ==
+            zero?(x) => 0
+            x = exp(1$F) => 1$F
+            kernel(opLambertW, x)
+    else
+        iLambertW(x) ==
+            zero?(x) => 0
+            kernel(opLambertW, x)
 
     if F has ElementaryFunctionCategory then
         if F has LiouvillianFunctionCategory then
