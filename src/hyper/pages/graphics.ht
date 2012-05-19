@@ -3,7 +3,7 @@
 % All rights reserved
 
 % Graphics Page
-% @(#)graphics.ht       1.9 91/05/29 15:31:14
+% @(#)graphics.ht 1.9 91/05/29 15:31:14
 %%%%%%%%%%%
 %% Pages %%
 %%%%%%%%%%%
@@ -133,11 +133,27 @@ extent where the graphical objects exist. This allows the export code, for
 example, to have an area to draw the graphics in.
 \begin{verbatim}
 createSceneRoot:() -> %
-createSceneRoot:(bb: BOUNDS) -> %
+createSceneRoot:(bb: SBoundary(PT)) -> %
 createSceneRoot:(minx:I,miny:I,maxx:I,maxy:I) -> %
 \end{verbatim}
-Where: BOUNDS==> Record(mins:PT,maxs:PT)
-Gives the maximum and minimum extent of the drawing area.
+The parameters define the boundary. This bounding box is intended to
+be the area or volume in which the graphical objects are drawn,
+elements of the geometry outside this area will not necessarily
+be clipped (to be sure use a clipping node with the same boundary).
+The bounding box in the root node has these additional effects: 
+\newline
+When exported to a drawing or editing application this defines
+the default area available for display of the graphics on the screen.
+\newline
+It allows some elements such as line widths, font sizes, width of
+arrow heads and so on to be scaled so that they are of an
+appropriate size for the overall screen area. In mathematical
+terms a line has no width but when drawing it we need to give
+it a nominal width so that it can be seen.
+\newline
+If the first version (without boundary information) is used then
+the boundary will be calculated, to include all the nodes, when
+the scene is first drawn to a file.
 \endscroll
 \autobuttons \end{page}
 
@@ -228,10 +244,10 @@ Clip Node
 Constructs a clip node, clips its sub nodes in the coordinate
  system in force at the clip node.
 \begin{verbatim}
-createSceneClip:(bb: BOUNDS) -> %
-addSceneClip:(n:%,bb: BOUNDS) -> %
+createSceneClip:(bb: SBoundary(PT)) -> %
+addSceneClip:(n:%,bb: SBoundary(PT)) -> %
 \end{verbatim}
-where: BOUNDS ==> Record(mins:SCartesian(2),maxs:SCartesian(2))
+where: bb is the boundary that the node is clipped to. 
 \endscroll
 \autobuttons \end{page}
 
@@ -306,8 +322,8 @@ lines given by the step parameter.\newline
 level of subdivision.\newline
 "HOUSE"::Symbol: constructs a house shape.\newline
 \begin{verbatim}
-createScenePattern(ptype:Symbol,step:NNI,bb: BOUNDS): %
-addScenePattern(n:%,ptype:Symbol,step:NNI,bb: BOUNDS):%
+createScenePattern(ptype:Symbol,step:NNI,bb: SBoundary(PT)): %
+addScenePattern(n:%,ptype:Symbol,step:NNI,bb: SBoundary(PT)):%
 \end{verbatim}
 \endscroll
 \autobuttons \end{page}
@@ -437,12 +453,12 @@ we can use these functions:
 create an XmlElement containing a 'SVG' representation of node 'n' and
 the nodes below it:
 \begin{verbatim}
-toSVG:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
+toSVG:(n:%,mat:MATERIAL,tran:TR,bb: SBoundary(PT)) -> XmlElement
 \end{verbatim}
 Create an XmlElement containing a 'X3D' representation of node 'n' and
 the nodes below it:
 \begin{verbatim}
-toX3D:(n:%,mat:MATERIAL,tran:TR,bb: BOUNDS) -> XmlElement
+toX3D:(n:%,mat:MATERIAL,tran:TR,bb: SBoundary(PT)) -> XmlElement
 \end{verbatim}
 Creates .OBJ (Wavefront) structures from scenegraph tree structure called
 recursively for each node, so when called on root node in scenegraph
@@ -452,7 +468,7 @@ they will be set.
 \begin{verbatim}
 toObj:(n:%,ptLst: Reference List PT,_
       indexLst:Reference List List NNI,_
-      indexNxt:Reference NNI,tran:TR,bb: BOUNDS) -> Void
+      indexNxt:Reference NNI,tran:TR,bb: SBoundary(PT)) -> Void
 \end{verbatim}
 \endscroll
 \autobuttons \end{page}
@@ -473,8 +489,7 @@ This contains two points representing the maximum and minimum extent of the
 drawing area or volume. That is mins contains the minimum values of x,y...
 and maxs contains the maximum values of x,y...
 \newline
-\spadpaste{BOUNDS ==> Record(mins:SCartesian(2),maxs:SCartesian(2)) \bound{BOUNDS}}
-\spadpaste{view:BOUNDS := [sipnt(0,-500)$SCartesian(2),sipnt(1200,500)$SCartesian(2)] \bound{view} \free{BOUNDS}}
+\spadpaste{view := boxBoundary(sipnt(0,-500)$SCartesian(2),sipnt(1200,500)$SCartesian(2)) \bound{view} }
 \spadpaste{sc := createSceneRoot(view)$Scene(SCartesian(2)) \bound{sc} \free{view}}
 \spadpaste{gd := addSceneGrid(sc,view)$Scene(SCartesian(2)) \bound{gd} \free{sc view}}
 \newline
@@ -507,7 +522,7 @@ it using material, transform and clip.
              [1::DF,0::DF,0::DF],_
              [0::DF,1::DF,0::DF],_
              [0::DF,0::DF,1::DF]]))$Scene(SCartesian(2))}
-\spadpaste{bb:BOUNDS := [sipnt(100,-400)$SCartesian(2),sipnt(1100,400)$SCartesian(2)]}
+\spadpaste{bb := boxBoundary(sipnt(100,-400)$SCartesian(2),sipnt(1100,400)$SCartesian(2))}
 \spadpaste{bb2 := addSceneClip(tr2,bb)$Scene(SCartesian(2))}
 \spadpaste{ln2 := addPlot1Din2D(bb2,fntan,0..1000::DF,49)$Scene(SCartesian(2))}
 \spadpaste{tx := addSceneText(sc,"sin(theta)",32::NNI,_
