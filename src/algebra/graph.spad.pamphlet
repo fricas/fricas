@@ -26,7 +26,7 @@ For more information and diagrams see:
 \section{Notation}
 This is an implementation mostly of finite directed graphs (finite
 undirected graphs are possible by having arrows in both directions
-and by using UndirectedGraph domain).
+or by using UndirectedGraph domain).
 
 A graph has two parts:
 \begin{itemize}
@@ -34,7 +34,10 @@ A graph has two parts:
 \item A set of 'arrows' or 'edges'
 \end{itemize}
 I will treat all these alternative terms equivalently and may switch
-between them in this document.
+between them in this document. I mostly use 'arrows' for directed
+graphs and 'edges' for undirected. The term 'object' is sometimes
+used to suggest that we ignore any internal structure in the object
+but we use the term 'vertex' more generally.
 
 We need definitions for other graph-related terminology such as
 trees and forest and so on. There tend to be widely accepted
@@ -93,65 +96,141 @@ the arrows are all towards or all away from the root.
 \end{itemize}
 \section{Design Issues}
 So far, only finite graphs are implemented, these all extend the
-category FiniteGraph (FGRPH). I would like this to extend a more
-general Graph (GRPH) category which would include functions such
-as 'neighbours' and 'distance' which are common to both finite and
-infinite graphs. However, at this stage, I don't know how infinite
-graphs would be represented (presumably some inductively defined
-data structure). Therefore I don't know how vertices of the graph
-would be referred too, in the most general case (can they still be
-indexed), so I don't know if the same signature can be used for
-'distance' in the finite and infinite cases. I have therefore left
-this Graph (GRPH) category as a possible future enhancement.
+category FiniteGraph (FGRPH). It would be interesting to find ways
+to encode repetitive or repeating structures in an efficient way,
+to represent infinite graphs, but that is not implemented yet.
 
-For finite graphs, probably the most efficient general representation
-coding of a graph is as a set of external 'objects' (graph is defined
-over a set) together with pairs of indices to represent the arrows.
+We allow:
+\begin{itemize}
+\item multiple arrows between the same vertices,
+\item arrows from a vertex back to itself,
+\item arrows may cross each other.
+\end{itemize}
+There are some disciplines where these are not allowed, for
+example in homology theory there is the concept of
+'planar graphs', but we don't yet support such constraints.
+To support such structures the user would have to enforce such
+constraints externally.
+
+Currently, although graphs can be drawn in a plane, they are not
+constrained to the plane in any way.
+
+We have various implementations of FiniteGraph such as:
+\begin{itemize}
+\item DirectedGraph
+\item UndirectedGraph
+\item WeightedGraph
+\item FunctionGraph
+\item MultifunctionGraph
+\end{itemize}
+The purpose of these is described below:
+
+\section{DirectedGraph and UndirectedGraph}
+
+We start with the concept of a graph as a set of external 'objects'
+(graph defined over a set of some type) together with pairs of
+indices to represent the arrows.
 
 Because the arrows are defined in terms of indices this means that the
 order of the objects becomes important and therefore must be held in a
 list/array rather than a set. The issue of list verses array is a
 performance issue, more of that later.
 
+For DirectedGraph then:
+arrow(x,y) is not necessarily equal to arrow(y,x)
+Whereas for UndirectedGraph then:
+arrow(x,y) = arrow(y,x) so in searches we should always get a match
+regardless of order.
+
+Therefore these domains are represented in the same way, the
+difference being whether order is taken into account when comparing
+arrows.
+
+In the case of UndirectedGraph, when we request a list of all arrows,
+then the list will contain both arrow(x,y) and arrow(y,x) for
+compatibility with DirectedGraph. That is:
+An UndirectedGraph with arrow(x,y) is equivalent to:
+A DirectedGraph with arrow(x,y) and arrow(y,x).
+
+Both DirectedGraph and UndirectedGraph have additional information
+for notation and for drawing diagrams as discussed below.
+
+\section{WeightedGraph}
+
+This domain is the same as directed graph except that each vertex
+and each arrow has additional information (of category
+OrderedAbelianMonoid) to represent its 'weight'. This is used for
+route finding and related operations. Instead of choosing the route
+with the lowest number of hops, this domain chooses the route with
+the lowest overall weight. That is, the weight for a given route is
+the sum of the weights associated with each vertex and each arrow
+that the route passes through.
+
+Currently, only the weights for the arrows and not the weights for
+the vertices are used, I plan to correct this in the future.
+
+\section{FunctionGraph and MultifunctionGraph}
+
+The purpose of these domains is to use graphs to represent various
+types of mapping, including endomaps, maps between different sets,
+Cayley graphs, (and related stuff like Schreier coset graph,
+graphs of permutations and so on). We can do various operations
+such as the coAdjoint and contraAdjoint functions. In addition to
+the graphs themselves representing maps we can also define each
+individual arrow to represent a map (see second order graph
+section below).
+
+Because we are representing mappings we place two additional
+constraints on the graph:
+\begin{itemize}
+\item We have a fixed number of outgoing arrows per vertex.
+\item The ordering of outgoing arrows is significant.
+\end{itemize}
+
+To illustrate the second point imagine a Cayley graph with a
+red arrow and a blue arrow leaving each node, now imagine if,
+on one vertex, we swap the red and blue arrows, this would
+completely change the structure being represented. Chances are
+that it would no longer be a valid group. So ordering preservation
+is very important.
+
+These above constraints mean that these graphs are coded more
+efficiently by using specific domains for them.
+
+In 'FunctionGraph' each vertex has one outgoing arrow and In
+'MultifunctionGraph' each vertex has exactly 'n' outgoing arrows
+where 'n' is the same for every vertex.
+
+They use a different representation where the arrow information
+is directly associated with each vertex. As its name suggests
+'FunctionGraph' can represent a function, a mapping where the
+domain and codomain are the same finite set of objects over which
+it is defined (endomap). 'MultifunctionGraph' can represent
+multiple function graphs such as Cayley graphs. Although these are
+special cases of the general graph, and could have used the general
+coding it is more efficient coding them in this way. They have a
+number of functions which are not applicable to the general case.
+
 It seems to me that there is a complimentary coding of graph where
 the arrows are a set of external objects and each node would be
 defined as two lists of indices: a list of incoming nodes and a list
 of outgoing nodes. I have not implemented this complimentary coding
 because its more complicated and I can't think of a use for it.
-However I have implemented two special related cases:
-\begin{itemize}
-\item FunctionGraph
-\item MultifunctionGraph
-\end{itemize}
-In 'FunctionGraph' each vertex has one outgoing arrow and In
-'MultifunctionGraph' each vertex has exactly 'n' outgoing arrows
-where 'n' is the same for every vertex. These limitations mean that
-they can be coded more efficiently by having the arrow information
-directly associated with each vertex. As its name suggests
-'FunctionGraph' can represent a function, a mapping where the
-domain and codomain are the same finite set of objects over which
-it is defined. 'MultifunctionGraph' can represent multiple function
-graphs such as Cayley graphs. Although these are special cases
-of the general graph, and could have used the general coding it
-is more efficient coding them in this way. They have a number of
-functions which are not applicable to the general case.
 
-The graph structures are concerned with finite graphs, that is
-finite numbers of vertices. It would be interesting to find ways
-to encode repetitive or repeating structures in an efficient way.
+\section{Extra information for Diagrams and Notation}
 
-Now I come to an issue which gives me a lot of concern: the
+Now I come to a contentious issue, the
 representation so far includes only the information required to
 define the pure mathematical structures but there is other
 information associated with graphs which helps to make it more
 human understandable such as names for arrows and diagram
-coordinates. I think this information is very important because
-there are great benefits to human users in being able to 'see'
-the structure in an accessible way. As a general rule I think it
-is important to separate out these issues and as far as I can I
-put the graphics stuff into the graphics framework:
-'scene.spad.pamphlet'. However, in this case, I have not managed
-to separate out these issues.
+coordinates. I think this notaional and graphical information
+is very important because there are great benefits to human users
+in being able to 'see' the structure in an accessible way. As a
+general rule I think it is important to separate out these issues
+and as far as I can I put the graphics stuff into the graphics
+framework: 'scene.spad.pamphlet'. However, in this case, I have
+not managed to separate out these issues.
 
 I did consider creating a wrapper domain, which would be external
 to the graph code, that would allow annotation and coordinate
@@ -209,6 +288,104 @@ the Axiom code library? It seems to me that structures like Tree,
 POSET/lattice are special cases of graph? Also there may be more
 general structures like Closed Cartesian Category (CCC) that should
 be categories in the code library?
+\section{Possible Changes to Structure}
+Currently we have various graph domains, for instance:
+\begin{itemize}
+\item DirectedGraph has a list of vertices together with the arrows
+represented as pairs of indices, like this,
+Rep := Record(objects: List OBJT,arrows:List ARROW)
+This is closest to the usual definition of graphs.
+\item MultifunctionGraph has the outgoing arrows together with
+the vertices, like this,
+Rep := Record(objects: List MFOBJT)
+MFOBJT ==> Record(value:S,next:List NNI,.... )
+\end{itemize}
+The reason that I have used the second type is to allow graphs to
+represent various types of mappings such as Cayley graphs. To do
+this I would like the option to constrain graphs so that:
+\begin{itemize}
+\item We have a fixed number of outgoing arrows per vertex.
+\item The order of outgoing arrows is significant.
+\end{itemize}
+Waldek has suggested that this representation could be more
+efficient for all types of FiniteGraph, but without the constraints,
+I want to keep a version of FiniteGraph with these constraints in
+order to more efficiently represent various mappings including
+Cayley graphs. I also want to be able to represent endomaps as
+graphs and relate that to maps between graphs.
+
+Waldek points out that such constraints are related to regular
+graphs. There are various other regularity conditions and it
+seems unnatural to single out the fixed number of outgoing arrows
+condition and not the others.
+
+So it seems to me that there are 3 possible representations of graph
+under consideration:
+\begin{itemize}
+\item (1) as pairs of vertices (where each pair represents an arrow)
+\item (2) as a list of records containing a vertex and a list of its
+adjacent vertices.
+\item (3) as adjacency matrix.
+\end{itemize}
+Option 2 does look like the coding that would use least memory? It
+also looks like it would be easy to convert to the other forms?  2
+seems like a version of 1 where, all the arrows with a given first
+node are grouped together in a separate list. Also each record in 2
+represents a row in the adjacency matrix. So it is a coding of
+adjacency matrix that is more efficient for sparse matrix (many
+vertices, few arrows) in that zeroes are not stored.
+
+So I can see advantages to converting DirectedGraph to option 2 before we
+try to find efficient algorithms for loop detection, route finding and
+so on. However I do have some concerns so I'm not quite sure. It seems
+like 1 is the canonical form of graph also there seems to be a partial
+symmetry between vertices and arrows that gets lost in 2.
+
+For instance,
+\begin{itemize}
+\item option 1 seems more efficient if we want to iterate through arrows
+while doing some operation on vertices.
+\item option 2 seems more efficient if we want to iterate through vertices
+while doing some operation on arrows.
+\end{itemize}
+Perhaps when working on algorithms there may be possibilities for
+simplification by swapping between these.
+
+Also both Ralf and Franz have advocated putting arrow into a separate
+domain (mainly as a way to have versions with/without notation and
+coordinate info). Another motivation for Franz is for undirected
+graphs and equality of edges is awkward otherwise.
+
+Also Franz believe that the FiniteGraph category should not contain
+specific methods/operations, only declarations common to all graphs,
+and generic operations common to different graph domains can be outsourced
+into packages.
+\section{Wider Structure Issues}
+
+There seem to be lots of structures that are special cases of
+graph (can be represented and drawn as graphs with additional
+restrictions) such as lists, trees,
+POSET, lattice, groups.... Could this be coded in the category
+structure in some way? It seems to cut across existing category
+structure. Or would there just be coercions between these and graphs?
+Also would it make sense to have more general categories? One
+particular category that I would like to implement is closed Cartesian
+category.
+
+On this wiki page there is a box on the right "Graph families defined
+by their automorphisms"
+\url{http://en.wikipedia.org/wiki/Regular_graph}
+Could this make a suitable basis for subtypes of graph?
+
+\section{Mutable and Non-mutable}
+
+These graphs are mutable, this is because graph structures can be
+very big, it would seem awkward and messy to insist that a very
+big graph be entered on one line.
+
+Beyond that I cant think of any particular reason to modify graphs
+once they are constructed, although its possible such a requirement
+could occur in the future.
 \section{Performance Issues}
 There is plenty of scope to improve the code. I have not tested how
 well it scales up (in terms of memory usage and runtime) but I suspect
@@ -237,79 +414,19 @@ runtime), I want to improve the loop detection and routing algorithms
 spanningForestNode for this purpose. Although I think
 spanningForestNode should still be provided as it represents an
 important concept.
-\item Need to improve SVG output. While this is useful, at the moment
-we need to tweak the SVG files produced using a program such as
-Inkscape, It would be possible to produce SVG output that is more
-readable but this first requires improvements to the graphics
-framework: scene.spad.pamphlet
+\item Need to improve SVG output. Reduce crossing arrows and
+overlapping of elements. Implement more sophisticated layout
+algorithms.
 \item I would like two-way graphical interaction by the user, so
 for instance, a user could drag a vertex and its arrows would
 move with it. This type of interaction is not possible by
 writing code in SPAD.
-\item Add domain parameter of type OrderedAbelianMonoid to weights
-to be other than NNI, in particular doubleFloat.
-\item Allow nodes to have weights in addition to arrows.
+\iten Use node weights,in addition to arrow weights, for routing.
 \item I would also like to experiment with the connection between
 (duality?) this code and the computing framework. That is use graphs
 to implement finite-state machine, Turing machine, etc.
 \end{itemize}
-\section{Installation}
-To install this code goto github
-(\url{https://github.com/martinbaker/fricas/blob/master/src/algebra/graph.spad.pamphlet})
-
-and download the file: \File{graph.spad.pamphlet}
-
-Then, from that file, copy the code for the FiniteGraph category into a
-file called 'ffgraph.spad' and the code for the directedGraph domain
-into a file called 'directedGraph.spad'.
-
-\begin{verbatim}
-document --tangle="domain LOOP Loop" --output=loop.spad graph.spad.pamphlet
-document --tangle="category FGRPH Graph" --output=fgraph.spad graph.spad.pamphlet
-document --tangle="domain DGRPH DirectedGraph" --output=dgraph.spad graph.spad.pamphlet
-document --tangle="domain FNGRPH FunctionGraph" --output=fngraph.spad graph.spad.pamphlet
-document --tangle="domain UDGRPH UndirectedGraph" --output=udgraph.spad graph.spad.pamphlet
-document --tangle="domain MFGRPH MultifunctionGraph" --output=mfgraph.spad graph.spad.pamphlet
-document --tangle="domain WGRPH WeightedGraph" --output=wgraph.spad graph.spad.pamphlet
-\end{verbatim}
-
-where \File{document} is the script that you find in the build
-directory of your fricas compilation.
-\File{build/scripts/document}.
-
-Then compile them
-\begin{verbatim}
-(1) -> )co loop.spad
-(1) -> )co fgraph.spad
-(1) -> )boot $bootStrapMode := true
-(1) -> )co dgraph.spad
-(1) -> )co fngraph.spad
-(1) -> )co udgraph.spad
-(1) -> )co mfgraph.spad
-(1) -> )co wgraph.spad
-(1) -> )boot $bootStrapMode := false
-(1) -> )co dgraph.spad
-(1) -> )co fngraph.spad
-(1) -> )co udgraph.spad
-(1) -> )co mfgraph.spad
-(1) -> )co wgraph.spad
-\end{verbatim}
 \section{Tutorial}
-
-If Graph and directedGraph are not already loaded then load them
-as follows:
-
-\begin{verbatim}
-(1) -> )library LOOP
-(1) -> )library FGRPH
-(1) -> )library FGRPH-
-(1) -> )library DGRPH
-(1) -> )library FNGRPH
-(1) -> )library UDGRPH
-(1) -> )library MFGRPH
-(1) -> )library WGRPH
-\end{verbatim}
-
 We will construct a graph over 'String'. If you don't care what
 the graph is constructed over, then 'String' is a good choice,
 as it allows us to use the string to name the nodes.
@@ -322,26 +439,25 @@ We can add additional vertices using 'addObject!' as in (3)
 And we can add arrows as in (4) and (5)
 
 \begin{verbatim}
-(1) ->GS := DirectedGraph(String)
-
+(1) -> GS := DirectedGraph(String)
    (1)  DirectedGraph(String)
-                                                             Type: Type
-(2) ->hs := directedGraph(["a","b"])$GS
+                                                         Type: Type
 
-   (2)  "a,b"
-                                            Type: DirectedGraph(String)
-(3) ->addObject!(hs,"c")$GS
+(2) -> hs := directedGraph(["a","b"])$GS
+   (2)  "a","b"
+                                        Type: DirectedGraph(String)
 
-   (3)  "a,b,c"
-                                            Type: DirectedGraph(String)
-(4) ->addArrow!(hs,"alpha",1,2)
+(3) -> addObject!(hs,"c")$GS
+   (3)  "a","b","c"
+                                        Type: DirectedGraph(String)
 
-   (4)  "a,b,c|alpha:a->b"
-                                            Type: DirectedGraph(String)
-(5) ->addArrow!(hs,"alpha",2,3)
+(4) -> addArrow!(hs,"alpha",1,2)
+   (4)  "a","b","c"|"alpha":"a"->"b"
+                                        Type: DirectedGraph(String)
 
-   (5)  "a,b,c|alpha:a->b,alpha:b->c"
-                                            Type: DirectedGraph(String)
+(5) -> addArrow!(hs,"alpha",2,3)
+   (5)  "a","b","c"|"alpha":"a"->"b","alpha":"b"->"c"
+                                        Type: DirectedGraph(String)
 \end{verbatim}
 
 We now have a graph and we can check out various things about
@@ -353,14 +469,14 @@ this is a directed graph, the result in the other direction
 may be different as in (7).
 
 \begin{verbatim}
-(6) ->isDirectSuccessor?(hs,1::NNI,2::NNI)
+(6) -> isDirectSuccessor?(hs,1::NNI,2::NNI)
 
    (6)  true
-                                                          Type: Boolean
-(7) ->isDirectSuccessor?(hs,2::NNI,1::NNI)
+                                                      Type: Boolean
+(7) -> isDirectSuccessor?(hs,2::NNI,1::NNI)
 
    (7)  false
-                                                          Type: Boolean
+                                                      Type: Boolean
 \end{verbatim}
 
 The graph generated so far does not have any information to help
@@ -369,34 +485,38 @@ we have to construct it in a slightly different way. Now create
 graph suitable for diagram:
 
 \begin{verbatim}
-(8) ->OBJT ==> Record(value:String,posX:NNI,posY:NNI)
-                                                             Type: Void
-(9) ->oba:OBJT := ["a",10,10]
+(8) -> OBJT ==> Record(value:String,posX:NNI,posY:NNI)
+                                                         Type: Void
+(9) -> oba:OBJT := ["a",10,10]
 
    (9)  [value= "a",posX= 10,posY= 10]
-Type: Record(value: String,posX: NonNegativeInteger,posY: NonNegativeInteger)
-(10) ->obb:OBJT := ["b",10,60]
+               Type: Record(value: String,posX: NonNegativeInteger,
+                                            posY:NonNegativeInteger)
+
+(10) -> obb:OBJT := ["b",10,60]
 
    (10)  [value= "b",posX= 10,posY= 60]
-Type: Record(value: String,posX: NonNegativeInteger,posY: NonNegativeInteger)
-(11) ->obc:OBJT := ["c",60,10]
+                Type: Record(value: String,posX: NonNegativeInteger,
+                                           posY: NonNegativeInteger)
 
+(11) -> obc:OBJT := ["c",60,10]
    (11)  [value= "c",posX= 60,posY= 10]
                      Type: Record(value: String,
                      posX: NonNegativeInteger,posY: NonNegativeInteger)
-(12) ->hs2 := directedGraph([oba,obb,obc])$GS
 
-   (12)  "a,b,c"
+(12) -> hs2 := directedGraph([oba,obb,obc])$GS
+   (12)  "a","b","c"
                                             Type: DirectedGraph(String)
-(13) ->addArrow!(hs2,"alpha",1,2)$GS
 
-   (13)  "a,b,c|alpha:a->b"
+(13) -> addArrow!(hs2,"alpha",1,2)$GS
+   (13)  "a","b","c"|"alpha":"a"->"b"
                                             Type: DirectedGraph(String)
-(14) ->addArrow!(hs2,"beta",2,3)$GS
 
-   (14)  "a,b,c|alpha:a->b,beta:b->c"
+(14) -> addArrow!(hs2,"beta",2,3)$GS
+   (14)  "a","b","c"|"alpha":"a"->"b","beta":"b"->"c"
                                             Type: DirectedGraph(String)
-(15) ->diagramSvg("testGraph1s1.svg",hs2,true)
+
+(15) -> diagramSvg("testGraph/testGraph1s1.svg",hs2,true)
                                                              Type: Void
 \end{verbatim}
 
@@ -404,56 +524,73 @@ In the same way that other algebras have special elements like
 "0" and "1" there are special elements in Graph which we can
 construct as follows:
 \begin{verbatim}
-(16) ->T := terminal("a")$GS
+(16) -> T := terminal("a")$GS
+   (16)  "a"|"loop":"a"->"a"
+                                        Type: DirectedGraph(String)
 
-   (16)  "a|loop:a->a"
-                                            Type: DirectedGraph(String)
-(17) ->I := initial()$GS
-
-   (17)  ""
-                                            Type: DirectedGraph(String)
+(17) -> I := initial()$GS
+   (17)
+                                        Type: DirectedGraph(String)
 \end{verbatim}
 Now lets explore the methods for combining the graphs, these include:
 \begin{verbatim}
-    "+":(%,%) -> % Sum : disjoint union of nodes with arrows from appropriate input
-    merge:(%,%) -> % Sum : union (not necessarily disjoint) of nodes with arrows merged in from appropriate input, if arrow exists from both inputs then it will be duplicated.
-    "*":(%,%) -> GRPHPROD Tensor product : the tensor product G*H of graphs G and H is a graph such that the vertex set of G*H is the Cartesian product V(G) × V(H); and any two vertices (u,u') and (v,v') are adjacent in G × H if and only if u' is adjacent with v' and u is adjacent with v.
-    cartesian:(%,%) -> GRPHPROD Cartesian product: the vertex set of G o H is the Cartesian product V(G) × V(H) and any two vertices (u,u') and (v,v') are adjacent in G o H if and only if either u = v and u' is adjacent with v' in H, or u' = v' and u is adjacent with v in G.
+"+":(%,%) -> % Sum : disjoint union of nodes with arrows from
+appropriate input
+merge:(%,%) -> % Sum : union (not necessarily disjoint) of nodes
+with arrows merged in from appropriate input, if arrow exists from
+both inputs then it will be duplicated.
+
+"*":(%,%) -> GRPHPROD Tensor product : the tensor product G*H of
+graphs G and H is a graph such that the vertex set of G*H is the
+Cartesian product V(G) x V(H); and any two vertices (u,u') and (v,v')
+are adjacent in G x H if and only if u' is adjacent with v' and u is
+adjacent with v.
+
+cartesian:(%,%) -> GRPHPROD Cartesian product: the vertex set of
+G o H is the Cartesian product V(G) x V(H) and any two vertices (u,u')
+and (v,v') are adjacent in G o H if and only if either u = v and u' is
+adjacent with v' in H, or u' = v' and u is adjacent with v in G.
 \end{verbatim}
 First lets construct a new graph to work with:
 
 \begin{verbatim}
-(18) ->hs3 := directedGraph(["x","y"])$GS
+(18) -> hs3 := directedGraph(["x","y"])$GS
+   (18)  "x","y"
+                                        Type: DirectedGraph(String)
 
-   (18)  "x,y"
-                                            Type: DirectedGraph(String)
-(19) ->addArrow!(hs3,"beta",1,2)
-
-   (19)  "x,y|beta:x->y"
-                                            Type: DirectedGraph(String)
+(19) -> addArrow!(hs3,"beta",1,2)
+   (19)  "x","y"|"beta":"x"->"y"
+                                        Type: DirectedGraph(String)
 \end{verbatim}
 
 We can construct the (tensor) product of this with our original graph
 
 \begin{verbatim}
-(20) ->hs4 := hs*hs3
-
-   (20)  "ax,ay,bx,by,cx,cy|alpha*beta:ax->by,alpha*beta:bx->cy"
-                            Type: DirectedGraph(Product(String,String))
+(20) -> hs4 := hs*hs3
+   (20)
+   ["a","x"],["a","y"],["b","x"],["b","y"],["c","x"],["c","y"]|
+     "alpha*beta":["a","x"]->["b","y"],
+     "alpha*beta":["b","x"]->["c","y"]
+                         Type: DirectedGraph(Product(String,String))
 \end{verbatim}
 
 Or the Cartesian product:
 
 \begin{verbatim}
-(21) -> hs5 := cartesian(hs,hs3)
-
+(21) -> hs5 := cartesian(hs2,hs3)
    (21)
-  "ax,ay,bx,by,cx,cy|beta#1:ax->ay,alpha#1:ax->bx,alpha#2:ay->by,
-   beta#2:bx->by,beta#1:bx->cx,beta#2:by->cy,beta#3:cx->cy"
-                            Type: DirectedGraph(Product(String,String))
+   ["a","x"],["a","y"],["b","x"],["b","y"],["c","x"],["c","y"]|
+    "beta#1":["a","x"]->["a","y"],
+     "alpha#1":["a","x"]->["b","x"],
+     "alpha#2":["a","y"]->["b","y"],
+     "beta#2":["b","x"]->["b","y"],
+     "beta#1":["b","x"]->["c","x"],
+     "beta#2":["b","y"]->["c","y"],
+     "beta#3":["c","x"]->["c","y"]
+                        Type: DirectedGraph(Product(String,String))
 
-(22) -> diagramSvg("testGraph1s2.svg",hs5,true)
-                                                             Type: Void
+(22) -> diagramSvg("testGraph/testGraph1s2.svg",hs5,true)
+                                                         Type: Void
 \end{verbatim}
 
 In addition to outputing to a diagram we can also output other
@@ -469,7 +606,7 @@ where:
 \item data (simplest case: 1 - incident, 0 - not incident).
 \end{itemize}
 \begin{verbatim}
-(23) ->incidenceMatrix(hs5)
+(23) -> incidenceMatrix(hs5)
 
          +1  0  0  0  0  0+
          |1  0  0  0  0  0|
@@ -488,7 +625,7 @@ of xy edges), otherwise it is 0. In computing, this matrix makes
 it easy to find subgraphs, and to reverse a directed graph.
 
 \begin{verbatim}
-(24) ->adjacencyMatrix(hs5)
+(24) -> adjacencyMatrix(hs5)
 
          +0  0  0  0  0  0+
          |1  0  0  0  0  0|
@@ -514,7 +651,7 @@ information. There are other, similar matrices, that are also
 called "Laplacian matrices" of a graph.
 
 \begin{verbatim}
-(25) ->laplacianMatrix(hs5)
+(25) -> laplacianMatrix(hs5)
 
          + 0    0    0    0    0   0+
          |- 1   1    0    0    0   0|
@@ -536,7 +673,7 @@ are closer, while "close" (connected) vertices yield larger entries
 in an adjacency matrix.
 \end{itemize}
 \begin{verbatim}
-(26) ->distanceMatrix(hs5)
+(26) -> distanceMatrix(hs5)
 
          +0  - 1  - 1  - 1  - 1  - 1+
          |1   0   - 1  - 1  - 1  - 1|
@@ -546,43 +683,172 @@ in an adjacency matrix.
          +3   2    2    1    1    0 +
                                                   Type: Matrix(Integer)
 \end{verbatim}
-\section{Tutorial}
-If Graph and directedGraph are not already loaded then load them as follows:
+\section{Second Order Graphs}
+This software can model second order graphs, that is, graphs whose
+vertices are also graphs. It can also use graphs to model various
+types of mappings. This page shows the approach I am taking to these
+things.
 
+Second order graphs seems to be related to 2-category structures, see
+[2] Wiki page about 2-categories. There may be other equivalent
+structures:
+\begin{itemize}
+\item As a graph whose elements are themselves graphs, where the outer
+  graph can see inside (has arrows between the nodes of) the inner
+  graph.
+\item As a set of graphs with mappings between them, where the whole
+  system is treated as a graph.
+\item As a graph which also has arrows between the arrows.
+\end{itemize}
+To show how I have implemented this I have written the following
+example. We construct 4 graphs of type INNER := DirectedGraph(String).
+Then we construct an OUTER graph over these INNER graphs.
 \begin{verbatim}
-(1) -> )library LOOP
-   Loop is now explicitly exposed in frame frame1
-   Loop will be automatically loaded when needed from
-      /home/martin/LOOP.NRLIB/LOOP
-(1) -> )library FGRPH
-   FiniteGraph is now explicitly exposed in frame frame1
-   FiniteGraph will be automatically loaded when needed from
-      /home/martin/FGRPH.NRLIB/FGRPH
-(1) -> )library FGRPH-
-   FiniteGraph& is now explicitly exposed in frame frame1
-   FiniteGraph& will be automatically loaded when needed from
-      /home/martin/FGRPH-.NRLIB/FGRPH-
-(1) -> )library DGRPH
-   DirectedGraph is now explicitly exposed in frame frame1
-   DirectedGraph will be automatically loaded when needed from
-      /home/martin/DGRPH.NRLIB/DGRPH
-(1) -> )library FNGRPH
-   FunctionGraph is now explicitly exposed in frame frame1
-   FunctionGraph will be automatically loaded when needed from
-      /home/martin/FNGRPH.NRLIB/FNGRPH
-(1) -> )library UDGRPH
-   UndirectedGraph is now explicitly exposed in frame frame1
-   UndirectedGraph will be automatically loaded when needed from
-      /home/martin/UDGRPH.NRLIB/UDGRPH
-(1) -> )library MFGRPH
-   MultifunctionGraph is now explicitly exposed in frame frame1
-   MultifunctionGraph will be automatically loaded when needed from
-      /home/martin/MFGRPH.NRLIB/MFGRPH
-(1) -> )library WGRPH
-   WeightedGraph is now explicitly exposed in frame frame1
-   WeightedGraph will be automatically loaded when needed from
-      /home/martin/WGRPH.NRLIB/WGRPH
+(1) -> INNER := DirectedGraph(String)
+   (1)  DirectedGraph(String)
+                                                         Type: Type
+
+(2) -> P := directedGraph(["a","b","c","d"])$INNER
+   (2)  "a","b","c","d"
+                                         Type: DirectedGraph(String)
+
+(3) -> addArrow!(P,"alpha",1,2)
+   (3)  "a","b","c","d"|"alpha":"a"->"b"
+                                         Type: DirectedGraph(String)
+
+(4) -> addArrow!(P,"beta",1,3)
+   (4)  "a","b","c","d"|"alpha":"a"->"b","beta":"a"->"c"
+                                         Type: DirectedGraph(String)
+
+(5) -> addArrow!(P,"gamma",2,4)
+   (5)  "a","b","c","d"|"alpha":"a"->"b","beta":"a"->"c",
+                                         "gamma":"b"->"d"
+                                         Type: DirectedGraph(String)
+
+(6) -> addArrow!(P,"delta",3,4)
+   (6)
+   "a","b","c","d"|"alpha":"a"->"b","beta":"a"->"c",
+                "gamma":"b"->"d","delta":"c"->"d"
+                                         Type: DirectedGraph(String)
+
+(7) -> Q := directedGraph(["x","y"])$INNER
+   (7)  "x","y"
+                                         Type: DirectedGraph(String)
+
+(8) -> addArrow!(Q,"alpha",1,2)
+   (8)  "x","y"|"alpha":"x"->"y"
+                                         Type: DirectedGraph(String)
+
+(9) -> R := directedGraph(["1","2"])$INNER
+   (9)  "1","2"
+                                         Type: DirectedGraph(String)
+
+(10) -> addArrow!(R,"alpha",1,2)
+   (10)  "1","2"|"alpha":"1"->"2"
+                                         Type: DirectedGraph(String)
+
+(11) -> S := directedGraph(["t"])$INNER
+   (11)  "t"
+                                         Type: DirectedGraph(String)
+
+(12) -> OUTER := DirectedGraph(INNER)
+   (12)  DirectedGraph(DirectedGraph(String))
+                                                          Type: Type
+
+(13) -> ML := directedGraph([P,Q,R,S])$OUTER
+   (13)  1,2,3,4
+                          Type: DirectedGraph(DirectedGraph(String))
+
+(14) -> addArrow!(ML,"alpha",1,2)
+   (14)  1,2,3,4|"alpha":1->2
+                          Type: DirectedGraph(DirectedGraph(String))
+
+(15) -> addArrow!(ML,"beta",1,3)
+   (15)  1,2,3,4|"alpha":1->2,"beta":1->3
+                         Type: DirectedGraph(DirectedGraph(String))
+
+(16) -> addArrow!(ML,"gamma",2,4)
+   (16)  1,2,3,4|"alpha":1->2,"beta":1->3,"gamma":2->4
+                         Type: DirectedGraph(DirectedGraph(String))
+
+(17) -> addArrow!(ML,"delta",3,4)
+   (17)  1,2,3,4|"alpha":1->2,"beta":1->3,"gamma":2->4,"delta":3->4
+                         Type: DirectedGraph(DirectedGraph(String))
+
+(18) -> diagramSvg("testGraph/testGraphml1.svg",ML,false)
+                                                         Type: Void
 \end{verbatim}
+As you can see this OUTER graph is hard to display in text format on
+the command line. However its easier to see what's going on when we
+look at the diagram it produces.
+
+So far the above diagram does not show how individual vertices in one
+inner graph map to the  individual vertices in another inner graph. To
+do this we need to define these maps, this is done by using a 'List NNI'
+where the 'nth entry in the list represents the 'from' index and its
+value represents the 'to' index. We put this map as the last entry in
+the 'addArrow!' calls below. To display this information we use a
+variant of 'diagramSvg' called 'deepDiagramSvg' which looks inside
+the arrows to see how individual inner vertices map as follows:
+\begin{verbatim}
+(19) -> ML2 := directedGraph([P,Q,R,S])$OUTER
+   (19)  1,2,3,4
+                           Type: DirectedGraph(DirectedGraph(String))
+
+(20) -> addArrow!(ML2,"alpha",1,2,[1,2,1,2])
+   (20)  1,2,3,4|"alpha":1->2
+                           Type: DirectedGraph(DirectedGraph(String))
+
+(21) -> addArrow!(ML2,"beta",1,3,[1,2,1,2])
+   (21)  1,2,3,4|"alpha":1->2,"beta":1->3
+                           Type: DirectedGraph(DirectedGraph(String))
+
+(22) -> addArrow!(ML2,"gamma",2,4,[1,1])
+   (22)  1,2,3,4|"alpha":1->2,"beta":1->3,"gamma":2->4
+                           Type: DirectedGraph(DirectedGraph(String))
+
+(23) -> addArrow!(ML2,"delta",3,4,[1,1])
+   (23)  1,2,3,4|"alpha":1->2,"beta":1->3,"gamma":2->4,"delta":3->4
+                           Type: DirectedGraph(DirectedGraph(String))
+
+(24) -> deepDiagramSvg("testGraph/testGraphml2.svg",ML2,false)
+                                                           Type: Void
+\end{verbatim}
+So the arrows now know about both the inner and the outer graphs.
+The diagram can now 'see' inside the inner graphs.
+
+We can now try the 'flatten' function. This takes a second order
+graph, such as the one that we have already constructed and flatten
+it into a first order graph.
+\begin{verbatim}
+(25) -> ML3 := flatten(ML2)$INNER
+   (25)
+   "a","b","c","d","x","y","1","2","t"|"alpha":"a"->"b",
+   "beta":"a"->"c","gamma":"b"->"d","delta":"c"->"d",
+   "alpha":"x"->"y","alpha":"1"->"2","alpha":"a"->"x",
+   "alpha":"b"->"y","alpha":"c"->"x","alpha":"d"->"y",
+   "beta":"a"->"1","beta":"b"->"2","beta":"c"->"1",
+   "beta":"d"->"2","gamma":"x"->"t","gamma":"y"->"t",
+   "delta":"1"->"t","delta":"2"->"t"
+                                        Type: DirectedGraph(String)
+(26) -> diagramSvg("testGraph/testGraphml3.svg",ML3,false)
+                                                         Type: Void
+\end{verbatim}
+The first order graph that we have constructed includes the arrows
+from both the inner and the outer graphs.
+
+As it stands there are a lot of limitations with the above code (it
+is not completely general).
+\begin{itemize}
+\item It only works if the outer graph is of type
+'DirectedGraph(DirectedGraph(String))' it would be better if it could
+be more general such as any implementation of
+'FiniteGraph(FiniteGraph(SetCategory))'.
+\item The code also makes certain assumptions about the coordinate
+ranges of the inner graphs and if this is not valid then the inner
+diagrams may overlap the circles.
+\end{itemize}
+\section{Tutorial}
 This graph framework has many methods to create graph instances, click on the following links for details:
 \begin{itemize}
 \item \url{http://www.euclideanspace.com/maths/standards/program/mycode/discrete/graph/construct/index.htm#individual}
@@ -740,7 +1006,7 @@ as [2,8,5,6]) but different to [5,2,6,8] (which is stored as
 )abbrev domain LOOP Loop
 ++ Author: Martin Baker
 ++ Date Created: January 2012
-++ Date Last Updated: February 2012
+++ Date Last Updated: March 2012
 ++ Basic Operations:
 ++ Related Domains: FiniteGraph, DirectedGraph. FunctionGraph
 ++ Also See: Graph
@@ -761,12 +1027,11 @@ Loop(): Exports == Implementation where
 
   Exports ==> SetCategory with
     loop: List NNI -> %
-      ++ construct loop with list of indexes
+      ++ loop(li) constructs loop from list of indexes li
     entries:(lp:%) -> List NNI
+      ++ entries(lp) returns list of indexes that make this loop
 
   Implementation ==> add
-    sayMsg ==> sayBrightly$Lisp
-    math_to_string ==> mathObject2String$Lisp
 
     -- array of vertex indices which form loop
     Rep := PrimitiveArray NNI
@@ -774,7 +1039,8 @@ Loop(): Exports == Implementation where
     -- construct loop with list of indexes
     -- rotate so that smallest index is always at the beginning
     -- (thanks to Ralf for patch to this constructor)
-    loop(li:List NNI):% ==
+    loop(lis:List NNI):% ==
+      li:List NNI := [x for x in lis]
       empty? li => error "cannot form empty loop"
       minValue:NNI := first li
       lx:List(NNI) := []
@@ -784,26 +1050,29 @@ Loop(): Exports == Implementation where
         if first li < minValue then
           l1 := li
           l2 := lx
+          minValue := first li
+        -- shift one element from Li to Lx
         lx := cons(first li, lx)
         li := rest li
-      construct(concat(l1, reverse! l2))
+      --print hconcat([outputForm("construct loop "),_
+      --      bracket[x::OutputForm for x in lis],_
+      --      bracket[x::OutputForm for x in concat(l1, reverse l2)]])
+      construct(concat(l1, reverse l2))$Rep
 
+    -- entries(lp) returns list of indexes that make this loop
     entries(lp:%):List NNI ==
       entries(lp pretend PrimitiveArray(NNI))$PrimitiveArray(NNI)
-
-    -- output loop to string
-    toString(lp:%): String ==
-      res:String := ""
-      for i in 1..#lp repeat
-        x:NNI := lp.(i-1)
-        res := concat([res,"->",math_to_string x])$String
-      concat(["[",res,"]"])$String
 
     -- start of SetCategory definitions --
 
     hash(s:%): SingleInteger == 0$SingleInteger
 
-    latex(s:%): String == "\mbox{\bf Unimplemented}"
+    latex(lp:%): String ==
+      res:String := ""
+      for i in 1..#lp repeat
+        x:NNI := lp.(i-1)
+        res := concat([res,"->",string(x)])$String
+      concat(["[",res,"]"])$String
 
     -- returns true if x equals y
     -- Since the constructor always makes sure that the Rep is
@@ -819,17 +1088,35 @@ Loop(): Exports == Implementation where
     _~_=(x:%,y:%) : Boolean == not(x=y)
 
     -- output
-    coerce(n: %):OutputForm ==
-      toString(n)::OutputForm
+    coerce(lp: %):OutputForm ==
+      res:OutputForm := empty()$OutputForm
+      for i in 1..#lp repeat
+        x:NNI := lp.(i-1)
+        res := hconcat([res,outputForm("->"::Symbol),_
+                       x::OutputForm])$OutputForm
+      hconcat([outputForm("["::Symbol),res,_
+             outputForm("]"::Symbol)])$OutputForm
 
 @
 
 \section{category FGRPH FiniteGraph}
+
+FiniteGraph is a graph category which has the following
+implementations:
+
+\begin{itemize}
+\item DirectedGraph
+\item UndirectedGraph
+\item WeightedGraph
+\item FunctionGraph
+\item MultifunctionGraph
+\end{itemize}
+
 <<category FGRPH FiniteGraph>>=
 )abbrev category FGRPH FiniteGraph
 ++ Author: Martin Baker
 ++ Date Created: December 2011
-++ Date Last Updated: February 2012
+++ Date Last Updated: March 2012
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: graph theory
@@ -844,13 +1131,12 @@ FiniteGraph(S): Category == Definition where
  NNI==> NonNegativeInteger
  OBJT ==> Record(value:S,posX:NNI,posY:NNI)
  ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
-           toOb:NNI,xOffset:Integer,yOffset:Integer)
+           toOb:NNI,xOffset:Integer,yOffset:Integer,map:List NNI)
  SPROD ==> Product(S,S)
  GRPHPROD ==> FiniteGraph SPROD
  OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI)
  DF ==> DoubleFloat
  PT ==> SCartesian(2)
- BOUNDS ==> Record(mins:PT,maxs:PT)
 
  Definition ==> Join(CoercibleTo(OutputForm),SetCategory) with
    addObject!:(s:%,n:S) -> %
@@ -866,39 +1152,51 @@ FiniteGraph(S): Category == Definition where
     ++ nm is the name of the arrow
     ++ n1 is the index of the start object
     ++ n2 is the index of the end object
-   addArrow! : (%, String, S, S) -> %
+   addArrow!:(s:%,name:String,n1:NNI,n2:NNI,mp:List NNI) -> %
+    ++ addArrow!(s,nm,n1,n2,mp) adds an arrow to the graph s, where:
+    ++ nm is the name of the arrow
+    ++ n1 is the index of the start object
+    ++ n2 is the index of the end object
+    ++ mp is a map represented by this arrow
+   addArrow!:(%, String, S, S) -> %
     ++ addArrow!(s, nm, o1, o2) adds an arrow to the graph s, where:
     ++ nm is the name of the arrow
     ++ o1 is the start object
     ++ o2 is the end object
    getVertices:(s:%) -> List OBJT
-    ++ a list of all the vertices (or objects).
+    ++ getVertices(s) returns a list of all the vertices (or objects)
+    ++ of the graph s.
    getVertexIndex :  (%, S) -> NNI
     ++ getVertexIndex(s, o) gives index of object o.
    getArrows:(s:%) -> List ARROW
-    ++ a list of all the arrows (or edges)
+    ++ getArrows(s) returns a list of all the arrows (or edges)
+   flatten:(n:DirectedGraph(%)) -> %
+    ++ flatten(n) takes a second order graph, that is a graph
+    ++ whose elements are themselves graphs and create a first
+    ++ order graph whose vertices are the vertices of the inner
+    ++ graphs.
    initial:() -> %
-    ++ constructs a graph without vertices or edges
+    ++ initial constructs a graph without vertices or edges
    terminal:(a:S) -> %
-    ++ constructs a graph with a single vertex and a single loop
+    ++ terminal(a) constructs a graph over a with a single vertex
+    ++ and a single loop
    cycleOpen:(objs:List S,arrowName:String) -> %
-    ++ constructs a graph with vertices (from objs) connected in a
-    ++ cycle but with one gap. The last vertex in the sequence
-    ++ loops back to itself so all vertices have one outgoing
-    ++ arrow.
+    ++ cycleOpen(objs,arrowName) constructs a graph with vertices
+    ++ (from objs) connected in a cycle but with one gap. The last
+    ++ vertex in the sequence loops back to itself so all vertices
+    ++ have one outgoing arrow.
     ++ arrowName is a prefix for all arrow names, this will be
     ++ followed by a number starting at 1 and incremented for each
     ++ arrow
    cycleClosed:(objs:List S,arrowName:String) -> %
-    ++ constructs a graph with vertices (from objs) connected in a
-    ++ cycle.
+    ++ cycleClosed:(objs:List S,arrowName:String) constructs a graph
+    ++ with vertices (from objs) connected in a cycle.
     ++ arrowName is a prefix for all arrow names, this will be
     ++ followed by a number starting at 1 and incremented for each
     ++ arrow
    unit:(objs:List S,arrowName:String) -> %
-    ++ unit(objs, arrowName)
-    ++ constructs a graph with vertices (from objs) and arrows from
-    ++ each object to itself.
+    ++ unit(objs, arrowName) constructs a graph with vertices
+    ++ (from objs) and arrows from each object to itself.
     ++ arrowName is a prefix for all arrow names, this will be
     ++ followed by a number starting at 1 and incremented for each
     ++ arrow
@@ -920,30 +1218,31 @@ FiniteGraph(S): Category == Definition where
     ++ sequence of arrows but we can't go in the opposite
     ++ direction from 'b' to 'a'
    max:(s:%) -> NNI
-    ++ index of the vertex which can be reached from all other
-    ++ vertices. Gives 0 if no such node exists or if it is not
-    ++ unique, if there is a loop for instance.
+    ++ max(s) returns index of the vertex which can be reached
+    ++ from all other vertices. Gives 0 if no such node exists
+    ++ or if it is not unique, if there is a loop for instance.
    max:(s:%,sub:List NNI) -> NNI
-    ++ index of the vertex which can be reached from a given
-    ++ subset of the vertices. Gives 0 if no such node exists
-    ++ or if it is not unique, if there is a loop for instance.
+    ++ max(s,sub) returns index of the vertex which
+    ++ can be reached from a given subset of the vertices. Gives
+    ++ 0 if no such node exists or if it is not unique, if there
+    ++ is a loop for instance.
    min:(s:%) -> NNI
-    ++ index of the vertex which can reach to all other
-    ++ vertices. Gives 0 if no such node exists or if it is not
-    ++ unique, if there is a loop for instance.
+    ++ min(s) returns index of the vertex which can reach to all
+    ++ other vertices. Gives 0 if no such node exists or if it is
+    ++ not unique, if there is a loop for instance.
    min:(s:%,sub:List NNI) -> NNI
-    ++ index of the vertex which can reach to a given
-    ++ subset of the vertices. Gives 0 if no such node exists
-    ++ or if it is not unique, if there is a loop for instance.
+    ++ min(s,sub) returns index of the vertex which can reach
+    ++ to a given subset of the vertices. Gives 0 if no such node
+    ++ exists or if it is not unique, if there is a loop for instance.
    isFixPoint?:(s:%,a:NNI) -> Boolean
     ++ isFixPoint?(s, a) is
     ++ true if 'a' has an arrow to itself
    arrowName:(s:%,a:NNI,b:NNI) -> String
-    ++ arrowName(s, a, b) retrives
+    ++ arrowName(s, a, b) retrieves
     ++ the name of arrow a->b
     ++ if it does not exist then return "?"
    getArrowIndex:(s:%,a:NNI,b:NNI) -> NNI
-    ++ getArrowIndex(s, a, b) retrives
+    ++ getArrowIndex(s, a, b) retrieves
     ++ arrow index of the arrow form a to b
    inDegree:(s:%,a:NNI) -> NNI
     ++ inDegree(s, a) gives the number of arrows leading in to node
@@ -963,15 +1262,16 @@ FiniteGraph(S): Category == Definition where
    arrowsToNode:(s:%,a:NNI) -> List NNI
     ++ arrowsToNode(s, a) gives list of all arrows leading from a given node
    nodeFromArrow:(s:%,a:NNI) -> List NNI
-    ++ index of all nodes with a direct arrow leading
-    ++ in to arrow 'a' in graph 's'
+    ++ nodeFromArrow(s,a) returns index of all nodes with a direct
+    ++ arrow leading in to arrow 'a' in graph 's'
    nodeToArrow:(s:%,a:NNI) -> List NNI
-    ++ index of all nodes with a direct arrow leading
-    ++ out of arrow 'a' in graph 's'
+    ++ nodeToArrow(s,a) returns index of all nodes with a direct
+    ++ arrow leading out of arrow 'a' in graph 's'
    arrowsFromArrow:(s:%,a:NNI) -> List NNI
     ++ index of all arrows leading to a given arrow
    arrowsToArrow:(s:%,a:NNI) -> List NNI
-    ++ index of all arrows leading from a given arrow
+    ++ arrowsToArrow:(s:%,a:NNI) returns index of all arrows leading from
+    ++ a given arrow
    routeNodes:(s:%,a:NNI,b:NNI) -> List NNI
     ++ routeNodes(s, a, b) gives the shortest route between
     ++ nodes 'a' and 'b' as a sequence of node indexes.
@@ -993,12 +1293,12 @@ FiniteGraph(S): Category == Definition where
     ++ sum : disjoint union of nodes with arrows from appropriate
     ++ input
    merge:(%,%) -> %
-    ++ sum : union (not necessarily disjoint) of nodes with arrows
-    ++ merged in from appropriate input, if arrow exists from both
-    ++ inputs then it will be duplicated.
+    ++ merge(a,b) returns sum : union (not necessarily disjoint) of
+    ++ nodes with arrows merged in from appropriate input, if arrow
+    ++ exists from both inputs then it will be duplicated.
    spanningTreeArrow:(s:%,i:NNI) -> Tree Integer
-    ++ constructs a spanning tree for graph 's' rooted at the
-    ++ arrow indexed by 'i'.
+    ++ spanningTreeArrow(s,i) constructs a spanning tree for graph
+    ++ 's' rooted at the arrow indexed by 'i'.
     ++ The tree will expand out from 'i' only stopping when reaching
     ++ a arrow that has already been visited (that is: loop detected).
     ++ Elements in the tree are Integer, a positive Integer represents
@@ -1006,7 +1306,7 @@ FiniteGraph(S): Category == Definition where
     ++ note: it is possible that nodes may be visited many times, only
     ++ arrows must not be re-visited.
    spanningForestArrow:(s:%) -> List Tree Integer
-    ++ constructs a spanning tree for every arrow.
+    ++ spanningForestArrow(s) constructs a spanning tree for every arrow.
    spanningTreeNode:(s:%,i:NNI) -> Tree Integer
     ++ spanningTreeNode(s, i) constructs a spanning tree for graph 's'
     ++ rooted at the node indexed by 'i'.
@@ -1015,27 +1315,29 @@ FiniteGraph(S): Category == Definition where
     ++ Elements in the tree are Integer, a positive Integer represents
     ++ a vertex and a negative Integer represents a repeated vertex.
    spanningForestNode:(s:%) -> List Tree Integer
-    ++ constructs a spanning tree for every vertex.
+    ++ spanningForestNode(s) constructs a spanning tree for every vertex.
    loopsNodes:(s:%) -> List Loop
-    ++ a list of loops for this graph
+    ++ loopsNodes(s) returns a list of loops for this graph
     ++ in this case the loop is represented by the indexes of the
     ++ sequence of nodes passed through.
     -- to-do: it would be better to use a more efficient algorithm,
     -- currently the code calls spanningForestNode and traverses the result
     -- for loops, it might be more efficient to use Floyds algorithm.
    loopsAtNode:(s:%,a:NNI) -> List Loop
-    ++ a list of loops for this graph that pass through vertex index 'a'
+    ++ loopsAtNode(s,a) returns a list of loops for this graph that pass
+    ++ through vertex index 'a'
    loopsArrows:(s:%) -> List Loop
-    ++ a list of loops for this graph
+    ++ loopsArrows(s) returns a list of loops for this graph
     ++ in this case the loop is represented by the indexes of the
     ++ sequence of nodes passed through.
     ++ to-do: it would be better to use a more efficient algorithm,
     ++ currently the code calls spanningForestArrow and traverses the result
     ++ for loops, it might be more efficient to use Floyds algorithm.
    isAcyclic?:(s:%) -> Boolean
-    ++ returns true if there are no loops
+    ++ isAcyclic?(s) returns true if there are no loops
    incidenceMatrix:(%) -> Matrix Integer
-    ++ The graph is represented by a matrix of size |V| by |E|
+    ++ incidenceMatrix(s) represents graph s by a matrix of
+    ++ size |V| by |E|
     ++ where:
     ++ V=number of vertices
     ++ E=number of edges
@@ -1043,13 +1345,15 @@ FiniteGraph(S): Category == Definition where
     ++ data (undirected case case: 1 - incident, 0 - not incident,
     ++ directed case: -1 - start, 1 - end, 0 - not incident).
    adjacencyMatrix:(%) -> Matrix NNI
-    ++ This is an n by n matrix A, where n is the number of vertices
-    ++ in the graph. If there is an edge from a vertex x to a vertex y,
-    ++ then the element ax,y is 1 (or in general the number of xy edges),
-    ++ otherwise it is 0. In computing, this matrix makes it easy to find
-    ++ subgraphs, and to reverse a directed graph.
+    ++ adjacencyMatrix(s) returns an n by n matrix A, where n is the
+    ++ number of vertices in the graph. If there is an edge from a
+    ++ vertex x to a vertex y, then the element ax,y is 1 (or in
+    ++ general the number of xy edges), otherwise it is 0. In computing,
+    ++ this matrix makes it easy to find subgraphs, and to reverse a
+    ++ directed graph.
    laplacianMatrix:(%) -> Matrix Integer
-    ++ Also known as "Kirchhoff matrix" or "Admittance matrix" where:
+    ++ laplacianMatrix(s) returns matrix also known as "Kirchhoff matrix"
+    ++ or "Admittance matrix" where:
     ++ entry [i,j] =
     ++ inDegree(vi) if i = j (number of incoming links)
     ++ -1 if i not = j and vi is adjacent to vj
@@ -1060,8 +1364,8 @@ FiniteGraph(S): Category == Definition where
     ++ There are other, similar matrices, that are also called "Laplacian
     ++ matrices" of a graph.
    distanceMatrix:(%) -> Matrix Integer
-    ++ gives matrix of distances between vertices.  Element a_{i, j}
-    ++ is the distance from i to j.
+    ++ distanceMatrix(s) gives matrix of distances between vertices.
+    ++ Element a_{i, j} is the distance from i to j.
     ++ Distance matrices are related to adjacency matrices, with the
     ++ differences that:
     ++ a) the latter only provides the information which vertices are connected
@@ -1069,37 +1373,41 @@ FiniteGraph(S): Category == Definition where
     ++ b) adjacency matrix only tells us about directly connected
     ++    vertices while distance matrix also considers indirect connections.
    isFunctional?:(%) -> Boolean
-    ++ a functional graph is a directed graph in which each vertex has
-    ++ a single outgoing arrow
+    ++ isFunctional?(s) returns true if s is a functional graph, that is a
+    ++ directed graph in which each vertex has a single outgoing arrow.
    isDirected? : () -> Boolean
     ++ isDirected? is true iff % is domain consisting of directed
     ++ graphs, false for undirected graphs.
+   subdiagramSvg:(sc:Scene(PT),n:%,dispArrowName:Boolean,deep:Boolean) -> Void
+    ++ subdiagramSvg(sc,n,dispArrowName,deep) creates a branch of
+    ++ an SVG diagram diagram under an already existing scene node sc.
+    ++ n:% is the graph that will be written
+    ++ dispArrowName:Boolean is true to include the name of each arrow
    diagramSvg:(fileName:String,n:%,dispArrowName:Boolean) -> Void
     ++ diagramSvg(fileName, n, dispArrowName) creates an SVG diagram
     ++ fileName:String is the name of the SVG file that will be created
     ++ n:% is the graph that will be written
     ++ dispArrowName:Boolean is true to include the name of each arrow
+   deepDiagramSvg:(fileName:String,n:%,dispArrowName:Boolean) -> Void
    diagramWidth:(s:%) -> NNI
-    ++ the width of the diagram that will be generated by
-    ++ diagramSvg. This is the maximum posX of all vertices in
-    ++ graph s
+    ++ diagramWidth(s) returns the width of the diagram that will be
+    ++ generated by diagramSvg. This is the maximum posX of all
+    ++ vertices in graph s
    diagramHeight:(s:%) -> NNI
-    ++ the height of the diagram that will be generated by
-    ++ diagramSvg. This is the maximum posY of all vertices in
-    ++ graph s
+    ++ diagramHeight(s) returns the height of the diagram that will be
+    ++ generated by diagramSvg. This is the maximum posY of all
+    ++ vertices in graph s
    createWidth:(x:NNI) -> NNI
-    ++ can be used by domains which extend graph
+    ++ createWidth(x) can be used by domains which extend graph
     ++ to help in creating coordinates for objects in a graph
    createX:(x:NNI,n:NNI) -> NNI
-    ++ can be used by domains which extend graph to
+    ++ createX(x,n) can be used by domains which extend graph to
     ++ help in creating the x coordinate for objects in a graph
    createY:(x:NNI,n:NNI) -> NNI
-    ++ can be used by domains which extend graph to
+    ++ createY(x,n) can be used by domains which extend graph to
     ++ help in creating the y coordinate for objects in a graph
-   toString: (n: %) -> String
-    ++ output
-   looseEquals: (x:%,y:%) -> Boolean
-    ++ true if x 'equals' y
+   looseEquals:(x:%,y:%) -> Boolean
+    ++ looseEquals(x,y) is true if x 'equals' y
     ++ this is a looser version of equality test but is not as
     ++ general as isomorphism.
     ++ it only requires the same number of vertices but does not
@@ -1117,12 +1425,11 @@ FiniteGraph(S): Category == Definition where
     ++ less objects than s (for surjective mapping) or
     ++ more objects than s (for injective mapping)
    mapContra:(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer) -> %
-    ++ similar to map function but reverses the directions of
-    ++ the arrows
+    ++ mapContra(s,m,newOb,offsetX,offsetY) is similar to map
+    ++ function but reverses the directions of the arrows
 
   add
 
-   sayMsg ==> sayBrightly$Lisp
    math_to_string ==> mathObject2String$Lisp
 
    getVertexIndex(s : %, o : S) : NNI ==
@@ -1255,10 +1562,6 @@ FiniteGraph(S): Category == Definition where
    loopsNodesRecursive(t:Tree Integer,visited:List NNI):List Loop ==
      c:List Tree Integer := children(t)
      v:Integer := value(t)
-     --sayMsg concat(["loopsNodesRecursive v=",math_to_string v,_
-     --  " c=",math_to_string c,_
-     --  " v=",math_to_string v_
-     --  ])$String
      if v<0 then
        v2 := (-v)::NNI
        i := position(v2,visited)$List(NNI)
@@ -1294,10 +1597,6 @@ FiniteGraph(S): Category == Definition where
    loopsArrowsRecursive(t:Tree Integer,visited:List NNI):List Loop ==
      c:List Tree Integer := children(t)
      v:Integer := value(t)
-     --sayMsg concat(["loopsArrowsRecursive v=",math_to_string v,_
-     --  " c=",math_to_string c,_
-     --  " v=",math_to_string v_
-     --  ])$String
      if v<0 then
        v2 := (-v)::NNI
        i := position(v2,visited)$List(NNI)
@@ -1345,7 +1644,6 @@ FiniteGraph(S): Category == Definition where
     arrs := getArrows(s)
     for arrn in 1..#arrs repeat
       if (arrs.arrn).fromOb = a and (arrs.arrn).toOb = b then
-        --sayMsg concat(["returns [",string(arrn),"]"])$String
         return arrn
     0::NNI
 
@@ -1435,24 +1733,15 @@ FiniteGraph(S): Category == Definition where
    -- and b, track visited nodes to avoid infinite loop.
    routeNodeRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
     if #visited > #getVertices(s) then return []
-    --sayMsg concat(["routeNodeRecursive ",math_to_string a,_
-    -- "->",math_to_string b," visited=",math_to_string visited])$String
     shortest:List NNI := []
     if a=b then return [a]
     if isDirectSuccessor?(s,a,b) then return [a,b]
     for arr in getArrows(s) repeat
       if isDirectSuccessor?(s,a,arr.fromOb) then
-        --sayMsg concat(["checking ",math_to_string a,_
-        -- "->",math_to_string arr.fromOb," visited=",math_to_string visited])$String
-        --sayMsg concat(["with ",math_to_string arr.fromOb,_
-        -- "->",math_to_string b," visited=",math_to_string visited])$String
         d := routeNodeRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
-        --sayMsg concat(["gives ",math_to_string arr.fromOb,_
-        -- "->",math_to_string b," d=",math_to_string d])$String
         if shortest = []
           then shortest := d
           else if (d ~= []) and #d < #shortest then shortest := d
-    --sayMsg concat(["returns shortest=",math_to_string shortest])$String
     if shortest = [] then return []
     concat(a,shortest)
 
@@ -1466,13 +1755,10 @@ FiniteGraph(S): Category == Definition where
    -- and b, track visited nodes to avoid infinite loop.
    routeArrowRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
     if #visited > #getVertices(s) then return [0]
-    --sayMsg concat(["routeArrowRecursive ",math_to_string a,_
-    -- "->",math_to_string b," visited=",math_to_string visited])$String
     shortest:List NNI := [0]
     if a=b then return []
     arrn := getArrowIndex(s,a,b)
     if arrn ~= 0 then
-       --sayMsg concat(["returns [",string(arrn),"]"])$String
        return [arrn]
     aa:NNI := 0
     shortestFullPath:List NNI := [0]
@@ -1480,13 +1766,7 @@ FiniteGraph(S): Category == Definition where
     for arr in arrs repeat
       if isDirectSuccessor?(s,a,arr.fromOb) then
         aa := getArrowIndex(s,a,arr.fromOb)
-        --sayMsg concat(["checking ",math_to_string a,_
-        -- "->",math_to_string arr.fromOb," visited=",math_to_string visited])$String
-        --sayMsg concat(["with ",math_to_string arr.fromOb,_
-        -- "->",math_to_string b," visited=",math_to_string visited])$String
         d := routeArrowRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
-        --sayMsg concat(["gives ",math_to_string arr.fromOb,_
-        -- "->",math_to_string b," d=",math_to_string d])$String
         fullPath:=concat(aa,d)
         if shortest = [0]
           then
@@ -1495,7 +1775,6 @@ FiniteGraph(S): Category == Definition where
           else if (d ~= [0]) and #fullPath < #shortestFullPath then
             shortest := d
             shortestFullPath := fullPath
-    --sayMsg concat(["returns shortest=",math_to_string shortest])$String
     if shortest = [0] then return [0]
     shortestFullPath
 
@@ -1593,11 +1872,6 @@ FiniteGraph(S): Category == Definition where
     w:NNI := createWidth(x)
     r := subtractIfCan(n,1)
     d : Record(quotient: NNI,remainder: NNI) :=divide(r::NNI,w)$NNI
-    --sayMsg concat(["createX x=",math_to_string x,_
-    --   " n=",math_to_string n,_
-    --   " w=",math_to_string w,_
-    --   " r=",math_to_string r_
-    --   ])$String
     if odd?((d.quotient)::Integer) then return (subtractIfCan(w,d.remainder)::NNI)*2
     (d.remainder + 1)*2
 
@@ -1609,14 +1883,11 @@ FiniteGraph(S): Category == Definition where
     d : Record(quotient: NNI,remainder: NNI) :=divide(r::NNI,w)$NNI
     (d.quotient + 1)*2
 
-   -- creates an SVG diagram
-   -- fileName:String is the name of the SVG file that will be created
+   -- subdiagramSvg(sc,n,dispArrowName,deep) creates a branch of an
+   -- SVG diagram diagram under an already existing scene node sc
    -- n:% is the graph that will be written
    -- dispArrowName:Boolean is true to include the name of each arrow
-   diagramSvg(fileName:String,n:%,dispArrowName:Boolean):Void ==
-    view:BOUNDS := [sipnt(0,0)$PT,sipnt(diagramWidth(n)+10::NNI,_
-                                        diagramHeight(n)+10::NNI)$PT]
-    sc := createSceneRoot(view)$Scene(PT)
+   subdiagramSvg(sc:Scene(PT),n:%,dispArrowName:Boolean,deep:Boolean):Void ==
     mt1 := addSceneMaterial(sc,3::DF,"black","black")$Scene(PT)
     mt2 := addSceneMaterial(sc,3::DF,"blue","blue")$Scene(PT)
     mt3 := addSceneMaterial(sc,3::DF,"orange","orange")$Scene(PT)
@@ -1626,39 +1897,64 @@ FiniteGraph(S): Category == Definition where
     mt7 := addSceneMaterial(sc,3::DF,"red","red")$Scene(PT)
     mt8 := addSceneMaterial(sc,3::DF,"purple","purple")$Scene(PT)
     ls: List OBJT := getVertices(n)
-    lastPointx:List NNI := []
-    lastPointy:List NNI := []
+    -- indexPointx and indexPointy holds an array of the x and y coordinates
+    -- so they can be looked up using an index value.
+    indexPointx:List NNI := []
+    indexPointy:List NNI := []
+    -- indexBounds holds an array of scene nodes so they can
+    -- be looked up using an index value (to draw arrows upto
+    -- their boundary).
+    indexBounds: List Scene(PT) := []
+    -- indexNodes holds an array of vertices so they can
+    -- be looked up using an index value (in case we need to look
+    -- inside them for second order graphs).
+    indexNodes: List S := []
     for i in ls repeat
+      indexNodes := concat(indexNodes,i.value)
       s:String := math_to_string i.value
       x:NNI :=i.posX
       y:NNI :=i.posY
-      lastPointx:= concat(lastPointx,x)
-      lastPointy:= concat(lastPointy,y)
-      addSceneText(sc,s,32::NNI,sipnt(x,y)$PT)$Scene(PT)
+      indexPointx:= concat(indexPointx,x)
+      indexPointy:= concat(indexPointy,y)
+      -- if this is a second order graph then draw sub graphs
+      -- otherwise draw vertex name
+      if S has DirectedGraph(String)
+       then
+        subgraph:DirectedGraph(String) := (i.value) pretend DirectedGraph(String)
+        SHAPE ==> Record(shptype:Symbol,centre:PT,size:PT,fill:Boolean)
+        sh:SHAPE := ["ellipse"::Symbol,sipnt(x,y)+svec(0.7::DF,0.7::DF),_
+                                       svec(0.7::DF,0.7::DF),false]
+        ellip := addSceneShape(sc,sh)
+        tn := addSceneGraph(sc,subgraph,x,y,dispArrowName)
+        indexBounds:= concat(indexBounds,ellip)
+       else
+        tn := addSceneText(sc,s,32::NNI,sipnt(x,y)$PT)$Scene(PT)
+        indexBounds:= concat(indexBounds,tn)
     arrs:List ARROW := getArrows(n)
-    if arrs=nil() then
-      writeSvg(sc,fileName)
-      return void
+    -- if no arrows then just write vertex names
+    if arrs=nil() then return void
+    -- if this is a second order graph then we need to get the inner objects
+    IOBJT ==> Record(value:DirectedGraph(String),posX:NNI,posY:NNI)
+    innerOb:List List IOBJT := []
+    if deep and S has DirectedGraph(String) then
+      for nd in indexNodes repeat
+        subNd:DirectedGraph(String) := nd pretend DirectedGraph(String)
+        innerObs:List IOBJT := getVertices(subNd)$DirectedGraph(String) pretend List IOBJT
+        innerOb := concat(innerOb,innerObs)$(List List IOBJT)
     -- now draw arrows in diagram
-    if arrs=nil() then
-      writeSvg(sc,fileName)
-      return void
     for arrow in arrs for arrn in 1..#arrs repeat
-      --sayMsg concat(["FiniteGraph diagramSvg fromOb x=",_
-      -- (math_to_string ls.(arrow.fromOb).posX)@String,_
-      -- " fromOb y=",(math_to_string ls.(arrow.fromOb).posY)@String,_
-      -- " toOb x=",(math_to_string ls.(arrow.toOb).posX)@String,_
-      -- " toOb y=",(math_to_string ls.(arrow.toOb).posY)@String_
-      -- ])$String
-      fromX:NNI := lastPointx.(arrow.fromOb)
-      toX:NNI := lastPointx.(arrow.toOb)
+      fromX:NNI := indexPointx.(arrow.fromOb)
+      toX:NNI := indexPointx.(arrow.toOb)
       fromX := (fromX+arrow.xOffset)::NNI
       toX := (toX+arrow.xOffset)::NNI
-      fromY:NNI := lastPointy.(arrow.fromOb)
-      toY:NNI := lastPointy.(arrow.toOb)
+      fromY:NNI := indexPointy.(arrow.fromOb)
+      toY:NNI := indexPointy.(arrow.toOb)
       fromY := (fromY+arrow.yOffset)::NNI
       toY := (toY+arrow.yOffset)::NNI
-      midX:NNI := shift(toX + fromX,-1) -- position of text
+      -- for arrow name we want to position text at the mid point of the
+      -- arrow, this is given by (start + end)/2. We divide integer by 2
+      -- by shifting binary number one place to the left.
+      midX:NNI := shift(toX + fromX,-1)
       midY:NNI := shift(toY + fromY,-1)
       -- get information to set line colour
       arrIndex:List NNI :=arrowsToNode(n,arrow.fromOb)
@@ -1673,23 +1969,75 @@ FiniteGraph(S): Category == Definition where
       if rema = 5 then mt := mt6
       if rema = 6 then mt := mt7
       if rema = 7 then mt := mt8
-      --sayMsg concat(["FiniteGraph diagramSvg arrNumber=",string(arrNumber),_
-      -- " arrIndex=", math_to_string arrIndex,_
-      -- " arrn=", math_to_string arrn,_
-      -- " rema=", math_to_string rema])$String
-      --nextPointx:= concat(nextPointx,midX)
-      --nextPointy:= concat(nextPointy,midY)
-      -- next we add the arrows, the parameter "proportional"::Symbol
-      -- tells the scenegraph code to reduce the length of the arrow
-      -- slightly to avoid overlapping the vertex label
-      addSceneArrows(mt,[[_
-         sipnt(fromX,fromY)$PT_
-         ,sipnt(toX,toY)$PT_
-          ]],"proportional"::Symbol,0.1::DF)
-      -- add the name of the arrow
-      if dispArrowName then
-        s:String :=arrow.name
-        addSceneText(mt,s,32::NNI,sipnt(midX,midY)$PT)$Scene(PT)
+      -- if this is a second order graph then we draw inner arrows
+      if deep and S has DirectedGraph(String) then
+        mp:List NNI := arrow.map
+        for subArrow in mp for subArrowN in 1..#mp repeat
+          --print hconcat(["fgraph subarrow subArrowN="::OutputForm,subArrowN::OutputForm,_
+          --           " subArrow="::OutputForm,subArrow::OutputForm])$OutputForm
+          innerObFrom:IOBJT := innerOb.(arrow.fromOb).subArrowN
+          innerObTo:IOBJT := innerOb.(arrow.toOb).subArrow
+          --v1 := innerObFrom.value
+          --st1:String := math_to_string v1
+          --v2 := innerObTo.value
+          --st2:String := math_to_string v2
+          --print hconcat(["fgraph subarrow subValueN="::OutputForm,st1::OutputForm,_
+          --           " subValue="::OutputForm,st2::OutputForm])$OutputForm
+          subFromX:DF := (fromX::DF)+((innerObFrom.posX)::DF)*(0.25::DF)
+          subToX:DF := (toX::DF)+((innerObFrom.posY)::DF)*(0.25::DF)
+          subFromY:DF := (fromY::DF)+((innerObTo.posX)::DF)*(0.25::DF)
+          subToY:DF := (toY::DF)+((innerObTo.posY)::DF)*(0.25::DF)
+          subArrNode := addSceneArrows(mt,[[spnt(subFromX,subFromY)$PT,_
+                     spnt(subToX,subToY)$PT]],_
+                     "fixed"::Symbol,0.1::DF)
+          --print hconcat(["fgraph subarrow from="::OutputForm,(arrow.fromOb)::OutputForm,_
+          --           " to="::OutputForm,(arrow.toOb)::OutputForm,_
+          --           " arrn="::OutputForm,arrn::OutputForm,_
+          --           " subArrow="::OutputForm,subArrow::OutputForm,_
+          --           " subArrowN="::OutputForm,subArrowN::OutputForm,_
+          --           " x="::OutputForm,(innerObFrom.posX)::OutputForm,_
+          --           " y="::OutputForm,(innerObFrom.posY)::OutputForm])$OutputForm
+      if not deep then
+        fnode:Scene(PT) := indexBounds.(arrow.fromOb)
+        tnode:Scene(PT) := indexBounds.(arrow.toOb)
+        offset:PT := sipnt(arrow.xOffset,arrow.yOffset)$PT
+        -- next we add the arrows, the parameter "proportional"::Symbol
+        -- tells the scenegraph code to reduce the length of the arrow
+        -- slightly to avoid overlapping the vertex label, this is only
+        -- required if not second order graph.
+        if S has DirectedGraph(String)
+         then
+          arrNode := addSceneArrow(mt,fnode,tnode,offset,_
+                     "fixed"::Symbol,0.1::DF,(diagramWidth(n)+10)::DF)
+         else
+          arrNode := addSceneArrow(mt,fnode,tnode,offset,_
+                     "proportional"::Symbol,0.1::DF,(diagramWidth(n)+10)::DF)
+        --print(vconcat([_
+        -- hconcat("fgraph subdiagramSvg sc="::OutputForm,sc::OutputForm)$OutputForm,_
+        -- hconcat(" n="::OutputForm,n::OutputForm)$OutputForm,_
+        -- hconcat(" arrNode="::OutputForm,arrNode::OutputForm)$OutputForm])$OutputForm)
+        -- add the name of the arrow
+        if dispArrowName then
+          s:String :=arrow.name
+          addSceneText(mt,s,32::NNI,sipnt(midX,midY)$PT)$Scene(PT)
+    return void
+
+   -- creates an SVG diagram
+   -- fileName:String is the name of the SVG file that will be created
+   -- n:% is the graph that will be written
+   -- dispArrowName:Boolean is true to include the name of each arrow
+   diagramSvg(fileName:String,n:%,dispArrowName:Boolean):Void ==
+    view := boxBoundary(sipnt(0,0)$PT,sipnt(diagramWidth(n)+10::NNI,_
+                           diagramHeight(n)+10::NNI)$PT)$SBoundary(PT)
+    sc := createSceneRoot(view)$Scene(PT)
+    subdiagramSvg(sc,n,dispArrowName,false)
+    writeSvg(sc,fileName)
+
+   deepDiagramSvg(fileName:String,n:%,dispArrowName:Boolean):Void ==
+    view := boxBoundary(sipnt(0,0)$PT,sipnt(diagramWidth(n)+10::NNI,_
+                           diagramHeight(n)+10::NNI)$PT)$SBoundary(PT)
+    sc := createSceneRoot(view)$Scene(PT)
+    subdiagramSvg(sc,n,dispArrowName,true)
     writeSvg(sc,fileName)
 
    -- returns the width of the diagram that will be generated by
@@ -1712,31 +2060,6 @@ FiniteGraph(S): Category == Definition where
       if (i.posY) > maxy then maxy:=i.posY
     maxy
 
-   -- return string representation
-   toString(n: %):String ==
-    -- s holds result that we are constructing
-    s:String := ""
-    -- first represent objects in s
-    ls: List OBJT := getVertices(n)
-    for i in ls repeat
-      if s=""
-        then s:=math_to_string i.value
-        else s := concat([s,",",math_to_string i.value])
-    arrs:List ARROW := getArrows(n)
-    if arrs=nil() then return s
-    -- now represent arrows in s
-    -- arrs is List ARROW
-    if arrs=nil() then return s
-    s:=concat([s,"|"])$String
-    fst:Boolean := true()
-    arrStr:String := "->"
-    for arrow in arrs repeat
-      if not fst then s:=concat(s,",")
-      s:=concat([s,arrow.name,":",math_to_string ls.(arrow.fromOb).value,arrStr,_
-             math_to_string ls.(arrow.toOb).value])$String
-      fst := false()
-    s
-
    -- returns true if x 'equals' y
    -- this is a looser version of equality test but is not as
    -- general as isomorphism.
@@ -1753,16 +2076,8 @@ FiniteGraph(S): Category == Definition where
     if #arx ~= #ary then return false
     for i in 1..#arx repeat
       if arx.i.fromOb ~= ary.i.fromOb then
-        --sayMsg concat(["looseEquals i=",(math_to_string i)@String,_
-        -- " x fromOb=",(math_to_string arx.i.fromOb)@String,_
-        -- " y fromOb=",(math_to_string ary.i.fromOb)@String_
-        -- ])$String
         return false
       if arx.i.toOb ~= ary.i.toOb then
-        --sayMsg concat(["looseEquals i=",(math_to_string i)@String,_
-        -- " x toOb=",(math_to_string arx.i.toOb)@String,_
-        -- " y toOb=",(math_to_string ary.i.toOb)@String_
-        -- ])$String
         return false
     true
 
@@ -1770,7 +2085,33 @@ FiniteGraph(S): Category == Definition where
 
    hash(s:%): SingleInteger == 0$SingleInteger
 
-   latex(s:%): String == "\mbox{\bf Unimplemented}"
+   -- return string representation
+   -- I'm not sure how latex(s:%) is intended to be used but
+   -- there is nothing specifically latex here, it just returns a
+   -- string description of the graph.
+   latex(n:%): String ==
+    -- s holds result that we are constructing
+    s:String := ""
+    -- first represent objects in s
+    ls: List OBJT := getVertices(n)
+    for i in ls repeat
+      if s=""
+        then s:=latex(i.value)
+        else s := concat([s,",",latex(i.value)])
+    arrs:List ARROW := getArrows(n)
+    if arrs=nil() then return s
+    -- now represent arrows in s
+    -- arrs is List ARROW
+    if arrs=nil() then return s
+    s:=concat([s,"|"])$String
+    fst:Boolean := true()
+    arrStr:String := "->"
+    for arrow in arrs repeat
+      if not fst then s:=concat(s,",")
+      s:=concat([s,arrow.name,":",latex(ls.(arrow.fromOb).value),arrStr,_
+             latex(ls.(arrow.toOb).value)])$String
+      fst := false()
+    s
 
    -- returns true if x equals y
    -- this is equality and not isomorphism
@@ -1784,17 +2125,96 @@ FiniteGraph(S): Category == Definition where
    -- returns true if x is not equal to y
    _~_=(x:%,y:%) : Boolean == not(x=y)
 
-   -- output
+
+   -- this is a local function used by coerce(n: %):OutputForm
+   -- it is used when outputting second order graphs to
+   -- avoid a massive output to command line if we displayed
+   -- full details of inner graphs. Instead we just represent
+   -- inner graphs by integers 1,2,3...
+   coerceSubgraph(n: %):OutputForm ==
+    -- s holds result that we are constructing
+    s:OutputForm := empty()
+    -- first represent objects in s
+    ls: List OBJT := getVertices(n)
+    for i in 1..#ls repeat
+      st:OutputForm := i::OutputForm
+      if s=empty()$OutputForm
+        then s := st
+        else s := hconcat([s,","::OutputForm,st])$OutputForm
+    arrs:List ARROW := getArrows(n)
+    if arrs=nil() then return s
+    -- now represent arrows in s
+    -- arrs is List ARROW
+    if arrs=nil() then return s
+    s:=hconcat([s,"|"::OutputForm])$OutputForm
+    fst:Boolean := true()
+    arrStr:OutputForm := "->"::OutputForm
+    for arrow in arrs repeat
+      stFrom:OutputForm := (arrow.fromOb)::OutputForm
+      stTo:OutputForm := (arrow.toOb)::OutputForm
+      if not fst then s:=hconcat(s,","::OutputForm)
+      s:=hconcat([s,(arrow.name)::OutputForm,":"::OutputForm,_
+             stFrom,arrStr,stTo])$OutputForm
+      fst := false()
+    s
+
+   -- output graph to OutputForm
    coerce(n: %):OutputForm ==
-    toString(n)::OutputForm
+    -- s holds result that we are constructing
+    if S has DirectedGraph(String) then return coerceSubgraph(n)
+    s:OutputForm := empty()
+    -- first represent objects in s
+    ls: List OBJT := getVertices(n)
+    for i in ls repeat
+      st:OutputForm :=(i.value)::OutputForm
+      if s=empty()$OutputForm
+        then s := st
+        else s := hconcat([s,","::OutputForm,st])$OutputForm
+    arrs:List ARROW := getArrows(n)
+    if arrs=nil() then return s
+    -- now represent arrows in s
+    -- arrs is List ARROW
+    if arrs=nil() then return s
+    s:=hconcat([s,"|"::OutputForm])$OutputForm
+    fst:Boolean := true()
+    arrStr:OutputForm := "->"::OutputForm
+    for arrow in arrs repeat
+      stFrom:OutputForm := (ls.(arrow.fromOb).value)::OutputForm
+      stTo:OutputForm := (ls.(arrow.toOb).value)::OutputForm
+      if not fst then s:=hconcat(s,","::OutputForm)
+      s:=hconcat([s,(arrow.name)::OutputForm,":"::OutputForm,_
+             stFrom,arrStr,stTo])$OutputForm
+      fst := false()
+    s
+
 @
 
 \section{domain DGRPH DirectedGraph}
+
+DirectedGraph is an implementation of FiniteGraph.
+
+We start with the concept of a graph as a set of external 'objects'
+(graph defined over a set of some type) together with pairs of
+indices to represent the arrows.
+
+Because the arrows are defined in terms of indices this means that the
+order of the objects becomes important and therefore must be held in a
+list/array rather than a set.
+
+For DirectedGraph then:
+arrow(x,y) is not necessarily equal to arrow(y,x)
+Whereas for UndirectedGraph then:
+arrow(x,y) = arrow(y,x) so in searches we should always get a match
+regardless of order.
+
+DirectedGraph has additional information for notation and for drawing
+diagrams.
+
 <<domain DGRPH DirectedGraph>>=
 )abbrev domain DGRPH DirectedGraph
 ++ Author: Martin Baker
 ++ Date Created: December 2011
-++ Date Last Updated: February 2012
+++ Date Last Updated: March 2012
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: graph theory
@@ -1810,25 +2230,25 @@ DirectedGraph(S): Exports == Implementation where
  NNI==> NonNegativeInteger
  OBJT ==> Record(value:S,posX:NNI,posY:NNI)
  ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
-           toOb:NNI,xOffset:Integer,yOffset:Integer)
+           toOb:NNI,xOffset:Integer,yOffset:Integer,map:List NNI)
  SPROD ==> Product(S,S)
  GRPHPROD ==> DirectedGraph SPROD
  OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI)
  DF ==> DoubleFloat
  PT ==> SCartesian(2)
- BOUNDS ==> Record(mins:PT,maxs:PT)
 
  Exports ==> FiniteGraph(S) with
 
-  directedGraph:(ob:List S) -> %
-    ++ constructor for graph with given list of
-    ++ object names. Use this version of the constructor
-    ++ if you don't intend to create diagrams and therefore don't
-    ++ care about x,y coordinates.
-    ++ more objects and arrows can be added later if required.
-  directedGraph:(ob:List OBJT) -> %
-    ++ constructor for graph with given objects
-    ++ more objects and arrows can be added later if required.
+  directedGraph:(objs:List S) -> %
+    ++ directedGraph(ob) is a constructor for graph with given list
+    ++ of object names and no arrows. Use this version of the
+    ++ constructor if you don't want to create specific x,y
+    ++ coordinates. more objects and arrows can be added later if
+    ++ required.
+  directedGraph:(objs:List OBJT) -> %
+    ++ directedGraph(ob) is a constructor for graph with given
+    ++ objects ob, more objects and arrows can be added later
+    ++ if required.
   directedGraph:(ob:List OBJT,ar:List ARROW) -> %
     ++ directedGraph(ob, ar) construcs graph with objects ob
     ++ and arrows ar, more objects and arrows can be added
@@ -1837,15 +2257,18 @@ DirectedGraph(S): Exports == Implementation where
     ++ directedGraph(ob, am) construcs graph with objects ob
     ++ and adjacency matrix am.
   directedGraph:(perms:List Permutation S) -> %
-    ++ construct graph from a list of permutations.
+    ++ directedGraph(perms) constructs graph from a list of
+    ++ permutations: perms.
   "*":(%,%) -> GRPHPROD
-    ++ tensor product : the tensor product G*H of graphs G and H is
+    ++ "*"(a,b) returns a tensor product : the tensor product G*H of
+    ++ graphs G and H is
     ++ a graph such that the vertex set of G*H is the Cartesian
     ++ product V(G) \times V(H); and any two vertices (u,u') and (v,v')
     ++ are adjacent in G \times H if and only if u' is adjacent with
     ++ v' and u is adjacent with v.
   cartesian:(%,%) -> GRPHPROD
-    ++ Cartesian product: the vertex set of G o H is the Cartesian
+    ++ cartesian(a,b) returns a Cartesian product: the vertex set of
+    ++ G o H is the Cartesian
     ++ product V(G) \times V(H) and any two vertices (u,u') and (v,v')
     ++  are adjacent in G o H if and only if either
     ++ u = v and u' is adjacent with v' in H, or
@@ -1865,6 +2288,8 @@ DirectedGraph(S): Exports == Implementation where
     ++ http://en.wikipedia.org/wiki/Complement_graph
   coerce:(pg:PermutationGroup S) -> %
     ++ coerce PermutationGroup to graph
+  coerce:(lst:List S) -> %
+    ++ coerce List to graph
 
  Implementation ==> add
 
@@ -1896,17 +2321,17 @@ DirectedGraph(S): Exports == Implementation where
         arrows:List ARROW_
         )
 
-  sayMsg ==> sayBrightly$Lisp
-  math_to_string ==> mathObject2String$Lisp
-
-  -- constructor for graph with given list of
-  -- object names. Use this version of the constructor
-  -- if you don't intend to create diagrams and therefore don't
-  -- care about x,y coordinates.
+  -- constructor for graph with given list of object names and
+  -- no arrows. Use this version of the constructor
+  -- if you don't want to create specific x,y coordinates.
   -- more objects and arrows can be added later if required.
-  directedGraph(ob:List S): % ==
-    objs: List OBJT := [[x,0::NNI,0::NNI] for x in ob]
-    [objs,[]]
+  directedGraph(objs:List S): % ==
+    obs:List OBJT := []
+    for ob in objs for obn in 1..#(objs) repeat
+      -- build objects
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+    [obs,[]]
 
   -- constructor for graph with given objects
   -- more objects and arrows can be added later if required.
@@ -1922,16 +2347,15 @@ DirectedGraph(S): Exports == Implementation where
   -- matrix.
   directedGraph(objs:List S,am:List List NNI):% ==
     obs:List OBJT := []
-    for obn in 1..#(objs) repeat
+    for ob in objs for obn in 1..#(objs) repeat
       -- build objects
-      ob := objs.obn
       o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
       obs := concat(obs,o)
     ar:List ARROW := []
     for i in 1..#am repeat
       for j in 1..#(am.i) repeat
         if (am.i).j = 1 then
-          a: ARROW := ["a",0::NNI,i,j,0::Integer,0::Integer]
+          a: ARROW := ["a",0::NNI,i,j,0::Integer,0::Integer,[]]
           ar := concat(ar,a)
     [obs,ar]
 
@@ -1952,12 +2376,8 @@ DirectedGraph(S): Exports == Implementation where
         else
           for v in im repeat
             if position(v,obs)<1 then obs :=concat(obs,v)
-    --sayMsg concat(["directedGraph obs=",math_to_string obs,
-    --  " #perms=",string(#perms),
-    --  " #obs=",string(#obs)])$String
     -- then create table for arrows
     tab: List List NNI := [[b for a in 1..#perms] for b in 1..#obs]
-    --sayMsg concat(["directedGraph empty tab=",math_to_string tab])$String
     for perm in perms for pi in 1..#perms repeat
       lr := listRepresentation(perm) -- get list of image-preimage pairs
       im:List S := lr.image
@@ -1965,22 +2385,15 @@ DirectedGraph(S): Exports == Implementation where
       for pt in 1..#im repeat
         pin:Integer := position(im.pt,obs)$List(S)
         pout:Integer := position(preim.pt,obs)$List(S)
-        --sayMsg concat(["directedGraph pin=",math_to_string pin,_
-        --  " pout=",math_to_string pout,_
-        --  " pi=",math_to_string pi])$String
         (tab.(pin::NNI)).pi := pout::NNI
-    --sayMsg concat(["directedGraph tab=",math_to_string tab])$String
     -- then create vertex and arrow lists
     verts:List OBJT := []
     ars:List ARROW := []
     for vert in obs for i in 1..#obs repeat
-      --x := tab.i
-      --sayMsg concat(["directedGraph i=",math_to_string i,_
-      --  " tab.i=",math_to_string x])$String
       o: OBJT := [vert,createX(#obs,i),createY(#obs,i)]
       verts := concat(verts,o)
       for arrNum in tab.i repeat
-        a: ARROW := ["a",0::NNI,i,arrNum,0::Integer,0::Integer]
+        a: ARROW := ["a",0::NNI,i,arrNum,0::Integer,0::Integer,[]]
         ars := concat(ars,a)
     [verts,ars]
 
@@ -2011,7 +2424,25 @@ DirectedGraph(S): Exports == Implementation where
   -- n2 is the index of the end object
   addArrow!(s:%,nm:String,n1:NNI,n2:NNI):% ==
     arrss:List ARROW := s.arrows
-    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer]
+    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer,[]]
+    if arrss=nil()
+      then
+        s.arrows := [a]
+        return s
+      else
+        arrs:List ARROW := concat(arrss,a)
+        s.arrows := arrs
+        return s
+
+  -- adds an arrow to this graph,where:
+  -- s is the graph where the arrow is to be added
+  -- nm is the name of the arrow
+  -- n1 is the index of the start object
+  -- n2 is the index of the end object
+  -- mp is a map represented by this arrow
+  addArrow!(s:%,nm:String,n1:NNI,n2:NNI,mp:List NNI):% ==
+    arrss:List ARROW := s.arrows
+    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer,mp]
     if arrss=nil()
       then
         s.arrows := [a]
@@ -2029,6 +2460,71 @@ DirectedGraph(S): Exports == Implementation where
   getArrows(s:%):List ARROW ==
     s.arrows
 
+  -- flatten(n) takes a second order graph, that is a graph
+  -- whose elements are themselves graphs and create a first
+  -- order graph whose vertices are the vertices of the inner
+  -- graphs.
+  flatten(n:DirectedGraph(%)):% ==
+    OBJT2 ==> Record(value:%,posX:NNI,posY:NNI)
+    v:List OBJT2 := getVertices(n)$DirectedGraph(%)
+    OBJT3 ==> Record(value:S,posX:NNI,posY:NNI)
+    innerValues:List OBJT3:= []
+    offset:NNI := 0
+    offsets:List NNI := []
+    innerArrows:List List ARROW := []
+    for v2 in v repeat
+      v3 := v2.value
+      obs:List OBJT3 := getVertices(v3)$(%)
+      obs2:List OBJT3 := []
+      for ob in obs repeat
+        px:NNI := ob.posX + 4*(v2.posX)
+        py:NNI := ob.posY + 4*(v2.posY)
+        ob2:OBJT3 := [ob.value,px,py]
+        obs2 := concat(obs2,ob2)
+      innerValues := concat(innerValues,obs2)
+      ina:List ARROW := getArrows(v3)$(%)
+      innerArrows := concat(innerArrows,ina)
+      offsets := concat(offsets,offset)
+      offset := offset + #obs
+    iv:List OBJT := innerValues pretend (List OBJT)
+    a:List ARROW := []
+    --maps:List List NNI := []
+    --print bracket([x::OutputForm for x in offsets])
+    for a2 in innerArrows for a2n in 1..#innerArrows repeat
+      for a3 in a2 repeat
+        name2:String:= a3.name
+        arrType2:NNI:= a3.arrType
+        fromOb2:NNI:= a3.fromOb + offsets.a2n
+        toOb2:NNI:= a3.toOb + offsets.a2n
+        xOffset2:Integer:= a3.xOffset
+        yOffset2:Integer:= a3.yOffset
+        map2:= a3.map
+        --print hconcat(["dgraph flatten a2n="::OutputForm,a2n::OutputForm,_
+        --           " name2="::OutputForm,name2::OutputForm,_
+        --           " arrType2="::OutputForm,arrType2::OutputForm,_
+        --           " fromOb2="::OutputForm,fromOb2::OutputForm,_
+        --           " toOb2="::OutputForm,toOb2::OutputForm,_
+        --           " xOffset2="::OutputForm,xOffset2::OutputForm,_
+        --           " yOffset2="::OutputForm,yOffset2::OutputForm])$OutputForm
+        arr:ARROW := [name2,arrType2,fromOb2,toOb2,xOffset2,yOffset2,map2]
+        a := concat(a,arr)
+        --maps := concat(maps,map2)
+    outerArrows:List ARROW := getArrows(n)
+    for oa3 in outerArrows repeat
+      name3:String:= oa3.name
+      arrType3:NNI:= oa3.arrType
+      fromOb3:NNI:= offsets.(oa3.fromOb) + 1
+      toOb3:NNI:= offsets.(oa3.toOb) + 1
+      xOffset3:Integer:= oa3.xOffset
+      yOffset3:Integer:= oa3.yOffset
+      map3:= oa3.map
+      for endi in map3 for starti in 1..#map3 repeat
+        fromOb3:NNI:= offsets.(oa3.fromOb) + starti
+        toOb3:NNI:= offsets.(oa3.toOb) + endi
+        arr:ARROW := [name3,arrType3,fromOb3,toOb3,xOffset3,yOffset3,[]]
+        a := concat(a,arr)
+    [iv,a]
+
   -- constructs a graph without vertices or edges
   initial(): % ==
     [[],[]]
@@ -2036,7 +2532,7 @@ DirectedGraph(S): Exports == Implementation where
   -- constructs a graph with a single vertex and a single loop
   terminal(a:S):% ==
     o: OBJT := [a,0::NNI,0::NNI]
-    ar: ARROW := ["loop",0::NNI,1::NNI,1::NNI,0::Integer,0::Integer]
+    ar: ARROW := ["loop",0::NNI,1::NNI,1::NNI,0::Integer,0::Integer,[]]
     [[o],[ar]]
 
   -- constructs a graph with vertices (from objs) connected in a
@@ -2058,7 +2554,8 @@ DirectedGraph(S): Exports == Implementation where
       next:NNI := obn+1
       if next-1 = #(objs) then next := obn
       if next <= #(objs) then
-        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,_
+                     0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -2080,7 +2577,8 @@ DirectedGraph(S): Exports == Implementation where
       next:NNI := obn+1
       if next-1 = #(objs) then next := 1::NNI
       if next <= #(objs) then
-        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,_
+                     0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -2099,7 +2597,8 @@ DirectedGraph(S): Exports == Implementation where
       o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
       obs := concat(obs,o)
       -- build arrows
-      a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obn,0::Integer,0::Integer]
+      a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obn,_
+                   0::Integer,0::Integer,[]]
       ars := concat(ars,a)
       arn := arn + 1
     [obs,ars]
@@ -2121,7 +2620,8 @@ DirectedGraph(S): Exports == Implementation where
       -- build arrows
       for obm in 1..#(objs) repeat
        if obn ~= obm then
-        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obm,0::Integer,0::Integer]
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obm,_
+                     0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -2134,7 +2634,7 @@ DirectedGraph(S): Exports == Implementation where
     lb:List ARROW := []
     for ba in b.arrows repeat
       arr: ARROW := [ba.name,ba.arrType,_
-         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset]
+         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset,[]]
       lb := concat(lb,arr)$(List ARROW)
     la:List ARROW := concat(a.arrows,lb)
     [lo,la]
@@ -2165,7 +2665,7 @@ DirectedGraph(S): Exports == Implementation where
       toI:NNI := bmap.(ba.toOb + bStart)
       fromI:NNI := bmap.(ba.fromOb + bStart)
       arr: ARROW := [ba.name,ba.arrType,_
-         fromI,toI,ba.xOffset,ba.yOffset]
+         fromI,toI,ba.xOffset,ba.yOffset,ba.map]
       lb := concat(lb,arr)$(List ARROW)
     la:List ARROW := concat(a.arrows,lb)
     [mergedObjects,la]
@@ -2186,12 +2686,6 @@ DirectedGraph(S): Exports == Implementation where
         y:NNI := byi*diagramHeight(a)+ayi
         widtha:NNI := diagramWidth(a)
         heighta:NNI := diagramHeight(a)
-        --sayMsg concat(["objProd axi=",math_to_string axi,_
-        -- " ayi=",math_to_string ayi,_
-        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
-        -- " widtha=",math_to_string widtha," heighta=",math_to_string heighta,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
         sp:SPROD := construct(ai,bi)$SPROD
         ob:OBJTPROD := [sp,x,y]
         newObjs := concat(newObjs,ob)
@@ -2218,17 +2712,11 @@ DirectedGraph(S): Exports == Implementation where
       for av in 1..#a.objects repeat
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
-            --sayMsg concat(["* graph au=",math_to_string au,_
-            -- " av=",math_to_string av,_
-            -- " bu=",math_to_string bu,_
-            -- " bv=",math_to_string bv_
-            -- ])$String
             if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
-              --sayMsg "add arrow"
               an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     directedGraph(objProd(a,b),newArrs)$GRPHPROD
 
@@ -2245,22 +2733,14 @@ DirectedGraph(S): Exports == Implementation where
       for av in 1..#a.objects repeat
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
-            --sayMsg concat(["* graph au=", math_to_string au,_
-            -- " av=",math_to_string av,_
-            -- " bu=",math_to_string bu,_
-            -- " bv=",math_to_string bv_
-            -- ])$String
             if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
                ((au = av) and isDirectSuccessor?(b,bu,bv)) then
               an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
-                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
-                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
-              --pu := indexProd(b,au,bu)
-              --pv := indexProd(b,av,bv)
-              --sayMsg concat(["add arrow:",an," ",math_to_string pu,"->",math_to_string pv])
+                    then concat([arrowName(a,au,av),"#",string(bv)])_
+                    else concat([arrowName(b,bu,bv),"#",string(av)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     directedGraph(objProd(a,b),newArrs)$GRPHPROD
 
@@ -2296,11 +2776,10 @@ DirectedGraph(S): Exports == Implementation where
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
             if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
-              --sayMsg "add arrow"
               an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     directedGraph(closedObjProd(a,b,f),newArrs)
 
@@ -2316,11 +2795,11 @@ DirectedGraph(S): Exports == Implementation where
             if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
                ((au = av) and isDirectSuccessor?(b,bu,bv)) then
               an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
-                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
-                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+                    then concat([arrowName(a,au,av),"#",string(bv)])_
+                    else concat([arrowName(b,bu,bv),"#",string(av)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     directedGraph(closedObjProd(a,b,f),newArrs)
 
@@ -2338,7 +2817,7 @@ DirectedGraph(S): Exports == Implementation where
       for j in 1..#obs repeat
         if not isDirectSuccessor?(s,i,j) then
           newArr: ARROW := [concat(string(i),string(j)),0::NNI,_
-                       i,j,0,0]
+                       i,j,0,0,[]]
           newArrs := concat(newArrs,newArr)
     [obs,newArrs]
 
@@ -2359,7 +2838,7 @@ DirectedGraph(S): Exports == Implementation where
     for oldArrow in s.arrows repeat
       newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
                        m.(oldArrow.fromOb),m.(oldArrow.toOb),_
-                       oldArrow.xOffset,oldArrow.yOffset]
+                       oldArrow.xOffset,oldArrow.yOffset,oldArrow.map]
       newArrs := concat(newArrs,newArr)
     [newObjs,newArrs]
 
@@ -2376,21 +2855,65 @@ DirectedGraph(S): Exports == Implementation where
     for oldArrow in s.arrows repeat
       newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
                        m.(oldArrow.toOb),m.(oldArrow.fromOb),_
-                       oldArrow.xOffset,oldArrow.yOffset]
+                       oldArrow.xOffset,oldArrow.yOffset,oldArrow.map]
       newArrs := concat(newArrs,newArr)
     [newObjs,newArrs]
 
   -- coerce PermutationGroup to graph
   coerce(pg:PermutationGroup S):% ==
     directedGraph(pg::(List Permutation S))
+
+  -- coerce List to graph
+  coerce(lst:List S):% ==
+    obs:List OBJT := []
+    ars:List ARROW := []
+    arn:Integer := 1::NNI
+    for ob in lst for obn in 1..#(lst) repeat
+      -- build objects
+      o: OBJT := [ob,createX(#lst,obn),createY(#lst,obn)]
+      obs := concat(obs,o)
+      -- build arrows
+      next:NNI := obn+1
+      if next <= #(lst) then
+        a: ARROW := [concat("a",string(arn)),0::NNI,obn,next,_
+                     0::Integer,0::Integer,[]]
+        ars := concat(ars,a)
+        arn := arn + 1
+    [obs,ars]
+
 @
 
 \section{domain FNGRPH FunctionGraph}
+
+FunctionGraph is an implementation of FiniteGraph.
+
+The purpose of these domains is to use graphs to represent various
+types of mapping, an individual FunctionGraph can represent an
+endomap.
+
+These above constraints mean that these graphs are coded more
+efficiently by using specific domains for them. It means that we
+can do various operations such as the coAdjoint, contraAdjoint,
+apply and limit functions. In addition to the graphs themselves
+representing maps we can also define each individual arrow to
+represent a map.
+
+In 'FunctionGraph' each vertex has one outgoing arrow and In
+'MultifunctionGraph' each vertex has exactly 'n' outgoing arrows
+where 'n' is the same for every vertex.
+
+They use a different representation where the arrow information
+is directly associated with each vertex. As its name suggests
+'FunctionGraph' can represent a function, a mapping where the
+domain and codomain are the same finite set of objects over which
+it is defined (endomap). 'MultifunctionGraph' can represent
+multiple function graphs such as Cayley graphs.
+
 <<domain FNGRPH FunctionGraph>>=
 )abbrev domain FNGRPH FunctionGraph
 ++ Author: Martin Baker
 ++ Date Created: January 2011
-++ Date Last Updated: February 2012
+++ Date Last Updated: March 2012
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: graph theory
@@ -2406,17 +2929,16 @@ FunctionGraph(S): Exports == Implementation where
  -- the following represent the graph in FiniteGraph
  OBJT ==> Record(value:S,posX:NNI,posY:NNI)
  ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
-           toOb:NNI,xOffset:Integer,yOffset:Integer)
+           toOb:NNI,xOffset:Integer,yOffset:Integer,map:List NNI)
  -- represent the graph in this domain
- FOBJT ==> Record(value:S,posX:NNI,posY:NNI,next:NNI)
+ FOBJT ==> Record(value:S,posX:NNI,posY:NNI,next:NNI,map:List NNI)
 
  SPROD ==> Product(S,S)
  GRPHPROD ==> FunctionGraph SPROD
- OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,next:NNI)
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,next:NNI,map:List NNI)
  AJMAP ==> Union(List NNI,"failed")
  DF ==> DoubleFloat
  PT ==> SCartesian(2)
- BOUNDS ==> Record(mins:PT,maxs:PT)
 
  Exports ==> FiniteGraph(S) with
 
@@ -2481,16 +3003,13 @@ FunctionGraph(S): Exports == Implementation where
   -- coding.
   Rep := Record(objects: List FOBJT)
 
-  sayMsg ==> sayBrightly$Lisp
-  math_to_string ==> mathObject2String$Lisp
-
   -- constructor for graph with given list of
   -- object names. Use this version of the constructor
   -- if you don't intend to create diagrams and therefore don't
   -- care about x,y coordinates.
   -- more objects and arrows can be added later if required.
   functionGraph(ob:List S): % ==
-    objs: List FOBJT := [[x,0::NNI,0::NNI,0::NNI] for x in ob]
+    objs: List FOBJT := [[x,0::NNI,0::NNI,0::NNI,[]] for x in ob]
     [objs]
 
   -- constructor for graph with given objects
@@ -2509,7 +3028,7 @@ FunctionGraph(S): Exports == Implementation where
     fobs:List FOBJT := []
     for fn in 1..#ob repeat
       f := ob.fn
-      fo: FOBJT := [f.value,f.posX,f.posY,arrs.fn]
+      fo: FOBJT := [f.value,f.posX,f.posY,arrs.fn,[]]
       fobs := concat(fobs,fo)
     [fobs]
 
@@ -2525,7 +3044,7 @@ FunctionGraph(S): Exports == Implementation where
       n: NNI := 1
       for j in 1..#preim repeat
         if im.i = preim.j then n := j
-      o: FOBJT := [vert,createX(#im,i),createY(#im,i),n]
+      o: FOBJT := [vert,createX(#im,i),createY(#im,i),n,[]]
       obs := concat(obs,o)
     [obs]
 
@@ -2533,7 +3052,7 @@ FunctionGraph(S): Exports == Implementation where
   -- The added object loops back to itself
   addObject!(s:%,n:S):% ==
     obs:List FOBJT := s.objects
-    obj:FOBJT := [n,0::NNI,0::NNI,#obs]
+    obj:FOBJT := [n,0::NNI,0::NNI,#obs,[]]
     if obs=nil()
       then s.objects := [obj]
       else s.objects := concat(obs,obj)
@@ -2570,7 +3089,7 @@ FunctionGraph(S): Exports == Implementation where
     res:List ARROW := []
     for sojn in 1..#(s.objects) repeat
       soj:FOBJT := (s.objects).sojn
-      a: ARROW := [string(sojn),0::NNI,sojn,soj.next,0,0]
+      a: ARROW := [string(sojn),0::NNI,sojn,soj.next,0,0,soj.map]
       res := concat(res,a)
     res
 
@@ -2580,7 +3099,7 @@ FunctionGraph(S): Exports == Implementation where
 
   -- constructs a graph with a single vertex and a single loop
   terminal(a:S):% ==
-    o: FOBJT := [a,0::NNI,0::NNI,1::NNI]
+    o: FOBJT := [a,0::NNI,0::NNI,1::NNI,[]]
     [[o]]
 
   -- constructs a graph with objects given connected in a
@@ -2592,7 +3111,7 @@ FunctionGraph(S): Exports == Implementation where
       ob := objs.obn
       n:NNI := obn+1
       if obn = #(objs) then n := #(objs)
-      o: FOBJT := [ob,createX(#objs,obn),createY(#objs,obn),n]
+      o: FOBJT := [ob,createX(#objs,obn),createY(#objs,obn),n,[]]
       obs := concat(obs,o)
     [obs]
 
@@ -2605,14 +3124,14 @@ FunctionGraph(S): Exports == Implementation where
       ob := objs.obn
       n:NNI := obn+1
       if obn = #(objs) then n := 1::NNI
-      o: FOBJT := [ob,createX(#objs,obn),createY(#objs,obn),n]
+      o: FOBJT := [ob,createX(#objs,obn),createY(#objs,obn),n,[]]
       obs := concat(obs,o)
     [obs]
 
   -- constructs a graph with objects given and arrows from
   -- each object only to itself.
   unit(objs:List S,arrowName:String):% ==
-    objs: List FOBJT := [[objs.x,0::NNI,0::NNI,x::NNI] for x in 1..#objs]
+    objs: List FOBJT := [[objs.x,0::NNI,0::NNI,x::NNI,[]] for x in 1..#objs]
     [objs]
 
   -- constructs a graph with objects given and fully connected
@@ -2628,7 +3147,7 @@ FunctionGraph(S): Exports == Implementation where
     objs: List FOBJT := b.objects
     c: List FOBJT := [[(objs.x).value,_
          (objs.x).posX,(objs.x).posY,_
-         (x::NNI)+#(a.objects)] for x in 1..#objs]
+         (x::NNI)+#(a.objects),(objs.x).map] for x in 1..#objs]
     [concat(a.objects,c)]
 
   -- sum : union (not necessarily disjoint) of vertices with arrows
@@ -2642,9 +3161,6 @@ FunctionGraph(S): Exports == Implementation where
   -- product to calculate the new index.
   indexProd(aObj:%,a:NNI,b:NNI):NNI ==
     x:NNI := a + ((b::Integer-1)::NNI * #aObj.objects)
-    --sayMsg concat(["indexProd a=",string(a),_
-    --               " b=",string(b),_
-    --               " a*b=",string(x)])$String
     x
 
   -- tensor product : the tensor product A*B of graphs A and B is
@@ -2670,14 +3186,8 @@ FunctionGraph(S): Exports == Implementation where
         x:NNI := bxi*diagramWidth(a)+axi
         y:NNI := byi*diagramHeight(a)+ayi
         nextA := indexProd(b,bni,ani)
-        --sayMsg concat(["objProd axi=",math_to_string axi,_
-        -- " ayi=",math_to_string ayi,_
-        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
-        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
         sp:SPROD := construct(ai,bi)$SPROD
-        ob:OBJTPROD := [sp,x,y,nextA]
+        ob:OBJTPROD := [sp,x,y,nextA,[]]
         newObjs := concat(newObjs,ob)
     functionGraph(newObjs)$GRPHPROD
 
@@ -2700,13 +3210,8 @@ FunctionGraph(S): Exports == Implementation where
         y:NNI := byi*diagramHeight(a)+ayi
         nextA := indexProd(b,bni,ani)
         sp:S := f(ai,bi)
-        ob:FOBJT := [sp,x,y,nextA]
+        ob:FOBJT := [sp,x,y,nextA,[]]
         newObjs := concat(newObjs,ob)
-        --sayMsg concat(["objProd ai=",math_to_string ai,_
-        -- " bi=",math_to_string bi,_
-        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
     functionGraph(newObjs)
 
   -- create a new graph by mapping from this one
@@ -2716,9 +3221,7 @@ FunctionGraph(S): Exports == Implementation where
   -- less objects than s (for surjective mapping) or
   -- more objects than s (for injective mapping)
   map(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
-    newObjs:List FOBJT := [[o,0::NNI,0::NNI,0::NNI] for o in newOb]
-    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
-    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    newObjs:List FOBJT := [[o,0::NNI,0::NNI,0::NNI,[]] for o in newOb]
     oldObjs:List FOBJT := s.objects
     for oi in 1..#oldObjs repeat
       oldObj := oldObjs.oi
@@ -2728,15 +3231,9 @@ FunctionGraph(S): Exports == Implementation where
       newX := ((oldObj.posX)+offsetX)::NNI
       newY := ((oldObj.posY)+offsetY)::NNI
       newNext := m.(oldObj.next)
-      nv:FOBJT :=[newObj,newX,newY,newNext] -- assemble new vertex
+      nv:FOBJT :=[newObj,newX,newY,newNext,oldObj.map] -- assemble new vertex
       if i ~= inext then newObjs.i:= nv -- add it if it does not
                                         -- point to itself
-      --sayMsg concat(["map oi=",string(oi),_
-      -- " i=",string(i),_
-      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
-      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
-      -- " newNext=",math_to_string newNext_
-      -- ])$String
     -- make sure all newObjs have 'next' set to valid index
     for p in 1..#newObjs repeat
       nwob := newObjs.p
@@ -2747,9 +3244,7 @@ FunctionGraph(S): Exports == Implementation where
   -- similar to map function but reverses the directions of
   -- the arrows
   mapContra(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
-    newObjs:List FOBJT := [[o,0::NNI,0::NNI,0::NNI] for o in newOb]
-    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
-    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    newObjs:List FOBJT := [[o,0::NNI,0::NNI,0::NNI,[]] for o in newOb]
     oldObjs:List FOBJT := s.objects
     for oi in 1..#oldObjs repeat
       oldObj := oldObjs.oi
@@ -2761,14 +3256,8 @@ FunctionGraph(S): Exports == Implementation where
       incoming:List NNI := nodeToNode(s,oi)
       if #incoming ~= 1 then error "not a FunctionGraph"
       newNext := m.(first incoming)
-      n:FOBJT :=[newObj,newX,newY,newNext]
+      n:FOBJT :=[newObj,newX,newY,newNext,oldObj.map]
       if i ~= inext then newObjs.i:= n
-      --sayMsg concat(["map oi=",string(oi),_
-      -- " i=",string(i),_
-      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
-      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
-      -- " newNext=",math_to_string newNext_
-      -- ])$String
     -- make sure all newObjs have 'next' set to valid index
     for p in 1..#newObjs repeat
       nwob := newObjs.p
@@ -2783,22 +3272,15 @@ FunctionGraph(S): Exports == Implementation where
     codomainSize:NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret:List NNI := [0::NNI for x in 1..codomainSize]
-    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
-    -- " codomainSize=",string(codomainSize)])$String
     retOpt:List List NNI := [[] for x in 1..codomainSize]
     for mi in 1..#m repeat
-      --sayMsg concat(["coAdjoint mi=",string(mi),_
-      -- " m.mi=",string(m.mi)])$String
       retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
-    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
     entry:NNI := 1
     for ri in retOpt repeat
       x := max(s,ri)
       if x = 0 then return "failed"
       ret.entry := x
       entry := entry + 1
-      --sayMsg concat(["coAdjoint ret.",string(entry),_
-      -- "=",string(x)])$String
     ret
 
   -- given a mapping from this graph this function tries to
@@ -2808,22 +3290,15 @@ FunctionGraph(S): Exports == Implementation where
     codomainSize:NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret:List NNI := [0::NNI for x in 1..codomainSize]
-    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
-    -- " codomainSize=",string(codomainSize)])$String
     retOpt:List List NNI := [[] for x in 1..codomainSize]
     for mi in 1..#m repeat
-      --sayMsg concat(["coAdjoint mi=",string(mi),_
-      -- " m.mi=",string(m.mi)])$String
       retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
-    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
     entry:NNI := 1
     for ri in retOpt repeat
       x := min(s,ri)
       if x = 0 then return "failed"
       ret.entry := x
       entry := entry + 1
-      --sayMsg concat(["coAdjoint ret.",string(entry),_
-      -- "=",string(x)])$String
     ret
 
   -- apply 'function' represented by this graph to vertex
@@ -2849,11 +3324,33 @@ FunctionGraph(S): Exports == Implementation where
 @
 
 \section{domain UDGRPH UndirectedGraph}
+
+UndirectedGraph is an implementation of FiniteGraph.
+
+For DirectedGraph then:
+arrow(x,y) is not necessarily equal to arrow(y,x)
+Whereas for UndirectedGraph then:
+arrow(x,y) = arrow(y,x) so in searches we should always get a match
+regardless of order.
+
+Therefore these domains are represented in the same way, the
+difference being whether order is taken into account when comparing
+arrows.
+
+In the case of UndirectedGraph, when we request a list of all arrows,
+then the list will contain both arrow(x,y) and arrow(y,x) for
+compatibility with DirectedGraph. That is:
+An UndirectedGraph with arrow(x,y) is equivalent to:
+A DirectedGraph with arrow(x,y) and arrow(y,x).
+
+Both DirectedGraph and UndirectedGraph have additional information
+for notation and for drawing diagrams.
+
 <<domain UDGRPH UndirectedGraph>>=
 )abbrev domain UDGRPH UndirectedGraph
 ++ Author: Martin Baker
 ++ Date Created: January 2012
-++ Date Last Updated: January 2012
+++ Date Last Updated: March 2012
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: graph theory
@@ -2868,13 +3365,12 @@ UndirectedGraph(S): Exports == Implementation where
  NNI==> NonNegativeInteger
  OBJT ==> Record(value:S,posX:NNI,posY:NNI)
  ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
-           toOb:NNI,xOffset:Integer,yOffset:Integer)
+           toOb:NNI,xOffset:Integer,yOffset:Integer,map:List NNI)
  SPROD ==> Product(S,S)
  GRPHPROD ==> UndirectedGraph SPROD
  OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI)
  DF ==> DoubleFloat
  PT ==> SCartesian(2)
- BOUNDS ==> Record(mins:PT,maxs:PT)
 
  Exports ==> FiniteGraph(S) with
 
@@ -2940,9 +3436,6 @@ UndirectedGraph(S): Exports == Implementation where
         arrows:List ARROW_
         )
 
-  sayMsg ==> sayBrightly$Lisp
-  math_to_string ==> mathObject2String$Lisp
-
   isDirected?() == false
 
   -- constructor for graph with given list of
@@ -2977,7 +3470,7 @@ UndirectedGraph(S): Exports == Implementation where
     for i in 1..#am repeat
       for j in 1..#(am.i) repeat
         if (am.i).j = 1 then
-          a: ARROW := ["a",0::NNI,i,j,0::Integer,0::Integer]
+          a: ARROW := ["a",0::NNI,i,j,0::Integer,0::Integer,[]]
           ar := concat(ar,a)
     [obs,ar]
 
@@ -3008,7 +3501,25 @@ UndirectedGraph(S): Exports == Implementation where
   -- n2 is the index of the end object
   addArrow!(s:%,nm:String,n1:NNI,n2:NNI):% ==
     arrss:List ARROW := s.arrows
-    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer]
+    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer,[]]
+    if arrss=nil()
+      then
+        s.arrows := [a]
+        return s
+      else
+        arrs:List ARROW := concat(arrss,a)
+        s.arrows := arrs
+        return s
+
+  -- adds an arrow to this graph,where:
+  -- s is the graph where the arrow is to be added
+  -- nm is the name of the arrow
+  -- n1 is the index of the start object
+  -- n2 is the index of the end object
+  -- mp is a map represented by this arrow
+  addArrow!(s:%,nm:String,n1:NNI,n2:NNI,mp:List NNI):% ==
+    arrss:List ARROW := s.arrows
+    a: ARROW := [nm,0::NNI,n1,n2,0::Integer,0::Integer,mp]
     if arrss=nil()
       then
         s.arrows := [a]
@@ -3026,10 +3537,12 @@ UndirectedGraph(S): Exports == Implementation where
   getArrows(s:%):List ARROW ==
     as:List ARROW := []
     for a in s.arrows repeat
-      forwAr:ARROW := [a.name,a.arrType,a.fromOb,a.toOb,a.xOffset,a.yOffset]
+      forwAr:ARROW := [a.name,a.arrType,a.fromOb,a.toOb,a.xOffset,_
+                       a.yOffset,a.map]
       as := concat(as,forwAr)$(List ARROW)
     for a in s.arrows repeat
-      revAr:ARROW := [a.name,a.arrType,a.toOb,a.fromOb,a.xOffset,a.yOffset]
+      revAr:ARROW := [a.name,a.arrType,a.toOb,a.fromOb,a.xOffset,_
+                      a.yOffset,a.map]
       as := concat(as,revAr)$(List ARROW)
     as
 
@@ -3040,7 +3553,7 @@ UndirectedGraph(S): Exports == Implementation where
   -- constructs a graph with a single vertex and a single loop
   terminal(a:S):% ==
     o: OBJT := [a,0::NNI,0::NNI]
-    ar: ARROW := ["loop",0::NNI,1::NNI,1::NNI,0::Integer,0::Integer]
+    ar: ARROW := ["loop",0::NNI,1::NNI,1::NNI,0::Integer,0::Integer,[]]
     [[o],[ar]]
 
   -- constructs a graph with objects given connected in a
@@ -3057,7 +3570,8 @@ UndirectedGraph(S): Exports == Implementation where
       -- build arrows
       next:NNI := obn+1
       if next <= #(objs) then
-        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,_
+                     0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -3077,7 +3591,8 @@ UndirectedGraph(S): Exports == Implementation where
       next:NNI := obn+1
       if next-1 = #(objs) then next := 1::NNI
       if next <= #(objs) then
-        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,0::Integer,0::Integer]
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,next,_
+                     0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -3094,7 +3609,8 @@ UndirectedGraph(S): Exports == Implementation where
       o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
       obs := concat(obs,o)
       -- build arrows
-      a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obn,0::Integer,0::Integer]
+      a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obn,_
+                   0::Integer,0::Integer,[]]
       ars := concat(ars,a)
       arn := arn + 1
     [obs,ars]
@@ -3114,7 +3630,8 @@ UndirectedGraph(S): Exports == Implementation where
       -- build arrows
       for obm in 1..#(objs) repeat
        if obn ~= obm then
-        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obm,0::Integer,0::Integer]
+        a: ARROW := [concat(arrowName,string(arn)),0::NNI,obn,obm,_
+                     0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -3127,7 +3644,7 @@ UndirectedGraph(S): Exports == Implementation where
     lb:List ARROW := []
     for ba in b.arrows repeat
       arr: ARROW := [ba.name,ba.arrType,_
-         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset]
+         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset,ba.map]
       lb := concat(lb,arr)$(List ARROW)
     la:List ARROW := concat(a.arrows,lb)
     [lo,la]
@@ -3158,7 +3675,7 @@ UndirectedGraph(S): Exports == Implementation where
       toI:NNI := bmap.(ba.toOb + bStart)
       fromI:NNI := bmap.(ba.fromOb + bStart)
       arr: ARROW := [ba.name,ba.arrType,_
-         fromI,toI,ba.xOffset,ba.yOffset]
+         fromI,toI,ba.xOffset,ba.yOffset,ba.map]
       lb := concat(lb,arr)$(List ARROW)
     la:List ARROW := concat(a.arrows,lb)
     [mergedObjects,la]
@@ -3179,12 +3696,6 @@ UndirectedGraph(S): Exports == Implementation where
         y:NNI := byi*diagramHeight(a)+ayi
         widtha:NNI := diagramWidth(a)
         heighta:NNI := diagramHeight(a)
-        --sayMsg concat(["objProd axi=",math_to_string axi,_
-        -- " ayi=",math_to_string ayi,_
-        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
-        -- " widtha=",math_to_string widtha," heighta=",math_to_string heighta,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
         sp:SPROD := construct(ai,bi)$SPROD
         ob:OBJTPROD := [sp,x,y]
         newObjs := concat(newObjs,ob)
@@ -3211,17 +3722,11 @@ UndirectedGraph(S): Exports == Implementation where
       for av in 1..#a.objects repeat
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
-            --sayMsg concat(["* graph au=",math_to_string au,_
-            -- " av=",math_to_string av,_
-            -- " bu=",math_to_string bu,_
-            -- " bv=",math_to_string bv_
-            -- ])$String
             if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
-              --sayMsg "add arrow"
               an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     undirectedGraph(objProd(a,b),newArrs)$GRPHPROD
 
@@ -3238,22 +3743,14 @@ UndirectedGraph(S): Exports == Implementation where
       for av in 1..#a.objects repeat
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
-            --sayMsg concat(["* graph au=", math_to_string au,_
-            -- " av=",math_to_string av,_
-            -- " bu=",math_to_string bu,_
-            -- " bv=",math_to_string bv_
-            -- ])$String
             if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
                ((au = av) and isDirectSuccessor?(b,bu,bv)) then
               an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
-                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
-                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
-              --pu := indexProd(b,au,bu)
-              --pv := indexProd(b,av,bv)
-              --sayMsg concat(["add arrow:",an," ",math_to_string pu,"->",math_to_string pv])
+                    then concat([arrowName(a,au,av),"#",string(bv)])_
+                    else concat([arrowName(b,bu,bv),"#",string(av)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     undirectedGraph(objProd(a,b),newArrs)$GRPHPROD
 
@@ -3289,11 +3786,10 @@ UndirectedGraph(S): Exports == Implementation where
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
             if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
-              --sayMsg "add arrow"
               an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     undirectedGraph(closedObjProd(a,b,f),newArrs)
 
@@ -3309,11 +3805,11 @@ UndirectedGraph(S): Exports == Implementation where
             if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
                ((au = av) and isDirectSuccessor?(b,bu,bv)) then
               an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
-                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
-                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+                    then concat([arrowName(a,au,av),"#",string(bv)])_
+                    else concat([arrowName(b,bu,bv),"#",string(av)])
               arr: ARROW := [an,0::NNI,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List ARROW)
     undirectedGraph(closedObjProd(a,b,f),newArrs)
 
@@ -3334,7 +3830,7 @@ UndirectedGraph(S): Exports == Implementation where
     for oldArrow in s.arrows repeat
       newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
                        m.(oldArrow.fromOb),m.(oldArrow.toOb),_
-                       oldArrow.xOffset,oldArrow.yOffset]
+                       oldArrow.xOffset,oldArrow.yOffset,oldArrow.map]
       newArrs := concat(newArrs,newArr)
     [newObjs,newArrs]
 
@@ -3351,17 +3847,56 @@ UndirectedGraph(S): Exports == Implementation where
     for oldArrow in s.arrows repeat
       newArr: ARROW := [oldArrow.name,oldArrow.arrType,_
                        m.(oldArrow.toOb),m.(oldArrow.fromOb),_
-                       oldArrow.xOffset,oldArrow.yOffset]
+                       oldArrow.xOffset,oldArrow.yOffset,oldArrow.map]
       newArrs := concat(newArrs,newArr)
     [newObjs,newArrs]
 @
 
 \section{domain MFGRPH MultifunctionGraph}
+
+MultifunctionGraph is an implementation of FiniteGraph.
+
+The purpose of this domain is to use graphs to represent various
+types of mapping, including endomaps, maps between different sets,
+Cayley graphs, (and related stuff like Schreier coset graph,
+graphs of permutations and so on). We can do various operations
+such as the coAdjoint, contraAdjoint, apply and limit functions.
+In addition to the graphs themselves representing maps we can also
+define each individual arrow to represent a map.
+
+Because we are representing mappings we place two additional
+constraints on the graph:
+\begin{itemize}
+\item We have a fixed number of outgoing arrows per vertex.
+\item The ordering of outgoing arrows is significant.
+\end{itemize}
+
+To illustrate the second point imagine a Cayley graph with a
+red arrow and a blue arrow leaving each node, now imagine if,
+on one vertex, we swap the red and blue arrows, this would
+completely change the structure being represented. Chances are
+that it would no longer be a valid group. So ordering preservation
+is very important.
+
+These above constraints mean that these graphs are coded more
+efficiently by using specific domains for them.
+
+In 'FunctionGraph' each vertex has one outgoing arrow and In
+'MultifunctionGraph' each vertex has exactly 'n' outgoing arrows
+where 'n' is the same for every vertex.
+
+They use a different representation where the arrow information
+is directly associated with each vertex. As its name suggests
+'FunctionGraph' can represent a function, a mapping where the
+domain and codomain are the same finite set of objects over which
+it is defined (endomap). 'MultifunctionGraph' can represent
+multiple function graphs such as Cayley graphs.
+
 <<domain MFGRPH MultifunctionGraph>>=
 )abbrev domain MFGRPH MultifunctionGraph
 ++ Author: Martin Baker
 ++ Date Created: January 2012
-++ Date Last Updated: February 2012
+++ Date Last Updated: March 2012
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: graph theory
@@ -3377,17 +3912,17 @@ MultifunctionGraph(S): Exports == Implementation where
  -- the following represent the graph in FiniteGraph
  OBJT ==> Record(value:S,posX:NNI,posY:NNI)
  ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
-           toOb:NNI,xOffset:Integer,yOffset:Integer)
+           toOb:NNI,xOffset:Integer,yOffset:Integer,map:List NNI)
  -- represent the graph in this domain
- MFOBJT ==> Record(value:S,posX:NNI,posY:NNI,next:List NNI)
-
+ MFOBJT ==> Record(value:S,posX:NNI,posY:NNI,next:List NNI,_
+                                      map:List List NNI)
  SPROD ==> Product(S,S)
  GRPHPROD ==> MultifunctionGraph SPROD
- OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,next:List NNI)
+ OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,next:List NNI,_
+                                      map:List List NNI)
  AJMAP ==> Union(List NNI,"failed")
  DF ==> DoubleFloat
  PT ==> SCartesian(2)
- BOUNDS ==> Record(mins:PT,maxs:PT)
 
  Exports ==> FiniteGraph(S) with
 
@@ -3403,6 +3938,9 @@ MultifunctionGraph(S): Exports == Implementation where
   multifunctionGraph:(ob:List OBJT,ar:List ARROW) -> %
     ++ constructor for graph with given objects and arrows
     ++ more objects and arrows can be added later if required.
+  multifunctionGraph:(objs:List S,am:List List NNI) -> %
+    ++ constructor for graph with given objects and adjacency
+    ++ matrix.
   multifunctionGraph:(perms:List Permutation S) -> %
     ++ construct graph from a list of permutations.
   "*":(%,%) -> GRPHPROD
@@ -3442,6 +3980,19 @@ MultifunctionGraph(S): Exports == Implementation where
   coerce:(pg:PermutationGroup S) -> %
     ++ coerce PermutationGroup to graph which
     ++ represents the generators of the group
+  toCayleyGraph:(permList:List Permutation S,_
+                permutationNames: Boolean) -> _
+                MultifunctionGraph(String)
+    ++ convert permutation generators to a Cayley graph
+    ++ permList should contain generator permutations and should
+    ++ not contain identity permutation.
+    ++ if permutationNames then names generated represent permutation
+  toCayleyGraph:(pg:PermutationGroup S) -> _
+                MultifunctionGraph(String)
+    ++ convert PermutationGroup to a Cayley graph
+  toPermutation:(s:%) -> PermutationGroup(NNI)
+    ++ generates a permutation group from this graph
+    ++ assumes this graph represents a valid group
 
  Implementation ==> add
 
@@ -3458,7 +4009,6 @@ MultifunctionGraph(S): Exports == Implementation where
   -- rule that there can only be 'n' outgoing arrows for each vertex.
   Rep := Record(objects: List MFOBJT)
 
-  sayMsg ==> sayBrightly$Lisp
   math_to_string ==> mathObject2String$Lisp
 
   -- constructor for graph with given list of
@@ -3467,7 +4017,7 @@ MultifunctionGraph(S): Exports == Implementation where
   -- care about x,y coordinates.
   -- more objects and arrows can be added later if required.
   multifunctionGraph(ob:List S): % ==
-    objs: List MFOBJT := [[x,0::NNI,0::NNI,[1::NNI]] for x in ob]
+    objs: List MFOBJT := [[x,0::NNI,0::NNI,[1::NNI],[]] for x in ob]
     [objs]
 
   -- constructor for graph with given objects
@@ -3484,9 +4034,23 @@ MultifunctionGraph(S): Exports == Implementation where
       too:NNI := a.toOb
       arrs.fromo := too
     fobs:List MFOBJT := []
-    for fn in 1..#ob repeat
-      f := ob.fn
-      fo: MFOBJT := [f.value,f.posX,f.posY,[arrs.fn]]
+    for f in ob for fn in 1..#ob repeat
+      fo: MFOBJT := [f.value,f.posX,f.posY,[arrs.fn],[]]
+      fobs := concat(fobs,fo)
+    [fobs]
+
+  -- constructor for graph with given objects and adjacency
+  -- matrix.
+  multifunctionGraph(objs:List S,am:List List NNI):% ==
+    obs:List OBJT := []
+    for obn in 1..#(objs) repeat
+      -- build objects
+      ob := objs.obn
+      o: OBJT := [ob,createX(#objs,obn),createY(#objs,obn)]
+      obs := concat(obs,o)
+    fobs:List MFOBJT := []
+    for f in obs for fn in 1..#obs repeat
+      fo: MFOBJT := [f.value,f.posX,f.posY,[am.fn],[]]
       fobs := concat(fobs,fo)
     [fobs]
 
@@ -3507,12 +4071,8 @@ MultifunctionGraph(S): Exports == Implementation where
         else
           for v in im repeat
             if position(v,obs)<1 then obs :=concat(obs,v)
-    --sayMsg concat(["multifunctionGraph obs=",math_to_string obs,
-    --  " #perms=",string(#perms),
-    --  " #obs=",string(#obs)])$String
     -- then create table for arrows
     tab: List List NNI := [[b for a in 1..#perms] for b in 1..#obs]
-    --sayMsg concat(["multifunctionGraph empty tab=",math_to_string tab])$String
     for perm in perms for pi in 1..#perms repeat
       lr := listRepresentation(perm) -- get list of image-preimage pairs
       im:List S := lr.image
@@ -3520,18 +4080,12 @@ MultifunctionGraph(S): Exports == Implementation where
       for pt in 1..#im repeat
         pin:Integer := position(im.pt,obs)$List(S)
         pout:Integer := position(preim.pt,obs)$List(S)
-        --sayMsg concat(["multifunctionGraph pin=",math_to_string pin,_
-        --  " pout=",math_to_string pout,_
-        --  " pi=",math_to_string pi])$String
         (tab.(pin::NNI)).pi := pout::NNI
-    --sayMsg concat(["multifunctionGraph tab=",math_to_string tab])$String
     -- then create vertex list
     verts:List MFOBJT := []
     for vert in obs for i in 1..#obs repeat
       --x := tab.i
-      --sayMsg concat(["multifunctionGraph i=",math_to_string i,_
-      --  " tab.i=",math_to_string x])$String
-      o: MFOBJT := [vert,createX(#obs,i),createY(#obs,i),tab.i]
+      o: MFOBJT := [vert,createX(#obs,i),createY(#obs,i),tab.i,[]]
       verts := concat(verts,o)
     [verts]
 
@@ -3539,7 +4093,7 @@ MultifunctionGraph(S): Exports == Implementation where
   -- The added object loops back to itself
   addObject!(s:%,n:S):% ==
     obs:List MFOBJT := s.objects
-    obj:MFOBJT := [n,0::NNI,0::NNI,[#obs]]
+    obj:MFOBJT := [n,0::NNI,0::NNI,[#obs],[]]
     if obs=nil()
       then s.objects := [obj]
       else s.objects := concat(obs,obj)
@@ -3565,7 +4119,6 @@ MultifunctionGraph(S): Exports == Implementation where
 
   -- returns a list of all the vertices (or objects)
   getVertices(s:%):List OBJT ==
-    --sayMsg concat(["getVertices ="])$String
     res:List OBJT := []
     for soj in s.objects repeat
       o: OBJT := [soj.value,soj.posX,soj.posY]
@@ -3574,12 +4127,11 @@ MultifunctionGraph(S): Exports == Implementation where
 
   -- returns a list of all the arrows (or edges)
   getArrows(s:%):List ARROW ==
-    --sayMsg concat(["getArrows ="])$String
     res:List ARROW := []
     for sojn in 1..#(s.objects) repeat
       soj:MFOBJT := (s.objects).sojn
       for ar in soj.next for ai in 1..#(soj.next) repeat
-        a: ARROW := [concat(string(sojn),string(ai)),0::NNI,sojn,ar,0,0]
+        a: ARROW := [concat(string(sojn),string(ai)),0::NNI,sojn,ar,0,0,[]]
         res := concat(res,a)
     res
 
@@ -3589,7 +4141,7 @@ MultifunctionGraph(S): Exports == Implementation where
 
   -- constructs a graph with a single vertex and a single loop
   terminal(a:S):% ==
-    o: MFOBJT := [a,0::NNI,0::NNI,[1::NNI]]
+    o: MFOBJT := [a,0::NNI,0::NNI,[1::NNI],[]]
     [[o]]
 
   -- constructs a graph with objects given connected in a
@@ -3601,7 +4153,7 @@ MultifunctionGraph(S): Exports == Implementation where
       ob := objs.obn
       n:NNI := obn+1
       if obn = #(objs) then n := #(objs)
-      o: MFOBJT := [ob,createX(#objs,obn),createY(#objs,obn),[n]]
+      o: MFOBJT := [ob,createX(#objs,obn),createY(#objs,obn),[n],[]]
       obs := concat(obs,o)
     [obs]
 
@@ -3614,14 +4166,14 @@ MultifunctionGraph(S): Exports == Implementation where
       ob := objs.obn
       n:NNI := obn+1
       if obn = #(objs) then n := 1::NNI
-      o: MFOBJT := [ob,createX(#objs,obn),createY(#objs,obn),[n]]
+      o: MFOBJT := [ob,createX(#objs,obn),createY(#objs,obn),[n],[]]
       obs := concat(obs,o)
     [obs]
 
   -- constructs a graph with objects given and arrows from
   -- each object only to itself.
   unit(objs:List S,arrowName:String):% ==
-    objs: List MFOBJT := [[objs.x,0::NNI,0::NNI,[x::NNI]] for x in 1..#objs]
+    objs: List MFOBJT := [[objs.x,0::NNI,0::NNI,[x::NNI],[]] for x in 1..#objs]
     [objs]
 
   -- constructs a graph with objects given and fully connected
@@ -3637,7 +4189,7 @@ MultifunctionGraph(S): Exports == Implementation where
     objs: List MFOBJT := b.objects
     c: List MFOBJT := [[(objs.x).value,_
          (objs.x).posX,(objs.x).posY,_
-         [(x::NNI)+#(a.objects)]] for x in 1..#objs]
+         [(x::NNI)+#(a.objects)],[]] for x in 1..#objs]
     [concat(a.objects,c)]
 
   -- sum : union (not necessarily disjoint) of vertices with arrows
@@ -3705,14 +4257,8 @@ MultifunctionGraph(S): Exports == Implementation where
         x:NNI := bxi*diagramWidth(a)+axi
         y:NNI := byi*diagramHeight(a)+ayi
         nextA := tensorNext(b,bni,ani)
-        --sayMsg concat(["objProd axi=",math_to_string axi,_
-        -- " ayi=",math_to_string ayi,_
-        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
-        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
         sp:SPROD := construct(ai,bi)$SPROD
-        ob:OBJTPROD := [sp,x,y,nextA]
+        ob:OBJTPROD := [sp,x,y,nextA,[]]
         newObjs := concat(newObjs,ob)
     multifunctionGraph(newObjs)$GRPHPROD
 
@@ -3738,14 +4284,8 @@ MultifunctionGraph(S): Exports == Implementation where
         x:NNI := bxi*diagramWidth(a)+axi
         y:NNI := byi*diagramHeight(a)+ayi
         nextA := cartesianNext(b,bni,ani,bptr,aptr)
-        --sayMsg concat(["objProd axi=",math_to_string axi,_
-        -- " ayi=",math_to_string ayi,_
-        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
-        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
         sp:SPROD := construct(ai,bi)$SPROD
-        ob:OBJTPROD := [sp,x,y,nextA]
+        ob:OBJTPROD := [sp,x,y,nextA,[]]
         newObjs := concat(newObjs,ob)
     multifunctionGraph(newObjs)$GRPHPROD
 
@@ -3768,13 +4308,8 @@ MultifunctionGraph(S): Exports == Implementation where
         y:NNI := byi*diagramHeight(a)+ayi
         nextA := tensorNext(b,bni,ani)
         sp:S := f(ai,bi)
-        ob:MFOBJT := [sp,x,y,nextA]
+        ob:MFOBJT := [sp,x,y,nextA,[]]
         newObjs := concat(newObjs,ob)
-        --sayMsg concat(["objProd ai=",math_to_string ai,_
-        -- " bi=",math_to_string bi,_
-        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
     multifunctionGraph(newObjs)
 
   -- as tensor product but returns %.
@@ -3796,13 +4331,8 @@ MultifunctionGraph(S): Exports == Implementation where
         y:NNI := byi*diagramHeight(a)+ayi
         nextA := cartesianNext(b,bni,ani,bptr,aptr)
         sp:S := f(ai,bi)
-        ob:MFOBJT := [sp,x,y,nextA]
+        ob:MFOBJT := [sp,x,y,nextA,[]]
         newObjs := concat(newObjs,ob)
-        --sayMsg concat(["objProd ai=",math_to_string ai,_
-        -- " bi=",math_to_string bi,_
-        -- " nexta=",math_to_string ani," nextb=",math_to_string bni,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
     multifunctionGraph(newObjs)
 
   -- The complement or inverse of a graph is a graph on the same
@@ -3817,7 +4347,7 @@ MultifunctionGraph(S): Exports == Implementation where
       nextA:List NNI := []
       for x in 1..#(s.objects) repeat
         if position(x,aoi.next) = 0 then nextA:=concat(nextA,x)
-      ob:MFOBJT := [aoi.value,aoi.posX,aoi.posY,nextA]
+      ob:MFOBJT := [aoi.value,aoi.posX,aoi.posY,nextA,[]]
       newObjs := concat(newObjs,ob)
     [newObjs]
 
@@ -3828,9 +4358,7 @@ MultifunctionGraph(S): Exports == Implementation where
   -- less objects than s (for surjective mapping) or
   -- more objects than s (for injective mapping)
   map(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
-    newObjs:List MFOBJT := [[o,0::NNI,0::NNI,[]] for o in newOb]
-    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
-    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    newObjs:List MFOBJT := [[o,0::NNI,0::NNI,[],[]] for o in newOb]
     oldObjs:List MFOBJT := s.objects
     for oi in 1..#oldObjs repeat
       oldObj := oldObjs.oi
@@ -3841,22 +4369,14 @@ MultifunctionGraph(S): Exports == Implementation where
       newNext:List NNI := []
       for n in oldObj.next repeat
         newNext := concat(newNext,m.n)
-      nv:MFOBJT :=[newObj,newX,newY,newNext] -- assemble new vertex
+      nv:MFOBJT :=[newObj,newX,newY,newNext,[]] -- assemble new vertex
       newObjs.i:= nv -- replace holding value
-      --sayMsg concat(["map oi=",string(oi),_
-      -- " i=",string(i),_
-      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
-      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
-      -- " newNext=",math_to_string newNext_
-      -- ])$String
     [newObjs]
 
   -- similar to map function but reverses the directions of
   -- the arrows
   mapContra(s:%,m: List NNI,newOb:List S,offsetX:Integer,offsetY:Integer):% ==
-    newObjs:List MFOBJT := [[o,0::NNI,0::NNI,[]] for o in newOb]
-    --sayMsg concat(["map newObjs=",math_to_string newObjs])$String
-    --sayMsg concat(["map s.objects=",math_to_string s.objects])$String
+    newObjs:List MFOBJT := [[o,0::NNI,0::NNI,[],[]] for o in newOb]
     oldObjs:List MFOBJT := s.objects
     for oi in 1..#oldObjs repeat
       oldObj := oldObjs.oi
@@ -3868,14 +4388,8 @@ MultifunctionGraph(S): Exports == Implementation where
       for n in oldObj.next repeat
         incoming:List NNI := nodeToNode(s,m.n)
         newNext := concat(newNext,incoming)
-      nv:MFOBJT :=[newObj,newX,newY,newNext] -- assemble new vertex
+      nv:MFOBJT :=[newObj,newX,newY,newNext,[]] -- assemble new vertex
       newObjs.i:= nv -- replace holding value
-      --sayMsg concat(["map oi=",string(oi),_
-      -- " i=",string(i),_
-      -- " newObj=",math_to_string newObj," inext=",math_to_string inext,_
-      -- " newX=",math_to_string newX," newY=",math_to_string newY,_
-      -- " newNext=",math_to_string newNext_
-      -- ])$String
     [newObjs]
 
   -- given a mapping from this graph this function tries to
@@ -3885,22 +4399,15 @@ MultifunctionGraph(S): Exports == Implementation where
     codomainSize:NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret:List NNI := [0::NNI for x in 1..codomainSize]
-    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
-    -- " codomainSize=",string(codomainSize)])$String
     retOpt:List List NNI := [[] for x in 1..codomainSize]
     for mi in 1..#m repeat
-      --sayMsg concat(["coAdjoint mi=",string(mi),_
-      -- " m.mi=",string(m.mi)])$String
       retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
-    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
     entry:NNI := 1
     for ri in retOpt repeat
       x := max(s,ri)
       if x = 0 then return "failed"
       ret.entry := x
       entry := entry + 1
-      --sayMsg concat(["coAdjoint ret.",string(entry),_
-      -- "=",string(x)])$String
     ret
 
   -- given a mapping from this graph this function tries to
@@ -3910,28 +4417,20 @@ MultifunctionGraph(S): Exports == Implementation where
     codomainSize:NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret:List NNI := [0::NNI for x in 1..codomainSize]
-    --sayMsg concat(["coAdjoint domainSize=",string(domainSize),_
-    -- " codomainSize=",string(codomainSize)])$String
     retOpt:List List NNI := [[] for x in 1..codomainSize]
     for mi in 1..#m repeat
-      --sayMsg concat(["coAdjoint mi=",string(mi),_
-      -- " m.mi=",string(m.mi)])$String
       retOpt.(m.mi) := concat(retOpt.(m.mi),mi)
-    --sayMsg concat(["coAdjoint retOpt=",math_to_string retOpt])$String
     entry:NNI := 1
     for ri in retOpt repeat
       x := min(s,ri)
       if x = 0 then return "failed"
       ret.entry := x
       entry := entry + 1
-      --sayMsg concat(["coAdjoint ret.",string(entry),_
-      -- "=",string(x)])$String
     ret
 
   -- apply 'function' represented by this graph to vertex
   -- index 'a'
   apply(s:%,a:NNI,m:NNI):NNI ==
-    --sayMsg concat(["apply a=",string(a)," m=",string(m)])$String
     (((s.objects).a).next).m
 
   -- apply 'function' represented by this graph to 'a'
@@ -3954,14 +4453,163 @@ MultifunctionGraph(S): Exports == Implementation where
   coerce(pg:PermutationGroup S):% ==
     multifunctionGraph(pg::(List Permutation S))
 
+  -- local function used by toCayleyGraph
+  -- find position of entry in list
+  -- if not found returns 0
+  permIndex(entry: Permutation S,lps2:List Permutation S): NNI ==
+    dimen:NNI := # lps2
+    resu:NNI := 0
+    for i in 1..dimen repeat
+      e2:Permutation S := lps2.i
+      if entry = e2 then resu := i::NNI
+    resu
+
+  -- local function used by toCayleyGraph
+  -- apply * of permutations to the permutation generators to get a
+  -- list of any new permutations found, this does not include the original
+  -- generators.
+  -- generateNewPerms returns a record containing:
+  --   prm:List Permutation S -- a permutation for each entry
+  --   nam:List String        -- a name for each entry
+  generateNewPerms(gens2:List Permutation S,stngs:List String,_
+                         permutationNames: Boolean):_
+                         Record(prm:List Permutation S,nam:List String) ==
+    dimen:NNI := # gens2
+    resu:List Permutation S := [] -- list of new permutations found
+    resstr:List String := []      -- names of new permutations found
+    for i in 1..dimen repeat
+      for j in 1..dimen repeat
+        p:Permutation S := (gens2.i)*(gens2.j)
+        foundNew:Boolean := (not member?(p,gens2)) and (not member?(p,resu))
+        if foundNew then
+          resu := concat(resu,p)
+          if permutationNames
+           then
+            resstr := concat(resstr,(math_to_string p)@String)
+           else
+            resstr := concat(resstr,concat(stngs.i,stngs.j))
+    [resu,resstr]
+
+  -- local function used by toCayleyGraph
+  -- generate string name for identity or nth generator in sequence:
+  -- a,b,c,d,e,f...
+  generateName(n: NNI): String ==
+    ascii:NNI := 96
+    -- miss out "i" since that is reserved for identity
+    if n>8 then ascii := 97
+    (char(ascii+n)$Character)::String
+
+  -- local function used by toCayleyGraph
+  -- generate string names for identity and generators
+  generateNames(n: NNI): List String ==
+    n = 0 => ["0"]
+    [generateName(ptr2) for ptr2 in 1..n]
+
+  -- local function used by toCayleyGraph
+  -- generate cycle names for identity and generators
+  generateNamesCycle(g: List Permutation S): List String ==
+    -- set s1 to name of identity
+    s1:String := (math_to_string 1$(Permutation S))@String
+    -- set s2 to names of remaining generators
+    s2:List String := [(math_to_string ptr2)@String for ptr2 in g]
+    concat(s1,s2)
+
+  -- convert permutation generators to a Cayley graph
+  -- permList should contain generator permutations and should
+  -- not contain identity permutation.
+  -- if permutationNames then names generated represent permutation
+  toCayleyGraph(permList:List Permutation S,permutationNames: Boolean):_
+                MultifunctionGraph(String) ==
+    -- first generate complete list of permutations from generators
+    -- assume generators don't contain identity so add it to start
+    elements:List Permutation S := permList
+    numGenerators:NNI := #permList
+    -- now multiply all permutations to get closed group
+    strngs:List String := generateNames(# elements)
+    if permutationNames then strngs := generateNamesCycle(permList)
+    --print(hconcat("toCayley strngs="::OutputForm,strngs::OutputForm))
+    -- we now generate a full list of permutations from the generators
+    -- we do this by repeatedly applying generateNewPerms until it
+    -- can't find any more.
+    contin:Boolean := true
+    while contin repeat
+      resu := generateNewPerms(elements,strngs,permutationNames)
+      contin := not empty?(resu.prm)
+      if contin then
+        elements := append(elements,resu.prm)
+        strngs := append(strngs,resu.nam)
+    -- now we need to move the identity permutation to first in list
+    idPos:Integer := position(one?,elements)
+    --print(hconcat("toCayley idPos="::OutputForm,idPos::OutputForm))
+    if idPos > 1 then
+      idPerm:=elements.idPos
+      elements := concat(idPerm,delete(elements,idPos))
+      strngs := concat("i",delete(strngs,idPos))
+    --print(hconcat("toCayley strngs="::OutputForm,strngs::OutputForm))
+    -- now calculate Cayley table
+    dimen:NNI := # elements
+    ct:List List NNI := [[_
+      permIndex((elements.i)*(elements.j),elements)
+        for j in 1..dimen] for i in 1..dimen]
+    --print(hconcat("toCayley ct="::OutputForm,ct::OutputForm))
+    -- now take out all but generator columns in table
+    gens:List List NNI := [_
+      first(rest(ct.i),numGenerators) for i in 1..dimen]
+    --print(hconcat("toCayley gens="::OutputForm,gens::OutputForm))
+    multifunctionGraph(strngs,gens)
+
+  -- convert PermutationGroup to Cayley graph
+  --
+  toCayleyGraph(pg:PermutationGroup S):MultifunctionGraph(String) ==
+    perms:(List Permutation S) := generators(pg)
+    toCayleyGraph(perms,false)
+
+  -- generates a permutation group from this graph
+  -- assumes this graph represents a valid group
+  toPermutation(s:%) : PermutationGroup(NNI) ==
+    lp:List Permutation NNI := []
+    preTable: List List NNI
+    objs:List MFOBJT := s.objects
+    for obj in objs for oi in 1..#objs repeat
+      newNext:List NNI := obj.next
+      preTable := concat(preTable,newNext)
+    -- transpose preTable to give cayleyTable
+    numRows := #preTable
+    numCols := #(first preTable)
+    cayleyTable: List List NNI := [[preTable.j.i for j in 1..numRows] for i in 1..numCols]
+    --print(hconcat("toPermutation cayleyTable="::OutputForm,cayleyTable::OutputForm))
+    preImgs := [p for p in 1..numRows]
+    for i in 1..(# cayleyTable) repeat
+      imgs := cayleyTable.i
+      --print(hconcat("toPermutation preImgs="::OutputForm,preImgs::OutputForm))
+      --print(hconcat("toPermutation imgs="::OutputForm,imgs::OutputForm))
+      p:(Permutation NNI) := coercePreimagesImages([preImgs,imgs])
+      lp := concat(lp,p)
+    permutationGroup(lp)
+
 @
 
 \section{domain WGRPH WeightedGraph}
+
+WeightedGraph is an implementation of FiniteGraph.
+
+This domain is the same as directed graph except that each vertex
+and each arrow has additional information (of category
+OrderedAbelianMonoid) to represent its 'weight'. This is used for
+route finding and related operations. Instead of choosing the route
+with the lowest number of hops, this domain chooses the route with
+the lowest overall weight. That is, the weight for a given route is
+the sum of the weights associated with each vertex and each arrow
+that the route passes through.
+
+Currently, only the weights for the arrows and not the weights for
+the vertices are used, I plan to correct this in the future.
+
 <<domain WGRPH WeightedGraph>>=
 )abbrev domain WGRPH WeightedGraph
 ++ Author: Martin Baker
 ++ Date Created: January 2012
-++ Date Last Updated: February 2012
+++ Date Last Updated: March 2012
 ++ Basic Operations:
 ++ Related Constructors:
 ++ Keywords: graph theory
@@ -3988,17 +4636,16 @@ WeightedGraph(S,W): Exports == Implementation where
  NNI==> NonNegativeInteger
  OBJT ==> Record(value:S,posX:NNI,posY:NNI)
  ARROW ==> Record(name:String,arrType:NNI,fromOb:NNI,_
-           toOb:NNI,xOffset:Integer,yOffset:Integer)
+           toOb:NNI,xOffset:Integer,yOffset:Integer,map:List NNI)
  -- represent the graph in this domain
  WOBJT ==> Record(value:S,posX:NNI,posY:NNI,weight:W)
  WARROW ==> Record(name:String,weight:W,fromOb:NNI,_
-           toOb:NNI,xOffset:Integer,yOffset:Integer)
+           toOb:NNI,xOffset:Integer,yOffset:Integer,map:List NNI)
  SPROD ==> Product(S,S)
  GRPHPROD ==> WeightedGraph(SPROD,W)
  OBJTPROD ==> Record(value:SPROD,posX:NNI,posY:NNI,weight:W)
  DF ==> DoubleFloat
  PT ==> SCartesian(2)
- BOUNDS ==> Record(mins:PT,maxs:PT)
 
  Exports ==> FiniteGraph(S) with
 
@@ -4050,7 +4697,11 @@ WeightedGraph(S,W): Exports == Implementation where
   closedCartesian:(a:%,b:%,f:(S,S)->S) -> %
     ++ as Cartesian product but returns %.
   weightedDistanceMatrix:(%) -> TwoDimensionalArray WEIGHT
-    ++ Distance weights between nodes.
+    ++ The elements of the returned array will represent the
+    ++ distance weights between vertices.
+    ++ if there is no connection between the vertices then the
+    ++ element will be set to "disjoint"
+
 
  Implementation ==> add
 
@@ -4082,9 +4733,6 @@ WeightedGraph(S,W): Exports == Implementation where
         arrows:List WARROW_
         )
 
-  sayMsg ==> sayBrightly$Lisp
-  math_to_string ==> mathObject2String$Lisp
-
   -- constructor for graph with given list of
   -- object names. Use this version of the constructor
   -- if you don't intend to create diagrams and therefore don't
@@ -4109,7 +4757,7 @@ WeightedGraph(S,W): Exports == Implementation where
   weightedGraph(ob:List OBJT,ar:List ARROW): % ==
     arrs:List WARROW := []
     for a in ar repeat
-      arro:WARROW := [a.name,0$W,a.fromOb,a.toOb,a.xOffset,a.yOffset]
+      arro:WARROW := [a.name,0$W,a.fromOb,a.toOb,a.xOffset,a.yOffset,a.map]
       arrs := concat(arrs,arro)
     fobs:List WOBJT := []
     for f in ob for fn in 1..#ob repeat
@@ -4130,7 +4778,7 @@ WeightedGraph(S,W): Exports == Implementation where
     for i in 1..#am repeat
       for j in 1..#(am.i) repeat
         if (am.i).j = 1 then
-          a: WARROW := ["a",0$W,i,j,0::Integer,0::Integer]
+          a: WARROW := ["a",0$W,i,j,0::Integer,0::Integer,[]]
           ar := concat(ar,a)
     [obs,ar]
 
@@ -4164,7 +4812,7 @@ WeightedGraph(S,W): Exports == Implementation where
   -- w is the weight of the arrow
   addWArrow!(s:%,nm:String,n1:NNI,n2:NNI,w:W):% ==
     arrss:List WARROW := s.arrows
-    a: WARROW := [nm,w,n1,n2,0::Integer,0::Integer]
+    a: WARROW := [nm,w,n1,n2,0::Integer,0::Integer,[]]
     if arrss=nil()
       then
         s.arrows := [a]
@@ -4176,7 +4824,6 @@ WeightedGraph(S,W): Exports == Implementation where
 
   -- returns a list of all the vertices (or objects)
   getVertices(s:%):List OBJT ==
-    --sayMsg concat(["getVertices ="])$String
     res:List OBJT := []
     for soj in s.objects repeat
       o: OBJT := [soj.value,soj.posX,soj.posY]
@@ -4189,7 +4836,7 @@ WeightedGraph(S,W): Exports == Implementation where
     arrs:List ARROW := []
     for a in s.arrows repeat
       aw: ARROW := [a.name,0::NNI,a.fromOb,a.toOb,_
-                     a.xOffset,a.yOffset]
+                     a.xOffset,a.yOffset,a.map]
       arrs := concat(arrs,aw)
     arrs
 
@@ -4200,7 +4847,7 @@ WeightedGraph(S,W): Exports == Implementation where
   -- constructs a graph with a single vertex and a single loop
   terminal(a:S):% ==
     o: WOBJT := [a,0::NNI,0::NNI,0$W]
-    ar: WARROW := ["loop",0$W,1::NNI,1::NNI,0::Integer,0::Integer]
+    ar: WARROW := ["loop",0$W,1::NNI,1::NNI,0::Integer,0::Integer,[]]
     [[o],[ar]]
 
   -- constructs a graph with objects given connected in a
@@ -4217,7 +4864,8 @@ WeightedGraph(S,W): Exports == Implementation where
       -- build arrows
       next:NNI := obn+1
       if next <= #(objs) then
-        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,next,0::Integer,0::Integer]
+        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,next,_
+                      0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -4237,7 +4885,8 @@ WeightedGraph(S,W): Exports == Implementation where
       next:NNI := obn+1
       if next-1 = #(objs) then next := 1::NNI
       if next <= #(objs) then
-        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,next,0::Integer,0::Integer]
+        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,next,_
+                      0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -4254,7 +4903,8 @@ WeightedGraph(S,W): Exports == Implementation where
       o: WOBJT := [ob,createX(#objs,obn),createY(#objs,obn),0$W]
       obs := concat(obs,o)
       -- build arrows
-      a: WARROW := [concat(arrowName,string(arn)),0$W,obn,obn,0::Integer,0::Integer]
+      a: WARROW := [concat(arrowName,string(arn)),0$W,obn,obn,_
+                    0::Integer,0::Integer,[]]
       ars := concat(ars,a)
       arn := arn + 1
     [obs,ars]
@@ -4274,7 +4924,8 @@ WeightedGraph(S,W): Exports == Implementation where
       -- build arrows
       for obm in 1..#(objs) repeat
        if obn ~= obm then
-        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,obm,0::Integer,0::Integer]
+        a: WARROW := [concat(arrowName,string(arn)),0$W,obn,obm,_
+                      0::Integer,0::Integer,[]]
         ars := concat(ars,a)
         arn := arn + 1
     [obs,ars]
@@ -4287,7 +4938,7 @@ WeightedGraph(S,W): Exports == Implementation where
     lb:List WARROW := []
     for ba in b.arrows repeat
       arr: WARROW := [ba.name,ba.weight,_
-         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset]
+         ba.fromOb + bStart,ba.toOb + bStart,ba.xOffset,ba.yOffset,ba.map]
       lb := concat(lb,arr)$(List WARROW)
     la:List WARROW := concat(a.arrows,lb)
     [lo,la]
@@ -4318,7 +4969,7 @@ WeightedGraph(S,W): Exports == Implementation where
       toI:NNI := bmap.(ba.toOb + bStart)
       fromI:NNI := bmap.(ba.fromOb + bStart)
       arr: WARROW := [ba.name,ba.weight,_
-         fromI,toI,ba.xOffset,ba.yOffset]
+         fromI,toI,ba.xOffset,ba.yOffset,ba.map]
       lb := concat(lb,arr)$(List WARROW)
     la:List WARROW := concat(a.arrows,lb)
     [mergedObjects,la]
@@ -4339,12 +4990,6 @@ WeightedGraph(S,W): Exports == Implementation where
         y:NNI := byi*diagramHeight(a)+ayi
         widtha:NNI := diagramWidth(a)
         heighta:NNI := diagramHeight(a)
-        --sayMsg concat(["objProd axi=",math_to_string axi,_
-        -- " ayi=",math_to_string ayi,_
-        -- " bxi=",math_to_string bxi," byi=",math_to_string byi,_
-        -- " widtha=",math_to_string widtha," heighta=",math_to_string heighta,_
-        -- " x=",math_to_string x," y=",math_to_string y_
-        -- ])$String
         sp:SPROD := construct(ai,bi)$SPROD
         ob:OBJTPROD := [sp,x,y,0$W]
         newObjs := concat(newObjs,ob)
@@ -4371,17 +5016,11 @@ WeightedGraph(S,W): Exports == Implementation where
       for av in 1..#a.objects repeat
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
-            --sayMsg concat(["* graph au=",math_to_string au,_
-            -- " av=",math_to_string av,_
-            -- " bu=",math_to_string bu,_
-            -- " bv=",math_to_string bv_
-            -- ])$String
             if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
-              --sayMsg "add arrow"
               an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
               arr: WARROW := [an,0$W,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List WARROW)
     weightedGraph(objProd(a,b),newArrs)$GRPHPROD
 
@@ -4398,22 +5037,14 @@ WeightedGraph(S,W): Exports == Implementation where
       for av in 1..#a.objects repeat
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
-            --sayMsg concat(["* graph au=", math_to_string au,_
-            -- " av=",math_to_string av,_
-            -- " bu=",math_to_string bu,_
-            -- " bv=",math_to_string bv_
-            -- ])$String
             if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
                ((au = av) and isDirectSuccessor?(b,bu,bv)) then
               an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
-                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
-                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
-              --pu := indexProd(b,au,bu)
-              --pv := indexProd(b,av,bv)
-              --sayMsg concat(["add arrow:",an," ",math_to_string pu,"->",math_to_string pv])
+                    then concat([arrowName(a,au,av),"#",string(bv)])_
+                    else concat([arrowName(b,bu,bv),"#",string(av)])
               arr: WARROW := [an,0$W,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List WARROW)
     weightedGraph(objProd(a,b),newArrs)$GRPHPROD
 
@@ -4449,11 +5080,10 @@ WeightedGraph(S,W): Exports == Implementation where
         for bu in 1..#b.objects repeat
           for bv in 1..#b.objects repeat
             if isDirectSuccessor?(a,au,av) and isDirectSuccessor?(b,bu,bv) then
-              --sayMsg "add arrow"
               an:String := concat([arrowName(a,au,av),"*",arrowName(b,bu,bv)])
               arr: WARROW := [an,0$W,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List WARROW)
     weightedGraph(closedObjProd(a,b,f),newArrs)
 
@@ -4469,11 +5099,11 @@ WeightedGraph(S,W): Exports == Implementation where
             if ((bu = bv) and isDirectSuccessor?(a,au,av)) or _
                ((au = av) and isDirectSuccessor?(b,bu,bv)) then
               an:String := if (bu = bv) and isDirectSuccessor?(a,au,av)_
-                    then concat([arrowName(a,au,av),"#",math_to_string bv])_
-                    else concat([arrowName(b,bu,bv),"#",math_to_string av])
+                    then concat([arrowName(a,au,av),"#",string(bv)])_
+                    else concat([arrowName(b,bu,bv),"#",string(av)])
               arr: WARROW := [an,0$W,_
                  indexProd(b,bu,au),_
-                 indexProd(b,bv,av),0::NNI,0::NNI]
+                 indexProd(b,bv,av),0::NNI,0::NNI,[]]
               newArrs := concat(newArrs,arr)$(List WARROW)
     weightedGraph(closedObjProd(a,b,f),newArrs)
 
@@ -4495,7 +5125,7 @@ WeightedGraph(S,W): Exports == Implementation where
     for oldArrow in s.arrows repeat
       newArr: WARROW := [oldArrow.name,oldArrow.weight,_
                        m.(oldArrow.fromOb),m.(oldArrow.toOb),_
-                       oldArrow.xOffset,oldArrow.yOffset]
+                       oldArrow.xOffset,oldArrow.yOffset,oldArrow.map]
       newArrs := concat(newArrs,newArr)
     [newObjs,newArrs]
 
@@ -4513,7 +5143,7 @@ WeightedGraph(S,W): Exports == Implementation where
     for oldArrow in s.arrows repeat
       newArr: WARROW := [oldArrow.name,oldArrow.weight,_
                        m.(oldArrow.toOb),m.(oldArrow.fromOb),_
-                       oldArrow.xOffset,oldArrow.yOffset]
+                       oldArrow.xOffset,oldArrow.yOffset,oldArrow.map]
       newArrs := concat(newArrs,newArr)
     [newObjs,newArrs]
 
@@ -4521,38 +5151,22 @@ WeightedGraph(S,W): Exports == Implementation where
   -- and b, track visited nodes to avoid infinite loop.
   routeNodeRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
    if #visited > #getVertices(s) then return []
-   --sayMsg concat(["routeNodeRecursive ",math_to_string a,_
-   -- "->",math_to_string b," visited=",math_to_string visited])$String
    shortest:List NNI := []
    if a=b then
-     --sayMsg concat(["returns [",string(a),"]"])$String
      return [a]
    if isDirectSuccessor?(s,a,b) then
-     --sayMsg concat(["returns [",string(a),",",string(b),"]"])$String
      return [a,b]
    for arr in getArrows(s) repeat
      if isDirectSuccessor?(s,a,arr.fromOb) then
-       --sayMsg concat(["checking ",math_to_string a,_
-       -- "->",math_to_string arr.fromOb,_
-       -- " with ",math_to_string arr.fromOb,_
-       -- "->",math_to_string b," visited=",math_to_string visited])$String
        d := routeNodeRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
-       --sayMsg concat(["gives ",math_to_string arr.fromOb,_
-       -- "->",math_to_string b," d=",math_to_string d])$String
        if shortest = []
          then
-           --sayMsg concat(["shortest:=",math_to_string d])$String
            shortest := d
          else if (d ~= []) and_
            routeNodeWeight(s,concat(a,d)) < routeNodeWeight(s,concat(a,shortest)) then
-             --sayMsg concat(["shortest:=",math_to_string d,_
-             --     "<",math_to_string shortest,_
-             --      "(",string(routeNodeWeight(s,concat(a,d))),"<"string(routeNodeWeight(s,concat(a,shortest))),")"])$String
              shortest := d
    if shortest = [] then
-     --sayMsg "returns []"
      return []
-   --sayMsg concat(["returns shortest=",string(a),",",math_to_string shortest])$String
    concat(a,shortest)
 
   -- the shortest route between 'a' and 'b' as a
@@ -4569,15 +5183,11 @@ WeightedGraph(S,W): Exports == Implementation where
   routeArrowRecursive(s:%,a:NNI,b:NNI,visited:List NNI):List NNI ==
    -- test for infinite loop
    if #visited > #getVertices(s) then return [0]
-   --sayMsg concat(["routeArrowRecursive ",math_to_string a,_
-   -- "->",math_to_string b," visited=",math_to_string visited])$String
    shortest:List NNI := [0]
    if a=b then
-     --sayMsg "returns []"
      return []
    arrn := getArrowIndex(s,a,b)
    if arrn ~= 0 then
-       --sayMsg concat(["returns [",string(arrn),"]"])$String
        return [arrn]
    aa:NNI := 0
    shortestFullPath:List NNI := [0]
@@ -4585,31 +5195,18 @@ WeightedGraph(S,W): Exports == Implementation where
    for arr in arrs repeat
      if isDirectSuccessor?(s,a,arr.fromOb) then
        aa := getArrowIndex(s,a,arr.fromOb)
-       --sayMsg concat(["checking ",math_to_string a,_
-       -- "->",math_to_string arr.fromOb,_
-       -- " (",string(aa),")",_
-       -- " with ",math_to_string arr.fromOb,_
-       -- "->",math_to_string b," visited=",math_to_string visited])$String
        d := routeArrowRecursive(s,arr.fromOb,b,concat(visited,a)$List(NNI))
        fullPath:=concat(aa,d)
-       --sayMsg concat(["gives ",math_to_string arr.fromOb,_
-       -- "->",math_to_string b," d=",math_to_string d])$String
        if shortest = [0]
          then
-           --sayMsg concat(["shortest:=",math_to_string d])$String
            shortest := d
            shortestFullPath := fullPath
          else if (d ~= [0]) and_
            routeArrowWeight(s,fullPath) < routeArrowWeight(s,shortestFullPath) then
-             --sayMsg concat(["shortest:=",string(aa),",",math_to_string d,_
-             --     "<",string(aa),",",math_to_string shortest,_
-             --      "(",string(routeArrowWeight(s,fullPath)),"<"string(routeArrowWeight(s,shortestFullPath)),")"])$String
              shortest := d
              shortestFullPath := fullPath
    if shortest = [0] then
-     --sayMsg "returns [0]"
      return [0]
-   --sayMsg concat(["returns shortest=",math_to_string aa,",",math_to_string shortest])$String
    shortestFullPath
 
   -- the shortest route between 'a' and 'b' as a
@@ -4630,14 +5227,10 @@ WeightedGraph(S,W): Exports == Implementation where
   -- this is a local function used by routeNodeWeight. It returns
   -- the minimum weight between two adjacent node indexes.
   getWeightBetween(s:%,i1:NNI,i2:NNI):W ==
-    --sayMsg concat(["getWeightBetween i1=",string(i1),_
-    -- " i2=",string(i2)])$String
     isDisjoint:Boolean := true
     res:W := 0$W
     arrs := s.arrows
     for arr in arrs repeat
-      --sayMsg concat(["getWeightBetween arr.fromOb=",string(arr.fromOb),_
-      -- " arr.toOb=",string(arr.toOb)," arr.weight=",string(arr.weight)])$String
       if isDisjoint
         then
           if (arr.fromOb = i1) and (arr.toOb = i2)
@@ -4661,8 +5254,6 @@ WeightedGraph(S,W): Exports == Implementation where
         res := res + w
       fst := false
       lasti := i
-    --sayMsg concat(["routeNodeWeight route=",math_to_string r,_
-    -- " res=",string(res)])$String
     res
 
   -- the cumulative weight of a given route. The route is given
@@ -4672,11 +5263,12 @@ WeightedGraph(S,W): Exports == Implementation where
     for i in r repeat
       a:WARROW := (s.arrows).i
       res := res + a.weight
-    --sayMsg concat(["routeArrowWeight route=",math_to_string r,_
-    -- " res=",string(res)])$String
     res
 
-  -- Distance weights between nodes.
+  -- The elements of the returned array will represent the
+  -- distance weights between vertices.
+  -- if there is no connection between the vertices then the
+  -- element will be set to "disjoint"
   weightedDistanceMatrix(s:%):TwoDimensionalArray WEIGHT ==
     n := # getVertices s
     m: TwoDimensionalArray := new(n, n, 0)
@@ -4727,5 +5319,8 @@ WeightedGraph(S,W): Exports == Implementation where
 For more details see:
 [1] Floyd's algorithm
 \url{http://en.wikipedia.org/wiki/Floyd–Warshall_algorithm}
+[2] Wiki page about 2-categories
+\url{http://en.wikipedia.org/wiki/2-category}
+
 \end{thebibliography}
 \end{document}
