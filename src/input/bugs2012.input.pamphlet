@@ -49,6 +49,18 @@ xftestEquals("solve([2=%e^(b)+c,6=%e^(1+b)+c],[b,c])", _
 -- We probably should also consider complex solutions
 xftestEquals("solve(2000*(1-%e^(-(1/10)*n))-20*n=0)", "[n = 0]")
 
+testcase "Gamma series at poles"
+
+as := approximate(series(Gamma(x), x=0), 2);
+es := 1/x + digamma(1) + (- 3*polygamma(1,1) + 3*digamma(1)^2  + %pi^2)*x/6 _
+ + (polygamma(2,1) - 3*digamma(1)*polygamma(1,1) + digamma(1)^3  + _
+   %pi^2*digamma(1))*x^2/6
+testEquals("as", "es")
+as := approximate(series(Gamma(x), x=-1), 1);
+es := -1/(x + 1) - digamma(2) + _
+  (3*polygamma(1,2) - 3*digamma(2)^2 - %pi^2)*(x + 1)/6
+testEquals("as", "es")
+
 )set output algebra on
 statistics()
 @
