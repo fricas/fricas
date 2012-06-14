@@ -317,15 +317,16 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
   UF  ==> Union(FF,  "failed")
   UF2 ==> Union(List F, "failed")
   REC ==> Record(ir:IR, specpart:RF, polypart:UP)
+  DREC ==> Record(answer : RF, logpart : RF, ir : IR)
   PSOL==> Record(ans:F, right:F, sol?:Boolean)
   FAIL==> error "Sorry - cannot handle that integrand yet"
 
   Exports ==> with
-    primintegrate  : (RF, UP -> UP, F -> UF)          -> IRF
+    primintegrate  : (RF, UP -> UP, RF -> DREC, F -> UF)          -> IRF
       ++ primintegrate(f, ', foo) returns \spad{[g, a]} such that
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in UP.
       ++ Argument foo is an extended integration function on F.
-    expintegrate   : (RF, UP -> UP, (Z, F) -> PSOL) -> IRF
+    expintegrate   : (RF, UP -> UP, RF -> DREC, (Z, F) -> PSOL) -> IRF
       ++ expintegrate(f, ', foo) returns \spad{[g, a]} such that
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in F;
       ++ Argument foo is a Risch differential equation solver on F;
@@ -427,12 +428,18 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
         p := reductum p
       ans
 
+    denint_dummy(f : RF) : DREC == [0, f, 0]
+
 -- works in any monomial extension
-    monomialIntegrate(f, derivation) ==
+    monomialIntegrate1(f : RF, denint : RF -> DREC, derivation : UP -> UP
+                      ) : REC ==
       zero? f => [0, 0, 0]
       r := HermiteIntegrate(f, derivation)
-      zero?(inum := numer(r.logpart)) => [r.answer::IR, r.specpart, r.polypart]
-      iden  := denom(r.logpart)
+      zero?(numer(r.logpart)) => [r.answer::IR, r.specpart, r.polypart]
+      dr := denint(r.logpart)
+      ans1 := r.answer + dr.answer
+      inum := numer(dr.logpart)
+      iden  := denom(dr.logpart)
       x := monomial(1, 1)$UP
       resultvec := subresultantVector(UP2UP2 inum -
                                  (x::UP2) * UP2UP2 derivation iden, UP2UP2 iden)
@@ -443,13 +450,16 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
                UP22UPR swap primitivePart(resultvec(term.exponent),term.factor)]
                      for term in factors(rec.special)]
       dlog :=
---           one? derivation x => r.logpart
-           ((derivation x) = 1) => r.logpart
+--           one? derivation x => dr.logpart
+           ((derivation x) = 1) => dr.logpart
            differentiate(mkAnswer(0, logs, empty()),
                          (x1:RF):RF+->differentiate(x1, derivation))
-      (u := retractIfCan(p := r.logpart - dlog)@Union(UP, "failed")) case UP =>
-        [mkAnswer(r.answer, logs, empty), r.specpart, r.polypart + u::UP]
-      [mkAnswer(r.answer, logs, [[p, dummy]]), r.specpart, r.polypart]
+      (u := retractIfCan(p := dr.logpart - dlog)@Union(UP, "failed")) case UP =>
+        [mkAnswer(ans1, logs, empty) + dr.ir, r.specpart, r.polypart + u::UP]
+      [mkAnswer(ans1, logs, [[p, dummy]]) + dr.ir, r.specpart, r.polypart]
+
+    monomialIntegrate(f, derivation) ==
+        monomialIntegrate1(f, denint_dummy, derivation)
 
 -- returns [q, r] such that p = q' + r and degree(r) < degree(dt)
 -- must have degree(derivation t) >= 2
@@ -625,8 +635,8 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
 
 -- returns
 --   (g in IR, a in F)  st f = g'+ a, and a=0 or a has no integral in UP
-    primintegrate(f, derivation, extendedint) ==
-      rec := monomialIntegrate(f, derivation)
+    primintegrate(f, derivation, denint, extendedint) ==
+      rec := monomialIntegrate1(f, denint, derivation)
       not elem?(i1 := rec.ir) => [notelementary rec, 0]
       (u2 := primintegratepoly(rec.polypart, extendedint,
                         retract derivation monomial(1, 1))) case UPUP =>
@@ -636,8 +646,8 @@ TranscendentalIntegration(F, UP): Exports == Implementation where
 
 -- returns
 --   (g in IR, a in F)  st f = g' + a, and a = 0 or a has no integral in F
-    expintegrate(f, derivation, FRDE) ==
-      rec := monomialIntegrate(f, derivation)
+    expintegrate(f, derivation, denint, FRDE) ==
+      rec := monomialIntegrate1(f, denint, derivation)
       not elem?(i1 := rec.ir) => [notelementary rec, 0]
 -- rec.specpart is either 0 or of the form p(t)/t^n
       special := rec.polypart::GP +

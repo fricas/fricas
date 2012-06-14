@@ -1,0 +1,476 @@
+<<package INTDEN DenominatorIntegration>>=
+++ Description:
+++  This package generates logarithmic integrals and polylogs
+++  corresponding to denominator of the integrand.
+)abbrev package INTDEN DenominatorIntegration
+-- DenominatorIntegration(R, F): Exports == Implementation where
+DenominatorIntegration(): Exports == Implementation where
+  -- R : Join(GcdDomain, Comparable, CharacteristicZero,
+  --         RetractableTo Integer, LinearlyExplicitRingOver Integer)
+  R ==> Integer
+  -- F : Join(AlgebraicallyClosedField, TranscendentalFunctionCategory,
+  --         FunctionSpace R)
+  F ==> Expression(Integer)
+  K ==> Kernel(F)
+  SUP ==> SparseUnivariatePolynomial
+  UP  ==> SUP F
+  RF  ==> Fraction UP
+  IR  ==> IntegrationResult RF
+  DREC ==> Record(answer : RF, logpart : RF, ir : IR)
+  SY ==> Symbol
+  NNI ==> NonNegativeInteger
+  MP ==> SparseMultivariatePolynomial(R, K)
+  MPF ==> SparseMultivariatePolynomial(F, K)
+  Exp ==> IndexedExponents(K)
+  Esol ==> ExpressionLinearSolve(Integer)
+  FREC ==> Record(factor : UP, cfactor : UP, ufun : F, vfun : F, den : Integer)
+  Exports ==> with
+      li_int : (RF, K, SY) -> DREC
+        ++ li_int(f, k, x) generates logarithmic integrals.
+      poly_int : (RF, K, SY) -> DREC
+        ++ poly_int(f, k, x) generates polylogarithms.
+  Implementation == add
+
+    Q ==> Fraction(Integer)
+
+    MP_to_UP(p : MP, k : K) : UP ==
+        up1 := univariate(p, k)
+        map((c : MP) : F +-> c::F, up1
+           )$SparseUnivariatePolynomialFunctions2(MP, F)
+
+    MULTFACT ==> MultivariateFactorize(K, Exp, R, MP)
+
+    -- 1. Find li-capable factors.  In principle we should
+    -- factor in UP, but that may be expensive due to
+    -- algebraic extensions, so we factor in MP (which may
+    -- miss some of good factors).
+    li_factors(df : MP, k : K, lk : List(K), x : SY) : List(FREC) ==
+        lfac := factors(factor(df)$MULTFACT)
+        res : List FREC := []
+        dummy := create()$SingletonAsOrderedSet
+        vlst := empty()$List(F)
+        dvvec : Vector(F)
+        ulst : List(F)
+        nk := #lk
+        u0 := argument(k).1
+        for fac in lfac repeat
+            f1 := MP_to_UP(fac.factor, k)
+            f1 := inv(leadingCoefficient(f1))*f1
+            deg1 := degree(f1)
+            deg1 = 0 => "iterate"
+            every?((c : F) : Boolean +-> D(c, x) = 0, coefficients(f1)) =>
+                (res := cons([f1, f1, u0, 0, 1], res))
+            empty?(lk) => "iterate"
+            rsum := inv(deg1::F)*coefficient(f1, qcoerce(deg1 - 1)$NNI)
+            f2 : UP
+            if deg1 > 1 then
+                f2 := eval(f1, dummy, monomial(1,1)$UP - rsum::UP)
+            deg1 > 1 and not(every?((c : F) : Boolean +-> D(c, x) = 0,
+                                    coefficients(f2))) => "iterate"
+            if empty?(vlst) then
+                vlst := [(is?(kk, 'log) => kk::F; argument(kk).1)
+                                  for kk in lk]
+                dvvec := vector([D(c, x) for c in vlst])$Vector(F)
+                ulst := [(is?(kk, 'log) =>  argument(kk).1; kk::F)
+                                  for kk in lk]
+            su := solveLinearlyOverQ(dvvec, D(rsum, x)
+                                    )$IntegerLinearDependence(F)
+            su case "failed" => "iterate"
+            sv := su::Vector(Q)
+            -- print("Found capable complex factor"::OutputForm)
+            -- print(f1::OutputForm)
+            -- print(lk::OutputForm)
+            -- print(sv::OutputForm)
+            cd := splitDenominator(sv)$InnerCommonDenominator(
+                         Integer, Q, List(Integer), Vector(Q))
+            d := cd.den
+            d ~= 1 =>
+                -- print("d ~= 1"::OutputForm)
+                -- print(cd::OutputForm)
+                "iterate"
+            u1 := reduce(_*, [ui^ki for ui in ulst for ki in cd.num])
+            k2 := reduce(_+, [(ki::R::F)*c for c in vlst for ki in cd.num])
+            f2 := eval(f1, dummy, monomial(1,1)$UP - k2::UP)
+            not(every?((c : F) : Boolean +-> D(c, x) = 0,
+                       coefficients(f2))) => error "Inpossible 1"
+            res := cons([f1, f2, u0^d*u1, k2, d], res)
+        res
+
+    -- Find poly-capable factors.
+    poly_factors(df : MP, k : K, lk : List(K), x : SY) : List(FREC) ==
+        lfac := factors(factor(df)$MULTFACT)
+        res : List(FREC) := []
+        dummy := create()$SingletonAsOrderedSet
+        vlst := empty()$List(F)
+        dvvec : Vector(F)
+        ulst : List(F)
+        nk := #lk
+        v0 := argument(k).1
+        for fac in lfac repeat
+            f1 := f1 := MP_to_UP(fac.factor, k)
+            deg1 := degree(f1)
+            deg1 = 0 => "iterate"
+            tc := coefficient(f1, 0)
+            tc = 0 => "iterate"
+            f1 := inv(tc)*f1
+            every?((c : F) : Boolean +-> D(c, x) = 0, coefficients(f1)) =>
+                (res := cons([f1, f1, 1, v0, 1], res))
+            empty?(lk) => "iterate"
+            lprod := leadingCoefficient(f1)
+            if empty?(vlst) then
+                vlst := [(is?(kk, 'log) => kk::F; argument(kk).1)
+                                  for kk in lk]
+                dvvec := vector([D(c, x) for c in vlst])$Vector(F)
+                ulst := [(is?(kk, 'log) =>  argument(kk).1; kk::F)
+                                  for kk in lk]
+            su := solveLinearlyOverQ(dvvec, D(lprod, x)/(deg1::R::F*lprod)
+                                    )$IntegerLinearDependence(F)
+            su case "failed" => "iterate"
+            sv := su::Vector(Q)
+            -- print("Found capable complex factor"::OutputForm)
+            -- print(f1::OutputForm)
+            -- print(lk::OutputForm)
+            -- print(sv::OutputForm)
+            cd := splitDenominator(sv)$InnerCommonDenominator(
+                         Integer, Q, List(Integer), Vector(Q))
+            d := cd.den
+            d ~= 1 =>
+                -- print("d ~= 1"::OutputForm)
+                -- print(cd::OutputForm)
+                "iterate"
+            u1 := reduce(_*, [ui^ki for ui in ulst for ki in cd.num])
+            k2 := reduce(_+, [(ki::R::F)*c for c in vlst for ki in cd.num])
+            f2 := eval(f1, dummy, (inv(u1))*monomial(1,1)$UP)
+            -- print(f2::OutputForm)
+            not(every?((c : F) : Boolean +-> D(c, x) = 0,
+                      coefficients(f2))) => "iterate"
+            res := cons([f1, f2, u1, v0 + k2, 1], res)
+        res
+
+    FUP ==> Factored(UP)
+    PFUP ==> PartialFraction(UP)
+
+    -- Partial fraction decomposition
+    decompose(nn : UP, elden : UP, lidens : List(UP)
+             ) : List(List(UP)) ==
+        nden1 := elden
+        ndens := lidens
+        fdens := [nilFactor(nden, 1)$FUP for nden in ndens]
+        ndf1 := nilFactor(nden1, 1)$FUP
+        fdens := cons(ndf1, fdens)
+        nd := reduce(_*, fdens)
+        -- print(nd::OutputForm)
+        pfr := partialFraction(nn, nd)$PFUP
+        -- print("prf ="::OutputForm)
+        -- print(pfr::OutputForm)
+        wholePart(pfr) ~= 0 =>
+             error "impossible: wholePart(pfr) ~= 0"
+        nfacs := numberOfFractionalTerms(pfr)
+        elfac : SUP(F) := 0
+        res : List(List(SUP(F))) := empty()
+        for i in 1..nfacs repeat
+            ct := nthFractionalTerm(pfr, i)
+            cnum := firstNumer(ct)
+            cden := firstDenom(ct)
+            cden = ndf1 =>
+                (elfac := cnum)
+            l1 : List(SUP(F)) := [cnum, expand(cden)]
+            res := cons(l1, res)
+        cons([elfac, nden1], res)
+
+    p_power_in_q(p : MPF, q : MPF) : Integer ==
+        res : Integer := 0
+        while (qq := q exquo p) case MPF repeat
+            q := qq::MPF
+            res := res + 1
+        res
+
+    Lift1 ==> PolynomialCategoryLifting(Exp, K, Integer, MP, MPF)
+
+    MP_to_MPF(p : MP, lk : List(K)) : MPF ==
+        map((k : K) : MPF +-> (member?(k, lk) =>
+                                  monomial(1$MPF, k, 1$NNI)$MPF; k::F::MPF), _
+            (c : Integer) : MPF +-> c::F::MPF, p)$Lift1
+
+
+    -- 3. Integrate single term
+    li_int1(f : F, u : F, x : Symbol) : Union(List(List(F)), "failed") ==
+        vk := [k for k in kernels(u) | D(k::F, x) ~= 0]
+        empty?(vk) => error "li_int1: constant log"
+        -- bogus if k1 is algebraic
+        k1 := last(vk)
+        -- print(k1::OutputForm)
+        deru := D(u, x)
+        f1 := f/deru
+        D(f1, x) = 0 => [[f1, 0]]
+        vk2 := [k for k in kernels(f1) | D(k::F, x) ~= 0]
+        not(empty?(setDifference(vk2, vk))) or
+          not(empty?(setDifference(vk, vk2))) => return "failed"
+        -- print("vk OK"::OutputForm)
+        nf1 := MP_to_MPF(numer(f1), vk)
+        -- print(nf1::OutputForm)
+        df1 := MP_to_MPF(denom(f1), vk)
+        -- print(df1::OutputForm)
+        nu := MP_to_MPF(numer(u), vk)
+        -- print(nu::OutputForm)
+        du := MP_to_MPF(denom(u), vk)
+        -- print(du::OutputForm)
+        m : Integer
+        n : Integer
+        degnf := degree(nf1, k1)
+        degdf := degree(df1, k1)
+        degnu := degree(nu, k1)
+        degdu := degree(du, k1)
+        if degdu = 0 then
+            -- print("degdu = 0"::OutputForm)
+            (qu := degdf exquo degnu) case "failed" =>
+                -- print("degdf exquo degnu failed"::OutputForm)
+                -- print(degdf::OutputForm)
+                -- print(degnu::OutputForm)
+                return "failed"
+            n := qu::Integer
+            (qu := degnf exquo degnu) case "failed" =>
+                -- print("degnf exquo degnu failed"::OutputForm)
+                -- print(degnf::OutputForm)
+                -- print(degnu::OutputForm)
+                return "failed"
+            m := qu::Integer - n
+        else if degnu = 0 then
+            -- print("degnu = 0"::OutputForm)
+            (qu := degdf exquo degdu) case "failed" => return "failed"
+            m := qu::Integer
+            (qu := degnf exquo degdu) case "failed" => return "failed"
+            n := qu::Integer - m
+        else
+            -- print("rational case"::OutputForm)
+            m := p_power_in_q(du, df1)
+            n := p_power_in_q(nu, df1)
+            -- print(([n, m]$List(Integer))::OutputForm)
+            -- print(([degdu, degnu, degdf]$List(Integer))::OutputForm)
+            if m*degdu + n*degnu ~= degdf then return "failed"
+        -- print("[n, m] ="::OutputForm)
+        -- print([n, m]::OutputForm)
+        nup : MPF :=
+            n > 0 => nu^(n::NNI)
+            1
+        dup : MPF :=
+            m > 0 => du^(m::NNI)
+            1
+        (ccu := df1 exquo (dup*nup)) case "failed" =>
+            -- print("df1 exquo (dup*nup) failed"::OutputForm)
+            return "failed"
+        (ccru := retractIfCan(ccu::MPF)@Union(F, "failed")) case "failed" =>
+            -- print("df1 exquo (dup*nup)) not in F"::OutputForm)
+            print(ccu::OutputForm)
+            return "failed"
+        cc := ccru::F
+        nf1 := (1/cc)*nf1
+        coefs := [new()$Symbol for j in -n..m]
+        eqs := nf1
+        pp := 1$MPF
+        lpow0 : List(MPF) := [pp]
+        for j in (1-n)..m repeat
+            pp := nu*pp
+            lpow0 := cons(pp, lpow0)
+        -- print("lpow0 ="::OutputForm)
+        -- print(lpow0::OutputForm)
+        lpow := [first(lpow0)]
+        pp := 1$MPF
+        for p1 in rest(lpow0) repeat
+            pp := du*pp
+            lpow := cons(pp*p1, lpow)
+        -- print("lpow ="::OutputForm)
+        -- print(lpow::OutputForm)
+        for p1 in lpow for coef in coefs repeat
+            eqs := eqs - coef::F*p1
+        eqsl := coefficients(eqs)
+        sl0 := lin_sol(eqsl, coefs)$Esol
+        sl0 case "failed" => "failed"
+        sl := sl0::List(F)
+        [[c, j::F] for c in sl for j in (-n)..m | c ~= 0]
+
+    mk_li(c : F, j : Integer, u : F, s : F) : F ==
+        j = -1 => c*log((log(u) + s))
+        es := exp(s)
+        (c)*li((u*es)^(j+1))/(es^(j+1))
+
+    UPR ==> SUP RF
+    LOG ==> Record(scalar : Q, coeff : UPR, logand : UPR)
+
+    UP2UPR(p : UP) : UPR ==
+      map(x1 +-> x1::UP::RF, p)$UnivariatePolynomialCategoryFunctions2(
+                                F, UP, RF, UPR)
+
+    li_int3(f : F, rf : RF, k : K, lk : List(K), x : SY
+           ) : Union(DREC, "failed") ==
+        ldrs := li_factors(denom(f), k, lk, x)
+        lidens := [ldr.factor for ldr in ldrs]
+        -- print(ldrs::OutputForm)
+        empty?(lidens) => "failed"
+        elden := denom(rf) exquo reduce(_*, lidens)
+        elden case "failed" => error "Inpossible 2"
+        dn := decompose(numer(rf), elden, lidens)
+        -- print("dn ="::OutputForm)
+        -- print(dn::OutputForm)
+        elfac := first(dn)
+        lifacs := rest(dn)
+        elpart : RF := first(elfac)/second(elfac)
+        c_shift : F
+        tf : F
+        dummy := create()$SingletonAsOrderedSet
+        u0 := argument(k)(1)
+        res : F := 0
+        rfc : F
+        logs : List(LOG) := []
+        for ldr in ldrs repeat
+            liden := ldr.factor
+            cfac := ldr.cfactor
+            for lifac in lifacs while not(liden = second(lifac)) repeat
+                0$Integer
+            not(liden = second(lifac)) =>
+                error "Inpossible 3"
+            u1 := ldr.ufun
+            linum := first(lifac)
+            if (deg1 := degree(liden)) > 1 then
+                rfc := rootOf(cfac)
+                c_shift := -rfc
+                rf1 := rfc - ldr.vfun
+                ddf := retract(eval(differentiate(liden), dummy, rf1))@F
+                tf := retract(eval(linum, dummy, rf1))@F/ddf
+            else
+                c_shift := coefficient(cfac, 0)
+                tf := retract(linum)@F
+            liu := li_int1(tf, u1, x)
+            liu case "failed" => return "failed"
+            lli := liu::List(List(F))
+            -- print(lli::OutputForm)
+            -- print(u1::OutputForm)
+            -- print(c_shift::OutputForm)
+            rf1k : K
+            zzl : List(F)
+            #lli = 1 and lli(1)(2) = -1 =>
+                deg1 = 1 =>
+                   logs := cons([1, monomial(1,1)$UPR - lli(1)(1)::UP::RF::UPR,
+                                  liden::RF::UPR], logs)
+                elpart := elpart + linum/liden
+            if deg1 > 1 then
+                rf1k := retract(rfc)@K
+                zzl := zerosOf(cfac)
+            for e in lli repeat
+                e(2) = -1 and deg1 = 1 =>
+                    logs := cons([1, monomial(1,1)$UPR - e(1)::UP::RF::UPR,
+                                  liden::RF::UPR], logs)
+                lle := mk_li(e(1), retract(e(2))@Integer, u1, c_shift)
+                if deg1 > 1 then
+                    for zz in zzl repeat
+                        res := res + eval(lle, rf1k, zz)
+                else
+                    res := res + lle
+        [res::UP::RF, elpart, mkAnswer(0, logs, [])]
+
+    mk_poly(c : F, j : Integer, u : F, s : F) : F ==
+        j = 0 => c*(u - log((exp(u) + 1/s)))
+        eu := s*exp(u)
+        j1 := j + 1
+        res : F := u^j1/(j1::R::F)
+        res := res - u^j*log(eu + 1)
+        ifac : F := -j::R::F
+        for i in 1..j repeat
+            i1 := j - i
+            res := res + ifac*u^i1*polylog((i + 1)::R::F, -eu)
+            ifac := -(i1)::R::F*ifac
+        c*res
+
+    poly_int3(f : F, rf : RF, k : K, lk : List(K), x : SY
+           ) : Union(DREC, "failed") ==
+        ldrs := poly_factors(denom(f), k, lk, x)
+        polydens := [ldr.factor for ldr in ldrs]
+        empty?(polydens) => "failed"
+        polydens1 := [inv(leadingCoefficient(p))*p for p in polydens]
+        elden := denom(rf) exquo reduce(_*, polydens1)
+        elden case "failed" => error "Inpossible 4"
+        dn := decompose(numer(rf), elden, polydens1)
+        -- print("dn ="::OutputForm)
+        -- print(dn::OutputForm)
+        elfac := first(dn)
+        polyfacs := rest(dn)
+        elpart : RF := first(elfac)/second(elfac)
+        c_shift : F
+        tf : F
+        dummy := create()$SingletonAsOrderedSet
+        u0 := argument(k).1
+        res : F := 0
+        logs : List(LOG) := []
+        for ldr in ldrs for polyden1 in polydens1 repeat
+            polyden := ldr.factor
+            cfac := ldr.cfactor
+            for polyfac in polyfacs while not(polyden1 = second(polyfac))
+                repeat 0$Integer
+            not(polyden1 = second(polyfac)) =>
+                error "Inpossible 5"
+            v1 := ldr.vfun
+            polynum := leadingCoefficient(polyden)*first(polyfac)
+            rfc : F
+            if (deg1 := degree(polyden)) > 1 then
+                -- print("deg1 > 1"::OutputForm)
+                -- print(polyden::OutputForm)
+                -- print(polynum::OutputForm)
+                -- print(v1::OutputForm)
+                rfc := rootOf(cfac)
+                rf1 := rfc/ldr.ufun
+                c_shift := -1/rfc
+                ddf := retract(eval(differentiate(cfac), dummy, rfc))@F
+                tf := -retract(eval(polynum, dummy, rf1))@F/(rfc*ddf)
+                -- print(tf::OutputForm)
+                -- print(c_shift::OutputForm)
+            else
+                c_shift := coefficient(cfac, 1)
+                tf := retract(polynum)@F
+            polyu := li_int1(tf, v1, x)
+            polyu case "failed" => return "failed"
+            lpoly := polyu::List(List(F))
+            #lpoly = 1 and lpoly(1)(2) = 0 =>
+                elpart := elpart + polynum/polyden
+            rf1k : K
+            zzl : List(F)
+            if deg1 > 1 then
+                rf1k := retract(rfc)@K
+                zzl := zerosOf(cfac)
+            for e in lpoly repeat
+                ii := retract(e(2))@Integer
+                ii < 0 => return "failed"
+                e(1) = 0 => "iterate"
+                -- print(e(1)::OutputForm)
+                -- print(v1::OutputForm)
+                -- print(u0::OutputForm)
+                -- print(cfac::OutputForm)
+                -- print(c_shift::OutputForm)
+                lle := mk_poly(e(1), ii, v1, c_shift)
+                if deg1 > 1 then
+                    for zz in zzl repeat
+                        res := res + eval(lle, rf1k, zz)
+                else
+                    res := res + lle
+        [res::UP::RF, elpart, mkAnswer(0, logs, [])]
+
+    import IntegrationTools(R, F)
+
+    li_int(rf, k, x) ==
+        f := multivariate(rf, k)$PolynomialCategoryQuotientFunctions(Exp,
+                K, R, MP, F)
+        lk := varselect([kk for kk in tower(f) |
+                           is?(kk, 'exp) or (is?(kk, 'log) and kk ~= k)], x)
+        res := li_int3(f, rf, k, lk, x)
+        res case "failed" => [0, rf, 0]
+        res::DREC
+
+    poly_int(rf, k, x) ==
+        f := multivariate(rf, k)$PolynomialCategoryQuotientFunctions(Exp,
+                K, R, MP, F)
+        lk := varselect([kk for kk in tower(f) |
+                           is?(kk, 'exp) or (is?(kk, 'log) and kk ~= k)], x)
+        res := poly_int3(f, rf, k, lk, x)
+        res case "failed" => [0, rf, 0]
+        res::DREC
+
+@

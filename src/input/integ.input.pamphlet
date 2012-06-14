@@ -1,0 +1,125 @@
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/input bug2008.input}
+\author{The Axiom Team}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+@
+<<*>>=
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "integ"
+
+testIntegrate(f: String, x: String, issue: String): Void ==
+    testcaseNoClear("integrate(" f ", " x ") (" issue ")")
+    testTrue("(res := integrate(" f ", " x "); true)")
+    testTrue("not is?(operator first kernels res, 'integral)")
+    testEquals("normalize(D(res, " x ") - (" f "))", "0")
+
+xf1testIntegrate(f: String, x: String, issue: String): Void ==
+    testcaseNoClear("integrate(" f ", " x ") (" issue ")")
+    xftestTrue("(res := integrate(" f ", " x "); true)")
+    testTrue("not is?(operator first kernels res, 'integral)")
+    testEquals("normalize(D(res, " x ") - (" f "))", "0")
+
+xf2testIntegrate(f: String, x: String, issue: String): Void ==
+    testcaseNoClear("integrate(" f ", " x ") (" issue ")")
+    testTrue("(res := integrate(" f ", " x "); true)")
+    xftestTrue("not is?(operator first kernels res, 'integral)")
+    testEquals("normalize(D(res, " x ") - (" f "))", "0")
+
+testIntegrate("sqrt(1+tan(x)^2)", "x", "#436")
+xf1testIntegrate("1/(-3+v^3)*v/(-4+v^3)^(1/2)", "v", "#360")
+testIntegrate("log(1-z^3)*(%i*z)^(1/2)", "z", "#440")
+
+-- xf2testIntegrate("csc(z)*(1-1/(%i*z)^(1/2))^(1/2)", "z", "#442")
+testcaseNoClear("csc(z)*(1-1/(%i*z)^(1/2))^(1/2)")
+testTrue("(res := integrate(csc(z)*(1-1/(%i*z)^(1/2))^(1/2), z); true)")
+xftestTrue("not is?(operator first kernels res, 'integral)")
+xftestTrue("normalize(D(res, z) - csc(z)*(1-1/(%i*z)^(1/2))^(1/2))", "0")
+
+testIntegrate("asin(x/a)", "x", " ")
+
+
+testIntegrate("1/log(x)", "x", "li")
+testIntegrate("1/(log(x) + 1)", "x", "li")
+testIntegrate("1/(log(x)^2-1)", "x", "li")
+testIntegrate("x/log(x)", "x", "li")
+testIntegrate("x/(log(x)+1)", "x", "li")
+testIntegrate("(x+1)/(x*log(x))", "x", "li")
+testIntegrate("(x+1)/(x*log(log(x) + x))", "x", "li")
+testIntegrate("(3*x^2+2)/log(x^3+2*x+1)", "x", "li")
+testIntegrate("((x + 1)*log(x) + x^2  + x)/(x*log(log(x) + x))", "x", "li")
+testIntegrate("((x + 1)*log(x) + x^2  - 1)/(x*log(log(x) + x))", "x", "li")
+testIntegrate("((x+1)*exp(x))/log(x*exp(x))", "x", "li")
+-- the same, but written in a different way
+testIntegrate("((x+1)*exp(x))/(x + log(x))", "x", "li")
+testIntegrate("exp(x)/log(exp(x)+1)", "x", "li")
+testIntegrate("(2*exp(x)^2+exp(x))/log(exp(x)^2+exp(x))", "x", "li")
+-- the same, but written in a different way
+testIntegrate("(2*exp(x)^2+exp(x))/(x + log(exp(x) + 1))", "x", "li")
+xf2testIntegrate("(4*x^6-14*x^5-8*x^4-16*x^3-12*x^2-2*x)/((x^4-8*x^3+24*x^2-32*x+16)*log((x^4+2*x^2+1)/(x^2-4*x+4)))", "x", "li")
+-- the same, but written in a different way
+testIntegrate("(4*x^6-14*x^5-8*x^4-16*x^3-12*x^2-2*x)/((x^4-8*x^3+24*x^2-32*x+16)*2*log((x^2+1)/(x-2)))", "x", "li")
+-- polylog
+testIntegrate("x/(exp(x) - 1)", "x", "poly")
+testIntegrate("x^2/(exp(x) - 1)", "x", "poly")
+testIntegrate("x^3/(exp(x) - 1)", "x", "poly")
+testIntegrate("2*x*exp(x)/(exp(x)^2 - 1)", "x", "poly")
+testIntegrate("x/(exp(x) - 2)", "x", "poly")
+testIntegrate("(2*x*exp(x) - 3*x)/(exp(x)^2 -3*exp(x) + 2)", "x", "poly")
+testIntegrate("2*x*exp(x)/(exp(x)^2 - 2)", "x", "poly")
+testIntegrate("((x+1)*log(x)+(x^2+x))/(x*exp(log(x)+x) - x)", "x", "poly")
+-- the same, but written in a different way
+xf2testIntegrate("((x+1)*log(x)+(x^2+x))/(x^2*exp(x) - x)", "x", "poly")
+testIntegrate("x/(c+b*%e^(d*x)+a*%e^(2*d*x))", "x", "poly")
+testIntegrate("((-4*x-8)*log(x)+(-2*x^2-4*x))/(3*x*exp(2*log(x)+x)^2-x)", "x", "poly")
+-- the same, but written in a different way
+testIntegrate("((-4*x-8)*log(x)+(-2*x^2-4*x))/(3*x^3*exp(log(x)+x)^2-x)", "x", "poly")
+-- Rich
+-- not integrable, but similar
+testcaseNoClear("1/(x*log(a + b*x))")
+testTrue("(integrate(1/(x*log(a + b*x)), x); true)")
+
+testIntegrate("1/(x^2*log(a*x^n))", "x", "poly")
+
+-- Cherry, Caviness
+testIntegrate("x/log(x)^2", "x", "li")
+testIntegrate("1/(log(x)+3)", "x", "li")
+testIntegrate("x^2/log(x+1)", "x", "li")
+xf2testIntegrate("exp(x)/(x+1)^2", "x", "Ei")
+testIntegrate("x^3/log(x^2 - 1)", "x", "li")
+-- Kelly Roach
+-- Ei integrable
+xf2testIntegrate("cos(b*x)*atan(a/x^2)", "x", "Ei")
+-- erf integrable
+xf2testIntegrate("cos(a*x^2+b*x)", "x", "erf")
+-- Knowles
+xf1testIntegrate("exp(-x^2 - erf(x)^2)", "x", "erf")
+xf1testIntegrate("exp(-1/log(x))/(x*log(x)*sqrt(log(x)))", "x", "Ei")
+-- the same, but written in a different way
+xf2testIntegrate("exp(-(1/2)*log(log(x)) -1/log(x))/(x*log(x))", "x", "Ei")
+
+testIntegrate("sin(x)/x", "x", "Ei")
+xf2testIntegrate("cos(x)^2/x^3", "x", "Ei")
+
+xf2testIntegrate("(x^2+3)*exp(x)/(x^2+3*x+2)", "x", "Ei")
+testIntegrate("((x + 1)*exp(x)*log(x) - exp(x))/(log(x)^2*log(x*exp(x)/log(x)))", "x", "li")
+testIntegrate("1/(log(x)*log(li(x)))", "x", "li")
+
+--
+xf2testIntegrate("log(sin(x))", "x", "li")
+)set output algebra on
+statistics()
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}

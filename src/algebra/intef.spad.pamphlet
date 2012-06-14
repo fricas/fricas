@@ -34,6 +34,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
   UP  ==> SparseUnivariatePolynomial F
   RF  ==> Fraction UP
   IR  ==> IntegrationResult F
+  IRRF ==> IntegrationResult RF
   FF  ==> Record(ratpart:RF, coeff:RF)
   LLG ==> List Record(coeff:F, logand:F)
   U2  ==> Union(Record(ratpart:F, coeff:F), "failed")
@@ -365,13 +366,23 @@ ElementaryIntegration(R, F): Exports == Implementation where
       (u2 := lfextendedint(u1.a0, x, g)) case "failed" => "failed"
       [multivariate(u1.answer, k) + u2.ratpart, u2.coeff]
 
+    DREC ==> Record(answer : RF, logpart : RF, ir : IRRF)
+
+    denint_dummy(f : RF) : DREC == [0, f, 0]
+
     primint(f, x, k) ==
       lk := varselect([a for a in tower f
                                      | k ~= a and is?(a, 'log)], x)
+      denint : RF -> DREC :=
+          R is Integer and F is Expression(Integer) and is?(k, log) =>
+              (rf : RF) : DREC +->
+                  li_int(rf, k, x)$DenominatorIntegration()
+          denint_dummy
       r1 := primintegrate(univariate(f, k),
               (x1:UP):UP+->differentiate(x1,
                 (x2:F):F+->differentiate(x2, x), differentiate(k::F, x)::UP),
-                  (x3:F):U2+->lfextlimint(x3, x, k, lk))
+                  denint,
+                    (x3:F):U2+->lfextlimint(x3, x, k, lk))
       map((x1:RF):F+->multivariate(x1, k), r1.answer) + lfintegrate(r1.a0, x)
 
     lfextlimint(f, x, k, lk) ==
@@ -395,10 +406,16 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     expint(f, x, k) ==
       eta := first argument k
+      denint : RF -> DREC :=
+          R is Integer and F is Expression(Integer) =>
+              (rf : RF) : DREC +->
+                  poly_int(rf, k, x)$DenominatorIntegration()
+          denint_dummy
       r1  := expintegrate(univariate(f, k),
                (x1:UP):UP+->differentiate(x1,
                  (x2:F):F+->differentiate(x2, x),
                  monomial(differentiate(eta, x), 1)),
+               denint,
                (x3:Integer,x4:F):PSOL+->rischDE(x3, eta, x4, x,
                  (x5:F,x6:List F):U3+-> lflimitedint(x5, x, x6),
                  (x7:F,x8:F):U2+->lfextendedint(x7, x, x8)))
