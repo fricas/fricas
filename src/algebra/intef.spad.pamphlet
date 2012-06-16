@@ -370,13 +370,27 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     denint_dummy(f : RF) : DREC == [0, f, 0]
 
+    DMap ==> (RF, K, SE) -> DREC
+
+    denint_li : DMap:=
+        R is Integer and F is Expression(Integer) =>
+            (li_int$DenominatorIntegration(R))@DMap
+        R is Complex(Integer) and F is Expression(Complex(Integer)) =>
+            (li_int$DenominatorIntegration(R))@DMap
+        (rf : RF, k: K, x : SE) : DREC +-> denint_dummy(rf)
+
+    denint_poly : DMap :=
+        R is Integer and F is Expression(Integer) =>
+            (poly_int$DenominatorIntegration(R))@DMap
+        R is Complex(Integer) and F is Expression(Complex(Integer)) =>
+            (poly_int$DenominatorIntegration(R))@DMap
+        (rf : RF, k: K, x : SE) : DREC +-> denint_dummy(rf)
+
     primint(f, x, k) ==
       lk := varselect([a for a in tower f
                                      | k ~= a and is?(a, 'log)], x)
       denint : RF -> DREC :=
-          R is Integer and F is Expression(Integer) and is?(k, log) =>
-              (rf : RF) : DREC +->
-                  li_int(rf, k, x)$DenominatorIntegration()
+          is?(k, log) => (rf : RF) : DREC +-> denint_li(rf, k, x)
           denint_dummy
       r1 := primintegrate(univariate(f, k),
               (x1:UP):UP+->differentiate(x1,
@@ -406,16 +420,11 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
     expint(f, x, k) ==
       eta := first argument k
-      denint : RF -> DREC :=
-          R is Integer and F is Expression(Integer) =>
-              (rf : RF) : DREC +->
-                  poly_int(rf, k, x)$DenominatorIntegration()
-          denint_dummy
       r1  := expintegrate(univariate(f, k),
                (x1:UP):UP+->differentiate(x1,
                  (x2:F):F+->differentiate(x2, x),
                  monomial(differentiate(eta, x), 1)),
-               denint,
+               (rf : RF) : DREC +-> denint_poly(rf, k, x),
                (x3:Integer,x4:F):PSOL+->rischDE(x3, eta, x4, x,
                  (x5:F,x6:List F):U3+-> lflimitedint(x5, x, x6),
                  (x7:F,x8:F):U2+->lfextendedint(x7, x, x8)))

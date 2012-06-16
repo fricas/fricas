@@ -1,16 +1,15 @@
 <<package INTDEN DenominatorIntegration>>=
+)abbrev package INTDEN DenominatorIntegration
 ++ Description:
 ++  This package generates logarithmic integrals and polylogs
 ++  corresponding to denominator of the integrand.
-)abbrev package INTDEN DenominatorIntegration
 -- DenominatorIntegration(R, F): Exports == Implementation where
-DenominatorIntegration(): Exports == Implementation where
-  -- R : Join(GcdDomain, Comparable, CharacteristicZero,
-  --         RetractableTo Integer, LinearlyExplicitRingOver Integer)
-  R ==> Integer
+DenominatorIntegration(R): Exports == Implementation where
+  R : Join(GcdDomain, Comparable, CharacteristicZero,
+           RetractableTo Integer, LinearlyExplicitRingOver Integer)
   -- F : Join(AlgebraicallyClosedField, TranscendentalFunctionCategory,
   --         FunctionSpace R)
-  F ==> Expression(Integer)
+  F ==> Expression(R)
   K ==> Kernel(F)
   SUP ==> SparseUnivariatePolynomial
   UP  ==> SUP F
@@ -22,13 +21,15 @@ DenominatorIntegration(): Exports == Implementation where
   MP ==> SparseMultivariatePolynomial(R, K)
   MPF ==> SparseMultivariatePolynomial(F, K)
   Exp ==> IndexedExponents(K)
-  Esol ==> ExpressionLinearSolve(Integer)
+  Esol ==> ExpressionLinearSolve(R)
   FREC ==> Record(factor : UP, cfactor : UP, ufun : F, vfun : F, den : Integer)
   Exports ==> with
       li_int : (RF, K, SY) -> DREC
         ++ li_int(f, k, x) generates logarithmic integrals.
       poly_int : (RF, K, SY) -> DREC
         ++ poly_int(f, k, x) generates polylogarithms.
+      factor : MP -> Factored(MP)
+        ++ factor(p) should be local but conditional.
   Implementation == add
 
     Q ==> Fraction(Integer)
@@ -40,12 +41,22 @@ DenominatorIntegration(): Exports == Implementation where
 
     MULTFACT ==> MultivariateFactorize(K, Exp, R, MP)
 
+    if R has Join(EuclideanDomain, CharacteristicZero) then
+
+        factor(p) == factor(p)$MULTFACT
+
+    else
+
+        factor(p) == error "No factor for polynomials over R"
+
+
+
     -- 1. Find li-capable factors.  In principle we should
     -- factor in UP, but that may be expensive due to
     -- algebraic extensions, so we factor in MP (which may
     -- miss some of good factors).
     li_factors(df : MP, k : K, lk : List(K), x : SY) : List(FREC) ==
-        lfac := factors(factor(df)$MULTFACT)
+        lfac := factors(factor(df))
         res : List FREC := []
         dummy := create()$SingletonAsOrderedSet
         vlst := empty()$List(F)
@@ -98,7 +109,7 @@ DenominatorIntegration(): Exports == Implementation where
 
     -- Find poly-capable factors.
     poly_factors(df : MP, k : K, lk : List(K), x : SY) : List(FREC) ==
-        lfac := factors(factor(df)$MULTFACT)
+        lfac := factors(factor(df))
         res : List(FREC) := []
         dummy := create()$SingletonAsOrderedSet
         vlst := empty()$List(F)
@@ -150,7 +161,7 @@ DenominatorIntegration(): Exports == Implementation where
     FUP ==> Factored(UP)
     PFUP ==> PartialFraction(UP)
 
-    -- Partial fraction decomposition
+    -- Partial fraction decomposition.
     decompose(nn : UP, elden : UP, lidens : List(UP)
              ) : List(List(UP)) ==
         nden1 := elden
@@ -185,12 +196,12 @@ DenominatorIntegration(): Exports == Implementation where
             res := res + 1
         res
 
-    Lift1 ==> PolynomialCategoryLifting(Exp, K, Integer, MP, MPF)
+    Lift1 ==> PolynomialCategoryLifting(Exp, K, R, MP, MPF)
 
     MP_to_MPF(p : MP, lk : List(K)) : MPF ==
         map((k : K) : MPF +-> (member?(k, lk) =>
                                   monomial(1$MPF, k, 1$NNI)$MPF; k::F::MPF), _
-            (c : Integer) : MPF +-> c::F::MPF, p)$Lift1
+            (c : R) : MPF +-> c::F::MPF, p)$Lift1
 
 
     -- 3. Integrate single term
