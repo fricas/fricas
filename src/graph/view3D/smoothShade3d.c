@@ -751,7 +751,7 @@ showAxesLabels(int dFlag)
   else GSetForeground(GC9991,psBlack,dFlag);
 
   /* axes label for X */
-  if ((int)axesZ[0][0] >= (int)axesZ[0][2]) {
+  if ((int)axesZ[0][0] >= (int)axesZ[0][1]) {
     if (axesXY[0][2] < axesXY[0][0]) xcoord2 = axesXY[0][2]-5;
     else xcoord2 = axesXY[0][2] + 5;
     if (axesXY[0][3] < axesXY[0][1]) ycoord2 = axesXY[0][3]-5;
