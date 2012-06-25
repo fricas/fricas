@@ -443,6 +443,7 @@ formatSlotDomain x ==
     formatSlotDomain val
   atom x => x
   x is ['NRTEVAL,y] => (atom y => [y]; y)
+  x is ['QUOTE, .] => x
   [first x,:[formatSlotDomain y for y in rest x]]
 
 --=======================================================================
