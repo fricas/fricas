@@ -727,8 +727,7 @@ case $target in
         ;;
     *darwin*)
         AC_DEFINE([MACOSXplatform], [], [MACOX flavour])
-        CCF="-O2 -Wall -D_GNU_SOURCE \
-            -I/usr/include -I/usr/include/sys"
+        CCF="-O2 -Wall -D_GNU_SOURCE"
         ;;
 esac
 
