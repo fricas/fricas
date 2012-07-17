@@ -429,10 +429,11 @@ RationalRicDE(F, UP): Exports == Implementation where
     polyRicDE(l, zeros) ==
       ans:List(POL) := [[0, l]]
       empty?(lc := leadingCoefficientRicDE l) => ans
-      rec := first lc                            -- one with highest degree
-      for a in zeros(rec.eq) | a ~= 0 repeat
-        if (p := newtonSolution(l, a, rec.deg, zeros)) ~= 0 then
-            ans := concat([p, changeVar(l, p)], ans)
+      -- reverse so highest degree comes first in the answer
+      for rec in reverse(lc) repeat
+          for a in zeros(rec.eq) | a ~= 0 repeat
+              if (p := newtonSolution(l, a, rec.deg, zeros)) ~= 0 then
+                  ans := concat([p, changeVar(l, p)], ans)
       ans
 
 -- reverseUP(a_0 + a_1 x + ... + an x^n) = a_n + ... + a_0 x^n
