@@ -427,16 +427,16 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
       ans
 
     recurfactor(l, r, zeros, ezfactor, adj?) ==
-      q := rightExactQuotient(l, r)::L
-      if adj? then q := adjoint q
-      innerFactor(q, zeros, ezfactor, true)
+        q := rightExactQuotient(l, r)::L
+        innerFactor(q, zeros, ezfactor, true)
 
     rfactor(op, r, zeros, ezfactor, adj?) ==
 --      degree r > 1 or not one? leadingCoefficient r =>
       degree r > 1 or not ((leadingCoefficient r) = 1) =>
         recurfactor(op, r, zeros, ezfactor, adj?)
       op1 := opeval(op, dd - coefficient(r, 0)::L)
-      map!((z1: L): L +-> opeval(z1, r), recurfactor(op1, dd, zeros, ezfactor, adj?))
+      map!((z1 : L) : L +-> opeval(z1, r),
+           recurfactor(op1, dd, zeros, ezfactor, adj?))
 
 -- r1? is true means look for 1st-order right-factor also
     innerFactor(l, zeros, ezfactor, r1?) ==
@@ -446,7 +446,8 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
         (r1? or (i > 1)) and ((u := rightFactor(l,i,zeros,ezfactor)) case L) =>
            return concat!(rfactor(l, u::L, zeros, ezfactor, false), u::L)
         (2 * i < n) and ((u := rightFactor(ll, i, zeros, ezfactor)) case L) =>
-           return concat(adjoint(u::L), rfactor(ll, u::L, zeros,ezfactor,true))
+           return concat(adjoint(u::L), map!(adjoint,
+                    reverse!(rfactor(ll, u::L, zeros, ezfactor, true))))
       [l]
 
     rightFactor(l, n, zeros, ezfactor) ==
