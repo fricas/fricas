@@ -516,7 +516,7 @@ TexFormat(): public == private where
         p < 1 => error "unknown binary op"
         opPrec := binaryPrecs.p
         s1 := formatExpr(first args, opPrec)
-        s2 := formatExpr(first rest args, opPrec)
+        s2 := formatExpr(first rest args, (op = "^"::Sy => minPrec ; opPrec))
         ops : S :=
             op = "|"::Sy     => " \mid "
             op = "^"::Sy    => " \sp "
@@ -529,7 +529,9 @@ TexFormat(): public == private where
             -- FIXME how to do this properly ???
             op = 'LET   => " := "
             string(op)
-        s := concat [s1, ops, s2]
+        s :=
+            op = "^"::Sy => concat [group(s1), ops, group(s2)]
+            concat [s1, ops, s2]
         group
             op = "/"::Sy or op = 'OVER => s
             opPrec < prec => parenthesize s
