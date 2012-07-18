@@ -47,6 +47,10 @@ LiouvillianFunction(R, F): Exports == Implementation where
       ++ Si(f) denotes the sine integral
     Ci      : F  -> F
       ++ Ci(f) denotes the cosine integral
+    Shi      : F  -> F
+      ++ Shi(f) denotes the hyperbolic sine integral
+    Chi      : F  -> F
+      ++ Chi(f) denotes the hyperbolic cosine integral
     li      : F  -> F
       ++ li(f) denotes the logarithmic integral
     erf     : F  -> F
@@ -70,6 +74,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     iei        : F  -> F
     isi        : F  -> F
     ici        : F  -> F
+    ishi       : F  -> F
+    ichi       : F  -> F
     ierf       : F  -> F
     ili        : F  -> F
     ili2       : F  -> F
@@ -90,6 +96,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     opli   := operator('li)$CommonOperators
     opsi   := operator('Si)$CommonOperators
     opci   := operator('Ci)$CommonOperators
+    opshi  := operator('Shi)$CommonOperators
+    opchi  := operator('Chi)$CommonOperators
     opli2  := operator('dilog)$CommonOperators
     operf  := operator('erf)$CommonOperators
     opfis  := operator('fresnelS)$CommonOperators
@@ -97,6 +105,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
 
     Si x                == opsi x
     Ci x                == opci x
+    Shi x               == opshi x
+    Chi x               == opchi x
     Ei x                == opei x
     erf x               == operf x
     li  x               == opli x
@@ -107,6 +117,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     belong? op     == has?(op, PRIM)
     isi x          == (zero? x => 0; kernel(opsi, x))
     ici x          == kernel(opci, x)
+    ishi x         == (zero? x => 0; kernel(opshi, x))
+    ichi x         == kernel(opchi, x)
     ierf x         == (zero? x => 0; kernel(operf, x))
 --    ili2 x         == (one? x => INV; kernel(opli2, x))
     ili2 x         == ((x = 1) => 0; kernel(opli2, x))
@@ -183,6 +195,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
       is?(op, 'Ei)         => opei
       is?(op, 'Si)         => opsi
       is?(op, 'Ci)         => opci
+      is?(op, 'Shi)        => opshi
+      is?(op, 'Chi)        => opchi
       is?(op, 'li)         => opli
       is?(op, 'erf)        => operf
       is?(op, 'dilog)      => opli2
@@ -194,6 +208,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     evaluate(opli,   ili)
     evaluate(opsi,   isi)
     evaluate(opci,   ici)
+    evaluate(opshi,  ishi)
+    evaluate(opchi,  ichi)
     evaluate(operf,  ierf)
     evaluate(opli2,  ili2)
     evaluate(opfis,  ifis)
@@ -202,6 +218,8 @@ LiouvillianFunction(R, F): Exports == Implementation where
     evaluate(opiint,  iiint)
     derivative(opsi, (z1:F):F +-> sin(z1) / z1)
     derivative(opci, (z1:F):F +-> cos(z1) / z1)
+    derivative(opshi, (z1:F):F +-> sinh(z1) / z1)
+    derivative(opchi, (z1:F):F +-> cosh(z1) / z1)
     derivative(opei, (z1:F):F +-> exp(z1) / z1)
     derivative(opli, (z1:F):F +-> inv log(z1))
     derivative(operf, (z1:F):F +-> 2 * exp(-(z1^2)) / sqrt(pi()))
