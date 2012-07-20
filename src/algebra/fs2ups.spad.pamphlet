@@ -146,6 +146,10 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       ++ the series is centered at 0.  For a series centered at a, the
       ++ user should perform the substitution \spad{x -> x + a} before calling
       ++ this function.
+    exprToPS : (FE, B, ATANFLAG, B, FE) -> Result
+      ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) is
+      ++ like exprToUPS, but if \spad{log_flag} is true it replaces
+      ++ logarithms of expansion variable by \spad{log_val}
     localAbs: FE -> FE
       ++ localAbs(fcn) = \spad{abs(fcn)} or \spad{sqrt(fcn^2)} depending
       ++ on whether or not FE has a function \spad{abs}.  This should be
@@ -153,42 +157,49 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
 
   Implementation ==> add
 
+    OPT_REC ==> Record(pos_Check? : Boolean, atan_Flag : ATANFLAG,
+                       log_x_replace : Boolean, log_x_val : FE)
+
     ratIfCan            : FE -> Union(RN,"failed")
     carefulNthRootIfCan : (UPS,NNI,B,B) -> Result
     stateProblem        : (PROBLEM, PROBLEM) -> Result
     polyToUPS           : SUP -> UPS
-    listToUPS           : (L FE,(FE,B,ATANFLAG) -> Result,B,ATANFLAG,UPS,(UPS,UPS) -> UPS)_
-                                            -> Result
+    listToUPS           : (L FE, (FE, OPT_REC) -> Result, OPT_REC,
+                           UPS, (UPS, UPS) -> UPS) -> Result
     isNonTrivPower      : FE -> Union(Record(val:FE,exponent:I),"failed")
-    powerToUPS          : (FE,I,B,ATANFLAG) -> Result
-    kernelToUPS         : (K,B,ATANFLAG) -> Result
-    nthRootToUPS        : (FE,NNI,B,ATANFLAG) -> Result
-    logToUPS            : (FE,B,ATANFLAG) -> Result
-    atancotToUPS        : (FE,B,ATANFLAG,I) -> Result
-    applyIfCan          : (UPS -> Union(UPS,"failed"),FE,FUNCTIONNAME,B,ATANFLAG) -> Result
-    tranToUPS           : (K,FE,B,ATANFLAG) -> Result
-    powToUPS            : (L FE,B,ATANFLAG) -> Result
+    i_expr_to_PS        : (FE, OPT_REC) -> Result
+    powerToUPS          : (FE, I, OPT_REC) -> Result
+    kernelToUPS         : (K, OPT_REC) -> Result
+    nthRootToUPS        : (FE, NNI, OPT_REC) -> Result
+    logToUPS            : (FE, OPT_REC) -> Result
+    atancotToUPS        : (FE, OPT_REC, I) -> Result
+    applyIfCan          : (UPS -> Union(UPS,"failed"), FE, FUNCTIONNAME,
+                           OPT_REC) -> Result
+    tranToUPS           : (K, FE, OPT_REC) -> Result
+    powToUPS            : (L FE, OPT_REC) -> Result
     newElem             : FE -> FE
     smpElem             : SMP -> FE
     k2Elem              : K -> FE
     contOnReals?        : FUNCTIONNAME -> B
     bddOnReals?         : FUNCTIONNAME -> B
-    iExprToGenUPS       : (FE,B,ATANFLAG) -> Result
+    iExprToGenUPS       : (FE, OPT_REC) -> Result
     opsInvolvingX       : FE -> L BOP
     opInOpList?         : (SY,L BOP) -> B
     exponential?        : FE -> B
     productOfNonZeroes? : FE -> B
-    powerToGenUPS       : (FE,I,B,ATANFLAG) -> Result
-    kernelToGenUPS      : (K,B,ATANFLAG) -> Result
-    nthRootToGenUPS     : (FE,NNI,B,ATANFLAG) -> Result
-    logToGenUPS         : (FE,B,ATANFLAG) -> Result
-    expToGenUPS         : (FE,B,ATANFLAG) -> Result
-    expGenUPS           : (UPS,B,ATANFLAG) -> Result
-    atancotToGenUPS     : (FE,FE,B,ATANFLAG,I) -> Result
-    genUPSApplyIfCan    : (UPS -> Union(UPS,"failed"),FE,FUNCTIONNAME,B,ATANFLAG) -> Result
-    applyBddIfCan       : (FE,UPS -> Union(UPS,"failed"),FE,FUNCTIONNAME,B,ATANFLAG) -> Result
-    tranToGenUPS        : (K,FE,B,ATANFLAG) -> Result
-    powToGenUPS         : (L FE,B,ATANFLAG) -> Result
+    powerToGenUPS       : (FE, I, OPT_REC) -> Result
+    kernelToGenUPS      : (K, OPT_REC) -> Result
+    nthRootToGenUPS     : (FE, NNI, OPT_REC) -> Result
+    logToGenUPS         : (FE, OPT_REC) -> Result
+    expToGenUPS         : (FE, OPT_REC) -> Result
+    expGenUPS           : (UPS, OPT_REC) -> Result
+    atancotToGenUPS     : (FE, FE, OPT_REC, I) -> Result
+    genUPSApplyIfCan    : (UPS -> Union(UPS,"failed"), FE, FUNCTIONNAME,
+                           OPT_REC) -> Result
+    applyBddIfCan       : (FE, UPS -> Union(UPS,"failed"), FE, FUNCTIONNAME,
+                           OPT_REC) -> Result
+    tranToGenUPS        : (K, FE, OPT_REC) -> Result
+    powToGenUPS         : (L FE, OPT_REC) -> Result
 
     ZEROCOUNT : I := 1000
     -- number of zeroes to be removed when taking logs or nth roots
@@ -228,6 +239,12 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       [[function,problem]]
 
     exprToUPS(fcn,posCheck?,atanFlag) ==
+        i_expr_to_PS(fcn, [posCheck?, atanFlag, false, 0]$OPT_REC)
+
+    exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) ==
+        i_expr_to_PS(fcn, [posCheck?, atanFlag, log_flag, log_val]$OPT_REC)
+
+    i_expr_to_PS(fcn, opt_rec) ==
       -- converts a functional expression to a power series
       --!! The following line is commented out so that expressions of
       --!! the form a^b will be normalized to exp(b * log(a)) even if
@@ -237,16 +254,16 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
         [polyToUPS univariate(poly :: POL,x)]
       (sum := isPlus fcn) case L(FE) =>
-        listToUPS(sum :: L(FE), exprToUPS, posCheck?, atanFlag, 0,
+          listToUPS(sum :: L(FE), i_expr_to_PS, opt_rec, 0,
                   (y1, y2) +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-        listToUPS(prod :: L(FE), exprToUPS, posCheck?, atanFlag, 1,
+          listToUPS(prod :: L(FE), i_expr_to_PS, opt_rec, 1,
                   (y1, y2) +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val:FE,exponent:I) =>
-        power := expt :: Record(val:FE,exponent:I)
-        powerToUPS(power.val,power.exponent,posCheck?,atanFlag)
+          power := expt :: Record(val:FE,exponent:I)
+          powerToUPS(power.val, power.exponent, opt_rec)
       (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-        kernelToUPS(ker :: K,posCheck?,atanFlag)
+          kernelToUPS(ker :: K, opt_rec)
       error "exprToUPS: neither a sum, product, power, nor kernel"
 
     polyToUPS poly ==
@@ -265,13 +282,13 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         poly := reductum poly
       ans
 
-    listToUPS(list,feToUPS,posCheck?,atanFlag,ans,op) ==
+    listToUPS(list, feToUPS, opt_rec, ans, op) ==
       -- converts each element of a list of expressions to a power
       -- series and returns the sum of these series, when 'op' is +
       -- and 'ans' is 0, or the product of these series, when 'op' is *
       -- and 'ans' is 1
       while not null list repeat
-        (term := feToUPS(first list,posCheck?,atanFlag)) case %problem =>
+        (term := feToUPS(first list, opt_rec)) case %problem =>
           return term
         ans := op(ans,term.%series)
         list := rest list
@@ -285,9 +302,9 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       (power.exponent = 1) => "failed"
       power
 
-    powerToUPS(fcn,n,posCheck?,atanFlag) ==
+    powerToUPS(fcn, n, opt_rec) ==
       -- converts an integral power to a power series
-      (b := exprToUPS(fcn,posCheck?,atanFlag)) case %problem => b
+      (b := i_expr_to_PS(fcn, opt_rec)) case %problem => b
       n > 0 => [(b.%series) ^ n]
       -- check lowest order coefficient when n < 0
       ups := b.%series; deg := degree ups
@@ -302,7 +319,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
     ARES ==> Record(osers : L(UPS), sers : L(UPS), sere : L(FE), sers0 : L(FE))
     ARESU ==> Union(ARES, Result)
 
-    handle_args(args : L(FE), posCheck? : B, atanFlag : ATANFLAG) : ARESU ==
+    handle_args(args : L(FE), opt_rec : OPT_REC) : ARESU ==
         losers : L(UPS) := []
         lsers :  L(UPS) := []
         lsere : L(FE) := []
@@ -313,7 +330,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
                 lsers := cons(0$UPS, lsers)
                 lsere := cons(0$FE, lsere)
                 lcoef := cons(arg, lcoef)
-            (nsu := exprToUPS(arg, posCheck?, atanFlag)) case %problem =>
+            (nsu := i_expr_to_PS(arg, opt_rec)) case %problem =>
                 return nsu
             ups := nsu.%series
             order(ups, 0) < 0 =>
@@ -474,9 +491,8 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         nres2 case %problem => return nres2
         [z_inv + nres2.%series]
 
-    spec_to_UPS(ker : K, args : L(FE), posCheck? : B,
-                atanFlag : ATANFLAG) : Result ==
-        (aresu := handle_args(args, posCheck?, atanFlag)) case Result =>
+    spec_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
+        (aresu := handle_args(args, opt_rec)) case Result =>
              aresu
         ares := aresu::ARES
         losers := ares.osers
@@ -545,28 +561,26 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
                     narg1 := 1 - arg1
                     nker := kernel(operator(ker), [narg1])
                     nexpr := pi()$FE/(nker::FE*sin(pi()$FE*arg1))
-                    return exprToUPS(nexpr, posCheck?, atanFlag)
+                    return i_expr_to_PS(nexpr, opt_rec)
         cargs := convert_args(lsers, lsere, lser0)
         nargs := cargs.nargs0
         nker : FE := kernel(operator(ker), nargs)
         do_taylor_via_deriv2(nker, cargs.syms, cargs.sers)
 
-    do_prim(ker : K, arg0 : FE, posCheck? : B,
-            atanFlag : ATANFLAG) : Result ==
+    do_prim(ker : K, arg0 : FE, opt_rec : OPT_REC) : Result ==
         c0 := operator(ker)(arg0)
         nf := differentiate(ker::FE, x)
-        ns := exprToUPS(nf, posCheck?, atanFlag)
+        ns := i_expr_to_PS(nf, opt_rec)
         ns case %problem => return ns
         [(c0::UPS) + integrate(ns.%series)]
 
 
-    prim_to_UPS(ker : K, args : L(FE), posCheck? : B,
-                atanFlag : ATANFLAG) : Result ==
+    prim_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
         nm := name(ker)
         #args ~= 1 =>
             stateProblem(string nm, "multivariate primitive")
         arg := first(args)
-        (nsu := exprToUPS(arg, posCheck?, atanFlag)) case %problem =>
+        (nsu := i_expr_to_PS(arg, opt_rec)) case %problem =>
             return nsu
         ups := nsu.%series
         order(ups, 0) < 0 =>
@@ -575,17 +589,17 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         coef := coefficient(ups, 0)
         nm = 'Ei or nm = 'Ci or nm = 'Chi =>
             coef = 0 => stateProblem(string(nm), "expansion at 0")
-            do_prim(ker, coef, posCheck?, atanFlag)
+            do_prim(ker, coef, opt_rec)
         nm = 'dilog or nm = 'li =>
             coef = 0 => stateProblem(string(nm), "expansion at 0")
             coef = 1 => stateProblem(string(nm), "expansion at 1")
-            do_prim(ker, coef, posCheck?, atanFlag)
+            do_prim(ker, coef, opt_rec)
         nm = 'Si or nm = 'Shi or nm = 'erf or
           nm = 'fresnelS or nm = 'fresnelC =>
-            do_prim(ker, coef, posCheck?, atanFlag)
+            do_prim(ker, coef, opt_rec)
         stateProblem(string name ker,"unimplemented")
 
-    kernelToUPS(ker,posCheck?,atanFlag) ==
+    kernelToUPS(ker, opt_rec) ==
       -- converts a kernel to a power series
       (sym := symbolIfCan(ker)) case Symbol =>
         (sym :: Symbol) = x => [monomial(1,1)]
@@ -594,48 +608,56 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       not member?(x, variables(ker :: FE)) => [monomial(ker :: FE,0)]
       op := operator(ker)
       has?(op, 'special) =>
-          spec_to_UPS(ker, args, posCheck?, atanFlag)
+          spec_to_UPS(ker, args, opt_rec)
       has?(op, 'prim) =>
-          prim_to_UPS(ker, args, posCheck?, atanFlag)
+          prim_to_UPS(ker, args, opt_rec)
       empty? rest args =>
         arg := first args
         is?(ker, 'abs) =>
-          nthRootToUPS(arg*arg,2,posCheck?,atanFlag)
-        is?(ker,"%paren" :: Symbol) => exprToUPS(arg,posCheck?,atanFlag)
-        is?(ker, 'log) => logToUPS(arg, posCheck?, atanFlag)
+            nthRootToUPS(arg*arg, 2, opt_rec)
+        is?(ker, "%paren"::Symbol) => i_expr_to_PS(arg, opt_rec)
+        is?(ker, 'log) => logToUPS(arg, opt_rec)
         is?(ker, 'exp) =>
-          applyIfCan(expIfCan,arg,"exp",posCheck?,atanFlag)
-        tranToUPS(ker,arg,posCheck?,atanFlag)
-      is?(ker,"%power" :: Symbol) => powToUPS(args,posCheck?,atanFlag)
+            applyIfCan(expIfCan, arg, "exp", opt_rec)
+        tranToUPS(ker, arg, opt_rec)
+      is?(ker, "%power"::Symbol) => powToUPS(args, opt_rec)
       is?(ker, 'nthRoot) =>
         n := retract(second args)@I
-        nthRootToUPS(first args,n :: NNI,posCheck?,atanFlag)
+        nthRootToUPS(first args, n::NNI, opt_rec)
       stateProblem(string name ker,"unknown kernel")
 
-    nthRootToUPS(arg,n,posCheck?,atanFlag) ==
+    nthRootToUPS(arg, n, opt_rec) ==
       -- converts an nth root to a power series
       -- this is not used in the limit package, so the series may
       -- have non-zero order, in which case nth roots may not be unique
-      (result := exprToUPS(arg,posCheck?,atanFlag)) case %problem => result
-      ans := carefulNthRootIfCan(result.%series,n,posCheck?,false)
+      (result := i_expr_to_PS(arg, opt_rec)) case %problem => result
+      ans := carefulNthRootIfCan(result.%series, n, opt_rec.pos_Check?, false)
       ans case %problem => ans
       [ans.%series]
 
-    logToUPS(arg,posCheck?,atanFlag) ==
+    logToUPS(arg, opt_rec) ==
       -- converts a logarithm log(f(x)) to a power series
       -- f(x) must have order 0 and if 'posCheck?' is true,
       -- then f(x) must have a non-negative leading coefficient
-      (result := exprToUPS(arg,posCheck?,atanFlag)) case %problem => result
+      (result := i_expr_to_PS(arg, opt_rec)) case %problem => result
       ups := result.%series
-      not zero? order(ups,1) =>
+      deg := degree ups
+      coef : FE
+      if (coef := coefficient(ups,deg)) = 0 then
+          deg := order(ups,deg + ZEROCOUNT :: Expon)
+          (coef := coefficient(ups,deg)) = 0 =>
+              error "log of series with many leading zero coefficients"
+      not (opt_rec.log_x_replace or zero? deg) =>
         stateProblem("log","series of non-zero order")
-      coef := coefficient(ups,0)
       -- if 'posCheck?' is true, we do not allow logs of negative numbers
-      if posCheck? then
+      if opt_rec.pos_Check? then
         if ((signum := sign(coef)$SIGNEF) case I) then
           (signum :: I) = -1 =>
             return stateProblem("log","negative leading coefficient")
-      [logIfCan(ups) :: UPS]
+      zero? deg => [logIfCan(ups)::UPS]
+      lt := monomial(coef, deg)$UPS
+      logTerm : FE := log(coef) +  opt_rec.log_x_val
+      [monomial(logTerm, 0) + log(ups/lt)]
 
     if FE has abs: FE -> FE then
       localAbs fcn == abs fcn
@@ -645,13 +667,14 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
     signOfExpression: FE -> FE
     signOfExpression arg == localAbs(arg)/arg
 
-    atancotToUPS(arg,posCheck?,atanFlag,plusMinus) ==
+    atancotToUPS(arg, opt_rec, plusMinus) ==
       -- converts atan(f(x)) to a power series
-      (result := exprToUPS(arg,posCheck?,atanFlag)) case %problem => result
+      (result := i_expr_to_PS(arg, opt_rec)) case %problem => result
       ups := result.%series; coef := coefficient(ups,0)
       (ord := order(ups,0)) = 0 and coef * coef = -1 =>
         -- series involves complex numbers
         return stateProblem("atan","logarithmic singularity")
+      atanFlag := opt_rec.atan_Flag
       cc : FE :=
         ord < 0 =>
           atanFlag = "complex" =>
@@ -683,69 +706,69 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         atan coef
       [(cc :: UPS) + integrate(plusMinus * differentiate(ups)/(1 + ups*ups))]
 
-    applyIfCan(fcn,arg,fcnName,posCheck?,atanFlag) ==
+    applyIfCan(fcn, arg, fcnName, opt_rec) ==
       -- converts fcn(arg) to a power series
-      (ups := exprToUPS(arg,posCheck?,atanFlag)) case %problem => ups
+      (ups := i_expr_to_PS(arg, opt_rec)) case %problem => ups
       ans := fcn(ups.%series)
       ans case "failed" => stateProblem(fcnName,"essential singularity")
       [ans :: UPS]
 
-    tranToUPS(ker,arg,posCheck?,atanFlag) ==
+    tranToUPS(ker, arg, opt_rec) ==
       -- converts ker to a power series for certain functions
       -- in trig or hyperbolic trig categories
       is?(ker, 'sin) =>
-        applyIfCan(sinIfCan,arg,"sin",posCheck?,atanFlag)
+          applyIfCan(sinIfCan, arg, "sin", opt_rec)
       is?(ker, 'cos) =>
-        applyIfCan(cosIfCan,arg,"cos",posCheck?,atanFlag)
+          applyIfCan(cosIfCan, arg, "cos", opt_rec)
       is?(ker, 'tan) =>
-        applyIfCan(tanIfCan,arg,"tan",posCheck?,atanFlag)
+          applyIfCan(tanIfCan, arg, "tan", opt_rec)
       is?(ker, 'cot) =>
-        applyIfCan(cotIfCan,arg,"cot",posCheck?,atanFlag)
+          applyIfCan(cotIfCan, arg, "cot", opt_rec)
       is?(ker, 'sec) =>
-        applyIfCan(secIfCan,arg,"sec",posCheck?,atanFlag)
+          applyIfCan(secIfCan, arg, "sec", opt_rec)
       is?(ker, 'csc) =>
-        applyIfCan(cscIfCan,arg,"csc",posCheck?,atanFlag)
+          applyIfCan(cscIfCan, arg, "csc", opt_rec)
       is?(ker, 'asin) =>
-        applyIfCan(asinIfCan,arg,"asin",posCheck?,atanFlag)
+          applyIfCan(asinIfCan, arg, "asin", opt_rec)
       is?(ker, 'acos) =>
-        applyIfCan(acosIfCan,arg,"acos",posCheck?,atanFlag)
-      is?(ker, 'atan) => atancotToUPS(arg,posCheck?,atanFlag,1)
-      is?(ker, 'acot) => atancotToUPS(arg,posCheck?,atanFlag,-1)
+          applyIfCan(acosIfCan, arg, "acos", opt_rec)
+      is?(ker, 'atan) => atancotToUPS(arg, opt_rec, 1)
+      is?(ker, 'acot) => atancotToUPS(arg, opt_rec, -1)
       is?(ker, 'asec) =>
-        applyIfCan(asecIfCan,arg,"asec",posCheck?,atanFlag)
+          applyIfCan(asecIfCan, arg, "asec", opt_rec)
       is?(ker, 'acsc) =>
-        applyIfCan(acscIfCan,arg,"acsc",posCheck?,atanFlag)
+          applyIfCan(acscIfCan, arg, "acsc", opt_rec)
       is?(ker, 'sinh) =>
-        applyIfCan(sinhIfCan,arg,"sinh",posCheck?,atanFlag)
+          applyIfCan(sinhIfCan, arg, "sinh", opt_rec)
       is?(ker, 'cosh) =>
-        applyIfCan(coshIfCan,arg,"cosh",posCheck?,atanFlag)
+          applyIfCan(coshIfCan, arg, "cosh", opt_rec)
       is?(ker, 'tanh) =>
-        applyIfCan(tanhIfCan,arg,"tanh",posCheck?,atanFlag)
+          applyIfCan(tanhIfCan, arg, "tanh", opt_rec)
       is?(ker, 'coth) =>
-        applyIfCan(cothIfCan,arg,"coth",posCheck?,atanFlag)
+          applyIfCan(cothIfCan, arg, "coth", opt_rec)
       is?(ker, 'sech) =>
-        applyIfCan(sechIfCan,arg,"sech",posCheck?,atanFlag)
+          applyIfCan(sechIfCan, arg, "sech", opt_rec)
       is?(ker, 'csch) =>
-        applyIfCan(cschIfCan,arg,"csch",posCheck?,atanFlag)
+          applyIfCan(cschIfCan, arg, "csch", opt_rec)
       is?(ker, 'asinh) =>
-        applyIfCan(asinhIfCan,arg,"asinh",posCheck?,atanFlag)
+          applyIfCan(asinhIfCan, arg, "asinh", opt_rec)
       is?(ker, 'acosh) =>
-        applyIfCan(acoshIfCan,arg,"acosh",posCheck?,atanFlag)
+          applyIfCan(acoshIfCan, arg, "acosh", opt_rec)
       is?(ker, 'atanh) =>
-        applyIfCan(atanhIfCan,arg,"atanh",posCheck?,atanFlag)
+          applyIfCan(atanhIfCan, arg, "atanh", opt_rec)
       is?(ker, 'acoth) =>
-        applyIfCan(acothIfCan,arg,"acoth",posCheck?,atanFlag)
+          applyIfCan(acothIfCan, arg, "acoth", opt_rec)
       is?(ker, 'asech) =>
-        applyIfCan(asechIfCan,arg,"asech",posCheck?,atanFlag)
+          applyIfCan(asechIfCan, arg, "asech", opt_rec)
       is?(ker, 'acsch) =>
-        applyIfCan(acschIfCan,arg,"acsch",posCheck?,atanFlag)
+          applyIfCan(acschIfCan, arg, "acsch", opt_rec)
       stateProblem(string name ker,"unknown kernel")
 
-    powToUPS(args,posCheck?,atanFlag) ==
+    powToUPS(args, opt_rec) ==
       -- converts a power f(x) ^ g(x) to a power series
-      (logBase := logToUPS(first args,posCheck?,atanFlag)) case %problem =>
+      (logBase := logToUPS(first args, opt_rec)) case %problem =>
         logBase
-      (expon := exprToUPS(second args,posCheck?,atanFlag)) case %problem =>
+      (expon := i_expr_to_PS(second args, opt_rec)) case %problem =>
         expon
       ans := expIfCan((expon.%series) * (logBase.%series))
       ans case "failed" => stateProblem("exp","essential singularity")
@@ -795,9 +818,9 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       -- converts a functional expression to a generalized power
       -- series; "generalized" means that log(x) and bounded functions
       -- of x are allowed to appear in the coefficients of the series
-      iExprToGenUPS(newElem fcn,posCheck?,atanFlag)
+      iExprToGenUPS(newElem fcn, [posCheck?, atanFlag, false, 0]$OPT_REC)
 
-    iExprToGenUPS(fcn,posCheck?,atanFlag) ==
+    iExprToGenUPS(fcn, opt_rec) ==
       -- converts a functional expression to a generalized power
       -- series without first normalizing the expression
       --!! The following line is commented out so that expressions of
@@ -808,16 +831,16 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
         [polyToUPS univariate(poly :: POL,x)]
       (sum := isPlus fcn) case L(FE) =>
-        listToUPS(sum :: L(FE), iExprToGenUPS, posCheck?, atanFlag, 0,
+        listToUPS(sum :: L(FE), iExprToGenUPS, opt_rec, 0,
                   (y1, y2) +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-        listToUPS(prod :: L(FE), iExprToGenUPS, posCheck?, atanFlag, 1,
+        listToUPS(prod :: L(FE), iExprToGenUPS, opt_rec, 1,
                   (y1, y2) +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val:FE,exponent:I) =>
         power := expt :: Record(val:FE,exponent:I)
-        powerToGenUPS(power.val,power.exponent,posCheck?,atanFlag)
+        powerToGenUPS(power.val, power.exponent, opt_rec)
       (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-        kernelToGenUPS(ker :: K,posCheck?,atanFlag)
+        kernelToGenUPS(ker :: K, opt_rec)
       error "exprToGenUPS: neither a sum, product, power, nor kernel"
 
     opsInvolvingX fcn ==
@@ -846,7 +869,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
           return false
       true
 
-    powerToGenUPS(fcn,n,posCheck?,atanFlag) ==
+    powerToGenUPS(fcn, n, opt_rec) ==
       -- converts an integral power to a generalized power series
       -- if n < 0 and the lowest order coefficient of the series
       -- involves x, we are careful about inverting this coefficient
@@ -854,7 +877,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       -- (a) the only function involving x is 'log', or
       -- (b) the lowest order coefficient is a product of exponentials
       --     and functions not involving x
-      (b := iExprToGenUPS(fcn,posCheck?,atanFlag)) case %problem => b
+      (b := iExprToGenUPS(fcn, opt_rec)) case %problem => b
       n > 0 => [(b.%series) ^ n]
       -- check lowest order coefficient when n < 0
       ups := b.%series; deg := degree ups
@@ -872,40 +895,40 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       productOfNonZeroes? coef => [ups ^ n]
       stateProblem("inv","lowest order coefficient involves x")
 
-    kernelToGenUPS(ker,posCheck?,atanFlag) ==
+    kernelToGenUPS(ker, opt_rec) ==
       -- converts a kernel to a generalized power series
       (sym := symbolIfCan(ker)) case Symbol =>
         (sym :: Symbol) = x => [monomial(1,1)]
         [monomial(ker :: FE,0)]
       empty?(args := argument ker) => [monomial(ker :: FE,0)]
       empty? rest args =>
-        arg := first args
-        is?(ker, 'abs) =>
-          nthRootToGenUPS(arg*arg,2,posCheck?,atanFlag)
-        is?(ker,"%paren" :: Symbol) => iExprToGenUPS(arg,posCheck?,atanFlag)
-        is?(ker, 'log) => logToGenUPS(arg, posCheck?, atanFlag)
-        is?(ker, 'exp) => expToGenUPS(arg, posCheck?, atanFlag)
-        tranToGenUPS(ker,arg,posCheck?,atanFlag)
-      is?(ker,"%power" :: Symbol) => powToGenUPS(args,posCheck?,atanFlag)
+          arg := first args
+          is?(ker, 'abs) =>
+              nthRootToGenUPS(arg*arg,2, opt_rec)
+          is?(ker, "%paren"::Symbol) => iExprToGenUPS(arg, opt_rec)
+          is?(ker, 'log) => logToGenUPS(arg, opt_rec)
+          is?(ker, 'exp) => expToGenUPS(arg, opt_rec)
+          tranToGenUPS(ker, arg, opt_rec)
+      is?(ker, "%power"::Symbol) => powToGenUPS(args, opt_rec)
       is?(ker, 'nthRoot) =>
         n := retract(second args)@I
-        nthRootToGenUPS(first args,n :: NNI,posCheck?,atanFlag)
+        nthRootToGenUPS(first args, n::NNI, opt_rec)
       stateProblem(string name ker,"unknown kernel")
 
-    nthRootToGenUPS(arg,n,posCheck?,atanFlag) ==
+    nthRootToGenUPS(arg,n, opt_rec) ==
       -- convert an nth root to a power series
       -- used for computing right hand limits, so the series may have
       -- non-zero order, but may not have a negative leading coefficient
       -- when n is even
-      (result := iExprToGenUPS(arg,posCheck?,atanFlag)) case %problem =>
+      (result := iExprToGenUPS(arg, opt_rec)) case %problem =>
         result
-      ans := carefulNthRootIfCan(result.%series,n,posCheck?,true)
+      ans := carefulNthRootIfCan(result.%series, n, opt_rec.pos_Check?, true)
       ans case %problem => ans
       [ans.%series]
 
-    logToGenUPS(arg,posCheck?,atanFlag) ==
+    logToGenUPS(arg, opt_rec) ==
       -- converts a logarithm log(f(x)) to a generalized power series
-      (result := iExprToGenUPS(arg,posCheck?,atanFlag)) case %problem =>
+      (result := iExprToGenUPS(arg, opt_rec)) case %problem =>
         result
       ups := result.%series; deg := degree ups
       if (coef := coefficient(ups,deg)) = 0 then
@@ -913,7 +936,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         (coef := coefficient(ups,deg)) = 0 =>
           error "log of series with many leading zero coefficients"
       -- if 'posCheck?' is true, we do not allow logs of negative numbers
-      if posCheck? then
+      if opt_rec.pos_Check? then
         if ((signum := sign(coef)$SIGNEF) case I) then
           (signum :: I) = -1 =>
             return stateProblem("log","negative leading coefficient")
@@ -933,13 +956,13 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         log(coef) + term1
       [monomial(logTerm,0) + log(ups/lt)]
 
-    expToGenUPS(arg,posCheck?,atanFlag) ==
+    expToGenUPS(arg, opt_rec) ==
       -- converts an exponential exp(f(x)) to a generalized
       -- power series
-      (ups := iExprToGenUPS(arg,posCheck?,atanFlag)) case %problem => ups
-      expGenUPS(ups.%series,posCheck?,atanFlag)
+      (ups := iExprToGenUPS(arg, opt_rec)) case %problem => ups
+      expGenUPS(ups.%series, opt_rec)
 
-    expGenUPS(ups,posCheck?,atanFlag) ==
+    expGenUPS(ups, opt_rec) ==
       -- computes the exponential of a generalized power series.
       -- If the series has order zero and the constant term a0 of the
       -- series involves x, the function tries to expand exp(a0) as
@@ -954,13 +977,13 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         normalize(exp lc,x)$ElementaryFunctionStructurePackage(R,FE)
       opInOpList?('log, opsInvolvingX expCoef) =>
         stateProblem("exp","logs in constant coefficient")
-      result := exprToGenUPS(expCoef,posCheck?,atanFlag)
+      result := iExprToGenUPS(newElem expCoef, opt_rec)
       result case %problem => result
       [(result.%series) * exp(ups - monomial(lc,0))]
 
-    atancotToGenUPS(fe,arg,posCheck?,atanFlag,plusMinus) ==
+    atancotToGenUPS(fe, arg, opt_rec, plusMinus) ==
       -- converts atan(f(x)) to a generalized power series
-      (result := iExprToGenUPS(arg,posCheck?,atanFlag)) case %problem =>
+      (result := iExprToGenUPS(arg, opt_rec)) case %problem =>
         trouble := result.%problem
         trouble.prob = "essential singularity" => [monomial(fe,0)$UPS]
         result
@@ -970,6 +993,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         y := differentiate(ups)/(1 + ups*ups)
         yCoef := coefficient(y,-1)
         [monomial(log yCoef,0) + integrate(y - monomial(yCoef,-1)$UPS)]
+      atanFlag := opt_rec.atan_Flag
       cc : FE :=
         ord < 0 =>
           atanFlag = "complex" =>
@@ -1001,9 +1025,9 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         atan coef
       [(cc :: UPS) + integrate(differentiate(ups)/(1 + ups*ups))]
 
-    genUPSApplyIfCan(fcn,arg,fcnName,posCheck?,atanFlag) ==
+    genUPSApplyIfCan(fcn, arg,fcnName, opt_rec) ==
       -- converts fcn(arg) to a generalized power series
-      (series := iExprToGenUPS(arg,posCheck?,atanFlag)) case %problem =>
+      (series := iExprToGenUPS(arg, opt_rec)) case %problem =>
         series
       ups := series.%series
       (deg := order(ups,1)) < 0 =>
@@ -1016,61 +1040,61 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       contOnReals? fcnName => [fcn(ups) :: UPS]
       stateProblem(fcnName,"x in constant coefficient")
 
-    applyBddIfCan(fe,fcn,arg,fcnName,posCheck?,atanFlag) ==
+    applyBddIfCan(fe, fcn, arg, fcnName, opt_rec) ==
       -- converts fcn(arg) to a generalized power series, where the
       -- function fcn is bounded for real values
       -- if fcn(arg) has an essential singularity as a complex
       -- function, we return fcn(arg) as a monomial of degree 0
-      (ups := iExprToGenUPS(arg,posCheck?,atanFlag)) case %problem =>
+      (ups := iExprToGenUPS(arg, opt_rec)) case %problem =>
         trouble := ups.%problem
         trouble.prob = "essential singularity" => [monomial(fe,0)$UPS]
         ups
       (ans := fcn(ups.%series)) case "failed" => [monomial(fe,0)$UPS]
       [ans :: UPS]
 
-    tranToGenUPS(ker,arg,posCheck?,atanFlag) ==
+    tranToGenUPS(ker, arg, opt_rec) ==
       -- converts op(arg) to a power series for certain functions
       -- op in trig or hyperbolic trig categories
       -- N.B. when this function is called, 'k2Elem' will have been
       -- applied, so the following functions cannot appear:
       -- tan, cot, sec, csc, sinh, cosh, tanh, coth, sech, csch
       is?(ker, 'sin) =>
-        applyBddIfCan(ker :: FE,sinIfCan,arg,"sin",posCheck?,atanFlag)
+          applyBddIfCan(ker::FE, sinIfCan, arg, "sin", opt_rec)
       is?(ker, 'cos) =>
-        applyBddIfCan(ker :: FE,cosIfCan,arg,"cos",posCheck?,atanFlag)
+          applyBddIfCan(ker::FE, cosIfCan, arg, "cos", opt_rec)
       is?(ker, 'asin) =>
-        genUPSApplyIfCan(asinIfCan,arg,"asin",posCheck?,atanFlag)
+          genUPSApplyIfCan(asinIfCan, arg, "asin", opt_rec)
       is?(ker, 'acos) =>
-        genUPSApplyIfCan(acosIfCan,arg,"acos",posCheck?,atanFlag)
+          genUPSApplyIfCan(acosIfCan, arg, "acos", opt_rec)
       is?(ker, 'atan) =>
-        atancotToGenUPS(ker :: FE,arg,posCheck?,atanFlag,1)
+          atancotToGenUPS(ker::FE, arg, opt_rec, 1)
       is?(ker, 'acot) =>
-        atancotToGenUPS(ker :: FE,arg,posCheck?,atanFlag,-1)
+          atancotToGenUPS(ker::FE, arg, opt_rec, -1)
       is?(ker, 'asec) =>
-        genUPSApplyIfCan(asecIfCan,arg,"asec",posCheck?,atanFlag)
+          genUPSApplyIfCan(asecIfCan, arg, "asec", opt_rec)
       is?(ker, 'acsc) =>
-        genUPSApplyIfCan(acscIfCan,arg,"acsc",posCheck?,atanFlag)
+          genUPSApplyIfCan(acscIfCan, arg, "acsc", opt_rec)
       is?(ker, 'asinh) =>
-        genUPSApplyIfCan(asinhIfCan,arg,"asinh",posCheck?,atanFlag)
+          genUPSApplyIfCan(asinhIfCan, arg, "asinh", opt_rec)
       is?(ker, 'acosh) =>
-        genUPSApplyIfCan(acoshIfCan,arg,"acosh",posCheck?,atanFlag)
+          genUPSApplyIfCan(acoshIfCan, arg, "acosh", opt_rec)
       is?(ker, 'atanh) =>
-        genUPSApplyIfCan(atanhIfCan,arg,"atanh",posCheck?,atanFlag)
+          genUPSApplyIfCan(atanhIfCan, arg, "atanh", opt_rec)
       is?(ker, 'acoth) =>
-        genUPSApplyIfCan(acothIfCan,arg,"acoth",posCheck?,atanFlag)
+          genUPSApplyIfCan(acothIfCan, arg, "acoth", opt_rec)
       is?(ker, 'asech) =>
-        genUPSApplyIfCan(asechIfCan,arg,"asech",posCheck?,atanFlag)
+          genUPSApplyIfCan(asechIfCan, arg, "asech", opt_rec)
       is?(ker, 'acsch) =>
-        genUPSApplyIfCan(acschIfCan,arg,"acsch",posCheck?,atanFlag)
+          genUPSApplyIfCan(acschIfCan, arg, "acsch", opt_rec)
       stateProblem(string name ker,"unknown kernel")
 
-    powToGenUPS(args,posCheck?,atanFlag) ==
+    powToGenUPS(args, opt_rec) ==
       -- converts a power f(x) ^ g(x) to a generalized power series
-      (logBase := logToGenUPS(first args,posCheck?,atanFlag)) case %problem =>
+      (logBase := logToGenUPS(first args, opt_rec)) case %problem =>
         logBase
-      expon := iExprToGenUPS(second args,posCheck?,atanFlag)
+      expon := iExprToGenUPS(second args, opt_rec)
       expon case %problem => expon
-      expGenUPS((expon.%series) * (logBase.%series),posCheck?,atanFlag)
+      expGenUPS((expon.%series) * (logBase.%series), opt_rec)
 
 @
 \section{License}
