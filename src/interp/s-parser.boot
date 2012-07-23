@@ -41,8 +41,8 @@ DEFPARAMETER($LABLASOC, NIL)
 
 MAKEOP(X, Y) ==
     if OR(NOT (CDR X), NUMBERP (SECOND X)) then
-        X := CONS(FIRST X, X)
-    MAKEPROP(FIRST X, Y, X)
+        X := CONS(first X, X)
+    MAKEPROP(first X, Y, X)
 
 init_parser_properties() ==
     for j in _
@@ -146,7 +146,7 @@ pop_stack_3() ==
     PUSH(el1, $reduction_stack)
     el3
 
-top_of_stack() == CAR($reduction_stack)
+top_of_stack() == first($reduction_stack)
 
 parse_token(token) ==
     tok := match_current_token(token, nil)
@@ -454,7 +454,7 @@ parse_rightBindingPowerOf(x, ind) ==
     105
 
 parse_getSemanticForm(ind, y) ==
-    AND(y, FUNCALL(CAR y)) => true
+    AND(y, FUNCALL(first y)) => true
     ind = "Nud" => parse_Prefix()
     ind = "Led" => parse_Infix()
     nil

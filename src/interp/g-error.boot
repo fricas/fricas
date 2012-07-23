@@ -85,7 +85,7 @@ errorSupervisor1(errorType,errorMsg,$BreakMode) ==
     if member('%b,errorMsg) then splitmsg := nil
       else if member('%d,errorMsg) then splitmsg := nil
            else if member('%l,errorMsg) then splitmsg := nil
-    splitmsg => CDR [:['%l,'"   ",u] for u in errorMsg]
+    splitmsg => rest [:['%l, '"   ", u] for u in errorMsg]
     ['"   ",:errorMsg]
   sayErrorly(errorLabel, msg)
   handleLispBreakLoop($BreakMode)

@@ -390,8 +390,8 @@ form2String1 u ==
     STRINGP u => formWrapId u
     WRITE_-TO_-STRING formWrapId u
   u1 := u
-  op := CAR u
-  argl := CDR u
+  op := first u
+  argl := rest u
   op='Join or op= 'mkCategory => formJoin1(op,argl)
   $InteractiveMode and (u:= constructor? op) =>
     null argl => app2StringWrap(formWrapId constructorName op, u1)
@@ -416,8 +416,8 @@ form2String1 u ==
       null argl => [ '":" ]
       null rest argl => [ '":", form2String1 first argl ]
       formDecl2String(argl.0,argl.1)
-  op = "#" and PAIRP argl and LISTP CAR argl =>
-    STRINGIMAGE SIZE CAR argl
+  op = "#" and PAIRP argl and LISTP first argl =>
+    STRINGIMAGE SIZE first argl
   op = 'Join => formJoin2String argl
   op = "ATTRIBUTE" => form2String1 first argl
   op='Zero => 0
@@ -634,13 +634,13 @@ tuple2String argl ==
         string
     fn2 x ==
       ATOM x => object2String x
-      -- [fn2 CAR x, :f CDR x]
+      -- [fn2 first x, :f rest x]
       [fn2 y for y in x]
 
 script2String s ==
   null s => '""   -- just to be safe
   if not PAIRP s then s := [s]
-  linearFormatForm(CAR s, CDR s)
+  linearFormatForm(first s, rest s)
 
 linearFormatName x ==
   atom x => x

@@ -32,7 +32,7 @@
 )package "BOOT"
 
 lefts u ==
-   [x for x in HKEYS  _*HASCATEGORY_-HASH_* | CDR x = u]
+   [x for x in HKEYS  _*HASCATEGORY_-HASH_* | rest x = u]
 
 
 --============================================================================
@@ -443,7 +443,7 @@ getImports conname == --called by mkUsersHashTable
               and not MEMQ(op,'(Mapping Union Record Enumeration CONS QUOTE local))
     import(x,template) ==
       x is [op,:args] =>
-        op = 'QUOTE or op = 'NRTEVAL => CAR args
+        op = 'QUOTE or op = 'NRTEVAL => first args
         op = 'local => first args
         op = 'Record =>
           ['Record,:[[":",CADR y,import(CADDR y,template)] for y in args]]
@@ -541,8 +541,8 @@ childrenOf conform ==
     childAssoc(conform,parentsOfForm first pair)]
 
 childAssoc(form,alist) ==
-  null (argl := CDR form) => assoc(form,alist)
-  u := assocCar(opOf form, alist) => childArgCheck(argl,rest CAR u) and u
+  null (argl := rest form) => assoc(form, alist)
+  u := assocCar(opOf form, alist) => childArgCheck(argl, rest first u) and u
   nil
 
 assocCar(x, al) == or/[pair for pair in al | x = CAAR pair]
@@ -614,7 +614,7 @@ ancestorsAdd(pred,form) == --called by ancestorsRecur
   op := IFCAR form or form
   alist := HGET($if,op)
   existingNode := assoc(form,alist) =>
-    RPLACD(existingNode,quickOr(CDR existingNode,pred))
+    RPLACD(existingNode, quickOr(rest existingNode, pred))
   HPUT($if,op,[[form,:pred],:alist])
 
 domainsOf(conform,domname,:options) ==
@@ -625,7 +625,7 @@ domainsOf(conform,domname,:options) ==
   --u is list of pairs (a . b) where b = conname
   --we sort u then replace each b by the predicate for which this is true
   s := listSort(function GLESSEQP,COPY u)
-  s := [[CAR pair,:GETDATABASE(pair,'HASCATEGORY)] for pair in s]
+  s := [[first pair, :GETDATABASE(pair, 'HASCATEGORY)] for pair in s]
   transKCatAlist(conform,domname,listSort(function GLESSEQP,s))
 
 catsOf(conform,domname,:options) ==
@@ -648,8 +648,8 @@ transKCatAlist(conform,domname,s) == main where
       acc := nil
       rest conform =>
         for pair in s repeat --pair has form [con,[conargs,:pred],...]]
-          leftForm := getConstructorForm CAR pair
-          for (ap := [args,:pred]) in CDR pair repeat
+          leftForm := getConstructorForm first pair
+          for (ap := [args, :pred]) in rest pair repeat
             match? :=
               domargs = args => true
               HAS_SHARP_VAR args => domargs = sublisFormal(IFCDR domname, args)
@@ -660,17 +660,17 @@ transKCatAlist(conform,domname,s) == main where
         NREVERSE acc
       --conform has no arguments so each pair has form [con,:pred]
       for pair in s repeat
-        leftForm := getConstructorForm CAR pair or systemError nil
+        leftForm := getConstructorForm first pair or systemError nil
         RPLACA(pair,leftForm)
-        RPLACD(pair, sublisFormal(IFCDR leftForm, CDR pair))
+        RPLACD(pair, sublisFormal(IFCDR leftForm, rest pair))
       s
     --no domname, so look for special argument combinations
     acc := nil
     IFCDR conform =>
       farglist := TAKE(#rest conform,$FormalMapVariableList)
       for pair in s repeat --pair has form [con,[conargs,:pred],...]]
-        leftForm := getConstructorForm CAR pair
-        for (ap := [args,:pred]) in CDR pair repeat
+        leftForm := getConstructorForm first pair
+        for (ap := [args, :pred]) in rest pair repeat
           hasArgsForm? := args ~= farglist
           npred := sublisFormal(IFCDR leftForm, pred)
           if hasArgsForm? then
@@ -682,9 +682,9 @@ transKCatAlist(conform,domname,s) == main where
           acc := [[leftForm,:npred],:acc]
       NREVERSE acc
     for pair in s repeat --pair has form [con,:pred]
-      leftForm := getConstructorForm CAR pair
+      leftForm := getConstructorForm first pair
       RPLACA(pair,leftForm)
-      RPLACD(pair, sublisFormal(IFCDR leftForm, CDR pair))
+      RPLACD(pair, sublisFormal(IFCDR leftForm, rest pair))
     s
 
 mkHasArgsPred subargs ==

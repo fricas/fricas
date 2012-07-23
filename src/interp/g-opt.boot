@@ -198,7 +198,7 @@ optSpecialCall(x,y,n) ==
                 --DEF-EQUAL is really an optimiser
                 -- RPLACW(x,DEF_-EQUAL args)
                 z := DEF_-EQUAL args
-                RPLACA(x, CAR z)
+                RPLACA(x, first z)
                 RPLACD(x, CDR z)
                 x
     x

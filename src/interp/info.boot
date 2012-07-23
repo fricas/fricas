@@ -197,17 +197,17 @@ knownInfo1 pred ==
     -- Order of tests below is tricky performencewise.  We
     -- put AncestorP test first because knownInfo in worst case
     -- may lead to large number of recursive calls.
-    or/[AncestorP(cat, LIST CAR u) and knownInfo CADR u
+    or/[AncestorP(cat, LIST first u) and knownInfo CADR u
           for u in CADR catlist] => true
     false
   pred is ["SIGNATURE",name,op,sig,:.] =>
       v:= get(op,"modemap",$e)
       res := false
       for w in v while(not(res)) repeat
-          w1 := CAR(w)
-          ww := CDR(w1)
+          w1 := first(w)
+          ww := rest(w1)
           --the actual signature part
-          name = CAR(w1) and LENGTH ww = LENGTH(sig) and _
+          name = first(w1) and LENGTH ww = LENGTH(sig) and _
             SourceLevelSubsume(ww, sig) =>
               CAADR w = true => res := true
       res
@@ -245,7 +245,7 @@ actOnInfo(u,$e) ==
          --we are adding information about a category
       [catvec,.,$e]:= u
       [ocatvec,.,$e]:= compMakeCategoryObject(vmode,$e)
-      -- member(vmode,CAR catvec.4) =>
+      -- member(vmode, first catvec.4) =>
       --    JHD 82/08/08 01:40 This does not mean that we can ignore the
       --    extension, since this may not be compatible with the view we
       --    were passed

@@ -105,7 +105,7 @@ set l ==  set1(l, $setOptions)
 set1(l,setTree) ==
   null l => displaySetVariableSettings(setTree,"")
   $setOptionNames : local := [x.0 for x in setTree]
-  arg := selectOption(DOWNCASE CAR l,$setOptionNames,'optionError)
+  arg := selectOption(DOWNCASE first l, $setOptionNames, 'optionError)
   setData := [arg,:LASSOC(arg,setTree)]
 
   -- check is the user is authorized for the set variable
@@ -486,8 +486,10 @@ setFortTmpDir arg ==
   $fortranTmpDir := mode
 
 validateOutputDirectory x ==
-  AND(PATHNAME_-DIRECTORY(PROBE_-FILE(CAR(x))), NOT PATHNAME_-NAME  (PROBE_-FILE(CAR(x)))) =>
-    CAR(x)
+  odir := first(x)
+  AND(PATHNAME_-DIRECTORY(PROBE_-FILE(odir)),
+      NOT PATHNAME_-NAME  (PROBE_-FILE(odir))) =>
+    odir
   NIL
 
 describeSetFortTmpDir() ==

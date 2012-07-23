@@ -40,7 +40,7 @@
 
 DEFPARAMETER($compileRecurrence, true)
 
-DEFPARAMETER($SYSCOMMANDS, [CAR x for x in $systemCommands])
+DEFPARAMETER($SYSCOMMANDS, [first x for x in $systemCommands])
 
 
 DEFPARAMETER($whatOptions, '( _
@@ -82,7 +82,7 @@ initializeSystemCommands() ==
   $SYSCOMMANDS := NIL
   while l repeat
     $SYSCOMMANDS := CONS(CAAR l, $SYSCOMMANDS)
-    l := CDR l
+    l := rest l
   $SYSCOMMANDS := NREVERSE $SYSCOMMANDS
 
 systemCommand [[op,:argl],:options] ==
@@ -107,7 +107,7 @@ synonymsForUserLevel l ==
   $UserLevel = 'development => l
   nl := NIL
   for syn in reverse l repeat
-    cmd := STRING2ID_-N(CDR syn,1)
+    cmd := STRING2ID_-N(rest syn, 1)
     null selectOptionLC(cmd,commandsForUserLevel
       $systemCommands,NIL) => nil
     nl := [syn,:nl]
@@ -133,7 +133,7 @@ hasOption(al,opt) ==
   optPname:= PNAME opt
   found := NIL
   for pair in al while not found repeat
-    stringPrefix?(PNAME CAR pair,optPname) => found := pair
+    stringPrefix?(PNAME first pair, optPname) => found := pair
   found
 
 selectOptionLC(x,l,errorFunction) ==
@@ -213,7 +213,7 @@ abbreviationsSpad2Cmd l ==
     opt = 'quiet => quiet := true
 
   l is [opt,:al] =>
-    key := opOf CAR al
+    key := opOf first al
     type := selectOptionLC(opt,abopts,'optionError)
     type is 'query =>
       null al => listConstructorAbbreviations()
@@ -349,13 +349,13 @@ clearCmdParts(l is [opt,:vl]) ==
           (lm := get(x,'localModemap,$InteractiveFrame)) =>
             PAIRP lm => untraceMapSubNames [CADAR lm]
           NIL
-        for p2 in CDR p1 repeat
-          prop:= CAR p2
-          recordOldValue(x,prop,CDR p2)
-          recordNewValue(x,prop,NIL)
+        for p2 in rest p1 repeat
+            prop := first p2
+            recordOldValue(x, prop, rest p2)
+            recordNewValue(x, prop, NIL)
         SETF(CAAR $InteractiveFrame,deleteAssoc(x,CAAR $InteractiveFrame))
-      p2:= assoc(option,CDR p1) =>
-        recordOldValue(x,option,CDR p2)
+      p2 := assoc(option, rest p1) =>
+        recordOldValue(x, option, rest p2)
         recordNewValue(x,option,NIL)
         RPLACD(p2,NIL)
   nil
@@ -813,7 +813,7 @@ displayMacros names ==
   NIL
 
 getParserMacroNames() ==
-  REMDUP [CAR mac for mac in getParserMacros()]
+  REMDUP [first mac for mac in getParserMacros()]
 
 clearParserMacro(macro) ==
   -- first see if it is one
@@ -1015,7 +1015,7 @@ edit l == editSpad2Cmd l
 editSpad2Cmd l ==
   l:=
     null l => $edit_file
-    CAR l
+    first l
   l := pathname l
   oldDir := pathnameDirectory l
   fileTypes :=
@@ -1082,7 +1082,7 @@ $previousBindings := nil
 
 frame l == frameSpad2Cmd l
 
-frameName(frame) == CAR frame
+frameName(frame) == first frame
 
 frameNames() == [frameName f for f in $interpreterFrameRing]
 
@@ -1235,7 +1235,7 @@ makeInitialModemapFrame() == COPY $InitialModemapFrame
 findFrameInRing(name) ==
   val := NIL
   for frame in $interpreterFrameRing repeat
-    CAR frame = name =>
+    first frame = name =>
       val := frame
       return frame
   val
@@ -1413,7 +1413,7 @@ writeInputLines(fn,initial) ==
   maxn := 72
   breakChars := [" ","+"]
   for i in initial..$IOindex - 1 repeat
-    vecl := CAR readHiFi i
+    vecl := first readHiFi i
     if STRINGP vecl then vecl := [vecl]
     for vec in vecl repeat
       n := SIZE vec
@@ -1445,7 +1445,7 @@ resetInCoreHist() ==
   -- removes all pointers from $HistList
   $HistListAct:= 0
   for i in 1..$HistListLen repeat
-    $HistList:= CDR $HistList
+    $HistList := rest $HistList
     RPLACA($HistList,NIL)
 
 changeHistListLen(n) ==
@@ -1453,11 +1453,11 @@ changeHistListLen(n) ==
   NULL INTEGERP n => sayKeyedMsg("S2IH0015",[n])
   dif:= n-$HistListLen
   $HistListLen:= n
-  l:= CDR $HistList
+  l := rest $HistList
   if dif > 0 then
     for i in 1..dif repeat l:= CONS(NIL,l)
   if dif < 0 then
-    for i in 1..-dif repeat l:= CDR l
+    for i in 1..-dif repeat l := rest l
     if $HistListAct > n then $HistListAct:= n
   RPLACD($HistList,l)
   'done
@@ -1477,7 +1477,7 @@ updateHist() ==
 
 updateInCoreHist() ==
   -- updates $HistList and $IOindex
-  $HistList:= CDR($HistList)
+  $HistList := rest($HistList)
   RPLACA($HistList,NIL)
   if $HistListAct < $HistListLen then $HistListAct:= $HistListAct+1
 
@@ -1500,9 +1500,9 @@ recordNewValue0(x,prop,val) ==
   -- writes (prop . val) into $HistRecord
   -- updateHist writes this stuff out into the history file
   p1:= ASSQ(x,$HistRecord) =>
-    p2:= ASSQ(prop,CDR p1) =>
+    p2 := ASSQ(prop, rest p1) =>
       RPLACD(p2,val)
-    RPLACD(p1,CONS(CONS(prop,val),CDR p1))
+    RPLACD(p1, CONS(CONS(prop, val), rest p1))
   p:= CONS(x,list CONS(prop,val))
   $HistRecord:= CONS(p,$HistRecord)
 
@@ -1513,35 +1513,35 @@ recordOldValue(x,prop,val) ==
 
 recordOldValue0(x,prop,val) ==
   -- writes (prop . val) into $HistList
-  p1:= ASSQ(x,CAR $HistList) =>
-    not ASSQ(prop,CDR p1) =>
-      RPLACD(p1,CONS(CONS(prop,val),CDR p1))
+  p1 := ASSQ(x, first $HistList) =>
+    not ASSQ(prop, rest p1) =>
+      RPLACD(p1, CONS(CONS(prop, val), rest p1))
   p:= CONS(x,list CONS(prop,val))
-  RPLACA($HistList,CONS(p,CAR $HistList))
+  RPLACA($HistList, CONS(p, first $HistList))
 
 undoInCore(n) ==
   -- undoes the last n>0 steps using $HistList
   -- resets $InteractiveFrame
   li:= $HistList
-  for i in n..$HistListLen repeat li:= CDR li
+  for i in n..$HistListLen repeat li := rest li
   undoChanges(li)
   n:= $IOindex-n-1
   n>0 and
     $HiFiAccess =>
-      vec:= CDR UNWIND_-PROTECT(readHiFi(n),disableHist())
-      val:= ( p:= ASSQ('%,vec) ) and ( p1:= ASSQ('value,CDR p) ) and
-        CDR p1
+      vec := rest UNWIND_-PROTECT(readHiFi(n), disableHist())
+      val := (p := ASSQ('%, vec)) and (p1 := ASSQ('value, rest p)) and
+        rest p1
     sayKeyedMsg("S2IH0019",[n])
   $InteractiveFrame:= putHist('%,'value,val,$InteractiveFrame)
   updateHist()
 
 undoChanges(li) ==
   -- undoes all changes of list 'li'
-  if not (CDR li = $HistList) then undoChanges CDR li
-  for p1 in CAR li repeat
-    x:= CAR p1
-    for p2 in CDR p1 repeat
-      putHist(x,CAR p2,CDR p2,$InteractiveFrame)
+  if not (rest li = $HistList) then undoChanges rest li
+  for p1 in first li repeat
+    x := first p1
+    for p2 in rest p1 repeat
+      putHist(x, first p2, rest p2, $InteractiveFrame)
 
 undoFromFile(n) ==
   -- makes a clear and redoes all the assignments until step n
@@ -1553,12 +1553,12 @@ undoFromFile(n) ==
         if $HiFiAccess then recordNewValue(x,prop,val)
         RPLACD(p,NIL)
   for i in 1..n repeat
-    vec:= UNWIND_-PROTECT(CDR readHiFi(i),disableHist())
+    vec := UNWIND_-PROTECT(rest readHiFi(i), disableHist())
     for p1 in vec repeat
-      x:= CAR p1
-      for p2 in CDR p1 repeat
-        $InteractiveFrame:= putHist(x,CAR p2,CDR p2,$InteractiveFrame)
-  val:= ( p:= ASSQ('%,vec) ) and ( p1:= ASSQ('value,CDR p) ) and CDR p1
+      x := first p1
+      for p2 in rest p1 repeat
+        $InteractiveFrame := putHist(x, first p2, rest p2, $InteractiveFrame)
+  val := (p := ASSQ('%, vec)) and (p1 := ASSQ('value, rest p)) and rest p1
   $InteractiveFrame:= putHist('%,'value,val,$InteractiveFrame)
   updateHist()
 
@@ -1622,11 +1622,11 @@ restoreHistory2(oldInternal, restfile, fn) ==
     vec:= UNWIND_-PROTECT(readHiFi(i),disableHist())
     if oldInternal then $internalHistoryTable :=
       CONS([i,:vec],$internalHistoryTable)
-    LINE:= CAR vec
-    for p1 in CDR vec repeat
-      x:= CAR p1
-      for p2 in CDR p1 repeat
-        $InteractiveFrame:= putHist(x,CAR p2,CDR p2,$InteractiveFrame)
+    LINE := first vec
+    for p1 in rest vec repeat
+      x := first p1
+      for p2 in rest p1 repeat
+        $InteractiveFrame := putHist(x, first p2, rest p2, $InteractiveFrame)
     updateInCoreHist()
   $e := $InteractiveFrame
   for [a,:.] in CAAR $InteractiveFrame repeat
@@ -1658,7 +1658,7 @@ showHistory(arg) ==
   n := 20
   nset := nil
   if arg then
-    arg1 := CAR arg
+    arg1 := first arg
     if INTEGERP arg1 then
       n := arg1
       nset := true
@@ -1686,9 +1686,9 @@ showInput(mini,maxi) ==
   for ind in mini..maxi repeat
     vec:= UNWIND_-PROTECT(readHiFi(ind),disableHist())
     if ind<10 then TAB 2 else if ind<100 then TAB 1
-    l := CAR vec
+    l := first vec
     STRINGP l =>
-      sayMSG ['"   [",ind,'"] ",CAR vec]
+      sayMSG ['"   [", ind, '"] ", first vec]
     sayMSG ['"   [",ind,'"] " ]
     for ln in l repeat
       sayMSG ['"      ", ln]
@@ -1697,9 +1697,9 @@ showInOut(mini,maxi) ==
   -- displays all steps from mini to maxi
   for ind in mini..maxi repeat
     vec:= UNWIND_-PROTECT(readHiFi(ind),disableHist())
-    sayMSG [CAR vec]
-    Alist:= ASSQ('%,CDR vec) =>
-      triple:= CDR ASSQ('value,CDR Alist)
+    sayMSG [first vec]
+    Alist := ASSQ('%, rest vec) =>
+      triple := rest ASSQ('value, rest Alist)
       $IOindex:= ind
       spadPrint(objValUnwrap triple,objMode triple)
 
@@ -1713,8 +1713,8 @@ fetchOutput(n) ==
     n >= $IOindex => throwKeyedMsg("S2IH0001",[n])
     n < 1        => throwKeyedMsg("S2IH0002",[n])
     vec:= UNWIND_-PROTECT(readHiFi(n),disableHist())
-    Alist:= ASSQ('%,CDR vec) =>
-      val:= CDR ASSQ('value,CDR Alist) => val
+    Alist := ASSQ('%, rest vec) =>
+      val := rest ASSQ('value, rest Alist) => val
       throwKeyedMsg("S2IH0003",[n])
     throwKeyedMsg("S2IH0003",[n])
   throwKeyedMsg("S2IH0004",NIL)
@@ -1909,7 +1909,7 @@ dewritify ob ==
             null ob => nil
             e := HGET($seen, ob) => e
 
-            PAIRP ob and CAR ob = 'WRITIFIED_!_! =>
+            PAIRP ob and first ob = 'WRITIFIED_!_! =>
                 type := ob.1
                 type = 'SELF =>
                     'WRITIFIED_!_!
@@ -2173,8 +2173,8 @@ read_or_compile(quiet, lib) ==
 
 --% )savesystem
 savesystem l ==
-  #l ~= 1 or not(SYMBOLP CAR l) => helpSpad2Cmd '(savesystem)
-  SPAD_-SAVE SYMBOL_-NAME CAR l
+  #l ~= 1 or not(SYMBOLP first l) => helpSpad2Cmd '(savesystem)
+  SPAD_-SAVE SYMBOL_-NAME first l
 
 --% )show
 
@@ -2266,7 +2266,7 @@ reportOpsFromLisplib1(unitForm,u)  ==
 reportOpsFromUnitDirectly unitForm ==
   isRecordOrUnion := unitForm is [a,:.] and a in '(Record Union)
   unit:= evalDomain unitForm
-  top:= CAR unitForm
+  top := first unitForm
   kind:= GETDATABASE(top,'CONSTRUCTORKIND)
 
   sayBrightly concat('%b,formatOpType unitForm,
@@ -2390,7 +2390,7 @@ synonymSpad2Cmd() ==
   else
     pair := processSynonymLine line
     if $CommandSynonymAlist then
-      PUTALIST($CommandSynonymAlist,CAR pair, CDR pair)
+      PUTALIST($CommandSynonymAlist, first pair, rest pair)
     else $CommandSynonymAlist := [pair]
   terminateSystemCommand()
 
@@ -2443,7 +2443,8 @@ recordFrame(systemNormal) ==
     delta := ['systemCommand,:delta]
   $frameRecord := [delta,:$frameRecord]
   $previousBindings := --copy all but the individual properties
-    [CONS(CAR x,[CONS(CAR y,CDR y) for y in CDR x]) for x in CAAR $InteractiveFrame]
+      [CONS(first x, [CONS(first y, rest y) for y in rest x]) for x
+        in CAAR $InteractiveFrame]
   first $frameRecord
 
 diffAlist(new,old) ==
@@ -2456,14 +2457,14 @@ diffAlist(new,old) ==
     --     a) for each property with a value: give the old value
     --     b) for each property missing:      give NIL as the old value
     oldPair := ASSQ(name,old) =>
-      null (oldProplist := CDR oldPair) =>
+      null (oldProplist := rest oldPair) =>
       --record old values of new properties as NIL
         acc := [[name,:[[prop] for [prop,:.] in proplist]],:acc]
       deltas := nil
       for (propval := [prop,:val]) in proplist repeat
         null (oldPropval := assoc(prop,oldProplist)) => --missing property
           deltas := [[prop],:deltas]
-        EQ(CDR oldPropval,val) => 'skip
+        EQ(rest oldPropval, val) => 'skip
         deltas := [oldPropval,:deltas]
       deltas => acc := [[name,:NREVERSE deltas],:acc]
     acc := [[name,:[[prop] for [prop,:.] in proplist]],:acc]
@@ -2553,10 +2554,10 @@ undoSingleStep(changes,env) ==
     if LASSOC('localModemap,changeList) then
       changeList := undoLocalModemapHack changeList
     pairlist := ASSQ(name,env) =>
-      proplist := CDR pairlist =>
+      proplist := rest pairlist =>
         for (pair := [prop,:value]) in changeList repeat
           node := ASSQ(prop,proplist) => RPLACD(node,value)
-          RPLACD(proplist,[CAR proplist,:CDR proplist])
+          RPLACD(proplist, [first proplist, :rest proplist])
           RPLACA(proplist,pair)
       RPLACD(pairlist,changeList)
     env := [change,:env]
@@ -2651,7 +2652,7 @@ whatSpad2Cmd l ==
 filterAndFormatConstructors(constrType,label,patterns) ==
   centerAndHighlight(label,$LINELENGTH,specialChar 'hbar)
   l := filterListOfStringsWithFn(patterns,whatConstructors constrType,
-        function CDR)
+        function rest)
   if patterns then
     null l =>
       sayMessage ['"   No ",label,'" with names matching patterns:",
@@ -2684,7 +2685,7 @@ printSynonyms(patterns) ==
   centerAndHighlight("System Command Synonyms",$LINELENGTH,specialChar 'hbar)
   ls := filterListOfStringsWithFn(patterns, [[STRINGIMAGE a,:b]
     for [a,:b] in synonymsForUserLevel $CommandSynonymAlist],
-      function CAR)
+      function first)
   printLabelledList(ls,'"user",'"synonyms",'")",patterns)
   nil
 
@@ -2746,7 +2747,7 @@ filterListOfStrings(patterns,names) ==
 
 filterListOfStringsWithFn(patterns,names,fn) ==
   -- names and patterns are lists of strings
-  -- fn is something like CAR or CADR
+  -- fn is something like first or CADR
   -- returns: list of strings in names that contains any of the strings
   -- in patterns
   (null patterns) or (null names) => names
@@ -2976,8 +2977,8 @@ dumbTokenize str ==
   nreverse tokenList
 
 handleParsedSystemCommands(unabr, optionList) ==
-  restOptionList := [dumbTokenize opt for opt in CDR optionList]
-  parcmd := [parseSystemCmd CAR optionList,
+  restOptionList := [dumbTokenize opt for opt in rest optionList]
+  parcmd := [parseSystemCmd first optionList,
              :[[tokTran tok for tok in opt] for opt in restOptionList]]
   systemCommand parcmd
 
@@ -3012,7 +3013,7 @@ npProcessSynonym(str) ==
   else
     pair := processSynonymLine str
     if $CommandSynonymAlist then
-      PUTALIST($CommandSynonymAlist,CAR pair, CDR pair)
+      PUTALIST($CommandSynonymAlist, first pair, rest pair)
     else $CommandSynonymAlist := [pair]
   terminateSystemCommand()
 

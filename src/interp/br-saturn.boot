@@ -435,7 +435,7 @@ htpSetLabelInputString(htPage, label, val) ==
 htDoneButton(func, htPage, :optionalArgs) ==
 ------> Handle argument values passed from page if present
   if optionalArgs then
-    htpSetInputAreaAlist(htPage,CAR optionalArgs)
+    htpSetInputAreaAlist(htPage, first optionalArgs)
   typeCheckInputAreas htPage =>
     htMakeErrorPage htPage
   NULL FBOUNDP func =>
@@ -698,7 +698,7 @@ kPageContextMenuSaturn page ==
 
 saturnExampleLink lname ==
   htSay '"\docLink{\csname "
-  htSay STRCONC(CAR(CDR(lname)), '"\endcsname}{E&xamples}")
+  htSay STRCONC(first(rest(lname)), '"\endcsname}{E&xamples}")
 
 $exampleConstructors := nil
 
@@ -721,7 +721,7 @@ dbPresentCons(htPage,kind,:exclusions) ==
   htpSetProperty(htPage,'exclusion,first exclusions)
   cAlist := htpProperty(htPage,'cAlist)
   empty? := null cAlist
-  one?   := null CDR cAlist
+  one?   := null rest cAlist
   one? := empty? or one?
   exposedUnexposedFlag := $includeUnexposed? --used to be star?       4/92
   star?  := true     --always include information on exposed/unexposed   4/92
@@ -731,7 +731,8 @@ dbPresentCons(htPage,kind,:exclusions) ==
     then htSay '"{\em Abbreviations}"
     else htMakePage [['bcLispLinks,['"Abbreviations",'"",'dbShowCons,'abbrs]]]
   htSay '"}{"
-  if one? or member('conditions,exclusions) or and/[CDR x = true for x in cAlist]
+  if one? or member('conditions, exclusions) or
+        and/[rest x = true for x in cAlist]
     then htSay '"{\em Conditions}"
     else htMakePage [['bcLispLinks,['"Conditions",'"",'dbShowCons,'conditions]]]
   htSay '"}{"
@@ -739,7 +740,7 @@ dbPresentCons(htPage,kind,:exclusions) ==
     then htSay '"{\em Descriptions}"
     else htMakePage [['bcLispLinks,['"Descriptions",'"",'dbShowCons,'documentation]]]
   htSay '"}{"
-  if one? or null CDR cAlist
+  if one? or null rest cAlist
     then htSay '"{\em Filter}"
     else htMakePage
       [['bcLinks,['"Filter",'"",'htFilterPage,['dbShowCons,'filter]]]]
@@ -782,13 +783,14 @@ dbPresentConsSaturn(htPage,kind,exclusions) ==
   if one? or member('abbrs,exclusions)
     then htSayCold '"\&Abbreviations"
     else htMakePage [['bcLispLinks,['"\&Abbreviations",'"",'dbShowCons,'abbrs]]]
-  if one? or member('conditions,exclusions) or and/[CDR x = true for x in cAlist]
+  if one? or member('conditions, exclusions) or
+      and/[rest x = true for x in cAlist]
     then htSayCold '"\&Conditions"
     else htMakePage [['bcLispLinks,['"\&Conditions",'"",'dbShowCons,'conditions]]]
   if empty? or member('documentation,exclusions)
     then htSayCold '"\&Descriptions"
     else htMakePage [['bcLispLinks,['"\&Descriptions",'"",'dbShowCons,'documentation]]]
-  if one? or null CDR cAlist
+  if one? or null rest cAlist
     then htSayCold '"\&Filter"
     else htMakeSaturnFilterPage ['dbShowCons, 'filter]
   if one? or member('kinds,exclusions) or kind ~= 'constructor
@@ -875,10 +877,10 @@ addParameterTemplates(page, conform) ==
   htSaySaturn '"\colorbuttonbox{lightgray}{"
   htSay '"Optional argument value"
   htSay
-    CDR parlist => '"s:"
+    rest parlist => '"s:"
     '":"
   htSaySaturn '"}"
-  if CDR conform then htSaySaturn '"\newline{}"
+  if rest conform then htSaySaturn '"\newline{}"
   htSaySaturn '"\begin{tabular}{p{.25in}l}"
   firstTime := true
   odd := false
@@ -1329,7 +1331,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSaySaturnAmpersand()
       htSayIndentRel(15)
       htSay '"\spadref{"
-      htSay CAR(CDR(link))
+      htSay first(rest(link))
       htSay '"}"
       htSayIndentRel(-15)
       htSayStandard('"\newline{}")
@@ -1376,7 +1378,7 @@ htEndTabular() ==
 
 htPopSaturn s ==
   pageDescription := ELT($saturnPage, 7)
-  pageDescription is [=s,:b] => SETELT($saturnPage, 7, CDR pageDescription)
+  pageDescription is [=s, :b] => SETELT($saturnPage, 7, rest pageDescription)
   nil
 
 htBeginTable() ==

@@ -58,8 +58,8 @@ NRTreplaceLocalTypes(t,dom) ==
      t:= dom.t
      if PAIRP t then t:= NRTevalDomain t
      t.0
-   MEMQ(CAR t,'(Mapping Union Record _:)) =>
-      [CAR t,:[NRTreplaceLocalTypes(x,dom) for x in rest t]]
+   MEMQ(first t, '(Mapping Union Record _:)) =>
+      [first t, :[NRTreplaceLocalTypes(x, dom) for x in rest t]]
    t
 
 substDomainArgs(domain,object) ==
@@ -97,7 +97,7 @@ lazyCompareSigEqual(s,tslot,dollar,domain) ==
   tslot = '$ => s = tslot
   INTEGERP tslot and PAIRP(lazyt:=domain.tslot) and PAIRP s =>
       lazyt is [.,.,.,[.,item,.]] and
-        item is [.,[functorName,:.]] and functorName = CAR s =>
+        item is [., [functorName, :.]] and functorName = first s =>
           compareSigEqual(s,(NRTevalDomain lazyt).0,dollar,domain)
       nil
   compareSigEqual(s,NRTreplaceLocalTypes(tslot,domain),dollar,domain)
@@ -133,8 +133,8 @@ NRTcompileEvalForm(opName,sigTail,dcVector) ==
 
 NRTtypeHack t ==
   ATOM t => t
-  CAR t = '_# => # CADR t
-  [CAR t,:[NRTtypeHack tt for tt in CDR t]]
+  first t = '_# => # CADR t
+  [first t, :[NRTtypeHack tt for tt in rest t]]
 
 NRTgetMinivectorIndex(u,op,sig,domVector) ==
   s := # $minivector

@@ -308,8 +308,9 @@ augmentTo(a, t) ==
   a = '$ => pretendTo(a, t)
   ax := axFormatType a -- a looks like |#i|
   not(null(kv:=ASSOC(a,$augmentedArgs))) =>
-      ['PretendTo, ax, formatAugmentedType(CDR kv, a, $augmentedArgs)]
-  not(null(kv:=ASSOC(a,$modemapArgs))) => ['PretendTo,ax,axFormatType CDR kv]
+      ['PretendTo, ax, formatAugmentedType(rest kv, a, $augmentedArgs)]
+  not(null(kv := ASSOC(a, $modemapArgs))) =>
+      ['PretendTo, ax, axFormatType rest kv]
   ax
 
 -- v the type to format (the form of v is as in $augmentedArgs, see above)
@@ -390,9 +391,9 @@ axFormatAugmentOp(op, axFormattedPred, pred, augargs) ==
                        nil
                      else
                        -- We don't want Join with category Type.
-                       if CDR kv = ['Type] then ['ignore] else [CDR kv]
+                       if rest kv = ['Type] then ['ignore] else [rest kv]
              else
-               CDR kv
+                 rest kv
       -- note that v is a list of the form [pred_n, pred_n-1, ..., pred1, cat]
       -- cat is only *one* item!!!
       if not(null v) then

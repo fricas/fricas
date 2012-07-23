@@ -216,7 +216,7 @@ isDomainSubst u == main where
     atom x =>
       IDENTP x and MEMQ(x,$PatternVariableList) and (s := findSub(x,alist)) => s
       x
-    [CAR x,:[fn(y,alist) for y in CDR x]]
+    [first x, :[fn(y, alist) for y in rest x]]
   findSub(x,alist) ==
     null alist => nil
     alist is [['isDomain,y,z],:.] and x = y => z
@@ -313,7 +313,7 @@ moveORsOutside p ==
   p is ['AND,:q] =>
     q := [moveORsOutside r for r in q]
     x := or/[r for r in q | r is ['OR,:s]] =>
-      moveORsOutside(['OR, :[['AND, :substitute(t, x, q)] for t in CDR x]])
+        moveORsOutside(['OR, :[['AND, :substitute(t, x, q)] for t in rest x]])
     ['AND,:q]
   p
 
@@ -507,10 +507,10 @@ DEFPARAMETER($globalExposureHash, nil)
 initExposureHash() ==
     $globalExposureHash := MAKE_-HASH_-TABLE()
     for grdata in $globalExposureGroupAlist repeat
-        group := CAR(grdata)
-        alist := CDR(grdata)
+        group := first(grdata)
+        alist := rest(grdata)
         for pair in alist repeat
-            name := CAR(pair)
+            name := first(pair)
             ogr := HGET($globalExposureHash, name)
             HPUT($globalExposureHash, name, [group, :ogr])
 

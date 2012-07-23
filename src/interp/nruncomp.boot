@@ -86,9 +86,9 @@ NRTencode(x,y) == encode(x,y,true) where encode(x,compForm,firstTime) ==
   PAIRP x =>
     QCAR x='Record or x is ['Union,['_:,a,b],:.] =>
       [QCAR x,:[['_:,a,encode(b,c,false)]
-        for [.,a,b] in QCDR x for [.,=a,c] in CDR compForm]]
+        for [., a, b] in QCDR x for [., =a, c] in rest compForm]]
     constructor? QCAR x or MEMQ(QCAR x,'(Union Mapping)) =>
-      [QCAR x,:[encode(y,z,false) for y in QCDR x for z in CDR compForm]]
+      [QCAR x, :[encode(y, z, false) for y in QCDR x for z in rest compForm]]
     ['NRTEVAL,NRTreplaceAllLocalReferences COPY_-TREE lispize compForm]
   MEMQ(x,$formalArgList) =>
     v := $FormalMapVariableList.(POSN1(x,$formalArgList))
@@ -107,10 +107,10 @@ listOfBoundVars form ==
     MEMQ(IFCAR u, '(Union Record)) => listOfBoundVars u
     [form]
   atom form => []
-  CAR form = 'QUOTE => []
-  EQ(CAR form,":") => listOfBoundVars CADDR form
+  first form = 'QUOTE => []
+  EQ(first form, ":") => listOfBoundVars CADDR form
   -- We don't want to pick up the tag, only the domain
-  "union"/[listOfBoundVars x for x in CDR form]
+  "union"/[listOfBoundVars x for x in rest form]
 
 optDeltaEntry(op,sig,dc,eltOrConst) ==
   $killOptimizeIfTrue = true => nil
@@ -191,7 +191,7 @@ NRTassocIndex x == --returns index of "domain" entry x in al
   NULL x => x
   x = $NRTaddForm => 5
   k := or/[i for i in 1.. for y in $NRTdeltaList
-            | CAR(y) = 'domain and NTH(1, y) = x and ($found := y)] =>
+            | first(y) = 'domain and NTH(1, y) = x and ($found := y)] =>
     $NRTbase + $NRTdeltaLength - k
   nil
 
@@ -482,7 +482,8 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
                 createViewCode,setVector0Code, slot3Code,:slamCode] where
     devaluateCode:= [['LET,b,['devaluate,a]] for [a,:b] in $devaluateList]
     createDomainCode:=
-      ['LET,domname,['LIST,MKQ CAR $definition,:ASSOCRIGHT $devaluateList]]
+        ['LET, domname, ['LIST, MKQ first $definition,
+                         :ASSOCRIGHT $devaluateList]]
     createViewCode:= ['LET,'$,['GETREFV, 6+$NRTdeltaLength]]
     setVector0Code:=[$setelt,'$,0,'dv_$]
     slot3Code := ['QSETREFV,'$,3,['LET,'pv_$,predBitVectorCode1]]
@@ -542,8 +543,8 @@ reverseCondlist cl ==
     for z in y repeat
       u := assoc(z,alist)
       null u => alist := [[z,x],:alist]
-      member(x,CDR u) => nil
-      RPLACD(u,[x,:CDR u])
+      member(x, rest u) => nil
+      RPLACD(u, [x, :rest u])
   alist
 
 NRTsetVector4a(sig,form,cond) ==
@@ -665,10 +666,10 @@ NRTsubstDelta(initSig) ==
           t = 2 => '_$_$
           t = 5 => $NRTaddForm
           u:= $NRTdeltaList.($NRTdeltaLength+5-t)
-          CAR u = 'domain => CADR u
+          first u = 'domain => CADR u
           error "bad $NRTdeltaList entry"
-        MEMQ(CAR t,'(Mapping Union Record _:)) =>
-           [CAR t,:[replaceSlotTypes(x) for x in rest t]]
+        MEMQ(first t, '(Mapping Union Record _:)) =>
+           [first t, :[replaceSlotTypes(x) for x in rest t]]
         t
 -----------------------------SLOT1 DATABASE------------------------------------
 

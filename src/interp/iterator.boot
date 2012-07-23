@@ -117,13 +117,13 @@ compRepeatOrCollect(form,m,e) ==
         form':= [repeatOrCollect,:itl',body']
         m'':=
           repeatOrCollect="COLLECT" =>
-            (u:=modeIsAggregateOf('List,targetMode,e)) => CAR u
+            (u := modeIsAggregateOf('List, targetMode, e)) => first u
             ["List",m']
           repeatOrCollect="COLLECTV" =>
-            (u:=modeIsAggregateOf('PrimitiveArray,targetMode,e)) => CAR u
+            (u := modeIsAggregateOf('PrimitiveArray, targetMode, e)) => first u
             ["PrimitiveArray",m']
           repeatOrCollect="COLLECTVEC" =>
-            (u:=modeIsAggregateOf('Vector,targetMode,e)) => CAR u
+            (u := modeIsAggregateOf('Vector, targetMode, e)) => first u
             ["Vector",m']
           m'
         coerceExit([form',m'',e'],targetMode)

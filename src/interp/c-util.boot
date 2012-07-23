@@ -354,7 +354,7 @@ isDomainInScope(domain,e) ==
     false
   (name:= first domain)="Category" => true
   ASSQ(name,domainList) => true
---   null CDR domain or domainMember(domain,domainList) => true
+--   null rest domain or domainMember(domain,domainList) => true
 --   false
   isFunctor name => false
   true --is not a functor

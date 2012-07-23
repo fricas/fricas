@@ -46,7 +46,7 @@ pfPosOrNopos pf ==
     poNoPosition()
 
 poIsPos? pos ==
-    PAIRP pos and PAIRP CAR pos and LENGTH CAR pos = 5
+    PAIRP pos and PAIRP first pos and LENGTH first pos = 5
 
 lnCreate(extBl, st, gNo, :optFileStuff) ==
     lNo :=
@@ -85,7 +85,7 @@ lnImmediate? lineObject  ==
     not lnFileName? lineObject
 
 poGetLineObject posn ==
-    CAR posn
+    first posn
 pfGetLineObject posn == poGetLineObject posn
 
 pfSourceToken form ==
@@ -121,7 +121,7 @@ pfSourcePositionlist x==
       else APPEND(pfSourcePositions first x,pfSourcePositionlist rest x)
 
 
-poCharPosn posn       == CDR posn
+poCharPosn posn == rest posn
 pfCharPosn posn == poCharPosn posn
 
 poLinePosn posn       ==

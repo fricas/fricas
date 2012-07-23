@@ -53,7 +53,7 @@ recordDocumentation(key,lineno) ==
   --record NIL to mean "there was no documentation"
   $maxSignatureLineNumber := lineno
   $docList := [[key,:u],:$docList]
-  -- leave CAR of $docList alone as required by collectAndDeleteAssoc
+  -- leave first of $docList alone as required by collectAndDeleteAssoc
 
 recordHeaderDocumentation lineno ==
   if $maxSignatureLineNumber = 0 then
@@ -92,7 +92,7 @@ finalizeDocumentation() ==
       y is [x,b] and b is [='attribute,:r] =>
         attributes := [[x,:r],:attributes]
       signatures := [y,:signatures]
-    name := CAR $lisplibForm
+    name := first $lisplibForm
     if noHeading or signatures or attributes or unusedCommentLineNumbers then
       sayKeyedMsg("S2CD0001",NIL)
       bigcnt := 1
@@ -930,8 +930,8 @@ checkBalance u ==
   while u repeat
     do
       x := first u
-      openClose := assoc(x,$checkPrenAlist)  --is it an open bracket?
-        => stack := [CAR openClose,:stack]   --yes, push the open bracket
+      openClose := assoc(x, $checkPrenAlist) =>  --is it an open bracket?
+          stack := [first openClose, :stack]   --yes, push the open bracket
       open  := rassoc(x,$checkPrenAlist) =>  --it is a close bracket!
         stack is [top,:restStack] => --does corresponding open bracket match?
           if open ~= top then          --yes: just pop the stack
@@ -964,7 +964,7 @@ checkBeginEnd u ==
       x = '"\beginitems" =>
         beginEndStack := ["items",:beginEndStack]
       x = '"\begin" =>
-        u is [.,=$charLbrace,y,:r] and CAR r = $charRbrace =>
+        u is [., =$charLbrace, y, :r] and first r = $charRbrace =>
           if not member(y,$beginEndList) then
             checkDocError ['"Unknown begin type: \begin{",y,'"}"]
           beginEndStack := [y,:beginEndStack]
@@ -976,7 +976,7 @@ checkBeginEnd u ==
           checkDocError ['"\item appears outside a \begin-\end"]
         checkDocError ['"\item appears within a \begin{",IFCAR beginEndStack,'"}.."]
       x = '"\end" =>
-        u is [.,=$charLbrace,y,:r] and CAR r = $charRbrace =>
+        u is [., =$charLbrace, y, :r] and first r = $charRbrace =>
           y = IFCAR beginEndStack =>
             beginEndStack := rest beginEndStack
             u := r

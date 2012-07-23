@@ -44,7 +44,7 @@
 -- the root of the first tree is concatenated with its forest.
 -- column t is the number of spaces before the first non-space in line t
 
-pileColumn t==CDR tokPosn CAAR t
+pileColumn t == rest tokPosn CAAR t
 pileComment t== EQ(tokType CAAR t,"negcomment")
 pilePlusComment t== EQ(tokType CAAR t,"comment")
 
@@ -123,9 +123,9 @@ pileTree(n,s)==
     then [false,n,[],s]
     else
         [h,t]:=[car s,cdr s]
-        hh:=pileColumn CAR h
+        hh := pileColumn first h
         if hh > n
-        then pileForests(CAR h,hh,t)
+        then pileForests(first h, hh, t)
         else [false,n,[],s]
 
 eqpileTree(n,s)==
@@ -133,9 +133,9 @@ eqpileTree(n,s)==
     then [false,n,[],s]
     else
         [h,t]:=[car s,cdr s]
-        hh:=pileColumn CAR h
+        hh := pileColumn first h
         if hh = n
-        then pileForests(CAR h,hh,t)
+        then pileForests(first h, hh, t)
         else [false,n,[],s]
 
 pileForest(n,s)==

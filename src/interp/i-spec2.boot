@@ -92,7 +92,7 @@ upDollar t ==
       if x then putTarget(y,x)
   putAtree(first form,'dollar,t)
   ms := bottomUp form
-  f in '(One Zero) and PAIRP(ms) and CAR(ms) = $OutputForm =>
+  f in '(One Zero) and PAIRP(ms) and first(ms) = $OutputForm =>
     throwKeyedMsg("S2IS0021",[f,t])
   putValue(op,getValue first form)
   putModeSet(op,ms)
@@ -346,7 +346,7 @@ compileIs(val,pattern) ==
   -- produce code for compiled "is" predicate.  makes pattern variables
   --  into local variables of the function
   vars:= NIL
-  for pat in CDR pattern repeat
+  for pat in rest pattern repeat
     IDENTP(pat) and isLocalVar(pat) => vars:=[pat,:vars]
     pat is ['_:,var] => vars:= [var,:vars]
     pat is ['_=,var] => vars:= [var,:vars]
@@ -379,8 +379,8 @@ removeConstruct pat ==
   if pat is ['construct,:p] then pat:=p
   if pat is ['cons, a, b] then pat := [a, ['_:, b]]
   atom pat => pat
-  RPLACA(pat,removeConstruct CAR pat)
-  RPLACD(pat,removeConstruct CDR pat)
+  RPLACA(pat, removeConstruct first pat)
+  RPLACD(pat, removeConstruct rest pat)
   pat
 
 isPatternMatch(l,pats) ==
@@ -404,7 +404,7 @@ isPatMatch(l,pats) ==
       isPatMatch(rest l,restPats)
     pat is ['_=,var] =>
       p:=ASSQ(var,$subs) =>
-        CAR l = CDR p => isPatMatch(rest l, restPats)
+        first l = rest p => isPatMatch(rest l, restPats)
         $subs:='failed
       $subs:='failed
     pat is ['_:,var] =>
@@ -734,7 +734,7 @@ assignSymbol(symbol, value, domain) ==
 getInterpMacroNames() ==
   names := [n for [n,:.] in $InterpreterMacroAlist]
   if (e := CAAR $InteractiveFrame) and (m := assoc("--macros--",e)) then
-    names := append(names,[n for [n,:.] in CDR m])
+    names := append(names, [n for [n, :.] in rest m])
   MSORT names
 
 isInterpMacro name ==
@@ -745,7 +745,7 @@ isInterpMacro name ==
   (m := get("--macros--",name,$e))   => m
   (m := get("--macros--",name,$InteractiveFrame))   => m
   -- $InterpreterMacroAlist will probably be phased out soon
-  (sv := assoc(name,$InterpreterMacroAlist)) => CONS(NIL,CDR sv)
+  (sv := assoc(name, $InterpreterMacroAlist)) => CONS(NIL, rest sv)
   NIL
 
 --% Handlers for prefix QUOTE
@@ -797,7 +797,7 @@ getReduceFunction(op,type,result, locale) ==
     (isHomogeneousArgs sig) and and/[null c for c in cond]]
   null mm => 'failed
   [[dc,:sig],fun,:.]:=mm
-  dc='local => [MKQ [fun,:'local],:CAR sig]
+  dc = 'local => [MKQ [fun, :'local], :first sig]
   dcVector := evalDomain dc
   $compilingMap =>
     k := NRTgetMinivectorIndex(
@@ -1013,10 +1013,10 @@ upTuple t ==
   isTaggedUnion tar => upTaggedUnionConstruct(op,l,tar)
   aggs := '(List)
   if tar and PAIRP(tar) and not isPartialMode(tar) then
-    CAR(tar) in aggs =>
+    first(tar) in aggs =>
       ud := CADR tar
       for x in l repeat if not getTarget(x) then putTarget(x,ud)
-    CAR(tar) in '(Matrix SquareMatrix RectangularMatrix) =>
+    first(tar) in '(Matrix SquareMatrix RectangularMatrix) =>
       vec := ['List,underDomainOf tar]
       for x in l repeat if not getTarget(x) then putTarget(x,vec)
   argModeSetList:= [bottomUp x for x in l]
@@ -1091,7 +1091,7 @@ upwhere t ==
   tree := upwhereMkAtree(tree,env,e)
   if x := getAtree(op,'dollar) then
     atom tree => throwKeyedMsg("S2IS0048",NIL)
-    putAtree(CAR tree,'dollar,x)
+    putAtree(first tree, 'dollar, x)
   upwhereMain(tree,env,e)
   val := getValue tree
   putValue(op,val)
@@ -1119,7 +1119,7 @@ copyHack(env) ==
   -- (localModemap . something)
   c:= CAAR env
   d:= [fn p for p in c] where fn(p) ==
-    CONS(CAR p,[(EQCAR(q,'localModemap) => q; copy q) for q in CDR p])
+    CONS(first p, [(EQCAR(q, 'localModemap) => q; copy q) for q in rest p])
   [[d]]
 
 -- Creates the function names of the special function handlers and puts

@@ -53,23 +53,23 @@ THE PFORM DATA STRUCTURE
 tokConstruct(hd,tok,:pos)==
          a:=cons(hd,tok)
          IFCAR pos =>
-             pfNoPosition? CAR pos=> a
-             ncPutQ(a,"posn",CAR pos)
+             pfNoPosition? first pos => a
+             ncPutQ(a, "posn", first pos)
              a
          a
 
 tokType x== ncTag x
-tokPart x== CDR x
+tokPart x == rest x
 tokPosn x==
      a:= ASSQ("posn",ncAlist x)
-     if a then CDR a else pfNoPosition()
+     if a then rest a else pfNoPosition()
 
 pfAbSynOp form ==
-    hd := CAR form
+    hd := first form
     IFCAR hd or hd
 
 pfAbSynOp?(form, op) ==
-    hd := CAR form
+    hd := first form
     EQ(hd, op) or EQCAR(hd, op)
 
 pfLeaf? form ==
@@ -82,7 +82,7 @@ pfLeafToken form    == tokPart form
 pfLeafPosition form == tokPosn form
 
 pfTree(x,y)         == CONS(x,y)       -- was ==>
-pfParts  form       == CDR form       -- was ==>
+pfParts  form       == rest form       -- was ==>
 pfFirst  form       == CADR form       -- was ==>
 pfSecond form       == CADDR form       -- was ==>
 

@@ -103,11 +103,11 @@ loadLib cname ==
   coSig :=
       u =>
           [[.,:sig],:.] := u
-          CONS(NIL,[categoryForm?(x) for x in CDR sig])
+          CONS(NIL, [categoryForm?(x) for x in rest sig])
       NIL
   -- in following, add property value false or NIL to possibly clear
   -- old value
-  if null CDR GETDATABASE(cname,'CONSTRUCTORFORM) then
+  if null rest GETDATABASE(cname, 'CONSTRUCTORFORM) then
       MAKEPROP(cname,'NILADIC,'T)
     else
       REMPROP(cname,'NILADIC)
@@ -159,7 +159,7 @@ convertOpAlist2compilerInfo(opalist) ==
                 for [op,:siglist] in opalist] where
       formatSig(op, [typelist, slot,:stuff]) ==
           pred := if stuff then first stuff else 'T
-          impl := if CDR stuff then CADR stuff else 'ELT -- handles 'CONST
+          impl := if rest stuff then CADR stuff else 'ELT -- handles 'CONST
           [[op, typelist], pred, [impl, '$, slot]]
 
 updateCategoryFrameForConstructor(constructor) ==
@@ -288,7 +288,7 @@ finalizeLisplib libName ==
   lisplibWrite('"sourceFile", namestring($edit_file), $libFile)
   lisplibWrite('"modemaps",removeZeroOne $lisplibModemapAlist,$libFile)
   opsAndAtts:= getConstructorOpsAndAtts($lisplibForm, kind)
-  lisplibWrite('"operationAlist",removeZeroOne CAR opsAndAtts,$libFile)
+  lisplibWrite('"operationAlist", removeZeroOne first opsAndAtts, $libFile)
   lisplibWrite('"superDomain",removeZeroOne $lisplibSuperDomain,$libFile)
   lisplibWrite('"predicates",removeZeroOne  $lisplibPredicates,$libFile)
   lisplibWrite('"abbreviation",$lisplibAbbreviation,$libFile)
@@ -296,8 +296,8 @@ finalizeLisplib libName ==
   lisplibWrite('"ancestors",removeZeroOne $lisplibAncestors,$libFile)
   lisplibWrite('"documentation",finalizeDocumentation(),$libFile)
   if $profileCompiler then profileWrite()
-  if $lisplibForm and null CDR $lisplibForm then
-    MAKEPROP(CAR $lisplibForm,'NILADIC,'T)
+  if $lisplibForm and null rest $lisplibForm then
+    MAKEPROP(first $lisplibForm, 'NILADIC, 'T)
   ERRORS ~=0 =>    -- ERRORS is a fluid variable for the compiler
     sayMSG ['"   Errors in processing ",kind,'" ",:bright libName,'":"]
     sayMSG ['"     not replacing ",$spadLibFT,'" for",:bright libName]
@@ -323,7 +323,7 @@ getConstructorOpsAndAtts(form, kind) ==
   getFunctorOpsAndAtts(form)
 
 getCategoryOpsAndAtts(catForm) ==
-  -- returns [operations,:attributes] of CAR catForm
+  -- returns [operations, :attributes] of first catForm
   [transformOperationAlist getSlot1FromCategoryForm(catForm)]
 
 getFunctorOpsAndAtts(form) ==

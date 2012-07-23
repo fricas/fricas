@@ -419,7 +419,7 @@ zeroOneConvert x ==
 
 kFormatSlotDomain x == fn formatSlotDomain x where fn x ==
   atom x => x
-  (op := CAR x) = '_$ => '_$
+  (op := first x) = '_$ => '_$
   op = 'local => CADR x
   op = ":" => [":",CADR x,fn CADDR x]
   MEMQ(op,$Primitives) or constructor? op =>
@@ -458,7 +458,7 @@ hashTable2Alist tb ==
   [[op,:HGET(tb,op)] for op in listSort(function GLESSEQP,HKEYS $if)]
 
 koCatAttrsAdd(catform,pred) ==
-  for [name,argl,:p] in CAR getConstructorExports catform repeat
+  for [name, argl, :p] in first getConstructorExports catform repeat
     npred  := quickAnd(pred,p)
     exists := HGET($if,name)
     if existingPred := LASSOC(argl,exists) then npred := quickOr(npred,existingPred)

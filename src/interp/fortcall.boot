@@ -317,7 +317,7 @@ makeSpadFun(name,userArgs,args,dummies,decls,results,returnType,asps,aspInfo,
              [["$elt","Result","construct"],body]]
 
 stripNil u ==
-  [CAR(u), ["construct",:CADR(u)], if CADDR(u) then "true" else "false"]
+  [first(u), ["construct", :CADR(u)], if CADDR(u) then "true" else "false"]
 
 makeUnion aspType ==
   -- The argument is the type of the asp to be generated.  We would like to
@@ -593,13 +593,14 @@ writeData(tmpFile,indata) ==
                 xdrWrite(xstr,v)
         -- some array
         VECTORP v =>
-                rows := CAR ARRAY_-DIMENSIONS(v)
+                rows := first ARRAY_-DIMENSIONS(v)
                 -- is it 2d or more (most likely) ?
                 VECTORP ELT(v,0) =>
-                        cols := CAR ARRAY_-DIMENSIONS(ELT(v,0))
+                        cols := first ARRAY_-DIMENSIONS(ELT(v, 0))
                         -- is it 3d ?
                         VECTORP ELT(ELT(v,0),0) =>
-                                planes := CAR ARRAY_-DIMENSIONS(ELT(ELT(v,0),0))
+                                planes := first
+                                    ARRAY_-DIMENSIONS(ELT(ELT(v, 0), 0))
                                 -- write 3d array
                                 xdrWrite(xstr,rows*cols*planes)
                                 for k in 0..planes-1 repeat

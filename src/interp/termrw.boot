@@ -56,16 +56,16 @@ term1RW(t,R) ==
   -- tries to reduce t at the top node
   [vars,:varRules]:= R
   for r in varRules until not (SL='failed) repeat
-    SL:= termMatch(CAR r,t,NIL,vars)
+    SL := termMatch(first r, t, NIL, vars)
     not (SL='failed) =>
-      t:= subCopy(copy CDR r,SL)
+      t := subCopy(copy rest r, SL)
   t
 
 term1RWall(t,R) ==
   -- same as term1RW, but returns a list
   [vars,:varRules]:= R
-  [not (SL='failed) and subCopy(copy CDR r,SL) for r in varRules |
-    not EQ(SL:= termMatch(CAR r,t,NIL,vars),'failed)]
+  [not (SL = 'failed) and subCopy(copy rest r, SL) for r in varRules |
+    not EQ(SL := termMatch(first r, t, NIL, vars), 'failed)]
 
 termMatch(tp,t,SL,vars) ==
   -- t is a term pattern, t a term
@@ -73,7 +73,7 @@ termMatch(tp,t,SL,vars) ==
   tp=t => SL
   atom tp =>
     MEMQ(tp,vars) =>
-      p:= assoc(tp,SL) => ( CDR p=t )
+      p := assoc(tp, SL) => (rest p = t)
       CONS(CONS(tp,t),SL)
     'failed
   atom t => 'failed
@@ -93,7 +93,7 @@ augmentSub(v,t,SL) ==
   -- t doesn't contain any of the variables of SL
   q:= CONS(v,t)
   null SL => [q]
---  for p in SL repeat RPLACD(p,SUBSTQ(t,v,CDR p))
+--  for p in SL repeat RPLACD(p, SUBSTQ(t, v, rest p))
   CONS(q,SL)
 
 mergeSubs(S1,S2) ==
@@ -101,8 +101,8 @@ mergeSubs(S1,S2) ==
   -- S1 doesn't contain any of the variables of S2
   null S1 => S2
   null S2 => S1
-  S3 := [p for p in S2 | not ASSQ(CAR p, S1)]
---  for p in S1 repeat S3:= augmentSub(CAR p,CDR p,S3)
+  S3 := [p for p in S2 | not ASSQ(first p, S1)]
+--  for p in S1 repeat S3 := augmentSub(first p, rest p, S3)
   APPEND(S1,S3)
 
 subCopy(t,SL) ==
@@ -112,7 +112,7 @@ subCopy(t,SL) ==
   subCopy0(t,SL)
 
 subCopy0(t, SL) ==
-  p := subCopyOrNil(t, SL) => CDR p
+  p := subCopyOrNil(t, SL) => rest p
   t
 
 subCopyOrNil(t,SL) ==
@@ -121,9 +121,9 @@ subCopyOrNil(t,SL) ==
   atom t => NIL
   [t1,:t2]:= t
   t0:= subCopyOrNil(t1,SL) =>
-    t2 => CONS(t, CONS(CDR t0, subCopy0(t2,SL)))
-    CONS(t,CONS(CDR t0,t2))
-  t2 and ( t0:= subCopyOrNil(t2,SL) ) => CONS(t, CONS(t1,CDR t0))
+    t2 => CONS(t, CONS(rest t0, subCopy0(t2, SL)))
+    CONS(t, CONS(rest t0, t2))
+  t2 and (t0 := subCopyOrNil(t2, SL)) => CONS(t, CONS(t1, rest t0))
   NIL
 
 
@@ -134,15 +134,15 @@ deepSubCopy(t,SL) ==
   deepSubCopy0(t,SL)
 
 deepSubCopy0(t, SL) ==
-  p := deepSubCopyOrNil(t, SL) => CDR p
+  p := deepSubCopyOrNil(t, SL) => rest p
   t
 
 deepSubCopyOrNil(t,SL) ==
   -- the same as subCopy, but the result is NIL if nothing was copied
-  p:= assoc(t,SL) => CONS(t, deepSubCopy0(CDR p, SL))
+  p := assoc(t, SL) => CONS(t, deepSubCopy0(rest p, SL))
   atom t => NIL
   [t1,:t2]:= t
   t0:= deepSubCopyOrNil(t1,SL) =>
-    t2 => CONS(t, CONS(CDR t0, deepSubCopy0(t2,SL)))
-    CONS(t,CONS(CDR t0,t2))
-  t2 and ( t0:= deepSubCopyOrNil(t2,SL) ) => CONS(t, CONS(t1,CDR t0))
+    t2 => CONS(t, CONS(rest t0, deepSubCopy0(t2, SL)))
+    CONS(t, CONS(rest t0, t2))
+  t2 and (t0 := deepSubCopyOrNil(t2, SL)) => CONS(t, CONS(t1, rest t0))

@@ -143,10 +143,10 @@ pushDownTargetInfo(op,target,arglist) ==
   2 = nargs =>
     op = "*" =>            -- only push down on 1st arg if not immed
       if not getTarget CADR arglist then putTarget(CADR arglist,target)
-      getTarget(x := CAR arglist) => NIL
+      getTarget(x := first arglist) => NIL
       if getUnname(x) ~= $immediateDataSymbol then putTarget(x,target)
     op = "**" or op = "^" =>           -- push down on base
-      if not getTarget CAR arglist then putTarget(CAR arglist,target)
+      if not getTarget first arglist then putTarget(first arglist, target)
     (op = 'equation) and (target is ['Equation,S]) =>
       for x in arglist repeat
         if not getTarget(x) then putTarget(x,S)
@@ -168,7 +168,7 @@ pushDownTargetInfo(op,target,arglist) ==
 pushDownOnArithmeticVariables(op,target,arglist) ==
   -- tries to push appropriate target information onto variable
   -- occurring in arithmetic expressions
-  PAIRP(target) and CAR(target) = 'Variable => NIL
+  PAIRP(target) and first(target) = 'Variable => NIL
   not MEMQ(op,'(_+ _- _* _*_* _/)) => NIL
   not containsPolynomial(target)   => NIL
   for x in arglist for i in 1.. repeat
@@ -268,7 +268,7 @@ bottomUp t ==
     -- given no target or package calling, force integer constants to
     -- belong to tightest possible subdomain
 
-    op := CAR t                -- may have changed in bottomUpElt
+    op := first t                -- may have changed in bottomUpElt
     $useIntegerSubdomain and null tar and null dol and
       isEqualOrSubDomain(first ms,$Integer) =>
         val := objVal getValue op
@@ -300,7 +300,7 @@ bottomUpCompile t ==
 bottomUpUseSubdomain t ==
   $useIntegerSubdomain : local := true
   ms := bottomUp t
-  ($immediateDataSymbol ~= getUnname(t)) or ($Integer ~= CAR(ms)) => ms
+  ($immediateDataSymbol ~= getUnname(t)) or ($Integer ~= first(ms)) => ms
   null INTEGERP(num := objValUnwrap getValue t) => ms
   o := getBasicObject(num)
   putValue(t,o)
@@ -519,8 +519,8 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
     -- this is a hack until Records go through the normal
     -- modemap selection process
     rtype := ['Record,:rargs]
-    code := optRECORDCOPY(['RECORDCOPY,getArgValue(CAR argl, rtype),#rargs])
-
+    code := optRECORDCOPY(['RECORDCOPY, getArgValue(first argl, rtype),
+                           #rargs])
     if $genValue then code := wrap timedEVALFUN code
     val := objNew(code,rtype)
     putValue(t,val)
@@ -664,7 +664,7 @@ bottomUpFormRetract(t,op,opName,argl,amsl) ==
     (i = 1) and (opName = "set!") =>
         a := [x,:a]
         ms := [m,:ms]
-    if PAIRP(m) and CAR(m) = $EmptyMode then return NIL
+    if PAIRP(m) and first(m) = $EmptyMode then return NIL
     object:= retract getValue x
     a:= [x,:a]
     EQ(object,'failed) =>
@@ -750,8 +750,8 @@ bottomUpElt (form:=[op,:argl]) ==
 
     ms := bottomUp op
     ms and (ms is [['Union,:.]] or ms is [['Record,:.]]) =>
-        rplac(CDR form, [op, :argl])
-        rplac(CAR form, mkAtreeNode "elt")
+        rplac(rest form, [op, :argl])
+        rplac(first form, mkAtreeNode "elt")
         bottomUp form
 
     target  := getTarget form
@@ -762,16 +762,16 @@ bottomUpElt (form:=[op,:argl]) ==
     while not u for newOp in newOps repeat
         newArgs := [op,:argl]
         if selectMms(newOp, newArgs, target) then
-            rplac(CDR form, newArgs)
-            rplac(CAR form, newOp)
+            rplac(rest form, newArgs)
+            rplac(first form, newOp)
             u := bottomUp form
 
     while not u and ( "and"/[retractAtree(a) for a in newArgs] ) repeat
         while not u for newOp in newOps repeat
             newArgs := [op,:argl]
             if selectMms(newOp, newArgs, target) then
-                rplac(CDR form, newArgs)
-                rplac(CAR form, newOp)
+                rplac(rest form, newArgs)
+                rplac(first form, newOp)
                 u := bottomUp form
     u
 

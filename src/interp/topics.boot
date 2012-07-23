@@ -90,14 +90,14 @@ mkTopicHashTable() ==                         --given $groupAssoc = ((extended .
   --initialize table of topic classes
   $topicHash := MAKE_-HASHTABLE 'ID           --$topicHash has keys: topic and value: index
   for [x,:c] in $groupAssoc repeat HPUT($topicHash,x,c)
-  $topicIndex := CDR last $groupAssoc
+  $topicIndex := rest last $groupAssoc
 
   --replace each property list by a topic code
   --store under each construct an OR of all codes
   for con in HKEYS $conTopicHash repeat
     conCode := 0
     for pair in HGET($conTopicHash,con) repeat
-      RPLACD(pair,code := topicCode CDR pair)
+      RPLACD(pair, code := topicCode rest pair)
       conCode := LOGIOR(conCode,code)
     HPUT($conTopicHash,con,
       [['constructor,:conCode],:HGET($conTopicHash,con)])
@@ -179,7 +179,8 @@ tdAdd(con,hash) ==
   v := HGET($conTopicHash,con)
   u := addTopic2Documentation(con,v)
 --u := GETDATABASE(con,'DOCUMENTATION)
-  for pair in u | FIXP (code := myLastAtom pair) and (op := CAR pair) ~= 'construct repeat
+  for pair in u | FIXP (code := myLastAtom pair) and
+       (op := first pair) ~= 'construct repeat
     for x in (names := code2Classes code) repeat HPUT(hash,x,insert(op,HGET(hash,x)))
 
 tdPrint hash ==

@@ -126,7 +126,7 @@ coerceConvertMmSelection(funName,m1,m2) ==
   --  mmS := [[sig,[targ,arg],:pred] for x in l | x is [sig,[.,arg],:pred] and
   mmS := [x for x in l | x is [sig,:.] and hasCorrectTarget(m2,sig) and
            sig is [dc,targ,oarg] and isEqualOrSubDomain(m1,oarg)]
-  mmS and CAR mmS
+  mmS and first mmS
 
 resolveTT(t1,t2) ==
   -- resolves two types
@@ -164,7 +164,7 @@ isLegitimateMode(t,hasPolyMode,polyVarList) ==
       listOfDuplicates vl => return false
       polyVarList:= union(vl,polyVarList)
     hasPolyMode => false
-    con := CAR t
+    con := first t
     poly? := (con = 'Polynomial or con = 'Expression)
     isLegitimateMode(underDomainOf t,poly?,polyVarList)
 
