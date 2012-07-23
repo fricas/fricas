@@ -74,7 +74,7 @@ dbShowInfoOp(htPage,op,sig,alist) ==
   kind     := GETDATABASE(conname,'CONSTRUCTORKIND)
   honestConform :=
     kind = 'category =>
-      [INTERN STRCONC(PNAME conname,'"&"),"$",:CDR conform]
+      [INTERN STRCONC(PNAME conname, '"&"), "$", :rest conform]
     conform
   faTypes  := CDDAR GETDATABASE(conname,'CONSTRUCTORMODEMAP)
 

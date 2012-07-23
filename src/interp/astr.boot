@@ -33,7 +33,7 @@
 )package "BOOT"
 
 --% Attributed Structures (astr)
--- For objects which are pairs where the CAR field is either just a tag
+-- For objects which are pairs where the first field is either just a tag
 -- (an identifier) or a pair which is the tag and an association list.
 
 -- Pick off the tag
@@ -56,7 +56,7 @@ ncAlist x ==
 ncEltQ(x,k) ==
    r := ASSQ(k,ncAlist x)
    NULL r => ncBug ('S2CB0007,[k])
-   CDR r
+   rest r
 
 -- Put (k . v) on the association list of x and return v
 -- case1: ncPutQ(x,k,v) where k is a key (an identifier), v a value

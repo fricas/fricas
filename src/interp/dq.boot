@@ -54,7 +54,7 @@ dqAppend(x,y)==
     else if null y
          then x
          else
-              RPLACD (CDR x,CAR y)
+              RPLACD(CDR x, first y)
               RPLACD (x,    CDR y)
               x
 
@@ -65,7 +65,7 @@ dqConcat ld==
          then first ld
          else dqAppend(first ld,dqConcat rest ld)
 
-dqToList s==if null s then nil else CAR s
+dqToList s == if null s then nil else first s
 
 dqAddAppend(x,y)==
     if null x
@@ -73,6 +73,6 @@ dqAddAppend(x,y)==
     else if null y
          then nil
          else
-              RPLACD (CDR x,CAR y)
+              RPLACD (CDR x, first y)
               RPLACD (x,    CDR y)
               x

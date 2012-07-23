@@ -188,7 +188,7 @@ resolveTTUnion(t1 is ['Union,:doms],t2) ==
   for d in doms2 while not bad repeat
     d = '"failed" => ud := append(ud,[d])
     null (d' := resolveTTUnion(t1,d)) => bad := true
-    ud := append(ud,CDR d')
+    ud := append(ud, rest d')
   bad => NIL
   ['Union,:REMDUP ud]
 
@@ -199,7 +199,7 @@ resolveTTSpecial(t1,t2) ==
 
   -- following is just an efficiency hack
   (t1 = '(Symbol) or t1 is ['OrderedVariableList,.]) and PAIRP(t2) and
-    CAR(t2) in '(Polynomial RationalFunction) => t2
+    first(t2) in '(Polynomial RationalFunction) => t2
 
   (t1 = '(Symbol)) and ofCategory(t2, '(IntegerNumberSystem)) =>
     resolveTT1(['Polynomial, t2], t2)
@@ -280,8 +280,8 @@ resolveTTSpecial(t1,t2) ==
     dom' := resolveTT(dom, t2)
     null dom' => nil
     ['Segment, dom']
-  op1 := CAR(t1)
-  op2 := CAR(t2)
+  op1 := first(t1)
+  op2 := first(t2)
   MEMQ(op1, '(GeneralUnivariatePowerSeries SparseUnivariateLaurentSeries _
             SparseUnivariatePuiseuxSeries SparseUnivariateTaylorSeries _
             UnivariateLaurentSeries UnivariatePuiseuxSeries _
@@ -333,10 +333,10 @@ resolveTTEq1(c1,arg1,TL is [c2,arg2,:.]) ==
   c1=c2 and
     [c2,arg2,:TL] := bubbleType TL
     until null arg1 or null arg2 or not t repeat
-      t := resolveTT1(CAR arg1,CAR arg2) =>
+      t := resolveTT1(first arg1, first arg2) =>
         arg := CONS(t,arg)
-        arg1 := CDR arg1
-        arg2 := CDR arg2
+        arg1 := rest arg1
+        arg2 := rest arg2
     t and null arg1 and null arg2 and
       t0 := constructM(c1,nreverse arg)
       constructTowerT(t0,TL)
@@ -397,11 +397,11 @@ resolveTTRed3(t) ==
     (and/[member(x,a) for x in b] and and/[member(x,b) for x in a]) and a
   [( atom x and x ) or ((not cs and x and not interpOp? x and x)
     or resolveTTRed3 x) or return NIL
-      for x in t for cs in GETDATABASE(CAR t, 'COSIG) ]
+      for x in t for cs in GETDATABASE(first t, 'COSIG)]
 
 interpOp?(op) ==
   PAIRP(op) and
-    CAR(op) in '(Incl SetDiff SetComp SetInter SetUnion VarEqual SetEqual)
+    first(op) in '(Incl SetDiff SetComp SetInter SetUnion VarEqual SetEqual)
 
 --% Resolve Type with Category
 
@@ -470,7 +470,7 @@ getConditionalCategoryOfType(t,conditions,match) ==
   if PAIRP t then t := first t
   t in '(Union Mapping Record) => NIL
   conCat := GETDATABASE(t,'CONSTRUCTORCATEGORY)
-  REMDUP CDR getConditionalCategoryOfType1(conCat,conditions,match,[NIL])
+  REMDUP rest getConditionalCategoryOfType1(conCat, conditions, match, [[]])
 
 getConditionalCategoryOfType1(cat,conditions,match,seen) ==
   cat is ['Join,:cs] or cat is ['CATEGORY,:cs] =>
@@ -480,12 +480,12 @@ getConditionalCategoryOfType1(cat,conditions,match,seen) ==
        match,seen)
   cat is ['IF,., cond,.] =>
     matchUpToPatternVars(cond,match,NIL) =>
-      RPLACD(conditions,CONS(cat,CDR conditions))
+      RPLACD(conditions, CONS(cat, rest conditions))
       conditions
     conditions
   cat is [catName,:.] and (GETDATABASE(catName,'CONSTRUCTORKIND) = 'category) =>
-    cat in CDR seen => conditions
-    RPLACD(seen,[cat,:CDR seen])
+    cat in rest seen => conditions
+    RPLACD(seen, [cat, :rest seen])
     subCat := GETDATABASE(catName,'CONSTRUCTORCATEGORY)
     -- substitute vars of cat into category
     for v in rest cat for vv in $TriangleVariableList repeat
@@ -501,13 +501,13 @@ matchUpToPatternVars(pat,form,patAlist) ==
   EQUAL(pat,form) => true
   isSharpVarWithNum(pat) =>
     -- see is pattern variable is in alist
-    (p := assoc(pat,patAlist)) => EQUAL(form,CDR p)
+    (p := assoc(pat, patAlist)) => EQUAL(form, rest p)
     patAlist := [[pat,:form],:patAlist]
     true
   PAIRP(pat) =>
     not (PAIRP form) => NIL
-    matchUpToPatternVars(CAR pat, CAR form,patAlist) and
-      matchUpToPatternVars(CDR pat, CDR form,patAlist)
+    matchUpToPatternVars(first pat, first form, patAlist) and
+      matchUpToPatternVars(rest pat, rest form, patAlist)
   NIL
 
 --% Resolve Type with Mode
@@ -542,9 +542,9 @@ resolveTM1(t,m) ==
     isPatternVar m =>
       p := ASSQ(m,$Subst) =>
         $Coerce =>
-          tt := resolveTT1(t,CDR p) => RPLACD(p,tt) and tt
+          tt := resolveTT1(t, rest p) => RPLACD(p, tt) and tt
           NIL
-        t=CDR p and t
+        t = rest p and t
       $Subst := CONS(CONS(m,t),$Subst)
       t
     atom(t) or atom(m) => NIL
@@ -570,7 +570,7 @@ resolveTMRecord(tr,mr) ==
     CADR(ta) ~= CADR(ma) => ok := NIL      -- match tags
     ra := resolveTM1(CADDR ta, CADDR ma)   -- resolve modes
     null ra => ok := NIL
-    tt := CONS([CAR ta,CADR ta,ra],tt)
+    tt := CONS([first ta, CADR ta, ra], tt)
   null ok => NIL
   ['Record,nreverse tt]
 
@@ -600,7 +600,7 @@ resolveTMUnion(t, m is ['Union,:ums]) ==
   doms := nil
   for ut in uts while not bad repeat
     (m' := resolveTMUnion(ut,['Union,:ums])) =>
-      doms := append(CDR m',doms)
+      doms := append(rest m', doms)
     bad := true
   bad => NIL
   ['Union,:REMDUP doms]
@@ -643,7 +643,7 @@ resolveTMEq(t,m) ==
       t := argt and last argt
   b and
     t := resolveTMEq2(cm,argm,[ct,argt,:TL])
-    if t then for p in SL repeat $Subst := augmentSub(CAR p,CDR p,$Subst)
+    if t then for p in SL repeat $Subst := augmentSub(first p, rest p, $Subst)
     t
 
 resolveTMSpecial(t,m) ==
@@ -672,25 +672,25 @@ resolveTMEq1(ct,cm) ==
   -- ct and cm are type constructors
   -- tests for a match from cm to ct
   -- the result is a substitution or 'failed
-  not (CAR ct=CAR cm) => 'failed
+  not (first ct = first cm) => 'failed
   SL := NIL
-  ct := CDR ct
-  cm := CDR cm
+  ct := rest ct
+  cm := rest cm
   b := 'T
   while ct and cm and b repeat
-    xt := CAR ct
-    ct := CDR ct
-    xm := CAR cm
-    cm := CDR cm
-    if not (atom xm) and CAR xm = ":"  --  i.e. Record
-      and CAR xt = ":" and CADR xm = CADR xt then
+    xt := first ct
+    ct := rest ct
+    xm := first cm
+    cm := rest cm
+    if not (atom xm) and first xm = ":"  --  i.e. Record
+      and first xt = ":" and CADR xm = CADR xt then
         xm := CADDR xm
         xt := CADDR xt
     b :=
       xt=xm => 'T
       isPatternVar(xm) and
-        p := ASSQ(xm,$Subst) => xt=CDR p
-        p := ASSQ(xm,SL) => xt=CDR p
+        p := ASSQ(xm, $Subst) => xt = rest p
+        p := ASSQ(xm, SL) => xt = rest p
         SL := augmentSub(xm,xt,SL)
   b => SL
   'failed
@@ -707,10 +707,10 @@ resolveTMEq2(cm,argm,TL) ==
 --  null argm => NIL
     arg := NIL
     while argt and argm until not tt repeat
-      x1 := CAR argt
-      argt := CDR argt
-      x2 := CAR argm
-      argm := CDR argm
+      x1 := first argt
+      argt := rest argt
+      x2 := first argm
+      argm := rest argm
       tt := resolveTM1(x1,x2) =>
         arg := CONS(tt,arg)
     tt and arg = argt0 => constructT(ct, argt0)
@@ -762,8 +762,8 @@ getUnderModeOf d ==
 --deconstructM(t) ==
 --  -- M is a type, which may contain type variables
 --  -- results in a pair (type constructor . mode arguments)
---  CDR t and constructor? CAR t =>
---    dt := destructT CAR t
+--  rest t and constructor? first t =>
+--    dt := destructT first t
 --    args := [ x for d in dt for y in t | ( x := d and y ) ]
 --    c := [ x for d in dt for y in t | ( x := not d and y ) ]
 --    CONS(c,args)
@@ -772,8 +772,8 @@ getUnderModeOf d ==
 deconstructT(t) ==
   -- M is a type, which may contain type variables
   -- results in a pair (type constructor . mode arguments)
-  IFCDR t and constructor? CAR t =>
-    dt := destructT CAR t
+  IFCDR t and constructor? first t =>
+    dt := destructT first t
     args := [ x for d in dt for y in t | ( x := d and y ) ]
     c := [ x for d in dt for y in t | ( x := not d and y ) ]
     CONS(c,args)
@@ -781,15 +781,15 @@ deconstructT(t) ==
 
 constructT(c,A) ==
   -- c is a type constructor, A a list of argument types
-  A => [if d then POP A else POP c for d in destructT CAR c]
+  A => [if d then POP A else POP c for d in destructT first c]
   c
 
 constructM(c,A) ==
   -- replaces top level RE's or QF's by equivalent types, if possible
-  #c > 1 and nontrivialCosig(CAR(c)) => nil
+  #c > 1 and nontrivialCosig(first(c)) => nil
   containsVars(c) or containsVars(A) => NIL
   -- collapses illegal FE's
-  CAR(c) = $FunctionalExpression => defaultTargetFE CAR A
+  first(c) = $FunctionalExpression => defaultTargetFE first A
   constructT(c,A)
 
 replaceLast(A,t) ==
@@ -799,7 +799,7 @@ replaceLast(A,t) ==
 nontrivialCosig(x) ==
    cs := GETDATABASE(x, "COSIG")
    sig := getConstructorSignature x
-   not("and"/[c or freeOfSharpVars s for c in CDR cs for s in CDR sig])
+   not("and"/[c or freeOfSharpVars s for c in rest cs for s in rest sig])
 
 destructT(functor)==
   -- provides a list of booleans, which indicate whether the arguments

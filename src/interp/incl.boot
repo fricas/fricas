@@ -48,7 +48,7 @@ incLine(eb, str, gno, lno, ufo) ==
             ln := lnCreate(eb,str,gno,lno,ufo)
             CONS(CONS(ln,1), str)
 
-incPos f == CAR f
+incPos f == first f
 
 incRenumberItem(f, i) ==
             l := CAAR f
@@ -139,7 +139,7 @@ incActive?(fn,ufos)==MEMBER(fn,ufos)
 
 incNConsoles ufos==
         a:=MEMBER('"console",ufos)
-        if a then 1+incNConsoles CDR a else 0
+        if a then 1+incNConsoles rest a else 0
 
 Top            := 01
 IfSkipToEnd    := 10
@@ -251,7 +251,7 @@ xlIfSyntax(eb, str, lno,ufos,info,sts) ==
 incLude(eb, ss, ln, ufos, states) ==
        Delay(function incLude1,[eb, ss, ln, ufos, states])
 
-Rest s==>incLude (eb,CDR ss,lno,ufos,states)
+Rest s ==> incLude(eb, rest ss, lno, ufos, states)
 
 incLude1 (:z) ==
             [eb, ss, ln, ufos, states]:=z
@@ -264,7 +264,7 @@ incLude1 (:z) ==
                      '")--premature end",  lno,ufos), StreamNil)
                 StreamNil
 
-            str  :=  EXPAND_-TABS CAR ss
+            str  :=  EXPAND_-TABS first ss
             info :=  incClassify str
 
             not info.0 =>
@@ -333,7 +333,7 @@ incLude1 (:z) ==
                     Skipping? state => IfSkipToEnd
                     if ifCond(str,info) then IfKeepPart else IfSkipPart
                 cons(xlOK(eb,str,lno,ufos.0),
-                      incLude(eb,CDR ss,lno,ufos,cons(s1,states)))
+                      incLude(eb, rest ss, lno, ufos, cons(s1, states)))
             info.2 = '"elseif" =>
                 not If? state and not Elseif? state =>
                     cons(xlIfSyntax(eb, str,lno,ufos,info,states),
@@ -349,7 +349,7 @@ incLude1 (:z) ==
                             else ElseifSkipPart
                          else ElseifSkipToEnd
                      cons(xlOK(eb,str,lno,ufos.0),
-                        incLude(eb,CDR ss,lno,ufos,cons(s1,rest states)))
+                        incLude(eb, rest ss, lno, ufos, cons(s1, rest states)))
                 else
                     cons(xlIfBug(eb, str, lno,ufos), StreamNil)
 
@@ -363,7 +363,7 @@ incLude1 (:z) ==
                            then ElseKeepPart
                            else ElseSkipToEnd
                       cons(xlOK(eb,str,lno,ufos.0),
-                        incLude(eb,CDR ss,lno,ufos,cons(s1,rest states)))
+                        incLude(eb, rest ss, lno, ufos, cons(s1, rest states)))
                 else
                     cons(xlIfBug(eb, str, lno,ufos), StreamNil)
 
@@ -372,7 +372,7 @@ incLude1 (:z) ==
                     cons(xlIfSyntax(eb, str,lno,ufos,info,states),
                         StreamNil)
                 cons(xlOK(eb,str,lno,ufos.0),
-                         incLude(eb,CDR ss,lno,ufos,rest states))
+                         incLude(eb, rest ss, lno, ufos, rest states))
 
             cons(xlCmdBug(eb, str, lno,ufos), StreamNil)
 

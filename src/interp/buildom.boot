@@ -49,7 +49,7 @@ isRecord type == type is ['Record,:.]
 Record0 args ==
     dom := GETREFV 11
     -- JHD added an extra slot to cache EQUAL methods
-    dom.0 := ['Record, :[['_:, CAR a, devaluate CDR a] for a in args]]
+    dom.0 := ['Record, :[['_:, first a, devaluate rest a] for a in args]]
     dom.1 :=
            [function lookupInTable,dom,
                [['_=,[[['Boolean],'_$,'_$],:6]],
@@ -59,7 +59,7 @@ Record0 args ==
     dom.3 := ['RecordCategory,:QCDR dom.0]
     dom.4 :=
           [[ '(SetCategory) ],[ '(SetCategory) ]]
-    dom.5 := [CDR a for a in args]
+    dom.5 := [rest a for a in args]
     dom.6 := [function RecordEqual, :dom]
     dom.7 := [function RecordPrint, :dom]
     dom.8 := [function Undef, :dom]
@@ -73,12 +73,12 @@ Record0 args ==
 RecordEqual(x,y,dom) ==
   PAIRP x =>
     b:=
-       SPADCALL(CAR x, CAR y, CAR(dom.9) or
-                           CAR RPLACA(dom.9,findEqualFun(dom.5.0)))
+       SPADCALL(first x, first y, first(dom.9) or
+                           first RPLACA(dom.9, findEqualFun(dom.5.0)))
     NULL rest(dom.5) => b
     b and
-       SPADCALL(CDR x, CDR y, CDR (dom.9) or
-                           CDR RPLACD(dom.9,findEqualFun(dom.5.1)))
+       SPADCALL(rest x, rest y, rest(dom.9) or
+                           rest RPLACD(dom.9, findEqualFun(dom.5.1)))
   VECP x =>
     equalfuns := dom.9
     and/[SPADCALL(x.i,y.i,equalfuns.i or (equalfuns.i:=findEqualFun(fdom)))
@@ -96,14 +96,14 @@ findEqualFun(dom) ==
   compiledLookup('_=,[$Boolean,'$,'$],dom)
 
 coerceRe2E(x,source) ==
-  n := # CDR source
+  n := #rest(source)
   n = 1 =>
     ['construct,
-     ['_=, source.1.1, coerceVal2E(CAR x,source.1.2)] ]
+     ['_=, source.1.1, coerceVal2E(first x, source.1.2)] ]
   n = 2 =>
     ['construct,
-     ['_=, source.1.1, coerceVal2E(CAR x,source.1.2)], _
-     ['_=, source.2.1, coerceVal2E(CDR x,source.2.2)] ]
+     ['_=, source.1.1, coerceVal2E(first x, source.1.2)], _
+     ['_=, source.2.1, coerceVal2E(rest x, source.2.2)] ]
   VECP x =>
     ['construct,
      :[['_=,tag,coerceVal2E(x.i, fdom)]
@@ -206,10 +206,10 @@ MappingPrint(x, dom) == coerceMap2E(x)
 
 coerceMap2E(x) ==
   -- nrlib domain
-  ARRAYP CDR x => ['theMap, BPINAME CAR x,
-    if $testingSystem then 0 else REMAINDER(HASHEQ CDR x, 1000)]
+  ARRAYP rest x => ['theMap, BPINAME first x,
+    if $testingSystem then 0 else REMAINDER(HASHEQ rest x, 1000)]
   -- aldor
-  ['theMap, BPINAME CAR x  ]
+  ['theMap, BPINAME first x]
 
 --% Enumeration
 -- Enumeration is a Lisp macro since it wants unevaluated arguments

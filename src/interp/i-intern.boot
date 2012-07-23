@@ -147,8 +147,8 @@ mkAtree1 x ==
 
 mkAtree2(x,op,argl) ==
   nargl := #argl
-  (op= '_-) and (nargl = 1) and (INTEGERP CAR argl) =>
-    mkAtree1(- CAR argl)
+  (op= '_-) and (nargl = 1) and (INTEGERP first argl) =>
+    mkAtree1(- first argl)
   op='_: and argl is [y,z] => [mkAtreeNode 'Declare,:argl]
   op='COLLECT => [mkAtreeNode op,:transformCollect argl]
   op= 'break =>
@@ -238,7 +238,7 @@ mkAtree3(x,op,argl) ==
       lowTest
     mkAtree1 z
   x is ['IF,p,'noBranch,a] => mkAtree1 ['IF,['not,p],a,'noBranch]
-  x is ['RULEDEF,:.] => [mkAtreeNode 'RULEDEF,:CDR x]
+  x is ['RULEDEF, :.] => [mkAtreeNode 'RULEDEF, :rest x]
   x is ['MDEF,sym,junk1,junk2,val] =>
     -- new macros look like  macro f ==  or macro f(x) ===
     -- so transform into that format
@@ -289,7 +289,7 @@ mkAtree3(x,op,argl) ==
 --  a is [op,p1,:pr] =>
 --    null pr => mkAtree1 ['DEF,[op,["|",p1,pred]],:r]
 --    mkAtree1 ['DEF,[op,["|",['Tuple,p1,:pr],pred]],:r]
---  [mkAtreeNode 'DEF, CDR y,pred,false]
+--  [mkAtreeNode 'DEF, rest y, pred, false]
 --x is ['otherwise,u] =>
 --  throwMessage '"   otherwise is no longer supported."
   z :=
@@ -614,8 +614,8 @@ get(x,prop,e) ==
 
 get0(x,prop,e) ==
   null atom x => get(QCAR x,prop,e)
-  u:= QLASSQ(x,CAR QCAR e) => QLASSQ(prop,u)
-  (tail:= CDR QCAR e) and (u:= fastSearchCurrentEnv(x,tail)) =>
+  u := QLASSQ(x, first QCAR e) => QLASSQ(prop, u)
+  (tail := rest QCAR e) and (u := fastSearchCurrentEnv(x, tail)) =>
     QLASSQ(prop,u)
   nil
 
@@ -664,9 +664,9 @@ remprop(x,prop,e) ==
   e
 
 fastSearchCurrentEnv(x,currentEnv) ==
-  u:= QLASSQ(x,CAR currentEnv) => u
+  u := QLASSQ(x, first currentEnv) => u
   while (currentEnv:= QCDR currentEnv) repeat
-    u:= QLASSQ(x,CAR currentEnv) => u
+    u := QLASSQ(x, first currentEnv) => u
 
 put(x,prop,val,e) ==
   $InteractiveMode and not EQ(e,$CategoryFrame) =>
@@ -771,9 +771,9 @@ objNewCode(val, mode) == ['CONS, MKQ mode,val ]
 objSetVal(obj,val) == RPLACD(obj,val)
 objSetMode(obj,mode) == RPLACA(obj,mode)
 
-objVal obj == CDR obj
-objValUnwrap obj == unwrap CDR obj
-objMode obj == CAR obj
+objVal obj == rest obj
+objValUnwrap obj == unwrap rest obj
+objMode obj == first obj
 
 objCodeVal obj == CADDR obj
 objCodeMode obj == CADR obj
@@ -791,6 +791,6 @@ asTupleNew0(listOfElts) == CONS(#listOfElts, LIST2VEC listOfElts)
 asTupleNewCode(size, listOfElts) == ["asTupleNew", size, ['LIST, :listOfElts]]
 asTupleNewCode0(listForm) == ["asTupleNew0", listForm]
 
-asTupleSize(at) == CAR at
-asTupleAsVector(at) == CDR at
+asTupleSize(at) == first at
+asTupleAsVector(at) == rest at
 asTupleAsList(at) == VEC2LIST asTupleAsVector at

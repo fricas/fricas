@@ -150,7 +150,7 @@ scanKeyWords := [ _
 scanKeyTableCons()==
    KeyTable:=MAKE_-HASHTABLE("CVEC")
    for st in scanKeyWords repeat
-      HPUT(KeyTable,CAR st,CADR st)
+      HPUT(KeyTable, first st, CADR st)
    KeyTable
 
 scanInsert(s,d) ==
@@ -226,7 +226,7 @@ for i in   [ _
    ["LARROW"       ,"<-"], _
    ["BAR"       ,"|"], _
    ["SEG"       ,".."] _
-    ] repeat MAKEPROP(CAR i,'INFGENERIC,CADR i)
+    ] repeat MAKEPROP(first i, 'INFGENERIC, CADR i)
 
 -- Scanner
 
@@ -256,9 +256,9 @@ nextline(s)==
      if npNull s
      then false
      else
-       $f:= CAR s
-       $r:= CDR s
-       $ln := CDR $f
+       $f:= first s
+       $r:= rest s
+       $ln := rest $f
        $linepos:=CAAR $f
        $n:=STRPOSL('" ",$ln,0,true)-- spaces at beginning
        $sz :=# $ln

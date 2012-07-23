@@ -96,11 +96,11 @@ $ncmPhase :=      NIL
 evalInlineCode() ==
   args := getCLArgs()
   while args repeat
-    arg := CAR args
-    args := CDR args
+    arg := first args
+    args := rest args
     if arg = '"-eval" and args then
-      CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr CAR(args)))
-      args := CDR args
+      CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr first(args)))
+      args := rest args
 
 spad() ==
   -- starts the interpreter, read in profiles, etc.
@@ -243,21 +243,21 @@ intloopPrefix?(prefix,whole) ==
 
 intloopProcess(n,interactive,s)==
      StreamNull s => n
-     [lines,ptree]:=CAR s
+     [lines, ptree] := first s
      pfAbSynOp?(ptree,"command")=>
             if interactive then setCurrentLine tokPart ptree
             InterpExecuteSpadSystemCommand(tokPart ptree)
-            intloopProcess(n ,interactive ,CDR s)
-     intloopProcess(intloopSpadProcess(n,lines,ptree,interactive)
-                 ,interactive ,CDR s)
+            intloopProcess(n, interactive, rest s)
+     intloopProcess(intloopSpadProcess(n, lines, ptree, interactive),
+                 interactive, rest s)
 
 intloopEchoParse s==
-         [dq,stream]:=CAR s
-         [lines,rest]:=ncloopDQlines(dq,$lines)
+         [dq, stream] := first s
+         [lines, restl] := ncloopDQlines(dq, $lines)
          setCurrentLine(mkLineList(lines))
          if $EchoLines then ncloopPrintLines lines
-         $lines:=rest
-         cons([[lines,npParse dqToList dq]],CDR s)
+         $lines := restl
+         cons([[lines, npParse dqToList dq]], rest s)
 
 intloopInclude0(st, name, n) ==
     $lines:local:=incStream(st,name)
@@ -346,8 +346,8 @@ intSayKeyedMsg(key, args) ==
   sayKeyedMsg(packageTran key, packageTran args)
 
 mkLineList lines ==
-  l := [CDR line for line in lines | nonBlank CDR line]
-  #l = 1 => CAR l
+  l := [rest line for line in lines | nonBlank rest line]
+  #l = 1 => first l
   l
 
 nonBlank str ==
@@ -390,12 +390,12 @@ streamChop(n,s)==
          else
             [a,b]:= streamChop(n-1,cdr s)
             line:=car s
-            c:=ncloopPrefix?('")command",CDR line)
+            c := ncloopPrefix?('")command", rest line)
             d:= cons(car line,if c then c else cdr line)
             [cons(d,a),b]
 
 ncloopPrintLines lines ==
-        for line in lines repeat WRITE_-LINE CDR line
+        for line in lines repeat WRITE_-LINE rest line
         WRITE_-LINE '" "
 
 ncloopIncFileName string==
@@ -406,9 +406,9 @@ ncloopIncFileName string==
                 fn
 
 ncloopParse s==
-         [dq,stream]:=CAR s
-         [lines,rest]:=ncloopDQlines(dq,stream)
-         cons([[lines,npParse dqToList dq]],CDR s)
+         [dq, stream] := first s
+         [lines, .] := ncloopDQlines(dq, stream)
+         cons([[lines, npParse dqToList dq]], rest s)
 
 ncloopInclude0(st, name, n) ==
      $lines:local := incStream(st, name)

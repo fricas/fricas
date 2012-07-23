@@ -45,8 +45,8 @@ minimalise x ==
         -- copes with a particular Lucid-ism, God knows why
         -- This circular way of doing things is an attempt to deal with Lucid
         -- Who may place quoted cells in read-only memory
-        z:=min CAR x
-        if not EQ(z,CAR x) then RPLACA(x,z)
+        z := min first x
+        if not EQ(z, first x) then RPLACA(x, z)
         z:=min CDR x
         if not EQ(z,CDR x) then RPLACD(x,z)
         HashCheck x

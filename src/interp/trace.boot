@@ -106,7 +106,7 @@ trace1 l ==
   hasOption($options,'stats) =>
     (1 < # $options) =>
       throwKeyedMsg("S2IT0001",['")trace ... )stats"])
-    [.,:opt] := CAR $options
+    [., :opt] := first $options
     -- look for )trace )stats       to list the statistics
     --          )trace )stats reset to reset them
     null opt =>      -- list the statistics
@@ -306,7 +306,7 @@ transTraceItem x ==
     UPPER_-CASE_-P (STRINGIMAGE x).(0) =>
       y := unabbrev x
       constructor?(y) => y
-      PAIRP(y) and constructor?(CAR y) => CAR y
+      PAIRP(y) and constructor?(first y) => first y
       (y:= domainToGenvar x) => y
       x
     x
@@ -320,12 +320,12 @@ removeTracedMapSigs untraceList ==
 
 coerceTraceArgs2E(traceName,subName,args) ==
   MEMQ(name:= subName,$mathTraceList) =>
-    SPADSYSNAMEP PNAME name => coerceSpadArgs2E(reverse CDR reverse args)
+    SPADSYSNAMEP PNAME name => coerceSpadArgs2E(reverse rest reverse args)
     [["=",name,objValUnwrap coerceInteractive(objNewWrap(arg,type),$OutputForm)]
       for name in '(arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12 arg13 arg14 arg15 arg16 arg17 arg18 arg19 )
-       for arg in args for type in CDR LASSOC(subName,
+       for arg in args for type in rest LASSOC(subName,
         $tracedMapSignatures)]
-  SPADSYSNAMEP PNAME name => reverse CDR reverse args
+  SPADSYSNAMEP PNAME name => reverse rest reverse args
   args
 
 coerceSpadArgs2E(args) ==
@@ -333,7 +333,7 @@ coerceSpadArgs2E(args) ==
   $streamCount:local := 0
   [["=",name,objValUnwrap coerceInteractive(objNewWrap(arg,type),$OutputForm)]
       for name in '(arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12 arg13 arg14 arg15 arg16 arg17 arg18 arg19 )
-        for arg in args for type in CDR $tracedSpadModemap]
+        for arg in args for type in rest $tracedSpadModemap]
 
 subTypes(mm,sublist) ==
   ATOM mm =>
@@ -345,14 +345,14 @@ coerceTraceFunValue2E(traceName,subName,value) ==
   MEMQ(name:= subName,$mathTraceList) =>
     SPADSYSNAMEP PNAME traceName => coerceSpadFunValue2E(value)
     (u:=LASSOC(subName,$tracedMapSignatures)) =>
-      objValUnwrap coerceInteractive(objNewWrap(value,CAR u),$OutputForm)
+      objValUnwrap coerceInteractive(objNewWrap(value, first u), $OutputForm)
     value
   value
 
 coerceSpadFunValue2E(value) ==
   -- following binding is to prevent forcing calculation of stream elements
   $streamCount:local := 0
-  objValUnwrap coerceInteractive(objNewWrap(value,CAR $tracedSpadModemap),
+  objValUnwrap coerceInteractive(objNewWrap(value, first $tracedSpadModemap),
     $OutputForm)
 
 isListOfIdentifiers l == and/[IDENTP x for x in l]
@@ -403,7 +403,7 @@ augmentTraceNames(l,mapSubNames) ==
 isSubForRedundantMapName(subName) ==
   mapName:= rassocSub(subName,$mapSubNameAlist) =>
     tail:=member([mapName,:subName],$mapSubNameAlist) =>
-      MEMQ(mapName,CDR ASSOCLEFT tail)
+      MEMQ(mapName, rest ASSOCLEFT tail)
 
 untraceMapSubNames traceNames ==
   null($mapSubNameAlist:local:= getPreviousMapSubNames traceNames) => nil
@@ -424,7 +424,7 @@ isTraceGensym x == GENSYMP x
 spadTrace(domain,options) ==
   $fromSpadTrace:= true
   $tracedModemap:local:= nil
-  PAIRP domain and REFVECP CAR domain and (CAR domain).0 = 0 =>
+  PAIRP domain and REFVECP first domain and (first domain).0 = 0 =>
       aldorTrace(domain,options)
   not isDomainOrPackage domain => userError '"bad argument to trace"
   listOfOperations:=

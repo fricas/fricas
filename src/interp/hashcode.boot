@@ -67,7 +67,7 @@ hashType(type, percentHash) ==
                 hash
 
         cmm :=   CDDAR getConstructorModemap(op)
-        cosig := CDR   GETDATABASE(op, 'COSIG)
+        cosig := rest GETDATABASE(op, 'COSIG)
         for arg in args for c in cosig for ct in cmm repeat
                 if c then
                         hash := hashCombine(hashType(arg, percentHash), hash)

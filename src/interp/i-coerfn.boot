@@ -361,7 +361,7 @@ Dmp2Up(u, source is [dmp,vl,S],target is [up,var,T]) ==
     y:= coerceInt(objNewWrap([[e1,:c]],S1),T) =>
       -- need to be careful about zeros
       p:= ASSQ(exp,x) =>
-        c' := SPADCALL(CDR p,objValUnwrap(y),plusfunc)
+        c' := SPADCALL(rest p, objValUnwrap(y), plusfunc)
         c' = zero => x := REMALIST(x,exp)
         RPLACD(p,c')
       zero = objValUnwrap(y) => 'iterate
@@ -374,8 +374,8 @@ removeVectorElt(v,pos) ==
   LIST2VEC [x for x in VEC2LIST v for y in 0.. | not (y=pos)]
 
 removeListElt(l,pos) ==
-  pos = 0 => CDR l
-  [CAR l, :removeListElt(CDR l,pos-1)]
+  pos = 0 => rest l
+  [first l, :removeListElt(rest l, pos - 1)]
 
 NDmp2domain(u,source is [ndmp,x,S],target) ==
   -- a null NDMP = 0
@@ -444,7 +444,7 @@ Expr2Dmp(u,source is [Expr,S], target is [dmp,v2,T]) ==
 
     null rest v2 =>
         for term in univ repeat
-            RPLACA(term, VECTOR CAR term)
+            RPLACA(term, VECTOR first term)
         univ
 
     -- more than one variable
@@ -502,11 +502,11 @@ Expr2Up(u,source is [Expr,S], target is [.,var,T]) ==
     sup        := ['SparseUnivariatePolynomial, source]
 
     fracUniv   := SPADCALL(u, varKernel, univFunc)
-    denom      := CDR fracUniv
+    denom      := rest fracUniv
 
     not equalOne(denom, sup) => coercionFailure()
 
-    numer      := CAR fracUniv
+    numer      := first fracUniv
     uniType := ['UnivariatePolynomial, var, source]
     (z := coerceInt(objNewWrap(numer, uniType), target)) => objValUnwrap z
     coercionFailure()
@@ -1275,9 +1275,9 @@ Rm2V(x,[.,.,.,R],target) == M2V(x,['Matrix,R],target)
 
 Scr2Scr(u, source is [.,S], target is [.,T]) ==
   u = '_$fromCoerceable_$ => canCoerce(S,T)
-  null (v := coerceInt(objNewWrap(CDR u,S),T)) =>
+  null (v := coerceInt(objNewWrap(rest u, S), T)) =>
     coercionFailure()
-  [CAR u, :objValUnwrap(v)]
+  [first u, :objValUnwrap(v)]
 
 --% SparseUnivariatePolynomialnimial
 
@@ -1750,8 +1750,8 @@ P2Us(u, source is [.,S], target is [.,T,var,cen], type) ==
   package := ['ExpressionToUnivariatePowerSeries, S, E]
   func := getFunctionFromDomain(type, package, [E, EQtype])
   newObj := SPADCALL(objValUnwrap(newU), eq, func)
-  newType := CAR newObj
-  newVal  := CDR newObj
+  newType := first newObj
+  newVal  := rest newObj
   newType = target => newVal
   finalObj := coerceInt(objNewWrap(newVal, newType), target)
   null finalObj => coercionFailure()

@@ -55,7 +55,7 @@ makeLongStatStringByProperty _
   otherStatTotal := GET('other, property)
   for [name,class,:ab] in listofnames repeat
     name = 'other => 'iterate
-    cl := CAR LASSOC(class,listofclasses)
+    cl := first LASSOC(class, listofclasses)
     n := GET(name, property)
     PUT(cl, classproperty, n + GET(cl, classproperty))
     total := total + n
@@ -70,8 +70,8 @@ makeLongStatStringByProperty _
   if otherStatTotal > 0 then
     str := makeStatString(str,normalizeStatAndStringify otherStatTotal,'O,flag)
     total := total + otherStatTotal
-    cl := CAR LASSOC('other,listofnames)
-    cl := CAR LASSOC(cl,listofclasses)
+    cl := first LASSOC('other, listofnames)
+    cl := first LASSOC(cl, listofclasses)
     PUT(cl, classproperty, otherStatTotal + GET(cl, classproperty))
   if flag ~= 'long then
     total := 0

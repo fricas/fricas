@@ -61,7 +61,7 @@ compCategories u ==
     pp rest v
   -- the next line "fixes" a bad modemap which sometimes appears ....
   --
-  if rest v and NULL CAAAR v then v:=CDR v
+  if rest v and NULL CAAAR v then v := rest v
   v:= CDDAAR v
   v:=resolvePatternVars(v, rest u) -- replaces #n forms
   -- select the modemap part of the first entry, and skip result etc.
@@ -136,7 +136,7 @@ worthlessCode x ==
   false
 
 cons5(p,l) ==
-  l and (CAAR l = CAR p) => [p,: rest l]
+  l and (CAAR l = first p) => [p,: rest l]
   LENGTH l < 5 => [p,:l]
   RPLACD(QCDDR(QCDDR l), nil)
   [p,:l]
@@ -271,7 +271,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
     while (c and (last c is [c1] or last c is [c1,[]]) and
             (c1 = '(QUOTE T))) repeat
                    --strip out some worthless junk at the end
-        c:=NREVERSE CDR NREVERSE c
+        c := NREVERSE rest NREVERSE c
     null c => '(LIST)
     ['COND,:c]
   code is ['LET,name,body,:.] =>
@@ -407,7 +407,8 @@ InvestigateConditions catvecListMaker ==
               --Rather like eval, but quotes parameters first
     for u in CADR principal'.4 repeat
       if not TruthP(cond:=CADR u) then
-        new:=['CATEGORY,'domain,['IF,cond,['ATTRIBUTE,CAR u], 'noBranch]]
+        new := ['CATEGORY, 'domain, 
+                ['IF, cond, ['ATTRIBUTE, first u], 'noBranch]]
         $principal is ['Join,:l] =>
           not member(new,l) =>
             $principal:=['Join,:l,new]
@@ -423,7 +424,7 @@ InvestigateConditions catvecListMaker ==
         [pessimise first a,:pessimise rest a]
   null $Conditions => [true,:[true for u in secondaries]]
   PrincipalSecondaries:= getViewsConditions principal'
-  MinimalPrimary:= CAR first PrincipalSecondaries
+  MinimalPrimary := first first PrincipalSecondaries
   MaximalPrimary:= CAAR $domainShell.4
   necessarySecondaries:= [first u for u in PrincipalSecondaries | rest u=true]
   and/[member(u,necessarySecondaries) for u in secondaries] =>
@@ -431,8 +432,8 @@ InvestigateConditions catvecListMaker ==
   HackSlot4:=
     MaximalPrimary = nil => nil
     MinimalPrimary=MaximalPrimary => nil
-    MaximalPrimaries:=[MaximalPrimary,:CAR (CatEval MaximalPrimary).4]
-    MinimalPrimaries:=[MinimalPrimary,:CAR (CatEval MinimalPrimary).4]
+    MaximalPrimaries := [MaximalPrimary, :first (CatEval MaximalPrimary).4]
+    MinimalPrimaries := [MinimalPrimary, :first (CatEval MinimalPrimary).4]
     MaximalPrimaries:=S_-(MaximalPrimaries,MinimalPrimaries)
     [[x] for x in MaximalPrimaries]
   ($Conditions:= Conds($principal,nil)) where
@@ -467,7 +468,7 @@ InvestigateConditions catvecListMaker ==
       LENGTH u=1 => first u
       ['AND,:u]
     for [v,:.] in newS repeat
-      for v' in [v,:CAR (CatEval v).4] repeat
+      for v' in [v, :first (CatEval v).4] repeat
         if (w:= assoc(v', HackSlot4)) then
           rplac(rest w, if rest w then mkOr(u, rest w) else u)
     (list:= update(list,u,secondaries,newS)) where
@@ -558,14 +559,14 @@ getViewsConditions u ==
   views:= [[first u,:CADR u] for u in CADR vec.4]
   null vec.0 =>
 --+
-    null CAR vec.4 => views
+    null first(vec.4) => views
     [[CAAR vec.4,:true],:views] --*
   [[vec.0,:true],:views] --*
       --the two lines marked  ensure that the principal view comes first
       --if you don't want it, CDR it off
 
 DescendCodeVarAdd(base,flag) ==
-   princview := CAR $catvecList
+   princview := first $catvecList
    [SetFunctionSlots(sig,SUBST('ELT,'CONST,implem),flag,'adding) repeat
        for i in 6..MAXINDEX princview |
          princview.i is [sig:=[op,types],:.] and

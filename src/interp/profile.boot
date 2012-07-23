@@ -56,7 +56,7 @@ profileRecord(label,name,info) ==  --name: info is var: type or op: sig
 --    alist2    is ((name . info) ...)
   if $insideCapsuleFunctionIfTrue then
     op := $op
-    argl := CDR $form
+    argl := rest $form
     opSig := [$op,$signatureOfForm]
   else
     op := 'constructor

@@ -310,13 +310,13 @@ retractByFunction(object,u) ==
     sayFunctionSelectionResult(funName,[t],mms)
   null mms => NIL
 
-  -- [[dc,:.],slot,.]:= CAR mms
+  -- [[dc, :.], slot, .] := first mms
   dc := CAAAR mms
   slot := CADAR mms
   fun := interpLookup(funName, [target,t], dc)
 --+
   NULL fun => NIL
-  CAR(fun) = function Undef => NIL
+  first(fun) = function Undef => NIL
 --+
   object' := coerceUnion2Branch objNewWrap(SPADCALL(val,fun),target)
   u' := objMode object'
@@ -446,8 +446,8 @@ canCoerce1(t1,t2) ==
 
     absolutelyCannotCoerce(t1,t2) => NIL
 
-    nt1 := CAR t1
-    nt2 := CAR t2
+    nt1 := first t1
+    nt2 := first t2
 
     EQ(nt1,'Mapping) => EQ(nt2,'Any)
     EQ(nt2,'Mapping) =>
@@ -576,7 +576,7 @@ canCoerceByMap(t1,t2) ==
   1 = #u2 => NIL
   u1 := deconstructT t1
   1 = #u1 => NIL                             -- no under domain
-  CAR(u1) ~= CAR(u2) => NIL
+  first(u1) ~= first(u2) => NIL
   top := CAAR u1
   u1 := underDomainOf t1
   u2 := underDomainOf t2
@@ -619,8 +619,8 @@ canCoerceTower(t1,t2) ==
 
 canCoerceLocal(t1,t2) ==
   -- test for coercion on top level
-  p:= ASSQ(CAR t1,$CoerceTable)
-  p and ASSQ(CAR t2,CDR p) is [.,:[tag,fun]] =>
+  p := ASSQ(first t1, $CoerceTable)
+  p and ASSQ(first t2, rest p) is [., :[tag, fun]] =>
     tag='partial => NIL
     tag='total   => true
     (functionp(fun) and
@@ -632,8 +632,8 @@ canCoerceCommute(t1,t2) ==
 -- THIS IS OUT-MODED AND WILL GO AWAY SOON  RSS 2-87
 -- t1 is t2 with the two top level constructors commuted
 -- looks for the existence of a commuting function
-  p:= ASSQ(CAR t1,$CommuteTable)
-  p and ASSQ(CAR t2,CDR p) is [.,:['commute,.]]
+  p := ASSQ(first t1, $CommuteTable)
+  p and ASSQ(first t2, rest p) is [., :['commute, .]]
 
 newCanCoerceCommute(t1,t2) ==
   coerceIntCommute(objNewWrap("$fromCoerceable$",t1),t2)
@@ -643,15 +643,15 @@ canCoercePermute(t1,t2) ==
   -- t1 into t2
   t2 in '((Integer) (OutputForm)) => NIL
   towers := computeTTTranspositions(t1,t2)
-  -- at this point, CAR towers = t1 and last towers should be similar
+  -- at this point, first towers = t1 and last towers should be similar
   -- to t2 in the sense that the components of t1 are in the same order
   -- as in t2. If length towers = 2 and t2 = last towers, we quit to
   -- avoid an infinte loop.
-  NULL towers or NULL CDR towers => NIL
+  NULL towers or NULL rest towers => NIL
   NULL CDDR towers and t2 = CADR towers => NIL
   -- do the coercions successively, quitting if any fail
   ok := true
-  for t in CDR towers while ok repeat
+  for t in rest towers while ok repeat
     ok := canCoerce(t1,t)
     if ok then t1 := t
   ok
@@ -690,8 +690,8 @@ absolutelyCannotCoerce(t1,t2) ==
   -- this is largely an efficiency hack
   ATOM(t1) or ATOM(t2) => NIL
   t2 = '(None) => true
-  n1   := CAR t1
-  n2   := CAR t2
+  n1   := first t1
+  n2   := first t2
   QFI  := [$QuotientField, $Integer]
   int2 := isEqualOrSubDomain(t2,$Integer)
   scalars := '(Float DoubleFloat RationalNumber)
@@ -731,7 +731,7 @@ absolutelyCannotCoerce(t1,t2) ==
   1 = #v2 => NIL
   v1 := deconstructT t1
   1 = #v1 => NIL
-  CAR(v1) ~= CAR(v2) => NIL
+  first(v1) ~= first(v2) => NIL
   absolutelyCannotCoerce(u1,u2)
 
 typeIsASmallInteger x == (x = $SingleInteger)
@@ -884,7 +884,7 @@ coerceInt1(triple,t2) ==
     $genValue =>
       fun := getFunctionFromDomain1(unwrap val, dc, targ, argl)
       objNewWrap(fun,t2)
-    val := NRTcompileEvalForm(unwrap val, CDR CAAR mms, evalDomain dc)
+    val := NRTcompileEvalForm(unwrap val, rest CAAR mms, evalDomain dc)
     objNew(val, t2)
   (t1 is ['Variable,sym]) and (t2 is ['Mapping,target,:margl]) =>
     null (mms := selectMms1(sym,target,margl,margl,NIL)) =>
@@ -893,7 +893,7 @@ coerceInt1(triple,t2) ==
     targ ~= target => NIL
     dc is ["__FreeFunction__",:freeFun] => objNew( freeFun, t2 )
     $genValue => objNewWrap(getFunctionFromDomain1(sym, dc, targ, argl), t2)
-    val := NRTcompileEvalForm(sym, CDR CAAR mms, evalDomain dc)
+    val := NRTcompileEvalForm(sym, rest CAAR mms, evalDomain dc)
     objNew(val, t2)
   (t1 is ['FunctionCalled,sym]) and (t2 is ['Mapping,target,:margl]) =>
     symNode := mkAtreeNode sym
@@ -914,9 +914,9 @@ coerceInt1(triple,t2) ==
       NIL
     NIL
 
-  EQ(CAR(t1),'Variable) and PAIRP(t2) and
+  EQ(first(t1), 'Variable) and PAIRP(t2) and
     (isEqualOrSubDomain(t2,$Integer) or
-      (t2 = [$QuotientField, $Integer]) or MEMQ(CAR(t2),
+      (t2 = [$QuotientField, $Integer]) or MEMQ(first(t2),
         '(RationalNumber Float DoubleFloat))) => NIL
 
   ans := coerceRetract(triple,t2) or coerceIntTower(triple,t2) or
@@ -1019,12 +1019,12 @@ coerceUnion2Branch(object) ==
       evalSharpOne(pred,val') =>
           targetType := typ
   null targetType => keyedSystemError("S2IC0013",NIL)
-  predicate is ['EQCAR,.,p] => objNewWrap(CDR val',targetType)
+  predicate is ['EQCAR, ., p] => objNewWrap(rest val', targetType)
   objNew(objVal object,targetType)
 
 coerceBranch2Union(object,union) ==
   -- assumes type is a member of unionDoms
-  doms := CDR union
+  doms := rest union
   predList:= mkPredList doms
   doms := stripUnionTags doms
   p := position(objMode object,doms)
@@ -1037,7 +1037,7 @@ coerceBranch2Union(object,union) ==
 coerceInt2Union(object,union) ==
   -- coerces to a Union type, adding numeric tags
   -- first cut
-  unionDoms := stripUnionTags CDR union
+  unionDoms := stripUnionTags rest union
   t1 := objMode object
   member(t1,unionDoms) => coerceBranch2Union(object,union)
   val := objVal object
@@ -1068,7 +1068,7 @@ coerceIntByMap(triple,t2) ==
   1 = #u1 => NIL
   CAAR u1 ~= CAAR u2 => nil  -- constructors not equal
   not valueArgsEqual?(t1, t2) => NIL
---  CAR u1 ~= CAR u2 => NIL
+--  first u1 ~= first u2 => NIL
   top := CAAR u1
   u1 := underDomainOf t1
   u2 := underDomainOf t2
@@ -1086,7 +1086,7 @@ coerceIntByMap(triple,t2) ==
     sayFunctionSelectionResult('map,args,mms)
   null mms => NIL
 
-  [[dc,:sig],slot,.]:= CAR mms
+  [[dc, :sig], slot, .] := first mms
   fun := compiledLookup('map,sig,evalDomain(dc))
   NULL fun => NIL
   [fn,:d]:= fun
@@ -1106,14 +1106,14 @@ coerceIntByMapInner(arg,[u1,:u2]) == coerceOrThrowFailure(arg,u1,u2)
 valueArgsEqual?(t1, t2) ==
   -- returns true if the object-valued arguments to t1 and t2 are the same
   -- under coercion
-  coSig := CDR GETDATABASE(CAR t1, 'COSIG)
-  constrSig := CDR getConstructorSignature CAR t1
+  coSig := rest GETDATABASE(first t1, 'COSIG)
+  constrSig := rest getConstructorSignature first t1
   tl1 := replaceSharps(constrSig, t1)
   tl2 := replaceSharps(constrSig, t2)
   not MEMQ(NIL, coSig) => true
   done := false
   value := true
-  for a1 in CDR t1 for a2 in CDR t2 for cs in coSig
+  for a1 in rest t1 for a2 in rest t2 for cs in coSig
     for m1 in tl1 for m2 in tl2 while not done repeat
           not cs =>
             trip := objNewWrap(a1, m1)
@@ -1172,8 +1172,8 @@ coerceIntTableOrFunction(triple,t2) ==
   null isValidType t2 => NIL  -- added 9-18-85 by RSS
   null isLegitimateMode(t2,NIL,NIL) => NIL  -- added 6-28-87 by RSS
   t1 := objMode triple
-  p:= ASSQ(CAR t1,$CoerceTable)
-  p and ASSQ(CAR t2,CDR p) is [.,:[tag,fun]] =>
+  p := ASSQ(first t1, $CoerceTable)
+  p and ASSQ(first t2, rest p) is [., :[tag, fun]] =>
     val := objVal triple
     fun='Identity => objNew(val,t2)
     tag='total =>
@@ -1194,8 +1194,8 @@ coerceCommuteTest(t1,t2) ==
   null (v2 := underDomainOf u2) => NIL
 
   -- now check that cross of constructors is correct
-  (CAR(deconstructT t1) = CAR(deconstructT u2)) and
-    (CAR(deconstructT t2) = CAR(deconstructT u1))
+  (first(deconstructT t1) = first(deconstructT u2)) and
+    (first(deconstructT t2) = first(deconstructT u1))
 
 coerceIntCommute(obj,target) ==
   -- note that the value in obj may be $fromCoerceable$, for canCoerce
@@ -1222,15 +1222,15 @@ coerceIntPermute(object,t2) ==
   t2 in '((Integer) (OutputForm)) => NIL
   t1 := objMode object
   towers := computeTTTranspositions(t1,t2)
-  -- at this point, CAR towers = t1 and last towers should be similar
+  -- at this point, first towers = t1 and last towers should be similar
   -- to t2 in the sense that the components of t1 are in the same order
   -- as in t2. If length towers = 2 and t2 = last towers, we quit to
   -- avoid an infinte loop.
-  NULL towers or NULL CDR towers => NIL
+  NULL towers or NULL rest towers => NIL
   NULL CDDR towers and t2 = CADR towers => NIL
   -- do the coercions successively, quitting if any fail
   ok := true
-  for t in CDR towers while ok repeat
+  for t in rest towers while ok repeat
     null (object := coerceInt(object,t)) => ok := NIL
   ok => object
   NIL
@@ -1264,12 +1264,12 @@ computeTTTranspositions(t1,t2) ==
   towers := [tl1]
   tower := LIST2VEC tl1
   for perm in perms repeat
-    t := tower.(CAR perm)
-    tower.(CAR perm) := tower.(CDR perm)
-    tower.(CDR perm) := t
+    t := tower.(first perm)
+    tower.(first perm) := tower.(rest perm)
+    tower.(rest perm) := t
     towers := CONS(VEC2LIST tower,towers)
   towers := [reassembleTowerIntoType tower for tower in towers]
-  if CAR(towers) ~= t2 then towers := cons(t2,towers)
+  if first(towers) ~= t2 then towers := cons(t2, towers)
   NREVERSE towers
 
 decomposeTypeIntoTower t ==
@@ -1281,7 +1281,7 @@ decomposeTypeIntoTower t ==
 
 reassembleTowerIntoType tower ==
   ATOM tower => tower
-  NULL rest tower => CAR tower
+  NULL rest tower => first tower
   [:top,t,s] := tower
   reassembleTowerIntoType [:top,[:t,s]]
 
@@ -1314,8 +1314,8 @@ coerceIntTest(t1,t2) ==
   -- thus the type can be bubbled before coerceIntTableOrFunction is called
   t1=t2 or
     b:=
-      p:= ASSQ(CAR t1,$CoerceTable)
-      p and ASSQ(CAR t2,CDR p)
+      p := ASSQ(first t1, $CoerceTable)
+      p and ASSQ(first t2, rest p)
     b or coerceConvertMmSelection('coerce,t1,t2) or
       ($useConvertForCoercions and
         coerceConvertMmSelection('convert,t1,t2))
@@ -1358,7 +1358,7 @@ coerceByFunction(T,m2) ==
     [fn,:d]:= fun
     isWrapped x =>
       x:= unwrap x
-      mkObjWrap(SPADCALL(CAR x,CDR x,fun),m2)
+      mkObjWrap(SPADCALL(first x, rest x, fun), m2)
     x isnt ['SPADCALL,a,b,:.] => keyedSystemError("S2IC0015",NIL)
     code := ['SPADCALL, a, b, fun]
     objNew(code,$Boolean)

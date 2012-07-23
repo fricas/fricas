@@ -171,7 +171,7 @@ parseAndEvalToStringEqNum str ==
 
 parseAndInterpToString str ==
   v := applyWithOutputToString('parseAndEvalStr, [str])
-  breakIntoLines CDR v
+  breakIntoLines rest v
 
 parseAndEvalStr string ==
   $InteractiveMode :fluid := true

@@ -146,7 +146,7 @@ processChPosesForOneLine msgList ==
     for msg in msgList repeat
         if getMsgFTTag? msg then
             putFTText (msg,chPosList)
-        posLetter := CDR ASSOC(poCharPosn getMsgPos msg,chPosList)
+        posLetter := rest ASSOC(poCharPosn getMsgPos msg, chPosList)
         oldPre := getMsgPrefix msg
         setMsgPrefix (msg,STRCONC(oldPre,_
                      make_full_CVEC($preLength - 4 - SIZE oldPre), posLetter))
@@ -180,12 +180,12 @@ insertPos(newPos,posList) ==
     bot  := [0,:posList]
     top  := []
     while not done repeat
-        top  := [CAR bot,:top]
-        bot  := CDR bot
+        top  := [first bot, :top]
+        bot  := rest bot
         NULL(bot) =>
            top := [newPos,:top]
            done := true
-        pos  := CAR bot
+        pos  := first bot
         done :=
           pos < newPos => false
           pos = newPos => true
@@ -194,12 +194,12 @@ insertPos(newPos,posList) ==
             true
     for pp in top repeat
         bot := [pp, :bot]
-    CDR bot
+    rest bot
 
 putFTText (msg,chPosList) ==
     tag := getMsgFTTag? msg
     pos := poCharPosn getMsgPos msg
-    charMarker := CDR ASSOC(pos,chPosList)
+    charMarker := rest ASSOC(pos, chPosList)
     tag = 'FROM =>
         markingText := ['"(from ",charMarker,'" and on) "]
         setMsgText(msg,[:markingText,:getMsgText msg])
@@ -208,7 +208,7 @@ putFTText (msg,chPosList) ==
         setMsgText(msg,[:markingText,:getMsgText msg])
     tag = 'FROMTO =>
        pos2 := poCharPosn getMsgPos2 msg
-       charMarker2 := CDR ASSOC(pos2,chPosList)
+       charMarker2 := rest ASSOC(pos2, chPosList)
        markingText := ['"(from ",charMarker,'" up to ",_
            charMarker2,'") "]
        setMsgText(msg,[:markingText,:getMsgText msg])
@@ -260,8 +260,8 @@ erMsgSep erMsgList ==
           msgWPos  := [msg,:msgWPos]
     [msgWPos,msgWOPos]
 
-getLinePos line  == CAR line
-getLineText line == CDR line
+getLinePos line  == first line
+getLineText line == rest line
 
 queueUpErrors(globalNumOfLine,msgList)==
     thisPosMsgs  := []
@@ -424,14 +424,14 @@ getPreStL optPre ==
 desiredMsg (erMsgKey,:optCatFlag) ==
     isKeyQualityP(erMsgKey,'show)   => true
     isKeyQualityP(erMsgKey,'stifle) => false
-    not null optCatFlag  => CAR optCatFlag
+    not null optCatFlag  => first optCatFlag
     true
 
 isKeyQualityP (key,qual)  ==
     --returns pair if found, else NIL
     found := false
     while not found and (qualPair := ASSOC(key,$specificMsgTags)) repeat
-        if CDR qualPair = qual then found := true
+        if rest qualPair = qual then found := true
     qualPair
 
 -----------------------------
