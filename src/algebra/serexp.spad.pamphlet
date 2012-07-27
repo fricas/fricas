@@ -26,7 +26,7 @@ TaylorSeriesExpansion(Coef : Algebra(Fraction(Integer)),
       ++ taylor_via_deriv(f, [x1,...,xn], [D1,...,Dn])
       ++ expands f into Taylor series at (x1,...,xn) using
       ++ D1,...,Dn as partial derivatives
-    taylor_via_lode : (List PS, PS, List Coef) -> PS
+    taylor_via_lode : (List UTS, PS, List Coef) -> PS
       ++ taylor_via_lode([a0,...,ak], z, [c0, ..., ck]) expands into
       ++ Taylor series solution of the linear ordinary differential
       ++ equation
@@ -111,10 +111,9 @@ TaylorSeriesExpansionLaurent(Coef : Algebra(Fraction(Integer)),
             lxt := [taylor(x) for x in lx]
             (taylor_via_deriv(ft, lxt, ld)$TET) :: ULS
 
-        taylor_via_lode(la : List ULS, z : ULS, lc : List Coef) : ULS ==
+        taylor_via_lode(la : List UTS, z : ULS, lc : List Coef) : ULS ==
             zt := taylor(z)
-            lat := [taylor(a) for a in la]
-            (taylor_via_lode(lat, zt, lc)$TET) :: ULS
+            (taylor_via_lode(la, zt, lc)$TET)::ULS
 
         applyTaylor(g, f) ==
             (applyTaylor(g, taylor(f))$TET) :: ULS
@@ -154,10 +153,10 @@ TaylorSeriesExpansionPuiseux(Coef : Algebra(Fraction(Integer)),
             lres := (taylor_via_deriv(first lla, rest lla, ld)$TEL)
             puiseux(nrep.rpow, lres)
 
-        taylor_via_lode(la : List UPS, z : UPS, lc : List Coef) : UPS ==
-            nrep := common_rep(cons(z, la))
-            lla := nrep.laus
-            lres := (taylor_via_lode(rest lla, first lla, lc)$TEL)
+        taylor_via_lode(la : List UTS, z : UPS, lc : List Coef) : UPS ==
+            nrep := common_rep([z])
+            lau := first(nrep.laus)
+            lres := (taylor_via_lode(la, lau, lc)$TEL)
             puiseux(nrep.rpow, lres)
 
         applyTaylor(g, f) ==
