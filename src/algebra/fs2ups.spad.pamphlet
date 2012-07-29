@@ -449,7 +449,10 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         z0 := last(lser0)
         ecl := getEq(nargs, z0)
         cn := first(ecl)
-        cn1 := -cn^(-1)
+        cn1u := recip(cn)
+        cn1u case "failed" =>
+            error "do_diff_eq: called at singular point"
+        cn1 := -(cn1u::UTS)
         ecl := [c*cn1 for c in rest(ecl)]
         nker : FE := kernel(operator(ker), nargs)
         lc : L(FE) := [nker]
