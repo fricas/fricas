@@ -505,9 +505,17 @@ Interval(R:Join(FloatingPointSystem,TranscendentalFunctionCategory)): IntervalCa
 
   -- From RadicalCategory
   _^(u:%, n:Fraction Integer):% ==
-       lo : R := inf(u)
-       lo <= 0 => error "fractional power only defined for x > 0"
-       interval(inf(u)^n,sup(u)^n)
+      lo : R := inf(u)
+      hi : R := sup(u)
+      lo <= 0 =>
+           even?(denom(n)) =>
+               error "fractional power only defined for x > 0"
+           even?(numer(n)) =>
+               hi < 0 =>
+                   interval(0, lo^n)
+               interval(0, max(lo^n, hi^n))
+           interval(lo^n, hi^n)
+      interval(lo^n, hi^n)
 
 @
 \section{License}
