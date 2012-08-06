@@ -1,0 +1,520 @@
+<<package EFGUSER ElementaryFunctionsGeneralizedUnivariatePowerSeries>>=
+
+)abbrev package EFGUSER ElementaryFunctionsGeneralizedUnivariatePowerSeries
+ElementaryFunctionsGeneralizedUnivariatePowerSeries(
+    Coef : Algebra Fraction Integer,
+     Expon : OrderedAbelianMonoid,
+      PS : UnivariatePowerSeriesCategory(Coef, Expon) with (
+         removeZeros : (%, Expon) -> %;
+          apply_taylor : (Stream Coef, %) -> %
+       )      
+   ) : Exports == Implementation where
+  Exports ==> PartialTranscendentalFunctions(PS) with
+
+    do_quo : (PS, PS) -> Union(PS, "failed")
+
+  Implementation ==> add
+
+    STTF ==> StreamTranscendentalFunctions(Coef)
+    STSO ==> StreamTaylorSeriesOperations(Coef)
+
+    TRANSFCN : Boolean := Coef has TranscendentalFunctionCategory
+                          and Coef has CommutativeRing
+
+    apply_taylor1(ft : Stream(Coef) -> Stream(Coef), x : PS
+                 ) : Union(PS, "failed") ==
+        x := removeZeros(x, 0)
+        degree(x) < 0 => "failed"
+        c0 := coefficient(x, 0)
+        s1 := monom(c0, 0)$STSO +$STSO monom(1,1)$STSO
+        fxu : Union(Stream(Coef), "failed") := trappedSpadEval(ft(s1))$Lisp
+        fxu case "failed" => "failed"
+        apply_taylor(fxu::Stream(Coef), x - monomial(c0, 0)$PS)
+
+    if Expon has Algebra(Fraction(Integer)) then
+  
+      nthRootIfCan(x : PS, n : NonNegativeInteger) ==
+        n = 0 => 1$PS
+        n = 1 => x
+        x := removeZeros(x, 0)
+        ord : Expon := degree(x)
+        if ord >= 0 then
+            for i in 0..50 while coefficient(x, ord) = 0 repeat
+                removeZeros(x, ord + 10*(1$Expon))
+                ord := degree(x)
+        (c0 := coefficient(x, ord)) = 0 => "failed"
+        x1 := monomial(1, (-1)*ord)*x
+        res1 := apply_taylor1((s : Stream(Coef)) : Stream(Coef) +->
+                               powern(1/n, s)$STSO, x1)
+        res1 case "failed" => "failed"
+        monomial(1, (1/n)*ord)*res1::PS
+
+    expIfCan(x : PS) ==
+        x := removeZeros(x, 0)
+        degree(x) < 0 => "failed"
+        expx := exp(monom(1,1)$STSO)$STTF
+        (c1 := coefficient(x, 0)) = 0 => apply_taylor(expx, x)
+        TRANSFCN => exp(c1)*apply_taylor(expx, x - monomial(c1, 0)$PS)
+        "failed"
+        
+    logIfCan(x : PS) == apply_taylor1(log$STTF, x)
+
+    sincos(x : PS) : Union(Record(sin : PS, cos : PS), "failed") ==
+        x := removeZeros(x, 0)
+        degree(x) < 0 => "failed"
+        scst := sincos(monom(1,1)$STSO)$STTF
+        (c1 := coefficient(x, 0)) = 0 =>
+            [apply_taylor(scst.sin, x), apply_taylor(scst.cos, x)]
+        TRANSFCN =>
+            x1 := x - monomial(c1, 0)$PS
+            sx1 := apply_taylor(scst.sin, x1)
+            cx1 := apply_taylor(scst.cos, x1)
+            sc1 := sin(c1)
+            cc1 := cos(c1)
+            [sc1*cx1 + cc1*sx1, cc1*cx1 - sc1*sx1]
+        "failed"
+
+    sinIfCan(x) ==
+        usc := sincos(x)
+        usc case "failed" => "failed"
+        (usc::Record(sin : PS, cos : PS)).sin
+
+    cosIfCan(x) ==
+        usc := sincos(x)
+        usc case "failed" => "failed"
+        (usc::Record(sin : PS, cos : PS)).cos
+
+    tanIfCan(x) ==
+        usc := sincos(x)
+        usc case "failed" => "failed"
+        do_quo((usc::Record(sin : PS, cos : PS)).sin,
+          (usc::Record(sin : PS, cos : PS)).cos)
+
+    cotIfCan(x) ==
+        usc := sincos(x)
+        usc case "failed" => "failed"
+        do_quo((usc::Record(sin : PS, cos : PS)).cos,
+          (usc::Record(sin : PS, cos : PS)).sin)
+
+    secIfCan(x) ==
+        usc := sincos(x)
+        usc case "failed" => "failed"
+        do_quo(1$PS, (usc::Record(sin : PS, cos : PS)).cos)
+
+    cscIfCan(x) ==
+        usc := sincos(x)
+        usc case "failed" => "failed"
+        do_quo(1$PS, (usc::Record(sin : PS, cos : PS)).sin)
+
+    asinIfCan(x) == apply_taylor1(asin$STTF, x)
+
+    acosIfCan(x) == apply_taylor1(acos$STTF, x)
+
+    atanIfCan(x) == apply_taylor1(atan$STTF, x)
+
+    acotIfCan(x) == apply_taylor1(acot$STTF, x)
+
+    asecIfCan(x) == apply_taylor1(asec$STTF, x)
+
+    acscIfCan(x) == apply_taylor1(acsc$STTF, x)
+
+    sinhcosh(x : PS) : Union(Record(sinh : PS, cosh : PS), "failed") ==
+        x := removeZeros(x, 0)
+        degree(x) < 0 => "failed"
+        scst := sinhcosh(monom(1,1)$STSO)$STTF
+        (c1 := coefficient(x, 0)) = 0 =>
+            [apply_taylor(scst.sinh, x), apply_taylor(scst.cosh, x)]
+        TRANSFCN =>
+            x1 := x - monomial(c1, 0)$PS
+            sx1 := apply_taylor(scst.sinh, x1)
+            cx1 := apply_taylor(scst.cosh, x1)
+            sc1 := sinh(c1)
+            cc1 := cosh(c1)
+            [sc1*cx1 + cc1*sx1, cc1*cx1 + sc1*sx1]
+        "failed"
+
+    sinhIfCan(x) ==
+        usc := sinhcosh(x)
+        usc case "failed" => "failed"
+        (usc::Record(sinh : PS, cosh : PS)).sinh
+
+    coshIfCan(x) ==
+        usc := sinhcosh(x)
+        usc case "failed" => "failed"
+        (usc::Record(sinh : PS, cosh : PS)).cosh
+
+    tanhIfCan(x) ==
+        usc := sinhcosh(x)
+        usc case "failed" => "failed"
+        do_quo((usc::Record(sinh : PS, cosh : PS)).sinh,
+          (usc::Record(sinh : PS, cosh : PS)).cosh)
+
+    cothIfCan(x) ==
+        usc := sinhcosh(x)
+        usc case "failed" => "failed"
+        do_quo((usc::Record(sinh : PS, cosh : PS)).cosh,
+          (usc::Record(sinh : PS, cosh : PS)).sinh)
+
+    sechIfCan(x) ==
+        usc := sinhcosh(x)
+        usc case "failed" => "failed"
+        do_quo(1$PS, (usc::Record(sinh : PS, cosh : PS)).cosh)
+
+    cschIfCan(x) ==
+        usc := sinhcosh(x)
+        usc case "failed" => "failed"
+        do_quo(1$PS, (usc::Record(sinh : PS, cosh : PS)).sinh)
+
+    asinhIfCan(x) == apply_taylor1(asinh$STTF, x)
+
+    acoshIfCan(x) == apply_taylor1(acosh$STTF, x)
+
+    atanhIfCan(x) == apply_taylor1(atanh$STTF, x)
+
+    acothIfCan(x) == apply_taylor1(acoth$STTF, x)
+
+    asechIfCan(x) == apply_taylor1(asech$STTF, x)
+
+    acschIfCan(x) == apply_taylor1(acsch$STTF, x)
+
+
+    if Coef has IntegralDomain then
+
+        do_quo(x, y) == x exquo y
+
+    else
+
+        do_quo(x, y) ==
+            (yinv := recip(y)) case "failed" => "failed"
+            x*yinv::PS
+
+@
+
+<<domain GENUSER GeneralizedUnivariatePowerSeries>>=
+
+)abbrev domain GENUSER GeneralizedUnivariatePowerSeries
+GeneralizedUnivariatePowerSeries(Coef : Ring,
+     Expon : Join(OrderedAbelianMonoid, SemiRing), 
+     var : Symbol, cen : Coef): Exports == Implementation where
+  Exports ==> UnivariatePowerSeriesCategory(Coef,Expon) with
+
+    infsum : Stream(%) -> %
+      ++ infsum(x) computes sum of all elements of x.  Degrees
+      ++ of elements of x must be nondecreasing and tend to
+      ++ infinity.
+    apply_taylor : (Stream(Coef), %) -> %
+    removeZeros : (%, Expon) -> %
+
+    if Coef has Field and Expon has AbelianGroup then Field
+
+    if Coef has Algebra Fraction Integer then
+
+        TranscendentalFunctionCategory
+
+  Implementation ==> add
+
+    Term ==> Record(k : Expon, c : Coef)
+
+    Rep := Stream(Term)
+
+    terms(x) == x::Rep
+
+    center(x) == cen
+
+    variable(x) == var
+
+    pole?(x) ==
+        empty?(x) => false
+        x := removeZeros(x, 0)
+        degree(x) < 0
+
+    0 : % == empty()
+
+    1 : % == concat([0, 1], empty())
+
+    reductum(x : %) ==
+        empty?(x) => x
+        rst(x)
+
+    characteristic() == characteristic()$Coef
+
+    monomial(ci : Coef, ki : Expon) : % == concat([ki, ci], empty())
+
+    OUT ==> OutputForm
+
+    termOutput(ki : Expon, ci : Coef, vv : OUT) : OUT ==
+        -- creates a term ci*vv^ki
+        ki = 0 => ci::OUT
+        mon := (ki = 1 => vv; vv^(ki::OUT))
+        ci = 1 => mon
+        ci = -1 => -mon
+        (ci::OUT)*mon
+
+    coerce(x : %) : OUT ==
+        xs : Rep := x
+        empty?(xs) => (0$Coef)::OUT
+        vv :=
+            zero? cen => var::OUT
+            paren(var::OUT - cen::OUT)
+        count : Integer := _$streamCount$Lisp
+        l : List(OUT) := empty()
+        ti : Term
+        for n in 0..count while not empty?(xs) repeat
+            ti := frst(xs)
+            if ti.c ~= 0 then
+                l := concat(termOutput(ti.k, ti.c, vv), l)
+            xs := rst xs
+        l :=
+            explicitlyEmpty? xs => l
+            concat(prefix("o"::OUT, [vv ^ (ti.k::OUT)]), l)
+        empty? l => (0$Coef)::OUT
+        reduce("+",reverse! l)
+
+    degree(x : %) : Expon ==
+        empty?(x) => 0$Expon
+        frst(x).k
+
+    map(fn : Coef -> Coef, x : %) : % ==
+        map((ti : Term) : Term +-> [ti.k, fn(ti.c)], x)$Rep
+
+    (c1 : Coef) * (x : %) == map((ti : Term) : Term +-> [ti.k, ti.c*c1], x)$Rep
+
+    multiplyExponents(x : %, n : PositiveInteger) : % ==
+        map((ti : Term) : Term +-> [n*ti.k, ti.c], x)$Rep
+
+    - x : % == map((ti : Term) : Term +-> [ti.k, -ti.c], x)$Rep
+
+    x : % + y : % == delay
+        empty?(x) => y
+        empty?(y) => x
+        tx : Term := frst(x)
+        ty : Term := frst(y)
+        tx.k < ty.k => concat([tx.k, tx.c], rst(x) + y)
+        ty.k < tx.k => concat([ty.k, ty.c], x + rst(y))
+        concat([tx.k, tx.c + ty.c], rst(x) + rst(y))
+
+    x : % - y : % == delay
+        empty?(x) => -y
+        empty?(y) => x
+        tx : Term := frst(x)
+        ty : Term := frst(y)
+        tx.k < ty.k => concat([tx.k, tx.c], rst(x) - y)
+        ty.k < tx.k => concat([ty.k, ty.c], x - rst(y))
+        concat([tx.k, tx.c - ty.c], rst(x) - rst(y))
+
+    x : % * y : % == delay
+        empty?(x) => 0$%
+        empty?(y) => 0$%
+        tx := frst(x)
+        ty := frst(y)
+        x1 := concat(tx, empty())
+        concat([tx.k + ty.k, tx.c*ty.c], x1*rst(y) + rst(x)*y)
+
+    -- if Coef has IntegralDomain and Expon has CancellationAbelianMonoid then
+    if Expon has CancellationAbelianMonoid then
+
+        exquo1(x : %, y : %, cyinv : Coef, ky : Expon) : % == delay
+            empty?(x) => empty()
+            tx : Term := frst(x)
+            -- (dkiu : Union(Expon, "failed") := subtractIfCan(tx.k, ky)$Expon)
+            (dkiu := subtractIfCan(tx.k, ky)$Expon)
+               case "failed" => error "cannot subtract exponents"
+            dki := dkiu::Expon
+            ci := cyinv*tx.c
+            concat([dki, ci],
+                   exquo1(rst(x) - monomial(ci, dki)*rst(y), y, cyinv, ky))
+
+        exquo2(x : %, y : %) : Union(%, "failed") ==
+            ty : Term
+            for n in 1.. repeat
+                n > 1000 => return "failed"
+                empty? y => return "failed"
+                ty := frst(y)
+                ty.c ~= 0 => break
+                y := rst(y)
+            ky := ty.k
+            (cyinv := recip(ty.c)) case "failed" => "failed"
+            for n in 1.. repeat
+                n > 1000 => return "failed"
+                empty? x => return empty()
+                tx := frst(x)
+                subtractIfCan(tx.k, ky) case Expon => break
+                tx.c ~= 0 => return "failed"
+                x := rst(x)
+            exquo1(x, y, cyinv::Coef, ky)
+
+        x : % exquo y : % == exquo2(x, y)
+
+        recip(x : %) : Union(%, "failed") == exquo2(1$%, x)
+
+        if Coef has Field and Expon has AbelianGroup then
+
+            x : % / y : % ==
+                resu := x exquo y
+                resu case "failed" =>
+                    error "division by possibly zero series"
+                resu::%
+
+    infsum1(stx : Stream(%), k1 : Expon, c1 : Coef) : % == delay
+        empty?(stx) => concat([k1, c1], empty())
+        x1 := frst(stx)
+        stx1 := rst(stx)
+        empty?(x1) => infsum1(stx1, k1, c1)
+        t1 := frst(x1)
+        x1 := rst(x1)
+        k1 < t1.k => concat([k1, c1], x1 + infsum1(stx1, t1.k, t1.c))
+        t1.k < k1 => error "infsum: degrees not monotone"
+        x1 + infsum1(stx1, k1, c1 + t1.c)
+
+    infsum(stx) == delay
+        empty?(stx) => 0$%
+        x1 := frst(stx)
+        empty?(x1) => infsum(rst(stx))
+        t1 := frst(x1)
+        rst(x1) + infsum1(rst(stx), t1.k, t1.c)
+
+    apply_taylor1(stc : Stream(Coef), x : %, xn : %) : Stream(%) == delay
+        empty?(stc) => empty()
+        c1 := frst(stc)
+        concat(c1*xn, apply_taylor1(rst(stc), x, x*xn))
+
+    removeZeros(x : %, ki : Expon) : % ==
+        xs : Rep := x
+        tx : Term
+        repeat
+            empty?(xs) => return(xs)
+            tx := frst(xs)
+            not(tx.k < ki) => return(xs)
+            tx.c ~= 0 => return(xs)
+            xs := rst(xs)
+
+    apply_taylor(stc, x) ==
+        xs : Rep := x
+        tx : Term
+        repeat
+            empty?(xs) => break
+            tx := frst(xs)
+            0 < tx.k => break
+            tx.c ~= 0 => break
+            xs := rst(xs)
+        empty?(xs) =>
+            empty?(stc) => 0$%
+            concat([0, frst(stc)], empty())
+        0 < tx.k => infsum(apply_taylor1(stc, xs, 1$%))
+        error "apply_taylor: x has negative order"
+
+    x : % = y : % ==
+        st : Rep := x - y
+        n : Integer := _$streamCount$Lisp
+        for i in 0..n repeat
+            empty? st => return true
+            tst := frst(st)
+            tst.c ~= 0 => return false
+            st := rst(st)
+        empty? st
+
+    order(x : %, ki : Expon) : Expon ==
+        xs : Rep := x
+        repeat
+            empty?(xs) => return ki
+            tx := frst(xs)
+            not(tx.k < ki) => return ki
+            tx.c ~= 0 => return tx.k
+            xs := rst(xs)
+
+    order(x : %) : Expon ==
+        xs : Rep := x
+        repeat
+            empty?(xs) => error "series of infinite order"
+            tx := frst(xs)
+            tx.c ~= 0 => return tx.k
+            xs := rst(xs)
+
+    extend(x : %, ki : Expon) : % ==
+        xs : Rep := x
+        repeat
+            empty?(xs) => return x
+            tx := frst(xs)
+            not(tx.k < ki) => return x
+            xs := rst(xs)
+
+    truncate(x : %, ki : Expon) : % == delay
+        xs : Rep := x
+        empty?(xs) => empty()
+        tx := frst(xs)
+        ki < tx.k => empty()
+        concat(tx, truncate(rst(xs), ki))
+
+    truncate(x : %, k1 : Expon, k2 : Expon) : % ==
+        if k2 < k1 then (k1, k2) := (k2, k1)
+        xs : Rep := x
+        repeat
+            empty?(xs) => return empty()
+            tx := frst(xs)
+            not(tx.k < k1) => break
+            xs := rst(xs)
+        truncate(xs::%, k2)
+
+    complete(x : %) : % == complete(x::Rep)$Rep
+
+    coefficient(x : %, ki : Expon) : Coef ==
+        xs : Rep := x
+        repeat
+            empty?(xs) => return 0
+            tx := frst(xs)
+            ki < tx.k => return 0
+            ki = tx.k => return tx.c
+            xs := rst(xs)
+
+    elt(x : %, ki : Expon) : Coef == coefficient(x, ki)
+
+    leadingMonomial(x : %) : % ==
+        empty?(x) => 0$%
+        concat(first(x), empty())
+
+    apply_or_error(fn : % -> Union(%, "failed"), xs : String, x : %) : % ==
+        resu := fn(x)
+        resu case "failed" => error(concat(xs, ": failed"))
+        resu::%
+
+    EFS ==> ElementaryFunctionsGeneralizedUnivariatePowerSeries(
+               Coef, Expon, %)
+
+    if Coef has Algebra Fraction Integer then
+
+        exp(x) == apply_or_error(expIfCan$EFS, "exp", x)
+        log(x) == apply_or_error(logIfCan$EFS, "log", x)
+
+        sin(x) == apply_or_error(sinIfCan$EFS, "sin", x)
+        cos(x) == apply_or_error(cosIfCan$EFS, "cos", x)
+        tan(x) == apply_or_error(tanIfCan$EFS, "tan", x)
+        cot(x) == apply_or_error(cotIfCan$EFS, "cot", x)
+        sec(x) == apply_or_error(secIfCan$EFS, "sec", x)
+        csc(x) == apply_or_error(cscIfCan$EFS, "csc", x)
+
+        asin(x) == apply_or_error(asinIfCan$EFS, "asin", x)
+        acos(x) == apply_or_error(acosIfCan$EFS, "acos", x)
+        atan(x) == apply_or_error(atanIfCan$EFS, "atan", x)
+        acot(x) == apply_or_error(acotIfCan$EFS, "acot", x)
+        asec(x) == apply_or_error(asecIfCan$EFS, "asec", x)
+        acsc(x) == apply_or_error(acscIfCan$EFS, "acsc", x)
+
+        sinh(x) == apply_or_error(sinhIfCan$EFS, "sinh", x)
+        cosh(x) == apply_or_error(coshIfCan$EFS, "cosh", x)
+        tanh(x) == apply_or_error(tanhIfCan$EFS, "tanh", x)
+        coth(x) == apply_or_error(cothIfCan$EFS, "coth", x)
+        sech(x) == apply_or_error(sechIfCan$EFS, "sech", x)
+        csch(x) == apply_or_error(cschIfCan$EFS, "csch", x)
+
+        asinh(x) == apply_or_error(asinhIfCan$EFS, "asinh", x)
+        acosh(x) == apply_or_error(acoshIfCan$EFS, "acosh", x)
+        atanh(x) == apply_or_error(atanhIfCan$EFS, "atanh", x)
+        acoth(x) == apply_or_error(acothIfCan$EFS, "acoth", x)
+        asech(x) == apply_or_error(asechIfCan$EFS, "asech", x)
+        acsch(x) == apply_or_error(acschIfCan$EFS, "acsch", x)
+
+    if Coef has TranscendentalFunctionCategory then
+
+        pi() : % == monomial(pi()$Coef, 0)
+
+@
