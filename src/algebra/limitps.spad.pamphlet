@@ -620,7 +620,8 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
 
     sign f ==
       not real? f => "failed"
-      (u := retractIfCan(f)@Union(RF,"failed")) case RF => sign(u::RF)
+      -- ATM sign in RF is weaker than smpsign.
+      -- (u := retractIfCan(f)@Union(RF,"failed")) case RF => sign(u::RF)
       (un := smpsign numer f) case Z and (ud := smpsign denom f) case Z =>
         un::Z * ud::Z
       --abort if there are any variables
@@ -632,7 +633,11 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
         import Interval(Float)
         import Expression(Interval Float)
         mapfun : (R -> Interval(Float)) := z1 +-> interval(convert(z1)$R)
-        f2 : Expression(Interval Float) := map(mapfun,f)$FS2(R,F,Interval(Float),Expression(Interval Float))
+        f2u : Union(Expression(Interval(Float)), "failed") :=
+            trappedSpadEval(map(mapfun, f)$FS2(R, F, Interval(Float),
+                              Expression(Interval(Float))))$Lisp
+        f2u case "failed" => "failed"
+        f2 := f2u::Expression(Interval(Float))
         r : Union(Interval(Float),"failed") := retractIfCan f2
         if r case "failed" then  return "failed"
         negative? r => return(-1)
@@ -688,7 +693,7 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
           direction(st) * s::Z
         sign v
 
-    smpsign p ==
+    smpsign2(p : P) : U ==
       (r := retractIfCan(p)@Union(R,"failed")) case R => sign(r::R)
       (u := sign(retract(unit(s := squareFree p))@R)) case "failed" =>
         "failed"
@@ -697,6 +702,35 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
         (u := sqfrSign(term.fctr)) case "failed" => return "failed"
         ans := ans * u::Z
       ans
+
+    DFINTTLS ==> DefiniteIntegrationTools(R, F)
+    sas := create()$SingletonAsOrderedSet
+
+    smpsign p ==
+        resu := smpsign2(p)
+        resu case Z => resu
+        vl : List(K) := variables(p)
+        #vl = 1 =>
+            k := first(vl)
+            s0 := kerSign(k)
+            a : OFE := minusInfinity()
+            b : OFE := plusInfinity()
+            x0 : F := 0
+            if s0 case Z then
+                if s0 = 1 then
+                    a := 0
+                if s0 = -1 then
+                    b := 0
+            if is?(k, 'atan) then
+                a := (a = 0 => a; (-(1$F))::OFE)
+                b := (b = 0 => b; (1$F)::OFE)
+            up := map(coerce@(R -> F), univariate(p)
+                     )$SparseUnivariatePolynomialFunctions2(R, F)
+            zu := checkForZero(up, a, b, true)$DFINTTLS
+            zu case "failed" => "failed"
+            (zu::Boolean) => "failed"
+            sign(retract(eval(up, sas, x0))@F)
+        "failed"
 
     sqfrSign p ==
       (u := termSign first(l := monomials p)) case "failed" => "failed"
@@ -732,6 +766,8 @@ ElementaryFunctionSign(R,F): Exports == Implementation where
         sign(first arg - 1)
       is?(op, 'tanh) or is?(op, 'sinh) or
                      is?(op, 'csch) or is?(op, 'coth) => s
+      is?(op, 'atan) or is?(op, 'Si) or is?(op, 'fresnelS)
+             or is?(op, 'fresnelC) => s
       is?(op, nthRoot) =>
         even?(retract(second arg)@Z) =>
           s::Z < 0 => "failed"
