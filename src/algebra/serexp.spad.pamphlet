@@ -166,4 +166,70 @@ TaylorSeriesExpansionPuiseux(Coef : Algebra(Fraction(Integer)),
 
 @
 
+<<package TSEREXPG TaylorSeriesExpansionGeneralized>>=
+
+)abbrev package TSEREXPG TaylorSeriesExpansionGeneralized
+TaylorSeriesExpansionGeneralized(
+    Coef : Algebra(Fraction(Integer)),
+    Expon : OrderedAbelianMonoid,
+    UPS : UnivariatePowerSeriesCategory(Coef,Expon) with (
+           infsum : Stream(%) -> % ;
+           apply_taylor : (Stream(Coef), %) -> %;
+           removeZeros : (%, Expon) -> %
+        ),
+    UTS : UnivariateTaylorSeriesCategory(Coef)
+    ) : Exports == Implementation where
+
+  UTSODE ==> UnivariateTaylorSeriesODESolver(Coef, UTS)
+  Exports ==> TaylorSeriesExpansion(Coef, Expon,
+                  SingletonAsOrderedSet, UPS, UTS)
+  Implementation ==> add
+
+    Term ==> Record(k : Expon, c : Coef)
+
+    stream_taylor(f : UPS, x : UPS, xn : UPS,
+                  d : (UPS -> UPS),
+                  n : Integer) : Stream(UPS) == delay
+        qn : Fraction(Integer) := 1/n
+        ninv : Coef := qn*1$Coef
+        fn := f*xn
+        concat(fn, stream_taylor(d(ninv*f), x, x*xn, d, n + 1))
+
+    taylor_via_deriv(f : UPS, lx : List UPS,
+                         ld : List (Coef -> Coef)) : UPS ==
+        #lx ~= #ld =>
+            error "taylor_via_deriv: number of variables must equal number of derivatives"
+        #lx = 0 => f
+        x1 := removeZeros(first lx, 0)
+        order(x1, 0) < 0 =>
+            error "taylor_via_deriv: variable is of negative order"
+        coefficient(x1, 0) ~= 0 =>
+            error "taylor_via_deriv: variable has constant term"
+        x1 :=
+            degree(x1) > 0 => x1
+            reductum(x1)
+        f := taylor_via_deriv(f, rest lx, rest ld)
+        d1 := first(ld)
+        ss := stream_taylor(f, x1, 1$UPS, (y : UPS) : UPS +-> map(d1, y), 1)
+        print(ss::OutputForm)
+        infsum(ss)
+
+    taylor_via_lode(la : List UTS, z : UPS, lc : List Coef) : UPS ==
+        #lc ~= #la =>
+            error "taylor_via_lode: number of coefficient and initial values must be equal"
+        ts : UTS:= (ode((ls : List UTS) : UTS +->
+                   reduce(_+, [s*a for s in ls for a in la]),
+                lc)$UTSODE)
+        apply_taylor(coefficients(ts), z)
+
+    applyTaylor(g, f) ==
+        f := removeZeros(f, 0)
+        degree(f) < 0 => error "applyTaylor: f of negative degree"
+        c0 := coefficient(f, 0)
+        sg : UTS := g(c0::UTS + monomial(1, 1)$UTS)
+        apply_taylor(coefficients(sg)$UTS, f - c0::UPS)
+
+
+@
+
 \end{document}
