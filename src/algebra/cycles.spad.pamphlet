@@ -24,6 +24,7 @@
 ++               Graphen und chemische Verbindungen', Acta Math. 68
 ++                (1937) 145-254.
 ++ Description: Enumeration by cycle indices.
+-- Currently unused.
 CycleIndicators: Exports == Implementation where
   I    ==> Integer
   L    ==> List
@@ -213,23 +214,27 @@ CycleIndicators: Exports == Implementation where
 
     hh: I -> SPOL RN      --symmetric group
     hh n == if n=0 then 1 else if n<0 then 0 else h n
-    SFunction li==
-      a:Matrix SPOL RN:=matrix [[hh(k -j+i) for k in li for j in 1..#li]
-                    for i in 1..#li]
-      determinant a
 
-    roundup:(L I,L I)-> L I
-    roundup(li1,li2)==
+    -- Condition on SPOL RN is redundant, but compiler can not infer it
+    if SPOL RN has CommutativeRing then
+
+        SFunction li==
+            a:Matrix SPOL RN:=matrix [[hh(k -j+i) for k in li for j in 1..#li]
+                    for i in 1..#li]
+            determinant a
+
+        roundup:(L I,L I)-> L I
+        roundup(li1,li2)==
               #li1 > #li2 => roundup(li1,concat(li2,0))
               li2
 
-    skewSFunction(li1,li2)==
-      #li1 < #li2 =>
-        error "skewSFunction: partition1 does not include partition2"
-      li2:=roundup (li1,li2)
-      a:Matrix SPOL RN:=matrix [[hh(k-li2.i-j+i)
-               for k in li1 for j in 1..#li1]  for i in 1..#li1]
-      determinant a
+        skewSFunction(li1,li2)==
+            #li1 < #li2 =>
+              error "skewSFunction: partition1 does not include partition2"
+            li2:=roundup (li1,li2)
+            a:Matrix SPOL RN:=matrix [[hh(k-li2.i-j+i)
+                    for k in li1 for j in 1..#li1]  for i in 1..#li1]
+            determinant a
 
 @
 \section{package EVALCYC EvaluateCycleIndicators}
@@ -248,6 +253,7 @@ CycleIndicators: Exports == Implementation where
 ++ Description: This package is to be used in conjuction with
 ++             the CycleIndicators package. It provides an evaluation
 ++             function for SymmetricPolynomials.
+-- Currently unused.
 EvaluateCycleIndicators(F):T==C where
     F:Algebra Fraction Integer
     I==>Integer

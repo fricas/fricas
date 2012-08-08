@@ -162,13 +162,16 @@ FramedAlgebra(R:CommutativeRing, UP:UnivariatePolynomialCategory R):
        setRow!(m, j, coordinates(x * qelt(b, i)))
      transpose m
 
-   characteristicPolynomial x ==
-      mat00 := (regularRepresentation x)
-      mat0 : Matrix UP := map(y +-> y::UP, mat00)$MatrixCategoryFunctions2(R,
+   -- Condition is redundant, but the compiler can not infer it
+   if UP has CommutativeRing then
+       characteristicPolynomial x ==
+           mat00 := (regularRepresentation x)
+           mat0 : Matrix UP := map(y +-> y::UP, mat00
+                        )$MatrixCategoryFunctions2(R,
                             Vector R, Vector R, Matrix R, UP,
                             Vector UP,Vector UP, Matrix UP)
-      mat1 : Matrix UP := scalarMatrix(rank(),monomial(1,1)$UP)
-      determinant(mat1 - mat0)
+           mat1 : Matrix UP := scalarMatrix(rank(),monomial(1,1)$UP)
+           determinant(mat1 - mat0)
 
    if R has Field then
     -- depends on the ordering of results from nullSpace, also see FFP
@@ -292,10 +295,12 @@ CharacteristicPolynomialInMonogenicalAlgebra(R : CommutativeRing,
     P : Pol(PolR) := XtoY(definingPolynomial()$E)
     X : Pol(PolR) := monomial(monomial(1, 1)$PolR, 0)
 
-    characteristicPolynomial(x : E) : PolR ==
-       Qx : PolR := lift(x)
-       -- on utilise le fait que resultant_Y (P(Y), X - Qx(Y))
-       return resultant(P, X - XtoY(Qx))
+    -- Condition on PolR is redundant, but compiler can not infer it
+    if PolR has CommutativeRing then
+        characteristicPolynomial(x : E) : PolR ==
+            Qx : PolR := lift(x)
+            -- on utilise le fait que resultant_Y (P(Y), X - Qx(Y))
+            return resultant(P, X - XtoY(Qx))
 
 @
 \section{package NORMMA NormInMonogenicAlgebra}
