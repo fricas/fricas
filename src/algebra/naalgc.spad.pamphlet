@@ -485,27 +485,31 @@ FiniteRankNonAssociativeAlgebra(R:CommutativeRing):
     SUP ==>  SparseUnivariatePolynomial
     NNI ==>  NonNegativeInteger
     -- next 2 functions: use a general characteristicPolynomial
-    leftCharacteristicPolynomial a ==
-       n := rank()$%
-       ma : Matrix R := leftRegularRepresentation(a,someBasis()$%)
-       mb : Matrix SUP R := zero(n,n)
-       for i in 1..n repeat
-         for j in 1..n repeat
-           mb(i,j):=
-             i=j => monomial(ma(i,j),0)$SUP(R) - monomial(1,1)$SUP(R)
-             monomial(ma(i,j),1)$SUP(R)
-       determinant mb
+    -- Condition is redundant, but the compiler can not infer it
+    if SUP R has CommutativeRing then
+        leftCharacteristicPolynomial a ==
+            n := rank()$%
+            ma : Matrix R := leftRegularRepresentation(a, someBasis()$%)
+            mb : Matrix SUP R := zero(n, n)
+            for i in 1..n repeat
+                for j in 1..n repeat
+                    mb(i, j) :=
+                        i = j =>
+                            monomial(ma(i, j), 0)$SUP(R) - monomial(1, 1)$SUP(R)
+                        monomial(ma(i, j), 1)$SUP(R)
+            determinant mb
 
-    rightCharacteristicPolynomial a ==
-       n := rank()$%
-       ma : Matrix R := rightRegularRepresentation(a,someBasis()$%)
-       mb : Matrix SUP R := zero(n,n)
-       for i in 1..n repeat
-         for j in 1..n repeat
-           mb(i,j):=
-             i=j => monomial(ma(i,j),0)$SUP(R) - monomial(1,1)$SUP(R)
-             monomial(ma(i,j),1)$SUP(R)
-       determinant mb
+        rightCharacteristicPolynomial a ==
+            n := rank()$%
+            ma : Matrix R := rightRegularRepresentation(a, someBasis()$%)
+            mb : Matrix SUP R := zero(n, n)
+            for i in 1..n repeat
+                for j in 1..n repeat
+                    mb(i, j) :=
+                        i = j =>
+                            monomial(ma(i, j), 0)$SUP(R) - monomial(1, 1)$SUP(R)
+                        monomial(ma(i, j), 1)$SUP(R)
+            determinant mb
 
 
 

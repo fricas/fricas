@@ -26,8 +26,9 @@
 ++ of this ring are of the form formal SUM (r_i * e_i)
 ++ where the r_i are coefficents and the e_i, elements of the
 ++ ordered abelian monoid, are thought of as exponents or monomials.
-++ The monomials commute with each other, and with
-++ the coefficients (which themselves may or may not be commutative).
+++ The monomials commute with each other, but in general do not
+++ commute with the coefficients (which themselves may or may not
+++ be commutative).
 ++ See \spadtype{FiniteAbelianMonoidRing} for the case of finite support.
 ++ A useful common model for polynomials and power series.
 ++ Conceptually at least, only the non-zero terms are ever operated on.
@@ -58,12 +59,13 @@ AbelianMonoidRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
     if R has Ring then Ring
     if R has Field then "/": (%,R) -> %
          ++ p/c divides p by the coefficient c.
-    if R has CommutativeRing then
+    if % has VariablesCommuteWithCoefficients and R has CommutativeRing then
        CommutativeRing
        Algebra R
     if R has CharacteristicZero then CharacteristicZero
     if R has CharacteristicNonZero then CharacteristicNonZero
-    if R has IntegralDomain then IntegralDomain
+    if % has VariablesCommuteWithCoefficients and R has IntegralDomain then
+        IntegralDomain
     if R has Algebra Fraction Integer then Algebra Fraction Integer
   add
     monomial? x == zero? reductum x
@@ -119,7 +121,7 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
          ++ \spad{pomopo!(p1,r,e,p2)} returns \spad{p1 + monomial(e,r) * p2}
          ++ and may use \spad{p1} as workspace. The constaant \spad{r} is
          ++ assumed to be nonzero.
-    if R has CommutativeRing then
+    if % has CommutativeRing then
        binomThmExpt: (%,%,NonNegativeInteger) -> %
          ++ \spad{binomThmExpt(p,q,n)} returns \spad{(x+y)^n}
          ++ by means of the binomial theorem trick.
@@ -127,6 +129,7 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
        "exquo": (%,R) -> Union(%,"failed")
        ++ exquo(p,r) returns the exact quotient of polynomial p by r, or "failed"
        ++ if none exists.
+       EntireRing
     if R has GcdDomain then
        content: % -> R
          ++ content(p) gives the gcd of the coefficients of polynomial p.
@@ -136,7 +139,7 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
   add
     pomopo!(p1,r,e,p2) == p1 + r * mapExponents(x1+->x1+e,p2)
 
-    if R has CommutativeRing then
+    if % has CommutativeRing then
        binomThmExpt(x,y,nn) ==
                nn = 0 => 1$%
                ans,xn,yn: %
@@ -192,6 +195,112 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
 
 @
 \section{category POLYCAT PolynomialCategory}
+
+<<category GPOLCAT MaybeSkewPolynomialCategory>>=
+
+)abbrev category GPOLCAT MaybeSkewPolynomialCategory
+++ Author:
+++ Date Created:
+++ Date Last Updated:
+++ Basic Functions: Ring, monomial, coefficient, differentiate, eval
+++ Related Constructors: Polynomial, DistributedMultivariatePolynomial
+++ Also See: UnivariatePolynomialCategory
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++  The category for general multi-variate possibly skew polynomials
+++  over a ring R, in variables from VarSet, with exponents from the
+++  \spadtype{OrderedAbelianMonoidSup}.
+
+MaybeSkewPolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup,
+                            VarSet : OrderedSet) : Category ==
+  Join(FiniteAbelianMonoidRing(R, E),
+       FullyLinearlyExplicitRingOver R) with
+    -- operations
+    degree : (%,VarSet) -> NonNegativeInteger
+      ++ degree(p,v) gives the degree of polynomial p with respect
+      ++ to the variable v.
+    degree : (%,List(VarSet)) -> List(NonNegativeInteger)
+      ++ degree(p,lv) gives the list of degrees of polynomial p
+      ++ with respect to each of the variables in the list lv.
+    coefficient: (%,VarSet,NonNegativeInteger) -> %
+      ++ coefficient(p,v,n) views the polynomial p as a univariate
+      ++ polynomial in v and returns the coefficient of the \spad{v^n} term.
+    coefficient: (%,List VarSet,List NonNegativeInteger) -> %
+      ++ coefficient(p, lv, ln) views the polynomial p as a polynomial
+      ++ in the variables of lv and returns the coefficient of the term
+      ++ \spad{lv^ln}, i.e. \spad{prod(lv_i ^ ln_i)}.
+    monomials: % -> List %
+      ++ monomials(p) returns the list of non-zero monomials of
+      ++ polynomial p, i.e.
+      ++ \spad{monomials(sum(a_(i) X^(i))) = [a_(1) X^(1),...,a_(n) X^(n)]}.
+    mainVariable  : % -> Union(VarSet,"failed")
+      ++ mainVariable(p) returns the biggest variable which actually
+      ++ occurs in the polynomial p, or "failed" if no variables are
+      ++ present.
+      ++ fails precisely if polynomial satisfies ground?
+    monomial : (%,VarSet,NonNegativeInteger) -> %
+      ++ monomial(a,x,n) creates the monomial \spad{a*x^n} where \spad{a} is
+      ++ a polynomial, x is a variable and n is a nonnegative integer.
+    monomial : (%,List VarSet,List NonNegativeInteger) -> %
+      ++ monomial(a,[v1..vn],[e1..en]) returns \spad{a*prod(vi^ei)}.
+    totalDegree : % -> NonNegativeInteger
+      ++ totalDegree(p) returns the largest sum over all monomials
+      ++ of all exponents of a monomial.
+    totalDegree : (%,List VarSet) -> NonNegativeInteger
+      ++ totalDegree(p, lv) returns the maximum sum (over all monomials
+      ++ of polynomial p) of the variables in the list lv.
+    totalDegreeSorted : (%, List VarSet) -> NonNegativeInteger
+        ++ totalDegreeSorted(p, lv) returns the maximum sum (over all
+        ++ monomials of polynomial p) of the degree in variables in the
+        ++ list lv.  lv is assumed to be sorted in decreasing order.
+    variables : % -> List(VarSet)
+      ++ variables(p) returns the list of those variables actually
+      ++ appearing in the polynomial p.
+    primitiveMonomials: % -> List %
+      ++ primitiveMonomials(p) gives the list of monomials of the
+      ++ polynomial p with their coefficients removed.
+      ++ Note: \spad{primitiveMonomials(sum(a_(i) X^(i))) = [X^(1),...,X^(n)]}.
+    if R has Comparable then Comparable
+
+    -- assertions
+    if R has canonicalUnitNormal then canonicalUnitNormal
+             ++ we can choose a unique representative for each
+             ++ associate class.
+             ++ This normalization is chosen to be normalization of
+             ++ leading coefficient (by default).
+ add
+    p : %
+    ln : List NonNegativeInteger
+    lv : List VarSet
+
+    monomials p ==
+--      sequential version for efficiency, by WMSIT, 7/30/90
+        ml := empty$List(%)
+        while p ~= 0 repeat
+            ml := concat(leadingMonomial p, ml)
+            p := reductum p
+        reverse! ml
+
+    monomial(p, lv, ln) ==
+        empty? lv =>
+            empty? ln => p
+            error "mismatched lists in monomial"
+        empty? ln  => error "mismatched lists in monomial"
+        monomial(monomial(p, first lv, first ln), rest lv, rest ln)
+
+    mkPrim(p : %) : % == monomial(1, degree p)
+
+    primitiveMonomials p ==
+        ml := empty$List(%)
+        while p ~= 0 repeat
+            ml := concat(mkPrim(leadingMonomial p), ml)
+            p := reductum p
+        reverse! ml
+
+@
+
 <<category POLYCAT PolynomialCategory>>=
 )abbrev category POLYCAT PolynomialCategory
 ++ Author:
@@ -204,32 +313,19 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
 ++ Keywords:
 ++ References:
 ++ Description:
-++ The category for general multi-variate polynomials over a ring
-++ R, in variables from VarSet, with exponents from the
-++ \spadtype{OrderedAbelianMonoidSup}.
+++  The category for general multi-variate polynomials over a ring
+++  R, in variables from VarSet, with exponents from the
+++  \spadtype{OrderedAbelianMonoidSup}.  Here variables commute
+++  with the coefficients.
 
 PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
         Category ==
-  Join(PartialDifferentialRing VarSet, FiniteAbelianMonoidRing(R, E),
+  Join(PartialDifferentialRing VarSet,
+       MaybeSkewPolynomialCategory(R, E, VarSet),
        Evalable %, InnerEvalable(VarSet, R),
        InnerEvalable(VarSet, %), RetractableTo VarSet,
-       FullyLinearlyExplicitRingOver R) with
+       VariablesCommuteWithCoefficients) with
     -- operations
-    degree : (%,VarSet) -> NonNegativeInteger
-      ++ degree(p,v) gives the degree of polynomial p with respect to the variable v.
-    degree : (%,List(VarSet)) -> List(NonNegativeInteger)
-      ++ degree(p,lv) gives the list of degrees of polynomial p
-      ++ with respect to each of the variables in the list lv.
-    coefficient: (%,VarSet,NonNegativeInteger) -> %
-      ++ coefficient(p,v,n) views the polynomial p as a univariate
-      ++ polynomial in v and returns the coefficient of the \spad{v^n} term.
-    coefficient: (%,List VarSet,List NonNegativeInteger) -> %
-      ++ coefficient(p, lv, ln) views the polynomial p as a polynomial
-      ++ in the variables of lv and returns the coefficient of the term
-      ++ \spad{lv^ln}, i.e. \spad{prod(lv_i ^ ln_i)}.
-    monomials: % -> List %
-      ++ monomials(p) returns the list of non-zero monomials of polynomial p, i.e.
-      ++ \spad{monomials(sum(a_(i) X^(i))) = [a_(1) X^(1),...,a_(n) X^(n)]}.
     univariate   : (%,VarSet) -> SparseUnivariatePolynomial(%)
       ++ univariate(p,v) converts the multivariate polynomial p
       ++ into a univariate polynomial in v, whose coefficients are still
@@ -240,11 +336,6 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
         ++ into a univariate polynomial
         ++ in that variable, whose coefficients are in the ground ring.
         ++ Error: if polynomial is genuinely multivariate
-    mainVariable  : % -> Union(VarSet,"failed")
-           ++ mainVariable(p) returns the biggest variable which actually
-           ++ occurs in the polynomial p, or "failed" if no variables are
-           ++ present.
-           ++ fails precisely if polynomial satisfies ground?
     minimumDegree : (%,VarSet) -> NonNegativeInteger
       ++ minimumDegree(p,v) gives the minimum degree of polynomial p
       ++ with respect to v, i.e. viewed a univariate polynomial in v
@@ -256,11 +347,6 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
        ++ with each viewed as a univariate polynomial in v returning
        ++ both the quotient and remainder.
        ++ Error: if b is not monic with respect to v.
-    monomial : (%,VarSet,NonNegativeInteger) -> %
-        ++ monomial(a,x,n) creates the monomial \spad{a*x^n} where \spad{a} is
-        ++ a polynomial, x is a variable and n is a nonnegative integer.
-    monomial : (%,List VarSet,List NonNegativeInteger) -> %
-        ++ monomial(a,[v1..vn],[e1..en]) returns \spad{a*prod(vi^ei)}.
     multivariate : (SparseUnivariatePolynomial(R),VarSet) -> %
         ++ multivariate(sup,v) converts an anonymous univariable
         ++ polynomial sup to a polynomial in the variable v.
@@ -277,24 +363,6 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
     isExpt: % -> Union(Record(var:VarSet, exponent:NonNegativeInteger),_
                        "failed")
         ++ isExpt(p) returns \spad{[x, n]} if polynomial p has the form \spad{x^n} and \spad{n > 0}.
-    totalDegree : % -> NonNegativeInteger
-        ++ totalDegree(p) returns the largest sum over all monomials
-        ++ of all exponents of a monomial.
-    totalDegree : (%,List VarSet) -> NonNegativeInteger
-        ++ totalDegree(p, lv) returns the maximum sum (over all monomials of polynomial p)
-        ++ of the variables in the list lv.
-    totalDegreeSorted : (%, List VarSet) -> NonNegativeInteger
-        ++ totalDegreeSorted(p, lv) returns the maximum sum (over all
-        ++ monomials of polynomial p) of the degree in variables in the
-        ++ list lv.  lv is assumed to be sorted in decreasing order.
-    variables : % -> List(VarSet)
-        ++ variables(p) returns the list of those variables actually
-        ++ appearing in the polynomial p.
-    primitiveMonomials: % -> List %
-        ++ primitiveMonomials(p) gives the list of monomials of the
-        ++ polynomial p with their coefficients removed.
-        ++ Note: \spad{primitiveMonomials(sum(a_(i) X^(i))) = [X^(1),...,X^(n)]}.
-    if R has Comparable then Comparable
     -- OrderedRing view removed to allow EXPR to define abs
     --if R has OrderedRing then OrderedRing
     if (R has ConvertibleTo InputForm) and
@@ -342,11 +410,6 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
         ++ of polynomial p each taken with multiplicity one.
 
     -- assertions
-    if R has canonicalUnitNormal then canonicalUnitNormal
-             ++ we can choose a unique representative for each
-             ++ associate class.
-             ++ This normalization is chosen to be normalization of
-             ++ leading coefficient (by default).
     if R has PolynomialFactorizationExplicit then
        PolynomialFactorizationExplicit
  add
@@ -363,15 +426,7 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
              error "cannot find a variable to evaluate"
       lvar:=[retract(lhs e)@VarSet for e in l]
       eval(p, lvar,[rhs e for e in l]$List(%))
-    monomials p ==
---    zero? p => empty()
---    concat(leadingMonomial p, monomials reductum p)
---    replaced by sequential version for efficiency, by WMSIT, 7/30/90
-      ml:= empty$List(%)
-      while p ~= 0 repeat
-        ml:=concat(leadingMonomial p, ml)
-        p:= reductum p
-      reverse ml
+
     isPlus p ==
       empty? rest(l := monomials p) => "failed"
       l
@@ -396,12 +451,7 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
        empty? ln  => error "mismatched lists in coefficient"
        coefficient(coefficient(univariate(p,first lv),first ln),
                    rest lv,rest ln)
-    monomial(p,lv,ln) ==
-       empty? lv =>
-         empty? ln => p
-         error "mismatched lists in monomial"
-       empty? ln  => error "mismatched lists in monomial"
-       monomial(monomial(p,first lv, first ln),rest lv, rest ln)
+
     retract(p:%):VarSet ==
       q := mainVariable(p)::VarSet
       q::% = p => q
@@ -409,8 +459,7 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
     retractIfCan(p:%):Union(VarSet, "failed") ==
       ((q := mainVariable p) case VarSet) and (q::VarSet::% = p) => q
       "failed"
-    mkPrim(p:%):% == monomial(1,degree p)
-    primitiveMonomials p == [mkPrim q for q in monomials p]
+
     totalDegree p ==
         ground? p => 0
         u := univariate(p, mainVariable(p)::VarSet)
@@ -442,7 +491,8 @@ PolynomialCategory(R:Ring, E:OrderedAbelianMonoidSup, VarSet:OrderedSet):
         lv1 := sort((v1 : VarSet, v2 : VarSet) : Boolean +-> v2 < v1, lv)
         totalDegreeSorted(p, lv1)
 
-    if R has CommutativeRing then
+    -- Condition on % is redundant, but compiler can not infer it
+    if % has CommutativeRing and R has CommutativeRing then
         resultant(p1,p2,mvar) ==
           resultant(univariate(p1,mvar),univariate(p2,mvar))
         discriminant(p,var) ==

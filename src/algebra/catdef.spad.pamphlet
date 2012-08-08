@@ -439,8 +439,50 @@ DivisionRing(): Category ==
 ++ Axioms:
 ++   \spad{ab=0 => a=0 or b=0}  -- known as noZeroDivisors
 ++   \spad{not(1=0)}
---EntireRing():Category == Join(Ring,BiModule(%:Ring,%:Ring)) with
-EntireRing():Category == Join(Ring,BiModule(%,%), noZeroDivisors)
+++
+++ Conditional attributes:
+++   canonicalUnitNormal\tab{20}the canonical field is the same for
+++     all associates
+++   canonicalsClosed\tab{20}the product of two canonicals is itself canonical
+EntireRing() : Category == Join(Ring, BiModule(%, %), noZeroDivisors) with
+    --operations
+      "exquo": (%,%) -> Union(%,"failed")
+            ++ exquo(a,b) either returns an element c such that
+            ++ \spad{c*b=a} or "failed" if no such element can be found.
+      unitNormal: % -> Record(unit:%,canonical:%,associate:%)
+            ++ unitNormal(x) tries to choose a canonical element
+            ++ from the associate class of x.
+            ++ The attribute canonicalUnitNormal, if asserted, means that
+            ++ the "canonical" element is the same across all associates of x
+            ++ if \spad{unitNormal(x) = [u,c,a]} then
+            ++ \spad{u*c = x}, \spad{a*u = 1}.
+      unitCanonical: % -> %
+            ++ \spad{unitCanonical(x)} returns \spad{unitNormal(x).canonical}.
+      associates?: (%,%) -> Boolean
+        ++ associates?(x,y) tests whether x and y are associates, i.e.
+        ++ differ by a unit factor.
+      unit?: % -> Boolean
+        ++ unit?(x) tests whether x is a unit, i.e. is invertible.
+ add
+      -- declaration
+      x,y: %
+      -- definitions
+      UCA ==> Record(unit:%,canonical:%,associate:%)
+      if not (% has Field) then
+        unitNormal(x) == [1$%,x,1$%]$UCA -- the non-canonical definition
+      unitCanonical(x) == unitNormal(x).canonical -- always true
+      recip(x) == if zero? x then "failed" else _exquo(1$%,x)
+      unit?(x) == (recip x case "failed" => false; true)
+      if % has canonicalUnitNormal then
+         associates?(x,y) ==
+           (unitNormal x).canonical = (unitNormal y).canonical
+       else
+         associates?(x,y) ==
+           zero? x => zero? y
+           zero? y => false
+           x exquo y case "failed" => false
+           y exquo x case "failed" => false
+           true
 
 @
 
@@ -952,51 +994,9 @@ Group(): Category == Join(Monoid, unitsKnown) with
 ++ The category of commutative integral domains, i.e. commutative
 ++ rings with no zero divisors.
 ++
-++ Conditional attributes:
-++   canonicalUnitNormal\tab{20}the canonical field is the same for all associates
-++   canonicalsClosed\tab{20}the product of two canonicals is itself canonical
-
 IntegralDomain(): Category ==
 --  Join(CommutativeRing, Algebra(%:CommutativeRing), EntireRing) with
-  Join(CommutativeRing, Algebra(%), EntireRing) with
-    --operations
-      "exquo": (%,%) -> Union(%,"failed")
-            ++ exquo(a,b) either returns an element c such that
-            ++ \spad{c*b=a} or "failed" if no such element can be found.
-      unitNormal: % -> Record(unit:%,canonical:%,associate:%)
-            ++ unitNormal(x) tries to choose a canonical element
-            ++ from the associate class of x.
-            ++ The attribute canonicalUnitNormal, if asserted, means that
-            ++ the "canonical" element is the same across all associates of x
-            ++ if \spad{unitNormal(x) = [u,c,a]} then
-            ++ \spad{u*c = x}, \spad{a*u = 1}.
-      unitCanonical: % -> %
-            ++ \spad{unitCanonical(x)} returns \spad{unitNormal(x).canonical}.
-      associates?: (%,%) -> Boolean
-        ++ associates?(x,y) tests whether x and y are associates, i.e.
-        ++ differ by a unit factor.
-      unit?: % -> Boolean
-        ++ unit?(x) tests whether x is a unit, i.e. is invertible.
- add
-      -- declaration
-      x,y: %
-      -- definitions
-      UCA ==> Record(unit:%,canonical:%,associate:%)
-      if not (% has Field) then
-        unitNormal(x) == [1$%,x,1$%]$UCA -- the non-canonical definition
-      unitCanonical(x) == unitNormal(x).canonical -- always true
-      recip(x) == if zero? x then "failed" else _exquo(1$%,x)
-      unit?(x) == (recip x case "failed" => false; true)
-      if % has canonicalUnitNormal then
-         associates?(x,y) ==
-           (unitNormal x).canonical = (unitNormal y).canonical
-       else
-         associates?(x,y) ==
-           zero? x => zero? y
-           zero? y => false
-           x exquo y case "failed" => false
-           y exquo x case "failed" => false
-           true
+  Join(CommutativeRing, Algebra(%), EntireRing)
 
 @
 
