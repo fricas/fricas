@@ -198,7 +198,6 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
               not(member?(uk, (tf := tower f))) then
                uk := find_int(uk, tf)
            f := eval(f, [uk], [k::F])
-      ltf := [k for k in tower(f) | is?(k, 'tan)]
       if not(empty? ltan) then
         ltemp := [tan2temp k for k in ltan]
         f := eval(f, ltan, [k::F for k in ltemp])
@@ -246,13 +245,15 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       tf := tower f
       ltf := select(x1+->is?(operator x1, 'tan), tf)
       ht  := any?(x1+->has?(operator x1, HTRIG), tf)
-      etf := [realLiouvillian(k::F) for k in tf]
+      etf := [realLiouvillian(k::F, x) for k in tf]
       ekers : List K := []
       evals : List F := []
       for k in tf for v in etf repeat
-          if has?(operator(k), 'prim) then
-              ekers := cons(k, ekers)
-              evals := cons(v, evals)
+          if ((vu := retractIfCan(v)@Union(K, "failed")) case K) then
+              vk := vu::K
+              if is?(operator(vk), '%iint) then
+                  ekers := cons(k, ekers)
+                  evals := cons(v, evals)
       rec := rischNormalize(eval(f, tf, etf), x)
       g   := rootSimp(rec.func)
       tg  := [k for k in tower g | member?(x, variables(k::F))]$List(K)

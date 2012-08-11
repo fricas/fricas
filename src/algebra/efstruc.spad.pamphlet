@@ -153,6 +153,11 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       ++ terms 4 fundamental real elementary functions: \spad{log, exp, tan,
       ++ atan}.  Additionally, it rewrites Liouvillian functions as
       ++ indefinite integrals to support better normalization.
+    realLiouvillian : (F, SY) -> F
+      ++ realLiouvillian(f, x) rewrites \spad{f} elementary kernels of f in
+      ++ terms 4 fundamental real elementary functions: \spad{log, exp, tan,
+      ++ atan}.  Additionally, it rewrites Liouvillian functions of x as
+      ++ indefinite integrals to support better normalization.
     realElementary: (F, SY) -> F
       ++ realElementary(f,x) rewrites the kernels of \spad{f} involving \spad{x}
       ++ in terms of the 4 fundamental real
@@ -222,7 +227,9 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
     realElementary(f, x) == realElem(f, [x])
     realElementary f     == realElem(f, variables f)
     k_to_liou : K -> F
+    k_to_liou1 : (K, SY) -> F
     realLiouvillian(f) == rmap(k_to_liou, f)
+    realLiouvillian(f, x) == rmap((k : K) : F +-> k_to_liou1(k, x), f)
     toY ker              == [func for k in ker | (func := ktoY k) ~= 0]
     toZ ker              == [func for k in ker | (func := ktoZ k) ~= 0]
     toU ker              == [func for k in ker | (func := ktoU k) ~= 0]
@@ -458,16 +465,49 @@ ElementaryFunctionStructurePackage(R,F): Exports == Implementation where
       is?(op, 'csc)   => (1 + tz2^2) / (2 * tz2)
       op args
 
+    do_int(op : BasicOperator, args : List(F)) : F ==
+        kf1 := op args
+        vars := variables(kf1)
+        vfs := [v::F for v in vars]
+        dvs := [realLiouvillian(D(kf1, v)) for v in vars]
+        kernel(opint, concat(vfs, dvs))::F
+
     k_to_liou(k) ==
         op := operator k
         args := [realLiouvillian(a) for a in argument(k)]
         empty?(args) => k::F
-        has?(op, 'prim) and not(is?(op, '%iint)) =>
-            kf1 := op args
-            vars := variables(kf1)
-            vfs := [v::F for v in vars]
-            dvs := [realLiouvillian(D(kf1, v)) for v in vars]
-            kernel(opint, concat(vfs, dvs))::F
+        has?(op, 'prim) and not(is?(op, '%iint)) => do_int(op, args)
+        nm := name(op)
+        nm = 'polylog and
+          (iu := retractIfCan(first(args))@Union(Integer, "failed"))
+                 case Integer =>
+            (i := iu::Integer) > 0 and i < 10 => do_int(op, args)
+            k2Elem0(k, op, args)
+        k2Elem0(k, op, args)
+
+    do_int1(op : BasicOperator, args : List(F), x : SY) : F ==
+        kf1 := op args
+        vars : List(SY) := [x]
+        vfs := [v::F for v in vars]
+        dvs := [realLiouvillian(D(kf1, v), x) for v in vars]
+        kernel(opint, concat(vfs, dvs))::F
+
+    k_to_liou1(k, x) ==
+        op := operator k
+        args := [realLiouvillian(a, x) for a in argument(k)]
+        empty?(args) => k::F
+        has?(op, 'prim) and not(is?(op, '%iint)) => do_int1(op, args, x)
+        nm := name(op)
+        nm = 'Gamma2 and D(first(args), x) = 0 => do_int1(op, args, x)
+        nm = 'polylog and
+          (iu := retractIfCan(first(args))@Union(Integer, "failed"))
+                 case Integer =>
+            (i := iu::Integer) > 0 and i < 10 => do_int(op, args)
+            k2Elem0(k, op, args)
+        (nm = 'ellipticE2 or nm = 'ellipticF) and D(args(2), x) = 0 =>
+            do_int1(op, args, x)
+        nm = 'ellipticPi and D(args(2), x) = 0 and D(args(3), x) = 0 =>
+            do_int1(op, args, x)
         k2Elem0(k, op, args)
 
     k2Elem(k, l) ==
