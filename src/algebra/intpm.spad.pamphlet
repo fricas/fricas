@@ -223,14 +223,20 @@ PatternMatchIntegration(R, F): Exports == Implementation where
                [a, d, leadingCoefficient p]
              empty()
 
+           pmd := new pm
+           pme := new pm
+           pmf := new pm
+           opt_d := optional(pmd::F)
+           opt_e := optional(pme::F)
+
 -- matches the integral to a result of the form d * Si(u) or d * Ci(u)
 -- returns [case, u, d]
            matchsici(f, x) ==
              res0 := new()$RES
              b := pmb::F
              t := tan(a := pma::F)
-             patsi := c * t / (patden := b + b * t^2)
-             patci := (c - c * t^2) / patden
+             patsi := (c*t + opt_d) / (patden := b + opt_e*t^2)
+             patci := (c - (pmf::F)*t^2) / patden
              patci0 := c / patden
              ci0?:Boolean
              (ci? := failed?(res := patternMatch(f, convert(patsi)@PAT, res0)))
@@ -238,14 +244,23 @@ PatternMatchIntegration(R, F): Exports == Implementation where
                  and failed?(res := patternMatch(f,convert(patci0)@PAT,res0)) =>
                    [NONE, 0, 0]
              l := mkalist res
-             (b := l.pmb) ~= 2 * (a := l.pma) => [NONE, 0, 0]
-             db := differentiate(b, x)
-             d := (cc := l.pmc) / db
+             a_val := l.pma
+             na := (2::F)*a_val
+             (dna := differentiate(na, x)) = 0 => [NONE, 0, 0]
+             ta := tan(a_val)
+             nden := (na*(ta^2 + 1))
+             d :=
+                 ci? =>
+                     ci0? =>
+                         f*nden/dna
+                     f*nden/((1 - ta^2)*dna)
+                 f*nden/(ta*dna)
              zero? differentiate(d, x) =>
-               ci? =>
-                  ci0? => [CI0, b, d / (2::F)]
-                  [CI, b, d]
-               [SI, b, d / (2::F)]
+                 ci? =>
+                     ci0? =>
+                         [CI0, na, d/(2::F)]
+                     [CI, na, d]
+                 [SI, na, d/(2::F)]
              [NONE, 0, 0]
 
 -- returns a simplified sqrt(y)
