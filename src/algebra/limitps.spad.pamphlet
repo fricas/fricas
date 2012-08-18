@@ -110,6 +110,8 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
 
     finiteValueAtInfinity?: Kernel FE -> Boolean
     finiteValueAtInfinity? ker ==
+      -- List of special functions with some finite values
+      -- at plus and minus infinity
       is?(ker, 'erf) => true
       is?(ker, 'sech) => true
       is?(ker, 'csch) => true
@@ -123,13 +125,52 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
       is?(ker, 'acoth) => true
       is?(ker, 'fresnelS) => true
       is?(ker, 'fresnelC) => true
+      is?(ker, 'Si) => true
+      is?(ker, 'airyAi) => true
+      false
+
+    finiteValueAtPlusInfinity?: Kernel FE -> Boolean
+    finiteValueAtPlusInfinity? ker ==
+      -- List of special functions with some finite value
+      -- at at least plus infinity
+      finiteValueAtInfinity? ker => true
+      is?(ker, 'Ci) => true
+      is?(ker, 'airyAiPrime) => true
+      false
+
+    finiteValueAtMinusInfinity?: Kernel FE -> Boolean
+    finiteValueAtMinusInfinity? ker ==
+      -- List of special functions with some finite value
+      -- at at least minus infinity
+      finiteValueAtInfinity? ker => true
+      is?(ker, 'airyBi) => true
       false
 
     knownValueAtInfinity?: Kernel FE -> Boolean
     knownValueAtInfinity? ker ==
+      -- List of special functions with known finite values
+      -- at plus and minus infinity
       is?(ker, 'exp) => true
       is?(ker, 'sinh) => true
       is?(ker, 'cosh) => true
+      is?(ker, 'Shi) => true
+      false
+
+    knownValueAtPlusInfinity?: Kernel FE -> Boolean
+    knownValueAtPlusInfinity? ker ==
+      -- List of special functions with known finite value
+      -- at at least plus infinity
+      knownValueAtInfinity? ker => true
+      is?(ker, 'airyBi) => true
+      is?(ker, 'airyBiPrime) => true
+      is?(ker, 'Chi) => true
+      false
+
+    knownValueAtMinusInfinity?: Kernel FE -> Boolean
+    knownValueAtMinusInfinity? ker ==
+      -- List of special functions with known finite value
+      -- at at least minus infinity
+      knownValueAtInfinity? ker => true
       false
 
     leftOrRight: (FE,SY,FE) -> SingleInteger
@@ -241,7 +282,7 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
          "failed"
       -- case where 'lim' is plus infinity
       inf = 1 =>
-        finiteValueAtInfinity? ker =>
+        finiteValueAtPlusInfinity? ker =>
           val : FE :=
             is?(ker, 'erf) => 1
             is?(ker, 'sech) => 0
@@ -256,13 +297,17 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
             is?(ker, 'acoth) => 0
             is?(ker, 'fresnelS) => sqrt(pi()/(8 :: FE))
             is?(ker, 'fresnelC) => sqrt(pi()/(8 :: FE))
-            error "finiteValueAtInfinity? true, but unknown value at infinity"
+            is?(ker, 'Si) => pi()/(2 :: FE)
+            is?(ker, 'Ci) => 0
+            is?(ker, 'airyAi) => 0
+            is?(ker, 'airyAiPrime) => 0
+            error "Finite but unknown value at infinity"
           val :: OFE
-        knownValueAtInfinity? ker =>
-          lim -- limit(exp, cosh, sinh ,x=inf) = inf
+        knownValueAtPlusInfinity? ker =>
+          lim
         "failed"
       -- case where 'lim' is minus infinity
-      finiteValueAtInfinity? ker =>
+      finiteValueAtMinusInfinity? ker =>
         val : FE :=
           is?(ker, 'erf) => -1
           is?(ker, 'sech) => 0
@@ -277,13 +322,16 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
           is?(ker, 'acoth) => 0
           is?(ker, 'fresnelS) => -sqrt(pi()/(8 :: FE))
           is?(ker, 'fresnelC) => -sqrt(pi()/(8 :: FE))
-          error "finiteValueAtInfinity? true, but unknown value at -infinity"
+          is?(ker, 'Si) => -pi()/(2 :: FE)
+          is?(ker, 'airyAi) => 0
+          is?(ker, 'airyBi) => 0
+          error "Finite but unknown value at minus infinity"
         val :: OFE
-      knownValueAtInfinity? ker =>
+      knownValueAtMinusInfinity? ker =>
         is?(ker, 'exp) => (0@FE) :: OFE
         is?(ker, 'sinh) => lim
         is?(ker, 'cosh) => plusInfinity()
-        "failed"
+        error "knownValueAtMinusInfinity? true but value unknown"
       "failed"
 
     logOnlyLimit: (FE,SY) -> RESULT
