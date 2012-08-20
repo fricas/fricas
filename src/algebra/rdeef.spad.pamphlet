@@ -205,6 +205,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
                                                              K, R, P, F)
 
     ALGOP := '%alg
+    PRIM := 'prim
 
     RF2GP:     RF -> GP
     makeData  : (F, SE, K)    -> Data
@@ -226,6 +227,9 @@ ElementaryRischDE(R, F): Exports == Implementation where
     exppolyint: (UP, (Z, F) -> PSOL) -> UUP
     RRF2F     : RRF -> F
     logdiff   : (List K, List K) -> List K
+
+    prim?(k : K, x : SE) : Boolean ==
+        is?(k, 'log) or has?(operator k, PRIM)
 
     tab:AssociationList(F, Data) := table()
 
@@ -259,7 +263,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       freeOf?(y := g / nfp, x) => [y, g, true]
       vl := varselect(union(kernels nfp, kernels g), x)
       symbolIfCan(k := kmax vl) case SE => normalise0(n, f, g, x)
-      is?(k, 'log) or is?(k, 'exp) =>
+      prim?(k, x) or is?(k, 'exp) =>
         normalise(n, nfp, f, g, x, k, limitedint, extendedint)
       has?(operator k, ALGOP) =>
         rischDEalg(n, nfp, f, g, k, vl, x, limitedint, extendedint)
@@ -302,7 +306,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       twr := union(logdiff(tower f, empty()), logdiff(tower g, empty()))
       ftwr := union(tower f, tower g)
       ans1 :=
-        is?(k, 'log) =>
+        prim?(k, x) =>
           rischDElog(twr, newf, newg, x, k,
                 z1 +-> differentiate(z1, (z2 : F) : F +-> differentiate(z2, x),
                              differentiate(k::F, x)::UP),
