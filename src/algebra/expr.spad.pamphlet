@@ -106,6 +106,7 @@ Expression(R : Comparable): Exports == Implementation where
             commonk0  : (List K, List K) -> List K
             toprat    : % -> %
             algkernels: List K -> List K
+            algtower  : % -> List K
             evl       : (MP, K, SparseUnivariatePolynomial %) -> Fraction MP
             evl0      : (MP, K) -> SparseUnivariatePolynomial Fraction MP
 
@@ -138,9 +139,9 @@ Expression(R : Comparable): Exports == Implementation where
                     not(#args = 2) => error "Too many arguments to ^"
                     number?(args.1) =>
                        reduc((args.1) ^$Rep n,
-                             algkernels kernels (args.1))^(args.2)
+                             algtower(args.1))^(args.2)
                     (first args)^(n*second(args))
-                reduc(x ^$Rep n, algkernels k)
+                reduc(x ^$Rep n, algtower(x))
 
             x:% ^ n:NonNegativeInteger ==
                 n = 0 => 1$%
@@ -177,11 +178,10 @@ Expression(R : Comparable): Exports == Implementation where
                 ed := poly_to_MP(denom(pq))
                 [en, ed]$EREP pretend %
 
-            reduce x         == reduc(x, algkernels kernels x)
-            commonk(x, y)    == commonk0(algkernels kernels x,
-                                         algkernels kernels y)
+            reduce x         == reduc(x, algtower x)
+            commonk(x, y)    == commonk0(algtower x, algtower y)
             algkernels l     == select!(x +-> has?(operator x, ALGOP), l)
-            toprat f == ratDenom(f, algkernels kernels f
+            toprat f == ratDenom(f, algtower f
                                 )$AlgebraicManipulations(R, %)
 
             alg_ker_set(x : %) : Set K ==
@@ -199,7 +199,7 @@ Expression(R : Comparable): Exports == Implementation where
                     res := union(res, ka)
                 res
 
-            algtower(x : %) : List K == sort! parts alg_ker_set(x)
+            algtower(x : %) : List K == reverse!(sort! parts alg_ker_set(x))
 
             simple_root(r : K) : Boolean ==
                 is?(r, 'nthRoot) =>
@@ -220,7 +220,7 @@ Expression(R : Comparable): Exports == Implementation where
                  c0 := leadingCoefficient(reductum(dp))
                  n1 := dn*(c0*n0 - monomial(1, r, 1)$MP*c1*n0)
                  d1 := c0*c0*dn - an*c1*c1
-                 reduc(n1 /$Rep d1, algkernels kernels x)
+                 reduc(n1 /$Rep d1, [r])
 
             DEFVAR(algreduc_flag$Lisp, false$Boolean)$Lisp
 
@@ -235,7 +235,7 @@ Expression(R : Comparable): Exports == Implementation where
             algreduc(x, ckl) ==
                 x1 := reduc(x, ckl)
                 not(getSimplifyDenomsFlag()) => x1
-                akl := reverse(algtower (1$MP /$Rep denom x1))
+                akl := algtower(1$MP /$Rep denom x1)
                 #akl = 0 => x1
                 if #akl = 1 then
                     r := akl.1
@@ -250,8 +250,7 @@ Expression(R : Comparable): Exports == Implementation where
                 reduc(x1, akl)
 
             x:MP / y:MP ==
-                reduc(x /$Rep y, commonk0(algkernels variables x,
-                                          algkernels variables y))
+                reduc(x /$Rep y, commonk(x /$Rep 1$MP, y /$Rep 1$MP))
 
             -- since we use the reduction from FRAC SMP which asssumes
             -- that the variables are independent, we must remove algebraic
