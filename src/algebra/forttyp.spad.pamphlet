@@ -89,47 +89,40 @@ FortranScalarType() : exports == implementation where
       false
 
     coerce(t:%):OutputForm ==
-      t case RealThing => coerce(REAL)$Symbol
-      t case IntegerThing => coerce(INTEGER)$Symbol
-      t case ComplexThing => coerce(COMPLEX)$Symbol
-      t case CharacterThing => coerce(CHARACTER)$Symbol
+      t case RealThing => coerce('REAL)$Symbol
+      t case IntegerThing => coerce('INTEGER)$Symbol
+      t case ComplexThing => coerce('COMPLEX)$Symbol
+      t case CharacterThing => coerce('CHARACTER)$Symbol
       t case DoublePrecisionThing => coerce(upperDoubleSymbol)$Symbol
       t case DoubleComplexThing => coerce(upperDoubleComplexSymbol)$Symbol
-      coerce(LOGICAL)$Symbol
+      coerce('LOGICAL)$Symbol
 
-    coerce(t:%):SExpression ==
-      t case RealThing => convert(real::Symbol)@SExpression
-      t case IntegerThing => convert(integer::Symbol)@SExpression
-      t case ComplexThing => convert(complex::Symbol)@SExpression
-      t case CharacterThing => convert(character::Symbol)@SExpression
-      t case DoublePrecisionThing => convert(doubleSymbol)@SExpression
-      t case DoubleComplexThing => convert(doubleComplexSymbol)@SExpression
-      convert(logical::Symbol)@SExpression
+    coerce(t:%):SExpression == convert(coerce(t)@Symbol)@SExpression
 
     coerce(t:%):Symbol ==
-      t case RealThing => real::Symbol
-      t case IntegerThing => integer::Symbol
-      t case ComplexThing => complex::Symbol
-      t case CharacterThing => character::Symbol
+      t case RealThing => 'real
+      t case IntegerThing => 'integer::Symbol
+      t case ComplexThing => 'complex::Symbol
+      t case CharacterThing => 'character::Symbol
       t case DoublePrecisionThing => doubleSymbol
       t case DoublePrecisionThing => doubleComplexSymbol
-      logical::Symbol
+      'logical
 
     coerce(s:Symbol):% ==
-      s = real => ["real"]$Rep
-      s = REAL => ["real"]$Rep
-      s = integer => ["integer"]$Rep
-      s = INTEGER => ["integer"]$Rep
-      s = complex => ["complex"]$Rep
-      s = COMPLEX => ["complex"]$Rep
-      s = character => ["character"]$Rep
-      s = CHARACTER => ["character"]$Rep
-      s = logical => ["logical"]$Rep
-      s = LOGICAL => ["logical"]$Rep
+      s = 'real => ["real"]$Rep
+      s = 'REAL => ["real"]$Rep
+      s = 'integer => ["integer"]$Rep
+      s = 'INTEGER => ["integer"]$Rep
+      s = 'complex => ["complex"]$Rep
+      s = 'COMPLEX => ["complex"]$Rep
+      s = 'character => ["character"]$Rep
+      s = 'CHARACTER => ["character"]$Rep
+      s = 'logical => ["logical"]$Rep
+      s = 'LOGICAL => ["logical"]$Rep
       s = doubleSymbol => ["double precision"]$Rep
       s = upperDoubleSymbol => ["double precision"]$Rep
       s = doubleComplexSymbol => ["double complex"]$Rep
-      s = upperDoubleCOmplexSymbol => ["double complex"]$Rep
+      s = upperDoubleComplexSymbol => ["double complex"]$Rep
 
     coerce(s:String):% ==
       s = "real" => ["real"]$Rep
@@ -401,7 +394,7 @@ SymbolTable() : exports == implementation where
         dims  : L Polynomial Integer := dimensionsOf uType
         lDims : L SEX := [convert(convert(v)@InputForm)@SEX for v in dims]
         lType : SEX := if sType case void
-          then convert(void::Symbol)@SEX
+          then convert('void)@SEX
           else coerce(sType.fst)$FortranScalarType
         tl := updateList(lType,convert(u)@SEX,convert(lDims)@SEX,tl)
       tl
@@ -550,7 +543,7 @@ TheSymbolTable() : Exports == Implementation where
 
     -- These are the global variables we want to update:
     theSymbolTable : % := empty()$Rep
-    currentSubProgramName : Symbol := MAIN
+    currentSubProgramName : Symbol := 'MAIN
 
     newEntry():Entry ==
       construct(empty()$SymbolTable,["void"]$FSTU,[]::List(Symbol))$Entry
@@ -593,7 +586,7 @@ TheSymbolTable() : Exports == Implementation where
     -- If we want to support more complex languages then we should keep
     -- a list of subprograms / blocks - but for the moment lets stick with
     -- Fortran.
-      currentSubProgramName := MAIN
+      currentSubProgramName := 'MAIN
 
     newSubProgram(u:Symbol):Void ==
       setelt(theSymbolTable,u,newEntry())$Rep

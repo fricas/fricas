@@ -533,13 +533,13 @@ OutputForm(): SetCategory with
 
         matrix ll ==
             lv : List % := [LIST2VEC$Lisp l for l in ll]
-            CONS(eform MATRIX, LIST2VEC$Lisp lv)$Lisp
+            CONS(eform 'MATRIX, LIST2VEC$Lisp lv)$Lisp
 
-        pile l              == cons(eform SC, l)
-        commaSeparate l     == cons(eform AGGLST,  l)
-        semicolonSeparate l == cons(eform AGGSET,  l)
+        pile l              == cons(eform 'SC, l)
+        commaSeparate l     == cons(eform 'AGGLST,  l)
+        semicolonSeparate l == cons(eform 'AGGSET,  l)
         blankSeparate l     ==
-           c:=eform CONCATB
+           c := eform 'CONCATB
            l1: List % := []
            for u in reverse l repeat
                if EQCAR(u,c)$Lisp
@@ -547,30 +547,30 @@ OutputForm(): SetCategory with
                   else l1:=[u,:l1]
            cons(c, l1)
 
-        brace a        == convert [eform BRACE, a]
+        brace a        == convert [eform 'BRACE, a]
         brace l        == brace commaSeparate l
-        bracket a      == convert [eform BRACKET, a]
+        bracket a      == convert [eform 'BRACKET, a]
         bracket l      == bracket commaSeparate l
-        paren a        == convert [eform PAREN, a]
+        paren a        == convert [eform 'PAREN, a]
         paren l        == paren commaSeparate l
 
-        sub(a, b)  == convert [eform SUB, a, b]
-        super(a, b) == convert [eform SUPERSUB, a, sform " ", b]
-        presub(a, b) == convert [eform SUPERSUB, a, sform " ", sform " ",_
+        sub(a, b)  == convert [eform 'SUB, a, b]
+        super(a, b) == convert [eform 'SUPERSUB, a, sform " ", b]
+        presub(a, b) == convert [eform 'SUPERSUB, a, sform " ", sform " ",_
                                   sform " ", b]
-        presuper(a, b) == convert [eform SUPERSUB, a, sform " ", sform " ", b]
+        presuper(a, b) == convert [eform 'SUPERSUB, a, sform " ", sform " ", b]
         scripts(a, l) ==
             null l => a
             null rest l => sub(a, first l)
-            cons(eform SUPERSUB, cons(a, l))
+            cons(eform 'SUPERSUB, cons(a, l))
         supersub(a, l) ==
             if odd?(#l) then l := append(l, [empty()])
-            cons(eform ALTSUPERSUB, cons(a, l))
+            cons(eform 'ALTSUPERSUB, cons(a, l))
 
-        hconcat(a, b)  == convert [eform CONCAT, a, b]
-        hconcat l     == cons(eform CONCAT, l)
-        vconcat(a, b)  == convert [eform VCONCAT, a, b]
-        vconcat l     == cons(eform VCONCAT, l)
+        hconcat(a, b)  == convert [eform 'CONCAT, a, b]
+        hconcat l     == cons(eform 'CONCAT, l)
+        vconcat(a, b)  == convert [eform 'VCONCAT, a, b]
+        vconcat l     == cons(eform 'VCONCAT, l)
 
         a ~= b      == convert [eform '_~_=,    a, b]
         a < b       == convert [eform '_<,     a, b]
@@ -590,11 +590,11 @@ OutputForm(): SetCategory with
         a and b     == convert [eform '_and,   a, b]
         a or b      == convert [eform '_or,    a, b]
         not a       == convert [eform '_not,   a]
-        SEGMENT(a, b) == convert [eform SEGMENT, a, b]
-        SEGMENT(a)  == convert [eform SEGMENT, a]
-        binomial(a, b) == convert [eform BINOMIAL, a, b]
+        SEGMENT(a, b) == convert [eform 'SEGMENT, a, b]
+        SEGMENT(a)  == convert [eform 'SEGMENT, a]
+        binomial(a, b) == convert [eform 'BINOMIAL, a, b]
 
-        empty() == convert [eform NOTHING]
+        empty() == convert [eform 'NOTHING]
 
         infix? a ==
             e:% :=
@@ -619,26 +619,26 @@ OutputForm(): SetCategory with
         postfix(a, b) ==
             hconcat(b, a)
 
-        add_prime(a : %, s : %) : % == convert [eform PRIME, a, s]
-        string a   == convert [eform STRING,  a]
-        quote  a   == convert [eform QUOTE,   a]
-        overbar a  == convert [eform OVERBAR, a]
+        add_prime(a : %, s : %) : % == convert [eform 'PRIME, a, s]
+        string a   == convert [eform 'STRING,  a]
+        quote  a   == convert [eform 'QUOTE,   a]
+        overbar a  == convert [eform 'OVERBAR, a]
         dot a      == super(a, sform ".")
         prime a    == prime(a, 1)
         dot(a,nn)   == (s := new(nn, char "."); super(a, sform s))
         prime(a, nn) == (s := new(nn, char ",");  add_prime(a, sform s))
 
-        overlabel(a,b) == convert [eform OVERLABEL, a, b]
-        box a      == convert [eform BOX,     a]
-        zag(a,b)   == convert [eform ZAG,     a, b]
-        root a     == convert [eform ROOT,    a]
-        root(a,b)  == convert [eform ROOT,    a, b]
-        over(a,b)  == convert [eform OVER,    a, b]
-        slash(a,b) == convert [eform SLASH,   a, b]
-        assign(a,b)== convert [eform LET,     a, b]
+        overlabel(a, b) == convert [eform 'OVERLABEL, a, b]
+        box a      == convert [eform 'BOX,     a]
+        zag(a, b)  == convert [eform 'ZAG,     a, b]
+        root a     == convert [eform 'ROOT,    a]
+        root(a, b) == convert [eform 'ROOT,    a, b]
+        over(a, b) == convert [eform 'OVER,    a, b]
+        slash(a, b) == convert [eform 'SLASH,   a, b]
+        assign(a, b) == convert [eform 'LET,     a, b]
 
-        label(a,b) == convert [eform EQUATNUM, a, b]
-        rarrow(a,b)== convert [eform TAG, a, b]
+        label(a, b) == convert [eform 'EQUATNUM, a, b]
+        rarrow(a, b)== convert [eform 'TAG, a, b]
         differentiate(a, nn)==
             zero? nn => a
             nn < 4 => prime(a, nn)
@@ -646,16 +646,16 @@ OutputForm(): SetCategory with
             s := lowerCase(r::String)
             add_prime(a, paren sform s)
 
-        sum(a)     == convert [eform SIGMA,  empty(), a]
-        sum(a,b)   == convert [eform SIGMA,  b, a]
-        sum(a,b,c) == convert [eform SIGMA2, b, c, a]
-        prod(a)    == convert [eform PI,     empty(), a]
-        prod(a,b)  == convert [eform PI,     b, a]
-        prod(a,b,c)== convert [eform PI2,    b, c, a]
-        int(a)     == convert [eform INTSIGN,empty(), empty(), a]
-        int(a,b)   == convert [eform INTSIGN,b, empty(), a]
-        int(a,b,c) == convert [eform INTSIGN,b, c, a]
-        tensor(a,b) == convert [eform TENSOR,a,b]
+        sum(a)     == convert [eform 'SIGMA,  empty(), a]
+        sum(a, b)  == convert [eform 'SIGMA,  b, a]
+        sum(a, b, c) == convert [eform 'SIGMA2, b, c, a]
+        prod(a)    == convert [eform 'PI,     empty(), a]
+        prod(a, b) == convert [eform 'PI,     b, a]
+        prod(a, b, c) == convert [eform 'PI2,    b, c, a]
+        int(a)     == convert [eform 'INTSIGN, empty(), empty(), a]
+        int(a, b)   == convert [eform 'INTSIGN, b, empty(), a]
+        int(a, b, c) == convert [eform 'INTSIGN, b, c, a]
+        tensor(a, b) == convert [eform 'TENSOR, a, b]
 
 @
 
