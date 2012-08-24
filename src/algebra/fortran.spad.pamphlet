@@ -395,7 +395,7 @@ FortranCode(): public == private where
       not(operation(elseBranch) case Null) =>
         operation(elseBranch) case Conditional =>
           APPEND(expr,getElseIf elseBranch)$Lisp
-        expr := APPEND(expr, getStatement(ELSE::O,NIL$Lisp)$Lisp)$Lisp
+        expr := APPEND(expr, getStatement('ELSE::O, NIL$Lisp)$Lisp)$Lisp
         expr := APPEND(expr, getBody elseBranch)$Lisp
       expr
 
@@ -448,9 +448,9 @@ FortranCode(): public == private where
       if not(operation(elseBranch) case Null) then
         operation(elseBranch) case Conditional =>
           expr := APPEND(expr,getElseIf elseBranch)$Lisp
-        expr := APPEND(expr,getStatement(ELSE::O,NIL$Lisp)$Lisp,
+        expr := APPEND(expr,getStatement('ELSE::O, NIL$Lisp)$Lisp,
                        getBody elseBranch)$Lisp
-      APPEND(expr,getStatement(ENDIF::O,NIL$Lisp)$Lisp)$Lisp
+      APPEND(expr,getStatement('ENDIF::O, NIL$Lisp)$Lisp)$Lisp
 
     getComment(rec:COMMENT):SEX ==
       convert([convert(concat("C     ",c)$String)@SEX for c in rec])@SEX
@@ -763,7 +763,7 @@ FortranProgram(name,returnType,arguments,symbols): Exports == Implement where
       fortFormatIntrinsics(intrinsics)$Lisp
       clearTheSymbolTable(tempName)
       for expr in body repeat displayLines1(expr)$Lisp
-      dispStatement(END::OutputForm)$Lisp
+      dispStatement('END::OutputForm)$Lisp
       void()$Void
 
     mkString(l:List Symbol):String ==
@@ -961,7 +961,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
     -- the first argument must be a symbol, which is either i,j or k
     -- to specify the direction in which the concatenation is to take place
     matrixConcat3D(dir : Symbol,mat1 : %,mat2 : %) : % ==
-      not ((dir = (i::Symbol)) or (dir = (j::Symbol)) or (dir = (k::Symbol)))_
+      not ((dir = 'i) or (dir = 'j) or (dir = 'k))_
        => error "the axis of concatenation must be i,j or k"
       mat1Dim := matrixDimensions(mat1)
       mat2Dim := matrixDimensions(mat2)
@@ -975,7 +975,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
       matRep2 : (PA PA PA R) := copy(mat2 :: (PA PA PA R))$(PA PA PA R)
       retVal : %
 
-      if (dir = (i::Symbol)) then
+      if (dir = 'i) then
         -- j,k dimensions must agree
         if (not ((jDim1 = jDim2) and (kDim1=kDim2)))
         then
@@ -983,7 +983,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
         else
           retVal := (coerce(concat(matRep1,matRep2)$(PA PA PA R))$%)@%
 
-      if (dir = (j::Symbol)) then
+      if (dir = 'j) then
         -- i,k dimensions must agree
         if (not ((iDim1 = iDim2) and (kDim1=kDim2)))
         then
@@ -994,7 +994,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
              ,elt(matRep2,i)$(PA PA PA R))$(PA PA R))@(PA PA R))$(PA PA PA R)
           retVal := (coerce(matRep1)$%)@%
 
-      if (dir = (k::Symbol)) then
+      if (dir = 'k) then
         temp : (PA PA R)
         -- i,j dimensions must agree
         if (not ((iDim1 = iDim2) and (jDim1=jDim2)))
@@ -1253,7 +1253,7 @@ Switch():public == private where
 
     -- Public function definitions
 
-    nullOp : BasicOperator := operator NULL
+    nullOp : BasicOperator := operator 'NULL
 
     coerce(s:%):OutputForm ==
       rat := (s . op)::OutputForm
@@ -1563,9 +1563,10 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
 
     -- The standard FORTRAN-77 intrinsic functions, plus nthRoot which
     -- can be translated into an arithmetic expression:
-    f77Functions : L S := [abs,sqrt,exp,log,log10,sin,cos,tan,asin,acos,
-                           atan,sinh,cosh,tanh,nthRoot,%power]
-    nagFunctions : L S := [pi, X01AAF]
+    f77Functions : L S := ['abs, 'sqrt, 'exp, 'log, 'log10, 'sin, 'cos,
+                           'tan, 'asin, 'acos, 'atan, 'sinh, 'cosh, 'tanh,
+                             'nthRoot, '%power]
+    nagFunctions : L S := ['pi, 'X01AAF]
     useNagFunctionsFlag : Boolean := true
 
     -- Local functions to check for "unassigned" symbols etc.
@@ -1639,7 +1640,7 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
       useNagFunctionsFlag =>
         import Pi
         import PiCoercions(R)
-        piOp : BasicOperator := operator X01AAF
+        piOp : BasicOperator := operator 'X01AAF
         piSub : Equation EXPR R :=
           equation(pi()$Pi::EXPR(R),kernel(piOp,0::EXPR(R))$EXPR(R))
         subst(u,piSub) pretend %
@@ -1700,9 +1701,9 @@ FortranExpression(basicSymbols,subscriptedSymbols,R):
       old
 
     log10(x:%):% ==
-      kernel(operator log10,x)
+      kernel(operator 'log10, x)
 
-    pi():% == kernel(operator X01AAF,0)
+    pi():% == kernel(operator 'X01AAF, 0)
 
     coerce(u:%):EXPR R == u pretend EXPR(R)
 

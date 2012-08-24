@@ -1869,7 +1869,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             le := r.Entries
             one?(#le) => [first le, [r.Indices, [1$D]]]
             g : D
-            if GCDmode = iterated then
+            if GCDmode = 'iterated then
                 g := iteratedGCD le
             else
                 g := randomGCD le
@@ -2076,8 +2076,6 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
   OUT  ==> OutputForm
   JBC  ==> JetBundleCategory
 
-  Indep    ==> "Indep"::Sy
-
   Cat ==> JBC with
 
     coerce : Sy -> %
@@ -2112,9 +2110,9 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
 
     setNotation(s : Sy) : Sy ==
         print("only repeated index notation possible")$OUT
-        Repeated
+        'Repeated
 
-    getNotation() : Sy == Repeated
+    getNotation() : Sy == 'Repeated
 
     multiIndex(jv : %) : L NNI == copy rest rest jv::Rep
 
@@ -2122,10 +2120,10 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
 
     type(jv : %) : Sy ==
         t := first jv
-        zero? t => Const
-        one? t => Indep
-        t = 2 => Dep
-        Deriv
+        zero? t => 'Const
+        one? t => 'Indep
+        t = 2 => 'Dep
+        'Deriv
 
     CheckZeroIndex(il : L NNI) : B ==
         -- Local function; checks, whether multi-index is zero.
@@ -2177,10 +2175,10 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
     -- ----------- --
 
     name(jv : %) : Sy ==
-        (jt := type(jv)) = Const => "1"::Sy
+        (jt := type(jv)) = 'Const => "1"::Sy
         i := index jv
-        jt = Indep => qelt(nameX, i)
-        jt = Dep => qelt(nameU, i)
+        jt = 'Indep => qelt(nameX, i)
+        jt = 'Dep => qelt(nameU, i)
         mu := repeatedIndex jv
         res := qelt(nameU, i)
         lower :L OUT := empty
@@ -2198,7 +2196,7 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
     coerce(jv : %) : EI ==
         -- Name of operator must be unique and the same as jv::Sy
         -- to allow to differentiate and substitute in EI.
-        type(jv) = Const => 1
+        type(jv) = 'Const => 1
         opname : Sy := name jv
         jop := operator(opname)$BOP
         display(jop, opdisp)
@@ -5133,9 +5131,9 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
     setNotation(s : Sy) : Sy ==
         print("only repeated index notation possible")$OUT
-        Repeated
+        'Repeated
 
-    getNotation() : Sy == Repeated
+    getNotation() : Sy == 'Repeated
 
     multiIndex(jv : %) : L NNI == multiIndex(jv)$Rep
 
@@ -5314,7 +5312,7 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
         for Ke in LKernels  for Op in LOps repeat
             has?(Op, "%jet"::Sy)$BOP =>
                 typ := property(Op, "%jet"::Sy)::None pretend Sy
-                typ = Deriv =>
+                typ = 'Deriv =>
                     error "function contains illegal jet variables in transform"
                 ind : I := retract second argument Ke
                 JV := cons(X(ind::PI)$JB2::EI, JV)
