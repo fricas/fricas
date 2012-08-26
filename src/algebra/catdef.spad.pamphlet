@@ -890,7 +890,7 @@ FullyLinearlyExplicitRingOver(R:Ring):Category ==
 ++ However, if such a \spadfun{factor} operation exist, factorization will be
 ++ unique up to order and units.
 
-GcdDomain(): Category == IntegralDomain with
+GcdDomain(): Category == Join(IntegralDomain, LeftOreRing) with
     --operations
       gcd: (%,%) -> %
             ++ gcd(x,y) returns the greatest common divisor of x and y.
@@ -935,6 +935,12 @@ GcdDomain(): Category == IntegralDomain with
            unitCanonical(c1 * primitivePart(((c2*p) exquo leadingCoefficient p)::SUP %))
         zero? e1 => p1
         monomial(1,e1)*p1
+
+      lcmCoef(c1, c2) ==
+          g := gcd(c1, c2)
+          cc1 := (c2 exquo g)::% 
+          cc2 := (c1 exquo g)::%
+          [cc1*c1, cc1, cc2]
 
 @
 
@@ -1030,6 +1036,24 @@ LeftModule(R : SemiRng) : Category == AbelianSemiGroup with
                           ++ by the ring element r.
 
 @
+
+<<category LORER LeftOreRing>>=
+
+)abbrev category LORER LeftOreRing
+
+++ Description:
+++   This is category of left ore rings, that is noncommutaive
+++   rings without zero divisors where we can compute least left
+++   common multiple
+
+LeftOreRing : Category == EntireRing with
+   lcmCoef : (%, %) -> Record(llcm_res : %, coeff1 : %, coeff2 : %)
+     ++ lcmCoef(c1, c2) computes (llcm_res, coeff1, coeff2) such that
+     ++ llcm_res is least left common multiple of c1 and c2
+     ++ and llcm_res = coeff1*c1 = coeff2*c2
+
+@
+
 \section{category LINEXP LinearlyExplicitRingOver}
 <<category LINEXP LinearlyExplicitRingOver>>=
 )abbrev category LINEXP LinearlyExplicitRingOver
