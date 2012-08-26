@@ -714,7 +714,7 @@ application2String(op,argl, linkInfo) ==
       concat(application2String(f, argl, linkInfo), '"$", _
              form2String1 t)
   null argl =>
-    res1 := 
+    res1 :=
        (op' := isInternalFunctionName(op)) => op'
        app2StringWrap(formWrapId op, linkInfo)
     $from_unparse => concat(res1,'"()")
