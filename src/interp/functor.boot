@@ -407,7 +407,7 @@ InvestigateConditions catvecListMaker ==
               --Rather like eval, but quotes parameters first
     for u in CADR principal'.4 repeat
       if not TruthP(cond:=CADR u) then
-        new := ['CATEGORY, 'domain, 
+        new := ['CATEGORY, 'domain,
                 ['IF, cond, ['ATTRIBUTE, first u], 'noBranch]]
         $principal is ['Join,:l] =>
           not member(new,l) =>
