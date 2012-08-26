@@ -36,7 +36,6 @@ DEFPARAMETER($newCompCompare, false)
 --% FUNCTIONS WHICH MUNCH ON == STATEMENTS
 
 compDefine(form,m,e) ==
-  $macroIfTrue: local := nil
   result:= compDefine1(form,m,e)
   result
 
@@ -898,9 +897,6 @@ compile u ==
        then optimizedBody
        else putInLocalDomainReferences optimizedBody
   $doNotCompileJustPrint=true => (PRETTYPRINT stuffToCompile; op')
-  $macroIfTrue =>
-      BREAK()
-      constructMacro stuffToCompile
   result:= spadCompileOrSetq stuffToCompile
   functionStats:=[0,elapsedTime()]
   $functionStats:= addStats($functionStats,functionStats)

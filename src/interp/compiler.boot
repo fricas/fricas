@@ -742,7 +742,6 @@ compVector(l,m is ["Vector",mUnder],e) ==
 
 --% MACROS
 compMacro(form,m,e) ==
-  $macroIfTrue: local:= true
   ["MDEF",lhs,signature,specialCases,rhs]:= form
   prhs :=
     rhs is ['CATEGORY,:.] => ['"-- the constructor category"]
