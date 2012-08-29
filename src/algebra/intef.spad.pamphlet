@@ -100,6 +100,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
     unknownint  : (F, SE) -> IR
     unkextint   : (F, SE, F) -> U2
     unklimint   : (F, SE, List F) -> U3
+    diffint     : (F, SE, K) -> IR
     tryChangeVar: (F, K, SE) -> Union(IR, "failed")
     droponex    : (F, F, K, F) -> Union(F, "failed")
 
@@ -120,12 +121,6 @@ ElementaryIntegration(R, F): Exports == Implementation where
 
 -- tries various tricks since the integrand contains something not elementary
     unknownint(f, x) ==
-      ((r := retractIfCan(f)@Union(K, "failed")) case K) and
-        is?(k := r::K, OPDIFF) and
-          ((ka:=retractIfCan(a:=second(l:=argument k))@Union(K,"failed"))case K)
-            and ((z := retractIfCan(zz := third l)@Union(SE, "failed")) case SE)
-              and (z::SE = x)
-                and ((u := droponex(first l, a, ka, zz)) case F) => u::F::IR
       (da := differentiate(a := denom(f)::F, x)) ~= 0 and
         zero? differentiate(c := numer(f)::F / da, x) => (c * log a)::IR
       mkAnswer(0, empty(), [[f, x::F]])
@@ -148,6 +143,45 @@ ElementaryIntegration(R, F): Exports == Implementation where
       zero?(g' := differentiate(g, x)) => "failed"
       zero? differentiate(c := f / g', x) => [0, c]
       "failed"
+
+    LOG ==> Record(scalar : Fraction(Integer), coeff : UP, logand : UP)
+
+    dummy := create()$SingletonAsOrderedSet
+
+    diffint1(f : F, x : SE, k : K) : Union(IR, "failed") ==
+        nfu := univariate(numer(f), k)
+        degree(nfu) ~= 1 => "failed"
+        f1 := leadingCoefficient(nfu)::F/(denom(f)::F)
+        args := argument(k)
+        #args ~= 3 => error "internal error, k is not a diff"
+        k1 := eval(args(1), retract(args(2))@K, args(3))
+        dv := new()$Symbol
+        f2 := eval(f1, k1, dv::F)
+        nres := lfintegrate(f2, dv)
+        not(empty?(notelem(nres))) => "failed"
+        logs := logpart(nres)
+        nlogs : List(LOG) := []
+        nrat : F := 0
+        for lg in logs repeat
+            cpol := lg.coeff
+            every?((x1 : F) : Boolean +-> D(x1, x) = 0, coefficients(cpol)) =>
+                nlogs := cons(lg, nlogs)
+            degree(cpol) ~= 1 =>
+                -- print(lg::OutputForm)
+                return "failed"
+            alpha := -coefficient(cpol, 0)/leadingCoefficient(cpol)
+            nrat := nrat + lg.scalar*alpha*
+                      log(retract(eval(lg.logand, dummy, alpha))@F)
+        nres2 := mkAnswer(ratpart(nres) + nrat, reverse!(nlogs), [])
+        nres3 := map((x1:F):F+->eval(x1, kernel(dv), k1::F), nres2)
+        f3 := f - differentiate(nres3, x)
+        member?(k, kernels(f3)) =>
+            error "internal error, f still contains k"
+        nres3 + lfintegrate(f3, x)
+
+    diffint(f, x, k) ==
+        (r1 := diffint1(f, x, k)) case IR => r1
+        mkAnswer(0, empty(), [[f, x::F]])
 
     isx?(f, x) ==
       (k := retractIfCan(f)@Union(K, "failed")) case "failed" => false
@@ -281,6 +315,7 @@ ElementaryIntegration(R, F): Exports == Implementation where
       is?(k, 'exp)  => addx(expint(f, x, k), xf)
       prim?(k, x)        => addx(primint(f, x, k), xf)
       has?(operator k, ALGOP) => alglfint(f, k, l, x)
+      is?(k, OPDIFF) => diffint(f, x, k)
       unknownint(f, x)
 
     addx(i, x) ==
