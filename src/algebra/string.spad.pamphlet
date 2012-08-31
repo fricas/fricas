@@ -119,6 +119,9 @@ Character: OrderedFinite() with
           QENUM(PNAME(DOWNCASE(NUM2CHAR(ord c)$Lisp)$Lisp)$Lisp,
                 0$Lisp)$Lisp
 
+        hashUpdate!(hs: HashState, c: %): HashState ==
+            update!(hs, c pretend SingleInteger)$HashState
+
 @
 
 \section{domain CCLASS CharacterClass}
@@ -271,9 +274,7 @@ IndexedString(mn:Integer): Export == Implementation where
   N ==> NonNegativeInteger
   U ==> UniversalSegment Integer
 
-  Export ==> StringAggregate() with
-      hash: % -> I
-        ++ hash(x) provides a hashing function for strings
+  Export ==> StringAggregate()
 
   Implementation ==> add
     -- These assume Character's Rep is Small I
@@ -419,15 +420,10 @@ IndexedString(mn:Integer): Export == Implementation where
         l < 0 or h >= #s => error "index out of bounds"
         SUBSTRING(s, l, max(0, h-l+1))$Lisp
 
-    hash(s:%):Integer ==
-        n:I := Qsize s
-        zero? n => 0
---      one? n => ord(s.mn)
-        (n = 1) => ord(s.mn)
-        ord(s.mn) * ord s(mn+n-1) * ord s(mn + n quo 2)
-
     match(pattern,target,wildcard) ==
         stringMatch(pattern,target,CHARACTER(wildcard::String)$Lisp)$Lisp
+
+    hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
 
 @
 

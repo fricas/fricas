@@ -1,0 +1,69 @@
+<<common>>=
+-- These two macros are necessary to distinguish between Rep and %.
+rep x ==> (x@%) pretend Rep
+per x ==> (x@Rep) pretend %
+-------------------------------------------------------------------
+Z ==> Integer
+I ==> SingleInteger
+@
+
+\documentclass{article}
+\usepackage{axiom}
+\begin{document}
+\title{\$SPAD/src/algebra hashstate.spad.pamphlet}
+\author{Waldek Hebisch and Ralf Hemmecke}
+\maketitle
+\begin{abstract}
+\end{abstract}
+\eject
+\tableofcontents
+\eject
+\section{domain HASHSTAT HashState}
+\begin{verbatim}
+To: fricas-devel@googlegroups.com
+Date: Tue, 10 Nov 2009 04:19:59 +0100 (CET)
+From: Waldek Hebisch <hebisch@math.uni.wroc.pl>
+
+Below is may proposal how to handle hashing.  Basically the
+main point is that SingleInteger may be inconvenient as _state_
+during hashing process -- one has to be careful to avoid overflow
+and since SingleInteger may have limited number of bits mixing
+must be extra good.  Bigger state may allow much easier update.
+
+So I propose the followin protocol: we first create a fresh
+HashState.  Then we walk trough data structure updating state.
+Finally we reduce state to a SingleInteger.  The implementation
+below is intended as a starting point -- I use SingleInteger
+as representation of HashState and 'combine' function is
+probably slow and it is not clear how good it mixes.  But
+if we stick to the protocol we can change representation
+later and add beter 'combine'.  Anyway, given definitions
+in HashState and SetCategory we can start to modify domains
+like the included example of PrimitiveArray and Integer.
+\end{verbatim}
+
+<<domain HASHSTAT HashState>>=
+<<common>>
+)abbrev domain HASHSTAT HashState
+++ Description: This domain supports incremental computation of hash
+++ values.
+HashState(): with
+    new: () -> %
+      ++ new() return a new HashState.
+    update!: (%, I) -> %
+      ++ update!(hs, x) computes new values of HashState from hs
+      ++ and x and might destructively operate on its first argument.
+    value: % -> I
+      ++ value(x) returns a SingleInteger value corresponding to x.
+  == add
+    Rep == Integer
+    new(): % == per FNVBASIS$Lisp
+    value(hs: %): I == (FNV_-MAKE_-FIXNUM(hs)$Lisp) pretend I
+    update!(hs: %, i: I): % == per FNV_-1A(hs, i)$Lisp
+    modulo(hs: %, i: I): I == (FNV_-MOD(hs, i)$Lisp) pretend I
+@
+\eject
+\begin{thebibliography}{99}
+\bibitem{1} nothing
+\end{thebibliography}
+\end{document}
