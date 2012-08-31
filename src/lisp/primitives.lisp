@@ -182,6 +182,18 @@
 (defmacro QMODDOT32 (v1 v2 ind1 ind2 kk s0 p)
      `(QMODDOT0 ELT32 ,v1 ,v2 ,ind1 ,ind2 ,kk ,s0 ,p))
 
+;;; FNV-1a hash
+(defconstant FNVBASIS 14695981039346656037)
+(defconstant FNVPRIME 1099511628211)
+; FNV-1a algorithm with 64bit truncation (18446744073709551615=2^64-1).
+(defmacro FNV-1A (x y)
+    `(logand (* FNVPRIME (logxor ,x ,y)) 18446744073709551615))
+; Make a fixnum out of (unsigned-byte 64)
+(defmacro FNV-MAKE-FIXNUM (x)
+    `(logand ,x most-positive-fixnum))
+(defmacro FNV-MOD (x y)
+    `(mod ,x ,y))
+
 ;;; Floating point macros
 
 ;; Closure CL has buggy floating point optimizer, so for it we need

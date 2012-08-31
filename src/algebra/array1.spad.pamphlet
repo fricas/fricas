@@ -32,6 +32,14 @@ PrimitiveArray(S:Type): OneDimensionalArrayAggregate S == add
    setelt(x:%, i:Integer, s:S) == Qsetelt(x, i, s)
    fill!(x, s)       == (for i in 0..Qmax x repeat Qsetelt(x, i, s); x)
 
+   -- logically unnecessary, but we want to take advantage from
+   -- fast indexing.
+   if S has SetCategory then
+       hashUpdate!(s: HashState, x: %): HashState ==
+           for i in 0..Qmax x repeat
+               s := hashUpdate!(s, Qelt(x, i))$S
+           s
+
 @
 
 \section{package PRIMARR2 PrimitiveArrayFunctions2}
@@ -413,6 +421,15 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
       for i in 0..maxind repeat
         Qsetelt(c, i, f(Qelt(a,i),Qelt(b,i)))
       c
+
+   -- logically unnecessary, but we want to take advantage from
+   -- fast indexing.
+   if S has SetCategory then
+
+       hashUpdate!(s : HashState, x : %) : HashState ==
+           for i in 0..Qmax x repeat
+               s := hashUpdate!(s, Qelt(x, i))$S
+           s
 
    if zero? mn then
      qelt(x, i)       == Qelt(x, i)
