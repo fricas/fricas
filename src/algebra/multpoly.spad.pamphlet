@@ -363,6 +363,11 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
          up:=p.ts ^ k
          if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
 
+      hashUpdate!(s : HashState, p : %) : HashState ==
+          p case R => hashUpdate!(s, p::R)
+          s := hashUpdate!(s, p.v)
+          hashUpdate!(s, p.ts)
+
       if R has IntegralDomain then
          UnitCorrAssoc ==> Record(unit:%,canonical:%,associate:%)
          unitNormal(p) ==
