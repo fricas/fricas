@@ -51,6 +51,10 @@ newGoGet(:l) ==
   slot := replaceGoGetSlot env
   APPLY(first slot,[:arglist,rest slot])  --SPADCALL it!
 
+forceLazySlot(f) ==
+    not(EQ(first f, function newGoGet)) => f
+    replaceGoGetSlot(rest f)
+
 --=======================================================
 --       Lookup Function in Slot 1 (via SPADCALL)
 --=======================================================
