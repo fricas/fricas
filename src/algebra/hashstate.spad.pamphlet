@@ -1,24 +1,23 @@
-<<common>>=
--- These two macros are necessary to distinguish between Rep and %.
-rep x ==> (x@%) pretend Rep
-per x ==> (x@Rep) pretend %
--------------------------------------------------------------------
-Z ==> Integer
-I ==> SingleInteger
-@
-
 \documentclass{article}
 \usepackage{axiom}
+\usepackage{url}
 \begin{document}
-\title{\$SPAD/src/algebra hashstate.spad.pamphlet}
+\title{HashState}
 \author{Waldek Hebisch and Ralf Hemmecke}
 \maketitle
 \begin{abstract}
+This domain is intended to support the computation of hash values.
 \end{abstract}
-\eject
+
 \tableofcontents
-\eject
-\section{domain HASHSTAT HashState}
+
+\section{A simple hash value container}
+
+The main idea for the the domain HashState was given by Waldek Hebisch
+in a mail to \url{fricas-devel}, see
+\url{https://groups.google.com/d/msg/fricas-devel/ofHadCkfdC8/SZGZbAai7ygJ}.
+
+It follows the text part of the message.
 \begin{verbatim}
 To: fricas-devel@googlegroups.com
 Date: Tue, 10 Nov 2009 04:19:59 +0100 (CET)
@@ -42,6 +41,16 @@ in HashState and SetCategory we can start to modify domains
 like the included example of PrimitiveArray and Integer.
 \end{verbatim}
 
+\section{Implementation}
+These two macros are necessary to distinguish between Rep and \%.
+<<common>>=
+rep x ==> (x@%) pretend Rep
+per x ==> (x@Rep) pretend %
+I ==> SingleInteger
+@
+
+The domain HashState is simply calling the respective lisp macros.
+
 <<domain HASHSTAT HashState>>=
 <<common>>
 )abbrev domain HASHSTAT HashState
@@ -57,13 +66,27 @@ HashState(): with
       ++ value(x) returns a SingleInteger value corresponding to x.
   == add
     Rep == Integer
-    new(): % == per FNVBASIS$Lisp
-    value(hs: %): I == (FNV_-MAKE_-FIXNUM(hs)$Lisp) pretend I
-    update!(hs: %, i: I): % == per FNV_-1A(hs, i)$Lisp
-    modulo(hs: %, i: I): I == (FNV_-MOD(hs, i)$Lisp) pretend I
+    new(): % == per HASHSTATE_-BASIS$Lisp
+    value(hs: %): I == (HASHSTATE_-MAKE_-FIXNUM(hs)$Lisp) pretend I
+    update!(hs: %, i: I): % == per HASHSTATE_-UPDATE(hs, i)$Lisp
+    modulo(hs: %, i: I): I == (HASHSTATE_-MOD(hs, i)$Lisp) pretend I
 @
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
+
+\section{Usage}
+
+The general pattern to use HashState is given by the default implementation
+of the hash function in SetCategory, see \url{src/algebra/catdef.spad.pamphlet}.
+
+<<usage:SetCategory>>=
+hash(s: %): SingleInteger ==
+    value(hashUpdate!(new()$HashState, s))$HashState
+@
+
+Instead of implementing
+\begin{verbatim}
+hash: % -> SingleInteger
+\end{verbatim}
+a domain should rather implement a function \texttt{hashUpdate!} by
+means of the \texttt{update!} function above.
+
 \end{document}

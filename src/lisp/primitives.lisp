@@ -182,16 +182,21 @@
 (defmacro QMODDOT32 (v1 v2 ind1 ind2 kk s0 p)
      `(QMODDOT0 ELT32 ,v1 ,v2 ,ind1 ,ind2 ,kk ,s0 ,p))
 
+;;; Support for HashState domain.
+;;; Here the FNV-1a algorithm is employed.
+;;; More about the FNV-1a algorithm can be found at Wikipedia, see
+;;; http://en.wikipedia.org/wiki/Fowler-Noll-Vo_hash_function.
+
 ;;; FNV-1a hash
-(defconstant FNVBASIS 14695981039346656037)
-(defconstant FNVPRIME 1099511628211)
+(defconstant HASHSTATE-BASIS 14695981039346656037)
+(defconstant HASHSTATE-PRIME 1099511628211)
 ; FNV-1a algorithm with 64bit truncation (18446744073709551615=2^64-1).
-(defmacro FNV-1A (x y)
-    `(logand (* FNVPRIME (logxor ,x ,y)) 18446744073709551615))
+(defmacro HASHSTATE-UPDATE (x y)
+    `(logand (* HASHSTATE-PRIME (logxor ,x ,y)) 18446744073709551615))
 ; Make a fixnum out of (unsigned-byte 64)
-(defmacro FNV-MAKE-FIXNUM (x)
+(defmacro HASHSTATE-MAKE-FIXNUM (x)
     `(logand ,x most-positive-fixnum))
-(defmacro FNV-MOD (x y)
+(defmacro HASHSTATE-MOD (x y)
     `(mod ,x ,y))
 
 ;;; Floating point macros
