@@ -70,7 +70,33 @@ PolynomialCategoryQuotientFunctions(E, V, R, P, F):
 
     univariate(f, x) == P2UP(numer f, x) / P2UP(denom f, x)
 
+    dummys := create()$SingletonAsOrderedSet
+
+    univ_root(f : F, x : V, a : F, k : Integer, modulus : UP) : UP ==
+        nf := P2UP(numer f, x) rem modulus
+        df := P2UP(denom f, x) rem modulus
+        nd : F
+        cofact :=
+            k = 2 => eval(df, dummys, monomial(-1$F, 1)$UP)
+            k = 3 =>
+                c2 := coefficient(df, 2)
+                c1 := coefficient(df, 1)
+                c0 := coefficient(df, 0)
+                (c0^2 - c2*c1*a)::UP + monomial(c2^2*a - c0*c1, 1)$UP +
+                        monomial(c1^2 - c0*c2, 2)$UP
+            k = 4 =>
+                cf1 := eval(df, dummys, monomial(-1$F, 1)$UP)
+                nd1 := df*cf1
+                ndu := divideExponents(nd1, 2)
+                cf2 := eval(ndu::UP, dummys, monomial(-1$F, 2)$UP)
+                cf1*cf2
+        nd := retract((df*cofact) rem modulus)@F
+        ((nf*cofact) rem modulus)/nd
+
     univariate(f, x, modulus) ==
+      degree(modulus) <= 4 and ground?(m0 := reductum(modulus)) =>
+          univ_root(f, x, -ground(m0)/leadingCoefficient(modulus),
+                    degree(modulus), modulus)
       (bc := extendedEuclidean(P2UP(denom f, x), modulus, 1))
              case "failed" => error "univariate: denominator is 0 mod p"
       (P2UP(numer f, x) * bc.coef1) rem modulus
