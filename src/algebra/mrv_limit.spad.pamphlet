@@ -1,0 +1,491 @@
+<<domain OEXPR OrderedExpression>>=
+
+)abbrev domain OEXPR OrderedExpression
+
+OrderedExpression() : Join(OrderedRing,
+    Algebra(Fraction(Integer)),
+    RetractableFrom(Expression(Integer))) == Expression(Integer) add
+
+  Rep := Expression(Integer)
+
+  SIGNEF ==> ElementaryFunctionSign(Integer, Expression(Integer))
+
+  retract(e : Expression(Integer)) : % == e pretend %
+
+  coerce(x : %) : Expression(Integer) == x pretend Expression(Integer)
+
+  retractIfCan(x) == retract(x)
+
+  (x : % < y : %) : Boolean ==
+       di := y - x
+       di = 0 => false
+       (s := sign(di pretend Expression(Integer))$SIGNEF) case Integer => s = 1
+       error "can not determine sign"
+
+@
+
+<<package MRVLIM MrvLimitPackage>>=
+
+)abbrev package MRVLIM MrvLimitPackage
+++ Author: W Hebisch
+++ Description: Compute limits using Gruntz-Gonnet MRV algorithm
+MrvLimitPackage : Exports == Implementation where
+   R ==> Integer
+   FE ==> Expression Integer
+   EQ ==> Equation
+   OFE ==> OrderedCompletion FE
+   SY ==> Symbol
+   K ==> Kernel FE
+   Z ==> Integer
+   Expon ==> OrderedExpression
+   CMP_RES ==> Record(sign : Integer, coeff : FE)
+   CMP_RESU ==> Union(CMP_RES, "failed")
+   SET_RES ==> Record(lk: List K, lc: List FE)
+   SET_RESU ==> Union(SET_RES, "failed")
+   SER_RES ==> Record(degree : Expon, coeff : FE)
+   SER_RESU ==> Union(SER_RES, "failed")
+   STATE_REC ==> Record(tan_syms : List(SY), atan_syms : List(SY),
+                        tan_kers : List(K), atan_kers : List(K))
+
+   RESULT ==> Union(OFE, "failed")
+   TwoSide ==> Record(leftHandLimit:RESULT, rightHandLimit:RESULT)
+   U ==> Union(OFE, TwoSide, "failed")
+
+   Exports ==> with
+      mrv_limit : (FE, EQ OFE) -> U
+        ++ Compute limit(f(x), x=a) for a finite or infinite limit point a
+
+      mrv_limit : (FE, EQ FE, String) -> RESULT
+        ++ Compute limit(f(x), x=a) for a strictly finite limit point a
+        ++ This function computes one-sided limits from the left or right
+
+      mrv_normalize : (FE, Symbol, STATE_REC) -> FE
+        ++ mrv_normalize(f, x) transform f to the form acceptable
+        ++ by core variant of mrv_limit.
+      mrv_limit : (FE, Symbol, STATE_REC) -> RESULT
+        ++ Compute limit.
+      mrv_limit1 : (FE, Symbol) -> RESULT
+        ++ normalize and compute limit.
+      mrv_sign : (FE, Symbol, STATE_REC) -> Union(Integer, "failed")
+      mrv_cmp : (K, K, Symbol, STATE_REC) -> CMP_RESU
+        ++ Compare kernels
+      mrv_set : (FE, Symbol, STATE_REC) -> SET_RESU
+        ++ Compute MRV set
+      expr_to_series : (FE, K, STATE_REC) -> SER_RESU
+        ++ Compute degree and leading coefficinet of series expansion
+      mrv_rewrite : (FE, List K, List FE, Symbol, STATE_REC) -> SER_RESU
+        ++ rewrite
+      mrv_rewrite0 : (FE, List K, List FE, FE) -> FE
+        ++ mrv_rewrite0
+
+   Implementation ==> add
+      import ToolsForSign(R)
+
+      UTS     ==> UnivariateTaylorSeries
+      FS2UPS2  ==> FunctionSpaceToUnivariatePowerSeries2
+      GENSER ==> GeneralizedUnivariatePowerSeries
+      TEXPG  ==> TaylorSeriesExpansionGeneralized
+      EFGUSER ==> ElementaryFunctionsGeneralizedUnivariatePowerSeries
+      zeroFE : FE := 0
+      series_x := new()$Symbol
+      -- Problem ==> Record(func:String,prob:String)
+      -- UPS_Result  ==> Union(%series:ULS_X,%problem:Problem)
+
+      import PrintPackage
+
+      var_kers(e : FE) : List(K) ==
+          [kk for kk in tower(e) | differentiate(kk::FE, series_x) ~= 0$FE ]
+
+      EFSTRUC ==> ElementaryFunctionStructurePackage(R, FE)
+
+      mrv_normalize(f, x, state) ==
+          f := normalize(f)$EFSTRUC
+          tf := tower(f)
+          rtf : List(K) := []
+          ntf : List(FE) := []
+          l_atan : List(K) := []
+          l_as : List(SY) := []
+          l_tan : List(K) := []
+          l_ts : List(SY) := []
+          for k in tf repeat
+              differentiate(k::FE, x) = 0 => "iterate"
+              op := operator(k)
+              args := argument(k)
+              nargs := [eval(arg, rtf, ntf) for arg in args]
+              nk : FE :=
+                  args ~= nargs => op(nargs)
+                  k::FE
+              rtf := cons(k, rtf)
+              ntf := cons(nk, ntf)
+              nm := name(op)
+              nm = 'exp => "iterate"
+              nm = 'log => "iterate"
+              #args = 1 =>
+                  lau := mrv_limit(arg1 := args(1), x, state)
+                  -- la := lau::OFE
+                  -- la := mrv_limit(arg1 := args(1), x)
+                  nm = 'atan =>
+                          lau case "failed" =>
+                              ns := new()$Symbol
+                              nk := ns::FE
+                              l_atan := cons(kernels(nk).1, l_atan)
+                              l_as := cons(ns, l_as)
+                              ntf(1) := nk
+                          la := lau::OFE
+                          ss : Integer := whatInfinity(la)
+                          ss = 0 => "iterate"
+                          nk :=
+                              ss = 1 => pi()$FE/(2::FE) - atan(1$FE/arg1)
+                              -pi()$FE/(2::FE) -atan(1$FE/arg1)
+                          ntf(1) := nk
+                  nm = 'tan =>
+                          need_subst : Boolean :=
+                              lau case "failed" => true
+                              la := lau::OFE
+                              ss : Integer := whatInfinity(la)
+                              not(ss = 0)
+                          not(need_subst) => "iterate"
+                          ns := new()$Symbol
+                          nk := ns::FE
+                          l_tan := cons(kernels(nk).1, l_tan)
+                          l_ts := cons(ns, l_ts)
+                          ntf(1) := nk
+          state.tan_syms := l_ts
+          state.atan_syms := l_as
+          state.tan_kers := l_tan
+          state.atan_kers := l_atan
+          eval(f, rtf, ntf)
+
+      Uts := UTS(FE,series_x,zeroFE)
+      Upg := GENSER(FE, Expon, series_x, zeroFE)
+      ppack := FS2UPS2(R, FE, Expon, Upg, _
+              EFGUSER(FE, Expon, Upg), Uts, _
+              TEXPG(FE, Expon, Upg, Uts), _
+              (coerce$Expon)@(Expon -> FE), _
+              series_x)
+
+      SIGNEF ==> ElementaryFunctionSign(Integer, FE)
+
+      mrv_bounded1(e : FE, state : STATE_REC) :  Boolean ==
+          ke := kernels(e)
+          ne := numer(e)
+          de := denom(e)
+          #ke = 1 =>
+              kk := first(ke)
+              member?(kk, state.tan_kers) =>
+                  degree(ne, kk) > degree(de, kk) => false
+                  sde := sign(de::FE)$SIGNEF
+                  sde case Z =>
+                      sde::Z ~= 0
+                  false
+              member?(kk, state.atan_kers) =>
+                  sde := sign(eval(de::FE, kk, atan(kk::FE)))$SIGNEF
+                  sde case Z =>
+                      sde::Z ~= 0
+                  false
+              true
+          vde := variables(de::FE)
+          not(empty?(setIntersection(vde, state.tan_syms))) or
+            not(empty?(setIntersection(vde, state.atan_syms))) => false
+          empty?(setIntersection(kernels(ne::FE), state.tan_kers))
+
+      mrv_bounded(state : STATE_REC) : (FE -> Boolean) ==
+          e +-> mrv_bounded1(e, state)
+
+      mrv_invertible(state : STATE_REC) : (FE -> Boolean) ==
+          var_syms := concat(state.tan_syms, state.atan_syms)
+          (e : FE) : Boolean +->
+              empty?(setIntersection(variables(e), var_syms)) => true
+              ke := kernels(e)
+              #ke ~= 1 => false
+              kk := first(ke)
+              ne := numer(e)
+              de := denom(e)
+              member?(kk, state.tan_kers) =>
+                  degree(ne, kk) < degree(de, kk) => false
+                  sde := sign(de::FE)$SIGNEF
+                  sde case Z =>
+                      sde::Z ~= 0
+                  false
+              member?(kk, state.atan_kers) =>
+                  sde := sign(eval(de::FE, kk, atan(kk::FE)))$SIGNEF
+                  sde case Z =>
+                      sde::Z ~= 0
+                  false
+              false
+
+      -- compute leading term and degree of expansion of e into
+      -- generalized power series with respect to k
+      expr_to_series(e : FE, k : K, state : STATE_REC) : SER_RESU ==
+         ex : FE := eval(e, [k], [series_x :: FE])
+         not(is?(k, 'exp)) =>
+                         error "Can only expand with respect to exp"
+         h := argument(k).1
+         ss := exprToPS(ex, false, "complex", true, h,
+                        mrv_bounded(state), mrv_invertible(state))$ppack
+         ss case %problem => "failed"
+         ssl := ss.%series
+         kk : Integer := 0
+         deg : Expon
+         lc : FE
+         ssl0 := ssl
+         repeat
+             deg := order(ssl)
+             ssll := removeZeros(ssl, deg)
+             lc := normalize(leadingCoefficient(ssll))$EFSTRUC
+             lc ~= 0 => break
+             kk := kk + 1
+             kk > 100 =>
+                 print(ssl0::OutputForm)
+                 error "Series with many zero terms"
+             ssl := reductum(ssl)
+         vkers := var_kers(lc)
+         empty?(vkers) => return [deg, lc]
+         error "Too many variable kernels"
+
+      -- compare comparability classes of two kernels, uses
+      -- Gruntz Lemma 3.6
+      mrv_cmp(x : K, y : K, v : Symbol, state : STATE_REC) : CMP_RESU ==
+        x1 : FE :=
+            is?(x, "exp" :: Symbol) => argument(x).1
+            log(x :: FE)
+        y1 : FE :=
+            is?(y, "exp" :: Symbol) => argument(y).1
+            log(y :: FE)
+        ppu := mrv_limit(x1/y1, v, state)
+        ppu case OFE =>
+           pp1 := ppu::OFE
+           pp1 = (0::OFE) => [-1, 0]
+           finite?(pp1) =>
+              [0, retract(pp1)]
+           [1, 0]
+        "failed"
+
+      -- compute the mrv set -- the method just uses definition
+      -- and observation that mrv set can contain only x or
+      -- exponentials
+      -- as a byproduct we compute list of constanst such that
+      -- res.i =~ res.1^(res_c.i)
+      mrv_set(e : FE, x : Symbol, state : STATE_REC): SET_RESU ==
+        kers := tower(e)
+        res_k : K := kernels(x::FE).1
+        res : List K := [res_k]
+        res_c : List FE := [1::FE]
+        for y in kers repeat
+           is?(y, "exp" :: Symbol) =>
+              icu := mrv_cmp(y, res_k, x, state)
+              icu case "failed" => return "failed"
+              ic := icu::CMP_RES
+              i := ic.sign
+              c := ic.coeff
+              i > 0 =>
+                 res_k := y
+                 res := [y]
+                 res_c := [1::FE]
+              (i = 0)::Boolean =>
+                 res := cons(y, res)
+                 res_c := cons(c, res_c)
+           0
+        [reverse(res), reverse(res_c)]
+
+
+      -- rewrite,
+      -- Arguments
+      --     e       the expression
+      --    lx        list of mrv kernels
+      --    ly        list of replecement kernels
+      -- we assume that simpler kernels are earlier on he list,
+      -- more precisely, if lx.i is a subexpression of lx.j then
+      -- i <= j
+      mrv_rewrite1(e : FE, lx : List K, ly : List FE) : FE ==
+        rlx := reverse(lx)
+        rly := reverse(ly)
+        for x in rlx for y in rly repeat
+           e := eval(e, [x], [y])
+        e
+
+      -- rewrite kernels from mrv set in terms of single kernel
+      -- Arguments
+      --     e       the expression
+      --    lx        list of mrv kernels
+      --    lc        coefficients so that lx.i =~ omega ^(lc.i)
+      --              where omega is selected mrv kernel
+      --    v         variable
+      --
+      -- lx.1 is equivalent to omega, but normalized so that it
+      -- goes to 0 when v goes to infinity
+      mrv_rewrite0(e : FE, lx : List K, lc : List FE, x00 : FE) : FE ==
+         c0 := first lc
+         (#lx = 1) and (c0 = 1) => e
+         e0 := argument(kernels(x00).1).1
+         ly : List FE := []
+         for xi in rest lx for ci in rest lc repeat
+            ei := argument(xi).1
+            yi := x00^(ci)*exp(ei - ci*e0)
+            ly := cons(yi, ly)
+         ly := reverse(ly)
+         if c0 = 1 then
+            lxx := rest lx
+         else
+            ly := cons(x00^c0, ly)
+            lxx := lx
+         mrv_rewrite1(e, lxx, ly)
+
+      -- Rewrite in terms of mrv kernel and compute leading term of
+      -- series expansion
+      -- Arguments:
+      --    e         the expression
+      --    lx        list of mrv kernels
+      --    lc        coefficients so that lx.i =~ lx.1 ^(lc.i)
+      --    v         variable
+      mrv_rewrite(e : FE, lx : List K, lc : List FE, v : Symbol,
+                  state : STATE_REC) : SER_RESU ==
+         x0 := first lx
+         -- Shift up, if needed and recurse
+         is?(x0, v :: Symbol) =>
+            lxx : List K := [kernels(eval(ei::FE, [x0], [exp(v::FE)])).1 for ei in lx]
+            mrv_rewrite(eval(e, [x0], [exp(v::FE)]), lxx, lc, v, state)
+         -- Sanity check
+         ~ is?(x0, "exp" :: Symbol) =>
+            error "mrv is not exp, need substitution"
+            -- [0, 0]
+         -- normalize mrv kernel, so that it goes to 0 when v goes to
+         -- infinity
+         e0 := argument(x0).1
+         -- vei : Equation OFE := (v::FE)::OFE = plusInfinity()@OFE
+         -- lip := limit(e0, vei)$PowerSeriesLimitPackage(Integer, FE)
+         -- kk := kernels(argument(x0).1)
+         lip : RESULT :=
+               e0 = (v::FE) => plusInfinity()@OFE
+               mrv_limit(e0, v, state)
+         lip case OFE =>
+            lipp : OFE := lip :: OFE
+            ss : Integer := whatInfinity(lipp)
+            (ss = 0) =>
+                error "Wrong mrv element"
+                -- 0
+            if ss > 0 then
+               lcc := cons(1::FE, [-ci for ci in lc])
+               x00 := exp(-e0)
+               lxx := cons(kernels(x00).1, lx)
+            else
+               lcc := lc
+               x00 := x0 :: FE
+               lxx := lx
+            -- do the rewrite
+            e := mrv_rewrite0(e, lxx, lcc, x00)
+            expr_to_series(e, kernels(x00).1, state)
+         error "limit failed"
+
+      mrv_sign(e : FE, v : Symbol, state : STATE_REC
+              ) : Union(Integer, "failed") ==
+         ~ member?(v::Symbol, variables(e)) => sign(e)$SIGNEF
+         --    (s := sign(e)$SIGNEF) case Integer =>
+         --       return s
+         --    error "Can not determine sign"
+         rkcu := mrv_set(e, v, state)
+         rkcu case "failed" => "failed"
+         rkc := rkcu::SET_RES
+         lx := rkc.lk
+         lcc := rkc.lc
+         ssu : SER_RESU := mrv_rewrite(e, lx, lcc, v, state)
+         ssu case "failed" => "failed"
+         ss := ssu::SER_RES
+         mrv_sign(ss.coeff, v, state)
+
+      -- Compute limit of e when v goes to infinity
+      mrv_limit(e : FE, v : Symbol, state : STATE_REC) : RESULT ==
+         ~ member?(v, (ve := variables(e))) =>
+             empty?(setIntersection(ve, state.tan_syms)) and
+               empty?(setIntersection(ve, state.atan_syms)) => e :: OFE
+             "failed"
+         rkcu := mrv_set(e, v, state)
+         rkcu case "failed" => "failed"
+         rkc := rkcu::SET_RES
+         lx := rkc.lk
+         lcc := rkc.lc
+         ssu : SER_RESU := mrv_rewrite(e, lx, lcc, v, state)
+         ssu case "failed" => "failed"
+         ss := ssu::SER_RES
+         deg := ss.degree
+         deg > 0 => 0
+         deg = 0 => mrv_limit(ss.coeff, v, state)
+         deg < 0 =>
+               su := mrv_sign(ss.coeff, v, state)
+               su case "failed" => "failed"
+               s := su::Integer
+               s = 1 =>
+                   plusInfinity()
+               s = -1 =>
+                   minusInfinity()
+               error "Nonzero term has no sign"
+
+      mrv_limit1(e : FE, x : Symbol) : RESULT ==
+          state := [[], [],[],[]]$STATE_REC
+          e := mrv_normalize(e, x, state)
+          mrv_limit(e, x, state)
+
+      mrv_limit(e : FE, eq : EQ OFE) : U ==
+          (f := retractIfCan(lhs eq)@Union(FE,"failed")) case "failed" =>
+              error "limit:left hand side must be a variable"
+
+          (var := retractIfCan(f)@Union(SY,"failed")) case "failed" =>
+              error "limit:left hand side must be a variable"
+
+          v := var::SY
+          a := rhs eq
+          ii := whatInfinity a
+
+          -- Case positive infinity
+          ii = 1 =>
+              resu := mrv_limit1(e, v)
+              resu case "failed" => "failed"
+              resu::OFE
+
+          -- Case negative infinity
+          ii = -1 =>
+              -- replace x by -x
+              vK := retract(v::FE)@Kernel(FE)
+              et:FE := eval(e, vK, -vK::FE)
+              resu := mrv_limit1(et, v)
+              resu case "failed" => "failed"
+              resu::OFE
+
+          -- Case finite real value
+          ii = 0 =>
+              -- Compute left and right hand limit
+              vK := retract(v::FE)@Kernel(FE)
+
+              -- replace x by a - 1/x
+              et:FE := eval(e, vK, retract(a)@FE - inv(vK::FE))
+              ll := mrv_limit1(et, v)
+
+              -- replace x by a + 1/x
+              et:FE := eval(e, vK, retract(a)@FE + inv(vK::FE))
+              lr := mrv_limit1(et, v)
+
+              ll = lr =>
+                  lr case "failed" => "failed"
+                  lr::OFE
+              [ll, lr]$TwoSide
+
+      mrv_limit(e : FE, eq : EQ FE, s : String) : RESULT ==
+          (f := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
+              error "limit:left hand side must be a variable"
+
+          v := f::SY
+          a := rhs eq
+
+          -- From the right: replace x by a + 1/z
+          direction(s) = 1 =>
+              vK := retract(v::FE)@Kernel(FE)
+              et:FE := eval(e, vK, a + inv(vK::FE))
+              mrv_limit1(et, v)
+
+          -- From the left: replace x by a - 1/z
+          direction(s) = -1 =>
+              vK := retract(v::FE)@Kernel(FE)
+              et:FE := eval(e, vK, a - inv(vK::FE))
+              mrv_limit1(et, v)
+
+@

@@ -88,6 +88,16 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
     poleLimit:(RN,FE,SY) -> U
     poleLimitPlus:(RN,FE,SY) -> RESULT
 
+    is_exp_log(fcn : FE, x : SY) : Boolean ==
+        xk := kernel(x)$Kernel(FE)
+        for k in tower(fcn) repeat
+            differentiate(k::FE, x) = 0 => "iterate"
+            k = xk or is?(k, 'log) or is?(k, 'exp) or
+             is?(k, '%power) or is?(k, 'nthRoot) =>
+                "iterate"
+            return false
+        true
+
     noX?: (FE,SY) -> Boolean
     noX?(fcn,x) == not member?(x,variables fcn)
 
@@ -582,13 +592,24 @@ PowerSeriesLimitPackage(R,FE): Exports == Implementation where
         answer :: OFE
       lim :: FE :: OFE
 
-    limit(fcn:FE,eq:EQ OFE) ==
+    limit1(fcn : FE, eq : EQ OFE, do_lim : (FE, SY, OFE) -> U) : U ==
       (f := retractIfCan(lhs eq)@Union(FE,"failed")) case "failed" =>
         error "limit:left hand side must be a variable"
       (xx := retractIfCan(f)@Union(SY,"failed")) case "failed" =>
         error "limit:left hand side must be a variable"
       x := xx :: SY; a := rhs eq
-      locallimit(fcn,x,a)
+      do_lim(fcn, x, a)
+
+    if R is Integer and FE is Expression(Integer) then
+
+        limit(fcn : FE, eq : EQ OFE) ==
+            limit1(fcn, eq, (f : FE, x : SY, a : OFE) : U +->
+                (is_exp_log(f, x) => mrv_limit(fcn, eq)$MrvLimitPackage;
+                 locallimit(f, x, a)))
+
+    else
+
+        limit(fcn : FE, eq : EQ OFE) == limit1(fcn, eq, locallimit)
 
     complexLimit(fcn:FE,eq:EQ OPF) ==
       (f := retractIfCan(lhs eq)@Union(FE,"failed")) case "failed" =>
