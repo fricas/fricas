@@ -10,8 +10,9 @@
 \tableofcontents
 \eject
 \section{package FS2UPS FunctionSpaceToUnivariatePowerSeries}
-<<package FS2UPS FunctionSpaceToUnivariatePowerSeries>>=
-)abbrev package FS2UPS FunctionSpaceToUnivariatePowerSeries
+<<package FS2UPS2 FunctionSpaceToUnivariatePowerSeries2>>=
+
+)abbrev package FS2UPS2 FunctionSpaceToUnivariatePowerSeries2
 ++ Author: Clifton J. Williamson
 ++ Date Created: 21 March 1989
 ++ Date Last Updated: 2 December 1994
@@ -29,26 +30,17 @@
 ++   whose coefficients do not contain the variable x. The function
 ++   \spadfun{exprToGenUPS} converts functional expressions to power series
 ++   whose coefficients may involve functions of \spad{log(x)}.
-FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
+FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
+                                     coerce_Ex : Expon -> FE, x) : _
  Exports == Implementation where
   R     : Join(GcdDomain, Comparable, RetractableTo Integer,
                LinearlyExplicitRingOver Integer)
   FE    : Join(AlgebraicallyClosedField, TranscendentalFunctionCategory,
                Algebra(Fraction(Integer)), FunctionSpace R)
-            with
-              coerce: Expon -> %
-                ++ coerce(e) converts an 'exponent' e to an 'expression'
   Expon : Join(OrderedAbelianMonoid, OrderedRing)
   UPS   : Join(UnivariatePowerSeriesCategory(FE,Expon),Field,
                PowerSeriesCategory(FE, Expon, SingletonAsOrderedSet),
                TranscendentalFunctionCategory)
-            with
-              differentiate: % -> %
-                ++ differentiate(x) returns the derivative of x since we
-                ++ need to be able to differentiate a power series
-              integrate: % -> %
-                ++ integrate(x) returns the integral of x since
-                ++ we need to be able to integrate a power series
   TRAN  : PartialTranscendentalFunctions UPS
   UTS : UnivariateTaylorSeriesCategory(FE)
   TEXP : TaylorSeriesExpansion(FE, Expon, SingletonAsOrderedSet, UPS, UTS)
@@ -75,6 +67,10 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
   Problem ==> Record(func:String,prob:String)
   Result  ==> Union(%series:UPS,%problem:Problem)
   SIGNEF  ==> ElementaryFunctionSign(R,FE)
+  OPT_MAP ==> Union(FE -> Boolean, "none")
+  OPT_REC ==> Record(pos_Check? : Boolean, atan_Flag : ATANFLAG,
+                     coeff_check? : OPT_MAP, inv_check? : OPT_MAP,
+                       log_x_replace : Boolean, log_x_val : FE)
 
   Exports ==> with
     exprToUPS : (FE,B,ATANFLAG) -> Result
@@ -150,20 +146,31 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) is
       ++ like exprToUPS, but if \spad{log_flag} is true it replaces
       ++ logarithms of expansion variable by \spad{log_val}
+    exprToPS : (FE, B, ATANFLAG, B, FE, FE -> B, FE -> B) -> Result
+      ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val, coef_chk,
+      ++ inv_chk) is like exprToPS(fcn, posCheck?, atanFlag, log_flag,
+      ++ log_val), but fails if \spad{coef_chk} is false for some
+      ++ coefficient of \spad{fcn} or if expansion process needs to
+      ++ invert element of \spad{FE} for which \spad{inv_chk} is
+      ++ false
     localAbs: FE -> FE
       ++ localAbs(fcn) = \spad{abs(fcn)} or \spad{sqrt(fcn^2)} depending
       ++ on whether or not FE has a function \spad{abs}.  This should be
       ++ a local function, but the compiler won't allow it.
+    atan1 : UPS -> UPS
+    integ : UPS -> UPS
+      ++ integ should be local but conditional
+    integ_df : (UPS, UPS) -> UPS
+      ++ integ_df should be local but conditional
+    powToUPS : (List(FE), OPT_REC) -> Result
+      ++ powToUPS should be local but conditional
 
   Implementation ==> add
 
-    OPT_REC ==> Record(pos_Check? : Boolean, atan_Flag : ATANFLAG,
-                       log_x_replace : Boolean, log_x_val : FE)
-
     ratIfCan            : FE -> Union(RN,"failed")
-    carefulNthRootIfCan : (UPS,NNI,B,B) -> Result
+    carefulNthRootIfCan : (UPS, NNI, OPT_REC, B) -> Result
     stateProblem        : (PROBLEM, PROBLEM) -> Result
-    polyToUPS           : SUP -> UPS
+    polyToUPS           : (SUP, OPT_REC) -> Result
     listToUPS           : (L FE, (FE, OPT_REC) -> Result, OPT_REC,
                            UPS, (UPS, UPS) -> UPS) -> Result
     isNonTrivPower      : FE -> Union(Record(val:FE,exponent:I),"failed")
@@ -176,7 +183,6 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
     applyIfCan          : (UPS -> Union(UPS,"failed"), FE, FUNCTIONNAME,
                            OPT_REC) -> Result
     tranToUPS           : (K, FE, OPT_REC) -> Result
-    powToUPS            : (L FE, OPT_REC) -> Result
     newElem             : FE -> FE
     smpElem             : SMP -> FE
     k2Elem              : K -> FE
@@ -206,7 +212,13 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
 
     ratIfCan fcn == retractIfCan(fcn)@Union(RN,"failed")
 
-    carefulNthRootIfCan(ups,n,posCheck?,rightOnly?) ==
+    check_inverse(coef : FE, opt_rec : OPT_REC) : B ==
+        if opt_rec.inv_check? case (FE -> B) then
+            ((opt_rec.inv_check?)::(FE -> B))(coef)
+        else
+            true
+
+    carefulNthRootIfCan(ups, n, opt_rec, rightOnly?) ==
       -- similar to 'nthRootIfCan', but it is fussy about the series
       -- it takes as an argument.  If 'n' is EVEN and 'posCheck?'
       -- is true then the leading coefficient of the series must
@@ -215,6 +227,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       -- series represents a real function of a real variable, and
       -- we want a unique real nth root defined on a neighborhood
       -- of zero.
+      posCheck? := opt_rec.pos_Check?
       n < 1 => error "nthRoot: n must be positive"
       deg := degree ups
       if (coef := coefficient(ups,deg)) = 0 then
@@ -229,6 +242,8 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
             return stateProblem("nth root","negative leading coefficient")
           not rightOnly? and not zero? deg => -- nth root not unique
             return stateProblem("nth root","series of non-zero order")
+      not(check_inverse(coef, opt_rec)) =>
+          stateProblem("nth root", "need to invert bad coefficient")
       (ans := nthRootIfCan(ups,n)) case "failed" =>
         stateProblem("nth root","no nth root")
       [ans :: UPS]
@@ -239,10 +254,17 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       [[function,problem]]
 
     exprToUPS(fcn,posCheck?,atanFlag) ==
-        i_expr_to_PS(fcn, [posCheck?, atanFlag, false, 0]$OPT_REC)
+        i_expr_to_PS(fcn, [posCheck?, atanFlag, "none",
+                           "none", false, 0]$OPT_REC)
 
     exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) ==
-        i_expr_to_PS(fcn, [posCheck?, atanFlag, log_flag, log_val]$OPT_REC)
+        i_expr_to_PS(fcn, [posCheck?, atanFlag, "none", "none",
+                           log_flag, log_val]$OPT_REC)
+
+    exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val,
+             coef_chk, inv_chk) ==
+       i_expr_to_PS(fcn, [posCheck?, atanFlag, coef_chk, inv_chk,
+                           log_flag, log_val]$OPT_REC)
 
     i_expr_to_PS(fcn, opt_rec) ==
       -- converts a functional expression to a power series
@@ -252,7 +274,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       --!!                         - cjw 1 Dec 94
       --not member?(x,variables fcn) => [monomial(fcn,0)]
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
-        [polyToUPS univariate(poly :: POL,x)]
+          polyToUPS(univariate(poly::POL, x), opt_rec)
       (sum := isPlus fcn) case L(FE) =>
           listToUPS(sum :: L(FE), i_expr_to_PS, opt_rec, 0,
                   (y1, y2) +-> y1 + y2)
@@ -266,21 +288,27 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
           kernelToUPS(ker :: K, opt_rec)
       error "exprToUPS: neither a sum, product, power, nor kernel"
 
-    polyToUPS poly ==
+    polyToUPS(poly, opt_rec) ==
       -- converts a polynomial to a power series
-      zero? poly => 0
+      zero? poly => [0$UPS]
       -- we don't start with 'ans := 0' as this may lead to an
       -- enormous number of leading zeroes in the power series
       deg  := degree poly
       coef := leadingCoefficient(poly) :: FE
+      if opt_rec.coeff_check? case (FE -> B) then
+          if not((opt_rec.coeff_check?::(FE -> B))(coef)) then
+              return stateProblem("polyToUPS", "bad coeff")
       ans  := monomial(coef,deg :: Expon)$UPS
       poly := reductum poly
       while not zero? poly repeat
         deg  := degree poly
         coef := leadingCoefficient(poly) :: FE
+        if opt_rec.coeff_check? case (FE -> B) then
+            if not((opt_rec.coeff_check?::(FE -> B))(coef)) then
+                return stateProblem("polyToUPS", "bad coeff")
         ans  := ans + monomial(coef,deg :: Expon)$UPS
         poly := reductum poly
-      ans
+      [ans]
 
     listToUPS(list, feToUPS, opt_rec, ans, op) ==
       -- converts each element of a list of expressions to a power
@@ -305,13 +333,15 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
     powerToUPS(fcn, n, opt_rec) ==
       -- converts an integral power to a power series
       (b := i_expr_to_PS(fcn, opt_rec)) case %problem => b
-      n > 0 => [(b.%series) ^ n]
+      n > 0 => [(b.%series) ^ (n::PositiveInteger)]
       -- check lowest order coefficient when n < 0
       ups := b.%series; deg := degree ups
       if (coef := coefficient(ups,deg)) = 0 then
         deg := order(ups,deg + ZEROCOUNT :: Expon)
         (coef := coefficient(ups,deg)) = 0 =>
           error "inverse of series with many leading zero coefficients"
+      not(check_inverse(coef, opt_rec)) =>
+          stateProblem("power", "need to invert bad coefficient")
       [ups ^ n]
 
     ELITS := EllipticFunctionsUnivariateTaylorSeries(FE, UTS)
@@ -473,7 +503,8 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         applyTaylor(lambertW0$SPFUTS, arg)
 
     do_weierstrass(losers : L(UPS), lsers : L(UPS), lsere : L(FE),
-          lser0 : L(FE), ef : (FE, FE, UTS) -> UTS, k : I, cz : I) : Result ==
+          lser0 : L(FE), ef : (FE, FE, UTS) -> UTS, k : I, cz : I,
+          opt_rec : OPT_REC) : Result ==
         lsere(3) = 0 => error "expansion at 0"
         z_ser := losers(3)
         z_inv : UPS
@@ -481,6 +512,9 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
             deg := order(z_ser, ZEROCOUNT :: Expon)
             (coef := coefficient(z_ser, deg)) = 0 =>
                 error "inverse of series with many leading zero coefficients"
+            if not(check_inverse(coef, opt_rec)) then
+                return stateProblem("weierstrass",
+                                    "need to invert bad coefficient")
             z_inv := cz*z_ser^k
         else
             z_inv := 0
@@ -547,16 +581,16 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
             do_ell3(losers, lsers, lsere, lser0, ellipticPi$ELITS)
         nm = 'weierstrassP and lser0(3) = 0 =>
             do_weierstrass(losers, lsers, lsere, lser0,
-                           weierstrassP0$SPFUTS, -2, 1)
+                           weierstrassP0$SPFUTS, -2, 1, opt_rec)
         nm = 'weierstrassPPrime and lser0(3) = 0 =>
             do_weierstrass(losers, lsers, lsere, lser0,
-                           weierstrassPPrime0$SPFUTS, -3, -2)
+                           weierstrassPPrime0$SPFUTS, -3, -2, opt_rec)
         nm = 'weierstrassZeta and lser0(3) = 0 =>
             do_weierstrass(losers, lsers, lsere, lser0,
-                           weierstrassZeta0$SPFUTS, -1, 1)
+                           weierstrassZeta0$SPFUTS, -1, 1, opt_rec)
         nm = 'weierstrassSigma and lser0(3) = 0 =>
             do_weierstrass(losers, lsers, lsere, lser0,
-                           weierstrassSigma0$SPFUTS, 0, 0)
+                           weierstrassSigma0$SPFUTS, 0, 0, opt_rec)
         if nm = 'Gamma then
             if (ir := retractIfCan(lser0(1))@Union(R, "failed")) case R and
                (ii := retractIfCan(ir)@Union(Integer, "failed")) case Integer
@@ -571,13 +605,40 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         nker : FE := kernel(operator(ker), nargs)
         do_taylor_via_deriv2(nker, cargs.syms, cargs.sers)
 
-    do_prim(ker : K, arg0 : FE, opt_rec : OPT_REC) : Result ==
-        c0 := operator(ker)(arg0)
-        nf := differentiate(ker::FE, x)
-        ns := i_expr_to_PS(nf, opt_rec)
-        ns case %problem => return ns
-        [(c0::UPS) + integrate(ns.%series)]
+    can_integrate : Boolean := false
 
+    if UPS has differentiate : UPS -> UPS and
+      UPS has integrate : UPS -> UPS then
+
+        can_integrate := true
+
+        atan1(ups) ==
+            y := differentiate(ups)$UPS/(1$UPS + ups*ups)
+            yCoef := coefficient(y,-1)
+            monomial(log yCoef,0) + integrate(y - monomial(yCoef,-1)$UPS)
+
+        integ(f) == integrate(f)$UPS
+
+        integ_df(f : UPS, xs : UPS) : UPS ==
+            integrate(differentiate(xs)$UPS*f)$UPS
+
+    else
+
+        atan1(ups) == error "atan1 called, but no integrate"
+
+        integ(f) == error "integ called, but no integrate"
+
+        integ_df(f : UPS, xs : UPS) : UPS ==
+            error "integ_df called, but no integrate"
+
+    do_prim(ker : K, arg0 : FE, opt_rec : OPT_REC) : Result ==
+        can_integrate =>
+            c0 := operator(ker)(arg0)
+            nf := differentiate(ker::FE, x)
+            ns := i_expr_to_PS(nf, opt_rec)
+            ns case %problem => return ns
+            [(c0::UPS) + integ(ns.%series)]
+        spec_to_UPS(ker, argument(ker), opt_rec)
 
     prim_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
         nm := name(ker)
@@ -635,7 +696,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       -- this is not used in the limit package, so the series may
       -- have non-zero order, in which case nth roots may not be unique
       (result := i_expr_to_PS(arg, opt_rec)) case %problem => result
-      ans := carefulNthRootIfCan(result.%series, n, opt_rec.pos_Check?, false)
+      ans := carefulNthRootIfCan(result.%series, n, opt_rec, false)
       ans case %problem => ans
       [ans.%series]
 
@@ -658,9 +719,11 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         if ((signum := sign(coef)$SIGNEF) case I) then
           (signum :: I) = -1 =>
             return stateProblem("log","negative leading coefficient")
+      if not(check_inverse(coef, opt_rec)) then
+          return stateProblem("log", "need to invert bad coefficient")
       zero? deg => [logIfCan(ups)::UPS]
       lt := monomial(coef, deg)$UPS
-      logTerm : FE := log(coef) +  (deg::FE)*opt_rec.log_x_val
+      logTerm : FE := log(coef) + coerce_Ex(deg)*opt_rec.log_x_val
       [monomial(logTerm, 0) + log(ups/lt)]
 
     if FE has abs: FE -> FE then
@@ -671,19 +734,14 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
     signOfExpression: FE -> FE
     signOfExpression arg == localAbs(arg)/arg
 
-    atancotToUPS(arg, opt_rec, plusMinus) ==
-      -- converts atan(f(x)) to a power series
-      (result := i_expr_to_PS(arg, opt_rec)) case %problem => result
-      ups := result.%series; coef := coefficient(ups,0)
-      (ord := order(ups,0)) = 0 and coef * coef = -1 =>
-        -- series involves complex numbers
-        return stateProblem("atan","logarithmic singularity")
+    atanacot2(ups : UPS, coef : FE, ord : Expon, opt_rec : OPT_REC,
+              plusMinus : I) : Result ==
       atanFlag := opt_rec.atan_Flag
       cc : FE :=
         ord < 0 =>
           atanFlag = "complex" =>
             return stateProblem("atan","essential singularity")
-          (rn := ratIfCan(ord :: FE)) case "failed" =>
+          (rn := ratIfCan(coerce_Ex(ord))) case "failed" =>
             -- this condition usually won't occur because exponents will
             -- be integers or rational numbers
             return stateProblem("atan","branch problem")
@@ -709,7 +767,23 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
           0
         plusMinus = 1 => atan coef
         acot coef
-      [(cc :: UPS) + integrate(plusMinus * differentiate(ups)/(1 + ups*ups))]
+      [(cc :: UPS) + integ_df(plusMinus*(1$UPS/(1 + ups*ups)), ups)]
+
+    atancotToUPS(arg, opt_rec, plusMinus) ==
+        -- converts atan(f(x)) to a power series
+        (result := i_expr_to_PS(arg, opt_rec)) case %problem => result
+        ups := result.%series; coef := coefficient(ups,0)
+        (ord := order(ups,0)) = 0 and coef * coef = -1 =>
+            -- series involves complex numbers
+            return stateProblem("atan","logarithmic singularity")
+        can_integrate =>
+            atanacot2(ups, coef, ord, opt_rec, plusMinus)
+        ord < 0 => stateProblem("atan","argument of negative order")
+        res1 : Union(UPS, "failed") :=
+            plusMinus = 1 => atanIfCan(ups)
+            acotIfCan(ups)
+        res1 case "failed" => stateProblem("atan","failed")
+        [res1::UPS]
 
     applyIfCan(fcn, arg, fcnName, opt_rec) ==
       -- converts fcn(arg) to a power series
@@ -769,7 +843,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
           applyIfCan(acschIfCan, arg, "acsch", opt_rec)
       stateProblem(string name ker,"unknown kernel")
 
-    powToUPS(args, opt_rec) ==
+    powToUPS2(args : L FE, opt_rec : OPT_REC) : Result ==
       -- converts a power f(x) ^ g(x) to a power series
       (logBase := logToUPS(first args, opt_rec)) case %problem =>
         logBase
@@ -778,6 +852,33 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       ans := expIfCan((expon.%series) * (logBase.%series))
       ans case "failed" => stateProblem("exp","essential singularity")
       [ans :: UPS]
+
+    if Expon has RetractableFrom(FE) and Expon has Ring then
+
+        powToUPS(args, opt_rec) ==
+            pow := second args
+            differentiate(pow, x) ~= 0 => powToUPS2(args, opt_rec)
+            (ep := retractIfCan(pow)@Union(Expon, "failed")) case Expon =>
+                pow_base : Result := i_expr_to_PS(first args, opt_rec)
+                bs : UPS
+                pow_base case %problem => pow_base
+                bs := pow_base.%series
+                eb := degree(bs)
+                if coefficient(bs, eb) = 0 then
+                    eb := order(bs, eb + 1000::Expon)
+                    coefficient(bs, eb) = 0 =>
+                        error "powToUPS: series with many zero terms"
+                b1 := monomial(1, -eb)*bs
+                lbu := logIfCan(b1)
+                lbu case "failed" => stateProblem("pow", "transcendental log")
+                ans1 := expIfCan(pow*(lbu::UPS))
+                ans1 case "failed" => stateProblem("pow", "transcendental exp")
+                [monomial(1, ep*eb)*ans1]
+            powToUPS2(args, opt_rec)
+
+    else
+
+        powToUPS(args, opt_rec) == powToUPS2(args, opt_rec)
 
 -- Generalized power series: power series in x, where log(x) and
 -- bounded functions of x are allowed to appear in the coefficients
@@ -823,7 +924,8 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       -- converts a functional expression to a generalized power
       -- series; "generalized" means that log(x) and bounded functions
       -- of x are allowed to appear in the coefficients of the series
-      iExprToGenUPS(newElem fcn, [posCheck?, atanFlag, false, 0]$OPT_REC)
+      iExprToGenUPS(newElem fcn, [posCheck?, atanFlag, "none", "none",
+                                  false, 0]$OPT_REC)
 
     iExprToGenUPS(fcn, opt_rec) ==
       -- converts a functional expression to a generalized power
@@ -834,7 +936,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       --!!                         - cjw 1 Dec 94
       --not member?(x,variables fcn) => [monomial(fcn,0)]
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
-        [polyToUPS univariate(poly :: POL,x)]
+          polyToUPS(univariate(poly::POL, x), opt_rec)
       (sum := isPlus fcn) case L(FE) =>
         listToUPS(sum :: L(FE), iExprToGenUPS, opt_rec, 0,
                   (y1, y2) +-> y1 + y2)
@@ -883,7 +985,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       -- (b) the lowest order coefficient is a product of exponentials
       --     and functions not involving x
       (b := iExprToGenUPS(fcn, opt_rec)) case %problem => b
-      n > 0 => [(b.%series) ^ n]
+      n > 0 => [(b.%series) ^ (n::PositiveInteger)]
       -- check lowest order coefficient when n < 0
       ups := b.%series; deg := degree ups
       if (coef := coefficient(ups,deg)) = 0 then
@@ -927,7 +1029,7 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       -- when n is even
       (result := iExprToGenUPS(arg, opt_rec)) case %problem =>
         result
-      ans := carefulNthRootIfCan(result.%series, n, opt_rec.pos_Check?, true)
+      ans := carefulNthRootIfCan(result.%series, n, opt_rec, true)
       ans case %problem => ans
       [ans.%series]
 
@@ -955,9 +1057,9 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
         false
       logTerm : FE :=
         mon : FE := (x :: FE) - (cen :: FE)
-        pow : FE := mon ^ (deg :: FE)
+        pow : FE := mon^coerce_Ex(deg)
         negRat? => log(coef * pow)
-        term1 : FE := (deg :: FE) * log(mon)
+        term1 : FE := coerce_Ex(deg)*log(mon)
         log(coef) + term1
       [monomial(logTerm,0) + log(ups/lt)]
 
@@ -995,40 +1097,8 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       ups := result.%series; coef := coefficient(ups,0)
       -- series involves complex numbers
       (ord := order(ups,0)) = 0 and coef * coef = -1 =>
-        y := differentiate(ups)/(1 + ups*ups)
-        yCoef := coefficient(y,-1)
-        [monomial(log yCoef,0) + integrate(y - monomial(yCoef,-1)$UPS)]
-      atanFlag := opt_rec.atan_Flag
-      cc : FE :=
-        ord < 0 =>
-          atanFlag = "complex" =>
-            return stateProblem("atan","essential singularity")
-          (rn := ratIfCan(ord :: FE)) case "failed" =>
-            -- this condition usually won't occur because exponents will
-            -- be integers or rational numbers
-            return stateProblem("atan","branch problem")
-          if (atanFlag = "real: two sides") and (odd? numer(rn :: RN)) then
-            -- expansions to the left and right of zero have different
-            -- constant coefficients
-            return stateProblem("atan","branch problem")
-          lc := coefficient(ups,ord)
-          (signum := sign(lc)$SIGNEF) case "failed" =>
-            -- can't determine sign
-            atanFlag = "just do it" =>
-              plusMinus = 1 => pi()/(2 :: FE)
-              0
-            posNegPi2 := signOfExpression(lc) * pi()/(2 :: FE)
-            plusMinus = 1 => posNegPi2
-            pi()/(2 :: FE) - posNegPi2
-            --return stateProblem("atan","branch problem")
-          left? : B := atanFlag = "real: left side"; n := signum :: Integer
-          (left? and n = 1) or (not left? and n = -1) =>
-            plusMinus = 1 => -pi()/(2 :: FE)
-            pi()
-          plusMinus = 1 => pi()/(2 :: FE)
-          0
-        atan coef
-      [(cc :: UPS) + integrate(differentiate(ups)/(1 + ups*ups))]
+          [atan1(ups)]
+      atanacot2(ups, coef, ord, opt_rec, plusMinus)
 
     genUPSApplyIfCan(fcn, arg,fcnName, opt_rec) ==
       -- converts fcn(arg) to a generalized power series
@@ -1100,6 +1170,158 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
       expon := iExprToGenUPS(second args, opt_rec)
       expon case %problem => expon
       expGenUPS((expon.%series) * (logBase.%series), opt_rec)
+
+@
+
+<<package FS2UPS FunctionSpaceToUnivariatePowerSeries>>=
+
+)abbrev package FS2UPS FunctionSpaceToUnivariatePowerSeries
+++ Author: Clifton J. Williamson
+++ Date Created: 21 March 1989
+++ Date Last Updated: 2 December 1994
+++ Basic Operations:
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords: elementary function, power series
+++ Examples:
+++ References:
+++ Description:
+++   This package converts expressions in some function space to power
+++   series in a variable x with coefficients in that function space.
+++   The function \spadfun{exprToUPS} converts expressions to power series
+++   whose coefficients do not contain the variable x. The function
+++   \spadfun{exprToGenUPS} converts functional expressions to power series
+++   whose coefficients may involve functions of \spad{log(x)}.
+FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x):_
+ Exports == Implementation where
+  R     : Join(GcdDomain, Comparable, RetractableTo Integer,
+               LinearlyExplicitRingOver Integer)
+  FE    : Join(AlgebraicallyClosedField, TranscendentalFunctionCategory,
+               Algebra(Fraction(Integer)), FunctionSpace R)
+            with
+              coerce: Expon -> %
+                ++ coerce(e) converts an 'exponent' e to an 'expression'
+  Expon : Join(OrderedAbelianMonoid, OrderedRing)
+  UPS   : Join(UnivariatePowerSeriesCategory(FE,Expon),Field,
+               PowerSeriesCategory(FE, Expon, SingletonAsOrderedSet),
+               TranscendentalFunctionCategory)
+  TRAN  : PartialTranscendentalFunctions UPS
+  UTS : UnivariateTaylorSeriesCategory(FE)
+  TEXP : TaylorSeriesExpansion(FE, Expon, SingletonAsOrderedSet, UPS, UTS)
+  x     : Symbol
+  B       ==> Boolean
+  BOP     ==> BasicOperator
+  I       ==> Integer
+  NNI     ==> NonNegativeInteger
+  K       ==> Kernel FE
+  L       ==> List
+  RN      ==> Fraction Integer
+  ATANFLAG ==> Union("complex", _
+                    "real: two sides", _
+                    "real: left side", _
+                    "real: right side", _
+                    "just do it")
+  PROBLEM ==> String
+  FUNCTIONNAME ==> String
+  SY      ==> Symbol
+  PCL     ==> PolynomialCategoryLifting(IndexedExponents K,K,R,SMP,FE)
+  POL     ==> Polynomial R
+  SMP     ==> SparseMultivariatePolynomial(R,K)
+  SUP     ==> SparseUnivariatePolynomial Polynomial R
+  Problem ==> Record(func:String,prob:String)
+  Result  ==> Union(%series:UPS,%problem:Problem)
+  SIGNEF  ==> ElementaryFunctionSign(R,FE)
+  OPT_MAP ==> Union(FE -> Boolean, "none")
+  OPT_REC ==> Record(pos_Check? : Boolean, atan_Flag : ATANFLAG,
+                     coeff_check? : OPT_MAP, inv_check? : OPT_MAP,
+                       log_x_replace : Boolean, log_x_val : FE)
+
+  Exports ==> with
+    exprToUPS : (FE,B,ATANFLAG) -> Result
+      ++ exprToUPS(fcn,posCheck?,atanFlag) converts the expression
+      ++ \spad{fcn} to a power series.  If \spad{posCheck?} is true,
+      ++ log's of negative numbers are not allowed nor are nth roots of
+      ++ negative numbers with n even.  If \spad{posCheck?} is false,
+      ++ these are allowed.  \spad{atanFlag} determines how the case
+      ++ \spad{atan(f(x))}, where \spad{f(x)} has a pole, will be treated.
+      ++ The possible values of \spad{atanFlag} are \spad{"complex"},
+      ++ \spad{"real: two sides"}, \spad{"real: left side"},
+      ++ \spad{"real: right side"}, and \spad{"just do it"}.
+      ++ If \spad{atanFlag} is \spad{"complex"}, then no series expansion
+      ++ will be computed because, viewed as a function of a complex
+      ++ variable, \spad{atan(f(x))} has an essential singularity.
+      ++ Otherwise, the sign of the leading coefficient of the series
+      ++ expansion of \spad{f(x)} determines the constant coefficient
+      ++ in the series expansion of \spad{atan(f(x))}.  If this sign cannot
+      ++ be determined, a series expansion is computed only when
+      ++ \spad{atanFlag} is \spad{"just do it"}.  When the leading term
+      ++ in the series expansion of \spad{f(x)} is of odd degree (or is a
+      ++ rational degree with odd numerator), then the constant coefficient
+      ++ in the series expansion of \spad{atan(f(x))} for values to the
+      ++ left differs from that for values to the right.  If \spad{atanFlag}
+      ++ is \spad{"real: two sides"}, no series expansion will be computed.
+      ++ If \spad{atanFlag} is \spad{"real: left side"} the constant
+      ++ coefficient for values to the left will be used and if \spad{atanFlag}
+      ++ \spad{"real: right side"} the constant coefficient for values to the
+      ++ right will be used.
+      ++ If there is a problem in converting the function to a power series,
+      ++ a record containing the name of the function that caused the problem
+      ++ and a brief description of the problem is returned.
+      ++ When expanding the expression into a series it is assumed that
+      ++ the series is centered at 0.  For a series centered at a, the
+      ++ user should perform the substitution \spad{x -> x + a} before calling
+      ++ this function.
+
+    exprToGenUPS : (FE,B,ATANFLAG) -> Result
+      ++ exprToGenUPS(fcn,posCheck?,atanFlag) converts the expression
+      ++ \spad{fcn} to a generalized power series.  If \spad{posCheck?}
+      ++ is true, log's of negative numbers are not allowed nor are nth roots
+      ++ of negative numbers with n even. If \spad{posCheck?} is false,
+      ++ these are allowed.  \spad{atanFlag} determines how the case
+      ++ \spad{atan(f(x))}, where \spad{f(x)} has a pole, will be treated.
+      ++ The possible values of \spad{atanFlag} are \spad{"complex"},
+      ++ \spad{"real: two sides"}, \spad{"real: left side"},
+      ++ \spad{"real: right side"}, and \spad{"just do it"}.
+      ++ If \spad{atanFlag} is \spad{"complex"}, then no series expansion
+      ++ will be computed because, viewed as a function of a complex
+      ++ variable, \spad{atan(f(x))} has an essential singularity.
+      ++ Otherwise, the sign of the leading coefficient of the series
+      ++ expansion of \spad{f(x)} determines the constant coefficient
+      ++ in the series expansion of \spad{atan(f(x))}.  If this sign cannot
+      ++ be determined, a series expansion is computed only when
+      ++ \spad{atanFlag} is \spad{"just do it"}.  When the leading term
+      ++ in the series expansion of \spad{f(x)} is of odd degree (or is a
+      ++ rational degree with odd numerator), then the constant coefficient
+      ++ in the series expansion of \spad{atan(f(x))} for values to the
+      ++ left differs from that for values to the right.  If \spad{atanFlag}
+      ++ is \spad{"real: two sides"}, no series expansion will be computed.
+      ++ If \spad{atanFlag} is \spad{"real: left side"} the constant
+      ++ coefficient for values to the left will be used and if \spad{atanFlag}
+      ++ \spad{"real: right side"} the constant coefficient for values to the
+      ++ right will be used.
+      ++ If there is a problem in converting the function to a power
+      ++ series, we return a record containing the name of the function
+      ++ that caused the problem and a brief description of the problem.
+      ++ When expanding the expression into a series it is assumed that
+      ++ the series is centered at 0.  For a series centered at a, the
+      ++ user should perform the substitution \spad{x -> x + a} before calling
+      ++ this function.
+    exprToPS : (FE, B, ATANFLAG, B, FE) -> Result
+      ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) is
+      ++ like exprToUPS, but if \spad{log_flag} is true it replaces
+      ++ logarithms of expansion variable by \spad{log_val}
+    exprToPS : (FE, B, ATANFLAG, B, FE, FE -> B, FE -> B) -> Result
+      ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val, coef_chk,
+      ++ inv_chk) is like exprToPS(fcn, posCheck?, atanFlag, log_flag,
+      ++ log_val), but fails if \spad{coef_chk} is false for some
+      ++ coefficient of \spad{fcn} or if expansion process needs to
+      ++ invert element of \spad{FE} for which \spad{inv_chk} is
+      ++ false
+
+  Implementation ==> FunctionSpaceToUnivariatePowerSeries2(R,
+                       FE, Expon, UPS, TRAN, UTS, TEXP,
+                        (coerce$FE)@(Expon -> FE), x)
 
 @
 \section{License}
