@@ -310,6 +310,7 @@ AlgebraicFunction(R, F): Exports == Implementation where
   UPR ==> SparseUnivariatePolynomial R
   SPECIALDISP ==> '%specialDisp
   SPECIALDIFF ==> '%specialDiff
+  SPECIALEQUAL ==> '%specialEqual
 
   Exports ==> with
     rootOf  : (UP, SE) -> F
@@ -410,11 +411,26 @@ AlgebraicFunction(R, F): Exports == Implementation where
         (d = 1) => - leadingCoefficient(reductum q) /leadingCoefficient q
         kernel(opalg, [q x, x])
 
+    eqopalg(k1 : K, k2 : K) : Boolean ==
+        al1 := argument(k1)
+        al2 := argument(k2)
+        dv1 := retract(al1.2)@K
+        dv2 := retract(al2.2)@K
+        pe1 := al1.1
+        pe2 := al2.1
+        dv1 = dv2 => pe1 = pe2
+        p1 := univariate(numer(pe1), dv1)
+        p2 := univariate(numer(pe2), dv2)
+        lc1 := leadingCoefficient(p1)
+        lc2 := leadingCoefficient(p2)
+        lc1 = lc2 => p1 = p2
+        lc2*p1 = lc1*p2
     evaluate(opalg, ialg)$BasicOperatorFunctions1(F)
     setProperty(opalg, SPECIALDIFF,
                               dvalg@((List F, SE) -> F) pretend None)
     setProperty(opalg, SPECIALDISP,
                               dalg@(List F -> OutputForm) pretend None)
+    setProperty(opalg, SPECIALEQUAL, eqopalg@((K,K) -> Boolean) pretend None)
 
     if R has RetractableTo Integer then
       import PolynomialRoots(IndexedExponents K, K, R, P, F)
