@@ -33,7 +33,8 @@ testsuite "HASHTBL"
 ++   purposes can be obtained.
 
 HashTable(Key, Entry, hashfn): Exports == Implementation where
-    Key, Entry: SetCategory
+    Key : SetCategory
+    Entry : Type
     hashfn: String --  Union("EQ", "UEQUAL", "CVEC", "ID")
 
     Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
@@ -98,7 +99,8 @@ testEquals("construct(l)$TABLE(INT, INT)", "construct(reverse l)$TABLE(INT, INT)
 ++   This domain is used to provide a conditional "add" domain
 ++   for the implementation of \spadtype{Table}.
 
-InnerTable(Key: SetCategory, Entry: SetCategory, addDom):Exports == Implementation where
+InnerTable(Key: SetCategory, Entry: Type, addDom) : Exports ==
+       Implementation where
     addDom : Join(TableAggregate(Key, Entry), finiteAggregate)
     Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
     Implementation ==> addDom
@@ -124,7 +126,7 @@ InnerTable(Key: SetCategory, Entry: SetCategory, addDom):Exports == Implementati
 ++   domain is consistent with Lisp EQUAL otherwise an
 ++   \spadtype{AssociationList}
 
-Table(Key: SetCategory, Entry: SetCategory):Exports == Implementation where
+Table(Key : SetCategory, Entry : Type):Exports == Implementation where
     Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
 
     Implementation ==> InnerTable(Key, Entry,
@@ -149,7 +151,7 @@ Table(Key: SetCategory, Entry: SetCategory):Exports == Implementation where
 ++   This domain provides tables where the keys are compared using
 ++   \spadfun{eq?}.  Thus keys are considered equal only if they
 ++   are the same instance of a structure.
-EqTable(Key: SetCategory, Entry: SetCategory) ==
+EqTable(Key: SetCategory, Entry: Type) ==
       HashTable(Key, Entry, "EQ")
 
 @
@@ -169,7 +171,7 @@ EqTable(Key: SetCategory, Entry: SetCategory) ==
 ++ Description:
 ++   This domain provides tables where the keys are strings.
 ++   A specialized hash function for strings is used.
-StringTable(Entry: SetCategory) ==
+StringTable(Entry : Type) ==
     HashTable(String, Entry, "CVEC")
 
 @
@@ -191,7 +193,8 @@ StringTable(Entry: SetCategory) ==
 ++   value has been explicitly stored for a key.
 GeneralSparseTable(Key, Entry, Tbl, dent): TableAggregate(Key, Entry) == Impl
   where
-    Key, Entry: SetCategory
+    Key : SetCategory
+    Entry : BasicType
     Tbl:  TableAggregate(Key, Entry)
     dent: Entry
 
@@ -228,7 +231,7 @@ GeneralSparseTable(Key, Entry, Tbl, dent): TableAggregate(Key, Entry) == Impl
 ++   A sparse table has a default entry, which is returned if no other
 ++   value has been explicitly stored for a key.
 
-SparseTable(Key:SetCategory, Ent:SetCategory, dent:Ent) ==
+SparseTable(Key : SetCategory, Ent : BasicType, dent : Ent) ==
         GeneralSparseTable(Key, Ent, Table(Key, Ent), dent)
 
 @

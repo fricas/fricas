@@ -119,6 +119,7 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
      map!: (S->S,%) -> %
         ++ map!(f,u) destructively replaces each element x of u by \axiom{f(x)}.
    if % has finiteAggregate then
+      if S has BasicType then BasicType
       any?: (S->Boolean,%) -> Boolean
         ++ any?(p,u) tests if \axiom{p(x)} is true for any element x of u.
         ++ Note: for collections,
@@ -141,7 +142,7 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
       members: % -> List S
         ++ members(u) returns a list of the consecutive elements of u.
         ++ For collections, \axiom{parts([x,y,...,z]) = (x,y,...,z)}.
-      if S has SetCategory then
+      if S has BasicType then
         count: (S,%) -> NonNegativeInteger
           ++ count(x,u) returns the number of occurrences of x in u.
           ++ For collections, \axiom{count(x,u) = reduce(+,[x=y for y in u],0)}.
@@ -165,13 +166,14 @@ HomogeneousAggregate(S:Type): Category == Aggregate with
        true
      count(f:S -> Boolean, c:%) == _+/[1 for x in parts c | f x]
      members x            == parts x
-     if S has SetCategory then
+     if S has BasicType then
        count(s : S, x : %) == count(y +-> s = y, x)
        member?(e, c)   == any?(x +-> e = x, c)
        x = y ==
           not size?(x, #y) => false
           for a in parts x for b in parts y | a ~= b repeat return false
           true
+     if S has CoercibleTo(OutputForm) then
        coerce(x:%):OutputForm ==
          bracket
             commaSeparate [a::OutputForm for a in parts x]$List(OutputForm)
@@ -228,7 +230,7 @@ Collection(S:Type): Category == HomogeneousAggregate(S) with
         ++ select(p,u) returns a copy of u containing only those elements such
         ++ \axiom{p(x)} is true.
         ++ Note: \axiom{select(p,u) == [x for x in u | p(x)]}.
-      if S has SetCategory then
+      if S has BasicType then
         reduce: ((S,S)->S,%,S,S) -> S
           ++ reduce(f,u,x,z) reduces the binary operation f across u, stopping
           ++ when an "absorbing element" z is encountered.
@@ -252,7 +254,7 @@ Collection(S:Type): Category == HomogeneousAggregate(S) with
      select(f:S->Boolean, x:%) ==
        construct select(f, parts x)
 
-     if S has SetCategory then
+     if S has BasicType then
        remove(s : S, x : %) == remove(y +-> y = s, x)
        reduce(f:(S,S)->S, x:%, s1:S, s2:S) == reduce(f, parts x, s1, s2)
        removeDuplicates(x) == construct removeDuplicates parts x
@@ -465,7 +467,7 @@ PriorityQueueAggregate(S:OrderedSet): Category == Join(BagAggregate S,_
 ++ Description:
 ++ This category is a collection of operations common to both
 ++ categories \spadtype{Dictionary} and \spadtype{MultiDictionary}
-DictionaryOperations(S:SetCategory): Category ==
+DictionaryOperations(S : Type) : Category ==
   Join(BagAggregate S, Collection(S)) with
    dictionary: () -> %
      ++ dictionary()$D creates an empty dictionary of type D.
@@ -481,9 +483,11 @@ DictionaryOperations(S:SetCategory): Category ==
 --   ++ remove!(p,d,n) destructively changes dictionary d by removing
 --   ++ up to n entries x such that \axiom{p(x)} is true.
    if % has finiteAggregate then
-     remove!: (S,%) -> %
-       ++ remove!(x,d) destructively changes dictionary d by removing
-       ++ all entries y such that \axiom{y = x}.
+     if S has CoercibleTo(OutputForm) then CoercibleTo(OutputForm)
+     if S has BasicType then
+       remove!: (S,%) -> %
+         ++ remove!(x,d) destructively changes dictionary d by removing
+         ++ all entries y such that \axiom{y = x}.
      remove!: (S->Boolean,%) -> %
        ++ remove!(p,d) destructively changes dictionary d by removeing
        ++ all entries x such that \axiom{p(x)} is true.
@@ -495,8 +499,9 @@ DictionaryOperations(S:SetCategory): Category ==
    dictionary() == empty()
    if % has finiteAggregate then
      copy d == dictionary parts d
-     coerce(s:%):OutputForm ==
-       prefix("dictionary"@String :: OutputForm,
+     if S has CoercibleTo(OutputForm) then
+         coerce(s:%):OutputForm ==
+             prefix("dictionary"@String :: OutputForm,
                                       [x::OutputForm for x in parts s])
 
 @
@@ -518,7 +523,7 @@ DictionaryOperations(S:SetCategory): Category ==
 ++ This category models the usual notion of dictionary which involves
 ++ large amounts of data where copying is impractical.
 ++ Principal operations are thus destructive (non-copying) ones.
-Dictionary(S:SetCategory): Category ==
+Dictionary(S : Type) : Category ==
  DictionaryOperations S add
    dictionary l ==
      d := dictionary()
@@ -535,14 +540,15 @@ Dictionary(S:SetCategory): Category ==
      --  remove!(x := first parts d, d, 1)
      --  x
 
-     s = t ==
-       eq?(s,t) => true
-       #s ~= #t => false
-       every?((x: S): Boolean +-> member?(x, t), parts s)
+     if S has BasicType then
+         s = t ==
+             eq?(s,t) => true
+             #s ~= #t => false
+             every?((x: S): Boolean +-> member?(x, t), parts s)
 
-     remove!(f:S->Boolean, t:%) ==
-       for m in parts t repeat if f m then remove!(m, t)
-       t
+         remove!(f:S->Boolean, t:%) ==
+             for m in parts t repeat if f m then remove!(m, t)
+             t
 
 @
 \section{category MDAGG MultiDictionary}
@@ -807,7 +813,7 @@ OrderedMultisetAggregate(S:OrderedSet): Category ==
 ++ Description:
 ++ A keyed dictionary is a dictionary of key-entry pairs for which there is
 ++ a unique entry for each key.
-KeyedDictionary(Key:SetCategory, Entry:SetCategory): Category ==
+KeyedDictionary(Key : SetCategory, Entry : Type): Category ==
   Dictionary Record(key:Key,entry:Entry) with
    key?: (Key, %) -> Boolean
      ++ key?(k,t) tests if k is a key in table t.
@@ -1011,7 +1017,7 @@ IndexedAggregate(Index: SetCategory, Entry: Type): Category ==
 ++ Description:
 ++ A table aggregate is a model of a table, i.e. a discrete many-to-one
 ++ mapping from keys to entries.
-TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
+TableAggregate(Key : SetCategory, Entry : Type) : Category ==
   Join(KeyedDictionary(Key,Entry),IndexedAggregate(Key,Entry)) with
    setelt: (%,Key,Entry) -> Entry          -- setelt! later
      ++ setelt(t,k,e) (also written \axiom{t.k := e}) is equivalent
@@ -1034,8 +1040,9 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
    insert!(p, t)      == (t(p.key) := p.entry; t)
    indices t           == keys t
 
-   coerce(t:%):OutputForm ==
-     prefix("table"::OutputForm,
+   if Entry has CoercibleTo(OutputForm) then
+       coerce(t:%):OutputForm ==
+           prefix("table"::OutputForm,
                     [k::OutputForm = (t.k)::OutputForm for k in keys t])
 
    elt(t, k) ==
@@ -1066,12 +1073,14 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
      parts(t:%):List Entry   == [t.k for k in keys t]
      entries(t:%):List Entry == parts(t)
 
-     s:% = t:% ==
-       eq?(s,t) => true
-       #s ~= #t => false
-       for k in keys s repeat
-         (e := search(k, t)) case "failed" or (e::Entry) ~= s.k => return false
-       true
+     if Entry has BasicType then
+         s:% = t:% ==
+             eq?(s,t) => true
+             #s ~= #t => false
+             for k in keys s repeat
+                 (e := search(k, t)) case "failed" or (e::Entry) ~= s.k =>
+                     return false
+             true
 
      map(f: Record(key:Key,entry:Entry)->Record(key:Key,entry:Entry), t: %): % ==
        z := table()
@@ -1079,13 +1088,15 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
          ke: Record(key:Key,entry:Entry) := f [k, t.k]
          z ke.key := ke.entry
        z
-     map!(f: Record(key:Key,entry:Entry)->Record(key:Key,entry:Entry), t: %): % ==
-       lke: List Record(key:Key,entry:Entry) := nil()
-       for k in keys t repeat
-         lke := cons(f [k, remove!(k,t)::Entry], lke)
-       for ke in lke repeat
-         t ke.key := ke.entry
-       t
+     if Entry has BasicType then
+         map!(f : Record(key : Key, entry : Entry) ->
+                Record(key : Key, entry : Entry), t : %) : % ==
+             lke: List Record(key:Key,entry:Entry) := nil()
+             for k in keys t repeat
+                 lke := cons(f [k, remove!(k,t)::Entry], lke)
+             for ke in lke repeat
+                 t ke.key := ke.entry
+             t
 
      inspect(t: %): Record(key:Key,entry:Entry) ==
        ks := keys t
@@ -1099,9 +1110,10 @@ TableAggregate(Key:SetCategory, Entry:SetCategory): Category ==
      index?(k: Key, t: %): Boolean ==
        search(k,t) case Entry
 
-     remove!(x:Record(key:Key,entry:Entry), t:%) ==
-       if member?(x, t) then remove!(x.key, t)
-       t
+     if Entry has BasicType then
+         remove!(x:Record(key:Key,entry:Entry), t:%) ==
+             if member?(x, t) then remove!(x.key, t)
+             t
      extract!(t: %): Record(key:Key,entry:Entry) ==
        k: Record(key:Key,entry:Entry) := inspect t
        remove!(k.key, t)
@@ -2335,7 +2347,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
      while not empty? x repeat (r := f(r, first x); x := rest x)
      r
 
-   if S has SetCategory then
+   if S has BasicType then
       reduce(f, x, i,a) ==
         r := i
         while not empty? x and r ~= a repeat
@@ -2397,7 +2409,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
        z := rest z
      y
 
-   if S has SetCategory then
+   if S has BasicType then
      position(w, x, s) ==
        s < (m := minIndex x) => error "index out of range"
        x := rest(x, (s - m)::NonNegativeInteger)
@@ -2439,7 +2451,7 @@ ListAggregate(S:Type): Category == Join(StreamAggregate S,
 ++ An association list is a list of key entry pairs which may be viewed
 ++ as a table.  It is a poor mans version of a table:
 ++ searching for a key is a linear operation.
-AssociationListAggregate(Key:SetCategory,Entry:SetCategory): Category ==
+AssociationListAggregate(Key : SetCategory, Entry : Type) : Category ==
    Join(TableAggregate(Key, Entry), ListAggregate Record(key:Key,entry:Entry)) with
       assoc: (Key, %) -> Union(Record(key:Key,entry:Entry), "failed")
         ++ assoc(k,u) returns the element x in association list u stored
