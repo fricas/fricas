@@ -58,7 +58,8 @@ Record0 args ==
     dom.2 := NIL
     dom.3 := ['RecordCategory,:QCDR dom.0]
     dom.4 :=
-          [[ '(SetCategory) ],[ '(SetCategory) ]]
+          [[ '(SetCategory) ], [ '(BasicType),
+             '(CoercibleTo (OutputForm)), '(SetCategory) ]]
     dom.5 := [rest a for a in args]
     dom.6 := [function RecordEqual, :dom]
     dom.7 := [function RecordPrint, :dom]
@@ -127,7 +128,8 @@ Union(:args) ==
     dom.3 :=
       '(SetCategory)
     dom.4 :=
-          [[ '(SetCategory) ],[ '(SetCategory) ]]
+          [[ '(SetCategory) ],[ '(BasicType),
+             '(CoercibleTo (OutputForm)),  '(SetCategory) ]]
     dom.5 := args
     dom.6 := [function UnionEqual, :dom]
     dom.7 := [function UnionPrint, :dom]
