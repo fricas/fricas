@@ -18,7 +18,7 @@
 ++ Description:
 ++ \spadtype{PatternMatchIntegration} provides functions that use
 ++ the pattern matcher to find some indefinite and definite integrals
-++ involving special functions and found in the litterature.
+++ involving special functions and found in the literature.
 PatternMatchIntegration(R, F): Exports == Implementation where
   R : Join(Comparable, RetractableTo Integer, GcdDomain,
            LinearlyExplicitRingOver Integer)
@@ -35,6 +35,7 @@ PatternMatchIntegration(R, F): Exports == Implementation where
   RES ==> PatternMatchResult(Z, F)
   OFE ==> OrderedCompletion F
   REC ==> Record(which: Z, exponent: F, coeff: F)
+  REC2 ==> Record(which: Z, exponent: F, coeff: F, addpart: F)
   ANS ==> Record(special:F, integrand:F)
   NONE ==> 0
   EI   ==> 1
@@ -43,6 +44,9 @@ PatternMatchIntegration(R, F): Exports == Implementation where
   CI   ==> 4
   GAM2 ==> 5
   CI0  ==> 6
+  -- Fresnel integrals
+  FS ==> 7
+  FC ==> 8
 
   Exports ==> with
     splitConstant: (F, SY) -> Record(const:F, nconst:F)
@@ -93,8 +97,9 @@ PatternMatchIntegration(R, F): Exports == Implementation where
                     zz case Z => zz >= 0; false))
 
     spi := sqrt(pi()$F)
-
     half := 1::F / 2::F
+    spio2 := sqrt(pi()$F / 2::F)
+    s2opi := sqrt(2::F / pi()$F)
 
     mkalist res == construct destruct res
 
@@ -134,6 +139,7 @@ PatternMatchIntegration(R, F): Exports == Implementation where
            matchei    : (F, SY) -> REC
            matcherfei : (F, SY, Boolean) -> REC
            matchsici  : (F, SY) -> REC
+           matchfresnel : (F, SY) -> REC2
            matchli    : (F, SY) -> List F
            matchli0   : (F, K, SY) -> List F
            matchdilog : (F, SY) -> List F
@@ -263,6 +269,57 @@ PatternMatchIntegration(R, F): Exports == Implementation where
                  [SI, na, d/(2::F)]
              [NONE, 0, 0]
 
+-- matches the integral of the form sin(pi/2*f(u)^2)*f'(u) or cos(pi/2*f(u)^2)*f'(u)
+-- to a result of the form p(f(u))*fresnel(f(u))+l(f(u))
+-- returns [case, f, d, l]
+           matchfresnel(f, x) ==
+             b := pmb::F
+             t := tan(a := pma::F)
+             patden := (t^2 + b)
+             pats := c*t / patden
+             --patc := (c - c * t^2) / patden
+             patc := c / patden
+
+             -- can we match the pattern?
+             ress := new()$RES
+             resc := new()$RES
+             sx? : Boolean := failed?(ress := patternMatch(f, convert(pats)@PAT, ress))
+             cx? : Boolean := failed?(resc := patternMatch(f, convert(patc)@PAT, resc))
+
+             -- Could not match
+             sx? and cx? => [NONE, 0, 0, 0]
+
+             -- post-process the match result
+             not sx? =>
+               l := mkalist ress
+               al := insqrt(4::F/pi()$F * (l.pma)::F)
+               ald := l.pmc
+               gamma := ald / D(al, x)
+
+               zero? D(gamma, x) =>
+                 newarg := al
+                 prefactor := gamma / 2::F
+                 [FS, newarg, prefactor, 0]
+
+               [NONE, 0, 0, 0]
+
+             not cx? =>
+               l := mkalist resc
+               al := insqrt(4::F/pi()$F * (l.pma)::F)
+               ald := l.pmc
+               gamma := ald / D(al, x)
+
+               zero? D(gamma, x) =>
+                 newarg := al
+                 prefactor := gamma / 2::F
+                 linpart := al*prefactor
+                 [FC, newarg, prefactor, linpart]
+
+               [NONE, 0, 0, 0]
+
+             -- Nothing fits
+             [NONE, 0, 0, 0]
+
 -- returns a simplified sqrt(y)
            insqrt y ==
              rec := froot(y, 2)$PolynomialRoots(IndexedExponents K, K, R, P, F)
@@ -287,6 +344,11 @@ PatternMatchIntegration(R, F): Exports == Implementation where
              cse = CI => [rec.coeff * Ci(rec.exponent), 0]
              cse = CI0 => [rec.coeff * Ci(rec.exponent)
                            + rec.coeff * log(rec.exponent), 0]
+
+             cse := (rec2:REC2 := matchfresnel(f, x)).which
+             cse = FS => [rec2.coeff * fresnelS(rec2.exponent) + rec2.addpart, 0]
+             cse = FC => [rec2.coeff * fresnelC(rec2.exponent) + rec2.addpart, 0]
+
              "failed"
 
            pmComplexintegrate(f, x) ==
