@@ -98,7 +98,8 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
       chooseVal       :  (SUPP,SUPP,List OV,List List R) -> Union(UTerm,"failed")
       localgcd        :  (SUPP,SUPP,List OV,List List R) -> LGcd
       notCoprime      :  (SUPP,SUPP, List NNI,List OV,List List R)   -> SUPP
-      imposelc        : (List SUP,List OV,List R,List P) -> List SUP
+      imposelc      :  (List SUP, List OV, List R, List P) ->
+                           Union(List SUP, "failed")
 
       lift? :(SUPP,SUPP,UTerm,List NNI,List OV) -> Union(s:SUPP,failed:"failed",notCoprime:"notCoprime")
       lift  :(SUPP,SUP,SUP,P,List OV,List NNI,List R) -> Union(SUPP,"failed")
@@ -164,12 +165,14 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           if degree gcd(uf,differentiate uf)=0 then return [uf,ltry]
 
       -- impose the right lc
-      imposelc(lipol:List SUP,
-               lvar:List OV,lval:List R,leadc:List P):List SUP ==
+      imposelc(lipol : List SUP, lvar : List OV, lval : List R,
+               leadc : List P) : Union(List SUP, "failed") ==
         result:List SUP :=[]
         for pol in lipol for leadpol in leadc repeat
            p1:= univariate eval(leadpol,lvar,lval) * pol
-           result:= cons((p1 exquo leadingCoefficient pol)::SUP,result)
+           p1u := p1 exquo leadingCoefficient pol
+           p1u case "failed" => return "failed"
+           result := cons(p1u::SUP, result)
         reverse result
 
     --Compute the gcd between not coprime polynomials
@@ -341,7 +344,9 @@ PolynomialGcdPackage(E,OV,R,P):C == T where
           else d:=(retract(eval(lgcd,lvar,lval)) * d exquo lcd)::SUP
           uf:=lcd*uf
         leadlist:=[lgcd,lcf]
-        lg:=imposelc([d,uf],lvar,lval,leadlist)
+        lgu := imposelc([d, uf], lvar, lval, leadlist)
+        lgu case "failed" => "failed"
+        lg := lgu::List(SUP)
         (pl:=lifting(f,lvar,lg,lval,leadlist,ldeg,pmod)) case "failed" =>
                "failed"
         plist := pl :: List SUPP
