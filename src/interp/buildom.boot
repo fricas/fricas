@@ -192,7 +192,8 @@ Mapping(:args) ==
     dom.3 :=
       '(SetCategory)
     dom.4 :=
-          [[ '(SetCategory) ],[ '(SetCategory) ]]
+          [[ '(SetCategory) ],[ '(BasicType),
+             '(CoercibleTo (OutputForm)), '(SetCategory) ]]
     dom.5 := args
     dom.6 := [function MappingEqual, :dom]
     dom.7 := [function MappingPrint, :dom]
@@ -230,7 +231,8 @@ Enumeration0(:args) ==
     dom.2 := NIL
     dom.3 := ['EnumerationCategory,:QCDR dom.0]
     dom.4 :=
-          [[ '(SetCategory) ],[ '(SetCategory) ]]
+          [[ '(SetCategory) ], [ '(BasicType),
+             '(CoercibleTo (OutputForm)), '(SetCategory) ]]
     dom.5 := args
     dom.6 := [function EnumEqual, :dom]
     dom.7 := [function EnumPrint, :dom]
