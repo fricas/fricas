@@ -146,16 +146,42 @@ SortedCache(S:CachableSet): Exports == Implementation where
             insertAtEnd(x)
             return x
         while (l + 1) < m repeat
+            vl : S
+            vm : S
+            m0 := cache_use
+            if not(l < 0) then
+                vl := qelt(vscan, l)
+            has_vm := false
+            if m < m0 then
+                vm := qelt(vscan, m)
+                has_vm := true
             i := shift(l + m, -1)
             cp := triage(x, y := qelt(vscan, i))
             zero?(cp) =>
                 setPosition(x, position y)
                 return y
+            vscan := cache
+            if not(l < 0) then
+                if not(EQ(vl, qelt(vscan, l))$Lisp) then
+                    l0 := l
+                    while not(EQ(vl, qelt(vscan, l))$Lisp) repeat
+                        l := l + 1
+                    i := i + l - l0
+                    m := m + l - l0
+            if not(EQ(y, qelt(vscan, i))$Lisp) then
+                i0 := i
+                while not(EQ(y, qelt(vscan, i))$Lisp) repeat
+                    i := i + 1
+                m := m + i - i0
+            if has_vm then
+                if not(EQ(vm, qelt(vscan, m))$Lisp) then
+                    while not(EQ(vm, qelt(vscan, m))$Lisp) repeat
+                        m := m + 1
             if cp < 0 then
                 m := i
             else
                 l := i
-        m = m0 =>
+        m = cache_use =>
             setPosition(x, (position qelt(vscan, m - 1)) + DIFF)
             insertAtEnd(x)
             return x
@@ -240,7 +266,7 @@ Kernel(S : Comparable): Exports == Implementation where
     kernel  : (OP, List S, N) -> %
       ++ kernel(op, [a1,...,an], m) returns the kernel \spad{op(a1,...,an)}
       ++ of nesting level m.
-      ++ Error: if op is k-ary for some k not equal to m.
+      ++ Error: if op is k-ary for some k not equal to n.
     kernel  : Symbol -> %
       ++ kernel(x) returns x viewed as a kernel.
     symbolIfCan: % -> Union(Symbol, "failed")
