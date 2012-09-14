@@ -656,3 +656,11 @@
 (defmacro |rplac| (x y) `(setf ,x ,y))
 
 (defmacro |do| (&rest args) (CONS 'PROGN args))
+
+;;; Support for double hashing tables
+;;; Double hashing hash tables need two distinct values.
+;;; VACANT  - a marker for a free position that has never been used
+;;; DELETED - a marker for a position that has been used but is now
+;;;           available for a new entry
+(defvar HASHTABLEVACANT  (gensym))
+(defvar HASHTABLEDELETED (gensym))
