@@ -188,15 +188,15 @@
 ;;; http://en.wikipedia.org/wiki/Fowler-Noll-Vo_hash_function.
 
 ;;; FNV-1a hash
-(defconstant HASHSTATE-BASIS 14695981039346656037)
-(defconstant HASHSTATE-PRIME 1099511628211)
+(defconstant HASHSTATEBASIS 14695981039346656037)
+(defconstant HASHSTATEPRIME 1099511628211)
 ; FNV-1a algorithm with 64bit truncation (18446744073709551615=2^64-1).
-(defmacro HASHSTATE-UPDATE (x y)
-    `(logand (* HASHSTATE-PRIME (logxor ,x ,y)) 18446744073709551615))
+(defmacro HASHSTATEUPDATE (x y)
+    `(logand (* HASHSTATEPRIME (logxor ,x ,y)) 18446744073709551615))
 ; Make a fixnum out of (unsigned-byte 64)
-(defmacro HASHSTATE-MAKE-FIXNUM (x)
+(defmacro HASHSTATEMAKEFIXNUM (x)
     `(logand ,x most-positive-fixnum))
-(defmacro HASHSTATE-MOD (x y)
+(defmacro HASHSTATEMOD (x y)
     `(mod ,x ,y))
 
 ;;; Floating point macros
