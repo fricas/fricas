@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2012-03-08],
+AC_INIT([FriCAS], [1.1.8],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
