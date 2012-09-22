@@ -12,9 +12,9 @@
 \section{package INEP InnerNumericEigenPackage}
 <<package INEP InnerNumericEigenPackage>>=
 )abbrev package INEP InnerNumericEigenPackage
-++ Author:P. Gianni
+++ Author: P. Gianni
 ++ Date Created: Summer 1990
-++ Date Last Updated:Spring 1991
+++ Date Last Updated: Spring 1991
 ++ Basic Functions:
 ++ Related Constructors: ModularField
 ++ Also See:
@@ -25,12 +25,12 @@
 ++ This package is the inner package to be used by NumericRealEigenPackage
 ++ and NumericComplexEigenPackage for the computation of numeric
 ++ eigenvalues and eigenvectors.
-InnerNumericEigenPackage(K,F,Par) : C == T
+InnerNumericEigenPackage(K, F, Par) : C == T
  where
    F    :   Field  -- this is the field where the answer will be
                    -- for dealing with the complex case
    K    :   Field  -- type of the  input
-   Par  :   Join(Field,OrderedRing)  -- it will be NF or RN
+   Par  :   Join(Field, OrderedRing)  -- it will be NF or RN
 
    SE    ==> Symbol()
    RN    ==> Fraction Integer
@@ -51,11 +51,11 @@ InnerNumericEigenPackage(K,F,Par) : C == T
    SUP         ==> SparseUnivariatePolynomial
    MSUK        ==> Matrix SUK
 
-   PEigenForm  ==> Record(algpol:SUK,almult:Integer,poleigen:List(MSUK))
+   PEigenForm  ==> Record(algpol : SUK, almult : Integer, poleigen : List(MSUK))
 
-   outForm     ==> Record(outval:F,outmult:Integer,outvect:List MF)
+   outForm     ==> Record(outval : F, outmult : Integer, outvect : List MF)
 
-   IntForm     ==> Union(outForm,PEigenForm)
+   IntForm     ==> Union(outForm, PEigenForm)
    UFactor     ==> (SUK -> Factored SUK)
    C == with
 
@@ -72,8 +72,8 @@ InnerNumericEigenPackage(K,F,Par) : C == T
        ++ then only the real roots are returned, if K is
        ++ \spad{Complex Fraction Integer} then all roots are found.
 
-     innerEigenvectors    : (MK,Par,UFactor)   ->  List(outForm)
-       ++ innerEigenvectors(m,eps,factor) computes explicitly
+     innerEigenvectors    : (MK, Par, UFactor)   ->  List(outForm)
+       ++ innerEigenvectors(m, eps, factor) computes explicitly
        ++ the eigenvalues and the correspondent eigenvectors
        ++ of the matrix m. The parameter eps determines the type of
        ++ the output, factor is the univariate factorizer to br used
@@ -81,7 +81,7 @@ InnerNumericEigenPackage(K,F,Par) : C == T
 
    T == add
 
-     numeric(r:K):F ==
+     numeric(r : K) : F ==
        K is RN =>
          F is NF => convert(r)$RN
          F is RN    => r
@@ -94,11 +94,11 @@ InnerNumericEigenPackage(K,F,Par) : C == T
 
     ---- next functions neeeded for defining  ModularField ----
 
-     monicize(f:SUK) : SUK ==
-       (a:=leadingCoefficient f) =1 => f
+     monicize(f : SUK) : SUK ==
+       (a := leadingCoefficient f) =1 => f
        inv(a)*f
 
-     reduction(u:SUK,p:SUK):SUK == u rem p
+     reduction(u : SUK, p : SUK) : SUK == u rem p
 
      merge(p:SUK,q:SUK):Union(SUK,"failed") ==
          p = q => p
@@ -107,102 +107,102 @@ InnerNumericEigenPackage(K,F,Par) : C == T
          "failed"
 
      exactquo(u:SUK,v:SUK,p:SUK):Union(SUK,"failed") ==
-        val:=extendedEuclidean(v,p,u)
+        val := extendedEuclidean(v, p, u)
         val case "failed" => "failed"
         val.coef1
 
          ----  eval a vector of F in a radical expression  ----
-     evalvect(vect:MSUK,alg:F) : MF ==
-       n:=nrows vect
-       w:MF:=zero(n,1)$MF
+     evalvect(vect : MSUK, alg : F) : MF ==
+       n := nrows vect
+       w : MF := zero(n, 1)$MF
        for i in 1..n repeat
-         polf:=map(numeric,
-           vect(i,1))$UnivariatePolynomialCategoryFunctions2(K,SUK,F,SUF)
-         v:F:=elt(polf,alg)
-         setelt(w,i,1,v)
+         polf := map(numeric,
+           vect(i, 1))$UnivariatePolynomialCategoryFunctions2(K, SUK, F, SUF)
+         v : F := elt(polf, alg)
+         setelt(w, i, 1, v)
        w
 
        ---- internal function for the computation of eigenvectors  ----
-     inteigen(A:MK,p:SUK,fact:UFactor) : List(IntForm) ==
-       dimA:NNI:=  nrows A
-       MM:=ModularField(SUK,SUK,reduction,merge,exactquo)
-       AM:=Matrix(MM)
-       lff:=factors fact(p)
-       res: List IntForm  :=[]
-       lr : List MF:=[]
+     inteigen(A : MK, p : SUK, fact : UFactor) : List(IntForm) ==
+       dimA : NNI :=  nrows A
+       MM := ModularField(SUK, SUK, reduction, merge, exactquo)
+       AM := Matrix(MM)
+       lff := factors fact(p)
+       res : List IntForm  := []
+       lr : List MF := []
        for ff in lff repeat
-         pol:SUK:= ff.factor
+         pol : SUK := ff.factor
          if (degree pol)=1 then
-           alpha:K:=-coefficient(pol,0)/leadingCoefficient pol
+           alpha : K := -coefficient(pol, 0)/leadingCoefficient pol
            -- compute the eigenvectors, rational case
-           B1:MK := zero(dimA,dimA)$MK
+           B1 : MK := zero(dimA, dimA)$MK
            for i in 1..dimA repeat
-             for j in 1..dimA repeat B1(i,j):=A(i,j)
-             B1(i,i):= B1(i,i) - alpha
-           lr:=[]
+             for j in 1..dimA repeat B1(i, j) := A(i, j)
+             B1(i, i) := B1(i, i) - alpha
+           lr := []
            for vecr in nullSpace B1 repeat
-             wf:MF:=zero(dimA,1)
-             for i in 1..dimA repeat wf(i,1):=numeric vecr.i
-             lr:=cons(wf,lr)
-           res:=cons([numeric alpha,ff.exponent,lr]$outForm,res)
+             wf : MF := zero(dimA, 1)
+             for i in 1..dimA repeat wf(i, 1) := numeric vecr.i
+             lr := cons(wf, lr)
+           res := cons([numeric alpha, ff.exponent, lr]$outForm, res)
          else
-           ppol:=monicize pol
-           alg:MM:= reduce(monomial(1,1),ppol)
-           B:AM:= zero(dimA,dimA)$AM
+           ppol := monicize pol
+           alg : MM := reduce(monomial(1, 1), ppol)
+           B : AM := zero(dimA, dimA)$AM
            for i in 1..dimA  repeat
-             for j in 1..dimA repeat B(i,j):=reduce(A(i,j) ::SUK,ppol)
-             B(i,i):=B(i,i) - alg
-           sln2:=nullSpace B
-           soln:List MSUK :=[]
+             for j in 1..dimA repeat B(i, j) := reduce(A(i, j) ::SUK, ppol)
+             B(i, i) := B(i, i) - alg
+           sln2 := nullSpace B
+           soln : List MSUK := []
            for vec in sln2 repeat
-             wk:MSUK:=zero(dimA,1)
-             for i in 1..dimA repeat wk(i,1):=(vec.i)::SUK
-             soln:=cons(wk,soln)
-           res:=cons([ff.factor,ff.exponent,soln]$PEigenForm,
+             wk : MSUK := zero(dimA, 1)
+             for i in 1..dimA repeat wk(i, 1) := (vec.i)::SUK
+             soln := cons(wk, soln)
+           res := cons([ff.factor, ff.exponent, soln]$PEigenForm,
                             res)
        res
 
      if K is RN then
-         solve1(up:SUK, eps:Par) : List(F) ==
+         solve1(up : SUK, eps : Par) : List(F) ==
            denom := "lcm"/[denom(c::RN) for c in coefficients up]
-           up:=denom*up
-           upi := map(numer,up)$UnivariatePolynomialCategoryFunctions2(RN,SUP RN,I,SUP I)
-           innerSolve1(upi, eps)$InnerNumericFloatSolvePackage(I,F,Par)
+           up := denom*up
+           upi := map(numer, up)$UnivariatePolynomialCategoryFunctions2(RN, SUP RN, I, SUP I)
+           innerSolve1(upi, eps)$InnerNumericFloatSolvePackage(I, F, Par)
      else if K is GRN then
-         solve1(up:SUK, eps:Par) : List(F) ==
+         solve1(up : SUK, eps : Par) : List(F) ==
            denom := "lcm"/[lcm(denom real(c::GRN), denom imag(c::GRN))
                                 for c in coefficients up]
-           up:=denom*up
-           upgi := map((c1: GRN): GI +-> complex(numer(real c1), numer(imag c1)),
-                      up)$UnivariatePolynomialCategoryFunctions2(GRN,SUP GRN,GI,SUP GI)
-           innerSolve1(upgi, eps)$InnerNumericFloatSolvePackage(GI,F,Par)
+           up := denom*up
+           upgi := map((c1 : GRN) : GI +-> complex(numer(real c1), numer(imag c1)),
+                      up)$UnivariatePolynomialCategoryFunctions2(GRN, SUP GRN, GI, SUP GI)
+           innerSolve1(upgi, eps)$InnerNumericFloatSolvePackage(GI, F, Par)
      else error "unsupported matrix type"
 
           ----  the real eigenvectors expressed as floats  ----
 
-     innerEigenvectors(A:MK,eps:Par,fact:UFactor) : List outForm ==
-       pol:= charpol A
-       sln1:List(IntForm):=inteigen(A,pol,fact)
-       n:=nrows A
-       sln:List(outForm):=[]
+     innerEigenvectors(A : MK, eps : Par, fact : UFactor) : List outForm ==
+       pol := charpol A
+       sln1 : List(IntForm) := inteigen(A, pol, fact)
+       n := nrows A
+       sln : List(outForm) := []
        for lev in sln1 repeat
-         lev case outForm => sln:=cons(lev,sln)
-         leva:=lev::PEigenForm
-         lval:List(F):= solve1(leva.algpol,eps)
-         lvect:=leva.poleigen
-         lmult:=leva.almult
+         lev case outForm => sln := cons(lev, sln)
+         leva := lev::PEigenForm
+         lval : List(F) := solve1(leva.algpol, eps)
+         lvect := leva.poleigen
+         lmult := leva.almult
          for alg in lval repeat
-           nsl:=[alg,lmult,[evalvect(ep,alg) for ep in lvect]]$outForm
-           sln:=cons(nsl,sln)
+           nsl := [alg, lmult, [evalvect(ep, alg) for ep in lvect]]$outForm
+           sln := cons(nsl, sln)
        sln
 
-     charpol(A:MK) : SUK ==
-       dimA :PI := (nrows A)::PI
+     charpol(A : MK) : SUK ==
+       dimA : PI := (nrows A)::PI
        dimA ~= ncols A => error " The matrix is not square"
-       B:Matrix SUK :=zero(dimA,dimA)
+       B : Matrix SUK := zero(dimA, dimA)
        for i in 1..dimA repeat
-         for j in 1..dimA repeat  B(i,j):=A(i,j)::SUK
-         B(i,i) := B(i,i) - monomial(1,1)$SUK
+         for j in 1..dimA repeat  B(i, j) := A(i, j)::SUK
+         B(i, i) := B(i, i) - monomial(1, 1)$SUK
        determinant B
 
 
@@ -210,9 +210,9 @@ InnerNumericEigenPackage(K,F,Par) : C == T
 \section{package NREP NumericRealEigenPackage}
 <<package NREP NumericRealEigenPackage>>=
 )abbrev package NREP NumericRealEigenPackage
-++ Author:P. Gianni
-++ Date Created:Summer 1990
-++ Date Last Updated:Spring 1991
+++ Author: P. Gianni
+++ Date Created: Summer 1990
+++ Date Last Updated: Spring 1991
 ++ Basic Functions:
 ++ Related Constructors: FloatingRealPackage
 ++ Also See:
@@ -226,7 +226,7 @@ InnerNumericEigenPackage(K,F,Par) : C == T
 ++ depending on the type of the parameter Par.
 NumericRealEigenPackage(Par) : C == T
  where
-   Par   :   Join(Field,OrderedRing) -- Float or RationalNumber
+   Par   :   Join(Field, OrderedRing) -- Float or RationalNumber
 
    SE    ==> Symbol()
    RN    ==> Fraction Integer
@@ -240,7 +240,7 @@ NumericRealEigenPackage(Par) : C == T
    MRN   ==> Matrix RN
 
    MPar        ==> Matrix Par
-   outForm     ==> Record(outval:Par,outmult:Integer,outvect:List MPar)
+   outForm     ==> Record(outval : Par, outmult : Integer, outvect : List MPar)
 
    C == with
      characteristicPolynomial :   MRN    -> Polynomial RN
@@ -248,18 +248,18 @@ NumericRealEigenPackage(Par) : C == T
        ++ of the matrix m expressed as polynomial
        ++ over RN with a new symbol as variable.
        -- while the function in EigenPackage returns Fraction P RN.
-     characteristicPolynomial : (MRN,SE) -> Polynomial RN
-       ++ characteristicPolynomial(m,x) returns the characteristic polynomial
+     characteristicPolynomial : (MRN, SE) -> Polynomial RN
+       ++ characteristicPolynomial(m, x) returns the characteristic polynomial
        ++ of the matrix m expressed as polynomial
        ++ over RN with variable x.
        -- while the function in EigenPackage returns
        ++ Fraction P RN.
-     realEigenvalues  :   (MRN,Par)   ->  List Par
-       ++ realEigenvalues(m,eps) computes the eigenvalues of the matrix
+     realEigenvalues  :   (MRN, Par)   ->  List Par
+       ++ realEigenvalues(m, eps) computes the eigenvalues of the matrix
        ++ m to precision eps. The eigenvalues are expressed as floats or
        ++ rational numbers depending on the type of eps (float or rational).
-     realEigenvectors    : (MRN,Par)   ->  List(outForm)
-       ++ realEigenvectors(m,eps)  returns a list of
+     realEigenvectors    : (MRN, Par)   ->  List(outForm)
+       ++ realEigenvectors(m, eps)  returns a list of
        ++ records each one containing
        ++ a real eigenvalue, its algebraic multiplicity, and a list of
        ++ associated eigenvectors. All these results
@@ -271,19 +271,19 @@ NumericRealEigenPackage(Par) : C == T
 
      import InnerNumericEigenPackage(RN, Par, Par)
 
-     characteristicPolynomial(m:MRN) : Polynomial RN ==
-       x:SE:=new()$SE
-       multivariate(charpol(m),x)
+     characteristicPolynomial(m : MRN) : Polynomial RN ==
+       x : SE := new()$SE
+       multivariate(charpol(m), x)
 
             ----  characteristic polynomial of a matrix A ----
-     characteristicPolynomial(A:MRN,x:SE):Polynomial RN ==
-       multivariate(charpol(A),x)
+     characteristicPolynomial(A : MRN, x : SE) : Polynomial RN ==
+       multivariate(charpol(A), x)
 
-     realEigenvalues(m:MRN,eps:Par) : List Par  ==
+     realEigenvalues(m : MRN, eps : Par) : List Par  ==
        solve1(charpol m, eps)
 
-     realEigenvectors(m:MRN,eps:Par) :List outForm ==
-       innerEigenvectors(m,eps,factor$GenUFactorize(RN))
+     realEigenvectors(m : MRN, eps : Par) : List outForm ==
+       innerEigenvectors(m, eps, factor$GenUFactorize(RN))
 
 @
 \section{package NCEP NumericComplexEigenPackage}
@@ -306,7 +306,7 @@ NumericRealEigenPackage(Par) : C == T
 ++ depending on the type of the precision parameter.
 NumericComplexEigenPackage(Par) : C == T
  where
-   Par   :   Join(Field,OrderedRing)   -- Float or RationalNumber
+   Par   :   Join(Field, OrderedRing)   -- Float or RationalNumber
 
    SE    ==> Symbol()
    RN    ==> Fraction Integer
@@ -323,7 +323,7 @@ NumericComplexEigenPackage(Par) : C == T
    MGRN        ==> Matrix GRN
    MCPar       ==> Matrix Complex Par
    SUPGRN      ==> SparseUnivariatePolynomial GRN
-   outForm     ==> Record(outval:Complex Par,outmult:Integer,outvect:List MCPar)
+   outForm     ==> Record(outval : Complex Par, outmult : Integer, outvect : List MCPar)
 
    C == with
      characteristicPolynomial :   MGRN    -> Polynomial GRN
@@ -331,17 +331,17 @@ NumericComplexEigenPackage(Par) : C == T
        ++ of the matrix m expressed as polynomial
        ++ over complex rationals with a new symbol as variable.
        -- while the function in EigenPackage returns Fraction P GRN.
-     characteristicPolynomial : (MGRN,SE) -> Polynomial GRN
-       ++ characteristicPolynomial(m,x) returns the characteristic polynomial
+     characteristicPolynomial : (MGRN, SE) -> Polynomial GRN
+       ++ characteristicPolynomial(m, x) returns the characteristic polynomial
        ++ of the matrix m expressed as polynomial
        ++ over Complex Rationals with variable x.
        -- while the function in EigenPackage returns Fraction P GRN.
-     complexEigenvalues  :   (MGRN,Par)   ->  List Complex Par
-       ++ complexEigenvalues(m,eps) computes the eigenvalues of the matrix
+     complexEigenvalues  :   (MGRN, Par)   ->  List Complex Par
+       ++ complexEigenvalues(m, eps) computes the eigenvalues of the matrix
        ++ m to precision eps. The eigenvalues are expressed as complex floats or
        ++ complex rational numbers depending on the type of eps (float or rational).
-     complexEigenvectors    : (MGRN,Par)   ->  List(outForm)
-       ++ complexEigenvectors(m,eps)  returns a list of
+     complexEigenvectors    : (MGRN, Par)   ->  List(outForm)
+       ++ complexEigenvectors(m, eps)  returns a list of
        ++ records each one containing
        ++ a complex eigenvalue, its algebraic multiplicity, and a list of
        ++ associated eigenvectors. All these results
@@ -349,21 +349,21 @@ NumericComplexEigenPackage(Par) : C == T
        ++ or complex rational numbers depending on the type of eps (float or rational).
    T == add
 
-     import InnerNumericEigenPackage(GRN,Complex Par,Par)
+     import InnerNumericEigenPackage(GRN, Complex Par, Par)
 
-     characteristicPolynomial(m:MGRN) : Polynomial GRN  ==
-       x:SE:=new()$SE
+     characteristicPolynomial(m : MGRN) : Polynomial GRN  ==
+       x : SE := new()$SE
        multivariate(charpol m, x)
 
             ----  characteristic polynomial of a matrix A ----
-     characteristicPolynomial(A:MGRN,x:SE):Polynomial GRN ==
+     characteristicPolynomial(A : MGRN, x : SE) : Polynomial GRN ==
        multivariate(charpol A, x)
 
-     complexEigenvalues(m:MGRN,eps:Par) : List Complex Par  ==
+     complexEigenvalues(m : MGRN, eps : Par) : List Complex Par  ==
        solve1(charpol m, eps)
 
-     complexEigenvectors(m:MGRN,eps:Par) :List outForm ==
-       innerEigenvectors(m,eps,factor$ComplexFactorization(RN,SUPGRN))
+     complexEigenvectors(m : MGRN, eps : Par) : List outForm ==
+       innerEigenvectors(m, eps, factor$ComplexFactorization(RN, SUPGRN))
 
 @
 \section{License}

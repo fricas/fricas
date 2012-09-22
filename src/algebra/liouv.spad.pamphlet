@@ -19,9 +19,9 @@
 ++ Examples:  )r LF INPUT
 ++ Description:
 ++   This package provides liouvillian functions over an integral domain.
-LiouvillianFunction(R, F): Exports == Implementation where
-  R: Join(Comparable, IntegralDomain)
-  F:Join(FunctionSpace R,RadicalCategory,TranscendentalFunctionCategory)
+LiouvillianFunction(R, F) : Exports == Implementation where
+  R : Join(Comparable, IntegralDomain)
+  F : Join(FunctionSpace R, RadicalCategory, TranscendentalFunctionCategory)
 
   OP  ==> BasicOperator
   PR  ==> Polynomial R
@@ -39,7 +39,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
   Exports ==> with
     belong? : OP -> Boolean
       ++ belong?(op) checks if op is Liouvillian
-    operator: OP -> OP
+    operator : OP -> OP
       ++ operator(op) returns the Liouvillian operator based on op
     Ei      : F  -> F
       ++ Ei(f) denotes the exponential integral
@@ -61,10 +61,10 @@ LiouvillianFunction(R, F): Exports == Implementation where
       ++ fresnelS(f) denotes the Fresnel integral \spad{S}
     fresnelC : F  -> F
       ++ fresnelC(f) denotes the Fresnel integral \spad{C}
-    integral: (F, SE) -> F
-      ++ integral(f,x) indefinite integral of f with respect to x.
-    integral: (F, SegmentBinding F) -> F
-      ++ integral(f,x = a..b) denotes the definite integral of f with
+    integral : (F, SE) -> F
+      ++ integral(f, x) indefinite integral of f with respect to x.
+    integral : (F, SegmentBinding F) -> F
+      ++ integral(f, x = a..b) denotes the definite integral of f with
       ++ respect to x from \spad{a} to b.
 
   Implementation ==> add
@@ -80,7 +80,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
     ili        : F  -> F
     ili2       : F  -> F
     iint       : List F -> F
-    eqint      : (K,K) -> Boolean
+    eqint      : (K, K) -> Boolean
     dvint      : (List F, SE) -> F
     dviint      : (List F, SE) -> F
     dvdint     : (List F, SE) -> F
@@ -125,7 +125,7 @@ LiouvillianFunction(R, F): Exports == Implementation where
     ifis(x : F) : F == (zero? x => 0; kernel(opfis, x))
     ific(x : F) : F == (zero? x => 0; kernel(opfic, x))
     integrand l    == eval(first l, retract(second l)@K, third l)
-    integral(f:F, x:SE) == opint [eval(f, k:=kernel(x)$K, dummy), dummy, k::F]
+    integral(f : F, x : SE) == opint [eval(f, k := kernel(x)$K, dummy), dummy, k::F]
 
     iint l ==
       zero? first l => 0
@@ -135,14 +135,14 @@ LiouvillianFunction(R, F): Exports == Implementation where
       int(integrand(l)::O * hconcat('d::O, third(l)::O),
                                     third(rest l)::O, third(rest rest l)::O)
 
-    eqint(k1,k2) ==
-      a1:=argument k1
-      a2:=argument k2
-      res:=operator k1 = operator k2
+    eqint(k1, k2) ==
+      a1 := argument k1
+      a2 := argument k2
+      res := operator k1 = operator k2
       if not res then return res
-      res:= a1 = a2
+      res := a1 = a2
       if res then return res
-      res:= (a1.3 = a2.3) and (subst(a1.1,[retract(a1.2)@K],[a2.2]) = a2.1)
+      res := (a1.3 = a2.3) and (subst(a1.1, [retract(a1.2)@K], [a2.2]) = a2.1)
 
     dvint(l, x) ==
       k  := retract(second l)@K
@@ -170,13 +170,13 @@ LiouvillianFunction(R, F): Exports == Implementation where
     dvdint(l, x) ==
       x = retract(y := third l)@SE => 0
       k := retract(d := second l)@K
-      differentiate(h := third rest rest l,x) * eval(f := first l, k, h)
+      differentiate(h := third rest rest l, x) * eval(f := first l, k, h)
         - differentiate(g := third rest l, x) * eval(f, k, g)
              + opdint [differentiate(f, x), d, y, g, h]
 
-    integral(f:F, s: SegmentBinding F) ==
+    integral(f : F, s : SegmentBinding F) ==
       x := kernel(variable s)$K
-      opdint [eval(f,x,dummy), dummy, x::F, lo segment s, hi segment s]
+      opdint [eval(f, x, dummy), dummy, x::F, lo segment s, hi segment s]
 
     ili x ==
       x = 1 => INV
@@ -216,31 +216,31 @@ LiouvillianFunction(R, F): Exports == Implementation where
     evaluate(opfic,  ific)
     evaluate(opint,  iint)
     evaluate(opiint,  iiint)
-    derivative(opsi, (z1:F):F +-> sin(z1) / z1)
-    derivative(opci, (z1:F):F +-> cos(z1) / z1)
-    derivative(opshi, (z1:F):F +-> sinh(z1) / z1)
-    derivative(opchi, (z1:F):F +-> cosh(z1) / z1)
-    derivative(opei, (z1:F):F +-> exp(z1) / z1)
-    derivative(opli, (z1:F):F +-> inv log(z1))
-    derivative(operf, (z1:F):F +-> 2 * exp(-(z1^2)) / sqrt(pi()))
-    derivative(opli2, (z1:F):F +-> log(z1) / (1 - z1))
-    derivative(opfis, (z1:F):F +-> sin(pi()*z1^2/(2::F)))
-    derivative(opfic, (z1:F):F +-> cos(pi()*z1^2/(2::F)))
-    setProperty(opint,SPECIALEQUAL,eqint@((K,K) -> Boolean) pretend None)
-    setProperty(opint,SPECIALDIFF,dvint@((List F,SE) -> F) pretend None)
-    setProperty(opiint, SPECIALDIFF, dviint@((List F,SE) -> F) pretend None)
-    setProperty(opdint,SPECIALDIFF,dvdint@((List F,SE)->F) pretend None)
+    derivative(opsi, (z1 : F) : F +-> sin(z1) / z1)
+    derivative(opci, (z1 : F) : F +-> cos(z1) / z1)
+    derivative(opshi, (z1 : F) : F +-> sinh(z1) / z1)
+    derivative(opchi, (z1 : F) : F +-> cosh(z1) / z1)
+    derivative(opei, (z1 : F) : F +-> exp(z1) / z1)
+    derivative(opli, (z1 : F) : F +-> inv log(z1))
+    derivative(operf, (z1 : F) : F +-> 2 * exp(-(z1^2)) / sqrt(pi()))
+    derivative(opli2, (z1 : F) : F +-> log(z1) / (1 - z1))
+    derivative(opfis, (z1 : F) : F +-> sin(pi()*z1^2/(2::F)))
+    derivative(opfic, (z1 : F) : F +-> cos(pi()*z1^2/(2::F)))
+    setProperty(opint, SPECIALEQUAL, eqint@((K, K) -> Boolean) pretend None)
+    setProperty(opint, SPECIALDIFF, dvint@((List F, SE) -> F) pretend None)
+    setProperty(opiint, SPECIALDIFF, dviint@((List F, SE) -> F) pretend None)
+    setProperty(opdint, SPECIALDIFF, dvdint@((List F, SE)->F) pretend None)
     setProperty(opdint, SPECIALDISP, ddint@(List F -> O) pretend None)
 
     if R has ConvertibleTo INP then
       inint : List F -> INP
-      indint: List F -> INP
+      indint : List F -> INP
       pint  : List INP -> INP
 
 
       pint l  == convert concat(convert('integral)@INP, l)
       inint l ==
-        r2:= convert([convert("::"::SE)@INP,convert(third l)@INP,convert('Symbol)@INP]@List INP)@INP
+        r2 := convert([convert("::"::SE)@INP,convert(third l)@INP,convert('Symbol)@INP]@List INP)@INP
         pint [convert(integrand l)@INP, r2]
 
       indint l ==

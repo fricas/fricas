@@ -16,9 +16,9 @@
 ++ Author: Manuel Bronstein
 ++ Date Created: May 1988
 ++ Date Last Updated: 26 Apr 1990
-LaurentPolynomial(R, UP): Exports == Implementation where
+LaurentPolynomial(R, UP) : Exports == Implementation where
   R : IntegralDomain
-  UP: UnivariatePolynomialCategory R
+  UP : UnivariatePolynomialCategory R
 
   O   ==> OutputForm
   B   ==> Boolean
@@ -38,28 +38,28 @@ LaurentPolynomial(R, UP): Exports == Implementation where
         ++ reductum(x) \undocumented
     leadingCoefficient : %  -> R
         ++ leadingCoefficient \undocumented
-    trailingCoefficient: %  -> R
+    trailingCoefficient : %  -> R
         ++ trailingCoefficient \undocumented
     coefficient        : (%, Z) -> R
-        ++ coefficient(x,n) \undocumented
+        ++ coefficient(x, n) \undocumented
     monomial           : (R, Z) -> %
-        ++ monomial(x,n) \undocumented
+        ++ monomial(x, n) \undocumented
     if R has CharacteristicZero then CharacteristicZero
     if R has CharacteristicNonZero then CharacteristicNonZero
     if R has Field then
       EuclideanDomain
-      separate: RF -> Record(polyPart:%, fracPart:RF)
+      separate : RF -> Record(polyPart : %, fracPart : RF)
         ++ separate(x) \undocumented
 
   Implementation ==> add
-    Rep := Record(polypart: UP, order0: Z)
+    Rep := Record(polypart : UP, order0 : Z)
 
     poly   : %  -> UP
     check0 : (Z, UP) -> %
     mkgpol : (Z, UP) -> %
     gpol   : (UP, Z) -> %
-    toutput: (R, Z, O) -> O
-    monTerm: (R, Z, O) -> O
+    toutput : (R, Z, O) -> O
+    monTerm : (R, Z, O) -> O
 
     0                == [0, 0]
     1                == [1, 0]
@@ -68,22 +68,22 @@ LaurentPolynomial(R, UP): Exports == Implementation where
     order p          == p.order0
     gpol(p, n)       == [p, n]
     monomial(r, n)   == check0(n, r::UP)
-    coerce(p:UP):%   == mkgpol(0, p)
+    coerce(p : UP) : %   == mkgpol(0, p)
     reductum p       == check0(order p, reductum poly p)
-    n:Z * p:%        == check0(order p, n * poly p)
+    n : Z * p : %        == check0(order p, n * poly p)
     characteristic() == characteristic()$R
-    coerce(n:Z):%    == n::R::%
+    coerce(n : Z) : %    == n::R::%
     degree p         == degree(poly p)::Z + order p
     monomial? p      == monomial? poly p
-    coerce(r:R):%    == gpol(r::UP, 0)
-    convert(p:%):RF  == poly(p) * (monomial(1, 1)$UP)::RF ^ order p
-    p:% * q:%        == check0(order p + order q, poly p * poly q)
+    coerce(r : R) : %    == gpol(r::UP, 0)
+    convert(p : %) : RF  == poly(p) * (monomial(1, 1)$UP)::RF ^ order p
+    p : % * q : %        == check0(order p + order q, poly p * poly q)
     - p              == gpol(- poly p, order p)
     check0(n, p)     == (zero? p => 0; gpol(p, n))
     trailingCoefficient p   == coefficient(poly p, 0)
     leadingCoefficient p    == leadingCoefficient poly p
 
-    coerce(p:%):O ==
+    coerce(p : %) : O ==
       zero? p => 0::Z::O
       l := nil()$List(O)
       v := monomial(1, 1)$UP :: O
@@ -96,7 +96,7 @@ LaurentPolynomial(R, UP): Exports == Implementation where
       (m := n - order p) < 0 => 0
       coefficient(poly p, m::N)
 
-    differentiate(p:%, derivation:UP -> UP) ==
+    differentiate(p : %, derivation : UP -> UP) ==
       t := monomial(1, 1)$UP
       mkgpol(order(p) - 1,
               derivation(poly p) * t + order(p) * poly(p) * derivation t)
@@ -149,7 +149,7 @@ LaurentPolynomial(R, UP): Exports == Implementation where
       separate f ==
         n  := order(q := denom f, monomial(1, 1))
         q  := (q exquo (tn := monomial(1, n)$UP))::UP
-        bc := extendedEuclidean(tn,q,numer f)::Record(coef1:UP,coef2:UP)
+        bc := extendedEuclidean(tn, q, numer f)::Record(coef1 : UP, coef2 : UP)
         qr := divide(bc.coef1, q)
         [mkgpol(-n, bc.coef2 + tn * qr.quotient), qr.remainder / q]
 

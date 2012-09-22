@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{axiom,amsthm,amsmath,amsfonts,url}
+\usepackage{axiom, amsthm, amsmath, amsfonts, url}
 \newtheorem{ToDo}{ToDo}[section]
 
 \newcommand{\Axiom}{{\tt Axiom}}
@@ -14,10 +14,10 @@
 
 \section{The Dirichlet Ring}
 The Dirichlet Ring is the ring of arithmetical functions
-$$ f: \mathbb N_+ \rightarrow R$$
-(see \url{http://en.wikipedia.org/wiki/Arithmetic_function}) together
+$$ f : \mathbb N_+ \rightarrow R$$
+(see \url{http : //en.wikipedia.org/wiki/Arithmetic_function}) together
 with the Dirichlet convolution (see
-\url{http://en.wikipedia.org/wiki/Dirichlet_convolution}) as
+\url{http : //en.wikipedia.org/wiki/Dirichlet_convolution}) as
 multiplication and component-wise addition.  Since we can consider
 the values an arithmetic functions assumes as the coefficients of a
 Dirichlet generating series, we call $R$ the coefficient ring of a
@@ -37,7 +37,7 @@ provide some convenient coercion functions.
 ++ Author: Martin Rubey
 ++ Description: DirichletRing is the ring of arithmetical functions
 ++ with Dirichlet convolution as multiplication
-DirichletRing(Coef: Ring):
+DirichletRing(Coef : Ring):
             Exports == Implementation where
 
     PI ==> PositiveInteger
@@ -51,84 +51,84 @@ DirichletRing(Coef: Ring):
         if Coef has CommutativeRing then
             Algebra Coef
 
-        coerce: FUN -> %
-        coerce: % -> FUN
-        coerce: Stream Coef -> %
-        coerce: % -> Stream Coef
+        coerce : FUN -> %
+        coerce : % -> FUN
+        coerce : Stream Coef -> %
+        coerce : % -> Stream Coef
 
-        zeta: constant -> %
+        zeta : constant -> %
         ++ zeta() returns the function which is constantly one
 
-        multiplicative?: (%, PI) -> Boolean
+        multiplicative? : (%, PI) -> Boolean
         ++ multiplicative?(a, n) returns true if the first
         ++ n coefficients of a are multiplicative
 
-        additive?: (%, PI) -> Boolean
+        additive? : (%, PI) -> Boolean
         ++ additive?(a, n) returns true if the first
         ++ n coefficients of a are additive
 
     Implementation ==> add
 
-        Rep := Record(function: FUN)
+        Rep := Record(function : FUN)
 
-        per(f: Rep): % == f pretend %
-        rep(a: %): Rep == a pretend Rep
+        per(f : Rep) : % == f pretend %
+        rep(a : %) : Rep == a pretend Rep
 
-        elt(a: %, n: PI): Coef ==
-            f: FUN := (rep a).function
+        elt(a : %, n : PI) : Coef ==
+            f : FUN := (rep a).function
             f n
 
-        coerce(a: %): FUN == (rep a).function
+        coerce(a : %) : FUN == (rep a).function
 
-        coerce(f: FUN): % == per [f]
+        coerce(f : FUN) : % == per [f]
 
-        indices: Stream Integer
+        indices : Stream Integer
                 := integers(1)$StreamTaylorSeriesOperations(Integer)
 
-        coerce(a: %): Stream Coef ==
-            f: FUN := (rep a).function
-            map((n: Integer): Coef +-> f(n::PI), indices)
+        coerce(a : %) : Stream Coef ==
+            f : FUN := (rep a).function
+            map((n : Integer) : Coef +-> f(n::PI), indices)
                $StreamFunctions2(Integer, Coef)
 
-        coerce(f: Stream Coef): % ==
-            ((n: PI): Coef +-> f.(n::Integer))::%
+        coerce(f : Stream Coef) : % ==
+            ((n : PI) : Coef +-> f.(n::Integer))::%
 
-        coerce(f: %): OutputForm == f::Stream Coef::OutputForm
+        coerce(f : %) : OutputForm == f::Stream Coef::OutputForm
 
-        1: % ==
-            ((n: PI): Coef +-> (if one? n then 1$Coef else 0$Coef))::%
+        1 : % ==
+            ((n : PI) : Coef +-> (if one? n then 1$Coef else 0$Coef))::%
 
-        0: % ==
-            ((n: PI): Coef +-> 0$Coef)::%
+        0 : % ==
+            ((n : PI) : Coef +-> 0$Coef)::%
 
-        zeta: % ==
-            ((n: PI): Coef +-> 1$Coef)::%
+        zeta : % ==
+            ((n : PI) : Coef +-> 1$Coef)::%
 
-        (f: %) + (g: %) ==
-            ((n: PI): Coef +-> f(n)+g(n))::%
+        (f : %) + (g : %) ==
+            ((n : PI) : Coef +-> f(n)+g(n))::%
 
-        - (f: %) ==
-            ((n: PI): Coef +-> -f(n))::%
+        - (f : %) ==
+            ((n : PI) : Coef +-> -f(n))::%
 
-        (a: Integer) * (f: %) ==
-            ((n: PI): Coef +-> a*f(n))::%
+        (a : Integer) * (f : %) ==
+            ((n : PI) : Coef +-> a*f(n))::%
 
-        (a: Coef) * (f: %) ==
-            ((n: PI): Coef +-> a*f(n))::%
+        (a : Coef) * (f : %) ==
+            ((n : PI) : Coef +-> a*f(n))::%
 
         import IntegerNumberTheoryFunctions
 
-        (f: %) * (g: %) ==
-            conv := (n: PI): Coef +-> _
-                 reduce((a: Coef, b: Coef): Coef +-> a + b, _
+        (f : %) * (g : %) ==
+            conv := (n : PI) : Coef +-> _
+                 reduce((a : Coef, b : Coef) : Coef +-> a + b, _
                         [f(d::PI) * g((n quo d)::PI) for d in divisors(n::Integer)], 0)
                         $ListFunctions2(Coef, Coef)
             conv::%
 
-        unit?(a: %): Boolean == not (recip(a(1$PI))$Coef case "failed")
+        unit?(a : %) : Boolean == not (recip(a(1$PI))$Coef case "failed")
 
-        qrecip: (%, Coef, PI) -> Coef
-        qrecip(f: %, f1inv: Coef, n: PI): Coef ==
+        qrecip : (%, Coef, PI) -> Coef
+        qrecip(f : %, f1inv : Coef, n : PI) : Coef ==
             if one? n then f1inv
             else
                 -f1inv * reduce(_+, [f(d::PI) * qrecip(f, f1inv, (n quo d)::PI) _
@@ -138,7 +138,7 @@ DirichletRing(Coef: Ring):
         recip f ==
             if (f1inv := recip(f(1$PI))$Coef) case "failed" then "failed"
             else
-                mp := (n: PI): Coef +-> qrecip(f, f1inv, n)
+                mp := (n : PI) : Coef +-> qrecip(f, f1inv, n)
 
                 mp::%::Union(%, "failed")
 
@@ -146,7 +146,7 @@ DirichletRing(Coef: Ring):
             for i in 2..n repeat
                 fl := factors(factor i)$Factored(Integer)
                 rl := [a.(((f.factor)::PI)^((f.exponent)::PI)) for f in fl]
-                if a.(i::PI) ~= reduce((r:Coef, s:Coef):Coef +-> r*s, rl)
+                if a.(i::PI) ~= reduce((r : Coef, s : Coef) : Coef +-> r*s, rl)
                 then
                     output(i::OutputForm)$OutputPackage
                     output(rl::OutputForm)$OutputPackage
@@ -157,7 +157,7 @@ DirichletRing(Coef: Ring):
             for i in 2..n repeat
                 fl := factors(factor i)$Factored(Integer)
                 rl := [a.(((f.factor)::PI)^((f.exponent)::PI)) for f in fl]
-                if a.(i::PI) ~= reduce((r:Coef, s:Coef):Coef +-> r+s, rl)
+                if a.(i::PI) ~= reduce((r : Coef, s : Coef) : Coef +-> r+s, rl)
                 then
                     output(i::OutputForm)$OutputPackage
                     output(rl::OutputForm)$OutputPackage

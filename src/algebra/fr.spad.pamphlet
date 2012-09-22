@@ -43,91 +43,91 @@
 ++   restriction to integral domains allows simplification to be
 ++   performed without worrying about multiplication order.
 
-Factored(R: IntegralDomain): Exports == Implementation where
+Factored(R : IntegralDomain) : Exports == Implementation where
   fUnion ==> Union("nil", "sqfr", "irred", "prime")
-  FF     ==> Record(flg: fUnion, fctr: R, xpnt: Integer)
-  SRFE   ==> Set(Record(factor:R, exponent:Integer))
+  FF     ==> Record(flg : fUnion, fctr : R, xpnt : Integer)
+  SRFE   ==> Set(Record(factor : R, exponent : Integer))
 
   Exports ==> Join(IntegralDomain, DifferentialExtension R, Algebra R,
                    FullyEvalableOver R, FullyRetractableTo R) with
-    expand: % -> R
+    expand : % -> R
       ++ expand(f) multiplies the unit and factors together, yielding an
       ++ "unfactored" object. Note: this is purposely not called \spadfun{coerce} which would
       ++ cause the interpreter to do this automatically.
 
-    exponent:  % -> Integer
+    exponent :  % -> Integer
       ++ exponent(u) returns the exponent of the first factor of
       ++ \spadvar{u}, or 0 if the factored form consists solely of a unit.
 
     makeFR  : (R, List FF) -> %
-      ++ makeFR(unit,listOfFactors) creates a factored object (for
+      ++ makeFR(unit, listOfFactors) creates a factored object (for
       ++ use by factoring code).
 
     factorList : % -> List FF
       ++ factorList(u) returns the list of factors with flags (for
       ++ use by factoring code).
 
-    nilFactor: (R, Integer) -> %
-      ++ nilFactor(base,exponent) creates a factored object with
+    nilFactor : (R, Integer) -> %
+      ++ nilFactor(base, exponent) creates a factored object with
       ++ a single factor with no information about the kind of
       ++ base (flag = "nil").
 
-    factors: % -> List Record(factor:R, exponent:Integer)
+    factors : % -> List Record(factor : R, exponent : Integer)
       ++ factors(u) returns a list of the factors in a form suitable
       ++ for iteration. That is, it returns a list where each element
       ++ is a record containing a base and exponent.  The original
       ++ object is the product of all the factors and the unit (which
       ++ can be extracted by \axiom{unit(u)}).
 
-    irreducibleFactor: (R, Integer) -> %
-      ++ irreducibleFactor(base,exponent) creates a factored object with
+    irreducibleFactor : (R, Integer) -> %
+      ++ irreducibleFactor(base, exponent) creates a factored object with
       ++ a single factor whose base is asserted to be irreducible
       ++ (flag = "irred").
 
-    nthExponent: (%, Integer) -> Integer
-      ++ nthExponent(u,n) returns the exponent of the nth factor of
+    nthExponent : (%, Integer) -> Integer
+      ++ nthExponent(u, n) returns the exponent of the nth factor of
       ++ \spadvar{u}.  If \spadvar{n} is not a valid index for a factor
       ++ (for example, less than 1 or too big), 0 is returned.
 
-    nthFactor:  (%,Integer) -> R
-      ++ nthFactor(u,n) returns the base of the nth factor of
+    nthFactor :  (%, Integer) -> R
+      ++ nthFactor(u, n) returns the base of the nth factor of
       ++ \spadvar{u}.  If \spadvar{n} is not a valid index for a factor
       ++ (for example, less than 1 or too big), 1 is returned.  If
       ++ \spadvar{u} consists only of a unit, the unit is returned.
 
-    nthFlag:    (%,Integer) -> fUnion
-      ++ nthFlag(u,n) returns the information flag of the nth factor of
+    nthFlag :    (%, Integer) -> fUnion
+      ++ nthFlag(u, n) returns the information flag of the nth factor of
       ++ \spadvar{u}.  If \spadvar{n} is not a valid index for a factor
       ++ (for example, less than 1 or too big), "nil" is returned.
 
     numberOfFactors : %  -> NonNegativeInteger
       ++ numberOfFactors(u) returns the number of factors in \spadvar{u}.
 
-    primeFactor:   (R,Integer) -> %
-      ++ primeFactor(base,exponent) creates a factored object with
+    primeFactor :   (R, Integer) -> %
+      ++ primeFactor(base, exponent) creates a factored object with
       ++ a single factor whose base is asserted to be prime
       ++ (flag = "prime").
 
-    sqfrFactor:   (R,Integer) -> %
-      ++ sqfrFactor(base,exponent) creates a factored object with
+    sqfrFactor :   (R, Integer) -> %
+      ++ sqfrFactor(base, exponent) creates a factored object with
       ++ a single factor whose base is asserted to be square-free
       ++ (flag = "sqfr").
 
-    flagFactor: (R,Integer, fUnion) -> %
-      ++ flagFactor(base,exponent,flag) creates a factored object with
+    flagFactor : (R, Integer, fUnion) -> %
+      ++ flagFactor(base, exponent, flag) creates a factored object with
       ++ a single factor whose base is asserted to be properly
       ++ described by the information flag.
 
-    unit:    % -> R
+    unit :    % -> R
       ++ unit(u) extracts the unit part of the factorization.
 
-    unitNormalize: % -> %
+    unitNormalize : % -> %
       ++ unitNormalize(u) normalizes the unit part of the factorization.
       ++ For example, when working with factored integers, this operation will
       ++ ensure that the bases are all positive integers.
 
-    map:     (R -> R, %) -> %
-      ++ map(fn,u) maps the function \userfun{fn} across the factors of
+    map :     (R -> R, %) -> %
+      ++ map(fn, u) maps the function \userfun{fn} across the factors of
       ++ \spadvar{u} and creates a new factored object. Note: this clears
       ++ the information flags (sets them to "nil") because the effect of
       ++ \userfun{fn} is clearly not known in general.
@@ -148,7 +148,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
         ++ rational(u) assumes spadvar{u} is actually a rational number
         ++ and does the conversion to rational number
         ++ (see \spadtype{Fraction Integer}).
-      rationalIfCan: % -> Union(Fraction Integer, "failed")
+      rationalIfCan : % -> Union(Fraction Integer, "failed")
         ++ rationalIfCan(u) returns a rational number if u
         ++ really is one, and "failed" otherwise.
 
@@ -161,10 +161,10 @@ Factored(R: IntegralDomain): Exports == Implementation where
   -- Representation:
     -- Note: exponents are allowed to be integers so that some special cases
     -- may be used in simplifications
-    Rep := Record(unt:R, fct:List FF)
+    Rep := Record(unt : R, fct : List FF)
 
     if R has ConvertibleTo InputForm then
-      convert(x:%):InputForm ==
+      convert(x : %) : InputForm ==
         empty?(lf := reverse factorList x) => convert(unit x)@InputForm
         l := empty()$List(InputForm)
         for rec in lf repeat
@@ -189,7 +189,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
 --          l := concat(convert(rec.fctr)@InputForm, l)
 --        l := concat(convert(rec.fctr)@InputForm ^ rec.xpnt, l)
         empty? l => convert(unit x)@InputForm
-        if unit x ~= 1 then l := concat(convert(unit x)@InputForm,l)
+        if unit x ~= 1 then l := concat(convert(unit x)@InputForm, l)
         empty? rest l => first l
         binary(convert("*"::Symbol)@InputForm, l)@InputForm
 
@@ -223,10 +223,10 @@ Factored(R: IntegralDomain): Exports == Implementation where
     1                    == [1, empty()]
     one? u               == empty? u.fct and u.unt = 1
     mkFF(r, x)           == [r, x]
-    coerce(j:Integer):%  == (j::R)::%
+    coerce(j : Integer) : %  == (j::R)::%
     characteristic()     == characteristic()$R
-    i:Integer * u:%      == (i :: %) * u
-    r:R * u:%            == (r :: %) * u
+    i : Integer * u : %      == (i :: %) * u
+    r : R * u : %            == (r :: %) * u
     factors u            == [[fe.fctr, fe.xpnt] for fe in factorList u]
     expand u             == retract u
     negexp? x           == "or"/[negative?(y.xpnt) for y in factorList x]
@@ -249,36 +249,36 @@ Factored(R: IntegralDomain): Exports == Implementation where
                                     ^ f.xpnt for f in factorList x]
 
     if R has Eltable(R, R) then
-      elt(x:%, v:%) == x(expand v)
+      elt(x : %, v : %) == x(expand v)
 
     if R has Evalable(R) then
-      eval(x:%, l:List Equation %) ==
-        eval(x,[expand lhs e = expand rhs e for e in l]$List(Equation R))
+      eval(x : %, l : List Equation %) ==
+        eval(x, [expand lhs e = expand rhs e for e in l]$List(Equation R))
 
     if R has InnerEvalable(Symbol, R) then
-      eval(x:%, ls:List Symbol, lv:List %) ==
+      eval(x : %, ls : List Symbol, lv : List %) ==
         eval(x, ls, [expand v for v in lv]$List(R))
 
     if R has RealConstant then
   --! negcount and rest commented out since RealConstant doesn't support
   --! positive? or negative?
   --  negcount: % -> Integer
-  --  positive?(x:%):Boolean == not(zero? x) and even?(negcount x)
-  --  negative?(x:%):Boolean == not(zero? x) and odd?(negcount x)
+  --  positive?(x: %): Boolean == not(zero? x) and even?(negcount x)
+  --  negative?(x: %): Boolean == not(zero? x) and odd?(negcount x)
   --  negcount x ==
   --    n := count(s +-> negative?(s.fctr), factorList x)$List(FF)
   --    negative? unit x => n + 1
   --    n
 
-      convert(x:%):Float ==
+      convert(x : %) : Float ==
         convert(unit x)@Float *
                 _*/[convert(f.fctr)@Float ^ f.xpnt for f in factorList x]
 
-      convert(x:%):DoubleFloat ==
+      convert(x : %) : DoubleFloat ==
         convert(unit x)@DoubleFloat *
           _*/[convert(f.fctr)@DoubleFloat ^ f.xpnt for f in factorList x]
 
-    u:% * v:% ==
+    u : % * v : % ==
       zero? u or zero? v => 0
 --      one? u => v
       (u = 1) => v
@@ -287,7 +287,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
       mkFF(unit u * unit v,
           SimplifyFactorization concat(factorList u, copy factorList v))
 
-    u:% ^ n:NonNegativeInteger ==
+    u : % ^ n : NonNegativeInteger ==
       mkFF(unit(u)^n, [[x.flg, x.fctr, n * x.xpnt] for x in factorList u])
 
     SimplifyFactorization x ==
@@ -310,7 +310,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
       concat(f, l)
 
 
-    coerce(x:%):OutputForm ==
+    coerce(x : %) : OutputForm ==
       empty?(lf := reverse factorList x) => (unit x)::OutputForm
       l := empty()$List(OutputForm)
       for rec in lf repeat
@@ -325,7 +325,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
       1 = unit x => e
       (unit x)::OutputForm * e
 
-    retract(u:%):R ==
+    retract(u : %) : R ==
       negexp? u =>  error "Negative exponent in factored object"
       qexpand u
 
@@ -355,18 +355,18 @@ Factored(R: IntegralDomain): Exports == Implementation where
 
     if R has IntegerNumberSystem
       then
-        coerce(r:R):% ==
+        coerce(r : R) : % ==
           factor(r)$IntegerFactorizationPackage(R) pretend %
       else
         if R has UniqueFactorizationDomain
           then
-            coerce(r:R):% ==
+            coerce(r : R) : % ==
               zero? r => 0
               unit? r => mkFF(r, empty())
               R has Field => error "zero divisor in a field"
               unitNormalize(squareFree(r) pretend %)
           else
-            coerce(r:R):% ==
+            coerce(r : R) : % ==
 --              one? r => 1
               (r = 1) => 1
               unitNormalize mkFF(1, [["nil", r, 1]$FF])
@@ -414,7 +414,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
       zero? r => 0
       unitNormalize mkFF(1, [[fl, r, i]$FF])
 
-    differentiate(u:%, deriv: R -> R) ==
+    differentiate(u : %, deriv : R -> R) ==
       ans := deriv(unit u) * ((u exquo unit(u)::%)::%)
       ans + (_+/[fact.xpnt * deriv(fact.fctr) *
        ((u exquo nilFactor(fact.fctr, 1))::%) for fact in factorList u])
@@ -424,7 +424,7 @@ Factored(R: IntegralDomain): Exports == Implementation where
 This operation provides an implementation of [[differentiate]] from the
 category [[DifferentialExtension]]. It uses the formula
 
-$$\frac{d}{dx} f(x) = \sum_{i=1}^n \frac{f(x)}{f_i(x)}\frac{d}{dx}f_i(x),$$
+$$\frac{d}{dx} f(x) = \sum_{i=1}^n \frac{f(x)}{f_i(x)}\frac{d}{dx}f_i(x), $$
 
 where
 
@@ -433,7 +433,7 @@ $$f(x)=\prod_{i=1}^n f_i(x).$$
 Note that up to [[patch--40]] the following wrong definition was used:
 
 \begin{verbatim}
-    differentiate(u:%, deriv: R -> R) ==
+    differentiate(u : %, deriv : R -> R) ==
       ans := deriv(unit u) * ((u exquo (fr := unit(u)::%))::%)
       ans + fr * (_+/[fact.xpnt * deriv(fact.fctr) *
        ((u exquo nilFactor(fact.fctr, 1))::%) for fact in factorList u])
@@ -449,13 +449,13 @@ which causes wrong results as soon as units are involved, for example in
 
 <<domain FR Factored>>=
     map(fn, u) ==
-     fn(unit u) * _*/[irreducibleFactor(fn(f.fctr),f.xpnt) for f in factorList u]
+     fn(unit u) * _*/[irreducibleFactor(fn(f.fctr), f.xpnt) for f in factorList u]
 
     u exquo v ==
       empty?(x1 := factorList v) =>  unitNormal(retract v).associate *  u
       empty? factorList u => "failed"
       v1 := u * reciprocal v
-      goodQuotient:Boolean := true
+      goodQuotient : Boolean := true
       while (goodQuotient and (not empty? x1)) repeat
         if x1.first.xpnt < 0
           then goodQuotient := false
@@ -484,7 +484,7 @@ which causes wrong results as soon as units are involved, for example in
 
     unitNormalize u ==
       uca := unitNormal u
-      mkFF(unit(uca.unit)*unit(uca.canonical),factorList(uca.canonical))
+      mkFF(unit(uca.unit)*unit(uca.canonical), factorList(uca.canonical))
 
     if R has GcdDomain then
       u + v ==
@@ -555,47 +555,47 @@ which causes wrong results as soon as units are involved, for example in
 ++ Description:
 ++   \spadtype{FactoredFunctionUtilities} implements some utility
 ++   functions for manipulating factored objects.
-FactoredFunctionUtilities(R): Exports == Implementation where
-  R: IntegralDomain
+FactoredFunctionUtilities(R) : Exports == Implementation where
+  R : IntegralDomain
   FR ==> Factored R
 
   Exports ==> with
-    refine: (FR, R-> FR) -> FR
-      ++ refine(u,fn) is used to apply the function \userfun{fn} to
+    refine : (FR, R-> FR) -> FR
+      ++ refine(u, fn) is used to apply the function \userfun{fn} to
       ++ each factor of \spadvar{u} and then build a new factored
       ++ object from the results.  For example, if \spadvar{u} were
-      ++ created by calling \spad{nilFactor(10,2)} then
-      ++ \spad{refine(u,factor)} would create a factored object equal
+      ++ created by calling \spad{nilFactor(10, 2)} then
+      ++ \spad{refine(u, factor)} would create a factored object equal
       ++ to that created by \spad{factor(100)} or
-      ++ \spad{primeFactor(2,2) * primeFactor(5,2)}.
+      ++ \spad{primeFactor(2, 2) * primeFactor(5, 2)}.
 
-    mergeFactors: (FR,FR) -> FR
-      ++ mergeFactors(u,v) is used when the factorizations of \spadvar{u}
+    mergeFactors : (FR, FR) -> FR
+      ++ mergeFactors(u, v) is used when the factorizations of \spadvar{u}
       ++ and \spadvar{v} are known to be disjoint, e.g. resulting from a
       ++ content/primitive part split. Essentially, it creates a new
       ++ factored object by multiplying the units together and appending
       ++ the lists of factors.
 
   Implementation ==> add
-    fg: FR
-    func: R -> FR
+    fg : FR
+    func : R -> FR
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flg: fUnion, fctr: R, xpnt: Integer)
+    FF     ==> Record(flg : fUnion, fctr : R, xpnt : Integer)
 
-    mergeFactors(f,g) ==
-      makeFR(unit(f)*unit(g),append(factorList f,factorList g))
+    mergeFactors(f, g) ==
+      makeFR(unit(f)*unit(g), append(factorList f, factorList g))
 
     refine(f, func) ==
        u := unit(f)
-       l: List FF := empty()
+       l : List FF := empty()
        for item in factorList f repeat
          fitem := func item.fctr
          u := u*unit(fitem) ^ (item.xpnt :: NonNegativeInteger)
          if item.xpnt = 1 then
-            l := concat(factorList fitem,l)
-         else l := concat([[v.flg,v.fctr,v.xpnt*item.xpnt]
-                          for v in factorList fitem],l)
-       makeFR(u,l)
+            l := concat(factorList fitem, l)
+         else l := concat([[v.flg, v.fctr, v.xpnt*item.xpnt]
+                          for v in factorList fitem], l)
+       makeFR(u, l)
 
 @
 \section{package FR2 FactoredFunctions2}
@@ -616,13 +616,13 @@ FactoredFunctionUtilities(R): Exports == Implementation where
 ++   For example, \spadfun{map} might be used to coerce an object of
 ++   type \spadtype{Factored(Integer)} to
 ++   \spadtype{Factored(Complex(Integer))}.
-FactoredFunctions2(R, S): Exports == Implementation where
-  R: IntegralDomain
-  S: IntegralDomain
+FactoredFunctions2(R, S) : Exports == Implementation where
+  R : IntegralDomain
+  S : IntegralDomain
 
   Exports ==> with
-    map: (R -> S, Factored R) -> Factored S
-      ++ map(fn,u) is used to apply the function \userfun{fn} to every
+    map : (R -> S, Factored R) -> Factored S
+      ++ map(fn, u) is used to apply the function \userfun{fn} to every
       ++ factor of \spadvar{u}. The new factored object will have all its
       ++ information flags set to "nil". This function is used, for
       ++ example, to coerce every factor base to another type.

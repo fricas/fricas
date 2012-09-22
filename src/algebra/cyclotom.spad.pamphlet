@@ -13,7 +13,7 @@
 <<package CYCLOTOM CyclotomicPolynomialPackage>>=
 )abbrev package CYCLOTOM CyclotomicPolynomialPackage
 ++ This package \undocumented{}
-CyclotomicPolynomialPackage: public == private where
+CyclotomicPolynomialPackage : public == private where
   SUP  ==> SparseUnivariatePolynomial(Integer)
   LSUP ==> List(SUP)
   NNI  ==> NonNegativeInteger
@@ -21,50 +21,50 @@ CyclotomicPolynomialPackage: public == private where
   IFP  ==> IntegerFactorizationPackage Integer
 
   public == with
-    cyclotomicDecomposition: Integer -> LSUP
+    cyclotomicDecomposition : Integer -> LSUP
         ++ cyclotomicDecomposition(n) returns prime factors of
         ++ \spad{x^n - 1} over integers.
-    cyclotomic:              Integer -> SUP
+    cyclotomic :              Integer -> SUP
         ++ cyclotomic(n) returns n-th cyclotomic polynomial, that
         ++ is minimal polynomial over rationals of primitive n-th
         ++ root of 1.
-    cyclotomicFactorization: Integer -> FR
+    cyclotomicFactorization : Integer -> FR
         ++ cyclotomicFactorization(n) returns prime factors of
         ++ \spad{x^n - 1} over integers.
 
   private == add
-    cyclotomic(n:Integer): SUP ==
-      x,y,z,l: SUP
+    cyclotomic(n : Integer) : SUP ==
+      x, y, z, l : SUP
       g := factors factor(n)$IFP
       --Now, for each prime in the factorization apply recursion
-      l := monomial(1,1) - monomial(1,0)
+      l := monomial(1, 1) - monomial(1, 0)
       for u in g repeat
-         l := (monicDivide(multiplyExponents(l,u.factor::NNI),l)).quotient
+         l := (monicDivide(multiplyExponents(l, u.factor::NNI), l)).quotient
          if u.exponent>1 then
-            l := multiplyExponents(l,((u.factor)^((u.exponent-1)::NNI))::NNI)
+            l := multiplyExponents(l, ((u.factor)^((u.exponent-1)::NNI))::NNI)
       l
 
-    cyclotomicDecomposition(n:Integer):LSUP ==
-      x,y,z: SUP
-      l,ll,m: LSUP
-      rr: Integer
+    cyclotomicDecomposition(n : Integer) : LSUP ==
+      x, y, z : SUP
+      l, ll, m : LSUP
+      rr : Integer
       g := factors factor(n)$IFP
-      l := [monomial(1,1) - monomial(1,0)]
+      l := [monomial(1, 1) - monomial(1, 0)]
       --Now, for each prime in the factorization apply recursion
       for u in g repeat
          m := [(monicDivide(
-            multiplyExponents(z,u.factor::NNI),z)).quotient for z in l]
+            multiplyExponents(z, u.factor::NNI), z)).quotient for z in l]
          for rr in 1..(u.exponent-1) repeat
-            l := append(l,m)
-            m := [multiplyExponents(z,u.factor::NNI) for z in m]
-         l := append(l,m)
+            l := append(l, m)
+            m := [multiplyExponents(z, u.factor::NNI) for z in m]
+         l := append(l, m)
       l
 
-    cyclotomicFactorization(n:Integer):FR ==
+    cyclotomicFactorization(n : Integer) : FR ==
       f :  SUP
       fr : FR := 1$FR
       for f in cyclotomicDecomposition(n) repeat
-        fr := fr * primeFactor(f,1$Integer)
+        fr := fr * primeFactor(f, 1$Integer)
       fr
 
 @

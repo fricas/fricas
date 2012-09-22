@@ -18,78 +18,78 @@
 ++ Description:
 ++   Basic and scripted symbols.
 ++ Keywords: symbol.
-Symbol(): Exports == Implementation where
+Symbol() : Exports == Implementation where
   L ==> List OutputForm
-  Scripts ==> Record(sub:L,sup:L,presup:L,presub:L,args:L)
+  Scripts ==> Record(sub : L, sup : L, presup : L, presub : L, args : L)
 
   Exports ==> Join(OrderedSet, ConvertibleTo InputForm, OpenMath,
         ConvertibleTo Symbol,
          ConvertibleTo Pattern Integer, ConvertibleTo Pattern Float,
           PatternMatchable Integer, PatternMatchable Float) with
-     new: () -> %
+     new : () -> %
        ++ new() returns a new symbol whose name starts with %.
-     new: % -> %
+     new : % -> %
        ++ new(s) returns a new symbol whose name starts with %s.
-     resetNew: () -> Void
+     resetNew : () -> Void
        ++ resetNew() resets the internals counters that new() and
        ++ new(s) use to return distinct symbols every time.
-     coerce: String -> %
+     coerce : String -> %
        ++ coerce(s) converts the string s to a symbol.
-     name: % -> %
+     name : % -> %
        ++ name(s) returns s without its scripts.
-     scripted?: % -> Boolean
+     scripted? : % -> Boolean
        ++ scripted?(s) is true if s has been given any scripts.
-     scripts: % -> Scripts
+     scripts : % -> Scripts
        ++ scripts(s) returns all the scripts of s.
-     script: (%, List L) -> %
-       ++ script(s, [a,b,c,d,e]) returns s with subscripts a,
+     script : (%, List L) -> %
+       ++ script(s, [a, b, c, d, e]) returns s with subscripts a,
        ++ superscripts b, pre-superscripts c, pre-subscripts d,
        ++ and argument-scripts e.  Omitted components are taken to be empty.
-       ++ For example, \spad{script(s, [a,b,c])} is equivalent to
-       ++ \spad{script(s,[a,b,c,[],[]])}.
-     script: (%, Scripts) -> %
-       ++ script(s, [a,b,c,d,e]) returns s with subscripts a,
+       ++ For example, \spad{script(s, [a, b, c])} is equivalent to
+       ++ \spad{script(s, [a, b, c, [], []])}.
+     script : (%, Scripts) -> %
+       ++ script(s, [a, b, c, d, e]) returns s with subscripts a,
        ++ superscripts b, pre-superscripts c, pre-subscripts d,
        ++ and argument-scripts e.
-     subscript: (%, L) -> %
-       ++ subscript(s, [a1,...,an]) returns s
-       ++ subscripted by \spad{[a1,...,an]}.
-     superscript: (%, L) -> %
-       ++ superscript(s, [a1,...,an]) returns s
-       ++ superscripted by \spad{[a1,...,an]}.
-     argscript: (%, L) -> %
-       ++ argscript(s, [a1,...,an]) returns s
-       ++ arg-scripted by \spad{[a1,...,an]}.
-     elt: (%, L) -> %
-       ++ elt(s,[a1,...,an]) or s([a1,...,an]) returns s subscripted by \spad{[a1,...,an]}.
-     string: % -> String
+     subscript : (%, L) -> %
+       ++ subscript(s, [a1, ..., an]) returns s
+       ++ subscripted by \spad{[a1, ..., an]}.
+     superscript : (%, L) -> %
+       ++ superscript(s, [a1, ..., an]) returns s
+       ++ superscripted by \spad{[a1, ..., an]}.
+     argscript : (%, L) -> %
+       ++ argscript(s, [a1, ..., an]) returns s
+       ++ arg-scripted by \spad{[a1, ..., an]}.
+     elt : (%, L) -> %
+       ++ elt(s, [a1, ..., an]) or s([a1, ..., an]) returns s subscripted by \spad{[a1, ..., an]}.
+     string : % -> String
        ++ string(s) converts the symbol s to a string.
        ++ Error: if the symbol is subscripted.
-     list: % -> List %
+     list : % -> List %
        ++ list(sy) takes a scripted symbol and produces a list
        ++ of the name followed by the scripts.
-     sample: constant -> %
+     sample : constant -> %
        ++ sample() returns a sample of %
 
   Implementation ==> add
-    count: Reference(Integer) := ref 0
-    xcount: AssociationList(%, Integer) := empty()
-    istrings:PrimitiveArray(String) :=
+    count : Reference(Integer) := ref 0
+    xcount : AssociationList(%, Integer) := empty()
+    istrings : PrimitiveArray(String) :=
                      construct ["0","1","2","3","4","5","6","7","8","9"]
     -- the following 3 strings shall be of empty intersection
-    nums:String:="0123456789"
-    ALPHAS:String:="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    alphas:String:="abcdefghijklmnopqrstuvwxyz"
+    nums:String := "0123456789"
+    ALPHAS:String := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    alphas:String := "abcdefghijklmnopqrstuvwxyz"
 
-    writeOMSym(dev: OpenMathDevice, x: %): Void ==
+    writeOMSym(dev : OpenMathDevice, x : %) : Void ==
       scripted? x =>
         error "Cannot convert a scripted symbol to OpenMath"
       OMputVariable(dev, x pretend Symbol)
 
-    OMwrite(x: %): String ==
-      s: String := ""
+    OMwrite(x : %) : String ==
+      s : String := ""
       sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-      dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+      dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
       OMputObject(dev)
       writeOMSym(dev, x)
       OMputEndObject(dev)
@@ -97,10 +97,10 @@ Symbol(): Exports == Implementation where
       s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
       s
 
-    OMwrite(x: %, wholeObj: Boolean): String ==
-      s: String := ""
+    OMwrite(x : %, wholeObj : Boolean) : String ==
+      s : String := ""
       sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-      dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+      dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
       if wholeObj then
         OMputObject(dev)
       writeOMSym(dev, x)
@@ -110,12 +110,12 @@ Symbol(): Exports == Implementation where
       s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
       s
 
-    OMwrite(dev: OpenMathDevice, x: %): Void ==
+    OMwrite(dev : OpenMathDevice, x : %) : Void ==
       OMputObject(dev)
       writeOMSym(dev, x)
       OMputEndObject(dev)
 
-    OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+    OMwrite(dev : OpenMathDevice, x : %, wholeObj : Boolean) : Void ==
       if wholeObj then
         OMputObject(dev)
       writeOMSym(dev, x)
@@ -128,38 +128,38 @@ Symbol(): Exports == Implementation where
 
     istring  : Integer -> String
     syprefix : Scripts -> String
-    syscripts: Scripts -> L
+    syscripts : Scripts -> L
 
-    convert(s:%):InputForm == convert(s pretend Symbol)$InputForm
-    convert(s:%):Symbol    == s pretend Symbol
-    coerce(s:String):%     == VALUES(INTERN(s)$Lisp)$Lisp
-    x = y                  == EQUAL(x,y)$Lisp
+    convert(s : %) : InputForm == convert(s pretend Symbol)$InputForm
+    convert(s : %) : Symbol    == s pretend Symbol
+    coerce(s : String) : %     == VALUES(INTERN(s)$Lisp)$Lisp
+    x = y                  == EQUAL(x, y)$Lisp
     hashUpdate!(hs, s)     == update!(hs, SXHASH(s)$Lisp)$HashState
     x < y                  == GGREATERP(y, x)$Lisp
-    coerce(x:%):OutputForm == outputForm(x pretend Symbol)
+    coerce(x : %) : OutputForm == outputForm(x pretend Symbol)
     subscript(sy, lx)      == script(sy, [lx, nil, nil(), nil(), nil()])
-    elt(sy,lx)             == subscript(sy,lx)
-    superscript(sy, lx)    == script(sy,[nil(),lx, nil(), nil(), nil()])
-    argscript(sy, lx)      == script(sy,[nil(),nil(), nil(), nil(), lx])
+    elt(sy, lx)             == subscript(sy, lx)
+    superscript(sy, lx)    == script(sy, [nil(), lx, nil(), nil(), nil()])
+    argscript(sy, lx)      == script(sy, [nil(), nil(), nil(), nil(), lx])
 
-    patternMatch(x:%,p:Pattern Integer,l:PatternMatchResult(Integer,%))==
+    patternMatch(x : %, p : Pattern Integer, l : PatternMatchResult(Integer, %))==
       (patternMatch(x pretend Symbol, p, l pretend
        PatternMatchResult(Integer, Symbol))$PatternMatchSymbol(Integer))
          pretend PatternMatchResult(Integer, %)
 
-    patternMatch(x:%, p:Pattern Float, l:PatternMatchResult(Float, %)) ==
+    patternMatch(x : %, p : Pattern Float, l : PatternMatchResult(Float, %)) ==
       (patternMatch(x pretend Symbol, p, l pretend
        PatternMatchResult(Float, Symbol))$PatternMatchSymbol(Float))
          pretend PatternMatchResult(Float, %)
 
-    convert(x:%):Pattern(Float) ==
+    convert(x : %) : Pattern(Float) ==
       coerce(x pretend Symbol)$Pattern(Float)
 
-    convert(x:%):Pattern(Integer) ==
+    convert(x : %) : Pattern(Integer) ==
       coerce(x pretend Symbol)$Pattern(Integer)
 
     syprefix sc ==
-      ns: List Integer := [#sc.presub, #sc.presup, #sc.sup, #sc.sub]
+      ns : List Integer := [#sc.presub, #sc.presup, #sc.sup, #sc.sub]
       while #ns >= 2 and zero? first ns repeat ns := rest ns
       concat concat(concat(hd, istring(#sc.args)),
                                  [istring n for n in reverse! ns])
@@ -171,8 +171,8 @@ Symbol(): Exports == Implementation where
       all := concat(sc.sub, all)
       concat(all, sc.args)
 
-    script(sy: %, ls: List L) ==
-      sc: Scripts := [nil(), nil(), nil(), nil(), nil()]
+    script(sy : %, ls : List L) ==
+      sc : Scripts := [nil(), nil(), nil(), nil(), nil()]
       if not null ls then (sc.sub    := first ls; ls := rest ls)
       if not null ls then (sc.sup    := first ls; ls := rest ls)
       if not null ls then (sc.presup := first ls; ls := rest ls)
@@ -180,7 +180,7 @@ Symbol(): Exports == Implementation where
       if not null ls then (sc.args   := first ls; ls := rest ls)
       script(sy, sc)
 
-    script(sy: %, sc: Scripts) ==
+    script(sy : %, sc : Scripts) ==
       scripted? sy => error "Cannot add scripts to a scripted symbol"
       (concat(concat(syprefix sc, string name sy)::%::OutputForm,
                                                 syscripts sc)) pretend %
@@ -189,7 +189,7 @@ Symbol(): Exports == Implementation where
       not scripted? e => PNAME(e)$Lisp
       error "Cannot form string from non-atomic symbols."
 
--- Scripts ==> Record(sub:L,sup:L,presup:L,presub:L,args:L)
+-- Scripts ==> Record(sub: L, sup: L, presup: L, presub: L, args: L)
     latex e ==
       s : String := (PNAME(name e)$Lisp) pretend String
       if #s > 1 and s.1 ~= char "\" then
@@ -244,21 +244,21 @@ Symbol(): Exports == Implementation where
         s := concat(s, sc)$String
       s
 
-    anyRadix(n:Integer,s:String):String ==
-      ns:String:=""
+    anyRadix(n : Integer, s : String) : String ==
+      ns:String := ""
       repeat
-        qr := divide(n,#s)
+        qr := divide(n, #s)
         n  := qr.quotient
-        ns := concat(s.(qr.remainder+minIndex s),ns)
+        ns := concat(s.(qr.remainder+minIndex s), ns)
         if zero?(n) then return ns
 
     new() ==
-      sym := anyRadix(count()::Integer,ALPHAS)
+      sym := anyRadix(count()::Integer, ALPHAS)
       count() := count() + 1
       concat("%",sym)::%
 
     new x ==
-      n:Integer :=
+      n : Integer :=
         (u := search(x, xcount)) case "failed" => 0
         inc(u::Integer)
       xcount(x) := n
@@ -267,11 +267,11 @@ Symbol(): Exports == Implementation where
         string name x
       xx := concat("%",xx)
       xx :=
-        (position(xx.maxIndex(xx),nums)>=minIndex(nums)) =>
-          concat(xx, anyRadix(n,alphas))
-        concat(xx, anyRadix(n,nums))
+        (position(xx.maxIndex(xx), nums)>=minIndex(nums)) =>
+          concat(xx, anyRadix(n, alphas))
+        concat(xx, anyRadix(n, nums))
       not scripted? x => xx::%
-      script(xx::%,scripts x)
+      script(xx::%, scripts x)
 
     resetNew() ==
       count() := 0
@@ -290,8 +290,8 @@ Symbol(): Exports == Implementation where
 
     scripts sy ==
       not scripted? sy => [nil(), nil(), nil(), nil(), nil()]
-      nscripts: List NonNegativeInteger := [0, 0, 0, 0, 0]
-      lscripts: List L := [nil(), nil(), nil(), nil(), nil()]
+      nscripts : List NonNegativeInteger := [0, 0, 0, 0, 0]
+      lscripts : List L := [nil(), nil(), nil(), nil(), nil()]
       str  := string first list sy
       nstr := #str
       m := minIndex nscripts

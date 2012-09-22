@@ -25,10 +25,10 @@
 ++ Description:
 ++   This is a category of univariate Puiseux series constructed
 ++   from univariate Laurent series.  A Puiseux series is represented
-++   by a pair \spad{[r,f(x)]}, where r is a positive rational number and
+++   by a pair \spad{[r, f(x)]}, where r is a positive rational number and
 ++   \spad{f(x)} is a Laurent series.  This pair represents the Puiseux
 ++   series \spad{f(x\^r)}.
-GeneralUnivariatePowerSeries(Coef,var,cen): Exports == Implementation where
+GeneralUnivariatePowerSeries(Coef, var, cen) : Exports == Implementation where
   Coef : Ring
   var  : Symbol
   cen  : Coef
@@ -38,82 +38,82 @@ GeneralUnivariatePowerSeries(Coef,var,cen): Exports == Implementation where
   UPXS   ==> UnivariatePuiseuxSeries
 
   Exports ==> UnivariatePuiseuxSeriesCategory Coef with
-    coerce: Variable(var) -> %
+    coerce : Variable(var) -> %
       ++ coerce(var) converts the series variable \spad{var} into a
       ++ Puiseux series.
-    coerce: UPXS(Coef,var,cen) -> %
+    coerce : UPXS(Coef, var, cen) -> %
       ++ coerce(f) converts a Puiseux series to a general power series.
-    differentiate: (%,Variable(var)) -> %
-      ++ \spad{differentiate(f(x),x)} returns the derivative of
+    differentiate : (%, Variable(var)) -> %
+      ++ \spad{differentiate(f(x), x)} returns the derivative of
       ++ \spad{f(x)} with respect to \spad{x}.
     if Coef has Algebra Fraction Integer then
-      integrate: (%,Variable(var)) -> %
+      integrate : (%, Variable(var)) -> %
         ++ \spad{integrate(f(x))} returns an anti-derivative of the power
         ++ series \spad{f(x)} with constant coefficient 0.
         ++ We may integrate a series when we can divide coefficients
         ++ by integers.
 
-  Implementation ==> UnivariatePuiseuxSeries(Coef,var,cen) add
+  Implementation ==> UnivariatePuiseuxSeries(Coef, var, cen) add
 
-    coerce(upxs:UPXS(Coef,var,cen)) == upxs pretend %
+    coerce(upxs : UPXS(Coef, var, cen)) == upxs pretend %
 
-    puiseux: % -> UPXS(Coef,var,cen)
-    puiseux f == f pretend UPXS(Coef,var,cen)
+    puiseux : % -> UPXS(Coef, var, cen)
+    puiseux f == f pretend UPXS(Coef, var, cen)
 
     if Coef has Algebra Fraction Integer then
 
       differentiate f ==
         str1 : String := "'differentiate' unavailable on this domain;  "
         str2 : String := "use 'approximate' first"
-        error concat(str1,str2)
+        error concat(str1, str2)
 
-      differentiate(f:%,v:Variable(var)) == differentiate f
+      differentiate(f : %, v : Variable(var)) == differentiate f
 
       if Coef has PartialDifferentialRing(Symbol) then
-        differentiate(f:%,s:Symbol) ==
+        differentiate(f : %, s : Symbol) ==
           (s = variable(f)) =>
             str1 : String := "'differentiate' unavailable on this domain;  "
             str2 : String := "use 'approximate' first"
-            error concat(str1,str2)
-          dcds := differentiate(center f,s)
+            error concat(str1, str2)
+          dcds := differentiate(center f, s)
           deriv := differentiate(puiseux f) :: %
-          map(x +-> differentiate(x,s),f) - dcds * deriv
+          map(x +-> differentiate(x, s), f) - dcds * deriv
 
       integrate f ==
         str1 : String := "'integrate' unavailable on this domain;  "
         str2 : String := "use 'approximate' first"
-        error concat(str1,str2)
+        error concat(str1, str2)
 
-      integrate(f:%,v:Variable(var)) == integrate f
+      integrate(f : %, v : Variable(var)) == integrate f
 
-      if Coef has integrate: (Coef,Symbol) -> Coef and _
-         Coef has variables: Coef -> List Symbol then
+      if Coef has integrate : (Coef, Symbol) -> Coef and _
+         Coef has variables : Coef -> List Symbol then
 
-        integrate(f:%,s:Symbol) ==
+        integrate(f : %, s : Symbol) ==
           (s = variable(f)) =>
             str1 : String := "'integrate' unavailable on this domain;  "
             str2 : String := "use 'approximate' first"
-            error concat(str1,str2)
-          not entry?(s,variables center f) => map(x +-> integrate(x,s),f)
+            error concat(str1, str2)
+          not entry?(s, variables center f) => map(x +-> integrate(x, s), f)
           error "integrate: center is a function of variable of integration"
 
       if Coef has TranscendentalFunctionCategory and _
          Coef has PrimitiveFunctionCategory and _
          Coef has AlgebraicallyClosedFunctionSpace Integer then
 
-        integrateWithOneAnswer: (Coef,Symbol) -> Coef
-        integrateWithOneAnswer(f,s) ==
-          res := integrate(f,s)$FunctionSpaceIntegration(Integer,Coef)
+        integrateWithOneAnswer : (Coef, Symbol) -> Coef
+        integrateWithOneAnswer(f, s) ==
+          res := integrate(f, s)$FunctionSpaceIntegration(Integer, Coef)
           res case Coef => res :: Coef
           first(res :: List Coef)
 
-        integrate(f:%,s:Symbol) ==
+        integrate(f : %, s : Symbol) ==
           (s = variable(f)) =>
             str1 : String := "'integrate' unavailable on this domain;  "
             str2 : String := "use 'approximate' first"
-            error concat(str1,str2)
-          not entry?(s,variables center f) =>
-            map(x +-> integrateWithOneAnswer(x,s),f)
+            error concat(str1, str2)
+          not entry?(s, variables center f) =>
+            map(x +-> integrateWithOneAnswer(x, s), f)
           error "integrate: center is a function of variable of integration"
 
 @

@@ -30,9 +30,9 @@ and r so that
 \[a = qb + r , {\rm\ where\ } 0 \le r < b\]
 q is called the quotient and r the remainder.
 
-The greatest common divisor of integers a and b, denoted by gcd(a,b),
+The greatest common divisor of integers a and b, denoted by gcd(a, b),
 is the largest integer that divides (without remainder) both a and
-b. So, for example: gcd(15, 5) = 5, gcd(7, 9) = 1, gcd(12, 9) = 3,
+b. So, for example : gcd(15, 5) = 5, gcd(7, 9) = 1, gcd(12, 9) = 3,
 gcd(81, 57) = 3.
 
 The gcd of two integers can be found by repeated application of the
@@ -52,7 +52,7 @@ Finding the gcd of 81 and 57 by the {\bf Euclidean Algorithm}:
 \end{array}
 \]
 
-So the greatest commmon divisor, the GCD(81,51)=3.
+So the greatest commmon divisor, the GCD(81, 51)=3.
 
 If the gcd(a, b) = r then there exist integers s and t so that
 \[s(a) + t(b) = r\]
@@ -71,14 +71,14 @@ And, from the line before that $24 = 81 - 1(57)$, giving us:
 \[3 = 3(57) - 7( 81 - 1(57)) = 10(57) -7(81)\]
 So we have found s = -7 and t = 10.
 
-The {\bf Extended Euclidean Algorithm} computes the GCD($a$,$b$) and
+The {\bf Extended Euclidean Algorithm} computes the GCD($a$, $b$) and
 the values for $s$ and $t$.
 
 Suppose we were doing arithmetics modulo 26 and we needed to find the
 inverse of a number mod 26. This turned out to be a difficult task
 (and not always possible). We observed that a number $x$ had an inverse
 mod 26 (i.e., a number $y$ so that $xy = 1 {\rm\ mod\ } 26$)
-if and only if $gcd(x,26) = 1$.
+if and only if $gcd(x, 26) = 1$.
 In the general case the inverse
 of $x$ exists if and only if $gcd(x, n) = 1$ and if it exists then
 there exist integers $s$ and $t$ so that
@@ -95,7 +95,7 @@ The extended Euclidean algorithm calculates $s$ efficiently.
 We will number the steps of the Euclidean algorithm starting
 with step 0. The quotient obtained at step $i$ will be denoted by $q_i$
 and an auxillary number, $s_i$. For the first two steps, the value
-of this number is given: $s_0 = 0$ and $s_1 = 1$. For the remainder of the
+of this number is given : $s_0 = 0$ and $s_1 = 1$. For the remainder of the
 steps, we recursively calculate
 \[s_i = s_{i-2} - s_{i-1} q_{i-2} {\rm\ (mod\ n)}\]
 
@@ -107,13 +107,13 @@ If the remainder is not 1, then $x$ does not have an inverse.
 Find the inverse of 15 mod 26.
 \[
 \begin{array}{crcll}
-Step 0: &26 &=& 1(15) + 11 &s_0 = 0\\
-Step 1: &15 &=& 1(11) + 4  &s_1 = 1\\
-Step 2: &11 &=& 2(4) + 3
+Step 0 : &26 &=& 1(15) + 11 &s_0 = 0\\
+Step 1 : &15 &=& 1(11) + 4  &s_1 = 1\\
+Step 2 : &11 &=& 2(4) + 3
 &s_2 = 0 - 1( 1) {\rm\ mod\ } 26 = 25\\
-Step 3: &4  &=& 1(3) + 1
+Step 3 : &4  &=& 1(3) + 1
 &s_3 = 1 - 25( 1) {\rm\ mod\ } 26 = -24 {\rm\ mod\ } 26 = 2\\
-Step 4: &3  &=& 3(1) + 0
+Step 4 : &3  &=& 3(1) + 0
 &s_4 = 25 - 2( 2) {\rm\ mod\ } 26 = 21\\
 &&& &s_5 = 2 - 21( 1) {\rm\ mod\ } 26 = -19 {\rm\ mod\ } 26 = 7
 \end{array}
@@ -121,42 +121,42 @@ Step 4: &3  &=& 3(1) + 0
 Notice that $15(7) = 105 = 1 + 4(26) \equiv 1 ({\rm\ mod\ } 26)$.
 
 Using the half extended Euclidean algorithm we compute 1/a mod b.
-<<inverse(a,b)>>=
-  inverse(a,b) ==
-    borg:I:=b
-    c1:I := 1
-    d1:I := 0
+<<inverse(a, b)>>=
+  inverse(a, b) ==
+    borg : I := b
+    c1 : I := 1
+    d1 : I := 0
     while b ~= 0 repeat
-      q:I := a quo b
-      r:I := a-q*b
-      (a,b):=(b,r)
-      (c1,d1):=(d1,c1-q*d1)
+      q : I := a quo b
+      r : I := a-q*b
+      (a, b) := (b, r)
+      (c1, d1) := (d1, c1-q*d1)
     a ~= 1 => error("moduli are not relatively prime")
-    positiveRemainder(c1,borg)
+    positiveRemainder(c1, borg)
 
 @
-<<inverse : (I,I) -> I>>=
-  inverse : (I,I) -> I
+<<inverse : (I, I) -> I>>=
+  inverse : (I, I) -> I
 @
 Since this algorithm in local we need to reproduce it in the
 input file for testing purposes.
 <<TESTinverse>>=
 )clear completely
 
-inverse:(INT,INT)->INT
+inverse : (INT, INT)->INT
 
-inverse(a,b) ==
-  borg:INT:=b
-  c1:INT := 1
-  d1:INT := 0
+inverse(a, b) ==
+  borg : INT := b
+  c1 : INT := 1
+  d1 : INT := 0
   while b ~= 0 repeat
     q := a quo b
     r := a-q*b
     print [a, "=", q, "*(", b, ")+", r]
-    (a,b):=(b,r)
-    (c1,d1):=(d1,c1-q*d1)
+    (a, b) := (b, r)
+    (c1, d1) := (d1, c1-q*d1)
   a ~= 1 => error("moduli are not relatively prime")
-  positiveRemainder(c1,borg)
+  positiveRemainder(c1, borg)
 
 if ((inverse(26,15)*26)::IntegerMod(15) ~= 1) then print "DALY BUG"
 if ((inverse(15,26)*15)::IntegerMod(26) ~= 1) then print "DALY BUG"
@@ -164,78 +164,78 @@ if ((inverse(15,26)*15)::IntegerMod(26) ~= 1) then print "DALY BUG"
 @
 \subsection{The Chinese Remainder Algorithm}
 \subsubsection{Chinese Remainder Theorem}
-Let $m_1$,$m_2$,\ldots,$m_r$ be positive integers that are pairwise
-relatively prime. Let $x_1$,$x_2$,\ldots,$x_r$ be integers with
+Let $m_1$, $m_2$, \ldots, $m_r$ be positive integers that are pairwise
+relatively prime. Let $x_1$, $x_2$, \ldots, $x_r$ be integers with
 $0 \le x_i < m_i$. Then, there is exactly one $x$ in the interval
 \[0 \le x < m_1 \cdot m_2 \cdots m_r\]
 that satisfies the remainder equations
-\[{\rm\ irem\ }(x,m_i) = x_i,\ \ \ i=1,2,\ldots,r\]
+\[{\rm\ irem\ }(x, m_i) = x_i, \ \ \ i=1, 2, \ldots, r\]
 where {\bf irem} is the positive integer remainder function.
 \subsubsection{Chinese Remainder Example}
 Let $x_1 = 4$, $m_1 = 5$, $x_2 = 2$, $m_2 = 3$. We know that
-\[{\rm\ irem\ }(x,m_1) = x_1\]
-\[{\rm\ irem\ }(x,m_2) = x_2\]
+\[{\rm\ irem\ }(x, m_1) = x_1\]
+\[{\rm\ irem\ }(x, m_2) = x_2\]
 where $0 \le x_1 < m_1$ and $0 \le x_2 < m_2$. By the extended
 Euclidean Algorithm there are integers $c$ and $d$ such that
 \[c m_1 + d m_2 = 1\].
 \noindent
 In this case we are looking for an integer such that
-\[{\rm\ irem\ }(x,5) = 4\]
-\[{\rm\ irem\ }(x,3) = 2\]
+\[{\rm\ irem\ }(x, 5) = 4\]
+\[{\rm\ irem\ }(x, 3) = 2\]
 
 The algorithm we use is to first
 compute the positive integer
 remainder of $x_1$ and $m_1$ to get a new $x_1$:
 \[
 \begin{array}{rcl}
-x_1 & = & {\rm\ positiveRemainder\ }(x_1,m_1)\\
-4 & = & {\rm\ positiveRemainder\ }(4,5)
+x_1 & = & {\rm\ positiveRemainder\ }(x_1, m_1)\\
+4 & = & {\rm\ positiveRemainder\ }(4, 5)
 \end{array}
 \]
 Next compute the positive integer
 remainder of $x_2$ and $m_2$ to get a new $x_2$:
 \[
 \begin{array}{rcl}
-x_2 & = & {\rm\ positiveRemainder\ }(x_2,m_2)\\
-2 & = & {\rm\ positiveRemainder\ }(2,3)
+x_2 & = & {\rm\ positiveRemainder\ }(x_2, m_2)\\
+2 & = & {\rm\ positiveRemainder\ }(2, 3)
 \end{array}
 \]
 Then we compute
 \[x_1 + m_1 \cdot {\rm\ positiveRemainder\ }
-(((x_2-x_1)\cdot{\rm inverse}(m_1,m_2)),m_2)\]
+(((x_2-x_1)\cdot{\rm inverse}(m_1, m_2)), m_2)\]
 or
-\[4+5*{\rm\ positiveRemainder\ }(((2-4)*{\rm\ inverse\ }(5,3)),3)\]
+\[4+5*{\rm\ positiveRemainder\ }(((2-4)*{\rm\ inverse\ }(5, 3)), 3)\]
 or
-\[4+5*{\rm\ positiveRemainder\ }(-2*2),3)\]
+\[4+5*{\rm\ positiveRemainder\ }(-2*2), 3)\]
 or
 \[4+5*2\]
 or
 \[14\]
-<<chineseRemainder(x1,m1,x2,m2)>>=
-  chineseRemainder(x1,m1,x2,m2) ==
+<<chineseRemainder(x1, m1, x2, m2)>>=
+  chineseRemainder(x1, m1, x2, m2) ==
     m1 < 0 or m2 < 0 => error "moduli must be positive"
-    x1 := positiveRemainder(x1,m1)
-    x2 := positiveRemainder(x2,m2)
-    x1 + m1 * positiveRemainder(((x2-x1) * inverse(m1,m2)),m2)
+    x1 := positiveRemainder(x1, m1)
+    x2 := positiveRemainder(x2, m2)
+    x1 + m1 * positiveRemainder(((x2-x1) * inverse(m1, m2)), m2)
 
 @
 This function has a restricted signature which only allows for
 computing the chinese remainder of two numbers and two moduli.
-<<chineseRemainder: (I,I,I,I) -> I>>=
-  chineseRemainder: (I,I,I,I) -> I
-    ++ \spad{chineseRemainder(x1,m1,x2,m2)} returns w, where w is such that
+<<chineseRemainder : (I, I, I, I) -> I>>=
+  chineseRemainder : (I, I, I, I) -> I
+    ++ \spad{chineseRemainder(x1, m1, x2, m2)} returns w, where w is such that
     ++ \spad{w = x1 mod m1} and \spad{w = x2 mod m2}. Note: \spad{m1} and
     ++ \spad{m2} must be relatively prime.
 @
 We test the particular example. The result should be 14.
 <<TESTchineseRemainder>>=
 )clear all
-x1:=4
-m1:=5
-x2:=2
-m2:=3
-result:=chineseRemainder(x1,m1,x2,m2)
-expected:=14
+x1 := 4
+m1 := 5
+x2 := 2
+m2 := 3
+result := chineseRemainder(x1, m1, x2, m2)
+expected := 14
 if (result-expected ~= 0) then print "DALY BUG"
 
 @
@@ -253,7 +253,7 @@ if (result-expected ~= 0) then print "DALY BUG"
 ++ References: Knuth, The Art of Computer Programming Vol.2
 ++ Description:
 ++ This package provides various number theoretic functions on the integers.
-IntegerNumberTheoryFunctions(): Exports == Implementation where
+IntegerNumberTheoryFunctions() : Exports == Implementation where
  I ==> Integer
  RN ==> Fraction I
  SUP ==> SparseUnivariatePolynomial
@@ -262,18 +262,18 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
  Exports ==> with
   bernoulli : I -> RN
     ++ \spad{bernoulli(n)} returns the nth Bernoulli number.
-    ++ this is \spad{B(n,0)}, where \spad{B(n,x)} is the \spad{n}th Bernoulli
+    ++ this is \spad{B(n, 0)}, where \spad{B(n, x)} is the \spad{n}th Bernoulli
     ++ polynomial.
   carmichaelLambda : I -> I
     ++ \spad{carmichaelLambda(n)} returns exponent of the multiplicative
     ++ group of integers modulo n, that is smallest positive integer
     ++ k such that \spad{i^k rem n = 1} for all i relatively prime to n.
-<<chineseRemainder: (I,I,I,I) -> I>>
+<<chineseRemainder : (I, I, I, I) -> I>>
   divisors : I -> List I
     ++ \spad{divisors(n)} returns a list of the divisors of n.
   euler : I -> I
     ++ \spad{euler(n)} returns the \spad{n}th Euler number. This is
-    ++ \spad{2^n E(n,1/2)}, where \spad{E(n,x)} is the nth Euler polynomial.
+    ++ \spad{2^n E(n, 1/2)}, where \spad{E(n, x)} is the nth Euler polynomial.
   eulerPhi : I -> I
     ++ \spad{eulerPhi(n)} returns the number of integers between 1 and n
     ++ (including 1) which are relatively prime to n. This is the Euler phi
@@ -287,25 +287,25 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     ++ Vol 2, Semi-Numerical Algorithms.
   harmonic : I -> RN
     ++ \spad{harmonic(n)} returns the nth harmonic number. This is
-    ++ \spad{H[n] = sum(1/k,k=1..n)}.
-  jacobi : (I,I) -> I
-    ++ \spad{jacobi(a,b)} returns the Jacobi symbol \spad{J(a/b)}.
+    ++ \spad{H[n] = sum(1/k, k=1..n)}.
+  jacobi : (I, I) -> I
+    ++ \spad{jacobi(a, b)} returns the Jacobi symbol \spad{J(a/b)}.
     ++ When b is odd, \spad{J(a/b) = product(L(a/p) for p in factor b )}.
-    ++ Note: by convention, 0 is returned if \spad{gcd(a,b) ~= 1}.
+    ++ Note: by convention, 0 is returned if \spad{gcd(a, b) ~= 1}.
     ++ Iterative \spad{O(log(b)^2)} version coded by Michael Monagan June 1987.
-  legendre : (I,I) -> I
-    ++ \spad{legendre(a,p)} returns the Legendre symbol \spad{L(a/p)}.
+  legendre : (I, I) -> I
+    ++ \spad{legendre(a, p)} returns the Legendre symbol \spad{L(a/p)}.
     ++ \spad{L(a/p) = (-1)^((p-1)/2) mod p} (p prime), which is 0 if \spad{a}
     ++ is 0, 1 if \spad{a} is a quadratic residue \spad{mod p} and -1 otherwise.
     ++ Note: because the primality test is expensive,
-    ++ if it is known that p is prime then use \spad{jacobi(a,p)}.
+    ++ if it is known that p is prime then use \spad{jacobi(a, p)}.
   moebiusMu : I -> I
     ++ \spad{moebiusMu(n)} returns the Moebius function \spad{mu(n)}.
-    ++ \spad{mu(n)} is either -1,0 or 1 as follows:
+    ++ \spad{mu(n)} is either -1, 0 or 1 as follows:
     ++ \spad{mu(n) = 0} if n is divisible by a square > 1,
     ++ \spad{mu(n) = (-1)^k} if n is square-free and has k distinct
     ++ prime divisors.
-  numberOfDivisors: I -> I
+  numberOfDivisors : I -> I
     ++ \spad{numberOfDivisors(n)} returns the number of integers between 1 and n
     ++ (inclusive) which divide n. The number of divisors of n is often
     ++ denoted by \spad{tau(n)}.
@@ -313,8 +313,8 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     ++ \spad{sumOfDivisors(n)} returns the sum of the integers between 1 and n
     ++ (inclusive) which divide n. The sum of the divisors of n is often
     ++ denoted by \spad{sigma(n)}.
-  sumOfKthPowerDivisors: (I,NNI) -> I
-    ++ \spad{sumOfKthPowerDivisors(n,k)} returns the sum of the \spad{k}th
+  sumOfKthPowerDivisors : (I, NNI) -> I
+    ++ \spad{sumOfKthPowerDivisors(n, k)} returns the sum of the \spad{k}th
     ++ powers of the integers between 1 and n (inclusive) which divide n.
     ++ the sum of the \spad{k}th powers of the divisors of n is often denoted
     ++ by \spad{sigma_k(n)}.
@@ -323,14 +323,14 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
 
   -- we store the euler and bernoulli numbers computed so far in
   -- a Vector because they are computed from an n-term recurrence
-  E: IndexedFlexibleArray(I,0)   := new(1, 1)
-  B: IndexedFlexibleArray(RN,0)  := new(1, 1)
-  H: Record(Hn:I,Hv:RN) := [1, 1]
+  E : IndexedFlexibleArray(I, 0)   := new(1, 1)
+  B : IndexedFlexibleArray(RN, 0)  := new(1, 1)
+  H : Record(Hn : I, Hv : RN) := [1, 1]
 
   harmonic n ==
-    s:I; h:RN
+    s : I; h : RN
     n < 0 => error("harmonic not defined for negative integers")
-    if n >= H.Hn then (s,h) := H else (s := 0; h := 0)
+    if n >= H.Hn then (s, h) := H else (s := 0; h := 0)
     for k in s+1..n repeat h := h + 1/k
     H.Hn := n
     H.Hv := h
@@ -340,14 +340,14 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     n = 0 => 0
     n < 0 => (odd? n => 1; -1) * fibonacci(-n)
     f1, f2 : I
-    (f1,f2) := (0,1)
+    (f1, f2) := (0, 1)
     for k in length(n)-2 .. 0 by -1 repeat
       t := f2^2
-      (f1,f2) := (t+f1^2,t+2*f1*f2)
-      if bit?(n,k) then (f1,f2) := (f2,f1+f2)
+      (f1, f2) := (t+f1^2, t+2*f1*f2)
+      if bit?(n, k) then (f1, f2) := (f2, f1+f2)
     f2
 
-  carmichaelLambda(n: Integer): Integer ==
+  carmichaelLambda(n : Integer) : Integer ==
       n <= 0 => error "carmichaelLambda defined only for positive integers"
       lcm [(if pk.factor >= 3 or pk.exponent <= 2 then
               (pk.factor)^((pk.exponent-1) pretend NNI)*(pk.factor-1)
@@ -359,10 +359,10 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     odd? n => 0
     l := (#E) :: I
     n < l => E(n)
-    concat!(E, new((n+1-l)::NNI, 0)$IndexedFlexibleArray(I,0))
+    concat!(E, new((n+1-l)::NNI, 0)$IndexedFlexibleArray(I, 0))
     for i in 1 .. l by 2 repeat E(i) := 0
-    -- compute E(i) i = l+2,l+4,...,n given E(j) j = 0,2,...,i-2
-    t,e : I
+    -- compute E(i) i = l+2, l+4, ..., n given E(j) j = 0, 2, ..., i-2
+    t, e : I
     for i in l+1 .. n by 2 repeat
       t := e := 1
       for j in 2 .. i-2 by 2 repeat
@@ -378,11 +378,11 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
       0
     l := (#B) :: I
     n < l => B(n)
-    concat!(B, new((n+1-l)::NNI, 0)$IndexedFlexibleArray(RN,0))
+    concat!(B, new((n+1-l)::NNI, 0)$IndexedFlexibleArray(RN, 0))
     for i in 1 .. l by 2 repeat B(i) := 0
-    -- compute B(i) i = l+2,l+4,...,n given B(j) j = 0,2,...,i-2
+    -- compute B(i) i = l+2, l+4, ..., n given B(j) j = 0, 2, ..., i-2
     for i in l+1 .. n by 2 repeat
-      t:I := 1
+      t : I := 1
       b := (1-i)/2
       for j in 2 .. i-2 by 2 repeat
         t := (t*(i-j+2)*(i-j+3)) quo (j*(j-1))
@@ -390,11 +390,11 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
       B(i) := -b/((i+1)::RN)
     B(n)
 
-<<inverse : (I,I) -> I>>
-<<inverse(a,b)>>
-<<chineseRemainder(x1,m1,x2,m2)>>
+<<inverse : (I, I) -> I>>
+<<inverse(a, b)>>
+<<chineseRemainder(x1, m1, x2, m2)>>
 
-  jacobi(a,b) ==
+  jacobi(a, b) ==
     -- Revised by Clifton Williamson January 1989.
     -- Previous version returned incorrect answers when b was even.
     -- The formula J(a/b) = product ( L(a/p) for p in factor b) is only
@@ -413,19 +413,19 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     if b < 0 then b := -b
     b = 0 => error "second argument of jacobi may not be 0"
     b = 1 => 1
-    even? b and positiveRemainder(a,4) > 1 =>
+    even? b and positiveRemainder(a, 4) > 1 =>
       error "J(a/b) not defined for b even and a = 2 or 3 (mod 4)"
     even? b and even? a => 0
     for k in 0.. while even? b repeat b := b quo 2
-    j:I := (odd? k and positiveRemainder(a,8) = 5 => -1; 1)
+    j : I := (odd? k and positiveRemainder(a, 8) = 5 => -1; 1)
     b = 1 => j
-    a := positiveRemainder(a,b)
+    a := positiveRemainder(a, b)
     -- assertion: 0 < a < b and odd? b
     while a > 1 repeat
       if odd? a then
         -- J(a/b) = J(b/a) (-1) ^ (a-1)/2 (b-1)/2
         if a rem 4 = 3 and b rem 4 = 3 then j := -j
-        (a,b) := (b rem a,a)
+        (a, b) := (b rem a, a)
       else
         -- J(2*a/b) = J(a/b) (-1) (b^2-1)/8
         for k in 0.. until odd? a repeat a := a quo 2
@@ -433,9 +433,9 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
     a = 0 => 0
     j
 
-  legendre(a,p) ==
+  legendre(a, p) ==
     p < 0 => error "legendre not defined for negative characteristic"
-    prime? p => jacobi(a,p)
+    prime? p => jacobi(a, p)
     error "characteristic of legendre must be prime"
 
   eulerPhi n ==
@@ -457,11 +457,11 @@ IntegerNumberTheoryFunctions(): Exports == Implementation where
           newList := concat(pow * m, newList)
       oldList := newList
 
-    sort((i1: Integer, i2: Integer): Boolean +-> i1 < i2, oldList)
+    sort((i1 : Integer, i2 : Integer) : Boolean +-> i1 < i2, oldList)
 @
 
 [[divisors]] generates the list of positive divisors of an integer. We proceed
-in an inductive manner: [[oldList]] contains the list of all possible divisors
+in an inductive manner : [[oldList]] contains the list of all possible divisors
 containing only the first few factors of [[n]]. We then prepend all possible
 divisors containing the new factor [[f]] by multiplying the [[oldList]] with
 all possible positive powers of [[f]].
@@ -498,7 +498,7 @@ can safely share memory.
       (entry.factor-1) for entry in factors factor n]
     numer r
 
-  sumOfKthPowerDivisors(n,k) ==
+  sumOfKthPowerDivisors(n, k) ==
     n = 0 => 0
     r : RN := */[(entry.factor^(k*entry.exponent::NNI+k)-1)/
       (entry.factor^k-1) for entry in factors factor n]
@@ -534,7 +534,7 @@ can safely share memory.
 ++ Description:
 ++ This package provides various polynomial number theoretic functions
 ++ over the integers.
-PolynomialNumberTheoryFunctions(): Exports == Implementation where
+PolynomialNumberTheoryFunctions() : Exports == Implementation where
  I ==> Integer
  RN ==> Fraction I
  SUP ==> SparseUnivariatePolynomial
@@ -543,34 +543,34 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
  Exports ==> with
   bernoulli : I -> SUP RN
     ++ bernoulli(n) returns the nth Bernoulli polynomial \spad{B[n](x)}.
-    ++ Note: Bernoulli polynomials denoted \spad{B(n,x)} computed by solving the
-    ++ differential equation  \spad{differentiate(B(n,x),x) = n B(n-1,x)} where
-    ++ \spad{B(0,x) = 1} and initial condition comes from \spad{B(n) = B(n,0)}.
-  chebyshevT: I -> SUP I
+    ++ Note: Bernoulli polynomials denoted \spad{B(n, x)} computed by solving the
+    ++ differential equation  \spad{differentiate(B(n, x), x) = n B(n-1, x)} where
+    ++ \spad{B(0, x) = 1} and initial condition comes from \spad{B(n) = B(n, 0)}.
+  chebyshevT : I -> SUP I
     ++ chebyshevT(n) returns the nth Chebyshev polynomial \spad{T[n](x)}.
     ++ Note: Chebyshev polynomials of the first kind, denoted \spad{T[n](x)},
     ++ computed from the two term recurrence.  The generating function
     ++ \spad{(1-t*x)/(1-2*t*x+t^2) = sum(T[n](x)*t^n, n=0..infinity)}.
-  chebyshevU: I -> SUP I
+  chebyshevU : I -> SUP I
     ++ chebyshevU(n) returns the nth Chebyshev polynomial \spad{U[n](x)}.
     ++ Note: Chebyshev polynomials of the second kind, denoted \spad{U[n](x)},
     ++ computed from the two term recurrence.  The generating function
     ++ \spad{1/(1-2*t*x+t^2) = sum(T[n](x)*t^n, n=0..infinity)}.
-  cyclotomic: I -> SUP I
+  cyclotomic : I -> SUP I
     ++ cyclotomic(n) returns the nth cyclotomic polynomial \spad{phi[n](x)}.
     ++ Note: \spad{phi[n](x)} is the factor of \spad{x^n - 1} whose roots
     ++ are the primitive nth roots of unity.
   euler     : I -> SUP RN
     ++ euler(n) returns the nth Euler polynomial \spad{E[n](x)}.
-    ++ Note: Euler polynomials denoted \spad{E(n,x)} are computed
+    ++ Note: Euler polynomials denoted \spad{E(n, x)} are computed
     ++ by solving the differential equation
-    ++ \spad{differentiate(E(n,x),x) = n E(n-1,x)} where \spad{E(0,x) = 1}
-    ++ and initial condition comes from \spad{E(n) = 2^n E(n,1/2)}.
-  fixedDivisor: SUP I -> I
+    ++ \spad{differentiate(E(n, x), x) = n E(n-1, x)} where \spad{E(0, x) = 1}
+    ++ and initial condition comes from \spad{E(n) = 2^n E(n, 1/2)}.
+  fixedDivisor : SUP I -> I
     ++ fixedDivisor(a) for \spad{a(x)} in \spad{Z[x]} is the largest integer
     ++ f such that f divides \spad{a(x=k)} for all integers k.
     ++ Note: fixed divisor of \spad{a} is
-    ++ \spad{reduce(gcd,[a(x=k) for k in 0..degree(a)])}.
+    ++ \spad{reduce(gcd, [a(x=k) for k in 0..degree(a)])}.
   hermite   : I -> SUP I
     ++ hermite(n) returns the nth Hermite polynomial \spad{H[n](x)}.
     ++ Note: Hermite polynomials, denoted \spad{H[n](x)}, are computed from
@@ -589,27 +589,27 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
  Implementation ==> add
   import IntegerPrimesPackage(I)
 
-  x := monomial(1,1)$SUP(I)
-  y := monomial(1,1)$SUP(RN)
+  x := monomial(1, 1)$SUP(I)
+  y := monomial(1, 1)$SUP(RN)
 
   -- For functions computed via a fixed term recurrence we record
   -- previous values so that the next value can be computed directly
 
-  E : Record(En:I, Ev:SUP(RN)) := [0,1]
-  B : Record( Bn:I, Bv:SUP(RN) ) := [0,1]
-  H : Record( Hn:I, H1:SUP(I), H2:SUP(I) ) := [0,1,x]
-  L : Record( Ln:I, L1:SUP(I), L2:SUP(I) ) := [0,1,x]
-  P : Record( Pn:I, P1:SUP(RN), P2:SUP(RN) ) := [0,1,y]
-  CT : Record( Tn:I, T1:SUP(I), T2:SUP(I) ) := [0,1,x]
-  U : Record( Un:I, U1:SUP(I), U2:SUP(I) ) := [0,1,0]
+  E : Record(En : I, Ev : SUP(RN)) := [0, 1]
+  B : Record( Bn : I, Bv : SUP(RN) ) := [0, 1]
+  H : Record( Hn : I, H1 : SUP(I), H2 : SUP(I) ) := [0, 1, x]
+  L : Record( Ln : I, L1 : SUP(I), L2 : SUP(I) ) := [0, 1, x]
+  P : Record( Pn : I, P1 : SUP(RN), P2 : SUP(RN) ) := [0, 1, y]
+  CT : Record( Tn : I, T1 : SUP(I), T2 : SUP(I) ) := [0, 1, x]
+  U : Record( Un : I, U1 : SUP(I), U2 : SUP(I) ) := [0, 1, 0]
 
-  MonicQuotient: (SUP(I),SUP(I)) -> SUP(I)
-  MonicQuotient (a,b) ==
+  MonicQuotient : (SUP(I), SUP(I)) -> SUP(I)
+  MonicQuotient (a, b) ==
     leadingCoefficient(b) ~= 1 => error "divisor must be monic"
     b = 1 => a
     da := degree a
-    db := degree b            -- assertion: degree b > 0
-    q:SUP(I) := 0
+    db := degree b            -- assertion : degree b > 0
+    q : SUP(I) := 0
     while da >= db repeat
       t := monomial(leadingCoefficient a, (da-db)::NNI)
       a := a - b * t
@@ -619,27 +619,27 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
 
   cyclotomic n ==
     --++ cyclotomic polynomial denoted phi[n](x)
-    p:I; q:I; r:I; s:I; m:NNI; c:SUP(I); t:SUP(I)
+    p : I; q : I; r : I; s : I; m : NNI; c : SUP(I); t : SUP(I)
     n < 0 => error "cyclotomic not defined for negative integers"
     n = 0 => x
     k := n; s := p := 1
     c := x - 1
     while k > 1 repeat
       p := nextPrime p
-      (q,r) := divide(k, p)
+      (q, r) := divide(k, p)
       if r = 0 then
-        while r = 0 repeat (k := q; (q,r) := divide(k,p))
-        t := multiplyExponents(c,p::NNI)
-        c := MonicQuotient(t,c)
+        while r = 0 repeat (k := q; (q, r) := divide(k, p))
+        t := multiplyExponents(c, p::NNI)
+        c := MonicQuotient(t, c)
         s := s * p
     m := (n quo s) :: NNI
-    multiplyExponents(c,m)
+    multiplyExponents(c, m)
 
   euler n ==
     p : SUP(RN); t : SUP(RN); c : RN; s : I
     n < 0 => error "euler not defined for negative integers"
-    if n < E.En then (s,p) := (0$I,1$SUP(RN)) else (s,p) := E
-    -- (s,p) := if n < E.En then (0,1) else E
+    if n < E.En then (s, p) := (0$I, 1$SUP(RN)) else (s, p) := E
+    -- (s, p) := if n < E.En then (0, 1) else E
     for i in s+1 .. n repeat
       t := (i::RN) * integrate p
       c := euler(i)$IntegerNumberTheoryFunctions / 2^(i::NNI) - t(1/2)
@@ -651,8 +651,8 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
   bernoulli n ==
     p : SUP RN; t : SUP RN; c : RN; s : I
     n < 0 => error "bernoulli not defined for negative integers"
-    if n < B.Bn then (s,p) := (0$I,1$SUP(RN)) else (s,p) := B
-    -- (s,p) := if n < B.Bn then (0,1) else B
+    if n < B.Bn then (s, p) := (0$I, 1$SUP(RN)) else (s, p) := B
+    -- (s, p) := if n < B.Bn then (0, 1) else B
     for i in s+1 .. n repeat
       t := (i::RN) * integrate p
       c := bernoulli(i)$IntegerNumberTheoryFunctions
@@ -662,44 +662,44 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
     p
 
   fixedDivisor a ==
-    g:I; d:NNI; SUP(I)
+    g : I; d : NNI; SUP(I)
     d := degree a
     g := coefficient(a, minimumDegree a)
-    for k in 1..d while g > 1 repeat g := gcd(g,a k)
+    for k in 1..d while g > 1 repeat g := gcd(g, a k)
     g
 
   hermite n ==
     s : I; p : SUP(I); q : SUP(I)
     n < 0 => error "hermite not defined for negative integers"
-    -- (s,p,q) := if n < H.Hn then (0,1,x) else H
-    if n < H.Hn then (s := 0; p := 1; q := x) else (s,p,q) := H
-    for k in s+1 .. n repeat (p,q) := (2*x*p-2*(k-1)*q,p)
+    -- (s, p, q) := if n < H.Hn then (0, 1, x) else H
+    if n < H.Hn then (s := 0; p := 1; q := x) else (s, p, q) := H
+    for k in s+1 .. n repeat (p, q) := (2*x*p-2*(k-1)*q, p)
     H.Hn := n
     H.H1 := p
     H.H2 := q
     p
 
   legendre n ==
-    s:I; t:I; p:SUP(RN); q:SUP(RN)
+    s : I; t : I; p : SUP(RN); q : SUP(RN)
     n < 0 => error "legendre not defined for negative integers"
-    -- (s,p,q) := if n < P.Pn then (0,1,y) else P
-    if n < P.Pn then (s := 0; p := 1; q := y) else (s,p,q) := P
+    -- (s, p, q) := if n < P.Pn then (0, 1, y) else P
+    if n < P.Pn then (s := 0; p := 1; q := y) else (s, p, q) := P
     for k in s+1 .. n repeat
       t := k-1
-      (p,q) := ((k+t)$I/k*y*p - t/k*q,p)
+      (p, q) := ((k+t)$I/k*y*p - t/k*q, p)
     P.Pn := n
     P.P1 := p
     P.P2 := q
     p
 
   laguerre n ==
-    k:I; s:I; t:I; p:SUP(I); q:SUP(I)
+    k : I; s : I; t : I; p : SUP(I); q : SUP(I)
     n < 0 => error "laguerre not defined for negative integers"
-    -- (s,p,q) := if n < L.Ln then (0,1,x) else L
-    if n < L.Ln then (s := 0; p := 1; q := x) else (s,p,q) := L
+    -- (s, p, q) := if n < L.Ln then (0, 1, x) else L
+    if n < L.Ln then (s := 0; p := 1; q := x) else (s, p, q) := L
     for k in s+1 .. n repeat
       t := k-1
-      (p,q) := ((((k+t)$I)::SUP(I)-x)*p-t^2*q,p)
+      (p, q) := ((((k+t)$I)::SUP(I)-x)*p-t^2*q, p)
     L.Ln := n
     L.L1 := p
     L.L2 := q
@@ -708,9 +708,9 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
   chebyshevT n ==
     s : I; p : SUP(I); q : SUP(I)
     n < 0 => error "chebyshevT not defined for negative integers"
-    -- (s,p,q) := if n < CT.Tn then (0,1,x) else CT
-    if n < CT.Tn then (s := 0; p := 1; q := x) else (s,p,q) := CT
-    for k in s+1 .. n repeat (p,q) := ((2*x*p - q),p)
+    -- (s, p, q) := if n < CT.Tn then (0, 1, x) else CT
+    if n < CT.Tn then (s := 0; p := 1; q := x) else (s, p, q) := CT
+    for k in s+1 .. n repeat (p, q) := ((2*x*p - q), p)
     CT.Tn := n
     CT.T1 := p
     CT.T2 := q
@@ -719,8 +719,8 @@ PolynomialNumberTheoryFunctions(): Exports == Implementation where
   chebyshevU n ==
     s : I; p : SUP(I); q : SUP(I)
     n < 0 => error "chebyshevU not defined for negative integers"
-    if n < U.Un then (s := 0; p := 1; q := 0) else (s,p,q) := U
-    for k in s+1 .. n repeat (p,q) := ((2*x*p - q),p)
+    if n < U.Un then (s := 0; p := 1; q := 0) else (s, p, q) := U
+    for k in s+1 .. n repeat (p, q) := ((2*x*p - q), p)
     U.Un := n
     U.U1 := p
     U.U2 := q

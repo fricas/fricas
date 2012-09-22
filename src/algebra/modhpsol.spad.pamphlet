@@ -29,7 +29,7 @@ MPA ==> TwoDimensionalArray PA
 VI ==> Vector Integer
 NBR ==> Record(basis : MPA, defects : VI, cinds : VI)
 
-NaiveBeckermannLabahnModular: with
+NaiveBeckermannLabahnModular : with
   naiveBeckermannLabahn : (VPA, VI, NonNegativeInteger, Integer) _
                          -> List Any
     ++ naiveBeckermannLabahn(f, degs, sigma, p) solves modulo $p$
@@ -90,7 +90,7 @@ NaiveBeckermannLabahnModular: with
                             (PA, K, Integer) -> Void) -> Void
     ++ main solver routine
 
-  reduceBasis0 :(MPA, VI, VI, Integer) -> NBR
+  reduceBasis0 : (MPA, VI, VI, Integer) -> NBR
 
   reduceBasis : (VPA, VI, VI, Integer) -> NBR
     ++ Skips elements of sigma basis which does not satisfy degree
@@ -103,7 +103,7 @@ NaiveBeckermannLabahnModular: with
   muladdmod ==> QSMULADDMOD64_-32$Lisp
   mulmod ==> QSMULMOD32$Lisp
 
-  vector_shift: PA -> Void
+  vector_shift : PA -> Void
 
   mul_by_binomial_pointwise : (PA, K, PA, Integer) -> Void
 
@@ -151,7 +151,7 @@ NaiveBeckermannLabahnModular: with
     m : NonNegativeInteger
     (m := #vp) ~= #vn =>
           error "Number of polynomials and number of degrees do not agree"
-    vpa :VPA := vector([new(sigma, 0$K)$PA for k in 1..m])
+    vpa : VPA := vector([new(sigma, 0$K)$PA for k in 1..m])
     for k in 1..m repeat
         p := vp(k)
         vk := vpa(k)
@@ -190,7 +190,7 @@ NaiveBeckermannLabahnModular: with
      coerce(vpa)$AnyFunctions1(VPA), _
      coerce(vd)$AnyFunctions1(Vector Integer)]
 
-  vector_shift(v : PA): Void ==
+  vector_shift(v : PA) : Void ==
     n := #v
     i : SingleInteger := (n - 1)::SingleInteger
     while i > 0 repeat
@@ -198,18 +198,18 @@ NaiveBeckermannLabahnModular: with
         i := i - 1
     v(0) := 0
 
-  mul_by_binomial_pointwise(v : PA, pt : K, pts : PA,_
+  mul_by_binomial_pointwise(v : PA, pt : K, pts : PA, _
        p : Integer) : Void ==
     n := #v
     for i in 0..(n - 1) repeat
         pp := addmod_SI(pts(i), pt, p)$Lisp
         v(i) := mulmod(v(i), pp, p)
 
-  naiveBeckermannLabahn0(mp : VPA, vp : VPA, vd : Vector Integer,_
+  naiveBeckermannLabahn0(mp : VPA, vp : VPA, vd : Vector Integer, _
                        sigma : NonNegativeInteger, p : Integer,
                        pts : Integer-> K, _
                        up_residual : (PA, K, Integer) -> Void, _
-                       up_poly : (PA, K, Integer) -> Void):Void ==
+                       up_poly : (PA, K, Integer) -> Void) : Void ==
     m := #vd
     vc := new(m, 0)$(Vector K)
     maxd : Integer
@@ -422,7 +422,7 @@ PSS ==> Record(degree_bounds : VI, pss_sigma : NonNegativeInteger, _
 
 GEN ==> (List(U32Vector), Integer, Integer) -> Vector(U32Vector)
 
-InnerModularHermitePade: with
+InnerModularHermitePade : with
     do_modular_solve : (VPA, Vector Integer, NonNegativeInteger, _
                           PA, Integer, Symbol) -> Union(NBR, "no_solution")
 
@@ -460,7 +460,7 @@ InnerModularHermitePade: with
     import U32VectorPolynomialOperations
 
     SmpTerm ==> Record(k : NonNegativeInteger, c : MP)
-    VPoly ==>  Record(v: Symbol, ts: List SmpTerm)
+    VPoly ==>  Record(v : Symbol, ts : List SmpTerm)
     SmpRep ==>  Union(Integer, VPoly)
 
 
@@ -627,7 +627,7 @@ InnerModularHermitePade: with
                        sigma : NonNegativeInteger, _
                        pts : PA, _
                        prime : Integer, kind : Symbol) _
-                      : Union(NBR, "no_solution") ==
+                       : Union(NBR, "no_solution") ==
         m0 := #ve
         m1 := 0
         for i in 1..m0 repeat
@@ -838,8 +838,8 @@ InnerModularHermitePade: with
         return "OK"
 
     eval_and_solve(pt : Integer, vars : List(Symbol), gvl : List(PMP),
-                     pss : PSS, gen: GEN) _
-                 : Union(PBR, "failed", "no_solution") ==
+                     pss : PSS, gen : GEN) _
+                  : Union(PBR, "failed", "no_solution") ==
         p := pss.prime
         nvars := #vars
         nvars = 1 =>
@@ -889,7 +889,7 @@ InnerModularHermitePade: with
         return do_poly_modular(rest vars, ngvl, pss, gen)
 
     do_poly_modular(vars : List(Symbol), gvl : List(PMP), pss : PSS,
-                      gen: GEN) : Union(PBR, "failed", "no_solution") ==
+                      gen : GEN) : Union(PBR, "failed", "no_solution") ==
         lpt : List Integer := []
         bad_cnt : Integer := 0
         good_cnt : Integer := 0
@@ -1034,7 +1034,7 @@ InnerModularHermitePade: with
                     rr.expdata, rr.coeffdata]
 
     do_poly_integer0(vars : List(Symbol), gvl : List(PMP), pss : PSS,
-                       gen: GEN)  : Union(PBRI, "no_solution") ==
+                       gen : GEN)  : Union(PBRI, "no_solution") ==
         lp : List Integer := []
         rstate : VIR
         exps := empty()$SortedExponentVector
@@ -1161,7 +1161,7 @@ InnerModularHermitePade: with
     do_poly_integer(vars : List Symbol, gvl : List(PMP),
                       ve : Vector Integer,
                       sigma : NonNegativeInteger, pts : PA, kind : Symbol,
-                      qvar : Symbol, gen: GEN) : Union(PBRI, "no_solution") ==
+                      qvar : Symbol, gen : GEN) : Union(PBRI, "no_solution") ==
         pss := [ve, sigma, pts, qvar, 0, 0, kind, empty()$VI, _
                 empty()$VI, #ve, #ve + 1, _
                 new(10, 0)$PA,
@@ -1214,7 +1214,7 @@ NBR ==> Record(basis : MPA, defects : VI, cinds : VI)
 GEN ==> (List(U32Vector), Integer, Integer) -> Vector(U32Vector)
 CHKR ==> Union("good", "reject", "no_solution")
 SUP ==> SparseUnivariatePolynomial
-ModularHermitePade(): with
+ModularHermitePade() : with
    HP_solve_I : (List(List(Fraction(Integer))), List Integer, Symbol, NNI, _
                    GEN, (List SUP Integer) -> CHKR) -> Union(MPI, Boolean)
      ++ implements  HP_solve over integers.
@@ -1387,14 +1387,14 @@ ModularHermitePade(): with
    RR ==> Record(numers : PrimitiveArray Integer, _
                  denoms : PrimitiveArray Integer)
 
-   HP_solve_I(list : List(List(Fraction(Integer))), degs: List Integer, kind: Symbol, _
-                sigma: NNI, gen: GEN, check : (List SUP Integer) -> CHKR) _
-               : Union(MPI, Boolean) ==
+   HP_solve_I(list : List(List(Fraction(Integer))), degs : List Integer, kind : Symbol, _
+                sigma : NNI, gen : GEN, check : (List SUP Integer) -> CHKR) _
+                : Union(MPI, Boolean) ==
        lp := []@List(Integer)
        kind = 'qdiffHP or kind = 'qshiftHP => true
        m := #degs
        degs_sum := (reduce(_+, degs) + m) pretend NNI
-       ve: Vector Integer := vector [d::Integer for d in degs]
+       ve : Vector Integer := vector [d::Integer for d in degs]
        pts :=
            kind = 'diffHP => empty()$PA
            kind = 'shiftHP =>
@@ -1530,7 +1530,7 @@ ModularHermitePade(): with
 
    unpack_poly(vars : List Symbol, exps : SortedExponentVector, _
                 coeffs : PAI, lo : Integer, hi : Integer) _
-               : SparseUnivariatePolynomial(MP) ==
+                : SparseUnivariatePolynomial(MP) ==
        res : SparseUnivariatePolynomial(MP) := 0
        nvars := #vars
        nn := nvars + 1
@@ -1574,7 +1574,7 @@ ModularHermitePade(): with
        res
 
    PI_to_PPI(p : SparseUnivariatePolynomial Integer) _
-              : SparseUnivariatePolynomial(MP) ==
+               : SparseUnivariatePolynomial(MP) ==
        res : SparseUnivariatePolynomial(MP) := 0
        while not(zero? p) repeat
            m := degree p
@@ -1588,7 +1588,7 @@ ModularHermitePade(): with
        [PI_to_PPI(p) for p in lp]
 
    trivial_poly_solve(list : List(List(Fraction(MP))), degs : List Integer,
-                        kind : Symbol, sigma : NNI, gen: GEN,
+                        kind : Symbol, sigma : NNI, gen : GEN,
                         check : (List SUP MP) -> CHKR) : Union(MPPI, Boolean) ==
         kind = 'qshiftHP => return true
         if kind = 'qdiffHP then kind := 'diffHP
@@ -1618,7 +1618,7 @@ ModularHermitePade(): with
        lp := []@List(Integer)
        -- print(sigma::OutputForm)
        m := #degs
-       ve: Vector Integer := vector [d::Integer for d in degs]
+       ve : Vector Integer := vector [d::Integer for d in degs]
        pts :=
            kind = 'diffHP or kind = 'qdiffHP => empty()$PA
            kind = 'shiftHP or kind = 'qmixed =>
@@ -1689,7 +1689,7 @@ ModularHermitePade(): with
        kind = 'qdiffHP or kind = 'qshiftHP => true
        -- print(sigma::OutputForm)
        m := #degs
-       ve: Vector Integer := vector [d::Integer for d in degs]
+       ve : Vector Integer := vector [d::Integer for d in degs]
        pts :=
            kind = 'diffHP => empty()$PA
            kind = 'shiftHP =>
@@ -1748,8 +1748,8 @@ ModularHermitePade(): with
 )abbrev package MODHPS ModularHermitePadeSolver
 ++ Description: This package provides generic interface to modular
 ++  Hermite-Pade solver.
-ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
-                      : Exports == Implementation where
+ModularHermitePadeSolver(F : CommutativeRing, S : CommutativeRing)_
+                       : Exports == Implementation where
 
     PA ==> U32Vector
     VPA ==> Vector PA
@@ -1767,7 +1767,7 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
               ++ HP_solve(l, degs, kind, sigma, gen check) finds a sigma
               ++ basis with degree bounds given by degs.  It returns false
               ++ if there is no interpolating vector that is correct up to
-              ++ (and including) z^(sigma-1) with sigma >= |degs+[1,1,...,1]|
+              ++ (and including) z^(sigma-1) with sigma >= |degs+[1, 1, ..., 1]|
               ++ or if check rejects all solutions.
               ++ It returns true if it can not handle given problem.
             gen_Monte_Carlo_check : (CHKT, List(List(F)), Symbol, Symbol,
@@ -1849,7 +1849,7 @@ ModularHermitePadeSolver(F: CommutativeRing, S: CommutativeRing)_
         -- chhh
 
         check_sol_mod_diff(resv, list, sigma, gen, qvar, vars) _
-               : Union("good", "reject", "no_solution") ==
+                : Union("good", "reject", "no_solution") ==
             #list ~= 1 =>
                 error "check_sol_mod_diff: #list ~= 1"
             n0 := #(first(list))

@@ -18,46 +18,46 @@
 ++ Description:
 ++ \spadtype{SetOfMIntegersInOneToN} implements the subsets of M integers
 ++ in the interval \spad{[1..n]}
-SetOfMIntegersInOneToN(m, n): Exports == Implementation where
+SetOfMIntegersInOneToN(m, n) : Exports == Implementation where
   PI ==> PositiveInteger
   N  ==> NonNegativeInteger
   U  ==> Union(%, "failed")
-  n,m: PI
+  n, m : PI
 
   Exports ==> Finite with
-    incrementKthElement: (%, PI) -> U
-      ++ incrementKthElement(S,k) increments the k^{th} element of S,
+    incrementKthElement : (%, PI) -> U
+      ++ incrementKthElement(S, k) increments the k^{th} element of S,
       ++ and returns "failed" if the result is not a set of M integers
       ++ in \spad{1..n} any more.
-    replaceKthElement:   (%, PI, PI) -> U
-      ++ replaceKthElement(S,k,p) replaces the k^{th} element of S by p,
+    replaceKthElement :   (%, PI, PI) -> U
+      ++ replaceKthElement(S, k, p) replaces the k^{th} element of S by p,
       ++ and returns "failed" if the result is not a set of M integers
       ++ in \spad{1..n} any more.
-    elements: % -> List PI
+    elements : % -> List PI
       ++ elements(S) returns the list of the elements of S in increasing order.
-    setOfMinN: List PI -> %
-      ++ setOfMinN([a_1,...,a_m]) returns the set {a_1,...,a_m}.
-      ++ Error if {a_1,...,a_m} is not a set of M integers in \spad{1..n}.
-    enumerate: () -> Vector %
+    setOfMinN : List PI -> %
+      ++ setOfMinN([a_1, ..., a_m]) returns the set {a_1, ..., a_m}.
+      ++ Error if {a_1, ..., a_m} is not a set of M integers in \spad{1..n}.
+    enumerate : () -> Vector %
       ++ enumerate() returns a vector of all the sets of M integers in
       ++ \spad{1..n}.
-    member?:   (PI, %) -> Boolean
+    member? :   (PI, %) -> Boolean
       ++ member?(p, s) returns true is p is in s, false otherwise.
-    delta: (%, PI, PI) -> N
-      ++ delta(S,k,p) returns the number of elements of S which are strictly
+    delta : (%, PI, PI) -> N
+      ++ delta(S, k, p) returns the number of elements of S which are strictly
       ++ between p and the k^{th} element of S.
 
   Implementation ==> add
-    Rep := Record(bits:Bits, pos:N)
+    Rep := Record(bits : Bits, pos : N)
 
-    reallyEnumerate: () -> Vector %
-    enum: (N, N, PI) -> List Bits
+    reallyEnumerate : () -> Vector %
+    enum : (N, N, PI) -> List Bits
 
-    all:Reference Vector % := ref empty()
-    sz:Reference N := ref 0
+    all : Reference Vector % := ref empty()
+    sz : Reference N := ref 0
 
     s1 = s2                == s1.bits =$Bits s2.bits
-    coerce(s:%):OutputForm == brace [i::OutputForm for i in elements s]
+    coerce(s : %) : OutputForm == brace [i::OutputForm for i in elements s]
     reallyEnumerate()      == [[b, i] for b in enum(m, n, n) for i in 1..]
     member?(p, s)          == s.bits.p
 
@@ -96,7 +96,7 @@ SetOfMIntegersInOneToN(m, n): Exports == Implementation where
 
     setOfMinN l ==
       s := new(n, false)$Bits
-      count:N := 0
+      count : N := 0
       for i in l repeat
         count := count + 1
         count > m or zero? i or i > n or s.i =>
@@ -107,9 +107,9 @@ SetOfMIntegersInOneToN(m, n): Exports == Implementation where
 
     elements s ==
       b := s.bits
-      l:List PI := empty()
-      found:N := 0
-      i:PI := 1
+      l : List PI := empty()
+      found : N := 0
+      i : PI := 1
       while found < m repeat
           if b.i then
               l := concat(i, l)
@@ -119,8 +119,8 @@ SetOfMIntegersInOneToN(m, n): Exports == Implementation where
 
     incrementKthElement(s, k) ==
       b := s.bits
-      found:N := 0
-      i:N := 1
+      found : N := 0
+      i : N := 1
       while found < k repeat
           if b.i then found := found + 1
           i := i + 1
@@ -132,8 +132,8 @@ SetOfMIntegersInOneToN(m, n): Exports == Implementation where
 
     delta(s, k, p) ==
       b := s.bits
-      count:N := found:N := 0
-      i:PI := 1
+      count : N := found : N := 0
+      i : PI := 1
       while found < k repeat
           if b.i then
              found := found + 1
@@ -143,8 +143,8 @@ SetOfMIntegersInOneToN(m, n): Exports == Implementation where
 
     replaceKthElement(s, k, p) ==
       b := s.bits
-      found:N := 0
-      i:PI := 1
+      found : N := 0
+      i : PI := 1
       while found < k repeat
           if b.i then found := found + 1
           if found < k then i := i + 1
@@ -165,9 +165,9 @@ SetOfMIntegersInOneToN(m, n): Exports == Implementation where
 ++ \spadtype{PrecomputedAssociatedEquations} stores some generic
 ++ precomputations which speed up the computations of the
 ++ associated equations needed for factoring operators.
-PrecomputedAssociatedEquations(R, L): Exports == Implementation where
-  R: IntegralDomain
-  L: LinearOrdinaryDifferentialOperatorCategory R
+PrecomputedAssociatedEquations(R, L) : Exports == Implementation where
+  R : IntegralDomain
+  L : LinearOrdinaryDifferentialOperatorCategory R
 
   PI  ==> PositiveInteger
   N   ==> NonNegativeInteger
@@ -175,21 +175,21 @@ PrecomputedAssociatedEquations(R, L): Exports == Implementation where
   U   ==> Union(Matrix R, "failed")
 
   Exports ==> with
-    firstUncouplingMatrix: (L, PI) -> U
+    firstUncouplingMatrix : (L, PI) -> U
       ++ firstUncouplingMatrix(op, m) returns the matrix A such that
-      ++ \spad{A w = (W',W'',...,W^N)} in the corresponding associated
+      ++ \spad{A w = (W', W'', ..., W^N)} in the corresponding associated
       ++ equations for right-factors of order m of op.
       ++ Returns "failed" if the matrix A has not been precomputed for
       ++ the particular combination \spad{degree(L), m}.
 
   Implementation ==> add
-    A32:  L -> U
-    A42:  L -> U
-    A425: (A, A, A) -> List R
-    A426: (A, A, A) -> List R
-    makeMonic: L -> Union(A, "failed")
+    A32 :  L -> U
+    A42 :  L -> U
+    A425 : (A, A, A) -> List R
+    A426 : (A, A, A) -> List R
+    makeMonic : L -> Union(A, "failed")
 
-    diff:L := D()
+    diff : L := D()
 
     firstUncouplingMatrix(op, m) ==
       n := degree op
@@ -199,7 +199,7 @@ PrecomputedAssociatedEquations(R, L): Exports == Implementation where
 
     makeMonic op ==
       lc := leadingCoefficient op
-      a:A := new(n := degree op, 0)
+      a : A := new(n := degree op, 0)
       for i in 0..(n-1)::N repeat
         (u := coefficient(op, i) exquo lc) case "failed" => return "failed"
         a.i := - (u::R)
@@ -214,12 +214,12 @@ PrecomputedAssociatedEquations(R, L): Exports == Implementation where
     A42 op ==
       (u := makeMonic op) case "failed" => "failed"
       a := u::A
-      a':A := new(4, 0)
-      a'':A := new(4, 0)
+      a': A := new(4, 0)
+      a'': A := new(4, 0)
       for i in 0..3 repeat
         a'.i := diff(a.i)
         a''.i := diff(a'.i)
-      matrix [[0, 1, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0], [a.1,a.2,0,a.3,2::R,0],
+      matrix [[0, 1, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0], [a.1, a.2, 0, a.3, 2::R, 0],
               [a'.1 + a.1 * a.3 - 2 * a.0, a'.2 + a.2 * a.3 + a.1, 3 * a.2,
                a'.3 + a.3 ^ 2 + a.2, 3 * a.3, 2::R],
                 A425(a, a', a''), A426(a, a', a'')]
@@ -260,46 +260,46 @@ PrecomputedAssociatedEquations(R, L): Exports == Implementation where
 ++ Description:
 ++ \spadtype{AssociatedEquations} provides functions to compute the
 ++ associated equations needed for factoring operators
-AssociatedEquations(R, L):Exports == Implementation where
-  R: IntegralDomain
-  L: LinearOrdinaryDifferentialOperatorCategory R
+AssociatedEquations(R, L) : Exports == Implementation where
+  R : IntegralDomain
+  L : LinearOrdinaryDifferentialOperatorCategory R
 
   PI  ==> PositiveInteger
   N   ==> NonNegativeInteger
   MAT ==> Matrix R
-  REC ==> Record(minor: List PI, eq: L, minors: List List PI, ops: List L)
+  REC ==> Record(minor : List PI, eq : L, minors : List List PI, ops : List L)
 
   Exports ==> with
-    associatedSystem: (L, PI) -> Record(mat: MAT, vec:Vector List PI)
-      ++ associatedSystem(op, m) returns \spad{[M,w]} such that the
+    associatedSystem : (L, PI) -> Record(mat : MAT, vec : Vector List PI)
+      ++ associatedSystem(op, m) returns \spad{[M, w]} such that the
       ++ m-th associated equation system to L is \spad{w' = M w}.
-    uncouplingMatrices: MAT -> Vector MAT
-      ++ uncouplingMatrices(M) returns \spad{[A_1,...,A_n]} such that if
-      ++ \spad{y = [y_1,...,y_n]} is a solution of \spad{y' = M y}, then
-      ++ \spad{[$y_j',y_j'',...,y_j^{(n)}$] = $A_j y$} for all j's.
+    uncouplingMatrices : MAT -> Vector MAT
+      ++ uncouplingMatrices(M) returns \spad{[A_1, ..., A_n]} such that if
+      ++ \spad{y = [y_1, ..., y_n]} is a solution of \spad{y' = M y}, then
+      ++ \spad{[$y_j', y_j'', ..., y_j^{(n)}$] = $A_j y$} for all j's.
     if R has Field then
-        associatedEquations: (L, PI) -> REC
+        associatedEquations : (L, PI) -> REC
           ++ associatedEquations(op, m) returns \spad{[w, eq, lw, lop]}
           ++ such that \spad{eq(w) = 0} where w is the given minor, and
           ++ \spad{lw_i = lop_i(w)} for all the other minors.
 
   Implementation ==> add
-    makeMatrix: (Vector MAT, N) -> MAT
+    makeMatrix : (Vector MAT, N) -> MAT
 
-    diff:L := D()
+    diff : L := D()
 
     makeMatrix(v, n) == matrix [parts row(v.i, n) for i in 1..#v]
 
     associatedSystem(op, m) ==
-      eq: Vector R
+      eq : Vector R
       S := SetOfMIntegersInOneToN(m, n := degree(op)::PI)
       w := enumerate()$S
       s := size()$S
-      ww:Vector List PI := new(s, empty())
-      M:MAT := new(s, s, 0)
+      ww : Vector List PI := new(s, empty())
+      M : MAT := new(s, s, 0)
       m1 := (m::Integer - 1)::PI
       an := leadingCoefficient op
-      a:Vector(R) := [- (coefficient(op, j) exquo an)::R for j in 0..n - 1]
+      a : Vector(R) := [- (coefficient(op, j) exquo an)::R for j in 0..n - 1]
       for i in 1..s repeat
           eq := new(s, 0)
           wi := w.i
@@ -320,17 +320,17 @@ AssociatedEquations(R, L):Exports == Implementation where
 
     uncouplingMatrices m ==
       n := nrows m
-      v:Vector MAT := new(n, zero(1, 0)$MAT)
+      v : Vector MAT := new(n, zero(1, 0)$MAT)
       v.1 := mi := m
-      for i in 2..n repeat v.i := mi := map((z1: R): R +-> diff z1, mi) + mi * m
+      for i in 2..n repeat v.i := mi := map((z1 : R) : R +-> diff z1, mi) + mi * m
       [makeMatrix(v, i) for i in 1..n]
 
     if R has Field then
         import PrecomputedAssociatedEquations(R, L)
 
-        makeop:    Vector R -> L
-        makeeq:    (Vector List PI, MAT, N, N) -> REC
-        computeIt: (L, PI, N) -> REC
+        makeop :    Vector R -> L
+        makeeq :    (Vector List PI, MAT, N, N) -> REC
+        computeIt : (L, PI, N) -> REC
 
         makeeq(v, m, i, n) ==
           [v.i, makeop row(m, i) - 1, [v.j for j in 1..n | j ~= i],
@@ -342,7 +342,7 @@ AssociatedEquations(R, L):Exports == Implementation where
           S := SetOfMIntegersInOneToN(m, degree(op)::PI)
           w := enumerate()$S
           s := size()$S
-          ww:Vector List PI := new(s, empty())
+          ww : Vector List PI := new(s, empty())
           for i in 1..s repeat ww.i := elements(w.i)
           makeeq(ww, v::MAT, 1, s)
 
@@ -351,11 +351,11 @@ AssociatedEquations(R, L):Exports == Implementation where
           a := uncouplingMatrices(rec.mat)
           n := #a
           for i in k..n repeat
-            (u := inverse(a.i)) case MAT => return makeeq(rec.vec,u::MAT,i,n)
+            (u := inverse(a.i)) case MAT => return makeeq(rec.vec, u::MAT, i, n)
           error "associatedEquations: full degenerate case"
 
         makeop v ==
-          op:L := 0
+          op : L := 0
           for i in 1..#v repeat op := op + monomial(v i, i)
           op
 
@@ -371,22 +371,22 @@ AssociatedEquations(R, L):Exports == Implementation where
 ++ factorizer for linear ordinary differential operators whose coefficients
 ++ are rational functions.
 ++ Keywords: differential equation, ODE, LODO, factoring
-LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
+LinearOrdinaryDifferentialOperatorFactorizer(F, UP) : Exports == Impl where
   F : Join(Field, CharacteristicZero,
            RetractableTo Integer, RetractableTo Fraction Integer)
-  UP: UnivariatePolynomialCategory F
+  UP : UnivariatePolynomialCategory F
 
   RF ==> Fraction UP
   L  ==> LinearOrdinaryDifferentialOperator1 RF
 
   Exports ==> with
-    factor: (L, UP -> List F) -> List L
+    factor : (L, UP -> List F) -> List L
       ++ factor(a, zeros) returns the factorisation of a.
       ++ \spad{zeros} is a zero finder in \spad{UP}.
     if F has AlgebraicallyClosedField then
-      factor: L -> List L
+      factor : L -> List L
         ++ factor(a) returns the factorisation of a.
-      factor1: L -> List L
+      factor1 : L -> List L
         ++ factor1(a) returns the factorisation of a,
         ++ assuming that a has no first-order right factor.
 
@@ -400,11 +400,11 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
     expsol     : (L, UP -> List F, UP -> Factored UP) -> Union(RF, "failed")
     expsols    : (L, UP -> List F, UP -> Factored UP, Boolean) -> List RF
     opeval     : (L, L) -> L
-    recurfactor: (L, L, UP -> List F, UP -> Factored UP, Boolean) -> List L
+    recurfactor : (L, L, UP -> List F, UP -> Factored UP, Boolean) -> List L
     rfactor    : (L, L, UP -> List F, UP -> Factored UP, Boolean) -> List L
-    rightFactor: (L, NonNegativeInteger, UP -> List F, UP -> Factored UP)
+    rightFactor : (L, NonNegativeInteger, UP -> List F, UP -> Factored UP)
                                                           -> Union(L, "failed")
-    innerFactor: (L, UP -> List F, UP -> Factored UP, Boolean) -> List L
+    innerFactor : (L, UP -> List F, UP -> Factored UP, Boolean) -> List L
 
     factor(l, zeros) == innerFactor(l, zeros, squareFree, true)
 
@@ -419,8 +419,8 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
 
 -- opeval(l1, l2) returns l1(l2)
     opeval(l1, l2) ==
-      ans:L := 0
-      l2n:L := 1
+      ans : L := 0
+      l2n : L := 1
       for i in 0..degree l1 repeat
         ans := ans + coefficient(l1, i) * l2n
         l2n := l2 * l2n
@@ -443,7 +443,7 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
       (n := degree l) <= 1 => [l]
       ll := adjoint l
       for i in 1..(n quo 2) repeat
-        (r1? or (i > 1)) and ((u := rightFactor(l,i,zeros,ezfactor)) case L) =>
+        (r1? or (i > 1)) and ((u := rightFactor(l, i, zeros, ezfactor)) case L) =>
            return concat!(rfactor(l, u::L, zeros, ezfactor, false), u::L)
         (2 * i < n) and ((u := rightFactor(ll, i, zeros, ezfactor)) case L) =>
            return concat(adjoint(u::L), map!(adjoint,
@@ -460,25 +460,25 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP): Exports == Impl where
       "failed"
 
     if F has AlgebraicallyClosedField then
-      zro1: UP -> List F
+      zro1 : UP -> List F
       zro : (UP, UP -> Factored UP) -> List F
 
       zro(p, ezfactor) ==
         concat [zro1(r.factor) for r in factors ezfactor p]
 
       zro1 p ==
-        [zeroOf(map((z1: F): F +-> z1, p)$UnivariatePolynomialCategoryFunctions2(F, UP,
+        [zeroOf(map((z1 : F) : F +-> z1, p)$UnivariatePolynomialCategoryFunctions2(F, UP,
                                              F, SparseUnivariatePolynomial F))]
 
       if F is AlgebraicNumber then
         import AlgFactor UP
 
-        factor l  == innerFactor(l, (p1: UP): List(F) +-> zro(p1, factor), factor, true)
-        factor1 l == innerFactor(l, (p1: UP): List(F) +-> zro(p1, factor), factor, false)
+        factor l  == innerFactor(l, (p1 : UP) : List(F) +-> zro(p1, factor), factor, true)
+        factor1 l == innerFactor(l, (p1 : UP) : List(F) +-> zro(p1, factor), factor, false)
 
       else
-        factor l  == innerFactor(l, (p1: UP): List(F) +-> zro(p1, squareFree), squareFree, true)
-        factor1 l == innerFactor(l, (p1: UP): List(F) +-> zro(p1, squareFree), squareFree, false)
+        factor l  == innerFactor(l, (p1 : UP) : List(F) +-> zro(p1, squareFree), squareFree, true)
+        factor1 l == innerFactor(l, (p1 : UP) : List(F) +-> zro(p1, squareFree), squareFree, false)
 
 @
 \section{License}

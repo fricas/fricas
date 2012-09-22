@@ -40,15 +40,15 @@
 ++   \spadtype{HomogeneousDistributedMultivariatePolynomial},
 ++   \spadtype{GeneralDistributedMultivariatePolynomial}.
 
-GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
+GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol) : T == C where
 
- Dom :    Join(EuclideanDomain,CharacteristicZero)
+ Dom :    Join(EuclideanDomain, CharacteristicZero)
  Expon :  OrderedAbelianMonoidSup
  VarSet : OrderedSet
- Dpol: PolynomialCategory(Dom, Expon, VarSet)
- MF       ==>   MultivariateFactorize(VarSet,Expon,Dom,Dpol)
- sugarPol ==>   Record(totdeg: NonNegativeInteger, pol : Dpol)
- critPair ==>   Record(lcmfij: Expon,totdeg: NonNegativeInteger, poli: Dpol, polj: Dpol )
+ Dpol : PolynomialCategory(Dom, Expon, VarSet)
+ MF       ==>   MultivariateFactorize(VarSet, Expon, Dom, Dpol)
+ sugarPol ==>   Record(totdeg : NonNegativeInteger, pol : Dpol)
+ critPair ==>   Record(lcmfij : Expon, totdeg : NonNegativeInteger, poli : Dpol, polj : Dpol )
  L        ==>   List
  B        ==>   Boolean
  NNI      ==>   NonNegativeInteger
@@ -60,7 +60,7 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
      ++ factorGroebnerBasis(basis) checks whether the basis contains
      ++ reducible polynomials and uses these to split the basis.
    factorGroebnerBasis : (L Dpol, Boolean) -> L L Dpol
-     ++ factorGroebnerBasis(basis,info) checks whether the basis contains
+     ++ factorGroebnerBasis(basis, info) checks whether the basis contains
      ++ reducible polynomials and uses these to split the basis.
      ++ If argument {\em info} is true, information is printed about
      ++ partial results.
@@ -113,9 +113,9 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
 
  C ==> add
 
-   import GroebnerInternalPackage(Dom,Expon,VarSet,Dpol)
+   import GroebnerInternalPackage(Dom, Expon, VarSet, Dpol)
    -- next to help compiler to choose correct signatures:
-   info: Boolean
+   info : Boolean
    -- signatures of local functions
 
    newPairs : (L sugarPol, Dpol) -> L critPair
@@ -123,16 +123,16 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
      -- {\em lp} of input polynomials and a given further one p.
      -- It uses criteria M and T to reduce the list.
    updateCritPairs : (L critPair, L critPair, Dpol) -> L critPair
-     -- updateCritPairs(lcP1,lcP2,p) applies criterion B to {\em lcP1} using
+     -- updateCritPairs(lcP1, lcP2, p) applies criterion B to {\em lcP1} using
      -- p. Then this list is merged with {\em lcP2}.
    updateBasis : (L sugarPol, Dpol, NNI) -> L sugarPol
-     -- updateBasis(li,p,deg) every polynomial in {\em li} is dropped if
+     -- updateBasis(li, p, deg) every polynomial in {\em li} is dropped if
      -- its leading term is a multiple of the leading term of p.
      -- The result is this list enlarged by p.
-   createGroebnerBases : (L sugarPol, L Dpol, L Dpol, L Dpol, L critPair,_
+   createGroebnerBases : (L sugarPol, L Dpol, L Dpol, L Dpol, L critPair, _
                           L L Dpol, Boolean) -> L L Dpol
      -- createGroebnerBases(basis, redPols, nonZeroRestrictions, inputPolys,
-     --   lcP,listOfBases): This function is used to be called from
+     --   lcP, listOfBases): This function is used to be called from
      -- groebnerFactorize.
      -- basis: part of a Groebner basis, computed so far
      -- redPols: Polynomials from the ideal to be used for reducing,
@@ -145,13 +145,13 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
      -- listOfBases: Collects the (Groebner) bases constructed by this
      --   recursive algorithm at different stages.
      --   we print info messages if info is true
-   createAllFactors: Dpol -> L Dpol
+   createAllFactors : Dpol -> L Dpol
      -- factor reduced critpair polynomial
 
    -- implementation of local functions
 
 
-   createGroebnerBases(basis, redPols, nonZeroRestrictions, inputPolys,_
+   createGroebnerBases(basis, redPols, nonZeroRestrictions, inputPolys, _
        lcP, listOfBases, info) ==
      doSplitting? : B := false
      terminateWithBasis : B := false
@@ -189,15 +189,15 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
              -- that p is reduced w.r.t. basis, as the ordering is only quasi
              -- and we could have equal leading terms, and due to factorization
              -- polynomials of smaller leading terms, hence reduce p first:
-             hMonic redPol(p,redPols)
+             hMonic redPol(p, redPols)
            -- now we have inputPolys empty and hence lcP is not empty:
            -- create S-Polynomial from first critical pair:
            h := sPol first lcP
            lcP := rest lcP
-           hMonic redPol(h,redPols)
+           hMonic redPol(h, redPols)
 
          nP = 1$Dpol =>
-           basis := [[0,1$Dpol]$sugarPol]
+           basis := [[0, 1$Dpol]$sugarPol]
            terminateWithBasis := true
 
          -- if "nP" ~= 0, then  we continue, otherwise we determine next "nP"
@@ -213,15 +213,15 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
                stopDividing := stopDividing or zero? degree nP
 
            zero? degree nP =>
-             basis := [[0,1$Dpol]$sugarPol]
+             basis := [[0, 1$Dpol]$sugarPol]
              terminateWithBasis := true  -- doSplitting? is still false
 
            -- a careful analysis has to be done, when and whether the
            -- following reduction and case nP=1 is necessary
 
-           nP := hMonic redPol(nP,redPols)
+           nP := hMonic redPol(nP, redPols)
            zero? degree nP =>
-             basis := [[0,1$Dpol]$sugarPol]
+             basis := [[0, 1$Dpol]$sugarPol]
              terminateWithBasis := true  -- doSplitting? is still false
 
            -- if "nP" ~= 0, then  we continue, otherwise we determine next "nP"
@@ -232,7 +232,7 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
              (doSplitting? := not null rest irreducibleFactors) =>
                -- and reduce and normalize the factors
                for fnP in irreducibleFactors repeat
-                 fnP := hMonic redPol(fnP,redPols)
+                 fnP := hMonic redPol(fnP, redPols)
                  -- no factor reduces to 0, as then "fP" would have been
                  -- reduced to zero,
                  -- but 1 may occur, which we will drop in a later version.
@@ -245,9 +245,9 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
              -- further reducible with respect to "redPols"
              nP := first irreducibleFactors
              -- put "nP" into "basis" and update "lcP" and "redPols":
-             lcP : L critPair := updateCritPairs(lcP,newPairs(basis,nP),nP)
-             basis := updateBasis(basis,nP,virtualDegree nP)
-             redPols := concat(redPols,nP)
+             lcP : L critPair := updateCritPairs(lcP, newPairs(basis, nP), nP)
+             basis := updateBasis(basis, nP, virtualDegree nP)
+             redPols := concat(redPols, nP)
      -- end of "while not doSplitting? and not terminateWithBasis repeat"
 
      --    STEP 2  splitting step
@@ -257,15 +257,15 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
          if fnP ~= 1$Dpol
            then
              newInputPolys : L Dpol  := _
-               sort((x, y) +-> degree x > degree y ,cons(fnP,inputPolys))
+               sort((x, y) +-> degree x > degree y , cons(fnP, inputPolys))
              listOfBases := createGroebnerBases(basis, redPols, _
-               nonZeroRestrictions,newInputPolys,lcP,listOfBases,info)
+               nonZeroRestrictions, newInputPolys, lcP, listOfBases, info)
              -- update "nonZeroRestrictions"
-             nonZeroRestrictions := cons(fnP,nonZeroRestrictions)
+             nonZeroRestrictions := cons(fnP, nonZeroRestrictions)
            else
              if info then
                messagePrint("we terminated with [1]")$OUT
-             listOfBases := cons([1$Dpol],listOfBases)
+             listOfBases := cons([1$Dpol], listOfBases)
 
        -- we finished with all the branches on one level and hence
        -- finished this call of createGroebnerBasis. Therefore
@@ -278,7 +278,7 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
 
      --  we found a groebner basis and put it into the list "listOfBases"
      --  (auto)reduce each basis element modulo the others
-     newBasis := minGbasis(sort((x, y) +-> degree x > degree y,[p.pol for p in basis]))
+     newBasis := minGbasis(sort((x, y) +-> degree x > degree y, [p.pol for p in basis]))
      -- now check whether the normalized basis again has reducible
      -- polynomials, in this case continue splitting!
      if info then
@@ -289,21 +289,21 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
        -- print(convert(newBasis::OUT)$InputForm :: OUT)$OUT
      removeDuplicates append(factorGroebnerBasis(newBasis, info), listOfBases)
 
-   createAllFactors(p: Dpol) ==
+   createAllFactors(p : Dpol) ==
      loF : L Dpol := [el.fctr for el in factorList factor(p)$MF]
      sort((x, y) +-> degree x < degree y, loF)
-   newPairs(lp : L sugarPol,p : Dpol) ==
+   newPairs(lp : L sugarPol, p : Dpol) ==
      totdegreeOfp : NNI := virtualDegree p
      -- next list lcP contains all critPair constructed from
      -- p and and the polynomials q in lp
-     lcP: L critPair := _
+     lcP : L critPair := _
        --[[sup(degree q, degreeOfp), q, p]$critPair for q in lp]
        [makeCrit(q, p, totdegreeOfp) for q in lp]
      -- application of the criteria to reduce the list lcP
-     critMTonD1 sort(critpOrder,lcP)
+     critMTonD1 sort(critpOrder, lcP)
    updateCritPairs(oldListOfcritPairs, newListOfcritPairs, p)==
-     updatD (newListOfcritPairs, critBonD(p,oldListOfcritPairs))
-   updateBasis(lp, p, deg) == updatF(p,deg,lp)
+     updatD (newListOfcritPairs, critBonD(p, oldListOfcritPairs))
+   updateBasis(lp, p, deg) == updatF(p, deg, lp)
 
    -- exported functions
 
@@ -321,23 +321,23 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol): T == C where
      -- build part of the basis, use the done factorizations, etc.
      if info then  messagePrint("factorGroebnerBasis:_
         we found reducible polynomials and continue splitting")$OUT
-     createGroebnerBases([],[],[],basis,[],[],info)
+     createGroebnerBases([], [], [], basis, [], [], info)
 
    groebnerFactorize(basis, nonZeroRestrictions) ==
      groebnerFactorize(basis, nonZeroRestrictions, false)
 
    groebnerFactorize(basis, nonZeroRestrictions, info) ==
      basis = [] => [basis]
-     basis := remove(zero?$Dpol,basis)
+     basis := remove(zero?$Dpol, basis)
      basis = [] => [[0$Dpol]]
      -- normalize all input polynomial
      basis := [hMonic p for p in basis]
-     member?(1$Dpol,basis) => [[1$Dpol]]
+     member?(1$Dpol, basis) => [[1$Dpol]]
      basis :=  sort((x, y) +-> degree x > degree y, basis)
-     createGroebnerBases([],[],nonZeroRestrictions,basis,[],[],info)
+     createGroebnerBases([], [], nonZeroRestrictions, basis, [], [], info)
 
    groebnerFactorize(basis) == groebnerFactorize(basis, [], false)
-   groebnerFactorize(basis,info) == groebnerFactorize(basis, [], info)
+   groebnerFactorize(basis, info) == groebnerFactorize(basis, [], info)
 
 @
 \section{License}

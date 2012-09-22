@@ -38,47 +38,47 @@
 ++   epilogue might simply contain ":df."  and ":edf."  so that the
 ++   formula section will be printed in display math mode.
 
-ScriptFormulaFormat(): public == private where
+ScriptFormulaFormat() : public == private where
   E      ==> OutputForm
   I      ==> Integer
   L      ==> List
   S      ==> String
 
   public == SetCategory with
-    coerce:   E -> %
+    coerce :   E -> %
       ++ coerce(o) changes o in the standard output format to
       ++ SCRIPT formula format.
-    convert:  (E,I) -> %
-      ++ convert(o,step) changes o in standard output format to
+    convert :  (E, I) -> %
+      ++ convert(o, step) changes o in standard output format to
       ++ SCRIPT formula format and also adds the given step number.
       ++ This is useful if you want to create equations with given numbers
       ++ or have the equation numbers correspond to the interpreter step
       ++ numbers.
-    display:  (%, I) -> Void
-      ++ display(t,width) outputs the formatted code t so that each
+    display :  (%, I) -> Void
+      ++ display(t, width) outputs the formatted code t so that each
       ++ line has length less than or equal to \spadvar{width}.
-    display:  % -> Void
+    display :  % -> Void
       ++ display(t) outputs the formatted code t so that each
       ++ line has length less than or equal to the value set by
       ++ the system command \spadsyscom{set output length}.
-    epilogue: % -> L S
+    epilogue : % -> L S
       ++ epilogue(t) extracts the epilogue section of a formatted object t.
-    formula:      % -> L S
+    formula :      % -> L S
       ++ formula(t) extracts the formula section of a formatted object t.
-    new:      () -> %
+    new :      () -> %
       ++ new() create a new, empty object. Use \spadfun{setPrologue!},
       ++ \spadfun{setFormula!} and \spadfun{setEpilogue!} to set the
       ++ various components of this object.
-    prologue: % -> L S
+    prologue : % -> L S
       ++ prologue(t) extracts the prologue section of a formatted object t.
-    setEpilogue!: (%, L S) -> L S
-      ++ setEpilogue!(t,strings) sets the epilogue section of a
+    setEpilogue! : (%, L S) -> L S
+      ++ setEpilogue!(t, strings) sets the epilogue section of a
       ++ formatted object t to strings.
-    setFormula!:  (%, L S) -> L S
-      ++ setFormula!(t,strings) sets the formula section of a
+    setFormula! :  (%, L S) -> L S
+      ++ setFormula!(t, strings) sets the formula section of a
       ++ formatted object t to strings.
-    setPrologue!: (%, L S) -> L S
-      ++ setPrologue!(t,strings) sets the prologue section of a
+    setPrologue! : (%, L S) -> L S
+      ++ setPrologue!(t, strings) sets the prologue section of a
       ++ formatted object t to strings.
 
   private == add
@@ -92,9 +92,9 @@ ScriptFormulaFormat(): public == private where
 
     -- local variables declarations and definitions
 
-    expr: E
-    prec,opPrec: I
-    str:  S
+    expr : E
+    prec, opPrec : I
+    str :  S
     blank         : S := " @@ "
 
     maxPrec       : I   := 1000000
@@ -108,11 +108,11 @@ ScriptFormulaFormat(): public == private where
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
     binaryOps     : L S := ["+->","|","^","/","<",">","=","OVER"]$(L S)
-    binaryPrecs   : L I := [0,0,900, 700,400,400,400,   700]$(L I)
+    binaryPrecs   : L I := [0, 0, 900, 700, 400, 400, 400,   700]$(L I)
 
     naryOps       : L S := ["-","+","*",blank,",",";"," ","ROW","",
                             " habove "," here "," labove "]$(L S)
-    naryPrecs     : L I := [700,700,800,  800,110,110,  0,    0, 0,
+    naryPrecs     : L I := [700, 700, 800,  800, 110, 110,  0,    0, 0,
                             0,  0,  0]$(L I)
 --  naryNGOps     : L S := ["ROW"," here "]$(L S)
     naryNGOps     : L S := nil$(L S)
@@ -135,38 +135,38 @@ ScriptFormulaFormat(): public == private where
 
     -- local function signatures
 
-    addBraces:      S -> S
-    addBrackets:    S -> S
-    group:          S -> S
-    formatBinary:   (S,L E, I) -> S
-    formatFunction: (S,L E, I) -> S
-    formatMatrix:   L E -> S
-    formatNary:     (S,L E, I) -> S
-    formatNaryNoGroup: (S,L E, I) -> S
-    formatNullary:  S -> S
-    formatPlex:     (S,L E, I) -> S
-    formatSpecial:  (S,L E, I) -> S
-    formatUnary:    (S,  E, I) -> S
-    formatFormula:      (E,I) -> S
-    parenthesize:   S -> S
-    precondition:   E -> E
-    postcondition:  S -> S
-    splitLong:      (S,I) -> L S
-    splitLong1:     (S,I) -> L S
-    stringify:      E -> S
+    addBraces :      S -> S
+    addBrackets :    S -> S
+    group :          S -> S
+    formatBinary :   (S, L E, I) -> S
+    formatFunction : (S, L E, I) -> S
+    formatMatrix :   L E -> S
+    formatNary :     (S, L E, I) -> S
+    formatNaryNoGroup : (S, L E, I) -> S
+    formatNullary :  S -> S
+    formatPlex :     (S, L E, I) -> S
+    formatSpecial :  (S, L E, I) -> S
+    formatUnary :    (S,  E, I) -> S
+    formatFormula :      (E, I) -> S
+    parenthesize :   S -> S
+    precondition :   E -> E
+    postcondition :  S -> S
+    splitLong :      (S, I) -> L S
+    splitLong1 :     (S, I) -> L S
+    stringify :      E -> S
 
     -- public function definitions
 
     new() : % == [[".eq set blank @",":df."]$(L S),
       [""]$(L S), [":edf."]$(L S)]$Rep
 
-    coerce(expr : E): % ==
+    coerce(expr : E) : % ==
       f : % := new()$%
       f.formula := [postcondition
         formatFormula(precondition expr, minPrec)]$(L S)
       f
 
-    convert(expr : E, stepNum : I): % ==
+    convert(expr : E, stepNum : I) : % ==
       f : % := new()$%
       f.formula := concat(["<leqno lparen ",string(stepNum)$S,
         " rparen>"], [postcondition
@@ -174,7 +174,7 @@ ScriptFormulaFormat(): public == private where
       f
 
     display(f : %, len : I) ==
-      s,t : S
+      s, t : S
       for s in f.prolog repeat sayFORMULA(s)$Lisp
       for s in f.formula repeat
         for t in splitLong(s, len) repeat sayFORMULA(t)$Lisp
@@ -192,23 +192,23 @@ ScriptFormulaFormat(): public == private where
     setFormula!(f : %, l : L S)  == f.formula := l
     setEpilogue!(f : %, l : L S) == f.epilog := l
 
-    coerce(f : %): E ==
-      s,t : S
+    coerce(f : %) : E ==
+      s, t : S
       l : L S := nil
-      for s in f.prolog repeat l := concat(s,l)
+      for s in f.prolog repeat l := concat(s, l)
       for s in f.formula repeat
         for t in splitLong(s, (_$LINELENGTH$Lisp pretend Integer) - 4) repeat
-          l := concat(t,l)
-      for s in f.epilog repeat l := concat(s,l)
+          l := concat(t, l)
+      for s in f.epilog repeat l := concat(s, l)
       (reverse l) :: E
 
     -- local function definitions
 
-    postcondition(str: S): S ==
+    postcondition(str : S) : S ==
       len : I := #str
       len < 4 => str
       plus : Character := char "+"
-      minus: Character := char "-"
+      minus : Character := char "-"
       for i in 1..(len-1) repeat
         if (str.i =$Character plus) and (str.(i+1) =$Character minus)
           then setelt(str,i,char " ")$S
@@ -216,7 +216,7 @@ ScriptFormulaFormat(): public == private where
 
     stringify expr == object2String(expr)$Lisp pretend S
 
-    splitLong(str : S, len : I): L S ==
+    splitLong(str : S, len : I) : L S ==
       -- this blocks into lines
       if len < 20 then len := _$LINELENGTH$Lisp
       splitLong1(str, len)
@@ -230,13 +230,13 @@ ScriptFormulaFormat(): public == private where
       for ss in split(str,char " ") repeat
         lss := #ss
         if ls + lss > len then
-          l := concat(s,l)$List(S)
+          l := concat(s, l)$List(S)
           s := ""
           ls := 0
-        lss > len => l := concat(ss,l)$List(S)
+        lss > len => l := concat(ss, l)$List(S)
         ls := ls + lss + 1
         s := concat(s,concat(ss," ")$S)$S
-      if ls > 0 then l := concat(s,l)$List(S)
+      if ls > 0 then l := concat(s, l)$List(S)
       reverse l
 
     group str ==
@@ -317,7 +317,7 @@ ScriptFormulaFormat(): public == private where
 
     formatPlex(op : S, args : L E, prec : I) : S ==
       hold : S
-      p : I := position(op,plexOps)
+      p : I := position(op, plexOps)
       p < 1 => error "unknown Script Formula Formatter unary op"
       opPrec := plexPrecs.p
       n : I := #args
@@ -328,13 +328,13 @@ ScriptFormulaFormat(): public == private where
         op = "INTSIGN" => "integral"
         op = "INDEFINTEGRAL" => "integral"
         "????"
-      hold := formatFormula(first args,minPrec)
+      hold := formatFormula(first args, minPrec)
       args := rest args
       if op ~= "INDEFINTEGRAL" then
         if hold ~= "" then
           s := concat [s," from",group concat ["\displaystyle ",hold]]
         if not null rest args then
-          hold := formatFormula(first args,minPrec)
+          hold := formatFormula(first args, minPrec)
           if hold ~= "" then
             s := concat [s," to",group concat ["\displaystyle ",hold]]
           args := rest args
@@ -346,7 +346,7 @@ ScriptFormulaFormat(): public == private where
       group s
 
     formatMatrix(args : L E) : S ==
-      -- format for args is [[ROW ...],[ROW ...],[ROW ...]]
+      -- format for args is [[ROW ...], [ROW ...], [ROW ...]]
       group addBrackets formatNary(" habove ",args,minPrec)
 
     formatFunction(op : S, args : L E, prec : I) : S ==
@@ -357,16 +357,16 @@ ScriptFormulaFormat(): public == private where
       group concat [op,"()"]
 
     formatUnary(op : S, arg : E, prec : I) ==
-      p : I := position(op,unaryOps)
+      p : I := position(op, unaryOps)
       p < 1 => error "unknown Script Formula Formatter unary op"
       opPrec := unaryPrecs.p
-      s : S := concat [op,formatFormula(arg,opPrec)]
+      s : S := concat [op, formatFormula(arg, opPrec)]
       opPrec < prec => group parenthesize s
       op = "-" => s
       group s
 
     formatBinary(op : S, args : L E, prec : I) : S ==
-      p : I := position(op,binaryOps)
+      p : I := position(op, binaryOps)
       p < 1 => error "unknown Script Formula Formatter binary op"
       op :=
         op = "^"    => " sup "
@@ -375,7 +375,7 @@ ScriptFormulaFormat(): public == private where
         op
       opPrec := binaryPrecs.p
       s : S := formatFormula(first args, opPrec)
-      s := concat [s,op,formatFormula(first rest args, opPrec)]
+      s := concat [s, op, formatFormula(first rest args, opPrec)]
       group
         op = " over " => s
         opPrec < prec => parenthesize s
@@ -386,7 +386,7 @@ ScriptFormulaFormat(): public == private where
 
     formatNaryNoGroup(op : S, args : L E, prec : I) : S ==
       null args => ""
-      p : I := position(op,naryOps)
+      p : I := position(op, naryOps)
       p < 1 => error "unknown Script Formula Formatter nary op"
       op :=
         op = ","     => ", @@ "
@@ -398,19 +398,19 @@ ScriptFormulaFormat(): public == private where
       l : L S := nil
       opPrec := naryPrecs.p
       for a in args repeat
-        l := concat(op,concat(formatFormula(a,opPrec),l)$L(S))$L(S)
+        l := concat(op, concat(formatFormula(a, opPrec), l)$L(S))$L(S)
       s : S := concat reverse rest l
       opPrec < prec => parenthesize s
       s
 
-    formatFormula(expr,prec) ==
+    formatFormula(expr, prec) ==
       i : Integer
       ATOM(expr)$Lisp pretend Boolean =>
         str := stringify expr
         FIXP(expr)$Lisp =>
           i := expr pretend Integer
           if (i < 0) or (i > 9) then group str else str
-        (i := position(str,specialStrings)) > 0 =>
+        (i := position(str, specialStrings)) > 0 =>
           specialStringsInFormula.i
         str
       l : L E := (expr pretend L E)
@@ -420,8 +420,8 @@ ScriptFormulaFormat(): public == private where
       nargs : I := #args
 
       -- special cases
-      member?(op, specialOps) => formatSpecial(op,args,prec)
-      member?(op, plexOps)    => formatPlex(op,args,prec)
+      member?(op, specialOps) => formatSpecial(op, args, prec)
+      member?(op, plexOps)    => formatPlex(op, args, prec)
 
       -- nullary case
       0 = nargs => formatNullary op
@@ -435,10 +435,10 @@ ScriptFormulaFormat(): public == private where
         formatBinary(op, args, prec)
 
       -- nary case
-      member?(op,naryNGOps) => formatNaryNoGroup(op,args, prec)
-      member?(op,naryOps) => formatNary(op,args, prec)
-      op := formatFormula(first l,minPrec)
-      formatFunction(op,args,prec)
+      member?(op, naryNGOps) => formatNaryNoGroup(op, args, prec)
+      member?(op, naryOps) => formatNary(op, args, prec)
+      op := formatFormula(first l, minPrec)
+      formatFunction(op, args, prec)
 
 @
 \section{package FORMULA1 ScriptFormulaFormat1}
@@ -461,9 +461,9 @@ ScriptFormulaFormat(): public == private where
 ++   changing to SCRIPT formula format anything that has a coercion to
 ++   the standard output format.
 
-ScriptFormulaFormat1(S : SetCategory): public == private where
+ScriptFormulaFormat1(S : SetCategory) : public == private where
   public  ==  with
-    coerce: S -> ScriptFormulaFormat()
+    coerce : S -> ScriptFormulaFormat()
       ++ coerce(s) provides a direct coercion from an expression s of domain S to
       ++ SCRIPT formula format. This allows the user to skip the step of
       ++ first manually coercing the object to standard output format
@@ -472,7 +472,7 @@ ScriptFormulaFormat1(S : SetCategory): public == private where
   private == add
     import ScriptFormulaFormat()
 
-    coerce(s : S): ScriptFormulaFormat ==
+    coerce(s : S) : ScriptFormulaFormat ==
       coerce(s :: OutputForm)$ScriptFormulaFormat
 
 @

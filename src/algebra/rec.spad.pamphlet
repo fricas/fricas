@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{axiom,amsthm,amsmath}
+\usepackage{axiom, amsthm, amsmath}
 \newtheorem{ToDo}{ToDo}[section]
 \begin{document}
 \title{rec.spad}
@@ -25,47 +25,47 @@
 ++ This package provides an operator for the n-th term of a recurrence and an
 ++ operator for the coefficient of x^n in a function specified by a functional
 ++ equation.
-RecurrenceOperator(R, F): Exports == Implementation where
-  R: Join(Comparable, IntegralDomain, ConvertibleTo InputForm)
-  F: Join(FunctionSpace R, AbelianMonoid, RetractableTo Integer, _
+RecurrenceOperator(R, F) : Exports == Implementation where
+  R : Join(Comparable, IntegralDomain, ConvertibleTo InputForm)
+  F : Join(FunctionSpace R, AbelianMonoid, RetractableTo Integer, _
           RetractableTo Symbol, PartialDifferentialRing Symbol, _
           CombinatorialOpsCategory)
 
   Exports == with
 
-    makeRec: (BasicOperator, Symbol, F, List F, Stream F) -> F
+    makeRec : (BasicOperator, Symbol, F, List F, Stream F) -> F
       ++ \spad{makeRec(u, n, eq, parameters, values)} creates an expression
       ++ that stands for u(n), where u(n) is given by the equation eq. The
       ++ argument parameters has to contain all variables (or kernels) that
       ++ appear eventually in the stream of values.  The argument values
-      ++ specifies the initial values of the recurrence u(0), u(1),...  For the
+      ++ specifies the initial values of the recurrence u(0), u(1), ...  For the
       ++ moment we don't allow recursions that contain u inside of another
       ++ operator.
 
-    makeFEq: (BasicOperator, Symbol, Symbol, F, List F, Stream F) -> F
+    makeFEq : (BasicOperator, Symbol, Symbol, F, List F, Stream F) -> F
       ++ \spad{evalADE(f, x, n, eq, parameters, values)} creates an
       ++ expression that stands for the coefficient of x^n in the Taylor
       ++ expansion of f(x), where f(x) is given by the functional equation eq.
       ++ The argument values specifies the first few Taylor coefficients.
 
-    getEq: F -> F
+    getEq : F -> F
       ++ \spad{getEq f} returns the defining equation, if f represents the
       ++ coefficient of an ADE or a recurrence.
 
-    values: () -> NonNegativeInteger
+    values : () -> NonNegativeInteger
       ++ \spad{values()} returns the number of initial values to display at
       ++ most.
 
-    values: NonNegativeInteger -> NonNegativeInteger
+    values : NonNegativeInteger -> NonNegativeInteger
       ++ \spad{values N} sets the number of initial values to display at
       ++ most.
 
-    eltable?: F -> Boolean
+    eltable? : F -> Boolean
       ++ \spad{eltable? r} returns whether the operator determines (most
       ++ likely) the sequence completely.
 
   Implementation == add
-<<implementation: RecurrenceOperator>>
+<<implementation : RecurrenceOperator>>
 @
 
 \subsection{Defining new operators}
@@ -75,7 +75,7 @@ equations. The operators for recurrences represents the $n$\textsuperscript{th}
 term of the corresponding sequence, the other the coefficient of $x^n$ in the
 Taylor series expansion.
 
-<<implementation: RecurrenceOperator>>=
+<<implementation : RecurrenceOperator>>=
     oprecur := operator('rootOfRec)$BasicOperator
     opADE := operator('rootOfADE)$BasicOperator
 
@@ -105,36 +105,36 @@ Only [[n]] and the elements in [[params]] can be substituted for.
 I decided not to include the name of the operator itself as a parameter for the
 moment, similar to the indexing variable in sum and product.
 
-<<implementation: RecurrenceOperator>>=
-    INFOREC ==> Record(eqn: F,
-                       idx: Symbol,
-                       fnc: BasicOperator,
-                       par: List F,
-                       val: Stream F,
-                       ord: Union(NonNegativeInteger, "failed"),
-                       gen: Union(List F -> List F, "failed"))
+<<implementation : RecurrenceOperator>>=
+    INFOREC ==> Record(eqn : F,
+                       idx : Symbol,
+                       fnc : BasicOperator,
+                       par : List F,
+                       val : Stream F,
+                       ord : Union(NonNegativeInteger, "failed"),
+                       gen : Union(List F -> List F, "failed"))
 
-    getINFOREC(infoOp: BasicOperator): INFOREC ==
+    getINFOREC(infoOp : BasicOperator) : INFOREC ==
         property(infoOp, '%INFOREC)::None pretend INFOREC
 
-    setINFOREC(infoOp: BasicOperator, rec: INFOREC): Void ==
+    setINFOREC(infoOp : BasicOperator, rec : INFOREC) : Void ==
         setProperty(infoOp, '%INFOREC, rec pretend None)
 
 
-    INFOSER ==> Record(eqn: F,
-                       idx: Symbol,
-                       fnc: BasicOperator,
-                       var: Symbol,
-                       par: List F,
-                       val: Stream F,
-                       ord: Union(NonNegativeInteger, "failed"),
-                       gen: Union(() -> Stream F, "failed"),
-                       ex?: Boolean)
+    INFOSER ==> Record(eqn : F,
+                       idx : Symbol,
+                       fnc : BasicOperator,
+                       var : Symbol,
+                       par : List F,
+                       val : Stream F,
+                       ord : Union(NonNegativeInteger, "failed"),
+                       gen : Union(() -> Stream F, "failed"),
+                       ex? : Boolean)
 
-    getINFOSER(infoOp: BasicOperator): INFOSER ==
+    getINFOSER(infoOp : BasicOperator) : INFOSER ==
         property(infoOp, '%INFOSER)::None pretend INFOSER
 
-    setINFOSER(infoOp: BasicOperator, ser: INFOSER): Void ==
+    setINFOSER(infoOp : BasicOperator, ser : INFOSER) : Void ==
         setProperty(infoOp, '%INFOSER, ser pretend None)
 @
 
@@ -145,9 +145,9 @@ moment, similar to the indexing variable in sum and product.
 We need to find out wether we can determine the next term of the sequence, and
 how many initial values are necessary.
 
-<<implementation: RecurrenceOperator>>=
-    getShiftRec(op: BasicOperator, f: Kernel F, n: Symbol)
-               : Union(Integer, "failed") ==
+<<implementation : RecurrenceOperator>>=
+    getShiftRec(op : BasicOperator, f : Kernel F, n : Symbol)
+                : Union(Integer, "failed") ==
         a := argument f
         if every?(z +-> freeOf?(z, n::F), a) then return 0
 
@@ -167,17 +167,17 @@ how many initial values are necessary.
 -- $p(n, f(n+m-o), f(n+m-o+1), \dots, f(n+m)) = 0$
 -- in which case shiftInfoRec returns [o, m, f(n+m)].
 
-    shiftInfoRec(op: BasicOperator, argsym: Symbol, eq: F)
-                : Union(Record(ord: NonNegativeInteger,
-                               max: Integer,
-                               ker: Kernel F),
+    shiftInfoRec(op : BasicOperator, argsym : Symbol, eq : F)
+                 : Union(Record(ord : NonNegativeInteger,
+                               max : Integer,
+                               ker : Kernel F),
                         "failed") ==
 
 -- ord and ker are valid only if all shifts are Integers
 -- ker is the kernel of the maximal shift.
-        maxShift: Integer
-        minShift: Integer
-        nextKernel: Kernel F
+        maxShift : Integer
+        minShift : Integer
+        nextKernel : Kernel F
 
 -- We consider only those kernels that have op as operator. If there is none,
 -- we raise an error. For the moment we don't allow recursions that contain op
@@ -211,7 +211,7 @@ how many initial values are necessary.
 
 \subsubsection{Creating a recurrence}
 
-<<implementation: RecurrenceOperator>>=
+<<implementation : RecurrenceOperator>>=
     makeRec(op, argsym, eq, params, values) ==
         shiftInfo := shiftInfoRec(op, argsym, eq)
 
@@ -252,21 +252,21 @@ how many initial values are necessary.
 
                 else
 -- we provide a generator - risking bad cancellation
-                    next: F := -coefficient(num, 0)/coefficient(num, 1)
+                    next : F := -coefficient(num, 0)/coefficient(num, 1)
                     max1 := shiftInfo.max
                     ord1 := shiftInfo.ord - 1
-                    fl: List F := cons(argsym::F,
+                    fl : List F := cons(argsym::F,
                                        [op(argsym::F+(max1-i)::F) _
                                         for i in 1..ord1+1])
 
                     if ord1 >= 0 then
 -- we could possibly make the following more efficient by creating a function
 -- explicitely via InputForm or so
-                        fn := (l: List F): List F +-> _
+                        fn := (l : List F) : List F +-> _
                              concat([first l+1, eval(next, fl, l)],
                                     first(rest l, ord1::NonNegativeInteger))
                     else
-                        fn := (l: List F): List F +-> _
+                        fn := (l : List F) : List F +-> _
                              [first l+1, eval(next, fl, l)]
 
                     info := operator(new('inforec)$Symbol, 0)$BasicOperator
@@ -289,8 +289,8 @@ how many initial values are necessary.
 
 [[irecur]] handles evaluation of [[oprecur]].
 
-<<implementation: RecurrenceOperator>>=
-    irecur: List F -> F
+<<implementation : RecurrenceOperator>>=
+    irecur : List F -> F
     irecur l ==
         arg := first l
         if (n := retractIfCan(arg)@Union(Integer, "failed")) case Integer _
@@ -321,8 +321,8 @@ how many initial values are necessary.
 
 \subsubsection{Displaying a recurrence relation}
 
-<<implementation: RecurrenceOperator>>=
-    ddrec: List F -> OutputForm
+<<implementation : RecurrenceOperator>>=
+    ddrec : List F -> OutputForm
     ddrec l ==
         info := getINFOREC operator(retract(second l)@(Kernel F))
 
@@ -337,13 +337,13 @@ how many initial values are necessary.
         if info.ord case NonNegativeInteger then
             v := min(v, (info.ord)::NonNegativeInteger)
 
-        RecCoeff: OutputForm := hconcat(f(n)::OutputForm, ": ")
+        RecCoeff : OutputForm := hconcat(f(n)::OutputForm, ": ")
 
-        RecEq: OutputForm
+        RecEq : OutputForm
             := hconcat(RecCoeff,                         _
                        e::OutputForm = 0::OutputForm)
 
-        RecList: List OutputForm
+        RecList : List OutputForm
             := [f(i::F)::OutputForm =                      _
                 eval((info.val).(i+1), lp, lv)::OutputForm _
                 for i in 0..v-1]
@@ -353,11 +353,11 @@ how many initial values are necessary.
     setProperty(oprecur, '%specialDisp,
                 ddrec@(List F -> OutputForm) pretend None)
 
-    dummyArg: Symbol := new()$Symbol
+    dummyArg : Symbol := new()$Symbol
     opdiff := operator first kernels D((operator(new()$Symbol)$BasicOperator)
                                             (dummyArg::F), dummyArg)
 
-    diffRec(l:List F, x: Symbol): F ==
+    diffRec(l : List F, x : Symbol) : F ==
         dummyF := new()$Symbol :: F
         xF := x::F
         kernel(opdiff, [eval(kernel(oprecur, l), xF, dummyF), dummyF, xF])
@@ -371,14 +371,14 @@ how many initial values are necessary.
 \subsubsection{Determining the number of initial values for ADE's}
 
 We use Joris van der Hoeven's instructions for ADE's. Given
-$Q=p(f,f',\dots,f^{(r)})$ we first need to differentiate $Q$ with respect to
-$f^{(i)}$ for $i\in\{0,1,\dots,r\}$, plug in the given truncated power series
+$Q=p(f, f', \dots, f^{(r)})$ we first need to differentiate $Q$ with respect to
+$f^{(i)}$ for $i\in\{0, 1, \dots, r\}$, plug in the given truncated power series
 solution and determine the valuation.
 
-<<NOTYET implementation: RecurrenceOperator>>=
-    getValuation(op, argsym, eq, maxorder, values): Integer ==
-        max: Integer := -1;
-        ker: Kernel F
+<<NOTYET implementation : RecurrenceOperator>>=
+    getValuation(op, argsym, eq, maxorder, values) : Integer ==
+        max : Integer := -1;
+        ker : Kernel F
         for i in 0..maxorder repeat
             ker := D(op(argsym), argsym, i)::Kernel F
             pol := univariate(eq, ker)
@@ -388,13 +388,13 @@ solution and determine the valuation.
 
 \subsubsection{Extracting a coefficient given a functional equation}
 
-<<implementation: RecurrenceOperator>>=
+<<implementation : RecurrenceOperator>>=
     makeFEq(op, v, argsym, eq, params, values) ==
         if not freeOf?(eq, argsym)
         then error "RECOP: The argument should not be used in the equation of the ADE"
 
 -- determine whether f(x) is an Expression
-        p: Fraction SparseUnivariatePolynomial F
+        p : Fraction SparseUnivariatePolynomial F
           := univariate(eq, retract(op(v::F))@Kernel(F))$F
 
         num := numer p
@@ -415,10 +415,10 @@ solution and determine the valuation.
             uts := UnivariateTaylorSeries(F, v, 0$F)
             a := taylor(eq, equation(v::F, 0$F))$ExpressionToUnivariatePowerSeries(R, F)
             s := retract(a)$AnyFunctions1(uts)
-            fn: () -> Stream F := coefficients s
+            fn : () -> Stream F := coefficients s
         else
             explicit? := false
-            fn: () -> Stream F :=
+            fn : () -> Stream F :=
                 coefficients
                     seriesSolve(eq, op, v, entries complete values)
                                $ExpressionSolve(R, F,
@@ -430,7 +430,7 @@ solution and determine the valuation.
                           "failed", fn, explicit?]$INFOSER)
         return kernel(opADE, concat([argsym::F, kernel(info, [])], params))
 
-    iADE: List F -> F
+    iADE : List F -> F
     iADE l ==
         arg := first l
         if (n := retractIfCan(arg)@Union(Integer, "failed")) case Integer _
@@ -454,7 +454,7 @@ solution and determine the valuation.
 
     evaluate(opADE, iADE)$BasicOperatorFunctions1(F)
 
-    getEq(f: F): F ==
+    getEq(f : F) : F ==
         kl := kernels f
         if one?(#(kl)) then
             op  := operator first kl
@@ -469,7 +469,7 @@ solution and determine the valuation.
 
         error "getEq: argument should be a single rootOfADE or rootOfRec object"
 
-    eltable?(f: F): Boolean ==
+    eltable?(f : F) : Boolean ==
         kl := kernels f
         if one?(#(kl)) then
             op  := operator first kl
@@ -489,17 +489,17 @@ solution and determine the valuation.
 %$
 \subsubsection{Displaying a functional equation}
 
-<<implementation: RecurrenceOperator>>=
-    vals: NonNegativeInteger := 4
+<<implementation : RecurrenceOperator>>=
+    vals : NonNegativeInteger := 4
 
-    values(): NonNegativeInteger == vals
+    values() : NonNegativeInteger == vals
 
-    values(n: NonNegativeInteger): NonNegativeInteger ==
+    values(n : NonNegativeInteger) : NonNegativeInteger ==
         v := values()
         vals := n
         v
 
-    ddADE: List F -> OutputForm
+    ddADE : List F -> OutputForm
     ddADE l ==
         info := getINFOSER operator(retract(second l)@(Kernel F))
 
@@ -508,14 +508,14 @@ solution and determine the valuation.
         f := info.fnc
         e := info.eqn
 
-        TaylorCoeff: OutputForm
+        TaylorCoeff : OutputForm
                     := bracket(x::OutputForm ^ n::OutputForm)
 
         if info.ex? then
             bracket hconcat(TaylorCoeff, e::OutputForm)
 
         else
-            DiffEq: OutputForm
+            DiffEq : OutputForm
                    := hconcat([TaylorCoeff, _
                                f(x)::OutputForm, ": ", _
                                (e::OutputForm = 0::OutputForm)])$OutputForm
@@ -524,14 +524,14 @@ solution and determine the valuation.
             if info.ord case NonNegativeInteger then
                 v := min(v, (info.ord)::NonNegativeInteger)
 
-            TaylorList: List OutputForm
+            TaylorList : List OutputForm
                        := [((info.val).i * x^(i-1))::OutputForm _
                            for i in 1..v | not zero? (info.val).i]
 
-            TaylorO: OutputForm
+            TaylorO : OutputForm
                     := prefix("O"::OutputForm, _
                               [(x^v)::OutputForm])
-            TaylorPoly: OutputForm
+            TaylorPoly : OutputForm
                        := f(x)::OutputForm _
                           = reduce(_+, concat(TaylorList, TaylorO))
 
@@ -542,7 +542,7 @@ solution and determine the valuation.
     setProperty(opADE, '%specialDisp,
                 ddADE@(List F -> OutputForm) pretend None)
 
-    diffADE(l:List F, x: Symbol): F ==
+    diffADE(l : List F, x : Symbol) : F ==
         dummyF := new()$Symbol :: F
         xF := x::F
         kernel(opdiff, [eval(kernel(opADE, l), xF, dummyF), dummyF, xF])

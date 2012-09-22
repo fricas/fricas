@@ -29,11 +29,11 @@
 ++   in \spadtype{ListAggregate}, often using functions in the underlying
 ++   LISP system. The second parameter to the constructor (\spad{mn})
 ++   is the beginning index of the list. That is, if \spad{l} is a
-++   list, then \spad{elt(l,mn)} is the first value. This constructor
+++   list, then \spad{elt(l, mn)} is the first value. This constructor
 ++   is probably best viewed as the implementation of singly-linked
 ++   lists that are addressable by index rather than as a mere wrapper
 ++   for LISP lists.
-IndexedList(S:Type, mn:Integer): Exports == Implementation where
+IndexedList(S : Type, mn : Integer) : Exports == Implementation where
  cycleMax ==> 1000        -- value used in checking for cycles
 
 -- The following seems to be a bit out of date, but is kept in case
@@ -56,26 +56,26 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
  Implementation ==>
   add
    #x                  == LENGTH(x)$Lisp
-   concat(s:S,x:%)     == CONS(s,x)$Lisp
-   eq?(x,y)            == EQ(x,y)$Lisp
+   concat(s : S, x : %)     == CONS(s, x)$Lisp
+   eq?(x, y)            == EQ(x, y)$Lisp
    first x             == SPADfirst(x)$Lisp
    elt(x,"first")      == SPADfirst(x)$Lisp
    empty()             == NIL$Lisp
    empty? x            == NULL(x)$Lisp
    rest x              == CDR(x)$Lisp
    elt(x,"rest")       == CDR(x)$Lisp
-   setfirst!(x,s)     ==
+   setfirst!(x, s)     ==
       empty? x => error "Cannot update an empty list"
-      Qfirst RPLACA(x,s)$Lisp
+      Qfirst RPLACA(x, s)$Lisp
    setelt(x,"first",s) ==
       empty? x => error "Cannot update an empty list"
-      Qfirst RPLACA(x,s)$Lisp
-   setrest!(x,y)      ==
+      Qfirst RPLACA(x, s)$Lisp
+   setrest!(x, y)      ==
       empty? x => error "Cannot update an empty list"
-      Qrest RPLACD(x,y)$Lisp
+      Qrest RPLACD(x, y)$Lisp
    setelt(x,"rest",y)  ==
       empty? x => error "Cannot update an empty list"
-      Qrest RPLACD(x,y)$Lisp
+      Qrest RPLACD(x, y)$Lisp
    construct l         == l pretend %
    parts s             == s pretend List S
    reverse! x         == NREVERSE(x)$Lisp
@@ -92,13 +92,13 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
       y := empty()
       for i in 0.. while not Qnull x repeat
          if Qeq(i,cycleMax) and cyclic? x then error "cyclic list"
-         y := Qcons(Qfirst x,y)
+         y := Qcons(Qfirst x, y)
          x := Qrest x
       (NREVERSE(y)$Lisp)@%
 
    if S has CoercibleTo(OutputForm) then
 
-     coerce(x):OutputForm ==
+     coerce(x) : OutputForm ==
         -- displays cycle with overbar over the cycle
         y := empty()$List(OutputForm)
         s := cycleEntry x
@@ -117,20 +117,20 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
    if S has BasicType then
 
      x = y ==
-       Qeq(x,y) => true
+       Qeq(x, y) => true
        while not Qnull x and not Qnull y repeat
           Qfirst x ~=$S Qfirst y => return false
           x := Qrest x
           y := Qrest y
        Qnull x and Qnull y
 
-     member?(s,x) ==
+     member?(s, x) ==
         while not Qnull x repeat
            if s = Qfirst x then return true else x := Qrest x
         false
 
    if S has SetCategory then
-     latex(x : %): String ==
+     latex(x : %) : String ==
        s : String := "\left["
        while not Qnull x repeat
          s := concat(s, latex(Qfirst x)$S)$String
@@ -146,16 +146,16 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
 
    -- Lots of code from parts of AGGCAT, repeated here to
    -- get faster compilation
-   concat!(x:%,y:%) ==
+   concat!(x : %, y : %) ==
       Qnull x =>
         Qnull y => x
-        Qpush(first y,x)
-        QRPLACD(x,rest y)$Lisp
+        Qpush(first y, x)
+        QRPLACD(x, rest y)$Lisp
         x
-      z:=x
+      z := x
       while not Qnull Qrest z repeat
-        z:=Qrest z
-      QRPLACD(z,y)$Lisp
+        z := Qrest z
+      QRPLACD(z, y)$Lisp
       x
 
    -- Then a quicky:
@@ -165,16 +165,16 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
        while not Qnull p repeat
 --       p := setrest!(p, remove!(#1 = Qfirst p, Qrest p))
 -- far too expensive - builds closures etc.
-         pp:=p
-         f:S:=Qfirst p
-         p:=Qrest p
-         while not Qnull (pr:=Qrest pp) repeat
-           if (Qfirst pr)@S = f then QRPLACD(pp,Qrest pr)$Lisp
-           else pp:=pr
+         pp := p
+         f : S := Qfirst p
+         p := Qrest p
+         while not Qnull (pr := Qrest pp) repeat
+           if (Qfirst pr)@S = f then QRPLACD(pp, Qrest pr)$Lisp
+           else pp := pr
        l
 
    -- then sorting
-   mergeSort: ((S, S) -> Boolean, %, Integer) -> %
+   mergeSort : ((S, S) -> Boolean, %, Integer) -> %
 
    sort!(f, l)       == mergeSort(f, l, #l)
 
@@ -232,7 +232,7 @@ IndexedList(S:Type, mn:Integer): Exports == Implementation where
 ++   is 1. In addition to the operations provided by
 ++   \spadtype{IndexedList}, this constructor provides some
 ++   LISP-like functions such as \spadfun{null} and \spadfun{cons}.
-List(S:Type): Exports == Implementation where
+List(S : Type) : Exports == Implementation where
  LISTMININDEX ==> 1       -- this is the minimum list index
 
  Exports ==> ListAggregate S with
@@ -242,24 +242,24 @@ List(S:Type): Exports == Implementation where
     ++ null(u) tests if list \spad{u} is the
     ++ empty list.
   cons            : (S, %) -> %
-    ++ cons(element,u) appends \spad{element} onto the front
+    ++ cons(element, u) appends \spad{element} onto the front
     ++ of list \spad{u} and returns the new list. This new list
     ++ and the old one will share some structure.
   append          : (%, %) -> %
-    ++ append(u1,u2) appends the elements of list \spad{u1}
+    ++ append(u1, u2) appends the elements of list \spad{u1}
     ++ onto the front of list \spad{u2}. This new list
     ++ and \spad{u2} will share some structure.
   if S has BasicType then
     setUnion        : (%, %) -> %
-      ++ setUnion(u1,u2) appends the two lists u1 and u2, then
+      ++ setUnion(u1, u2) appends the two lists u1 and u2, then
       ++ removes all duplicates. The order of elements in the
       ++ resulting list is unspecified.
     setIntersection : (%, %) -> %
-      ++ setIntersection(u1,u2) returns a list of the elements
+      ++ setIntersection(u1, u2) returns a list of the elements
       ++ that lists \spad{u1} and \spad{u2} have in common.
       ++ The order of elements in the resulting list is unspecified.
     setDifference   : (%, %) -> %
-      ++ setDifference(u1,u2) returns a list of the elements
+      ++ setDifference(u1, u2) returns a list of the elements
       ++ of \spad{u1} that are not also in \spad{u2}.
       ++ The order of elements in the resulting list is unspecified.
   if S has OpenMath then OpenMath
@@ -269,10 +269,10 @@ List(S:Type): Exports == Implementation where
       nil()                    == NIL$Lisp
       null l                   == NULL(l)$Lisp
       cons(s, l)               == CONS(s, l)$Lisp
-      append(l:%, t:%)         == APPEND(l, t)$Lisp
+      append(l : %, t : %)         == APPEND(l, t)$Lisp
 
       if S has OpenMath then
-        writeOMList(dev: OpenMathDevice, x: %): Void ==
+        writeOMList(dev : OpenMathDevice, x : %) : Void ==
           OMputApp(dev)
           OMputSymbol(dev, "list1", "list")
           -- The following didn't compile because the compiler isn't
@@ -280,14 +280,14 @@ List(S:Type): Exports == Implementation where
           --for xval in x repeat
           --  OMwrite(dev, xval, false)
           while not null x repeat
-            OMwrite(dev,first x,false)
+            OMwrite(dev, first x, false)
             x := rest x
           OMputEndApp(dev)
 
-        OMwrite(x: %): String ==
-          s: String := ""
+        OMwrite(x : %) : String ==
+          s : String := ""
           sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-          dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+          dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
           OMputObject(dev)
           writeOMList(dev, x)
           OMputEndObject(dev)
@@ -295,10 +295,10 @@ List(S:Type): Exports == Implementation where
           s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
           s
 
-        OMwrite(x: %, wholeObj: Boolean): String ==
-          s: String := ""
+        OMwrite(x : %, wholeObj : Boolean) : String ==
+          s : String := ""
           sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-          dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+          dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
           if wholeObj then
             OMputObject(dev)
           writeOMList(dev, x)
@@ -308,12 +308,12 @@ List(S:Type): Exports == Implementation where
           s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
           s
 
-        OMwrite(dev: OpenMathDevice, x: %): Void ==
+        OMwrite(dev : OpenMathDevice, x : %) : Void ==
           OMputObject(dev)
           writeOMList(dev, x)
           OMputEndObject(dev)
 
-        OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+        OMwrite(dev : OpenMathDevice, x : %, wholeObj : Boolean) : Void ==
           if wholeObj then
             OMputObject(dev)
           writeOMList(dev, x)
@@ -321,27 +321,27 @@ List(S:Type): Exports == Implementation where
             OMputEndObject(dev)
 
       if S has BasicType then
-        setUnion(l1:%,l2:%)      == removeDuplicates concat(l1,l2)
+        setUnion(l1 : %, l2 : %)      == removeDuplicates concat(l1, l2)
 
-        setIntersection(l1:%,l2:%) ==
-          u :% := empty()
+        setIntersection(l1 : %, l2 : %) ==
+          u : % := empty()
           l1 := removeDuplicates l1
           while not empty? l1 repeat
-            if member?(first l1,l2) then u := cons(first l1,u)
+            if member?(first l1, l2) then u := cons(first l1, u)
             l1 := rest l1
           u
 
-        setDifference(l1:%,l2:%) ==
+        setDifference(l1 : %, l2 : %) ==
           l1 := removeDuplicates l1
-          lu:% := empty()
+          lu : % := empty()
           while not empty? l1 repeat
-            l11:=l1.1
-            if not member?(l11,l2) then lu := concat(l11,lu)
+            l11 := l1.1
+            if not member?(l11, l2) then lu := concat(l11, lu)
             l1 := rest l1
           lu
 
       if S has ConvertibleTo InputForm then
-        convert(x:%):InputForm ==
+        convert(x : %) : InputForm ==
           convert concat(convert('construct)@InputForm,
                 [convert a for a in (x pretend List S)]$List(InputForm))
 
@@ -362,32 +362,32 @@ List(S:Type): Exports == Implementation where
 ++   \spadtype{ListFunctions2} implements utility functions that
 ++   operate on two kinds of lists, each with a possibly different
 ++   type of element.
-ListFunctions2(A:Type, B:Type): public == private where
+ListFunctions2(A : Type, B : Type) : public == private where
   LA     ==> List A
   LB     ==> List B
   O2     ==> FiniteLinearAggregateFunctions2(A, LA, B, LB)
 
   public ==> with
-    scan:    ((A, B) -> B, LA, B) -> LB
-      ++ scan(fn,u,ident) successively uses the binary function
+    scan :    ((A, B) -> B, LA, B) -> LB
+      ++ scan(fn, u, ident) successively uses the binary function
       ++ \spad{fn} to reduce more and more of list \spad{u}.
       ++ \spad{ident} is returned if the \spad{u} is empty.
       ++ The result is a list of the reductions at each step. See
       ++ \spadfun{reduce} for more information. Examples:
-      ++ \spad{scan(fn,[1,2],0) = [fn(2,fn(1,0)),fn(1,0)]} and
-      ++ \spad{scan(*,[2,3],1) = [2 * 1, 3 * (2 * 1)]}.
-    reduce:  ((A, B) -> B, LA, B) -> B
-      ++ reduce(fn,u,ident) successively uses the binary function
+      ++ \spad{scan(fn, [1, 2], 0) = [fn(2, fn(1, 0)), fn(1, 0)]} and
+      ++ \spad{scan(*, [2, 3], 1) = [2 * 1, 3 * (2 * 1)]}.
+    reduce :  ((A, B) -> B, LA, B) -> B
+      ++ reduce(fn, u, ident) successively uses the binary function
       ++ \spad{fn} on the elements of list \spad{u} and the result
       ++ of previous applications. \spad{ident} is returned if the
       ++ \spad{u} is empty. Note the order of application in
       ++ the following examples:
-      ++ \spad{reduce(fn,[1,2,3],0) = fn(3,fn(2,fn(1,0)))} and
-      ++ \spad{reduce(*,[2,3],1) = 3 * (2 * 1)}.
-    map:      (A -> B, LA) -> LB
-      ++ map(fn,u) applies \spad{fn} to each element of
+      ++ \spad{reduce(fn, [1, 2, 3], 0) = fn(3, fn(2, fn(1, 0)))} and
+      ++ \spad{reduce(*, [2, 3], 1) = 3 * (2 * 1)}.
+    map :      (A -> B, LA) -> LB
+      ++ map(fn, u) applies \spad{fn} to each element of
       ++ list \spad{u} and returns a new list with the results.
-      ++ For example \spad{map(square,[1,2,3]) = [1,4,9]}.
+      ++ For example \spad{map(square, [1, 2, 3]) = [1, 4, 9]}.
 
   private ==> add
     map(f, l)       == map(f, l)$O2
@@ -410,23 +410,23 @@ ListFunctions2(A:Type, B:Type): public == private where
 ++   \spadtype{ListFunctions3} implements utility functions that
 ++   operate on three kinds of lists, each with a possibly different
 ++   type of element.
-ListFunctions3(A:Type, B:Type, C:Type): public == private where
+ListFunctions3(A : Type, B : Type, C : Type) : public == private where
   LA     ==> List A
   LB     ==> List B
   LC     ==> List C
 
   public ==> with
-    map: ( (A,B)->C, LA, LB) -> LC
-      ++ map(fn,list1, u2) applies the binary function \spad{fn}
+    map : ( (A, B)->C, LA, LB) -> LC
+      ++ map(fn, list1, u2) applies the binary function \spad{fn}
       ++ to corresponding elements of lists \spad{u1} and \spad{u2}
       ++ and returns a list of the results (in the same order). Thus
-      ++ \spad{map(/,[1,2,3],[4,5,6]) = [1/4,2/4,1/2]}. The computation
+      ++ \spad{map(/, [1, 2, 3], [4, 5, 6]) = [1/4, 2/4, 1/2]}. The computation
       ++ terminates when the end of either list is reached. That is,
       ++ the length of the result list is equal to the minimum of the
       ++ lengths of \spad{u1} and \spad{u2}.
 
   private ==> add
-    map(fn : (A,B) -> C, la : LA, lb : LB): LC ==
+    map(fn : (A, B) -> C, la : LA, lb : LB) : LC ==
       empty?(la) or empty?(lb) => empty()$LC
       concat(fn(first la, first lb), map(fn, rest la, rest lb))
 
@@ -451,13 +451,13 @@ ListFunctions3(A:Type, B:Type, C:Type): public == private where
 ++   default function can be specified to be used when \spad{x}
 ++   does not appear in the first list.  In the absence of defaults,
 ++   an error will occur in that case.
-ListToMap(A:SetCategory, B:Type): Exports == Implementation where
+ListToMap(A : SetCategory, B : Type) : Exports == Implementation where
   LA  ==> List A
   LB  ==> List B
   AB  ==> (A -> B)
 
   Exports ==> with
-    match: (LA, LB   ) -> AB
+    match : (LA, LB   ) -> AB
       ++ match(la, lb) creates a map with no default source or target values
       ++ defined by lists la and lb of equal length.
       ++ The target of a source value \spad{x} in la is the
@@ -465,14 +465,14 @@ ListToMap(A:SetCategory, B:Type): Exports == Implementation where
       ++ Error: if la and lb are not of equal length.
       ++ Note: when this map is applied, an error occurs when
       ++ applied to a value missing from la.
-    match: (LA, LB, A) -> B
+    match : (LA, LB, A) -> B
       ++ match(la, lb, a) creates a map
       ++ defined by lists la and lb of equal length, where \spad{a} is used
       ++ as the default source value if the given one is not in \spad{la}.
       ++ The target of a source value \spad{x} in la is the
       ++ value y with the same index lb.
       ++ Error: if la and lb are not of equal length.
-    match: (LA, LB, B)    -> AB
+    match : (LA, LB, B)    -> AB
       ++ match(la, lb, b) creates a map
       ++ defined by lists la and lb of equal length, where \spad{b} is used
       ++ as the default target value if the given function argument is
@@ -480,7 +480,7 @@ ListToMap(A:SetCategory, B:Type): Exports == Implementation where
       ++ The target of a source value \spad{x} in la is the
       ++ value y with the same index lb.
       ++ Error: if la and lb are not of equal length.
-    match: (LA, LB, A, B) -> B
+    match : (LA, LB, A, B) -> B
       ++ match(la, lb, a, b) creates a map
       ++ defined by lists la and lb of equal length.
       ++ and applies this map to a.
@@ -488,7 +488,7 @@ ListToMap(A:SetCategory, B:Type): Exports == Implementation where
       ++ value y with the same index lb.
       ++ Argument b is the default target value if a is not in la.
       ++ Error: if la and lb are not of equal length.
-    match: (LA, LB, AB)    -> AB
+    match : (LA, LB, AB)    -> AB
       ++ match(la, lb, f) creates a map
       ++ defined by lists la and lb of equal length.
       ++ The target of a source value \spad{x} in la is the
@@ -497,7 +497,7 @@ ListToMap(A:SetCategory, B:Type): Exports == Implementation where
       ++ function to call when the given function argument is not in
       ++ \spad{la}.
       ++ The value returned is f applied to that argument.
-    match: (LA, LB, A, AB) -> B
+    match : (LA, LB, A, AB) -> B
       ++ match(la, lb, a, f) creates a map
       ++ defined by lists la and lb of equal length.
       ++ and applies this map to a.
@@ -507,16 +507,16 @@ ListToMap(A:SetCategory, B:Type): Exports == Implementation where
       ++ The value returned is then obtained by applying f to argument a.
 
   Implementation ==> add
-    match(la, lb)             == (z1: A): B +-> match(la, lb, z1)
-    match(la:LA, lb:LB, a:A)  == lb.position(a, la)
-    match(la:LA, lb:LB, b:B)  == (z1: A): B +-> match(la, lb, z1, b)
-    match(la:LA, lb:LB, f:AB) == (z1: A): B +-> match(la, lb, z1, f)
+    match(la, lb)             == (z1 : A) : B +-> match(la, lb, z1)
+    match(la : LA, lb : LB, a : A)  == lb.position(a, la)
+    match(la : LA, lb : LB, b : B)  == (z1 : A) : B +-> match(la, lb, z1, b)
+    match(la : LA, lb : LB, f : AB) == (z1 : A) : B +-> match(la, lb, z1, f)
 
-    match(la:LA, lb:LB, a:A, b:B) ==
+    match(la : LA, lb : LB, a : A, b : B) ==
       (p := position(a, la)) < minIndex(la) => b
       lb.p
 
-    match(la:LA, lb:LB, a:A, f:AB) ==
+    match(la : LA, lb : LB, a : A, f : AB) ==
       (p := position(a, la)) < minIndex(la) => f a
       lb.p
 
@@ -542,23 +542,23 @@ ListToMap(A:SetCategory, B:Type): Exports == Implementation where
 
 AssociationList(Key : SetCategory, Entry : Type):
  AssociationListAggregate(Key, Entry) == add
-        Pair ==> Record(key:Key, entry:Entry)
+        Pair ==> Record(key : Key, entry : Entry)
         Rep := Reference List Pair
 
         dictionary()            == ref empty()
         empty()                 == dictionary()
         empty? t                == empty? deref t
-        entries(t:%):List(Pair) == deref t
-        parts(t:%):List(Pair)   == deref t
+        entries(t : %) : List(Pair) == deref t
+        parts(t : %) : List(Pair)   == deref t
         keys t                  == [k.key for k in deref t]
         # t                     == # deref t
-        first(t:%):Pair         == first deref t
+        first(t : %) : Pair         == first deref t
         rest t                  == ref rest deref t
-        concat(p:Pair, t:%)     == ref concat(p, deref t)
-        setrest!(a:%, b:%)     == ref setrest!(deref a, deref b)
-        setfirst!(a:%, p:Pair) == setfirst!(deref a,p)
-        minIndex(a:%):Integer   == minIndex(deref a)
-        maxIndex(a:%):Integer   == maxIndex(deref a)
+        concat(p : Pair, t : %)     == ref concat(p, deref t)
+        setrest!(a : %, b : %)     == ref setrest!(deref a, deref b)
+        setfirst!(a : %, p : Pair) == setfirst!(deref a, p)
+        minIndex(a : %) : Integer   == minIndex(deref a)
+        maxIndex(a : %) : Integer   == maxIndex(deref a)
 
         search(k, t) ==
           for r in deref t repeat
@@ -586,12 +586,12 @@ AssociationList(Key : SetCategory, Entry : Type):
             k = r.key => return r
           "failed"
 
-        setelt(t:%, k:Key, e:Entry) ==
+        setelt(t : %, k : Key, e : Entry) ==
           (r := assoc(k, t)) case Pair => (r::Pair).entry := e
           setref(t, concat([k, e], deref t))
           e
 
-        remove!(k:Key, t:%) ==
+        remove!(k : Key, t : %) ==
           empty?(l := deref t) => "failed"
           k = first(l).key =>
             setref(t, rest l)

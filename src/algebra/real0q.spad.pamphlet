@@ -27,38 +27,38 @@
 ++ precision. The results are returned as a list of
 ++ isolating intervals, expressed as records with "left" and "right" rational number components.
 
-RealZeroPackageQ(Pol): T == C where
+RealZeroPackageQ(Pol) : T == C where
    RN  ==> Fraction Integer
    I   ==> Integer
    SUP ==> SparseUnivariatePolynomial
-   Pol: UnivariatePolynomialCategory RN
+   Pol : UnivariatePolynomialCategory RN
    Interval ==> Record(left : RN, right : RN)
    isoList ==> List(Interval)
    ApproxInfo ==> Record(approx : RN, exFlag : Boolean)
    T == with
     -- next two functions find isolating intervals
-      realZeros: (Pol) -> isoList
+      realZeros : (Pol) -> isoList
         ++ realZeros(pol) returns a list of isolating intervals for
         ++ all the real zeros of the univariate polynomial pol.
-      realZeros: (Pol, Interval) -> isoList
+      realZeros : (Pol, Interval) -> isoList
         ++ realZeros(pol, range) returns a list of isolating intervals
         ++ for all the real zeros of the univariate polynomial pol which
         ++ lie in the interval expressed by the record range.
     -- next two functions return intervals smaller then tolerence
-      realZeros: (Pol, RN) -> isoList
+      realZeros : (Pol, RN) -> isoList
         ++ realZeros(pol, eps) returns a list of intervals of length less
         ++ than the rational number eps for all the real roots of the
         ++ polynomial pol.
-      realZeros: (Pol, Interval, RN) -> isoList
+      realZeros : (Pol, Interval, RN) -> isoList
         ++ realZeros(pol, int, eps) returns a list of intervals of length
         ++ less than the rational number eps for all the real roots of the
         ++ polynomial pol which lie in the interval expressed by the
         ++ record int.
-      refine: (Pol, Interval, RN) -> Interval
+      refine : (Pol, Interval, RN) -> Interval
         ++ refine(pol, int, eps) refines the interval int containing
         ++ exactly one root of the univariate polynomial pol to size less
         ++ than the rational number eps.
-      refine: (Pol, Interval, Interval) -> Union(Interval,"failed")
+      refine : (Pol, Interval, Interval) -> Union(Interval,"failed")
         ++ refine(pol, int, range) takes a univariate polynomial pol and
         ++ and isolating interval int which must contain exactly one real
         ++ root of pol, and returns an isolating interval which
@@ -66,11 +66,11 @@ RealZeroPackageQ(Pol): T == C where
    C == add
       import RealZeroPackage SparseUnivariatePolynomial Integer
 
-      convert2PolInt: Pol -> SparseUnivariatePolynomial Integer
+      convert2PolInt : Pol -> SparseUnivariatePolynomial Integer
 
       convert2PolInt(f : Pol) ==
-         pden:I :=lcm([denom c for c in coefficients f])
-         map(numer,pden * f)$UnivariatePolynomialCategoryFunctions2(RN,Pol,I,SUP I)
+         pden : I := lcm([denom c for c in coefficients f])
+         map(numer, pden * f)$UnivariatePolynomialCategoryFunctions2(RN, Pol, I, SUP I)
 
       realZeros(f : Pol) == realZeros(convert2PolInt f)
       realZeros(f : Pol, rn : RN) == realZeros(convert2PolInt f, rn)

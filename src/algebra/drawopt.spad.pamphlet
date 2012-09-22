@@ -26,7 +26,7 @@
 ++ Description: DrawOption allows the user to specify defaults for the
 ++ creation and rendering of plots.
 
-DrawOption(): Exports == Implementation where
+DrawOption() : Exports == Implementation where
  RANGE ==> List Segment Float
  UNIT  ==> List Float
  PAL   ==> Palette
@@ -34,7 +34,7 @@ DrawOption(): Exports == Implementation where
  SEG   ==> Segment Float
  SF     ==> DoubleFloat
  SPACE3 ==> ThreeSpace(DoubleFloat)
- VIEWPT ==> Record( theta:SF, phi:SF, scale:SF, scaleX:SF, scaleY:SF, scaleZ:SF, deltaX:SF, deltaY:SF )
+ VIEWPT ==> Record( theta : SF, phi : SF, scale : SF, scaleX : SF, scaleY : SF, scaleZ : SF, deltaX : SF, deltaY : SF )
 
  Exports ==> SetCategory with
   adaptive : Boolean -> %
@@ -80,14 +80,14 @@ DrawOption(): Exports == Implementation where
   colorFunction : (SF -> SF) -> %
     ++ colorFunction(f(z)) specifies the color based upon the z-component of
     ++ three dimensional plots. This option is expressed in the form \spad{colorFunction == f(z)}.
-  colorFunction : ((SF,SF) -> SF) -> %
-    ++ colorFunction(f(u,v)) specifies the color for three dimensional plots
+  colorFunction : ((SF, SF) -> SF) -> %
+    ++ colorFunction(f(u, v)) specifies the color for three dimensional plots
     ++ as a function based upon the two parametric variables. This option is expressed
-    ++ in the form \spad{colorFunction == f(u,v)}.
-  colorFunction : ((SF,SF,SF) -> SF) -> %
-    ++ colorFunction(f(x,y,z)) specifies the color for three dimensional
+    ++ in the form \spad{colorFunction == f(u, v)}.
+  colorFunction : ((SF, SF, SF) -> SF) -> %
+    ++ colorFunction(f(x, y, z)) specifies the color for three dimensional
     ++ plots as a function of x, y, and z coordinates. This option is expressed in the
-    ++ form \spad{colorFunction == f(x,y,z)}.
+    ++ form \spad{colorFunction == f(x, y, z)}.
   tubeRadius : Float -> %
     ++ tubeRadius(r) specifies a radius, r, for a tube plot around a 3D curve;
     ++ is expressed in the form \spad{tubeRadius == 4}.
@@ -119,12 +119,12 @@ DrawOption(): Exports == Implementation where
     ++ in the form \spad{coord == p}.
   unit   : UNIT -> %
     ++ unit(lf) will mark off the units according to the indicated list lf.
-    ++ This option is expressed in the form \spad{unit == [f1,f2]}.
+    ++ This option is expressed in the form \spad{unit == [f1, f2]}.
   option : (List %, Symbol) -> Union(Any, "failed")
     ++ option() is not to be used at the top level;
     ++ option determines internally which drawing options are indicated in
     ++ a draw command.
-  option?: (List %, Symbol) -> Boolean
+  option? : (List %, Symbol) -> Boolean
     ++ option?() is not to be used at the top level;
     ++ option? internally returns true for drawing options which are
     ++ indicated in a draw command, or false for those which are not.
@@ -142,23 +142,23 @@ DrawOption(): Exports == Implementation where
   import AnyFunctions1(Float)
   import AnyFunctions1(POINT -> POINT)
   import AnyFunctions1(SF -> SF)
-  import AnyFunctions1((SF,SF) -> SF)
-  import AnyFunctions1((SF,SF,SF) -> SF)
+  import AnyFunctions1((SF, SF) -> SF)
+  import AnyFunctions1((SF, SF, SF) -> SF)
   import AnyFunctions1(POINT)
   import AnyFunctions1(PAL)
   import AnyFunctions1(SPACE3)
 
-  Rep := Record(keyword:Symbol, value:Any)
+  Rep := Record(keyword : Symbol, value : Any)
 
-  length:List SEG -> NonNegativeInteger
+  length : List SEG -> NonNegativeInteger
   -- these lists will become tuples in a later version
   length tup == # tup
 
-  lengthR:List Segment Fraction Integer -> NonNegativeInteger
+  lengthR : List Segment Fraction Integer -> NonNegativeInteger
   -- these lists will become tuples in a later version
   lengthR tup == # tup
 
-  lengthI:List Integer -> NonNegativeInteger
+  lengthI : List Integer -> NonNegativeInteger
   -- these lists will become tuples in a later version
   lengthI tup == # tup
 
@@ -168,29 +168,29 @@ DrawOption(): Exports == Implementation where
   title s == ['title, s::Any]
   style s == ['style, s::Any]
   toScale b == ['toScale, b::Any]
-  clip(b:Boolean) == ['clipBoolean, b::Any]
+  clip(b : Boolean) == ['clipBoolean, b::Any]
   adaptive b == ['adaptive, b::Any]
 
-  pointColor(x:Float) == ['pointColorFloat, x::Any]
-  pointColor(c:PAL) == ['pointColorPalette, c::Any]
-  curveColor(x:Float) == ['curveColorFloat, x::Any]
-  curveColor(c:PAL) == ['curveColorPalette, c::Any]
-  colorFunction(f:SF -> SF) == ['colorFunction1, f::Any]
-  colorFunction(f:(SF,SF) -> SF) == ['colorFunction2, f::Any]
-  colorFunction(f:(SF,SF,SF) -> SF) == ['colorFunction3, f::Any]
-  clip(tup:List SEG) ==
+  pointColor(x : Float) == ['pointColorFloat, x::Any]
+  pointColor(c : PAL) == ['pointColorPalette, c::Any]
+  curveColor(x : Float) == ['curveColorFloat, x::Any]
+  curveColor(c : PAL) == ['curveColorPalette, c::Any]
+  colorFunction(f : SF -> SF) == ['colorFunction1, f::Any]
+  colorFunction(f : (SF, SF) -> SF) == ['colorFunction2, f::Any]
+  colorFunction(f : (SF, SF, SF) -> SF) == ['colorFunction3, f::Any]
+  clip(tup : List SEG) ==
     length tup > 3 =>
       error "clip: at most 3 segments may be specified"
     ['clipSegment, tup::Any]
   coordinates f == ['coordinates, f::Any]
   tubeRadius x == ['tubeRadius, x::Any]
-  range(tup:List Segment Float) ==
+  range(tup : List Segment Float) ==
     ((n := length tup) > 3) =>
       error "range: at most 3 segments may be specified"
     n < 2 =>
       error "range: at least 2 segments may be specified"
     ['rangeFloat, tup::Any]
-  range(tup:List Segment Fraction Integer) ==
+  range(tup : List Segment Fraction Integer) ==
     ((n := lengthR tup) > 3) =>
       error "range: at most 3 segments may be specified"
     n < 2 =>
@@ -204,8 +204,8 @@ DrawOption(): Exports == Implementation where
   tubePoints s           == ['tubePoints, s::Any]
   coord s                == ['coord, s::Any]
   unit s                 == ['unit, s::Any]
-  coerce(x:%):OutputForm == x.keyword::OutputForm = x.value::OutputForm
-  x:% = y:%              == x.keyword = y.keyword and x.value = y.value
+  coerce(x : %) : OutputForm == x.keyword::OutputForm = x.value::OutputForm
+  x : % = y : %              == x.keyword = y.keyword and x.value = y.value
 
   option?(l, s) ==
     for x in l repeat
@@ -222,7 +222,7 @@ DrawOption(): Exports == Implementation where
 <<package DROPT1 DrawOptionFunctions1>>=
 )abbrev package DROPT1 DrawOptionFunctions1
 ++ This package \undocumented{}
-DrawOptionFunctions1(S:Type): Exports == Implementation where
+DrawOptionFunctions1(S : Type) : Exports == Implementation where
  RANGE ==> List Segment Float
  UNIT  ==> List Float
  PAL   ==> Palette
@@ -230,11 +230,11 @@ DrawOptionFunctions1(S:Type): Exports == Implementation where
  SEG   ==> Segment Float
  SF     ==> DoubleFloat
  SPACE3 ==> ThreeSpace(DoubleFloat)
- VIEWPT ==> Record( theta:SF, phi:SF, scale:SF, scaleX:SF, scaleY:SF, scaleZ:SF, deltaX:SF, deltaY:SF )
+ VIEWPT ==> Record( theta : SF, phi : SF, scale : SF, scaleX : SF, scaleY : SF, scaleZ : SF, deltaX : SF, deltaY : SF )
 
  Exports ==> with
-  option: (List DrawOption, Symbol) -> Union(S, "failed")
-    ++ option(l,s) determines whether the indicated drawing option, s,
+  option : (List DrawOption, Symbol) -> Union(S, "failed")
+    ++ option(l, s) determines whether the indicated drawing option, s,
     ++ is contained in the list of drawing options, l, which is defined
     ++ by the draw command.
  Implementation ==> add
@@ -249,7 +249,7 @@ DrawOptionFunctions1(S:Type): Exports == Implementation where
 -- The functions here are not in DrawOptions since they are not
 -- visible to the interpreter.
 ++ This package \undocumented{}
-DrawOptionFunctions0(): Exports == Implementation where
+DrawOptionFunctions0() : Exports == Implementation where
  RANGE ==> List Segment Float
  UNIT  ==> List Float
  PAL   ==> Palette
@@ -257,83 +257,83 @@ DrawOptionFunctions0(): Exports == Implementation where
  SEG   ==> Segment Float
  SF     ==> DoubleFloat
  SPACE3 ==> ThreeSpace(DoubleFloat)
- VIEWPT ==> Record( theta:SF, phi:SF, scale:SF, scaleX:SF, scaleY:SF, scaleZ:SF, deltaX:SF, deltaY:SF )
+ VIEWPT ==> Record( theta : SF, phi : SF, scale : SF, scaleX : SF, scaleY : SF, scaleZ : SF, deltaX : SF, deltaY : SF )
 
  Exports ==> with
-  adaptive: (List DrawOption, Boolean) -> Boolean
-    ++ adaptive(l,b) takes the list of draw options, l, and checks
+  adaptive : (List DrawOption, Boolean) -> Boolean
+    ++ adaptive(l, b) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{adaptive}.
     ++ If the option does not exist the value, b is returned.
-  clipBoolean: (List DrawOption, Boolean) -> Boolean
-    ++ clipBoolean(l,b) takes the list of draw options, l, and checks
+  clipBoolean : (List DrawOption, Boolean) -> Boolean
+    ++ clipBoolean(l, b) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{clipBoolean}.
     ++ If the option does not exist the value, b is returned.
-  viewpoint: (List DrawOption, VIEWPT) -> VIEWPT
-    ++ viewpoint(l,ls) takes the list of draw options, l, and checks
+  viewpoint : (List DrawOption, VIEWPT) -> VIEWPT
+    ++ viewpoint(l, ls) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{viewpoint}.
     ++ IF the option does not exist, the value ls is returned.
-  title: (List DrawOption, String) -> String
-    ++ title(l,s) takes the list of draw options, l, and checks
+  title : (List DrawOption, String) -> String
+    ++ title(l, s) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{title}.
     ++ If the option does not exist the value, s is returned.
-  style: (List DrawOption, String) -> String
-    ++ style(l,s) takes the list of draw options, l, and checks
+  style : (List DrawOption, String) -> String
+    ++ style(l, s) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{style}.
     ++ If the option does not exist the value, s is returned.
-  toScale: (List DrawOption, Boolean) -> Boolean
-    ++ toScale(l,b) takes the list of draw options, l, and checks
+  toScale : (List DrawOption, Boolean) -> Boolean
+    ++ toScale(l, b) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{toScale}.
     ++ If the option does not exist the value, b is returned.
 
-  pointColorPalette: (List DrawOption,PAL) -> PAL
-    ++ pointColorPalette(l,p) takes the list of draw options, l, and checks
+  pointColorPalette : (List DrawOption, PAL) -> PAL
+    ++ pointColorPalette(l, p) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{pointColorPalette}.
     ++ If the option does not exist the value, p is returned.
-  curveColorPalette: (List DrawOption,PAL) -> PAL
-    ++ curveColorPalette(l,p) takes the list of draw options, l, and checks
+  curveColorPalette : (List DrawOption, PAL) -> PAL
+    ++ curveColorPalette(l, p) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{curveColorPalette}.
     ++ If the option does not exist the value, p is returned.
 
-  ranges: (List DrawOption, RANGE) -> RANGE
-    ++ ranges(l,r) takes the list of draw options, l, and checks
+  ranges : (List DrawOption, RANGE) -> RANGE
+    ++ ranges(l, r) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{ranges}.
     ++ If the option does not exist the value, r is returned.
-  var1Steps: (List DrawOption, PositiveInteger) -> PositiveInteger
-    ++ var1Steps(l,n) takes the list of draw options, l, and checks
+  var1Steps : (List DrawOption, PositiveInteger) -> PositiveInteger
+    ++ var1Steps(l, n) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{var1Steps}.
     ++ If the option does not exist the value, n is returned.
-  var2Steps: (List DrawOption, PositiveInteger) -> PositiveInteger
-    ++ var2Steps(l,n) takes the list of draw options, l, and checks
+  var2Steps : (List DrawOption, PositiveInteger) -> PositiveInteger
+    ++ var2Steps(l, n) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{var2Steps}.
     ++ If the option does not exist the value, n is returned.
-  space: (List DrawOption) -> SPACE3
+  space : (List DrawOption) -> SPACE3
     ++ space(l) takes a list of draw options, l, and checks to see
     ++ if it contains the option \spad{space}.  If the the option
     ++ doesn't exist, then an empty space is returned.
   tubePoints : (List DrawOption, PositiveInteger) -> PositiveInteger
-    ++ tubePoints(l,n) takes the list of draw options, l, and checks
+    ++ tubePoints(l, n) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{tubePoints}.
     ++ If the option does not exist the value, n is returned.
   tubeRadius : (List DrawOption, Float) -> Float
-    ++ tubeRadius(l,n) takes the list of draw options, l, and checks
+    ++ tubeRadius(l, n) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{tubeRadius}.
     ++ If the option does not exist the value, n is returned.
-  coord: (List DrawOption, (POINT->POINT)) -> (POINT->POINT)
-    ++ coord(l,p) takes the list of draw options, l, and checks
+  coord : (List DrawOption, (POINT->POINT)) -> (POINT->POINT)
+    ++ coord(l, p) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{coord}.
     ++ If the option does not exist the value, p is returned.
-  units: (List DrawOption, UNIT) -> UNIT
-    ++ units(l,u) takes the list of draw options, l, and checks
+  units : (List DrawOption, UNIT) -> UNIT
+    ++ units(l, u) takes the list of draw options, l, and checks
     ++ the list to see if it contains the option \spad{unit}.
     ++ If the option does not exist the value, u is returned.
 
  Implementation ==> add
-  adaptive(l,s) ==
+  adaptive(l, s) ==
     (u := option(l, 'adaptive)$DrawOptionFunctions1(Boolean))
       case "failed" => s
     u::Boolean
 
-  clipBoolean(l,s) ==
+  clipBoolean(l, s) ==
     (u := option(l, 'clipBoolean)$DrawOptionFunctions1(Boolean))
       case "failed" => s
     u::Boolean
@@ -353,17 +353,17 @@ DrawOptionFunctions0(): Exports == Implementation where
       case "failed" => s
     u::String
 
-  toScale(l,s) ==
+  toScale(l, s) ==
     (u := option(l, 'toScale)$DrawOptionFunctions1(Boolean))
       case "failed" => s
     u::Boolean
 
-  pointColorPalette(l,s) ==
+  pointColorPalette(l, s) ==
     (u := option(l, 'pointColorPalette)$DrawOptionFunctions1(PAL))
       case "failed" => s
     u::PAL
 
-  curveColorPalette(l,s) ==
+  curveColorPalette(l, s) ==
     (u := option(l, 'curveColorPalette)$DrawOptionFunctions1(PAL))
       case "failed" => s
     u::PAL
@@ -380,32 +380,32 @@ DrawOptionFunctions0(): Exports == Implementation where
       case "failed" => create3Space()$SPACE3
     u::SPACE3
 
-  var1Steps(l,s) ==
+  var1Steps(l, s) ==
     (u := option(l, 'var1Steps)$DrawOptionFunctions1(PositiveInteger))
       case "failed" => s
     u::PositiveInteger
 
-  var2Steps(l,s) ==
+  var2Steps(l, s) ==
     (u := option(l, 'var2Steps)$DrawOptionFunctions1(PositiveInteger))
       case "failed" => s
     u::PositiveInteger
 
-  tubePoints(l,s) ==
+  tubePoints(l, s) ==
     (u := option(l, 'tubePoints)$DrawOptionFunctions1(PositiveInteger))
       case "failed" => s
     u::PositiveInteger
 
-  tubeRadius(l,s) ==
+  tubeRadius(l, s) ==
     (u := option(l, 'tubeRadius)$DrawOptionFunctions1(Float))
       case "failed" => s
     u::Float
 
-  coord(l,s) ==
+  coord(l, s) ==
     (u := option(l, 'coord)$DrawOptionFunctions1(POINT->POINT))
       case "failed" => s
     u::(POINT->POINT)
 
-  units(l,s) ==
+  units(l, s) ==
     (u := option(l, 'unit)$DrawOptionFunctions1(UNIT))
       case "failed" => s
     u::UNIT

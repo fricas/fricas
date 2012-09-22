@@ -24,40 +24,40 @@
 ++ Description:
 ++ \spadtype{GaloisGroupUtilities} provides several useful functions.
 
-GaloisGroupUtilities(R): Exports == Implementation where
+GaloisGroupUtilities(R) : Exports == Implementation where
   N ==> NonNegativeInteger
   Z ==> Integer
   R : Ring
 
   Exports ==> with
-    pascalTriangle: (N,Z) -> R
-      ++ pascalTriangle(n,r) returns the binomial coefficient
-      ++ \spad{C(n,r)=n!/(r! (n-r)!)}
+    pascalTriangle : (N, Z) -> R
+      ++ pascalTriangle(n, r) returns the binomial coefficient
+      ++ \spad{C(n, r)=n!/(r! (n-r)!)}
       ++ and stores it in a table to prevent recomputation.
-    rangePascalTriangle: N -> N
+    rangePascalTriangle : N -> N
       ++ rangePascalTriangle(n) sets the maximal number of lines which
       ++ are stored and returns the previous value.
-    rangePascalTriangle: () -> N
+    rangePascalTriangle : () -> N
       ++ rangePascalTriangle() returns the maximal number of lines stored.
-    sizePascalTriangle: () -> N
+    sizePascalTriangle : () -> N
       ++ sizePascalTriangle() returns the number of entries currently stored
       ++ in the table.
-    fillPascalTriangle: () -> Void
+    fillPascalTriangle : () -> Void
       ++ fillPascalTriangle() fills the stored table.
 
     if R has FloatingPointSystem then
-      safeCeiling: R -> Z
+      safeCeiling : R -> Z
         ++ safeCeiling(x) returns the integer which is greater than any integer
         ++ with the same floating point number representation.
-      safeFloor: R -> Z
+      safeFloor : R -> Z
         ++ safeFloor(x) returns the integer which is lower or equal to the
         ++ largest integer which has the same floating point number
         ++ representation.
-      safetyMargin: N -> N
+      safetyMargin : N -> N
         ++ safetyMargin(n) sets to n the number of low weight digits we do not
         ++ trust in the floating point representation and returns the previous
         ++ value (for use by \spadfun{safeCeiling}).
-      safetyMargin: () -> N
+      safetyMargin : () -> N
         ++ safetyMargin() returns the number of low weight digits we do not
         ++ trust in the floating point representation (used by
         ++ \spadfun{safeCeiling}).
@@ -67,65 +67,65 @@ GaloisGroupUtilities(R): Exports == Implementation where
     if R has FloatingPointSystem then
       safetymargin : N := 6
 
-      safeFloor(x:R):Z ==
+      safeFloor(x : R) : Z ==
         if (shift := order(x)-precision()$R+safetymargin) >= 0 then
-          x := x+float(1,shift)
+          x := x+float(1, shift)
         retract(floor(x))@Z
 
-      safeCeiling(x:R):Z ==
+      safeCeiling(x : R) : Z ==
         if (shift := order(x)-precision()$R+safetymargin) >= 0 then
-          x := x+float(1,shift)
+          x := x+float(1, shift)
         retract(ceiling(x))@Z
 
-      safetyMargin(n:N):N ==
-        (safetymargin,n) := (n,safetymargin)
+      safetyMargin(n : N) : N ==
+        (safetymargin, n) := (n, safetymargin)
         n
 
-      safetyMargin():N == safetymargin
+      safetyMargin() : N == safetymargin
 
     pascaltriangle : FlexibleArray(R) := empty()
     ncomputed : N := 3
     rangepascaltriangle : N := 216
 
-    pascalTriangle(n:N, r:Z):R ==
+    pascalTriangle(n : N, r : Z) : R ==
       negative? r => 0
-      (d := n-r) < r => pascalTriangle(n,d)
+      (d := n-r) < r => pascalTriangle(n, d)
       zero? r => 1$R
 --      one? r => n :: R
       (r = 1) => n :: R
       n > rangepascaltriangle =>
-       binomial(n,r)$IntegerCombinatoricFunctions(Z) :: R
+       binomial(n, r)$IntegerCombinatoricFunctions(Z) :: R
       n <= ncomputed =>
-        m := divide(n-4,2)
+        m := divide(n-4, 2)
         mq := m.quotient
         pascaltriangle((mq+1)*(mq+m.remainder)+r-1)
       -- compute the missing lines
       for i in (ncomputed+1)..n repeat
         for j in 2..(i quo 2) repeat
-          pascaltriangle := concat!(pascaltriangle,pascalTriangle((i-1)
-           :: N, j-1)+pascalTriangle((i-1) :: N,j))
+          pascaltriangle := concat!(pascaltriangle, pascalTriangle((i-1)
+           :: N, j-1)+pascalTriangle((i-1) :: N, j))
         ncomputed := i
-      pascalTriangle(n,r)
+      pascalTriangle(n, r)
 
-    rangePascalTriangle(n:N):N ==
+    rangePascalTriangle(n : N) : N ==
       if n<ncomputed then
         if n<3 then
-          pascaltriangle := delete!(pascaltriangle,1..#pascaltriangle)
+          pascaltriangle := delete!(pascaltriangle, 1..#pascaltriangle)
           ncomputed := 3
         else
-          d := divide(n-3,2)
+          d := divide(n-3, 2)
           dq := d.quotient
-          pascaltriangle := delete!(pascaltriangle,((dq+1)*(dq+d.remainder)
+          pascaltriangle := delete!(pascaltriangle, ((dq+1)*(dq+d.remainder)
            +1)..#pascaltriangle)
           ncomputed := n
-      (rangepascaltriangle,n) := (n,rangepascaltriangle)
+      (rangepascaltriangle, n) := (n, rangepascaltriangle)
       n
 
-    rangePascalTriangle():N == rangepascaltriangle
+    rangePascalTriangle() : N == rangepascaltriangle
 
-    sizePascalTriangle():N == #pascaltriangle
+    sizePascalTriangle() : N == #pascaltriangle
 
-    fillPascalTriangle():Void == pascalTriangle(rangepascaltriangle,2)
+    fillPascalTriangle() : Void == pascalTriangle(rangepascaltriangle, 2)
 
 @
 \section{License}

@@ -23,19 +23,19 @@
 ++ References:
 ++ Description: OutPackage allows pretty-printing from programs.
 
-OutputPackage: with
-        output: String -> Void
+OutputPackage : with
+        output : String -> Void
             ++ output(s) displays the string s on the ``algebra output''
             ++ stream, as defined by \spadsyscom{set output algebra}.
-        output: OutputForm -> Void
+        output : OutputForm -> Void
             ++ output(x) displays the output form x on the
             ++ ``algebra output'' stream, as defined by
             ++ \spadsyscom{set output algebra}.
-        output: (String, OutputForm) -> Void
-            ++ output(s,x) displays the string s followed by the form x
+        output : (String, OutputForm) -> Void
+            ++ output(s, x) displays the string s followed by the form x
             ++ on the ``algebra output'' stream, as defined by
             ++ \spadsyscom{set output algebra}.
-        outputList: (List Any) -> Void
+        outputList : (List Any) -> Void
             ++ outputList(l) displays the concatenated components of the
             ++ list l on the ``algebra output'' stream, as defined by
             ++ \spadsyscom{set output algebra}; quotes are stripped
@@ -46,16 +46,16 @@ OutputPackage: with
         E      ==> OutputForm
         putout ==> mathprint$Lisp
 
-        s: String
-        e: OutputForm
-        l: List Any
+        s : String
+        e : OutputForm
+        l : List Any
 
         output e ==
             mathprint(e)$Lisp
             void()
         output s ==
             output(s pretend E)
-        output(s,e) ==
+        output(s, e) ==
             output blankSeparate [s pretend E, e]
         outputList(l) ==                                -- MGR
           output hconcat
@@ -81,28 +81,28 @@ OutputPackage: with
 ++ Description: SpecialOutputPackage allows FORTRAN, Tex and
 ++   Script Formula Formatter output from programs.
 
-SpecialOutputPackage: public == private where
+SpecialOutputPackage : public == private where
   public == with
-    outputAsFortran: (String,OutputForm) -> Void
-      ++ outputAsFortran(v,o) sends output v = o in FORTRAN format
+    outputAsFortran : (String, OutputForm) -> Void
+      ++ outputAsFortran(v, o) sends output v = o in FORTRAN format
       ++ to the destination defined by \spadsyscom{set output fortran}.
-    outputAsFortran: OutputForm          -> Void
+    outputAsFortran : OutputForm          -> Void
       ++ outputAsFortran(o) sends output o in FORTRAN format.
-    outputAsScript:  OutputForm          -> Void
+    outputAsScript :  OutputForm          -> Void
       ++ outputAsScript(o) sends output o in Script Formula Formatter format
       ++ to the destination defined by \spadsyscom{set output formula}.
-    outputAsTex:     OutputForm          -> Void
+    outputAsTex :     OutputForm          -> Void
       ++ outputAsTex(o) sends output o in Tex format to the destination
       ++ defined by \spadsyscom{set output tex}.
-    outputAsFortran: List OutputForm     -> Void
+    outputAsFortran : List OutputForm     -> Void
       ++ outputAsFortran(l) sends (for each expression in the list l)
       ++ output in FORTRAN format to the destination defined by
       ++ \spadsyscom{set output fortran}.
-    outputAsScript:  List OutputForm     -> Void
+    outputAsScript :  List OutputForm     -> Void
       ++ outputAsScript(l) sends (for each expression in the list l)
       ++ output in Script Formula Formatter format to the destination defined.
       ++ by \spadsyscom{set output forumula}.
-    outputAsTex:     List OutputForm     -> Void
+    outputAsTex :     List OutputForm     -> Void
       ++ outputAsTex(l) sends (for each expression in the list l)
       ++ output in Tex format to the destination as defined by
       ++ \spadsyscom{set output tex}.
@@ -113,14 +113,14 @@ SpecialOutputPackage: public == private where
     var : String
     --ExpressionPackage()
 
-    juxtaposeTerms: List OutputForm -> OutputForm
+    juxtaposeTerms : List OutputForm -> OutputForm
     juxtaposeTerms l == blankSeparate l
 
     outputAsFortran e ==
       dispfortexp$Lisp e
       void()$Void
 
-    outputAsFortran(var,e) ==
+    outputAsFortran(var, e) ==
       e := var::Symbol::OutputForm  = e
       dispfortexp(e)$Lisp
       void()$Void
@@ -161,48 +161,48 @@ SpecialOutputPackage: public == private where
 ++ Description: DisplayPackage allows one to print strings in a nice manner,
 ++ including highlighting substrings.
 
-DisplayPackage: public == private where
+DisplayPackage : public == private where
   I       ==> Integer
   L       ==> List
   S       ==> String
   RECLR   ==> Record(lhs : S, rhs : S)
 
   public  == with
-    bright:       S           -> L S
+    bright :       S           -> L S
       ++ bright(s) sets the font property of the string s to bold-face type.
-    bright:       L S         -> L S
+    bright :       L S         -> L S
       ++ bright(l) sets the font property of a list of strings, l, to
       ++ bold-face type.
-    newLine:      ()          -> S
+    newLine :      ()          -> S
       ++ newLine() sends a new line command to output.
 
-    copies:       (I,S)       -> S
-      ++ copies(i,s) will take a string s and create a new string composed of
+    copies :       (I, S)       -> S
+      ++ copies(i, s) will take a string s and create a new string composed of
       ++ i copies of s.
-    center:       (S,I,S)     -> S
-      ++ center(s,i,s) takes the first string s, and centers it within a string
+    center :       (S, I, S)     -> S
+      ++ center(s, i, s) takes the first string s, and centers it within a string
       ++ of length i, in which the other elements of the string are composed
       ++ of as many replications as possible of the second indicated string, s
       ++ which must have a length greater than that of an empty string.
-    center:       (L S,I,S)   -> L S
-      ++ center(l,i,s) takes a list of strings l, and centers them within a
+    center :       (L S, I, S)   -> L S
+      ++ center(l, i, s) takes a list of strings l, and centers them within a
       ++ list of strings which is i characters long, in which the remaining
       ++ spaces are filled with strings composed of as many repetitions as
       ++ possible of the last string parameter s.
 
-    say:          S           -> Void
+    say :          S           -> Void
       ++ say(s) sends a string s to output.
-    say:          L S         -> Void
+    say :          L S         -> Void
       ++ say(l) sends a list of strings l to output.
-    sayLength:    S           -> I
+    sayLength :    S           -> I
       ++ sayLength(s) returns the length of a string s as an integer.
-    sayLength:    L S         -> I
+    sayLength :    L S         -> I
       ++ sayLength(l) returns the length of a list of strings l as an integer.
 
   private == add
     --StringManipulations()
 
-    center0:  (I,I,S) -> RECLR
+    center0 :  (I, I, S) -> RECLR
 
     s : S
     l : L S
@@ -211,38 +211,38 @@ DisplayPackage: public == private where
     HIOFF   : S := "%d"
     NEWLINE : S := "%l"
 
-    bright s == [HION,s,HIOFF]$(L S)
-    bright l == cons(HION,append(l,list HIOFF))
+    bright s == [HION, s, HIOFF]$(L S)
+    bright l == cons(HION, append(l, list HIOFF))
     newLine() == NEWLINE
 
     copies(n : I, s : S) ==
       n < 1 => ""
       n = 1 => s
       t : S := copies(n quo 2, s)
-      odd? n => concat [s,t,t]
-      concat [t,t]
+      odd? n => concat [s, t, t]
+      concat [t, t]
 
     center0(len : I, wid : I, fill : S) : RECLR ==
       (wid < 1) or (len >= wid) => ["",""]$RECLR
       m : I := (wid - len) quo 2
-      t : S := copies(1 + (m quo (sayLength fill)),fill)
-      [t(1..m),t(1..wid-len-m)]$RECLR
+      t : S := copies(1 + (m quo (sayLength fill)), fill)
+      [t(1..m), t(1..wid-len-m)]$RECLR
 
     center(s, wid, fill) ==
       wid < 1 => ""
       len : I := sayLength s
       len = wid => s
       len > wid => s(1..wid)
-      rec : RECLR := center0(len,wid,fill)
-      concat [rec.lhs,s,rec.rhs]
+      rec : RECLR := center0(len, wid, fill)
+      concat [rec.lhs, s, rec.rhs]
 
     center(l, wid, fill) ==
       wid < 1 => [""]$(L S)
       len : I := sayLength l
       len = wid => l
 --    len > wid => s(1..wid)
-      rec : RECLR := center0(len,wid,fill)
-      cons(rec.lhs,append(l,list rec.rhs))
+      rec : RECLR := center0(len, wid, fill)
+      cons(rec.lhs, append(l, list rec.rhs))
 
     say s ==
       sayBrightly$Lisp s

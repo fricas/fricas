@@ -23,7 +23,7 @@
 ++   matches the expression expr.
 ++ Keywords: pattern, matching.
 -- not exported
-PatternMatchResult(R:SetCategory, S:SetCategory): SetCategory with
+PatternMatchResult(R : SetCategory, S : SetCategory) : SetCategory with
   failed?           : %  -> Boolean
     ++ failed?(r) tests if r is a failed match.
   failed            : () -> %
@@ -42,19 +42,19 @@ PatternMatchResult(R:SetCategory, S:SetCategory): SetCategory with
   insertMatch       : (Pattern R, S, %) -> %
     ++ insertMatch(var, expr, r) adds the match (var, expr) in r,
     ++ without checking predicates or previous matches for var.
-  addMatchRestricted: (Pattern R, S, %, S) -> %
+  addMatchRestricted : (Pattern R, S, %, S) -> %
     ++ addMatchRestricted(var, expr, r, val) adds the match
     ++ (var, expr) in r,
     ++ provided that expr satisfies the predicates attached to var,
     ++ that var is not matched to another expression already,
     ++ and that either var is an optional pattern variable or that
     ++ expr is not equal to val (usually an identity).
-  destruct          : % -> List Record(key:Symbol, entry:S)
+  destruct          : % -> List Record(key : Symbol, entry : S)
     ++ destruct(r) returns the list of matches (var, expr) in r.
     ++ Error: if r is a failed match.
-  construct         : List Record(key:Symbol, entry:S) -> %
-    ++ construct([v1,e1],...,[vn,en]) returns the match result
-    ++ containing the matches (v1,e1),...,(vn,en).
+  construct         : List Record(key : Symbol, entry : S) -> %
+    ++ construct([v1, e1], ..., [vn, en]) returns the match result
+    ++ containing the matches (v1, e1), ..., (vn, en).
   satisfy?          : (%, Pattern R) -> Union(Boolean, "failed")
     ++ satisfy?(r, p) returns true if the matches satisfy the
     ++ top-level predicate of p, false if they don't, and "failed"
@@ -91,7 +91,7 @@ PatternMatchResult(R:SetCategory, S:SetCategory): SetCategory with
     failed? y => false
     x::LR =$LR y::LR
 
-  coerce(x:%):OutputForm ==
+  coerce(x : %) : OutputForm ==
     failed? x => "Does not match"::OutputForm
     destruct(x)::OutputForm
 
@@ -121,15 +121,15 @@ PatternMatchResult(R:SetCategory, S:SetCategory): SetCategory with
 ++ Date Last Updated: 14 Dec 1989
 ++ Description: Lifts maps to pattern matching results.
 ++ Keywords: pattern, matching.
-PatternMatchResultFunctions2(R, A, B): Exports == Implementation where
-  R: SetCategory
-  A: SetCategory
-  B: SetCategory
+PatternMatchResultFunctions2(R, A, B) : Exports == Implementation where
+  R : SetCategory
+  A : SetCategory
+  B : SetCategory
 
   Exports ==> with
-    map: (A -> B, PatternMatchResult(R, A)) -> PatternMatchResult(R, B)
-      ++ map(f, [(v1,a1),...,(vn,an)]) returns the matching result
-      ++ [(v1,f(a1)),...,(vn,f(an))].
+    map : (A -> B, PatternMatchResult(R, A)) -> PatternMatchResult(R, B)
+      ++ map(f, [(v1, a1), ..., (vn, an)]) returns the matching result
+      ++ [(v1, f(a1)), ..., (vn, f(an))].
 
   Implementation ==> add
     map(f, r) ==
@@ -151,7 +151,7 @@ PatternMatchResultFunctions2(R, A, B): Exports == Implementation where
 ++   one for atoms (elements of the list), and one for lists.
 ++ Keywords: pattern, matching, list.
 -- not exported
-PatternMatchListResult(R:SetCategory, S:SetCategory, L:ListAggregate S):
+PatternMatchListResult(R : SetCategory, S : SetCategory, L : ListAggregate S):
   SetCategory with
     failed?   : %  -> Boolean
       ++ failed?(r) tests if r is a failed match.
@@ -159,15 +159,15 @@ PatternMatchListResult(R:SetCategory, S:SetCategory, L:ListAggregate S):
       ++ failed() returns a failed match.
     new       : () -> %
       ++ new() returns a new empty match result.
-    makeResult: (PatternMatchResult(R,S), PatternMatchResult(R,L)) -> %
-      ++ makeResult(r1,r2) makes the combined result [r1,r2].
+    makeResult : (PatternMatchResult(R, S), PatternMatchResult(R, L)) -> %
+      ++ makeResult(r1, r2) makes the combined result [r1, r2].
     atoms     : %  -> PatternMatchResult(R, S)
       ++ atoms(r) returns the list of matches that match atoms
       ++ (elements of the lists).
     lists     : %  -> PatternMatchResult(R, L)
       ++ lists(r) returns the list of matches that match lists.
  == add
-  Rep := Record(a:PatternMatchResult(R, S), l:PatternMatchResult(R, L))
+  Rep := Record(a : PatternMatchResult(R, S), l : PatternMatchResult(R, L))
 
   new()              == [new(), new()]
   atoms r            == r.a
@@ -180,7 +180,7 @@ PatternMatchListResult(R:SetCategory, S:SetCategory, L:ListAggregate S):
     failed? r1 or failed? r2 => failed()
     [r1, r2]
 
-  coerce(r:%):OutputForm ==
+  coerce(r : %) : OutputForm ==
     failed? r => atoms(r)::OutputForm
     RecordPrint(r, Rep)$Lisp
 
@@ -196,8 +196,8 @@ PatternMatchListResult(R:SetCategory, S:SetCategory, L:ListAggregate S):
 ++   A set R is PatternMatchable over S if elements of R can
 ++   be matched to patterns over S.
 ++ Keywords: pattern, matching.
-PatternMatchable(S:SetCategory): Category == SetCategory with
-  patternMatch: (%, Pattern S, PatternMatchResult(S, %)) ->
+PatternMatchable(S : SetCategory) : Category == SetCategory with
+  patternMatch : (%, Pattern S, PatternMatchResult(S, %)) ->
                                                 PatternMatchResult(S, %)
     ++ patternMatch(expr, pat, res) matches the pattern pat to the
     ++ expression expr. res contains the variables of pat which
@@ -218,7 +218,7 @@ PatternMatchable(S:SetCategory): Category == SetCategory with
 ++   pattern-matching functions of S over the integers and float
 ++   to itself (necessary for matching in towers).
 ++ Keywords: pattern, matching.
-FullyPatternMatchable(R:Type): Category == Type with
+FullyPatternMatchable(R : Type) : Category == Type with
   if R has PatternMatchable Integer then PatternMatchable Integer
   if R has PatternMatchable Float   then PatternMatchable Float
 
@@ -233,8 +233,8 @@ FullyPatternMatchable(R:Type): Category == Type with
 ++ Description:
 ++   This package provides pattern matching functions on symbols.
 ++ Keywords: pattern, matching, symbol.
-PatternMatchSymbol(S:SetCategory): with
-  patternMatch: (Symbol, Pattern S, PatternMatchResult(S, Symbol)) ->
+PatternMatchSymbol(S : SetCategory) : with
+  patternMatch : (Symbol, Pattern S, PatternMatchResult(S, Symbol)) ->
                                            PatternMatchResult(S, Symbol)
     ++ patternMatch(expr, pat, res) matches the pattern pat to the
     ++ expression expr; res contains the variables of pat which
@@ -261,9 +261,9 @@ PatternMatchSymbol(S:SetCategory): with
 ++ Description:
 ++   This package provides pattern matching functions on kernels.
 ++ Keywords: pattern, matching, kernel.
-PatternMatchKernel(S, E): Exports == Implementation where
-  S: SetCategory
-  E: Join(Comparable, RetractableTo Kernel %,
+PatternMatchKernel(S, E) : Exports == Implementation where
+  S : SetCategory
+  E : Join(Comparable, RetractableTo Kernel %,
           ConvertibleTo Pattern S, PatternMatchable S)
 
   PAT ==> Pattern S
@@ -272,20 +272,20 @@ PatternMatchKernel(S, E): Exports == Implementation where
   NTHRT ==> 'nthRoot
 
   Exports ==> with
-    patternMatch: (Kernel E, PAT, PRS) -> PRS
-      ++ patternMatch(f(e1,...,en), pat, res) matches the pattern pat
-      ++ to \spad{f(e1,...,en)}; res contains the variables of pat which
+    patternMatch : (Kernel E, PAT, PRS) -> PRS
+      ++ patternMatch(f(e1, ..., en), pat, res) matches the pattern pat
+      ++ to \spad{f(e1, ..., en)}; res contains the variables of pat which
       ++ are already matched and their matches.
 
   Implementation ==> add
     patternMatchArg  : (List E, List PAT, PRS) -> PRS
-    patternMatchInner: (Kernel E, PAT, PRS) -> Union(PRS, "failed")
+    patternMatchInner : (Kernel E, PAT, PRS) -> Union(PRS, "failed")
 
     -- matches the ordered lists ls and lp.
     patternMatchArg(ls, lp, l) ==
       #ls ~= #lp => failed()
       for p in lp for s in ls repeat
-        generic? p and failed?(l := addMatch(p,s,l)) => return failed()
+        generic? p and failed?(l := addMatch(p, s, l)) => return failed()
       for p in lp for s in ls repeat
         not(generic? p) and failed?(l := patternMatch(s, p, l)) =>
                                                          return failed()
@@ -293,8 +293,8 @@ PatternMatchKernel(S, E): Exports == Implementation where
 
     patternMatchInner(s, p, l) ==
       generic? p => addMatch(p, s::E, l)
-      (u := isOp p) case Record(op:BasicOperator, arg: List PAT) =>
-        ur := u::Record(op:BasicOperator, arg: List PAT)
+      (u := isOp p) case Record(op : BasicOperator, arg : List PAT) =>
+        ur := u::Record(op : BasicOperator, arg : List PAT)
         ur.op = operator s => patternMatchArg(argument s, ur.arg, l)
         failed()
       constant? p =>
@@ -305,7 +305,7 @@ PatternMatchKernel(S, E): Exports == Implementation where
       "failed"
 
     if E has Monoid then
-      patternMatchMonoid: (Kernel E, PAT, PRS) -> Union(PRS, "failed")
+      patternMatchMonoid : (Kernel E, PAT, PRS) -> Union(PRS, "failed")
       patternMatchOpt   : (E, List PAT, PRS, E) -> PRS
 
       patternMatchOpt(x, lp, l, id) ==
@@ -316,11 +316,11 @@ PatternMatchKernel(S, E): Exports == Implementation where
 
       patternMatchMonoid(s, p, l) ==
         (u := patternMatchInner(s, p, l)) case PRS => u::PRS
-        (v := isPower p) case Record(val:PAT, exponent:PAT) =>
-          vr := v::Record(val:PAT, exponent: PAT)
+        (v := isPower p) case Record(val : PAT, exponent : PAT) =>
+          vr := v::Record(val : PAT, exponent : PAT)
           is?(op := operator s, POWER) =>
             patternMatchArg(argument s, [vr.val, vr.exponent], l)
-          is?(op,NTHRT) and ((r := recip(second(arg := argument s))) case E) =>
+          is?(op, NTHRT) and ((r := recip(second(arg := argument s))) case E) =>
             patternMatchArg([first arg, r::E], [vr.val, vr.exponent], l)
           optional?(vr.exponent) =>
             failed?(l := addMatch(vr.exponent, 1, l)) => failed()
@@ -359,20 +359,20 @@ PatternMatchKernel(S, E): Exports == Implementation where
 ++   This packages provides tools for matching recursively
 ++   in type towers.
 ++ Keywords: pattern, matching, quotient, field.
-PatternMatchPushDown(S, A, B): Exports == Implementation where
-  S: SetCategory
-  A: PatternMatchable S
-  B: Join(SetCategory, RetractableTo A)
+PatternMatchPushDown(S, A, B) : Exports == Implementation where
+  S : SetCategory
+  A : PatternMatchable S
+  B : Join(SetCategory, RetractableTo A)
 
   PAT ==> Pattern S
   PRA ==> PatternMatchResult(S, A)
   PRB ==> PatternMatchResult(S, B)
-  REC ==> Record(pat:PAT, res:PRA)
+  REC ==> Record(pat : PAT, res : PRA)
 
   Exports ==> with
-    fixPredicate: (B -> Boolean) -> (A -> Boolean)
+    fixPredicate : (B -> Boolean) -> (A -> Boolean)
       ++ fixPredicate(f) returns g defined by g(a) = f(a::B);
-    patternMatch: (A, PAT, PRB)  -> PRB
+    patternMatch : (A, PAT, PRB)  -> PRB
       ++ patternMatch(expr, pat, res) matches the pattern pat to the
       ++ expression expr; res contains the variables of pat which
       ++ are already matched and their matches.
@@ -384,14 +384,14 @@ PatternMatchPushDown(S, A, B): Exports == Implementation where
 
     fixPred      : Any -> Union(Any, "failed")
     inA          : (PAT, PRB) -> Union(List A, "failed")
-    fixPredicates: (PAT, PRB, PRA) -> Union(REC, "failed")
+    fixPredicates : (PAT, PRB, PRA) -> Union(REC, "failed")
     fixList:(List PAT -> PAT, List PAT, PRB, PRA) -> Union(REC,"failed")
 
-    fixPredicate f == (a1: A): Boolean +-> f(a1::B)
+    fixPredicate f == (a1 : A) : Boolean +-> f(a1::B)
 
     patternMatch(a, p, l) ==
       (u := fixPredicates(p, l, new())) case "failed" => failed()
-      union(l, map((a1: A): B +-> a1::B, patternMatch(a, (u::REC).pat, (u::REC).res)))
+      union(l, map((a1 : A) : B +-> a1::B, patternMatch(a, (u::REC).pat, (u::REC).res)))
 
     inA(p, l) ==
       (u := getMatch(p, l)) case "failed" => empty()
@@ -399,7 +399,7 @@ PatternMatchPushDown(S, A, B): Exports == Implementation where
       "failed"
 
     fixList(fn, l, lb, la) ==
-      ll:List(PAT) := empty()
+      ll : List(PAT) := empty()
       for x in l repeat
         (f := fixPredicates(x, lb, la)) case "failed" => return "failed"
         ll := concat((f::REC).pat, ll)
@@ -407,32 +407,32 @@ PatternMatchPushDown(S, A, B): Exports == Implementation where
       [fn ll, la]
 
     fixPred f ==
-      (u:= retractIfCan(f)$AnyFunctions1(B -> Boolean)) case "failed" =>
+      (u := retractIfCan(f)$AnyFunctions1(B -> Boolean)) case "failed" =>
                                                                 "failed"
       g := fixPredicate(u::(B -> Boolean))
       coerce(g)$AnyFunctions1(A -> Boolean)
 
     fixPredicates(p, lb, la) ==
-      (r:=retractIfCan(p)@Union(S,"failed")) case S or quoted? p =>[p,la]
-      (u := isOp p) case Record(op:BasicOperator, arg:List PAT) =>
-        ur := u::Record(op:BasicOperator, arg:List PAT)
-        fixList((l1: List(PAT)): PAT +-> (ur.op) l1, ur.arg, lb, la)
+      (r := retractIfCan(p)@Union(S,"failed")) case S or quoted? p =>[p,la]
+      (u := isOp p) case Record(op : BasicOperator, arg : List PAT) =>
+        ur := u::Record(op : BasicOperator, arg : List PAT)
+        fixList((l1 : List(PAT)) : PAT +-> (ur.op) l1, ur.arg, lb, la)
       (us := isPlus p) case List(PAT) =>
-        fixList((l1: List(PAT)): PAT +-> reduce("+", l1), us::List(PAT), lb, la)
+        fixList((l1 : List(PAT)) : PAT +-> reduce("+", l1), us::List(PAT), lb, la)
       (us := isTimes p) case List(PAT) =>
-        fixList((l1: List(PAT)): PAT +-> reduce("*", l1), us::List(PAT), lb, la)
-      (v := isQuotient p) case Record(num:PAT, den:PAT) =>
-        vr := v::Record(num:PAT, den:PAT)
+        fixList((l1 : List(PAT)) : PAT +-> reduce("*", l1), us::List(PAT), lb, la)
+      (v := isQuotient p) case Record(num : PAT, den : PAT) =>
+        vr := v::Record(num : PAT, den : PAT)
         (fn := fixPredicates(vr.num, lb, la)) case "failed" => "failed"
         la  := (fn::REC).res
         (fd := fixPredicates(vr.den, lb, la)) case "failed" => "failed"
         [(fn::REC).pat / (fd::REC).pat, (fd::REC).res]
-      (w:= isExpt p) case Record(val:PAT,exponent:NonNegativeInteger) =>
-        wr := w::Record(val:PAT, exponent: NonNegativeInteger)
+      (w := isExpt p) case Record(val : PAT, exponent : NonNegativeInteger) =>
+        wr := w::Record(val : PAT, exponent : NonNegativeInteger)
         (f := fixPredicates(wr.val, lb, la)) case "failed" => "failed"
         [(f::REC).pat ^ wr.exponent, (f::REC).res]
-      (uu := isPower p) case Record(val:PAT, exponent:PAT) =>
-        uur := uu::Record(val:PAT, exponent: PAT)
+      (uu := isPower p) case Record(val : PAT, exponent : PAT) =>
+        uur := uu::Record(val : PAT, exponent : PAT)
         (fv := fixPredicates(uur.val, lb, la)) case "failed" => "failed"
         la  := (fv::REC).res
         (fe := fixPredicates(uur.exponent, lb, la)) case "failed" =>
@@ -444,7 +444,7 @@ PatternMatchPushDown(S, A, B): Exports == Implementation where
                         return "failed" for g in predicates p]$List(Any)
         q := setPredicates(patternVariable(retract p, constant? p,
                                            optional? p, multiple? p), lp)
-        [q, (empty?(ua::List A) => la; insertMatch(q,first(ua::List A), la))]
+        [q, (empty?(ua::List A) => la; insertMatch(q, first(ua::List A), la))]
       error "Should not happen"
 
 @
@@ -458,42 +458,42 @@ PatternMatchPushDown(S, A, B): Exports == Implementation where
 ++ Description:
 ++   This package provides tools for the pattern matcher.
 ++ Keywords: pattern, matching, tools.
-PatternMatchTools(S, R, P): Exports == Implementation where
-  S: SetCategory
-  R: Join(Comparable, Ring)
-  P: Join(Ring, ConvertibleTo Pattern S, RetractableTo R)
+PatternMatchTools(S, R, P) : Exports == Implementation where
+  S : SetCategory
+  R : Join(Comparable, Ring)
+  P : Join(Ring, ConvertibleTo Pattern S, RetractableTo R)
 
   PAT ==> Pattern S
   PRS ==> PatternMatchResult(S, P)
-  REC ==> Record(res:PRS, s:List P)
-  RC  ==> Record(pat:List PAT, s:List P)
+  REC ==> Record(res : PRS, s : List P)
+  RC  ==> Record(pat : List PAT, s : List P)
 
   Exports ==> with
-    patternMatch: (List P, List PAT, List P -> P, PRS,
+    patternMatch : (List P, List PAT, List P -> P, PRS,
                                             (P, PAT, PRS) -> PRS) -> PRS
       ++ patternMatch(lsubj, lpat, op, res, match) matches the list
       ++ of patterns lpat to the list of subjects lsubj, allowing for
       ++ commutativity; op is the operator such that op(lpat) should
       ++ match op(lsubj) at the end, r contains the previous matches,
       ++ and match is a pattern-matching function on P.
-    patternMatchTimes: (List P, List PAT, PRS,
+    patternMatchTimes : (List P, List PAT, PRS,
                                             (P, PAT, PRS) -> PRS) -> PRS
       ++ patternMatchTimes(lsubj, lpat, res, match) matches the
-      ++ product of patterns \spad{reduce(*,lpat)}
-      ++ to the product of subjects \spad{reduce(*,lsubj)};
+      ++ product of patterns \spad{reduce(*, lpat)}
+      ++ to the product of subjects \spad{reduce(*, lsubj)};
       ++ r contains the previous matches
       ++ and match is a pattern-matching function on P.
 
   Implementation ==> add
     import PatternFunctions1(S, P)
 
-    preprocessList: (PAT, List P, PRS) -> Union(List P, "failed")
+    preprocessList : (PAT, List P, PRS) -> Union(List P, "failed")
     selBestGen    : List PAT -> List PAT
     negConstant   : List P -> Union(P, "failed")
     findMatch     : (PAT, List P, PRS, P, (P, PAT, PRS) -> PRS) -> REC
     tryToMatch    : (List PAT, REC, P, (P, PAT, PRS) -> PRS) ->
                                                   Union(REC, "failed")
-    filterMatchedPatterns: (List PAT, List P, PRS) -> Union(RC, "failed")
+    filterMatchedPatterns : (List PAT, List P, PRS) -> Union(RC, "failed")
 
     mn1 := convert(-1::P)@Pattern(S)
 
@@ -507,7 +507,7 @@ PatternMatchTools(S, R, P): Exports == Implementation where
 -- with rc.res being the list of existing matches.
 -- updates rc with the new result and subjects still to match
     tryToMatch(lp, rc, ident, pmatch) ==
-      rec:REC := [l := rc.res, ls := rc.s]
+      rec : REC := [l := rc.res, ls := rc.s]
       for p in lp repeat
         rec := findMatch(p, ls, l, ident, pmatch)
         failed?(l := rec.res) => return "failed"
@@ -519,15 +519,15 @@ PatternMatchTools(S, R, P): Exports == Implementation where
       member?(mn1, lp) =>
         (u := negConstant ls) case "failed" => failed()
         if (u::P ~= -1::P) then ls := concat(-u::P, ls)
-        patternMatch(remove(u::P,ls), remove(mn1,lp), (l1: List(P)): P +-> */l1, l, pmatch)
-      patternMatch(ls, lp, (l1: List(P)): P +-> */l1, l, pmatch)
+        patternMatch(remove(u::P, ls), remove(mn1, lp), (l1 : List(P)) : P +-> */l1, l, pmatch)
+      patternMatch(ls, lp, (l1 : List(P)) : P +-> */l1, l, pmatch)
 
 -- finds a match for p in ls, try not to match to a "bad" value
     findMatch(p, ls, l, ident, pmatch) ==
-      bad:List(P) :=
+      bad : List(P) :=
         generic? p => setIntersection(badValues p, ls)
         empty()
-      l1:PRS := failed()
+      l1 : PRS := failed()
       for x in setDifference(ls, bad)
         while (t := x; failed?(l1 := pmatch(x, p, l))) repeat 0
       failed? l1 =>
@@ -585,14 +585,14 @@ PatternMatchTools(S, R, P): Exports == Implementation where
       -- l1 = constant patterns (i.e. 'x, or sin('x))
       l1 := select(constant?, lp)
       -- l2 = patterns with a predicate attached to them
-      l2 := select((p1: PAT): Boolean +-> hasPredicate? p1 and not constant? p1, lp)
+      l2 := select((p1 : PAT) : Boolean +-> hasPredicate? p1 and not constant? p1, lp)
       -- l3 = non-generic patterns without predicates
-      l3 := sort!((z1: PAT, z2: PAT): Boolean +-> depth(z1) > depth(z2),
-        select((p1: PAT): Boolean +-> not(hasPredicate? p1 or generic? p1 or constant? p1),lp))
+      l3 := sort!((z1 : PAT, z2 : PAT) : Boolean +-> depth(z1) > depth(z2),
+        select((p1 : PAT) : Boolean +-> not(hasPredicate? p1 or generic? p1 or constant? p1), lp))
       -- l4 = generic patterns with predicates
-      l4 := select((p1: PAT): Boolean +-> generic? p1 and
+      l4 := select((p1 : PAT) : Boolean +-> generic? p1 and
                               not(hasPredicate? p1 or constant? p1), lp)
-      rec:REC := [l, ls]
+      rec : REC := [l, ls]
       (u := tryToMatch(l1, rec, ident, pmatch)) case "failed" =>
         failed()
       (u := tryToMatch(l2, u::REC, ident, pmatch)) case "failed" =>
@@ -622,21 +622,21 @@ PatternMatchTools(S, R, P): Exports == Implementation where
 ++ Description:
 ++   This package provides pattern matching functions on lists.
 ++ Keywords: pattern, matching, list.
-PatternMatchListAggregate(S, R, L): Exports == Implementation where
-  S: SetCategory
-  R: PatternMatchable S
-  L: ListAggregate R
+PatternMatchListAggregate(S, R, L) : Exports == Implementation where
+  S : SetCategory
+  R : PatternMatchable S
+  L : ListAggregate R
 
   PLR ==> PatternMatchListResult(S, R, L)
 
   Exports ==> with
-    patternMatch: (L, Pattern S, PLR) -> PLR
+    patternMatch : (L, Pattern S, PLR) -> PLR
       ++ patternMatch(l, pat, res) matches the pattern pat to the
       ++ list l; res contains the variables of pat which
       ++ are already matched and their matches.
 
   Implementation ==> add
-    match: (L, List Pattern S, PLR, Boolean) -> PLR
+    match : (L, List Pattern S, PLR, Boolean) -> PLR
 
     patternMatch(l, p, r) ==
       (u := isList p) case "failed" => failed()
@@ -649,11 +649,11 @@ PatternMatchListAggregate(S, R, L): Exports == Implementation where
       multiple?(p0 := first lp) =>
         empty? rest lp =>
           if not new? then l := reverse! l
-          makeResult(atoms r, addMatchRestricted(p0,l,lists r,empty()))
+          makeResult(atoms r, addMatchRestricted(p0, l, lists r, empty()))
         new? => match(reverse l, reverse lp, r, false)
         error "Only one multiple pattern allowed in list"
       empty? l => failed()
-      failed?(r := makeResult(patternMatch(first l,p0,atoms r),lists r))
+      failed?(r := makeResult(patternMatch(first l, p0, atoms r), lists r))
                                                              => failed()
       match(rest l, rest lp, r, new?)
 

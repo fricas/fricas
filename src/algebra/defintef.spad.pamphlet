@@ -20,7 +20,7 @@
 ++   \spadtype{ElementaryFunctionDefiniteIntegration}
 ++   provides functions to compute definite
 ++   integrals of elementary functions.
-ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
+ElementaryFunctionDefiniteIntegration(R, F) : Exports == Implementation where
   R : Join(EuclideanDomain, Comparable, CharacteristicZero,
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory, PrimitiveFunctionCategory,
@@ -36,11 +36,11 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
   U   ==> Union(f1:OFE, f2:List OFE, fail:"failed", pole:"potentialPole")
 
   Exports ==> with
-    integrate: (F, SegmentBinding OFE) -> U
+    integrate : (F, SegmentBinding OFE) -> U
       ++ integrate(f, x = a..b) returns the integral of
       ++ \spad{f(x)dx} from a to b.
       ++ Error: if f has a pole for x between a and b.
-    integrate: (F, SegmentBinding OFE, String) -> U
+    integrate : (F, SegmentBinding OFE, String) -> U
       ++ integrate(f, x = a..b, "noPole") returns the
       ++ integral of \spad{f(x)dx} from a to b.
       ++ If it is not possible to check whether f has a pole for x
@@ -48,7 +48,7 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
       ++ will assume that f has no such pole.
       ++ Error: if f has a pole for x between a and b or
       ++ if the last argument is not "noPole".
-    innerint: (F, SE, OFE, OFE, B) -> U
+    innerint : (F, SE, OFE, OFE, B) -> U
       ++ innerint(f, x, a, b, ignore?) should be local but conditional
 
   Implementation ==> add
@@ -61,7 +61,7 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
     nopole      : (F, SE, K, OFE, OFE) -> U
     checkFor0   : (P, K, OFE, OFE) -> Union(B, "failed")
     checkSMP    : (P, SE, K, OFE, OFE) -> Union(B, "failed")
-    checkForPole: (F, SE, K, OFE, OFE) -> Union(B, "failed")
+    checkForPole : (F, SE, K, OFE, OFE) -> Union(B, "failed")
     posit       : (F, SE, K, OFE, OFE) -> Union(B, "failed")
     negat       : (F, SE, K, OFE, OFE) -> Union(B, "failed")
     moreThan    : (OFE, Fraction Z) -> Union(B, "failed")
@@ -78,10 +78,10 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
     else
       innerint(f, x, a, b, ignor?) == int(f, x, a, b, ignor?)
 
-    integrate(f:F, s:SegmentBinding OFE) ==
+    integrate(f : F, s : SegmentBinding OFE) ==
       innerint(f, variable s, lo segment s, hi segment s, false)
 
-    integrate(f:F, s:SegmentBinding OFE, str:String) ==
+    integrate(f : F, s : SegmentBinding OFE, str : String) ==
       innerint(f, variable s, lo segment s, hi segment s, ignore? str)
 
     int(f, x, a, b, ignor?) ==
@@ -149,7 +149,7 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
         or is?(kk, 'sinh) or is?(kk, 'cosh) or is?(kk, 'tanh)
           or is?(kk, 'sech) or is?(kk, 'atan) or is?(kk, 'acot)
             or is?(kk, 'asinh) => checkForPole(f, x, k, a, b)
-      -- functions which are defined on (-1,+1):
+      -- functions which are defined on (-1, +1):
       is?(kk, 'asin) or is?(kk, 'acos) or is?(kk, 'atanh) =>
         ((w := checkForPole(f, x, k, a, b)) case "failed") or (w::B) => w
         ((w := posit(f - 1, x, k, a, b)) case "failed") or (w::B) => w
@@ -165,9 +165,9 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
       "failed"
 
 -- returns true if it is certain that f takes at least one strictly positive
--- value for x in (a,b), false if it is certain that f takes no strictly
+-- value for x in (a, b), false if it is certain that f takes no strictly
 -- positive value in (a,b), "failed" otherwise
--- f must be known to have no poles in (a,b)
+-- f must be known to have no poles in (a, b)
     posit(f, x, k, a, b) ==
       z :=
         (r := retractIfCan(a)@Union(F, "failed")) case "failed" => sign(f, x, a)
@@ -183,9 +183,9 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
       "failed"
 
 -- returns true if it is certain that f takes at least one strictly negative
--- value for x in (a,b), false if it is certain that f takes no strictly
+-- value for x in (a, b), false if it is certain that f takes no strictly
 -- negative value in (a,b), "failed" otherwise
--- f must be known to have no poles in (a,b)
+-- f must be known to have no poles in (a, b)
     negat(f, x, k, a, b) ==
       z :=
         (r := retractIfCan(a)@Union(F, "failed")) case "failed" => sign(f, x, a)
@@ -203,7 +203,7 @@ ElementaryFunctionDefiniteIntegration(R, F): Exports == Implementation where
 -- returns a UP if p is only a poly w.r.t. the kernel x
     polyIfCan(p, x) ==
       q := univariate(p, x)
-      ans:UP := 0
+      ans : UP := 0
       while q ~= 0 repeat
         member?(x, tower(c := leadingCoefficient(q)::F)) => return "failed"
         ans := ans + monomial(c, degree q)

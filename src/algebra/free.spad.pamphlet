@@ -20,12 +20,12 @@
 ++ This internal package represents monoid (abelian or not, with or
 ++ without inverses) as lists and provides some common operations
 ++ to the various flavors of monoids.
-ListMonoidOps(S, E, un): Exports == Implementation where
+ListMonoidOps(S, E, un) : Exports == Implementation where
   S : SetCategory
   E : AbelianMonoid
-  un: E
+  un : E
 
-  REC ==> Record(gen:S, exp: E)
+  REC ==> Record(gen : S, exp : E)
   O   ==> OutputForm
 
   Exports ==> Join(SetCategory, RetractableTo S) with
@@ -78,8 +78,8 @@ ListMonoidOps(S, E, un): Exports == Implementation where
       ++ plus(x, y) returns \spad{x + y} where \spad{+}
       ++ is the monoid operation,
       ++ which is assumed commutative.
-    commutativeEquality: (%, %) -> Boolean
-      ++ commutativeEquality(x,y) returns true if x and y are equal
+    commutativeEquality : (%, %) -> Boolean
+      ++ commutativeEquality(x, y) returns true if x and y are equal
       ++ assuming commutativity
     mapExpon      : (E -> E, %) -> %
       ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
@@ -89,12 +89,12 @@ ListMonoidOps(S, E, un): Exports == Implementation where
   Implementation ==> add
     Rep := List REC
 
-    localplus: (%, %) -> %
+    localplus : (%, %) -> %
 
     makeUnit()       == empty()$Rep
     size l           == # listOfMonoms l
-    coerce(s:S):%    == [[s, un]]
-    coerce(l:%):O    == coerce(l)$Rep
+    coerce(s : S) : %    == [[s, un]]
+    coerce(l : %) : O    == coerce(l)$Rep
     makeTerm(s, e)   == (zero? e => makeUnit(); [[s, e]])
     makeMulti l      == l
     f = g            == f =$Rep g
@@ -106,14 +106,14 @@ ListMonoidOps(S, E, un): Exports == Implementation where
     mapGen(f, l)     == [[f(x.gen), x.exp] for x in l]
 
     mapExpon(f, l) ==
-      ans:List(REC) := empty()
+      ans : List(REC) := empty()
       for x in l repeat
         if (a := f(x.exp)) ~= 0 then ans := concat([x.gen, a], ans)
       reverse! ans
 
     outputForm(l, op, opexp, id) ==
       empty? l => id::OutputForm
-      l:List(O) :=
+      l : List(O) :=
          [(p.exp = un => p.gen::O; opexp(p.gen::O, p.exp::O)) for p in l]
       reduce(op, l)
 
@@ -131,13 +131,13 @@ ListMonoidOps(S, E, un): Exports == Implementation where
       s = f.first.gen => concat([s, f.first.exp + un], rest f)
       concat([s, un], f)
 
-    commutativeEquality(s1:%, s2:%):Boolean ==
+    commutativeEquality(s1 : %, s2 : %) : Boolean ==
       #s1 ~= #s2 => false
       for t1 in s1 repeat
-          if not member?(t1,s2) then return false
+          if not member?(t1, s2) then return false
       true
 
-    plus!(s:S, n:E, f:%):% ==
+    plus!(s : S, n : E, f : %) : % ==
       h := g := concat([s, n], f)
       h1 := rest h
       while not empty? h1 repeat
@@ -151,7 +151,7 @@ ListMonoidOps(S, E, un): Exports == Implementation where
         h1 := rest h1
       g
 
-    plus(s, n, f) == plus!(s,n,copy f)
+    plus(s, n, f) == plus!(s, n, copy f)
 
     plus(f, g) ==
       #f < #g => localplus(f, g)
@@ -173,11 +173,11 @@ ListMonoidOps(S, E, un): Exports == Implementation where
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ The free monoid on a set S is the monoid of finite products of
-++ the form \spad{reduce(*,[si ^ ni])} where the si's are in S, and the ni's
+++ the form \spad{reduce(*, [si ^ ni])} where the si's are in S, and the ni's
 ++ are nonnegative integers. The multiplication is not commutative.
-FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
+FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
     NNI ==> NonNegativeInteger
-    REC ==> Record(gen: S, exp: NonNegativeInteger)
+    REC ==> Record(gen : S, exp : NonNegativeInteger)
     Ex  ==> OutputForm
 
     FMcategory ==> Join(Monoid, RetractableTo S) with
@@ -187,32 +187,32 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
           ++ x * s returns the product of x by s on the right.
         "^":   (S, NonNegativeInteger) -> %
           ++ s ^ n returns the product of s by itself n times.
-        hclf:   (%, %) -> %
+        hclf :   (%, %) -> %
           ++ hclf(x, y) returns the highest common left factor of x and y,
           ++ i.e. the largest d such that \spad{x = d a} and \spad{y = d b}.
-        hcrf:   (%, %) -> %
+        hcrf :   (%, %) -> %
           ++ hcrf(x, y) returns the highest common right factor of x and y,
           ++ i.e. the largest d such that \spad{x = a d} and \spad{y = b d}.
-        lquo:   (%, %) -> Union(%, "failed")
+        lquo :   (%, %) -> Union(%, "failed")
           ++ lquo(x, y) returns the exact left quotient of x by y i.e.
           ++ q such that \spad{x = y * q},
           ++ "failed" if x is not of the form \spad{y * q}.
-        rquo:   (%, %) -> Union(%, "failed")
+        rquo :   (%, %) -> Union(%, "failed")
           ++ rquo(x, y) returns the exact right quotient of x by y i.e.
           ++ q such that \spad{x = q * y},
           ++ "failed" if x is not of the form \spad{q * y}.
-        divide:   (%, %) -> Union(Record(lm: %, rm: %), "failed")
+        divide :   (%, %) -> Union(Record(lm: %, rm: %), "failed")
           ++ divide(x, y) returns the left and right exact quotients of
           ++ x by y, i.e. \spad{[l, r]} such that \spad{x = l * y * r},
           ++ "failed" if x is not of the form \spad{l * y * r}.
-        overlap: (%, %) -> Record(lm: %, mm: %, rm: %)
+        overlap : (%, %) -> Record(lm : %, mm : %, rm : %)
           ++ overlap(x, y) returns \spad{[l, m, r]} such that
           ++ \spad{x = l * m}, \spad{y = m * r} and l and r have no overlap,
           ++ i.e. \spad{overlap(l, r) = [l, 1, r]}.
         size         :   % -> NNI
           ++ size(x) returns the number of monomials in x.
-        factors      : % -> List Record(gen: S, exp: NonNegativeInteger)
-          ++ factors(a1\^e1,...,an\^en) returns \spad{[[a1, e1],...,[an, en]]}.
+        factors      : % -> List Record(gen : S, exp : NonNegativeInteger)
+          ++ factors(a1\^e1, ..., an\^en) returns \spad{[[a1, e1], ..., [an, en]]}.
         nthExpon     : (%, Integer) -> NonNegativeInteger
           ++ nthExpon(x, n) returns the exponent of the n^th monomial of x.
         nthFactor    : (%, Integer) -> S
@@ -228,16 +228,16 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
 
         1               == makeUnit()
         one? f          == empty? listOfMonoms f
-        coerce(f:%): Ex == outputForm(f, "*", "^", 1)
+        coerce(f:%) : Ex == outputForm(f, "*", "^", 1)
         hcrf(f, g)      == reverse! hclf(reverse f, reverse g)
-        f:% * s:S       == rightMult(f, s)
-        s:S * f:%       == leftMult(s, f)
+        f : % * s : S       == rightMult(f, s)
+        s : S * f : %       == leftMult(s, f)
         factors f       == copy listOfMonoms f
         mapExpon(f, x)  == mapExpon(f, x)$Rep
         mapGen(f, x)    == mapGen(f, x)$Rep
-        s:S ^ n:NonNegativeInteger == makeTerm(s, n)
+        s : S ^ n : NonNegativeInteger == makeTerm(s, n)
 
-        f:% * g:% ==
+        f : % * g : % ==
 --            one? f => g
             (f = 1) => g
 --            one? g => f
@@ -245,7 +245,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
             lg := listOfMonoms g
             ls := last(lf := listOfMonoms f)
             ls.gen = lg.first.gen =>
-                setlast!(h := copy lf,[lg.first.gen,lg.first.exp+ls.exp])
+                setlast!(h := copy lf, [lg.first.gen, lg.first.exp+ls.exp])
                 makeMulti concat(h, rest lg)
             makeMulti concat(lf, lg)
 
@@ -254,7 +254,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
             (la = 1) or (ar = 1) => [la, 1, ar]
             lla := la0 := listOfMonoms la
             lar := listOfMonoms ar
-            l:List(REC) := empty()
+            l : List(REC) := empty()
             while not empty? lla repeat
               if lla.first.gen = lar.first.gen then
                 if lla.first.exp < lar.first.exp and empty? rest lla then
@@ -264,7 +264,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
                                   (lar.first.exp - lla.first.exp)::NNI],
                                                               rest lar)]
                 if lla.first.exp >= lar.first.exp then
-                  if (ru:= lquo(makeMulti rest lar,
+                  if (ru := lquo(makeMulti rest lar,
                     makeMulti rest lla)) case % then
                       if lla.first.exp > lar.first.exp then
                         l := concat!(l, [lla.first.gen,
@@ -282,13 +282,13 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
             (a = 1) => [lar, 1]
             Na   : Integer := #(la := listOfMonoms a)
             Nlar : Integer := #(llar := listOfMonoms lar)
-            l:List(REC) := empty()
+            l : List(REC) := empty()
             while Na <= Nlar repeat
               if llar.first.gen = la.first.gen and
                  llar.first.exp >= la.first.exp then
                 -- Can match a portion of this lar factor.
                 -- Now match tail.
-                (q:=lquo(makeMulti rest llar,makeMulti rest la))case % =>
+                (q := lquo(makeMulti rest llar, makeMulti rest la))case % =>
                    if llar.first.exp > la.first.exp then
                        l := concat!(l, [la.first.gen,
                                   (llar.first.exp - la.first.exp)::NNI])
@@ -299,7 +299,7 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
             "failed"
 
         hclf(f, g) ==
-            h:List(REC) := empty()
+            h : List(REC) := empty()
             for f0 in listOfMonoms f for g0 in listOfMonoms g repeat
                 f0.gen ~= g0.gen => return makeMulti h
                 h := concat!(h, [f0.gen, min(f0.exp, g0.exp)])
@@ -324,26 +324,26 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
           a < b ==
             la := listOfMonoms a
             lb := listOfMonoms b
-            na: Integer := #la
-            nb: Integer := #lb
+            na : Integer := #la
+            nb : Integer := #lb
             while na > 0 and nb > 0 repeat
                 la.first.gen > lb.first.gen => return false
                 la.first.gen < lb.first.gen => return true
                 if la.first.exp = lb.first.exp then
-                    la:=rest la
-                    lb:=rest lb
-                    na:=na - 1
-                    nb:=nb - 1
+                    la := rest la
+                    lb := rest lb
+                    na := na - 1
+                    nb := nb - 1
                 else if la.first.exp > lb.first.exp then
-                    la:=concat([la.first.gen,
+                    la := concat([la.first.gen,
                            (la.first.exp - lb.first.exp)::NNI], rest lb)
-                    lb:=rest lb
-                    nb:=nb - 1
+                    lb := rest lb
+                    nb := nb - 1
                 else
-                    lb:=concat([lb.first.gen,
+                    lb := concat([lb.first.gen,
                              (lb.first.exp-la.first.exp)::NNI], rest la)
-                    la:=rest la
-                    na:=na-1
+                    la := rest la
+                    na := na-1
             empty? la and not empty? lb
 
 @
@@ -356,9 +356,9 @@ FreeMonoid(S: SetCategory): FMcategory == FMdefinition where
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ The free group on a set S is the group of finite products of
-++ the form \spad{reduce(*,[si ^ ni])} where the si's are in S, and the ni's
+++ the form \spad{reduce(*, [si ^ ni])} where the si's are in S, and the ni's
 ++ are integers. The multiplication is not commutative.
-FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
+FreeGroup(S : SetCategory) : Join(Group, RetractableTo S) with
         "*":    (S, %) -> %
           ++ s * x returns the product of x by s on the left.
         "*":    (%, S) -> %
@@ -375,23 +375,23 @@ FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
           ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
         mapGen       : (S -> S, %) -> %
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
-        factors      : % -> List Record(gen: S, exp: Integer)
-          ++ factors(a1\^e1,...,an\^en) returns \spad{[[a1, e1],...,[an, en]]}.
+        factors      : % -> List Record(gen : S, exp : Integer)
+          ++ factors(a1\^e1, ..., an\^en) returns \spad{[[a1, e1], ..., [an, en]]}.
     == ListMonoidOps(S, Integer, 1) add
         Rep := ListMonoidOps(S, Integer, 1)
 
         1                       == makeUnit()
         one? f                  == empty? listOfMonoms f
-        s:S ^ n:Integer        == makeTerm(s, n)
-        f:% * s:S               == rightMult(f, s)
-        s:S * f:%               == leftMult(s, f)
+        s : S ^ n : Integer        == makeTerm(s, n)
+        f : % * s : S               == rightMult(f, s)
+        s : S * f : %               == leftMult(s, f)
         inv f                   == reverse! mapExpon("-", f)
         factors f               == copy listOfMonoms f
         mapExpon(f, x)          == mapExpon(f, x)$Rep
         mapGen(f, x)            == mapGen(f, x)$Rep
         coerce(f:%):OutputForm  == outputForm(f, "*", "^", 1)
 
-        f:% * g:% ==
+        f : % * g : % ==
             one? f => g
             one? g => f
             r := reverse listOfMonoms f
@@ -418,9 +418,9 @@ FreeGroup(S: SetCategory): Join(Group, RetractableTo S) with
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ A free abelian monoid on a set S is the monoid of finite sums of
-++ the form \spad{reduce(+,[ni * si])} where the si's are in S, and the ni's
+++ the form \spad{reduce(+, [ni * si])} where the si's are in S, and the ni's
 ++ are in a given abelian monoid. The operation is commutative.
-FreeAbelianMonoidCategory(S: SetCategory, E:CancellationAbelianMonoid): Category ==
+FreeAbelianMonoidCategory(S : SetCategory, E : CancellationAbelianMonoid) : Category ==
   Join(CancellationAbelianMonoid, RetractableTo S) with
         "+"        : (S, %) -> %
           ++ s + x returns the sum of s and x.
@@ -429,13 +429,13 @@ FreeAbelianMonoidCategory(S: SetCategory, E:CancellationAbelianMonoid): Category
         size       : % -> NonNegativeInteger
           ++ size(x) returns the number of terms in x.
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
-        terms      : % -> List Record(gen: S, exp: E)
-          ++ terms(e1 a1 + ... + en an) returns \spad{[[a1, e1],...,[an, en]]}.
+        terms      : % -> List Record(gen : S, exp : E)
+          ++ terms(e1 a1 + ... + en an) returns \spad{[[a1, e1], ..., [an, en]]}.
         nthCoef    : (%, Integer) -> E
           ++ nthCoef(x, n) returns the coefficient of the n^th term of x.
         nthFactor  : (%, Integer) -> S
           ++ nthFactor(x, n) returns the factor of the n^th term of x.
-        coefficient: (S, %) -> E
+        coefficient : (S, %) -> E
           ++ coefficient(s, e1 a1 + ... + en an) returns ei such that
           ++ ai = s, or 0 if s is not one of the ai's.
         mapCoef    : (E -> E, %) -> %
@@ -445,11 +445,11 @@ FreeAbelianMonoidCategory(S: SetCategory, E:CancellationAbelianMonoid): Category
           ++ mapGen(f, e1 a1 +...+ en an) returns
           ++ \spad{e1 f(a1) +...+ en f(an)}.
         if E has OrderedAbelianMonoid then
-          highCommonTerms: (%, %) -> %
+          highCommonTerms : (%, %) -> %
             ++ highCommonTerms(e1 a1 + ... + en an, f1 b1 + ... + fm bm) returns
-            ++   \spad{reduce(+,[max(ei, fi) ci])}
+            ++   \spad{reduce(+, [max(ei, fi) ci])}
             ++ where ci ranges in the intersection
-            ++ of \spad{{a1,...,an}} and \spad{{b1,...,bm}}.
+            ++ of \spad{{a1, ..., an}} and \spad{{b1, ..., bm}}.
 
 @
 \section{domain IFAMON InnerFreeAbelianMonoid}
@@ -461,7 +461,7 @@ FreeAbelianMonoidCategory(S: SetCategory, E:CancellationAbelianMonoid): Category
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ Internal implementation of a free abelian monoid.
-InnerFreeAbelianMonoid(S: SetCategory, E:CancellationAbelianMonoid, un:E):
+InnerFreeAbelianMonoid(S : SetCategory, E : CancellationAbelianMonoid, un : E):
   FreeAbelianMonoidCategory(S, E) == ListMonoidOps(S, E, un) add
         Rep := ListMonoidOps(S, E, un)
 
@@ -470,10 +470,10 @@ InnerFreeAbelianMonoid(S: SetCategory, E:CancellationAbelianMonoid, un:E):
         terms f                    == copy listOfMonoms f
         nthCoef(f, i)              == nthExpon(f, i)
         nthFactor(f, i)            == nthFactor(f, i)$Rep
-        s:S + f:%                  == plus(s, un, f)
-        f:% + g:%                  == plus(f, g)
-        (f:% = g:%):Boolean        == commutativeEquality(f,g)
-        n:E * s:S                  == makeTerm(s, n)
+        s : S + f : %                  == plus(s, un, f)
+        f : % + g : %                  == plus(f, g)
+        (f : % = g : %) : Boolean        == commutativeEquality(f, g)
+        n : E * s : S                  == makeTerm(s, n)
         n : NonNegativeInteger * f : % == mapExpon(x +-> n * x, f)
         coerce(f : %) : OutputForm     == outputForm(f, "+", (x, y) +-> y*x, 0)
         mapCoef(f, x)              == mapExpon(f, x)
@@ -499,9 +499,9 @@ InnerFreeAbelianMonoid(S: SetCategory, E:CancellationAbelianMonoid, un:E):
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ The free abelian monoid on a set S is the monoid of finite sums of
-++ the form \spad{reduce(+,[ni * si])} where the si's are in S, and the ni's
+++ the form \spad{reduce(+, [ni * si])} where the si's are in S, and the ni's
 ++ are non-negative integers. The operation is commutative.
-FreeAbelianMonoid(S: SetCategory):
+FreeAbelianMonoid(S : SetCategory):
   FreeAbelianMonoidCategory(S, NonNegativeInteger)
     == InnerFreeAbelianMonoid(S, NonNegativeInteger, 1)
 
@@ -515,9 +515,9 @@ FreeAbelianMonoid(S: SetCategory):
 ++ Date Last Updated: 6 June 1991
 ++ Description:
 ++ The free abelian group on a set S is the monoid of finite sums of
-++ the form \spad{reduce(+,[ni * si])} where the si's are in S, and the ni's
+++ the form \spad{reduce(+, [ni * si])} where the si's are in S, and the ni's
 ++ are integers. The operation is commutative.
-FreeAbelianGroup(S:SetCategory): Exports == Implementation where
+FreeAbelianGroup(S : SetCategory) : Exports == Implementation where
   Exports ==> Join(AbelianGroup, Module Integer,
                    FreeAbelianMonoidCategory(S, Integer)) with
     if S has OrderedSet then OrderedSet
@@ -526,7 +526,7 @@ FreeAbelianGroup(S:SetCategory): Exports == Implementation where
     - f == mapCoef("-", f)
 
     if S has OrderedSet then
-      inmax: List Record(gen: S, exp: Integer) -> Record(gen: S, exp:Integer)
+      inmax : List Record(gen : S, exp : Integer) -> Record(gen : S, exp : Integer)
 
       inmax l ==
         mx := first l

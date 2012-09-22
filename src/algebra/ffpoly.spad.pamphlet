@@ -41,7 +41,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
   L    ==> List
   NNI  ==> NonNegativeInteger
   PI   ==> PositiveInteger
-  Rec  ==> Record(expnt:NNI, coeff:GF)
+  Rec  ==> Record(expnt : NNI, coeff : GF)
   Repr ==> L Rec
   SUP  ==> SparseUnivariatePolynomial GF
 
@@ -175,16 +175,16 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       ++ random(n)$FFPOLY(GF) generates a random monic polynomial
       ++ of degree n over the finite field {\em GF}.
     random : (PI, PI) -> SUP
-      ++ random(m,n)$FFPOLY(GF) generates a random monic polynomial
+      ++ random(m, n)$FFPOLY(GF) generates a random monic polynomial
       ++ of degree d over the finite field {\em GF}, d between m and n.
-    leastAffineMultiple: SUP  -> SUP
+    leastAffineMultiple : SUP  -> SUP
       ++ leastAffineMultiple(f) computes the least affine polynomial which
       ++ is divisible by the polynomial f over the finite field {\em GF},
       ++ i.e. a polynomial whose exponents are 0 or a power of q, the
       ++ size of {\em GF}.
-    reducedQPowers: SUP  -> PrimitiveArray SUP
+    reducedQPowers : SUP  -> PrimitiveArray SUP
       ++ reducedQPowers(f)
-      ++ generates \spad{[x,x^q,x^(q^2),...,x^(q^(n-1))]}
+      ++ generates \spad{[x, x^q, x^(q^2), ..., x^(q^(n-1))]}
       ++ reduced modulo f where \spad{q = size()$GF} and \spad{n = degree f}.
     --
     -- we intend to implement also the functions
@@ -202,14 +202,14 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 
     sizeGF : PI := size()$GF :: PI
 
-    revListToSUP(l:Repr):SUP ==
-        newl:Repr := empty()
+    revListToSUP(l : Repr) : SUP ==
+        newl : Repr := empty()
         -- cannot use map since copy for Record is an XLAM
         for t in l repeat newl := cons(copy t, newl)
         newl pretend SUP
 
-    listToSUP(l:Repr):SUP ==
-        newl:Repr := [copy t for t in l]
+    listToSUP(l : Repr) : SUP ==
+        newl : Repr := [copy t for t in l]
         newl pretend SUP
 
     nextSubset : (L NNI, NNI) -> Union(L NNI, "failed")
@@ -223,47 +223,47 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       --  to avoid coercions in the main functions)
 
     reducedQPowers(f) ==
-      m:PI:=degree(f)$SUP pretend PI
-      m1:I:=m-1
+      m : PI := degree(f)$SUP pretend PI
+      m1 : I := m-1
       setPoly(f)$MM
-      e:=reduce(monomial(1,1)$SUP)$MM ^ sizeGF
-      w:=1$MM
-      qpow:PrimitiveArray SUP:=new(m,0)
-      qpow.0:=1$SUP
-      for i in 1..m1 repeat  qpow.i:=lift(w:=w*e)$MM
-      qexp:PrimitiveArray SUP:=new(m,0)
+      e := reduce(monomial(1, 1)$SUP)$MM ^ sizeGF
+      w := 1$MM
+      qpow : PrimitiveArray SUP := new(m, 0)
+      qpow.0 := 1$SUP
+      for i in 1..m1 repeat  qpow.i := lift(w := w*e)$MM
+      qexp : PrimitiveArray SUP := new(m, 0)
       m = 1 =>
-        qexp.(0$I):= (-coefficient(f,0$NNI)$SUP)::SUP
+        qexp.(0$I) := (-coefficient(f, 0$NNI)$SUP)::SUP
         qexp
-      qexp.0$I:=monomial(1,1)$SUP
-      h:=qpow.1
-      qexp.1:=h
+      qexp.0$I := monomial(1, 1)$SUP
+      h := qpow.1
+      qexp.1 := h
       for i in 2..m1 repeat
-        g:=0$SUP
+        g := 0$SUP
         while h ~= 0 repeat
-          g:=g + leadingCoefficient(h) * qpow.degree(h)
-          h:=reductum(h)
-        qexp.i:=(h:=g)
+          g := g + leadingCoefficient(h) * qpow.degree(h)
+          h := reductum(h)
+        qexp.i := (h := g)
       qexp
 
     leastAffineMultiple(f) ==
     -- [LS] p.112
-      qexp:=reducedQPowers(f)
-      n:=degree(f)$SUP
-      b:Matrix GF:= transpose matrix [entries vectorise
-           (qexp.i,n) for i in 0..n-1]
-      col1:Matrix GF:= new(n,1,0)
-      col1(1,1)  := 1
-      ns : List Vector GF := nullSpace (horizConcat(col1,b) )
+      qexp := reducedQPowers(f)
+      n := degree(f)$SUP
+      b : Matrix GF := transpose matrix [entries vectorise
+           (qexp.i, n) for i in 0..n-1]
+      col1 : Matrix GF := new(n, 1, 0)
+      col1(1, 1)  := 1
+      ns : List Vector GF := nullSpace (horizConcat(col1, b) )
       ----------------------------------------------------------------
       -- perhaps one should use that the first vector in ns is already
       -- the right one
       ----------------------------------------------------------------
-      dim:=n+2
+      dim := n+2
       coeffVector : Vector GF
       until empty? ns repeat
         newCoeffVector := ns.1
-        i : PI :=(n+1) pretend PI
+        i : PI := (n+1) pretend PI
         while newCoeffVector(i) = 0 repeat
           i := (i - 1) pretend PI
         if i < dim then
@@ -322,7 +322,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- of f in its canonical factorization over GF
       -- ([LN] p.122, Lemma 3.69).
       -- hence, if n = m * p^r where p is the characteristic of GF
-      -- and gcd(m,p) = 1, we get
+      -- and gcd(m, p) = 1, we get
       -- Nq(n) = (1/n)* q^(n-m) * qPhi(X^m - 1)
       -- now X^m - 1 is the product of the (pairwise relatively prime)
       -- cyclotomic polynomials Qd(X) for which d divides m
@@ -335,7 +335,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       p : PI := characteristic()$GF :: PI
       q : PI := sizeGF
       while (m rem p) = 0 repeat   -- find m such that
-        m := (m quo p) :: PI       -- n = m * p^r and gcd(m,p) = 1
+        m := (m quo p) :: PI       -- n = m * p^r and gcd(m, p) = 1
       m = 1 =>
          -- know that n is a power of p
         (((q ^ ((n-1)::NNI) )  * (q - 1) ) quo n) :: PI
@@ -364,15 +364,15 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       leadingCoefficient f ~= 1 => false
       coefficient(f, 0) = 0 => false
       q  : PI := sizeGF
-      qn1: PI := (q^n - 1) :: NNI :: PI
+      qn1 : PI := (q^n - 1) :: NNI :: PI
       setPoly f
-      x := reduce(monomial(1,1)$SUP)$MM -- X rem f represented in MM
+      x := reduce(monomial(1, 1)$SUP)$MM -- X rem f represented in MM
       --
       -- may be improved by tabulating the residues x^(i*q)
-      -- for i = 0,...,n-1 :
+      -- for i = 0, ..., n-1 :
       --
       lift(x ^ qn1)$MM ~= 1 => false -- X^(q^n - 1) rem f in GF[X]
-      lrec  : L Record(factor:I, exponent:I) := factors(factor qn1)
+      lrec  : L Record(factor : I, exponent : I) := factors(factor qn1)
       lfact : L PI := []              -- collect the prime factors
       for rec in lrec repeat          -- of q^n - 1
         lfact := cons((rec.factor) :: PI, lfact)
@@ -391,8 +391,8 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       coefficient(f, 0) = 0 => false
       n = 1 => true
       not irreducible? f => false
-      g:=reducedQPowers(f)
-      l:=[entries vectorise(g.i,n)$SUP for i in 0..(n-1)::NNI]
+      g := reducedQPowers(f)
+      l := [entries vectorise(g.i, n)$SUP for i in 0..(n-1)::NNI]
       rank(matrix(l)$Matrix(GF)) = n => true
       false
 
@@ -411,7 +411,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         secondOfs = firstOfsPlus1 =>
           s := restOfs
           i := i + 1
-        setfirst!(s, firstOfsPlus1)  -- s := [s(i)+1, s(i+1),..., s(m)]
+        setfirst!(s, firstOfsPlus1)  -- s := [s(i)+1, s(i+1), ..., s(m)]
         noGap := false
       if noGap then                   -- here s = [s(m)]
         firstOfs := first s
@@ -430,7 +430,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
+      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
       -- we can not simply write fcopy := copy fRepr because
@@ -439,9 +439,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
       if term.expnt ~= 0 then
-        fcopy := cons([0,0]$Rec, fcopy)
+        fcopy := cons([0, 0]$Rec, fcopy)
       tailpol : Repr := []
-      headpol : Repr := fcopy  -- [[0,f0], ... , [n,fn]] where
+      headpol : Repr := fcopy  -- [[0, f0], ... , [n, fn]] where
                                -- fi is non-zero for i > 0
       fcopy   := reverse fcopy
       weight  : NNI := (#(fcopy) - 1) :: NNI -- #s(f) as explained above
@@ -456,16 +456,16 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         while not empty? headlookuplist repeat
           -- find next polynomial in the above order with fixed weight;
           -- assume at this point we have
-          -- headpol = [[i1,f{i1}], [i2,f{i2}], ... , [n,1]]
-          -- and tailpol = [[k,fk], ... , [0,f0]] (with k < i1)
+          -- headpol = [[i1, f{i1}], [i2, f{i2}], ... , [n, 1]]
+          -- and tailpol = [[k, fk], ... , [0, f0]] (with k < i1)
           term := first headpol
           j := first headlookuplist
           if j = 0 then j := lookup(term.coeff)$GF
           j := j + 1 -- lookup(f{i1})$GF + 1
           j rem sizeGF = 0 =>
             -- in this case one has to increase f{i2}
-            tailpol := cons(term, tailpol) -- [[i1,f{i1}],...,[0,f0]]
-            headpol := rest headpol        -- [[i2,f{i2}],...,[n,1]]
+            tailpol := cons(term, tailpol) -- [[i1, f{i1}], ..., [0, f0]]
+            headpol := rest headpol        -- [[i2, f{i2}], ..., [n, 1]]
             taillookuplist := cons(j, taillookuplist)
             headlookuplist := rest headlookuplist
           -- otherwise set f{i1} := index(j)$GF
@@ -479,7 +479,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
             irreducible? pol => return pol
           else
             -- go back to fk
-            headpol := cons(first tailpol, headpol) -- [[k,fk],...,[n,1]]
+            headpol := cons(first tailpol, headpol) -- [[k, fk], ..., [n, 1]]
             tailpol := rest tailpol
             headlookuplist := cons(first taillookuplist, headlookuplist)
             taillookuplist := rest taillookuplist
@@ -494,7 +494,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         taillookuplist := []
         headlookuplist := cons(sizeGF, new((weight-1) :: NNI, 1))
         tailpol := []
-        headpol := [] -- [[0,0], [s.2,1], ... , [s.weight,1], [n,1]] :
+        headpol := [] -- [[0, 0], [s.2, 1], ... , [s.weight, 1], [n, 1]] :
         s1 := cons(n, reverse s1)
         while not empty? s1 repeat
           headpol := cons([first s1, 1]$Rec, headpol)
@@ -507,7 +507,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
+      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
       -- we can not simply write fcopy := copy fRepr because
@@ -516,7 +516,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
       if term.expnt ~= 0 then
-        term  := [0,0]$Rec
+        term  := [0, 0]$Rec
         fcopy := cons(term, fcopy)
       fcopy   := reverse fcopy
       xn : Rec := first fcopy
@@ -530,7 +530,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           l := l + 1
           c := index(l :: PI)$GF
           primitive?(-c)$GF =>
-            return [xn, [0,c]$Rec] pretend SUP
+            return [xn, [0, c]$Rec] pretend SUP
         "failed"
       weight : NNI := (#(fcopy) - 1) :: NNI -- #s(f)+1 as explained above
       s  : L NNI := [] -- we will compute s(f) only if necessary
@@ -550,7 +550,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         noGenerator => return "failed"
         constterm : Rec := [0, c]$Rec
         if c = c0 and weight > 1 then
-          headpol : Repr := rest reverse fcopy -- [[i0,f{i0}],...,[n,1]]
+          headpol : Repr := rest reverse fcopy -- [[i0, f{i0}], ..., [n, 1]]
                                                -- fi is non-zero for i>0
           -- the zeroes in the headlookuplist stand for the fi
           -- whose lookup's were not yet computed :
@@ -558,9 +558,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         else
           -- X^n + c can not be primitive for n > 1 (cf. [LN] p.90,
           -- Th. 3.18); next possible polynomial is X^n + X + c
-          headpol : Repr := [[1,0]$Rec, xn] -- 0*X + X^n
+          headpol : Repr := [[1, 0]$Rec, xn] -- 0*X + X^n
           headlookuplist : L NNI := [sizeGF]
-          s := [0,1]
+          s := [0, 1]
           weight := 2
         tailpol : Repr := []
         taillookuplist : L NNI := []
@@ -570,16 +570,16 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           while not empty? headlookuplist repeat
             -- find next polynomial in the above order with fixed
             -- constant term and weight; assume at this point we have
-            -- headpol = [[i1,f{i1}], [i2,f{i2}], ... , [n,1]] and
-            -- tailpol = [[k,fk],...,[k0,fk0]] (k0<...<k<i1<i2<...<n)
+            -- headpol = [[i1, f{i1}], [i2, f{i2}], ... , [n, 1]] and
+            -- tailpol = [[k, fk], ..., [k0, fk0]] (k0<...<k<i1<i2<...<n)
             term := first headpol
             j := first headlookuplist
             if j = 0 then j := lookup(term.coeff)$GF
             j := j + 1 -- lookup(f{i1})$GF + 1
             j rem sizeGF = 0 =>
               -- in this case one has to increase f{i2}
-              tailpol := cons(term, tailpol) -- [[i1,f{i1}],...,[k0,f{k0}]]
-              headpol := rest headpol        -- [[i2,f{i2}],...,[n,1]]
+              tailpol := cons(term, tailpol) -- [[i1, f{i1}], ..., [k0, f{k0}]]
+              headpol := rest headpol        -- [[i2, f{i2}], ..., [n, 1]]
               taillookuplist := cons(j, taillookuplist)
               headlookuplist := rest headlookuplist
             -- otherwise set f{i1} := index(j)$GF
@@ -593,7 +593,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
               primitive? pol => return pol
             else
               -- go back to fk
-              headpol := cons(first tailpol, headpol) -- [[k,fk],...,[n,1]]
+              headpol := cons(first tailpol, headpol) -- [[k, fk], ..., [n, 1]]
               tailpol := rest tailpol
               headlookuplist := cons(first taillookuplist,
                                               headlookuplist)
@@ -610,7 +610,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
             taillookuplist := []
             headlookuplist := cons(sizeGF, new((weight-2) :: NNI, 1))
             tailpol := []
-            -- headpol = [[s.2,0], [s.3,1], ... , [s.weight,1], [n,1]] :
+            -- headpol = [[s.2, 0], [s.3, 1], ... , [s.weight, 1], [n, 1]] :
             headpol := [[first s1, 0]$Rec]
             while not empty? (s1 := rest s1) repeat
               headpol := cons([first s1, 1]$Rec, headpol)
@@ -626,7 +626,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
+      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
       -- we can not simply write fcopy := copy fRepr because
@@ -635,11 +635,11 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
       if term.expnt ~= 0 then
-        term  := [0,0]$Rec
+        term  := [0, 0]$Rec
         fcopy := cons(term, fcopy)
-      fcopy     := reverse fcopy -- [[n,1], [r,fr], ... , [0,f0]]
+      fcopy     := reverse fcopy -- [[n, 1], [r, fr], ... , [0, f0]]
       xn : Rec  := first fcopy
-      middlepol : Repr := rest fcopy -- [[r,fr], ... , [0,f0]]
+      middlepol : Repr := rest fcopy -- [[r, fr], ... , [0, f0]]
       a0 : GF  := (first middlepol).coeff -- fr
       l  : NNI := lookup(a0)$GF rem sizeGF
       n = 1 =>
@@ -658,7 +658,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       while l < sizeGF repeat
         -- (run through the possible values of a)
         if a = a0 then
-          -- middlepol = [[0,f0], ... , [m,fm]] with m < n-1
+          -- middlepol = [[0, f0], ... , [m, fm]] with m < n-1
           middlepol := reverse rest middlepol
           weight : NNI := #middlepol -- #s(f) as explained above
           -- the zeroes in the middlelookuplist stand for the fi
@@ -666,7 +666,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           middlelookuplist : L NNI := new(weight, 0)
           s : L NNI := [] -- we will compute s(f) only if necessary
         else
-          middlepol := [[0,0]$Rec]
+          middlepol := [[0, 0]$Rec]
           middlelookuplist : L NNI := [sizeGF]
           s : L NNI := [0]
           weight : NNI := 1
@@ -679,17 +679,17 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           while not empty? middlelookuplist repeat
             -- find next polynomial in the above order with fixed
             -- a and weight; assume at this point we have
-            -- middlepol = [[i1,f{i1}], [i2,f{i2}], ... , [m,fm]] and
-            -- tailpol = [[k,fk],...,[0,f0]] ( with k<i1<i2<...<m)
+            -- middlepol = [[i1, f{i1}], [i2, f{i2}], ... , [m, fm]] and
+            -- tailpol = [[k, fk], ..., [0, f0]] ( with k<i1<i2<...<m)
             term := first middlepol
             j := first middlelookuplist
             if j = 0 then j := lookup(term.coeff)$GF
             j := j + 1 -- lookup(f{i1})$GF + 1
             j rem sizeGF = 0 =>
               -- in this case one has to increase f{i2}
-              -- tailpol = [[i1,f{i1}],...,[0,f0]]
+              -- tailpol = [[i1, f{i1}], ..., [0, f0]]
               tailpol   := cons(term, tailpol)
-              middlepol := rest middlepol -- [[i2,f{i2}],...,[m,fm]]
+              middlepol := rest middlepol -- [[i2, f{i2}], ..., [m, fm]]
               taillookuplist   := cons(j, taillookuplist)
               middlelookuplist := rest middlelookuplist
             -- otherwise set f{i1} := index(j)$GF
@@ -703,7 +703,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
               normal? pol => return pol
             else
               -- go back to fk
-              -- middlepol = [[k,fk],...,[m,fm]]
+              -- middlepol = [[k, fk], ..., [m, fm]]
               middlepol := cons(first tailpol, middlepol)
               tailpol := rest tailpol
               middlelookuplist := cons(first taillookuplist,
@@ -721,13 +721,13 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
             taillookuplist := []
             middlelookuplist := cons(sizeGF, new((weight-1) :: NNI, 1))
             tailpol   := []
-            -- middlepol = [[0,0], [s.2,1], ... , [s.weight,1]] :
+            -- middlepol = [[0, 0], [s.2, 1], ... , [s.weight, 1]] :
             middlepol := []
             s1 := reverse s1
             while not empty? s1 repeat
               middlepol := cons([first s1, 1]$Rec, middlepol)
               s1 := rest s1
-            middlepol := cons([0,0]$Rec, middlepol)
+            middlepol := cons([0, 0]$Rec, middlepol)
         -- next polynomial must have greater a
         l := l + 1
         a := index(l :: PI)$GF
@@ -739,7 +739,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- make f monic
       if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n,fn], ... , [i0,f{i0}]]
+      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
       fRepr : Repr := f pretend Repr
       fcopy : Repr := []
       -- we can not simply write fcopy := copy fRepr because
@@ -748,9 +748,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       for term in fRepr repeat
         fcopy := cons(copy term, fcopy)
       if term.expnt ~= 0 then
-        term  := [0,0]$Rec
+        term  := [0, 0]$Rec
         fcopy := cons(term, fcopy)
-      fcopy   := reverse fcopy -- [[n,1], [r,fr], ... , [0,f0]]
+      fcopy   := reverse fcopy -- [[n, 1], [r, fr], ... , [0, f0]]
       xn : Rec := first fcopy
       c0 : GF  := term.coeff
       lc : NNI := lookup(c0)$GF rem sizeGF
@@ -762,11 +762,11 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           lc := lc + 1
           c  := index(lc :: PI)$GF
           primitive?(-c)$GF =>
-            return [xn, [0,c]$Rec] pretend SUP
+            return [xn, [0, c]$Rec] pretend SUP
         "failed"
       n1 : NNI := (n  - 1) :: NNI
       n2 : NNI := (n1 - 1) :: NNI
-      middlepol : Repr := rest fcopy -- [[r,fr],...,[i0,f{i0}],[0,f0]]
+      middlepol : Repr := rest fcopy -- [[r, fr], ..., [i0, f{i0}], [0, f0]]
       a0 : GF  := (first middlepol).coeff
       la : NNI := lookup(a0)$GF rem sizeGF
       -- if the polynomial X^n + a * X^(n-1) +...+ c is primitive and
@@ -793,7 +793,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         -- (run through the possible values of a)
           headpol : Repr := [xn, [n1, a]$Rec] -- X^n + a X^(n-1)
           if c = c0 and a = a0 then
-            -- middlepol = [[i0,f{i0}], ... , [m,fm]] with m < n-1
+            -- middlepol = [[i0, f{i0}], ... , [m, fm]] with m < n-1
             middlepol := rest reverse rest middlepol
             weight : NNI := #middlepol + 1 -- #s(f)+1 as explained above
             -- the zeroes in the middlelookuplist stand for the fi
@@ -803,9 +803,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           else
             pol := listToSUP append(headpol, [constterm])
             normal? pol and primitive? pol => return pol
-            middlepol := [[1,0]$Rec]
+            middlepol := [[1, 0]$Rec]
             middlelookuplist : L NNI := [sizeGF]
-            s : L NNI := [0,1]
+            s : L NNI := [0, 1]
             weight : NNI := 2
           tailpol : Repr := []
           taillookuplist : L NNI := []
@@ -815,17 +815,17 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
             while not empty? middlelookuplist repeat
               -- find next polynomial in the above order with fixed
               -- c, a and weight; assume at this point we have
-              -- middlepol = [[i1,f{i1}], [i2,f{i2}], ... , [m,fm]]
-              -- tailpol = [[k,fk],...,[k0,fk0]] (k0<...<k<i1<...<m)
+              -- middlepol = [[i1, f{i1}], [i2, f{i2}], ... , [m, fm]]
+              -- tailpol = [[k, fk], ..., [k0, fk0]] (k0<...<k<i1<...<m)
               term := first middlepol
               j := first middlelookuplist
               if j = 0 then j := lookup(term.coeff)$GF
               j := j + 1 -- lookup(f{i1})$GF + 1
               j rem sizeGF = 0 =>
                 -- in this case one has to increase f{i2}
-                -- tailpol = [[i1,f{i1}],...,[k0,f{k0}]]
+                -- tailpol = [[i1, f{i1}], ..., [k0, f{k0}]]
                 tailpol   := cons(term, tailpol)
-                middlepol := rest middlepol -- [[i2,f{i2}],...,[m,fm]]
+                middlepol := rest middlepol -- [[i2, f{i2}], ..., [m, fm]]
                 taillookuplist   := cons(j, taillookuplist)
                 middlelookuplist := rest middlelookuplist
               -- otherwise set f{i1} := index(j)$GF
@@ -840,7 +840,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
                 normal? pol and primitive? pol => return pol
               else
                 -- go back to fk
-                -- middlepol = [[k,fk],...,[m,fm]]
+                -- middlepol = [[k, fk], ..., [m, fm]]
                 middlepol := cons(first tailpol, middlepol)
                 tailpol := rest tailpol
                 middlelookuplist := cons(first taillookuplist,
@@ -858,7 +858,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
               taillookuplist := []
               middlelookuplist := cons(sizeGF, new((weight-2)::NNI, 1))
               tailpol   := []
-              -- middlepol = [[s.2,0], [s.3,1], ... , [s.weight,1] :
+              -- middlepol = [[s.2, 0], [s.3, 1], ... , [s.weight, 1] :
               middlepol := [[first s1, 0]$Rec]
               while not empty? (s1 := rest s1) repeat
                 middlepol := cons([first s1, 1]$Rec, middlepol)
@@ -876,9 +876,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
     nextPrimitiveNormalPoly f == nextNormalPrimitivePoly f
 
     createIrreduciblePoly n ==
-      x := monomial(1,1)$SUP
+      x := monomial(1, 1)$SUP
       n = 1 => x
-      xn := monomial(1,n)$SUP
+      xn := monomial(1, n)$SUP
       n >= sizeGF => nextIrreduciblePoly(xn + x) :: SUP
       -- (since in this case there is most no irreducible binomial X+a)
       odd? n => nextIrreduciblePoly(xn + 1) :: SUP
@@ -886,15 +886,15 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 
     createPrimitivePoly n ==
     -- (see also the comments in the code of nextPrimitivePoly)
-      xn := monomial(1,n)$SUP
+      xn := monomial(1, n)$SUP
       n = 1 => xn + monomial(-primitiveElement()$GF, 0)$SUP
       c0 : GF := (-1)^n * primitiveElement()$GF
       constterm : Rec := [0, c0]$Rec
       -- try first (probably faster) the polynomials
       -- f = X^n + f{n-1}*X^(n-1) +...+ f1*X + c0 for which
-      -- fi is 0 or 1 for i=1,...,n-1,
+      -- fi is 0 or 1 for i=1, ..., n-1,
       -- and this in the order used to define nextPrimitivePoly
-      s  : L NNI := [0,1]
+      s  : L NNI := [0, 1]
       weight : NNI := 2
       s1 : L NNI := [1]
       n1 : NNI := (n - 1) :: NNI
@@ -916,11 +916,11 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           weight := #s
       -- if there is no primitive f of the above form
       -- search now from the beginning, allowing arbitrary
-      -- coefficients f_i, i = 1,...,n-1
+      -- coefficients f_i, i = 1, ..., n-1
       nextPrimitivePoly(xn + monomial(c0, 0)$SUP) :: SUP
 
     createNormalPoly n  ==
-      n = 1 => monomial(1,1)$SUP + monomial(-1,0)$SUP
+      n = 1 => monomial(1, 1)$SUP + monomial(-1, 0)$SUP
       -- get a normal polynomial f = X^n + a * X^(n-1) + ...
       -- with a = -1
       -- [recall that if f is normal over the field GF of order q
@@ -928,11 +928,11 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- hence the existence of such an f follows from the
       -- normal basis theorem ([LN] p.60, Th. 2.35) and the
       -- surjectivity of the trace ([LN] p.55, Th. 2.23 (iii))]
-      nextNormalPoly(monomial(1,n)$SUP
+      nextNormalPoly(monomial(1, n)$SUP
                        + monomial(-1, (n-1) :: NNI)$SUP) :: SUP
 
     createNormalPrimitivePoly n ==
-      xn := monomial(1,n)$SUP
+      xn := monomial(1, n)$SUP
       n = 1 => xn + monomial(-primitiveElement()$GF, 0)$SUP
       n1  : NNI := (n - 1) :: NNI
       c0  : GF  := (-1)^n * primitiveElement()$GF
@@ -964,7 +964,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 --    random == qAdicExpansion(random()$I)
 
 --    random n ==
---      pol := monomial(1,n)$SUP
+--      pol := monomial(1, n)$SUP
 --      n1 : NNI := (n - 1) :: NNI
 --      for i in 0..n1 repeat
 --        if (c := random()$GF) ~= 0 then
@@ -979,8 +979,8 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           polRepr := cons([i, c]$Rec, polRepr)
       cons([n, 1$GF]$Rec, polRepr) pretend SUP
 
-    random(m,n) ==
-      if m > n then (m,n) := (n,m)
+    random(m, n) ==
+      if m > n then (m, n) := (n, m)
       d : NNI := (n - m) :: NNI
       if d > 1 then n := (random(d)$I + m) :: PI
       random(n)

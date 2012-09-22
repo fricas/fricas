@@ -21,24 +21,24 @@
 ++ Description:  \spadtype{Reference} is for making a changeable instance
 ++ of something.
 
-Reference(S:Type): Type with
+Reference(S : Type) : Type with
         ref   : S -> %
           ++  ref(n) creates a pointer (reference) to the object n.
         elt   : % -> S
           ++ elt(n) returns the object n.
-        setelt: (%, S) -> S
-          ++ setelt(n,m) changes the value of the object n to m.
+        setelt : (%, S) -> S
+          ++ setelt(n, m) changes the value of the object n to m.
         -- alternates for when bugs don't allow the above
         deref : % -> S
           ++ deref(n) is equivalent to \spad{elt(n)}.
-        setref: (%, S) -> S
-          ++ setref(n,m) same as \spad{setelt(n,m)}.
+        setref : (%, S) -> S
+          ++ setref(n, m) same as \spad{setelt(n, m)}.
         _=   : (%, %) -> Boolean
           ++ a=b tests if \spad{a} and b are equal.
         if S has SetCategory then SetCategory
 
     == add
-        Rep := Record(value: S)
+        Rep := Record(value : S)
 
         p = q        == EQ(p, q)$Lisp
         ref v        == [v]
@@ -67,7 +67,7 @@ Reference(S:Type): Type with
 ++ e.g., boolean algebra.
 
 
-Logic: Category == BasicType with
+Logic : Category == BasicType with
        _~:        % -> %
         ++ ~(x) returns the logical complement of x.
        _/_\:       (%, %) -> %
@@ -75,7 +75,7 @@ Logic: Category == BasicType with
        _\_/:       (%, %) -> %
         ++ \spadignore{ \/ } returns the logical `join', e.g. `or'.
   add
-    _\_/(x: %,y: %) == _~( _/_\(_~(x), _~(y)))
+    _\_/(x : %, y : %) == _~( _/_\(_~(x), _~(y)))
 
 @
 \section{domain BOOLEAN Boolean}
@@ -90,7 +90,7 @@ Logic: Category == BasicType with
 ++ Description:  \spadtype{Boolean} is the elementary logic with 2 values:
 ++ true and false
 
-Boolean(): Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
+Boolean() : Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
     true   : constant -> %
       ++ true is a logical constant.
     false  : constant -> %
@@ -103,24 +103,24 @@ Boolean(): Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
       ++ a or b returns the logical inclusive {\em or}
       ++ of Boolean \spad{a} and b.
     xor    : (%, %) -> %
-      ++ xor(a,b) returns the logical exclusive {\em or}
+      ++ xor(a, b) returns the logical exclusive {\em or}
       ++ of Boolean \spad{a} and b.
     nand   : (%, %) -> %
-      ++ nand(a,b) returns the logical negation of \spad{a} and b.
+      ++ nand(a, b) returns the logical negation of \spad{a} and b.
     nor    : (%, %) -> %
-      ++ nor(a,b) returns the logical negation of \spad{a} or b.
-    implies: (%, %) -> %
-      ++ implies(a,b) returns the logical implication
+      ++ nor(a, b) returns the logical negation of \spad{a} or b.
+    implies : (%, %) -> %
+      ++ implies(a, b) returns the logical implication
       ++ of Boolean \spad{a} and b.
-    test: % -> Boolean
+    test : % -> Boolean
       ++ test(b) returns b and is provided for compatibility with the new compiler.
   == add
-    nt: % -> %
+    nt : % -> %
 
     test a        == a pretend Boolean
 
     nt b          == (b pretend Boolean => false; true)
-    true          == EQ(2,2)$Lisp   --well, 1 is rather special
+    true          == EQ(2, 2)$Lisp   --well, 1 is rather special
     false         == NIL$Lisp
     sample()      == true
     not b         == NOT(b)$Lisp
@@ -147,11 +147,11 @@ Boolean(): Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
       even?(random(2)$Integer) => false
       true
 
-    convert(x:%):InputForm ==
+    convert(x : %) : InputForm ==
       x pretend Boolean => convert('true)
       convert('false)
 
-    coerce(x:%):OutputForm ==
+    coerce(x : %) : OutputForm ==
       x pretend Boolean => message "true"
       message "false"
 
@@ -171,20 +171,20 @@ Boolean(): Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
 ++ Description: \spadtype{IndexedBits} is a domain to compactly represent
 ++ large quantities of Boolean data.
 
-IndexedBits(mn:Integer): BitAggregate() with
+IndexedBits(mn : Integer) : BitAggregate() with
         -- temporaries until parser gets better
-        Not: % -> %
+        Not : % -> %
             ++ Not(n) returns the bit-by-bit logical {\em Not} of n.
         Or : (%, %) -> %
-            ++ Or(n,m)  returns the bit-by-bit logical {\em Or} of
+            ++ Or(n, m)  returns the bit-by-bit logical {\em Or} of
             ++ n and m.
-        And: (%, %) -> %
-            ++ And(n,m)  returns the bit-by-bit logical {\em And} of
+        And : (%, %) -> %
+            ++ And(n, m)  returns the bit-by-bit logical {\em And} of
             ++ n and m.
     == add
 
-        range: (%, Integer) -> Integer
-          --++ range(j,i) returnes the range i of the boolean j.
+        range : (%, Integer) -> Integer
+          --++ range(j, i) returnes the range i of the boolean j.
 
         minIndex u  == mn
 
@@ -192,7 +192,7 @@ IndexedBits(mn:Integer): BitAggregate() with
           i >= 0 and i < #v => i
           error "Index out of range"
 
-        coerce(v):OutputForm ==
+        coerce(v) : OutputForm ==
             t:Character := char "1"
             f:Character := char "0"
             s := new(#v, space()$Character)$String
@@ -209,9 +209,9 @@ IndexedBits(mn:Integer): BitAggregate() with
         _and(u, v)   == (#v = #u => and_BVEC(v, u)$Lisp; map("and", v, u))
         _or(u, v)    == (#v = #u => or_BVEC(v, u)$Lisp; map("or", v, u))
         xor(v, u)    == (#v = #u => xor_BVEC(v, u)$Lisp; map("xor", v, u))
-        setelt(v:%, i:Integer, f:Boolean) ==
+        setelt(v : %, i : Integer, f : Boolean) ==
             SETELT_BVEC(v, range(v, i - mn), bool_to_bit(f)$Lisp)$Lisp
-        elt(v:%, i:Integer) ==
+        elt(v : %, i : Integer) ==
             bit_to_bool(ELT_BVEC(v, range(v, i - mn))$Lisp)$Lisp
 
         Not v        == not_BVEC(v)$Lisp
@@ -230,12 +230,12 @@ IndexedBits(mn:Integer): BitAggregate() with
 ++ Keywords: bits
 ++ Description:  \spadtype{Bits} provides logical functions for Indexed Bits.
 
-Bits(): Exports == Implementation where
+Bits() : Exports == Implementation where
   Exports == BitAggregate() with
-    bits: (NonNegativeInteger, Boolean) -> %
-        ++ bits(n,b) creates bits with n values of b
+    bits : (NonNegativeInteger, Boolean) -> %
+        ++ bits(n, b) creates bits with n values of b
   Implementation == IndexedBits(1) add
-    bits(n,b)    == new(n,b)
+    bits(n, b)    == new(n, b)
 
 @
 \section{License}

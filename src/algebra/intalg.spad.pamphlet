@@ -19,10 +19,10 @@
 ++ Description:
 ++ This package provides functions for computing the residues
 ++ of a function on an algebraic curve.
-DoubleResultantPackage(F, UP, UPUP, R): Exports == Implementation where
+DoubleResultantPackage(F, UP, UPUP, R) : Exports == Implementation where
   F   : Field
   UP  : UnivariatePolynomialCategory F
-  UPUP: UnivariatePolynomialCategory Fraction UP
+  UPUP : UnivariatePolynomialCategory Fraction UP
   R   : FunctionFieldCategory(F, UP, UPUP)
 
   RF  ==> Fraction UP
@@ -30,7 +30,7 @@ DoubleResultantPackage(F, UP, UPUP, R): Exports == Implementation where
   UP3 ==> SparseUnivariatePolynomial UP2
 
   Exports ==> with
-    doubleResultant: (R, UP -> UP) -> UP
+    doubleResultant : (R, UP -> UP) -> UP
       ++ doubleResultant(f, ') returns p(x) whose roots are
       ++ rational multiples of the residues of f at all its
       ++ finite poles. Argument ' is the derivation to use.
@@ -41,13 +41,13 @@ DoubleResultantPackage(F, UP, UPUP, R): Exports == Implementation where
 
     UP22   : UP   -> UP2
     UP23   : UPUP -> UP3
-    remove0: UP   -> UP             -- removes the power of x dividing p
+    remove0 : UP   -> UP             -- removes the power of x dividing p
 
     remove0 p ==
       primitivePart((p exquo monomial(1, minimumDegree p))::UP)
 
     UP22 p ==
-      map(x+->x::UP, p)$UnivariatePolynomialCategoryFunctions2(F,UP,UP,UP2)
+      map(x+->x::UP, p)$UnivariatePolynomialCategoryFunctions2(F, UP, UP, UP2)
 
     UP23 p ==
       map(x1+->UP22(retract(x1)@UP),
@@ -70,35 +70,35 @@ DoubleResultantPackage(F, UP, UPUP, R): Exports == Implementation where
 ++ Date Created: 1987
 ++ Date Last Updated: 25 July 1990
 ++ Description: algebraic Hermite redution.
-AlgebraicHermiteIntegration(F,UP,UPUP,R):Exports == Implementation where
+AlgebraicHermiteIntegration(F, UP, UPUP, R) : Exports == Implementation where
   F   : Field
   UP  : UnivariatePolynomialCategory F
-  UPUP: UnivariatePolynomialCategory Fraction UP
+  UPUP : UnivariatePolynomialCategory Fraction UP
   R   : FunctionFieldCategory(F, UP, UPUP)
 
   N   ==> NonNegativeInteger
   RF  ==> Fraction UP
 
   Exports ==> with
-    HermiteIntegrate: (R, UP -> UP) -> Record(answer:R, logpart:R)
-      ++ HermiteIntegrate(f, ') returns \spad{[g,h]} such that
+    HermiteIntegrate : (R, UP -> UP) -> Record(answer : R, logpart : R)
+      ++ HermiteIntegrate(f, ') returns \spad{[g, h]} such that
       ++ \spad{f = g' + h} and h has a only simple finite normal poles.
 
   Implementation ==> add
-    localsolve: (Matrix UP, Vector UP, UP) -> Vector UP
+    localsolve : (Matrix UP, Vector UP, UP) -> Vector UP
 
 -- the denominator of f should have no prime factor P s.t. P | P'
 -- (which happens only for P = t in the exponential case)
     HermiteIntegrate(f, derivation) ==
-      ratform:R := 0
+      ratform : R := 0
       n    := rank()
-      m    := transpose((mat:= integralDerivationMatrix derivation).num)
+      m    := transpose((mat := integralDerivationMatrix derivation).num)
       inum := (cform := integralCoordinates f).num
       if ((iden := cform.den) exquo (e := mat.den)) case "failed" then
         iden := (coef := (e exquo gcd(e, iden))::UP) * iden
         inum := coef * inum
-      for trm in factors squareFree iden | (j:= trm.exponent) > 1 repeat
-        u':=(u:=(iden exquo (v:=trm.factor)^(j::N))::UP) * derivation v
+      for trm in factors squareFree iden | (j := trm.exponent) > 1 repeat
+        u' := (u := (iden exquo (v := trm.factor)^(j::N))::UP) * derivation v
         sys := ((u * v) exquo e)::UP * m
         nn := minRowIndex sys - minIndex inum
         while j > 1 repeat
@@ -114,7 +114,7 @@ AlgebraicHermiteIntegration(F,UP,UPUP,R):Exports == Implementation where
       [ratform, integralRepresents(inum, iden)]
 
     localsolve(mat, vec, modulus) ==
-      ans:Vector(UP) := new(nrows mat, 0)
+      ans : Vector(UP) := new(nrows mat, 0)
       diagonal? mat =>
         for i in minIndex ans .. maxIndex ans
           for j in minRowIndex mat .. maxRowIndex mat
@@ -148,7 +148,7 @@ AlgebraicHermiteIntegration(F,UP,UPUP,R):Exports == Implementation where
 ++ Description:
 ++ This package provides functions for integrating a function
 ++ on an algebraic curve.
-AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
+AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
   R0   : Join(Comparable, IntegralDomain, RetractableTo Integer)
   F    : Join(AlgebraicallyClosedField, FunctionSpace R0)
   UP   : UnivariatePolynomialCategory F
@@ -167,9 +167,9 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
   UPR ==> SparseUnivariatePolynomial R
   FRQ ==> Factored UPQ
   FD  ==> FiniteDivisor(F, UP, UPUP, R)
-  FAC ==> Record(factor:UPQ, exponent:Z)
-  LOG ==> Record(scalar:Q, coeff:UPR, logand:UPR)
-  DIV ==> Record(num:R, den:UP, derivden:UP, gd:UP)
+  FAC ==> Record(factor : UPQ, exponent : Z)
+  LOG ==> Record(scalar : Q, coeff : UPR, logand : UPR)
+  DIV ==> Record(num : R, den : UP, derivden : UP, gd : UP)
   U2  ==> Union(Record(ratpart:R, coeff:F),"failed")
   FAIL0 ==> error "integrate: implementation incomplete (constant residues)"
   FAIL1==> error "integrate: implementation incomplete (irrational residues)"
@@ -183,14 +183,14 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
     palgintegrate : (R, UP -> UP) -> IR
       ++ palgintegrate(f, d) integrates f with respect to the derivation d.
       ++ Argument f must be a pure algebraic function.
-    palginfieldint: (R, UP -> UP) -> Union(R, "failed")
+    palginfieldint : (R, UP -> UP) -> Union(R, "failed")
       ++ palginfieldint(f, d) returns an algebraic function g
       ++ such that \spad{dg = f} if such a g exists, "failed" otherwise.
       ++ Argument f must be a pure algebraic function.
     palgextintegrate : (R, UP -> UP, UPUP, Fraction UP, Fraction UP) -> U2
       ++ palgextintegrate(f, d, g, c1, c2) returns functions \spad{[h, c]}
       ++ such that using \spad{c1, c2} as a change of variables we have
-      ++ \spad{(d(h))(c1(x), c2(y)) = d(c1(x))f(c1(x),c2(y)) - c g(x,y)},
+      ++ \spad{(d(h))(c1(x), c2(y)) = d(c1(x))f(c1(x), c2(y)) - c g(x, y)},
       ++ where y is an algebraic function of x; returns "failed" if no
       ++ such functions exist.
 
@@ -223,7 +223,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
     algintexp  : (R, UP -> UP) -> IR
     algintprim : (R, UP -> UP) -> IR
 
-    dummy:R := 0
+    dummy : R := 0
 
     dumx  := kernel(new()$SE)$K
     dumy  := kernel(new()$SE)$K
@@ -234,15 +234,15 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
     algintexp(f, derivation) ==
       d := (c := integralCoordinates f).den
       v := c.num
-      vp:Vector(GP) := new(n := #v, 0)
-      vf:Vector(QF) := new(n, 0)
+      vp : Vector(GP) := new(n := #v, 0)
+      vf : Vector(QF) := new(n, 0)
       for i in minIndex v .. maxIndex v repeat
         r := separate(qelt(v, i) / d)$GP
         qsetelt!(vf, i, r.fracPart)
         qsetelt!(vp, i, r.polyPart)
       ff := represents(vf, w := integralBasis())
       h := HermiteIntegrate(ff, derivation)
-      p := represents(map((x1:GP):QF+->convert(x1)@QF, vp)$VectorFunctions2(GP, QF), w)
+      p := represents(map((x1 : GP) : QF+->convert(x1)@QF, vp)$VectorFunctions2(GP, QF), w)
       zero?(h.logpart) and zero? p => h.answer::IR
       (u := alglogint(h.logpart, derivation)) case "failed" =>
                        mkAnswer(h.answer, empty(), [[p + h.logpart, dummy]])
@@ -452,13 +452,13 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
         concat(ppr.result1, tr1u::List(LOG))
 
     UPQ2F p ==
-      map((x:Q):F+->x::F, p)$UnivariatePolynomialCategoryFunctions2(Q,UPQ,F,UP)
+      map((x : Q) : F+->x::F, p)$UnivariatePolynomialCategoryFunctions2(Q, UPQ, F, UP)
 
     UP2SUP p ==
-       map((x:F):F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, UP, F, SUP)
+       map((x : F) : F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, UP, F, SUP)
 
     SUP2UP p ==
-       map((x:F):F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, SUP, F, UP)
+       map((x : F) : F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, SUP, F, UP)
 
     varRoot?(p, derivation) ==
       for c in coefficients primitivePart p repeat
@@ -479,7 +479,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       (diflog := extendedEuclidean(log.logand, log.coeff, numlog)) case
           "failed" => error "this shouldn't happen"
       algans := diflog.coef1
-      ans:R := 0
+      ans : R := 0
       for i in 0..n-1 repeat
         algans := (algans * monomial(1, 1)) rem log.coeff
         ans    := ans + coefficient(algans, i)
@@ -487,11 +487,11 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
 
     R2UP(f, k) ==
       x := dumx :: F
-      g := (map((f1:QF):F+->f1(x),
+      g := (map((f1 : QF) : F+->f1(x),
         lift f)$UnivariatePolynomialCategoryFunctions2(QF, UPUP, F, UP))
           (y := dumy::F)
-      map((x1:F):R+->rlift(x1, dumx, dumy), univariate(g, k,
-         minPoly k))$UnivariatePolynomialCategoryFunctions2(F,SUP,R,UPR)
+      map((x1 : F) : R+->rlift(x1, dumx, dumy), univariate(g, k,
+         minPoly k))$UnivariatePolynomialCategoryFunctions2(F, SUP, R, UPR)
 
     univ(f, k) ==
       g := univariate(f, k)
@@ -500,32 +500,32 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
     rlift(f, kx, ky) ==
       uf := univariate(f, ky)
       reduce map(x1+->univ(x1, kx), retract(uf)@SUP
-                )$UnivariatePolynomialCategoryFunctions2(F,SUP,QF,UPUP)
+                )$UnivariatePolynomialCategoryFunctions2(F, SUP, QF, UPUP)
 
 
     -- case when the irreducible factor p has roots which sum <> 0
-    -- the residues of f are of the form [a1,...,ak]
+    -- the residues of f are of the form [a1, ..., ak]
     -- plus all the roots of q(z), which is squarefree
-    -- la is the list of residues la := [a1,...,ak]
-    -- ld is the list of divisors [D1,...Dk] where Di is the sum of all the
+    -- la is the list of residues la := [a1, ..., ak]
+    -- ld is the list of divisors [D1, ...Dk] where Di is the sum of all the
     -- places where f has residue ai
     -- q(z) is assumed doubly transitive for now.
-    -- let [alpha_1,...,alpha_m] be the roots of q(z)
+    -- let [alpha_1, ..., alpha_m] be the roots of q(z)
     -- in this function, b = - alpha_1 - ... - alpha_m is <> 0
     -- which implies only one generic log term
-    -- we assume that [a1,...,ak] are b times rational numbers
+    -- we assume that [a1, ..., ak] are b times rational numbers
 
     trace1(q, la, ld, v1, alpha, b) ==
-        -- cd = [[b1,...,bk], d]  such that ai / b = bi / d
+        -- cd = [[b1, ..., bk], d]  such that ai / b = bi / d
         cd  := splitDenominator [retract(a/b)@Q for a in la]
         -- then, a basis for all the residues of f over the integers is
-        -- [beta_1 = - alpha_1 / d,..., beta_m = - alpha_m / d], since:
+        -- [beta_1 = - alpha_1 / d, ..., beta_m = - alpha_m / d], since:
         --     alpha_i = - d beta_i
         --     ai = (ai / b)*b = (bi / d)*b = b1*beta_1 + ... + bm*beta_m
         -- linear independence is a consequence of the doubly transitive
         -- assumption
         -- v0 is the divisor +/[bi Di] corresponding to the residues
-        -- [a1,...,ak]
+        -- [a1, ..., ak]
         v0 := +/[a * dv for a in cd.num for dv in ld]
         v2 := v0 - cd.den * v1
         (rc := torsionIfCan v2) case "failed" =>   -- non-torsion case
@@ -537,13 +537,13 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R): Exports == Implementation where
       degree(q) <=$Integer 1 =>
         [[scalr, monomial(1, 1)$UPR - F2UPR alpha, lgd::UPR]]
       [[scalr,
-         map(F2R, q)$UnivariatePolynomialCategoryFunctions2(F,UP,R,UPR),
+         map(F2R, q)$UnivariatePolynomialCategoryFunctions2(F, UP, R, UPR),
                                            R2UP(lgd, retract(alpha)@K)]]
 
 -- return the non-linear factor, if unique
 -- or any linear factor if they are all linear
     nonLinear l ==
-      found:Boolean := false
+      found : Boolean := false
       ans := first l
       for q in l repeat
         if degree(q.factor)$UPQ >$Integer 1 then

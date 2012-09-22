@@ -41,7 +41,7 @@ MrvLimitPackage : Exports == Implementation where
    Expon ==> OrderedExpression
    CMP_RES ==> Record(sign : Integer, coeff : FE)
    CMP_RESU ==> Union(CMP_RES, "failed")
-   SET_RES ==> Record(lk: List K, lc: List FE)
+   SET_RES ==> Record(lk : List K, lc : List FE)
    SET_RESU ==> Union(SET_RES, "failed")
    SER_RES ==> Record(degree : Expon, coeff : FE)
    SER_RESU ==> Union(SER_RES, "failed")
@@ -49,7 +49,7 @@ MrvLimitPackage : Exports == Implementation where
                         tan_kers : List(K), atan_kers : List(K))
 
    RESULT ==> Union(OFE, "failed")
-   TwoSide ==> Record(leftHandLimit:RESULT, rightHandLimit:RESULT)
+   TwoSide ==> Record(leftHandLimit : RESULT, rightHandLimit : RESULT)
    U ==> Union(OFE, TwoSide, "failed")
 
    Exports ==> with
@@ -89,8 +89,8 @@ MrvLimitPackage : Exports == Implementation where
       EFGUSER ==> ElementaryFunctionsGeneralizedUnivariatePowerSeries
       zeroFE : FE := 0
       series_x := new()$Symbol
-      -- Problem ==> Record(func:String,prob:String)
-      -- UPS_Result  ==> Union(%series:ULS_X,%problem:Problem)
+      -- Problem ==> Record(func: String, prob: String)
+      -- UPS_Result  ==> Union(%series: ULS_X, %problem: Problem)
 
       import PrintPackage
 
@@ -157,7 +157,7 @@ MrvLimitPackage : Exports == Implementation where
           state.atan_kers := l_atan
           eval(f, rtf, ntf)
 
-      Uts := UTS(FE,series_x,zeroFE)
+      Uts := UTS(FE, series_x, zeroFE)
       Upg := GENSER(FE, Expon, series_x, zeroFE)
       ppack := FS2UPS2(R, FE, Expon, Upg, _
               EFGUSER(FE, Expon, Upg), Uts, _
@@ -267,7 +267,7 @@ MrvLimitPackage : Exports == Implementation where
       -- exponentials
       -- as a byproduct we compute list of constanst such that
       -- res.i =~ res.1^(res_c.i)
-      mrv_set(e : FE, x : Symbol, state : STATE_REC): SET_RESU ==
+      mrv_set(e : FE, x : Symbol, state : STATE_REC) : SET_RESU ==
         kers := tower(e)
         res_k : K := kernels(x::FE).1
         res : List K := [res_k]
@@ -422,7 +422,7 @@ MrvLimitPackage : Exports == Implementation where
                error "Nonzero term has no sign"
 
       mrv_limit1(e : FE, x : Symbol) : RESULT ==
-          state := [[], [],[],[]]$STATE_REC
+          state := [[], [], [], []]$STATE_REC
           e := mrv_normalize(e, x, state)
           mrv_limit(e, x, state)
 
@@ -447,7 +447,7 @@ MrvLimitPackage : Exports == Implementation where
           ii = -1 =>
               -- replace x by -x
               vK := retract(v::FE)@Kernel(FE)
-              et:FE := eval(e, vK, -vK::FE)
+              et : FE := eval(e, vK, -vK::FE)
               resu := mrv_limit1(et, v)
               resu case "failed" => "failed"
               resu::OFE
@@ -458,11 +458,11 @@ MrvLimitPackage : Exports == Implementation where
               vK := retract(v::FE)@Kernel(FE)
 
               -- replace x by a - 1/x
-              et:FE := eval(e, vK, retract(a)@FE - inv(vK::FE))
+              et : FE := eval(e, vK, retract(a)@FE - inv(vK::FE))
               ll := mrv_limit1(et, v)
 
               -- replace x by a + 1/x
-              et:FE := eval(e, vK, retract(a)@FE + inv(vK::FE))
+              et : FE := eval(e, vK, retract(a)@FE + inv(vK::FE))
               lr := mrv_limit1(et, v)
 
               ll = lr =>
@@ -480,13 +480,13 @@ MrvLimitPackage : Exports == Implementation where
           -- From the right: replace x by a + 1/z
           direction(s) = 1 =>
               vK := retract(v::FE)@Kernel(FE)
-              et:FE := eval(e, vK, a + inv(vK::FE))
+              et : FE := eval(e, vK, a + inv(vK::FE))
               mrv_limit1(et, v)
 
           -- From the left: replace x by a - 1/z
           direction(s) = -1 =>
               vK := retract(v::FE)@Kernel(FE)
-              et:FE := eval(e, vK, a - inv(vK::FE))
+              et : FE := eval(e, vK, a - inv(vK::FE))
               mrv_limit1(et, v)
 
 @

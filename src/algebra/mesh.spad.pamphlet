@@ -19,7 +19,7 @@
 ++ Keywords:
 ++ Examples:
 ++ References:
-MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
+MeshCreationRoutinesForThreeDimensions() : Exports == Implementation where
 
   I       ==> Integer
   PI      ==> PositiveInteger
@@ -28,9 +28,9 @@ MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
   SEG     ==> Segment
   S       ==> String
   Fn1     ==> SF -> SF
-  Fn2     ==> (SF,SF) -> SF
-  Fn3     ==> (SF,SF,SF) -> SF
-  FnPt    ==> (SF,SF) -> Point(SF)
+  Fn2     ==> (SF, SF) -> SF
+  Fn3     ==> (SF, SF, SF) -> SF
+  FnPt    ==> (SF, SF) -> Point(SF)
   FnU     ==> Union(Fn3,"undefined")
   EX      ==> Expression
   DROP    ==> DrawOption
@@ -40,18 +40,18 @@ MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
   TUBE    ==> TubePlot
 
   Exports ==> with
-    meshPar2Var: (Fn2,Fn2,Fn2,FnU,SEG SF,SEG SF,L DROP) -> SPACE3
-        ++ meshPar2Var(f,g,h,j,s1,s2,l) \undocumented
-    meshPar2Var: (FnPt,SEG SF,SEG SF,L DROP) -> SPACE3
-        ++ meshPar2Var(f,s1,s2,l) \undocumented
-    meshPar2Var: (SPACE3,FnPt,SEG SF,SEG SF,L DROP) -> SPACE3
-        ++ meshPar2Var(sp,f,s1,s2,l) \undocumented
-    meshFun2Var: (Fn2,FnU,SEG SF,SEG SF,L DROP) -> SPACE3
-        ++ meshFun2Var(f,g,s1,s2,l) \undocumented
-    meshPar1Var: (EX I,EX I,EX I,Fn1,SEG SF,L DROP) -> SPACE3
-        ++ meshPar1Var(s,t,u,f,s1,l) \undocumented
-    ptFunc: (Fn2,Fn2,Fn2,Fn3) -> ((SF,SF) -> POINT)
-      ++ ptFunc(a,b,c,d) is an internal function exported in
+    meshPar2Var : (Fn2, Fn2, Fn2, FnU, SEG SF, SEG SF, L DROP) -> SPACE3
+        ++ meshPar2Var(f, g, h, j, s1, s2, l) \undocumented
+    meshPar2Var : (FnPt, SEG SF, SEG SF, L DROP) -> SPACE3
+        ++ meshPar2Var(f, s1, s2, l) \undocumented
+    meshPar2Var : (SPACE3, FnPt, SEG SF, SEG SF, L DROP) -> SPACE3
+        ++ meshPar2Var(sp, f, s1, s2, l) \undocumented
+    meshFun2Var : (Fn2, FnU, SEG SF, SEG SF, L DROP) -> SPACE3
+        ++ meshFun2Var(f, g, s1, s2, l) \undocumented
+    meshPar1Var : (EX I, EX I, EX I, Fn1, SEG SF, L DROP) -> SPACE3
+        ++ meshPar1Var(s, t, u, f, s1, l) \undocumented
+    ptFunc : (Fn2, Fn2, Fn2, Fn3) -> ((SF, SF) -> POINT)
+      ++ ptFunc(a, b, c, d) is an internal function exported in
       ++ order to compile packages.
 
   Implementation ==> add
@@ -62,7 +62,7 @@ MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
     --import TUBE()
 
     -- local functions
-    numberCheck(nums:Point SF):Void ==
+    numberCheck(nums : Point SF) : Void ==
       -- this function checks to see that the small floats are
       -- actually just that - rather than complex numbers or
       -- whatever (the whatever includes nothing presently
@@ -73,21 +73,21 @@ MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
         COMPLEXP(nums.(i::PositiveInteger))$Lisp =>
           error "An unexpected complex number was encountered in the calculations."
 
-    makePt:(SF,SF,SF,SF) -> POINT
-    makePt(x,y,z,c) == point(l : List SF := [x,y,z,c])
-    ptFunc(f,g,h,c) ==
-      (z1: SF, z2: SF): POINT +->
-           x := f(z1,z2); y := g(z1,z2); z := h(z1,z2)
-           makePt(x,y,z,c(x,y,z))
+    makePt : (SF, SF, SF, SF) -> POINT
+    makePt(x, y, z, c) == point(l : List SF := [x, y, z, c])
+    ptFunc(f, g, h, c) ==
+      (z1 : SF, z2 : SF) : POINT +->
+           x := f(z1, z2); y := g(z1, z2); z := h(z1, z2)
+           makePt(x, y, z, c(x, y, z))
 
     -- parameterized equations of two variables
-    meshPar2Var(sp,ptFun,uSeg,vSeg,opts) ==
+    meshPar2Var(sp, ptFun, uSeg, vSeg, opts) ==
       -- the issue of open and closed needs to be addressed, here, we are
       -- defaulting to open (which is probably the correct default)
       -- the user should be able to override that (optional argument?)
       llp : L L POINT := nil()
-      uNum : PI  := var1Steps(opts,var1StepsDefault())
-      vNum : PI  := var2Steps(opts,var2StepsDefault())
+      uNum : PI  := var1Steps(opts, var1StepsDefault())
+      vNum : PI  := var2Steps(opts, var2StepsDefault())
       ustep := (lo uSeg - hi uSeg)/uNum
       vstep := (lo vSeg - hi vSeg)/vNum
       someV := hi vSeg
@@ -99,49 +99,49 @@ MeshCreationRoutinesForThreeDimensions():Exports == Implementation where
         for iu in uNum..0 by -1 repeat
           if zero? iu then someU := lo uSeg
           -- hack: get last number in segment within segment
-          pt := ptFun(someU,someV)
+          pt := ptFun(someU, someV)
           numberCheck pt
-          lp := concat(pt,lp)
+          lp := concat(pt, lp)
           someU := someU + ustep
-        llp := concat(lp,llp)
+        llp := concat(lp, llp)
         someV := someV + vstep
       -- now llp contains a list of lists of points
       -- for a surface that is a result of a function of 2 variables,
       -- the main component is open and each sublist is open as well
       lProp : L COMPPROP := [ new() for l in llp ]
       for aProp in lProp repeat
-        close(aProp,false)
-        solid(aProp,false)
+        close(aProp, false)
+        solid(aProp, false)
       aProp : COMPPROP:= new()
-      close(aProp,false)
-      solid(aProp,false)
+      close(aProp, false)
+      solid(aProp, false)
       space := sp
 --      space := create3Space()
-      mesh(space,llp,lProp,aProp)
+      mesh(space, llp, lProp, aProp)
       space
 
-    meshPar2Var(ptFun,uSeg,vSeg,opts) ==
+    meshPar2Var(ptFun, uSeg, vSeg, opts) ==
       sp := create3Space()
-      meshPar2Var(sp,ptFun,uSeg,vSeg,opts)
+      meshPar2Var(sp, ptFun, uSeg, vSeg, opts)
 
-    zCoord: (SF,SF,SF) -> SF
-    zCoord(x,y,z) == z
+    zCoord : (SF, SF, SF) -> SF
+    zCoord(x, y, z) == z
 
-    meshPar2Var(xFun,yFun,zFun,colorFun,uSeg,vSeg,opts) ==
-      -- the color function should be parameterized by (u,v) as well,
-      -- not (x,y,z) but we also want some sort of consistency and so
+    meshPar2Var(xFun, yFun, zFun, colorFun, uSeg, vSeg, opts) ==
+      -- the color function should be parameterized by (u, v) as well,
+      -- not (x, y, z) but we also want some sort of consistency and so
       -- changing this over would mean possibly changing the explicit
       -- stuff over and there, we probably do want the color function
-      -- to be parameterized by (x,y,z) - not just (x,y) (this being
-      -- for convinience only since z is also defined in terms of (x,y)).
+      -- to be parameterized by (x, y, z) - not just (x, y) (this being
+      -- for convinience only since z is also defined in terms of (x, y)).
       (colorFun case Fn3) =>
-        meshPar2Var(ptFunc(xFun,yFun,zFun,colorFun :: Fn3),uSeg,vSeg,opts)
-      meshPar2Var(ptFunc(xFun,yFun,zFun,zCoord),uSeg,vSeg,opts)
+        meshPar2Var(ptFunc(xFun, yFun, zFun, colorFun :: Fn3), uSeg, vSeg, opts)
+      meshPar2Var(ptFunc(xFun, yFun, zFun, zCoord), uSeg, vSeg, opts)
 
     -- explicit equations of two variables
-    meshFun2Var(zFun,colorFun,xSeg,ySeg,opts) ==
+    meshFun2Var(zFun, colorFun, xSeg, ySeg, opts) ==
       -- here, we construct the data for a function of two variables
-      meshPar2Var((z1: SF, z2: SF): SF +-> z1, (z1: SF, z2: SF): SF +-> z2,zFun,colorFun,xSeg,ySeg,opts)
+      meshPar2Var((z1 : SF, z2 : SF) : SF +-> z1, (z1 : SF, z2 : SF) : SF +-> z2, zFun, colorFun, xSeg, ySeg, opts)
 
 @
 \section{License}

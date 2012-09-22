@@ -12,9 +12,9 @@
 \section{package RANDSRC RandomNumberSource}
 <<package RANDSRC RandomNumberSource>>=
 )abbrev package RANDSRC RandomNumberSource
-++ Author:S.M.Watt
+++ Author: S.M.Watt
 ++ Date Created: April 87
-++ Date Last Updated:Jan 92, May 1995 (MCD)
+++ Date Last Updated: Jan 92, May 1995 (MCD)
 ++ Basic Operations:
 ++ Related Domains:
 ++ Also See:
@@ -22,7 +22,7 @@
 ++ Keywords:
 ++ Examples:
 ++ References:
-++ Description:Random number generators
+++ Description: Random number generators
 --% RandomNumberSource
 ++  All random numbers used in the system should originate from
 ++  the same generator.  This package is intended to be the source.
@@ -31,18 +31,18 @@
 --  1) Start where the user left off
 --  2) Be able to switch between methods in the random number source.
 -- Currently unused.
-RandomNumberSource(): with
+RandomNumberSource() : with
     -- If r := randnum() then  0 <= r < size().
-        randnum:  () -> Integer
+        randnum :  () -> Integer
            ++ randnum() is a random number between 0 and size().
     --   If r := randnum() then  0 <= r < size().
-        size:     () -> Integer
+        size :     () -> Integer
           ++ size() is the base of the random number generator
 
         -- If r := randnum n and n <= size()  then  0 <= r < n.
-        randnum:  Integer -> Integer
+        randnum :  Integer -> Integer
            ++ randnum(n) is a random number between 0 and n.
-        reseed:   Integer -> Void
+        reseed :   Integer -> Void
            ++ reseed(n) restarts the random number generator at n.
         seed : () -> Integer
            ++ seed() returns the current seed value.
@@ -50,9 +50,9 @@ RandomNumberSource(): with
     == add
         -- This random number generator passes the spectral test
         -- with flying colours. [Knuth vol2, 2nd ed, p105]
-        ranbase: Integer := 2^31-1
-        x0:   Integer := 1231231231
-        x1:   Integer := 3243232987
+        ranbase : Integer := 2^31-1
+        x0 :   Integer := 1231231231
+        x1 :   Integer := 3243232987
 
         randnum() ==
             t := (271828183 * x1 - 314159269 * x0) rem ranbase
@@ -79,21 +79,21 @@ RandomNumberSource(): with
 ++ Description:
 ++ This package exports random distributions
 -- Currently unused.
-RandomDistributions(S: SetCategory): with
-        uniform:  Set S -> (() -> S)
+RandomDistributions(S : SetCategory) : with
+        uniform :  Set S -> (() -> S)
                 ++ uniform(s) \undocumented
-        weighted: List Record(value: S, weight: Integer) -> (()->S)
+        weighted : List Record(value : S, weight : Integer) -> (()->S)
                 ++ weighted(l) \undocumented
-        rdHack1:  (Vector S,Vector Integer,Integer)->(()->S)
-                ++ rdHack1(v,u,n) \undocumented
+        rdHack1 :  (Vector S, Vector Integer, Integer)->(()->S)
+                ++ rdHack1(v, u, n) \undocumented
     == add
         import RandomNumberSource()
 
         weighted lvw ==
             -- Collapse duplicates, adding weights.
-            t: Table(S, Integer) := table()
+            t : Table(S, Integer) := table()
             for r in lvw repeat
-                u := search(r.value,t)
+                u := search(r.value, t)
                 w := (u case "failed" => 0; u::Integer)
                 t r.value := w + r.weight
 
@@ -101,10 +101,10 @@ RandomDistributions(S: SetCategory): with
             kl := keys t
             n  := (#kl)::NonNegativeInteger
             n = 0 => error "Cannot select from empty set"
-            kv: Vector(S)       := new(n, kl.0)
-            wv: Vector(Integer) := new(n, 0)
+            kv : Vector(S)       := new(n, kl.0)
+            wv : Vector(Integer) := new(n, 0)
 
-            totwt: Integer := 0
+            totwt : Integer := 0
             for k in kl for i in 1..n repeat
                 kv.i := k
                 totwt:= totwt + t k
@@ -140,22 +140,22 @@ RandomDistributions(S: SetCategory): with
 ++ Description:
 ++ This  package provides functions to lookup bits in integers
 -- Currently unused.
-IntegerBits: with
+IntegerBits : with
     --  bitLength(n)  == # of bits to represent abs(n)
-    --  bitCoef (n,i) == coef of 2^i in abs(n)
-    --  bitTruth(n,i) == true if coef of 2^i in abs(n) is 1
+    --  bitCoef (n, i) == coef of 2^i in abs(n)
+    --  bitTruth(n, i) == true if coef of 2^i in abs(n) is 1
 
-        bitLength: Integer -> Integer
+        bitLength : Integer -> Integer
                 ++ bitLength(n) returns the number of bits to represent abs(n)
-        bitCoef:   (Integer, Integer) -> Integer
-                ++ bitCoef(n,m) returns the coefficient of 2^m  in abs(n)
-        bitTruth:  (Integer, Integer) -> Boolean
-                ++ bitTruth(n,m) returns true if coefficient of 2^m in abs(n) is 1
+        bitCoef :   (Integer, Integer) -> Integer
+                ++ bitCoef(n, m) returns the coefficient of 2^m  in abs(n)
+        bitTruth :  (Integer, Integer) -> Boolean
+                ++ bitTruth(n, m) returns true if coefficient of 2^m in abs(n) is 1
 
     == add
         bitLength n   == INTEGER_-LENGTH(n)$Lisp
-        bitCoef (n,i) == if INTEGER_-BIT(n,i)$Lisp then 1 else 0
-        bitTruth(n,i) == INTEGER_-BIT(n,i)$Lisp
+        bitCoef (n, i) == if INTEGER_-BIT(n, i)$Lisp then 1 else 0
+        bitTruth(n, i) == INTEGER_-BIT(n, i)$Lisp
 
 @
 \section{package RIDIST RandomIntegerDistributions}
@@ -165,18 +165,18 @@ IntegerBits: with
 ++ This package exports integer distributions
 RationalNumber==> Fraction Integer
 -- Currently unused.
-RandomIntegerDistributions(): with
-        uniform:   Segment Integer           -> (() -> Integer)
+RandomIntegerDistributions() : with
+        uniform :   Segment Integer           -> (() -> Integer)
                 ++ uniform(s) \undocumented
-        binomial:  (Integer, RationalNumber) -> (() -> Integer)
-                ++ binomial(n,f) \undocumented
-        poisson:   RationalNumber          -> (() -> Integer)
+        binomial :  (Integer, RationalNumber) -> (() -> Integer)
+                ++ binomial(n, f) \undocumented
+        poisson :   RationalNumber          -> (() -> Integer)
                 ++ poisson(f) \undocumented
-        geometric: RationalNumber          -> (() -> Integer)
+        geometric : RationalNumber          -> (() -> Integer)
                 ++ geometric(f) \undocumented
 
-        ridHack1:  (Integer,Integer,Integer,Integer) -> Integer
-                ++ ridHack1(i,j,k,l) \undocumented
+        ridHack1 :  (Integer, Integer, Integer, Integer) -> Integer
+                ++ ridHack1(i, j, k, l) \undocumented
     == add
         import RandomNumberSource()
         import IntegerBits()
@@ -186,15 +186,15 @@ RandomIntegerDistributions(): with
         --     l + U0 + w*U1 + w^2*U2 +...+ w^(n-1)*U-1 + w^n*M
         --
         -- where
-        --     l = min(a,b)
+        --     l = min(a, b)
         --     m = abs(b-a) + 1
         --     w^n < m < w^(n+1)
-        --     U0,...,Un-1  are uniform on  0..w-1
+        --     U0, ..., Un-1  are uniform on  0..w-1
         --     M            is  uniform on  0..(m quo w^n)-1
 
         uniform aTob ==
             a := lo aTob;  b := hi aTob
-            l := min(a,b); m := abs(a-b) + 1
+            l := min(a, b); m := abs(a-b) + 1
 
             w := 2^(bitLength size() quo 2)::NonNegativeInteger
 
@@ -217,32 +217,32 @@ RandomIntegerDistributions(): with
 ++ Description:
 ++ This package exports random floating-point distributions
 -- Currently unused.
-RandomFloatDistributions(): Cat == Body where
+RandomFloatDistributions() : Cat == Body where
     NNI ==> NonNegativeInteger
 
     Cat ==> with
-        uniform01:   ()  -> Float
+        uniform01 :   ()  -> Float
                 ++ uniform01() \undocumented
-        normal01:    ()  -> Float
+        normal01 :    ()  -> Float
                 ++ normal01() \undocumented
-        exponential1:()  -> Float
+        exponential1 : ()  -> Float
                 ++ exponential1() \undocumented
-        chiSquare1:  NNI -> Float
+        chiSquare1 :  NNI -> Float
                 ++ chiSquare1(n) \undocumented
 
-        uniform:     (Float, Float) -> (() -> Float)
-                ++ uniform(f,g) \undocumented
-        normal:      (Float, Float) -> (() -> Float)
-                ++ normal(f,g) \undocumented
-        exponential: (Float)        -> (() -> Float)
+        uniform :     (Float, Float) -> (() -> Float)
+                ++ uniform(f, g) \undocumented
+        normal :      (Float, Float) -> (() -> Float)
+                ++ normal(f, g) \undocumented
+        exponential : (Float)        -> (() -> Float)
                 ++ exponential(f) \undocumented
-        chiSquare:   (NNI)          -> (() -> Float)
+        chiSquare :   (NNI)          -> (() -> Float)
                 ++ chiSquare(n) \undocumented
-        Beta:        (NNI, NNI)     -> (() -> Float)
-                ++ Beta(n,m) \undocumented
-        F:           (NNI, NNI)     -> (() -> Float)
-                ++ F(n,m) \undocumented
-        t:           (NNI)          -> (() -> Float)
+        Beta :        (NNI, NNI)     -> (() -> Float)
+                ++ Beta(n, m) \undocumented
+        F :           (NNI, NNI)     -> (() -> Float)
+                ++ F(n, m) \undocumented
+        t :           (NNI)          -> (() -> Float)
                 ++ t(n) \undocumented
 
 
@@ -255,11 +255,11 @@ RandomFloatDistributions(): Cat == Body where
 
         uniform01() ==
             randnum()::Float/rnmax
-        uniform(a,b) ==
+        uniform(a, b) ==
             a + uniform01()*(b-a)
 
         exponential1() ==
-            u: Float := 0
+            u : Float := 0
             -- This test should really be  u < m where m is
             -- the minumum acceptible argument to log.
             while u = 0 repeat u := uniform01()
@@ -279,7 +279,7 @@ RandomFloatDistributions(): Cat == Body where
             mean + stdev*normal01()
 
         chiSquare1 dgfree ==
-            x: Float := 0
+            x : Float := 0
             for i in 1..dgfree quo 2 repeat
                 x := x + 2*exponential1()
             if odd? dgfree then

@@ -19,64 +19,64 @@
 ++ Description:
 ++   PseudoLinearNormalForm provides a function for computing a block-companion
 ++   form for pseudo-linear operators.
-PseudoLinearNormalForm(K:Field): Exports == Implementation where
-  ER  ==> Record(C: Matrix K, g: Vector K)
-  REC ==> Record(R: Matrix K, A: Matrix K, Ainv: Matrix K)
+PseudoLinearNormalForm(K : Field) : Exports == Implementation where
+  ER  ==> Record(C : Matrix K, g : Vector K)
+  REC ==> Record(R : Matrix K, A : Matrix K, Ainv : Matrix K)
 
   Exports ==> with
-    normalForm: (Matrix K, Automorphism K, K -> K) -> REC
+    normalForm : (Matrix K, Automorphism K, K -> K) -> REC
       ++ normalForm(M, sig, der) returns \spad{[R, A, A^{-1}]} such that
       ++ the pseudo-linear operator whose matrix in the basis \spad{y} is
       ++ \spad{M} had matrix \spad{R} in the basis \spad{z = A y}.
       ++ \spad{der} is a \spad{sig}-derivation.
-    changeBase: (Matrix K, Matrix K, Automorphism K, K -> K) -> Matrix K
+    changeBase : (Matrix K, Matrix K, Automorphism K, K -> K) -> Matrix K
       ++ changeBase(M, A, sig, der): computes the new matrix of a pseudo-linear
       ++ transform given by the matrix M under the change of base A
-    companionBlocks: (Matrix K, Vector K) -> List ER
-      ++ companionBlocks(m, v) returns \spad{[[C_1, g_1],...,[C_k, g_k]]}
+    companionBlocks : (Matrix K, Vector K) -> List ER
+      ++ companionBlocks(m, v) returns \spad{[[C_1, g_1], ..., [C_k, g_k]]}
       ++ such that each \spad{C_i} is a companion block and
-      ++ \spad{m = diagonal(C_1,...,C_k)}.
+      ++ \spad{m = diagonal(C_1, ..., C_k)}.
 
   Implementation ==> add
-    normalForm0: (Matrix K, Automorphism K, Automorphism K, K -> K) -> REC
-    mulMatrix: (Integer, Integer, K) -> Matrix K
+    normalForm0 : (Matrix K, Automorphism K, Automorphism K, K -> K) -> REC
+    mulMatrix : (Integer, Integer, K) -> Matrix K
       -- mulMatrix(N, i, a): under a change of base with the resulting matrix of
       -- size N*N the following operations are performed:
       -- D1: column i will be multiplied by sig(a)
       -- D2: row i will be multiplied by 1/a
-      -- D3: addition of der(a)/a to the element at position (i,i)
-    addMatrix: (Integer, Integer, Integer, K) -> Matrix K
+      -- D3: addition of der(a)/a to the element at position (i, i)
+    addMatrix : (Integer, Integer, Integer, K) -> Matrix K
       -- addMatrix(N, i, k, a): under a change of base with the resulting matrix
       -- of size N*N the following operations are performed:
       -- C1: addition of column i multiplied by sig(a) to column k
       -- C2: addition of row k multiplied by -a to row i
-      -- C3: addition of -a*der(a) to the element at position (i,k)
-    permutationMatrix: (Integer, Integer, Integer) -> Matrix K
+      -- C3: addition of -a*der(a) to the element at position (i, k)
+    permutationMatrix : (Integer, Integer, Integer) -> Matrix K
       -- permutationMatrix(N, i, k): under a change of base with the resulting
       -- permutation matrix of size N*N the following operations are performed:
       -- P1: columns i and k will be exchanged
       -- P2: rows i and k will be exchanged
-    inv: Matrix K -> Matrix K
+    inv : Matrix K -> Matrix K
       -- inv(M): computes the inverse of a invertable matrix M.
       -- avoids possible type conflicts
 
     inv m                      == inverse(m) :: Matrix K
-    changeBase(M, A, sig, der) == inv(A) * (M * map((k1: K): K +-> sig k1, A) + map(der, A))
+    changeBase(M, A, sig, der) == inv(A) * (M * map((k1 : K) : K +-> sig k1, A) + map(der, A))
     normalForm(M, sig, der)    == normalForm0(M, sig, inv sig, der)
 
     companionBlocks(R, w) ==
       -- decomposes the rational matrix R into single companion blocks
       -- and the inhomogenity w as well
-      i:Integer := 1
+      i : Integer := 1
       n := nrows R
-      l:List(ER) := empty()
+      l : List(ER) := empty()
       while i <= n repeat
         j := i
-        while j+1 <= n and R(j,j+1) = 1 repeat j := j+1
+        while j+1 <= n and R(j, j+1) = 1 repeat j := j+1
         --split block now
-        v:Vector K := new((j-i+1)::NonNegativeInteger, 0)
+        v : Vector K := new((j-i+1)::NonNegativeInteger, 0)
         for k in i..j repeat v(k-i+1) := w k
-        l := concat([subMatrix(R,i,j,i,j), v], l)
+        l := concat([subMatrix(R, i, j, i, j), v], l)
         i := j+1
       l
 
@@ -103,13 +103,13 @@ PseudoLinearNormalForm(K:Field): Exports == Implementation where
             B := B*E
             Binv := E*Binv
           -- now is M(i, i+1) ~= 0
-          E := mulMatrix(N, i+1, siginv inv M(i,i+1))
+          E := mulMatrix(N, i+1, siginv inv M(i, i+1))
           M := changeBase(M, E, sig, der)
           B := B*E
           Binv := inv(E)*Binv
           for j in 1..N repeat
             if j ~= i+1 then
-              E := addMatrix(N, i+1, j, siginv(-M(i,j)))
+              E := addMatrix(N, i+1, j, siginv(-M(i, j)))
               M := changeBase(M, E, sig, der)
               B := B*E
               Binv := inv(E)*Binv
@@ -118,12 +118,12 @@ PseudoLinearNormalForm(K:Field): Exports == Implementation where
           -- apply lemma 6
           for j in i..2 by -1 repeat
             for k in (i+1)..N repeat
-              E := addMatrix(N, k, j-1, M(k,j))
+              E := addMatrix(N, k, j-1, M(k, j))
               M := changeBase(M, E, sig, der)
               B := B*E
               Binv := inv(E)*Binv
           j := i + 1
-          while j <= N and M(j,1) = 0 repeat  j := j + 1
+          while j <= N and M(j, 1) = 0 repeat  j := j + 1
           if j <= N then
             -- expand companionblock by lemma 8
             E := permutationMatrix(N, 1, j)

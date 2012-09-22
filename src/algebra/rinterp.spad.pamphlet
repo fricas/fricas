@@ -18,7 +18,7 @@ where the coefficients of the rational function are in any given field.
   Lagrange interpolation is implemented. I have a second version that parallels
   the structure of pinterp.spad closely.
 \item There are probably better ways to implement rational interpolation. Maybe
-  {http://www.cs.ucsb.edu/~omer/personal/abstracts/rational.html} contains
+  {http : //www.cs.ucsb.edu/~omer/personal/abstracts/rational.html} contains
   something useful, but I don't know.
 \item Comments welcome!
 \end{itemize}
@@ -29,14 +29,14 @@ where the coefficients of the rational function are in any given field.
 )abbrev package RINTERP RationalInterpolation
 ++ Description:
 ++ This package exports rational interpolation algorithms
-RationalInterpolation(xx,F): Exports == Implementation  where
-    xx: Symbol
-    F: Field
+RationalInterpolation(xx, F) : Exports == Implementation  where
+    xx : Symbol
+    F : Field
 @
 
 <<RINTERP Exports>>=
     Exports == with
-        interpolate: (List F, List F, NonNegativeInteger,
+        interpolate : (List F, List F, NonNegativeInteger,
                                 NonNegativeInteger) -> Fraction Polynomial F
 @
 
@@ -94,12 +94,12 @@ a_0\\a_1\\\vdots\\a_m\\b_0\\b_1\\\vdots\\b_k
 $$
 We generate this matrix columnwise:
 <<RINTERP Implementation>>=
-            tempvec: List F := [1 for i in 1..(m+k+1)]
+            tempvec : List F := [1 for i in 1..(m+k+1)]
 
-            collist: List List F := cons(tempvec,
+            collist : List List F := cons(tempvec,
                                          [(tempvec := [tempvec.i * xlist.i _
                                                        for i in 1..(m+k+1)]) _
-                                          for j in 1..max(m,k)])
+                                          for j in 1..max(m, k)])
 
             collist := append([collist.j for j in 1..(m+1)], _
                               [[- collist.j.i * ylist.i for i in 1..(m+k+1)] _
@@ -107,7 +107,7 @@ We generate this matrix columnwise:
 @
 Now we can solve the system:
 <<RINTERP Implementation>>=
-            res: List Vector F := nullSpace((transpose matrix collist) _
+            res : List Vector F := nullSpace((transpose matrix collist) _
                                             ::Matrix F)
 @
 
@@ -124,13 +124,13 @@ In this situation, all the solutions will be equivalent, thus we can always
 simply take the first one:
 
 <<RINTERP Implementation>>=
-            reslist: List List Polynomial F := _
+            reslist : List List Polynomial F := _
                       [[(res.1).(i+1)*(xx::Polynomial F)^i for i in 0..m], _
                       [(res.1).(i+m+2)*(xx::Polynomial F)^i for i in 0..k]]
 @
 Finally, we generate the rational function:
 <<RINTERP Implementation>>=
-            reduce((_+),reslist.1)/reduce((_+),reslist.2)
+            reduce((_+), reslist.1)/reduce((_+), reslist.2)
 @
 \section{Rational Interpolation Code}
 <<package RINTERP RationalInterpolation>>=

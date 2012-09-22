@@ -25,21 +25,21 @@
 ++ over finite fields.
 
 
-MultFiniteFactorize(OV,E,F,PG) : C == T
+MultFiniteFactorize(OV, E, F, PG) : C == T
  where
   F          :   FiniteFieldCategory
   OV         :   OrderedSet
   E          :   OrderedAbelianMonoidSup
-  PG         :   PolynomialCategory(F,E,OV)
+  PG         :   PolynomialCategory(F, E, OV)
   SUP        ==> SparseUnivariatePolynomial
   R          ==> SUP F
-  P          ==> SparseMultivariatePolynomial(R,OV)
+  P          ==> SparseMultivariatePolynomial(R, OV)
   Z          ==> Integer
   FFPOLY     ==> FiniteFieldPolynomialPackage(F)
-  MParFact   ==> Record(irr:P,pow:Z)
-  MFinalFact ==> Record(contp:R,factors:List MParFact)
-  SUParFact    ==> Record(irr:SUP P,pow:Z)
-  SUPFinalFact ==> Record(contp:R,factors:List SUParFact)
+  MParFact   ==> Record(irr : P, pow : Z)
+  MFinalFact ==> Record(contp : R, factors : List MParFact)
+  SUParFact    ==> Record(irr : SUP P, pow : Z)
+  SUPFinalFact ==> Record(contp : R, factors : List SUParFact)
 
                  --  contp   =  content,
                  --  factors =  List of irreducible factors with exponent
@@ -56,324 +56,324 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
 
   T == add
 
-    import LeadingCoefDetermination(OV,IndexedExponents OV,R,P)
-    import MultivariateLifting(IndexedExponents OV,OV,R,P)
-    import FactoringUtilities(IndexedExponents OV,OV,R,P)
-    import FactoringUtilities(E,OV,F,PG)
-    import GenExEuclid(R,SUP R)
+    import LeadingCoefDetermination(OV, IndexedExponents OV, R, P)
+    import MultivariateLifting(IndexedExponents OV, OV, R, P)
+    import FactoringUtilities(IndexedExponents OV, OV, R, P)
+    import FactoringUtilities(E, OV, F, PG)
+    import GenExEuclid(R, SUP R)
 
     NNI       ==> NonNegativeInteger
     L         ==> List
     UPCF2     ==> UnivariatePolynomialCategoryFunctions2
-    LeadFact  ==> Record(polfac:L P,correct:R,corrfact:L SUP R)
-    ContPrim  ==> Record(cont:P,prim:P)
-    ParFact   ==> Record(irr:SUP R,pow:Z)
-    FinalFact ==> Record(contp:R,factors:L ParFact)
-    NewOrd    ==> Record(npol:SUP P,nvar:L OV,newdeg:L NNI)
-    Valuf     ==> Record(inval:L L R,unvfact:L SUP R,lu:R,complead:L R)
+    LeadFact  ==> Record(polfac : L P, correct : R, corrfact : L SUP R)
+    ContPrim  ==> Record(cont : P, prim : P)
+    ParFact   ==> Record(irr : SUP R, pow : Z)
+    FinalFact ==> Record(contp : R, factors : L ParFact)
+    NewOrd    ==> Record(npol : SUP P, nvar : L OV, newdeg : L NNI)
+    Valuf     ==> Record(inval : L L R, unvfact : L SUP R, lu : R, complead : L R)
 
                    ----  Local Functions  ----
     ran       :                   Z              -> R
-    mFactor   :                (P,Z)             -> MFinalFact
-    supFactor :              (SUP P,Z)           -> SUPFinalFact
-    mfconst   :        (SUP P,Z,L OV,L NNI)      -> L SUP P
-    mfpol     :        (SUP P,Z,L OV,L NNI)      -> L SUP P
-    varChoose :           (P,L OV,L NNI)         -> NewOrd
-    simplify  :         (P,Z,L OV,L NNI)         -> MFinalFact
-    intChoose :        (SUP P,L OV,R,L P,L L R)  -> Valuf
-    pretest   :         (P,NNI,L OV,L R)         -> FinalFact
-    checkzero :            (SUP P,SUP R)         -> Boolean
+    mFactor   :                (P, Z)             -> MFinalFact
+    supFactor :              (SUP P, Z)           -> SUPFinalFact
+    mfconst   :        (SUP P, Z, L OV, L NNI)      -> L SUP P
+    mfpol     :        (SUP P, Z, L OV, L NNI)      -> L SUP P
+    varChoose :           (P, L OV, L NNI)         -> NewOrd
+    simplify  :         (P, Z, L OV, L NNI)         -> MFinalFact
+    intChoose :        (SUP P, L OV, R, L P, L L R)  -> Valuf
+    pretest   :         (P, NNI, L OV, L R)         -> FinalFact
+    checkzero :            (SUP P, SUP R)         -> Boolean
     pushdcoef :                  PG              -> P
-    pushdown  :                (PG,OV)           -> P
-    pushupconst :               (R,OV)           -> PG
-    pushup    :                 (P,OV)           -> PG
+    pushdown  :                (PG, OV)           -> P
+    pushupconst :               (R, OV)           -> PG
+    pushup    :                 (P, OV)           -> PG
     norm      :               L SUP R            -> Integer
-    constantCase :        (P,L MParFact)         -> MFinalFact
+    constantCase :        (P, L MParFact)         -> MFinalFact
     pM          :             L SUP R            -> R
-    intfact     :     (SUP P,L OV,L NNI,MFinalFact,L L R) -> L SUP P
+    intfact     :     (SUP P, L OV, L NNI, MFinalFact, L L R) -> L SUP P
 
-    basicVar:OV:=NIL$Lisp pretend OV  -- variable for the basic step
+    basicVar : OV := NIL$Lisp pretend OV  -- variable for the basic step
 
 
-    convertPUP(lfg:MFinalFact): SUPFinalFact ==
-      [lfg.contp,[[lff.irr ::SUP P,lff.pow]$SUParFact
+    convertPUP(lfg : MFinalFact) : SUPFinalFact ==
+      [lfg.contp, [[lff.irr ::SUP P, lff.pow]$SUParFact
                     for lff in lfg.factors]]$SUPFinalFact
 
-    supFactor(um:SUP P,dx:Z) : SUPFinalFact ==
-        degree(um)=0 => convertPUP(mFactor(ground um,dx))
-        lvar:L OV:= "setUnion"/[variables cf for cf in coefficients um]
-        lcont:SUP P
-        lf:L SUP P
+    supFactor(um : SUP P, dx : Z) : SUPFinalFact ==
+        degree(um)=0 => convertPUP(mFactor(ground um, dx))
+        lvar:L OV := "setUnion"/[variables cf for cf in coefficients um]
+        lcont : SUP P
+        lf : L SUP P
 
-        flead : SUPFinalFact:=[0,empty()]$SUPFinalFact
-        factorlist:L SUParFact :=empty()
+        flead : SUPFinalFact := [0, empty()]$SUPFinalFact
+        factorlist : L SUParFact := empty()
 
-        mdeg :=minimumDegree um     ---- is the Mindeg > 0? ----
+        mdeg := minimumDegree um     ---- is the Mindeg > 0? ----
         if mdeg>0 then
-          f1:SUP P:=monomial(1,mdeg)
-          um:=(um exquo f1)::SUP P
-          factorlist:=cons([monomial(1,1),mdeg],factorlist)
-          if degree um=0 then return
-            lfg:=convertPUP mFactor(ground um, dx)
-            [lfg.contp,append(factorlist,lfg.factors)]
+          f1 : SUP P := monomial(1, mdeg)
+          um := (um exquo f1)::SUP P
+          factorlist := cons([monomial(1, 1), mdeg], factorlist)
+          if degree um = 0 then return
+            lfg := convertPUP mFactor(ground um, dx)
+            [lfg.contp, append(factorlist, lfg.factors)]
 
 
-        om:=map((p1: P): PG +-> pushup(p1,basicVar),um)$UPCF2(P,SUP P,PG,SUP PG)
-        sqfacs:=squareFree(om)
-        lcont:=map((p1: PG): P +-> pushdown(p1,basicVar),unit sqfacs)$UPCF2(PG,SUP PG,P,SUP P)
+        om := map((p1 : P) : PG +-> pushup(p1, basicVar), um)$UPCF2(P, SUP P, PG, SUP PG)
+        sqfacs := squareFree(om)
+        lcont := map((p1 : PG) : P +-> pushdown(p1, basicVar), unit sqfacs)$UPCF2(PG, SUP PG, P, SUP P)
 
                                    ----   Factorize the content  ----
         if ground? lcont then
-          flead:=convertPUP constantCase(ground lcont,empty())
+          flead := convertPUP constantCase(ground lcont, empty())
         else
-          flead:=supFactor(lcont,dx)
+          flead := supFactor(lcont, dx)
 
-        factorlist:=flead.factors
+        factorlist := flead.factors
 
                                  ----  Make the polynomial square-free  ----
-        sqqfact:=[[map((p1: PG): P +-> pushdown(p1,basicVar),ff.factor),ff.exponent]
+        sqqfact := [[map((p1 : PG) : P +-> pushdown(p1, basicVar), ff.factor), ff.exponent]
                       for ff in factors sqfacs]
 
                         ---  Factorize the primitive square-free terms ---
         for fact in sqqfact repeat
-          ffactor:SUP P:=fact.irr
-          ffexp:=fact.pow
-          ffcont:=content ffactor
+          ffactor : SUP P := fact.irr
+          ffexp := fact.pow
+          ffcont := content ffactor
           coefs := coefficients ffactor
-          ldeg:= ["max"/[degree(fc,xx) for fc in coefs] for xx in lvar]
+          ldeg := ["max"/[degree(fc,xx) for fc in coefs] for xx in lvar]
           if ground?(leadingCoefficient ffactor) then
-             lf:= mfconst(ffactor,dx,lvar,ldeg)
-          else lf:=mfpol(ffactor,dx,lvar,ldeg)
-          auxfl:=[[lfp,ffexp]$SUParFact  for lfp in lf]
-          factorlist:=append(factorlist,auxfl)
+             lf := mfconst(ffactor, dx, lvar, ldeg)
+          else lf := mfpol(ffactor, dx, lvar, ldeg)
+          auxfl := [[lfp, ffexp]$SUParFact  for lfp in lf]
+          factorlist := append(factorlist, auxfl)
         lcfacs := */[leadingCoefficient leadingCoefficient(f.irr)^((f.pow)::NNI)
                              for f in factorlist]
         [(leadingCoefficient leadingCoefficient(um) exquo lcfacs)::R,
                        factorlist]$SUPFinalFact
 
-    factor(um:SUP PG):Factored SUP PG ==
-        lv:List OV:=variables um
-        ld:=degree(um,lv)
-        dx:="min"/ld
-        basicVar:=lv.position(dx,ld)
-        cm:=map((p1: PG): P +-> pushdown(p1,basicVar),um)$UPCF2(PG,SUP PG,P,SUP P)
-        flist := supFactor(cm,dx)
-        pushupconst(flist.contp,basicVar)::SUP(PG) *
-          (*/[primeFactor(map((p1: P): PG +-> pushup(p1,basicVar),u.irr)$UPCF2(P,SUP P,PG,SUP PG),
+    factor(um : SUP PG) : Factored SUP PG ==
+        lv : List OV := variables um
+        ld := degree(um, lv)
+        dx := "min"/ld
+        basicVar := lv.position(dx, ld)
+        cm := map((p1 : PG) : P +-> pushdown(p1, basicVar), um)$UPCF2(PG, SUP PG, P, SUP P)
+        flist := supFactor(cm, dx)
+        pushupconst(flist.contp, basicVar)::SUP(PG) *
+          (*/[primeFactor(map((p1 : P) : PG +-> pushup(p1, basicVar), u.irr)$UPCF2(P, SUP P, PG, SUP PG),
                  u.pow) for u in flist.factors])
 
 
 
-    mFactor(m:P,dx:Z) : MFinalFact ==
-      ground?(m) => constantCase(m,empty())
-      lvar:L OV:= variables m
-      lcont:P
-      lf:L SUP P
-      flead : MFinalFact:=[1,empty()]$MFinalFact
-      factorlist:L MParFact :=empty()
+    mFactor(m : P, dx : Z) : MFinalFact ==
+      ground?(m) => constantCase(m, empty())
+      lvar : L OV := variables m
+      lcont : P
+      lf : L SUP P
+      flead : MFinalFact := [1, empty()]$MFinalFact
+      factorlist : L MParFact := empty()
                                   ---- is the Mindeg > 0? ----
-      lmdeg :=minimumDegree(m,lvar)
-      or/[n>0 for n in lmdeg] => simplify(m,dx,lvar,lmdeg)
+      lmdeg := minimumDegree(m, lvar)
+      or/[n>0 for n in lmdeg] => simplify(m, dx, lvar, lmdeg)
                               ----  Make the polynomial square-free  ----
-      om:=pushup(m,basicVar)
-      sqfacs:=squareFree(om)
-      lcont := pushdown(unit sqfacs,basicVar)
+      om := pushup(m, basicVar)
+      sqfacs := squareFree(om)
+      lcont := pushdown(unit sqfacs, basicVar)
 
                                   ----  Factorize the content  ----
       if ground? lcont then
-        flead:=constantCase(lcont,empty())
+        flead := constantCase(lcont, empty())
       else
-        flead:=mFactor(lcont,dx)
-      factorlist:=flead.factors
-      sqqfact:List Record(factor:P,exponent:Integer)
-      sqqfact:=[[pushdown(ff.factor,basicVar),ff.exponent]
+        flead := mFactor(lcont, dx)
+      factorlist := flead.factors
+      sqqfact : List Record(factor : P, exponent : Integer)
+      sqqfact := [[pushdown(ff.factor, basicVar), ff.exponent]
                                               for ff in factors sqfacs]
                        ---  Factorize the primitive square-free terms ---
       for fact in sqqfact repeat
-        ffactor:P:=fact.factor
+        ffactor : P := fact.factor
         ffexp := fact.exponent
         ground? ffactor =>
-          for lterm in constantCase(ffactor,empty()).factors repeat
-            factorlist:=cons([lterm.irr,lterm.pow * ffexp], factorlist)
+          for lterm in constantCase(ffactor, empty()).factors repeat
+            factorlist := cons([lterm.irr, lterm.pow * ffexp], factorlist)
         lvar := variables ffactor
-        x:OV:=lvar.1
-        ldeg:=degree(ffactor,lvar)
+        x : OV := lvar.1
+        ldeg := degree(ffactor, lvar)
              ---  Is the polynomial linear in one of the variables ? ---
-        member?(1,ldeg) =>
-          x:OV:=lvar.position(1,ldeg)
-          lcont:= gcd coefficients(univariate(ffactor,x))
-          ffactor:=(ffactor exquo lcont)::P
-          factorlist:=cons([ffactor,ffexp]$MParFact,factorlist)
-          for lcterm in mFactor(lcont,dx).factors repeat
-           factorlist:=cons([lcterm.irr,lcterm.pow * ffexp], factorlist)
+        member?(1, ldeg) =>
+          x : OV := lvar.position(1, ldeg)
+          lcont := gcd coefficients(univariate(ffactor, x))
+          ffactor := (ffactor exquo lcont)::P
+          factorlist := cons([ffactor, ffexp]$MParFact, factorlist)
+          for lcterm in mFactor(lcont, dx).factors repeat
+           factorlist := cons([lcterm.irr, lcterm.pow * ffexp], factorlist)
 
-        varch:=varChoose(ffactor,lvar,ldeg)
-        um:=varch.npol
+        varch := varChoose(ffactor, lvar, ldeg)
+        um := varch.npol
 
 
-        ldeg:=ldeg.rest
-        lvar:=lvar.rest
+        ldeg := ldeg.rest
+        lvar := lvar.rest
         if varch.nvar.1 ~= x then
-          lvar:= varch.nvar
+          lvar := varch.nvar
           x := lvar.1
-          lvar:=lvar.rest
-          pc:= gcd coefficients um
+          lvar := lvar.rest
+          pc := gcd coefficients um
           if pc ~= 1 then
-            um:=(um exquo pc)::SUP P
-            ffactor:=multivariate(um,x)
-            for lcterm in mFactor(pc,dx).factors repeat
-              factorlist:=cons([lcterm.irr,lcterm.pow*ffexp],factorlist)
-          ldeg:= degree(ffactor,lvar)
+            um := (um exquo pc)::SUP P
+            ffactor := multivariate(um, x)
+            for lcterm in mFactor(pc, dx).factors repeat
+              factorlist := cons([lcterm.irr, lcterm.pow*ffexp], factorlist)
+          ldeg := degree(ffactor, lvar)
 
         -- should be unitNormal if unified, but for now it is easier
-        lcum:F:= leadingCoefficient leadingCoefficient
+        lcum : F := leadingCoefficient leadingCoefficient
                 leadingCoefficient um
         if lcum ~= 1  then
-          um:=((inv lcum)::R::P) * um
+          um := ((inv lcum)::R::P) * um
           flead.contp := (lcum::R) *flead.contp
 
         if ground?(leadingCoefficient um)
-        then lf:= mfconst(um,dx,lvar,ldeg)
-        else lf:=mfpol(um,dx,lvar,ldeg)
-        auxfl:=[[multivariate(lfp,x),ffexp]$MParFact  for lfp in lf]
-        factorlist:=append(factorlist,auxfl)
-      flead.factors:= factorlist
+        then lf := mfconst(um, dx, lvar, ldeg)
+        else lf := mfpol(um, dx, lvar, ldeg)
+        auxfl := [[multivariate(lfp, x), ffexp]$MParFact  for lfp in lf]
+        factorlist := append(factorlist, auxfl)
+      flead.factors := factorlist
       flead
 
 
-    pM(lum:L SUP R) : R ==
-      x := monomial(1,1)$R
+    pM(lum : L SUP R) : R ==
+      x := monomial(1, 1)$R
       for i in 1..size()$F repeat
          p := x + (index(i::PositiveInteger)$F) ::R
-         testModulus(p,lum) => return p
+         testModulus(p, lum) => return p
       for e in 2.. repeat
           p :=  (createIrreduciblePoly(e::PositiveInteger))$FFPOLY
-          testModulus(p,lum) => return p
+          testModulus(p, lum) => return p
           while not((q := nextIrreduciblePoly(p)$FFPOLY) case "failed") repeat
              p := q::SUP F
              if testModulus(p, lum)$GenExEuclid(R, SUP R) then return p
 
       ----  push x in the coefficient domain for a term ----
-    pushdcoef(t:PG):P ==
-       map((f1: F): R +-> coerce(f1)$R,t)$MPolyCatFunctions2(OV,E,
-                                           IndexedExponents OV,F,R,PG,P)
+    pushdcoef(t : PG) : P ==
+       map((f1 : F) : R +-> coerce(f1)$R, t)$MPolyCatFunctions2(OV, E,
+                                           IndexedExponents OV, F, R, PG, P)
 
 
               ----  internal function, for testing bad cases  ----
-    intfact(um:SUP P,lvar: L OV,ldeg:L NNI,
-            tleadpol:MFinalFact,ltry:L L R):  L SUP P ==
-      polcase:Boolean:=(not empty? tleadpol.factors )
-      vfchoo:Valuf:=
+    intfact(um : SUP P, lvar : L OV, ldeg : L NNI,
+            tleadpol : MFinalFact, ltry : L L R) :  L SUP P ==
+      polcase : Boolean := (not empty? tleadpol.factors )
+      vfchoo : Valuf :=
         polcase =>
-          leadpol:L P:=[ff.irr for ff in tleadpol.factors]
-          intChoose(um,lvar,tleadpol.contp,leadpol,ltry)
-        intChoose(um,lvar,1,empty(),empty())
-      unifact:List SUP R := vfchoo.unvfact
-      nfact:NNI := #unifact
-      nfact=1 => [um]
-      ltry:L L R:= vfchoo.inval
-      lval:L R:=first ltry
-      dd:= vfchoo.lu
-      lpol:List P:=empty()
-      leadval:List R:=empty()
+          leadpol : L P := [ff.irr for ff in tleadpol.factors]
+          intChoose(um, lvar, tleadpol.contp, leadpol, ltry)
+        intChoose(um, lvar, 1, empty(), empty())
+      unifact : List SUP R := vfchoo.unvfact
+      nfact : NNI := #unifact
+      nfact = 1 => [um]
+      ltry : L L R := vfchoo.inval
+      lval : L R := first ltry
+      dd := vfchoo.lu
+      lpol : List P := empty()
+      leadval : List R := empty()
       if polcase then
         leadval := vfchoo.complead
-        distf := distFact(vfchoo.lu,unifact,tleadpol,leadval,lvar,lval)
+        distf := distFact(vfchoo.lu, unifact, tleadpol, leadval, lvar, lval)
         distf case "failed" =>
-             return intfact(um,lvar,ldeg,tleadpol,ltry)
+             return intfact(um, lvar, ldeg, tleadpol, ltry)
         dist := distf :: LeadFact
           -- check the factorization of leading coefficient
-        lpol:= dist.polfac
+        lpol := dist.polfac
         dd := dist.correct
-        unifact:=dist.corrfact
+        unifact := dist.corrfact
       if dd ~= 1 then
         unifact := [dd*unifact.i for i in 1..nfact]
         um := ((dd^(nfact-1)::NNI)::P)*um
-      (ffin:= lifting(um,lvar,unifact,lval,lpol,ldeg,pM(unifact)))
+      (ffin := lifting(um, lvar, unifact, lval, lpol, ldeg, pM(unifact)))
            case "failed" => intfact(um,lvar,ldeg,tleadpol,ltry)
-      factfin: L SUP P:=ffin :: L SUP P
+      factfin : L SUP P := ffin :: L SUP P
       if dd ~= 1 then
-        factfin:=[primitivePart ff  for ff in  factfin]
+        factfin := [primitivePart ff  for ff in  factfin]
       factfin
 
 -- the following functions are used to "push" x in the coefficient ring -
                ----  push back the variable  ----
-    pushup(f:P,x:OV) :PG ==
-       ground? f => pushupconst((retract f)@R,x)
-       rr:PG:=0
+    pushup(f : P, x : OV) : PG ==
+       ground? f => pushupconst((retract f)@R, x)
+       rr : PG := 0
        while f ~= 0 repeat
-         lf:=leadingMonomial f
-         cf:=pushupconst(leadingCoefficient f,x)
-         lvf:=variables lf
-         rr:=rr+monomial(cf,lvf, degree(lf,lvf))$PG
-         f:=reductum f
+         lf := leadingMonomial f
+         cf := pushupconst(leadingCoefficient f, x)
+         lvf := variables lf
+         rr := rr+monomial(cf, lvf, degree(lf, lvf))$PG
+         f := reductum f
        rr
 
         ----  push x in the coefficient domain for a polynomial ----
-    pushdown(g:PG,x:OV) : P ==
+    pushdown(g : PG, x : OV) : P ==
        ground? g => ((retract g)@F)::R::P
-       rf:P:=0$P
-       ug:=univariate(g,x)
+       rf : P := 0$P
+       ug := univariate(g, x)
        while ug ~= 0 repeat
-         cf:=monomial(1,degree ug)$R
-         rf:=rf+cf*pushdcoef(leadingCoefficient ug)
+         cf := monomial(1, degree ug)$R
+         rf := rf+cf*pushdcoef(leadingCoefficient ug)
          ug := reductum ug
        rf
 
       ----  push x back from the coefficient domain ----
-    pushupconst(r:R,x:OV):PG ==
+    pushupconst(r : R, x : OV) : PG ==
        ground? r => (retract r)@F ::PG
-       rr:PG:=0
+       rr : PG := 0
        while r ~= 0 repeat
-         rr:=rr+monomial((leadingCoefficient r)::PG,x,degree r)$PG
-         r:=reductum r
+         rr := rr+monomial((leadingCoefficient r)::PG, x, degree r)$PG
+         r := reductum r
        rr
 
     -- This function has to be added to Eucliden domain
-    ran(k1:Z) : R ==
+    ran(k1 : Z) : R ==
       --if R case Integer then random()$R rem (2*k1)-k1
       --else
-      +/[monomial(random()$F,i)$R for i in 0..k1]
+      +/[monomial(random()$F, i)$R for i in 0..k1]
 
-    checkzero(u:SUP P,um:SUP R) : Boolean ==
-      u=0 => um =0
+    checkzero(u : SUP P, um : SUP R) : Boolean ==
+      u = 0 => um =0
       um = 0 => false
       degree u = degree um => checkzero(reductum u, reductum um)
       false
 
               ---  Choose the variable of least degree  ---
-    varChoose(m:P,lvar:L OV,ldeg:L NNI) : NewOrd ==
-      k:="min"/[d for d in ldeg]
-      k=degree(m,first lvar) =>
-                             [univariate(m,first lvar),lvar,ldeg]$NewOrd
-      i:=position(k,ldeg)
-      x:OV:=lvar.i
-      ldeg:=cons(k,delete(ldeg,i))
-      lvar:=cons(x,delete(lvar,i))
-      [univariate(m,x),lvar,ldeg]$NewOrd
+    varChoose(m : P, lvar : L OV, ldeg : L NNI) : NewOrd ==
+      k := "min"/[d for d in ldeg]
+      k = degree(m, first lvar) =>
+                             [univariate(m, first lvar), lvar, ldeg]$NewOrd
+      i := position(k, ldeg)
+      x : OV := lvar.i
+      ldeg := cons(k, delete(ldeg, i))
+      lvar := cons(x, delete(lvar, i))
+      [univariate(m, x), lvar, ldeg]$NewOrd
 
 
-    norm(lum: L SUP R): Integer == "max"/[degree lup for lup in lum]
+    norm(lum : L SUP R) : Integer == "max"/[degree lup for lup in lum]
 
           ---  Choose the values to reduce to the univariate case  ---
-    intChoose(um:SUP P,lvar:L OV,clc:R,plist:L P,ltry:L L R) : Valuf ==
+    intChoose(um : SUP P, lvar : L OV, clc : R, plist : L P, ltry : L L R) : Valuf ==
       -- declarations
-      degum:NNI := degree um
-      nvar1:=#lvar
-      range:NNI:=0
-      unifact:L SUP R
+      degum : NNI := degree um
+      nvar1 := #lvar
+      range : NNI := 0
+      unifact : L SUP R
       ctf1 : R := 1
-      testp:Boolean :=             -- polynomial leading coefficient
+      testp : Boolean :=             -- polynomial leading coefficient
         plist = empty() => false
         true
-      leadcomp,leadcomp1 : L R
-      leadcomp:=leadcomp1:=empty()
-      nfatt:NNI := degum+1
-      lffc:R:=1
-      lffc1:=lffc
-      newunifact : L SUP R:=empty()
-      leadtest:=true --- the lc test with polCase has to be performed
-      int:L R:=empty()
+      leadcomp, leadcomp1 : L R
+      leadcomp := leadcomp1 := empty()
+      nfatt : NNI := degum+1
+      lffc : R := 1
+      lffc1 := lffc
+      newunifact : L SUP R := empty()
+      leadtest := true --- the lc test with polCase has to be performed
+      int : L R := empty()
       base_success : Z := 0
       base_failure : Z := 0
 
@@ -382,26 +382,26 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
    --  is chosen.
       while true repeat
        lval := [ ran(range) for i in 1..nvar1]
-       member?(lval,ltry) => range:=1+range
-       ltry := cons(lval,ltry)
-       leadcomp1:=[retract eval(pol,lvar,lval) for pol in plist]
-       testp and or/[unit? epl for epl in leadcomp1] => range:=range+1
-       newm:SUP R:=completeEval(um,lvar,lval)
-       degum ~= degree newm or minimumDegree newm ~= 0 => range:=range+1
-       lffc1:=content newm
-       newm:=(newm exquo lffc1)::SUP R
-       testp and leadtest and not polCase(lffc1*clc,#plist,leadcomp1)
-                           => range:=range+1
+       member?(lval, ltry) => range := 1+range
+       ltry := cons(lval, ltry)
+       leadcomp1 := [retract eval(pol, lvar, lval) for pol in plist]
+       testp and or/[unit? epl for epl in leadcomp1] => range := range+1
+       newm : SUP R := completeEval(um, lvar, lval)
+       degum ~= degree newm or minimumDegree newm ~= 0 => range := range+1
+       lffc1 := content newm
+       newm := (newm exquo lffc1)::SUP R
+       testp and leadtest and not polCase(lffc1*clc, #plist, leadcomp1)
+                           => range := range+1
        Dnewm := differentiate newm
        D2newm := map(differentiate, newm)
-       degree(gcd [newm,Dnewm,D2newm]) ~= 0 => range:=range+1
-      -- if R has Integer then luniv:=henselFact(newm,false)$
+       degree(gcd [newm, Dnewm, D2newm]) ~= 0 => range := range+1
+      -- if R has Integer then luniv := henselFact(newm, false)$
       -- else
-       lcnm:F:=1
+       lcnm : F := 1
         -- should be unitNormal if unified, but for now it is easier
-       if (lcnm:=leadingCoefficient leadingCoefficient newm) ~= 1 then
-         newm:=((inv lcnm)::R)*newm
-       dx:="max"/[degree uc  for uc in coefficients newm]
+       if (lcnm := leadingCoefficient leadingCoefficient newm) ~= 1 then
+         newm := ((inv lcnm)::R)*newm
+       dx := "max"/[degree uc  for uc in coefficients newm]
        luniv := tryTwoFactor(newm)$TwoFactorize(F)
        nfl := factorList luniv
        nf := #nfl
@@ -416,15 +416,15 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
            base_success := base_success + 1
            skip := false
        skip => "iterate"
-       lunivf:= factors luniv
-       nf:= #lunivf
+       lunivf := factors luniv
+       nf := #lunivf
 
-       nf=0 or nf>nfatt => "next values"      ---  pretest failed ---
+       nf = 0 or nf>nfatt => "next values"      ---  pretest failed ---
 
                         --- the univariate polynomial is irreducible ---
        if nf = 1 then (unifact := [newm]; break)
 
-       lffc1:=lcnm * retract(unit luniv)@R * lffc1
+       lffc1 := lcnm * retract(unit luniv)@R * lffc1
 
    --  the new integer give the same number of factors
        nfatt = nf =>
@@ -433,88 +433,88 @@ MultFiniteFactorize(OV,E,F,PG) : C == T
        -- polCase
          if leadtest or
            ((norm unifact > norm [ff.factor for ff in lunivf]) and
-             (not testp or polCase(lffc1*clc,#plist,leadcomp1))) then
-                unifact:=[uf.factor for uf in lunivf]
-                int:=lval
-                lffc:=lffc1
-                if testp then leadcomp:=leadcomp1
+             (not testp or polCase(lffc1*clc, #plist, leadcomp1))) then
+                unifact := [uf.factor for uf in lunivf]
+                int := lval
+                lffc := lffc1
+                if testp then leadcomp := leadcomp1
          -- found it
          break
 
    --  the first univariate factorization, inizialize
        nfatt > degum =>
-         unifact:=[uf.factor for uf in lunivf]
-         lffc:=lffc1
-         if testp then leadcomp:=leadcomp1
-         int:=lval
+         unifact := [uf.factor for uf in lunivf]
+         lffc := lffc1
+         if testp then leadcomp := leadcomp1
+         int := lval
          leadtest := false
          nfatt := nf
 
        nfatt>nf =>  -- for the previous values there were more factors
-         if testp then leadtest := not polCase(lffc*clc,#plist,leadcomp)
-         else leadtest:= false
+         if testp then leadtest := not polCase(lffc*clc, #plist, leadcomp)
+         else leadtest := false
          -- if polCase=true we can consider the univariate decomposition
          if not leadtest then
-           unifact:=[uf.factor for uf in lunivf]
-           lffc:=lffc1
-           if testp then leadcomp:=leadcomp1
-           int:=lval
+           unifact := [uf.factor for uf in lunivf]
+           lffc := lffc1
+           if testp then leadcomp := leadcomp1
+           int := lval
          nfatt := nf
-      [cons(int,ltry),unifact,lffc,leadcomp]$Valuf
+      [cons(int, ltry), unifact, lffc, leadcomp]$Valuf
 
 
-    constantCase(m:P,factorlist:List MParFact) : MFinalFact ==
-    --if R case Integer then [const m,factorlist]$MFinalFact
+    constantCase(m : P, factorlist : List MParFact) : MFinalFact ==
+    --if R case Integer then [const m, factorlist]$MFinalFact
     --else
-      lunm:=distdfact((retract m)@R,false)$DistinctDegreeFactorize(F,R)
+      lunm := distdfact((retract m)@R, false)$DistinctDegreeFactorize(F, R)
       [(lunm.cont)::R, append(factorlist,
-           [[(pp.irr)::P,pp.pow] for pp in lunm.factors])]$MFinalFact
+           [[(pp.irr)::P, pp.pow] for pp in lunm.factors])]$MFinalFact
 
                 ----  The polynomial has mindeg>0   ----
 
-    simplify(m:P,dm:Z,lvar:L OV,lmdeg:L NNI):MFinalFact ==
-      factorlist:L MParFact:=empty()
-      pol1:P:= 1$P
+    simplify(m : P, dm : Z, lvar : L OV, lmdeg : L NNI) : MFinalFact ==
+      factorlist : L MParFact := empty()
+      pol1 : P := 1$P
       for x in lvar repeat
-        i := lmdeg.(position(x,lvar))
-        i=0 => "next value"
-        pol1:=pol1*monomial(1$P,x,i)
-        factorlist:=cons([x::P,i]$MParFact,factorlist)
+        i := lmdeg.(position(x, lvar))
+        i = 0 => "next value"
+        pol1 := pol1*monomial(1$P, x, i)
+        factorlist := cons([x::P, i]$MParFact, factorlist)
       m := (m exquo pol1)::P
-      ground? m => constantCase(m,factorlist)
-      flead:=mFactor(m,dm)
-      flead.factors:=append(factorlist,flead.factors)
+      ground? m => constantCase(m, factorlist)
+      flead := mFactor(m, dm)
+      flead.factors := append(factorlist, flead.factors)
       flead
 
-                ----  m square-free,primitive,lc constant  ----
-    mfconst(um:SUP P,dm:Z,lvar:L OV,ldeg:L NNI):L SUP P ==
-      nsign:Boolean
-      factfin:L SUP P:=empty()
+                ----  m square-free, primitive, lc constant  ----
+    mfconst(um : SUP P, dm : Z, lvar : L OV, ldeg : L NNI) : L SUP P ==
+      nsign : Boolean
+      factfin : L SUP P := empty()
       empty? lvar =>
-          um1:SUP R:=map(ground,
-              um)$UPCF2(P,SUP P,R,SUP R)
-          lum:= generalTwoFactor(um1)$TwoFactorize(F)
-          [map(coerce,lumf.factor)$UPCF2(R,SUP R,P,SUP P)
+          um1 : SUP R := map(ground,
+              um)$UPCF2(P, SUP P, R, SUP R)
+          lum := generalTwoFactor(um1)$TwoFactorize(F)
+          [map(coerce, lumf.factor)$UPCF2(R, SUP R, P, SUP P)
                 for lumf in factors lum]
-      intfact(um,lvar,ldeg,[0,empty()]$MFinalFact,empty())
+      intfact(um, lvar, ldeg, [0, empty()]$MFinalFact, empty())
 
-              --- m is square-free,primitive,lc is a polynomial  ---
-    mfpol(um:SUP P,dm:Z,lvar:L OV,ldeg:L NNI):L SUP P ==
+              --- m is square-free, primitive, lc is a polynomial  ---
+    mfpol(um : SUP P, dm : Z, lvar : L OV, ldeg : L NNI) : L SUP P ==
       dist : LeadFact
-      tleadpol:=mFactor(leadingCoefficient um,dm)
-      intfact(um,lvar,ldeg,tleadpol,empty())
+      tleadpol := mFactor(leadingCoefficient um, dm)
+      intfact(um, lvar, ldeg, tleadpol, empty())
 
-    factor(m:PG):Factored PG ==
-       lv:=variables m
-       lv=empty() => makeFR(m,empty() )
+    factor(m : PG) : Factored PG ==
+       lv := variables m
+       lv = empty() => makeFR(m, empty() )
     -- reduce to multivariate over SUP
-       ld:=[degree(m,x) for x in lv]
-       dx:="min"/ld
-       basicVar:=lv(position(dx,ld))
-       cm:=pushdown(m,basicVar)
-       flist := mFactor(cm,dx)
-       pushupconst(flist.contp,basicVar) *
-          (*/[primeFactor(pushup(u.irr,basicVar),u.pow)
+       ld := [degree(m, x) for x in lv]
+       dx := "min"/ld
+       basicVar := lv(position(dx, ld))
+       cm := pushdown(m, basicVar)
+       flist := mFactor(cm, dx)
+       pushupconst(flist.contp, basicVar) *
+          (*/[primeFactor(pushup(u.irr, basicVar), u.pow)
                                                  for u in flist.factors])
 
 @

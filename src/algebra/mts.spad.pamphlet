@@ -34,11 +34,11 @@ testsuite "MTS"
 ++   by a stream of polynomials from the polynomial domain SMP.
 ++   The nth element of the stream is a form of degree n.  SMTS is an
 ++   internal domain.
-SparseMultivariateTaylorSeries(Coef,Var,SMP):_
+SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
  Exports == Implementation where
   Coef : Ring
   Var  : OrderedSet
-  SMP  : PolynomialCategory(Coef,IndexedExponents Var,Var)
+  SMP  : PolynomialCategory(Coef, IndexedExponents Var, Var)
   I   ==> Integer
   L   ==> List
   NNI ==> NonNegativeInteger
@@ -52,25 +52,25 @@ SparseMultivariateTaylorSeries(Coef,Var,SMP):_
   ST2 ==> StreamFunctions2
   ST3 ==> StreamFunctions3
 
-  Exports ==> MultivariateTaylorSeriesCategory(Coef,Var) with
-    coefficient: (%,NNI) -> SMP
+  Exports ==> MultivariateTaylorSeriesCategory(Coef, Var) with
+    coefficient : (%, NNI) -> SMP
       ++ \spad{coefficient(s, n)} gives the terms of total degree n.
-    coerce: Var -> %
+    coerce : Var -> %
       ++ \spad{coerce(var)} converts a variable to a Taylor series
-    coerce: SMP -> %
+    coerce : SMP -> %
       ++ \spad{coerce(poly)} regroups the terms by total degree and forms
       ++ a series.
     "*":(SMP,%)->%
       ++\spad{smp*ts} multiplies a TaylorSeries by a monomial SMP.
-    csubst:(L Var,L StS) -> (SMP -> StS)
-      ++\spad{csubst(a,b)} is for internal use only
+    csubst : (L Var, L StS) -> (SMP -> StS)
+      ++\spad{csubst(a, b)} is for internal use only
 
     if Coef has Algebra Fraction Integer then
-      integrate: (%,Var,Coef) -> %
-        ++\spad{integrate(s,v,c)} is the integral of s with respect
+      integrate : (%, Var, Coef) -> %
+        ++\spad{integrate(s, v, c)} is the integral of s with respect
         ++ to v and having c as the constant of integration.
-      fintegrate: (() -> %,Var,Coef) -> %
-        ++\spad{fintegrate(f,v,c)} is the integral of \spad{f()} with respect
+      fintegrate : (() -> %, Var, Coef) -> %
+        ++\spad{fintegrate(f, v, c)} is the integral of \spad{f()} with respect
         ++ to v and having c as the constant of integration.
         ++ The evaluation of \spad{f()} is delayed.
 
@@ -85,17 +85,17 @@ the stream should always be $n-1$.
 <<domain SMTS SparseMultivariateTaylorSeries>>=
     Rep := StS
 
-    extend(x,n) == extend(x,n + 1)$Rep
+    extend(x, n) == extend(x, n + 1)$Rep
     complete x == complete(x)$Rep
 
-    evalstream:(%,L Var,L SMP) -> StS
-    evalstream(s:%,lv:(L Var),lsmp:(L SMP)):(ST SMP) ==
-      scan(0,_+$SMP,map((z1: SMP): SMP +-> eval(z1,lv,lsmp),s pretend StS))$ST2(SMP,SMP)
+    evalstream : (%, L Var, L SMP) -> StS
+    evalstream(s : %, lv : (L Var), lsmp : (L SMP)) : (ST SMP) ==
+      scan(0, _+$SMP, map((z1 : SMP) : SMP +-> eval(z1, lv, lsmp), s pretend StS))$ST2(SMP, SMP)
 
-    addvariable:(Var,InnerTaylorSeries Coef) -> %
-    addvariable(v,s) ==
+    addvariable : (Var, InnerTaylorSeries Coef) -> %
+    addvariable(v, s) ==
       ints := integers(0)$STT pretend ST NNI
-      map((n1: NNI, c2: Coef): SMP +-> monomial(c2 :: SMP,v,n1)$SMP,ints,s pretend ST Coef)$ST3(NNI,Coef,SMP)
+      map((n1 : NNI, c2 : Coef) : SMP +-> monomial(c2 :: SMP, v, n1)$SMP, ints, s pretend ST Coef)$ST3(NNI, Coef, SMP)
 
 @
 
@@ -120,12 +120,12 @@ The function \spadfun{coefficient} carries three different semantics.  We can ex
   here we have to take into account that we reduce the degree of each term of
   the stream by a constant.
 <<domain SMTS SparseMultivariateTaylorSeries>>=
-    coefficient(s: %, lv: List Var, ln: List NNI): % ==
-        map((z1: SMP): SMP +-> coefficient(z1, lv, ln), rest(s, reduce(_+, ln)))
+    coefficient(s : %, lv : List Var, ln : List NNI) : % ==
+        map((z1 : SMP) : SMP +-> coefficient(z1, lv, ln), rest(s, reduce(_+, ln)))
 @
 \item the coefficient of a particular monomial:
 <<domain SMTS SparseMultivariateTaylorSeries>>=
-    coefficient(s: %, m: IndexedExponents Var): Coef ==
+    coefficient(s : %, m : IndexedExponents Var) : Coef ==
         n := leadingCoefficient(mon := m)
         while not zero?(mon := reductum mon) repeat
             n := n + leadingCoefficient mon
@@ -147,7 +147,7 @@ IS ==> IndexedExponents Symbol
 testEquals("coefficient(s, monomial(3,x)$IS)", "-1/6")
 
 s := (1/(1-X-Y-Z))::TS FRAC INT;
-t := coefficient(s, [x,z], [3,2]);
+t := coefficient(s, [x, z], [3, 2]);
 testEquals("degree(polynomial(t, 5), y)", "5")
 
 s := (1/(1-X-Y))::TS FRAC INT;
@@ -161,52 +161,52 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
 
 --% creation of series
 
-    coerce(r:Coef) == monom(r::SMP,0)$STT
-    smp:SMP * p:% == (((smp) *  (p pretend Rep))$STT)pretend %
-    r:Coef * p:% == (((r::SMP) *  (p pretend Rep))$STT)pretend %
-    p:% * r:Coef == (((r::SMP) * ( p pretend Rep))$STT)pretend %
-    mts(p:SMP):% ==
+    coerce(r : Coef) == monom(r::SMP, 0)$STT
+    smp : SMP * p : % == (((smp) *  (p pretend Rep))$STT)pretend %
+    r : Coef * p : % == (((r::SMP) *  (p pretend Rep))$STT)pretend %
+    p : % * r : Coef == (((r::SMP) * ( p pretend Rep))$STT)pretend %
+    mts(p : SMP) : % ==
       (uv := mainVariable p) case "failed" => monom(p,0)$STT
       v := uv :: Var
       s : % := 0
-      up := univariate(p,v)
+      up := univariate(p, v)
       while not zero? up repeat
-        s := s + monomial(1,v,degree up) * mts(leadingCoefficient up)
+        s := s + monomial(1, v, degree up) * mts(leadingCoefficient up)
         up := reductum up
       s
 
-    coerce(p:SMP) == mts p
-    coerce(v:Var) == v :: SMP :: %
+    coerce(p : SMP) == mts p
+    coerce(v : Var) == v :: SMP :: %
 
-    monomial(r:%,v:Var,n:NNI) ==
-      r * monom(monomial(1,v,n)$SMP,n)$STT
+    monomial(r : %, v : Var, n : NNI) ==
+      r * monom(monomial(1, v, n)$SMP, n)$STT
 
 --% evaluation
 
-    substvar: (SMP,L Var,L %) -> %
-    substvar(p,vl,q) ==
-      null vl => monom(p,0)$STT
+    substvar : (SMP, L Var, L %) -> %
+    substvar(p, vl, q) ==
+      null vl => monom(p, 0)$STT
       (uv := mainVariable p) case "failed" => monom(p,0)$STT
       v := uv :: Var
       v = first vl =>
         s : % := 0
-        up := univariate(p,v)
+        up := univariate(p, v)
         while not zero? up repeat
           c := leadingCoefficient up
-          s := s + first q ^ degree up * substvar(c,rest vl,rest q)
+          s := s + first q ^ degree up * substvar(c, rest vl, rest q)
           up := reductum up
         s
-      substvar(p,rest vl,rest q)
+      substvar(p, rest vl, rest q)
 
-    sortmfirst:(SMP,L Var,L %) -> %
-    sortmfirst(p,vl,q) ==
-      nlv : L Var := sort(_>,vl)
-      nq : L % := [q position$(L Var) (i,vl) for i in nlv]
-      substvar(p,nlv,nq)
+    sortmfirst : (SMP, L Var, L %) -> %
+    sortmfirst(p, vl, q) ==
+      nlv : L Var := sort(_>, vl)
+      nq : L % := [q position$(L Var) (i, vl) for i in nlv]
+      substvar(p, nlv, nq)
 
-    csubst(vl,q) == (p1: SMP): StS +-> sortmfirst(p1,vl,q pretend L(%)) pretend StS
+    csubst(vl, q) == (p1 : SMP) : StS +-> sortmfirst(p1, vl, q pretend L(%)) pretend StS
 
-    restCheck(s:StS):StS ==
+    restCheck(s : StS) : StS ==
       -- checks that stream is null or first element is 0
       -- returns empty() or rest of stream
       empty? s => s
@@ -214,52 +214,52 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
         error "eval: constant coefficient should be 0"
       rst s
 
-    eval(s:%,v:L Var,q:L %) ==
+    eval(s : %, v : L Var, q : L %) ==
       #v ~= #q =>
         error "eval: number of variables should equal number of values"
       nq : L StS := [restCheck(i pretend StS) for i in q]
-      addiag(map(csubst(v,nq),s pretend StS)$ST2(SMP,StS))$STT pretend %
+      addiag(map(csubst(v, nq), s pretend StS)$ST2(SMP, StS))$STT pretend %
 
-    substmts(v:Var,p:SMP,q:%):% ==
-      up := univariate(p,v)
+    substmts(v : Var, p : SMP, q : %) : % ==
+      up := univariate(p, v)
       ss : % := 0
       while not zero? up repeat
-        d:=degree up
-        c:SMP:=leadingCoefficient up
+        d := degree up
+        c : SMP := leadingCoefficient up
         ss := ss + c* q ^ d
         up := reductum up
       ss
 
-    subststream(v:Var,p:SMP,q:StS):StS==
-      substmts(v,p,q pretend %) pretend StS
+    subststream(v : Var, p : SMP, q : StS) : StS==
+      substmts(v, p, q pretend %) pretend StS
 
-    comp1:(Var,StS,StS) -> StS
-    comp1(v,r,t)== addiag(map((p1: SMP): StS +-> subststream(v,p1,t),r)$ST2(SMP,StS))$STT
+    comp1 : (Var, StS, StS) -> StS
+    comp1(v, r, t)== addiag(map((p1 : SMP) : StS +-> subststream(v, p1, t), r)$ST2(SMP, StS))$STT
 
-    comp(v:Var,s:StS,t:StS):StS == delay
+    comp(v : Var, s : StS, t : StS) : StS == delay
       empty? s => s
       f := frst s; r : StS := rst s;
       empty? r => s
-      empty? t => concat(f,comp1(v,r,empty()$StS))
+      empty? t => concat(f, comp1(v, r, empty()$StS))
       not zero? frst t =>
         error "eval: constant coefficient should be zero"
-      concat(f,comp1(v,r,rst t))
+      concat(f, comp1(v, r, rst t))
 
-    eval(s:%,v:Var,t:%) == comp(v,s pretend StS,t pretend StS)
+    eval(s : %, v : Var, t : %) == comp(v, s pretend StS, t pretend StS)
 
 --% differentiation and integration
 
-    differentiate(s:%,v:Var):% ==
+    differentiate(s : %, v : Var) : % ==
       empty? s => 0
-      map((z1: SMP): SMP +-> differentiate(z1,v),rst s)
+      map((z1 : SMP) : SMP +-> differentiate(z1, v), rst s)
 
-    stream(x:%):Rep == x pretend Rep
+    stream(x : %) : Rep == x pretend Rep
 
     if Coef has Algebra Fraction Integer then
 
-      (x:%) ^ (r:RN) == powern(r,stream x)$STT
-      (r:RN) * (x:%)  == map((z1: SMP): SMP +-> r * z1, stream x)$ST2(SMP,SMP) pretend %
-      (x:%) * (r:RN)  == map((z1: SMP): SMP +-> z1 * r,stream x )$ST2(SMP,SMP) pretend %
+      (x : %) ^ (r : RN) == powern(r, stream x)$STT
+      (r : RN) * (x : %)  == map((z1 : SMP) : SMP +-> r * z1, stream x)$ST2(SMP, SMP) pretend %
+      (x : %) * (r : RN)  == map((z1 : SMP) : SMP +-> z1 * r, stream x )$ST2(SMP, SMP) pretend %
 
       exp x == exp(stream x)$STF
       log x == log(stream x)$STF
@@ -292,53 +292,53 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
       asech x == asech(stream x)$STF
       acsch x == acsch(stream x)$STF
 
-      intsmp(v:Var,p: SMP): SMP ==
-        up := univariate(p,v)
+      intsmp(v : Var, p : SMP) : SMP ==
+        up := univariate(p, v)
         ss : SMP := 0
         while not zero? up repeat
           d := degree up
           c := leadingCoefficient up
-          ss := ss + inv((d+1) :: RN) * monomial(c,v,d+1)$SMP
+          ss := ss + inv((d+1) :: RN) * monomial(c, v, d+1)$SMP
           up := reductum up
         ss
 
-      fintegrate(f,v,r) ==
-        concat(r::SMP,delay map((z1: SMP): SMP +-> intsmp(v,z1),f() pretend StS))
-      integrate(s,v,r) ==
-        concat(r::SMP,map((z1: SMP): SMP +-> intsmp(v,z1),s pretend StS))
+      fintegrate(f, v, r) ==
+        concat(r::SMP, delay map((z1 : SMP) : SMP +-> intsmp(v, z1), f() pretend StS))
+      integrate(s, v, r) ==
+        concat(r::SMP, map((z1 : SMP) : SMP +-> intsmp(v, z1), s pretend StS))
 
     -- If there is more than one term of the same order, group them.
-    tout(p:SMP):OUT ==
+    tout(p : SMP) : OUT ==
       pe := p :: OUT
       monomial? p => pe
       paren pe
 
-    showAll?: () -> Boolean
+    showAll? : () -> Boolean
     -- check a global Lisp variable
     showAll?() == true
 
-    coerce(s:%):OUT ==
+    coerce(s : %) : OUT ==
       uu := s pretend Stream(SMP)
       empty? uu => (0$SMP) :: OUT
       n : NNI; count : NNI := _$streamCount$Lisp
       l : List OUT := empty()
       for n in 0..count while not empty? uu repeat
-        if frst(uu) ~= 0 then l := concat(tout frst uu,l)
+        if frst(uu) ~= 0 then l := concat(tout frst uu, l)
         uu := rst uu
       if showAll?() then
         for n in n.. while explicitEntries? uu and _
-               not eq?(uu,rst uu) repeat
-          if frst(uu) ~= 0 then l := concat(tout frst uu,l)
+               not eq?(uu, rst uu) repeat
+          if frst(uu) ~= 0 then l := concat(tout frst uu, l)
           uu := rst uu
       l :=
         explicitlyEmpty? uu => l
-        eq?(uu,rst uu) and frst uu = 0 => l
+        eq?(uu, rst uu) and frst uu = 0 => l
         concat(prefix("O" :: OUT,[n :: OUT]),l)
       empty? l => (0$SMP) :: OUT
       reduce("+",reverse! l)
     if Coef has Field then
          SF2==> StreamFunctions2
-         p:% / r:Coef ==(map((z1: SMP): SMP +-> z1/$SMP r,stream p)$SF2(SMP,SMP))pretend %
+         p : % / r : Coef ==(map((z1 : SMP) : SMP +-> z1/$SMP r, stream p)$SF2(SMP, SMP))pretend %
 
 @
 \section{domain TS TaylorSeries}
@@ -357,39 +357,39 @@ testEquals("polynomial(t, 5)", "1+2*y+3*y^2+4*y^3+5*y^4+6*y^5")
 ++ Description:
 ++   \spadtype{TaylorSeries} is a general multivariate Taylor series domain
 ++   over the ring Coef and with variables of type Symbol.
-TaylorSeries(Coef): Exports == Implementation where
+TaylorSeries(Coef) : Exports == Implementation where
   Coef  : Ring
   L   ==> List
   NNI ==> NonNegativeInteger
   SMP ==> Polynomial Coef
   StS ==> Stream SMP
 
-  Exports ==> MultivariateTaylorSeriesCategory(Coef,Symbol) with
-    coefficient: (%,NNI) -> SMP
+  Exports ==> MultivariateTaylorSeriesCategory(Coef, Symbol) with
+    coefficient : (%, NNI) -> SMP
       ++\spad{coefficient(s, n)} gives the terms of total degree n.
-    coerce: Symbol -> %
+    coerce : Symbol -> %
       ++\spad{coerce(s)} converts a variable to a Taylor series
-    coerce: SMP -> %
+    coerce : SMP -> %
       ++\spad{coerce(s)} regroups terms of s by total degree
       ++ and forms a series.
 
     if Coef has Algebra Fraction Integer then
-      integrate: (%,Symbol,Coef) -> %
-        ++\spad{integrate(s,v,c)} is the integral of s with respect
+      integrate : (%, Symbol, Coef) -> %
+        ++\spad{integrate(s, v, c)} is the integral of s with respect
         ++ to v and having c as the constant of integration.
-      fintegrate: (() -> %,Symbol,Coef) -> %
-        ++\spad{fintegrate(f,v,c)} is the integral of \spad{f()} with respect
+      fintegrate : (() -> %, Symbol, Coef) -> %
+        ++\spad{fintegrate(f, v, c)} is the integral of \spad{f()} with respect
         ++ to v and having c as the constant of integration.
         ++ The evaluation of \spad{f()} is delayed.
 
-  Implementation ==> SparseMultivariateTaylorSeries(Coef,Symbol,SMP) add
+  Implementation ==> SparseMultivariateTaylorSeries(Coef, Symbol, SMP) add
     Rep := StS -- Below we use the fact that Rep of PS is Stream SMP.
 
-    polynomial(s,n) ==
+    polynomial(s, n) ==
       sum : SMP := 0
       for i in 0..n while not empty? s repeat
         sum := sum + frst s
-        s:= rst s
+        s := rst s
       sum
 
 @

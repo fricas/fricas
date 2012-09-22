@@ -18,9 +18,9 @@
 ++ Description: SystemODESolver provides tools for triangulating
 ++ and solving some systems of linear ordinary differential equations.
 ++ Keywords: differential equation, ODE, system
-SystemODESolver(F, LO): Exports == Implementation where
+SystemODESolver(F, LO) : Exports == Implementation where
   F : Field
-  LO: LinearOrdinaryDifferentialOperatorCategory F
+  LO : LinearOrdinaryDifferentialOperatorCategory F
 
   N   ==> NonNegativeInteger
   Z   ==> Integer
@@ -29,35 +29,35 @@ SystemODESolver(F, LO): Exports == Implementation where
   V   ==> Vector F
   UF  ==> Union(F, "failed")
   UV  ==> Union(V, "failed")
-  REC ==> Record(mat: M, vec: V)
-  FSL ==> Record(particular: UF, basis: List F)
-  VSL ==> Record(particular: UV, basis: List V)
-  SOL ==> Record(particular: F, basis: List F)
+  REC ==> Record(mat : M, vec : V)
+  FSL ==> Record(particular : UF, basis : List F)
+  VSL ==> Record(particular : UV, basis : List V)
+  SOL ==> Record(particular : F, basis : List F)
   USL ==> Union(SOL, "failed")
-  ER  ==> Record(C: MF, g: V, eq: LO, rh: F)
+  ER  ==> Record(C : MF, g : V, eq : LO, rh : F)
 
   Exports ==> with
-    triangulate: (MF, V) -> Record(A:MF, eqs: List ER)
-      ++ triangulate(M,v) returns
-      ++ \spad{A,[[C_1,g_1,L_1,h_1],...,[C_k,g_k,L_k,h_k]]}
+    triangulate : (MF, V) -> Record(A : MF, eqs : List ER)
+      ++ triangulate(M, v) returns
+      ++ \spad{A, [[C_1, g_1, L_1, h_1], ..., [C_k, g_k, L_k, h_k]]}
       ++ such that under the change of variable \spad{y = A z}, the first
       ++ order linear system \spad{D y = M y + v} is uncoupled as
       ++ \spad{D z_i = C_i z_i + g_i} and each \spad{C_i} is a companion
       ++ matrix corresponding to the scalar equation \spad{L_i z_j = h_i}.
-    triangulate: (M, V) -> REC
+    triangulate : (M, V) -> REC
       ++ triangulate(m, v) returns \spad{[m_0, v_0]} such that \spad{m_0}
       ++ is upper triangular and the system \spad{m_0 x = v_0} is equivalent
       ++ to \spad{m x = v}.
-    solve: (MF,V,(LO,F)->USL) -> Union(Record(particular:V, basis:MF), "failed")
-      ++ solve(m, v, solve) returns \spad{[[v_1,...,v_m], v_p]} such that
+    solve : (MF,V,(LO,F)->USL) -> Union(Record(particular:V, basis:MF), "failed")
+      ++ solve(m, v, solve) returns \spad{[[v_1, ..., v_m], v_p]} such that
       ++ the solutions in \spad{F} of the system \spad{D x = m x + v} are
       ++ \spad{v_p + c_1 v_1 + ... + c_m v_m} where the \spad{c_i's} are
       ++ constants, and the \spad{v_i's} form a basis for the solutions of
       ++ \spad{D x = m x}.
       ++ Argument \spad{solve} is a function for solving a single linear
       ++ ordinary differential equation in \spad{F}.
-    solveInField: (M, V, (LO, F) -> FSL) -> VSL
-      ++ solveInField(m, v, solve) returns \spad{[[v_1,...,v_m], v_p]} such that
+    solveInField : (M, V, (LO, F) -> FSL) -> VSL
+      ++ solveInField(m, v, solve) returns \spad{[[v_1, ..., v_m], v_p]} such that
       ++ the solutions in \spad{F} of the system \spad{m x = v} are
       ++ \spad{v_p + c_1 v_1 + ... + c_m v_m} where the \spad{c_i's} are
       ++ constants, and the \spad{v_i's} form a basis for the solutions of
@@ -71,7 +71,7 @@ SystemODESolver(F, LO): Exports == Implementation where
     applyLodo   : (M, Z, V, N) -> F
     applyLodo0  : (M, Z, Matrix F, Z, N) -> F
     backsolve   : (M, V, (LO, F) -> FSL) -> VSL
-    firstnonzero: (M, Z) -> Z
+    firstnonzero : (M, Z) -> Z
     FSL2USL     : FSL -> USL
     M2F         : M -> Union(MF, "failed")
 
@@ -79,25 +79,25 @@ SystemODESolver(F, LO): Exports == Implementation where
 
     solve(mm, v, solve) ==
       rec  := triangulate(mm, v)
-      sols:List(SOL) := empty()
+      sols : List(SOL) := empty()
       for e in rec.eqs repeat
           (u := solve(e.eq, e.rh)) case "failed" => return "failed"
           sols := concat(u::SOL, sols)
       n := nrows(rec.A)    -- dimension of original vectorspace
-      k:N := 0             -- sum of sizes of visited companionblocks
-      i:N := 0             -- number of companionblocks
-      m:N := 0             -- number of Solutions
-      part:V := new(n, 0)
+      k : N := 0             -- sum of sizes of visited companionblocks
+      i : N := 0             -- number of companionblocks
+      m : N := 0             -- number of Solutions
+      part : V := new(n, 0)
       -- count first the different solutions
-      for sol in sols repeat m := m + count((f1: F): Boolean +-> f1 ~= 0, sol.basis)$List(F)
-      SolMatrix:MF := new(n, m, 0)
+      for sol in sols repeat m := m + count((f1 : F) : Boolean +-> f1 ~= 0, sol.basis)$List(F)
+      SolMatrix : MF := new(n, m, 0)
       m := 0
       for sol in reverse! sols repeat
           i := i+1
           er := rec.eqs.i
           nn := #(er.g)           -- size of active companionblock
           for s in sol.basis repeat
-              solVec:V := new(n, 0)
+              solVec : V := new(n, 0)
               -- compute corresponding solution base with recursion (24)
               solVec(k+1) := s
               for l in 2..nn repeat solVec(k+l) := diff solVec(k+l-1)
@@ -110,19 +110,19 @@ SystemODESolver(F, LO): Exports == Implementation where
       -- transform these values back to the original system
       [rec.A * part, rec.A * SolMatrix]
 
-    triangulate(m:MF, v:V) ==
-      k:N := 0       -- sum of companion-dimensions
-      rat := normalForm(m, 1, (f1: F): F +-> - diff f1)
+    triangulate(m : MF, v : V) ==
+      k : N := 0       -- sum of companion-dimensions
+      rat := normalForm(m, 1, (f1 : F) : F +-> - diff f1)
       l   := companionBlocks(rat.R, rat.Ainv * v)
-      ler:List(ER) := empty()
+      ler : List(ER) := empty()
       for er in l repeat
         n := nrows(er.C)         -- dimension of this companion vectorspace
-        op:LO := 0               -- compute homogeneous equation
+        op : LO := 0               -- compute homogeneous equation
         for j in 0..n-1 repeat op := op + monomial((er.C)(n, j + 1), j)
         op := monomial(1, n) - op
-        sum:V := new(n::N, 0)    -- compute inhomogen Vector (25)
+        sum : V := new(n::N, 0)    -- compute inhomogen Vector (25)
         for j in 1..n-1 repeat sum(j+1) := diff(sum j) + (er.g) j
-        h0:F := 0                 -- compute inhomogenity (26)
+        h0 : F := 0                 -- compute inhomogenity (26)
         for j in 1..n repeat h0 := h0 - (er.C)(n, j) * sum j
         h0 := h0 + diff(sum n) + (er.g) n
         ler := concat([er.C, er.g, op, h0], ler)
@@ -131,7 +131,7 @@ SystemODESolver(F, LO): Exports == Implementation where
 
 -- like solveInField, but expects a system already triangularized
     backsolve(m, v, solve) ==
-      part:V
+      part : V
       r := maxRowIndex m
       offset := minIndex v - (mr := minRowIndex m)
       while r >= mr and every?(zero?, row(m, r))$Vector(LO) repeat r := r - 1
@@ -144,10 +144,10 @@ SystemODESolver(F, LO): Exports == Implementation where
         part := new(dim, 0)                           -- particular solution
         part(r + offset) :=  u::F
 -- hom is the basis for the homogeneous solutions, each column is a solution
-      hom:Matrix(F) := new(dim, #(rec.basis), 0)
+      hom : Matrix(F) := new(dim, #(rec.basis), 0)
       for i in minColIndex hom .. maxColIndex hom for b in rec.basis repeat
         hom(r, i) := b
-      n:N := 1                 -- number of equations already solved
+      n : N := 1                 -- number of equations already solved
       while r > mr repeat
         r := r - 1
         c := c - 1
@@ -159,7 +159,7 @@ SystemODESolver(F, LO): Exports == Implementation where
         for i in minColIndex hom .. maxColIndex hom repeat
           hom(r, i) := - applyLodo0(m, r, hom, i, n)
         n := n + 1
-      bas:List(V) := [column(hom,i) for i in minColIndex hom..maxColIndex hom]
+      bas : List(V) := [column(hom, i) for i in minColIndex hom..maxColIndex hom]
       part? => [part, bas]
       ["failed", bas]
 
@@ -168,13 +168,13 @@ SystemODESolver(F, LO): Exports == Implementation where
          ((u := M2F(diagonalMatrix [diff for i in 1..n] - m)) case MF) =>
              (uu := solve(u::MF, v, (l1: LO, f2: F): USL +-> FSL2USL solve(l1, f2))) case "failed" =>
                   ["failed", empty()]
-             rc := uu::Record(particular:V, basis:MF)
+             rc := uu::Record(particular : V, basis : MF)
              [rc.particular, [column(rc.basis, i) for i in 1..ncols(rc.basis)]]
       rec := triangulate(m, v)
       backsolve(rec.mat, rec.vec, solve)
 
     M2F m ==
-        mf:MF := new(nrows m, ncols m, 0)
+        mf : MF := new(nrows m, ncols m, 0)
         for i in minRowIndex m .. maxRowIndex m repeat
             for j in minColIndex m .. maxColIndex m repeat
                 (u := retractIfCan(m(i, j))@Union(F, "failed")) case "failed" =>
@@ -194,7 +194,7 @@ SystemODESolver(F, LO): Exports == Implementation where
 
 -- computes +/[m(r, i) v(i) for i ranging over the last n columns of m]
     applyLodo(m, r, v, n) ==
-      ans:F := 0
+      ans : F := 0
       c := maxColIndex m
       cv := maxIndex v
       for i in 1..n repeat
@@ -214,7 +214,7 @@ SystemODESolver(F, LO): Exports == Implementation where
         rr := rr - 1
       ans
 
-    triangulate(m:M, v:V) ==
+    triangulate(m : M, v : V) ==
       x := copy m
       w := copy v
       nrows := maxRowIndex x
@@ -226,15 +226,15 @@ SystemODESolver(F, LO): Exports == Implementation where
         rown := minr - 1
         for k in i .. nrows repeat
           if (x(k, j) ~= 0) and ((rown = minr - 1) or
-                              degree x(k,j) < degree x(rown,j)) then rown := k
+                              degree x(k, j) < degree x(rown, j)) then rown := k
           rown = minr - 1 => "enuf"
           x := swapRows!(x, i, rown)
           swap!(w, i + offset, rown + offset)
         for k in i+1 .. nrows | x(k, j) ~= 0 repeat
-          l := rightLcm(x(i,j), x(k,j))
+          l := rightLcm(x(i, j), x(k, j))
           a := rightQuotient(l, x(i, j))
           b := rightQuotient(l, x(k, j))
-          -- l = a x(i,j) = b x(k,j)
+          -- l = a x(i, j) = b x(k, j)
           for k1 in j+1 .. ncols repeat
             x(k, k1) :=  a * x(i, k1) - b * x(k, k1)
           x(k, j) := 0
@@ -251,33 +251,33 @@ SystemODESolver(F, LO): Exports == Implementation where
 ++ Date Last Updated: 11 April 1994
 ++ Description: Elimination of an algebraic from the coefficentss
 ++ of a linear ordinary differential equation.
-ReduceLODE(F, L, UP, A, LO): Exports == Implementation where
+ReduceLODE(F, L, UP, A, LO) : Exports == Implementation where
   F : Field
   L : LinearOrdinaryDifferentialOperatorCategory F
-  UP: UnivariatePolynomialCategory F
+  UP : UnivariatePolynomialCategory F
   A : MonogenicAlgebra(F, UP)
-  LO: LinearOrdinaryDifferentialOperatorCategory A
+  LO : LinearOrdinaryDifferentialOperatorCategory A
 
   V ==> Vector F
   M ==> Matrix L
 
   Exports ==> with
-    reduceLODE: (LO, A) -> Record(mat:M, vec:V)
+    reduceLODE : (LO, A) -> Record(mat : M, vec : V)
       ++ reduceLODE(op, g) returns \spad{[m, v]} such that
       ++ any solution in \spad{A} of \spad{op z = g}
-      ++ is of the form \spad{z = (z_1,...,z_m) . (b_1,...,b_m)} where
+      ++ is of the form \spad{z = (z_1, ..., z_m) . (b_1, ..., b_m)} where
       ++ the \spad{b_i's} are the basis of \spad{A} over \spad{F} returned
       ++ by \spadfun{basis}() from \spad{A}, and the \spad{z_i's} satisfy the
       ++ differential system \spad{M.z = v}.
 
   Implementation ==> add
-    matF2L: Matrix F -> M
+    matF2L : Matrix F -> M
 
     diff := D()$L
 
 -- coerces a matrix of elements of F into a matrix of (order 0) L.O.D.O's
     matF2L m ==
-      map((f1: F): L +-> f1::L, m)$MatrixCategoryFunctions2(F, V, V, Matrix F,
+      map((f1 : F) : L +-> f1::L, m)$MatrixCategoryFunctions2(F, V, V, Matrix F,
                                                 L, Vector L, Vector L, M)
 
 -- This follows the algorithm and notation of
@@ -286,7 +286,7 @@ ReduceLODE(F, L, UP, A, LO): Exports == Implementation where
     reduceLODE(l, g) ==
       n := rank()$A
 -- md is the basic differential matrix (D x I + Dy)
-      md := matF2L transpose derivationCoordinates(basis(), (f1: F): F +-> diff f1)
+      md := matF2L transpose derivationCoordinates(basis(), (f1 : F) : F +-> diff f1)
       for i in minRowIndex md .. maxRowIndex md
         for j in minColIndex md .. maxColIndex md repeat
           md(i, j) := diff + md(i, j)
@@ -308,11 +308,11 @@ ReduceLODE(F, L, UP, A, LO): Exports == Implementation where
 ++ Date Last Updated: 3 February 1994
 ++ Description: In-field solution of an linear ordinary differential equation,
 ++ pure algebraic case.
-PureAlgebraicLODE(F, UP, UPUP, R): Exports == Implementation where
+PureAlgebraicLODE(F, UP, UPUP, R) : Exports == Implementation where
   F   : Join(Field, CharacteristicZero,
              RetractableTo Integer, RetractableTo Fraction Integer)
   UP  : UnivariatePolynomialCategory F
-  UPUP: UnivariatePolynomialCategory Fraction UP
+  UPUP : UnivariatePolynomialCategory Fraction UP
   R   : FunctionFieldCategory(F, UP, UPUP)
 
   RF  ==> Fraction UP
@@ -323,10 +323,10 @@ PureAlgebraicLODE(F, UP, UPUP, R): Exports == Implementation where
   LQ  ==> LinearOrdinaryDifferentialOperator1 RF
 
   Exports ==> with
-    algDsolve: (L, R) -> Record(particular: U, basis: List R)
+    algDsolve : (L, R) -> Record(particular : U, basis : List R)
       ++ algDsolve(op, g) returns \spad{["failed", []]} if the equation
       ++ \spad{op y = g} has no solution in \spad{R}. Otherwise, it returns
-      ++ \spad{[f, [y1,...,ym]]} where \spad{f} is a particular rational
+      ++ \spad{[f, [y1, ..., ym]]} where \spad{f} is a particular rational
       ++ solution and the \spad{y_i's} form a basis for the solutions in
       ++ \spad{R} of the homogeneous equation.
 
@@ -338,7 +338,7 @@ PureAlgebraicLODE(F, UP, UPUP, R): Exports == Implementation where
     algDsolve(l, g) ==
       rec := reduceLODE(l, g)
       sol := solveInField(rec.mat, rec.vec, ratDsolve)
-      bas:List(R) := [represents v for v in sol.basis]
+      bas : List(R) := [represents v for v in sol.basis]
       (u := sol.particular) case V => [represents(u::V), bas]
       ["failed", bas]
 

@@ -44,46 +44,46 @@
 ++ \spadtype{GaloisGroupFactorizationUtilities} provides functions
 ++ that will be used by the factorizer.
 
-GaloisGroupFactorizationUtilities(R,UP,F): Exports == Implementation where
+GaloisGroupFactorizationUtilities(R, UP, F) : Exports == Implementation where
   R : Ring
   UP : UnivariatePolynomialCategory R
-  F : Join(FloatingPointSystem,RetractableTo(R),Field,
-   TranscendentalFunctionCategory,ElementaryFunctionCategory)
+  F : Join(FloatingPointSystem, RetractableTo(R), Field,
+   TranscendentalFunctionCategory, ElementaryFunctionCategory)
   N ==> NonNegativeInteger
   P ==> PositiveInteger
   Z ==> Integer
 
   Exports ==> with
-    beauzamyBound: UP -> Z -- See [1]
+    beauzamyBound : UP -> Z -- See [1]
       ++ beauzamyBound(p) returns a bound on the larger coefficient of any
       ++ factor of p.
-    bombieriNorm: UP -> F -- See [1]
+    bombieriNorm : UP -> F -- See [1]
       ++ bombieriNorm(p) returns quadratic Bombieri's norm of p.
-    bombieriNorm: (UP,P) -> F -- See [2] and [3]
-      ++ bombieriNorm(p,n) returns the nth Bombieri's norm of p.
-    rootBound: UP -> Z -- See [4] and [5]
+    bombieriNorm : (UP, P) -> F -- See [2] and [3]
+      ++ bombieriNorm(p, n) returns the nth Bombieri's norm of p.
+    rootBound : UP -> Z -- See [4] and [5]
       ++ rootBound(p) returns a bound on the largest norm of the complex roots
       ++ of p.
-    singleFactorBound: (UP,N) -> Z -- See [6]
-      ++ singleFactorBound(p,r) returns a bound on the infinite norm of
+    singleFactorBound : (UP, N) -> Z -- See [6]
+      ++ singleFactorBound(p, r) returns a bound on the infinite norm of
       ++ the factor of p with smallest Bombieri's norm. r is a lower bound
       ++ for the number of factors of p. p shall be of degree higher or equal
       ++ to 2.
-    singleFactorBound: UP -> Z -- See [6]
-      ++ singleFactorBound(p,r) returns a bound on the infinite norm of
+    singleFactorBound : UP -> Z -- See [6]
+      ++ singleFactorBound(p, r) returns a bound on the infinite norm of
       ++ the factor of p with smallest Bombieri's norm. p shall be of degree
       ++ higher or equal to 2.
-    norm: (UP,P) -> F
-      ++ norm(f,p) returns the lp norm of the polynomial f.
-    quadraticNorm: UP -> F
+    norm : (UP, P) -> F
+      ++ norm(f, p) returns the lp norm of the polynomial f.
+    quadraticNorm : UP -> F
       ++ quadraticNorm(f) returns the l2 norm of the polynomial f.
-    infinityNorm: UP -> F
+    infinityNorm : UP -> F
       ++ infinityNorm(f) returns the maximal absolute value of the coefficients
       ++ of the polynomial f.
-    height: UP -> F
+    height : UP -> F
       ++ height(p) returns the maximal absolute value of the coefficients of
       ++ the polynomial p.
-    length: UP -> F
+    length : UP -> F
       ++ length(p) returns the sum of the absolute values of the coefficients
       ++ of the polynomial p.
 
@@ -91,41 +91,41 @@ GaloisGroupFactorizationUtilities(R,UP,F): Exports == Implementation where
 
     import GaloisGroupUtilities(F)
 
-    height(p:UP):F == infinityNorm(p)
+    height(p : UP) : F == infinityNorm(p)
 
-    length(p:UP):F == norm(p,1)
+    length(p : UP) : F == norm(p, 1)
 
-    norm(f:UP,p:P):F ==
+    norm(f : UP, p : P) : F ==
       n : F := 0
       for c in coefficients f repeat
         n := n+abs(c::F)^p
-      nthRoot(n,p::N)
+      nthRoot(n, p::N)
 
-    quadraticNorm(f:UP):F == norm(f,2)
+    quadraticNorm(f : UP) : F == norm(f, 2)
 
-    infinityNorm(f:UP):F ==
+    infinityNorm(f : UP) : F ==
       n : F := 0
       for c in coefficients f repeat
-        n := max(n,c::F)
+        n := max(n, c::F)
       n
 
-    singleFactorBound(p:UP,r:N):Z == -- See [6]
+    singleFactorBound(p : UP, r : N) : Z == -- See [6]
       n : N := degree p
-      r := max(2,r)
+      r := max(2, r)
       n < r => error "singleFactorBound: Bad arguments."
       nf : F := n :: F
-      num : F := nthRoot(bombieriNorm(p),r)
-      if F has Gamma: F -> F then
-        num := num*nthRoot(Gamma(nf+1$F),2*r)
+      num : F := nthRoot(bombieriNorm(p), r)
+      if F has Gamma : F -> F then
+        num := num*nthRoot(Gamma(nf+1$F), 2*r)
         den : F := Gamma(nf/((2*r)::F)+1$F)
       else
         num := num*(2::F)^(5/8+n/2)*exp(1$F/(4*nf))
         den : F := (pi()$F*nf)^(3/8)
       safeFloor( num/den )
 
-    singleFactorBound(p:UP):Z == singleFactorBound(p,2) -- See [6]
+    singleFactorBound(p : UP) : Z == singleFactorBound(p, 2) -- See [6]
 
-    rootBound(p:UP):Z == -- See [4] and [5]
+    rootBound(p : UP) : Z == -- See [4] and [5]
       n := degree p
       zero? n => 0
       lc := abs(leadingCoefficient(p)::F)
@@ -136,37 +136,37 @@ GaloisGroupFactorizationUtilities(R,UP,F): Exports == Implementation where
       c : F := 0
       cl : F := 0
       for i in 1..n repeat
-        c := abs(coefficient(p,(n-i)::N)::F)
-        b1 := max(b1,c)
+        c := abs(coefficient(p, (n-i)::N)::F)
+        b1 := max(b1, c)
         cl := c/lc
-        b2 := max(b2,nthRoot(cl,i))
-        b3 := max(b3,nthRoot(cl/pascalTriangle(n,i),i))
-        b4 := max(b4,nthRoot(n*cl,i))
-      min(1+safeCeiling(b1/lc),min(safeCeiling(2*b2),min(safeCeiling(b3/
-       (nthRoot(2::F,n)-1)),safeCeiling(b4))))
+        b2 := max(b2, nthRoot(cl, i))
+        b3 := max(b3, nthRoot(cl/pascalTriangle(n, i), i))
+        b4 := max(b4, nthRoot(n*cl, i))
+      min(1+safeCeiling(b1/lc), min(safeCeiling(2*b2), min(safeCeiling(b3/
+       (nthRoot(2::F, n)-1)), safeCeiling(b4))))
 
-    beauzamyBound(f:UP):Z == -- See [1]
+    beauzamyBound(f : UP) : Z == -- See [1]
       d := degree f
       zero? d => safeFloor bombieriNorm f
       safeFloor( (bombieriNorm(f)*(3::F)^(3/4+d/2))/
        (2*sqrt(pi()$F*(d::F))) )
 
-    bombieriNorm(f:UP,p:P):F == -- See [2] and [3]
+    bombieriNorm(f : UP, p : P) : F == -- See [2] and [3]
       d := degree f
-      b := abs(coefficient(f,0)::F)
+      b := abs(coefficient(f, 0)::F)
       if zero? d then return b
        else b := b^p
       b := b+abs(leadingCoefficient(f)::F)^p
       dd := (d-1) quo 2
       for i in 1..dd repeat
-        b := b+(abs(coefficient(f,i)::F)^p+abs(coefficient(f,(d-i)::N)::F)^p)
-         /pascalTriangle(d,i)
+        b := b+(abs(coefficient(f, i)::F)^p+abs(coefficient(f, (d-i)::N)::F)^p)
+         /pascalTriangle(d, i)
       if even? d then
         dd := dd+1
-        b := b+abs(coefficient(f, dd::N)::F)^p/pascalTriangle(d,dd)
-      nthRoot(b,p::N)
+        b := b+abs(coefficient(f, dd::N)::F)^p/pascalTriangle(d, dd)
+      nthRoot(b, p::N)
 
-    bombieriNorm(f:UP):F == bombieriNorm(f,2) -- See [1]
+    bombieriNorm(f : UP) : F == bombieriNorm(f, 2) -- See [1]
 
 @
 \section{License}

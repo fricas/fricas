@@ -17,20 +17,20 @@
 ++ Date Created: ???
 ++ Date Last Updated: 19 April 1991
 ++ Description: tools for the summation packages.
-InnerPolySum(E, V, R, P): Exports == Impl where
-    E: OrderedAbelianMonoidSup
-    V: OrderedSet
-    R: IntegralDomain
-    P: PolynomialCategory(R, E, V)
+InnerPolySum(E, V, R, P) : Exports == Impl where
+    E : OrderedAbelianMonoidSup
+    V : OrderedSet
+    R : IntegralDomain
+    P : PolynomialCategory(R, E, V)
 
     Z   ==> Integer
     Q   ==> Fraction Z
     SUP ==> SparseUnivariatePolynomial
 
     Exports ==> with
-        sum: (P, V, Segment P) -> Record(num:P, den:Z)
+        sum : (P, V, Segment P) -> Record(num : P, den : Z)
             ++ sum(p(n), n = a..b) returns \spad{p(a) + p(a+1) + ... + p(b)}.
-        sum: (P, V) -> Record(num:P, den: Z)
+        sum : (P, V) -> Record(num : P, den : Z)
             ++ sum(p(n), n) returns \spad{P(n)},
             ++ the indefinite sum of \spad{p(n)} with respect to
             ++ upward difference on n, i.e. \spad{P(n+1) - P(n) = a(n)};
@@ -39,7 +39,7 @@ InnerPolySum(E, V, R, P): Exports == Impl where
         import PolynomialNumberTheoryFunctions()
         import UnivariatePolynomialCommonDenominator(Z, Q, SUP Q)
 
-        pmul: (P, SUP Q) -> Record(num:SUP P, den:Z)
+        pmul : (P, SUP Q) -> Record(num : SUP P, den : Z)
 
         pmul(c, p) ==
             pn := (rec := splitDenominator p).num
@@ -74,13 +74,13 @@ InnerPolySum(E, V, R, P): Exports == Impl where
 ++ Date Created: ???
 ++ Date Last Updated: 19 August 1991
 ++ Description: Gosper's summation algorithm.
-GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
-    E: OrderedAbelianMonoidSup
-    V: OrderedSet
-    R: IntegralDomain
-    P: PolynomialCategory(R, E, V)
-    Q: Join(RetractableTo Fraction Integer, Field with
-              (coerce: P -> %; numer : % -> P; denom : % -> P))
+GosperSummationMethod(E, V, R, P, Q) : Exports == Impl where
+    E : OrderedAbelianMonoidSup
+    V : OrderedSet
+    R : IntegralDomain
+    P : PolynomialCategory(R, E, V)
+    Q : Join(RetractableTo Fraction Integer, Field with
+              (coerce : P -> %; numer : % -> P; denom : % -> P))
 
     I   ==> Integer
     RN  ==> Fraction I
@@ -88,7 +88,7 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
     RQ  ==> Fraction PQ
 
     Exports ==> with
-        GospersMethod: (Q, V, () -> V) -> Union(Q, "failed")
+        GospersMethod : (Q, V, () -> V) -> Union(Q, "failed")
             ++ GospersMethod(b, n, new) returns a rational function
             ++ \spad{rf(n)} such that \spad{a(n) * rf(n)} is the indefinite
             ++ sum of \spad{a(n)}
@@ -105,17 +105,17 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
 
     Impl ==> add
       import PolynomialCategoryQuotientFunctions(E, V, R, P, Q)
-      import LinearSystemMatrixPackage(RQ,Vector RQ,Vector RQ,Matrix RQ)
+      import LinearSystemMatrixPackage(RQ, Vector RQ, Vector RQ, Matrix RQ)
 
-      InnerGospersMethod: (RQ, V, () -> V) -> Union(RQ, "failed")
-      GosperPQR:   (PQ, PQ, V, () -> V)       -> List PQ
-      GosperDegBd: (PQ, PQ, PQ, V, () -> V)    -> I
-      GosperF:     (I, PQ, PQ, PQ, V, () -> V) -> Union(RQ, "failed")
-      linearAndNNIntRoot: (PQ, V) -> Union(I, "failed")
-      deg0:    (PQ, V) -> I       -- degree with deg 0 = -1.
-      pCoef:   (PQ, PQ) -> PQ  -- pCoef(p, a*b^2)
-      RF2QIfCan: Q -> Union(RQ, "failed")
-      UP2QIfCan: P -> Union(PQ,"failed")
+      InnerGospersMethod : (RQ, V, () -> V) -> Union(RQ, "failed")
+      GosperPQR :   (PQ, PQ, V, () -> V)       -> List PQ
+      GosperDegBd : (PQ, PQ, PQ, V, () -> V)    -> I
+      GosperF :     (I, PQ, PQ, PQ, V, () -> V) -> Union(RQ, "failed")
+      linearAndNNIntRoot : (PQ, V) -> Union(I, "failed")
+      deg0 :    (PQ, V) -> I       -- degree with deg 0 = -1.
+      pCoef :   (PQ, PQ) -> PQ  -- pCoef(p, a*b^2)
+      RF2QIfCan : Q -> Union(RQ, "failed")
+      UP2QIfCan : P -> Union(PQ,"failed")
       RFQ2R    : RQ -> Q
       PQ2R     : PQ -> Q
       rat?     : R  -> Boolean
@@ -147,16 +147,16 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
         "failed"
 
       InnerGospersMethod(aquo, n, newV) ==
-            -- 1. Define coprime polys an,anm1 such that
+            -- 1. Define coprime polys an, anm1 such that
             --      an/anm1=a(n)/a(n-1)
             an   := numer aquo
             anm1 := denom aquo
 
-            -- 2. Define p,q,r such that
+            -- 2. Define p, q, r such that
             --      a(n)/a(n-1) = (p(n)/p(n-1)) * (q(n)/r(n))
             --    and
             --      gcd(q(n), r(n+j)) = 1, for all j: NNI.
-            pqr:= GosperPQR(an, anm1, n, newV)
+            pqr := GosperPQR(an, anm1, n, newV)
             pn := first pqr; qn := second pqr; rn := third pqr
 
             -- 3. If the sum is a rational fn, there is a poly f with
@@ -172,21 +172,21 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
             fn  := ufn::RQ
 
             -- 6. The sum is q(n-1)/p(n)*f(n) * a(n). We leave out a(n).
-            --qnm1 := eval(qn,n,n::PQ - 1)
+            --qnm1 := eval(qn, n, n::PQ - 1)
             --qnm1/pn * fn
-            qn1 := eval(qn,n,n::PQ + 1)
+            qn1 := eval(qn, n, n::PQ + 1)
             qn1/pn * fn
 
       GosperF(k, pn, qn, rn, n, newV) ==
             mv := newV(); mp := mv::PQ; np := n::PQ
-            fn:       PQ := +/[mp^(i+1) * np^i for i in 0..k]
-            fnminus1: PQ := eval(fn, n, np-1)
+            fn :       PQ := +/[mp^(i+1) * np^i for i in 0..k]
+            fnminus1 : PQ := eval(fn, n, np-1)
             qnplus1        := eval(qn, n, np+1)
             zro  := qnplus1 * fn - rn * fnminus1 - pn
             zron := univariate(zro, n)
             dz  := degree zron
-            mat: Matrix RQ := zero(dz+1, (k+1)::NonNegativeInteger)
-            vec: Vector RQ := new(dz+1, 0)
+            mat : Matrix RQ := zero(dz+1, (k+1)::NonNegativeInteger)
+            vec : Vector RQ := new(dz+1, 0)
             while zron ~= 0 repeat
                 cz := leadingCoefficient zron
                 dz := degree zron
@@ -206,9 +206,9 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
       GosperPQR(an, anm1, n, newV) ==
             np := n::PQ   -- polynomial version of n
             -- Initial guess.
-            pn: PQ := 1
-            qn: PQ := an
-            rn: PQ := anm1
+            pn : PQ := 1
+            qn : PQ := an
+            rn : PQ := anm1
             -- Find all j: NNI giving common factors to q(n) and r(n+j).
             j     := newV()
             rnj   := eval(rn, n, np + j::PQ)
@@ -216,11 +216,11 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
             fres  := factor(res)$MRationalFactorize(IndexedExponents V,
                                                     V, I, PQ)
             js    := [rt::I for fe in factors fres
-                       | (rt := linearAndNNIntRoot(fe.factor,j)) case I]
+                       | (rt := linearAndNNIntRoot(fe.factor, j)) case I]
             -- For each such j, change variables to remove the gcd.
             for rt in js repeat
-                rtp:= rt::PQ  -- polynomial version of rt
-                gn := gcd(qn, eval(rn,n,np+rtp))
+                rtp := rt::PQ  -- polynomial version of rt
+                gn := gcd(qn, eval(rn, n, np+rtp))
                 qn := (qn exquo gn)::PQ
                 rn := (rn exquo eval(gn, n, np-rtp))::PQ
                 pn := pn * */[eval(gn, n, np-i::PQ) for i in 0..rt-1]
@@ -244,7 +244,7 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
             kk := newV()::PQ
             ck := newV()::PQ
             ckm1 := newV()::PQ
-            nkm1:= newV()::PQ
+            nkm1 := newV()::PQ
             nk := np*nkm1
             headfn   := ck*nk +         ckm1*nkm1
             headfnm1 := ck*nk + (ckm1-kk*ck)*nkm1
@@ -261,9 +261,9 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
               error "pCoef requires a monomial 2nd arg"
             vlist := variables nom
             for v in vlist while p ~= 0 repeat
-                unom:= univariate(nom,v)
-                pow:=degree unom
-                nom:=leadingCoefficient unom
+                unom := univariate(nom, v)
+                pow := degree unom
+                nom := leadingCoefficient unom
                 up  := univariate(p, v)
                 p   := coefficient(up, pow)
             p
@@ -288,8 +288,8 @@ GosperSummationMethod(E, V, R, P, Q): Exports == Impl where
 ++ Date Created: ???
 ++ Date Last Updated: 19 April 1991
 ++ Description: Computes sums of rational functions;
-RationalFunctionSum(R): Exports == Impl where
-    R: Join(IntegralDomain, Comparable, RetractableTo Integer)
+RationalFunctionSum(R) : Exports == Impl where
+    R : Join(IntegralDomain, Comparable, RetractableTo Integer)
 
     P   ==> Polynomial R
     RF  ==> Fraction P
@@ -297,17 +297,17 @@ RationalFunctionSum(R): Exports == Impl where
     SE  ==> Symbol
 
     Exports ==> with
-        sum: (P, SE) -> RF
+        sum : (P, SE) -> RF
             ++ sum(a(n), n) returns \spad{A} which
             ++ is the indefinite sum of \spad{a} with respect to
             ++ upward difference on \spad{n}, i.e. \spad{A(n+1) - A(n) = a(n)}.
-        sum: (RF, SE) -> Union(RF, FE)
+        sum : (RF, SE) -> Union(RF, FE)
             ++ sum(a(n), n) returns \spad{A} which
             ++ is the indefinite sum of \spad{a} with respect to
             ++ upward difference on \spad{n}, i.e. \spad{A(n+1) - A(n) = a(n)}.
-        sum: (P, SegmentBinding P) -> RF
+        sum : (P, SegmentBinding P) -> RF
             ++ sum(f(n), n = a..b) returns \spad{f(a) + f(a+1) + ... f(b)}.
-        sum: (RF, SegmentBinding RF) -> Union(RF, FE)
+        sum : (RF, SegmentBinding RF) -> Union(RF, FE)
             ++ sum(f(n), n = a..b) returns \spad{f(a) + f(a+1) + ... f(b)}.
 
     Impl ==> add
@@ -315,22 +315,22 @@ RationalFunctionSum(R): Exports == Impl where
       import GosperSummationMethod(IndexedExponents SE, SE, R, P, RF)
 
       innersum    : (RF, SE) -> Union(RF, "failed")
-      innerpolysum: (P, SE) -> RF
+      innerpolysum : (P, SE) -> RF
 
-      sum(f:RF, s:SegmentBinding RF) ==
+      sum(f : RF, s : SegmentBinding RF) ==
         (indef := innersum(f, v := variable s)) case "failed" =>
           summation(f::FE, map((z : RF) : FE +-> z::FE,
                                s)$SegmentBindingFunctions2(RF, FE))
         eval(indef::RF, v, 1 + hi segment s)
-          - eval(indef::RF, v,lo segment s)
+          - eval(indef::RF, v, lo segment s)
 
-      sum(an:RF, n:SE) ==
+      sum(an : RF, n : SE) ==
         (u := innersum(an, n)) case "failed" => summation(an::FE, n)
         u::RF
 
-      sum(p:P, s:SegmentBinding P) ==
+      sum(p : P, s : SegmentBinding P) ==
         f := sum(p, v := variable s)
-        eval(f, v, (1 + hi segment s)::RF) - eval(f,v,lo(segment s)::RF)
+        eval(f, v, (1 + hi segment s)::RF) - eval(f, v, lo(segment s)::RF)
 
       innersum(an, n) ==
         (r := retractIfCan(an)@Union(P, "failed")) case "failed" =>
@@ -340,7 +340,7 @@ RationalFunctionSum(R): Exports == Impl where
            an1 * eval(u::RF, n, -1 + n::RF)
         sum(r::P, n)
 
-      sum(p:P, n:SE) ==
+      sum(p : P, n : SE) ==
         rec := sum(p, n)$InnerPolySum(IndexedExponents SE, SE, R, P)
         rec.num / (rec.den :: P)
 

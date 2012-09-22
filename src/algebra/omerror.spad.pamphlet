@@ -47,16 +47,16 @@ OpenMathErrorKind() : SetCategory with
   OMUnknownSymbol?(u) == (u case unknownSymbol)$Rep
   OMReadError?(u) == (u case readError)$Rep
 
-  coerce(s:Symbol):% ==
+  coerce(s : Symbol) : % ==
     s = 'OMParseError    => ["OMParseError"]$Rep
     s = 'OMUnknownCD     => ["OMUnknownCD"]$Rep
     s = 'OMUnknownSymbol => ["OMUnknownSymbol"]$Rep
     s = 'OMReadError     => ["OMReadError"]$Rep
     error concat(string s, " is not a valid OpenMathErrorKind.")
 
-  a = b == (a=b)$Rep
+  a = b == (a = b)$Rep
 
-  coerce(e:%):OutputForm == coerce(e)$Rep
+  coerce(e : %) : OutputForm == coerce(e)$Rep
 
 @
 \section{domain OMERR OpenMathError}
@@ -78,13 +78,13 @@ OpenMathError() : SetCategory with
   errorInfo : % -> List Symbol
   ++ errorInfo(u) returns information about the error u.
   omError   : (OpenMathErrorKind, List Symbol) -> %
-  ++ omError(k,l) creates an instance of OpenMathError.
+  ++ omError(k, l) creates an instance of OpenMathError.
  == add
-  Rep := Record(err:OpenMathErrorKind, info:List Symbol)
+  Rep := Record(err : OpenMathErrorKind, info : List Symbol)
 
   import List String
 
-  coerce(e:%):OutputForm ==
+  coerce(e : %) : OutputForm ==
     OMParseError? e.err => message "Error parsing OpenMath object"
     infoSize := #(e.info)
     OMUnknownCD? e.err =>
@@ -92,17 +92,17 @@ OpenMathError() : SetCategory with
       not (infoSize = 1) => error "Malformed info list in OMUnknownCD"
       message concat("Cannot handle CD ",string first e.info)
     OMUnknownSymbol? e.err =>
-      not 2=infoSize => error "Malformed info list in OMUnknownSymbol"
+      not 2 = infoSize => error "Malformed info list in OMUnknownSymbol"
       message concat ["Cannot handle Symbol ",
                       string e.info.2, " from CD ", string e.info.1]
     OMReadError? e.err =>
       message "OpenMath read error"
     error "Malformed OpenMath Error"
 
-  omError(e:OpenMathErrorKind,i:List Symbol):% == [e,i]$Rep
+  omError(e : OpenMathErrorKind, i : List Symbol) : % == [e, i]$Rep
 
-  errorKind(e:%):OpenMathErrorKind == e.err
-  errorInfo(e:%):List Symbol == e.info
+  errorKind(e : %) : OpenMathErrorKind == e.err
+  errorInfo(e : %) : List Symbol == e.info
 
 @
 \section{License}

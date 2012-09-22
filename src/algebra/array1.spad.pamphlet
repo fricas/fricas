@@ -14,7 +14,7 @@
 )abbrev domain PRIMARR PrimitiveArray
 ++ This provides a fast array type with no bound checking on elt's.
 ++ Minimum index is 0 in this type, cannot be changed
-PrimitiveArray(S:Type): OneDimensionalArrayAggregate S == add
+PrimitiveArray(S : Type) : OneDimensionalArrayAggregate S == add
    Qmax ==> QVMAXINDEX$Lisp
    Qsize ==> QVSIZE$Lisp
    Qelt ==> QAREF1$Lisp
@@ -27,15 +27,15 @@ PrimitiveArray(S:Type): OneDimensionalArrayAggregate S == add
    empty()                     == Qnew(0$Lisp)
    new(n, x)                   == Qnew1(n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x:%, i:Integer)         == Qelt(x, i)
+   elt(x : %, i : Integer)         == Qelt(x, i)
    qsetelt!(x, i, s)          == Qsetelt(x, i, s)
-   setelt(x:%, i:Integer, s:S) == Qsetelt(x, i, s)
+   setelt(x : %, i : Integer, s : S) == Qsetelt(x, i, s)
    fill!(x, s)       == (for i in 0..Qmax x repeat Qsetelt(x, i, s); x)
 
    -- logically unnecessary, but we want to take advantage from
    -- fast indexing.
    if S has SetCategory then
-       hashUpdate!(s: HashState, x: %): HashState ==
+       hashUpdate!(s : HashState, x : %) : HashState ==
            for i in 0..Qmax x repeat
                s := hashUpdate!(s, Qelt(x, i))$S
            s
@@ -47,31 +47,31 @@ PrimitiveArray(S:Type): OneDimensionalArrayAggregate S == add
 )abbrev package PRIMARR2 PrimitiveArrayFunctions2
 ++ This package provides tools for operating on primitive arrays
 ++ with unary and binary functions involving different underlying types
-PrimitiveArrayFunctions2(A, B): Exports == Implementation where
-  A, B: Type
+PrimitiveArrayFunctions2(A, B) : Exports == Implementation where
+  A, B : Type
 
   VA ==> PrimitiveArray A
   VB ==> PrimitiveArray B
   O2 ==> FiniteLinearAggregateFunctions2(A, VA, B, VB)
   Exports ==> with
     scan   : ((A, B) -> B, VA, B) -> VB
-        ++ scan(f,a,r) successively applies
-        ++ \spad{reduce(f,x,r)} to more and more leading sub-arrays
+        ++ scan(f, a, r) successively applies
+        ++ \spad{reduce(f, x, r)} to more and more leading sub-arrays
         ++ x of primitive array \spad{a}.
-        ++ More precisely, if \spad{a} is \spad{[a1,a2,...]}, then
-        ++ \spad{scan(f,a,r)} returns
-        ++ \spad{[reduce(f,[a1],r),reduce(f,[a1,a2],r),...]}.
+        ++ More precisely, if \spad{a} is \spad{[a1, a2, ...]}, then
+        ++ \spad{scan(f, a, r)} returns
+        ++ \spad{[reduce(f, [a1], r), reduce(f, [a1, a2], r), ...]}.
     reduce : ((A, B) -> B, VA, B) -> B
-        ++ reduce(f,a,r) applies function f to each
+        ++ reduce(f, a, r) applies function f to each
         ++ successive element of the
         ++ primitive array \spad{a} and an accumulant initialized to r.
         ++ For example,
-        ++ \spad{reduce(_+$Integer,[1,2,3],0)}
+        ++ \spad{reduce(_+$Integer, [1, 2, 3], 0)}
         ++ does \spad{3+(2+(1+0))}. Note: third argument r
         ++ may be regarded as the
         ++ identity element for the function f.
     map    : (A -> B, VA) -> VB
-        ++ map(f,a) applies function f to each member of primitive array
+        ++ map(f, a) applies function f to each member of primitive array
         ++ \spad{a} resulting in a new primitive array over a
         ++ possibly different underlying domain.
 
@@ -86,21 +86,21 @@ PrimitiveArrayFunctions2(A, B): Exports == Implementation where
 )abbrev domain TUPLE Tuple
 ++ This domain is used to interface with the interpreter's notion
 ++ of comma-delimited sequences of values.
-Tuple(S:Type): CoercibleTo(PrimitiveArray S) with
-  coerce: PrimitiveArray S -> %
+Tuple(S : Type) : CoercibleTo(PrimitiveArray S) with
+  coerce : PrimitiveArray S -> %
         ++ coerce(a) makes a tuple from primitive array a
-  select: (%, NonNegativeInteger) -> S
-        ++ select(x,n) returns the n-th element of tuple x.
+  select : (%, NonNegativeInteger) -> S
+        ++ select(x, n) returns the n-th element of tuple x.
         ++ tuples are 0-based
-  length: % -> NonNegativeInteger
+  length : % -> NonNegativeInteger
         ++ length(x) returns the number of elements in tuple x
   if S has CoercibleTo(OutputForm) then CoercibleTo(OutputForm)
   if S has SetCategory then SetCategory
  == add
   Rep := Record(len : NonNegativeInteger, elts : PrimitiveArray S)
 
-  coerce(x: PrimitiveArray S): %  == [#x, x]
-  coerce(x:%): PrimitiveArray(S) == x.elts
+  coerce(x : PrimitiveArray S) : %  == [#x, x]
+  coerce(x : %) : PrimitiveArray(S) == x.elts
   length x == x.len
 
   select(x, n) ==
@@ -112,7 +112,7 @@ Tuple(S:Type): CoercibleTo(PrimitiveArray S) with
 
   if S has CoercibleTo(OutputForm) then
 
-    coerce(x : %): OutputForm ==
+    coerce(x : %) : OutputForm ==
       paren [(x.elts.i)::OutputForm
              for i in minIndex x.elts .. maxIndex x.elts]$List(OutputForm)
 
@@ -136,32 +136,32 @@ Tuple(S:Type): CoercibleTo(PrimitiveArray S) with
 ++ Flexible arrays provide for an efficient implementation of many
 ++ data structures in particular heaps, stacks and sets.
 
-IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
+IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
   A ==> PrimitiveArray S
   I ==> Integer
   N ==> NonNegativeInteger
   U ==> UniversalSegment Integer
   Exports ==
-    Join(OneDimensionalArrayAggregate S,ExtensibleLinearAggregate S) with
+    Join(OneDimensionalArrayAggregate S, ExtensibleLinearAggregate S) with
       flexibleArray : List S -> %
         ++ flexibleArray(l) creates a flexible array from the list of elements l
       physicalLength : % -> NonNegativeInteger
         ++ physicalLength(x) returns the number of elements x can accomodate before growing
-      physicalLength!: (%, I) -> %
-        ++ physicalLength!(x,n) changes the physical length of x to be n and returns the new array.
-      shrinkable: Boolean -> Boolean
+      physicalLength! : (%, I) -> %
+        ++ physicalLength!(x, n) changes the physical length of x to be n and returns the new array.
+      shrinkable : Boolean -> Boolean
         ++ shrinkable(b) sets the shrinkable attribute of flexible arrays to b and returns the previous value
       removeRepeats! : % -> %
         ++ removeRepeats!(u) destructively replaces runs of consequtive
         ++ equal elements of u by single elements.
 
   Implementation == add
-    Rep := Record(physLen:I, logLen:I, f:A)
+    Rep := Record(physLen : I, logLen : I, f : A)
     shrinkable? : Boolean := true
     growAndFill : (%, I, S) -> %
     growWith    : (%, I, S) -> %
     growAdding  : (%, I, %) -> %
-    shrink: (%, I)    -> %
+    shrink : (%, I)    -> %
     newa  : (N, A) -> A
 
     physicalLength(r) == (r.physLen) pretend NonNegativeInteger
@@ -185,7 +185,7 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        n := #l
        n = 0 => empty()
        x := l.1
-       a := new(n,x)
+       a := new(n, x)
        for i in mn + 1..mn + n-1 for y in rest l repeat a.i := y
        a
 
@@ -236,51 +236,51 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        [n, n, v]
 
 
-    elt(r:%, i:I) ==
+    elt(r : %, i : I) ==
        i < mn or i >= r.logLen + mn =>
            error "index out of range"
        r.f.(i-mn)
 
-    setelt(r:%, i:I, x:S) ==
+    setelt(r : %, i : I, x : S) ==
        i < mn or i >= r.logLen + mn =>
            error "index out of range"
        r.f.(i-mn) := x
 
     -- operations inherited from extensible aggregate
     merge(g, a, b)   == merge!(g, copy a, b)
-    concat(x:S, r:%) == insert!(x, r, mn)
+    concat(x : S, r : %) == insert!(x, r, mn)
 
-    concat!(r:%, x:S) ==
+    concat!(r : %, x : S) ==
        growAndFill(r, 1, x)
        r.f.(r.logLen-1) := x
        r
 
-    concat!(a:%, b:%) ==
+    concat!(a : %, b : %) ==
        if eq?(a, b) then b := copy b
        n := #a
        growAdding(a, #b, b)
        copyInto!(a, b, n + mn)
 
-    remove!(g:(S->Boolean), a:%) ==
-       k:I := 0
+    remove!(g : (S->Boolean), a : %) ==
+       k : I := 0
        for i in 0..maxIndex a - mn repeat
           if not g(a.i) then (a.k := a.i; k := k+1)
        shrink(a, #a - k)
 
-    delete!(r:%, i1:I) ==
+    delete!(r : %, i1 : I) ==
        i := i1 - mn
        i < 0 or i > r.logLen => error "index out of range"
        for k in i..r.logLen-2 repeat r.f.k := r.f.(k+1)
        shrink(r, 1)
 
-    delete!(r:%, i:U) ==
+    delete!(r : %, i : U) ==
        l := lo i - mn; m := maxIndex r - mn
        h := (hasHi i => hi i - mn; m)
        l < 0 or h > m => error "index out of range"
        for j in l.. for k in h+1..m repeat r.f.j := r.f.k
-       shrink(r, max(0,h-l+1))
+       shrink(r, max(0, h-l+1))
 
-    insert!(x:S, r:%, i1:I):% ==
+    insert!(x : S, r : %, i1 : I) : % ==
        i := i1 - mn
        n := r.logLen
        i < 0 or i > n => error "index out of range"
@@ -289,7 +289,7 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        r.f.i := x
        r
 
-    insert!(a:%, b:%, i1:I):% ==
+    insert!(a : %, b : %, i1 : I) : % ==
        i := i1 - mn
        if eq?(a, b) then b := copy b
        m := #a; n := #b
@@ -304,13 +304,13 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
        for i in m-1..0 by -1 for j in m+n-1.. by -1 repeat a.f.j := a.f.i
        i := n; j := 0
        for k in 0.. while i < n+m and j < n repeat
-          if g(a.f.i,b.f.j) then (a.f.k := a.f.i; i := i+1)
+          if g(a.f.i, b.f.j) then (a.f.k := a.f.i; i := i+1)
           else (a.f.k := b.f.j; j := j+1)
        for k in k.. for j in j..n-1 repeat a.f.k := b.f.j
        a
 
-    select!(g:(S->Boolean), a:%) ==
-       k:I := 0
+    select!(g : (S->Boolean), a : %) ==
+       k : I := 0
        for i in 0..maxIndex a - mn repeat if g(a.f.i) then (a.f.k := a.f.i;k := k+1)
        shrink(a, #a - k)
 
@@ -368,7 +368,7 @@ IndexedFlexibleArray(S:Type, mn: Integer): Exports == Implementation where
 ++ Flexible arrays provide for an efficient implementation of many
 ++ data structures in particular heaps, stacks and sets.
 
-FlexibleArray(S: Type) == Implementation where
+FlexibleArray(S : Type) == Implementation where
   ARRAYMININDEX ==> 1       -- if you want to change this, be my guest
   Implementation ==> IndexedFlexibleArray(S, ARRAYMININDEX)
 -- Join(OneDimensionalArrayAggregate S, ExtensibleLinearAggregate S)
@@ -380,7 +380,7 @@ FlexibleArray(S: Type) == Implementation where
 ++ Author Micheal Monagan Aug/87
 ++ This is the basic one dimensional array data type.
 
-IndexedOneDimensionalArray(S:Type, mn:Integer):
+IndexedOneDimensionalArray(S : Type, mn : Integer):
  OneDimensionalArrayAggregate S == add
    Qmax ==> QVMAXINDEX$Lisp
    Qsize ==> QVSIZE$Lisp
@@ -399,27 +399,27 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
    minIndex x       == mn
 
    empty()          == Qnew(0$Lisp)
-   new(n, s)        == Qnew1(n,s)
+   new(n, s)        == Qnew1(n, s)
 
    map!(f, s1)  ==
-      n:Integer := Qmax(s1)
+      n : Integer := Qmax(s1)
       n < 0 => s1
-      for i in 0..n repeat Qsetelt(s1, i, f(Qelt(s1,i)))
+      for i in 0..n repeat Qsetelt(s1, i, f(Qelt(s1, i)))
       s1
 
    map(f, s1)       ==
-      n:Integer := Qmax(s1)
+      n : Integer := Qmax(s1)
       n < 0 => s1
-      ss2:% := Qnew(n+1)
-      for i in 0..n repeat Qsetelt(ss2, i, f(Qelt(s1,i)))
+      ss2 : % := Qnew(n+1)
+      for i in 0..n repeat Qsetelt(ss2, i, f(Qelt(s1, i)))
       ss2
 
    map(f, a, b)   ==
-      maxind:Integer := min(Qmax a, Qmax b)
+      maxind : Integer := min(Qmax a, Qmax b)
       maxind < 0 => empty()
-      c:% := Qnew(maxind+1)
+      c : % := Qnew(maxind+1)
       for i in 0..maxind repeat
-        Qsetelt(c, i, f(Qelt(a,i),Qelt(b,i)))
+        Qsetelt(c, i, f(Qelt(a, i), Qelt(b, i)))
       c
 
    -- logically unnecessary, but we want to take advantage from
@@ -435,11 +435,11 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
      qelt(x, i)       == Qelt(x, i)
      qsetelt!(x, i, s) == Qsetelt(x, i, s)
 
-     elt(x:%, i:I) ==
+     elt(x : %, i : I) ==
        negative? i or i > maxIndex(x) => error "index out of range"
        qelt(x, i)
 
-     setelt(x:%, i:I, s:S) ==
+     setelt(x : %, i : I, s : S) ==
        negative? i or i > maxIndex(x) => error "index out of range"
        qsetelt!(x, i, s)
 
@@ -449,13 +449,13 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
      qelt(x, i)       == Qelt(x, i-1)
      qsetelt!(x, i, s) == Qsetelt(x, i-1, s)
 
-     elt(x:%, i:I) ==
-       less_SI(i,1$Lisp)$Lisp or less_SI(Qsize x,i)$Lisp =>
+     elt(x : %, i : I) ==
+       less_SI(i, 1$Lisp)$Lisp or less_SI(Qsize x, i)$Lisp =>
          error "index out of range"
        Qelt(x, i-1)
 
-     setelt(x:%, i:I, s:S) ==
-       less_SI(i,1$Lisp)$Lisp or less_SI(Qsize x,i)$Lisp =>
+     setelt(x : %, i : I, s : S) ==
+       less_SI(i, 1$Lisp)$Lisp or less_SI(Qsize x, i)$Lisp =>
          error "index out of range"
        Qsetelt(x, i-1, s)
 
@@ -463,11 +463,11 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
        qelt(x, i)       == Qelt(x, i - mn)
        qsetelt!(x, i, s) == Qsetelt(x, i - mn, s)
 
-       elt(x:%, i:I) ==
+       elt(x : %, i : I) ==
          i < mn or i > maxIndex(x) => error "index out of range"
          qelt(x, i)
 
-       setelt(x:%, i:I, s:S) ==
+       setelt(x : %, i : I, s : S) ==
          i < mn or i > maxIndex(x) => error "index out of range"
          qsetelt!(x, i, s)
 
@@ -477,13 +477,13 @@ IndexedOneDimensionalArray(S:Type, mn:Integer):
 )abbrev domain ARRAY1 OneDimensionalArray
 ++ This is the domain of 1-based one dimensional arrays
 
-OneDimensionalArray(S:Type): Exports == Implementation where
+OneDimensionalArray(S : Type) : Exports == Implementation where
   ARRAYMININDEX ==> 1       -- if you want to change this, be my guest
   Exports == OneDimensionalArrayAggregate S with
-    oneDimensionalArray: List S -> %
+    oneDimensionalArray : List S -> %
         ++ oneDimensionalArray(l) creates an array from a list of elements l
-    oneDimensionalArray: (NonNegativeInteger, S) -> %
-        ++ oneDimensionalArray(n,s) creates an array from n copies of element s
+    oneDimensionalArray : (NonNegativeInteger, S) -> %
+        ++ oneDimensionalArray(n, s) creates an array from n copies of element s
   Implementation == IndexedOneDimensionalArray(S, ARRAYMININDEX) add
 
     -- qelt and qsetelt! are logically unnecessary, but good for
@@ -500,7 +500,7 @@ OneDimensionalArray(S:Type): Exports == Implementation where
       a := new(n, first u)
       for i in 2..n for x in rest u repeat a.i := x
       a
-    oneDimensionalArray(n,s) == new(n,s)
+    oneDimensionalArray(n, s) == new(n, s)
 
 @
 \section{package ARRAY12 OneDimensionalArrayFunctions2}
@@ -508,8 +508,8 @@ OneDimensionalArray(S:Type): Exports == Implementation where
 )abbrev package ARRAY12 OneDimensionalArrayFunctions2
 ++ This package provides tools for operating on one-dimensional arrays
 ++ with unary and binary functions involving different underlying types
-OneDimensionalArrayFunctions2(A, B): Exports == Implementation where
-  A, B: Type
+OneDimensionalArrayFunctions2(A, B) : Exports == Implementation where
+  A, B : Type
 
   VA ==> OneDimensionalArray A
   VB ==> OneDimensionalArray B
@@ -517,23 +517,23 @@ OneDimensionalArrayFunctions2(A, B): Exports == Implementation where
 
   Exports ==> with
     scan   : ((A, B) -> B, VA, B) -> VB
-        ++ scan(f,a,r) successively applies
-        ++ \spad{reduce(f,x,r)} to more and more leading sub-arrays
+        ++ scan(f, a, r) successively applies
+        ++ \spad{reduce(f, x, r)} to more and more leading sub-arrays
         ++ x of one-dimensional array \spad{a}.
-        ++ More precisely, if \spad{a} is \spad{[a1,a2,...]}, then
-        ++ \spad{scan(f,a,r)} returns
-        ++ \spad{[reduce(f,[a1],r),reduce(f,[a1,a2],r),...]}.
+        ++ More precisely, if \spad{a} is \spad{[a1, a2, ...]}, then
+        ++ \spad{scan(f, a, r)} returns
+        ++ \spad{[reduce(f, [a1], r), reduce(f, [a1, a2], r), ...]}.
     reduce : ((A, B) -> B, VA, B) -> B
-        ++ reduce(f,a,r) applies function f to each
+        ++ reduce(f, a, r) applies function f to each
         ++ successive element of the
         ++ one-dimensional array \spad{a} and an accumulant initialized to r.
         ++ For example,
-        ++ \spad{reduce(_+$Integer,[1,2,3],0)}
+        ++ \spad{reduce(_+$Integer, [1, 2, 3], 0)}
         ++ does \spad{3+(2+(1+0))}. Note: third argument r
         ++ may be regarded as the
         ++ identity element for the function f.
     map    : (A -> B, VA) -> VB
-        ++ map(f,a) applies function f to each member of one-dimensional array
+        ++ map(f, a) applies function f to each member of one-dimensional array
         ++ \spad{a} resulting in a new one-dimensional array over a
         ++ possibly different underlying domain.
 
@@ -589,11 +589,11 @@ OneDimensionalArrayFunctions2(A, B): Exports == Implementation where
 <<package ARRAY12 OneDimensionalArrayFunctions2>>
 
 --%% TupleFunctions2
---TupleFunctions2(A:Type, B:Type): with
+--TupleFunctions2(A: Type, B: Type): with
 --  map: (A -> B, Tuple A) -> Tuple B
 -- == add
 --  map(f, t) ==
---    p:PrimitiveArray(B) := new length t
+--    p: PrimitiveArray(B) := new length t
 --    for i in minIndex p .. maxIndex p repeat
 --      p.i := f select(t, i)
 --    p::Tuple(B)

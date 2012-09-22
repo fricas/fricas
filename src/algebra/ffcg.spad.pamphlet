@@ -16,9 +16,9 @@
 --    factorsOfCyclicGroupSize() changed.
 -- 12.05.92: JG: long lines
 -- 25.02.92: AS: added functions order and primitive?
--- 19.02.92: AS: implementation of basis:PI -> Vector % changed .
+-- 19.02.92: AS: implementation of basis: PI -> Vector % changed .
 -- 17.02.92: AS: implementation of coordinates corrected.
--- 10.02.92: AS: implementation of coerce:GF -> % corrected.
+-- 10.02.92: AS: implementation of coerce: GF -> % corrected.
 -- 05.08.91: JG: AS implementation of missing functions in FFC and FAXF
 
 
@@ -43,7 +43,7 @@
 ++  J. Grabmeier, A. Scheerhorn: Finite Fields in AXIOM.
 ++  AXIOM Technical Report Series, ATR/5 NP2522.
 ++ Description:
-++  FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol)  implements a
+++  FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol)  implements a
 ++  finite extension field of the ground field {\em GF}. Its elements are
 ++  represented by powers of a primitive element, i.e. a generator of the
 ++  multiplicative (cyclic) group. As primitive
@@ -54,10 +54,10 @@
 ++  on the size of the field.
 
 
-FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
+FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
   Exports == Implementation where
   GF    : FiniteFieldCategory                -- the ground field
-  defpol: SparseUnivariatePolynomial GF      -- the extension polynomial
+  defpol : SparseUnivariatePolynomial GF      -- the extension polynomial
   -- the root of defpol is used as the primitive element
 
   PI    ==> PositiveInteger
@@ -65,75 +65,75 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
   I     ==> Integer
   SI    ==> SingleInteger
   SUP   ==> SparseUnivariatePolynomial
-  SAE   ==> SimpleAlgebraicExtension(GF,SUP GF,defpol)
+  SAE   ==> SimpleAlgebraicExtension(GF, SUP GF, defpol)
   V     ==> Vector GF
-  FFP   ==> FiniteFieldExtensionByPolynomial(GF,defpol)
+  FFP   ==> FiniteFieldExtensionByPolynomial(GF, defpol)
   FFF   ==> FiniteFieldFunctions(GF)
   OUT   ==> OutputForm
   ARR   ==> PrimitiveArray(SI)
-  TBL   ==> Table(PI,NNI)
+  TBL   ==> Table(PI, NNI)
 
 
   Exports ==> FiniteAlgebraicExtensionField(GF)  with
 
-    getZechTable:() -> ARR
+    getZechTable : () -> ARR
       ++ getZechTable() returns the zech logarithm table of the field
       ++ it is used to perform additions in the field quickly.
   Implementation ==>  add
 
 -- global variables ===================================================
 
-    Rep:= SI
+    Rep := SI
     -- elements are represented by small integers in the range
     -- (-1)..(size()-2). The (-1) representing the field element zero,
     -- the other small integers representing the corresponding power
     -- of the primitive element, the root of the defining polynomial
 
     -- it would be very nice if we could use the representation
-    -- Rep:= Union("zero", IntegerMod(size()$GF ^ degree(defpol) -1)),
+    -- Rep := Union("zero", IntegerMod(size()$GF ^ degree(defpol) -1)),
     -- why doesn't the compiler like this ?
 
     qzero ==> (-1)@SI pretend Rep
 
-    extdeg:NNI  :=degree(defpol)$(SUP GF)::NNI
+    extdeg : NNI  := degree(defpol)$(SUP GF)::NNI
     -- the extension degree
 
-    sizeFF:NNI:=(size()$GF ^ extdeg) pretend NNI
+    sizeFF : NNI := (size()$GF ^ extdeg) pretend NNI
     -- the size of the field
 
     if sizeFF > 2^20 then
       error "field too large for this representation"
 
-    sizeCG:SI:=(sizeFF - 1) pretend SI
+    sizeCG : SI := (sizeFF - 1) pretend SI
     -- the order of the cyclic group
 
-    sizeFG:SI:=(sizeCG quo (size()$GF-1)) pretend SI
+    sizeFG : SI := (sizeCG quo (size()$GF-1)) pretend SI
     -- the order of the factor group
 
 
-    zechlog:ARR:=new(((sizeFF+1) quo 2)::NNI,-1::SI)$ARR
+    zechlog : ARR := new(((sizeFF+1) quo 2)::NNI, -1::SI)$ARR
     -- the table for the zech logarithm
 
-    alpha :=new()$Symbol :: OutputForm
+    alpha := new()$Symbol :: OutputForm
     -- get a new symbol for the output representation of
     -- the elements
 
-    primEltGF:GF:=
-      odd?(extdeg)$I => -$GF coefficient(defpol,0)$(SUP GF)
-      coefficient(defpol,0)$(SUP GF)
+    primEltGF : GF :=
+      odd?(extdeg)$I => -$GF coefficient(defpol, 0)$(SUP GF)
+      coefficient(defpol, 0)$(SUP GF)
     -- the corresponding primitive element of the ground field
     -- equals the trace of the primitive element w.r.t. the ground field
 
-    facOfGroupSize := nil()$(List Record(factor:Integer,exponent:Integer))
+    facOfGroupSize := nil()$(List Record(factor : Integer, exponent : Integer))
     -- the factorization of sizeCG
 
-    initzech?:Boolean:=true
+    initzech? : Boolean := true
     -- gets false after initialization of the zech logarithm array
 
-    initelt?:Boolean:=true
+    initelt? : Boolean := true
     -- gets false after initialization of the normal element
 
-    normalElt:SI:=0
+    normalElt : SI := 0
     -- the global variable containing a normal element
 
 -- functions ==========================================================
@@ -146,66 +146,66 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 
 
     getZechTable() == zechlog
-    initializeZech:() -> Void
-    initializeElt: () -> Void
+    initializeZech : () -> Void
+    initializeElt : () -> Void
 
-    order(x:%):PI ==
+    order(x : %) : PI ==
       zero?(x) =>
         error"order: order of zero undefined"
-      (sizeCG quo gcd(sizeCG,x pretend NNI))::PI
+      (sizeCG quo gcd(sizeCG, x pretend NNI))::PI
 
-    primitive?(x:%) ==
+    primitive?(x : %) ==
 --      zero?(x) or one?(x) => false
       zero?(x) or (x = 1) => false
-      gcd(x::Rep,sizeCG)$Rep = 1$Rep => true
+      gcd(x::Rep, sizeCG)$Rep = 1$Rep => true
       false
 
-    coordinates(x:%) ==
-      x=0 => new(extdeg,0)$(Vector GF)
-      primElement:SAE:=convert(monomial(1,1)$(SUP GF))$SAE
+    coordinates(x : %) ==
+      x = 0 => new(extdeg, 0)$(Vector GF)
+      primElement : SAE := convert(monomial(1, 1)$(SUP GF))$SAE
 -- the primitive element in the corresponding algebraic extension
       coordinates(primElement ^$SAE (x pretend SI))$SAE
 
-    x:% + y:% ==
+    x : % + y : % ==
       if initzech? then initializeZech()
       x =$Rep qzero => y
       y =$Rep qzero => x
-      d:Rep := submod(y, x, sizeCG)$Rep
-      (d pretend SI) <= shift(sizeCG,-$SI (1$SI)) =>
+      d : Rep := submod(y, x, sizeCG)$Rep
+      (d pretend SI) <= shift(sizeCG, -$SI (1$SI)) =>
         zechlog.(d pretend SI) =$SI -1::SI => qzero
-        addmod(x,zechlog.(d pretend SI) pretend Rep,sizeCG)$Rep
-      --d:Rep:=positiveRemainder(x -$Rep y,sizeCG)$Rep
-      d:Rep:=(sizeCG -$SI d)::Rep
-      addmod(y,zechlog.(d pretend SI) pretend Rep,sizeCG)$Rep
-      --positiveRemainder(x +$Rep zechlog.(d pretend SI) -$Rep d,sizeCG)$Rep
+        addmod(x, zechlog.(d pretend SI) pretend Rep, sizeCG)$Rep
+      --d: Rep := positiveRemainder(x -$Rep y, sizeCG)$Rep
+      d : Rep := (sizeCG -$SI d)::Rep
+      addmod(y, zechlog.(d pretend SI) pretend Rep, sizeCG)$Rep
+      --positiveRemainder(x +$Rep zechlog.(d pretend SI) -$Rep d, sizeCG)$Rep
 
 
     initializeZech() ==
-      zechlog:=createZechTable(defpol)$FFF
+      zechlog := createZechTable(defpol)$FFF
       -- set initialization flag
       initzech? := false
       void()$Void
 
-    basis(n:PI) ==
+    basis(n : PI) ==
       extensionDegree() rem n ~= 0 =>
         error("argument must divide extension degree")
-      m:=sizeCG quo (size()$GF^n-1)
+      m := sizeCG quo (size()$GF^n-1)
       [index((1+i*m) ::PI) for i in 0..(n-1)]::Vector %
 
-    n:I * x:% == ((n::GF)::%) * x
+    n : I * x : % == ((n::GF)::%) * x
 
     minimalPolynomial(a) ==
-      f:SUP %:=monomial(1,1)$(SUP %) - monomial(a,0)$(SUP %)
-      u:%:=Frobenius(a)
+      f : SUP % := monomial(1, 1)$(SUP %) - monomial(a, 0)$(SUP %)
+      u : % := Frobenius(a)
       while not(u = a) repeat
-        f:=f * (monomial(1,1)$(SUP %) - monomial(u,0)$(SUP %))
-        u:=Frobenius(u)
-      p:SUP GF:=0$(SUP GF)
+        f := f * (monomial(1, 1)$(SUP %) - monomial(u, 0)$(SUP %))
+        u := Frobenius(u)
+      p : SUP GF := 0$(SUP GF)
       while not zero?(f)$(SUP %) repeat
-        g:GF:=retract(leadingCoefficient(f)$(SUP %))
-        p:=p+monomial(g,_
+        g : GF := retract(leadingCoefficient(f)$(SUP %))
+        p := p+monomial(g, _
                       degree(f)$(SUP %))$(SUP GF)
-        f:=reductum(f)$(SUP %)
+        f := reductum(f)$(SUP %)
       p
 
     factorsOfCyclicGroupSize() ==
@@ -221,29 +221,29 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 
 
     represents(v) ==
-      u:FFP:=represents(v)$FFP
+      u : FFP := represents(v)$FFP
       u =$FFP 0$FFP => 0
       discreteLog(u)$FFP pretend Rep
 
 
 
-    coerce(e:GF):% ==
+    coerce(e : GF) : % ==
       zero?(e)$GF => 0
-      log:I:=discreteLog(primEltGF,e)$GF::NNI *$I sizeFG
+      log : I := discreteLog(primEltGF, e)$GF::NNI *$I sizeFG
       -- version before 10.20.92: log pretend Rep
       -- 1$GF is coerced to sizeCG pretend Rep by old version
       -- now 1$GF is coerced to 0$Rep which is correct.
-      positiveRemainder(log,sizeCG) pretend Rep
+      positiveRemainder(log, sizeCG) pretend Rep
 
 
-    retractIfCan(x:%) ==
+    retractIfCan(x : %) ==
       zero? x => 0$GF
-      u:= (x::Rep) exquo$Rep (sizeFG pretend Rep)
+      u := (x::Rep) exquo$Rep (sizeFG pretend Rep)
       u = "failed" => "failed"
       primEltGF ^$GF ((u::%) pretend SI)
 
-    retract(x:%) ==
-      a:=retractIfCan(x)
+    retract(x : %) ==
+      a := retractIfCan(x)
       a="failed" => error "element not in ground field"
       a :: GF
 
@@ -252,26 +252,26 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 
     inGroundField?(x) ==
       zero? x=> true
-      positiveRemainder(x::Rep,sizeFG pretend Rep)$Rep =$Rep 0$Rep => true
+      positiveRemainder(x::Rep, sizeFG pretend Rep)$Rep =$Rep 0$Rep => true
       false
 
-    discreteLog(b:%,x:%) ==
+    discreteLog(b : %, x : %) ==
       zero? x => "failed"
-      e:= extendedEuclidean(b,sizeCG,x)$Rep
+      e := extendedEuclidean(b, sizeCG, x)$Rep
       e = "failed" => "failed"
-      e1:Record(coef1:%,coef2:%) := e :: Record(coef1:%,coef2:%)
-      positiveRemainder(e1.coef1,sizeCG)$Rep pretend NNI
+      e1 : Record(coef1 : %, coef2 : %) := e :: Record(coef1 : %, coef2 : %)
+      positiveRemainder(e1.coef1, sizeCG)$Rep pretend NNI
 
-    - x:% ==
+    - x : % ==
         x =$Rep qzero => qzero
         characteristic() =$I 2 => x
-        addmod(x,shift(sizeCG,-1)$SI pretend Rep,sizeCG)
+        addmod(x, shift(sizeCG, -1)$SI pretend Rep, sizeCG)
 
     generator() == 1$SI
     createPrimitiveElement() == 1$SI
     primitiveElement() == 1$SI
 
-    discreteLog(x:%) ==
+    discreteLog(x : %) ==
       zero? x => error "discrete logarithm error"
       x pretend NNI
 
@@ -281,61 +281,61 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 
     initializeElt() ==
       facOfGroupSize := factors(factor(sizeCG)$Integer)
-      normalElt:=createNormalElement() pretend SI
-      initelt?:=false
+      normalElt := createNormalElement() pretend SI
+      initelt? := false
       void()$Void
 
     extensionDegree() == extdeg pretend PI
 
     characteristic() == characteristic()$GF
 
-    lookup(x:%) ==
+    lookup(x : %) ==
       x =$Rep (-$Rep 1$Rep) => sizeFF pretend PI
       (x +$Rep 1$Rep) pretend PI
 
-    index(a:PI) ==
-      positiveRemainder(a,sizeFF)$I pretend Rep -$Rep 1$Rep
+    index(a : PI) ==
+      positiveRemainder(a, sizeFF)$I pretend Rep -$Rep 1$Rep
 
     0 == (-$Rep 1$Rep)
 
     1 == 0$Rep
 
 -- to get a "exponent like" output form
-    coerce(x:%):OUT ==
+    coerce(x : %) : OUT ==
       x =$Rep (-$Rep 1$Rep) => "0"::OUT
       x =$Rep 0$Rep => "1"::OUT
-      y:I:=lookup(x)-1
+      y : I := lookup(x)-1
       alpha ^$OUT (y::OUT)
 
-    x:% = y:% ==  x =$Rep y
+    x : % = y : % ==  x =$Rep y
 
-    x:% * y:% ==
+    x : % * y : % ==
       x =$Rep qzero => qzero
       y =$Rep qzero => qzero
-      addmod(x,y,sizeCG)$Rep
+      addmod(x, y, sizeCG)$Rep
 
-    a:GF * x:% == coerce(a)@% * x
-    x:%/a:GF == x/coerce(a)@%
+    a : GF * x : % == coerce(a)@% * x
+    x : %/a : GF == x/coerce(a)@%
 
---    x:% / a:GF ==
+--    x: % / a: GF ==
 --      a = 0$GF => error "division by zero"
 --      x * inv(coerce(a))
 
-    inv(x:%)  ==
+    inv(x : %)  ==
       zero?(x) => error "inv: not invertible"
 --      one?(x) => 1
       (x = 1) => 1
       sizeCG -$Rep x
 
-    x:% ^ n:PI == x ^ n::I
+    x : % ^ n : PI == x ^ n::I
 
-    x:% ^ n:NNI == x ^ n::I
+    x : % ^ n : NNI == x ^ n::I
 
-    x:% ^ n:I ==
-      m:Rep:=positiveRemainder(n,sizeCG)$I pretend Rep
+    x : % ^ n : I ==
+      m : Rep := positiveRemainder(n, sizeCG)$I pretend Rep
       m =$Rep 0$Rep => 1
       x = 0 => 0
-      mulmod(m,x,sizeCG::Rep)$Rep
+      mulmod(m, x, sizeCG::Rep)$Rep
 
 @
 \section{domain FFCGX FiniteFieldCyclicGroupExtension}
@@ -356,7 +356,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 ++  J. Grabmeier, A. Scheerhorn: Finite Fields in AXIOM.
 ++  AXIOM Technical Report Series, ATR/5 NP2522.
 ++ Description:
-++  FiniteFieldCyclicGroupExtension(GF,n)  implements a extension of degree n
+++  FiniteFieldCyclicGroupExtension(GF, n)  implements a extension of degree n
 ++  over the ground field {\em GF}. Its elements are represented by powers of
 ++  a primitive element, i.e. a generator of the multiplicative (cyclic) group.
 ++  As primitive element we choose the root of the extension polynomial, which
@@ -367,7 +367,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF,defpol):_
 ++  on the size of the field.
 
 
-FiniteFieldCyclicGroupExtension(GF,extdeg):_
+FiniteFieldCyclicGroupExtension(GF, extdeg) : _
   Exports == Implementation where
   GF       : FiniteFieldCategory
   extdeg   : PositiveInteger
@@ -375,10 +375,10 @@ FiniteFieldCyclicGroupExtension(GF,extdeg):_
   FFPOLY         ==> FiniteFieldPolynomialPackage(GF)
   SI       ==> SingleInteger
   Exports  ==> FiniteAlgebraicExtensionField(GF) with
-    getZechTable:() -> PrimitiveArray(SingleInteger)
+    getZechTable : () -> PrimitiveArray(SingleInteger)
       ++ getZechTable() returns the zech logarithm table of the field.
       ++ This table is used to perform additions in the field quickly.
-  Implementation ==> FiniteFieldCyclicGroupExtensionByPolynomial(GF,_
+  Implementation ==> FiniteFieldCyclicGroupExtensionByPolynomial(GF, _
                           createPrimitivePoly(extdeg)$FFPOLY)
 
 @
@@ -398,7 +398,7 @@ FiniteFieldCyclicGroupExtension(GF,extdeg):_
 ++  R.Lidl, H.Niederreiter: Finite Field, Encycoldia of Mathematics and
 ++  Its Applications, Vol. 20, Cambridge Univ. Press, 1983, ISBN 0 521 30240 4
 ++ Description:
-++  FiniteFieldCyclicGroup(p,n) implements a finite field extension of degee n
+++  FiniteFieldCyclicGroup(p, n) implements a finite field extension of degee n
 ++  over the prime field with p elements. Its elements are represented by
 ++  powers of a primitive element, i.e. a generator of the multiplicative
 ++  (cyclic) group. As primitive element we choose the root of the extension
@@ -408,7 +408,7 @@ FiniteFieldCyclicGroupExtension(GF,extdeg):_
 ++  for representing field elements, hence, there are restrictions
 ++  on the size of the field.
 
-FiniteFieldCyclicGroup(p,extdeg):_
+FiniteFieldCyclicGroup(p, extdeg) : _
   Exports == Implementation where
   p : PositiveInteger
   extdeg   : PositiveInteger
@@ -416,10 +416,10 @@ FiniteFieldCyclicGroup(p,extdeg):_
   FFPOLY         ==> FiniteFieldPolynomialPackage(PrimeField(p))
   SI       ==> SingleInteger
   Exports  ==> FiniteAlgebraicExtensionField(PrimeField(p)) with
-    getZechTable:() -> PrimitiveArray(SingleInteger)
+    getZechTable : () -> PrimitiveArray(SingleInteger)
       ++ getZechTable() returns the zech logarithm table of the field.
       ++ This table is used to perform additions in the field quickly.
-  Implementation ==> FiniteFieldCyclicGroupExtensionByPolynomial(PrimeField(p),_
+  Implementation ==> FiniteFieldCyclicGroupExtensionByPolynomial(PrimeField(p), _
                           createPrimitivePoly(extdeg)$FFPOLY)
 
 @

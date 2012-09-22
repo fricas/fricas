@@ -24,7 +24,7 @@
 ++ Description:
 ++ The tableau domain is for printing Young tableaux, and
 ++ coercions to and from List List S where S is a set.
-Tableau(S:SetCategory):Exports == Implementation where
+Tableau(S : SetCategory) : Exports == Implementation where
   ++ The tableau domain is for printing Young tableaux, and
   ++ coercions to and from List List S where S is a set.
   L   ==> List
@@ -42,22 +42,22 @@ Tableau(S:SetCategory):Exports == Implementation where
 
     Rep := L L S
 
-    tableau(lls:(L L S)) == lls pretend %
-    listOfLists(x:%):(L L S) == x pretend (L L S)
-    makeupv : (NNI,L S) -> L OUT
-    makeupv(n,ls)==
-        v:=new(n,message " ")$(List OUT)
-        for i in 1..#ls for s in  ls repeat v.i:=box(s::OUT)
+    tableau(lls : (L L S)) == lls pretend %
+    listOfLists(x : %) : (L L S) == x pretend (L L S)
+    makeupv : (NNI, L S) -> L OUT
+    makeupv(n, ls)==
+        v := new(n,message " ")$(List OUT)
+        for i in 1..#ls for s in  ls repeat v.i := box(s::OUT)
         v
     maketab : L L S -> OUT
     maketab lls ==
       ll :  L OUT :=
         empty? lls => [[empty()]]
-        sz:NNI:=# first lls
-        [blankSeparate makeupv(sz,i) for i in lls]
+        sz : NNI := # first lls
+        [blankSeparate makeupv(sz, i) for i in lls]
       pile ll
 
-    coerce(x:%):OUT == maketab listOfLists x
+    coerce(x : %) : OUT == maketab listOfLists x
 
 @
 \section{package TABLBUMP TableauxBumpers}
@@ -77,82 +77,82 @@ Tableau(S:SetCategory):Exports == Implementation where
 ++ correspondence between sequences and pairs of Young tableaux.
 ++ The 2 Young tableaux are represented as a single tableau with
 ++ pairs as components.
-TableauxBumpers(S:OrderedSet):T==C where
+TableauxBumpers(S : OrderedSet) : T==C where
      L==>List
      ST==>Stream
      B==>Boolean
-     ROW==>Record(fs:B,sd:L S,td:L L S)
-     RC==>Record(f1:L S,f2:L L L S,f3:L L S,f4:L L L S)
+     ROW==>Record(fs : B, sd : L S, td : L L S)
+     RC==>Record(f1 : L S, f2 : L L L S, f3 : L L S, f4 : L L L S)
      PAIR==>L S
      T== with
-       bumprow:((S,S)->B,PAIR,L PAIR)->ROW
-         ++ bumprow(cf,pr,r) is an auxiliary function which
+       bumprow : ((S, S)->B, PAIR, L PAIR)->ROW
+         ++ bumprow(cf, pr, r) is an auxiliary function which
          ++ bumps a row r with a pair pr
          ++ using comparison function cf, and returns a record
-       bumptab:((S,S)->B,PAIR,L L PAIR)->L L PAIR
-         ++ bumptab(cf,pr,t) bumps a tableau t with a pair pr
+       bumptab : ((S, S)->B, PAIR, L L PAIR)->L L PAIR
+         ++ bumptab(cf, pr, t) bumps a tableau t with a pair pr
          ++ using comparison function cf, returning a new tableau
-       bumptab1:(PAIR,L L PAIR)->L L PAIR
-         ++ bumptab1(pr,t) bumps a tableau t with a pair pr
+       bumptab1 : (PAIR, L L PAIR)->L L PAIR
+         ++ bumptab1(pr, t) bumps a tableau t with a pair pr
          ++ using comparison function \spadfun{<},
          ++ returning a new tableau
-       untab: (L PAIR,L L PAIR)->L PAIR
-         ++ untab(lp,llp) is an auxiliary function
+       untab : (L PAIR, L L PAIR)->L PAIR
+         ++ untab(lp, llp) is an auxiliary function
          ++ which unbumps a tableau llp,
          ++ using lp to accumulate pairs
-       bat1:L L PAIR->L PAIR
+       bat1 : L L PAIR->L PAIR
          ++ bat1(llp) unbumps a tableau llp.
          ++ Operation bat1 is the inverse of tab1.
-       bat:Tableau(L S)->L L S
+       bat : Tableau(L S)->L L S
          ++ bat(ls) unbumps a tableau ls
-       tab1:L PAIR->L L PAIR
+       tab1 : L PAIR->L L PAIR
          ++ tab1(lp) creates a tableau from a list of pairs lp
-       tab:L S->Tableau(L S)
+       tab : L S->Tableau(L S)
          ++ tab(ls) creates a tableau from ls by first creating
          ++ a list of pairs using \spadfunFrom{slex}{TableauBumpers},
          ++ then creating a tableau using \spadfunFrom{tab1}{TableauBumpers}.
-       lex:L PAIR->L PAIR
+       lex : L PAIR->L PAIR
          ++ lex(ls) sorts a list of pairs to lexicographic order
-       slex:L S->L PAIR
+       slex : L S->L PAIR
          ++ slex(ls) sorts the argument sequence ls, then
          ++ zips (see \spadfunFrom{map}{ListFunctions3}) the
          ++ original argument sequence with the sorted result to
          ++ a list of pairs
-       inverse:L S->L S
+       inverse : L S->L S
          ++ inverse(ls) forms the inverse of a sequence ls
-       maxrow:(PAIR,L L PAIR,L PAIR,L L PAIR,L L PAIR,L L PAIR)->RC
-         ++ maxrow(a,b,c,d,e) is an auxiliary function for mr
-       mr:L L PAIR->RC
+       maxrow : (PAIR, L L PAIR, L PAIR, L L PAIR, L L PAIR, L L PAIR)->RC
+         ++ maxrow(a, b, c, d, e) is an auxiliary function for mr
+       mr : L L PAIR->RC
          ++ mr(t) is an auxiliary function which
          ++ finds the position of the maximum element of a tableau t
          ++ which is in the lowest row, producing a record of results
      C== add
-       cf:(S,S)->B
-       bumprow(cf,x:(PAIR),lls:(L PAIR))==
+       cf : (S, S)->B
+       bumprow(cf, x : (PAIR), lls : (L PAIR))==
          if null lls
-         then [false,x,[x]]$ROW
-         else (y:(PAIR):=first lls;
-               if cf(x.2,y.2)
-               then [true,[x.1,y.2],cons([y.1,x.2],rest lls)]$ROW
-               else (rw:ROW:=bumprow(cf,x,rest lls);
-                       [rw.fs,rw.sd,cons(first lls,rw.td)]$ROW ))
+         then [false, x, [x]]$ROW
+         else (y : (PAIR) := first lls;
+               if cf(x.2, y.2)
+               then [true, [x.1, y.2], cons([y.1, x.2], rest lls)]$ROW
+               else (rw : ROW := bumprow(cf, x, rest lls);
+                       [rw.fs, rw.sd, cons(first lls, rw.td)]$ROW ))
 
-       bumptab(cf,x:(PAIR),llls:(L L PAIR))==
+       bumptab(cf, x : (PAIR), llls : (L L PAIR))==
            if null llls
            then [[x]]
-           else (rw:ROW:= bumprow(cf,x,first llls);
+           else (rw : ROW := bumprow(cf, x, first llls);
                  if rw.fs
-                 then cons(rw.td, bumptab(cf,rw.sd,rest llls))
-                 else cons(rw.td,rest llls))
+                 then cons(rw.td, bumptab(cf, rw.sd, rest llls))
+                 else cons(rw.td, rest llls))
 
        bumptab1(x, llls) == bumptab((s1, s2) +-> s1 < s2, x, llls)
 
-       rd==> reduce$StreamFunctions2(PAIR,L L PAIR)
-       tab1(lls:(L PAIR))== rd([],bumptab1,lls::(ST PAIR))
+       rd==> reduce$StreamFunctions2(PAIR, L L PAIR)
+       tab1(lls : (L PAIR))== rd([], bumptab1, lls::(ST PAIR))
 
        srt==>sort$(PAIR)
-       lexorder:(PAIR,PAIR)->B
-       lexorder(p1,p2)==if p1.1=p2.1 then p1.2<p2.2 else p1.1<p2.1
+       lexorder : (PAIR, PAIR)->B
+       lexorder(p1, p2)==if p1.1 = p2.1 then p1.2<p2.2 else p1.1<p2.1
        lex lp == (sort$(L PAIR))((s1, s2) +-> lexorder(s1, s2), lp)
        slex ls == lex([[i, j] for i in srt((s1, s2) +-> s1 < s2, ls)
                               for j in ls])
@@ -160,32 +160,32 @@ TableauxBumpers(S:OrderedSet):T==C where
                     lex([[j, i] for i in srt((s1, s2) +-> s1 < s2, ls)
                                for j in ls])]
 
-       tab(ls:(PAIR))==(tableau tab1 slex ls )
+       tab(ls : (PAIR))==(tableau tab1 slex ls )
 
-       maxrow(n,a,b,c,d,llls)==
+       maxrow(n, a, b, c, d, llls)==
         if null llls or null(first llls)
-        then [n,a,b,c]$RC
-        else (fst:=first first llls;rst:=rest first llls;
+        then [n, a, b, c]$RC
+        else (fst := first first llls;rst := rest first llls;
               if fst.1>n.1
-              then maxrow(fst,d,rst,rest llls,cons(first llls,d),rest llls)
-              else maxrow(n,a,b,c,cons(first llls,d),rest llls))
+              then maxrow(fst, d, rst, rest llls, cons(first llls, d), rest llls)
+              else maxrow(n, a, b, c, cons(first llls, d), rest llls))
 
-       mr llls==maxrow(first first llls,[],rest first llls,rest llls,
-                                                               [],llls)
+       mr llls==maxrow(first first llls, [], rest first llls, rest llls,
+                                                               [], llls)
 
        untab(lp, llls)==
          if null llls
          then lp
-         else (rc:RC:=mr llls;
+         else (rc : RC := mr llls;
                rv := reverse (bumptab((s1 : S, s2 : S) : B +-> s2 < s1,
                                       rc.f1, rc.f2));
-               untab(cons(first first rv,lp)
-                     ,append(rest rv,
+               untab(cons(first first rv, lp)
+                     , append(rest rv,
                                          if null rc.f3
                                          then []
-                                         else cons(rc.f3,rc.f4))))
+                                         else cons(rc.f3, rc.f4))))
 
-       bat1 llls==untab([],[reverse lls for lls in llls])
+       bat1 llls==untab([], [reverse lls for lls in llls])
        bat tb==bat1(listOfLists tb)
 
 @

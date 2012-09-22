@@ -31,7 +31,7 @@
 ++  GrayCode provides a function for efficiently running
 ++  through all subsets of a finite set, only changing one element
 ++  by another one.
-GrayCode: public == private where
+GrayCode : public == private where
 
   PI ==> PositiveInteger
   I  ==> Integer
@@ -39,11 +39,11 @@ GrayCode: public == private where
 
   public ==> with
 
-    nextSubsetGray: (V V I,PI) -> V V I
-      ++ nextSubsetGray(ww,n) returns a vector {\em vv} whose components
-      ++ have the following meanings:\begin{items}
+    nextSubsetGray : (V V I, PI) -> V V I
+      ++ nextSubsetGray(ww, n) returns a vector {\em vv} whose components
+      ++ have the following meanings: \begin{items}
       ++ \item {\em vv.1}: a vector of length n whose entries are 0 or 1. This
-      ++    can be interpreted as a code for a subset of the set 1,...,n;
+      ++    can be interpreted as a code for a subset of the set 1, ..., n;
       ++    {\em vv.1} differs from {\em ww.1} by exactly one entry;
       ++ \item {\em vv.2.1} is the number of the entry of {\em vv.1} which
       ++    will be changed next time;
@@ -59,21 +59,21 @@ GrayCode: public == private where
       ++ {\em nextSubsetGray(vv)} and {\em vv := nextSubsetGray(vv)}
       ++ will have the same effect.
 
-    firstSubsetGray: PI -> V V I
+    firstSubsetGray : PI -> V V I
       ++ firstSubsetGray(n) creates the first vector {\em ww} to start a
-      ++ loop using {\em nextSubsetGray(ww,n)}
+      ++ loop using {\em nextSubsetGray(ww, n)}
 
   private ==> add
 
     firstSubsetGray(n : PI) ==
-      vv : V V I := new(2,[])
-      vv.1 := new(n,0) @ V I
-      vv.2 := new(n+1,1) @ V I
+      vv : V V I := new(2, [])
+      vv.1 := new(n, 0) @ V I
+      vv.2 := new(n+1, 1) @ V I
       for i in 1..(n+1) repeat
         vv.2.i := i
       vv
 
-    nextSubsetGray(vv : V V I,n : PI) ==
+    nextSubsetGray(vv : V V I, n : PI) ==
       subs : V I := vv.1    -- subset
       lab : V I := vv.2     -- labels
       c : I := lab(1)    -- element which is to be changed next
@@ -111,7 +111,7 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
   I  ==> Integer
   L  ==> List
   V  ==> Vector
-  SM  ==> SquareMatrix(n,R)
+  SM  ==> SquareMatrix(n, R)
   VECTPKG1 ==> VectorPackage1(I)
   NNI ==> NonNegativeInteger
   PI ==> PositiveInteger
@@ -119,7 +119,7 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
 
   public ==> with
 
-    permanent:  SM  -> R
+    permanent :  SM  -> R
       ++ permanent(x) computes the permanent of a square matrix x.
       ++ The {\em permanent} is equivalent to
       ++ the \spadfun{determinant} except that coefficients have
@@ -129,9 +129,9 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
       ++ improved by [Nijenhuis and Wilf, Ch. 19].
       ++ Note: permanent(x) choose one of three algorithms, depending
       ++ on the underlying ring R and on n, the number of rows (and
-      ++ columns) of x:\begin{items}
+      ++ columns) of x: \begin{items}
       ++ \item 1. if 2 has an inverse in R we can use the algorithm of
-      ++    [Nijenhuis and Wilf, ch.19,p.158]; if 2 has no inverse,
+      ++    [Nijenhuis and Wilf, ch.19, p.158]; if 2 has no inverse,
       ++    some modifications are necessary:
       ++ \item 2. if {\em n > 6} and R is an integral domain with characteristic
       ++    different from 2 (the algorithm works if and only 2 is not a
@@ -146,36 +146,36 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
 
     -- local functions:
 
-    permanent2:  SM  -> R
+    permanent2 :  SM  -> R
 
-    permanent3:  SM  -> R
+    permanent3 :  SM  -> R
 
     x : SM
-    a,b : R
-    i,j,k,l : I
+    a, b : R
+    i, j, k, l : I
 
     permanent3(x) ==
       -- This algorithm is based upon the principle of inclusion-
       -- exclusion. A Gray-code is used to generate the subsets of
-      -- 1,... ,n. This reduces the number of additions needed in
+      -- 1, ... , n. This reduces the number of additions needed in
       -- every step.
       sgn : R := 1
       k : R
       a := 0$R
       vv : V V I := firstSubsetGray(n)$GRAY
         -- For the meaning of the elements of vv, see GRAY.
-      w : V R := new(n,0$R)
+      w : V R := new(n, 0$R)
       j := 1   -- Will be the number of the element changed in subset
-      while j ~= (n+1) repeat  -- we sum over all subsets of (1,...,n)
+      while j ~= (n+1) repeat  -- we sum over all subsets of (1, ..., n)
         sgn := -sgn
         b := sgn
         if vv.1.j = 1 then k := -1
-        else k := 1  -- was that element deleted(k=-1) or added(k=1)?
+        else k := 1  -- was that element deleted(k=-1) or added(k = 1)?
         for i in 1..(n::I) repeat
-          w.i :=  w.i +$R k *$R  x(i,j)
+          w.i :=  w.i +$R k *$R  x(i, j)
           b := b *$R w.i
         a := a +$R b
-        vv := nextSubsetGray(vv,n)$GRAY
+        vv := nextSubsetGray(vv, n)$GRAY
         j := vv.2.1
       if odd?(n) then a := -a
       a
@@ -184,8 +184,8 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
     permanent(x) ==
       -- If 2 has an inverse in R, we can spare half of the calcu-
       -- lation needed in "permanent3": This is the algorithm of
-      -- [Nijenhuis and Wilf, ch.19,p.158]
-      n = 1 => x(1,1)
+      -- [Nijenhuis and Wilf, ch.19, p.158]
+      n = 1 => x(1, 1)
       two : R := (2::I) :: R
       half : Union(R,"failed") := recip(two)
       if (half case "failed") then
@@ -193,12 +193,12 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
         else return permanent2(x)
       sgn : R := 1
       a := 0$R
-      w : V R := new(n,0$R)
+      w : V R := new(n, 0$R)
       -- w.i will be at first x.i and later lambda.i in
       -- [Nijenhuis and Wilf, p.158, (24a) resp.(26)].
-      rowi : V R := new(n,0$R)
+      rowi : V R := new(n, 0$R)
       for i in 1..n repeat
-        rowi := row(x,i) :: V R
+        rowi := row(x, i) :: V R
         b := 0$R
         for j in 1..n repeat
           b := b + rowi.j
@@ -211,16 +211,16 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
         b := b * w.i
       a := a+b
       j := 1   -- Will be the number of the element changed in subset
-      while j ~= n repeat  -- we sum over all subsets of (1,...,n-1)
+      while j ~= n repeat  -- we sum over all subsets of (1, ..., n-1)
         sgn := -sgn
         b := sgn
         if vv.1.j = 1 then k := -1
-        else k := 1  -- was that element deleted(k=-1) or added(k=1)?
+        else k := 1  -- was that element deleted(k=-1) or added(k = 1)?
         for i in 1..n repeat
-          w.i :=  w.i +$R k *$R  x(i,j)
+          w.i :=  w.i +$R k *$R  x(i, j)
           b := b *$R w.i
         a := a +$R b
-        vv := nextSubsetGray(vv,(n-1) :: PI)$GRAY
+        vv := nextSubsetGray(vv, (n-1) :: PI)$GRAY
         j := vv.2.1
       if not odd?(n) then a := -a
       two * a
@@ -236,15 +236,15 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
       -- This is a slight modification of permanent which is
       -- necessary if 2 is not zero or a zero-divisor in R, but has
       -- no inverse in R.
-      n = 1 => x(1,1)
+      n = 1 => x(1, 1)
       two : R := (2::I) :: R
       a := 0$R
-      w : V R := new(n,0$R)
+      w : V R := new(n, 0$R)
       -- w.i will be at first x.i and later lambda.i in
       -- [Nijenhuis and Wilf, p.158, (24a) resp.(26)].
-      rowi : V R := new(n,0$R)
+      rowi : V R := new(n, 0$R)
       for i in 1..n repeat
-        rowi := row(x,i) :: V R
+        rowi := row(x, i) :: V R
         b := 0$R
         for j in 1..n repeat
           b := b + rowi.j
@@ -256,17 +256,17 @@ Permanent(n : PositiveInteger, R : Join(Ring, CommutativeStar)):
         b := b *$R w.i
       a := a +$R b
       j := 1   -- Will be the number of the element changed in subset
-      while j ~= n repeat  -- we sum over all subsets of (1,...,n-1)
+      while j ~= n repeat  -- we sum over all subsets of (1, ..., n-1)
         sgn := -sgn
         b := sgn
         if vv.1.j = 1 then k := -1
-        else k := 1  -- was that element deleted(k=-1) or added(k=1)?
+        else k := 1  -- was that element deleted(k=-1) or added(k = 1)?
         c := k * two
         for i in 1..n repeat
-          w.i :=  w.i +$R c *$R x(i,j)
+          w.i :=  w.i +$R c *$R x(i, j)
           b := b *$R w.i
         a := a +$R b
-        vv := nextSubsetGray(vv,(n-1) :: PI)$GRAY
+        vv := nextSubsetGray(vv, (n-1) :: PI)$GRAY
         j := vv.2.1
       if not odd?(n) then a := -a
       b := two ^ ((n-1)::NNI)

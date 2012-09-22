@@ -16,34 +16,34 @@
 ++ Description:
 ++  This package implements asymptotically efficient Chinese reconstruction
 -- Currently unused.
-CRApackage(R:EuclideanDomain): Exports == Implementation where
+CRApackage(R : EuclideanDomain) : Exports == Implementation where
   Exports == with
-    modTree: (R,List R) -> List R
-        ++ modTree(r,l) \undocumented{}
-    chineseRemainder: (List R, List R) -> R
-    ++ chineseRemainder(lv,lm) returns a value \axiom{v} such that, if
+    modTree : (R, List R) -> List R
+        ++ modTree(r, l) \undocumented{}
+    chineseRemainder : (List R, List R) -> R
+    ++ chineseRemainder(lv, lm) returns a value \axiom{v} such that, if
     ++ x is \axiom{lv.i} modulo \axiom{lm.i} for all \axiom{i}, then
     ++ x is \axiom{v} modulo \axiom{lm(1)*lm(2)*...*lm(n)}.
-    chineseRemainder: (List List R, List R) -> List R
-    ++ chineseRemainder(llv,lm) returns a list of values, each of which
+    chineseRemainder : (List List R, List R) -> List R
+    ++ chineseRemainder(llv, lm) returns a list of values, each of which
     ++ corresponds to the Chinese remainder of the associated element of
     ++ \axiom{llv} and axiom{lm}.  This is more efficient than applying
     ++ chineseRemainder several times.
-    multiEuclideanTree: (List R, R) -> List R
-        ++ multiEuclideanTree(l,r) \undocumented{}
+    multiEuclideanTree : (List R, R) -> List R
+        ++ multiEuclideanTree(l, r) \undocumented{}
   Implementation == add
 
-    BB:=BalancedBinaryTree(R)
-    x:BB
+    BB := BalancedBinaryTree(R)
+    x : BB
 
     -- Definition for modular reduction mapping with several moduli
-    modTree(a,lm) ==
+    modTree(a, lm) ==
       t := balancedBinaryTree(#lm, 0$R)
-      setleaves!(t,lm)
+      setleaves!(t, lm)
       mapUp!(t,"*")
       leaves mapDown!(t, a, "rem")
 
-    chineseRemainder(lv:List(R), lm:List(R)):R ==
+    chineseRemainder(lv : List(R), lm : List(R)) : R ==
       #lm ~= #lv => error "lists of moduli and values not of same length"
       x := balancedBinaryTree(#lm, 0$R)
       x := setleaves!(x, lm)
@@ -55,10 +55,10 @@ CRApackage(R:EuclideanDomain): Exports == Implementation where
       inv := u . coef1
       linv := modTree(inv, lm)
       l := [(u*v) rem m for v in lv for u in linv for m in lm]
-      y := setleaves!(y,l)
+      y := setleaves!(y, l)
       value(mapUp!(y, x, (x1, x2, x3, x4) +-> x1*x4 + x2*x3)) rem value(x)
 
-    chineseRemainder(llv:List List(R), lm:List(R)):List(R) ==
+    chineseRemainder(llv : List List(R), lm : List(R)) : List(R) ==
       x := balancedBinaryTree(#lm, 0$R)
       x := setleaves!(x, lm)
       mapUp!(x,"*")
@@ -68,15 +68,15 @@ CRApackage(R:EuclideanDomain): Exports == Implementation where
         error "moduli not relatively prime"
       inv := u . coef1
       linv := modTree(inv, lm)
-      retVal:List(R) := []
+      retVal : List(R) := []
       for lv in llv repeat
         l := [(u3*v) rem m for v in lv for u3 in linv for m in lm]
-        y := setleaves!(y,l)
+        y := setleaves!(y, l)
         retVal := cons(value(mapUp!(y, x, (x1, x2, x3, x4) +->
                                       x1*x4 + x2*x3)) rem value(x), retVal)
       reverse retVal
 
-    extEuclidean: (R, R, R) -> List R
+    extEuclidean : (R, R, R) -> List R
     extEuclidean(a, b, c) ==
       u := extendedEuclidean(a, b, c)
       u case "failed" => error [c, " not spanned by ", a, " and ",b]

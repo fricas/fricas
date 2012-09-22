@@ -19,7 +19,7 @@
 ++ roman numbers, to convert numbers to strings and to read
 ++ floating-point numbers.
 
-NumberFormats(): NFexports == NFimplementation where
+NumberFormats() : NFexports == NFimplementation where
     PI ==> PositiveInteger
     I  ==> Integer
     C  ==> Character
@@ -28,20 +28,20 @@ NumberFormats(): NFexports == NFimplementation where
     V  ==> PrimitiveArray
 
     NFexports ==> with
-        FormatArabic: PI -> S
+        FormatArabic : PI -> S
             ++ FormatArabic(n) forms an Arabic numeral
             ++ string from an integer n.
-        ScanArabic:   S -> PI
+        ScanArabic :   S -> PI
             ++ ScanArabic(s) forms an integer from an Arabic numeral string s.
-        FormatRoman:  PI -> S
+        FormatRoman :  PI -> S
             ++ FormatRoman(n) forms a Roman numeral string from an integer n.
-        ScanRoman:    S -> PI
+        ScanRoman :    S -> PI
             ++ ScanRoman(s) forms an integer from a Roman numeral string s.
-        ScanFloatIgnoreSpaces: S -> F
+        ScanFloatIgnoreSpaces : S -> F
             ++ ScanFloatIgnoreSpaces(s) forms a floating point number from
             ++ the string s ignoring any spaces. Error is generated if the
             ++ string is not recognised as a floating point number.
-        ScanFloatIgnoreSpacesIfCan: S -> Union(F, "failed")
+        ScanFloatIgnoreSpacesIfCan : S -> Union(F, "failed")
             ++ ScanFloatIgnoreSpacesIfCan(s) tries to form a floating point number from
             ++ the string s ignoring any spaces.
 
@@ -49,35 +49,35 @@ NumberFormats(): NFexports == NFimplementation where
     NFimplementation ==> add
         import SExpression
         import Symbol
-        replaceD: C -> C
-        replaced: C -> C
-        contract: S -> S
-        check: S ->Boolean
+        replaceD : C -> C
+        replaced : C -> C
+        contract : S -> S
+        check : S ->Boolean
         replaceD c ==
           if c = char "D" then char "E" else c
         replaced c ==
           if c = char "d" then char "E" else c
         contract s ==
-          s:= map(replaceD,s)
-          s:= map(replaced,s)
+          s := map(replaceD, s)
+          s := map(replaced, s)
           ls:List S := split(s,char " ")$String
-          s:= concat ls
+          s := concat ls
         check s ==
           NUMBERP(READ_-FROM_-STRING(s)$Lisp)$Lisp and
            -- if there is an "E" then there must be a "."
            -- this is not caught by code above
            -- also if the exponent is v.big the above returns false
-           not (any?((c1: C): Boolean +-> c1=char "E",s) and not any?((c1: C): Boolean +-> c1=char ".",s) )
+           not (any?((c1 : C) : Boolean +-> c1 = char "E",s) and not any?((c1: C): Boolean +-> c1 = char ".",s) )
 
 --        Original interpreter function:
 --        )lis (defun scanstr(x) (spadcomp::|parseFromString| x))
-        sexfloat:SExpression:=convert(coerce("Float")@Symbol)$SExpression
+        sexfloat:SExpression := convert(coerce("Float")@Symbol)$SExpression
         ScanFloatIgnoreSpaces s ==
           s := contract s
           not check s => error "Non-numeric value"
           sex := interpret(packageTran(ncParseFromString(s)$Lisp)$Lisp)$Lisp
           sCheck := car(car(sex))
-          if (sCheck=sexfloat) = true then
+          if (sCheck = sexfloat) = true then
              f := (cdr cdr sex) pretend Float
           else
              if integer?(cdr sex) = true then
@@ -91,7 +91,7 @@ NumberFormats(): NFexports == NFimplementation where
           not check s => "failed"
           sex := interpret(packageTran(ncParseFromString(s)$Lisp)$Lisp)$Lisp
           sCheck := car(car(sex))
-          if (sCheck=sexfloat) = true then
+          if (sCheck = sexfloat) = true then
              f := (cdr cdr sex) pretend Float
           else
              if integer?(cdr sex) = true then
@@ -100,16 +100,16 @@ NumberFormats(): NFexports == NFimplementation where
              else
                 "failed"
 
-        units:V S :=
+        units : V S :=
            construct ["","I","II","III","IV","V","VI","VII","VIII","IX"]
-        tens :V S :=
+        tens : V S :=
            construct ["","X","XX","XXX","XL","L","LX","LXX","LXXX","XC"]
-        hunds:V S :=
+        hunds : V S :=
            construct ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM"]
         umin := minIndex units
         tmin := minIndex tens
         hmin := minIndex hunds
-        romval:V I := new(256, -1)
+        romval : V I := new(256, -1)
         romval ord char(" ")$C := 0
         romval ord char("I")$C := 1
         romval ord char("V")$C := 5
@@ -171,9 +171,9 @@ NumberFormats(): NFexports == NFimplementation where
 
         ScanRoman s ==
             s      := upperCase s
-            tot: I := 0
-            Max: I := 0
-            i:   I := maxIndex s
+            tot : I := 0
+            Max : I := 0
+            i :   I := maxIndex s
             while i >= minIndex s repeat
                 -- Read a single roman digit
                 c := s.i; i := i-1
@@ -182,7 +182,7 @@ NumberFormats(): NFexports == NFimplementation where
                 if n < 0 then
                     c ~= pren =>
                        error ["Improper character in Roman numeral: ",c]
-                    nprens: PI := 1
+                    nprens : PI := 1
                     while c = pren and i >= minIndex s repeat
                        c := s.i; i := i-1
                        if c = pren then nprens := nprens+1
@@ -213,210 +213,210 @@ NumberFormats(): NFexports == NFimplementation where
 ++ the expression rendering software (e.g.FORTRAN, TeX, or Script) and
 ++ the output coercions in the various domains.
 
-OutputForm(): SetCategory with
+OutputForm() : SetCategory with
         --% Printing
         print  : % -> Void
           ++ print(u) prints the form u.
-        message: String -> %
+        message : String -> %
           ++ message(s) creates an form with no string quotes
           ++ from string s.
-        messagePrint: String -> Void
+        messagePrint : String -> Void
           ++ messagePrint(s) prints s without string quotes. Note:
           ++ \spad{messagePrint(s)} is equivalent to \spad{print message(s)}.
         --% Creation of atomic forms
-        outputForm: Integer -> %
+        outputForm : Integer -> %
           ++ outputForm(n) creates an form for integer n.
-        outputForm: Symbol  -> %
+        outputForm : Symbol  -> %
           ++ outputForm(s) creates an form for symbol s.
-        outputForm: String  -> %
+        outputForm : String  -> %
           ++ outputForm(s) creates an form for string s.
-        outputForm: DoubleFloat  -> %
+        outputForm : DoubleFloat  -> %
           ++ outputForm(sf) creates an form for small float sf.
         empty   : () -> %
           ++ empty() creates an empty form.
 
         --% Sizings
-        width: % -> Integer
+        width : % -> Integer
           ++ width(f) returns the width of form f (an integer).
-        height: % -> Integer
+        height : % -> Integer
           ++ height(f) returns the height of form f (an integer).
-        width: -> Integer
+        width : -> Integer
           ++ width() returns the width of the display area (an integer).
-        height: -> Integer
+        height : -> Integer
           ++ height() returns the height of the display area (an integer).
-        subHeight: % -> Integer
+        subHeight : % -> Integer
           ++ subHeight(f) returns the height of form f below the base line.
-        superHeight: % -> Integer
+        superHeight : % -> Integer
           ++ superHeight(f) returns the height of form f above the base line.
          --% Space manipulations
-        hspace: Integer -> %  ++ hspace(n) creates white space of width n.
-        vspace: Integer -> %  ++ vspace(n) creates white space of height n.
-        rspace: (Integer,Integer) -> %
-          ++ rspace(n,m) creates rectangular white space, n wide by m high.
+        hspace : Integer -> %  ++ hspace(n) creates white space of width n.
+        vspace : Integer -> %  ++ vspace(n) creates white space of height n.
+        rspace : (Integer, Integer) -> %
+          ++ rspace(n, m) creates rectangular white space, n wide by m high.
         --% Area adjustments
-        left: (%,Integer) -> %
-          ++ left(f,n) left-justifies form f within space of width n.
-        right: (%,Integer) -> %
-          ++ right(f,n) right-justifies form f within space of width n.
-        center: (%,Integer) -> %
-          ++ center(f,n) centers form f within space of width n.
-        left: % -> %
+        left : (%, Integer) -> %
+          ++ left(f, n) left-justifies form f within space of width n.
+        right : (%, Integer) -> %
+          ++ right(f, n) right-justifies form f within space of width n.
+        center : (%, Integer) -> %
+          ++ center(f, n) centers form f within space of width n.
+        left : % -> %
           ++ left(f) left-justifies form f in total space.
-        right: % -> %
+        right : % -> %
           ++ right(f) right-justifies form f in total space.
-        center:   % -> %
+        center :   % -> %
           ++ center(f) centers form f in total space.
 
         --% Area manipulations
-        hconcat:  (%,%) -> %
-          ++ hconcat(f,g) horizontally concatenate forms f and g.
-        vconcat:  (%,%) -> %
-          ++ vconcat(f,g) vertically concatenates forms f and g.
-        hconcat:  List % -> %
+        hconcat :  (%, %) -> %
+          ++ hconcat(f, g) horizontally concatenate forms f and g.
+        vconcat :  (%, %) -> %
+          ++ vconcat(f, g) vertically concatenates forms f and g.
+        hconcat :  List % -> %
           ++ hconcat(u) horizontally concatenates all forms in list u.
-        vconcat:  List % -> %
+        vconcat :  List % -> %
           ++ vconcat(u) vertically concatenates all forms in list u.
 
         --% Application formers
-        prefix:  (%, List %) -> %
-          ++ prefix(f,l) creates a form depicting the n-ary prefix
+        prefix :  (%, List %) -> %
+          ++ prefix(f, l) creates a form depicting the n-ary prefix
           ++ application of f to a tuple of arguments given by list l.
-        infix:   (%, List %) -> %
-          ++ infix(f,l) creates a form depicting the n-ary application
+        infix :   (%, List %) -> %
+          ++ infix(f, l) creates a form depicting the n-ary application
           ++ of infix operation f to a tuple of arguments l.
-        infix:   (%, %, %) -> %
+        infix :   (%, %, %) -> %
           ++ infix(op, a, b) creates a form which prints as: a op b.
-        postfix: (%, %)    -> %
+        postfix : (%, %)    -> %
           ++ postfix(op, a)  creates a form which prints as: a op.
-        infix?: % -> Boolean
+        infix? : % -> Boolean
           ++ infix?(op) returns true if op is an infix operator,
           ++ and false otherwise.
-        elt:     (%, List %) -> %
-          ++ elt(op,l) creates a form for application of op
+        elt :     (%, List %) -> %
+          ++ elt(op, l) creates a form for application of op
           ++ to list of arguments l.
 
         --% Special forms
-        string:  % -> %
+        string :  % -> %
           ++ string(f) creates f with string quotes.
-        label:   (%, %) -> %
-          ++ label(n,f) gives form f an equation label n.
-        box:     % -> %
+        label :   (%, %) -> %
+          ++ label(n, f) gives form f an equation label n.
+        box :     % -> %
           ++ box(f) encloses f in a box.
-        matrix:  List List % -> %
+        matrix :  List List % -> %
           ++ matrix(llf) makes llf (a list of lists of forms) into
           ++ a form which displays as a matrix.
-        zag:     (%, %) -> %
-          ++ zag(f,g) creates a form for the continued fraction form for f over g.
-        root:    % -> %
+        zag :     (%, %) -> %
+          ++ zag(f, g) creates a form for the continued fraction form for f over g.
+        root :    % -> %
           ++ root(f) creates a form for the square root of form f.
-        root:    (%, %) -> %
-          ++ root(f,n) creates a form for the nth root of form f.
-        over:    (%, %) -> %
-          ++ over(f,g) creates a form for the vertical fraction of f over g.
-        slash:   (%, %) -> %
-          ++ slash(f,g) creates a form for the horizontal fraction of f over g.
-        assign:  (%, %) -> %
-          ++ assign(f,g) creates a form for the assignment \spad{f := g}.
-        rarrow:  (%, %) -> %
-          ++ rarrow(f,g) creates a form for the mapping \spad{f -> g}.
-        differentiate: (%, NonNegativeInteger) -> %
-          ++ differentiate(f,n) creates a form for the nth derivative of f,
+        root :    (%, %) -> %
+          ++ root(f, n) creates a form for the nth root of form f.
+        over :    (%, %) -> %
+          ++ over(f, g) creates a form for the vertical fraction of f over g.
+        slash :   (%, %) -> %
+          ++ slash(f, g) creates a form for the horizontal fraction of f over g.
+        assign :  (%, %) -> %
+          ++ assign(f, g) creates a form for the assignment \spad{f := g}.
+        rarrow :  (%, %) -> %
+          ++ rarrow(f, g) creates a form for the mapping \spad{f -> g}.
+        differentiate : (%, NonNegativeInteger) -> %
+          ++ differentiate(f, n) creates a form for the nth derivative of f,
           ++ e.g. \spad{f'}, \spad{f''}, \spad{f'''},
           ++ "f super \spad{iv}".
-        binomial: (%, %) -> %
-          ++ binomial(n,m) creates a form for the binomial coefficient of n and m.
-        tensor:  (%, %) -> %
-          ++ tensor(a,b) creates a form for a tensor b
+        binomial : (%, %) -> %
+          ++ binomial(n, m) creates a form for the binomial coefficient of n and m.
+        tensor :  (%, %) -> %
+          ++ tensor(a, b) creates a form for a tensor b
 
         --% Scripts
-        sub:     (%, %) -> %
-          ++ sub(f,n) creates a form for f subscripted by n.
-        super:   (%, %) -> %
-          ++ super(f,n) creates a form for f superscripted by n.
-        presub:  (%, %) -> %
-          ++ presub(f,n) creates a form for f presubscripted by n.
-        presuper:(%, %) -> %
-          ++ presuper(f,n) creates a form for f presuperscripted by n.
-        scripts: (%, List %) -> %
+        sub :     (%, %) -> %
+          ++ sub(f, n) creates a form for f subscripted by n.
+        super :   (%, %) -> %
+          ++ super(f, n) creates a form for f superscripted by n.
+        presub :  (%, %) -> %
+          ++ presub(f, n) creates a form for f presubscripted by n.
+        presuper : (%, %) -> %
+          ++ presuper(f, n) creates a form for f presuperscripted by n.
+        scripts : (%, List %) -> %
             ++ \spad{scripts(f, [sub, super, presuper, presub])}
             ++  creates a form for f with scripts on all 4 corners.
-        supersub:(%, List %) -> %
-            ++ supersub(a,[sub1,super1,sub2,super2,...])
+        supersub : (%, List %) -> %
+            ++ supersub(a, [sub1, super1, sub2, super2, ...])
             ++ creates a form with each subscript aligned
             ++ under each superscript.
 
         --% Diacritical marks
-        quote:   % -> %
+        quote :   % -> %
           ++ quote(f) creates the form f with a prefix quote.
-        dot:     % -> %
+        dot :     % -> %
           ++ dot(f) creates the form with a one dot overhead.
-        dot:     (%, NonNegativeInteger) -> %
-          ++ dot(f,n) creates the form f with n dots overhead.
-        prime:   % -> %
+        dot :     (%, NonNegativeInteger) -> %
+          ++ dot(f, n) creates the form f with n dots overhead.
+        prime :   % -> %
           ++ prime(f) creates the form f followed by a suffix prime (single quote).
-        prime:   (%, NonNegativeInteger) -> %
-          ++ prime(f,n) creates the form f followed by n primes.
-        overbar: % -> %
+        prime :   (%, NonNegativeInteger) -> %
+          ++ prime(f, n) creates the form f followed by n primes.
+        overbar : % -> %
           ++ overbar(f) creates the form f with an overbar.
-        overlabel: (%, %) -> %
+        overlabel : (%, %) -> %
           ++ overlabel(x,f) creates the form f with "x overbar" over the top.
 
         --% Plexes
-        sum:     (%)       -> %
+        sum :     (%)       -> %
           ++ sum(expr) creates the form prefixing expr by a capital sigma.
-        sum:     (%, %)    -> %
-          ++ sum(expr,lowerlimit) creates the form prefixing expr by
+        sum :     (%, %)    -> %
+          ++ sum(expr, lowerlimit) creates the form prefixing expr by
           ++ a capital sigma with a lowerlimit.
-        sum:     (%, %, %) -> %
-          ++ sum(expr,lowerlimit,upperlimit) creates the form prefixing expr by
+        sum :     (%, %, %) -> %
+          ++ sum(expr, lowerlimit, upperlimit) creates the form prefixing expr by
           ++ a capital sigma with both a lowerlimit and upperlimit.
-        prod:    (%)       -> %
+        prod :    (%)       -> %
           ++ prod(expr) creates the form prefixing expr by a capital pi.
-        prod:    (%, %)    -> %
-          ++ prod(expr,lowerlimit) creates the form prefixing expr by
+        prod :    (%, %)    -> %
+          ++ prod(expr, lowerlimit) creates the form prefixing expr by
           ++ a capital pi with a lowerlimit.
-        prod:    (%, %, %) -> %
-          ++ prod(expr,lowerlimit,upperlimit) creates the form prefixing expr by
+        prod :    (%, %, %) -> %
+          ++ prod(expr, lowerlimit, upperlimit) creates the form prefixing expr by
           ++ a capital pi with both a lowerlimit and upperlimit.
-        int:     (%)       -> %
+        int :     (%)       -> %
           ++ int(expr) creates the form prefixing expr with an integral sign.
-        int:     (%, %)    -> %
-          ++ int(expr,lowerlimit) creates the form prefixing expr by an
+        int :     (%, %)    -> %
+          ++ int(expr, lowerlimit) creates the form prefixing expr by an
           ++ integral sign with a lowerlimit.
-        int:     (%, %, %) -> %
-          ++ int(expr,lowerlimit,upperlimit) creates the form prefixing expr by
+        int :     (%, %, %) -> %
+          ++ int(expr, lowerlimit, upperlimit) creates the form prefixing expr by
           ++ an integral sign with both a lowerlimit and upperlimit.
 
         --% Matchfix forms
-        brace:   % -> %
+        brace :   % -> %
           ++ brace(f) creates the form enclosing f in braces (curly brackets).
-        brace:   List % -> %
+        brace :   List % -> %
           ++ brace(lf) creates the form separating the elements of lf
           ++ by commas and encloses the result in curly brackets.
-        bracket: % -> %
+        bracket : % -> %
           ++ bracket(f) creates the form enclosing f in square brackets.
-        bracket: List % -> %
+        bracket : List % -> %
           ++ bracket(lf) creates the form separating the elements of lf
           ++ by commas and encloses the result in square brackets.
-        paren:   % -> %
+        paren :   % -> %
           ++ paren(f) creates the form enclosing f in parentheses.
-        paren:   List % -> %
+        paren :   List % -> %
           ++ paren(lf) creates the form separating the elements of lf
           ++ by commas and encloses the result in parentheses.
 
         --% Separators for aggregates
-        pile:     List % -> %
+        pile :     List % -> %
           ++ pile(l) creates the form consisting of the elements of l which
           ++ displays as a pile, i.e. the elements begin on a new line and
           ++ are indented right to the same margin.
 
-        commaSeparate: List % -> %
+        commaSeparate : List % -> %
           ++ commaSeparate(l) creates the form separating the elements of l
           ++ by commas.
-        semicolonSeparate:  List % -> %
+        semicolonSeparate :  List % -> %
           ++ semicolonSeparate(l) creates the form separating the elements of l
           ++ by semicolons.
-        blankSeparate: List % -> %
+        blankSeparate : List % -> %
           ++ blankSeparate(l) creates the form separating the elements of l
           ++ by blanks.
         --% Specific applications
@@ -449,16 +449,16 @@ OutputForm(): SetCategory with
         "quo":   (%, %) -> %
           ++ f quo g creates the equivalent infix form.
         "exquo": (%, %) -> %
-          ++ exquo(f,g) creates the equivalent infix form.
+          ++ exquo(f, g) creates the equivalent infix form.
         "and":   (%, %) -> %
           ++ f and g creates the equivalent infix form.
         "or":    (%, %) -> %
           ++ f or g creates the equivalent infix form.
         "not":   (%)    -> %
           ++ not f creates the equivalent prefix form.
-        SEGMENT: (%,%)  -> %
-          ++ SEGMENT(x,y) creates the infix form: \spad{x..y}.
-        SEGMENT: (%)    -> %
+        SEGMENT : (%, %)  -> %
+          ++ SEGMENT(x, y) creates the infix form: \spad{x..y}.
+        SEGMENT : (%)    -> %
           ++ SEGMENT(x) creates the prefix form: \spad{x..}.
 
     == add
@@ -478,26 +478,26 @@ OutputForm(): SetCategory with
 
         Rep := SExpression
 
-        a, b: %
-        l: List %
-        s: String
-        e: Symbol
-        n: Integer
-        nn:NonNegativeInteger
+        a, b : %
+        l : List %
+        s : String
+        e : Symbol
+        n : Integer
+        nn : NonNegativeInteger
 
-        sform:    String  -> %
-        eform:    Symbol  -> %
-        iform:    Integer -> %
+        sform :    String  -> %
+        eform :    Symbol  -> %
+        iform :    Integer -> %
 
         print x              == mathprint(x)$Lisp
         message s            == (empty? s => empty(); s pretend %)
         messagePrint s       == print message s
-        (a:% = b:%):Boolean  == EQUAL(a, b)$Lisp
-        (a:% = b:%):%        == convert [eform '_=,     a, b]
-        coerce(a):OutputForm  == a pretend OutputForm
+        (a : % = b : %) : Boolean  == EQUAL(a, b)$Lisp
+        (a : % = b : %) : %        == convert [eform '_=,     a, b]
+        coerce(a) : OutputForm  == a pretend OutputForm
         outputForm n          == n pretend %
         outputForm e          == e pretend %
-        outputForm(f:DoubleFloat) == f pretend %
+        outputForm(f : DoubleFloat) == f pretend %
         sform s               == s pretend %
         eform e               == e pretend %
         iform n               == n pretend %
@@ -512,12 +512,12 @@ OutputForm(): SetCategory with
         height() == 20
         width() == 66
 
-        center(a,w)   == hconcat(hspace((w - width(a)) quo 2),a)
-        left(a,w)     == hconcat(a,hspace((w - width(a))))
-        right(a,w)    == hconcat(hspace(w - width(a)),a)
-        center(a)     == center(a,width())
-        left(a)       == left(a,width())
-        right(a)      == right(a,width())
+        center(a, w)   == hconcat(hspace((w - width(a)) quo 2), a)
+        left(a, w)     == hconcat(a, hspace((w - width(a))))
+        right(a, w)    == hconcat(hspace(w - width(a)), a)
+        center(a)     == center(a, width())
+        left(a)       == left(a, width())
+        right(a)      == right(a, width())
 
         vspace(n) ==
           n = 0 => empty()
@@ -540,11 +540,11 @@ OutputForm(): SetCategory with
         semicolonSeparate l == cons(eform 'AGGSET,  l)
         blankSeparate l     ==
            c := eform 'CONCATB
-           l1: List % := []
+           l1 : List % := []
            for u in reverse l repeat
-               if EQCAR(u,c)$Lisp
-                  then l1:=[:cdr u,:l1]
-                  else l1:=[u,:l1]
+               if EQCAR(u, c)$Lisp
+                  then l1 := [:cdr u, :l1]
+                  else l1 := cons(u, l1)
            cons(c, l1)
 
         brace a        == convert [eform 'BRACE, a]
@@ -597,15 +597,15 @@ OutputForm(): SetCategory with
         empty() == convert [eform 'NOTHING]
 
         infix? a ==
-            e:% :=
+            e : % :=
                 IDENTP$Lisp a => a
                 STRINGP$Lisp a => INTERN$Lisp a
                 return false
-            if GET(e,QUOTE(INFIXOP$Lisp)$Lisp)$Lisp then true else false
+            if GET(e, QUOTE(INFIXOP$Lisp)$Lisp)$Lisp then true else false
 
         elt(a, l) ==
             cons(a, l)
-        prefix(a,l)   ==
+        prefix(a, l)   ==
             not infix? a => cons(a, l)
             hconcat(a, paren commaSeparate l)
         infix(a, l) ==
@@ -613,7 +613,7 @@ OutputForm(): SetCategory with
             null rest l => first l
             infix? a => cons(a, l)
             hconcat [first l, a, infix(a, rest l)]
-        infix(a,b,c)  ==
+        infix(a, b, c)  ==
             infix? a => convert [a, b, c]
             hconcat [b, a, c]
         postfix(a, b) ==

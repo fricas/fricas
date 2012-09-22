@@ -60,13 +60,13 @@ enumeration the index of the leftmost (nth)component varies most quickly.
 ++ are defined for vectors componentwise. It can by assumed that extraction or
 ++ updating components can be done in constant time.
 
-VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
+VectorCategory(R : Type) : Category == OneDimensionalArrayAggregate R with
     if R has AbelianSemiGroup then
       _+ : (%, %) -> %
         ++ x + y returns the component-wise sum of the vectors x and y.
         ++ Error: if x and y are not of the same length.
     if R has AbelianMonoid then
-      zero: NonNegativeInteger -> %
+      zero : NonNegativeInteger -> %
         ++ zero(n) creates a zero vector of length n.
     if R has AbelianGroup then
       _- : % -> %
@@ -82,20 +82,20 @@ VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
       _* : (%, R) -> %
         ++ y * r multiplies each component of the vector y by the element r.
     if R has Ring then
-      dot: (%, %) -> R
-        ++ dot(x,y) computes the inner product of the two vectors x and y.
+      dot : (%, %) -> R
+        ++ dot(x, y) computes the inner product of the two vectors x and y.
         ++ Error: if x and y are not of the same length.
-      outerProduct: (%, %) -> Matrix R
-        ++ outerProduct(u,v) constructs the matrix whose (i,j)'th element is
+      outerProduct : (%, %) -> Matrix R
+        ++ outerProduct(u, v) constructs the matrix whose (i, j)'th element is
         ++ u(i)*v(j).
-      cross: (%, %) -> %
-        ++ cross(u,v) constructs the cross product of u and v.
+      cross : (%, %) -> %
+        ++ cross(u, v) constructs the cross product of u and v.
         ++ Error: if u and v are not of length 3.
     if R has RadicalCategory and R has Ring then
-      length: % -> R
-        ++ length(v) computes the sqrt(dot(v,v)), i.e. the magnitude
-      magnitude: % -> R
-        ++ magnitude(v) computes the sqrt(dot(v,v)), i.e. the length
+      length : % -> R
+        ++ length(v) computes the sqrt(dot(v, v)), i.e. the magnitude
+      magnitude : % -> R
+        ++ magnitude(v) computes the sqrt(dot(v, v)), i.e. the length
  add
     if R has AbelianSemiGroup then
       u + v ==
@@ -119,7 +119,7 @@ VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
         #u ~= #v => error "Vectors must be of the same length"
         _+/[qelt(u, i) * qelt(v, i) for i in minIndex u .. maxIndex u]
       outerProduct(u, v) ==
-        matrix [[qelt(u, i) * qelt(v,j) for i in minIndex u .. maxIndex u] _
+        matrix [[qelt(u, i) * qelt(v, j) for i in minIndex u .. maxIndex u] _
                 for j in minIndex v .. maxIndex v]
       cross(u, v) ==
         #u ~= 3 or #v ~= 3 => error "Vectors must be of length 3"
@@ -129,9 +129,9 @@ VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
 
     if R has RadicalCategory and R has Ring then
       length p ==
-         sqrt(dot(p,p))
+         sqrt(dot(p, p))
       magnitude p ==
-         sqrt(dot(p,p))
+         sqrt(dot(p, p))
 
 @
 \section{domain IVECTOR IndexedVector}
@@ -150,7 +150,7 @@ VectorCategory(R:Type): Category == OneDimensionalArrayAggregate R with
 ++   This type represents vector like objects with varying lengths
 ++ and a user-specified initial index.
 
-IndexedVector(R:Type, mn:Integer):
+IndexedVector(R : Type, mn : Integer):
   VectorCategory R == IndexedOneDimensionalArray(R, mn)
 
 @
@@ -170,11 +170,11 @@ IndexedVector(R:Type, mn:Integer):
 ++ This type represents vector like objects with varying lengths
 ++ and indexed by a finite segment of integers starting at 1.
 
-Vector(R:Type): Exports == Implementation where
+Vector(R : Type) : Exports == Implementation where
  VECTORMININDEX ==> 1       -- if you want to change this, be my guest
 
  Exports ==> VectorCategory R with
-   vector: List R -> %
+   vector : List R -> %
      ++ vector(l) converts the list l to a vector.
  Implementation ==>
   IndexedVector(R, VECTORMININDEX) add
@@ -189,7 +189,7 @@ Vector(R:Type): Exports == Implementation where
 
      vector l == construct l
      if R has ConvertibleTo InputForm then
-       convert(x:%):InputForm ==
+       convert(x : %) : InputForm ==
           convert [convert('vector)@InputForm,
                           convert(parts x)@InputForm]
 
@@ -213,8 +213,8 @@ Vector(R:Type): Exports == Implementation where
 ++ another of type B. The operations all iterate over their vector argument
 ++ and either return a value of type B or a vector over B.
 
-VectorFunctions2(A, B): Exports == Implementation where
-  A, B: Type
+VectorFunctions2(A, B) : Exports == Implementation where
+  A, B : Type
 
   VA ==> Vector A
   VB ==> Vector B
@@ -223,12 +223,12 @@ VectorFunctions2(A, B): Exports == Implementation where
 
   Exports ==> with
     scan   : ((A, B) -> B, VA, B) -> VB
-      ++ scan(func,vec,ident) creates a new vector whose elements are
+      ++ scan(func, vec, ident) creates a new vector whose elements are
       ++ the result of applying reduce to the binary function func,
       ++ increasing initial subsequences of the vector vec,
       ++ and the element ident.
     reduce : ((A, B) -> B, VA, B) -> B
-      ++ reduce(func,vec,ident) combines the elements in vec using the
+      ++ reduce(func, vec, ident) combines the elements in vec using the
       ++ binary function func. Argument ident is returned if vec is empty.
     map    : (A -> B, VA) -> VB
       ++ map(f, v) applies the function f to every element of the vector v
@@ -240,14 +240,14 @@ VectorFunctions2(A, B): Exports == Implementation where
   Implementation ==> add
     scan(f, v, b)   == scan(f, v, b)$O2
     reduce(f, v, b) == reduce(f, v, b)$O2
-    map(f:(A->B), v:VA):VB == map(f, v)$O2
+    map(f : (A->B), v : VA) : VB == map(f, v)$O2
 
     map(f:(A -> UB), a:VA):Union(VB,"failed") ==
      res : List B  := []
      for u in entries(a) repeat
        r := f u
        r = "failed" => return "failed"
-       res := [r::B,:res]
+       res := cons(r::B, res)
      vector reverse! res
 
 @
@@ -270,11 +270,11 @@ VectorFunctions2(A, B): Exports == Implementation where
 ++   This category represents a finite cartesian product of a given type.
 ++ Many categorical properties are preserved under this construction.
 
-DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
+DirectProductCategory(dim : NonNegativeInteger, R : Type) : Category ==
   Join(IndexedAggregate(Integer, R), CoercibleTo Vector R, _
            finiteAggregate) with
            ++ attribute to indicate an aggregate of finite size
-         directProduct: Vector R -> %
+         directProduct : Vector R -> %
            ++ directProduct(v) converts the vector v to become
            ++ a direct product. Error: if the length of v is
            ++ different from dim.
@@ -283,11 +283,11 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
            BiModule(R, R)
            DifferentialExtension R
            FullyLinearlyExplicitRingOver R
-           unitVector: PositiveInteger -> %
+           unitVector : PositiveInteger -> %
              ++ unitVector(n) produces a vector with 1 in position n and
              ++ zero elsewhere.
-           dot: (%, %) -> R
-             ++ dot(x,y) computes the inner product of the vectors x and y.
+           dot : (%, %) -> R
+             ++ dot(x, y) computes the inner product of the vectors x and y.
          if R has AbelianSemiGroup then AbelianSemiGroup
          if R has CancellationAbelianMonoid then CancellationAbelianMonoid
          if R has Monoid then
@@ -307,27 +307,27 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
          if R has Field then VectorSpace R
  add
       if R has Ring then
-        equation2R: Vector % -> Matrix R
+        equation2R : Vector % -> Matrix R
 
-        coerce(n:Integer):%          == n::R::%
+        coerce(n : Integer) : %          == n::R::%
         characteristic()             == characteristic()$R
-        differentiate(z:%, d:R -> R) == map(d, z)
+        differentiate(z : %, d : R -> R) == map(d, z)
 
         equation2R v ==
-          ans:Matrix(R) := new(dim, #v, 0)
+          ans : Matrix(R) := new(dim, #v, 0)
           for i in minRowIndex ans .. maxRowIndex ans repeat
             for j in minColIndex ans .. maxColIndex ans repeat
               qsetelt!(ans, i, j, qelt(qelt(v, j), i))
           ans
 
-        reducedSystem(m:Matrix %):Matrix(R) ==
+        reducedSystem(m : Matrix %) : Matrix(R) ==
           empty? m => new(0, 0, 0)
           reduce(vertConcat, [equation2R row(m, i)
                  for i in minRowIndex m .. maxRowIndex m])$List(Matrix R)
 
-        reducedSystem(m:Matrix %, v:Vector %):
-          Record(mat:Matrix R, vec:Vector R) ==
-            vh:Vector(R) :=
+        reducedSystem(m : Matrix %, v : Vector %):
+          Record(mat : Matrix R, vec : Vector R) ==
+            vh : Vector(R) :=
               empty? v => empty()
               rh := reducedSystem(v::Matrix %)@Matrix(R)
               column(rh, minColIndex rh)
@@ -343,7 +343,7 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
           index n ==
               s := size()$R
               r := new(dim, index(1)$R)$Vector(R)
-              n0: Integer := n-1
+              n0 : Integer := n-1
               for i in 1..dim repeat
                   d := divide(n0, s)
                   r.i := index((1+d.remainder)::PositiveInteger)$R
@@ -353,8 +353,8 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
 
           lookup v ==
               s := size()$R
-              pow: NonNegativeInteger := 1
-              res: Integer := 1
+              pow : NonNegativeInteger := 1
+              res : Integer := 1
               for i in 1..dim repeat
                   res := res + (lookup(v.i)$R - 1)*pow
                   pow := pow * s
@@ -386,13 +386,13 @@ DirectProductCategory(dim:NonNegativeInteger, R:Type): Category ==
 ++ or by taking appropriate linear combinations of basis vectors provided
 ++ by the \spad{unitVector} operation.
 
-DirectProduct(dim:NonNegativeInteger, R:Type):
+DirectProduct(dim : NonNegativeInteger, R : Type):
   DirectProductCategory(dim, R) == Vector R add
 
       Rep := Vector R
 
-      coerce(z:%):Vector(R)        == copy(z)$Rep pretend Vector(R)
-      coerce(r:R):%                == new(dim, r)$Rep
+      coerce(z : %) : Vector(R)        == copy(z)$Rep pretend Vector(R)
+      coerce(r : R) : %                == new(dim, r)$Rep
 
       parts x == VEC2LIST(x)$Lisp
 
@@ -402,7 +402,7 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
 
 
       if R has SetCategory then
-        same?: % -> Boolean
+        same? : % -> Boolean
         same? z == every?(x +-> x = z(minIndex z), z)
 
         if R is NonNegativeInteger or R is Integer then
@@ -417,11 +417,11 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
         else
           x = y ==
             for i in 1..dim repeat
-               not (qelt(x,i)$Rep = qelt(y,i)$Rep) => return false
+               not (qelt(x, i)$Rep = qelt(y, i)$Rep) => return false
             true
-            -- _and/[qelt(x,i)$Rep = qelt(y,i)$Rep for i in 1..dim]
+            -- _and/[qelt(x, i)$Rep = qelt(y, i)$Rep for i in 1..dim]
 
-        retract(z:%):R ==
+        retract(z : %) : R ==
           same? z => z(minIndex z)
           error "Not retractable"
 
@@ -430,24 +430,24 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
           "failed"
 
       if R has Finite then
-          index(n:PositiveInteger):% ==
-            N:Integer := size()$R
-            p:Integer := n-1
-            L:List R := [index(((p rem N) + 1)::PositiveInteger)$R]
+          index(n : PositiveInteger) : % ==
+            N : Integer := size()$R
+            p : Integer := n-1
+            L : List R := [index(((p rem N) + 1)::PositiveInteger)$R]
             for i in 2..dim repeat
               p := p quo N
-              L:=cons(index(((p rem N) + 1)::PositiveInteger)$R, L)
+              L := cons(index(((p rem N) + 1)::PositiveInteger)$R, L)
             vector(L)
           random() == [random()$R for i in 1..dim]
           lookup(x) ==
-            N:Integer := size()$R
-            L:Integer := lookup(x.1)-1
+            N : Integer := size()$R
+            L : Integer := lookup(x.1)-1
             for i in 2..dim repeat
-              L:=L*N+lookup(x.i)-1
+              L := L*N+lookup(x.i)-1
             (L+1)::PositiveInteger
 
       if R has AbelianSemiGroup then
-        u:% + v:% == map(_+ , u, v)$Rep
+        u : % + v : % == map(_+ , u, v)$Rep
 
       if R has AbelianMonoid then
         0 == zero(dim)$Vector(R) pretend %
@@ -456,12 +456,12 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
         1 == new(dim, 1)$Vector(R) pretend %
         u : % * r : R       == map(x +-> x*r, u)
         r : R * u : %       == map(x +-> r*x, u)
-        x:% * y:%       == [x.i * y.i for i in 1..dim]$Vector(R) pretend %
+        x : % * y : %       == [x.i * y.i for i in 1..dim]$Vector(R) pretend %
 
 
       if R has CancellationAbelianMonoid then
         subtractIfCan(u:%, v:%):Union(%,"failed") ==
-          w := new(dim,0)$Vector(R)
+          w := new(dim, 0)$Vector(R)
           for i in 1..dim repeat
             (c := subtractIfCan(qelt(u, i)$Rep, qelt(v,i)$Rep)) case "failed" =>
                     return "failed"
@@ -470,17 +470,17 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
 
       if R has Ring then
 
-        u:% * v:%                    == map(_* , u, v)$Rep
+        u : % * v : %                    == map(_* , u, v)$Rep
 
         recip z ==
-          w := new(dim,0)$Vector(R)
+          w := new(dim, 0)$Vector(R)
           for i in minIndex w .. maxIndex w repeat
             (u := recip qelt(z, i)) case "failed" => return "failed"
             qsetelt!(w, i, u::R)
           w pretend %
 
         unitVector i ==
-          v:= new(dim,0)$Vector(R)
+          v := new(dim, 0)$Vector(R)
           v.i := 1
           v pretend %
 
@@ -497,8 +497,8 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
        else
         x < y ==
           for i in 1..dim repeat
-             qelt(x,i) < qelt(y,i) => return true
-             qelt(x,i) > qelt(y,i) => return false
+             qelt(x, i) < qelt(y, i) => return true
+             qelt(x, i) > qelt(y, i) => return false
           false
 
       if R has OrderedAbelianMonoidSup then sup(x, y) == map(sup, x, y)
@@ -522,9 +522,9 @@ DirectProduct(dim:NonNegativeInteger, R:Type):
 ++ type B. The operations all iterate over their vector argument
 ++ and either return a value of type B or a direct product over B.
 
-DirectProductFunctions2(dim, A, B): Exports == Implementation where
+DirectProductFunctions2(dim, A, B) : Exports == Implementation where
   dim : NonNegativeInteger
-  A, B: Type
+  A, B : Type
 
   DA ==> DirectProduct(dim, A)
   DB ==> DirectProduct(dim, B)
@@ -534,12 +534,12 @@ DirectProductFunctions2(dim, A, B): Exports == Implementation where
 
   Exports ==> with
     scan   : ((A, B) -> B, DA, B) -> DB
-      ++ scan(func,vec,ident) creates a new vector whose elements are
+      ++ scan(func, vec, ident) creates a new vector whose elements are
       ++ the result of applying reduce to the binary function func,
       ++ increasing initial subsequences of the vector vec,
       ++ and the element ident.
     reduce : ((A, B) -> B, DA, B) -> B
-      ++ reduce(func,vec,ident) combines the elements in vec using the
+      ++ reduce(func, vec, ident) combines the elements in vec using the
       ++ binary function func. Argument ident is returned if the vector is empty.
     map    : (A -> B, DA) -> DB
       ++ map(f, v) applies the function f to every element of the vector v

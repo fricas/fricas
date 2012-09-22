@@ -20,7 +20,7 @@
 ++   \spadtype{FunctionSpaceComplexIntegration} provides functions for the
 ++   indefinite integration of complex-valued functions.
 ++ Keywords: function, integration.
-FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
+FunctionSpaceComplexIntegration(R, F) : Exports == Implementation where
   R : Join(EuclideanDomain, Comparable, CharacteristicZero,
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory,
@@ -35,7 +35,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
     internalIntegrate : (F, SE) -> IR
         ++ internalIntegrate(f, x) returns the integral of \spad{f(x)dx}
         ++ where x is viewed as a complex variable.
-    internalIntegrate0: (F, SE) -> IR
+    internalIntegrate0 : (F, SE) -> IR
         ++ internalIntegrate0 should be a local function, but is conditional.
     complexIntegrate  : (F, SE) -> F
         ++ complexIntegrate(f, x) returns the integral of \spad{f(x)dx}
@@ -56,7 +56,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
 
     RTRIG := 'rtrig
 
-    K2KG: Kernel F -> Kernel FG
+    K2KG : Kernel F -> Kernel FG
 
     K2KG k                 == retract(tan F2FG first argument k)@Kernel(FG)
 
@@ -98,7 +98,7 @@ FunctionSpaceComplexIntegration(R, F): Exports == Implementation where
 ++   \spadtype{FunctionSpaceIntegration} provides functions for the
 ++   indefinite integration of real-valued functions.
 ++ Examples: )r INTEF INPUT
-FunctionSpaceIntegration(R, F): Exports == Implementation where
+FunctionSpaceIntegration(R, F) : Exports == Implementation where
   R : Join(EuclideanDomain, Comparable, CharacteristicZero,
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory, PrimitiveFunctionCategory,
@@ -114,7 +114,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
   TANTEMP ==> '%temptan
 
   Exports ==> with
-    integrate: (F, SE) -> Union(F, List F)
+    integrate : (F, SE) -> Union(F, List F)
         ++ integrate(f, x) returns the integral of \spad{f(x)dx}
         ++ where x is viewed as a real variable.
 
@@ -143,18 +143,18 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     rinteg    : (IR, F, SE, B) -> Union(F, List F)
     mkPrimh   : (F, SE, B) -> F
     trans?    : F -> B
-    goComplex?: (B, List K, List K) -> B
+    goComplex? : (B, List K, List K) -> B
     halfangle : F -> F
     Khalf     : K -> F
     tan2temp  : K -> K
 
-    optemp:BasicOperator := operator(TANTEMP, 1)
+    optemp : BasicOperator := operator(TANTEMP, 1)
 
     K2KG k     == retract(tan F2FG first argument k)@Kernel(FG)
     tan2temp k == kernel(optemp, argument k, height k)$K
 
     trans? f ==
-      any?(x1+->is?(x1,'log) or is?(x1,'exp) or is?(x1,'atan),
+      any?(x1+->is?(x1, 'log) or is?(x1, 'exp) or is?(x1, 'atan),
            operators f)$List(BasicOperator)
 
     mkPrimh(f, x, h) ==
@@ -238,7 +238,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
     integrate(f, x) ==
       -- FIXME: we need better way to check if base ring is
       -- real
-      R has imaginary:() -> % or R is AlgebraicNumber =>
+      R has imaginary : () -> % or R is AlgebraicNumber =>
           complexIntegrate(f, x)
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
@@ -260,7 +260,7 @@ FunctionSpaceIntegration(R, F): Exports == Implementation where
       ltg := select(x1+->is?(operator x1, 'tan), tg)
       rtg := any?(x1+->has?(operator x1, RTRIG), tg)
       el  := any?(x1+->has?(operator x1, ELEM), tg)
-      i:IR
+      i : IR
       if (goComplex?(rtg, tg, ltg)) then
           gg0 := F2FG g
           tgg0 := tower(gg0)

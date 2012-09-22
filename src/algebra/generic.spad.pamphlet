@@ -28,8 +28,8 @@
 ++  AlgebraGenericElementPackage allows you to create generic elements
 ++  of an algebra, i.e. the scalars are extended to include symbolic
 ++  coefficients
-GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
-  ls : List Symbol, gamma: Vector Matrix R ): public == private where
+GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger, _
+  ls : List Symbol, gamma : Vector Matrix R ) : public == private where
 
   NNI ==> NonNegativeInteger
   V   ==> Vector
@@ -39,7 +39,7 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
   S   ==> Symbol
 
   public ==> Join(FramedNonAssociativeAlgebra(FPR), _
-      LeftModule(SquareMatrix(n,FPR)) ) with
+      LeftModule(SquareMatrix(n, FPR)) ) with
 
     coerce : Vector FPR -> %
       ++ coerce(v) assumes that it is called with a vector
@@ -54,11 +54,11 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
     generic : () -> %
       ++ generic() returns a generic element, i.e. the linear combination
       ++ of the fixed basis with the symbolic coefficients
-      ++ \spad{%x1,%x2,..}
+      ++ \spad{%x1, %x2, ..}
     generic : Symbol -> %
       ++ generic(s) returns a generic element, i.e. the linear combination
       ++ of the fixed basis with the symbolic coefficients
-      ++ \spad{s1,s2,..}
+      ++ \spad{s1, s2, ..}
     generic : Vector Symbol -> %
       ++ generic(vs) returns a generic element, i.e. the linear combination
       ++ of the fixed basis with the symbolic coefficients
@@ -67,13 +67,13 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
     generic : Vector % -> %
       ++ generic(ve) returns a generic element, i.e. the linear combination
       ++ of \spad{ve} basis with the symbolic coefficients
-      ++ \spad{%x1,%x2,..}
+      ++ \spad{%x1, %x2, ..}
     generic : (Symbol, Vector %) -> %
-      ++ generic(s,v) returns a generic element, i.e. the linear combination
+      ++ generic(s, v) returns a generic element, i.e. the linear combination
       ++ of v with the symbolic coefficients
-      ++ \spad{s1,s2,..}
+      ++ \spad{s1, s2, ..}
     generic : (Vector Symbol, Vector %) -> %
-      ++ generic(vs,ve) returns a generic element, i.e. the linear combination
+      ++ generic(vs, ve) returns a generic element, i.e. the linear combination
       ++ of \spad{ve} with the symbolic coefficients \spad{vs}
       ++ error, if the vector of symbols is shorter than the vector of
       ++ elements
@@ -114,38 +114,38 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
         ++ of \spad{a} for the generic coefficients into the
         ++ coefficient of the constant term in \spadfun{rightRankPolynomial}
         ++ and changes the sign if the degree of this polynomial is odd
-      genericLeftTraceForm : (%,%) -> FPR
-        ++ genericLeftTraceForm (a,b) is defined to be
+      genericLeftTraceForm : (%, %) -> FPR
+        ++ genericLeftTraceForm (a, b) is defined to be
         ++ \spad{genericLeftTrace (a*b)}, this defines
         ++ a symmetric bilinear form on the algebra
-      genericLeftDiscriminant: () -> FPR
+      genericLeftDiscriminant : () -> FPR
         ++ genericLeftDiscriminant() is the determinant of the
         ++ generic left trace forms of all products of basis element,
         ++ if the generic left trace form is associative, an algebra
         ++ is separable if the generic left discriminant is invertible,
         ++ if it is non-zero, there is some ring extension which
         ++ makes the algebra separable
-      genericRightTraceForm : (%,%) -> FPR
-        ++ genericRightTraceForm (a,b) is defined to be
+      genericRightTraceForm : (%, %) -> FPR
+        ++ genericRightTraceForm (a, b) is defined to be
         ++ \spadfun{genericRightTrace (a*b)}, this defines
         ++ a symmetric bilinear form on the algebra
-      genericRightDiscriminant: () -> FPR
+      genericRightDiscriminant : () -> FPR
         ++ genericRightDiscriminant() is the determinant of the
         ++ generic left trace forms of all products of basis element,
         ++ if the generic left trace form is associative, an algebra
         ++ is separable if the generic left discriminant is invertible,
         ++ if it is non-zero, there is some ring extension which
         ++ makes the algebra separable
-      conditionsForIdempotents: Vector % -> List Polynomial R
-        ++ conditionsForIdempotents([v1,...,vn]) determines a complete list
+      conditionsForIdempotents : Vector % -> List Polynomial R
+        ++ conditionsForIdempotents([v1, ..., vn]) determines a complete list
         ++ of polynomial equations for the coefficients of idempotents
-        ++ with respect to the \spad{R}-module basis \spad{v1},...,\spad{vn}
-      conditionsForIdempotents: () -> List Polynomial R
+        ++ with respect to the \spad{R}-module basis \spad{v1}, ..., \spad{vn}
+      conditionsForIdempotents : () -> List Polynomial R
         ++ conditionsForIdempotents() determines a complete list
         ++ of polynomial equations for the coefficients of idempotents
         ++ with respect to the fixed \spad{R}-module basis
 
-  private ==> AlgebraGivenByStructuralConstants(FPR,n,ls,_
+  private ==> AlgebraGivenByStructuralConstants(FPR, n, ls, _
          coerce(gamma)$CoerceVectorMatrixPackage(R) ) add
 
     listOfNumbers : List String :=  [STRINGIMAGE(q)$Lisp for q in 1..n]
@@ -153,59 +153,59 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
         [concat("%", concat("x", i))::Symbol  for i in listOfNumbers]
     genericElement : % :=
       v : Vector PR :=
-        [monomial(1$PR, [symbolsForCoef.i],[1]) for i in 1..n]
-      convert map(coerce,v)$VectorFunctions2(PR,FPR)
+        [monomial(1$PR, [symbolsForCoef.i], [1]) for i in 1..n]
+      convert map(coerce, v)$VectorFunctions2(PR, FPR)
 
     eval : (FPR, %) -> FPR
-    eval(rf,a) ==
+    eval(rf, a) ==
       -- for the moment we only substitute the numerators
       -- of the coefficients
       coefOfa : List PR :=
-        map(numer, entries coordinates a)$ListFunctions2(FPR,PR)
-      ls : List PR :=[monomial(1$PR, [s],[1]) for s in entries symbolsForCoef]
+        map(numer, entries coordinates a)$ListFunctions2(FPR, PR)
+      ls : List PR := [monomial(1$PR, [s], [1]) for s in entries symbolsForCoef]
       lEq : List Equation PR := []
       for i in 1..maxIndex ls repeat
-        lEq := cons(equation(ls.i,coefOfa.i)$Equation(PR) , lEq)
-      top : PR := eval(numer(rf),lEq)$PR
-      bot : PR := eval(numer(rf),lEq)$PR
+        lEq := cons(equation(ls.i, coefOfa.i)$Equation(PR) , lEq)
+      top : PR := eval(numer(rf), lEq)$PR
+      bot : PR := eval(numer(rf), lEq)$PR
       top/bot
 
 
     if R has IntegralDomain then
 
-      genericLeftTraceForm(a,b) == genericLeftTrace(a*b)
+      genericLeftTraceForm(a, b) == genericLeftTrace(a*b)
       genericLeftDiscriminant() ==
         listBasis : List % := entries basis()$%
         m : Matrix FPR := matrix
-          [[genericLeftTraceForm(a,b) for a in listBasis] for b in listBasis]
+          [[genericLeftTraceForm(a, b) for a in listBasis] for b in listBasis]
         determinant m
 
-      genericRightTraceForm(a,b) == genericRightTrace(a*b)
+      genericRightTraceForm(a, b) == genericRightTrace(a*b)
       genericRightDiscriminant() ==
         listBasis : List % := entries basis()$%
         m : Matrix FPR := matrix
-          [[genericRightTraceForm(a,b) for a in listBasis] for b in listBasis]
+          [[genericRightTraceForm(a, b) for a in listBasis] for b in listBasis]
         determinant m
 
 
 
       leftRankPoly : SparseUnivariatePolynomial FPR := 0
-      initLeft? : Boolean :=true
+      initLeft? : Boolean := true
 
-      initializeLeft: () -> Void
+      initializeLeft : () -> Void
       initializeLeft() ==
         -- reset initialize flag
-        initLeft?:=false
+        initLeft? := false
         leftRankPoly := leftMinimalPolynomial genericElement
         void()$Void
 
       rightRankPoly : SparseUnivariatePolynomial FPR := 0
-      initRight? : Boolean :=true
+      initRight? : Boolean := true
 
-      initializeRight: () -> Void
+      initializeRight : () -> Void
       initializeRight() ==
         -- reset initialize flag
-        initRight?:=false
+        initRight? := false
         rightRankPoly := rightMinimalPolynomial genericElement
         void()$Void
 
@@ -219,24 +219,24 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
 
       genericLeftMinimalPolynomial a ==
         if initLeft? then initializeLeft()
-        map(x+->eval(x,a),leftRankPoly)$SUP(FPR)
+        map(x+->eval(x, a), leftRankPoly)$SUP(FPR)
 
       genericRightMinimalPolynomial a ==
         if initRight? then initializeRight()
-        map(x+->eval(x,a),rightRankPoly)$SUP(FPR)
+        map(x+->eval(x, a), rightRankPoly)$SUP(FPR)
 
       genericLeftTrace a ==
         if initLeft? then initializeLeft()
         d1 : NNI := (degree leftRankPoly - 1) :: NNI
         rf : FPR := coefficient(leftRankPoly, d1)
-        rf := eval(rf,a)
+        rf := eval(rf, a)
         - rf
 
       genericRightTrace a ==
         if initRight? then initializeRight()
         d1 : NNI := (degree rightRankPoly - 1) :: NNI
         rf : FPR := coefficient(rightRankPoly, d1)
-        rf := eval(rf,a)
+        rf := eval(rf, a)
         - rf
 
       genericLeftNorm a ==
@@ -251,24 +251,24 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
         if odd? degree rightRankPoly then rf := - rf
         rf
 
-    conditionsForIdempotents(b: V %) : List Polynomial R ==
+    conditionsForIdempotents(b : V %) : List Polynomial R ==
       x : % := generic(b)
-      map(numer,entries coordinates(x*x-x,b))$ListFunctions2(FPR,PR)
+      map(numer, entries coordinates(x*x-x, b))$ListFunctions2(FPR, PR)
 
-    conditionsForIdempotents(): List Polynomial R ==
+    conditionsForIdempotents() : List Polynomial R ==
       x : % := genericElement
-      map(numer,entries coordinates(x*x-x))$ListFunctions2(FPR,PR)
+      map(numer, entries coordinates(x*x-x))$ListFunctions2(FPR, PR)
 
     generic() ==  genericElement
 
-    generic(vs:V S, ve: V %): % ==
+    generic(vs : V S, ve : V %) : % ==
       maxIndex vs > maxIndex ve =>
         error "generic: too little symbols"
       v : Vector PR :=
-        [monomial(1$PR, [vs.i],[1]) for i in 1..maxIndex ve]
-      represents(map(coerce,v)$VectorFunctions2(PR,FPR),ve)
+        [monomial(1$PR, [vs.i], [1]) for i in 1..maxIndex ve]
+      represents(map(coerce, v)$VectorFunctions2(PR, FPR), ve)
 
-    generic(s: S, ve: V %): % ==
+    generic(s : S, ve : V %) : % ==
       lON : List String :=  [STRINGIMAGE(q)$Lisp for q in 1..maxIndex ve]
       sFC : Vector Symbol :=
         [concat(s pretend String, i)::Symbol  for i in lON]
@@ -279,12 +279,12 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
       sFC : Vector Symbol :=
         [concat("%", concat("x", i))::Symbol  for i in lON]
       v : Vector PR :=
-        [monomial(1$PR, [sFC.i],[1]) for i in 1..maxIndex ve]
-      represents(map(coerce,v)$VectorFunctions2(PR,FPR),ve)
+        [monomial(1$PR, [sFC.i], [1]) for i in 1..maxIndex ve]
+      represents(map(coerce, v)$VectorFunctions2(PR, FPR), ve)
 
-    generic(vs:V S): % == generic(vs, basis()$%)
+    generic(vs : V S) : % == generic(vs, basis()$%)
 
-    generic(s: S): % == generic(s, basis()$%)
+    generic(s : S) : % == generic(s, basis()$%)
 
 )fin
       -- variations on eval
@@ -296,13 +296,13 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
       -- not known that (Fraction (Polynomial R)) has (has (Polynomial R)
       --  (Evalable (Fraction (Polynomial R))))
       --res : FPR := rf
-      --for eq in lEq repeat res := eval(res,eq)$FPR
+      --for eq in lEq repeat res := eval(res, eq)$FPR
       --res
       --rf
       --eval(rf, le)$FPR
       --eval(rf, entries symbolsForCoef, coefOfa)$FPR
       --eval(rf, ls, coefOfa)$FPR
-      --le : List Equation PR := [equation(lh,rh) for lh in ls for rh in coefOfa]
+      --le : List Equation PR := [equation(lh, rh) for lh in ls for rh in coefOfa]
 
 @
 \section{package CVMP CoerceVectorMatrixPackage}
@@ -320,17 +320,17 @@ GenericNonAssociativeAlgebra(R : CommutativeRing, n : PositiveInteger,_
 ++ Description:
 ++  CoerceVectorMatrixPackage: an unexposed, technical package
 ++  for data conversions
-CoerceVectorMatrixPackage(R : CommutativeRing): public == private where
+CoerceVectorMatrixPackage(R : CommutativeRing) : public == private where
   M2P ==> MatrixCategoryFunctions2(R, Vector R, Vector R, Matrix R, _
     Polynomial R, Vector Polynomial R, Vector Polynomial R, Matrix Polynomial R)
   M2FP ==> MatrixCategoryFunctions2(R, Vector R, Vector R, Matrix R, _
     Fraction Polynomial R, Vector Fraction Polynomial R, _
     Vector Fraction Polynomial R, Matrix Fraction Polynomial R)
   public ==> with
-    coerceP: Vector Matrix R -> Vector Matrix Polynomial R
+    coerceP : Vector Matrix R -> Vector Matrix Polynomial R
       ++ coerceP(v) coerces a vector v with entries in \spadtype{Matrix R}
       ++ as vector over \spadtype{Matrix Polynomial R}
-    coerce: Vector Matrix R -> Vector Matrix Fraction Polynomial R
+    coerce : Vector Matrix R -> Vector Matrix Fraction Polynomial R
       ++ coerce(v) coerces a vector v with entries in \spadtype{Matrix R}
       ++ as vector over \spadtype{Matrix Fraction Polynomial R}
   private ==> add
@@ -341,22 +341,22 @@ CoerceVectorMatrixPackage(R : CommutativeRing): public == private where
     imbedP : R -> Polynomial R
     imbedP r == (r:: Polynomial R)
 
-    coerceP(g:Vector Matrix R) : Vector Matrix Polynomial R ==
+    coerceP(g : Vector Matrix R) : Vector Matrix Polynomial R ==
       m2 : Matrix Polynomial R
       lim : List Matrix R := entries g
-      l: List Matrix Polynomial R :=  []
+      l : List Matrix Polynomial R :=  []
       for m in lim repeat
-        m2 :=  map(imbedP,m)$M2P
-        l := cons(m2,l)
+        m2 :=  map(imbedP, m)$M2P
+        l := cons(m2, l)
       vector reverse l
 
-    coerce(g:Vector Matrix R) : Vector Matrix Fraction Polynomial R ==
+    coerce(g : Vector Matrix R) : Vector Matrix Fraction Polynomial R ==
       m3 : Matrix Fraction Polynomial R
       lim : List Matrix R := entries g
-      l: List Matrix Fraction Polynomial R :=  []
+      l : List Matrix Fraction Polynomial R :=  []
       for m in lim repeat
-        m3 :=  map(imbedFP,m)$M2FP
-        l := cons(m3,l)
+        m3 :=  map(imbedFP, m)$M2FP
+        l := cons(m3, l)
       vector reverse l
 
 @

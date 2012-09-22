@@ -13,30 +13,30 @@
 <<domain DLIST DataList>>=
 )abbrev domain DLIST DataList
 ++ This domain provides some nice functions on lists
-DataList(S:OrderedSet) : Exports == Implementation where
+DataList(S : OrderedSet) : Exports == Implementation where
   Exports == ListAggregate(S) with
-    coerce: List S -> %
+    coerce : List S -> %
       ++ coerce(l) creates a datalist from l
-    coerce: % -> List S
+    coerce : % -> List S
       ++ coerce(x) returns the list of elements in x
-    datalist: List S -> %
+    datalist : List S -> %
       ++ datalist(l) creates a datalist from l
-    elt: (%,"unique") -> %
+    elt : (%,"unique") -> %
       ++ \axiom{l.unique} returns \axiom{l} with duplicates removed.
       ++ Note: \axiom{l.unique = removeDuplicates(l)}.
-    elt: (%,"sort") -> %
+    elt : (%,"sort") -> %
       ++ \axiom{l.sort} returns \axiom{l} with elements sorted.
       ++ Note: \axiom{l.sort = sort(l)}
-    elt: (%,"count") -> NonNegativeInteger
+    elt : (%,"count") -> NonNegativeInteger
       ++ \axiom{l."count"} returns the number of elements in \axiom{l}.
   Implementation == List(S) add
     elt(x,"unique") == removeDuplicates(x)
     elt(x,"sort") == sort(x)
     elt(x,"count") == #x
-    coerce(x:List S) == x pretend %
-    coerce(x:%):List S == x pretend (List S)
-    coerce(x:%): OutputForm == (x :: List S) :: OutputForm
-    datalist(x:List S) == x::%
+    coerce(x : List S) == x pretend %
+    coerce(x : %) : List S == x pretend (List S)
+    coerce(x : %) : OutputForm == (x :: List S) :: OutputForm
+    datalist(x : List S) == x::%
 
 @
 \section{domain ICARD IndexCard}
@@ -46,44 +46,44 @@ DataList(S:OrderedSet) : Exports == Implementation where
 ++ about the FriCAS library
 IndexCard() : Exports == Implementation where
   Exports == OrderedSet with
-    elt: (%,Symbol) -> String
-      ++ elt(ic,s) selects a particular field from \axiom{ic}.  Valid fields
+    elt : (%, Symbol) -> String
+      ++ elt(ic, s) selects a particular field from \axiom{ic}.  Valid fields
       ++ are \axiom{name, nargs, exposed, type, abbreviation, kind, origin,
       ++ params, condition, doc}.
-    display: % -> Void
+    display : % -> Void
       ++ display(ic) prints a summary of the information contained in \axiom{ic}.
-    fullDisplay: % -> Void
+    fullDisplay : % -> Void
       ++ fullDisplay(ic) prints all of the information contained in \axiom{ic}.
-    coerce: String -> %
+    coerce : String -> %
       ++ coerce(s) converts \axiom{s} into an \axiom{IndexCard}.  Warning: if
       ++ \axiom{s} is not of the right format then an error will occur when using
       ++ it.
   Implementation == add
     x<y==(x pretend String) < (y pretend String)
-    x=y==(x pretend String) = (y pretend String)
+    x = y==(x pretend String) = (y pretend String)
     display(x) ==
       name : OutputForm := dbName(x)$Lisp
-      type : OutputForm := dbPart(x,4,1$Lisp)$Lisp
+      type : OutputForm := dbPart(x, 4, 1$Lisp)$Lisp
       output(hconcat(name,hconcat(" : ",type)))$OutputPackage
     fullDisplay(x) ==
       name : OutputForm := dbName(x)$Lisp
-      type : OutputForm := dbPart(x,4,1$Lisp)$Lisp
-      origin:OutputForm := hconcat(alqlGetOrigin(x$Lisp)$Lisp,alqlGetParams(x$Lisp)$Lisp)
+      type : OutputForm := dbPart(x, 4, 1$Lisp)$Lisp
+      origin : OutputForm := hconcat(alqlGetOrigin(x$Lisp)$Lisp, alqlGetParams(x$Lisp)$Lisp)
       fromPart : OutputForm := hconcat(" from ",origin)
-      condition : String := dbPart(x,6,1$Lisp)$Lisp
+      condition : String := dbPart(x, 6, 1$Lisp)$Lisp
       ifPart : OutputForm :=
         condition = "" => empty()
         hconcat(" if ",condition::OutputForm)
-      exposed? : String := SUBSTRING(dbPart(x,3,1)$Lisp,0,1)$Lisp
+      exposed? : String := SUBSTRING(dbPart(x, 3, 1)$Lisp, 0, 1)$Lisp
       exposedPart : OutputForm :=
         exposed? = "n" => " (unexposed)"
         empty()
       firstPart := hconcat(name,hconcat(" : ",type))
-      secondPart := hconcat(fromPart,hconcat(ifPart,exposedPart))
-      output(hconcat(firstPart,secondPart))$OutputPackage
-    coerce(s:String): % == (s pretend %)
-    coerce(x): OutputForm == (x pretend String)::OutputForm
-    elt(x,sel) ==
+      secondPart := hconcat(fromPart, hconcat(ifPart, exposedPart))
+      output(hconcat(firstPart, secondPart))$OutputPackage
+    coerce(s : String) : % == (s pretend %)
+    coerce(x) : OutputForm == (x pretend String)::OutputForm
+    elt(x, sel) ==
       s := PNAME(sel)$Lisp pretend String
       s = "name" => dbName(x)$Lisp
       s = "nargs" => dbPart(x,2,1$Lisp)$Lisp
@@ -103,48 +103,48 @@ IndexCard() : Exports == Implementation where
 )abbrev domain DBASE Database
 ++ This domain implements a simple view of a database whose fields are
 ++ indexed by symbols
-Database(S): Exports == Implementation where
-  S: OrderedSet with
-    elt: (%,Symbol) -> String
-        ++ elt(x,s) returns an element of x indexed by s
-    display: % -> Void
+Database(S) : Exports == Implementation where
+  S : OrderedSet with
+    elt : (%, Symbol) -> String
+        ++ elt(x, s) returns an element of x indexed by s
+    display : % -> Void
         ++ display(x) displays x in some form
-    fullDisplay: % -> Void
+    fullDisplay : % -> Void
         ++ fullDisplay(x) displays x in detail
   Exports == SetCategory with
-    elt: (%,QueryEquation) -> %
-      ++ elt(db,q) returns all elements of \axiom{db} which satisfy \axiom{q}.
-    elt: (%,Symbol) -> DataList String
-      ++ elt(db,s) returns the \axiom{s} field of each element of \axiom{db}.
-    _+: (%,%) -> %
+    elt : (%, QueryEquation) -> %
+      ++ elt(db, q) returns all elements of \axiom{db} which satisfy \axiom{q}.
+    elt : (%, Symbol) -> DataList String
+      ++ elt(db, s) returns the \axiom{s} field of each element of \axiom{db}.
+    _+: (%, %) -> %
       ++ db1+db2 returns the merge of databases db1 and db2
-    _-: (%,%) -> %
+    _-: (%, %) -> %
       ++ db1-db2 returns the difference of databases db1 and db2 i.e. consisting
       ++ of elements in db1 but not in db2
-    coerce: List S -> %
+    coerce : List S -> %
       ++ coerce(l) makes a database out of a list
-    display: % -> Void
+    display : % -> Void
       ++ display(db) prints a summary line for each entry in \axiom{db}.
-    fullDisplay: % -> Void
+    fullDisplay : % -> Void
       ++ fullDisplay(db) prints full details of each entry in \axiom{db}.
-    fullDisplay: (%,PositiveInteger,PositiveInteger) -> Void
-      ++ fullDisplay(db,start,end ) prints full details of entries in the range
+    fullDisplay : (%, PositiveInteger, PositiveInteger) -> Void
+      ++ fullDisplay(db, start, end ) prints full details of entries in the range
       ++ \axiom{start..end} in \axiom{db}.
   Implementation == List S add
-    s: Symbol
+    s : Symbol
     Rep := List S
-    coerce(u: List S):% == u@%
-    elt(data: %,s: Symbol) == [x.s for x in data] :: DataList(String)
-    elt(data: %,eq: QueryEquation) ==
+    coerce(u : List S) : % == u@%
+    elt(data : %, s : Symbol) == [x.s for x in data] :: DataList(String)
+    elt(data : %, eq : QueryEquation) ==
       field := variable eq
       val := value eq
-      [x for x in data | stringMatches?(val,x.field)$Lisp]
-    x+y==removeDuplicates! merge(x,y)
-    x-y==mergeDifference(copy(x::Rep),y::Rep)$MergeThing(S)
-    coerce(data): OutputForm == (#data):: OutputForm
+      [x for x in data | stringMatches?(val, x.field)$Lisp]
+    x+y==removeDuplicates! merge(x, y)
+    x-y==mergeDifference(copy(x::Rep), y::Rep)$MergeThing(S)
+    coerce(data) : OutputForm == (#data):: OutputForm
     display(data) ==  for x in data repeat display x
     fullDisplay(data) == for x in data repeat fullDisplay x
-    fullDisplay(data,n,m) == for x in data for i in 1..m repeat
+    fullDisplay(data, n, m) == for x in data for i in 1..m repeat
       if i >= n then fullDisplay x
 
 @
@@ -152,18 +152,18 @@ Database(S): Exports == Implementation where
 <<domain QEQUAT QueryEquation>>=
 )abbrev domain QEQUAT QueryEquation
 ++ This domain implements simple database queries
-QueryEquation(): Exports == Implementation where
+QueryEquation() : Exports == Implementation where
   Exports == CoercibleTo(OutputForm) with
-    equation: (Symbol,String) -> %
+    equation : (Symbol, String) -> %
       ++ equation(s,"a") creates a new equation.
-    variable: % -> Symbol
+    variable : % -> Symbol
       ++ variable(q) returns the variable (i.e. left hand side) of \axiom{q}.
-    value: % -> String
+    value : % -> String
       ++ value(q) returns the value (i.e. right hand side) of \axiom{q}.
   Implementation == add
-    Rep := Record(var:Symbol, val:String)
+    Rep := Record(var : Symbol, val : String)
     coerce(u) == coerce(u.var)$Symbol = coerce(u.val)$String
-    equation(x,s) == [x,s]
+    equation(x, s) == [x, s]
     variable q == q.var
     value q == q.val
 
@@ -172,19 +172,19 @@ QueryEquation(): Exports == Implementation where
 <<package MTHING MergeThing>>=
 )abbrev package MTHING MergeThing
 ++ This package exports tools for merging lists
-MergeThing(S:OrderedSet): Exports == Implementation where
+MergeThing(S : OrderedSet) : Exports == Implementation where
   Exports == with
-    mergeDifference: (List(S),List(S)) -> List(S)
-        ++ mergeDifference(l1,l2) returns a list of elements in l1 not present in l2.
+    mergeDifference : (List(S), List(S)) -> List(S)
+        ++ mergeDifference(l1, l2) returns a list of elements in l1 not present in l2.
         ++ Assumes lists are ordered and all x in l2 are also in l1.
   Implementation == add
-    mergeDifference1: (List S,S,List S) -> List S
-    mergeDifference(x,y) ==
+    mergeDifference1 : (List S, S, List S) -> List S
+    mergeDifference(x, y) ==
       null x or null y => x
-      mergeDifference1(x,y.first,y.rest)
-      x.first=y.first => x.rest
+      mergeDifference1(x, y.first, y.rest)
+      x.first = y.first => x.rest
       x
-    mergeDifference1(x,fy,ry) ==
+    mergeDifference1(x, fy, ry) ==
       rx := x
       while not null rx repeat
         rx := rx.rest
@@ -205,9 +205,9 @@ MergeThing(S:OrderedSet): Exports == Implementation where
 <<package OPQUERY OperationsQuery>>=
 )abbrev package OPQUERY OperationsQuery
 ++ This package exports tools to create FriCAS Library information databases.
-OperationsQuery(): Exports == Implementation where
+OperationsQuery() : Exports == Implementation where
   Exports == with
-    getDatabase: String -> Database(IndexCard)
+    getDatabase : String -> Database(IndexCard)
       ++ getDatabase("char") returns a list of appropriate entries in the
       ++ browser database.  The legal values for "char" are "o" (operations),
       ++ "k" (constructors), "d" (domains), "c" (categories) or "p" (packages).

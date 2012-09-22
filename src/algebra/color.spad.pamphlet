@@ -25,7 +25,7 @@
 ++ \Language{} system (the colors mix additively).
 
 
-Color(): Exports == Implementation where
+Color() : Exports == Implementation where
   I      ==> Integer
   PI     ==> PositiveInteger
   SF     ==> DoubleFloat
@@ -55,10 +55,10 @@ Color(): Exports == Implementation where
   Implementation ==> add
     totalHues   ==> 27  --see  (header.h file) for the current number
 
-    Rep := Record(hue:I, weight:SF)
+    Rep := Record(hue : I, weight : SF)
 
 
-    f:SF * c:% ==
+    f : SF * c : % ==
       -- s * c returns the color c, whose weighted shade has been scaled by s
       zero? f => c
       -- 0 is the identitly function...or maybe an error is better?
@@ -71,8 +71,8 @@ Color(): Exports == Implementation where
         x := y
         y := c
       diff := x.hue - y.hue
-      if (xHueSmaller:= (diff < 0)) then diff := -diff
-      if (moreThanHalf:=(diff > totalHues quo 2)) then diff := totalHues-diff
+      if (xHueSmaller := (diff < 0)) then diff := -diff
+      if (moreThanHalf := (diff > totalHues quo 2)) then diff := totalHues-diff
       offset : I := wholePart(round (diff::SF/(2::SF)^(x.weight/y.weight)) )
       if (xHueSmaller and not moreThanHalf)
            or (not xHueSmaller and moreThanHalf)
@@ -82,16 +82,16 @@ Color(): Exports == Implementation where
         ans := x.hue - offset
       if (ans < 0) then ans := totalHues + ans
       else if (ans > totalHues) then ans := ans - totalHues
-      [ans,1]
+      [ans, 1]
 
     x = y     == (x.hue = y.hue) and (x.weight = y.weight)
-    red()     == [1,1]
-    yellow()  == [11::I,1]
-    green()   == [14::I,1]
-    blue()    == [22::I,1]
+    red()     == [1, 1]
+    yellow()  == [11::I, 1]
+    green()   == [14::I, 1]
+    blue()    == [22::I, 1]
     sample()  == red()
     hue c     == c.hue
-    i:PositiveInteger * c:% == i::SF * c
+    i : PositiveInteger * c : % == i::SF * c
     numberOfHues() == totalHues
 
     color i ==
@@ -99,7 +99,7 @@ Color(): Exports == Implementation where
        error concat("Color should be in the range 1..",totalHues::String)
       [i::I, 1]
 
-    coerce(c:%):OutputForm ==
+    coerce(c : %) : OutputForm ==
       hconcat ["Hue: "::OutputForm, (c.hue)::OutputForm,
                "  Weight: "::OutputForm, (c.weight)::OutputForm]
 
@@ -114,11 +114,11 @@ Color(): Exports == Implementation where
 ++ Related Constructors:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: dim,bright,pastel,coerce
+++ Keywords: dim, bright, pastel, coerce
 ++ References:
 ++ Description: This domain describes four groups of color shades (palettes).
 
-Palette(): Exports == Implementation where
+Palette() : Exports == Implementation where
   I      ==> Integer
   C      ==> Color
   SHADE  ==> ["Dark","Dim","Bright","Pastel","Light"]
@@ -143,18 +143,18 @@ Palette(): Exports == Implementation where
       ++ indicated color c.
 
   Implementation ==> add
-    Rep := Record(shadeField:I, hueField:C)
+    Rep := Record(shadeField : I, hueField : C)
 
-    dark   c == [1,c]
-    dim    c == [2,c]
-    bright c == [3,c]
-    pastel c == [4,c]
-    light  c == [5,c]
+    dark   c == [1, c]
+    dim    c == [2, c]
+    bright c == [3, c]
+    pastel c == [4, c]
+    light  c == [5, c]
     hue    p == p.hueField
     shade  p == p.shadeField
     sample() == bright(sample())
-    coerce(c:Color):% == bright c
-    coerce(p:%):OutputForm ==
+    coerce(c : Color) : % == bright c
+    coerce(p : %) : OutputForm ==
       hconcat ["[",coerce(p.hueField),"] from the ",SHADE.(p.shadeField)," palette"]
 
 @

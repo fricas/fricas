@@ -29,18 +29,18 @@
 ++ The coefficient ring may be non commutative,
 ++ but the variables are assumed to commute.
 
-Polynomial(R:Ring):
+Polynomial(R : Ring):
   PolynomialCategory(R, IndexedExponents Symbol, Symbol) with
    if R has Algebra Fraction Integer then
-     integrate: (%, Symbol) -> %
-       ++ integrate(p,x) computes the integral of \spad{p*dx}, i.e.
+     integrate : (%, Symbol) -> %
+       ++ integrate(p, x) computes the integral of \spad{p*dx}, i.e.
        ++ integrates the polynomial p with respect to the variable x.
  == SparseMultivariatePolynomial(R, Symbol) add
 
     import UserDefinedPartialOrdering(Symbol)
 
-    coerce(p:%):OutputForm ==
-      (r:= retractIfCan(p)@Union(R,"failed")) case R => r::R::OutputForm
+    coerce(p : %) : OutputForm ==
+      (r := retractIfCan(p)@Union(R,"failed")) case R => r::R::OutputForm
       a :=
         userOrdered?() => largest variables p
         mainVariable(p)::Symbol
@@ -66,8 +66,8 @@ Polynomial(R:Ring):
 ++   This package takes a mapping between coefficient rings, and lifts
 ++ it to a mapping between polynomials over those rings.
 
-PolynomialFunctions2(R:Ring, S:Ring): with
-  map: (R -> S, Polynomial R) -> Polynomial S
+PolynomialFunctions2(R : Ring, S : Ring) : with
+  map : (R -> S, Polynomial R) -> Polynomial S
     ++ map(f, p) produces a new polynomial as a result of applying
     ++ the function f to every coefficient of the polynomial p.
  == add
@@ -97,7 +97,7 @@ PolynomialFunctions2(R:Ring, S:Ring): with
 ++ The coefficient ring may be non commutative,
 ++ but the variables are assumed to commute.
 
-MultivariatePolynomial(vl:List Symbol, R:Ring)
+MultivariatePolynomial(vl : List Symbol, R : Ring)
    ==  SparseMultivariatePolynomial(--SparseUnivariatePolynomial,
            R, OrderedVariableList vl)
 
@@ -124,9 +124,9 @@ MultivariatePolynomial(vl:List Symbol, R:Ring)
 ++ by the variable set parameter. The coefficient ring may be non-commutative,
 ++ but the variables are assumed to commute.
 
-SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
-  pgcd ==> PolynomialGcdPackage(IndexedExponents VarSet,VarSet,R,%)
-  C == PolynomialCategory(R,IndexedExponents(VarSet),VarSet)
+SparseMultivariatePolynomial(R : Ring, VarSet : OrderedSet) : C == T where
+  pgcd ==> PolynomialGcdPackage(IndexedExponents VarSet, VarSet, R, %)
+  C == PolynomialCategory(R, IndexedExponents(VarSet), VarSet)
   SUP ==> SparseUnivariatePolynomial
   T == add
     --constants
@@ -136,24 +136,24 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
     -- Used in SparsePolynomialCoercionHelpers and InnerModularHermitePade
     -- (search for SmpRep)
       D := SparseUnivariatePolynomial(%)
-      VPoly:=  Record(v:VarSet,ts:D)
-      Rep:=  Union(R,VPoly)
+      VPoly :=  Record(v : VarSet, ts : D)
+      Rep :=  Union(R, VPoly)
 
     --local function
 
 
     --declarations
-      fn: R -> R
-      n: Integer
-      k: NonNegativeInteger
-      kp:PositiveInteger
-      k1:NonNegativeInteger
-      c: R
-      mvar: VarSet
+      fn : R -> R
+      n : Integer
+      k : NonNegativeInteger
+      kp : PositiveInteger
+      k1 : NonNegativeInteger
+      c : R
+      mvar : VarSet
       val : R
-      var:VarSet
-      up: D
-      p,p1,p2,pval: %
+      var : VarSet
+      up : D
+      p, p1, p2, pval : %
       Lval : List(R)
       Lpval : List(%)
       Lvar : List(VarSet)
@@ -167,17 +167,17 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 --      one? p == p case R and one?(p)$R
       one? p == p case R and ((p) = 1)$R
     -- a local function
-      red(p:%):% ==
+      red(p : %) : % ==
          p case R => 0
-         if ground?(reductum p.ts) then leadingCoefficient(reductum p.ts) else [p.v,reductum p.ts]$VPoly
+         if ground?(reductum p.ts) then leadingCoefficient(reductum p.ts) else [p.v, reductum p.ts]$VPoly
 
-      numberOfMonomials(p): NonNegativeInteger ==
+      numberOfMonomials(p) : NonNegativeInteger ==
         p case R =>
           zero?(p)$R => 0
           1
         +/[numberOfMonomials q for q in coefficients(p.ts)]
 
-      coerce(mvar):% == [mvar,monomial(1,1)$D]$VPoly
+      coerce(mvar) : % == [mvar, monomial(1, 1)$D]$VPoly
 
       monomial? p ==
         p case R => true
@@ -186,20 +186,20 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
         monomial? leadingCoefficient(sup)$D
 
 --    local
-      moreThanOneVariable?: % -> Boolean
+      moreThanOneVariable? : % -> Boolean
 
       moreThanOneVariable? p ==
          p case R => false
-         q:=p.ts
-         any?(x1+->not ground? x1 ,coefficients q) => true
+         q := p.ts
+         any?(x1+->not ground? x1 , coefficients q) => true
          false
 
       -- if we already know we use this (slighlty) faster function
-      univariateKnown: % -> SparseUnivariatePolynomial R
+      univariateKnown : % -> SparseUnivariatePolynomial R
 
       univariateKnown p ==
         p case R => (leadingCoefficient p) :: SparseUnivariatePolynomial(R)
-        monomial( leadingCoefficient p,degree p.ts)+ univariateKnown(red p)
+        monomial( leadingCoefficient p, degree p.ts)+ univariateKnown(red p)
 
       univariate p ==
         p case R =>(leadingCoefficient p) :: SparseUnivariatePolynomial(R)
@@ -208,34 +208,34 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
            )$UnivariatePolynomialCategoryFunctions2(
              %, D, R, SparseUnivariatePolynomial(R))
 
-      multivariate (u:SparseUnivariatePolynomial(R),var:VarSet) ==
+      multivariate (u : SparseUnivariatePolynomial(R), var : VarSet) ==
         ground? u => (leadingCoefficient u) ::%
-        [var,monomial(leadingCoefficient u,degree u)$D]$VPoly +
-           multivariate(reductum u,var)
+        [var, monomial(leadingCoefficient u, degree u)$D]$VPoly +
+           multivariate(reductum u, var)
 
-      univariate(p:%,mvar:VarSet):SparseUnivariatePolynomial(%) ==
-        p case R or p.v < mvar  => monomial(p,0)$D
-        pt:=p.ts
-        mvar=p.v => pt
-        monomial(1,p.v,degree pt)*univariate(leadingCoefficient pt,mvar)+
-          univariate(red p,mvar)
+      univariate(p : %, mvar : VarSet) : SparseUnivariatePolynomial(%) ==
+        p case R or p.v < mvar  => monomial(p, 0)$D
+        pt := p.ts
+        mvar = p.v => pt
+        monomial(1, p.v, degree pt)*univariate(leadingCoefficient pt, mvar)+
+          univariate(red p, mvar)
 
 --  a local functions, used in next definition
-      unlikeUnivReconstruct(u:SparseUnivariatePolynomial(%),mvar:VarSet):% ==
-        zero? (d:=degree u) => coefficient(u,0)
-        monomial(leadingCoefficient u,mvar,d)+
-            unlikeUnivReconstruct(reductum u,mvar)
+      unlikeUnivReconstruct(u : SparseUnivariatePolynomial(%), mvar : VarSet) : % ==
+        zero? (d := degree u) => coefficient(u, 0)
+        monomial(leadingCoefficient u, mvar, d)+
+            unlikeUnivReconstruct(reductum u, mvar)
 
-      multivariate(u:SparseUnivariatePolynomial(%),mvar:VarSet):% ==
-        ground? u => coefficient(u,0)
-        uu:=u
+      multivariate(u : SparseUnivariatePolynomial(%), mvar : VarSet) : % ==
+        ground? u => coefficient(u, 0)
+        uu := u
         while not zero? uu repeat
-          cc:=leadingCoefficient uu
-          cc case R or mvar > cc.v => uu:=reductum uu
-          return unlikeUnivReconstruct(u,mvar)
-        [mvar,u]$VPoly
+          cc := leadingCoefficient uu
+          cc case R or mvar > cc.v => uu := reductum uu
+          return unlikeUnivReconstruct(u, mvar)
+        [mvar, u]$VPoly
 
-      ground?(p:%):Boolean ==
+      ground?(p : %) : Boolean ==
         p case R => true
         false
 
@@ -243,35 +243,35 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 --        p case R => p
 --        error "the polynomial is not a constant"
 
-      monomial(p,mvar,k1) ==
+      monomial(p, mvar, k1) ==
         zero? k1 or zero? p => p
-        p case R or mvar>p.v => [mvar,monomial(p,k1)$D]$VPoly
-        p*[mvar,monomial(1,k1)$D]$VPoly
+        p case R or mvar>p.v => [mvar, monomial(p, k1)$D]$VPoly
+        p*[mvar, monomial(1, k1)$D]$VPoly
 
-      monomial(c:R,e:IndexedExponents(VarSet)):% ==
+      monomial(c : R, e : IndexedExponents(VarSet)) : % ==
         zero? e => (c::%)
-        monomial(1,leadingSupport e, leadingCoefficient e) *
-            monomial(c,reductum e)
+        monomial(1, leadingSupport e, leadingCoefficient e) *
+            monomial(c, reductum e)
 
-      coefficient(p:%, e:IndexedExponents(VarSet)) : R ==
+      coefficient(p : %, e : IndexedExponents(VarSet)) : R ==
         zero? e =>
           p case R  => p::R
-          coefficient(coefficient(p.ts,0),e)
+          coefficient(coefficient(p.ts, 0), e)
         p case R => 0
         ve := leadingSupport e
         vp := p.v
         ve < vp =>
-          coefficient(coefficient(p.ts,0),e)
+          coefficient(coefficient(p.ts, 0), e)
         ve > vp => 0
-        coefficient(coefficient(p.ts,leadingCoefficient e),reductum e)
+        coefficient(coefficient(p.ts, leadingCoefficient e), reductum e)
 
---    coerce(e:IndexedExponents(VarSet)) : % ==
+--    coerce(e: IndexedExponents(VarSet)) : % ==
 --      e = 0 => 1
---      monomial(1,leadingSupport e, leadingCoefficient e) *
+--      monomial(1, leadingSupport e, leadingCoefficient e) *
 --          (reductum e)::%
 
---    retract(p:%):IndexedExponents(VarSet) ==
---      q:Union(IndexedExponents(VarSet),"failed"):=retractIfCan p
+--    retract(p: %): IndexedExponents(VarSet) ==
+--      q : Union(IndexedExponents(VarSet), "failed") := retractIfCan p
 --      q :: IndexedExponents(VarSet)
 
 --    retractIfCan(p:%):Union(IndexedExponents(VarSet),"failed") ==
@@ -284,7 +284,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       characteristic == characteristic$R
 
       recip(p) ==
-        p case R => (uu:=recip(p::R);uu case "failed" => "failed"; uu::%)
+        p case R => (uu := recip(p::R);uu case "failed" => "failed"; uu::%)
         "failed"
 
       - p ==
@@ -292,23 +292,23 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
           [p.v, - p.ts]$VPoly
       n * p  ==
           p case R => n * p::R
-          mvar:=p.v
-          up:=n*p.ts
-          if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+          mvar := p.v
+          up := n*p.ts
+          if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
       c * p  ==
           c = 1 => p
           p case R => c * p::R
-          mvar:=p.v
-          up:=c*p.ts
-          if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+          mvar := p.v
+          up := c*p.ts
+          if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
       p1 + p2  ==
          p1 case R and p2 case R => p1 +$R p2
          p1 case R => [p2.v, p1::D + p2.ts]$VPoly
          p2 case R => [p1.v,  p1.ts + p2::D]$VPoly
          p1.v = p2.v =>
-              mvar:=p1.v
-              up:=p1.ts+p2.ts
-              if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+              mvar := p1.v
+              up := p1.ts+p2.ts
+              if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
          p1.v < p2.v =>
               [p2.v, p1::D + p2.ts]$VPoly
          [p1.v, p1.ts + p2::D]$VPoly
@@ -318,9 +318,9 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
          p1 case R => [p2.v, p1::D - p2.ts]$VPoly
          p2 case R => [p1.v,  p1.ts - p2::D]$VPoly
          p1.v = p2.v =>
-              mvar:=p1.v
-              up:=p1.ts-p2.ts
-              if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+              mvar := p1.v
+              up := p1.ts-p2.ts
+              if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
          p1.v < p2.v =>
               [p2.v, p1::D - p2.ts]$VPoly
          [p1.v, p1.ts - p2::D]$VPoly
@@ -336,21 +336,21 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       p1 * p2  ==
          p1 case R => p1::R * p2
          p2 case R =>
-            mvar:=p1.v
-            up:=p1.ts*p2
-            if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+            mvar := p1.v
+            up := p1.ts*p2
+            if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
          p1.v = p2.v =>
-            mvar:=p1.v
-            up:=p1.ts*p2.ts
-            if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+            mvar := p1.v
+            up := p1.ts*p2.ts
+            if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
          p1.v > p2.v =>
-            mvar:=p1.v
-            up:=p1.ts*p2
-            if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+            mvar := p1.v
+            up := p1.ts*p2
+            if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
             --- p1.v < p2.v
-         mvar:=p2.v
-         up:=p1*p2.ts
-         if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+         mvar := p2.v
+         up := p1*p2.ts
+         if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
 
       p ^ kp == p ^ (kp pretend NonNegativeInteger)
 
@@ -359,9 +359,9 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
          -- univariate special case
          not moreThanOneVariable? p =>
              multivariate( (univariateKnown p) ^ k , p.v)
-         mvar:=p.v
-         up:=p.ts ^ k
-         if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+         mvar := p.v
+         up := p.ts ^ k
+         if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
 
       hashUpdate!(s : HashState, p : %) : HashState ==
           p case R => hashUpdate!(s, p::R)
@@ -369,38 +369,38 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
           hashUpdate!(s, p.ts)
 
       if R has IntegralDomain then
-         UnitCorrAssoc ==> Record(unit:%,canonical:%,associate:%)
+         UnitCorrAssoc ==> Record(unit : %, canonical : %, associate : %)
          unitNormal(p) ==
-            u,c,a:R
+            u, c, a : R
             p case R =>
-              (u,c,a):= unitNormal(p::R)$R
-              [u::%,c::%,a::%]$UnitCorrAssoc
-            (u,c,a):= unitNormal(leadingCoefficient(p))$R
-            [u::%,(a*p)::%,a::%]$UnitCorrAssoc
+              (u, c, a) := unitNormal(p::R)$R
+              [u::%, c::%, a::%]$UnitCorrAssoc
+            (u, c, a) := unitNormal(leadingCoefficient(p))$R
+            [u::%, (a*p)::%, a::%]$UnitCorrAssoc
          unitCanonical(p) ==
             p case R => unitCanonical(p::R)$R
-            (u,c,a):= unitNormal(leadingCoefficient(p))$R
+            (u, c, a) := unitNormal(leadingCoefficient(p))$R
             a*p
          unit? p ==
             p case R => unit?(p::R)$R
             false
-         associates?(p1,p2) ==
-            p1 case R => p2 case R and associates?(p1,p2)$R
-            p2 case VPoly and p1.v = p2.v and associates?(p1.ts,p2.ts)
+         associates?(p1, p2) ==
+            p1 case R => p2 case R and associates?(p1, p2)$R
+            p2 case VPoly and p1.v = p2.v and associates?(p1.ts, p2.ts)
 
          if R has Approximate then
            p1  exquo  p2  ==
               p1 case R and p2 case R =>
-                a:= (p1::R  exquo  p2::R)
+                a := (p1::R  exquo  p2::R)
                 if a case "failed" then "failed" else a::%
               zero? p1 => p1
 --              one? p2 => p1
               (p2 = 1) => p1
               p1 case R or p2 case VPoly and p1.v < p2.v => "failed"
               p2 case R or p1.v > p2.v =>
-                 a:= (p1.ts  exquo  p2::D)
+                 a := (p1.ts  exquo  p2::D)
                  a case "failed" => "failed"
-                 [p1.v,a]$VPoly::%
+                 [p1.v, a]$VPoly::%
               -- The next test is useful in the case that R has inexact
               -- arithmetic (in particular when it is Interval(...)).
               -- In the case where the test succeeds, empirical evidence
@@ -409,35 +409,35 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
               -- and p1 and p2 differ only in the low order terms (e.g. p1=p2+1)
               -- it slows exquo down by about 15-20%.
               p1 = p2 => 1
-              a:= p1.ts  exquo  p2.ts
+              a := p1.ts  exquo  p2.ts
               a case "failed" => "failed"
-              mvar:=p1.v
-              up:SUP %:=a
-              if ground? (up) then leadingCoefficient(up) else [mvar,up]$VPoly::%
+              mvar := p1.v
+              up : SUP % := a
+              if ground? (up) then leadingCoefficient(up) else [mvar, up]$VPoly::%
          else
            p1  exquo  p2  ==
               p1 case R and p2 case R =>
-                a:= (p1::R  exquo  p2::R)
+                a := (p1::R  exquo  p2::R)
                 if a case "failed" then "failed" else a::%
               zero? p1 => p1
 --              one? p2 => p1
               (p2 = 1) => p1
               p1 case R or p2 case VPoly and p1.v < p2.v => "failed"
               p2 case R or p1.v > p2.v =>
-                 a:= (p1.ts  exquo  p2::D)
+                 a := (p1.ts  exquo  p2::D)
                  a case "failed" => "failed"
-                 [p1.v,a]$VPoly::%
-              a:= p1.ts  exquo  p2.ts
+                 [p1.v, a]$VPoly::%
+              a := p1.ts  exquo  p2.ts
               a case "failed" => "failed"
-              mvar:=p1.v
-              up:SUP %:=a
-              if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly::%
+              mvar := p1.v
+              up : SUP % := a
+              if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly::%
 
-      map(fn,p) ==
+      map(fn, p) ==
          p case R => fn(p)
-         mvar:=p.v
-         up:=map(x1+->map(fn,x1),p.ts)
-         if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+         mvar := p.v
+         up := map(x1+->map(fn, x1), p.ts)
+         if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
 
       if R has Field then
         (p : %) / (r : R) == inv(r) * p
@@ -445,33 +445,33 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       if R has GcdDomain then
         content(p) ==
            p case R => p
-           c :R :=0
-           up:=p.ts
+           c : R := 0
+           up := p.ts
 --           while not(zero? up) and not(one? c) repeat
            while not(zero? up) and not(c = 1) repeat
-               c:=gcd(c,content leadingCoefficient(up))
+               c := gcd(c, content leadingCoefficient(up))
                up := reductum up
            c
 
       if R has EuclideanDomain and R has CharacteristicZero and not(R has FloatingPointSystem)  then
-        content(p,mvar) ==
+        content(p, mvar) ==
           p case R => p
-          gcd(coefficients univariate(p,mvar))$pgcd
+          gcd(coefficients univariate(p, mvar))$pgcd
 
-        gcd(p1,p2) ==  gcd(p1,p2)$pgcd
+        gcd(p1, p2) ==  gcd(p1, p2)$pgcd
 
-        gcd(lp:List %) ==  gcd(lp)$pgcd
+        gcd(lp : List %) ==  gcd(lp)$pgcd
 
-        gcdPolynomial(a:SUP %,b:SUP %):SUP % == gcd(a,b)$pgcd
+        gcdPolynomial(a : SUP %, b : SUP %) : SUP % == gcd(a, b)$pgcd
 
       else if R has GcdDomain then
-        content(p,mvar) ==
+        content(p, mvar) ==
           p case R => p
-          content univariate(p,mvar)
+          content univariate(p, mvar)
 
-        gcd(p1,p2) ==
+        gcd(p1, p2) ==
            p1 case R =>
-              p2 case R => gcd(p1,p2)$R::%
+              p2 case R => gcd(p1, p2)$R::%
               zero? p1 => p2
               gcd(p1, content(p2.ts))
            p2 case R =>
@@ -479,14 +479,14 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
               gcd(p2, content(p1.ts))
            p1.v < p2.v => gcd(p1, content(p2.ts))
            p1.v > p2.v => gcd(content(p1.ts), p2)
-           mvar:=p1.v
-           up:=gcd(p1.ts, p2.ts)
-           if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
+           mvar := p1.v
+           up := gcd(p1.ts, p2.ts)
+           if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
 
         if R has FloatingPointSystem then
            -- eventually need a better notion of gcd's over floats
            -- this essentially computes the gcds of the monomial contents
-           gcdPolynomial(a:SUP %,b:SUP %):SUP % ==
+           gcdPolynomial(a : SUP %, b : SUP %) : SUP % ==
               ground? (a) =>
                   zero? a => b
                   gcd(leadingCoefficient a, content b)::SUP %
@@ -494,14 +494,14 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
                   zero? b => b
                   gcd(leadingCoefficient b, content a)::SUP %
               conta := content a
-              mona:SUP % := monomial(conta, minimumDegree a)
+              mona : SUP % := monomial(conta, minimumDegree a)
               if mona ~= 1 then
                    a := (a exquo mona)::SUP %
               contb := content b
-              monb:SUP % := monomial(contb, minimumDegree b)
+              monb : SUP % := monomial(contb, minimumDegree b)
               if monb ~= 1 then
                    b := (b exquo monb)::SUP %
-              mong:SUP %  := monomial(gcd(conta, contb),
+              mong : SUP %  := monomial(gcd(conta, contb),
                                       min(degree mona, degree monb))
               degree(a) >= degree b =>
                    not((a exquo b) case "failed") =>
@@ -510,15 +510,15 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
               not((b exquo a) case "failed") => mong * a
               mong
 
-      coerce(p):OutputForm ==
+      coerce(p) : OutputForm ==
         p case R => (p::R)::OutputForm
-        outputForm(p.ts,p.v::OutputForm)
+        outputForm(p.ts, p.v::OutputForm)
 
       coefficients p ==
         p case R => list(p :: R)$List(R)
         "append"/[coefficients(p1)$% for p1 in coefficients(p.ts)]
 
-      retract(p:%):R ==
+      retract(p : %) : R ==
         p case R => p :: R
         error "cannot retract nonconstant polynomial"
 
@@ -526,80 +526,80 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
         p case R => p::R
         "failed"
 
---      leadingCoefficientRecursive(p:%):% ==
+--      leadingCoefficientRecursive(p: %): % ==
 --         p case R => p
 --         leadingCoefficient p.ts
 
-      mymerge:(List VarSet,List VarSet) ->List VarSet
-      mymerge(l:List VarSet,m:List VarSet):List VarSet  ==
+      mymerge : (List VarSet, List VarSet) ->List VarSet
+      mymerge(l : List VarSet, m : List VarSet) : List VarSet  ==
          empty? l => m
          empty? m => l
          first l = first m =>
             empty? rest l =>
-                 setrest!(l,rest m)
+                 setrest!(l, rest m)
                  l
             empty? rest m => l
             setrest!(l, mymerge(rest l, rest m))
             l
          first l > first m =>
             empty? rest l =>
-                setrest!(l,m)
+                setrest!(l, m)
                 l
             setrest!(l, mymerge(rest l, m))
             l
          empty? rest m =>
-             setrest!(m,l)
+             setrest!(m, l)
              m
-         setrest!(m,mymerge(l,rest m))
+         setrest!(m, mymerge(l, rest m))
          m
 
       variables p ==
          p case R => empty()
-         lv:List VarSet:=empty()
+         lv : List VarSet := empty()
          q := p.ts
          while not zero? q repeat
-           lv:=mymerge(lv,variables leadingCoefficient q)
+           lv := mymerge(lv, variables leadingCoefficient q)
            q := reductum q
-         cons(p.v,lv)
+         cons(p.v, lv)
 
       mainVariable p ==
          p case R => "failed"
          p.v
 
-      eval(p,mvar,pval) == univariate(p,mvar)(pval)
-      eval(p,mvar,val) ==  univariate(p,mvar)(val)
+      eval(p, mvar, pval) == univariate(p, mvar)(pval)
+      eval(p, mvar, val) ==  univariate(p, mvar)(val)
 
-      evalSortedVarlist(p,Lvar,Lpval):% ==
+      evalSortedVarlist(p, Lvar, Lpval) : % ==
         p case R => p
         empty? Lvar or empty? Lpval => p
         mvar := Lvar.first
-        mvar > p.v => evalSortedVarlist(p,Lvar.rest,Lpval.rest)
+        mvar > p.v => evalSortedVarlist(p, Lvar.rest, Lpval.rest)
         pval := Lpval.first
-        pts := map(x1+->evalSortedVarlist(x1,Lvar,Lpval),p.ts)
-        mvar=p.v =>
+        pts := map(x1+->evalSortedVarlist(x1, Lvar, Lpval), p.ts)
+        mvar = p.v =>
              pval case R => pts (pval::R)
              pts pval
-        multivariate(pts,p.v)
+        multivariate(pts, p.v)
 
-      eval(p,Lvar,Lpval) ==
-        empty? rest Lvar => evalSortedVarlist(p,Lvar,Lpval)
-        sorted?((x1,x2)+->(x1 > x2), Lvar) => evalSortedVarlist(p,Lvar,Lpval)
-        nlvar := sort((x1,x2)+->(x1 > x2),Lvar)
+      eval(p, Lvar, Lpval) ==
+        empty? rest Lvar => evalSortedVarlist(p, Lvar, Lpval)
+        sorted?((x1, x2)+->(x1 > x2), Lvar) => evalSortedVarlist(p, Lvar, Lpval)
+        nlvar := sort((x1, x2)+->(x1 > x2), Lvar)
         nlpval :=
            Lvar = nlvar => Lpval
-           nlpval := [Lpval.position(mvar,Lvar) for mvar in nlvar]
-        evalSortedVarlist(p,nlvar,nlpval)
+           nlpval := [Lpval.position(mvar, Lvar) for mvar in nlvar]
+        evalSortedVarlist(p, nlvar, nlpval)
 
-      eval(p,Lvar,Lval) ==
-        eval(p,Lvar,[val::% for val in Lval]$(List %)) -- kill?
+      eval(p, Lvar, Lval) ==
+        eval(p, Lvar, [val::% for val in Lval]$(List %)) -- kill?
 
-      degree(p,mvar) ==
+      degree(p, mvar) ==
         p case R => 0
         mvar= p.v => degree p.ts
         mvar > p.v => 0    -- might as well take advantage of the order
-        max(degree(leadingCoefficient p.ts,mvar),degree(red p,mvar))
+        max(degree(leadingCoefficient p.ts, mvar), degree(red p, mvar))
 
-      degree(p,Lvar)  == [degree(p,mvar)  for mvar in Lvar]
+      degree(p, Lvar)  == [degree(p, mvar)  for mvar in Lvar]
 
       degree p ==
         p case R => 0
@@ -608,26 +608,26 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       minimumDegree p ==
         p case R => 0
         md := minimumDegree p.ts
-        minimumDegree(coefficient(p.ts,md)) + monomial(md, p.v)
+        minimumDegree(coefficient(p.ts, md)) + monomial(md, p.v)
 
-      minimumDegree(p,mvar) ==
+      minimumDegree(p, mvar) ==
         p case R => 0
         mvar = p.v => minimumDegree p.ts
-        md:=minimumDegree(leadingCoefficient p.ts,mvar)
-        zero? (p1:=red p) => md
-        min(md,minimumDegree(p1,mvar))
+        md := minimumDegree(leadingCoefficient p.ts, mvar)
+        zero? (p1 := red p) => md
+        min(md, minimumDegree(p1, mvar))
 
-      minimumDegree(p,Lvar) ==
-        [minimumDegree(p,mvar) for mvar in Lvar]
+      minimumDegree(p, Lvar) ==
+        [minimumDegree(p, mvar) for mvar in Lvar]
 
       if R has CommutativeRing then
-        differentiate(p,mvar) ==
+        differentiate(p, mvar) ==
           p case R => 0
-          mvar=p.v =>
-             up:=differentiate p.ts
-             if ground? up then leadingCoefficient(up) else [mvar,up]$VPoly
-          up:=map(x1+->differentiate(x1,mvar),p.ts)
-          if ground? up then leadingCoefficient(up) else [p.v,up]$VPoly
+          mvar = p.v =>
+             up := differentiate p.ts
+             if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
+          up := map(x1+->differentiate(x1, mvar), p.ts)
+          if ground? up then leadingCoefficient(up) else [p.v, up]$VPoly
 
       leadingCoefficient(p) ==
          p case R => p
@@ -635,7 +635,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 
 --      trailingCoef(p) ==
 --        p case R => p
---        coef(p.ts,0) case R => coef(p.ts,0)
+--        coef(p.ts, 0) case R => coef(p.ts, 0)
 --        trailingCoef(red p)
 --      TrailingCoef(p) == trailingCoef(p)
 
@@ -651,7 +651,7 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
       SmpTerm ==> Record(k : NonNegativeInteger, c : %)
 
       monomials1(p : VPoly, vars : List VarSet,
-                 degs : List NonNegativeInteger, res : List(%)): List(%) ==
+                 degs : List NonNegativeInteger, res : List(%)) : List(%) ==
           tl := p.ts pretend List SmpTerm
           v1 := p.v
           for t in tl repeat
@@ -681,18 +681,18 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
           reverse!(monomials1(p, [], [], []))
 
 --        if R is Integer then
---           pgcd := PolynomialGcdPackage(%,VarSet)
---           gcd(p1,p2) ==
---               gcd(p1,p2)$pgcd
+--           pgcd := PolynomialGcdPackage(%, VarSet)
+--           gcd(p1, p2) ==
+--               gcd(p1, p2)$pgcd
 --
 --        else if R is RationalNumber then
---           gcd(p1,p2) ==
---               mrat:= MRationalFactorize(VarSet,%)
---               gcd(p1,p2)$mrat
+--           gcd(p1, p2) ==
+--               mrat := MRationalFactorize(VarSet, %)
+--               gcd(p1, p2)$mrat
 --
---        else gcd(p1,p2) ==
+--        else gcd(p1, p2) ==
 --           p1 case R =>
---              p2 case R => gcd(p1,p2)$R::%
+--              p2 case R => gcd(p1, p2)$R::%
 --              p1 = 0 => p2
 --              gcd(p1, content(p2.ts))
 --           p2 case R =>
@@ -708,10 +708,10 @@ SparseMultivariatePolynomial(R: Ring,VarSet: OrderedSet): C == T where
 
 )abbrev package SMPCOER SparsePolynomialCoercionHelpers
 
-SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
-                                VarSet2: OrderedSet): _
+SparsePolynomialCoercionHelpers(R : Ring, VarSet1 : OrderedSet,
+                                VarSet2 : OrderedSet) : _
   with
-    remap_variables: (SparseMultivariatePolynomial(R, VarSet1), List VarSet1, _
+    remap_variables : (SparseMultivariatePolynomial(R, VarSet1), List VarSet1, _
               List VarSet2) -> _
              SparseMultivariatePolynomial(R, VarSet2)
        ++ remap_variables(p, lv1, lv2) replaces corresponding variables
@@ -724,11 +724,11 @@ SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
     MP2 ==> SparseMultivariatePolynomial(R, VarSet2)
 
     SmpTerm1 ==> Record(k : NonNegativeInteger, c : MP1)
-    VPoly1 ==>  Record(v: VarSet1, ts: List SmpTerm1)
+    VPoly1 ==>  Record(v : VarSet1, ts : List SmpTerm1)
     SmpRep1 ==>  Union(R, VPoly1)
 
     SmpTerm2 ==> Record(k : NonNegativeInteger, c : MP2)
-    VPoly2 ==>  Record(v: VarSet2, ts: List SmpTerm2)
+    VPoly2 ==>  Record(v : VarSet2, ts : List SmpTerm2)
     SmpRep2 ==>  Union(R, VPoly2)
 
     LV1 ==> List VarSet1
@@ -774,7 +774,7 @@ SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
             pl : LPLR :=
                [[el1, el2] for el1 in lv1 for el2 in lv2]
             pl := sort((x : PLR, y : PLR) _
-                          : Boolean +-> x.elt1 < y.elt1, pl)
+                           : Boolean +-> x.elt1 < y.elt1, pl)
             lv1 := [x.elt1 for x in pl]
             lv2 := [x.elt2 for x in pl]
         not(sorted?(lv2)) =>
@@ -805,18 +805,18 @@ SparsePolynomialCoercionHelpers(R : Ring, VarSet1: OrderedSet,
 ++ for the degree of polynomials in commuting variables. It gives an ordered
 ++ pairing of non negative integer exponents with variables
 
-IndexedExponents(Varset:OrderedSet): C == T where
+IndexedExponents(Varset : OrderedSet) : C == T where
   C == Join(OrderedAbelianMonoidSup,
-            IndexedDirectProductCategory(NonNegativeInteger,Varset))
+            IndexedDirectProductCategory(NonNegativeInteger, Varset))
   T == IndexedDirectProductObject(NonNegativeInteger, Varset) add
-      Term:=  Record(k:Varset,c:NonNegativeInteger)
-      Rep:=  List Term
-      x:%
-      t:Term
-      coerceOF(t):OutputForm ==     --++ converts term to OutputForm
+      Term :=  Record(k : Varset, c : NonNegativeInteger)
+      Rep :=  List Term
+      x : %
+      t : Term
+      coerceOF(t) : OutputForm ==     --++ converts term to OutputForm
          t.c = 1 => (t.k)::OutputForm
          (t.k)::OutputForm ^ (t.c)::OutputForm
-      coerce(x):OutputForm == ++ converts entire exponents to OutputForm
+      coerce(x) : OutputForm == ++ converts entire exponents to OutputForm
          null x => 1::Integer::OutputForm
          null rest x => coerceOF(first x)
          reduce("*",[coerceOF t for t in x])

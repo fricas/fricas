@@ -26,34 +26,34 @@
 ++ \spadfun{solveLinearPolynomialEquation}
 ++ operation over the integers. It uses a lifting technique
 ++ from the package GenExEuclid
-IntegerSolveLinearPolynomialEquation(): C ==T
+IntegerSolveLinearPolynomialEquation() : C ==T
  where
   ZP ==> SparseUnivariatePolynomial Integer
   C == with
-      solveLinearPolynomialEquation: (List ZP,ZP) -> Union(List ZP,"failed")
+      solveLinearPolynomialEquation : (List ZP,ZP) -> Union(List ZP,"failed")
            ++ solveLinearPolynomialEquation([f1, ..., fn], g)
            ++ (where the fi are relatively prime to each other)
            ++ returns a list of ai such that
            ++ \spad{g/prod fi = sum ai/fi}
            ++ or returns "failed" if no such list of ai's exists.
   T == add
-      oldlp:List ZP := []
-      slpePrime:Integer:=(2::Integer)
-      oldtable:Vector List ZP := empty()
-      solveLinearPolynomialEquation(lp,p) ==
+      oldlp : List ZP := []
+      slpePrime : Integer := (2::Integer)
+      oldtable : Vector List ZP := empty()
+      solveLinearPolynomialEquation(lp, p) ==
          if (oldlp ~= lp) then
             -- we have to generate a new table
-            deg:= _+/[degree u for u in lp]
-            ans:Union(Vector List ZP,"failed"):="failed"
-            slpePrime:=2147483647::Integer   -- 2^31 -1 : a prime
+            deg := _+/[degree u for u in lp]
+            ans : Union(Vector List ZP, "failed") := "failed"
+            slpePrime := 2147483647::Integer   -- 2^31 -1 : a prime
                  -- a good test case for this package is
-                 --  ([x^31-1,x-2],2)
+                 --  ([x^31-1, x-2], 2)
             while (ans case "failed") repeat
-              ans:=tablePow(deg,slpePrime,lp)$GenExEuclid(Integer,ZP)
+              ans := tablePow(deg, slpePrime, lp)$GenExEuclid(Integer, ZP)
               if (ans case "failed") then
-                 slpePrime:= prevPrime(slpePrime)$IntegerPrimesPackage(Integer)
-            oldtable:=(ans:: Vector List ZP)
-         answer:=solveid(p,slpePrime,oldtable)
+                 slpePrime := prevPrime(slpePrime)$IntegerPrimesPackage(Integer)
+            oldtable := (ans:: Vector List ZP)
+         answer := solveid(p, slpePrime, oldtable)
          answer
 
 @
@@ -72,17 +72,17 @@ Common Lisp and is not defined in Common Lisp.
 ++ Description: \spadtype{Integer} provides the domain of arbitrary precision
 ++ integers.
 
-Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
+Integer : Join(IntegerNumberSystem, ConvertibleTo String, OpenMath, _
     Canonical, canonicalsClosed) with
     random   : % -> %
       ++ random(n) returns a random integer from 0 to \spad{n-1}.
  == add
       ZP ==> SparseUnivariatePolynomial %
       ZZP ==> SparseUnivariatePolynomial Integer
-      x,y: %
-      n: NonNegativeInteger
+      x, y : %
+      n : NonNegativeInteger
 
-      writeOMInt(dev: OpenMathDevice, x: %): Void ==
+      writeOMInt(dev : OpenMathDevice, x : %) : Void ==
         if x < 0 then
           OMputApp(dev)
           OMputSymbol(dev, "arith1", "unary_minus")
@@ -91,10 +91,10 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
         else
           OMputInteger(dev, x pretend Integer)
 
-      OMwrite(x: %): String ==
-        s: String := ""
+      OMwrite(x : %) : String ==
+        s : String := ""
         sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-        dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+        dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
         OMputObject(dev)
         writeOMInt(dev, x)
         OMputEndObject(dev)
@@ -102,10 +102,10 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
         s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
         s
 
-      OMwrite(x: %, wholeObj: Boolean): String ==
-        s: String := ""
+      OMwrite(x : %, wholeObj : Boolean) : String ==
+        s : String := ""
         sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-        dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+        dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
         if wholeObj then
           OMputObject(dev)
         writeOMInt(dev, x)
@@ -115,12 +115,12 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
         s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
         s
 
-      OMwrite(dev: OpenMathDevice, x: %): Void ==
+      OMwrite(dev : OpenMathDevice, x : %) : Void ==
         OMputObject(dev)
         writeOMInt(dev, x)
         OMputEndObject(dev)
 
-      OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+      OMwrite(dev : OpenMathDevice, x : %, wholeObj : Boolean) : Void ==
         if wholeObj then
           OMputObject(dev)
         writeOMInt(dev, x)
@@ -138,23 +138,23 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
       dec  x  == x - 1
       hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
       negative? x == MINUSP(x)$Lisp
-      coerce(x):OutputForm == outputForm(x pretend Integer)
-      coerce(m:Integer):% == m pretend %
-      convert(x:%):Integer == x pretend Integer
+      coerce(x) : OutputForm == outputForm(x pretend Integer)
+      coerce(m : Integer) : % == m pretend %
+      convert(x : %) : Integer == x pretend Integer
       length a == INTEGER_-LENGTH(a)$Lisp
       addmod(a, b, p) ==
-         (c:=a + b) >= p => c - p
+         (c := a + b) >= p => c - p
          c
       submod(a, b, p) ==
-         (c:=a - b) < 0 => c + p
+         (c := a - b) < 0 => c + p
          c
       mulmod(a, b, p) == (a * b) rem p
-      convert(x:%):Float       == coerce(x pretend Integer)$Float
-      convert(x:%):DoubleFloat  == coerce(x pretend Integer)$DoubleFloat
-      convert(x:%):InputForm   == convert(x pretend Integer)$InputForm
-      convert(x:%):String      == string(x pretend Integer)$String
+      convert(x : %) : Float       == coerce(x pretend Integer)$Float
+      convert(x : %) : DoubleFloat  == coerce(x pretend Integer)$DoubleFloat
+      convert(x : %) : InputForm   == convert(x pretend Integer)$InputForm
+      convert(x : %) : String      == string(x pretend Integer)$String
 
-      latex(x:%):String ==
+      latex(x : %) : String ==
         s : String := string(x pretend Integer)$String
         (-1 < (x pretend Integer)) and ((x  pretend Integer) < 10) => s
         concat("{", concat(s, "}")$String)$String
@@ -165,18 +165,18 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
            r + b
         r
 
-      reducedSystem(m:Matrix %):Matrix(Integer) ==
+      reducedSystem(m : Matrix %) : Matrix(Integer) ==
         m pretend Matrix(Integer)
 
-      reducedSystem(m:Matrix %, v:Vector %):
-       Record(mat:Matrix(Integer), vec:Vector(Integer)) ==
+      reducedSystem(m : Matrix %, v : Vector %):
+       Record(mat : Matrix(Integer), vec : Vector(Integer)) ==
         [m pretend Matrix(Integer), vec pretend Vector(Integer)]
 
       abs(x) == ABS(x)$Lisp
 -- FIXME: strange random distribution used (#227).
       random() == random()$Lisp
       random(x) == RANDOM(x)$Lisp
-      x = y == EQL(x,y)$Lisp
+      x = y == EQL(x, y)$Lisp
       x < y == (x<y)$Lisp
       -- critical for coercions to NonNegativeInteger
       x >= y == (x >= y)$Lisp
@@ -184,15 +184,15 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
       x + y == (x+y)$Lisp
       x - y == (x-y)$Lisp
       x * y == (x*y)$Lisp
-      (m:Integer) * (y:%) == (m*y)$Lisp -- for subsumption problem
-      x ^ n == EXPT(x,n)$Lisp
+      (m : Integer) * (y : %) == (m*y)$Lisp -- for subsumption problem
+      x ^ n == EXPT(x, n)$Lisp
       odd? x == ODDP(x)$Lisp
-      max(x,y) == MAX(x,y)$Lisp
-      min(x,y) == MIN(x,y)$Lisp
-      divide(x,y) == DIVIDE2(x,y)$Lisp
-      x quo y == QUOTIENT2(x,y)$Lisp
+      max(x, y) == MAX(x, y)$Lisp
+      min(x, y) == MIN(x, y)$Lisp
+      divide(x, y) == DIVIDE2(x, y)$Lisp
+      x quo y == QUOTIENT2(x, y)$Lisp
       x rem y == REM(x, y)$Lisp
-      shift(x, y) == ASH(x,y)$Lisp
+      shift(x, y) == ASH(x, y)$Lisp
       x exquo y ==
          zero? y => "failed"
          z : SExpression := INTEXQUO(x, y)$Lisp
@@ -200,41 +200,41 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
          "failed"
 --      recip(x) == if one? x or x=-1 then x else "failed"
       recip(x) == if (x = 1) or x=-1 then x else "failed"
-      gcd(x,y) == GCD(x,y)$Lisp
-      UCA ==> Record(unit:%,canonical:%,associate:%)
+      gcd(x, y) == GCD(x, y)$Lisp
+      UCA ==> Record(unit : %, canonical : %, associate : %)
       unitNormal x ==
-         x < 0 => [-1,-x,-1]$UCA
-         [1,x,1]$UCA
+         x < 0 => [-1, -x, -1]$UCA
+         [1, x, 1]$UCA
       unitCanonical x == abs x
       solveLinearPolynomialEquation(lp:List ZP,p:ZP):Union(List ZP,"failed") ==
          solveLinearPolynomialEquation(lp pretend List ZZP,
                p pretend ZZP)$IntegerSolveLinearPolynomialEquation pretend
                      Union(List ZP,"failed")
-      squareFreePolynomial(p:ZP):Factored ZP ==
-        squareFree(p)$UnivariatePolynomialSquareFree(%,ZP)
-      factorPolynomial(p:ZP):Factored ZP ==
+      squareFreePolynomial(p : ZP) : Factored ZP ==
+        squareFree(p)$UnivariatePolynomialSquareFree(%, ZP)
+      factorPolynomial(p : ZP) : Factored ZP ==
          -- GaloisGroupFactorizer doesn't factor the content
          -- so we have to do this by hand
-         pp:=primitivePart p
+         pp := primitivePart p
          leadingCoefficient pp = leadingCoefficient p =>
              factor(p)$GaloisGroupFactorizer(ZP)
          mergeFactors(factor(pp)$GaloisGroupFactorizer(ZP),
-                        map((x1:%):ZP+->x1::ZP,
+                        map((x1 : %) : ZP+->x1::ZP,
                             factor((leadingCoefficient p exquo
                                     leadingCoefficient pp)
-                                   ::%))$FactoredFunctions2(%,ZP)
+                                   ::%))$FactoredFunctions2(%, ZP)
                                      )$FactoredFunctionUtilities(ZP)
-      factorSquareFreePolynomial(p:ZP):Factored ZP ==
+      factorSquareFreePolynomial(p : ZP) : Factored ZP ==
            factorSquareFree(p)$GaloisGroupFactorizer(ZP)
-      gcdPolynomial(p:ZP, q:ZP):ZP ==
+      gcdPolynomial(p : ZP, q : ZP) : ZP ==
          zero? p => unitCanonical q
          zero? q => unitCanonical p
-         gcd([p,q])$HeuGcd(ZP)
---    myNextPrime: (%,NonNegativeInteger) -> %
---    myNextPrime(x,n) ==
+         gcd([p, q])$HeuGcd(ZP)
+--    myNextPrime: (%, NonNegativeInteger) -> %
+--    myNextPrime(x, n) ==
 --       nextPrime(x)$IntegerPrimesPackage(%)
---    TT:=InnerModularGcd(%,ZP,67108859 pretend %,myNextPrime)
---    gcdPolynomial(p,q) == modularGcd(p,q)$TT
+--    TT := InnerModularGcd(%, ZP, 67108859 pretend %, myNextPrime)
+--    gcdPolynomial(p, q) == modularGcd(p, q)$TT
 
 @
 
@@ -249,39 +249,39 @@ Integer: Join(IntegerNumberSystem, ConvertibleTo String, OpenMath,_
 ++ Keywords: integer
 ++ Description: \spadtype{NonNegativeInteger} provides functions for non
 ++   negative integers.
-NonNegativeInteger: Join(OrderedAbelianMonoidSup, SemiRing,
+NonNegativeInteger : Join(OrderedAbelianMonoidSup, SemiRing,
                          CommutativeStar) with
-            _quo : (%,%) -> %
+            _quo : (%, %) -> %
               ++ a quo b returns the quotient of \spad{a} and b, forgetting
               ++ the remainder.
-            _rem : (%,%) -> %
+            _rem : (%, %) -> %
               ++ a rem b returns the remainder of \spad{a} and b.
-            gcd  : (%,%) -> %
-              ++ gcd(a,b) computes the greatest common divisor of two
+            gcd  : (%, %) -> %
+              ++ gcd(a, b) computes the greatest common divisor of two
               ++ non negative integers \spad{a} and b.
-            divide: (%,%) -> Record(quotient:%,remainder:%)
-              ++ divide(a,b) returns a record containing both
+            divide : (%, %) -> Record(quotient : %, remainder : %)
+              ++ divide(a, b) returns a record containing both
               ++ remainder and quotient.
             _exquo: (%,%) -> Union(%,"failed")
               ++ exquo(a,b) returns the quotient of \spad{a} and b, or "failed"
               ++ if b is zero or \spad{a} rem b is zero.
-            shift: (%, Integer) -> %
-              ++ shift(a,i) shift \spad{a} by i bits.
+            shift : (%, Integer) -> %
+              ++ shift(a, i) shift \spad{a} by i bits.
             random   : % -> %
               ++ random(n) returns a random integer from 0 to \spad{n-1}.
             qcoerce : Integer -> %
               ++ qcoerce(n) coerces \spad{n} to \spad{%} trusting that
               ++ \spad{n} is nonnegative
 
-  == SubDomain(Integer,#1 >= 0) add
-      x,y:%
-      sup(x,y) == MAX(x,y)$Lisp
-      shift(x:%, n:Integer):% == ASH(x,n)$Lisp
+  == SubDomain(Integer, #1 >= 0) add
+      x, y : %
+      sup(x, y) == MAX(x, y)$Lisp
+      shift(x : %, n : Integer) : % == ASH(x, n)$Lisp
 
       qcoerce(n) == n pretend %
 
       subtractIfCan(x, y) ==
-        c:Integer := (x pretend Integer) - (y pretend Integer)
+        c : Integer := (x pretend Integer) - (y pretend Integer)
         c < 0 => "failed"
         c pretend %
 
@@ -298,13 +298,13 @@ NonNegativeInteger: Join(OrderedAbelianMonoidSup, SemiRing,
 ++ Keywords: positive integer
 ++ Description: \spadtype{PositiveInteger} provides functions for
 ++   positive integers.
-PositiveInteger: Join(OrderedAbelianSemiGroup, Monoid, CommutativeStar) with
-            gcd: (%,%) -> %
-              ++ gcd(a,b) computes the greatest common divisor of two
+PositiveInteger : Join(OrderedAbelianSemiGroup, Monoid, CommutativeStar) with
+            gcd : (%, %) -> %
+              ++ gcd(a, b) computes the greatest common divisor of two
               ++ positive integers \spad{a} and b.
- == SubDomain(NonNegativeInteger,#1 > 0) add
-     x:%
-     y:%
+ == SubDomain(NonNegativeInteger, #1 > 0) add
+     x : %
+     y : %
 
 @
 
@@ -320,8 +320,8 @@ PositiveInteger: Join(OrderedAbelianSemiGroup, Monoid, CommutativeStar) with
 ++ Keywords: roman numerals
 ++ Description:  \spadtype{RomanNumeral} provides functions for converting
 ++   integers to roman numerals.
-RomanNumeral(): Join(IntegerNumberSystem, Canonical, canonicalsClosed) with
-    convert: Symbol  -> %
+RomanNumeral() : Join(IntegerNumberSystem, Canonical, canonicalsClosed) with
+    convert : Symbol  -> %
       ++ convert(n) creates a roman numeral for symbol n.
     roman  : Symbol  -> %
       ++ roman(n) creates a roman numeral for symbol n.
@@ -331,11 +331,11 @@ RomanNumeral(): Join(IntegerNumberSystem, Canonical, canonicalsClosed) with
   == Integer add
         import NumberFormats()
 
-        roman(n:Integer) == n::%
-        roman(sy:Symbol) == convert sy
-        convert(sy:Symbol):%    == ScanRoman(string sy)::%
+        roman(n : Integer) == n::%
+        roman(sy : Symbol) == convert sy
+        convert(sy : Symbol) : %    == ScanRoman(string sy)::%
 
-        coerce(r:%):OutputForm ==
+        coerce(r : %) : OutputForm ==
             n := convert(r)@Integer
             -- okay, we stretch it
             zero? n => n::OutputForm

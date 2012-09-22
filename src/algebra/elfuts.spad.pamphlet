@@ -22,7 +22,7 @@
 ++ References:
 ++ Description: The elliptic functions sn, sc and dn are expanded as
 ++ Taylor series.
-EllipticFunctionsUnivariateTaylorSeries(Coef,UTS):
+EllipticFunctionsUnivariateTaylorSeries(Coef, UTS):
  Exports == Implementation where
   Coef : Field
   UTS  : UnivariateTaylorSeriesCategory Coef
@@ -54,8 +54,8 @@ EllipticFunctionsUnivariateTaylorSeries(Coef,UTS):
         ellipticPi : (UTS, Coef, Coef) -> UTS
           ++ ellipticPi(z, n, m) expands the elliptic integral Pi as a Taylor
           ++ series in z.
-    sncndn: (ST,Coef) -> L ST
-       ++\spad{sncndn(s,c)} is used internally.
+    sncndn : (ST, Coef) -> L ST
+       ++\spad{sncndn(s, c)} is used internally.
 
   Implementation ==> add
     import StreamTaylorSeriesOperations Coef
@@ -64,14 +64,14 @@ EllipticFunctionsUnivariateTaylorSeries(Coef,UTS):
 
     SPFCN : Boolean := Coef has SpecialFunctionCategory
 
-    sncndnre:(Coef, Coef, Coef, Coef, L ST,ST,Coef) -> L ST
-    sncndnre(m, s0, c0, d0,scd,dx,sign) ==
+    sncndnre : (Coef, Coef, Coef, Coef, L ST, ST, Coef) -> L ST
+    sncndnre(m, s0, c0, d0, scd, dx, sign) ==
             [lint(s0,      scd.2*$UPS scd.3*$UPS dx),  _
              lint(c0, sign*scd.1*$UPS scd.3*$UPS dx),  _
              lint(d0, sign*m*$UPS scd.1*$UPS scd.2*$UPS dx)]
 
     sncndn(z, m) ==
-      empty? z => [0 :: ST,1 :: ST,1::ST]
+      empty? z => [0 :: ST, 1 :: ST, 1::ST]
       (z0 := frst z) = 0 => YS(x +-> sncndnre(m, 0, 1, 1, x, deriv z, -1), 3)
       SPFCN =>
           scd := YS(x +-> sncndnre(m, 0, 1, 1, x, deriv z, -1), 3)

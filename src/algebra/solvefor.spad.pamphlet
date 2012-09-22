@@ -21,49 +21,49 @@
 ++ Care is taken to introduce few radicals so that radical extension
 ++ domains can more easily simplify the results.
 
-PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
+PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
 
-    UP: UnivariatePolynomialCategory F
-    F:  Field with "^": (%, Fraction Integer) -> %
+    UP : UnivariatePolynomialCategory F
+    F :  Field with "^": (%, Fraction Integer) -> %
 
     L  ==> List
 
     PSFcat == with
-        solve:      UP -> L F
+        solve :      UP -> L F
                 ++ solve(u) \undocumented
-        particularSolution:  UP -> F
+        particularSolution :  UP -> F
                 ++ particularSolution(u) \undocumented
-        mapSolve:   (UP, F -> F) -> Record(solns: L F,
-                                           maps: L Record(arg:F,res:F))
-                ++ mapSolve(u,f) \undocumented
+        mapSolve :   (UP, F -> F) -> Record(solns : L F,
+                                           maps : L Record(arg : F, res : F))
+                ++ mapSolve(u, f) \undocumented
 
-        linear:     UP -> L F
+        linear :     UP -> L F
                 ++ linear(u) \undocumented
-        quadratic:  UP -> L F
+        quadratic :  UP -> L F
                 ++ quadratic(u) \undocumented
-        cubic:      UP -> L F
+        cubic :      UP -> L F
                 ++ cubic(u) \undocumented
-        quartic:    UP -> L F
+        quartic :    UP -> L F
                 ++ quartic(u) \undocumented
 
         -- Arguments give coefs from high to low degree.
-        linear:     (F, F)          -> L F
-                ++ linear(f,g) \undocumented
-        quadratic:  (F, F, F)       -> L F
-                ++ quadratic(f,g,h) \undocumented
-        cubic:      (F, F, F, F)    -> L F
-                ++ cubic(f,g,h,i) \undocumented
-        quartic:    (F, F, F, F, F) -> L F
-                ++ quartic(f,g,h,i,j) \undocumented
+        linear :     (F, F)          -> L F
+                ++ linear(f, g) \undocumented
+        quadratic :  (F, F, F)       -> L F
+                ++ quadratic(f, g, h) \undocumented
+        cubic :      (F, F, F, F)    -> L F
+                ++ cubic(f, g, h, i) \undocumented
+        quartic :    (F, F, F, F, F) -> L F
+                ++ quartic(f, g, h, i, j) \undocumented
 
-        aLinear:    (F, F)          -> F
-                ++ aLinear(f,g) \undocumented
-        aQuadratic: (F, F, F)       -> F
-                ++ aQuadratic(f,g,h) \undocumented
-        aCubic:     (F, F, F, F)    -> F
-                ++ aCubic(f,g,h,j) \undocumented
-        aQuartic:   (F, F, F, F, F) -> F
-                ++ aQuartic(f,g,h,i,k) \undocumented
+        aLinear :    (F, F)          -> F
+                ++ aLinear(f, g) \undocumented
+        aQuadratic : (F, F, F)       -> F
+                ++ aQuadratic(f, g, h) \undocumented
+        aCubic :     (F, F, F, F)    -> F
+                ++ aCubic(f, g, h, j) \undocumented
+        aQuartic :   (F, F, F, F, F) -> F
+                ++ aQuartic(f, g, h, i, k) \undocumented
 
     PSFdef == add
 
@@ -72,14 +72,14 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
         -----------------------------------------------------------------
         id ==> (IDENTITY$Lisp)
 
-        maplist: List Record(arg: F, res: F) := []
-        mapSolving?: Boolean := false
+        maplist : List Record(arg : F, res : F) := []
+        mapSolving? : Boolean := false
         -- map: F -> F := id #1    replaced with line below
-        map: Boolean := false
+        map : Boolean := false
 
         mapSolve(p, fn) ==
             -- map := fn #1   replaced with line below
-            locmap: F -> F := x +-> fn x; map := id locmap
+            locmap : F -> F := x +-> fn x; map := id locmap
             mapSolving? := true;  maplist := []
             slist := solve p
             mapSolving? := false
@@ -87,10 +87,10 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             locmap := x +-> id x; map := id locmap
             [slist, maplist]
 
-        part(s: F): F ==
+        part(s : F) : F ==
             not mapSolving? => s
             -- t := map s     replaced with line below
-            t: F := SPADCALL(s, map)$Lisp
+            t : F := SPADCALL(s, map)$Lisp
             t = s => s
             maplist := cons([t, s], maplist)
             t
@@ -101,61 +101,61 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
         cc ==> coefficient
 
         -- local intsolve
-        intsolve(u:UP):L(F) ==
+        intsolve(u : UP) : L(F) ==
             u := (factors squareFree u).1.factor
             n := degree u
-            n=1 => linear    (cc(u,1), cc(u,0))
-            n=2 => quadratic (cc(u,2), cc(u,1), cc(u,0))
-            n=3 => cubic     (cc(u,3), cc(u,2), cc(u,1), cc(u,0))
-            n=4 => quartic   (cc(u,4), cc(u,3), cc(u,2), cc(u,1), cc(u,0))
+            n = 1 => linear    (cc(u, 1), cc(u, 0))
+            n = 2 => quadratic (cc(u, 2), cc(u, 1), cc(u, 0))
+            n = 3 => cubic     (cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
+            n = 4 => quartic   (cc(u, 4), cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
             error "All sqfr factors of polynomial must be of degree < 5"
 
         solve u ==
             ls := nil$L(F)
             for f in factors squareFree u repeat
                lsf := intsolve f.factor
-               for i in 1..(f.exponent) repeat ls := [:lsf,:ls]
+               for i in 1..(f.exponent) repeat ls := [: lsf, : ls]
             ls
 
         particularSolution u ==
             u := (factors squareFree u).1.factor
             n := degree u
-            n=1 => aLinear    (cc(u,1), cc(u,0))
-            n=2 => aQuadratic (cc(u,2), cc(u,1), cc(u,0))
-            n=3 => aCubic     (cc(u,3), cc(u,2), cc(u,1), cc(u,0))
-            n=4 => aQuartic   (cc(u,4), cc(u,3), cc(u,2), cc(u,1), cc(u,0))
+            n = 1 => aLinear    (cc(u, 1), cc(u, 0))
+            n = 2 => aQuadratic (cc(u, 2), cc(u, 1), cc(u, 0))
+            n = 3 => aCubic     (cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
+            n = 4 => aQuartic   (cc(u, 4), cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
             error "All sqfr factors of polynomial must be of degree < 5"
 
-        needDegree(n: Integer, u: UP): Boolean ==
+        needDegree(n : Integer, u : UP) : Boolean ==
             degree u = n => true
             error concat("Polynomial must be of degree ", n::String)
 
-        needLcoef(cn: F): Boolean ==
+        needLcoef(cn : F) : Boolean ==
             cn ~= 0 => true
             error "Leading coefficient must not be 0."
 
-        needChar0(): Boolean ==
+        needChar0() : Boolean ==
             characteristic()$F = 0 => true
             error "Formula defined only for fields of characteristic 0."
 
         linear u ==
             needDegree(1, u)
-            linear (coefficient(u,1), coefficient(u,0))
+            linear (coefficient(u, 1), coefficient(u, 0))
 
         quadratic u ==
             needDegree(2, u)
-            quadratic (coefficient(u,2), coefficient(u,1),
-                       coefficient(u,0))
+            quadratic (coefficient(u, 2), coefficient(u, 1),
+                       coefficient(u, 0))
 
         cubic u ==
             needDegree(3, u)
-            cubic (coefficient(u,3), coefficient(u,2),
-                   coefficient(u,1), coefficient(u,0))
+            cubic (coefficient(u, 3), coefficient(u, 2),
+                   coefficient(u, 1), coefficient(u, 0))
 
         quartic u ==
             needDegree(4, u)
-            quartic (coefficient(u,4),coefficient(u,3),
-                     coefficient(u,2),coefficient(u,1),coefficient(u,0))
+            quartic (coefficient(u, 4), coefficient(u, 3),
+                     coefficient(u, 2), coefficient(u, 1), coefficient(u, 0))
 
         -----------------------------------------------------------------
         -- The formulas
@@ -164,7 +164,7 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
         -- local function for testing equality of radicals.
         --  This function is necessary to detect at least some of the
         --  situations like sqrt(9)-3 = 0 --> false.
-        equ(x:F,y:F):Boolean ==
+        equ(x : F, y : F) : Boolean ==
             ( (recip(x-y)) case "failed" ) => true
             false
 
@@ -173,12 +173,12 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             [- c0/c1 ]
 
         aLinear(c1, c0) ==
-            first linear(c1,c0)
+            first linear(c1, c0)
 
         quadratic(c2, c1, c0) ==
             needLcoef c2; needChar0()
-            (c0 = 0) => [0$F,:linear(c2, c1)]
-            (c1 = 0) => [(-c0/c2)^(1/2),-(-c0/c2)^(1/2)]
+            (c0 = 0) => cons(0$F, linear(c2, c1))
+            (c1 = 0) => [(-c0/c2)^(1/2), -(-c0/c2)^(1/2)]
             D := part(c1^2 - 4*c2*c0)^(1/2)
             [(-c1+D)/(2*c2), (-c1-D)/(2*c2)]
 
@@ -189,13 +189,13 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             D := part(c1^2 - 4*c2*c0)^(1/2)
             (-c1+D)/(2*c2)
 
-        w3: F := (-1 + (-3::F)^(1/2)) / 2::F
+        w3 : F := (-1 + (-3::F)^(1/2)) / 2::F
 
         cubic(c3, c2, c1, c0) ==
             needLcoef c3; needChar0()
 
             -- case one root = 0, not necessary but keeps result small
-            (c0 = 0) => [0$F,:quadratic(c3, c2, c1)]
+            (c0 = 0) => cons(0$F, quadratic(c3, c2, c1))
             a1 := c2/c3;  a2 := c1/c3;  a3 := c0/c3
 
             -- case x^3-a3 = 0, not necessary but keeps result small
@@ -205,9 +205,9 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             -- case x^3 + a1*x^2 + a1^2*x/3 + a3 = 0, the general for-
             --   mula is not valid in this case, but solution is easy.
             P := part(-a1/3::F)
-            equ(a1^2,3*a2) =>
+            equ(a1^2, 3*a2) =>
               S := part((- a3 + (a1^3)/27::F)^(1/3))
-              [ P + S*u for u in [1,w3,w3^2] ]
+              [ P + S*u for u in [1, w3, w3^2] ]
 
             -- general case
             Q := part((3*a2 - a1^2)/9::F)
@@ -223,7 +223,7 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             a1 := c2/c3;  a2 := c1/c3;  a3 := c0/c3
             (a1 = 0 and a2 = 0) => (-a3)^(1/3)
             P := part(-a1/3::F)
-            equ(a1^2,3*a2) =>
+            equ(a1^2, 3*a2) =>
               S := part((- a3 + (a1^3)/27::F)^(1/3))
               P + S
             Q := part((3*a2 - a1^2)/9::F)
@@ -236,15 +236,15 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             needLcoef c4; needChar0()
 
             -- case one root = 0, not necessary but keeps result small
-            (c0 = 0) => [0$F,:cubic(c4, c3, c2, c1)]
+            (c0 = 0) => cons(0$F, cubic(c4, c3, c2, c1))
             -- Make monic:
             a1 := c3/c4; a2 := c2/c4; a3 := c1/c4; a4 := c0/c4
 
             -- case x^4 + a4 = 0 <=> (x^2-sqrt(-a4))*(x^2+sqrt(-a4))
             -- not necessary but keeps result small.
             (a1 = 0 and a2 = 0 and a3 = 0) =>
-                append( quadratic(1, 0, (-a4)^(1/2)),_
-                        quadratic(1 ,0, -((-a4)^(1/2))) )
+                append( quadratic(1, 0, (-a4)^(1/2)), _
+                        quadratic(1 , 0, -((-a4)^(1/2))) )
 
             -- Translate w = x+a1/4 to eliminate a1:  w^4+p*w^2+q*w+r
             p := part(a2-3*a1*a1/8::F)
@@ -257,7 +257,7 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             -- polynomial above. This is always possible provided that
             -- the input is squarefree. In this case the two other roots
             -- are +(-) 2*r^(1/2).
-            if equ(q,0)            -- this means p is a root
+            if equ(q, 0)            -- this means p is a root
               then t0 := part(2*(r^(1/2)))
               else t0 := aCubic(1, -p, -4*r, 4*p*r - q^2)
             rt    := part(t0 - p)^(1/2)
@@ -274,7 +274,7 @@ PolynomialSolveByFormulas(UP, F): PSFcat == PSFdef where
             p  := part(a2-3*a1*a1/8::F)
             q  := part(a3-a1*a2/2::F + a1^2*a1/8::F)
             r  := part(a4-a1*a3/4::F + a1^2*a2/16::F - 3*a1^4/256::F)
-            if equ(q,0)
+            if equ(q, 0)
               then t0 := part(2*(r^(1/2)))
               else t0 := aCubic(1, -p, -4*r, 4*p*r - q^2)
             rt := part(t0 - p)^(1/2)

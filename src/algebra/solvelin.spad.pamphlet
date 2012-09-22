@@ -14,7 +14,7 @@
 )abbrev package LSMP LinearSystemMatrixPackage
 ++ Author: P.Gianni, S.Watt
 ++ Date Created: Summer 1985
-++ Date Last Updated:Summer 1990
+++ Date Last Updated: Summer 1990
 ++ Basic Functions: solve, particularSolution, hasSolution?, rank
 ++ Related Constructors: LinearSystemMatrixPackage1
 ++ Also See:
@@ -24,33 +24,33 @@
 ++ Description:
 ++ This package solves linear system in the matrix form \spad{AX = B}.
 
-LinearSystemMatrixPackage(F, Row, Col, M): Cat == Capsule where
-    F: Field
-    Row: Join(FiniteLinearAggregate F, shallowlyMutable)
-    Col: Join(FiniteLinearAggregate F, shallowlyMutable)
+LinearSystemMatrixPackage(F, Row, Col, M) : Cat == Capsule where
+    F : Field
+    Row : Join(FiniteLinearAggregate F, shallowlyMutable)
+    Col : Join(FiniteLinearAggregate F, shallowlyMutable)
     M  : MatrixCategory(F, Row, Col)
 
     N        ==> NonNegativeInteger
     PartialV ==> Union(Col, "failed")
-    Both     ==> Record(particular: PartialV, basis: List Col)
+    Both     ==> Record(particular : PartialV, basis : List Col)
 
     Cat ==> with
         solve       : (M, Col) -> Both
-          ++  solve(A,B) finds a particular solution of the system \spad{AX = B}
+          ++  solve(A, B) finds a particular solution of the system \spad{AX = B}
           ++  and a basis of the associated homogeneous system \spad{AX = 0}.
         solve       : (M, List Col) -> List Both
-          ++  solve(A,LB) finds a particular soln of the systems \spad{AX = B}
+          ++  solve(A, LB) finds a particular soln of the systems \spad{AX = B}
           ++  and a basis of the associated homogeneous systems \spad{AX = 0}
           ++  where B varies in the list of column vectors LB.
 
-        particularSolution: (M, Col) -> PartialV
-          ++ particularSolution(A,B) finds a particular solution of the linear
+        particularSolution : (M, Col) -> PartialV
+          ++ particularSolution(A, B) finds a particular solution of the linear
           ++ system \spad{AX = B}.
-        hasSolution?: (M, Col) -> Boolean
-          ++ hasSolution?(A,B) tests if the linear system \spad{AX = B}
+        hasSolution? : (M, Col) -> Boolean
+          ++ hasSolution?(A, B) tests if the linear system \spad{AX = B}
           ++ has a solution.
         rank        : (M, Col) -> N
-          ++ rank(A,B) computes the rank of the complete matrix \spad{(A|B)}
+          ++ rank(A, B) computes the rank of the complete matrix \spad{(A|B)}
           ++ of the linear system \spad{AX = B}.
 
     Capsule ==> add
@@ -61,7 +61,7 @@ LinearSystemMatrixPackage(F, Row, Col, M): Cat == Capsule where
       hasSolution?(A, b) == rank A = rank systemMatrix(A, b)
       systemMatrix(m, v) == horizConcat(m, -(v::M))
       rank(A, b)         == rank systemMatrix(A, b)
-      particularSolution(A, b) == aSolution rowEchelon systemMatrix(A,b)
+      particularSolution(A, b) == aSolution rowEchelon systemMatrix(A, b)
 
       -- m should be in row-echelon form.
       -- last column of m is -(right-hand-side of system)
@@ -86,7 +86,7 @@ LinearSystemMatrixPackage(F, Row, Col, M): Cat == Capsule where
              qsetelt!(sol, j+minIndex sol, - qelt(m, v.j, maxColIndex m))
          sol
 
-      solve(A:M, b:Col) ==
+      solve(A : M, b : Col) ==
           -- Special case for homogeneous systems.
           every?(zero?, b) => [new(ncols A, 0), nullSpace A]
           -- General case.
@@ -95,7 +95,7 @@ LinearSystemMatrixPackage(F, Row, Col, M): Cat == Capsule where
            nullSpace subMatrix(m, minRowIndex m, maxRowIndex m,
                                       minColIndex m, maxColIndex m - 1)]
 
-      solve(A:M, l:List Col) ==
+      solve(A : M, l : List Col) ==
           null l => [[new(ncols A, 0), nullSpace A]]
           nl := (sol0 := solve(A, first l)).basis
           cons(sol0,
@@ -122,8 +122,8 @@ LinearSystemMatrixPackage(F, Row, Col, M): Cat == Capsule where
 ++ package's existence makes it easier to use \spadfun{solve} in the
 ++ FriCAS interpreter.
 
-LinearSystemMatrixPackage1(F): Cat == Capsule where
-    F: Field
+LinearSystemMatrixPackage1(F) : Cat == Capsule where
+    F : Field
     Row      ==> Vector F
     Col      ==> Vector F
     M        ==> Matrix(F)
@@ -131,43 +131,43 @@ LinearSystemMatrixPackage1(F): Cat == Capsule where
 
     N        ==> NonNegativeInteger
     PartialV ==> Union(Col, "failed")
-    Both     ==> Record(particular: PartialV, basis: List Col)
+    Both     ==> Record(particular : PartialV, basis : List Col)
     LSMP     ==> LinearSystemMatrixPackage(F, Row, Col, M)
 
     Cat ==> with
         solve       : (M, Col) -> Both
-          ++  solve(A,B) finds a particular solution of the system \spad{AX = B}
+          ++  solve(A, B) finds a particular solution of the system \spad{AX = B}
           ++  and a basis of the associated homogeneous system \spad{AX = 0}.
         solve       : (LL, Col) -> Both
-          ++  solve(A,B) finds a particular solution of the system \spad{AX = B}
+          ++  solve(A, B) finds a particular solution of the system \spad{AX = B}
           ++  and a basis of the associated homogeneous system \spad{AX = 0}.
         solve       : (M, List Col) -> List Both
-          ++  solve(A,LB) finds a particular soln of the systems \spad{AX = B}
+          ++  solve(A, LB) finds a particular soln of the systems \spad{AX = B}
           ++  and a basis of the associated homogeneous systems \spad{AX = 0}
           ++  where B varies in the list of column vectors LB.
         solve       : (LL, List Col) -> List Both
-          ++  solve(A,LB) finds a particular soln of the systems \spad{AX = B}
+          ++  solve(A, LB) finds a particular soln of the systems \spad{AX = B}
           ++  and a basis of the associated homogeneous systems \spad{AX = 0}
           ++  where B varies in the list of column vectors LB.
 
-        particularSolution: (M, Col) -> PartialV
-          ++ particularSolution(A,B) finds a particular solution of the linear
+        particularSolution : (M, Col) -> PartialV
+          ++ particularSolution(A, B) finds a particular solution of the linear
           ++ system \spad{AX = B}.
-        hasSolution?: (M, Col) -> Boolean
-          ++ hasSolution?(A,B) tests if the linear system \spad{AX = B}
+        hasSolution? : (M, Col) -> Boolean
+          ++ hasSolution?(A, B) tests if the linear system \spad{AX = B}
           ++ has a solution.
         rank        : (M, Col) -> N
-          ++ rank(A,B) computes the rank of the complete matrix \spad{(A|B)}
+          ++ rank(A, B) computes the rank of the complete matrix \spad{(A|B)}
           ++ of the linear system \spad{AX = B}.
 
     Capsule ==> add
-        solve(m : M, c: Col): Both == solve(m,c)$LSMP
-        solve(ll : LL, c: Col): Both == solve(matrix(ll)$M,c)$LSMP
-        solve(m : M, l : List Col): List Both == solve(m, l)$LSMP
-        solve(ll : LL, l : List Col): List Both == solve(matrix(ll)$M, l)$LSMP
-        particularSolution (m : M, c : Col): PartialV == particularSolution(m, c)$LSMP
-        hasSolution?(m :M, c : Col): Boolean == hasSolution?(m, c)$LSMP
-        rank(m : M, c : Col): N == rank(m, c)$LSMP
+        solve(m : M, c : Col) : Both == solve(m, c)$LSMP
+        solve(ll : LL, c : Col) : Both == solve(matrix(ll)$M, c)$LSMP
+        solve(m : M, l : List Col) : List Both == solve(m, l)$LSMP
+        solve(ll : LL, l : List Col) : List Both == solve(matrix(ll)$M, l)$LSMP
+        particularSolution (m : M, c : Col) : PartialV == particularSolution(m, c)$LSMP
+        hasSolution?(m : M, c : Col) : Boolean == hasSolution?(m, c)$LSMP
+        rank(m : M, c : Col) : N == rank(m, c)$LSMP
 
 @
 \section{package LSPP LinearSystemPolynomialPackage}
@@ -186,11 +186,11 @@ LinearSystemMatrixPackage1(F): Cat == Capsule where
 ++ this package finds the solutions of linear systems presented as a
 ++ list of polynomials.
 
-LinearSystemPolynomialPackage(R, E, OV, P): Cat == Capsule where
+LinearSystemPolynomialPackage(R, E, OV, P) : Cat == Capsule where
     R          :   IntegralDomain
     OV         :   OrderedSet
     E          :   OrderedAbelianMonoidSup
-    P          :   PolynomialCategory(R,E,OV)
+    P          :   PolynomialCategory(R, E, OV)
 
     F        ==> Fraction P
     NNI      ==> NonNegativeInteger
@@ -199,41 +199,41 @@ LinearSystemPolynomialPackage(R, E, OV, P): Cat == Capsule where
     Soln     ==> Record(particular: Union(V F, "failed"), basis: List V F)
 
     Cat == with
-        linSolve:  (List P, List OV) -> Soln
-          ++ linSolve(lp,lvar) finds the solutions of the linear system
+        linSolve :  (List P, List OV) -> Soln
+          ++ linSolve(lp, lvar) finds the solutions of the linear system
           ++ of polynomials lp = 0 with respect to the list of symbols lvar.
-        intoMatrix: (List P,   List OV) -> Record(mat: M F, vec: V F)
-          ++ intoMatrix(lp,lvar) converts linear in symbols lvar system
+        intoMatrix : (List P,   List OV) -> Record(mat : M F, vec : V F)
+          ++ intoMatrix(lp, lvar) converts linear in symbols lvar system
           ++ of polynomials lp = 0 into matrix form
 
     Capsule == add
 
                         ---- Local Functions ----
 
-        poly2vect:    (P,     List OV)    -> Record(coefvec: V F, reductum: F)
+        poly2vect :    (P,     List OV)    -> Record(coefvec : V F, reductum : F)
 
-        poly2vect(p : P, vs : List OV) : Record(coefvec: V F, reductum: F) ==
+        poly2vect(p : P, vs : List OV) : Record(coefvec : V F, reductum : F) ==
             coefs := new(#vs, 0)$(V F)
             for v in vs for i in 1.. while p ~= 0 repeat
               u := univariate(p, v)
               degree u = 0 => "next v"
               coefs.i := (c := leadingCoefficient u)::F
-              p := p - monomial(c,v, 1)
+              p := p - monomial(c, v, 1)
             [coefs, p :: F]
 
-        intoMatrix(ps : List P, vs : List OV ) : Record(mat: M F, vec: V F) ==
+        intoMatrix(ps : List P, vs : List OV ) : Record(mat : M F, vec : V F) ==
             m := zero(#ps, #vs)$M(F)
             v := new(#ps, 0)$V(F)
             for p in ps for i in 1.. repeat
                 totalDegree(p,vs) > 1 => error "The system is not linear"
-                r   := poly2vect(p,vs)
-                m:=setRow!(m,i,r.coefvec)
+                r   := poly2vect(p, vs)
+                m := setRow!(m, i, r.coefvec)
                 v.i := - r.reductum
             [m, v]
 
         linSolve(ps, vs) ==
             r := intoMatrix(ps, vs)
-            solve(r.mat, r.vec)$LinearSystemMatrixPackage(F,V F,V F,M F)
+            solve(r.mat, r.vec)$LinearSystemMatrixPackage(F, V F, V F, M F)
 
 @
 \section{License}

@@ -21,55 +21,55 @@
 ++ AMS Classifications:
 ++ Keywords: localization
 ++ References:
-++ Description: Localize(M,R) produces fractions with numerators
+++ Description: Localize(M, R) produces fractions with numerators
 ++ from an R module M and denominators being the nonzero elements of R.
 Localize(M : Module R,
-         R : CommutativeRing): Module R with
+         R : CommutativeRing) : Module R with
       if M has OrderedAbelianGroup then OrderedAbelianGroup
       _/ : (%, R) -> %
          ++ x / d divides the element x by d.
       _/ : (M, R) -> %
          ++ m / d divides the element m by d.
-      numer: % -> M
+      numer : % -> M
          ++ numer x returns the numerator of x.
-      denom: % -> R
+      denom : % -> R
          ++ denom x returns the denominator of x.
  ==
   add
     --representation
-      Rep:= Record(num : M, den : R)
+      Rep := Record(num : M, den : R)
     --declarations
-      x, y: %
-      n: Integer
-      m: M
-      r: R
-      d: R
+      x, y : %
+      n : Integer
+      m : M
+      r : R
+      d : R
     --definitions
-      0 == [0,1]
+      0 == [0, 1]
       zero? x == zero? (x.num)
-      -x== [-x.num,x.den]
-      x=y == y.den*x.num = x.den*y.num
+      -x== [-x.num, x.den]
+      x = y == y.den*x.num = x.den*y.num
       numer x == x.num
       denom x == x.den
       if M has OrderedAbelianGroup then
         x < y ==
---             if y.den::R < 0 then (x,y):=(y,x)
---             if x.den::R < 0 then (x,y):=(y,x)
+--             if y.den::R < 0 then (x, y) := (y, x)
+--             if x.den::R < 0 then (x, y) := (y, x)
              y.den*x.num < x.den*y.num
       x+y == [y.den*x.num+x.den*y.num, x.den*y.den]
-      n*x == [n*x.num,x.den]
-      r*x == if r=x.den then [x.num,1] else [r*x.num,x.den]
+      n*x == [n*x.num, x.den]
+      r*x == if r = x.den then [x.num, 1] else [r*x.num, x.den]
       x/d ==
-        zero?(u:R:=d*x.den) => error "division by zero"
-        [x.num,u]
+        zero?(u:R := d*x.den) => error "division by zero"
+        [x.num, u]
       m/d == if zero? d then error "division by zero" else [m,d]
-      coerce(x:%):OutputForm ==
---        one?(xd:=x.den) => (x.num)::OutputForm
-        ((xd:=x.den) = 1) => (x.num)::OutputForm
+      coerce(x : %) : OutputForm ==
+--        one?(xd := x.den) => (x.num)::OutputForm
+        ((xd := x.den) = 1) => (x.num)::OutputForm
         (x.num)::OutputForm / (xd::OutputForm)
-      latex(x:%): String ==
---        one?(xd:=x.den) => latex(x.num)
-        ((xd:=x.den) = 1) => latex(x.num)
+      latex(x : %) : String ==
+--        one?(xd := x.den) => latex(x.num)
+        ((xd := x.den) = 1) => latex(x.num)
         nl : String := concat("{", concat(latex(x.num), "}")$String)$String
         dl : String := concat("{", concat(latex(x.den), "}")$String)$String
         concat("{ ", concat(nl, concat(" \over ", concat(dl, " }")$String)$String)$String)$String
@@ -89,20 +89,20 @@ Localize(M : Module R,
 ++ References:
 ++ Description: LocalAlgebra produces the localization of an algebra, i.e.
 ++ fractions whose numerators come from some R algebra.
-LocalAlgebra(A: Algebra R,
-             R: CommutativeRing): Algebra R with
+LocalAlgebra(A : Algebra R,
+             R : CommutativeRing) : Algebra R with
           if A has OrderedRing then OrderedRing
-          _/ : (%,R) -> %
+          _/ : (%, R) -> %
             ++ x / d divides the element x by d.
-          _/ : (A,R) -> %
+          _/ : (A, R) -> %
             ++ a / d divides the element \spad{a} by d.
-          numer: % -> A
+          numer : % -> A
             ++ numer x returns the numerator of x.
-          denom: % -> R
+          denom : % -> R
             ++ denom x returns the denominator of x.
  == Localize(A, R) add
         1 == 1$A / 1$R
-        x:% * y:% == (numer(x) * numer(y)) / (denom(x) * denom(y))
+        x : % * y : % == (numer(x) * numer(y)) / (denom(x) * denom(y))
         characteristic() == characteristic()$A
 
 @
@@ -120,7 +120,7 @@ LocalAlgebra(A: Algebra R,
 ++ References:
 ++ Description: QuotientField(S) is the
 ++ category of fractions of an Integral Domain S.
-QuotientFieldCategory(S: IntegralDomain): Category ==
+QuotientFieldCategory(S : IntegralDomain) : Category ==
   Join(Field, Algebra S, RetractableTo S, FullyEvalableOver S,
          DifferentialExtension S, FullyLinearlyExplicitRingOver S,
            Patternable S, FullyPatternMatchable S) with
@@ -147,19 +147,19 @@ QuotientFieldCategory(S: IntegralDomain): Category ==
     if S has CharacteristicNonZero then CharacteristicNonZero
     if S has RetractableTo Symbol then RetractableTo Symbol
     if S has EuclideanDomain then
-      wholePart: % -> S
+      wholePart : % -> S
         ++ wholePart(x) returns the whole part of the fraction x
         ++ i.e. the truncated quotient of the numerator by the denominator.
-      fractionPart: % -> %
+      fractionPart : % -> %
         ++ fractionPart(x) returns the fractional part of x.
         ++ x = wholePart(x) + fractionPart(x)
 -- FIXME: strange random distribution used (#227).
     if S has IntegerNumberSystem then
-      random: () -> %
+      random : () -> %
         ++ random() returns a random fraction.  This function is deprecated.
       ceiling : % -> S
         ++ ceiling(x) returns the smallest integral element above x.
-      floor: % -> S
+      floor : % -> S
         ++ floor(x) returns the largest integral element below x.
     if S has PolynomialFactorizationExplicit then
       PolynomialFactorizationExplicit
@@ -172,80 +172,80 @@ QuotientFieldCategory(S: IntegralDomain): Category ==
        init() == init()$S / 1$S
 
        nextItem(n) ==
-         m:= nextItem(numer(n))
+         m := nextItem(numer(n))
          m case "failed" =>
            error "We seem to have a Fraction of a finite object"
          m / 1
 
     map(fn, x)                         == (fn numer x) / (fn denom x)
 
-    reducedSystem(m:Matrix %):Matrix S ==
+    reducedSystem(m : Matrix %) : Matrix S ==
       nrm := nrows m
       ncm := ncols m
       ans : Matrix S := new(nrm, ncm, 0)$(Matrix S)
       for i in 1..nrm repeat
         d := commonDenominator(row(m, i))$CommonDenominator(S, %, Vector %)
         for j in 1..ncm repeat
-          ell := qelt(m,i,j)
+          ell := qelt(m, i, j)
           qsetelt!(ans, i, j, ((d exquo denom(ell))::S)*numer(ell))
       ans
 
     characteristic()                   == characteristic()$S
 
-    differentiate(x:%, deriv:S -> S) ==
+    differentiate(x : %, deriv : S -> S) ==
         n := numer x
         d := denom x
         (deriv n * d - n * deriv d) / (d^2)
 
     if S has ConvertibleTo InputForm then
-      convert(x:%):InputForm == (convert numer x) / (convert denom x)
+      convert(x : %) : InputForm == (convert numer x) / (convert denom x)
 
     if S has RealConstant then
-      convert(x:%):Float == (convert numer x) / (convert denom x)
-      convert(x:%):DoubleFloat == (convert numer x) / (convert denom x)
+      convert(x : %) : Float == (convert numer x) / (convert denom x)
+      convert(x : %) : DoubleFloat == (convert numer x) / (convert denom x)
 
     if S has OrderedSet then
-       x:% < y:% ==
+       x : % < y : % ==
          (numer x  * denom y) < (numer y * denom x)
 
     if S has Comparable then
-       smaller?(x:%,  y:%) ==
+       smaller?(x : %,  y : %) ==
          smaller?(numer x  * denom y, numer y * denom x)
 
     if (S has EuclideanDomain) then
       fractionPart x == x - (wholePart(x)::%)
 
     if S has RetractableTo Symbol then
-      coerce(s:Symbol):%  == s::S::%
-      retract(x:%):Symbol == retract(retract(x)@S)
+      coerce(s : Symbol) : %  == s::S::%
+      retract(x : %) : Symbol == retract(retract(x)@S)
 
       retractIfCan(x:%):Union(Symbol, "failed") ==
         (r := retractIfCan(x)@Union(S,"failed")) case "failed" =>"failed"
         retractIfCan(r::S)
 
     if (S has ConvertibleTo Pattern Integer) then
-      convert(x:%):Pattern(Integer)==(convert numer x)/(convert denom x)
+      convert(x : %) : Pattern(Integer)==(convert numer x)/(convert denom x)
 
       if (S has PatternMatchable Integer) then
-        patternMatch(x:%, p:Pattern Integer,
-         l:PatternMatchResult(Integer, %)) ==
+        patternMatch(x : %, p : Pattern Integer,
+         l : PatternMatchResult(Integer, %)) ==
            patternMatch(x, p,
                      l)$PatternMatchQuotientFieldCategory(Integer, S, %)
 
     if (S has ConvertibleTo Pattern Float) then
-      convert(x:%):Pattern(Float) == (convert numer x)/(convert denom x)
+      convert(x : %) : Pattern(Float) == (convert numer x)/(convert denom x)
 
       if (S has PatternMatchable Float) then
-        patternMatch(x:%, p:Pattern Float,
-         l:PatternMatchResult(Float, %)) ==
+        patternMatch(x : %, p : Pattern Float,
+         l : PatternMatchResult(Float, %)) ==
            patternMatch(x, p,
                        l)$PatternMatchQuotientFieldCategory(Float, S, %)
 
     if S has RetractableTo Integer then
-      coerce(x:Fraction Integer):% == numer(x)::% / denom(x)::%
+      coerce(x : Fraction Integer) : % == numer(x)::% / denom(x)::%
 
       if not(S is Integer) then
-        retract(x:%):Integer == retract(retract(x)@S)
+        retract(x : %) : Integer == retract(retract(x)@S)
 
         retractIfCan(x:%):Union(Integer, "failed") ==
           (u := retractIfCan(x)@Union(S, "failed")) case "failed" =>
@@ -254,12 +254,12 @@ QuotientFieldCategory(S: IntegralDomain): Category ==
 
 -- FIXME: strange random distribution used (#227).
     if S has IntegerNumberSystem then
-      random():% ==
-        while zero?(d:=random()$S) repeat d
+      random() : % ==
+        while zero?(d := random()$S) repeat d
         random()$S / d
 
-    reducedSystem(m:Matrix %, v:Vector %):
-      Record(mat:Matrix S, vec:Vector S) ==
+    reducedSystem(m : Matrix %, v : Vector %):
+      Record(mat : Matrix S, vec : Vector S) ==
         n := reducedSystem(horizConcat(v::Matrix(%), m))@Matrix(S)
         [subMatrix(n, minRowIndex n, maxRowIndex n, 1 + minColIndex n,
                                 maxColIndex n), column(n, minColIndex n)]
@@ -281,14 +281,14 @@ QuotientFieldCategory(S: IntegralDomain): Category ==
 ++ Description:
 ++ This package extends a function between integral domains
 ++ to a mapping between their quotient fields.
-QuotientFieldCategoryFunctions2(A, B, R, S): Exports == Impl where
-  A, B: IntegralDomain
+QuotientFieldCategoryFunctions2(A, B, R, S) : Exports == Impl where
+  A, B : IntegralDomain
   R   : QuotientFieldCategory(A)
   S   : QuotientFieldCategory(B)
 
   Exports ==> with
-    map: (A -> B, R) -> S
-      ++ map(func,frac) applies the function func to the numerator
+    map : (A -> B, R) -> S
+      ++ map(func, frac) applies the function func to the numerator
       ++ and denominator of frac.
 
   Impl ==> add
@@ -311,19 +311,19 @@ QuotientFieldCategoryFunctions2(A, B, R, S): Exports == Impl where
 ++ the domain of Fractions with numerators and denominators from S.
 ++ If S is also a GcdDomain, then gcd's between numerator and
 ++ denominator will be cancelled during all operations.
-Fraction(S: IntegralDomain): QuotientFieldCategory S with
+Fraction(S : IntegralDomain) : QuotientFieldCategory S with
        if S has IntegerNumberSystem and S has OpenMath then OpenMath
        if S has Canonical and S has GcdDomain and S has canonicalUnitNormal
            then Canonical
             ++ \spad{Canonical} means that equal elements are in fact identical.
   == LocalAlgebra(S, S) add
-    Rep:= Record(num:S, den:S)
-    coerce(d:S):% == [d,1]
-    zero?(x:%) == zero? x.num
+    Rep := Record(num : S, den : S)
+    coerce(d : S) : % == [d, 1]
+    zero?(x : %) == zero? x.num
 
 
     if S has GcdDomain and S has canonicalUnitNormal then
-      retract(x:%):S ==
+      retract(x : %) : S ==
 --        one?(x.den) => x.num
         ((x.den) = 1) => x.num
         error "Denominator not equal to 1"
@@ -333,8 +333,8 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
         ((x.den) = 1) => x.num
         "failed"
     else
-      retract(x:%):S ==
-        (a:= x.num exquo x.den) case "failed" =>
+      retract(x : %) : S ==
+        (a := x.num exquo x.den) case "failed" =>
            error "Denominator not equal to 1"
         a
       retractIfCan(x:%):Union(S,"failed") == x.num exquo x.den
@@ -363,17 +363,17 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
         -- TODO: somwhere this file does something which redefines the division
         -- operator. Doh!
 
-        writeOMFrac(dev: OpenMathDevice, x: %): Void ==
+        writeOMFrac(dev : OpenMathDevice, x : %) : Void ==
           OMputApp(dev)
           OMputSymbol(dev, "nums1", "rational")
           OMwrite(dev, x.num, false)
           OMwrite(dev, x.den, false)
           OMputEndApp(dev)
 
-        OMwrite(x: %): String ==
-          s: String := ""
+        OMwrite(x : %) : String ==
+          s : String := ""
           sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-          dev: OpenMathDevice := _
+          dev : OpenMathDevice := _
                         OMopenString(sp pretend String, OMencodingXML)
           OMputObject(dev)
           writeOMFrac(dev, x)
@@ -382,10 +382,10 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
           s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
           s
 
-        OMwrite(x: %, wholeObj: Boolean): String ==
-          s: String := ""
+        OMwrite(x : %, wholeObj : Boolean) : String ==
+          s : String := ""
           sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-          dev: OpenMathDevice := _
+          dev : OpenMathDevice := _
                         OMopenString(sp pretend String, OMencodingXML)
           if wholeObj then
             OMputObject(dev)
@@ -396,12 +396,12 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
           s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
           s
 
-        OMwrite(dev: OpenMathDevice, x: %): Void ==
+        OMwrite(dev : OpenMathDevice, x : %) : Void ==
           OMputObject(dev)
           writeOMFrac(dev, x)
           OMputEndObject(dev)
 
-        OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+        OMwrite(dev : OpenMathDevice, x : %, wholeObj : Boolean) : Void ==
           if wholeObj then
             OMputObject(dev)
           writeOMFrac(dev, x)
@@ -409,8 +409,8 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
             OMputEndObject(dev)
 
     if S has GcdDomain then
-      cancelGcd: % -> S
-      normalize: % -> %
+      cancelGcd : % -> S
+      normalize : % -> %
 
       normalize x ==
         zero?(x.num) => 0
@@ -439,7 +439,7 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
         x.den := xd :: S
         d
 
-      nn:S / dd:S ==
+      nn : S / dd : S ==
         zero? dd => error "division by zero"
         cancelGcd(z := [nn, dd])
         normalize z
@@ -447,7 +447,7 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
       x + y  ==
         zero? y => x
         zero? x => y
-        z := [x.den,y.den]
+        z := [x.den, y.den]
         d := cancelGcd z
         g := [z.den * x.num + z.num * y.num, d]
         cancelGcd g
@@ -473,7 +473,7 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
         g.den := g.den * z.num * z.den
         normalize g
 
-      x:% * y:%  ==
+      x : % * y : %  ==
         zero? x or zero? y => 0
 --        one? x => y
         (x = 1) => y
@@ -483,17 +483,17 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
         cancelGcd x; cancelGcd y;
         normalize [x.num * y.num, x.den * y.den]
 
-      n:Integer * x:% ==
+      n : Integer * x : % ==
         y := [n::S, x.den]
         cancelGcd y
         normalize [x.num * y.num, y.den]
 
-      nn:S * x:% ==
+      nn : S * x : % ==
         y := [nn, x.den]
         cancelGcd y
         normalize [x.num * y.num, y.den]
 
-      differentiate(x:%, deriv:S -> S) ==
+      differentiate(x : %, deriv : S -> S) ==
         y := [deriv(x.den), x.den]
         d := cancelGcd(y)
         y.num := deriv(x.num) * y.den - x.num * y.num
@@ -504,7 +504,7 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
 
       if S has canonicalUnitNormal then
         x = y == (x.num = y.num) and (x.den = y.den)
-    --x / dd == (cancelGcd (z:=[x.num,dd*x.den]); normalize z)
+    --x / dd == (cancelGcd (z := [x.num, dd*x.den]); normalize z)
 
 --        one? x == one? (x.num) and one? (x.den)
         one? x == ((x.num) = 1) and ((x.den) = 1)
@@ -518,14 +518,14 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
         [x.den, x.num]
 
     if (S has RetractableTo Fraction Integer) then
-      retract(x:%):Fraction(Integer) == retract(retract(x)@S)
+      retract(x : %) : Fraction(Integer) == retract(retract(x)@S)
 
       retractIfCan(x:%):Union(Fraction Integer, "failed") ==
         (u := retractIfCan(x)@Union(S, "failed")) case "failed" => "failed"
         retractIfCan(u::S)
 
     else if (S has RetractableTo Integer) then
-      retract(x:%):Fraction(Integer) ==
+      retract(x : %) : Fraction(Integer) ==
         retract(numer x) / retract(denom x)
 
       retractIfCan(x:%):Union(Fraction Integer, "failed") ==
@@ -535,19 +535,19 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
 
     QFP ==> SparseUnivariatePolynomial %
     DP ==> SparseUnivariatePolynomial S
-    import UnivariatePolynomialCategoryFunctions2(%,QFP,S,DP)
-    import UnivariatePolynomialCategoryFunctions2(S,DP,%,QFP)
+    import UnivariatePolynomialCategoryFunctions2(%, QFP, S, DP)
+    import UnivariatePolynomialCategoryFunctions2(S, DP, %, QFP)
 
     if S has GcdDomain then
-       gcdPolynomial(pp,qq) ==
+       gcdPolynomial(pp, qq) ==
           zero? pp => qq
           zero? qq => pp
           zero? degree pp or zero? degree qq => 1
-          denpp:="lcm"/[denom u for u in coefficients pp]
+          denpp := "lcm"/[denom u for u in coefficients pp]
           ppD : DP := map(x +-> retract(x*denpp), pp)
-          denqq:="lcm"/[denom u for u in coefficients qq]
+          denqq := "lcm"/[denom u for u in coefficients qq]
           qqD : DP := map(x +-> retract(x*denqq), qq)
-          g:=gcdPolynomial(ppD,qqD)
+          g := gcdPolynomial(ppD, qqD)
           zero? degree g => 1
 --          one? (lc := leadingCoefficient g) => map(x +-> x::%, g)
           ((lc := leadingCoefficient g) = 1) => map(x +-> x::%, g)
@@ -556,71 +556,71 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
     if (S has PolynomialFactorizationExplicit) then
        -- we'll let the solveLinearPolynomialEquations operator
        -- default from Field
-       pp,qq: QFP
-       lpp: List QFP
+       pp, qq : QFP
+       lpp : List QFP
        import Factored SparseUnivariatePolynomial %
        if S has CharacteristicNonZero then
           if S has canonicalUnitNormal and S has GcdDomain then
              charthRoot x ==
-               n:= charthRoot x.num
+               n := charthRoot x.num
                n case "failed" => "failed"
-               d:=charthRoot x.den
+               d := charthRoot x.den
                d case "failed" => "failed"
                n/d
           else
              charthRoot x ==
                -- to find x = p-th root of n/d
                -- observe that xd is p-th root of n*d^(p-1)
-               ans:=charthRoot(x.num *
+               ans := charthRoot(x.num *
                       (x.den)^(characteristic()$%-1)::NonNegativeInteger)
                ans case "failed" => "failed"
                ans / x.den
-          clear: List % -> List S
+          clear : List % -> List S
           clear l ==
-             d:="lcm"/[x.den for x in l]
+             d := "lcm"/[x.den for x in l]
              [ x.num * (d exquo x.den)::S for x in l]
-          mat: Matrix %
+          mat : Matrix %
           conditionP mat ==
-            matD: Matrix S
-            matD:= matrix [ clear l for l in listOfLists mat ]
+            matD : Matrix S
+            matD := matrix [ clear l for l in listOfLists mat ]
             ansD := conditionP matD
             ansD case "failed" => "failed"
-            ansDD:=ansD :: Vector(S)
+            ansDD := ansD :: Vector(S)
             [ ansDD(i)::% for i in 1..#ansDD]$Vector(%)
 
        factorPolynomial(pp) ==
           zero? pp => 0
-          denpp:="lcm"/[denom u for u in coefficients pp]
+          denpp := "lcm"/[denom u for u in coefficients pp]
           ppD : DP := map(x +-> retract(x*denpp), pp)
-          ff:=factorPolynomial ppD
-          den1:%:=denpp::%
+          ff := factorPolynomial ppD
+          den1 : % := denpp::%
           lfact:List Record(flg:Union("nil", "sqfr", "irred", "prime"),
-                             fctr:QFP, xpnt:Integer)
-          lfact:= ([[w.flg,
+                             fctr : QFP, xpnt : Integer)
+          lfact := ([[w.flg,
                     if leadingCoefficient w.fctr = 1 then
                         map(x +-> x::%, w.fctr)
-                    else (lc:=(leadingCoefficient w.fctr)::%;
-                           den1:=den1/lc^w.xpnt;
+                    else (lc := (leadingCoefficient w.fctr)::%;
+                           den1 := den1/lc^w.xpnt;
                             map(x +-> x::%/lc, w.fctr)),
                    w.xpnt] for w in factorList ff])
           makeFR(map(x +-> x::%/den1, unit(ff)), lfact)
 
        factorSquareFreePolynomial(pp) ==
           zero? pp => 0
-          degree pp = 0 => makeFR(pp,empty())
-          lcpp:=leadingCoefficient pp
-          pp:=pp/lcpp
-          denpp:="lcm"/[denom u for u in coefficients pp]
+          degree pp = 0 => makeFR(pp, empty())
+          lcpp := leadingCoefficient pp
+          pp := pp/lcpp
+          denpp := "lcm"/[denom u for u in coefficients pp]
           ppD : DP := map(x +-> retract(x*denpp), pp)
-          ff:=factorSquareFreePolynomial ppD
-          den1:%:=denpp::%/lcpp
+          ff := factorSquareFreePolynomial ppD
+          den1 : % := denpp::%/lcpp
           lfact:List Record(flg:Union("nil", "sqfr", "irred", "prime"),
-                             fctr:QFP, xpnt:Integer)
-          lfact:= ([[w.flg,
+                             fctr : QFP, xpnt : Integer)
+          lfact := ([[w.flg,
                     if leadingCoefficient w.fctr = 1 then
                         map(x +-> x::%, w.fctr)
-                    else (lc:=(leadingCoefficient w.fctr)::%;
-                           den1:=den1/lc^w.xpnt;
+                    else (lc := (leadingCoefficient w.fctr)::%;
+                           den1 := den1/lc^w.xpnt;
                             map(x +-> x::%/lc, w.fctr)),
                    w.xpnt] for w in factorList ff])
           makeFR(map(x +-> x::%/den1, unit(ff)), lfact)
@@ -644,8 +644,8 @@ Fraction(S: IntegralDomain): QuotientFieldCategory S with
 ++ operation, by moving into the field of fractions, and solving it there
 ++ via the \spad{multiEuclidean} operation.
 -- Currently unused.
-LinearPolynomialEquationByFractions(R:PolynomialFactorizationExplicit): with
-  solveLinearPolynomialEquationByFractions: ( _
+LinearPolynomialEquationByFractions(R : PolynomialFactorizationExplicit) : with
+  solveLinearPolynomialEquationByFractions : ( _
            List SparseUnivariatePolynomial R, _
            SparseUnivariatePolynomial R) ->   _
            Union(List SparseUnivariatePolynomial R, "failed")
@@ -658,24 +658,24 @@ LinearPolynomialEquationByFractions(R:PolynomialFactorizationExplicit): with
   SupR ==> SparseUnivariatePolynomial R
   F ==> Fraction R
   SupF ==> SparseUnivariatePolynomial F
-  import UnivariatePolynomialCategoryFunctions2(R,SupR,F,SupF)
+  import UnivariatePolynomialCategoryFunctions2(R, SupR, F, SupF)
   lp : List SupR
-  pp: SupR
-  pF: SupF
+  pp : SupR
+  pF : SupF
   pullback : SupF -> Union(SupR,"failed")
   pullback(pF) ==
     pF = 0 => 0
-    c:=retractIfCan leadingCoefficient pF
+    c := retractIfCan leadingCoefficient pF
     c case "failed" => "failed"
-    r:=pullback reductum pF
+    r := pullback reductum pF
     r case "failed" => "failed"
-    monomial(c,degree pF) + r
-  solveLinearPolynomialEquationByFractions(lp,pp) ==
+    monomial(c, degree pF) + r
+  solveLinearPolynomialEquationByFractions(lp, pp) ==
     lpF : List SupF := [map((x : R) : F +-> x::F, u) for u in lp]
     pF : SupF := map((x : R) : F +-> x::F, pp)
-    ans:= solveLinearPolynomialEquation(lpF,pF)$F
+    ans := solveLinearPolynomialEquation(lpF, pF)$F
     ans case "failed" => "failed"
-    [(vv:= pullback v;
+    [(vv := pullback v;
       vv case "failed" => return "failed";
        vv)
         for v in ans]
@@ -696,15 +696,15 @@ LinearPolynomialEquationByFractions(R:PolynomialFactorizationExplicit): with
 ++ Description: This package extends a map between integral domains to
 ++ a map between Fractions over those domains by applying the map to the
 ++ numerators and denominators.
-FractionFunctions2(A, B): Exports == Impl where
-  A, B: IntegralDomain
+FractionFunctions2(A, B) : Exports == Impl where
+  A, B : IntegralDomain
 
   R ==> Fraction A
   S ==> Fraction B
 
   Exports ==> with
-    map: (A -> B, R) -> S
-      ++ map(func,frac) applies the function func to the numerator
+    map : (A -> B, R) -> S
+      ++ map(func, frac) applies the function func to the numerator
       ++ and denominator of the fraction frac.
 
   Impl ==> add

@@ -26,25 +26,25 @@
 ++ Description:
 ++  AlgebraGivenByStructuralConstants implements finite rank algebras
 ++  over a commutative ring, given by the structural constants \spad{gamma}
-++  with respect to a fixed  basis \spad{[a1,..,an]}, where
+++  with respect to a fixed  basis \spad{[a1, .., an]}, where
 ++  \spad{gamma} is an \spad{n}-vector of n by n matrices
 ++  \spad{[(gammaijk) for k in 1..rank()]} defined by
 ++  \spad{ai * aj = gammaij1 * a1 + ... + gammaijn * an}.
 ++  The symbols for the fixed basis
 ++  have to be given as a list of symbols.
-AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
-  ls : List Symbol, gamma: Vector Matrix R ): public == private where
+AlgebraGivenByStructuralConstants(R : Field, n : PositiveInteger, _
+  ls : List Symbol, gamma : Vector Matrix R ) : public == private where
 
   V  ==> Vector
   M  ==> Matrix
   I  ==> Integer
   NNI  ==> NonNegativeInteger
   REC  ==> Record(particular: Union(V R,"failed"),basis: List V R)
-  LSMP ==> LinearSystemMatrixPackage(R,V R,V R, M R)
+  LSMP ==> LinearSystemMatrixPackage(R, V R, V R, M R)
 
   --public ==> FramedNonAssociativeAlgebra(R) with
   public ==> Join(FramedNonAssociativeAlgebra(R), _
-    LeftModule(SquareMatrix(n,R)) ) with
+    LeftModule(SquareMatrix(n, R)) ) with
 
     coerce : Vector R -> %
       ++ coerce(v) converts a vector to a member of the algebra
@@ -52,32 +52,32 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
       ++ Note: the vector is assumed to have length equal to the
       ++ dimension of the algebra.
 
-  private ==> DirectProduct(n,R) add
+  private ==> DirectProduct(n, R) add
 
-    Rep := DirectProduct(n,R)
+    Rep := DirectProduct(n, R)
 
-    x,y : %
-    dp : DirectProduct(n,R)
+    x, y : %
+    dp : DirectProduct(n, R)
     v : V R
 
 
-    recip(x) == recip(x)$FiniteRankNonAssociativeAlgebra_&(%,R)
+    recip(x) == recip(x)$FiniteRankNonAssociativeAlgebra_&(%, R)
 
-    (m:SquareMatrix(n,R))*(x:%) == apply((m :: Matrix R),x)
+    (m : SquareMatrix(n, R))*(x : %) == apply((m :: Matrix R), x)
     coerce v == directProduct(v) :: %
 
     structuralConstants() == gamma
 
     coordinates(x) == vector(entries(x :: Rep)$Rep)$Vector(R)
 
-    coordinates(x,b) ==
+    coordinates(x, b) ==
       --not (maxIndex b = n) =>
       --  error("coordinates: your 'basis' has not the right length")
       m : NonNegativeInteger := (maxIndex b) :: NonNegativeInteger
-      transitionMatrix   : Matrix R := new(n,m,0$R)$Matrix(R)
+      transitionMatrix   : Matrix R := new(n, m, 0$R)$Matrix(R)
       for i in 1..m repeat
-        setColumn!(transitionMatrix,i,coordinates(b.i))
-      res : REC := solve(transitionMatrix,coordinates(x))$LSMP
+        setColumn!(transitionMatrix, i, coordinates(b.i))
+      res : REC := solve(transitionMatrix, coordinates(x))$LSMP
       if (not empty?(res.basis)) then
         error("coordinates: warning your 'basis' is linearly dependent")
       (res.particular  case "failed") =>
@@ -90,29 +90,29 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
 
     rank() == n
 
-    elt(x,i) == elt(x::Rep,i)$Rep
+    elt(x, i) == elt(x::Rep, i)$Rep
 
-    coerce(x:%):OutputForm ==
+    coerce(x : %) : OutputForm ==
       zero?(x::Rep)$Rep => (0$R) :: OutputForm
       le : List OutputForm := nil
       for i in 1..n repeat
-        coef : R := elt(x::Rep,i)
+        coef : R := elt(x::Rep, i)
         not zero?(coef)$R =>
 --          one?(coef)$R =>
           ((coef) = 1)$R =>
-            -- sy : OutputForm := elt(ls,i)$(List Symbol) :: OutputForm
-            le := cons(elt(ls,i)$(List Symbol) :: OutputForm, le)
-          le := cons(coef :: OutputForm *  elt(ls,i)$(List Symbol)_
+            -- sy : OutputForm := elt(ls, i)$(List Symbol) :: OutputForm
+            le := cons(elt(ls, i)$(List Symbol) :: OutputForm, le)
+          le := cons(coef :: OutputForm *  elt(ls, i)$(List Symbol)_
               :: OutputForm, le)
       reduce("+",le)
 
     x * y ==
-      v : Vector R :=  new(n,0)
+      v : Vector R :=  new(n, 0)
       for k in 1..n repeat
         h : R := 0
         for i in 1..n repeat
           for j in 1..n repeat
-            h := h  +$R elt(x,i) *$R elt(y,j) *$R elt(gamma.k,i,j )
+            h := h  +$R elt(x, i) *$R elt(y, j) *$R elt(gamma.k, i, j )
         v.k := h
       directProduct v
 
@@ -129,9 +129,9 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
               res := 0$R
               for l in 1..n repeat
                 res := res - _
-                  (elt(gamma.l,j,k)+elt(gamma.l,k,j))*elt(gamma.r,i,l)+_
-                  (elt(gamma.l,i,j)*elt(gamma.r,l,k) + elt(gamma.l,i,k)*_
-                  elt(gamma.r,l,j) )
+                  (elt(gamma.l, j, k)+elt(gamma.l, k, j))*elt(gamma.r, i, l)+_
+                  (elt(gamma.l, i, j)*elt(gamma.r, l, k) + elt(gamma.l, i, k)*_
+                  elt(gamma.r, l, j) )
               not zero? res =>
                 messagePrint("algebra is not right alternative")$OutputForm
                 return false
@@ -142,9 +142,9 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
               res := 0$R
               for l in 1..n repeat
                 res := res + _
-                  (elt(gamma.l,i,j)+elt(gamma.l,j,i))*elt(gamma.r,l,k)-_
-                  (elt(gamma.l,j,k)*elt(gamma.r,i,l) + elt(gamma.l,i,k)*_
-                   elt(gamma.r,j,l) )
+                  (elt(gamma.l, i, j)+elt(gamma.l, j, i))*elt(gamma.r, l, k)-_
+                  (elt(gamma.l, j, k)*elt(gamma.r, i, l) + elt(gamma.l, i, k)*_
+                   elt(gamma.r, j, l) )
               not (zero? res) =>
                 messagePrint("algebra is not left alternative")$OutputForm
                 return false
@@ -155,9 +155,9 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
               res := 0$R
               for l in 1..n repeat
                 res := res + _
-                  (elt(gamma.l,i,j)+elt(gamma.l,j,i))*elt(gamma.r,l,k)-_
-                  (elt(gamma.l,j,k)*elt(gamma.r,i,l) + elt(gamma.l,i,k)*_
-                   elt(gamma.r,j,l) )
+                  (elt(gamma.l, i, j)+elt(gamma.l, j, i))*elt(gamma.r, l, k)-_
+                  (elt(gamma.l, j, k)*elt(gamma.r, i, l) + elt(gamma.l, i, k)*_
+                   elt(gamma.r, j, l) )
               not (zero? res) =>
                 messagePrint("algebra is not left alternative")$OutputForm
                 return false
@@ -166,9 +166,9 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
               res := 0$R
               for l in 1..n repeat
                 res := res - _
-                  (elt(gamma.l,j,k)+elt(gamma.l,k,j))*elt(gamma.r,i,l)+_
-                  (elt(gamma.l,i,j)*elt(gamma.r,l,k) + elt(gamma.l,i,k)*_
-                  elt(gamma.r,l,j) )
+                  (elt(gamma.l, j, k)+elt(gamma.l, k, j))*elt(gamma.r, i, l)+_
+                  (elt(gamma.l, i, j)*elt(gamma.r, l, k) + elt(gamma.l, i, k)*_
+                  elt(gamma.r, l, j) )
               not (zero? res) =>
                 messagePrint("algebra is not right alternative")$OutputForm
                 return false
@@ -192,8 +192,8 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
  --           xi := symbolsForCoef.i
  --           xj := symbolsForCoef.j
  --           p := p + monomial(_
- --             elt((gamma.k),i,j) :: Polynomial(R), [xi,xj], [1,1])
- --       conditions := cons(p,conditions)
+ --             elt((gamma.k), i, j) :: Polynomial(R), [xi, xj], [1, 1])
+ --       conditions := cons(p, conditions)
  --     conditions
 
     associative?() ==
@@ -203,8 +203,8 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
          for r in 1..n repeat
            res := 0$R
            for l in 1..n repeat
-             res := res + elt(gamma.l,i,j)*elt(gamma.r,l,k)-_
-                          elt(gamma.l,j,k)*elt(gamma.r,i,l)
+             res := res + elt(gamma.l, i, j)*elt(gamma.r, l, k)-_
+                          elt(gamma.l, j, k)*elt(gamma.r, i, l)
            not (zero? res) =>
             messagePrint("algebra is not associative")$OutputForm
             return false
@@ -219,8 +219,8 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
          for r in 1..n repeat
            res := 0$R
            for l in 1..n repeat
-             res := res + elt(gamma.l,i,j)*elt(gamma.r,l,k)+_
-                          elt(gamma.l,j,k)*elt(gamma.r,i,l)
+             res := res + elt(gamma.l, i, j)*elt(gamma.r, l, k)+_
+                          elt(gamma.l, j, k)*elt(gamma.r, i, l)
            not (zero? res) =>
             messagePrint("algebra is not anti-associative")$OutputForm
             return false
@@ -231,7 +231,7 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
       for i in 1..n repeat
        for j in (i+1)..n repeat
         for k in 1..n repeat
-           not ( elt(gamma.k,i,j)=elt(gamma.k,j,i) ) =>
+           not ( elt(gamma.k, i, j)=elt(gamma.k, j, i) ) =>
             messagePrint("algebra is not commutative")$OutputForm
             return false
       messagePrint("algebra is commutative")$OutputForm
@@ -241,7 +241,7 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
       for i in 1..n repeat
        for j in i..n repeat
         for k in 1..n repeat
-          not zero? (i=j => elt(gamma.k,i,i); elt(gamma.k,i,j)+elt(gamma.k,j,i) ) =>
+          not zero? (i = j => elt(gamma.k, i, i); elt(gamma.k, i, j)+elt(gamma.k, j, i) ) =>
             messagePrint("algebra is not anti-commutative")$OutputForm
             return false
       messagePrint("algebra is anti-commutative")$OutputForm
@@ -255,8 +255,8 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
          for r in 1..n repeat
            res := 0$R
            for l in 1..n repeat
-             res := res + (elt(gamma.l,i,j)+elt(gamma.l,j,i))*elt(gamma.r,l,k)-_
-               (elt(gamma.l,j,k)*elt(gamma.r,i,l) + elt(gamma.l,i,k)*elt(gamma.r,j,l) )
+             res := res + (elt(gamma.l, i, j)+elt(gamma.l, j, i))*elt(gamma.r, l, k)-_
+               (elt(gamma.l, j, k)*elt(gamma.r, i, l) + elt(gamma.l, i, k)*elt(gamma.r, j, l) )
            not (zero? res) =>
             messagePrint("algebra is not left alternative")$OutputForm
             return false
@@ -272,8 +272,8 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
          for r in 1..n repeat
            res := 0$R
            for l in 1..n repeat
-             res := res - (elt(gamma.l,j,k)+elt(gamma.l,k,j))*elt(gamma.r,i,l)+_
-               (elt(gamma.l,i,j)*elt(gamma.r,l,k) + elt(gamma.l,i,k)*elt(gamma.r,l,j) )
+             res := res - (elt(gamma.l, j, k)+elt(gamma.l, k, j))*elt(gamma.r, i, l)+_
+               (elt(gamma.l, i, j)*elt(gamma.r, l, k) + elt(gamma.l, i, k)*elt(gamma.r, l, j) )
            not (zero? res) =>
             messagePrint("algebra is not right alternative")$OutputForm
             return false
@@ -289,10 +289,10 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
          for r in 1..n repeat
            res := 0$R
            for l in 1..n repeat
-             res := res + elt(gamma.l,i,j)*elt(gamma.r,l,k)-_
-                          elt(gamma.l,j,k)*elt(gamma.r,i,l)+_
-                          elt(gamma.l,k,j)*elt(gamma.r,l,i)-_
-                          elt(gamma.l,j,i)*elt(gamma.r,k,l)
+             res := res + elt(gamma.l, i, j)*elt(gamma.r, l, k)-_
+                          elt(gamma.l, j, k)*elt(gamma.r, i, l)+_
+                          elt(gamma.l, k, j)*elt(gamma.r, l, i)-_
+                          elt(gamma.l, j, i)*elt(gamma.r, k, l)
            not (zero? res) =>
             messagePrint("algebra is not flexible")$OutputForm
             return false
@@ -307,9 +307,9 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
            res := 0$R
            for l in 1..n repeat
              res := res_
-              + (elt(gamma.l,i,j)-elt(gamma.l,j,i))*(elt(gamma.r,l,k)-elt(gamma.r,k,l)) _
-              + (elt(gamma.l,j,k)-elt(gamma.l,k,j))*(elt(gamma.r,l,i)-elt(gamma.r,i,l)) _
-              + (elt(gamma.l,k,i)-elt(gamma.l,i,k))*(elt(gamma.r,l,j)-elt(gamma.r,j,l))
+              + (elt(gamma.l, i, j)-elt(gamma.l, j, i))*(elt(gamma.r, l, k)-elt(gamma.r, k, l)) _
+              + (elt(gamma.l, j, k)-elt(gamma.l, k, j))*(elt(gamma.r, l, i)-elt(gamma.r, i, l)) _
+              + (elt(gamma.l, k, i)-elt(gamma.l, i, k))*(elt(gamma.r, l, j)-elt(gamma.r, j, l))
            not (zero? res) =>
             messagePrint("algebra is not Lie admissible")$OutputForm
             return false
@@ -329,24 +329,24 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
            for l in 1..n repeat
             for r in 1..n repeat
              res := res_
-              + (elt(gamma.l,i,j)+elt(gamma.l,j,i))_
-                * (elt(gamma.r,w,k)+elt(gamma.r,k,w))_
-                * (elt(gamma.t,l,r)+elt(gamma.t,r,l))_
-              - (elt(gamma.r,w,k)+elt(gamma.r,k,w))_
-                * (elt(gamma.l,j,r)+elt(gamma.l,r,j))_
-                * (elt(gamma.t,i,l)+elt(gamma.t,l,i))_
-              + (elt(gamma.l,w,j)+elt(gamma.l,j,w))_
-                * (elt(gamma.r,k,i)+elt(gamma.r,i,k))_
-                * (elt(gamma.t,l,r)+elt(gamma.t,r,l))_
-              - (elt(gamma.r,k,i)+elt(gamma.r,k,i))_
-                * (elt(gamma.l,j,r)+elt(gamma.l,r,j))_
-                * (elt(gamma.t,w,l)+elt(gamma.t,l,w))_
-              + (elt(gamma.l,k,j)+elt(gamma.l,j,k))_
-                * (elt(gamma.r,i,w)+elt(gamma.r,w,i))_
-                * (elt(gamma.t,l,r)+elt(gamma.t,r,l))_
-              - (elt(gamma.r,i,w)+elt(gamma.r,w,i))_
-                * (elt(gamma.l,j,r)+elt(gamma.l,r,j))_
-                * (elt(gamma.t,k,l)+elt(gamma.t,l,k))
+              + (elt(gamma.l, i, j)+elt(gamma.l, j, i))_
+                * (elt(gamma.r, w, k)+elt(gamma.r, k, w))_
+                * (elt(gamma.t, l, r)+elt(gamma.t, r, l))_
+              - (elt(gamma.r, w, k)+elt(gamma.r, k, w))_
+                * (elt(gamma.l, j, r)+elt(gamma.l, r, j))_
+                * (elt(gamma.t, i, l)+elt(gamma.t, l, i))_
+              + (elt(gamma.l, w, j)+elt(gamma.l, j, w))_
+                * (elt(gamma.r, k, i)+elt(gamma.r, i, k))_
+                * (elt(gamma.t, l, r)+elt(gamma.t, r, l))_
+              - (elt(gamma.r, k, i)+elt(gamma.r, k, i))_
+                * (elt(gamma.l, j, r)+elt(gamma.l, r, j))_
+                * (elt(gamma.t, w, l)+elt(gamma.t, l, w))_
+              + (elt(gamma.l, k, j)+elt(gamma.l, j, k))_
+                * (elt(gamma.r, i, w)+elt(gamma.r, w, i))_
+                * (elt(gamma.t, l, r)+elt(gamma.t, r, l))_
+              - (elt(gamma.r, i, w)+elt(gamma.r, w, i))_
+                * (elt(gamma.l, j, r)+elt(gamma.l, r, j))_
+                * (elt(gamma.t, k, l)+elt(gamma.t, l, k))
            not (zero? res) =>
              messagePrint("algebra is not Jordan admissible")$OutputForm
              return false
@@ -369,12 +369,12 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
              for r in 1..n repeat
                for s in 1..n repeat
                  res := res +  _
-                   elt(gamma.r,i,j)*elt(gamma.s,l,k)*elt(gamma.t,r,s) - _
-                   elt(gamma.r,l,k)*elt(gamma.s,j,r)*elt(gamma.t,i,s) + _
-                   elt(gamma.r,l,j)*elt(gamma.s,k,k)*elt(gamma.t,r,s) - _
-                   elt(gamma.r,k,i)*elt(gamma.s,j,r)*elt(gamma.t,l,s) + _
-                   elt(gamma.r,k,j)*elt(gamma.s,i,k)*elt(gamma.t,r,s) - _
-                   elt(gamma.r,i,l)*elt(gamma.s,j,r)*elt(gamma.t,k,s)
+                   elt(gamma.r, i, j)*elt(gamma.s, l, k)*elt(gamma.t, r, s) - _
+                   elt(gamma.r, l, k)*elt(gamma.s, j, r)*elt(gamma.t, i, s) + _
+                   elt(gamma.r, l, j)*elt(gamma.s, k, k)*elt(gamma.t, r, s) - _
+                   elt(gamma.r, k, i)*elt(gamma.s, j, r)*elt(gamma.t, l, s) + _
+                   elt(gamma.r, k, j)*elt(gamma.s, i, k)*elt(gamma.t, r, s) - _
+                   elt(gamma.r, i, l)*elt(gamma.s, j, r)*elt(gamma.t, k, s)
                  not zero? res =>
                    messagePrint("this is not a Jordan algebra")$OutputForm
                    return false
@@ -389,9 +389,9 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
          for r in 1..n repeat
            res := 0$R
            for s in 1..n repeat
-                 res := res +  elt(gamma.r,i,j)*elt(gamma.s,j,k) +_
-                               elt(gamma.r,j,k)*elt(gamma.s,k,i) +_
-                               elt(gamma.r,k,i)*elt(gamma.s,i,j)
+                 res := res +  elt(gamma.r, i, j)*elt(gamma.s, j, k) +_
+                               elt(gamma.r, j, k)*elt(gamma.s, k, i) +_
+                               elt(gamma.r, k, i)*elt(gamma.s, i, j)
            not zero? res =>
                  messagePrint("Jacobi identity does not hold")$OutputForm
                  return false
@@ -415,7 +415,7 @@ AlgebraGivenByStructuralConstants(R:Field, n : PositiveInteger,_
 ++  StructuralConstantsPackage provides functions creating
 ++  structural constants from a multiplication tables or a basis
 ++  of a matrix algebra and other useful functions in this context.
-StructuralConstantsPackage(R:Field): public == private where
+StructuralConstantsPackage(R : Field) : public == private where
 
   L  ==> List
   S  ==> Symbol
@@ -424,52 +424,52 @@ StructuralConstantsPackage(R:Field): public == private where
   V  ==> Vector
   M  ==> Matrix
   REC  ==> Record(particular: Union(V R,"failed"),basis: List V R)
-  LSMP ==> LinearSystemMatrixPackage(R,V R,V R, M R)
+  LSMP ==> LinearSystemMatrixPackage(R, V R, V R, M R)
 
   public ==>  with
       -- what we really want to have here is a matrix over
       -- linear polynomials in the list of symbols, having arbitrary
       -- coefficients from a ring extension of R, e.g. FRAC POLY R.
       structuralConstants : (L S, M FRAC POLY R) -> V M FRAC POLY R
-        ++ structuralConstants(ls,mt) determines the structural constants
+        ++ structuralConstants(ls, mt) determines the structural constants
         ++ of an algebra with generators ls and multiplication table mt, the
         ++ entries of which must be given as linear polynomials in the
         ++ indeterminates given by ls. The result is in particular useful
         ++  as fourth argument for \spadtype{AlgebraGivenByStructuralConstants}
         ++  and \spadtype{GenericNonAssociativeAlgebra}.
       structuralConstants : (L S, M POLY R) -> V M POLY R
-        ++ structuralConstants(ls,mt) determines the structural constants
+        ++ structuralConstants(ls, mt) determines the structural constants
         ++ of an algebra with generators ls and multiplication table mt, the
         ++ entries of which must be given as linear polynomials in the
         ++ indeterminates given by ls. The result is in particular useful
         ++  as fourth argument for \spadtype{AlgebraGivenByStructuralConstants}
         ++  and \spadtype{GenericNonAssociativeAlgebra}.
-      structuralConstants: L M R -> V M R
+      structuralConstants : L M R -> V M R
         ++ structuralConstants(basis)  takes the basis of a matrix
         ++ algebra, e.g. the result of \spadfun{basisOfCentroid} and calculates
         ++ the structural constants.
         ++ Note, that the it is not checked, whether basis really is a
         ++ basis of a matrix algebra.
-      coordinates: (M R, L M R) -> V R
-        ++ coordinates(a,[v1,...,vn]) returns the coordinates of \spad{a}
-        ++ with respect to the \spad{R}-module basis \spad{v1},...,\spad{vn}.
+      coordinates : (M R, L M R) -> V R
+        ++ coordinates(a, [v1, ..., vn]) returns the coordinates of \spad{a}
+        ++ with respect to the \spad{R}-module basis \spad{v1}, ..., \spad{vn}.
 
   private ==> add
 
-      matrix2Vector: M R -> V R
+      matrix2Vector : M R -> V R
       matrix2Vector m ==
         lili : L L R := listOfLists m
         --li : L R  := reduce(concat, listOfLists m)
         li : L R  := reduce(concat, lili)
         construct(li)$(V R)
 
-      coordinates(x,b) ==
+      coordinates(x, b) ==
         m : NonNegativeInteger := (maxIndex b) :: NonNegativeInteger
         n : NonNegativeInteger := nrows(b.1) * ncols(b.1)
-        transitionMatrix   : Matrix R := new(n,m,0$R)$Matrix(R)
+        transitionMatrix   : Matrix R := new(n, m, 0$R)$Matrix(R)
         for i in 1..m repeat
-          setColumn!(transitionMatrix,i,matrix2Vector(b.i))
-        res : REC := solve(transitionMatrix,matrix2Vector(x))$LSMP
+          setColumn!(transitionMatrix, i, matrix2Vector(b.i))
+        res : REC := solve(transitionMatrix, matrix2Vector(x))$LSMP
         if (not empty?(res.basis)) then
           error("coordinates: the second argument is linearly dependent")
         (res.particular  case "failed") =>
@@ -481,7 +481,7 @@ second argument")
         --n := rank()
         -- be careful with the possibility that b is not a basis
         m : NonNegativeInteger := (maxIndex b) :: NonNegativeInteger
-        sC : Vector Matrix R := [new(m,m,0$R) for k in 1..m]
+        sC : Vector Matrix R := [new(m, m, 0$R) for k in 1..m]
         for i in 1..m repeat
           for j in 1..m repeat
             covec : Vector R := coordinates(b.i * b.j, b)$%
@@ -489,7 +489,7 @@ second argument")
                setelt( sC.k, i, j, covec.k )
         sC
 
-      structuralConstants(ls:L S, mt: M POLY R)  ==
+      structuralConstants(ls : L S, mt : M POLY R)  ==
         nn := #(ls)
         nrows(mt) ~= nn or ncols(mt) ~= nn =>
           error "structuralConstants: size of second argument does not _
@@ -497,20 +497,20 @@ agree with number of generators"
         gamma : L M POLY R := []
         lscopy : L S := copy ls
         while not null lscopy repeat
-          mat : M POLY R := new(nn,nn,0)
+          mat : M POLY R := new(nn, nn, 0)
           s : S := first lscopy
           for i in 1..nn repeat
             for j in 1..nn repeat
-              p := qelt(mt,i,j)
-              totalDegree(p,ls) > 1 =>
+              p := qelt(mt, i, j)
+              totalDegree(p, ls) > 1 =>
                 error "structuralConstants: entries of second argument _
 must be linear polynomials in the generators"
-              if (c := coefficient(p, s, 1) ) ~= 0 then qsetelt!(mat,i,j,c)
+              if (c := coefficient(p, s, 1) ) ~= 0 then qsetelt!(mat, i, j, c)
           gamma := cons(mat, gamma)
           lscopy := rest lscopy
         vector reverse gamma
 
-      structuralConstants(ls:L S, mt: M FRAC POLY R)  ==
+      structuralConstants(ls : L S, mt : M FRAC POLY R)  ==
         nn := #(ls)
         nrows(mt) ~= nn or ncols(mt) ~= nn =>
           error "structuralConstants: size of second argument does not _
@@ -518,20 +518,20 @@ agree with number of generators"
         gamma : L M FRAC(POLY R) := []
         lscopy : L S := copy ls
         while not null lscopy repeat
-          mat : M FRAC(POLY R) := new(nn,nn,0)
+          mat : M FRAC(POLY R) := new(nn, nn, 0)
           s : S := first lscopy
           for i in 1..nn repeat
             for j in 1..nn repeat
-              r := qelt(mt,i,j)
+              r := qelt(mt, i, j)
               q := denom(r)
-              totalDegree(q,ls) ~= 0 =>
+              totalDegree(q, ls) ~= 0 =>
                 error "structuralConstants: entries of second argument _
 must be (linear) polynomials in the generators"
               p := numer(r)
-              totalDegree(p,ls) > 1 =>
+              totalDegree(p, ls) > 1 =>
                 error "structuralConstants: entries of second argument _
 must be linear polynomials in the generators"
-              if (c := coefficient(p, s, 1) ) ~= 0 then qsetelt!(mat,i,j,c/q)
+              if (c := coefficient(p, s, 1) ) ~= 0 then qsetelt!(mat, i, j, c/q)
           gamma := cons(mat, gamma)
           lscopy := rest lscopy
         vector reverse gamma
@@ -562,7 +562,7 @@ must be linear polynomials in the generators"
 ++ Description:
 ++  AlgebraPackage assembles a variety of useful functions for
 ++  general algebras.
-AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
+AlgebraPackage(R : IntegralDomain, A : FramedNonAssociativeAlgebra(R)) : _
    public == private where
 
   V  ==> Vector
@@ -570,80 +570,80 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
   I  ==> Integer
   NNI  ==> NonNegativeInteger
   REC  ==> Record(particular: Union(V R,"failed"),basis: List V R)
-  LSMP ==> LinearSystemMatrixPackage(R,V R,V R, M R)
+  LSMP ==> LinearSystemMatrixPackage(R, V R, V R, M R)
 
   public ==>  with
 
-      leftRank: A -> NonNegativeInteger
+      leftRank : A -> NonNegativeInteger
         ++ leftRank(x) determines the number of linearly independent elements
-        ++ in \spad{x*b1},...,\spad{x*bn},
-        ++ where \spad{b=[b1,...,bn]} is a basis.
-      rightRank: A -> NonNegativeInteger
+        ++ in \spad{x*b1}, ..., \spad{x*bn},
+        ++ where \spad{b=[b1, ..., bn]} is a basis.
+      rightRank : A -> NonNegativeInteger
         ++ rightRank(x) determines the number of linearly independent elements
-        ++ in \spad{b1*x},...,\spad{bn*x},
-        ++ where \spad{b=[b1,...,bn]} is a basis.
-      doubleRank: A -> NonNegativeInteger
+        ++ in \spad{b1*x}, ..., \spad{bn*x},
+        ++ where \spad{b=[b1, ..., bn]} is a basis.
+      doubleRank : A -> NonNegativeInteger
         ++ doubleRank(x) determines the number of linearly
         ++ independent elements
-        ++ in \spad{b1*x},...,\spad{x*bn},
-        ++ where \spad{b=[b1,...,bn]} is a basis.
-      weakBiRank: A -> NonNegativeInteger
+        ++ in \spad{b1*x}, ..., \spad{x*bn},
+        ++ where \spad{b=[b1, ..., bn]} is a basis.
+      weakBiRank : A -> NonNegativeInteger
         ++ weakBiRank(x) determines the number of
         ++ linearly independent elements
-        ++ in the \spad{bi*x*bj}, \spad{i,j=1,...,n},
-        ++ where \spad{b=[b1,...,bn]} is a basis.
-      biRank: A -> NonNegativeInteger
+        ++ in the \spad{bi*x*bj}, \spad{i, j=1, ..., n},
+        ++ where \spad{b=[b1, ..., bn]} is a basis.
+      biRank : A -> NonNegativeInteger
         ++ biRank(x) determines the number of linearly independent elements
         ++ in \spad{x}, \spad{x*bi}, \spad{bi*x}, \spad{bi*x*bj},
-        ++ \spad{i,j=1,...,n},
-        ++ where \spad{b=[b1,...,bn]} is a basis.
+        ++ \spad{i, j=1, ..., n},
+        ++ where \spad{b=[b1, ..., bn]} is a basis.
         ++ Note: if \spad{A} has a unit,
         ++ then \spadfunFrom{doubleRank}{AlgebraPackage},
         ++ \spadfunFrom{weakBiRank}{AlgebraPackage}
         ++ and \spadfunFrom{biRank}{AlgebraPackage} coincide.
-      basisOfCommutingElements: () -> List A
+      basisOfCommutingElements : () -> List A
         ++ basisOfCommutingElements() returns a basis of the space of
-        ++ all x of \spad{A} satisfying \spad{0 = commutator(x,a)} for all
+        ++ all x of \spad{A} satisfying \spad{0 = commutator(x, a)} for all
         ++ \spad{a} in \spad{A}.
-      basisOfLeftAnnihilator: A -> List A
+      basisOfLeftAnnihilator : A -> List A
         ++ basisOfLeftAnnihilator(a) returns a basis of the space of
         ++ all x of \spad{A} satisfying \spad{0 = x*a}.
-      basisOfRightAnnihilator: A -> List A
+      basisOfRightAnnihilator : A -> List A
         ++ basisOfRightAnnihilator(a) returns a basis of the space of
         ++ all x of \spad{A} satisfying \spad{0 = a*x}.
-      basisOfLeftNucleus: () -> List A
+      basisOfLeftNucleus : () -> List A
         ++ basisOfLeftNucleus() returns a basis of the space of
-        ++ all x of \spad{A} satisfying \spad{0 = associator(x,a,b)}
-        ++ for all \spad{a},b in \spad{A}.
-      basisOfRightNucleus: () -> List A
+        ++ all x of \spad{A} satisfying \spad{0 = associator(x, a, b)}
+        ++ for all \spad{a}, b in \spad{A}.
+      basisOfRightNucleus : () -> List A
         ++ basisOfRightNucleus() returns a basis of the space of
-        ++ all x of \spad{A} satisfying \spad{0 = associator(a,b,x)}
-        ++ for all \spad{a},b in \spad{A}.
-      basisOfMiddleNucleus: () -> List A
+        ++ all x of \spad{A} satisfying \spad{0 = associator(a, b, x)}
+        ++ for all \spad{a}, b in \spad{A}.
+      basisOfMiddleNucleus : () -> List A
         ++ basisOfMiddleNucleus() returns a basis of the space of
-        ++ all x of \spad{A} satisfying \spad{0 = associator(a,x,b)}
-        ++ for all \spad{a},b in \spad{A}.
-      basisOfNucleus: () -> List A
+        ++ all x of \spad{A} satisfying \spad{0 = associator(a, x, b)}
+        ++ for all \spad{a}, b in \spad{A}.
+      basisOfNucleus : () -> List A
         ++ basisOfNucleus() returns a basis of the space of all x of \spad{A} satisfying
-        ++ \spad{associator(x,a,b) = associator(a,x,b) = associator(a,b,x) = 0}
-        ++ for all \spad{a},b in \spad{A}.
-      basisOfCenter: () -> List A
+        ++ \spad{associator(x, a, b) = associator(a, x, b) = associator(a, b, x) = 0}
+        ++ for all \spad{a}, b in \spad{A}.
+      basisOfCenter : () -> List A
         ++ basisOfCenter() returns a basis of the space of
-        ++ all x of \spad{A} satisfying \spad{commutator(x,a) = 0} and
-        ++ \spad{associator(x,a,b) = associator(a,x,b) = associator(a,b,x) = 0}
-        ++ for all \spad{a},b in \spad{A}.
-      basisOfLeftNucloid:()-> List Matrix R
+        ++ all x of \spad{A} satisfying \spad{commutator(x, a) = 0} and
+        ++ \spad{associator(x, a, b) = associator(a, x, b) = associator(a, b, x) = 0}
+        ++ for all \spad{a}, b in \spad{A}.
+      basisOfLeftNucloid : ()-> List Matrix R
         ++ basisOfLeftNucloid() returns a basis of the space of
         ++ endomorphisms of \spad{A} as right module.
         ++ Note: left nucloid coincides with left nucleus if \spad{A} has a unit.
-      basisOfRightNucloid:()-> List Matrix R
+      basisOfRightNucloid : ()-> List Matrix R
         ++ basisOfRightNucloid() returns a basis of the space of
         ++ endomorphisms of \spad{A} as left module.
         ++ Note: right nucloid coincides with right nucleus if \spad{A} has a unit.
-      basisOfCentroid:()-> List Matrix R
+      basisOfCentroid : ()-> List Matrix R
         ++ basisOfCentroid() returns a basis of the centroid, i.e. the
-        ++ endomorphism ring of \spad{A} considered as \spad{(A,A)}-bimodule.
-      radicalOfLeftTraceForm: () -> List A
+        ++ endomorphism ring of \spad{A} considered as \spad{(A, A)}-bimodule.
+      radicalOfLeftTraceForm : () -> List A
         ++ radicalOfLeftTraceForm() returns basis for null space of
         ++ \spad{leftTraceMatrix()}, if the algebra is
         ++ associative, alternative or a Jordan algebra, then this
@@ -666,26 +666,26 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
       -- local functions
 
       convVM : Vector R -> Matrix R
-        -- converts n2-vector to (n,n)-matrix row by row
+        -- converts n2-vector to (n, n)-matrix row by row
       convMV : Matrix R -> Vector R
         -- converts n-square matrix to  n2-vector row by row
       convVM v  ==
-        cond : Matrix(R) := new(n,n,0$R)$M(R)
+        cond : Matrix(R) := new(n, n, 0$R)$M(R)
         z : Integer := 0
         for i in 1..n repeat
           for j in 1..n  repeat
             z := z+1
-            setelt(cond,i,j,v.z)
+            setelt(cond, i, j, v.z)
         cond
 
 
       -- convMV m ==
-      --     vec : Vector(R) := new(n*n,0$R)
+      --     vec : Vector(R) := new(n*n, 0$R)
       --     z : Integer := 0
       --     for i in 1..n repeat
       --       for j in 1..n  repeat
       --         z := z+1
-      --         setelt(vec,z,elt(m,i,j))
+      --         setelt(vec, z, elt(m, i, j))
       --     vec
 
 
@@ -707,8 +707,8 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
         map(represents, nullSpace cond)$ListFunctions2(Vector R, A)
 
       basisOfLeftNucloid() ==
-        cond : Matrix(R) := new(n3,n2,0$R)$M(R)
-        condo: Matrix(R) := new(n3,n2,0$R)$M(R)
+        cond : Matrix(R) := new(n3, n2, 0$R)$M(R)
+        condo : Matrix(R) := new(n3, n2, 0$R)$M(R)
         z : Integer := 0
         for i in 1..n repeat
           for j in 1..n repeat
@@ -720,9 +720,9 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
               for r in 1..n repeat
                 r1 := r1 + 1
                 -- here r1 equals (k-1)*n+r (loop-invariant)
-                setelt(cond,z,r1,elt(gamma.r,i,j))
+                setelt(cond, z, r1, elt(gamma.r, i, j))
                 -- here r2 equals (r-1)*n+i (loop-invariant)
-                setelt(condo,z,r2,-elt(gamma.k,r,j))
+                setelt(condo, z, r2, -elt(gamma.k, r, j))
                 r2 := r2 + n
         [convVM(sol) for sol in nullSpace(cond+condo)]
 
@@ -741,7 +741,7 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
         map(represents, nullSpace cond)$ListFunctions2(Vector R, A)
 
       basisOfLeftNucleus() ==
-        condi: Matrix(R) := new(n3,n,0$R)$Matrix(R)
+        condi : Matrix(R) := new(n3, n, 0$R)$Matrix(R)
         z : Integer := 0
         for k in 1..n repeat
          for j in 1..n repeat
@@ -750,13 +750,13 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
             for i in 1..n repeat
               entry : R := 0
               for l in 1..n repeat
-                entry :=  entry+elt(gamma.l,j,k)*elt(gamma.s,i,l)_
-                               -elt(gamma.l,i,j)*elt(gamma.s,l,k)
-              setelt(condi,z,i,entry)$Matrix(R)
-        map(represents, nullSpace condi)$ListFunctions2(Vector R,A)
+                entry :=  entry+elt(gamma.l, j, k)*elt(gamma.s, i, l)_
+                               -elt(gamma.l, i, j)*elt(gamma.s, l, k)
+              setelt(condi, z, i, entry)$Matrix(R)
+        map(represents, nullSpace condi)$ListFunctions2(Vector R, A)
 
       basisOfRightNucleus() ==
-        condo : Matrix(R) := new(n3,n,0$R)$Matrix(R)
+        condo : Matrix(R) := new(n3, n, 0$R)$Matrix(R)
         z : Integer := 0
         for k in 1..n repeat
          for j in 1..n repeat
@@ -765,13 +765,13 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
             for i in 1..n repeat
               entry : R := 0
               for l in 1..n repeat
-                entry :=  entry+elt(gamma.l,k,i)*elt(gamma.s,j,l) _
-                               -elt(gamma.l,j,k)*elt(gamma.s,l,i)
-              setelt(condo,z,i,entry)$Matrix(R)
-        map(represents, nullSpace condo)$ListFunctions2(Vector R,A)
+                entry :=  entry+elt(gamma.l, k, i)*elt(gamma.s, j, l) _
+                               -elt(gamma.l, j, k)*elt(gamma.s, l, i)
+              setelt(condo, z, i, entry)$Matrix(R)
+        map(represents, nullSpace condo)$ListFunctions2(Vector R, A)
 
       basisOfMiddleNucleus() ==
-        conda : Matrix(R) := new(n3,n,0$R)$Matrix(R)
+        conda : Matrix(R) := new(n3, n, 0$R)$Matrix(R)
         z : Integer := 0
         for k in 1..n repeat
          for j in 1..n repeat
@@ -780,14 +780,14 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
             for i in 1..n repeat
               entry : R := 0
               for l in 1..n repeat
-                entry :=  entry+elt(gamma.l,j,i)*elt(gamma.s,l,k)
-                               -elt(gamma.l,i,k)*elt(gamma.s,j,l)
-              setelt(conda,z,i,entry)$Matrix(R)
-        map(represents, nullSpace conda)$ListFunctions2(Vector R,A)
+                entry :=  entry+elt(gamma.l, j, i)*elt(gamma.s, l, k)
+                               -elt(gamma.l, i, k)*elt(gamma.s, j, l)
+              setelt(conda, z, i, entry)$Matrix(R)
+        map(represents, nullSpace conda)$ListFunctions2(Vector R, A)
 
 
       basisOfNucleus() ==
-        condi: Matrix(R) := new(3*n3,n,0$R)$Matrix(R)
+        condi : Matrix(R) := new(3*n3, n, 0$R)$Matrix(R)
         z : Integer := 0
         u : Integer := n3
         w : Integer := 2*n3
@@ -802,16 +802,16 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
               enter : R := 0
               ent   : R := 0
               for l in 1..n repeat
-                entry :=  entry + elt(gamma.l,j,k)*elt(gamma.s,i,l) _
-                                - elt(gamma.l,i,j)*elt(gamma.s,l,k)
-                enter :=  enter + elt(gamma.l,k,i)*elt(gamma.s,j,l) _
-                                - elt(gamma.l,j,k)*elt(gamma.s,l,i)
-                ent :=  ent  +  elt(gamma.l,j,k)*elt(gamma.s,i,l) _
-                             -  elt(gamma.l,j,i)*elt(gamma.s,l,k)
-              setelt(condi,z,i,entry)$Matrix(R)
-              setelt(condi,u,i,enter)$Matrix(R)
-              setelt(condi,w,i,ent)$Matrix(R)
-        map(represents, nullSpace condi)$ListFunctions2(Vector R,A)
+                entry :=  entry + elt(gamma.l, j, k)*elt(gamma.s, i, l) _
+                                - elt(gamma.l, i, j)*elt(gamma.s, l, k)
+                enter :=  enter + elt(gamma.l, k, i)*elt(gamma.s, j, l) _
+                                - elt(gamma.l, j, k)*elt(gamma.s, l, i)
+                ent :=  ent  +  elt(gamma.l, j, k)*elt(gamma.s, i, l) _
+                             -  elt(gamma.l, j, i)*elt(gamma.s, l, k)
+              setelt(condi, z, i, entry)$Matrix(R)
+              setelt(condi, u, i, enter)$Matrix(R)
+              setelt(condi, w, i, ent)$Matrix(R)
+        map(represents, nullSpace condi)$ListFunctions2(Vector R, A)
 
       basisOfCenter() ==
         gamma1 := first gamma
@@ -822,7 +822,7 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
           gammak := gammak - transpose gammak
           cond :=  vertConcat(cond, gammak :: Matrix(R))$Matrix(R)
         B := cond :: Matrix(R)
-        condi: Matrix(R) := new(2*n3,n,0$R)$Matrix(R)
+        condi : Matrix(R) := new(2*n3, n, 0$R)$Matrix(R)
         z : Integer := 0
         u : Integer := n3
         for k in 1..n repeat
@@ -834,18 +834,18 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
               entry : R := 0
               enter : R := 0
               for l in 1..n repeat
-                entry :=  entry + elt(gamma.l,j,k)*elt(gamma.s,i,l) _
-                                - elt(gamma.l,i,j)*elt(gamma.s,l,k)
-                enter :=  enter + elt(gamma.l,k,i)*elt(gamma.s,j,l) _
-                                - elt(gamma.l,j,k)*elt(gamma.s,l,i)
-              setelt(condi,z,i,entry)$Matrix(R)
-              setelt(condi,u,i,enter)$Matrix(R)
-        D := vertConcat(condi,B)$Matrix(R)
+                entry :=  entry + elt(gamma.l, j, k)*elt(gamma.s, i, l) _
+                                - elt(gamma.l, i, j)*elt(gamma.s, l, k)
+                enter :=  enter + elt(gamma.l, k, i)*elt(gamma.s, j, l) _
+                                - elt(gamma.l, j, k)*elt(gamma.s, l, i)
+              setelt(condi, z, i, entry)$Matrix(R)
+              setelt(condi, u, i, enter)$Matrix(R)
+        D := vertConcat(condi, B)$Matrix(R)
         map(represents, nullSpace D)$ListFunctions2(Vector R, A)
 
       basisOfRightNucloid() ==
-        cond : Matrix(R) := new(n3,n2,0$R)$M(R)
-        condo: Matrix(R) := new(n3,n2,0$R)$M(R)
+        cond : Matrix(R) := new(n3, n2, 0$R)$M(R)
+        condo : Matrix(R) := new(n3, n2, 0$R)$M(R)
         z : Integer := 0
         for i in 1..n repeat
           for j in 1..n repeat
@@ -857,15 +857,15 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
               for r in 1..n repeat
                 r1 := r1 + 1
                 -- here r1 equals (k-1)*n+r (loop-invariant)
-                setelt(cond,z,r1,elt(gamma.r,j,i))
+                setelt(cond, z, r1, elt(gamma.r, j, i))
                 -- here r2 equals (r-1)*n+i (loop-invariant)
-                setelt(condo,z,r2,-elt(gamma.k,j,r))
+                setelt(condo, z, r2, -elt(gamma.k, j, r))
                 r2 := r2 + n
         [convVM(sol) for sol in nullSpace(cond+condo)]
 
       basisOfCentroid() ==
-        cond : Matrix(R) := new(2*n3,n2,0$R)$M(R)
-        condo: Matrix(R) := new(2*n3,n2,0$R)$M(R)
+        cond : Matrix(R) := new(2*n3, n2, 0$R)$M(R)
+        condo : Matrix(R) := new(2*n3, n2, 0$R)$M(R)
         z : Integer := 0
         u : Integer := n3
         for i in 1..n repeat
@@ -880,17 +880,17 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
               for r in 1..n repeat
                 r1 := r1 + 1
                 -- here r1 equals (k-1)*n+r (loop-invariant)
-                setelt(cond,z,r1,elt(gamma.r,i,j))
-                setelt(cond,u,r1,elt(gamma.r,j,i))
+                setelt(cond, z, r1, elt(gamma.r, i, j))
+                setelt(cond, u, r1, elt(gamma.r, j, i))
                 -- here r2 equals (r-1)*n+i (loop-invariant)
-                setelt(condo,z,r2,-elt(gamma.k,r,j))
-                setelt(condo,u,r2,-elt(gamma.k,j,r))
+                setelt(condo, z, r2, -elt(gamma.k, r, j))
+                setelt(condo, u, r2, -elt(gamma.k, j, r))
                 r2 := r2 + n
         [convVM(sol) for sol in nullSpace(cond+condo)]
 
 
       doubleRank x ==
-        cond : Matrix(R) := new(2*n,n,0$R)
+        cond : Matrix(R) := new(2*n, n, 0$R)
         for k in 1..n repeat
          z : Integer := 0
          u : Integer := n
@@ -900,14 +900,14 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
            entry : R := 0
            enter : R := 0
            for i in 1..n repeat
-             entry := entry + elt(x,i)*elt(gamma.k,j,i)
-             enter := enter + elt(x,i)*elt(gamma.k,i,j)
-           setelt(cond,z,k,entry)$Matrix(R)
-           setelt(cond,u,k,enter)$Matrix(R)
+             entry := entry + elt(x, i)*elt(gamma.k, j, i)
+             enter := enter + elt(x, i)*elt(gamma.k, i, j)
+           setelt(cond, z, k, entry)$Matrix(R)
+           setelt(cond, u, k, enter)$Matrix(R)
         rank(cond)$(M R)
 
       weakBiRank(x) ==
-        cond : Matrix(R) := new(n2,n,0$R)$Matrix(R)
+        cond : Matrix(R) := new(n2, n, 0$R)$Matrix(R)
         z : Integer := 0
         for i in 1..n repeat
           for j in 1..n repeat
@@ -916,12 +916,12 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
               entry : R := 0
               for l in 1..n repeat
                for s in 1..n repeat
-                entry:=entry+elt(x,l)*elt(gamma.s,i,l)*elt(gamma.k,s,j)
-              setelt(cond,z,k,entry)$Matrix(R)
+                entry := entry+elt(x, l)*elt(gamma.s, i, l)*elt(gamma.k, s, j)
+              setelt(cond, z, k, entry)$Matrix(R)
         rank(cond)$(M R)
 
       biRank(x) ==
-        cond : Matrix(R) := new(n2+2*n+1,n,0$R)$Matrix(R)
+        cond : Matrix(R) := new(n2+2*n+1, n, 0$R)$Matrix(R)
         z : Integer := 0
         for j in 1..n repeat
           for i in 1..n repeat
@@ -930,8 +930,8 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
               entry : R := 0
               for l in 1..n repeat
                for s in 1..n repeat
-                entry:=entry+elt(x,l)*elt(gamma.s,i,l)*elt(gamma.k,s,j)
-              setelt(cond,z,k,entry)$Matrix(R)
+                entry := entry+elt(x, l)*elt(gamma.s, i, l)*elt(gamma.k, s, j)
+              setelt(cond, z, k, entry)$Matrix(R)
         u : Integer := n*n
         w : Integer := n*(n+1)
         c := n2 + 2*n + 1
@@ -942,31 +942,31 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
              entry : R := 0
              enter : R := 0
              for i in 1..n repeat
-               entry := entry + elt(x,i)*elt(gamma.k,j,i)
-               enter := enter + elt(x,i)*elt(gamma.k,i,j)
-             setelt(cond,u,k,entry)$Matrix(R)
-             setelt(cond,w,k,enter)$Matrix(R)
-           setelt(cond,c,j, elt(x,j))
+               entry := entry + elt(x, i)*elt(gamma.k, j, i)
+               enter := enter + elt(x, i)*elt(gamma.k, i, j)
+             setelt(cond, u, k, entry)$Matrix(R)
+             setelt(cond, w, k, enter)$Matrix(R)
+           setelt(cond, c, j, elt(x, j))
         rank(cond)$(M R)
 
       leftRank x ==
-        cond : Matrix(R) := new(n,n,0$R)
+        cond : Matrix(R) := new(n, n, 0$R)
         for k in 1..n repeat
          for j in 1..n repeat
            entry : R := 0
            for i in 1..n repeat
-             entry := entry + elt(x,i)*elt(gamma.k,i,j)
-           setelt(cond,j,k,entry)$Matrix(R)
+             entry := entry + elt(x, i)*elt(gamma.k, i, j)
+           setelt(cond, j, k, entry)$Matrix(R)
         rank(cond)$(M R)
 
       rightRank x ==
-        cond : Matrix(R) := new(n,n,0$R)
+        cond : Matrix(R) := new(n, n, 0$R)
         for k in 1..n repeat
          for j in 1..n repeat
            entry : R := 0
            for i in 1..n repeat
-             entry := entry + elt(x,i)*elt(gamma.k,j,i)
-           setelt(cond,j,k,entry)$Matrix(R)
+             entry := entry + elt(x, i)*elt(gamma.k, j, i)
+           setelt(cond, j, k, entry)$Matrix(R)
         rank(cond)$(M R)
 
 
@@ -977,7 +977,7 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
           empty? v =>  [0$A]
           m : Matrix R := coerce(coordinates(v.1))$(Matrix R)
           for i in 2..maxIndex v repeat
-            m := horizConcat(m,coerce(coordinates(v.i))$(Matrix R) )
+            m := horizConcat(m, coerce(coordinates(v.i))$(Matrix R) )
           m := rowEchelon m
           lj : List Integer := []
           h : Integer := 1
@@ -986,10 +986,10 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
           finished? : Boolean := false
           j : Integer := 1
           while not finished? repeat
-            not zero? m(h,j) =>  -- corner found
-              lj := cons(j,lj)
+            not zero? m(h, j) =>  -- corner found
+              lj := cons(j, lj)
               h := mRI
-              while zero? m(h,j) repeat h := h-1
+              while zero? m(h, j) repeat h := h-1
               finished? := (h = mRI)
               if not finished? then h := h+1
             if j < mCI then
@@ -1017,7 +1017,7 @@ AlgebraPackage(R:IntegralDomain, A: FramedNonAssociativeAlgebra(R)): _
 ++  The function map is used to coerce between algebras over different
 ++  domains having the same structural constants.
 
-FramedNonAssociativeAlgebraFunctions2(AR,R,AS,S) : Exports ==
+FramedNonAssociativeAlgebraFunctions2(AR, R, AS, S) : Exports ==
   Implementation where
     R  : CommutativeRing
     S  : CommutativeRing
@@ -1025,15 +1025,15 @@ FramedNonAssociativeAlgebraFunctions2(AR,R,AS,S) : Exports ==
     AS : FramedNonAssociativeAlgebra S
     V ==> Vector
     Exports ==> with
-      map:     (R -> S, AR) -> AS
-        ++ map(f,u) maps f onto the coordinates of u to get an element
+      map :     (R -> S, AR) -> AS
+        ++ map(f, u) maps f onto the coordinates of u to get an element
         ++ in \spad{AS} via identification of the basis of \spad{AR}
         ++ as beginning part of the basis of \spad{AS}.
     Implementation ==> add
-      map(fn : R -> S, u : AR): AS ==
+      map(fn : R -> S, u : AR) : AS ==
         rank()$AR > rank()$AS => error("map: ranks of algebras do not fit")
         vr : V R := coordinates u
-        vs : V S := map(fn,vr)$VectorFunctions2(R,S)
+        vs : V S := map(fn, vr)$VectorFunctions2(R, S)
 @
 This line used to read:
 \begin{verbatim}
@@ -1044,7 +1044,7 @@ Gregory Vanuxem supplied the fix below.
 <<package FRNAAF2 FramedNonAssociativeAlgebraFunctions2>>=
         rank()$AR = rank()$AS => represents(vs)$AS
         ba := basis()$AS
-        represents(vs,[ba.i for i in 1..rank()$AR])
+        represents(vs, [ba.i for i in 1..rank()$AR])
 
 @
 \section{License}

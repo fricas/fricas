@@ -24,7 +24,7 @@
 ++ References:
 ++ Description:
 ++    The free monoid on a set \spad{S} is the monoid of finite products of
-++ the form \spad{reduce(*,[si ^ ni])} where the si's are in S, and the ni's
+++ the form \spad{reduce(*, [si ^ ni])} where the si's are in S, and the ni's
 ++ are non-negative integers. The multiplication is not commutative.
 ++ For two elements \spad{x} and \spad{y} the relation \spad{x < y}
 ++ holds if either \spad{length(x) < length(y)} holds or if these lengths
@@ -33,9 +33,9 @@
 ++ This domain inherits implementation from \spadtype{FreeMonoid}.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
-OrderedFreeMonoid(S: OrderedSet): OFMcategory == OFMdefinition where
+OrderedFreeMonoid(S : OrderedSet) : OFMcategory == OFMdefinition where
     NNI ==> NonNegativeInteger
-    REC ==> Record(gen:S, exp:NNI)
+    REC ==> Record(gen : S, exp : NNI)
 
     OFMcategory == Join(OrderedMonoid, RetractableTo S) with
         "*":    (S, %) -> %
@@ -44,119 +44,119 @@ OrderedFreeMonoid(S: OrderedSet): OFMcategory == OFMdefinition where
           ++ \spad{x * s} returns the product of \spad{x} by \spad{s} on the right.
         "^":   (S, NNI) -> %
           ++ \spad{s ^ n} returns the product of \spad{s} by itself \spad{n} times.
-        first: % -> S
+        first : % -> S
           ++ \spad{first(x)} returns the first letter of \spad{x}.
-        rest:  % -> %
+        rest :  % -> %
           ++ \spad{rest(x)} returns \spad{x} except the first letter.
-        mirror: % -> %
+        mirror : % -> %
           ++ \spad{mirror(x)} returns the reversed word of \spad{x}.
-        lexico: (%,%) -> Boolean
-          ++ \spad{lexico(x,y)} returns \spad{true} iff \spad{x} is smaller than \spad{y}
+        lexico : (%, %) -> Boolean
+          ++ \spad{lexico(x, y)} returns \spad{true} iff \spad{x} is smaller than \spad{y}
           ++ w.r.t. the pure lexicographical ordering induced by \spad{S}.
-        hclf:   (%, %) -> %
+        hclf :   (%, %) -> %
           ++ \spad{hclf(x, y)} returns the highest common left factor
           ++ of \spad{x} and \spad{y},
           ++ that is the largest \spad{d} such that \spad{x = d a} and \spad{y = d b}.
-        hcrf:   (%, %) -> %
+        hcrf :   (%, %) -> %
           ++ \spad{hcrf(x, y)} returns the highest common right
           ++ factor of \spad{x} and \spad{y},
           ++ that is the largest \spad{d} such that \spad{x = a d} and \spad{y = b d}.
-        lquo:   (%, %) -> Union(%, "failed")
+        lquo :   (%, %) -> Union(%, "failed")
           ++ \spad{lquo(x, y)} returns the exact left quotient of \spad{x}
           ++  by \spad{y} that is \spad{q} such that \spad{x = y * q},
           ++ "failed" if \spad{x} is not of the form \spad{y * q}.
-        rquo:   (%, %) -> Union(%, "failed")
+        rquo :   (%, %) -> Union(%, "failed")
           ++ \spad{rquo(x, y)} returns the exact right quotient of \spad{x}
           ++ by \spad{y} that is \spad{q} such that \spad{x = q * y},
           ++ "failed" if \spad{x} is not of the form \spad{q * y}.
-        lquo:   (%, S) -> Union(%, "failed")
+        lquo :   (%, S) -> Union(%, "failed")
           ++ \spad{lquo(x, s)} returns the exact left quotient of \spad{x}
           ++ by \spad{s}.
-        rquo:   (%, S) -> Union(%, "failed")
+        rquo :   (%, S) -> Union(%, "failed")
           ++ \spad{rquo(x, s)} returns the exact right quotient
           ++ of \spad{x} by \spad{s}.
-        divide:   (%, %) -> Union(Record(lm: %, rm: %), "failed")
+        divide :   (%, %) -> Union(Record(lm: %, rm: %), "failed")
           ++ \spad{divide(x, y)} returns the left and right exact quotients of
           ++ \spad{x} by \spad{y}, that is \spad{[l, r]} such that \spad{x = l * y * r}.
           ++ "failed" is returned iff \spad{x} is not of the form \spad{l * y * r}.
-        overlap: (%, %) -> Record(lm: %, mm: %, rm: %)
+        overlap : (%, %) -> Record(lm : %, mm : %, rm : %)
           ++ \spad{overlap(x, y)} returns \spad{[l, m, r]} such that
           ++ \spad{x = l * m} and \spad{y = m * r} hold and such that
           ++ \spad{l} and \spad{r} have no overlap,
           ++ that is \spad{overlap(l, r) = [l, 1, r]}.
-        size:   % -> NNI
+        size :   % -> NNI
           ++ \spad{size(x)} returns the number of monomials in \spad{x}.
-        nthExpon:  (%, Integer) -> NNI
+        nthExpon :  (%, Integer) -> NNI
           ++ \spad{nthExpon(x, n)} returns the exponent of the
           ++ \spad{n-th} monomial of \spad{x}.
-        nthFactor: (%, Integer) -> S
+        nthFactor : (%, Integer) -> S
           ++ \spad{nthFactor(x, n)} returns the factor of the \spad{n-th}
           ++ monomial of \spad{x}.
-        factors: % -> List REC
-          ++ \spad{factors(a1\^e1,...,an\^en)} returns \spad{[[a1, e1],...,[an, en]]}.
-        length: % -> NNI
+        factors : % -> List REC
+          ++ \spad{factors(a1\^e1, ..., an\^en)} returns \spad{[[a1, e1], ..., [an, en]]}.
+        length : % -> NNI
           ++ \spad{length(x)} returns the length of \spad{x}.
-        varList: % -> List S
+        varList : % -> List S
           ++ \spad{varList(x)} returns the list of variables of \spad{x}.
 
     OFMdefinition == FreeMonoid(S) add
         Rep := ListMonoidOps(S, NNI, 1)
 
       -- definitions
-        lquo(w:%, l:S) ==
-          x: List REC := listOfMonoms(w)$Rep
+        lquo(w : %, l : S) ==
+          x : List REC := listOfMonoms(w)$Rep
           null x        => "failed"
-          fx: REC := first x
+          fx : REC := first x
           fx.gen ~= l  => "failed"
           fx.exp = 1   => makeMulti rest(x)
-          makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, :rest x]
+          makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
 
-        rquo(w:%, l:S) ==
-          u:% := reverse w
+        rquo(w : %, l : S) ==
+          u : % := reverse w
           (r := lquo (u,l)) case "failed" => "failed"
           reverse! (r::%)
 
-        length x == reduce("+" ,[f.exp for f in listOfMonoms x], 0)
+        length x == reduce("+",[f.exp for f in listOfMonoms x], 0)
 
         varList x ==
-          le: List S := [t.gen for t in listOfMonoms x]
+          le : List S := [t.gen for t in listOfMonoms x]
           sort! removeDuplicates(le)
 
         first w ==
-          x: List REC := listOfMonoms w
+          x : List REC := listOfMonoms w
           null x => error "empty word !!!"
           x.first.gen
 
         rest w ==
-          x: List REC := listOfMonoms w
+          x : List REC := listOfMonoms w
           null x => error "empty word !!!"
-          fx: REC := first x
+          fx : REC := first x
           fx.exp = 1 => makeMulti rest x
-          makeMulti [[fx.gen , (fx.exp - 1)::NNI ]$REC , :rest x]
+          makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
 
-        lexico(a,b) ==         --  lexicographic order
+        lexico(a, b) ==         --  lexicographic order
             la := listOfMonoms a
             lb := listOfMonoms b
             while (not null la) and (not null lb) repeat
                 la.first.gen > lb.first.gen => return false
                 la.first.gen < lb.first.gen => return true
                 if la.first.exp = lb.first.exp then
-                    la:=rest la
-                    lb:=rest lb
+                    la := rest la
+                    lb := rest lb
                 else if la.first.exp > lb.first.exp then
-                    la:=concat([la.first.gen,
+                    la := concat([la.first.gen,
                            (la.first.exp - lb.first.exp)::NNI], rest lb)
-                    lb:=rest lb
+                    lb := rest lb
                 else
-                    lb:=concat([lb.first.gen,
+                    lb := concat([lb.first.gen,
                              (lb.first.exp-la.first.exp)::NNI], rest la)
-                    la:=rest la
+                    la := rest la
             empty? la and not empty? lb
 
 
         a < b ==               --  length, then lexicographic
-            la:NNI := length a; lb:NNI := length b
-            la = lb =>  lexico(a,b)
+            la : NNI := length a; lb : NNI := length b
+            la = lb =>  lexico(a, b)
             la < lb
 
         mirror x == reverse(x)$Rep
@@ -182,16 +182,16 @@ OrderedFreeMonoid(S: OrderedSet): OFMcategory == OFMdefinition where
 ++       \spadtype{XFreeAlgebra}
 ++   Author: Michel Petitot (petitot@lifl.fr)
 
-XAlgebra(R: Ring): Category ==
-  Join(Ring, BiModule(R,R)) with
+XAlgebra(R : Ring) : Category ==
+  Join(Ring, BiModule(R, R)) with
     --operations
-      coerce: R -> %
+      coerce : R -> %
           ++ \spad{coerce(r)} equals  \spad{r*1}.
     -- attributs
       if R has CommutativeRing then Algebra(R)
       -- if R has CommutativeRing then Module(R)
 -- add
---  coerce(x:R):% == x * 1$%
+--  coerce(x: R): % == x * 1$%
 
 @
 \section{category XFALG XFreeAlgebra}
@@ -212,11 +212,11 @@ XAlgebra(R: Ring): Category ==
 ++    and formal series with non-commutative variables.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
-XFreeAlgebra(vl:OrderedSet,R:Ring):Category == Catdef where
+XFreeAlgebra(vl : OrderedSet, R : Ring) : Category == Catdef where
    WORD   ==> OrderedFreeMonoid(vl)          -- monoide libre
    NNI    ==> NonNegativeInteger
    I      ==> Integer
-   TERM   ==> Record(k: WORD, c: R)
+   TERM   ==> Record(k : WORD, c : R)
 
    Catdef == Join(Ring, XAlgebra(R), RetractableTo WORD)
      with
@@ -225,53 +225,53 @@ XFreeAlgebra(vl:OrderedSet,R:Ring):Category == Catdef where
        "*": (%, R) -> %
          ++ \spad{x * r} returns the product of \spad{x} by \spad{r}.
          ++ Usefull if \spad{R} is a non-commutative Ring.
-       mindeg: % -> WORD
+       mindeg : % -> WORD
          ++ \spad{mindeg(x)} returns the little word which appears in \spad{x}.
          ++ Error if \spad{x=0}.
-       mindegTerm: % -> TERM
+       mindegTerm : % -> TERM
          ++ \spad{mindegTerm(x)} returns the term whose word is \spad{mindeg(x)}.
-       coef  : (%,WORD) -> R
-         ++ \spad{coef(x,w)} returns the coefficient of the word \spad{w} in \spad{x}.
-       coef  : (%,%) -> R
-         ++ \spad{coef(x,y)} returns scalar product of \spad{x} by \spad{y},
+       coef  : (%, WORD) -> R
+         ++ \spad{coef(x, w)} returns the coefficient of the word \spad{w} in \spad{x}.
+       coef  : (%, %) -> R
+         ++ \spad{coef(x, y)} returns scalar product of \spad{x} by \spad{y},
          ++ the set of words being regarded as an orthogonal basis.
-       lquo  : (%,vl) -> %
-         ++ \spad{lquo(x,v)} returns the left simplification of \spad{x} by the variable \spad{v}.
-       lquo  : (%,WORD) -> %
-         ++ \spad{lquo(x,w)} returns the left simplification of \spad{x} by the word \spad{w}.
-       lquo  : (%,%) -> %
-         ++ \spad{lquo(x,y)} returns the left simplification of \spad{x} by \spad{y}.
-       rquo  : (%,vl) -> %
-         ++ \spad{rquo(x,v)} returns the right simplification of \spad{x} by the variable \spad{v}.
-       rquo  : (%,WORD) -> %
-         ++ \spad{rquo(x,w)} returns the right simplification of \spad{x} by \spad{w}.
-       rquo  : (%,%) -> %
-         ++ \spad{rquo(x,y)} returns the right simplification of \spad{x} by \spad{y}.
-       monom : (WORD , R) -> %
-         ++ \spad{monom(w,r)} returns the product of the word \spad{w} by the coefficient \spad{r}.
+       lquo  : (%, vl) -> %
+         ++ \spad{lquo(x, v)} returns the left simplification of \spad{x} by the variable \spad{v}.
+       lquo  : (%, WORD) -> %
+         ++ \spad{lquo(x, w)} returns the left simplification of \spad{x} by the word \spad{w}.
+       lquo  : (%, %) -> %
+         ++ \spad{lquo(x, y)} returns the left simplification of \spad{x} by \spad{y}.
+       rquo  : (%, vl) -> %
+         ++ \spad{rquo(x, v)} returns the right simplification of \spad{x} by the variable \spad{v}.
+       rquo  : (%, WORD) -> %
+         ++ \spad{rquo(x, w)} returns the right simplification of \spad{x} by \spad{w}.
+       rquo  : (%, %) -> %
+         ++ \spad{rquo(x, y)} returns the right simplification of \spad{x} by \spad{y}.
+       monom : (WORD, R) -> %
+         ++ \spad{monom(w, r)} returns the product of the word \spad{w} by the coefficient \spad{r}.
        monomial? : % -> Boolean
          ++ \spad{monomial?(x)} returns true if \spad{x} is a monomial
-       mirror: % -> %
+       mirror : % -> %
          ++ \spad{mirror(x)} returns \spad{Sum(r_i mirror(w_i))} if \spad{x} writes \spad{Sum(r_i w_i)}.
        coerce : vl -> %
          ++ \spad{coerce(v)} returns \spad{v}.
-       constant?:% -> Boolean
+       constant? : % -> Boolean
          ++ \spad{constant?(x)} returns true if \spad{x} is constant.
-       constant: % -> R
+       constant : % -> R
          ++ \spad{constant(x)} returns the constant term of \spad{x}.
        quasiRegular? : % -> Boolean
          ++ \spad{quasiRegular?(x)} return true if \spad{constant(x)} is zero.
        quasiRegular : % -> %
          ++ \spad{quasiRegular(x)} return \spad{x} minus its constant term.
        if R has CommutativeRing then
-          sh :(%,%) -> %
-             ++ \spad{sh(x,y)} returns the shuffle-product of \spad{x} by \spad{y}.
+          sh : (%, %) -> %
+             ++ \spad{sh(x, y)} returns the shuffle-product of \spad{x} by \spad{y}.
              ++ This multiplication is associative and commutative.
-          sh :(%,NNI) -> %
-             ++ \spad{sh(x,n)} returns the shuffle power of \spad{x} to the \spad{n}.
+          sh : (%, NNI) -> %
+             ++ \spad{sh(x, n)} returns the shuffle power of \spad{x} to the \spad{n}.
        map   : (R -> R, %) -> %
-         ++ \spad{map(fn,x)} returns \spad{Sum(fn(r_i) w_i)} if \spad{x} writes \spad{Sum(r_i w_i)}.
-       varList: % -> List vl
+         ++ \spad{map(fn, x)} returns \spad{Sum(fn(r_i) w_i)} if \spad{x} writes \spad{Sum(r_i w_i)}.
+       varList : % -> List vl
          ++ \spad{varList(x)} returns the list of variables which appear in \spad{x}.
 
      -- Attributs
@@ -297,17 +297,17 @@ XFreeAlgebra(vl:OrderedSet,R:Ring):Category == Catdef where
 ++   However coefficients commute with variables.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
-XPolynomialsCat(vl:OrderedSet,R:Ring):Category == Export where
+XPolynomialsCat(vl : OrderedSet, R : Ring) : Category == Export where
   WORD ==> OrderedFreeMonoid(vl)
 
-  Export == XFreeAlgebra(vl,R) with
-    maxdeg: % -> WORD
+  Export == XFreeAlgebra(vl, R) with
+    maxdeg : % -> WORD
       ++ \spad{maxdeg(p)} returns the greatest leading word in the support of \spad{p}.
-    degree: % -> NonNegativeInteger
+    degree : % -> NonNegativeInteger
       ++ \spad{degree(p)} returns the degree of \spad{p}.
       ++  Note that the degree of a word is its length.
-    trunc : (% , NonNegativeInteger) -> %
-      ++  \spad{trunc(p,n)} returns the polynomial \spad{p} truncated at order \spad{n}.
+    trunc : (%, NonNegativeInteger) -> %
+      ++  \spad{trunc(p, n)} returns the polynomial \spad{p} truncated at order \spad{n}.
 
 @
 \section{domain XPR XPolynomialRing}
@@ -331,42 +331,42 @@ XPolynomialsCat(vl:OrderedSet,R:Ring):Category == Export where
 ++ domain constructor where the Monoid is free.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
-XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
-  TERM   ==> Record(k: E, c: R)
+XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
+  TERM   ==> Record(k : E, c : R)
   EX     ==> OutputForm
   NNI    ==> NonNegativeInteger
 
-  T == Join(Ring, XAlgebra(R), FreeModuleCategory(R,E)) with
+  T == Join(Ring, XAlgebra(R), FreeModuleCategory(R, E)) with
     --operations
       "*": (%,R) -> %
         ++ \spad{p*r} returns the product of \spad{p} by \spad{r}.
       "#": % -> NonNegativeInteger
         ++ \spad{# p} returns the number of terms in \spad{p}.
-      coerce: E -> %
+      coerce : E -> %
         ++ \spad{coerce(e)} returns \spad{1*e}
-      maxdeg: % -> E
+      maxdeg : % -> E
         ++ \spad{maxdeg(p)} returns the greatest word occurring in the polynomial \spad{p}
         ++ with a non-zero coefficient. An error is produced if  \spad{p} is zero.
-      mindeg: % -> E
+      mindeg : % -> E
         ++ \spad{mindeg(p)} returns the smallest word occurring in the polynomial \spad{p}
         ++ with a non-zero coefficient. An error is produced if  \spad{p} is zero.
       reductum : % -> %
         ++ \spad{reductum(p)} returns \spad{p} minus its leading term.
         ++ An error is produced if  \spad{p} is zero.
-      coef  : (%,E) -> R
-        ++ \spad{coef(p,e)} extracts the coefficient of the monomial \spad{e}.
+      coef  : (%, E) -> R
+        ++ \spad{coef(p, e)} extracts the coefficient of the monomial \spad{e}.
         ++ Returns zero if \spad{e} is not present.
-      constant?:% -> Boolean
+      constant? : % -> Boolean
         ++ \spad{constant?(p)} tests whether the polynomial \spad{p} belongs to the
         ++ coefficient ring.
-      constant: % -> R
+      constant : % -> R
         ++ \spad{constant(p)} return the constant term of \spad{p}.
       quasiRegular? : % -> Boolean
         ++ \spad{quasiRegular?(x)} return true if \spad{constant(p)} is zero.
       quasiRegular : % -> %
         ++ \spad{quasiRegular(x)} return \spad{x} minus its constant term.
       map   : (R -> R, %) -> %
-        ++ \spad{map(fn,x)} returns \spad{Sum(fn(r_i) w_i)} if \spad{x} writes \spad{Sum(r_i w_i)}.
+        ++ \spad{map(fn, x)} returns \spad{Sum(fn(r_i) w_i)} if \spad{x} writes \spad{Sum(r_i w_i)}.
       if R has Field then "/" : (%,R) -> %
         ++ \spad{p/r} returns \spad{p*(1/r)}.
 
@@ -379,13 +379,13 @@ XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
           ++ associates of any particular element.
 
 
-  C == FreeModule(R,E) add
+  C == FreeModule(R, E) add
     --representations
-       Rep:=  List TERM
+       Rep :=  List TERM
     --uses
-       repeatMultExpt: (%,NonNegativeInteger) -> %
+       repeatMultExpt : (%, NonNegativeInteger) -> %
     --define
-       1  == [[1$E,1$R]]
+       1  == [[1$E, 1$R]]
 
        characteristic  == characteristic$R
        #x == #$Rep x
@@ -394,62 +394,62 @@ XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
        mindeg p == if null p then  error "zero polynomial !!"
                              else (last p).k
 
-       coef(p,e)  ==
+       coef(p, e)  ==
           for tm in p repeat
-            tm.k=e => return tm.c
+            tm.k = e => return tm.c
             tm.k < e => return 0$R
           0$R
 
        constant? p == (p = 0) or (maxdeg(p) = 1$E)
-       constant  p == coef(p,1$E)
+       constant  p == coef(p, 1$E)
 
-       quasiRegular? p == (p=0) or (last p).k ~= 1$E
+       quasiRegular? p == (p = 0) or (last p).k ~= 1$E
        quasiRegular  p ==
           quasiRegular?(p) => p
           [t for t in p | not(t.k = 1$E)]
 
        recip(p) ==
-           p=0 => "failed"
+           p = 0 => "failed"
            p.first.k > 1$E => "failed"
-           (u:=recip(p.first.c)) case "failed" => "failed"
+           (u := recip(p.first.c)) case "failed" => "failed"
            (u::R)::%
 
-       coerce(r:R) == if r=0$R then 0$% else [[1$E,r]]
-       coerce(n:Integer) == (n::R)::%
+       coerce(r : R) == if r = 0$R then 0$% else [[1$E, r]]
+       coerce(n : Integer) == (n::R)::%
 
        if R has noZeroDivisors then
-         p1:% * p2:%  ==
+         p1 : % * p2 : %  ==
             null p1 => 0
             null p2 => 0
             p1.first.k = 1$E => p1.first.c * p2
             p2 = 1 => p1
---            +/[[[t1.k*t2.k,t1.c*t2.c]$TERM for t2 in p2]
+--            +/[[[t1.k*t2.k, t1.c*t2.c]$TERM for t2 in p2]
 --                   for t1 in reverse(p1)]
-            +/[[[t1.k*t2.k,t1.c*t2.c]$TERM for t2 in p2]
+            +/[[[t1.k*t2.k, t1.c*t2.c]$TERM for t2 in p2]
                    for t1 in p1]
         else
-         p1:% * p2:%  ==
+         p1 : % * p2 : %  ==
             null p1 => 0
             null p2 => 0
             p1.first.k = 1$E => p1.first.c * p2
             p2 = 1 => p1
---            +/[[[t1.k*t2.k,r]$TERM for t2 in p2 | not (r:=t1.c*t2.c) =$R 0]
+--            +/[[[t1.k*t2.k, r]$TERM for t2 in p2 | not (r := t1.c*t2.c) =$R 0]
 --                 for t1 in reverse(p1)]
-            +/[[[t1.k*t2.k,r]$TERM for t2 in p2 | not (r:=t1.c*t2.c) =$R 0]
+            +/[[[t1.k*t2.k, r]$TERM for t2 in p2 | not (r := t1.c*t2.c) =$R 0]
                    for t1 in p1]
-       p:% ^ nn:NNI  == repeatMultExpt(p,nn)
-       repeatMultExpt(x,nn) ==
+       p : % ^ nn : NNI  == repeatMultExpt(p, nn)
+       repeatMultExpt(x, nn) ==
                nn = 0 => 1
-               y:% := x
-               for i in 2..nn repeat y:= x * y
+               y : % := x
+               for i in 2..nn repeat y := x * y
                y
 
-       outTerm(r:R, m:E):EX ==
-            r=1 => m::EX
-            m=1 => r::EX
+       outTerm(r : R, m : E) : EX ==
+            r = 1 => m::EX
+            m = 1 => r::EX
             r::EX * m::EX
 
---       coerce(x:%) : EX ==
+--       coerce(x: %) : EX ==
 --         null x => (0$R) :: EX
 --         le : List EX := nil
 --         for rec in x repeat
@@ -460,7 +460,7 @@ XPolynomialRing(R:Ring,E:OrderedMonoid): T == C where
 --         1 = #le => first le
 --         mkNary("+" :: EX,le)
 
-       coerce(a:%):EX ==
+       coerce(a : %) : EX ==
             empty? a => (0$R)::EX
             reduce(_+, reverse! [outTerm(t.c, t.k) for t in a])$List(EX)
 
@@ -496,16 +496,16 @@ equivalent for the
 ++ However, coefficients and variables commute.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
-XDistributedPolynomial(vl:OrderedSet,R:Ring): XDPcat == XDPdef where
+XDistributedPolynomial(vl : OrderedSet, R : Ring) : XDPcat == XDPdef where
 
   WORD ==> OrderedFreeMonoid(vl)
   I    ==> Integer
   NNI  ==> NonNegativeInteger
-  TERM ==> Record(k:WORD, c:R)
+  TERM ==> Record(k : WORD, c : R)
 
-  XDPcat == Join(FreeModuleCategory(R, WORD), XPolynomialsCat(vl,R))
+  XDPcat == Join(FreeModuleCategory(R, WORD), XPolynomialsCat(vl, R))
 
-  XDPdef == XPolynomialRing(R,WORD) add
+  XDPdef == XPolynomialRing(R, WORD) add
 
        import( WORD, TERM)
 
@@ -513,30 +513,30 @@ XDistributedPolynomial(vl:OrderedSet,R:Ring): XDPcat == XDPdef where
        Rep  :=  List TERM
 
     -- local functions
-       shw: (WORD , WORD) -> %    -- shuffle de 2 mots
+       shw : (WORD, WORD) -> %    -- shuffle de 2 mots
 
     -- definitions
 
        mindegTerm p == last(p)$Rep
 
        if R has CommutativeRing then
-         sh(p:%, n:NNI):% ==
-            n=0 => 1
-            n=1 => p
-            n1: NNI := (n-$I 1)::NNI
-            sh(p, sh(p,n1))
+         sh(p : %, n : NNI) : % ==
+            n = 0 => 1
+            n = 1 => p
+            n1 : NNI := (n-$I 1)::NNI
+            sh(p, sh(p, n1))
 
 
-         sh(p1:%, p2:%) ==
-           p:% := 0
+         sh(p1 : %, p2 : %) ==
+           p : % := 0
            for t1 in p1 repeat
              for t2 in p2 repeat
-                p := p + (t1.c * t2.c) * shw(t1.k,t2.k)
+                p := p + (t1.c * t2.c) * shw(t1.k, t2.k)
            p
 
-       coerce(v: vl):% == coerce(v::WORD)
-       v:vl * p:% ==
-         [[v * t.k , t.c]$TERM for t in p]
+       coerce(v : vl) : % == coerce(v::WORD)
+       v : vl * p : % ==
+         [[v * t.k, t.c]$TERM for t in p]
 
        mirror p ==
          null p => p
@@ -547,7 +547,7 @@ XDistributedPolynomial(vl:OrderedSet,R:Ring): XDPcat == XDPdef where
 
        trunc(p, n) ==
          p = 0 => p
-         degree(p) > n => trunc( reductum p , n)
+         degree(p) > n => trunc( reductum p, n)
          p
 
        varList p ==
@@ -555,33 +555,33 @@ XDistributedPolynomial(vl:OrderedSet,R:Ring): XDPcat == XDPdef where
          le : List vl := "setUnion"/[varList(t.k) for t in p]
          sort!(le)
 
-       rquo(p:% , w: WORD) ==
-         [[r::WORD,t.c]$TERM for t in p | not (r:= rquo(t.k,w)) case "failed" ]
-       lquo(p:% , w: WORD) ==
-         [[r::WORD,t.c]$TERM for t in p | not (r:= lquo(t.k,w)) case "failed" ]
-       rquo(p:% , v: vl) ==
-         [[r::WORD,t.c]$TERM for t in p | not (r:= rquo(t.k,v)) case "failed" ]
-       lquo(p:% , v: vl) ==
-         [[r::WORD,t.c]$TERM for t in p | not (r:= lquo(t.k,v)) case "failed" ]
+       rquo(p : %, w : WORD) ==
+         [[r::WORD,t.c]$TERM for t in p | not (r := rquo(t.k,w)) case "failed" ]
+       lquo(p : %, w : WORD) ==
+         [[r::WORD,t.c]$TERM for t in p | not (r := lquo(t.k,w)) case "failed" ]
+       rquo(p : %, v : vl) ==
+         [[r::WORD,t.c]$TERM for t in p | not (r := rquo(t.k,v)) case "failed" ]
+       lquo(p : %, v : vl) ==
+         [[r::WORD,t.c]$TERM for t in p | not (r := lquo(t.k,v)) case "failed" ]
 
-       shw(w1,w2) ==
+       shw(w1, w2) ==
          w1 = 1$WORD => w2::%
          w2 = 1$WORD => w1::%
-         x: vl := first w1 ; y: vl := first w2
-         x * shw(rest w1,w2) + y * shw(w1,rest w2)
+         x : vl := first w1 ; y : vl := first w2
+         x * shw(rest w1, w2) + y * shw(w1, rest w2)
 
-       lquo(p:%,q:%):% ==
-         +/  [r * t.c for t in q | (r := lquo(p,t.k)) ~= 0]
+       lquo(p : %, q : %) : % ==
+         +/  [r * t.c for t in q | (r := lquo(p, t.k)) ~= 0]
 
-       rquo(p:%,q:%):% ==
-         +/  [r * t.c for t in q | (r := rquo(p,t.k)) ~= 0]
+       rquo(p : %, q : %) : % ==
+         +/  [r * t.c for t in q | (r := rquo(p, t.k)) ~= 0]
 
-       coef(p:%,q:%):R ==
+       coef(p : %, q : %) : R ==
          p = 0 => 0$R
          q = 0 => 0$R
-         p.first.k > q.first.k => coef(p.rest,q)
-         p.first.k < q.first.k => coef(p,q.rest)
-         return p.first.c * q.first.c + coef(p.rest,q.rest)
+         p.first.k > q.first.k => coef(p.rest, q)
+         p.first.k < q.first.k => coef(p, q.rest)
+         return p.first.c * q.first.c + coef(p.rest, q.rest)
 
 @
 \section{domain XRPOLY XRecursivePolynomial}
@@ -611,23 +611,23 @@ equivalents for the {\bf SparseMultivariatePolynomial} constructor.
 ++ Coefficients and variables commute.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
-XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
+XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
   I      ==> Integer
   NNI    ==> NonNegativeInteger
   XDPOLY ==> XDistributedPolynomial(VarSet, R)
   EX     ==> OutputForm
   WORD   ==> OrderedFreeMonoid(VarSet)
-  TERM   ==> Record(k:VarSet , c:%)
+  TERM   ==> Record(k : VarSet, c : %)
   LTERMS ==> List(TERM)
   REGPOLY==> FreeModule(%, VarSet)
-  VPOLY  ==> Record(c0:R, reg:REGPOLY)
+  VPOLY  ==> Record(c0 : R, reg : REGPOLY)
 
-  Xcat == XPolynomialsCat(VarSet,R) with
-       expand: % -> XDPOLY
+  Xcat == XPolynomialsCat(VarSet, R) with
+       expand : % -> XDPOLY
          ++ \spad{expand(p)} returns \spad{p} in distributed form.
        unexpand : XDPOLY -> %
          ++ \spad{unexpand(p)} returns \spad{p} in recursive form.
-       RemainderList: % -> LTERMS
+       RemainderList : % -> LTERMS
          ++ \spad{RemainderList(p)} returns the regular part of \spad{p}
          ++ as a list of terms.
 
@@ -635,18 +635,18 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
        import(VPOLY)
 
     -- representation
-       Rep     := Union(R,VPOLY)
+       Rep     := Union(R, VPOLY)
 
     -- local functions
-       construct: LTERMS -> REGPOLY
-       simplifie: VPOLY -> %
-       lquo1: (LTERMS,LTERMS) -> %        ++ a ajouter
-       coef1: (LTERMS,LTERMS) -> R        ++ a ajouter
-       outForm: REGPOLY -> EX
+       construct : LTERMS -> REGPOLY
+       simplifie : VPOLY -> %
+       lquo1 : (LTERMS, LTERMS) -> %        ++ a ajouter
+       coef1 : (LTERMS, LTERMS) -> R        ++ a ajouter
+       outForm : REGPOLY -> EX
 
     --define
        construct(lt) == lt pretend REGPOLY
-       p1:%  =  p2:%  ==
+       p1 : %  =  p2 : %  ==
          p1 case R =>
              p2 case R => p1 =$R p2
              false
@@ -658,83 +658,83 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
          r * w::%
 
 --       if R has Field then                  -- Bug non resolu !!!!!!!!
---         p:% / r: R == inv(r) * p
+--         p: % / r: R == inv(r) * p
 
-       rquo(p1:%, p2:%):% ==
+       rquo(p1 : %, p2 : %) : % ==
          p2 case R => p1 * p2::R
          p1 case R => p1  * p2.c0
-         x:REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms(p1.reg) _
-                         | (a:= rquo(t.c,p2)) ~= 0$% ]$LTERMS
-         simplifie [coef(p1,p2) , x]$VPOLY
+         x : REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms(p1.reg) _
+                         | (a := rquo(t.c, p2)) ~= 0$% ]$LTERMS
+         simplifie [coef(p1, p2), x]$VPOLY
 
-       trunc(p,n) ==
+       trunc(p, n) ==
          n = 0 or (p case R) => (constant p)::%
-         n1: NNI := (n-1)::NNI
-         lt: LTERMS := [[t.k, r]$TERM for t in listOfTerms p.reg _
+         n1 : NNI := (n-1)::NNI
+         lt : LTERMS := [[t.k, r]$TERM for t in listOfTerms p.reg _
                         | (r := trunc(t.c, n1)) ~= 0]$LTERMS
-         x: REGPOLY := construct lt
+         x : REGPOLY := construct lt
          simplifie [constant p, x]$VPOLY
 
        unexpand p ==
          constant? p => (constant p)::%
-         vl: List VarSet := sort((y, z) +-> y > z, varList p)
+         vl : List VarSet := sort((y, z) +-> y > z, varList p)
          x : REGPOLY := _
-           construct [[v, unexpand r]$TERM for v in vl| (r:=lquo(p,v)) ~= 0]
+           construct [[v, unexpand r]$TERM for v in vl| (r := lquo(p, v)) ~= 0]
          [constant p, x]$VPOLY
 
        if R has CommutativeRing then
-         sh(p:%, n:NNI):% ==
+         sh(p : %, n : NNI) : % ==
             n = 0 => 1
             p case R => (p::R)^ n
-            n1: NNI := (n-1)::NNI
-            p1: % := n * sh(p, n1)
-            lt: LTERMS := [[t.k, sh(t.c, p1)]$TERM for t in listOfTerms p.reg]
+            n1 : NNI := (n-1)::NNI
+            p1 : % := n * sh(p, n1)
+            lt : LTERMS := [[t.k, sh(t.c, p1)]$TERM for t in listOfTerms p.reg]
             [p.c0 ^ n, construct lt]$VPOLY
 
-         sh(p1:%, p2:%) ==
+         sh(p1 : %, p2 : %) ==
             p1 case R => p1::R * p2
             p2 case R => p1 * p2::R
-            lt1:LTERMS := listOfTerms p1.reg ; lt2:LTERMS := listOfTerms p2.reg
-            x: REGPOLY := construct [[t.k,sh(t.c,p2)]$TERM for t in lt1]
-            y: REGPOLY := construct [[t.k,sh(p1,t.c)]$TERM for t in lt2]
-            [p1.c0*p2.c0,x + y]$VPOLY
+            lt1 : LTERMS := listOfTerms p1.reg ; lt2 : LTERMS := listOfTerms p2.reg
+            x : REGPOLY := construct [[t.k, sh(t.c, p2)]$TERM for t in lt1]
+            y : REGPOLY := construct [[t.k, sh(p1, t.c)]$TERM for t in lt2]
+            [p1.c0*p2.c0, x + y]$VPOLY
 
        RemainderList p ==
            p case R => []
            listOfTerms( p.reg)$REGPOLY
 
-       lquo(p1:%,p2:%):% ==
+       lquo(p1 : %, p2 : %) : % ==
          p2 case R => p1 * p2
          p1 case R => p1  *$R p2.c0
          p1 * p2.c0 +$% lquo1(listOfTerms p1.reg, listOfTerms p2.reg)
 
-       lquo1(x:LTERMS,y:LTERMS):% ==
+       lquo1(x : LTERMS, y : LTERMS) : % ==
          null x => 0$%
          null y => 0$%
-         x.first.k < y.first.k => lquo1(x,y.rest)
+         x.first.k < y.first.k => lquo1(x, y.rest)
          x.first.k = y.first.k =>
-             lquo(x.first.c,y.first.c) + lquo1(x.rest,y.rest)
-         return lquo1(x.rest,y)
+             lquo(x.first.c, y.first.c) + lquo1(x.rest, y.rest)
+         return lquo1(x.rest, y)
 
-       coef(p1:%, p2:%):R ==
+       coef(p1 : %, p2 : %) : R ==
          p1 case R => p1::R * constant p2
          p2 case R => p1.c0 * p2::R
          p1.c0 * p2.c0 +$R coef1(listOfTerms p1.reg, listOfTerms p2.reg)
 
-       coef1(x:LTERMS,y:LTERMS):R ==
+       coef1(x : LTERMS, y : LTERMS) : R ==
          null x => 0$R
          null y => 0$R
-         x.first.k < y.first.k => coef1(x,y.rest)
+         x.first.k < y.first.k => coef1(x, y.rest)
          x.first.k = y.first.k =>
-             coef(x.first.c,y.first.c) + coef1(x.rest,y.rest)
-         return coef1(x.rest,y)
+             coef(x.first.c, y.first.c) + coef1(x.rest, y.rest)
+         return coef1(x.rest, y)
 
        --------------------------------------------------------------
-       outForm(p:REGPOLY): EX ==
+       outForm(p : REGPOLY) : EX ==
           le : List EX :=  [t.k::EX * t.c::EX for t in listOfTerms p]
           reduce(_+, reverse! le)$List(EX)
 
-       coerce(p:%): EX ==
+       coerce(p : %) : EX ==
           p case R => (p::R)::EX
           p.c0 = 0 => outForm p.reg
           p.c0::EX + outForm p.reg
@@ -750,89 +750,89 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
          p.reg = 0$REGPOLY => (p.c0)::%
          p
 
-       coerce (v:VarSet):% ==
-         [0$R,coerce(v)$REGPOLY]$VPOLY
+       coerce (v : VarSet) : % ==
+         [0$R, coerce(v)$REGPOLY]$VPOLY
 
-       coerce (r:R):% == r::%
-       coerce (n:Integer) == n::R::%
-       coerce (w:WORD) ==
+       coerce (r : R) : % == r::%
+       coerce (n : Integer) == n::R::%
+       coerce (w : WORD) ==
          w = 1 => 1$R
          (first w) * coerce(rest w)
 
        expand p ==
          p case R => p::R::XDPOLY
-         lt:LTERMS := listOfTerms(p.reg)
-         ep:XDPOLY := (p.c0)::XDPOLY
+         lt : LTERMS := listOfTerms(p.reg)
+         ep : XDPOLY := (p.c0)::XDPOLY
          for t in lt repeat
-           ep:= ep + t.k * expand(t.c)
+           ep := ep + t.k * expand(t.c)
          ep
 
-       - p:% ==
+       - p : % ==
          p case R => -$R p
          [- p.c0, - p.reg]$VPOLY
 
        p1 + p2 ==
          p1 case R and p2 case R => p1 +$R p2
-         p1 case R => [p1 + p2.c0 , p2.reg]$VPOLY
-         p2 case R => [p2 + p1.c0 , p1.reg]$VPOLY
-         simplifie [p1.c0 + p2.c0 , p1.reg +$REGPOLY p2.reg]$VPOLY
+         p1 case R => [p1 + p2.c0, p2.reg]$VPOLY
+         p2 case R => [p2 + p1.c0, p1.reg]$VPOLY
+         simplifie [p1.c0 + p2.c0, p1.reg +$REGPOLY p2.reg]$VPOLY
 
        p1 - p2 ==
          p1 case R and p2 case R => p1 -$R p2
-         p1 case R => [p1 - p2.c0 , -p2.reg]$VPOLY
-         p2 case R => [p1.c0 - p2 , p1.reg]$VPOLY
-         simplifie [p1.c0 - p2.c0 , p1.reg -$REGPOLY p2.reg]$VPOLY
+         p1 case R => [p1 - p2.c0, -p2.reg]$VPOLY
+         p2 case R => [p1.c0 - p2, p1.reg]$VPOLY
+         simplifie [p1.c0 - p2.c0, p1.reg -$REGPOLY p2.reg]$VPOLY
 
-       n:Integer * p:% ==
-         n=0 => 0$%
+       n : Integer * p : % ==
+         n = 0 => 0$%
          p case R => n *$R p
-         -- [ n*p.c0,n*p.reg]$VPOLY
-         simplifie [ n*p.c0,n*p.reg]$VPOLY
+         -- [ n*p.c0, n*p.reg]$VPOLY
+         simplifie [ n*p.c0, n*p.reg]$VPOLY
 
-       r:R * p:% ==
-         r=0 => 0$%
+       r : R * p : % ==
+         r = 0 => 0$%
          p case R => r *$R p
-         -- [ r*p.c0,r*p.reg]$VPOLY
-         simplifie [ r*p.c0,r*p.reg]$VPOLY
+         -- [ r*p.c0, r*p.reg]$VPOLY
+         simplifie [ r*p.c0, r*p.reg]$VPOLY
 
-       p:% * r:R ==
-         r=0 => 0$%
+       p : % * r : R ==
+         r = 0 => 0$%
          p case R => p *$R r
-         -- [ p.c0 * r,p.reg * r]$VPOLY
-         simplifie [ r*p.c0,r*p.reg]$VPOLY
+         -- [ p.c0 * r, p.reg * r]$VPOLY
+         simplifie [ r*p.c0, r*p.reg]$VPOLY
 
-       v:VarSet * p:% ==
+       v : VarSet * p : % ==
           p = 0 => 0$%
           [0$R, v *$REGPOLY p]$VPOLY
 
-       p1:% * p2:% ==
+       p1 : % * p2 : % ==
          p1 case R => p1::R * p2
          p2 case R => p1 * p2::R
-         x:REGPOLY := p1.reg *$REGPOLY p2
-         y:REGPOLY := (p1.c0)::% *$REGPOLY p2.reg  -- maladroit:(p1.c0)::% !!
-         -- [ p1.c0 * p2.c0 , x+y ]$VPOLY
-         simplifie [ p1.c0 * p2.c0 , x+y ]$VPOLY
+         x : REGPOLY := p1.reg *$REGPOLY p2
+         y : REGPOLY := (p1.c0)::% *$REGPOLY p2.reg  -- maladroit : (p1.c0)::% !!
+         -- [ p1.c0 * p2.c0, x+y ]$VPOLY
+         simplifie [ p1.c0 * p2.c0, x+y ]$VPOLY
 
-       lquo(p:%, v:VarSet):% ==
+       lquo(p : %, v : VarSet) : % ==
          p case R => 0
-         coefficient(p.reg,v)$REGPOLY
+         coefficient(p.reg, v)$REGPOLY
 
-       lquo(p:%, w:WORD):% ==
+       lquo(p : %, w : WORD) : % ==
          w = 1$WORD => p
-         lquo(lquo(p,first w),rest w)
+         lquo(lquo(p, first w), rest w)
 
-       rquo(p:%, v:VarSet):% ==
+       rquo(p : %, v : VarSet) : % ==
          p case R => 0
-         x:REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms(p.reg)
-                         | (a:= rquo(t.c,v)) ~= 0 ]
-         simplifie [constant(coefficient(p.reg,v)) , x]$VPOLY
+         x : REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms(p.reg)
+                         | (a := rquo(t.c, v)) ~= 0 ]
+         simplifie [constant(coefficient(p.reg, v)), x]$VPOLY
 
-       rquo(p:%, w:WORD):% ==
+       rquo(p : %, w : WORD) : % ==
          w = 1$WORD => p
-         rquo(rquo(p,rest w),first w)
+         rquo(rquo(p, rest w), first w)
 
-       coef(p:%, w:WORD):R ==
-         constant lquo(p,w)
+       coef(p : %, w : WORD) : R ==
+         constant lquo(p, w)
 
        quasiRegular? p ==
          p case R => p = 0$R
@@ -840,7 +840,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
 
        quasiRegular p ==
          p case R => 0$%
-         [0$R,p.reg]$VPOLY
+         [0$R, p.reg]$VPOLY
 
        characteristic == characteristic()$R
        recip p ==
@@ -864,16 +864,16 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
           p = 0 => error "XRPOLY.degree: zero polynomial !!"
           length(maxdeg p)
 
-       map(fn,p) ==
+       map(fn, p) ==
          p case R => fn(p::R)
-         x:REGPOLY := construct [[t.k,a]$TERM for t in listOfTerms p.reg
-                         |(a := map(fn,t.c)) ~= 0$R]
-         simplifie [fn(p.c0),x]$VPOLY
+         x : REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms p.reg
+                         |(a := map(fn, t.c)) ~= 0$R]
+         simplifie [fn(p.c0), x]$VPOLY
 
        varList p ==
          p case R => []
-         lv: List VarSet := "setUnion"/[varList(t.c) for t in listOfTerms p.reg]
-         lv:= setUnion(lv,[t.k for t in listOfTerms p.reg])
+         lv : List VarSet := "setUnion"/[varList(t.c) for t in listOfTerms p.reg]
+         lv := setUnion(lv, [t.k for t in listOfTerms p.reg])
          sort!(lv)
 
 @
@@ -900,7 +900,7 @@ XRecursivePolynomial(VarSet:OrderedSet,R:Ring):  Xcat == Xdef where
 ++ However, coefficients and variables commute.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
-XPolynomial(R:Ring) == XRecursivePolynomial(Symbol, R)
+XPolynomial(R : Ring) == XRecursivePolynomial(Symbol, R)
 
 @
 \section{License}
